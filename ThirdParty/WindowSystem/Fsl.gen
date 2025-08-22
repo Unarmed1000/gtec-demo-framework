@@ -22,6 +22,14 @@
       <Dependency Name="SDL2"/>
       -->
     </Platform>
+    <Platform Name="RDK_Yocto" Supported="true">
+      <Dependency Name="Recipe.Wayland_XDG" Access="Public"/>
+      <ExternalDependency Name="wayland-client" Type="StaticLib"/>
+      <ExternalDependency Name="wayland-cursor" Type="StaticLib"/>
+      <!-- Since this is just a small tweak to the wayland backend, we reuse the old define and create a new one -->
+      <Define Name="FSL_WINDOWSYSTEM_WAYLAND" Access="Public"/>
+      <Define Name="FSL_WINDOWSYSTEM_WAYLAND_XDG" Access="Public"/>
+    </Platform>
     <Platform Name="Windows" Supported="true">
       <Define Name="FSL_WINDOWSYSTEM_WIN32" Access="Public"/>
       <!--ExternalDependency Name="Shcore.lib" Type="StaticLib"/ -->
