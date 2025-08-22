@@ -73,7 +73,7 @@ from FslBuildGen.Tool.ToolCommonArgConfig import ToolCommonArgConfig
 from FslBuildGen.Xml.Project.XmlProjectRootConfigFile import XmlProjectRootConfigFile
 
 
-CurrentVersion = Version(3, 7, 1, 7)
+CurrentVersion = Version(3, 7, 1, 8)
 
 
 def __AddDefaultOptions(parser: argparse.ArgumentParser, allowStandaloneMode: bool) -> None:
@@ -114,7 +114,7 @@ def __EarlyArgumentParser(allowStandaloneMode: bool) -> Optional[LowLevelToolCon
             print("Using custom path from --input '{0}'".format(currentDir))
 
         if args.version:
-            print("V{0}".format(CurrentVersion))
+            print("V{0} unofficial".format(CurrentVersion))
 
         return LowLevelToolConfig(verbosityLevel, debugEnabled, allowDevelopmentPlugins, profilerEnabled, standaloneEnabled, currentDir, noGitHash)
     except (Exception) as ex:

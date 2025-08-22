@@ -71,6 +71,8 @@ def TryGetPlatformDefaultCMakeGenerator(platformName: str, compilerVersion: int)
         return CMakeGeneratorName.Ninja
     elif platformName == PackageConfig.PlatformNameString.YOCTO:
         return CMakeGeneratorName.Ninja
+    elif platformName == PackageConfig.PlatformNameString.RDK_YOCTO:
+        return CMakeGeneratorName.Ninja
     elif platformName == PackageConfig.PlatformNameString.FREERTOS:
         return CMakeGeneratorName.Ninja
     elif platformName == PackageConfig.PlatformNameString.QNX:

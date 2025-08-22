@@ -350,6 +350,8 @@ class GeneratorGNUmakefileUtil(object):
             buildCommandArguments = []  # type: List[str]
         elif generatorName == PlatformNameString.YOCTO:
             buildCommandArguments = ['-f', 'GNUmakefile_Yocto']
+        elif generatorName == PlatformNameString.RDK_YOCTO:
+            buildCommandArguments = ['-f', 'GNUmakefile_RDK_Yocto']
         else:
             raise Exception("Unknown generator name: {0}".format(generatorName))
 
