@@ -12,15 +12,23 @@
     </Platform>
     <Platform Name="Ubuntu" Supported="true">
       <!-- Use X11 -->
-      <!--ExternalDependency Name="Xi" Type="StaticLib"/-->
+      <!--
       <ExternalDependency Name="Xrandr" Type="StaticLib"/>
       <ExternalDependency Name="X11" Type="StaticLib"/>
       <Define Name="FSL_WINDOWSYSTEM_X11" Access="Public"/>
+      -->
       <!-- Use SDl -->
       <!--
       <Define Name="FSL_WINDOWSYSTEM_SDL2" Access="Public"/>
       <Dependency Name="SDL2"/>
       -->
+      <!-- Use X11 -->
+      <Dependency Name="Recipe.Wayland_XDG" Access="Public"/>
+      <ExternalDependency Name="wayland-client" Type="StaticLib"/>
+      <ExternalDependency Name="wayland-cursor" Type="StaticLib"/>
+      <!-- Since this is just a small tweak to the wayland backend, we reuse the old define and create a new one -->
+      <Define Name="FSL_WINDOWSYSTEM_WAYLAND" Access="Public"/>
+      <Define Name="FSL_WINDOWSYSTEM_WAYLAND_XDG" Access="Public"/>
     </Platform>
     <Platform Name="Windows" Supported="true">
       <Define Name="FSL_WINDOWSYSTEM_WIN32" Access="Public"/>

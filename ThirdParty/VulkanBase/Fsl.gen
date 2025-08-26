@@ -17,9 +17,13 @@
       <Define Name="VK_USE_PLATFORM_SCREEN_QNX" Access="Public"/>
     </Platform>
     <Platform Name="Ubuntu" Supported="true">
+      <!-- X11 -->
+      <!--
       <Define Name="VK_USE_PLATFORM_XLIB_KHR" Access="Public"/>
       <FindPackage Name="Vulkan" Version="1.0"/>
       <ExternalDependency Name="vulkan" Include="$(VULKAN_SDK)/include" Access="Public" Type="StaticLib" If="!AllowFindPackage"/>
+      -->
+      <Define Name="VK_USE_PLATFORM_WAYLAND_KHR" Access="Public"/>
     </Platform>
     <Platform Name="Windows" Supported="true">
       <Dependency Name="Recipe.Vulkan"/>
