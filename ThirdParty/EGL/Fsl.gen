@@ -9,8 +9,15 @@
       <ExternalDependency Name="EGL" Type="StaticLib"/>
     </Platform>
     <Platform Name="Ubuntu" Supported="true">
+      <!-- X11 -->
+      <!--
       <ExternalDependency Name="EGL" Type="StaticLib"/>
       <Define Name="MESA_EGL_NO_X11_HEADERS" Access="Public"/>
+      -->
+      <!-- Wayland -->
+      <Define Name="EGL_API_WL" Access="Public"/>
+      <ExternalDependency Name="EGL" Type="StaticLib"/>
+      <ExternalDependency Name="wayland-egl" Type="StaticLib"/>
     </Platform>
     <Platform Name="QNX" Supported="true">
       <ExternalDependency Name="EGL" Type="StaticLib"/>
