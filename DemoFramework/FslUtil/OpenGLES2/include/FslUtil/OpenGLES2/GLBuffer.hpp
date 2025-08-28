@@ -36,6 +36,7 @@
 #include <FslBase/BasicTypes.hpp>
 #include <FslBase/Span/ReadOnlyFlexSpan.hpp>
 #include <FslBase/Span/ReadOnlyFlexSpanUtil.hpp>
+#include <FslBase/Span/ReadOnlySpan.hpp>
 #include <FslBase/UncheckedNumericCast.hpp>
 #include <FslUtil/OpenGLES2/Common.hpp>
 #include <FslUtil/OpenGLES2/GLValues.hpp>
@@ -194,6 +195,12 @@ namespace Fsl::GLES2
       SetDataEx(dstIndex, ReadOnlyFlexSpanUtil::AsSpan(bufferData));
     }
 
+    template <typename T>
+    void SetDataFast(const std::size_t dstIndex, const ReadOnlySpan<T> bufferData)
+    {
+      SetDataFast(dstIndex, ReadOnlyFlexSpanUtil::AsSpan(bufferData));
+    }
+
     //! @brief Update the given area of the buffer
     //!        This is the recommended way of updating the content of a buffer both for full and partial updates!
     //! @param dstIndex the dst index where the data will be written.
@@ -202,7 +209,7 @@ namespace Fsl::GLES2
     //! @throws IndexOutOfRangeException if the dstIndex + elementCount exceeds the capacity of the buffer.
     //! @throws std::invalid_argument if the bufferData span stride is incompatible with the buffer.
     //! @throws UsageErrorException if the object isn't valid
-    void SetData(const std::size_t dstIndex, ReadOnlyFlexSpan bufferData);
+    void SetData(const std::size_t dstIndex, const ReadOnlyFlexSpan bufferData);
 
     //! @brief Update the given area of the buffer
     //!        This is the recommended way of updating the content of a buffer both for full and partial updates!
@@ -213,7 +220,18 @@ namespace Fsl::GLES2
     //! @throws IndexOutOfRangeException if the dstIndex + elementCount exceeds the capacity of the buffer.
     //! @throws std::invalid_argument if the bufferData span stride is incompatible with the buffer.
     //! @throws UsageErrorException if the object isn't valid
-    void SetDataEx(const std::size_t dstIndex, ReadOnlyFlexSpan bufferData);
+    void SetDataEx(const std::size_t dstIndex, const ReadOnlyFlexSpan bufferData);
+
+    //! @brief Update the given area of the buffer
+    //!        This is the recommended way of updating the content of a buffer both for full and partial updates!
+    //!        This does not unbind the GLBuffer after modification
+    //! @param dstIndex the dst index where the data will be written.
+    //! @param bufferData the elements that should be written.
+    //! @note   This method does not check for glErrors since its intended for use during rendering.
+    //! @throws IndexOutOfRangeException if the dstIndex + elementCount exceeds the capacity of the buffer.
+    //! @throws std::invalid_argument if the bufferData span stride is incompatible with the buffer.
+    //! @throws UsageErrorException if the object isn't valid
+    void SetDataFast(const std::size_t dstIndex, const ReadOnlyFlexSpan bufferData);
 
     //! @brief Update the given area of the buffer
     //!        This is the recommended way of updating the content of a buffer both for full and partial updates!
