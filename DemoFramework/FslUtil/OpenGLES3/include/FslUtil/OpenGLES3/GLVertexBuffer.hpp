@@ -214,6 +214,12 @@ namespace Fsl::GLES3
       m_vertexElements.DisableAttribArrays(pLinks, count);
     }
 
+    //! @brief Enable all vertex elements listed in the supplied link list binding the to the requested index
+    void EnableAttribArrays(const ReadOnlySpan<GLVertexAttribLink> links) const
+    {
+      m_vertexElements.EnableAttribArrays(links);
+    }
+
     template <std::size_t TSize>
     void EnableAttribArrays(const std::array<GLVertexAttribLink, TSize>& links) const
     {
@@ -224,6 +230,12 @@ namespace Fsl::GLES3
     void EnableAttribArrays(const std::vector<GLVertexAttribLink>& links) const
     {
       m_vertexElements.EnableAttribArrays(links);
+    }
+
+    //! @brief Disable all vertex elements listed in the supplied link
+    void DisableAttribArrays(const ReadOnlySpan<GLVertexAttribLink> links) const
+    {
+      m_vertexElements.DisableAttribArrays(links);
     }
 
     //! @brief Disable all vertex elements listed in the supplied link
