@@ -6,6 +6,10 @@
     <Platform Name="Android" Supported="true">
       <Dependency Name="GLBase"/>
     </Platform>
+    <Platform Name="RDK_Yocto" Supported="true">
+      <Dependency Name="GLBase"/>
+      <ExternalDependency Name="GLESv2" Type="StaticLib"/>
+    </Platform>
     <Platform Name="Ubuntu" Supported="true">
       <Dependency Name="GLBase"/>
       <ExternalDependency Name="GLESv2" Type="StaticLib"/>

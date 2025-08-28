@@ -87,6 +87,33 @@ namespace Fsl
       m_results[static_cast<uint32_t>(keyBegin)].Begin = counter;
     }
 
+    inline void CumulativeBegin(const key_type key)
+    {
+      const auto keyIndex = static_cast<uint32_t>(key);
+      assert(keyIndex <= m_results.size());
+      m_results[keyIndex].Begin = PerformanceCounter::GetPerformanceCounter() - (m_results[keyIndex].End - m_results[keyIndex].Begin);
+    }
+
+    inline void CumulativeEnd(const key_type key)
+    {
+      const auto keyIndex = static_cast<uint32_t>(key);
+      assert(keyIndex <= m_results.size());
+      m_results[keyIndex].End = PerformanceCounter::GetPerformanceCounter();
+    }
+
+    inline void CumulativeEndThenBegin(const key_type keyEnd, const key_type keyBegin)
+    {
+      const auto keyEndIndex = static_cast<uint32_t>(keyEnd);
+      const auto keyBeginIndex = static_cast<uint32_t>(keyBegin);
+
+      assert(keyEndIndex <= m_results.size());
+      assert(keyBeginIndex <= m_results.size());
+
+      const auto counter = PerformanceCounter::GetPerformanceCounter();
+      m_results[keyEndIndex].End = counter;
+      m_results[keyBeginIndex].Begin = counter - (m_results[keyBeginIndex].End - m_results[keyBeginIndex].Begin);
+    }
+
     inline const BasicPerformanceCaptureRecord& Get(const key_type key) const
     {
       assert(static_cast<uint32_t>(key) <= m_results.size());

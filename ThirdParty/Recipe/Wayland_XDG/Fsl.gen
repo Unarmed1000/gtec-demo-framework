@@ -16,7 +16,7 @@
         </Installation>
       </ExperimentalRecipe>
     </Platform>
-    <Platform Name="Yocto" Supported="true">
+    <Platform Name="RDK_Yocto;Yocto" Supported="true">
       <ExperimentalRecipe Name="Wayland_XDG" Version="1.0" Find="true">
         <Pipeline>
           <Source/>

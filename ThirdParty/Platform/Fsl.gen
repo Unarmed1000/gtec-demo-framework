@@ -7,6 +7,9 @@
     <Platform Name="FreeRTOS" Supported="true">
       <Define Name="FSL_PLATFORM_FREERTOS" Access="Public"/> 
     </Platform>
+    <Platform Name="RDK_Yocto" Supported="true">
+      <Define Name="FSL_PLATFORM_RDK_YOCTO" Access="Public"/> 
+    </Platform>
     <Platform Name="QNX" Supported="true">
       <Define Name="FSL_PLATFORM_QNX" Access="Public"/> 
     </Platform>

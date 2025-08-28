@@ -87,7 +87,7 @@ namespace Fsl::GLES2
     }
   }
 
-  void GLBuffer::SetData(const std::size_t dstIndex, ReadOnlyFlexSpan bufferData)
+  void GLBuffer::SetData(const std::size_t dstIndex, const ReadOnlyFlexSpan bufferData)
   {
     if (!bufferData.empty())
     {
@@ -96,7 +96,7 @@ namespace Fsl::GLES2
     }
   }
 
-  void GLBuffer::SetDataEx(const std::size_t dstIndex, ReadOnlyFlexSpan bufferData)
+  void GLBuffer::SetDataEx(const std::size_t dstIndex, const ReadOnlyFlexSpan bufferData)
   {
     if (m_elementStride != bufferData.stride())
     {
@@ -119,6 +119,30 @@ namespace Fsl::GLES2
                       bufferData.data());
     }
   }
+
+  void GLBuffer::SetDataFast(const std::size_t dstIndex, const ReadOnlyFlexSpan bufferData)
+  {
+    if (m_elementStride != bufferData.stride())
+    {
+      throw std::invalid_argument("bufferData is not compatible with GLBuffer");
+    }
+    if ((dstIndex + bufferData.size()) > m_capacity)
+    {
+      throw IndexOutOfRangeException("SetData");
+    }
+    if (!IsValid())
+    {
+      throw UsageErrorException("SetData called on invalid buffer");
+    }
+    if (!bufferData.empty())
+    {
+      assert(m_elementStride > 0);
+      assert(bufferData.data() != nullptr);
+      glBufferSubData(m_target, UncheckedNumericCast<GLintptr>(dstIndex * m_elementStride), UncheckedNumericCast<GLsizeiptr>(bufferData.byte_size()),
+                      bufferData.data());
+    }
+  }
+
 
   void GLBuffer::SetDataFast(const std::size_t dstIndex, const void* const pElements, const std::size_t elementCount)
   {

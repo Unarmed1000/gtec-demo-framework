@@ -145,6 +145,8 @@ def ValidatePlatform(log: Log, platformName: str, features: List[str], verbosity
         CheckUbuntu(log, features, verbosityLevel)
     elif platformName.lower() == PackageConfig.PlatformNameString.YOCTO.lower():
         CheckYocto(log, features, verbosityLevel)
+    elif platformName.lower() == PackageConfig.PlatformNameString.RDK_YOCTO.lower():
+        CheckYocto(log, features, verbosityLevel)
     else:
         log.LogPrintVerbose(verbosityLevel, "No configuration checks available for this platform")
     log.LogPrintVerbose(verbosityLevel, "Configuration check completed successfully.")

@@ -11,6 +11,9 @@
       <!-- Workaround, as JNIHelper needs GLES. We need to handle JNIHelper differently -->
       <ExternalDependency Name="GLESv3" Type="StaticLib"/>
     </Platform>
+    <Platform Name="RDK_Yocto" Supported="true">
+      <ExternalDependency Name="vulkan" Type="StaticLib"/>
+    </Platform>
     <Platform Name="QNX" Supported="true">
       <!--ExternalDependency Name="vulkan" Include="$(VULKAN_SDK)/include" Access="Public" Type="StaticLib"/-->
       <FindPackage Name="Vulkan" Version="1.0"/>

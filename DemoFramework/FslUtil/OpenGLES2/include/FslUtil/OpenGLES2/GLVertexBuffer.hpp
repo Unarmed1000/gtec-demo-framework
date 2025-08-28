@@ -31,7 +31,7 @@
  *
  ****************************************************************************************************************************************************/
 
-// Make sure Common.hpp is the first include file (to make the error message as helpful as possible when disabled)
+#include <FslGraphics/Vertices/ReadOnlyFlexVertexSpan.hpp>
 #include <FslGraphics/Vertices/VertexDeclarationSpan.hpp>
 #include <FslUtil/OpenGLES2/Common.hpp>
 #include <FslUtil/OpenGLES2/GLBuffer.hpp>
@@ -90,6 +90,20 @@ namespace Fsl::GLES2
     }
 
     //! @brief Create a initialized vertex buffer
+    GLVertexBuffer(const ReadOnlyFlexSpan vertices, const VertexDeclarationSpan vertexDeclarationSpan, const GLenum usage)
+      : GLVertexBuffer()
+    {
+      Reset(vertices, vertexDeclarationSpan, usage);
+    }
+
+    //! @brief Create a initialized vertex buffer
+    GLVertexBuffer(const ReadOnlyFlexVertexSpan vertices, const GLenum usage)
+      : GLVertexBuffer()
+    {
+      Reset(vertices, usage);
+    }
+
+    //! @brief Create a initialized vertex buffer
     template <typename T, std::size_t TSize>
     GLVertexBuffer(const std::array<T, TSize>& vertices, const GLenum usage)
       : GLVertexBuffer()
@@ -124,6 +138,22 @@ namespace Fsl::GLES2
     void Reset(const T* const pVertices, const std::size_t elementCount, const GLenum usage)
     {
       Reset(pVertices, elementCount, T::AsVertexDeclarationSpan(), usage);
+    }
+
+    //! @brief Reset the buffer to contain the supplied elements
+    //! @note  This is a very slow operation and its not recommended for updating the content of the buffer (since it creates a new buffer
+    //! internally)
+    void Reset(const ReadOnlyFlexSpan vertices, const VertexDeclarationSpan vertexDeclarationSpan, const GLenum usage)
+    {
+      Reset(vertices.data(), vertices.size(), vertexDeclarationSpan, usage);
+    }
+
+    //! @brief Reset the buffer to contain the supplied elements
+    //! @note  This is a very slow operation and its not recommended for updating the content of the buffer (since it creates a new buffer
+    //! internally)
+    void Reset(const ReadOnlyFlexVertexSpan vertices, const GLenum usage)
+    {
+      Reset(vertices.data(), vertices.size(), vertices.AsVertexDeclarationSpan(), usage);
     }
 
     //! @brief Reset the buffer to contain the supplied elements
@@ -166,7 +196,7 @@ namespace Fsl::GLES2
     //  m_vertexElements.EnableAttribArrays(pAttributeIndices, count);
     //}
 
-    //! @brief Disable all attrib arrays in the supplied index list.
+    ////! @brief Disable all attrib arrays in the supplied index list.
     // void DisableAttribArrays(const GLuint* const pAttributeIndices, const std::size_t count) const
     //{
     //  m_vertexElements.DisableAttribArrays(pAttributeIndices, count);
@@ -184,6 +214,12 @@ namespace Fsl::GLES2
       m_vertexElements.DisableAttribArrays(pLinks, count);
     }
 
+    //! @brief Enable all vertex elements listed in the supplied link list binding the to the requested index
+    void EnableAttribArrays(const ReadOnlySpan<GLVertexAttribLink> links) const
+    {
+      m_vertexElements.EnableAttribArrays(links);
+    }
+
     template <std::size_t TSize>
     void EnableAttribArrays(const std::array<GLVertexAttribLink, TSize>& links) const
     {
@@ -194,6 +230,12 @@ namespace Fsl::GLES2
     void EnableAttribArrays(const std::vector<GLVertexAttribLink>& links) const
     {
       m_vertexElements.EnableAttribArrays(links);
+    }
+
+    //! @brief Disable all vertex elements listed in the supplied link
+    void DisableAttribArrays(const ReadOnlySpan<GLVertexAttribLink> links) const
+    {
+      m_vertexElements.DisableAttribArrays(links);
     }
 
     //! @brief Disable all vertex elements listed in the supplied link

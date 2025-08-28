@@ -8,6 +8,11 @@
     <Platform Name="Android" Supported="true">
       <ExternalDependency Name="EGL" Type="StaticLib"/>
     </Platform>
+    <Platform Name="RDK_Yocto" Supported="true">
+      <ExternalDependency Name="EGL" Type="StaticLib"/>
+      <ExternalDependency Name="wayland-egl" Type="StaticLib"/>
+      <Define Name="EGL_API_WL" Access="Public"/>
+    </Platform>
     <Platform Name="Ubuntu" Supported="true">
       <!-- X11 -->
       <!--
