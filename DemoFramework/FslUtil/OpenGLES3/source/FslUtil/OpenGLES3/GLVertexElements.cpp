@@ -271,13 +271,34 @@ namespace Fsl::GLES3
 
     const ReadOnlySpan<GLVertexElement> vertexElementSpan = SpanUtil::AsReadOnlySpan(m_vertexElements);
     const auto vertexStride = VertexStride();
-    assert(count <= std::numeric_limits<uint32_t>::max());
-    for (uint32_t i = 0; i < static_cast<uint32_t>(count); ++i)
+    const auto count32 = UncheckedNumericCast<uint32_t>(count);
+    for (uint32_t i = 0; i < count32; ++i)
     {
       if (pLinks[i].AttribIndex >= 0)    // if present in shader
       {
         assert(pLinks[i].VertexElementIndex < vertexElementSpan.size());
         EnableAttribArray(vertexElementSpan[pLinks[i].VertexElementIndex], pLinks[i].AttribIndex, vertexStride, vertexElementSpan);
+      }
+    }
+  }
+
+
+  void GLVertexElements::EnableAttribArrays(const ReadOnlySpan<GLVertexAttribLink> links) const
+  {
+    if (links.size() > std::numeric_limits<uint32_t>::max())
+    {
+      throw NotSupportedException("We only support 32bit of elements");
+    }
+
+    const ReadOnlySpan<GLVertexElement> vertexElementSpan = SpanUtil::AsReadOnlySpan(m_vertexElements);
+    const auto vertexStride = VertexStride();
+    const auto count32 = UncheckedNumericCast<uint32_t>(links.size());
+    for (uint32_t i = 0; i < count32; ++i)
+    {
+      if (links[i].AttribIndex >= 0)    // if present in shader
+      {
+        assert(links[i].VertexElementIndex < vertexElementSpan.size());
+        EnableAttribArray(vertexElementSpan[links[i].VertexElementIndex], links[i].AttribIndex, vertexStride, vertexElementSpan);
       }
     }
   }
@@ -295,12 +316,32 @@ namespace Fsl::GLES3
     }
 
     const ReadOnlySpan<GLVertexElement> vertexElementSpan = SpanUtil::AsReadOnlySpan(m_vertexElements);
-    for (uint32_t i = 0; i < static_cast<uint32_t>(count); ++i)
+    const auto count32 = UncheckedNumericCast<uint32_t>(count);
+    for (uint32_t i = 0; i < count32; ++i)
     {
       if (pLinks[i].AttribIndex >= 0)
       {
         assert(pLinks[i].VertexElementIndex < vertexElementSpan.size());
         DisableAttribArray(vertexElementSpan[pLinks[i].VertexElementIndex], pLinks[i].AttribIndex);
+      }
+    }
+  }
+
+  void GLVertexElements::DisableAttribArrays(const ReadOnlySpan<GLVertexAttribLink> links) const
+  {
+    if (links.size() > std::numeric_limits<uint32_t>::max())
+    {
+      throw NotSupportedException("We only support 32bit of elements");
+    }
+
+    const ReadOnlySpan<GLVertexElement> vertexElementSpan = SpanUtil::AsReadOnlySpan(m_vertexElements);
+    const auto count32 = UncheckedNumericCast<uint32_t>(links.size());
+    for (uint32_t i = 0; i < count32; ++i)
+    {
+      if (links[i].AttribIndex >= 0)
+      {
+        assert(links[i].VertexElementIndex < vertexElementSpan.size());
+        DisableAttribArray(vertexElementSpan[links[i].VertexElementIndex], links[i].AttribIndex);
       }
     }
   }
