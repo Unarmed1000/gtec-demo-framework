@@ -1,5 +1,3 @@
-diff --git a/ri/include/VG/openvg.h b/ri/include/VG/openvg.h
-index 456a8bb..b54c392 100644
 --- a/ri/include/VG/openvg.h
 +++ b/ri/include/VG/openvg.h
 @@ -56,7 +56,7 @@ extern "C" {
