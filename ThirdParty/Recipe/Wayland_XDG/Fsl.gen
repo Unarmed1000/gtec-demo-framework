@@ -2,7 +2,7 @@
 <FslBuildGen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../FslBuildGen.xsd">
   <ExternalLibrary Name="Recipe.Wayland_XDG" CreationYear="2023">
     <Default.Platform.Supported Value="false"/>
-    <Platform Name="Ubuntu" Supported="false">
+    <Platform Name="Ubuntu" Supported="true">
       <ExperimentalRecipe Name="Wayland_XDG" Version="1.0" Find="true">
         <Pipeline>
           <Source OutputPath="Ubuntu"/>
