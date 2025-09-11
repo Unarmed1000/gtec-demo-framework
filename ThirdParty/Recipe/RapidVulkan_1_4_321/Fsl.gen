@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <FslBuildGen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../FslBuildGen.xsd">
-  <ExternalLibrary Name="Recipe.RapidVulkan_1_4_304" CreationYear="2017">
+  <ExternalLibrary Name="Recipe.RapidVulkan_1_4_321" CreationYear="2017">
     <Dependency Name="VulkanBase"/>
     <Platform Name="Android">
-      <ExperimentalRecipe Name="RapidVulkan" Version="1.4.304.0" Find="false">
+      <ExperimentalRecipe Name="RapidVulkan" Version="1.4.321.1" Find="false">
         <Pipeline>
-          <Download URL="https://github.com/Unarmed1000/RapidVulkan/archive/1.4.304.0.tar.gz" To="RapidVulkan-1.4.304.0.tar.gz" Hash="75f95b534c5f4d74b315d976d64d4e9b2e3f6d5f3c9b647c819d3862d0080521"/>
-          <Unpack File="RapidVulkan-1.4.304.0.tar.gz" OutputPath="RapidVulkan-1.4.304.0"/>
+          <Download URL="https://github.com/Unarmed1000/RapidVulkan/archive/1.4.321.1.tar.gz" To="RapidVulkan-1.4.321.1.tar.gz" Hash="499cad16dcc79bfd6b70854a9affc72a21323ce1c5366759ab596bd80ceb428a"/>
+          <Unpack File="RapidVulkan-1.4.321.1.tar.gz" OutputPath="RapidVulkan-1.4.321.1"/>
           <CMakeBuild Project="RapidVulkan" Target="install" Configuration="release" OutputPath="_Install"/>
         </Pipeline>
         <Installation>
@@ -18,10 +18,10 @@
       </ExperimentalRecipe>
     </Platform>
     <Platform Name="*">
-      <ExperimentalRecipe Name="RapidVulkan" Version="1.4.304.0" Find="true">
+      <ExperimentalRecipe Name="RapidVulkan" Version="1.4.321.1" Find="true">
         <Pipeline>
-          <Download URL="https://github.com/Unarmed1000/RapidVulkan/archive/1.4.304.0.tar.gz" To="RapidVulkan-1.4.304.0.tar.gz" Hash="75f95b534c5f4d74b315d976d64d4e9b2e3f6d5f3c9b647c819d3862d0080521"/>
-          <Unpack File="RapidVulkan-1.4.304.0.tar.gz" OutputPath="RapidVulkan-1.4.304.0"/>
+          <Download URL="https://github.com/Unarmed1000/RapidVulkan/archive/1.4.321.1.tar.gz" To="RapidVulkan-1.4.321.1.tar.gz" Hash="499cad16dcc79bfd6b70854a9affc72a21323ce1c5366759ab596bd80ceb428a"/>
+          <Unpack File="RapidVulkan-1.4.321.1.tar.gz" OutputPath="RapidVulkan-1.4.321.1"/>
           <CMakeBuild Project="RapidVulkan" Target="install" Configuration="release" OutputPath="_Install"/>
         </Pipeline>
         <Installation>
