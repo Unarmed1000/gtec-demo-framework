@@ -1,5 +1,5 @@
 # stop if cmake version below 3.2
-cmake_minimum_required(VERSION 3.2 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.10 FATAL_ERROR)
 
 # Custom make file that enables building of the openvg reference implementation on windows.
 # project name
