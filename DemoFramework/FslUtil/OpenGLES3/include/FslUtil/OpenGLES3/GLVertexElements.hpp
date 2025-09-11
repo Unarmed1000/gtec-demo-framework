@@ -31,7 +31,7 @@
  *
  ****************************************************************************************************************************************************/
 
-// Make sure Common.hpp is the first include file (to make the error message as helpful as possible when disabled)
+#include <FslBase/Span/ReadOnlySpan.hpp>
 #include <FslGraphics/Vertices/VertexDeclarationSpan.hpp>
 #include <FslUtil/OpenGLES3/Common.hpp>
 #include <FslUtil/OpenGLES3/GLVertexAttribLink.hpp>
@@ -118,8 +118,14 @@ namespace Fsl::GLES3
     //! @brief Enable all vertex elements listed in the supplied link list binding the to the requested index
     void EnableAttribArrays(const GLVertexAttribLink* const pLinks, const std::size_t count) const;
 
+    //! @brief Enable all vertex elements listed in the supplied link list binding the to the requested index
+    void EnableAttribArrays(const ReadOnlySpan<GLVertexAttribLink> links) const;
+
     //! @brief Disable all vertex elements listed in the supplied link
     void DisableAttribArrays(const GLVertexAttribLink* const pLinks, const std::size_t count) const;
+
+    //! @brief Disable all vertex elements listed in the supplied link
+    void DisableAttribArrays(const ReadOnlySpan<GLVertexAttribLink> links) const;
 
     template <std::size_t TSize>
     void EnableAttribArrays(const std::array<GLVertexAttribLink, TSize>& links) const
