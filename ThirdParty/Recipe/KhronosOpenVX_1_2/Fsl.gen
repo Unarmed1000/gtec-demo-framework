@@ -8,8 +8,10 @@
       <ExperimentalRecipe Name="KhronosOpenVX" Version="1.2">
         <Pipeline>
           <Download URL="https://registry.khronos.org/OpenVX/sample/openvx_sample_1.2.tar.bz2" Hash="8f61203572668f7719bc9f86bc24ca06c51a98531ca7941264bd7cbbaa7b9aaa"/>
-          <Unpack File="openvx_sample_1.2.tar.bz2" OutputPath="openvx_sample">
-          </Unpack>
+          <Unpack File="openvx_sample_1.2.tar.bz2" OutputPath="openvx_sample"/>
+          <Copy>
+            <GitApply From="{RECIPE_PATH}/cmake-version.patch"/>
+          </Copy>
           <CMakeBuild Project="OpenVX" Target="install" Configuration="release" Options="-DBUILD_X64=1" OutputPath="_Install"/>
         </Pipeline>  
         <Installation>
@@ -27,8 +29,10 @@
       <ExperimentalRecipe Name="KhronosOpenVX" Version="1.2">
         <Pipeline>
           <Download URL="https://registry.khronos.org/OpenVX/sample/openvx_sample_1.2.tar.bz2" Hash="8f61203572668f7719bc9f86bc24ca06c51a98531ca7941264bd7cbbaa7b9aaa"/>
-          <Unpack File="openvx_sample_1.2.tar.bz2" OutputPath="openvx_sample">
-          </Unpack>
+          <Unpack File="openvx_sample_1.2.tar.bz2" OutputPath="openvx_sample"/>
+          <Copy>
+            <GitApply From="{RECIPE_PATH}/cmake-version.patch"/>
+          </Copy>
           <CMakeBuild Project="OpenVX" Target="install" Configuration="release" Options="-DBUILD_X64=1" OutputPath="_Install"/>
         </Pipeline>  
         <Installation>
