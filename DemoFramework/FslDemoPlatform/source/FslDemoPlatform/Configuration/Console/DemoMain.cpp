@@ -32,6 +32,7 @@
 
 #include <FslBase/IO/Directory.hpp>
 #include <FslBase/IO/Path.hpp>
+#include <FslBase/Log/IO/FmtPath.hpp>
 #include <FslBase/Log/Log3Fmt.hpp>
 #include <FslDemoPlatform/DemoRunner.hpp>
 #include <csignal>
@@ -48,6 +49,12 @@ int main(int argc, char* argv[])
     if (argc >= 1 && argv[0] != nullptr)
     {
       strContentPath = Fsl::IO::Path::GetDirectoryName(argv[0]);
+      if (strContentPath.IsEmpty())
+      {
+        FSLLOG3_WARNING_IF(strContentPath.IsEmpty(),
+                           "could not get directory information from the exe file argument: '{}', trying to use '.' to resolve it", argv[0])
+        strContentPath = ".";
+      }
     }
     else
     {
@@ -55,7 +62,8 @@ int main(int argc, char* argv[])
       FSLLOG3_WARNING("Could not find the exe path, trying to use current working directory instead.");
     }
 
-    strContentPath = Fsl::IO::Path::GetFullPath(strContentPath);
+    // Only try to resolve the full path if we have a path to begin with.
+    strContentPath = !strContentPath.IsEmpty() ? Fsl::IO::Path::GetFullPath(strContentPath) : strContentPath;
 
     strPersistentPath = strContentPath;
     strContentPath = Fsl::IO::Path::Combine(strContentPath, "Content");
