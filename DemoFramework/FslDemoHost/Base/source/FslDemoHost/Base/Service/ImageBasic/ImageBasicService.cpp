@@ -41,6 +41,7 @@
 #include <FslGraphics/Exceptions.hpp>
 #include <FslGraphics/IO/BMPUtil.hpp>
 #include <FslGraphics/ImageFormatUtil.hpp>
+#include <FslGraphics/Log/Bitmap/FmtBitmapOrigin.hpp>
 #include <FslGraphics/PixelFormatUtil.hpp>
 #include <FslGraphics/Texture/Texture.hpp>
 #include <FslGraphics/Texture/TextureBlobBuilder.hpp>
@@ -234,16 +235,18 @@ namespace Fsl
     }
 
     const bool isCompressed = PixelFormatUtil::IsCompressed(rTexture.GetPixelFormat());
+    auto resolvedOrigin = desiredOrigin;
     if (isCompressed && desiredOrigin != BitmapOrigin::Undefined && rTexture.GetBitmapOrigin() != desiredOrigin)
     {
-      throw NotSupportedException("The origin of compressed formats can not be modified");
+      resolvedOrigin = rTexture.GetBitmapOrigin();
+      FSLLOG3_WARNING("The origin of compressed formats can not be modified (desired: {}) using {}", desiredOrigin, resolvedOrigin);
     }
 
     const auto usedDesiredPixelFormat = (desiredPixelFormat != PixelFormat::Undefined ? desiredPixelFormat : rTexture.GetPixelFormat());
 
-    if (rTexture.GetPixelFormat() != usedDesiredPixelFormat || rTexture.GetBitmapOrigin() != desiredOrigin)
+    if (rTexture.GetPixelFormat() != usedDesiredPixelFormat || rTexture.GetBitmapOrigin() != resolvedOrigin)
     {
-      m_bitmapConverter->Convert(rTexture, usedDesiredPixelFormat, desiredOrigin);
+      m_bitmapConverter->Convert(rTexture, usedDesiredPixelFormat, resolvedOrigin);
     }
 
     // When loading a undefined pixel format we prefer the unorm variant
