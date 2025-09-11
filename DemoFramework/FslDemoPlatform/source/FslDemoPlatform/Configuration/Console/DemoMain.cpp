@@ -48,7 +48,6 @@ int main(int argc, char* argv[])
     Fsl::IO::Path strPersistentPath;
     if (argc >= 1 && argv[0] != nullptr)
     {
-      FSLLOG3_VERBOSE6("ExeArg: {}", argv[0]);
       strContentPath = Fsl::IO::Path::GetDirectoryName(argv[0]);
       if (strContentPath.IsEmpty())
       {
@@ -65,8 +64,6 @@ int main(int argc, char* argv[])
 
     // Only try to resolve the full path if we have a path to begin with.
     strContentPath = !strContentPath.IsEmpty() ? Fsl::IO::Path::GetFullPath(strContentPath) : strContentPath;
-
-    FSLLOG3_VERBOSE6("Full path: {}", strContentPath);
 
     strPersistentPath = strContentPath;
     strContentPath = Fsl::IO::Path::Combine(strContentPath, "Content");
