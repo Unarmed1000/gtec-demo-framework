@@ -47,6 +47,18 @@ namespace Fsl::UI
     constexpr const uint32_t MaxLoopCount = 4;
   }
 
+  namespace
+  {
+    constexpr PxSize1D SafeLimit(const PxAvailableSize1D value0, const PxSize1D value1) noexcept
+    {
+      if (value0.IsInfinity())
+      {
+        return value1;
+      }
+      return PxSize1D::Min(value0.ToPxSize1D(), value1);
+    }
+  }
+
   GridLayout::GridLayout(const std::shared_ptr<BaseWindowContext>& context)
     : ComplexLayout<GridWindowCollectionRecord>(context)
   {
@@ -214,9 +226,9 @@ namespace Fsl::UI
     MeasureCellGroup3(unitConverter, m_cellInfo.FirstIndexCellGroup3, availableSizePx);
 
     auto resolvedSize = ResolveMeasureSize();
-    return !m_limitToAvailableSpace ? resolvedSize
-                                    : PxSize2D(PxSize1D::Min(availableSizePx.ToPxWidth(), resolvedSize.Width()),
-                                               PxSize1D::Min(availableSizePx.ToPxHeight(), resolvedSize.Height()));
+    return !m_limitToAvailableSpace
+             ? resolvedSize
+             : PxSize2D(SafeLimit(availableSizePx.Width(), resolvedSize.Width()), SafeLimit(availableSizePx.Height(), resolvedSize.Height()));
   }
 
 
