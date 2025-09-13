@@ -6,12 +6,12 @@ pipeline
         docker
         {
             label 'ubuntu'
-            image 'sigil/graphics-compute-api-test:u21_10'
+            image 'sigil/graphics-compute-api-test:u25_04'
             args '-v $HOME/PersistentCache:/PersistentCache:rw'
         }
     }
     environment {
-        FSL_JENKINS_DF_PLATFORM_NAME     = 'u21_04'
+        FSL_JENKINS_DF_PLATFORM_NAME     = 'u25_04'
         FSL_JENKINS_DF_CACHE_DIR         = "DF-${FSL_JENKINS_DF_PLATFORM_NAME}"
         FSL_JENKINS_THIRD_PARTY_INSTALL  = "/PersistentCache/${FSL_JENKINS_DF_CACHE_DIR}"
     }

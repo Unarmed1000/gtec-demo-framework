@@ -11,7 +11,7 @@ pipeline
         }
     }
     environment {
-        FSL_JENKINS_DF_PLATFORM_NAME     = 'u20_04'
+        FSL_JENKINS_DF_PLATFORM_NAME     = 'u21_04'
         FSL_JENKINS_DF_CACHE_DIR         = "DF-${FSL_JENKINS_DF_PLATFORM_NAME}"
         FSL_JENKINS_THIRD_PARTY_INSTALL  = "/PersistentCache/${FSL_JENKINS_DF_CACHE_DIR}"
     }
