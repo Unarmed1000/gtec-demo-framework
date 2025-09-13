@@ -38,6 +38,7 @@ class PackageNameMagicString(object):
 class PlatformNameString(object):
     INVALID = "Invalid"
     ANDROID = "Android"
+    APPLE = "Apple"
     RDK_YOCTO = "RDK_Yocto"
     UBUNTU = "Ubuntu"
     YOCTO = "Yocto"
@@ -49,6 +50,7 @@ class PlatformNameString(object):
 class PlatformNameIdString(object):
     INVALID = PlatformNameString.INVALID.lower()
     ANDROID = PlatformNameString.ANDROID.lower()
+    APPLE = PlatformNameString.APPLE.lower()
     RDK_YOCTO = PlatformNameString.RDK_YOCTO.lower()
     UBUNTU = PlatformNameString.UBUNTU.lower()
     YOCTO = PlatformNameString.YOCTO.lower()
@@ -57,5 +59,5 @@ class PlatformNameIdString(object):
     QNX = PlatformNameString.QNX.lower()
     EMSCRIPTEN = PlatformNameString.EMSCRIPTEN.lower()
 
-APPROVED_PLATFORM_NAMES = [PlatformNameString.ANDROID, PlatformNameString.UBUNTU, PlatformNameString.RDK_YOCTO, PlatformNameString.YOCTO, PlatformNameString.WINDOWS,
+APPROVED_PLATFORM_NAMES = [PlatformNameString.ANDROID, PlatformNameString.APPLE, PlatformNameString.UBUNTU, PlatformNameString.RDK_YOCTO, PlatformNameString.YOCTO, PlatformNameString.WINDOWS,
                            PlatformNameString.FREERTOS, PlatformNameString.QNX, PlatformNameString.EMSCRIPTEN]
