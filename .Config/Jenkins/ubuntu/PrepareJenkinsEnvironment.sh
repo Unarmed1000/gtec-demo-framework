@@ -1,5 +1,16 @@
 #!/bin/bash
 
+# Check user and folder
+echo ----- Dir permissons
+ls -l /
+echo -----
+echo "whoami"
+whoami
+echo "id"
+id
+echo -----
+
+
 # Build recipe caching setup
 localJobName=$JOB_NAME
 localJobName+='_'
