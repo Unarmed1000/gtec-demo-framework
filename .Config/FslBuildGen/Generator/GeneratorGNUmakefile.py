@@ -346,7 +346,7 @@ class GeneratorGNUmakefileUtil(object):
         # Yocto
         # buildCommand = ['make', '-f', 'GNUmakefile_Yocto'] + buildConfig.BuildArgs
 
-        if generatorName == PlatformNameString.UBUNTU:
+        if generatorName == PlatformNameString.UBUNTU or generatorName == PlatformNameString.APPLE:
             buildCommandArguments = []  # type: List[str]
         elif generatorName == PlatformNameString.YOCTO:
             buildCommandArguments = ['-f', 'GNUmakefile_Yocto']
