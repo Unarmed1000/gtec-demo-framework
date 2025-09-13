@@ -62,6 +62,7 @@ from FslBuildGen.Packages.Unresolved.UnresolvedFactory import UnresolvedFactory
 from FslBuildGen.Packages.Unresolved.UnresolvedPackage import UnresolvedPackage
 from FslBuildGen.Packages.Unresolved.UnresolvedPackage import UnresolvedPackageFlags
 from FslBuildGen.Packages.Unresolved.UnresolvedPackage import UnresolvedPackagePaths
+from FslBuildGen.Packages.Unresolved.UnresolvedPackageCopyFile import UnresolvedPackageCopyFile
 from FslBuildGen.Packages.Unresolved.UnresolvedPackageDefine import UnresolvedPackageDefine
 from FslBuildGen.Packages.Unresolved.UnresolvedPackageGenerate import UnresolvedPackageGenerate
 from FslBuildGen.Packages.Unresolved.UnresolvedPackageGenerateGrpcProtoFile import UnresolvedPackageGenerateGrpcProtoFile
@@ -71,6 +72,7 @@ from FslBuildGen.Packages.Unresolved.UnresolvedPackageVariantOption import Unres
 from FslBuildGen.Xml.Flavor.XmlGenFileFlavor import XmlGenFileFlavor
 from FslBuildGen.Xml.Flavor.XmlGenFileFlavorExtension import XmlGenFileFlavorExtension
 from FslBuildGen.Xml.Flavor.XmlGenFileFlavorOption import XmlGenFileFlavorOption
+from FslBuildGen.Xml.XmlGenFileCopyFile import XmlGenFileCopyFile
 from FslBuildGen.Xml.XmlGenFileDefine import XmlGenFileDefine
 from FslBuildGen.Xml.XmlGenFileExternalDependency import XmlGenFileExternalDependency
 from FslBuildGen.Xml.XmlGenFileExternalDependencyPackageManager import XmlGenFileExternalDependencyPackageManager
@@ -147,7 +149,7 @@ class XmlConvert(object):
     def ToUnresolvedPackageDependency(xmlValue: XmlGenFileDependency, allowInternalNames: bool) -> UnresolvedPackageDependency:
         unresolvedPackageName = UnresolvedPackageName(xmlValue.Name, allowInternalNames)
         flavorConstraints = XmlConvert.__ToPackageFlavorSelections(xmlValue.Flavor)
-        return UnresolvedPackageDependency(unresolvedPackageName, xmlValue.Access, flavorConstraints, xmlValue.IfCondition)
+        return UnresolvedPackageDependency(unresolvedPackageName, xmlValue.Access, xmlValue.OutputType, xmlValue.ReferenceOutputAssembly, flavorConstraints, xmlValue.IfCondition)
 
     @staticmethod
     def __ToPackageFlavorSelections(constraintsDict: Dict[str, str]) -> PackageFlavorSelections:
@@ -178,6 +180,7 @@ class XmlConvert(object):
 
         generateList = XmlConvert.ToUnresolvedPackageGenerateList(xmlValue.GenerateList)
         generateGrpcProtoFileList = XmlConvert.ToUnresolvedPackageGenerateGrpcProtoFileList(xmlValue.GenerateGrpcProtoFileList)
+        copyFileList = XmlConvert.ToUnresolvedPackageCopyFileList(xmlValue.CopyFileList)
         directDependencies = XmlConvert.ToUnresolvedPackageDependencyList(xmlValue.DirectDependencies, allowInternalNames)
         directRequirements = XmlConvert.ToUnresolvedPackageRequirementList(xmlValue.DirectRequirements)
         directDefines = XmlConvert.ToUnresolvedPackageDefineList(xmlValue.DirectDefines)
@@ -197,9 +200,9 @@ class XmlConvert(object):
 
 
         return UnresolvedFactory.CreateUnresolvedPackage(createContext, packageProjectContext, nameInfo, companyName, creationYear, packageFile,
-                                                         sourceFileHash, packageType, packageFlags, packageLanguage, generateList, generateGrpcProtoFileList, directDependencies,
-                                                         directRequirements, directDefines, externalDependencies, path, templateType,
-                                                         buildCustomization, directExperimentalRecipe, resolvedPlatform,
+                                                         sourceFileHash, packageType, packageFlags, packageLanguage, generateList, generateGrpcProtoFileList,
+                                                         copyFileList, directDependencies, directRequirements, directDefines, externalDependencies,
+                                                         path, templateType, buildCustomization, directExperimentalRecipe, resolvedPlatform,
                                                          resolvedPlatformDirectSupported, packageCustomInfo, packageTraceContext)
 
     @staticmethod
@@ -231,12 +234,20 @@ class XmlConvert(object):
         return [XmlConvert.ToUnresolvedPackageGenerateGrpcProtoFile(xmlEntry) for xmlEntry in xmlList]
 
     @staticmethod
+    def ToUnresolvedPackageCopyFileList(xmlList: List[XmlGenFileCopyFile]) -> List[UnresolvedPackageCopyFile]:
+        return [XmlConvert.ToUnresolvedPackageCopyFile(xmlEntry) for xmlEntry in xmlList]
+
+    @staticmethod
     def ToUnresolvedPackageGenerate(entry: XmlGenFileGenerate) -> UnresolvedPackageGenerate:
         return UnresolvedPackageGenerate(entry.TemplateFile, entry.TargetFile)
 
     @staticmethod
     def ToUnresolvedPackageGenerateGrpcProtoFile(entry: XmlGenFileGenerateGrpcProtoFile) -> UnresolvedPackageGenerateGrpcProtoFile:
         return UnresolvedPackageGenerateGrpcProtoFile(entry.Include, entry.GrpcServices)
+
+    @staticmethod
+    def ToUnresolvedPackageCopyFile(entry: XmlGenFileCopyFile) -> UnresolvedPackageCopyFile:
+        return UnresolvedPackageCopyFile(entry.Name)
 
     @staticmethod
     def __TryGetExperimentalRecipe(genFile: XmlGenFile, platformObject: PackagePlatform) -> Optional[XmlExperimentalRecipe]:

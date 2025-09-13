@@ -39,6 +39,7 @@ from FslBuildGen.Log import Log
 from FslBuildGen.MatchUtil import MatchUtil
 from FslBuildGen.Version import Version
 from FslBuildGen.SemanticVersion2 import SemanticVersion2
+from FslBuildGen.SemanticVersionPattern import SemanticVersionPattern
 from FslBuildGen.Xml.XmlBaseInfo import XmlBaseInfo
 from FslBuildGen.Xml.Exceptions import XmlException2
 from FslBuildGen.Xml.Exceptions import XmlFormatException
@@ -143,6 +144,18 @@ class XmlBase(XmlBaseInfo):
         strValue = self._TryReadAttrib(xmlElement, attribName, None)
         if strValue is not None:
             res = SemanticVersion2.TryFromString(strValue)
+            if res is None:
+                raise XmlFormatException("{0} expects a value in the format 'major[.minor[.patch[.tweak]]][-suffix]' not '{1}'".format(attribName, strValue))
+            return res
+        return defaultValue
+
+
+    def _TryReadAttribAsSemanticVersionPattern(self, xmlElement: ET.Element, attribName: str,
+                                         defaultValue: Optional[SemanticVersionPattern] = None) -> Optional[SemanticVersionPattern]:
+        """ Read the attrib if its available, else return defaultValue """
+        strValue = self._TryReadAttrib(xmlElement, attribName, None)
+        if strValue is not None:
+            res = SemanticVersionPattern.TryFromString(strValue)
             if res is None:
                 raise XmlFormatException("{0} expects a value in the format 'major[.minor[.patch[.tweak]]][-suffix]' not '{1}'".format(attribName, strValue))
             return res

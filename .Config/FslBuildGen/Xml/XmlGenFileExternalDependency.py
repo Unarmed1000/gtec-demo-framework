@@ -37,6 +37,7 @@ import xml.etree.ElementTree as ET
 from FslBuildGen.DataTypes import AccessType
 from FslBuildGen.DataTypes import ExternalDependencyType
 from FslBuildGen.SemanticVersion2 import SemanticVersion2
+from FslBuildGen.SemanticVersionPattern import SemanticVersionPattern
 from FslBuildGen.Log import Log
 from FslBuildGen.Xml import FakeXmlElementFactory
 from FslBuildGen.Xml.Exceptions import XmlException
@@ -71,7 +72,7 @@ class XmlGenFileExternalDependency(XmlBase):
         self.Location = self._TryReadAttrib(xmlElement, self.__AttribLocation)  # type: Optional['str']
         # New assembly keywords primarily used for C# assemblies
         self.HintPath = self._TryReadAttrib(xmlElement, self.__AttribHintPath)  # type: Optional['str']
-        self.Version = self._TryReadAttribAsSemanticVersion2(xmlElement, self.__AttribVersion)  # type: Optional[SemanticVersion2]
+        self.Version = self._TryReadAttribAsSemanticVersionPattern(xmlElement, self.__AttribVersion)  # type: Optional[SemanticVersionPattern]
         self.PublicKeyToken = self._TryReadAttrib(xmlElement, self.__AttribPublicKeyToken)  # type: Optional['str']
         self.ProcessorArchitecture = self._TryReadAttrib(xmlElement, self.__AttribProcessorArchitecture)  # type: Optional['str']
         self.Culture = self._TryReadAttrib(xmlElement, self.__AttribCulture)  # type: Optional['str']

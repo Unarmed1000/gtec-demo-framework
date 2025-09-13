@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 #****************************************************************************************************************************************************
-# Copyright 2020 NXP
+# Copyright 2025 Mana Battery
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -31,26 +31,10 @@
 #
 #****************************************************************************************************************************************************
 
+from typing import List
 from typing import Optional
-from FslBuildGen.DataTypes import AccessType
-from FslBuildGen.DataTypes import DependencyOutputType
-from FslBuildGen.Engine.PackageFlavorSelections import PackageFlavorSelections
-from FslBuildGen.Engine.PackageFlavorSelections import PackageFlavorSelectionsEmpty
-from FslBuildGen.Packages.PackageInstanceName import PackageInstanceName
 
-class ProcessedPackageDependency(object):
-    def __init__(self, name: PackageInstanceName, accessType: AccessType, outputType: DependencyOutputType, referenceOutputAssembly: bool, flavorConstraints: Optional[PackageFlavorSelections] = None,
-                 ifCondition: Optional[str] = None) -> None:
+class UnresolvedPackageCopyFile(object):
+    def __init__(self, name: str) -> None:
         super().__init__()
         self.Name = name
-        self.FlavorConstraints = flavorConstraints if flavorConstraints is not None else PackageFlavorSelectionsEmpty.Empty
-        self.Access = accessType
-        self.OutputType = outputType
-        self.ReferenceOutputAssembly = referenceOutputAssembly
-        self.IfCondition = ifCondition
-
-    def __str__(self) -> str:
-        return "Name:{0} Constraints:{1}".format(self.Name, self.FlavorConstraints)
-
-    def __repr__(self) -> str:
-        return "ProcessedPackageDependency:{0}".format(str(self))

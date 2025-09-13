@@ -178,8 +178,8 @@ class GeneratorPluginYoctoLegacy(GeneratorPluginMakefile):
         super().__init__(log, PackageConfig.PlatformNameString.YOCTO, "GNUmakefile_Yocto", False)
 
 class GeneratorPluginWindowsLegacy(GeneratorPlugin):
-    def __init__(self, log: Log) -> None:
-        super().__init__(log, PackageConfig.PlatformNameString.WINDOWS)
+    def __init__(self, log: Log, platformNameString: str = PackageConfig.PlatformNameString.WINDOWS) -> None:
+        super().__init__(log, platformNameString)
         self.InDevelopment = False
         self.ToolVersion = VisualStudioVersion.DEFAULT
         self.SupportContentBuild = True
@@ -440,6 +440,8 @@ class ActualPluginConfigContext(PluginConfigContext):
             platformName = generatorPluginDict[pluginId].PlatformName
             if platformName == PlatformNameString.WINDOWS:
                 return GeneratorPluginWindowsLegacy(self.__Log)
+            elif platformName == PlatformNameString.UBUNTU:
+                return GeneratorPluginWindowsLegacy(self.__Log, PackageConfig.PlatformNameString.UBUNTU)
         return generatorPluginDict[pluginId]
 
 

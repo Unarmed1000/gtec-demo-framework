@@ -84,6 +84,7 @@ from FslBuildGen.Xml.XmlGenFileExternalDependency import XmlGenFileExternalDepen
 from FslBuildGen.Xml.XmlGenFileFindPackage import FakeXmlGenFileFindPackage
 from FslBuildGen.Xml.XmlGenFileGenerate import XmlGenFileGenerate
 from FslBuildGen.Xml.XmlGenFileGenerateGrpcProtoFile import XmlGenFileGenerateGrpcProtoFile
+from FslBuildGen.Xml.XmlGenFileCopyFile import XmlGenFileCopyFile
 from FslBuildGen.Xml.XmlGenFileRequirement import XmlGenFileRequirement
 from FslBuildGen.Xml.XmlStuff import DefaultValueName
 from FslBuildGen.Xml.XmlStuff import LocalPackageDefaultValues
@@ -110,6 +111,7 @@ class XmlGenFile(XmlCommonFslBuild):
         self.IsVirtual = False
         self.GenerateList = [] # type: List[XmlGenFileGenerate]
         self.GenerateGrpcProtoFileList = [] # type: List[XmlGenFileGenerateGrpcProtoFile]
+        self.CopyFileList = [] # type: List[XmlGenFileCopyFile]
         self.DirectDependencies = []  # type: List[XmlGenFileDependency]
         self.DirectRequirements = []  # type: List[XmlGenFileRequirement]
         self.DirectDefines = []
@@ -186,6 +188,7 @@ class XmlGenFile(XmlCommonFslBuild):
 
         self.GenerateList = self.__GetGenerateList(log, elem)
         self.GenerateGrpcProtoFileList = self.__GetGenerateGrpcProtoFileList(log, elem)
+        self.CopyFileList = self.__GetCopyFileList(log, elem)
         requirements = self._GetXMLRequirements(elem)
         allowRecipes = self.__DoesTypeAllowRecipes(theType)
 
@@ -313,6 +316,13 @@ class XmlGenFile(XmlCommonFslBuild):
         foundElements = xmlElement.findall("GenerateGrpcProtoFile")
         for element in foundElements:
             res.append(XmlGenFileGenerateGrpcProtoFile(log, element))
+        return res
+
+    def __GetCopyFileList(self, log: Log, xmlElement: ET.Element) -> List[XmlGenFileCopyFile]:
+        res = []  # type: List[XmlGenFileCopyFile]
+        foundElements = xmlElement.findall("CopyFile")
+        for element in foundElements:
+            res.append(XmlGenFileCopyFile(log, element))
         return res
 
     def __GetXMLPlatforms(self, requirementTypes: List[str], elem: ET.Element, ownerPackageName: str,

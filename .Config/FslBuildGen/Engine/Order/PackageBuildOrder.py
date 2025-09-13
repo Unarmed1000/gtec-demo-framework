@@ -37,6 +37,7 @@ from typing import Optional
 from typing import Tuple
 import difflib
 from FslBuildGen.DataTypes import AccessType
+from FslBuildGen.DataTypes import DependencyOutputType
 from FslBuildGen.DataTypes import PackageType
 from FslBuildGen.Engine.ComplexExternalFlavorConstraints import ComplexExternalFlavorConstraints
 from FslBuildGen.Engine.ExternalFlavorConstraints import ExternalFlavorConstraints
@@ -266,7 +267,7 @@ class PackageBuildOrder(object):
         if not flavorConstraints.HasConstraints():
             for srcNode in topLevelNodes:
                 packageDirectDependencies.append(EvaluationPackage.DependencyRecord(srcNode.Source, None))
-                unresolvedDirectDependencies.append(UnresolvedPackageDependency(srcNode.Source.Name, AccessType.Public))
+                unresolvedDirectDependencies.append(UnresolvedPackageDependency(srcNode.Source.Name, AccessType.Public, DependencyOutputType.Reference, True))
         else:
             for srcNode in topLevelNodes:
                 flavorInfo = PackageBuildOrder.__ToFlavorInfo(flavorConstraints.GetFlavorConstraints(srcNode.Source.Name.Value))
@@ -274,7 +275,7 @@ class PackageBuildOrder(object):
                     log.LogPrint("- '{0}' applying constraints '{1}'".format(srcNode.Source.Name, PackageBuildOrder.__ToString(flavorInfo)))
                 externalConstraintNode = PackageBuildOrder.__CreateExternalFlavorConstraintNode(graph, srcNode, flavorInfo);
                 packageDirectDependencies.append(EvaluationPackage.DependencyRecord(externalConstraintNode.Source, None))
-                unresolvedDirectDependencies.append(UnresolvedPackageDependency(externalConstraintNode.Source.Name, AccessType.Public))
+                unresolvedDirectDependencies.append(UnresolvedPackageDependency(externalConstraintNode.Source.Name, AccessType.Public, DependencyOutputType.Reference, True))
 
         newTopLevel = UnresolvedBasicPackage(UnresolvedPackageName(PackageNameMagicString.TopLevelName), PackageType.TopLevel, unresolvedDirectDependencies, [], [])
         return EvaluationPackage(newTopLevel.Name, newTopLevel, packageDirectDependencies)
@@ -291,7 +292,7 @@ class PackageBuildOrder(object):
         # contain the flavor dependency constraints. The only packages that satisfy the constraints will be the nodes that these internal constraint
         # nodes depend upon.
         flavorConstraints = PackageBuildOrder.__CreatePackageFlavorSelections(flavorInfo)
-        constrainedDirectDependency = UnresolvedPackageDependency(graphRootNode.Source.Name, AccessType.Public, flavorConstraints)
+        constrainedDirectDependency = UnresolvedPackageDependency(graphRootNode.Source.Name, AccessType.Public, DependencyOutputType.Reference, True, flavorConstraints)
         constraintPackageName = UnresolvedPackageName("{0}_{1}".format(LocalStrings.FlavorConstraintPackageName, graphRootNode.Source.Name.Value), True)
         constraintSourcePackage = UnresolvedBasicPackage(constraintPackageName, PackageType.ExternalFlavorConstraint, [constrainedDirectDependency], [], [])
         directDependencies = [ EvaluationPackage.DependencyRecord(graphRootNode.Source, None) ]

@@ -36,14 +36,17 @@ from FslBuildGen.Engine.PackageFlavorSelections import PackageFlavorSelections
 from FslBuildGen.Engine.PackageFlavorSelections import PackageFlavorSelectionsEmpty
 from FslBuildGen.Engine.Unresolved.UnresolvedPackageName import UnresolvedPackageName
 from FslBuildGen.DataTypes import AccessType
+from FslBuildGen.DataTypes import DependencyOutputType
 
 class UnresolvedPackageDependency(object):
-    def __init__(self, name: UnresolvedPackageName, accessType: AccessType, flavorConstraints: Optional[PackageFlavorSelections] = None,
+    def __init__(self, name: UnresolvedPackageName, accessType: AccessType, outputType: DependencyOutputType, referenceOutputAssembly: bool, flavorConstraints: Optional[PackageFlavorSelections] = None,
                  ifCondition: Optional[str] = None) -> None:
         super().__init__()
         self.Name = name
         self.FlavorConstraints = flavorConstraints if flavorConstraints is not None else PackageFlavorSelectionsEmpty.Empty
         self.Access = accessType
+        self.OutputType = outputType
+        self.ReferenceOutputAssembly = referenceOutputAssembly
         self.IfCondition = ifCondition
 
     def __str__(self) -> str:
@@ -51,3 +54,4 @@ class UnresolvedPackageDependency(object):
 
     def __repr__(self) -> str:
         return "UnresolvedPackageDependency:{0}".format(str(self))
+    6

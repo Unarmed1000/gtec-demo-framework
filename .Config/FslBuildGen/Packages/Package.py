@@ -40,7 +40,7 @@ from FslBuildGen import Util
 from FslBuildGen.BuildContent.PathRecord import PathRecord
 from FslBuildGen.BuildExternal.PackageExperimentalRecipe import PackageExperimentalRecipe
 from FslBuildGen.Config import Config
-from FslBuildGen.DataTypes import AccessType
+from FslBuildGen.DataTypes import AccessType, DependencyOutputType
 from FslBuildGen.DataTypes import ExternalDependencyType
 from FslBuildGen.DataTypes import PackageType
 from FslBuildGen.DataTypes import VariantType
@@ -54,6 +54,7 @@ from FslBuildGen.Location.ResolvedPath import ResolvedPath
 from FslBuildGen.Log import Log
 from FslBuildGen.Generator.GeneratorInfo import GeneratorInfo
 from FslBuildGen.Packages.PackageBuildCustomization import PackageBuildCustomization
+from FslBuildGen.Packages.PackageCopyFile import PackageCopyFile
 from FslBuildGen.Packages.PackageElement import PackageElement
 from FslBuildGen.Packages.PackageGenerate import PackageGenerate
 from FslBuildGen.Packages.PackageGenerateGrpcProtoFile import PackageGenerateGrpcProtoFile
@@ -63,6 +64,7 @@ from FslBuildGen.Packages.PackagePlatformExternalDependency import PackagePlatfo
 from FslBuildGen.Packages.Unresolved.UnresolvedExternalDependency import UnresolvedExternalDependency
 from FslBuildGen.Packages.Unresolved.UnresolvedExternalDependencyPackageManager import UnresolvedExternalDependencyPackageManager
 from FslBuildGen.Engine.Resolver.PreResolvePackageResult import PreResolvePackageResult
+from FslBuildGen.Packages.Unresolved.UnresolvedPackageCopyFile import UnresolvedPackageCopyFile
 from FslBuildGen.Packages.Unresolved.UnresolvedPackageDefine import UnresolvedPackageDefine
 from FslBuildGen.Packages.Unresolved.UnresolvedPackageGenerate import UnresolvedPackageGenerate
 from FslBuildGen.Packages.Unresolved.UnresolvedPackageGenerateGrpcProtoFile import UnresolvedPackageGenerateGrpcProtoFile
@@ -71,7 +73,7 @@ from FslBuildGen.Packages.Unresolved.UnresolvedPackageVariant import UnresolvedP
 from FslBuildGen.Packages.Unresolved.UnresolvedPackageVariantOption import UnresolvedPackageVariantOption
 #from FslBuildGen.Packages.PackageRequirement import PackageRequirement
 from FslBuildGen.PackagePath import PackagePath
-from FslBuildGen.SemanticVersion2 import SemanticVersion2
+from FslBuildGen.SemanticVersionPattern import SemanticVersionPattern
 from FslBuildGen.Xml.Exceptions import XmlException2
 
 # We define the PackageDefine here because it has a dependency to Package and having it externally
@@ -93,7 +95,7 @@ class PackageExternalDependency(PackageElement):
         self.Include = base.Include  # type: Optional[str]
         self.Location = base.Location  # type: Optional[str]
         self.HintPath = base.HintPath  # type: Optional[str]
-        self.Version = base.Version  # type: Optional[SemanticVersion2]
+        self.Version = base.Version  # type: Optional[SemanticVersionPattern]
         self.PublicKeyToken = base.PublicKeyToken  # type: Optional[str]
         self.ProcessorArchitecture = base.ProcessorArchitecture  # type: Optional[str]
         self.Culture = base.Culture  # type: Optional[str]
@@ -171,6 +173,7 @@ class Package(object):
         # All generate commands for the package
         self.ResolvedGenerateList = self.__ToResolvedGenerateList(self.Path, unresolvedPackage.GenerateList)
         self.ResolvedGenerateGrpcProtoFileList = self.__ToResolvedGenerateGrpcProtoFileList(self.Path, unresolvedPackage.GenerateGrpcProtoFileList)
+        self.ResolvedCopyFileList = self.__ToResolvedCopyFileList(self.Path, unresolvedPackage.CopyFileList)
 
         self.ResolvedFlavorSelections = preResolvePackageResult.SourcePackage.ResolvedFlavorSelections
         self.ResolvedFlavorTemplate = preResolvePackageResult.SourcePackage.ResolvedFlavorTemplate
@@ -340,7 +343,18 @@ class Package(object):
             res.append(PackageGenerateGrpcProtoFile(resolvedInclude, entry.GrpcServices))
         return res
 
+    def __ToResolvedCopyFileList(self, packagePath: Optional[PackagePath], sourceList: List[UnresolvedPackageCopyFile]) -> List[PackageCopyFile]:
+        if packagePath is None:
+            if len(sourceList) > 0:
+                raise Exception("Could not locate location of file '{0}'".format(self.Name))
+            return []
+        pathAbsolute = packagePath.AbsoluteDirPath
+        res = [] # type: List[PackageCopyFile]
+        for entry in sourceList:
+            resolvedName = ResolvedPath(entry.Name, IOUtil.Join(pathAbsolute, entry.Name))
 
+            res.append(PackageCopyFile(entry.Name, resolvedName))
+        return res
 
     def __ResolveAllowDependencyOnThis(self, packageType: PackageType) -> bool:
         if packageType == PackageType.Library:
@@ -391,10 +405,12 @@ class Package(object):
 # We define the PackageDependency here because it has a dependency to Package and having it externally
 # would produce a circular dependency which does all kinds of bads things.
 class PackageDependency(object):
-    def __init__(self, package: Package, access: AccessType) -> None:
+    def __init__(self, package: Package, access: AccessType, outputType: DependencyOutputType, referenceOutputAssembly: bool) -> None:
         super().__init__()
         self.Package = package
         self.Access = access
+        self.OutputType = outputType
+        self.ReferenceOutputAssembly = referenceOutputAssembly
         self.Name = package.Name # type: str
 
 
