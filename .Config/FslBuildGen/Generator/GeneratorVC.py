@@ -90,6 +90,7 @@ from FslBuildGen.Packages.Package import PackagePlatformVariant
 from FslBuildGen.Packages.Package import PackagePlatformVariantOption
 from FslBuildGen.Packages.PackageRequirement import PackageRequirement
 from FslBuildGen.Packages.PackagePlatformExternalDependency import PackagePlatformExternalDependency
+#from FslBuildGen.PackageIncludeDir import PackageIncludeDir
 from FslBuildGen.SharedGeneration import ToolAddedVariant
 from FslBuildGen.SharedGeneration import GEN_BUILD_ENV_FEATURE_SETTING
 from FslBuildGen.SharedGeneration import GEN_BUILD_ENV_VARIANT_SETTING
@@ -943,8 +944,8 @@ class GeneratorVC(GeneratorBase):
                   defines: List[PackageDefine]) -> None:
         # add external dependencies
         for entry1 in option.ExternalDependencies:
-            if entry1.Include is not None and not entry1.Include in includeDirs:
-                includeDirs.append(entry1.Include)
+            if entry1.IncludeDir is not None and not entry1.IncludeDir.Name in includeDirs:
+                includeDirs.append(entry1.IncludeDir.Name)
                 # disabled since we did the exe links all fix
                 #if entry1.IsFirstActualUse:
                 #rVariantExtDeps.append(entry1)
@@ -963,7 +964,7 @@ class GeneratorVC(GeneratorBase):
                                          package: Package) -> str:
         if package.ResolvedBuildAllIncludeDirs is None:
             raise Exception("Invalid package '{0}' as package.ResolvedBuildAllIncludeDirs is None".format(package.NameInfo.FullName))
-        includeDirs = package.ResolvedBuildAllIncludeDirs  # type: List[str]
+        includeDirs = [entry.Name for entry in package.ResolvedBuildAllIncludeDirs]  # type: List[str]
         defines = package.ResolvedBuildAllDefines  # type: List[PackageDefine]
 
         # Process virtual variants
@@ -1455,7 +1456,7 @@ class GeneratorVC(GeneratorBase):
 
         newDirs = []  # type: List[str]
         for entry in includeDirs:
-            if entry == package.BaseIncludePath:
+            if entry == package.BaseIncludePath.Name:
                 newDirs.append(entry)
             else:
                 newName = Util.ChangeToBashEnvVariables(entry)

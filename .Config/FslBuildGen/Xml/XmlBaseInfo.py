@@ -39,3 +39,6 @@ class XmlBaseInfo(object):
         super().__init__()
         self.Log = log
         self.XMLElement = xmlElement
+
+    def BaseLoad(self, xmlElement: ET.Element) -> None:
+        self.XMLElement = xmlElement

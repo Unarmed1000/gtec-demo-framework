@@ -41,6 +41,8 @@ from FslBuildGen.Engine.PackageFlavorSelections import PackageFlavorSelections
 from FslBuildGen.Engine.Resolver.ProcessedPackageDependency import ProcessedPackageDependency
 from FslBuildGen.Engine.Resolver.ResolvedPackageTemplate import ResolvedPackageTemplate
 from FslBuildGen.PackageFile import PackageFile
+from FslBuildGen.PackageIncludeDir import PackageIncludeDir
+from FslBuildGen.PackageIncludePath import PackageIncludePath
 from FslBuildGen.PackagePath import PackagePath
 from FslBuildGen.Packages.CompanyName import CompanyName
 from FslBuildGen.Packages.PackageCustomInfo import PackageCustomInfo
@@ -73,8 +75,8 @@ class ProcessedPackageFlags(object):
 
 
 class ProcessedPackagePaths(object):
-    def __init__(self, includePath: Optional[PackagePath], sourcePath: Optional[PackagePath], contentPath: Optional[PackagePath],
-                 contentSourcePath: Optional[PackagePath], baseIncludePath: str, baseSourcePath: str) -> None:
+    def __init__(self, includePath: Optional[PackageIncludePath], sourcePath: Optional[PackagePath], contentPath: Optional[PackagePath],
+                 contentSourcePath: Optional[PackagePath], baseIncludePath: PackageIncludeDir, baseSourcePath: str) -> None:
         super().__init__()
         self.IncludePath = includePath
         self.SourcePath = sourcePath

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-
+# -*- coding: utf-8 -*-
 #****************************************************************************************************************************************************
 #* BSD 3-Clause License
 #*
@@ -22,15 +22,40 @@
 #* EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #****************************************************************************************************************************************************
 
-from typing import List
-import xml.etree.ElementTree as ET
-from FslBuildGen.Log import Log
-from FslBuildGen.Xml.XmlBase import XmlBase
+from typing import Any, final, NoReturn
+from FslBuildGen.DataTypes import IncludePriority
 
-class XmlGenFileCopyFile(XmlBase):
-    __AttribName = 'Name'
+@final
+class PackageIncludeDir(object):
+    def __init__(self, name: str, priority: IncludePriority) -> None:
+        super().__init__()
+        self.Name = name
+        self.Priority = priority
 
-    def __init__(self, log: Log, xmlElement: ET.Element) -> None:
-        super().__init__(log, xmlElement)
-        self._CheckAttributes({self.__AttribName})
-        self.Name = self._ReadAttrib(xmlElement, self.__AttribName)
+    def __str__(self) -> str:
+        return f"{self.Name} ({self.Priority.name})"
+
+    def __repr__(self) -> str:
+        return f"PackageIncludeDir(include={self.Name!r}, priority={self.Priority!r})"
+
+    @staticmethod
+    def PatchName(src: 'PackageIncludeDir', newName: str) -> 'PackageIncludeDir':
+        return PackageIncludeDir(newName, src.Priority)
+
+    def __eq__(self, other: Any) -> NoReturn:
+        raise TypeError(f"{self.__class__.__name__} objects cannot be compared")
+
+    def __ne__(self, other: Any) -> NoReturn:
+        raise TypeError(f"{self.__class__.__name__} objects cannot be compared")
+
+    def __lt__(self, other: Any) -> NoReturn:
+        raise TypeError(f"{self.__class__.__name__} objects cannot be ordered")
+
+    def __le__(self, other: Any) -> NoReturn:
+        raise TypeError(f"{self.__class__.__name__} objects cannot be ordered")
+
+    def __gt__(self, other: Any) -> NoReturn:
+        raise TypeError(f"{self.__class__.__name__} objects cannot be ordered")
+
+    def __ge__(self, other: Any) -> NoReturn:
+        raise TypeError(f"{self.__class__.__name__} objects cannot be ordered")

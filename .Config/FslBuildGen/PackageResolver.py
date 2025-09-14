@@ -60,6 +60,7 @@ from FslBuildGen.DataTypes import AccessType
 from FslBuildGen.DataTypes import BuildRecipeValidateCommand
 from FslBuildGen.DataTypes import ExternalDependencyType
 from FslBuildGen.DataTypes import FilterMode
+from FslBuildGen.DataTypes import IncludePriority
 from FslBuildGen.DataTypes import PackageType
 #from FslBuildGen.DataTypes import PackageRequirementTypeString
 from FslBuildGen.DataTypes import PackageLanguage
@@ -78,6 +79,7 @@ from FslBuildGen.Location.PathBuilder import PathBuilder
 from FslBuildGen.Location.ResolvedPath import ResolvedPath
 from FslBuildGen.Log import Log
 from FslBuildGen.PackageBuilder import PackageBuilder
+from FslBuildGen.PackageIncludeDir import PackageIncludeDir
 from FslBuildGen.PackageManager import PackageManagerFilter
 from FslBuildGen.Packages.ExceptionsXml import ExtendingVariantCanNotIntroduceNewOptionsException
 #from FslBuildGen.Packages.ExceptionsXml import RequirementNameCollisionException
@@ -108,9 +110,10 @@ from FslBuildGen.BuildExternal.Commands.PackageRecipeValidateCommandAddLib impor
 from FslBuildGen.BuildExternal.Commands.PackageRecipeValidateCommandAddDLL import PackageRecipeValidateCommandAddDLL
 
 class PackageResolvedInclude(object):
-    def __init__(self, path: str, fromPackageAccess: AccessType) -> None:
+    def __init__(self, includeDir: PackageIncludeDir, fromPackageAccess: AccessType) -> None:
         super().__init__()
-        self.Path = path
+        self.IncludeDir = includeDir
+        self.Path = includeDir.Name
         # the access to the package this was received from
         self.FromPackageAccess = fromPackageAccess
 
@@ -328,20 +331,21 @@ class PackageResolver(object):
         return result
 
 
-    def __HasPathOverlap(self, path1: Optional[str], path2: Optional[str]) -> bool:
-        if path1 == path2:
+    def __HasPathOverlap(self, path1: Optional[PackageIncludeDir], path2: Optional[str]) -> bool:
+        path1Name = path1.Name if path1 is not None else None
+        if path1Name == path2:
             return True
-        elif path1 is None or path2 is None:
+        if path1Name is None or path2 is None:
             return False
-        elif len(path1) < len(path2) and path2.startswith(path1):
+        if len(path1Name) < len(path2) and path2.startswith(path1Name):
             return True
-        elif len(path1) > len(path2) and path1.startswith(path2):
+        if len(path1Name) > len(path2) and path1Name.startswith(path2):
             return True
         return False
 
     def __ValidateIncludePaths(self, package: Package, files: List[str]) -> None:
         # skip the base include path name and its slash
-        strip = len(package.BaseIncludePath) + 1
+        strip = len(package.BaseIncludePath.Name) + 1
         packageNameAsDir = package.NameInfo.SourceName.replace('.', '/') + '/'
         errors = None # type: Optional[List[Exception]]
         for filename in files:
@@ -359,7 +363,7 @@ class PackageResolver(object):
                 if package.AbsolutePath is None:
                     raise Exception("invalid package")
                 startIdx = len(package.AbsolutePath) + 1
-                filesPub = [] if package.AbsoluteIncludePath is None else IOUtil.GetFilePaths(package.AbsoluteIncludePath, (".hpp", ".h", ".inl"))
+                filesPub = [] if package.AbsoluteIncludePath is None else IOUtil.GetFilePaths(package.AbsoluteIncludePath.Name, (".hpp", ".h", ".inl"))
                 filesPri = [] # type: List[str]
                 filesAll = list(filesPub)
                 if package.AbsoluteSourcePath:
@@ -471,28 +475,28 @@ class PackageResolver(object):
         return SourceContent(log, package.ContentPath.AbsoluteDirPath, package.ContentSourcePath.AbsoluteDirPath, commands, False)
 
 
-    def __AddBuildIncludeDir(self, srcDir: str,
+    def __AddBuildIncludeDir(self, srcDir: PackageIncludeDir,
                              currentAccess: AccessType,
                              fromPackageAccess: AccessType,
                              rIncludeDirs: Dict[str, PackageResolvedInclude],
-                             rPrivateIncludeDirs: List[str],
-                             rPublicIncludeDirs: List[str]) -> None:
-        rIncludeDirs[srcDir] = PackageResolvedInclude(srcDir, fromPackageAccess)
+                             rPrivateIncludeDirs: Dict[str, PackageIncludeDir],
+                             rPublicIncludeDirs: Dict[str, PackageIncludeDir]) -> None:
+        rIncludeDirs[srcDir.Name] = PackageResolvedInclude(srcDir, fromPackageAccess)
         if currentAccess == AccessType.Private:
-            rPrivateIncludeDirs.append(srcDir)
+            rPrivateIncludeDirs[srcDir.Name] = srcDir
         else:
-            rPublicIncludeDirs.append(srcDir)
+            rPublicIncludeDirs[srcDir.Name] = srcDir
 
 
     def __RemoveBuildIncludeDir(self, resolvedDir: PackageResolvedInclude,
                                 rIncludeDirs: Dict[str, PackageResolvedInclude],
-                                rPrivateIncludeDirs: List[str],
-                                rPublicIncludeDirs: List[str]) -> None:
+                                rPrivateIncludeDirs: Dict[str, PackageIncludeDir],
+                                rPublicIncludeDirs: Dict[str, PackageIncludeDir]) -> None:
         rIncludeDirs.pop(resolvedDir.Path, None)
-        if resolvedDir.Path in rPrivateIncludeDirs:
-            rPrivateIncludeDirs.remove(resolvedDir.Path)
-        if resolvedDir.Path in rPublicIncludeDirs:
-            rPublicIncludeDirs.remove(resolvedDir.Path)
+        if resolvedDir.IncludeDir.Name in rPrivateIncludeDirs:
+            del rPrivateIncludeDirs[resolvedDir.IncludeDir.Name]
+        if resolvedDir.IncludeDir.Name in rPublicIncludeDirs:
+            del rPublicIncludeDirs[resolvedDir.IncludeDir.Name]
 
     def __GenerateFiles(self, log: Log, platformContext: PlatformContext, toolConfig: ToolConfig, finalResolveOrder: List[Package]) -> None:
         for package in finalResolveOrder:
@@ -524,37 +528,36 @@ class PackageResolver(object):
     def __ResolveBuildIncludeDirs(self, log: Log, toolConfig: ToolConfig, finalResolveOrder: List[Package]) -> None:
         for package in finalResolveOrder:
             hasLocalIncludeDir = False
-            includeDirs = {}  # type: Dict[str, PackageResolvedInclude]
-            publicIncludeDirs = [] # type: List[str]
-            privateIncludeDirs = [] # type: List[str]
+            includeDirDict = {}  # type: Dict[str, PackageResolvedInclude]
+            publicIncludeDict = {} # type: Dict[str, PackageIncludeDir]
+            privateIncludeDict = {} # type: Dict[str, PackageIncludeDir]
             directPrivateIncludeDirs = [] # type: List[ResolvedPath]
 
             # First process the include paths present in this package
             if package.AbsoluteIncludePath is not None:
                 hasLocalIncludeDir = True
             for extDependency in package.ResolvedDirectExternalDependencies:
-                if extDependency.Include is not None:
-                    if extDependency.Include in includeDirs:
-                        raise Exception("External include dir defined multiple times: '{0}'".format(extDependency.Include))
-                    if extDependency.Include is None:
-                        raise Exception("Invalid external dependency")
-                    self.__AddBuildIncludeDir(extDependency.Include, extDependency.Access, AccessType.Public, includeDirs, privateIncludeDirs, publicIncludeDirs)
+                if extDependency.IncludeDir is not None:
+                    if extDependency.IncludeDir.Name in includeDirDict:
+                        raise Exception(f"External include dir defined multiple times: '{extDependency.IncludeDir.Name}'")
+                    self.__AddBuildIncludeDir(extDependency.IncludeDir, extDependency.Access, AccessType.Public, includeDirDict, privateIncludeDict, publicIncludeDict)
 
             # Then pull in the dependencies from the packages we depend upon
             # here we take advantage of the fact that all packages we are dependent upon
             # have been resolved.
+
             for dep in package.ResolvedDirectDependencies:
                 if dep.Access != AccessType.Link:
                     if dep.Package.ResolvedBuildPublicIncludeDirs is None:
                         raise Exception("Invalid package")
                     for dirEntry in dep.Package.ResolvedBuildPublicIncludeDirs:
-                        if dirEntry == dep.Package.BaseIncludePath:
+                        if dirEntry.Name == dep.Package.BaseIncludePath.Name:
                             dirEntry = self.__ExtractIncludePath(toolConfig, dep.Package)
-                        if dirEntry not in includeDirs:
-                            self.__AddBuildIncludeDir(dirEntry, dep.Access, dep.Access, includeDirs, privateIncludeDirs, publicIncludeDirs)
-                        elif dep.Access.value < includeDirs[dirEntry].FromPackageAccess.value:
-                            self.__RemoveBuildIncludeDir(includeDirs[dirEntry], includeDirs, privateIncludeDirs, publicIncludeDirs)
-                            self.__AddBuildIncludeDir(dirEntry, dep.Access, dep.Access, includeDirs, privateIncludeDirs, publicIncludeDirs)
+                        if dirEntry.Name not in includeDirDict:
+                            self.__AddBuildIncludeDir(dirEntry, dep.Access, dep.Access, includeDirDict, privateIncludeDict, publicIncludeDict)
+                        elif dep.Access.value < includeDirDict[dirEntry.Name].FromPackageAccess.value:
+                            self.__RemoveBuildIncludeDir(includeDirDict[dirEntry.Name], includeDirDict, privateIncludeDict, publicIncludeDict)
+                            self.__AddBuildIncludeDir(dirEntry, dep.Access, dep.Access, includeDirDict, privateIncludeDict, publicIncludeDict)
 
             # If this is a unit test package 'allow access to the source files as a include path' this is done to allow access to private headers
             if package.IsUnitTest:
@@ -563,13 +566,15 @@ class PackageResolver(object):
                         sourceDir = self.__ExtractSourcePath(toolConfig, parentPackage)
                         if log.Verbosity >= 4:
                             log.LogPrint("  Adding source {0} as include for unit test {1}".format(sourceDir, package.Name))
-                        self.__AddBuildIncludeDir(sourceDir, AccessType.Private, AccessType.Private, includeDirs, privateIncludeDirs, publicIncludeDirs)
-                        directPrivateIncludeDirs.append(ResolvedPath(sourceDir, parentPackage.AbsoluteSourcePath))
+                        self.__AddBuildIncludeDir(sourceDir, AccessType.Private, AccessType.Private, includeDirDict, privateIncludeDict, publicIncludeDict)
+                        directPrivateIncludeDirs.append(ResolvedPath(sourceDir.Name, parentPackage.AbsoluteSourcePath))
 
-            allIncludeDirs = list(includeDirs.keys())
-            allIncludeDirs.sort(key=lambda s: s.lower())
-            publicIncludeDirs.sort(key=lambda s: s.lower())
-            privateIncludeDirs.sort(key=lambda s: s.lower())
+            allIncludeDirs = [entry.IncludeDir for entry in includeDirDict.values()]
+            publicIncludeDirs = [entry for entry in publicIncludeDict.values()]
+            privateIncludeDirs = [entry for entry in privateIncludeDict.values()]
+            allIncludeDirs.sort(key=lambda s: s.Name.lower())
+            publicIncludeDirs.sort(key=lambda s: s.Name.lower())
+            privateIncludeDirs.sort(key=lambda s: s.Name.lower())
             directPrivateIncludeDirs.sort(key=lambda s: s.ResolvedPath.lower())
             if hasLocalIncludeDir:
                 allIncludeDirs.insert(0, package.BaseIncludePath)
@@ -629,18 +634,18 @@ class PackageResolver(object):
             package.ResolvedBuildAllPrivateDefines = privateDefines
 
 
-    def __ExtractIncludePath(self, toolConfig: ToolConfig, package: Package) -> str:
+    def __ExtractIncludePath(self, toolConfig: ToolConfig, package: Package) -> PackageIncludeDir:
         if package.AbsoluteIncludePath is None:
             raise Exception("Invalid package")
-        path = toolConfig.ToPath(package.AbsoluteIncludePath)
-        return Util.UTF8ToAscii(path)
+        path = toolConfig.ToPath(package.AbsoluteIncludePath.Name)
+        return PackageIncludeDir(Util.UTF8ToAscii(path), package.AbsoluteIncludePath.Priority)
 
 
-    def __ExtractSourcePath(self, toolConfig: ToolConfig, package: Package) -> str:
+    def __ExtractSourcePath(self, toolConfig: ToolConfig, package: Package) -> PackageIncludeDir:
         if package.AbsoluteSourcePath is None:
             raise Exception("Invalid package")
         path = toolConfig.ToPath(package.AbsoluteSourcePath)
-        return Util.UTF8ToAscii(path)
+        return PackageIncludeDir(Util.UTF8ToAscii(path), IncludePriority.After)
 
 
     def __ResolveAdd(self, package: Package, processedEntry: Union[PackageDefine,PackageExternalDependency], rAllDict: Dict[str, Any],

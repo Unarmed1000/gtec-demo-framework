@@ -139,7 +139,7 @@ class GeneratorGNUmakefile(GeneratorBase):
             raise Exception("Invalid Package")
 
         files = MakeFileHelper.CreateList(package.ResolvedBuildSourceFiles)
-        includeDirs = MakeFileHelper.CreateList(package.ResolvedBuildAllIncludeDirs)
+        includeDirs = MakeFileHelper.CreateList([entry.Name for entry in package.ResolvedBuildAllIncludeDirs])
 
         localDefines = Util.ExtractNames(package.ResolvedBuildAllPrivateDefines)
         localDefines += Util.ExtractNames(package.ResolvedBuildAllPublicDefines)
@@ -302,8 +302,8 @@ class GeneratorGNUmakefile(GeneratorBase):
     def __ExtractInclude(self, entries: List[PackagePlatformExternalDependency]) -> List[str]:
         resultList = []  # type: List[str]
         for entry in entries:
-            if entry.Include is not None:
-                resultList.append(entry.Include)
+            if entry.IncludeDir is not None:
+                resultList.append(entry.IncludeDir.Name)
         return resultList
 
 

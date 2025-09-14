@@ -156,6 +156,27 @@ class AccessType(Enum):
             return "Link"
         raise Exception("Unknown AccessType: {0}".format(value))
 
+class IncludePriority(Enum):
+    After = 0   # the default where include directories are appended to the current list
+    Before = 1  # include directory is inserted at the front of the current list allowing us to override system includes.
+
+    @staticmethod
+    def ToString(value: 'IncludePriority') -> str:
+        if value == IncludePriority.After:
+            return "After"
+        elif value == IncludePriority.Before:
+            return "Before"
+        raise Exception(f"Unknown IncludePriority: '{value}'")
+
+    @staticmethod
+    def TryFromString(value: str) -> Optional['IncludePriority']:
+        if value == 'After':
+            return IncludePriority.After
+        elif value == 'Before':
+            return IncludePriority.Before
+        return None
+
+
 class DependencyCondition(object):
     FindPackageAllowed = "AllowFindPackage"
     FindPackageNotAllowed = "!AllowFindPackage"

@@ -41,7 +41,9 @@ import shlex
 from FslBuildGen import IOUtil
 from FslBuildGen import Util
 from FslBuildGen.Log import Log
+from FslBuildGen.DataTypes import IncludePriority
 from FslBuildGen.Exceptions import InvalidPackageNameException
+from FslBuildGen.PackageIncludeDir import PackageIncludeDir
 
 class CompileCommandDefine(object):
     PackageName = "FSLPACKAGENAME__"
@@ -75,8 +77,8 @@ class CMakeCompileCommandsBasicRecord(object):
         return self.__str__()
 
 class CMakeCompileCommandsRecord(object):
-    def __init__(self, packageName: str, directory: str, sourceCommand: str, file: str, defines: Set[str], includes: List[str],
-                 systemIncludes: List[str], compilerFlags: List[str], otherArguments: List[str]) -> None:
+    def __init__(self, packageName: str, directory: str, sourceCommand: str, file: str, defines: Set[str], includes: List[PackageIncludeDir],
+                 systemIncludes: List[PackageIncludeDir], compilerFlags: List[str], otherArguments: List[str]) -> None:
         super().__init__()
         self.PackageName = packageName
         self.Directory = IOUtil.NormalizePath(directory)
@@ -153,7 +155,7 @@ class CMakeCompileCommandsJson(object):
                 if parseState == ParseState.Skip:
                     parseState = ParseState.Normal
                 elif parseState == ParseState.SystemInclude:
-                    systemIncludes.append(command)
+                    systemIncludes.append(PackageIncludeDir(command, IncludePriority.Before))
                     parseState = ParseState.Normal
                 else:
                     if command.startswith('-D'):
@@ -167,7 +169,7 @@ class CMakeCompileCommandsJson(object):
                             defines.add(defineName)
                     elif command.startswith('-I'):
                         # Extract include paths
-                        includes.append(IOUtil.NormalizePath(command[2:]))
+                        includes.append(PackageIncludeDir(IOUtil.NormalizePath(command[2:]), IncludePriority.After))
                     elif command == '-isystem':
                         # Extract system include paths
                         parseState = ParseState.SystemInclude
@@ -184,7 +186,8 @@ class CMakeCompileCommandsJson(object):
             if packageName is None:
                 raise Exception("The compile command was not tagged with a package name define starting with: {0}".format(CompileCommandDefine.PackageName))
 
-            result.append(CMakeCompileCommandsRecord(packageName, entry.Directory, entry.Command, entry.File, defines, includes, systemIncludes, compilerFlags, otherArguments))
+            result.append(CMakeCompileCommandsRecord(packageName, entry.Directory, entry.Command, entry.File, defines,
+                                                     includes, systemIncludes, compilerFlags, otherArguments))
 
         return result
 

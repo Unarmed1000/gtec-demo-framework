@@ -203,6 +203,7 @@ class GeneratorAndroidGradleCMake(GeneratorBase):
         ignoreLibs = ["android_native_app_glue"]
 
         aliasPackageName = CMakeGeneratorUtil.GetAliasName(packageName, package.ProjectContext.ProjectName)
+
         targetIncludeDirectories = CMakeGeneratorUtil.BuildTargetIncludeDirectories(toolConfig, package, template.PackageTargetIncludeDirectories,
                                                                                     template.PackageTargetIncludeDirEntry, template.PackageTargetIncludeDirVirtualEntry, pathType)
         targetIncludeDirectories = targetIncludeDirectories.replace(Variable.RecipeVariant, "${ANDROID_ABI}")
