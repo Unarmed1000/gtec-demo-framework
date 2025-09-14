@@ -189,7 +189,7 @@ class GitApplyTask(GitBaseTask):
 
     def RunGitApply(self, sourcePatchFile: str, targetPath: str) -> None:
         self.LogPrint("Running git apply {0} in {1}".format(sourcePatchFile, targetPath))
-        buildCommand = [self.GitCommand, 'apply', sourcePatchFile, "--whitespace=fix"]
+        buildCommand = [self.GitCommand, 'apply', sourcePatchFile, "--whitespace=fix", "--ignore-space-change", "--ignore-whitespace"]
         if self.Log.Verbosity > 0:
             buildCommand.append("-v")
         result = subprocess.call(buildCommand, cwd=targetPath)

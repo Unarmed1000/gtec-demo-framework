@@ -37,6 +37,7 @@ from typing import Optional
 #from FslBuildGen import PackageListUtil
 #from FslBuildGen.Config import Config
 from FslBuildGen.DataTypes import AccessType
+from FslBuildGen.DataTypes import DependencyOutputType
 from FslBuildGen.DataTypes import FilterMode
 from FslBuildGen.DataTypes import PackageType
 from FslBuildGen.DependencyGraph import DependencyGraph
@@ -265,7 +266,7 @@ class PackageBuilder(object):
                 # ensure that anything we get via a non public access type keeps gets a access type that is >= directDep.Access
                 if dep.Access.value < directDep.Access.value or dep.Access == AccessType.Private:
                     #dep = PackageDependency(dep.Package, directDep.Access)
-                    dep = PackageDependency(dep.Package, AccessType.Link)
+                    dep = PackageDependency(dep.Package, AccessType.Link, dep.OutputType, dep.ReferenceOutputAssembly)
                 if not dep.Name in addedDict:
                     package.ResolvedAllDependencies.append(dep)
                     addedDict[dep.Name] = dep

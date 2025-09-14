@@ -87,6 +87,7 @@ class RecipePathBuilder(object):
             self.InstallRootLocation = ResolvedPath(sourceInstallRootPath, installRootPath)
 
             self.ReadonlyCache_DownloadCacheRootPath = None if readonlyCachePath is None else IOUtil.Join(readonlyCachePath, ".DownloadCache")
+            self.__Log.LogPrintVerbose(3, "ReadOnlyCacheRootPath '{0}'".format(self.ReadonlyCache_DownloadCacheRootPath))
 
 
     def GetBuildPath(self, sourceRecipe: PackageExperimentalRecipe) -> str:

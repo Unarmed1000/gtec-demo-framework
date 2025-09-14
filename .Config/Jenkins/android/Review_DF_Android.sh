@@ -5,9 +5,9 @@ source $WORKSPACE/.Config/Jenkins/android/PrepareJenkinsEnvironment.sh
 
 echo --- Java environment info:
 echo JAVA_HOME: $JAVA_HOME
-echo ---
+echo --- Content of JAVA_HOME/bin
 ls $JAVA_HOME/bin
-echo ---
+echo --- Java version
 which javac
 
 #FslBuild.py --noGitHash -t sdk -vv --BuildTime --UseFeatures [EGL,OpenGLES2,OpenGLES3,OpenGLES3.1,Vulkan,EarlyAccess,Test_RequireUserInputToExit]

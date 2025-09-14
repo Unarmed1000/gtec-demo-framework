@@ -530,9 +530,13 @@ class PipelineCommandBuilder(object):
             # If we have a download cache and the directory exists there then setup a void fetch command
             targetFilename = PipelineCommandDownload.GetTargetFilename(sourceCommand)
             cachePath = IOUtil.Join(readonlyCacheRootDir, targetFilename)
+            self.__Log.LogPrintVerbose(3, "Checking readonly cache file '{0}'".format(cachePath))
             if PipelineCommandDownload.IsValidCacheFile(cachePath, sourceCommand):
+                self.__Log.LogPrintVerbose(3, "Using readonly cache file '{0}'".format(cachePath))
                 info = PipelineInfo(self.PipelineTasks, self.__SourcePackage, self.__PathBuilder, readonlyCacheRootDir, True, readonlyCacheRootDir, True)
                 return PipelineCommandNOP(self.__Log, sourceCommand, info)
+            else:
+                self.__Log.LogPrintVerbose(3, "Readonly cache file was not valid '{0}'".format(cachePath))
 
         if self.__PathBuilder.DownloadCacheRootPath is None:
             raise Exception("Invalid State")
@@ -548,9 +552,13 @@ class PipelineCommandBuilder(object):
         readonlyCacheRootDir = self.__PathBuilder.ReadonlyCache_DownloadCacheRootPath
         if not readonlyCacheRootDir is None:
             cachePath = IOUtil.Join(readonlyCacheRootDir, self.__SourceRecipe.FullName)
+            self.__Log.LogPrintVerbose(3, "Checking readonly cache directory '{0}'".format(cachePath))
             if IOUtil.IsDirectory(cachePath):
+                self.__Log.LogPrintVerbose(3, "Using readonly cache directory '{0}'".format(cachePath))
                 info = PipelineInfo(self.PipelineTasks, self.__SourcePackage, self.__PathBuilder, cachePath, True, cachePath, True)
                 return PipelineCommandNOP(self.__Log, sourceCommand, info)
+            else:
+                self.__Log.LogPrintVerbose(3, "Readonly cache directory '{0}' not found".format(cachePath))
 
         if self.__PathBuilder.DownloadCacheRootPath is None:
             raise Exception("Invalid State")

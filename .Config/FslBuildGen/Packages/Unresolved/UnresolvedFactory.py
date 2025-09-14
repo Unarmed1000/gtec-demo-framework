@@ -37,6 +37,7 @@ from typing import Optional
 from typing import TypeVar
 from FslBuildGen import PackageConfig
 from FslBuildGen.DataTypes import AccessType
+from FslBuildGen.DataTypes import DependencyOutputType
 from FslBuildGen.DataTypes import PackageLanguage
 from FslBuildGen.DataTypes import PackageType
 from FslBuildGen.Engine.PackageFlavorOptionName import PackageFlavorOptionName
@@ -58,6 +59,7 @@ from FslBuildGen.Packages.PackageTraceContext import PackageTraceContext
 from FslBuildGen.Packages.Unresolved.UnresolvedFilter import UnresolvedFilter
 from FslBuildGen.Packages.Unresolved.UnresolvedExternalDependency import UnresolvedExternalDependency
 from FslBuildGen.Packages.Unresolved.UnresolvedPackage import UnresolvedPackage
+from FslBuildGen.Packages.Unresolved.UnresolvedPackageCopyFile import UnresolvedPackageCopyFile
 from FslBuildGen.Packages.Unresolved.UnresolvedPackage import UnresolvedPackageFlags
 from FslBuildGen.Packages.Unresolved.UnresolvedPackage import UnresolvedPackagePaths
 from FslBuildGen.Packages.Unresolved.UnresolvedPackageDefine import UnresolvedPackageDefine
@@ -112,6 +114,7 @@ class UnresolvedFactory(object):
                                 sourceFileHash: str, packageType: PackageType, packageFlags: UnresolvedPackageFlags, packageLanguage: PackageLanguage,
                                 generateList: List[UnresolvedPackageGenerate],
                                 generateGrpcProtofileList: List[UnresolvedPackageGenerateGrpcProtoFile],
+                                copyFileList: List[UnresolvedPackageCopyFile],
                                 directDependencies: List[UnresolvedPackageDependency],
                                 directRequirements: List[UnresolvedPackageRequirement], directDefines: List[UnresolvedPackageDefine],
                                 externalDependencies: List[UnresolvedExternalDependency], path: UnresolvedPackagePaths, templateType: str,
@@ -128,7 +131,7 @@ class UnresolvedFactory(object):
         directDependencies = UnresolvedFilter.FilterOnConditions(createContext.Log, createContext.GeneratorInfo, directDependencies, "Dependency")
 
         return UnresolvedPackage(packageProjectContext, nameInfo, companyName, creationYear, packageFile, sourceFileHash, packageType,
-                                 packageFlags, packageLanguage, generateList, generateGrpcProtofileList, directDependencies, directRequirements,
+                                 packageFlags, packageLanguage, generateList, generateGrpcProtofileList, copyFileList, directDependencies, directRequirements,
                                  directDefines, externalDependencies, path, templateType, buildCustomization, directExperimentalRecipe,
                                  resolvedPlatform, directPlatformSupported, customInfo, traceContext)
 
@@ -141,11 +144,11 @@ class UnresolvedFactory(object):
         if (packageType == PackageType.ExternalLibrary and resolvedPlatform.Name == PackageConfig.PlatformNameString.ANDROID and
                 createContext.IsWindows and directExperimentalRecipe is not None and
                 not UnresolvedFactory.__ContainsDependency(directDependencies, createContext.NinjaRecipePackageName.Value)):
-            directDependencies += [UnresolvedPackageDependency(createContext.NinjaRecipePackageName, AccessType.Public)]
+            directDependencies += [UnresolvedPackageDependency(createContext.NinjaRecipePackageName, AccessType.Public, DependencyOutputType.Reference, True)]
 
         for basePackage in packageProjectContext.BasePackages:
             if packageType != PackageType.ToolRecipe and packageName.Value != basePackage.Name and not UnresolvedFactory.__ContainsDependency(directDependencies, basePackage.Name):
-                directDependencies += [UnresolvedPackageDependency(UnresolvedPackageName(basePackage.Name), AccessType.Public)]
+                directDependencies += [UnresolvedPackageDependency(UnresolvedPackageName(basePackage.Name), AccessType.Public, DependencyOutputType.Reference, True)]
 
         return directDependencies + resolvedPlatform.DirectDependencies
 

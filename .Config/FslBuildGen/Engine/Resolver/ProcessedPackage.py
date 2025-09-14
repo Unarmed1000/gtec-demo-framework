@@ -49,6 +49,7 @@ from FslBuildGen.Packages.PackagePlatform import PackagePlatform
 from FslBuildGen.Packages.PackageProjectContext import PackageProjectContext
 #from FslBuildGen.Packages.PackageShortName import PackageShortName
 from FslBuildGen.Packages.PackageTraceContext import PackageTraceContext
+from FslBuildGen.Packages.Unresolved.UnresolvedPackageCopyFile import UnresolvedPackageCopyFile
 from FslBuildGen.Packages.Unresolved.UnresolvedExternalDependency import UnresolvedExternalDependency
 from FslBuildGen.Packages.Unresolved.UnresolvedPackageDefine import UnresolvedPackageDefine
 from FslBuildGen.Packages.Unresolved.UnresolvedPackageGenerate import UnresolvedPackageGenerate
@@ -88,6 +89,7 @@ class ProcessedPackage(object):
                  packageFile: Optional[PackageFile], sourceFileHash: str, packageType: PackageType, packageFlags: ProcessedPackageFlags,
                  packageLanguage: PackageLanguage, generateList: List[UnresolvedPackageGenerate],
                  generateGrpcProtoFileList: List[UnresolvedPackageGenerateGrpcProtoFile],
+                 copyFileList: List[UnresolvedPackageCopyFile],
                  directDependencies: List[ProcessedPackageDependency],
                  directRequirements: List[UnresolvedPackageRequirement], directDefines: List[UnresolvedPackageDefine],
                  externalDependencies: List[UnresolvedExternalDependency], path: ProcessedPackagePaths, templateType: str,
@@ -112,6 +114,7 @@ class ProcessedPackage(object):
 
         self.GenerateList = generateList
         self.GenerateGrpcProtoFileList = generateGrpcProtoFileList
+        self.CopyFileList = copyFileList
 
         self.DirectDependencies = directDependencies
         self.DirectRequirements = directRequirements

@@ -68,6 +68,13 @@ class NuGetPackageConfigSnippets(object):
         self.Master = master
         self.PackageEntry = IOUtil.ReadFile(IOUtil.Join(path, "PackageEntry.txt"))
 
+class ProjectReferenceSnippets(object):
+    def __init__(self, master: str, reference: str, analyzer: Optional[str], attribReferenceOutputAssembly: Optional[str]) -> None:
+        super().__init__()
+        self.Master = master
+        self.Reference = reference
+        self.Analyzer = analyzer
+        self.AttribReferenceOutputAssembly = attribReferenceOutputAssembly
 
 class CodeTemplateVC(object):
     def __init__(self, log: Log, template: XmlNewVSProjectTemplateFile,
@@ -99,13 +106,22 @@ class CodeTemplateVC(object):
         self.SLNSnippet2 = IOUtil.ReadFile(IOUtil.Join(strTemplateSolutionPath, "Snippet2.txt"))
         self.Master = IOUtil.ReadFile(IOUtil.Join(strTemplateProjectPath, "Master.txt"))
         self.VariantProjectConfiguration = IOUtil.ReadFile(IOUtil.Join(strTemplateProjectPath, "VariantProjectConfiguration.txt"))
-        self.ProjectReferences = IOUtil.ReadFile(IOUtil.Join(strTemplateProjectPath, "ProjectReferences.txt"))
-        self.ProjectReferences_1 = IOUtil.ReadFile(IOUtil.Join(strTemplateProjectPath, "ProjectReferences_1.txt"))
+
+        projectReferencesMaster = IOUtil.ReadFile(IOUtil.Join(strTemplateProjectPath, "ProjectReferences.txt"))
+        projectReferencesReference = IOUtil.ReadFile(IOUtil.Join(strTemplateProjectPath, "ProjectReferences_1.txt"))
+        projectReferencesAnalyzer = IOUtil.TryReadFile(IOUtil.Join(strTemplateProjectPath, "ProjectReferences_Analyzer.txt"))
+        projectReferencesAttribReferenceOutputAssembly = IOUtil.TryReadFile(IOUtil.Join(strTemplateProjectPath, "ProjectReferences_AttrReferenceOutputAssembly.txt"))
+
+        self.ProjectReferences = ProjectReferenceSnippets(projectReferencesMaster, projectReferencesReference, projectReferencesAnalyzer,
+                                                         projectReferencesAttribReferenceOutputAssembly)
+
         self.PackageReferences = IOUtil.TryReadFile(IOUtil.Join(strTemplateProjectPath, "PackageReferences.txt"))
         self.PackageReferences_1 = IOUtil.TryReadFile(IOUtil.Join(strTemplateProjectPath, "PackageReferences_1.txt"))
         self.PackageReferences_2 = self.SafeReadFile(IOUtil.Join(strTemplateProjectPath, "PackageReferences_2.txt"), "")
         self.PackageReferencesPrivateAssets = self.SafeReadFile(IOUtil.Join(strTemplateProjectPath, "PackageReferences_PrivateAssets.txt"), "")
         self.PackageReferencesIncludeAssets = self.SafeReadFile(IOUtil.Join(strTemplateProjectPath, "PackageReferences_IncludeAssets.txt"), "")
+        self.FileReferences = IOUtil.TryReadFile(IOUtil.Join(strTemplateProjectPath, "FileReferences.txt"))
+        self.FileReferences_1 = IOUtil.TryReadFile(IOUtil.Join(strTemplateProjectPath, "FileReferences_1.txt"))
 
         self.GrpcProtoFilesGroup = self.SafeReadFile(IOUtil.Join(strTemplateProjectPath, "GrpcProtoFilesGroup.txt"), "")
         self.GrpcProtoFilesGroupEntry = self.SafeReadFile(IOUtil.Join(strTemplateProjectPath, "GrpcProtoFilesGroupFile.txt"), "")

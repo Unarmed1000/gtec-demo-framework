@@ -103,6 +103,40 @@ class PackageInstanceType(Enum):
 
 
 # Beware that code relies on the more accessible accesstype being smaller value (so public < private < link)
+class DependencyOutputType(Enum):
+    Reference = 0
+    Analyzer = 1
+    # Content = 2
+    # EmbeddedResource = 3
+    # Compile = 4
+    # None = 5
+
+    @staticmethod
+    def ToString(value: 'DependencyOutputType') -> str:
+        if value == DependencyOutputType.Reference:
+            return "Reference"
+        if value == DependencyOutputType.Analyzer:
+            return "Analyzer"
+        # if value == DependencyOutputType.Content:
+        #     return "Content"
+        # if value == DependencyOutputType.EmbeddedResource:
+        #     return "EmbeddedResource"
+        # if value == DependencyOutputType.Compile:
+        #     return "Compile"
+        # if value == DependencyOutputType.None:
+        #     return "None"
+        raise Exception("Unknown DependencyOutputType: {0}".format(value))
+
+    @staticmethod
+    def FromString(value: str) -> 'DependencyOutputType':
+        if value == "Reference":
+            return DependencyOutputType.Reference
+        elif value == "Analyzer":
+            return DependencyOutputType.Analyzer
+        raise Exception("Unknown DependencyOutputType: {0}".format(value))
+
+
+# Beware that code relies on the more accessible accesstype being smaller value (so public < private < link)
 class AccessType(Enum):
     Public = 0
     Private = 1
@@ -608,7 +642,7 @@ class ClangTidyProfile(Enum):
 
 
 class FilterMode(Enum):
-    Disabled = 0                        # Do not use a filter 
+    Disabled = 0                        # Do not use a filter
     TrimUnrequestedPackages = 1         # Trim packages that where not imported because of a user request
 
 class GrpcServices(Enum):

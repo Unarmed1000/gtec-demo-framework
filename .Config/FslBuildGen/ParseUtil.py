@@ -40,9 +40,11 @@ from FslBuildGen.DataTypes import PackageType
 from FslBuildGen.Engine.PackageFlavorOptionName import PackageFlavorOptionName
 from FslBuildGen.ExtensionListManager2 import ExtensionListManager2
 from FslBuildGen.ExternalVariantConstraints import ExternalVariantConstraints
+from FslBuildGen.QualifiedRequirementExtensionName import QualifiedRequirementExtensionName
 from FslBuildGen.RecipeFilterManager import RecipeFilterManager
 from FslBuildGen.RecipeFilterName import RecipeFilterName
-from FslBuildGen.QualifiedRequirementExtensionName import QualifiedRequirementExtensionName
+from FslBuildGen.SharedGeneration import ToolAddedVariant
+from FslBuildGen.SharedGeneration import ToolAddedVariantConfigOption
 from FslBuildGen import Util
 
 
@@ -175,17 +177,18 @@ def ParseBool(value: str) -> bool:
         raise Exception("Unsupported bool value '{0}'".format(value))
 
 
-def ParseExternalVariantConstraints(variants: Optional[str]) -> ExternalVariantConstraints:
+def __ParseExternalVariantConstraints(variants: Optional[str]) -> Dict[str,str]:
     if not variants:
-        return ExternalVariantConstraints({})
+        return {}
     if not variants.startswith('[') and not variants.endswith('['):
         raise Exception("Expected a variant list in the format '[variant=value,variant=value]' not '%s'" % (variants))
 
     variants = variants[1:-1]
     if len(variants) == 0:
-        return ExternalVariantConstraints({})
+        return {}
     entries = variants.split(',')
     variantDict = {}  # type: Dict[str, str]
+    configId = ToolAddedVariant.CONFIG.upper()
     for entry in entries:
         pair = entry.split('=')
         if len(pair) != 2:
@@ -196,5 +199,16 @@ def ParseExternalVariantConstraints(variants: Optional[str]) -> ExternalVariantC
             raise Exception("The variant value must be valid not empty '{0}'".format(entry))
         if pair[0] in variantDict:
             raise Exception("The variant '{0}' has already been configured ('{1}')".format(pair[0], entry))
+        if pair[0] != ToolAddedVariant.CONFIG and pair[0].upper() == configId:
+            raise Exception(f"The variant name '{pair[0]}' collides with '{ToolAddedVariant.CONFIG}'")
         variantDict[pair[0]] = pair[1]
+    return variantDict
+
+def ParseExternalVariantConstraints(variants: Optional[str], setDebugMode: bool = False) -> ExternalVariantConstraints:
+    variantDict = __ParseExternalVariantConstraints(variants)
+    if setDebugMode:
+        if ToolAddedVariant.CONFIG in variantDict:
+            raise Exception(f"Can not force debug mode when variants '{ToolAddedVariant.CONFIG}' is already set")
+        variantDict[ToolAddedVariant.CONFIG] = ToolAddedVariantConfigOption.Debug
+
     return ExternalVariantConstraints.ToExternalVariantConstraints(variantDict)
