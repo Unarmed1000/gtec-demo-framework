@@ -45,4 +45,15 @@ pipeline
             }
         }
     }
+    post
+    {
+        success
+        {
+            gerritReview labels: [Verified: 1], message: "Build and tests passed ✅"
+        }
+        failure
+        {
+            gerritReview labels: [Verified: -1], message: "Build or tests failed ❌"
+        }
+    }
 }
