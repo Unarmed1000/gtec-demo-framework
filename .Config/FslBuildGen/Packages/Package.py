@@ -58,6 +58,7 @@ from FslBuildGen.Packages.PackageCopyFile import PackageCopyFile
 from FslBuildGen.Packages.PackageElement import PackageElement
 from FslBuildGen.Packages.PackageGenerate import PackageGenerate
 from FslBuildGen.Packages.PackageGenerateGrpcProtoFile import PackageGenerateGrpcProtoFile
+from FslBuildGen.PackageIncludeDir import PackageIncludeDir
 #from FslBuildGen.Packages.PackageNameInfo import PackageNameInfo
 from FslBuildGen.Packages.PackagePlatform import PackagePlatform
 from FslBuildGen.Packages.PackagePlatformExternalDependency import PackagePlatformExternalDependency
@@ -92,7 +93,7 @@ class PackageExternalDependency(PackageElement):
 
         # Clone all the members of the base object
         self.DebugName = base.DebugName  # type: str
-        self.Include = base.Include  # type: Optional[str]
+        self.IncludeDir = base.IncludeDir  # type: Optional[PackageIncludeDir]
         self.Location = base.Location  # type: Optional[str]
         self.HintPath = base.HintPath  # type: Optional[str]
         self.Version = base.Version  # type: Optional[SemanticVersionPattern]
@@ -228,9 +229,9 @@ class Package(object):
         self.ResolvedBuildPrivateIncludeFiles = None  # type: Optional[List[str]]
         # All include files in this package (public+private)
         self.ResolvedBuildAllIncludeFiles = None  # type: Optional[List[str]]
-        self.ResolvedBuildAllIncludeDirs = None  # type: Optional[List[str]]
-        self.ResolvedBuildPublicIncludeDirs = None  # type: Optional[List[str]]
-        self.ResolvedBuildPrivateIncludeDirs = None  # type: Optional[List[str]]
+        self.ResolvedBuildAllIncludeDirs = None  # type: Optional[List[PackageIncludeDir]]
+        self.ResolvedBuildPublicIncludeDirs = None  # type: Optional[List[PackageIncludeDir]]
+        self.ResolvedBuildPrivateIncludeDirs = None  # type: Optional[List[PackageIncludeDir]]
         self.ResolvedBuildDirectPrivateIncludeDirs = []  # type: List[ResolvedPath]
         # Known special files that might mean something to some generators
         self.ResolvedSpecialFiles = [] # type: List[ResolvedPath]

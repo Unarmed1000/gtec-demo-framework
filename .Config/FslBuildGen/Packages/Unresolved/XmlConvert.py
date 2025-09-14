@@ -124,7 +124,7 @@ class XmlConvert(object):
         return UnresolvedExternalDependency(xmlExternalDependency.Name,
                                             xmlExternalDependency.DebugName,
                                             xmlExternalDependency.TargetName,
-                                            xmlExternalDependency.Include,
+                                            xmlExternalDependency.IncludeDir,
                                             xmlExternalDependency.Location,
                                             xmlExternalDependency.HintPath,
                                             xmlExternalDependency.Version,

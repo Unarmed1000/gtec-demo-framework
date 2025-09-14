@@ -70,6 +70,7 @@ class XmlBase2(XmlBase):
 
 
     def BaseLoad(self, xmlElement: ET.Element) -> None:
+        super().BaseLoad(xmlElement)
         self.ExternalDependencies = self.__GetXMLExternalDependencies(xmlElement)
         self.DirectDefines = self.__GetXMLDefines(xmlElement)
         self.DirectDependencies = self._GetXMLDependencies(xmlElement)

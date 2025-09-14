@@ -42,6 +42,8 @@ from FslBuildGen.Engine.Unresolved.UnresolvedPackageDependency import Unresolved
 from FslBuildGen.Engine.Unresolved.UnresolvedPackageFlavor import UnresolvedPackageFlavor
 from FslBuildGen.Engine.Unresolved.UnresolvedPackageFlavorExtension import UnresolvedPackageFlavorExtension
 from FslBuildGen.PackageFile import PackageFile
+from FslBuildGen.PackageIncludeDir import PackageIncludeDir
+from FslBuildGen.PackageIncludePath import PackageIncludePath
 from FslBuildGen.PackagePath import PackagePath
 from FslBuildGen.Packages.CompanyName import CompanyName
 from FslBuildGen.Packages.PackageCustomInfo import PackageCustomInfo
@@ -74,8 +76,8 @@ class UnresolvedPackageFlags(object):
 
 
 class UnresolvedPackagePaths(object):
-    def __init__(self, includePath: Optional[PackagePath], sourcePath: Optional[PackagePath], contentPath: Optional[PackagePath],
-                 contentSourcePath: Optional[PackagePath], baseIncludePath: str, baseSourcePath: str) -> None:
+    def __init__(self, includePath: Optional[PackageIncludePath], sourcePath: Optional[PackagePath], contentPath: Optional[PackagePath],
+                 contentSourcePath: Optional[PackagePath], baseIncludePath: PackageIncludeDir, baseSourcePath: str) -> None:
         super().__init__()
         self.IncludePath = includePath
         self.SourcePath = sourcePath

@@ -71,8 +71,8 @@ class SourceFile(object):
 
 
     def __TryDetermineFileBasePath(self, package: Package, fileName: str) -> Optional[str]:
-        if package.AbsoluteIncludePath and fileName.startswith(package.AbsoluteIncludePath):
-            return package.AbsoluteIncludePath
+        if package.AbsoluteIncludePath and fileName.startswith(package.AbsoluteIncludePath.Name):
+            return package.AbsoluteIncludePath.Name
         elif package.AbsoluteSourcePath and fileName.startswith(package.AbsoluteSourcePath):
             return package.AbsoluteSourcePath
         return None

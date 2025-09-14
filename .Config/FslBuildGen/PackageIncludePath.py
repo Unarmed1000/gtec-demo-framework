@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 #****************************************************************************************************************************************************
-# Copyright (c) 2014 Freescale Semiconductor, Inc.
+# Copyright 2025 NXP
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -14,7 +14,7 @@
 #      this list of conditions and the following disclaimer in the documentation
 #      and/or other materials provided with the distribution.
 #
-#    * Neither the name of the Freescale Semiconductor, Inc. nor the names of
+#    * Neither the name of the NXP. nor the names of
 #      its contributors may be used to endorse or promote products derived from
 #      this software without specific prior written permission.
 #
@@ -31,23 +31,32 @@
 #
 #****************************************************************************************************************************************************
 
-from typing import Optional
-from typing import Union
-from FslBuildGen.DataTypes import AccessType
-from FslBuildGen.DataTypes import ExternalDependencyType
-from FslBuildGen.Packages.PackageElement import PackageElement
-from FslBuildGen.Packages.Unresolved.UnresolvedExternalDependency import UnresolvedExternalDependency
+from FslBuildGen import IOUtil
 from FslBuildGen.PackageIncludeDir import PackageIncludeDir
+from FslBuildGen.Exceptions import UsageErrorException
+from FslBuildGen.ToolConfig import ToolConfigPackageLocation
 
-# TODO: eliminate this class and reuse the PackageExternalDependency if possible
-class PackagePlatformExternalDependency(PackageElement):
-    def __init__(self, base: Union[UnresolvedExternalDependency, 'PackagePlatformExternalDependency'], allowPrivate: bool) -> None:
-        super().__init__(base.Name)
-        self.DebugName = base.DebugName # type: str
-        self.TargetName = base.TargetName # type: str
-        self.IncludeDir = base.IncludeDir if base.Access != AccessType.Private or allowPrivate else None  # type: Optional[PackageIncludeDir]
-        self.Location = base.Location  # type: Optional[str]
-        self.Access = base.Access  # type: AccessType
-        self.Type = base.Type  # type: ExternalDependencyType
-        self.IsFirstActualUse = False  # type: bool
-        self.IsManaged = False
+class PackageIncludePath(object):
+    def __init__(self, includeDir: PackageIncludeDir, packageLocation: ToolConfigPackageLocation, normalize: bool = True) -> None:
+        super().__init__()
+        self.IncludeDir = includeDir
+
+        path = self.IncludeDir.Name
+        path = IOUtil.NormalizePath(path) if normalize else path
+
+        if not isinstance(packageLocation, ToolConfigPackageLocation):
+            raise UsageErrorException()
+
+
+        if IOUtil.IsAbsolutePath(path):
+            if not path.startswith(packageLocation.ResolvedPathEx):
+                raise UsageErrorException("The path '{0}' does not belong to the supplied location '{1}'".format(path, packageLocation.ResolvedPathEx))
+            rootRelativeDirPath = path[len(packageLocation.ResolvedPathEx):]
+            absoluteDirPath = path
+        else:
+            rootRelativeDirPath = path
+            absoluteDirPath = IOUtil.Join(packageLocation.ResolvedPath, path)
+
+        self.RootRelativeDirPath = PackageIncludeDir.PatchName(includeDir, rootRelativeDirPath)  # The root relative containing directory
+        self.AbsoluteDirPath = PackageIncludeDir.PatchName(includeDir, absoluteDirPath) # type: PackageIncludeDir
+        self.PackageRootLocation = packageLocation      # type: ToolConfigPackageLocation

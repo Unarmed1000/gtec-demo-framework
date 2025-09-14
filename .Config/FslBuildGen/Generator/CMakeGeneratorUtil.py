@@ -45,6 +45,7 @@ from FslBuildGen.BuildContent.PathRecord import PathRecord
 from FslBuildGen.Config import Config
 from FslBuildGen.DataTypes import AccessType
 from FslBuildGen.DataTypes import ExternalDependencyType
+from FslBuildGen.DataTypes import IncludePriority
 from FslBuildGen.DataTypes import PackageType
 from FslBuildGen.DataTypes import SpecialFiles
 from FslBuildGen.DataTypes import VariantType
@@ -401,25 +402,26 @@ def __GetPackageIncludePath(toolConfig: ToolConfig, package: Package, absPathIns
 
 
 def __TryTargetIncludeDirectoriesGetExternalDependencyString(toolConfig: ToolConfig, package: Package,
+                                                             currentIncludePriority: IncludePriority,
                                                              directExternalDeps: Union[PackageExternalDependency, PackagePlatformExternalDependency],
                                                              templatePackageTargetIncludeDirEntry: str,
                                                              templatePackageTargetIncludeDirVirtualEntry: str, pathType: CMakePathType) -> Optional[str]:
     add = None # type: Optional[str]
     relativeCurrentIncDir = None # type: Optional[str]
     if directExternalDeps.Type != ExternalDependencyType.CMakeFindLegacy:
-        currentIncDir = directExternalDeps.Include
-        if currentIncDir is not None:
+        currentIncDir = directExternalDeps.IncludeDir
+        if currentIncDir is not None and currentIncDir.Priority == currentIncludePriority:
             if package.AbsolutePath is None:
                 raise Exception("Invalid package")
             packageRootPath = toolConfig.ToPath(package.AbsolutePath)
-            if currentIncDir.startswith(packageRootPath):
-                relativeCurrentIncDir = currentIncDir[len(packageRootPath)+1:] if pathType == CMakePathType.LocalRelative else Util.ChangeToCMakeVariables(currentIncDir)
+            if currentIncDir.Name.startswith(packageRootPath):
+                relativeCurrentIncDir = currentIncDir.Name[len(packageRootPath)+1:] if pathType == CMakePathType.LocalRelative else Util.ChangeToCMakeVariables(currentIncDir.Name)
                 add = "\n" + __GenerateDirEntryString(GetAccessTypeString(package, directExternalDeps.Access), relativeCurrentIncDir, templatePackageTargetIncludeDirEntry)
             else:
                 currentTemplate = templatePackageTargetIncludeDirEntry
-                relativeCurrentIncDir = toolConfig.TryToPath(currentIncDir)
+                relativeCurrentIncDir = toolConfig.TryToPath(currentIncDir.Name)
                 if relativeCurrentIncDir is None:
-                    relativeCurrentIncDir = currentIncDir
+                    relativeCurrentIncDir = currentIncDir.Name
                 if pathType != CMakePathType.LocalRelative:
                     relativeCurrentIncDir = Util.ChangeToCMakeVariables(relativeCurrentIncDir)
                 else:
@@ -431,30 +433,33 @@ def __TryTargetIncludeDirectoriesGetExternalDependencyString(toolConfig: ToolCon
         add = "\n  %s ${%s_INCLUDE_DIRS}" % (GetAccessTypeString(package, directExternalDeps.Access), directExternalDeps.Name)
     return add
 
-
-def BuildTargetIncludeDirectories(toolConfig: ToolConfig, package: Package,
-                                  templatePackageTargetIncludeDirectories: str,
-                                  templatePackageTargetIncludeDirEntry: str,
-                                  templatePackageTargetIncludeDirVirtualEntry: str,
-                                  pathType: CMakePathType) -> str:
+def __BuildTargetIncludeDirectories(toolConfig: ToolConfig,
+                                    package: Package,
+                                    currentIncludePriority: IncludePriority,
+                                    templatePackageTargetIncludeDirectories: str,
+                                    templatePackageTargetIncludeDirEntry: str,
+                                    templatePackageTargetIncludeDirVirtualEntry: str,
+                                    pathType: CMakePathType) -> str:
     #isExternalLibrary = package.Type == PackageType.ExternalLibrary
     publicIncludeDir = ""
-    if package.AbsoluteIncludePath is not None:
-        pubIncPath = __GetPackageIncludePath(toolConfig, package, package.AbsoluteIncludePath, pathType)
+    if package.AbsoluteIncludePath is not None and currentIncludePriority == package.AbsoluteIncludePath.Priority:
+        pubIncPath = __GetPackageIncludePath(toolConfig, package, package.AbsoluteIncludePath.Name, pathType)
         accessString = "PUBLIC" if not package.IsVirtual else "INTERFACE"
         publicIncludeDir = "\n" + __GenerateDirEntryString(accessString, pubIncPath, templatePackageTargetIncludeDirEntry)
     privateIncludeDir = ""
-    if package.AbsoluteSourcePath is not None:
+    if package.AbsoluteSourcePath is not None and currentIncludePriority == IncludePriority.After:
         priIncPath = __GetPackageIncludePath(toolConfig, package, package.AbsoluteSourcePath, pathType)
         accessString = "PRIVATE" if not package.IsVirtual else "INTERFACE"
         privateIncludeDir = "\n" + __GenerateDirEntryString(accessString, priIncPath, templatePackageTargetIncludeDirEntry)
     for privEntry in package.ResolvedBuildDirectPrivateIncludeDirs:
-        priIncPath = __GetPackageIncludePath(toolConfig, package, privEntry.ResolvedPath, pathType)
-        accessString = "PRIVATE" if not package.IsVirtual else "INTERFACE"
-        privateIncludeDir += "\n" + __GenerateDirEntryString(accessString, priIncPath, templatePackageTargetIncludeDirEntry)
+        print("************* fix fix fix fix")
+        if currentIncludePriority == IncludePriority.After:
+            priIncPath = __GetPackageIncludePath(toolConfig, package, privEntry.ResolvedPath, pathType)
+            accessString = "PRIVATE" if not package.IsVirtual else "INTERFACE"
+            privateIncludeDir += "\n" + __GenerateDirEntryString(accessString, priIncPath, templatePackageTargetIncludeDirEntry)
 
     for directExternalDeps in package.ResolvedDirectExternalDependencies:
-        add = __TryTargetIncludeDirectoriesGetExternalDependencyString(toolConfig, package, directExternalDeps,
+        add = __TryTargetIncludeDirectoriesGetExternalDependencyString(toolConfig, package, currentIncludePriority, directExternalDeps,
                                                                        templatePackageTargetIncludeDirEntry, templatePackageTargetIncludeDirVirtualEntry,
                                                                        pathType)
         if add is not None:
@@ -469,7 +474,8 @@ def BuildTargetIncludeDirectories(toolConfig: ToolConfig, package: Package,
             if len(variant.Options) != 1:
                 raise Exception("VirtualVariant has unsupported amount of options")
             for variantDirectExternalDeps in variant.Options[0].ExternalDependencies:
-                add = __TryTargetIncludeDirectoriesGetExternalDependencyString(toolConfig, package, variantDirectExternalDeps,
+                add = __TryTargetIncludeDirectoriesGetExternalDependencyString(toolConfig, package, currentIncludePriority,
+                                                                               variantDirectExternalDeps,
                                                                                templatePackageTargetIncludeDirEntry,
                                                                                templatePackageTargetIncludeDirVirtualEntry,
                                                                                pathType)
@@ -483,11 +489,38 @@ def BuildTargetIncludeDirectories(toolConfig: ToolConfig, package: Package,
     if len(publicIncludeDir) <= 0 and len(privateIncludeDir) <= 0:
         return ""
 
+    strIncludePriority = " AFTER" if currentIncludePriority == IncludePriority.After else " BEFORE"
+
     content = templatePackageTargetIncludeDirectories
+    content = content.replace("##PACKAGE_INCLUDE_PRIORITY##", strIncludePriority)
     content = content.replace("##PACKAGE_PUBLIC_INCLUDE_DIRECTORIES##", publicIncludeDir)
     content = content.replace("##PACKAGE_PRIVATE_INCLUDE_DIRECTORIES##", privateIncludeDir)
     return content
 
+
+
+def BuildTargetIncludeDirectories(toolConfig: ToolConfig, package: Package,
+                                  templatePackageTargetIncludeDirectories: str,
+                                  templatePackageTargetIncludeDirEntry: str,
+                                  templatePackageTargetIncludeDirVirtualEntry: str,
+                                  pathType: CMakePathType) -> str:
+    beforeSection = __BuildTargetIncludeDirectories(toolConfig,
+                                                   package,
+                                                   IncludePriority.Before,
+                                                   templatePackageTargetIncludeDirectories,
+                                                   templatePackageTargetIncludeDirEntry,
+                                                   templatePackageTargetIncludeDirVirtualEntry,
+                                                   pathType)
+
+    afterSection = __BuildTargetIncludeDirectories(toolConfig,
+                                                   package,
+                                                   IncludePriority.After,
+                                                   templatePackageTargetIncludeDirectories,
+                                                   templatePackageTargetIncludeDirEntry,
+                                                   templatePackageTargetIncludeDirVirtualEntry,
+                                                   pathType)
+    finalSection = beforeSection
+    return afterSection if len(beforeSection) <= 0 else beforeSection + "\n" + afterSection
 
 
 def BuildInstallInstructions(log: Log, package: Package, templateInstallInstructions: str,
@@ -503,7 +536,7 @@ def BuildInstallInstructions(log: Log, package: Package, templateInstallInstruct
     includeHeadersContent = ""
     if (package.Type == PackageType.Library or package.Type == PackageType.HeaderLibrary) and hasIncludeDirectory:
         includeHeadersContent = templateInstallInstructionsHeaders
-        includeHeadersContent = includeHeadersContent.replace("##PACKAGE_INCLUDE_DIRECTORY##", package.BaseIncludePath)
+        includeHeadersContent = includeHeadersContent.replace("##PACKAGE_INCLUDE_DIRECTORY##", package.BaseIncludePath.Name)
     installContent = ""
     installDLL = ""
     installAppInfo = ""

@@ -206,8 +206,10 @@ class GeneratorCMake(GeneratorBase):
 
         aliasPackageName = CMakeGeneratorUtil.GetAliasName(packageName, package.ProjectContext.ProjectName)
 
-        targetIncludeDirectories = CMakeGeneratorUtil.BuildTargetIncludeDirectories(toolConfig, package, template.PackageTargetIncludeDirectories,
-                                                                                    template.PackageTargetIncludeDirEntry, template.PackageTargetIncludeDirVirtualEntry,
+        targetIncludeDirectories = CMakeGeneratorUtil.BuildTargetIncludeDirectories(toolConfig, package,
+                                                                                    template.PackageTargetIncludeDirectories,
+                                                                                    template.PackageTargetIncludeDirEntry,
+                                                                                    template.PackageTargetIncludeDirVirtualEntry,
                                                                                     CMakeGeneratorUtil.CMakePathType.LocalRelative)
 
         publicIncludeFiles = CMakeGeneratorUtil.ExpandPathAndJoin(toolConfig, package, package.ResolvedBuildPublicIncludeFiles)
@@ -333,14 +335,14 @@ class GeneratorCMake(GeneratorBase):
         if len(sortedDirectories) > 0:
             sortedDirectories.sort()
 
-            packageBaseIncludePathEx = package.BaseIncludePath + '/' if package.BaseIncludePath is not None else None;
+            packageBaseIncludePathEx = package.BaseIncludePath.Name + '/' if package.BaseIncludePath is not None else None;
             packageBaseSourcePathEx = package.BaseSourcePath + '/' if package.BaseSourcePath is not None else None;
 
             for dirName in sortedDirectories:
                 files = CMakeGeneratorUtil.ExpandPathAndJoin(toolConfig, package, resDict[dirName])
                 sourceGroupName = dirName
                 if package.BaseIncludePath is not None:
-                    if dirName == package.BaseIncludePath:
+                    if dirName == package.BaseIncludePath.Name:
                         sourceGroupName = "Include Files"
                     elif dirName.startswith(packageBaseIncludePathEx):
                         sourceGroupName = "Include Files/" + dirName[len(packageBaseIncludePathEx):]
