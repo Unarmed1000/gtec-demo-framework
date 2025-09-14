@@ -73,12 +73,12 @@ from FslBuildGen.Tool.ToolCommonArgConfig import ToolCommonArgConfig
 from FslBuildGen.Xml.Project.XmlProjectRootConfigFile import XmlProjectRootConfigFile
 
 
-CurrentVersion = Version(3, 7, 2, 0)
+CurrentVersion = Version(3, 7, 2, 1)
 
 
 def __AddDefaultOptions(parser: argparse.ArgumentParser, allowStandaloneMode: bool) -> None:
     parser.add_argument('-v', '--verbosity', action='count', default=0, help='Set verbosity level')
-    parser.add_argument('--debug', action='store_true', help='Enable script debugging')
+    parser.add_argument('--scriptDebug', action='store_true', help='Enable script debugging')
     parser.add_argument('--dev', action='store_true', help='Allow plugins in development')
     parser.add_argument('--version', action='store_true', help='The tool version')
     parser.add_argument('--profile', action='store_true', help='Enable tool profiling')
@@ -99,7 +99,7 @@ def __EarlyArgumentParser(allowStandaloneMode: bool) -> Optional[LowLevelToolCon
         __AddDefaultOptions(parser, allowStandaloneMode)
         args, unknown = parser.parse_known_args()
         verbosityLevel = args.verbosity
-        debugEnabled = True if args.debug else False
+        debugEnabled = True if args.scriptDebug else False
         allowDevelopmentPlugins = True if args.dev else False
         profilerEnabled = True if args.profile else False
         noGitHash = True if args.noGitHash else False
