@@ -49,11 +49,11 @@ pipeline
     {
         success
         {
-            gerritReview labels: [Verified: 1], message: "Build and tests passed ✅"
+            setGerritReview customUrl: "${env.BUILD_URL}", unsuccessfulMessage: ""
         }
         failure
         {
-            gerritReview labels: [Verified: -1], message: "Build or tests failed ❌"
+            setGerritReview customUrl: "${env.BUILD_URL}", unsuccessfulMessage: "Build failed ❌"
         }
     }
 }
