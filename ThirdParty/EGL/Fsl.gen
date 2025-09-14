@@ -14,8 +14,8 @@
       <Define Name="EGL_API_WL" Access="Public"/>
     </Platform>
     <Platform Name="Ubuntu" Supported="true">
+      <Define Name="USE_X11" Access="Public"/>
       <ExternalDependency Name="EGL" Type="StaticLib"/>
-      <Define Name="MESA_EGL_NO_X11_HEADERS" Access="Public"/>
     </Platform>
     <Platform Name="QNX" Supported="true">
       <ExternalDependency Name="EGL" Type="StaticLib"/>

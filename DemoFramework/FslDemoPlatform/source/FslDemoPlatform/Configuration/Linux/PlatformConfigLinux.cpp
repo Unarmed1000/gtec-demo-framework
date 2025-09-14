@@ -1,4 +1,4 @@
-#ifdef __linux__
+#if defined(__linux__) || ! defined(FORCED)
 /****************************************************************************************************************************************************
  * Copyright (c) 2014 Freescale Semiconductor, Inc.
  * All rights reserved.
@@ -33,7 +33,7 @@
 // #include <FslDemoHost/EGL/EGLDemoHostSetup.hpp>
 #include <FslDemoHost/Base/Service/ServiceGroupName.hpp>
 #include <FslDemoHost/Base/Service/ServicePriorityList.hpp>
-#include <FslDemoService/CpuStats/Impl/Adapter/Linux/CpuStatsAdapterLinux.hpp>
+//#include <FslDemoService/CpuStats/Impl/Adapter/Linux/CpuStatsAdapterLinux.hpp>
 #include <FslDemoService/CpuStats/Impl/CpuStatsServiceFactory.hpp>
 #include <FslService/Impl/ServiceType/Local/ThreadLocalSingletonServiceFactoryTemplate.hpp>
 // #include <FslNativeGraphicsGLES2/NativeGraphicsServiceGLES2.hpp>
@@ -65,8 +65,8 @@ namespace Fsl
     //     >(ServicePriorityList::NativeGraphicsService());
     // #endif
 
-    auto cpuStatsServiceFactory = std::make_shared<CpuStatsServiceFactory>([]() { return std::make_unique<CpuStatsAdapterLinux>(); });
-    serviceRegistry.Register(cpuStatsServiceFactory);
+  //  auto cpuStatsServiceFactory = std::make_shared<CpuStatsServiceFactory>([]() { return std::make_unique<CpuStatsAdapterLinux>(); });
+//    serviceRegistry.Register(cpuStatsServiceFactory);
   }
 }
 #endif

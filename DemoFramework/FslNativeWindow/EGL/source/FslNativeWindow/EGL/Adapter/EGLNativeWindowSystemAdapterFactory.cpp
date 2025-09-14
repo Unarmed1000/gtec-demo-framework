@@ -57,6 +57,7 @@ namespace Fsl
   typedef EGLNativeWindowSystemAdapterQNX EGLNATIVEWINDOWSYSTEM;
 }
 #elif defined(__linux__)
+// fix
 #if defined(FSL_WINDOWSYSTEM_X11)
 #include "X11/EGLNativeWindowSystemAdapterX11.hpp"
 namespace Fsl

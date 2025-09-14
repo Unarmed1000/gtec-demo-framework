@@ -19,7 +19,7 @@
       <Dependency Name="gli" Access="Private"/>
     </Platform>
     <Platform Name="Ubuntu">
-      <Dependency Name="DevIL" Access="Private"/>    
+      <!--Dependency Name="DevIL" Access="Private"/-->    
       <Dependency Name="gli" Access="Private"/>
     </Platform>
     <Platform Name="QNX">

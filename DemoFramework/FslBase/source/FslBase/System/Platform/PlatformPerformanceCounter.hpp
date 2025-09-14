@@ -34,7 +34,7 @@
 #include <FslBase/BasicTypes.hpp>
 #ifdef _WIN32
 #include <Windows.h>
-#elif defined(__linux__) || defined(__QNXNTO__)
+#elif defined(__linux__) || defined(__QNXNTO__) || (defined(__APPLE__) && defined(__MACH__))
 #include <ctime>
 #elif defined(FSL_PLATFORM_FREERTOS)
 #include <FslBase/Log/Log3Core.hpp>
@@ -52,7 +52,7 @@ namespace Fsl::PlatformPerformanceCounter
     LARGE_INTEGER value;
     QueryPerformanceFrequency(&value);
     return value.QuadPart;
-#elif defined(__linux__) || defined(__QNXNTO__)
+#elif defined(__linux__) || defined(__QNXNTO__) || (defined(__APPLE__) && defined(__MACH__))
     return 1000000u;
 #elif defined(FSL_PLATFORM_EMSCRIPTEN)
     return 1000000u;
@@ -69,7 +69,7 @@ namespace Fsl::PlatformPerformanceCounter
       QueryPerformanceCounter(&value);
       return value.QuadPart;
     }
-#elif defined(__linux__) || defined(__QNXNTO__)
+#elif defined(__linux__) || defined(__QNXNTO__) || (defined(__APPLE__) && defined(__MACH__))
     {
       using SafeTimespec = struct timespec;
       SafeTimespec currentTime{};

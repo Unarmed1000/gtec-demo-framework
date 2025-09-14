@@ -1,4 +1,5 @@
 #if !defined(__ANDROID__) && defined(__linux__) && defined(FSL_WINDOWSYSTEM_X11)
+// fix
 /****************************************************************************************************************************************************
  * Copyright (c) 2014 Freescale Semiconductor, Inc.
  * All rights reserved.
@@ -36,6 +37,7 @@
 #include <FslNativeWindow/Platform/Adapter/X11/PlatformNativeWindowAdapterX11.hpp>
 #include <FslUtil/EGL/EGLCheck.hpp>
 #include <FslUtil/EGL/Exceptions.hpp>
+#include <X11/Xlib.h>
 
 namespace Fsl
 {

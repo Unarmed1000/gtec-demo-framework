@@ -110,6 +110,9 @@
 // NOLINTNEXTLINE(cppcoreguidelines-macro-usage)
 #define EGL_PLATFORM_ANGLE_DEBUG_LAYERS_ENABLED 0x3451
 #endif
+#ifndef EGL_PLATFORM_X11_KHR
+#define EGL_PLATFORM_X11_KHR 0x31D5
+#endif
 
 
 namespace Fsl
@@ -1039,7 +1042,17 @@ namespace Fsl
       }
       if (useDefault)
       {
-        m_hDisplay = EGL_CHECK(eglGetDisplay(hDisplay));
+        FSLLOG3_INFO("display")
+        // m_hDisplay = EGL_CHECK(eglGetDisplay(hDisplay));
+        m_hDisplay = eglGetPlatformDisplay(EGL_PLATFORM_X11_KHR, hDisplay, nullptr);
+      }
+      if(m_hDisplay == nullptr)
+      {
+        FSLLOG3_INFO("display is null")
+      }
+      if (m_hDisplay == EGL_NO_DISPLAY)
+      {
+          FSLLOG3_INFO("eglGetDisplay failed");
       }
 
       LOCAL_LOG("Initialize");

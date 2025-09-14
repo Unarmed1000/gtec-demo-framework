@@ -15,6 +15,7 @@
     </Platform>
     <Platform Name="Ubuntu" Supported="true">
       <Define Name="FSL_PLATFORM_UBUNTU" Access="Public"/> 
+      <Define Name="__linux__" Access="Public"/>
     </Platform>
     <Platform Name="Windows" Supported="true">
       <Define Name="FSL_PLATFORM_WINDOWS" Access="Public"/> 

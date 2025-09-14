@@ -1,6 +1,7 @@
 #ifndef FSLNATIVEWINDOW_EGL_ADAPTER_X11_EGLNATIVEWINDOWSYSTEMADAPTERX11_HPP
 #define FSLNATIVEWINDOW_EGL_ADAPTER_X11_EGLNATIVEWINDOWSYSTEMADAPTERX11_HPP
 #if !defined(__ANDROID__) && defined(__linux__) && defined(FSL_WINDOWSYSTEM_X11)
+// fix
 /****************************************************************************************************************************************************
  * Copyright (c) 2014 Freescale Semiconductor, Inc.
  * All rights reserved.

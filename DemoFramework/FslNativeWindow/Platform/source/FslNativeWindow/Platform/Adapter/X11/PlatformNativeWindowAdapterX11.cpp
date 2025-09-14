@@ -1,4 +1,5 @@
 #if !defined(__ANDROID__) && defined(__linux__) && defined(FSL_WINDOWSYSTEM_X11)
+// fix
 /****************************************************************************************************************************************************
  * Copyright (c) 2014 Freescale Semiconductor, Inc.
  * All rights reserved.
@@ -368,6 +369,9 @@ namespace Fsl
     , m_rrEventBase(0)
     , m_rrErrorBase(0)
   {
+    // Might be necessary
+    XInitThreads();
+
     FSLLOG3_WARNING_IF(setup.GetConfig().GetDisplayId() != 0, "X11 only supports the main display. Using DisplayId 0 instead of {}",
                        setup.GetConfig().GetDisplayId());
     FSLLOG3_VERBOSE3("PlatformNativeWindowSystemAdapterX11| XOpenDisplay");
