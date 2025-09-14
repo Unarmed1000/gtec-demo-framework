@@ -45,4 +45,15 @@ pipeline
             }
         }
     }
+    post
+    {
+        success
+        {
+            setGerritReview customUrl: "${env.BUILD_URL}", unsuccessfulMessage: ""
+        }
+        failure
+        {
+            setGerritReview customUrl: "${env.BUILD_URL}", unsuccessfulMessage: "Build failed ❌"
+        }
+    }
 }
