@@ -3,6 +3,18 @@
   <ExternalLibrary Name="WindowSystem" CreationYear="2016">
     <Default.Platform.Supported Value="false"/>
     <Platform Name="Android" Supported="true"/>
+    <Platform Name="Apple" Supported="true">
+      <!-- Use X11 -->
+      <!--ExternalDependency Name="Xi" Type="StaticLib"/-->
+      <ExternalDependency Name="Xrandr" Type="StaticLib"/>
+      <ExternalDependency Name="X11" Type="StaticLib"/>
+      <Define Name="FSL_WINDOWSYSTEM_X11" Access="Public"/>
+      <!-- Use SDl -->
+      <!--
+      <Define Name="FSL_WINDOWSYSTEM_SDL2" Access="Public"/>
+      <Dependency Name="SDL2"/>
+      -->
+    </Platform>
     <Platform Name="Emscripten" Supported="true">
       <Dependency Name="SDL2"/>
       <Define Name="FSL_WINDOWSYSTEM_SDL2" Access="Public"/>

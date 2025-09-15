@@ -3,7 +3,7 @@
   <ExternalLibrary Name="benchmark" CreationYear="2022">
     <Default.Platform.Supported Value="false"/>
     <Requirement Name="GoogleBenchmark" Type="feature"/>
-    <Platform Name="Ubuntu;Windows" Supported="true">
+    <Platform Name="Apple;Ubuntu;Windows" Supported="true">
       <Dependency Name="Recipe.benchmark_1_8"/>
     </Platform>    
     

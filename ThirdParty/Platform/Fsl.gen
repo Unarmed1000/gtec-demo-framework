@@ -4,6 +4,9 @@
     <Platform Name="Android" Supported="true">
       <Define Name="FSL_PLATFORM_ANDROID" Access="Public"/> 
     </Platform>
+    <Platform Name="Apple" Supported="true">
+      <Define Name="FSL_PLATFORM_APPLE" Access="Public"/> 
+    </Platform>
     <Platform Name="FreeRTOS" Supported="true">
       <Define Name="FSL_PLATFORM_FREERTOS" Access="Public"/> 
     </Platform>
