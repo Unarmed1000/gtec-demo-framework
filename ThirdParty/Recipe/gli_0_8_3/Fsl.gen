@@ -30,6 +30,7 @@
           <GitClone URL="https://github.com/g-truc/gli.git" Hash="779b99ac6656e4d30c3b24e96e0136a59649a869"/>
           <Copy>
             <GitApply From="{RECIPE_PATH}/cmake-version.patch"/>
+            <GitApply From="{RECIPE_PATH}/compile-fix_reduce.inl.patch"/>
           </Copy>
           <CMakeBuild Project="gli" Target="install" Configuration="release" OutputPath="_Install"/>
         </Pipeline>
