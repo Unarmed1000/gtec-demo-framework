@@ -80,14 +80,21 @@ namespace Fsl
     };
 
 #ifndef SDL_VIDEO_DRIVER_EMSCRIPTEN
-    PlatformNativeWindowRecord ExtractNativeWindowRecord(SDL_SysWMinfo systemInfo)
+    PlatformNativeWindowRecord ExtractNativeWindowRecord(SDL_Window* window, SDL_SysWMinfo systemInfo)
     {
 #ifdef SDL_VIDEO_DRIVER_WINDOWS
+      FSL_PARAM_NOT_USED(window);
       return {systemInfo.info.win.hinstance, systemInfo.info.win.window};
 #elif defined(SDL_VIDEO_DRIVER_X11)
+      FSL_PARAM_NOT_USED(window);
       return {systemInfo.info.x11.display, systemInfo.info.x11.window};
 #elif defined(SDL_VIDEO_DRIVER_WAYLAND)
+      FSL_PARAM_NOT_USED(window);
       return {systemInfo.info.wl.display, systemInfo.info.wl.surface};
+//#elif defined(SDL_VIDEO_DRIVER_COCOA)
+//      // For macOS, just store the SDL_Window* itself
+//      //return {nullptr, systemInfo.info.cocoa.window};
+//      return {nullptr, window};
 #else
 #error Unsupported SDL platform
 #endif
@@ -471,7 +478,7 @@ namespace Fsl
         {
           throw GraphicsException(fmt::format("Failed to get native SDL window: {}", SDL_GetError()));
         }
-        auto nativeWindowRecord = ExtractNativeWindowRecord(systemInfo);
+        auto nativeWindowRecord = ExtractNativeWindowRecord(m_pSdlWindow, systemInfo);
 #else
         PlatformNativeWindowRecord nativeWindowRecord{};
 #endif
@@ -519,8 +526,9 @@ namespace Fsl
 
   void PlatformNativeWindowAdapterSDL::OnMouseMotion(INativeWindowEventQueue& eventQueue, const SDL_MouseMotionEvent& theEvent)
   {
+    const auto timestamp = MillisecondTickCount32::FromMilliseconds(theEvent.timestamp);
     const PxPoint2 position(PxValue(theEvent.x), PxValue(theEvent.y));
-    const NativeWindowEvent event = NativeWindowEventHelper::EncodeInputMouseMoveEvent(position);
+    const NativeWindowEvent event = NativeWindowEventHelper::EncodeInputMouseMoveEvent(timestamp, position);
     eventQueue.PostEvent(event);
 
     m_cachedMouse.LastPositionPx = position;
@@ -534,10 +542,11 @@ namespace Fsl
     {
       return;
     }
+    const auto timestamp = MillisecondTickCount32::FromMilliseconds(theEvent.timestamp);
 
     const PxPoint2 position(PxValue(theEvent.x), PxValue(theEvent.y));
     const NativeWindowEvent event =
-      NativeWindowEventHelper::EncodeInputMouseButtonEvent(mouseButton.value(), theEvent.type == SDL_MOUSEBUTTONDOWN, position);
+      NativeWindowEventHelper::EncodeInputMouseButtonEvent(timestamp, mouseButton.value(), theEvent.type == SDL_MOUSEBUTTONDOWN, position);
     eventQueue.PostEvent(event);
 
     m_cachedMouse.LastPositionPx = position;
@@ -546,7 +555,8 @@ namespace Fsl
 
   void PlatformNativeWindowAdapterSDL::OnMouseWheel(INativeWindowEventQueue& eventQueue, const SDL_MouseWheelEvent& theEvent)
   {
-    const NativeWindowEvent event = NativeWindowEventHelper::EncodeInputMouseWheelEvent(theEvent.y, m_cachedMouse.LastPositionPx);
+    const auto timestamp = MillisecondTickCount32::FromMilliseconds(theEvent.timestamp);
+    const NativeWindowEvent event = NativeWindowEventHelper::EncodeInputMouseWheelEvent(timestamp, theEvent.y, m_cachedMouse.LastPositionPx);
     eventQueue.PostEvent(event);
   }
 
