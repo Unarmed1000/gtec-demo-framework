@@ -81,6 +81,8 @@ echo "  CPLUS_INCLUDE_PATH=${CPLUS_INCLUDE_PATH}"
 # -------------------------------
 # Change to project directory and source prepare.sh
 # -------------------------------
+export FSL_PLATFORM_NAME=Apple
+
 cd gtec-demo-framework
 source prepare.sh
 ```
