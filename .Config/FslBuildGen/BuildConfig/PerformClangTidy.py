@@ -1051,8 +1051,8 @@ class PerformClangTidyHelper(object):
 
         variables = {}
         variables[PerformClangTidyHelper.VAR_PACKAGE_DEFINES] = _AddCmdToEachEntry("-D", packageDefines)
-        variables[PerformClangTidyHelper.VAR_INCLUDES] = _AddCmdToEachEntry("-I", ['"{0}"'.format(includePath) for includePath in packageIncludePaths])
-        variables[PerformClangTidyHelper.VAR_SYSTEM_INCLUDES] = _AddCmdToEachEntry("-isystem ", ['"{0}"'.format(includePath) for includePath in packageIncludePaths])
+        variables[PerformClangTidyHelper.VAR_INCLUDES] = _AddCmdToEachEntry("-I", ['"{0}"'.format(includePath.Name) for includePath in packageIncludePaths])
+        variables[PerformClangTidyHelper.VAR_SYSTEM_INCLUDES] = _AddCmdToEachEntry("-isystem ", ['"{0}"'.format(includePath.Name) for includePath in packageIncludePaths])
 
         # //build cmake_object_order_depends_target_FslGraphics: phony || cmake_object_order_depends_target_FslBase
 
