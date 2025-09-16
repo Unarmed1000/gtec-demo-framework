@@ -110,6 +110,9 @@
 // NOLINTNEXTLINE(cppcoreguidelines-macro-usage)
 #define EGL_PLATFORM_ANGLE_DEBUG_LAYERS_ENABLED 0x3451
 #endif
+#ifndef EGL_PLATFORM_X11_KHR
+#define EGL_PLATFORM_X11_KHR 0x31D5
+#endif
 
 
 namespace Fsl
@@ -1039,7 +1042,11 @@ namespace Fsl
       }
       if (useDefault)
       {
+#if defined(FSL_PLATFORM_APPLE)
+        m_hDisplay = eglGetPlatformDisplay(EGL_PLATFORM_X11_KHR, hDisplay, nullptr);
+#else
         m_hDisplay = EGL_CHECK(eglGetDisplay(hDisplay));
+#endif
       }
 
       LOCAL_LOG("Initialize");

@@ -2,7 +2,7 @@
 <FslBuildGen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../FslBuildGen.xsd">
   <ExternalLibrary Name="Recipe.SDL_2_28" CreationYear="2021">
     <Default.Platform.Supported Value="false"/>
-    <Platform Name="Ubuntu" Supported="false">
+    <Platform Name="Apple;Ubuntu" Supported="false">
       <ExperimentalRecipe Name="SDL" Version="2.28.4">
         <Pipeline>
           <Download URL="https://www.libsdl.org/release/SDL2-2.28.4.tar.gz" Hash="888b8c39f36ae2035d023d1b14ab0191eb1d26403c3cf4d4d5ede30e66a4942c"/> 

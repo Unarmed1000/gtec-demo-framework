@@ -25,6 +25,7 @@
       <Requirement Name="GoogleUnitTest" Skip="true"/>
     </BuildDocConfiguration>
     <CMakeConfiguration DefaultBuildDir="${TopProjectRoot}/build" MinVersion="3.16" NinjaRecipe="Recipe.BuildTool.ninja">
+      <Platform Name="Apple" DefaultGeneratorName="Ninja"/>
       <Platform Name="QNX" DefaultGeneratorName="Ninja"/>
       <Platform Name="RDK_Yocto" DefaultGeneratorName="Ninja" AllowFindPackage="false"/>
       <Platform Name="Ubuntu" DefaultGeneratorName="Ninja"/>
@@ -112,9 +113,9 @@
       <Platform Name="Android">
         <Compiler Flags="-std=c++20"/>
       </Platform>
-      <Platform Name="RDK_Yocto">
-        <Compiler Flags="-std=c++20;-I$(ROOTFS)/usr/include"/>
-        <Defines All="FSL_PLATFORM_RDK_YOCTO;PIC;LINUX" Debug="DEBUG;_DEBUG" Release="NDEBUG"/>
+      <Platform Name="Apple">
+        <Compiler Flags="-std=c++20"/>
+        <Defines All="FSL_PLATFORM_APPLE;PIC" Debug="DEBUG" Release="NDEBUG"/>
       </Platform>
       <Platform Name="Ubuntu">
         <Compiler Flags="-std=c++20"/>

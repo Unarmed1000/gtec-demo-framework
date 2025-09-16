@@ -11,14 +11,19 @@
       <!-- Workaround, as JNIHelper needs GLES. We need to handle JNIHelper differently -->
       <ExternalDependency Name="GLESv3" Type="StaticLib"/>
     </Platform>
-    <Platform Name="RDK_Yocto" Supported="true">
-      <ExternalDependency Name="vulkan" Type="StaticLib"/>
+    <Platform Name="Apple" Supported="true">
+      <Define Name="VK_USE_PLATFORM_XLIB_KHR" Access="Public"/>
+      <FindPackage Name="Vulkan" Version="1.0"/>
+      <ExternalDependency Name="vulkan" Include="$(VULKAN_SDK)/include" Access="Public" Type="StaticLib" If="!AllowFindPackage"/>
     </Platform>
     <Platform Name="QNX" Supported="true">
       <!--ExternalDependency Name="vulkan" Include="$(VULKAN_SDK)/include" Access="Public" Type="StaticLib"/-->
       <FindPackage Name="Vulkan" Version="1.0"/>
       <Define Name="VK_USE_PLATFORM_SCREEN_QNX" Access="Public"/>
     </Platform>
+    <Platform Name="RDK_Yocto" Supported="true">
+      <ExternalDependency Name="vulkan" Type="StaticLib"/>
+    </Platform>    
     <Platform Name="Ubuntu" Supported="true">
       <!-- X11 -->
       <!--

@@ -14,7 +14,7 @@
     <Platform Name="Windows">
       <Dependency Name="FslAssimp"/>
     </Platform>
-    <Platform Name="Ubuntu">
+    <Platform Name="Apple;Ubuntu">
       <Dependency Name="FslAssimp"/>
     </Platform>
     <Platform Name="Yocto">

@@ -3,7 +3,7 @@
   <ExternalLibrary Name="Recipe.OpenCV_4_10" CreationYear="2017">
     <Default.Platform.Supported Value="false"/>
 
-    <!--Platform Name="Ubuntu">
+    <!--Platform Name="Apple;Ubuntu">
       <ExperimentalRecipe Name="OpenCV-3.2" ExternalInstallDirectory="$(OPENCV_DIR)">
         <Installation>
           <Path Name="include/opencv/cv.h" Method="IsFile"/>

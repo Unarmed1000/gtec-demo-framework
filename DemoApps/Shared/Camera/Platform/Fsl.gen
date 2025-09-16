@@ -5,7 +5,7 @@
     <Requirement Name="EarlyAccess" Type="feature"/>
     <Dependency Name="Shared.Camera.System"/>
 
-    <Platform Name="Ubuntu" Supported="true">
+    <Platform Name="Apple;Ubuntu" Supported="true">
       <Dependency Name="Shared.Camera.Adapter.OpenCV" Access="Private"/>
     </Platform>
     <Platform Name="Windows" Supported="true">

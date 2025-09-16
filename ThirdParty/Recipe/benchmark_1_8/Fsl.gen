@@ -4,7 +4,7 @@
     <Requirement Name="GoogleBenchmark" Type="feature"/>
     <!--Dependency Name="GTest"/-->
     <Default.Platform.Supported Value="false"/>
-    <Platform Name="Ubuntu" Supported="true">
+    <Platform Name="Apple;Ubuntu" Supported="true">
       <ExperimentalRecipe Name="benchmark" Version="1.8" FindTargetName="benchmark::benchmark benchmark::benchmark_main">
         <Pipeline>
           <Download URL="https://github.com/google/benchmark/archive/refs/tags/v1.8.3.tar.gz" To="googlebenchmark-1.8.3.tar.gz" Hash="6bc180a57d23d4d9515519f92b0c83d61b05b5bab188961f36ac7b06b0d9e9ce"/>

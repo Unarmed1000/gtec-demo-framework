@@ -4,7 +4,7 @@
   <ExternalLibrary Name="DevIL" CreationYear="2015">
     <Default.Platform.Supported Value="false"/>
     <Define Name="FSL_ENABLE_DEVIL" Access="Public"/> 
-    <Platform Name="Ubuntu" Supported="true">
+    <Platform Name="Apple;Ubuntu" Supported="true">
       <ExternalDependency Name="IL" Type="StaticLib"/>
       <!-- Not done because DevIL doesnt define a modern target name.
            To support this we need additional cmake magic that generates the proper modern target name in the cmake file for this.

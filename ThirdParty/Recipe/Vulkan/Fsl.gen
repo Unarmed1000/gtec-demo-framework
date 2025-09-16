@@ -3,7 +3,7 @@
   <ExternalLibrary Name="Recipe.Vulkan" CreationYear="2017">
     <Default.Platform.Supported Value="false"/>
 
-    <Platform Name="Ubuntu">
+    <Platform Name="Apple;Ubuntu">
       <!--
       <ExperimentalRecipe Name="Vulkan" FindTargetName="Vulkan::Vulkan">
         <Pipeline Name="Vulkan1" ExternalInstallDirectory="$(VK_SDK_PATH)"/>
