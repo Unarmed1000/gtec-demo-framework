@@ -163,8 +163,8 @@ namespace Fsl
     mainLayout->AddColumnDefinition(UI::GridColumnDefinition(UI::GridUnitType::Auto));
     mainLayout->AddColumnDefinition(UI::GridColumnDefinition(UI::GridUnitType::Star, 1.0f));
     mainLayout->AddRowDefinition(UI::GridRowDefinition(UI::GridUnitType::Star, 1.0f));
-    mainLayout->AddChild(menuSidebar, 0, 0);
     mainLayout->AddChild(content.MainLayout, 1, 0);
+    mainLayout->AddChild(menuSidebar, 0, 0);
     mainLayout->SetLimitToAvailableSpace(true);
 
     return {std::move(mainLayout), std::move(menuContent), std::move(content)};
