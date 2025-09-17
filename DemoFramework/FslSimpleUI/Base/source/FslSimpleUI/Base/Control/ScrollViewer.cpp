@@ -529,6 +529,12 @@ namespace Fsl::UI
     const PxPoint2 positionOffsetPx = m_gestureHandler.Arrange(localFinalSizePx, desiredlayoutSizePx);
     m_scrollPositionOffsetPx = positionOffsetPx;
     base_type::CustomArrange(desiredlayoutSizePx, positionOffsetPx);
+
+    // After the arrange we need to check if we need to animate
+    if (m_gestureHandler.UpdateAnimationState(false))
+    {
+      CheckAnimationState();
+    }
     return finalSizePx;
   }
 
