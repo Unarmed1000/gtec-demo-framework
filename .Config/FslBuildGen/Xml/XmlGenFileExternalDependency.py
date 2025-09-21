@@ -36,7 +36,10 @@ from typing import Optional
 import xml.etree.ElementTree as ET
 from FslBuildGen.DataTypes import AccessType
 from FslBuildGen.DataTypes import ExternalDependencyType
+from FslBuildGen.DataTypes import IncludePriority
+from FslBuildGen.PackageIncludeDir import PackageIncludeDir
 from FslBuildGen.SemanticVersion2 import SemanticVersion2
+from FslBuildGen.SemanticVersionPattern import SemanticVersionPattern
 from FslBuildGen.Log import Log
 from FslBuildGen.Xml import FakeXmlElementFactory
 from FslBuildGen.Xml.Exceptions import XmlException
@@ -50,6 +53,7 @@ class XmlGenFileExternalDependency(XmlBase):
     __AttribDebugName = 'DebugName'
     __AttribTargetName = 'TargetName'
     __AttribInclude = 'Include'
+    __AttribOverrideIncludePriority = 'OverrideIncludePriority'
     __AttribLocation = 'Location'
     __AttribHintPath = 'HintPath'
     __AttribVersion = 'Version'
@@ -62,16 +66,21 @@ class XmlGenFileExternalDependency(XmlBase):
 
     def __init__(self, log: Log, xmlElement: ET.Element) -> None:
         super().__init__(log, xmlElement)
-        self._CheckAttributes({self.__AttribName, self.__AttribDebugName, self.__AttribTargetName, self.__AttribInclude, self.__AttribLocation, self.__AttribHintPath, self.__AttribVersion, self.__AttribPublicKeyToken, self.__AttribProcessorArchitecture, self.__AttribCulture, self.__AttribIf, self.__AttribAccess, self.__AttribType})
+        self._CheckAttributes({self.__AttribName, self.__AttribDebugName, self.__AttribTargetName, self.__AttribInclude,
+                               self.__AttribOverrideIncludePriority, self.__AttribLocation,
+                               self.__AttribHintPath, self.__AttribVersion, self.__AttribPublicKeyToken, self.__AttribProcessorArchitecture,
+                               self.__AttribCulture, self.__AttribIf, self.__AttribAccess, self.__AttribType})
         self.Name = self._ReadAttrib(xmlElement, self.__AttribName)
         self.DebugName = self._ReadAttrib(xmlElement, self.__AttribDebugName, self.Name) # type: str
         defaultTargetName = "{0}::{0}".format(self.Name)
         self.TargetName = self._ReadAttrib(xmlElement, self.__AttribTargetName, defaultTargetName) # type: str
-        self.Include = self._TryReadAttrib(xmlElement, self.__AttribInclude)  # type: Optional['str']
+        strIncludeDir = self._TryReadAttrib(xmlElement, self.__AttribInclude)  # type: Optional['str']
+        includePriority = self._ReadIncludePriorityAttrib(xmlElement, self.__AttribOverrideIncludePriority, IncludePriority.After)
+
         self.Location = self._TryReadAttrib(xmlElement, self.__AttribLocation)  # type: Optional['str']
         # New assembly keywords primarily used for C# assemblies
         self.HintPath = self._TryReadAttrib(xmlElement, self.__AttribHintPath)  # type: Optional['str']
-        self.Version = self._TryReadAttribAsSemanticVersion2(xmlElement, self.__AttribVersion)  # type: Optional[SemanticVersion2]
+        self.Version = self._TryReadAttribAsSemanticVersionPattern(xmlElement, self.__AttribVersion)  # type: Optional[SemanticVersionPattern]
         self.PublicKeyToken = self._TryReadAttrib(xmlElement, self.__AttribPublicKeyToken)  # type: Optional['str']
         self.ProcessorArchitecture = self._TryReadAttrib(xmlElement, self.__AttribProcessorArchitecture)  # type: Optional['str']
         self.Culture = self._TryReadAttrib(xmlElement, self.__AttribCulture)  # type: Optional['str']
@@ -82,7 +91,7 @@ class XmlGenFileExternalDependency(XmlBase):
         strAccess = self._TryReadAttrib(xmlElement, self.__AttribAccess)  # type: Optional['str']
 
         access = None
-        if self.Include is not None or strAccess is not None:
+        if strIncludeDir is not None or strAccess is not None:
             strAccess = self._ReadAttrib(xmlElement, self.__AttribAccess) if access is None else access
             if strAccess == "Public":
                 access = AccessType.Public
@@ -90,6 +99,7 @@ class XmlGenFileExternalDependency(XmlBase):
                 access = AccessType.Private
             else:
                 raise XmlFormatException("Unknown access type '{0}' on external dependency: '{1}'".format(access, self.Name))
+        self.IncludeDir = PackageIncludeDir(strIncludeDir, includePriority) if strIncludeDir is not None else None
 
         strElementType = self._ReadAttrib(xmlElement, self.__AttribType)
         elementType = ExternalDependencyType.TryFromString(strElementType)
@@ -104,7 +114,7 @@ class XmlGenFileExternalDependency(XmlBase):
         self.ConsumedBy = None
 
         if self.Type == ExternalDependencyType.DLL:
-            if not self.Include is None:
+            if not self.IncludeDir is None:
                 raise XmlException(xmlElement, "DLL dependency: '{0}' can not contain include paths".format(self.Name))
             if self.Access != AccessType.Public:
                 raise XmlException(xmlElement, "DLL dependency: '{0}' can only have a access type of Public".format(self.Name))
@@ -146,7 +156,7 @@ class FakeXmlGenFileExternalDependency(XmlGenFileExternalDependency):
             raise Exception("Failed to setting fake element attribute Access")
         if debugName is not None and self.DebugName != debugName:
             raise Exception("Failed to setting fake element attribute DebugName")
-        if includeLocation is not None and self.Include != includeLocation:
+        if includeLocation is not None and (self.IncludeDir is None or self.IncludeDir.Name != includeLocation):
             raise Exception("Failed to setting fake element attribute IncludeLocation")
         # Override the value set in the base class
         self.IsManaged = isManaged

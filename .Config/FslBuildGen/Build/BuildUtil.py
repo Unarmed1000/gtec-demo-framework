@@ -68,6 +68,8 @@ class PlatformBuildUtil(object):
             platformName = generatorOriginalName
             if (platformName == PlatformNameString.QNX or
                     platformName == PlatformNameString.YOCTO or
+                    platformName == PlatformNameString.APPLE or
+                    platformName == PlatformNameString.RDK_YOCTO or
                     platformName == PlatformNameString.UBUNTU or
                     platformName == PlatformNameString.FREERTOS or
                     (external and platformName == PlatformNameString.ANDROID)):

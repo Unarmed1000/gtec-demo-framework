@@ -48,7 +48,7 @@ from FslBuildGen import PackageConfig
 from FslBuildGen import ToolSharedValues
 from FslBuildGen import Util
 from FslBuildGen.Config import Config
-from FslBuildGen.DataTypes import PackageCreationYearString
+from FslBuildGen.DataTypes import IncludePriority, PackageCreationYearString
 from FslBuildGen.DataTypes import PackageLanguage
 from FslBuildGen.DataTypes import PackageString
 from FslBuildGen.DataTypes import PackageType
@@ -61,6 +61,8 @@ from FslBuildGen.Exceptions import UsageErrorException
 from FslBuildGen.Log import Log
 from FslBuildGen.PackageConfig import APPROVED_PLATFORM_NAMES
 from FslBuildGen.PackageFile import PackageFile
+from FslBuildGen.PackageIncludeDir import PackageIncludeDir
+from FslBuildGen.PackageIncludePath import PackageIncludePath
 from FslBuildGen.PackagePath import PackagePath
 from FslBuildGen.PackageTemplateLoader import PackageTemplateLoader
 from FslBuildGen.ToolConfig import ToolConfig
@@ -84,6 +86,7 @@ from FslBuildGen.Xml.XmlGenFileExternalDependency import XmlGenFileExternalDepen
 from FslBuildGen.Xml.XmlGenFileFindPackage import FakeXmlGenFileFindPackage
 from FslBuildGen.Xml.XmlGenFileGenerate import XmlGenFileGenerate
 from FslBuildGen.Xml.XmlGenFileGenerateGrpcProtoFile import XmlGenFileGenerateGrpcProtoFile
+from FslBuildGen.Xml.XmlGenFileCopyFile import XmlGenFileCopyFile
 from FslBuildGen.Xml.XmlGenFileRequirement import XmlGenFileRequirement
 from FslBuildGen.Xml.XmlStuff import DefaultValueName
 from FslBuildGen.Xml.XmlStuff import LocalPackageDefaultValues
@@ -96,6 +99,26 @@ from FslBuildGen.Xml.Flavor.XmlGenFileFlavor import XmlGenFileFlavor
 from FslBuildGen.Xml.Flavor.XmlGenFileFlavorExtension import XmlGenFileFlavorExtension
 
 class XmlGenFile(XmlCommonFslBuild):
+    __AttribAllowCheck = "AllowCheck"
+    __AttribAllowCombinedDirectory = "AllowCombinedDirectory"
+    __AttribCompany = "Company"
+    __AttribCreationYear = "CreationYear"
+    __AttribEnableExtendedSourceExtensions = "EnableExtendedSourceExtensions"
+    __AttribName = "Name"
+    __AttribNoInclude = 'NoInclude'
+    __AttribOverrideInclude = 'OverrideInclude'
+    __AttribOverrideIncludePriority = "OverrideIncludePriority"
+    __AttribOverrideSource = "OverrideSource"
+    __AttribPackageNameBasedIncludePath = "PackageNameBasedIncludePath"
+    __AttribShowInMainReadme = "ShowInMainReadme"
+    __AttribTemplateType = "TemplateType"
+    __AttribUnitTest = "UnitTest"
+
+    __ValidAttribs = {__AttribAllowCheck, __AttribAllowCombinedDirectory, __AttribCompany, __AttribCreationYear,
+                      __AttribEnableExtendedSourceExtensions, __AttribName, __AttribNoInclude,
+                      __AttribOverrideInclude, __AttribOverrideIncludePriority, __AttribOverrideSource, __AttribPackageNameBasedIncludePath,
+                      __AttribShowInMainReadme, __AttribTemplateType, __AttribUnitTest}
+
     def __init__(self, log: Log, toolConfig: ToolConfig, defaultPackageLanguage: PackageLanguage) -> None:
         super().__init__(log, toolConfig.RequirementTypes,
                          FakeXmlElementFactory.CreateWithName("FakeGenFile", "FSLBUILD_INVALID_INITIAL_VALUE"))
@@ -110,17 +133,18 @@ class XmlGenFile(XmlCommonFslBuild):
         self.IsVirtual = False
         self.GenerateList = [] # type: List[XmlGenFileGenerate]
         self.GenerateGrpcProtoFileList = [] # type: List[XmlGenFileGenerateGrpcProtoFile]
+        self.CopyFileList = [] # type: List[XmlGenFileCopyFile]
         self.DirectDependencies = []  # type: List[XmlGenFileDependency]
         self.DirectRequirements = []  # type: List[XmlGenFileRequirement]
         self.DirectDefines = []
         self.DirectExperimentalRecipe = None    # type: Optional[XmlExperimentalRecipe]
         self.Platforms = {}  # type: Dict[str, XmlGenFilePlatform]
-        self.IncludePath = None  # type: Optional[PackagePath]
+        self.IncludePath = None  # type: Optional[PackageIncludePath]
         self.SourcePath = None  # type: Optional[PackagePath]
         self.ContentPath = None  # type: Optional[PackagePath]
         self.ContentSourcePath = None  # type: Optional[PackagePath]
         self.PackageLanguage = defaultPackageLanguage
-        self.BaseIncludePath = "include"
+        self.BaseIncludePath = PackageIncludeDir("include", IncludePriority.After)
         self.BaseSourcePath = "source"
         self.BuildCustomization = {}  # type: Dict[str, XmlGenFileBuildCustomization]
         self.CompanyName = "NotDefined"
@@ -158,34 +182,40 @@ class XmlGenFile(XmlCommonFslBuild):
 
         elem, theType = self.__FindPackageElementAndType(elem)
 
-        packageName = self._ReadAttrib(elem, 'Name')
+        packageName = self._ReadAttrib(elem, self.__AttribName)
         defaultValues = self.__GetDefaultValues(elem, packageName)
-        allowNoInclude = self._ReadBoolAttrib(elem, 'NoInclude', False)
-        companyName = self._ReadAttrib(elem, 'Company', toolConfig.DefaultCompany)
+        allowNoInclude = self._ReadBoolAttrib(elem, self.__AttribNoInclude, False)
+        companyName = self._ReadAttrib(elem, self.__AttribCompany, toolConfig.DefaultCompany)
 
         # Used by FslBuildDoc to determine if it should be visible in the main readme
-        self.ShowInMainReadme = self._ReadBoolAttrib(elem, 'ShowInMainReadme', True)
+        self.ShowInMainReadme = self._ReadBoolAttrib(elem, self.__AttribShowInMainReadme, True)
 
         if toolConfig.RequirePackageCreationYear:
-            creationYear = self._ReadAttrib(elem, 'CreationYear')
+            creationYear = self._ReadAttrib(elem, self.__AttribCreationYear)
         else:
-            creationYear = self._ReadAttrib(elem, 'CreationYear', PackageCreationYearString.NotDefined)
+            creationYear = self._ReadAttrib(elem, self.__AttribCreationYear, PackageCreationYearString.NotDefined)
 
-        templateType = self._ReadAttrib(elem, 'TemplateType', "")
-        self.AllowCheck = self._ReadBoolAttrib(elem, 'AllowCheck', True)
-        self.UnitTest = self._ReadBoolAttrib(elem, 'UnitTest', False)
+        templateType = self._ReadAttrib(elem, self.__AttribTemplateType, "")
+        self.AllowCheck = self._ReadBoolAttrib(elem, self.__AttribAllowCheck, True)
+        self.UnitTest = self._ReadBoolAttrib(elem, self.__AttribUnitTest, False)
         # if this is set we allow '.cc' files for C++ code.
-        self.EnableExtendedSourceExtensions = self._ReadBoolAttrib(elem, 'EnableExtendedSourceExtensions', False)
+        self.EnableExtendedSourceExtensions = self._ReadBoolAttrib(elem, self.__AttribEnableExtendedSourceExtensions, False)
 
-        self.BaseIncludePath = self._ReadAttrib(elem, 'OverrideInclude', 'include')
-        self.BaseSourcePath = self._ReadAttrib(elem, 'OverrideSource', 'source')
-        self.AllowCombinedDirectory = self._ReadBoolAttrib(elem, 'AllowCombinedDirectory', False)
-        self.PackageNameBasedIncludePath = self._ReadBoolAttrib(elem, 'PackageNameBasedIncludePath', True)
+        strBaseInclude = self._ReadAttrib(elem, self.__AttribOverrideInclude, 'include')
+        includePriority = self._ReadIncludePriorityAttrib(elem, self.__AttribOverrideIncludePriority, IncludePriority.After)
+
+        self.BaseIncludePath = PackageIncludeDir(strBaseInclude, includePriority)
+
+        self.BaseSourcePath = self._ReadAttrib(elem, self.__AttribOverrideSource, 'source')
+        self.AllowCombinedDirectory = self._ReadBoolAttrib(elem, self.__AttribAllowCombinedDirectory, False)
+        self.PackageNameBasedIncludePath = self._ReadBoolAttrib(elem, self.__AttribPackageNameBasedIncludePath, True)
 
         self.BaseLoad(elem)
+        self._CheckAttributes(self.__ValidAttribs)
 
         self.GenerateList = self.__GetGenerateList(log, elem)
         self.GenerateGrpcProtoFileList = self.__GetGenerateGrpcProtoFileList(log, elem)
+        self.CopyFileList = self.__GetCopyFileList(log, elem)
         requirements = self._GetXMLRequirements(elem)
         allowRecipes = self.__DoesTypeAllowRecipes(theType)
 
@@ -202,7 +232,7 @@ class XmlGenFile(XmlCommonFslBuild):
         templates = self.__GetXMLImportTemplates(elem)
         self.__ImportTemplates(packageTemplateLoader, templates, requirements, self.DirectDependencies, self.ExternalDependencies, self.DirectDefines)
 
-        if self.BaseIncludePath == self.BaseSourcePath and not self.AllowCombinedDirectory:
+        if self.BaseIncludePath.Name == self.BaseSourcePath and not self.AllowCombinedDirectory:
             raise XmlException2("Package '{0}' uses the same directory for include and source '{1}'".format(packageName, self.BaseIncludePath))
 
         self.XMLElement = elem
@@ -227,7 +257,7 @@ class XmlGenFile(XmlCommonFslBuild):
         self.__ValidateBasicDependencyCorrectness()
         self.__ValidateDefines()
 
-        self.__ResolvePaths(configDisableIncludeDirCheck, configDisableSourceDirCheck, packageFile, allowNoInclude)
+        self.__ResolvePaths(configDisableIncludeDirCheck, configDisableSourceDirCheck, packageFile, allowNoInclude, includePriority)
         # FIX: check for clashes with platform addition
         #      check for platform variant name clashes
 
@@ -313,6 +343,13 @@ class XmlGenFile(XmlCommonFslBuild):
         foundElements = xmlElement.findall("GenerateGrpcProtoFile")
         for element in foundElements:
             res.append(XmlGenFileGenerateGrpcProtoFile(log, element))
+        return res
+
+    def __GetCopyFileList(self, log: Log, xmlElement: ET.Element) -> List[XmlGenFileCopyFile]:
+        res = []  # type: List[XmlGenFileCopyFile]
+        foundElements = xmlElement.findall("CopyFile")
+        for element in foundElements:
+            res.append(XmlGenFileCopyFile(log, element))
         return res
 
     def __GetXMLPlatforms(self, requirementTypes: List[str], elem: ET.Element, ownerPackageName: str,
@@ -542,27 +579,28 @@ class XmlGenFile(XmlCommonFslBuild):
                 nameStr = "{0} ({1})".format(entry.Name, entryId)
                 raise XmlException2(errorStr.format(entry.Name))
 
-    def __ResolvePathIncludeDir(self, configDisableIncludeDirCheck: bool, allowNoInclude: bool) -> None:
+    def __ResolvePathIncludeDir(self, configDisableIncludeDirCheck: bool, allowNoInclude: bool, includePriority: IncludePriority) -> None:
         packagePath = self.PackageFile
         if packagePath is None:
             raise Exception("PackageFile can not be None")
 
-        self.IncludePath = PackagePath(IOUtil.Join(packagePath.AbsoluteDirPath, self.BaseIncludePath), packagePath.PackageRootLocation)
-        includeDirExist = os.path.isdir(self.IncludePath.AbsoluteDirPath)
-        if not includeDirExist and (os.path.exists(self.IncludePath.AbsoluteDirPath) or not (allowNoInclude or configDisableIncludeDirCheck)):
-            raise PackageMissingRequiredIncludeDirectoryException(self.IncludePath.AbsoluteDirPath)
+        includeDir = PackageIncludeDir(IOUtil.Join(packagePath.AbsoluteDirPath, self.BaseIncludePath.Name), includePriority)
+        self.IncludePath = PackageIncludePath(includeDir, packagePath.PackageRootLocation)
+        includeDirExist = os.path.isdir(self.IncludePath.AbsoluteDirPath.Name)
+        if not includeDirExist and (os.path.exists(self.IncludePath.AbsoluteDirPath.Name) or not (allowNoInclude or configDisableIncludeDirCheck)):
+            raise PackageMissingRequiredIncludeDirectoryException(self.IncludePath.AbsoluteDirPath.Name)
         if not includeDirExist and allowNoInclude:
             self.IncludePath = None
 
 
     def __ResolvePaths(self, configDisableIncludeDirCheck: bool, configDisableSourceDirCheck: bool, packagePath: PackagePath,
-                       allowNoInclude: bool) -> None:
+                       allowNoInclude: bool, includePriority: IncludePriority) -> None:
 
         rootRelativeDirPath = packagePath.RootRelativeDirPath
         if not self.IsVirtual:
             sourcePath = self.BaseSourcePath
             if self.PackageLanguage == PackageLanguage.CPP:
-                self.__ResolvePathIncludeDir(configDisableIncludeDirCheck, allowNoInclude)
+                self.__ResolvePathIncludeDir(configDisableIncludeDirCheck, allowNoInclude, includePriority)
             elif self.PackageLanguage == PackageLanguage.CSharp:
                 #sourcePath = self.Name
                 pass
@@ -577,6 +615,6 @@ class XmlGenFile(XmlCommonFslBuild):
                 raise PackageMissingRequiredSourceDirectoryException(self.SourcePath.AbsoluteDirPath)
         elif self.Type == PackageType.HeaderLibrary:
             if self.PackageLanguage == PackageLanguage.CPP:
-                self.__ResolvePathIncludeDir(configDisableIncludeDirCheck, allowNoInclude)
+                self.__ResolvePathIncludeDir(configDisableIncludeDirCheck, allowNoInclude, includePriority)
             else:
                 raise UsageErrorException("HeaderLibrary is only supported for C++")

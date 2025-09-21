@@ -34,19 +34,20 @@
 from typing import Optional
 from FslBuildGen.DataTypes import AccessType
 from FslBuildGen.DataTypes import ExternalDependencyType
-from FslBuildGen.SemanticVersion2 import SemanticVersion2
+from FslBuildGen.SemanticVersionPattern import SemanticVersionPattern
 from FslBuildGen.Packages.Unresolved.UnresolvedExternalDependencyPackageManager import UnresolvedExternalDependencyPackageManager
+from FslBuildGen.PackageIncludeDir import PackageIncludeDir
 
 class UnresolvedExternalDependency(object):
-    def __init__(self, name: str, debugName: str, targetName: str, include: Optional[str], location: Optional[str],
-                 hintPath: Optional[str], version: Optional[SemanticVersion2], publicKeyToken: Optional[str],
+    def __init__(self, name: str, debugName: str, targetName: str, includeDir: Optional[PackageIncludeDir], location: Optional[str],
+                 hintPath: Optional[str], version: Optional[SemanticVersionPattern], publicKeyToken: Optional[str],
                  processorArchitecture: Optional[str], culture: Optional[str], packageManager: Optional[UnresolvedExternalDependencyPackageManager],
                  ifCondition: Optional[str], elementType: ExternalDependencyType, accessType: AccessType, isManaged: bool = False) -> None:
         super().__init__()
         self.Name = name
         self.DebugName = debugName if debugName is not None else name
         self.TargetName = targetName if targetName is not None else "{0}::{0}".format(name)
-        self.Include = include
+        self.IncludeDir = includeDir
         self.Location = location
         self.HintPath = hintPath
         self.Version = version
@@ -62,7 +63,7 @@ class UnresolvedExternalDependency(object):
         self.IsManaged = isManaged
 
         if self.Type == ExternalDependencyType.DLL:
-            if not self.Include is None:
+            if not self.IncludeDir is None:
                 raise Exception("DLL dependency: '{0}' can not contain include paths".format(self.Name))
             if self.Access != AccessType.Public:
                 raise Exception("DLL dependency: '{0}' can only have a access type of Public".format(self.Name))

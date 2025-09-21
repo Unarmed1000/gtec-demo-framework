@@ -69,7 +69,11 @@ def DetermineEmscriptenCommands() -> CMakeEmscriptenConfig:
 def TryGetPlatformDefaultCMakeGenerator(platformName: str, compilerVersion: int) -> Optional[str]:
     if platformName == PackageConfig.PlatformNameString.UBUNTU:
         return CMakeGeneratorName.Ninja
+    elif platformName == PackageConfig.PlatformNameString.APPLE:
+        return CMakeGeneratorName.Ninja
     elif platformName == PackageConfig.PlatformNameString.YOCTO:
+        return CMakeGeneratorName.Ninja
+    elif platformName == PackageConfig.PlatformNameString.RDK_YOCTO:
         return CMakeGeneratorName.Ninja
     elif platformName == PackageConfig.PlatformNameString.FREERTOS:
         return CMakeGeneratorName.Ninja

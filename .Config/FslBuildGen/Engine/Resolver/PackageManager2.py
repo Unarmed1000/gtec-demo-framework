@@ -31,6 +31,7 @@
 #
 #****************************************************************************************************************************************************
 
+from shutil import copyfile
 from typing import Dict
 from typing import List
 from typing import Optional
@@ -242,6 +243,7 @@ class PackageManager2(object):
         packageLanguage = originalPackage.PackageLanguage
         generateList = originalPackage.GenerateList
         generateGrpcProtoFileList = originalPackage.GenerateGrpcProtoFileList
+        copyFileList = originalPackage.CopyFileList
 
         # patch the direct dependencies to match the flavor selection
         directDependencies = PackageManager2.__ToProcessedDependencyList(instance.DirectDependencies)
@@ -271,7 +273,7 @@ class PackageManager2(object):
 
         return ProcessedFactory.CreatePackage(createContext.Log, createContext.GeneratorInfo, projectContext, nameInfo, companyName, creationYear,
                                               packageFile, sourceFileHash, packageType, packageFlags, packageLanguage, generateList,
-                                              generateGrpcProtoFileList, directDependencies,
+                                              generateGrpcProtoFileList, copyFileList, directDependencies,
                                               directRequirements, directDefines, externalDependencies, path, templateType, buildCustomization,
                                               directExperimentalRecipe, instance.FlavorSelections, instance.FlavorTemplate,
                                               resolvedPlatform, directPlatformSupported, customInfo, traceContext)
@@ -391,6 +393,7 @@ class PackageManager2(object):
         packageLanguage = unresolvedPackage.PackageLanguage
         generateList = unresolvedPackage.GenerateList
         generateGrpcProtoFileList = unresolvedPackage.GenerateGrpcProtoFileList
+        copyFileList = unresolvedPackage.CopyFileList
         directDependencies = PackageManager2.__ToProcessedDependencyList2(unresolvedPackage.DirectDependencies)
         directRequirements = unresolvedPackage.DirectRequirements
         directDefines = unresolvedPackage.DirectDefines
@@ -411,8 +414,8 @@ class PackageManager2(object):
 
         return ProcessedFactory.CreatePackage(createContext.Log, createContext.GeneratorInfo, packageProjectContext, nameInfo, companyName,
                                               creationYear, packageFile, sourceFileHash, packageType, packageFlags, packageLanguage, generateList,
-                                              generateGrpcProtoFileList, directDependencies, directRequirements, directDefines, externalDependencies,
-                                              path, templateType, buildCustomization, directExperimentalRecipe, resolvedFlavorSelections,
+                                              generateGrpcProtoFileList, copyFileList, directDependencies, directRequirements, directDefines,
+                                              externalDependencies, path, templateType, buildCustomization, directExperimentalRecipe, resolvedFlavorSelections,
                                               resolvedFlavorTemplate, resolvedPlatform,
                                               directPlatformSupported, customInfo, traceContext)
 
@@ -425,9 +428,11 @@ class PackageManager2(object):
     def __ToProcessedDependency(entry: ResolvedPackageInstanceDependency) -> ProcessedPackageDependency:
         name = PackageInstanceName(entry.Package.Name.SmartValue)
         accessType = entry.SourceDependency.Access
+        outputType = entry.SourceDependency.OutputType
+        referenceOutputAssembly = entry.SourceDependency.ReferenceOutputAssembly
         flavorConstraints = entry.SourceDependency.FlavorConstraints
         ifCondition = entry.SourceDependency.IfCondition
-        return ProcessedPackageDependency(name, accessType, flavorConstraints, ifCondition)
+        return ProcessedPackageDependency(name, accessType, outputType, referenceOutputAssembly, flavorConstraints, ifCondition)
 
     @staticmethod
     def __ToProcessedDependencyList2(instanceDependencies: List[UnresolvedPackageDependency]) -> List[ProcessedPackageDependency]:
@@ -437,9 +442,11 @@ class PackageManager2(object):
     def __UnresolvedPackageDependencyToProcessedDependency(entry: UnresolvedPackageDependency) -> ProcessedPackageDependency:
         name = PackageInstanceName(entry.Name.Value)
         accessType = entry.Access
+        outputType = entry.OutputType
+        referenceOutputAssembly = entry.ReferenceOutputAssembly
         flavorConstraints = entry.FlavorConstraints
         ifCondition = entry.IfCondition
-        return ProcessedPackageDependency(name, accessType, flavorConstraints, ifCondition)
+        return ProcessedPackageDependency(name, accessType, outputType, referenceOutputAssembly, flavorConstraints, ifCondition)
 
     @staticmethod
     def __PatchResolvedPlatform(createContext: FactoryCreateContext, sourcePlatform: PackagePlatform,

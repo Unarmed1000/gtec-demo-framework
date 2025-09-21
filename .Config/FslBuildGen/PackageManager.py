@@ -214,7 +214,7 @@ class PackageManager(object):
     def __ResolvePackageDependencies(self, package: Package, originalPackageDict: Dict[PackageInstanceName, Package]) -> None:
         for dep in package.GetDirectDependencies():
             depPackage = self.__ResolvePackageDependency(package, dep.Name, originalPackageDict)
-            package.ResolvedDirectDependencies.append(PackageDependency(depPackage, dep.Access))
+            package.ResolvedDirectDependencies.append(PackageDependency(depPackage, dep.Access, dep.OutputType, dep.ReferenceOutputAssembly))
 
     def __ResolvePackageDependency(self, package: Package, depPackageName: PackageInstanceName, originalPackageDict: Dict[PackageInstanceName, Package]) -> Package:
         depPackageNameInstanceName = PackageInstanceName(depPackageName.Value)

@@ -71,6 +71,7 @@ from FslBuildGen.Config import Config
 from FslBuildGen.Context.GeneratorContext import GeneratorContext
 from FslBuildGen.DataTypes import VariantType
 from FslBuildGen.DataTypes import ClangTidyProfile
+from FslBuildGen.DataTypes import IncludePriority
 #from FslBuildGen.Exceptions import AggregateException
 from FslBuildGen.Exceptions import ExitException
 from FslBuildGen.ExternalVariantConstraints import ExternalVariantConstraints
@@ -85,6 +86,7 @@ from FslBuildGen.Generator.Report.PackageGeneratorReport import PackageGenerator
 from FslBuildGen.Generator.Report.ParsedFormatString import ParsedFormatString
 from FslBuildGen.Generator.Report.ReportVariableFormatter import ReportVariableFormatter
 from FslBuildGen.Generator.Report.StringVariableDict import StringVariableDict
+from FslBuildGen.PackageIncludeDir import PackageIncludeDir
 from FslBuildGen.ProjectId import ProjectId
 from FslBuildGen.Location.ResolvedPath import ResolvedPath
 from FslBuildGen.Log import Log
@@ -113,6 +115,10 @@ class LocalVariantInfo(object):
         self.GeneratorReportDict = generatorReportDict
         self.PythonScriptRoot = pythonScriptRoot
 
+class UniqueIncludeRecord(object):
+    def __init__(self, includeDir: PackageIncludeDir, index: int) -> None:
+        self.IncludeDir = includeDir;
+        self.Index = index
 
 def __TryGetEnvironmentVariable(virtualVariantEnvironmentCache: VirtualVariantEnvironmentCache, envVariable: str) -> str:
     res = virtualVariantEnvironmentCache.TryGetCachedValue(envVariable)
@@ -155,7 +161,7 @@ def __ExtractVariantDefines(log: Log, localVariantInfo: LocalVariantInfo, packag
 
 
 def __ExtractVariantIncludeDirs(log: Log, localVariantInfo: LocalVariantInfo,
-                                virtualVariantEnvironmentCache: VirtualVariantEnvironmentCache, package: Package) -> List[str]:
+                                virtualVariantEnvironmentCache: VirtualVariantEnvironmentCache, package: Package) -> List[PackageIncludeDir]:
     """
     Extract all static and virtual include dirs and ensure that 'dynamic' environment variables gets cached
     """
@@ -163,26 +169,26 @@ def __ExtractVariantIncludeDirs(log: Log, localVariantInfo: LocalVariantInfo,
         return []
 
     environmentVariableList = []  # type: List[str]
-    allIncludeDirs = []  # type: List[str]
+    allIncludeDirs = []  # type: List[PackageIncludeDir]
     for variant in package.ResolvedAllVariantDict.values():
         if variant.Type == VariantType.Virtual:
             if len(variant.Options) != 1:
                 raise Exception("Unsupported virtual variant type")
             parsedDeps = []  # type: List[ParsedFormatString]
             for externalDep in variant.Options[0].ExternalDependencies:
-                if externalDep.Include is not None:
-                    if externalDep.Include.startswith("$("):
-                        endIndex = externalDep.Include.find(')')
+                if externalDep.IncludeDir is not None:
+                    if externalDep.IncludeDir.Name.startswith("$("):
+                        endIndex = externalDep.IncludeDir.Name.find(')')
                         if endIndex < 0:
-                            raise Exception("external include path invalid no ending ')' in '{0}'".format(externalDep.Include))
-                        environmentVariableList.append(externalDep.Include[:endIndex+1])
-                    allIncludeDirs.append(externalDep.Include)
+                            raise Exception("external include path invalid no ending ')' in '{0}'".format(externalDep.IncludeDir.Name))
+                        environmentVariableList.append(externalDep.IncludeDir.Name[:endIndex+1])
+                    allIncludeDirs.append(externalDep.IncludeDir)
         else:
             optionName = localVariantInfo.ResolvedVariantSettingsDict[variant.Name]
             selectedOption = variant.OptionDict[optionName]
             for externalDep in selectedOption.ExternalDependencies:
-                if externalDep.Include is not None:
-                    allIncludeDirs.append(externalDep.Include)
+                if externalDep.IncludeDir is not None:
+                    allIncludeDirs.append(externalDep.IncludeDir)
 
     if package not in localVariantInfo.GeneratorReportDict:
         raise Exception("Could not find a report for package '{0}".format(package.Name))
@@ -205,7 +211,7 @@ def __ExtractVariantIncludeDirs(log: Log, localVariantInfo: LocalVariantInfo,
 
 
 def _BuildClangTidyPackageIncludePaths(log: Log, localVariantInfo: LocalVariantInfo,
-                                       virtualVariantEnvironmentCache: VirtualVariantEnvironmentCache, package: Package) -> List[str]:
+                                       virtualVariantEnvironmentCache: VirtualVariantEnvironmentCache, package: Package) -> List[PackageIncludeDir]:
     allIncludeDirs = package.ResolvedBuildAllIncludeDirs
     if allIncludeDirs is None:
         raise Exception("Package ResolvedBuildAllIncludeDirs was not resolved")
@@ -219,12 +225,13 @@ def _BuildClangTidyPackageIncludePaths(log: Log, localVariantInfo: LocalVariantI
 
     includeDirCommands = []
     for includeDir in combinedIncludeDirs:
-        if not includeDir.startswith("$("):
-            packageIncludeDir = IOUtil.Join(package.AbsolutePath, includeDir)
-            includeDirCommands.append(IOUtil.NormalizePath(packageIncludeDir))
+        if not includeDir.Name.startswith("$("):
+            packageIncludeDirName = IOUtil.Join(package.AbsolutePath, includeDir.Name)
         else:
-            packageIncludeDir = __ResolveVariables(includeDir, variableDict, virtualVariantEnvironmentCache)
-            includeDirCommands.append(IOUtil.NormalizePath(packageIncludeDir))
+            packageIncludeDirName = __ResolveVariables(includeDir.Name, variableDict, virtualVariantEnvironmentCache);
+        packageIncludeDirName = IOUtil.NormalizePath(packageIncludeDirName)
+        packageIncludeDir = PackageIncludeDir.PatchName(includeDir, packageIncludeDirName)
+        includeDirCommands.append(packageIncludeDir)
     return includeDirCommands
 
 def _BuildClangTidyPackageDefines(log: Log, localVariantInfo: LocalVariantInfo, package: Package) -> List[str]:
@@ -318,7 +325,7 @@ class TidyPackageConfig(object):
         self.PackageDefineCommands = _BuildClangTidyPackageDefines(log, localVariantInfo, package)
 
         self.AllFiles.sort(key=lambda s: s.ResolvedPath.upper())
-        self.IncludePaths.sort()
+        self.IncludePaths.sort(key=lambda s: s.Name.upper())
         self.PackageDefineCommands.sort()
 
 
@@ -437,7 +444,7 @@ class LocalTidyHelper(object):
 
 
 class ExtractedPackageConfiguration(object):
-    def __init__(self, defines: List[str], includes: List[str], systemIncludes: List[str]) -> None:
+    def __init__(self, defines: List[str], includes: List[PackageIncludeDir], systemIncludes: List[PackageIncludeDir]) -> None:
         super().__init__()
         self.Defines = defines
         self.Includes = includes
@@ -562,20 +569,20 @@ class CMakeHelper(object):
                     if define.Name not in uniquePackagesDefines:
                         uniquePackagesDefines[define.Name] = False
 
-                # A dict of all the package indluces, the value is negative if the define belongs to the package definition, positive to to indicate its from the compiler commands
+                # A dict of all the package includes, the value is negative if the define belongs to the package definition, positive to to indicate its from the compiler commands
                 # positive values can also be used to sorting the list so the include order can be restored!
-                uniquePackageIncludes = {}  # type: Dict[str, int]
+                uniquePackageIncludes = {}  # type: Dict[str, UniqueIncludeRecord]
                 if package.ResolvedBuildAllIncludeDirs is not None:
                     variableReport = localVariantInfo.GeneratorReportDict[package].VariableReport if package in localVariantInfo.GeneratorReportDict else emptyVariableReport
                     if package.AbsoluteSourcePath is not None:
-                        uniquePackageIncludes[package.AbsoluteSourcePath] = -1
+                        uniquePackageIncludes[package.AbsoluteSourcePath] = UniqueIncludeRecord(PackageIncludeDir(package.AbsoluteSourcePath, IncludePriority.After), -1)
                     for includeDir in package.ResolvedBuildAllIncludeDirs:
                         # expand and normalize the include paths
-                        includeDir = IOUtil.NormalizePath(ReportVariableFormatter.Format2(includeDir, variableReport, localVariantInfo.ResolvedVariantSettingsDict))
-                        if not IOUtil.IsAbsolutePath(includeDir):
-                            includeDir = IOUtil.Join(package.AbsolutePath, includeDir)
-                        if includeDir not in uniquePackageIncludes:
-                            uniquePackageIncludes[includeDir] = -1
+                        includeDirName = IOUtil.NormalizePath(ReportVariableFormatter.Format2(includeDir.Name, variableReport, localVariantInfo.ResolvedVariantSettingsDict))
+                        if not IOUtil.IsAbsolutePath(includeDirName):
+                            includeDirName = IOUtil.Join(package.AbsolutePath, includeDirName)
+                        if includeDirName not in uniquePackageIncludes:
+                            uniquePackageIncludes[includeDirName] = UniqueIncludeRecord(includeDir, -1)
 
 
                 if (package.NameInfo.FullName.Value in packageToCommandsDict and package.ResolvedBuildSourceFiles is not None and len(package.ResolvedBuildSourceFiles) > 0 and package.AbsolutePath is not None):
@@ -593,28 +600,27 @@ class CMakeHelper(object):
                                 if define.Name not in uniquePackagesDefines:
                                     uniquePackagesDefines[newDefine] = True
                             # merge includes
-                            for index, newInclude in enumerate(command.Includes):
-                                if newInclude not in uniquePackageIncludes:
+                            for index, newIncludeDir in enumerate(command.Includes):
+                                if newIncludeDir.Name not in uniquePackageIncludes:
                                     if index >= MagicValues.SystemIncludeBaseIndex:
                                         raise Exception("Unsupported")
-                                    uniquePackageIncludes[newInclude] = index
+                                    uniquePackageIncludes[newIncludeDir.Name] = UniqueIncludeRecord(newIncludeDir, index)
                             # merge system includes
-                            for index, newInclude in enumerate(command.SystemIncludes):
-                                if newInclude not in uniquePackageIncludes:
-                                    uniquePackageIncludes[newInclude] = MagicValues.SystemIncludeBaseIndex + index
-
+                            for index, newIncludeDir in enumerate(command.SystemIncludes):
+                                if newIncludeDir.Name not in uniquePackageIncludes:
+                                    uniquePackageIncludes[newIncludeDir.Name] = UniqueIncludeRecord(newIncludeDir, MagicValues.SystemIncludeBaseIndex + index)
 
                 newPackageDefines = [defineName for defineName, isNew in uniquePackagesDefines.items() if isNew]
                 newIncludes = []
                 newSystemIncludes = []
-                for newInclude, index in uniquePackageIncludes.items():
-                    if index >= 0:
-                        if index <= MagicValues.SystemIncludeBaseIndex:
-                            newIncludes.append(newInclude)
+                for newInclude, includeRecord in uniquePackageIncludes.items():
+                    if includeRecord.Index >= 0:
+                        if includeRecord.Index <= MagicValues.SystemIncludeBaseIndex:
+                            newIncludes.append(includeRecord.IncludeDir)
                         else:
-                            newSystemIncludes.append(newInclude)
-                newIncludes.sort()
-                newSystemIncludes.sort()
+                            newSystemIncludes.append(includeRecord.IncludeDir)
+                newIncludes.sort(key=lambda s: s.Name.lower())
+                newSystemIncludes.sort(key=lambda s: s.Name.lower())
                 packageConfigurationDict[package.NameInfo.FullName.Value] = ExtractedPackageConfiguration(newPackageDefines, newIncludes, newSystemIncludes)
         return packageConfigurationDict
 
@@ -889,7 +895,7 @@ class PerformClangTidyHelper(object):
         outputFolderSet = set()  # type: Set[str]
         for entry in outputFolders:
             if entry.Package.BaseIncludePath is not None:
-                outputFolderSet.add(IOUtil.Join(entry.OutputFolder, entry.Package.BaseIncludePath + '/'))
+                outputFolderSet.add(IOUtil.Join(entry.OutputFolder, entry.Package.BaseIncludePath.Name + '/'))
             if entry.Package.BaseSourcePath is not None:
                 outputFolderSet.add(IOUtil.Join(entry.OutputFolder, entry.Package.BaseSourcePath + '/'))
 
@@ -1045,8 +1051,8 @@ class PerformClangTidyHelper(object):
 
         variables = {}
         variables[PerformClangTidyHelper.VAR_PACKAGE_DEFINES] = _AddCmdToEachEntry("-D", packageDefines)
-        variables[PerformClangTidyHelper.VAR_INCLUDES] = _AddCmdToEachEntry("-I", ['"{0}"'.format(includePath) for includePath in packageIncludePaths])
-        variables[PerformClangTidyHelper.VAR_SYSTEM_INCLUDES] = _AddCmdToEachEntry("-isystem ", ['"{0}"'.format(includePath) for includePath in packageIncludePaths])
+        variables[PerformClangTidyHelper.VAR_INCLUDES] = _AddCmdToEachEntry("-I", ['"{0}"'.format(includePath.Name) for includePath in packageIncludePaths])
+        variables[PerformClangTidyHelper.VAR_SYSTEM_INCLUDES] = _AddCmdToEachEntry("-isystem ", ['"{0}"'.format(includePath.Name) for includePath in packageIncludePaths])
 
         # //build cmake_object_order_depends_target_FslGraphics: phony || cmake_object_order_depends_target_FslBase
 

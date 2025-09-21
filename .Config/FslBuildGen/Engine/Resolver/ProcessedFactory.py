@@ -51,6 +51,7 @@ from FslBuildGen.Packages.PackageCustomInfo import PackageCustomInfo
 from FslBuildGen.Packages.PackageProjectContext import PackageProjectContext
 from FslBuildGen.Packages.PackagePlatform import PackagePlatform
 from FslBuildGen.Packages.PackageTraceContext import PackageTraceContext
+from FslBuildGen.Packages.Unresolved.UnresolvedPackageCopyFile import UnresolvedPackageCopyFile
 from FslBuildGen.Packages.Unresolved.UnresolvedExternalDependency import UnresolvedExternalDependency
 from FslBuildGen.Packages.Unresolved.UnresolvedFilter import UnresolvedFilter
 from FslBuildGen.Packages.Unresolved.UnresolvedPackageDefine import UnresolvedPackageDefine
@@ -67,6 +68,7 @@ class ProcessedFactory(object):
                       packageType: PackageType, packageFlags: ProcessedPackageFlags, packageLanguage: PackageLanguage,
                       generateList: List[UnresolvedPackageGenerate],
                       generateGrpcProtoFileList: List[UnresolvedPackageGenerateGrpcProtoFile],
+                      copyFileList: List[UnresolvedPackageCopyFile],
                       directDependencies: List[ProcessedPackageDependency], directRequirements: List[UnresolvedPackageRequirement],
                       directDefines: List[UnresolvedPackageDefine], externalDependencies: List[UnresolvedExternalDependency],
                       path: ProcessedPackagePaths, templateType: str, buildCustomization: Dict[str, XmlGenFileBuildCustomization],
@@ -79,6 +81,6 @@ class ProcessedFactory(object):
         directDependencies = UnresolvedFilter.FilterOnConditions(log, generatorInfo, directDependencies, "Dependency")
 
         return ProcessedPackage(packageProjectContext, nameInfo, companyName, creationYear, packageFile, sourceFileHash, packageType,
-                                packageFlags, packageLanguage, generateList, generateGrpcProtoFileList, directDependencies, directRequirements,
-                                directDefines, externalDependencies, path, templateType, buildCustomization, directExperimentalRecipe,
+                                packageFlags, packageLanguage, generateList, generateGrpcProtoFileList, copyFileList, directDependencies,
+                                directRequirements, directDefines, externalDependencies, path, templateType, buildCustomization, directExperimentalRecipe,
                                 resolvedFlavorSelections, resolvedFlavorTemplate, resolvedPlatform, directPlatformSupported, customInfo, traceContext)

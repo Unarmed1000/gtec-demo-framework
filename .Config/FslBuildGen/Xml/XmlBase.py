@@ -35,10 +35,12 @@ from typing import Optional
 from typing import Set
 import xml.etree.ElementTree as ET
 from FslBuildGen.DataTypes import BoolStringHelper
+from FslBuildGen.DataTypes import IncludePriority
 from FslBuildGen.Log import Log
 from FslBuildGen.MatchUtil import MatchUtil
 from FslBuildGen.Version import Version
 from FslBuildGen.SemanticVersion2 import SemanticVersion2
+from FslBuildGen.SemanticVersionPattern import SemanticVersionPattern
 from FslBuildGen.Xml.XmlBaseInfo import XmlBaseInfo
 from FslBuildGen.Xml.Exceptions import XmlException2
 from FslBuildGen.Xml.Exceptions import XmlFormatException
@@ -48,6 +50,9 @@ class XmlBase(XmlBaseInfo):
     def __init__(self, log: Log, xmlElement: ET.Element) -> None:
         # pylint: disable=useless-super-delegation
         super().__init__(log, xmlElement)
+
+    def BaseLoad(self, xmlElement: ET.Element) -> None:
+        super().BaseLoad(xmlElement)
 
     def _CheckAttributes(self, validAttributesSet: Set[str]) -> None:
         for attributeName in self.XMLElement.attrib.keys():
@@ -125,6 +130,22 @@ class XmlBase(XmlBaseInfo):
         raise XmlFormatException("{0} expects a value of either 'true' or 'false' not '{1}'".format(attribName, strValue))
 
 
+    def _ReadIncludePriorityAttrib(self, xmlElement: ET.Element, attribName: str, defaultValue: Optional[IncludePriority] = None) -> IncludePriority:
+        """ If the attrib is there we return it
+            if its not there and defaultValue is not None we return the default value.
+            if its not there and defaultValue is None we throw a exception.
+        """
+        strValue = self._TryReadAttrib(xmlElement, attribName, None)
+        if strValue is not None:
+            res = IncludePriority.TryFromString(strValue)
+            if res is not None:
+                return res
+            raise XmlFormatException("{0} expects a value of either 'Before' or 'After' not '{1}'".format(attribName, strValue))
+        elif defaultValue is not None:
+            return defaultValue
+        raise XmlFormatException("{0} expects a value of either 'true' or 'false' not '{1}'".format(attribName, strValue))
+
+
     def _TryReadAttribAsVersion(self, xmlElement: ET.Element, attribName: str,
                                 defaultValue: Optional[Version] = None) -> Optional[Version]:
         """ Read the attrib if its available, else return defaultValue """
@@ -143,6 +164,18 @@ class XmlBase(XmlBaseInfo):
         strValue = self._TryReadAttrib(xmlElement, attribName, None)
         if strValue is not None:
             res = SemanticVersion2.TryFromString(strValue)
+            if res is None:
+                raise XmlFormatException("{0} expects a value in the format 'major[.minor[.patch[.tweak]]][-suffix]' not '{1}'".format(attribName, strValue))
+            return res
+        return defaultValue
+
+
+    def _TryReadAttribAsSemanticVersionPattern(self, xmlElement: ET.Element, attribName: str,
+                                         defaultValue: Optional[SemanticVersionPattern] = None) -> Optional[SemanticVersionPattern]:
+        """ Read the attrib if its available, else return defaultValue """
+        strValue = self._TryReadAttrib(xmlElement, attribName, None)
+        if strValue is not None:
+            res = SemanticVersionPattern.TryFromString(strValue)
             if res is None:
                 raise XmlFormatException("{0} expects a value in the format 'major[.minor[.patch[.tweak]]][-suffix]' not '{1}'".format(attribName, strValue))
             return res

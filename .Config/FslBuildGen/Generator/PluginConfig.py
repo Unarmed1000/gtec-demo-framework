@@ -178,8 +178,8 @@ class GeneratorPluginYoctoLegacy(GeneratorPluginMakefile):
         super().__init__(log, PackageConfig.PlatformNameString.YOCTO, "GNUmakefile_Yocto", False)
 
 class GeneratorPluginWindowsLegacy(GeneratorPlugin):
-    def __init__(self, log: Log) -> None:
-        super().__init__(log, PackageConfig.PlatformNameString.WINDOWS)
+    def __init__(self, log: Log, platformNameString: str = PackageConfig.PlatformNameString.WINDOWS) -> None:
+        super().__init__(log, platformNameString)
         self.InDevelopment = False
         self.ToolVersion = VisualStudioVersion.DEFAULT
         self.SupportContentBuild = True
@@ -321,6 +321,10 @@ class GeneratorPluginWindows(GeneratorPluginCMakeBase):
     def __init__(self, log: Log) -> None:
         super().__init__(log, PackageConfig.PlatformNameString.WINDOWS)
 
+class GeneratorPluginApple(GeneratorPluginCMakeBase):
+    def __init__(self, log: Log) -> None:
+        super().__init__(log, PackageConfig.PlatformNameString.APPLE)
+
 class GeneratorPluginUbuntu(GeneratorPluginCMakeBase):
     def __init__(self, log: Log) -> None:
         super().__init__(log, PackageConfig.PlatformNameString.UBUNTU)
@@ -328,6 +332,10 @@ class GeneratorPluginUbuntu(GeneratorPluginCMakeBase):
 class GeneratorPluginYocto(GeneratorPluginCMakeBase):
     def __init__(self, log: Log) -> None:
         super().__init__(log, PackageConfig.PlatformNameString.YOCTO)
+
+class GeneratorPluginRDKYocto(GeneratorPluginCMakeBase):
+    def __init__(self, log: Log) -> None:
+        super().__init__(log, PackageConfig.PlatformNameString.RDK_YOCTO)
 
 class GeneratorPluginQNX(GeneratorPluginCMakeBase):
     def __init__(self, log: Log) -> None:
@@ -365,7 +373,7 @@ class ActualPluginConfigContext(PluginConfigContext):
         self.__Log = log
         self.__ToolVersion = toolVersion
         # prepare plugins
-        self.__GeneratorPlugins = [GeneratorPluginAndroid(log), GeneratorPluginUbuntu(log),
+        self.__GeneratorPlugins = [GeneratorPluginAndroid(log), GeneratorPluginApple(log), GeneratorPluginRDKYocto(log), GeneratorPluginUbuntu(log),
                                    GeneratorPluginYocto(log), GeneratorPluginWindows(log),
                                    GeneratorPluginFreeRTOS(log), GeneratorPluginQNX(log), GeneratorPluginEmscripten(log)]
         if not allowDevelopmentPlugins:
@@ -432,6 +440,8 @@ class ActualPluginConfigContext(PluginConfigContext):
             platformName = generatorPluginDict[pluginId].PlatformName
             if platformName == PlatformNameString.WINDOWS:
                 return GeneratorPluginWindowsLegacy(self.__Log)
+            elif platformName == PlatformNameString.UBUNTU:
+                return GeneratorPluginWindowsLegacy(self.__Log, PackageConfig.PlatformNameString.UBUNTU)
         return generatorPluginDict[pluginId]
 
 

@@ -46,7 +46,7 @@ from FslBuildGen import Util
 from FslBuildGen.Build.DataTypes import CommandType
 from FslBuildGen.BuildContent.PathRecord import PathRecord
 from FslBuildGen.Config import Config
-from FslBuildGen.DataTypes import AccessType
+from FslBuildGen.DataTypes import AccessType, DependencyOutputType
 #from FslBuildGen.DataTypes import BuildVariantConfig
 from FslBuildGen.DataTypes import ExternalDependencyType
 from FslBuildGen.DataTypes import GrpcServices
@@ -59,7 +59,6 @@ from FslBuildGen.Exceptions import InternalErrorException
 from FslBuildGen.Exceptions import UnsupportedException
 from FslBuildGen.ExternalVariantConstraints import ExternalVariantConstraints
 #from FslBuildGen.Location.ResolvedPath import ResolvedPath
-#from FslBuildGen.Generator import GitIgnoreHelper
 from FslBuildGen.Generator.ExceptionsVC import PackageDuplicatedWindowsVisualStudioProjectIdException
 from FslBuildGen.Generator.GeneratorBase import GeneratorBase
 from FslBuildGen.Generator.GeneratorConfig import GeneratorConfig
@@ -67,9 +66,10 @@ from FslBuildGen.Generator.GeneratorVCTemplate import CodeTemplateVC
 from FslBuildGen.Generator.GeneratorVCTemplate import CodeTemplateProjectBatFiles
 from FslBuildGen.Generator.GeneratorVCTemplate import GeneratorVCTemplate
 from FslBuildGen.Generator.GeneratorVCTemplate import NuGetPackageConfigSnippets
+from FslBuildGen.Generator.GeneratorVCTemplate import ProjectReferenceSnippets
 from FslBuildGen.Generator.GeneratorVCTemplateManager import GeneratorVCTemplateManager
 from FslBuildGen.Generator.GeneratorVSTemplateInfo import GeneratorVSTemplateInfo
-from FslBuildGen.Generator.WindowsRegistryHelper import WindowsRegistryHelper
+from FslBuildGen.Generator.GitIgnoreFile import GitIgnoreFile
 from FslBuildGen.Generator.Report.Datatypes import FormatStringEnvironmentVariableResolveMethod
 from FslBuildGen.Generator.Report.GeneratorBuildReport import GeneratorBuildReport
 from FslBuildGen.Generator.Report.GeneratorCommandReport import GeneratorCommandReport
@@ -79,6 +79,7 @@ from FslBuildGen.Generator.Report.PackageGeneratorReport import PackageGenerator
 from FslBuildGen.Generator.Report.ParsedFormatString import ParsedFormatString
 from FslBuildGen.Generator.Report.StringVariableDict import StringVariableDict
 from FslBuildGen.Generator.VariantHelper import VariantHelper
+from FslBuildGen.Generator.WindowsRegistryHelper import WindowsRegistryHelper
 #from FslBuildGen.Location.ResolvedPath import ResolvedPath
 from FslBuildGen.Log import Log
 #from FslBuildGen.PackagePath import PackagePath
@@ -89,6 +90,7 @@ from FslBuildGen.Packages.Package import PackagePlatformVariant
 from FslBuildGen.Packages.Package import PackagePlatformVariantOption
 from FslBuildGen.Packages.PackageRequirement import PackageRequirement
 from FslBuildGen.Packages.PackagePlatformExternalDependency import PackagePlatformExternalDependency
+#from FslBuildGen.PackageIncludeDir import PackageIncludeDir
 from FslBuildGen.SharedGeneration import ToolAddedVariant
 from FslBuildGen.SharedGeneration import GEN_BUILD_ENV_FEATURE_SETTING
 from FslBuildGen.SharedGeneration import GEN_BUILD_ENV_VARIANT_SETTING
@@ -289,9 +291,9 @@ class GeneratorVC(GeneratorBase):
 
         projectionConfigurations = self.__GenerateProjectConfigurations(variantHelper, template.VariantProjectConfiguration, package)
 
-        libDepVC = self.__GenerateVCDependencies(template.ProjectReferences_1, config, package, template.ProjectExtension)
+        libDepVC = self.__GenerateVCDependencies(template.ProjectReferences, config, package, template.ProjectExtension)
         if len(libDepVC) > 0:
-            libDepVC = template.ProjectReferences.replace("##SNIPPET##", libDepVC)
+            libDepVC = template.ProjectReferences.Master.replace("##SNIPPET##", libDepVC)
 
         packageDepVC = ""
         if template.PackageReferences is not None and template.PackageReferences_1 is not None:
@@ -300,6 +302,13 @@ class GeneratorVC(GeneratorBase):
                                                               config, package, template.ProjectExtension)
             if len(packageDepVC) > 0:
                 packageDepVC = template.PackageReferences.replace("##SNIPPET##", packageDepVC)
+
+        fileReferences = ""
+        if template.FileReferences is not None and template.FileReferences_1 is not None:
+            fileReferences = self.__GenerateVCFileReferences(template.FileReferences_1,
+                                                             config, package, template.ProjectExtension)
+            if len(fileReferences) > 0:
+                fileReferences = template.FileReferences.replace("##SNIPPET##", fileReferences)
 
         excludeDirs = self.__GenerateExcludeDirs(template.ExcludePackageDirsComplexEntry, config, package)
         if template.ExcludePackageDirs is not None and len(excludeDirs) > 0:
@@ -334,6 +343,7 @@ class GeneratorVC(GeneratorBase):
         build = build.replace("##ADD_PROJECT_CONFIGURATIONS##", projectionConfigurations)
         build = build.replace("##ADD_PROJECT_REFERENCES##", libDepVC)
         build = build.replace("##ADD_PACKAGE_REFERENCES##", packageDepVC)
+        build = build.replace("##ADD_FILE_REFERENCES##", fileReferences)
         build = build.replace("##ADD_GENERATE_SECTION##", customGenerateSection)
         build = build.replace("##ADD_EXCLUDE_PACKAGE_DIRS##", excludeDirs)
         build = build.replace("##ADD_INCLUDE_FILES##", includeFiles)
@@ -934,8 +944,8 @@ class GeneratorVC(GeneratorBase):
                   defines: List[PackageDefine]) -> None:
         # add external dependencies
         for entry1 in option.ExternalDependencies:
-            if entry1.Include is not None and not entry1.Include in includeDirs:
-                includeDirs.append(entry1.Include)
+            if entry1.IncludeDir is not None and not entry1.IncludeDir.Name in includeDirs:
+                includeDirs.append(entry1.IncludeDir.Name)
                 # disabled since we did the exe links all fix
                 #if entry1.IsFirstActualUse:
                 #rVariantExtDeps.append(entry1)
@@ -954,7 +964,7 @@ class GeneratorVC(GeneratorBase):
                                          package: Package) -> str:
         if package.ResolvedBuildAllIncludeDirs is None:
             raise Exception("Invalid package '{0}' as package.ResolvedBuildAllIncludeDirs is None".format(package.NameInfo.FullName))
-        includeDirs = package.ResolvedBuildAllIncludeDirs  # type: List[str]
+        includeDirs = [entry.Name for entry in package.ResolvedBuildAllIncludeDirs]  # type: List[str]
         defines = package.ResolvedBuildAllDefines  # type: List[PackageDefine]
 
         # Process virtual variants
@@ -1133,7 +1143,9 @@ class GeneratorVC(GeneratorBase):
         return "\n".join(res) + "\n" if len(res) > 0 else ""
 
 
-    def __GenerateVCDependencies(self, snippet: str, config: Config, package: Package, projectExtension: str) -> str:
+    def __GenerateVCDependencies(self, snippets: ProjectReferenceSnippets, config: Config, package: Package, projectExtension: str) -> str:
+        dependencyDict = {x.Name: x for x in package.ResolvedAllDependencies}
+
         res = []
         if len(package.ResolvedBuildOrder) > 1:
             for entry in package.ResolvedBuildOrder:
@@ -1142,9 +1154,20 @@ class GeneratorVC(GeneratorBase):
                         raise Exception("Invalid package")
                     projectPath = self.__GenerateProjectPath(config, package, entry, projectExtension)
                     projectId = entry.CustomInfo.VisualStudioProjectGUID
+                    snippet = snippets.Reference
+                    referenceOutputAssembly = ''
+                    if entry.Name in dependencyDict:
+                        depLookup = dependencyDict[entry.Name]
+                        if snippets.Analyzer is not None and depLookup.OutputType == DependencyOutputType.Analyzer:
+                            snippet = snippets.Analyzer
+                        if snippets.AttribReferenceOutputAssembly is not None and depLookup.ReferenceOutputAssembly == False:
+                            referenceOutputAssembly = snippets.AttribReferenceOutputAssembly
+                            referenceOutputAssembly = referenceOutputAssembly.replace("##PACKAGE_DEPENDENCY_REFERENCEOUTPUTASSEMBLY_VALUE##", "false")
+
                     strContent = snippet.replace("##PACKAGE_DEPENDENCY_PROJECT_PATH##", projectPath)
                     strContent = strContent.replace("##PACKAGE_DEPENDENCY_PROJECTID##", projectId.lower())
                     strContent = strContent.replace("##PACKAGE_NAME##", entry.Name)
+                    strContent = strContent.replace("##PACKAGE_DEPENDENCY_REFERENCEOUTPUTASSEMBLY##", referenceOutputAssembly)
                     res.append(strContent)
         return "\n".join(res)
 
@@ -1183,22 +1206,39 @@ class GeneratorVC(GeneratorBase):
             result = "\n" + snippetGroup.replace("##SNIPPET##", allEntries)
         return result
 
+    def __GenerateExcludeDirSection(self, snippetList: List[str], dirList: List[str]) -> List[str]:
+        res = []  # type: List[str]
+        for snippet in snippetList:
+            for subDir in dirList:
+                subDirEx = subDir + '/'
+                subDirName = IOUtil.GetFileName(subDir)
+                strContent = snippet.replace('##DIR_NAME##', subDirName)
+                res.append(strContent)
+        return res
+
+
     def __GenerateExcludeDirs(self, snippetList: List[str], config: Config, package: Package) -> str:
-        whitelistSet = self.__GenerateExcludeDirsWhitelist(package)
         res = []  # type: List[str]
         if len(snippetList) > 0:
             if package.AbsolutePath is not None and package.PackageLanguage == PackageLanguage.CSharp:
-                subDirs = IOUtil.GetDirectoriesAt(package.AbsolutePath, True)
-                if len(subDirs) > 0:
-                    for snippet in snippetList:
+                gitignore = GitIgnoreFile.TryGetDirectories(IOUtil.Join(package.AbsolutePath, ".gitignore"))
+                if gitignore is not None:
+                    res = self.__GenerateExcludeDirSection(snippetList, gitignore.Ignored)
+                else:
+                    whitelistSet = self.__GenerateExcludeDirsWhitelist(package)
+                    subDirs = IOUtil.GetDirectoriesAt(package.AbsolutePath, True)
+                    if len(subDirs) > 0:
+                        filteredSubDirs = [] # type: List[str]
                         for subDir in subDirs:
                             subDirEx = subDir + '/'
                             if package.AbsoluteSourcePath is None or (not package.AbsoluteSourcePath.startswith(subDirEx) and subDir != package.AbsoluteSourcePath):
                                 subDirName = IOUtil.GetFileName(subDir)
                                 if subDirName not in whitelistSet:
-                                    strContent = snippet.replace('##DIR_NAME##', subDirName)
-                                    res.append(strContent)
+                                    filteredSubDirs.append(subDirName)
+                        res = self.__GenerateExcludeDirSection(snippetList, filteredSubDirs)
+
         return "\n".join(res)
+
 
     def __GenerateExcludeDirsWhitelist(self, package: Package) -> Set[str]:
         result = set() # type: Set[str]
@@ -1213,6 +1253,7 @@ class GeneratorVC(GeneratorBase):
                         includePath = includePath[:findIndex]
                         result.add(includePath)
         return result
+
 
     def __GenerateVCPackageReferences(self, snippet: str, complexSnippet: str, snippetPrivateAssets: str, snippetIncludeAssets: str,
                                       config: Config, package: Package, projectExtension: str) -> str:
@@ -1244,6 +1285,21 @@ class GeneratorVC(GeneratorBase):
             else:
                 strContent = snippet.replace("##PACKAGE_NAME##", entry.Name)
             strContent = strContent.replace("##PACKAGE_VERSION##", str(entry.Version))
+            res.append(strContent)
+        return "\n".join(res)
+
+
+    def __GenerateVCFileReferences(self, snippet: str, config: Config, package: Package, projectExtension: str) -> str:
+        fileReferences = package.ResolvedCopyFileList
+        if len(fileReferences) <= 0:
+            return ""
+        fileReferences.sort(key=lambda s: s.File.SourcePathId)
+
+        res = []
+        for entry in fileReferences:
+            if entry.File is None:
+                raise Exception("FileReference File can not be null")
+            strContent = snippet.replace("##FILE_NAME##", entry.File.SourcePath)
             res.append(strContent)
         return "\n".join(res)
 
@@ -1416,7 +1472,7 @@ class GeneratorVC(GeneratorBase):
 
         newDirs = []  # type: List[str]
         for entry in includeDirs:
-            if entry == package.BaseIncludePath:
+            if entry == package.BaseIncludePath.Name:
                 newDirs.append(entry)
             else:
                 newName = Util.ChangeToBashEnvVariables(entry)

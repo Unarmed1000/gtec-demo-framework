@@ -42,6 +42,8 @@ from FslBuildGen.Engine.Unresolved.UnresolvedPackageDependency import Unresolved
 from FslBuildGen.Engine.Unresolved.UnresolvedPackageFlavor import UnresolvedPackageFlavor
 from FslBuildGen.Engine.Unresolved.UnresolvedPackageFlavorExtension import UnresolvedPackageFlavorExtension
 from FslBuildGen.PackageFile import PackageFile
+from FslBuildGen.PackageIncludeDir import PackageIncludeDir
+from FslBuildGen.PackageIncludePath import PackageIncludePath
 from FslBuildGen.PackagePath import PackagePath
 from FslBuildGen.Packages.CompanyName import CompanyName
 from FslBuildGen.Packages.PackageCustomInfo import PackageCustomInfo
@@ -50,6 +52,7 @@ from FslBuildGen.Packages.PackagePlatform import PackagePlatform
 from FslBuildGen.Packages.PackageProjectContext import PackageProjectContext
 from FslBuildGen.Packages.PackageShortName import PackageShortName
 from FslBuildGen.Packages.PackageTraceContext import PackageTraceContext
+from FslBuildGen.Packages.Unresolved.UnresolvedPackageCopyFile import UnresolvedPackageCopyFile
 from FslBuildGen.Packages.Unresolved.UnresolvedExternalDependency import UnresolvedExternalDependency
 from FslBuildGen.Packages.Unresolved.UnresolvedPackageDefine import UnresolvedPackageDefine
 from FslBuildGen.Packages.Unresolved.UnresolvedPackageGenerate import UnresolvedPackageGenerate
@@ -73,8 +76,8 @@ class UnresolvedPackageFlags(object):
 
 
 class UnresolvedPackagePaths(object):
-    def __init__(self, includePath: Optional[PackagePath], sourcePath: Optional[PackagePath], contentPath: Optional[PackagePath],
-                 contentSourcePath: Optional[PackagePath], baseIncludePath: str, baseSourcePath: str) -> None:
+    def __init__(self, includePath: Optional[PackageIncludePath], sourcePath: Optional[PackagePath], contentPath: Optional[PackagePath],
+                 contentSourcePath: Optional[PackagePath], baseIncludePath: PackageIncludeDir, baseSourcePath: str) -> None:
         super().__init__()
         self.IncludePath = includePath
         self.SourcePath = sourcePath
@@ -89,6 +92,7 @@ class UnresolvedPackage(object):
                  packageFile: Optional[PackageFile], sourceFileHash: str, packageType: PackageType, packageFlags: UnresolvedPackageFlags,
                  packageLanguage: PackageLanguage, generateList: List[UnresolvedPackageGenerate],
                  generateGrpcProtoFileList: List[UnresolvedPackageGenerateGrpcProtoFile],
+                 copyFileList: List[UnresolvedPackageCopyFile],
                  directDependencies: List[UnresolvedPackageDependency], directRequirements: List[UnresolvedPackageRequirement],
                  directDefines: List[UnresolvedPackageDefine], externalDependencies: List[UnresolvedExternalDependency],
                  path: UnresolvedPackagePaths, templateType: str, buildCustomization: Dict[str, XmlGenFileBuildCustomization],
@@ -112,6 +116,7 @@ class UnresolvedPackage(object):
 
         self.GenerateList = generateList
         self.GenerateGrpcProtoFileList = generateGrpcProtoFileList
+        self.CopyFileList = copyFileList
 
         self.DirectDependencies = directDependencies
         self.DirectRequirements = directRequirements

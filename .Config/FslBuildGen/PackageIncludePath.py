@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
+
 #****************************************************************************************************************************************************
-# Copyright 2020 NXP
+# Copyright 2025 NXP
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -31,26 +31,32 @@
 #
 #****************************************************************************************************************************************************
 
-from typing import Optional
-from FslBuildGen.DataTypes import AccessType
-from FslBuildGen.DataTypes import DependencyOutputType
-from FslBuildGen.Engine.PackageFlavorSelections import PackageFlavorSelections
-from FslBuildGen.Engine.PackageFlavorSelections import PackageFlavorSelectionsEmpty
-from FslBuildGen.Packages.PackageInstanceName import PackageInstanceName
+from FslBuildGen import IOUtil
+from FslBuildGen.PackageIncludeDir import PackageIncludeDir
+from FslBuildGen.Exceptions import UsageErrorException
+from FslBuildGen.ToolConfig import ToolConfigPackageLocation
 
-class ProcessedPackageDependency(object):
-    def __init__(self, name: PackageInstanceName, accessType: AccessType, outputType: DependencyOutputType, referenceOutputAssembly: bool, flavorConstraints: Optional[PackageFlavorSelections] = None,
-                 ifCondition: Optional[str] = None) -> None:
+class PackageIncludePath(object):
+    def __init__(self, includeDir: PackageIncludeDir, packageLocation: ToolConfigPackageLocation, normalize: bool = True) -> None:
         super().__init__()
-        self.Name = name
-        self.FlavorConstraints = flavorConstraints if flavorConstraints is not None else PackageFlavorSelectionsEmpty.Empty
-        self.Access = accessType
-        self.OutputType = outputType
-        self.ReferenceOutputAssembly = referenceOutputAssembly
-        self.IfCondition = ifCondition
+        self.IncludeDir = includeDir
 
-    def __str__(self) -> str:
-        return "Name:{0} Constraints:{1}".format(self.Name, self.FlavorConstraints)
+        path = self.IncludeDir.Name
+        path = IOUtil.NormalizePath(path) if normalize else path
 
-    def __repr__(self) -> str:
-        return "ProcessedPackageDependency:{0}".format(str(self))
+        if not isinstance(packageLocation, ToolConfigPackageLocation):
+            raise UsageErrorException()
+
+
+        if IOUtil.IsAbsolutePath(path):
+            if not path.startswith(packageLocation.ResolvedPathEx):
+                raise UsageErrorException("The path '{0}' does not belong to the supplied location '{1}'".format(path, packageLocation.ResolvedPathEx))
+            rootRelativeDirPath = path[len(packageLocation.ResolvedPathEx):]
+            absoluteDirPath = path
+        else:
+            rootRelativeDirPath = path
+            absoluteDirPath = IOUtil.Join(packageLocation.ResolvedPath, path)
+
+        self.RootRelativeDirPath = PackageIncludeDir.PatchName(includeDir, rootRelativeDirPath)  # The root relative containing directory
+        self.AbsoluteDirPath = PackageIncludeDir.PatchName(includeDir, absoluteDirPath) # type: PackageIncludeDir
+        self.PackageRootLocation = packageLocation      # type: ToolConfigPackageLocation

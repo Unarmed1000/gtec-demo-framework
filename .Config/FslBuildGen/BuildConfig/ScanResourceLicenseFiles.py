@@ -574,7 +574,7 @@ def _ProcessDictLicenses(log: Log, licenseFilename: str, dict: Dict[str, List[Re
                 noLicenseEntries.append(entry)
             elif firstLicenseEntry is None:
                 firstLicenseEntry = entry
-            elif not firstLicenseEntry.License.Compare(entry.License):
+            elif firstLicenseEntry.License is None or not entry.License.Compare(firstLicenseEntry.License):
                 raise Exception("The license of the duplicated resource at {0} and {1} is different".format(firstLicenseEntry.SourceDirectory, entry.SourceDirectory))
 
         if len(noLicenseEntries) > 0 and firstLicenseEntry is not None:

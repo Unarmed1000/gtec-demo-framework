@@ -32,7 +32,6 @@
 #****************************************************************************************************************************************************
 
 from re import S
-from tkinter import CURRENT
 from typing import Any
 #from typing import Callable
 from typing import cast
@@ -763,7 +762,7 @@ class ToolFlowBuildDoc(AToolAppFlow):
             for namespaceRecord in namespaceRecords:
                 if len(namespaceRecord.FileContent) > 0:
                     updatedReadMeLines = namespaceRecord.FileContent
-                    projectCaptionLines = ["# {0} {1}".format(projectContext.ProjectName, projectContext.ProjectVersion)]
+                    projectCaptionLines = ["# {0} {1} Unofficial".format(projectContext.ProjectName, projectContext.ProjectVersion)]
                     if namespaceRecord != projectRootNamepaceRecord:
                         projectCaptionLines[0] = "{0} {1}".format(projectCaptionLines[0], namespaceRecord.Caption)
                         relativePathToRoot = IOUtil.RelativePath(rootDir.ResolvedPath, namespaceRecord.FileDirectoryEx)
