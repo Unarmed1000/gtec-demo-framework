@@ -348,6 +348,29 @@ def FindFileByName(directory: str, findFilename: str, ignoreDirectories: Optiona
     return filePaths
 
 
+def ContainsFileByName(directory: str, findFilename: str, ignoreDirectories: Optional[List[str]] = None) -> Optional[str]:
+    """
+    This function will find all instances of a findFilename in the directory and its subdirectories
+    :param ignoreDirectories: Will not scan any of the ignored directories.
+    """
+    filePaths = []  # type: List[str]   # List which will store all of the full filepaths.
+
+    try:
+        if ignoreDirectories is None or directory not in ignoreDirectories:
+            # Walk the tree.
+            for root, directories, files in os.walk(directory):
+                if ignoreDirectories is not None:
+                    directories[:] = [dir for dir in directories if ToUnixStylePath(os.path.join(root, dir)) not in ignoreDirectories]
+                for filename in files:
+                    if filename == findFilename:
+                        # Join the two strings in order to form the full filepath.
+                        filepath = ToUnixStylePath(os.path.join(root, filename))
+                        return filepath  # Add it to the list.
+    except StopIteration: # Python >2.5
+        pass
+    return None
+
+
 def FindFileByExtension(directory: str, extension: str, ignoreDirectories: Optional[List[str]] = None) -> List[str]:
     """
     This function will find all instances of files with the given extension in the directory and its subdirectories

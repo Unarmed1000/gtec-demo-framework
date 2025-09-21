@@ -22,13 +22,13 @@
 #* EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #****************************************************************************************************************************************************
 
-from typing import List, Optional
+from typing import List, Optional, Set
 import os
 import pathspec
 from FslBuildGen import IOUtil
 
 class GitDirResult(object):
-    def __init__(self, ignored: List[str], kept: List[str]) -> None:
+    def __init__(self, ignored: Set[str], kept: Set[str]) -> None:
         self.Ignored = ignored
         self.Kept = kept
 
@@ -49,8 +49,8 @@ class GitIgnoreFile(object):
         except (OSError, UnicodeDecodeError, pathspec.util.RecursionError):
             return None
 
-        ignored = []
-        kept = []
+        ignored = set() # type: set[str]
+        kept = set() # type: set[str]
 
         for entry in os.listdir(baseDir):
             fullPath = os.path.join(baseDir, entry)
@@ -59,9 +59,9 @@ class GitIgnoreFile(object):
                 rel_path = os.path.relpath(fullPath, baseDir)
                 # Try matching both "dir" and "dir/"
                 if spec.match_file(rel_path) or spec.match_file(rel_path + "/"):
-                    ignored.append(entry)
+                    ignored.add(entry)
                 else:
-                    kept.append(entry)
+                    kept.add(entry)
 
         return GitDirResult(ignored, kept)
 
