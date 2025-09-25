@@ -52,6 +52,9 @@ namespace Fsl
     {
       using base_type = BaseWindow;
 
+      PxSize2D m_renderSizePx;
+      PxVector2 m_renderOffsetPxf;
+
     protected:
       // NOLINTNEXTLINE(readability-identifier-naming)
       const std::shared_ptr<WindowContext> m_windowContext;
@@ -61,6 +64,8 @@ namespace Fsl
       DependencyPropertyUIColor m_propertyContentColor;
       DataBinding::TypedDependencyProperty<ItemScalePolicy> m_propertyScalePolicy{ItemScalePolicy::FitKeepAR};
       DataBinding::TypedDependencyProperty<bool> m_propertyRotateImageCW;
+      DataBinding::TypedDependencyProperty<ItemAlignment> m_propertyContentAlignmentX{ItemAlignment::Center};
+      DataBinding::TypedDependencyProperty<ItemAlignment> m_propertyContentAlignmentY{ItemAlignment::Center};
 
     public:
       // NOLINTNEXTLINE(readability-identifier-naming)
@@ -69,6 +74,10 @@ namespace Fsl
       static DataBinding::DependencyPropertyDefinition PropertyScalePolicy;
       // NOLINTNEXTLINE(readability-identifier-naming)
       static DataBinding::DependencyPropertyDefinition PropertyRotateImageCW;
+      // NOLINTNEXTLINE(readability-identifier-naming)
+      static DataBinding::DependencyPropertyDefinition PropertyContentAlignmentX;
+      // NOLINTNEXTLINE(readability-identifier-naming)
+      static DataBinding::DependencyPropertyDefinition PropertyContentAlignmentY;
 
       explicit Image(const std::shared_ptr<WindowContext>& context);
 
@@ -100,6 +109,20 @@ namespace Fsl
       }
 
       bool SetRotateImageCW(const bool value);
+
+      ItemAlignment GetContentAlignmentX() const noexcept
+      {
+        return m_propertyContentAlignmentX.Get();
+      }
+
+      bool SetContentAlignmentX(const ItemAlignment value);
+
+      ItemAlignment GetContentAlignmentY() const noexcept
+      {
+        return m_propertyContentAlignmentY.Get();
+      };
+
+      bool SetContentAlignmentY(const ItemAlignment value);
 
 
       void WinDraw(const UIDrawContext& context) override;

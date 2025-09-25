@@ -37,6 +37,7 @@
 #include <FslGraphics/Color.hpp>
 #include <FslGraphics/Sprite/ISizedSprite.hpp>
 #include <FslSimpleUI/Base/Control/Image.hpp>
+#include <FslSimpleUI/Base/ItemAlignmentUtil.hpp>
 #include <FslSimpleUI/Base/PropertyTypeFlags.hpp>
 #include <FslSimpleUI/Base/UIDrawContext.hpp>
 #include <FslSimpleUI/Base/UIScaleUtil.hpp>
@@ -54,6 +55,10 @@ namespace Fsl::UI
   TDef TClass::PropertyContentColor = TFactory::Create<UIColor, TClass, &TClass::GetContentColor, &TClass::SetContentColor>("Color");
   TDef TClass::PropertyScalePolicy = TFactory::Create<ItemScalePolicy, TClass, &TClass::GetScalePolicy, &TClass::SetScalePolicy>("ScalePolicy");
   TDef TClass::PropertyRotateImageCW = TFactory::Create<bool, TClass, &TClass::GetRotateImageCW, &TClass::SetRotateImageCW>("RotateImageCW");
+  TDef TClass::PropertyContentAlignmentX =
+    TFactory::Create<ItemAlignment, TClass, &TClass::GetContentAlignmentX, &TClass::SetContentAlignmentX>("ContentAlignmentX");
+  TDef TClass::PropertyContentAlignmentY =
+    TFactory::Create<ItemAlignment, TClass, &TClass::GetContentAlignmentY, &TClass::SetContentAlignmentY>("ContentAlignmentY");
 }
 
 namespace Fsl::UI
@@ -116,6 +121,27 @@ namespace Fsl::UI
     return changed;
   }
 
+  bool Image::SetContentAlignmentX(const ItemAlignment value)
+  {
+    const bool changed = m_propertyContentAlignmentX.Set(ThisDependencyObject(), value);
+    if (changed)
+    {
+      PropertyUpdated(PropertyType::Alignment);
+    }
+    return changed;
+  }
+
+
+  bool Image::SetContentAlignmentY(const ItemAlignment value)
+  {
+    const bool changed = m_propertyContentAlignmentY.Set(ThisDependencyObject(), value);
+    if (changed)
+    {
+      PropertyUpdated(PropertyType::Alignment);
+    }
+    return changed;
+  }
+
 
   void Image::WinDraw(const UIDrawContext& context)
   {
@@ -123,12 +149,12 @@ namespace Fsl::UI
 
     if (!m_propertyRotateImageCW.Get())
     {
-      context.CommandBuffer.Draw(m_content.Get(), context.TargetRect.Location(), RenderSizePx(), GetFinalBaseColor() * GetContentInternalColor(),
-                                 context.ClipContext);
+      context.CommandBuffer.Draw(m_content.Get(), context.TargetRect.Location() + m_renderOffsetPxf, m_renderSizePx,
+                                 GetFinalBaseColor() * GetContentInternalColor(), context.ClipContext);
     }
     else
     {
-      context.CommandBuffer.DrawRotated90CW(m_content.Get(), context.TargetRect.Location(), RenderSizePx(),
+      context.CommandBuffer.DrawRotated90CW(m_content.Get(), context.TargetRect.Location() + m_renderOffsetPxf, m_renderSizePx,
                                             GetFinalBaseColor() * GetContentInternalColor(), context.ClipContext);
     }
   }
@@ -136,7 +162,12 @@ namespace Fsl::UI
 
   PxSize2D Image::ArrangeOverride(const PxSize2D& finalSizePx)
   {
-    return m_content.Measure(finalSizePx, m_propertyScalePolicy.Get(), m_propertyRotateImageCW.Get());
+    m_renderSizePx = m_content.Measure(finalSizePx, m_propertyScalePolicy.Get(), m_propertyRotateImageCW.Get());
+    auto spaceLeftPx = finalSizePx - m_renderSizePx;
+    const PxValue offsetXPx = UI::ItemAlignmentUtil::CalcAlignmentPx(m_propertyContentAlignmentX.Get(), spaceLeftPx.X);
+    const PxValue offsetYPx = UI::ItemAlignmentUtil::CalcAlignmentPx(m_propertyContentAlignmentY.Get(), spaceLeftPx.Y);
+    m_renderOffsetPxf = TypeConverter::To<PxVector2>(PxPoint2(offsetXPx, offsetYPx));
+    return finalSizePx;
   }
 
 
@@ -152,7 +183,8 @@ namespace Fsl::UI
     using namespace DataBinding;
     auto res = DependencyObjectHelper::TryGetPropertyHandle(
       this, ThisDependencyObject(), sourceDef, PropLinkRefs(PropertyContentColor, m_propertyContentColor.ExternalColor),
-      PropLinkRefs(PropertyScalePolicy, m_propertyScalePolicy), PropLinkRefs(PropertyRotateImageCW, m_propertyRotateImageCW));
+      PropLinkRefs(PropertyScalePolicy, m_propertyScalePolicy), PropLinkRefs(PropertyRotateImageCW, m_propertyRotateImageCW),
+      PropLinkRefs(PropertyAlignmentX, m_propertyContentAlignmentX), PropLinkRefs(PropertyAlignmentY, m_propertyContentAlignmentY));
     return res.IsValid() ? res : base_type::TryGetPropertyHandleNow(sourceDef);
   }
 
@@ -163,7 +195,8 @@ namespace Fsl::UI
     using namespace DataBinding;
     auto res = DependencyObjectHelper::TrySetBinding(
       this, ThisDependencyObject(), targetDef, binding, PropLinkRefs(PropertyContentColor, m_propertyContentColor.ExternalColor),
-      PropLinkRefs(PropertyScalePolicy, m_propertyScalePolicy), PropLinkRefs(PropertyRotateImageCW, m_propertyRotateImageCW));
+      PropLinkRefs(PropertyScalePolicy, m_propertyScalePolicy), PropLinkRefs(PropertyRotateImageCW, m_propertyRotateImageCW),
+      PropLinkRefs(PropertyAlignmentX, m_propertyContentAlignmentX), PropLinkRefs(PropertyAlignmentY, m_propertyContentAlignmentY));
     return res != PropertySetBindingResult::NotFound ? res : base_type::TrySetBindingNow(targetDef, binding);
   }
 
@@ -174,5 +207,7 @@ namespace Fsl::UI
     rProperties.push_back(PropertyContentColor);
     rProperties.push_back(PropertyScalePolicy);
     rProperties.push_back(PropertyRotateImageCW);
+    rProperties.push_back(PropertyContentAlignmentX);
+    rProperties.push_back(PropertyContentAlignmentY);
   }
 }

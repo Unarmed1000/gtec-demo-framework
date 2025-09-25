@@ -32,6 +32,7 @@
  ****************************************************************************************************************************************************/
 
 #include <FslBase/BasicTypes.hpp>
+#include <FslBase/Math/Pixel/PxSize1D.hpp>
 #include <FslBase/Math/Pixel/PxValue.hpp>
 #include <FslSimpleUI/Base/ItemAlignment.hpp>
 
@@ -75,6 +76,11 @@ namespace Fsl::UI::ItemAlignmentUtil
   constexpr inline PxValue CalcAlignmentPx(const ItemAlignment alignment, const PxValue deltaPx) noexcept
   {
     return PxValue::Create(CalcAlignmentPx(alignment, deltaPx.Value));
+  }
+
+  constexpr inline PxValue CalcAlignmentPx(const ItemAlignment alignment, const PxSize1D deltaPx) noexcept
+  {
+    return PxValue::Create(CalcAlignmentPx(alignment, deltaPx.RawValue()));
   }
 }
 
