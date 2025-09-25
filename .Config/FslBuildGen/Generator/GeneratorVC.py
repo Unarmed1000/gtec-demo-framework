@@ -59,7 +59,6 @@ from FslBuildGen.Exceptions import InternalErrorException
 from FslBuildGen.Exceptions import UnsupportedException
 from FslBuildGen.ExternalVariantConstraints import ExternalVariantConstraints
 #from FslBuildGen.Location.ResolvedPath import ResolvedPath
-#from FslBuildGen.Generator import GitIgnoreHelper
 from FslBuildGen.Generator.ExceptionsVC import PackageDuplicatedWindowsVisualStudioProjectIdException
 from FslBuildGen.Generator.GeneratorBase import GeneratorBase
 from FslBuildGen.Generator.GeneratorConfig import GeneratorConfig
@@ -70,7 +69,8 @@ from FslBuildGen.Generator.GeneratorVCTemplate import NuGetPackageConfigSnippets
 from FslBuildGen.Generator.GeneratorVCTemplate import ProjectReferenceSnippets
 from FslBuildGen.Generator.GeneratorVCTemplateManager import GeneratorVCTemplateManager
 from FslBuildGen.Generator.GeneratorVSTemplateInfo import GeneratorVSTemplateInfo
-from FslBuildGen.Generator.WindowsRegistryHelper import WindowsRegistryHelper
+from FslBuildGen.Generator.GitIgnoreFile import GitDirResult
+from FslBuildGen.Generator.GitIgnoreFile import GitIgnoreFile
 from FslBuildGen.Generator.Report.Datatypes import FormatStringEnvironmentVariableResolveMethod
 from FslBuildGen.Generator.Report.GeneratorBuildReport import GeneratorBuildReport
 from FslBuildGen.Generator.Report.GeneratorCommandReport import GeneratorCommandReport
@@ -80,9 +80,11 @@ from FslBuildGen.Generator.Report.PackageGeneratorReport import PackageGenerator
 from FslBuildGen.Generator.Report.ParsedFormatString import ParsedFormatString
 from FslBuildGen.Generator.Report.StringVariableDict import StringVariableDict
 from FslBuildGen.Generator.VariantHelper import VariantHelper
+from FslBuildGen.Generator.WindowsRegistryHelper import WindowsRegistryHelper
 #from FslBuildGen.Location.ResolvedPath import ResolvedPath
 from FslBuildGen.Log import Log
 #from FslBuildGen.PackagePath import PackagePath
+from FslBuildGen.PackageListUtil import GetTopLevelPackage
 from FslBuildGen.Packages.Package import Package
 from FslBuildGen.Packages.Package import PackageDefine
 from FslBuildGen.Packages.Package import PackageExternalDependency
@@ -172,6 +174,9 @@ class GeneratorVC(GeneratorBase):
 
         self.__CheckProjectIds(packages)
 
+        self.PackageDirectorySet = GeneratorVC.__GeneratePackageDirectorySet(packages)
+        self.AllPackageTouchedDirectoriesSet = GeneratorVC.__GeneratePackageTouchDirectorySet(self.PackageDirectorySet)
+
         for package in packages:
             #if package.Type == PackageType.TopLevel:
             #    self.__GenerateLibraryBuildFile(config, package, generatorConfig.PlatformName, template.GetLibraryTemplate(package),
@@ -193,6 +198,25 @@ class GeneratorVC(GeneratorBase):
 
         self.__ValidateProjectIds(packages)
         config.LogPrintVerbose(1, "  Projects generated")
+
+
+    @staticmethod
+    def __GeneratePackageDirectorySet(packages: List[Package]) -> Set[str]:
+        topLevelPackage = GetTopLevelPackage(packages)
+        packagePathSet = set() # package path set
+        for entry in topLevelPackage.ResolvedAllDependencies:
+            if entry.Package.AbsolutePath is not None:
+                packagePathSet.add(entry.Package.AbsolutePath)
+        return packagePathSet
+
+    @staticmethod
+    def __GeneratePackageTouchDirectorySet(packagePathSet: Set[str]) -> Set[str]:
+        result = set()  # type: Set[str]
+        for path in packagePathSet:
+            parts = path.split("/")
+            for i in range(1, len(parts) + 1):
+                result.add("/".join(parts[:i]))
+        return result
 
     @staticmethod
     def AddPackageToRelevantPackagesDict(dirToRelevantPackagesDict: Dict[str, Set[Package]], absolutePath: Optional[str], package: Package) -> None:
@@ -1206,25 +1230,71 @@ class GeneratorVC(GeneratorBase):
             result = "\n" + snippetGroup.replace("##SNIPPET##", allEntries)
         return result
 
+    @staticmethod
+    def __GenerateExcludeDirSection(snippetList: List[str], dirListSet: Set[str]) -> List[str]:
+        dirList = list(dirListSet)
+        dirList.sort()
+        res = []  # type: List[str]
+        for snippet in snippetList:
+            for subDir in dirList:
+                subDirEx = subDir + '/'
+                subDirName = IOUtil.GetFileName(subDir)
+                strContent = snippet.replace('##DIR_NAME##', subDirName)
+                res.append(strContent)
+        return res
+
+
     def __GenerateExcludeDirs(self, snippetList: List[str], config: Config, package: Package) -> str:
-        whitelistSet = self.__GenerateExcludeDirsWhitelist(package)
+        allPackageTouchedDirectoriesSet = self.AllPackageTouchedDirectoriesSet
+        genFileName = config.GenFileName
+
         res = []  # type: List[str]
         if len(snippetList) > 0:
             if package.AbsolutePath is not None and package.PackageLanguage == PackageLanguage.CSharp:
-                subDirs = IOUtil.GetDirectoriesAt(package.AbsolutePath, True)
-                if len(subDirs) > 0:
-                    for snippet in snippetList:
-                        for subDir in subDirs:
-                            subDirEx = subDir + '/'
-                            if package.AbsoluteSourcePath is None or (not package.AbsoluteSourcePath.startswith(subDirEx) and subDir != package.AbsoluteSourcePath):
-                                subDirName = IOUtil.GetFileName(subDir)
-                                if subDirName not in whitelistSet:
-                                    strContent = snippet.replace('##DIR_NAME##', subDirName)
-                                    res.append(strContent)
+                gitignore = GitIgnoreFile.TryGetDirectories(IOUtil.Join(package.AbsolutePath, ".gitignore"))
+                excludeDirs = GeneratorVC.__GenerateExcludeDirList(gitignore, package, allPackageTouchedDirectoriesSet, genFileName) if gitignore is not None else GeneratorVC.__LegacyGenerateExcludeDirList(package)
+                res = GeneratorVC.__GenerateExcludeDirSection(snippetList, excludeDirs)
         return "\n".join(res)
 
+    @staticmethod
+    def __GenerateExcludeDirList(gitDirResult: GitDirResult, package: Package, allPackageTouchedDirectoriesSet: Set[str], genFileName: str) -> Set[str]:
+        if package.AbsolutePath is None:
+            return set()
+        # Base the initial exclude dir list on directories from the git ignore file that exist
+        excludeDirs = set(gitDirResult.Ignored)
 
-    def __GenerateExcludeDirsWhitelist(self, package: Package) -> Set[str]:
+        # Run through all the initially kept directories and remove them if there is a known package in it or its subdirs
+        for entry in gitDirResult.Kept:
+            fullPath = IOUtil.Join(package.AbsolutePath, entry)
+            # since we might not be doing a full package resovle we might not have all actual pakcage directories in the set
+            # so manually scan sub dirs for package files and exclude those that has at least one
+            if fullPath in allPackageTouchedDirectoriesSet or GeneratorVC.__ContainsProjectFile(fullPath, genFileName):
+                excludeDirs.add(entry)
+        return excludeDirs
+
+    @staticmethod
+    def __ContainsProjectFile(path: str, genFileName: str) -> bool:
+        return IOUtil.ContainsFileByName(path, genFileName) is not None
+
+    @staticmethod
+    def __LegacyGenerateExcludeDirList(package: Package) -> Set[str]:
+        if package.AbsolutePath is None:
+            return set()
+        whitelistSet = GeneratorVC.__GenerateExcludeDirsWhitelist(package)
+        subDirs = IOUtil.GetDirectoriesAt(package.AbsolutePath, True)
+        filteredSubDirs = set() # type: Set[str]
+        if len(subDirs) > 0:
+            for subDir in subDirs:
+                subDirEx = subDir + '/'
+                if package.AbsoluteSourcePath is None or (not package.AbsoluteSourcePath.startswith(subDirEx) and subDir != package.AbsoluteSourcePath):
+                    subDirName = IOUtil.GetFileName(subDir)
+                    if subDirName not in whitelistSet:
+                        filteredSubDirs.add(subDirName)
+        return filteredSubDirs
+
+
+    @staticmethod
+    def __GenerateExcludeDirsWhitelist(package: Package) -> Set[str]:
         result = set() # type: Set[str]
         result.add('Properties')
         if package.AbsolutePath is not None:
@@ -1236,6 +1306,8 @@ class GeneratorVC(GeneratorBase):
                     if findIndex > 0:
                         includePath = includePath[:findIndex]
                         result.add(includePath)
+        result.add('Components')
+        result.add('wwwroot')
         return result
 
 
