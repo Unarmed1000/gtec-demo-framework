@@ -22,49 +22,76 @@
 #* EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #****************************************************************************************************************************************************
 
-from typing import List, Optional, Set
+from typing import Optional, Set
 import os
-import pathspec
+import fnmatch
 from FslBuildGen import IOUtil
 
-class GitDirResult(object):
+# Try importing pathspec
+try:
+    import pathspec
+    HAS_PATHSPEC = True
+except ImportError:
+    HAS_PATHSPEC = False
+
+class GitDirResult:
     def __init__(self, ignored: Set[str], kept: Set[str]) -> None:
         self.Ignored = ignored
         self.Kept = kept
 
-
-
-class GitIgnoreFile(object):
+class GitIgnoreFile:
 
     @staticmethod
     def TryGetIgnoredDirectories(baseDir: str, gitignoreFile: str = ".gitignore") -> Optional[GitDirResult]:
         """
         Return GitDirResult(ignored, kept) of direct subdirectories of baseDir,
-        according to patterns in gitignoreFile. Returns None if the file
-        cannot be opened or parsed.
+        according to patterns in gitignoreFile. Returns None if the file cannot be opened or parsed.
+        Uses pathspec if available, otherwise falls back to simple fnmatch matching.
         """
         try:
-            with open(gitignoreFile) as f:
-                spec = pathspec.PathSpec.from_lines("gitwildmatch", f)
-        except (OSError, UnicodeDecodeError, pathspec.util.RecursionError):
+            with open(gitignoreFile, "r") as f:
+                lines = [line.strip() for line in f if line.strip() and not line.startswith("#")]
+        except (OSError, UnicodeDecodeError):
             return None
 
-        ignored = set() # type: set[str]
-        kept = set() # type: set[str]
+        ignored = set()
+        kept = set()
+
+        if HAS_PATHSPEC:
+            try:
+                spec = pathspec.PathSpec.from_lines("gitwildmatch", lines)
+            except Exception:
+                # fallback to fnmatch if pathspec fails
+                spec = None
+        else:
+            spec = None
 
         for entry in os.listdir(baseDir):
             fullPath = os.path.join(baseDir, entry)
-            if os.path.isdir(fullPath):
-                # Match relative to baseDir
+            if not os.path.isdir(fullPath):
+                continue
+
+            if spec:
+                # match relative path with and without trailing slash
                 rel_path = os.path.relpath(fullPath, baseDir)
-                # Try matching both "dir" and "dir/"
                 if spec.match_file(rel_path) or spec.match_file(rel_path + "/"):
+                    ignored.add(entry)
+                else:
+                    kept.add(entry)
+            else:
+                # fallback fnmatch
+                ignored_flag = False
+                for pattern in lines:
+                    pat = pattern.rstrip("/")
+                    if fnmatch.fnmatch(entry, pat):
+                        ignored_flag = True
+                        break
+                if ignored_flag:
                     ignored.add(entry)
                 else:
                     kept.add(entry)
 
         return GitDirResult(ignored, kept)
-
 
     @staticmethod
     def TryGetDirectories(filename: str) -> Optional[GitDirResult]:
