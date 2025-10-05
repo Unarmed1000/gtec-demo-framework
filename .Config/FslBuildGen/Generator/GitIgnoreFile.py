@@ -82,7 +82,7 @@ class GitIgnoreFile:
                 # fallback fnmatch
                 ignored_flag = False
                 for pattern in lines:
-                    pat = pattern.rstrip("/")
+                    pat = pattern.rstrip("/").lstrip("/")
                     if fnmatch.fnmatch(entry, pat):
                         ignored_flag = True
                         break
