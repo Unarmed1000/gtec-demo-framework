@@ -65,6 +65,7 @@ from FslBuildGen.Packages.Unresolved.UnresolvedPackage import UnresolvedPackageP
 from FslBuildGen.Packages.Unresolved.UnresolvedPackageDefine import UnresolvedPackageDefine
 from FslBuildGen.Packages.Unresolved.UnresolvedPackageGenerate import UnresolvedPackageGenerate
 from FslBuildGen.Packages.Unresolved.UnresolvedPackageGenerateGrpcProtoFile import UnresolvedPackageGenerateGrpcProtoFile
+from FslBuildGen.Packages.Unresolved.UnresolvedPackageIgnore import UnresolvedPackageIgnore
 from FslBuildGen.Packages.Unresolved.UnresolvedPackageRequirement import UnresolvedPackageRequirement
 from FslBuildGen.Packages.Unresolved.UnresolvedPackageVariant import UnresolvedPackageVariant
 from FslBuildGen.Xml.XmlExperimentalRecipe import XmlExperimentalRecipe
@@ -117,6 +118,7 @@ class UnresolvedFactory(object):
                                 copyFileList: List[UnresolvedPackageCopyFile],
                                 directDependencies: List[UnresolvedPackageDependency],
                                 directRequirements: List[UnresolvedPackageRequirement], directDefines: List[UnresolvedPackageDefine],
+                                directIgnores: List[UnresolvedPackageIgnore],
                                 externalDependencies: List[UnresolvedExternalDependency], path: UnresolvedPackagePaths, templateType: str,
                                 buildCustomization: Dict[str, XmlGenFileBuildCustomization], directExperimentalRecipe: Optional[XmlExperimentalRecipe],
                                 resolvedPlatform: PackagePlatform, directPlatformSupported: bool, customInfo: PackageCustomInfo,
@@ -132,7 +134,7 @@ class UnresolvedFactory(object):
 
         return UnresolvedPackage(packageProjectContext, nameInfo, companyName, creationYear, packageFile, sourceFileHash, packageType,
                                  packageFlags, packageLanguage, generateList, generateGrpcProtofileList, copyFileList, directDependencies, directRequirements,
-                                 directDefines, externalDependencies, path, templateType, buildCustomization, directExperimentalRecipe,
+                                 directDefines, directIgnores, externalDependencies, path, templateType, buildCustomization, directExperimentalRecipe,
                                  resolvedPlatform, directPlatformSupported, customInfo, traceContext)
 
 

@@ -248,6 +248,7 @@ class PackageManager2(object):
         # patch the direct dependencies to match the flavor selection
         directDependencies = PackageManager2.__ToProcessedDependencyList(instance.DirectDependencies)
         directRequirements, directDefines, externalDependencies = PackageManager2.__ExtractInstanceRequirementsAndDefinesAndExtDeps(instance, originalPackage)
+        directIgnores = originalPackage.DirectIgnores
         path = PackageManager2.__ToProcessedPackagePaths(originalPackage.Path)
         templateType = originalPackage.TemplateType
         buildCustomization = originalPackage.BuildCustomization
@@ -274,8 +275,8 @@ class PackageManager2(object):
         return ProcessedFactory.CreatePackage(createContext.Log, createContext.GeneratorInfo, projectContext, nameInfo, companyName, creationYear,
                                               packageFile, sourceFileHash, packageType, packageFlags, packageLanguage, generateList,
                                               generateGrpcProtoFileList, copyFileList, directDependencies,
-                                              directRequirements, directDefines, externalDependencies, path, templateType, buildCustomization,
-                                              directExperimentalRecipe, instance.FlavorSelections, instance.FlavorTemplate,
+                                              directRequirements, directDefines, directIgnores, externalDependencies, path, templateType,
+                                              buildCustomization, directExperimentalRecipe, instance.FlavorSelections, instance.FlavorTemplate,
                                               resolvedPlatform, directPlatformSupported, customInfo, traceContext)
 
     @staticmethod
@@ -397,6 +398,7 @@ class PackageManager2(object):
         directDependencies = PackageManager2.__ToProcessedDependencyList2(unresolvedPackage.DirectDependencies)
         directRequirements = unresolvedPackage.DirectRequirements
         directDefines = unresolvedPackage.DirectDefines
+        directIgnores = unresolvedPackage.DirectIgnores
         externalDependencies = unresolvedPackage.ExternalDependencies
         path = PackageManager2.__ToProcessedPackagePaths(unresolvedPackage.Path)
         templateType = unresolvedPackage.TemplateType
@@ -414,7 +416,7 @@ class PackageManager2(object):
 
         return ProcessedFactory.CreatePackage(createContext.Log, createContext.GeneratorInfo, packageProjectContext, nameInfo, companyName,
                                               creationYear, packageFile, sourceFileHash, packageType, packageFlags, packageLanguage, generateList,
-                                              generateGrpcProtoFileList, copyFileList, directDependencies, directRequirements, directDefines,
+                                              generateGrpcProtoFileList, copyFileList, directDependencies, directRequirements, directDefines, directIgnores,
                                               externalDependencies, path, templateType, buildCustomization, directExperimentalRecipe, resolvedFlavorSelections,
                                               resolvedFlavorTemplate, resolvedPlatform,
                                               directPlatformSupported, customInfo, traceContext)

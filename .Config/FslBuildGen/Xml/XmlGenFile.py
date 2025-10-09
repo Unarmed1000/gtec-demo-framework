@@ -80,13 +80,14 @@ from FslBuildGen.Xml.Exceptions import XmlUnsupportedPlatformException
 from FslBuildGen.Xml.XmlCommonFslBuild import XmlCommonFslBuild
 from FslBuildGen.Xml.XmlExperimentalRecipe import XmlExperimentalRecipe
 from FslBuildGen.Xml.XmlExperimentalRecipe import XmlRecipePipeline
+from FslBuildGen.Xml.XmlGenFileCopyFile import XmlGenFileCopyFile
 from FslBuildGen.Xml.XmlGenFileDefine import XmlGenFileDefine
 from FslBuildGen.Xml.XmlGenFileDependency import XmlGenFileDependency
 from FslBuildGen.Xml.XmlGenFileExternalDependency import XmlGenFileExternalDependency
 from FslBuildGen.Xml.XmlGenFileFindPackage import FakeXmlGenFileFindPackage
 from FslBuildGen.Xml.XmlGenFileGenerate import XmlGenFileGenerate
 from FslBuildGen.Xml.XmlGenFileGenerateGrpcProtoFile import XmlGenFileGenerateGrpcProtoFile
-from FslBuildGen.Xml.XmlGenFileCopyFile import XmlGenFileCopyFile
+from FslBuildGen.Xml.XmlGenFileIgnore import XmlGenFileIgnore
 from FslBuildGen.Xml.XmlGenFileRequirement import XmlGenFileRequirement
 from FslBuildGen.Xml.XmlStuff import DefaultValueName
 from FslBuildGen.Xml.XmlStuff import LocalPackageDefaultValues
@@ -136,6 +137,7 @@ class XmlGenFile(XmlCommonFslBuild):
         self.CopyFileList = [] # type: List[XmlGenFileCopyFile]
         self.DirectDependencies = []  # type: List[XmlGenFileDependency]
         self.DirectRequirements = []  # type: List[XmlGenFileRequirement]
+        self.DirectIgnores = []  # type: List[XmlGenFileIgnore]
         self.DirectDefines = []
         self.DirectExperimentalRecipe = None    # type: Optional[XmlExperimentalRecipe]
         self.Platforms = {}  # type: Dict[str, XmlGenFilePlatform]
@@ -230,6 +232,8 @@ class XmlGenFile(XmlCommonFslBuild):
         self.BuildCustomization = self.__GetBuildCustomizations(elem, packageName)
 
         templates = self.__GetXMLImportTemplates(elem)
+
+        # self.__ImportTemplates(packageTemplateLoader, templates, requirements, self.DirectDependencies, self.DirectIgnores, self.ExternalDependencies, self.DirectDefines)
         self.__ImportTemplates(packageTemplateLoader, templates, requirements, self.DirectDependencies, self.ExternalDependencies, self.DirectDefines)
 
         if self.BaseIncludePath.Name == self.BaseSourcePath and not self.AllowCombinedDirectory:
@@ -509,6 +513,7 @@ class XmlGenFile(XmlCommonFslBuild):
                           templates: List[XmlGenFileImportTemplate],
                           requirements: List[XmlGenFileRequirement],
                           dependencies: List[XmlGenFileDependency],
+                          # ignore: List[XmlGenFileIgnore],
                           externalDependencies: List[XmlGenFileExternalDependency],
                           directDefines: List[XmlGenFileDefine]) -> None:
         for template in templates:
@@ -517,6 +522,8 @@ class XmlGenFile(XmlCommonFslBuild):
                 requirements.append(reqEntry)
             for directEntry in imported.DirectDependencies:
                 dependencies.append(directEntry)
+            # for ignoreEntries in imported.DirectIgnores:
+            #     ignore.append(ignoreEntries)
             for extDepEntry in imported.ExternalDependencies:
                 externalDependencies.append(extDepEntry)
             for directDefEntry in imported.DirectDefines:

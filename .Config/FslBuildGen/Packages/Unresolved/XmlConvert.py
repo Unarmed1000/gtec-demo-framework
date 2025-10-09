@@ -66,6 +66,7 @@ from FslBuildGen.Packages.Unresolved.UnresolvedPackageCopyFile import Unresolved
 from FslBuildGen.Packages.Unresolved.UnresolvedPackageDefine import UnresolvedPackageDefine
 from FslBuildGen.Packages.Unresolved.UnresolvedPackageGenerate import UnresolvedPackageGenerate
 from FslBuildGen.Packages.Unresolved.UnresolvedPackageGenerateGrpcProtoFile import UnresolvedPackageGenerateGrpcProtoFile
+from FslBuildGen.Packages.Unresolved.UnresolvedPackageIgnore import UnresolvedPackageIgnore
 from FslBuildGen.Packages.Unresolved.UnresolvedPackageRequirement import UnresolvedPackageRequirement
 from FslBuildGen.Packages.Unresolved.UnresolvedPackageVariant import UnresolvedPackageVariant
 from FslBuildGen.Packages.Unresolved.UnresolvedPackageVariantOption import UnresolvedPackageVariantOption
@@ -74,6 +75,7 @@ from FslBuildGen.Xml.Flavor.XmlGenFileFlavorExtension import XmlGenFileFlavorExt
 from FslBuildGen.Xml.Flavor.XmlGenFileFlavorOption import XmlGenFileFlavorOption
 from FslBuildGen.Xml.XmlGenFileCopyFile import XmlGenFileCopyFile
 from FslBuildGen.Xml.XmlGenFileDefine import XmlGenFileDefine
+from FslBuildGen.Xml.XmlGenFileIgnore import XmlGenFileIgnore
 from FslBuildGen.Xml.XmlGenFileExternalDependency import XmlGenFileExternalDependency
 from FslBuildGen.Xml.XmlGenFileExternalDependencyPackageManager import XmlGenFileExternalDependencyPackageManager
 from FslBuildGen.Xml.XmlGenFileGenerate import XmlGenFileGenerate
@@ -106,6 +108,10 @@ class XmlConvert(object):
     @staticmethod
     def ToUnresolvedPackageDefine(xmlDefine: XmlGenFileDefine) -> UnresolvedPackageDefine:
         return UnresolvedPackageDefine(xmlDefine.Name, xmlDefine.Value, xmlDefine.Access)
+
+    @staticmethod
+    def ToUnresolvedPackageIgnore(xmlIgnore: XmlGenFileIgnore) -> UnresolvedPackageIgnore:
+        return UnresolvedPackageIgnore(xmlIgnore.Path)
 
     @staticmethod
     def ToUnresolvedPackageVariant(xmlVariant: XmlGenFileVariant) -> UnresolvedPackageVariant:
@@ -184,6 +190,7 @@ class XmlConvert(object):
         directDependencies = XmlConvert.ToUnresolvedPackageDependencyList(xmlValue.DirectDependencies, allowInternalNames)
         directRequirements = XmlConvert.ToUnresolvedPackageRequirementList(xmlValue.DirectRequirements)
         directDefines = XmlConvert.ToUnresolvedPackageDefineList(xmlValue.DirectDefines)
+        directIgnores = XmlConvert.ToUnresolvedPackageIgnoreList(xmlValue.DirectIgnores)
         externalDependencies = XmlConvert.ToUnresolvedExternalDependencyList(xmlValue.ExternalDependencies)
         path = UnresolvedPackagePaths(xmlValue.IncludePath, xmlValue.SourcePath, xmlValue.ContentPath, xmlValue.ContentSourcePath,
                                       xmlValue.BaseIncludePath, xmlValue.BaseSourcePath)
@@ -201,7 +208,7 @@ class XmlConvert(object):
 
         return UnresolvedFactory.CreateUnresolvedPackage(createContext, packageProjectContext, nameInfo, companyName, creationYear, packageFile,
                                                          sourceFileHash, packageType, packageFlags, packageLanguage, generateList, generateGrpcProtoFileList,
-                                                         copyFileList, directDependencies, directRequirements, directDefines, externalDependencies,
+                                                         copyFileList, directDependencies, directRequirements, directDefines, directIgnores, externalDependencies,
                                                          path, templateType, buildCustomization, directExperimentalRecipe, resolvedPlatform,
                                                          resolvedPlatformDirectSupported, packageCustomInfo, packageTraceContext)
 
@@ -216,6 +223,10 @@ class XmlConvert(object):
     @staticmethod
     def ToUnresolvedPackageDefineList(xmlList: List[XmlGenFileDefine]) -> List[UnresolvedPackageDefine]:
         return [XmlConvert.ToUnresolvedPackageDefine(entry) for entry in xmlList]
+
+    @staticmethod
+    def ToUnresolvedPackageIgnoreList(xmlList: List[XmlGenFileIgnore]) -> List[UnresolvedPackageIgnore]:
+        return [XmlConvert.ToUnresolvedPackageIgnore(entry) for entry in xmlList]
 
     @staticmethod
     def ToUnresolvedPackageRequirementList(xmlList: List[XmlGenFileRequirement]) -> List[UnresolvedPackageRequirement]:

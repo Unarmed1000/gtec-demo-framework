@@ -55,6 +55,7 @@ from FslBuildGen.Packages.Unresolved.UnresolvedPackageCopyFile import Unresolved
 from FslBuildGen.Packages.Unresolved.UnresolvedExternalDependency import UnresolvedExternalDependency
 from FslBuildGen.Packages.Unresolved.UnresolvedPackageDefine import UnresolvedPackageDefine
 from FslBuildGen.Packages.Unresolved.UnresolvedPackageGenerate import UnresolvedPackageGenerate
+from FslBuildGen.Packages.Unresolved.UnresolvedPackageIgnore import UnresolvedPackageIgnore
 from FslBuildGen.Packages.Unresolved.UnresolvedPackageGenerateGrpcProtoFile import UnresolvedPackageGenerateGrpcProtoFile
 from FslBuildGen.Packages.Unresolved.UnresolvedPackageRequirement import UnresolvedPackageRequirement
 from FslBuildGen.Xml.XmlExperimentalRecipe import XmlExperimentalRecipe
@@ -94,6 +95,7 @@ class ProcessedPackage(object):
                  copyFileList: List[UnresolvedPackageCopyFile],
                  directDependencies: List[ProcessedPackageDependency],
                  directRequirements: List[UnresolvedPackageRequirement], directDefines: List[UnresolvedPackageDefine],
+                 directIgnores: List[UnresolvedPackageIgnore],
                  externalDependencies: List[UnresolvedExternalDependency], path: ProcessedPackagePaths, templateType: str,
                  buildCustomization: Dict[str, XmlGenFileBuildCustomization], directExperimentalRecipe: Optional[XmlExperimentalRecipe],
                  resolvedFlavorSelections: PackageFlavorSelections, resolvedFlavorTemplate: ResolvedPackageTemplate,
@@ -121,6 +123,7 @@ class ProcessedPackage(object):
         self.DirectDependencies = directDependencies
         self.DirectRequirements = directRequirements
         self.DirectDefines = directDefines
+        self.DirectIgnores = directIgnores
         self.ExternalDependencies = externalDependencies
 
         self.Path = path

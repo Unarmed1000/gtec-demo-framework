@@ -151,6 +151,7 @@ class Package(object):
         self.IsVirtual = unresolvedPackage.Flags.IsVirtual
         self.PlatformDefaultSupportedValue = unresolvedPackage.Flags.PlatformDefaultSupportedValue
         self.DirectDefines = unresolvedPackage.DirectDefines
+        self.DirectIgnores = unresolvedPackage.DirectIgnores
         self.Path = unresolvedPackage.PackageFile # type: Optional[PackagePath]
         self.AbsolutePath = None if unresolvedPackage.PackageFile is None else unresolvedPackage.PackageFile.AbsoluteDirPath
         self.AbsoluteIncludePath = None if unresolvedPackage.Path.IncludePath is None else unresolvedPackage.Path.IncludePath.AbsoluteDirPath

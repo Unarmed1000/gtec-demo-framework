@@ -57,6 +57,7 @@ from FslBuildGen.Packages.Unresolved.UnresolvedFilter import UnresolvedFilter
 from FslBuildGen.Packages.Unresolved.UnresolvedPackageDefine import UnresolvedPackageDefine
 from FslBuildGen.Packages.Unresolved.UnresolvedPackageGenerate import UnresolvedPackageGenerate
 from FslBuildGen.Packages.Unresolved.UnresolvedPackageGenerateGrpcProtoFile import UnresolvedPackageGenerateGrpcProtoFile
+from FslBuildGen.Packages.Unresolved.UnresolvedPackageIgnore import UnresolvedPackageIgnore
 from FslBuildGen.Packages.Unresolved.UnresolvedPackageRequirement import UnresolvedPackageRequirement
 from FslBuildGen.Xml.XmlExperimentalRecipe import XmlExperimentalRecipe
 from FslBuildGen.Xml.XmlStuff import XmlGenFileBuildCustomization
@@ -70,7 +71,8 @@ class ProcessedFactory(object):
                       generateGrpcProtoFileList: List[UnresolvedPackageGenerateGrpcProtoFile],
                       copyFileList: List[UnresolvedPackageCopyFile],
                       directDependencies: List[ProcessedPackageDependency], directRequirements: List[UnresolvedPackageRequirement],
-                      directDefines: List[UnresolvedPackageDefine], externalDependencies: List[UnresolvedExternalDependency],
+                      directDefines: List[UnresolvedPackageDefine], directIgnores: List[UnresolvedPackageIgnore],
+                      externalDependencies: List[UnresolvedExternalDependency],
                       path: ProcessedPackagePaths, templateType: str, buildCustomization: Dict[str, XmlGenFileBuildCustomization],
                       directExperimentalRecipe: Optional[XmlExperimentalRecipe], resolvedFlavorSelections: PackageFlavorSelections,
                       resolvedFlavorTemplate: ResolvedPackageTemplate, resolvedPlatform: PackagePlatform, directPlatformSupported: bool,
@@ -82,5 +84,6 @@ class ProcessedFactory(object):
 
         return ProcessedPackage(packageProjectContext, nameInfo, companyName, creationYear, packageFile, sourceFileHash, packageType,
                                 packageFlags, packageLanguage, generateList, generateGrpcProtoFileList, copyFileList, directDependencies,
-                                directRequirements, directDefines, externalDependencies, path, templateType, buildCustomization, directExperimentalRecipe,
-                                resolvedFlavorSelections, resolvedFlavorTemplate, resolvedPlatform, directPlatformSupported, customInfo, traceContext)
+                                directRequirements, directDefines, directIgnores, externalDependencies, path, templateType, buildCustomization,
+                                directExperimentalRecipe, resolvedFlavorSelections, resolvedFlavorTemplate, resolvedPlatform,
+                                directPlatformSupported, customInfo, traceContext)

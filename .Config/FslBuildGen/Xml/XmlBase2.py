@@ -47,6 +47,7 @@ from FslBuildGen.Xml.XmlGenFileDefine import XmlGenFileDefine
 from FslBuildGen.Xml.XmlGenFileDependency import XmlGenFileDependency
 from FslBuildGen.Xml.XmlGenFileExternalDependency import XmlGenFileExternalDependency
 from FslBuildGen.Xml.XmlGenFileExternalDependency import FakeXmlGenFileExternalDependencyCMakeFindModern
+from FslBuildGen.Xml.XmlGenFileIgnore import XmlGenFileIgnore
 from FslBuildGen.Xml.XmlGenFileFindPackage import XmlGenFileFindPackage
 
 
@@ -74,6 +75,7 @@ class XmlBase2(XmlBase):
         self.ExternalDependencies = self.__GetXMLExternalDependencies(xmlElement)
         self.DirectDefines = self.__GetXMLDefines(xmlElement)
         self.DirectDependencies = self._GetXMLDependencies(xmlElement)
+        self.DirectIgnores = self.__GetXMLIgnores(xmlElement)
 
     def __GetXMLExternalDependencies(self, xmlElement: ET.Element) -> List[XmlGenFileExternalDependency]:
         dependencies = []
@@ -109,6 +111,15 @@ class XmlBase2(XmlBase):
                 elif child.tag == 'CPPDefine':
                     # todo log warning here
                     dependencies.append(XmlGenFileDefine(self.Log, child))
+        return dependencies
+
+
+    def __GetXMLIgnores(self, xmlElement: ET.Element) -> List[XmlGenFileIgnore]:
+        dependencies = []
+        if xmlElement is not None:
+            for child in xmlElement:
+                if child.tag == 'Ignore':
+                    dependencies.append(XmlGenFileIgnore(self.Log, child))
         return dependencies
 
 

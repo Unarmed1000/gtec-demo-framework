@@ -1253,6 +1253,8 @@ class GeneratorVC(GeneratorBase):
             if package.AbsolutePath is not None and package.PackageLanguage == PackageLanguage.CSharp:
                 gitignore = GitIgnoreFile.TryGetDirectories(IOUtil.Join(package.AbsolutePath, ".gitignore"))
                 excludeDirs = GeneratorVC.__GenerateExcludeDirList(gitignore, package, allPackageTouchedDirectoriesSet, genFileName) if gitignore is not None else GeneratorVC.__LegacyGenerateExcludeDirList(package)
+                for ignoreItem in package.DirectIgnores:
+                    excludeDirs.add(ignoreItem.Path)
                 res = GeneratorVC.__GenerateExcludeDirSection(snippetList, excludeDirs)
         return "\n".join(res)
 
