@@ -233,7 +233,7 @@ class GeneratorVC(GeneratorBase):
 
 
     def __DetectVS10SDKVersion(self, log: Log, vsVersion: int) -> Optional[str]:
-        if vsVersion != VisualStudioVersion.VS2017 and vsVersion != VisualStudioVersion.VS2019 and vsVersion != VisualStudioVersion.VS2022:
+        if vsVersion != VisualStudioVersion.VS2017 and vsVersion != VisualStudioVersion.VS2019 and vsVersion != VisualStudioVersion.VS2022 and vsVersion != VisualStudioVersion.VS2026:
             return None
         windows10SDKVersion = GeneratorVCUtil.TryGetWindows10SDKVersion(log)
         if windows10SDKVersion is not None:

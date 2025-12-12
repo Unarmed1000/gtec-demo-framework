@@ -122,6 +122,8 @@ def GetCompilerShortIdFromGeneratorName(generatorName: str) -> str:
         return "VS2019_X64"
     elif generatorName == CMakeGeneratorName.VisualStudio2022_X64:
         return "VS2022_X64"
+    elif generatorName == CMakeGeneratorName.VisualStudio2026_X64:
+        return "VS2026_X64"
     elif generatorName == CMakeGeneratorName.Android:
         # For android we utilize a combination of the SDK and NDK version for the unique 'toolchain' name
         theId = AndroidUtil.GetSDKNDKId()
@@ -156,7 +158,7 @@ def DeterminePlatformArguments(platformName: str) -> List[str]:
 
 def DetermineGeneratorArguments(cmakeGeneratorName: str, platformName: str) -> List[str]:
     res = DeterminePlatformArguments(platformName)
-    if cmakeGeneratorName != CMakeGeneratorName.VisualStudio2019_X64 and cmakeGeneratorName != CMakeGeneratorName.VisualStudio2022_X64:
+    if cmakeGeneratorName != CMakeGeneratorName.VisualStudio2019_X64 and cmakeGeneratorName != CMakeGeneratorName.VisualStudio2022_X64 and cmakeGeneratorName != CMakeGeneratorName.VisualStudio2026_X64:
         return res
     # for now we always use x64
     res.append("-A")
@@ -191,7 +193,8 @@ def GetNativeBuildThreadArguments(cmakeGeneratorName: str, numBuildThreads: int)
     elif (cmakeGeneratorName == CMakeGeneratorName.VisualStudio2015_X64 or
           cmakeGeneratorName == CMakeGeneratorName.VisualStudio2017_X64 or
           cmakeGeneratorName == CMakeGeneratorName.VisualStudio2019_X64 or
-          cmakeGeneratorName == CMakeGeneratorName.VisualStudio2022_X64):
+          cmakeGeneratorName == CMakeGeneratorName.VisualStudio2022_X64 or
+          cmakeGeneratorName == CMakeGeneratorName.VisualStudio2026_X64):
         return ['/maxcpucount:{0}'.format(numBuildThreads)]
     return []
 
@@ -206,7 +209,8 @@ def GetGeneratorMultiConfigCapabilities(cmakeGeneratorName: str) -> CMakeGenerat
     elif (cmakeGeneratorName == CMakeGeneratorName.VisualStudio2015_X64 or
           cmakeGeneratorName == CMakeGeneratorName.VisualStudio2017_X64 or
           cmakeGeneratorName == CMakeGeneratorName.VisualStudio2019_X64 or
-          cmakeGeneratorName == CMakeGeneratorName.VisualStudio2022_X64):
+          cmakeGeneratorName == CMakeGeneratorName.VisualStudio2022_X64 or
+          cmakeGeneratorName == CMakeGeneratorName.VisualStudio2026_X64):
         return CMakeGeneratorMultiConfigCapability.Yes
     # Since we dont know, we just return false
     return CMakeGeneratorMultiConfigCapability.Unknown

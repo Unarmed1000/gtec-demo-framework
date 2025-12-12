@@ -491,7 +491,8 @@ class CMakeAndBuildTask(BasicTask):
                 return CMakeBuilderNinja(generatorContext, buildThreads)
             return CMakeBuilderMake(generatorContext, buildThreads)
         isMSVC = (generatorName == CMakeGeneratorName.VisualStudio2015_X64 or generatorName == CMakeGeneratorName.VisualStudio2017_X64 or
-                  generatorName == CMakeGeneratorName.VisualStudio2019_X64 or generatorName == CMakeGeneratorName.VisualStudio2022_X64)
+                  generatorName == CMakeGeneratorName.VisualStudio2019_X64 or generatorName == CMakeGeneratorName.VisualStudio2022_X64 or
+                  generatorName == CMakeGeneratorName.VisualStudio2022_X64)
         # The generic handler does not really apply proper threaded builds, so we use the old one for MSVC
         if generatorContext.CMakeConfig.CMakeVersion < CMakeBuilderGeneric.MINIMUM_VERSION or isMSVC:
             if isMSVC:

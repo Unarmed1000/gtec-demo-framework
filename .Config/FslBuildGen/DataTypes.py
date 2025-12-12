@@ -260,9 +260,10 @@ class VisualStudioVersion:
     VS2017 = 2017
     VS2019 = 2019
     VS2022 = 2022
-    DEFAULT = VS2022
+    VS2026 = 2026
+    DEFAULT = VS2026
 
-    AllEntries = [VS2015, VS2017, VS2019, VS2022]
+    AllEntries = [VS2015, VS2017, VS2019, VS2022, VS2026]
 
     @staticmethod
     def ToString(value: int) -> str:
@@ -274,6 +275,8 @@ class VisualStudioVersion:
             return "2019"
         elif value == VisualStudioVersion.VS2022:
             return "2022"
+        elif value == VisualStudioVersion.VS2026:
+            return "2026"
         return "Unknown"
 
     @staticmethod
@@ -295,6 +298,8 @@ class VisualStudioVersion:
             return VisualStudioVersion.VS2019
         elif strValue == "2022":
             return VisualStudioVersion.VS2022
+        elif strValue == "2026":
+            return VisualStudioVersion.VS2026
         return None
 
 
