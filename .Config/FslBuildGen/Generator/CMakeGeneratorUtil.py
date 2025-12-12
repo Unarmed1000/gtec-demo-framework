@@ -452,7 +452,6 @@ def __BuildTargetIncludeDirectories(toolConfig: ToolConfig,
         accessString = "PRIVATE" if not package.IsVirtual else "INTERFACE"
         privateIncludeDir = "\n" + __GenerateDirEntryString(accessString, priIncPath, templatePackageTargetIncludeDirEntry)
     for privEntry in package.ResolvedBuildDirectPrivateIncludeDirs:
-        print("************* fix fix fix fix")
         if currentIncludePriority == IncludePriority.After:
             priIncPath = __GetPackageIncludePath(toolConfig, package, privEntry.ResolvedPath, pathType)
             accessString = "PRIVATE" if not package.IsVirtual else "INTERFACE"
