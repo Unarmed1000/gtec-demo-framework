@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright 2021 NXP
 # All rights reserved.
 #
@@ -29,34 +28,43 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-from typing import List
-from typing import Optional
-from FslBuildGen import IOUtil
-from FslBuildGen import Util
+
+from FslBuildGen import IOUtil, Util
 from FslBuildGen.BannedCommands import BannedCommands
 from FslBuildGen.BuildExternal.Commands.PackageRecipeValidateCommand import PackageRecipeValidateCommand
-from FslBuildGen.BuildExternal.Commands.PackageRecipeValidateCommandFindExecutableFileInPathAddOnErrorWarning import PackageRecipeValidateCommandFindExecutableFileInPathAddOnErrorWarning
+from FslBuildGen.BuildExternal.Commands.PackageRecipeValidateCommandFindExecutableFileInPathAddOnErrorWarning import (
+    PackageRecipeValidateCommandFindExecutableFileInPathAddOnErrorWarning,
+)
 from FslBuildGen.DataTypes import BuildRecipeValidateCommand
 
+
 class PackageRecipeValidateCommandFindExecutableFileInPath(PackageRecipeValidateCommand):
-    def __init__(self, name: str, alternatives: List[str], expectedPath: Optional[str], minVersion: Optional[str], versionCommand: Optional[str],
-                 versionRegEx: Optional[str], versionSplitChar: str,
-                 addOnErrorWarning: List[PackageRecipeValidateCommandFindExecutableFileInPathAddOnErrorWarning], help: Optional[str]) -> None:
+    def __init__(
+        self,
+        name: str,
+        alternatives: list[str],
+        expectedPath: str | None,
+        minVersion: str | None,
+        versionCommand: str | None,
+        versionRegEx: str | None,
+        versionSplitChar: str,
+        addOnErrorWarning: list[PackageRecipeValidateCommandFindExecutableFileInPathAddOnErrorWarning],
+        help: str | None,
+    ) -> None:
         super().__init__("FindFileInPath", BuildRecipeValidateCommand.FindExecutableFileInPath, help)
 
         self.__ValidateName(name)
 
         if expectedPath is not None:
-            if '\\' in expectedPath:
-                raise Exception("A path can not contain backslash '\\': '{0}'".format(expectedPath))
-            if expectedPath.startswith('/'):
-                raise Exception("A path can not start with a slash '/': '{0}'".format(expectedPath))
-            if expectedPath.endswith('/'):
-                raise Exception("A path can not end with a slash '/': '{0}'".format(expectedPath))
+            if "\\" in expectedPath:
+                raise Exception(f"A path can not contain backslash '\\': '{expectedPath}'")
+            if expectedPath.startswith("/"):
+                raise Exception(f"A path can not start with a slash '/': '{expectedPath}'")
+            if expectedPath.endswith("/"):
+                raise Exception(f"A path can not end with a slash '/': '{expectedPath}'")
             expectedPath = IOUtil.NormalizePath(expectedPath)
-
 
         self.Name = name
         self.Alternatives = alternatives
@@ -70,19 +78,18 @@ class PackageRecipeValidateCommandFindExecutableFileInPath(PackageRecipeValidate
 
         self.__ValidateVersionCheck()
 
-
     def __ValidateName(self, name: str) -> None:
-        if '\\' in name or '/' in name:
-            raise Exception("A filename can not contain backslash '\\' or slash '/': '{0}'".format(name))
+        if "\\" in name or "/" in name:
+            raise Exception(f"A filename can not contain backslash '\\' or slash '/': '{name}'")
         trimmed = name.strip()
         if trimmed != name:
-            raise Exception("Name contained leading or ending whitespaces'{0}'".format(name))
+            raise Exception(f"Name contained leading or ending whitespaces'{name}'")
         if len(name) <= 0:
             raise Exception("Name length must be greater than zero")
         if not Util.IsValidCommandName(name):
-            raise Exception("Name must start with a a-z or A-Z and can only contain a-z,A-Z,0-9,_ and - '{0}'".format(name))
+            raise Exception(f"Name must start with a a-z or A-Z and can only contain a-z,A-Z,0-9,_ and - '{name}'")
         if name.lower() in BannedCommands.Commands:
-            raise Exception("The command '{0}' is banned".format(name))
+            raise Exception(f"The command '{name}' is banned")
 
     def __ValidateVersionCheck(self) -> None:
         if self.MinVersion is None and self.VersionCommand is None and self.VersionRegEx is None:
@@ -95,7 +102,7 @@ class PackageRecipeValidateCommandFindExecutableFileInPath(PackageRecipeValidate
                 missingAttribs.append("VersionCommand")
             if self.VersionRegEx is None:
                 missingAttribs.append("VersionRegEx")
-            raise Exception("{0} are not defined".format(", ".join(missingAttribs)))
+            raise Exception("{} are not defined".format(", ".join(missingAttribs)))
         if self.MinVersion is not None:
             trimmed = self.MinVersion.strip()
             if trimmed != self.MinVersion:

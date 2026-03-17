@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright 2018 NXP
 # All rights reserved.
 #
@@ -29,10 +28,9 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-from typing import List
-from typing import Optional
+
 from FslBuildGen import IOUtil
 from FslBuildGen.BuildExternal.PipelineBasicCommand import PipelineBasicCommand
 from FslBuildGen.BuildExternal.PipelineInfo import PipelineInfo
@@ -42,16 +40,18 @@ from FslBuildGen.BuildExternal.PipelineJoinCommandDelete import PipelineJoinComm
 from FslBuildGen.BuildExternal.PipelineJoinCommandGitApply import PipelineJoinCommandGitApply
 from FslBuildGen.DataTypes import BuildRecipePipelineCommand
 from FslBuildGen.Log import Log
-from FslBuildGen.Xml.XmlExperimentalRecipe import XmlRecipePipelineCommand
-from FslBuildGen.Xml.XmlExperimentalRecipe import XmlRecipePipelineJoinCommand
-from FslBuildGen.Xml.XmlExperimentalRecipe import XmlRecipePipelineJoinCommandCopy
-from FslBuildGen.Xml.XmlExperimentalRecipe import XmlRecipePipelineJoinCommandDelete
-from FslBuildGen.Xml.XmlExperimentalRecipe import XmlRecipePipelineJoinCommandGitApply
-from FslBuildGen.Xml.XmlExperimentalRecipe import XmlRecipePipelineJoinCommandUnpack
+from FslBuildGen.Xml.XmlExperimentalRecipe import (
+    XmlRecipePipelineCommand,
+    XmlRecipePipelineJoinCommand,
+    XmlRecipePipelineJoinCommandCopy,
+    XmlRecipePipelineJoinCommandDelete,
+    XmlRecipePipelineJoinCommandGitApply,
+    XmlRecipePipelineJoinCommandUnpack,
+)
 
 
 class PipelineCommand(PipelineBasicCommand):
-    def __init__(self, log: Log, sourceCommand: Optional[XmlRecipePipelineCommand], pipelineInfo: PipelineInfo) -> None:
+    def __init__(self, log: Log, sourceCommand: XmlRecipePipelineCommand | None, pipelineInfo: PipelineInfo) -> None:
         super().__init__(log, sourceCommand, pipelineInfo)
         self.Skip = False
         self.AutoCreateDstDirectory = True
@@ -61,7 +61,6 @@ class PipelineCommand(PipelineBasicCommand):
             self.FinalDstPath = IOUtil.Join(self.Info.CombinedDstRootPath, sourceCommand.OutputPath)
         self.JoinCommandList = [] if sourceCommand is None else self.__CreateJoinCommandList(sourceCommand.JoinCommandList)
 
-
     def Execute(self) -> None:
         if self.AutoCreateDstDirectory:
             self._CreateDirectory(self.Info.DstRootPath)
@@ -70,28 +69,24 @@ class PipelineCommand(PipelineBasicCommand):
             self.DoExecute()
             self.__ExcuteJoin()
         elif self.SourceCommand is not None:
-            self.LogPrint("Skipping command '{0}'".format(self.SourceCommand.CommandName))
+            self.LogPrint(f"Skipping command '{self.SourceCommand.CommandName}'")
         else:
             self.LogPrint("Skipping command")
 
-
     def DoExecute(self) -> None:
-        """ The base implementation does nothing """
+        """The base implementation does nothing"""
         pass
-
 
     def __ExcuteJoin(self) -> None:
         for joinCommand in self.JoinCommandList:
             joinCommand.Execute()
 
-
-    def __CreateJoinCommandList(self, sourceJoinCommandList: List[XmlRecipePipelineJoinCommand]) -> List[PipelineJoinCommand]:
-        commandList = []  # type: List[PipelineJoinCommand]
+    def __CreateJoinCommandList(self, sourceJoinCommandList: list[XmlRecipePipelineJoinCommand]) -> list[PipelineJoinCommand]:
+        commandList: list[PipelineJoinCommand] = []
         for sourceJoinCommand in sourceJoinCommandList:
             command = self.__JoinCommand(sourceJoinCommand)
             commandList.append(command)
         return commandList
-
 
     def __JoinCommand(self, sourceCommand: XmlRecipePipelineJoinCommand) -> PipelineJoinCommand:
         if sourceCommand.CommandType == BuildRecipePipelineCommand.JoinCopy:
@@ -111,4 +106,4 @@ class PipelineCommand(PipelineBasicCommand):
             if not isinstance(sourceCommand, XmlRecipePipelineJoinCommandDelete):
                 raise Exception("Invalid command type")
             return PipelineJoinCommandDelete(self.Log, sourceCommand, self.Info, self.FinalDstPath)
-        raise Exception("Unsupported join command '{0}'({1}) in '{2}'".format(sourceCommand.CommandName, sourceCommand.CommandType, self.Info.SourceRecipe.FullName))
+        raise Exception(f"Unsupported join command '{sourceCommand.CommandName}'({sourceCommand.CommandType}) in '{self.Info.SourceRecipe.FullName}'")

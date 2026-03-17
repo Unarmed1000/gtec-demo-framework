@@ -1,6 +1,6 @@
-﻿#!/usr/bin/env python3
+#!/usr/bin/env python3
 
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright 2018 NXP
 # All rights reserved.
 #
@@ -29,66 +29,64 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-from typing import List
-#from typing import Optional
+# from typing import Optional
 import subprocess
+
 from FslBuildGen.BuildConfig.ClangExeInfo import ClangExeInfo
 from FslBuildGen.BuildExternal.PackageRecipeResult import PackageRecipeResult
 from FslBuildGen.BuildExternal.PackageRecipeResultManager import PackageRecipeResultManager
 from FslBuildGen.DataTypes import PackageType
-from FslBuildGen.Packages.Package import Package
 from FslBuildGen.Log import Log
+from FslBuildGen.Packages.Package import Package
 
-class PerformClangUtil(object):
+
+class PerformClangUtil:
     @staticmethod
-    def _TryLookupAlternativeResults(packageRecipeResultManager: PackageRecipeResultManager, commandName: str) -> List[PackageRecipeResult]:
-        possibleResults = []   # type: List[PackageRecipeResult]
+    def _TryLookupAlternativeResults(packageRecipeResultManager: PackageRecipeResultManager, commandName: str) -> list[PackageRecipeResult]:
+        possibleResults: list[PackageRecipeResult] = []
         for packageRecipeResult in packageRecipeResultManager.PackageDict.values():
             if commandName in packageRecipeResult.ExecutableDict:
                 possibleResults.append(packageRecipeResult)
         return possibleResults
 
-
     @staticmethod
-    def LookupRecipeResults(packageRecipeResultManager: PackageRecipeResultManager,
-                            recipePackageName: str, magicCommandName: str) -> ClangExeInfo:
-        if not recipePackageName in packageRecipeResultManager.PackageDict:
+    def LookupRecipeResults(packageRecipeResultManager: PackageRecipeResultManager, recipePackageName: str, magicCommandName: str) -> ClangExeInfo:
+        if recipePackageName not in packageRecipeResultManager.PackageDict:
             # ok no direct lookup, so lets try to locate it by the magic command name
             candidateList = PerformClangUtil._TryLookupAlternativeResults(packageRecipeResultManager, magicCommandName)
             if len(candidateList) < 1:
-                raise Exception("Could not locate '{0}' recipe '{1}' in external results".format(magicCommandName, recipePackageName))
+                raise Exception(f"Could not locate '{magicCommandName}' recipe '{recipePackageName}' in external results")
             if len(candidateList) > 1:
-                raise Exception("Could not locate '{0}' recipe '{1}' in external results, multiple possible values {2}".format(magicCommandName, recipePackageName, [entry.Name for entry in candidateList]))
+                raise Exception(
+                    f"Could not locate '{magicCommandName}' recipe '{recipePackageName}' in external results, multiple possible values {[entry.Name for entry in candidateList]}"
+                )
             recipeResults = candidateList[0]
         else:
             recipeResults = packageRecipeResultManager.PackageDict[recipePackageName]
-            if not magicCommandName in recipeResults.ExecutableDict:
-                raise Exception("Could not locate information about '{0}' in recipe '{1}'".format(magicCommandName, recipePackageName))
+            if magicCommandName not in recipeResults.ExecutableDict:
+                raise Exception(f"Could not locate information about '{magicCommandName}' in recipe '{recipePackageName}'")
 
         exeResult = recipeResults.ExecutableDict[magicCommandName]
         return ClangExeInfo(exeResult.Path, exeResult.Version)
 
     @staticmethod
-    def IsValidExtension(fileName: str, validExtensions: List[str]) -> bool:
+    def IsValidExtension(fileName: str, validExtensions: list[str]) -> bool:
         fileNameId = fileName.lower()
-        for entry in validExtensions:
-            if fileNameId.endswith(entry):
-                return True
-        return False
+        return any(fileNameId.endswith(entry) for entry in validExtensions)
 
     @staticmethod
     def ShowVersion(log: Log, clangExeInfo: ClangExeInfo) -> None:
         try:
             log.LogPrint("Listing version")
             cmd = clangExeInfo.Command
-            versionCommand = [cmd, '-version']
+            versionCommand = [cmd, "-version"]
             result = subprocess.call(versionCommand)
             if result != 0:
-                log.LogPrintWarning("The command '{0}' failed with '{1}'.".format(" ".join(versionCommand), result))
+                log.LogPrintWarning("The command '{}' failed with '{}'.".format(" ".join(versionCommand), result))
         except FileNotFoundError:
-            log.DoPrintWarning("The command '{0}' failed with 'file not found'.".format(" ".join(versionCommand)))
+            log.DoPrintWarning("The command '{}' failed with 'file not found'.".format(" ".join(versionCommand)))
             raise
 
     @staticmethod

@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright (c) 2016 Freescale Semiconductor, Inc.
 # All rights reserved.
 #
@@ -29,9 +28,10 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-class ToolCommonArgConfig(object):
+
+class ToolCommonArgConfig:
     def __init__(self) -> None:
         super().__init__()
         self.AddBuildFiltering = False  # If this is set then AddUseFeatures will be added
@@ -43,7 +43,7 @@ class ToolCommonArgConfig(object):
         self.AddPlatformArg = False
         self.AllowForceClaimInstallArea = False
         self.AllowRecursive = False
-        #self.AllowVSVersion = True
+        # self.AllowVSVersion = True
         # Allow override of variables
         self.SupportBuildTime = False
         # Dont use this if you have positional arguments!

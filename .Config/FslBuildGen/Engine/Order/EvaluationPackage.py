@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright 2020 NXP
 # All rights reserved.
 #
@@ -29,34 +28,31 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-from typing import Dict
-from typing import List
-from typing import Optional
-from FslBuildGen.Exceptions import CircularDependencyException
-from FslBuildGen.Exceptions import GroupedException
+
 from FslBuildGen.Engine.PackageFlavorName import PackageFlavorName
 from FslBuildGen.Engine.PackageFlavorOptionName import PackageFlavorOptionName
 from FslBuildGen.Engine.Unresolved.UnresolvedBasicPackage import UnresolvedBasicPackage
 from FslBuildGen.Engine.Unresolved.UnresolvedPackageName import UnresolvedPackageName
+from FslBuildGen.Exceptions import CircularDependencyException, GroupedException
 
-class FlavorInfo(object):
+
+class FlavorInfo:
     def __init__(self, flavorName: PackageFlavorName, flavorOption: PackageFlavorOptionName) -> None:
         super().__init__()
         self.FlavorName = flavorName
         self.FlavorOption = flavorOption
 
-class EvaluationPackage(object):
 
-    class DependencyRecord(object):
-        def __init__(self, package: 'EvaluationPackage', flavorInfo: Optional[FlavorInfo]) -> None:
+class EvaluationPackage:
+    class DependencyRecord:
+        def __init__(self, package: "EvaluationPackage", flavorInfo: FlavorInfo | None) -> None:
             super().__init__()
             self.Package = package
             self.FlavorInfo = flavorInfo
 
-
-    def __init__(self, name: UnresolvedPackageName, source: UnresolvedBasicPackage, directDependencies: List[DependencyRecord]) -> None:
+    def __init__(self, name: UnresolvedPackageName, source: UnresolvedBasicPackage, directDependencies: list[DependencyRecord]) -> None:
         super().__init__()
         self.Name = name
         self.SourcePackage = source
@@ -73,25 +69,25 @@ class EvaluationPackage(object):
         return str(self.Name)
 
     def __repr__(self) -> str:
-        return "EvaluationPackage({0})".format(self.Name)
+        return f"EvaluationPackage({self.Name})"
 
     @staticmethod
-    def __SanityCheckDependencies(directDependencies: List[DependencyRecord], name: UnresolvedPackageName) -> None:
+    def __SanityCheckDependencies(directDependencies: list[DependencyRecord], name: UnresolvedPackageName) -> None:
         if len(directDependencies) <= 0:
             return
 
-        uniquePackageDict = dict() # type: Dict[UnresolvedPackageName, List[EvaluationPackage.DependencyRecord]]
+        uniquePackageDict: dict[UnresolvedPackageName, list[EvaluationPackage.DependencyRecord]] = {}
         for record in directDependencies:
             if record.Package.Name == name:
-                raise CircularDependencyException("Can not add dependency to self '{0}'".format(record.Package.Name))
+                raise CircularDependencyException(f"Can not add dependency to self '{record.Package.Name}'")
             if record.Package.Name not in uniquePackageDict:
-                recordList = []   # type: List[EvaluationPackage.DependencyRecord]
+                recordList: list[EvaluationPackage.DependencyRecord] = []
                 uniquePackageDict[record.Package.Name] = recordList
             else:
                 recordList = uniquePackageDict[record.Package.Name]
             recordList.append(record)
 
-        exceptionList = None # type: Optional[List[Exception]]
+        exceptionList: list[Exception] | None = None
         for pairKey, pairValue in uniquePackageDict.items():
             if EvaluationPackage.__IsDuplicatedDependency(pairValue):
                 if exceptionList is None:
@@ -99,7 +95,7 @@ class EvaluationPackage(object):
 
                 helpStr = EvaluationPackage.__ToDuplicatedDependencyHelp(name, pairKey, pairValue)
 
-                exceptionList.append(Exception("Package '{0}' has duplicate dependency to '{1}': [{2}]'".format(name, pairKey, helpStr)))
+                exceptionList.append(Exception(f"Package '{name}' has duplicate dependency to '{pairKey}': [{helpStr}]'"))
 
         if exceptionList is not None and len(exceptionList) > 0:
             if len(exceptionList) > 1:
@@ -108,21 +104,27 @@ class EvaluationPackage(object):
                 raise exceptionList[0]
 
     @staticmethod
-    def __IsDuplicatedDependency(entries: List['EvaluationPackage.DependencyRecord']) -> bool:
+    def __IsDuplicatedDependency(entries: list["EvaluationPackage.DependencyRecord"]) -> bool:
         if len(entries) <= 1:
             return False
 
         # Check if all the collisions occur from a flavor (which is allowed)
-        flavorHitCount = 0 # type: int
+        flavorHitCount: int = 0
         for entry in entries:
             if entry.FlavorInfo is not None:
                 flavorHitCount = flavorHitCount + 1
-        return (flavorHitCount != len(entries))
+        return flavorHitCount != len(entries)
 
     @staticmethod
-    def __ToDuplicatedDependencyHelp(fromPackageName: UnresolvedPackageName, toPackageName: UnresolvedPackageName, entries: List['EvaluationPackage.DependencyRecord']) -> str:
-        res = [] # type: List[str]
+    def __ToDuplicatedDependencyHelp(
+        fromPackageName: UnresolvedPackageName, toPackageName: UnresolvedPackageName, entries: list["EvaluationPackage.DependencyRecord"]
+    ) -> str:
+        res: list[str] = []
         for entry in entries:
-            desc = "{0}<{1}={2}>->{3}".format(fromPackageName, entry.FlavorInfo.FlavorName, entry.FlavorInfo.FlavorOption, toPackageName) if entry.FlavorInfo is not None else "{0}->{1}".format(fromPackageName, toPackageName)
+            desc = (
+                f"{fromPackageName}<{entry.FlavorInfo.FlavorName}={entry.FlavorInfo.FlavorOption}>->{toPackageName}"
+                if entry.FlavorInfo is not None
+                else f"{fromPackageName}->{toPackageName}"
+            )
             res.append(desc)
         return ", ".join(res)

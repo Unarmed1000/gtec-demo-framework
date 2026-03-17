@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright 2017 NXP
 # All rights reserved.
 #
@@ -29,17 +28,24 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-from typing import List
-from typing import Optional
+
 from FslBuildGen.DataTypes import PackageType
-from FslBuildGen.Info.RequirementInfo import RequirementInfo
 from FslBuildGen.Info.PackageGeneratorReportInfo import PackageGeneratorReportInfo
+from FslBuildGen.Info.RequirementInfo import RequirementInfo
 
-class PackageInfo(object):
-    def __init__(self, name: str, sourceName: str, allRequirements: List[RequirementInfo], packageType: PackageType,
-                 supported: bool, generatorReport: Optional[PackageGeneratorReportInfo]) -> None:
+
+class PackageInfo:
+    def __init__(
+        self,
+        name: str,
+        sourceName: str,
+        allRequirements: list[RequirementInfo],
+        packageType: PackageType,
+        supported: bool,
+        generatorReport: PackageGeneratorReportInfo | None,
+    ) -> None:
         self.Name = name
         self.SourceName = sourceName
         self.AllRequirements = allRequirements

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright (c) 2014 Freescale Semiconductor, Inc.
 # All rights reserved.
 #
@@ -29,38 +29,36 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-from typing import List
 import xml.etree.ElementTree as ET
+
 from FslBuildGen.Log import Log
-from FslBuildGen.Xml.XmlBase import XmlBase
 from FslBuildGen.Xml.ToolConfig.XmlConfigPackageLocation import XmlConfigPackageLocation
+from FslBuildGen.Xml.XmlBase import XmlBase
 
 
 class XmlConfigPackageConfiguration(XmlBase):
-    __AttribName = 'Name'
-    __AttribPreload = 'Preload'
+    __AttribName = "Name"
+    __AttribPreload = "Preload"
 
     def __init__(self, log: Log, xmlElement: ET.Element, sourceFile: str) -> None:
         super().__init__(log, xmlElement)
         self._CheckAttributes({self.__AttribName, self.__AttribPreload})
         self.Name = self._ReadAttrib(xmlElement, self.__AttribName)
         self.Preload = self._ReadBoolAttrib(xmlElement, self.__AttribPreload, False)
-        self.Locations = self.__LoadLocations(log, xmlElement)  # type: List[XmlConfigPackageLocation]
+        self.Locations: list[XmlConfigPackageLocation] = self.__LoadLocations(log, xmlElement)
         self.SourceFile = sourceFile
         self.Id = self.Name.lower()
 
-
-    def __LoadLocations(self, log: Log, xmlElement: ET.Element) -> List[XmlConfigPackageLocation]:
+    def __LoadLocations(self, log: Log, xmlElement: ET.Element) -> list[XmlConfigPackageLocation]:
         res = []
         foundElements = xmlElement.findall("PackageLocation")
         for foundElement in foundElements:
             res.append(XmlConfigPackageLocation(log, foundElement))
         return res
 
-
-    def Merge(self, other: 'XmlConfigPackageConfiguration') -> None:
+    def Merge(self, other: "XmlConfigPackageConfiguration") -> None:
         if self.Name != other.Name or self.Id != other.Id:
             raise Exception("Usage error, can only merge two configurations with the same id")
         for entry in other.Locations:

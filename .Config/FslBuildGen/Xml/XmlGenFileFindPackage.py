@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright 2020 NXP
 # All rights reserved.
 #
@@ -29,51 +28,54 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-from typing import Optional
 import xml.etree.ElementTree as ET
+
 from FslBuildGen import IOUtil
-from FslBuildGen.Log import Log
 from FslBuildGen.DataTypes import DependencyCondition
+from FslBuildGen.Log import Log
 from FslBuildGen.Version import Version
 from FslBuildGen.Xml import FakeXmlElementFactory
 from FslBuildGen.Xml.Exceptions import XmlFormatException
 from FslBuildGen.Xml.XmlBase import XmlBase
 
+
 class XmlGenFileFindPackage(XmlBase):
-    __AttribName = 'Name'
-    __AttribVersion = 'Version'
-    __AttribTargetName = 'TargetName'
-    __AttribPath = 'Path'
-    __AttribIf = 'If'
+    __AttribName = "Name"
+    __AttribVersion = "Version"
+    __AttribTargetName = "TargetName"
+    __AttribPath = "Path"
+    __AttribIf = "If"
 
     def __init__(self, log: Log, xmlElement: ET.Element) -> None:
         super().__init__(log, xmlElement)
         self._CheckAttributes({self.__AttribName, self.__AttribVersion, self.__AttribTargetName, self.__AttribPath, self.__AttribIf})
         self.Name = self._ReadAttrib(xmlElement, self.__AttribName)
-        self.Version = self._TryReadAttribAsVersion(xmlElement, self.__AttribVersion)  # type: Optional[Version]
-        self.TargetName = self._TryReadAttrib(xmlElement, self.__AttribTargetName)  # type: Optional[str]
+        self.Version: Version | None = self._TryReadAttribAsVersion(xmlElement, self.__AttribVersion)
+        self.TargetName: str | None = self._TryReadAttrib(xmlElement, self.__AttribTargetName)
         # A optional path that will be specified to cmake
-        self.Path = self._TryReadAttrib(xmlElement, self.__AttribPath)  # type: Optional[str]
-        self.IfCondition = self._TryReadAttrib(xmlElement, self.__AttribIf, DependencyCondition.FindPackageAllowed)  # type: Optional[str]
+        self.Path: str | None = self._TryReadAttrib(xmlElement, self.__AttribPath)
+        self.IfCondition: str | None = self._TryReadAttrib(xmlElement, self.__AttribIf, DependencyCondition.FindPackageAllowed)
         if self.IfCondition != DependencyCondition.FindPackageAllowed:
-            raise XmlFormatException("Unsupported IfCondition '{0}' on FindPackage: '{1}'. Expected {2}".format(self.Version, self.Name, DependencyCondition.FindPackageAllowed))
+            raise XmlFormatException(
+                f"Unsupported IfCondition '{self.Version}' on FindPackage: '{self.Name}'. Expected {DependencyCondition.FindPackageAllowed}"
+            )
         if self.Path is not None and IOUtil.IsAbsolutePath(self.Path):
-            raise XmlFormatException("Path '{0}' can not be absolute".format(self.Path))
+            raise XmlFormatException(f"Path '{self.Path}' can not be absolute")
 
 
 class FakeXmlGenFileFindPackage(XmlGenFileFindPackage):
-    def __init__(self, log: Log, name: str, version: Optional[Version], targetName: Optional[str], path: Optional[str], ifCondition: Optional[str]) -> None:
-        fakeXmlElementAttribs = {'Name': name}
+    def __init__(self, log: Log, name: str, version: Version | None, targetName: str | None, path: str | None, ifCondition: str | None) -> None:
+        fakeXmlElementAttribs = {"Name": name}
         if version is not None:
-            fakeXmlElementAttribs['Version'] = str(version)
+            fakeXmlElementAttribs["Version"] = str(version)
         if targetName is not None:
-            fakeXmlElementAttribs['TargetName'] = targetName
+            fakeXmlElementAttribs["TargetName"] = targetName
         if path is not None:
-            fakeXmlElementAttribs['Path'] = path
+            fakeXmlElementAttribs["Path"] = path
         if ifCondition is not None:
-            fakeXmlElementAttribs['If'] = ifCondition
+            fakeXmlElementAttribs["If"] = ifCondition
 
         fakeXmlElement = FakeXmlElementFactory.Create("FakeXmlGenFileFindPackage", fakeXmlElementAttribs)
         super().__init__(log, fakeXmlElement)

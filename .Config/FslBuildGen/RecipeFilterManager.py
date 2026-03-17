@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright 2018 NXP
 # All rights reserved.
 #
@@ -28,24 +28,23 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-from typing import List
+
 from FslBuildGen.RecipeFilterName import RecipeFilterName
 
 
-class RecipeFilterManager(object):
-    def __init__(self, containsWildcard: bool, content: List[RecipeFilterName]) -> None:
+class RecipeFilterManager:
+    def __init__(self, containsWildcard: bool, content: list[RecipeFilterName]) -> None:
         super().__init__()
         allRecipesEnabled = containsWildcard
         if containsWildcard:
             allRecipesEnabled = self.__IsAllRecipesEnabled(content)
 
-        self.AllRecipesEnabled = allRecipesEnabled                      # if this is then all packages are enabled
+        self.AllRecipesEnabled = allRecipesEnabled  # if this is then all packages are enabled
         self.DefaultEnabled = containsWildcard
         self.Content = [] if allRecipesEnabled else content
-        self.ContentDict = {entry.Name:entry for entry in self.Content}
-
+        self.ContentDict = {entry.Name: entry for entry in self.Content}
 
     def IsEnabled(self, packageName: str) -> bool:
         """
@@ -57,12 +56,8 @@ class RecipeFilterManager(object):
             return self.ContentDict[packageName].Enabled
         return self.DefaultEnabled
 
-    def __IsAllRecipesEnabled(self, content: List[RecipeFilterName]) -> bool:
+    def __IsAllRecipesEnabled(self, content: list[RecipeFilterName]) -> bool:
         """
         Scan content to see if all entries are marked as enabled
         """
-        for entry in content:
-            if not entry.Enabled:
-                return False
-        return True
-
+        return all(entry.Enabled for entry in content)

@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright 2021 NXP
 # All rights reserved.
 #
@@ -29,19 +28,17 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-from typing import Optional
 
-class PackageRecipeValidateCommandFindExecutableFileInPathAddOnErrorWarning(object):
-    def __init__(self, startVersion: str, endVersion: Optional[str], help: str) -> None:
+class PackageRecipeValidateCommandFindExecutableFileInPathAddOnErrorWarning:
+    def __init__(self, startVersion: str, endVersion: str | None, help: str) -> None:
         super().__init__()
 
         if startVersion.strip() != startVersion:
             raise Exception("StartVersion contained leading or ending whitespaces")
-        if endVersion is not None:
-            if endVersion.strip() != endVersion:
-                raise Exception("EndVersion contained leading or ending whitespaces")
+        if endVersion is not None and endVersion.strip() != endVersion:
+            raise Exception("EndVersion contained leading or ending whitespaces")
 
         self.StartVersion = startVersion
         self.EndVersion = endVersion

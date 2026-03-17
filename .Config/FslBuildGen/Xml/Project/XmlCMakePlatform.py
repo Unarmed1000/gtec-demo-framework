@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright 2019 NXP
 # All rights reserved.
 #
@@ -29,20 +29,23 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-#from typing import List
-#from typing import Optional
+# from typing import List
+# from typing import Optional
 import xml.etree.ElementTree as ET
+
 from FslBuildGen.Log import Log
-#from FslBuildGen.Xml.Exceptions import XmlException2
+
+# from FslBuildGen.Xml.Exceptions import XmlException2
 from FslBuildGen.Xml.XmlBase import XmlBase
 
+
 class XmlCMakePlatform(XmlBase):
-    __AttribName = 'Name'
-    __AttribDefaultGeneratorName = 'DefaultGeneratorName'
-    __AttribDefaultInstallPrefix = 'DefaultInstallPrefix'
-    __AttribAllowFindPackage = 'AllowFindPackage'
+    __AttribName = "Name"
+    __AttribDefaultGeneratorName = "DefaultGeneratorName"
+    __AttribDefaultInstallPrefix = "DefaultInstallPrefix"
+    __AttribAllowFindPackage = "AllowFindPackage"
 
     def __init__(self, log: Log, xmlElement: ET.Element) -> None:
         super().__init__(log, xmlElement)

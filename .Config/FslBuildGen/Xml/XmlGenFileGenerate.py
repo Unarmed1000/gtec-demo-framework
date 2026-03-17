@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright 2021 NXP
 # All rights reserved.
 #
@@ -29,16 +29,17 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-from typing import List
 import xml.etree.ElementTree as ET
+
 from FslBuildGen.Log import Log
 from FslBuildGen.Xml.XmlBase import XmlBase
 
+
 class XmlGenFileGenerate(XmlBase):
-    __AttribTemplate = 'Template'
-    __AttribTarget = 'Target'
+    __AttribTemplate = "Template"
+    __AttribTarget = "Target"
 
     def __init__(self, log: Log, xmlElement: ET.Element) -> None:
         super().__init__(log, xmlElement)

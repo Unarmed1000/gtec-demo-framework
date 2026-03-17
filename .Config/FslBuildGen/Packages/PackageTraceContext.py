@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright 2020 NXP
 # All rights reserved.
 #
@@ -29,14 +29,15 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-from typing import Optional
+
 from FslBuildGen.PackageFile import PackageFile
 from FslBuildGen.Xml.XmlGenFile import XmlGenFile
 
-class PackageTraceContext(object):
-    def __init__(self, packageFile: Optional[PackageFile], genFile: XmlGenFile) -> None:
+
+class PackageTraceContext:
+    def __init__(self, packageFile: PackageFile | None, genFile: XmlGenFile) -> None:
         super().__init__()
         self.PackageFile = packageFile
         self.GenFile = genFile

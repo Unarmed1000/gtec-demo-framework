@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright 2017 NXP
 # All rights reserved.
 #
@@ -29,18 +28,24 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
 from FslBuildGen.ErrorHelpManager import ErrorHelpManager
+from FslBuildGen.Generator.PluginConfigContext import PluginConfigContext
 from FslBuildGen.Log import Log
 from FslBuildGen.Tool.LowLevelToolConfig import LowLevelToolConfig
 from FslBuildGen.Tool.ToolAppConfig import ToolAppConfig
-from FslBuildGen.Generator.PluginConfigContext import PluginConfigContext
 
 
-class ToolAppContext(object):
-    def __init__(self, log: Log, errorHelpManager: ErrorHelpManager, lowLevelToolConfig: LowLevelToolConfig,
-                 toolAppConfig: ToolAppConfig, pluginConfigContext: PluginConfigContext) -> None:
+class ToolAppContext:
+    def __init__(
+        self,
+        log: Log,
+        errorHelpManager: ErrorHelpManager,
+        lowLevelToolConfig: LowLevelToolConfig,
+        toolAppConfig: ToolAppConfig,
+        pluginConfigContext: PluginConfigContext,
+    ) -> None:
         self.Log = log
         self.ErrorHelpManager = errorHelpManager
         self.LowLevelToolConfig = lowLevelToolConfig

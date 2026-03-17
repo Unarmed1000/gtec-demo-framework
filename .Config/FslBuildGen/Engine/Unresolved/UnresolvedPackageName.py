@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright 2020 NXP
 # All rights reserved.
 #
@@ -29,12 +28,13 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
 from FslBuildGen import Util
 from FslBuildGen.Exceptions import InvalidUnresolvedPackageNameException
 
-class UnresolvedPackageName(object):
+
+class UnresolvedPackageName:
     # allowInternalNames should only be true for unresolved package names created for the internal top level package
     # This is a unfortunate hack we need until the top level package can be properly added to the new resolve engine
     def __init__(self, name: str, allowInternalNames: bool = False) -> None:
@@ -44,7 +44,7 @@ class UnresolvedPackageName(object):
 
         self.Value = name
 
-    def CompareTo(self, other: 'UnresolvedPackageName') -> int:
+    def CompareTo(self, other: "UnresolvedPackageName") -> int:
         if self.Value < other.Value:
             return -1
         return 0 if self.Value == other.Value else 1
@@ -81,4 +81,4 @@ class UnresolvedPackageName(object):
         return self.Value
 
     def __repr__(self) -> str:
-        return "UnresolvedPackageName({0})".format(self.Value)
+        return f"UnresolvedPackageName({self.Value})"

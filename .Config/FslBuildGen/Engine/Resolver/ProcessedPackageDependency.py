@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright 2020 NXP
 # All rights reserved.
 #
@@ -29,18 +28,24 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-from typing import Optional
-from FslBuildGen.DataTypes import AccessType
-from FslBuildGen.DataTypes import DependencyOutputType
-from FslBuildGen.Engine.PackageFlavorSelections import PackageFlavorSelections
-from FslBuildGen.Engine.PackageFlavorSelections import PackageFlavorSelectionsEmpty
+
+from FslBuildGen.DataTypes import AccessType, DependencyOutputType
+from FslBuildGen.Engine.PackageFlavorSelections import PackageFlavorSelections, PackageFlavorSelectionsEmpty
 from FslBuildGen.Packages.PackageInstanceName import PackageInstanceName
 
-class ProcessedPackageDependency(object):
-    def __init__(self, name: PackageInstanceName, accessType: AccessType, outputType: DependencyOutputType, referenceOutputAssembly: bool, flavorConstraints: Optional[PackageFlavorSelections] = None,
-                 ifCondition: Optional[str] = None) -> None:
+
+class ProcessedPackageDependency:
+    def __init__(
+        self,
+        name: PackageInstanceName,
+        accessType: AccessType,
+        outputType: DependencyOutputType,
+        referenceOutputAssembly: bool,
+        flavorConstraints: PackageFlavorSelections | None = None,
+        ifCondition: str | None = None,
+    ) -> None:
         super().__init__()
         self.Name = name
         self.FlavorConstraints = flavorConstraints if flavorConstraints is not None else PackageFlavorSelectionsEmpty.Empty
@@ -50,7 +55,7 @@ class ProcessedPackageDependency(object):
         self.IfCondition = ifCondition
 
     def __str__(self) -> str:
-        return "Name:{0} Constraints:{1}".format(self.Name, self.FlavorConstraints)
+        return f"Name:{self.Name} Constraints:{self.FlavorConstraints}"
 
     def __repr__(self) -> str:
-        return "ProcessedPackageDependency:{0}".format(str(self))
+        return f"ProcessedPackageDependency:{str(self)}"

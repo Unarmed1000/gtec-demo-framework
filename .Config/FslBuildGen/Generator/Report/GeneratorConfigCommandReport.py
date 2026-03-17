@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright 2019 NXP
 # All rights reserved.
 #
@@ -29,29 +28,25 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-from typing import List
-from typing import Optional
 
-class GeneratorConfigCommandReport(object):
-    def __init__(self, commandFormatString: str,
-                 arguments: List[str], currentWorkingDirectoryFormatString: str,
-                 runInEnvScript: Optional[str] = None) -> None:
+class GeneratorConfigCommandReport:
+    def __init__(self, commandFormatString: str, arguments: list[str], currentWorkingDirectoryFormatString: str, runInEnvScript: str | None = None) -> None:
         """
-            The information stored in a format string can contain both variables and environment variables and
-            it need to be formatted/converted using the ReportVariableFormatter before being used.
+        The information stored in a format string can contain both variables and environment variables and
+        it need to be formatted/converted using the ReportVariableFormatter before being used.
 
-            Some notes:
-            Each variant name string as used by the generator.
-            - Each normal variant is represented as a ${VARIANT_NAME} variable.
-            - Each virtual variant is represented as a $(VARIANT_NAME) variable.
-            Please note there can be other variables and environment variables as required by the generator
+        Some notes:
+        Each variant name string as used by the generator.
+        - Each normal variant is represented as a ${VARIANT_NAME} variable.
+        - Each virtual variant is represented as a $(VARIANT_NAME) variable.
+        Please note there can be other variables and environment variables as required by the generator
         """
         super().__init__()
         if commandFormatString is None:
             raise Exception("commandFormatString can not be None")
-        if commandFormatString.startswith('/') or ':' in commandFormatString:
+        if commandFormatString.startswith("/") or ":" in commandFormatString:
             raise Exception("commandFormatString can not be absolute")
 
         # The command that should be run with the cwdFormatString as CWD

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright (c) 2014 Freescale Semiconductor, Inc.
 # All rights reserved.
 #
@@ -29,10 +29,10 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
 from typing import Optional
-from typing import Union
+
 from FslBuildGen import IOUtil
 from FslBuildGen.Log import Log
 from FslBuildGen.ProjectId import ProjectId
@@ -40,20 +40,23 @@ from FslBuildGen.Vars.VariableProcessor import VariableProcessor
 from FslBuildGen.Xml.Project.XmlProjectRootConfigFile import XmlConfigFileAddRootDirectory
 
 
-class ToolConfigRootDirectory(object):
-    def __init__(self, log: Log,
-                 basedUponXML: Optional[XmlConfigFileAddRootDirectory],
-                 projectId: ProjectId,
-                 dynamicSourceRootDir: Union[Optional[XmlConfigFileAddRootDirectory], Optional['ToolConfigRootDirectory']] = None,
-                 dynamicRootName: Optional[str] = None,
-                 dynamicPath: Optional[str] = None) -> None:
+class ToolConfigRootDirectory:
+    def __init__(
+        self,
+        log: Log,
+        basedUponXML: XmlConfigFileAddRootDirectory | None,
+        projectId: ProjectId,
+        dynamicSourceRootDir: XmlConfigFileAddRootDirectory | None | Optional["ToolConfigRootDirectory"] = None,
+        dynamicRootName: str | None = None,
+        dynamicPath: str | None = None,
+    ) -> None:
         super().__init__()
         dirMustExist = True
         self.ProjectId = projectId
         if basedUponXML is not None:
-            self.BasedOn = basedUponXML  # type: Union[XmlConfigFileAddRootDirectory, 'ToolConfigRootDirectory']
-            self.Name = basedUponXML.Name # type: str
-            self.DynamicName = basedUponXML.Name # type: str
+            self.BasedOn: XmlConfigFileAddRootDirectory | ToolConfigRootDirectory = basedUponXML
+            self.Name: str = basedUponXML.Name
+            self.DynamicName: str = basedUponXML.Name
             dirMustExist = not basedUponXML.Create
         else:
             if dynamicSourceRootDir is None:
@@ -71,22 +74,21 @@ class ToolConfigRootDirectory(object):
         env = tupleResult[0]
         remainingPath = tupleResult[1]
         if env is None:
-            raise Exception("Root dirs are expected to contain environment variables '{0}'".format(self.DynamicName))
+            raise Exception(f"Root dirs are expected to contain environment variables '{self.DynamicName}'")
         remainingPath = remainingPath if remainingPath is not None else ""
 
         resolvedPath = IOUtil.GetEnvironmentVariableForDirectory(env, dirMustExist)
         if not IOUtil.Exists(resolvedPath):
             IOUtil.SafeMakeDirs(resolvedPath)
         if not IOUtil.IsDirectory(resolvedPath):
-            raise EnvironmentError("The {0} environment variable content '{1}' does not point to a valid directory".format(env, resolvedPath))
+            raise OSError(f"The {env} environment variable content '{resolvedPath}' does not point to a valid directory")
 
         resolvedPath = resolvedPath + remainingPath
-        self.BashName = '${0}{1}'.format(env, remainingPath)  # type: str
-        self.DosName = '%{0}%{1}'.format(env, remainingPath)  # type: str
-        self.ResolvedPath = IOUtil.ToUnixStylePath(resolvedPath)  # type: str
-        self.ResolvedPathEx = "{0}/".format(self.ResolvedPath) if len(self.ResolvedPath) > 0 else ""  # type: str
-        self.__EnvironmentVariableName = env  # type: str
-
+        self.BashName: str = f"${env}{remainingPath}"
+        self.DosName: str = f"%{env}%{remainingPath}"
+        self.ResolvedPath: str = IOUtil.ToUnixStylePath(resolvedPath)
+        self.ResolvedPathEx: str = f"{self.ResolvedPath}/" if len(self.ResolvedPath) > 0 else ""
+        self.__EnvironmentVariableName: str = env
 
     def TryGetEnvironmentVariableName(self) -> str:
         return self.__EnvironmentVariableName

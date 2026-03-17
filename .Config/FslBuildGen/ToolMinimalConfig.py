@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright 2018 NXP
 # All rights reserved.
 #
@@ -29,14 +28,14 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-from typing import List
+
 from FslBuildGen.ToolConfigRootDirectory import ToolConfigRootDirectory
 
-class ToolMinimalConfig(object):
-    def __init__(self, rootDirectories: List[ToolConfigRootDirectory],
-                 ignoreDirectories: List[str]) -> None:
+
+class ToolMinimalConfig:
+    def __init__(self, rootDirectories: list[ToolConfigRootDirectory], ignoreDirectories: list[str]) -> None:
         """
         :param ignoreDirectories: a list of directories that should be ignored when scanning for project files etc
         """

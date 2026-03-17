@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright 2020 NXP
 # All rights reserved.
 #
@@ -29,36 +29,32 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-from typing import Dict
-from typing import List
 import xml.etree.ElementTree as ET
+
 from FslBuildGen import Util
 from FslBuildGen.Log import Log
-from FslBuildGen.Xml.Exceptions import XmlFlavorOptionNameCollisionException
-from FslBuildGen.Xml.Exceptions import XmlUnsupportedFlavorNameException
-from FslBuildGen.Xml.Exceptions import XmlUnsupportedFlavorOptionNameException
+from FslBuildGen.Xml.Exceptions import XmlFlavorOptionNameCollisionException, XmlUnsupportedFlavorNameException, XmlUnsupportedFlavorOptionNameException
 from FslBuildGen.Xml.Flavor.XmlGenFileFlavorOption import XmlGenFileFlavorOption
 from FslBuildGen.Xml.XmlBase import XmlBase
 
 
 class XmlGenFileFlavor(XmlBase):
-    __AttribName = 'Name'
-    __AttribQuickName = 'QuickName'
+    __AttribName = "Name"
+    __AttribQuickName = "QuickName"
 
-    def __init__(self, log: Log, requirementTypes: List[str], xmlElement: ET.Element, ownerPackageName: str) -> None:
+    def __init__(self, log: Log, requirementTypes: list[str], xmlElement: ET.Element, ownerPackageName: str) -> None:
         super().__init__(log, xmlElement)
         self._CheckAttributes({self.__AttribName, self.__AttribQuickName})
         self.Name = self._ReadAttrib(xmlElement, self.__AttribName)
         self.QuickName = self._TryReadAttrib(xmlElement, self.__AttribQuickName)
         self.IntroducedByPackageName = ownerPackageName
-        #elementType = self._ReadAttrib(xmlElement, 'Type', 'Normal')
+        # elementType = self._ReadAttrib(xmlElement, 'Type', 'Normal')
         self.Options = self.__GetXMLFlavorOptions(requirementTypes, xmlElement, ownerPackageName)
-        self.OptionDict = self.__BuildOptionDict()  # type: Dict[str, XmlGenFileFlavorOption]
+        self.OptionDict: dict[str, XmlGenFileFlavorOption] = self.__BuildOptionDict()
         self.__ValidateFlavorName()
         self.__ValidateOptionNames()
-
 
     def __ValidateFlavorName(self) -> None:
         if not Util.IsValidName(self.Name):
@@ -69,24 +65,23 @@ class XmlGenFileFlavor(XmlBase):
             if not Util.IsValidName(option.Name):
                 raise XmlUnsupportedFlavorOptionNameException(option.XMLElement, option.Name)
 
-    def __BuildOptionDict(self) -> Dict[str, XmlGenFileFlavorOption]:
-        optionDict = {} # type: Dict[str, XmlGenFileFlavorOption]
-        optionNameSet = {}  # type: Dict[str, str]
+    def __BuildOptionDict(self) -> dict[str, XmlGenFileFlavorOption]:
+        optionDict: dict[str, XmlGenFileFlavorOption] = {}
+        optionNameSet: dict[str, str] = {}
         for option in self.Options:
             optionDict[option.Name] = option
             key = option.Name.lower()
-            if not key in optionNameSet:
+            if key not in optionNameSet:
                 optionNameSet[key] = option.Name
             else:
                 raise XmlFlavorOptionNameCollisionException(self.XMLElement, optionNameSet[key], option.Name)
         return optionDict
 
-
-    def __GetXMLFlavorOptions(self, requirementTypes: List[str], elem: ET.Element, ownerPackageName: str) -> List[XmlGenFileFlavorOption]:
+    def __GetXMLFlavorOptions(self, requirementTypes: list[str], elem: ET.Element, ownerPackageName: str) -> list[XmlGenFileFlavorOption]:
         options = []
-        if elem != None:
+        if elem is not None:
             for child in elem:
-                if child.tag == 'Option':
+                if child.tag == "Option":
                     options.append(XmlGenFileFlavorOption(self.Log, requirementTypes, child, ownerPackageName))
         options.sort(key=lambda s: s.Name.lower())
         return options

@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright 2020 NXP
 # All rights reserved.
 #
@@ -29,23 +28,27 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-from typing import List
-from typing import Optional
-from typing import Set
+
 from FslBuildGen.DataTypes import PackageType
+from FslBuildGen.Engine.Order.Exceptions import FlavorExtensionCanNotBeAddedToFlavorOriginException, MustBeFlavorExtensionException
 from FslBuildGen.Engine.PackageFlavorName import PackageFlavorName
-from FslBuildGen.Engine.Order.Exceptions import FlavorExtensionCanNotBeAddedToFlavorOriginException
-from FslBuildGen.Engine.Order.Exceptions import MustBeFlavorExtensionException
-from FslBuildGen.Engine.Unresolved.UnresolvedPackageName import UnresolvedPackageName
 from FslBuildGen.Engine.Unresolved.UnresolvedPackageDependency import UnresolvedPackageDependency
 from FslBuildGen.Engine.Unresolved.UnresolvedPackageFlavor import UnresolvedPackageFlavor
 from FslBuildGen.Engine.Unresolved.UnresolvedPackageFlavorExtension import UnresolvedPackageFlavorExtension
+from FslBuildGen.Engine.Unresolved.UnresolvedPackageName import UnresolvedPackageName
 
-class UnresolvedBasicPackage(object):
-    def __init__(self, name: UnresolvedPackageName, packageType: PackageType, directDependencies: List[UnresolvedPackageDependency],
-                 flavors: List[UnresolvedPackageFlavor], flavorExtensions: List[UnresolvedPackageFlavorExtension]) -> None:
+
+class UnresolvedBasicPackage:
+    def __init__(
+        self,
+        name: UnresolvedPackageName,
+        packageType: PackageType,
+        directDependencies: list[UnresolvedPackageDependency],
+        flavors: list[UnresolvedPackageFlavor],
+        flavorExtensions: list[UnresolvedPackageFlavorExtension],
+    ) -> None:
         super().__init__()
         self.Name = name
         self.Type = packageType
@@ -64,28 +67,29 @@ class UnresolvedBasicPackage(object):
         return str(self.Name)
 
     def __repr__(self) -> str:
-        return "Name:{0}".format(self.Name)
+        return f"Name:{self.Name}"
 
     @staticmethod
-    def __SanityCheckDependencies(directDependencies: List[UnresolvedPackageDependency]) -> None:
+    def __SanityCheckDependencies(directDependencies: list[UnresolvedPackageDependency]) -> None:
         if len(directDependencies) <= 0:
             return
-        uniqueNames = set() # type: Set[UnresolvedPackageName]
+        uniqueNames: set[UnresolvedPackageName] = set()
         for entry in directDependencies:
             if entry.Name in uniqueNames:
-                raise Exception("Duplicate dependency '{0}'".format(entry.Name))
+                raise Exception(f"Duplicate dependency '{entry.Name}'")
             uniqueNames.add(entry.Name)
 
     @staticmethod
-    def __SanityCheckFlavor(packageFlavors: List[UnresolvedPackageFlavor], flavorExtensions: List[UnresolvedPackageFlavorExtension],
-                            ownerPackageName: UnresolvedPackageName) -> None:
+    def __SanityCheckFlavor(
+        packageFlavors: list[UnresolvedPackageFlavor], flavorExtensions: list[UnresolvedPackageFlavorExtension], ownerPackageName: UnresolvedPackageName
+    ) -> None:
         if len(packageFlavors) <= 0 and len(flavorExtensions) <= 0:
             return
-        uniqueNames = set() # type: Set[PackageFlavorName]
+        uniqueNames: set[PackageFlavorName] = set()
         # check flavors
         for entry in packageFlavors:
             if entry.Name in uniqueNames:
-                raise Exception("Duplicate flavor '{0}'".format(entry.Name))
+                raise Exception(f"Duplicate flavor '{entry.Name}'")
             uniqueNames.add(entry.Name)
             if ownerPackageName != entry.Name.OwnerPackageName:
                 raise MustBeFlavorExtensionException(ownerPackageName, entry)
@@ -93,18 +97,17 @@ class UnresolvedBasicPackage(object):
         # check flavor extensions
         for entry2 in flavorExtensions:
             if entry2.Name in uniqueNames:
-                raise Exception("Duplicate flavor '{0}'".format(entry2.Name))
+                raise Exception(f"Duplicate flavor '{entry2.Name}'")
             uniqueNames.add(entry2.Name)
             if ownerPackageName == entry2.Name.OwnerPackageName:
                 raise FlavorExtensionCanNotBeAddedToFlavorOriginException(entry2)
 
-
-    def TryGetFlavor(self, flavorName: PackageFlavorName) -> Optional[UnresolvedPackageFlavor]:
+    def TryGetFlavor(self, flavorName: PackageFlavorName) -> UnresolvedPackageFlavor | None:
         for entry in self.Flavors:
             if entry.Name == flavorName:
                 return entry
         return None
 
     @staticmethod
-    def Create2(packageName: UnresolvedPackageName, packageType: PackageType) -> 'UnresolvedBasicPackage':
+    def Create2(packageName: UnresolvedPackageName, packageType: PackageType) -> "UnresolvedBasicPackage":
         return UnresolvedBasicPackage(packageName, packageType, [], [], [])

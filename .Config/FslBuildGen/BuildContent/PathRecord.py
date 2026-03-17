@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright (c) 2016 Freescale Semiconductor, Inc.
 # All rights reserved.
 #
@@ -30,13 +29,14 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
 from FslBuildGen import IOUtil
-from FslBuildGen.Log import Log
 from FslBuildGen.BuildContent.ContentRootRecord import ContentRootRecord
+from FslBuildGen.Log import Log
 
-class PathRecord(object):
+
+class PathRecord:
     def __init__(self, log: Log, sourceRoot: ContentRootRecord, sourceFilename: str) -> None:
         super().__init__()
         self.Id = sourceFilename.lower()
@@ -44,7 +44,7 @@ class PathRecord(object):
         self.RelativePath = sourceFilename
 
         if sourceFilename.startswith(sourceRoot.ResolvedPath) or sourceFilename.startswith(sourceRoot.SourcePath):
-            self.RelativePath = sourceFilename[len(self.SourceRoot.ResolvedPath)+1:]
+            self.RelativePath = sourceFilename[len(self.SourceRoot.ResolvedPath) + 1 :]
             self.ResolvedPath = sourceFilename
         else:
             self.RelativePath = sourceFilename
@@ -52,7 +52,7 @@ class PathRecord(object):
 
         self.RelativeId = sourceFilename.lower()
 
-        if self.ResolvedPath.find('..') != -1:
-            raise Exception("'..' is now allowed in content filenames ('{0}')".format(self.ResolvedPath))
-        if self.ResolvedPath.find('\\') != -1:
-            raise Exception("'\\' is now allowed in content filenames ('{0}')".format(self.ResolvedPath))
+        if self.ResolvedPath.find("..") != -1:
+            raise Exception(f"'..' is now allowed in content filenames ('{self.ResolvedPath}')")
+        if self.ResolvedPath.find("\\") != -1:
+            raise Exception(f"'\\' is now allowed in content filenames ('{self.ResolvedPath}')")

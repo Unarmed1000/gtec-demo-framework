@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright 2019 NXP
 # All rights reserved.
 #
@@ -29,18 +28,18 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-#from typing import List
-from typing import Optional
-#from FslBuildGen.DataTypes import BuildVariantConfig
+# from typing import List
+
+# from FslBuildGen.DataTypes import BuildVariantConfig
 from FslBuildGen.Generator.Report.GeneratorConfigCommandCMakeReport import GeneratorConfigCommandCMakeReport
 from FslBuildGen.Generator.Report.GeneratorConfigCommandReport import GeneratorConfigCommandReport
 
-class GeneratorConfigReport(object):
-    def __init__(self, configCommandReport: GeneratorConfigCommandReport, configCommandCMakeReport: Optional[GeneratorConfigCommandCMakeReport]) -> None:
-        """
-        """
+
+class GeneratorConfigReport:
+    def __init__(self, configCommandReport: GeneratorConfigCommandReport, configCommandCMakeReport: GeneratorConfigCommandCMakeReport | None) -> None:
+        """ """
         super().__init__()
         self.ConfigCommandReport = configCommandReport
         self.ConfigCommandCMakeReport = configCommandCMakeReport

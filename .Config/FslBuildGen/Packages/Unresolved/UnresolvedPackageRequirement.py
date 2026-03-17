@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright 2020 NXP
 # All rights reserved.
 #
@@ -29,9 +29,10 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-class UnresolvedPackageRequirement(object):
+
+class UnresolvedPackageRequirement:
     def __init__(self, name: str, strType: str, extends: str, version: str) -> None:
         super().__init__()
         self.Name = name
@@ -39,12 +40,12 @@ class UnresolvedPackageRequirement(object):
         self.Extends = extends
         self.Version = version
 
-        #if not Util.IsValidRequirementName(self.Name):
+        # if not Util.IsValidRequirementName(self.Name):
         #    raise XmlRequirementNameException(xmlElement, self.Name)
-        #if not self.Type in requirementTypes:
+        # if not self.Type in requirementTypes:
         #    raise XmlRequirementTypeException(xmlElement, self.Name, self.Type, self.Extends, requirementTypes)
 
-        #if len(self.Extends) > 0 and not Util.IsValidRequirementName(self.Extends):
+        # if len(self.Extends) > 0 and not Util.IsValidRequirementName(self.Extends):
         #    raise XmlRequirementStringException(xmlElement, "extends", self.Extends)
-        #if self.Type == PackageRequirementTypeString.Extension and len(self.Extends) == 0:
+        # if self.Type == PackageRequirementTypeString.Extension and len(self.Extends) == 0:
         #    raise XmlRequirementTypeExtensionRequiresAValidExtendFieldException(xmlElement, self.Name)

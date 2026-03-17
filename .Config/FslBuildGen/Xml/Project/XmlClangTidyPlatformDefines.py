@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright 2018 NXP
 # All rights reserved.
 #
@@ -29,17 +29,18 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-from typing import List
 import xml.etree.ElementTree as ET
+
 from FslBuildGen.Log import Log
 from FslBuildGen.Xml.XmlBase import XmlBase
 
+
 class XmlClangTidyPlatformDefines(XmlBase):
-    __AttribAll = 'All'
-    __AttribDebug = 'Debug'
-    __AttribRelease = 'Release'
+    __AttribAll = "All"
+    __AttribDebug = "Debug"
+    __AttribRelease = "Release"
 
     def __init__(self, log: Log, xmlElement: ET.Element) -> None:
         super().__init__(log, xmlElement)
@@ -47,6 +48,6 @@ class XmlClangTidyPlatformDefines(XmlBase):
         attribAll = self._TryReadAttrib(xmlElement, self.__AttribAll)
         debug = self._TryReadAttrib(xmlElement, self.__AttribDebug)
         release = self._TryReadAttrib(xmlElement, self.__AttribRelease)
-        self.All = attribAll.split(';') if attribAll is not None else []    # type: List[str]
-        self.Debug = debug.split(';') if debug is not None else []          # type: List[str]
-        self.Release = release.split(';') if release is not None else []    # type: List[str]
+        self.All: list[str] = attribAll.split(";") if attribAll is not None else []
+        self.Debug: list[str] = debug.split(";") if debug is not None else []
+        self.Release: list[str] = release.split(";") if release is not None else []

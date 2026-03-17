@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright 2020 NXP
 # All rights reserved.
 #
@@ -29,10 +28,9 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-from typing import List
-from FslBuildGen.DataTypes import PackageRequirementTypeString
+
 from FslBuildGen.Engine.PackageFlavorOptionName import PackageFlavorOptionName
 from FslBuildGen.Engine.Unresolved.UnresolvedPackageDependency import UnresolvedPackageDependency
 from FslBuildGen.Engine.Unresolved.UnresolvedPackageName import UnresolvedPackageName
@@ -40,19 +38,27 @@ from FslBuildGen.Packages.Unresolved.UnresolvedExternalDependency import Unresol
 from FslBuildGen.Packages.Unresolved.UnresolvedPackageDefine import UnresolvedPackageDefine
 from FslBuildGen.Packages.Unresolved.UnresolvedPackageRequirement import UnresolvedPackageRequirement
 
-class UnresolvedPackageFlavorOption(object):
-    def __init__(self, name: PackageFlavorOptionName, supported: bool, introducedByPackageName: UnresolvedPackageName,
-                 directRequirements: List[UnresolvedPackageRequirement], directDependencies: List[UnresolvedPackageDependency],
-                 externalDependencies: List[UnresolvedExternalDependency], directDefines: List[UnresolvedPackageDefine]) -> None:
+
+class UnresolvedPackageFlavorOption:
+    def __init__(
+        self,
+        name: PackageFlavorOptionName,
+        supported: bool,
+        introducedByPackageName: UnresolvedPackageName,
+        directRequirements: list[UnresolvedPackageRequirement],
+        directDependencies: list[UnresolvedPackageDependency],
+        externalDependencies: list[UnresolvedExternalDependency],
+        directDefines: list[UnresolvedPackageDefine],
+    ) -> None:
         super().__init__()
         self.Name = name
         self.Supported = supported
         self.IntroducedByPackageName = introducedByPackageName
-        #self.DirectUsedFeatures = [requirement for requirement in directRequirements if requirement.Type == PackageRequirementTypeString.Feature]
+        # self.DirectUsedFeatures = [requirement for requirement in directRequirements if requirement.Type == PackageRequirementTypeString.Feature]
         self.DirectRequirements = directRequirements
         self.DirectDependencies = directDependencies
         self.ExternalDependencies = externalDependencies
         self.DirectDefines = directDefines
 
     def __str__(self) -> str:
-        return "Name:{0} DirectDepCount:{1}".format(self.Name, len(self.DirectDependencies))
+        return f"Name:{self.Name} DirectDepCount:{len(self.DirectDependencies)}"

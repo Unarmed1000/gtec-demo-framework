@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright 2018 NXP
 # All rights reserved.
 #
@@ -29,27 +28,30 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-from typing import List
+
 from FslBuildGen.BuildConfig.ClangTidyConfiguration import ClangTidyConfiguration
 from FslBuildGen.DataTypes import ClangTidyProfile
 
 
-class PerformClangTidyConfig(object):
-    def __init__(self, clangTidyConfiguration: ClangTidyConfiguration,
-                 additionalUserArguments: List[str],
-                 postfixArguments: List[str],
-                 overrideChecks: List[str],
-                 profile: ClangTidyProfile,
-                 allowDynamicVariantCache: bool,
-                 repair: bool) -> None:
+class PerformClangTidyConfig:
+    def __init__(
+        self,
+        clangTidyConfiguration: ClangTidyConfiguration,
+        additionalUserArguments: list[str],
+        postfixArguments: list[str],
+        overrideChecks: list[str],
+        profile: ClangTidyProfile,
+        allowDynamicVariantCache: bool,
+        repair: bool,
+    ) -> None:
         super().__init__()
         self.ClangTidyConfiguration = clangTidyConfiguration
         self.AdditionalUserArguments = additionalUserArguments
         self.PostfixArguments = postfixArguments
         if len(overrideChecks) > 0:
-            overrideChecks = ['-*'] + overrideChecks
+            overrideChecks = ["-*"] + overrideChecks
         self.OverrideChecks = overrideChecks
         self.Profile = profile
         self.AllowDynamicVariantCache = allowDynamicVariantCache

@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright 2017 NXP
 # All rights reserved.
 #
@@ -29,33 +28,27 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-from typing import cast
-from typing import Dict
-from typing import List
-from typing import Optional
-from typing import overload
-from typing import TypeVar
-from typing import Union
 import fnmatch
-from FslBuildGen import PackageListUtil
-from FslBuildGen import Util
+from typing import TypeVar, cast, overload
+
+from FslBuildGen import PackageListUtil, Util
 from FslBuildGen.Build.RequirementTree import RequirementTree
 from FslBuildGen.Build.RequirementTreeNode import RequirementTreeNode
-#from FslBuildGen.Config import Config
-from FslBuildGen.DataTypes import FilterMethod
-from FslBuildGen.DataTypes import PackageRequirementTypeString
-from FslBuildGen.DataTypes import PackageType
+
+# from FslBuildGen.Config import Config
+from FslBuildGen.DataTypes import FilterMethod, PackageRequirementTypeString, PackageType
 from FslBuildGen.Engine.Resolver.PreResolvePackageResult import PreResolvePackageResult
 from FslBuildGen.Exceptions import UsageErrorException
 from FslBuildGen.ExtensionListManager import ExtensionListManager
 from FslBuildGen.ExtensionListManager2 import ExtensionListManager2
 from FslBuildGen.Info.AppInfo import AppInfoPackage
-from FslBuildGen.Info.AppInfoRequirementTree import AppInfoGlobalRequirementTree
 from FslBuildGen.Info.AppInfoGlobalRequirementTreeNode import AppInfoGlobalRequirementTreeNode
+from FslBuildGen.Info.AppInfoRequirementTree import AppInfoGlobalRequirementTree
 from FslBuildGen.Info.RequirementInfo import RequirementInfo
-#from FslBuildGen.Info.RequirementInfo import RequirementType
+
+# from FslBuildGen.Info.RequirementInfo import RequirementType
 from FslBuildGen.Log import Log
 from FslBuildGen.PackageFilters import PackageFilters
 from FslBuildGen.Packages.Package import Package
@@ -65,31 +58,30 @@ from FslBuildGen.QualifiedRequirementExtensionName import QualifiedRequirementEx
 
 class LocalUtil:
     @staticmethod
-    def BuildListOfDirectlyNotSupported(package: Package) -> List[Package]:
-        notSupported = []  # type: List[Package]
+    def BuildListOfDirectlyNotSupported(package: Package) -> list[Package]:
+        notSupported: list[Package] = []
         for dependency in package.ResolvedBuildOrder:
             if not dependency.ResolvedPlatformDirectSupported:
                 notSupported.append(dependency)
         return notSupported
 
-CommonPackage = TypeVar('CommonPackage', Package, PreResolvePackageResult)
+
+CommonPackage = TypeVar("CommonPackage", Package, PreResolvePackageResult)
+
 
 class RequirementFilter:
     @staticmethod
-    def FilterRequirementsByType(requirements: List[PackageRequirement], requirementType: Optional[str]) -> List[PackageRequirement]:
-        """ Filter the requirements by the supplied type.
-            If type is none this returns the requirements list without modification
+    def FilterRequirementsByType(requirements: list[PackageRequirement], requirementType: str | None) -> list[PackageRequirement]:
+        """Filter the requirements by the supplied type.
+        If type is none this returns the requirements list without modification
         """
         return requirements if requirementType is None else [requirement for requirement in requirements if requirement.Type == requirementType]
 
-
     @staticmethod
-    def GetRequirementList(topLevelPackage: Package,
-                           requestedPackages: Optional[List[Package]],
-                           requirementType: Optional[str] = None) -> List[PackageRequirement]:
-        """ Generate a requirement list based on input, the requirement list can be optionally filtered by requirementType.
-            If requestedPackages are None then then all packages used by the top level package will be filtered.
-            If a top level package is supplied then we return the 'ResolvedAllRequirements' for it (filtered as requested).
+    def GetRequirementList(topLevelPackage: Package, requestedPackages: list[Package] | None, requirementType: str | None = None) -> list[PackageRequirement]:
+        """Generate a requirement list based on input, the requirement list can be optionally filtered by requirementType.
+        If requestedPackages are None then then all packages used by the top level package will be filtered.
+        If a top level package is supplied then we return the 'ResolvedAllRequirements' for it (filtered as requested).
         """
         if topLevelPackage is None:
             raise UsageErrorException("topLevelPackage can not be None")
@@ -99,25 +91,24 @@ class RequirementFilter:
             return RequirementFilter.FilterRequirementsByType(topLevelPackage.ResolvedAllRequirements, requirementType)
         return RequirementFilter.GetRequirementListFromPackages(requestedPackages, requirementType)
 
-
     @staticmethod
-    def GetRequirementListFromPackages(requestedPackages: List[CommonPackage],
-                                       requirementType: Optional[str] = None) -> List[PackageRequirement]:
+    def GetRequirementListFromPackages(requestedPackages: list[CommonPackage], requirementType: str | None = None) -> list[PackageRequirement]:
         # extract the package requirements into a unique list while still respecting the filter
-        requirementDict = {}  # type: Dict[str, PackageRequirement]
+        requirementDict: dict[str, PackageRequirement] = {}
         for package in requestedPackages:
             requirementList = RequirementFilter.FilterRequirementsByType(package.ResolvedAllRequirements, requirementType)
             for requirement in requirementList:
-                if not requirement.FullId in requirementDict:
+                if requirement.FullId not in requirementDict:
                     requirementDict[requirement.FullId] = requirement
         return list(requirementDict.values())
 
 
-T = TypeVar('T')
+T = TypeVar("T")
+
 
 class PackageFilter:
     @staticmethod
-    def __ToPackageName(package: Union[CommonPackage, AppInfoPackage]) -> str:
+    def __ToPackageName(package: CommonPackage | AppInfoPackage) -> str:
         if isinstance(package, AppInfoPackage):
             return package.Name
         if isinstance(package, Package):
@@ -125,89 +116,76 @@ class PackageFilter:
         return package.SourcePackage.NameInfo.FullName.Value
 
     @staticmethod
-    def __HasRecipe(package: Union[CommonPackage, AppInfoPackage]) -> bool:
+    def __HasRecipe(package: CommonPackage | AppInfoPackage) -> bool:
         if isinstance(package, PreResolvePackageResult):
             return package.SourcePackage.DirectExperimentalRecipe is not None
         return package.ResolvedDirectExperimentalRecipe is not None
 
+    @staticmethod
+    def __ContainsFeature(resolvedFeatureList: list[PackageRequirement] | list[RequirementInfo], featureName: str) -> bool:
+        return any(feature.Name == featureName for feature in resolvedFeatureList)
 
     @staticmethod
-    def __ContainsFeature(resolvedFeatureList: Union[List[PackageRequirement], List[RequirementInfo]], featureName: str) -> bool:
-        for feature in resolvedFeatureList:
-            if feature.Name == featureName:
-                return True
-        return False
-
+    def __UsesFeatures(package: CommonPackage | AppInfoPackage, requiredFeatureNameList: list[str]) -> bool:
+        return all(PackageFilter.__ContainsFeature(package.ResolvedAllUsedFeatures, featureName) for featureName in requiredFeatureNameList)
 
     @staticmethod
-    def __UsesFeatures(package: Union[CommonPackage, AppInfoPackage], requiredFeatureNameList: List[str]) -> bool:
-        for featureName in requiredFeatureNameList:
-            if not PackageFilter.__ContainsFeature(package.ResolvedAllUsedFeatures, featureName):
-                return False
-        return True
-
+    def __FeaturesAvailable(package: CommonPackage | AppInfoPackage, featureNameList: list[str]) -> bool:
+        return all(feature.Name in featureNameList for feature in package.ResolvedAllUsedFeatures)
 
     @staticmethod
-    def __FeaturesAvailable(package: Union[CommonPackage, AppInfoPackage], featureNameList: List[str]) -> bool:
-        for feature in package.ResolvedAllUsedFeatures:
-            if not feature.Name in featureNameList:
-                return False
-        return True
-
-
-    @staticmethod
-    def __IsExtensionAvailable(requirementTree: Union[RequirementTree, AppInfoGlobalRequirementTree], featureName: str, extensionName: str) -> bool:
+    def __IsExtensionAvailable(requirementTree: RequirementTree | AppInfoGlobalRequirementTree, featureName: str, extensionName: str) -> bool:
         extensionNode = requirementTree.TryLocateExtensionNode(featureName, extensionName)
         return extensionNode is not None and extensionNode.Supported
 
-
     @staticmethod
-    def __IsAllPackageExtensionAvailable(package: Union[CommonPackage, AppInfoPackage], requirementTree: Union[RequirementTree, AppInfoGlobalRequirementTree]) -> bool:
+    def __IsAllPackageExtensionAvailable(package: CommonPackage | AppInfoPackage, requirementTree: RequirementTree | AppInfoGlobalRequirementTree) -> bool:
         for requirement in package.ResolvedAllRequirements:
-            if requirement.Type == PackageRequirementTypeString.Extension and not PackageFilter.__IsExtensionAvailable(requirementTree, requirement.Extends, requirement.Name):
+            if requirement.Type == PackageRequirementTypeString.Extension and not PackageFilter.__IsExtensionAvailable(
+                requirementTree, requirement.Extends, requirement.Name
+            ):
                 return False
         return True
 
     @staticmethod
-    def __GetCompleteMissingExtensionNames(package: Union[CommonPackage, AppInfoPackage], requirementTree: Union[RequirementTree, AppInfoGlobalRequirementTree]) -> List[str]:
+    def __GetCompleteMissingExtensionNames(
+        package: CommonPackage | AppInfoPackage, requirementTree: RequirementTree | AppInfoGlobalRequirementTree
+    ) -> list[str]:
         missing = []
         for requirement in package.ResolvedAllRequirements:
-            if requirement.Type == PackageRequirementTypeString.Extension and not PackageFilter.__IsExtensionAvailable(requirementTree, requirement.Extends, requirement.Name):
+            if requirement.Type == PackageRequirementTypeString.Extension and not PackageFilter.__IsExtensionAvailable(
+                requirementTree, requirement.Extends, requirement.Name
+            ):
                 missing.append(QualifiedRequirementExtensionName.ToString(requirement.Extends, requirement.Name))
         return missing
 
-
     @staticmethod
-    def __GetCompleteMissingFeatureNames(package: Union[CommonPackage, AppInfoPackage], featureNameList: List[str]) -> List[str]:
+    def __GetCompleteMissingFeatureNames(package: CommonPackage | AppInfoPackage, featureNameList: list[str]) -> list[str]:
         missing = []
         for feature in package.ResolvedAllUsedFeatures:
-            if not feature.Name in featureNameList:
+            if feature.Name not in featureNameList:
                 missing.append(feature.Name)
         return missing
 
-
     @overload
     @staticmethod
-    def __FiltersPackagesByRequiredFeature(log: Log, packages: List[CommonPackage],
-                                           requiredFeatureNameList: List[str]) -> List[T]:
+    def __FiltersPackagesByRequiredFeature(log: Log, packages: list[CommonPackage], requiredFeatureNameList: list[str]) -> list[T]:
         pass
 
     @overload
     @staticmethod
-    def __FiltersPackagesByRequiredFeature(log: Log, packages: List[AppInfoPackage],
-                                           requiredFeatureNameList: List[str]) -> List[T]:
+    def __FiltersPackagesByRequiredFeature(log: Log, packages: list[AppInfoPackage], requiredFeatureNameList: list[str]) -> list[T]:
         pass
 
     @staticmethod
-    def __FiltersPackagesByRequiredFeature(log: Log, packages: Union[List[CommonPackage], List[AppInfoPackage]],
-                                           requiredFeatureNameList: List[str]) -> List[T]:
-        """ Filter packages to those that require the specified feature.
-            - If '*' is contained in 'requiredFeatureNameList' then we return 'packages' and no filtering is done.
-            - Will always return a new list
+    def __FiltersPackagesByRequiredFeature(log: Log, packages: list[CommonPackage] | list[AppInfoPackage], requiredFeatureNameList: list[str]) -> list[T]:
+        """Filter packages to those that require the specified feature.
+        - If '*' is contained in 'requiredFeatureNameList' then we return 'packages' and no filtering is done.
+        - Will always return a new list
         """
-        allowAllFeatures = '*' in requiredFeatureNameList
+        allowAllFeatures = "*" in requiredFeatureNameList
         if allowAllFeatures:
-            return cast(List[T], list(packages))
+            return cast(list[T], list(packages))
 
         # Count and filter executables
         filteredPackageList = []
@@ -215,69 +193,64 @@ class PackageFilter:
             if PackageFilter.__UsesFeatures(package, requiredFeatureNameList):
                 filteredPackageList.append(package)
             else:
-                log.LogPrint("Skipping '{0}' since it did not use the features '{1}'".format(PackageFilter.__ToPackageName(package), ", ".join(requiredFeatureNameList)))
-        return cast(List[T], filteredPackageList)
-
+                log.LogPrint(
+                    "Skipping '{}' since it did not use the features '{}'".format(PackageFilter.__ToPackageName(package), ", ".join(requiredFeatureNameList))
+                )
+        return cast(list[T], filteredPackageList)
 
     @staticmethod
-    def __AddParentFeatures(log: Log, featureNameList: List[str],
-                            requirementTree: Union[RequirementTree, AppInfoGlobalRequirementTree],
-                            useStrictFeatureWarning: bool) -> List[str]:
-        if '*' in featureNameList:
+    def __AddParentFeatures(
+        log: Log, featureNameList: list[str], requirementTree: RequirementTree | AppInfoGlobalRequirementTree, useStrictFeatureWarning: bool
+    ) -> list[str]:
+        if "*" in featureNameList:
             return featureNameList
         featureNameList.sort()
         if log.Verbosity > 1:
-            log.LogPrint("Automatically adding features to supplied feature list {0}".format(featureNameList))
+            log.LogPrint(f"Automatically adding features to supplied feature list {featureNameList}")
         featureNameSet = set(featureNameList)
         for featureName in featureNameList:
             if featureName in requirementTree.FeatureToNodeDict:
                 requirementNode = requirementTree.FeatureToNodeDict[featureName]
-                currentNode = requirementNode  # type: Optional[Union[RequirementTreeNode, AppInfoGlobalRequirementTreeNode]]
+                currentNode: RequirementTreeNode | AppInfoGlobalRequirementTreeNode | None = requirementNode
                 while currentNode is not None:
-                    if currentNode.Content is not None:
-                        if not currentNode.Content.Name in featureNameSet:
-                            featureNameSet.add(currentNode.Content.Name)
-                            if log.Verbosity > 1 and requirementNode.Content is not None:
-                                log.LogPrint("- '{0}' because '{1}' depends on it".format(currentNode.Content.Name, requirementNode.Content.Name))
+                    if currentNode.Content is not None and currentNode.Content.Name not in featureNameSet:
+                        featureNameSet.add(currentNode.Content.Name)
+                        if log.Verbosity > 1 and requirementNode.Content is not None:
+                            log.LogPrint(f"- '{currentNode.Content.Name}' because '{requirementNode.Content.Name}' depends on it")
                     currentNode = currentNode.Parent
             else:
                 featureNameSet.remove(featureName)
                 if useStrictFeatureWarning:
-                    log.DoPrintWarning("Unknown feature name '{0}' in filterNameList {1}".format(featureName, featureNameList))
+                    log.DoPrintWarning(f"Unknown feature name '{featureName}' in filterNameList {featureNameList}")
                 else:
                     # For now just log a warning
-                    log.LogPrintVerbose(5, "Unknown feature name '{0}' in filterNameList {1}".format(featureName, featureNameList))
+                    log.LogPrintVerbose(5, f"Unknown feature name '{featureName}' in filterNameList {featureNameList}")
         resultList = list(featureNameSet)
         resultList.sort()
         return resultList
 
-
+    @overload
+    @staticmethod
+    def __FiltersPackagesByFeatures(log: Log, packages: list[CommonPackage], featureNameList: list[str]) -> list[T]:
+        pass
 
     @overload
     @staticmethod
-    def __FiltersPackagesByFeatures(log: Log, packages: List[CommonPackage], featureNameList: List[str]) -> List[T]:
+    def __FiltersPackagesByFeatures(log: Log, packages: list[AppInfoPackage], featureNameList: list[str]) -> list[T]:
         pass
 
-
-    @overload
     @staticmethod
-    def __FiltersPackagesByFeatures(log: Log, packages: List[AppInfoPackage], featureNameList: List[str]) -> List[T]:
-        pass
-
-
-    @staticmethod
-    def __FiltersPackagesByFeatures(log: Log, packages: Union[List[CommonPackage], List[AppInfoPackage]],
-                                    featureNameList: List[str]) -> List[T]:
-        """  Filter packages by features.
-             If '*' is in the featureNameList a clone of 'packages' will be returned
-             Else we return a list containing only the packages that can be build with the available features
+    def __FiltersPackagesByFeatures(log: Log, packages: list[CommonPackage] | list[AppInfoPackage], featureNameList: list[str]) -> list[T]:
+        """Filter packages by features.
+        If '*' is in the featureNameList a clone of 'packages' will be returned
+        Else we return a list containing only the packages that can be build with the available features
         """
 
-        if '*' in featureNameList:
+        if "*" in featureNameList:
             log.LogPrint("Filtering by features: All")
-            return cast(List[T], list(packages))
+            return cast(list[T], list(packages))
         else:
-            log.LogPrint("Filtering by features: {0}".format(", ".join(featureNameList)))
+            log.LogPrint("Filtering by features: {}".format(", ".join(featureNameList)))
 
         filteredPackageList = []
         for package in packages:
@@ -285,45 +258,46 @@ class PackageFilter:
                 filteredPackageList.append(package)
             elif package.Type == PackageType.Library or package.Type == PackageType.Executable or PackageFilter.__HasRecipe(package):
                 missingFeatures = PackageFilter.__GetCompleteMissingFeatureNames(package, featureNameList)
-                log.LogPrint("Could not build package '{0}' due to missing features '{1}'".format(PackageFilter.__ToPackageName(package), ", ".join(missingFeatures)))
-        return cast(List[T], filteredPackageList)
-
-
-    @overload
-    @staticmethod
-    def __FiltersPackagesByExtensions(log: Log,
-                                      packages: List[CommonPackage],
-                                      extensionNameList: ExtensionListManager,
-                                      featureNameList: List[str],
-                                      requirementTree: RequirementTree) -> List[T]:
-        pass
-
+                log.LogPrint(
+                    "Could not build package '{}' due to missing features '{}'".format(PackageFilter.__ToPackageName(package), ", ".join(missingFeatures))
+                )
+        return cast(list[T], filteredPackageList)
 
     @overload
     @staticmethod
-    def __FiltersPackagesByExtensions(log: Log,
-                                      packages: List[AppInfoPackage],
-                                      extensionNameList: ExtensionListManager,
-                                      featureNameList: List[str],
-                                      requirementTree: AppInfoGlobalRequirementTree) -> List[T]:
+    def __FiltersPackagesByExtensions(
+        log: Log, packages: list[CommonPackage], extensionNameList: ExtensionListManager, featureNameList: list[str], requirementTree: RequirementTree
+    ) -> list[T]:
         pass
 
+    @overload
+    @staticmethod
+    def __FiltersPackagesByExtensions(
+        log: Log,
+        packages: list[AppInfoPackage],
+        extensionNameList: ExtensionListManager,
+        featureNameList: list[str],
+        requirementTree: AppInfoGlobalRequirementTree,
+    ) -> list[T]:
+        pass
 
     @staticmethod
-    def __FiltersPackagesByExtensions(log: Log,
-                                      packages: Union[List[CommonPackage], List[AppInfoPackage]],
-                                      extensionNameList: ExtensionListManager,
-                                      featureNameList: List[str],
-                                      requirementTree: Union[RequirementTree, AppInfoGlobalRequirementTree]) -> List[T]:
-        """  Filter packages by extensions.
-             If '*' is in the extensionNameList a clone of 'packages' will be returned
-             Else we return a list containing only the packages that can be build with the available extensions
+    def __FiltersPackagesByExtensions(
+        log: Log,
+        packages: list[CommonPackage] | list[AppInfoPackage],
+        extensionNameList: ExtensionListManager,
+        featureNameList: list[str],
+        requirementTree: RequirementTree | AppInfoGlobalRequirementTree,
+    ) -> list[T]:
+        """Filter packages by extensions.
+        If '*' is in the extensionNameList a clone of 'packages' will be returned
+        Else we return a list containing only the packages that can be build with the available extensions
         """
         if extensionNameList.AllowAllExtensions:
             log.LogPrint("Filtering by extensions: All")
-            return cast(List[T], list(packages))
+            return cast(list[T], list(packages))
         else:
-            log.LogPrint("Filtering by extensions: {0}".format(", ".join([str(qualifiedName) for qualifiedName in extensionNameList.Content])))
+            log.LogPrint("Filtering by extensions: {}".format(", ".join([str(qualifiedName) for qualifiedName in extensionNameList.Content])))
 
         filteredPackageList = []
         for package in packages:
@@ -331,58 +305,51 @@ class PackageFilter:
                 filteredPackageList.append(package)
             elif package.Type == PackageType.Library or package.Type == PackageType.Executable or PackageFilter.__HasRecipe(package):
                 missingNames = PackageFilter.__GetCompleteMissingExtensionNames(package, requirementTree)
-                log.LogPrint("Could not build package '{0}' due to missing extension '{1}'".format(PackageFilter.__ToPackageName(package), ", ".join(missingNames)))
-        return cast(List[T], filteredPackageList)
-
+                log.LogPrint(
+                    "Could not build package '{}' due to missing extension '{}'".format(PackageFilter.__ToPackageName(package), ", ".join(missingNames))
+                )
+        return cast(list[T], filteredPackageList)
 
     @overload
     @staticmethod
-    def __FiltersPackagesBySupported(log: Log, packages: List[CommonPackage]) -> List[T]:
+    def __FiltersPackagesBySupported(log: Log, packages: list[CommonPackage]) -> list[T]:
         pass
 
     @overload
     @staticmethod
-    def __FiltersPackagesBySupported(log: Log, packages: List[AppInfoPackage]) -> List[T]:
+    def __FiltersPackagesBySupported(log: Log, packages: list[AppInfoPackage]) -> list[T]:
         pass
 
     @staticmethod
-    def __FiltersPackagesBySupported(log: Log, packages: Union[List[CommonPackage], List[AppInfoPackage]]) -> List[T]:
-        """ Remove packages that are marked as not supported by the platform
-        """
+    def __FiltersPackagesBySupported(log: Log, packages: list[CommonPackage] | list[AppInfoPackage]) -> list[T]:
+        """Remove packages that are marked as not supported by the platform"""
         packageList = []
         for package in packages:
             if package.ResolvedPlatformSupported:
                 packageList.append(package)
-            elif not package.Type == PackageType.TopLevel and log.IsVerbose:
-                if isinstance(package, Package):
-                    notSupported = LocalUtil.BuildListOfDirectlyNotSupported(package)
-                    notSupportedNames = Util.ExtractNames(notSupported)
-                    log.DoPrint("Skipping {0} since its marked as not supported on this platform by package: {1}".format(package.Name, notSupportedNames))
-        return cast(List[T], packageList)
+            elif package.Type != PackageType.TopLevel and log.IsVerbose and isinstance(package, Package):
+                assert isinstance(package, Package)
+                notSupported = LocalUtil.BuildListOfDirectlyNotSupported(package)
+                notSupportedNames = Util.ExtractNames(notSupported)
+                log.DoPrint(f"Skipping {package.Name} since its marked as not supported on this platform by package: {notSupportedNames}")
+        return cast(list[T], packageList)
 
     @staticmethod
-    def __ContainsExecutablePackage(packages: List[Package]) -> bool:
+    def __ContainsExecutablePackage(packages: list[Package]) -> bool:
         if packages is None:
             return False
-        for package in packages:
-            if package.Type == PackageType.Executable:
-                return True
-        return False
-
+        return any(package.Type == PackageType.Executable for package in packages)
 
     @staticmethod
-    def PrintExecutableSkipReason(log: Log, fullPackageList: List[Package], filteredPackageList: List[Package]) -> None:
+    def PrintExecutableSkipReason(log: Log, fullPackageList: list[Package], filteredPackageList: list[Package]) -> None:
         for package in fullPackageList:
-            if package.Type == PackageType.Executable:
-                if not package.ResolvedPlatformSupported:
-                    notSupported = LocalUtil.BuildListOfDirectlyNotSupported(package)
-                    notSupportedNames = Util.ExtractNames(notSupported)
-                    log.DoPrint("{0} was marked as not supported on this platform by package: {1}".format(package.Name, notSupportedNames))
-
+            if package.Type == PackageType.Executable and not package.ResolvedPlatformSupported:
+                notSupported = LocalUtil.BuildListOfDirectlyNotSupported(package)
+                notSupportedNames = Util.ExtractNames(notSupported)
+                log.DoPrint(f"{package.Name} was marked as not supported on this platform by package: {notSupportedNames}")
 
     @staticmethod
-    def __FilterExtensionsByAvailableFeatures(log: Log, featureNameList: List[str],
-                                              qualifiedExtensionNameList: ExtensionListManager) -> ExtensionListManager:
+    def __FilterExtensionsByAvailableFeatures(log: Log, featureNameList: list[str], qualifiedExtensionNameList: ExtensionListManager) -> ExtensionListManager:
         if qualifiedExtensionNameList.AllowAllExtensions:
             return qualifiedExtensionNameList
 
@@ -391,29 +358,25 @@ class PackageFilter:
             if qualifiedExtensionNameRecord.FeatureName in featureNameList:
                 filteredList.append(qualifiedExtensionNameRecord)
             else:
-                log.LogPrint("Removing extension '{0}' as the feature '{1}' is unavailable".format(qualifiedExtensionNameRecord, qualifiedExtensionNameRecord.FeatureName))
+                log.LogPrint(f"Removing extension '{qualifiedExtensionNameRecord}' as the feature '{qualifiedExtensionNameRecord.FeatureName}' is unavailable")
         return ExtensionListManager(False, filteredList)
 
-
     @staticmethod
-    def __DetermineActualUserBuildRequest(allAvailablePackageListInResolvedBuildOrder: List[CommonPackage],
-                                          requestedPackages: Optional[List[CommonPackage]]) -> List[CommonPackage]:
+    def __DetermineActualUserBuildRequest(
+        allAvailablePackageListInResolvedBuildOrder: list[CommonPackage], requestedPackages: list[CommonPackage] | None
+    ) -> list[CommonPackage]:
         if requestedPackages is not None and len(requestedPackages) > 0:
             return requestedPackages
         return allAvailablePackageListInResolvedBuildOrder
 
     @staticmethod
-    def __FiltersRecipePackages(log: Log, resolvedPackageOrder: List[CommonPackage],
-                                requestedPackages: Optional[List[CommonPackage]]) -> List[CommonPackage]:
+    def __FiltersRecipePackages(log: Log, resolvedPackageOrder: list[CommonPackage], requestedPackages: list[CommonPackage] | None) -> list[CommonPackage]:
         return [package for package in resolvedPackageOrder if not package.ContainsRecipe() or (requestedPackages is not None and package in requestedPackages)]
 
-
     @staticmethod
-    def FilterNotSupported(log: Log,
-                           topLevelPackage: Package,
-                           requestedPackages: Optional[List[Package]]) -> List[Package]:
-        """ Filter the package list based
-            - if they are supported on the platform
+    def FilterNotSupported(log: Log, topLevelPackage: Package, requestedPackages: list[Package] | None) -> list[Package]:
+        """Filter the package list based
+        - if they are supported on the platform
         """
         resolvedBuildOrder = topLevelPackage.ResolvedBuildOrder
 
@@ -425,34 +388,33 @@ class PackageFilter:
         # Now that we have a filtered list of desired packages, extend it to include all required packages
         return PackageListUtil.GetRequiredPackagesInSourcePackageListOrder(requestedPackagesInOrder, resolvedBuildOrder)
 
-
     @staticmethod
-    def Filter(log: Log,
-               topLevelPackage: Package,
-               requestedPackages: Optional[List[Package]],
-               packageFilters: PackageFilters) -> List[Package]:
-        """ Filter the package list based
-            - Required packages by the requested packages (if requestedPackages isnt None)
-            - If there is executeables then chose those that implement the required features in requiredFeatureNameList
-            - the available features from featureNameList
-            - the available extensions from extensionNameList
-            - if they are supported on the platform
+    def Filter(log: Log, topLevelPackage: Package, requestedPackages: list[Package] | None, packageFilters: PackageFilters) -> list[Package]:
+        """Filter the package list based
+        - Required packages by the requested packages (if requestedPackages isnt None)
+        - If there is executeables then chose those that implement the required features in requiredFeatureNameList
+        - the available features from featureNameList
+        - the available extensions from extensionNameList
+        - if they are supported on the platform
         """
         resolvedBuildOrder = topLevelPackage.ResolvedBuildOrder
         requirements = RequirementFilter.GetRequirementList(topLevelPackage, None)
         return PackageFilter.Filter2(log, resolvedBuildOrder, requirements, requestedPackages, packageFilters)
 
     @staticmethod
-    def Filter2(log: Log,
-                resolvedBuildOrder: List[CommonPackage], requirements: List[PackageRequirement],
-                requestedPackages: Optional[List[CommonPackage]],
-                packageFilters: PackageFilters) -> List[CommonPackage]:
-        """ Filter the package list based
-            - Required packages by the requested packages (if requestedPackages isnt None)
-            - If there is executeables then chose those that implement the required features in requiredFeatureNameList
-            - the available features from featureNameList
-            - the available extensions from extensionNameList
-            - if they are supported on the platform
+    def Filter2(
+        log: Log,
+        resolvedBuildOrder: list[CommonPackage],
+        requirements: list[PackageRequirement],
+        requestedPackages: list[CommonPackage] | None,
+        packageFilters: PackageFilters,
+    ) -> list[CommonPackage]:
+        """Filter the package list based
+        - Required packages by the requested packages (if requestedPackages isnt None)
+        - If there is executeables then chose those that implement the required features in requiredFeatureNameList
+        - the available features from featureNameList
+        - the available extensions from extensionNameList
+        - if they are supported on the platform
         """
         requirementTree = RequirementTree(requirements)
 
@@ -477,20 +439,20 @@ class PackageFilter:
         # Remove packages based on the available features (remove all packages that can't be build due to missing features)
         requestedPackagesInOrder = PackageFilter.__FiltersPackagesByFeatures(log, requestedPackagesInOrder, featureNameList2)
         # Remove packages based on the available extensions (remove all packages that can't be build due missing extensions)
-        requestedPackagesInOrder = PackageFilter.__FiltersPackagesByExtensions(log, requestedPackagesInOrder, extensionNameList, featureNameList2, requirementTree)
+        requestedPackagesInOrder = PackageFilter.__FiltersPackagesByExtensions(
+            log, requestedPackagesInOrder, extensionNameList, featureNameList2, requirementTree
+        )
         # Remove packages that are not supported on this platform
         requestedPackagesInOrder = PackageFilter.__FiltersPackagesBySupported(log, requestedPackagesInOrder)
         # Now that we have a filtered list of desired packages, extend it to include all required packages
         return PackageListUtil.GetRequiredPackagesInSourcePackageListOrder(requestedPackagesInOrder, resolvedBuildOrder)
 
-
     @staticmethod
-    def FilterAppInfo(log: Log,
-                      resolvedBuildOrder: List[AppInfoPackage],
-                      appInfoRequirementTree: AppInfoGlobalRequirementTree,
-                      packageFilters: PackageFilters) -> List[AppInfoPackage]:
-        """ The goal of this filter is to follow the same rules as the 'Filter' method
-            so we filter the AppInfoPackage in the same way we would the packages
+    def FilterAppInfo(
+        log: Log, resolvedBuildOrder: list[AppInfoPackage], appInfoRequirementTree: AppInfoGlobalRequirementTree, packageFilters: PackageFilters
+    ) -> list[AppInfoPackage]:
+        """The goal of this filter is to follow the same rules as the 'Filter' method
+        so we filter the AppInfoPackage in the same way we would the packages
         """
         useStrictFeatureWarning = True
         # Smart expand the input lists
@@ -503,7 +465,7 @@ class PackageFilter:
             appInfoRequirementTree.SetExtensionSupport(log, extensionNameList)
 
         # Remove recipe packages (we dont have recipe packages in the app info)
-        #requestedPackagesInOrder = PackageFilter.__FiltersRecipePackages(log, requestedPackagesInOrder)
+        # requestedPackagesInOrder = PackageFilter.__FiltersRecipePackages(log, requestedPackagesInOrder)
 
         # Remove packages based on the users required features request (app must have feature, if no executables in resolvedBuildOrder no filtering is done!)
         resolvedBuildOrder = PackageFilter.__FiltersPackagesByRequiredFeature(log, resolvedBuildOrder, packageFilters.RequiredFeatureNameList)
@@ -519,22 +481,17 @@ class PackageFilter:
 
         # NOTE: this is probably not necessary for app info
         # Now that we have a filtered list of desired packages, extend it to include all required packages
-        #return PackageListUtil.GetRequiredPackagesInSourcePackageListOrder(requestedPackagesInOrder, resolvedBuildOrder)
+        # return PackageListUtil.GetRequiredPackagesInSourcePackageListOrder(requestedPackagesInOrder, resolvedBuildOrder)
         return resolvedBuildOrder
 
-
     @staticmethod
-    def WasThisAExecutableBuildAndAreThereAnyLeft(sourcePackageList: List[Package], packageList: List[Package]) -> bool:
+    def WasThisAExecutableBuildAndAreThereAnyLeft(sourcePackageList: list[Package], packageList: list[Package]) -> bool:
         # If we require executables and had executables available to begin with and if there is no executables left -> exit
-        if PackageFilter.__ContainsExecutablePackage(sourcePackageList) and not PackageFilter.__ContainsExecutablePackage(packageList):
-            return False
-        return True
-
+        return not (PackageFilter.__ContainsExecutablePackage(sourcePackageList) and not PackageFilter.__ContainsExecutablePackage(packageList))
 
     @staticmethod
-    def FilterBuildablePackages(resolvedBuildOrder: List[Package]) -> List[Package]:
-        """ Remove any package that aint buildable.
-        """
+    def FilterBuildablePackages(resolvedBuildOrder: list[Package]) -> list[Package]:
+        """Remove any package that aint buildable."""
         result = []
         for package in resolvedBuildOrder:
             if not package.IsVirtual and (package.Type == PackageType.Library or package.Type == PackageType.Executable):
@@ -542,13 +499,13 @@ class PackageFilter:
         return result
 
     @staticmethod
-    def __CreateExtensionNameList(resolvedBuildOrder: Union[List[CommonPackage], List[AppInfoPackage]], extensionList: ExtensionListManager2) -> ExtensionListManager:
+    def __CreateExtensionNameList(resolvedBuildOrder: list[CommonPackage] | list[AppInfoPackage], extensionList: ExtensionListManager2) -> ExtensionListManager:
         if extensionList.FilterMethod == FilterMethod.AllowAll:
             return ExtensionListManager(True, [])
         elif extensionList.FilterMethod == FilterMethod.AllowList:
             return ExtensionListManager(False, extensionList.Content)
 
-        uniqueExtensionDict = dict()  # type: Dict[str,QualifiedRequirementExtensionName]
+        uniqueExtensionDict: dict[str, QualifiedRequirementExtensionName] = {}
         for package in resolvedBuildOrder:
             for requirement in package.ResolvedAllRequirements:
                 if requirement.Type == PackageRequirementTypeString.Extension:
@@ -563,10 +520,9 @@ class PackageFilter:
         allowedList = list(uniqueExtensionDict.values())
         return ExtensionListManager(False, allowedList)
 
-
     @staticmethod
-    def ApplyExePackageNameFilter(log: Log, candidatePackageList: List[CommonPackage], exePackageNameFilter: str) -> List[CommonPackage]:
-        result = [] # type: List[CommonPackage]
+    def ApplyExePackageNameFilter(log: Log, candidatePackageList: list[CommonPackage], exePackageNameFilter: str) -> list[CommonPackage]:
+        result: list[CommonPackage] = []
         for candidatePackage in candidatePackageList:
             if candidatePackage.Type == PackageType.Executable:
                 candidateSourcePackageName = ""
@@ -577,20 +533,19 @@ class PackageFilter:
                 if PackageFilter.IsMatchForExePackageNameFilter(candidateSourcePackageName, exePackageNameFilter):
                     result.append(candidatePackage)
         if len(result) <= 0:
-            raise Exception("No executable match the exePackageNameFilter '{0}'".format(exePackageNameFilter))
+            raise Exception(f"No executable match the exePackageNameFilter '{exePackageNameFilter}'")
         return result
 
     @staticmethod
-    def ApplyExePackageNameFilterAppInfo(log: Log, candidatePackageList: List[AppInfoPackage], exePackageNameFilter: str) -> List[AppInfoPackage]:
-        result = [] # type: List[AppInfoPackage]
+    def ApplyExePackageNameFilterAppInfo(log: Log, candidatePackageList: list[AppInfoPackage], exePackageNameFilter: str) -> list[AppInfoPackage]:
+        result: list[AppInfoPackage] = []
         for candidatePackage in candidatePackageList:
             if candidatePackage.Type == PackageType.Executable:
                 if PackageFilter.IsMatchForExePackageNameFilter(candidatePackage.SourceName, exePackageNameFilter):
                     result.append(candidatePackage)
         if len(result) <= 0:
-            raise Exception("No executable match the exePackageNameFilter '{0}'".format(exePackageNameFilter))
+            raise Exception(f"No executable match the exePackageNameFilter '{exePackageNameFilter}'")
         return result
-
 
     @staticmethod
     def IsMatchForExePackageNameFilter(packageName: str, exePackageNameFilter: str) -> bool:

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright 2019 NXP
 # All rights reserved.
 #
@@ -29,26 +29,27 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-from typing import Dict
-from typing import Optional
+
 from FslBuildGen import Util
 from FslBuildGen.Engine.Cache.JsonProjectIdCache import JsonProjectIdCache
 from FslBuildGen.Exceptions import InvalidPackageNameException
 
-class ProjectIdCache(object):
 
+class ProjectIdCache:
     def __init__(self, projectIdCache: JsonProjectIdCache) -> None:
         super().__init__()
         self.__projectIdCache = projectIdCache
 
-        projectIdToNameDict = {} # type: Dict[str, str]
+        projectIdToNameDict: dict[str, str] = {}
         for packageName, packageProjectId in self.__projectIdCache.ProjectIdDict.items():
             if not Util.IsValidPackageName(packageName):
                 raise InvalidPackageNameException(packageName)
             if packageProjectId in projectIdToNameDict:
-                raise Exception("The package project id '{0}' is registered for multiple package names. First '{1}' Second '{2}'".format(packageProjectId, projectIdToNameDict[packageName], packageName))
+                raise Exception(
+                    f"The package project id '{packageProjectId}' is registered for multiple package names. First '{projectIdToNameDict[packageName]}' Second '{packageName}'"
+                )
             projectIdToNameDict[packageProjectId] = packageName
 
         self.__projectIdToNameDict = projectIdToNameDict
@@ -56,12 +57,12 @@ class ProjectIdCache(object):
     def Contains(self, packageProjectId: str) -> bool:
         return packageProjectId in self.__projectIdToNameDict
 
-    def TryGetByName(self, packageName: str) -> Optional[str]:
+    def TryGetByName(self, packageName: str) -> str | None:
         if packageName in self.__projectIdCache.ProjectIdDict:
             return self.__projectIdCache.ProjectIdDict[packageName]
         return None
 
-    #def Add(self, packageName: str, packageProjectId: str) -> bool:
+    # def Add(self, packageName: str, packageProjectId: str) -> bool:
     #    if not Util.IsValidPackageName(packageName):
     #        raise InvalidPackageNameException(packageName)
 
@@ -90,11 +91,13 @@ class ProjectIdCache(object):
         if packageProjectId in self.__projectIdToNameDict:
             oldName = self.__projectIdToNameDict[packageProjectId]
             if oldName != packageName:
-                raise Exception("PackageName '{0}' uses project id '{1}' already used by package: '{2}'".format(packageName, packageProjectId, self.__projectIdToNameDict[packageProjectId]))
+                raise Exception(
+                    f"PackageName '{packageName}' uses project id '{packageProjectId}' already used by package: '{self.__projectIdToNameDict[packageProjectId]}'"
+                )
         if packageName in self.__projectIdCache.ProjectIdDict:
             oldId = self.__projectIdCache.ProjectIdDict[packageName]
             if oldId != packageProjectId:
-                raise Exception("PackageName '{0}' already added with project Id '{1}'".format(packageName, self.__projectIdCache.ProjectIdDict[packageName]))
+                raise Exception(f"PackageName '{packageName}' already added with project Id '{self.__projectIdCache.ProjectIdDict[packageName]}'")
 
         self.__projectIdCache.Add(packageName, packageProjectId)
         self.__projectIdToNameDict[packageProjectId] = packageName
@@ -104,9 +107,11 @@ class ProjectIdCache(object):
             raise InvalidPackageNameException(packageName)
 
         if packageProjectId in self.__projectIdToNameDict:
-            raise Exception("Package '{0}' uses project id '{1}' already used by package: '{2}'".format(packageName, packageProjectId, self.__projectIdToNameDict[packageProjectId]))
+            raise Exception(
+                f"Package '{packageName}' uses project id '{packageProjectId}' already used by package: '{self.__projectIdToNameDict[packageProjectId]}'"
+            )
         if packageName in self.__projectIdCache.ProjectIdDict:
-            raise Exception("Package '{0}' already added".format(packageName))
+            raise Exception(f"Package '{packageName}' already added")
 
         self.__projectIdCache.Add(packageName, packageProjectId)
         self.__projectIdToNameDict[packageProjectId] = packageName

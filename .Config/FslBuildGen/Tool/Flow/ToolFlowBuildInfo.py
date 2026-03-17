@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright 2017 NXP
 # All rights reserved.
 #
@@ -29,16 +29,13 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-from typing import Any
-from typing import List
-from typing import Optional
 import argparse
+from typing import Any
+
 from FslBuildGen import Main as MainFlow
-from FslBuildGen import PackageListUtil
-from FslBuildGen import ParseUtil
-from FslBuildGen import PluginSharedValues
+from FslBuildGen import PackageListUtil, ParseUtil, PluginSharedValues
 from FslBuildGen.Build import Builder
 from FslBuildGen.Build.BuildVariantConfigUtil import BuildVariantConfigUtil
 from FslBuildGen.Build.DataTypes import CommandType
@@ -46,12 +43,15 @@ from FslBuildGen.BuildExternal.RecipeInfo import RecipeInfo
 from FslBuildGen.Config import Config
 from FslBuildGen.Context.GeneratorContext import GeneratorContext
 from FslBuildGen.DataTypes import PackageType
-#from FslBuildGen.Generator import PluginConfig
+
+# from FslBuildGen.Generator import PluginConfig
 from FslBuildGen.Engine.EngineResolveConfig import EngineResolveConfig
 from FslBuildGen.Generator.GeneratorConfig import GeneratorConfig
-#from FslBuildGen.Log import Log
-#from FslBuildGen.PackageConfig import PlatformNameString
-#from FslBuildGen.PackageFilters import PackageFilters
+from FslBuildGen.Info import InfoSaver
+
+# from FslBuildGen.Log import Log
+# from FslBuildGen.PackageConfig import PlatformNameString
+# from FslBuildGen.PackageFilters import PackageFilters
 from FslBuildGen.Packages.Package import Package
 from FslBuildGen.Tool.AToolAppFlow import AToolAppFlow
 from FslBuildGen.Tool.AToolAppFlowFactory import AToolAppFlowFactory
@@ -59,17 +59,17 @@ from FslBuildGen.Tool.ToolAppConfig import ToolAppConfig
 from FslBuildGen.Tool.ToolAppContext import ToolAppContext
 from FslBuildGen.Tool.ToolCommonArgConfig import ToolCommonArgConfig
 from FslBuildGen.ToolConfig import ToolConfig
-from FslBuildGen.Info import InfoSaver
 from FslBuildGen.VariableContextHelper import VariableContextHelper
 
-class DefaultValue(object):
+
+class DefaultValue:
     PackageTypeList = "*"
     RequireFeaturesList = "*"
     UseExtensionsList = "*"
     UseFeaturesList = "*"
-    #RequireExtensionsList = "*"
+    # RequireExtensionsList = "*"
 
-    #DryRun = False
+    # DryRun = False
     IgnoreNotSupported = False
     ListBuildVariants = False
     ListExtensions = False
@@ -80,17 +80,17 @@ class DefaultValue(object):
     Stats = False
     Details = False
     PackageConfigurationType = PluginSharedValues.TYPE_DEFAULT
-    SaveJson = None # type: Optional[str]
+    SaveJson: str | None = None
     IncludeGeneratorReport = False
 
 
 class LocalToolConfig(ToolAppConfig):
-    def __init__(self, packageTypeList: List[str]) -> None:
+    def __init__(self, packageTypeList: list[str]) -> None:
         super().__init__()
 
         self.PackageTypeList = packageTypeList
 
-        #self.DryRun = DefaultValue.DryRun
+        # self.DryRun = DefaultValue.DryRun
         self.IgnoreNotSupported = DefaultValue.IgnoreNotSupported
         self.ListBuildVariants = DefaultValue.ListBuildVariants
         self.ListExtensions = DefaultValue.ListExtensions
@@ -111,11 +111,10 @@ def GetDefaultLocalConfig() -> LocalToolConfig:
 
 
 class ToolFlowBuildInfo(AToolAppFlow):
-    #def __init__(self, toolAppContext: ToolAppContext) -> None:
+    # def __init__(self, toolAppContext: ToolAppContext) -> None:
     #    super().__init__(toolAppContext)
 
-
-    def ProcessFromCommandLine(self, args: Any, currentDirPath: str, toolConfig: ToolConfig, userTag: Optional[object]) -> None:
+    def ProcessFromCommandLine(self, args: Any, currentDirPath: str, toolConfig: ToolConfig, userTag: object | None) -> None:
         # Process the input arguments here, before calling the real work function
 
         parsedPackageType = ParseUtil.ParsePackageTypeList(args.PackageType)
@@ -141,12 +140,12 @@ class ToolFlowBuildInfo(AToolAppFlow):
 
         self.Process(currentDirPath, toolConfig, localToolConfig)
 
-
     def Process(self, currentDirPath: str, toolConfig: ToolConfig, localToolConfig: LocalToolConfig) -> None:
-        config = Config(self.Log, toolConfig, localToolConfig.PackageConfigurationType,
-                        localToolConfig.BuildVariantConstraints, localToolConfig.AllowDevelopmentPlugins)
+        config = Config(
+            self.Log, toolConfig, localToolConfig.PackageConfigurationType, localToolConfig.BuildVariantConstraints, localToolConfig.AllowDevelopmentPlugins
+        )
 
-        #if localToolConfig.DryRun:
+        # if localToolConfig.DryRun:
         #    config.ForceDisableAllWrite()
         if localToolConfig.IgnoreNotSupported:
             config.IgnoreNotSupported = True
@@ -157,18 +156,31 @@ class ToolFlowBuildInfo(AToolAppFlow):
 
         buildVariantConfig = BuildVariantConfigUtil.GetBuildVariantConfig(localToolConfig.BuildVariantConstraints)
         variableContext = VariableContextHelper.Create(toolConfig, localToolConfig.UserSetVariables)
-        generator = self.ToolAppContext.PluginConfigContext.GetGeneratorPluginById(localToolConfig.PlatformName, localToolConfig.Generator,
-                                                                                   buildVariantConfig, variableContext.UserSetVariables,
-                                                                                   config.ToolConfig.DefaultPackageLanguage,
-                                                                                   config.ToolConfig.CMakeConfiguration,
-                                                                                   localToolConfig.GetUserCMakeConfig(), False)
+        generator = self.ToolAppContext.PluginConfigContext.GetGeneratorPluginById(
+            localToolConfig.PlatformName,
+            localToolConfig.Generator,
+            buildVariantConfig,
+            variableContext.UserSetVariables,
+            config.ToolConfig.DefaultPackageLanguage,
+            config.ToolConfig.CMakeConfiguration,
+            localToolConfig.GetUserCMakeConfig(),
+            False,
+        )
 
-        theFiles = MainFlow.DoGetFiles(config, toolConfig.GetMinimalConfig(generator.CMakeConfig), currentDirPath, localToolConfig.Recursive)
-        generatorContext = GeneratorContext(config, self.ErrorHelpManager, packageFilters.RecipeFilterManager, config.ToolConfig.Experimental,
-                                            generator, variableContext)
+        theFiles = MainFlow.DoGetFiles(
+            config,
+            toolConfig.GetMinimalConfig(generator.CMakeConfig),
+            currentDirPath,
+            localToolConfig.Recursive,
+            additionalDirs=self.ToolAppContext.LowLevelToolConfig.AdditionalInputDirs,
+        )
+        generatorContext = GeneratorContext(
+            config, self.ErrorHelpManager, packageFilters.RecipeFilterManager, config.ToolConfig.Experimental, generator, variableContext
+        )
         # As we want to get info for all flavors we remove the limits
-        packages = MainFlow.DoGetPackages(generatorContext, config, theFiles, packageFilters, autoAddRecipeExternals=False,
-                                          engineResolveConfig=EngineResolveConfig.CreateNoLimit())
+        packages = MainFlow.DoGetPackages(
+            generatorContext, config, theFiles, packageFilters, autoAddRecipeExternals=False, engineResolveConfig=EngineResolveConfig.CreateNoLimit()
+        )
 
         topLevelPackage = PackageListUtil.GetTopLevelPackage(packages)
         requestedFiles = None if config.IsSDKBuild else theFiles
@@ -178,17 +190,18 @@ class ToolFlowBuildInfo(AToolAppFlow):
         if localToolConfig.SaveJson is not None:
             if localToolConfig.BuildPackageFilters.ExtensionNameList is None:
                 raise Exception("Invalid config missing ExtensionNameList filters")
-            config.LogPrint("Saving to json file '{0}'".format(localToolConfig.SaveJson))
-
+            config.LogPrint(f"Saving to json file '{localToolConfig.SaveJson}'")
 
             generatorConfig = GeneratorConfig(generator.PlatformName, config.SDKConfigTemplatePath, config.ToolConfig, 1, CommandType.Build)
-            InfoSaver.SavePackageMetaDataToJson(generatorContext,
-                                                generatorConfig,
-                                                localToolConfig.SaveJson,
-                                                config,
-                                                topLevelPackage,
-                                                localToolConfig.PackageTypeList,
-                                                localToolConfig.IncludeGeneratorReport)
+            InfoSaver.SavePackageMetaDataToJson(
+                generatorContext,
+                generatorConfig,
+                localToolConfig.SaveJson,
+                config,
+                topLevelPackage,
+                localToolConfig.PackageTypeList,
+                localToolConfig.IncludeGeneratorReport,
+            )
 
         if localToolConfig.ListFeatures:
             Builder.ShowFeatureList(self.Log, topLevelPackage, requestedFiles, packageNameDetails)
@@ -224,21 +237,20 @@ class ToolFlowBuildInfo(AToolAppFlow):
             elif dep.Package.Type == PackageType.ToolRecipe:
                 toolRecipe += 1
 
-        self.Log.DoPrint("Total packages: {}".format(len(topLevelPackage.ResolvedAllDependencies)))
-        self.Log.DoPrint("- Exe:        {}".format(exeCount))
-        self.Log.DoPrint("- Lib:        {}".format(libCount))
-        self.Log.DoPrint("- ExtLib:     {}".format(extLibCount))
-        self.Log.DoPrint("- HeaderLib:  {}".format(headerLibCount))
-        self.Log.DoPrint("- ToolRecipe: {}".format(toolRecipe))
+        self.Log.DoPrint(f"Total packages: {len(topLevelPackage.ResolvedAllDependencies)}")
+        self.Log.DoPrint(f"- Exe:        {exeCount}")
+        self.Log.DoPrint(f"- Lib:        {libCount}")
+        self.Log.DoPrint(f"- ExtLib:     {extLibCount}")
+        self.Log.DoPrint(f"- HeaderLib:  {headerLibCount}")
+        self.Log.DoPrint(f"- ToolRecipe: {toolRecipe}")
+
 
 class ToolAppFlowFactory(AToolAppFlowFactory):
-    #def __init__(self) -> None:
+    # def __init__(self) -> None:
     #    pass
 
-
     def GetTitle(self) -> str:
-        return 'FslBuildInfo'
-
+        return "FslBuildInfo"
 
     def GetToolCommonArgConfig(self) -> ToolCommonArgConfig:
         argConfig = ToolCommonArgConfig()
@@ -252,32 +264,38 @@ class ToolAppFlowFactory(AToolAppFlowFactory):
         argConfig.AllowRecursive = True
         return argConfig
 
-
-    def AddCustomArguments(self, parser: argparse.ArgumentParser, toolConfig: ToolConfig, userTag: Optional[object]) -> None:
+    def AddCustomArguments(self, parser: argparse.ArgumentParser, toolConfig: ToolConfig, userTag: object | None) -> None:
         packageTypes = PackageType.AllStrings()
         packageTypes.sort()
 
-        #parser.add_argument('--graph', action='store_true', help='Generate a dependency graph using dot (requires the graphviz dot executable in path)')
-        parser.add_argument('--IgnoreNotSupported', action='store_true', help='try to build things that are marked as not supported')
+        # parser.add_argument('--graph', action='store_true', help='Generate a dependency graph using dot (requires the graphviz dot executable in path)')
+        parser.add_argument("--IgnoreNotSupported", action="store_true", help="try to build things that are marked as not supported")
 
-        parser.add_argument('--ListBuildVariants', action='store_true', help='List all build-variants')
-        parser.add_argument('--ListExtensions', action='store_true', help='List all extensions')
-        parser.add_argument('--ListFeatures', action='store_true', help='List all features supported by build')
-        parser.add_argument('--ListVariants', action='store_true', help='List all used variants')
-        parser.add_argument('--ListRecipes', action='store_true', help='List all known recipes')
-        parser.add_argument('--ListRequirements', action='store_true', help='List all requirements')
+        parser.add_argument("--ListBuildVariants", action="store_true", help="List all build-variants")
+        parser.add_argument("--ListExtensions", action="store_true", help="List all extensions")
+        parser.add_argument("--ListFeatures", action="store_true", help="List all features supported by build")
+        parser.add_argument("--ListVariants", action="store_true", help="List all used variants")
+        parser.add_argument("--ListRecipes", action="store_true", help="List all known recipes")
+        parser.add_argument("--ListRequirements", action="store_true", help="List all requirements")
 
-        parser.add_argument('--stats', action='store_true', help='Show stats')
-        parser.add_argument('--details', action='store_true', help='Provide extended details')
+        parser.add_argument("--stats", action="store_true", help="Show stats")
+        parser.add_argument("--details", action="store_true", help="Provide extended details")
 
-        parser.add_argument('-t', '--type', default=DefaultValue.PackageConfigurationType, choices=[PluginSharedValues.TYPE_DEFAULT, 'sdk'], help='Select generator type')
+        parser.add_argument(
+            "-t", "--type", default=DefaultValue.PackageConfigurationType, choices=[PluginSharedValues.TYPE_DEFAULT, "sdk"], help="Select generator type"
+        )
 
-        parser.add_argument('--SaveJson', default=DefaultValue.SaveJson, help='Save package information to the given json output file')
-        parser.add_argument('--IncludeGeneratorReport', action='store_true', help='If set we include the generator report if available when saving to json')
+        parser.add_argument("--SaveJson", default=DefaultValue.SaveJson, help="Save package information to the given json output file")
+        parser.add_argument("--IncludeGeneratorReport", action="store_true", help="If set we include the generator report if available when saving to json")
 
         # filtering
-        parser.add_argument('--PackageType', default=DefaultValue.PackageTypeList, help="The list of package types that will be saved [{0}]. For example [Executable] to save all packages of the 'Executable' type.".format(', '.join(packageTypes)))
-
+        parser.add_argument(
+            "--PackageType",
+            default=DefaultValue.PackageTypeList,
+            help="The list of package types that will be saved [{}]. For example [Executable] to save all packages of the 'Executable' type.".format(
+                ", ".join(packageTypes)
+            ),
+        )
 
     def Create(self, toolAppContext: ToolAppContext) -> AToolAppFlow:
         return ToolFlowBuildInfo(toolAppContext)

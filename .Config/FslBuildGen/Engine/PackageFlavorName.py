@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright 2020 NXP
 # All rights reserved.
 #
@@ -29,23 +28,27 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
 from typing import Optional
-#from FslBuildGen import Util
-from FslBuildGen.Engine.Unresolved.UnresolvedPackageName import UnresolvedPackageName
-from FslBuildGen.Engine.Unresolved.UnresolvedPackageFlavorUnqualifiedName import UnresolvedPackageFlavorUnqualifiedName
-#from FslBuildGen.Exceptions import InvalidPackageFlavorNameException
 
-class PackageFlavorName(object):
+from FslBuildGen.Engine.Unresolved.UnresolvedPackageFlavorUnqualifiedName import UnresolvedPackageFlavorUnqualifiedName
+
+# from FslBuildGen import Util
+from FslBuildGen.Engine.Unresolved.UnresolvedPackageName import UnresolvedPackageName
+
+# from FslBuildGen.Exceptions import InvalidPackageFlavorNameException
+
+
+class PackageFlavorName:
     def __init__(self, ownerPackageName: UnresolvedPackageName, name: UnresolvedPackageFlavorUnqualifiedName) -> None:
         super().__init__()
 
         self.OwnerPackageName = ownerPackageName
-        self.Value = "{0}.{1}".format(ownerPackageName.Value, name) if len(name.Value) > 0 else ownerPackageName.Value
+        self.Value = f"{ownerPackageName.Value}.{name}" if len(name.Value) > 0 else ownerPackageName.Value
         self.Id = self.Value.upper()
 
-    def CompareTo(self, other: 'PackageFlavorName') -> int:
+    def CompareTo(self, other: "PackageFlavorName") -> int:
         if self.Value < other.Value:
             return -1
         return 0 if self.Value == other.Value else 1
@@ -82,18 +85,18 @@ class PackageFlavorName(object):
         return self.Value
 
     def __repr__(self) -> str:
-        return "PackageFlavorName({0})".format(self.Value)
+        return f"PackageFlavorName({self.Value})"
 
     @staticmethod
-    def FromString(value: str) -> 'PackageFlavorName':
+    def FromString(value: str) -> "PackageFlavorName":
         res = PackageFlavorName.TryFromString(value)
         if res is None:
-            raise Exception("Invalid package flavor name '{0}', package flavor names must contain atleast one '.'".format(value))
+            raise Exception(f"Invalid package flavor name '{value}', package flavor names must contain atleast one '.'")
         return res
 
     @staticmethod
-    def TryFromString(value: str) -> Optional['PackageFlavorName']:
-        lastDotIndex = value.rfind('.')
+    def TryFromString(value: str) -> Optional["PackageFlavorName"]:
+        lastDotIndex = value.rfind(".")
         if lastDotIndex < 0:
             return None
-        return PackageFlavorName(UnresolvedPackageName(value[:lastDotIndex]), UnresolvedPackageFlavorUnqualifiedName(value[lastDotIndex+1:]))
+        return PackageFlavorName(UnresolvedPackageName(value[:lastDotIndex]), UnresolvedPackageFlavorUnqualifiedName(value[lastDotIndex + 1 :]))

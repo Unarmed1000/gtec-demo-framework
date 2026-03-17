@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright (c) 2014 Freescale Semiconductor, Inc.
 # All rights reserved.
 #
@@ -29,30 +29,31 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
 from typing import Any
-from typing import List
-from typing import Optional
-from typing import Tuple
-#from FslBuildGen.DataTypes import ExternalDependencyType
+
+# from FslBuildGen.DataTypes import ExternalDependencyType
+
 
 # TODO: add a proper type to entries. It is a type that contains the Name attribute of type str
-def ExtractNames(entries: Any) -> List[str]:
+def ExtractNames(entries: Any) -> list[str]:
     resList = []
     for entry in entries:
         resList.append(entry.Name)
     return resList
 
+
 # TODO: add a proper type to entries. It is a type that contains the Name attribute of type str
-def ExtractValues(entries: Any) -> List[str]:
+def ExtractValues(entries: Any) -> list[str]:
     resList = []
     for entry in entries:
         resList.append(entry.Value)
     return resList
 
+
 # TODO: add a proper type to entries. It is a type that contains the Package attribute and the package attribute is of type Package
-def ExtractNonVirtualNames(entries: Any) -> List[str]:
+def ExtractNonVirtualNames(entries: Any) -> list[str]:
     resList = []
     for entry in entries:
         package = entry.Package
@@ -62,26 +63,24 @@ def ExtractNonVirtualNames(entries: Any) -> List[str]:
 
 
 # TODO: add a proper type to entries. It is a type that contains the Name attribute of type str
-def ExtractNamesAsMakeEnvironmentVariables(entries: Any) -> List[str]:
+def ExtractNamesAsMakeEnvironmentVariables(entries: Any) -> list[str]:
     resList = []
     for entry in entries:
         if not (entry.Name.startswith("$(") and entry.Name.endswith(")")):
-            resList.append("$({0})".format(entry.Name))
+            resList.append(f"$({entry.Name})")
         else:
             resList.append(entry.Name)
     return resList
 
 
-
-
 def RemoveEnvironmentVariablePadding(environmentVariableName: str) -> str:
     if not environmentVariableName.startswith("$(") or not environmentVariableName.endswith(")"):
-        raise Exception("Environment variable name '{0}' did not follow the expected pattern of $(name)".format(environmentVariableName))
+        raise Exception(f"Environment variable name '{environmentVariableName}' did not follow the expected pattern of $(name)")
     return environmentVariableName[2:-1]
 
 
 # TODO: add a proper type to entries. It is a type that contains the Type attribute of type typeValue
-def FilterByType(entries: List[Any], typeValue: Any) -> List[Any]: #: ExternalDependencyType):
+def FilterByType(entries: list[Any], typeValue: Any) -> list[Any]:  #: ExternalDependencyType):
     res = []
     if isinstance(typeValue, (list, set)):
         for entry in entries:
@@ -94,7 +93,7 @@ def FilterByType(entries: List[Any], typeValue: Any) -> List[Any]: #: ExternalDe
     return res
 
 
-#def EnsureUTF8(value: Optional[str]) -> Optional[str]:
+# def EnsureUTF8(value: Optional[str]) -> Optional[str]:
 #    if value is None:
 #        return None
 #    try:
@@ -104,96 +103,91 @@ def FilterByType(entries: List[Any], typeValue: Any) -> List[Any]: #: ExternalDe
 #        return value
 
 
-
-def TryUTF8ToAscii(value: Optional[str]) -> Optional[str]:
+def TryUTF8ToAscii(value: str | None) -> str | None:
     return value
-    #if value is None:
+    # if value is None:
     #    return None
-    #try:
+    # try:
     #    return str(value.encode('ascii'))
-    #except UnicodeEncodeError:
+    # except UnicodeEncodeError:
     #    return None
 
 
 def UTF8ToAscii(value: str) -> str:
     return value
+
+
 #    return str(value.encode('ascii'))
 
 
 def IsValidNameStartCharacter(ch: str) -> bool:
-    return ((ch >= 'a' and ch <= 'z') or (ch >= 'A' and ch <= 'Z'))
+    return (ch >= "a" and ch <= "z") or (ch >= "A" and ch <= "Z")
 
 
 def IsValidNameEndCharacter(ch: str) -> bool:
-    return ((ch >= 'a' and ch <= 'z') or (ch >= 'A' and ch <= 'Z') or (ch >= '0' and ch <= '9'))
+    return (ch >= "a" and ch <= "z") or (ch >= "A" and ch <= "Z") or (ch >= "0" and ch <= "9")
 
 
 def IsValidNameCharacter(ch: str) -> bool:
-    return ((ch >= 'a' and ch <= 'z') or (ch >= 'A' and ch <= 'Z') or (ch >= '0' and ch <= '9') or (ch == '_'))
+    return (ch >= "a" and ch <= "z") or (ch >= "A" and ch <= "Z") or (ch >= "0" and ch <= "9") or (ch == "_")
+
 
 def IsValidFlavorOptionNameCharacter(ch: str) -> bool:
-    return ((ch >= 'a' and ch <= 'z') or (ch >= 'A' and ch <= 'Z') or (ch >= '0' and ch <= '9') or (ch == '_') or (ch == '-'))
+    return (ch >= "a" and ch <= "z") or (ch >= "A" and ch <= "Z") or (ch >= "0" and ch <= "9") or (ch == "_") or (ch == "-")
 
 
 def IsValidPackageNameCharacter(ch: str) -> bool:
-    return ((ch >= 'a' and ch <= 'z') or (ch >= 'A' and ch <= 'Z') or (ch >= '0' and ch <= '9') or (ch == '_') or (ch == '.'))
+    return (ch >= "a" and ch <= "z") or (ch >= "A" and ch <= "Z") or (ch >= "0" and ch <= "9") or (ch == "_") or (ch == ".")
 
 
 def IsValidUppercaseNameStartCharacter(ch: str) -> bool:
-    return ((ch >= 'A' and ch <= 'Z'))
+    return ch >= "A" and ch <= "Z"
 
 
 def IsValidUppercaseNameCharacter(ch: str) -> bool:
-    return ((ch >= 'A' and ch <= 'Z') or (ch >= '0' and ch <= '9') or (ch == '_'))
+    return (ch >= "A" and ch <= "Z") or (ch >= "0" and ch <= "9") or (ch == "_")
 
 
 def IsValidName(name: str) -> bool:
     if len(name) <= 0 or not IsValidNameStartCharacter(name[0]):
         return False
 
-    for ch in name:
-        if not IsValidNameCharacter(ch):
-            return False
-    return True
+    return all(IsValidNameCharacter(ch) for ch in name)
+
 
 def IsValidCompanyName(name: str) -> bool:
     if len(name) <= 0 or not IsValidNameStartCharacter(name[0]):
         return False
 
     for ch in name:
-        if ch != ' ' and not IsValidNameCharacter(ch):
+        if ch != " " and not IsValidNameCharacter(ch):
             return False
-    if name[-1] == ' ':
-        return False
-    return True
-
+    return name[-1] != " "
 
 
 def IsValidConstraintFlavorName(name: str) -> bool:
-    if len(name) < 3 or '.' not in name:
+    if len(name) < 3 or "." not in name:
         return False
     return IsValidPackageName(name)
+
 
 def IsValidFlavorName(name: str) -> bool:
     if len(name) <= 0 or not IsValidNameStartCharacter(name[0]):
         return False
 
-    for ch in name:
-        if not IsValidNameCharacter(ch):
-            return False
-    return True
+    return all(IsValidNameCharacter(ch) for ch in name)
+
 
 def IsValidUnresolvedPackageFlavorName(name: str) -> bool:
     return IsValidPackageName(name)
+
 
 def IsValidUnresolvedPackageFlavorUnqualifiedName(name: str) -> bool:
     if len(name) <= 0 or not IsValidNameStartCharacter(name[0]):
         return False
 
-    for ch in name:
-        if not IsValidNameCharacter(ch):
-            return False
-    return True
+    return all(IsValidNameCharacter(ch) for ch in name)
+
 
 def IsValidFlavorExtensionName(name: str) -> bool:
     return IsValidConstraintFlavorName(name)
@@ -203,12 +197,12 @@ def IsValidFlavorOptionName(name: str) -> bool:
     if len(name) <= 0 or not IsValidNameStartCharacter(name[0]):
         return False
 
-    previousChar = ' '
+    previousChar = " "
     for ch in name:
         if not IsValidFlavorOptionNameCharacter(ch):
             return False
         # Double underscores are reserved for internal use
-        if ch == '_' and previousChar == '_':
+        if ch == "_" and previousChar == "_":
             return False
         previousChar = ch
     return True
@@ -218,19 +212,14 @@ def IsValidCommandName(name: str) -> bool:
     if len(name) <= 0 or not IsValidNameStartCharacter(name[0]):
         return False
 
-    for ch in name:
-        if not IsValidNameCharacter(ch) and ch != '-' and ch != '+':
-            return False
-    return True
+    return all(not (not IsValidNameCharacter(ch) and ch != "-" and ch != "+") for ch in name)
+
 
 def IsValidUppercaseName(name: str) -> bool:
     if len(name) <= 0 or not IsValidUppercaseNameStartCharacter(name[0]):
         return False
 
-    for ch in name:
-        if not IsValidUppercaseNameCharacter(ch):
-            return False
-    return True
+    return all(IsValidUppercaseNameCharacter(ch) for ch in name)
 
 
 def IsValidVirtualVariantName(name: str) -> bool:
@@ -238,11 +227,12 @@ def IsValidVirtualVariantName(name: str) -> bool:
         return False
     return IsValidUppercaseName(name[2:-1])
 
+
 def __IsValidPackageName(name: str) -> bool:
     isFirstCharInName = True
-    previousChar = ' '
+    previousChar = " "
     for ch in name:
-        if ch != '.':
+        if ch != ".":
             if not isFirstCharInName:
                 if not IsValidNameCharacter(ch):
                     return False
@@ -250,21 +240,22 @@ def __IsValidPackageName(name: str) -> bool:
                 if not IsValidNameStartCharacter(ch):
                     return False
                 isFirstCharInName = False
-        elif previousChar == '.':
+        elif previousChar == ".":
             return False
         else:
             isFirstCharInName = True
         previousChar = ch
     return True
 
+
 def __IsValidUnresolvedPackageName(name: str) -> bool:
     isFirstCharInName = True
-    previousChar = ' '
+    previousChar = " "
     for ch in name:
-        if ch != '.':
+        if ch != ".":
             if not isFirstCharInName:
                 # Double underscores are reserved for internal use
-                if ch == '_' and previousChar == '_':
+                if ch == "_" and previousChar == "_":
                     return False
                 if not IsValidNameCharacter(ch):
                     return False
@@ -272,7 +263,7 @@ def __IsValidUnresolvedPackageName(name: str) -> bool:
                 if not IsValidNameStartCharacter(ch):
                     return False
                 isFirstCharInName = False
-        elif previousChar == '.':
+        elif previousChar == ".":
             return False
         else:
             isFirstCharInName = True
@@ -287,6 +278,7 @@ def IsValidPackageName(name: str) -> bool:
         return False
     return __IsValidPackageName(name)
 
+
 def IsValidPackageInstanceName(name: str) -> bool:
     if len(name) <= 0 or not IsValidNameStartCharacter(name[0]):
         return False
@@ -294,14 +286,13 @@ def IsValidPackageInstanceName(name: str) -> bool:
         return False
     return __IsValidPackageName(name)
 
+
 def IsValidPackageShortName(name: str) -> bool:
     if len(name) <= 0 or not IsValidNameStartCharacter(name[0]):
         return False
 
-    for ch in name:
-        if not IsValidNameCharacter(ch):
-            return False
-    return True
+    return all(IsValidNameCharacter(ch) for ch in name)
+
 
 def IsValidPackageNamespaceName(name: str) -> bool:
     if len(name) <= 0:
@@ -327,40 +318,31 @@ def IsValidRecipeName(name: str) -> bool:
 def IsValidCStyleName(name: str) -> bool:
     if len(name) <= 0 or not IsValidNameStartCharacter(name[0]):
         return False
-    for index in range(1, len(name)):
-        if not IsValidNameCharacter(name[index]):
-            return False
-    return True
+    return all(IsValidNameCharacter(name[index]) for index in range(1, len(name)))
 
 
 def IsValidRequirementName(name: str) -> bool:
     if len(name) <= 0 or not IsValidNameStartCharacter(name[0]):
         return False
-    for index in range(1, len(name)):
-        if name[index] != '.' and not IsValidNameCharacter(name[index]):
-            return False
-    return True
+    return all(not (name[index] != "." and not IsValidNameCharacter(name[index])) for index in range(1, len(name)))
 
 
-def IsValidDefineValue(name: Optional[str]) -> bool:
+def IsValidDefineValue(name: str | None) -> bool:
     if name is None:
-        return True;
+        return True
     if len(name) <= 0:
         return False
 
-    for ch in name:
-        if not IsValidNameCharacter(ch):
-            return False
-    return True
+    return all(IsValidNameCharacter(ch) for ch in name)
 
 
-def ExtractNamesAsVariables(entries: Any) -> List[str]:
+def ExtractNamesAsVariables(entries: Any) -> list[str]:
     resList = []
     for entry in entries:
         if IsValidCStyleName(entry.Name):
-            resList.append("${{{0}}}".format(entry.Name))
+            resList.append(f"${{{entry.Name}}}")
         else:
-            raise Exception("The name '{0}' is not a valid variable name".format(entry.Name))
+            raise Exception(f"The name '{entry.Name}' is not a valid variable name")
     return resList
 
 
@@ -372,9 +354,9 @@ def ChangeToBashEnvVariables(path: str) -> str:
     if endIndex < 0:
         return path
     start = path[:index]
-    envName = path[index+2:endIndex]
-    end = path[endIndex+1:]
-    path = "%s$%s%s" % (start, envName, end)
+    envName = path[index + 2 : endIndex]
+    end = path[endIndex + 1 :]
+    path = f"{start}${envName}{end}"
     return ChangeToBashEnvVariables(path)
 
 
@@ -386,9 +368,9 @@ def ChangeToCMakeVariables(path: str) -> str:
     if endIndex < 0:
         return path
     start = path[:index]
-    envName = path[index+2:endIndex]
-    end = path[endIndex+1:]
-    path = "%s${%s}%s" % (start, envName, end)
+    envName = path[index + 2 : endIndex]
+    end = path[endIndex + 1 :]
+    path = f"{start}${{{envName}}}{end}"
     return ChangeToCMakeVariables(path)
 
 
@@ -400,9 +382,9 @@ def ChangeToCMakeEnvVariables(path: str) -> str:
     if endIndex < 0:
         return path
     start = path[:index]
-    envName = path[index+2:endIndex]
-    end = path[endIndex+1:]
-    path = "{0}$ENV{{{1}}}{2}".format(start, envName, end)
+    envName = path[index + 2 : endIndex]
+    end = path[endIndex + 1 :]
+    path = f"{start}$ENV{{{envName}}}{end}"
     return ChangeToCMakeEnvVariables(path)
 
 
@@ -414,38 +396,41 @@ def ChangeToDosEnvironmentVariables(path: str) -> str:
     if endIndex < 0:
         return path
     start = path[:index]
-    envName = path[index+2:endIndex]
-    end = path[endIndex+1:]
-    path = "%s%%%s%%%s" % (start, envName, end)
+    envName = path[index + 2 : endIndex]
+    end = path[endIndex + 1 :]
+    path = f"{start}%{envName}%{end}"
     return ChangeToDosEnvironmentVariables(path)
 
-def ParseVersionString(version: str, splitChar: str = '.', maxValues: int = 4) -> List[int]:
+
+def ParseVersionString(version: str, splitChar: str = ".", maxValues: int = 4) -> list[int]:
     valueStrings = version.split(splitChar)
 
-    if len(valueStrings) > 0 and len(valueStrings[len(valueStrings)-1]) == 0:
+    if len(valueStrings) > 0 and len(valueStrings[len(valueStrings) - 1]) == 0:
         valueStrings.pop()
     if len(valueStrings) > maxValues:
-        raise Exception("Version string contained more values than allowed '{0}'".format(version))
+        raise Exception(f"Version string contained more values than allowed '{version}'")
     try:
         return [int(value) for value in valueStrings]
-    except ValueError as exc:
-        print("ERROR: Failed to parse version string: '{0}' split into {1}".format(version, valueStrings))
+    except ValueError:
+        print(f"ERROR: Failed to parse version string: '{version}' split into {valueStrings}")
         raise
 
-def GetPackageNames(name: str) -> Tuple[str, str]:
-    """
-    extract the namespace and pure name
-    """
-    index = name.rfind('.')
-    if index < 0:
-        return name, ''
-    return name[index+1:], name[:index]
 
-def GetPackageSourceAndFlavorNames(name: str) -> Tuple[str, str]:
+def GetPackageNames(name: str) -> tuple[str, str]:
     """
     extract the namespace and pure name
     """
-    index = name.rfind('___')
+    index = name.rfind(".")
     if index < 0:
-        return name, ''
-    return name[:index], name[index+3:]
+        return name, ""
+    return name[index + 1 :], name[:index]
+
+
+def GetPackageSourceAndFlavorNames(name: str) -> tuple[str, str]:
+    """
+    extract the namespace and pure name
+    """
+    index = name.rfind("___")
+    if index < 0:
+        return name, ""
+    return name[:index], name[index + 3 :]

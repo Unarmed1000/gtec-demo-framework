@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright 2018 NXP
 # All rights reserved.
 #
@@ -29,18 +28,19 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-from typing import List
-from typing import Optional
-#from FslBuildGen.Log import Log
-from FslBuildGen.Exceptions import UsageErrorException
-from FslBuildGen.ToolConfigRootDirectory import ToolConfigRootDirectory
+
 from FslBuildGen import Util
 
-class ToolConfigPackageRootUtil(object):
+# from FslBuildGen.Log import Log
+from FslBuildGen.Exceptions import UsageErrorException
+from FslBuildGen.ToolConfigRootDirectory import ToolConfigRootDirectory
+
+
+class ToolConfigPackageRootUtil:
     @staticmethod
-    def TryFindRootDirectory(rootDirectories: List[ToolConfigRootDirectory], path: Optional[str]) -> Optional[ToolConfigRootDirectory]:
+    def TryFindRootDirectory(rootDirectories: list[ToolConfigRootDirectory], path: str | None) -> ToolConfigRootDirectory | None:
         """
         Try to find the nearest root directory
         """
@@ -52,22 +52,22 @@ class ToolConfigPackageRootUtil(object):
         return None
 
     @staticmethod
-    def ToPath(rootDirectories: List[ToolConfigRootDirectory], path: str) -> str:
+    def ToPath(rootDirectories: list[ToolConfigRootDirectory], path: str) -> str:
         """
         convert to a path that we know reside in one of the package roots
         """
         foundPath = ToolConfigPackageRootUtil.TryToPath(rootDirectories, path)
         if foundPath is not None:
             return foundPath
-        raise UsageErrorException("the folder '{0}' does not reside inside one of the root dirs".format(path))
+        raise UsageErrorException(f"the folder '{path}' does not reside inside one of the root dirs")
 
     @staticmethod
-    def TryToPath(rootDirectories: List[ToolConfigRootDirectory], path: str) -> Optional[str]:
+    def TryToPath(rootDirectories: list[ToolConfigRootDirectory], path: str) -> str | None:
         """
         convert to a path that we know reside in one of the package roots
         """
         if path.find("\\") >= 0:
-            raise UsageErrorException("Backslash found in the supplied path '{0}'".format(path))
+            raise UsageErrorException(f"Backslash found in the supplied path '{path}'")
         for rootDir in rootDirectories:
             if path.startswith(rootDir.ResolvedPathEx):
                 lenRootPath = len(rootDir.ResolvedPathEx)

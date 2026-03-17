@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright 2021 NXP
 # All rights reserved.
 #
@@ -29,22 +28,22 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-from typing import Optional
-from FslBuildGen import IOUtil
+
 from FslBuildGen.BuildExternal.Commands.PackageRecipeValidateCommand import PackageRecipeValidateCommand
 from FslBuildGen.DataTypes import BuildRecipeValidateCommand
-from FslBuildGen.DataTypes import BuildRecipeValidateMethod
+
 
 class PackageRecipeValidateCommandAddTool(PackageRecipeValidateCommand):
-    def __init__(self, name: str, minVersion: Optional[str], versionCommand: Optional[str], versionRegEx: Optional[str],
-                 versionSplitChar: str, help: Optional[str]) -> None:
+    def __init__(
+        self, name: str, minVersion: str | None, versionCommand: str | None, versionRegEx: str | None, versionSplitChar: str, help: str | None
+    ) -> None:
         super().__init__("AddTool", BuildRecipeValidateCommand.AddTool, help)
-        if '\\' in name:
-            raise Exception("A path can not contain backslash '\\': '{0}'".format(name))
-        if name.endswith('/'):
-            raise Exception("A path can not end with a slash '/': '{0}'".format(name))
+        if "\\" in name:
+            raise Exception(f"A path can not contain backslash '\\': '{name}'")
+        if name.endswith("/"):
+            raise Exception(f"A path can not end with a slash '/': '{name}'")
 
         self.Name = name
         self.MinVersion = minVersion
@@ -64,7 +63,7 @@ class PackageRecipeValidateCommandAddTool(PackageRecipeValidateCommand):
                 missingAttribs.append("VersionCommand")
             if self.VersionRegEx is None:
                 missingAttribs.append("VersionRegEx")
-            raise Exception("{0} are not defined".format(", ".join(missingAttribs)))
+            raise Exception("{} are not defined".format(", ".join(missingAttribs)))
         if self.MinVersion is not None:
             trimmed = self.MinVersion.strip()
             if trimmed != self.MinVersion:

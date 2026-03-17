@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright 2018 NXP
 # All rights reserved.
 #
@@ -29,36 +28,42 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-from typing import Dict
-from typing import List
+
 from FslBuildGen import IOUtil
 from FslBuildGen.BuildConfig.ClangConfiguration import ClangConfiguration
 from FslBuildGen.BuildConfig.ClangTidyPlatform import ClangTidyPlatform
 
+
 class ClangTidyConfiguration(ClangConfiguration):
-    def __init__(self, fileExtensions: List[str], clangRecipePackageName: str, clangTidyRecipePackageName: str,
-                 ninjaRecipePackageName: str, platforms: List[ClangTidyPlatform]) -> None:
+    def __init__(
+        self,
+        fileExtensions: list[str],
+        clangRecipePackageName: str,
+        clangTidyRecipePackageName: str,
+        ninjaRecipePackageName: str,
+        platforms: list[ClangTidyPlatform],
+    ) -> None:
         super().__init__()
         self.CustomTidyFile = ".clang-tidy"
         self.FileExtensions = fileExtensions
         self.ClangRecipePackageName = clangRecipePackageName
         self.ClangTidyRecipePackageName = clangTidyRecipePackageName
         self.NinjaRecipePackageName = ninjaRecipePackageName
-        platformDict = {}                                                # type: Dict[str,ClangTidyPlatform]
+        platformDict: dict[str, ClangTidyPlatform] = {}
         for entry in platforms:
             platformDict[entry.Name.lower()] = entry
         self.PlatformDict = platformDict
 
         self.__ValidateFileExtensions(fileExtensions)
 
-    def __ValidateFileExtensions(self, fileExtensions: List[str]) -> None:
+    def __ValidateFileExtensions(self, fileExtensions: list[str]) -> None:
         for fileExt in fileExtensions:
             normalizedFileExt = IOUtil.NormalizePath(fileExt)
             directory = IOUtil.GetDirectoryName(normalizedFileExt)
             if len(directory) > 0:
-                raise Exception("ClangTidyConfiguration: File extension '{0}' can not contain a directory '{1}'".format(fileExt, directory))
+                raise Exception(f"ClangTidyConfiguration: File extension '{fileExt}' can not contain a directory '{directory}'")
             if fileExt.startswith(".."):
                 raise Exception("ClangTidyConfiguration: File extension can not start with '..'")
             if not fileExt.startswith("."):

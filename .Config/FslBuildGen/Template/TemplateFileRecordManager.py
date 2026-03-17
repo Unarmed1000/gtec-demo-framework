@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright 2017 NXP
 # All rights reserved.
 #
@@ -29,15 +29,15 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-from typing import List
+
 from FslBuildGen import IOUtil
 from FslBuildGen.Template.TemplateFileRecord import TemplateFileRecord
 
 
 # Scans template directory for files to copy or modify
-class TemplateFileRecordManager(object):
+class TemplateFileRecordManager:
     def __init__(self, path: str) -> None:
         super().__init__()
 
@@ -47,10 +47,9 @@ class TemplateFileRecordManager(object):
         self.FilesToCopy = self.__GetTemplateFiles(copyPath)
         self.FilesToModify = self.__GetTemplateFiles(modifyPath)
 
-
-    def __GetTemplateFiles(self, copyFrom: str) -> List[TemplateFileRecord]:
-        skip = len(copyFrom)+1
-        files = []  # type: List[TemplateFileRecord]
+    def __GetTemplateFiles(self, copyFrom: str) -> list[TemplateFileRecord]:
+        skip = len(copyFrom) + 1
+        files: list[TemplateFileRecord] = []
         for file in IOUtil.GetFilePaths(copyFrom, None):
             files.append(TemplateFileRecord(file[skip:], copyFrom))
         return files

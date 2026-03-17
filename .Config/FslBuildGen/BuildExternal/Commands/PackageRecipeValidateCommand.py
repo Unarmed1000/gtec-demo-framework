@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright 2021 NXP
 # All rights reserved.
 #
@@ -29,13 +28,14 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-from typing import Optional
+
 from FslBuildGen.DataTypes import BuildRecipeValidateCommand
 
-class PackageRecipeValidateCommand(object):
-    def __init__(self, commandName: str, commandType: BuildRecipeValidateCommand, help: Optional[str]) -> None:
+
+class PackageRecipeValidateCommand:
+    def __init__(self, commandName: str, commandType: BuildRecipeValidateCommand, help: str | None) -> None:
         super().__init__()
         self.CommandName = commandName
         self.CommandType = commandType

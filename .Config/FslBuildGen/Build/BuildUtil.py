@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright 2018 NXP
 # All rights reserved.
 #
@@ -29,18 +29,18 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-from typing import List
-from typing import Optional
-from enum import Enum
 import multiprocessing
+from enum import Enum
+
 from FslBuildGen.BuildExternal.CMakeTypes import CMakeGeneratorName
+from FslBuildGen.CMakeUtil import CMakeVersion
 from FslBuildGen.DataTypes import BuildThreads
 from FslBuildGen.Generator.GeneratorCMakeConfig import GeneratorCMakeConfig
 from FslBuildGen.Log import Log
 from FslBuildGen.PackageConfig import PlatformNameString
-from FslBuildGen.CMakeUtil import CMakeVersion
+
 
 class PlatformBuildTypeInfo(Enum):
     Legacy = 0
@@ -48,31 +48,46 @@ class PlatformBuildTypeInfo(Enum):
     CMakeCustom = 2
 
 
-class PlatformBuildUtil(object):
+class PlatformBuildUtil:
     @staticmethod
-    def AddBuildThreads(log: Log, rArgumentList: List[str], generatorOriginalName: str, buildThreads: int,
-                        buildTypeInfo: PlatformBuildTypeInfo, cmakeConfig: Optional[GeneratorCMakeConfig], external: bool) -> int:
+    def AddBuildThreads(
+        log: Log,
+        rArgumentList: list[str],
+        generatorOriginalName: str,
+        buildThreads: int,
+        buildTypeInfo: PlatformBuildTypeInfo,
+        cmakeConfig: GeneratorCMakeConfig | None,
+        external: bool,
+    ) -> int:
         numBuildThreads = PlatformBuildUtil.GetRecommendedBuildThreads(buildThreads)
         if PlatformBuildUtil.TryAddBuildThreads(log, rArgumentList, generatorOriginalName, numBuildThreads, buildTypeInfo, cmakeConfig, external):
-            log.LogPrint("Builder using BuildThreads: {0}".format(numBuildThreads))
+            log.LogPrint(f"Builder using BuildThreads: {numBuildThreads}")
         else:
             log.LogPrintWarning("The builder ignored 'BuildThreads'")
         return numBuildThreads
 
     @staticmethod
-    def TryAddBuildThreads(log: Log, rArgumentList: List[str], generatorOriginalName: str, numBuildThreads: int,
-                           buildTypeInfo: PlatformBuildTypeInfo, cmakeConfig: Optional[GeneratorCMakeConfig], external: bool) -> bool:
-
+    def TryAddBuildThreads(
+        log: Log,
+        rArgumentList: list[str],
+        generatorOriginalName: str,
+        numBuildThreads: int,
+        buildTypeInfo: PlatformBuildTypeInfo,
+        cmakeConfig: GeneratorCMakeConfig | None,
+        external: bool,
+    ) -> bool:
         if buildTypeInfo == PlatformBuildTypeInfo.Legacy:
             # This is the old add thread arguments code from a simpler time when we only supported one build system per platform
             platformName = generatorOriginalName
-            if (platformName == PlatformNameString.QNX or
-                    platformName == PlatformNameString.YOCTO or
-                    platformName == PlatformNameString.APPLE or
-                    platformName == PlatformNameString.RDK_YOCTO or
-                    platformName == PlatformNameString.UBUNTU or
-                    platformName == PlatformNameString.FREERTOS or
-                    (external and platformName == PlatformNameString.ANDROID)):
+            if (
+                platformName == PlatformNameString.QNX
+                or platformName == PlatformNameString.YOCTO
+                or platformName == PlatformNameString.APPLE
+                or platformName == PlatformNameString.RDK_YOCTO
+                or platformName == PlatformNameString.UBUNTU
+                or platformName == PlatformNameString.FREERTOS
+                or (external and platformName == PlatformNameString.ANDROID)
+            ):
                 PlatformBuildUtil.AddMakeThreadArgument(rArgumentList, numBuildThreads)
                 return True
             elif platformName == PlatformNameString.WINDOWS:
@@ -82,35 +97,35 @@ class PlatformBuildUtil(object):
 
         # We are doing somekind of cmake based build.
         if cmakeConfig is None:
-            raise Exception("buildTypeInfo {0} requires a cmakeConfig to be supplied".format(buildTypeInfo))
+            raise Exception(f"buildTypeInfo {buildTypeInfo} requires a cmakeConfig to be supplied")
 
         if buildTypeInfo == PlatformBuildTypeInfo.CMake:
             return PlatformBuildUtil.TryAddCMakeThreadArgument(rArgumentList, numBuildThreads, cmakeConfig)
         elif buildTypeInfo == PlatformBuildTypeInfo.CMakeCustom:
             return PlatformBuildUtil.TryAddCustomCMakeThreadArgument(rArgumentList, numBuildThreads, cmakeConfig)
-        log.DoPrintWarning("Unknown build type info {0}".format(buildTypeInfo))
+        log.DoPrintWarning(f"Unknown build type info {buildTypeInfo}")
         return False
 
     @staticmethod
-    def AddVisualStudioThreadArgument(rArgumentList: List[str], numBuildThreads: int) -> None:
-        rArgumentList += ['/maxcpucount:{0}'.format(numBuildThreads)]
+    def AddVisualStudioThreadArgument(rArgumentList: list[str], numBuildThreads: int) -> None:
+        rArgumentList += [f"/maxcpucount:{numBuildThreads}"]
 
     @staticmethod
-    def AddMakeThreadArgument(rArgumentList: List[str], numBuildThreads: int) -> None:
-        rArgumentList += ['-j', str(numBuildThreads)]
+    def AddMakeThreadArgument(rArgumentList: list[str], numBuildThreads: int) -> None:
+        rArgumentList += ["-j", str(numBuildThreads)]
 
     @staticmethod
-    def TryAddCMakeThreadArgument(rArgumentList: List[str], numBuildThreads: int, cmakeConfig: GeneratorCMakeConfig) -> bool:
+    def TryAddCMakeThreadArgument(rArgumentList: list[str], numBuildThreads: int, cmakeConfig: GeneratorCMakeConfig) -> bool:
         if cmakeConfig.CMakeVersion >= CMakeVersion(3, 13, 0):
             # This is a cmake build, so we use the standard cmake parallel command
-            rArgumentList += ['--parallel', str(numBuildThreads)]
+            rArgumentList += ["--parallel", str(numBuildThreads)]
             return True
         # This is a cmake based build but the cmake command is so old that it does not support '--parallel'
         # FIX: patch the command so it can supply commands that get added after '--' or whatever the build system use
         return False
 
     @staticmethod
-    def TryAddCustomCMakeThreadArgument(rArgumentList: List[str], numBuildThreads: int, cmakeConfig: GeneratorCMakeConfig) -> bool:
+    def TryAddCustomCMakeThreadArgument(rArgumentList: list[str], numBuildThreads: int, cmakeConfig: GeneratorCMakeConfig) -> bool:
         generatorName = cmakeConfig.CMakeFinalGeneratorName
         if CMakeGeneratorName.IsVisualStudio(generatorName):
             PlatformBuildUtil.AddVisualStudioThreadArgument(rArgumentList, numBuildThreads)

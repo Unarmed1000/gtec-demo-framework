@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright 2018 NXP
 # All rights reserved.
 #
@@ -29,13 +29,14 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-#from typing import List
-from typing import Set
+# from typing import List
 import xml.etree.ElementTree as ET
+
 from FslBuildGen.Log import Log
 from FslBuildGen.Xml.XmlBase import XmlBase
+
 
 class XmlClangTidyPlatformStrictChecks(XmlBase):
     def __init__(self, log: Log, xmlElement: ET.Element) -> None:
@@ -44,14 +45,14 @@ class XmlClangTidyPlatformStrictChecks(XmlBase):
         text = xmlElement.text if xmlElement.text is not None else ""
         self.Checks = self.__ParseText(text)
 
-    def __ParseText(self, text: str) -> Set[str]:
-        lines = text.split('\n')
-        cleanedLines = set()  # type: Set[str]
+    def __ParseText(self, text: str) -> set[str]:
+        lines = text.split("\n")
+        cleanedLines: set[str] = set()
         for line in lines:
             line = line.strip()
             if len(line) > 0:
                 if line not in cleanedLines:
                     cleanedLines.add(line)
                 else:
-                    self.Log.DoPrintWarning("Duplicated StrictCheck '{0}'".format(line))
+                    self.Log.DoPrintWarning(f"Duplicated StrictCheck '{line}'")
         return cleanedLines

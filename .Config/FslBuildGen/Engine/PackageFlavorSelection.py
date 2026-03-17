@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright 2020 NXP
 # All rights reserved.
 #
@@ -29,12 +28,13 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
 from FslBuildGen.Engine.PackageFlavorName import PackageFlavorName
 from FslBuildGen.Engine.PackageFlavorOptionName import PackageFlavorOptionName
 
-class PackageFlavorSelection(object):
+
+class PackageFlavorSelection:
     def __init__(self, name: PackageFlavorName, option: PackageFlavorOptionName) -> None:
         super().__init__()
         self.Name = name
@@ -66,4 +66,4 @@ class PackageFlavorSelection(object):
         return self.Name >= other.Name or (self.Name == other.Name and self.Option >= other.Option)
 
     def __str__(self) -> str:
-        return "{0}={1}".format(self.Name, self.Option)
+        return f"{self.Name}={self.Option}"

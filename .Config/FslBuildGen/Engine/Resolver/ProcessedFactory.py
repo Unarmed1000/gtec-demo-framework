@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright 2020 NXP
 # All rights reserved.
 #
@@ -29,31 +29,26 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-from typing import Dict
-from typing import List
-from typing import Optional
-from FslBuildGen.DataTypes import PackageLanguage
-from FslBuildGen.DataTypes import PackageType
+
+from FslBuildGen.DataTypes import PackageLanguage, PackageType
 from FslBuildGen.Engine.PackageFlavorSelections import PackageFlavorSelections
-from FslBuildGen.Engine.Resolver.ProcessedPackage import ProcessedPackage
-from FslBuildGen.Engine.Resolver.ProcessedPackage import ProcessedPackageFlags
-from FslBuildGen.Engine.Resolver.ProcessedPackage import ProcessedPackagePaths
+from FslBuildGen.Engine.Resolver.ProcessedPackage import ProcessedPackage, ProcessedPackageFlags, ProcessedPackagePaths
 from FslBuildGen.Engine.Resolver.ProcessedPackageDependency import ProcessedPackageDependency
 from FslBuildGen.Engine.Resolver.ResolvedPackageTemplate import ResolvedPackageTemplate
 from FslBuildGen.Generator.GeneratorInfo import GeneratorInfo
 from FslBuildGen.Log import Log
 from FslBuildGen.PackageFile import PackageFile
 from FslBuildGen.Packages.CompanyName import CompanyName
-from FslBuildGen.Packages.PackageNameInfo import PackageNameInfo
 from FslBuildGen.Packages.PackageCustomInfo import PackageCustomInfo
-from FslBuildGen.Packages.PackageProjectContext import PackageProjectContext
+from FslBuildGen.Packages.PackageNameInfo import PackageNameInfo
 from FslBuildGen.Packages.PackagePlatform import PackagePlatform
+from FslBuildGen.Packages.PackageProjectContext import PackageProjectContext
 from FslBuildGen.Packages.PackageTraceContext import PackageTraceContext
-from FslBuildGen.Packages.Unresolved.UnresolvedPackageCopyFile import UnresolvedPackageCopyFile
 from FslBuildGen.Packages.Unresolved.UnresolvedExternalDependency import UnresolvedExternalDependency
 from FslBuildGen.Packages.Unresolved.UnresolvedFilter import UnresolvedFilter
+from FslBuildGen.Packages.Unresolved.UnresolvedPackageCopyFile import UnresolvedPackageCopyFile
 from FslBuildGen.Packages.Unresolved.UnresolvedPackageDefine import UnresolvedPackageDefine
 from FslBuildGen.Packages.Unresolved.UnresolvedPackageGenerate import UnresolvedPackageGenerate
 from FslBuildGen.Packages.Unresolved.UnresolvedPackageGenerateGrpcProtoFile import UnresolvedPackageGenerateGrpcProtoFile
@@ -62,28 +57,70 @@ from FslBuildGen.Packages.Unresolved.UnresolvedPackageRequirement import Unresol
 from FslBuildGen.Xml.XmlExperimentalRecipe import XmlExperimentalRecipe
 from FslBuildGen.Xml.XmlStuff import XmlGenFileBuildCustomization
 
-class ProcessedFactory(object):
-    @staticmethod
-    def CreatePackage(log: Log, generatorInfo: GeneratorInfo, packageProjectContext: PackageProjectContext, nameInfo: PackageNameInfo,
-                      companyName: CompanyName, creationYear: Optional[str], packageFile: Optional[PackageFile], sourceFileHash: str,
-                      packageType: PackageType, packageFlags: ProcessedPackageFlags, packageLanguage: PackageLanguage,
-                      generateList: List[UnresolvedPackageGenerate],
-                      generateGrpcProtoFileList: List[UnresolvedPackageGenerateGrpcProtoFile],
-                      copyFileList: List[UnresolvedPackageCopyFile],
-                      directDependencies: List[ProcessedPackageDependency], directRequirements: List[UnresolvedPackageRequirement],
-                      directDefines: List[UnresolvedPackageDefine], directIgnores: List[UnresolvedPackageIgnore],
-                      externalDependencies: List[UnresolvedExternalDependency],
-                      path: ProcessedPackagePaths, templateType: str, buildCustomization: Dict[str, XmlGenFileBuildCustomization],
-                      directExperimentalRecipe: Optional[XmlExperimentalRecipe], resolvedFlavorSelections: PackageFlavorSelections,
-                      resolvedFlavorTemplate: ResolvedPackageTemplate, resolvedPlatform: PackagePlatform, directPlatformSupported: bool,
-                      customInfo: PackageCustomInfo, traceContext: PackageTraceContext) -> ProcessedPackage:
 
+class ProcessedFactory:
+    @staticmethod
+    def CreatePackage(
+        log: Log,
+        generatorInfo: GeneratorInfo,
+        packageProjectContext: PackageProjectContext,
+        nameInfo: PackageNameInfo,
+        companyName: CompanyName,
+        creationYear: str | None,
+        packageFile: PackageFile | None,
+        sourceFileHash: str,
+        packageType: PackageType,
+        packageFlags: ProcessedPackageFlags,
+        packageLanguage: PackageLanguage,
+        generateList: list[UnresolvedPackageGenerate],
+        generateGrpcProtoFileList: list[UnresolvedPackageGenerateGrpcProtoFile],
+        copyFileList: list[UnresolvedPackageCopyFile],
+        directDependencies: list[ProcessedPackageDependency],
+        directRequirements: list[UnresolvedPackageRequirement],
+        directDefines: list[UnresolvedPackageDefine],
+        directIgnores: list[UnresolvedPackageIgnore],
+        externalDependencies: list[UnresolvedExternalDependency],
+        path: ProcessedPackagePaths,
+        templateType: str,
+        buildCustomization: dict[str, XmlGenFileBuildCustomization],
+        directExperimentalRecipe: XmlExperimentalRecipe | None,
+        resolvedFlavorSelections: PackageFlavorSelections,
+        resolvedFlavorTemplate: ResolvedPackageTemplate,
+        resolvedPlatform: PackagePlatform,
+        directPlatformSupported: bool,
+        customInfo: PackageCustomInfo,
+        traceContext: PackageTraceContext,
+    ) -> ProcessedPackage:
         # filter based on conditions
         externalDependencies = UnresolvedFilter.FilterOnConditions(log, generatorInfo, externalDependencies, "ExternalDependency")
         directDependencies = UnresolvedFilter.FilterOnConditions(log, generatorInfo, directDependencies, "Dependency")
 
-        return ProcessedPackage(packageProjectContext, nameInfo, companyName, creationYear, packageFile, sourceFileHash, packageType,
-                                packageFlags, packageLanguage, generateList, generateGrpcProtoFileList, copyFileList, directDependencies,
-                                directRequirements, directDefines, directIgnores, externalDependencies, path, templateType, buildCustomization,
-                                directExperimentalRecipe, resolvedFlavorSelections, resolvedFlavorTemplate, resolvedPlatform,
-                                directPlatformSupported, customInfo, traceContext)
+        return ProcessedPackage(
+            packageProjectContext,
+            nameInfo,
+            companyName,
+            creationYear,
+            packageFile,
+            sourceFileHash,
+            packageType,
+            packageFlags,
+            packageLanguage,
+            generateList,
+            generateGrpcProtoFileList,
+            copyFileList,
+            directDependencies,
+            directRequirements,
+            directDefines,
+            directIgnores,
+            externalDependencies,
+            path,
+            templateType,
+            buildCustomization,
+            directExperimentalRecipe,
+            resolvedFlavorSelections,
+            resolvedFlavorTemplate,
+            resolvedPlatform,
+            directPlatformSupported,
+            customInfo,
+            traceContext,
+        )

@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright 2023 NXP
 # All rights reserved.
 #
@@ -29,20 +28,21 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-#from FslBuildGen import Util
-from FslBuildGen.Engine.Unresolved.UnresolvedPackageName import UnresolvedPackageName
+# from FslBuildGen import Util
 from FslBuildGen.Engine.Unresolved.UnresolvedPackageFlavorUnqualifiedName import UnresolvedPackageFlavorUnqualifiedName
-#from FslBuildGen.Exceptions import InvalidPackageFlavorNameException
 
-class PackageFlavorQuickName(object):
+# from FslBuildGen.Exceptions import InvalidPackageFlavorNameException
+
+
+class PackageFlavorQuickName:
     def __init__(self, name: UnresolvedPackageFlavorUnqualifiedName) -> None:
         super().__init__()
 
         self.Value = name.Value
 
-    def CompareTo(self, other: 'PackageFlavorQuickName') -> int:
+    def CompareTo(self, other: "PackageFlavorQuickName") -> int:
         if self.Value < other.Value:
             return -1
         return 0 if self.Value == other.Value else 1
@@ -79,4 +79,4 @@ class PackageFlavorQuickName(object):
         return self.Value
 
     def __repr__(self) -> str:
-        return "PackageFlavorQuickName({0})".format(self.Value)
+        return f"PackageFlavorQuickName({self.Value})"

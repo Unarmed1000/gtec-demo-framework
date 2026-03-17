@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright (c) 2014 Freescale Semiconductor, Inc.
 # All rights reserved.
 #
@@ -29,29 +29,30 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-from typing import Set
-#from FslBuildGen.Config import Config
+# from FslBuildGen.Config import Config
+
 from FslBuildGen.Packages.PackageElement import PackageElement
 from FslBuildGen.Packages.Unresolved.UnresolvedPackageRequirement import UnresolvedPackageRequirement
+
 
 class PackageRequirement(PackageElement):
     def __init__(self, base: UnresolvedPackageRequirement, introducedByPackageName: str) -> None:
         super().__init__(base.Name)
         self.Id = self.Name.lower()
         # type#extends
-        self.GroupId = "{0}#{1}".format(base.Type.lower(), base.Extends.lower())
+        self.GroupId = f"{base.Type.lower()}#{base.Extends.lower()}"
         # type#extends#id
-        self.FullId = "{0}#{1}".format(self.GroupId, self.Id)
+        self.FullId = f"{self.GroupId}#{self.Id}"
         self.Extends = base.Extends
         self.Type = base.Type
         self.Version = base.Version
         self.IntroducedByPackageName = introducedByPackageName
-        #self.Access = base.Access
+        # self.Access = base.Access
         self.IsFirstActualUse = False
-        self.IntroducedByPackages = set()  # type: Set[str]
+        self.IntroducedByPackages: set[str] = set()
         self.IntroducedByPackages.add(introducedByPackageName)
-        #self.ConsumedBy = base.ConsumedBy
+        # self.ConsumedBy = base.ConsumedBy
         # the access to the package this was received from
-        #self.FromPackageAccess = fromPackageAccess
+        # self.FromPackageAccess = fromPackageAccess

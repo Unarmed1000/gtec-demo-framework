@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright 2017 NXP
 # All rights reserved.
 #
@@ -29,15 +29,15 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-from typing import List
+
 from FslBuildGen.DataTypes import FilterMethod
 from FslBuildGen.QualifiedRequirementExtensionName import QualifiedRequirementExtensionName
 
 
-class ExtensionListManager2(object):
-    def __init__(self, filterMethod: FilterMethod, content: List[QualifiedRequirementExtensionName]) -> None:
+class ExtensionListManager2:
+    def __init__(self, filterMethod: FilterMethod, content: list[QualifiedRequirementExtensionName]) -> None:
         super().__init__()
         self.FilterMethod = filterMethod
         self.Content = [] if filterMethod == FilterMethod.AllowAll else content

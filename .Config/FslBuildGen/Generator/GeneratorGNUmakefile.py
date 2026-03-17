@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright (c) 2014 Freescale Semiconductor, Inc.
 # All rights reserved.
 #
@@ -29,20 +29,13 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-from typing import Dict
-from typing import List
-from typing import Optional
-from typing import Set
-from FslBuildGen import IOUtil
-from FslBuildGen import MakeFileHelper
-from FslBuildGen import Util
+
+from FslBuildGen import IOUtil, MakeFileHelper, Util
 from FslBuildGen.Build.DataTypes import CommandType
 from FslBuildGen.Config import Config
-from FslBuildGen.DataTypes import BuildVariantConfig
-from FslBuildGen.DataTypes import ExternalDependencyType
-from FslBuildGen.DataTypes import PackageType
+from FslBuildGen.DataTypes import ExternalDependencyType, PackageType
 from FslBuildGen.Exceptions import InternalErrorException
 from FslBuildGen.Generator import GitIgnoreHelper
 from FslBuildGen.Generator.GeneratorBase import GeneratorBase
@@ -53,27 +46,31 @@ from FslBuildGen.Generator.Report.GeneratorCommandReport import GeneratorCommand
 from FslBuildGen.Generator.Report.GeneratorExecutableReport import GeneratorExecutableReport
 from FslBuildGen.Generator.Report.GeneratorVariableReport import GeneratorVariableReport
 from FslBuildGen.Generator.Report.PackageGeneratorReport import PackageGeneratorReport
-from FslBuildGen.Generator.Report.ReportVariableFormatter import ReportVariableFormatter
 from FslBuildGen.LibUtil import LibUtil
 from FslBuildGen.Log import Log
 from FslBuildGen.PackageConfig import PlatformNameString
-from FslBuildGen.Packages.Package import Package
-from FslBuildGen.Packages.Package import PackageExternalDependency
-from FslBuildGen.Packages.Package import PackagePlatformVariant
-from FslBuildGen.Packages.Package import PackagePlatformVariantOption
+from FslBuildGen.Packages.Package import Package, PackageExternalDependency, PackagePlatformVariant, PackagePlatformVariantOption
 from FslBuildGen.Packages.PackagePlatformExternalDependency import PackagePlatformExternalDependency
-from FslBuildGen.SharedGeneration import ToolAddedVariant
-from FslBuildGen.SharedGeneration import ToolAddedVariantConfigOption
+from FslBuildGen.SharedGeneration import ToolAddedVariant, ToolAddedVariantConfigOption
+
 
 class LocalMagicBuildVariants:
     GeneratorExeFileExtension = "FSLGEN_GENERATOR_ExeFileExtension"
 
 
 class GeneratorGNUmakefile(GeneratorBase):
-    def __init__(self, config: Config, packages: List[Package], dstMakeFilename: str,
-                 templateExe: str, templateLib: str, generatorName: str, configVariantOptions: List[str]) -> None:
+    def __init__(
+        self,
+        config: Config,
+        packages: list[Package],
+        dstMakeFilename: str,
+        templateExe: str,
+        templateLib: str,
+        generatorName: str,
+        configVariantOptions: list[str],
+    ) -> None:
         super().__init__()
-        self.ConfigVariantOptions = configVariantOptions;
+        self.ConfigVariantOptions = configVariantOptions
         self.BldTemplate = IOUtil.ReadFile(IOUtil.Join(config.SDKConfigTemplatePath, "build.sh"))
         self.ExeTemplate = IOUtil.ReadFile(IOUtil.Join(config.SDKConfigTemplatePath, templateExe))
         self.LibTemplate = IOUtil.ReadFile(IOUtil.Join(config.SDKConfigTemplatePath, templateLib))
@@ -83,18 +80,15 @@ class GeneratorGNUmakefile(GeneratorBase):
                     self.__GenerateLibraryBuildFile(config, generatorName, package, dstMakeFilename)
                 elif package.Type == PackageType.Executable:
                     self.__GenerateExecutableBuildFile(config, generatorName, package, dstMakeFilename)
-            #elif package.Type == PackageType.Executable:
+            # elif package.Type == PackageType.Executable:
             #    config.DoPrint("WARNING: Package {0} marked as not supported".format(package.Name))
-
 
     def __GenerateLibraryBuildFile(self, config: Config, generatorName: str, package: Package, dstMakeFilename: str) -> None:
         self.__GenerateBuildFile(config, generatorName, package, self.LibTemplate, dstMakeFilename)
 
-
     def __GenerateExecutableBuildFile(self, config: Config, generatorName: str, package: Package, dstMakeFilename: str) -> None:
         self.__GenerateBuildFile(config, generatorName, package, self.ExeTemplate, dstMakeFilename)
         self.__GenerateBuildScript(config, generatorName, package, self.BldTemplate)
-
 
     def __GenerateBuildScript(self, config: Config, generatorName: str, package: Package, template: str) -> None:
         strContent = ""
@@ -120,12 +114,11 @@ class GeneratorGNUmakefile(GeneratorBase):
             # This file has been superseded by the 'FslBuild.py' script
             # so for now we just write it inside the build dir to keep it around if needed
 
-            #dstFile = IOUtil.Join(package.AbsolutePath, "build.sh")
+            # dstFile = IOUtil.Join(package.AbsolutePath, "build.sh")
             dstFile = IOUtil.Join(buildPath, "build.sh")
 
             IOUtil.WriteFileIfChanged(dstFile, build)
             IOUtil.SetFileExecutable(dstFile)
-
 
     def __GenerateBuildFile(self, config: Config, generatorName: str, package: Package, template: str, dstMakeFilename: str) -> None:
         if package.ResolvedMakeObjectPath is None or package.AbsolutePath is None:
@@ -135,7 +128,12 @@ class GeneratorGNUmakefile(GeneratorBase):
         if package.Type == PackageType.Library:
             name = "lib" + name
 
-        if package.ResolvedBuildSourceFiles is None or package.ResolvedBuildAllIncludeDirs is None or package.ResolvedBuildAllPrivateDefines is None or package.ResolvedBuildAllPublicDefines is None:
+        if (
+            package.ResolvedBuildSourceFiles is None
+            or package.ResolvedBuildAllIncludeDirs is None
+            or package.ResolvedBuildAllPrivateDefines is None
+            or package.ResolvedBuildAllPublicDefines is None
+        ):
             raise Exception("Invalid Package")
 
         files = MakeFileHelper.CreateList(package.ResolvedBuildSourceFiles)
@@ -148,7 +146,7 @@ class GeneratorGNUmakefile(GeneratorBase):
         variantSection = self.__GetVariantSection(package)
 
         if package.ResolvedMakeVariantNameHint is None:
-            raise InternalErrorException("Package '{0}' ResolvedMakeVariantNameHint can not be None".format(package.Name))
+            raise InternalErrorException(f"Package '{package.Name}' ResolvedMakeVariantNameHint can not be None")
 
         variantName = package.ResolvedMakeVariantNameHint
         build = template
@@ -160,7 +158,6 @@ class GeneratorGNUmakefile(GeneratorBase):
         build = build.replace("##PACKAGE_VARIANT_SECTION##", variantSection)
         build = build.replace("##PACKAGE_OBJECT_PATH##", package.ResolvedMakeObjectPath)
         build = build.replace("##PACKAGE_VARIANT_NAME##", variantName)
-
 
         if package.Type == PackageType.Executable:
             libraryDependencies = self.__GetLibraryDependencies(config, package)
@@ -185,13 +182,12 @@ class GeneratorGNUmakefile(GeneratorBase):
             IOUtil.WriteFileIfChanged(dstFile, build)
             GitIgnoreHelper.AddPathIfInPackageRoot(self.GitIgnoreDict, package, dstFile)
 
-
     def __GetVariantSection(self, package: Package) -> str:
-        variantSection = ''
-        allVariants = self.__GetAllVariants(package)  # type: List[PackagePlatformVariant]
+        variantSection = ""
+        allVariants: list[PackagePlatformVariant] = self.__GetAllVariants(package)
         isLibrary = package.Type == PackageType.Library
         for variant in allVariants:
-            #if variant.Type != VariantType.Normal:
+            # if variant.Type != VariantType.Normal:
             #    raise NotImplementedException("This generator only supports Normal variants at the moment")
             isFirstOption = True
             for variantOption in variant.Options:
@@ -201,96 +197,90 @@ class GeneratorGNUmakefile(GeneratorBase):
                 variantSection += self.__CreateVariantOptionEnd(variant)
         return variantSection
 
-
-    def __CreateVariantOption(self, variant: PackagePlatformVariant,
-                              option: PackagePlatformVariantOption,
-                              isLibrary: bool,
-                              isFirstOption: bool) -> str:
+    def __CreateVariantOption(self, variant: PackagePlatformVariant, option: PackagePlatformVariantOption, isLibrary: bool, isFirstOption: bool) -> str:
         strContent = ""
         if isFirstOption:
-            strContent += "ifeq ($(%s),%s)\n" % (variant.Name, option.Name)
+            strContent += f"ifeq ($({variant.Name}),{option.Name})\n"
         else:
-            strContent += "else ifeq ($(%s),%s)\n" % (variant.Name, option.Name)
+            strContent += f"else ifeq ($({variant.Name}),{option.Name})\n"
 
         if len(option.DirectDefines) > 0:
             defines = Util.ExtractNames(option.DirectDefines)
             strDefines = MakeFileHelper.CreateList(defines)
-            strContent += "CPP_DEFINE_FLAG_NAMES+=%s\n\n" % (strDefines)
+            strContent += f"CPP_DEFINE_FLAG_NAMES+={strDefines}\n\n"
 
         if len(option.ExternalDependencies) > 0:
             includes = self.__ExtractInclude(option.ExternalDependencies)
             if len(includes) > 0:
-                includes.reverse() # to make GCC happy
+                includes.reverse()  # to make GCC happy
                 strIncludes = MakeFileHelper.CreateList(includes)
-                strContent += "INCLUDE_DIRS+=%s\n\n" % (strIncludes)
+                strContent += f"INCLUDE_DIRS+={strIncludes}\n\n"
 
         if not isLibrary and len(option.ExternalDependencies) > 0:
             extLibraryDependencies = Util.ExtractNames(option.ExternalDependencies)
-            extLibraryDependencies.reverse() # to make GCC happy
+            extLibraryDependencies.reverse()  # to make GCC happy
             strExtLibraryDependencies = MakeFileHelper.CreateList(extLibraryDependencies)
-            strContent += "USER_EXTLIB_DEPS+=%s\n\n" % (strExtLibraryDependencies)
+            strContent += f"USER_EXTLIB_DEPS+={strExtLibraryDependencies}\n\n"
         return strContent
-
 
     def __CreateVariantOptionEnd(self, variant: PackagePlatformVariant) -> str:
         name = variant.Name
         allOptions = ", ".join(Util.ExtractNames(variant.Options))
         strContent = "else\n"
-        strContent += "$(error Variant %s not configured expected one of these %s)\n" % (name, allOptions)
+        strContent += f"$(error Variant {name} not configured expected one of these {allOptions})\n"
         strContent += "endif\n"
         return strContent
 
-
-    def __GetAllVariants(self, package: Package) -> List[PackagePlatformVariant]:
+    def __GetAllVariants(self, package: Package) -> list[PackagePlatformVariant]:
         variantDict = {}
         for currentPackage in package.ResolvedBuildOrder:
             for variant in currentPackage.ResolvedDirectVariants:
                 variantDict[variant.Name] = variant
         return list(variantDict.values())
 
-
-    def __GetLibraryDependencies(self, config: Config, package: Package) -> List[str]:
-        libPaths = []  # type: List[str]
+    def __GetLibraryDependencies(self, config: Config, package: Package) -> list[str]:
+        libPaths: list[str] = []
         # GCC apparently needs the list to be in reverse order
         buildOrder = list(package.ResolvedBuildOrder)
         buildOrder.reverse()
         for entry in buildOrder:
             if entry.Type == PackageType.Library:
                 asSdkBasedPath = config.ToolConfig.TryToPath(entry.AbsolutePath)
-                libPath = "%s/%s/lib%s$(TARGET_POSTFIX).a" % (asSdkBasedPath, entry.ResolvedMakeObjectPath, entry.Name)
-                #libPath = asSdkBasedPath + "/$(OBJ_PATH)/lib" + entry.Name +
-                #"$(TARGET_POSTFIX).a"
+                libPath = f"{asSdkBasedPath}/{entry.ResolvedMakeObjectPath}/lib{entry.Name}$(TARGET_POSTFIX).a"
+                # libPath = asSdkBasedPath + "/$(OBJ_PATH)/lib" + entry.Name +
+                # "$(TARGET_POSTFIX).a"
                 libPaths.append(libPath)
         return libPaths
 
-
-    def __GetExternalLibraryDependencies(self, package: Package) -> List[str]:
-        libPaths = []  # type: List[str]
+    def __GetExternalLibraryDependencies(self, package: Package) -> list[str]:
+        libPaths: list[str] = []
         # GCC apparently needs the list to be in reverse order
         buildOrder = list(package.ResolvedBuildOrder)
         buildOrder.reverse()
         for entry in buildOrder:
-            externalList = Util.ExtractNames(Util.FilterByType(entry.ResolvedDirectExternalDependencies, [ExternalDependencyType.StaticLib, ExternalDependencyType.DLL]))
+            externalList = Util.ExtractNames(
+                Util.FilterByType(entry.ResolvedDirectExternalDependencies, [ExternalDependencyType.StaticLib, ExternalDependencyType.DLL])
+            )
             externalList.reverse()
             if len(externalList) > 0:
                 externalList = self.__ApplyExternalLibNameCorrection(externalList)
             libPaths += externalList
         return libPaths
 
-    def __ApplyExternalLibNameCorrection(self, libraryNameList: List[str]) -> List[str]:
+    def __ApplyExternalLibNameCorrection(self, libraryNameList: list[str]) -> list[str]:
         newList = []
         for libName in libraryNameList:
             libName = LibUtil.ToUnixLibName(libName)
             newList.append(libName)
         return newList
 
-    def __GetExternalLibraryPaths(self, package: Package, dependencyTypeFilter: List[ExternalDependencyType]) -> List[str]:
+    def __GetExternalLibraryPaths(self, package: Package, dependencyTypeFilter: list[ExternalDependencyType]) -> list[str]:
         # GCC apparently needs the list to be in reverse order
         buildOrder = list(package.ResolvedBuildOrder)
         buildOrder.reverse()
-        additionalLibraryDirectories = set()  # type: Set[str]
+        additionalLibraryDirectories: set[str] = set()
         for currentPackage in buildOrder:
-            extDeps = Util.FilterByType(currentPackage.ResolvedDirectExternalDependencies, dependencyTypeFilter)  # type: List[PackageExternalDependency]
+            extDeps: list[PackageExternalDependency] = Util.FilterByType(currentPackage.ResolvedDirectExternalDependencies, dependencyTypeFilter)
             for entry in extDeps:
                 if entry.Location is not None:
                     additionalLibraryDirectories.add(entry.Location)
@@ -298,23 +288,21 @@ class GeneratorGNUmakefile(GeneratorBase):
         result.sort()
         return result
 
-
-    def __ExtractInclude(self, entries: List[PackagePlatformExternalDependency]) -> List[str]:
-        resultList = []  # type: List[str]
+    def __ExtractInclude(self, entries: list[PackagePlatformExternalDependency]) -> list[str]:
+        resultList: list[str] = []
         for entry in entries:
             if entry.IncludeDir is not None:
                 resultList.append(entry.IncludeDir.Name)
         return resultList
 
 
-class GeneratorGNUmakefileUtil(object):
+class GeneratorGNUmakefileUtil:
     @staticmethod
     def GetTargetName(package: Package) -> str:
         return package.NameInfo.ShortName.Value if package.Type == PackageType.Executable else package.Name
 
-
     @staticmethod
-    def GenerateVariableReport(log: Log, generatorName: str, package: Package, configVariantOptions: List[str]) -> GeneratorVariableReport:
+    def GenerateVariableReport(log: Log, generatorName: str, package: Package, configVariantOptions: list[str]) -> GeneratorVariableReport:
         variableReport = GeneratorVariableReport(log, configVariantOptions=configVariantOptions)
         # Add all the package variants
         for variantEntry in package.ResolvedAllVariantDict.values():
@@ -325,19 +313,18 @@ class GeneratorGNUmakefileUtil(object):
         GeneratorUtil.AddFlavors(variableReport, package)
 
         # The make files generate executable files in debug mode with the postfix '_d'
-        exeFileExtensionOptionList = ['_d', '']
+        exeFileExtensionOptionList = ["_d", ""]
         # This is a bit ugly as we just assume coverage will be last
         if ToolAddedVariantConfigOption.Coverage in configVariantOptions:
-            exeFileExtensionOptionList.append('_c')
+            exeFileExtensionOptionList.append("_c")
         variableReport.Add(LocalMagicBuildVariants.GeneratorExeFileExtension, exeFileExtensionOptionList, ToolAddedVariant.CONFIG)
 
         # make builds default to release
         variableReport.SetDefaultOption(ToolAddedVariant.CONFIG, ToolAddedVariantConfigOption.Release)
         return variableReport
 
-
     @staticmethod
-    def _TryGenerateBuildReport(log: Log, generatorName: str, package: Package, buildCommand: CommandType) -> Optional[GeneratorBuildReport]:
+    def _TryGenerateBuildReport(log: Log, generatorName: str, package: Package, buildCommand: CommandType) -> GeneratorBuildReport | None:
         if package.IsVirtual:
             return None
 
@@ -347,20 +334,20 @@ class GeneratorGNUmakefileUtil(object):
         # buildCommand = ['make', '-f', 'GNUmakefile_Yocto'] + buildConfig.BuildArgs
 
         if generatorName == PlatformNameString.UBUNTU or generatorName == PlatformNameString.APPLE:
-            buildCommandArguments = []  # type: List[str]
+            buildCommandArguments: list[str] = []
         elif generatorName == PlatformNameString.YOCTO:
-            buildCommandArguments = ['-f', 'GNUmakefile_Yocto']
+            buildCommandArguments = ["-f", "GNUmakefile_Yocto"]
         elif generatorName == PlatformNameString.RDK_YOCTO:
-            buildCommandArguments = ['-f', 'GNUmakefile_RDK_Yocto']
+            buildCommandArguments = ["-f", "GNUmakefile_RDK_Yocto"]
         else:
-            raise Exception("Unknown generator name: {0}".format(generatorName))
+            raise Exception(f"Unknown generator name: {generatorName}")
 
         # Configuration (debug, release)
-        buildCommandArguments.append("{0}=${{{0}}}".format(ToolAddedVariant.CONFIG))
+        buildCommandArguments.append(f"{ToolAddedVariant.CONFIG}=${{{ToolAddedVariant.CONFIG}}}")
 
         # Normal variants
         for normalVariant in package.ResolvedNormalVariantNameList:
-            buildCommandArguments.append("{0}=${{{0}}}".format(normalVariant))
+            buildCommandArguments.append(f"{normalVariant}=${{{normalVariant}}}")
 
         #
         if buildCommand == CommandType.Clean:
@@ -372,9 +359,8 @@ class GeneratorGNUmakefileUtil(object):
         buildCommandReport = GeneratorCommandReport(True, strBuildCommand, buildCommandArguments, [])
         return GeneratorBuildReport(buildCommandReport)
 
-
     @staticmethod
-    def TryGenerateExecutableReport(log: Log, generatorName: str, package: Package) -> Optional[GeneratorExecutableReport]:
+    def TryGenerateExecutableReport(log: Log, generatorName: str, package: Package) -> GeneratorExecutableReport | None:
         if package.Type != PackageType.Executable or package.IsVirtual:
             return None
         if package.AbsolutePath is None:
@@ -389,14 +375,14 @@ class GeneratorGNUmakefileUtil(object):
         # TARGET_POSTFIX=
         # From make file
         # TARGET= $(TARGET_NAME)$(VARIANT_NAME)$(TARGET_POSTFIX)
-        targetPostfix = "${{{0}}}".format(LocalMagicBuildVariants.GeneratorExeFileExtension)
-        exeFormatString = "{0}{1}{2}".format(targetName, package.ResolvedVariantNameHint, targetPostfix)
+        targetPostfix = f"${{{LocalMagicBuildVariants.GeneratorExeFileExtension}}}"
+        exeFormatString = f"{targetName}{package.ResolvedVariantNameHint}{targetPostfix}"
         return GeneratorExecutableReport(False, exeFormatString)
 
-
     @staticmethod
-    def TryGenerateGeneratorPackageReport(log: Log, generatorConfig: GeneratorConfig, generatorName: str,
-                                          package: Package, configVariantOptions: List[str]) -> Optional[PackageGeneratorReport]:
+    def TryGenerateGeneratorPackageReport(
+        log: Log, generatorConfig: GeneratorConfig, generatorName: str, package: Package, configVariantOptions: list[str]
+    ) -> PackageGeneratorReport | None:
         if package.IsVirtual and package.Type != PackageType.HeaderLibrary:
             return None
 

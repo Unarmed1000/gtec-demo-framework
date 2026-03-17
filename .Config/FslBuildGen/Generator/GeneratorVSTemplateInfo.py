@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright 2018 NXP
 # All rights reserved.
 #
@@ -29,11 +28,12 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
 from FslBuildGen.ToolConfig import ToolConfigTemplateFolder
 
-class GeneratorVSTemplateInfo(object):
+
+class GeneratorVSTemplateInfo:
     def __init__(self, activeTemplate: str, templateFolder: ToolConfigTemplateFolder, sdkConfigTemplatePath: str) -> None:
         super().__init__()
         self.ActiveTemplate = activeTemplate

@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright 2018 NXP
 # All rights reserved.
 #
@@ -29,21 +28,22 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
 from typing import cast
+
 from FslBuildGen import IOUtil
 from FslBuildGen.BuildExternal.State.JsonDictType import JsonDictType
 
 
-class BuildAreaInfoFileElements(object):
+class BuildAreaInfoFileElements:
     FileFormatVersion = "FileFormatVersion"
     SDKPath = "SDKPath"
 
     CURRENT_VERSION = "1"
 
 
-class BuildAreaInfoFile(object):
+class BuildAreaInfoFile:
     def __init__(self, jsonDict: JsonDictType) -> None:
         super().__init__()
         self.FileFormatVersion = jsonDict[BuildAreaInfoFileElements.FileFormatVersion]
@@ -51,7 +51,7 @@ class BuildAreaInfoFile(object):
 
     @staticmethod
     def IsDictValid(srcDict: JsonDictType) -> bool:
-        if not BuildAreaInfoFileElements.FileFormatVersion in srcDict or not BuildAreaInfoFileElements.SDKPath in srcDict:
+        if BuildAreaInfoFileElements.FileFormatVersion not in srcDict or BuildAreaInfoFileElements.SDKPath not in srcDict:
             return False
         if not isinstance(srcDict[BuildAreaInfoFileElements.FileFormatVersion], str):
             return False

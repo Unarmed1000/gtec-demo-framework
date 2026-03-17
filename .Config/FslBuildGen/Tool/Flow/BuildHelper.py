@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright 2018 NXP
 # All rights reserved.
 #
@@ -28,24 +28,23 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-from typing import List
-from typing import Optional
+
 from FslBuildGen.Log import Log
 from FslBuildGen.Packages.Package import Package
 
-class BuildHelper(object):
+
+class BuildHelper:
     @staticmethod
-    def FindRequestedPackages(log: Log, allPackages: List[Package], requestedFiles: Optional[List[str]]) -> List[Package]:
+    def FindRequestedPackages(log: Log, allPackages: list[Package], requestedFiles: list[str] | None) -> list[Package]:
         if requestedFiles is None or len(requestedFiles) <= 0:
             return []
         requestedFileSet = set(requestedFiles)
-        allRequestedPackages = [] # type: List[Package]
+        allRequestedPackages: list[Package] = []
         for package in allPackages:
             if package.TraceContext.PackageFile is not None and package.TraceContext.PackageFile.AbsoluteFilePath in requestedFileSet:
                 allRequestedPackages.append(package)
         if len(allRequestedPackages) != len(requestedFiles):
             log.LogPrintVerbose(2, "Could not locate all requested files")
         return allRequestedPackages
-

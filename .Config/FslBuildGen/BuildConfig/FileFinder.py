@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright 2018 NXP
 # All rights reserved.
 #
@@ -29,24 +28,25 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-#from typing import List
-from typing import Optional
+# from typing import List
+
 from FslBuildGen import IOUtil
 from FslBuildGen.Log import Log
 from FslBuildGen.ToolConfig import ToolConfig
 
-class FileFinder(object):
+
+class FileFinder:
     @staticmethod
     def LocateFileInParentTree(log: Log, startDirectory: str, findFilename: str) -> str:
         try:
             res = IOUtil.TryFindFileInCurrentOrParentDir(startDirectory, findFilename)
             if res is not None:
                 return res
-        except (Exception) as ex:
+        except Exception as ex:
             log.DoPrintError(str(ex))
-        raise Exception("Could not find a '{0}' file in the parent tree of '{1}'".format(findFilename, startDirectory))
+        raise Exception(f"Could not find a '{findFilename}' file in the parent tree of '{startDirectory}'")
 
     @staticmethod
     def FindClosestFileInRoot(log: Log, toolConfig: ToolConfig, startDirectory: str, findFilename: str) -> str:
@@ -55,11 +55,11 @@ class FileFinder(object):
 
         rootDir = toolConfig.TryFindRootDirectory(foundDir)
         if rootDir is None:
-            raise Exception("Could not find a '{0}' file inside the project root".format(findFilename))
+            raise Exception(f"Could not find a '{findFilename}' file inside the project root")
         return foundDir
 
     @staticmethod
-    def TryFindClosestFileInRoot(log: Log, toolConfig: ToolConfig, startDirectory: str, findFilename: str) -> Optional[str]:
+    def TryFindClosestFileInRoot(log: Log, toolConfig: ToolConfig, startDirectory: str, findFilename: str) -> str | None:
         foundPath = IOUtil.TryFindFileInCurrentOrParentDir(startDirectory, findFilename)
         if foundPath is None:
             return None

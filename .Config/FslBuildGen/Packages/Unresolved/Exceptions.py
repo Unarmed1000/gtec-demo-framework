@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright 2020 NXP
 # All rights reserved.
 #
@@ -29,18 +29,20 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
 from FslBuildGen.Packages.PackageInstanceName import PackageInstanceName
-from FslBuildGen.Packages.Unresolved.UnresolvedPackageRequirement import UnresolvedPackageRequirement
 from FslBuildGen.Packages.Unresolved.UnresolvedExternalDependency import UnresolvedExternalDependency
+from FslBuildGen.Packages.Unresolved.UnresolvedPackageRequirement import UnresolvedPackageRequirement
+
 
 class RequirementUseDuplicatedException(Exception):
     def __init__(self, packageName: PackageInstanceName, requirement: UnresolvedPackageRequirement) -> None:
-        msg = "Requirement named '{0}' that extends '{1}' in package '{2}' already defined".format(requirement.Name, requirement.Extends, packageName)
+        msg = f"Requirement named '{requirement.Name}' that extends '{requirement.Extends}' in package '{packageName}' already defined"
         super().__init__(msg)
+
 
 class ExternalDependencyDuplicatedException(Exception):
     def __init__(self, packageName: PackageInstanceName, dependency: UnresolvedExternalDependency) -> None:
-        msg = "External  named '{0}' in package '{1}' already defined".format(dependency.Name, packageName)
+        msg = f"External  named '{dependency.Name}' in package '{packageName}' already defined"
         super().__init__(msg)

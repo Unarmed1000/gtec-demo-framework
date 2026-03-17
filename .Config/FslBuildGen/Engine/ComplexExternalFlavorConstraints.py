@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright 2023 NXP
 # All rights reserved.
 #
@@ -29,41 +28,40 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-from typing import Dict
+
 from FslBuildGen.Engine.ExternalFlavorConstraints import ExternalFlavorConstraints
 
-class ComplexExternalFlavorConstraints(object):
-    def __init__(self, flavorConstraintsDict: ExternalFlavorConstraints,
-                       packageFlavorDict: Dict[str, ExternalFlavorConstraints]) -> None:
+
+class ComplexExternalFlavorConstraints:
+    def __init__(self, flavorConstraintsDict: ExternalFlavorConstraints, packageFlavorDict: dict[str, ExternalFlavorConstraints]) -> None:
         super().__init__()
         self.DefaultFlavorConstraints = flavorConstraintsDict
         self.PackageFlavorContraintDict = packageFlavorDict
 
     def GetFlavorConstraints(self, packageName: str) -> ExternalFlavorConstraints:
-        return self.PackageFlavorContraintDict[packageName] if packageName in self.PackageFlavorContraintDict else self.DefaultFlavorConstraints
+        return self.PackageFlavorContraintDict.get(packageName, self.DefaultFlavorConstraints)
 
     def HasConstraints(self) -> bool:
         return self.DefaultFlavorConstraints.HasConstraints() or len(self.PackageFlavorContraintDict) > 0
 
     @staticmethod
-    def Merge(flavorConstraints: 'ComplexExternalFlavorConstraints',
-              newConstraints: Dict[str, ExternalFlavorConstraints]) -> 'ComplexExternalFlavorConstraints':
-        mergedPackageFlavorDict = dict() # type: Dict[str, ExternalFlavorConstraints]
+    def Merge(
+        flavorConstraints: "ComplexExternalFlavorConstraints", newConstraints: dict[str, ExternalFlavorConstraints]
+    ) -> "ComplexExternalFlavorConstraints":
+        mergedPackageFlavorDict: dict[str, ExternalFlavorConstraints] = {}
         for packageName, packageFlavorConstraints in newConstraints.items():
             if packageName in flavorConstraints.PackageFlavorContraintDict:
-                mergedDict = dict() # type: Dict[str, str]
+                mergedDict: dict[str, str] = {}
                 for flavorConstraintName, flavorConstraintOptionName in packageFlavorConstraints.Dict.items():
                     mergedDict[flavorConstraintName.Value] = flavorConstraintOptionName.Value
                 for flavorConstraintName, flavorConstraintOptionName in flavorConstraints.PackageFlavorContraintDict[packageName].Dict.items():
-                    if flavorConstraintName.Value in mergedDict:
-                        if mergedDict[flavorConstraintName.Value] != flavorConstraintOptionName:
-                            raise Exception("internal error key exist in both location and the value is not the same")
+                    if flavorConstraintName.Value in mergedDict and mergedDict[flavorConstraintName.Value] != flavorConstraintOptionName:
+                        raise Exception("internal error key exist in both location and the value is not the same")
                     mergedDict[flavorConstraintName.Value] = flavorConstraintOptionName.Value
                 mergedPackageFlavorDict[packageName] = ExternalFlavorConstraints.ToExternalFlavorConstraints(mergedDict)
             else:
                 mergedPackageFlavorDict[packageName] = packageFlavorConstraints
-
 
         return ComplexExternalFlavorConstraints(flavorConstraints.DefaultFlavorConstraints, mergedPackageFlavorDict)

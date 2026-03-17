@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright 2018 NXP
 # All rights reserved.
 #
@@ -29,27 +28,26 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-from typing import Dict
-#from typing import List
-from typing import Optional
+# from typing import List
+
+
 from FslBuildGen.Generator.Report.VariableReport import VariableReport
 
-class VariableDict(object):
+
+class VariableDict:
     def __init__(self) -> None:
         super().__init__()
-        self.__Dict = {}            # type: Dict[str, VariableReport]
+        self.__Dict: dict[str, VariableReport] = {}
 
-
-    def TryGetVariableReport(self, variableName: str) -> Optional[VariableReport]:
-        return None if variableName not in self.__Dict else self.__Dict[variableName]
-
+    def TryGetVariableReport(self, variableName: str) -> VariableReport | None:
+        return self.__Dict.get(variableName, None)
 
     def GetVariableReport(self, variableName: str) -> VariableReport:
         if variableName not in self.__Dict:
-            raise Exception("The variable '{0}' is unknown".format(variableName))
+            raise Exception(f"The variable '{variableName}' is unknown")
         return self.__Dict[variableName]
 
-    def _GetDict(self) -> Dict[str, VariableReport]:
+    def _GetDict(self) -> dict[str, VariableReport]:
         return self.__Dict

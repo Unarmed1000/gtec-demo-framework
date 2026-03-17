@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright 2017 NXP
 # All rights reserved.
 #
@@ -29,34 +28,39 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-#from typing import Callable
-#from typing import Dict
-#from typing import List
-from typing import Optional
-#from typing import Set
-#from FslBuildGen.DataTypes import BuildVariantConfig
+# from typing import Callable
+# from typing import Dict
+# from typing import List
+
+# from typing import Set
+# from FslBuildGen.DataTypes import BuildVariantConfig
 from FslBuildGen.Generator.Report.Datatypes import FormatStringEnvironmentVariableResolveMethod
 
 
-class GeneratorExecutableReport(object):
-    def __init__(self, useAsRelative: bool, exeFormatString: str, runScript: Optional[str] = None,
-                 environmentVariableResolveMethod: FormatStringEnvironmentVariableResolveMethod = FormatStringEnvironmentVariableResolveMethod.Lookup) -> None:
+class GeneratorExecutableReport:
+    def __init__(
+        self,
+        useAsRelative: bool,
+        exeFormatString: str,
+        runScript: str | None = None,
+        environmentVariableResolveMethod: FormatStringEnvironmentVariableResolveMethod = FormatStringEnvironmentVariableResolveMethod.Lookup,
+    ) -> None:
         """
-            The information stored in a format string can contain both variables and environment variables and
-            it need to be formatted/converted using the ReportVariableFormatter before being used.
+        The information stored in a format string can contain both variables and environment variables and
+        it need to be formatted/converted using the ReportVariableFormatter before being used.
 
-            Some notes:
-            Each variant name string as used by the generator.
-            - Each normal variant is represented as a ${VARIANT_NAME} variable.
-            - Each virtual variant is represented as a $(VARIANT_NAME) variable.
-            Please note there can be other variables and environment variables as required by the generator
+        Some notes:
+        Each variant name string as used by the generator.
+        - Each normal variant is represented as a ${VARIANT_NAME} variable.
+        - Each virtual variant is represented as a $(VARIANT_NAME) variable.
+        Please note there can be other variables and environment variables as required by the generator
         """
         super().__init__()
         if exeFormatString is None:
             raise Exception("exeFormatString can not be None")
-        if exeFormatString.startswith('/') or ':' in exeFormatString:
+        if exeFormatString.startswith("/") or ":" in exeFormatString:
             raise Exception("exeFormatString can not be absolute")
 
         # if this is true the exe should be run via as 'relative' command.
@@ -75,4 +79,4 @@ class GeneratorExecutableReport(object):
         self.RunScript = runScript
 
         # if set this is the method to use for resolving the exe format string when running
-        self.EnvironmentVariableResolveMethod = environmentVariableResolveMethod  # type: FormatStringEnvironmentVariableResolveMethod
+        self.EnvironmentVariableResolveMethod: FormatStringEnvironmentVariableResolveMethod = environmentVariableResolveMethod

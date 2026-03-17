@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright 2018 NXP
 # All rights reserved.
 #
@@ -29,13 +29,14 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-from typing import List
 import xml.etree.ElementTree as ET
+
 from FslBuildGen.Log import Log
-from FslBuildGen.Xml.XmlBase import XmlBase
 from FslBuildGen.Xml.Project.XmlBuildDocRequirement import XmlBuildDocRequirement
+from FslBuildGen.Xml.XmlBase import XmlBase
+
 
 class XmlBuildDocConfiguration(XmlBase):
     def __init__(self, log: Log, xmlElement: ET.Element) -> None:
@@ -43,8 +44,8 @@ class XmlBuildDocConfiguration(XmlBase):
         self._CheckAttributes(set())
         self.Requirements = self.__ReadRequirements(log, xmlElement)
 
-    def __ReadRequirements(self, log: Log, xmlElement: ET.Element) -> List[XmlBuildDocRequirement]:
-        res = []  # type: List[XmlBuildDocRequirement]
+    def __ReadRequirements(self, log: Log, xmlElement: ET.Element) -> list[XmlBuildDocRequirement]:
+        res: list[XmlBuildDocRequirement] = []
         foundElements = xmlElement.findall("Requirement")
         for element in foundElements:
             res.append(XmlBuildDocRequirement(log, element))

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright (c) 2014 Freescale Semiconductor, Inc.
 # All rights reserved.
 #
@@ -29,31 +29,36 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-from typing import Optional
-from typing import Union
+
 from FslBuildGen import IOUtil
 from FslBuildGen.Log import Log
 from FslBuildGen.Vars.VariableProcessor import VariableProcessor
-from FslBuildGen.Xml.Project.XmlProjectRootConfigFile import XmlExperimentalDefaultThirdPartyInstallDirectory
-from FslBuildGen.Xml.Project.XmlProjectRootConfigFile import XmlExperimentalDefaultThirdPartyInstallReadonlyCacheDirectory
+from FslBuildGen.Xml.Project.XmlProjectRootConfigFile import (
+    XmlExperimentalDefaultThirdPartyInstallDirectory,
+    XmlExperimentalDefaultThirdPartyInstallReadonlyCacheDirectory,
+)
 
 
-class ToolConfigExperimentalDefaultThirdPartyInstallDirectory(object):
-    def __init__(self, log: Log,
-                 basedUponXML: Optional[Union[XmlExperimentalDefaultThirdPartyInstallDirectory, XmlExperimentalDefaultThirdPartyInstallReadonlyCacheDirectory]],
-                 entryName: str, isReadonlyCache: bool) -> None:
+class ToolConfigExperimentalDefaultThirdPartyInstallDirectory:
+    def __init__(
+        self,
+        log: Log,
+        basedUponXML: XmlExperimentalDefaultThirdPartyInstallDirectory | XmlExperimentalDefaultThirdPartyInstallReadonlyCacheDirectory | None,
+        entryName: str,
+        isReadonlyCache: bool,
+    ) -> None:
         super().__init__()
 
         if basedUponXML is None:
-            raise Exception("No '{0}' was defined in the xml".format(entryName))
+            raise Exception(f"No '{entryName}' was defined in the xml")
 
-        self.__Log = log # type: Log
+        self.__Log: Log = log
         self.BasedOn = basedUponXML
-        self.Name = basedUponXML.Name  # type: str
-        self.DynamicName = basedUponXML.Name  # type: str
-        self.IsReadonlyCache = isReadonlyCache  # type: bool
+        self.Name: str = basedUponXML.Name
+        self.DynamicName: str = basedUponXML.Name
+        self.IsReadonlyCache: bool = isReadonlyCache
 
         variableProcessor = VariableProcessor(log)
 
@@ -62,42 +67,40 @@ class ToolConfigExperimentalDefaultThirdPartyInstallDirectory(object):
         env = tupleResult[0]
         remainingPath = tupleResult[1]
         if env is None:
-            raise Exception("The {0} is expected to contain a environment variable '{1}'".format(entryName, self.DynamicName))
+            raise Exception(f"The {entryName} is expected to contain a environment variable '{self.DynamicName}'")
 
         resolvedPath = self.__GetEnvironmentVariable(env)
 
-        self.__EnvironmentVariableName = env  # type: str
-        self.BashName = '${0}{1}'.format(env, remainingPath)  # type: str
-        self.DosName = '%{0}%{1}'.format(env, remainingPath)  # type: str
-        self.ResolvedPath = IOUtil.ToUnixStylePath(resolvedPath)  # type: str
-        self.ResolvedPathEx = "{0}/".format(self.ResolvedPath) if len(self.ResolvedPath) > 0 else ""  # type: str
-
+        self.__EnvironmentVariableName: str = env
+        self.BashName: str = f"${env}{remainingPath}"
+        self.DosName: str = f"%{env}%{remainingPath}"
+        self.ResolvedPath: str = IOUtil.ToUnixStylePath(resolvedPath)
+        self.ResolvedPathEx: str = f"{self.ResolvedPath}/" if len(self.ResolvedPath) > 0 else ""
 
     def __GetEnvironmentVariable(self, name: str) -> str:
         # For cache entries we allow the variable to not be defined, but if it is defned we retrieve is as normal
         value = IOUtil.TryGetEnvironmentVariable(name)
         if value is None:
-            raise EnvironmentError("{0} environment variable not set".format(name))
+            raise OSError(f"{name} environment variable not set")
 
         value = IOUtil.NormalizePath(value)
         if value is None:
-            raise EnvironmentError("{0} environment variable not set".format(name))
+            raise OSError(f"{name} environment variable not set")
 
         if not IOUtil.IsAbsolutePath(value):
-            raise EnvironmentError("{0} environment path '{1}' is not absolute".format(name, value))
+            raise OSError(f"{name} environment path '{value}' is not absolute")
 
         if value.endswith("/"):
-            raise EnvironmentError("{0} environment path '{1}' not allowed to end with '/' or '\'".format(name, value))
+            raise OSError(f"{name} environment path '{value}' not allowed to end with '/' or ''")
 
         # Create the directory if it didnt exist
         if not IOUtil.IsDirectory(value) and not IOUtil.Exists(value):
-            self.__Log.LogPrint("The directory '{0}' did not exist, creating it".format(value))
+            self.__Log.LogPrint(f"The directory '{value}' did not exist, creating it")
             IOUtil.SafeMakeDirs(value)
 
         if not IOUtil.IsDirectory(value):
-            raise EnvironmentError("The {0} environment variable content '{1}' does not point to a valid directory".format(name, value))
+            raise OSError(f"The {name} environment variable content '{value}' does not point to a valid directory")
         return value
-
 
     def TryGetEnvironmentVariableName(self) -> str:
         return self.__EnvironmentVariableName

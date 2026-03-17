@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright (c) 2014 Freescale Semiconductor, Inc.
 # All rights reserved.
 #
@@ -28,12 +28,13 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
 from FslBuildGen.Packages.Package import Package
 from FslBuildGen.Xml.Exceptions import XmlException2
 
+
 class PackageDuplicatedWindowsVisualStudioProjectIdException(XmlException2):
     def __init__(self, package1: Package, package2: Package, duplicatedProjectId: str) -> None:
-        msg = "The windows platform requires a unique ProjectId to be defined. {0} is defined in {1} and {2} ".format(duplicatedProjectId, package1.Name, package2.Name)
+        msg = f"The windows platform requires a unique ProjectId to be defined. {duplicatedProjectId} is defined in {package1.Name} and {package2.Name} "
         super().__init__(msg)

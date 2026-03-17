@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright 2019 NXP
 # All rights reserved.
 #
@@ -29,18 +28,19 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-#from typing import Dict
-#from typing import List
-#from typing import Optional
+# from typing import Dict
+# from typing import List
+# from typing import Optional
 from FslBuildGen import IOUtil
 
+
 def ValidateIsNormalizedPath(path: str, pathTypeDesc: str) -> None:
-    if '\\' in path:
-        raise Exception("{0} '{1}' can not contain '\\'".format(pathTypeDesc, path))
-    if path.endswith('/'):
-        raise Exception("{0} '{1}' can not end with '/'".format(pathTypeDesc, path))
+    if "\\" in path:
+        raise Exception(f"{pathTypeDesc} '{path}' can not contain '\\'")
+    if path.endswith("/"):
+        raise Exception(f"{pathTypeDesc} '{path}' can not end with '/'")
     normalizedName = IOUtil.NormalizePath(path)
     if path != normalizedName:
-        raise Exception("{0} '{1}' should be a normalized path like '{2}'".format(pathTypeDesc, path, normalizedName))
+        raise Exception(f"{pathTypeDesc} '{path}' should be a normalized path like '{normalizedName}'")

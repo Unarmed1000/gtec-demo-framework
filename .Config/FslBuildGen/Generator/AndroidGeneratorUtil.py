@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright (c) 2016 Freescale Semiconductor, Inc.
 # All rights reserved.
 #
@@ -29,27 +29,27 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-from typing import List
+
 from FslBuildGen.AndroidUtil import AndroidUtil
 from FslBuildGen.Packages.Package import Package
 from FslBuildGen.ToolConfig import ToolConfigPackageLocation
 
 
-class PackageDepByLocation(object):
+class PackageDepByLocation:
     def __init__(self, location: ToolConfigPackageLocation) -> None:
         super().__init__()
         self.Location = location
-        self.Packages = []  # type: List[Package]
+        self.Packages: list[Package] = []
 
 
-class AndroidSDKVersion(object):
+class AndroidSDKVersion:
     def __init__(self, version: int) -> None:
         super().__init__()
         self.Version = version
-        self.VersionString = "{0}".format(version)  # type: str
-        self.AppPlatform = "android-{0}".format(version)  # type: str
+        self.VersionString: str = f"{version}"
+        self.AppPlatform: str = f"android-{version}"
 
 
 def GetTargetSDKVersion(package: Package) -> AndroidSDKVersion:
@@ -76,15 +76,14 @@ def DetermineMinGLESVersion(package: Package) -> str:
     return "0x00020000"
 
 
-class AppPackageTemplateInfo(object):
+class AppPackageTemplateInfo:
     def __init__(self, package: Package) -> None:
         super().__init__()
-        self.ProjectPathName = package.Name.replace('.', '/')
-        self.PrefixedProjectName = package.Name.replace('.', '_')
+        self.ProjectPathName = package.Name.replace(".", "/")
+        self.PrefixedProjectName = package.Name.replace(".", "_")
         self.TargetSDKVersion = GetTargetSDKVersion(package)
         self.MinSDKVersion = DetermineMinSDKVersion(package)
         self.MinGLESVersion = DetermineMinGLESVersion(package)
-
 
     def UpdateFileName(self, fileName: str) -> str:
         fileName = fileName.replace("##PREFIXED_PROJECT_NAME##", self.PrefixedProjectName)

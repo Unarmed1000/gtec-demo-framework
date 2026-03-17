@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright 2020 NXP
 # All rights reserved.
 #
@@ -29,22 +28,27 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-from typing import Dict
-from typing import List
-from typing import Optional
 
-class OpenProjectCMakeInfo(object):
-    def __init__(self, buildDirectory: str, generator: str, sourceDirectory: str, configureArgs: List[str], configureSettingsDict: Dict[str,object],
-                 installPrefix: str, buildThreads: Optional[int]) -> None:
+class OpenProjectCMakeInfo:
+    def __init__(
+        self,
+        buildDirectory: str,
+        generator: str,
+        sourceDirectory: str,
+        configureArgs: list[str],
+        configureSettingsDict: dict[str, object],
+        installPrefix: str,
+        buildThreads: int | None,
+    ) -> None:
         """
         configureArgs = Arguments to CMake that will be passed during the configure process. (Never pass -D arguments using this setting.)
         """
 
         for entry in configureArgs:
             if entry.strip().startswith("-D"):
-                raise Exception("configureArgs can not contain entries that start with '-D' entry: '{0}'".format(entry))
+                raise Exception(f"configureArgs can not contain entries that start with '-D' entry: '{entry}'")
 
         if "CMAKE_INSTALL_PREFIX" in configureSettingsDict:
             raise Exception("configureSettingsDict can not contain CMAKE_INSTALL_PREFIX")

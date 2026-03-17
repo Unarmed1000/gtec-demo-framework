@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright 2017 NXP
 # All rights reserved.
 #
@@ -29,19 +28,19 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-#from typing import Dict
-#from typing import List
-from typing import Optional
-#from typing import Set
-#from FslBuildGen.DataTypes import BuildVariantConfig
+# from typing import Dict
+# from typing import List
+
+# from typing import Set
+# from FslBuildGen.DataTypes import BuildVariantConfig
 from FslBuildGen.Generator.Report.GeneratorCommandReport import GeneratorCommandReport
 
-class GeneratorBuildReport(object):
-    def __init__(self, buildCommandReport: Optional[GeneratorCommandReport]) -> None:
-        """
-        """
+
+class GeneratorBuildReport:
+    def __init__(self, buildCommandReport: GeneratorCommandReport | None) -> None:
+        """ """
         super().__init__()
         # If this is None, it means that the builder should skip this.
         self.BuildCommandReport = buildCommandReport

@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright 2020 NXP
 # All rights reserved.
 #
@@ -29,34 +28,41 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-#from typing import Dict
-#from typing import Optional
+# from typing import Dict
+# from typing import Optional
+from FslBuildGen.BuildContent.ConditionInterpreter import EvaluateConditionInterpreter
 from FslBuildGen.DataTypes import DependencyCondition
 from FslBuildGen.Generator.GeneratorInfo import GeneratorInfo
-from FslBuildGen.BuildContent.ConditionInterpreter import EvaluateConditionInterpreter
-
-class MagicCommands(object):
-    CommandEvaluate = 'Evaluate'
-
-class Magic(object):
-    CommandEvaluatePre = MagicCommands.CommandEvaluate + '('
-    CommandEvaluatePost = ')'
 
 
-class ElementIfConditionUtil(object):
+class MagicCommands:
+    CommandEvaluate = "Evaluate"
 
+
+class Magic:
+    CommandEvaluatePre = MagicCommands.CommandEvaluate + "("
+    CommandEvaluatePost = ")"
+
+
+class ElementIfConditionUtil:
     @staticmethod
     def CheckCondition(condition: str, generatorInfo: GeneratorInfo, debugHelp: str) -> bool:
         if condition == DependencyCondition.FindPackageAllowed:
             return generatorInfo.AllowFindPackage
         elif condition == DependencyCondition.FindPackageNotAllowed:
             return not generatorInfo.AllowFindPackage
-        elif (generatorInfo.ValidVariabelDict is not None and condition.startswith(Magic.CommandEvaluatePre) and condition.endswith(Magic.CommandEvaluatePost) and len(condition) > (len(Magic.CommandEvaluatePre)+len(Magic.CommandEvaluatePost))):
-            evalCondition = condition[len(Magic.CommandEvaluatePre):-len(Magic.CommandEvaluatePost)]
-            #raise Exception("Evaluate '{0}' not implemented".format(condition))
+        elif (
+            generatorInfo.ValidVariabelDict is not None
+            and condition.startswith(Magic.CommandEvaluatePre)
+            and condition.endswith(Magic.CommandEvaluatePost)
+            and len(condition) > (len(Magic.CommandEvaluatePre) + len(Magic.CommandEvaluatePost))
+        ):
+            evalCondition = condition[len(Magic.CommandEvaluatePre) : -len(Magic.CommandEvaluatePost)]
+            # raise Exception("Evaluate '{0}' not implemented".format(condition))
             return EvaluateConditionInterpreter.Evaluate(evalCondition, generatorInfo.ValidVariabelDict, debugHelp)
 
-        raise Exception("Unsupported condition '{0}' expected one of these {1}".format(condition, [DependencyCondition.FindPackageAllowed, DependencyCondition.FindPackageNotAllowed]))
-
+        raise Exception(
+            f"Unsupported condition '{condition}' expected one of these {[DependencyCondition.FindPackageAllowed, DependencyCondition.FindPackageNotAllowed]}"
+        )

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright (c) 2014 Freescale Semiconductor, Inc.
 # All rights reserved.
 #
@@ -28,27 +28,27 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-from typing import List
-from typing import Optional
 from enum import Enum
+from typing import Optional
+
 from FslBuildGen.Exceptions import UnknownTypeException
 
-class PackageType(Enum):
-    ExternalFlavorConstraint  = 0   # For internal graph resolution only.
-    TopLevel = 1                    # a top level package, this is a internal thing (used for total
-                                    # verification)
-    Library = 2                     # a static library
-    Executable = 3                  # a executable
-    ExternalLibrary = 4             # a unmanaged static library
-    HeaderLibrary = 5               # a header only library
-    ToolRecipe = 6                  # a external tool recipe
-    #ExeLibCombo =  6               # a executeable and static library combo (not supported yet)
 
+class PackageType(Enum):
+    ExternalFlavorConstraint = 0  # For internal graph resolution only.
+    TopLevel = 1  # a top level package, this is a internal thing (used for total
+    # verification)
+    Library = 2  # a static library
+    Executable = 3  # a executable
+    ExternalLibrary = 4  # a unmanaged static library
+    HeaderLibrary = 5  # a header only library
+    ToolRecipe = 6  # a external tool recipe
+    # ExeLibCombo =  6               # a executeable and static library combo (not supported yet)
 
     @staticmethod
-    def ToString(value: 'PackageType') -> str:
+    def ToString(value: "PackageType") -> str:
         if value == PackageType.TopLevel:
             return "TopLevel"
         elif value == PackageType.Library:
@@ -61,10 +61,10 @@ class PackageType(Enum):
             return "HeaderLibrary"
         elif value == PackageType.ToolRecipe:
             return "ToolRecipe"
-        raise UnknownTypeException("Unknown PackageType: {0}".format(value))
+        raise UnknownTypeException(f"Unknown PackageType: {value}")
 
     @staticmethod
-    def FromString(value: str) -> 'PackageType':
+    def FromString(value: str) -> "PackageType":
         if value == "TopLevel":
             return PackageType.TopLevel
         elif value == "Library":
@@ -77,13 +77,18 @@ class PackageType(Enum):
             return PackageType.HeaderLibrary
         elif value == "ToolRecipe":
             return PackageType.ToolRecipe
-        raise Exception("Unknown PackageType: {0}".format(value))
+        raise Exception(f"Unknown PackageType: {value}")
 
     @staticmethod
-    def AllStrings() -> List[str]:
-        return [PackageType.ToString(PackageType.TopLevel), PackageType.ToString(PackageType.Library), PackageType.ToString(PackageType.Executable),
-                PackageType.ToString(PackageType.ExternalLibrary), PackageType.ToString(PackageType.HeaderLibrary),
-                PackageType.ToString(PackageType.ToolRecipe)]
+    def AllStrings() -> list[str]:
+        return [
+            PackageType.ToString(PackageType.TopLevel),
+            PackageType.ToString(PackageType.Library),
+            PackageType.ToString(PackageType.Executable),
+            PackageType.ToString(PackageType.ExternalLibrary),
+            PackageType.ToString(PackageType.HeaderLibrary),
+            PackageType.ToString(PackageType.ToolRecipe),
+        ]
 
 
 class PackageInstanceType(Enum):
@@ -92,14 +97,14 @@ class PackageInstanceType(Enum):
     FlavorSingleton = 2
 
     @staticmethod
-    def ToString(value: 'PackageInstanceType') -> str:
+    def ToString(value: "PackageInstanceType") -> str:
         if value == PackageInstanceType.Normal:
             return "Normal"
         elif value == PackageInstanceType.Flavor:
             return "Flavor"
         elif value == PackageInstanceType.FlavorSingleton:
             return "FlavorSingleton"
-        raise UnknownTypeException("Unknown PackageInstanceType: {0}".format(value))
+        raise UnknownTypeException(f"Unknown PackageInstanceType: {value}")
 
 
 # Beware that code relies on the more accessible accesstype being smaller value (so public < private < link)
@@ -112,7 +117,7 @@ class DependencyOutputType(Enum):
     # None = 5
 
     @staticmethod
-    def ToString(value: 'DependencyOutputType') -> str:
+    def ToString(value: "DependencyOutputType") -> str:
         if value == DependencyOutputType.Reference:
             return "Reference"
         if value == DependencyOutputType.Analyzer:
@@ -125,15 +130,15 @@ class DependencyOutputType(Enum):
         #     return "Compile"
         # if value == DependencyOutputType.None:
         #     return "None"
-        raise Exception("Unknown DependencyOutputType: {0}".format(value))
+        raise Exception(f"Unknown DependencyOutputType: {value}")
 
     @staticmethod
-    def FromString(value: str) -> 'DependencyOutputType':
+    def FromString(value: str) -> "DependencyOutputType":
         if value == "Reference":
             return DependencyOutputType.Reference
         elif value == "Analyzer":
             return DependencyOutputType.Analyzer
-        raise Exception("Unknown DependencyOutputType: {0}".format(value))
+        raise Exception(f"Unknown DependencyOutputType: {value}")
 
 
 # Beware that code relies on the more accessible accesstype being smaller value (so public < private < link)
@@ -142,26 +147,27 @@ class AccessType(Enum):
     Private = 1
     Link = 2  # (only valid for Dependency)
 
-    #@staticmethod
-    #def IsLessThan(lhs: 'AccessType', rhs: 'AccessType' )
+    # @staticmethod
+    # def IsLessThan(lhs: 'AccessType', rhs: 'AccessType' )
     #    return lhs.value < rhs.value
 
     @staticmethod
-    def ToString(value: 'AccessType') -> str:
+    def ToString(value: "AccessType") -> str:
         if value == AccessType.Public:
             return "Public"
         elif value == AccessType.Private:
             return "Private"
         elif value == AccessType.Link:
             return "Link"
-        raise Exception("Unknown AccessType: {0}".format(value))
+        raise Exception(f"Unknown AccessType: {value}")
+
 
 class IncludePriority(Enum):
-    After = 0   # the default where include directories are appended to the current list
+    After = 0  # the default where include directories are appended to the current list
     Before = 1  # include directory is inserted at the front of the current list allowing us to override system includes.
 
     @staticmethod
-    def ToString(value: 'IncludePriority') -> str:
+    def ToString(value: "IncludePriority") -> str:
         if value == IncludePriority.After:
             return "After"
         elif value == IncludePriority.Before:
@@ -169,17 +175,18 @@ class IncludePriority(Enum):
         raise Exception(f"Unknown IncludePriority: '{value}'")
 
     @staticmethod
-    def TryFromString(value: str) -> Optional['IncludePriority']:
-        if value == 'After':
+    def TryFromString(value: str) -> Optional["IncludePriority"]:
+        if value == "After":
             return IncludePriority.After
-        elif value == 'Before':
+        elif value == "Before":
             return IncludePriority.Before
         return None
 
 
-class DependencyCondition(object):
+class DependencyCondition:
     FindPackageAllowed = "AllowFindPackage"
     FindPackageNotAllowed = "!AllowFindPackage"
+
 
 class ExternalDependencyType(Enum):
     StaticLib = 1
@@ -193,63 +200,65 @@ class ExternalDependencyType(Enum):
     CMakeFindModern = 7
 
     @staticmethod
-    def ToString(value: 'ExternalDependencyType') -> str:
+    def ToString(value: "ExternalDependencyType") -> str:
         if value == ExternalDependencyType.StaticLib:
-            return 'StaticLib'
+            return "StaticLib"
         elif value == ExternalDependencyType.DLL:
-            return 'DLL'
+            return "DLL"
         elif value == ExternalDependencyType.Headers:
-            return 'Headers'
+            return "Headers"
         elif value == ExternalDependencyType.Assembly:
-            return 'Assembly'
+            return "Assembly"
         elif value == ExternalDependencyType.PackageReference:
-            return 'PackageReference'
+            return "PackageReference"
         elif value == ExternalDependencyType.CMakeFindLegacy:
-            return 'CMakeFindLegacy'
+            return "CMakeFindLegacy"
         elif value == ExternalDependencyType.CMakeFindModern:
-            return 'CMakeFindModern'
-        raise Exception("Unknown ExternalDependencyType: {0}".format(value))
+            return "CMakeFindModern"
+        raise Exception(f"Unknown ExternalDependencyType: {value}")
 
     @staticmethod
-    def TryFromString(value: str) -> Optional['ExternalDependencyType']:
-        if value == 'StaticLib':
+    def TryFromString(value: str) -> Optional["ExternalDependencyType"]:
+        if value == "StaticLib":
             return ExternalDependencyType.StaticLib
-        elif value == 'DLL':
+        elif value == "DLL":
             return ExternalDependencyType.DLL
-        elif value == 'Headers':
+        elif value == "Headers":
             return ExternalDependencyType.Headers
-        elif value == 'Assembly':
+        elif value == "Assembly":
             return ExternalDependencyType.Assembly
-        elif value == 'PackageReference':
+        elif value == "PackageReference":
             return ExternalDependencyType.PackageReference
-        elif value == 'CMakeFindLegacy':
+        elif value == "CMakeFindLegacy":
             return ExternalDependencyType.CMakeFindLegacy
-        elif value == 'CMakeFindModern':
+        elif value == "CMakeFindModern":
             return ExternalDependencyType.CMakeFindModern
         return None
 
-
     @staticmethod
-    def FromString(value: str) -> 'ExternalDependencyType':
+    def FromString(value: str) -> "ExternalDependencyType":
         result = ExternalDependencyType.TryFromString(value)
         if result is not None:
             return result
-        raise Exception("Unknown external dependency type: '{0}' expected: StaticLib, DLL, Headers, Assembly, CMakeFindLegacy, CMakeFindModern".format(value))
+        raise Exception(f"Unknown external dependency type: '{value}' expected: StaticLib, DLL, Headers, Assembly, CMakeFindLegacy, CMakeFindModern")
 
     @staticmethod
-    def AllStrings() -> List[str]:
-        return [ExternalDependencyType.ToString(ExternalDependencyType.StaticLib),
-                ExternalDependencyType.ToString(ExternalDependencyType.DLL),
-                ExternalDependencyType.ToString(ExternalDependencyType.Headers),
-                ExternalDependencyType.ToString(ExternalDependencyType.Assembly),
-                ExternalDependencyType.ToString(ExternalDependencyType.PackageReference),
-                ExternalDependencyType.ToString(ExternalDependencyType.CMakeFindLegacy),
-                ExternalDependencyType.ToString(ExternalDependencyType.CMakeFindModern)]
+    def AllStrings() -> list[str]:
+        return [
+            ExternalDependencyType.ToString(ExternalDependencyType.StaticLib),
+            ExternalDependencyType.ToString(ExternalDependencyType.DLL),
+            ExternalDependencyType.ToString(ExternalDependencyType.Headers),
+            ExternalDependencyType.ToString(ExternalDependencyType.Assembly),
+            ExternalDependencyType.ToString(ExternalDependencyType.PackageReference),
+            ExternalDependencyType.ToString(ExternalDependencyType.CMakeFindLegacy),
+            ExternalDependencyType.ToString(ExternalDependencyType.CMakeFindModern),
+        ]
 
 
 class VariantType(Enum):
     Normal = 1
     Virtual = 2
+
 
 class CompilerNames:
     VisualStudio = "VisualStudio"
@@ -285,11 +294,10 @@ class VisualStudioVersion:
         if result is not None:
             return result
         else:
-            raise Exception("Unsupported visual studio version {0}".format(strValue))
-
+            raise Exception(f"Unsupported visual studio version {strValue}")
 
     @staticmethod
-    def TryParse(strValue: str) -> Optional[int]:
+    def TryParse(strValue: str) -> int | None:
         if strValue == "2015":
             return VisualStudioVersion.VS2015
         elif strValue == "2017":
@@ -325,7 +333,7 @@ class PackageLanguage(Enum):
     CSharp = 1
 
     @staticmethod
-    def ToString(value: 'PackageLanguage') -> str:
+    def ToString(value: "PackageLanguage") -> str:
         if value == PackageLanguage.CPP:
             return "C++"
         elif value == PackageLanguage.CSharp:
@@ -333,13 +341,13 @@ class PackageLanguage(Enum):
         return "Unknown"
 
     @staticmethod
-    def FromString(strPackageLanguage: str) -> 'PackageLanguage':
+    def FromString(strPackageLanguage: str) -> "PackageLanguage":
         if strPackageLanguage == "C++":
             return PackageLanguage.CPP
         elif strPackageLanguage == "C#":
             return PackageLanguage.CSharp
         else:
-            raise Exception("Unsupported package language {0}".format(strPackageLanguage))
+            raise Exception(f"Unsupported package language {strPackageLanguage}")
 
 
 class OptimizationType:
@@ -356,7 +364,7 @@ class OptimizationType:
         elif value == OptimizationType.Full:
             return "Full"
         else:
-            raise Exception("Unsupported OptimizationType {0}".format(value))
+            raise Exception(f"Unsupported OptimizationType {value}")
 
 
 class MagicStrings:
@@ -383,7 +391,7 @@ class ScanMethod:
     AllSubDirectories = 2
 
     @staticmethod
-    def TryToString(value: int, returnValueStringIfUnknown: bool = False) -> Optional[str]:
+    def TryToString(value: int, returnValueStringIfUnknown: bool = False) -> str | None:
         if value == ScanMethod.Directory:
             return "Directory"
         elif value == ScanMethod.OneSubDirectory:
@@ -391,7 +399,7 @@ class ScanMethod:
         elif value == ScanMethod.AllSubDirectories:
             return "AllSubDirectories"
         else:
-            return None if not returnValueStringIfUnknown else "{0}".format(value)
+            return None if not returnValueStringIfUnknown else f"{value}"
 
     @staticmethod
     def ToString(value: int) -> str:
@@ -402,7 +410,7 @@ class ScanMethod:
         elif value == ScanMethod.AllSubDirectories:
             return "AllSubDirectories"
         else:
-            raise Exception("Unsupported ScanMethod {0}".format(value))
+            raise Exception(f"Unsupported ScanMethod {value}")
 
     @staticmethod
     def FromString(value: str) -> int:
@@ -413,8 +421,7 @@ class ScanMethod:
         elif value == "AllSubDirectories":
             return ScanMethod.AllSubDirectories
         else:
-            raise Exception("Unsupported ScanMethod {0}".format(value))
-
+            raise Exception(f"Unsupported ScanMethod {value}")
 
 
 class PackageRequirementTypeString:
@@ -441,7 +448,7 @@ class PackageRequirementType:
         result = PackageRequirementType.TryFromString(value)
         if result != PackageRequirementType.Invalid:
             return result
-        raise Exception("Unsupported PackageRequirementType {0}".format(value))
+        raise Exception(f"Unsupported PackageRequirementType {value}")
 
 
 class PackageCreationYearString:
@@ -454,7 +461,7 @@ class BuildVariantConfig(Enum):
     Coverage = 2
 
     @staticmethod
-    def ToString(value: 'BuildVariantConfig') -> str:
+    def ToString(value: "BuildVariantConfig") -> str:
         if value == BuildVariantConfig.Release:
             return "release"
         elif value == BuildVariantConfig.Debug:
@@ -462,10 +469,10 @@ class BuildVariantConfig(Enum):
         elif value == BuildVariantConfig.Coverage:
             return "coverage"
         else:
-            raise Exception("Unsupported BuildVariantConfig '{0}'".format(value))
+            raise Exception(f"Unsupported BuildVariantConfig '{value}'")
 
     @staticmethod
-    def FromString(value: str) -> 'BuildVariantConfig':
+    def FromString(value: str) -> "BuildVariantConfig":
         if value == "release":
             return BuildVariantConfig.Release
         elif value == "debug":
@@ -473,23 +480,25 @@ class BuildVariantConfig(Enum):
         elif value == "coverage":
             return BuildVariantConfig.Coverage
         else:
-            raise Exception("Unsupported BuildVariantConfig '{0}'".format(value))
+            raise Exception(f"Unsupported BuildVariantConfig '{value}'")
 
-class BuildVariantConfigDefaults(object):
+
+class BuildVariantConfigDefaults:
     DefaultSetting = BuildVariantConfig.Release
+
 
 class CMakeTargetType(Enum):
     Project = 0
     Install = 1
 
     @staticmethod
-    def FromString(value: str) -> 'CMakeTargetType':
+    def FromString(value: str) -> "CMakeTargetType":
         if value == "project":
             return CMakeTargetType.Project
         elif value == "install":
             return CMakeTargetType.Install
         else:
-            raise Exception("Unsupported CMakeTargetType '{0}'".format(value))
+            raise Exception(f"Unsupported CMakeTargetType '{value}'")
 
 
 class BuildRecipePipelineCommand(Enum):
@@ -532,24 +541,25 @@ class BuildRecipeValidateMethod:
             return BuildRecipeValidateMethod.IsFile
         elif value == "Exists":
             return BuildRecipeValidateMethod.Exists
-        raise Exception("Unsupported BuildRecipeValidateMethod '{0}'".format(value))
+        raise Exception(f"Unsupported BuildRecipeValidateMethod '{value}'")
 
     @staticmethod
     def ToString(value: int) -> str:
         result = BuildRecipeValidateMethod.TryToString(value)
         if result is None:
-            raise Exception("Unsupported BuildRecipeValidateMethod '{0}'".format(value))
+            raise Exception(f"Unsupported BuildRecipeValidateMethod '{value}'")
         return result
 
     @staticmethod
-    def TryToString(value: int, returnValueStringIfUnknown: bool = False) -> Optional[str]:
+    def TryToString(value: int, returnValueStringIfUnknown: bool = False) -> str | None:
         if value == BuildRecipeValidateMethod.IsDirectory:
             return "IsDirectory"
         elif value == BuildRecipeValidateMethod.IsFile:
             return "IsFile"
         elif value == BuildRecipeValidateMethod.Exists:
             return "Exists"
-        return None if not returnValueStringIfUnknown else "{0}".format(value)
+        return None if not returnValueStringIfUnknown else f"{value}"
+
 
 class BuildThreads:
     NotDefined = 0
@@ -561,29 +571,30 @@ class BuildThreads:
             return BuildThreads.Auto
         try:
             return int(value)
-        except ValueError:
-            raise Exception("Unsupported BuildThreads '{0}'".format(value))
+        except ValueError as ex:
+            raise Exception(f"Unsupported BuildThreads '{value}'") from ex
 
-class BoolStringHelper(object):
+
+class BoolStringHelper:
     @staticmethod
     def FromString(value: str) -> bool:
         result = BoolStringHelper.TryFromString(value)
         if result is None:
-            raise Exception("Failed to parse boolean string '{0}' to bool value".format(value))
+            raise Exception(f"Failed to parse boolean string '{value}' to bool value")
         return result
 
-
     @staticmethod
-    def TryFromString(value: str) -> Optional[bool]:
+    def TryFromString(value: str) -> bool | None:
         if value == "true":
             return True
         elif value == "false":
             return False
         return None
 
-class PackageString(object):
-    PLATFORM_WILDCARD = '*'
-    PLATFORM_SEPARATOR = ';'
+
+class PackageString:
+    PLATFORM_WILDCARD = "*"
+    PLATFORM_SEPARATOR = ";"
 
 
 class GeneratorNameString:
@@ -592,7 +603,7 @@ class GeneratorNameString:
     Legacy = "legacy"
 
     @staticmethod
-    def AllStrings() -> List[str]:
+    def AllStrings() -> list[str]:
         return [GeneratorNameString.Default, GeneratorNameString.CMake, GeneratorNameString.Legacy]
 
 
@@ -602,74 +613,78 @@ class GeneratorType(Enum):
     Legacy = 2
 
     @staticmethod
-    def FromString(value: str) -> 'GeneratorType':
+    def FromString(value: str) -> "GeneratorType":
         if value == GeneratorNameString.Default:
             return GeneratorType.Default
         elif value == GeneratorNameString.CMake:
             return GeneratorType.CMake
         elif value == GeneratorNameString.Legacy:
             return GeneratorType.Legacy
-        raise Exception("Unsupported GeneratorName '{0}'".format(value))
+        raise Exception(f"Unsupported GeneratorName '{value}'")
 
     @staticmethod
-    def ToString(value: 'GeneratorType') -> str:
+    def ToString(value: "GeneratorType") -> str:
         result = GeneratorType.TryToString(value)
         if result is None:
-            raise Exception("Unsupported GeneratorName '{0}'".format(value))
+            raise Exception(f"Unsupported GeneratorName '{value}'")
         return result
 
     @staticmethod
-    def TryToString(value: 'GeneratorType', returnValueStringIfUnknown: bool = False) -> Optional[str]:
+    def TryToString(value: "GeneratorType", returnValueStringIfUnknown: bool = False) -> str | None:
         if value == GeneratorType.Default:
             return GeneratorNameString.Default
         elif value == GeneratorType.CMake:
             return GeneratorNameString.CMake
         elif value == GeneratorType.Legacy:
             return GeneratorNameString.Legacy
-        return None if not returnValueStringIfUnknown else "{0}".format(value)
+        return None if not returnValueStringIfUnknown else f"{value}"
 
-class SpecialFiles(object):
+
+class SpecialFiles:
     Natvis = "Package.natvis"
 
-class ClangTidyProfileString(object):
+
+class ClangTidyProfileString:
     Fast = "fast"
     Strict = "strict"
 
     @staticmethod
-    def AllStrings() -> List[str]:
+    def AllStrings() -> list[str]:
         return [ClangTidyProfileString.Fast, ClangTidyProfileString.Strict]
+
 
 class ClangTidyProfile(Enum):
     Fast = 0
     Strict = 1
 
     @staticmethod
-    def FromString(value: str) -> 'ClangTidyProfile':
+    def FromString(value: str) -> "ClangTidyProfile":
         if value == ClangTidyProfileString.Fast:
             return ClangTidyProfile.Fast
         elif value == ClangTidyProfileString.Strict:
             return ClangTidyProfile.Strict
-        raise Exception("Unsupported ClangTidyProfile '{0}'".format(value))
+        raise Exception(f"Unsupported ClangTidyProfile '{value}'")
 
     @staticmethod
-    def ToString(value: 'ClangTidyProfile') -> str:
+    def ToString(value: "ClangTidyProfile") -> str:
         result = ClangTidyProfile.TryToString(value)
         if result is None:
-            raise Exception("Unsupported ClangTidyProfile '{0}'".format(value))
+            raise Exception(f"Unsupported ClangTidyProfile '{value}'")
         return result
 
     @staticmethod
-    def TryToString(value: 'ClangTidyProfile', returnValueStringIfUnknown: bool = False) -> Optional[str]:
+    def TryToString(value: "ClangTidyProfile", returnValueStringIfUnknown: bool = False) -> str | None:
         if value == ClangTidyProfile.Fast:
             return ClangTidyProfileString.Fast
         elif value == ClangTidyProfile.Strict:
             return ClangTidyProfileString.Strict
-        return None if not returnValueStringIfUnknown else "{0}".format(value)
+        return None if not returnValueStringIfUnknown else f"{value}"
 
 
 class FilterMode(Enum):
-    Disabled = 0                        # Do not use a filter
-    TrimUnrequestedPackages = 1         # Trim packages that where not imported because of a user request
+    Disabled = 0  # Do not use a filter
+    TrimUnrequestedPackages = 1  # Trim packages that where not imported because of a user request
+
 
 class GrpcServices(Enum):
     Both = 0
@@ -678,32 +693,32 @@ class GrpcServices(Enum):
     NoneGen = 3
 
     @staticmethod
-    def ToString(value: 'GrpcServices') -> str:
+    def ToString(value: "GrpcServices") -> str:
         if value == GrpcServices.Both:
-            return 'Both'
+            return "Both"
         elif value == GrpcServices.Server:
-            return 'Server'
+            return "Server"
         elif value == GrpcServices.Client:
-            return 'Client'
+            return "Client"
         elif value == GrpcServices.NoneGen:
-            return 'None'
-        raise Exception("Unknown GrpcServices: {0}".format(value))
+            return "None"
+        raise Exception(f"Unknown GrpcServices: {value}")
 
     @staticmethod
-    def TryFromString(value: str) -> Optional['GrpcServices']:
-        if value == 'Both':
+    def TryFromString(value: str) -> Optional["GrpcServices"]:
+        if value == "Both":
             return GrpcServices.Both
-        elif value == 'Server':
+        elif value == "Server":
             return GrpcServices.Server
-        elif value == 'Client':
+        elif value == "Client":
             return GrpcServices.Client
-        elif value == 'None':
+        elif value == "None":
             return GrpcServices.NoneGen
         return None
 
     @staticmethod
-    def FromString(value: str) -> 'GrpcServices':
+    def FromString(value: str) -> "GrpcServices":
         result = GrpcServices.TryFromString(value)
         if result is not None:
             return result
-        raise Exception("Unknown external dependency type: '{0}' expected: Both, Server, Client, None".format(value))
+        raise Exception(f"Unknown external dependency type: '{value}' expected: Both, Server, Client, None")

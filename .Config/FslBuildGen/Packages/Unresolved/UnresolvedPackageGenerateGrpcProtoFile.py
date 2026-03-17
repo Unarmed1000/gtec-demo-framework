@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright 2022 NXP
 # All rights reserved.
 #
@@ -29,14 +28,13 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-from typing import List
-from typing import Optional
 from FslBuildGen.DataTypes import GrpcServices
 
-class UnresolvedPackageGenerateGrpcProtoFile(object):
-    def __init__(self, include: str, grpcServices: Optional[GrpcServices]) -> None:
+
+class UnresolvedPackageGenerateGrpcProtoFile:
+    def __init__(self, include: str, grpcServices: GrpcServices | None) -> None:
         super().__init__()
         self.Include = include
         self.GrpcServices = grpcServices

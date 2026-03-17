@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright 2017 NXP
 # All rights reserved.
 #
@@ -29,35 +28,32 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
 import tarfile
 import zipfile
 
-class FileUnpack(object):
+
+class FileUnpack:
     @staticmethod
     def UnpackZipFile(srcPath: str, dstPath: str) -> None:
-        with zipfile.ZipFile(srcPath, 'r') as archive:
+        with zipfile.ZipFile(srcPath, "r") as archive:
             archive.extractall(dstPath)
-
 
     @staticmethod
     def UnpackTarFile(srcPath: str, dstPath: str) -> None:
         with tarfile.open(srcPath, "r:") as archive:
             archive.extractall(dstPath)
 
-
     @staticmethod
     def UnpackTarGZFile(srcPath: str, dstPath: str) -> None:
         with tarfile.open(srcPath, "r:gz") as archive:
             archive.extractall(dstPath)
 
-
     @staticmethod
     def UnpackTarBz2File(srcPath: str, dstPath: str) -> None:
         with tarfile.open(srcPath, "r:bz2") as archive:
             archive.extractall(dstPath)
-
 
     @staticmethod
     def UnpackFile(filename: str, dstPath: str) -> None:
@@ -71,4 +67,4 @@ class FileUnpack(object):
         elif fileNameId.endswith(".tar.bz2"):
             FileUnpack.UnpackTarBz2File(filename, dstPath)
         else:
-            raise Exception("Unsupported archive format '{0}'".format(filename))
+            raise Exception(f"Unsupported archive format '{filename}'")

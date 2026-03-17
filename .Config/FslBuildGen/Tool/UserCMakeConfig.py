@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright 2019 NXP
 # All rights reserved.
 #
@@ -29,17 +28,27 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-from typing import Optional
+
 from FslBuildGen import PathUtil
 
-class UserCMakeConfig(object):
+
+class UserCMakeConfig:
     """
     The cmake settings that can be overriden by the user
     """
-    def __init__(self, buildDir: Optional[str], buildDirId: Optional[int], generatorName: Optional[str], installPrefix: Optional[str], configUserAppArgs: Optional[str],
-                 configGlobalArgs: Optional[str], allowFindPackage: Optional[bool]) -> None:
+
+    def __init__(
+        self,
+        buildDir: str | None,
+        buildDirId: int | None,
+        generatorName: str | None,
+        installPrefix: str | None,
+        configUserAppArgs: str | None,
+        configGlobalArgs: str | None,
+        allowFindPackage: bool | None,
+    ) -> None:
         super().__init__()
 
         if buildDir is not None:

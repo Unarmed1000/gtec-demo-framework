@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright 2023 NXP
 # All rights reserved.
 #
@@ -29,32 +28,32 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-from typing import List
-from typing import Optional
+
 from FslBuildGen.Engine.PackageFlavorName import PackageFlavorName
 from FslBuildGen.Engine.PackageFlavorOptionName import PackageFlavorOptionName
 from FslBuildGen.Engine.Unresolved.UnresolvedPackageFlavorOption import UnresolvedPackageFlavorOption
 from FslBuildGen.Engine.Unresolved.UnresolvedPackageName import UnresolvedPackageName
 
-class UnresolvedPackageFlavorExtension(object):
-    def __init__(self, name: PackageFlavorName, introducedByPackageName: UnresolvedPackageName, options: List[UnresolvedPackageFlavorOption]) -> None:
+
+class UnresolvedPackageFlavorExtension:
+    def __init__(self, name: PackageFlavorName, introducedByPackageName: UnresolvedPackageName, options: list[UnresolvedPackageFlavorOption]) -> None:
         super().__init__()
         self.Name = name
         self.IntroducedByPackageName = introducedByPackageName
         self.Options = options
         self.Description = UnresolvedPackageFlavorExtension.__OptionString(self.Options)
 
-    def TryGetOptionByName(self, name: PackageFlavorOptionName) -> Optional[UnresolvedPackageFlavorOption]:
+    def TryGetOptionByName(self, name: PackageFlavorOptionName) -> UnresolvedPackageFlavorOption | None:
         for entry in self.Options:
             if entry.Name == name:
                 return entry
         return None
 
     def __str__(self) -> str:
-        return "{0}:{{{1}}}".format(self.Name, self.Description)
+        return f"{self.Name}:{{{self.Description}}}"
 
     @staticmethod
-    def __OptionString(options: List[UnresolvedPackageFlavorOption]) -> str:
+    def __OptionString(options: list[UnresolvedPackageFlavorOption]) -> str:
         return ",".join([option.Name.Value for option in options])

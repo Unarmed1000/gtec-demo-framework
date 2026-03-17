@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright 2017 NXP
 # All rights reserved.
 #
@@ -29,11 +29,12 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
 from FslBuildGen import IOUtil
 
-class TemplateFileRecord(object):
+
+class TemplateFileRecord:
     def __init__(self, filename: str, srcPath: str) -> None:
         super().__init__()
         self.FileName = IOUtil.GetFileName(filename)
@@ -41,4 +42,4 @@ class TemplateFileRecord(object):
         if not filename.endswith(".__template__"):
             self.RelativeDestPath = filename
         else:
-            self.RelativeDestPath = filename[:-len(".__template__")]
+            self.RelativeDestPath = filename[: -len(".__template__")]

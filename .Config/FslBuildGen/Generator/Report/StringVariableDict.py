@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright 2018 NXP
 # All rights reserved.
 #
@@ -29,17 +28,17 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-#from typing import Dict
-#from typing import List
-#from typing import Optional
+# from typing import Dict
+# from typing import List
+# from typing import Optional
 from FslBuildGen.Generator.Report.VariableDict import VariableDict
 from FslBuildGen.Generator.Report.VariableReport import VariableReport
 
 
 class StringVariableDict(VariableDict):
-    #def __init__(self) -> None:
+    # def __init__(self) -> None:
     #    super().__init__()
 
     def Add(self, variableName: str, variableValue: str) -> None:

@@ -28,7 +28,7 @@
       <Platform Name="QNX" DefaultGeneratorName="Ninja"/>
       <Platform Name="Ubuntu" DefaultGeneratorName="Ninja"/>
       <!-- For now we rely on FslBuild to select the default generator based on CompilerConfiguration from this file, as that was the old way to do it instead of using 
-           DefaultGeneratorName="Visual Studio 17 2022 Win64"-->
+           DefaultGeneratorName="Visual Studio 18 2026 Win64"-->
       <Platform Name="Windows"/>
       <!-- 
       The current Yocto SDKs do not contain the required cmake files needed by find_package, so we force disable it for now.
@@ -124,7 +124,7 @@
         <Defines All="FSL_PLATFORM_YOCTO;PIC;LINUX" Debug="DEBUG;_DEBUG" Release="NDEBUG"/>
       </Platform>
     </ClangTidyConfiguration>
-    <CompilerConfiguration Name="VisualStudio" Platform="Windows" DefaultVersion="2022"/>
+    <CompilerConfiguration Name="VisualStudio" Platform="Windows" DefaultVersion="2026"/>
     <Experimental AllowDownloads="true" DisableDownloadEnv="FSL_GRAPHICS_SDK_THIRD_PARTY_LIBS_DISABLE_DOWNLOAD">
       <!-- Define the name of the default third party installation directory. -->
       <!-- This will be the directory where we install/build any thirdparty source that is needed -->

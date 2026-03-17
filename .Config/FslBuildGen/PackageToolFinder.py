@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright 2018 NXP
 # All rights reserved.
 #
@@ -29,20 +28,19 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
 from typing import cast
-from typing import Dict
-from typing import List
-from typing import Optional
+
 from FslBuildGen import IOUtil
 from FslBuildGen.DataTypes import BuildRecipeValidateCommand
 from FslBuildGen.Packages.Package import Package
-#from FslBuildGen.Xml.XmlExperimentalRecipe import XmlRecipeValidateCommand
+
+# from FslBuildGen.Xml.XmlExperimentalRecipe import XmlRecipeValidateCommand
 from FslBuildGen.Xml.XmlExperimentalRecipe import XmlRecipeValidateCommandAddTool
 
 
-class PackageToolRecord(object):
+class PackageToolRecord:
     def __init__(self, package: Package, resolvedInstallPath: str, addToolCommand: XmlRecipeValidateCommandAddTool) -> None:
         super().__init__()
         self.Package = package
@@ -51,34 +49,33 @@ class PackageToolRecord(object):
         self.AbsoluteToolPath = IOUtil.Join(resolvedInstallPath, self.RelativeToolPath)
 
 
-class PackageToolFinder(object):
-    def __init__(self, toolPackages: List[Package]) -> None:
+class PackageToolFinder:
+    def __init__(self, toolPackages: list[Package]) -> None:
         super().__init__()
-        toolPackageByPackageNameDict = {}  # type: Dict[str, Package]
+        toolPackageByPackageNameDict: dict[str, Package] = {}
         for package in toolPackages:
             toolPackageByPackageNameDict[package.Name] = package
 
         self.__ToolPackageByPackageNameDict = toolPackageByPackageNameDict
         self.__ToolPackageByToolNameDict = self.__BuildToolPackageByName(toolPackages)
-        self.ToolPaths = [package.ResolvedDirectExperimentalRecipe.ResolvedInstallLocation.ResolvedPath
-                          for package in toolPackages
-                          if package.ResolvedDirectExperimentalRecipe is not None and package.ResolvedDirectExperimentalRecipe.ResolvedInstallLocation is not None]
+        self.ToolPaths = [
+            package.ResolvedDirectExperimentalRecipe.ResolvedInstallLocation.ResolvedPath
+            for package in toolPackages
+            if package.ResolvedDirectExperimentalRecipe is not None and package.ResolvedDirectExperimentalRecipe.ResolvedInstallLocation is not None
+        ]
 
-
-    def TryGetToolPackageByPackageName(self, packageName: str) -> Optional[Package]:
+    def TryGetToolPackageByPackageName(self, packageName: str) -> Package | None:
         if packageName in self.__ToolPackageByPackageNameDict:
             return self.__ToolPackageByPackageNameDict[packageName]
         return None
 
-
     def GetToolPackageByPackageName(self, packageName: str) -> Package:
         package = self.TryGetToolPackageByPackageName(packageName)
         if package is None:
-            raise Exception("Could not find tool package '{0}'".format(packageName))
+            raise Exception(f"Could not find tool package '{packageName}'")
         return package
 
-
-    def TryGetToolPackageByToolName(self, toolName: str) -> Optional[PackageToolRecord]:
+    def TryGetToolPackageByToolName(self, toolName: str) -> PackageToolRecord | None:
         if toolName in self.__ToolPackageByToolNameDict:
             return self.__ToolPackageByToolNameDict[toolName]
         return None
@@ -86,16 +83,15 @@ class PackageToolFinder(object):
     def GetToolPackageByToolName(self, toolName: str) -> PackageToolRecord:
         package = self.TryGetToolPackageByToolName(toolName)
         if package is None:
-            raise Exception("Could not find tool package by name '{0}'".format(toolName))
+            raise Exception(f"Could not find tool package by name '{toolName}'")
         return package
 
-
-    def __BuildToolPackageByName(self, toolPackages: List[Package]) -> Dict[str, PackageToolRecord]:
-        resDict = {} # type: Dict[str, PackageToolRecord]
+    def __BuildToolPackageByName(self, toolPackages: list[Package]) -> dict[str, PackageToolRecord]:
+        resDict: dict[str, PackageToolRecord] = {}
         for package in toolPackages:
             recipe = package.ResolvedDirectExperimentalRecipe
             if recipe is not None and recipe.ResolvedInstallLocation is not None and recipe.ValidateInstallation is not None:
-                #addToolList = [] # type: List[XmlRecipeValidateCommand]
+                # addToolList = [] # type: List[XmlRecipeValidateCommand]
                 validation = recipe.ValidateInstallation
 
                 for command in validation.CommandList:
@@ -104,9 +100,7 @@ class PackageToolFinder(object):
                         toolName = IOUtil.GetFileNameWithoutExtension(commandEx.Name)
                         if toolName in resDict:
                             if resDict[toolName].Package != package:
-                                raise Exception("Tool already registered by {0}".format(package.Name))
+                                raise Exception(f"Tool already registered by {package.Name}")
                         else:
                             resDict[toolName] = PackageToolRecord(package, recipe.ResolvedInstallLocation.ResolvedPath, commandEx)
         return resDict
-
-

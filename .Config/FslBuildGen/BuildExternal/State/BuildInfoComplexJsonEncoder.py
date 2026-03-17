@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright 2018 NXP
 # All rights reserved.
 #
@@ -29,14 +28,15 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-from typing import Any
 import json
+from typing import Any
+
+from FslBuildGen.BuildExternal.State.JsonRecipeCMakeConfig import JsonRecipeCMakeConfig, JsonRecipeCMakeVersion
 from FslBuildGen.BuildExternal.State.JsonRecipePackageContentState import JsonRecipePackageContentState
 from FslBuildGen.BuildExternal.State.JsonRecipePackageFileState import JsonRecipePackageFileState
-from FslBuildGen.BuildExternal.State.JsonRecipeCMakeConfig import JsonRecipeCMakeConfig
-from FslBuildGen.BuildExternal.State.JsonRecipeCMakeConfig import JsonRecipeCMakeVersion
+
 
 class BuildInfoComplexJsonEncoder(json.JSONEncoder):
     def default(self, o: Any) -> Any:
@@ -46,4 +46,3 @@ class BuildInfoComplexJsonEncoder(json.JSONEncoder):
             return o.__dict__
         # Let the base class default method raise the TypeError
         return json.JSONEncoder.default(self, o)
-

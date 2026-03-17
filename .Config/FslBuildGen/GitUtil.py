@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright 2018 NXP
 # All rights reserved.
 #
@@ -29,21 +28,22 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-from typing import Optional
-from FslBuildGen.PlatformUtil import PlatformUtil
-from FslBuildGen.DataTypes import BuildPlatformType
 import subprocess
 
-class GitUtil(object):
+from FslBuildGen.DataTypes import BuildPlatformType
+from FslBuildGen.PlatformUtil import PlatformUtil
+
+
+class GitUtil:
     @staticmethod
     def GetExecutableName(platformName: str) -> str:
-        return PlatformUtil.GetExecutableName('git', platformName)
+        return PlatformUtil.GetExecutableName("git", platformName)
 
     @staticmethod
     def GetPlatformDependentExecutableName(buildPlatformType: BuildPlatformType) -> str:
-        return PlatformUtil.GetPlatformDependentExecuteableName('git', buildPlatformType)
+        return PlatformUtil.GetPlatformDependentExecuteableName("git", buildPlatformType)
 
     @staticmethod
     def GetCurrentHash(gitExecutableName: str, path: str) -> str:
@@ -54,7 +54,7 @@ class GitUtil(object):
             (strVersion, err) = proc.communicate()
             proc.wait()
             strVersion = strVersion.strip()
-            if len(strVersion) != 40 or '\n' in strVersion or '\r' in strVersion or '\t' in strVersion:
+            if len(strVersion) != 40 or "\n" in strVersion or "\r" in strVersion or "\t" in strVersion:
                 strVersion = None
         finally:
             if proc.stdout is not None:
@@ -62,8 +62,8 @@ class GitUtil(object):
         return str(strVersion)
 
     @staticmethod
-    def TryGetCurrentHash(gitExecutableName: str, path: str) -> Optional[str]:
+    def TryGetCurrentHash(gitExecutableName: str, path: str) -> str | None:
         try:
             return GitUtil.GetCurrentHash(gitExecutableName, path)
-        except Exception as ex:
+        except Exception:
             return None

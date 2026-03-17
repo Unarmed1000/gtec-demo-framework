@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright 2017 NXP
 # All rights reserved.
 #
@@ -29,11 +28,12 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-from typing import cast
 from enum import Enum
+
 from FslBuildGen.Exceptions import UnknownTypeException
+
 
 class FormatStringEnvironmentVariableResolveMethod(Enum):
     # Do a environment variable lookup right away
@@ -42,13 +42,13 @@ class FormatStringEnvironmentVariableResolveMethod(Enum):
     OSShellEnvironmentVariable = 1
 
     @staticmethod
-    def ToInt(value: 'FormatStringEnvironmentVariableResolveMethod') -> int:
+    def ToInt(value: "FormatStringEnvironmentVariableResolveMethod") -> int:
         return value.value
 
     @staticmethod
-    def Convert(value: int) -> 'FormatStringEnvironmentVariableResolveMethod':
+    def Convert(value: int) -> "FormatStringEnvironmentVariableResolveMethod":
         if value == FormatStringEnvironmentVariableResolveMethod.Lookup.value:
             return FormatStringEnvironmentVariableResolveMethod.Lookup
         elif value == FormatStringEnvironmentVariableResolveMethod.OSShellEnvironmentVariable.value:
             return FormatStringEnvironmentVariableResolveMethod.OSShellEnvironmentVariable
-        raise UnknownTypeException("Unknown FormatStringEnvironmentVariableResolveMethod: {0}".format(value))
+        raise UnknownTypeException(f"Unknown FormatStringEnvironmentVariableResolveMethod: {value}")

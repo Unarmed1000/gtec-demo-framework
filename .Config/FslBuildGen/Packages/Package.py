@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright (c) 2014 Freescale Semiconductor, Inc.
 # All rights reserved.
 #
@@ -29,42 +29,36 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-from typing import Dict
-from typing import List
-from typing import Optional
 from typing import Union
-from FslBuildGen import IOUtil
-from FslBuildGen import Util
+
+from FslBuildGen import IOUtil, Util
 from FslBuildGen.BuildContent.PathRecord import PathRecord
 from FslBuildGen.BuildExternal.PackageExperimentalRecipe import PackageExperimentalRecipe
-from FslBuildGen.Config import Config
-from FslBuildGen.DataTypes import AccessType, DependencyOutputType
-from FslBuildGen.DataTypes import ExternalDependencyType
-from FslBuildGen.DataTypes import PackageType
-from FslBuildGen.DataTypes import VariantType
-from FslBuildGen.Engine.PackageFlavorSelections import PackageFlavorSelections
-from FslBuildGen.Engine.Resolver.ResolvedPackageTemplate import ResolvedPackageTemplate
+from FslBuildGen.DataTypes import AccessType, DependencyOutputType, ExternalDependencyType, PackageType, VariantType
+from FslBuildGen.Engine.Resolver.PreResolvePackageResult import PreResolvePackageResult
 from FslBuildGen.Engine.Resolver.ProcessedPackageDependency import ProcessedPackageDependency
-from FslBuildGen.Exceptions import InvalidDefineValueException
-from FslBuildGen.Exceptions import UsageErrorException
+from FslBuildGen.Exceptions import InvalidDefineValueException, UsageErrorException
+from FslBuildGen.Generator.GeneratorInfo import GeneratorInfo
 from FslBuildGen.Location.PathBuilder import PathBuilder
 from FslBuildGen.Location.ResolvedPath import ResolvedPath
 from FslBuildGen.Log import Log
-from FslBuildGen.Generator.GeneratorInfo import GeneratorInfo
+from FslBuildGen.PackageIncludeDir import PackageIncludeDir
+
+# from FslBuildGen.Packages.PackageRequirement import PackageRequirement
+from FslBuildGen.PackagePath import PackagePath
 from FslBuildGen.Packages.PackageBuildCustomization import PackageBuildCustomization
 from FslBuildGen.Packages.PackageCopyFile import PackageCopyFile
 from FslBuildGen.Packages.PackageElement import PackageElement
 from FslBuildGen.Packages.PackageGenerate import PackageGenerate
 from FslBuildGen.Packages.PackageGenerateGrpcProtoFile import PackageGenerateGrpcProtoFile
-from FslBuildGen.PackageIncludeDir import PackageIncludeDir
-#from FslBuildGen.Packages.PackageNameInfo import PackageNameInfo
 from FslBuildGen.Packages.PackagePlatform import PackagePlatform
+
+# from FslBuildGen.Packages.PackageNameInfo import PackageNameInfo
 from FslBuildGen.Packages.PackagePlatformExternalDependency import PackagePlatformExternalDependency
 from FslBuildGen.Packages.Unresolved.UnresolvedExternalDependency import UnresolvedExternalDependency
 from FslBuildGen.Packages.Unresolved.UnresolvedExternalDependencyPackageManager import UnresolvedExternalDependencyPackageManager
-from FslBuildGen.Engine.Resolver.PreResolvePackageResult import PreResolvePackageResult
 from FslBuildGen.Packages.Unresolved.UnresolvedPackageCopyFile import UnresolvedPackageCopyFile
 from FslBuildGen.Packages.Unresolved.UnresolvedPackageDefine import UnresolvedPackageDefine
 from FslBuildGen.Packages.Unresolved.UnresolvedPackageGenerate import UnresolvedPackageGenerate
@@ -72,42 +66,46 @@ from FslBuildGen.Packages.Unresolved.UnresolvedPackageGenerateGrpcProtoFile impo
 from FslBuildGen.Packages.Unresolved.UnresolvedPackageRequirement import UnresolvedPackageRequirement
 from FslBuildGen.Packages.Unresolved.UnresolvedPackageVariant import UnresolvedPackageVariant
 from FslBuildGen.Packages.Unresolved.UnresolvedPackageVariantOption import UnresolvedPackageVariantOption
-#from FslBuildGen.Packages.PackageRequirement import PackageRequirement
-from FslBuildGen.PackagePath import PackagePath
 from FslBuildGen.SemanticVersionPattern import SemanticVersionPattern
 from FslBuildGen.Xml.Exceptions import XmlException2
+
 
 # We define the PackageDefine here because it has a dependency to Package and having it externally
 # would produce a circular dependency which does all kinds of bads things.
 class PackageExternalDependency(PackageElement):
-    def __init__(self, pathBuilder: Optional[PathBuilder],
-                 base: Union[UnresolvedExternalDependency, 'PackageExternalDependency'],
-                 introducedByPackageName: str, fromPackageAccess: AccessType, isAutoGenerated: bool = False) -> None:
+    def __init__(
+        self,
+        pathBuilder: PathBuilder | None,
+        base: Union[UnresolvedExternalDependency, "PackageExternalDependency"],
+        introducedByPackageName: str,
+        fromPackageAccess: AccessType,
+        isAutoGenerated: bool = False,
+    ) -> None:
         super().__init__(base.Name)
         self.IntroducedByPackageName = introducedByPackageName
-        self.Access = base.Access  # type: AccessType
-        self.IsFirstActualUse = False # type: bool
-        self.ConsumedBy = base.ConsumedBy if isinstance(base, PackageExternalDependency) else None # type: Optional['Package']
+        self.Access: AccessType = base.Access
+        self.IsFirstActualUse: bool = False
+        self.ConsumedBy: Package | None = base.ConsumedBy if isinstance(base, PackageExternalDependency) else None
         # the access to the package this was received from
         self.FromPackageAccess = fromPackageAccess
 
         # Clone all the members of the base object
-        self.DebugName = base.DebugName  # type: str
-        self.IncludeDir = base.IncludeDir  # type: Optional[PackageIncludeDir]
-        self.Location = base.Location  # type: Optional[str]
-        self.HintPath = base.HintPath  # type: Optional[str]
-        self.Version = base.Version  # type: Optional[SemanticVersionPattern]
-        self.PublicKeyToken = base.PublicKeyToken  # type: Optional[str]
-        self.ProcessorArchitecture = base.ProcessorArchitecture  # type: Optional[str]
-        self.Culture = base.Culture  # type: Optional[str]
-        self.PackageManager = base.PackageManager  # type: Optional[UnresolvedExternalDependencyPackageManager]
-        self.Type = base.Type  # type: ExternalDependencyType
-        self.IsManaged = base.IsManaged # type: bool
-        self.TargetName = base.TargetName # type: str
+        self.DebugName: str = base.DebugName
+        self.IncludeDir: PackageIncludeDir | None = base.IncludeDir
+        self.Location: str | None = base.Location
+        self.HintPath: str | None = base.HintPath
+        self.Version: SemanticVersionPattern | None = base.Version
+        self.PublicKeyToken: str | None = base.PublicKeyToken
+        self.ProcessorArchitecture: str | None = base.ProcessorArchitecture
+        self.Culture: str | None = base.Culture
+        self.PackageManager: UnresolvedExternalDependencyPackageManager | None = base.PackageManager
+        self.Type: ExternalDependencyType = base.Type
+        self.IsManaged: bool = base.IsManaged
+        self.TargetName: str = base.TargetName
 
         # resolved paths
-        self.IsAutoGenerated = isAutoGenerated  # type: bool
-        self.ResolvedLocation = None  # type: Optional[ResolvedPath]
+        self.IsAutoGenerated: bool = isAutoGenerated
+        self.ResolvedLocation: ResolvedPath | None = None
 
         # Do the resolve
         if pathBuilder is None:
@@ -119,7 +117,7 @@ class PackageExternalDependency(PackageElement):
             self.ResolvedLocation = pathBuilder.ResolveDirectoryPath(self.Location, isAutoGenerated is False)
 
 
-class Package(object):
+class Package:
     def __init__(self, log: Log, configBuildDir: str, preResolvePackageResult: PreResolvePackageResult, allowExeDependency: bool) -> None:
         super().__init__()
 
@@ -131,8 +129,8 @@ class Package(object):
         self.TemplateType = unresolvedPackage.TemplateType
         self.AllowCheck = unresolvedPackage.Flags.AllowCheck
         self.PackageNameBasedIncludePath = unresolvedPackage.Flags.PackageNameBasedIncludePath
-        self.EnableExtendedSourceExtensions = unresolvedPackage.Flags.EnableExtendedSourceExtensions    # type: bool
-        self.IsUnitTest = unresolvedPackage.Flags.UnitTest                                              # type: bool
+        self.EnableExtendedSourceExtensions: bool = unresolvedPackage.Flags.EnableExtendedSourceExtensions
+        self.IsUnitTest: bool = unresolvedPackage.Flags.UnitTest
         self.ShowInMainReadme = unresolvedPackage.Flags.ShowInMainReadme
         self.TraceContext = unresolvedPackage.TraceContext
         self.CustomInfo = unresolvedPackage.CustomInfo
@@ -152,7 +150,7 @@ class Package(object):
         self.PlatformDefaultSupportedValue = unresolvedPackage.Flags.PlatformDefaultSupportedValue
         self.DirectDefines = unresolvedPackage.DirectDefines
         self.DirectIgnores = unresolvedPackage.DirectIgnores
-        self.Path = unresolvedPackage.PackageFile # type: Optional[PackagePath]
+        self.Path: PackagePath | None = unresolvedPackage.PackageFile
         self.AbsolutePath = None if unresolvedPackage.PackageFile is None else unresolvedPackage.PackageFile.AbsoluteDirPath
         self.AbsoluteIncludePath = None if unresolvedPackage.Path.IncludePath is None else unresolvedPackage.Path.IncludePath.AbsoluteDirPath
         self.AbsoluteSourcePath = None if unresolvedPackage.Path.SourcePath is None else unresolvedPackage.Path.SourcePath.AbsoluteDirPath
@@ -181,61 +179,60 @@ class Package(object):
         self.ResolvedFlavorTemplate = preResolvePackageResult.SourcePackage.ResolvedFlavorTemplate
 
         # Fill all the package attributes that will be resolved with a initial value
-        self.ResolvedPlatform = unresolvedPackage.ResolvedPlatform # type: PackagePlatform
+        self.ResolvedPlatform: PackagePlatform = unresolvedPackage.ResolvedPlatform
         self.ResolvedPlatformSupported = preResolvePackageResult.ResolvedPlatformSupported
         self.ResolvedPlatformDirectSupported = unresolvedPackage.DirectPlatformSupported
-        self.ResolvedPlatformName = unresolvedPackage.ResolvedPlatform.Name # type: str
+        self.ResolvedPlatformName: str = unresolvedPackage.ResolvedPlatform.Name
         # All direct dependencies of this package
-        self.ResolvedDirectDependencies = []  # type: List['PackageDependency']
+        self.ResolvedDirectDependencies: list[PackageDependency] = []
         # All dependencies both direct and indirect
-        self.ResolvedAllDependencies = []  # type: List['PackageDependency']
+        self.ResolvedAllDependencies: list[PackageDependency] = []
         # The build order of dependent packages
-        self.ResolvedBuildOrder = []  # type: List['Package']
+        self.ResolvedBuildOrder: list[Package] = []
         # This is basically the 'resolved build order of the package' filtered down to packages that contain a experimental recipe.
-        self.ResolvedExperimentalRecipeBuildOrder = []  # type: List['Package']
-        self.ResolvedToolDependencyOrder = []  # type: List['Package']
+        self.ResolvedExperimentalRecipeBuildOrder: list[Package] = []
+        self.ResolvedToolDependencyOrder: list[Package] = []
         # The known recipe variants, currently used for android ABI's
-        self.ResolvedRecipeVariants = []       # type: List[str]
-        self.ResolvedBuildSourceFiles = None  # type: Optional[List[str]]
+        self.ResolvedRecipeVariants: list[str] = []
+        self.ResolvedBuildSourceFiles: list[str] | None = None
 
         # ContentBuilder input files
 
         # The content source files in this package (content input files that are send through the builder)
-        self.ResolvedContentBuilderBuildInputFiles = None  # type: Optional[List[PathRecord]]
+        self.ResolvedContentBuilderBuildInputFiles: list[PathRecord] | None = None
         # The content files in this package (content input files that are not send through the builder)
-        self.ResolvedContentBuilderSyncInputFiles = None  # type: Optional[List[PathRecord]]
+        self.ResolvedContentBuilderSyncInputFiles: list[PathRecord] | None = None
         # All input files to the content builder system (this includes both build files and synced files)
         # but it does not include the files in "Content" as they are not send through the ContentBuilder
-        self.ResolvedContentBuilderAllInputFiles = None  # type: Optional[List[PathRecord]]
+        self.ResolvedContentBuilderAllInputFiles: list[PathRecord] | None = None
 
         # ContentBuilder output files
 
         # All files generated by the content builder "build" process (content output files)
-        self.ResolvedContentBuilderBuildOutputFiles = [] # type: List[str]
+        self.ResolvedContentBuilderBuildOutputFiles: list[str] = []
         # All files generated by the content builder "sync" process (content output files)
-        self.ResolvedContentBuilderSyncOutputFiles = [] # type: List[str]
+        self.ResolvedContentBuilderSyncOutputFiles: list[str] = []
         # All files generated by content builder system (this includes both build files and synced files)
         # but it does not include the files in "Content" as they are not send through the ContentBuilder
-        self.ResolvedContentBuilderAllOutputFiles = [] # type: List[str]
+        self.ResolvedContentBuilderAllOutputFiles: list[str] = []
 
         # Content files
 
         # Content files from "Content" except those generated by the content builder
-        self.ResolvedContentFiles = [] # type: List[PathRecord]
-
+        self.ResolvedContentFiles: list[PathRecord] = []
 
         # The public include files in this package
-        self.ResolvedBuildPublicIncludeFiles = None  # type: Optional[List[str]]
+        self.ResolvedBuildPublicIncludeFiles: list[str] | None = None
         # The private include files in this package
-        self.ResolvedBuildPrivateIncludeFiles = None  # type: Optional[List[str]]
+        self.ResolvedBuildPrivateIncludeFiles: list[str] | None = None
         # All include files in this package (public+private)
-        self.ResolvedBuildAllIncludeFiles = None  # type: Optional[List[str]]
-        self.ResolvedBuildAllIncludeDirs = None  # type: Optional[List[PackageIncludeDir]]
-        self.ResolvedBuildPublicIncludeDirs = None  # type: Optional[List[PackageIncludeDir]]
-        self.ResolvedBuildPrivateIncludeDirs = None  # type: Optional[List[PackageIncludeDir]]
-        self.ResolvedBuildDirectPrivateIncludeDirs = []  # type: List[ResolvedPath]
+        self.ResolvedBuildAllIncludeFiles: list[str] | None = None
+        self.ResolvedBuildAllIncludeDirs: list[PackageIncludeDir] | None = None
+        self.ResolvedBuildPublicIncludeDirs: list[PackageIncludeDir] | None = None
+        self.ResolvedBuildPrivateIncludeDirs: list[PackageIncludeDir] | None = None
+        self.ResolvedBuildDirectPrivateIncludeDirs: list[ResolvedPath] = []
         # Known special files that might mean something to some generators
-        self.ResolvedSpecialFiles = [] # type: List[ResolvedPath]
+        self.ResolvedSpecialFiles: list[ResolvedPath] = []
         # All direct feature uses of this package
         self.ResolvedDirectUsedFeatures = preResolvePackageResult.ResolvedDirectUsedFeatures
         # All feature uses both direct and indirect
@@ -245,52 +242,52 @@ class Package(object):
         # All requirements both direct and indirect
         self.ResolvedAllRequirements = preResolvePackageResult.ResolvedAllRequirements
         # All the direct cpp defines of this package
-        self.ResolvedBuildDirectDefines = None  # type: Optional[List['PackageDefine']]
+        self.ResolvedBuildDirectDefines: list[PackageDefine] | None = None
         # All the cpp defines that touch this package (direct and inherited)
-        self.ResolvedBuildAllDefines = [] # type: List['PackageDefine']
+        self.ResolvedBuildAllDefines: list[PackageDefine] = []
         # All the public cpp defines that touch this package (direct and inherited)
-        self.ResolvedBuildAllPublicDefines = None  # type: Optional[List['PackageDefine']]
+        self.ResolvedBuildAllPublicDefines: list[PackageDefine] | None = None
         # All the private cpp defines that touch this package (direct and inherited)
-        self.ResolvedBuildAllPrivateDefines = None  # type: Optional[List['PackageDefine']]
+        self.ResolvedBuildAllPrivateDefines: list[PackageDefine] | None = None
         # All direct external dependencies
-        self.ResolvedDirectExternalDependencies = [] # type: List[PackageExternalDependency]
+        self.ResolvedDirectExternalDependencies: list[PackageExternalDependency] = []
         # All the ExternalDeps that touch this package (direct and inherited)
-        self.ResolvedBuildAllExternalDependencies = None  # type: Optional[List[PackageExternalDependency]]
+        self.ResolvedBuildAllExternalDependencies: list[PackageExternalDependency] | None = None
         # All the public ExternalDeps that touch this package (direct and inherited)
-        self.ResolvedBuildAllPublicExternalDependencies = None # type: Optional[List[PackageExternalDependency]]
+        self.ResolvedBuildAllPublicExternalDependencies: list[PackageExternalDependency] | None = None
         # All the private ExternalDeps that touch this package (direct and inherited)
-        self.ResolvedBuildAllPrivateExternalDependencies = None # type: Optional[List[PackageExternalDependency]]
-        self.ResolvedDirectVariants = [] # type: List['PackagePlatformVariant']
-        self.ResolvedAllVariantDict = {}  # type: Dict[str, 'PackagePlatformVariant']
-        self.ResolvedMakeConfigName = None  # type: Optional[str]
-        self.ResolvedMakeObjectPath = None  # type: Optional[str]
+        self.ResolvedBuildAllPrivateExternalDependencies: list[PackageExternalDependency] | None = None
+        self.ResolvedDirectVariants: list[PackagePlatformVariant] = []
+        self.ResolvedAllVariantDict: dict[str, PackagePlatformVariant] = {}
+        self.ResolvedMakeConfigName: str | None = None
+        self.ResolvedMakeObjectPath: str | None = None
 
         # The complete variant name containing both the normal and virtual variant names
         # in a format that is suitable for insertion into make files.
         # Beware this is just a hint and any generator is free to ignore it!
         # - each normal variant is inserted as a ${VARIANT_NAME} in the string
         # - each virtual variant is inserted as a $(VARIANT_NAME) in the string
-        self.ResolvedVariantNameHint = "" # type: str
+        self.ResolvedVariantNameHint: str = ""
 
         # The complete variant name containing both the normal and virtual variant names
         # in a format that is suitable for insertion into make files.
         # Beware this is just a hint and any generator is free to ignore it!
         # - each normal variant is inserted as a $(VARIANT_NAME) in the string
         # - each virtual variant is inserted as a $(VARIANT_NAME) in the string
-        self.ResolvedMakeVariantNameHint = None  # type: Optional[str]
+        self.ResolvedMakeVariantNameHint: str | None = None
 
         # The normal variant format string each variant is inserted as a ${VARIANT_NAME} in the string
-        self.ResolvedNormalVariantNameHint = None  # type: Optional[str]
+        self.ResolvedNormalVariantNameHint: str | None = None
         # The virtual variant format string each variant is inserted as a $(VARIANT_NAME) in the string
-        self.ResolvedVirtualVariantNameHint = None  # type: Optional[str]
+        self.ResolvedVirtualVariantNameHint: str | None = None
 
         # A list of all normal variant names in a order that matches the one used for the name hints
-        self.ResolvedNormalVariantNameList = []  # type: List[str]
+        self.ResolvedNormalVariantNameList: list[str] = []
         # A list of all virtual variant names in a order that matches the one used for the name hints
-        self.ResolvedVirtualVariantNameList = []  # type: List[str]
+        self.ResolvedVirtualVariantNameList: list[str] = []
 
         # The resolved direct experimental recipe if one exist
-        self.ResolvedDirectExperimentalRecipe = None  # type: Optional[PackageExperimentalRecipe]
+        self.ResolvedDirectExperimentalRecipe: PackageExperimentalRecipe | None = None
 
         # All variant dependencies (this is the dependencies pulled in by all variants)
         # Since we do a simple static evaluation of all variant dependencies that results in a fixed
@@ -299,31 +296,35 @@ class Package(object):
         # A->B->C->D and another to require D->C->B->A its simply not supported
         # since we require the global build order to stay fixed so we can do a static
         # build order setup
-        #self.ResolvedDirectVariantDependencies = []
+        # self.ResolvedDirectVariantDependencies = []
         # This is up the the build generator to set, it will be a PackageGeneratorReport object or None if the builder doesn't support it
-        self.ResolvedBuildPath = None # type: Optional[str]
+        self.ResolvedBuildPath: str | None = None
 
         # Contains about the project this package is associated with
         self.ProjectContext = unresolvedPackage.ProjectContext
 
         # The resolved path for the package
         packageFile = self.Path
-        self.ResolvedPath = ResolvedPath(packageFile.PackageRootLocation.Name + '/' + packageFile.RootRelativeDirPath, packageFile.AbsoluteDirPath) if packageFile is not None else None
+        self.ResolvedPath = (
+            ResolvedPath(packageFile.PackageRootLocation.Name + "/" + packageFile.RootRelativeDirPath, packageFile.AbsoluteDirPath)
+            if packageFile is not None
+            else None
+        )
 
     def __repr__(self) -> str:
-        return "Package({0})".format(self.Name)
+        return f"Package({self.Name})"
 
     def ContainsRecipe(self) -> bool:
         return self.ResolvedDirectExperimentalRecipe is not None or self.__experimentalRecipe is not None
 
-    def __ToResolvedGenerateList(self, packagePath: Optional[PackagePath], sourceList: List[UnresolvedPackageGenerate]) -> List[PackageGenerate]:
+    def __ToResolvedGenerateList(self, packagePath: PackagePath | None, sourceList: list[UnresolvedPackageGenerate]) -> list[PackageGenerate]:
         if packagePath is None:
             if len(sourceList) > 0:
-                raise Exception("Could not locate location of package '{0}'".format(self.Name))
+                raise Exception(f"Could not locate location of package '{self.Name}'")
             return []
         pathRelative = packagePath.RootRelativeDirPath
         pathAbsolute = packagePath.AbsoluteDirPath
-        res = [] # type: List[PackageGenerate]
+        res: list[PackageGenerate] = []
         for entry in sourceList:
             resolvedTemplate = ResolvedPath(IOUtil.Join(pathRelative, entry.TemplateFile), IOUtil.Join(pathAbsolute, entry.TemplateFile))
             resolvedTarget = ResolvedPath(IOUtil.Join(pathRelative, entry.TargetFile), IOUtil.Join(pathAbsolute, entry.TargetFile))
@@ -331,27 +332,28 @@ class Package(object):
             res.append(PackageGenerate(resolvedTemplate, resolvedTarget))
         return res
 
-    def __ToResolvedGenerateGrpcProtoFileList(self, packagePath: Optional[PackagePath], sourceList: List[UnresolvedPackageGenerateGrpcProtoFile]) -> List[PackageGenerateGrpcProtoFile]:
+    def __ToResolvedGenerateGrpcProtoFileList(
+        self, packagePath: PackagePath | None, sourceList: list[UnresolvedPackageGenerateGrpcProtoFile]
+    ) -> list[PackageGenerateGrpcProtoFile]:
         if packagePath is None:
             if len(sourceList) > 0:
-                raise Exception("Could not locate location of package '{0}'".format(self.Name))
+                raise Exception(f"Could not locate location of package '{self.Name}'")
             return []
-        pathRelative = packagePath.RootRelativeDirPath
         pathAbsolute = packagePath.AbsoluteDirPath
-        res = [] # type: List[PackageGenerateGrpcProtoFile]
+        res: list[PackageGenerateGrpcProtoFile] = []
         for entry in sourceList:
             resolvedInclude = ResolvedPath(entry.Include, IOUtil.Join(pathAbsolute, entry.Include))
 
             res.append(PackageGenerateGrpcProtoFile(resolvedInclude, entry.GrpcServices))
         return res
 
-    def __ToResolvedCopyFileList(self, packagePath: Optional[PackagePath], sourceList: List[UnresolvedPackageCopyFile]) -> List[PackageCopyFile]:
+    def __ToResolvedCopyFileList(self, packagePath: PackagePath | None, sourceList: list[UnresolvedPackageCopyFile]) -> list[PackageCopyFile]:
         if packagePath is None:
             if len(sourceList) > 0:
-                raise Exception("Could not locate location of file '{0}'".format(self.Name))
+                raise Exception(f"Could not locate location of file '{self.Name}'")
             return []
         pathAbsolute = packagePath.AbsoluteDirPath
-        res = [] # type: List[PackageCopyFile]
+        res: list[PackageCopyFile] = []
         for entry in sourceList:
             resolvedName = ResolvedPath(entry.Name, IOUtil.Join(pathAbsolute, entry.Name))
 
@@ -363,100 +365,104 @@ class Package(object):
             return True
         elif packageType == PackageType.Executable:
             return self._AllowExeDependency
-        elif packageType == PackageType.ExternalLibrary:
-            return True
-        elif packageType == PackageType.HeaderLibrary:
-            return True
-        elif packageType == PackageType.ToolRecipe:
+        elif packageType == PackageType.ExternalLibrary or packageType == PackageType.HeaderLibrary or packageType == PackageType.ToolRecipe:
             return True
         elif packageType == PackageType.TopLevel:
             return False
         else:
-            raise XmlException2("Unknown package type: {0}".format(packageType))
+            raise XmlException2(f"Unknown package type: {packageType}")
 
-    def GetDirectDependencies(self) -> List[ProcessedPackageDependency]:
+    def GetDirectDependencies(self) -> list[ProcessedPackageDependency]:
         return self.__DirectDependencies
 
     @staticmethod
-    def __ContainsDependency(dependencies: List[ProcessedPackageDependency], dependencyName: str) -> bool:
-        for entry in dependencies:
-            if entry.Name.Value == dependencyName:
-                return True
-        return False
+    def __ContainsDependency(dependencies: list[ProcessedPackageDependency], dependencyName: str) -> bool:
+        return any(entry.Name.Value == dependencyName for entry in dependencies)
 
-
-    def GetExternalDependencies(self) -> List[UnresolvedExternalDependency]:
+    def GetExternalDependencies(self) -> list[UnresolvedExternalDependency]:
         return self.__FilteredExternalDependencies + self.ResolvedPlatform.ExternalDependencies
 
-
-    def GetVariants(self) -> List[UnresolvedPackageVariant]:
+    def GetVariants(self) -> list[UnresolvedPackageVariant]:
         return self.ResolvedPlatform.Variants
 
-
-    def GetUnresolvedDirectDefines(self) -> List[UnresolvedPackageDefine]:
+    def GetUnresolvedDirectDefines(self) -> list[UnresolvedPackageDefine]:
         return self.__allUnresolvedDirectDefines
 
-
-    def GetUnresolvedDirectRequirements(self) -> List[UnresolvedPackageRequirement]:
+    def GetUnresolvedDirectRequirements(self) -> list[UnresolvedPackageRequirement]:
         return self.__allUnresolvedDirectRequirements
 
+    def TryGetExperimentalRecipe(self, pathBuilder: PathBuilder, forceDisable: bool) -> PackageExperimentalRecipe | None:
+        return (
+            None if self.__experimentalRecipe is None else PackageExperimentalRecipe(self._Log, self.Name, pathBuilder, self.__experimentalRecipe, forceDisable)
+        )
 
-    def TryGetExperimentalRecipe(self, pathBuilder: PathBuilder, forceDisable: bool) -> Optional[PackageExperimentalRecipe]:
-        return None if self.__experimentalRecipe is None else PackageExperimentalRecipe(self._Log, self.Name, pathBuilder, self.__experimentalRecipe, forceDisable)
 
 # We define the PackageDependency here because it has a dependency to Package and having it externally
 # would produce a circular dependency which does all kinds of bads things.
-class PackageDependency(object):
+class PackageDependency:
     def __init__(self, package: Package, access: AccessType, outputType: DependencyOutputType, referenceOutputAssembly: bool) -> None:
         super().__init__()
         self.Package = package
         self.Access = access
         self.OutputType = outputType
         self.ReferenceOutputAssembly = referenceOutputAssembly
-        self.Name = package.Name # type: str
+        self.Name: str = package.Name
 
 
 # We define the PackageDefine here because it has a dependency to Package and having it externally
 # would produce a circular dependency which does all kinds of bads things.
 class PackageDefine(PackageElement):
-    def __init__(self, base: Union[UnresolvedPackageDefine, 'PackageDefine'], introducedByPackageName: str, fromPackageAccess: AccessType) -> None:
+    def __init__(self, base: Union[UnresolvedPackageDefine, "PackageDefine"], introducedByPackageName: str, fromPackageAccess: AccessType) -> None:
         super().__init__(base.Name)
-        self.IntroducedByPackageName = introducedByPackageName  # type: str
-        self.Value = base.Value  # type: Optional[str]
-        self.Access = base.Access # type: AccessType
-        self.IsFirstActualUse = False  # type: bool
-        self.ConsumedBy = base.ConsumedBy if isinstance(base, PackageDefine) else None # type: Optional[Package]
+        self.IntroducedByPackageName: str = introducedByPackageName
+        self.Value: str | None = base.Value
+        self.Access: AccessType = base.Access
+        self.IsFirstActualUse: bool = False
+        self.ConsumedBy: Package | None = base.ConsumedBy if isinstance(base, PackageDefine) else None
         # the access to the package this was received from
-        self.FromPackageAccess = fromPackageAccess # type: AccessType
+        self.FromPackageAccess: AccessType = fromPackageAccess
 
         if self.Value is not None and not Util.IsValidDefineValue(self.Value):
             raise InvalidDefineValueException(self.Name, self.Value)
 
 
 class VariantExtensionCanNotOverwriteExistingExternalDependencyException(XmlException2):
-    def __init__(self, previous: PackagePlatformExternalDependency, introducedByPackageName: str, extending: PackagePlatformExternalDependency, extensionInfo: str) -> None:
-        msg = "The variant option '{0}' in package '{1}' can overwrite a existing external dependency from '{2}'".format(extending.Name, introducedByPackageName, extensionInfo)
+    def __init__(
+        self, previous: PackagePlatformExternalDependency, introducedByPackageName: str, extending: PackagePlatformExternalDependency, extensionInfo: str
+    ) -> None:
+        msg = (
+            f"The variant option '{extending.Name}' in package '{introducedByPackageName}' can overwrite a existing external dependency from '{extensionInfo}'"
+        )
         super().__init__(msg)
 
 
 class VariantExtensionCanNotOverwriteExistingDefineException(XmlException2):
     def __init__(self, previous: PackageDefine, introducedByPackageName: str, extending: PackageDefine, extensionInfo: str) -> None:
-        msg = "The variant option '{0}' in package '{1}' can overwrite a existing Define from '{2}'".format(extending.Name, introducedByPackageName, extensionInfo)
+        msg = f"The variant option '{extending.Name}' in package '{introducedByPackageName}' can overwrite a existing Define from '{extensionInfo}'"
         super().__init__(msg)
 
 
 class PackagePlatformVariantOption(PackageElement):
-    def __init__(self, log: Log, generatorInfo: GeneratorInfo, ownerPackageName: str, base: Union[UnresolvedPackageVariantOption, 'PackagePlatformVariantOption'], allowPrivate: bool) -> None:
+    def __init__(
+        self,
+        log: Log,
+        generatorInfo: GeneratorInfo,
+        ownerPackageName: str,
+        base: Union[UnresolvedPackageVariantOption, "PackagePlatformVariantOption"],
+        allowPrivate: bool,
+    ) -> None:
         super().__init__(base.Name)
         self.__Log = log
         self.__GeneratorInfo = generatorInfo
-        self.IntroducedByPackageName = base.IntroducedByPackageName #  type: str
-        self.ExtensionInfo = base.IntroducedByPackageName  #  type: str
-        self.ExternalDependencies = self.__CloneExtDeps(base.ExternalDependencies, allowPrivate) # type: List[PackagePlatformExternalDependency]
+        self.IntroducedByPackageName: str = base.IntroducedByPackageName
+        self.ExtensionInfo: str = base.IntroducedByPackageName
+        self.ExternalDependencies: list[PackagePlatformExternalDependency] = self.__CloneExtDeps(base.ExternalDependencies, allowPrivate)
 
         if isinstance(base, UnresolvedPackageVariantOption):
             if not allowPrivate:
-                self.DirectDefines = [PackageDefine(entry, ownerPackageName, AccessType.Public) for entry in base.DirectDefines if entry.Access != AccessType.Private]  # type: List[PackageDefine]
+                self.DirectDefines: list[PackageDefine] = [
+                    PackageDefine(entry, ownerPackageName, AccessType.Public) for entry in base.DirectDefines if entry.Access != AccessType.Private
+                ]
             else:
                 self.DirectDefines = [PackageDefine(entry, ownerPackageName, AccessType.Public) for entry in base.DirectDefines]
         else:
@@ -465,16 +471,17 @@ class PackagePlatformVariantOption(PackageElement):
             else:
                 self.DirectDefines = base.DirectDefines
 
-    def __CloneExtDeps(self, externalDependencies: Union[List[UnresolvedExternalDependency], List[PackagePlatformExternalDependency]], allowPrivate: bool) -> List[PackagePlatformExternalDependency]:
-        res = []  # type: List[PackagePlatformExternalDependency]
+    def __CloneExtDeps(
+        self, externalDependencies: list[UnresolvedExternalDependency] | list[PackagePlatformExternalDependency], allowPrivate: bool
+    ) -> list[PackagePlatformExternalDependency]:
+        res: list[PackagePlatformExternalDependency] = []
         for entry in externalDependencies:
             res.append(PackagePlatformExternalDependency(entry, allowPrivate))
         return res
 
-
-    def Extend(self, srcOption: 'PackagePlatformVariantOption', extendingPackageName: str) -> 'PackagePlatformVariantOption':
+    def Extend(self, srcOption: "PackagePlatformVariantOption", extendingPackageName: str) -> "PackagePlatformVariantOption":
         extendedOption = PackagePlatformVariantOption(self.__Log, self.__GeneratorInfo, extendingPackageName, self, False)
-        extendedOption.ExtensionInfo = "{0}<-{1}".format(self.IntroducedByPackageName, extendingPackageName)
+        extendedOption.ExtensionInfo = f"{self.IntroducedByPackageName}<-{extendingPackageName}"
 
         dstExternals = extendedOption.ExternalDependencies
         srcExternals = srcOption.ExternalDependencies
@@ -482,24 +489,29 @@ class PackagePlatformVariantOption(PackageElement):
         for srcExternalEntry in srcExternals:
             index = self.__IndexOf(dstExternals, srcExternalEntry.Name)
             if index >= 0:
-                raise VariantExtensionCanNotOverwriteExistingExternalDependencyException(dstExternals[index], self.IntroducedByPackageName, srcExternalEntry, self.ExtensionInfo)
+                raise VariantExtensionCanNotOverwriteExistingExternalDependencyException(
+                    dstExternals[index], self.IntroducedByPackageName, srcExternalEntry, self.ExtensionInfo
+                )
             else:
                 dstExternals.append(srcExternalEntry)
 
         dstDefines = extendedOption.DirectDefines
-        srcDefines = srcOption.DirectDefines  # type: List[PackageDefine]
+        srcDefines: list[PackageDefine] = srcOption.DirectDefines
         for srcDefineEntry in srcDefines:
-            if srcDefineEntry.Access == AccessType.Public or (srcDefineEntry.Access == AccessType.Private and srcDefineEntry.IntroducedByPackageName == extendingPackageName):
+            if srcDefineEntry.Access == AccessType.Public or (
+                srcDefineEntry.Access == AccessType.Private and srcDefineEntry.IntroducedByPackageName == extendingPackageName
+            ):
                 index = self.__IndexOf(dstDefines, srcDefineEntry.Name)
                 if index >= 0:
-                    raise VariantExtensionCanNotOverwriteExistingDefineException(dstDefines[index], self.IntroducedByPackageName, srcDefineEntry, self.ExtensionInfo)
+                    raise VariantExtensionCanNotOverwriteExistingDefineException(
+                        dstDefines[index], self.IntroducedByPackageName, srcDefineEntry, self.ExtensionInfo
+                    )
                 else:
                     dstDefines.append(srcDefineEntry)
 
         return extendedOption
 
-
-    def __IndexOf(self, entries: Union[List[PackagePlatformExternalDependency], List[PackageDefine]], entryName: str) -> int:
+    def __IndexOf(self, entries: list[PackagePlatformExternalDependency] | list[PackageDefine], entryName: str) -> int:
         for i, entry in enumerate(entries):
             if entry.Name == entryName:
                 return i
@@ -507,24 +519,26 @@ class PackagePlatformVariantOption(PackageElement):
 
 
 class VariantNotMarkedAsExtendingException(XmlException2):
-    def __init__(self, previousVariant: 'PackagePlatformVariant', extendingVariant: 'PackagePlatformVariant') -> None:
-        msg = "The variant '{0}' in package '{1}' is not marked for extend, but it would be extending '{2}'".format(extendingVariant.Name, extendingVariant.IntroducedByPackageName, previousVariant.ExtensionInfo)
+    def __init__(self, previousVariant: "PackagePlatformVariant", extendingVariant: "PackagePlatformVariant") -> None:
+        msg = f"The variant '{extendingVariant.Name}' in package '{extendingVariant.IntroducedByPackageName}' is not marked for extend, but it would be extending '{previousVariant.ExtensionInfo}'"
         super().__init__(msg)
 
 
 # We define the PackageDefine here because it has a dependency to Package and having it externally
 # would produce a circular dependency which does all kinds of bads things.
 class PackagePlatformVariant(PackageElement):
-    def __init__(self, log: Log, generatorInfo: GeneratorInfo, ownerPackageName: str, base: Union[UnresolvedPackageVariant, 'PackagePlatformVariant'], allowPrivate: bool) -> None:
+    def __init__(
+        self, log: Log, generatorInfo: GeneratorInfo, ownerPackageName: str, base: Union[UnresolvedPackageVariant, "PackagePlatformVariant"], allowPrivate: bool
+    ) -> None:
         super().__init__(base.Name)
         self.__Log = log
         self.__GeneratorInfo = generatorInfo
-        self.IntroducedByPackageName = base.IntroducedByPackageName  # type: str
-        self.ExtensionInfo = base.IntroducedByPackageName  # type: str
-        self.Options = self.__ProcessOptions(ownerPackageName, base.Options, allowPrivate)  # type: List[PackagePlatformVariantOption]
-        self.Type = base.Type    # type: VariantType
+        self.IntroducedByPackageName: str = base.IntroducedByPackageName
+        self.ExtensionInfo: str = base.IntroducedByPackageName
+        self.Options: list[PackagePlatformVariantOption] = self.__ProcessOptions(ownerPackageName, base.Options, allowPrivate)
+        self.Type: VariantType = base.Type
         self._BuildOptionDict(self.Options)
-        self.AllowExtend = base.AllowExtend  # type: bool
+        self.AllowExtend: bool = base.AllowExtend
         self.PurifiedName = self.__PurifyName(base.Type, self.Name)
 
     def __PurifyName(self, variantType: VariantType, variantName: str) -> str:
@@ -532,27 +546,26 @@ class PackagePlatformVariant(PackageElement):
             variantName = Util.RemoveEnvironmentVariablePadding(variantName)
         return variantName
 
-
-    def __ProcessOptions(self, ownerPackageName: str,
-                         options: Union[List[UnresolvedPackageVariantOption], List[PackagePlatformVariantOption]],
-                         allowPrivate: bool) -> List[PackagePlatformVariantOption]:
+    def __ProcessOptions(
+        self, ownerPackageName: str, options: list[UnresolvedPackageVariantOption] | list[PackagePlatformVariantOption], allowPrivate: bool
+    ) -> list[PackagePlatformVariantOption]:
         res = []
         for entry in options:
             res.append(PackagePlatformVariantOption(self.__Log, self.__GeneratorInfo, ownerPackageName, entry, allowPrivate))
         return res
 
-    def _BuildOptionDict(self, options: List[PackagePlatformVariantOption]) -> None:
-        optionDict = {}  # type: Dict[str, PackagePlatformVariantOption]
+    def _BuildOptionDict(self, options: list[PackagePlatformVariantOption]) -> None:
+        optionDict: dict[str, PackagePlatformVariantOption] = {}
         for option in options:
             optionDict[option.Name] = option
         self.OptionDict = optionDict
 
-    def Extend(self, variant: 'PackagePlatformVariant', extendingPackageName: str) -> 'PackagePlatformVariant':
+    def Extend(self, variant: "PackagePlatformVariant", extendingPackageName: str) -> "PackagePlatformVariant":
         if not variant.AllowExtend:
             raise VariantNotMarkedAsExtendingException(self, variant)
 
         extendedVariant = PackagePlatformVariant(self.__Log, self.__GeneratorInfo, extendingPackageName, self, False)
-        extendedVariant.ExtensionInfo = "{0}<-{1}".format(self.IntroducedByPackageName, extendingPackageName)
+        extendedVariant.ExtensionInfo = f"{self.IntroducedByPackageName}<-{extendingPackageName}"
 
         dstOptions = extendedVariant.Options
         srcOptions = variant.Options
@@ -565,8 +578,7 @@ class PackagePlatformVariant(PackageElement):
         extendedVariant._BuildOptionDict(dstOptions)
         return extendedVariant
 
-
-    def __IndexOf(self, entries: List[PackagePlatformVariantOption], entryName: str) -> int:
+    def __IndexOf(self, entries: list[PackagePlatformVariantOption], entryName: str) -> int:
         for i, entry in enumerate(entries):
             if entry.Name == entryName:
                 return i

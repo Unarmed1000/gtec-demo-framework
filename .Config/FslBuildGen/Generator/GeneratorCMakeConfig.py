@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright 2019 NXP
 # All rights reserved.
 #
@@ -29,29 +28,42 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-from typing import Optional
-from typing import List
-from FslBuildGen import IOUtil
-from FslBuildGen import PackageConfig
-from FslBuildGen import PathUtil
+
+from FslBuildGen import IOUtil, PackageConfig, PathUtil
+from FslBuildGen.BuildConfig.UserSetVariables import UserSetVariables
 from FslBuildGen.BuildExternal import CMakeHelper
 from FslBuildGen.BuildExternal.CMakeTypes import CMakeGeneratorMultiConfigCapability
-from FslBuildGen.BuildConfig.UserSetVariables import UserSetVariables
 from FslBuildGen.CMakeUtil import CMakeVersion
 from FslBuildGen.DataTypes import BuildVariantConfig
 from FslBuildGen.Log import Log
 from FslBuildGen.Version import Version
 
-class GeneratorCMakeConfig(object):
+
+class GeneratorCMakeConfig:
     """
     The cmake context for the current platform
     """
-    def __init__(self, log: Log, toolVersion: Version, platformName: str, buildVariantConfig: BuildVariantConfig, userSetVariables: UserSetVariables,
-                 buildDir: str, buildDirSetByUser: bool, buildDirId: Optional[int], checkDir: str, generatorName: str, installPrefix: Optional[str],
-                 cmakeVersion: CMakeVersion, additionalGlobalConfigArguments: List[str], additionalAppConfigArguments: List[str],
-                 allowFindPackage: bool) -> None:
+
+    def __init__(
+        self,
+        log: Log,
+        toolVersion: Version,
+        platformName: str,
+        buildVariantConfig: BuildVariantConfig,
+        userSetVariables: UserSetVariables,
+        buildDir: str,
+        buildDirSetByUser: bool,
+        buildDirId: int | None,
+        checkDir: str,
+        generatorName: str,
+        installPrefix: str | None,
+        cmakeVersion: CMakeVersion,
+        additionalGlobalConfigArguments: list[str],
+        additionalAppConfigArguments: list[str],
+        allowFindPackage: bool,
+    ) -> None:
         super().__init__()
 
         PathUtil.ValidateIsNormalizedPath(buildDir, "BuildDir")
@@ -68,13 +80,13 @@ class GeneratorCMakeConfig(object):
             if CMakeHelper.GetGeneratorMultiConfigCapabilities(finalGeneratorName) == CMakeGeneratorMultiConfigCapability.No:
                 buildDir = IOUtil.Join(buildDir, BuildVariantConfig.ToString(buildVariantConfig))
             if buildDirId is not None:
-                buildDir += "_{}".format(buildDirId)
+                buildDir += f"_{buildDirId}"
 
         self.ToolVersion = toolVersion
         self.PlatformName = platformName
         self.BuildDir = buildDir
         self.BuildDirId = buildDirId
-        self.CacheDir = IOUtil.Join(buildDir, '_fsl')
+        self.CacheDir = IOUtil.Join(buildDir, "_fsl")
         # If this is true the user specified the directory
         self.BuildDirSetByUser = buildDirSetByUser
         self.CheckDir = checkDir
@@ -86,7 +98,7 @@ class GeneratorCMakeConfig(object):
         self.CMakeVersion = cmakeVersion
 
         platformCMakeCommand = CMakeHelper.DetermineCMakeCommand(platformName)
-        #self.CMakeConfigureCommand = platformCMakeCommand
+        # self.CMakeConfigureCommand = platformCMakeCommand
         self.CMakeCommand = platformCMakeCommand
 
         emscriptenConfig = CMakeHelper.DetermineEmscriptenCommands()
@@ -110,7 +122,7 @@ class GeneratorCMakeConfig(object):
 
         self.CMakeFinalGeneratorName = finalGeneratorName
         self.GeneratorShortName = generatorShortName
-        self.GeneratorRecipeShortName = "{0}_{1}".format(generatorShortName, toolVersion.ToMajorMinorString().replace('.', '_'))
+        self.GeneratorRecipeShortName = "{}_{}".format(generatorShortName, toolVersion.ToMajorMinorString().replace(".", "_"))
         self.AllowFindPackage = allowFindPackage
 
         self.VsToolsetVersionStr = CMakeHelper.DetermineVSToolsetVersion(log, finalGeneratorName, platformName, userSetVariables)

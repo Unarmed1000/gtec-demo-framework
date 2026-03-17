@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright 2020 NXP
 # All rights reserved.
 #
@@ -29,14 +28,15 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-from typing import List
+
 from FslBuildGen.Engine.PackageFlavorSelections import PackageFlavorSelections
 from FslBuildGen.Engine.Resolver.PackageDependency import PackageDependency
 
-class InstanceConfig(object):
-    def __init__(self, flavorSelections: PackageFlavorSelections, directDependencies: List[PackageDependency]) -> None:
+
+class InstanceConfig:
+    def __init__(self, flavorSelections: PackageFlavorSelections, directDependencies: list[PackageDependency]) -> None:
         super().__init__()
         self.FlavorSelections = flavorSelections
         self.DirectDependencies = directDependencies

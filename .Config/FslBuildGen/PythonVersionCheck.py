@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright 2017 NXP
 # All rights reserved.
 #
@@ -29,14 +28,8 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-import os
-import sys
 
-def CheckVersion():
-    # type: () -> None
-    if sys.version_info < (3, 10):
-        print("This tool requires Python 3.10 or better, please upgrade your python version. You are running python {0}.{1}.{2}".format(sys.version_info[0], sys.version_info[1], sys.version_info[2]))
-        # So exit with a error
-        sys.exit(1)
+def CheckVersion() -> None:
+    pass

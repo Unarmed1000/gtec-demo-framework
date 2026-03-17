@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright 2018 NXP
 # All rights reserved.
 #
@@ -29,42 +29,46 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-from typing import Any
-#from typing import List
-from typing import Optional
 import argparse
-import os
-from FslBuildGen import IOUtil
+
+# from typing import List
+from typing import Any
+
+# from FslBuildGen.Generator import PluginConfig
+# from FslBuildGen import ParseUtil
+from FslBuildGen import IOUtil, PackageListUtil, PluginSharedValues
 from FslBuildGen import Main as MainFlow
-from FslBuildGen import PackageListUtil
-#from FslBuildGen.Generator import PluginConfig
-#from FslBuildGen import ParseUtil
-from FslBuildGen import PluginSharedValues
-#from FslBuildGen.Build import Builder
+
+# from FslBuildGen.Build import Builder
 from FslBuildGen.Build.BuildVariantConfigUtil import BuildVariantConfigUtil
-#from FslBuildGen.BuildExternal.RecipeInfo import RecipeInfo
+
+# from FslBuildGen.BuildExternal.RecipeInfo import RecipeInfo
 from FslBuildGen.Config import Config
 from FslBuildGen.Context.GeneratorContext import GeneratorContext
-#from FslBuildGen.DataTypes import PackageType
-#from FslBuildGen.Generator.GeneratorConfig import GeneratorConfig
-#from FslBuildGen.Log import Log
-#from FslBuildGen.PackageFilters import PackageFilters
-#from FslBuildGen.PackageConfig import PlatformNameString
+
+# from FslBuildGen.DataTypes import PackageType
+# from FslBuildGen.Generator.GeneratorConfig import GeneratorConfig
+# from FslBuildGen.Log import Log
+# from FslBuildGen.PackageFilters import PackageFilters
+# from FslBuildGen.PackageConfig import PlatformNameString
 from FslBuildGen.Tool.AToolAppFlow import AToolAppFlow
 from FslBuildGen.Tool.AToolAppFlowFactory import AToolAppFlowFactory
 from FslBuildGen.Tool.ToolAppConfig import ToolAppConfig
 from FslBuildGen.Tool.ToolAppContext import ToolAppContext
 from FslBuildGen.Tool.ToolCommonArgConfig import ToolCommonArgConfig
 from FslBuildGen.ToolConfig import ToolConfig
-#from FslBuildGen.Info import InfoSaver
+
+# from FslBuildGen.Info import InfoSaver
 from FslBuildGen.VariableContextHelper import VariableContextHelper
 
-class DefaultValue(object):
+
+class DefaultValue:
     IgnoreNotSupported = False
     PackageConfigurationType = PluginSharedValues.TYPE_DEFAULT
     ForceYes = False
+
 
 class LocalToolConfig(ToolAppConfig):
     def __init__(self) -> None:
@@ -79,12 +83,10 @@ def GetDefaultLocalConfig() -> LocalToolConfig:
 
 
 class ToolFlowBuildInfo(AToolAppFlow):
-    #def __init__(self, toolAppContext: ToolAppContext) -> None:
+    # def __init__(self, toolAppContext: ToolAppContext) -> None:
     #    super().__init__(toolAppContext)
 
-
-    def ProcessFromCommandLine(self, args: Any, currentDirPath: str, toolConfig: ToolConfig, userTag: Optional[object]) -> None:
-
+    def ProcessFromCommandLine(self, args: Any, currentDirPath: str, toolConfig: ToolConfig, userTag: object | None) -> None:
         localToolConfig = LocalToolConfig()
 
         # Configure the ToolAppConfig part
@@ -97,10 +99,10 @@ class ToolFlowBuildInfo(AToolAppFlow):
 
         self.Process(currentDirPath, toolConfig, localToolConfig)
 
-
     def Process(self, currentDirPath: str, toolConfig: ToolConfig, localToolConfig: LocalToolConfig) -> None:
-        config = Config(self.Log, toolConfig, localToolConfig.PackageConfigurationType,
-                        localToolConfig.BuildVariantConstraints, localToolConfig.AllowDevelopmentPlugins)
+        config = Config(
+            self.Log, toolConfig, localToolConfig.PackageConfigurationType, localToolConfig.BuildVariantConstraints, localToolConfig.AllowDevelopmentPlugins
+        )
 
         # Disable downloads and writes
         if config.ToolConfig.Experimental is not None:
@@ -118,19 +120,31 @@ class ToolFlowBuildInfo(AToolAppFlow):
 
         buildVariantConfig = BuildVariantConfigUtil.GetBuildVariantConfig(localToolConfig.BuildVariantConstraints)
         variableContext = VariableContextHelper.Create(toolConfig, localToolConfig.UserSetVariables)
-        generator = self.ToolAppContext.PluginConfigContext.GetGeneratorPluginById(localToolConfig.PlatformName, localToolConfig.Generator,
-                                                                                   buildVariantConfig, variableContext.UserSetVariables,
-                                                                                   config.ToolConfig.DefaultPackageLanguage,
-                                                                                   config.ToolConfig.CMakeConfiguration,
-                                                                                   localToolConfig.GetUserCMakeConfig(), False)
+        generator = self.ToolAppContext.PluginConfigContext.GetGeneratorPluginById(
+            localToolConfig.PlatformName,
+            localToolConfig.Generator,
+            buildVariantConfig,
+            variableContext.UserSetVariables,
+            config.ToolConfig.DefaultPackageLanguage,
+            config.ToolConfig.CMakeConfiguration,
+            localToolConfig.GetUserCMakeConfig(),
+            False,
+        )
 
-        theFiles = MainFlow.DoGetFiles(config, toolConfig.GetMinimalConfig(generator.CMakeConfig), currentDirPath, localToolConfig.Recursive)
-        generatorContext = GeneratorContext(config, self.ErrorHelpManager, packageFilters.RecipeFilterManager, config.ToolConfig.Experimental,
-                                            generator, variableContext)
+        theFiles = MainFlow.DoGetFiles(
+            config,
+            toolConfig.GetMinimalConfig(generator.CMakeConfig),
+            currentDirPath,
+            localToolConfig.Recursive,
+            additionalDirs=self.ToolAppContext.LowLevelToolConfig.AdditionalInputDirs,
+        )
+        generatorContext = GeneratorContext(
+            config, self.ErrorHelpManager, packageFilters.RecipeFilterManager, config.ToolConfig.Experimental, generator, variableContext
+        )
         packages = MainFlow.DoGetPackages(generatorContext, config, theFiles, packageFilters, autoAddRecipeExternals=False)
 
         topLevelPackage = PackageListUtil.GetTopLevelPackage(packages)
-        #requestedFiles = None if config.IsSDKBuild else theFiles
+        # requestedFiles = None if config.IsSDKBuild else theFiles
 
         self.Log.LogPrint("Deleting package build directories")
         for package in topLevelPackage.ResolvedBuildOrder:
@@ -138,9 +152,9 @@ class ToolFlowBuildInfo(AToolAppFlow):
                 # While the path is most likely normalized we force it here
                 removePath = IOUtil.NormalizePath(package.AbsoluteBuildPath)
                 if IOUtil.IsDirectory(removePath):
-                    self.Log.LogPrint("- Deleting '{0}'".format(removePath))
+                    self.Log.LogPrint(f"- Deleting '{removePath}'")
                     if IOUtil.IsDriveRootPath(removePath):
-                        raise Exception("Invalid path format '{0}'".format(removePath))
+                        raise Exception(f"Invalid path format '{removePath}'")
                     IOUtil.SafeRemoveDirectoryTree(removePath)
 
     def __AskYesNo(self, question: str, default: str = "no") -> bool:
@@ -152,12 +166,12 @@ class ToolFlowBuildInfo(AToolAppFlow):
         elif default == "no":
             prompt = " [y/N] "
         else:
-            raise ValueError("invalid default answer: '{0}'".format(default))
+            raise ValueError(f"invalid default answer: '{default}'")
 
         while True:
             print(question + prompt)
             choice = input().lower().strip()
-            if default is not None and choice == '':
+            if default is not None and choice == "":
                 return valid[default]
             elif choice in valid:
                 return valid[choice]
@@ -166,13 +180,11 @@ class ToolFlowBuildInfo(AToolAppFlow):
 
 
 class ToolAppFlowFactory(AToolAppFlowFactory):
-    #def __init__(self) -> None:
+    # def __init__(self) -> None:
     #    pass
 
-
     def GetTitle(self) -> str:
-        return 'FslBuildClean'
-
+        return "FslBuildClean"
 
     def GetToolCommonArgConfig(self) -> ToolCommonArgConfig:
         argConfig = ToolCommonArgConfig()
@@ -185,12 +197,12 @@ class ToolAppFlowFactory(AToolAppFlowFactory):
         argConfig.AllowRecursive = True
         return argConfig
 
-
-    def AddCustomArguments(self, parser: argparse.ArgumentParser, toolConfig: ToolConfig, userTag: Optional[object]) -> None:
-        parser.add_argument('--IgnoreNotSupported', action='store_true', help='try to build things that are marked as not supported')
-        parser.add_argument('-t', '--type', default=DefaultValue.PackageConfigurationType, choices=[PluginSharedValues.TYPE_DEFAULT, 'sdk'], help='Select generator type')
-        parser.add_argument('-y', action='store_true', help='answer yes to all prompts')
-
+    def AddCustomArguments(self, parser: argparse.ArgumentParser, toolConfig: ToolConfig, userTag: object | None) -> None:
+        parser.add_argument("--IgnoreNotSupported", action="store_true", help="try to build things that are marked as not supported")
+        parser.add_argument(
+            "-t", "--type", default=DefaultValue.PackageConfigurationType, choices=[PluginSharedValues.TYPE_DEFAULT, "sdk"], help="Select generator type"
+        )
+        parser.add_argument("-y", action="store_true", help="answer yes to all prompts")
 
     def Create(self, toolAppContext: ToolAppContext) -> AToolAppFlow:
         return ToolFlowBuildInfo(toolAppContext)

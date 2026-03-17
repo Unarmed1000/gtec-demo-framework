@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright 2017 NXP
 # All rights reserved.
 #
@@ -29,11 +29,12 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
 from FslBuildGen.ToolConfig import ToolConfig
 
-class PathVariables(object):
+
+class PathVariables:
     def __init__(self, toolConfig: ToolConfig, packageBuildPath: str, contentBuildPath: str, contentPathPath: str) -> None:
         super().__init__()
         self.PackageBuild = packageBuildPath
@@ -42,5 +43,5 @@ class PathVariables(object):
 
         rootDir = toolConfig.TryFindRootDirectory(packageBuildPath)
         if rootDir is None:
-            raise Exception("Could not find a project root for the path '{0}'".format(packageBuildPath))
-        self.ProjectRoot = rootDir.ResolvedPath  # type: str
+            raise Exception(f"Could not find a project root for the path '{packageBuildPath}'")
+        self.ProjectRoot: str = rootDir.ResolvedPath

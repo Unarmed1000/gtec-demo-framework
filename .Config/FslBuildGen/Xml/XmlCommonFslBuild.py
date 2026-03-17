@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright (c) 2014 Freescale Semiconductor, Inc.
 # All rights reserved.
 #
@@ -29,35 +29,37 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-from typing import List
 import xml.etree.ElementTree as ET
+
 from FslBuildGen.Log import Log
 from FslBuildGen.Xml.Exceptions import XmlUnsupportedTag
-from FslBuildGen.Xml.XmlGenFileRequirement import XmlGenFileRequirement
 from FslBuildGen.Xml.XmlBase import XmlBase
 from FslBuildGen.Xml.XmlBase2 import XmlBase2
+from FslBuildGen.Xml.XmlGenFileRequirement import XmlGenFileRequirement
 
 
 class XmlGenFileUsesFeature(XmlBase):
     def __init__(self, log: Log, xmlElement: ET.Element) -> None:
         super().__init__(log, xmlElement)
-        self.Name = self._ReadAttrib(xmlElement, 'Name')
+        self.Name = self._ReadAttrib(xmlElement, "Name")
 
 
 class XmlCommonFslBuild(XmlBase2):
-    def __init__(self, log: Log, requirementTypes: List[str], xmlElement: ET.Element) -> None:
+    def __init__(self, log: Log, requirementTypes: list[str], xmlElement: ET.Element) -> None:
         super().__init__(log, xmlElement)
         self.__RequirementTypes = requirementTypes
 
-
-    def _GetXMLRequirements(self, elem: ET.Element) -> List[XmlGenFileRequirement]:
+    def _GetXMLRequirements(self, elem: ET.Element) -> list[XmlGenFileRequirement]:
         elements = []  # List[XmlGenFileRequirement]
         for child in elem:
-            if child.tag == 'Requirement':
+            if child.tag == "Requirement":
                 elements.append(XmlGenFileRequirement(self.Log, self.__RequirementTypes, child))
-            if child.tag == 'UsesFeature':
+            if child.tag == "UsesFeature":
                 legacyElement = XmlGenFileUsesFeature(self.Log, child)
-                raise XmlUnsupportedTag(legacyElement.XMLElement, "The tag <UsesFeature Name='{0}'> has been replaced by <Requirement Name=\"{0}\" Type=\"feature\"> please update".format(legacyElement.Name))
+                raise XmlUnsupportedTag(
+                    legacyElement.XMLElement,
+                    f'The tag <UsesFeature Name=\'{legacyElement.Name}\'> has been replaced by <Requirement Name="{legacyElement.Name}" Type="feature"> please update',
+                )
         return elements

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright 2017 NXP
 # All rights reserved.
 #
@@ -29,18 +29,17 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-from typing import Any
-from typing import List
-from typing import Optional
-from typing import Dict
 import argparse
 import json
 import os
-#from FslBuildGen import Main as MainFlow
+from typing import Any
+
+# from FslBuildGen import Main as MainFlow
 from FslBuildGen import ParseUtil
-#from FslBuildGen.Log import Log
+
+# from FslBuildGen.Log import Log
 from FslBuildGen.Build.CaptureEnvironmentBlock import CaptureEnvironmentBlock
 from FslBuildGen.Tool.AToolAppFlow import AToolAppFlow
 from FslBuildGen.Tool.AToolAppFlowFactory import AToolAppFlowFactory
@@ -49,10 +48,12 @@ from FslBuildGen.Tool.ToolAppContext import ToolAppContext
 from FslBuildGen.Tool.ToolCommonArgConfig import ToolCommonArgConfig
 from FslBuildGen.ToolConfig import ToolConfig
 
-class DefaultValue(object):
-    Env = None # type: Optional[List[str]]
+
+class DefaultValue:
+    Env: list[str] | None = None
     Enclose = False
     AllowNotFound = False
+
 
 class LocalToolConfig(ToolAppConfig):
     def __init__(self) -> None:
@@ -67,16 +68,15 @@ def GetDefaultLocalConfig() -> LocalToolConfig:
 
 
 class ToolFlowDumpEnv(AToolAppFlow):
-    #def __init__(self, toolAppContext: ToolAppContext) -> None:
+    # def __init__(self, toolAppContext: ToolAppContext) -> None:
     #    super().__init__(toolAppContext)
 
-
-    def ProcessFromCommandLine(self, args: Any, currentDirPath: str, toolConfig: ToolConfig, userTag: Optional[object]) -> None:
+    def ProcessFromCommandLine(self, args: Any, currentDirPath: str, toolConfig: ToolConfig, userTag: object | None) -> None:
         # Process the input arguments here, before calling the real work function
 
         localToolConfig = LocalToolConfig()
 
-        envList = None   # type: Optional[List[str]]
+        envList: list[str] | None = None
         if args.Env is not None:
             envList = ParseUtil.ParseList(args.Env, "environment variable list", False)
 
@@ -86,18 +86,17 @@ class ToolFlowDumpEnv(AToolAppFlow):
 
         self.Process(currentDirPath, toolConfig, localToolConfig)
 
-
     def Process(self, currentDirPath: str, toolConfig: ToolConfig, localToolConfig: LocalToolConfig) -> None:
         self.Log.PrintTitle()
 
-        envDict = {}  # type: Dict[str,str]
+        envDict: dict[str, str] = {}
         if localToolConfig.Env is None:
             for key, value in os.environ.items():
                 envDict[key] = value
         else:
             for entry in localToolConfig.Env:
                 if entry not in os.environ:
-                    strError = "Could not locate environment variable: {0}".format(entry)
+                    strError = f"Could not locate environment variable: {entry}"
                     if not localToolConfig.AllowNotFound:
                         raise Exception(strError)
                     else:
@@ -115,14 +114,13 @@ class ToolFlowDumpEnv(AToolAppFlow):
         if localToolConfig.Enclose:
             print(CaptureEnvironmentBlock.End)
 
+
 class ToolAppFlowFactory(AToolAppFlowFactory):
-    #def __init__(self) -> None:
+    # def __init__(self) -> None:
     #    pass
 
-
     def GetTitle(self) -> str:
-        return 'FslBuildDumpEnv'
-
+        return "FslBuildDumpEnv"
 
     def GetToolCommonArgConfig(self) -> ToolCommonArgConfig:
         argConfig = ToolCommonArgConfig()
@@ -134,11 +132,10 @@ class ToolAppFlowFactory(AToolAppFlowFactory):
         argConfig.AddBuildVariants = False
         return argConfig
 
-
-    def AddCustomArguments(self, parser: argparse.ArgumentParser, toolConfig: ToolConfig, userTag: Optional[object]) -> None:
-        parser.add_argument('--Env', default=DefaultValue.Env, help='Dump the given environment variables')
-        parser.add_argument('--Enclose', action='store_true', help='Add begin and end statements around the json')
-        parser.add_argument('--AllowNotFound', action='store_true', help='Not finding a environment variable does not cause a error')
+    def AddCustomArguments(self, parser: argparse.ArgumentParser, toolConfig: ToolConfig, userTag: object | None) -> None:
+        parser.add_argument("--Env", default=DefaultValue.Env, help="Dump the given environment variables")
+        parser.add_argument("--Enclose", action="store_true", help="Add begin and end statements around the json")
+        parser.add_argument("--AllowNotFound", action="store_true", help="Not finding a environment variable does not cause a error")
 
     def Create(self, toolAppContext: ToolAppContext) -> AToolAppFlow:
         return ToolFlowDumpEnv(toolAppContext)

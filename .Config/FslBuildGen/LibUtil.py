@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright 2018 NXP
 # All rights reserved.
 #
@@ -29,16 +28,16 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-class LibUtil(object):
+
+class LibUtil:
     @staticmethod
     def ToUnixLibName(libName: str) -> str:
-        if libName.endswith('.a'):
+        if libName.endswith(".a"):
             libName = libName[:-2]
-        elif libName.endswith('.so'):
+        elif libName.endswith(".so"):
             libName = libName[:-3]
-        if libName.startswith('lib'):
+        if libName.startswith("lib"):
             libName = libName[3:]
         return libName
-

@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright 2023 NXP
 # All rights reserved.
 #
@@ -29,16 +28,15 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-from typing import List
-from typing import Tuple
 import difflib
 
-class MatchUtil(object):
+
+class MatchUtil:
     @staticmethod
-    def BuildCandidateStringList(found: str, candidates: List[str], candidateCount: int = 5) -> List[str]:
-        ratingList = [] # type: List[Tuple[str, float]]
+    def BuildCandidateStringList(found: str, candidates: list[str], candidateCount: int = 5) -> list[str]:
+        ratingList: list[tuple[str, float]] = []
 
         # Build a possible candidate array
         for candidate in candidates:
@@ -51,7 +49,7 @@ class MatchUtil(object):
         return candidateList[0:candidateCount]
 
     @staticmethod
-    def BuildCandidateListString(found: str, candidates: List[str], candidateCount: int = 5) -> str:
+    def BuildCandidateListString(found: str, candidates: list[str], candidateCount: int = 5) -> str:
         candidateList = MatchUtil.BuildCandidateStringList(found, candidates, candidateCount)
-        topCandidates = ", ".join(candidateList) # type: str
+        topCandidates: str = ", ".join(candidateList)
         return topCandidates

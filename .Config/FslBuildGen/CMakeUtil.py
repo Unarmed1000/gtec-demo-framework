@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright 2018 NXP
 # All rights reserved.
 #
@@ -29,14 +28,15 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-from typing import List
 import subprocess
+
 from FslBuildGen import IOUtil
 from FslBuildGen.PlatformUtil import PlatformUtil
 
-class CMakeVersion(object):
+
+class CMakeVersion:
     def __init__(self, major: int, minor: int, build: int) -> None:
         super().__init__()
         self.Major = major
@@ -46,44 +46,52 @@ class CMakeVersion(object):
     def __eq__(self, rhs: object) -> bool:
         if not isinstance(rhs, CMakeVersion):
             return NotImplemented
-        return (self.Major == rhs.Major and self.Minor == rhs.Minor and self.Build == rhs.Build)
+        return self.Major == rhs.Major and self.Minor == rhs.Minor and self.Build == rhs.Build
 
     def __ne__(self, rhs: object) -> bool:
         if not isinstance(rhs, CMakeVersion):
             return NotImplemented
-        return (self.Major != rhs.Major or self.Minor != rhs.Minor or self.Build != rhs.Build)
+        return self.Major != rhs.Major or self.Minor != rhs.Minor or self.Build != rhs.Build
 
-    def __lt__(self, rhs: 'CMakeVersion') -> bool:
-        return ((self.Major < rhs.Major) or
-                (self.Major == rhs.Major and self.Minor < rhs.Minor) or
-                (self.Major == rhs.Major and self.Minor == rhs.Minor and self.Build < rhs.Build))
+    def __lt__(self, rhs: "CMakeVersion") -> bool:
+        return (
+            (self.Major < rhs.Major)
+            or (self.Major == rhs.Major and self.Minor < rhs.Minor)
+            or (self.Major == rhs.Major and self.Minor == rhs.Minor and self.Build < rhs.Build)
+        )
 
-    def __le__(self, rhs: 'CMakeVersion') -> bool:
-        return ((self.Major < rhs.Major) or
-                (self.Major == rhs.Major and self.Minor < rhs.Minor) or
-                (self.Major == rhs.Major and self.Minor == rhs.Minor and self.Build <= rhs.Build))
+    def __le__(self, rhs: "CMakeVersion") -> bool:
+        return (
+            (self.Major < rhs.Major)
+            or (self.Major == rhs.Major and self.Minor < rhs.Minor)
+            or (self.Major == rhs.Major and self.Minor == rhs.Minor and self.Build <= rhs.Build)
+        )
 
-    def __gt__(self, rhs: 'CMakeVersion') -> bool:
-        return ((self.Major > rhs.Major) or
-                (self.Major == rhs.Major and self.Minor > rhs.Minor) or
-                (self.Major == rhs.Major and self.Minor == rhs.Minor and self.Build > rhs.Build))
+    def __gt__(self, rhs: "CMakeVersion") -> bool:
+        return (
+            (self.Major > rhs.Major)
+            or (self.Major == rhs.Major and self.Minor > rhs.Minor)
+            or (self.Major == rhs.Major and self.Minor == rhs.Minor and self.Build > rhs.Build)
+        )
 
-    def __ge__(self, rhs: 'CMakeVersion') -> bool:
-        return ((self.Major > rhs.Major) or
-                (self.Major == rhs.Major and self.Minor > rhs.Minor) or
-                (self.Major == rhs.Major and self.Minor == rhs.Minor and self.Build >= rhs.Build))
+    def __ge__(self, rhs: "CMakeVersion") -> bool:
+        return (
+            (self.Major > rhs.Major)
+            or (self.Major == rhs.Major and self.Minor > rhs.Minor)
+            or (self.Major == rhs.Major and self.Minor == rhs.Minor and self.Build >= rhs.Build)
+        )
 
     def __str__(self) -> str:
-        return "{0}.{1}.{2}".format(self.Major, self.Minor, self.Build)
+        return f"{self.Major}.{self.Minor}.{self.Build}"
 
 
-class CMakeUtil(object):
+class CMakeUtil:
     @staticmethod
     def GetMinimumVersion() -> CMakeVersion:
         return CMakeVersion(3, 10, 2)
 
     @staticmethod
-    def RunCommand(cmd: List[str]) -> str:
+    def RunCommand(cmd: list[str]) -> str:
         try:
             with subprocess.Popen(cmd, stderr=subprocess.STDOUT, stdout=subprocess.PIPE, universal_newlines=True) as proc:
                 verStr = proc.stdout.read().strip() if proc.stdout is not None else ""
@@ -94,9 +102,8 @@ class CMakeUtil(object):
                 if not isinstance(verStr, str):
                     raise Exception("Failed to get CMake version (2).")
                 return verStr
-        except OSError:
-            raise Exception("Failed to get CMake version (3)")
-
+        except OSError as ex:
+            raise Exception("Failed to get CMake version (3)") from ex
 
     @staticmethod
     def _FindNonDigit(strWithNumber: str) -> int:
@@ -115,14 +122,14 @@ class CMakeUtil(object):
         version = CMakeUtil.RunCommand(cmd)
         versionString = "cmake version "
         if not version.startswith(versionString):
-            raise Exception("Failed to parse cmake version string '{0}'".format(versionString))
-        version = version[len(versionString):]
-        indexEnd = version.find('\n')
+            raise Exception(f"Failed to parse cmake version string '{versionString}'")
+        version = version[len(versionString) :]
+        indexEnd = version.find("\n")
         indexEnd = indexEnd if indexEnd >= 0 else len(version)
         version = version[0:indexEnd].strip()
-        parsedVersion = version.split('.')
+        parsedVersion = version.split(".")
         if len(parsedVersion) < 3:
-            raise Exception("Failed to parse cmake version string: '{0}'".format(version))
+            raise Exception(f"Failed to parse cmake version string: '{version}'")
         while len(parsedVersion) < 3:
             parsedVersion.append("0")
 

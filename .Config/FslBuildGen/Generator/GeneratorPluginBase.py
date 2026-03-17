@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright 2017 NXP
 # All rights reserved.
 #
@@ -28,20 +28,21 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-from typing import Optional
+
 from FslBuildGen.Generator.GeneratorCMakeConfig import GeneratorCMakeConfig
 
-class GeneratorPluginBase(object):
+
+class GeneratorPluginBase:
     def __init__(self, platformName: str) -> None:
         super().__init__()
-        self.PlatformName = platformName  # type: str
-        self.PlatformId = platformName.lower()  # type: str
-        self.ToolVersion = 0  # type: int
+        self.PlatformName: str = platformName
+        self.PlatformId: str = platformName.lower()
+        self.ToolVersion: int = 0
         self.IsCMake = False
         # self.IsCMakeAndroid = False
-        self.CMakeConfig = None     # type: Optional[GeneratorCMakeConfig]     # This is the configuration that should be used by cmake (recipe builders and normal)
+        self.CMakeConfig: GeneratorCMakeConfig | None = None  # This is the configuration that should be used by cmake (recipe builders and normal)
 
-    def SYS_SetCMakeConfig(self, cmakeConfig: Optional[GeneratorCMakeConfig]) -> None:
+    def SYS_SetCMakeConfig(self, cmakeConfig: GeneratorCMakeConfig | None) -> None:
         self.CMakeConfig = cmakeConfig

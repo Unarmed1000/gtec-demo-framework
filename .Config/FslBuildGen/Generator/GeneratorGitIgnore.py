@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright (c) 2016 Freescale Semiconductor, Inc.
 # All rights reserved.
 #
@@ -29,20 +29,19 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-from typing import Dict
-from typing import List
-from typing import Optional
-from typing import Set
+
 from FslBuildGen import IOUtil
 from FslBuildGen.DataTypes import PackageType
 from FslBuildGen.Generator.GeneratorBase import GeneratorBase
 from FslBuildGen.Packages.Package import Package
 
+
 class GeneratorGitIgnore(GeneratorBase):
-    def __init__(self, configSDKConfigTemplatePath: str, configDisableWrite: bool, packages: List[Package],
-                 platformName: str, activeGenerator: GeneratorBase) -> None:
+    def __init__(
+        self, configSDKConfigTemplatePath: str, configDisableWrite: bool, packages: list[Package], platformName: str, activeGenerator: GeneratorBase
+    ) -> None:
         super().__init__()
 
         virtualTemplate = IOUtil.TryReadFile(IOUtil.Join(configSDKConfigTemplatePath, "Template_gitignore_virtual.txt"))
@@ -62,30 +61,27 @@ class GeneratorGitIgnore(GeneratorBase):
             else:
                 self.__GenerateLibraryBuildFile(configDisableWrite, package, platformName, virtualTemplate, generatorIgnoreDict)
 
-
-    def __GenerateLibraryBuildFile(self, configDisableWrite: bool, package: Package,
-                                   platformName: str, template: Optional[str],
-                                   generatorIgnoreDict: Dict[str, Set[str]]) -> None:
+    def __GenerateLibraryBuildFile(
+        self, configDisableWrite: bool, package: Package, platformName: str, template: str | None, generatorIgnoreDict: dict[str, set[str]]
+    ) -> None:
         if template is None or package.AbsolutePath is None:
             return
         template = template.replace("##PROJECT_NAME##", package.Name)
         targetFilePath = IOUtil.Join(package.AbsolutePath, ".gitignore")
-
 
         targetContent = IOUtil.TryReadFile(targetFilePath)
 
         targetArray = self.__ToArray(targetContent)
         templateArray = self.__ToArray(template)
 
-        templateArray = [('/' + entry if not entry.startswith('/') else entry) for entry in templateArray if len(entry) > 0]
-
+        templateArray = [("/" + entry if not entry.startswith("/") else entry) for entry in templateArray if len(entry) > 0]
 
         targetArray = [_f for _f in targetArray if _f]
         templateArray = [_f for _f in templateArray if _f]
 
         # Add the missing dependencies
         for entry in templateArray:
-            if not entry in targetArray:
+            if entry not in targetArray:
                 targetArray.append(entry)
 
         # Allow each generator to add things that should be ignored
@@ -95,43 +91,42 @@ class GeneratorGitIgnore(GeneratorBase):
                 # Remove the old legacy entries
                 if entry in targetArray:
                     targetArray.remove(entry)
-                entry = '/' + entry if not entry.startswith('/') and len(entry) > 0 else entry
-                if not entry in targetArray:
+                entry = "/" + entry if not entry.startswith("/") and len(entry) > 0 else entry
+                if entry not in targetArray:
                     targetArray.append(entry)
 
         # Remove stuff
-        #remove = []
-        #legacyName = package.ShortName + '.'
-        #for entry in targetArray:
+        # remove = []
+        # legacyName = package.ShortName + '.'
+        # for entry in targetArray:
         #    if entry.startswith(legacyName) or entry == package.ShortName:
         #        remove.append(entry)
-        #for entry in remove:
+        # for entry in remove:
         #    targetArray.remove(entry)
 
-        #if 'GNUmakefile_yocto' in targetArray:
+        # if 'GNUmakefile_yocto' in targetArray:
         #    targetArray.remove('GNUmakefile_yocto')
 
         # sort the content to ensure that there are minimal changes
 
-        targetArraySet = set()  # type: Set[str]
+        targetArraySet: set[str] = set()
 
         # ensure no duplicates exist
         finalTargetArray = []
         for entry in targetArray:
-            if len(entry) > 0 and entry != '/' and entry not in targetArraySet:
+            if len(entry) > 0 and entry != "/" and entry not in targetArraySet:
                 targetArraySet.add(entry)
                 finalTargetArray.append(entry)
 
         finalTargetArray.sort()
 
-        finalContent = "\n".join(finalTargetArray) + '\n'
+        finalContent = "\n".join(finalTargetArray) + "\n"
 
         if not configDisableWrite:
             IOUtil.WriteFileIfChanged(targetFilePath, finalContent)
 
-
-    def __ToArray(self, content: Optional[str]) -> List[str]:
+    def __ToArray(self, content: str | None) -> list[str]:
         if content is None:
             return []
-        content = content.replace('\r', '')
-        return content.split('\n')
+        content = content.replace("\r", "")
+        return content.split("\n")

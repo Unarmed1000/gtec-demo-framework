@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright 2017 NXP
 # All rights reserved.
 #
@@ -29,19 +28,19 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
 
-class ResolvedPath(object):
+class ResolvedPath:
     def __init__(self, sourcePath: str, resolvedPath: str) -> None:
         super().__init__()
-        self.SourcePath = sourcePath                # type: str
-        self.ResolvedPath = resolvedPath            # type: str
-        self.ResolvedPathEx = resolvedPath + '/'    # type: str
+        self.SourcePath: str = sourcePath
+        self.ResolvedPath: str = resolvedPath
+        self.ResolvedPathEx: str = resolvedPath + "/"
 
         # setup common id's
-        self.SourcePathId = sourcePath.lower()      # type: str
-        self.ResolvedPathId = resolvedPath.lower()  # type: str
+        self.SourcePathId: str = sourcePath.lower()
+        self.ResolvedPathId: str = resolvedPath.lower()
 
     def __str__(self) -> str:
         return self.ResolvedPath

@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright 2017 NXP
 # All rights reserved.
 #
@@ -29,37 +28,40 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-#from typing import Dict
-from typing import List
-from typing import Optional
-#from typing import Union
+# from typing import Dict
+
+# from typing import Union
 from FslBuildGen.Build.BuildVariantConfigUtil import BuildVariantConfigUtil
+from FslBuildGen.Build.DataTypes import CommandType
 from FslBuildGen.Build.ForAllConfig import ForAllConfig
 from FslBuildGen.BuildConfig.UserSetVariables import UserSetVariables
-from FslBuildGen.Build.DataTypes import CommandType
 from FslBuildGen.ExternalVariantConstraints import ExternalVariantConstraints
-#from FslBuildGen.DataTypes import BuildVariantConfig
+
+# from FslBuildGen.DataTypes import BuildVariantConfig
 from FslBuildGen.Generator.GeneratorPluginBase2 import GeneratorPluginBase2
 from FslBuildGen.Version import Version
-#from FslBuildGen.PackageFilters import PackageFilters
-#from FslBuildGen.QualifiedRequirementExtensionName import QualifiedRequirementExtensionName
-#from FslBuildGen.SharedGeneration import ToolAddedVariant
+
+# from FslBuildGen.PackageFilters import PackageFilters
+# from FslBuildGen.QualifiedRequirementExtensionName import QualifiedRequirementExtensionName
+# from FslBuildGen.SharedGeneration import ToolAddedVariant
 
 
-class BuildConfigRecord(object):
-    def __init__(self,
-                 toolVersion: Version,
-                 platformName: str,
-                 externalVariantConstraints: ExternalVariantConstraints,
-                 userSetVariables: UserSetVariables,
-                 buildCommand: CommandType,
-                 buildCommandArgs: List[str],
-                 buildArgs: List[str],
-                 forAllConfig: Optional[ForAllConfig],
-                 generator: Optional[GeneratorPluginBase2],
-                 buildThreads: int) -> None:
+class BuildConfigRecord:
+    def __init__(
+        self,
+        toolVersion: Version,
+        platformName: str,
+        externalVariantConstraints: ExternalVariantConstraints,
+        userSetVariables: UserSetVariables,
+        buildCommand: CommandType,
+        buildCommandArgs: list[str],
+        buildArgs: list[str],
+        forAllConfig: ForAllConfig | None,
+        generator: GeneratorPluginBase2 | None,
+        buildThreads: int,
+    ) -> None:
         super().__init__()
         self.ToolVersion = toolVersion
         self.PlatformName = platformName

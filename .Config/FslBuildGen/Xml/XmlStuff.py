@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright (c) 2014 Freescale Semiconductor, Inc.
 # All rights reserved.
 #
@@ -29,53 +29,53 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-from typing import Dict
-from typing import List
-from typing import Optional
-#import copy
-#import os
-#import os.path
+# import copy
+# import os
+# import os.path
 import xml.etree.ElementTree as ET
-#from FslBuildGen import IOUtil
-from FslBuildGen import PackageConfig
-from FslBuildGen import Util
-from FslBuildGen.Log import Log
-from FslBuildGen.DataTypes import OptimizationType
-#from FslBuildGen.DataTypes import PackageCreationYearString
-#from FslBuildGen.DataTypes import PackageLanguage
-#from FslBuildGen.DataTypes import PackageRequirementTypeString
-from FslBuildGen.DataTypes import PackageString
-#from FslBuildGen.DataTypes import PackageType
-from FslBuildGen.DataTypes import VariantType
-#from FslBuildGen.Exceptions import FileNotFoundException
-#from FslBuildGen.Exceptions import PackageMissingRequiredIncludeDirectoryException
-#from FslBuildGen.Exceptions import PackageMissingRequiredSourceDirectoryException
-#from FslBuildGen.Exceptions import UnsupportedException
-#from FslBuildGen.Exceptions import UsageErrorException
+
+# from FslBuildGen import IOUtil
+from FslBuildGen import PackageConfig, Util
+
+# from FslBuildGen.DataTypes import PackageCreationYearString
+# from FslBuildGen.DataTypes import PackageLanguage
+# from FslBuildGen.DataTypes import PackageRequirementTypeString
+# from FslBuildGen.DataTypes import PackageType
+from FslBuildGen.DataTypes import OptimizationType, PackageString, VariantType
+
+# from FslBuildGen.Exceptions import FileNotFoundException
+# from FslBuildGen.Exceptions import PackageMissingRequiredIncludeDirectoryException
+# from FslBuildGen.Exceptions import PackageMissingRequiredSourceDirectoryException
+# from FslBuildGen.Exceptions import UnsupportedException
+# from FslBuildGen.Exceptions import UsageErrorException
 from FslBuildGen.Exceptions import VariantOptionNameCollisionException
-from FslBuildGen.Xml.Exceptions import XmlException
-#from FslBuildGen.Xml.Exceptions import XmlException2
-#from FslBuildGen.Xml.Exceptions import BuildCustomizationAlreadyDefinedException
-#from FslBuildGen.Xml.Exceptions import DefaultValueAlreadyDefinedException
-#from FslBuildGen.Xml.Exceptions import PlatformAlreadyDefinedException
-#from FslBuildGen.Xml.Exceptions import UnknownBuildCustomizationException
-#from FslBuildGen.Xml.Exceptions import UnknownDefaultValueException
-from FslBuildGen.Xml.Exceptions import XmlFormatException
-#from FslBuildGen.Xml.Exceptions import XmlInvalidRootElement
-from FslBuildGen.Xml.Exceptions import XmlInvalidVirtualVariantOptionException
-#from FslBuildGen.Xml.Exceptions import XmlRequirementNameException
-#from FslBuildGen.Xml.Exceptions import XmlRequirementStringException
-#from FslBuildGen.Xml.Exceptions import XmlRequirementTypeException
-#from FslBuildGen.Xml.Exceptions import XmlRequirementTypeExtensionRequiresAValidExtendFieldException
-#from FslBuildGen.Xml.Exceptions import XmlUnsupportedPackageType
-from FslBuildGen.Xml.Exceptions import XmlUnsupportedPlatformException
-from FslBuildGen.Xml.Exceptions import XmlUnsupportedVariantNameException
-from FslBuildGen.Xml.Exceptions import XmlUnsupportedVariantOptionNameException
-from FslBuildGen.Xml.Exceptions import XmlUnsupportedVirtualVariantNameException
-from FslBuildGen.Xml.Exceptions import XmlUnsupportedVirtualVariantOptionNameException
+from FslBuildGen.Log import Log
 from FslBuildGen.Xml import FakeXmlElementFactory
+
+# from FslBuildGen.Xml.Exceptions import XmlException2
+# from FslBuildGen.Xml.Exceptions import BuildCustomizationAlreadyDefinedException
+# from FslBuildGen.Xml.Exceptions import DefaultValueAlreadyDefinedException
+# from FslBuildGen.Xml.Exceptions import PlatformAlreadyDefinedException
+# from FslBuildGen.Xml.Exceptions import UnknownBuildCustomizationException
+# from FslBuildGen.Xml.Exceptions import UnknownDefaultValueException
+# from FslBuildGen.Xml.Exceptions import XmlInvalidRootElement
+# from FslBuildGen.Xml.Exceptions import XmlRequirementNameException
+# from FslBuildGen.Xml.Exceptions import XmlRequirementStringException
+# from FslBuildGen.Xml.Exceptions import XmlRequirementTypeException
+# from FslBuildGen.Xml.Exceptions import XmlRequirementTypeExtensionRequiresAValidExtendFieldException
+# from FslBuildGen.Xml.Exceptions import XmlUnsupportedPackageType
+from FslBuildGen.Xml.Exceptions import (
+    XmlException,
+    XmlFormatException,
+    XmlInvalidVirtualVariantOptionException,
+    XmlUnsupportedPlatformException,
+    XmlUnsupportedVariantNameException,
+    XmlUnsupportedVariantOptionNameException,
+    XmlUnsupportedVirtualVariantNameException,
+    XmlUnsupportedVirtualVariantOptionNameException,
+)
 from FslBuildGen.Xml.Flavor.XmlGenFileFlavor import XmlGenFileFlavor
 from FslBuildGen.Xml.Flavor.XmlGenFileFlavorExtension import XmlGenFileFlavorExtension
 from FslBuildGen.Xml.XmlBase import XmlBase
@@ -84,16 +84,17 @@ from FslBuildGen.Xml.XmlExperimentalRecipe import XmlExperimentalRecipe
 from FslBuildGen.Xml.XmlGenFileDependency import XmlGenFileDependency
 from FslBuildGen.Xml.XmlGenFileRequirement import XmlGenFileRequirement
 
-class DefaultValueName(object):
+
+class DefaultValueName:
     DEFAULT_PLATFORM_Supported = "Default.Platform.Supported"
 
 
-class LocalPackageDefaultValues(object):
+class LocalPackageDefaultValues:
     Platform_Supported = True
 
 
 class XmlGenFileImportTemplate(XmlBase):
-    __AttribName = 'Name'
+    __AttribName = "Name"
 
     def __init__(self, log: Log, xmlElement: ET.Element) -> None:
         super().__init__(log, xmlElement)
@@ -102,7 +103,7 @@ class XmlGenFileImportTemplate(XmlBase):
 
 
 class XmlGenFileVariantOption(XmlBase2):
-    __AttribName = 'Name'
+    __AttribName = "Name"
 
     def __init__(self, log: Log, xmlElement: ET.Element, ownerPackageName: str) -> None:
         super().__init__(log, xmlElement)
@@ -112,9 +113,9 @@ class XmlGenFileVariantOption(XmlBase2):
 
 
 class XmlGenFileVariant(XmlBase):
-    __AttribName = 'Name'
-    __AttribExtend = 'Extend'
-    __AttribType = 'Type'
+    __AttribName = "Name"
+    __AttribExtend = "Extend"
+    __AttribType = "Type"
 
     def __init__(self, log: Log, xmlElement: ET.Element, ownerPackageName: str) -> None:
         super().__init__(log, xmlElement)
@@ -122,13 +123,12 @@ class XmlGenFileVariant(XmlBase):
         self.Name = self._ReadAttrib(xmlElement, self.__AttribName)
         self.IntroducedByPackageName = ownerPackageName
         self.AllowExtend = self._ReadBoolAttrib(xmlElement, self.__AttribExtend, False)
-        elementType = self._ReadAttrib(xmlElement, self.__AttribType, 'Normal')
+        elementType = self._ReadAttrib(xmlElement, self.__AttribType, "Normal")
         self.Options = self.__GetXMLVariantOptions(xmlElement, ownerPackageName)
         self.Type = self.__ExtractType(elementType)
-        self.OptionDict = self.__BuildOptionDict()  # type: Dict[str, XmlGenFileVariantOption]
+        self.OptionDict: dict[str, XmlGenFileVariantOption] = self.__BuildOptionDict()
         self.__ValidateVariantName()
         self.__ValidateOptionNames()
-
 
     def __ValidateVariantName(self) -> None:
         if self.Type == VariantType.Normal:
@@ -139,7 +139,6 @@ class XmlGenFileVariant(XmlBase):
                 raise XmlUnsupportedVirtualVariantNameException(self.XMLElement, self.Name)
         else:
             raise XmlException(self.XMLElement, "Unknown variant type")
-
 
     def __ValidateOptionNames(self) -> None:
         if self.Type == VariantType.Normal:
@@ -154,48 +153,53 @@ class XmlGenFileVariant(XmlBase):
         else:
             raise XmlException(self.XMLElement, "Unknown variant type")
 
-
     def __ExtractType(self, variantType: str) -> VariantType:
-        if variantType == 'Normal':
+        if variantType == "Normal":
             return VariantType.Normal
-        elif variantType == 'Virtual':
+        elif variantType == "Virtual":
             return VariantType.Virtual
         else:
-            raise XmlException(self.XMLElement, "Unknown variant type: '{0}' expected: Normal, Virtual".format(variantType))
+            raise XmlException(self.XMLElement, f"Unknown variant type: '{variantType}' expected: Normal, Virtual")
 
-
-    def __BuildOptionDict(self) -> Dict[str, XmlGenFileVariantOption]:
-        optionDict = {} # type: Dict[str, XmlGenFileVariantOption]
-        optionNameSet = {}  # type: Dict[str, str]
+    def __BuildOptionDict(self) -> dict[str, XmlGenFileVariantOption]:
+        optionDict: dict[str, XmlGenFileVariantOption] = {}
+        optionNameSet: dict[str, str] = {}
         for option in self.Options:
             optionDict[option.Name] = option
             key = option.Name.lower()
-            if not key in optionNameSet:
+            if key not in optionNameSet:
                 optionNameSet[key] = option.Name
             else:
                 raise VariantOptionNameCollisionException(optionNameSet[key], option.Name)
         return optionDict
 
-
-    def __GetXMLVariantOptions(self, elem: ET.Element, ownerPackageName: str) -> List[XmlGenFileVariantOption]:
+    def __GetXMLVariantOptions(self, elem: ET.Element, ownerPackageName: str) -> list[XmlGenFileVariantOption]:
         options = []
         if elem is not None:
             for child in elem:
-                if child.tag == 'Option':
+                if child.tag == "Option":
                     options.append(XmlGenFileVariantOption(self.Log, child, ownerPackageName))
         options.sort(key=lambda s: s.Name.lower())
         return options
 
 
 class XmlGenFilePlatform(XmlBase2):
-    __AttribName = 'Name'
-    __AttribProjectId = 'ProjectId'
-    __AttribSupported = 'Supported'
+    __AttribName = "Name"
+    __AttribProjectId = "ProjectId"
+    __AttribSupported = "Supported"
 
-    def __init__(self, log: Log, xmlElement: ET.Element, defaultValues: LocalPackageDefaultValues,
-                 requirements: List[XmlGenFileRequirement], dependencies: List[XmlGenFileDependency], flavors: List[XmlGenFileFlavor],
-                 flavorExtensions: List[XmlGenFileFlavorExtension], variants: List[XmlGenFileVariant],
-                 experimentalRecipe: Optional[XmlExperimentalRecipe]) -> None:
+    def __init__(
+        self,
+        log: Log,
+        xmlElement: ET.Element,
+        defaultValues: LocalPackageDefaultValues,
+        requirements: list[XmlGenFileRequirement],
+        dependencies: list[XmlGenFileDependency],
+        flavors: list[XmlGenFileFlavor],
+        flavorExtensions: list[XmlGenFileFlavorExtension],
+        variants: list[XmlGenFileVariant],
+        experimentalRecipe: XmlExperimentalRecipe | None,
+    ) -> None:
         super().__init__(log, xmlElement)
         self._CheckAttributes({self.__AttribName, self.__AttribProjectId, self.__AttribSupported})
         self.Name = self._ReadAttrib(xmlElement, self.__AttribName)
@@ -208,17 +212,21 @@ class XmlGenFilePlatform(XmlBase2):
         self.ProjectId = self._TryReadAttrib(xmlElement, self.__AttribProjectId)
         self.Supported = self._ReadBoolAttrib(xmlElement, self.__AttribSupported, defaultValues.Platform_Supported)
 
-        #self.DirectVariantDependencyUnion = self.__CreateVariantDependencyUnion(variants)
+        # self.DirectVariantDependencyUnion = self.__CreateVariantDependencyUnion(variants)
 
-        if((not PackageString.PLATFORM_SEPARATOR in self.Name) and not self.Name in PackageConfig.APPROVED_PLATFORM_NAMES and self.Name != PackageString.PLATFORM_WILDCARD):
+        if (
+            (PackageString.PLATFORM_SEPARATOR not in self.Name)
+            and self.Name not in PackageConfig.APPROVED_PLATFORM_NAMES
+            and self.Name != PackageString.PLATFORM_WILDCARD
+        ):
             raise XmlUnsupportedPlatformException(xmlElement, self.Name)
         # Wrong place to check this.
         # We need to know what type the project file is and we also need to know
         # if the target environment is windows
-        #if self.Name == PackageConfig.PlatformNameString.WINDOWS and self.ProjectId == None:
+        # if self.Name == PackageConfig.PlatformNameString.WINDOWS and self.ProjectId == None:
         #    raise XmlMissingWindowsVisualStudioProjectIdException(xmlElement)
 
-    #def __CreateVariantDependencyUnion(self, variants):
+    # def __CreateVariantDependencyUnion(self, variants):
     #    res = []
     #    if variants != None:
     #        for variant in variants:
@@ -232,20 +240,19 @@ class XmlGenFilePlatform(XmlBase2):
 
 
 class FakeXmlGenFilePlatform(XmlGenFilePlatform):
-    def __init__(self, log: Log, platformName: str,
-                 defaultValues: LocalPackageDefaultValues) -> None:
+    def __init__(self, log: Log, platformName: str, defaultValues: LocalPackageDefaultValues) -> None:
         fakeXmlElement = FakeXmlElementFactory.CreateWithName("Platform", platformName)
         super().__init__(log, fakeXmlElement, defaultValues, [], [], [], [], [], None)
 
 
 class XmlGenFileBuildCustomization(XmlBase):
-    __AttribName = 'Name'
+    __AttribName = "Name"
 
     def __init__(self, log: Log, xmlElement: ET.Element) -> None:
         super().__init__(log, xmlElement)
         self._CheckAttributes({self.__AttribName})
         self.Name = xmlElement.tag
-        self.ValueString = self._ReadAttrib(xmlElement, 'Value')
+        self.ValueString = self._ReadAttrib(xmlElement, "Value")
 
     def GetValueAsInt(self) -> int:
         raise Exception("XmlGenFileBuildCustomization is not a int")
@@ -261,7 +268,7 @@ class XmlGenFileBuildCustomization_Optimization(XmlGenFileBuildCustomization):
         elif self.ValueString == "Full":
             self.Value = OptimizationType.Full
         else:
-            raise XmlFormatException("Unknown optimization type '{0}' : '{1}'".format(self.ValueString, self.Name))
+            raise XmlFormatException(f"Unknown optimization type '{self.ValueString}' : '{self.Name}'")
 
     def GetValueAsInt(self) -> int:
         return self.Value

@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright 2020 NXP
 # All rights reserved.
 #
@@ -29,25 +28,26 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-from typing import Dict
-from typing import List
-from typing import Optional
+
 from FslBuildGen.Engine.Resolver.PreResolvePackageResult import PreResolvePackageResult
 from FslBuildGen.Packages.PackageInstanceName import PackageInstanceName
 
-#def GetPackageFromFilename(topLevelPackage: Package, filename: str) -> Package:
+# def GetPackageFromFilename(topLevelPackage: Package, filename: str) -> Package:
 #    for entry in topLevelPackage.ResolvedAllDependencies:
 #        if entry.Package.GenFile is not None and entry.Package.GenFile.PackageFile is not None and entry.Package.GenFile.PackageFile.AbsoluteFilePath == filename:
 #            return entry.Package
 #    raise Exception("Could not find package for '{0}'".format(filename))
 
-def TryGetPackageListFromFilenames(allPackages: List[PreResolvePackageResult], requestedFiles: Optional[List[str]], ignoreNotFound: bool) -> Optional[List[PreResolvePackageResult]]:
+
+def TryGetPackageListFromFilenames(
+    allPackages: list[PreResolvePackageResult], requestedFiles: list[str] | None, ignoreNotFound: bool
+) -> list[PreResolvePackageResult] | None:
     if requestedFiles is None:
         return None
 
-    filenameToPackagesDict = {}  # type: Dict [str,List[PreResolvePackageResult]]
+    filenameToPackagesDict: dict[str, list[PreResolvePackageResult]] = {}
     for entry in allPackages:
         if entry.SourcePackage.TraceContext.PackageFile is not None:
             sourcePackageFile = entry.SourcePackage.TraceContext.PackageFile.AbsoluteFilePath
@@ -56,13 +56,13 @@ def TryGetPackageListFromFilenames(allPackages: List[PreResolvePackageResult], r
             else:
                 filenameToPackagesDict[sourcePackageFile].append(entry)
 
-    uniqueDict = {} # type: Dict[PackageInstanceName, PreResolvePackageResult]
+    uniqueDict: dict[PackageInstanceName, PreResolvePackageResult] = {}
     for file in requestedFiles:
         if file in filenameToPackagesDict:
             filePackageList = filenameToPackagesDict[file]
             for filePackage in filePackageList:
-                if not filePackage.SourcePackage.NameInfo.FullName in uniqueDict:
+                if filePackage.SourcePackage.NameInfo.FullName not in uniqueDict:
                     uniqueDict[filePackage.SourcePackage.NameInfo.FullName] = filePackage
         elif not ignoreNotFound:
-            raise Exception("Could not find package for '{0}'".format(file))
+            raise Exception(f"Could not find package for '{file}'")
     return list(uniqueDict.values())

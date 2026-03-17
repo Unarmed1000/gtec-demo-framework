@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright 2017 NXP
 # All rights reserved.
 #
@@ -29,12 +28,12 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-from typing import Dict
-from typing import Optional
+
 from FslBuildGen import IOUtil
-#from FslBuildGen.BuildExternal import CMakeTypes
+
+# from FslBuildGen.BuildExternal import CMakeTypes
 from FslBuildGen.BuildConfig.BuildVariables import BuildVariables
 from FslBuildGen.BuildExternal.RecipeBuilderSetup import RecipeBuilderSetup
 from FslBuildGen.Context.PlatformContext import PlatformContext
@@ -44,43 +43,51 @@ from FslBuildGen.Generator.GeneratorInfo import GeneratorInfo
 from FslBuildGen.Generator.GeneratorPlugin import GeneratorPlugin
 from FslBuildGen.Location.ResolvedPath import ResolvedPath
 from FslBuildGen.Log import Log
-#from FslBuildGen.PackageConfig import PlatformNameString
+
+# from FslBuildGen.PackageConfig import PlatformNameString
 from FslBuildGen.RecipeFilterManager import RecipeFilterManager
 from FslBuildGen.ToolConfigExperimental import ToolConfigExperimental
 
 
 class GeneratorContext(PlatformContext):
-    def __init__(self, log: Log, errorHelpManager: ErrorHelpManager, recipeFilterManager: RecipeFilterManager,
-                 experimental: Optional[ToolConfigExperimental], generator: GeneratorPlugin, variableContext: VariableContext) -> None:
+    def __init__(
+        self,
+        log: Log,
+        errorHelpManager: ErrorHelpManager,
+        recipeFilterManager: RecipeFilterManager,
+        experimental: ToolConfigExperimental | None,
+        generator: GeneratorPlugin,
+        variableContext: VariableContext,
+    ) -> None:
         if generator.CMakeConfig is None:
             raise Exception("Invalid generator")
 
         recipeBuilderSetup = None
         allowDownloads = False
         if experimental is not None:
-            targetLocation = ResolvedPath(experimental.DefaultThirdPartyInstallDirectory.DynamicName,
-                                          experimental.DefaultThirdPartyInstallDirectory.ResolvedPath)
+            targetLocation = ResolvedPath(
+                experimental.DefaultThirdPartyInstallDirectory.DynamicName, experimental.DefaultThirdPartyInstallDirectory.ResolvedPath
+            )
             installReadonlySource = experimental.DefaultThirdPartyInstallReadonlyCacheDirectory
-            readonlyCachePath = None if installReadonlySource is None else installReadonlySource.ResolvedPath  # type: Optional[str]
+            readonlyCachePath: str | None = None if installReadonlySource is None else installReadonlySource.ResolvedPath
             recipeBuilderSetup = RecipeBuilderSetup(targetLocation, readonlyCachePath)
             if IOUtil.TryGetEnvironmentVariable(experimental.DisableDownloadEnv) is not None:
                 allowDownloads = False
-                log.LogPrint("Downloads disabled since the environment variable {0} was defined".format(experimental.DisableDownloadEnv))
+                log.LogPrint(f"Downloads disabled since the environment variable {experimental.DisableDownloadEnv} was defined")
             elif experimental.AllowDownloads:
                 allowDownloads = True
             else:
                 log.LogPrint("Downloads disabled since the project has it disabled by default")
 
-        validVariableDict = {}      # type: Dict[str, object]
+        validVariableDict: dict[str, object] = {}
         validVariableDict[BuildVariables.PlatformName] = generator.PlatformName
         validVariableDict[BuildVariables.IsCMakeBuild] = generator.IsCMake
         validVariableDict[BuildVariables.ProjectDefaultTemplate] = variableContext.ValidVariables.ProjectDefaultTemplate
 
         generatorInfo = GeneratorInfo(generator.IsCMake, generator.CMakeConfig.AllowFindPackage, validVariableDict, variableContext)
-        super().__init__(log, errorHelpManager, generator.PlatformName, generator.PlatformName, generatorInfo, generator.CMakeConfig,
-                         recipeBuilderSetup)
+        super().__init__(log, errorHelpManager, generator.PlatformName, generator.PlatformName, generatorInfo, generator.CMakeConfig, recipeBuilderSetup)
 
-        #allowDownload=True, disableDownloadEnv=None
+        # allowDownload=True, disableDownloadEnv=None
 
         self.Log = log
         self.Generator = generator

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright (c) 2014 Freescale Semiconductor, Inc.
 # All rights reserved.
 #
@@ -29,9 +29,9 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-from typing import Optional
+
 from FslBuildGen import IOUtil
 from FslBuildGen.Exceptions import UsageErrorException
 from FslBuildGen.PackagePath import PackagePath
@@ -39,19 +39,18 @@ from FslBuildGen.ToolConfig import ToolConfigPackageLocation
 
 
 class PackageFile(PackagePath):
-    def __init__(self, filename: str, strPackageName: Optional[str], packageLocation: ToolConfigPackageLocation) -> None:
+    def __init__(self, filename: str, strPackageName: str | None, packageLocation: ToolConfigPackageLocation) -> None:
         filename = IOUtil.NormalizePath(filename)
         if not IOUtil.IsAbsolutePath(filename):
             raise UsageErrorException()
 
-        rootRelativePath = filename[len(packageLocation.ResolvedPathEx):]
+        rootRelativePath = filename[len(packageLocation.ResolvedPathEx) :]
         super().__init__(IOUtil.GetDirectoryName(rootRelativePath), packageLocation, False)
 
         self.Filename = IOUtil.GetFileName(filename)
-        self.RootRelativeFilePath = rootRelativePath # The full root relative path to the file
-        self.AbsoluteFilePath = filename  # type: str
-        self.PackageName = self.__DeterminePackageNameFromRelativeName(self.RootRelativeDirPath) if strPackageName is None else strPackageName # type: str
-
+        self.RootRelativeFilePath = rootRelativePath  # The full root relative path to the file
+        self.AbsoluteFilePath: str = filename
+        self.PackageName: str = self.__DeterminePackageNameFromRelativeName(self.RootRelativeDirPath) if strPackageName is None else strPackageName
 
     def __DeterminePackageNameFromRelativeName(self, relativeDirPath: str) -> str:
-        return relativeDirPath.replace('/', '.')
+        return relativeDirPath.replace("/", ".")

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright (c) 2014 Freescale Semiconductor, Inc.
 # All rights reserved.
 #
@@ -29,18 +29,18 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-from typing import List
+
 from FslBuildGen.Exceptions import PackageHasMultipleDefinitionsException
 from FslBuildGen.Xml.XmlGenFile import XmlGenFile
 
 
 class PackageHasMultipleDefinitions2Exception(PackageHasMultipleDefinitionsException):
-    def __init__(self, xmlGenFileList: List[XmlGenFile]) -> None:
-        locationList = [] # type: List[str]
+    def __init__(self, xmlGenFileList: list[XmlGenFile]) -> None:
+        locationList: list[str] = []
         for genFile in xmlGenFileList:
             foundPath = genFile.PackageFile.AbsoluteDirPath if genFile.PackageFile is not None else "Unknown path"
             locationList.append(foundPath)
-        msg = "Package '{0}' defined by '{1}'".format(xmlGenFileList[0].Name, ", ".join(locationList))
+        msg = "Package '{}' defined by '{}'".format(xmlGenFileList[0].Name, ", ".join(locationList))
         super().__init__(msg)

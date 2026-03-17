@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright 2020 NXP
 # All rights reserved.
 #
@@ -29,35 +28,40 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-from typing import List
-from typing import Set
-from enum import Enum
-from FslBuildGen.DataTypes import PackageInstanceType
-from FslBuildGen.DataTypes import PackageType
+
+from FslBuildGen.DataTypes import PackageInstanceType, PackageType
 from FslBuildGen.Engine.PackageFlavorSelections import PackageFlavorSelections
 from FslBuildGen.Engine.Resolver.PackageName import PackageName
 from FslBuildGen.Engine.Resolver.ResolvedPackage import ResolvedPackage
 from FslBuildGen.Engine.Resolver.ResolvedPackageTemplate import ResolvedPackageTemplate
 from FslBuildGen.Engine.Unresolved.UnresolvedPackageDependency import UnresolvedPackageDependency
 
-class ResolvedPackageInstanceDependency(object):
-    def __init__(self, package: 'ResolvedPackageInstance', sourceDependency: UnresolvedPackageDependency) -> None:
+
+class ResolvedPackageInstanceDependency:
+    def __init__(self, package: "ResolvedPackageInstance", sourceDependency: UnresolvedPackageDependency) -> None:
         super().__init__()
         self.Package = package
         self.SourceDependency = sourceDependency
 
     def __str__(self) -> str:
-        return "Name:{0}".format(self.Package.Name)
+        return f"Name:{self.Package.Name}"
 
     def __repr__(self) -> str:
-        return "ResolvedPackageInstanceDependency({0})".format(self.Package)
+        return f"ResolvedPackageInstanceDependency({self.Package})"
 
 
 class ResolvedPackageInstance(ResolvedPackage):
-    def __init__(self, name: PackageName, packageType: PackageType, directDependencies: List[ResolvedPackageInstanceDependency],
-                 flavorSelections: PackageFlavorSelections, flavorTemplate: ResolvedPackageTemplate, instanceType: PackageInstanceType) -> None:
+    def __init__(
+        self,
+        name: PackageName,
+        packageType: PackageType,
+        directDependencies: list[ResolvedPackageInstanceDependency],
+        flavorSelections: PackageFlavorSelections,
+        flavorTemplate: ResolvedPackageTemplate,
+        instanceType: PackageInstanceType,
+    ) -> None:
         super().__init__(name, packageType)
 
         if len(directDependencies) > 0:
@@ -87,12 +91,12 @@ class ResolvedPackageInstance(ResolvedPackage):
         return True
 
     @staticmethod
-    def __SanityCheckDependencies(directDependencies: List[ResolvedPackageInstanceDependency], name: PackageName) -> None:
+    def __SanityCheckDependencies(directDependencies: list[ResolvedPackageInstanceDependency], name: PackageName) -> None:
         if len(directDependencies) <= 0:
-            uniqueNames = set() # type: Set[PackageName]
+            uniqueNames: set[PackageName] = set()
             for entry in directDependencies:
                 if entry.Package.Name == name:
-                    raise Exception("Can not add dependency to self '{0}'".format(entry.Package.Name))
+                    raise Exception(f"Can not add dependency to self '{entry.Package.Name}'")
                 if entry.Package.Name in uniqueNames:
-                    raise Exception("Duplicate dependency '{0}'".format(entry.Package.Name))
+                    raise Exception(f"Duplicate dependency '{entry.Package.Name}'")
                 uniqueNames.add(entry.Package.Name)

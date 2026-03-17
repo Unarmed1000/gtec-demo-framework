@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright 2017 NXP
 # All rights reserved.
 #
@@ -29,11 +28,10 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-from typing import List
-from typing import Optional
 from enum import Enum
+
 
 class CommandType(Enum):
     Build = 0
@@ -45,7 +43,7 @@ class CommandType(Enum):
     ConfigIfChanged = 6
 
     @staticmethod
-    def FromString(value: str) -> 'CommandType':
+    def FromString(value: str) -> "CommandType":
         if value == "build":
             return CommandType.Build
         elif value == "clean":
@@ -60,18 +58,17 @@ class CommandType(Enum):
             return CommandType.Config
         elif value == "configIfChanged":
             return CommandType.ConfigIfChanged
-        raise Exception("Unsupported Command '{0}'".format(value))
+        raise Exception(f"Unsupported Command '{value}'")
 
     @staticmethod
-    def ToString(value: 'CommandType') -> str:
+    def ToString(value: "CommandType") -> str:
         result = CommandType.TryToString(value)
         if result is not None:
             return result
-        raise Exception("Unsupported Command '{0}'".format(value))
-
+        raise Exception(f"Unsupported Command '{value}'")
 
     @staticmethod
-    def TryToString(value: 'CommandType') -> Optional[str]:
+    def TryToString(value: "CommandType") -> str | None:
         if value == CommandType.Build:
             return "build"
         elif value == CommandType.Clean:
@@ -89,6 +86,12 @@ class CommandType(Enum):
         return None
 
     @staticmethod
-    def AllStrings() -> List[str]:
-        return  [CommandType.ToString(CommandType.Build), CommandType.ToString(CommandType.Clean), CommandType.ToString(CommandType.Install),
-                 CommandType.ToString(CommandType.Open), CommandType.ToString(CommandType.Open2), CommandType.ToString(CommandType.Config)]
+    def AllStrings() -> list[str]:
+        return [
+            CommandType.ToString(CommandType.Build),
+            CommandType.ToString(CommandType.Clean),
+            CommandType.ToString(CommandType.Install),
+            CommandType.ToString(CommandType.Open),
+            CommandType.ToString(CommandType.Open2),
+            CommandType.ToString(CommandType.Config),
+        ]

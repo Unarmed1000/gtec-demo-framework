@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright 2017 NXP
 # All rights reserved.
 #
@@ -29,11 +29,10 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-from typing import Callable
-from typing import List
-from typing import Optional
+from collections.abc import Callable
+
 from FslBuildGen import IOUtil
 from FslBuildGen.Config import Config
 from FslBuildGen.ExternalVariantConstraints import ExternalVariantConstraints
@@ -43,19 +42,21 @@ from FslBuildGen.Template.TemplateFileRecord import TemplateFileRecord
 from FslBuildGen.Template.TemplateFileRecordManager import TemplateFileRecordManager
 
 
-class TemplateFileProcessor(object):
+class TemplateFileProcessor:
     def __init__(self, config: Config, platformName: str, genFileOnly: bool = False) -> None:
         super().__init__()
         self.GenFileOnly = genFileOnly
         self.Environment = TemplateEnvironment(config, platformName)
 
-
-    def Process(self, config: Config,
-                templateFileRecordManager: TemplateFileRecordManager,
-                dstPath: str,
-                package: Optional[Package],
-                externalVariantConstraints: Optional[ExternalVariantConstraints],
-                dstFilenameModifier: Optional[Callable[[str], str]] = None) -> None:
+    def Process(
+        self,
+        config: Config,
+        templateFileRecordManager: TemplateFileRecordManager,
+        dstPath: str,
+        package: Package | None,
+        externalVariantConstraints: ExternalVariantConstraints | None,
+        dstFilenameModifier: Callable[[str], str] | None = None,
+    ) -> None:
         if package is not None:
             if externalVariantConstraints is None:
                 raise Exception("Internal error")
@@ -67,11 +68,9 @@ class TemplateFileProcessor(object):
         self.__CopyFiles(config, dstPath, templateFileRecordManager.FilesToCopy)
         self.__CopyAndModifyFiles(config, dstPath, templateFileRecordManager.FilesToModify, dstFilenameModifier)
 
-
-    def __CopyAndModifyFiles(self, config: Config,
-                             dstPath: str,
-                             filesToModify: List[TemplateFileRecord],
-                             dstFilenameModifier: Optional[Callable[[str], str]]) -> None:
+    def __CopyAndModifyFiles(
+        self, config: Config, dstPath: str, filesToModify: list[TemplateFileRecord], dstFilenameModifier: Callable[[str], str] | None
+    ) -> None:
         for file in filesToModify:
             if not self.GenFileOnly or file.FileName == config.ToolConfig.GenFileName:
                 dstFilename = IOUtil.Join(dstPath, file.RelativeDestPath)
@@ -91,8 +90,7 @@ class TemplateFileProcessor(object):
                     IOUtil.SafeMakeDirs(dirName)
                     IOUtil.WriteFileIfChanged(dstFilename, content)
 
-
-    def __CopyFiles(self, config: Config, dstPath: str, filesToCopy: List[TemplateFileRecord]) -> None:
+    def __CopyFiles(self, config: Config, dstPath: str, filesToCopy: list[TemplateFileRecord]) -> None:
         for file in filesToCopy:
             if not self.GenFileOnly or file.FileName == config.ToolConfig.GenFileName:
                 dst = IOUtil.Join(dstPath, file.RelativeDestPath)

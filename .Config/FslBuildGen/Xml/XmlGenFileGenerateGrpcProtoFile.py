@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright 2022 NXP
 # All rights reserved.
 #
@@ -29,25 +29,25 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-from typing import List
-from typing import Optional
 import xml.etree.ElementTree as ET
+
 from FslBuildGen.DataTypes import GrpcServices
 from FslBuildGen.Log import Log
 from FslBuildGen.Xml.XmlBase import XmlBase
 
+
 class XmlGenFileGenerateGrpcProtoFile(XmlBase):
-    __AttribInclude = 'Include'
-    __AttribGrpcServices = 'GrpcServices'
+    __AttribInclude = "Include"
+    __AttribGrpcServices = "GrpcServices"
 
     def __init__(self, log: Log, xmlElement: ET.Element) -> None:
         super().__init__(log, xmlElement)
         self._CheckAttributes({self.__AttribInclude, self.__AttribGrpcServices})
         self.Include = self._ReadAttrib(xmlElement, self.__AttribInclude)
-        grpcServices =  self._TryReadAttrib(xmlElement, self.__AttribGrpcServices)  # type: Optional[str]
+        grpcServices: str | None = self._TryReadAttrib(xmlElement, self.__AttribGrpcServices)
         self.GrpcServices = self.__ParseGrpcServices(grpcServices)
 
-    def __ParseGrpcServices(self, value: Optional[str]) -> Optional[GrpcServices]:
+    def __ParseGrpcServices(self, value: str | None) -> GrpcServices | None:
         return GrpcServices.FromString(value) if value is not None else None

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright 2018 NXP
 # All rights reserved.
 #
@@ -29,18 +29,20 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-#from typing import List
+# from typing import List
 import xml.etree.ElementTree as ET
+
 from FslBuildGen.Log import Log
 from FslBuildGen.Xml.XmlBase import XmlBase
 
+
 class XmlClangTidyPlatformCompiler(XmlBase):
-    __AttribFlags = 'Flags'
+    __AttribFlags = "Flags"
 
     def __init__(self, log: Log, xmlElement: ET.Element) -> None:
         super().__init__(log, xmlElement)
         self._CheckAttributes({self.__AttribFlags})
         flags = self._ReadAttrib(xmlElement, self.__AttribFlags)
-        self.Flags = flags.split(';')
+        self.Flags = flags.split(";")

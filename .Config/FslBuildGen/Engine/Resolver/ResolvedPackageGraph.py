@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright 2020 NXP
 # All rights reserved.
 #
@@ -29,18 +28,17 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-from typing import Dict
-from typing import List
-from typing import Optional
-from typing import Union
 from enum import Enum
+
 from FslBuildGen.Engine.PackageFlavorSelections import PackageFlavorSelections
+from FslBuildGen.Engine.Resolver.PackageName import PackageName
 from FslBuildGen.Engine.Resolver.ResolvedPackage import ResolvedPackage
 from FslBuildGen.Engine.Resolver.ResolvedPackageInstance import ResolvedPackageInstance
-#from FslBuildGen.Engine.Resolver.PackageDependency import PackageDependency
-from FslBuildGen.Engine.Resolver.PackageName import PackageName
+
+# from FslBuildGen.Engine.Resolver.PackageDependency import PackageDependency
+
 
 class EdgeType(Enum):
     # A edge between instances
@@ -53,8 +51,8 @@ class EdgeType(Enum):
     TemplateFlavor = 3
 
 
-class EdgeRecord(object):
-    def __init__(self, node: 'ResolvedPackageGraphNode', edgeType: EdgeType, constraint: Optional[PackageFlavorSelections], desc: Optional[str]) -> None:
+class EdgeRecord:
+    def __init__(self, node: "ResolvedPackageGraphNode", edgeType: EdgeType, constraint: PackageFlavorSelections | None, desc: str | None) -> None:
         super().__init__()
         self.Node = node
         self.Constraint = constraint
@@ -62,13 +60,13 @@ class EdgeRecord(object):
         self.Desc = desc
 
 
-class ResolvedPackageGraphNode(object):
+class ResolvedPackageGraphNode:
     def __init__(self, source: ResolvedPackage) -> None:
         self.Source = source
-        self.From = [] # type: List['ResolvedPackageGraphNode']
-        self.To = [] # type: List[EdgeRecord]
+        self.From: list[ResolvedPackageGraphNode] = []
+        self.To: list[EdgeRecord] = []
 
-    def AddEdge(self, toNode: 'ResolvedPackageGraphNode', edgeType: EdgeType, constraint: Optional[PackageFlavorSelections], desc: Optional[str]) -> None:
+    def AddEdge(self, toNode: "ResolvedPackageGraphNode", edgeType: EdgeType, constraint: PackageFlavorSelections | None, desc: str | None) -> None:
         if toNode == self:
             raise Exception("Can't add edge to self")
 
@@ -77,23 +75,24 @@ class ResolvedPackageGraphNode(object):
             toNode.From.append(self)
 
     @staticmethod
-    def __FindIndex(edgeRecords: List[EdgeRecord], toNode: 'ResolvedPackageGraphNode', edgeType: EdgeType, constraint: Optional[PackageFlavorSelections], desc: Optional[str]) -> int:
+    def __FindIndex(
+        edgeRecords: list[EdgeRecord], toNode: "ResolvedPackageGraphNode", edgeType: EdgeType, constraint: PackageFlavorSelections | None, desc: str | None
+    ) -> int:
         for index, x in enumerate(edgeRecords):
             if x.Node == toNode and x.Type == edgeType and x.Constraint == constraint and x.Desc == desc:
                 return index
         return -1
 
 
-
-class ResolvedPackageGraph(object):
+class ResolvedPackageGraph:
     def __init__(self) -> None:
         super().__init__()
-        self.__uniqueNodeDict = dict() # type: Dict[ResolvedPackage, ResolvedPackageGraphNode]
-        self.__instanceNodeDict = dict() # type: Dict[PackageName, ResolvedPackageGraphNode]
-        self.__nodes = [] # type: List[ResolvedPackageGraphNode]
+        self.__uniqueNodeDict: dict[ResolvedPackage, ResolvedPackageGraphNode] = {}
+        self.__instanceNodeDict: dict[PackageName, ResolvedPackageGraphNode] = {}
+        self.__nodes: list[ResolvedPackageGraphNode] = []
         self.HasExternalContraints = False
 
-    def DebugNodes(self) -> List[ResolvedPackageGraphNode]:
+    def DebugNodes(self) -> list[ResolvedPackageGraphNode]:
         return self.__nodes
 
     def AddNode(self, package: ResolvedPackage) -> ResolvedPackageGraphNode:
@@ -104,15 +103,18 @@ class ResolvedPackageGraph(object):
             self.__instanceNodeDict[package.Name] = node
         return node
 
-
-    def AddEdge(self, fromObj: Union[ResolvedPackageGraphNode, ResolvedPackage],
-                toObj: Union[ResolvedPackageGraphNode, ResolvedPackage], edgeType: EdgeType,
-                constraint: Optional[PackageFlavorSelections], desc: Optional[str]) -> None:
-
+    def AddEdge(
+        self,
+        fromObj: ResolvedPackageGraphNode | ResolvedPackage,
+        toObj: ResolvedPackageGraphNode | ResolvedPackage,
+        edgeType: EdgeType,
+        constraint: PackageFlavorSelections | None,
+        desc: str | None,
+    ) -> None:
         if isinstance(fromObj, ResolvedPackage):
             if fromObj not in self.__uniqueNodeDict:
                 toName = toObj.Name if isinstance(toObj, ResolvedPackage) else toObj.Source.Name
-                raise Exception("fromObj: {0} not found (To:{1})".format(fromObj.Name, toName))
+                raise Exception(f"fromObj: {fromObj.Name} not found (To:{toName})")
             fromNode = self.__uniqueNodeDict[fromObj]
         else:
             fromNode = fromObj
@@ -120,15 +122,15 @@ class ResolvedPackageGraph(object):
         if isinstance(toObj, ResolvedPackage):
             if toObj not in self.__uniqueNodeDict:
                 fromName = fromObj.Name if isinstance(fromObj, ResolvedPackage) else fromObj.Source.Name
-                raise Exception("toObj: {0} not found (From:{1})".format(toObj.Name, fromName))
+                raise Exception(f"toObj: {toObj.Name} not found (From:{fromName})")
             toNode = self.__uniqueNodeDict[toObj]
         else:
             toNode = toObj
 
         fromNode.AddEdge(toNode, edgeType, constraint, desc)
 
-    def FindNodesWithNoIncomingDependencies(self) -> List[ResolvedPackageGraphNode]:
+    def FindNodesWithNoIncomingDependencies(self) -> list[ResolvedPackageGraphNode]:
         return [entry for entry in self.__nodes if len(entry.From) <= 0]
 
-    def FindNodesWithNoOutgoingDependencies(self) -> List[ResolvedPackageGraphNode]:
+    def FindNodesWithNoOutgoingDependencies(self) -> list[ResolvedPackageGraphNode]:
         return [entry for entry in self.__nodes if len(entry.To) <= 0]

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright (c) 2016 Freescale Semiconductor, Inc.
 # All rights reserved.
 #
@@ -29,37 +29,32 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-from typing import Dict
-from typing import List
-from typing import Set
-import itertools
+
 from FslBuildGen import IOUtil
 from FslBuildGen.Generator.Report.GeneratorExecutableReport import GeneratorExecutableReport
 from FslBuildGen.Generator.Report.GeneratorVariableReport import GeneratorVariableReport
 from FslBuildGen.Generator.Report.ReportVariableFormatter import ReportVariableFormatter
-from FslBuildGen.Generator.VariantNameHelper import VariantNameHelper
-from FslBuildGen.Log import Log
 from FslBuildGen.Packages.Package import Package
 
 
-def SafeAddEntry(rGitIgnoreDict: Dict[str, Set[str]], package: Package, entry: str) -> None:
-    if not package.Name in rGitIgnoreDict:
+def SafeAddEntry(rGitIgnoreDict: dict[str, set[str]], package: Package, entry: str) -> None:
+    if package.Name not in rGitIgnoreDict:
         rGitIgnoreDict[package.Name] = set()
     rGitIgnoreDict[package.Name].add(entry)
 
 
-def AddPathIfInPackageRoot(rGitIgnoreDict: Dict[str, Set[str]], package: Package, pathToFile: str) -> None:
+def AddPathIfInPackageRoot(rGitIgnoreDict: dict[str, set[str]], package: Package, pathToFile: str) -> None:
     pathDir = IOUtil.GetDirectoryName(pathToFile)
     if pathDir == package.AbsolutePath:
         fileName = IOUtil.GetFileName(pathToFile)
         SafeAddEntry(rGitIgnoreDict, package, fileName)
 
 
-def AddFromBuildReport(rGitIgnoreDict: Dict[str, Set[str]], package: Package,
-                       executableReport: GeneratorExecutableReport,
-                       variableReport: GeneratorVariableReport) -> None:
+def AddFromBuildReport(
+    rGitIgnoreDict: dict[str, set[str]], package: Package, executableReport: GeneratorExecutableReport, variableReport: GeneratorVariableReport
+) -> None:
     if executableReport is None or variableReport is None:
         return
 

@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright 2018 NXP
 # All rights reserved.
 #
@@ -29,34 +28,34 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-from typing import Optional
-from typing import cast
 import os
+from typing import cast
 
-if os.name == 'nt':
+if os.name == "nt":
     import winreg
 
-class WindowsRegistryHelper(object):
+
+class WindowsRegistryHelper:
     @staticmethod
-    def TryReadRegistryLocalMachineStringValue(registryKey: str, valueName: str) -> Optional[str]:
-        if os.name != 'nt':
+    def TryReadRegistryLocalMachineStringValue(registryKey: str, valueName: str) -> str | None:
+        if os.name != "nt":
             return None
         try:
             with winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE, registryKey) as regKey:
                 val, valType = winreg.QueryValueEx(regKey, valueName)
                 return cast(str, val) if valType == winreg.REG_SZ else None
-        except (EnvironmentError, WindowsError):
+        except OSError:
             return None
 
     @staticmethod
-    def TryReadRegistryCurrentUserStringValue(registryKey: str, valueName: str) -> Optional[str]:
-        if os.name != 'nt':
+    def TryReadRegistryCurrentUserStringValue(registryKey: str, valueName: str) -> str | None:
+        if os.name != "nt":
             return None
         try:
             with winreg.OpenKey(winreg.HKEY_CURRENT_USER, registryKey) as regKey:
                 val, valType = winreg.QueryValueEx(regKey, valueName)
                 return cast(str, val) if valType == winreg.REG_SZ else None
-        except EnvironmentError:
+        except OSError:
             return None

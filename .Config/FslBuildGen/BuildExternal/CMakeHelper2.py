@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright 2017 NXP
 # All rights reserved.
 #
@@ -29,17 +28,19 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-from typing import Optional
-from FslBuildGen.Generator.GeneratorPluginBase import GeneratorPluginBase
+
 from FslBuildGen.BuildExternal import CMakeHelper
+from FslBuildGen.Generator.GeneratorPluginBase import GeneratorPluginBase
 
-def TryDetermineCMakeGenerator(generator: GeneratorPluginBase) -> Optional[str]:
+
+def TryDetermineCMakeGenerator(generator: GeneratorPluginBase) -> str | None:
     return CMakeHelper.TryGetPlatformDefaultCMakeGenerator(generator.PlatformName, generator.ToolVersion)
+
 
 def DetermineCMakeGenerator(generator: GeneratorPluginBase) -> str:
     result = TryDetermineCMakeGenerator(generator)
-    if not result is None:
+    if result is not None:
         return result
-    raise Exception("CMake generator name could not be determined for this platform '{0}".format(generator.PlatformName))
+    raise Exception(f"CMake generator name could not be determined for this platform '{generator.PlatformName}")

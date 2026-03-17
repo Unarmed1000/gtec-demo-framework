@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright 2018 NXP
 # All rights reserved.
 #
@@ -29,14 +28,12 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-from typing import List
-from typing import Optional
 
-class VariableReport(object):
-    def __init__(self, name: str, options: List[str], linkTargetName: Optional[str]) -> None:
+class VariableReport:
+    def __init__(self, name: str, options: list[str], linkTargetName: str | None) -> None:
         super().__init__()
-        self.Name = name                        # type: str
-        self.Options = options                  # type: List[str]
-        self.LinkTargetName = linkTargetName    # type: Optional[str]
+        self.Name: str = name
+        self.Options: list[str] = options
+        self.LinkTargetName: str | None = linkTargetName

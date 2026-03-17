@@ -1,6 +1,6 @@
-﻿#!/usr/bin/env python3
+#!/usr/bin/env python3
 
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright 2020 NXP
 # All rights reserved.
 #
@@ -29,14 +29,14 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
 from FslBuildGen.Generator.Report.GeneratorVariableReport import GeneratorVariableReport
 from FslBuildGen.Generator.Report.ReportVariableFormatter import ReportVariableFormatter
 from FslBuildGen.ToolConfigProjectInfo import ToolConfigProjectInfo
 
 
-class BuildUtil(object):
+class BuildUtil:
     @staticmethod
     def GetBuildDir(projectInfo: ToolConfigProjectInfo, buildDir: str) -> str:
         variableReport = GeneratorVariableReport()
@@ -45,4 +45,4 @@ class BuildUtil(object):
 
     @staticmethod
     def AddCustomVariables(variableReport: GeneratorVariableReport, projectInfo: ToolConfigProjectInfo) -> None:
-        variableReport.Add('TopProjectRoot', [projectInfo.TopProjectContext.Location.ResolvedPath])
+        variableReport.Add("TopProjectRoot", [projectInfo.TopProjectContext.Location.ResolvedPath])

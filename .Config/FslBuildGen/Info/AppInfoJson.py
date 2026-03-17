@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright 2017 NXP
 # All rights reserved.
 #
@@ -29,60 +28,61 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-#from typing import Any
-from typing import cast
-from typing import Dict
-from typing import List
-from typing import Optional
-#from typing import Union
+# from typing import Any
+# from typing import Union
 import json
+from typing import cast
+
 from FslBuildGen import IOUtil
 from FslBuildGen.DataTypes import PackageType
 from FslBuildGen.Generator.Report.Datatypes import FormatStringEnvironmentVariableResolveMethod
 from FslBuildGen.Info.AppInfo import AppInfo
-from FslBuildGen.Info.RequirementInfo import RequirementInfo
-from FslBuildGen.Info.RequirementInfo import RequirementType
-from FslBuildGen.Info.RequirementFeatureInfo import RequirementFeatureInfo
-from FslBuildGen.Info.RequirementExtensionInfo import RequirementExtensionInfo
+from FslBuildGen.Info.PackageGeneratorReportInfo import (
+    GeneratorVariableReportInfo,
+    PackageGeneratorExecutableReportInfo,
+    PackageGeneratorReportInfo,
+    PackageGeneratorVariableReportInfo,
+)
 from FslBuildGen.Info.PackageInfo import PackageInfo
-from FslBuildGen.Info.PackageGeneratorReportInfo import PackageGeneratorReportInfo
-from FslBuildGen.Info.PackageGeneratorReportInfo import PackageGeneratorExecutableReportInfo
-from FslBuildGen.Info.PackageGeneratorReportInfo import PackageGeneratorVariableReportInfo
-from FslBuildGen.Info.PackageGeneratorReportInfo import GeneratorVariableReportInfo
+from FslBuildGen.Info.RequirementExtensionInfo import RequirementExtensionInfo
+from FslBuildGen.Info.RequirementFeatureInfo import RequirementFeatureInfo
+from FslBuildGen.Info.RequirementInfo import RequirementInfo, RequirementType
 from FslBuildGen.Log import Log
 
-class JsonRequirementKey(object):
+
+class JsonRequirementKey:
     Name = "Name"
     Type = "Type"
     Version = "Version"
     Extends = "Extends"
 
-class JsonPackageGeneratorExecutableReport(object):
+
+class JsonPackageGeneratorExecutableReport:
     UseAsRelative = "UseAsRelative"
     EnvironmentVariableResolveMethod = "EnvironmentVariableResolveMethod"
     ExeFormatString = "ExeFormatString"
     RunScript = "RunScript"
 
 
-class JsonPackageVariableReport(object):
+class JsonPackageVariableReport:
     Name = "Name"
     Options = "Options"
     LinkTargetName = "LinkTargetName"
 
 
-class JsonPackageGeneratorVariableReport(object):
+class JsonPackageGeneratorVariableReport:
     VariableReportList = "VariableReportList"
     DefaultOptions = "DefaultOptions"
 
 
-class JsonPackageGeneratorReport(object):
+class JsonPackageGeneratorReport:
     ExecutableReport = "ExecutableReport"
     VariableReport = "VariableReport"
 
 
-class JsonPackageKey(object):
+class JsonPackageKey:
     AllRequirements = "AllRequirements"
     Type = "Type"
     Supported = "Supported"
@@ -91,79 +91,78 @@ class JsonPackageKey(object):
     CreationYear = "CreationYear"
 
 
-class JsonRootKey(object):
+class JsonRootKey:
     PlatformName = "PlatformName"
     ResolvedPackageList = "ResolvedPackageList"
 
 
-def __TryReadDictStrAttrib(sourceDict: Dict[str, object], key: str, defaultValue: Optional[str] = None) -> Optional[str]:
-    """ Read the attrib if its available, else return defaultValue """
-    value = None if not key in sourceDict else sourceDict[key]  # type: Optional[object]
+def __TryReadDictStrAttrib(sourceDict: dict[str, object], key: str, defaultValue: str | None = None) -> str | None:
+    """Read the attrib if its available, else return defaultValue"""
+    value: object | None = sourceDict.get(key)
     if value is not None:
         if isinstance(value, str):
             return value
-        raise Exception("{0} expects a string value not '{1}' of type '{2}'".format(key, value, type(value)))
+        raise Exception(f"{key} expects a string value not '{value}' of type '{type(value)}'")
     elif defaultValue is not None:
         return defaultValue
     return None
 
 
-def __ReadDictStrAttrib(sourceDict: Dict[str, object], key: str, defaultValue: Optional[str] = None) -> str:
-    """ If the attrib is there we return it
-        if its not there and defaultValue is not None we return the default value.
-        if its not there and defaultValue is None we throw a exception.
+def __ReadDictStrAttrib(sourceDict: dict[str, object], key: str, defaultValue: str | None = None) -> str:
+    """If the attrib is there we return it
+    if its not there and defaultValue is not None we return the default value.
+    if its not there and defaultValue is None we throw a exception.
     """
-    value = None if not key in sourceDict else sourceDict[key]  # type: Optional[object]
+    value: object | None = sourceDict.get(key)
     if value is not None:
         if isinstance(value, str):
             return value
     elif defaultValue is not None:
         return defaultValue
-    raise Exception("{0} expects a string value not '{1}' of type '{2}'".format(key, value, type(value)))
+    raise Exception(f"{key} expects a string value not '{value}' of type '{type(value)}'")
 
 
-def __TryReadDictBoolAttrib(sourceDict: Dict[str, object], key: str, defaultValue: Optional[bool]) -> Optional[bool]:
-    """ Read the attrib if its available, else return defaultValue """
-    value = None if not key in sourceDict else sourceDict[key]  # type: Optional[object]
+def __TryReadDictBoolAttrib(sourceDict: dict[str, object], key: str, defaultValue: bool | None) -> bool | None:
+    """Read the attrib if its available, else return defaultValue"""
+    value: object | None = sourceDict.get(key)
     if value is not None:
         if isinstance(value, bool):
             return value
-        raise Exception("{0} expects a bool value of either 'true' or 'false' not '{1}' of type '{2}'".format(key, value, type(value)))
+        raise Exception(f"{key} expects a bool value of either 'true' or 'false' not '{value}' of type '{type(value)}'")
     elif defaultValue is not None:
         return defaultValue
     return None
 
 
-def __ReadDictBoolAttrib(sourceDict: Dict[str, object], key: str, defaultValue: Optional[bool] = None) -> bool:
-    """ If the attrib is there we return it
-        if its not there and defaultValue is not None we return the default value.
-        if its not there and defaultValue is None we throw a exception.
+def __ReadDictBoolAttrib(sourceDict: dict[str, object], key: str, defaultValue: bool | None = None) -> bool:
+    """If the attrib is there we return it
+    if its not there and defaultValue is not None we return the default value.
+    if its not there and defaultValue is None we throw a exception.
     """
-    value = None if not key in sourceDict else sourceDict[key]  # type: Optional[object]
+    value: object | None = sourceDict.get(key)
     if value is not None:
         if isinstance(value, bool):
             return value
     elif defaultValue is not None:
         return defaultValue
-    raise Exception("{0} expects a bool value of either 'true' or 'false' not '{1}' of type '{2}'".format(key, value, type(value)))
+    raise Exception(f"{key} expects a bool value of either 'true' or 'false' not '{value}' of type '{type(value)}'")
 
 
-
-def __ReadDictIntAttrib(sourceDict: Dict[str, object], key: str, defaultValue: Optional[int] = None) -> int:
-    """ If the attrib is there we return it
-        if its not there and defaultValue is not None we return the default value.
-        if its not there and defaultValue is None we throw a exception.
+def __ReadDictIntAttrib(sourceDict: dict[str, object], key: str, defaultValue: int | None = None) -> int:
+    """If the attrib is there we return it
+    if its not there and defaultValue is not None we return the default value.
+    if its not there and defaultValue is None we throw a exception.
     """
-    value = None if not key in sourceDict else sourceDict[key]  # type: Optional[object]
+    value: object | None = sourceDict.get(key)
     if value is not None:
         if isinstance(value, int):
             return value
     elif defaultValue is not None:
         return defaultValue
-    raise Exception("{0} expects a int value not '{1}' of type '{2}'".format(key, value, type(value)))
+    raise Exception(f"{key} expects a int value not '{value}' of type '{type(value)}'")
 
 
-def __ParseJsonStringList(log: Log, packageName: str, jsonList: List[object]) -> List[str]:
+def __ParseJsonStringList(log: Log, packageName: str, jsonList: list[object]) -> list[str]:
     if not isinstance(jsonList, list):
         raise Exception("Invalid file format")
 
@@ -171,10 +170,10 @@ def __ParseJsonStringList(log: Log, packageName: str, jsonList: List[object]) ->
         if not isinstance(jsonEntry, str):
             raise Exception("The list entries are expected to be strings")
 
-    return cast(List[str], jsonList)
+    return cast(list[str], jsonList)
 
 
-def __ParseRequirementInfo(log: Log, jsonRequirementDict: Dict[str, object]) -> RequirementInfo:
+def __ParseRequirementInfo(log: Log, jsonRequirementDict: dict[str, object]) -> RequirementInfo:
     name = __ReadDictStrAttrib(jsonRequirementDict, JsonRequirementKey.Name)
     strRequirementType = __ReadDictStrAttrib(jsonRequirementDict, JsonRequirementKey.Type)
     version = __ReadDictStrAttrib(jsonRequirementDict, JsonRequirementKey.Version, "")
@@ -186,24 +185,24 @@ def __ParseRequirementInfo(log: Log, jsonRequirementDict: Dict[str, object]) -> 
     elif requirementType == RequirementType.Extension:
         return RequirementExtensionInfo(name, version, extends)
 
-    log.LogPrintWarning("No special handling for requirement type: {0}, using default".format(strRequirementType))
+    log.LogPrintWarning(f"No special handling for requirement type: {strRequirementType}, using default")
     return RequirementInfo(name, requirementType, version, extends)
 
 
-def __ParseRequirementsInfo(log: Log, jsonList: List[Dict[str, object]]) -> List[RequirementInfo]:
+def __ParseRequirementsInfo(log: Log, jsonList: list[dict[str, object]]) -> list[RequirementInfo]:
     if not isinstance(jsonList, list):
         raise Exception("Invalid file format")
 
-    result = [] # type: List[RequirementInfo]
+    result: list[RequirementInfo] = []
     for dictEntry in jsonList:
         entry = __ParseRequirementInfo(log, dictEntry)
         result.append(entry)
     return result
 
 
-def __ParsePackageGeneratorExecutableReport(log: Log, packageName: str, jsonDict: Dict[str, object]) -> Optional[PackageGeneratorExecutableReportInfo]:
+def __ParsePackageGeneratorExecutableReport(log: Log, packageName: str, jsonDict: dict[str, object]) -> PackageGeneratorExecutableReportInfo | None:
     useAsRelative = __ReadDictBoolAttrib(jsonDict, JsonPackageGeneratorExecutableReport.UseAsRelative)
-    environmentVariableResolveMethod = __ReadDictIntAttrib(jsonDict, JsonPackageGeneratorExecutableReport.EnvironmentVariableResolveMethod)  # type: int
+    environmentVariableResolveMethod: int = __ReadDictIntAttrib(jsonDict, JsonPackageGeneratorExecutableReport.EnvironmentVariableResolveMethod)
     exeFormatString = __ReadDictStrAttrib(jsonDict, JsonPackageGeneratorExecutableReport.ExeFormatString)
     runScript = __TryReadDictStrAttrib(jsonDict, JsonPackageGeneratorExecutableReport.RunScript)
 
@@ -211,8 +210,7 @@ def __ParsePackageGeneratorExecutableReport(log: Log, packageName: str, jsonDict
     return PackageGeneratorExecutableReportInfo(useAsRelative, exeFormatString, runScript, convertedEnvironmentVariableResolveMethod)
 
 
-
-def __ParsePackageVariableReport(log: Log, packageName: str, jsonDict: Dict[str, object]) -> GeneratorVariableReportInfo:
+def __ParsePackageVariableReport(log: Log, packageName: str, jsonDict: dict[str, object]) -> GeneratorVariableReportInfo:
     name = __ReadDictStrAttrib(jsonDict, JsonPackageVariableReport.Name)
     linkTargetName = __TryReadDictStrAttrib(jsonDict, JsonPackageVariableReport.LinkTargetName)
 
@@ -227,8 +225,8 @@ def __ParsePackageVariableReport(log: Log, packageName: str, jsonDict: Dict[str,
     return GeneratorVariableReportInfo(name, options, linkTargetName)
 
 
-def __ParsePackageGeneratorVariableReport_VariableReportList(log: Log, packageName: str, jsonList: List[object]) -> List[GeneratorVariableReportInfo]:
-    resultList = [] # type: List[GeneratorVariableReportInfo]
+def __ParsePackageGeneratorVariableReport_VariableReportList(log: Log, packageName: str, jsonList: list[object]) -> list[GeneratorVariableReportInfo]:
+    resultList: list[GeneratorVariableReportInfo] = []
     for jsonEntry in jsonList:
         if not isinstance(jsonEntry, dict):
             raise Exception("Invalid file format")
@@ -237,16 +235,16 @@ def __ParsePackageGeneratorVariableReport_VariableReportList(log: Log, packageNa
     return resultList
 
 
-def __ParsePackageGeneratorVariableReport_DefaultOptions(log: Log, packageName: str, jsonDict: Dict[object, object]) -> Dict[str, int]:
+def __ParsePackageGeneratorVariableReport_DefaultOptions(log: Log, packageName: str, jsonDict: dict[object, object]) -> dict[str, int]:
     # do basic validation
     for key, value in jsonDict.items():
         if not isinstance(key, str) or not isinstance(value, int):
             errFormatStr = "The default options must be of the format: key=str, value=int. Key was '{0}' of type '{1}', value was '{2}' of type '{3}'"
             raise Exception(errFormatStr.format(key, type(key), value, type(value)))
-    return cast(Dict[str, int], jsonDict)
+    return cast(dict[str, int], jsonDict)
 
 
-def __ParsePackageGeneratorVariableReport(log: Log, packageName: str, jsonDict: Dict[str, object]) -> PackageGeneratorVariableReportInfo:
+def __ParsePackageGeneratorVariableReport(log: Log, packageName: str, jsonDict: dict[str, object]) -> PackageGeneratorVariableReportInfo:
     if JsonPackageGeneratorVariableReport.VariableReportList not in jsonDict:
         raise Exception("Invalid file format")
     if JsonPackageGeneratorVariableReport.DefaultOptions not in jsonDict:
@@ -266,17 +264,16 @@ def __ParsePackageGeneratorVariableReport(log: Log, packageName: str, jsonDict: 
     return PackageGeneratorVariableReportInfo(variableReportList, defaultOptions)
 
 
-def __ParsePackageGeneratorReport(log: Log, packageName: str, jsonDict: Dict[str, object]) -> Optional[PackageGeneratorReportInfo]:
+def __ParsePackageGeneratorReport(log: Log, packageName: str, jsonDict: dict[str, object]) -> PackageGeneratorReportInfo | None:
     if not isinstance(jsonDict, dict):
         raise Exception("Invalid file format")
 
-    executableReport = None  # type: Optional[PackageGeneratorExecutableReportInfo]
+    executableReport: PackageGeneratorExecutableReportInfo | None = None
     if JsonPackageGeneratorReport.ExecutableReport in jsonDict:
         jsonExecutableReportDict = jsonDict[JsonPackageGeneratorReport.ExecutableReport]
         if not isinstance(jsonExecutableReportDict, dict):
             raise Exception("Invalid file format")
         executableReport = __ParsePackageGeneratorExecutableReport(log, packageName, jsonExecutableReportDict)
-
 
     if JsonPackageGeneratorReport.VariableReport in jsonDict:
         jsonVariableReportDict = jsonDict[JsonPackageGeneratorReport.VariableReport]
@@ -287,8 +284,7 @@ def __ParsePackageGeneratorReport(log: Log, packageName: str, jsonDict: Dict[str
     return PackageGeneratorReportInfo(executableReport, variableReport)
 
 
-
-def __ParsePackage(log: Log, packageName: str, jsonPackageDict: Dict[str, object]) -> PackageInfo:
+def __ParsePackage(log: Log, packageName: str, jsonPackageDict: dict[str, object]) -> PackageInfo:
     jsonAllRequirements = jsonPackageDict[JsonPackageKey.AllRequirements]
 
     if not isinstance(jsonAllRequirements, list):
@@ -296,13 +292,13 @@ def __ParsePackage(log: Log, packageName: str, jsonPackageDict: Dict[str, object
     allRequirements = __ParseRequirementsInfo(log, jsonAllRequirements)
 
     strSourcePackageName = __ReadDictStrAttrib(jsonPackageDict, JsonPackageKey.SourcePackageName)
-    strCreationYear = __ReadDictStrAttrib(jsonPackageDict, JsonPackageKey.CreationYear)
+    __ReadDictStrAttrib(jsonPackageDict, JsonPackageKey.CreationYear)
     strPackageType = __ReadDictStrAttrib(jsonPackageDict, JsonPackageKey.Type)
     packageType = PackageType.FromString(strPackageType)
     supported = __ReadDictBoolAttrib(jsonPackageDict, JsonPackageKey.Supported, True)
 
-    jsonPackageGeneratorReport = None if JsonPackageKey.GeneratorReport not in jsonPackageDict else jsonPackageDict[JsonPackageKey.GeneratorReport]
-    generatorReport = None  # type: Optional[PackageGeneratorReportInfo]
+    jsonPackageGeneratorReport = jsonPackageDict.get(JsonPackageKey.GeneratorReport, None)
+    generatorReport: PackageGeneratorReportInfo | None = None
     if jsonPackageGeneratorReport is not None:
         if not isinstance(jsonPackageGeneratorReport, dict):
             raise Exception("Invalid file format")
@@ -311,7 +307,7 @@ def __ParsePackage(log: Log, packageName: str, jsonPackageDict: Dict[str, object
     return PackageInfo(packageName, strSourcePackageName, allRequirements, packageType, supported, generatorReport)
 
 
-def __ParseResolvedPackageList(log: Log, jsonResolvedPackageListDict: Dict[str, object]) -> List[PackageInfo]:
+def __ParseResolvedPackageList(log: Log, jsonResolvedPackageListDict: dict[str, object]) -> list[PackageInfo]:
     packageList = []
     for packageName, jsonPackageDict in jsonResolvedPackageListDict.items():
         if isinstance(jsonPackageDict, dict):
@@ -322,7 +318,7 @@ def __ParseResolvedPackageList(log: Log, jsonResolvedPackageListDict: Dict[str, 
     return packageList
 
 
-def TryLoad(log: Log, path: str) -> Optional[AppInfo]:
+def TryLoad(log: Log, path: str) -> AppInfo | None:
     content = IOUtil.TryReadFile(path)
     if content is None:
         return None
@@ -330,10 +326,10 @@ def TryLoad(log: Log, path: str) -> Optional[AppInfo]:
     try:
         jsonDict = json.loads(content)
 
-        platformName = jsonDict[JsonRootKey.PlatformName]  # type: str
+        platformName: str = jsonDict[JsonRootKey.PlatformName]
         resolvedPackageList = __ParseResolvedPackageList(log, jsonDict[JsonRootKey.ResolvedPackageList])
 
         return AppInfo.CreateAppInfo(platformName, resolvedPackageList)
     except Exception:
-        log.LogPrintWarning("Failed to parse json content in file: '{0}'".format(path))
+        log.LogPrintWarning(f"Failed to parse json content in file: '{path}'")
         raise

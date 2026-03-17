@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright (c) 2014, 2023 Freescale Semiconductor, Inc.
 # All rights reserved.
 #
@@ -29,66 +29,55 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-from typing import Dict
-from typing import List
-from typing import Optional
-from FslBuildGen import CMakeConfigUtil
-#from FslBuildGen import IOUtil
-from FslBuildGen import PackageConfig
-from FslBuildGen import PackageListUtil
-#from FslBuildGen import PluginSharedValues
+# from FslBuildGen import IOUtil
+
+from FslBuildGen import CMakeConfigUtil, PackageConfig, PackageListUtil
+
+# from FslBuildGen import PluginSharedValues
 from FslBuildGen.AndroidUtil import AndroidUtil
 from FslBuildGen.BuildConfig.BuildUtil import BuildUtil
 from FslBuildGen.BuildConfig.CMakeConfiguration import CMakeConfiguration
 from FslBuildGen.BuildConfig.UserSetVariables import UserSetVariables
 from FslBuildGen.CMakeUtil import CMakeVersion
-#from FslBuildGen.Config import Config
-#from FslBuildGen.Context.PlatformContext import PlatformContext
-from FslBuildGen.DataTypes import BuildVariantConfig
-from FslBuildGen.DataTypes import BuildVariantType
-from FslBuildGen.DataTypes import GeneratorType
-from FslBuildGen.DataTypes import PackageLanguage
-from FslBuildGen.DataTypes import VisualStudioVersion
-#from FslBuildGen.Exceptions import UnsupportedException
+
+# from FslBuildGen.Config import Config
+# from FslBuildGen.Context.PlatformContext import PlatformContext
+from FslBuildGen.DataTypes import BuildVariantConfig, BuildVariantType, GeneratorType, PackageLanguage, VisualStudioVersion
+
+# from FslBuildGen.Exceptions import UnsupportedException
 from FslBuildGen.Exceptions import UsageErrorException
 from FslBuildGen.ExternalVariantConstraints import ExternalVariantConstraints
-from FslBuildGen.Generator.GeneratorAndroidGradleCMake import GeneratorAndroidGradleCMake
-from FslBuildGen.Generator.GeneratorAndroidGradleCMake import GeneratorAndroidGradleCMakeUtil
+from FslBuildGen.Generator.GeneratorAndroidGradleCMake import GeneratorAndroidGradleCMake, GeneratorAndroidGradleCMakeUtil
 from FslBuildGen.Generator.GeneratorBase import GeneratorBase
-from FslBuildGen.Generator.GeneratorCMake import CMakeGeneratorMode
+from FslBuildGen.Generator.GeneratorCMake import CMakeGeneratorMode, GeneratorCMake
 from FslBuildGen.Generator.GeneratorCMakeConfig import GeneratorCMakeConfig
-from FslBuildGen.Generator.GeneratorGNUmakefile import GeneratorGNUmakefile
-from FslBuildGen.Generator.GeneratorGNUmakefile import GeneratorGNUmakefileUtil
-from FslBuildGen.Generator.GeneratorCMake import GeneratorCMake
-from FslBuildGen.Generator.GeneratorVC import GeneratorVC
-from FslBuildGen.Generator.GeneratorVC import GeneratorVCUtil
-from FslBuildGen.Generator.GeneratorVC import GeneratorVSConfig
-from FslBuildGen.Generator.GeneratorPlugin import GenerateContext
 from FslBuildGen.Generator.GeneratorConfig import GeneratorConfig
-from FslBuildGen.Generator.GeneratorPlugin import GeneratorPlugin
+from FslBuildGen.Generator.GeneratorGNUmakefile import GeneratorGNUmakefile, GeneratorGNUmakefileUtil
+from FslBuildGen.Generator.GeneratorPlugin import GenerateContext, GeneratorPlugin
 from FslBuildGen.Generator.GeneratorPluginBase2 import GeneratorVariant
+from FslBuildGen.Generator.GeneratorVC import GeneratorVC, GeneratorVCUtil, GeneratorVSConfig
 from FslBuildGen.Generator.GeneratorVSTemplateInfo import GeneratorVSTemplateInfo
 from FslBuildGen.Generator.PluginConfigContext import PluginConfigContext
-#from FslBuildGen.Generator.Report.GeneratorConfigReport import GeneratorConfigReport
+
+# from FslBuildGen.Generator.Report.GeneratorConfigReport import GeneratorConfigReport
 from FslBuildGen.Generator.Report.PackageGeneratorBuildExecutableInfo import PackageGeneratorBuildExecutableInfo
 from FslBuildGen.Generator.Report.PackageGeneratorConfigReport import PackageGeneratorConfigReport
 from FslBuildGen.Generator.Report.PackageGeneratorReport import PackageGeneratorReport
 from FslBuildGen.Generator.Report.TheGeneratorBuildReport import TheGeneratorBuildReport
 from FslBuildGen.Log import Log
+from FslBuildGen.PackageConfig import PlatformNameString
 from FslBuildGen.Packages.Package import Package
 from FslBuildGen.Packages.PackageRequirement import PackageRequirement
-from FslBuildGen.Version import Version
-from FslBuildGen.PackageConfig import PlatformNameString
-#from FslBuildGen.PackageLoader import PackageLoader
-#from FslBuildGen.PackageResolver import PackageResolver
-from FslBuildGen.SharedGeneration import AndroidABIOption
-from FslBuildGen.SharedGeneration import ToolAddedVariant
-from FslBuildGen.SharedGeneration import ToolAddedVariantConfigOption
-from FslBuildGen.SharedGeneration import GEN_MAGIC_VARIANT_ANDROID_ABI
+
+# from FslBuildGen.PackageLoader import PackageLoader
+# from FslBuildGen.PackageResolver import PackageResolver
+from FslBuildGen.SharedGeneration import GEN_MAGIC_VARIANT_ANDROID_ABI, AndroidABIOption, ToolAddedVariant, ToolAddedVariantConfigOption
 from FslBuildGen.Tool.UserCMakeConfig import UserCMakeConfig
-#from FslBuildGen.ToolConfigProjectInfo import ToolConfigProjectInfo
+from FslBuildGen.Version import Version
+
+# from FslBuildGen.ToolConfigProjectInfo import ToolConfigProjectInfo
 
 
 class GeneratorPluginAndroid(GeneratorPlugin):
@@ -100,38 +89,35 @@ class GeneratorPluginAndroid(GeneratorPlugin):
         self.AddGeneratorVariant(self.VariantAndroidABI)
         # self.IsCMakeAndroid = True
 
-    def __ContainsFeature(self, allFeatures: List[PackageRequirement], featureId: str) -> bool:
-        for feature in allFeatures:
-            if feature.Id == featureId:
-                return True
-        return False
+    def __ContainsFeature(self, allFeatures: list[PackageRequirement], featureId: str) -> bool:
+        return any(feature.Id == featureId for feature in allFeatures)
 
-
-    def DoGenerate(self, generateContext: GenerateContext) -> List[Package]:
-        generator = None # type: Optional[GeneratorBase]
+    def DoGenerate(self, generateContext: GenerateContext) -> list[Package]:
+        generator: GeneratorBase | None = None
 
         topLevelPackage = PackageListUtil.GetTopLevelPackage(generateContext.Packages)
 
         androidABIList = self.OptionAndroidABI_all
         androidABI = generateContext.Config.VariantConstraints.TryGetOptionStringByNameString(GEN_MAGIC_VARIANT_ANDROID_ABI)
-        if androidABI is not None:
-            if androidABI != 'all':
-                if not androidABI in self.VariantAndroidABI.Options:
-                    raise Exception("'{0}' is not a valid option expected one of these {1}".format(androidABI, self.VariantAndroidABI.Options))
-                androidABIList = [androidABI]
+        if androidABI is not None and androidABI != "all":
+            if androidABI not in self.VariantAndroidABI.Options:
+                raise Exception(f"'{androidABI}' is not a valid option expected one of these {self.VariantAndroidABI.Options}")
+            androidABIList = [androidABI]
         # remove unsupported ABI's if there are others available to build
         if self.__ContainsFeature(topLevelPackage.ResolvedAllUsedFeatures, "vulkan"):
             if len(androidABIList) > 1 and AndroidABIOption.DeprecatedArmeAbi in androidABIList:
-                generateContext.Config.LogPrint("INFO: Vulkan does not support ANDROID_ABI '{0}' removing the ABI and building the rest".format(AndroidABIOption.DeprecatedArmeAbi))
+                generateContext.Config.LogPrint(
+                    f"INFO: Vulkan does not support ANDROID_ABI '{AndroidABIOption.DeprecatedArmeAbi}' removing the ABI and building the rest"
+                )
                 androidABIList.remove(AndroidABIOption.DeprecatedArmeAbi)
 
-        generator = GeneratorAndroidGradleCMake(generateContext.Config, generateContext.Packages, self.PlatformName, androidABIList,
-                                                generateContext.VariantConstraints)
+        generator = GeneratorAndroidGradleCMake(
+            generateContext.Config, generateContext.Packages, self.PlatformName, androidABIList, generateContext.VariantConstraints
+        )
         return self.GenerateDone(generateContext.Config, generateContext.Packages, self.PlatformName, generator)
 
-
-    def _DoGenerateReport(self, log: Log, generatorConfig: GeneratorConfig, packageList: List[Package]) -> TheGeneratorBuildReport:
-        resultDict = {} # type: Dict[Package, PackageGeneratorReport]
+    def _DoGenerateReport(self, log: Log, generatorConfig: GeneratorConfig, packageList: list[Package]) -> TheGeneratorBuildReport:
+        resultDict: dict[Package, PackageGeneratorReport] = {}
         for package in packageList:
             buildReport = GeneratorAndroidGradleCMakeUtil.TryGenerateGeneratorPackageReport(log, self.PlatformName, package)
             if buildReport is not None:
@@ -148,19 +134,20 @@ class GeneratorPluginMakefile(GeneratorPlugin):
         if addCoverageVariant:
             self.AddGeneratorVariantConfigOption(ToolAddedVariantConfigOption.Coverage)
 
-    def DoGenerate(self, generateContext: GenerateContext) -> List[Package]:
+    def DoGenerate(self, generateContext: GenerateContext) -> list[Package]:
         dstMakeFilename = self.MakeFilename
-        templateExe = "{0}_exe".format(self.MakeFilename)
-        templateLib = "{0}_lib".format(self.MakeFilename)
+        templateExe = f"{self.MakeFilename}_exe"
+        templateLib = f"{self.MakeFilename}_lib"
 
         configVariant = self.GeneratorVariants[ToolAddedVariant.CONFIG]
-        generator = GeneratorGNUmakefile(generateContext.Config, generateContext.Packages, dstMakeFilename, templateExe, templateLib, self.PlatformName, configVariant.Options)
+        generator = GeneratorGNUmakefile(
+            generateContext.Config, generateContext.Packages, dstMakeFilename, templateExe, templateLib, self.PlatformName, configVariant.Options
+        )
         return self.GenerateDone(generateContext.Config, generateContext.Packages, self.PlatformName, generator)
 
-
-    def _DoGenerateReport(self, log: Log, generatorConfig: GeneratorConfig, packageList: List[Package]) -> TheGeneratorBuildReport:
+    def _DoGenerateReport(self, log: Log, generatorConfig: GeneratorConfig, packageList: list[Package]) -> TheGeneratorBuildReport:
         configVariant = self.GeneratorVariants[ToolAddedVariant.CONFIG]
-        resultDict = {} # type: Dict[Package, PackageGeneratorReport]
+        resultDict: dict[Package, PackageGeneratorReport] = {}
         for package in packageList:
             buildReport = GeneratorGNUmakefileUtil.TryGenerateGeneratorPackageReport(log, generatorConfig, self.PlatformName, package, configVariant.Options)
             if buildReport is not None:
@@ -177,6 +164,7 @@ class GeneratorPluginYoctoLegacy(GeneratorPluginMakefile):
     def __init__(self, log: Log) -> None:
         super().__init__(log, PackageConfig.PlatformNameString.YOCTO, "GNUmakefile_Yocto", False)
 
+
 class GeneratorPluginWindowsLegacy(GeneratorPlugin):
     def __init__(self, log: Log, platformNameString: str = PackageConfig.PlatformNameString.WINDOWS) -> None:
         super().__init__(log, platformNameString)
@@ -187,7 +175,7 @@ class GeneratorPluginWindowsLegacy(GeneratorPlugin):
         self.SupportedPackageLanguages.append(PackageLanguage.CSharp)
         self.PackageResolveConfig_MarkExternalLibFirstUse = True
 
-    #def __PatchVisualStudioPackageIds(self, config, packageLoader, packageResolver):
+    # def __PatchVisualStudioPackageIds(self, config, packageLoader, packageResolver):
     #    # We need the windows resolver to acquire the visual studio project id's
     #    windowsPackageResolver = PackageResolver(config, PackageConfig.PlatformNameString.WINDOWS, packageLoader.GenFiles, True)
 
@@ -203,9 +191,8 @@ class GeneratorPluginWindowsLegacy(GeneratorPlugin):
     #            if package.ResolvedPlatform and winPackage.ResolvedPlatform:
     #                package.ResolvedPlatform.ProjectId = windowsPackageDict[package.Name].ResolvedPlatform.ProjectId
 
-
-    def DoGenerate(self, generateContext: GenerateContext) -> List[Package]:
-        #if self.Name != PackageConfig.PlatformNameString.WINDOWS:
+    def DoGenerate(self, generateContext: GenerateContext) -> list[Package]:
+        # if self.Name != PackageConfig.PlatformNameString.WINDOWS:
         #    self.__PatchVisualStudioPackageIds(config, packageLoader, packageResolver)
 
         if generateContext.PlatformContext.RecipePathBuilder is None:
@@ -214,34 +201,38 @@ class GeneratorPluginWindowsLegacy(GeneratorPlugin):
         installRootLocation = generateContext.PlatformContext.RecipePathBuilder.InstallRootLocation
         activeThirdPartyLibsDir = installRootLocation.ResolvedPath if installRootLocation is not None else None
         generatorConfig = GeneratorVSConfig(self.PlatformName, self.ToolVersion)
-        generator = GeneratorVC(generateContext.Config, generateContext.Packages, generatorConfig, generateContext.VariantConstraints,
-                                activeThirdPartyLibsDir)
+        generator = GeneratorVC(generateContext.Config, generateContext.Packages, generatorConfig, generateContext.VariantConstraints, activeThirdPartyLibsDir)
         return self.GenerateDone(generateContext.Config, generateContext.Packages, self.PlatformName, generator)
 
-
-    def _DoGenerateReport(self, log: Log, generatorConfig: GeneratorConfig, packageList: List[Package]) -> TheGeneratorBuildReport:
-        resultDict = {} # type: Dict[Package, PackageGeneratorReport]
+    def _DoGenerateReport(self, log: Log, generatorConfig: GeneratorConfig, packageList: list[Package]) -> TheGeneratorBuildReport:
+        resultDict: dict[Package, PackageGeneratorReport] = {}
 
         configVariant = self.GeneratorVariants[ToolAddedVariant.CONFIG]
 
         # vsVersion: int, platformName: str
         generatorVSConfig = GeneratorVSConfig(self.PlatformName, self.ToolVersion)
-        generatorTemplateInfo = GeneratorVSTemplateInfo(generatorConfig.ToolConfig.ProjectRootConfig.DefaultTemplate,
-                                                        generatorConfig.ToolConfig.TemplateFolder,
-                                                        generatorConfig.SDKConfigTemplatePath)
+        generatorTemplateInfo = GeneratorVSTemplateInfo(
+            generatorConfig.ToolConfig.ProjectRootConfig.DefaultTemplate, generatorConfig.ToolConfig.TemplateFolder, generatorConfig.SDKConfigTemplatePath
+        )
 
         for package in packageList:
-            buildReport = GeneratorVCUtil.TryGenerateGeneratorPackageReport(log, generatorConfig, self.PlatformName, package,
-                                                                            generatorVSConfig, generatorTemplateInfo,
-                                                                            configVariant.Options)
+            buildReport = GeneratorVCUtil.TryGenerateGeneratorPackageReport(
+                log, generatorConfig, self.PlatformName, package, generatorVSConfig, generatorTemplateInfo, configVariant.Options
+            )
             if buildReport is not None:
                 resultDict[package] = buildReport
         return TheGeneratorBuildReport(resultDict)
 
 
 class GeneratorPluginCMakeBase(GeneratorPlugin):
-    def __init__(self, log: Log, platformName: str, templateName: Optional[str] = None, overrideTemplateName: Optional[str] = None,
-                 generatorMode: CMakeGeneratorMode = CMakeGeneratorMode.Normal) -> None:
+    def __init__(
+        self,
+        log: Log,
+        platformName: str,
+        templateName: str | None = None,
+        overrideTemplateName: str | None = None,
+        generatorMode: CMakeGeneratorMode = CMakeGeneratorMode.Normal,
+    ) -> None:
         super().__init__(log, platformName)
         self.AddGeneratorVariantConfigOption(ToolAddedVariantConfigOption.Coverage)
         self.InDevelopment = False
@@ -255,64 +246,83 @@ class GeneratorPluginCMakeBase(GeneratorPlugin):
         self.__CMakeOverrideTemplateName = overrideTemplateName
         self.__CMakeGeneratorMode = generatorMode
 
-    def SYS_SetCMakeConfig(self, cmakeConfig: Optional[GeneratorCMakeConfig]) -> None:
+    def SYS_SetCMakeConfig(self, cmakeConfig: GeneratorCMakeConfig | None) -> None:
         super().SYS_SetCMakeConfig(cmakeConfig)
         if cmakeConfig is not None and cmakeConfig.CMakeVersion >= CMakeVersion(3, 11, 0):
             self.SupportCommandOpen = True
             self.SupportCommandOpenHintMessage = ""
 
-    def DoGenerate(self, generateContext: GenerateContext) -> List[Package]:
+    def DoGenerate(self, generateContext: GenerateContext) -> list[Package]:
         if self.CMakeConfig is None:
             raise Exception("Internal error no CMakeConfig set")
 
-        log = generateContext.Config # type: Log
+        log: Log = generateContext.Config
         toolConfig = generateContext.Config.ToolConfig
         cmakeBuildPackageDir = BuildUtil.GetBuildDir(toolConfig.ProjectInfo, self.CMakeConfig.CacheDir)
 
-        generator = GeneratorCMake(log, toolConfig, generateContext.Packages, self.PlatformName, self.__CMakeTemplateName,
-                                   self.__CMakeOverrideTemplateName, cmakeBuildPackageDir, generateContext.Config.SDKConfigTemplatePath,
-                                   generateContext.Config.DisableWrite, self.__CMakeGeneratorMode, generateContext.VariantConstraints)
+        generator = GeneratorCMake(
+            log,
+            toolConfig,
+            generateContext.Packages,
+            self.PlatformName,
+            self.__CMakeTemplateName,
+            self.__CMakeOverrideTemplateName,
+            cmakeBuildPackageDir,
+            generateContext.Config.SDKConfigTemplatePath,
+            generateContext.Config.DisableWrite,
+            self.__CMakeGeneratorMode,
+            generateContext.VariantConstraints,
+        )
         return self.GenerateDone(generateContext.Config, generateContext.Packages, self.PlatformName, generator)
 
-    def _DoGenerateReport(self, log: Log, generatorConfig: GeneratorConfig, packageList: List[Package]) -> TheGeneratorBuildReport:
+    def _DoGenerateReport(self, log: Log, generatorConfig: GeneratorConfig, packageList: list[Package]) -> TheGeneratorBuildReport:
         if self.CMakeConfig is None:
             raise Exception("internal error generator not configured")
 
         cmakeBuildPackageDir = BuildUtil.GetBuildDir(generatorConfig.ToolConfig.ProjectInfo, self.CMakeConfig.CacheDir)
 
         configVariant = self.GeneratorVariants[ToolAddedVariant.CONFIG]
-        resultDict = {} # type: Dict[Package, PackageGeneratorReport]
+        resultDict: dict[Package, PackageGeneratorReport] = {}
         for package in packageList:
-            buildReport = GeneratorCMake.TryGenerateGeneratorPackageReport(log, generatorConfig, self.CMakeConfig, cmakeBuildPackageDir, package,
-                                                                           configVariant.Options)
+            buildReport = GeneratorCMake.TryGenerateGeneratorPackageReport(
+                log, generatorConfig, self.CMakeConfig, cmakeBuildPackageDir, package, configVariant.Options
+            )
             if buildReport is not None:
                 resultDict[package] = buildReport
         return TheGeneratorBuildReport(resultDict)
 
-    def _DoTryGenerateConfigReport(self, log: Log, generatorConfig: GeneratorConfig, topLevelPackage: Package) -> Optional[PackageGeneratorConfigReport]:
+    def _DoTryGenerateConfigReport(self, log: Log, generatorConfig: GeneratorConfig, topLevelPackage: Package) -> PackageGeneratorConfigReport | None:
         if self.CMakeConfig is None:
             raise Exception("internal error generator not configured")
 
         configVariant = self.GeneratorVariants[ToolAddedVariant.CONFIG]
         cmakeBuildPackageDir = BuildUtil.GetBuildDir(generatorConfig.ToolConfig.ProjectInfo, self.CMakeConfig.CacheDir)
 
-        return GeneratorCMake.GenerateGeneratorBuildConfigReport(log, generatorConfig, self.CMakeConfig, cmakeBuildPackageDir, topLevelPackage,
-                                                                 configVariant.Options)
+        return GeneratorCMake.GenerateGeneratorBuildConfigReport(
+            log, generatorConfig, self.CMakeConfig, cmakeBuildPackageDir, topLevelPackage, configVariant.Options
+        )
 
-    def _DoTryGetBuildExecutableInfo(self, log: Log, generatorConfig: GeneratorConfig, package: Package,
-                                     generatorReport: PackageGeneratorReport,
-                                     externalVariantConstraints: ExternalVariantConstraints) -> Optional[PackageGeneratorBuildExecutableInfo]:
+    def _DoTryGetBuildExecutableInfo(
+        self,
+        log: Log,
+        generatorConfig: GeneratorConfig,
+        package: Package,
+        generatorReport: PackageGeneratorReport,
+        externalVariantConstraints: ExternalVariantConstraints,
+    ) -> PackageGeneratorBuildExecutableInfo | None:
         if self.CMakeConfig is None:
             raise Exception("internal error generator not configured")
         configVariant = self.GeneratorVariants[ToolAddedVariant.CONFIG]
-        return GeneratorCMake.TryGetBuildExecutableInfo(log, generatorConfig, self.CMakeConfig, package, generatorReport, externalVariantConstraints,
-                                                        configVariant.Options)
+        return GeneratorCMake.TryGetBuildExecutableInfo(
+            log, generatorConfig, self.CMakeConfig, package, generatorReport, externalVariantConstraints, configVariant.Options
+        )
 
 
 class GeneratorPluginTidy(GeneratorPluginCMakeBase):
     """
     This is only intented for the clang tidy checks
     """
+
     def __init__(self, log: Log, platformName: str, generatorMode: CMakeGeneratorMode) -> None:
         super().__init__(log, platformName, generatorMode=generatorMode)
 
@@ -321,49 +331,58 @@ class GeneratorPluginWindows(GeneratorPluginCMakeBase):
     def __init__(self, log: Log) -> None:
         super().__init__(log, PackageConfig.PlatformNameString.WINDOWS)
 
+
 class GeneratorPluginApple(GeneratorPluginCMakeBase):
     def __init__(self, log: Log) -> None:
         super().__init__(log, PackageConfig.PlatformNameString.APPLE)
+
 
 class GeneratorPluginUbuntu(GeneratorPluginCMakeBase):
     def __init__(self, log: Log) -> None:
         super().__init__(log, PackageConfig.PlatformNameString.UBUNTU)
 
+
 class GeneratorPluginYocto(GeneratorPluginCMakeBase):
     def __init__(self, log: Log) -> None:
         super().__init__(log, PackageConfig.PlatformNameString.YOCTO)
+
 
 class GeneratorPluginRDKYocto(GeneratorPluginCMakeBase):
     def __init__(self, log: Log) -> None:
         super().__init__(log, PackageConfig.PlatformNameString.RDK_YOCTO)
 
+
 class GeneratorPluginQNX(GeneratorPluginCMakeBase):
     def __init__(self, log: Log) -> None:
         super().__init__(log, PackageConfig.PlatformNameString.QNX)
+
 
 class GeneratorPluginFreeRTOS(GeneratorPluginCMakeBase):
     def __init__(self, log: Log) -> None:
         super().__init__(log, PackageConfig.PlatformNameString.FREERTOS, None, "CMakeFreeRTOS")
         self.InDevelopment = True
 
+
 class GeneratorPluginEmscripten(GeneratorPluginCMakeBase):
     def __init__(self, log: Log) -> None:
         super().__init__(log, PackageConfig.PlatformNameString.EMSCRIPTEN)
         self.InDevelopment = True
 
-#def __CreateCustomWindowGenerator(platformName):
+
+# def __CreateCustomWindowGenerator(platformName):
 #    gen = GeneratorPluginWindows();
 #    gen.SetCustomPlatformName(platformName);
 #    return gen
 
 
-#def SetForceUseNativeGenerator(forceUseNativegenerator):
+# def SetForceUseNativeGenerator(forceUseNativegenerator):
 #    if forceUseNativegenerator or PlatformUtil.DetectBuildPlatformType() != BuildPlatformType.Windows:
 #        return
 #    # This allows us to use the Visual C++ for linux development plugin on windows
 #    ubuntuGen = __CreateCustomWindowGenerator(PackageConfig.PlatformNameString.UBUNTU)
 #    __g_generatorPluginDict[ubuntuGen.Id] = ubuntuGen
 #    PlatformUtil.AddExtraGenerators(ubuntuGen.Name)
+
 
 class ActualPluginConfigContext(PluginConfigContext):
     def __init__(self, log: Log, toolVersion: Version, allowDevelopmentPlugins: bool) -> None:
@@ -373,34 +392,59 @@ class ActualPluginConfigContext(PluginConfigContext):
         self.__Log = log
         self.__ToolVersion = toolVersion
         # prepare plugins
-        self.__GeneratorPlugins = [GeneratorPluginAndroid(log), GeneratorPluginApple(log), GeneratorPluginRDKYocto(log), GeneratorPluginUbuntu(log),
-                                   GeneratorPluginYocto(log), GeneratorPluginWindows(log),
-                                   GeneratorPluginFreeRTOS(log), GeneratorPluginQNX(log), GeneratorPluginEmscripten(log)]
+        self.__GeneratorPlugins = [
+            GeneratorPluginAndroid(log),
+            GeneratorPluginApple(log),
+            GeneratorPluginRDKYocto(log),
+            GeneratorPluginUbuntu(log),
+            GeneratorPluginYocto(log),
+            GeneratorPluginWindows(log),
+            GeneratorPluginFreeRTOS(log),
+            GeneratorPluginQNX(log),
+            GeneratorPluginEmscripten(log),
+        ]
         if not allowDevelopmentPlugins:
             self.__GeneratorPlugins = [entry for entry in self.__GeneratorPlugins if not entry.InDevelopment]
 
-        self.__GeneratorPluginDict = {} # Dict[str, GeneratorPlugin]
+        self.__GeneratorPluginDict = {}  # Dict[str, GeneratorPlugin]
         for _entry in self.__GeneratorPlugins:
             self.__GeneratorPluginDict[_entry.PlatformId] = _entry
 
-    def GetGeneratorPlugins(self) -> List[GeneratorPlugin]:
+    def GetGeneratorPlugins(self) -> list[GeneratorPlugin]:
         return self.__GeneratorPlugins
 
-    def GetGeneratorPluginById(self, pluginId: str, generatorType: GeneratorType, buildVariantConfig: BuildVariantConfig,
-                               userSetVariables: UserSetVariables, defaultPackageLanguage: PackageLanguage,
-                               cmakeConfiguration: CMakeConfiguration, userCMakeConfig: Optional[UserCMakeConfig],
-                               isCheckMode: bool) -> GeneratorPlugin:
+    def GetGeneratorPluginById(
+        self,
+        pluginId: str,
+        generatorType: GeneratorType,
+        buildVariantConfig: BuildVariantConfig,
+        userSetVariables: UserSetVariables,
+        defaultPackageLanguage: PackageLanguage,
+        cmakeConfiguration: CMakeConfiguration,
+        userCMakeConfig: UserCMakeConfig | None,
+        isCheckMode: bool,
+    ) -> GeneratorPlugin:
         generator = self.__GetGenerator(pluginId, defaultPackageLanguage, generatorType)
         # Patch the generator with the global context variables
-        generator.DotEnabled =  self.DotEnabled
+        generator.DotEnabled = self.DotEnabled
         generator.ToolVersion = self.VSVersion
         generator.SetLegacyGeneratorType(self.LegacyGeneratorType)
 
         if isinstance(generator, GeneratorPlugin):
             # patch the GeneratorPlugin generators with cmake configuration data
-            generator.SYS_SetCMakeConfig(CMakeConfigUtil.BuildGeneratorCMakeConfig(self.__Log, self.__ToolVersion, generator.PlatformName,
-                                                                                   buildVariantConfig, userSetVariables, userCMakeConfig,
-                                                                                   cmakeConfiguration, generator.ToolVersion, isCheckMode))
+            generator.SYS_SetCMakeConfig(
+                CMakeConfigUtil.BuildGeneratorCMakeConfig(
+                    self.__Log,
+                    self.__ToolVersion,
+                    generator.PlatformName,
+                    buildVariantConfig,
+                    userSetVariables,
+                    userCMakeConfig,
+                    cmakeConfiguration,
+                    generator.ToolVersion,
+                    isCheckMode,
+                )
+            )
         return generator
 
     def EnableGraph(self) -> None:
@@ -421,8 +465,8 @@ class ActualPluginConfigContext(PluginConfigContext):
     def __GetGenerator(self, pluginId: str, defaultPackageLanguage: PackageLanguage, generatorType: GeneratorType) -> GeneratorPlugin:
         pluginId = pluginId.lower()
         generatorPluginDict = self.__GeneratorPluginDict
-        if not pluginId in generatorPluginDict:
-            raise UsageErrorException("Unknown platform: '{0}'".format(pluginId))
+        if pluginId not in generatorPluginDict:
+            raise UsageErrorException(f"Unknown platform: '{pluginId}'")
         if generatorType == GeneratorType.CMake:
             platformName = generatorPluginDict[pluginId].PlatformName
             return GeneratorPluginCMakeBase(self.__Log, platformName)
@@ -445,7 +489,7 @@ class ActualPluginConfigContext(PluginConfigContext):
         return generatorPluginDict[pluginId]
 
 
-__g_globalContext = None # type ActualPluginConfigContext
+__g_globalContext = None  # type ActualPluginConfigContext
 
 
 def InitPluginConfigContext(log: Log, toolVersion: Version, allowDevelopmentPlugins: bool) -> PluginConfigContext:

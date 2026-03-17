@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright 2017 NXP
 # All rights reserved.
 #
@@ -29,13 +28,14 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-#from typing import List
-from typing import Optional
-#from enum import Enum
+# from typing import List
 
-class RequirementType(object):
+# from enum import Enum
+
+
+class RequirementType:
     Undefined = 0
     Feature = 1
     Extension = 2
@@ -47,8 +47,7 @@ class RequirementType(object):
         elif value == "extension":
             return RequirementType.Extension
         else:
-            raise Exception("Unknown value: {0}".format(value))
-
+            raise Exception(f"Unknown value: {value}")
 
     @staticmethod
     def ToString(value: int) -> str:
@@ -57,35 +56,33 @@ class RequirementType(object):
         elif value == RequirementType.Extension:
             return "extension"
         else:
-            raise Exception("Unknown value {0}".format(value))
+            raise Exception(f"Unknown value {value}")
 
 
-class RequirementInfo(object):
-    def __init__(self, name: str, requirementType: int, version: Optional[str], extends: str = "") -> None:
+class RequirementInfo:
+    def __init__(self, name: str, requirementType: int, version: str | None, extends: str = "") -> None:
         super().__init__()
         self.Name = name
         self.Type = requirementType
         self.Version = version
         self.Extends = extends
 
-
-    def IsContentEqual(self, src: 'RequirementInfo') -> bool:
+    def IsContentEqual(self, src: "RequirementInfo") -> bool:
         return self.Name == src.Name and self.Type == src.Type and self.Version == src.Version and self.Extends == src.Extends
 
-
-    def DebugGetDifferenceString(self, src: 'RequirementInfo') -> str:
+    def DebugGetDifferenceString(self, src: "RequirementInfo") -> str:
         strDiff = ""
         if self.Name != src.Name:
-            strDiff = self.__AppendStr(strDiff, "Name '{0}' != '{1}'".format(self.Name, src.Name))
+            strDiff = self.__AppendStr(strDiff, f"Name '{self.Name}' != '{src.Name}'")
         if self.Type != src.Type:
-            strDiff = self.__AppendStr(strDiff, "Type '{0}' != '{1}'".format(self.Type, src.Type))
+            strDiff = self.__AppendStr(strDiff, f"Type '{self.Type}' != '{src.Type}'")
         if self.Version != src.Version:
-            strDiff = self.__AppendStr(strDiff, "Version '{0}' != '{1}'".format(self.Version, src.Version))
+            strDiff = self.__AppendStr(strDiff, f"Version '{self.Version}' != '{src.Version}'")
         if self.Extends != src.Extends:
-            strDiff = self.__AppendStr(strDiff, "Extends '{0}' != '{1}'".format(self.Extends, src.Extends))
+            strDiff = self.__AppendStr(strDiff, f"Extends '{self.Extends}' != '{src.Extends}'")
         return strDiff
 
     def __AppendStr(self, src1: str, src2: str) -> str:
         if len(src1) > 0:
-            return "{0}, {1}".format(src1, src2)
-        return "{0}".format(src2)
+            return f"{src1}, {src2}"
+        return f"{src2}"

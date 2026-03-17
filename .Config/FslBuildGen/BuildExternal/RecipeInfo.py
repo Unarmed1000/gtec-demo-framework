@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright 2018 NXP
 # All rights reserved.
 #
@@ -29,19 +28,19 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-from typing import Optional
-from typing import List
-#from FslBuildGen import PackageUtil
+
+# from FslBuildGen import PackageUtil
 from FslBuildGen.BuildExternal.DataTypes import RecipeType
 from FslBuildGen.Log import Log
 from FslBuildGen.Packages.Package import Package
 
-class RecipeInfo(object):
+
+class RecipeInfo:
     @staticmethod
-    def ShowRecipeList(log: Log, topLevelPackage: Package, requestedFiles: Optional[List[str]]) -> None:
-        #requestedPackages = PackageUtil.GetPackageListFromFilenames(topLevelPackage, requestedFiles, True)
+    def ShowRecipeList(log: Log, topLevelPackage: Package, requestedFiles: list[str] | None) -> None:
+        # requestedPackages = PackageUtil.GetPackageListFromFilenames(topLevelPackage, requestedFiles, True)
 
         recipeBuildOrder = topLevelPackage.ResolvedExperimentalRecipeBuildOrder
         if recipeBuildOrder is None or len(recipeBuildOrder) <= 0:
@@ -49,16 +48,18 @@ class RecipeInfo(object):
             return
 
         recipePackages = list(topLevelPackage.ResolvedExperimentalRecipeBuildOrder)
-        recipePackages.sort(key=lambda s: s.ResolvedDirectExperimentalRecipe.FullName.lower() if s.ResolvedDirectExperimentalRecipe is not None else s.Name.lower())
+        recipePackages.sort(
+            key=lambda s: s.ResolvedDirectExperimentalRecipe.FullName.lower() if s.ResolvedDirectExperimentalRecipe is not None else s.Name.lower()
+        )
         strAddIndent = "  "
         print("Recipes")
         for package in recipePackages:
             packageRecipe = package.ResolvedDirectExperimentalRecipe
             if packageRecipe is not None and packageRecipe.Type != RecipeType.External:
-                print("{0}{1} (introduced by: {2}), type: {3}".format(strAddIndent, packageRecipe.FullName, package.Name, RecipeType.ToString(packageRecipe.Type)))
+                print(f"{strAddIndent}{packageRecipe.FullName} (introduced by: {package.Name}), type: {RecipeType.ToString(packageRecipe.Type)}")
 
         print("External")
         for package in recipePackages:
             packageRecipe = package.ResolvedDirectExperimentalRecipe
             if packageRecipe is not None and packageRecipe.Type == RecipeType.External:
-                print("{0}{1} (introduced by: {2})".format(strAddIndent, packageRecipe.FullName, package.Name))
+                print(f"{strAddIndent}{packageRecipe.FullName} (introduced by: {package.Name})")

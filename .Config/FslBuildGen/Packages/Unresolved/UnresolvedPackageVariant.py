@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright 2020 NXP
 # All rights reserved.
 #
@@ -29,36 +29,37 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-from typing import Dict
-from typing import List
+
 from FslBuildGen.DataTypes import VariantType
 from FslBuildGen.Exceptions import VariantOptionNameCollisionException
 from FslBuildGen.Packages.Unresolved.UnresolvedPackageVariantOption import UnresolvedPackageVariantOption
 
-class UnresolvedPackageVariant(object):
-    def __init__(self, name: str, introducedByPackageName: str, allowExtend: bool, variantType: VariantType,
-                 options: List[UnresolvedPackageVariantOption]) -> None:
+
+class UnresolvedPackageVariant:
+    def __init__(
+        self, name: str, introducedByPackageName: str, allowExtend: bool, variantType: VariantType, options: list[UnresolvedPackageVariantOption]
+    ) -> None:
         super().__init__()
         self.Name = name
         self.IntroducedByPackageName = introducedByPackageName
         self.AllowExtend = allowExtend
         self.Options = options
         self.Type = variantType
-        self.OptionDict = UnresolvedPackageVariant.__BuildOptionDict(options)  # type: Dict[str, UnresolvedPackageVariantOption]
+        self.OptionDict: dict[str, UnresolvedPackageVariantOption] = UnresolvedPackageVariant.__BuildOptionDict(options)
         # TODO: verify
-        #self.__ValidateVariantName()
-        #self.__ValidateOptionNames()
+        # self.__ValidateVariantName()
+        # self.__ValidateOptionNames()
 
     @staticmethod
-    def __BuildOptionDict(options: List[UnresolvedPackageVariantOption]) -> Dict[str, UnresolvedPackageVariantOption]:
-        optionDict = {} # type: Dict[str, UnresolvedPackageVariantOption]
-        optionNameSet = {}  # type: Dict[str, str]
+    def __BuildOptionDict(options: list[UnresolvedPackageVariantOption]) -> dict[str, UnresolvedPackageVariantOption]:
+        optionDict: dict[str, UnresolvedPackageVariantOption] = {}
+        optionNameSet: dict[str, str] = {}
         for option in options:
             optionDict[option.Name] = option
             key = option.Name.upper()
-            if not key in optionNameSet:
+            if key not in optionNameSet:
                 optionNameSet[key] = option.Name
             else:
                 raise VariantOptionNameCollisionException(optionNameSet[key], option.Name)

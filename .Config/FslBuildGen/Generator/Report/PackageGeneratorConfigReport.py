@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright 2019 NXP
 # All rights reserved.
 #
@@ -29,29 +29,34 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-#from typing import Dict
-#from typing import List
-from typing import Optional
-from typing import Set
+# from typing import Dict
+# from typing import List
+
+
 from FslBuildGen.Generator.Report.GeneratorBuildReport import GeneratorBuildReport
 from FslBuildGen.Generator.Report.GeneratorConfigReport import GeneratorConfigReport
 from FslBuildGen.Generator.Report.GeneratorVariableReport import GeneratorVariableReport
 
 
-class PackageGeneratorConfigReport(object):
-    def __init__(self, configReport: GeneratorConfigReport, variableReport: GeneratorVariableReport,
-                 generatedFileSet: Set[str], canBuildContent: bool,
-                 masterBuildReport: Optional[GeneratorBuildReport],
-                 masterBuildVariableReport: Optional[GeneratorVariableReport]) -> None:
+class PackageGeneratorConfigReport:
+    def __init__(
+        self,
+        configReport: GeneratorConfigReport,
+        variableReport: GeneratorVariableReport,
+        generatedFileSet: set[str],
+        canBuildContent: bool,
+        masterBuildReport: GeneratorBuildReport | None,
+        masterBuildVariableReport: GeneratorVariableReport | None,
+    ) -> None:
         super().__init__()
-        self.ConfigReport = configReport                   # type: GeneratorConfigReport
-        self.VariableReport = variableReport                # type: GeneratorVariableReport
-        self.GeneratedFileSet = generatedFileSet            # type: Set[str]
+        self.ConfigReport: GeneratorConfigReport = configReport
+        self.VariableReport: GeneratorVariableReport = variableReport
+        self.GeneratedFileSet: set[str] = generatedFileSet
         # Set to true when the generated build files will build the Content files.
         self.CanBuildContent = canBuildContent
         self.MasterBuildReport = masterBuildReport
         self.MasterBuildVariableReport = masterBuildVariableReport
-        if ((masterBuildReport is None and masterBuildVariableReport is not None) or (masterBuildReport is not None and masterBuildVariableReport is None)):
+        if (masterBuildReport is None and masterBuildVariableReport is not None) or (masterBuildReport is not None and masterBuildVariableReport is None):
             raise Exception("MasterBuildReport and MasterBuildVariableReport must both be valid or both be invalid")

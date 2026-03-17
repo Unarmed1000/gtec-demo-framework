@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright (c) 2014 Freescale Semiconductor, Inc.
 # All rights reserved.
 #
@@ -29,20 +29,18 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-from typing import Optional
-from typing import List
 import xml.etree.ElementTree as ET
+
 from FslBuildGen.DataTypes import ScanMethod
 from FslBuildGen.Log import Log
 from FslBuildGen.Xml import FakeXmlElementFactory
 from FslBuildGen.Xml.XmlBase import XmlBase
 
 
-
 class XmlConfigPackageLocationBlacklist(XmlBase):
-    __AttribName = 'Name'
+    __AttribName = "Name"
 
     def __init__(self, log: Log, xmlElement: ET.Element) -> None:
         super().__init__(log, xmlElement)
@@ -51,21 +49,20 @@ class XmlConfigPackageLocationBlacklist(XmlBase):
 
 
 class XmlConfigPackageLocation(XmlBase):
-    __AttribName = 'Name'
-    __AttribScanMethod = 'ScanMethod'
+    __AttribName = "Name"
+    __AttribScanMethod = "ScanMethod"
 
     def __init__(self, log: Log, xmlElement: ET.Element) -> None:
         super().__init__(log, xmlElement)
         self._CheckAttributes({self.__AttribName, self.__AttribScanMethod})
         defaultScanMethod = ScanMethod.Directory
-        self.Name = self._ReadAttrib(xmlElement, self.__AttribName) # type: str
+        self.Name: str = self._ReadAttrib(xmlElement, self.__AttribName)
         self.Blacklist = self.__LoadBlacklist(xmlElement)
         self.ScanMethod = ScanMethod.FromString(self._ReadAttrib(xmlElement, self.__AttribScanMethod, ScanMethod.ToString(defaultScanMethod)))
         self.Id = self.Name.lower() if self.Name is not None else None
         self.ResolvedActualPath = None
 
-
-    def __LoadBlacklist(self, xmlElement: ET.Element) -> List[XmlConfigPackageLocationBlacklist]:
+    def __LoadBlacklist(self, xmlElement: ET.Element) -> list[XmlConfigPackageLocationBlacklist]:
         res = []
         foundElements = xmlElement.findall("Blacklist")
         for foundElement in foundElements:
@@ -74,10 +71,10 @@ class XmlConfigPackageLocation(XmlBase):
 
 
 class FakeXmlConfigPackageLocation(XmlConfigPackageLocation):
-    def __init__(self, log: Log, name: str, scanMethod: Optional[int] = None, blacklist: Optional[List[str]] = None) -> None:
-        xmlAttribs = {'Name': name}
+    def __init__(self, log: Log, name: str, scanMethod: int | None = None, blacklist: list[str] | None = None) -> None:
+        xmlAttribs = {"Name": name}
         if scanMethod is not None:
-            xmlAttribs['ScanMethod'] = ScanMethod.ToString(scanMethod)
+            xmlAttribs["ScanMethod"] = ScanMethod.ToString(scanMethod)
         xmlElement = FakeXmlElementFactory.Create("PackageLocation", xmlAttribs)
         if blacklist is not None:
             for blacklistEntry in blacklist:

@@ -1,6 +1,6 @@
-﻿#!/usr/bin/env python3
+#!/usr/bin/env python3
 
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright 2018 NXP
 # All rights reserved.
 #
@@ -29,16 +29,17 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-from typing import List
+
 from FslBuildGen.Build.Filter import PackageFilter
 from FslBuildGen.Log import Log
 from FslBuildGen.Packages.Package import Package
 
-class ToolPackageFiltering(object):
+
+class ToolPackageFiltering:
     @staticmethod
-    def FilterPackages(log: Log, topLevelPackage: Package, specifiedPackages: List[Package], scanDependencies: bool) -> List[Package]:
+    def FilterPackages(log: Log, topLevelPackage: Package, specifiedPackages: list[Package], scanDependencies: bool) -> list[Package]:
         """
         Implements the filtering behaviour for the FslBuildCheck commands.
         - Filter the 'ResolvedBuildOrder' package list of the topLevelPackage.

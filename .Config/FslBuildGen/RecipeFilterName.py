@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright 2018 NXP
 # All rights reserved.
 #
@@ -28,19 +28,20 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
 from FslBuildGen import Util
 
-class RecipeFilterName(object):
+
+class RecipeFilterName:
     def __init__(self, filterName: str) -> None:
         super().__init__()
 
         name = filterName
         enabled = True
-        if filterName.startswith('+'):
+        if filterName.startswith("+"):
             name = filterName[1:]
-        elif filterName.startswith('-'):
+        elif filterName.startswith("-"):
             name = filterName[1:]
             enabled = False
 
@@ -49,10 +50,10 @@ class RecipeFilterName(object):
         self.Enabled = enabled
 
         if not Util.IsValidRecipeName(name):
-            raise Exception("The filter name '{0}' is invalid".format(name))
+            raise Exception(f"The filter name '{name}' is invalid")
 
     def __str__(self) -> str:
         return self.FilterName
 
-    #def __repr__(self) -> str:
+    # def __repr__(self) -> str:
     #    return "RecipeFilterName({0},{1}) ".format(self.Filtername,id(self))

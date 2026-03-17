@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright 2024 NXP
 # All rights reserved.
 #
@@ -29,31 +28,29 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-from typing import Any
-from typing import List
-from typing import Set
-from typing import Union
 import xml.etree.ElementTree as ET
-from FslBuildGen.Log import Log
+from typing import Any
+
 from FslBuildGen.Location.ResolvedPath import ResolvedPath
+from FslBuildGen.Log import Log
 
-class NatvisCombiner(object):
 
+class NatvisCombiner:
     @staticmethod
-    def Combine(log: Log, allNatvisFiles: List[ResolvedPath], targetFilePath: str) -> None:
-        ET.register_namespace('', "http://schemas.microsoft.com/vstudio/debugger/natvis/2010")
-        typeAdded = set() # type: Set[Union[str, Any, None]]
+    def Combine(log: Log, allNatvisFiles: list[ResolvedPath], targetFilePath: str) -> None:
+        ET.register_namespace("", "http://schemas.microsoft.com/vstudio/debugger/natvis/2010")
+        typeAdded: set[str | Any | None] = set()
         namespace = "http://schemas.microsoft.com/vstudio/debugger/natvis/2010"
-        combined = ET.Element('AutoVisualizer')
+        combined = ET.Element("AutoVisualizer")
         namespaces = {"vis": namespace}
 
         for resolvedPathEntry in allNatvisFiles:
             tree = ET.parse(resolvedPathEntry.ResolvedPath)
             root = tree.getroot()
-            for typeElement in root.iterfind('vis:Type', namespaces=namespaces):
-                typeName = typeElement.get('Name')
+            for typeElement in root.iterfind("vis:Type", namespaces=namespaces):
+                typeName = typeElement.get("Name")
                 if typeName not in typeAdded:
                     typeAdded.add(typeName)
                     combined.append(typeElement)
@@ -61,4 +58,4 @@ class NatvisCombiner(object):
         tree = ET.ElementTree(combined)
         ET.indent(tree, space="\t", level=0)
 
-        tree.write(targetFilePath, encoding='utf-8', xml_declaration=True, method='xml')
+        tree.write(targetFilePath, encoding="utf-8", xml_declaration=True, method="xml")

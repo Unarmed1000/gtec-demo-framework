@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright 2018 NXP
 # All rights reserved.
 #
@@ -29,30 +29,31 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-#from typing import List
-from typing import Optional
+# from typing import List
 import xml.etree.ElementTree as ET
+
 from FslBuildGen.Log import Log
 from FslBuildGen.Xml.Exceptions import XmlException2
-from FslBuildGen.Xml.XmlBase import XmlBase
 from FslBuildGen.Xml.Project.XmlClangTidyPlatformCompiler import XmlClangTidyPlatformCompiler
 from FslBuildGen.Xml.Project.XmlClangTidyPlatformDefines import XmlClangTidyPlatformDefines
 from FslBuildGen.Xml.Project.XmlClangTidyPlatformStrictChecks import XmlClangTidyPlatformStrictChecks
+from FslBuildGen.Xml.XmlBase import XmlBase
+
 
 class XmlClangTidyPlatform(XmlBase):
-    __AttribName = 'Name'
+    __AttribName = "Name"
 
     def __init__(self, log: Log, xmlElement: ET.Element) -> None:
         super().__init__(log, xmlElement)
         self._CheckAttributes({self.__AttribName})
         self.Name = self._ReadAttrib(xmlElement, self.__AttribName)
         self.Compiler = self.__TryReadCompiler(log, xmlElement)  # Optional[type: XmlClangTidyPlatformCompiler]
-        self.Defines = self.__TryReadDefines(log, xmlElement)    # Optional[type: XmlClangTidyPlatformDefines]
-        self.StrictChecks = self.__TryReadStrictChecks(log, xmlElement)    # Optional[type: XmlClangTidyPlatformStrictChecks]
+        self.Defines = self.__TryReadDefines(log, xmlElement)  # Optional[type: XmlClangTidyPlatformDefines]
+        self.StrictChecks = self.__TryReadStrictChecks(log, xmlElement)  # Optional[type: XmlClangTidyPlatformStrictChecks]
 
-    def __TryReadCompiler(self, log: Log, xmlElement: ET.Element) -> Optional[XmlClangTidyPlatformCompiler]:
+    def __TryReadCompiler(self, log: Log, xmlElement: ET.Element) -> XmlClangTidyPlatformCompiler | None:
         foundElements = xmlElement.findall("Compiler")
         if len(foundElements) > 1:
             raise XmlException2("There can only be one 'Compiler' element in a ClangTidyConfiguration.Platform")
@@ -60,7 +61,7 @@ class XmlClangTidyPlatform(XmlBase):
             return None
         return XmlClangTidyPlatformCompiler(log, foundElements[0])
 
-    def __TryReadDefines(self, log: Log, xmlElement: ET.Element) -> Optional[XmlClangTidyPlatformDefines]:
+    def __TryReadDefines(self, log: Log, xmlElement: ET.Element) -> XmlClangTidyPlatformDefines | None:
         foundElements = xmlElement.findall("Defines")
         if len(foundElements) > 1:
             raise XmlException2("There can only be one 'Defines' element in a ClangTidyConfiguration.Platform")
@@ -68,7 +69,7 @@ class XmlClangTidyPlatform(XmlBase):
             return None
         return XmlClangTidyPlatformDefines(log, foundElements[0])
 
-    def __TryReadStrictChecks(self, log: Log, xmlElement: ET.Element) -> Optional[XmlClangTidyPlatformStrictChecks]:
+    def __TryReadStrictChecks(self, log: Log, xmlElement: ET.Element) -> XmlClangTidyPlatformStrictChecks | None:
         foundElements = xmlElement.findall("StrictChecks")
         if len(foundElements) > 1:
             raise XmlException2("There can only be one 'StrictChecks' element in a ClangTidyConfiguration.Platform")

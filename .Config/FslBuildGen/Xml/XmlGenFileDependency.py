@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright (c) 2014 Freescale Semiconductor, Inc.
 # All rights reserved.
 #
@@ -29,75 +29,74 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-from typing import Dict
-from typing import Optional
 import xml.etree.ElementTree as ET
+
 from FslBuildGen import Util
-from FslBuildGen.DataTypes import AccessType
-from FslBuildGen.DataTypes import DependencyOutputType
+from FslBuildGen.DataTypes import AccessType, DependencyOutputType
 from FslBuildGen.Log import Log
-from FslBuildGen.Xml.Exceptions import XmlFormatException, XmlInvalidRootElement
+from FslBuildGen.Xml.Exceptions import XmlFormatException
 from FslBuildGen.Xml.XmlBase import XmlBase
 
 
 class XmlGenFileDependency(XmlBase):
-    __AttribName = 'Name'
-    __AttribFlavor = 'Flavor'
-    __AttribAccess = 'Access'
-    __AttribOutputType = 'OutputType'
-    __AttribReferenceOutputAssembly = 'ReferenceOutputAssembly'
-    __AttribIf = 'If'
+    __AttribName = "Name"
+    __AttribFlavor = "Flavor"
+    __AttribAccess = "Access"
+    __AttribOutputType = "OutputType"
+    __AttribReferenceOutputAssembly = "ReferenceOutputAssembly"
+    __AttribIf = "If"
 
     def __init__(self, log: Log, xmlElement: ET.Element) -> None:
         super().__init__(log, xmlElement)
-        self._CheckAttributes({self.__AttribName, self.__AttribFlavor, self.__AttribAccess, self.__AttribOutputType, self.__AttribReferenceOutputAssembly, self.__AttribIf})
-        self.Name = self._ReadAttrib(xmlElement, self.__AttribName)  # type: str
-        flavor = self._TryReadAttrib(xmlElement, self.__AttribFlavor)  # type: Optional[str]
+        self._CheckAttributes(
+            {self.__AttribName, self.__AttribFlavor, self.__AttribAccess, self.__AttribOutputType, self.__AttribReferenceOutputAssembly, self.__AttribIf}
+        )
+        self.Name: str = self._ReadAttrib(xmlElement, self.__AttribName)
+        flavor: str | None = self._TryReadAttrib(xmlElement, self.__AttribFlavor)
         self.Flavor = self.__TryParseFlavor(flavor)
-        access = self._ReadAttrib(xmlElement, self.__AttribAccess, 'Public')  # type: str
-        outputType = self._ReadAttrib(xmlElement, self.__AttribOutputType, 'Reference')  # type: str
+        access: str = self._ReadAttrib(xmlElement, self.__AttribAccess, "Public")
+        outputType: str = self._ReadAttrib(xmlElement, self.__AttribOutputType, "Reference")
         self.ReferenceOutputAssembly = self._ReadBoolAttrib(xmlElement, self.__AttribReferenceOutputAssembly, True)
-        self.IfCondition = self._TryReadAttrib(xmlElement, self.__AttribIf)  # type: Optional[str]
+        self.IfCondition: str | None = self._TryReadAttrib(xmlElement, self.__AttribIf)
 
         if access == "Public":
-            self.Access = AccessType.Public  # type: AccessType
+            self.Access: AccessType = AccessType.Public
         elif access == "Private":
             self.Access = AccessType.Private
         elif access == "Link":
             self.Access = AccessType.Link
         else:
-            raise XmlFormatException("Unknown access type '{0}' on Dependency: '{1}'".format(access, self.Name))
+            raise XmlFormatException(f"Unknown access type '{access}' on Dependency: '{self.Name}'")
 
         self.OutputType = DependencyOutputType.FromString(outputType)
         if self.OutputType != DependencyOutputType.Reference and self.Access != self.Access:
-            raise XmlFormatException("OutputType '{0}' requires AccessType: 'Private'".format(outputType))
+            raise XmlFormatException(f"OutputType '{outputType}' requires AccessType: 'Private'")
 
-    def __TryParseFlavor(self, flavor: Optional[str]) -> Dict[str, str]:
+    def __TryParseFlavor(self, flavor: str | None) -> dict[str, str]:
         if flavor is None or len(flavor) <= 0:
             return {}
-        uniqueIds = {} # type: Dict[str, str]
-        resDict = {} # type: Dict[str, str]
-        entries = flavor.split(',')
+        uniqueIds: dict[str, str] = {}
+        resDict: dict[str, str] = {}
+        entries = flavor.split(",")
         for entry in entries:
-            parts = entry.split('=')
+            parts = entry.split("=")
             if len(parts) != 2:
-                raise XmlFormatException("Dependency flavor constraint '{0}' not in the expected format 'flavor1=option, flavor2=option'".format(flavor))
+                raise XmlFormatException(f"Dependency flavor constraint '{flavor}' not in the expected format 'flavor1=option, flavor2=option'")
             key = parts[0].strip()
             value = parts[1].strip()
             if key in resDict:
-                raise XmlFormatException("Dependency flavor constraint key '{0}' already defined to '{1}'".format(key, resDict[key]))
+                raise XmlFormatException(f"Dependency flavor constraint key '{key}' already defined to '{resDict[key]}'")
             keyId = key.upper()
             if keyId in uniqueIds:
-                raise XmlFormatException("Dependency flavor constraint key '{0}' already collides with '{1}'".format(key, uniqueIds[keyId]))
+                raise XmlFormatException(f"Dependency flavor constraint key '{key}' already collides with '{uniqueIds[keyId]}'")
 
             if not Util.IsValidConstraintFlavorName(key):
-                raise XmlFormatException("Dependency flavor name '{0}' is invalid".format(key))
+                raise XmlFormatException(f"Dependency flavor name '{key}' is invalid")
 
             if not Util.IsValidFlavorOptionName(value):
-                raise XmlFormatException("Dependency flavor option '{1}' is invalid in {0}={1}".format(key, value))
-
+                raise XmlFormatException(f"Dependency flavor option '{value}' is invalid in {key}={value}")
 
             uniqueIds[keyId] = key
             resDict[key] = value

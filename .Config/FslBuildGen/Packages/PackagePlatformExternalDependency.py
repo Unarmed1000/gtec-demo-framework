@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright (c) 2014 Freescale Semiconductor, Inc.
 # All rights reserved.
 #
@@ -29,25 +29,25 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-from typing import Optional
 from typing import Union
-from FslBuildGen.DataTypes import AccessType
-from FslBuildGen.DataTypes import ExternalDependencyType
+
+from FslBuildGen.DataTypes import AccessType, ExternalDependencyType
+from FslBuildGen.PackageIncludeDir import PackageIncludeDir
 from FslBuildGen.Packages.PackageElement import PackageElement
 from FslBuildGen.Packages.Unresolved.UnresolvedExternalDependency import UnresolvedExternalDependency
-from FslBuildGen.PackageIncludeDir import PackageIncludeDir
+
 
 # TODO: eliminate this class and reuse the PackageExternalDependency if possible
 class PackagePlatformExternalDependency(PackageElement):
-    def __init__(self, base: Union[UnresolvedExternalDependency, 'PackagePlatformExternalDependency'], allowPrivate: bool) -> None:
+    def __init__(self, base: Union[UnresolvedExternalDependency, "PackagePlatformExternalDependency"], allowPrivate: bool) -> None:
         super().__init__(base.Name)
-        self.DebugName = base.DebugName # type: str
-        self.TargetName = base.TargetName # type: str
-        self.IncludeDir = base.IncludeDir if base.Access != AccessType.Private or allowPrivate else None  # type: Optional[PackageIncludeDir]
-        self.Location = base.Location  # type: Optional[str]
-        self.Access = base.Access  # type: AccessType
-        self.Type = base.Type  # type: ExternalDependencyType
-        self.IsFirstActualUse = False  # type: bool
+        self.DebugName: str = base.DebugName
+        self.TargetName: str = base.TargetName
+        self.IncludeDir: PackageIncludeDir | None = base.IncludeDir if base.Access != AccessType.Private or allowPrivate else None
+        self.Location: str | None = base.Location
+        self.Access: AccessType = base.Access
+        self.Type: ExternalDependencyType = base.Type
+        self.IsFirstActualUse: bool = False
         self.IsManaged = False

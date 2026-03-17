@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright 2017 NXP
 # All rights reserved.
 #
@@ -29,27 +29,28 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
 from FslBuildGen import Util
 
-class QualifiedRequirementExtensionName(object):
+
+class QualifiedRequirementExtensionName:
     def __init__(self, featureName: str, extensionName: str) -> None:
         super().__init__()
         self.FeatureName = featureName
         self.ExtensionName = extensionName
 
         if not Util.IsValidRequirementName(featureName):
-            raise Exception("The featureName '{0}' is invalid".format(featureName))
+            raise Exception(f"The featureName '{featureName}' is invalid")
         if not Util.IsValidRequirementName(extensionName):
-            raise Exception("The extensionName '{0}' is invalid".format(extensionName))
+            raise Exception(f"The extensionName '{extensionName}' is invalid")
 
     def ToId(self) -> str:
-        return "{0}#{1}".format(self.FeatureName.lower(), self.ExtensionName.lower())
+        return f"{self.FeatureName.lower()}#{self.ExtensionName.lower()}"
 
     def __str__(self) -> str:
-        return "{0}:{1}".format(self.FeatureName, self.ExtensionName)
+        return f"{self.FeatureName}:{self.ExtensionName}"
 
     @staticmethod
     def ToString(featureName: str, extensionName: str) -> str:
-        return "{0}:{1}".format(featureName, extensionName)
+        return f"{featureName}:{extensionName}"

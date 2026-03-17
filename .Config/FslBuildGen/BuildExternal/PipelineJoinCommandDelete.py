@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright 2018 NXP
 # All rights reserved.
 #
@@ -29,33 +28,30 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-from FslBuildGen.Xml.XmlExperimentalRecipe import XmlRecipePipelineJoinCommandDelete
 from FslBuildGen import IOUtil
 from FslBuildGen.BuildExternal.PipelineInfo import PipelineInfo
 from FslBuildGen.BuildExternal.PipelineJoinCommand import PipelineJoinCommand
 from FslBuildGen.Log import Log
+from FslBuildGen.Xml.XmlExperimentalRecipe import XmlRecipePipelineJoinCommandDelete
 
 
 class PipelineJoinCommandDelete(PipelineJoinCommand):
-    def __init__(self, log: Log,
-                 sourceCommand: XmlRecipePipelineJoinCommandDelete,
-                 pipelineInfo: PipelineInfo, finalDstPath: str) -> None:
+    def __init__(self, log: Log, sourceCommand: XmlRecipePipelineJoinCommandDelete, pipelineInfo: PipelineInfo, finalDstPath: str) -> None:
         super().__init__(log, sourceCommand, pipelineInfo, finalDstPath)
         self.__SourceCommand = sourceCommand
 
-
     def DoExecute(self) -> None:
-        """ Delete a file or directory if it exist """
+        """Delete a file or directory if it exist"""
         sourcePath = self.__SourceCommand.Path
         path = sourcePath
-        if  '../' in path or '/..' in path or path.startswith('/') or '\\' in path or path == '..' or len(path) <= 0:
-            raise Exception("Invalid path format '{0}'".format(path))
+        if "../" in path or "/.." in path or path.startswith("/") or "\\" in path or path == ".." or len(path) <= 0:
+            raise Exception(f"Invalid path format '{path}'")
         path = IOUtil.Join(self.FinalDstPath, path)
         if IOUtil.IsDirectory(path):
-            self.LogPrint("Deleting directory '{0}'".format(sourcePath))
+            self.LogPrint(f"Deleting directory '{sourcePath}'")
             IOUtil.SafeRemoveDirectoryTree(path)
         elif IOUtil.IsFile(path):
-            self.LogPrint("Deleting file '{0}'".format(sourcePath))
+            self.LogPrint(f"Deleting file '{sourcePath}'")
             IOUtil.RemoveFile(path)

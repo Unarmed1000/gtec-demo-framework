@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright (c) 2014 Freescale Semiconductor, Inc.
 # All rights reserved.
 #
@@ -28,54 +28,71 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-from typing import Dict
-from typing import List
-from typing import Optional
-#from typing import Set
-#from FslBuildGen import PackageListUtil
-#from FslBuildGen.Config import Config
-from FslBuildGen.DataTypes import AccessType
-from FslBuildGen.DataTypes import DependencyOutputType
-from FslBuildGen.DataTypes import FilterMode
-from FslBuildGen.DataTypes import PackageType
-from FslBuildGen.DependencyGraph import DependencyGraph
-from FslBuildGen.DependencyGraph import DependencyGraphNode
+# from typing import Set
+# from FslBuildGen import PackageListUtil
+# from FslBuildGen.Config import Config
+
+from FslBuildGen.DataTypes import AccessType, FilterMode, PackageType
+from FslBuildGen.DependencyGraph import DependencyGraph, DependencyGraphNode
 from FslBuildGen.Engine.BasicBuildConfig import BasicBuildConfig
 from FslBuildGen.Engine.EngineResolveConfig import EngineResolveConfig
-from FslBuildGen.Exceptions import CircularDependencyException
-from FslBuildGen.Exceptions import CircularDependencyInDependentModuleException
-from FslBuildGen.Exceptions import GroupedException
-from FslBuildGen.Exceptions import UsageErrorException
+from FslBuildGen.Exceptions import CircularDependencyException, CircularDependencyInDependentModuleException, GroupedException, UsageErrorException
 from FslBuildGen.ExternalVariantConstraints import ExternalVariantConstraints
 from FslBuildGen.Generator.GeneratorInfo import GeneratorInfo
 from FslBuildGen.Log import Log
-from FslBuildGen.Packages.Package import Package
-from FslBuildGen.Packages.Package import PackageDependency
 from FslBuildGen.PackageConfig import PackageNameMagicString
-from FslBuildGen.PackageManager import PackageManager
-from FslBuildGen.PackageManager import PackageManagerFilter
+from FslBuildGen.PackageManager import PackageManager, PackageManagerFilter
+from FslBuildGen.Packages.Package import Package, PackageDependency
 from FslBuildGen.ToolConfig import ToolConfig
-from FslBuildGen.Xml.XmlGenFile import XmlGenFile
 from FslBuildGen.Xml.XmlBase2 import FakeXmlGenFileDependency
+from FslBuildGen.Xml.XmlGenFile import XmlGenFile
 
 
-class PackageBuilder(object):
-    def __init__(self, log: Log, configBuildDir: str, configIgnoreNotSupported: bool, configGroupException: bool, toolConfig: ToolConfig,
-                 platformName: str, hostPlatformName: str, basicBuildConfig: BasicBuildConfig, generatorInfo: GeneratorInfo,
-                 genFiles: List[XmlGenFile], packageManagerFilter: PackageManagerFilter,
-                 externalVariantConstraints: ExternalVariantConstraints, engineResolveConfig: EngineResolveConfig,
-                 filterMode: FilterMode, allowExeDependency: bool,
-                 logVerbosity: int = 1, writeGraph: bool = False) -> None:
+class PackageBuilder:
+    def __init__(
+        self,
+        log: Log,
+        configBuildDir: str,
+        configIgnoreNotSupported: bool,
+        configGroupException: bool,
+        toolConfig: ToolConfig,
+        platformName: str,
+        hostPlatformName: str,
+        basicBuildConfig: BasicBuildConfig,
+        generatorInfo: GeneratorInfo,
+        genFiles: list[XmlGenFile],
+        packageManagerFilter: PackageManagerFilter,
+        externalVariantConstraints: ExternalVariantConstraints,
+        engineResolveConfig: EngineResolveConfig,
+        filterMode: FilterMode,
+        allowExeDependency: bool,
+        logVerbosity: int = 1,
+        writeGraph: bool = False,
+    ) -> None:
         super().__init__()
 
         # create top level package and resolve build order
         log.LogPrintVerbose(logVerbosity, "Validating dependencies")
 
-        packageManager = PackageManager(log, configBuildDir, configIgnoreNotSupported, toolConfig, platformName, hostPlatformName, basicBuildConfig,
-                                        generatorInfo, genFiles, packageManagerFilter, externalVariantConstraints, engineResolveConfig,
-                                        writeGraph, filterMode, allowExeDependency)
+        packageManager = PackageManager(
+            log,
+            configBuildDir,
+            configIgnoreNotSupported,
+            toolConfig,
+            platformName,
+            hostPlatformName,
+            basicBuildConfig,
+            generatorInfo,
+            genFiles,
+            packageManagerFilter,
+            externalVariantConstraints,
+            engineResolveConfig,
+            writeGraph,
+            filterMode,
+            allowExeDependency,
+        )
         packages = packageManager.Packages
 
         # Build a graph containing all packages
@@ -86,7 +103,7 @@ class PackageBuilder(object):
 
         # Extract the top level nodes
         nodes = graph.GetNodesWithNoIncomingDependencies()
-        #useFallback = True
+        # useFallback = True
         if len(nodes) > 0:
             topLevelGenFile = XmlGenFile(log, toolConfig, toolConfig.DefaultPackageLanguage)
             topLevelGenFile.Name = PackageNameMagicString.TopLevelName
@@ -103,28 +120,29 @@ class PackageBuilder(object):
             topLevelGenFile.Name = PackageNameMagicString.TopLevelName
             topLevelGenFile.SetType(PackageType.TopLevel)
 
-        topLevelPackage = packageManager.CreatePackage(log, configBuildDir, configIgnoreNotSupported, toolConfig, platformName, hostPlatformName,
-                                                       topLevelGenFile, True)
+        topLevelPackage = packageManager.CreatePackage(
+            log, configBuildDir, configIgnoreNotSupported, toolConfig, platformName, hostPlatformName, topLevelGenFile, True
+        )
         graph.AddNodeAndEdges(topLevelPackage)
 
         # Since we need to resolve the build order we might as well verify dependencies at the same time
         self.__ValidateDependencies(configGroupException, packages)
-        self.AllPackages = packages  # type: List[Package]
+        self.AllPackages: list[Package] = packages
         self.TopLevelPackage = topLevelPackage
         self.__ResolveAllPackageDependencies(log, topLevelPackage)
-#        self.TopLevelPackage = PackageListUtil.GetTopLevelPackage(packages)
-#        self.__ResolveAllPackageDependencies(config, self.TopLevelPackage)
 
+    #        self.TopLevelPackage = PackageListUtil.GetTopLevelPackage(packages)
+    #        self.__ResolveAllPackageDependencies(config, self.TopLevelPackage)
 
-    def __ValidateDependencies(self, configGroupException: bool, packages: List[Package]) -> None:
-        exceptionList = []  # type: List[Exception]
-        exceptionList2 = []  # type: List[Exception]
+    def __ValidateDependencies(self, configGroupException: bool, packages: list[Package]) -> None:
+        exceptionList: list[Exception] = []
+        exceptionList2: list[Exception] = []
         for package in packages:
             try:
-                #allDependenciesDict = {}
-                #stack = [package]
+                # allDependenciesDict = {}
+                # stack = [package]
                 graph = DependencyGraph(package)
-                orderedDependencyList = []  # type: List[Package]
+                orderedDependencyList: list[Package] = []
                 self.__ValidateDependenciesFor(orderedDependencyList, package, graph)
                 orderedDependencyList.reverse()
                 package.ResolvedBuildOrder = orderedDependencyList
@@ -149,8 +167,7 @@ class PackageBuilder(object):
         if len(exceptionList2) > 0:
             raise GroupedException(exceptionList2)
 
-
-    def __ValidateDependenciesFor(self, rOrderedDependencyList: List[Package], package: Package, graph: DependencyGraph) -> None:
+    def __ValidateDependenciesFor(self, rOrderedDependencyList: list[Package], package: Package, graph: DependencyGraph) -> None:
         packageNode = graph.Get(package)
         # TODO: make the get method never return none
         if packageNode is None:
@@ -161,9 +178,8 @@ class PackageBuilder(object):
                 self.HandleCircularDependencies(graph, packageNode)
             nodes.sort(key=lambda node: node.Name.lower())
             for node in nodes:
-                #if node != packageNode:
+                # if node != packageNode:
                 rOrderedDependencyList.append(node.Package)
-
 
     def HandleCircularDependencies(self, graph: DependencyGraph, packageNode: DependencyGraphNode) -> None:
         keepRemoving = True
@@ -171,16 +187,16 @@ class PackageBuilder(object):
             keepRemoving = len(graph.RemoveNodesWithNoDependencies()) > 0
 
         # check if this package is actually part of the circular dependency or not
-        if not packageNode in graph.Nodes:
-            #raise CircularDependencyInDependentModuleException("'{0}' uses a package that has a circular dependency".format(packageNode.Name))
-            raise CircularDependencyException("'{0}' uses a package that has a circular dependency".format(packageNode.Name))
+        if packageNode not in graph.Nodes:
+            # raise CircularDependencyInDependentModuleException("'{0}' uses a package that has a circular dependency".format(packageNode.Name))
+            raise CircularDependencyException(f"'{packageNode.Name}' uses a package that has a circular dependency")
 
         # We are only interested in the dependencies that start at packageNode
-        circularDependencies = [] # type: List[List[DependencyGraphNode]]
-        dependencies = [packageNode]  # type: List[DependencyGraphNode]
+        circularDependencies: list[list[DependencyGraphNode]] = []
+        dependencies: list[DependencyGraphNode] = [packageNode]
         self.BuildDependencyList(circularDependencies, dependencies, packageNode)
 
-        circularDepStringsSet = set() # Set[str]
+        circularDepStringsSet = set()  # Set[str]
         for circularDep in circularDependencies:
             circularDepStringsSet.add(self.GetCircularDependencyString(circularDep))
 
@@ -189,13 +205,11 @@ class PackageBuilder(object):
 
         raise CircularDependencyException("Circular dependency detected while validating " + packageNode.Name + ":\n  " + "\n  ".join(circularDepStrings))
 
-
-    def BuildDependencyList(self,
-                            rCircularDependencies: List[List[DependencyGraphNode]],
-                            dependencies: List[DependencyGraphNode],
-                            node: DependencyGraphNode) -> None:
+    def BuildDependencyList(
+        self, rCircularDependencies: list[list[DependencyGraphNode]], dependencies: list[DependencyGraphNode], node: DependencyGraphNode
+    ) -> None:
         for depNode in node.To:
-            if not depNode in dependencies:
+            if depNode not in dependencies:
                 dependencies.append(depNode)
                 self.BuildDependencyList(rCircularDependencies, dependencies, depNode)
                 dependencies.pop()
@@ -204,8 +218,7 @@ class PackageBuilder(object):
                 circularDependencyList.append(depNode)
                 rCircularDependencies.append(circularDependencyList)
 
-
-    def GetCircularDependencyString(self, srcList: List[DependencyGraphNode]) -> str:
+    def GetCircularDependencyString(self, srcList: list[DependencyGraphNode]) -> str:
         if srcList is None or len(srcList) < 1:
             raise UsageErrorException("No circular dependency exist in the supplied list")
         try:
@@ -213,11 +226,10 @@ class PackageBuilder(object):
             # we need to find the first occurrance of the last element
             index = srcList.index(srcList[-1])
             return self.GetNameListString(srcList[index:], "->")
-        except ValueError:
-            raise UsageErrorException("No circular dependency exist in the supplied list")
+        except ValueError as ex:
+            raise UsageErrorException("No circular dependency exist in the supplied list") from ex
 
-
-    def GetNameListString(self, srcList: List[DependencyGraphNode], seperator: str) -> str:
+    def GetNameListString(self, srcList: list[DependencyGraphNode], seperator: str) -> str:
         strContent = ""
         isFirst = True
         for entry in srcList:
@@ -228,7 +240,6 @@ class PackageBuilder(object):
                 strContent += seperator + entry.Name
         return strContent
 
-
     def __CountArrows(self, strContent: str) -> int:
         count = 0
         index = strContent.find("->")
@@ -238,18 +249,16 @@ class PackageBuilder(object):
             index = strContent.find("->", index + 2)
         return count
 
-
     def __ResolveAllPackageDependencies(self, log: Log, topLevel: Package) -> None:
         for package in topLevel.ResolvedBuildOrder:
             self.__DoResolveAllPackageDependencies(log, package)
 
-
     def __DoResolveAllPackageDependencies(self, log: Log, package: Package) -> None:
         # FIX: we are doing some of the same checks twice here
-        addedDict = {}  # type: Dict[str, PackageDependency]
+        addedDict: dict[str, PackageDependency] = {}
         # First we resolve all direct dependencies
         for dep in package.ResolvedDirectDependencies:
-            if not dep.Name in addedDict:
+            if dep.Name not in addedDict:
                 package.ResolvedAllDependencies.append(dep)
                 addedDict[dep.Name] = dep
             else:
@@ -265,9 +274,9 @@ class PackageBuilder(object):
             for dep in directDep.Package.ResolvedAllDependencies:
                 # ensure that anything we get via a non public access type keeps gets a access type that is >= directDep.Access
                 if dep.Access.value < directDep.Access.value or dep.Access == AccessType.Private:
-                    #dep = PackageDependency(dep.Package, directDep.Access)
+                    # dep = PackageDependency(dep.Package, directDep.Access)
                     dep = PackageDependency(dep.Package, AccessType.Link, dep.OutputType, dep.ReferenceOutputAssembly)
-                if not dep.Name in addedDict:
+                if dep.Name not in addedDict:
                     package.ResolvedAllDependencies.append(dep)
                     addedDict[dep.Name] = dep
                 else:
@@ -279,20 +288,21 @@ class PackageBuilder(object):
                         addedDict[dep.Name] = dep
                         foundDep = self.__TryFindDep(package.ResolvedDirectDependencies, dep)
                         if foundDep is not None:
-                            log.DoPrintWarning("Package '{0}' requested dependency access to '{1}', overwritten by dependency from '{2}'".format(package.Name, dep.Name, directDep.Name))
+                            log.DoPrintWarning(
+                                f"Package '{package.Name}' requested dependency access to '{dep.Name}', overwritten by dependency from '{directDep.Name}'"
+                            )
                             package.ResolvedDirectDependencies.remove(foundDep)
                             package.ResolvedDirectDependencies.append(dep)
 
         package.ResolvedDirectDependencies.sort(key=lambda s: s.Name.lower())
         package.ResolvedAllDependencies.sort(key=lambda s: s.Name.lower())
 
-        #tmp = []
-        #for dep in package.ResolvedAllDependencies:
+        # tmp = []
+        # for dep in package.ResolvedAllDependencies:
         #    tmp.append(dep.Name)
-        #print ("%s -> %s" % (package.Name, ", ".join(tmp)))
+        # print ("%s -> %s" % (package.Name, ", ".join(tmp)))
 
-
-    def __TryFindDep(self, deps: List[PackageDependency], findDep: PackageDependency) -> Optional[PackageDependency]:
+    def __TryFindDep(self, deps: list[PackageDependency], findDep: PackageDependency) -> PackageDependency | None:
         for dep in deps:
             if dep.Name == findDep.Name:
                 return dep

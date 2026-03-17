@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright 2018 NXP
 # All rights reserved.
 #
@@ -29,9 +28,9 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-from typing import Optional
+
 from FslBuildGen import IOUtil
 from FslBuildGen.BuildExternal.PipelineInfo import PipelineInfo
 from FslBuildGen.BuildExternal.PipelineJoinCommand import PipelineJoinCommand
@@ -41,20 +40,17 @@ from FslBuildGen.Xml.XmlExperimentalRecipe import XmlRecipePipelineJoinCommandGi
 
 
 class PipelineJoinCommandGitApply(PipelineJoinCommand):
-    def __init__(self, log: Log,
-                 sourceCommand: XmlRecipePipelineJoinCommandGitApply,
-                 pipelineInfo: PipelineInfo,
-                 finalDstPath: str,
-                 task: Optional[GitApplyTask]) -> None:
+    def __init__(
+        self, log: Log, sourceCommand: XmlRecipePipelineJoinCommandGitApply, pipelineInfo: PipelineInfo, finalDstPath: str, task: GitApplyTask | None
+    ) -> None:
         super().__init__(log, sourceCommand, pipelineInfo, finalDstPath)
         if task is None:
-            raise Exception("The '{0}' operation has not been enabled for this platform".format(sourceCommand.CommandName))
+            raise Exception(f"The '{sourceCommand.CommandName}' operation has not been enabled for this platform")
         self.Task = task
         self.__SourceCommand = sourceCommand
 
-
     def DoExecute(self) -> None:
-        """ Copy a file or directory to the destination """
+        """Copy a file or directory to the destination"""
         # Try to do a lookup
         srcPath = self.TryResolveSrcPathString(self.__SourceCommand.From)
         if srcPath is None:

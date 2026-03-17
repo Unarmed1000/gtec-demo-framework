@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright (c) 2014 Freescale Semiconductor, Inc.
 # All rights reserved.
 #
@@ -29,22 +29,19 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-from typing import Optional
-from typing import Set
 import xml.etree.ElementTree as ET
-from FslBuildGen.DataTypes import BoolStringHelper
-from FslBuildGen.DataTypes import IncludePriority
+
+from FslBuildGen.DataTypes import BoolStringHelper, IncludePriority
 from FslBuildGen.Log import Log
 from FslBuildGen.MatchUtil import MatchUtil
-from FslBuildGen.Version import Version
 from FslBuildGen.SemanticVersion2 import SemanticVersion2
 from FslBuildGen.SemanticVersionPattern import SemanticVersionPattern
+from FslBuildGen.Version import Version
+from FslBuildGen.Xml.Exceptions import XmlException2, XmlFormatException, XmlRequiredAttributeMissingException
 from FslBuildGen.Xml.XmlBaseInfo import XmlBaseInfo
-from FslBuildGen.Xml.Exceptions import XmlException2
-from FslBuildGen.Xml.Exceptions import XmlFormatException
-from FslBuildGen.Xml.Exceptions import XmlRequiredAttributeMissingException
+
 
 class XmlBase(XmlBaseInfo):
     def __init__(self, log: Log, xmlElement: ET.Element) -> None:
@@ -54,29 +51,31 @@ class XmlBase(XmlBaseInfo):
     def BaseLoad(self, xmlElement: ET.Element) -> None:
         super().BaseLoad(xmlElement)
 
-    def _CheckAttributes(self, validAttributesSet: Set[str]) -> None:
-        for attributeName in self.XMLElement.attrib.keys():
+    def _CheckAttributes(self, validAttributesSet: set[str]) -> None:
+        for attributeName in self.XMLElement.attrib:
             if attributeName not in validAttributesSet:
                 if len(validAttributesSet) > 0:
                     validAttributeList = list(validAttributesSet)
                     validAttributeList.sort()
                     candidateStr = MatchUtil.BuildCandidateListString(attributeName, validAttributeList, 1)
-                    raise XmlException2("Element '{0}', found invalid attribute '{1}', did you mean '{2}'. Valid attributes are: {3}".format(self.XMLElement.tag, attributeName, candidateStr, ", ".join(validAttributeList)))
+                    raise XmlException2(
+                        "Element '{}', found invalid attribute '{}', did you mean '{}'. Valid attributes are: {}".format(
+                            self.XMLElement.tag, attributeName, candidateStr, ", ".join(validAttributeList)
+                        )
+                    )
                 else:
-                    raise XmlException2("Element '{0}', found invalid attribute '{1}', this element can not contain attributes".format(self.XMLElement.tag, attributeName))
-
+                    raise XmlException2(f"Element '{self.XMLElement.tag}', found invalid attribute '{attributeName}', this element can not contain attributes")
 
     def _GetElement(self, xmlElement: ET.Element, elementName: str) -> ET.Element:
         foundElement = xmlElement.find(elementName)
         if foundElement is None:
-            raise XmlException2("Could not locate the expected {0} element".format(elementName))
+            raise XmlException2(f"Could not locate the expected {elementName} element")
         return foundElement
 
-
-    def _TryGetElement(self, xmlElement: ET.Element, elementName: str) -> Optional[ET.Element]:
+    def _TryGetElement(self, xmlElement: ET.Element, elementName: str) -> ET.Element | None:
         return xmlElement.find(elementName)
 
-    #def _LogAttributes(self, validAttributeNames):
+    # def _LogAttributes(self, validAttributeNames):
     #    """ Raise a exception if there is any attributes isn't on the list """
     #    for entry in xmlElement.attrib.keys():
     #        if not entry in validAttributeNames:
@@ -85,18 +84,16 @@ class XmlBase(XmlBaseInfo):
     def _HasAttrib(self, xmlElement: ET.Element, attribName: str) -> bool:
         return attribName in xmlElement.attrib
 
-
-    def _TryReadAttrib(self, xmlElement: ET.Element, attribName: str, defaultValue: Optional[str] = None) -> Optional[str]:
-        """ Read the attrib if its available, else return defaultValue """
+    def _TryReadAttrib(self, xmlElement: ET.Element, attribName: str, defaultValue: str | None = None) -> str | None:
+        """Read the attrib if its available, else return defaultValue"""
         if attribName in xmlElement.attrib:
             return xmlElement.attrib[attribName]
         return defaultValue
 
-
-    def _ReadAttrib(self, xmlElement: ET.Element, attribName: str, defaultValue: Optional[str] = None) -> str:
-        """ If the attrib is there we return it
-            if its not there and defaultValue is not None we return the default value.
-            if its not there and defaultValue is None we throw a exception.
+    def _ReadAttrib(self, xmlElement: ET.Element, attribName: str, defaultValue: str | None = None) -> str:
+        """If the attrib is there we return it
+        if its not there and defaultValue is not None we return the default value.
+        if its not there and defaultValue is None we throw a exception.
         """
         value = self._TryReadAttrib(xmlElement, attribName, defaultValue)
         if value is not None:
@@ -105,78 +102,73 @@ class XmlBase(XmlBaseInfo):
             return defaultValue
         raise XmlRequiredAttributeMissingException(xmlElement, attribName)
 
-
-    def _TryReadBoolAttrib(self, xmlElement: ET.Element, attribName: str, defaultValue: Optional[bool]) -> Optional[bool]:
+    def _TryReadBoolAttrib(self, xmlElement: ET.Element, attribName: str, defaultValue: bool | None) -> bool | None:
         value = self._TryReadAttrib(xmlElement, attribName, None)
         if value is None:
             return defaultValue
 
         res = BoolStringHelper.TryFromString(value)
-        if res == None:
-            self.Log.DoPrintWarning("Failed to parse as bool attribute: '{0}, using default settings".format(value));
-        return res;
+        if res is None:
+            self.Log.DoPrintWarning(f"Failed to parse as bool attribute: '{value}, using default settings")
+        return res
 
-
-    def _ReadBoolAttrib(self, xmlElement: ET.Element, attribName: str, defaultValue: Optional[bool] = None) -> bool:
-        """ If the attrib is there we return it
-            if its not there and defaultValue is not None we return the default value.
-            if its not there and defaultValue is None we throw a exception.
+    def _ReadBoolAttrib(self, xmlElement: ET.Element, attribName: str, defaultValue: bool | None = None) -> bool:
+        """If the attrib is there we return it
+        if its not there and defaultValue is not None we return the default value.
+        if its not there and defaultValue is None we throw a exception.
         """
         strValue = self._TryReadAttrib(xmlElement, attribName, None)
         if strValue is not None:
             return BoolStringHelper.FromString(strValue)
         elif defaultValue is not None:
             return defaultValue
-        raise XmlFormatException("{0} expects a value of either 'true' or 'false' not '{1}'".format(attribName, strValue))
+        raise XmlFormatException(f"{attribName} expects a value of either 'true' or 'false' not '{strValue}'")
 
-
-    def _ReadIncludePriorityAttrib(self, xmlElement: ET.Element, attribName: str, defaultValue: Optional[IncludePriority] = None) -> IncludePriority:
-        """ If the attrib is there we return it
-            if its not there and defaultValue is not None we return the default value.
-            if its not there and defaultValue is None we throw a exception.
+    def _ReadIncludePriorityAttrib(self, xmlElement: ET.Element, attribName: str, defaultValue: IncludePriority | None = None) -> IncludePriority:
+        """If the attrib is there we return it
+        if its not there and defaultValue is not None we return the default value.
+        if its not there and defaultValue is None we throw a exception.
         """
         strValue = self._TryReadAttrib(xmlElement, attribName, None)
         if strValue is not None:
             res = IncludePriority.TryFromString(strValue)
             if res is not None:
                 return res
-            raise XmlFormatException("{0} expects a value of either 'Before' or 'After' not '{1}'".format(attribName, strValue))
+            raise XmlFormatException(f"{attribName} expects a value of either 'Before' or 'After' not '{strValue}'")
         elif defaultValue is not None:
             return defaultValue
-        raise XmlFormatException("{0} expects a value of either 'true' or 'false' not '{1}'".format(attribName, strValue))
+        raise XmlFormatException(f"{attribName} expects a value of either 'true' or 'false' not '{strValue}'")
 
-
-    def _TryReadAttribAsVersion(self, xmlElement: ET.Element, attribName: str,
-                                defaultValue: Optional[Version] = None) -> Optional[Version]:
-        """ Read the attrib if its available, else return defaultValue """
+    def _TryReadAttribAsVersion(self, xmlElement: ET.Element, attribName: str, defaultValue: Version | None = None) -> Version | None:
+        """Read the attrib if its available, else return defaultValue"""
         strValue = self._TryReadAttrib(xmlElement, attribName, None)
         if strValue is not None:
             res = Version.TryFromString(strValue)
             if res is None:
-                raise XmlFormatException("{0} expects a value in the format 'major[.minor[.patch[.tweak]]]' not '{1}'".format(attribName, strValue))
+                raise XmlFormatException(f"{attribName} expects a value in the format 'major[.minor[.patch[.tweak]]]' not '{strValue}'")
             return res
         return defaultValue
 
-
-    def _TryReadAttribAsSemanticVersion2(self, xmlElement: ET.Element, attribName: str,
-                                         defaultValue: Optional[SemanticVersion2] = None) -> Optional[SemanticVersion2]:
-        """ Read the attrib if its available, else return defaultValue """
+    def _TryReadAttribAsSemanticVersion2(
+        self, xmlElement: ET.Element, attribName: str, defaultValue: SemanticVersion2 | None = None
+    ) -> SemanticVersion2 | None:
+        """Read the attrib if its available, else return defaultValue"""
         strValue = self._TryReadAttrib(xmlElement, attribName, None)
         if strValue is not None:
             res = SemanticVersion2.TryFromString(strValue)
             if res is None:
-                raise XmlFormatException("{0} expects a value in the format 'major[.minor[.patch[.tweak]]][-suffix]' not '{1}'".format(attribName, strValue))
+                raise XmlFormatException(f"{attribName} expects a value in the format 'major[.minor[.patch[.tweak]]][-suffix]' not '{strValue}'")
             return res
         return defaultValue
 
-
-    def _TryReadAttribAsSemanticVersionPattern(self, xmlElement: ET.Element, attribName: str,
-                                         defaultValue: Optional[SemanticVersionPattern] = None) -> Optional[SemanticVersionPattern]:
-        """ Read the attrib if its available, else return defaultValue """
+    def _TryReadAttribAsSemanticVersionPattern(
+        self, xmlElement: ET.Element, attribName: str, defaultValue: SemanticVersionPattern | None = None
+    ) -> SemanticVersionPattern | None:
+        """Read the attrib if its available, else return defaultValue"""
         strValue = self._TryReadAttrib(xmlElement, attribName, None)
         if strValue is not None:
             res = SemanticVersionPattern.TryFromString(strValue)
             if res is None:
-                raise XmlFormatException("{0} expects a value in the format 'major[.minor[.patch[.tweak]]][-suffix]' not '{1}'".format(attribName, strValue))
+                raise XmlFormatException(f"{attribName} expects a value in the format 'major[.minor[.patch[.tweak]]][-suffix]' not '{strValue}'")
             return res
         return defaultValue

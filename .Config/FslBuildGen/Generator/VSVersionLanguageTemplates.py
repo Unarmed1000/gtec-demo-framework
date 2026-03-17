@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright (c) 2016 Freescale Semiconductor, Inc.
 # All rights reserved.
 #
@@ -29,25 +29,22 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-from typing import Dict
-from typing import Optional
+
 from FslBuildGen.DataTypes import PackageLanguage
 from FslBuildGen.Xml.XmlNewVSProjectTemplateFile import XmlNewVSProjectTemplateFile
 
 
-class VSVersionLanguageTemplates(object):
+class VSVersionLanguageTemplates:
     def __init__(self, packageLanguage: PackageLanguage) -> None:
         super().__init__()
         self.PackageLanguage = packageLanguage
-        self.TemplateDict = {}  # type: Dict[str, XmlNewVSProjectTemplateFile]
-
+        self.TemplateDict: dict[str, XmlNewVSProjectTemplateFile] = {}
 
     def AddTemplate(self, template: XmlNewVSProjectTemplateFile) -> None:
         self.TemplateDict[template.Id] = template
 
-
-    def TryGet(self, templateName: str) -> Optional[XmlNewVSProjectTemplateFile]:
+    def TryGet(self, templateName: str) -> XmlNewVSProjectTemplateFile | None:
         templateId = templateName.lower()
-        return self.TemplateDict[templateId] if templateId in self.TemplateDict else None
+        return self.TemplateDict.get(templateId, None)

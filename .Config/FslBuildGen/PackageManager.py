@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright (c) 2014 Freescale Semiconductor, Inc.
 # All rights reserved.
 #
@@ -29,47 +29,39 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-from typing import Dict
-from typing import List
-from typing import Optional
-from typing import Tuple
 import xml.etree.ElementTree as ET
+
 from FslBuildGen import PackageConfig
-from FslBuildGen.Build.Filter import PackageFilter
-from FslBuildGen.Build.Filter import RequirementFilter
-#from FslBuildGen.Config import Config
-from FslBuildGen.DataTypes import BuildPlatformType
-from FslBuildGen.DataTypes import FilterMode
-from FslBuildGen.DataTypes import PackageType
+from FslBuildGen.Build.Filter import PackageFilter, RequirementFilter
+
+# from FslBuildGen.Config import Config
+from FslBuildGen.DataTypes import BuildPlatformType, FilterMode, PackageType
 from FslBuildGen.Engine.BasicBuildConfig import BasicBuildConfig
 from FslBuildGen.Engine.EngineResolveConfig import EngineResolveConfig
 from FslBuildGen.Engine.GraphImageSaveInfo import GraphImageSaveInfo
-from FslBuildGen.Engine.Resolver.PackageManager2 import PackageManager2
-from FslBuildGen.Engine.Resolver.PreResolver import PreResolver
-from FslBuildGen.Engine.Resolver.PreResolvePackageResult import PreResolvePackageResult
-from FslBuildGen.Engine.Resolver.ProcessedPackage import ProcessedPackage
 from FslBuildGen.Engine.Resolver import PreResolvePackageResultUtil
+from FslBuildGen.Engine.Resolver.PackageManager2 import PackageManager2
+from FslBuildGen.Engine.Resolver.PreResolvePackageResult import PreResolvePackageResult
+from FslBuildGen.Engine.Resolver.PreResolver import PreResolver
+from FslBuildGen.Engine.Resolver.ProcessedPackage import ProcessedPackage
 from FslBuildGen.Engine.Unresolved.UnresolvedPackageName import UnresolvedPackageName
-from FslBuildGen.Exceptions import DependencyNotFoundException
-from FslBuildGen.Exceptions import InternalErrorException
-from FslBuildGen.Exceptions import InvalidDependencyException
-from FslBuildGen.Exceptions import UsageErrorException
+from FslBuildGen.Exceptions import DependencyNotFoundException, InternalErrorException, InvalidDependencyException, UsageErrorException
 from FslBuildGen.ExternalVariantConstraints import ExternalVariantConstraints
-from FslBuildGen.Log import Log
 from FslBuildGen.Generator.GeneratorInfo import GeneratorInfo
+from FslBuildGen.Log import Log
 from FslBuildGen.PackageFilters import PackageFilters
-from FslBuildGen.Packages.Package import Package
-from FslBuildGen.Packages.Package import PackageDependency
+from FslBuildGen.Packages.Package import Package, PackageDependency
 from FslBuildGen.Packages.PackageInstanceName import PackageInstanceName
 from FslBuildGen.Packages.PackagePlatform import PackagePlatform
 from FslBuildGen.Packages.PackageProjectContext import PackageProjectContext
 from FslBuildGen.Packages.PackageProjectContextBasePackage import PackageProjectContextBasePackage
-from FslBuildGen.Packages.Unresolved.XmlConvert import XmlConvert
 from FslBuildGen.Packages.Unresolved.UnresolvedFactory import FactoryCreateContext
-#from FslBuildGen.Packages.Unresolved.UnresolvedFactory import UnresolvedFactory
+
+# from FslBuildGen.Packages.Unresolved.UnresolvedFactory import UnresolvedFactory
 from FslBuildGen.Packages.Unresolved.UnresolvedPackage import UnresolvedPackage
+from FslBuildGen.Packages.Unresolved.XmlConvert import XmlConvert
 from FslBuildGen.PlatformUtil import PlatformUtil
 from FslBuildGen.ProjectId import ProjectId
 from FslBuildGen.ToolConfig import ToolConfig
@@ -77,33 +69,47 @@ from FslBuildGen.ToolConfigBasePackage import ToolConfigBasePackage
 from FslBuildGen.ToolConfigPackageProjectContextUtil import ToolConfigPackageProjectContextUtil
 from FslBuildGen.Version import Version
 from FslBuildGen.Xml.XmlGenFile import XmlGenFile
-from FslBuildGen.Xml.XmlStuff import FakeXmlGenFilePlatform
-from FslBuildGen.Xml.XmlStuff import LocalPackageDefaultValues
-from FslBuildGen.Xml.XmlStuff import XmlGenFilePlatform
+from FslBuildGen.Xml.XmlStuff import FakeXmlGenFilePlatform, LocalPackageDefaultValues, XmlGenFilePlatform
 
 
-class PackageManagerFilter(object):
-    def __init__(self, requestedFiles: List[str], packageFilters: PackageFilters) -> None:
+class PackageManagerFilter:
+    def __init__(self, requestedFiles: list[str], packageFilters: PackageFilters) -> None:
         super().__init__()
         self.RequestedFiles = requestedFiles
         self.PackageFilters = packageFilters
 
-class ProjectContextCache(object):
+
+class ProjectContextCache:
     def __init__(self) -> None:
         super().__init__()
-        self.__Cache = dict()  # type: Dict[str, PackageProjectContext]
+        self.__Cache: dict[str, PackageProjectContext] = {}
 
     def Add(self, projectContext: PackageProjectContext) -> None:
         self.__Cache[projectContext.ProjectName] = projectContext
 
-    def TryGet(self, projectName: str) -> Optional[PackageProjectContext]:
-        return self.__Cache[projectName] if projectName in self.__Cache else None
+    def TryGet(self, projectName: str) -> PackageProjectContext | None:
+        return self.__Cache.get(projectName, None)
 
-class PackageManager(object):
-    def __init__(self, log: Log, configBuildDir: str, configIgnoreNotSupported: bool, toolConfig: ToolConfig, platformName: str,
-                 hostPlatformName: str, basicBuildConfig: BasicBuildConfig, generatorInfo: GeneratorInfo, genFiles: List[XmlGenFile],
-                 packageManagerFilter: PackageManagerFilter, externalVariantConstraints: ExternalVariantConstraints,
-                 engineResolveConfig: EngineResolveConfig, writeGraph: bool, filterMode: FilterMode, allowExeDependency: bool) -> None:
+
+class PackageManager:
+    def __init__(
+        self,
+        log: Log,
+        configBuildDir: str,
+        configIgnoreNotSupported: bool,
+        toolConfig: ToolConfig,
+        platformName: str,
+        hostPlatformName: str,
+        basicBuildConfig: BasicBuildConfig,
+        generatorInfo: GeneratorInfo,
+        genFiles: list[XmlGenFile],
+        packageManagerFilter: PackageManagerFilter,
+        externalVariantConstraints: ExternalVariantConstraints,
+        engineResolveConfig: EngineResolveConfig,
+        writeGraph: bool,
+        filterMode: FilterMode,
+        allowExeDependency: bool,
+    ) -> None:
         super().__init__()
 
         self._AllowExeDependency = allowExeDependency
@@ -113,15 +119,17 @@ class PackageManager(object):
         createContext = PackageManager.__CreateFactoryCreateContext(log, toolConfig, generatorInfo)
 
         # Handle flavor package resolving.
-        unresolvedInput = self.__CreateInitialUnresolvedPackageList(configIgnoreNotSupported, toolConfig, platformName, hostPlatformName, genFiles,
-                                                                    createContext)
+        unresolvedInput = self.__CreateInitialUnresolvedPackageList(
+            configIgnoreNotSupported, toolConfig, platformName, hostPlatformName, genFiles, createContext
+        )
 
         graphImageSaveInfo = GraphImageSaveInfo(toolConfig.ProjectInfo.Contexts) if writeGraph else None
-        unresolvedPackages = PackageManager2.Resolve2(basicBuildConfig, createContext, unresolvedInput, externalVariantConstraints,
-                                                      engineResolveConfig, graphImageSaveInfo)
+        unresolvedPackages = PackageManager2.Resolve2(
+            basicBuildConfig, createContext, unresolvedInput, externalVariantConstraints, engineResolveConfig, graphImageSaveInfo
+        )
         unresolvedPackages = PackageManager.__Filter(log, unresolvedPackages, packageManagerFilter, filterMode)
 
-        uniqueDict = {}  # type: Dict[PackageInstanceName, Package]
+        uniqueDict: dict[PackageInstanceName, Package] = {}
         for unresolvedPackage in unresolvedPackages:
             if unresolvedPackage.SourcePackage.NameInfo.FullName not in uniqueDict:
                 uniqueDict[unresolvedPackage.SourcePackage.NameInfo.FullName] = Package(log, configBuildDir, unresolvedPackage, self._AllowExeDependency)
@@ -130,34 +138,39 @@ class PackageManager(object):
 
         self.__unresolvedPackages = unresolvedPackages
         self.OriginalPackageDict = uniqueDict
-        self.Packages = list(uniqueDict.values())  # type: List[Package]
+        self.Packages: list[Package] = list(uniqueDict.values())
 
         # Resolve dependency package names -> actual package objects
         for package in self.Packages:
             self.__ResolvePackageDependencies(package, self.OriginalPackageDict)
 
-
-    def __CreateInitialUnresolvedPackageList(self, configIgnoreNotSupported: bool, toolConfig: ToolConfig, platformName: str, hostPlatformName: str,
-                                             genFiles: List[XmlGenFile], createContext: FactoryCreateContext) -> List[UnresolvedPackage]:
-        #clonedList = list(genFiles)
+    def __CreateInitialUnresolvedPackageList(
+        self,
+        configIgnoreNotSupported: bool,
+        toolConfig: ToolConfig,
+        platformName: str,
+        hostPlatformName: str,
+        genFiles: list[XmlGenFile],
+        createContext: FactoryCreateContext,
+    ) -> list[UnresolvedPackage]:
+        # clonedList = list(genFiles)
         # Create a fake top level file and append it to the list
-        #topLevelGenFile = XmlGenFile(config, config.ToolConfig.DefaultPackageLanguage)
-        #topLevelGenFile.Name = PackageNameMagicString.TopLevelName
-        #topLevelGenFile.SetType(PackageType.TopLevel)
-        #clonedList.append(topLevelGenFile)
+        # topLevelGenFile = XmlGenFile(config, config.ToolConfig.DefaultPackageLanguage)
+        # topLevelGenFile.Name = PackageNameMagicString.TopLevelName
+        # topLevelGenFile.SetType(PackageType.TopLevel)
+        # clonedList.append(topLevelGenFile)
 
-        unresolvedPackageDict = {}  # type: Dict[str, UnresolvedPackage]
+        unresolvedPackageDict: dict[str, UnresolvedPackage] = {}
         for genFile in genFiles:
             if genFile.Name not in unresolvedPackageDict:
                 packageProjectContext = self.__FindProjectContext(toolConfig, genFile)
-                unresolvedPackageDict[genFile.Name] = PackageManager.__AllocateUnresolvedPackage(createContext, packageProjectContext,
-                                                                                                 configIgnoreNotSupported, platformName,
-                                                                                                 hostPlatformName, genFile, False)
+                unresolvedPackageDict[genFile.Name] = PackageManager.__AllocateUnresolvedPackage(
+                    createContext, packageProjectContext, configIgnoreNotSupported, platformName, hostPlatformName, genFile, False
+                )
             else:
                 raise InternalErrorException("Package has been defined multiple times, this ought to have been caught earlier")
 
         return list(unresolvedPackageDict.values())
-
 
     def __FindProjectContext(self, toolConfig: ToolConfig, genFile: XmlGenFile) -> PackageProjectContext:
         """
@@ -165,41 +178,49 @@ class PackageManager(object):
         """
         if genFile.PackageLocation is None:
             if genFile.Type != PackageType.TopLevel:
-                raise UsageErrorException("Package '{0}' did not contain a valid location".format(genFile.Name))
+                raise UsageErrorException(f"Package '{genFile.Name}' did not contain a valid location")
             # The top level package is not associated with a project context
-            topLevelProjectContext = PackageProjectContext(ProjectId("__TopLevel__"), "__TopLevel__", Version(0,0,0,0), None, [])
+            topLevelProjectContext = PackageProjectContext(ProjectId("__TopLevel__"), "__TopLevel__", Version(0, 0, 0, 0), None, [])
             self.__ProjectContextCache.Add(topLevelProjectContext)
             return topLevelProjectContext
-        projectContext = ToolConfigPackageProjectContextUtil.FindProjectContext(toolConfig.ProjectInfo.Contexts,
-                                                                                genFile.PackageLocation.ResolvedPath)
+        projectContext = ToolConfigPackageProjectContextUtil.FindProjectContext(toolConfig.ProjectInfo.Contexts, genFile.PackageLocation.ResolvedPath)
         basePackages = self.__CreateBasePackageList(projectContext.BasePackages)
         packageProjectContext = self.__ProjectContextCache.TryGet(projectContext.ProjectName)
         if packageProjectContext is None:
-            packageProjectContext = PackageProjectContext(projectContext.ProjectId, projectContext.ProjectName, projectContext.ProjectVersion,
-                                                          projectContext.GitHash, basePackages)
+            packageProjectContext = PackageProjectContext(
+                projectContext.ProjectId, projectContext.ProjectName, projectContext.ProjectVersion, projectContext.GitHash, basePackages
+            )
             self.__ProjectContextCache.Add(packageProjectContext)
         return packageProjectContext
 
-    def __CreateBasePackageList(self, basePackages: List[ToolConfigBasePackage]) -> List[PackageProjectContextBasePackage]:
-        res = [] # type: List[PackageProjectContextBasePackage]
+    def __CreateBasePackageList(self, basePackages: list[ToolConfigBasePackage]) -> list[PackageProjectContextBasePackage]:
+        res: list[PackageProjectContextBasePackage] = []
         for basePackage in basePackages:
             res.append(PackageProjectContextBasePackage(basePackage.Name))
         return res
 
-
-    def CreatePackage(self, log: Log, configBuildDir: str, configIgnoreNotSupported: bool, toolConfig: ToolConfig,
-                      platformName: str, hostPlatformName: str, genFile: XmlGenFile, insertAtFront: bool = False) -> Package:
-
+    def CreatePackage(
+        self,
+        log: Log,
+        configBuildDir: str,
+        configIgnoreNotSupported: bool,
+        toolConfig: ToolConfig,
+        platformName: str,
+        hostPlatformName: str,
+        genFile: XmlGenFile,
+        insertAtFront: bool = False,
+    ) -> Package:
         filePackageInstanceName = PackageInstanceName(genFile.Name)
         if filePackageInstanceName in self.OriginalPackageDict:
-            raise UsageErrorException("Package '{0}' already exist".format(filePackageInstanceName))
+            raise UsageErrorException(f"Package '{filePackageInstanceName}' already exist")
 
         createContext = PackageManager.__CreateFactoryCreateContext(log, toolConfig, self.__GeneratorInfo)
         packageProjectContext = self.__FindProjectContext(toolConfig, genFile)
-        processedPackage = PackageManager.__AllocatePreprocessedPackage(createContext, packageProjectContext, configIgnoreNotSupported, platformName,
-                                                                        hostPlatformName, genFile, True)
+        processedPackage = PackageManager.__AllocatePreprocessedPackage(
+            createContext, packageProjectContext, configIgnoreNotSupported, platformName, hostPlatformName, genFile, True
+        )
         packageLookupDict = PreResolver.CreatePackageLookupDict(self.__unresolvedPackages)
-        preResolvedPackageResult = PreResolver.PreResolvePackage(log, packageLookupDict, processedPackage, 0xffffffff)
+        preResolvedPackageResult = PreResolver.PreResolvePackage(log, packageLookupDict, processedPackage, 0xFFFFFFFF)
         package = Package(log, configBuildDir, preResolvedPackageResult, self._AllowExeDependency)
 
         self.__ResolvePackageDependencies(package, self.OriginalPackageDict)
@@ -210,13 +231,14 @@ class PackageManager(object):
         self.OriginalPackageDict[package.NameInfo.FullName] = package
         return package
 
-
-    def __ResolvePackageDependencies(self, package: Package, originalPackageDict: Dict[PackageInstanceName, Package]) -> None:
+    def __ResolvePackageDependencies(self, package: Package, originalPackageDict: dict[PackageInstanceName, Package]) -> None:
         for dep in package.GetDirectDependencies():
             depPackage = self.__ResolvePackageDependency(package, dep.Name, originalPackageDict)
             package.ResolvedDirectDependencies.append(PackageDependency(depPackage, dep.Access, dep.OutputType, dep.ReferenceOutputAssembly))
 
-    def __ResolvePackageDependency(self, package: Package, depPackageName: PackageInstanceName, originalPackageDict: Dict[PackageInstanceName, Package]) -> Package:
+    def __ResolvePackageDependency(
+        self, package: Package, depPackageName: PackageInstanceName, originalPackageDict: dict[PackageInstanceName, Package]
+    ) -> Package:
         depPackageNameInstanceName = PackageInstanceName(depPackageName.Value)
         if depPackageNameInstanceName not in originalPackageDict:
             raise DependencyNotFoundException(package.Name, depPackageNameInstanceName.Value)
@@ -226,37 +248,66 @@ class PackageManager(object):
         return depPackage
 
     @staticmethod
-    def __AllocatePreprocessedPackage(createContext: FactoryCreateContext, packageProjectContext: PackageProjectContext,
-                                      configIgnoreNotSupported: bool, platformName: str, hostPlatformName: str, genFile: XmlGenFile,
-                                      allowInternalNames: bool) -> ProcessedPackage:
-        unresolvedPackage = PackageManager.__AllocateUnresolvedPackage(createContext, packageProjectContext, configIgnoreNotSupported, platformName,
-                                                                       hostPlatformName, genFile, allowInternalNames)
+    def __AllocatePreprocessedPackage(
+        createContext: FactoryCreateContext,
+        packageProjectContext: PackageProjectContext,
+        configIgnoreNotSupported: bool,
+        platformName: str,
+        hostPlatformName: str,
+        genFile: XmlGenFile,
+        allowInternalNames: bool,
+    ) -> ProcessedPackage:
+        unresolvedPackage = PackageManager.__AllocateUnresolvedPackage(
+            createContext, packageProjectContext, configIgnoreNotSupported, platformName, hostPlatformName, genFile, allowInternalNames
+        )
         return PackageManager2.ProcessPackage(createContext, packageProjectContext, unresolvedPackage)
 
     @staticmethod
-    def __AllocateUnresolvedPackage(createContext: FactoryCreateContext, packageProjectContext: PackageProjectContext,
-                                    configIgnoreNotSupported: bool, platformName: str, hostPlatformName: str, genFile: XmlGenFile,
-                                    allowInternalNames: bool) -> UnresolvedPackage:
-        resolvedPlatform, resolvedPlatformDirectSupported = PackageManager.__ResolvePlatform(createContext, platformName, hostPlatformName,
-                                                                                             configIgnoreNotSupported, genFile.Platforms,
-                                                                                             genFile.Name, genFile.Type,
-                                                                                             genFile.XMLElement, genFile.SystemDefaultValues)
+    def __AllocateUnresolvedPackage(
+        createContext: FactoryCreateContext,
+        packageProjectContext: PackageProjectContext,
+        configIgnoreNotSupported: bool,
+        platformName: str,
+        hostPlatformName: str,
+        genFile: XmlGenFile,
+        allowInternalNames: bool,
+    ) -> UnresolvedPackage:
+        resolvedPlatform, resolvedPlatformDirectSupported = PackageManager.__ResolvePlatform(
+            createContext,
+            platformName,
+            hostPlatformName,
+            configIgnoreNotSupported,
+            genFile.Platforms,
+            genFile.Name,
+            genFile.Type,
+            genFile.XMLElement,
+            genFile.SystemDefaultValues,
+        )
 
-        return XmlConvert.ToUnresolvedPackage(createContext, packageProjectContext, genFile, resolvedPlatform, resolvedPlatformDirectSupported,
-                                              allowInternalNames)
+        return XmlConvert.ToUnresolvedPackage(
+            createContext, packageProjectContext, genFile, resolvedPlatform, resolvedPlatformDirectSupported, allowInternalNames
+        )
 
     # The returned tuple is the [resolvedPlatformName, packagePlatform, resolvedPlatformDirectSupported]
     @staticmethod
-    def __ResolvePlatform(createContext: FactoryCreateContext, platformName: str, hostPlatformName: str, ignoreNotSupported: bool,
-                          platforms: Dict[str, XmlGenFilePlatform], packageName: str, packageType: PackageType, packageXMLElement: ET.Element,
-                          systemDefaultValues: LocalPackageDefaultValues) -> Tuple[PackagePlatform, bool]:
+    def __ResolvePlatform(
+        createContext: FactoryCreateContext,
+        platformName: str,
+        hostPlatformName: str,
+        ignoreNotSupported: bool,
+        platforms: dict[str, XmlGenFilePlatform],
+        packageName: str,
+        packageType: PackageType,
+        packageXMLElement: ET.Element,
+        systemDefaultValues: LocalPackageDefaultValues,
+    ) -> tuple[PackagePlatform, bool]:
         # ToolRecipe's resolve using the hostPlatformName as we use this for 'cross compiling' for now
         currentPlatformName = platformName if packageType != PackageType.ToolRecipe else hostPlatformName
         resolvedPlatform = PackageManager.__CreatePlatform(createContext, platforms, currentPlatformName, packageType, systemDefaultValues)
         resolvedPlatformDirectSupported = resolvedPlatform.Supported if not ignoreNotSupported else True
 
         # Due to the new flavor project id generation code we no longer require a project id to be in the xml file
-        #if currentPlatformName == PackageConfig.PlatformNameString.WINDOWS:
+        # if currentPlatformName == PackageConfig.PlatformNameString.WINDOWS:
         #    if packageType == PackageType.Library or packageType == PackageType.Executable: # or packageType == PackageType.ExeLibCombo:
         #        if resolvedPlatform.ProjectId is None:  # split into separate line to make MyPy happy
         #            raise XmlMissingWindowsVisualStudioProjectIdException(packageXMLElement, packageName)
@@ -265,8 +316,13 @@ class PackageManager(object):
         return (resolvedPlatform, resolvedPlatformDirectSupported)
 
     @staticmethod
-    def __CreatePlatform(createContext: FactoryCreateContext, platforms: Dict[str, XmlGenFilePlatform], platformName: str,
-                         packageType: PackageType, systemDefaultValues: LocalPackageDefaultValues) -> PackagePlatform:
+    def __CreatePlatform(
+        createContext: FactoryCreateContext,
+        platforms: dict[str, XmlGenFilePlatform],
+        platformName: str,
+        packageType: PackageType,
+        systemDefaultValues: LocalPackageDefaultValues,
+    ) -> PackagePlatform:
         # filter out any unwanted platform names
         if platformName in PackageConfig.APPROVED_PLATFORM_NAMES and platformName in platforms:
             return XmlConvert.CreateFromXmlGenFilePlatform(createContext, platformName, platforms[platformName])
@@ -274,7 +330,7 @@ class PackageManager(object):
         # create fake entries as needed
         fakeXmlGenFilePlatform = FakeXmlGenFilePlatform(createContext.Log, platformName, systemDefaultValues)
         if packageType == PackageType.TopLevel:
-            fakeXmlGenFilePlatform.ProjectId = 'EDC12D73-5B32-4E45-8E2E-DFC82FAD5DF4'
+            fakeXmlGenFilePlatform.ProjectId = "EDC12D73-5B32-4E45-8E2E-DFC82FAD5DF4"
         return XmlConvert.CreateFromXmlGenFilePlatform(createContext, platformName, fakeXmlGenFilePlatform)
 
     @staticmethod
@@ -284,12 +340,13 @@ class PackageManager(object):
         return FactoryCreateContext(log, generatorInfo, ninjaRecipePackageName, isWindows)
 
     @staticmethod
-    def __Filter(log: Log, sourcePackageBuildOrder: List[PreResolvePackageResult], packageManagerFilter: PackageManagerFilter,
-                 filterMode: FilterMode) -> List[PreResolvePackageResult]:
+    def __Filter(
+        log: Log, sourcePackageBuildOrder: list[PreResolvePackageResult], packageManagerFilter: PackageManagerFilter, filterMode: FilterMode
+    ) -> list[PreResolvePackageResult]:
         log.LogPrint("- Filtering")
         log.PushIndent()
         try:
-            #topLevelPackage = PackageListUtil.GetTopLevelPackage(sourcePackageBuildOrder)
+            # topLevelPackage = PackageListUtil.GetTopLevelPackage(sourcePackageBuildOrder)
             requestedPackages = PreResolvePackageResultUtil.TryGetPackageListFromFilenames(sourcePackageBuildOrder, packageManagerFilter.RequestedFiles, False)
 
             if requestedPackages is not None and packageManagerFilter.PackageFilters.ExePackageNameFilter is not None:
@@ -302,36 +359,37 @@ class PackageManager(object):
             if not packageManagerFilter.PackageFilters.ContainsRequirementTypeFilters():
                 return sourcePackageBuildOrder
 
-            #requirements = RequirementFilter.GetRequirementList(topLevelPackage, None)
+            # requirements = RequirementFilter.GetRequirementList(topLevelPackage, None)
             requirements = RequirementFilter.GetRequirementListFromPackages(sourcePackageBuildOrder)
             return PackageFilter.Filter2(log, sourcePackageBuildOrder, requirements, requestedPackages, packageManagerFilter.PackageFilters)
         finally:
             log.PopIndent()
 
     @staticmethod
-    def __FilterNotUserRequested(log: Log, sourcePackageBuildOrder: List[PreResolvePackageResult],
-                                requestedPackages: Optional[List[PreResolvePackageResult]]) -> List[PreResolvePackageResult]:
-       if requestedPackages is None or len(requestedPackages) <= 0:
-           return sourcePackageBuildOrder
+    def __FilterNotUserRequested(
+        log: Log, sourcePackageBuildOrder: list[PreResolvePackageResult], requestedPackages: list[PreResolvePackageResult] | None
+    ) -> list[PreResolvePackageResult]:
+        if requestedPackages is None or len(requestedPackages) <= 0:
+            return sourcePackageBuildOrder
 
-       userRequestedPackageNameSet = set()
-       for preResolvePackageResult in requestedPackages:
-           package = preResolvePackageResult.SourcePackage
-           if not package.NameInfo.FullName in userRequestedPackageNameSet:
-               userRequestedPackageNameSet.add(package.NameInfo.FullName)
-               for depPreResolvePackageResult in preResolvePackageResult.ResolvedBuildOrder:
-                   if not depPreResolvePackageResult.SourcePackage.NameInfo.FullName in userRequestedPackageNameSet:
-                       userRequestedPackageNameSet.add(depPreResolvePackageResult.SourcePackage.NameInfo.FullName)
+        userRequestedPackageNameSet = set()
+        for preResolvePackageResult in requestedPackages:
+            package = preResolvePackageResult.SourcePackage
+            if package.NameInfo.FullName not in userRequestedPackageNameSet:
+                userRequestedPackageNameSet.add(package.NameInfo.FullName)
+                for depPreResolvePackageResult in preResolvePackageResult.ResolvedBuildOrder:
+                    if depPreResolvePackageResult.SourcePackage.NameInfo.FullName not in userRequestedPackageNameSet:
+                        userRequestedPackageNameSet.add(depPreResolvePackageResult.SourcePackage.NameInfo.FullName)
 
-       # This one liner
-       #    return [entry for entry in sourcePackageBuildOrder if entry.SourcePackage.NameInfo.FullName in userRequestedPackageNameSet]
-       # Was expanded because we need to log information
+        # This one liner
+        #    return [entry for entry in sourcePackageBuildOrder if entry.SourcePackage.NameInfo.FullName in userRequestedPackageNameSet]
+        # Was expanded because we need to log information
 
-       logResult = log.Verbosity > 2
-       result = []
-       for entry in sourcePackageBuildOrder:
-           if entry.SourcePackage.NameInfo.FullName in userRequestedPackageNameSet:
-               result.append(entry)
-           elif logResult:
-               log.LogPrint("- {0} (Removed because it was not requested by the user)".format(entry.SourcePackage.NameInfo.FullName))
-       return result
+        logResult = log.Verbosity > 2
+        result = []
+        for entry in sourcePackageBuildOrder:
+            if entry.SourcePackage.NameInfo.FullName in userRequestedPackageNameSet:
+                result.append(entry)
+            elif logResult:
+                log.LogPrint(f"- {entry.SourcePackage.NameInfo.FullName} (Removed because it was not requested by the user)")
+        return result

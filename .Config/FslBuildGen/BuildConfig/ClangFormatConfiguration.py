@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright 2018 NXP
 # All rights reserved.
 #
@@ -29,14 +28,15 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-from typing import List
+
 from FslBuildGen import IOUtil
 from FslBuildGen.BuildConfig.ClangConfiguration import ClangConfiguration
 
+
 class ClangFormatConfiguration(ClangConfiguration):
-    def __init__(self, fileExtensions: List[str], recipePackageName: str, ninjaRecipePackageName: str) -> None:
+    def __init__(self, fileExtensions: list[str], recipePackageName: str, ninjaRecipePackageName: str) -> None:
         super().__init__()
         self.CustomFormatFile = ".clang-format"
         self.FileExtensions = fileExtensions
@@ -44,16 +44,16 @@ class ClangFormatConfiguration(ClangConfiguration):
         self.NinjaRecipePackageName = ninjaRecipePackageName
 
         # Additional user supplied command line arguments (FIX: should be moved)
-        self.AdditionalUserArguments = []  # type: List[str]
+        self.AdditionalUserArguments: list[str] = []
 
         self.__ValidateFileExtensions(fileExtensions)
 
-    def __ValidateFileExtensions(self, fileExtensions: List[str]) -> None:
+    def __ValidateFileExtensions(self, fileExtensions: list[str]) -> None:
         for fileExt in fileExtensions:
             normalizedFileExt = IOUtil.NormalizePath(fileExt)
             directory = IOUtil.GetDirectoryName(normalizedFileExt)
             if len(directory) > 0:
-                raise Exception("ClangFormatConfiguration: File extension '{0}' can not contain a directory '{1}'".format(fileExt, directory))
+                raise Exception(f"ClangFormatConfiguration: File extension '{fileExt}' can not contain a directory '{directory}'")
             if fileExt.startswith(".."):
                 raise Exception("ClangFormatConfiguration: File extension can not start with '..'")
             if not fileExt.startswith("."):

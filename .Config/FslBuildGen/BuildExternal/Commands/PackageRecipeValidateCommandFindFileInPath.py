@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright 2021 NXP
 # All rights reserved.
 #
@@ -29,26 +28,27 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-from typing import Optional
+
 from FslBuildGen import IOUtil
 from FslBuildGen.BuildExternal.Commands.PackageRecipeValidateCommand import PackageRecipeValidateCommand
 from FslBuildGen.DataTypes import BuildRecipeValidateCommand
 
+
 class PackageRecipeValidateCommandFindFileInPath(PackageRecipeValidateCommand):
-    def __init__(self, name: str, expectedPath: Optional[str], help: Optional[str]) -> None:
+    def __init__(self, name: str, expectedPath: str | None, help: str | None) -> None:
         super().__init__("FindFileInPath", BuildRecipeValidateCommand.FindFileInPath, help)
 
-        if '\\' in name or '/' in name:
-            raise Exception("A filename can not contain backslash '\\' or slash '/': '{0}'".format(name))
+        if "\\" in name or "/" in name:
+            raise Exception(f"A filename can not contain backslash '\\' or slash '/': '{name}'")
         if expectedPath is not None:
-            if '\\' in expectedPath:
-                raise Exception("A path can not contain backslash '\\': '{0}'".format(expectedPath))
-            if expectedPath.startswith('/'):
-                raise Exception("A path can not start with a slash '/': '{0}'".format(expectedPath))
-            if expectedPath.endswith('/'):
-                raise Exception("A path can not end with a slash '/': '{0}'".format(expectedPath))
+            if "\\" in expectedPath:
+                raise Exception(f"A path can not contain backslash '\\': '{expectedPath}'")
+            if expectedPath.startswith("/"):
+                raise Exception(f"A path can not start with a slash '/': '{expectedPath}'")
+            if expectedPath.endswith("/"):
+                raise Exception(f"A path can not end with a slash '/': '{expectedPath}'")
             expectedPath = IOUtil.NormalizePath(expectedPath)
 
         self.Name = name

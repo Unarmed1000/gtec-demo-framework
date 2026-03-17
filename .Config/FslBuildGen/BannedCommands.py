@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright 2021 NXP
 # All rights reserved.
 #
@@ -29,32 +28,32 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
+
 
 class BannedCommands:
     # making this list is impossible but lets just check for some obvious bad ones
     Commands = [
-        'attrib',
-        'bash',
-        'cd',
-        'copy',
-        'cp',
-        'cmd',
-        'chown'
-        'chmod',
-        'cmd',
-        'dd',
-        'del',
-        'delete',
-        'fdisk',
-        'format',
-        'mkfs',
-        'mv',
-        'rd',
-        'reg',
-        'regedit',
-        'remove',
-        'ren',
-        'rm',
-        'wget',
-        ]
+        "attrib",
+        "bash",
+        "cd",
+        "copy",
+        "cp",
+        "cmd",
+        "chownchmod",
+        "cmd",
+        "dd",
+        "del",
+        "delete",
+        "fdisk",
+        "format",
+        "mkfs",
+        "mv",
+        "rd",
+        "reg",
+        "regedit",
+        "remove",
+        "ren",
+        "rm",
+        "wget",
+    ]

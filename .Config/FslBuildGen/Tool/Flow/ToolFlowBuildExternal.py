@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright 2017 NXP
 # All rights reserved.
 #
@@ -29,26 +29,27 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-from typing import Any
-from typing import List
-from typing import Optional
 import argparse
+from typing import Any
+
 from FslBuildGen import Main as MainFlow
-#from FslBuildGen import PackageListUtil
-#from FslBuildGen.DataTypes import BuildRecipeValidateCommand
-#from FslBuildGen.DataTypes import BuildRecipeValidateMethod
+
+# from FslBuildGen import PackageListUtil
+# from FslBuildGen.DataTypes import BuildRecipeValidateCommand
+# from FslBuildGen.DataTypes import BuildRecipeValidateMethod
 from FslBuildGen import PluginSharedValues
 from FslBuildGen.Build.BuildVariantConfigUtil import BuildVariantConfigUtil
 from FslBuildGen.BuildExternal import RecipeBuilder
 from FslBuildGen.BuildExternal.BuilderConfig import BuilderConfig
 from FslBuildGen.Config import Config
 from FslBuildGen.Context.GeneratorContext import GeneratorContext
-#from FslBuildGen.Generator import PluginConfig
-#from FslBuildGen.Log import Log
-#from FslBuildGen.PackageConfig import PlatformNameString
-#from FslBuildGen.PackageFilters import PackageFilters
+
+# from FslBuildGen.Generator import PluginConfig
+# from FslBuildGen.Log import Log
+# from FslBuildGen.PackageConfig import PlatformNameString
+# from FslBuildGen.PackageFilters import PackageFilters
 from FslBuildGen.Engine.EngineResolveConfig import EngineResolveConfig
 from FslBuildGen.Tool.AToolAppFlow import AToolAppFlow
 from FslBuildGen.Tool.AToolAppFlowFactory import AToolAppFlowFactory
@@ -59,7 +60,7 @@ from FslBuildGen.ToolConfig import ToolConfig
 from FslBuildGen.VariableContextHelper import VariableContextHelper
 
 
-class DefaultValue(object):
+class DefaultValue:
     CheckBuildCommands = False
     ForceClaimInstallArea = False
     DryRun = False
@@ -87,11 +88,10 @@ def GetDefaultLocalConfig() -> LocalToolConfig:
 
 
 class ToolFlowBuildExternal(AToolAppFlow):
-    #def __init__(self, toolAppContext: ToolAppContext) -> None:
+    # def __init__(self, toolAppContext: ToolAppContext) -> None:
     #    super().__init__(toolAppContext)
 
-
-    def ProcessFromCommandLine(self, args: Any, currentDirPath: str, toolConfig: ToolConfig, userTag: Optional[object]) -> None:
+    def ProcessFromCommandLine(self, args: Any, currentDirPath: str, toolConfig: ToolConfig, userTag: object | None) -> None:
         # Process the input arguments here, before calling the real work function
         localToolConfig = LocalToolConfig()
 
@@ -108,32 +108,42 @@ class ToolFlowBuildExternal(AToolAppFlow):
 
         self.Process(currentDirPath, toolConfig, localToolConfig)
 
-
     def Process(self, currentDirPath: str, toolConfig: ToolConfig, localToolConfig: LocalToolConfig) -> None:
-        config = Config(self.Log, toolConfig, localToolConfig.PackageConfigurationType,
-                        localToolConfig.BuildVariantConstraints, localToolConfig.AllowDevelopmentPlugins)
+        config = Config(
+            self.Log, toolConfig, localToolConfig.PackageConfigurationType, localToolConfig.BuildVariantConstraints, localToolConfig.AllowDevelopmentPlugins
+        )
 
         packageFilters = localToolConfig.BuildPackageFilters
 
         buildVariantConfig = BuildVariantConfigUtil.GetBuildVariantConfig(localToolConfig.BuildVariantConstraints)
         variableContext = VariableContextHelper.Create(toolConfig, localToolConfig.UserSetVariables)
-        platform = self.ToolAppContext.PluginConfigContext.GetGeneratorPluginById(localToolConfig.PlatformName, localToolConfig.Generator,
-                                                                                  buildVariantConfig, variableContext.UserSetVariables,
-                                                                                  config.ToolConfig.DefaultPackageLanguage,
-                                                                                  config.ToolConfig.CMakeConfiguration,
-                                                                                  localToolConfig.GetUserCMakeConfig(), False)
-        theFiles = [] # type: List[str]
+        platform = self.ToolAppContext.PluginConfigContext.GetGeneratorPluginById(
+            localToolConfig.PlatformName,
+            localToolConfig.Generator,
+            buildVariantConfig,
+            variableContext.UserSetVariables,
+            config.ToolConfig.DefaultPackageLanguage,
+            config.ToolConfig.CMakeConfiguration,
+            localToolConfig.GetUserCMakeConfig(),
+            False,
+        )
+        theFiles: list[str] = []
         if not localToolConfig.VoidBuild:
-            theFiles = MainFlow.DoGetFiles(config, toolConfig.GetMinimalConfig(platform.CMakeConfig), currentDirPath, localToolConfig.Recursive)
+            theFiles = MainFlow.DoGetFiles(
+                config,
+                toolConfig.GetMinimalConfig(platform.CMakeConfig),
+                currentDirPath,
+                localToolConfig.Recursive,
+                additionalDirs=self.ToolAppContext.LowLevelToolConfig.AdditionalInputDirs,
+            )
         else:
             self.Log.LogPrintVerbose(1, "Doing a void build")
-        generatorContext = GeneratorContext(config, self.ErrorHelpManager, packageFilters.RecipeFilterManager, config.ToolConfig.Experimental,
-                                            platform, variableContext)
-        packages = MainFlow.DoGetPackages(generatorContext, config, theFiles, packageFilters,
-                                          engineResolveConfig=EngineResolveConfig.CreateDefaultFlavor())
-        #packages = DoExperimentalGetRecipes(generatorContext, config, [])
-        #topLevelPackage = PackageListUtil.GetTopLevelPackage(packages)
-
+        generatorContext = GeneratorContext(
+            config, self.ErrorHelpManager, packageFilters.RecipeFilterManager, config.ToolConfig.Experimental, platform, variableContext
+        )
+        packages = MainFlow.DoGetPackages(generatorContext, config, theFiles, packageFilters, engineResolveConfig=EngineResolveConfig.CreateDefaultFlavor())
+        # packages = DoExperimentalGetRecipes(generatorContext, config, [])
+        # topLevelPackage = PackageListUtil.GetTopLevelPackage(packages)
 
         builderConfig = BuilderConfig()
         builderConfig.Settings.PreDeleteBuild = localToolConfig.PreDeleteBuild
@@ -144,8 +154,8 @@ class ToolFlowBuildExternal(AToolAppFlow):
 
         RecipeBuilder.BuildPackages(self.Log, config.SDKPath, config.IsDryRun, config.ToolConfig, generatorContext, builderConfig, packages)
 
-        #topLevelPackage = PackageListUtil.GetTopLevelPackage(packages)
-        #for package in topLevelPackage.ResolvedExperimentalRecipeBuildOrder:
+        # topLevelPackage = PackageListUtil.GetTopLevelPackage(packages)
+        # for package in topLevelPackage.ResolvedExperimentalRecipeBuildOrder:
         #    print("{0}".format(package.Name))
         #    packageRecipe = package.ResolvedDirectExperimentalRecipe
         #    pipeline = packageRecipe.Pipeline
@@ -185,22 +195,19 @@ class ToolFlowBuildExternal(AToolAppFlow):
         #                print("  - Unexpected '{0}'".format(command.CommandName))
 
 
-
 class ToolAppFlowFactory(AToolAppFlowFactory):
-    #def __init__(self) -> None:
+    # def __init__(self) -> None:
     #    pass
 
-
     def GetTitle(self) -> str:
-        return 'FslBuildExternal'
-
+        return "FslBuildExternal"
 
     def GetToolCommonArgConfig(self) -> ToolCommonArgConfig:
         argConfig = ToolCommonArgConfig()
         argConfig.AddPlatformArg = True
         argConfig.AddGeneratorSelection = True
         argConfig.ProcessRemainingArgs = False
-        #argConfig.AllowVSVersion = True
+        # argConfig.AllowVSVersion = True
         argConfig.AllowForceClaimInstallArea = True
         argConfig.SupportBuildTime = True
         argConfig.AddBuildFiltering = True
@@ -209,14 +216,18 @@ class ToolAppFlowFactory(AToolAppFlowFactory):
         argConfig.AllowRecursive = True
         return argConfig
 
-
-    def AddCustomArguments(self, parser: argparse.ArgumentParser, toolConfig: ToolConfig, userTag: Optional[object]) -> None:
-        parser.add_argument('-t', '--type', default=DefaultValue.PackageConfigurationType, choices=[PluginSharedValues.TYPE_DEFAULT, 'sdk'], help='Select generator type')
-        parser.add_argument('--DontPreDeleteBuild', action='store_true', help='The build temporary directory will not be deleted before starting a build. Only use this if you know what you are doing')
-        parser.add_argument('--DontPostDeleteBuild', action='store_true', help='On successfull build dont delete the build directory')
-        parser.add_argument('--CheckBuildCommands', action='store_true', help='Check that all build commands are available')
-        parser.add_argument('--VoidBuild', action='store_true', help='Build a empty package (a void package)')
-
+    def AddCustomArguments(self, parser: argparse.ArgumentParser, toolConfig: ToolConfig, userTag: object | None) -> None:
+        parser.add_argument(
+            "-t", "--type", default=DefaultValue.PackageConfigurationType, choices=[PluginSharedValues.TYPE_DEFAULT, "sdk"], help="Select generator type"
+        )
+        parser.add_argument(
+            "--DontPreDeleteBuild",
+            action="store_true",
+            help="The build temporary directory will not be deleted before starting a build. Only use this if you know what you are doing",
+        )
+        parser.add_argument("--DontPostDeleteBuild", action="store_true", help="On successfull build dont delete the build directory")
+        parser.add_argument("--CheckBuildCommands", action="store_true", help="Check that all build commands are available")
+        parser.add_argument("--VoidBuild", action="store_true", help="Build a empty package (a void package)")
 
     def Create(self, toolAppContext: ToolAppContext) -> AToolAppFlow:
         return ToolFlowBuildExternal(toolAppContext)

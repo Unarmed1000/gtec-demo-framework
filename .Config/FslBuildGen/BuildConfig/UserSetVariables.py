@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright 2021 NXP
 # All rights reserved.
 #
@@ -29,15 +28,13 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-from typing import Dict
-from typing import Optional
 
-class UserSetVariables(object):
-    def __init__(self, userSetVariableDict: Dict[str,str]) -> None:
+class UserSetVariables:
+    def __init__(self, userSetVariableDict: dict[str, str]) -> None:
         super().__init__()
         self.Dict = userSetVariableDict
 
-    def TryGet(self, key: str) -> Optional[str]:
-        return self.Dict[key] if key in self.Dict else None
+    def TryGet(self, key: str) -> str | None:
+        return self.Dict.get(key, None)

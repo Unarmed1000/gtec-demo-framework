@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright 2020 NXP
 # All rights reserved.
 #
@@ -29,19 +28,19 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-from typing import List
-from typing import Set
+
 from FslBuildGen.Engine.PackageFlavorName import PackageFlavorName
 from FslBuildGen.Engine.PackageFlavorSelection import PackageFlavorSelection
 
-class PackageFlavorSelections(object):
-    def __init__(self, selections: List[PackageFlavorSelection]) -> None:
+
+class PackageFlavorSelections:
+    def __init__(self, selections: list[PackageFlavorSelection]) -> None:
         super().__init__()
         if len(selections) > 0:
-          selections = list(selections)
-          selections.sort(key=lambda s: s.Name.Value.upper())
+            selections = list(selections)
+            selections.sort(key=lambda s: s.Name.Value.upper())
         self.Selections = selections
         self.Description = ", ".join([str(entry) for entry in selections])
         self.__SanityCheck(self.Selections)
@@ -59,13 +58,14 @@ class PackageFlavorSelections(object):
                 return i if res == 0 else -1
         return -1
 
-    def __SanityCheck(self, selections: List[PackageFlavorSelection]) -> None:
+    def __SanityCheck(self, selections: list[PackageFlavorSelection]) -> None:
         if len(selections) > 0:
-            uniqueNames = set() # type: Set[PackageFlavorName]
+            uniqueNames: set[PackageFlavorName] = set()
             for entry in selections:
                 if entry.Name in uniqueNames:
-                    raise Exception("Duplicate flavor '{0}'".format(entry.Name))
+                    raise Exception(f"Duplicate flavor '{entry.Name}'")
                 uniqueNames.add(entry.Name)
 
-class PackageFlavorSelectionsEmpty(object):
+
+class PackageFlavorSelectionsEmpty:
     Empty = PackageFlavorSelections([])

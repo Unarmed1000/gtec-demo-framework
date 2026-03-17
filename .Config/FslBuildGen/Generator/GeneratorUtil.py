@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright 2023 NXP
 # All rights reserved.
 #
@@ -29,15 +29,16 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
 from FslBuildGen.Generator.Report.GeneratorVariableReport import GeneratorVariableReport
 from FslBuildGen.Packages.Package import Package
 
-class GeneratorUtil(object):
+
+class GeneratorUtil:
     @staticmethod
     def AddFlavors(variableReport: GeneratorVariableReport, package: Package) -> None:
-        packageFlavorDict = dict()
+        packageFlavorDict = {}
         for entry in package.ResolvedBuildOrder:
             for packageFlavor in entry.ResolvedFlavorTemplate.PackageFlavors:
                 packageFlavorDict[packageFlavor.Name.Value] = packageFlavor
@@ -47,6 +48,6 @@ class GeneratorUtil(object):
             flavorEntryOptions = [option.Name.Value for option in packageFlavor.Options]
             variableReport.Add(flavorSelectionEntry.Name.Value, flavorEntryOptions)
 
-        #for flavorSelectionEntry in package.ResolvedFlavorSelections.Selections:
+        # for flavorSelectionEntry in package.ResolvedFlavorSelections.Selections:
         #    flavorEntryOptions = [flavorSelectionEntry.Option.Value]
         #    variableReport.Add(flavorSelectionEntry.Name.Value, flavorEntryOptions)

@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright 2020 NXP
 # All rights reserved.
 #
@@ -29,16 +28,17 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
 from FslBuildGen.Engine.PackageFlavorName import PackageFlavorName
 from FslBuildGen.Engine.Unresolved.UnresolvedPackageFlavorOption import UnresolvedPackageFlavorOption
 
-class UnresolvedPackageFlavorConfig(object):
+
+class UnresolvedPackageFlavorConfig:
     def __init__(self, name: PackageFlavorName, option: UnresolvedPackageFlavorOption) -> None:
         super().__init__()
         self.Name = name
         self.Option = option
 
     def __str__(self) -> str:
-        return "{0}={1}".format(self.Name, self.Option)
+        return f"{self.Name}={self.Option}"

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright 2019 NXP
 # All rights reserved.
 #
@@ -29,12 +29,11 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-from typing import Optional
 
-class ProjectId(object):
-    def __init__(self, projectName: str, shortProjectId: Optional[str] = None) -> None:
+class ProjectId:
+    def __init__(self, projectName: str, shortProjectId: str | None = None) -> None:
         super().__init__()
         self.ProjectId = projectName.lower()
         self.ShortProjectId = self.ProjectId if shortProjectId is None else shortProjectId.upper()

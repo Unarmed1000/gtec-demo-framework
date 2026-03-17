@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright 2017 NXP
 # All rights reserved.
 #
@@ -29,58 +29,59 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-from typing import Any
-from typing import Dict
-from typing import List
-from typing import Optional
 import argparse
 import subprocess
-#import sys
-from FslBuildGen import IOUtil
-#from FslBuildGen import PackageListUtil
-#from FslBuildGen import ParseUtil
-from FslBuildGen import PluginSharedValues
+from typing import Any
+
+# import sys
+# from FslBuildGen import PackageListUtil
+# from FslBuildGen import ParseUtil
+from FslBuildGen import IOUtil, PluginSharedValues
 from FslBuildGen.Build.Filter import PackageFilter
 from FslBuildGen.Build.ForAllConfig import ForAllConfig
-#from FslBuildGen.Config import Config
-#from FslBuildGen.Context.GeneratorContext import GeneratorContext
-#from FslBuildGen.DataTypes import PackageType
+
+# from FslBuildGen.Config import Config
+# from FslBuildGen.Context.GeneratorContext import GeneratorContext
+# from FslBuildGen.DataTypes import PackageType
 from FslBuildGen.Exceptions import ExitException
 from FslBuildGen.ExternalVariantConstraints import ExternalVariantConstraints
-#from FslBuildGen.Generator import PluginConfig
+
+# from FslBuildGen.Generator import PluginConfig
 from FslBuildGen.Generator.Report.ReportVariableFormatter import ReportVariableFormatter
 from FslBuildGen.Info.AppInfo import AppInfoPackage
 from FslBuildGen.Info.AppInfoLoader import AppInfoLoader
 from FslBuildGen.Info.AppInfoRequirementTree import AppInfoRequirementTree
-#from FslBuildGen.Log import Log
-#from FslBuildGen.PackageConfig import PlatformNameString
+
+# from FslBuildGen.Log import Log
+# from FslBuildGen.PackageConfig import PlatformNameString
 from FslBuildGen.Tool.AToolAppFlow import AToolAppFlow
 from FslBuildGen.Tool.AToolAppFlowFactory import AToolAppFlowFactory
 from FslBuildGen.Tool.Flow import ToolFlowBuild
-from FslBuildGen.Tool.ToolAppConfig import ToolAppConfig
 from FslBuildGen.Tool.ToolAppConfig import DefaultValue as ToolAppConfigDefaultValue
+from FslBuildGen.Tool.ToolAppConfig import ToolAppConfig
 from FslBuildGen.Tool.ToolAppContext import ToolAppContext
 from FslBuildGen.Tool.ToolCommonArgConfig import ToolCommonArgConfig
 from FslBuildGen.ToolConfig import ToolConfig
 
 g_InfoFilename = ".AppInfo.json"
 
-class AppInfoChoice(object):
+
+class AppInfoChoice:
     File = 0
     Recursive = 1
 
     @staticmethod
-    def GetAll() -> List[int]:
+    def GetAll() -> list[int]:
         return [AppInfoChoice.File, AppInfoChoice.Recursive]
 
     @staticmethod
-    def TryToString(value: int) -> Optional[str]:
+    def TryToString(value: int) -> str | None:
         if value == AppInfoChoice.File:
-            return 'file'
+            return "file"
         elif value == AppInfoChoice.Recursive:
-            return 'recursive'
+            return "recursive"
         return None
 
     @staticmethod
@@ -88,13 +89,13 @@ class AppInfoChoice(object):
         result = AppInfoChoice.TryToString(value)
         if result is not None:
             return result
-        raise Exception("Unknown AppInfoChoice: {0}".format(value))
+        raise Exception(f"Unknown AppInfoChoice: {value}")
 
     @staticmethod
-    def TryFromString(value: str) -> Optional[int]:
-        if value == 'file':
+    def TryFromString(value: str) -> int | None:
+        if value == "file":
             return AppInfoChoice.File
-        elif value == 'recursive':
+        elif value == "recursive":
             return AppInfoChoice.Recursive
         return None
 
@@ -103,16 +104,16 @@ class AppInfoChoice(object):
         result = AppInfoChoice.TryFromString(value)
         if result is not None:
             return result
-        raise Exception("Unknown AppInfoChoice: {0}".format(value))
+        raise Exception(f"Unknown AppInfoChoice: {value}")
 
 
-class DefaultValue(object):
+class DefaultValue:
     PackageConfigurationType = PluginSharedValues.TYPE_DEFAULT
-    AppInfo = None  # type: Optional[str]
+    AppInfo: str | None = None
 
 
-class DefaultValueStandalone(object):
-    AppInfo = AppInfoChoice.ToString(AppInfoChoice.File)  # type: str
+class DefaultValueStandalone:
+    AppInfo: str = AppInfoChoice.ToString(AppInfoChoice.File)
 
 
 class LocalToolConfig(ToolAppConfig):
@@ -127,10 +128,10 @@ def GetDefaultLocalConfig() -> LocalToolConfig:
 
 
 class ToolFlowBuildRun(AToolAppFlow):
-    #def __init__(self, toolAppContext: ToolAppContext) -> None:
+    # def __init__(self, toolAppContext: ToolAppContext) -> None:
     #    super().__init__(toolAppContext)
 
-    def ProcessFromStandaloneCommandLine(self, args: Any, currentDirPath: str, userTag: Optional[object]) -> None:
+    def ProcessFromStandaloneCommandLine(self, args: Any, currentDirPath: str, userTag: object | None) -> None:
         # Process the input arguments here, before calling the real work function
         localToolConfig = LocalToolConfig()
         # Configure the ToolAppConfig part
@@ -139,8 +140,7 @@ class ToolFlowBuildRun(AToolAppFlow):
 
         self.ProcessAppInfo(currentDirPath, localToolConfig, AppInfoChoice.FromString(args.AppInfo))
 
-
-    def ProcessFromCommandLine(self, args: Any, currentDirPath: str, toolConfig: ToolConfig, userTag: Optional[object]) -> None:
+    def ProcessFromCommandLine(self, args: Any, currentDirPath: str, toolConfig: ToolConfig, userTag: object | None) -> None:
         # Process the input arguments here, before calling the real work function
         localToolConfig = LocalToolConfig()
         # Configure the ToolAppConfig part
@@ -153,10 +153,8 @@ class ToolFlowBuildRun(AToolAppFlow):
         else:
             self.ProcessAppInfo(currentDirPath, localToolConfig, AppInfoChoice.FromString(args.AppInfo))
 
-
-
     def Process(self, currentDirPath: str, toolConfig: ToolConfig, localToolConfig: LocalToolConfig) -> None:
-        #config = Config(self.Log, toolConfig, localToolConfig.PackageConfigurationType,
+        # config = Config(self.Log, toolConfig, localToolConfig.PackageConfigurationType,
         #                localToolConfig.BuildVariantConstraints, localToolConfig.AllowDevelopmentPlugins)
 
         # Take advantage of the --ForAllExe option in the builder
@@ -164,16 +162,14 @@ class ToolFlowBuildRun(AToolAppFlow):
         toolFlowConfig = ToolFlowBuild.GetDefaultLocalConfig()
         toolFlowConfig.SetToolAppConfigValues(toolAppContext.ToolAppConfig)
         toolFlowConfig.RemainingArgs = ToolAppConfigDefaultValue.RemainingArgs
-        toolFlowConfig.ForAllConfig = ForAllConfig.CreateForAllExeConfig('(EXE) {0}'.format(" ".join(localToolConfig.RemainingArgs)))
+        toolFlowConfig.ForAllConfig = ForAllConfig.CreateForAllExeConfig("(EXE) {}".format(" ".join(localToolConfig.RemainingArgs)))
         toolFlowConfig.PackageConfigurationType = localToolConfig.PackageConfigurationType
 
         buildFlow = ToolFlowBuild.ToolFlowBuild(toolAppContext)
         buildFlow.Process(currentDirPath, toolConfig, toolFlowConfig)
 
-
-
     def ProcessAppInfo(self, currentDirPath: str, localToolConfig: LocalToolConfig, appInfoChoice: int) -> None:
-        requestedFileList = [] # type: List[str]
+        requestedFileList: list[str] = []
         localFile = IOUtil.Join(currentDirPath, g_InfoFilename)
         if IOUtil.IsFile(localFile):
             requestedFileList.append(localFile)
@@ -183,7 +179,7 @@ class ToolFlowBuildRun(AToolAppFlow):
         isRecursive = appInfoChoice == AppInfoChoice.Recursive
         loader = AppInfoLoader(self.Log, g_InfoFilename, requestedFileList, isRecursive, currentDirPath, activePlatformNameId)
         if loader.IsEmpty():
-            self.Log.LogPrint("No '{0}' files found".format(g_InfoFilename))
+            self.Log.LogPrint(f"No '{g_InfoFilename}' files found")
             return
 
         requirementTree = AppInfoRequirementTree(self.Log, loader.GetDict(), activePlatformNameId)
@@ -194,26 +190,20 @@ class ToolFlowBuildRun(AToolAppFlow):
         # Now we basically need to apply the same filters as the other build tools
         completePackageList = [AppInfoPackage(self.Log, appInfo, filename) for filename, appInfo in loader.GetDict().items()]
         completePackageList.sort(key=lambda s: s.Name.lower())
-        filteredPackageList = PackageFilter.FilterAppInfo(self.Log, completePackageList,
-                                                          requirementTree.GlobalTree,
-                                                          localToolConfig.BuildPackageFilters)
+        filteredPackageList = PackageFilter.FilterAppInfo(self.Log, completePackageList, requirementTree.GlobalTree, localToolConfig.BuildPackageFilters)
 
         # Then its time to run the the packages that are left
         self.__RunPackages(filteredPackageList, localToolConfig.RemainingArgs, localToolConfig.BuildVariantConstraints)
 
-
-    def __RunPackages(self, packages: List[AppInfoPackage], userArgs: List[str],
-                      externalVariantConstraints: ExternalVariantConstraints) -> None:
+    def __RunPackages(self, packages: list[AppInfoPackage], userArgs: list[str], externalVariantConstraints: ExternalVariantConstraints) -> None:
         for package in packages:
             self.__RunPackage(package, userArgs, externalVariantConstraints)
 
-
-    def __RunPackage(self, package: AppInfoPackage, userArgs: List[str],
-                     externalVariantConstraints: ExternalVariantConstraints) -> None:
+    def __RunPackage(self, package: AppInfoPackage, userArgs: list[str], externalVariantConstraints: ExternalVariantConstraints) -> None:
         if package.GeneratorReport is None or package.GeneratorReport.ExecutableReport is None or package.GeneratorReport.VariableReport is None:
-            raise Exception("Could not run {0}, as we dont have the required information".format(package.Name))
+            raise Exception(f"Could not run {package.Name}, as we dont have the required information")
 
-        self.Log.LogPrint("Running {0}".format(package.Name))
+        self.Log.LogPrint(f"Running {package.Name}")
 
         executableReport = package.GeneratorReport.ExecutableReport
         variableReport = package.GeneratorReport.VariableReport
@@ -221,8 +211,9 @@ class ToolFlowBuildRun(AToolAppFlow):
         runCommandList = []
 
         packagePath = package.AbsolutePath
-        exePath = ReportVariableFormatter.Format(executableReport.ExeFormatString, variableReport, externalVariantConstraints,
-                                                 executableReport.EnvironmentVariableResolveMethod)
+        exePath = ReportVariableFormatter.Format(
+            executableReport.ExeFormatString, variableReport, externalVariantConstraints, executableReport.EnvironmentVariableResolveMethod
+        )
         if not executableReport.UseAsRelative:
             exePath = IOUtil.Join(packagePath, exePath)
 
@@ -239,22 +230,23 @@ class ToolFlowBuildRun(AToolAppFlow):
         try:
             result = subprocess.call(runCommandList, cwd=currentWorkingDirectory)
             if result != 0:
-                self.Log.LogPrintWarning("The run command '{0}' failed with '{1}'. It was run with CWD: '{2}'".format(" ".join(runCommandList), result, currentWorkingDirectory))
+                self.Log.LogPrintWarning(
+                    "The run command '{}' failed with '{}'. It was run with CWD: '{}'".format(" ".join(runCommandList), result, currentWorkingDirectory)
+                )
                 raise ExitException(result)
         except FileNotFoundError:
-            self.Log.LogPrintWarning("The run command '{0}' failed with 'file not found'. It was run with CWD: '{1}'".format(" ".join(runCommandList), currentWorkingDirectory))
+            self.Log.LogPrintWarning(
+                "The run command '{}' failed with 'file not found'. It was run with CWD: '{}'".format(" ".join(runCommandList), currentWorkingDirectory)
+            )
             raise
 
 
-
 class ToolAppFlowFactory(AToolAppFlowFactory):
-    #def __init__(self) -> None:
+    # def __init__(self) -> None:
     #    pass
 
-
     def GetTitle(self) -> str:
-        return 'FslBuildRun'
-
+        return "FslBuildRun"
 
     def GetToolCommonArgConfig(self) -> ToolCommonArgConfig:
         argConfig = ToolCommonArgConfig()
@@ -270,18 +262,21 @@ class ToolAppFlowFactory(AToolAppFlowFactory):
         argConfig.ProcessRemainingArgs = True
         return argConfig
 
-
-    def AddCustomArguments(self, parser: argparse.ArgumentParser, toolConfig: ToolConfig, userTag: Optional[object]) -> None:
+    def AddCustomArguments(self, parser: argparse.ArgumentParser, toolConfig: ToolConfig, userTag: object | None) -> None:
         allAppInfoChoices = [AppInfoChoice.ToString(entry) for entry in AppInfoChoice.GetAll()]
 
-        parser.add_argument('-t', '--type', default=DefaultValue.PackageConfigurationType, choices=[PluginSharedValues.TYPE_DEFAULT, 'sdk'], help='Select generator type')
-        parser.add_argument('--AppInfo', default=DefaultValue.AppInfo, choices=allAppInfoChoices, help='Run via appinfo: {0}.'.format(", ".join(allAppInfoChoices)))
-
+        parser.add_argument(
+            "-t", "--type", default=DefaultValue.PackageConfigurationType, choices=[PluginSharedValues.TYPE_DEFAULT, "sdk"], help="Select generator type"
+        )
+        parser.add_argument(
+            "--AppInfo", default=DefaultValue.AppInfo, choices=allAppInfoChoices, help="Run via appinfo: {}.".format(", ".join(allAppInfoChoices))
+        )
 
     def Create(self, toolAppContext: ToolAppContext) -> AToolAppFlow:
         return ToolFlowBuildRun(toolAppContext)
 
-
-    def AddCustomStandaloneArguments(self, parser: argparse.ArgumentParser, userTag: Optional[object]) -> None:
+    def AddCustomStandaloneArguments(self, parser: argparse.ArgumentParser, userTag: object | None) -> None:
         allAppInfoChoices = [AppInfoChoice.ToString(entry) for entry in AppInfoChoice.GetAll()]
-        parser.add_argument('--AppInfo', default=DefaultValueStandalone.AppInfo, choices=allAppInfoChoices, help='Run via appinfo: {0}.'.format(", ".join(allAppInfoChoices)))
+        parser.add_argument(
+            "--AppInfo", default=DefaultValueStandalone.AppInfo, choices=allAppInfoChoices, help="Run via appinfo: {}.".format(", ".join(allAppInfoChoices))
+        )

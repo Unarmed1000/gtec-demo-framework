@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright 2020 NXP
 # All rights reserved.
 #
@@ -29,10 +29,10 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-from typing import List
 from typing import TypeVar
+
 from FslBuildGen.Engine.Resolver.ProcessedPackageDependency import ProcessedPackageDependency
 from FslBuildGen.Engine.Unresolved.UnresolvedPackageDependency import UnresolvedPackageDependency
 from FslBuildGen.Generator.GeneratorInfo import GeneratorInfo
@@ -40,18 +40,16 @@ from FslBuildGen.Log import Log
 from FslBuildGen.Packages.Unresolved.ElementIfConditionUtil import ElementIfConditionUtil
 from FslBuildGen.Packages.Unresolved.UnresolvedExternalDependency import UnresolvedExternalDependency
 
+FilterElementType = TypeVar("FilterElementType", ProcessedPackageDependency, UnresolvedExternalDependency, UnresolvedPackageDependency)
 
-FilterElementType = TypeVar('FilterElementType', ProcessedPackageDependency, UnresolvedExternalDependency, UnresolvedPackageDependency)
 
-class UnresolvedFilter(object):
+class UnresolvedFilter:
     @staticmethod
-    def FilterOnConditions(log: Log, generatorInfo: GeneratorInfo, sourceList: List[FilterElementType], debugHelp: str) -> List[FilterElementType]:
-        result = [] # type: List[FilterElementType]
+    def FilterOnConditions(log: Log, generatorInfo: GeneratorInfo, sourceList: list[FilterElementType], debugHelp: str) -> list[FilterElementType]:
+        result: list[FilterElementType] = []
         for element in sourceList:
-            if element.IfCondition is None:
-                result.append(element)
-            elif ElementIfConditionUtil.CheckCondition(element.IfCondition, generatorInfo, debugHelp):
+            if element.IfCondition is None or ElementIfConditionUtil.CheckCondition(element.IfCondition, generatorInfo, debugHelp):
                 result.append(element)
             else:
-                log.LogPrintVerbose(2, "Skipped {0} name '{1}' because of condition '{2}'".format(debugHelp, element.Name, element.IfCondition))
+                log.LogPrintVerbose(2, f"Skipped {debugHelp} name '{element.Name}' because of condition '{element.IfCondition}'")
         return result

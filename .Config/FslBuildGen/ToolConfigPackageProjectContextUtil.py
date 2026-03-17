@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright 2019 NXP
 # All rights reserved.
 #
@@ -29,23 +28,24 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-from typing import List
-from typing import Optional
-#from FslBuildGen.Log import Log
+
+# from FslBuildGen.Log import Log
+
 from FslBuildGen.Exceptions import UsageErrorException
 from FslBuildGen.ToolConfigProjectContext import ToolConfigProjectContext
 
-class ToolConfigPackageProjectContextUtil(object):
+
+class ToolConfigPackageProjectContextUtil:
     @staticmethod
-    def TryFindToProjectContext(contexts: List[ToolConfigProjectContext], path: Optional[str]) -> Optional[ToolConfigProjectContext]:
+    def TryFindToProjectContext(contexts: list[ToolConfigProjectContext], path: str | None) -> ToolConfigProjectContext | None:
         """
         Try to find the project context
         """
         if path is None:
             return None
-        foundContext = None # type: Optional[ToolConfigProjectContext]
+        foundContext: ToolConfigProjectContext | None = None
         lenPath = 0
         # Scan all contexts and find the best match
         for context in contexts:
@@ -57,8 +57,8 @@ class ToolConfigPackageProjectContextUtil(object):
         return foundContext
 
     @staticmethod
-    def FindProjectContext(contexts: List[ToolConfigProjectContext], path: str) -> ToolConfigProjectContext:
+    def FindProjectContext(contexts: list[ToolConfigProjectContext], path: str) -> ToolConfigProjectContext:
         context = ToolConfigPackageProjectContextUtil.TryFindToProjectContext(contexts, path)
         if context is None:
-            raise UsageErrorException("Could not locate a context for path '{0}'".format(path))
+            raise UsageErrorException(f"Could not locate a context for path '{path}'")
         return context

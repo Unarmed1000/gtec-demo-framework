@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright 2017 NXP
 # All rights reserved.
 #
@@ -29,34 +28,32 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-from typing import Dict
-from typing import List
-from typing import Optional
+
 from FslBuildGen import IOUtil
-#from FslBuildGen.DataTypes import PackageType
+
+# from FslBuildGen.DataTypes import PackageType
 from FslBuildGen.Generator.Report.GeneratorExecutableReport import GeneratorExecutableReport
 from FslBuildGen.Generator.Report.GeneratorVariableReport import GeneratorVariableReport
 from FslBuildGen.Generator.Report.PackageGeneratorReport import PackageGeneratorReport
+from FslBuildGen.Info.PackageGeneratorReportInfo import PackageGeneratorExecutableReportInfo, PackageGeneratorVariableReportInfo
 from FslBuildGen.Info.PackageInfo import PackageInfo
-from FslBuildGen.Info.PackageGeneratorReportInfo import PackageGeneratorExecutableReportInfo
-from FslBuildGen.Info.PackageGeneratorReportInfo import PackageGeneratorVariableReportInfo
-from FslBuildGen.Info.RequirementInfo import RequirementInfo
-from FslBuildGen.Info.RequirementInfo import RequirementType
+from FslBuildGen.Info.RequirementInfo import RequirementInfo, RequirementType
 from FslBuildGen.Log import Log
 
 
-class AppInfo(object):
-    def __init__(self, platformName: str, resolvedPackageList: List[PackageInfo]) -> None:
+class AppInfo:
+    def __init__(self, platformName: str, resolvedPackageList: list[PackageInfo]) -> None:
         self.PlatformName = platformName
         self.ResolvedPackageList = resolvedPackageList
 
     @staticmethod
-    def CreateAppInfo(platformName: str, resolvedPackageList: List[PackageInfo]) -> 'AppInfo':
+    def CreateAppInfo(platformName: str, resolvedPackageList: list[PackageInfo]) -> "AppInfo":
         return AppInfo(platformName, resolvedPackageList)
 
-class AppInfoPackage(object):
+
+class AppInfoPackage:
     def __init__(self, log: Log, appInfo: AppInfo, sourceFilename: str) -> None:
         self.Log = log
         self.SourceAppInfo = appInfo
@@ -68,33 +65,28 @@ class AppInfoPackage(object):
         self.Name = self.__GuessDiscoverFilename(self.__ResolvedPackageDict, sourceFilename)
         self.SourceName = self.DiscoverSourcePackageName(self.__ResolvedPackageDict, self.Name)
         self.ResolvedPackage = self.__ResolvedPackageDict[self.Name]
-        self.ResolvedAllRequirements = self.__ResolvedAllRequirements(self.ResolvedPackage)         # type: List[RequirementInfo]
-        self.ResolvedAllUsedFeatures = self.__ResolvedAllUsedFeatures(self.ResolvedPackage)         # type: List[RequirementInfo]
-        self.ResolvedPlatformSupported = self.__ResolvedPlatformSupported(self.ResolvedPackage)     # type: bool
+        self.ResolvedAllRequirements: list[RequirementInfo] = self.__ResolvedAllRequirements(self.ResolvedPackage)
+        self.ResolvedAllUsedFeatures: list[RequirementInfo] = self.__ResolvedAllUsedFeatures(self.ResolvedPackage)
+        self.ResolvedPlatformSupported: bool = self.__ResolvedPlatformSupported(self.ResolvedPackage)
         self.Type = self.ResolvedPackage.Type
 
         self.GeneratorReport = self.__ResolveGeneratorReport(self.ResolvedPackage)
         # To be compatible with the Package in some methods
         self.ResolvedDirectExperimentalRecipe = None
 
-
-    def __ResolvedAllRequirements(self, packageInfo: PackageInfo) -> List[RequirementInfo]:
+    def __ResolvedAllRequirements(self, packageInfo: PackageInfo) -> list[RequirementInfo]:
         return list(packageInfo.AllRequirements)
 
-
-    def __ResolvedAllUsedFeatures(self, packageInfo: PackageInfo) -> List[RequirementInfo]:
+    def __ResolvedAllUsedFeatures(self, packageInfo: PackageInfo) -> list[RequirementInfo]:
         return [requirement for requirement in packageInfo.AllRequirements if requirement.Type == RequirementType.Feature]
-
 
     def __ResolvedPlatformSupported(self, packageInfo: PackageInfo) -> bool:
         return packageInfo.Supported
 
-
-    def __BuildPackageDict(self, appInfo: AppInfo) -> Dict[str, PackageInfo]:
+    def __BuildPackageDict(self, appInfo: AppInfo) -> dict[str, PackageInfo]:
         return {package.Name: package for package in appInfo.ResolvedPackageList}
 
-
-    def __ResolveGeneratorReport(self, package: PackageInfo) -> Optional[PackageGeneratorReport]:
+    def __ResolveGeneratorReport(self, package: PackageInfo) -> PackageGeneratorReport | None:
         if package.GeneratorReport is None:
             return None
 
@@ -105,10 +97,8 @@ class AppInfoPackage(object):
         variableReport = self.__ResolveGeneratorVariableReport(variableReportInfo)
         return PackageGeneratorReport(None, executableReport, variableReport, None)
 
-
     def __ResolveGeneratorExecutableReport(self, report: PackageGeneratorExecutableReportInfo) -> GeneratorExecutableReport:
         return GeneratorExecutableReport(report.UseAsRelative, report.ExeFormatString, report.RunScript, report.EnvironmentVariableResolveMethod)
-
 
     def __ResolveGeneratorVariableReport(self, report: PackageGeneratorVariableReportInfo) -> GeneratorVariableReport:
         variabelReport = GeneratorVariableReport(self.Log, True)
@@ -119,11 +109,10 @@ class AppInfoPackage(object):
             variabelReport.SetDefaultOptionIndex(defaultOptionKey, defaultOptionValue)
         return variabelReport
 
-
-    def __GuessDiscoverFilename(self, packageDict: Dict[str, PackageInfo], sourceFilename: str) -> str:
+    def __GuessDiscoverFilename(self, packageDict: dict[str, PackageInfo], sourceFilename: str) -> str:
         sourceDirectory = IOUtil.GetDirectoryName(sourceFilename)
-        sourcePackageName = sourceDirectory.replace('/', '.')
-        allSubPackageNames = sourcePackageName.split('.')
+        sourcePackageName = sourceDirectory.replace("/", ".")
+        allSubPackageNames = sourcePackageName.split(".")
 
         while len(allSubPackageNames) > 0:
             packageNameCandidate = self.__GeneratePackageName(allSubPackageNames)
@@ -131,18 +120,17 @@ class AppInfoPackage(object):
                 return packageNameCandidate
             allSubPackageNames.pop(0)
 
-        raise Exception("Could not determine the package name for the file at '{0}'".format(sourceFilename))
+        raise Exception(f"Could not determine the package name for the file at '{sourceFilename}'")
 
-    def DiscoverSourcePackageName(self, packageDict: Dict[str, PackageInfo], packageName: str) -> str:
+    def DiscoverSourcePackageName(self, packageDict: dict[str, PackageInfo], packageName: str) -> str:
         if packageName in packageDict:
             return packageDict[packageName].SourceName
-        raise Exception("Could not determine the source package name for the file at '{0}'".format(packageName))
+        raise Exception(f"Could not determine the source package name for the file at '{packageName}'")
 
-
-    def __GeneratePackageName(self, subNameList: List[str]) -> str:
+    def __GeneratePackageName(self, subNameList: list[str]) -> str:
         if len(subNameList) <= 0:
             return ""
         name = subNameList[0]
         for index in range(1, len(subNameList)):
-            name = "{0}.{1}".format(name, subNameList[index])
+            name = f"{name}.{subNameList[index]}"
         return name

@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright (c) 2016 Freescale Semiconductor, Inc.
 # All rights reserved.
 #
@@ -30,51 +29,50 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-from typing import List
-from typing import Optional
-from typing import Tuple
 import os
-from FslBuildGen.Log import Log
+
 from FslBuildGen import IOUtil
-from FslBuildGen.BuildContent.PathRecord import PathRecord
 from FslBuildGen.BuildContent.ContentRootRecord import ContentRootRecord
-#from FslBuildGen.BuildContent.Processor.ContentFileRecord import ContentFileRecord
-#from FslBuildGen.Location.ResolvedPath import ResolvedPath
+from FslBuildGen.BuildContent.PathRecord import PathRecord
+from FslBuildGen.Log import Log
+
+# from FslBuildGen.BuildContent.Processor.ContentFileRecord import ContentFileRecord
+# from FslBuildGen.Location.ResolvedPath import ResolvedPath
 
 
-class Content(object):
-    #def __init__(self, log: Log, resolvedSourcePath: ResolvedPath, includeSourcePathContent: bool, additionalFiles: Optional[List[PathRecord]] = None) -> None:
-    def __init__(self, log: Log, sourcePath: str, includeSourcePathContent: bool, additionalFiles: Optional[List[PathRecord]] = None) -> None:
+class Content:
+    # def __init__(self, log: Log, resolvedSourcePath: ResolvedPath, includeSourcePathContent: bool, additionalFiles: Optional[List[PathRecord]] = None) -> None:
+    def __init__(self, log: Log, sourcePath: str, includeSourcePathContent: bool, additionalFiles: list[PathRecord] | None = None) -> None:
         super().__init__()
-        #sourcePath = resolvedSourcePath.ResolvedPath
+        # sourcePath = resolvedSourcePath.ResolvedPath
         folderRoot = ContentRootRecord(log, sourcePath)
 
-        pathDirRecords = []  # type: List[PathRecord]
-        pathFileRecords = []  # type: List[PathRecord]
+        pathDirRecords: list[PathRecord] = []
+        pathFileRecords: list[PathRecord] = []
         if includeSourcePathContent:
             dirs, files = self.__GetDirAndFilePaths(sourcePath)
 
-            #rootDict = {}
-            #rootDict[folderRoot.Id] = folderRoot
+            # rootDict = {}
+            # rootDict[folderRoot.Id] = folderRoot
 
-        #    if additionalFiles != None:
-        #        for entry in additionalFiles:
-        #            if not entry.SourceRoot.Id in rootDict:
-        #                rootDict[entry.SourceRoot.Id] = entry.SourceRoot
-        #            files.append(entry)
+            #    if additionalFiles != None:
+            #        for entry in additionalFiles:
+            #            if not entry.SourceRoot.Id in rootDict:
+            #                rootDict[entry.SourceRoot.Id] = entry.SourceRoot
+            #            files.append(entry)
 
             # We sort it so that the longest paths come first meaning we will always find the most exact match first
             # if searching from the front to the end of the list and comparing to 'startswith'
-            #uniqueRootNames = list(rootDict.values())
-            #uniqueRootNames.sort(key=lambda s: -len(s.Id))
+            # uniqueRootNames = list(rootDict.values())
+            # uniqueRootNames.sort(key=lambda s: -len(s.Id))
 
             for dirEntry in dirs:
-                pathDirRecords.append(PathRecord(log, folderRoot, dirEntry[len(folderRoot.ResolvedPath)+1:]))
+                pathDirRecords.append(PathRecord(log, folderRoot, dirEntry[len(folderRoot.ResolvedPath) + 1 :]))
 
             for file in files:
-                pathFileRecords.append(PathRecord(log, folderRoot, file[len(folderRoot.ResolvedPath)+1:]))
+                pathFileRecords.append(PathRecord(log, folderRoot, file[len(folderRoot.ResolvedPath) + 1 :]))
 
         self.__AppendAdditional(log, pathDirRecords, pathFileRecords, additionalFiles)
 
@@ -85,34 +83,31 @@ class Content(object):
         self.Dirs.sort(key=lambda s: s.Id)
         self.Files.sort(key=lambda s: s.Id)
 
-
     def RemoveFileByResolvedSourcePath(self, resolvedSourcePath: str) -> None:
         entry = self.TryFindByResolvedSourcePath(resolvedSourcePath)
         if entry is not None:
             self.Files.remove(entry)
 
-
-    def TryFindByResolvedSourcePath(self, resolvedSourcePath: str) -> Optional[PathRecord]:
+    def TryFindByResolvedSourcePath(self, resolvedSourcePath: str) -> PathRecord | None:
         for entry in self.Files:
             if entry.ResolvedPath == resolvedSourcePath:
                 return entry
         return None
 
-
-    def __GetDirAndFilePaths(self, directory: str) -> Tuple[List[str], List[str]]:
+    def __GetDirAndFilePaths(self, directory: str) -> tuple[list[str], list[str]]:
         """
         This function will generate the file names in a directory
         tree by walking the tree either top-down or bottom-up. For each
         directory in the tree rooted at directory top (including top itself),
         it yields a 3-tuple (dirpath, dirnames, filenames).
         """
-        filePaths = [] # type: List[str]   # List which will store all of the full filepaths.
-        dirPaths = []  # type: List[str]   # List which will store all of the full dirpaths.
+        filePaths: list[str] = []  # List which will store all of the full filepaths.
+        dirPaths: list[str] = []  # List which will store all of the full dirpaths.
 
         # Walk the tree (skipping hidden files and directories).
         for root, directories, files in os.walk(directory):
-            files = [f for f in files if not f[0] == '.']
-            directories[:] = [d for d in directories if not d[0] == '.']
+            files = [f for f in files if f[0] != "."]
+            directories[:] = [d for d in directories if d[0] != "."]
             for dirname in directories:
                 dirpath = IOUtil.Join(root, dirname)
                 dirPaths.append(IOUtil.ToUnixStylePath(dirpath))  # Add it to the list.
@@ -121,11 +116,9 @@ class Content(object):
                 filePaths.append(IOUtil.ToUnixStylePath(filepath))  # Add it to the list.
         return (dirPaths, filePaths)
 
-
-    def __AppendAdditional(self, log: Log,
-                           rPathDirRecords: List[PathRecord],
-                           pathFileRecords: List[PathRecord],
-                           additionalFiles: Optional[List[PathRecord]]) -> None:
+    def __AppendAdditional(
+        self, log: Log, rPathDirRecords: list[PathRecord], pathFileRecords: list[PathRecord], additionalFiles: list[PathRecord] | None
+    ) -> None:
         if additionalFiles is None:
             return
 
@@ -141,11 +134,13 @@ class Content(object):
             dirName = IOUtil.GetDirectoryName(entry.RelativePath)
             if len(dirName) > 0:
                 dirId = dirName.lower()
-                if not dirId in uniqueDirs:
+                if dirId not in uniqueDirs:
                     uniqueDirs.add(dirId)
                     rPathDirRecords.append(PathRecord(log, entry.SourceRoot, dirName))
             if entry.RelativeId in uniqueFiles:
-                raise Exception("The relative file name '{0}' has already been added by '{1}' and '{2}' tried to add it again".format(uniqueFiles[entry.RelativeId].RelativePath, uniqueFiles[entry.RelativeId].ResolvedPath, entry.ResolvedPath))
+                raise Exception(
+                    f"The relative file name '{uniqueFiles[entry.RelativeId].RelativePath}' has already been added by '{uniqueFiles[entry.RelativeId].ResolvedPath}' and '{entry.ResolvedPath}' tried to add it again"
+                )
 
             pathFileRecords.append(entry)
             uniqueFiles[entry.RelativeId] = entry

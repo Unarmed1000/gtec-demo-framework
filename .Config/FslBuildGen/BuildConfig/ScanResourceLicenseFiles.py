@@ -1,6 +1,6 @@
-﻿#!/usr/bin/env python3
+#!/usr/bin/env python3
 
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright 2021 NXP
 # All rights reserved.
 #
@@ -29,61 +29,52 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-from typing import Any
-from typing import Dict
-from typing import List
-from typing import Optional
-from typing import Tuple
-from typing import Set
-import errno
-import hashlib
-import io
+import json
 import os
 import os.path
-import json
-import sys
+from typing import Any
+
 from FslBuildGen import IOUtil
-from FslBuildGen.Log import Log
 from FslBuildGen.BuildConfig.LicenseConfig import LicenseConfig
-from FslBuildGen.DataTypes import CheckType
 from FslBuildGen.DataTypes import PackageType
+from FslBuildGen.Log import Log
 from FslBuildGen.Packages.Package import Package
 from FslBuildGen.ToolMinimalConfig import ToolMinimalConfig
 
-#import argparse
-#import os
-#import subprocess
+# import argparse
+# import os
+# import subprocess
 
 __g_Image = "Image"
 __g_Model = "Model"
 __g_Video = "Video"
 __g_extensions = [
-    ('.bmp', __g_Image),
-    ('.dds', __g_Image),
-    ('.hdr', __g_Image),
-    ('.jpg', __g_Image),
-    ('.ktx', __g_Image),
-    ('.png', __g_Image),
-    ('.psd', __g_Image),
-    ('.tga', __g_Image),
-    ('.tiff', __g_Image),
-    ('.3ds', __g_Model),
-    ('.fbx', __g_Model),
-    ('.fsf', __g_Model),
-    ('.obj', __g_Model),
-    ('.nff', __g_Model),
+    (".bmp", __g_Image),
+    (".dds", __g_Image),
+    (".hdr", __g_Image),
+    (".jpg", __g_Image),
+    (".ktx", __g_Image),
+    (".png", __g_Image),
+    (".psd", __g_Image),
+    (".tga", __g_Image),
+    (".tiff", __g_Image),
+    (".3ds", __g_Model),
+    (".fbx", __g_Model),
+    (".fsf", __g_Model),
+    (".obj", __g_Model),
+    (".nff", __g_Model),
     # video
-    ('.avi', __g_Video),
-    ('.fsf', __g_Video),
-    ('.mp4', __g_Video),
-    ('.mpg', __g_Video),
-    ('.mpeg', __g_Video),
-    ('.mkv', __g_Video),
-    ]
+    (".avi", __g_Video),
+    (".fsf", __g_Video),
+    (".mp4", __g_Video),
+    (".mpg", __g_Video),
+    (".mpeg", __g_Video),
+    (".mkv", __g_Video),
+]
 
-__g_ignore = [] # type: List[str]
+__g_ignore: list[str] = []
 
 __g_ignoreDir = [
     ".Config/Templates.gen/Android/Copy/res/drawable-hdpi",
@@ -98,78 +89,81 @@ __g_ignoreDir = [
     ".Config/Templates.gen/AndroidGradleCMake/Copy/app/src/main/res/mipmap-xhdpi",
     ".Config/Templates.gen/AndroidGradleCMake/Copy/app/src/main/res/mipmap-xxhdpi",
     ".Config/Templates.gen/AndroidGradleCMake/Copy/app/src/main/res/mipmap-xxxhdpi",
-    ]
+]
 
 
-class JsonBasicLicense(object):
-    def __init__(self, sourceDict: Dict[str,str] = {}) -> None:
+class JsonBasicLicense:
+    def __init__(self, sourceDict: dict[str, str] | None = None) -> None:
+        if sourceDict is None:
+            sourceDict = {}
         super().__init__()
         self.Origin = ""
         self.License = ""
         self.Comment = ""
         self.Url = ""
         self.Tags = ""
-        self.TagsIdList = []  # type: List[str]
+        self.TagsIdList: list[str] = []
         self.SourceDict = sourceDict
 
     def SetTags(self, tags: str) -> None:
         self.Tags = tags
-        self.TagsIdList = [entry.lower() for entry in tags.split(';') if len(entry) > 0]
+        self.TagsIdList = [entry.lower() for entry in tags.split(";") if len(entry) > 0]
 
-    def Compare(self, license: 'JsonBasicLicense') -> bool:
-        return self.Origin == license.Origin and  self.License == license.License and self.Url == license.Url and self.Tags == license.Tags and self.SourceDict == license.SourceDict
+    def Compare(self, license: "JsonBasicLicense") -> bool:
+        return (
+            self.Origin == license.Origin
+            and self.License == license.License
+            and self.Url == license.Url
+            and self.Tags == license.Tags
+            and self.SourceDict == license.SourceDict
+        )
 
 
-class JsonComplexLicense(object):
-    def __init__(self, licenses: List[JsonBasicLicense], comment: Optional[str]) -> None:
+class JsonComplexLicense:
+    def __init__(self, licenses: list[JsonBasicLicense], comment: str | None) -> None:
         super().__init__()
         self.Comment = comment if comment is not None else ""
         self.Licenses = list(licenses)
 
-    def Compare(self, license: 'JsonComplexLicense') -> bool:
+    def Compare(self, license: "JsonComplexLicense") -> bool:
         return self.Comment == license.Comment and self.__IsConsideredEqual(license.Licenses)
 
-    def __IsConsideredEqual(self, otherLicenses: List[JsonBasicLicense]) -> bool:
-        for entry in otherLicenses:
-            if not self.__IsMember(entry):
-                return False
-        return True
+    def __IsConsideredEqual(self, otherLicenses: list[JsonBasicLicense]) -> bool:
+        return all(self.__IsMember(entry) for entry in otherLicenses)
 
     def __IsMember(self, license: JsonBasicLicense) -> bool:
-        for entry in self.Licenses:
-            if entry.Compare(license):
-                return True
-        return False;
+        return any(entry.Compare(license) for entry in self.Licenses)
 
-    def Merge(self, license: 'JsonComplexLicense') -> None:
+    def Merge(self, license: "JsonComplexLicense") -> None:
         for entry in license.Licenses:
             if not self.__IsMember(entry):
                 self.Licenses.append(entry)
 
-def _GetExtensionList(extensions: List[Tuple[str,str]]) -> List[str]:
+
+def _GetExtensionList(extensions: list[tuple[str, str]]) -> list[str]:
     return [extension[0] for extension in extensions]
 
 
-def _ReadJsonFile(filename: str) -> Any: # nasty any return
+def _ReadJsonFile(filename: str) -> Any:  # nasty any return
     content = IOUtil.ReadFile(filename)
     return json.loads(content)
 
 
-def _WriteJsonFileIfChanged(filename: str, dict: Dict[str,str]) -> None:
+def _WriteJsonFileIfChanged(filename: str, dict: dict[str, str]) -> None:
     content = str(json.dumps(dict, ensure_ascii=False, indent=2))
     IOUtil.WriteFileUTF8IfChanged(filename, content)
 
 
-class Resource(object):
+class Resource:
     def __init__(self, sourcePath: str, relativeSkipChars: int) -> None:
         super().__init__()
         self.SourcePath = sourcePath
         self.SourceDirectory = IOUtil.GetDirectoryName(sourcePath)
-        self.License = None  # type: Optional[JsonComplexLicense]
+        self.License: JsonComplexLicense | None = None
         self.RelativePath = sourcePath[relativeSkipChars:]
 
 
-def _ScanForFiles(path: str, extensionList: List[str], ignoreFiles: List[str], ignoreDirs: List[str]) -> List[str]:
+def _ScanForFiles(path: str, extensionList: list[str], ignoreFiles: list[str], ignoreDirs: list[str]) -> list[str]:
     foundFiles = []
     for root, dirs, files in os.walk(path):
         if ignoreDirs is not None:
@@ -177,35 +171,35 @@ def _ScanForFiles(path: str, extensionList: List[str], ignoreFiles: List[str], i
         for file in files:
             fileId = file.lower()
             for extension in extensionList:
-                if fileId.endswith(extension) and not fileId in ignoreFiles:
+                if fileId.endswith(extension) and fileId not in ignoreFiles:
                     foundFiles.append(IOUtil.Join(root, file))
                     break
     return foundFiles
 
 
-def _BuildFileLengthDict(files: List[str]) -> Dict[int,List[str]]:
-    dict = {}  # type: Dict[int,List[str]]
+def _BuildFileLengthDict(files: list[str]) -> dict[int, list[str]]:
+    result: dict[int, list[str]] = {}
     for file in files:
         fileLength = os.stat(file).st_size
-        if fileLength in dict:
-            dict[fileLength].append(file)
+        if fileLength in result:
+            result[fileLength].append(file)
         else:
-            dict[fileLength] = [file]
-    return dict
+            result[fileLength] = [file]
+    return result
 
 
-def _BuildFileContentHashDict(files: List[str]) -> Dict[str, List[str]]:
-    dict = {} # type: Dict[str, List[str]]
+def _BuildFileContentHashDict(files: list[str]) -> dict[str, list[str]]:
+    result: dict[str, list[str]] = {}
     for file in files:
         hash = IOUtil.HashFile(file)
-        if hash in dict:
-            dict[hash].append(file)
+        if hash in result:
+            result[hash].append(file)
         else:
-            dict[hash] = [file]
-    return dict
+            result[hash] = [file]
+    return result
 
 
-def _BuildDuplicatedList(fileName: str, files: List[str]) -> List[str]:
+def _BuildDuplicatedList(fileName: str, files: list[str]) -> list[str]:
     srcFilename = files[0]
     srcContentSet = set(IOUtil.ReadBinaryFile(srcFilename))
     matchingFiles = [fileName]
@@ -216,14 +210,14 @@ def _BuildDuplicatedList(fileName: str, files: List[str]) -> List[str]:
     return matchingFiles
 
 
-def _BuildDuplicatedDict(log: Log, files: List[str], uniqueFiles: List[str]) -> Dict[str, List[str]]:
-    dict = {} # type: Dict[str, List[str]]
-    while(len(files) > 1):
+def _BuildDuplicatedDict(log: Log, files: list[str], uniqueFiles: list[str]) -> dict[str, list[str]]:
+    result: dict[str, list[str]] = {}
+    while len(files) > 1:
         srcFile = files[0]
         remainingFiles = files[1:]
         matchingFiles = _BuildDuplicatedList(srcFile, remainingFiles)
         if len(matchingFiles) > 1:
-            dict[srcFile] = matchingFiles
+            result[srcFile] = matchingFiles
         else:
             uniqueFiles.append(srcFile)
 
@@ -231,15 +225,15 @@ def _BuildDuplicatedDict(log: Log, files: List[str], uniqueFiles: List[str]) -> 
         files.remove(srcFile)
         files = []
         for file in remainingFiles:
-            if not file in matchingFiles:
+            if file not in matchingFiles:
                 files.append(file)
-    return dict
+    return result
 
 
-def _BuildUniqueFileDictByContent(log: Log, files: List[str], uniqueFiles: List[str]) -> Dict[str, List[str]]:
+def _BuildUniqueFileDictByContent(log: Log, files: list[str], uniqueFiles: list[str]) -> dict[str, list[str]]:
     # we start by sorting files by their hash
     # this should limit the amount of files that have to be byte compared quite a bit
-    duplicationDict = {} # type: Dict[str, List[str]]
+    duplicationDict: dict[str, list[str]] = {}
     dictHash = _BuildFileContentHashDict(files)
     for fileList in list(dictHash.values()):
         if len(fileList) > 1:
@@ -250,12 +244,12 @@ def _BuildUniqueFileDictByContent(log: Log, files: List[str], uniqueFiles: List[
     return duplicationDict
 
 
-def _BuildUniqueFileDict(log: Log, files: List[str], uniqueFiles: List[str]) -> Dict[str, List[str]]:
+def _BuildUniqueFileDict(log: Log, files: list[str], uniqueFiles: list[str]) -> dict[str, list[str]]:
     # we start by sorting files by their size
     # this should limit the amount of files that have to be byte compared quite a bit
     dictFileLength = _BuildFileLengthDict(files)
 
-    #log.LogPrint("Initial bins {0}".format(len(dictFileLength)))
+    # log.LogPrint("Initial bins {0}".format(len(dictFileLength)))
 
     duplicationDict = {}
     for fileList in list(dictFileLength.values()):
@@ -267,36 +261,35 @@ def _BuildUniqueFileDict(log: Log, files: List[str], uniqueFiles: List[str]) -> 
     return duplicationDict
 
 
-
-def _BuildExtensionDict(extensions: List[Tuple[str,str]]) -> Dict[str,str]:
-    dict = {} # type: Dict[str,str]
+def _BuildExtensionDict(extensions: list[tuple[str, str]]) -> dict[str, str]:
+    result: dict[str, str] = {}
     for extension in extensions:
-        dict[extension[0]] = extension[1]
-    return dict
+        result[extension[0]] = extension[1]
+    return result
 
 
-def _GetContentTypeByExtension(extensionDict: Dict[str,str], filename: str) -> str:
+def _GetContentTypeByExtension(extensionDict: dict[str, str], filename: str) -> str:
     filenameExtension = IOUtil.GetFileNameExtension(filename).lower()
-    return extensionDict[filenameExtension] if filenameExtension in extensionDict else ""
+    return extensionDict.get(filenameExtension, "")
 
 
-def _BuildResourceDirectorySet(uniqueFiles: List[str], duplicatedFilesDict: Dict[str, List[str]]) -> Set[str]:
+def _BuildResourceDirectorySet(uniqueFiles: list[str], duplicatedFilesDict: dict[str, list[str]]) -> set[str]:
     # build unique dir list
-    resourceDirSet = set()  # type: Set[str]
+    resourceDirSet: set[str] = set()
     for entry in uniqueFiles:
         dirName = IOUtil.GetDirectoryName(entry)
-        if not dirName in resourceDirSet:
+        if dirName not in resourceDirSet:
             resourceDirSet.add(dirName)
 
     for fileList in list(duplicatedFilesDict.values()):
         for entry in fileList:
             dirName = IOUtil.GetDirectoryName(entry)
-            if not dirName in resourceDirSet:
+            if dirName not in resourceDirSet:
                 resourceDirSet.add(dirName)
     return resourceDirSet
 
 
-class LicenseManager(object):
+class LicenseManager:
     def __init__(self) -> None:
         super().__init__()
         self.KeyOrigin = "Origin"
@@ -310,7 +303,7 @@ class LicenseManager(object):
         self.KeyComplexComment = "Comment"
 
     def CreateDefaultLicense(self, origin: str, license: str) -> JsonBasicLicense:
-        jsonDict = {} # type: Dict[str,str]
+        jsonDict: dict[str, str] = {}
         jsonDict[self.KeyOrigin] = origin
         jsonDict[self.KeyLicense] = license
 
@@ -320,8 +313,7 @@ class LicenseManager(object):
         return jsonLicense
 
     def WriteLicenseIfChanged(self, log: Log, dstFilename: str, srcComplexLicense: JsonComplexLicense) -> None:
-
-        licenses = [] # type: List[Dict[str, str]]
+        licenses: list[dict[str, str]] = []
         for license in srcComplexLicense.Licenses:
             licenseDict = {}
             if len(license.Origin) > 0:
@@ -337,66 +329,65 @@ class LicenseManager(object):
             if len(licenseDict) > 0:
                 licenses.append(licenseDict)
 
-        jsonLicenseDict = {} # type: Dict[str,Any]
+        jsonLicenseDict: dict[str, Any] = {}
         jsonLicenseDict[self.KeyComplexLicenses] = licenses
         if len(srcComplexLicense.Comment) > 0:
             jsonLicenseDict[self.KeyComplexComment] = srcComplexLicense.Comment
 
-        jsonDict = {} # type: Dict[str,Any]
+        jsonDict: dict[str, Any] = {}
         jsonDict[self.KeyComplexLicense] = jsonLicenseDict
 
         _WriteJsonFileIfChanged(dstFilename, jsonDict)
 
-
-    def TryReadLicense(self, log: Log, filename: str) -> Optional[JsonComplexLicense]:
+    def TryReadLicense(self, log: Log, filename: str) -> JsonComplexLicense | None:
         if not os.path.isfile(filename):
             return None
 
         content = None
         try:
             content = _ReadJsonFile(filename)
-        except (Exception) as ex:
-            print("ERROR: Exception while parsing {0}".format(filename))
+        except Exception:
+            print(f"ERROR: Exception while parsing {filename}")
             raise
 
         if self.KeyComplexLicense in content:
             return self.__TryParseComplexLicense(log, content, filename)
 
-        if not self.KeyOrigin in content:
-            log.LogPrint("ERROR: '{0}' not present in file '{1}'".format(self.KeyOrigin, filename));
+        if self.KeyOrigin not in content:
+            log.LogPrint(f"ERROR: '{self.KeyOrigin}' not present in file '{filename}'")
             return None
-        if not self.KeyLicense in content:
-            log.LogPrint("ERROR: '{0}' not present in file '{1}'".format(self.KeyLicense, filename));
+        if self.KeyLicense not in content:
+            log.LogPrint(f"ERROR: '{self.KeyLicense}' not present in file '{filename}'")
             return None
         basicLicense = self.__TryParseBasicLicense(log, content, filename)
-        return  JsonComplexLicense([basicLicense], None) if basicLicense is not None else None
+        return JsonComplexLicense([basicLicense], None) if basicLicense is not None else None
 
-    def __TryParseBasicLicense(self, log: Log, jsonDict: Any, debugFilename: str) -> Optional[JsonBasicLicense]:
+    def __TryParseBasicLicense(self, log: Log, jsonDict: Any, debugFilename: str) -> JsonBasicLicense | None:
         license = JsonBasicLicense(jsonDict)
         license.Origin = jsonDict[self.KeyOrigin]
         license.License = jsonDict[self.KeyLicense]
-        license.Comment = jsonDict[self.KeyComment] if self.KeyComment in jsonDict else ""
-        license.Url = jsonDict[self.KeyURL] if self.KeyURL in jsonDict else ""
-        license.SetTags(jsonDict[self.KeyTags] if self.KeyTags in jsonDict else "")
-        return  license
+        license.Comment = jsonDict.get(self.KeyComment, "")
+        license.Url = jsonDict.get(self.KeyURL, "")
+        license.SetTags(jsonDict.get(self.KeyTags, ""))
+        return license
 
-    def __TryParseComplexLicense(self, log: Log, jsonDict: Any, debugFilename: str) -> Optional[JsonComplexLicense]:
+    def __TryParseComplexLicense(self, log: Log, jsonDict: Any, debugFilename: str) -> JsonComplexLicense | None:
         jsonDict = jsonDict[self.KeyComplexLicense]
-        if not self.KeyComplexLicenses in jsonDict:
-            log.LogPrint("ERROR: '{0}' not present in file '{1}'".format(self.KeyComplexLicenses, debugFilename));
+        if self.KeyComplexLicenses not in jsonDict:
+            log.LogPrint(f"ERROR: '{self.KeyComplexLicenses}' not present in file '{debugFilename}'")
             return None
 
-        licenses = [] # type: List[JsonBasicLicense]
+        licenses: list[JsonBasicLicense] = []
         for entry in jsonDict[self.KeyComplexLicenses]:
             basicLicense = self.__TryParseBasicLicense(log, entry, debugFilename)
             if basicLicense is None:
-                log.LogPrint("ERROR: Failed to parse complex license in file '{0}'".format(debugFilename));
+                log.LogPrint(f"ERROR: Failed to parse complex license in file '{debugFilename}'")
                 return None
             licenses.append(basicLicense)
-        comment = jsonDict[self.KeyComplexComment] if self.KeyComplexComment in jsonDict else ""
+        comment = jsonDict.get(self.KeyComplexComment, "")
         return JsonComplexLicense(licenses, comment)
 
-    #def SaveLicense(self, filename: str, license: JsonComplexLicense) -> None:
+    # def SaveLicense(self, filename: str, license: JsonComplexLicense) -> None:
     #    if len(license.Comment) > 0 or len(license.Licenses) > 1:
     #        # save complex license
     #        pass
@@ -408,11 +399,11 @@ class LicenseManager(object):
 
     #        _WriteJsonFile(filename, license.Licenses[0].SourceDict)
 
-
-    #def __AddKeyIfNeeded(self, dict, key, value):
+    # def __AddKeyIfNeeded(self, dict, key, value):
     #    if len(value) <= 0:
     #        return
     #    dict[key] = value
+
 
 def _HasScreenshot(package: Package, licenseConfig: LicenseConfig) -> bool:
     if package.AbsolutePath is None:
@@ -421,16 +412,16 @@ def _HasScreenshot(package: Package, licenseConfig: LicenseConfig) -> bool:
     return IOUtil.IsFile(screenshotName)
 
 
-def _BuildPackageLicenseList(log: Log, package: Package, licenseConfig: LicenseConfig) -> List[JsonComplexLicense]:
+def _BuildPackageLicenseList(log: Log, package: Package, licenseConfig: LicenseConfig) -> list[JsonComplexLicense]:
     licenseManager = LicenseManager()
-    licenseList = [] # type: List[JsonComplexLicense]
+    licenseList: list[JsonComplexLicense] = []
 
     if package.ResolvedContentBuilderAllInputFiles is not None:
         for fileEntry in package.ResolvedContentBuilderAllInputFiles:
             if fileEntry.ResolvedPath.endswith(licenseConfig.LicenseFilename):
                 license = licenseManager.TryReadLicense(log, fileEntry.ResolvedPath)
                 if license is None:
-                    raise Exception("Failed to read license file: {0}".format(fileEntry.ResolvedPath))
+                    raise Exception(f"Failed to read license file: {fileEntry.ResolvedPath}")
                 licenseList.append(license)
 
     if package.ResolvedContentFiles is not None:
@@ -438,7 +429,7 @@ def _BuildPackageLicenseList(log: Log, package: Package, licenseConfig: LicenseC
             if fileEntry.ResolvedPath.endswith(licenseConfig.LicenseFilename):
                 license = licenseManager.TryReadLicense(log, fileEntry.ResolvedPath)
                 if license is None:
-                    raise Exception("Failed to read license file: {0}".format(fileEntry.ResolvedPath))
+                    raise Exception(f"Failed to read license file: {fileEntry.ResolvedPath}")
                 licenseList.append(license)
 
     # Add the default license for executables unless we dont have any other licenses and no screenshot was found
@@ -452,9 +443,9 @@ def _BuildPackageLicenseList(log: Log, package: Package, licenseConfig: LicenseC
     return licenseList
 
 
-def _BuildDirectoryLicenseDict(log: Log, resourceDirectories: Set[str], licenseFilename: str) -> Dict[str, JsonComplexLicense]:
+def _BuildDirectoryLicenseDict(log: Log, resourceDirectories: set[str], licenseFilename: str) -> dict[str, JsonComplexLicense]:
     licenseManager = LicenseManager()
-    licenseDict = {} # type: Dict[str, JsonComplexLicense]
+    licenseDict: dict[str, JsonComplexLicense] = {}
     for dir in resourceDirectories:
         license = licenseManager.TryReadLicense(log, IOUtil.Join(dir, licenseFilename))
         if license is not None:
@@ -462,9 +453,9 @@ def _BuildDirectoryLicenseDict(log: Log, resourceDirectories: Set[str], licenseF
     return licenseDict
 
 
-def _TagListWithLicenses(inputDirectory: str, files: List[str], directoryLicenseDict: Dict[str, JsonComplexLicense]) -> List[Resource]:
+def _TagListWithLicenses(inputDirectory: str, files: list[str], directoryLicenseDict: dict[str, JsonComplexLicense]) -> list[Resource]:
     inputDirectory = IOUtil.NormalizePath(inputDirectory)
-    skipChars = len(inputDirectory) if inputDirectory.endswith('/') else len(inputDirectory)+1
+    skipChars = len(inputDirectory) if inputDirectory.endswith("/") else len(inputDirectory) + 1
 
     res = []
     for entry in files:
@@ -472,24 +463,25 @@ def _TagListWithLicenses(inputDirectory: str, files: List[str], directoryLicense
         if resource.SourceDirectory in directoryLicenseDict:
             resource.License = directoryLicenseDict[resource.SourceDirectory]
         res.append(resource)
-    return res;
+    return res
 
 
-def _TagDictWithLicenses(inputDirectory: str, fileDict: Dict[str, List[str]], directoryLicenseDict: Dict[str, JsonComplexLicense]) -> Dict[str, List[Resource]]:
+def _TagDictWithLicenses(inputDirectory: str, fileDict: dict[str, list[str]], directoryLicenseDict: dict[str, JsonComplexLicense]) -> dict[str, list[Resource]]:
     inputDirectory = IOUtil.NormalizePath(inputDirectory)
-    skipChars = len(inputDirectory) if inputDirectory.endswith('/') else len(inputDirectory)+1
+    skipChars = len(inputDirectory) if inputDirectory.endswith("/") else len(inputDirectory) + 1
 
-    res = {} # type: Dict[str, List[Resource]]
+    res: dict[str, list[Resource]] = {}
     for key, value in fileDict.items():
         keyFilename = key[skipChars:]
         res[keyFilename] = _TagListWithLicenses(inputDirectory, value, directoryLicenseDict)
-    return res;
+    return res
 
-def _Flatten(entry: JsonComplexLicense) -> Tuple[str,str,str,str]:
-    originList = []  # type: List[str]
-    licenseList = []  # type: List[str]
-    commentList = []  # type: List[str]
-    urlList = []  # type: List[str]
+
+def _Flatten(entry: JsonComplexLicense) -> tuple[str, str, str, str]:
+    originList: list[str] = []
+    licenseList: list[str] = []
+    commentList: list[str] = []
+    urlList: list[str] = []
     for licenseEntry in entry.Licenses:
         originList.append(licenseEntry.Origin)
         licenseList.append(licenseEntry.License)
@@ -502,57 +494,54 @@ def _Flatten(entry: JsonComplexLicense) -> Tuple[str,str,str,str]:
     return (strOrigin, strLicense, strComment, strUrl)
 
 
-
-def _WriteCSV(dstFilename: str, extensions: List[Tuple[str,str]], uniqueEntries: List[Resource], duplicatedEntryDict: Dict[str, List[Resource]]) -> None:
-    #count = len(uniqueFiles)
-    #for list in duplicatedFilesDict.values():
+def _WriteCSV(dstFilename: str, extensions: list[tuple[str, str]], uniqueEntries: list[Resource], duplicatedEntryDict: dict[str, list[Resource]]) -> None:
+    # count = len(uniqueFiles)
+    # for list in duplicatedFilesDict.values():
     #  count += len(list)
-    #log.LogPrint("Found {0} resource files".format(count))
+    # log.LogPrint("Found {0} resource files".format(count))
 
     uniqueEntries.sort(key=lambda s: s.SourcePath.lower())
     sortedDuplicatedFiles = list(duplicatedEntryDict.keys())
     sortedDuplicatedFiles.sort()
     for fileList in list(duplicatedEntryDict.values()):
-        fileList.sort(key=lambda s: s.SourcePath.lower());
+        fileList.sort(key=lambda s: s.SourcePath.lower())
 
     extensionDict = _BuildExtensionDict(extensions)
 
     lines = []
-    lines.append("Unique files ({0});;Origin;License;Type;Comment;URL".format(len(uniqueEntries)))
+    lines.append(f"Unique files ({len(uniqueEntries)});;Origin;License;Type;Comment;URL")
     for entry in uniqueEntries:
         contentType = _GetContentTypeByExtension(extensionDict, entry.RelativePath)
         if entry.License is None:
-            lines.append("{0};;;;{1};;".format(entry.RelativePath, contentType))
+            lines.append(f"{entry.RelativePath};;;;{contentType};;")
         else:
             strOrigin, strLicense, strComment, strUrl = _Flatten(entry.License)
-            lines.append("{0};;{1};{2};{3};{4};{5}".format(entry.RelativePath, strOrigin, strLicense, contentType, strComment, strUrl))
+            lines.append(f"{entry.RelativePath};;{strOrigin};{strLicense};{contentType};{strComment};{strUrl}")
 
     lines.append("\n")
-    lines.append("Duplicated files ({0})".format(len(duplicatedEntryDict)))
+    lines.append(f"Duplicated files ({len(duplicatedEntryDict)})")
     for key in sortedDuplicatedFiles:
-        lines.append("{0};;;;{1};;".format(key, _GetContentTypeByExtension(extensionDict, key)))
+        lines.append(f"{key};;;;{_GetContentTypeByExtension(extensionDict, key)};;")
         for entry in duplicatedEntryDict[key]:
             contentType = _GetContentTypeByExtension(extensionDict, entry.RelativePath)
             if entry.License is None:
-                lines.append(";{0};;;{1};;".format(entry.RelativePath, contentType))
+                lines.append(f";{entry.RelativePath};;;{contentType};;")
             else:
                 strOrigin, strLicense, strComment, strUrl = _Flatten(entry.License)
-                lines.append(";{0};{1};{2};{3};{4};{5}".format(entry.RelativePath, strOrigin, strLicense, contentType, strComment, strUrl))
+                lines.append(f";{entry.RelativePath};{strOrigin};{strLicense};{contentType};{strComment};{strUrl}")
 
-    IOUtil.WriteFile(dstFilename, "\n".join(lines));
-
-
+    IOUtil.WriteFile(dstFilename, "\n".join(lines))
 
 
-def _PrintIssueDirectories(fileList: List[Resource], dict: Dict[str,List[Resource]]) -> None:
-    uniqueDirs = set() # type: Set[str]
+def _PrintIssueDirectories(fileList: list[Resource], dict: dict[str, list[Resource]]) -> None:
+    uniqueDirs: set[str] = set()
     for entry in fileList:
-        if not entry.SourceDirectory in uniqueDirs:
+        if entry.SourceDirectory not in uniqueDirs:
             uniqueDirs.add(entry.SourceDirectory)
 
     for value in list(dict.values()):
         for entry in value:
-            if not entry.SourceDirectory in uniqueDirs:
+            if entry.SourceDirectory not in uniqueDirs:
                 uniqueDirs.add(entry.SourceDirectory)
 
     if len(uniqueDirs) > 0:
@@ -560,13 +549,13 @@ def _PrintIssueDirectories(fileList: List[Resource], dict: Dict[str,List[Resourc
         uniqueDirSet = list(uniqueDirs)
         uniqueDirSet.sort()
         for dirEntry in uniqueDirSet:
-            print("  {0}".format(dirEntry))
+            print(f"  {dirEntry}")
 
 
-def _ProcessDictLicenses(log: Log, licenseFilename: str, dict: Dict[str, List[Resource]]) -> None:
-    licenseManager = LicenseManager()
-    newLicenseDirs = set() # type: Set[str]
-    for key, entryList in dict.items():
+def _ProcessDictLicenses(log: Log, licenseFilename: str, dict: dict[str, list[Resource]]) -> None:
+    LicenseManager()
+    newLicenseDirs: set[str] = set()
+    for _key, entryList in dict.items():
         firstLicenseEntry = None
         noLicenseEntries = []
         for entry in entryList:
@@ -575,17 +564,17 @@ def _ProcessDictLicenses(log: Log, licenseFilename: str, dict: Dict[str, List[Re
             elif firstLicenseEntry is None:
                 firstLicenseEntry = entry
             elif firstLicenseEntry.License is None or not entry.License.Compare(firstLicenseEntry.License):
-                raise Exception("The license of the duplicated resource at {0} and {1} is different".format(firstLicenseEntry.SourceDirectory, entry.SourceDirectory))
+                raise Exception(f"The license of the duplicated resource at {firstLicenseEntry.SourceDirectory} and {entry.SourceDirectory} is different")
 
         if len(noLicenseEntries) > 0 and firstLicenseEntry is not None:
-            log.LogPrint("Info: Found duplicated resource missing a license, cloning source license from {0}".format(firstLicenseEntry.SourcePath))
+            log.LogPrint(f"Info: Found duplicated resource missing a license, cloning source license from {firstLicenseEntry.SourcePath}")
             for entry in noLicenseEntries:
                 entry.License = firstLicenseEntry.License
-                if not entry.SourceDirectory in newLicenseDirs:
+                if entry.SourceDirectory not in newLicenseDirs:
                     newLicenseDirs.add(entry.SourceDirectory)
                     newLicenseFile = IOUtil.Join(entry.SourceDirectory, licenseFilename)
                     if os.path.isfile(newLicenseFile):
-                        raise Exception("Could not create a new license at {0} since one already exist".format(newLicenseFile))
+                        raise Exception(f"Could not create a new license at {newLicenseFile} since one already exist")
                     if firstLicenseEntry.License is None:
                         raise Exception("internal error")
 
@@ -595,11 +584,10 @@ def _ProcessDictLicenses(log: Log, licenseFilename: str, dict: Dict[str, List[Re
                     # licenseManager.SaveLicense(newLicenseFile, firstLicenseEntry.License)
 
 
-def _FilterDictBasedOnLicense(dict: Dict[str, List[Resource]]) -> Dict[str,List[Resource]]:
-    newDict = {} # type: Dict[str,List[Resource]]
-    for key, entryList in dict.items():
+def _FilterDictBasedOnLicense(sourceDict: dict[str, list[Resource]]) -> dict[str, list[Resource]]:
+    newDict: dict[str, list[Resource]] = {}
+    for key, entryList in sourceDict.items():
         newList = []
-        firstLicenseEntry = None
         for entry in entryList:
             if entry.License is None:
                 newList.append(entry)
@@ -610,26 +598,26 @@ def _FilterDictBasedOnLicense(dict: Dict[str, List[Resource]]) -> Dict[str,List[
     return newDict
 
 
-def _PrintListFixTags(entries: List[Resource]) -> None:
+def _PrintListFixTags(entries: list[Resource]) -> None:
     for entry in entries:
         if entry.License is not None:
             for licenseEntry in entry.License.Licenses:
                 if licenseEntry is not None and "fix" in licenseEntry.TagsIdList:
-                    print("Fix: {0}".format(entry.SourcePath))
+                    print(f"Fix: {entry.SourcePath}")
 
 
-def _PrintFixTags(uniqueEntries: List[Resource], duplicatedEntriesDict: Dict[str, List[Resource]]) -> None:
+def _PrintFixTags(uniqueEntries: list[Resource], duplicatedEntriesDict: dict[str, list[Resource]]) -> None:
     _PrintListFixTags(uniqueEntries)
     for entries in list(duplicatedEntriesDict.values()):
         _PrintListFixTags(entries)
 
 
-def _AddLicenses(dict: Dict[str, List[Resource]], entries: List[Resource]) -> None:
+def _AddLicenses(dict: dict[str, list[Resource]], entries: list[Resource]) -> None:
     for entry in entries:
         if entry.License is not None:
             for licenseEntry in entry.License.Licenses:
                 if licenseEntry is not None:
-                    if not licenseEntry.License in dict:
+                    if licenseEntry.License not in dict:
                         dict[licenseEntry.License] = [entry]
                     else:
                         dict[licenseEntry.License].append(entry)
@@ -637,11 +625,19 @@ def _AddLicenses(dict: Dict[str, List[Resource]], entries: List[Resource]) -> No
 
 def _ExpandLicense(key: str) -> bool:
     key = key.lower()
-    return key != 'bsd-3-clause' and key != "mit" and key != "mixed" and key != "cc0-1.0" and key != "cc-by-3.0" and key != "cc-by-sa-4.0" and key != "modified 3-clause bsd-license"
+    return (
+        key != "bsd-3-clause"
+        and key != "mit"
+        and key != "mixed"
+        and key != "cc0-1.0"
+        and key != "cc-by-3.0"
+        and key != "cc-by-sa-4.0"
+        and key != "modified 3-clause bsd-license"
+    )
 
 
-def _PrintLicenses(uniqueEntries: List[Resource], duplicatedEntriesDict: Dict[str, List[Resource]]) -> None:
-    licenseDict = {}  # type: Dict[str, List[Resource]]
+def _PrintLicenses(uniqueEntries: list[Resource], duplicatedEntriesDict: dict[str, list[Resource]]) -> None:
+    licenseDict: dict[str, list[Resource]] = {}
     _AddLicenses(licenseDict, uniqueEntries)
     for entries in list(duplicatedEntriesDict.values()):
         _AddLicenses(licenseDict, entries)
@@ -652,34 +648,41 @@ def _PrintLicenses(uniqueEntries: List[Resource], duplicatedEntriesDict: Dict[st
     print("License")
     for key in sortedKeys:
         value = licenseDict[key]
-        print("- '{0}' entries: {1}".format(key, len(value)))
+        print(f"- '{key}' entries: {len(value)}")
         if _ExpandLicense(key):
             for entry in value:
-                print("  * {0}".format(entry.SourcePath))
+                print(f"  * {entry.SourcePath}")
 
 
-def _Process(log: Log, ignoreDirList: List[str], inputDirectory: str, extensions: List[Tuple[str,str]],
-            ignoreFiles: List[str], licenseFilename: str, listLicenses: bool,
-            saveCSVs: bool) -> None:
+def _Process(
+    log: Log,
+    ignoreDirList: list[str],
+    inputDirectory: str,
+    extensions: list[tuple[str, str]],
+    ignoreFiles: list[str],
+    licenseFilename: str,
+    listLicenses: bool,
+    saveCSVs: bool,
+) -> None:
     if not os.path.isdir(inputDirectory):
-        raise Exception("'{0}' is not a directory".format(inputDirectory));
+        raise Exception(f"'{inputDirectory}' is not a directory")
 
     print("Please run this on a clean checkout as compiler obj files could be found otherwise.")
     extensionList = _GetExtensionList(extensions)
     files = _ScanForFiles(inputDirectory, extensionList, ignoreFiles, ignoreDirList)
-    log.LogPrint("Found {0} resource files".format(len(files)))
+    log.LogPrint(f"Found {len(files)} resource files")
 
-    uniqueFiles = [] # type: List[str]
+    uniqueFiles: list[str] = []
     duplicatedFilesDict = _BuildUniqueFileDict(log, files, uniqueFiles)
 
-    log.LogPrint("Found {0} unique resource files".format(len(uniqueFiles)))
-    log.LogPrint("Found {0} duplicated resource files".format(len(duplicatedFilesDict)))
+    log.LogPrint(f"Found {len(uniqueFiles)} unique resource files")
+    log.LogPrint(f"Found {len(duplicatedFilesDict)} duplicated resource files")
 
     # Check license information
     resourceDirectories = _BuildResourceDirectorySet(uniqueFiles, duplicatedFilesDict)
     directoryLicenseDict = _BuildDirectoryLicenseDict(log, resourceDirectories, licenseFilename)
 
-    log.LogPrint("Found {0} license files".format(len(directoryLicenseDict)))
+    log.LogPrint(f"Found {len(directoryLicenseDict)} license files")
 
     uniqueEntries = _TagListWithLicenses(inputDirectory, uniqueFiles, directoryLicenseDict)
     duplicatedEntriesDict = _TagDictWithLicenses(inputDirectory, duplicatedFilesDict, directoryLicenseDict)
@@ -695,9 +698,9 @@ def _Process(log: Log, ignoreDirList: List[str], inputDirectory: str, extensions
     noLicenseDuplicatedEntriesDict = _FilterDictBasedOnLicense(duplicatedEntriesDict)
 
     if len(noLicenseUniqueEntries) > 0:
-        print("WARNING: Found {0} unique resource files with no license attached".format(len(noLicenseUniqueEntries)))
+        print(f"WARNING: Found {len(noLicenseUniqueEntries)} unique resource files with no license attached")
     if len(noLicenseDuplicatedEntriesDict) > 0:
-        print("WARNING: Found {0} duplicated resource files with no license attached".format(len(noLicenseDuplicatedEntriesDict)))
+        print(f"WARNING: Found {len(noLicenseDuplicatedEntriesDict)} duplicated resource files with no license attached")
 
     if saveCSVs:
         _WriteCSV("resourcesIssues.csv", extensions, noLicenseUniqueEntries, noLicenseDuplicatedEntriesDict)
@@ -709,7 +712,8 @@ def _Process(log: Log, ignoreDirList: List[str], inputDirectory: str, extensions
     if listLicenses:
         _PrintLicenses(uniqueEntries, duplicatedEntriesDict)
 
-def _ScanPackageContent(log: Log, licenseConfig: LicenseConfig, scanPackageList: List[Package], disableWrite: bool) -> None:
+
+def _ScanPackageContent(log: Log, licenseConfig: LicenseConfig, scanPackageList: list[Package], disableWrite: bool) -> None:
     for package in scanPackageList:
         packageLicenseList = _BuildPackageLicenseList(log, package, licenseConfig)
 
@@ -727,19 +731,29 @@ def _ScanPackageContent(log: Log, licenseConfig: LicenseConfig, scanPackageList:
             # no licenses, so remove the license if it exist
             dstFilename = IOUtil.Join(package.AbsolutePath, licenseConfig.LicenseFilename)
             if IOUtil.IsFile(dstFilename):
-                IOUtil.RemoveFile(dstFilename);
+                IOUtil.RemoveFile(dstFilename)
 
-def GetExtensionList() -> List[str]:
+
+def GetExtensionList() -> list[str]:
     return _GetExtensionList(__g_extensions)
 
 
-def Scan(log: Log, miniToolConfig: ToolMinimalConfig, directory: str, scanPackageList: List[Package], repairEnabled: bool, disableWrite: bool,
-         listLicenses: bool, saveCSVs: bool, licenseConfig: LicenseConfig) -> None:
+def Scan(
+    log: Log,
+    miniToolConfig: ToolMinimalConfig,
+    directory: str,
+    scanPackageList: list[Package],
+    repairEnabled: bool,
+    disableWrite: bool,
+    listLicenses: bool,
+    saveCSVs: bool,
+    licenseConfig: LicenseConfig,
+) -> None:
     """
     Run through all resource files and check if the licenses are specified.
     """
 
-    #log: Log, ignoreDirList: List[str], inputDirectory: str, extensions: List[Tuple[str,str]],
+    # log: Log, ignoreDirList: List[str], inputDirectory: str, extensions: List[Tuple[str,str]],
     #        ignoreFiles: List[str], licenseFilename: str, listLicenses: List[str],
     #        saveCSVs: bool
 
@@ -756,5 +770,3 @@ def Scan(log: Log, miniToolConfig: ToolMinimalConfig, directory: str, scanPackag
                 ignoreDirs.append(IOUtil.Join(rootDirectory.ResolvedPath, ignoreDir))
 
     _Process(log, ignoreDirs, directory, __g_extensions, __g_ignore, licenseConfig.LicenseFilename, listLicenses, saveCSVs)
-
-

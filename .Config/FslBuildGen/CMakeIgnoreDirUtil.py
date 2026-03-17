@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright 2021 NXP
 # All rights reserved.
 #
@@ -29,15 +29,20 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-from typing import List
+
 from FslBuildGen.BuildConfig.BuildUtil import BuildUtil
 from FslBuildGen.Generator.GeneratorCMakeConfig import GeneratorCMakeConfig
 from FslBuildGen.ToolConfigProjectInfo import ToolConfigProjectInfo
 
-class CMakeIgnoreDirUtil(object):
+
+class CMakeIgnoreDirUtil:
     @staticmethod
-    def GetIgnoreDirs(projectInfo: ToolConfigProjectInfo, cmakeConfig: GeneratorCMakeConfig, defaultBuildDir: str) -> List[str]:
-        return [BuildUtil.GetBuildDir(projectInfo, defaultBuildDir), BuildUtil.GetBuildDir(projectInfo, cmakeConfig.BuildDir),
-                BuildUtil.GetBuildDir(projectInfo, cmakeConfig.CacheDir), BuildUtil.GetBuildDir(projectInfo, cmakeConfig.CheckDir)]
+    def GetIgnoreDirs(projectInfo: ToolConfigProjectInfo, cmakeConfig: GeneratorCMakeConfig, defaultBuildDir: str) -> list[str]:
+        return [
+            BuildUtil.GetBuildDir(projectInfo, defaultBuildDir),
+            BuildUtil.GetBuildDir(projectInfo, cmakeConfig.BuildDir),
+            BuildUtil.GetBuildDir(projectInfo, cmakeConfig.CacheDir),
+            BuildUtil.GetBuildDir(projectInfo, cmakeConfig.CheckDir),
+        ]

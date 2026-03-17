@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright 2017 NXP
 # All rights reserved.
 #
@@ -29,97 +28,86 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-from typing import Dict
-from typing import List
-from typing import Optional
-from typing import Set
-from typing import Tuple
-#from typing import Deque
-#from collections import deque
+# from typing import Deque
+# from collections import deque
 import copy
 import difflib
-from FslBuildGen import IOUtil
-from FslBuildGen import Util
+
+from FslBuildGen import IOUtil, Util
 from FslBuildGen.DataTypes import ScanMethod
 from FslBuildGen.Exceptions import PackageHasMultipleDefinitionsException
 from FslBuildGen.Log import Log
-from FslBuildGen.ToolConfig import ToolConfigPackageLocation
-from FslBuildGen.ToolConfig import ToolConfigPackageLocationBlacklistEntry
+from FslBuildGen.ToolConfig import ToolConfigPackageLocation, ToolConfigPackageLocationBlacklistEntry
 
 g_verbosityMaxLevel = 4
 
 
-class PackageLocationCachePath(object):
-    def __init__(self, packageName: str, absolutePath: str, foundPackageFilePath: Optional[str], sourceLocation: ToolConfigPackageLocation) -> None:
-        """ if foundPackageFilePath is set, this means that the package file was located under this cached path """
+class PackageLocationCachePath:
+    def __init__(self, packageName: str, absolutePath: str, foundPackageFilePath: str | None, sourceLocation: ToolConfigPackageLocation) -> None:
+        """if foundPackageFilePath is set, this means that the package file was located under this cached path"""
         self.PackageName = packageName
         self.AbsolutePath = absolutePath
         self.FoundPackageFilePath = foundPackageFilePath
         self.SourceLocation = sourceLocation
 
 
-class PackageLocationCacheRecord(object):
+class PackageLocationCacheRecord:
     def __init__(self, name: str) -> None:
         self.Name = name
-        self.PathList = [] # type: List[PackageLocationCachePath]
+        self.PathList: list[PackageLocationCachePath] = []
         # The location of a package with this name
         # - if this is None -> no such package exist
-        self.PackagePath = None   # type: Optional[PackageLocationCachePath]
-
+        self.PackagePath: PackageLocationCachePath | None = None
 
     def Append(self, packageLocationCachePath: PackageLocationCachePath) -> None:
         if packageLocationCachePath.FoundPackageFilePath is not None:
             if self.PackagePath is not None:
-                raise PackageHasMultipleDefinitionsException("Two files tried to define the package name '{0}', file1: '{1}' file2: '{2}'".format(self.Name, self.PackagePath.FoundPackageFilePath, packageLocationCachePath.FoundPackageFilePath))
+                raise PackageHasMultipleDefinitionsException(
+                    f"Two files tried to define the package name '{self.Name}', file1: '{self.PackagePath.FoundPackageFilePath}' file2: '{packageLocationCachePath.FoundPackageFilePath}'"
+                )
             self.PackagePath = packageLocationCachePath
         self.PathList.append(packageLocationCachePath)
 
 
-class PackageLocationCandidates(object):
+class PackageLocationCandidates:
     def __init__(self) -> None:
         # We dont use a deque here since MyPy doesnt like it atm
-        #self.__ScannedPaths = set()     # type: Set[str]
-        self.__List = []                # type: List[PackageLocationCachePath]
-        self.NewLocations = []          # type: List[PackageLocationCachePath]
-
+        # self.__ScannedPaths = set()     # type: Set[str]
+        self.__List: list[PackageLocationCachePath] = []
+        self.NewLocations: list[PackageLocationCachePath] = []
 
     def Clear(self) -> None:
-        """ Clear the queue """
-        #self.__ScannedPaths.clear()
+        """Clear the queue"""
+        # self.__ScannedPaths.clear()
         self.__List.clear()
         self.NewLocations.clear()
 
-
     def IsEmpty(self) -> bool:
-        """ Check if the queue is empty """
+        """Check if the queue is empty"""
         return len(self.__List) <= 0
 
-
     def Append(self, location: PackageLocationCachePath) -> None:
-        """ Append the location to the end of the queue """
-        #if location.AbsolutePath in self.__ScannedPaths:
+        """Append the location to the end of the queue"""
+        # if location.AbsolutePath in self.__ScannedPaths:
         #    return
         self.__List.append(location)
 
-
     def Insert(self, location: PackageLocationCachePath) -> None:
-        """ Find the best location to add the element based on the existing content """
-        #if location.AbsolutePath in self.__ScannedPaths:
+        """Find the best location to add the element based on the existing content"""
+        # if location.AbsolutePath in self.__ScannedPaths:
         #    return
 
         index = self.__LocateInsertIndex(location)
         self.__List.insert(index, location)
 
-
-    def TryPopFront(self) -> Optional[PackageLocationCachePath]:
+    def TryPopFront(self) -> PackageLocationCachePath | None:
         if len(self.__List) <= 0:
             return None
         result = self.__List.pop(0)
-        #self.__ScannedPaths.add(result.AbsolutePath)
+        # self.__ScannedPaths.add(result.AbsolutePath)
         return result
-
 
     def __LocateInsertIndex(self, location: PackageLocationCachePath) -> int:
         for index, entry in enumerate(self.__List):
@@ -128,17 +116,17 @@ class PackageLocationCandidates(object):
         return len(self.__List)
 
 
-class PackageLocationCache(object):
-    def __init__(self, log: Log, packageLocations: List[ToolConfigPackageLocation], genFilename: str) -> None:
+class PackageLocationCache:
+    def __init__(self, log: Log, packageLocations: list[ToolConfigPackageLocation], genFilename: str) -> None:
         self.Log = log
         self.__PackageLocations = packageLocations
         self.__GenFilename = genFilename
         # Package name to location matching, this contains all entries also the ones that dont have a package
-        self.__LocationDict = {}  # type: Dict[str, PackageLocationCacheRecord]
-        self.__ScannedPathsCacheSet = set()  # type: Set[str]
+        self.__LocationDict: dict[str, PackageLocationCacheRecord] = {}
+        self.__ScannedPathsCacheSet: set[str] = set()
         # Contains the paths thare are 'root' locations
-        self.__RootLocationPaths = set()  # type: Set[str]
-        self.__TryLocatePackageScratchpad = PackageLocationCandidates()   # type: PackageLocationCandidates
+        self.__RootLocationPaths: set[str] = set()
+        self.__TryLocatePackageScratchpad: PackageLocationCandidates = PackageLocationCandidates()
 
         for entry in packageLocations:
             self.__RootLocationPaths.add(entry.ResolvedPath)
@@ -146,39 +134,43 @@ class PackageLocationCache(object):
         # Warmup the cache by scanning the initial locations
         self.__CacheInitialLocations(packageLocations)
 
-    def SYS_TestAccess_GetLocationDict(self) -> Dict[str, PackageLocationCacheRecord]:
+    def SYS_TestAccess_GetLocationDict(self) -> dict[str, PackageLocationCacheRecord]:
         return self.__LocationDict
 
-
-    def GetKnownPackageLocations(self) -> List[PackageLocationCachePath]:
-        """ Get all the currently known package locations """
+    def GetKnownPackageLocations(self) -> list[PackageLocationCachePath]:
+        """Get all the currently known package locations"""
         return [record.PackagePath for record in self.__LocationDict.values() if record.PackagePath is not None]
 
-
     def CacheEverything(self) -> None:
-        """ Cache all subdirectories.
-            This is useful if you want to create a package candidate list to provide a helpful error message.
+        """Cache all subdirectories.
+        This is useful if you want to create a package candidate list to provide a helpful error message.
         """
         self.Log.LogPrintVerbose(g_verbosityMaxLevel, "- Caching everything")
         try:
             self.Log.PushIndent()
 
-            sourcePackageLocationCacheRecords = copy.deepcopy(list(self.__LocationDict.values())) # type: List[PackageLocationCacheRecord]
+            sourcePackageLocationCacheRecords: list[PackageLocationCacheRecord] = copy.deepcopy(list(self.__LocationDict.values()))
             for sourceRecord in sourcePackageLocationCacheRecords:
                 for packageLocation in sourceRecord.PathList:
                     newLocationPackageName = packageLocation.PackageName + "."
-                    self.__CacheLocation(self.__ScannedPathsCacheSet, self.__LocationDict, newLocationPackageName, packageLocation.AbsolutePath, ScanMethod.AllSubDirectories, packageLocation.SourceLocation)
+                    self.__CacheLocation(
+                        self.__ScannedPathsCacheSet,
+                        self.__LocationDict,
+                        newLocationPackageName,
+                        packageLocation.AbsolutePath,
+                        ScanMethod.AllSubDirectories,
+                        packageLocation.SourceLocation,
+                    )
         finally:
             self.Log.PopIndent()
 
-
-    def FindCandidates(self, packageName: str, automaticallyCacheEverything: bool = False) -> List[str]:
-        """ Look at the cached packages and try to create candidate list of packages that have similar names """
+    def FindCandidates(self, packageName: str, automaticallyCacheEverything: bool = False) -> list[str]:
+        """Look at the cached packages and try to create candidate list of packages that have similar names"""
         if automaticallyCacheEverything:
             self.CacheEverything()
 
         if self.Log.Verbosity >= g_verbosityMaxLevel:
-            self.Log.LogPrint("- Finding candidates for: {0}".format(packageName))
+            self.Log.LogPrint(f"- Finding candidates for: {packageName}")
         allValidPackageList = [record.Name for record in self.__LocationDict.values() if record.PackagePath is not None]
 
         # Check for a exact match first
@@ -189,20 +181,18 @@ class PackageLocationCache(object):
         candidateList += self.__FindCandidatesThatAreClose(allValidPackageList, packageName, candidateList)
         return candidateList
 
-
-    def __FindCandidatesThatMatchPackageEnding(self, allValidPackageList: List[str], packageName: str) -> List[str]:
-        """ Find all packages has a end prefix that match the name 100% """
-        resultList = []  # type: List[str]
+    def __FindCandidatesThatMatchPackageEnding(self, allValidPackageList: list[str], packageName: str) -> list[str]:
+        """Find all packages has a end prefix that match the name 100%"""
+        resultList: list[str] = []
         endName = "." + packageName
         for name in allValidPackageList:
             if name.endswith(endName):
                 resultList.append(name)
         return resultList
 
-
-    def __FindCandidatesThatAreClose(self, allValidPackageList: List[str], packageName: str, ignoreList: List[str], matchRating: float = 0.70) -> List[str]:
-        """ Find all candidates that have a close matchRating to the name we are looking for """
-        ratingList = []  # type: List[Tuple[float, str]]
+    def __FindCandidatesThatAreClose(self, allValidPackageList: list[str], packageName: str, ignoreList: list[str], matchRating: float = 0.70) -> list[str]:
+        """Find all candidates that have a close matchRating to the name we are looking for"""
+        ratingList: list[tuple[float, str]] = []
         for name in allValidPackageList:
             if name not in ignoreList:
                 ratio = difflib.SequenceMatcher(None, packageName, name).ratio()
@@ -211,23 +201,20 @@ class PackageLocationCache(object):
 
         ratingList.sort(key=lambda s: -s[0])
 
-        resultList = []  # type: List[str]
+        resultList: list[str] = []
         for entry in ratingList:
             resultList.append(entry[1])
         return resultList
 
-
-
-    def TryGet(self, packageName: str) -> Optional[PackageLocationCachePath]:
-        """ Get cached package path if available """
+    def TryGet(self, packageName: str) -> PackageLocationCachePath | None:
+        """Get cached package path if available"""
         if packageName not in self.__LocationDict:
             return None
         found = self.__LocationDict[packageName]
         return None if found.PackagePath is None else found.PackagePath
 
-
-    def TryLocatePackage(self, packageName: str) -> Optional[PackageLocationCachePath]:
-        """ Locate the package """
+    def TryLocatePackage(self, packageName: str) -> PackageLocationCachePath | None:
+        """Locate the package"""
         found = self.TryGet(packageName)
         if found is not None:
             return found
@@ -245,10 +232,9 @@ class PackageLocationCache(object):
         finally:
             locationCandidates.Clear()
 
-
     def __AddInitialCandidates(self, rLocationCandidates: PackageLocationCandidates, sourcePackageName: str) -> None:
-        """ Fill the location candidate queue with candidate locations """
-        subNames = sourcePackageName.split('.')
+        """Fill the location candidate queue with candidate locations"""
+        subNames = sourcePackageName.split(".")
         subNames.pop()
         while len(subNames) > 0:
             packageName = ".".join(subNames)
@@ -257,23 +243,31 @@ class PackageLocationCache(object):
                     rLocationCandidates.Append(location)
             subNames.pop()
 
-
     def __AddCandidateLocations(self, rLocationCandidates: PackageLocationCandidates, sourcePackageName: str) -> None:
-        """ Look at the newly added entries in rLocationCandidates.NewLocations and insert the new possible locations in the queue """
+        """Look at the newly added entries in rLocationCandidates.NewLocations and insert the new possible locations in the queue"""
         for newLocation in rLocationCandidates.NewLocations:
-            if(sourcePackageName.startswith(newLocation.PackageName) and len(sourcePackageName) > len(newLocation.PackageName) and
-               sourcePackageName[len(newLocation.PackageName)] == '.'):
+            if (
+                sourcePackageName.startswith(newLocation.PackageName)
+                and len(sourcePackageName) > len(newLocation.PackageName)
+                and sourcePackageName[len(newLocation.PackageName)] == "."
+            ):
                 rLocationCandidates.Insert(newLocation)
 
-
-    def __TryLocatePackage(self, rLocationCandidates: PackageLocationCandidates, packageName: str) -> Optional[PackageLocationCachePath]:
+    def __TryLocatePackage(self, rLocationCandidates: PackageLocationCandidates, packageName: str) -> PackageLocationCachePath | None:
         packageLocationCachePath = rLocationCandidates.TryPopFront()
         while packageLocationCachePath is not None:
             newLocationPackageName = packageLocationCachePath.PackageName + "."
 
             rLocationCandidates.NewLocations.clear()
-            self.__CacheLocation(self.__ScannedPathsCacheSet, self.__LocationDict, newLocationPackageName, packageLocationCachePath.AbsolutePath,
-                                 ScanMethod.Directory, packageLocationCachePath.SourceLocation, rLocationCandidates.NewLocations)
+            self.__CacheLocation(
+                self.__ScannedPathsCacheSet,
+                self.__LocationDict,
+                newLocationPackageName,
+                packageLocationCachePath.AbsolutePath,
+                ScanMethod.Directory,
+                packageLocationCachePath.SourceLocation,
+                rLocationCandidates.NewLocations,
+            )
 
             # Lets see if the scan found the package for us
             found = self.TryGet(packageName)
@@ -285,33 +279,32 @@ class PackageLocationCache(object):
             packageLocationCachePath = rLocationCandidates.TryPopFront()
         return None
 
-
-    def __CacheInitialLocations(self, packageLocations: List[ToolConfigPackageLocation]) -> None:
+    def __CacheInitialLocations(self, packageLocations: list[ToolConfigPackageLocation]) -> None:
         if self.Log.Verbosity >= g_verbosityMaxLevel:
             self.Log.LogPrint("- Caching initial locations")
         try:
             self.Log.PushIndent()
             for packageLocation in packageLocations:
-                self.__CacheLocation(self.__ScannedPathsCacheSet, self.__LocationDict, "", packageLocation.ResolvedPathEx, packageLocation.ScanMethod, packageLocation)
+                self.__CacheLocation(
+                    self.__ScannedPathsCacheSet, self.__LocationDict, "", packageLocation.ResolvedPathEx, packageLocation.ScanMethod, packageLocation
+                )
         finally:
             self.Log.PopIndent()
 
+    def __IsBlacklisted(self, currentPath: str, blacklist: list[ToolConfigPackageLocationBlacklistEntry]) -> bool:
+        """Check if a absolute path, is present in the blacklist"""
+        return any(currentPath == entry.AbsoluteDirPath for entry in blacklist)
 
-    def __IsBlacklisted(self, currentPath: str, blacklist: List[ToolConfigPackageLocationBlacklistEntry]) -> bool:
-        """ Check if a absolute path, is present in the blacklist """
-        for entry in blacklist:
-            if currentPath == entry.AbsoluteDirPath:
-                return True
-        return False
-
-
-    def __CacheLocation(self, rScannedPathsCacheSet: Set[str],
-                        rLocationDict: Dict[str, PackageLocationCacheRecord],
-                        locationPackageName: str,
-                        sourcePath: str,
-                        scanMethod: int,
-                        sourceLocation: ToolConfigPackageLocation,
-                        rNewLocations: Optional[List[PackageLocationCachePath]] = None) -> None:
+    def __CacheLocation(
+        self,
+        rScannedPathsCacheSet: set[str],
+        rLocationDict: dict[str, PackageLocationCacheRecord],
+        locationPackageName: str,
+        sourcePath: str,
+        scanMethod: int,
+        sourceLocation: ToolConfigPackageLocation,
+        rNewLocations: list[PackageLocationCachePath] | None = None,
+    ) -> None:
         # if rNewLocations is not None all new locations we find will be added to this list
         # Prevent multiple scannings of the same path
         if sourcePath in rScannedPathsCacheSet:
@@ -324,16 +317,16 @@ class PackageLocationCache(object):
         for dirEntry in directories:
             if not Util.IsValidPackageName(dirEntry):
                 if self.Log.Verbosity >= 4:
-                    self.Log.LogPrint("Ignored directory '{0}' at '{1}' as it was not a valid package name".format(dirEntry, IOUtil.Join(sourcePath, dirEntry)))
+                    self.Log.LogPrint(f"Ignored directory '{dirEntry}' at '{IOUtil.Join(sourcePath, dirEntry)}' as it was not a valid package name")
                 continue
             absoluteDirPath = IOUtil.Join(sourcePath, dirEntry)
             if absoluteDirPath in self.__RootLocationPaths:
                 if self.Log.Verbosity >= g_verbosityMaxLevel:
-                    self.Log.LogPrint("Not scanning '{0}' as a child of '{1}' since it is a root location".format(absoluteDirPath, sourceLocation.ResolvedPath))
+                    self.Log.LogPrint(f"Not scanning '{absoluteDirPath}' as a child of '{sourceLocation.ResolvedPath}' since it is a root location")
                 continue
             if self.__IsBlacklisted(absoluteDirPath, sourceLocation.Blacklist):
                 if self.Log.Verbosity >= g_verbosityMaxLevel:
-                    self.Log.LogPrint("Not scanning '{0}' as it was blacklisted".format(absoluteDirPath))
+                    self.Log.LogPrint(f"Not scanning '{absoluteDirPath}' as it was blacklisted")
                 continue
 
             # This is not a original location path, so we can cache it as a 'child' of this location
@@ -347,14 +340,14 @@ class PackageLocationCache(object):
                 rLocationDict[directoryLocationPackageName] = newRecord
                 if self.Log.Verbosity >= g_verbosityMaxLevel:
                     if foundPackageFilePath is None:
-                        self.Log.LogPrint("- Cached '{0}' at '{1}'".format(directoryLocationPackageName, absoluteDirPath))
+                        self.Log.LogPrint(f"- Cached '{directoryLocationPackageName}' at '{absoluteDirPath}'")
                     else:
-                        self.Log.LogPrint("- Cached '{0}' at '{1}', found package here.".format(directoryLocationPackageName, absoluteDirPath))
+                        self.Log.LogPrint(f"- Cached '{directoryLocationPackageName}' at '{absoluteDirPath}', found package here.")
             elif self.Log.Verbosity >= g_verbosityMaxLevel:
                 if foundPackageFilePath is None:
-                    self.Log.LogPrint("- Cached alias to '{0}' at '{1}'".format(directoryLocationPackageName, absoluteDirPath))
+                    self.Log.LogPrint(f"- Cached alias to '{directoryLocationPackageName}' at '{absoluteDirPath}'")
                 else:
-                    self.Log.LogPrint("- Cached alias to '{0}' at '{1}', found package here.".format(directoryLocationPackageName, absoluteDirPath))
+                    self.Log.LogPrint(f"- Cached alias to '{directoryLocationPackageName}' at '{absoluteDirPath}', found package here.")
 
             cacheRecord = rLocationDict[directoryLocationPackageName]
             cacheRecord.Append(newLocationRecord)
@@ -366,9 +359,13 @@ class PackageLocationCache(object):
                 pass
             elif scanMethod == ScanMethod.OneSubDirectory:
                 newLocationPackageName = directoryLocationPackageName + "."
-                self.__CacheLocation(rScannedPathsCacheSet, rLocationDict, newLocationPackageName, absoluteDirPath, ScanMethod.Directory, sourceLocation, rNewLocations)
+                self.__CacheLocation(
+                    rScannedPathsCacheSet, rLocationDict, newLocationPackageName, absoluteDirPath, ScanMethod.Directory, sourceLocation, rNewLocations
+                )
             elif scanMethod == ScanMethod.AllSubDirectories:
                 newLocationPackageName = directoryLocationPackageName + "."
-                self.__CacheLocation(rScannedPathsCacheSet, rLocationDict, newLocationPackageName, absoluteDirPath, ScanMethod.AllSubDirectories, sourceLocation, rNewLocations)
+                self.__CacheLocation(
+                    rScannedPathsCacheSet, rLocationDict, newLocationPackageName, absoluteDirPath, ScanMethod.AllSubDirectories, sourceLocation, rNewLocations
+                )
             else:
-                raise Exception("Unsupported ScanMethod {0}".format(ScanMethod.TryToString(scanMethod, True)))
+                raise Exception(f"Unsupported ScanMethod {ScanMethod.TryToString(scanMethod, True)}")

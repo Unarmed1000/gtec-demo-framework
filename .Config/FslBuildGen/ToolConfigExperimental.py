@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright (c) 2014 Freescale Semiconductor, Inc.
 # All rights reserved.
 #
@@ -29,52 +29,59 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-from typing import List
-from typing import Optional
-#import xml.etree.ElementTree as ET
+
+# import xml.etree.ElementTree as ET
+
 from FslBuildGen import IOUtil
 from FslBuildGen.Log import Log
-from FslBuildGen.Vars.VariableProcessor import VariableProcessor
-from FslBuildGen.ToolConfigRootDirectory import ToolConfigRootDirectory
 from FslBuildGen.ToolConfigExperimentalDefaultThirdPartyInstallDirectory import ToolConfigExperimentalDefaultThirdPartyInstallDirectory
-from FslBuildGen.Xml.Project.XmlProjectRootConfigFile import XmlExperimental
-from FslBuildGen.Xml.Project.XmlProjectRootConfigFile import XmlExperimentalDefaultThirdPartyInstallReadonlyCacheDirectory
+from FslBuildGen.ToolConfigRootDirectory import ToolConfigRootDirectory
+from FslBuildGen.Vars.VariableProcessor import VariableProcessor
+from FslBuildGen.Xml.Project.XmlProjectRootConfigFile import XmlExperimental, XmlExperimentalDefaultThirdPartyInstallReadonlyCacheDirectory
 
 
-class ToolConfigExperimental(object):
-    def __init__(self, log: Log, rootDirs: List[ToolConfigRootDirectory],
-                 basedUponXML: XmlExperimental, configFileName: str, projectRootDirectory: str) -> None:
+class ToolConfigExperimental:
+    def __init__(
+        self, log: Log, rootDirs: list[ToolConfigRootDirectory], basedUponXML: XmlExperimental, configFileName: str, projectRootDirectory: str
+    ) -> None:
         super().__init__()
         self.BasedOn = basedUponXML
 
-        self.DefaultThirdPartyInstallReadonlyCacheDirectory = None  # type: Optional[ToolConfigExperimentalDefaultThirdPartyInstallDirectory]
+        self.DefaultThirdPartyInstallReadonlyCacheDirectory: ToolConfigExperimentalDefaultThirdPartyInstallDirectory | None = None
 
         self.AllowDownloads = basedUponXML.AllowDownloads
         self.DisableDownloadEnv = basedUponXML.DisableDownloadEnv
-        self.DefaultThirdPartyInstallDirectory = ToolConfigExperimentalDefaultThirdPartyInstallDirectory(log, basedUponXML.DefaultThirdPartyInstallDirectory, "DefaultThirdPartyInstallDirectory", False)
+        self.DefaultThirdPartyInstallDirectory = ToolConfigExperimentalDefaultThirdPartyInstallDirectory(
+            log, basedUponXML.DefaultThirdPartyInstallDirectory, "DefaultThirdPartyInstallDirectory", False
+        )
         self.DefaultThirdPartyInstallReadonlyCacheDirectory = self.__TryCreateReadonlyCache(log, basedUponXML.DefaultThirdPartyInstallReadonlyCacheDirectory)
 
         if log.Verbosity > 1:
-            log.LogPrint("DefaultThirdPartyInstallDirectory: {0} which resolves to '{1}'".format(self.DefaultThirdPartyInstallDirectory.Name, self.DefaultThirdPartyInstallDirectory.ResolvedPath))
-            if not self.DefaultThirdPartyInstallReadonlyCacheDirectory is None:
-                log.LogPrint("DefaultThirdPartyInstallReadonlyCacheDirectory: {0} which resolves to '{1}'".format(self.DefaultThirdPartyInstallReadonlyCacheDirectory.Name, self.DefaultThirdPartyInstallReadonlyCacheDirectory.ResolvedPath))
+            log.LogPrint(
+                f"DefaultThirdPartyInstallDirectory: {self.DefaultThirdPartyInstallDirectory.Name} which resolves to '{self.DefaultThirdPartyInstallDirectory.ResolvedPath}'"
+            )
+            if self.DefaultThirdPartyInstallReadonlyCacheDirectory is not None:
+                log.LogPrint(
+                    f"DefaultThirdPartyInstallReadonlyCacheDirectory: {self.DefaultThirdPartyInstallReadonlyCacheDirectory.Name} which resolves to '{self.DefaultThirdPartyInstallReadonlyCacheDirectory.ResolvedPath}'"
+                )
 
-
-    def __TryCreateReadonlyCache(self, log: Log, basedUponXML: Optional[XmlExperimentalDefaultThirdPartyInstallReadonlyCacheDirectory]) -> Optional[ToolConfigExperimentalDefaultThirdPartyInstallDirectory]:
+    def __TryCreateReadonlyCache(
+        self, log: Log, basedUponXML: XmlExperimentalDefaultThirdPartyInstallReadonlyCacheDirectory | None
+    ) -> ToolConfigExperimentalDefaultThirdPartyInstallDirectory | None:
         entryName = "DefaultThirdPartyInstallReadonlyCacheDirectory"
         if basedUponXML is None:
-            raise Exception("No '{0}' was defined in the xml".format(entryName))
+            raise Exception(f"No '{entryName}' was defined in the xml")
 
         variableProcessor = VariableProcessor(log)
         env = variableProcessor.TryExtractLeadingEnvironmentVariableName(basedUponXML.Name, False)
         if env is None:
-            raise Exception("The {0} is expected to contain a environment variable '{1}'".format(entryName, basedUponXML.Name))
+            raise Exception(f"The {entryName} is expected to contain a environment variable '{basedUponXML.Name}'")
 
         resolvedPath = IOUtil.TryGetEnvironmentVariable(env)
         if resolvedPath is None:
-            log.LogPrintVerbose(2, "Read only cache environment variable {0} not set, disabling cache".format(env))
+            log.LogPrintVerbose(2, f"Read only cache environment variable {env} not set, disabling cache")
             return None
 
         return ToolConfigExperimentalDefaultThirdPartyInstallDirectory(log, basedUponXML, entryName, True)

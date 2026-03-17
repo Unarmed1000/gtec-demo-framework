@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright 2020 NXP
 # All rights reserved.
 #
@@ -29,22 +28,22 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-from typing import List
-from typing import Set
+
 from FslBuildGen.Engine.Unresolved.UnresolvedBasicPackage import UnresolvedBasicPackage
 from FslBuildGen.Engine.Unresolved.UnresolvedPackageName import UnresolvedPackageName
 
-class PackageResolveQueue(object):
-    def __init__(self, allPackages: List[UnresolvedBasicPackage]) -> None:
-        super().__init__()
-        self.__queue = list(allPackages)  # type: List[UnresolvedBasicPackage]
 
-        queuedPackageNames = set() # type: Set[UnresolvedPackageName]
+class PackageResolveQueue:
+    def __init__(self, allPackages: list[UnresolvedBasicPackage]) -> None:
+        super().__init__()
+        self.__queue: list[UnresolvedBasicPackage] = list(allPackages)
+
+        queuedPackageNames: set[UnresolvedPackageName] = set()
         for entry in allPackages:
             if entry.Name in queuedPackageNames:
-                raise Exception("Duplicated package detected '{0}'".format(entry.Name))
+                raise Exception(f"Duplicated package detected '{entry.Name}'")
             queuedPackageNames.add(entry.Name)
 
     def __len__(self) -> int:

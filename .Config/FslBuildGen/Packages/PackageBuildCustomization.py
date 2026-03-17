@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright 2017 NXP
 # All rights reserved.
 #
@@ -29,30 +29,30 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-from typing import Dict
+
 from FslBuildGen.DataTypes import OptimizationType
 from FslBuildGen.Xml.XmlStuff import XmlGenFileBuildCustomization
 
-class PackageBuildCustomizationBase(object):
-    #def __init__(self) -> None:
+
+class PackageBuildCustomizationBase:
+    # def __init__(self) -> None:
     #    super().__init__()
 
-
-    def ReadValue(self, srcDict: Dict[str, XmlGenFileBuildCustomization], name: str, defaultValue: int) -> int:
+    def ReadValue(self, srcDict: dict[str, XmlGenFileBuildCustomization], name: str, defaultValue: int) -> int:
         if srcDict is not None and name in srcDict:
             return srcDict[name].GetValueAsInt()
         return defaultValue
 
 
 class PackageBuildCustomization_Debug(PackageBuildCustomizationBase):
-    def __init__(self, srcDict: Dict[str, XmlGenFileBuildCustomization]) -> None:
+    def __init__(self, srcDict: dict[str, XmlGenFileBuildCustomization]) -> None:
         super().__init__()
-        self.Optimization = self.ReadValue(srcDict, 'BuildCustomization.Debug.Optimization', OptimizationType.Disabled)
+        self.Optimization = self.ReadValue(srcDict, "BuildCustomization.Debug.Optimization", OptimizationType.Disabled)
 
 
 class PackageBuildCustomization(PackageBuildCustomizationBase):
-    def __init__(self, xmlBuildCustomizationDict: Dict[str, XmlGenFileBuildCustomization]) -> None:
+    def __init__(self, xmlBuildCustomizationDict: dict[str, XmlGenFileBuildCustomization]) -> None:
         super().__init__()
         self.Debug = PackageBuildCustomization_Debug(xmlBuildCustomizationDict)

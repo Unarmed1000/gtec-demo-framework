@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright 2020 NXP
 # All rights reserved.
 #
@@ -29,14 +29,11 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-from typing import Dict
-from typing import List
-from typing import Optional
-#from FslBuildGen import Util
-from FslBuildGen.DataTypes import PackageLanguage
-from FslBuildGen.DataTypes import PackageType
+
+# from FslBuildGen import Util
+from FslBuildGen.DataTypes import PackageLanguage, PackageType
 from FslBuildGen.Engine.PackageFlavorSelections import PackageFlavorSelections
 from FslBuildGen.Engine.Resolver.ProcessedPackageDependency import ProcessedPackageDependency
 from FslBuildGen.Engine.Resolver.ResolvedPackageTemplate import ResolvedPackageTemplate
@@ -49,22 +46,31 @@ from FslBuildGen.Packages.PackageCustomInfo import PackageCustomInfo
 from FslBuildGen.Packages.PackageNameInfo import PackageNameInfo
 from FslBuildGen.Packages.PackagePlatform import PackagePlatform
 from FslBuildGen.Packages.PackageProjectContext import PackageProjectContext
-#from FslBuildGen.Packages.PackageShortName import PackageShortName
+
+# from FslBuildGen.Packages.PackageShortName import PackageShortName
 from FslBuildGen.Packages.PackageTraceContext import PackageTraceContext
-from FslBuildGen.Packages.Unresolved.UnresolvedPackageCopyFile import UnresolvedPackageCopyFile
 from FslBuildGen.Packages.Unresolved.UnresolvedExternalDependency import UnresolvedExternalDependency
+from FslBuildGen.Packages.Unresolved.UnresolvedPackageCopyFile import UnresolvedPackageCopyFile
 from FslBuildGen.Packages.Unresolved.UnresolvedPackageDefine import UnresolvedPackageDefine
 from FslBuildGen.Packages.Unresolved.UnresolvedPackageGenerate import UnresolvedPackageGenerate
-from FslBuildGen.Packages.Unresolved.UnresolvedPackageIgnore import UnresolvedPackageIgnore
 from FslBuildGen.Packages.Unresolved.UnresolvedPackageGenerateGrpcProtoFile import UnresolvedPackageGenerateGrpcProtoFile
+from FslBuildGen.Packages.Unresolved.UnresolvedPackageIgnore import UnresolvedPackageIgnore
 from FslBuildGen.Packages.Unresolved.UnresolvedPackageRequirement import UnresolvedPackageRequirement
 from FslBuildGen.Xml.XmlExperimentalRecipe import XmlExperimentalRecipe
 from FslBuildGen.Xml.XmlStuff import XmlGenFileBuildCustomization
 
 
-class ProcessedPackageFlags(object):
-    def __init__(self, isVirtual: bool, allowCheck: bool, unitTest: bool, showInMainReadme: bool,
-                 packageNameBasedIncludePath: bool, platformDefaultSupportedValue: bool, enableExtendedSourceExtensions: bool) -> None:
+class ProcessedPackageFlags:
+    def __init__(
+        self,
+        isVirtual: bool,
+        allowCheck: bool,
+        unitTest: bool,
+        showInMainReadme: bool,
+        packageNameBasedIncludePath: bool,
+        platformDefaultSupportedValue: bool,
+        enableExtendedSourceExtensions: bool,
+    ) -> None:
         super().__init__()
         self.IsVirtual = isVirtual
         self.AllowCheck = allowCheck
@@ -75,9 +81,16 @@ class ProcessedPackageFlags(object):
         self.EnableExtendedSourceExtensions = enableExtendedSourceExtensions
 
 
-class ProcessedPackagePaths(object):
-    def __init__(self, includePath: Optional[PackageIncludePath], sourcePath: Optional[PackagePath], contentPath: Optional[PackagePath],
-                 contentSourcePath: Optional[PackagePath], baseIncludePath: PackageIncludeDir, baseSourcePath: str) -> None:
+class ProcessedPackagePaths:
+    def __init__(
+        self,
+        includePath: PackageIncludePath | None,
+        sourcePath: PackagePath | None,
+        contentPath: PackagePath | None,
+        contentSourcePath: PackagePath | None,
+        baseIncludePath: PackageIncludeDir,
+        baseSourcePath: str,
+    ) -> None:
         super().__init__()
         self.IncludePath = includePath
         self.SourcePath = sourcePath
@@ -87,20 +100,37 @@ class ProcessedPackagePaths(object):
         self.BaseSourcePath = baseSourcePath
 
 
-class ProcessedPackage(object):
-    def __init__(self, projectContext: PackageProjectContext, nameInfo: PackageNameInfo, companyName: CompanyName, creationYear: Optional[str],
-                 packageFile: Optional[PackageFile], sourceFileHash: str, packageType: PackageType, packageFlags: ProcessedPackageFlags,
-                 packageLanguage: PackageLanguage, generateList: List[UnresolvedPackageGenerate],
-                 generateGrpcProtoFileList: List[UnresolvedPackageGenerateGrpcProtoFile],
-                 copyFileList: List[UnresolvedPackageCopyFile],
-                 directDependencies: List[ProcessedPackageDependency],
-                 directRequirements: List[UnresolvedPackageRequirement], directDefines: List[UnresolvedPackageDefine],
-                 directIgnores: List[UnresolvedPackageIgnore],
-                 externalDependencies: List[UnresolvedExternalDependency], path: ProcessedPackagePaths, templateType: str,
-                 buildCustomization: Dict[str, XmlGenFileBuildCustomization], directExperimentalRecipe: Optional[XmlExperimentalRecipe],
-                 resolvedFlavorSelections: PackageFlavorSelections, resolvedFlavorTemplate: ResolvedPackageTemplate,
-                 resolvedPlatform: PackagePlatform, directPlatformSupported: bool, customInfo: PackageCustomInfo,
-                 traceContext: PackageTraceContext) -> None:
+class ProcessedPackage:
+    def __init__(
+        self,
+        projectContext: PackageProjectContext,
+        nameInfo: PackageNameInfo,
+        companyName: CompanyName,
+        creationYear: str | None,
+        packageFile: PackageFile | None,
+        sourceFileHash: str,
+        packageType: PackageType,
+        packageFlags: ProcessedPackageFlags,
+        packageLanguage: PackageLanguage,
+        generateList: list[UnresolvedPackageGenerate],
+        generateGrpcProtoFileList: list[UnresolvedPackageGenerateGrpcProtoFile],
+        copyFileList: list[UnresolvedPackageCopyFile],
+        directDependencies: list[ProcessedPackageDependency],
+        directRequirements: list[UnresolvedPackageRequirement],
+        directDefines: list[UnresolvedPackageDefine],
+        directIgnores: list[UnresolvedPackageIgnore],
+        externalDependencies: list[UnresolvedExternalDependency],
+        path: ProcessedPackagePaths,
+        templateType: str,
+        buildCustomization: dict[str, XmlGenFileBuildCustomization],
+        directExperimentalRecipe: XmlExperimentalRecipe | None,
+        resolvedFlavorSelections: PackageFlavorSelections,
+        resolvedFlavorTemplate: ResolvedPackageTemplate,
+        resolvedPlatform: PackagePlatform,
+        directPlatformSupported: bool,
+        customInfo: PackageCustomInfo,
+        traceContext: PackageTraceContext,
+    ) -> None:
         super().__init__()
         self.ProjectContext = projectContext
         self.NameInfo = nameInfo

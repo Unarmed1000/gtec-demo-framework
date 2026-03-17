@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright 2017 NXP
 # All rights reserved.
 #
@@ -29,24 +29,25 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-from typing import List
-from FslBuildGen.Log import Log
+
 from FslBuildGen.BuildContent.Processor.ContentFileRecord import ContentFileRecord
+from FslBuildGen.Log import Log
 
-class Command(object):
+
+class Command:
     def __init__(self, log: Log) -> None:
         super().__init__()
 
 
 class CommandContentSync(Command):
-    def __init__(self, log: Log, files: List[ContentFileRecord]) -> None:
+    def __init__(self, log: Log, files: list[ContentFileRecord]) -> None:
         super().__init__(log)
         self.Files = files
 
 
 class CommandContentBuildSync(Command):
-    def __init__(self, log: Log, files: List[ContentFileRecord]) -> None:
+    def __init__(self, log: Log, files: list[ContentFileRecord]) -> None:
         super().__init__(log)
         self.Files = files

@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright 2018 NXP
 # All rights reserved.
 #
@@ -29,18 +28,17 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-from typing import Dict
-from typing import Optional
+
 from FslBuildGen.BuildExternal.State.RecipePackageState import RecipePackageState
 from FslBuildGen.Log import Log
 
 
-class RecipePackageStateCache(object):
+class RecipePackageStateCache:
     def __init__(self, log: Log) -> None:
         super().__init__()
-        self.Dict = {}   # type: Dict[str,RecipePackageState]
+        self.Dict: dict[str, RecipePackageState] = {}
 
     def Set(self, packageState: RecipePackageState) -> None:
         self.Dict[packageState.PackageName] = packageState
@@ -48,7 +46,7 @@ class RecipePackageStateCache(object):
     def Get(self, packageName: str) -> RecipePackageState:
         return self.Dict[packageName]
 
-    def TryGet(self, packageName: str) -> Optional[RecipePackageState]:
+    def TryGet(self, packageName: str) -> RecipePackageState | None:
         if packageName in self.Dict:
             return self.Dict[packageName]
         return None

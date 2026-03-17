@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright 2018 NXP
 # All rights reserved.
 #
@@ -29,12 +28,13 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-#from typing import Dict
+# from typing import Dict
 from FslBuildGen.Version import Version
 
-class PackageRecipeResultFoundExecutable(object):
+
+class PackageRecipeResultFoundExecutable:
     def __init__(self, primaryExeName: str, exeName: str, path: str, version: Version) -> None:
         """
         Contains information about the found executable

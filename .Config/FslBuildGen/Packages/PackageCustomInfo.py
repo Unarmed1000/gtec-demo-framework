@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright 2020 NXP
 # All rights reserved.
 #
@@ -29,11 +29,10 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-from typing import Optional
 
-class PackageCustomInfo(object):
-    def __init__(self, visualStudioProjectGUID: Optional[str]) -> None:
+class PackageCustomInfo:
+    def __init__(self, visualStudioProjectGUID: str | None) -> None:
         super().__init__()
         self.VisualStudioProjectGUID = visualStudioProjectGUID

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright 2020 NXP
 # All rights reserved.
 #
@@ -29,14 +29,17 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-from typing import List
-from FslBuildGen.Packages.Unresolved.UnresolvedPackageDefine import UnresolvedPackageDefine
+
 from FslBuildGen.Packages.Unresolved.UnresolvedExternalDependency import UnresolvedExternalDependency
+from FslBuildGen.Packages.Unresolved.UnresolvedPackageDefine import UnresolvedPackageDefine
 
-class UnresolvedPackageVariantOption(object):
-    def __init__(self, name: str, ownerPackageName: str, directDefines: List[UnresolvedPackageDefine], externalDependency: List[UnresolvedExternalDependency]) -> None:
+
+class UnresolvedPackageVariantOption:
+    def __init__(
+        self, name: str, ownerPackageName: str, directDefines: list[UnresolvedPackageDefine], externalDependency: list[UnresolvedExternalDependency]
+    ) -> None:
         super().__init__()
         self.Name = name
         self.IntroducedByPackageName = ownerPackageName

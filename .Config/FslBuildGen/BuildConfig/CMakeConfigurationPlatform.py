@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright 2018 NXP
 # All rights reserved.
 #
@@ -29,16 +28,17 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-#from typing import List
-from typing import Optional
-#from typing import Set
-#from FslBuildGen import IOUtil
+# from typing import List
+
+# from typing import Set
+# from FslBuildGen import IOUtil
 from FslBuildGen import PathUtil
 
-class CMakeConfigurationPlatform(object):
-    def __init__(self, name: str, defaultGeneratorName: Optional[str], defaultInstallPrefix: Optional[str], allowFindPackage: Optional[bool]) -> None:
+
+class CMakeConfigurationPlatform:
+    def __init__(self, name: str, defaultGeneratorName: str | None, defaultInstallPrefix: str | None, allowFindPackage: bool | None) -> None:
         super().__init__()
 
         if defaultInstallPrefix is not None:

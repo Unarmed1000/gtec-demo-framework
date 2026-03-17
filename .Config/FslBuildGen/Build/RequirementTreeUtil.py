@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright 2017 NXP
 # All rights reserved.
 #
@@ -29,15 +28,10 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-from typing import cast
-from typing import Dict
-from typing import List
-from typing import Optional
-from typing import overload
-from typing import TypeVar
-from typing import Union
+from typing import TypeVar, cast, overload
+
 from FslBuildGen.Build.RequirementTreeNode import RequirementTreeNode
 from FslBuildGen.DataTypes import PackageRequirementTypeString
 from FslBuildGen.ExtensionListManager import ExtensionListManager
@@ -46,20 +40,22 @@ from FslBuildGen.Log import Log
 from FslBuildGen.QualifiedRequirementExtensionName import QualifiedRequirementExtensionName
 
 
-def __RecursiveSetExtensionSupport(currentNode: Union[RequirementTreeNode, AppInfoGlobalRequirementTreeNode], supported: bool) -> None:
+def __RecursiveSetExtensionSupport(currentNode: RequirementTreeNode | AppInfoGlobalRequirementTreeNode, supported: bool) -> None:
     if currentNode.Content is not None and currentNode.Content.Type == PackageRequirementTypeString.Extension:
         currentNode.Supported = supported
     for child in currentNode.Children:
         __RecursiveSetExtensionSupport(child, supported)
 
 
-def __RecursiveEnableExtension(currentNode: Union[RequirementTreeNode, AppInfoGlobalRequirementTreeNode], extensionName: str, log: Optional[Log], strIndent: str) -> bool:
+def __RecursiveEnableExtension(
+    currentNode: RequirementTreeNode | AppInfoGlobalRequirementTreeNode, extensionName: str, log: Log | None, strIndent: str
+) -> bool:
     found = False
     if currentNode.Content is not None and currentNode.Content.Type == PackageRequirementTypeString.Extension and currentNode.Content.Name == extensionName:
         currentNode.Supported = True
         found = True
         if log is not None:
-            log.LogPrint("{0}{1}".format(strIndent, QualifiedRequirementExtensionName.ToString(currentNode.Content.Extends, currentNode.Content.Name)))
+            log.LogPrint(f"{strIndent}{QualifiedRequirementExtensionName.ToString(currentNode.Content.Extends, currentNode.Content.Name)}")
     for child in currentNode.Children:
         if __RecursiveEnableExtension(child, extensionName, log, strIndent):
             found = True
@@ -67,20 +63,28 @@ def __RecursiveEnableExtension(currentNode: Union[RequirementTreeNode, AppInfoGl
 
 
 @overload
-def SetExtensionSupport(log: Log, rootNode: RequirementTreeNode, featureToNodeDict: Dict[str, RequirementTreeNode],
-                        qualifiedExtensionNameList: ExtensionListManager) -> None:
+def SetExtensionSupport(
+    log: Log, rootNode: RequirementTreeNode, featureToNodeDict: dict[str, RequirementTreeNode], qualifiedExtensionNameList: ExtensionListManager
+) -> None:
     pass
 
 
 @overload
-def SetExtensionSupport(log: Log, rootNode: AppInfoGlobalRequirementTreeNode, featureToNodeDict: Dict[str, AppInfoGlobalRequirementTreeNode],
-                        qualifiedExtensionNameList: ExtensionListManager) -> None:
+def SetExtensionSupport(
+    log: Log,
+    rootNode: AppInfoGlobalRequirementTreeNode,
+    featureToNodeDict: dict[str, AppInfoGlobalRequirementTreeNode],
+    qualifiedExtensionNameList: ExtensionListManager,
+) -> None:
     pass
 
 
-def SetExtensionSupport(log: Log, rootNode: Union[RequirementTreeNode, AppInfoGlobalRequirementTreeNode],
-                        featureToNodeDict: Union[Dict[str, RequirementTreeNode], Dict[str, AppInfoGlobalRequirementTreeNode]],
-                        qualifiedExtensionNameList: ExtensionListManager) -> None:
+def SetExtensionSupport(
+    log: Log,
+    rootNode: RequirementTreeNode | AppInfoGlobalRequirementTreeNode,
+    featureToNodeDict: dict[str, RequirementTreeNode] | dict[str, AppInfoGlobalRequirementTreeNode],
+    qualifiedExtensionNameList: ExtensionListManager,
+) -> None:
     if qualifiedExtensionNameList.AllowAllExtensions:
         log.LogPrintWarning("SetExtensionSupport should not be called when all extensions are allowed")
         return
@@ -93,33 +97,37 @@ def SetExtensionSupport(log: Log, rootNode: Union[RequirementTreeNode, AppInfoGl
 
     for qualifiedExtensionNameRecord in qualifiedExtensionNameList.Content:
         if qualifiedExtensionNameRecord.FeatureName in featureToNodeDict:
-            log.LogPrint("- Enabling extensions using {0}".format(qualifiedExtensionNameRecord))
+            log.LogPrint(f"- Enabling extensions using {qualifiedExtensionNameRecord}")
             # we found the feature
             foundFeatureNode = featureToNodeDict[qualifiedExtensionNameRecord.FeatureName]
             if not __RecursiveEnableExtension(foundFeatureNode, qualifiedExtensionNameRecord.ExtensionName, verboseBasicConfig, "  - "):
-                log.LogPrint("WARNING: Unknown extension name {0} used in {1}".format(qualifiedExtensionNameRecord.ExtensionName, qualifiedExtensionNameRecord))
+                log.LogPrint(f"WARNING: Unknown extension name {qualifiedExtensionNameRecord.ExtensionName} used in {qualifiedExtensionNameRecord}")
         else:
-            log.LogPrint("WARNING: Unknown feature name {0} used in {1}".format(qualifiedExtensionNameRecord.FeatureName, qualifiedExtensionNameRecord))
+            log.LogPrint(f"WARNING: Unknown feature name {qualifiedExtensionNameRecord.FeatureName} used in {qualifiedExtensionNameRecord}")
 
 
+T = TypeVar("T")
 
-T = TypeVar('T')
 
 @overload
-def TryLocateExtensionNode(featureToNodeDict: Dict[str, RequirementTreeNode], featureName: str, extensionName: str) -> Optional[T]:
+def TryLocateExtensionNode(featureToNodeDict: dict[str, RequirementTreeNode], featureName: str, extensionName: str) -> T | None:
     pass
+
 
 @overload
-def TryLocateExtensionNode(featureToNodeDict: Dict[str, AppInfoGlobalRequirementTreeNode], featureName: str, extensionName: str) -> Optional[T]:
+def TryLocateExtensionNode(featureToNodeDict: dict[str, AppInfoGlobalRequirementTreeNode], featureName: str, extensionName: str) -> T | None:
     pass
 
-def TryLocateExtensionNode(featureToNodeDict: Union[Dict[str, RequirementTreeNode], Dict[str, AppInfoGlobalRequirementTreeNode]], featureName: str, extensionName: str) -> Optional[T]:
-    if not featureName in featureToNodeDict:
+
+def TryLocateExtensionNode(
+    featureToNodeDict: dict[str, RequirementTreeNode] | dict[str, AppInfoGlobalRequirementTreeNode], featureName: str, extensionName: str
+) -> T | None:
+    if featureName not in featureToNodeDict:
         return None
-    currentNode = featureToNodeDict[featureName]  # type: Optional[Union[RequirementTreeNode, AppInfoGlobalRequirementTreeNode]]
+    currentNode: RequirementTreeNode | AppInfoGlobalRequirementTreeNode | None = featureToNodeDict[featureName]
     while currentNode is not None:
         for child in currentNode.Children:
             if child.Content is not None and child.Content.Type == PackageRequirementTypeString.Extension and child.Content.Name == extensionName:
-                return cast(Optional[T], child)
+                return cast(T | None, child)
         currentNode = currentNode.Parent
     return None

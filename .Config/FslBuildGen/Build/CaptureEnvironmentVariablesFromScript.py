@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright 2018 NXP
 # All rights reserved.
 #
@@ -29,28 +29,27 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-from typing import Dict
-from typing import List
-from typing import Optional
 import json
 import subprocess
+
 from FslBuildGen import IOUtil
 from FslBuildGen.Build.CaptureEnvironmentBlock import CaptureEnvironmentBlock
 from FslBuildGen.DataTypes import BuildPlatformType
 from FslBuildGen.Log import Log
 from FslBuildGen.PlatformUtil import PlatformUtil
 
-class LocalUtil(object):
+
+class LocalUtil:
     @staticmethod
-    def TryRun(log: Log, cmdList: List[str]) -> Optional[str]:
+    def TryRun(log: Log, cmdList: list[str]) -> str | None:
         """
         Run the command and capture the output
         :return: the captured output on sucess, None if it failed
         """
         try:
-            if cmdList[0].endswith('.py') and PlatformUtil.DetectBuildPlatformType() == BuildPlatformType.Windows:
+            if cmdList[0].endswith(".py") and PlatformUtil.DetectBuildPlatformType() == BuildPlatformType.Windows:
                 cmdList[0] = cmdList[0][:-3] + ".bat"
 
             with subprocess.Popen(cmdList, stderr=subprocess.STDOUT, stdout=subprocess.PIPE, universal_newlines=True) as proc:
@@ -60,13 +59,13 @@ class LocalUtil(object):
                 result = proc.wait()
                 if result != 0:
                     LocalUtil.DumpCapture(log, 4, output)
-                    log.LogPrintWarning("The command '{0}' failed with '{1}'".format(" ".join(cmdList), result))
+                    log.LogPrintWarning("The command '{}' failed with '{}'".format(" ".join(cmdList), result))
                     return None
                 if isinstance(output, str):
                     return output
                 return None
         except FileNotFoundError:
-            log.DoPrintWarning("The command '{0}' failed with 'file not found'.".format(" ".join(cmdList)))
+            log.DoPrintWarning("The command '{}' failed with 'file not found'.".format(" ".join(cmdList)))
             return None
 
     @staticmethod
@@ -76,7 +75,7 @@ class LocalUtil(object):
         if startPos < 0 or endPos < 0 or endPos < startPos:
             raise Exception("Captured content is not of the expecte format")
 
-        return content[(startPos + len(CaptureEnvironmentBlock.Begin)):endPos].strip()
+        return content[(startPos + len(CaptureEnvironmentBlock.Begin)) : endPos].strip()
 
     @staticmethod
     def DumpCapture(log: Log, verbosity: int, content: str) -> None:
@@ -86,27 +85,27 @@ class LocalUtil(object):
         log.LogPrint(content)
         log.LogPrint("***Dump capture end***")
 
-class CaptureEnvironmentVariablesFromScript(object):
 
+class CaptureEnvironmentVariablesFromScript:
     @staticmethod
-    def Capture(log: Log, runCommand: List[str], pythonScriptRoot: str, envNameList: List[str]) -> Dict[str, str]:
+    def Capture(log: Log, runCommand: list[str], pythonScriptRoot: str, envNameList: list[str]) -> dict[str, str]:
         """
         param: runCommand: the command we should run.
         param: pythonScriptRoot: The root location of the FslBuild.py tools (this must be a absolute path)
                                  This will be joined with the FslBuildDump.py name to get the absolute path to the python script.
         """
         if not IOUtil.IsAbsolutePath(pythonScriptRoot):
-            raise Exception("pythonScriptRoot '{0}' is not absolute".format(pythonScriptRoot))
+            raise Exception(f"pythonScriptRoot '{pythonScriptRoot}' is not absolute")
 
         # Validate that the input is in the correct format and create a initial dict
-        entryDict = {} # type: Dict[str,str]
+        entryDict: dict[str, str] = {}
         for envEntry in envNameList:
             if not (envEntry.startswith("$(") and envEntry.endswith(")")):
-                raise Exception("Environment variable not in the correct $(NAME) format {0}".format(envEntry))
+                raise Exception(f"Environment variable not in the correct $(NAME) format {envEntry}")
             strippedEntry = envEntry[2:-1]
             entryDict[envEntry] = strippedEntry
 
-        log.LogPrintVerbose(4, "Trying to capture environment variables: {0}".format(envNameList))
+        log.LogPrintVerbose(4, f"Trying to capture environment variables: {envNameList}")
 
         # call a custom python script with the stripped argument list using the 'generator' run script
         # the scripts main role is to dump the listed environment variables to screen in a 'json dictionary' format that can be easily captured and
@@ -114,14 +113,14 @@ class CaptureEnvironmentVariablesFromScript(object):
 
         # Call generator run script (captured)
         # 'use the "FslBuildDumpEnv --Env [ENV1,ENV2]" script to generate a json dump for the env variables
-        strEnv = "[{0}]".format(",".join(entryDict.values()))
-        commandName = 'FslBuildDumpEnv.py'
+        strEnv = "[{}]".format(",".join(entryDict.values()))
+        commandName = "FslBuildDumpEnv.py"
         absCommandName = IOUtil.Join(pythonScriptRoot, commandName)
-        cmdList = [absCommandName, '--AllowNotFound', '--Enclose', '--Env', strEnv]
+        cmdList = [absCommandName, "--AllowNotFound", "--Enclose", "--Env", strEnv]
         runCommand += cmdList
         content = LocalUtil.TryRun(log, runCommand)
         if content is None:
-            raise Exception("Failed to capture virtual variant environment variables {0}".format(envNameList))
+            raise Exception(f"Failed to capture virtual variant environment variables {envNameList}")
 
         # Parse captured json output
         strJson = LocalUtil.ExtractJson(content)
@@ -129,26 +128,26 @@ class CaptureEnvironmentVariablesFromScript(object):
         # Decode json
         jsonDict = json.loads(strJson)
 
-        finalDict = {} # type: Dict[str,str]
+        finalDict: dict[str, str] = {}
         for key, value in jsonDict.items():
             if not isinstance(key, str) or not isinstance(value, str):
                 LocalUtil.DumpCapture(log, 4, content)
                 raise Exception("captured json decode failed")
-            if not key in jsonDict:
+            if key not in jsonDict:
                 LocalUtil.DumpCapture(log, 4, content)
-                raise Exception("Capture contained wrong key: '{0}".format(key))
+                raise Exception(f"Capture contained wrong key: '{key}")
             finalDict[key] = value
 
         # Ensure that all the requested entries are present
         if len(finalDict) != len(entryDict):
             missingKeys = []
             for key in entryDict:
-                if not key in finalDict:
+                if key not in finalDict:
                     missingKeys.append(key)
             LocalUtil.DumpCapture(log, 4, content)
-            raise Exception("The Captured environment variable output is missing for: {0}".format(missingKeys))
+            raise Exception(f"The Captured environment variable output is missing for: {missingKeys}")
 
-        log.LogPrintVerbose(4, "Captured environment variables: {0}".format(finalDict))
+        log.LogPrintVerbose(4, f"Captured environment variables: {finalDict}")
 
         return finalDict
 

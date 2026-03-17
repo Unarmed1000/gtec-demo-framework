@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright (c) 2014 Freescale Semiconductor, Inc.
 # All rights reserved.
 #
@@ -29,9 +29,9 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-from typing import Dict
+
 from FslBuildGen.BasicConfig import BasicConfig
 from FslBuildGen.Config import Config
 from FslBuildGen.Xml.Exceptions import ImportTemplateNotFoundException
@@ -39,20 +39,19 @@ from FslBuildGen.Xml.XmlGenFslBuildTemplate import XmlGenFslBuildTemplate
 from FslBuildGen.Xml.XmlStuff import XmlGenFileImportTemplate
 
 
-class PackageTemplateLoader(object):
-    def __init__(self, config: Config, templateLocationCache: Dict[str, str]) -> None:
+class PackageTemplateLoader:
+    def __init__(self, config: Config, templateLocationCache: dict[str, str]) -> None:
         super().__init__()
-        self.__Config = config  # type: Config
-        self.BasicConfig = config  # type: BasicConfig
+        self.__Config: Config = config
+        self.BasicConfig: BasicConfig = config
         self.TemplateLocationCache = templateLocationCache
-        self.TemplateDict = {}  # type: Dict[str, XmlGenFslBuildTemplate]
-
+        self.TemplateDict: dict[str, XmlGenFslBuildTemplate] = {}
 
     def Import(self, cmd: XmlGenFileImportTemplate, name: str) -> XmlGenFslBuildTemplate:
         if name in self.TemplateDict:
             return self.TemplateDict[name]
 
-        if not name in self.TemplateLocationCache:
+        if name not in self.TemplateLocationCache:
             raise ImportTemplateNotFoundException(cmd.XMLElement, name)
 
         template = XmlGenFslBuildTemplate(self.__Config, self.__Config.ToolConfig.RequirementTypes, self.TemplateLocationCache[name])

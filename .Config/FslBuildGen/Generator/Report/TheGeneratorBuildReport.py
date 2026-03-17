@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright 2019 NXP
 # All rights reserved.
 #
@@ -29,16 +29,16 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-from typing import Dict
-#from typing import List
-#from typing import Optional
+
+# from typing import List
+# from typing import Optional
 from FslBuildGen.Generator.Report.PackageGeneratorReport import PackageGeneratorReport
 from FslBuildGen.Packages.Package import Package
 
-class TheGeneratorBuildReport(object):
-    def __init__(self, packageReportDict: Dict[Package, PackageGeneratorReport]) -> None:
+
+class TheGeneratorBuildReport:
+    def __init__(self, packageReportDict: dict[Package, PackageGeneratorReport]) -> None:
         super().__init__()
         self.PackageReportDict = packageReportDict
-

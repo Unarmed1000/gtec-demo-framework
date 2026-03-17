@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright (c) 2016 Freescale Semiconductor, Inc.
 # All rights reserved.
 #
@@ -28,42 +28,39 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-from email.policy import default
-from typing import Any
-#from typing import Dict
-from typing import List
-from typing import Optional
 import argparse
 import shlex
-from FslBuildGen.Generator import GeneratorPlugin
+
+# from typing import Dict
+from typing import Any
+
 from FslBuildGen import Main as MainFlow
-from FslBuildGen import PackageListUtil
-from FslBuildGen import ParseUtil
-#from FslBuildGen.Generator import PluginConfig
-from FslBuildGen import PluginSharedValues
+
+# from FslBuildGen.Generator import PluginConfig
+from FslBuildGen import PackageListUtil, ParseUtil, PluginSharedValues
 from FslBuildGen.Build import Builder
 from FslBuildGen.Build.BuildVariantConfigUtil import BuildVariantConfigUtil
 from FslBuildGen.Build.DataTypes import CommandType
 from FslBuildGen.Build.ForAllConfig import ForAllConfig
-from FslBuildGen.Build.ForAllConfig import ForAllMode
 from FslBuildGen.Config import Config
 from FslBuildGen.Context.GeneratorContext import GeneratorContext
-from FslBuildGen.Log import Log
-#from FslBuildGen.PackageFilters import PackageFilters
-from FslBuildGen.Packages.Package import Package
+from FslBuildGen.Generator import GeneratorPlugin
+
+# from FslBuildGen.PackageFilters import PackageFilters
 from FslBuildGen.PlatformUtil import PlatformUtil
 from FslBuildGen.Tool.AToolAppFlow import AToolAppFlow
 from FslBuildGen.Tool.AToolAppFlowFactory import AToolAppFlowFactory
 from FslBuildGen.Tool.Flow.BuildHelper import BuildHelper
-from FslBuildGen.Tool.ToolAppContext import ToolAppContext
 from FslBuildGen.Tool.ToolAppConfig import ToolAppConfig
+from FslBuildGen.Tool.ToolAppContext import ToolAppContext
 from FslBuildGen.Tool.ToolCommonArgConfig import ToolCommonArgConfig
 from FslBuildGen.ToolConfig import ToolConfig
 from FslBuildGen.VariableContextHelper import VariableContextHelper
 
-class DefaultValue(object):
+
+class DefaultValue:
     DryRun = False
     EnableContentBuilder = True
     ForAllExe = None
@@ -78,13 +75,13 @@ class DefaultValue(object):
     Variants = None
     Type = PluginSharedValues.TYPE_DEFAULT
     Command = CommandType.ToString(CommandType.Build)
-    CommandArgs = None # type: Optional[str]
+    CommandArgs: str | None = None
     Details = False
 
 
 class LocalToolConfig(ToolAppConfig):
     @staticmethod
-    def CreateForAllConfig(forAllExe: Optional[str], forAll: Optional[str], filterFeatureNameList: Optional[List[str]] = None) -> Optional[ForAllConfig]:
+    def CreateForAllConfig(forAllExe: str | None, forAll: str | None, filterFeatureNameList: list[str] | None = None) -> ForAllConfig | None:
         # Only one of the ForAll... parameters can be set
         if forAllExe is not None:
             if forAll is not None:
@@ -108,7 +105,7 @@ class LocalToolConfig(ToolAppConfig):
         self.ListVariants = DefaultValue.ListVariants
         self.PackageConfigurationType = DefaultValue.Type
         self.Command = CommandType.FromString(DefaultValue.Command)
-        self.CommandArgs = [] # type: List[str]
+        self.CommandArgs: list[str] = []
         self.Details = DefaultValue.Details
 
 
@@ -117,10 +114,10 @@ def GetDefaultLocalConfig() -> LocalToolConfig:
 
 
 class ToolFlowBuild(AToolAppFlow):
-    #def __init__(self, toolAppContext: ToolAppContext) -> None:
+    # def __init__(self, toolAppContext: ToolAppContext) -> None:
     #    super().__init__(toolAppContext)
 
-    def ProcessFromCommandLine(self, args: Any, currentDirPath: str, toolConfig: ToolConfig, userTag: Optional[object]) -> None:
+    def ProcessFromCommandLine(self, args: Any, currentDirPath: str, toolConfig: ToolConfig, userTag: object | None) -> None:
         # Process the input arguments here, before calling the real work function
         localToolConfig = LocalToolConfig()
 
@@ -146,10 +143,10 @@ class ToolFlowBuild(AToolAppFlow):
 
         self.Process(currentDirPath, toolConfig, localToolConfig)
 
-
     def Process(self, currentDirPath: str, toolConfig: ToolConfig, localToolConfig: LocalToolConfig) -> None:
-        config = Config(self.Log, toolConfig, localToolConfig.PackageConfigurationType,
-                        localToolConfig.BuildVariantConstraints, localToolConfig.AllowDevelopmentPlugins)
+        config = Config(
+            self.Log, toolConfig, localToolConfig.PackageConfigurationType, localToolConfig.BuildVariantConstraints, localToolConfig.AllowDevelopmentPlugins
+        )
 
         if localToolConfig.DryRun:
             config.ForceDisableAllWrite()
@@ -159,20 +156,36 @@ class ToolFlowBuild(AToolAppFlow):
         # Get the platform and see if its supported
         buildVariantConfig = BuildVariantConfigUtil.GetBuildVariantConfig(localToolConfig.BuildVariantConstraints)
         variableContext = VariableContextHelper.Create(toolConfig, localToolConfig.UserSetVariables)
-        platformGeneratorPlugin = self.ToolAppContext.PluginConfigContext.GetGeneratorPluginById(localToolConfig.PlatformName,
-                                                                                                 localToolConfig.Generator, buildVariantConfig,
-                                                                                                 variableContext.UserSetVariables,
-                                                                                                 toolConfig.DefaultPackageLanguage,
-                                                                                                 toolConfig.CMakeConfiguration,
-                                                                                                 localToolConfig.GetUserCMakeConfig(), False)
+        platformGeneratorPlugin = self.ToolAppContext.PluginConfigContext.GetGeneratorPluginById(
+            localToolConfig.PlatformName,
+            localToolConfig.Generator,
+            buildVariantConfig,
+            variableContext.UserSetVariables,
+            toolConfig.DefaultPackageLanguage,
+            toolConfig.CMakeConfiguration,
+            localToolConfig.GetUserCMakeConfig(),
+            False,
+        )
         PlatformUtil.CheckBuildPlatform(platformGeneratorPlugin.PlatformName)
 
-        self.Log.LogPrint("Active platform: {0}".format(platformGeneratorPlugin.PlatformName))
+        self.Log.LogPrint(f"Active platform: {platformGeneratorPlugin.PlatformName}")
 
-        theFiles = MainFlow.DoGetFiles(config, toolConfig.GetMinimalConfig(platformGeneratorPlugin.CMakeConfig), currentDirPath, localToolConfig.Recursive)
+        theFiles = MainFlow.DoGetFiles(
+            config,
+            toolConfig.GetMinimalConfig(platformGeneratorPlugin.CMakeConfig),
+            currentDirPath,
+            localToolConfig.Recursive,
+            additionalDirs=self.ToolAppContext.LowLevelToolConfig.AdditionalInputDirs,
+        )
 
-        generatorContext = GeneratorContext(self.Log, self.ErrorHelpManager, localToolConfig.BuildPackageFilters.RecipeFilterManager,
-                                            toolConfig.Experimental, platformGeneratorPlugin, variableContext)
+        generatorContext = GeneratorContext(
+            self.Log,
+            self.ErrorHelpManager,
+            localToolConfig.BuildPackageFilters.RecipeFilterManager,
+            toolConfig.Experimental,
+            platformGeneratorPlugin,
+            variableContext,
+        )
         self.ToolAppContext.PluginConfigContext.SetLegacyGeneratorType(localToolConfig.GenType)
 
         packageFilters = localToolConfig.BuildPackageFilters
@@ -198,26 +211,43 @@ class ToolFlowBuild(AToolAppFlow):
             if localToolConfig.BuildPackageFilters is None or localToolConfig.BuildPackageFilters.ExtensionNameList is None:
                 raise Exception("localToolConfig.BuildPackageFilters.ExtensionNameList not set")
             requestedPackages = BuildHelper.FindRequestedPackages(self.Log, packages, requestedFiles)
-            Builder.BuildPackages(self.Log, config.GetBuildDir(), config.SDKPath, config.SDKConfigTemplatePath, config.DisableWrite, config.IsDryRun,
-                                  toolConfig, generatorContext, packages, requestedPackages, localToolConfig.BuildVariantConstraints,
-                                  localToolConfig.RemainingArgs, localToolConfig.ForAllConfig, platformGeneratorPlugin,
-                                  localToolConfig.EnableContentBuilder, localToolConfig.ForceClaimInstallArea, localToolConfig.BuildThreads,
-                                  localToolConfig.Command, localToolConfig.CommandArgs, True)
+            Builder.BuildPackages(
+                self.Log,
+                config.GetBuildDir(),
+                config.SDKPath,
+                config.SDKConfigTemplatePath,
+                config.DisableWrite,
+                config.IsDryRun,
+                toolConfig,
+                generatorContext,
+                packages,
+                requestedPackages,
+                localToolConfig.BuildVariantConstraints,
+                localToolConfig.RemainingArgs,
+                localToolConfig.ForAllConfig,
+                platformGeneratorPlugin,
+                localToolConfig.EnableContentBuilder,
+                localToolConfig.ForceClaimInstallArea,
+                localToolConfig.BuildThreads,
+                localToolConfig.Command,
+                localToolConfig.CommandArgs,
+                True,
+            )
+
 
 class ToolAppFlowFactory(AToolAppFlowFactory):
-    #def __init__(self) -> None:
+    # def __init__(self) -> None:
     #    pass
 
     def GetTitle(self) -> str:
-        return 'FslBuild'
-
+        return "FslBuild"
 
     def GetToolCommonArgConfig(self) -> ToolCommonArgConfig:
         argConfig = ToolCommonArgConfig()
         argConfig.AddPlatformArg = True
         argConfig.AddGeneratorSelection = True
         argConfig.ProcessRemainingArgs = True
-        #argConfig.AllowVSVersion = True
+        # argConfig.AllowVSVersion = True
         argConfig.AllowForceClaimInstallArea = True
         argConfig.SupportBuildTime = True
         argConfig.AddBuildFiltering = True
@@ -226,30 +256,48 @@ class ToolAppFlowFactory(AToolAppFlowFactory):
         argConfig.AllowRecursive = True
         return argConfig
 
-
-    def AddCustomArguments(self, parser: argparse.ArgumentParser, toolConfig: ToolConfig, userTag: Optional[object]) -> None:
+    def AddCustomArguments(self, parser: argparse.ArgumentParser, toolConfig: ToolConfig, userTag: object | None) -> None:
         defaultContentBuilder = "on" if DefaultValue.EnableContentBuilder else "off"
 
         allCommandTypes = CommandType.AllStrings()
 
-        parser.add_argument('-t', '--type', default=DefaultValue.Type, choices=[PluginSharedValues.TYPE_DEFAULT, 'sdk'], help='Select generator type')
-        parser.add_argument('--GenType', default=DefaultValue.GenType, help='Chose the generator type to use ({0})'.format(", ".join(list(GeneratorPlugin.GENERATOR_TYPES.keys()))))
-        parser.add_argument('--ListFeatures', action='store_true', help='List all features supported by build and exit')
-        #parser.add_argument('--RequireExtensions', default=DefaultValue.RequireExtensions, help='The list of extensions that are required for a executable to be build. For example [OpenGLES3.1:EXT_geometry_shader] to build all executables that use OpenGLES3.1:EXT_geometry_shader beware this allows OpenGLES3.2 apps that use EXT_geometry_shader since OpenGLES3.2 extends OpenGLES3.1.')
-        parser.add_argument('--ListExtensions', action='store_true', help='List all extensions supported by build and exit')
-        parser.add_argument('--ListRequirements', action='store_true', help='List all requirements supported by build and exit')
-        parser.add_argument('--ListVariants', action='store_true', help='List all variants supported by build and exit')
-        parser.add_argument('--DryRun', action='store_true', help='Nothing will be build')
-        parser.add_argument('--IgnoreNotSupported', action='store_true', help='try to build things that are marked as not supported')
-        parser.add_argument('--ContentBuilder', default=defaultContentBuilder, help='Enable/disable the content builder')
-        parser.add_argument('--ForAllExe', default=DefaultValue.ForAllExe, help='For each executable run the given command. (EXE) = the full path to the executable. (EXE_NAME) = name of the executable. (EXE_PATH) = the executables dir. (PACKAGE_NAME) = full name of package, (PACKAGE_PATH) = full path to package (CONTENT_PATH) = full path to package content directory, (BUILD_PATH) = the build path, (RUN_PATH) = the run path. *Experimental*')
-        parser.add_argument('--ForAll', default=DefaultValue.ForAll, help='For all packages, run the given command. (BUILD_PATH) = the build path, (PACKAGE_NAME) = full name of package, (PACKAGE_PATH) = full path to package, (RUN_PATH) = the run path. *Experimental*')
-        parser.add_argument('--FilterForFeatures', default=DefaultValue.FilterForFeatures,
-                            help='The list of features that are required for ForAll to be executed. For example [OpenGLES2] to run the ForAll command on a qualifying package that use OpenGLES2.')
-        parser.add_argument('-c', "--Command", default=DefaultValue.Command, help='The build command, defaults to build. Choices: {0}. Beware install is not supported by all build backends'.format(", ".join(allCommandTypes)))
-        parser.add_argument("--CommandArgs", default=DefaultValue.CommandArgs, help='Custom arguments for the command')
-        parser.add_argument('--details', action='store_true', help='Provide extended details (affects the --List operations)')
-
+        parser.add_argument("-t", "--type", default=DefaultValue.Type, choices=[PluginSharedValues.TYPE_DEFAULT, "sdk"], help="Select generator type")
+        parser.add_argument(
+            "--GenType",
+            default=DefaultValue.GenType,
+            help="Chose the generator type to use ({})".format(", ".join(list(GeneratorPlugin.GENERATOR_TYPES.keys()))),
+        )
+        parser.add_argument("--ListFeatures", action="store_true", help="List all features supported by build and exit")
+        # parser.add_argument('--RequireExtensions', default=DefaultValue.RequireExtensions, help='The list of extensions that are required for a executable to be build. For example [OpenGLES3.1:EXT_geometry_shader] to build all executables that use OpenGLES3.1:EXT_geometry_shader beware this allows OpenGLES3.2 apps that use EXT_geometry_shader since OpenGLES3.2 extends OpenGLES3.1.')
+        parser.add_argument("--ListExtensions", action="store_true", help="List all extensions supported by build and exit")
+        parser.add_argument("--ListRequirements", action="store_true", help="List all requirements supported by build and exit")
+        parser.add_argument("--ListVariants", action="store_true", help="List all variants supported by build and exit")
+        parser.add_argument("--DryRun", action="store_true", help="Nothing will be build")
+        parser.add_argument("--IgnoreNotSupported", action="store_true", help="try to build things that are marked as not supported")
+        parser.add_argument("--ContentBuilder", default=defaultContentBuilder, help="Enable/disable the content builder")
+        parser.add_argument(
+            "--ForAllExe",
+            default=DefaultValue.ForAllExe,
+            help="For each executable run the given command. (EXE) = the full path to the executable. (EXE_NAME) = name of the executable. (EXE_PATH) = the executables dir. (PACKAGE_NAME) = full name of package, (PACKAGE_PATH) = full path to package (CONTENT_PATH) = full path to package content directory, (BUILD_PATH) = the build path, (RUN_PATH) = the run path. *Experimental*",
+        )
+        parser.add_argument(
+            "--ForAll",
+            default=DefaultValue.ForAll,
+            help="For all packages, run the given command. (BUILD_PATH) = the build path, (PACKAGE_NAME) = full name of package, (PACKAGE_PATH) = full path to package, (RUN_PATH) = the run path. *Experimental*",
+        )
+        parser.add_argument(
+            "--FilterForFeatures",
+            default=DefaultValue.FilterForFeatures,
+            help="The list of features that are required for ForAll to be executed. For example [OpenGLES2] to run the ForAll command on a qualifying package that use OpenGLES2.",
+        )
+        parser.add_argument(
+            "-c",
+            "--Command",
+            default=DefaultValue.Command,
+            help="The build command, defaults to build. Choices: {}. Beware install is not supported by all build backends".format(", ".join(allCommandTypes)),
+        )
+        parser.add_argument("--CommandArgs", default=DefaultValue.CommandArgs, help="Custom arguments for the command")
+        parser.add_argument("--details", action="store_true", help="Provide extended details (affects the --List operations)")
 
     def Create(self, toolAppContext: ToolAppContext) -> AToolAppFlow:
         return ToolFlowBuild(toolAppContext)

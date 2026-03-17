@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright 2024 NXP
 # All rights reserved.
 #
@@ -29,15 +28,14 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-from typing import Optional
-from typing import List
+
 from FslBuildGen.SemanticVersion2 import SemanticVersion2
 from FslBuildGen.Version import Version
 
-class VersionConverter(object):
-    @staticmethod
-    def TryToSemanticVersion2(version: Optional[Version]) -> Optional[SemanticVersion2]:
-        return SemanticVersion2.FromString(str(version)) if version is not None else None
 
+class VersionConverter:
+    @staticmethod
+    def TryToSemanticVersion2(version: Version | None) -> SemanticVersion2 | None:
+        return SemanticVersion2.FromString(str(version)) if version is not None else None

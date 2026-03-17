@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright 2023 NXP
 # All rights reserved.
 #
@@ -29,9 +28,10 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
 from enum import Enum
+
 
 class FlavorResolveConstraints(Enum):
     NoLimit = 0
@@ -43,29 +43,32 @@ class ExternalFlavorConstraintHelp(Enum):
     SelectDefaultFlavor = 1
 
 
-class EngineResolveConfig(object):
+class EngineResolveConfig:
     def __init__(self, flavorResolveConstraints: FlavorResolveConstraints, externalFlavorConstraintHelp: ExternalFlavorConstraintHelp) -> None:
         super().__init__()
         self.FlavorResolveConstraints = flavorResolveConstraints
         self.ExternalFlavorConstraintHelp = externalFlavorConstraintHelp
 
     @staticmethod
-    def CreateDefault() -> 'EngineResolveConfig':
+    def CreateDefault() -> "EngineResolveConfig":
         return EngineResolveConfig(FlavorResolveConstraints.OnlyAllowOneFlavorPerRoot, ExternalFlavorConstraintHelp.Disabled)
 
     @staticmethod
-    def Create(flavorResolveConstraints: FlavorResolveConstraints = FlavorResolveConstraints.OnlyAllowOneFlavorPerRoot, externalFlavorConstraintHelp: ExternalFlavorConstraintHelp = ExternalFlavorConstraintHelp.Disabled) -> 'EngineResolveConfig':
+    def Create(
+        flavorResolveConstraints: FlavorResolveConstraints = FlavorResolveConstraints.OnlyAllowOneFlavorPerRoot,
+        externalFlavorConstraintHelp: ExternalFlavorConstraintHelp = ExternalFlavorConstraintHelp.Disabled,
+    ) -> "EngineResolveConfig":
         return EngineResolveConfig(flavorResolveConstraints, externalFlavorConstraintHelp)
 
     @staticmethod
-    def CreateNoLimit() -> 'EngineResolveConfig':
+    def CreateNoLimit() -> "EngineResolveConfig":
         """
         No limits to the amount of root flavors and no external constraints will be added.
         """
         return EngineResolveConfig(FlavorResolveConstraints.NoLimit, ExternalFlavorConstraintHelp.Disabled)
 
     @staticmethod
-    def CreateDefaultFlavor() -> 'EngineResolveConfig':
+    def CreateDefaultFlavor() -> "EngineResolveConfig":
         """
         Only one root package flavor is allowed and must be constrained by external constraints.
         If a flavor is found to require a constraint a default flavor will be chosen.
@@ -73,6 +76,7 @@ class EngineResolveConfig(object):
         return EngineResolveConfig(FlavorResolveConstraints.OnlyAllowOneFlavorPerRoot, ExternalFlavorConstraintHelp.SelectDefaultFlavor)
 
     @staticmethod
-    def ModifyExternalFlavorConstraintHelp(engineResolveConfig: 'EngineResolveConfig', externalFlavorConstraintHelp: ExternalFlavorConstraintHelp) -> 'EngineResolveConfig':
+    def ModifyExternalFlavorConstraintHelp(
+        engineResolveConfig: "EngineResolveConfig", externalFlavorConstraintHelp: ExternalFlavorConstraintHelp
+    ) -> "EngineResolveConfig":
         return EngineResolveConfig(engineResolveConfig.FlavorResolveConstraints, externalFlavorConstraintHelp)
-

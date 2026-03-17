@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright 2017 NXP
 # All rights reserved.
 #
@@ -29,14 +29,14 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-from typing import List
+
 from FslBuildGen.QualifiedRequirementExtensionName import QualifiedRequirementExtensionName
 
 
-class ExtensionListManager(object):
-    def __init__(self, allowAllExtensions: bool, content: List[QualifiedRequirementExtensionName]) -> None:
+class ExtensionListManager:
+    def __init__(self, allowAllExtensions: bool, content: list[QualifiedRequirementExtensionName]) -> None:
         super().__init__()
         self.AllowAllExtensions = allowAllExtensions
         self.Content = [] if allowAllExtensions else content

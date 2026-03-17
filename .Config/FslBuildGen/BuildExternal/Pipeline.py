@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright 2017 NXP
 # All rights reserved.
 #
@@ -29,22 +28,24 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-#from typing import Dict
-from typing import List
-from typing import Optional
-from FslBuildGen.Log import Log
+# from typing import Dict
+
 from FslBuildGen import IOUtil
 from FslBuildGen.BuildExternal.DataTypes import RecipeType
+from FslBuildGen.BuildExternal.PackageExperimentalRecipe import PackageExperimentalRecipe
 from FslBuildGen.BuildExternal.PipelineCommand import PipelineCommand
 from FslBuildGen.BuildExternal.PipelineCommandBuilder import PipelineCommandBuilder
-from FslBuildGen.BuildExternal.PackageExperimentalRecipe import PackageExperimentalRecipe
-#from FslBuildGen.DataTypes import BuildRecipePipelineCommand
-from FslBuildGen.Packages.Package import Package
-#from FslBuildGen.PackageConfig import PlatformNameString
+from FslBuildGen.Log import Log
 
-class Pipeline(object):
+# from FslBuildGen.DataTypes import BuildRecipePipelineCommand
+from FslBuildGen.Packages.Package import Package
+
+# from FslBuildGen.PackageConfig import PlatformNameString
+
+
+class Pipeline:
     def __init__(self, log: Log, builder: PipelineCommandBuilder, sourcePackage: Package, sourceRecipe: PackageExperimentalRecipe) -> None:
         super().__init__()
         self._Log = log
@@ -55,17 +56,17 @@ class Pipeline(object):
         self.BuildPath = builder.GetBuildPath(sourceRecipe)
         self.CommandList = self.__CreateCommandList(builder, self.SourcePackage, self.SourceRecipe)
 
-    def __CreateCommandList(self, builder: PipelineCommandBuilder, sourcePackage: Package, sourceRecipe: PackageExperimentalRecipe) -> List[PipelineCommand]:
+    def __CreateCommandList(self, builder: PipelineCommandBuilder, sourcePackage: Package, sourceRecipe: PackageExperimentalRecipe) -> list[PipelineCommand]:
         if sourceRecipe.Pipeline is None:
             raise Exception("Invalid recipe")
 
-        #isAndroidBuild = (sourcePackage.ResolvedPlatform is not None and sourcePackage.ResolvedPlatform.Name == PlatformNameString.ANDROID)
+        # isAndroidBuild = (sourcePackage.ResolvedPlatform is not None and sourcePackage.ResolvedPlatform.Name == PlatformNameString.ANDROID)
 
         builder.Begin(sourcePackage, sourceRecipe)
-        #if not isAndroidBuild:
+        # if not isAndroidBuild:
         for sourceCommand in sourceRecipe.Pipeline.CommandList:
             builder.Add(sourceCommand, False)
-        #else:
+        # else:
         #    # We handle cmake differently in android builds for now
         #    # This is until we get a proper solution that will allow us to prebuild libraries
         #    for index, sourceCommand in enumerate(sourceRecipe.Pipeline.CommandList):
@@ -80,28 +81,28 @@ class Pipeline(object):
         #        builder.Add(sourceCommand, skip)
         return builder.End()
 
-class RecipeRecord(object):
+
+class RecipeRecord:
     def __init__(self, log: Log, builder: PipelineCommandBuilder, sourcePackage: Package) -> None:
         super().__init__()
 
         if sourcePackage.ResolvedDirectExperimentalRecipe is None:
-            raise Exception("No build recipe in package {0}".format(sourcePackage.Name))
+            raise Exception(f"No build recipe in package {sourcePackage.Name}")
 
-        #if sourcePackage.Type != PackageType.ExperimentalRecipe:
+        # if sourcePackage.Type != PackageType.ExperimentalRecipe:
         #    raise Exception("Unsupported package type encountered: {0} in package {1}".format(sourcePackage.Type, sourcePackage.Name))
 
         self.SourcePackage = sourcePackage
         self.SourceRecipe = sourcePackage.ResolvedDirectExperimentalRecipe
         self.Pipeline = self.__TryCreatePipeline(log, builder, sourcePackage, self.SourceRecipe)
 
-
-    def __TryCreatePipeline(self, log: Log, builder: PipelineCommandBuilder,
-                            sourcePackage: Package, sourceRecipe: PackageExperimentalRecipe) -> Optional[Pipeline]:
+    def __TryCreatePipeline(
+        self, log: Log, builder: PipelineCommandBuilder, sourcePackage: Package, sourceRecipe: PackageExperimentalRecipe
+    ) -> Pipeline | None:
         if sourceRecipe.Pipeline is None:
             return None
         self.__RemoveInvalidInstallation(log, sourceRecipe)
         return Pipeline(log, builder, sourcePackage, sourceRecipe)
-
 
     def __RemoveInvalidInstallation(self, log: Log, sourceRecipe: PackageExperimentalRecipe) -> None:
         if sourceRecipe is None or sourceRecipe.ResolvedInstallLocation is None or sourceRecipe.Pipeline is None:
@@ -114,5 +115,5 @@ class RecipeRecord(object):
                 log.DoPrintWarning("The sourceRecipe type was not of the expected type, aborting delete to be safe")
                 return
 
-            log.LogPrint("Removing invalid content at '{0}'".format(sourceRecipe.ResolvedInstallLocation.ResolvedPath))
+            log.LogPrint(f"Removing invalid content at '{sourceRecipe.ResolvedInstallLocation.ResolvedPath}'")
             IOUtil.SafeRemoveDirectoryTree(sourceRecipe.ResolvedInstallLocation.ResolvedPath)

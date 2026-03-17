@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright 2023 NXP
 # All rights reserved.
 #
@@ -29,14 +28,15 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-from typing import Dict
+
 from FslBuildGen.Engine.PackageFlavorName import PackageFlavorName
 from FslBuildGen.Engine.PackageFlavorOptionName import PackageFlavorOptionName
 
-class ExternalFlavorConstraints(object):
-    def __init__(self, flavorConstraintsDict: Dict[PackageFlavorName, PackageFlavorOptionName]) -> None:
+
+class ExternalFlavorConstraints:
+    def __init__(self, flavorConstraintsDict: dict[PackageFlavorName, PackageFlavorOptionName]) -> None:
         super().__init__()
         self.Dict = flavorConstraintsDict
 
@@ -44,8 +44,8 @@ class ExternalFlavorConstraints(object):
         return len(self.Dict) > 0
 
     @staticmethod
-    def ToExternalFlavorConstraints(sourceDict: Dict[str,str]) -> 'ExternalFlavorConstraints':
-        convertedDict = dict() # type: Dict[PackageFlavorName, PackageFlavorOptionName]
+    def ToExternalFlavorConstraints(sourceDict: dict[str, str]) -> "ExternalFlavorConstraints":
+        convertedDict: dict[PackageFlavorName, PackageFlavorOptionName] = {}
         for key, value in sourceDict.items():
             convertedDict[PackageFlavorName.FromString(key)] = PackageFlavorOptionName(value)
         return ExternalFlavorConstraints(convertedDict)

@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright 2021 NXP
 # All rights reserved.
 #
@@ -29,12 +28,13 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
 from FslBuildGen.BuildConfig.UserSetVariables import UserSetVariables
 from FslBuildGen.Context.ValidVariables import ValidVariables
 
-class VariableContext(object):
+
+class VariableContext:
     def __init__(self, validVariables: ValidVariables, userSetVariables: UserSetVariables) -> None:
         super().__init__()
         self.ValidVariables = validVariables

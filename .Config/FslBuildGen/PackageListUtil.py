@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright (c) 2016 Freescale Semiconductor, Inc.
 # All rights reserved.
 #
@@ -29,51 +28,48 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-from typing import List
-from typing import Optional
-from typing import overload
-from typing import Set
 from typing import TypeVar
-from typing import Union
+
 from FslBuildGen.DataTypes import PackageType
-from FslBuildGen.Packages.Package import Package
 from FslBuildGen.Engine.Resolver.PreResolvePackageResult import PreResolvePackageResult
+from FslBuildGen.Packages.Package import Package
 
-CommonPackage = TypeVar('CommonPackage', Package, PreResolvePackageResult)
+CommonPackage = TypeVar("CommonPackage", Package, PreResolvePackageResult)
 
 
-def TryFindFirstExecutablePackage(packages: List[Package]) -> Optional[Package]:
-    """ Given a list of packages locate the first marked as PackageType.Executable """
+def TryFindFirstExecutablePackage(packages: list[Package]) -> Package | None:
+    """Given a list of packages locate the first marked as PackageType.Executable"""
     for package in packages:
         if package.Type == PackageType.Executable:
             return package
     return None
 
 
-def FindFirstExecutablePackage(packages: List[Package]) -> Package:
+def FindFirstExecutablePackage(packages: list[Package]) -> Package:
     package = TryFindFirstExecutablePackage(packages)
     if package is not None:
         return package
     raise Exception("No executable package found")
 
 
-def GetExecutablePackages(packages: List[Package]) -> List[Package]:
-    """ Given a list of packages marked as PackageType.Executable """
+def GetExecutablePackages(packages: list[Package]) -> list[Package]:
+    """Given a list of packages marked as PackageType.Executable"""
     return [package for package in packages if package.Type == PackageType.Executable]
 
-def GetTopLevelPackage(packages: List[CommonPackage]) -> CommonPackage:
-    """ Given a list of packages locate the TopLevel one or raise a exception if not found"""
+
+def GetTopLevelPackage(packages: list[CommonPackage]) -> CommonPackage:
+    """Given a list of packages locate the TopLevel one or raise a exception if not found"""
     for package in packages:
         if package.Type == PackageType.TopLevel:
             return package
     raise Exception("No TopLevel package")
 
 
-def BuildReferencedPackageSet(packageList: List[CommonPackage]) -> Set[CommonPackage]:
-    """ build a set of packages that is referenced by the packages in packageList.
-        This is basically all packages in the package list and any packages that they depend upon.
+def BuildReferencedPackageSet(packageList: list[CommonPackage]) -> set[CommonPackage]:
+    """build a set of packages that is referenced by the packages in packageList.
+    This is basically all packages in the package list and any packages that they depend upon.
     """
     referencedPackageSet = set()
     for package in packageList:
@@ -83,9 +79,8 @@ def BuildReferencedPackageSet(packageList: List[CommonPackage]) -> Set[CommonPac
     return referencedPackageSet
 
 
-def GetRequiredPackagesInSourcePackageListOrder(packageList: List[CommonPackage], sourcePackageList: List[CommonPackage]) -> List[CommonPackage]:
-    """ Generate a list of all the packages that are required to build the packages in packageList in resolved build order.
-    """
+def GetRequiredPackagesInSourcePackageListOrder(packageList: list[CommonPackage], sourcePackageList: list[CommonPackage]) -> list[CommonPackage]:
+    """Generate a list of all the packages that are required to build the packages in packageList in resolved build order."""
 
     # From the packageList build a set of all packages required to build
     allRequiredPackageSet = BuildReferencedPackageSet(packageList)

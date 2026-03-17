@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright 2017 NXP
 # All rights reserved.
 #
@@ -29,19 +28,19 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-from typing import List
-from typing import Optional
+
 from FslBuildGen.Info.RequirementInfo import RequirementInfo
 
-class AppInfoGlobalRequirementTreeNode(object):
+
+class AppInfoGlobalRequirementTreeNode:
     def __init__(self, content: RequirementInfo) -> None:
-        self.Parent = None  # type: Optional['AppInfoGlobalRequirementTreeNode']
+        self.Parent: AppInfoGlobalRequirementTreeNode | None = None
         self.Content = content
-        self.Children = []  # type: List['AppInfoGlobalRequirementTreeNode']
+        self.Children: list[AppInfoGlobalRequirementTreeNode] = []
         self.Supported = True
 
-    def AddChild(self, node: 'AppInfoGlobalRequirementTreeNode') -> None:
+    def AddChild(self, node: "AppInfoGlobalRequirementTreeNode") -> None:
         node.Parent = self
         self.Children.append(node)

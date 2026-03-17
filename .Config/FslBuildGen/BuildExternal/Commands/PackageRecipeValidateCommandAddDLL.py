@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright 2021 NXP
 # All rights reserved.
 #
@@ -29,15 +28,15 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-from typing import Optional
-from FslBuildGen import IOUtil
+
 from FslBuildGen.BuildExternal.Commands.PackageRecipeValidateCommand import PackageRecipeValidateCommand
 from FslBuildGen.DataTypes import BuildRecipeValidateCommand
 
+
 class PackageRecipeValidateCommandAddDLL(PackageRecipeValidateCommand):
-    def __init__(self, originalName: str, originalDebugName: str, resolvedName: str, resolvedDebugName: str, help: Optional[str]) -> None:
+    def __init__(self, originalName: str, originalDebugName: str, resolvedName: str, resolvedDebugName: str, help: str | None) -> None:
         super().__init__("AddDLL", BuildRecipeValidateCommand.AddDLL, help)
 
         self.__ValidateName(originalName)
@@ -50,10 +49,8 @@ class PackageRecipeValidateCommandAddDLL(PackageRecipeValidateCommand):
         self.OriginalName = originalName
         self.OriginalDebugName = originalDebugName
 
-
     def __ValidateName(self, name: str) -> None:
-        if '\\' in name:
-            raise Exception("A path can not contain backslash '\\': '{0}'".format(name))
-        if name.endswith('/'):
-            raise Exception("A path can not end with a slash '/': '{0}'".format(name))
-
+        if "\\" in name:
+            raise Exception(f"A path can not contain backslash '\\': '{name}'")
+        if name.endswith("/"):
+            raise Exception(f"A path can not end with a slash '/': '{name}'")

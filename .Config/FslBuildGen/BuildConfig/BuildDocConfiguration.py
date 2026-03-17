@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright 2018 NXP
 # All rights reserved.
 #
@@ -29,12 +28,13 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-from typing import List
+
 from FslBuildGen.BuildConfig.BuildDocConfigurationRequirement import BuildDocConfigurationRequirement
 
-class BuildDocConfiguration(object):
-    def __init__(self, requirements: List[BuildDocConfigurationRequirement]) -> None:
+
+class BuildDocConfiguration:
+    def __init__(self, requirements: list[BuildDocConfigurationRequirement]) -> None:
         super().__init__()
         self.Requirements = requirements

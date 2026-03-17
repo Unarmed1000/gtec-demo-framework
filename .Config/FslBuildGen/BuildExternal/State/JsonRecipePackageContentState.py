@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright 2018 NXP
 # All rights reserved.
 #
@@ -29,16 +28,17 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-from typing import List
+
 from FslBuildGen.BuildExternal.State.JsonRecipePackageFileState import JsonRecipePackageFileState
 
-class JsonRecipePackageContentState(object):
+
+class JsonRecipePackageContentState:
     def __init__(self) -> None:
         super().__init__()
-        self.Directories = []   # type: List[str]
-        self.Files = []         # type: List[JsonRecipePackageFileState]
+        self.Directories: list[str] = []
+        self.Files: list[JsonRecipePackageFileState] = []
 
     def AddFile(self, name: str, length: int, modifiedDate: str, checksum: str, tagChecksum: str) -> None:
         fileState = JsonRecipePackageFileState()
@@ -48,4 +48,3 @@ class JsonRecipePackageContentState(object):
     def Sort(self) -> None:
         self.Directories.sort()
         self.Files.sort(key=lambda s: s.Name.lower())
-

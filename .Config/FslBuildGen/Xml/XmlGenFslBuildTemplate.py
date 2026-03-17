@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright (c) 2014 Freescale Semiconductor, Inc.
 # All rights reserved.
 #
@@ -29,31 +29,30 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-from typing import List
 import os
 import xml.etree.ElementTree as ET
+
 from FslBuildGen import IOUtil
-from FslBuildGen.Log import Log
 from FslBuildGen.Exceptions import FileNotFoundException
+from FslBuildGen.Log import Log
 from FslBuildGen.Xml.Exceptions import XmlInvalidRootElement
 from FslBuildGen.Xml.XmlCommonFslBuild import XmlCommonFslBuild
 
 
 class XmlGenFslBuildTemplate(XmlCommonFslBuild):
-
-    def __init__(self, log: Log, requirementTypes: List[str], filename: str) -> None:
+    def __init__(self, log: Log, requirementTypes: list[str], filename: str) -> None:
         if not os.path.isfile(filename):
             raise FileNotFoundException("Could not locate gen file %s", filename)
 
         tree = ET.parse(filename)
         xmlElement = tree.getroot()
-        if xmlElement.tag != 'FslBuildTemplate':
+        if xmlElement.tag != "FslBuildTemplate":
             raise XmlInvalidRootElement("The file did not contain the expected root tag 'FslBuildTemplate'")
 
         super().__init__(log, requirementTypes, xmlElement)
-        #self._CheckAttributes(set())
+        # self._CheckAttributes(set())
 
         self.Name = IOUtil.GetFileNameWithoutExtension(filename)
         self.DirectRequirements = self._GetXMLRequirements(xmlElement)

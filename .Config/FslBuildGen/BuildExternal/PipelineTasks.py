@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright 2018 NXP
 # All rights reserved.
 #
@@ -29,19 +28,15 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-from typing import Optional
-from FslBuildGen.BuildExternal.Tasks import CMakeAndBuildTask
-from FslBuildGen.BuildExternal.Tasks import DownloadTask
-from FslBuildGen.BuildExternal.Tasks import GitCloneTask
-from FslBuildGen.BuildExternal.Tasks import GitApplyTask
-from FslBuildGen.BuildExternal.Tasks import UnpackAndRenameTask
+
+from FslBuildGen.BuildExternal.Tasks import CMakeAndBuildTask, DownloadTask, GitApplyTask, GitCloneTask, UnpackAndRenameTask
 from FslBuildGen.Context.GeneratorContext import GeneratorContext
 from FslBuildGen.Log import Log
 
 
-class PipelineTasks(object):
+class PipelineTasks:
     def __init__(self, log: Log, generatorContext: GeneratorContext, checkBuildCommands: bool, buildThreads: int) -> None:
         self.__Log = log
         # Add the task objects
@@ -51,33 +46,31 @@ class PipelineTasks(object):
         self.TaskDownload = DownloadTask(generatorContext)
         self.TaskUnpackAndRename = UnpackAndRenameTask(generatorContext)
 
-    def __TryAllocateCMakeAndBuildTask(self, generatorContext: GeneratorContext, checkBuildCommands: bool, buildThreads: int) -> Optional[CMakeAndBuildTask]:
+    def __TryAllocateCMakeAndBuildTask(self, generatorContext: GeneratorContext, checkBuildCommands: bool, buildThreads: int) -> CMakeAndBuildTask | None:
         try:
             return CMakeAndBuildTask(generatorContext, buildThreads)
         except Exception as ex:
             if checkBuildCommands:
                 raise
-            self.__Log.DoPrintWarning("CMakeAndBuild failed with: {0}".format(ex))
+            self.__Log.DoPrintWarning(f"CMakeAndBuild failed with: {ex}")
             return None
 
-
-    def __TryAllocateGitCloneTask(self, generatorContext: GeneratorContext, checkBuildCommands: bool) -> Optional[GitCloneTask]:
+    def __TryAllocateGitCloneTask(self, generatorContext: GeneratorContext, checkBuildCommands: bool) -> GitCloneTask | None:
         try:
             return GitCloneTask(generatorContext)
         except Exception as ex:
             if checkBuildCommands:
                 raise
             if self.__Log.Verbosity > 1:
-                self.__Log.LogPrintWarning("GitClone is unavailable: {0}".format(str(ex)))
+                self.__Log.LogPrintWarning(f"GitClone is unavailable: {str(ex)}")
             return None
 
-
-    def __TryAllocateGitApplyTask(self, generatorContext: GeneratorContext, checkBuildCommands: bool) -> Optional[GitApplyTask]:
+    def __TryAllocateGitApplyTask(self, generatorContext: GeneratorContext, checkBuildCommands: bool) -> GitApplyTask | None:
         try:
             return GitApplyTask(generatorContext)
         except Exception as ex:
             if checkBuildCommands:
                 raise
             if self.__Log.Verbosity > 1:
-                self.__Log.LogPrintWarning("GitApply is unavailable: {0}".format(str(ex)))
+                self.__Log.LogPrintWarning(f"GitApply is unavailable: {str(ex)}")
             return None

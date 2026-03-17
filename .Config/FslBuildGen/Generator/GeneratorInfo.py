@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright 2020 NXP
 # All rights reserved.
 #
@@ -29,14 +28,14 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
+
 
 from FslBuildGen.Context.VariableContext import VariableContext
-from typing import Dict
-from typing import Optional
 
-class GeneratorInfo(object):
-    def __init__(self, isCMakeGenerator: bool, allowFindPackage: bool, validVariabelDict: Optional[Dict[str, object]], variableContext: VariableContext) -> None:
+
+class GeneratorInfo:
+    def __init__(self, isCMakeGenerator: bool, allowFindPackage: bool, validVariabelDict: dict[str, object] | None, variableContext: VariableContext) -> None:
         self.IsCMakeGenerator = isCMakeGenerator
         self.AllowFindPackage = allowFindPackage
         self.ValidVariabelDict = validVariabelDict

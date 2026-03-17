@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright 2017 NXP
 # All rights reserved.
 #
@@ -29,27 +28,26 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
 from typing import Any
-from typing import Optional
-#import argparse
+
+# import argparse
 from FslBuildGen.Tool.ToolAppContext import ToolAppContext
-#from FslBuildGen.Tool.ToolCommonArgConfig import ToolCommonArgConfig
+
+# from FslBuildGen.Tool.ToolCommonArgConfig import ToolCommonArgConfig
 from FslBuildGen.ToolConfig import ToolConfig
 
 
-class AToolAppFlow(object):
+class AToolAppFlow:
     def __init__(self, toolAppContext: ToolAppContext) -> None:
         self.ToolAppContext = toolAppContext
         self.Log = toolAppContext.Log
         self.ErrorHelpManager = toolAppContext.ErrorHelpManager
 
-
-    def ProcessFromStandaloneCommandLine(self, args: Any, currentDirPath: str, userTag: Optional[object]) -> None:
-        """ Called when run in standalone mode, instead of ProcessFromCommandLine """
+    def ProcessFromStandaloneCommandLine(self, args: Any, currentDirPath: str, userTag: object | None) -> None:
+        """Called when run in standalone mode, instead of ProcessFromCommandLine"""
         pass
 
-
-    def ProcessFromCommandLine(self, args: Any, currentDirPath: str, toolConfig: ToolConfig, userTag: Optional[object]) -> None:
+    def ProcessFromCommandLine(self, args: Any, currentDirPath: str, toolConfig: ToolConfig, userTag: object | None) -> None:
         pass

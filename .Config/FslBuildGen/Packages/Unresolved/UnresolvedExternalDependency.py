@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright 2020 NXP
 # All rights reserved.
 #
@@ -29,24 +29,38 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-from typing import Optional
-from FslBuildGen.DataTypes import AccessType
-from FslBuildGen.DataTypes import ExternalDependencyType
-from FslBuildGen.SemanticVersionPattern import SemanticVersionPattern
-from FslBuildGen.Packages.Unresolved.UnresolvedExternalDependencyPackageManager import UnresolvedExternalDependencyPackageManager
+
+from FslBuildGen.DataTypes import AccessType, ExternalDependencyType
 from FslBuildGen.PackageIncludeDir import PackageIncludeDir
+from FslBuildGen.Packages.Unresolved.UnresolvedExternalDependencyPackageManager import UnresolvedExternalDependencyPackageManager
+from FslBuildGen.SemanticVersionPattern import SemanticVersionPattern
 
-class UnresolvedExternalDependency(object):
-    def __init__(self, name: str, debugName: str, targetName: str, includeDir: Optional[PackageIncludeDir], location: Optional[str],
-                 hintPath: Optional[str], version: Optional[SemanticVersionPattern], publicKeyToken: Optional[str],
-                 processorArchitecture: Optional[str], culture: Optional[str], packageManager: Optional[UnresolvedExternalDependencyPackageManager],
-                 ifCondition: Optional[str], elementType: ExternalDependencyType, accessType: AccessType, isManaged: bool = False) -> None:
+
+class UnresolvedExternalDependency:
+    def __init__(
+        self,
+        name: str,
+        debugName: str,
+        targetName: str,
+        includeDir: PackageIncludeDir | None,
+        location: str | None,
+        hintPath: str | None,
+        version: SemanticVersionPattern | None,
+        publicKeyToken: str | None,
+        processorArchitecture: str | None,
+        culture: str | None,
+        packageManager: UnresolvedExternalDependencyPackageManager | None,
+        ifCondition: str | None,
+        elementType: ExternalDependencyType,
+        accessType: AccessType,
+        isManaged: bool = False,
+    ) -> None:
         super().__init__()
         self.Name = name
         self.DebugName = debugName if debugName is not None else name
-        self.TargetName = targetName if targetName is not None else "{0}::{0}".format(name)
+        self.TargetName = targetName if targetName is not None else f"{name}::{name}"
         self.IncludeDir = includeDir
         self.Location = location
         self.HintPath = hintPath
@@ -55,15 +69,15 @@ class UnresolvedExternalDependency(object):
         self.ProcessorArchitecture = processorArchitecture
         self.Culture = culture
         self.PackageManager = packageManager
-        self.IfCondition = ifCondition  # type: Optional[str]
+        self.IfCondition: str | None = ifCondition
         # Can only be set from code, and it indicates that this dependency is managed by a recipe or similar
-        self.Type = elementType  # type: ExternalDependencyType
+        self.Type: ExternalDependencyType = elementType
 
         self.Access = accessType
         self.IsManaged = isManaged
 
         if self.Type == ExternalDependencyType.DLL:
-            if not self.IncludeDir is None:
-                raise Exception("DLL dependency: '{0}' can not contain include paths".format(self.Name))
+            if self.IncludeDir is not None:
+                raise Exception(f"DLL dependency: '{self.Name}' can not contain include paths")
             if self.Access != AccessType.Public:
-                raise Exception("DLL dependency: '{0}' can only have a access type of Public".format(self.Name))
+                raise Exception(f"DLL dependency: '{self.Name}' can only have a access type of Public")

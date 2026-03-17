@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright 2018 NXP
 # All rights reserved.
 #
@@ -29,24 +28,22 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-from typing import Dict
-from typing import List
-from typing import Optional
+
 from FslBuildGen import IOUtil
 from FslBuildGen.Build.CaptureEnvironmentVariablesFromScript import CaptureEnvironmentVariablesFromScript
 from FslBuildGen.Log import Log
 
 
-class VirtualVariantEnvironmentCache(object):
+class VirtualVariantEnvironmentCache:
     def __init__(self, log: Log, pythonScriptRoot: str, allowCaching: bool) -> None:
         super().__init__()
         if not IOUtil.IsAbsolutePath(pythonScriptRoot):
-            raise Exception("pythonScriptRoot '{0}' is not absolute".format(pythonScriptRoot))
+            raise Exception(f"pythonScriptRoot '{pythonScriptRoot}' is not absolute")
         self.Log = log
-        self.PythonScriptRoot = pythonScriptRoot    # type: str
-        self.EnvDict = {}                           # type: Dict[str,str]
+        self.PythonScriptRoot: str = pythonScriptRoot
+        self.EnvDict: dict[str, str] = {}
         self.AllowCaching = allowCaching
 
     def GetCachedValue(self, key: str) -> str:
@@ -54,17 +51,17 @@ class VirtualVariantEnvironmentCache(object):
             print("")
         return self.EnvDict[key]
 
-    def TryGetCachedValue(self, key: str) -> Optional[str]:
+    def TryGetCachedValue(self, key: str) -> str | None:
         if key in self.EnvDict:
             return self.EnvDict[key]
         return None
 
-    def CacheEnv(self, keys: List[str], runCommand: List[str]) -> None:
-        #numFound = 0
-        #for key in keys:
+    def CacheEnv(self, keys: list[str], runCommand: list[str]) -> None:
+        # numFound = 0
+        # for key in keys:
         #    if key in self.EnvDict:
         #        numFound += 1
-        #if len(keys) == numFound:
+        # if len(keys) == numFound:
         #    return
 
         if not self.AllowCaching:
@@ -77,17 +74,17 @@ class VirtualVariantEnvironmentCache(object):
             unknownKeys = []
             for entry in keys:
                 if not (entry.startswith("$(") and entry.endswith(")")):
-                    raise Exception("Environment variable not in the correct $(NAME) format {0}".format(entry))
+                    raise Exception(f"Environment variable not in the correct $(NAME) format {entry}")
                 strippedEntry = entry[2:-1]
                 if strippedEntry not in self.EnvDict:
                     unknownKeys.append(entry)
                 else:
-                    self.Log.LogPrintVerbose(4, "Using captured value for {0}".format(entry))
+                    self.Log.LogPrintVerbose(4, f"Using captured value for {entry}")
 
         if len(unknownKeys) > 0:
             captureDict = CaptureEnvironmentVariablesFromScript.Capture(self.Log, runCommand, self.PythonScriptRoot, unknownKeys)
             for key, value in captureDict.items():
-                if not key in self.EnvDict:
+                if key not in self.EnvDict:
                     self.EnvDict[key] = value
                 elif self.EnvDict[key] != value:
-                    raise Exception("newly cached value for key '{0} does not match cached value. Cached: {1}, new: {2}".format(key, self.EnvDict[key], value))
+                    raise Exception(f"newly cached value for key '{key} does not match cached value. Cached: {self.EnvDict[key]}, new: {value}")

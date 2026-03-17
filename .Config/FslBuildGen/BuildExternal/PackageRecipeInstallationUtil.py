@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright 2021 NXP
 # All rights reserved.
 #
@@ -29,37 +28,43 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-from typing import List
-from FslBuildGen.BuildExternal.PackageRecipeInstallation import PackageRecipeInstallation
+
 from FslBuildGen.BuildExternal.Commands.PackageRecipeValidateCommand import PackageRecipeValidateCommand
-from FslBuildGen.BuildExternal.Commands.PackageRecipeValidateCommandAddHeaders import PackageRecipeValidateCommandAddHeaders
 from FslBuildGen.BuildExternal.Commands.PackageRecipeValidateCommandAddDLL import PackageRecipeValidateCommandAddDLL
+from FslBuildGen.BuildExternal.Commands.PackageRecipeValidateCommandAddHeaders import PackageRecipeValidateCommandAddHeaders
 from FslBuildGen.BuildExternal.Commands.PackageRecipeValidateCommandAddLib import PackageRecipeValidateCommandAddLib
 from FslBuildGen.BuildExternal.Commands.PackageRecipeValidateCommandAddTool import PackageRecipeValidateCommandAddTool
 from FslBuildGen.BuildExternal.Commands.PackageRecipeValidateCommandEnvironmentVariable import PackageRecipeValidateCommandEnvironmentVariable
 from FslBuildGen.BuildExternal.Commands.PackageRecipeValidateCommandFindExecutableFileInPath import PackageRecipeValidateCommandFindExecutableFileInPath
-from FslBuildGen.BuildExternal.Commands.PackageRecipeValidateCommandFindExecutableFileInPathAddOnErrorWarning import PackageRecipeValidateCommandFindExecutableFileInPathAddOnErrorWarning
+from FslBuildGen.BuildExternal.Commands.PackageRecipeValidateCommandFindExecutableFileInPathAddOnErrorWarning import (
+    PackageRecipeValidateCommandFindExecutableFileInPathAddOnErrorWarning,
+)
 from FslBuildGen.BuildExternal.Commands.PackageRecipeValidateCommandFindFileInPath import PackageRecipeValidateCommandFindFileInPath
 from FslBuildGen.BuildExternal.Commands.PackageRecipeValidateCommandPath import PackageRecipeValidateCommandPath
+from FslBuildGen.BuildExternal.PackageRecipeInstallation import PackageRecipeInstallation
 from FslBuildGen.Location.PathBuilder import PathBuilder
-from FslBuildGen.Xml.XmlExperimentalRecipe import XmlRecipeInstallation
-from FslBuildGen.Xml.XmlExperimentalRecipe import XmlRecipeValidateCommand
-from FslBuildGen.Xml.XmlExperimentalRecipe import XmlRecipeValidateCommandAddHeaders
-from FslBuildGen.Xml.XmlExperimentalRecipe import XmlRecipeValidateCommandAddLib
-from FslBuildGen.Xml.XmlExperimentalRecipe import XmlRecipeValidateCommandAddDLL
-from FslBuildGen.Xml.XmlExperimentalRecipe import XmlRecipeValidateCommandAddTool
-from FslBuildGen.Xml.XmlExperimentalRecipe import XmlRecipeValidateCommandEnvironmentVariable
-from FslBuildGen.Xml.XmlExperimentalRecipe import XmlRecipeValidateCommandFindFileInPath
-from FslBuildGen.Xml.XmlExperimentalRecipe import XmlRecipeValidateCommandFindExecutableFileInPath
-from FslBuildGen.Xml.XmlExperimentalRecipe import XmlRecipeValidateCommandFindExecutableFileInPathAddOnErrorWarning
-from FslBuildGen.Xml.XmlExperimentalRecipe import XmlRecipeValidateCommandPath
+from FslBuildGen.Xml.XmlExperimentalRecipe import (
+    XmlRecipeInstallation,
+    XmlRecipeValidateCommand,
+    XmlRecipeValidateCommandAddDLL,
+    XmlRecipeValidateCommandAddHeaders,
+    XmlRecipeValidateCommandAddLib,
+    XmlRecipeValidateCommandAddTool,
+    XmlRecipeValidateCommandEnvironmentVariable,
+    XmlRecipeValidateCommandFindExecutableFileInPath,
+    XmlRecipeValidateCommandFindExecutableFileInPathAddOnErrorWarning,
+    XmlRecipeValidateCommandFindFileInPath,
+    XmlRecipeValidateCommandPath,
+)
 
-class PackageRecipeInstallationUtil(object):
 
+class PackageRecipeInstallationUtil:
     @staticmethod
-    def ToPackageRecipeValidateCommandAddHeaders(pathBuilder: PathBuilder, command: XmlRecipeValidateCommandAddHeaders) -> PackageRecipeValidateCommandAddHeaders:
+    def ToPackageRecipeValidateCommandAddHeaders(
+        pathBuilder: PathBuilder, command: XmlRecipeValidateCommandAddHeaders
+    ) -> PackageRecipeValidateCommandAddHeaders:
         originalName = command.Name
         resolvedName = pathBuilder.ResolveFilenameWithVariables(originalName)
         return PackageRecipeValidateCommandAddHeaders(originalName, resolvedName, command.Help)
@@ -82,40 +87,57 @@ class PackageRecipeInstallationUtil(object):
 
     @staticmethod
     def ToPackageRecipeValidateCommandAddTool(pathBuilder: PathBuilder, command: XmlRecipeValidateCommandAddTool) -> PackageRecipeValidateCommandAddTool:
-        return PackageRecipeValidateCommandAddTool(command.Name, command.MinVersion, command.VersionCommand, command.VersionRegEx, command.VersionSplitChar, command.Help)
+        return PackageRecipeValidateCommandAddTool(
+            command.Name, command.MinVersion, command.VersionCommand, command.VersionRegEx, command.VersionSplitChar, command.Help
+        )
 
     @staticmethod
-    def ToPackageRecipeValidateCommandEnvironmentVariable(command: XmlRecipeValidateCommandEnvironmentVariable) -> PackageRecipeValidateCommandEnvironmentVariable:
+    def ToPackageRecipeValidateCommandEnvironmentVariable(
+        command: XmlRecipeValidateCommandEnvironmentVariable,
+    ) -> PackageRecipeValidateCommandEnvironmentVariable:
         return PackageRecipeValidateCommandEnvironmentVariable(command.Name, command.Method, command.AllowEndSlash, command.Help)
 
-
     @staticmethod
-    def ToPackageRecipeValidateCommandFindExecutableFileInPathAddOnErrorWarning(entry: XmlRecipeValidateCommandFindExecutableFileInPathAddOnErrorWarning) -> PackageRecipeValidateCommandFindExecutableFileInPathAddOnErrorWarning:
+    def ToPackageRecipeValidateCommandFindExecutableFileInPathAddOnErrorWarning(
+        entry: XmlRecipeValidateCommandFindExecutableFileInPathAddOnErrorWarning,
+    ) -> PackageRecipeValidateCommandFindExecutableFileInPathAddOnErrorWarning:
         return PackageRecipeValidateCommandFindExecutableFileInPathAddOnErrorWarning(entry.StartVersion, entry.EndVersion, entry.Help)
 
     @staticmethod
-    def ToPackageRecipeValidateCommandFindExecutableFileInPathAddOnErrorWarningList(sourceList: List[XmlRecipeValidateCommandFindExecutableFileInPathAddOnErrorWarning]) -> List[PackageRecipeValidateCommandFindExecutableFileInPathAddOnErrorWarning]:
+    def ToPackageRecipeValidateCommandFindExecutableFileInPathAddOnErrorWarningList(
+        sourceList: list[XmlRecipeValidateCommandFindExecutableFileInPathAddOnErrorWarning],
+    ) -> list[PackageRecipeValidateCommandFindExecutableFileInPathAddOnErrorWarning]:
         resultList = []
         for entry in sourceList:
             resultList.append(PackageRecipeInstallationUtil.ToPackageRecipeValidateCommandFindExecutableFileInPathAddOnErrorWarning(entry))
         return resultList
 
     @staticmethod
-    def ToPackageRecipeValidateCommandFindExecutableFileInPath(command: XmlRecipeValidateCommandFindExecutableFileInPath) -> PackageRecipeValidateCommandFindExecutableFileInPath:
-        addOnErrorWarningList = PackageRecipeInstallationUtil.ToPackageRecipeValidateCommandFindExecutableFileInPathAddOnErrorWarningList(command.AddOnErrorWarning)
-        return PackageRecipeValidateCommandFindExecutableFileInPath(command.Name, command.Alternatives, command.ExpectedPath,
-                                                                    command.MinVersion, command.VersionCommand, command.VersionRegEx,
-                                                                    command.VersionSplitChar, addOnErrorWarningList, command.Help)
+    def ToPackageRecipeValidateCommandFindExecutableFileInPath(
+        command: XmlRecipeValidateCommandFindExecutableFileInPath,
+    ) -> PackageRecipeValidateCommandFindExecutableFileInPath:
+        addOnErrorWarningList = PackageRecipeInstallationUtil.ToPackageRecipeValidateCommandFindExecutableFileInPathAddOnErrorWarningList(
+            command.AddOnErrorWarning
+        )
+        return PackageRecipeValidateCommandFindExecutableFileInPath(
+            command.Name,
+            command.Alternatives,
+            command.ExpectedPath,
+            command.MinVersion,
+            command.VersionCommand,
+            command.VersionRegEx,
+            command.VersionSplitChar,
+            addOnErrorWarningList,
+            command.Help,
+        )
 
     @staticmethod
     def ToPackageRecipeValidateCommandFindFileInPath(command: XmlRecipeValidateCommandFindFileInPath) -> PackageRecipeValidateCommandFindFileInPath:
         return PackageRecipeValidateCommandFindFileInPath(command.Name, command.ExpectedPath, command.Help)
 
-
     @staticmethod
     def ToPackageRecipeValidateCommandPath(command: XmlRecipeValidateCommandPath) -> PackageRecipeValidateCommandPath:
         return PackageRecipeValidateCommandPath(command.Name, command.Method, command.Help)
-
 
     @staticmethod
     def ToPackageRecipeValidateCommand(pathBuilder: PathBuilder, command: XmlRecipeValidateCommand) -> PackageRecipeValidateCommand:
@@ -135,11 +157,10 @@ class PackageRecipeInstallationUtil(object):
             return PackageRecipeInstallationUtil.ToPackageRecipeValidateCommandFindFileInPath(command)
         if isinstance(command, XmlRecipeValidateCommandPath):
             return PackageRecipeInstallationUtil.ToPackageRecipeValidateCommandPath(command)
-        raise Exception("Unknown validation command '{0}'".format(command.CommandName))
-
+        raise Exception(f"Unknown validation command '{command.CommandName}'")
 
     @staticmethod
-    def ToPackageRecipeValidateCommandList(pathBuilder: PathBuilder, commandList: List[XmlRecipeValidateCommand]) -> List[PackageRecipeValidateCommand]:
+    def ToPackageRecipeValidateCommandList(pathBuilder: PathBuilder, commandList: list[XmlRecipeValidateCommand]) -> list[PackageRecipeValidateCommand]:
         resultList = []
         for command in commandList:
             resultList.append(PackageRecipeInstallationUtil.ToPackageRecipeValidateCommand(pathBuilder, command))

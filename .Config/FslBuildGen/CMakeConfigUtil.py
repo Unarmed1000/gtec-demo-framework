@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright 2019 NXP
 # All rights reserved.
 #
@@ -29,26 +28,35 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-from typing import Optional
 import shlex
-from FslBuildGen.Log import Log
+
 from FslBuildGen import IOUtil
 from FslBuildGen.BuildConfig.CMakeConfiguration import CMakeConfiguration
 from FslBuildGen.BuildConfig.UserSetVariables import UserSetVariables
 from FslBuildGen.BuildExternal import CMakeHelper
 from FslBuildGen.CMakeUtil import CMakeUtil
-#from FslBuildGen.CMakeUtil import CMakeVersion
+
+# from FslBuildGen.CMakeUtil import CMakeVersion
 from FslBuildGen.DataTypes import BuildVariantConfig
 from FslBuildGen.Generator.GeneratorCMakeConfig import GeneratorCMakeConfig
-from FslBuildGen.Version import Version
+from FslBuildGen.Log import Log
 from FslBuildGen.Tool.UserCMakeConfig import UserCMakeConfig
+from FslBuildGen.Version import Version
 
-def BuildGeneratorCMakeConfig(log: Log, toolVersion: Version, platformName: str, buildVariantConfig: BuildVariantConfig,
-                              userSetVariables: UserSetVariables, userCMakeConfig: Optional[UserCMakeConfig],
-                              cmakeConfiguration: CMakeConfiguration, defaultCompilerVersion: int,
-                              isCheckMode: bool) -> GeneratorCMakeConfig:
+
+def BuildGeneratorCMakeConfig(
+    log: Log,
+    toolVersion: Version,
+    platformName: str,
+    buildVariantConfig: BuildVariantConfig,
+    userSetVariables: UserSetVariables,
+    userCMakeConfig: UserCMakeConfig | None,
+    cmakeConfiguration: CMakeConfiguration,
+    defaultCompilerVersion: int,
+    isCheckMode: bool,
+) -> GeneratorCMakeConfig:
     """
     Build the CMake config based on the supplied parameters and the default settings from the toolconfig
     """
@@ -68,11 +76,11 @@ def BuildGeneratorCMakeConfig(log: Log, toolVersion: Version, platformName: str,
             installPrefix = platformConfig.DefaultInstallPrefix
         if platformConfig.AllowFindPackage is not None:
             allowFindPackage = platformConfig.AllowFindPackage
-            log.LogPrintVerbose(2, "project defined AllowFindPackage to {0}".format(allowFindPackage))
+            log.LogPrintVerbose(2, f"project defined AllowFindPackage to {allowFindPackage}")
 
     # Apply the commandline overrides (so the user gets the final say)
     buildDirSetByUser = False
-    buildDirId = None # Optional[int]
+    buildDirId = None  # Optional[int]
     if userCMakeConfig is not None:
         if userCMakeConfig.BuildDir is not None:
             buildDir = userCMakeConfig.BuildDir
@@ -85,7 +93,7 @@ def BuildGeneratorCMakeConfig(log: Log, toolVersion: Version, platformName: str,
             installPrefix = userCMakeConfig.InstallPrefix
         if userCMakeConfig.AllowFindPackage is not None:
             allowFindPackage = userCMakeConfig.AllowFindPackage
-            log.LogPrintVerbose(2, "Command line set AllowFindPackage to {0}".format(allowFindPackage))
+            log.LogPrintVerbose(2, f"Command line set AllowFindPackage to {allowFindPackage}")
 
     # If we still dont have a generator name then try to select a good default
     if len(generatorName) <= 0:
@@ -97,10 +105,24 @@ def BuildGeneratorCMakeConfig(log: Log, toolVersion: Version, platformName: str,
     cmakeConfigGlobalArgs = [] if userCMakeConfig is None else shlex.split(userCMakeConfig.ConfigGlobalArgs)
     cmakeConfigAppArgs = [] if userCMakeConfig is None else shlex.split(userCMakeConfig.ConfigAppArgs)
 
-    checkDir = IOUtil.Join(buildDir, 'fsl')
+    checkDir = IOUtil.Join(buildDir, "fsl")
     if isCheckMode:
         buildDir = checkDir
 
-    return GeneratorCMakeConfig(log, toolVersion, platformName, buildVariantConfig, userSetVariables, buildDir, buildDirSetByUser, buildDirId, checkDir,
-                                generatorName, installPrefix, cmakeVersion, cmakeConfigGlobalArgs, cmakeConfigAppArgs,
-                                allowFindPackage)
+    return GeneratorCMakeConfig(
+        log,
+        toolVersion,
+        platformName,
+        buildVariantConfig,
+        userSetVariables,
+        buildDir,
+        buildDirSetByUser,
+        buildDirId,
+        checkDir,
+        generatorName,
+        installPrefix,
+        cmakeVersion,
+        cmakeConfigGlobalArgs,
+        cmakeConfigAppArgs,
+        allowFindPackage,
+    )

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright 2019 NXP
 # All rights reserved.
 #
@@ -29,36 +29,38 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-from typing import Dict
-from typing import List
-from typing import Optional
 import json
-from FslBuildGen import IOUtil
-from FslBuildGen import Util
-from FslBuildGen.Log import Log
-from FslBuildGen.Exceptions import InvalidPackageNameException
+from typing import Optional
 
-class LocalVerbosityLevel(object):
+from FslBuildGen import IOUtil, Util
+from FslBuildGen.Exceptions import InvalidPackageNameException
+from FslBuildGen.Log import Log
+
+
+class LocalVerbosityLevel:
     Info = 3
     Debug = 4
     Trace = 5
 
-class JsonProjectIdCache(object):
+
+class JsonProjectIdCache:
     CURRENT_VERSION = 1
 
-    def __init__(self, projectIdDict: Dict[str, str]) -> None:
+    def __init__(self, projectIdDict: dict[str, str]) -> None:
         super().__init__()
         self.Version = JsonProjectIdCache.CURRENT_VERSION
         self.ProjectIdDict = projectIdDict
 
-        projectIdToNameDict = {} # type: Dict[str, str]
+        projectIdToNameDict: dict[str, str] = {}
         for packageName, packageProjectId in projectIdToNameDict.items():
             if not Util.IsValidPackageName(packageName):
                 raise InvalidPackageNameException(packageName)
             if packageProjectId in projectIdDict:
-                raise Exception("The package project id '{0}' is registered for multiple package names. First '{1}' Second '{2}'".format(packageProjectId, projectIdToNameDict[packageName], packageName))
+                raise Exception(
+                    f"The package project id '{packageProjectId}' is registered for multiple package names. First '{projectIdToNameDict[packageName]}' Second '{packageName}'"
+                )
             projectIdToNameDict[packageProjectId] = packageName
 
     def Add(self, packageName: str, packageProjectId: str) -> None:
@@ -70,7 +72,7 @@ class JsonProjectIdCache(object):
         self.ProjectIdDict.pop(packageName)
 
     @staticmethod
-    def TryLoad(log: Log, cacheFilename: str) -> Optional['JsonProjectIdCache']:
+    def TryLoad(log: Log, cacheFilename: str) -> Optional["JsonProjectIdCache"]:
         try:
             strJson = IOUtil.TryReadFile(cacheFilename)
             if strJson is None:
@@ -80,7 +82,7 @@ class JsonProjectIdCache(object):
                 raise Exception("Unsupported version")
 
             jsonProjectIdDict = jsonDict["ProjectIdDict"]
-            finalDict = {} # type: Dict[str,str]
+            finalDict: dict[str, str] = {}
 
             for key, value in jsonProjectIdDict.items():
                 if not isinstance(key, str) or not isinstance(value, str):
@@ -88,22 +90,18 @@ class JsonProjectIdCache(object):
                 finalDict[key] = value
 
             return JsonProjectIdCache(finalDict)
-        except:
-            log.DoPrintWarning("Failed to decode cache file '{0}'".format(cacheFilename))
+        except Exception:
+            log.DoPrintWarning(f"Failed to decode cache file '{cacheFilename}'")
             return None
 
     @staticmethod
-    def Save(log: Log, cacheFilename: str, JsonProjectIdCache: 'JsonProjectIdCache') -> None:
-        log.LogPrintVerbose(LocalVerbosityLevel.Trace, "- Saving cache '{0}'".format(cacheFilename))
+    def Save(log: Log, cacheFilename: str, JsonProjectIdCache: "JsonProjectIdCache") -> None:
+        log.LogPrintVerbose(LocalVerbosityLevel.Trace, f"- Saving cache '{cacheFilename}'")
         jsonText = json.dumps(JsonProjectIdCache.__dict__, ensure_ascii=False, sort_keys=True, indent=2)
         IOUtil.WriteFileIfChanged(cacheFilename, jsonText)
 
-
     @staticmethod
-    def IsEqual(lhs: 'JsonProjectIdCache', rhs: 'JsonProjectIdCache') -> bool:
+    def IsEqual(lhs: "JsonProjectIdCache", rhs: "JsonProjectIdCache") -> bool:
         if lhs.Version != rhs.Version or len(lhs.ProjectIdDict) != len(rhs.ProjectIdDict):
             return False
-        for key, value in lhs.ProjectIdDict.items():
-            if key not in rhs.ProjectIdDict or value != rhs.ProjectIdDict[key]:
-                return False
-        return True
+        return all(not (key not in rhs.ProjectIdDict or value != rhs.ProjectIdDict[key]) for key, value in lhs.ProjectIdDict.items())

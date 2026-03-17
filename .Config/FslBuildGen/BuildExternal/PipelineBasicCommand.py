@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright 2018 NXP
 # All rights reserved.
 #
@@ -29,58 +28,53 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-from typing import Optional
+
 from FslBuildGen import IOUtil
 from FslBuildGen.BuildExternal.PipelineInfo import PipelineInfo
 from FslBuildGen.Log import Log
 from FslBuildGen.Xml.XmlExperimentalRecipe import XmlRecipePipelineBasicCommand
 
-class PipelineBasicCommand(object):
-    def __init__(self, log: Log,
-                 sourceCommand: Optional[XmlRecipePipelineBasicCommand],
-                 pipelineInfo: PipelineInfo, finalDstPath: Optional[str] = None) -> None:
+
+class PipelineBasicCommand:
+    def __init__(self, log: Log, sourceCommand: XmlRecipePipelineBasicCommand | None, pipelineInfo: PipelineInfo, finalDstPath: str | None = None) -> None:
         super().__init__()
         self.Log = log
         self.SourceCommand = sourceCommand
         self.Info = pipelineInfo
-        self.FinalDstPath = finalDstPath if not finalDstPath is None else self.Info.CombinedDstRootPath
-
+        self.FinalDstPath = finalDstPath if finalDstPath is not None else self.Info.CombinedDstRootPath
 
     def LogPrint(self, message: str) -> None:
         self.Log.LogPrint(message)
 
-
     def _CreateDirectory(self, path: str) -> None:
         if not IOUtil.IsDirectory(path):
-            self.LogPrint("- Creating '{0}' as it was missing".format(path))
+            self.LogPrint(f"- Creating '{path}' as it was missing")
             IOUtil.SafeMakeDirs(path)
 
-
-    def TryResolveSrcPathString(self, path: str) -> Optional[str]:
-        if path.startswith('{RECIPE_PATH}/'):
-            srcPath = path[len('{RECIPE_PATH}/'):]
+    def TryResolveSrcPathString(self, path: str) -> str | None:
+        if path.startswith("{RECIPE_PATH}/"):
+            srcPath = path[len("{RECIPE_PATH}/") :]
             if self.Info.RecipeAbsolutePath is None:
                 raise Exception("{RECIPE_PATH} could not be resolved as RecipeAbsolutePath was None")
             return IOUtil.Join(self.Info.RecipeAbsolutePath, srcPath)
-        elif path.startswith('{DST_PATH}/'):
-            srcPath = path[len('{DST_PATH}/'):]
+        elif path.startswith("{DST_PATH}/"):
+            srcPath = path[len("{DST_PATH}/") :]
             return IOUtil.Join(self.Info.DstRootPath, srcPath)
-        elif path.startswith('{SRC_PATH}/'):
-            srcPath = path[len('{SRC_PATH}/'):]
+        elif path.startswith("{SRC_PATH}/"):
+            srcPath = path[len("{SRC_PATH}/") :]
             return IOUtil.Join(self.Info.SrcRootPath, srcPath)
-        elif path.startswith('{OUTPUT_PATH}/'):
-            srcPath = path[len('{OUTPUT_PATH}/'):]
+        elif path.startswith("{OUTPUT_PATH}/"):
+            srcPath = path[len("{OUTPUT_PATH}/") :]
             return IOUtil.Join(self.FinalDstPath, srcPath)
         return None
 
-
-    def TryResolveDstPathString(self, path: str) -> Optional[str]:
-        if path.startswith('{DST_PATH}/'):
-            srcPath = path[len('{DST_PATH}/'):]
+    def TryResolveDstPathString(self, path: str) -> str | None:
+        if path.startswith("{DST_PATH}/"):
+            srcPath = path[len("{DST_PATH}/") :]
             return IOUtil.Join(self.Info.DstRootPath, srcPath)
-        elif path.startswith('{OUTPUT_PATH}/'):
-            srcPath = path[len('{OUTPUT_PATH}/'):]
+        elif path.startswith("{OUTPUT_PATH}/"):
+            srcPath = path[len("{OUTPUT_PATH}/") :]
             return IOUtil.Join(self.FinalDstPath, srcPath)
         return None

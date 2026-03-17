@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright 2018 NXP
 # All rights reserved.
 #
@@ -29,15 +28,16 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-from typing import List
-#from FslBuildGen import IOUtil
 
-class ClangTidyPlatformCompiler(object):
-    def __init__(self, flags: List[str]) -> None:
+# from FslBuildGen import IOUtil
+
+
+class ClangTidyPlatformCompiler:
+    def __init__(self, flags: list[str]) -> None:
         super().__init__()
         self.Flags = flags
 
-    def Merge(self, compiler: 'ClangTidyPlatformCompiler') -> None:
+    def Merge(self, compiler: "ClangTidyPlatformCompiler") -> None:
         self.Flags += compiler.Flags

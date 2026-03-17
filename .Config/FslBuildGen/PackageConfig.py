@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright (c) 2014 Freescale Semiconductor, Inc.
 # All rights reserved.
 #
@@ -29,13 +29,14 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
-
-class PackageNameMagicString(object):
-    TopLevelName = 'SYS_tOpLeVeL_sYsInTeRnAl'
+# ****************************************************************************************************************************************************
 
 
-class PlatformNameString(object):
+class PackageNameMagicString:
+    TopLevelName = "SYS_tOpLeVeL_sYsInTeRnAl"
+
+
+class PlatformNameString:
     INVALID = "Invalid"
     ANDROID = "Android"
     APPLE = "Apple"
@@ -47,7 +48,8 @@ class PlatformNameString(object):
     QNX = "QNX"
     EMSCRIPTEN = "Emscripten"
 
-class PlatformNameIdString(object):
+
+class PlatformNameIdString:
     INVALID = PlatformNameString.INVALID.lower()
     ANDROID = PlatformNameString.ANDROID.lower()
     APPLE = PlatformNameString.APPLE.lower()
@@ -59,5 +61,15 @@ class PlatformNameIdString(object):
     QNX = PlatformNameString.QNX.lower()
     EMSCRIPTEN = PlatformNameString.EMSCRIPTEN.lower()
 
-APPROVED_PLATFORM_NAMES = [PlatformNameString.ANDROID, PlatformNameString.APPLE, PlatformNameString.UBUNTU, PlatformNameString.RDK_YOCTO, PlatformNameString.YOCTO, PlatformNameString.WINDOWS,
-                           PlatformNameString.FREERTOS, PlatformNameString.QNX, PlatformNameString.EMSCRIPTEN]
+
+APPROVED_PLATFORM_NAMES = [
+    PlatformNameString.ANDROID,
+    PlatformNameString.APPLE,
+    PlatformNameString.UBUNTU,
+    PlatformNameString.RDK_YOCTO,
+    PlatformNameString.YOCTO,
+    PlatformNameString.WINDOWS,
+    PlatformNameString.FREERTOS,
+    PlatformNameString.QNX,
+    PlatformNameString.EMSCRIPTEN,
+]

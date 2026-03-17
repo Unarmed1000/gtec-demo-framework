@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright 2018 NXP
 # All rights reserved.
 #
@@ -29,15 +28,16 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-from typing import List
+
 from FslBuildGen.Log import Log
+
 
 class CaptureLog(Log):
     def __init__(self, title: str, verbosityLevel: int) -> None:
         super().__init__(title, verbosityLevel, False)
-        self.Captured = []  # type: List[str]
+        self.Captured: list[str] = []
 
     def _PrintNow(self, message: str) -> None:
         self.Captured.append(message)

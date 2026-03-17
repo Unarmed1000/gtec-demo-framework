@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright 2019 NXP
 # All rights reserved.
 #
@@ -29,30 +28,28 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-from typing import Dict
-from typing import List
 
-class GeneratorConfigCommandCMakeReport(object):
-    def __init__(self, configureSettingsDict: Dict[str,str], configureArgs: List[str], buildDirectory: str, prefixPathList: List[str]) -> None:
+class GeneratorConfigCommandCMakeReport:
+    def __init__(self, configureSettingsDict: dict[str, str], configureArgs: list[str], buildDirectory: str, prefixPathList: list[str]) -> None:
         """
-            The information stored in a format string can contain both variables and environment variables and
-            it need to be formatted/converted using the ReportVariableFormatter before being used.
+        The information stored in a format string can contain both variables and environment variables and
+        it need to be formatted/converted using the ReportVariableFormatter before being used.
 
-            Some notes:
-            Each variant name string as used by the generator.
-            - Each normal variant is represented as a ${VARIANT_NAME} variable.
-            - Each virtual variant is represented as a $(VARIANT_NAME) variable.
-            Please note there can be other variables and environment variables as required by the generator
+        Some notes:
+        Each variant name string as used by the generator.
+        - Each normal variant is represented as a ${VARIANT_NAME} variable.
+        - Each virtual variant is represented as a $(VARIANT_NAME) variable.
+        Please note there can be other variables and environment variables as required by the generator
 
-            configureArgs must not contain any -D arguments
+        configureArgs must not contain any -D arguments
         """
         super().__init__()
 
         for entry in configureArgs:
             if entry.strip().startswith("-D"):
-                raise Exception("configureArgs can not contain entries that start with '-D' entry: '{0}'".format(entry))
+                raise Exception(f"configureArgs can not contain entries that start with '-D' entry: '{entry}'")
 
         self.ConfigureSettingsDict = configureSettingsDict
         self.ConfigureArgs = configureArgs

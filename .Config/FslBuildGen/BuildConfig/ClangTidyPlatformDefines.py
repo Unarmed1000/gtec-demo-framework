@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright 2018 NXP
 # All rights reserved.
 #
@@ -29,19 +28,20 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-from typing import List
-#from FslBuildGen import IOUtil
 
-class ClangTidyPlatformDefines(object):
-    def __init__(self, allList: List[str], debug: List[str], release: List[str]) -> None:
+# from FslBuildGen import IOUtil
+
+
+class ClangTidyPlatformDefines:
+    def __init__(self, allList: list[str], debug: list[str], release: list[str]) -> None:
         super().__init__()
         self.All = allList
         self.Debug = debug
         self.Release = release
 
-    def Merge(self, defines: 'ClangTidyPlatformDefines') -> None:
+    def Merge(self, defines: "ClangTidyPlatformDefines") -> None:
         self.All += defines.All
         self.Debug += defines.Debug
         self.Release += defines.Release

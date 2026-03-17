@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright 2020 NXP
 # All rights reserved.
 #
@@ -29,14 +28,13 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-from typing import List
 
-class ErrorHelpManager(object):
+class ErrorHelpManager:
     def __init__(self) -> None:
         super().__init__()
-        self.OnErrorWarningHints = []  # type: List[str]
+        self.OnErrorWarningHints: list[str] = []
 
     def AddOnErrorWarningHint(self, strHelp: str) -> None:
         self.OnErrorWarningHints.append(strHelp)

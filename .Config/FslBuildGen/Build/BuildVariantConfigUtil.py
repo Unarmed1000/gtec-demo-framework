@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright 2018 NXP
 # All rights reserved.
 #
@@ -29,17 +29,16 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-from typing import Dict
-#from typing import List
-#from typing import Optional
-from FslBuildGen.DataTypes import BuildVariantConfig
-from FslBuildGen.DataTypes import BuildVariantConfigDefaults
+# from typing import List
+# from typing import Optional
+from FslBuildGen.DataTypes import BuildVariantConfig, BuildVariantConfigDefaults
 from FslBuildGen.ExternalVariantConstraints import ExternalVariantConstraints
 from FslBuildGen.SharedGeneration import ToolAddedVariant
 
-class BuildVariantConfigUtil(object):
+
+class BuildVariantConfigUtil:
     @staticmethod
     def GetBuildVariantConfig(externalVariantConstraints: ExternalVariantConstraints) -> BuildVariantConfig:
         option = externalVariantConstraints.TryGetOptionStringByNameString(ToolAddedVariant.CONFIG)

@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright 2020 NXP
 # All rights reserved.
 #
@@ -29,13 +28,13 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-from typing import Any
 from FslBuildGen import Util
 from FslBuildGen.Exceptions import InvalidPackageShortNameException
 
-class PackageShortName(object):
+
+class PackageShortName:
     def __init__(self, name: str) -> None:
         super().__init__()
         if not Util.IsValidPackageShortName(name):
@@ -43,7 +42,7 @@ class PackageShortName(object):
 
         self.Value = name
 
-    def CompareTo(self, other: 'PackageShortName') -> int:
+    def CompareTo(self, other: "PackageShortName") -> int:
         if self.Value < other.Value:
             return -1
         return 0 if self.Value == other.Value else 1
@@ -80,4 +79,4 @@ class PackageShortName(object):
         return self.Value
 
     def __repr__(self) -> str:
-        return "PackageShortName({0})".format(self.Value)
+        return f"PackageShortName({self.Value})"

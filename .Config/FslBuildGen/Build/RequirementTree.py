@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright 2017 NXP
 # All rights reserved.
 #
@@ -29,24 +28,25 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-from typing import List
-from typing import Optional
-#from FslBuildGen.BasicConfig import BasicConfig
-from FslBuildGen.Build.RequirementTreeNode import RequirementTreeNode
+
 from FslBuildGen.Build import RequirementTreeUtil
+
+# from FslBuildGen.BasicConfig import BasicConfig
+from FslBuildGen.Build.RequirementTreeNode import RequirementTreeNode
 from FslBuildGen.DataTypes import PackageRequirementTypeString
 from FslBuildGen.ExtensionListManager import ExtensionListManager
 from FslBuildGen.Log import Log
 from FslBuildGen.Packages.PackageRequirement import PackageRequirement
-#from FslBuildGen.QualifiedRequirementExtensionName import QualifiedRequirementExtensionName
+
+# from FslBuildGen.QualifiedRequirementExtensionName import QualifiedRequirementExtensionName
 
 
 # TODO: much of the requirement code can be made simpler by using the 'supported' flag on the nodes instead
 #       So we might as well do that in the future
-class RequirementTree(object):
-    def __init__(self, requirements: List[PackageRequirement]) -> None:
+class RequirementTree:
+    def __init__(self, requirements: list[PackageRequirement]) -> None:
         # Create the various nodes and a
         rootNode = RequirementTreeNode(None)
         featureNodeDict = {}
@@ -63,10 +63,8 @@ class RequirementTree(object):
         self.FeatureToNodeDict = featureNodeDict
         self.SourceRequirements = requirements
 
-
     def SetExtensionSupport(self, log: Log, qualifiedExtensionNameList: ExtensionListManager) -> None:
         RequirementTreeUtil.SetExtensionSupport(log, self.RootNode, self.FeatureToNodeDict, qualifiedExtensionNameList)
 
-
-    def TryLocateExtensionNode(self, featureName: str, extensionName: str) -> Optional[RequirementTreeNode]:
+    def TryLocateExtensionNode(self, featureName: str, extensionName: str) -> RequirementTreeNode | None:
         return RequirementTreeUtil.TryLocateExtensionNode(self.FeatureToNodeDict, featureName, extensionName)

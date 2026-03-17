@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright (c) 2014 Freescale Semiconductor, Inc.
 # All rights reserved.
 #
@@ -29,37 +29,35 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-from typing import Dict
-from typing import List
-from typing import Optional
 import os
 import os.path
 import xml.etree.ElementTree as ET
+
 from FslBuildGen.Exceptions import FileNotFoundException
 from FslBuildGen.Log import Log
-from FslBuildGen.Xml.Exceptions import XmlException
-from FslBuildGen.Xml.Exceptions import XmlException2
-from FslBuildGen.Xml.Exceptions import XmlInvalidRootElement
+from FslBuildGen.Xml import FakeXmlElementFactory
+from FslBuildGen.Xml.Exceptions import XmlException, XmlException2, XmlInvalidRootElement
+from FslBuildGen.Xml.Project.XmlBuildDocConfiguration import XmlBuildDocConfiguration
+from FslBuildGen.Xml.Project.XmlClangTidyConfiguration import XmlClangTidyConfiguration
+from FslBuildGen.Xml.Project.XmlCMakeConfiguration import XmlCMakeConfiguration
+from FslBuildGen.Xml.Project.XmlProjectRootConfigFile import (
+    XmlClangFormatConfiguration,
+    XmlConfigCompilerConfiguration,
+    XmlConfigFileAddRootDirectory,
+    XmlDotnetFormatConfiguration,
+    XmlExperimental,
+    XmlProjectRootConfigFile,
+)
 from FslBuildGen.Xml.ToolConfig import LoadUtil
 from FslBuildGen.Xml.ToolConfig.XmlConfigFileAddNewProjectTemplatesRootDirectory import XmlConfigFileAddNewProjectTemplatesRootDirectory
 from FslBuildGen.Xml.ToolConfig.XmlConfigPackageConfiguration import XmlConfigPackageConfiguration
-from FslBuildGen.Xml import FakeXmlElementFactory
 from FslBuildGen.Xml.XmlBase import XmlBase
-from FslBuildGen.Xml.Project.XmlBuildDocConfiguration import XmlBuildDocConfiguration
-from FslBuildGen.Xml.Project.XmlClangTidyConfiguration import XmlClangTidyConfiguration
-from FslBuildGen.Xml.Project.XmlProjectRootConfigFile import XmlClangFormatConfiguration
-from FslBuildGen.Xml.Project.XmlProjectRootConfigFile import XmlDotnetFormatConfiguration
-from FslBuildGen.Xml.Project.XmlCMakeConfiguration import XmlCMakeConfiguration
-from FslBuildGen.Xml.Project.XmlProjectRootConfigFile import XmlConfigCompilerConfiguration
-from FslBuildGen.Xml.Project.XmlProjectRootConfigFile import XmlConfigFileAddRootDirectory
-from FslBuildGen.Xml.Project.XmlProjectRootConfigFile import XmlExperimental
-from FslBuildGen.Xml.Project.XmlProjectRootConfigFile import XmlProjectRootConfigFile
 
 
 class XmlConfigFileGenFile(XmlBase):
-    __AttribName = 'Name'
+    __AttribName = "Name"
 
     def __init__(self, log: Log, xmlElement: ET.Element) -> None:
         super().__init__(log, xmlElement)
@@ -68,7 +66,7 @@ class XmlConfigFileGenFile(XmlBase):
 
 
 class XmlConfigFileTemplateFolder(XmlBase):
-    __AttribName = 'Name'
+    __AttribName = "Name"
 
     def __init__(self, log: Log, xmlElement: ET.Element) -> None:
         super().__init__(log, xmlElement)
@@ -76,9 +74,8 @@ class XmlConfigFileTemplateFolder(XmlBase):
         self.Name = self._ReadAttrib(xmlElement, self.__AttribName)
 
 
-
 class XmlConfigFileAddTemplateImportDirectory(XmlBase):
-    __AttribName = 'Name'
+    __AttribName = "Name"
 
     def __init__(self, log: Log, xmlElement: ET.Element) -> None:
         super().__init__(log, xmlElement)
@@ -87,37 +84,36 @@ class XmlConfigFileAddTemplateImportDirectory(XmlBase):
 
 
 class XmlConfigContentBuilderAddExtension(XmlBase):
-    __AttribName = 'Name'
-    __AttribDescription = 'Description'
-    __AttribPostfixedOutputExtension = 'PostfixedOutputExtension'
+    __AttribName = "Name"
+    __AttribDescription = "Description"
+    __AttribPostfixedOutputExtension = "PostfixedOutputExtension"
 
     def __init__(self, log: Log, xmlElement: ET.Element) -> None:
         super().__init__(log, xmlElement)
         self._CheckAttributes({self.__AttribName, self.__AttribDescription, self.__AttribPostfixedOutputExtension})
         self.Name = self._ReadAttrib(xmlElement, self.__AttribName)
         self.Description = self._ReadAttrib(xmlElement, self.__AttribDescription)
-        self.PostfixedOutputExtension = self._ReadAttrib(xmlElement, self.__AttribPostfixedOutputExtension, '')
+        self.PostfixedOutputExtension = self._ReadAttrib(xmlElement, self.__AttribPostfixedOutputExtension, "")
 
 
 class XmlConfigContentBuilder(XmlBase):
-    __AttribName = 'Name'
-    __AttribExecutable = 'Executable'
-    __AttribParameters = 'Parameters'
-    __AttribFeatureRequirements = 'FeatureRequirements'
-    __AttribDescription = 'Description'
+    __AttribName = "Name"
+    __AttribExecutable = "Executable"
+    __AttribParameters = "Parameters"
+    __AttribFeatureRequirements = "FeatureRequirements"
+    __AttribDescription = "Description"
 
     def __init__(self, log: Log, xmlElement: ET.Element) -> None:
         super().__init__(log, xmlElement)
         self._CheckAttributes({self.__AttribName, self.__AttribExecutable, self.__AttribParameters, self.__AttribFeatureRequirements, self.__AttribDescription})
-        self.Name = self._ReadAttrib(xmlElement, self.__AttribName)  # type: str
-        self.Executable = self._ReadAttrib(xmlElement, self.__AttribExecutable)  # type: str
-        self.Parameters = self._ReadAttrib(xmlElement, self.__AttribParameters)  # type: str
-        self.FeatureRequirements = self._ReadAttrib(xmlElement, self.__AttribFeatureRequirements, '')  # type: str
-        self.DefaultExtensions = self.__LoadDefaultExtensions(log, xmlElement)  # type: List[XmlConfigContentBuilderAddExtension]
-        self.Description = self._ReadAttrib(xmlElement, self.__AttribDescription)  # type: str
+        self.Name: str = self._ReadAttrib(xmlElement, self.__AttribName)
+        self.Executable: str = self._ReadAttrib(xmlElement, self.__AttribExecutable)
+        self.Parameters: str = self._ReadAttrib(xmlElement, self.__AttribParameters)
+        self.FeatureRequirements: str = self._ReadAttrib(xmlElement, self.__AttribFeatureRequirements, "")
+        self.DefaultExtensions: list[XmlConfigContentBuilderAddExtension] = self.__LoadDefaultExtensions(log, xmlElement)
+        self.Description: str = self._ReadAttrib(xmlElement, self.__AttribDescription)
 
-
-    def __LoadDefaultExtensions(self, log: Log, xmlElement: ET.Element) -> List[XmlConfigContentBuilderAddExtension]:
+    def __LoadDefaultExtensions(self, log: Log, xmlElement: ET.Element) -> list[XmlConfigContentBuilderAddExtension]:
         res = []
         foundElements = xmlElement.findall("AddExtension")
         for foundElement in foundElements:
@@ -129,10 +125,9 @@ class XmlConfigContentBuilderConfiguration(XmlBase):
     def __init__(self, log: Log, xmlElement: ET.Element) -> None:
         super().__init__(log, xmlElement)
         self._CheckAttributes(set())
-        self.ContentBuilders = self.__LoadContentBuilders(log, xmlElement)  # type: List[XmlConfigContentBuilder]
+        self.ContentBuilders: list[XmlConfigContentBuilder] = self.__LoadContentBuilders(log, xmlElement)
 
-
-    def __LoadContentBuilders(self, log: Log, xmlElement: ET.Element) -> List[XmlConfigContentBuilder]:
+    def __LoadContentBuilders(self, log: Log, xmlElement: ET.Element) -> list[XmlConfigContentBuilder]:
         res = []
         foundElements = xmlElement.findall("ContentBuilder")
         for foundElement in foundElements:
@@ -147,7 +142,7 @@ class FakeXmlConfigContentBuilderConfiguration(XmlConfigContentBuilderConfigurat
 
 
 class XmlToolConfigFile(XmlBase):
-    __AttribVersion = 'Version'
+    __AttribVersion = "Version"
 
     def __init__(self, log: Log, filename: str, projectRootConfig: XmlProjectRootConfigFile) -> None:
         if projectRootConfig is None:
@@ -157,15 +152,15 @@ class XmlToolConfigFile(XmlBase):
 
         tree = ET.parse(filename)
         elem = tree.getroot()
-        if elem.tag != 'FslBuildGenConfig':
+        if elem.tag != "FslBuildGenConfig":
             raise XmlInvalidRootElement("The file did not contain the expected root tag 'FslBuildGenConfig'")
 
         super().__init__(log, elem)
-        #self._CheckAttributes({self.__AttribVersion})
-        currentVersion = '2'
+        # self._CheckAttributes({self.__AttribVersion})
+        currentVersion = "2"
         fileVersion = self._ReadAttrib(elem, self.__AttribVersion)
         if fileVersion != currentVersion:
-            raise XmlException("The file was not of the expected version {0}".format(currentVersion))
+            raise XmlException(f"The file was not of the expected version {currentVersion}")
 
         # In V2 we do not support local AddRootDirectory elements, we use the ones in ProjectRootConfig
         rootDirs = projectRootConfig.XmlRootDirectories
@@ -177,88 +172,86 @@ class XmlToolConfigFile(XmlBase):
         self.__CheckForLegacyElements(elem, filename)
 
         # In V2 we do not support local PackageConfiguration elements, we use the ones in ProjectRootConfig
-        xmlPackageConfigurations = projectRootConfig.XmlPackageConfiguration  # type: List[XmlConfigPackageConfiguration]
+        xmlPackageConfigurations: list[XmlConfigPackageConfiguration] = projectRootConfig.XmlPackageConfiguration
         if len(xmlPackageConfigurations) < 1:
             if projectRootConfig.SourceFileName is None:
-                raise XmlException("The file '{0}' did not contain at least one PackageConfiguration element".format(filename))
+                raise XmlException(f"The file '{filename}' did not contain at least one PackageConfiguration element")
             else:
-                raise XmlException("The file '{0}' and {1} did not contain at least one PackageConfiguration element".format(filename, projectRootConfig.SourceFileName))
+                raise XmlException(f"The file '{filename}' and {projectRootConfig.SourceFileName} did not contain at least one PackageConfiguration element")
 
         newProjectTemplatesRootDirectories = LoadUtil.LoadAddNewProjectTemplatesRootDirectory(log, elem, filename)
-        newProjectTemplatesRootDirectories = self.__MergeNewProjectTemplatesRootDirectories(newProjectTemplatesRootDirectories, projectRootConfig.XmlNewProjectTemplatesRootDirectories)
+        newProjectTemplatesRootDirectories = self.__MergeNewProjectTemplatesRootDirectories(
+            newProjectTemplatesRootDirectories, projectRootConfig.XmlNewProjectTemplatesRootDirectories
+        )
 
         xmlContentBuilderConfiguration = self.__LoadContentBuilderConfiguration(elem)
 
         xmlConfigFileTemplateFolder = self.__LoadTemplateFolder(elem)
 
-        self.Version = int(fileVersion)  # type: int
-        self.RootDirectories = rootDirs  # type: List[XmlConfigFileAddRootDirectory]
-        self.TemplateImportDirectories = templateImportDirectory  # type: List[XmlConfigFileAddTemplateImportDirectory]
-        self.PackageConfiguration = self.__ResolvePackageConfiguration(xmlPackageConfigurations)  # type: Dict[str, XmlConfigPackageConfiguration]
-        self.NewProjectTemplateRootDirectories = newProjectTemplatesRootDirectories  # type: List[XmlConfigFileAddNewProjectTemplatesRootDirectory]
-        self.TemplateFolder = xmlConfigFileTemplateFolder  # type: XmlConfigFileTemplateFolder
-        self.GenFileName = self.__LoadGenFileName(elem)  # type: XmlConfigFileGenFile
-        self.ContentBuilderConfiguration = xmlContentBuilderConfiguration  # type: XmlConfigContentBuilderConfiguration
-        self.BuildDocConfiguration = projectRootConfig.XmlBuildDocConfiguration # type: List[XmlBuildDocConfiguration]
-        self.ClangFormatConfiguration = projectRootConfig.XmlClangFormatConfiguration  # type: List[XmlClangFormatConfiguration]
-        self.DotnetFormatConfiguration = projectRootConfig.XmlDotnetFormatConfiguration  # type: List[XmlDotnetFormatConfiguration]
-        self.ClangTidyConfiguration = projectRootConfig.XmlClangTidyConfiguration  # type: List[XmlClangTidyConfiguration]
-        self.CMakeConfiguration = projectRootConfig.XmlCMakeConfiguration  # type: List[XmlCMakeConfiguration]
-        self.CompilerConfiguration = projectRootConfig.XmlCompilerConfiguration  # type: List[XmlConfigCompilerConfiguration]
-        self.Experimental = self.__ResolveExperimental(projectRootConfig.XmlExperimental)  # type: Optional[XmlExperimental]
+        self.Version: int = int(fileVersion)
+        self.RootDirectories: list[XmlConfigFileAddRootDirectory] = rootDirs
+        self.TemplateImportDirectories: list[XmlConfigFileAddTemplateImportDirectory] = templateImportDirectory
+        self.PackageConfiguration: dict[str, XmlConfigPackageConfiguration] = self.__ResolvePackageConfiguration(xmlPackageConfigurations)
+        self.NewProjectTemplateRootDirectories: list[XmlConfigFileAddNewProjectTemplatesRootDirectory] = newProjectTemplatesRootDirectories
+        self.TemplateFolder: XmlConfigFileTemplateFolder = xmlConfigFileTemplateFolder
+        self.GenFileName: XmlConfigFileGenFile = self.__LoadGenFileName(elem)
+        self.ContentBuilderConfiguration: XmlConfigContentBuilderConfiguration = xmlContentBuilderConfiguration
+        self.BuildDocConfiguration: list[XmlBuildDocConfiguration] = projectRootConfig.XmlBuildDocConfiguration
+        self.ClangFormatConfiguration: list[XmlClangFormatConfiguration] = projectRootConfig.XmlClangFormatConfiguration
+        self.DotnetFormatConfiguration: list[XmlDotnetFormatConfiguration] = projectRootConfig.XmlDotnetFormatConfiguration
+        self.ClangTidyConfiguration: list[XmlClangTidyConfiguration] = projectRootConfig.XmlClangTidyConfiguration
+        self.CMakeConfiguration: list[XmlCMakeConfiguration] = projectRootConfig.XmlCMakeConfiguration
+        self.CompilerConfiguration: list[XmlConfigCompilerConfiguration] = projectRootConfig.XmlCompilerConfiguration
+        self.Experimental: XmlExperimental | None = self.__ResolveExperimental(projectRootConfig.XmlExperimental)
 
-
-
-    def __MergeNewProjectTemplatesRootDirectories(self,
-                                                  newProjectTemplatesRootDirectories1: List[XmlConfigFileAddNewProjectTemplatesRootDirectory],
-                                                  newProjectTemplatesRootDirectories2: List[XmlConfigFileAddNewProjectTemplatesRootDirectory]) -> List[XmlConfigFileAddNewProjectTemplatesRootDirectory]:
-        uniqueDict = {} # type: Dict[str, XmlConfigFileAddNewProjectTemplatesRootDirectory]
-        result = []     # type: List[XmlConfigFileAddNewProjectTemplatesRootDirectory]
+    def __MergeNewProjectTemplatesRootDirectories(
+        self,
+        newProjectTemplatesRootDirectories1: list[XmlConfigFileAddNewProjectTemplatesRootDirectory],
+        newProjectTemplatesRootDirectories2: list[XmlConfigFileAddNewProjectTemplatesRootDirectory],
+    ) -> list[XmlConfigFileAddNewProjectTemplatesRootDirectory]:
+        uniqueDict: dict[str, XmlConfigFileAddNewProjectTemplatesRootDirectory] = {}
+        result: list[XmlConfigFileAddNewProjectTemplatesRootDirectory] = []
 
         self.__AddNewProjectTemplatesRootDirectories(result, uniqueDict, newProjectTemplatesRootDirectories1)
         self.__AddNewProjectTemplatesRootDirectories(result, uniqueDict, newProjectTemplatesRootDirectories2)
         return result
 
-
-    def __AddNewProjectTemplatesRootDirectories(self,
-                                                rDst: List[XmlConfigFileAddNewProjectTemplatesRootDirectory],
-                                                rDstUniqueDict: Dict[str, XmlConfigFileAddNewProjectTemplatesRootDirectory],
-                                                src: List[XmlConfigFileAddNewProjectTemplatesRootDirectory]) -> None:
+    def __AddNewProjectTemplatesRootDirectories(
+        self,
+        rDst: list[XmlConfigFileAddNewProjectTemplatesRootDirectory],
+        rDstUniqueDict: dict[str, XmlConfigFileAddNewProjectTemplatesRootDirectory],
+        src: list[XmlConfigFileAddNewProjectTemplatesRootDirectory],
+    ) -> None:
         for entry in src:
             if entry.Id in rDstUniqueDict:
-                raise Exception("Duplicated template root with the id {0} at {1} and {2}".format(entry.Id, rDstUniqueDict[entry.Id].SourceFileName, entry.SourceFileName))
+                raise Exception(f"Duplicated template root with the id {entry.Id} at {rDstUniqueDict[entry.Id].SourceFileName} and {entry.SourceFileName}")
             rDstUniqueDict[entry.Id] = entry
             rDst.append(entry)
-
 
     def __CheckForLegacyElements(self, xmlElement: ET.Element, filename: str) -> None:
         self.__CheckForLegacyElement(xmlElement, filename, "PackageConfiguration")
         self.__CheckForLegacyElement(xmlElement, filename, "AddRootDirectory")
 
-
     def __CheckForLegacyElement(self, xmlElement: ET.Element, filename: str, name: str) -> None:
         found = xmlElement.find(name)
         if found is not None:
-            raise XmlException("The file '{0}' contained a legacy {1} element which is not supported anymore. Use the 'Project.gen' file instead".format(filename, name))
+            raise XmlException(f"The file '{filename}' contained a legacy {name} element which is not supported anymore. Use the 'Project.gen' file instead")
 
-
-    def __ResolvePackageConfiguration(self, xmlPackageConfigurations: List[XmlConfigPackageConfiguration]) -> Dict[str, XmlConfigPackageConfiguration]:
+    def __ResolvePackageConfiguration(self, xmlPackageConfigurations: list[XmlConfigPackageConfiguration]) -> dict[str, XmlConfigPackageConfiguration]:
         # prepare the package configurations
-        packageConfigurationDict = {} # type: Dict[str, XmlConfigPackageConfiguration]
+        packageConfigurationDict: dict[str, XmlConfigPackageConfiguration] = {}
         for entry in xmlPackageConfigurations:
             if entry.Name in packageConfigurationDict:
                 firstEntry = packageConfigurationDict[entry.Name]
-                raise XmlException2("Duplicated package configuration name '{0}' found in '{1}' and '{2}'".format(entry.Name, entry.SourceFile, firstEntry.SourceFile))
+                raise XmlException2(f"Duplicated package configuration name '{entry.Name}' found in '{entry.SourceFile}' and '{firstEntry.SourceFile}'")
             packageConfigurationDict[entry.Name] = entry
 
-        if 'default' not in packageConfigurationDict:
+        if "default" not in packageConfigurationDict:
             raise XmlException("The file did not contain the 'default' PackageConfiguration element")
         return packageConfigurationDict
 
-
-    def __ResolveExperimental(self, xmlExperimental: Optional[XmlExperimental]) -> Optional[XmlExperimental]:
+    def __ResolveExperimental(self, xmlExperimental: XmlExperimental | None) -> XmlExperimental | None:
         return xmlExperimental
-
 
     def __LoadTemplateFolder(self, xmlElement: ET.Element) -> XmlConfigFileTemplateFolder:
         foundElement = xmlElement.find("TemplateFolder")
@@ -266,21 +259,18 @@ class XmlToolConfigFile(XmlBase):
             raise XmlException2("Could not locate the TemplateFolder element")
         return XmlConfigFileTemplateFolder(self.Log, foundElement)
 
-
     def __LoadGenFileName(self, xmlElement: ET.Element) -> XmlConfigFileGenFile:
         foundElement = xmlElement.find("GenFile")
         if foundElement is None:
             raise XmlException2("Could not locate the GenFile element")
         return XmlConfigFileGenFile(self.Log, foundElement)
 
-
-    def __LoadAddTemplateImportDirectory(self, xmlElement: ET.Element) -> List[XmlConfigFileAddTemplateImportDirectory]:
+    def __LoadAddTemplateImportDirectory(self, xmlElement: ET.Element) -> list[XmlConfigFileAddTemplateImportDirectory]:
         res = []
         foundElements = xmlElement.findall("AddTemplateImportDirectory")
         for foundElement in foundElements:
             res.append(XmlConfigFileAddTemplateImportDirectory(self.Log, foundElement))
         return res
-
 
     def __LoadContentBuilderConfiguration(self, xmlElement: ET.Element) -> XmlConfigContentBuilderConfiguration:
         foundElements = xmlElement.findall("ContentBuilderConfiguration")

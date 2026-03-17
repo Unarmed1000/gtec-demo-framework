@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright 2020 NXP
 # All rights reserved.
 #
@@ -29,13 +29,14 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-from typing import Optional
+
 from FslBuildGen.DataTypes import AccessType
 
-class UnresolvedPackageDefine(object):
-    def __init__(self, name: str, value: Optional[str], access: AccessType) -> None:
+
+class UnresolvedPackageDefine:
+    def __init__(self, name: str, value: str | None, access: AccessType) -> None:
         super().__init__()
         self.Name = name
         self.Value = value

@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright 2020 NXP
 # All rights reserved.
 #
@@ -29,34 +28,31 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-from typing import Optional
 import json
+
 from FslBuildGen import IOUtil
 from FslBuildGen.Log import Log
 from FslBuildGen.OpenProject.OpenProjectCMakeInfo import OpenProjectCMakeInfo
 
 # See https://vector-of-bool.github.io/docs/vscode-cmake-tools/settings.html
 
-class VSCodeSettingsJsonUtil(object):
 
+class VSCodeSettingsJsonUtil:
     @staticmethod
     def Patch(log: Log, jsonFilePath: str, cmakeInfo: OpenProjectCMakeInfo) -> None:
         strJson = IOUtil.TryReadFile(jsonFilePath)
-        if strJson is not None:
-            jsonDict = json.loads(strJson)
-        else:
-            jsonDict = {}
+        jsonDict = json.loads(strJson) if strJson is not None else {}
 
         if log.Verbosity >= 1:
-            log.LogPrint("- cmake.buildDirectory: '{0}' ".format(cmakeInfo.BuildDirectory))
-            log.LogPrint("- cmake.configureArgs: '{0}' ".format(cmakeInfo.ConfigureArgs))
-            log.LogPrint("- cmake.sourceDirectory: '{0}' ".format(cmakeInfo.SourceDirectory))
-            log.LogPrint("- cmake.generator: '{0}' ".format(cmakeInfo.Generator))
-            log.LogPrint("- cmake.installPrefix: '{0}' ".format(cmakeInfo.InstallPrefix))
+            log.LogPrint(f"- cmake.buildDirectory: '{cmakeInfo.BuildDirectory}' ")
+            log.LogPrint(f"- cmake.configureArgs: '{cmakeInfo.ConfigureArgs}' ")
+            log.LogPrint(f"- cmake.sourceDirectory: '{cmakeInfo.SourceDirectory}' ")
+            log.LogPrint(f"- cmake.generator: '{cmakeInfo.Generator}' ")
+            log.LogPrint(f"- cmake.installPrefix: '{cmakeInfo.InstallPrefix}' ")
             if cmakeInfo.BuildThreads is not None:
-                log.LogPrint("- cmake.parallelJobs: '{0}' ".format(cmakeInfo.BuildThreads))
+                log.LogPrint(f"- cmake.parallelJobs: '{cmakeInfo.BuildThreads}' ")
 
         # Running build config command
         # cmake
@@ -79,7 +75,7 @@ class VSCodeSettingsJsonUtil(object):
         if cmakeInfo.BuildThreads is not None:
             jsonDict["cmake.parallelJobs"] = cmakeInfo.BuildThreads
 
-        #If specified, sets a value for CMAKE_INSTALL_PREFIX when running CMake configure. If not, no value will be passed
+        # If specified, sets a value for CMAKE_INSTALL_PREFIX when running CMake configure. If not, no value will be passed
         if len(cmakeInfo.InstallPrefix) > 0:
             jsonDict["cmake.installPrefix"] = cmakeInfo.InstallPrefix
 

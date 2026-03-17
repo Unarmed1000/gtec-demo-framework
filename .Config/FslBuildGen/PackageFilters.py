@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright 2017 NXP
 # All rights reserved.
 #
@@ -29,27 +29,32 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-from typing import List
-from typing import Optional
+
 from FslBuildGen.DataTypes import FilterMethod
 from FslBuildGen.ExtensionListManager2 import ExtensionListManager2
 from FslBuildGen.RecipeFilterManager import RecipeFilterManager
 
-class PackageFilters(object):
-    def __init__(self, featureNameList: Optional[List[str]] = None,
-                 extensionNameList: Optional[ExtensionListManager2] = None,
-                 requiredFeatureNameList: Optional[List[str]] = None,
-                 recipeList: Optional[RecipeFilterManager] = None) -> None:
-        self.FeatureNameList = ['*'] if featureNameList is None else featureNameList                                                    # type: List[str]
-        self.ExtensionNameList = ExtensionListManager2(FilterMethod.AllowAll, []) if extensionNameList is None else extensionNameList   # type: ExtensionListManager2
-        self.RequiredFeatureNameList = ['*'] if requiredFeatureNameList is None else requiredFeatureNameList                            # type: List[str]
-        self.RecipeFilterManager = RecipeFilterManager(True, []) if recipeList is None else recipeList                                  # type: RecipeFilterManager
-        self.ExePackageNameFilter = None # type: Optional[str]
+
+class PackageFilters:
+    def __init__(
+        self,
+        featureNameList: list[str] | None = None,
+        extensionNameList: ExtensionListManager2 | None = None,
+        requiredFeatureNameList: list[str] | None = None,
+        recipeList: RecipeFilterManager | None = None,
+    ) -> None:
+        self.FeatureNameList: list[str] = ["*"] if featureNameList is None else featureNameList
+        self.ExtensionNameList: ExtensionListManager2 = ExtensionListManager2(FilterMethod.AllowAll, []) if extensionNameList is None else extensionNameList
+        self.RequiredFeatureNameList: list[str] = ["*"] if requiredFeatureNameList is None else requiredFeatureNameList
+        self.RecipeFilterManager: RecipeFilterManager = RecipeFilterManager(True, []) if recipeList is None else recipeList
+        self.ExePackageNameFilter: str | None = None
 
     def ContainsRequirementTypeFilters(self) -> bool:
-        return (not self.ExtensionNameList.FilterMethod == FilterMethod.AllowAll or
-                not '*' in self.FeatureNameList or
-                not '*' in self.RequiredFeatureNameList or
-                not self.RecipeFilterManager.AllRecipesEnabled)
+        return (
+            self.ExtensionNameList.FilterMethod != FilterMethod.AllowAll
+            or "*" not in self.FeatureNameList
+            or "*" not in self.RequiredFeatureNameList
+            or not self.RecipeFilterManager.AllRecipesEnabled
+        )

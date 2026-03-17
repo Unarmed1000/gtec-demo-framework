@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright 2017 NXP
 # All rights reserved.
 #
@@ -28,16 +28,16 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-from typing import List
 import xml.etree.ElementTree as ET
+
 from FslBuildGen.Log import Log
 from FslBuildGen.Xml.ToolConfig.XmlConfigFileAddNewProjectTemplatesRootDirectory import XmlConfigFileAddNewProjectTemplatesRootDirectory
 from FslBuildGen.Xml.ToolConfig.XmlConfigPackageConfiguration import XmlConfigPackageConfiguration
 
 
-def LoadAddNewProjectTemplatesRootDirectory(log: Log, xmlElement: ET.Element, filename: str) -> List[XmlConfigFileAddNewProjectTemplatesRootDirectory]:
+def LoadAddNewProjectTemplatesRootDirectory(log: Log, xmlElement: ET.Element, filename: str) -> list[XmlConfigFileAddNewProjectTemplatesRootDirectory]:
     res = []
     foundElements = xmlElement.findall("AddNewProjectTemplatesRootDirectory")
     for foundElement in foundElements:
@@ -45,8 +45,7 @@ def LoadAddNewProjectTemplatesRootDirectory(log: Log, xmlElement: ET.Element, fi
     return res
 
 
-
-def XMLLoadPackageConfiguration(log: Log, xmlElement: ET.Element, sourceFile: str) -> List[XmlConfigPackageConfiguration]:
+def XMLLoadPackageConfiguration(log: Log, xmlElement: ET.Element, sourceFile: str) -> list[XmlConfigPackageConfiguration]:
     res = []
     foundElements = xmlElement.findall("PackageConfiguration")
     for foundElement in foundElements:

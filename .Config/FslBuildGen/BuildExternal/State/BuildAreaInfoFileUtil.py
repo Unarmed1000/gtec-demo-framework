@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright 2018 NXP
 # All rights reserved.
 #
@@ -29,16 +28,17 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
 import json
+
 from FslBuildGen import IOUtil
 from FslBuildGen.BuildExternal.State.BuildAreaInfoFile import BuildAreaInfoFile
 from FslBuildGen.BuildExternal.State.JsonDictType import JsonDictType
 from FslBuildGen.Log import Log
 
 
-class BuildAreaInfoFileUtil(object):
+class BuildAreaInfoFileUtil:
     @staticmethod
     def SaveInstallAreaInfo(dstFilePath: str, sdkPath: str) -> JsonDictType:
         jsonRootDict = BuildAreaInfoFile.CreateDict(sdkPath)
@@ -47,31 +47,25 @@ class BuildAreaInfoFileUtil(object):
         return jsonRootDict
 
     @staticmethod
-    def ClaimInstallDirNow(log: Log,
-                           targetPath: str,
-                           dstFilePath: str,
-                           sdkPath: str,
-                           forceClaimInstallArea: bool,
-                           logWarning: bool = True) -> JsonDictType:
+    def ClaimInstallDirNow(log: Log, targetPath: str, dstFilePath: str, sdkPath: str, forceClaimInstallArea: bool, logWarning: bool = True) -> JsonDictType:
         # Since we are claiming the install area, we check to see if its empty as expected
         files = IOUtil.GetFilePaths(targetPath, None)
         # Then give the user error about the files at the install area can be lost unless it is changed
         if len(files) > 0:
             if not forceClaimInstallArea:
-                raise Exception("The install area at '{0}' was unclaimed, but it was not empty. To allow the tool to use the directory and do with its content as it see fit.\nYou need to rerun the command with the --ForceClaimInstallArea parameter to allow it, but BEWARE that doing so means the content of '{0}' can be lost".format(targetPath))
+                raise Exception(
+                    f"The install area at '{targetPath}' was unclaimed, but it was not empty. To allow the tool to use the directory and do with its content as it see fit.\nYou need to rerun the command with the --ForceClaimInstallArea parameter to allow it, but BEWARE that doing so means the content of '{targetPath}' can be lost"
+                )
             if logWarning:
-                log.DoPrintWarning("The install area was not empty but the user enabled --ForceClaimInstallArea and allowed the tool to use it, the files there could be lost because of it.")
+                log.DoPrintWarning(
+                    "The install area was not empty but the user enabled --ForceClaimInstallArea and allowed the tool to use it, the files there could be lost because of it."
+                )
 
         # then save the claim file
         return BuildAreaInfoFileUtil.SaveInstallAreaInfo(dstFilePath, sdkPath)
 
-
     @staticmethod
-    def ProcessInstallDirClaim(log: Log,
-                               targetPath: str,
-                               sdkPath: str,
-                               forceClaimInstallArea: bool, 
-                               installAreaInfoPath: str) -> None:
+    def ProcessInstallDirClaim(log: Log, targetPath: str, sdkPath: str, forceClaimInstallArea: bool, installAreaInfoPath: str) -> None:
         filePath = IOUtil.Join(targetPath, installAreaInfoPath)
 
         # Beware that this method to claim a area is in no way secure
@@ -80,22 +74,30 @@ class BuildAreaInfoFileUtil(object):
         # will catch that multiple repos are trying to reuse the same install area
         fileContent = IOUtil.TryReadFile(filePath)
         if fileContent is None:
-            log.LogPrint("Install area '{0}' is unclaimed, claiming it".format(targetPath))
+            log.LogPrint(f"Install area '{targetPath}' is unclaimed, claiming it")
             BuildAreaInfoFileUtil.ClaimInstallDirNow(log, targetPath, filePath, sdkPath, forceClaimInstallArea)
             return
 
         jsonBuildInfoDict = json.loads(fileContent)
         if not BuildAreaInfoFile.IsDictValid(jsonBuildInfoDict):
             if not forceClaimInstallArea:
-                raise Exception("Install area '{0}' contained an invalid file '{1}', did you try to run concurrent builds using the same install directory or did it get corrupted? Delete the file to allow the build to continue or use --ForceClaimInstallArea to do so automatically. You could also set up a readonly cache area to reuse between repos see the documentation for more info.".format(targetPath, filePath))
-            log.DoPrintWarning("Install area '{0}' contained an invalid file '{1}', as --ForceClaimInstallArea was specified it was overwritten and '{2}' now controls it".format(targetPath, filePath, sdkPath))
+                raise Exception(
+                    f"Install area '{targetPath}' contained an invalid file '{filePath}', did you try to run concurrent builds using the same install directory or did it get corrupted? Delete the file to allow the build to continue or use --ForceClaimInstallArea to do so automatically. You could also set up a readonly cache area to reuse between repos see the documentation for more info."
+                )
+            log.DoPrintWarning(
+                f"Install area '{targetPath}' contained an invalid file '{filePath}', as --ForceClaimInstallArea was specified it was overwritten and '{sdkPath}' now controls it"
+            )
             jsonBuildInfoDict = BuildAreaInfoFileUtil.ClaimInstallDirNow(log, targetPath, filePath, sdkPath, forceClaimInstallArea, logWarning=False)
 
         buildAreaInfoFile = BuildAreaInfoFile(jsonBuildInfoDict)
         if buildAreaInfoFile.SDKPath != sdkPath:
             if not forceClaimInstallArea:
-                raise Exception("The Install area at '{0}' is already claimed by the sdk at '{1}' so the sdk at '{2}' can not reuse it as it could give concurrency issues if multiple builds execute at the same time. If you are sure that you are not doing concurrent builds and you just want to use the area for a new SDK you can force claim it with --ForceClaimInstallArea. You could also set up a readonly cache area to reuse between repos see the documentation for more info.".format(targetPath, buildAreaInfoFile.SDKPath, sdkPath))
-            log.DoPrintWarning("The Install area at '{0}' was already claimed by the sdk at '{1}' but '{2}' took control of it as --ForceClaimInstallArea was specified.".format(targetPath, buildAreaInfoFile.SDKPath, sdkPath))
+                raise Exception(
+                    f"The Install area at '{targetPath}' is already claimed by the sdk at '{buildAreaInfoFile.SDKPath}' so the sdk at '{sdkPath}' can not reuse it as it could give concurrency issues if multiple builds execute at the same time. If you are sure that you are not doing concurrent builds and you just want to use the area for a new SDK you can force claim it with --ForceClaimInstallArea. You could also set up a readonly cache area to reuse between repos see the documentation for more info."
+                )
+            log.DoPrintWarning(
+                f"The Install area at '{targetPath}' was already claimed by the sdk at '{buildAreaInfoFile.SDKPath}' but '{sdkPath}' took control of it as --ForceClaimInstallArea was specified."
+            )
             jsonBuildInfoDict = BuildAreaInfoFileUtil.ClaimInstallDirNow(log, targetPath, filePath, sdkPath, forceClaimInstallArea, logWarning=False)
-            #jsonBuildInfoDict = BuildAreaInfoFileUtil.ClaimInstallDirNow(log, targetPath, filePath, sdkPath, forceClaimInstallArea, logWarning=False)
-            #buildAreaInfoFile = BuildAreaInfoFile(jsonBuildInfoDict)
+            # jsonBuildInfoDict = BuildAreaInfoFileUtil.ClaimInstallDirNow(log, targetPath, filePath, sdkPath, forceClaimInstallArea, logWarning=False)
+            # buildAreaInfoFile = BuildAreaInfoFile(jsonBuildInfoDict)

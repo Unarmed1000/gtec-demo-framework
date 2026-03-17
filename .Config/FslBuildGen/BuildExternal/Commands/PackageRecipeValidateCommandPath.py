@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright 2021 NXP
 # All rights reserved.
 #
@@ -29,22 +28,24 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-from typing import Optional
+
 from FslBuildGen import IOUtil
 from FslBuildGen.BuildExternal.Commands.PackageRecipeValidateCommand import PackageRecipeValidateCommand
 from FslBuildGen.DataTypes import BuildRecipeValidateCommand
-#from FslBuildGen.DataTypes import BuildRecipeValidateMethod
+
+# from FslBuildGen.DataTypes import BuildRecipeValidateMethod
 # method: BuildRecipeValidateMethod
 
+
 class PackageRecipeValidateCommandPath(PackageRecipeValidateCommand):
-    def __init__(self, name: str, method: int, help: Optional[str]) -> None:
+    def __init__(self, name: str, method: int, help: str | None) -> None:
         super().__init__("Path", BuildRecipeValidateCommand.Path, help)
-        if '\\' in name:
-            raise Exception("A path can not contain backslash '\\': '{0}'".format(name))
-        if name.endswith('/'):
-            raise Exception("A path can not end with a slash '/': '{0}'".format(name))
+        if "\\" in name:
+            raise Exception(f"A path can not contain backslash '\\': '{name}'")
+        if name.endswith("/"):
+            raise Exception(f"A path can not end with a slash '/': '{name}'")
 
         self.Name = IOUtil.NormalizePath(name)
         self.Method = method

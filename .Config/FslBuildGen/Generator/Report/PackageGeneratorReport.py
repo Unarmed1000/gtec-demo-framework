@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright 2017 NXP
 # All rights reserved.
 #
@@ -29,24 +29,28 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-#from typing import Dict
-#from typing import List
-from typing import Optional
+# from typing import Dict
+# from typing import List
+
+
 from FslBuildGen.Generator.Report.GeneratorBuildReport import GeneratorBuildReport
 from FslBuildGen.Generator.Report.GeneratorExecutableReport import GeneratorExecutableReport
-from FslBuildGen.Generator.Report.GeneratorVariableReport import GeneratorVariableReport
 from FslBuildGen.Generator.Report.GeneratorOpenProjectReport import GeneratorOpenProjectReport
+from FslBuildGen.Generator.Report.GeneratorVariableReport import GeneratorVariableReport
 
 
-class PackageGeneratorReport(object):
-    def __init__(self, buildReport: Optional[GeneratorBuildReport],
-                 executableReport: Optional[GeneratorExecutableReport],
-                 variableReport: GeneratorVariableReport,
-                 openProjectReport: Optional[GeneratorOpenProjectReport]) -> None:
+class PackageGeneratorReport:
+    def __init__(
+        self,
+        buildReport: GeneratorBuildReport | None,
+        executableReport: GeneratorExecutableReport | None,
+        variableReport: GeneratorVariableReport,
+        openProjectReport: GeneratorOpenProjectReport | None,
+    ) -> None:
         super().__init__()
-        self.BuildReport = buildReport                  # type: Optional[GeneratorBuildReport]
-        self.ExecutableReport = executableReport        # type: Optional[GeneratorExecutableReport]
-        self.VariableReport = variableReport            # type: GeneratorVariableReport
-        self.OpenProjectReport = openProjectReport      # type: Optional[GeneratorOpenProjectReport]
+        self.BuildReport: GeneratorBuildReport | None = buildReport
+        self.ExecutableReport: GeneratorExecutableReport | None = executableReport
+        self.VariableReport: GeneratorVariableReport = variableReport
+        self.OpenProjectReport: GeneratorOpenProjectReport | None = openProjectReport

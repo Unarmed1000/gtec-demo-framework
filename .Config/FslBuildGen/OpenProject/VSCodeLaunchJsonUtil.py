@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright 2020 NXP
 # All rights reserved.
 #
@@ -29,15 +28,15 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-from typing import Dict
 import json
+
 from FslBuildGen import IOUtil
 from FslBuildGen.DataTypes import BuildPlatformType
 
 
-class LocalStrings(object):
+class LocalStrings:
     Version = "version"
     VersionStr = "0.2.0"
     Configurations = "configurations"
@@ -48,13 +47,12 @@ class LocalStrings(object):
     ConfigVisualizerFile = "visualizerFile"
     ConfigShowDisplayString = "showDisplayString"
 
-
     UbuntuLaunchName = "(FslBuild-Ubuntu) Launch"
     WindowsLaunchName = "(FslBuild-Windows) Launch"
 
-# https://github.com/microsoft/vscode-cmake-tools/blob/master/docs/debug-launch.md#debug-using-a-launchjson-file
-class VSCodeLaunchJsonUtil(object):
 
+# https://github.com/microsoft/vscode-cmake-tools/blob/master/docs/debug-launch.md#debug-using-a-launchjson-file
+class VSCodeLaunchJsonUtil:
     @staticmethod
     def TryPatch(jsonFilePath: str, buildPlatformType: BuildPlatformType, executable: str, currentWorkingDirectory: str, combinedNatvisFile: str) -> bool:
         strJson = IOUtil.TryReadFile(jsonFilePath)
@@ -68,11 +66,11 @@ class VSCodeLaunchJsonUtil(object):
         if LocalStrings.Version not in jsonDict or jsonDict[LocalStrings.Version] != LocalStrings.VersionStr:
             return False
 
-        configurationDictList = jsonDict[LocalStrings.Configurations] if LocalStrings.Configurations in jsonDict else []
+        configurationDictList = jsonDict.get(LocalStrings.Configurations, [])
 
         # Patch/Create windows configuration
         launchWindowsFound = buildPlatformType != BuildPlatformType.Windows  # this basically ensures we only generate the windows launch on windows
-        launchUbuntuFound = buildPlatformType == BuildPlatformType.Windows   # this basically ensures we only generate the ubuntu launch on non windows platforms
+        launchUbuntuFound = buildPlatformType == BuildPlatformType.Windows  # this basically ensures we only generate the ubuntu launch on non windows platforms
         for configDict in configurationDictList:
             if configDict[LocalStrings.ConfigKeyName] == LocalStrings.WindowsLaunchName:
                 VSCodeLaunchJsonUtil.__PacthConfigurationDict(configDict, executable, currentWorkingDirectory, combinedNatvisFile, False)
@@ -89,17 +87,15 @@ class VSCodeLaunchJsonUtil(object):
             VSCodeLaunchJsonUtil.__PacthConfigurationDict(configDict, executable, currentWorkingDirectory, combinedNatvisFile, True)
             configurationDictList.append(configDict)
 
-
         jsonDict[LocalStrings.Configurations] = configurationDictList
 
         jsonText = json.dumps(jsonDict, ensure_ascii=False, sort_keys=True, indent=4)
         IOUtil.WriteFileIfChanged(jsonFilePath, jsonText)
         return True
 
-
     @staticmethod
-    def __PacthConfigurationDict(configDict: Dict[str, object], executable: str, currentWorkingDirectory: str, combinedNatvisFile: str, isUnix: bool) -> None:
-        #configDict[LocalStrings.ConfigKeyProgram] = executable
+    def __PacthConfigurationDict(configDict: dict[str, object], executable: str, currentWorkingDirectory: str, combinedNatvisFile: str, isUnix: bool) -> None:
+        # configDict[LocalStrings.ConfigKeyProgram] = executable
         configDict[LocalStrings.ConfigKeyProgram] = "${command:cmake.launchTargetPath}"
         configDict[LocalStrings.ConfigKeyCwd] = currentWorkingDirectory
         configDict[LocalStrings.ConfigVisualizerFile] = combinedNatvisFile
@@ -107,9 +103,9 @@ class VSCodeLaunchJsonUtil(object):
         if isUnix:
             configDict[LocalStrings.ConfigShowDisplayString] = True
             configDict["MIMode"] = "gdb"
-            setupCommandsDict = {}   # type: Dict[str, object]
+            setupCommandsDict: dict[str, object] = {}
             setupCommandsDict["description"] = "Enable pretty-printing for gdb"
-            setupCommandsDict["text"] =  "-enable-pretty-printing"
+            setupCommandsDict["text"] = "-enable-pretty-printing"
             setupCommandsDict["ignoreFailures"] = True
             configDict[LocalStrings.ConfigKeySetupCommands] = [setupCommandsDict]
 
@@ -124,8 +120,8 @@ class VSCodeLaunchJsonUtil(object):
         return "\n".join(finalLines)
 
     @staticmethod
-    def __CreateWindowsLaunchConfigurationDict() -> Dict[str, object]:
-        launchDict = {} # type: Dict[str, object]
+    def __CreateWindowsLaunchConfigurationDict() -> dict[str, object]:
+        launchDict: dict[str, object] = {}
         launchDict[LocalStrings.ConfigKeyName] = LocalStrings.WindowsLaunchName
         launchDict["type"] = "cppvsdbg"
         launchDict["request"] = "launch"
@@ -136,8 +132,8 @@ class VSCodeLaunchJsonUtil(object):
         return launchDict
 
     @staticmethod
-    def __CreateUbuntuLaunchConfigurationDict() -> Dict[str, object]:
-        launchDict = {} # type: Dict[str, object]
+    def __CreateUbuntuLaunchConfigurationDict() -> dict[str, object]:
+        launchDict: dict[str, object] = {}
         launchDict[LocalStrings.ConfigKeyName] = LocalStrings.UbuntuLaunchName
         launchDict["type"] = "cppdbg"
         launchDict["request"] = "launch"

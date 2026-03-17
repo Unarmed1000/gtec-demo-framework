@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright 2018 NXP
 # All rights reserved.
 #
@@ -29,21 +28,28 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-from typing import Optional
-#from FslBuildGen.BasicConfig import BasicConfig
+
+# from FslBuildGen.BasicConfig import BasicConfig
 from FslBuildGen.BuildExternal.PipelineTasks import PipelineTasks
 from FslBuildGen.BuildExternal.RecipePathBuilder import RecipePathBuilder
 from FslBuildGen.Packages.Package import Package
 
 
-class PipelineInfo(object):
-    def __init__(self, tasks: PipelineTasks, sourcePackage: Package,
-                 pathBuilder: RecipePathBuilder,
-                 srcRootPath: str, srcRootPathReadOnly: bool, dstRootPath: str, dstRootPathReadOnly: bool,
-                 allowDownloads: bool = True,
-                 combinedDstRootPath: Optional[str] = None) -> None:
+class PipelineInfo:
+    def __init__(
+        self,
+        tasks: PipelineTasks,
+        sourcePackage: Package,
+        pathBuilder: RecipePathBuilder,
+        srcRootPath: str,
+        srcRootPathReadOnly: bool,
+        dstRootPath: str,
+        dstRootPathReadOnly: bool,
+        allowDownloads: bool = True,
+        combinedDstRootPath: str | None = None,
+    ) -> None:
         super().__init__()
         if sourcePackage.ResolvedDirectExperimentalRecipe is None:
             raise Exception("Invalid recipe")

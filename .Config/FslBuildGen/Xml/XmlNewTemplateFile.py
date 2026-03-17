@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright (c) 2016 Freescale Semiconductor, Inc.
 # All rights reserved.
 #
@@ -29,39 +29,39 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-from typing import List
 import os
 import os.path
 import xml.etree.ElementTree as ET
+
 from FslBuildGen import IOUtil
-from FslBuildGen.Log import Log
 from FslBuildGen.Exceptions import FileNotFoundException
-from FslBuildGen.Xml.Exceptions import XmlException
-from FslBuildGen.Xml.Exceptions import XmlInvalidRootElement
+from FslBuildGen.Log import Log
+from FslBuildGen.Xml.Exceptions import XmlException, XmlInvalidRootElement
 from FslBuildGen.Xml.XmlBase import XmlBase
-#from FslBuildGen.DataTypes import *
-#from FslBuildGen.Exceptions import *
-#from FslBuildGen.Xml.XmlStuff import *
-#from FslBuildGen import IOUtil, Util, PackageConfig
+
+# from FslBuildGen.DataTypes import *
+# from FslBuildGen.Exceptions import *
+# from FslBuildGen.Xml.XmlStuff import *
+# from FslBuildGen import IOUtil, Util, PackageConfig
 
 
 class XmlNewTemplate(XmlBase):
-    __AttribNoInclude = 'NoInclude'
-    __AttribForce = 'Force'
-    __AttribWarning = 'Warning'
+    __AttribNoInclude = "NoInclude"
+    __AttribForce = "Force"
+    __AttribWarning = "Warning"
 
     def __init__(self, log: Log, xmlElement: ET.Element) -> None:
         super().__init__(log, xmlElement)
         self._CheckAttributes({self.__AttribNoInclude, self.__AttribForce, self.__AttribWarning})
         self.NoInclude = self._ReadBoolAttrib(xmlElement, self.__AttribNoInclude, False)
         self.Force = self._ReadBoolAttrib(xmlElement, self.__AttribForce, False)
-        self.Warning = self._ReadAttrib(xmlElement, self.__AttribWarning, '')
+        self.Warning = self._ReadAttrib(xmlElement, self.__AttribWarning, "")
 
 
 class XmlNewTemplateFile(XmlBase):
-    __AttribVersion = 'Version'
+    __AttribVersion = "Version"
 
     def __init__(self, log: Log, filename: str) -> None:
         if not os.path.isfile(filename):
@@ -69,13 +69,13 @@ class XmlNewTemplateFile(XmlBase):
 
         tree = ET.parse(filename)
         elem = tree.getroot()
-        if elem.tag != 'FslBuildNewTemplate':
+        if elem.tag != "FslBuildNewTemplate":
             raise XmlInvalidRootElement("The file did not contain the expected root tag 'FslBuildGenConfig'")
 
         super().__init__(log, elem)
-        #self._CheckAttributes({self.__AttribVersion})
+        # self._CheckAttributes({self.__AttribVersion})
         fileVersion = self._ReadAttrib(elem, self.__AttribVersion)
-        if fileVersion != '1':
+        if fileVersion != "1":
             raise Exception("The template file version was not correct")
 
         xmlTemplate = self.__LoadTemplateConfiguration(log, elem)
@@ -84,13 +84,12 @@ class XmlNewTemplateFile(XmlBase):
 
         self.Name = IOUtil.GetFileName(IOUtil.GetDirectoryName(filename))
         self.Id = self.Name.lower()
-        self.Version = int(fileVersion)  # type: int
+        self.Version: int = int(fileVersion)
         self.Template = xmlTemplate[0]
         self.Path = IOUtil.GetDirectoryName(filename)
-        self.Prefix = ("%s_" % (self.Name)).upper()
+        self.Prefix = (f"{self.Name}_").upper()
 
-
-    def __LoadTemplateConfiguration(self, log: Log, element: ET.Element) -> List[XmlNewTemplate]:
+    def __LoadTemplateConfiguration(self, log: Log, element: ET.Element) -> list[XmlNewTemplate]:
         res = []
         foundElements = element.findall("Template")
         for foundElement in foundElements:

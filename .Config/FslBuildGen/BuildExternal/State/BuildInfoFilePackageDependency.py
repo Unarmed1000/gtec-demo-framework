@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright 2018 NXP
 # All rights reserved.
 #
@@ -29,11 +28,10 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-from typing import List
 
-class BuildInfoFilePackageDependency(object):
+class BuildInfoFilePackageDependency:
     def __init__(self, jsonStr: str) -> None:
         super().__init__()
         decoded = BuildInfoFilePackageDependency.DecodeDependency(jsonStr)
@@ -42,11 +40,11 @@ class BuildInfoFilePackageDependency(object):
 
     @staticmethod
     def EncodeDependency(name: str, revision: str) -> str:
-        return "{0}|{1}".format(name, revision)
+        return f"{name}|{revision}"
 
     @staticmethod
-    def DecodeDependency(encodedValue: str) -> List[str]:
-        result = encodedValue.split('|')
+    def DecodeDependency(encodedValue: str) -> list[str]:
+        result = encodedValue.split("|")
         if len(result) != 2:
-            raise Exception("The dependency '{0}' is invalid".format(encodedValue))
+            raise Exception(f"The dependency '{encodedValue}' is invalid")
         return result

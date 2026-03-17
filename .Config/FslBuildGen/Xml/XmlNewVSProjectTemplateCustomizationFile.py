@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright 2018 NXP
 # All rights reserved.
 #
@@ -29,34 +29,35 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-from typing import List
 import os
 import os.path
 import xml.etree.ElementTree as ET
+
 from FslBuildGen import IOUtil
-from FslBuildGen.Log import Log
-#from FslBuildGen.DataTypes import PackageLanguage
+
+# from FslBuildGen.DataTypes import PackageLanguage
 from FslBuildGen.Exceptions import FileNotFoundException
-from FslBuildGen.Xml.Exceptions import XmlException
-from FslBuildGen.Xml.Exceptions import XmlInvalidRootElement
+from FslBuildGen.Log import Log
+from FslBuildGen.Xml.Exceptions import XmlException, XmlInvalidRootElement
 from FslBuildGen.Xml.XmlBase import XmlBase
 
 
 class XmlNewVSProjectTemplateCustomizationBuildOutput(XmlBase):
-    __AttribLocation = 'Location'
+    __AttribLocation = "Location"
 
     def __init__(self, log: Log, xmlElement: ET.Element) -> None:
         super().__init__(log, xmlElement)
         self._CheckAttributes({self.__AttribLocation})
         location = self._ReadAttrib(xmlElement, self.__AttribLocation)
-        if '\\' in location:
-            raise Exception("'\\' is now allowed in location use '/' instead ('{0}')".format(location))
+        if "\\" in location:
+            raise Exception(f"'\\' is now allowed in location use '/' instead ('{location}')")
         self.Location = location
 
+
 class XmlNewVSProjectTemplateCustomizationFile(XmlBase):
-    __AttribVersion = 'Version'
+    __AttribVersion = "Version"
 
     def __init__(self, log: Log, filename: str) -> None:
         if not os.path.isfile(filename):
@@ -64,11 +65,11 @@ class XmlNewVSProjectTemplateCustomizationFile(XmlBase):
 
         tree = ET.parse(filename)
         elem = tree.getroot()
-        if elem.tag != 'FslBuildGeneratorVSProjectTemplateCustomization':
+        if elem.tag != "FslBuildGeneratorVSProjectTemplateCustomization":
             raise XmlInvalidRootElement("The file did not contain the expected root tag 'FslBuildGeneratorVSProjectTemplateCustomization'")
 
         super().__init__(log, elem)
-        #self._CheckAttributes({self.__AttribVersion})
+        # self._CheckAttributes({self.__AttribVersion})
         strVersion = self._ReadAttrib(elem, self.__AttribVersion)
         if strVersion != "1":
             raise Exception("Unsupported version")
@@ -81,7 +82,7 @@ class XmlNewVSProjectTemplateCustomizationFile(XmlBase):
         self.BuildOutput = xmlConfiguration[0]
         self.Path = IOUtil.GetDirectoryName(filename)
 
-    def __LoadTemplateConfiguration(self, log: Log, element: ET.Element) -> List[XmlNewVSProjectTemplateCustomizationBuildOutput]:
+    def __LoadTemplateConfiguration(self, log: Log, element: ET.Element) -> list[XmlNewVSProjectTemplateCustomizationBuildOutput]:
         res = []
         foundElements = element.findall("BuildOutput")
         for foundElement in foundElements:

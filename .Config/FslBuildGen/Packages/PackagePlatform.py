@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright (c) 2014 Freescale Semiconductor, Inc.
 # All rights reserved.
 #
@@ -29,10 +29,9 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-from typing import List
-from typing import Optional
+
 from FslBuildGen.DataTypes import PackageRequirementTypeString
 from FslBuildGen.Engine.Unresolved.UnresolvedPackageDependency import UnresolvedPackageDependency
 from FslBuildGen.Engine.Unresolved.UnresolvedPackageFlavor import UnresolvedPackageFlavor
@@ -43,20 +42,32 @@ from FslBuildGen.Packages.Unresolved.UnresolvedPackageRequirement import Unresol
 from FslBuildGen.Packages.Unresolved.UnresolvedPackageVariant import UnresolvedPackageVariant
 from FslBuildGen.Xml.XmlExperimentalRecipe import XmlExperimentalRecipe
 
-class PackagePlatform(object):
-    def __init__(self, name: str, directRequirements: List[UnresolvedPackageRequirement], directDependencies: List[UnresolvedPackageDependency],
-                 variants: List[UnresolvedPackageVariant], supported: bool, externalDependencies: List[UnresolvedExternalDependency],
-                 directDefines: List[UnresolvedPackageDefine], directExperimentalRecipe: Optional[XmlExperimentalRecipe],
-                 flavors: List[UnresolvedPackageFlavor], flavorExtensions: List[UnresolvedPackageFlavorExtension]) -> None:
+
+class PackagePlatform:
+    def __init__(
+        self,
+        name: str,
+        directRequirements: list[UnresolvedPackageRequirement],
+        directDependencies: list[UnresolvedPackageDependency],
+        variants: list[UnresolvedPackageVariant],
+        supported: bool,
+        externalDependencies: list[UnresolvedExternalDependency],
+        directDefines: list[UnresolvedPackageDefine],
+        directExperimentalRecipe: XmlExperimentalRecipe | None,
+        flavors: list[UnresolvedPackageFlavor],
+        flavorExtensions: list[UnresolvedPackageFlavorExtension],
+    ) -> None:
         super().__init__()
         self.Name = name
-        self.DirectUsedFeatures = [requirement for requirement in directRequirements if requirement.Type == PackageRequirementTypeString.Feature]  # type: List[UnresolvedPackageRequirement]
+        self.DirectUsedFeatures: list[UnresolvedPackageRequirement] = [
+            requirement for requirement in directRequirements if requirement.Type == PackageRequirementTypeString.Feature
+        ]
         self.DirectRequirements = directRequirements
         self.DirectDependencies = directDependencies
         self.Variants = variants
         self.Supported = supported
         self.ExternalDependencies = externalDependencies
-        self.DirectDefines = directDefines  # type: List[UnresolvedPackageDefine]
+        self.DirectDefines: list[UnresolvedPackageDefine] = directDefines
         self.DirectExperimentalRecipe = directExperimentalRecipe
         self.Flavors = flavors
         self.FlavorExtensions = flavorExtensions

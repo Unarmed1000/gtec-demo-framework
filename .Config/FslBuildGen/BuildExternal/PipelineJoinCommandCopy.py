@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright 2018 NXP
 # All rights reserved.
 #
@@ -29,9 +28,10 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
 import shutil
+
 from FslBuildGen import IOUtil
 from FslBuildGen.BuildExternal.PipelineInfo import PipelineInfo
 from FslBuildGen.BuildExternal.PipelineJoinCommand import PipelineJoinCommand
@@ -40,16 +40,13 @@ from FslBuildGen.Xml.XmlExperimentalRecipe import XmlRecipePipelineJoinCommandCo
 
 
 class PipelineJoinCommandCopy(PipelineJoinCommand):
-    def __init__(self, log: Log,
-                 sourceCommand: XmlRecipePipelineJoinCommandCopy,
-                 pipelineInfo: PipelineInfo, finalDstPath: str) -> None:
+    def __init__(self, log: Log, sourceCommand: XmlRecipePipelineJoinCommandCopy, pipelineInfo: PipelineInfo, finalDstPath: str) -> None:
         super().__init__(log, sourceCommand, pipelineInfo, finalDstPath)
         self.__Overwrite = sourceCommand.Overwrite
         self.__SourceCommand = sourceCommand
 
-
     def DoExecute(self) -> None:
-        """ Copy a file or directory to the destination """
+        """Copy a file or directory to the destination"""
         # Try to do a lookup
         srcPath = self.TryResolveSrcPathString(self.__SourceCommand.From)
         if srcPath is None:
@@ -62,9 +59,9 @@ class PipelineJoinCommandCopy(PipelineJoinCommand):
         fileExist = IOUtil.Exists(dstPath)
         if not IOUtil.Exists(dstPath) or self.__Overwrite:
             if fileExist:
-                self.LogPrint("Copying from '{0}' to '{1}' overwriting the existing file".format(srcPath, dstPath))
+                self.LogPrint(f"Copying from '{srcPath}' to '{dstPath}' overwriting the existing file")
             else:
-                self.LogPrint("Copying from '{0}' to '{1}'".format(srcPath, dstPath))
+                self.LogPrint(f"Copying from '{srcPath}' to '{dstPath}'")
             if IOUtil.IsFile(srcPath):
                 self._CreateDirectory(IOUtil.GetDirectoryName(dstPath))
                 shutil.copy2(srcPath, dstPath)
@@ -72,6 +69,6 @@ class PipelineJoinCommandCopy(PipelineJoinCommand):
                 self._CreateDirectory(IOUtil.GetDirectoryName(dstPath))
                 shutil.copytree(srcPath, dstPath)
             else:
-                raise Exception("Copy source '{0}' not found".format(srcPath))
+                raise Exception(f"Copy source '{srcPath}' not found")
         else:
-            self.LogPrint("Copying from '{0}' to '{1}' skipped as target exist".format(srcPath, dstPath))
+            self.LogPrint(f"Copying from '{srcPath}' to '{dstPath}' skipped as target exist")

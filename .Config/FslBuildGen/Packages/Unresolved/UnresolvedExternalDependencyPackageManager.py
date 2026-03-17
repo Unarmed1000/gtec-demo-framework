@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright 2020 NXP
 # All rights reserved.
 #
@@ -29,13 +29,11 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-from typing import Optional
 
-class UnresolvedExternalDependencyPackageManager(object):
-    def __init__(self, name: str, version: Optional[str], packageTargetFramework: Optional[str], privateAssets: Optional[str],
-                 includeAssets: Optional[str]) -> None:
+class UnresolvedExternalDependencyPackageManager:
+    def __init__(self, name: str, version: str | None, packageTargetFramework: str | None, privateAssets: str | None, includeAssets: str | None) -> None:
         super().__init__()
         self.Name = name
         self.Version = version

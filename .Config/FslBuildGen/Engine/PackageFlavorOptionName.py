@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright 2020 NXP
 # All rights reserved.
 #
@@ -29,12 +28,13 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
 from FslBuildGen import Util
 from FslBuildGen.Exceptions import InvalidPackageFlavorOptionNameException
 
-class PackageFlavorOptionName(object):
+
+class PackageFlavorOptionName:
     def __init__(self, name: str) -> None:
         super().__init__()
         if not Util.IsValidFlavorOptionName(name):
@@ -74,4 +74,4 @@ class PackageFlavorOptionName(object):
         return self.Value
 
     def __repr__(self) -> str:
-        return "PackageFlavorOptionName({0})".format(self.Value)
+        return f"PackageFlavorOptionName({self.Value})"

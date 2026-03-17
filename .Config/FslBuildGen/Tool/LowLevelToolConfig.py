@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright 2017 NXP
 # All rights reserved.
 #
@@ -29,20 +28,26 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-class LowLevelToolConfig(object):
-    def __init__(self, verbosityLevel: int,
-                 debugEnabled: bool,
-                 allowDevelopmentPlugins: bool,
-                 profilerEnabled: bool,
-                 standaloneEnabled: bool,
-                 currentDir: str,
-                 noGitHash: bool) -> None:
+
+class LowLevelToolConfig:
+    def __init__(
+        self,
+        verbosityLevel: int,
+        debugEnabled: bool,
+        allowDevelopmentPlugins: bool,
+        profilerEnabled: bool,
+        standaloneEnabled: bool,
+        currentDir: str,
+        additionalInputDirs: list[str],
+        noGitHash: bool,
+    ) -> None:
         self.VerbosityLevel = verbosityLevel
         self.DebugEnabled = debugEnabled
         self.AllowDevelopmentPlugins = allowDevelopmentPlugins
         self.ProfilerEnabled = profilerEnabled
         self.StandaloneEnabled = standaloneEnabled
         self.CurrentDir = currentDir
+        self.AdditionalInputDirs = additionalInputDirs
         self.NoGitHash = noGitHash

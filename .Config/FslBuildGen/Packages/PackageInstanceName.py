@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright 2020 NXP
 # All rights reserved.
 #
@@ -29,12 +28,13 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
 from FslBuildGen import Util
 from FslBuildGen.Exceptions import InvalidPackageInstanceNameException
 
-class PackageInstanceName(object):
+
+class PackageInstanceName:
     def __init__(self, name: str) -> None:
         super().__init__()
         if not Util.IsValidPackageInstanceName(name):
@@ -42,7 +42,7 @@ class PackageInstanceName(object):
 
         self.Value = name
 
-    def CompareTo(self, other: 'PackageInstanceName') -> int:
+    def CompareTo(self, other: "PackageInstanceName") -> int:
         if self.Value < other.Value:
             return -1
         return 0 if self.Value == other.Value else 1
@@ -79,4 +79,4 @@ class PackageInstanceName(object):
         return self.Value
 
     def __repr__(self) -> str:
-        return "Value:{0}".format(self.Value)
+        return f"Value:{self.Value}"

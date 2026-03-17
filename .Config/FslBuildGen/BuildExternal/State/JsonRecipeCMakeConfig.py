@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright 2020 NXP
 # All rights reserved.
 #
@@ -29,16 +28,14 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-from typing import List
-from FslBuildGen.BuildExternal.State.JsonRecipePackageFileState import JsonRecipePackageFileState
 
-class JsonRecipeCMakeVersion(object):
+class JsonRecipeCMakeVersion:
     def __init__(self) -> None:
         super().__init__()
-        self.Major = 0      # type: int
-        self.Minor = 0      # type: int
+        self.Major: int = 0
+        self.Minor: int = 0
 
     def Set(self, major: int, minor: int) -> None:
         self.Major = major
@@ -47,26 +44,26 @@ class JsonRecipeCMakeVersion(object):
     def __eq__(self, rhs: object) -> bool:
         if not isinstance(rhs, JsonRecipeCMakeVersion):
             return NotImplemented
-        return (self.Major == rhs.Major and self.Minor == rhs.Minor)
+        return self.Major == rhs.Major and self.Minor == rhs.Minor
 
     def __ne__(self, rhs: object) -> bool:
         if not isinstance(rhs, JsonRecipeCMakeVersion):
             return NotImplemented
-        return (self.Major != rhs.Major or self.Minor != rhs.Minor)
+        return self.Major != rhs.Major or self.Minor != rhs.Minor
 
     def __str__(self) -> str:
-        return "{0}.{1}".format(self.Major, self.Minor)
+        return f"{self.Major}.{self.Minor}"
 
 
-class JsonRecipeCMakeConfig(object):
+class JsonRecipeCMakeConfig:
     def __init__(self) -> None:
         super().__init__()
-        self.GeneratorName = ""                         # type: str
-        self.CMakeVersion = JsonRecipeCMakeVersion()    # type: JsonRecipeCMakeVersion
-        self.ConfigInternalArgs = []                    # type: List[str]
-        self.ConfigUserArgs     = []                    # type: List[str]
+        self.GeneratorName: str = ""
+        self.CMakeVersion: JsonRecipeCMakeVersion = JsonRecipeCMakeVersion()
+        self.ConfigInternalArgs: list[str] = []
+        self.ConfigUserArgs: list[str] = []
 
-    def Set(self, generatorName: str, cmakeVersion: JsonRecipeCMakeVersion, configInternalArgs: List[str], configUserArgs: List[str]) -> None:
+    def Set(self, generatorName: str, cmakeVersion: JsonRecipeCMakeVersion, configInternalArgs: list[str], configUserArgs: list[str]) -> None:
         self.GeneratorName = generatorName
         self.CMakeVersion = cmakeVersion
         self.ConfigInternalArgs = configInternalArgs
@@ -75,25 +72,32 @@ class JsonRecipeCMakeConfig(object):
     def __eq__(self, rhs: object) -> bool:
         if not isinstance(rhs, JsonRecipeCMakeConfig):
             return NotImplemented
-        return (self.GeneratorName == rhs.GeneratorName and self.CMakeVersion == rhs.CMakeVersion and
-                self.ConfigInternalArgs == rhs.ConfigInternalArgs and self.ConfigUserArgs == rhs.ConfigUserArgs)
+        return (
+            self.GeneratorName == rhs.GeneratorName
+            and self.CMakeVersion == rhs.CMakeVersion
+            and self.ConfigInternalArgs == rhs.ConfigInternalArgs
+            and self.ConfigUserArgs == rhs.ConfigUserArgs
+        )
 
     def __ne__(self, rhs: object) -> bool:
         if not isinstance(rhs, JsonRecipeCMakeConfig):
             return NotImplemented
-        return (self.GeneratorName != rhs.GeneratorName or self.CMakeVersion != rhs.CMakeVersion or
-                self.ConfigInternalArgs != rhs.ConfigInternalArgs or self.ConfigUserArgs != rhs.ConfigUserArgs)
-
+        return (
+            self.GeneratorName != rhs.GeneratorName
+            or self.CMakeVersion != rhs.CMakeVersion
+            or self.ConfigInternalArgs != rhs.ConfigInternalArgs
+            or self.ConfigUserArgs != rhs.ConfigUserArgs
+        )
 
     @staticmethod
-    def GetDiff(lhs: 'JsonRecipeCMakeConfig', rhs: 'JsonRecipeCMakeConfig') -> str:
-        res = []   # type: List[str]
+    def GetDiff(lhs: "JsonRecipeCMakeConfig", rhs: "JsonRecipeCMakeConfig") -> str:
+        res: list[str] = []
         if lhs.GeneratorName != rhs.GeneratorName:
-            res.append("GeneratorName: '{0}'!='{1}'".format(lhs.GeneratorName, rhs.GeneratorName))
+            res.append(f"GeneratorName: '{lhs.GeneratorName}'!='{rhs.GeneratorName}'")
         if lhs.CMakeVersion != rhs.CMakeVersion:
-            res.append("CMakeVersion: {0}!={1}".format(lhs.CMakeVersion, rhs.CMakeVersion))
+            res.append(f"CMakeVersion: {lhs.CMakeVersion}!={rhs.CMakeVersion}")
         if lhs.ConfigInternalArgs != rhs.ConfigInternalArgs:
-            res.append("ConfigInternalArgs: {0}!={1}".format(lhs.ConfigInternalArgs, rhs.ConfigInternalArgs))
+            res.append(f"ConfigInternalArgs: {lhs.ConfigInternalArgs}!={rhs.ConfigInternalArgs}")
         if lhs.ConfigUserArgs != rhs.ConfigUserArgs:
-            res.append("ConfigUserArgs: {0}!={1}".format(lhs.ConfigUserArgs, rhs.ConfigUserArgs))
+            res.append(f"ConfigUserArgs: {lhs.ConfigUserArgs}!={rhs.ConfigUserArgs}")
         return ", ".join(res)

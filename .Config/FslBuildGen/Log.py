@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright 2017 NXP
 # All rights reserved.
 #
@@ -28,12 +28,12 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-from typing import List
 import sys
 
-class Log(object):
+
+class Log:
     def __init__(self, title: str, verbosityLevel: int, showAppTitleIfVerbose: bool = False) -> None:
         super().__init__()
         self.Title = title
@@ -41,7 +41,7 @@ class Log(object):
         self.IsVerbose = verbosityLevel > 0
         self.__CurrentIndent = 0
         self.__CurrentSpaces = ""
-        self.__CurrentSpaceCache = []  # type: List[str]
+        self.__CurrentSpaceCache: list[str] = []
         self.__TitlePrinted = False
 
         for i in range(0, 8):
@@ -50,29 +50,24 @@ class Log(object):
         if self.IsVerbose and showAppTitleIfVerbose:
             self.PrintTitle()
 
-
     def GetTitlePrinted(self) -> bool:
         return self.__TitlePrinted
-
 
     def SetTitlePrinted(self, value: bool) -> None:
         self.__TitlePrinted = value
 
-
     def PrintTitle(self) -> None:
-        """ Prints the title if it has not been printed already """
+        """Prints the title if it has not been printed already"""
         if self.__TitlePrinted:
             return
         self.__TitlePrinted = True
         self.DoPrint(self.Title)
-
 
     def PushIndent(self) -> None:
         self.__CurrentIndent += 1
         if self.__CurrentIndent >= len(self.__CurrentSpaceCache):
             self.__CurrentSpaceCache.append("  " * self.__CurrentIndent)
         self.__CurrentSpaces = self.__CurrentSpaceCache[self.__CurrentIndent]
-
 
     def PopIndent(self) -> None:
         if self.__CurrentIndent <= 0:
@@ -83,38 +78,30 @@ class Log(object):
         self.__CurrentIndent -= 1
         self.__CurrentSpaces = self.__CurrentSpaceCache[self.__CurrentIndent]
 
-
     def LogPrint(self, message: str) -> None:
         if self.IsVerbose:
             self.DoPrint(message)
-
 
     def LogPrintWarning(self, message: str) -> None:
         if self.IsVerbose:
             self.DoPrintWarning(message)
 
-
     def LogPrintVerbose(self, verbosityLevel: int, message: str) -> None:
         if self.Verbosity >= verbosityLevel:
             self.DoPrint(message)
-
 
     def DoPrint(self, message: str) -> None:
         if self.__CurrentIndent <= 0:
             self._PrintNow(message)
         else:
-            self._PrintNow("{0}{1}".format(self.__CurrentSpaces, message))
-
+            self._PrintNow(f"{self.__CurrentSpaces}{message}")
 
     def DoPrintError(self, message: str) -> None:
-        self._PrintNow("ERROR: {0}".format(message))
-
+        self._PrintNow(f"ERROR: {message}")
 
     def DoPrintWarning(self, message: str) -> None:
-        self._PrintNow("WARNING: {0}".format(message))
+        self._PrintNow(f"WARNING: {message}")
 
     def _PrintNow(self, message: str) -> None:
         print(message)
         sys.stdout.flush()
-
-

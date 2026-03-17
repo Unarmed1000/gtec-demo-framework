@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright 2017 NXP
 # All rights reserved.
 #
@@ -29,10 +28,9 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-from FslBuildGen.Info.RequirementInfo import RequirementInfo
-from FslBuildGen.Info.RequirementInfo import RequirementType
+from FslBuildGen.Info.RequirementInfo import RequirementInfo, RequirementType
 
 
 class RequirementFeatureInfo(RequirementInfo):

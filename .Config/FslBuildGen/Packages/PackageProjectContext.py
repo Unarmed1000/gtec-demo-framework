@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright 2019 NXP
 # All rights reserved.
 #
@@ -29,16 +29,18 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-from typing import List
-from typing import Optional
-from FslBuildGen.ProjectId import ProjectId
+
 from FslBuildGen.Packages.PackageProjectContextBasePackage import PackageProjectContextBasePackage
+from FslBuildGen.ProjectId import ProjectId
 from FslBuildGen.Version import Version
 
-class PackageProjectContext(object):
-    def __init__(self, projectId: ProjectId, projectName: str, projectVersion: Version, gitHash: Optional[str], basePackages: List[PackageProjectContextBasePackage]) -> None:
+
+class PackageProjectContext:
+    def __init__(
+        self, projectId: ProjectId, projectName: str, projectVersion: Version, gitHash: str | None, basePackages: list[PackageProjectContextBasePackage]
+    ) -> None:
         super().__init__()
         self.ProjectId = projectId
         self.ProjectName = projectName

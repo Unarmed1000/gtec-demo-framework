@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright 2018 NXP
 # All rights reserved.
 #
@@ -29,12 +28,13 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
 from FslBuildGen.Build.DataTypes import CommandType
 from FslBuildGen.ToolConfig import ToolConfig
 
-class GeneratorConfig(object):
+
+class GeneratorConfig:
     def __init__(self, platformName: str, sdkConfigTemplatePath: str, toolConfig: ToolConfig, numBuildThreads: int, buildCommand: CommandType) -> None:
         super().__init__()
         if numBuildThreads < 1:

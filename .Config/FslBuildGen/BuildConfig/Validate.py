@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright (c) 2016 Freescale Semiconductor, Inc.
 # All rights reserved.
 #
@@ -29,19 +29,20 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-from typing import List
 import os
-#from FslBuildGen.Config import Config
+
+from FslBuildGen import IOUtil, PackageConfig
+
+# from FslBuildGen.Config import Config
 from FslBuildGen.Log import Log
-from FslBuildGen import IOUtil
-from FslBuildGen import PackageConfig
 from FslBuildGen.SharedGeneration import ToolEnvironmentVariableName
 
 # TODO: update this code to just pull the paths from the package files instead since we now have full access to them
 #       Problem: due to performance we dont always scan all the package files :(
 #                but maybe we could get away with scanning the third party files or just a select few if no packages were processed
+
 
 def IsEnvironmentVariableSet(variable: str) -> bool:
     return os.environ.get(variable) is not None
@@ -83,71 +84,67 @@ def CheckWindowsGLES(log: Log) -> None:
     try:
         emulator = os.environ.get("FSL_GLES_EMULATOR_NAME")
         if not emulator:
-            raise EnvironmentError("OpenGLES emulation 'FSL_GLES_EMULATOR_NAME' environment variable is not set.")
+            raise OSError("OpenGLES emulation 'FSL_GLES_EMULATOR_NAME' environment variable is not set.")
 
         emulator = emulator.lower()
-        if(emulator == 'arm' or emulator == 'default'):
+        if emulator == "arm" or emulator == "default":
             CheckWindowsGLESArm(log)
-        elif(emulator == 'mesa'):
+        elif emulator == "mesa":
             CheckWindowsGLESPowerVR(log)
-        elif(emulator == 'powervr'):
+        elif emulator == "powervr":
             CheckWindowsGLESMesa(log)
-        elif(emulator == 'qualcomm'):
+        elif emulator == "qualcomm":
             CheckWindowsGLESQualcomm(log)
-        elif(emulator == 'vivante'):
+        elif emulator == "vivante":
             CheckWindowsGLESVivante(log)
         else:
-            log.LogPrint("WARNING: Unknown emulator '{0}'".format(emulator))
+            log.LogPrint(f"WARNING: Unknown emulator '{emulator}'")
     except:
-        print("ERROR: CheckWindowsGLES failed.\nThis indicates that the OpenGLES emulation environment was not correctly setup and the code wont be able to locate the necessary OpenGLES header files. Possible causes:\n- Are you using the right emulator type: x64 or x86 see documentation.\n- Did you run the required setup scripts?\n- If building from visual studio did you launch the project via .StartProject.bat\n")
+        print(
+            "ERROR: CheckWindowsGLES failed.\nThis indicates that the OpenGLES emulation environment was not correctly setup and the code wont be able to locate the necessary OpenGLES header files. Possible causes:\n- Are you using the right emulator type: x64 or x86 see documentation.\n- Did you run the required setup scripts?\n- If building from visual studio did you launch the project via .StartProject.bat\n"
+        )
         raise
 
 
-
-
-def CheckWindows(log: Log, features: List[str], verbosityLevel: int) -> None:
+def CheckWindows(log: Log, features: list[str], verbosityLevel: int) -> None:
     log.LogPrintVerbose(verbosityLevel, "Running Windows checks")
     CheckCommon(log, verbosityLevel)
 
     checkedGLES = False
     for feature in features:
-        if not checkedGLES and (feature == "EGL" or feature == 'OpenGLES2' or feature == 'OpenGLES3' or feature == 'OpenGLES3.1' or feature == 'OpenGLES3.2'):
+        if not checkedGLES and (feature == "EGL" or feature == "OpenGLES2" or feature == "OpenGLES3" or feature == "OpenGLES3.1" or feature == "OpenGLES3.2"):
             CheckWindowsGLES(log)
             checkedGLES = True
 
 
-def CheckUbuntu(log: Log, features: List[str], verbosityLevel: int) -> None:
+def CheckUbuntu(log: Log, features: list[str], verbosityLevel: int) -> None:
     log.LogPrintVerbose(verbosityLevel, "Running Ubuntu checks")
     CheckCommon(log, verbosityLevel)
 
     checkedGLES = False
     for feature in features:
-        if not checkedGLES and (feature == "EGL" or feature == 'OpenGLES2' or feature == 'OpenGLES3' or feature == 'OpenGLES3.1') or feature == 'OpenGLES3.2':
-            #CheckUbuntuGLES(log)
+        if not checkedGLES and (feature == "EGL" or feature == "OpenGLES2" or feature == "OpenGLES3" or feature == "OpenGLES3.1") or feature == "OpenGLES3.2":
+            # CheckUbuntuGLES(log)
             checkedGLES = True
 
 
-def CheckYocto(log: Log, features: List[str], verbosityLevel: int) -> None:
+def CheckYocto(log: Log, features: list[str], verbosityLevel: int) -> None:
     log.LogPrintVerbose(verbosityLevel, "Running Yocto checks")
     CheckCommon(log, verbosityLevel)
 
     checkedGLES = False
     for feature in features:
-        if not checkedGLES and (feature == "EGL" or feature == 'OpenGLES2' or feature == 'OpenGLES3' or feature == 'OpenGLES3.1'):
-            #CheckYoctoGLES(log)
+        if not checkedGLES and (feature == "EGL" or feature == "OpenGLES2" or feature == "OpenGLES3" or feature == "OpenGLES3.1"):
+            # CheckYoctoGLES(log)
             checkedGLES = True
 
 
-def ValidatePlatform(log: Log, platformName: str, features: List[str], verbosityLevel: int = 1) -> None:
+def ValidatePlatform(log: Log, platformName: str, features: list[str], verbosityLevel: int = 1) -> None:
     if platformName.lower() == PackageConfig.PlatformNameString.WINDOWS.lower():
         CheckWindows(log, features, verbosityLevel)
-    elif platformName.lower() == PackageConfig.PlatformNameString.UBUNTU.lower():
+    elif platformName.lower() == PackageConfig.PlatformNameString.UBUNTU.lower() or platformName.lower() == PackageConfig.PlatformNameString.APPLE.lower():
         CheckUbuntu(log, features, verbosityLevel)
-    elif platformName.lower() == PackageConfig.PlatformNameString.APPLE.lower():
-        CheckUbuntu(log, features, verbosityLevel)
-    elif platformName.lower() == PackageConfig.PlatformNameString.YOCTO.lower():
-        CheckYocto(log, features, verbosityLevel)
-    elif platformName.lower() == PackageConfig.PlatformNameString.RDK_YOCTO.lower():
+    elif platformName.lower() == PackageConfig.PlatformNameString.YOCTO.lower() or platformName.lower() == PackageConfig.PlatformNameString.RDK_YOCTO.lower():
         CheckYocto(log, features, verbosityLevel)
     else:
         log.LogPrintVerbose(verbosityLevel, "No configuration checks available for this platform")

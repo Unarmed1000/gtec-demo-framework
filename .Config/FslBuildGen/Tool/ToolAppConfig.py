@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright 2017 NXP
 # All rights reserved.
 #
@@ -29,20 +28,18 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-from typing import Dict
-from typing import List
-from typing import Optional
+
 from FslBuildGen.BuildConfig.UserSetVariables import UserSetVariables
-from FslBuildGen.DataTypes import BuildThreads
-from FslBuildGen.DataTypes import GeneratorType
+from FslBuildGen.DataTypes import BuildThreads, GeneratorType
 from FslBuildGen.ExternalVariantConstraints import ExternalVariantConstraints
 from FslBuildGen.PackageConfig import PlatformNameString
 from FslBuildGen.PackageFilters import PackageFilters
 from FslBuildGen.Tool.UserCMakeConfig import UserCMakeConfig
 
-class DefaultValue(object):
+
+class DefaultValue:
     UseFeatures = "*"
     RequireFeatures = "*"
     UseExtensions = "*"
@@ -53,19 +50,19 @@ class DefaultValue(object):
     ForceClaimInstallArea = False
     PlatformName = PlatformNameString.INVALID
     Generator = GeneratorType.Default
-    RemainingArgs = []  # type: List[str]
+    RemainingArgs: list[str] = []
     BuildThreads = BuildThreads.Auto  # Not set
-    CMakeBuildDir = None # type: Optional[str]
-    CMakeBuildDirId = None # type: Optional[int]
-    CMakeInstallPrefix = None # type: Optional[str]
-    CMakeGeneratorName = None # type: Optional[str]
-    CMakeConfigArgs = None # type: Optional[str]               # applied to app cmake config only
-    CMakeConfigGlobalArgs = None # type: Optional[str]         # applied to both recipe and app config.
-    CMakeAllowFindPackage = None # type: Optional[bool]        #
-    ExePackageNameFilter = None # type: Optional[str]
+    CMakeBuildDir: str | None = None
+    CMakeBuildDirId: int | None = None
+    CMakeInstallPrefix: str | None = None
+    CMakeGeneratorName: str | None = None
+    CMakeConfigArgs: str | None = None  # applied to app cmake config only
+    CMakeConfigGlobalArgs: str | None = None  # applied to both recipe and app config.
+    CMakeAllowFindPackage: bool | None = None  #
+    ExePackageNameFilter: str | None = None
 
 
-class ToolAppConfig(object):
+class ToolAppConfig:
     def __init__(self) -> None:
         self.AllowDevelopmentPlugins = DefaultValue.AllowDevelopmentPlugins
         self.BuildThreads = DefaultValue.BuildThreads
@@ -74,7 +71,7 @@ class ToolAppConfig(object):
         self.PlatformName = DefaultValue.PlatformName
         self.Generator = DefaultValue.Generator
         self.RemainingArgs = DefaultValue.RemainingArgs
-        self.VSVersion = None  # type: Optional[int]
+        self.VSVersion: int | None = None
 
         self.BuildPackageFilters = PackageFilters()
         self.BuildVariantConstraints = ExternalVariantConstraints({})
@@ -87,11 +84,10 @@ class ToolAppConfig(object):
         self.CMakeConfigArgs = DefaultValue.CMakeConfigArgs
         self.CMakeConfigGlobalArgs = DefaultValue.CMakeConfigGlobalArgs
         self.CMakeAllowFindPackage = DefaultValue.CMakeAllowFindPackage
-        self.UserSetVariables = UserSetVariables(dict())
+        self.UserSetVariables = UserSetVariables({})
         self.ExePackageNameFilter = DefaultValue.ExePackageNameFilter
 
-
-    def SetToolAppConfigValues(self, toolAppConfig: 'ToolAppConfig') -> None:
+    def SetToolAppConfigValues(self, toolAppConfig: "ToolAppConfig") -> None:
         if toolAppConfig.PlatformName is None:
             raise Exception("Platform name can not be None")
 
@@ -119,5 +115,12 @@ class ToolAppConfig(object):
         self.ExePackageNameFilter = toolAppConfig.ExePackageNameFilter
 
     def GetUserCMakeConfig(self) -> UserCMakeConfig:
-        return UserCMakeConfig(self.CMakeBuildDir, self.CMakeBuildDirId, self.CMakeGeneratorName, self.CMakeInstallPrefix, self.CMakeConfigArgs,
-                               self.CMakeConfigGlobalArgs, self.CMakeAllowFindPackage)
+        return UserCMakeConfig(
+            self.CMakeBuildDir,
+            self.CMakeBuildDirId,
+            self.CMakeGeneratorName,
+            self.CMakeInstallPrefix,
+            self.CMakeConfigArgs,
+            self.CMakeConfigGlobalArgs,
+            self.CMakeAllowFindPackage,
+        )

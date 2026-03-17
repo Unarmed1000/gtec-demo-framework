@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright (c) 2014 Freescale Semiconductor, Inc.
 # All rights reserved.
 #
@@ -29,18 +29,12 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-from typing import Dict
-from typing import List
-from typing import Optional
-from typing import Set
-from typing import Union
 import os
 import os.path
-from FslBuildGen import IOUtil
-from FslBuildGen import PathUtil
-from FslBuildGen import Util
+
+from FslBuildGen import IOUtil, PathUtil, Util
 from FslBuildGen.BasicConfig import BasicConfig
 from FslBuildGen.BuildConfig.BuildDocConfiguration import BuildDocConfiguration
 from FslBuildGen.BuildConfig.BuildDocConfigurationRequirement import BuildDocConfigurationRequirement
@@ -52,24 +46,20 @@ from FslBuildGen.BuildConfig.ClangTidyPlatformDefines import ClangTidyPlatformDe
 from FslBuildGen.BuildConfig.CMakeConfiguration import CMakeConfiguration
 from FslBuildGen.BuildConfig.CMakeConfigurationPlatform import CMakeConfigurationPlatform
 from FslBuildGen.BuildConfig.DotnetFormatConfiguration import DotnetFormatConfiguration
-from FslBuildGen.CMakeUtil import CMakeVersion
-from FslBuildGen.CMakeUtil import CMakeUtil
 from FslBuildGen.CMakeIgnoreDirUtil import CMakeIgnoreDirUtil
-from FslBuildGen.DataTypes import BuildPlatformType
-from FslBuildGen.DataTypes import CompilerNames
-from FslBuildGen.DataTypes import MagicStrings
-from FslBuildGen.DataTypes import PackageRequirementTypeString
-from FslBuildGen.DataTypes import VisualStudioVersion
-from FslBuildGen.Exceptions import DuplicatedConfigBasePackage
-from FslBuildGen.Exceptions import DuplicatedConfigContentBuilder
-from FslBuildGen.Exceptions import DuplicatedConfigPackageLocation
-from FslBuildGen.Exceptions import DuplicatedConfigRootPath
-from FslBuildGen.Exceptions import DuplicatedNewProjectTemplatesRootPath
-from FslBuildGen.Exceptions import UsageErrorException
+from FslBuildGen.CMakeUtil import CMakeUtil, CMakeVersion
+from FslBuildGen.DataTypes import BuildPlatformType, CompilerNames, MagicStrings, PackageRequirementTypeString, VisualStudioVersion
+from FslBuildGen.Exceptions import (
+    DuplicatedConfigBasePackage,
+    DuplicatedConfigContentBuilder,
+    DuplicatedConfigPackageLocation,
+    DuplicatedConfigRootPath,
+    DuplicatedNewProjectTemplatesRootPath,
+    UsageErrorException,
+)
 from FslBuildGen.Generator.GeneratorCMakeConfig import GeneratorCMakeConfig
 from FslBuildGen.GitUtil import GitUtil
 from FslBuildGen.Log import Log
-from FslBuildGen.Version import Version
 from FslBuildGen.Tool.LowLevelToolConfig import LowLevelToolConfig
 from FslBuildGen.ToolConfigBasePackage import ToolConfigBasePackage
 from FslBuildGen.ToolConfigExperimental import ToolConfigExperimental
@@ -80,9 +70,7 @@ from FslBuildGen.ToolConfigRootDirectory import ToolConfigRootDirectory
 from FslBuildGen.ToolMinimalConfig import ToolMinimalConfig
 from FslBuildGen.Vars.VariableProcessor import VariableProcessor
 from FslBuildGen.Version import Version
-from FslBuildGen.Xml.Exceptions import XmlException2
-from FslBuildGen.Xml.Exceptions import XmlDuplicatedCompilerConfigurationException
-from FslBuildGen.Xml.Exceptions import XmlUnsupportedCompilerVersionException
+from FslBuildGen.Xml.Exceptions import XmlDuplicatedCompilerConfigurationException, XmlException2, XmlUnsupportedCompilerVersionException
 from FslBuildGen.Xml.Project.XmlBuildDocConfiguration import XmlBuildDocConfiguration
 from FslBuildGen.Xml.Project.XmlClangTidyConfiguration import XmlClangTidyConfiguration
 from FslBuildGen.Xml.Project.XmlClangTidyPlatform import XmlClangTidyPlatform
@@ -90,25 +78,28 @@ from FslBuildGen.Xml.Project.XmlClangTidyPlatformCompiler import XmlClangTidyPla
 from FslBuildGen.Xml.Project.XmlClangTidyPlatformDefines import XmlClangTidyPlatformDefines
 from FslBuildGen.Xml.Project.XmlClangTidyPlatformStrictChecks import XmlClangTidyPlatformStrictChecks
 from FslBuildGen.Xml.Project.XmlCMakeConfiguration import XmlCMakeConfiguration
-from FslBuildGen.Xml.Project.XmlProjectRootConfigFile import XmlClangFormatConfiguration
-from FslBuildGen.Xml.Project.XmlProjectRootConfigFile import XmlConfigCompilerConfiguration
-from FslBuildGen.Xml.Project.XmlProjectRootConfigFile import XmlConfigFileAddBasePackage
-from FslBuildGen.Xml.Project.XmlProjectRootConfigFile import XmlConfigFileAddRootDirectory
-from FslBuildGen.Xml.Project.XmlProjectRootConfigFile import XmlDotnetFormatConfiguration
-from FslBuildGen.Xml.Project.XmlProjectRootConfigFile import XmlExperimental
-from FslBuildGen.Xml.Project.XmlProjectRootConfigFile import XmlProjectRootConfigFile
+from FslBuildGen.Xml.Project.XmlProjectRootConfigFile import (
+    XmlClangFormatConfiguration,
+    XmlConfigCompilerConfiguration,
+    XmlConfigFileAddBasePackage,
+    XmlConfigFileAddRootDirectory,
+    XmlDotnetFormatConfiguration,
+    XmlExperimental,
+    XmlProjectRootConfigFile,
+)
 from FslBuildGen.Xml.ToolConfig.XmlConfigFileAddNewProjectTemplatesRootDirectory import XmlConfigFileAddNewProjectTemplatesRootDirectory
 from FslBuildGen.Xml.ToolConfig.XmlConfigPackageConfiguration import XmlConfigPackageConfiguration
-from FslBuildGen.Xml.ToolConfig.XmlConfigPackageLocation import FakeXmlConfigPackageLocation
-from FslBuildGen.Xml.ToolConfig.XmlConfigPackageLocation import XmlConfigPackageLocation
-from FslBuildGen.Xml.XmlToolConfigFile import XmlConfigContentBuilder
-from FslBuildGen.Xml.XmlToolConfigFile import XmlConfigContentBuilderConfiguration
-from FslBuildGen.Xml.XmlToolConfigFile import XmlConfigFileAddTemplateImportDirectory
-from FslBuildGen.Xml.XmlToolConfigFile import XmlConfigFileTemplateFolder
-from FslBuildGen.Xml.XmlToolConfigFile import XmlToolConfigFile
+from FslBuildGen.Xml.ToolConfig.XmlConfigPackageLocation import FakeXmlConfigPackageLocation, XmlConfigPackageLocation
+from FslBuildGen.Xml.XmlToolConfigFile import (
+    XmlConfigContentBuilder,
+    XmlConfigContentBuilderConfiguration,
+    XmlConfigFileAddTemplateImportDirectory,
+    XmlConfigFileTemplateFolder,
+    XmlToolConfigFile,
+)
 
 
-class ToolConfigCompilerConfiguration(object):
+class ToolConfigCompilerConfiguration:
     def __init__(self, basicConfig: BasicConfig, basedUponXML: XmlConfigCompilerConfiguration) -> None:
         super().__init__()
         self.BasedOn = basedUponXML
@@ -117,11 +108,13 @@ class ToolConfigCompilerConfiguration(object):
         self.Platform = self.BasedOn.Platform
         defaultVersion = VisualStudioVersion.TryParse(self.BasedOn.DefaultVersion)
         if defaultVersion is None:
-            raise XmlUnsupportedCompilerVersionException(self.BasedOn.XMLElement, self.BasedOn.Name, self.BasedOn.DefaultVersion, ', '.join(str(x) for x in VisualStudioVersion.AllEntries))
+            raise XmlUnsupportedCompilerVersionException(
+                self.BasedOn.XMLElement, self.BasedOn.Name, self.BasedOn.DefaultVersion, ", ".join(str(x) for x in VisualStudioVersion.AllEntries)
+            )
         self.DefaultVersion = defaultVersion
 
 
-class ToolConfigTemplateFolder(object):
+class ToolConfigTemplateFolder:
     def __init__(self, basicConfig: BasicConfig, basedUponXML: XmlConfigFileTemplateFolder) -> None:
         super().__init__()
         self.BasedOn = basedUponXML
@@ -132,7 +125,7 @@ class ToolConfigTemplateFolder(object):
         self.ResolvedPath = variableProcessor.ResolveAbsolutePathWithLeadingEnvironmentVariablePathAsDir(self.Name)
 
 
-class NewProjectTemplateRootDirectory(object):
+class NewProjectTemplateRootDirectory:
     def __init__(self, basicConfig: BasicConfig, basedUponXML: XmlConfigFileAddNewProjectTemplatesRootDirectory) -> None:
         super().__init__()
         self.BasedOn = basedUponXML
@@ -147,18 +140,18 @@ class NewProjectTemplateRootDirectory(object):
         env = tupleResult[0]
         remainingPath = tupleResult[1]
         if env is None:
-            raise Exception("Root dirs are expected to contain environment variables '{0}'".format(self.DynamicName))
+            raise Exception(f"Root dirs are expected to contain environment variables '{self.DynamicName}'")
         remainingPath = remainingPath if remainingPath is not None else ""
 
         resolvedPath = IOUtil.GetEnvironmentVariableForDirectory(env) + remainingPath
-        self.BashName = '${0}{1}'.format(env, remainingPath)
-        self.DosName = '%{0}%{1}'.format(env, remainingPath)
+        self.BashName = f"${env}{remainingPath}"
+        self.DosName = f"%{env}%{remainingPath}"
         self.ResolvedPath = IOUtil.ToUnixStylePath(resolvedPath)
-        self.ResolvedPathEx = "{0}/".format(self.ResolvedPath) if len(self.ResolvedPath) > 0 else ""
+        self.ResolvedPathEx = f"{self.ResolvedPath}/" if len(self.ResolvedPath) > 0 else ""
         self.__EnvironmentVariableName = env
 
 
-class ToolConfigDirectory(object):
+class ToolConfigDirectory:
     def __init__(self, basicConfig: BasicConfig, basedUponXML: XmlConfigFileAddTemplateImportDirectory) -> None:
         super().__init__()
 
@@ -176,25 +169,27 @@ class ToolConfigDirectory(object):
         rest = rest if rest is not None else ""
 
         self.DecodedName = envName
-        self.BashName = IOUtil.Join('$' + self.DecodedName, rest)
-        self.DosName = IOUtil.Join('%' + self.DecodedName + '%', rest)
+        self.BashName = IOUtil.Join("$" + self.DecodedName, rest)
+        self.DosName = IOUtil.Join("%" + self.DecodedName + "%", rest)
         if self.Name is None:
             raise XmlException2(basedUponXML.XmlElement, "Dirs are expected to contain environment variables")
         self.ResolvedPath = IOUtil.Join(IOUtil.GetEnvironmentVariableForDirectory(self.DecodedName), rest)
-        self.ResolvedPathEx = "{0}/".format(self.ResolvedPath) if len(self.ResolvedPath) > 0 else ""
+        self.ResolvedPathEx = f"{self.ResolvedPath}/" if len(self.ResolvedPath) > 0 else ""
 
 
 # TODO: improve interface, dont allow so many None (remove None from rootDirs and projectRootDirectory)
-class ToolConfigLocation(object):
-    def __init__(self, basicConfig: BasicConfig,
-                 rootDirs: Optional[List[ToolConfigRootDirectory]],
-                 basedUponXML: XmlConfigPackageLocation,
-                 projectRootDirectory: Optional[str],
-                 resolvedPath: Optional[str] = None) -> None:
+class ToolConfigLocation:
+    def __init__(
+        self,
+        basicConfig: BasicConfig,
+        rootDirs: list[ToolConfigRootDirectory] | None,
+        basedUponXML: XmlConfigPackageLocation,
+        projectRootDirectory: str | None,
+        resolvedPath: str | None = None,
+    ) -> None:
         super().__init__()
-        if rootDirs is None or projectRootDirectory is None:
-            if rootDirs is not None or projectRootDirectory is not None:
-                raise Exception("When rootDirs is none, then the projectRootDirectory must be none")
+        if (rootDirs is None or projectRootDirectory is None) and (rootDirs is not None or projectRootDirectory is not None):
+            raise Exception("When rootDirs is none, then the projectRootDirectory must be none")
 
         # Do some basic validation of the path
         PathUtil.ValidateIsNormalizedPath(basedUponXML.Name, "Location")
@@ -203,23 +198,22 @@ class ToolConfigLocation(object):
         self.Id = basedUponXML.Id
         self.Name = basedUponXML.Name
 
-
         if resolvedPath is not None:
             self.ResolvedPath = IOUtil.NormalizePath(resolvedPath)
         else:
             if rootDirs is None or projectRootDirectory is None:
                 raise Exception("When resolvedPath is None then rootDirs and projectRootDirectory can not be None")
             self.ResolvedPath = self.__ResolvePath(basicConfig, rootDirs, self.Name, projectRootDirectory)
-        self.ResolvedPathEx = "{0}/".format(self.ResolvedPath) if len(self.ResolvedPath) > 0 else ""
+        self.ResolvedPathEx = f"{self.ResolvedPath}/" if len(self.ResolvedPath) > 0 else ""
         self.ScanMethod = basedUponXML.ScanMethod
 
-
-    def __ResolvePath(self, basicConfig: BasicConfig, rootDirs: List[ToolConfigRootDirectory], entryName: str, projectRootDirectory: str) -> str:
+    def __ResolvePath(self, basicConfig: BasicConfig, rootDirs: list[ToolConfigRootDirectory], entryName: str, projectRootDirectory: str) -> str:
         rootDir = self.__LocateRootDir(basicConfig, rootDirs, entryName, projectRootDirectory)
         return entryName.replace(rootDir.Name, rootDir.ResolvedPath)
 
-
-    def __LocateRootDir(self, basicConfig: BasicConfig, rootDirs: List[ToolConfigRootDirectory], entryName: str, projectRootDirectory: str) -> ToolConfigRootDirectory:
+    def __LocateRootDir(
+        self, basicConfig: BasicConfig, rootDirs: list[ToolConfigRootDirectory], entryName: str, projectRootDirectory: str
+    ) -> ToolConfigRootDirectory:
         if projectRootDirectory is None or not entryName.startswith(MagicStrings.ProjectRoot):
             for rootDir in rootDirs:
                 if entryName.startswith(rootDir.Name):
@@ -231,13 +225,13 @@ class ToolConfigLocation(object):
                 if projectRootDirectory == rootDir.ResolvedPath:
                     return ToolConfigRootDirectory(basicConfig, None, rootDir.ProjectId, rootDir, MagicStrings.ProjectRoot, rootDir.DynamicName)
                 elif projectRootDirectory.startswith(rootDir.ResolvedPathEx):
-                    dynamicRootDir = projectRootDirectory[len(rootDir.ResolvedPathEx):]
-                    dynamicRootDir = "{0}/{1}".format(rootDir.Name, dynamicRootDir)
+                    dynamicRootDir = projectRootDirectory[len(rootDir.ResolvedPathEx) :]
+                    dynamicRootDir = f"{rootDir.Name}/{dynamicRootDir}"
                     return ToolConfigRootDirectory(basicConfig, None, rootDir.ProjectId, rootDir, MagicStrings.ProjectRoot, dynamicRootDir)
-        raise Exception("Path '{0}' is not based on one of the valid root directories {1}".format(entryName, ", ".join(Util.ExtractNames(rootDirs))))
+        raise Exception("Path '{}' is not based on one of the valid root directories {}".format(entryName, ", ".join(Util.ExtractNames(rootDirs))))
 
 
-class ToolConfigPackageLocationBlacklistEntry(object):
+class ToolConfigPackageLocationBlacklistEntry:
     def __init__(self, sourceRootPath: str, relativePath: str) -> None:
         self.RootDirPath = IOUtil.NormalizePath(sourceRootPath)
         self.RelativeDirPath = IOUtil.NormalizePath(relativePath)
@@ -246,28 +240,39 @@ class ToolConfigPackageLocationBlacklistEntry(object):
 
 # TODO: improve interface, dont allow so many None (remove None from rootDirs and projectRootDirectory)
 class ToolConfigPackageLocation(ToolConfigLocation):
-    def __init__(self, basicConfig: BasicConfig,
-                 rootDirs: Optional[List[ToolConfigRootDirectory]],
-                 basedUponXML: XmlConfigPackageLocation,
-                 projectRootDirectory: Optional[str],
-                 resolvedPath: Optional[str] = None) -> None:
+    def __init__(
+        self,
+        basicConfig: BasicConfig,
+        rootDirs: list[ToolConfigRootDirectory] | None,
+        basedUponXML: XmlConfigPackageLocation,
+        projectRootDirectory: str | None,
+        resolvedPath: str | None = None,
+    ) -> None:
         super().__init__(basicConfig, rootDirs, basedUponXML, projectRootDirectory, resolvedPath)
         self.Blacklist = [ToolConfigPackageLocationBlacklistEntry(self.ResolvedPath, entry.Name) for entry in basedUponXML.Blacklist]
 
 
-class ToolConfigPackageConfigurationLocationSetup(object):
-    def __init__(self, name: str, scanMethod: Optional[int] = None, blacklist: Optional[List[str]] = None) -> None:
+class ToolConfigPackageConfigurationLocationSetup:
+    def __init__(self, name: str, scanMethod: int | None = None, blacklist: list[str] | None = None) -> None:
         self.Name = name
         self.ScanMethod = scanMethod
         self.Blacklist = blacklist
 
 
-ToolConfigPackageConfigurationAddLocationType = Union[str, ToolConfigPackageConfigurationLocationSetup, List[str], List[ToolConfigPackageConfigurationLocationSetup]]
+ToolConfigPackageConfigurationAddLocationType = (
+    str | ToolConfigPackageConfigurationLocationSetup | list[str] | list[ToolConfigPackageConfigurationLocationSetup]
+)
 
 
-class ToolConfigPackageConfiguration(object):
-    def __init__(self, basicConfig: BasicConfig, rootDirs: List[ToolConfigRootDirectory],
-                 basedUponXML: XmlConfigPackageConfiguration, configFileName: str, projectRootDirectory: str) -> None:
+class ToolConfigPackageConfiguration:
+    def __init__(
+        self,
+        basicConfig: BasicConfig,
+        rootDirs: list[ToolConfigRootDirectory],
+        basedUponXML: XmlConfigPackageConfiguration,
+        configFileName: str,
+        projectRootDirectory: str,
+    ) -> None:
         super().__init__()
         self.__basicConfig = basicConfig
         self.BasedOn = basedUponXML
@@ -300,17 +305,20 @@ class ToolConfigPackageConfiguration(object):
                 raise Exception("Unsupported type")
             self.Locations.append(ToolConfigPackageLocation(self.__basicConfig, None, fakeXml, None, resolvedPath))
 
-
-
-    def __ResolveLocations(self, basicConfig: BasicConfig,
-                           rootDirs: List[ToolConfigRootDirectory], locations: List[XmlConfigPackageLocation],
-                           configFileName: str, projectRootDirectory: str) -> List[ToolConfigPackageLocation]:
+    def __ResolveLocations(
+        self,
+        basicConfig: BasicConfig,
+        rootDirs: list[ToolConfigRootDirectory],
+        locations: list[XmlConfigPackageLocation],
+        configFileName: str,
+        projectRootDirectory: str,
+    ) -> list[ToolConfigPackageLocation]:
         # Check for unique names and
         # convert to a ToolConfigPackageLocation list
-        res = [] # List[ToolConfigPackageLocation]
-        uniqueLocationIds = set() # type: Set[str]
+        res = []  # List[ToolConfigPackageLocation]
+        uniqueLocationIds: set[str] = set()
         for location in locations:
-            if not location.Id in uniqueLocationIds:
+            if location.Id not in uniqueLocationIds:
                 uniqueLocationIds.add(location.Id)
                 packageLocation = ToolConfigPackageLocation(basicConfig, rootDirs, location, projectRootDirectory)
                 res.append(packageLocation)
@@ -323,8 +331,7 @@ class ToolConfigPackageConfiguration(object):
         return res
 
 
-
-class ToolContentBuilder(object):
+class ToolContentBuilder:
     def __init__(self, basedUponXML: XmlConfigContentBuilder) -> None:
         super().__init__()
         self.BasedOn = basedUponXML
@@ -336,19 +343,18 @@ class ToolContentBuilder(object):
         self.Description = basedUponXML.Description
 
 
-class ToolConfigContentBuilderConfiguration(object):
+class ToolConfigContentBuilderConfiguration:
     def __init__(self, basedUponXML: XmlConfigContentBuilderConfiguration, configFileName: str) -> None:
         super().__init__()
         self.BasedOn = basedUponXML
         self.ContentBuilders = self.__ResolveContentBuilders(basedUponXML.ContentBuilders, configFileName) if basedUponXML else []
 
-
-    def __ResolveContentBuilders(self, contentBuilders: List[XmlConfigContentBuilder], configFileName: str) -> List[ToolContentBuilder]:
-        uniqueNames = set()  # type: Set[str]
-        res = []  # type: List[ToolContentBuilder]
+    def __ResolveContentBuilders(self, contentBuilders: list[XmlConfigContentBuilder], configFileName: str) -> list[ToolContentBuilder]:
+        uniqueNames: set[str] = set()
+        res: list[ToolContentBuilder] = []
         for contentBuilder in contentBuilders:
             newContentBuilder = ToolContentBuilder(contentBuilder)
-            if not newContentBuilder.Name in uniqueNames:
+            if newContentBuilder.Name not in uniqueNames:
                 uniqueNames.add(newContentBuilder.Name)
                 res.append(newContentBuilder)
             else:
@@ -356,9 +362,16 @@ class ToolConfigContentBuilderConfiguration(object):
         return res
 
 
-class ToolConfig(object):
-    def __init__(self, lowLevelToolConfig: LowLevelToolConfig, buildPlatformType: BuildPlatformType, toolVersion: Version, basicConfig: BasicConfig, filename: str,
-                 projectRootConfig: XmlProjectRootConfigFile) -> None:
+class ToolConfig:
+    def __init__(
+        self,
+        lowLevelToolConfig: LowLevelToolConfig,
+        buildPlatformType: BuildPlatformType,
+        toolVersion: Version,
+        basicConfig: BasicConfig,
+        filename: str,
+        projectRootConfig: XmlProjectRootConfigFile,
+    ) -> None:
         super().__init__()
         basedUponXML = XmlToolConfigFile(basicConfig, filename, projectRootConfig)
         self.LowLevelToolConfig = lowLevelToolConfig
@@ -367,10 +380,16 @@ class ToolConfig(object):
         self.GenFileName = basedUponXML.GenFileName.Name
         self.RootDirectories = self.__ResolveRootDirectories(basicConfig, basedUponXML.RootDirectories, filename)
         self.TemplateImportDirectories = self.__ResolveDirectories(basicConfig, basedUponXML.TemplateImportDirectories)
-        self.PackageConfiguration = self.__ResolvePackageConfiguration(basicConfig, self.RootDirectories, basedUponXML.PackageConfiguration, filename, projectRootConfig.RootDirectory)
+        self.PackageConfiguration = self.__ResolvePackageConfiguration(
+            basicConfig, self.RootDirectories, basedUponXML.PackageConfiguration, filename, projectRootConfig.RootDirectory
+        )
         self.TemplateFolder = ToolConfigTemplateFolder(basicConfig, basedUponXML.TemplateFolder)
         self.NewProjectTemplateRootDirectories = self.__ResolveNewProjectTemplateRootDirectories(basicConfig, basedUponXML.NewProjectTemplateRootDirectories)
-        self.ContentBuilderConfiguration = ToolConfigContentBuilderConfiguration(basedUponXML.ContentBuilderConfiguration, filename) if basedUponXML.ContentBuilderConfiguration is not None else None
+        self.ContentBuilderConfiguration = (
+            ToolConfigContentBuilderConfiguration(basedUponXML.ContentBuilderConfiguration, filename)
+            if basedUponXML.ContentBuilderConfiguration is not None
+            else None
+        )
         self.UnitTestPath = self.__TryResolveUnitTestPath()
         self.DefaultPackageLanguage = projectRootConfig.DefaultPackageLanguage
         self.DefaultCompany = projectRootConfig.DefaultCompany
@@ -379,12 +398,18 @@ class ToolConfig(object):
         self.ProjectInfo = self.__GenerateProjectInfo(basicConfig, buildPlatformType, projectRootConfig, lowLevelToolConfig.NoGitHash)
         self.BuildDocConfiguration = self.__TryGetBuildDocConfiguration(basedUponXML.BuildDocConfiguration)
         self.CMakeConfiguration = self.__GetCMakeConfiguration(basedUponXML.CMakeConfiguration)
-        self.ClangFormatConfiguration = self.__TryGetClangFormatConfiguration(basedUponXML.ClangFormatConfiguration, self.CMakeConfiguration.NinjaRecipePackageName)
-        self.DotnetFormatConfiguration = self.__TryGetDotnetFormatConfiguration(basedUponXML.DotnetFormatConfiguration, self.CMakeConfiguration.NinjaRecipePackageName)
+        self.ClangFormatConfiguration = self.__TryGetClangFormatConfiguration(
+            basedUponXML.ClangFormatConfiguration, self.CMakeConfiguration.NinjaRecipePackageName
+        )
+        self.DotnetFormatConfiguration = self.__TryGetDotnetFormatConfiguration(
+            basedUponXML.DotnetFormatConfiguration, self.CMakeConfiguration.NinjaRecipePackageName
+        )
         self.ClangTidyConfiguration = self.__TryGetClangTidyConfiguration(basedUponXML.ClangTidyConfiguration, self.CMakeConfiguration.NinjaRecipePackageName)
         self.CompilerConfigurationDict = self.__ProcessCompilerConfiguration(basicConfig, basedUponXML.CompilerConfiguration)
         self.RequirementTypes = [PackageRequirementTypeString.Extension, PackageRequirementTypeString.Feature]
-        self.Experimental = self.__ResolveExperimental(basicConfig, self.RootDirectories, basedUponXML.Experimental, filename, projectRootConfig.RootDirectory) # type: Optional[ToolConfigExperimental]
+        self.Experimental: ToolConfigExperimental | None = self.__ResolveExperimental(
+            basicConfig, self.RootDirectories, basedUponXML.Experimental, filename, projectRootConfig.RootDirectory
+        )
 
         if buildPlatformType == BuildPlatformType.Windows:
             self.__ResolvedLegacyToCurrentOSPathMethod = self.TryLegacyToDosPath
@@ -397,9 +422,8 @@ class ToolConfig(object):
             self.__ResolvedToCurrentOSPathMethod = self.ToBashPath
             self.__ResolvedToCurrentOSPathDirectConversionMethod = self.ToBashPathDirectConversion
 
-
-    def GetMinimalConfig(self, cmakeConfig: Optional[GeneratorCMakeConfig]) -> ToolMinimalConfig:
-        ignoreDirectories = []  # type: List[str]
+    def GetMinimalConfig(self, cmakeConfig: GeneratorCMakeConfig | None) -> ToolMinimalConfig:
+        ignoreDirectories: list[str] = []
         # ignore the template import directory
         for templateImport in self.TemplateImportDirectories:
             ignoreDirectories.append(templateImport.ResolvedPath)
@@ -412,8 +436,8 @@ class ToolConfig(object):
 
         return ToolMinimalConfig(self.RootDirectories, ignoreDirectories)
 
-    def __TryGetBuildDocConfiguration(self, configList: List[XmlBuildDocConfiguration]) -> BuildDocConfiguration:
-        requirementList = [] # type: List[BuildDocConfigurationRequirement]
+    def __TryGetBuildDocConfiguration(self, configList: list[XmlBuildDocConfiguration]) -> BuildDocConfiguration:
+        requirementList: list[BuildDocConfigurationRequirement] = []
         if len(configList) < 1:
             return BuildDocConfiguration(requirementList)
         config = configList[0]
@@ -421,26 +445,27 @@ class ToolConfig(object):
             requirementList.append(BuildDocConfigurationRequirement(requirement.Name, requirement.Skip))
         return BuildDocConfiguration(requirementList)
 
-    def __TryGetClangFormatConfiguration(self, configList: List[XmlClangFormatConfiguration], ninjaRecipePackageName: str) -> Optional[ClangFormatConfiguration]:
+    def __TryGetClangFormatConfiguration(self, configList: list[XmlClangFormatConfiguration], ninjaRecipePackageName: str) -> ClangFormatConfiguration | None:
         if len(configList) < 1:
             return None
         config = configList[0]
         return ClangFormatConfiguration(config.FileExtensions, config.Recipe, ninjaRecipePackageName)
 
-    def __TryGetDotnetFormatConfiguration(self, configList: List[XmlDotnetFormatConfiguration], ninjaRecipePackageName: str) -> Optional[DotnetFormatConfiguration]:
+    def __TryGetDotnetFormatConfiguration(
+        self, configList: list[XmlDotnetFormatConfiguration], ninjaRecipePackageName: str
+    ) -> DotnetFormatConfiguration | None:
         if len(configList) < 1:
             return None
         config = configList[0]
         return DotnetFormatConfiguration(config.FileExtensions, config.Recipe, ninjaRecipePackageName)
 
-
-    def __TryGetClangTidyConfiguration(self, configList: List[XmlClangTidyConfiguration], ninjaRecipePackageName: str) -> Optional[ClangTidyConfiguration]:
+    def __TryGetClangTidyConfiguration(self, configList: list[XmlClangTidyConfiguration], ninjaRecipePackageName: str) -> ClangTidyConfiguration | None:
         if len(configList) < 1:
             return None
         config = configList[0]
         platforms = self.__GetClangTidyPlatforms(config.Platforms)
         clangConfig = ClangTidyConfiguration(config.FileExtensions, config.ClangRecipe, config.ClangTidyRecipe, ninjaRecipePackageName, platforms)
-        allPlatformName = 'all'
+        allPlatformName = "all"
         if allPlatformName in clangConfig.PlatformDict:
             # append the all configuration to all other configurations
             allPlatform = clangConfig.PlatformDict[allPlatformName]
@@ -449,8 +474,8 @@ class ToolConfig(object):
                     platform.Merge(allPlatform)
         return clangConfig
 
-    def __GetClangTidyPlatforms(self, clangTidyPlatforms: List[XmlClangTidyPlatform]) -> List[ClangTidyPlatform]:
-        res = [] # type: List[ClangTidyPlatform]
+    def __GetClangTidyPlatforms(self, clangTidyPlatforms: list[XmlClangTidyPlatform]) -> list[ClangTidyPlatform]:
+        res: list[ClangTidyPlatform] = []
         for platform in clangTidyPlatforms:
             res.append(self.__GetClangTidyPlatform(platform))
         return res
@@ -461,27 +486,27 @@ class ToolConfig(object):
         strictChecks = self.__GetClangTidyPlatformStrictChecks(clangTidyPlatform.StrictChecks)
         return ClangTidyPlatform(clangTidyPlatform.Name, compiler, defines, strictChecks)
 
-    def __GetClangTidyPlatformCompiler(self, compiler: Optional[XmlClangTidyPlatformCompiler]) -> ClangTidyPlatformCompiler:
+    def __GetClangTidyPlatformCompiler(self, compiler: XmlClangTidyPlatformCompiler | None) -> ClangTidyPlatformCompiler:
         if compiler is None:
             return ClangTidyPlatformCompiler([])
         return ClangTidyPlatformCompiler(compiler.Flags)
 
-    def __GetClangTidyPlatformDefines(self, defines: Optional[XmlClangTidyPlatformDefines]) -> ClangTidyPlatformDefines:
-        definesAll = []       # type: List[str]
-        definesDebug = []     # type: List[str]
-        definesRelease = []   # type: List[str]
+    def __GetClangTidyPlatformDefines(self, defines: XmlClangTidyPlatformDefines | None) -> ClangTidyPlatformDefines:
+        definesAll: list[str] = []
+        definesDebug: list[str] = []
+        definesRelease: list[str] = []
         if defines is not None:
             definesAll += defines.All
             definesDebug += defines.Debug
             definesRelease += defines.Release
         return ClangTidyPlatformDefines(definesAll, definesDebug, definesRelease)
 
-    def __GetClangTidyPlatformStrictChecks(self, strictChecks: Optional[XmlClangTidyPlatformStrictChecks]) -> Set[str]:
+    def __GetClangTidyPlatformStrictChecks(self, strictChecks: XmlClangTidyPlatformStrictChecks | None) -> set[str]:
         if strictChecks is None:
             return set()
         return strictChecks.Checks
 
-    def __GetCMakeConfiguration(self, configList: List[XmlCMakeConfiguration]) -> CMakeConfiguration:
+    def __GetCMakeConfiguration(self, configList: list[XmlCMakeConfiguration]) -> CMakeConfiguration:
         if len(configList) != 1:
             if len(configList) <= 0:
                 return CMakeConfiguration("${TopProjectRoot}/build", None, CMakeUtil.GetMinimumVersion(), [], "Recipe.BuildTool.ninja")
@@ -493,20 +518,22 @@ class ToolConfig(object):
         minVersion = self.__ParseCMakeVersionString(configEntry.MinVersion)
         ninjaRecipePackageName = configEntry.NinjaRecipePackageName
 
-        platformList = [] # type: List[CMakeConfigurationPlatform]
+        platformList: list[CMakeConfigurationPlatform] = []
         for platformEntry in configEntry.Platforms:
             # Default to the platform one if its defined, else default to the general one (which can be None)
             platformEntryDefaultInstallPrefix = platformEntry.DefaultInstallPrefix if platformEntry.DefaultInstallPrefix is not None else defaultInstallPrefix
             # Generate the platform config object
-            platformList.append(CMakeConfigurationPlatform(platformEntry.Name, platformEntry.DefaultGeneratorName, platformEntryDefaultInstallPrefix,
-                                                           platformEntry.AllowFindPackage))
+            platformList.append(
+                CMakeConfigurationPlatform(
+                    platformEntry.Name, platformEntry.DefaultGeneratorName, platformEntryDefaultInstallPrefix, platformEntry.AllowFindPackage
+                )
+            )
 
         if defaultBuildDir is None:
             raise Exception("CMakeConfiguration.DefaultBuildDir must be defined")
         return CMakeConfiguration(defaultBuildDir, defaultInstallPrefix, minVersion, platformList, ninjaRecipePackageName)
 
-
-    def __ParseCMakeVersionString(self, versionStr: Optional[str]) -> CMakeVersion:
+    def __ParseCMakeVersionString(self, versionStr: str | None) -> CMakeVersion:
         toolMin = CMakeUtil.GetMinimumVersion()
         if versionStr is None:
             return toolMin
@@ -516,15 +543,17 @@ class ToolConfig(object):
         projectMin = CMakeVersion(parsedMinVersion[0], parsedMinVersion[1], parsedMinVersion[2])
         return projectMin if projectMin >= toolMin else toolMin
 
-
-    def __GenerateProjectInfo(self, log: Log, buildPlatformType: BuildPlatformType, projectRootConfig: XmlProjectRootConfigFile, noGitHash: bool) -> ToolConfigProjectInfo:
+    def __GenerateProjectInfo(
+        self, log: Log, buildPlatformType: BuildPlatformType, projectRootConfig: XmlProjectRootConfigFile, noGitHash: bool
+    ) -> ToolConfigProjectInfo:
         gitExeName = GitUtil.GetPlatformDependentExecutableName(buildPlatformType)
         rootProjectBasePackages = self.__ResolveBasePackages(log, projectRootConfig.XmlBasePackages, projectRootConfig.SourceFileName)
         gitHash = GitUtil.TryGetCurrentHash(gitExeName, projectRootConfig.RootDirectory) if not noGitHash else None
-        result = [] #  type: List[ToolConfigProjectContext]
+        result: list[ToolConfigProjectContext] = []
         projectVersion = Version.FromString(projectRootConfig.ProjectVersion)
-        rootProjectContext = ToolConfigProjectContext(projectRootConfig.ProjectId, projectRootConfig.ProjectName,
-                                                      projectVersion, projectRootConfig.RootDirectory, gitHash, rootProjectBasePackages, None)
+        rootProjectContext = ToolConfigProjectContext(
+            projectRootConfig.ProjectId, projectRootConfig.ProjectName, projectVersion, projectRootConfig.RootDirectory, gitHash, rootProjectBasePackages, None
+        )
         result.append(rootProjectContext)
         topProjectContext = rootProjectContext
         # FIX: context base packages does not resolve correctly if we have multiple extension projects inheriting
@@ -537,17 +566,19 @@ class ToolConfig(object):
                 contextBasePackages = rootProjectBasePackages + contextBasePackages
             extendedProjectVersion = Version.FromString(entry.ProjectVersion)
             entryGitHash = GitUtil.TryGetCurrentHash(gitExeName, entry.RootDirectory) if not noGitHash else None
-            extendedProjectContext = ToolConfigProjectContext(entry.ProjectId, entry.ProjectName, extendedProjectVersion, entry.RootDirectory, entryGitHash, contextBasePackages, rootProjectContext)
+            extendedProjectContext = ToolConfigProjectContext(
+                entry.ProjectId, entry.ProjectName, extendedProjectVersion, entry.RootDirectory, entryGitHash, contextBasePackages, rootProjectContext
+            )
             result.append(extendedProjectContext)
             topProjectContext = extendedProjectContext
         return ToolConfigProjectInfo(result, topProjectContext)
 
-    def __ResolveBasePackages(self, log: Log, basePackages: List[XmlConfigFileAddBasePackage], configFileName: str) -> List[ToolConfigBasePackage]:
-        uniqueNameIds = set()  # type: Set[str]
-        basePackageList = []  # type: List[ToolConfigBasePackage]
+    def __ResolveBasePackages(self, log: Log, basePackages: list[XmlConfigFileAddBasePackage], configFileName: str) -> list[ToolConfigBasePackage]:
+        uniqueNameIds: set[str] = set()
+        basePackageList: list[ToolConfigBasePackage] = []
         for basePackageEntry in basePackages:
             basePackage = ToolConfigBasePackage(log, basePackageEntry.Name)
-            if not basePackage.Id in uniqueNameIds:
+            if basePackage.Id not in uniqueNameIds:
                 uniqueNameIds.add(basePackage.Id)
                 basePackageList.append(basePackage)
             else:
@@ -555,29 +586,26 @@ class ToolConfig(object):
         basePackageList.sort(key=lambda s: s.Name)
         return basePackageList
 
-
     def GetVisualStudioDefaultVersion(self) -> int:
         visualStudioId = CompilerNames.VisualStudio.lower()
         if visualStudioId in self.CompilerConfigurationDict:
             return self.CompilerConfigurationDict[visualStudioId].DefaultVersion
         return VisualStudioVersion.DEFAULT
 
-
-    def TryToPath(self, path: Optional[str]) -> Optional[str]:
+    def TryToPath(self, path: str | None) -> str | None:
         if path is None:
             return None
         return ToolConfigPackageRootUtil.TryToPath(self.RootDirectories, path)
 
-
     def ToPath(self, path: str) -> str:
         return ToolConfigPackageRootUtil.ToPath(self.RootDirectories, path)
 
-    def TryFindRootDirectory(self, path: Optional[str]) -> Optional[ToolConfigRootDirectory]:
+    def TryFindRootDirectory(self, path: str | None) -> ToolConfigRootDirectory | None:
         return ToolConfigPackageRootUtil.TryFindRootDirectory(self.RootDirectories, path)
 
     def ToBashPath(self, path: str) -> str:
         if path.find("\\") >= 0:
-            raise UsageErrorException("Backslash found in the supplied path '{0}'".format(path))
+            raise UsageErrorException(f"Backslash found in the supplied path '{path}'")
         for rootDir in self.RootDirectories:
             if path.startswith(rootDir.ResolvedPathEx):
                 lenRootPath = len(rootDir.ResolvedPathEx)
@@ -585,83 +613,74 @@ class ToolConfig(object):
                 return rootDir.BashName + "/" + Util.UTF8ToAscii(path)
             elif path == rootDir.ResolvedPath:
                 return rootDir.Name + "/"
-        raise UsageErrorException("the folder '{0}' does not reside inside one of the root dirs".format(path))
+        raise UsageErrorException(f"the folder '{path}' does not reside inside one of the root dirs")
 
-
-
-    def TryLegacyToBashPath(self, path: Optional[str]) -> Optional[str]:
+    def TryLegacyToBashPath(self, path: str | None) -> str | None:
         if path is None:
             return None
         return self.ToBashPath(path)
 
-
     def ToBashPathDirectConversion(self, path: str) -> str:
-        """ This does not make the path relative to a root path """
+        """This does not make the path relative to a root path"""
         if path.find("\\") >= 0:
-            raise UsageErrorException("Backslash found in the supplied path '{0}'".format(path))
+            raise UsageErrorException(f"Backslash found in the supplied path '{path}'")
         path = Util.ChangeToBashEnvVariables(path)
-        return Util.UTF8ToAscii(path).replace('\\', '/')
+        return Util.UTF8ToAscii(path).replace("\\", "/")
 
-
-    def TryLegacyToBashPathDirectConversion(self, path: Optional[str]) -> Optional[str]:
-        """ This does not make the path relative to a root path """
+    def TryLegacyToBashPathDirectConversion(self, path: str | None) -> str | None:
+        """This does not make the path relative to a root path"""
         if path is None:
             return None
         return self.ToBashPathDirectConversion(path)
 
-
     def ToDosPath(self, path: str) -> str:
         if path.find("\\") >= 0:
-            raise UsageErrorException("Backslash found in the supplied path '{0}'".format(path))
+            raise UsageErrorException(f"Backslash found in the supplied path '{path}'")
         for rootDir in self.RootDirectories:
             if path.startswith(rootDir.ResolvedPathEx):
                 lenRootPath = len(rootDir.ResolvedPathEx)
                 path = path[lenRootPath:]
                 tmp = rootDir.DosName + "/" + Util.UTF8ToAscii(path)
-                return tmp.replace('/', '\\')
+                return tmp.replace("/", "\\")
             elif path == rootDir.ResolvedPath:
                 tmp = rootDir.Name + "/"
-                return tmp.replace('/', '\\')
-        raise UsageErrorException("the folder '{0}' does not reside inside one of the root dirs".format(path))
+                return tmp.replace("/", "\\")
+        raise UsageErrorException(f"the folder '{path}' does not reside inside one of the root dirs")
 
-
-    def TryLegacyToDosPath(self, path: Optional[str]) -> Optional[str]:
+    def TryLegacyToDosPath(self, path: str | None) -> str | None:
         if path is None:
             return None
         return self.ToDosPath(path)
 
-
     def ToDosPathDirectConversion(self, path: str) -> str:
-        """ This does not make the path relative to a root path """
+        """This does not make the path relative to a root path"""
         if path.find("\\") >= 0:
-            raise UsageErrorException("Backslash found in the supplied path '{0}'".format(path))
+            raise UsageErrorException(f"Backslash found in the supplied path '{path}'")
         path = Util.ChangeToDosEnvironmentVariables(path)
-        return Util.UTF8ToAscii(path).replace('/', '\\')
+        return Util.UTF8ToAscii(path).replace("/", "\\")
 
-
-    def TryLegacyToDosPathDirectConversion(self, path: Optional[str]) -> Optional[str]:
-        """ This does not make the path relative to a root path """
+    def TryLegacyToDosPathDirectConversion(self, path: str | None) -> str | None:
+        """This does not make the path relative to a root path"""
         if path is None:
             return None
         return self.ToDosPathDirectConversion(path)
 
-
     def ToCurrentOSPathDirectConversion(self, path: str) -> str:
-        """ Resolve the path to how it would look on the current OS """
+        """Resolve the path to how it would look on the current OS"""
         return self.__ResolvedToCurrentOSPathDirectConversionMethod(path)
 
-    def TryToCurrentOSPathDirectConversion(self, path: Optional[str]) -> Optional[str]:
-        """ Resolve the path to how it would look on the current OS """
+    def TryToCurrentOSPathDirectConversion(self, path: str | None) -> str | None:
+        """Resolve the path to how it would look on the current OS"""
         return self.__ResolvedLegacyToCurrentOSPathDirectConversionMethod(path)
 
-
-    def __ResolveNewProjectTemplateRootDirectories(self, basicConfig: BasicConfig,
-                                                   newProjectTemplateRootDirectories: List[XmlConfigFileAddNewProjectTemplatesRootDirectory]) -> List[NewProjectTemplateRootDirectory]:
-        uniqueIdDict = {}  # type: Dict[str, NewProjectTemplateRootDirectory]
-        rootDirs = []  # type: List[NewProjectTemplateRootDirectory]
+    def __ResolveNewProjectTemplateRootDirectories(
+        self, basicConfig: BasicConfig, newProjectTemplateRootDirectories: list[XmlConfigFileAddNewProjectTemplatesRootDirectory]
+    ) -> list[NewProjectTemplateRootDirectory]:
+        uniqueIdDict: dict[str, NewProjectTemplateRootDirectory] = {}
+        rootDirs: list[NewProjectTemplateRootDirectory] = []
         for rootDir in newProjectTemplateRootDirectories:
             toolRootDir = NewProjectTemplateRootDirectory(basicConfig, rootDir)
-            if not toolRootDir.Id in uniqueIdDict:
+            if toolRootDir.Id not in uniqueIdDict:
                 uniqueIdDict[toolRootDir.Id] = toolRootDir
                 rootDirs.append(toolRootDir)
             else:
@@ -671,15 +690,14 @@ class ToolConfig(object):
         rootDirs.sort(key=lambda s: -len(s.ResolvedPathEx))
         return rootDirs
 
-
-    def __ResolveRootDirectories(self, basicConfig: BasicConfig,
-                                 rootDirectories: List[XmlConfigFileAddRootDirectory],
-                                 configFileName: str) -> List[ToolConfigRootDirectory]:
-        uniqueNames = set()  # type: Set[str]
-        rootDirs = []  # type: List[ToolConfigRootDirectory]
+    def __ResolveRootDirectories(
+        self, basicConfig: BasicConfig, rootDirectories: list[XmlConfigFileAddRootDirectory], configFileName: str
+    ) -> list[ToolConfigRootDirectory]:
+        uniqueNames: set[str] = set()
+        rootDirs: list[ToolConfigRootDirectory] = []
         for rootDir in rootDirectories:
             toolRootDir = ToolConfigRootDirectory(basicConfig, rootDir, rootDir.ProjectId)
-            if not toolRootDir.Name in uniqueNames:
+            if toolRootDir.Name not in uniqueNames:
                 uniqueNames.add(toolRootDir.Name)
                 rootDirs.append(toolRootDir)
             else:
@@ -689,48 +707,54 @@ class ToolConfig(object):
         rootDirs.sort(key=lambda s: -len(s.ResolvedPathEx))
         return rootDirs
 
-
-    def __ResolveDirectories(self, basicConfig: BasicConfig, directories: List[XmlConfigFileAddTemplateImportDirectory]) -> List[ToolConfigDirectory]:
-        dirs = []  # type: List[ToolConfigDirectory]
+    def __ResolveDirectories(self, basicConfig: BasicConfig, directories: list[XmlConfigFileAddTemplateImportDirectory]) -> list[ToolConfigDirectory]:
+        dirs: list[ToolConfigDirectory] = []
         for dirEntry in directories:
             dirs.append(ToolConfigDirectory(basicConfig, dirEntry))
         return dirs
 
-
-    def __ResolvePackageConfiguration(self, basicConfig: BasicConfig, rootDirs: List[ToolConfigRootDirectory],
-                                      packageConfiguration: Dict[str, XmlConfigPackageConfiguration],
-                                      configFileName: str, projectRootDirectory: str) -> Dict[str, ToolConfigPackageConfiguration]:
-        configs = {} # type Dict[str, ToolConfigPackageConfiguration]
+    def __ResolvePackageConfiguration(
+        self,
+        basicConfig: BasicConfig,
+        rootDirs: list[ToolConfigRootDirectory],
+        packageConfiguration: dict[str, XmlConfigPackageConfiguration],
+        configFileName: str,
+        projectRootDirectory: str,
+    ) -> dict[str, ToolConfigPackageConfiguration]:
+        configs = {}  # type Dict[str, ToolConfigPackageConfiguration]
         for packageConfig in list(packageConfiguration.values()):
             resolvedConfig = ToolConfigPackageConfiguration(basicConfig, rootDirs, packageConfig, configFileName, projectRootDirectory)
             configs[resolvedConfig.Name] = resolvedConfig
         return configs
 
-
-    def __ResolveExperimental(self, basicConfig: BasicConfig, rootDirs: List[ToolConfigRootDirectory],
-                              experimental: Optional[XmlExperimental],
-                              configFileName: str, projectRootDirectory: str) -> Optional[ToolConfigExperimental]:
+    def __ResolveExperimental(
+        self,
+        basicConfig: BasicConfig,
+        rootDirs: list[ToolConfigRootDirectory],
+        experimental: XmlExperimental | None,
+        configFileName: str,
+        projectRootDirectory: str,
+    ) -> ToolConfigExperimental | None:
         if experimental is None:
             return None
         return ToolConfigExperimental(basicConfig, rootDirs, experimental, configFileName, projectRootDirectory)
 
-
-    def __TryResolveUnitTestPath(self) -> Optional[str]:
+    def __TryResolveUnitTestPath(self) -> str | None:
         path = os.environ.get("FSL_GRAPHICS_INTERNAL")
         if path is None:
             return None
         return IOUtil.Join(path, "Tools/FslBuildGen/FslBuildGen/UnitTest/TestFiles")
 
-
-    def __ProcessCompilerConfiguration(self, basicConfig: BasicConfig,
-                                       xmlCompilerConfiguration: List[XmlConfigCompilerConfiguration]) -> Dict[str, ToolConfigCompilerConfiguration]:
-        result = {}  # type: Dict[str, ToolConfigCompilerConfiguration]
+    def __ProcessCompilerConfiguration(
+        self, basicConfig: BasicConfig, xmlCompilerConfiguration: list[XmlConfigCompilerConfiguration]
+    ) -> dict[str, ToolConfigCompilerConfiguration]:
+        result: dict[str, ToolConfigCompilerConfiguration] = {}
         for config in xmlCompilerConfiguration:
             if config.Id in result:
                 raise XmlDuplicatedCompilerConfigurationException(result[config.Id].BasedOn.XMLElement, result[config.Id].Name, config.XMLElement, config.Name)
             elif config.Name == CompilerNames.VisualStudio:
                 result[config.Id] = ToolConfigCompilerConfiguration(basicConfig, config)
             else:
-                msg = "CompilerConfiguration name: '{0}' is not currently supported, so entry is ignored".format(config.Name)
+                msg = f"CompilerConfiguration name: '{config.Name}' is not currently supported, so entry is ignored"
                 basicConfig.LogPrint(msg)
         return result

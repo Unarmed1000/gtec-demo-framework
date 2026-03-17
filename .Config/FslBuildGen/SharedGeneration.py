@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright (c) 2016 Freescale Semiconductor, Inc.
 # All rights reserved.
 #
@@ -29,22 +29,22 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-from FslBuildGen.DataTypes import BuildVariantConfig
-from FslBuildGen.DataTypes import BuildVariantConfigDefaults
-
+from FslBuildGen.DataTypes import BuildVariantConfig, BuildVariantConfigDefaults
 
 GEN_BUILD_ENV_VARIANT_SETTING = "FSLBUILD_VARIANT_"
 # Deprecated: its not about the feature but the variant instead
 #             So the code generation engine needs to know if the 'feature' config needs the variant info or not :/
 GEN_BUILD_ENV_FEATURE_SETTING = "FSLBUILD_FEATURE_"
 
-class ToolEnvironmentVariableName(object):
+
+class ToolEnvironmentVariableName:
     FSL_GRAPHICS_SDK = "FSL_GRAPHICS_SDK"
     FSL_GRAPHICS_SDK_ANDROID_PROJECT_DIR = "FSL_GRAPHICS_SDK_ANDROID_PROJECT_DIR"
 
-class ToolAddedVariantConfigOption(object):
+
+class ToolAddedVariantConfigOption:
     Debug = "Debug"
     Release = "Release"
     Coverage = "Coverage"
@@ -57,12 +57,14 @@ class ToolAddedVariantConfigOption(object):
             return ToolAddedVariantConfigOption.Release
         if BuildVariantConfigDefaults.DefaultSetting == BuildVariantConfig.Coverage:
             return ToolAddedVariantConfigOption.Coverage
-        raise Exception("unsupported default setting {0}".format(BuildVariantConfigDefaults.DefaultSetting))
+        raise Exception(f"unsupported default setting {BuildVariantConfigDefaults.DefaultSetting}")
 
-class ToolAddedVariant(object):
+
+class ToolAddedVariant:
     CONFIG = "config"
 
-class ToolAddedVariantOptions(object):
+
+class ToolAddedVariantOptions:
     CONFIG = [ToolAddedVariantConfigOption.Debug, ToolAddedVariantConfigOption.Release]
 
 
@@ -71,6 +73,7 @@ class ToolAddedVariantOptions(object):
 
 GEN_MAGIC_VARIANT_ANDROID_ABI = "ANDROID_ABI"
 
+
 class AndroidABIOption:
     All = "all"
     ArmeAbiV7a = "armeabi-v7a"
@@ -78,5 +81,5 @@ class AndroidABIOption:
     X86 = "x86"
     X86_64 = "x86_64"
     DeprecatedArmeAbi = "armeabi"  # Deprecated in r16.
-    DeprecatedMips = "mips"        # Deprecated in r16.
-    DeprecatedMips64 = "mips64"    # Deprecated in r16.
+    DeprecatedMips = "mips"  # Deprecated in r16.
+    DeprecatedMips64 = "mips64"  # Deprecated in r16.

@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright 2020 NXP
 # All rights reserved.
 #
@@ -29,9 +28,10 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-class BasicBuildConfig(object):
+
+class BasicBuildConfig:
     def __init__(self, buildDirAbsolutePath: str, buildCacheDirAbsolutePath: str, isDryRun: bool) -> None:
         super().__init__()
         self.BuildDirAbsolutePath = buildDirAbsolutePath

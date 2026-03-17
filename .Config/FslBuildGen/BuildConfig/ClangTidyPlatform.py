@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright 2018 NXP
 # All rights reserved.
 #
@@ -29,23 +28,24 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-#from typing import List
-from typing import Set
-#from FslBuildGen import IOUtil
+# from typing import List
+
+# from FslBuildGen import IOUtil
 from FslBuildGen.BuildConfig.ClangTidyPlatformCompiler import ClangTidyPlatformCompiler
 from FslBuildGen.BuildConfig.ClangTidyPlatformDefines import ClangTidyPlatformDefines
 
-class ClangTidyPlatform(object):
-    def __init__(self, name: str, compiler: ClangTidyPlatformCompiler, defines: ClangTidyPlatformDefines, strictChecks: Set[str]) -> None:
+
+class ClangTidyPlatform:
+    def __init__(self, name: str, compiler: ClangTidyPlatformCompiler, defines: ClangTidyPlatformDefines, strictChecks: set[str]) -> None:
         super().__init__()
         self.Name = name
         self.Compiler = compiler
         self.Defines = defines
         self.StrictChecks = list(strictChecks)
 
-    def Merge(self, platform: 'ClangTidyPlatform') -> None:
+    def Merge(self, platform: "ClangTidyPlatform") -> None:
         self.Compiler.Merge(platform.Compiler)
         self.Defines.Merge(platform.Defines)
         self.StrictChecks += platform.StrictChecks

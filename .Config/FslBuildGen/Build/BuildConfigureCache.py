@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright 2019 NXP
 # All rights reserved.
 #
@@ -29,20 +29,28 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-from typing import Dict
-from typing import List
-from typing import Optional
 import json
+from typing import Optional
+
 from FslBuildGen import IOUtil
 from FslBuildGen.Log import Log
 
-class BuildConfigureCache(object):
+
+class BuildConfigureCache:
     CURRENT_VERSION = 5
 
-    def __init__(self, environmentDict: Dict[str, str], userSetVariablesDict: Dict[str,str], fileHashDict: Dict[str, str], commandList: List[str],
-                 platformName: str, fslBuildVersion: str, allowFindPackage: str) -> None:
+    def __init__(
+        self,
+        environmentDict: dict[str, str],
+        userSetVariablesDict: dict[str, str],
+        fileHashDict: dict[str, str],
+        commandList: list[str],
+        platformName: str,
+        fslBuildVersion: str,
+        allowFindPackage: str,
+    ) -> None:
         super().__init__()
         self.Version = BuildConfigureCache.CURRENT_VERSION
         self.EnvironmentDict = environmentDict
@@ -54,7 +62,7 @@ class BuildConfigureCache(object):
         self.AllowFindPackage = allowFindPackage
 
     @staticmethod
-    def TryLoad(log: Log, cacheFilename: str) -> Optional['BuildConfigureCache']:
+    def TryLoad(log: Log, cacheFilename: str) -> Optional["BuildConfigureCache"]:
         try:
             strJson = IOUtil.TryReadFile(cacheFilename)
             if strJson is None:
@@ -64,52 +72,57 @@ class BuildConfigureCache(object):
                 raise Exception("Unsupported version")
 
             jsonUserSetVariablesDict = jsonDict["UserSetVariablesDict"]
-            finalUserSetVariablesDict = {} # type: Dict[str,str]
+            finalUserSetVariablesDict: dict[str, str] = {}
             for key, value in jsonUserSetVariablesDict.items():
                 if not isinstance(key, str) or not isinstance(value, str):
                     raise Exception("json decode failed")
                 finalUserSetVariablesDict[key] = value
 
-
             jsonEnvironmentDict = jsonDict["EnvironmentDict"]
-            finalEnvironmentDict = {} # type: Dict[str,str]
+            finalEnvironmentDict: dict[str, str] = {}
             for key, value in jsonEnvironmentDict.items():
                 if not isinstance(key, str) or not isinstance(value, str):
                     raise Exception("json decode failed")
                 finalEnvironmentDict[key] = value
 
             jsonFileHashDict = jsonDict["FileHashDict"]
-            finalDict = {} # type: Dict[str,str]
+            finalDict: dict[str, str] = {}
             for key, value in jsonFileHashDict.items():
                 if not isinstance(key, str) or not isinstance(value, str):
                     raise Exception("json decode failed")
                 finalDict[key] = value
 
-            finalCommandList = [] # type: List[str]
+            finalCommandList: list[str] = []
             jsonCommandList = jsonDict["CommandList"]
             for value in jsonCommandList:
                 if not isinstance(value, str):
                     raise Exception("json decode failed")
                 finalCommandList.append(value)
 
-            platformName = jsonDict["PlatformName"] # type: str
-            fslBuildVersion = jsonDict["FslBuildVersion"] # type: str
-            allowFindPackage = jsonDict["AllowFindPackage"] # type: str
-            return BuildConfigureCache(finalEnvironmentDict, finalUserSetVariablesDict, finalDict, finalCommandList, platformName, fslBuildVersion, allowFindPackage)
-        except:
-            log.DoPrintWarning("Failed to decode cache file '{0}'".format(cacheFilename))
+            platformName: str = jsonDict["PlatformName"]
+            fslBuildVersion: str = jsonDict["FslBuildVersion"]
+            allowFindPackage: str = jsonDict["AllowFindPackage"]
+            return BuildConfigureCache(
+                finalEnvironmentDict, finalUserSetVariablesDict, finalDict, finalCommandList, platformName, fslBuildVersion, allowFindPackage
+            )
+        except Exception:
+            log.DoPrintWarning(f"Failed to decode cache file '{cacheFilename}'")
             return None
 
     @staticmethod
-    def Save(log: Log, cacheFilename: str, buildConfigureCache: 'BuildConfigureCache') -> None:
-        log.LogPrintVerbose(4, "- Saving generated file hash cache '{0}'".format(cacheFilename))
+    def Save(log: Log, cacheFilename: str, buildConfigureCache: "BuildConfigureCache") -> None:
+        log.LogPrintVerbose(4, f"- Saving generated file hash cache '{cacheFilename}'")
         jsonText = json.dumps(buildConfigureCache.__dict__, ensure_ascii=False, sort_keys=True, indent=2)
         IOUtil.WriteFileIfChanged(cacheFilename, jsonText)
 
-
     @staticmethod
-    def IsEqual(lhs: 'BuildConfigureCache', rhs: 'BuildConfigureCache') -> bool:
-        if lhs.Version != rhs.Version or len(lhs.EnvironmentDict) != len(rhs.EnvironmentDict) or len(lhs.FileHashDict) != len(rhs.FileHashDict) or len(lhs.CommandList) != len(rhs.CommandList):
+    def IsEqual(lhs: "BuildConfigureCache", rhs: "BuildConfigureCache") -> bool:
+        if (
+            lhs.Version != rhs.Version
+            or len(lhs.EnvironmentDict) != len(rhs.EnvironmentDict)
+            or len(lhs.FileHashDict) != len(rhs.FileHashDict)
+            or len(lhs.CommandList) != len(rhs.CommandList)
+        ):
             return False
 
         for key, value in lhs.UserSetVariablesDict.items():

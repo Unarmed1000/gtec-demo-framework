@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright 2017 NXP
 # All rights reserved.
 #
@@ -29,21 +29,21 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-from typing import Optional
-from FslBuildGen.Log import Log
+
 from FslBuildGen.BuildContent.PathVariables import PathVariables
+from FslBuildGen.Log import Log
 
-class ContentRootRecord(object):
-    def __init__(self, log: Log, sourcePath: str, pathVariables: Optional[PathVariables] = None) -> None:
+
+class ContentRootRecord:
+    def __init__(self, log: Log, sourcePath: str, pathVariables: PathVariables | None = None) -> None:
         super().__init__()
         expandedSourcePath = self.__ExpandSourcePath(sourcePath, pathVariables) if pathVariables is not None else sourcePath
 
         self.Id = expandedSourcePath.lower()
         self.SourcePath = sourcePath
         self.ResolvedPath = expandedSourcePath
-
 
     def __ExpandSourcePath(self, sourcePath: str, pathVariables: PathVariables) -> str:
         result = self.__TryExpandSourcePath(sourcePath, pathVariables.ProjectRoot, "${ProjectRoot}")
@@ -57,7 +57,7 @@ class ContentRootRecord(object):
             return result
         return sourcePath
 
-    def __TryExpandSourcePath(self, sourcePath: str, root: str, rootName: str) -> Optional[str]:
+    def __TryExpandSourcePath(self, sourcePath: str, root: str, rootName: str) -> str | None:
         if sourcePath.startswith(rootName):
             return sourcePath.replace(rootName, root)
         return None

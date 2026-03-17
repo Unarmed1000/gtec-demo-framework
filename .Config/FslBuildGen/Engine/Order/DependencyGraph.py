@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright 2020 NXP
 # All rights reserved.
 #
@@ -29,25 +28,22 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-from typing import Dict
-from typing import List
-from typing import Optional
-from typing import Set
-from typing import Union
-from FslBuildGen.Exceptions import CircularDependencyException
-from FslBuildGen.Engine.Order.Exceptions import CircularDependencyInDependentPackageException
+
 from FslBuildGen.Engine.Order.EvaluationPackage import EvaluationPackage
+from FslBuildGen.Engine.Order.Exceptions import CircularDependencyInDependentPackageException
+from FslBuildGen.Exceptions import CircularDependencyException
 
-class DependencyGraphNode(object):
+
+class DependencyGraphNode:
     def __init__(self, source: EvaluationPackage) -> None:
         super().__init__()
         self.Source = source
-        self.From = []   # type: List[DependencyGraphNode]
-        self.To = []   # type: List[DependencyGraphNode]
+        self.From: list[DependencyGraphNode] = []
+        self.To: list[DependencyGraphNode] = []
 
-    def AddEdge(self, toNode: 'DependencyGraphNode') -> None:
+    def AddEdge(self, toNode: "DependencyGraphNode") -> None:
         if toNode == self:
             raise Exception("Can't add edge to self")
 
@@ -68,11 +64,12 @@ class DependencyGraphNode(object):
     def __str__(self) -> str:
         return str(self.Source)
 
-class DependencyGraph(object):
-    def __init__(self, allPackages: Optional[List[EvaluationPackage]] = None) -> None:
+
+class DependencyGraph:
+    def __init__(self, allPackages: list[EvaluationPackage] | None = None) -> None:
         super().__init__()
-        self.__uniqueNodeDict = dict() # type: Dict[EvaluationPackage, DependencyGraphNode]
-        self.__nodes = [] # type: List[DependencyGraphNode]
+        self.__uniqueNodeDict: dict[EvaluationPackage, DependencyGraphNode] = {}
+        self.__nodes: list[DependencyGraphNode] = []
         if allPackages is not None:
             self.AddAllNodes(allPackages)
             self.AddAllDependencies(allPackages)
@@ -80,7 +77,7 @@ class DependencyGraph(object):
     def Empty(self) -> bool:
         return len(self.__nodes) <= 0
 
-    def DebugNodes(self) -> List[DependencyGraphNode]:
+    def DebugNodes(self) -> list[DependencyGraphNode]:
         return self.__nodes
 
     def Contains(self, package: EvaluationPackage) -> bool:
@@ -100,13 +97,13 @@ class DependencyGraph(object):
         self.__nodes.append(node)
         return node
 
-    def AddEdge(self, fromObj: Union[DependencyGraphNode, EvaluationPackage], toObj: Union[DependencyGraphNode, EvaluationPackage]) -> None:
+    def AddEdge(self, fromObj: DependencyGraphNode | EvaluationPackage, toObj: DependencyGraphNode | EvaluationPackage) -> None:
         if isinstance(fromObj, EvaluationPackage):
             if fromObj in self.__uniqueNodeDict:
                 fromNode = self.__uniqueNodeDict[fromObj]
         else:
             fromNode = fromObj
-            #if fromNode not in self.__nodes:
+            # if fromNode not in self.__nodes:
             #    raise Exception("Unknown node: '{0}'".format(fromNode))
 
         if isinstance(toObj, EvaluationPackage):
@@ -114,42 +111,38 @@ class DependencyGraph(object):
                 toNode = self.__uniqueNodeDict[toObj]
         else:
             toNode = toObj
-            #if toNode not in self.__nodes:
+            # if toNode not in self.__nodes:
             #    raise Exception("Unknown node: '{0}'".format(toNode))
 
         fromNode.AddEdge(toNode)
 
-
-    def FindNodesWithNoIncomingDependencies(self) -> List[DependencyGraphNode]:
+    def FindNodesWithNoIncomingDependencies(self) -> list[DependencyGraphNode]:
         return [entry for entry in self.__nodes if len(entry.From) <= 0]
 
-    def FindNodesWithNoOutgoingDependencies(self) -> List[DependencyGraphNode]:
+    def FindNodesWithNoOutgoingDependencies(self) -> list[DependencyGraphNode]:
         return [entry for entry in self.__nodes if len(entry.To) <= 0]
 
-
-    def AddAllNodes(self, allPackages: List[EvaluationPackage]) -> None:
+    def AddAllNodes(self, allPackages: list[EvaluationPackage]) -> None:
         for package in allPackages:
             self.AddNode(package)
-
 
     def AddPackageDirectDependencies(self, node: DependencyGraphNode) -> None:
         for depPackage in node.Source.DirectDependencies:
             self.AddEdge(node, depPackage.Package)
 
-
-    def AddAllDependencies(self, allPackages: List[EvaluationPackage]) -> None:
+    def AddAllDependencies(self, allPackages: list[EvaluationPackage]) -> None:
         for package in allPackages:
             self.AddPackageDirectDependencies(self.GetNode(package))
 
-    def DetermineBuildOrder(self, rootPackage: EvaluationPackage) -> List[EvaluationPackage]:
+    def DetermineBuildOrder(self, rootPackage: EvaluationPackage) -> list[EvaluationPackage]:
         """
         This extract the correct build order, but it also clears the graph!
         """
-        orderedDependencyList = [] # type: List[EvaluationPackage]
+        orderedDependencyList: list[EvaluationPackage] = []
 
         rootNode = self.GetNode(rootPackage)
         while not self.Empty():
-            removedNodes = self.RemoveNodesWithNoIncomingDependencies()  # type: List[DependencyGraphNode]
+            removedNodes: list[DependencyGraphNode] = self.RemoveNodesWithNoIncomingDependencies()
             if len(removedNodes) <= 0:
                 self.__HandleCircularDependencies(rootNode)
 
@@ -162,45 +155,44 @@ class DependencyGraph(object):
         orderedDependencyList.reverse()
         return orderedDependencyList
 
-
-    def __RemoveNodesWithNoOutgoingDependencies(self) -> List[DependencyGraphNode]:
-        removeList = self.FindNodesWithNoOutgoingDependencies() # type: List[DependencyGraphNode]
+    def __RemoveNodesWithNoOutgoingDependencies(self) -> list[DependencyGraphNode]:
+        removeList: list[DependencyGraphNode] = self.FindNodesWithNoOutgoingDependencies()
         for node in removeList:
             self.Remove(node)
         return removeList
 
-    def RemoveNodesWithNoIncomingDependencies(self) -> List[DependencyGraphNode]:
+    def RemoveNodesWithNoIncomingDependencies(self) -> list[DependencyGraphNode]:
         """
         This is useful for finding the dependency order
         """
-        removeList = self.FindNodesWithNoIncomingDependencies() # type: List[DependencyGraphNode]
+        removeList: list[DependencyGraphNode] = self.FindNodesWithNoIncomingDependencies()
         for node in removeList:
             self.Remove(node)
         return removeList
 
     def __HandleCircularDependencies(self, node: DependencyGraphNode) -> None:
         # Nodes without outgoing dependencies can not be part of the cycle -> so we remove them to simplify the graph
-        while (len(self.__RemoveNodesWithNoOutgoingDependencies()) > 0):
+        while len(self.__RemoveNodesWithNoOutgoingDependencies()) > 0:
             pass
 
         # check if this package is actually part of the circular dependency or not
         if not self.Contains(node.Source):
-            raise CircularDependencyInDependentPackageException("'{0}' uses a package that has a circular dependency".format(node.Source.Name))
+            raise CircularDependencyInDependentPackageException(f"'{node.Source.Name}' uses a package that has a circular dependency")
 
         # We are only interested in the dependencies that start at packageNode
-        circularDependencies = [] # type: List[List[DependencyGraphNode]]
-        dependencies = [node] # type: List[DependencyGraphNode]
+        circularDependencies: list[list[DependencyGraphNode]] = []
+        dependencies: list[DependencyGraphNode] = [node]
         DependencyGraph.__BuildDependencyList(circularDependencies, dependencies, node)
 
-        circularDepStringsSet = set() # type: Set[str]
+        circularDepStringsSet: set[str] = set()
         for circularDep in circularDependencies:
             circularDepStringsSet.add(DependencyGraph.__GetCircularDependencyString(circularDep))
 
-        circularDepStrings = list(circularDepStringsSet) # type: List[str]
+        circularDepStrings: list[str] = list(circularDepStringsSet)
         circularDepStrings.sort(key=lambda s: (DependencyGraph.__CountArrows(s), s.upper()))
 
         strDependencies = "\n  ".join(circularDepStrings)
-        raise CircularDependencyException("Circular dependency detected while validating {0}:\n  {1}".format(node.Source.Name.Value, strDependencies))
+        raise CircularDependencyException(f"Circular dependency detected while validating {node.Source.Name.Value}:\n  {strDependencies}")
 
     @staticmethod
     def __CountArrows(strContent: str) -> int:
@@ -213,7 +205,7 @@ class DependencyGraph(object):
         return count
 
     @staticmethod
-    def __GetCircularDependencyString(srcList: List[DependencyGraphNode]) -> str:
+    def __GetCircularDependencyString(srcList: list[DependencyGraphNode]) -> str:
         if srcList is None or len(srcList) < 2:
             raise Exception("No circular dependency exist in the supplied list")
 
@@ -227,15 +219,16 @@ class DependencyGraph(object):
         del srcList[0:foundIndex]
         return "->".join([entry.Source.Name.Value for entry in srcList])
 
-
     @staticmethod
-    def __BuildDependencyList(circularDependencies: List[List[DependencyGraphNode]], dependencies: List[DependencyGraphNode], node: DependencyGraphNode) -> None:
+    def __BuildDependencyList(
+        circularDependencies: list[list[DependencyGraphNode]], dependencies: list[DependencyGraphNode], node: DependencyGraphNode
+    ) -> None:
         for depNode in node.To:
             if depNode not in dependencies:
                 dependencies.append(depNode)
                 DependencyGraph.__BuildDependencyList(circularDependencies, dependencies, depNode)
                 dependencies.pop()
             else:
-                circularDependencyList = list(dependencies) # type: List[DependencyGraphNode]
+                circularDependencyList: list[DependencyGraphNode] = list(dependencies)
                 circularDependencyList.append(depNode)
                 circularDependencies.append(circularDependencyList)

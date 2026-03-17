@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright 2023 NXP
 # All rights reserved.
 #
@@ -29,15 +28,15 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-from typing import Dict
-from typing import Optional
+
 from FslBuildGen.Engine.PackageFlavorOptionName import PackageFlavorOptionName
 from FslBuildGen.Engine.Unresolved.UnresolvedPackageFlavorName import UnresolvedPackageFlavorName
 
-class ExternalVariantConstraints(object):
-    def __init__(self, constraintsDict: Dict[UnresolvedPackageFlavorName, PackageFlavorOptionName]) -> None:
+
+class ExternalVariantConstraints:
+    def __init__(self, constraintsDict: dict[UnresolvedPackageFlavorName, PackageFlavorOptionName]) -> None:
         super().__init__()
         self.Dict = constraintsDict
         self.__LookupDict = ExternalVariantConstraints.__ToLookupDict(constraintsDict)
@@ -47,28 +46,28 @@ class ExternalVariantConstraints(object):
         for key, value in self.Dict.items():
             if len(res) > 0:
                 res = res + ","
-            res = "{0}={1}".format(key, value)
+            res = f"{key}={value}"
         return res
 
-    def TryGetByNameString(self, name: str) -> Optional[PackageFlavorOptionName]:
-        return self.__LookupDict[name] if name in self.__LookupDict else None
+    def TryGetByNameString(self, name: str) -> PackageFlavorOptionName | None:
+        return self.__LookupDict.get(name, None)
 
-    def TryGetOptionStringByNameString(self, name: str) -> Optional[str]:
+    def TryGetOptionStringByNameString(self, name: str) -> str | None:
         return self.__LookupDict[name].Value if name in self.__LookupDict else None
 
     def HasConstraints(self) -> bool:
         return len(self.Dict) > 0
 
     @staticmethod
-    def ToExternalVariantConstraints(srcDict: Dict[str,str]) -> 'ExternalVariantConstraints':
-        constraintsDict = dict() # type: Dict[UnresolvedPackageFlavorName, PackageFlavorOptionName]
+    def ToExternalVariantConstraints(srcDict: dict[str, str]) -> "ExternalVariantConstraints":
+        constraintsDict: dict[UnresolvedPackageFlavorName, PackageFlavorOptionName] = {}
         for key, value in srcDict.items():
             constraintsDict[UnresolvedPackageFlavorName(key)] = PackageFlavorOptionName(value)
         return ExternalVariantConstraints(constraintsDict)
 
     @staticmethod
-    def __ToLookupDict(srcDict: Dict[UnresolvedPackageFlavorName, PackageFlavorOptionName]) -> Dict[str, PackageFlavorOptionName]:
-        resDict = dict() # type: Dict[str, PackageFlavorOptionName]
+    def __ToLookupDict(srcDict: dict[UnresolvedPackageFlavorName, PackageFlavorOptionName]) -> dict[str, PackageFlavorOptionName]:
+        resDict: dict[str, PackageFlavorOptionName] = {}
         for key, value in srcDict.items():
             resDict[key.Value] = value
         return resDict

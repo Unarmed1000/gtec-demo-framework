@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright 2019 NXP
 # All rights reserved.
 #
@@ -29,14 +29,14 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
 from FslBuildGen import IOUtil
 from FslBuildGen.Exceptions import UsageErrorException
 from FslBuildGen.ToolConfig import ToolConfigPackageLocation
 
 
-class PackagePath(object):
+class PackagePath:
     def __init__(self, path: str, packageLocation: ToolConfigPackageLocation, normalize: bool = True) -> None:
         super().__init__()
 
@@ -45,16 +45,15 @@ class PackagePath(object):
         if not isinstance(packageLocation, ToolConfigPackageLocation):
             raise UsageErrorException()
 
-
         if IOUtil.IsAbsolutePath(path):
             if not path.startswith(packageLocation.ResolvedPathEx):
-                raise UsageErrorException("The path '{0}' does not belong to the supplied location '{1}'".format(path, packageLocation.ResolvedPathEx))
-            rootRelativeDirPath = path[len(packageLocation.ResolvedPathEx):]
+                raise UsageErrorException(f"The path '{path}' does not belong to the supplied location '{packageLocation.ResolvedPathEx}'")
+            rootRelativeDirPath = path[len(packageLocation.ResolvedPathEx) :]
             absoluteDirPath = path
         else:
             rootRelativeDirPath = path
             absoluteDirPath = IOUtil.Join(packageLocation.ResolvedPath, path)
 
         self.RootRelativeDirPath = rootRelativeDirPath  # The root relative containing directory
-        self.AbsoluteDirPath = absoluteDirPath          # type: str
-        self.PackageRootLocation = packageLocation      # type: ToolConfigPackageLocation
+        self.AbsoluteDirPath: str = absoluteDirPath
+        self.PackageRootLocation: ToolConfigPackageLocation = packageLocation

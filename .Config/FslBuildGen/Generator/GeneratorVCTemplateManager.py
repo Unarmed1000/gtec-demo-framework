@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright (c) 2016 Freescale Semiconductor, Inc.
 # All rights reserved.
 #
@@ -29,57 +29,52 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-from typing import Dict
-from typing import List
-from typing import Optional
-from typing import Set
+
 from FslBuildGen import IOUtil
 from FslBuildGen.DataTypes import PackageLanguage
-#from FslBuildGen.DataTypes import *
-#from FslBuildGen.Exceptions import *
-#from FslBuildGen.SharedGeneration import *
-#from FslBuildGen.PackageGeneratorReport import *
+
+# from FslBuildGen.DataTypes import *
+# from FslBuildGen.Exceptions import *
+# from FslBuildGen.SharedGeneration import *
+# from FslBuildGen.PackageGeneratorReport import *
 from FslBuildGen.Generator.VSVersionLanguageTemplates import VSVersionLanguageTemplates
 from FslBuildGen.Log import Log
 from FslBuildGen.ToolConfig import ToolConfigTemplateFolder
 from FslBuildGen.Xml.XmlNewVSProjectTemplateFile import XmlNewVSProjectTemplateFile
 
 
-class GeneratorVCTemplateManager(object):
+class GeneratorVCTemplateManager:
     def __init__(self, log: Log, pathTemplateRoot: ToolConfigTemplateFolder, vsVersion: int) -> None:
         super().__init__()
         self.TemplateFileName = "Template.xml"
         # Language to template lookup
         # key =  the packageLanguage
         # value = VSVersionLanguageTemplates
-        self.LanguageToTemplatesDict = self.__LoadTemplates(log, pathTemplateRoot.ResolvedPath, vsVersion)  # type: Dict[PackageLanguage, VSVersionLanguageTemplates]
-
+        self.LanguageToTemplatesDict: dict[PackageLanguage, VSVersionLanguageTemplates] = self.__LoadTemplates(log, pathTemplateRoot.ResolvedPath, vsVersion)
 
     def GetLanguageTemplates(self, packageLanguage: PackageLanguage) -> VSVersionLanguageTemplates:
         return self.LanguageToTemplatesDict[packageLanguage]
 
+    def TryGetLanguageTemplates(self, packageLanguage: PackageLanguage) -> VSVersionLanguageTemplates | None:
+        return self.LanguageToTemplatesDict.get(packageLanguage, None)
 
-    def TryGetLanguageTemplates(self, packageLanguage: PackageLanguage) -> Optional[VSVersionLanguageTemplates]:
-        return self.LanguageToTemplatesDict[packageLanguage] if packageLanguage in self.LanguageToTemplatesDict else None
-
-
-    def __LoadTemplates(self, log: Log, path: str, vsVersion: int) -> Dict[PackageLanguage, VSVersionLanguageTemplates]:
-        pathVS = IOUtil.Join(path, "VS{0}".format(vsVersion))
+    def __LoadTemplates(self, log: Log, path: str, vsVersion: int) -> dict[PackageLanguage, VSVersionLanguageTemplates]:
+        pathVS = IOUtil.Join(path, f"VS{vsVersion}")
         vsDirs = self.__ScanDir(pathVS)
 
-        templateIds = set()  # type: Set[str]
-        languageToTemplatesDict = {}  # type: Dict[PackageLanguage, VSVersionLanguageTemplates]
+        templateIds: set[str] = set()
+        languageToTemplatesDict: dict[PackageLanguage, VSVersionLanguageTemplates] = {}
         for entry in vsDirs:
             templateList = self.__ScanForTemplates(log, entry)
             for template in templateList:
-                if template != None:
+                if template is not None:
                     if template.Id in templateIds:
-                        raise Exception("Template id already defined: '{0}'".format(template.Id))
+                        raise Exception(f"Template id already defined: '{template.Id}'")
 
-                    #languageTemplateDict = None
-                    if not template.Template.PackageLanguage in languageToTemplatesDict:
+                    # languageTemplateDict = None
+                    if template.Template.PackageLanguage not in languageToTemplatesDict:
                         languageTemplates = VSVersionLanguageTemplates(template.Template.PackageLanguage)
                         languageToTemplatesDict[template.Template.PackageLanguage] = languageTemplates
                     else:
@@ -90,24 +85,21 @@ class GeneratorVCTemplateManager(object):
 
         return languageToTemplatesDict
 
-
-    def __ScanForTemplates(self, log: Log, path: str) -> List[XmlNewVSProjectTemplateFile]:
+    def __ScanForTemplates(self, log: Log, path: str) -> list[XmlNewVSProjectTemplateFile]:
         files = IOUtil.GetFilePaths(path, self.TemplateFileName)
-        templateList = []  # type: List[XmlNewVSProjectTemplateFile]
+        templateList: list[XmlNewVSProjectTemplateFile] = []
         for filename in files:
             template = self.__TryLoadTemplate(log, filename)
             if template is not None:
                 templateList.append(template)
             else:
-                log.LogPrint("Failed to load template '{0}'".format(filename))
+                log.LogPrint(f"Failed to load template '{filename}'")
         return templateList
 
-
-    def __ScanDir(self, path: str) -> List[str]:
+    def __ScanDir(self, path: str) -> list[str]:
         return IOUtil.GetDirectoriesAt(path, True)
 
-
-    def __TryLoadTemplate(self, log: Log, path: str) -> Optional[XmlNewVSProjectTemplateFile]:
+    def __TryLoadTemplate(self, log: Log, path: str) -> XmlNewVSProjectTemplateFile | None:
         if IOUtil.IsFile(path):
             return XmlNewVSProjectTemplateFile(log, path)
         return None

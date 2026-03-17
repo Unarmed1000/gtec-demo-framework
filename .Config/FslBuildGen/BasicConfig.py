@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright 2017 NXP
 # All rights reserved.
 #
@@ -29,9 +29,10 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
 from FslBuildGen.Log import Log
+
 
 class BasicConfig(Log):
     def __init__(self, log: Log) -> None:
@@ -46,42 +47,32 @@ class BasicConfig(Log):
     def GetTitlePrinted(self) -> bool:
         return self.__Log.GetTitlePrinted()
 
-
     def SetTitlePrinted(self, value: bool) -> None:
         self.__Log.SetTitlePrinted(value)
-
 
     def PrintTitle(self) -> None:
         self.__Log.PrintTitle()
 
-
     def PushIndent(self) -> None:
         self.__Log.PushIndent()
-
 
     def PopIndent(self) -> None:
         self.__Log.PopIndent()
 
-
     def LogPrint(self, message: str) -> None:
         self.__Log.LogPrint(message)
-
 
     def LogPrintWarning(self, message: str) -> None:
         self.__Log.LogPrintWarning(message)
 
-
     def LogPrintVerbose(self, verbosityLevel: int, message: str) -> None:
         self.__Log.LogPrintVerbose(verbosityLevel, message)
-
 
     def DoPrint(self, message: str) -> None:
         self.__Log.DoPrint(message)
 
-
     def DoPrintError(self, message: str) -> None:
         self.__Log.DoPrintError(message)
-
 
     def DoPrintWarning(self, message: str) -> None:
         self.__Log.DoPrintWarning(message)

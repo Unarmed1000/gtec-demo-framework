@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright 2017 NXP
 # All rights reserved.
 #
@@ -29,11 +28,10 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-from typing import Optional
 
-class RecipeType(object):
+class RecipeType:
     Undefined = 0
     External = 1
     ExternalInstallation = 2
@@ -45,11 +43,10 @@ class RecipeType(object):
         result = RecipeType.TryToString(value)
         if result is not None:
             return result
-        raise Exception("Unsupported RecipeType '{0}'".format(value))
-
+        raise Exception(f"Unsupported RecipeType '{value}'")
 
     @staticmethod
-    def TryToString(value: int) -> Optional[str]:
+    def TryToString(value: int) -> str | None:
         if value == RecipeType.Undefined:
             return "Undefined"
         elif value == RecipeType.External:

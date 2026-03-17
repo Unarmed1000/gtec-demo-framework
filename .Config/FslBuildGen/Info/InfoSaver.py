@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright 2017 NXP
 # All rights reserved.
 #
@@ -29,27 +28,25 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-from typing import Any
-from typing import Dict
-from typing import List
-from typing import Optional
 import json
+from typing import Any
+
 from FslBuildGen import IOUtil
-#from FslBuildGen import PackageUtil
-#from FslBuildGen.Build.Filter import PackageFilter
+
+# from FslBuildGen import PackageUtil
+# from FslBuildGen.Build.Filter import PackageFilter
 from FslBuildGen.Context.GeneratorContext import GeneratorContext
-from FslBuildGen.DataTypes import PackageCreationYearString
-from FslBuildGen.DataTypes import PackageType
+from FslBuildGen.DataTypes import PackageCreationYearString, PackageType
 from FslBuildGen.Generator.GeneratorConfig import GeneratorConfig
 from FslBuildGen.Generator.Report.Datatypes import FormatStringEnvironmentVariableResolveMethod
 from FslBuildGen.Generator.Report.GeneratorExecutableReport import GeneratorExecutableReport
 from FslBuildGen.Generator.Report.GeneratorVariableReport import GeneratorVariableReport
 from FslBuildGen.Generator.Report.PackageGeneratorReport import PackageGeneratorReport
 from FslBuildGen.Generator.Report.VariableReport import VariableReport
-from FslBuildGen.Log import Log
 from FslBuildGen.Info.AppInfoJson import JsonRootKey
+from FslBuildGen.Log import Log
 from FslBuildGen.Packages.Package import Package
 from FslBuildGen.Packages.PackageRequirement import PackageRequirement
 
@@ -57,7 +54,8 @@ from FslBuildGen.Packages.PackageRequirement import PackageRequirement
 
 ## Info save code
 
-class JsonRequirement(object):
+
+class JsonRequirement:
     def __init__(self, requirement: PackageRequirement) -> None:
         super().__init__()
         self.Name = requirement.Name
@@ -68,33 +66,33 @@ class JsonRequirement(object):
             self.Extends = requirement.Extends
 
 
-class JsonPackageVariableReport(object):
+class JsonPackageVariableReport:
     def __init__(self, variableReport: VariableReport) -> None:
         super().__init__()
-        self.Name = variableReport.Name                # type: str
-        self.Options = variableReport.Options          # type: List[str]
+        self.Name: str = variableReport.Name
+        self.Options: list[str] = variableReport.Options
         if variableReport.LinkTargetName is not None:
-            self.LinkTargetName = variableReport.LinkTargetName    # type: Optional[str]
+            self.LinkTargetName: str | None = variableReport.LinkTargetName
 
 
-class JsonPackageGeneratorVariableReport(object):
+class JsonPackageGeneratorVariableReport:
     def __init__(self, variableReport: GeneratorVariableReport) -> None:
         super().__init__()
         self.VariableReportList = [JsonPackageVariableReport(report) for report in variableReport.GetVariableReportList()]
-        self.DefaultOptions = variableReport.SYS_GetDefaultOptions()  # type: Dict[str, int]
+        self.DefaultOptions: dict[str, int] = variableReport.SYS_GetDefaultOptions()
 
 
-class JsonPackageGeneratorExecutableReport(object):
+class JsonPackageGeneratorExecutableReport:
     def __init__(self, executableReport: GeneratorExecutableReport) -> None:
         super().__init__()
         self.UseAsRelative = executableReport.UseAsRelative
-        self.EnvironmentVariableResolveMethod = FormatStringEnvironmentVariableResolveMethod.ToInt(executableReport.EnvironmentVariableResolveMethod)  # type: int
-        self.ExeFormatString = executableReport.ExeFormatString  # type: str
-        if executableReport.RunScript  is not None:
-            self.RunScript = executableReport.RunScript  # type: str
+        self.EnvironmentVariableResolveMethod: int = FormatStringEnvironmentVariableResolveMethod.ToInt(executableReport.EnvironmentVariableResolveMethod)
+        self.ExeFormatString: str = executableReport.ExeFormatString
+        if executableReport.RunScript is not None:
+            self.RunScript: str = executableReport.RunScript
 
 
-class JsonPackageGeneratorReport(object):
+class JsonPackageGeneratorReport:
     def __init__(self, package: Package, generatorReport: PackageGeneratorReport) -> None:
         super().__init__()
 
@@ -104,25 +102,24 @@ class JsonPackageGeneratorReport(object):
             self.ExecutableReport = JsonPackageGeneratorExecutableReport(generatorReport.ExecutableReport)
 
 
-class JsonPackage(object):
-    def __init__(self, package: Package, packageGeneratorReport: Optional[PackageGeneratorReport]) -> None:
+class JsonPackage:
+    def __init__(self, package: Package, packageGeneratorReport: PackageGeneratorReport | None) -> None:
         super().__init__()
         self.SourcePackageName = package.NameInfo.SourceName
         self.Type = PackageType.ToString(package.Type)
-        #self.IsVirtual = package.IsVirtual
+        # self.IsVirtual = package.IsVirtual
 
-
-        #self.PackageLanguage = PackageLanguage.ToString(package.PackageLanguage)
+        # self.PackageLanguage = PackageLanguage.ToString(package.PackageLanguage)
         if package.CreationYear != PackageCreationYearString.NotDefined and package.CreationYear is not None:
-            self.CreationYear = package.CreationYear  # type: str
-        #self.CompanyName = package.CompanyName
+            self.CreationYear: str = package.CreationYear
+        # self.CompanyName = package.CompanyName
 
         # resolved
-        #self.PlatformName = package.ResolvedPlatformName
+        # self.PlatformName = package.ResolvedPlatformName
 
         self.AllRequirements = [JsonRequirement(requirement) for requirement in package.ResolvedAllRequirements]
         if not package.ResolvedPlatformSupported:
-            self.Supported = package.ResolvedPlatformSupported # type: bool
+            self.Supported: bool = package.ResolvedPlatformSupported
 
         if packageGeneratorReport is not None:
             self.GeneratorReport = JsonPackageGeneratorReport(package, packageGeneratorReport)
@@ -130,43 +127,54 @@ class JsonPackage(object):
 
 class ComplexEncoder(json.JSONEncoder):
     def default(self, o: Any) -> Any:
-        if isinstance(o, (JsonPackage, JsonRequirement, JsonPackageGeneratorReport,
-                          JsonPackageGeneratorVariableReport, JsonPackageVariableReport,
-                          JsonPackageGeneratorExecutableReport)):
+        if isinstance(
+            o,
+            (
+                JsonPackage,
+                JsonRequirement,
+                JsonPackageGeneratorReport,
+                JsonPackageGeneratorVariableReport,
+                JsonPackageVariableReport,
+                JsonPackageGeneratorExecutableReport,
+            ),
+        ):
             return o.__dict__
         # Let the base class default method raise the TypeError
         return json.JSONEncoder.default(self, o)
 
 
-
-def ToJsonPackage(package: Package, generatorReportDict: Optional[Dict[Package, PackageGeneratorReport]]) -> JsonPackage:
+def ToJsonPackage(package: Package, generatorReportDict: dict[Package, PackageGeneratorReport] | None) -> JsonPackage:
     packageGeneratorReport = None if generatorReportDict is None or package not in generatorReportDict else generatorReportDict[package]
     return JsonPackage(package, packageGeneratorReport)
 
 
-def SavePackageMetaDataToJson(generatorContext: GeneratorContext,
-                              generatorConfig: GeneratorConfig,
-                              dstFilePath: str,
-                              log: Log,
-                              topLevelPackage: Package,
-                              packageTypeFilters: List[str],
-                              includeGeneratorReport: bool) -> None:
+def SavePackageMetaDataToJson(
+    generatorContext: GeneratorContext,
+    generatorConfig: GeneratorConfig,
+    dstFilePath: str,
+    log: Log,
+    topLevelPackage: Package,
+    packageTypeFilters: list[str],
+    includeGeneratorReport: bool,
+) -> None:
     resolvedBuildOrder = topLevelPackage.ResolvedBuildOrder
 
     # Raw package type filtering
-    if not '*' in packageTypeFilters:
-        log.LogPrint("Filtering by PackageType: {0}".format(packageTypeFilters))
+    if "*" not in packageTypeFilters:
+        log.LogPrint(f"Filtering by PackageType: {packageTypeFilters}")
         resolvedBuildOrder = [package for package in resolvedBuildOrder if PackageType.ToString(package.Type) in packageTypeFilters]
 
     if resolvedBuildOrder is None:
-        log.LogPrint("WARNING: No packages left to write to json file '{0}'".format(dstFilePath))
+        log.LogPrint(f"WARNING: No packages left to write to json file '{dstFilePath}'")
         resolvedBuildOrder = []
 
-    generatorReportDict = None if not includeGeneratorReport else generatorContext.Generator.GenerateReport(log, generatorConfig, resolvedBuildOrder).PackageReportDict
+    generatorReportDict = (
+        None if not includeGeneratorReport else generatorContext.Generator.GenerateReport(log, generatorConfig, resolvedBuildOrder).PackageReportDict
+    )
 
-    jsonRootDict = {} # type: Dict[str, Any]
+    jsonRootDict: dict[str, Any] = {}
     jsonRootDict[JsonRootKey.PlatformName] = topLevelPackage.ResolvedPlatformName
-    jsonRootDict[JsonRootKey.ResolvedPackageList] = {package.Name:ToJsonPackage(package, generatorReportDict) for package in resolvedBuildOrder}
+    jsonRootDict[JsonRootKey.ResolvedPackageList] = {package.Name: ToJsonPackage(package, generatorReportDict) for package in resolvedBuildOrder}
 
     jsonText = str(json.dumps(jsonRootDict, ensure_ascii=False, sort_keys=True, indent=2, cls=ComplexEncoder))
     IOUtil.WriteFileIfChanged(dstFilePath, jsonText)

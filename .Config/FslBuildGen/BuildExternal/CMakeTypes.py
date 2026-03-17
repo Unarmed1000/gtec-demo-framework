@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright 2017 NXP
 # All rights reserved.
 #
@@ -29,20 +28,21 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
 from enum import Enum
-from FslBuildGen.DataTypes import BuildVariantConfig
-from FslBuildGen.DataTypes import VisualStudioVersion
 
-class CMakeGeneratorName(object):
+from FslBuildGen.DataTypes import BuildVariantConfig, VisualStudioVersion
+
+
+class CMakeGeneratorName:
     NotDefined = "NotDefined"
     UnixMakeFile = "Unix Makefiles"
     VisualStudio2015_X64 = "Visual Studio 14 2015 Win64"
     VisualStudio2017_X64 = "Visual Studio 15 2017 Win64"
-    VisualStudio2019_X64 = "Visual Studio 16 2019"    # this needs a "-A x64" option to generate x64 code
-    VisualStudio2022_X64 = "Visual Studio 17 2022"    # this needs a "-A x64" option to generate x64 code
-    VisualStudio2026_X64 = "Visual Studio 18 2026"    # this needs a "-A x64" option to generate x64 code
+    VisualStudio2019_X64 = "Visual Studio 16 2019"  # this needs a "-A x64" option to generate x64 code
+    VisualStudio2022_X64 = "Visual Studio 17 2022"  # this needs a "-A x64" option to generate x64 code
+    VisualStudio2026_X64 = "Visual Studio 18 2026"  # this needs a "-A x64" option to generate x64 code
     Ninja = "Ninja"
     Android = "AndroidDummy"
 
@@ -58,13 +58,17 @@ class CMakeGeneratorName(object):
             return CMakeGeneratorName.VisualStudio2022_X64
         elif version == VisualStudioVersion.VS2026:
             return CMakeGeneratorName.VisualStudio2026_X64
-        raise Exception("Unsupported visual studio version: {0}".format(version))
+        raise Exception(f"Unsupported visual studio version: {version}")
 
     @staticmethod
     def IsVisualStudio(name: str) -> bool:
-        return (name == CMakeGeneratorName.VisualStudio2015_X64 or name == CMakeGeneratorName.VisualStudio2017_X64 or
-                name == CMakeGeneratorName.VisualStudio2019_X64 or name == CMakeGeneratorName.VisualStudio2022_X64 or
-                name == CMakeGeneratorName.VisualStudio2026_X64)
+        return (
+            name == CMakeGeneratorName.VisualStudio2015_X64
+            or name == CMakeGeneratorName.VisualStudio2017_X64
+            or name == CMakeGeneratorName.VisualStudio2019_X64
+            or name == CMakeGeneratorName.VisualStudio2022_X64
+            or name == CMakeGeneratorName.VisualStudio2026_X64
+        )
 
     @staticmethod
     def GetToolsetVersionString(name: str) -> str:
@@ -83,13 +87,13 @@ class CMakeGeneratorName(object):
         return ""
 
 
-
 class CMakeGeneratorMultiConfigCapability(Enum):
     No = 0
     Yes = 1
     Unknown = 2
 
-class CMakeBuildType(object):
+
+class CMakeBuildType:
     Release = "RELEASE"
     Debug = "DEBUG"
 
@@ -99,4 +103,6 @@ class CMakeBuildType(object):
             return CMakeBuildType.Release
         elif buildVariantConfig == BuildVariantConfig.Debug or buildVariantConfig == BuildVariantConfig.Coverage:
             return CMakeBuildType.Debug
-        raise Exception("Unsupported BuildVariantConfig '{0}' valid configs are '{1}', '{2}' or '{3}'".format(BuildVariantConfig.ToString(buildVariantConfig), BuildVariantConfig.Debug, BuildVariantConfig.Release, BuildVariantConfig.Coverage))
+        raise Exception(
+            f"Unsupported BuildVariantConfig '{BuildVariantConfig.ToString(buildVariantConfig)}' valid configs are '{BuildVariantConfig.Debug}', '{BuildVariantConfig.Release}' or '{BuildVariantConfig.Coverage}'"
+        )

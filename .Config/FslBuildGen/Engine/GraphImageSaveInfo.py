@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright 2023 NXP
 # All rights reserved.
 #
@@ -29,12 +28,13 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-from typing import List
+
 from FslBuildGen.ToolConfigProjectContext import ToolConfigProjectContext
 
-class GraphImageSaveInfo(object):
-    def __init__(self, projectContexts: List[ToolConfigProjectContext]) -> None:
+
+class GraphImageSaveInfo:
+    def __init__(self, projectContexts: list[ToolConfigProjectContext]) -> None:
         super().__init__()
         self.ProjectContexts = projectContexts

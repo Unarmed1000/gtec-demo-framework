@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright 2017 NXP
 # All rights reserved.
 #
@@ -29,47 +28,44 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-from FslBuildGen.Log import Log
 from FslBuildGen.Location.ResolvedPath import ResolvedPath
+from FslBuildGen.Log import Log
 from FslBuildGen.Vars.VariableProcessor import VariableProcessor
 
-class PathBuilder(object):
+
+class PathBuilder:
     def __init__(self, log: Log, variableProcessor: VariableProcessor, platformName: str) -> None:
         super().__init__()
 
-        self.__Log = log                             # type: Log
-        self.__VariableProcessor = variableProcessor # type: VariableProcessor
-
+        self.__Log: Log = log
+        self.__VariableProcessor: VariableProcessor = variableProcessor
 
     def ResolveFilePath(self, sourcePath: str) -> ResolvedPath:
-        if sourcePath.find('..') != -1:
-            raise Exception("'..' is now allowed in file paths ('{0}')".format(sourcePath))
-        if sourcePath.find('\\') != -1:
-            raise Exception("'\\' is now allowed in file paths ('{0}')".format(sourcePath))
+        if sourcePath.find("..") != -1:
+            raise Exception(f"'..' is now allowed in file paths ('{sourcePath}')")
+        if sourcePath.find("\\") != -1:
+            raise Exception(f"'\\' is now allowed in file paths ('{sourcePath}')")
 
         resolvedPath = self.__VariableProcessor.ResolveAbsolutePathWithLeadingEnvironmentVariablePathAsFile(sourcePath)
         return ResolvedPath(sourcePath, resolvedPath)
 
-
     def ResolveDirectoryPath(self, sourcePath: str, checkExists: bool = True) -> ResolvedPath:
-        if sourcePath.find('..') != -1:
-            raise Exception("'..' is now allowed in directory paths ('{0}')".format(sourcePath))
-        if sourcePath.find('\\') != -1:
-            raise Exception("'\\' is now allowed in directory paths ('{0}')".format(sourcePath))
+        if sourcePath.find("..") != -1:
+            raise Exception(f"'..' is now allowed in directory paths ('{sourcePath}')")
+        if sourcePath.find("\\") != -1:
+            raise Exception(f"'\\' is now allowed in directory paths ('{sourcePath}')")
 
         resolvedPath = self.__VariableProcessor.ResolveAbsolutePathWithLeadingEnvironmentVariablePathAsDir(sourcePath, checkExists=checkExists)
         return ResolvedPath(sourcePath, resolvedPath)
 
-
     def ResolveFilenameWithVariables(self, sourcePath: str) -> str:
-        if sourcePath.find('..') != -1:
-            raise Exception("'..' is now allowed in directory paths ('{0}')".format(sourcePath))
-        if sourcePath.find('\\') != -1:
-            raise Exception("'\\' is now allowed in directory paths ('{0}')".format(sourcePath))
-        if sourcePath.find('$') == -1:
+        if sourcePath.find("..") != -1:
+            raise Exception(f"'..' is now allowed in directory paths ('{sourcePath}')")
+        if sourcePath.find("\\") != -1:
+            raise Exception(f"'\\' is now allowed in directory paths ('{sourcePath}')")
+        if sourcePath.find("$") == -1:
             return sourcePath
         resolvedPath = self.__VariableProcessor.ResolveFilenameWithVariables(sourcePath)
         return resolvedPath
-

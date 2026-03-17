@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright (c) 2014 Freescale Semiconductor, Inc.
 # All rights reserved.
 #
@@ -29,29 +29,33 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-from typing import Dict
-from typing import List
-from typing import Optional
 from FslBuildGen.BuildConfig.CMakeConfiguration import CMakeConfiguration
 from FslBuildGen.BuildConfig.UserSetVariables import UserSetVariables
-from FslBuildGen.DataTypes import BuildVariantConfig
-from FslBuildGen.DataTypes import GeneratorType
-from FslBuildGen.DataTypes import PackageLanguage
+from FslBuildGen.DataTypes import BuildVariantConfig, GeneratorType, PackageLanguage
 from FslBuildGen.Generator.GeneratorPlugin import GeneratorPlugin
 from FslBuildGen.Tool.UserCMakeConfig import UserCMakeConfig
 
-class PluginConfigContext(object):
+
+class PluginConfigContext:
     def __init__(self) -> None:
         super().__init__()
 
-    def GetGeneratorPlugins(self) -> List[GeneratorPlugin]:
+    def GetGeneratorPlugins(self) -> list[GeneratorPlugin]:
         raise Exception("GetGeneratorPlugins not implemented")
 
-    def GetGeneratorPluginById(self, pluginId: str, generatorType: GeneratorType, buildVariantConfig: BuildVariantConfig,
-                               userSetVariables: UserSetVariables, defaultPackageLanguage: PackageLanguage, cmakeConfiguration: CMakeConfiguration,
-                               userCMakeConfig: Optional[UserCMakeConfig], isCheckMode: bool) -> GeneratorPlugin:
+    def GetGeneratorPluginById(
+        self,
+        pluginId: str,
+        generatorType: GeneratorType,
+        buildVariantConfig: BuildVariantConfig,
+        userSetVariables: UserSetVariables,
+        defaultPackageLanguage: PackageLanguage,
+        cmakeConfiguration: CMakeConfiguration,
+        userCMakeConfig: UserCMakeConfig | None,
+        isCheckMode: bool,
+    ) -> GeneratorPlugin:
         raise Exception("GetGeneratorPluginById not implemented")
 
     def EnableGraph(self) -> None:
@@ -62,4 +66,3 @@ class PluginConfigContext(object):
 
     def SetLegacyGeneratorType(self, legacyGeneratorType: str) -> None:
         raise Exception("SetLegacyGeneratorType not implemented")
-

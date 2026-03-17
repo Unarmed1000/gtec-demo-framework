@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright 2018 NXP
 # All rights reserved.
 #
@@ -29,43 +29,42 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-from typing import Dict
-#from typing import List
-from typing import Optional
-#from FslBuildGen.Build.CaptureEnvironmentVariablesFromScript import CaptureEnvironmentVariablesFromScript
+# from typing import List
+
+# from FslBuildGen.Build.CaptureEnvironmentVariablesFromScript import CaptureEnvironmentVariablesFromScript
+
 from FslBuildGen.DataTypes import VariantType
 from FslBuildGen.ExternalVariantConstraints import ExternalVariantConstraints
 from FslBuildGen.Log import Log
-from FslBuildGen.Packages.Package import Package
-from FslBuildGen.Packages.Package import PackagePlatformVariant
-from FslBuildGen.SharedGeneration import GEN_BUILD_ENV_VARIANT_SETTING
-from FslBuildGen.SharedGeneration import ToolAddedVariant
+from FslBuildGen.Packages.Package import Package, PackagePlatformVariant
+from FslBuildGen.SharedGeneration import GEN_BUILD_ENV_VARIANT_SETTING, ToolAddedVariant
 
-class BuildVariantUtil(object):
+
+class BuildVariantUtil:
     @staticmethod
-    def BuildCompleteVariantDict(topLevelPackage: Package) -> Dict[str, PackagePlatformVariant]:
-        variantDict = dict(topLevelPackage.ResolvedAllVariantDict) # type: Dict[str, PackagePlatformVariant]
+    def BuildCompleteVariantDict(topLevelPackage: Package) -> dict[str, PackagePlatformVariant]:
+        variantDict: dict[str, PackagePlatformVariant] = dict(topLevelPackage.ResolvedAllVariantDict)
         return variantDict
 
     @staticmethod
-    def ValidateUserVariantSettings(log: Log,
-                                    topLevelPackage: Package,
-                                    externalVariantConstraints: ExternalVariantConstraints) -> None:
+    def ValidateUserVariantSettings(log: Log, topLevelPackage: Package, externalVariantConstraints: ExternalVariantConstraints) -> None:
         variantDict = BuildVariantUtil.BuildCompleteVariantDict(topLevelPackage)
         for flavorName, flavorOption in externalVariantConstraints.Dict.items():
             if flavorName.Value in variantDict:
                 variant = variantDict[flavorName.Value]
-                if not flavorOption.Value in variant.OptionDict:
+                if flavorOption.Value not in variant.OptionDict:
                     validValues = list(variant.OptionDict.keys())
                     validValues.sort()
-                    raise Exception("Variant '{0}' expects one of the following values: '{1}' not '{2}'".format(flavorName.Value, ','.join(validValues), flavorOption.Value))
+                    raise Exception(
+                        "Variant '{}' expects one of the following values: '{}' not '{}'".format(flavorName.Value, ",".join(validValues), flavorOption.Value)
+                    )
             elif flavorName.Value != ToolAddedVariant.CONFIG:
-                log.LogPrintWarning("WARNING: Unused variant setting '{0}'".format(flavorName.Value))
+                log.LogPrintWarning(f"WARNING: Unused variant setting '{flavorName.Value}'")
 
-    #@staticmethod
-    #def LogVariantSettings(log: Log, variantSettingsDict: Dict[str, str]) -> None:
+    # @staticmethod
+    # def LogVariantSettings(log: Log, variantSettingsDict: Dict[str, str]) -> None:
     #    if len(variantSettingsDict) <= 0:
     #        return
     #    names = list(variantSettingsDict.keys())
@@ -76,7 +75,7 @@ class BuildVariantUtil(object):
     #    log.LogPrint("Variant settings: {0}".format(", ".join(result)))
 
     @staticmethod
-    def __TryLocateVariant(package: Package, key: str) -> Optional[PackagePlatformVariant]:
+    def __TryLocateVariant(package: Package, key: str) -> PackagePlatformVariant | None:
         if key in package.ResolvedAllVariantDict:
             return package.ResolvedAllVariantDict[key]
         # try a manual search for 'virtual keys'
@@ -86,25 +85,24 @@ class BuildVariantUtil(object):
         return None
 
     @staticmethod
-    def ExtendEnvironmentDictWithVariants(log: Log,
-                                          buildEnv: Dict[str, str],
-                                          package: Package,
-                                          externalVariantConstraints: ExternalVariantConstraints) -> None:
+    def ExtendEnvironmentDictWithVariants(log: Log, buildEnv: dict[str, str], package: Package, externalVariantConstraints: ExternalVariantConstraints) -> None:
         for flavorName, flavorOption in externalVariantConstraints.Dict.items():
             variant = BuildVariantUtil.__TryLocateVariant(package, flavorName.Value)
             if variant is not None:
                 if variant.Type == VariantType.Virtual or (flavorOption.Value in variant.OptionDict):
-                    envName = "{0}{1}".format(GEN_BUILD_ENV_VARIANT_SETTING, flavorName.Value.upper())
+                    envName = f"{GEN_BUILD_ENV_VARIANT_SETTING}{flavorName.Value.upper()}"
                     if envName in buildEnv:
-                        raise Exception("The environment variable {0} has allready been defined".format(envName))
+                        raise Exception(f"The environment variable {envName} has allready been defined")
                     buildEnv[envName] = flavorOption.Value
                 else:
                     validValues = list(variant.OptionDict.keys())
                     validValues.sort()
-                    log.DoPrintWarning("Variant '{0}' expects one of the following values: '{1}' not '{2}'".format(flavorName.Value, ','.join(validValues), flavorOption.Value))
+                    log.DoPrintWarning(
+                        "Variant '{}' expects one of the following values: '{}' not '{}'".format(flavorName.Value, ",".join(validValues), flavorOption.Value)
+                    )
 
-    #@staticmethod
-    #def ExtractRelevantVariantSettingsDict(config: Config,
+    # @staticmethod
+    # def ExtractRelevantVariantSettingsDict(config: Config,
     #                                       package: Package,
     #                                       userVariantSettingDict: Dict[str, str]) -> Dict[str, str]:
     #    """ Filters the userVariantSettingsDict down into a dict containing only the entries that are relevant for this package.
@@ -123,8 +121,9 @@ class BuildVariantUtil(object):
     #    return dictVariantSettings
 
     @staticmethod
-    def CreateCompleteStaticVariantSettings(resolvedAllVariantDict: Dict[str, PackagePlatformVariant],
-                                            externalVariantConstraints: ExternalVariantConstraints) -> Dict[str, str]:
+    def CreateCompleteStaticVariantSettings(
+        resolvedAllVariantDict: dict[str, PackagePlatformVariant], externalVariantConstraints: ExternalVariantConstraints
+    ) -> dict[str, str]:
         """
         Create a settings dict variant options in the resolvedAllVariantDict.
         We will use the supplied settings from variantsSelectionDict when available and chose a default option when not.
@@ -132,10 +131,9 @@ class BuildVariantUtil(object):
         :param variantsSelectionDict: the variant settings currently set
         :return: a selection dict containing values for all non dynamic variants
         """
-        resultDict = {}  # type: Dict[str,str]
+        resultDict: dict[str, str] = {}
         for variant in resolvedAllVariantDict.values():
             if variant.Type == VariantType.Normal:
-                value = ""
                 strOptionName = externalVariantConstraints.TryGetOptionStringByNameString(variant.Name)
                 if strOptionName is None:
                     if len(variant.Options) <= 0:
@@ -144,8 +142,8 @@ class BuildVariantUtil(object):
                 resultDict[variant.Name] = strOptionName
         return resultDict
 
-    #@staticmethod
-    #def CreateCompleteVirtualVariantSettings(log: Log, resolvedAllVariantDict: Dict[str, PackagePlatformVariant]) -> Dict[str,str]:
+    # @staticmethod
+    # def CreateCompleteVirtualVariantSettings(log: Log, resolvedAllVariantDict: Dict[str, PackagePlatformVariant]) -> Dict[str,str]:
     #    """
     #    Create a settings dict variant options in the resolvedAllVariantDict.
     #    We will use the supplied settings from variantsSelectionDict when available and chose a default option when not.
@@ -175,8 +173,8 @@ class BuildVariantUtil(object):
 
     #    return resultDict
 
-    #@staticmethod
-    #def CreateCompleteVariantSettings(log: Log, resolvedAllVariantDict: Dict[str, PackagePlatformVariant],
+    # @staticmethod
+    # def CreateCompleteVariantSettings(log: Log, resolvedAllVariantDict: Dict[str, PackagePlatformVariant],
     #                                  variantsSelectionDict: Dict[str, str]) -> Dict[str,str]:
     #    """
     #    Create a settings dict variant options in the resolvedAllVariantDict.

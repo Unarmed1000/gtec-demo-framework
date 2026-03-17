@@ -1,55 +1,56 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-#****************************************************************************************************************************************************
-#* BSD 3-Clause License
-#*
-#* Copyright (c) 2025, Mana Battery
-#* All rights reserved.
-#*
-#* Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
-#*
-#* 1. Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
-#* 2. Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the
-#*    documentation and/or other materials provided with the distribution.
-#* 3. Neither the name of the copyright holder nor the names of its contributors may be used to endorse or promote products derived from this
-#*    software without specific prior written permission.
-#*
-#* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
-#* THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR
-#* CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
-#* PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
-#* LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
-#* EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
+# * BSD 3-Clause License
+# *
+# * Copyright (c) 2025, Mana Battery
+# * All rights reserved.
+# *
+# * Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
+# *
+# * 1. Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
+# * 2. Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the
+# *    documentation and/or other materials provided with the distribution.
+# * 3. Neither the name of the copyright holder nor the names of its contributors may be used to endorse or promote products derived from this
+# *    software without specific prior written permission.
+# *
+# * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+# * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR
+# * CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+# * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+# * LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
+# * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+# ****************************************************************************************************************************************************
 
-from typing import Optional, Set
-import os
 import fnmatch
+import os
+
 from FslBuildGen import IOUtil
 
 # Try importing pathspec
 try:
     import pathspec
+
     HAS_PATHSPEC = True
 except ImportError:
     HAS_PATHSPEC = False
 
+
 class GitDirResult:
-    def __init__(self, ignored: Set[str], kept: Set[str]) -> None:
+    def __init__(self, ignored: set[str], kept: set[str]) -> None:
         self.Ignored = ignored
         self.Kept = kept
 
-class GitIgnoreFile:
 
+class GitIgnoreFile:
     @staticmethod
-    def TryGetIgnoredDirectories(baseDir: str, gitignoreFile: str = ".gitignore") -> Optional[GitDirResult]:
+    def TryGetIgnoredDirectories(baseDir: str, gitignoreFile: str = ".gitignore") -> GitDirResult | None:
         """
         Return GitDirResult(ignored, kept) of direct subdirectories of baseDir,
         according to patterns in gitignoreFile. Returns None if the file cannot be opened or parsed.
         Uses pathspec if available, otherwise falls back to simple fnmatch matching.
         """
         try:
-            with open(gitignoreFile, "r") as f:
+            with open(gitignoreFile) as f:
                 lines = [line.strip() for line in f if line.strip() and not line.startswith("#")]
         except (OSError, UnicodeDecodeError):
             return None
@@ -94,6 +95,6 @@ class GitIgnoreFile:
         return GitDirResult(ignored, kept)
 
     @staticmethod
-    def TryGetDirectories(filename: str) -> Optional[GitDirResult]:
+    def TryGetDirectories(filename: str) -> GitDirResult | None:
         contentDir = IOUtil.GetDirectoryName(filename)
         return GitIgnoreFile.TryGetIgnoredDirectories(contentDir, filename)

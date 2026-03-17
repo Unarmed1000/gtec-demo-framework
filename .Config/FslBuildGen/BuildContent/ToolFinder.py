@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright (c) 2016 Freescale Semiconductor, Inc.
 # All rights reserved.
 #
@@ -29,15 +29,16 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
 from FslBuildGen import IOUtil
-#from FslBuildGen.DataTypes import BuildPlatformType
+
+# from FslBuildGen.DataTypes import BuildPlatformType
 from FslBuildGen.Log import Log
 from FslBuildGen.PlatformUtil import PlatformUtil
 
 
-class ToolFinder(object):
+class ToolFinder:
     def __init__(self, log: Log) -> None:
         super().__init__()
         self.BuildPlatform = PlatformUtil.DetectBuildPlatformType()
@@ -48,8 +49,8 @@ class ToolFinder(object):
 
     def CheckVulkanShaderCompiler(self) -> None:
         if IOUtil.TryFindExecutable(self.VulkanShaderCompiler) is None:
-            raise EnvironmentError("Could not locate the Vulkan shader compiler: '{0}'".format(self.VulkanShaderCompiler))
+            raise OSError(f"Could not locate the Vulkan shader compiler: '{self.VulkanShaderCompiler}'")
 
     def CheckToolCommand(self, toolCommand: str, toolDescription: str) -> None:
         if IOUtil.TryFindExecutable(toolCommand) is None:
-            raise EnvironmentError("Could not locate the content builder '{0}' ({1})".format(toolCommand, toolDescription))
+            raise OSError(f"Could not locate the content builder '{toolCommand}' ({toolDescription})")

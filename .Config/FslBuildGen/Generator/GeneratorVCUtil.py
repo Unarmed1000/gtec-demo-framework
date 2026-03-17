@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright 2017 NXP
 # All rights reserved.
 #
@@ -29,24 +29,22 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-from typing import Callable
-from typing import List
-from typing import Optional
-from typing import Set
+import uuid
+from collections.abc import Callable
+
 from FslBuildGen.Log import Log
 from FslBuildGen.Packages.Package import Package
-import uuid
 
-DefaultVCID = 'F73214FE-7A4B-4D7D-89EC-416B25E643BF'
+DefaultVCID = "F73214FE-7A4B-4D7D-89EC-416B25E643BF"
 
 
 def _CreateGUID() -> str:
-    return "{0}".format(uuid.uuid4()).upper()
+    return f"{uuid.uuid4()}".upper()
 
 
-def CreateGUID(usedGUIds: Set[str], maxRetries: int = 1000000) -> str:
+def CreateGUID(usedGUIds: set[str], maxRetries: int = 1000000) -> str:
     count = 0
     newGuid = _CreateGUID()
     while newGuid in usedGUIds:
@@ -55,6 +53,7 @@ def CreateGUID(usedGUIds: Set[str], maxRetries: int = 1000000) -> str:
         newGuid = _CreateGUID()
         count = count + 1
     return newGuid
+
 
 def CreateGUID2(fnExist: Callable[[str], bool], maxRetries: int = 1000000) -> str:
     count = 0
@@ -66,7 +65,8 @@ def CreateGUID2(fnExist: Callable[[str], bool], maxRetries: int = 1000000) -> st
         count = count + 1
     return newGuid
 
-def TryGenerateGUID(log: Log, packages: List[Package], guid: Optional[str] = None, maxRetries: int = 1000000) -> str:
+
+def TryGenerateGUID(log: Log, packages: list[Package], guid: str | None = None, maxRetries: int = 1000000) -> str:
     """
     If this returns DefaultVCID then it failed to
     """
@@ -90,7 +90,7 @@ def TryGenerateGUID(log: Log, packages: List[Package], guid: Optional[str] = Non
     return newGuid
 
 
-def GenerateGUID(log: Log, packages: List[Package], guid: Optional[str] = None, maxRetries: int = 1000000) -> str:
+def GenerateGUID(log: Log, packages: list[Package], guid: str | None = None, maxRetries: int = 1000000) -> str:
     newGuid = TryGenerateGUID(log, packages, guid, maxRetries)
     if newGuid == DefaultVCID:
         raise Exception("Failed to generate new GUID")

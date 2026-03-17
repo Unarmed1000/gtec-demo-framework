@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright 2017 NXP
 # All rights reserved.
 #
@@ -29,52 +28,46 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-#from typing import Any
-from typing import Optional
+# from typing import Any
 import argparse
+
 from FslBuildGen.Config import BaseConfig
-from FslBuildGen.Tool.ToolCommonArgConfig import ToolCommonArgConfig
 from FslBuildGen.Tool.AToolAppFlow import AToolAppFlow
 from FslBuildGen.Tool.ToolAppContext import ToolAppContext
+from FslBuildGen.Tool.ToolCommonArgConfig import ToolCommonArgConfig
 from FslBuildGen.ToolConfig import ToolConfig
 
 
-class AToolAppFlowFactory(object):
+class AToolAppFlowFactory:
     def __init__(self) -> None:
         pass
 
     def GetTitle(self) -> str:
         return "NotDefined"
 
-
-    def GetShortDesc(self) -> Optional[str]:
+    def GetShortDesc(self) -> str | None:
         return None
-
 
     def GetToolCommonArgConfig(self) -> ToolCommonArgConfig:
         return ToolCommonArgConfig()
 
-
-    def CreateUserTag(self, baseConfig: BaseConfig) -> Optional[object]:
+    def CreateUserTag(self, baseConfig: BaseConfig) -> object | None:
         return None
 
-
-    def AddCustomArguments(self, parser: argparse.ArgumentParser, toolConfig: ToolConfig, userTag: Optional[object]) -> None:
-        """ Allow the app to add its custom arguments """
+    def AddCustomArguments(self, parser: argparse.ArgumentParser, toolConfig: ToolConfig, userTag: object | None) -> None:
+        """Allow the app to add its custom arguments"""
         pass
 
-
     def Create(self, toolAppContext: ToolAppContext) -> AToolAppFlow:
-        """ Create a AppFlow instance object """
+        """Create a AppFlow instance object"""
         raise Exception("Create not implemented")
 
-
-    def CreateStandaloneUserTag(self) -> Optional[object]:
-        """ Only called on standalone apps """
+    def CreateStandaloneUserTag(self) -> object | None:
+        """Only called on standalone apps"""
         return None
 
-    def AddCustomStandaloneArguments(self, parser: argparse.ArgumentParser, userTag: Optional[object]) -> None:
-        """ Allow the standalone app to add its custom arguments """
+    def AddCustomStandaloneArguments(self, parser: argparse.ArgumentParser, userTag: object | None) -> None:
+        """Allow the standalone app to add its custom arguments"""
         pass

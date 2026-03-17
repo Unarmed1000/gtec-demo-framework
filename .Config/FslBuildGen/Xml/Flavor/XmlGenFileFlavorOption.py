@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright 2020 NXP
 # All rights reserved.
 #
@@ -29,18 +29,19 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-from typing import List
 import xml.etree.ElementTree as ET
+
 from FslBuildGen.Log import Log
 from FslBuildGen.Xml.XmlCommonFslBuild import XmlCommonFslBuild
 
-class XmlGenFileFlavorOption(XmlCommonFslBuild):
-    __AttribName = 'Name'
-    __AttribSupported = 'Supported'
 
-    def __init__(self, log: Log, requirementTypes: List[str], xmlElement: ET.Element, ownerPackageName: str) -> None:
+class XmlGenFileFlavorOption(XmlCommonFslBuild):
+    __AttribName = "Name"
+    __AttribSupported = "Supported"
+
+    def __init__(self, log: Log, requirementTypes: list[str], xmlElement: ET.Element, ownerPackageName: str) -> None:
         super().__init__(log, requirementTypes, xmlElement)
         self._CheckAttributes({self.__AttribName, self.__AttribSupported})
         self.Name = self._ReadAttrib(xmlElement, self.__AttribName)

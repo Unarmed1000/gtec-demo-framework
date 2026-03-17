@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright 2024 NXP
 # All rights reserved.
 #
@@ -29,26 +28,27 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-from typing import List
-from typing import Optional
 from enum import Enum
+from typing import Optional
+
 
 class ForAllMode(Enum):
     RunExe = 0
     RunCustom = 1
 
-class ForAllConfig(object):
+
+class ForAllConfig:
     @staticmethod
-    def CreateForAllExeConfig(forAllExe: str, filterFeatureNameList: Optional[List[str]] = None) -> Optional['ForAllConfig']:
+    def CreateForAllExeConfig(forAllExe: str, filterFeatureNameList: list[str] | None = None) -> Optional["ForAllConfig"]:
         return ForAllConfig(ForAllMode.RunExe, forAllExe, filterFeatureNameList)
 
     @staticmethod
-    def CreateForAllPackagesConfig(forAll: str, filterFeatureNameList: Optional[List[str]] = None) -> Optional['ForAllConfig']:
+    def CreateForAllPackagesConfig(forAll: str, filterFeatureNameList: list[str] | None = None) -> Optional["ForAllConfig"]:
         return ForAllConfig(ForAllMode.RunCustom, forAll, filterFeatureNameList)
 
-    def __init__(self, mode: ForAllMode, runCommand: str, filterFeatureNameList: Optional[List[str]] = None) -> None:
+    def __init__(self, mode: ForAllMode, runCommand: str, filterFeatureNameList: list[str] | None = None) -> None:
         super().__init__()
         self.Mode = mode
         self.RunCommand = runCommand

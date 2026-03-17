@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright 2017 NXP
 # All rights reserved.
 #
@@ -29,10 +28,9 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-from typing import Optional
-from FslBuildGen.Log import Log
+
 from FslBuildGen.BuildConfig.BuildVariables import BuildVariables
 from FslBuildGen.BuildExternal.RecipeBuilderSetup import RecipeBuilderSetup
 from FslBuildGen.BuildExternal.RecipePathBuilder import RecipePathBuilder
@@ -43,6 +41,7 @@ from FslBuildGen.ErrorHelpManager import ErrorHelpManager
 from FslBuildGen.Generator.GeneratorCMakeConfig import GeneratorCMakeConfig
 from FslBuildGen.Generator.GeneratorInfo import GeneratorInfo
 from FslBuildGen.Location.PathBuilder import PathBuilder
+from FslBuildGen.Log import Log
 from FslBuildGen.PackageConfig import PlatformNameString
 from FslBuildGen.PlatformUtil import PlatformUtil
 from FslBuildGen.Vars.VariableEnvironment import VariableEnvironment
@@ -50,21 +49,28 @@ from FslBuildGen.Vars.VariableProcessor import VariableProcessor
 
 
 class PlatformContext(Context):
-    def __init__(self, log: Log, errorHelpManager: ErrorHelpManager, platformName: str, generatorName: str,
-                 generatorInfo: GeneratorInfo, cmakeConfig: GeneratorCMakeConfig, recipeBuilderSetup: Optional[RecipeBuilderSetup]) -> None:
+    def __init__(
+        self,
+        log: Log,
+        errorHelpManager: ErrorHelpManager,
+        platformName: str,
+        generatorName: str,
+        generatorInfo: GeneratorInfo,
+        cmakeConfig: GeneratorCMakeConfig,
+        recipeBuilderSetup: RecipeBuilderSetup | None,
+    ) -> None:
         super().__init__(log)
 
         self.ErrorHelpManager = errorHelpManager
         self.HostPlatformName = self.__DetermineHostPlatformName(platformName)
-        self.PlatformName = platformName # type: str
-        self.GeneratorName = generatorName # type: str
+        self.PlatformName: str = platformName
+        self.GeneratorName: str = generatorName
         self.GeneratorInfo = generatorInfo
         self.CMakeConfig = cmakeConfig
         self.VariableProcessor = VariableProcessor(log, self.__CreateVariables(log, cmakeConfig, generatorInfo.VariableContext))
 
         self.PathBuilder = PathBuilder(log, self.VariableProcessor, platformName)
         self.RecipePathBuilder = RecipePathBuilder(log, self.VariableProcessor, recipeBuilderSetup, platformName, cmakeConfig)
-
 
     def __DetermineHostPlatformName(self, platformName: str) -> str:
         if platformName != PlatformNameString.ANDROID:
@@ -73,8 +79,7 @@ class PlatformContext(Context):
             return PlatformNameString.WINDOWS
         return PlatformNameString.UBUNTU
 
-    def __CreateVariables(Self, log: Log, cmakeConfig: GeneratorCMakeConfig, variableContext: VariableContext) -> VariableEnvironment:
+    def __CreateVariables(self, log: Log, cmakeConfig: GeneratorCMakeConfig, variableContext: VariableContext) -> VariableEnvironment:
         variables = VariableEnvironment(log)
         variables.Set(BuildVariables.VS_TOOLSET_VERSION, cmakeConfig.VsToolsetVersionStr)
         return variables
-

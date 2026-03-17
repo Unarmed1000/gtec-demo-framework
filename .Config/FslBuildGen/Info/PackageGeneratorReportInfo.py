@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright 2017 NXP
 # All rights reserved.
 #
@@ -29,18 +28,20 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-from typing import Dict
-from typing import List
-from typing import Optional
-#from FslBuildGen.DataTypes import PackageType
+
+# from FslBuildGen.DataTypes import PackageType
+
 from FslBuildGen.Generator.Report.Datatypes import FormatStringEnvironmentVariableResolveMethod
-#from FslBuildGen.Info.RequirementInfo import RequirementInfo
 
-class PackageGeneratorExecutableReportInfo(object):
-    def __init__(self, useAsRelative: bool, exeFormatString: str,
-                 runScript: Optional[str], environmentVariableResolveMethod: FormatStringEnvironmentVariableResolveMethod) -> None:
+# from FslBuildGen.Info.RequirementInfo import RequirementInfo
+
+
+class PackageGeneratorExecutableReportInfo:
+    def __init__(
+        self, useAsRelative: bool, exeFormatString: str, runScript: str | None, environmentVariableResolveMethod: FormatStringEnvironmentVariableResolveMethod
+    ) -> None:
         super().__init__()
         self.UseAsRelative = useAsRelative
         self.ExeFormatString = exeFormatString
@@ -48,24 +49,23 @@ class PackageGeneratorExecutableReportInfo(object):
         self.EnvironmentVariableResolveMethod = environmentVariableResolveMethod
 
 
-class GeneratorVariableReportInfo(object):
-    def __init__(self, name: str, options: List[str], linkTargetName: Optional[str]) -> None:
+class GeneratorVariableReportInfo:
+    def __init__(self, name: str, options: list[str], linkTargetName: str | None) -> None:
         super().__init__()
-        self.Name = name                        # type: str
-        self.Options = options                  # type: List[str]
-        self.LinkTargetName = linkTargetName    # type: Optional[str]
+        self.Name: str = name
+        self.Options: list[str] = options
+        self.LinkTargetName: str | None = linkTargetName
 
 
-class PackageGeneratorVariableReportInfo(object):
-    def __init__(self, variableReport: List[GeneratorVariableReportInfo], defaultOptions: Dict[str, int]) -> None:
+class PackageGeneratorVariableReportInfo:
+    def __init__(self, variableReport: list[GeneratorVariableReportInfo], defaultOptions: dict[str, int]) -> None:
         super().__init__()
-        self.VariableReport = variableReport  # type: List[GeneratorVariableReportInfo]
-        self.DefaultOptions = defaultOptions  # type: Dict[str, int]
+        self.VariableReport: list[GeneratorVariableReportInfo] = variableReport
+        self.DefaultOptions: dict[str, int] = defaultOptions
 
 
-class PackageGeneratorReportInfo(object):
-    def __init__(self, executableReport: Optional[PackageGeneratorExecutableReportInfo],
-                 variableReport: PackageGeneratorVariableReportInfo) -> None:
+class PackageGeneratorReportInfo:
+    def __init__(self, executableReport: PackageGeneratorExecutableReportInfo | None, variableReport: PackageGeneratorVariableReportInfo) -> None:
         super().__init__()
         self.ExecutableReport = executableReport
         self.VariableReport = variableReport

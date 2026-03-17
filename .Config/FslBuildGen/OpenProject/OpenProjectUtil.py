@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright 2020, 2024 NXP
 # All rights reserved.
 #
@@ -29,25 +28,26 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-from typing import List
 import subprocess
+
 from FslBuildGen import IOUtil
 from FslBuildGen.DataTypes import BuildPlatformType
-from FslBuildGen.Log import Log
 from FslBuildGen.Exceptions import ExitException
 from FslBuildGen.Location.ResolvedPath import ResolvedPath
+from FslBuildGen.Log import Log
 from FslBuildGen.OpenProject.NatvisCombiner import NatvisCombiner
 from FslBuildGen.OpenProject.OpenProjectCreateInfo import OpenProjectCreateInfo
 from FslBuildGen.OpenProject.VSCodeLaunchJsonUtil import VSCodeLaunchJsonUtil
 from FslBuildGen.OpenProject.VSCodeSettingsJsonUtil import VSCodeSettingsJsonUtil
 from FslBuildGen.PlatformUtil import PlatformUtil
 
-class OpenProjectUtil(object):
+
+class OpenProjectUtil:
     @staticmethod
-    def Run(log: Log, createInfo: OpenProjectCreateInfo, allNatvisFiles: List[ResolvedPath]) -> None:
-        log.LogPrintVerbose(1, "Configuring and launching Visual Studio Code for path '{0}'".format(createInfo.SourcePath))
+    def Run(log: Log, createInfo: OpenProjectCreateInfo, allNatvisFiles: list[ResolvedPath]) -> None:
+        log.LogPrintVerbose(1, f"Configuring and launching Visual Studio Code for path '{createInfo.SourcePath}'")
 
         buildPlatformType = PlatformUtil.DetectBuildPlatformType()
 
@@ -61,7 +61,7 @@ class OpenProjectUtil(object):
         # Combine all natvis files into one
         NatvisCombiner.Combine(log, allNatvisFiles, combinedNatvisFile)
 
-        log.LogPrintVerbose(1, "- Patching settings at '{0}'".format(settingsFilePath))
+        log.LogPrintVerbose(1, f"- Patching settings at '{settingsFilePath}'")
         log.PushIndent()
         try:
             VSCodeSettingsJsonUtil.Patch(log, settingsFilePath, createInfo.CMakeInfo)
@@ -71,11 +71,11 @@ class OpenProjectUtil(object):
         exeInfo = createInfo.ExeInfo
         if exeInfo is not None:
             if log.Verbosity >= 1:
-                log.LogPrint("- Patching launch settings at '{0}'".format(launchFilePath))
-                log.LogPrint("  - Exe: '{0}'".format(exeInfo.Executable))
-                log.LogPrint("  - Cwd: '{0}'".format(exeInfo.CurrentWorkingDirectory))
+                log.LogPrint(f"- Patching launch settings at '{launchFilePath}'")
+                log.LogPrint(f"  - Exe: '{exeInfo.Executable}'")
+                log.LogPrint(f"  - Cwd: '{exeInfo.CurrentWorkingDirectory}'")
             if not VSCodeLaunchJsonUtil.TryPatch(launchFilePath, buildPlatformType, exeInfo.Executable, exeInfo.CurrentWorkingDirectory, combinedNatvisFile):
-                log.LogPrintVerbose(1, "WARNING Failed to patch launch file '{0}'".format(launchFilePath))
+                log.LogPrintVerbose(1, f"WARNING Failed to patch launch file '{launchFilePath}'")
         else:
             log.LogPrintVerbose(1, "- Launch: No executable information found")
 
@@ -86,37 +86,40 @@ class OpenProjectUtil(object):
             log.PopIndent()
 
     @staticmethod
-    def __RunVSCode(log: Log, buildPlatformType: BuildPlatformType, sourcePath: str, openCommandArgs : List[str]) -> None:
+    def __RunVSCode(log: Log, buildPlatformType: BuildPlatformType, sourcePath: str, openCommandArgs: list[str]) -> None:
         try:
             if log.Verbosity >= 1:
-                log.LogPrint("Opening visual studio code in '{0}'".format(sourcePath))
+                log.LogPrint(f"Opening visual studio code in '{sourcePath}'")
 
             codeCmd = OpenProjectUtil.__GetCodeCmd(buildPlatformType)
-            vsCodeCommand = [codeCmd, '.']
+            vsCodeCommand = [codeCmd, "."]
             if len(openCommandArgs) > 0:
                 vsCodeCommand += openCommandArgs
             if log.Verbosity >= 4:
-                log.LogPrint("Running vs code with the arguments {0}".format(vsCodeCommand))
+                log.LogPrint(f"Running vs code with the arguments {vsCodeCommand}")
             result = subprocess.call(vsCodeCommand, cwd=sourcePath)
             if result != 0:
-                log.LogPrintWarning("The open vscode command '{0}' failed with '{1}'. It was run with CWD: '{2}'".format(OpenProjectUtil.__SafeJoinCommandArguments(vsCodeCommand), result, sourcePath))
+                log.LogPrintWarning(
+                    f"The open vscode command '{OpenProjectUtil.__SafeJoinCommandArguments(vsCodeCommand)}' failed with '{result}'. It was run with CWD: '{sourcePath}'"
+                )
                 raise ExitException(result)
         except FileNotFoundError:
-            log.DoPrintWarning("The open vscode command '{0}' failed with 'file not found'. It was run with CWD: '{1}'".format(OpenProjectUtil.__SafeJoinCommandArguments(vsCodeCommand), sourcePath))
+            log.DoPrintWarning(
+                f"The open vscode command '{OpenProjectUtil.__SafeJoinCommandArguments(vsCodeCommand)}' failed with 'file not found'. It was run with CWD: '{sourcePath}'"
+            )
             raise
 
     @staticmethod
     def __GetCodeCmd(buildPlatformType: BuildPlatformType) -> str:
         if buildPlatformType == BuildPlatformType.Windows:
-            return 'code.cmd'
-        return 'code'
+            return "code.cmd"
+        return "code"
 
     @staticmethod
-    def __SafeJoinCommandArguments(strings: List[str]) -> str:
+    def __SafeJoinCommandArguments(strings: list[str]) -> str:
         res = []
         for entry in strings:
-            if ' ' in entry:
-                entry = '"{0}"'.format(entry)
+            if " " in entry:
+                entry = f'"{entry}"'
             res.append(entry)
         return " ".join(res)
-

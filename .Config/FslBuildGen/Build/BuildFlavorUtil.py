@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright 2023 NXP
 # All rights reserved.
 #
@@ -29,25 +29,27 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-from typing import Dict
-#from typing import List
-from typing import Optional
-from FslBuildGen.Log import Log
+# from typing import List
+
+
 from FslBuildGen.Build.BuildVariantUtil import BuildVariantUtil
 from FslBuildGen.Engine.Resolver.ResolvedPackageTemplate import ResolvedPackageFlavor
 from FslBuildGen.ExternalVariantConstraints import ExternalVariantConstraints
+from FslBuildGen.Log import Log
 from FslBuildGen.Packages.Package import Package
-#from FslBuildGen.Packages.Package import PackagePlatformVariant
-#from FslBuildGen.SharedGeneration import GEN_BUILD_ENV_VARIANT_SETTING
-#from FslBuildGen.SharedGeneration import ToolAddedVariant
 
-class BuildFlavorUtil(object):
+# from FslBuildGen.Packages.Package import PackagePlatformVariant
+# from FslBuildGen.SharedGeneration import GEN_BUILD_ENV_VARIANT_SETTING
+# from FslBuildGen.SharedGeneration import ToolAddedVariant
+
+
+class BuildFlavorUtil:
     @staticmethod
-    def BuildCompleteFlavorDict(topLevelPackage: Package, preferQuickNames: bool) -> Dict[str, ResolvedPackageFlavor]:
-        flavorQuickNameDict = dict() # type: Dict[str, Optional[ResolvedPackageFlavor]]
-        flavorDict = dict() # type: Dict[str, ResolvedPackageFlavor]
+    def BuildCompleteFlavorDict(topLevelPackage: Package, preferQuickNames: bool) -> dict[str, ResolvedPackageFlavor]:
+        flavorQuickNameDict: dict[str, ResolvedPackageFlavor | None] = {}
+        flavorDict: dict[str, ResolvedPackageFlavor] = {}
         for srcPackage in topLevelPackage.ResolvedBuildOrder:
             for flavor in srcPackage.ResolvedFlavorTemplate.PackageFlavors:
                 if flavor.Name.Value not in flavorDict:
@@ -72,19 +74,17 @@ class BuildFlavorUtil(object):
         return flavorDict
 
     @staticmethod
-    def ValidateUserFlavorSettings(log: Log,
-                                   topLevelPackage: Package,
-                                   externalVariantConstraints: ExternalVariantConstraints) -> None:
-    #    flavorDict = BuildFlavorUtil.BuildCompleteFlavorDict(topLevelPackage)
-    #    for key, value in list(userFlavorSettingDict.items()):
-    #        if key in flavorDict:
-    #            flavor = flavorDict[key]
-    #            if not value in flavor.OptionDict:
-    #                validValues = list(flavor.OptionDict.keys())
-    #                validValues.sort()
-    #                raise Exception("Flavor '{0}' expects one of the following values: '{1}' not '{2}'".format(key, ','.join(validValues), value))
-    #        elif key != ToolAddedFlavor.CONFIG:
-    #            log.LogPrintWarning("WARNING: Unused flavor setting '{0}'".format(key))
+    def ValidateUserFlavorSettings(log: Log, topLevelPackage: Package, externalVariantConstraints: ExternalVariantConstraints) -> None:
+        #    flavorDict = BuildFlavorUtil.BuildCompleteFlavorDict(topLevelPackage)
+        #    for key, value in list(userFlavorSettingDict.items()):
+        #        if key in flavorDict:
+        #            flavor = flavorDict[key]
+        #            if not value in flavor.OptionDict:
+        #                validValues = list(flavor.OptionDict.keys())
+        #                validValues.sort()
+        #                raise Exception("Flavor '{0}' expects one of the following values: '{1}' not '{2}'".format(key, ','.join(validValues), value))
+        #        elif key != ToolAddedFlavor.CONFIG:
+        #            log.LogPrintWarning("WARNING: Unused flavor setting '{0}'".format(key))
         BuildVariantUtil.ValidateUserVariantSettings(log, topLevelPackage, externalVariantConstraints)
 
     @staticmethod
@@ -95,11 +95,11 @@ class BuildFlavorUtil(object):
         names.sort()
         result = []
         for name in names:
-            result.append("{0}={1}".format(name.Value, externalVariantConstraints.Dict[name].Value))
-        log.LogPrint("Flavor settings: {0}".format(", ".join(result)))
+            result.append(f"{name.Value}={externalVariantConstraints.Dict[name].Value}")
+        log.LogPrint("Flavor settings: {}".format(", ".join(result)))
 
-    #@staticmethod
-    #def TryLocateFlavor(package: Package, key: str) -> Optional[PackagePlatformFlavor]:
+    # @staticmethod
+    # def TryLocateFlavor(package: Package, key: str) -> Optional[PackagePlatformFlavor]:
     #    if key in package.ResolvedAllFlavorDict:
     #        return package.ResolvedAllFlavorDict[key]
     #    # try a manual search for 'virtual keys'
@@ -108,8 +108,8 @@ class BuildFlavorUtil(object):
     #            return entry
     #    return None
 
-    #@staticmethod
-    #def ExtendEnvironmentDictWithFlavors(log: Log,
+    # @staticmethod
+    # def ExtendEnvironmentDictWithFlavors(log: Log,
     #                                      buildEnv: Dict[str, str],
     #                                      package: Package,
     #                                      userFlavorSettingDict: Dict[str, str]) -> None:
@@ -126,8 +126,8 @@ class BuildFlavorUtil(object):
     #                validValues.sort()
     #                log.DoPrintWarning("Flavor '{0}' expects one of the following values: '{1}' not '{2}'".format(key, ','.join(validValues), value))
 
-    #@staticmethod
-    #def CreateCompleteStaticFlavorSettings(resolvedAllFlavorDict: Dict[str, PackagePlatformFlavor],
+    # @staticmethod
+    # def CreateCompleteStaticFlavorSettings(resolvedAllFlavorDict: Dict[str, PackagePlatformFlavor],
     #                                       flavorSelectionDict: Dict[str, str]) -> Dict[str, str]:
     #    """
     #    Create a settings dict flavor options in the resolvedAllFlavorDict.
@@ -147,4 +147,3 @@ class BuildFlavorUtil(object):
     #            value = flavor.Options[0].Name
     #        resultDict[flavor.Name] = value
     #    return resultDict
-

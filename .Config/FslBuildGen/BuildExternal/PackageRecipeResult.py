@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright 2018 NXP
 # All rights reserved.
 #
@@ -29,18 +28,19 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-from typing import Dict
+
 from FslBuildGen.BuildExternal.PackageRecipeResultFoundExecutable import PackageRecipeResultFoundExecutable
 from FslBuildGen.Log import Log
 
-class PackageRecipeResult(object):
+
+class PackageRecipeResult:
     def __init__(self, log: Log, name: str) -> None:
         super().__init__()
         self.__Log = log
         self.Name = name
-        self.ExecutableDict = {}  # type: Dict[str,PackageRecipeResultFoundExecutable]
+        self.ExecutableDict: dict[str, PackageRecipeResultFoundExecutable] = {}
 
     def AddFoundExecutable(self, exe: PackageRecipeResultFoundExecutable) -> None:
         if exe.PrimaryName in self.ExecutableDict:

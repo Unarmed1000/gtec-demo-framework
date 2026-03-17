@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright (c) 2016 Freescale Semiconductor, Inc.
 # All rights reserved.
 #
@@ -30,22 +29,20 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-from typing import Dict
-from typing import List
-from typing import Optional
 import datetime
 import os
-from FslBuildGen import IOUtil
-from FslBuildGen.BuildContent.Sync.Content import Content
-from FslBuildGen.BuildContent.PathRecord import PathRecord
-from FslBuildGen.Log import Log
+from typing import Optional
 
+from FslBuildGen import IOUtil
+from FslBuildGen.BuildContent.PathRecord import PathRecord
+from FslBuildGen.BuildContent.Sync.Content import Content
+from FslBuildGen.Log import Log
 
 g_isVerbose = False
 g_isInfo = False
-GLOBAL_SEP = '\\'
+GLOBAL_SEP = "\\"
 
 
 class CacheState:
@@ -55,7 +52,7 @@ class CacheState:
 
 
 def __GetCacheFormatVersion() -> str:
-    return '2'
+    return "2"
 
 
 def GetCacheHeader() -> str:
@@ -63,10 +60,10 @@ def GetCacheHeader() -> str:
 
 
 def GetCacheVersionString() -> str:
-    return "# Format: %s\n" % (__GetCacheFormatVersion())
+    return f"# Format: {__GetCacheFormatVersion()}\n"
 
 
-class BasicContentState(object):
+class BasicContentState:
     def __init__(self) -> None:
         super().__init__()
         self.Name = ""
@@ -89,27 +86,25 @@ class ContentState(BasicContentState):
         self.CacheState = CacheState.New
         self.ModificationComment = ""
 
-    def IsSameState(self, entry: 'ContentState') -> bool:
+    def IsSameState(self, entry: "ContentState") -> bool:
         return self.Name == entry.Name and self.Length == entry.Length and self.ModifiedDate == entry.ModifiedDate and self.Checksum == entry.Checksum
 
-
-    def GetDifferenceString(self, entry: 'ContentState')-> str:
+    def GetDifferenceString(self, entry: "ContentState") -> str:
         res = ""
         if self.Name != entry.Name:
-            res = self.__AddToString(res, "Name: {0} != {1}".format(self.Name, entry.Name))
+            res = self.__AddToString(res, f"Name: {self.Name} != {entry.Name}")
         if self.Length != entry.Length:
-            res = self.__AddToString(res, "Length: {0} != {1}".format(self.Length, entry.Length))
+            res = self.__AddToString(res, f"Length: {self.Length} != {entry.Length}")
         if self.ModifiedDate != entry.ModifiedDate:
-            res = self.__AddToString(res, "ModifiedDate: {0} != {1}".format(self.ModifiedDate, entry.ModifiedDate))
+            res = self.__AddToString(res, f"ModifiedDate: {self.ModifiedDate} != {entry.ModifiedDate}")
         if self.Checksum != entry.Checksum:
-            res = self.__AddToString(res, "Checksum: {0} != {1}".format(self.Checksum, entry.Checksum))
+            res = self.__AddToString(res, f"Checksum: {self.Checksum} != {entry.Checksum}")
         if self.TagChecksum != entry.TagChecksum:
-            res = self.__AddToString(res, "TagChecksum: {0} != {1}".format(self.TagChecksum, entry.TagChecksum))
+            res = self.__AddToString(res, f"TagChecksum: {self.TagChecksum} != {entry.TagChecksum}")
         return res
 
-
     def __AddToString(self, srcStr: str, strNew: str) -> str:
-        return strNew if len(srcStr) == 0 else "{0}, {1}".format(srcStr, strNew)
+        return strNew if len(srcStr) == 0 else f"{srcStr}, {strNew}"
 
 
 def CreateDirEntry(path: str) -> ContentState:
@@ -122,27 +117,28 @@ def CreateDirEntry(path: str) -> ContentState:
     return dirState
 
 
-class BasicContent(object):
+class BasicContent:
     def __init__(self) -> None:
         super().__init__()
-        self.Directories = []  # type: List[str]
-        self.Files = []  # type: List[BasicContentState]
+        self.Directories: list[str] = []
+        self.Files: list[BasicContentState] = []
 
     def AddFile(self, name: str, length: int, modifiedDate: str, checksum: str, tagChecksum: str) -> None:
         fileState = BasicContentState()
         fileState.Set(name, length, modifiedDate, checksum, tagChecksum)
         self.Files.append(fileState)
 
-class SyncState(object):
+
+class SyncState:
     def __init__(self, absoluteCacheFileName: str) -> None:
         super().__init__()
         self.AbsoluteCacheFileName = absoluteCacheFileName
         self.__Clear()
 
     def __Clear(self) -> None:
-        self.Dirs = {}      # type: Dict[str, ContentState]
-        self.Entries = {}   # type: Dict[str, ContentState]
-        self.Removed = {}   # type: Dict[str, ContentState]
+        self.Dirs: dict[str, ContentState] = {}
+        self.Entries: dict[str, ContentState] = {}
+        self.Removed: dict[str, ContentState] = {}
         self.IsNew = True
 
     def __FileModificationDate(self, filename: str) -> str:
@@ -150,40 +146,32 @@ class SyncState(object):
         currentTime = datetime.datetime.utcfromtimestamp(t)
         return currentTime.isoformat()
 
-
     def Add(self, syncState: ContentState) -> None:
         self.Entries[syncState.Name] = syncState
-
 
     def AddDir(self, syncState: ContentState) -> None:
         self.Dirs[syncState.Name] = syncState
 
-
     def AddRemoved(self, syncState: ContentState) -> None:
         self.Removed[syncState.Name] = syncState
 
-
-
-    def TryGetDirState(self, syncState: ContentState) -> Optional[ContentState]:
+    def TryGetDirState(self, syncState: ContentState) -> ContentState | None:
         if syncState.Name in self.Dirs:
             return self.Dirs[syncState.Name]
         return None
 
-
-    def TryGetFileState(self, syncState: ContentState) -> Optional[ContentState]:
+    def TryGetFileState(self, syncState: ContentState) -> ContentState | None:
         if syncState.Name in self.Entries:
             return self.Entries[syncState.Name]
         return None
 
-    def TryGetFileStateByFileName(self, fileName: str) -> Optional[ContentState]:
+    def TryGetFileStateByFileName(self, fileName: str) -> ContentState | None:
         if fileName in self.Entries:
             return self.Entries[fileName]
         return None
 
-
     def Load(self, log: Log) -> None:
         self.__Load(log, self.AbsoluteCacheFileName)
-
 
     def __Load(self, log: Log, path: str) -> None:
         if not os.path.exists(path):
@@ -200,15 +188,15 @@ class SyncState(object):
             log.LogPrint("Cache header invalid, ignoring cache")
             return
 
-        entries = []  # type: List[ContentState]
+        entries: list[ContentState] = []
         dirs = []
         lines = content.splitlines(False)
         if len(lines) < 3:
-            log.LogPrintWarning("Cache at '{0}' is invalid, ignoring it.".format(path))
+            log.LogPrintWarning(f"Cache at '{path}' is invalid, ignoring it.")
             return
         for line in lines:
             line = line.strip()
-            if not line.startswith('#'):
+            if not line.startswith("#"):
                 elements = line.split(GLOBAL_SEP)
                 if len(elements) != 5:
                     log.LogPrint("Cache entry invalid, ignoring cache")
@@ -229,7 +217,6 @@ class SyncState(object):
         for entry in dirs:
             self.AddDir(entry)
         self.IsNew = False
-
 
     def Save(self) -> None:
         self.__Save(self.AbsoluteCacheFileName)
@@ -257,7 +244,6 @@ class SyncState(object):
             res.Files.append(state)
         return res
 
-
     def RestoreContent(self, content: BasicContent) -> None:
         self.__Clear()
         self.IsNew = False
@@ -275,7 +261,6 @@ class SyncState(object):
             fileEntry.TagChecksum = contentFileEntry.TagChecksum
             self.Add(fileEntry)
 
-
     def __Save(self, path: str) -> None:
         result = [GetCacheHeader(), GetCacheVersionString()]
 
@@ -283,38 +268,36 @@ class SyncState(object):
         sortedList.sort()
         for name in sortedList:
             entry = self.Dirs[name]
-            strContent = "{0}{1}{2}{3}{4}{5}{6}{7}{8}\n".format(entry.Name, GLOBAL_SEP, entry.Length, GLOBAL_SEP, entry.ModifiedDate, GLOBAL_SEP, entry.Checksum, GLOBAL_SEP, entry.TagChecksum)
+            strContent = f"{entry.Name}{GLOBAL_SEP}{entry.Length}{GLOBAL_SEP}{entry.ModifiedDate}{GLOBAL_SEP}{entry.Checksum}{GLOBAL_SEP}{entry.TagChecksum}\n"
             result.append(strContent)
 
         sortedList = list(self.Entries.keys())
         sortedList.sort()
         for name in sortedList:
             entry = self.Entries[name]
-            strContent = "{0}{1}{2}{3}{4}{5}{6}{7}{8}\n".format(entry.Name, GLOBAL_SEP, entry.Length, GLOBAL_SEP, entry.ModifiedDate, GLOBAL_SEP, entry.Checksum, GLOBAL_SEP, entry.TagChecksum)
+            strContent = f"{entry.Name}{GLOBAL_SEP}{entry.Length}{GLOBAL_SEP}{entry.ModifiedDate}{GLOBAL_SEP}{entry.Checksum}{GLOBAL_SEP}{entry.TagChecksum}\n"
             result.append(strContent)
         IOUtil.WriteFileIfChanged(path, "".join(result))
 
-
-    def BuildContentState(self, log: Log,
-                          pathFileRecord: PathRecord,
-                          allowCaching: bool, allowNew: bool,
-                          cachedSyncState: Optional['SyncState'] = None) -> ContentState:
+    def BuildContentState(
+        self, log: Log, pathFileRecord: PathRecord, allowCaching: bool, allowNew: bool, cachedSyncState: Optional["SyncState"] = None
+    ) -> ContentState:
         fileState = ContentState()
         fileState.Name = pathFileRecord.RelativePath
         fileState.Length = os.path.getsize(pathFileRecord.ResolvedPath)
         fileState.ModifiedDate = self.__FileModificationDate(pathFileRecord.ResolvedPath)
-        fileState.TagChecksum = '0'
+        fileState.TagChecksum = "0"
 
         cachedState = cachedSyncState.TryGetFileState(fileState) if cachedSyncState is not None else None
         if allowCaching and cachedState is not None and fileState.Length == cachedState.Length and fileState.ModifiedDate == cachedState.ModifiedDate:
             fileState.Checksum = cachedState.Checksum
             fileState.TagChecksum = cachedState.TagChecksum
-            log.LogPrintVerbose(2, "Using cached checksum for '{0}'".format(fileState.Name))
+            log.LogPrintVerbose(2, f"Using cached checksum for '{fileState.Name}'")
         else:
-            log.LogPrintVerbose(2, "Calculating checksum for '{0}'".format(fileState.Name))
+            log.LogPrintVerbose(2, f"Calculating checksum for '{fileState.Name}'")
             fileState.Checksum = IOUtil.HashFile(pathFileRecord.ResolvedPath)
         # Mark the entry as being new
-        #if (cachedState is None or CacheState.New) and allowNew:
+        # if (cachedState is None or CacheState.New) and allowNew:
         if cachedState is None and allowNew:
             fileState.CacheState = CacheState.New
         elif cachedState is not None and not fileState.IsSameState(cachedState):
@@ -325,22 +308,25 @@ class SyncState(object):
         return fileState
 
 
-
-def __BuildSyncState(log: Log, absoluteCacheFileName: str,
-                     content: Content,
-                     cachedSyncState: Optional[SyncState],
-                     allowCaching: bool, allowNew: bool, addNewFilesAndDirs: bool,
-                     allowCacheLoad: bool) -> SyncState:
-    """ absoluteCacheFileName must be a absolute filename """
+def __BuildSyncState(
+    log: Log,
+    absoluteCacheFileName: str,
+    content: Content,
+    cachedSyncState: SyncState | None,
+    allowCaching: bool,
+    allowNew: bool,
+    addNewFilesAndDirs: bool,
+    allowCacheLoad: bool,
+) -> SyncState:
+    """absoluteCacheFileName must be a absolute filename"""
     content.RemoveFileByResolvedSourcePath(absoluteCacheFileName)
 
     if cachedSyncState is None and allowCacheLoad:
-        log.LogPrintVerbose(2, "Examining content of '{0}'".format(content.PrimaryFolder))
+        log.LogPrintVerbose(2, f"Examining content of '{content.PrimaryFolder}'")
         cachedSyncState = SyncState(absoluteCacheFileName)
         cachedSyncState.Load(log)
     else:
-        log.LogPrintVerbose(2, "Rescanning content of '{0}'".format(content.PrimaryFolder))
-
+        log.LogPrintVerbose(2, f"Rescanning content of '{content.PrimaryFolder}'")
 
     syncState = SyncState(absoluteCacheFileName)
 
@@ -352,32 +338,29 @@ def __BuildSyncState(log: Log, absoluteCacheFileName: str,
         if addNewFilesAndDirs or dirState.CacheState != CacheState.New:
             syncState.AddDir(dirState)
 
-
     for pathFileRecord in content.Files:
         fileState = syncState.BuildContentState(log, pathFileRecord, allowCaching, allowNew, cachedSyncState)
         if addNewFilesAndDirs or fileState.CacheState != CacheState.New:
             syncState.Add(fileState)
 
-
     # Tag the sync state with information about which files were removed compared the the last time we synced
     if cachedSyncState is not None:
         for entry in list(cachedSyncState.Entries.values()):
-            if not entry.Name in syncState.Entries:
+            if entry.Name not in syncState.Entries:
                 syncState.AddRemoved(entry)
 
         # Tag the sync state with information about which dirs were removed compared the the last time we synced
         for entry in list(cachedSyncState.Dirs.values()):
-            if not entry.Name in syncState.Dirs:
+            if entry.Name not in syncState.Dirs:
                 syncState.AddRemoved(entry)
     return syncState
-
 
 
 def GenerateSyncState(log: Log, absoluteCacheFileName: str, content: Content, allowCache: bool) -> SyncState:
     return __BuildSyncState(log, absoluteCacheFileName, content, None, allowCache, True, True, True)
 
 
-def GenerateSyncState2(log: Log, absoluteCacheFileName: str, content: Content, cachedSyncState: Optional[SyncState], allowCache: bool) -> SyncState:
+def GenerateSyncState2(log: Log, absoluteCacheFileName: str, content: Content, cachedSyncState: SyncState | None, allowCache: bool) -> SyncState:
     return __BuildSyncState(log, absoluteCacheFileName, content, cachedSyncState, allowCache, True, True, False)
 
 

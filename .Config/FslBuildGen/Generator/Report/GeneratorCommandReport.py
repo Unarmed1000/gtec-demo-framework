@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright 2017 NXP
 # All rights reserved.
 #
@@ -29,38 +28,43 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-from typing import List
-from typing import Optional
+
 from FslBuildGen import IOUtil
 
-class GeneratorCommandReport(object):
-    def __init__(self, useAsRelative: bool, commandFormatString: str,
-                 arguments: List[str], nativeArguments: List[str],
-                 currentWorkingDirectoryFormatString: Optional[str] = None,
-                 runInEnvScript: Optional[str] = None,
-                 nativeArgumentSeparator: Optional[str] = None) -> None:
-        """
-            The information stored in a format string can contain both variables and environment variables and
-            it need to be formatted/converted using the ReportVariableFormatter before being used.
 
-            Some notes:
-            Each variant name string as used by the generator.
-            - Each normal variant is represented as a ${VARIANT_NAME} variable.
-            - Each virtual variant is represented as a $(VARIANT_NAME) variable.
-            Please note there can be other variables and environment variables as required by the generator
+class GeneratorCommandReport:
+    def __init__(
+        self,
+        useAsRelative: bool,
+        commandFormatString: str,
+        arguments: list[str],
+        nativeArguments: list[str],
+        currentWorkingDirectoryFormatString: str | None = None,
+        runInEnvScript: str | None = None,
+        nativeArgumentSeparator: str | None = None,
+    ) -> None:
+        """
+        The information stored in a format string can contain both variables and environment variables and
+        it need to be formatted/converted using the ReportVariableFormatter before being used.
+
+        Some notes:
+        Each variant name string as used by the generator.
+        - Each normal variant is represented as a ${VARIANT_NAME} variable.
+        - Each virtual variant is represented as a $(VARIANT_NAME) variable.
+        Please note there can be other variables and environment variables as required by the generator
         """
         super().__init__()
         if commandFormatString is None:
             raise Exception("commandFormatString can not be None")
-        if commandFormatString.startswith('/') or ':' in commandFormatString:
+        if commandFormatString.startswith("/") or ":" in commandFormatString:
             raise Exception("commandFormatString can not be absolute")
-        #if currentWorkingDirectoryFormatString is not None and (currentWorkingDirectoryFormatString.startswith('/') or ':' in currentWorkingDirectoryFormatString):
+        # if currentWorkingDirectoryFormatString is not None and (currentWorkingDirectoryFormatString.startswith('/') or ':' in currentWorkingDirectoryFormatString):
         #    raise Exception("currentWorkingDirectoryFormatString can not be absolute: '{0}'".format(currentWorkingDirectoryFormatString))
         if currentWorkingDirectoryFormatString is not None and IOUtil.IsDriveRootPath(currentWorkingDirectoryFormatString):
-            raise Exception("currentWorkingDirectoryFormatString can not point to a drive root: '{0}'".format(currentWorkingDirectoryFormatString))
-        if runInEnvScript is not None and (runInEnvScript.startswith('/') or ':' in runInEnvScript):
+            raise Exception(f"currentWorkingDirectoryFormatString can not point to a drive root: '{currentWorkingDirectoryFormatString}'")
+        if runInEnvScript is not None and (runInEnvScript.startswith("/") or ":" in runInEnvScript):
             raise Exception("runInEnvScript can not be absolute")
         if len(nativeArguments) != 0 and nativeArgumentSeparator is None:
             raise Exception("When native args are supplied there should be a native argument separator")

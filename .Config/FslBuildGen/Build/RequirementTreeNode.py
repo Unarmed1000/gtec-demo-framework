@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright 2017 NXP
 # All rights reserved.
 #
@@ -29,20 +28,19 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-from typing import List
-from typing import Optional
+
 from FslBuildGen.Packages.PackageRequirement import PackageRequirement
 
 
-class RequirementTreeNode(object):
-    def __init__(self, content: Optional[PackageRequirement]) -> None:
-        self.Parent = None  # type: Optional['RequirementTreeNode']
+class RequirementTreeNode:
+    def __init__(self, content: PackageRequirement | None) -> None:
+        self.Parent: RequirementTreeNode | None = None
         self.Content = content
-        self.Children = []  # type: List['RequirementTreeNode']
+        self.Children: list[RequirementTreeNode] = []
         self.Supported = True
 
-    def AddChild(self, node: 'RequirementTreeNode') -> None:
+    def AddChild(self, node: "RequirementTreeNode") -> None:
         node.Parent = self
         self.Children.append(node)

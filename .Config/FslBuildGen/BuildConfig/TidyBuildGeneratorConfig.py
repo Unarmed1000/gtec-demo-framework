@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright 2017 NXP
 # All rights reserved.
 #
@@ -29,12 +28,13 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
 from FslBuildGen.ErrorHelpManager import ErrorHelpManager
 from FslBuildGen.RecipeFilterManager import RecipeFilterManager
 
-class TidyBuildGeneratorConfig(object):
+
+class TidyBuildGeneratorConfig:
     def __init__(self, configSDKPath: str, errorHelpManager: ErrorHelpManager, recipeFilterManager: RecipeFilterManager) -> None:
         self.ConfigSDKPath = configSDKPath
         self.ErrorHelpManager = errorHelpManager

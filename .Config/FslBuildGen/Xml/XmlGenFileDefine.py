@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright (c) 2014 Freescale Semiconductor, Inc.
 # All rights reserved.
 #
@@ -29,10 +29,10 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-from typing import Optional
 import xml.etree.ElementTree as ET
+
 from FslBuildGen.DataTypes import AccessType
 from FslBuildGen.Log import Log
 from FslBuildGen.Xml.Exceptions import XmlFormatException
@@ -40,20 +40,20 @@ from FslBuildGen.Xml.XmlBase import XmlBase
 
 
 class XmlGenFileDefine(XmlBase):
-    __AttribName = 'Name'
-    __AttribValue = 'Value'
-    __AttribAccess = 'Access'
+    __AttribName = "Name"
+    __AttribValue = "Value"
+    __AttribAccess = "Access"
 
     def __init__(self, log: Log, xmlElement: ET.Element) -> None:
         super().__init__(log, xmlElement)
         self._CheckAttributes({self.__AttribName, self.__AttribValue, self.__AttribAccess})
-        self.Name = self._ReadAttrib(xmlElement, self.__AttribName)  # type: str
-        self.Value =  self._TryReadAttrib(xmlElement, self.__AttribValue)  # type: Optional[str]
+        self.Name: str = self._ReadAttrib(xmlElement, self.__AttribName)
+        self.Value: str | None = self._TryReadAttrib(xmlElement, self.__AttribValue)
         self.ConsumedBy = None
-        access = self._ReadAttrib(xmlElement, self.__AttribAccess)  # type: str
+        access: str = self._ReadAttrib(xmlElement, self.__AttribAccess)
         if access == "Public":
-            self.Access = AccessType.Public  # type: AccessType
+            self.Access: AccessType = AccessType.Public
         elif access == "Private":
             self.Access = AccessType.Private
         else:
-            raise XmlFormatException("Unknown access type '{0}' on Define: '{1}'".format(access, self.Name))
+            raise XmlFormatException(f"Unknown access type '{access}' on Define: '{self.Name}'")

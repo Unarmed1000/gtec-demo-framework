@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright (c) 2014 Freescale Semiconductor, Inc.
 # All rights reserved.
 #
@@ -29,60 +29,55 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-from typing import Dict
-from typing import List
-from typing import Tuple
 import itertools
-from FslBuildGen.DataTypes import VariantType
-from FslBuildGen.Packages.Package import Package
-from FslBuildGen.Packages.Package import PackagePlatformVariant
 
-class VariantHelper(object):
+from FslBuildGen.DataTypes import VariantType
+from FslBuildGen.Packages.Package import Package, PackagePlatformVariant
+
+
+class VariantHelper:
     def __init__(self, package: Package) -> None:
         self.Package = package
         allVariants = list(package.ResolvedAllVariantDict.values())
         self.VariantTypeDict = self.__FilterVariants(allVariants)
-
 
         if VariantType.Normal in self.VariantTypeDict:
             self.NormalVariants = self.VariantTypeDict[VariantType.Normal]
             # We sort this to enforce a normalized 'ordering' of the variants
             self.NormalVariants.sort(key=lambda s: s.Name.lower())
             # build a list like this [ variant0-option-list, variant1-option-list ]
-            optionsPerVariantList = []  # type: List[List[str]]
+            optionsPerVariantList: list[list[str]] = []
             for variant in self.NormalVariants:
-                variantOptionList = []  # type: List[str]
+                variantOptionList: list[str] = []
                 for option in variant.Options:
                     variantOptionList.append(option.Name)
                 optionsPerVariantList.append(variantOptionList)
-            #Cartesian product of all possible configurations (yes variants are dangerous)
-            self.CartesianProduct = list(itertools.product(*optionsPerVariantList))  # type: List[Tuple[str, ...]]
-            #self.CartesianProduct = self.__SortCartesianProduct(cartesianProduct)
+            # Cartesian product of all possible configurations (yes variants are dangerous)
+            self.CartesianProduct: list[tuple[str, ...]] = list(itertools.product(*optionsPerVariantList))
+            # self.CartesianProduct = self.__SortCartesianProduct(cartesianProduct)
         else:
             self.CartesianProduct = []
             self.NormalVariants = []
 
         # The normal variant format string each variant is inserted as a ${VARIANT_NAME} in the string
-        self.ResolvedNormalVariantNameHint = self.__GetNormalVariantsVariableFormatString()  # type: str
-
+        self.ResolvedNormalVariantNameHint: str = self.__GetNormalVariantsVariableFormatString()
 
     def __GetNormalVariantsVariableFormatString(self) -> str:
         variantVariableNameList = []
         for platformVariant in self.NormalVariants:
-            variantVariableNameList.append("${{{0}}}".format(platformVariant.Name))
+            variantVariableNameList.append(f"${{{platformVariant.Name}}}")
         return "".join(variantVariableNameList)
 
-
-    def __FilterVariants(self, variants: List[PackagePlatformVariant]) -> Dict[VariantType, List[PackagePlatformVariant]]:
-        resDict = {}  # type: Dict[VariantType, List[PackagePlatformVariant]]
+    def __FilterVariants(self, variants: list[PackagePlatformVariant]) -> dict[VariantType, list[PackagePlatformVariant]]:
+        resDict: dict[VariantType, list[PackagePlatformVariant]] = {}
         for entry in variants:
-            if not entry.Type in resDict:
+            if entry.Type not in resDict:
                 resDict[entry.Type] = []
             resDict[entry.Type].append(entry)
         return resDict
 
-    #def __SortCartesianProduct(self, cartesianProduct):
+    # def __SortCartesianProduct(self, cartesianProduct):
 
     #    return cartesianProduct

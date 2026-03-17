@@ -1,6 +1,6 @@
-﻿#!/usr/bin/env python3
+#!/usr/bin/env python3
 
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright 2018 NXP
 # All rights reserved.
 #
@@ -29,35 +29,39 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-from typing import List
 import subprocess
-from FslBuildGen.Log import Log
+
 from FslBuildGen.BuildConfig.ClangExeInfo import ClangExeInfo
 from FslBuildGen.Exceptions import ExitException
+from FslBuildGen.Log import Log
 
 
-class RunHelper(object):
+class RunHelper:
     @staticmethod
     def RunNinja(log: Log, ninjaExeInfo: ClangExeInfo, ninjaFile: str, currentWorkingDirectory: str, numBuildThreads: int, logOutput: bool) -> None:
         buildCommand = [ninjaExeInfo.Command, "-f", ninjaFile]
-        #buildCommand += ["-d", "explain"]
+        # buildCommand += ["-d", "explain"]
         if numBuildThreads > 0:
             buildCommand += ["-j", str(numBuildThreads)]
         try:
             if log.Verbosity >= 4:
-                log.LogPrint("Running command '{0}' in cwd: {1}".format(buildCommand, currentWorkingDirectory))
+                log.LogPrint(f"Running command '{buildCommand}' in cwd: {currentWorkingDirectory}")
             result = RunHelper.RunNow(log, buildCommand, currentWorkingDirectory, logOutput)
             if result != 0:
-                log.LogPrintWarning("The command '{0}' failed with '{1}'. It was run with CWD: '{2}'".format(" ".join(buildCommand), result, currentWorkingDirectory))
+                log.LogPrintWarning(
+                    "The command '{}' failed with '{}'. It was run with CWD: '{}'".format(" ".join(buildCommand), result, currentWorkingDirectory)
+                )
                 raise ExitException(result)
         except FileNotFoundError:
-            log.DoPrintWarning("The command '{0}' failed with 'file not found'. It was run with CWD: '{1}'".format(" ".join(buildCommand), currentWorkingDirectory))
+            log.DoPrintWarning(
+                "The command '{}' failed with 'file not found'. It was run with CWD: '{}'".format(" ".join(buildCommand), currentWorkingDirectory)
+            )
             raise
 
     @staticmethod
-    def RunNow(log: Log, buildCommand: List[str], currentWorkingDirectory: str, logOutput: bool) -> int:
+    def RunNow(log: Log, buildCommand: list[str], currentWorkingDirectory: str, logOutput: bool) -> int:
         if not logOutput:
             return subprocess.call(buildCommand, cwd=currentWorkingDirectory)
         try:

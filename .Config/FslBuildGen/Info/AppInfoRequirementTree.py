@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright 2017 NXP
 # All rights reserved.
 #
@@ -29,33 +28,31 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-from typing import Dict
-from typing import List
-from typing import Optional
-#from typing import Set
-#from typing import Union
+
+# from typing import Set
+# from typing import Union
+
 from FslBuildGen.Build import RequirementTreeUtil
 from FslBuildGen.ExtensionListManager import ExtensionListManager
 from FslBuildGen.Info.AppInfo import AppInfo
 from FslBuildGen.Info.AppInfoGlobalRequirementTreeNode import AppInfoGlobalRequirementTreeNode
 from FslBuildGen.Info.PackageInfo import PackageInfo
-from FslBuildGen.Info.RequirementInfo import RequirementInfo
-from FslBuildGen.Info.RequirementInfo import RequirementType
+from FslBuildGen.Info.RequirementInfo import RequirementInfo, RequirementType
 from FslBuildGen.Log import Log
 
 g_rootRequirement = RequirementInfo("", RequirementType.Undefined, None, "")
 
-class AppInfoGlobalRequirementTree(object):
+
+class AppInfoGlobalRequirementTree:
     def __init__(self, log: Log) -> None:
         self.Log = log
-        self.TreeDict = {}              # type: Dict[str, AppInfoGlobalRequirementTreeNode]
-        self.FeatureToNodeDict = {}     # type: Dict[str, AppInfoGlobalRequirementTreeNode]
+        self.TreeDict: dict[str, AppInfoGlobalRequirementTreeNode] = {}
+        self.FeatureToNodeDict: dict[str, AppInfoGlobalRequirementTreeNode] = {}
         self.__RootNode = AppInfoGlobalRequirementTreeNode(g_rootRequirement)
 
-
-    def Merge(self, treeDict: Dict[str, RequirementInfo]) -> None:
+    def Merge(self, treeDict: dict[str, RequirementInfo]) -> None:
         # First we add all new nodes, then we link up the parent with its children
         newNodes = []
         for key, value in treeDict.items():
@@ -74,62 +71,54 @@ class AppInfoGlobalRequirementTree(object):
             else:
                 self.__RootNode.AddChild(newNode)
 
-
     def __CheckForConflicts(self, src1: RequirementInfo, src2: RequirementInfo) -> None:
         if not src1.IsContentEqual(src2):
             strHelp = src1.DebugGetDifferenceString(src2)
-            raise Exception("The requirement {0} already exist but there are differences {1}".format(src1.Name, strHelp))
-
+            raise Exception(f"The requirement {src1.Name} already exist but there are differences {strHelp}")
 
     def SetExtensionSupport(self, log: Log, qualifiedExtensionNameList: ExtensionListManager) -> None:
         RequirementTreeUtil.SetExtensionSupport(log, self.__RootNode, self.FeatureToNodeDict, qualifiedExtensionNameList)
 
-
-    def TryLocateExtensionNode(self, featureName: str, extensionName: str) -> Optional[AppInfoGlobalRequirementTreeNode]:
+    def TryLocateExtensionNode(self, featureName: str, extensionName: str) -> AppInfoGlobalRequirementTreeNode | None:
         return RequirementTreeUtil.TryLocateExtensionNode(self.FeatureToNodeDict, featureName, extensionName)
 
 
-class AppInfoRequirementTree(object):
-    def __init__(self, log: Log, appInfoDict: Dict[str, AppInfo], activePlatformNameId: str) -> None:
-        """ Look at the available AppInfo and generate a complete merged requirement tree """
+class AppInfoRequirementTree:
+    def __init__(self, log: Log, appInfoDict: dict[str, AppInfo], activePlatformNameId: str) -> None:
+        """Look at the available AppInfo and generate a complete merged requirement tree"""
         self.Log = log
         appInfoGlobalRequirementTree = AppInfoGlobalRequirementTree(log)
         self.__ProcessAppInfoDict(appInfoGlobalRequirementTree, appInfoDict, activePlatformNameId)
 
         self.GlobalTree = appInfoGlobalRequirementTree
 
-
-    def __ProcessAppInfoDict(self, rAppInfoGlobalRequirementTree: AppInfoGlobalRequirementTree,
-                             appInfoDict: Dict[str, AppInfo], activePlatformId: str) -> None:
+    def __ProcessAppInfoDict(self, rAppInfoGlobalRequirementTree: AppInfoGlobalRequirementTree, appInfoDict: dict[str, AppInfo], activePlatformId: str) -> None:
         for filename, appInfo in appInfoDict.items():
             self.__TryProcessAppInfo(rAppInfoGlobalRequirementTree, appInfo, filename, activePlatformId)
 
-
-    def __TryProcessAppInfo(self, rAppInfoGlobalRequirementTree: AppInfoGlobalRequirementTree,
-                            appInfo: AppInfo, sourceFilename: str, activePlatformId: str) -> None:
+    def __TryProcessAppInfo(
+        self, rAppInfoGlobalRequirementTree: AppInfoGlobalRequirementTree, appInfo: AppInfo, sourceFilename: str, activePlatformId: str
+    ) -> None:
         # Verify the platform
         if appInfo.PlatformName.lower() != activePlatformId:
-            self.Log.LogPrint("Skipping '{0}' as it was for '{1}' instead of the expected '{2}'".format(sourceFilename, appInfo.PlatformName, activePlatformId))
+            self.Log.LogPrint(f"Skipping '{sourceFilename}' as it was for '{appInfo.PlatformName}' instead of the expected '{activePlatformId}'")
             return None
 
         self.__ProcessPackageList(rAppInfoGlobalRequirementTree, appInfo.ResolvedPackageList, sourceFilename)
         return None
 
-
-    def __ProcessPackageList(self, rAppInfoGlobalRequirementTree: AppInfoGlobalRequirementTree,
-                             resolvedPackageInfoList: List[PackageInfo], sourceFilename: str) -> None:
+    def __ProcessPackageList(
+        self, rAppInfoGlobalRequirementTree: AppInfoGlobalRequirementTree, resolvedPackageInfoList: list[PackageInfo], sourceFilename: str
+    ) -> None:
         for packageInfo in resolvedPackageInfoList:
             self.__ProcessPackageInfo(rAppInfoGlobalRequirementTree, packageInfo, sourceFilename)
 
-
-    def __ProcessPackageInfo(self, rAppInfoGlobalRequirementTree: AppInfoGlobalRequirementTree,
-                             packageInfo: PackageInfo, sourceFilename: str) -> None:
+    def __ProcessPackageInfo(self, rAppInfoGlobalRequirementTree: AppInfoGlobalRequirementTree, packageInfo: PackageInfo, sourceFilename: str) -> None:
         requirementsDict = self.__ProcessAllRequirements(packageInfo.AllRequirements, sourceFilename)
         rAppInfoGlobalRequirementTree.Merge(requirementsDict)
 
-
-    def __ProcessAllRequirements(self, allRequirementList: List[RequirementInfo], sourceFilename: str) -> Dict[str, RequirementInfo]:
-        treeDict = {"": g_rootRequirement} # type: Dict[str, RequirementInfo]
+    def __ProcessAllRequirements(self, allRequirementList: list[RequirementInfo], sourceFilename: str) -> dict[str, RequirementInfo]:
+        treeDict: dict[str, RequirementInfo] = {"": g_rootRequirement}
 
         laterQueue = list(allRequirementList)
         previousCount = len(laterQueue) + 1
@@ -139,17 +128,17 @@ class AppInfoRequirementTree(object):
             previousCount = len(laterQueue)
             queue = laterQueue
             laterQueue = []
-            while(len(queue) > 0):
+            while len(queue) > 0:
                 current = queue.pop()
                 if current.Extends is None or current.Extends in treeDict:
                     if current.Name in treeDict:
-                        raise Exception("The requirement '{0}' already exist".format(current.Name))
+                        raise Exception(f"The requirement '{current.Name}' already exist")
                     treeDict[current.Name] = current
                 else:
                     # add it to the queue forlater
                     laterQueue.append(current)
 
         if len(laterQueue) > 0:
-            invalidNameList = ["{0} extends {1}".format(entry.Name, entry.Extends) for entry in laterQueue]
-            raise Exception("The requirements contained requirements with invalid extends {0} in file '{1}'".format(invalidNameList, sourceFilename))
+            invalidNameList = [f"{entry.Name} extends {entry.Extends}" for entry in laterQueue]
+            raise Exception(f"The requirements contained requirements with invalid extends {invalidNameList} in file '{sourceFilename}'")
         return treeDict

@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright 2017 NXP
 # All rights reserved.
 #
@@ -29,24 +28,23 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-from typing import Dict
-from typing import List
-from typing import Optional
+
 from FslBuildGen.Packages.Package import Package
 
-#def GetPackageFromFilename(topLevelPackage: Package, filename: str) -> Package:
+# def GetPackageFromFilename(topLevelPackage: Package, filename: str) -> Package:
 #    for entry in topLevelPackage.ResolvedAllDependencies:
 #        if entry.Package.GenFile is not None and entry.Package.GenFile.PackageFile is not None and entry.Package.GenFile.PackageFile.AbsoluteFilePath == filename:
 #            return entry.Package
 #    raise Exception("Could not find package for '{0}'".format(filename))
 
-def TryGetPackageListFromFilenames(topLevelPackage: Package, requestedFiles: Optional[List[str]], ignoreNotFound: bool) -> Optional[List[Package]]:
+
+def TryGetPackageListFromFilenames(topLevelPackage: Package, requestedFiles: list[str] | None, ignoreNotFound: bool) -> list[Package] | None:
     if requestedFiles is None:
         return None
 
-    filenameToPackagesDict = {}  # type: Dict [str,List[Package]]
+    filenameToPackagesDict: dict[str, list[Package]] = {}
     for entry in topLevelPackage.ResolvedAllDependencies:
         if entry.Package.TraceContext.PackageFile is not None:
             theFilename = entry.Package.TraceContext.PackageFile.AbsoluteFilePath
@@ -55,7 +53,7 @@ def TryGetPackageListFromFilenames(topLevelPackage: Package, requestedFiles: Opt
             else:
                 filenameToPackagesDict[theFilename].append(entry.Package)
 
-    uniqueDict = {} # type: Dict[str, Package]
+    uniqueDict: dict[str, Package] = {}
     for fileName in requestedFiles:
         if fileName in filenameToPackagesDict:
             filePackages = filenameToPackagesDict[fileName]
@@ -63,10 +61,10 @@ def TryGetPackageListFromFilenames(topLevelPackage: Package, requestedFiles: Opt
                 if filePackage.Name not in uniqueDict:
                     uniqueDict[filePackage.Name] = filePackage
         elif not ignoreNotFound:
-            raise Exception("Could not find package for '{0}'".format(fileName))
+            raise Exception(f"Could not find package for '{fileName}'")
     return list(uniqueDict.values())
 
 
-def GetPackageListFromFilenames(topLevelPackage: Package, requestedFiles: Optional[List[str]], ignoreNotFound: bool = False) -> List[Package]:
+def GetPackageListFromFilenames(topLevelPackage: Package, requestedFiles: list[str] | None, ignoreNotFound: bool = False) -> list[Package]:
     result = TryGetPackageListFromFilenames(topLevelPackage, requestedFiles, ignoreNotFound)
     return [] if result is None else result

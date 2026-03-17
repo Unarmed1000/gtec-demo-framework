@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright 2018 NXP
 # All rights reserved.
 #
@@ -29,18 +29,19 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-#from typing import List
-from typing import Optional
+# from typing import List
 import xml.etree.ElementTree as ET
+
 from FslBuildGen.Log import Log
 from FslBuildGen.Xml.Exceptions import XmlException2
-from FslBuildGen.Xml.XmlBase import XmlBase
 from FslBuildGen.Xml.Project.XmlExperimentalPlatformRecipes_DefaultValue import XmlExperimentalPlatformRecipes_DefaultValue
+from FslBuildGen.Xml.XmlBase import XmlBase
+
 
 class XmlExperimentalPlatform(XmlBase):
-    __AttribName = 'Name'
+    __AttribName = "Name"
 
     def __init__(self, log: Log, xmlElement: ET.Element) -> None:
         super().__init__(log, xmlElement)
@@ -49,11 +50,11 @@ class XmlExperimentalPlatform(XmlBase):
         self.Id = self.Name.lower()
         self.Recipes = self.__ReadRecipes(log, xmlElement)
 
-    def __ReadRecipes(self, log: Log, xmlElement: ET.Element) -> Optional[XmlExperimentalPlatformRecipes_DefaultValue]:
+    def __ReadRecipes(self, log: Log, xmlElement: ET.Element) -> XmlExperimentalPlatformRecipes_DefaultValue | None:
         foundElements = xmlElement.findall("Recipes.DefaultValue")
         if foundElements is None or len(foundElements) <= 0:
             return None
         if len(foundElements) > 1:
-            errorMsg = "Multiple entries called '{0}' for platform found in Project.gen".format(foundElements)
+            errorMsg = f"Multiple entries called '{foundElements}' for platform found in Project.gen"
             raise XmlException2(errorMsg)
         return XmlExperimentalPlatformRecipes_DefaultValue(log, foundElements[0])

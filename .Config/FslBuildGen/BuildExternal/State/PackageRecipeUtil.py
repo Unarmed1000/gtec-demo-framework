@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright 2018 NXP
 # All rights reserved.
 #
@@ -29,27 +28,28 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-from typing import List
-from typing import Union
+
 from FslBuildGen.BuildExternal.PackageExperimentalRecipe import PackageExperimentalRecipe
 from FslBuildGen.DataTypes import BuildRecipePipelineCommand
 from FslBuildGen.Packages.Package import Package
-from FslBuildGen.Xml.XmlExperimentalRecipe import XmlRecipePipelineBuildCommand
-from FslBuildGen.Xml.XmlExperimentalRecipe import XmlRecipePipelineCommand
-from FslBuildGen.Xml.XmlExperimentalRecipe import XmlRecipePipelineCommandCombine
+from FslBuildGen.Xml.XmlExperimentalRecipe import XmlRecipePipelineBuildCommand, XmlRecipePipelineCommand, XmlRecipePipelineCommandCombine
 
-class PackageRecipeUtil(object):
 
+class PackageRecipeUtil:
     @staticmethod
     def HasBuildPipeline(sourcePackage: Package) -> bool:
-        if sourcePackage is None or sourcePackage.ResolvedDirectExperimentalRecipe is None or sourcePackage.ResolvedDirectExperimentalRecipe.ResolvedInstallLocation is None:
+        if (
+            sourcePackage is None
+            or sourcePackage.ResolvedDirectExperimentalRecipe is None
+            or sourcePackage.ResolvedDirectExperimentalRecipe.ResolvedInstallLocation is None
+        ):
             return False
-        return not sourcePackage.ResolvedDirectExperimentalRecipe.Pipeline is None
+        return sourcePackage.ResolvedDirectExperimentalRecipe.Pipeline is not None
 
     @staticmethod
-    def CommandListContainsBuildCMake(commandList: Union[List[XmlRecipePipelineCommand], List[XmlRecipePipelineBuildCommand]]) -> bool:
+    def CommandListContainsBuildCMake(commandList: list[XmlRecipePipelineCommand] | list[XmlRecipePipelineBuildCommand]) -> bool:
         for command in commandList:
             if command.CommandType == BuildRecipePipelineCommand.CMakeBuild:
                 return True

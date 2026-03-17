@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright 2020 NXP
 # All rights reserved.
 #
@@ -29,51 +28,49 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-from typing import List
-from typing import Optional
-from typing import Set
+
 from FslBuildGen.DataTypes import PackageType
 from FslBuildGen.Engine.PackageFlavorName import PackageFlavorName
-from FslBuildGen.Engine.PackageFlavorQuickName import PackageFlavorQuickName
 from FslBuildGen.Engine.PackageFlavorOptionName import PackageFlavorOptionName
+from FslBuildGen.Engine.PackageFlavorQuickName import PackageFlavorQuickName
 from FslBuildGen.Engine.PackageFlavorSelections import PackageFlavorSelections
 from FslBuildGen.Engine.Resolver.InstanceConfig import InstanceConfig
 from FslBuildGen.Engine.Resolver.PackageName import PackageName
 from FslBuildGen.Engine.Resolver.ResolvedPackage import ResolvedPackage
 
 
-class ResolvedPackageTemplateDependency(object):
-    def __init__(self, template: 'ResolvedPackageTemplate', flavorConstraints: PackageFlavorSelections) -> None:
+class ResolvedPackageTemplateDependency:
+    def __init__(self, template: "ResolvedPackageTemplate", flavorConstraints: PackageFlavorSelections) -> None:
         super().__init__()
         self.Template = template
         self.FlavorConstraints = flavorConstraints
 
     def __str__(self) -> str:
-        return "Name:{0} Constraints:{1}".format(self.Template.Name, self.FlavorConstraints)
+        return f"Name:{self.Template.Name} Constraints:{self.FlavorConstraints}"
 
 
-class ResolvedPackageFlavorOption(object):
-    def __init__(self, name: PackageFlavorOptionName, directDependencies: List[ResolvedPackageTemplateDependency], supported: bool) -> None:
+class ResolvedPackageFlavorOption:
+    def __init__(self, name: PackageFlavorOptionName, directDependencies: list[ResolvedPackageTemplateDependency], supported: bool) -> None:
         super().__init__()
         self.Name = name
         self.DirectDependencies = directDependencies
         self.Supported = supported
 
     def __str__(self) -> str:
-        return "Name:{0} DirectDepCount:{1}".format(self.Name, len(self.DirectDependencies))
+        return f"Name:{self.Name} DirectDepCount:{len(self.DirectDependencies)}"
 
 
-class ResolvedPackageFlavor(object):
-    def __init__(self, name: PackageFlavorName, quickName: Optional[PackageFlavorQuickName], options: List[ResolvedPackageFlavorOption]) -> None:
+class ResolvedPackageFlavor:
+    def __init__(self, name: PackageFlavorName, quickName: PackageFlavorQuickName | None, options: list[ResolvedPackageFlavorOption]) -> None:
         super().__init__()
         self.Name = name
         self.QuickName = quickName
         self.Options = options
         self.Description = ResolvedPackageFlavor.__OptionString(self.Options)
 
-    def TryGetOptionByName(self, name: PackageFlavorOptionName) -> Optional[ResolvedPackageFlavorOption]:
+    def TryGetOptionByName(self, name: PackageFlavorOptionName) -> ResolvedPackageFlavorOption | None:
         for flavorOption in self.Options:
             if flavorOption.Name == name:
                 return flavorOption
@@ -86,49 +83,53 @@ class ResolvedPackageFlavor(object):
         return result
 
     def __str__(self) -> str:
-        return "{0}:{{{1}}}".format(self.Name, self.Description)
+        return f"{self.Name}:{{{self.Description}}}"
 
     @staticmethod
-    def __OptionString(options: List[ResolvedPackageFlavorOption]) -> str:
+    def __OptionString(options: list[ResolvedPackageFlavorOption]) -> str:
         return ",".join([option.Name.Value for option in options])
 
 
-class ResolvedPackageFlavorExtension(object):
-    def __init__(self, name: PackageFlavorName, options: List[ResolvedPackageFlavorOption]) -> None:
+class ResolvedPackageFlavorExtension:
+    def __init__(self, name: PackageFlavorName, options: list[ResolvedPackageFlavorOption]) -> None:
         super().__init__()
         self.Name = name
         self.Options = options
         self.Description = self.__OptionString(self.Options)
 
-    def TryGetOptionByName(self, name: PackageFlavorOptionName) -> Optional[ResolvedPackageFlavorOption]:
+    def TryGetOptionByName(self, name: PackageFlavorOptionName) -> ResolvedPackageFlavorOption | None:
         for flavorOption in self.Options:
             if flavorOption.Name == name:
                 return flavorOption
         return None
 
-
     def __str__(self) -> str:
-        return "{0}:{{{1}}}".format(self.Name, self.Description)
+        return f"{self.Name}:{{{self.Description}}}"
 
     @staticmethod
-    def __OptionString(options: List[ResolvedPackageFlavorOption]) -> str:
+    def __OptionString(options: list[ResolvedPackageFlavorOption]) -> str:
         return ",".join([option.Name.Value for option in options])
 
 
-
 class ResolvedPackageTemplate(ResolvedPackage):
-    def __init__(self, name: PackageName, packageType: PackageType, directDependencies: List[ResolvedPackageTemplateDependency],
-                 instanceConfigs: List[InstanceConfig], packageFlavors: List[ResolvedPackageFlavor],
-                 packageFlavorExtensions: List[ResolvedPackageFlavorExtension]) -> None:
+    def __init__(
+        self,
+        name: PackageName,
+        packageType: PackageType,
+        directDependencies: list[ResolvedPackageTemplateDependency],
+        instanceConfigs: list[InstanceConfig],
+        packageFlavors: list[ResolvedPackageFlavor],
+        packageFlavorExtensions: list[ResolvedPackageFlavorExtension],
+    ) -> None:
         super().__init__(name, packageType)
 
         if len(directDependencies) > 0:
-          directDependencies = list(directDependencies)
-          directDependencies.sort(key=lambda s: s.Template.Name.Value.upper())
+            directDependencies = list(directDependencies)
+            directDependencies.sort(key=lambda s: s.Template.Name.Value.upper())
 
         if len(instanceConfigs) > 0:
-          instanceConfigs = list(instanceConfigs)
-          instanceConfigs.sort(key=lambda s: s.Description.upper())
+            instanceConfigs = list(instanceConfigs)
+            instanceConfigs.sort(key=lambda s: s.Description.upper())
 
         self.DirectDependencies = directDependencies
         self.InstanceConfigs = instanceConfigs
@@ -140,7 +141,7 @@ class ResolvedPackageTemplate(ResolvedPackage):
         ResolvedPackageTemplate.__SanityCheckDependencies(self.DirectDependencies, self.Name)
         ResolvedPackageTemplate.__SanityCheckInstanceConfigs(self.InstanceConfigs)
 
-    def TryGetFlavor(self, name: PackageFlavorName) -> Optional[ResolvedPackageFlavor]:
+    def TryGetFlavor(self, name: PackageFlavorName) -> ResolvedPackageFlavor | None:
         for flavor in self.PackageFlavors:
             if flavor.Name == name:
                 return flavor
@@ -149,10 +150,10 @@ class ResolvedPackageTemplate(ResolvedPackage):
     def GetFlavor(self, name: PackageFlavorName) -> ResolvedPackageFlavor:
         flavor = self.TryGetFlavor(name)
         if flavor is None:
-            raise Exception("Package '{0}' unknown flavor name: {1} ({2})".format(self.Name, name, self.PackageFlavors))
+            raise Exception(f"Package '{self.Name}' unknown flavor name: {name} ({self.PackageFlavors})")
         return flavor
 
-    def TryGetFlavorExtension(self, name: PackageFlavorName) -> Optional[ResolvedPackageFlavorExtension]:
+    def TryGetFlavorExtension(self, name: PackageFlavorName) -> ResolvedPackageFlavorExtension | None:
         for flavorExtension in self.PackageFlavorExtensions:
             if flavorExtension.Name == name:
                 return flavorExtension
@@ -161,30 +162,30 @@ class ResolvedPackageTemplate(ResolvedPackage):
     def GetFlavorExtension(self, name: PackageFlavorName) -> ResolvedPackageFlavorExtension:
         flavorExtension = self.TryGetFlavorExtension(name)
         if flavorExtension is None:
-            raise Exception("Package '{0}' unknown flavor extension name: {1} ({2})".format(self.Name, name, self.PackageFlavors))
+            raise Exception(f"Package '{self.Name}' unknown flavor extension name: {name} ({self.PackageFlavors})")
         return flavorExtension
 
     def GetFlavorOption(self, name: PackageFlavorName, flavorOptionName: PackageFlavorOptionName) -> ResolvedPackageFlavorOption:
         return self.GetFlavor(name).GetOptionByName(flavorOptionName)
 
     @staticmethod
-    def __SanityCheckDependencies(directDependencies: List[ResolvedPackageTemplateDependency], name: PackageName) -> None:
+    def __SanityCheckDependencies(directDependencies: list[ResolvedPackageTemplateDependency], name: PackageName) -> None:
         if len(directDependencies) <= 0:
             return
-        uniqueNames = set()  # type: Set[PackageName]
+        uniqueNames: set[PackageName] = set()
         for entry in directDependencies:
             if entry.Template.Name == name:
-                raise Exception("Can not add dependency to self '{0}'".format(entry.Template.Name))
+                raise Exception(f"Can not add dependency to self '{entry.Template.Name}'")
             if entry.Template.Name in uniqueNames:
-                raise Exception("Duplicate dependency '{0}'".format(entry.Template.Name))
+                raise Exception(f"Duplicate dependency '{entry.Template.Name}'")
             uniqueNames.add(entry.Template.Name)
 
     @staticmethod
-    def __SanityCheckInstanceConfigs(instanceConfigs: List[InstanceConfig]) -> None:
+    def __SanityCheckInstanceConfigs(instanceConfigs: list[InstanceConfig]) -> None:
         if len(instanceConfigs) <= 0:
             return
-        uniqueNames = set()  # type: Set[str]
+        uniqueNames: set[str] = set()
         for entry in instanceConfigs:
             if entry.Description in uniqueNames:
-                raise Exception("Duplicate instance config '{0}'".format(entry.Description))
+                raise Exception(f"Duplicate instance config '{entry.Description}'")
             uniqueNames.add(entry.Description)

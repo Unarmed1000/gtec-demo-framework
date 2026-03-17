@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright 2020 NXP
 # All rights reserved.
 #
@@ -29,58 +28,47 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-from typing import Dict
-from typing import List
-from typing import Optional
-from typing import Set
-from FslBuildGen.DataTypes import PackageInstanceType
-from FslBuildGen.DataTypes import PackageType
+
+from FslBuildGen.DataTypes import PackageInstanceType, PackageType
 from FslBuildGen.Engine.ComplexExternalFlavorConstraints import ComplexExternalFlavorConstraints
-from FslBuildGen.Engine.EngineResolveConfig import EngineResolveConfig
-from FslBuildGen.Engine.EngineResolveConfig import ExternalFlavorConstraintHelp
-from FslBuildGen.Engine.EngineResolveConfig import FlavorResolveConstraints
+from FslBuildGen.Engine.EngineResolveConfig import EngineResolveConfig, ExternalFlavorConstraintHelp, FlavorResolveConstraints
 from FslBuildGen.Engine.ExternalFlavorConstraints import ExternalFlavorConstraints
 from FslBuildGen.Engine.Order.Exceptions import PackageExternalFlavorConstraintMustBeSetException
 from FslBuildGen.Engine.Order.PackageBuildOrder import PackageBuildOrder
 from FslBuildGen.Engine.PackageFlavorName import PackageFlavorName
+from FslBuildGen.Engine.PackageFlavorOptionName import PackageFlavorOptionName
 from FslBuildGen.Engine.Resolver.InstanceConfig import InstanceConfig
 from FslBuildGen.Engine.Resolver.PackageName import PackageName
-from FslBuildGen.Engine.Resolver.PackageResolver import PackageResolver
 from FslBuildGen.Engine.Resolver.PackageResolveQueue import PackageResolveQueue
-from FslBuildGen.Engine.Resolver.ResolvedPackageGraph import EdgeType
-from FslBuildGen.Engine.Resolver.ResolvedPackageGraph import ResolvedPackageGraph
-from FslBuildGen.Engine.Resolver.ResolvedPackageGraph import ResolvedPackageGraphNode
-from FslBuildGen.Engine.Resolver.ResolvedPackageInstance import ResolvedPackageInstance
-from FslBuildGen.Engine.Resolver.ResolvedPackageInstance import ResolvedPackageInstanceDependency
+from FslBuildGen.Engine.Resolver.PackageResolver import PackageResolver
+from FslBuildGen.Engine.Resolver.ResolvedPackageGraph import EdgeType, ResolvedPackageGraph, ResolvedPackageGraphNode
+from FslBuildGen.Engine.Resolver.ResolvedPackageInstance import ResolvedPackageInstance, ResolvedPackageInstanceDependency
 from FslBuildGen.Engine.Resolver.ResolvedPackageTemplate import ResolvedPackageTemplate
-from FslBuildGen.Engine.PackageFlavorOptionName import PackageFlavorOptionName
 from FslBuildGen.Engine.Unresolved.UnresolvedBasicPackage import UnresolvedBasicPackage
 from FslBuildGen.Log import Log
 
 
-class LocalVerbosityLevel(object):
+class LocalVerbosityLevel:
     Info = 3
     Debug = 4
     Trace = 5
 
 
-class BuildResult(object):
-    def __init__(self, graph: Optional[ResolvedPackageGraph],
-                       generatedFlavorConstraints: Optional[ComplexExternalFlavorConstraints]) -> None:
+class BuildResult:
+    def __init__(self, graph: ResolvedPackageGraph | None, generatedFlavorConstraints: ComplexExternalFlavorConstraints | None) -> None:
         super().__init__()
         self.Graph = graph
         self.GeneratedFlavorConstraints = generatedFlavorConstraints
 
 
-class PackageGraphBuilder(object):
-
+class PackageGraphBuilder:
     @staticmethod
-    def Build(log: Log, allPackages: List[UnresolvedBasicPackage],
-              flavorConstraints: ExternalFlavorConstraints, engineResolveConfig: EngineResolveConfig) -> ResolvedPackageGraph:
-
-        result = PackageGraphBuilder.__BuildNow(log, allPackages, ComplexExternalFlavorConstraints(flavorConstraints, dict()), engineResolveConfig)
+    def Build(
+        log: Log, allPackages: list[UnresolvedBasicPackage], flavorConstraints: ExternalFlavorConstraints, engineResolveConfig: EngineResolveConfig
+    ) -> ResolvedPackageGraph:
+        result = PackageGraphBuilder.__BuildNow(log, allPackages, ComplexExternalFlavorConstraints(flavorConstraints, {}), engineResolveConfig)
         if result.Graph is not None:
             return result.Graph
         if result.GeneratedFlavorConstraints is not None:
@@ -92,10 +80,10 @@ class PackageGraphBuilder(object):
         raise Exception("Internal error")
 
     @staticmethod
-    def __BuildNow(log: Log, allPackages: List[UnresolvedBasicPackage],
-                   flavorConstraints: ComplexExternalFlavorConstraints, engineResolveConfig: EngineResolveConfig) -> BuildResult:
-
-        buildOrder = PackageBuildOrder.ResolveBuildOrder(log, allPackages, flavorConstraints)  # type: List[UnresolvedBasicPackage]
+    def __BuildNow(
+        log: Log, allPackages: list[UnresolvedBasicPackage], flavorConstraints: ComplexExternalFlavorConstraints, engineResolveConfig: EngineResolveConfig
+    ) -> BuildResult:
+        buildOrder: list[UnresolvedBasicPackage] = PackageBuildOrder.ResolveBuildOrder(log, allPackages, flavorConstraints)
         log.LogPrintVerbose(LocalVerbosityLevel.Info, "Building instance graph")
         log.PushIndent()
         try:
@@ -103,8 +91,9 @@ class PackageGraphBuilder(object):
             graph = PackageGraphBuilder.__BuildInstanceGraph(log, queue)
             graph.HasExternalContraints = flavorConstraints.HasConstraints()
             if engineResolveConfig.FlavorResolveConstraints == FlavorResolveConstraints.OnlyAllowOneFlavorPerRoot:
-                generatedFlavorConstraints = PackageGraphBuilder.__EnsureOnlyOneFlavorPerRootNode(graph, flavorConstraints.HasConstraints(),
-                                                                                                  engineResolveConfig.ExternalFlavorConstraintHelp)
+                generatedFlavorConstraints = PackageGraphBuilder.__EnsureOnlyOneFlavorPerRootNode(
+                    graph, flavorConstraints.HasConstraints(), engineResolveConfig.ExternalFlavorConstraintHelp
+                )
                 if generatedFlavorConstraints is not None:
                     mergedConstraints = ComplexExternalFlavorConstraints.Merge(flavorConstraints, generatedFlavorConstraints)
                     return BuildResult(None, mergedConstraints)
@@ -115,7 +104,7 @@ class PackageGraphBuilder(object):
     @staticmethod
     def __BuildInstanceGraph(log: Log, queue: PackageResolveQueue) -> ResolvedPackageGraph:
         graph = ResolvedPackageGraph()
-        instanceDict = dict() # type: Dict[PackageName, ResolvedPackageInstance]
+        instanceDict: dict[PackageName, ResolvedPackageInstance] = {}
 
         resolver = PackageResolver(log)
 
@@ -123,7 +112,7 @@ class PackageGraphBuilder(object):
             currentPackage = queue.Dequeue()
             if currentPackage.Type != PackageType.TopLevel:
                 if log.Verbosity >= LocalVerbosityLevel.Info:
-                    log.LogPrint("Resolving package: {0}".format(currentPackage))
+                    log.LogPrint(f"Resolving package: {currentPackage}")
 
                 resolvedPackageTemplate = resolver.Resolve(currentPackage)
                 PackageGraphBuilder.__AddTemplateNodeAndEdges(graph, resolvedPackageTemplate)
@@ -133,8 +122,9 @@ class PackageGraphBuilder(object):
 
                 isFlavorSingleton = len(resolvedPackageTemplate.InstanceConfigs) <= 1
                 for instanceConfig in resolvedPackageTemplate.InstanceConfigs:
-                    packageInstance = PackageGraphBuilder.__CreateResolvedPackageInstance(log, instanceDict, resolvedPackageTemplate,
-                                                                                          instanceConfig, isFlavorSingleton) # type: ResolvedPackageInstance
+                    packageInstance: ResolvedPackageInstance = PackageGraphBuilder.__CreateResolvedPackageInstance(
+                        log, instanceDict, resolvedPackageTemplate, instanceConfig, isFlavorSingleton
+                    )
                     PackageGraphBuilder.__AddInstanceNodeAndEdges(graph, packageInstance)
             elif len(queue) != 0:
                 raise Exception("internal error")
@@ -161,25 +151,28 @@ class PackageGraphBuilder(object):
         for flavor in resolvedPackageTemplate.PackageFlavors:
             for option in flavor.Options:
                 for dep in option.DirectDependencies:
-                    desc = "{0}={1}".format(flavor.Name.Value, option.Name)
+                    desc = f"{flavor.Name.Value}={option.Name}"
                     graph.AddEdge(node, dep.Template, EdgeType.TemplateFlavor, dep.FlavorConstraints, desc)
 
         return node
 
     @staticmethod
-    def __CreateResolvedPackageInstance(log: Log, instanceDict: Dict[PackageName, ResolvedPackageInstance],
-                                        resolvedPackageTemplate: ResolvedPackageTemplate,
-                                        instanceConfig: InstanceConfig,
-                                        isFlavorSingleton: bool) -> ResolvedPackageInstance:
+    def __CreateResolvedPackageInstance(
+        log: Log,
+        instanceDict: dict[PackageName, ResolvedPackageInstance],
+        resolvedPackageTemplate: ResolvedPackageTemplate,
+        instanceConfig: InstanceConfig,
+        isFlavorSingleton: bool,
+    ) -> ResolvedPackageInstance:
         packageInstanceName = PackageName.CreateNameAndSelection(resolvedPackageTemplate.Name, instanceConfig.FlavorSelections, isFlavorSingleton)
         if log.Verbosity >= LocalVerbosityLevel.Info:
-            log.LogPrint("- Creating instance: {0}".format(packageInstanceName))
+            log.LogPrint(f"- Creating instance: {packageInstanceName}")
 
         # lookup all instances for the direct dependencies
-        directDependencies = [] # type: List[ResolvedPackageInstanceDependency]
+        directDependencies: list[ResolvedPackageInstanceDependency] = []
         for source in instanceConfig.DirectDependencies:
             if source.Name not in instanceDict:
-                raise Exception("Package '{0}' Dependency instance '{1}' not found".format(resolvedPackageTemplate.Name, source.Name))
+                raise Exception(f"Package '{resolvedPackageTemplate.Name}' Dependency instance '{source.Name}' not found")
             depInstance = instanceDict[source.Name]
             directDependencies.append(ResolvedPackageInstanceDependency(depInstance, source.Source))
 
@@ -189,15 +182,16 @@ class PackageGraphBuilder(object):
 
         # Since the instance and the template its created from is basically the same we can just say that this instances-flavor template is the same
         # as the instance-template's flavor-template.  This will remove what is basically duplicated information from the graph
-        instance = ResolvedPackageInstance(packageInstanceName, resolvedPackageTemplate.Type, directDependencies, instanceConfig.FlavorSelections,
-                                           resolvedPackageTemplate, instanceType)
+        instance = ResolvedPackageInstance(
+            packageInstanceName, resolvedPackageTemplate.Type, directDependencies, instanceConfig.FlavorSelections, resolvedPackageTemplate, instanceType
+        )
         instanceDict[instance.Name] = instance
         return instance
 
     @staticmethod
-    def __EnsureOnlyOneFlavorPerRootNode(graph: ResolvedPackageGraph, hasFlavorConstraints: bool,
-                                         externalFlavorConstraintHelp: ExternalFlavorConstraintHelp) -> Optional[Dict[str, ExternalFlavorConstraints]]:
-
+    def __EnsureOnlyOneFlavorPerRootNode(
+        graph: ResolvedPackageGraph, hasFlavorConstraints: bool, externalFlavorConstraintHelp: ExternalFlavorConstraintHelp
+    ) -> dict[str, ExternalFlavorConstraints] | None:
         flavorTemplateDict = PackageGraphBuilder.__BuildFlavorTemplateDict(graph, hasFlavorConstraints)
 
         if externalFlavorConstraintHelp == ExternalFlavorConstraintHelp.Disabled:
@@ -206,19 +200,23 @@ class PackageGraphBuilder(object):
             rootNodeConstraintDict = PackageGraphBuilder.__TryBuildRootNodeDefaultConstraints(flavorTemplateDict)
             return None if len(rootNodeConstraintDict) <= 0 else rootNodeConstraintDict
         else:
-            raise Exception("Unsupported ExternalFlavorConstraintHelp: {0}".format(externalFlavorConstraintHelp))
-        return None;
+            raise Exception(f"Unsupported ExternalFlavorConstraintHelp: {externalFlavorConstraintHelp}")
+        return None
 
     @staticmethod
-    def __BuildFlavorTemplateDict(graph: ResolvedPackageGraph, hasFlavorConstraints: bool) -> Dict[ResolvedPackageTemplate, List[ResolvedPackageInstance]]:
+    def __BuildFlavorTemplateDict(graph: ResolvedPackageGraph, hasFlavorConstraints: bool) -> dict[ResolvedPackageTemplate, list[ResolvedPackageInstance]]:
         # Run through all root nodes and determine if there are multiple flavors of each
         # if there are we determine which flavors need to be constrained and notify the user.
 
-        flavorTemplateDict = dict() # type: Dict[ResolvedPackageTemplate, List[ResolvedPackageInstance]]
+        flavorTemplateDict: dict[ResolvedPackageTemplate, list[ResolvedPackageInstance]] = {}
         rootNodes = graph.FindNodesWithNoIncomingDependencies()
         if hasFlavorConstraints:
             for rootNode in rootNodes:
-                if rootNode.Source.Type == PackageType.ExternalFlavorConstraint and isinstance(rootNode.Source, ResolvedPackageInstance) and rootNode.Source.InstanceType == PackageInstanceType.Flavor:
+                if (
+                    rootNode.Source.Type == PackageType.ExternalFlavorConstraint
+                    and isinstance(rootNode.Source, ResolvedPackageInstance)
+                    and rootNode.Source.InstanceType == PackageInstanceType.Flavor
+                ):
                     if rootNode.Source.FlavorTemplate not in flavorTemplateDict:
                         flavorTemplateDict[rootNode.Source.FlavorTemplate] = [rootNode.Source]
                     else:
@@ -233,8 +231,8 @@ class PackageGraphBuilder(object):
         return flavorTemplateDict
 
     @staticmethod
-    def __VerifyOnlyOneFlavorPerRootNode(flavorTemplateDict: Dict[ResolvedPackageTemplate, List[ResolvedPackageInstance]]) -> None:
-        flavorOptionDict = dict() # type: Dict[str, Set[str]]
+    def __VerifyOnlyOneFlavorPerRootNode(flavorTemplateDict: dict[ResolvedPackageTemplate, list[ResolvedPackageInstance]]) -> None:
+        flavorOptionDict: dict[str, set[str]] = {}
         for instanceList in flavorTemplateDict.values():
             if len(instanceList) > 1:
                 PackageGraphBuilder.__DetermineFlavorsThatDiffer(flavorOptionDict, instanceList)
@@ -242,13 +240,14 @@ class PackageGraphBuilder(object):
             res = PackageGraphBuilder.__CreateFlavorMustBeConstrainedErrorMessage(flavorOptionDict)
             raise PackageExternalFlavorConstraintMustBeSetException(", ".join(res))
 
-
     @staticmethod
-    def __TryBuildRootNodeDefaultConstraints(flavorTemplateDict: Dict[ResolvedPackageTemplate, List[ResolvedPackageInstance]]) -> Dict[str, ExternalFlavorConstraints]:
-        rootNodeDefaultConstraints = dict() # type: Dict[str, ExternalFlavorConstraints]
+    def __TryBuildRootNodeDefaultConstraints(
+        flavorTemplateDict: dict[ResolvedPackageTemplate, list[ResolvedPackageInstance]],
+    ) -> dict[str, ExternalFlavorConstraints]:
+        rootNodeDefaultConstraints: dict[str, ExternalFlavorConstraints] = {}
         for packageTemplate, instanceList in flavorTemplateDict.items():
             if len(instanceList) > 1:
-                flavorOptionDict = dict() # type: Dict[str, Set[str]]
+                flavorOptionDict: dict[str, set[str]] = {}
                 PackageGraphBuilder.__DetermineFlavorsThatDiffer(flavorOptionDict, instanceList)
                 if len(flavorOptionDict) > 0:
                     rootNodeDefaultConstraints[packageTemplate.Name.Value] = PackageGraphBuilder.__BuildTemplateDefaultFlavorConstraints(flavorOptionDict)
@@ -256,8 +255,8 @@ class PackageGraphBuilder(object):
         return rootNodeDefaultConstraints
 
     @staticmethod
-    def __BuildTemplateDefaultFlavorConstraints(flavorOptionDict: Dict[str, Set[str]]) -> ExternalFlavorConstraints:
-        typedDict = dict() # type: Dict[PackageFlavorName, PackageFlavorOptionName]
+    def __BuildTemplateDefaultFlavorConstraints(flavorOptionDict: dict[str, set[str]]) -> ExternalFlavorConstraints:
+        typedDict: dict[PackageFlavorName, PackageFlavorOptionName] = {}
         for strFlavorName, flavorOptionNameSet in flavorOptionDict.items():
             if len(flavorOptionNameSet) > 1:
                 flavorOptionNames = list(flavorOptionNameSet)
@@ -266,7 +265,7 @@ class PackageGraphBuilder(object):
         return ExternalFlavorConstraints(typedDict)
 
     @staticmethod
-    def __DetermineFlavorsThatDiffer(flavorOptionDict: Dict[str, Set[str]], instances: List[ResolvedPackageInstance]) -> None:
+    def __DetermineFlavorsThatDiffer(flavorOptionDict: dict[str, set[str]], instances: list[ResolvedPackageInstance]) -> None:
         for instance in instances:
             for flavorSelection in instance.FlavorSelections.Selections:
                 if flavorSelection.Name.Value not in flavorOptionDict:
@@ -274,15 +273,15 @@ class PackageGraphBuilder(object):
                 flavorOptionDict[flavorSelection.Name.Value].add(flavorSelection.Option.Value)
 
     @staticmethod
-    def __CreateFlavorMustBeConstrainedErrorMessage(flavorOptionDict: Dict[str, Set[str]]) -> List[str]:
+    def __CreateFlavorMustBeConstrainedErrorMessage(flavorOptionDict: dict[str, set[str]]) -> list[str]:
         sortedFlavorNameList = list(flavorOptionDict.keys())
         sortedFlavorNameList.sort()
 
-        res = [] # type: List[str]
+        res: list[str] = []
         for flavorName in sortedFlavorNameList:
             flavorOptionList = flavorOptionDict[flavorName]
             if len(flavorOptionList) > 1:
                 sortedFlavorOptionList = list(flavorOptionList)
                 sortedFlavorOptionList.sort()
-                res.append("{0}=[{1}]".format(flavorName, ", ".join(sortedFlavorOptionList)))
+                res.append("{}=[{}]".format(flavorName, ", ".join(sortedFlavorOptionList)))
         return res

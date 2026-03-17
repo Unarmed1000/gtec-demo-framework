@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright 2020 NXP
 # All rights reserved.
 #
@@ -29,17 +28,25 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-from typing import List
+
 from FslBuildGen.Engine.Resolver.ProcessedPackage import ProcessedPackage
 from FslBuildGen.Packages.PackageRequirement import PackageRequirement
 
-class PreResolvePackageResult(object):
-    def __init__(self, sourcePackage: ProcessedPackage, resolvedPlatformSupported: bool,
-                resolvedDirectRequirements: List[PackageRequirement], resolvedAllRequirements: List[PackageRequirement],
-                resolvedDirectUsedFeatures: List[PackageRequirement], resolvedAllUsedFeatures: List[PackageRequirement],
-                resolvedBuildIndex: int, resolvedBuildOrder: List['PreResolvePackageResult']) -> None:
+
+class PreResolvePackageResult:
+    def __init__(
+        self,
+        sourcePackage: ProcessedPackage,
+        resolvedPlatformSupported: bool,
+        resolvedDirectRequirements: list[PackageRequirement],
+        resolvedAllRequirements: list[PackageRequirement],
+        resolvedDirectUsedFeatures: list[PackageRequirement],
+        resolvedAllUsedFeatures: list[PackageRequirement],
+        resolvedBuildIndex: int,
+        resolvedBuildOrder: list["PreResolvePackageResult"],
+    ) -> None:
         super().__init__()
         self.Type = sourcePackage.Type
         self.SourcePackage = sourcePackage
@@ -55,7 +62,7 @@ class PreResolvePackageResult(object):
         return self.SourcePackage.DirectExperimentalRecipe is not None
 
     def __str__(self) -> str:
-        return 'SourcePackage.NameInfo:"{0}"'.format(self.SourcePackage.NameInfo)
+        return f'SourcePackage.NameInfo:"{self.SourcePackage.NameInfo}"'
 
     def __repr__(self) -> str:
         return self.__str__()

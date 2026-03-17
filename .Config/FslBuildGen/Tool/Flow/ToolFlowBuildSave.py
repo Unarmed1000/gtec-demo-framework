@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright 2019 NXP
 # All rights reserved.
 #
@@ -29,17 +29,16 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-from typing import Any
-from typing import List
-from typing import Optional
-from typing import Dict
 import argparse
 import json
+from typing import Any
+
 from FslBuildGen import IOUtil
-#from FslBuildGen import Main as MainFlow
-#from FslBuildGen.Log import Log
+
+# from FslBuildGen import Main as MainFlow
+# from FslBuildGen.Log import Log
 from FslBuildGen.Tool.AToolAppFlow import AToolAppFlow
 from FslBuildGen.Tool.AToolAppFlowFactory import AToolAppFlowFactory
 from FslBuildGen.Tool.ToolAppConfig import ToolAppConfig
@@ -49,25 +48,27 @@ from FslBuildGen.ToolConfig import ToolConfig
 
 # A very simple tool to write a basic JSON file from the command line
 
-class DefaultValue(object):
+
+class DefaultValue:
     Save = None
+
 
 class LocalToolConfig(ToolAppConfig):
     def __init__(self) -> None:
         super().__init__()
-        self.Append = []  # type: List[str]
+        self.Append: list[str] = []
         self.Save = DefaultValue.Save
 
 
 def GetDefaultLocalConfig() -> LocalToolConfig:
     return LocalToolConfig()
 
+
 class ToolFlowDumpEnv(AToolAppFlow):
-    #def __init__(self, toolAppContext: ToolAppContext) -> None:
+    # def __init__(self, toolAppContext: ToolAppContext) -> None:
     #    super().__init__(toolAppContext)
 
-
-    def ProcessFromCommandLine(self, args: Any, currentDirPath: str, toolConfig: ToolConfig, userTag: Optional[object]) -> None:
+    def ProcessFromCommandLine(self, args: Any, currentDirPath: str, toolConfig: ToolConfig, userTag: object | None) -> None:
         # Process the input arguments here, before calling the real work function
 
         localToolConfig = LocalToolConfig()
@@ -76,18 +77,17 @@ class ToolFlowDumpEnv(AToolAppFlow):
 
         self.Process(currentDirPath, toolConfig, localToolConfig)
 
-
     def Process(self, currentDirPath: str, toolConfig: ToolConfig, localToolConfig: LocalToolConfig) -> None:
         self.Log.PrintTitle()
 
-        envDict = {}  # type: Dict[str,str]
+        envDict: dict[str, str] = {}
         if localToolConfig.Append is None:
             raise Exception("No arguments supplied")
 
         for entry in localToolConfig.Append:
-            tokens = entry.split('=')
+            tokens = entry.split("=")
             if len(tokens) != 2:
-                raise Exception("appended argument '{0}' was not in the correct key=value format".format(entry))
+                raise Exception(f"appended argument '{entry}' was not in the correct key=value format")
             envDict[tokens[0]] = tokens[1]
 
         jsonText = json.dumps(envDict, ensure_ascii=False, sort_keys=True, indent=2)
@@ -98,13 +98,12 @@ class ToolFlowDumpEnv(AToolAppFlow):
             print(jsonText)
 
 
-
 class ToolAppFlowFactory(AToolAppFlowFactory):
-    #def __init__(self) -> None:
+    # def __init__(self) -> None:
     #    pass
 
     def GetTitle(self) -> str:
-        return 'FslBuildSave'
+        return "FslBuildSave"
 
     def GetToolCommonArgConfig(self) -> ToolCommonArgConfig:
         argConfig = ToolCommonArgConfig()
@@ -116,9 +115,9 @@ class ToolAppFlowFactory(AToolAppFlowFactory):
         argConfig.AddBuildVariants = False
         return argConfig
 
-    def AddCustomArguments(self, parser: argparse.ArgumentParser, toolConfig: ToolConfig, userTag: Optional[object]) -> None:
-        parser.add_argument('--append', action='append', help='Append a key value pair to the json dictionary')
-        parser.add_argument('--save', default=DefaultValue.Save, help='The json filename to save the dictionary to')
+    def AddCustomArguments(self, parser: argparse.ArgumentParser, toolConfig: ToolConfig, userTag: object | None) -> None:
+        parser.add_argument("--append", action="append", help="Append a key value pair to the json dictionary")
+        parser.add_argument("--save", default=DefaultValue.Save, help="The json filename to save the dictionary to")
 
     def Create(self, toolAppContext: ToolAppContext) -> AToolAppFlow:
         return ToolFlowDumpEnv(toolAppContext)

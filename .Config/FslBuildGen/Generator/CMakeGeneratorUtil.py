@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright (c) 2016 Freescale Semiconductor, Inc.
 # All rights reserved.
 #
@@ -29,40 +29,27 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-from typing import Dict
-from typing import List
-from typing import Optional
-from typing import Set
-from typing import Tuple
-from typing import Union
 from enum import Enum
-from FslBuildGen import IOUtil
-from FslBuildGen import ToolSharedValues
-from FslBuildGen import Util
+
+from FslBuildGen import IOUtil, ToolSharedValues, Util
 from FslBuildGen.BuildContent.PathRecord import PathRecord
-from FslBuildGen.Config import Config
-from FslBuildGen.DataTypes import AccessType
-from FslBuildGen.DataTypes import ExternalDependencyType
-from FslBuildGen.DataTypes import IncludePriority
-from FslBuildGen.DataTypes import PackageType
-from FslBuildGen.DataTypes import SpecialFiles
-from FslBuildGen.DataTypes import VariantType
+from FslBuildGen.DataTypes import AccessType, ExternalDependencyType, IncludePriority, PackageType, SpecialFiles, VariantType
 from FslBuildGen.ExternalVariantConstraints import ExternalVariantConstraints
 from FslBuildGen.LibUtil import LibUtil
 from FslBuildGen.Log import Log
-from FslBuildGen.Packages.Package import Package
-from FslBuildGen.Packages.Package import PackageDefine
-from FslBuildGen.Packages.Package import PackageExternalDependency
+from FslBuildGen.Packages.Package import Package, PackageDefine, PackageExternalDependency
 from FslBuildGen.Packages.PackagePlatformExternalDependency import PackagePlatformExternalDependency
 from FslBuildGen.Packages.PackageProjectContext import PackageProjectContext
-from FslBuildGen.ToolConfigProjectContext import ToolConfigProjectContext
 from FslBuildGen.ToolConfig import ToolConfig
+from FslBuildGen.ToolConfigProjectContext import ToolConfigProjectContext
+
 
 class CMakeVariableType(Enum):
     Normal = 0
     Environment = 1
+
 
 class CMakePathType(Enum):
     LocalRelative = 0
@@ -70,6 +57,7 @@ class CMakePathType(Enum):
     Relative = 1
     # absolute path (not supported by cmake)
     # Absolute = 2
+
 
 # This file is used to make the executables dependent on the 'content' + 'content building' in a way that doesnt confuse cmake
 # into thinking that content like the .obj mesh format is a object file
@@ -90,8 +78,9 @@ _CONTENT_DEP_FILENAME = "${CMAKE_CURRENT_BINARY_DIR}/content_deps.txt"
 # - Platform dependent defines can not be specified (its all or nothing at the moment)
 # - Version tags and handling?
 
-class CodeTemplateCMake(object):
-    def __init__(self, sdkConfigTemplatePath: str, strTemplatePath: str, overrideDirName: str, hasManifest: bool, overrideTemplateName: Optional[str]) -> None:
+
+class CodeTemplateCMake:
+    def __init__(self, sdkConfigTemplatePath: str, strTemplatePath: str, overrideDirName: str, hasManifest: bool, overrideTemplateName: str | None) -> None:
         super().__init__()
         self.TemplatePath = strTemplatePath
         self.AbsoluteTemplatePath = IOUtil.Join(sdkConfigTemplatePath, strTemplatePath)
@@ -147,7 +136,6 @@ class CodeTemplateCMake(object):
 
         self.PackageCompilerFileDict = self.__BuildCompilerFileDict(IOUtil.Join(self.AbsoluteTemplatePath, overrideDirName))
 
-
     def __ReadFile(self, filename: str) -> str:
         if self.__OverrideTemplateName is not None:
             res = self.__TryDoReadFile(self.__OverrideTemplateName, self.__OverrideDirName, filename)
@@ -155,53 +143,49 @@ class CodeTemplateCMake(object):
                 return res
         return self.__DoReadFile(self.AbsoluteTemplatePath, self.__OverrideDirName, filename)
 
-
-    def __ReadOptionalFile(self, filename: str, defaultValue:str) -> str:
+    def __ReadOptionalFile(self, filename: str, defaultValue: str) -> str:
         if self.__OverrideTemplateName is not None:
             res = self.__TryDoReadFile(self.__OverrideTemplateName, self.__OverrideDirName, filename)
             if res is not None:
                 return res
         return self.__DoReadOptionalFile(self.AbsoluteTemplatePath, self.__OverrideDirName, filename, defaultValue)
 
-
-    def __DoReadOptionalFile(self, absoluteTemplatePath: str, overrideDirName: str, filename: str, defaultValue:str) -> str:
+    def __DoReadOptionalFile(self, absoluteTemplatePath: str, overrideDirName: str, filename: str, defaultValue: str) -> str:
         """
         Read a file, if not found return the defaultValue
         """
         res = self.__TryDoReadFile(absoluteTemplatePath, overrideDirName, filename)
         return res if res is not None else defaultValue
 
-
     def __DoReadFile(self, absoluteTemplatePath: str, overrideDirName: str, filename: str) -> str:
-        templateFilename = IOUtil.Join(absoluteTemplatePath, "{0}/{1}".format(overrideDirName, filename))
+        templateFilename = IOUtil.Join(absoluteTemplatePath, f"{overrideDirName}/{filename}")
         res = IOUtil.TryReadFile(templateFilename)
         if res is None:
             templateFilename = IOUtil.Join(absoluteTemplatePath, filename)
             res = IOUtil.ReadFile(templateFilename)
         return res
 
-
-    def __TryDoReadFile(self, absoluteTemplatePath: str, overrideDirName: str, filename: str) -> Optional[str]:
+    def __TryDoReadFile(self, absoluteTemplatePath: str, overrideDirName: str, filename: str) -> str | None:
         """
         Try to read a file from the override path, if its not found there try to read it from the base path,
         return None if not found
         """
-        templateFilename = IOUtil.Join(absoluteTemplatePath, "{0}/{1}".format(overrideDirName, filename))
+        templateFilename = IOUtil.Join(absoluteTemplatePath, f"{overrideDirName}/{filename}")
         res = IOUtil.TryReadFile(templateFilename)
         if res is None:
             templateFilename = IOUtil.Join(absoluteTemplatePath, filename)
             res = IOUtil.TryReadFile(templateFilename)
         return res
 
-    def __BuildCompilerFileDict(self, basePath: str) -> Dict[str, List[str]]:
+    def __BuildCompilerFileDict(self, basePath: str) -> dict[str, list[str]]:
         compilerDependentFilePath = IOUtil.Join(basePath, "CompilerId")
         if not IOUtil.IsDirectory(compilerDependentFilePath):
-            return dict()
+            return {}
         foundDirs = IOUtil.GetDirectoriesAt(compilerDependentFilePath, False)
         if len(foundDirs) <= 0:
-            return dict()
+            return {}
 
-        result = dict() # type: Dict[str, List[str]]
+        result: dict[str, list[str]] = {}
         for dirName in foundDirs:
             absDirName = IOUtil.Join(compilerDependentFilePath, dirName)
             foundFiles = IOUtil.GetFilesAt(absDirName, True)
@@ -224,7 +208,7 @@ def GetPackageSDKBasedPathUsingCMakeVariable(toolConfig: ToolConfig, package: Pa
     return GetSDKBasedPathUsingCMakeVariable(toolConfig, IOUtil.Join(package.AbsolutePath, packageRelativeFilePath))
 
 
-#def GetRelativePath(rootPath: str, path: str) -> str:
+# def GetRelativePath(rootPath: str, path: str) -> str:
 #    if not rootPath or not path:
 #        raise Exception("rootPath or root can not be None")
 #    if not path.startswith(rootPath):
@@ -237,24 +221,23 @@ def GetAccessTypeString(package: Package, accessType: AccessType, allowPrivate: 
         if accessType == AccessType.Public or not allowPrivate:
             return "PUBLIC"
         return "PRIVATE"
-        #return "INTERFACE" // unfortunately there don't seem to be a mapping that corresponds to "Link" in cmake
+        # return "INTERFACE" // unfortunately there don't seem to be a mapping that corresponds to "Link" in cmake
     else:
         if accessType == AccessType.Public:
             return "INTERFACE"
-        #raise Exception("Not supported")
+        # raise Exception("Not supported")
         return "INTERFACE"
-
 
 
 def GetPackageName(package: Package) -> str:
     name = package.Name
     if len(package.ResolvedVariantNameHint) > 0:
         name += package.ResolvedVariantNameHint
-    return name if not package.IsVirtual or package.Type == PackageType.HeaderLibrary else ("_Virtual_{0}".format(name))
+    return name if not package.IsVirtual or package.Type == PackageType.HeaderLibrary else (f"_Virtual_{name}")
 
 
 def GetPackageShortName(package: Package) -> str:
-    return package.NameInfo.ShortName.Value if not package.IsVirtual else ("_Virtual_{0}".format(package.NameInfo.ShortName.Value))
+    return package.NameInfo.ShortName.Value if not package.IsVirtual else (f"_Virtual_{package.NameInfo.ShortName.Value}")
 
 
 def GetAliasPackageName(package: Package) -> str:
@@ -262,7 +245,7 @@ def GetAliasPackageName(package: Package) -> str:
 
 
 def GetAliasName(name: str, projectName: str) -> str:
-    return "{0}::{1}".format(projectName, name)
+    return f"{projectName}::{name}"
 
 
 def GetFullyQualifiedPackageName(package: Package) -> str:
@@ -270,7 +253,7 @@ def GetFullyQualifiedPackageName(package: Package) -> str:
 
 
 def BuildFindDirectExternalDependencies(log: Log, package: Package, templatePackageDependencyFindPackage: str) -> str:
-    externalDeps = []  # type: List[PackageExternalDependency]
+    externalDeps: list[PackageExternalDependency] = []
     for externalDep in package.ResolvedDirectExternalDependencies:
         if externalDep.Type == ExternalDependencyType.CMakeFindLegacy or externalDep.Type == ExternalDependencyType.CMakeFindModern:
             externalDeps.append(externalDep)
@@ -281,8 +264,8 @@ def BuildFindDirectExternalDependencies(log: Log, package: Package, templatePack
     snippet = templatePackageDependencyFindPackage
     content = ""
     for externalDep in externalDeps:
-        strVersion = " {0}".format(externalDep.Version) if externalDep.Version is not None else ""
-        findParams = "{0}{1} REQUIRED".format(externalDep.Name, strVersion)
+        strVersion = f" {externalDep.Version}" if externalDep.Version is not None else ""
+        findParams = f"{externalDep.Name}{strVersion} REQUIRED"
         contentEntry = snippet
         contentEntry = contentEntry.replace("##FIND_PARAMS##", findParams)
         content += contentEntry
@@ -294,13 +277,16 @@ def GetVersion(package: Package) -> str:
 
 
 def _FindPackageDirectDependencyPackage(package: Package, templatePackageDependencyFindPackage: str) -> str:
-    findParams = "{0} {1}".format(GetFullyQualifiedPackageName(package), GetVersion(package))
+    findParams = f"{GetFullyQualifiedPackageName(package)} {GetVersion(package)}"
     return templatePackageDependencyFindPackage.replace("##FIND_PARAMS##", findParams)
 
 
-def __BuildTargetLinkLibrariesForDirectExternalDependencies(log: Log, package: Package,
-                                                            resolvedDirectExternalDependencies: Union[List[PackageExternalDependency], List[PackagePlatformExternalDependency]],
-                                                            ignoreLibs: Optional[List[str]] = None) -> str:
+def __BuildTargetLinkLibrariesForDirectExternalDependencies(
+    log: Log,
+    package: Package,
+    resolvedDirectExternalDependencies: list[PackageExternalDependency] | list[PackagePlatformExternalDependency],
+    ignoreLibs: list[str] | None = None,
+) -> str:
     if ignoreLibs is None:
         ignoreLibs = []
 
@@ -315,26 +301,29 @@ def __BuildTargetLinkLibrariesForDirectExternalDependencies(log: Log, package: P
                 libraryName = libraryName if len(location) <= 0 else entry.Name
                 fullPathLinkDir = Util.ChangeToCMakeEnvVariables(IOUtil.Join(location, libraryName))
                 if entry.DebugName != entry.Name:
-                    deps += "\n  {0} optimized {1}".format(GetAccessTypeString(package, entry.Access, False), fullPathLinkDir)
+                    deps += f"\n  {GetAccessTypeString(package, entry.Access, False)} optimized {fullPathLinkDir}"
                     libraryName = LibUtil.ToUnixLibName(entry.DebugName)
                     fullPathLinkDir = Util.ChangeToCMakeEnvVariables(IOUtil.Join(location, libraryName))
-                    deps += "\n  {0} debug {1}".format(GetAccessTypeString(package, entry.Access, False), fullPathLinkDir)
+                    deps += f"\n  {GetAccessTypeString(package, entry.Access, False)} debug {fullPathLinkDir}"
                 else:
-                    deps += "\n  {0} {1}".format(GetAccessTypeString(package, entry.Access, False), fullPathLinkDir)
+                    deps += f"\n  {GetAccessTypeString(package, entry.Access, False)} {fullPathLinkDir}"
             if entry.Type == ExternalDependencyType.CMakeFindLegacy:
-                linkName = "${{{0}_LIBRARY}}".format(libraryName)
-                deps += "\n  {0} {1}".format(GetAccessTypeString(package, entry.Access, False), linkName)
+                linkName = f"${{{libraryName}_LIBRARY}}"
+                deps += f"\n  {GetAccessTypeString(package, entry.Access, False)} {linkName}"
             elif entry.Type == ExternalDependencyType.CMakeFindModern:
-                deps += "\n  {0} {1}".format(GetAccessTypeString(package, entry.Access, False), entry.TargetName)
+                deps += f"\n  {GetAccessTypeString(package, entry.Access, False)} {entry.TargetName}"
         else:
-            log.LogPrintVerbose(2, "INFO: Force ignored '{0}'".format(libraryName))
+            log.LogPrintVerbose(2, f"INFO: Force ignored '{libraryName}'")
     return deps
 
-def BuildTargetLinkLibrariesForDirectDependencies(log: Log,
-                                                  package: Package,
-                                                  templatePackageDependencyTargetLinkLibraries: str,
-                                                  templatePackageDependencyFindPackage: str,
-                                                  ignoreLibs: Optional[List[str]] = None) -> str:
+
+def BuildTargetLinkLibrariesForDirectDependencies(
+    log: Log,
+    package: Package,
+    templatePackageDependencyTargetLinkLibraries: str,
+    templatePackageDependencyFindPackage: str,
+    ignoreLibs: list[str] | None = None,
+) -> str:
     if package.ResolvedDirectDependencies is None:
         raise Exception("Invalid package")
 
@@ -342,9 +331,9 @@ def BuildTargetLinkLibrariesForDirectDependencies(log: Log,
     findDeps = ""
     for entry1 in package.ResolvedDirectDependencies:
         if entry1.Package.Type != PackageType.ToolRecipe:
-            deps += "\n  {0} {1}".format(GetAccessTypeString(package, entry1.Access, True), GetFullyQualifiedPackageName(entry1.Package))
-#           deps += "\n  {0} {1}".format(GetAccessTypeString(package, entry1.Access), GetAliasPackageName(entry1.Package))
-            findDeps += "\n{0}".format(_FindPackageDirectDependencyPackage(entry1.Package, templatePackageDependencyFindPackage))
+            deps += f"\n  {GetAccessTypeString(package, entry1.Access, True)} {GetFullyQualifiedPackageName(entry1.Package)}"
+            #           deps += "\n  {0} {1}".format(GetAccessTypeString(package, entry1.Access), GetAliasPackageName(entry1.Package))
+            findDeps += f"\n{_FindPackageDirectDependencyPackage(entry1.Package, templatePackageDependencyFindPackage)}"
 
     deps += __BuildTargetLinkLibrariesForDirectExternalDependencies(log, package, package.ResolvedDirectExternalDependencies, ignoreLibs)
 
@@ -356,21 +345,24 @@ def BuildTargetLinkLibrariesForDirectDependencies(log: Log,
     content = content.replace("##PACKAGE_FINDDIRECT_DEPENDENCIES##", findDeps)
     return content
 
-def __BuildDefinitions(package: Package, directDefines: List[PackageDefine], templatePackageDependencyTargetCompileDefinitions: str) -> str:
+
+def __BuildDefinitions(package: Package, directDefines: list[PackageDefine], templatePackageDependencyTargetCompileDefinitions: str) -> str:
     if len(directDefines) <= 0:
         return ""
     snippet = templatePackageDependencyTargetCompileDefinitions
     content = ""
     for entry in directDefines:
         if entry.Value is None:
-            content += "\n  {0}\n    {1}".format(GetAccessTypeString(package, entry.Access), entry.Name)
+            content += f"\n  {GetAccessTypeString(package, entry.Access)}\n    {entry.Name}"
         else:
-            content += "\n  {0}\n    {1}={2}".format(GetAccessTypeString(package, entry.Access), entry.Name, entry.Value)
+            content += f"\n  {GetAccessTypeString(package, entry.Access)}\n    {entry.Name}={entry.Value}"
 
     return snippet.replace("##PACKAGE_COMPILE_DEFINITIONS##", content)
 
 
-def BuildDirectDefinitions(log: Log, package: Package, templatePackageDependencyTargetCompileDefinitions: str, extraDefines: Optional[List[PackageDefine]]=None) -> str:
+def BuildDirectDefinitions(
+    log: Log, package: Package, templatePackageDependencyTargetCompileDefinitions: str, extraDefines: list[PackageDefine] | None = None
+) -> str:
     if package.ResolvedBuildDirectDefines is None:
         raise Exception("Invalid package")
 
@@ -389,25 +381,29 @@ def __GenerateDirEntryString(access: str, incPath: str, templatePackageTargetInc
 
 def __GetPackageIncludePath(toolConfig: ToolConfig, package: Package, absPathInsidePackage: str, pathType: CMakePathType) -> str:
     if pathType == CMakePathType.LocalRelative:
-        #if package.AbsolutePath is None:
+        # if package.AbsolutePath is None:
         #    raise Exception("Invalid package")
-        #if absPathInsidePackage.startswith(package.AbsolutePath + '/'):
+        # if absPathInsidePackage.startswith(package.AbsolutePath + '/'):
         #    lenAbsPath = len(package.AbsolutePath)
         #    return absPathInsidePackage[lenAbsPath+1:]
-        #return IOUtil.RelativePath(absPathInsidePackage, package.AbsolutePath)
+        # return IOUtil.RelativePath(absPathInsidePackage, package.AbsolutePath)
         return GetSDKBasedPathUsingCMakeVariable(toolConfig, absPathInsidePackage)
     elif pathType == CMakePathType.Relative:
         return GetSDKBasedPathUsingCMakeVariable(toolConfig, absPathInsidePackage)
     raise Exception("Unsupported path type")
 
 
-def __TryTargetIncludeDirectoriesGetExternalDependencyString(toolConfig: ToolConfig, package: Package,
-                                                             currentIncludePriority: IncludePriority,
-                                                             directExternalDeps: Union[PackageExternalDependency, PackagePlatformExternalDependency],
-                                                             templatePackageTargetIncludeDirEntry: str,
-                                                             templatePackageTargetIncludeDirVirtualEntry: str, pathType: CMakePathType) -> Optional[str]:
-    add = None # type: Optional[str]
-    relativeCurrentIncDir = None # type: Optional[str]
+def __TryTargetIncludeDirectoriesGetExternalDependencyString(
+    toolConfig: ToolConfig,
+    package: Package,
+    currentIncludePriority: IncludePriority,
+    directExternalDeps: PackageExternalDependency | PackagePlatformExternalDependency,
+    templatePackageTargetIncludeDirEntry: str,
+    templatePackageTargetIncludeDirVirtualEntry: str,
+    pathType: CMakePathType,
+) -> str | None:
+    add: str | None = None
+    relativeCurrentIncDir: str | None = None
     if directExternalDeps.Type != ExternalDependencyType.CMakeFindLegacy:
         currentIncDir = directExternalDeps.IncludeDir
         if currentIncDir is not None and currentIncDir.Priority == currentIncludePriority:
@@ -415,8 +411,14 @@ def __TryTargetIncludeDirectoriesGetExternalDependencyString(toolConfig: ToolCon
                 raise Exception("Invalid package")
             packageRootPath = toolConfig.ToPath(package.AbsolutePath)
             if currentIncDir.Name.startswith(packageRootPath):
-                relativeCurrentIncDir = currentIncDir.Name[len(packageRootPath)+1:] if pathType == CMakePathType.LocalRelative else Util.ChangeToCMakeVariables(currentIncDir.Name)
-                add = "\n" + __GenerateDirEntryString(GetAccessTypeString(package, directExternalDeps.Access), relativeCurrentIncDir, templatePackageTargetIncludeDirEntry)
+                relativeCurrentIncDir = (
+                    currentIncDir.Name[len(packageRootPath) + 1 :]
+                    if pathType == CMakePathType.LocalRelative
+                    else Util.ChangeToCMakeVariables(currentIncDir.Name)
+                )
+                add = "\n" + __GenerateDirEntryString(
+                    GetAccessTypeString(package, directExternalDeps.Access), relativeCurrentIncDir, templatePackageTargetIncludeDirEntry
+                )
             else:
                 currentTemplate = templatePackageTargetIncludeDirEntry
                 relativeCurrentIncDir = toolConfig.TryToPath(currentIncDir.Name)
@@ -430,17 +432,20 @@ def __TryTargetIncludeDirectoriesGetExternalDependencyString(toolConfig: ToolCon
 
                 add = "\n" + __GenerateDirEntryString(GetAccessTypeString(package, directExternalDeps.Access), relativeCurrentIncDir, currentTemplate)
     else:
-        add = "\n  %s ${%s_INCLUDE_DIRS}" % (GetAccessTypeString(package, directExternalDeps.Access), directExternalDeps.Name)
+        add = f"\n  {GetAccessTypeString(package, directExternalDeps.Access)} ${{{directExternalDeps.Name}_INCLUDE_DIRS}}"
     return add
 
-def __BuildTargetIncludeDirectories(toolConfig: ToolConfig,
-                                    package: Package,
-                                    currentIncludePriority: IncludePriority,
-                                    templatePackageTargetIncludeDirectories: str,
-                                    templatePackageTargetIncludeDirEntry: str,
-                                    templatePackageTargetIncludeDirVirtualEntry: str,
-                                    pathType: CMakePathType) -> str:
-    #isExternalLibrary = package.Type == PackageType.ExternalLibrary
+
+def __BuildTargetIncludeDirectories(
+    toolConfig: ToolConfig,
+    package: Package,
+    currentIncludePriority: IncludePriority,
+    templatePackageTargetIncludeDirectories: str,
+    templatePackageTargetIncludeDirEntry: str,
+    templatePackageTargetIncludeDirVirtualEntry: str,
+    pathType: CMakePathType,
+) -> str:
+    # isExternalLibrary = package.Type == PackageType.ExternalLibrary
     publicIncludeDir = ""
     if package.AbsoluteIncludePath is not None and currentIncludePriority == package.AbsoluteIncludePath.Priority:
         pubIncPath = __GetPackageIncludePath(toolConfig, package, package.AbsoluteIncludePath.Name, pathType)
@@ -458,32 +463,41 @@ def __BuildTargetIncludeDirectories(toolConfig: ToolConfig,
             privateIncludeDir += "\n" + __GenerateDirEntryString(accessString, priIncPath, templatePackageTargetIncludeDirEntry)
 
     for directExternalDeps in package.ResolvedDirectExternalDependencies:
-        add = __TryTargetIncludeDirectoriesGetExternalDependencyString(toolConfig, package, currentIncludePriority, directExternalDeps,
-                                                                       templatePackageTargetIncludeDirEntry, templatePackageTargetIncludeDirVirtualEntry,
-                                                                       pathType)
+        add = __TryTargetIncludeDirectoriesGetExternalDependencyString(
+            toolConfig,
+            package,
+            currentIncludePriority,
+            directExternalDeps,
+            templatePackageTargetIncludeDirEntry,
+            templatePackageTargetIncludeDirVirtualEntry,
+            pathType,
+        )
         if add is not None:
             if directExternalDeps.Access == AccessType.Public:
                 publicIncludeDir += add
             else:
                 privateIncludeDir += add
 
-    #for variant in package.ResolvedAllVariantDict
+    # for variant in package.ResolvedAllVariantDict
     for variant in package.ResolvedDirectVariants:
         if variant.Type == VariantType.Virtual:
             if len(variant.Options) != 1:
                 raise Exception("VirtualVariant has unsupported amount of options")
             for variantDirectExternalDeps in variant.Options[0].ExternalDependencies:
-                add = __TryTargetIncludeDirectoriesGetExternalDependencyString(toolConfig, package, currentIncludePriority,
-                                                                               variantDirectExternalDeps,
-                                                                               templatePackageTargetIncludeDirEntry,
-                                                                               templatePackageTargetIncludeDirVirtualEntry,
-                                                                               pathType)
+                add = __TryTargetIncludeDirectoriesGetExternalDependencyString(
+                    toolConfig,
+                    package,
+                    currentIncludePriority,
+                    variantDirectExternalDeps,
+                    templatePackageTargetIncludeDirEntry,
+                    templatePackageTargetIncludeDirVirtualEntry,
+                    pathType,
+                )
                 if add is not None:
                     if variantDirectExternalDeps.Access == AccessType.Public:
                         publicIncludeDir += add
                     else:
                         privateIncludeDir += add
-
 
     if len(publicIncludeDir) <= 0 and len(privateIncludeDir) <= 0:
         return ""
@@ -497,37 +511,46 @@ def __BuildTargetIncludeDirectories(toolConfig: ToolConfig,
     return content
 
 
+def BuildTargetIncludeDirectories(
+    toolConfig: ToolConfig,
+    package: Package,
+    templatePackageTargetIncludeDirectories: str,
+    templatePackageTargetIncludeDirEntry: str,
+    templatePackageTargetIncludeDirVirtualEntry: str,
+    pathType: CMakePathType,
+) -> str:
+    beforeSection = __BuildTargetIncludeDirectories(
+        toolConfig,
+        package,
+        IncludePriority.Before,
+        templatePackageTargetIncludeDirectories,
+        templatePackageTargetIncludeDirEntry,
+        templatePackageTargetIncludeDirVirtualEntry,
+        pathType,
+    )
 
-def BuildTargetIncludeDirectories(toolConfig: ToolConfig, package: Package,
-                                  templatePackageTargetIncludeDirectories: str,
-                                  templatePackageTargetIncludeDirEntry: str,
-                                  templatePackageTargetIncludeDirVirtualEntry: str,
-                                  pathType: CMakePathType) -> str:
-    beforeSection = __BuildTargetIncludeDirectories(toolConfig,
-                                                   package,
-                                                   IncludePriority.Before,
-                                                   templatePackageTargetIncludeDirectories,
-                                                   templatePackageTargetIncludeDirEntry,
-                                                   templatePackageTargetIncludeDirVirtualEntry,
-                                                   pathType)
-
-    afterSection = __BuildTargetIncludeDirectories(toolConfig,
-                                                   package,
-                                                   IncludePriority.After,
-                                                   templatePackageTargetIncludeDirectories,
-                                                   templatePackageTargetIncludeDirEntry,
-                                                   templatePackageTargetIncludeDirVirtualEntry,
-                                                   pathType)
-    finalSection = beforeSection
+    afterSection = __BuildTargetIncludeDirectories(
+        toolConfig,
+        package,
+        IncludePriority.After,
+        templatePackageTargetIncludeDirectories,
+        templatePackageTargetIncludeDirEntry,
+        templatePackageTargetIncludeDirVirtualEntry,
+        pathType,
+    )
     return afterSection if len(beforeSection) <= 0 else beforeSection + "\n" + afterSection
 
 
-def BuildInstallInstructions(log: Log, package: Package, templateInstallInstructions: str,
-                             templateInstallInstructionsTargets: str,
-                             templateInstallInstructionsHeaders: str,
-                             templateInstallInstructionsContent: str,
-                             templateInstallInstructionsDLL: str,
-                             templateInstallInstructionsAppInfo: str) -> str:
+def BuildInstallInstructions(
+    log: Log,
+    package: Package,
+    templateInstallInstructions: str,
+    templateInstallInstructionsTargets: str,
+    templateInstallInstructionsHeaders: str,
+    templateInstallInstructionsContent: str,
+    templateInstallInstructionsDLL: str,
+    templateInstallInstructionsAppInfo: str,
+) -> str:
     hasIncludeDirectory = package.ResolvedBuildPublicIncludeFiles is not None and len(package.ResolvedBuildPublicIncludeFiles) > 0
 
     installTargets = templateInstallInstructionsTargets
@@ -540,7 +563,7 @@ def BuildInstallInstructions(log: Log, package: Package, templateInstallInstruct
     installDLL = ""
     installAppInfo = ""
     targetInstallDir = ""
-    if (package.Type == PackageType.Executable):
+    if package.Type == PackageType.Executable:
         # Content
         if package.ContentPath is not None and (len(package.ResolvedContentFiles) > 0 or len(package.ResolvedContentBuilderAllOutputFiles) > 0):
             packageContentFolderName = IOUtil.GetFileName(package.ContentPath.AbsoluteDirPath)
@@ -560,9 +583,7 @@ def BuildInstallInstructions(log: Log, package: Package, templateInstallInstruct
         installAppInfo = "\n" + installAppInfo
 
         # target install dir
-        targetInstallDir = "/" + package.Name.replace('.', '/')
-
-
+        targetInstallDir = "/" + package.Name.replace(".", "/")
 
     content = templateInstallInstructions
     content = content.replace("##PACKAGE_INSTALL_TARGETS##", installTargets)
@@ -584,8 +605,8 @@ def BuildCompileOptions(log: Log, package: Package, templateTargetCompileOptions
     return templateTargetCompileOptionsDefault
 
 
-def _BuildDLLDepsDict(package: Package) -> Dict[str, PackageExternalDependency]:
-    deps = dict()       #type: Dict[str, PackageExternalDependency]
+def _BuildDLLDepsDict(package: Package) -> dict[str, PackageExternalDependency]:
+    deps: dict[str, PackageExternalDependency] = {}
     for depPackage in package.ResolvedBuildOrder:
         for directExternalDeps in depPackage.ResolvedDirectExternalDependencies:
             if directExternalDeps.Type == ExternalDependencyType.DLL and directExternalDeps.Location is not None:
@@ -593,7 +614,8 @@ def _BuildDLLDepsDict(package: Package) -> Dict[str, PackageExternalDependency]:
                     deps[directExternalDeps.Name] = directExternalDeps
     return deps
 
-def _GetDLLFileList(package: Package) -> List[str]:
+
+def _GetDLLFileList(package: Package) -> list[str]:
     dllFiles = []
     deps = _BuildDLLDepsDict(package)
     for dependency in deps.values():
@@ -602,7 +624,7 @@ def _GetDLLFileList(package: Package) -> List[str]:
             srcFileCommand = fullPathToFile
             if dependency.DebugName != dependency.Name:
                 fullPathToDebugFile = Util.ChangeToCMakeVariables(IOUtil.Join(dependency.Location, dependency.DebugName))
-                srcFileCommand = "$<$<CONFIG:debug>:{0}>$<$<CONFIG:release>:{1}>".format(fullPathToDebugFile, srcFileCommand)
+                srcFileCommand = f"$<$<CONFIG:debug>:{fullPathToDebugFile}>$<$<CONFIG:release>:{srcFileCommand}>"
             dllFiles.append(srcFileCommand)
     return dllFiles
 
@@ -615,10 +637,10 @@ def BuildFileCopy(log: Log, package: Package, templatePackageTargetCopyFile: str
     dllFileList = _GetDLLFileList(package)
 
     for srcFileCommand in dllFileList:
-        copyFiles = "{0} $<TARGET_FILE_DIR:{1}>".format(srcFileCommand, package.Name)
+        copyFiles = f"{srcFileCommand} $<TARGET_FILE_DIR:{package.Name}>"
         contentFile = templatePackageTargetCopyFilePath
         contentFile = contentFile.replace("##COPY_PATHS##", copyFiles)
-        contentFiles += "\n{0}".format(contentFile)
+        contentFiles += f"\n{contentFile}"
 
     if len(contentFiles) <= 0:
         return ""
@@ -628,25 +650,29 @@ def BuildFileCopy(log: Log, package: Package, templatePackageTargetCopyFile: str
     return content
 
 
-def GetAllPackageNames(package: Package, projectContextFilter: Optional[PackageProjectContext]) -> List[str]:
-    """ Get a list of all package names used by the root cmake file """
-    names = [GetFullyQualifiedPackageName(package) for package in package.ResolvedBuildOrder
-            if (projectContextFilter is None or package.ProjectContext == projectContextFilter) and
-            package.Type != PackageType.ToolRecipe and package.Type != PackageType.TopLevel]
+def GetAllPackageNames(package: Package, projectContextFilter: PackageProjectContext | None) -> list[str]:
+    """Get a list of all package names used by the root cmake file"""
+    names = [
+        GetFullyQualifiedPackageName(package)
+        for package in package.ResolvedBuildOrder
+        if (projectContextFilter is None or package.ProjectContext == projectContextFilter)
+        and package.Type != PackageType.ToolRecipe
+        and package.Type != PackageType.TopLevel
+    ]
     names.sort()
     return names
 
 
-def GetProjectContexts(package: Package) -> List[PackageProjectContext]:
-    contexts = set() # type: Set[PackageProjectContext]
-    for package in package.ResolvedBuildOrder:
-        if package.Type != PackageType.TopLevel and package.ProjectContext not in contexts:
-            contexts.add(package.ProjectContext)
+def GetProjectContexts(package: Package) -> list[PackageProjectContext]:
+    contexts: set[PackageProjectContext] = set()
+    for entry in package.ResolvedBuildOrder:
+        if entry.Type != PackageType.TopLevel and entry.ProjectContext not in contexts:
+            contexts.add(entry.ProjectContext)
     return list(contexts)
 
 
 def GetCacheVariants(package: Package, snippetCacheVariant: str) -> str:
-    res = [] # type: List[str]
+    res: list[str] = []
     for variant in package.ResolvedAllVariantDict.values():
         if len(variant.Options) > 0:
             variantOptions = " ".join([option.Name for option in variant.Options])
@@ -659,7 +685,7 @@ def GetCacheVariants(package: Package, snippetCacheVariant: str) -> str:
     return "\n".join(res)
 
 
-def GetContentSectionOutputFileList(toolConfig: ToolConfig, package: Package, contentInBinaryDirectory: bool) -> List[str]:
+def GetContentSectionOutputFileList(toolConfig: ToolConfig, package: Package, contentInBinaryDirectory: bool) -> list[str]:
     if package.ResolvedPath is None or len(package.ResolvedContentFiles) <= 0:
         return []
     outputContentFiles = _ExtractRelativePaths(toolConfig, package.ResolvedPath.ResolvedPathEx, package.ResolvedContentFiles)
@@ -669,7 +695,7 @@ def GetContentSectionOutputFileList(toolConfig: ToolConfig, package: Package, co
     return outputContentFiles
 
 
-def GetContentBuilderOutputFileList(toolConfig: ToolConfig, package: Package, contentInBinaryDirectory: bool) -> List[str]:
+def GetContentBuilderOutputFileList(toolConfig: ToolConfig, package: Package, contentInBinaryDirectory: bool) -> list[str]:
     if package.ResolvedPath is None or len(package.ResolvedContentBuilderAllOutputFiles) <= 0:
         return []
     outputContentFiles = _ExtractRelativePaths(toolConfig, package.ResolvedPath.ResolvedPathEx, package.ResolvedContentBuilderAllOutputFiles)
@@ -685,26 +711,33 @@ def GetContentDepOutputFile(log: Log, package: Package, contentInBinaryDirectory
     return "\n  " + _CONTENT_DEP_FILENAME
 
 
-def _ExtractRelativePaths(toolConfig: ToolConfig, absoluteSourcePathEx: str, records: Union[List[PathRecord], List[str]], force: bool = False) -> List[str]:
-    res = [] # type: List[str]
+def _ExtractRelativePaths(toolConfig: ToolConfig, absoluteSourcePathEx: str, records: list[PathRecord] | list[str], force: bool = False) -> list[str]:
+    res: list[str] = []
     for content in records:
         strPath = content.ResolvedPath if isinstance(content, PathRecord) else content
         if not force and strPath.startswith(absoluteSourcePathEx):
-            res.append(strPath[len(absoluteSourcePathEx):])
+            res.append(strPath[len(absoluteSourcePathEx) :])
         else:
             res.append(GetSDKBasedPathUsingCMakeVariable(toolConfig, strPath))
     return res
 
-def _MakeRelativeToCurrentBinaryDirectory(files: List[str]) -> List[str]:
+
+def _MakeRelativeToCurrentBinaryDirectory(files: list[str]) -> list[str]:
     return ["${CMAKE_CURRENT_BINARY_DIR}/" + filename for filename in files]
 
 
-def GetContentBuilder(toolConfig: ToolConfig, package: Package, platformName:str, snippetContentBuilder: str, contentInBinaryDirectory: bool,
-                      externalVariantConstraints: ExternalVariantConstraints) -> str:
+def GetContentBuilder(
+    toolConfig: ToolConfig,
+    package: Package,
+    platformName: str,
+    snippetContentBuilder: str,
+    contentInBinaryDirectory: bool,
+    externalVariantConstraints: ExternalVariantConstraints,
+) -> str:
     if package.ResolvedContentBuilderAllInputFiles is None or len(package.ResolvedContentBuilderAllInputFiles) <= 0:
         return ""
     if package.ResolvedPath is None:
-        raise Exception("Package '{0}' is invalid as it is missing a path".format(package.Name))
+        raise Exception(f"Package '{package.Name}' is invalid as it is missing a path")
 
     targetName = package.Name
     packagePath = package.ResolvedPath.ResolvedPath
@@ -742,13 +775,19 @@ def GetContentBuilder(toolConfig: ToolConfig, package: Package, platformName:str
     return "\n" + content
 
 
-
-def GetContentSection(toolConfig: ToolConfig, package: Package, platformName:str, snippetContentSection: str, snippetContentFile: str,
-                      contentInBinaryDirectory: bool, externalVariantConstraints: ExternalVariantConstraints) -> str:
+def GetContentSection(
+    toolConfig: ToolConfig,
+    package: Package,
+    platformName: str,
+    snippetContentSection: str,
+    snippetContentFile: str,
+    contentInBinaryDirectory: bool,
+    externalVariantConstraints: ExternalVariantConstraints,
+) -> str:
     if not contentInBinaryDirectory or package.ResolvedContentFiles is None or len(package.ResolvedContentFiles) <= 0:
         return ""
     if package.ResolvedPath is None:
-        raise Exception("Package '{0}' is invalid as it is missing a path".format(package.Name))
+        raise Exception(f"Package '{package.Name}' is invalid as it is missing a path")
 
     targetName = package.Name
     contentFiles = _ExtractRelativePaths(toolConfig, package.ResolvedPath.ResolvedPathEx, package.ResolvedContentFiles)
@@ -763,13 +802,13 @@ def GetContentSection(toolConfig: ToolConfig, package: Package, platformName:str
 
     strExternalVariantConstraints = externalVariantConstraints.AsString()
 
-    contentCommands = [] # type: List[str]
+    contentCommands: list[str] = []
     for i in range(len(inputContentFiles)):
         content = snippetContentFile
         content = content.replace("##PLATFORM_NAME##", platformName)
         content = content.replace("##PACKAGE_TARGET_NAME##", targetName)
         content = content.replace("##RELATIVE_INPUT_FILE##", inputContentFiles[i])
-        content = content.replace("##INPUT_FILE##", "##PACKAGE_PATH##/{0}".format(inputContentFiles[i]))
+        content = content.replace("##INPUT_FILE##", f"##PACKAGE_PATH##/{inputContentFiles[i]}")
         content = content.replace("##OUTPUT_FILE##", outputContentFiles[i])
         content = content.replace("##VARIANT_LIST##", strExternalVariantConstraints)
         contentCommands.append(content)
@@ -779,7 +818,7 @@ def GetContentSection(toolConfig: ToolConfig, package: Package, platformName:str
     return "\n" + contentSection
 
 
-def GetContentDepSection(toolConfig: ToolConfig, package: Package, platformName:str, snippetContentSection: str, contentInBinaryDirectory: bool) -> str:
+def GetContentDepSection(toolConfig: ToolConfig, package: Package, platformName: str, snippetContentSection: str, contentInBinaryDirectory: bool) -> str:
     outputContentFileList = GetContentSectionOutputFileList(toolConfig, package, contentInBinaryDirectory)
     outputContentBuildFileList = GetContentBuilderOutputFileList(toolConfig, package, contentInBinaryDirectory)
     if len(outputContentFileList) <= 0 and len(outputContentBuildFileList) <= 0:
@@ -793,36 +832,41 @@ def GetContentDepSection(toolConfig: ToolConfig, package: Package, platformName:
     content = content.replace("##INPUT_FILES##", allContentFiles)
     return "\n" + content
 
-def GetEmscriptenSection(toolConfig: ToolConfig, package: Package, platformName:str, snippetEmscriptenSection: str, snippetEmscriptenContent: str) -> str:
+
+def GetEmscriptenSection(toolConfig: ToolConfig, package: Package, platformName: str, snippetEmscriptenSection: str, snippetEmscriptenContent: str) -> str:
     if package.Type != PackageType.Executable:
         return ""
 
-    content = " {0}".format(snippetEmscriptenContent) if len(package.ResolvedContentFiles) > 0 else ""
+    content = f" {snippetEmscriptenContent}" if len(package.ResolvedContentFiles) > 0 else ""
     result = snippetEmscriptenSection
     result = snippetEmscriptenSection.replace("##EMSCRIPTEN_CONTENT##", content)
     return result
 
 
-def CompilerSpecificFileDependencies(toolConfig: ToolConfig, package: Package, snippetPackageCompilerConditional: str,
-                                     snippetPackageTargetSourceFiles: str,
-                                     packageCompilerFileDict: Dict[str, List[str]]) -> str:
+def CompilerSpecificFileDependencies(
+    toolConfig: ToolConfig,
+    package: Package,
+    snippetPackageCompilerConditional: str,
+    snippetPackageTargetSourceFiles: str,
+    packageCompilerFileDict: dict[str, list[str]],
+) -> str:
     if len(packageCompilerFileDict) <= 0:
         return ""
     targetName = package.Name
 
     finalContent = ""
     for key, conditionalFiles in packageCompilerFileDict.items():
-        content = [] # type: List[str]
-        files = [] # type: List[str]
+        content: list[str] = []
+        files: list[str] = []
         for filename in conditionalFiles:
             inputFilename = GetSDKBasedPathUsingCMakeVariable(toolConfig, filename)
             outputFilename = IOUtil.GetFileName(filename)
             outputFilename = outputFilename.replace("__PACKAGE_TARGET_NAME__", targetName)
-            content.append("configure_file({0} ${{CMAKE_CURRENT_BINARY_DIR}}/{1} COPYONLY)".format(inputFilename, outputFilename))
+            content.append(f"configure_file({inputFilename} ${{CMAKE_CURRENT_BINARY_DIR}}/{outputFilename} COPYONLY)")
             files.append(outputFilename)
 
         contentTargetSource = snippetPackageTargetSourceFiles
-        contentTargetSource =  contentTargetSource.replace("##PACKAGE_SOURCE_FILES##", "\n  " + "\n  ".join(files))
+        contentTargetSource = contentTargetSource.replace("##PACKAGE_SOURCE_FILES##", "\n  " + "\n  ".join(files))
         targetSource = contentTargetSource.split("\n")
 
         content += targetSource
@@ -835,10 +879,11 @@ def CompilerSpecificFileDependencies(toolConfig: ToolConfig, package: Package, s
     return finalContent
 
 
-def CreateDefineRootDirectoryEnvironmentAsVariables(toolConfig: ToolConfig, projectContext: ToolConfigProjectContext, includeParents: bool,
-                                                    snippet: str, uniqueEnvironmentVariables: Set[str]) -> str:
-    allProjectContextRootDirs = [] # List[ToolConfigRootDirectory]
-    context = projectContext # type: Optional[ToolConfigProjectContext]
+def CreateDefineRootDirectoryEnvironmentAsVariables(
+    toolConfig: ToolConfig, projectContext: ToolConfigProjectContext, includeParents: bool, snippet: str, uniqueEnvironmentVariables: set[str]
+) -> str:
+    allProjectContextRootDirs = []  # List[ToolConfigRootDirectory]
+    context: ToolConfigProjectContext | None = projectContext
     while context is not None:
         rootDir = toolConfig.TryFindRootDirectory(context.Location.ResolvedPath)
         if rootDir is None:
@@ -858,9 +903,9 @@ def CreateDefineRootDirectoryEnvironmentAsVariables(toolConfig: ToolConfig, proj
                 if envVarName not in allUniqueEnv:
                     allUniqueEnv.add(envVarName)
 
-    allRootDirs = list(allUniqueEnv) # List[set]
+    allRootDirs = list(allUniqueEnv)  # List[set]
     allRootDirs.sort(key=lambda s: s.lower())
-    result = [] # List[str]
+    result = []  # List[str]
     for envEntry in allRootDirs:
         content = snippet
         content = content.replace("##ENVIRONMENT_VARIABLE_NAME##", envEntry)
@@ -879,16 +924,17 @@ def GetAddExtendedPackageParent(toolConfig: ToolConfig, projectContext: ToolConf
 
     content = snippet
     content = content.replace("##PARENT_NAME##", parentContext.ProjectName)
-    #content = content.replace("##PARENT_ROOT##", "${{{0}}}".format(rootDir.GetEnvironmentVariableName()))
-    content = content.replace("##PARENT_ROOT##", "../{0}".format(parentContext.ProjectId.ShortProjectId))
+    # content = content.replace("##PARENT_ROOT##", "${{{0}}}".format(rootDir.GetEnvironmentVariableName()))
+    content = content.replace("##PARENT_ROOT##", f"../{parentContext.ProjectId.ShortProjectId}")
     return content
 
-def GetVariantSettings(log: Log, package: Package, snippetPackageVariantSettings: str,
-                       snippetDefine: str,
-                       templatePackageDependencyTargetLinkLibraries: str) -> str:
+
+def GetVariantSettings(
+    log: Log, package: Package, snippetPackageVariantSettings: str, snippetDefine: str, templatePackageDependencyTargetLinkLibraries: str
+) -> str:
     if len(package.ResolvedDirectVariants) <= 0:
         return ""
-    result = [] # type: List[str]
+    result: list[str] = []
     for variant in package.ResolvedDirectVariants:
         for variantOption in variant.Options:
             if len(variantOption.DirectDefines) > 0 or len(variantOption.ExternalDependencies) > 0:
@@ -912,19 +958,19 @@ def GetVariantSettings(log: Log, package: Package, snippetPackageVariantSettings
                 result.append(content)
     return "\n".join(result) + "\n"
 
-#add_custom_command(TARGET ##PACKAGE_NAME POST_BUILD
+
+# add_custom_command(TARGET ##PACKAGE_NAME POST_BUILD
 #                   COMMAND ${CMAKE_COMMAND} -E copy_directory
 #                       ${CMAKE_SOURCE_DIR}/config $<TARGET_FILE_DIR:MyTarget>)
 
 
-#add_custom_command(TARGET unitTests POST_BUILD
-#COMMAND ${CMAKE_COMMAND} ARGS -E copy "$<$<CONFIG:debug>:${DEBUG_EXE_PATH}>$<$<CONFIG:release>:${RELEASE_EXE_PATH}>" "$<$<CONFIG:debug>:${DEBUG_NEW_EXE}>$<$<CONFIG:release>:${RELEASE_NEW_EXE}>")
+# add_custom_command(TARGET unitTests POST_BUILD
+# COMMAND ${CMAKE_COMMAND} ARGS -E copy "$<$<CONFIG:debug>:${DEBUG_EXE_PATH}>$<$<CONFIG:release>:${RELEASE_EXE_PATH}>" "$<$<CONFIG:debug>:${DEBUG_NEW_EXE}>$<$<CONFIG:release>:${RELEASE_NEW_EXE}>")
+
 
 def __ContainsNatvis(package: Package) -> bool:
-    for entry in package.ResolvedSpecialFiles:
-        if entry.SourcePath == SpecialFiles.Natvis:
-            return True
-    return False
+    return any(entry.SourcePath == SpecialFiles.Natvis for entry in package.ResolvedSpecialFiles)
+
 
 def GetTargetSpecialFiles(log: Log, toolConfig: ToolConfig, package: Package, snippetPackageTargetSpecialFileNatvis: str) -> str:
     if len(snippetPackageTargetSpecialFileNatvis) <= 0 or not __ContainsNatvis(package):
@@ -934,7 +980,8 @@ def GetTargetSpecialFiles(log: Log, toolConfig: ToolConfig, package: Package, sn
     content = content.replace("##FULL_FILE_PATH##", natvis)
     return content
 
-def ExpandPathAndJoinList(toolConfig: ToolConfig, package: Package, srcList: Optional[List[str]]) -> List[str]:
+
+def ExpandPathAndJoinList(toolConfig: ToolConfig, package: Package, srcList: list[str] | None) -> list[str]:
     if srcList is None or len(srcList) <= 0:
         return []
     if package.AbsolutePath is None:
@@ -942,33 +989,32 @@ def ExpandPathAndJoinList(toolConfig: ToolConfig, package: Package, srcList: Opt
     return [GetPackageSDKBasedPathUsingCMakeVariable(toolConfig, package, entry) for entry in srcList]
 
 
-def ExpandPathAndJoin(toolConfig: ToolConfig, package: Package, srcList: Optional[List[str]]) -> str:
+def ExpandPathAndJoin(toolConfig: ToolConfig, package: Package, srcList: list[str] | None) -> str:
     if srcList is None or len(srcList) <= 0:
         return ""
     expandedList = ExpandPathAndJoinList(toolConfig, package, srcList)
     return "\n  " + "\n  ".join(expandedList)
 
 
-
-
-def __TryExtractEnvironmentVariable(input: str) -> Optional[Tuple[str,CMakeVariableType]]:
+def __TryExtractEnvironmentVariable(input: str) -> tuple[str, CMakeVariableType] | None:
     index = input.find("$")
     if index >= 0 and len(input) > (index + 3):
-        if input[index+1] == '{':
+        if input[index + 1] == "{":
             endIndex = input.find("}", index + 1)
             if endIndex >= 0:
-                variableName = input[index+2:endIndex]
+                variableName = input[index + 2 : endIndex]
                 if len(variableName) > 0:
                     return (variableName, CMakeVariableType.Normal)
-        elif input[index+1] == '(':
+        elif input[index + 1] == "(":
             endIndex = input.find(")", index + 1)
             if endIndex >= 0:
-                variableName = input[index+2:endIndex]
+                variableName = input[index + 2 : endIndex]
                 if len(variableName) > 0:
                     return (variableName, CMakeVariableType.Environment)
     return None
 
-def ExtractUniqueVariables(packages: List[Package]) -> Tuple[Set[str], Set[str]]:
+
+def ExtractUniqueVariables(packages: list[Package]) -> tuple[set[str], set[str]]:
     uniquePaths = set()
     uniqueNormalVariables = set()
     uniqueEnvironmentVariables = set()
@@ -983,7 +1029,6 @@ def ExtractUniqueVariables(packages: List[Package]) -> Tuple[Set[str], Set[str]]
                         if variableType == CMakeVariableType.Normal:
                             if variableName not in uniqueNormalVariables:
                                 uniqueNormalVariables.add(variableName)
-                        elif variableType == CMakeVariableType.Environment:
-                            if variableName not in uniqueEnvironmentVariables:
-                                uniqueEnvironmentVariables.add(variableName)
+                        elif variableType == CMakeVariableType.Environment and variableName not in uniqueEnvironmentVariables:
+                            uniqueEnvironmentVariables.add(variableName)
     return (uniqueNormalVariables, uniqueEnvironmentVariables)

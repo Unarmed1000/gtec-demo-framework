@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright 2020 NXP
 # All rights reserved.
 #
@@ -29,12 +28,13 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
 from FslBuildGen.DataTypes import PackageType
 from FslBuildGen.Engine.Resolver.PackageName import PackageName
 
-class ResolvedPackage(object):
+
+class ResolvedPackage:
     def __init__(self, name: PackageName, packageType: PackageType) -> None:
         super().__init__()
         self.Name = name

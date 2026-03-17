@@ -1,6 +1,6 @@
-﻿#!/usr/bin/env python3
+#!/usr/bin/env python3
 
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright 2020 NXP
 # All rights reserved.
 #
@@ -29,20 +29,21 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-from typing import Dict
+
 from FslBuildGen import IOUtil
 from FslBuildGen.Packages.Package import Package
 from FslBuildGen.ProjectId import ProjectId
 from FslBuildGen.ToolConfigProjectContext import ToolConfigProjectContext
 from FslBuildGen.ToolConfigProjectInfo import ToolConfigProjectInfo
 
-class PackagePathUtil(object):
+
+class PackagePathUtil:
     @staticmethod
-    def CreateToolProjectContextsDict(projectInfo: ToolConfigProjectInfo) -> Dict[ProjectId, ToolConfigProjectContext]:
+    def CreateToolProjectContextsDict(projectInfo: ToolConfigProjectInfo) -> dict[ProjectId, ToolConfigProjectContext]:
         # Create a quick lookup table
-        return {projectContext.ProjectId : projectContext for projectContext in projectInfo.Contexts}
+        return {projectContext.ProjectId: projectContext for projectContext in projectInfo.Contexts}
 
     # @staticmethod
     # def GetPackagePath(package: Package, toolProjectContextsDict: Dict[ProjectId, ToolConfigProjectContext]) -> str:
@@ -60,8 +61,8 @@ class PackagePathUtil(object):
     #     return IOUtil.Join(package.ProjectContext.ProjectId.ShortProjectId, packageRelativePath)
 
     @staticmethod
-    def GetUniquePackagePath(package: Package, toolProjectContextsDict: Dict[ProjectId, ToolConfigProjectContext]) -> str:
-        """ This method takes the flavor into account """
+    def GetUniquePackagePath(package: Package, toolProjectContextsDict: dict[ProjectId, ToolConfigProjectContext]) -> str:
+        """This method takes the flavor into account"""
         if package.ProjectContext.ProjectId not in toolProjectContextsDict:
             raise Exception("invalid project context")
         if package.Path is None:
@@ -76,5 +77,5 @@ class PackagePathUtil(object):
         path = IOUtil.GetDirectoryName(path)
         # add the package flavor name
         path = IOUtil.Join(path, package.NameInfo.ShortName.Value)
-        packageRelativePath = path[len(projectPath):]
+        packageRelativePath = path[len(projectPath) :]
         return IOUtil.Join(package.ProjectContext.ProjectId.ShortProjectId, packageRelativePath)

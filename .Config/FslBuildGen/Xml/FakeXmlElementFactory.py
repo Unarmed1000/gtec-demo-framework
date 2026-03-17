@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright 2017 NXP
 # All rights reserved.
 #
@@ -29,13 +28,12 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-from typing import Dict
-from typing import Optional
 import xml.etree.ElementTree as ET
 
-def Create(elementName: str, attribDict: Optional[Dict[str, str]] = None) -> ET.Element:
+
+def Create(elementName: str, attribDict: dict[str, str] | None = None) -> ET.Element:
     if attribDict is None:
         attribDict = {}
     fakeElement = ET.Element(elementName, attribDict)
@@ -43,5 +41,5 @@ def Create(elementName: str, attribDict: Optional[Dict[str, str]] = None) -> ET.
 
 
 def CreateWithName(elementName: str, attribName: str) -> ET.Element:
-    attribs = {'Name': attribName}
+    attribs = {"Name": attribName}
     return Create(elementName, attribs)

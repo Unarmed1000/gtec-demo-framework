@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright 2017 NXP
 # All rights reserved.
 #
@@ -29,55 +29,73 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-from typing import Dict
-from typing import Optional
+
 from FslBuildGen.Config import Config
 from FslBuildGen.ExternalVariantConstraints import ExternalVariantConstraints
 from FslBuildGen.Packages.Package import Package
 
-class TemplateEnvironment(object):
+
+class TemplateEnvironment:
     def __init__(self, config: Config, platformName: str) -> None:
         super().__init__()
-        self.Dict = {}  # type: Dict[str, Optional[str]]
+        self.Dict: dict[str, str | None] = {}
         self.Dict["##PLATFORM_NAME##"] = platformName
         self.Dict["##CURRENT_YEAR##"] = config.CurrentYearString
-
 
     def Set(self, key: str, value: str) -> None:
         self.Dict[key] = value
 
-
-    def SetPackage(self, package: Package, androidProjectPath: Optional[str],
-                    externalVariantConstraints: ExternalVariantConstraints) -> None:
+    def SetPackage(self, package: Package, androidProjectPath: str | None, externalVariantConstraints: ExternalVariantConstraints) -> None:
         if package.PackageLocation is None or package.ContentPath is None or package.AbsolutePath is None:
             raise Exception("Invalid package")
 
-        location = package.PackageLocation.Name  # type: str
-        targetName = package.Name  # type: str
-        sourceName = package.NameInfo.SourceName;
-        platformProjectId = None # type: Optional[str]
+        location: str = package.PackageLocation.Name
+        targetName: str = package.Name
+        sourceName = package.NameInfo.SourceName
+        platformProjectId: str | None = None
         if package.ResolvedPlatform is not None:
             platformProjectId = package.CustomInfo.VisualStudioProjectGUID
-        creationYear = package.CreationYear  # type: Optional[str]
-        companyName = package.CompanyName.Value  # type: str
+        creationYear: str | None = package.CreationYear
+        companyName: str = package.CompanyName.Value
 
         packageContentPath = package.ContentPath.AbsoluteDirPath
-        #androidProjectDir = buildCMakeFile.replace("##PACKAGE_ANDROID_PROJECT_PATH##", androidProjectDir)
-        self.SetPackageValues(location, package.Name, package.NameInfo.ShortName.Value, package.AbsolutePath,
-                              targetName, sourceName, externalVariantConstraints.AsString(),
-                              packageContentPath, platformProjectId, creationYear, companyName, androidProjectPath)
+        # androidProjectDir = buildCMakeFile.replace("##PACKAGE_ANDROID_PROJECT_PATH##", androidProjectDir)
+        self.SetPackageValues(
+            location,
+            package.Name,
+            package.NameInfo.ShortName.Value,
+            package.AbsolutePath,
+            targetName,
+            sourceName,
+            externalVariantConstraints.AsString(),
+            packageContentPath,
+            platformProjectId,
+            creationYear,
+            companyName,
+            androidProjectPath,
+        )
 
-
-    def SetPackageValues(self, packageLocation: str, packageName: str, packageShortName: str, packagePath: str,
-                         packageTargetName: str, packageSourceName: str, strVariantList: str, packageContentPath: Optional[str],
-                         platformProjectId: Optional[str], creationYear: Optional[str], companyName: str,
-                         androidProjectPath: Optional[str] = None) -> None:
-        platformProjectId = platformProjectId if platformProjectId != None else "ERROR_PLATFORM_PROJECT_ID_NOT_DEFINED"
+    def SetPackageValues(
+        self,
+        packageLocation: str,
+        packageName: str,
+        packageShortName: str,
+        packagePath: str,
+        packageTargetName: str,
+        packageSourceName: str,
+        strVariantList: str,
+        packageContentPath: str | None,
+        platformProjectId: str | None,
+        creationYear: str | None,
+        companyName: str,
+        androidProjectPath: str | None = None,
+    ) -> None:
+        platformProjectId = platformProjectId if platformProjectId is not None else "ERROR_PLATFORM_PROJECT_ID_NOT_DEFINED"
         self.Dict["##PACKAGE_LOCATION##"] = packageLocation
         self.Dict["##PACKAGE_NAME##"] = packageName
-        self.Dict["##DIRS_PACKAGE_NAME##"] = packageName.replace('.','/')
+        self.Dict["##DIRS_PACKAGE_NAME##"] = packageName.replace(".", "/")
         self.Dict["##PACKAGE_SHORT_NAME##"] = packageShortName
         self.Dict["##PACKAGE_TARGET_NAME##"] = packageTargetName
         self.Dict["##PACKAGE_SOURCE_NAME##"] = packageSourceName
@@ -87,9 +105,9 @@ class TemplateEnvironment(object):
         self.Dict["##VARIANT_LIST##"] = strVariantList
 
         self.Dict["##PACKAGE_VISUAL_STUDIO_PROJECT_ID##"] = platformProjectId
-        self.Dict["##PACKAGE_CREATION_YEAR##"] = creationYear if creationYear != None else self.Dict["##CURRENT_YEAR##"]
+        self.Dict["##PACKAGE_CREATION_YEAR##"] = creationYear if creationYear is not None else self.Dict["##CURRENT_YEAR##"]
         self.Dict["##PACKAGE_COMPANY_NAME##"] = companyName
-        self.Dict["##{$(PACKAGE_NAME).upper().replace('.','_')}##"] = packageName.upper().replace('.', '_')
+        self.Dict["##{$(PACKAGE_NAME).upper().replace('.','_')}##"] = packageName.upper().replace(".", "_")
         if androidProjectPath is not None:
             self.Dict["##PACKAGE_ANDROID_PROJECT_PATH##"] = androidProjectPath
         # deprecated

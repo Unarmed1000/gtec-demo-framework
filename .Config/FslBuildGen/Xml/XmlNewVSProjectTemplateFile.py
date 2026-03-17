@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright (c) 2016 Freescale Semiconductor, Inc.
 # All rights reserved.
 #
@@ -29,26 +29,25 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-from typing import List
 import os
 import os.path
 import xml.etree.ElementTree as ET
+
 from FslBuildGen import IOUtil
-from FslBuildGen.Log import Log
 from FslBuildGen.DataTypes import PackageLanguage
 from FslBuildGen.Exceptions import FileNotFoundException
-from FslBuildGen.Xml.Exceptions import XmlException
-from FslBuildGen.Xml.Exceptions import XmlInvalidRootElement
+from FslBuildGen.Log import Log
+from FslBuildGen.Xml.Exceptions import XmlException, XmlInvalidRootElement
 from FslBuildGen.Xml.XmlBase import XmlBase
 
 
 class XmlNewVSProjectTemplate(XmlBase):
-    __AttribName = 'Name'
-    __AttribDescription = 'Description'
-    __AttribPackageLanguage = 'PackageLanguage'
-    __AttribProjectExtension = 'ProjectExtension'
+    __AttribName = "Name"
+    __AttribDescription = "Description"
+    __AttribPackageLanguage = "PackageLanguage"
+    __AttribProjectExtension = "ProjectExtension"
 
     def __init__(self, log: Log, xmlElement: ET.Element) -> None:
         super().__init__(log, xmlElement)
@@ -57,11 +56,11 @@ class XmlNewVSProjectTemplate(XmlBase):
         self.Description = self._ReadAttrib(xmlElement, self.__AttribDescription)
         packageLanguage = self._ReadAttrib(xmlElement, self.__AttribPackageLanguage)
         self.PackageLanguage = PackageLanguage.FromString(packageLanguage)
-        self.ProjectExtension = self._ReadAttrib(xmlElement, self.__AttribProjectExtension, 'vcxproj')
+        self.ProjectExtension = self._ReadAttrib(xmlElement, self.__AttribProjectExtension, "vcxproj")
 
 
 class XmlNewVSProjectTemplateFile(XmlBase):
-    __AttribVersion = 'Version'
+    __AttribVersion = "Version"
 
     def __init__(self, log: Log, filename: str) -> None:
         if not os.path.isfile(filename):
@@ -69,15 +68,17 @@ class XmlNewVSProjectTemplateFile(XmlBase):
 
         tree = ET.parse(filename)
         elem = tree.getroot()
-        if elem.tag == 'FslBuildGeneratorVSProjectTemplate':
+        if elem.tag == "FslBuildGeneratorVSProjectTemplate":
             pass
-        elif elem.tag == 'FslBuildNewVSProjectTemplate':
-            log.LogPrintWarning("Template file '{0}' using legacy template FslBuildNewVSProjectTemplate update it to FslBuildGeneratorVSProjectTemplate".format(filename))
+        elif elem.tag == "FslBuildNewVSProjectTemplate":
+            log.LogPrintWarning(
+                f"Template file '{filename}' using legacy template FslBuildNewVSProjectTemplate update it to FslBuildGeneratorVSProjectTemplate"
+            )
         else:
             raise XmlInvalidRootElement("The file did not contain the expected root tag 'FslBuildGeneratorVSProjectTemplate'")
 
         super().__init__(log, elem)
-        #self._CheckAttributes({self.__AttribVersion})
+        # self._CheckAttributes({self.__AttribVersion})
         strVersion = self._ReadAttrib(elem, self.__AttribVersion)
         if strVersion != "1":
             raise Exception("Unsupported version")
@@ -92,12 +93,12 @@ class XmlNewVSProjectTemplateFile(XmlBase):
         self.Version = 1
         self.Template = xmlTemplate[0]
         self.Path = IOUtil.GetDirectoryName(filename)
-        self.Prefix = ("%s_" % (self.Name)).upper()
+        self.Prefix = (f"{self.Name}_").upper()
 
         if self.Name != self.Template.Name:
-            raise Exception("The parent template directory name '{0}' does not match the template name '{1}' {2}".format(self.Name, self.Template.Name, self.Path))
+            raise Exception(f"The parent template directory name '{self.Name}' does not match the template name '{self.Template.Name}' {self.Path}")
 
-    def __LoadTemplateConfiguration(self, log: Log, element: ET.Element) -> List[XmlNewVSProjectTemplate]:
+    def __LoadTemplateConfiguration(self, log: Log, element: ET.Element) -> list[XmlNewVSProjectTemplate]:
         res = []
         foundElements = element.findall("Template")
         for foundElement in foundElements:

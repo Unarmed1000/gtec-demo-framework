@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright 2019 NXP
 # All rights reserved.
 #
@@ -29,19 +29,20 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-from typing import List
 import xml.etree.ElementTree as ET
+
 from FslBuildGen.Log import Log
-from FslBuildGen.Xml.XmlBase import XmlBase
 from FslBuildGen.Xml.Project.XmlCMakePlatform import XmlCMakePlatform
+from FslBuildGen.Xml.XmlBase import XmlBase
+
 
 class XmlCMakeConfiguration(XmlBase):
-    __AttribDefaultBuildDir = 'DefaultBuildDir'
-    __AttribNinjaRecipe = 'NinjaRecipe'
-    __AttribDefaultInstallPrefix = 'DefaultInstallPrefix'
-    __AttribMinVersion = 'MinVersion'
+    __AttribDefaultBuildDir = "DefaultBuildDir"
+    __AttribNinjaRecipe = "NinjaRecipe"
+    __AttribDefaultInstallPrefix = "DefaultInstallPrefix"
+    __AttribMinVersion = "MinVersion"
 
     def __init__(self, log: Log, xmlElement: ET.Element) -> None:
         super().__init__(log, xmlElement)
@@ -52,8 +53,8 @@ class XmlCMakeConfiguration(XmlBase):
         self.MinVersion = self._TryReadAttrib(xmlElement, self.__AttribMinVersion)
         self.Platforms = self.__ReadPlatforms(log, xmlElement)
 
-    def __ReadPlatforms(self, log: Log, xmlElement: ET.Element) -> List[XmlCMakePlatform]:
-        res = []  # type: List[XmlCMakePlatform]
+    def __ReadPlatforms(self, log: Log, xmlElement: ET.Element) -> list[XmlCMakePlatform]:
+        res: list[XmlCMakePlatform] = []
         foundElements = xmlElement.findall("Platform")
         for element in foundElements:
             res.append(XmlCMakePlatform(log, element))

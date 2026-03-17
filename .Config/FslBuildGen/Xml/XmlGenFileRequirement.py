@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright (c) 2014 Freescale Semiconductor, Inc.
 # All rights reserved.
 #
@@ -29,36 +29,39 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-from typing import List
 import xml.etree.ElementTree as ET
+
 from FslBuildGen import Util
-from FslBuildGen.Log import Log
 from FslBuildGen.DataTypes import PackageRequirementTypeString
+from FslBuildGen.Log import Log
+from FslBuildGen.Xml.Exceptions import (
+    XmlRequirementNameException,
+    XmlRequirementStringException,
+    XmlRequirementTypeException,
+    XmlRequirementTypeExtensionRequiresAValidExtendFieldException,
+)
 from FslBuildGen.Xml.XmlBase import XmlBase
-from FslBuildGen.Xml.Exceptions import XmlRequirementNameException
-from FslBuildGen.Xml.Exceptions import XmlRequirementTypeException
-from FslBuildGen.Xml.Exceptions import XmlRequirementStringException
-from FslBuildGen.Xml.Exceptions import XmlRequirementTypeExtensionRequiresAValidExtendFieldException
+
 
 class XmlGenFileRequirement(XmlBase):
-    __AttribName = 'Name'
-    __AttribType = 'Type'
-    __AttribExtends = 'Extends'
-    __AttribVersion = 'Version'
+    __AttribName = "Name"
+    __AttribType = "Type"
+    __AttribExtends = "Extends"
+    __AttribVersion = "Version"
 
-    def __init__(self, log: Log, requirementTypes: List[str], xmlElement: ET.Element) -> None:
+    def __init__(self, log: Log, requirementTypes: list[str], xmlElement: ET.Element) -> None:
         super().__init__(log, xmlElement)
         self._CheckAttributes({self.__AttribName, self.__AttribType, self.__AttribExtends, self.__AttribVersion})
-        self.Name = self._ReadAttrib(xmlElement, self.__AttribName)        # type: str
-        self.Type = self._ReadAttrib(xmlElement, self.__AttribType)        # type: str
-        self.Extends = self._ReadAttrib(xmlElement, self.__AttribExtends, '') # type: str
-        self.Version = self._ReadAttrib(xmlElement, self.__AttribVersion, '') # type: str
+        self.Name: str = self._ReadAttrib(xmlElement, self.__AttribName)
+        self.Type: str = self._ReadAttrib(xmlElement, self.__AttribType)
+        self.Extends: str = self._ReadAttrib(xmlElement, self.__AttribExtends, "")
+        self.Version: str = self._ReadAttrib(xmlElement, self.__AttribVersion, "")
 
         if not Util.IsValidRequirementName(self.Name):
             raise XmlRequirementNameException(xmlElement, self.Name)
-        if not self.Type in requirementTypes:
+        if self.Type not in requirementTypes:
             raise XmlRequirementTypeException(xmlElement, self.Name, self.Type, self.Extends, requirementTypes)
 
         if len(self.Extends) > 0 and not Util.IsValidRequirementName(self.Extends):

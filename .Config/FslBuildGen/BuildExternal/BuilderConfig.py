@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright 2017 NXP
 # All rights reserved.
 #
@@ -29,14 +28,15 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-#from typing import List
-#from typing import Optional
+# from typing import List
+# from typing import Optional
 from FslBuildGen.BuildExternal.BuilderSettings import BuilderSettings
-#from FslBuildGen.PackageFilters import PackageFilters
+
+# from FslBuildGen.PackageFilters import PackageFilters
 
 
-class BuilderConfig(object):
+class BuilderConfig:
     def __init__(self) -> None:
         self.Settings = BuilderSettings()

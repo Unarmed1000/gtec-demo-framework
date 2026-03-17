@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright 2018 NXP
 # All rights reserved.
 #
@@ -29,19 +28,25 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-from typing import Dict
-from typing import List
-from typing import Optional
+
 from FslBuildGen import PathUtil
-#from FslBuildGen import IOUtil
+
+# from FslBuildGen import IOUtil
 from FslBuildGen.BuildConfig.CMakeConfigurationPlatform import CMakeConfigurationPlatform
 from FslBuildGen.CMakeUtil import CMakeVersion
 
-class CMakeConfiguration(object):
-    def __init__(self, defaultBuildDir: str, defaultInstallPrefix: Optional[str], minimumVersion: CMakeVersion,
-                 platforms: List[CMakeConfigurationPlatform], ninjaRecipePackageName: str) -> None:
+
+class CMakeConfiguration:
+    def __init__(
+        self,
+        defaultBuildDir: str,
+        defaultInstallPrefix: str | None,
+        minimumVersion: CMakeVersion,
+        platforms: list[CMakeConfigurationPlatform],
+        ninjaRecipePackageName: str,
+    ) -> None:
         super().__init__()
 
         PathUtil.ValidateIsNormalizedPath(defaultBuildDir, "DefaultBuildDir")
@@ -53,15 +58,14 @@ class CMakeConfiguration(object):
         self.MinimumVersion = minimumVersion
         self.NinjaRecipePackageName = ninjaRecipePackageName
 
-
-        platformDict = {}                                                # type: Dict[str,CMakeConfigurationPlatform]
+        platformDict: dict[str, CMakeConfigurationPlatform] = {}
         for entry in platforms:
             platformDict[entry.Name.lower()] = entry
         self.__PlatformDict = platformDict
 
-    def TryGetPlatformConfig(self, platformName: str) -> Optional[CMakeConfigurationPlatform]:
+    def TryGetPlatformConfig(self, platformName: str) -> CMakeConfigurationPlatform | None:
         platformId = platformName.lower()
-        return self.__PlatformDict[platformId] if platformId in self.__PlatformDict else None
+        return self.__PlatformDict.get(platformId, None)
 
     def SetAllowFindPackage(self, enabled: bool) -> None:
         for entry in self.__PlatformDict.values():

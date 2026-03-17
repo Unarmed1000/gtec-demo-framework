@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright 2018 NXP
 # All rights reserved.
 #
@@ -29,30 +29,31 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-from typing import List
 import xml.etree.ElementTree as ET
+
 from FslBuildGen.Log import Log
-from FslBuildGen.Xml.XmlBase import XmlBase
 from FslBuildGen.Xml.Project.XmlClangTidyPlatform import XmlClangTidyPlatform
+from FslBuildGen.Xml.XmlBase import XmlBase
+
 
 class XmlClangTidyConfiguration(XmlBase):
-    __AttribFileExtensions = 'FileExtensions'
-    __AttribClangRecipe = 'ClangRecipe'
-    __AttribClangTidyRecipe = 'ClangTidyRecipe'
+    __AttribFileExtensions = "FileExtensions"
+    __AttribClangRecipe = "ClangRecipe"
+    __AttribClangTidyRecipe = "ClangTidyRecipe"
 
     def __init__(self, log: Log, xmlElement: ET.Element) -> None:
         super().__init__(log, xmlElement)
         self._CheckAttributes({self.__AttribFileExtensions, self.__AttribClangRecipe, self.__AttribClangTidyRecipe})
         fileExtensions = self._ReadAttrib(xmlElement, self.__AttribFileExtensions)
-        self.FileExtensions = fileExtensions.split(';')
+        self.FileExtensions = fileExtensions.split(";")
         self.ClangRecipe = self._ReadAttrib(xmlElement, self.__AttribClangRecipe)
         self.ClangTidyRecipe = self._ReadAttrib(xmlElement, self.__AttribClangTidyRecipe)
         self.Platforms = self.__ReadPlatforms(log, xmlElement)
 
-    def __ReadPlatforms(self, log: Log, xmlElement: ET.Element) -> List[XmlClangTidyPlatform]:
-        res = []  # type: List[XmlClangTidyPlatform]
+    def __ReadPlatforms(self, log: Log, xmlElement: ET.Element) -> list[XmlClangTidyPlatform]:
+        res: list[XmlClangTidyPlatform] = []
         foundElements = xmlElement.findall("Platform")
         for element in foundElements:
             res.append(XmlClangTidyPlatform(log, element))

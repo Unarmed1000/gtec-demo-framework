@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright 2019 NXP
 # All rights reserved.
 #
@@ -29,13 +29,14 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-from typing import List
+
 from FslBuildGen.ToolConfigProjectContext import ToolConfigProjectContext
 
-class ToolConfigProjectInfo(object):
-    def __init__(self, projectContexts: List[ToolConfigProjectContext], topProjectContext: ToolConfigProjectContext) -> None:
+
+class ToolConfigProjectInfo:
+    def __init__(self, projectContexts: list[ToolConfigProjectContext], topProjectContext: ToolConfigProjectContext) -> None:
         super().__init__()
         self.Contexts = projectContexts
         self.TopProjectContext = topProjectContext

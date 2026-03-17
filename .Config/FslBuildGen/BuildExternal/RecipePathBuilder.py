@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright 2017 NXP
 # All rights reserved.
 #
@@ -29,29 +28,36 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-from typing import Optional
+
 from FslBuildGen import IOUtil
-from FslBuildGen.Location.ResolvedPath import ResolvedPath
-from FslBuildGen.Log import Log
-#from FslBuildGen.Exceptions import UsageErrorException
+
+# from FslBuildGen.Exceptions import UsageErrorException
 from FslBuildGen.BuildExternal.PackageExperimentalRecipe import PackageExperimentalRecipe
 from FslBuildGen.BuildExternal.RecipeBuilderSetup import RecipeBuilderSetup
 from FslBuildGen.Generator.GeneratorCMakeConfig import GeneratorCMakeConfig
+from FslBuildGen.Location.ResolvedPath import ResolvedPath
+from FslBuildGen.Log import Log
 from FslBuildGen.Vars.VariableProcessor import VariableProcessor
 from FslBuildGen.Xml.XmlExperimentalRecipe import XmlExperimentalRecipe
 
 
-class RecipePathBuilder(object):
-    def __init__(self, log: Log, variableProcessor: VariableProcessor, recipeBuilderSetup: Optional[RecipeBuilderSetup], platformName: str,
-                 cmakeConfig: GeneratorCMakeConfig) -> None:
+class RecipePathBuilder:
+    def __init__(
+        self,
+        log: Log,
+        variableProcessor: VariableProcessor,
+        recipeBuilderSetup: RecipeBuilderSetup | None,
+        platformName: str,
+        cmakeConfig: GeneratorCMakeConfig,
+    ) -> None:
         super().__init__()
 
-        self.__Log = log  # type: Log
-        self.__VariableProcessor = variableProcessor  # type: VariableProcessor
+        self.__Log: Log = log
+        self.__VariableProcessor: VariableProcessor = variableProcessor
 
-        self.IsEnabled = recipeBuilderSetup is not None  # type: bool
+        self.IsEnabled: bool = recipeBuilderSetup is not None
 
         self.TargetLocation = None  # Optional[ResolvedPath]
         self.DownloadCacheRootPath = None  # Optional[str]
@@ -65,9 +71,9 @@ class RecipePathBuilder(object):
             readonlyCachePath = recipeBuilderSetup.ReadonlyCachePath
 
             if not IOUtil.IsAbsolutePath(targetLocation.ResolvedPath):
-                raise Exception("Install area path is not absolute: '{0}'".format(targetLocation.ResolvedPath))
-            if not readonlyCachePath is None and not IOUtil.IsAbsolutePath(readonlyCachePath):
-                raise Exception("Install area readonly cache path is not absolute: '{0}'".format(readonlyCachePath))
+                raise Exception(f"Install area path is not absolute: '{targetLocation.ResolvedPath}'")
+            if readonlyCachePath is not None and not IOUtil.IsAbsolutePath(readonlyCachePath):
+                raise Exception(f"Install area readonly cache path is not absolute: '{readonlyCachePath}'")
 
             self.TargetLocation = targetLocation
             self.DownloadCacheRootPath = IOUtil.Join(targetLocation.ResolvedPath, ".DownloadCache")
@@ -87,27 +93,27 @@ class RecipePathBuilder(object):
             self.InstallRootLocation = ResolvedPath(sourceInstallRootPath, installRootPath)
 
             self.ReadonlyCache_DownloadCacheRootPath = None if readonlyCachePath is None else IOUtil.Join(readonlyCachePath, ".DownloadCache")
-            self.__Log.LogPrintVerbose(3, "ReadOnlyCacheRootPath '{0}'".format(self.ReadonlyCache_DownloadCacheRootPath))
-
+            self.__Log.LogPrintVerbose(3, f"ReadOnlyCacheRootPath '{self.ReadonlyCache_DownloadCacheRootPath}'")
 
     def GetBuildPath(self, sourceRecipe: PackageExperimentalRecipe) -> str:
         if not self.IsEnabled or self.__TempPipelineRootPath is None:
             raise Exception("Can not GetBuildPath since the builder functionality has been disabled")
         return IOUtil.Join(self.__TempPipelineRootPath, sourceRecipe.FullName)
 
-
-    def TryGetInstallPath(self, xmlSourceRecipe: XmlExperimentalRecipe) -> Optional[ResolvedPath]:
+    def TryGetInstallPath(self, xmlSourceRecipe: XmlExperimentalRecipe) -> ResolvedPath | None:
         if xmlSourceRecipe is None:
             return None
-        elif not xmlSourceRecipe.ExternalInstallDirectory is None:
-            if not xmlSourceRecipe.Pipeline is None:
-                self.__Log.DoPrintWarning("SourceRecipe ExternalInstallDirectory overrides Pipeline '{0}'".format(xmlSourceRecipe.FullName))
+        elif xmlSourceRecipe.ExternalInstallDirectory is not None:
+            if xmlSourceRecipe.Pipeline is not None:
+                self.__Log.DoPrintWarning(f"SourceRecipe ExternalInstallDirectory overrides Pipeline '{xmlSourceRecipe.FullName}'")
             sourcePath = xmlSourceRecipe.ExternalInstallDirectory
             resolvedPath = self.__VariableProcessor.ResolveAbsolutePathWithLeadingEnvironmentVariablePathAsDir(sourcePath)
             return ResolvedPath(sourcePath, resolvedPath)
 
         if not self.IsEnabled or self.InstallRootLocation is None:
-            raise Exception("Can not TryGetInstallPath since the builder functionality has been disabled, please enable the builder functionality for this project")
+            raise Exception(
+                "Can not TryGetInstallPath since the builder functionality has been disabled, please enable the builder functionality for this project"
+            )
 
         if xmlSourceRecipe.Pipeline is None:
             return None

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright 2019 NXP
 # All rights reserved.
 #
@@ -29,19 +29,27 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-from typing import List
 from typing import Optional
+
 from FslBuildGen.Location.ResolvedPath import ResolvedPath
 from FslBuildGen.ProjectId import ProjectId
 from FslBuildGen.ToolConfigBasePackage import ToolConfigBasePackage
 from FslBuildGen.Version import Version
 
-class ToolConfigProjectContext(object):
-    def __init__(self, projectId: ProjectId,
-                 projectName: str, projectVersion: Version, projectDirectory: str, gitHash: Optional[str], basePackages: List[ToolConfigBasePackage],
-                 parentContext: Optional['ToolConfigProjectContext']) -> None:
+
+class ToolConfigProjectContext:
+    def __init__(
+        self,
+        projectId: ProjectId,
+        projectName: str,
+        projectVersion: Version,
+        projectDirectory: str,
+        gitHash: str | None,
+        basePackages: list[ToolConfigBasePackage],
+        parentContext: Optional["ToolConfigProjectContext"],
+    ) -> None:
         super().__init__()
         self.ProjectId = projectId
         self.ProjectName = projectName
@@ -50,4 +58,3 @@ class ToolConfigProjectContext(object):
         self.GitHash = gitHash
         self.BasePackages = basePackages
         self.ParentContext = parentContext
-

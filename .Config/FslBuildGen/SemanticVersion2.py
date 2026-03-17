@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright 2024 NXP
 # All rights reserved.
 #
@@ -29,14 +28,13 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
 from typing import Optional
-from typing import List
 
-class SemanticVersion2(object):
 
-    def __init__(self, major: int, minor: int = -1, patch: int = -1, revision: int = -1, suffix: Optional[str] = None) -> None:
+class SemanticVersion2:
+    def __init__(self, major: int, minor: int = -1, patch: int = -1, revision: int = -1, suffix: str | None = None) -> None:
         if (minor < 0 and (patch >= 0 or revision >= 0)) or (patch < 0 and revision >= 0):
             raise Exception("Invalid version")
 
@@ -51,7 +49,7 @@ class SemanticVersion2(object):
         self.__Set |= 2 if patch >= 0 else 0
         self.__Set |= 1 if revision >= 0 else 0
 
-    def IsCompatible(self, other: 'SemanticVersion2') -> bool:
+    def IsCompatible(self, other: "SemanticVersion2") -> bool:
         if self.Major != other.Major:
             return False
         if self.Minor > other.Minor:
@@ -64,48 +62,48 @@ class SemanticVersion2(object):
 
     def __str__(self) -> str:
         if self.Suffix is None:
-            if self.__Set == (8|4|2|1):
-                return "{0}.{1}.{2}.{3}".format(self.Major, self.Minor, self.Patch, self.Revision)
-            if self.__Set == (8|4|2):
-                return "{0}.{1}.{2}".format(self.Major, self.Minor, self.Patch)
-            if self.__Set == (8|4):
-                return "{0}.{1}".format(self.Major, self.Minor)
-            return "{0}".format(self.Major)
-        if self.__Set == (8|4|2|1):
-            return "{0}.{1}.{2}.{3}-{4}".format(self.Major, self.Minor, self.Patch, self.Revision, self.Suffix)
-        if self.__Set == (8|4|2):
-            return "{0}.{1}.{2}-{3}".format(self.Major, self.Minor, self.Patch, self.Suffix)
-        if self.__Set == (8|4):
-            return "{0}.{1}-{2}".format(self.Major, self.Minor, self.Suffix)
-        return "{0}-{1}".format(self.Major, self.Suffix)
+            if self.__Set == (8 | 4 | 2 | 1):
+                return f"{self.Major}.{self.Minor}.{self.Patch}.{self.Revision}"
+            if self.__Set == (8 | 4 | 2):
+                return f"{self.Major}.{self.Minor}.{self.Patch}"
+            if self.__Set == (8 | 4):
+                return f"{self.Major}.{self.Minor}"
+            return f"{self.Major}"
+        if self.__Set == (8 | 4 | 2 | 1):
+            return f"{self.Major}.{self.Minor}.{self.Patch}.{self.Revision}-{self.Suffix}"
+        if self.__Set == (8 | 4 | 2):
+            return f"{self.Major}.{self.Minor}.{self.Patch}-{self.Suffix}"
+        if self.__Set == (8 | 4):
+            return f"{self.Major}.{self.Minor}-{self.Suffix}"
+        return f"{self.Major}-{self.Suffix}"
 
     def ToMajorMinorPatchString(self) -> str:
-        return "{0}.{1}.{2}".format(self.Major, self.Minor, self.Patch)
+        return f"{self.Major}.{self.Minor}.{self.Patch}"
 
     def ToMajorMinorString(self) -> str:
-        return "{0}.{1}".format(self.Major, self.Minor)
+        return f"{self.Major}.{self.Minor}"
 
     @staticmethod
-    def IsValid(values: List[int]) -> bool:
+    def IsValid(values: list[int]) -> bool:
         if len(values) < 1 or values[0] < 0:
             return False
         hasNegative = False
         for entry in values:
             if not hasNegative:
-                hasNegative = (entry < 0)
+                hasNegative = entry < 0
             elif entry >= 0:
                 return False
         return True
 
     @staticmethod
-    def TryFromString(strValue: str) -> Optional['SemanticVersion2']:
-        suffix = None # type: Optional[str]
-        if '-' in strValue:
-            strValue, suffix = strValue.split('-', 1)
+    def TryFromString(strValue: str) -> Optional["SemanticVersion2"]:
+        suffix: str | None = None
+        if "-" in strValue:
+            strValue, suffix = strValue.split("-", 1)
             if suffix is None or len(suffix) <= 0:
                 return None
 
-        entries = strValue.split('.')
+        entries = strValue.split(".")
         if len(entries) < 1 or len(entries) > 4:
             return None
 
@@ -120,8 +118,8 @@ class SemanticVersion2(object):
             return None
 
     @staticmethod
-    def FromString(strValue: str) -> 'SemanticVersion2':
+    def FromString(strValue: str) -> "SemanticVersion2":
         result = SemanticVersion2.TryFromString(strValue)
         if result is None:
-            raise Exception("Version string '{0} was not of the expected '1.2.3.4' or '1.2.3.4-suffix' format".format(strValue))
+            raise Exception(f"Version string '{strValue} was not of the expected '1.2.3.4' or '1.2.3.4-suffix' format")
         return result

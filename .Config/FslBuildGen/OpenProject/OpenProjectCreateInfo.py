@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright 2020 NXP
 # All rights reserved.
 #
@@ -29,21 +28,21 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-from typing import Optional
-from typing import List
+
 from FslBuildGen.OpenProject.OpenProjectCMakeInfo import OpenProjectCMakeInfo
 
-class OpenProjectExecutableInfo(object):
+
+class OpenProjectExecutableInfo:
     def __init__(self, executable: str, currentWorkingDirectory: str) -> None:
         super().__init__()
         self.Executable = executable
         self.CurrentWorkingDirectory = currentWorkingDirectory
 
 
-class OpenProjectCreateInfo(object):
-    def __init__(self, sourcePath: str, exeInfo: Optional[OpenProjectExecutableInfo], cmakeInfo: OpenProjectCMakeInfo, openCommandArgs: List[str]) -> None:
+class OpenProjectCreateInfo:
+    def __init__(self, sourcePath: str, exeInfo: OpenProjectExecutableInfo | None, cmakeInfo: OpenProjectCMakeInfo, openCommandArgs: list[str]) -> None:
         super().__init__()
         self.SourcePath = sourcePath
         self.ExeInfo = exeInfo

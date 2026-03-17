@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright 2017 NXP
 # All rights reserved.
 #
@@ -29,16 +29,17 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-from typing import Dict
+
 from FslBuildGen.Log import Log
 
-class VariableEnvironment(object):
+
+class VariableEnvironment:
     def __init__(self, log: Log) -> None:
         super().__init__()
-        self._Log = log  # type: Log
-        self.Dict = {}   # type: Dict[str, str]
+        self._Log: Log = log
+        self.Dict: dict[str, str] = {}
 
     def Set(self, key: str, value: str) -> None:
         self.Dict[key] = value

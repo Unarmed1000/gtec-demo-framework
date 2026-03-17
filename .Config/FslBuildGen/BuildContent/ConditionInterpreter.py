@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright (c) 2016 Freescale Semiconductor, Inc.
 # All rights reserved.
 #
@@ -29,16 +29,16 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-from typing import Any
-from typing import Dict
-from typing import List
 import ast
 import copy
+from typing import Any
+
 from FslBuildGen.Generator.Report.GeneratorVariableReport import GeneratorVariableReport
 from FslBuildGen.Generator.Report.ReportVariableFormatter import ReportVariableFormatter
-#import sys
+
+# import sys
 
 # We use the python AST to do a safe condition evaluation
 # Example
@@ -56,6 +56,7 @@ from FslBuildGen.Generator.Report.ReportVariableFormatter import ReportVariableF
 #        Name
 #          Load
 
+
 class LocalNodeVisitor(ast.NodeVisitor):
     def __init__(self, contentProcessorName: str, source: str) -> None:
         self.ContentProcessorName = contentProcessorName
@@ -63,21 +64,20 @@ class LocalNodeVisitor(ast.NodeVisitor):
         self.Indent = 0
 
     def CheckNodeType(self, node: Any) -> None:
-        if not (isinstance(node, ast.Expression) or
-                isinstance(node, ast.BoolOp) or
-                isinstance(node, ast.UnaryOp) or
-                isinstance(node, ast.Not) or
-                isinstance(node, ast.Or) or
-                isinstance(node, ast.And) or
-                isinstance(node, ast.Name) or
-                isinstance(node, ast.Load)):
-            if hasattr(node, 'col_offset'):
-                if hasattr(node, 'id'):
-                    raise Exception("FeatureRequirements contain unsupported node type '{0}' at '{1} (x:{2})' in content builder '{3}' feature requirement: '{4}'".format(type(node).__name__, node.id, node.col_offset, self.ContentProcessorName, self.Source))
+        if not (isinstance(node, (ast.Expression, ast.BoolOp, ast.UnaryOp, ast.Not, ast.Or, ast.And, ast.Name, ast.Load))):
+            if hasattr(node, "col_offset"):
+                if hasattr(node, "id"):
+                    raise Exception(
+                        f"FeatureRequirements contain unsupported node type '{type(node).__name__}' at '{node.id} (x:{node.col_offset})' in content builder '{self.ContentProcessorName}' feature requirement: '{self.Source}'"
+                    )
                 else:
-                    raise Exception("FeatureRequirements contain unsupported node type '%s' at (x:%s) in content builder '%s' feature requirement: '%s'" % (type(node).__name__, node.col_offset, self.ContentProcessorName, self.Source))
+                    raise Exception(
+                        f"FeatureRequirements contain unsupported node type '{type(node).__name__}' at (x:{node.col_offset}) in content builder '{self.ContentProcessorName}' feature requirement: '{self.Source}'"
+                    )
             else:
-                raise Exception("FeatureRequirements contain unsupported node type '%s' in content builder '%s' feature requirement: '%s'" % (type(node).__name__, self.ContentProcessorName, self.Source))
+                raise Exception(
+                    f"FeatureRequirements contain unsupported node type '{type(node).__name__}' in content builder '{self.ContentProcessorName}' feature requirement: '{self.Source}'"
+                )
 
 
 class ConditionNodeVisitor(LocalNodeVisitor):
@@ -86,24 +86,24 @@ class ConditionNodeVisitor(LocalNodeVisitor):
 
     def generic_visit(self, node: Any) -> None:
         self.CheckNodeType(node)
-        #print(" "* (self.Indent*2) + type(node).__name__)
+        # print(" "* (self.Indent*2) + type(node).__name__)
         self.Indent = self.Indent + 1
         ast.NodeVisitor.generic_visit(self, node)
         self.Indent = self.Indent - 1
 
 
 class ConditionInterpreterNodeTransformer(ast.NodeTransformer):
-    def __init__(self, featureIds: List[str]) -> None:
+    def __init__(self, featureIds: list[str]) -> None:
         self.__FeatureIds = featureIds
 
     def visit_Name(self, node: Any) -> Any:
-        featureInList = node.id.lower() in self.__FeatureIds # type: bool
+        featureInList: bool = node.id.lower() in self.__FeatureIds
         # workaround the issue that ast.Num no longer accepts a bool in python3 and
         # ast.Constant is python 3.6+
         val = ast.Num(1 if featureInList else 0)
-#        if sys.version_info < (3, 6):
- #       else:
- #           val = ast.Constant(featureInList)
+        #        if sys.version_info < (3, 6):
+        #       else:
+        #           val = ast.Constant(featureInList)
         return ast.copy_location(val, node)
 
 
@@ -114,27 +114,38 @@ class EvaluateLocalNodeVisitor(ast.NodeVisitor):
         self.Indent = 0
 
     def CheckNodeType(self, node: Any) -> None:
-        if not (isinstance(node, ast.Expression) or
-                isinstance(node, ast.BoolOp) or
-                isinstance(node, ast.Constant) or
-                isinstance(node, ast.UnaryOp) or
-                isinstance(node, ast.Not) or
-                isinstance(node, ast.NotEq) or
-                isinstance(node, ast.Eq) or
-                isinstance(node, ast.Or) or
-                isinstance(node, ast.And) or
-                isinstance(node, ast.Name) or
-                isinstance(node, ast.NameConstant) or
-                isinstance(node, ast.Compare) or
-                isinstance(node, ast.Str) or
-                isinstance(node, ast.Load)):
-            if hasattr(node, 'col_offset'):
-                if hasattr(node, 'id'):
-                    raise Exception("Evaluate contain unsupported node type '{0}' at '{1} (x:{2})' in Evaluate '{3}' condition: '{4}'".format(type(node).__name__, node.id, node.col_offset, self.SourceName, self.Source))
+        if not (
+            isinstance(
+                node,
+                (
+                    ast.Expression,
+                    ast.BoolOp,
+                    ast.Constant,
+                    ast.UnaryOp,
+                    ast.Not,
+                    ast.NotEq,
+                    ast.Eq,
+                    ast.Or,
+                    ast.And,
+                    ast.Name,
+                    ast.NameConstant,
+                    ast.Compare,
+                    ast.Str,
+                    ast.Load,
+                ),
+            )
+        ):
+            if hasattr(node, "col_offset"):
+                if hasattr(node, "id"):
+                    raise Exception(
+                        f"Evaluate contain unsupported node type '{type(node).__name__}' at '{node.id} (x:{node.col_offset})' in Evaluate '{self.SourceName}' condition: '{self.Source}'"
+                    )
                 else:
-                    raise Exception("Evaluate contain unsupported node type '{0}' at (x:{1}) in Evaluate '{2}' condition: '{3}'".format(type(node).__name__, node.col_offset, self.SourceName, self.Source))
+                    raise Exception(
+                        f"Evaluate contain unsupported node type '{type(node).__name__}' at (x:{node.col_offset}) in Evaluate '{self.SourceName}' condition: '{self.Source}'"
+                    )
             else:
-                raise Exception("Evaluate contain unsupported node type '{0}' in Evaluate '{1}' condition: '{2}'".format(type(node).__name__, self.SourceName, self.Source))
+                raise Exception(f"Evaluate contain unsupported node type '{type(node).__name__}' in Evaluate '{self.SourceName}' condition: '{self.Source}'")
 
 
 class EvaluateConditionNodeVisitor(EvaluateLocalNodeVisitor):
@@ -143,13 +154,13 @@ class EvaluateConditionNodeVisitor(EvaluateLocalNodeVisitor):
 
     def generic_visit(self, node: Any) -> None:
         self.CheckNodeType(node)
-        #print(" "* (self.Indent*2) + type(node).__name__)
+        # print(" "* (self.Indent*2) + type(node).__name__)
         self.Indent = self.Indent + 1
         ast.NodeVisitor.generic_visit(self, node)
         self.Indent = self.Indent - 1
 
 
-#class EvaluateConditionInterpreterNodeTransformer(ast.NodeTransformer):
+# class EvaluateConditionInterpreterNodeTransformer(ast.NodeTransformer):
 #    def __init__(self, validVariableDict: Dict[str, str]) -> None:
 #        self.__ValidVariableDict = validVariableDict
 
@@ -164,7 +175,7 @@ class EvaluateConditionNodeVisitor(EvaluateLocalNodeVisitor):
 #        #return ast.copy_location(val, node)
 
 
-class ConditionInterpreter(object):
+class ConditionInterpreter:
     def __init__(self, contentProcessorName: str, featureRequirements: str) -> None:
         self.__ContentProcessorName = contentProcessorName
         self.__FeatureRequirements = featureRequirements
@@ -177,33 +188,34 @@ class ConditionInterpreter(object):
 
     def __Parse(self, featureRequirements: str) -> ast.Expression:
         try:
-            return ast.parse(featureRequirements, mode='eval')
+            return ast.parse(featureRequirements, mode="eval")
         except SyntaxError as ex:
-            raise Exception("FeatureRequirements {0} in ContentBuilder '{1}' at 'x:{2}' in '{3}' ".format(ex.msg, self.__ContentProcessorName, ex.offset, str(ex.text).strip()))
+            raise Exception(
+                f"FeatureRequirements {ex.msg} in ContentBuilder '{self.__ContentProcessorName}' at 'x:{ex.offset}' in '{str(ex.text).strip()}' "
+            ) from ex
 
-    def CheckFeatureRequirements(self, featuresIds: List[str]) -> bool:
+    def CheckFeatureRequirements(self, featuresIds: list[str]) -> bool:
         astRootNode = copy.deepcopy(self.__RootNode)
         nodeTransformer = ConditionInterpreterNodeTransformer(featuresIds)
         nodeTransformer.visit(astRootNode)
-        fixed = ast.fix_missing_locations(astRootNode)
-        codeobj = compile(astRootNode, '<string>', mode='eval')
+        ast.fix_missing_locations(astRootNode)
+        codeobj = compile(astRootNode, "<string>", mode="eval")
         # this should be safe as the root ast tree object has been verified to only contain things we expect
-        return True if eval(codeobj) == 1 else False
+        return bool(eval(codeobj) == 1)
 
 
-class EvaluateConditionInterpreter(object):
+class EvaluateConditionInterpreter:
     @staticmethod
-    def Evaluate(condition: str, validVariableDict: Dict[str, object], source: str) -> bool:
+    def Evaluate(condition: str, validVariableDict: dict[str, object], source: str) -> bool:
         variableReport = GeneratorVariableReport()
         for variableKey, variableValue in validVariableDict.items():
             if isinstance(variableValue, str):
-                variableReport.Add(variableKey, ["'{0}'".format(variableValue)])
+                variableReport.Add(variableKey, [f"'{variableValue}'"])
             elif isinstance(variableValue, bool):
-                variableReport.Add(variableKey, ["{0}".format(variableValue)])
+                variableReport.Add(variableKey, [f"{variableValue}"])
             else:
                 raise Exception("Not supported")
         processedCondition = ReportVariableFormatter.Format2(condition, variableReport, {})
-
 
         # Do some validation on the condition to ensure it only contains the elements we want and support
         astRootNode = EvaluateConditionInterpreter.__Parse(processedCondition, condition, source)
@@ -214,16 +226,15 @@ class EvaluateConditionInterpreter(object):
     @staticmethod
     def __Parse(condition: str, sourceCondition: str, source: str) -> ast.Expression:
         try:
-            return ast.parse(condition, mode='eval')
+            return ast.parse(condition, mode="eval")
         except SyntaxError as ex:
-            raise Exception("Evaluate({0}) from '{1}' at 'x:{2}' in '{3}' ".format(ex.msg, source, ex.offset, str(ex.text).strip()))
+            raise Exception(f"Evaluate({ex.msg}) from '{source}' at 'x:{ex.offset}' in '{str(ex.text).strip()}' ") from ex
 
     @staticmethod
-    def __DoEvaluate(astRootNode: ast.Expression, validVariableDict: Dict[str, object]) -> bool:
-        #nodeTransformer = EvaluateConditionInterpreterNodeTransformer(validVariableDict)
-        #nodeTransformer.visit(astRootNode)
-        fixed = ast.fix_missing_locations(astRootNode)
-        codeobj = compile(astRootNode, '<string>', mode='eval')
+    def __DoEvaluate(astRootNode: ast.Expression, validVariableDict: dict[str, object]) -> bool:
+        # nodeTransformer = EvaluateConditionInterpreterNodeTransformer(validVariableDict)
+        # nodeTransformer.visit(astRootNode)
+        ast.fix_missing_locations(astRootNode)
+        codeobj = compile(astRootNode, "<string>", mode="eval")
         # this should be safe as the root ast tree object has been verified to only contain things we expect
-        return True if eval(codeobj) == 1 else False
-
+        return bool(eval(codeobj) == 1)

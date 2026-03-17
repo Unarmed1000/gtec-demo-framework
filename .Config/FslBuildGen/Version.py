@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright 2020 NXP
 # All rights reserved.
 #
@@ -29,12 +28,12 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
 from typing import Optional
-from typing import List
 
-class Version(object):
+
+class Version:
     def __init__(self, major: int, minor: int = -1, patch: int = -1, tweak: int = -1) -> None:
         if (minor < 0 and (patch >= 0 or tweak >= 0)) or (patch < 0 and tweak >= 0):
             raise Exception("Invalid version")
@@ -49,7 +48,7 @@ class Version(object):
         self.__Set |= 2 if patch >= 0 else 0
         self.__Set |= 1 if tweak >= 0 else 0
 
-    def IsCompatible(self, other: 'Version') -> bool:
+    def IsCompatible(self, other: "Version") -> bool:
         if self.Major != other.Major:
             return False
         if self.Minor > other.Minor:
@@ -61,35 +60,35 @@ class Version(object):
         return True
 
     def __str__(self) -> str:
-        if self.__Set == (8|4|2|1):
-            return "{0}.{1}.{2}.{3}".format(self.Major, self.Minor, self.Patch, self.Tweak)
-        if self.__Set == (8|4|2):
-            return "{0}.{1}.{2}".format(self.Major, self.Minor, self.Patch)
-        if self.__Set == (8|4):
-            return "{0}.{1}".format(self.Major, self.Minor)
-        return "{0}".format(self.Major)
+        if self.__Set == (8 | 4 | 2 | 1):
+            return f"{self.Major}.{self.Minor}.{self.Patch}.{self.Tweak}"
+        if self.__Set == (8 | 4 | 2):
+            return f"{self.Major}.{self.Minor}.{self.Patch}"
+        if self.__Set == (8 | 4):
+            return f"{self.Major}.{self.Minor}"
+        return f"{self.Major}"
 
     def ToMajorMinorPatchString(self) -> str:
-        return "{0}.{1}.{2}".format(self.Major, self.Minor, self.Patch)
+        return f"{self.Major}.{self.Minor}.{self.Patch}"
 
     def ToMajorMinorString(self) -> str:
-        return "{0}.{1}".format(self.Major, self.Minor)
+        return f"{self.Major}.{self.Minor}"
 
     @staticmethod
-    def IsValid(values: List[int]) -> bool:
+    def IsValid(values: list[int]) -> bool:
         if len(values) < 1 or values[0] < 0:
             return False
         hasNegative = False
         for entry in values:
             if not hasNegative:
-                hasNegative = (entry < 0)
+                hasNegative = entry < 0
             elif entry >= 0:
                 return False
         return True
 
     @staticmethod
-    def TryFromString(strValue: str) -> Optional['Version']:
-        entries = strValue.split('.')
+    def TryFromString(strValue: str) -> Optional["Version"]:
+        entries = strValue.split(".")
         if len(entries) < 1 or len(entries) > 4:
             return None
 
@@ -104,8 +103,8 @@ class Version(object):
             return None
 
     @staticmethod
-    def FromString(strValue: str) -> 'Version':
+    def FromString(strValue: str) -> "Version":
         result = Version.TryFromString(strValue)
         if result is None:
-            raise Exception("Version string '{0} was not of the expected '1.2.3.4' format".format(strValue))
+            raise Exception(f"Version string '{strValue} was not of the expected '1.2.3.4' format")
         return result

@@ -1,6 +1,6 @@
-﻿#!/usr/bin/env python3
+#!/usr/bin/env python3
 
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright 2018 NXP
 # All rights reserved.
 #
@@ -29,33 +29,26 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-#from typing import Any
-from typing import Dict
-from typing import List
-from typing import Optional
-from typing import Set
-from typing import Tuple
-#from concurrent.futures import ThreadPoolExecutor
-#from enum import Enum
+# from typing import Any
+# from concurrent.futures import ThreadPoolExecutor
+# from enum import Enum
 import io
-#import queue
-#import threading
-from FslBuildGen import IOUtil
-from FslBuildGen import PluginSharedValues
+
+# import queue
+# import threading
+from FslBuildGen import IOUtil, PluginSharedValues
 from FslBuildGen.Build import Builder
-from FslBuildGen.Build.BuildVariantUtil import BuildVariantUtil
 from FslBuildGen.Build.BuildFlavorUtil import BuildFlavorUtil
 from FslBuildGen.Build.BuildUtil import PlatformBuildUtil
+from FslBuildGen.Build.BuildVariantUtil import BuildVariantUtil
 from FslBuildGen.Build.DataTypes import CommandType
 from FslBuildGen.Build.VirtualVariantEnvironmentCache import VirtualVariantEnvironmentCache
 from FslBuildGen.BuildConfig.BuildUtil import BuildUtil
-from FslBuildGen.BuildConfig.CaptureLog import CaptureLog
 from FslBuildGen.BuildConfig.ClangExeInfo import ClangExeInfo
 from FslBuildGen.BuildConfig.ClangTidyConfiguration import ClangTidyConfiguration
-from FslBuildGen.BuildConfig.CMakeCompileCommandsJson import CMakeCompileCommandsJson
-from FslBuildGen.BuildConfig.CMakeCompileCommandsJson import CMakeCompileCommandsRecord
+from FslBuildGen.BuildConfig.CMakeCompileCommandsJson import CMakeCompileCommandsJson, CMakeCompileCommandsRecord
 from FslBuildGen.BuildConfig.CustomPackageFileFilter import CustomPackageFileFilter
 from FslBuildGen.BuildConfig.FileFinder import FileFinder
 from FslBuildGen.BuildConfig.ninja_syntax import Writer
@@ -63,19 +56,16 @@ from FslBuildGen.BuildConfig.PackagePathUtil import PackagePathUtil
 from FslBuildGen.BuildConfig.PerformClangTidyConfig import PerformClangTidyConfig
 from FslBuildGen.BuildConfig.PerformClangUtil import PerformClangUtil
 from FslBuildGen.BuildConfig.RunHelper import RunHelper
-from FslBuildGen.BuildConfig.SimpleCancellationToken import SimpleCancellationToken
 from FslBuildGen.BuildConfig.TidyBuildGeneratorConfig import TidyBuildGeneratorConfig
 from FslBuildGen.BuildConfig.UserSetVariables import UserSetVariables
 from FslBuildGen.BuildExternal.PackageRecipeResultManager import PackageRecipeResultManager
 from FslBuildGen.Config import Config
 from FslBuildGen.Context.GeneratorContext import GeneratorContext
-from FslBuildGen.DataTypes import VariantType
-from FslBuildGen.DataTypes import ClangTidyProfile
-from FslBuildGen.DataTypes import IncludePriority
-#from FslBuildGen.Exceptions import AggregateException
+from FslBuildGen.DataTypes import ClangTidyProfile, IncludePriority, VariantType
+
+# from FslBuildGen.Exceptions import AggregateException
 from FslBuildGen.Exceptions import ExitException
 from FslBuildGen.ExternalVariantConstraints import ExternalVariantConstraints
-from FslBuildGen.Generator.GeneratorCMake import GeneratorCMake
 from FslBuildGen.Generator.GeneratorCMake import CMakeGeneratorMode
 from FslBuildGen.Generator.GeneratorCMakeConfig import GeneratorCMakeConfig
 from FslBuildGen.Generator.GeneratorConfig import GeneratorConfig
@@ -86,17 +76,17 @@ from FslBuildGen.Generator.Report.PackageGeneratorReport import PackageGenerator
 from FslBuildGen.Generator.Report.ParsedFormatString import ParsedFormatString
 from FslBuildGen.Generator.Report.ReportVariableFormatter import ReportVariableFormatter
 from FslBuildGen.Generator.Report.StringVariableDict import StringVariableDict
-from FslBuildGen.PackageIncludeDir import PackageIncludeDir
-from FslBuildGen.ProjectId import ProjectId
 from FslBuildGen.Location.ResolvedPath import ResolvedPath
 from FslBuildGen.Log import Log
+from FslBuildGen.PackageIncludeDir import PackageIncludeDir
 from FslBuildGen.Packages.Package import Package
+from FslBuildGen.ProjectId import ProjectId
 from FslBuildGen.ToolConfig import ToolConfig
 from FslBuildGen.ToolConfigProjectContext import ToolConfigProjectContext
-from FslBuildGen.ToolConfigProjectInfo import ToolConfigProjectInfo
 from FslBuildGen.VariableContextHelper import VariableContextHelper
 
-class MagicValues(object):
+
+class MagicValues:
     ClangCompileCommand = "clang"
     ClangCppCompileCommand = "clang++"
     ClangTidyCommand = "clang-tidy"
@@ -106,19 +96,19 @@ class MagicValues(object):
     SystemIncludeBaseIndex = 50000000
 
 
-class LocalVariantInfo(object):
-    def __init__(self, resolvedVariantSettingsDict: Dict[str, str],
-                 generatorReportDict: Dict[Package, PackageGeneratorReport],
-                 pythonScriptRoot: str) -> None:
+class LocalVariantInfo:
+    def __init__(self, resolvedVariantSettingsDict: dict[str, str], generatorReportDict: dict[Package, PackageGeneratorReport], pythonScriptRoot: str) -> None:
         super().__init__()
         self.ResolvedVariantSettingsDict = resolvedVariantSettingsDict
         self.GeneratorReportDict = generatorReportDict
         self.PythonScriptRoot = pythonScriptRoot
 
-class UniqueIncludeRecord(object):
+
+class UniqueIncludeRecord:
     def __init__(self, includeDir: PackageIncludeDir, index: int) -> None:
-        self.IncludeDir = includeDir;
+        self.IncludeDir = includeDir
         self.Index = index
+
 
 def __TryGetEnvironmentVariable(virtualVariantEnvironmentCache: VirtualVariantEnvironmentCache, envVariable: str) -> str:
     res = virtualVariantEnvironmentCache.TryGetCachedValue(envVariable)
@@ -128,7 +118,7 @@ def __TryGetEnvironmentVariable(virtualVariantEnvironmentCache: VirtualVariantEn
 
 
 def __ResolveVariables(strWithVariables: str, variableDict: StringVariableDict, virtualVariantEnvironmentCache: VirtualVariantEnvironmentCache) -> str:
-    parsedStr = ParsedFormatString(strWithVariables, variableDict, lambda name: __TryGetEnvironmentVariable(virtualVariantEnvironmentCache, name) )
+    parsedStr = ParsedFormatString(strWithVariables, variableDict, lambda name: __TryGetEnvironmentVariable(virtualVariantEnvironmentCache, name))
     for var1 in parsedStr.VarCommandList:
         parsedStr.SplitList[var1.SplitIndex] = var1.Report.Options[0]
     for var2 in parsedStr.EnvCommandList:
@@ -136,19 +126,19 @@ def __ResolveVariables(strWithVariables: str, variableDict: StringVariableDict, 
     return "".join(parsedStr.SplitList)
 
 
-def __ExtractVariantDefines(log: Log, localVariantInfo: LocalVariantInfo, package: Package) -> List[str]:
+def __ExtractVariantDefines(log: Log, localVariantInfo: LocalVariantInfo, package: Package) -> list[str]:
     """
     Extract all static and virtual defines
     """
     if len(package.ResolvedAllVariantDict) <= 0:
         return []
 
-    allDefines = []  # type: List[str]
+    allDefines: list[str] = []
     for variant in package.ResolvedAllVariantDict.values():
         if variant.Type == VariantType.Virtual:
             if len(variant.Options) != 1:
                 raise Exception("Unsupported virtual variant type")
-            for externalDep in variant.Options[0].ExternalDependencies:
+            for _externalDep in variant.Options[0].ExternalDependencies:
                 for define in variant.Options[0].DirectDefines:
                     allDefines.append(define.Name)
         else:
@@ -160,28 +150,28 @@ def __ExtractVariantDefines(log: Log, localVariantInfo: LocalVariantInfo, packag
     return allDefines
 
 
-def __ExtractVariantIncludeDirs(log: Log, localVariantInfo: LocalVariantInfo,
-                                virtualVariantEnvironmentCache: VirtualVariantEnvironmentCache, package: Package) -> List[PackageIncludeDir]:
+def __ExtractVariantIncludeDirs(
+    log: Log, localVariantInfo: LocalVariantInfo, virtualVariantEnvironmentCache: VirtualVariantEnvironmentCache, package: Package
+) -> list[PackageIncludeDir]:
     """
     Extract all static and virtual include dirs and ensure that 'dynamic' environment variables gets cached
     """
     if len(package.ResolvedAllVariantDict) <= 0:
         return []
 
-    environmentVariableList = []  # type: List[str]
-    allIncludeDirs = []  # type: List[PackageIncludeDir]
+    environmentVariableList: list[str] = []
+    allIncludeDirs: list[PackageIncludeDir] = []
     for variant in package.ResolvedAllVariantDict.values():
         if variant.Type == VariantType.Virtual:
             if len(variant.Options) != 1:
                 raise Exception("Unsupported virtual variant type")
-            parsedDeps = []  # type: List[ParsedFormatString]
             for externalDep in variant.Options[0].ExternalDependencies:
                 if externalDep.IncludeDir is not None:
                     if externalDep.IncludeDir.Name.startswith("$("):
-                        endIndex = externalDep.IncludeDir.Name.find(')')
+                        endIndex = externalDep.IncludeDir.Name.find(")")
                         if endIndex < 0:
-                            raise Exception("external include path invalid no ending ')' in '{0}'".format(externalDep.IncludeDir.Name))
-                        environmentVariableList.append(externalDep.IncludeDir.Name[:endIndex+1])
+                            raise Exception(f"external include path invalid no ending ')' in '{externalDep.IncludeDir.Name}'")
+                        environmentVariableList.append(externalDep.IncludeDir.Name[: endIndex + 1])
                     allIncludeDirs.append(externalDep.IncludeDir)
         else:
             optionName = localVariantInfo.ResolvedVariantSettingsDict[variant.Name]
@@ -191,12 +181,12 @@ def __ExtractVariantIncludeDirs(log: Log, localVariantInfo: LocalVariantInfo,
                     allIncludeDirs.append(externalDep.IncludeDir)
 
     if package not in localVariantInfo.GeneratorReportDict:
-        raise Exception("Could not find a report for package '{0}".format(package.Name))
+        raise Exception(f"Could not find a report for package '{package.Name}")
     report = localVariantInfo.GeneratorReportDict[package]
 
     runCommand = []
     if report.BuildReport is not None and report.BuildReport.BuildCommandReport is not None:
-        log.LogPrintVerbose(2, "Extracting dynamic variants from {0}".format(package.Name))
+        log.LogPrintVerbose(2, f"Extracting dynamic variants from {package.Name}")
         runInEnvScript = report.BuildReport.BuildCommandReport.RunInEnvScript
         if runInEnvScript is not None:
             if package.AbsolutePath is None:
@@ -210,8 +200,9 @@ def __ExtractVariantIncludeDirs(log: Log, localVariantInfo: LocalVariantInfo,
     return allIncludeDirs
 
 
-def _BuildClangTidyPackageIncludePaths(log: Log, localVariantInfo: LocalVariantInfo,
-                                       virtualVariantEnvironmentCache: VirtualVariantEnvironmentCache, package: Package) -> List[PackageIncludeDir]:
+def _BuildClangTidyPackageIncludePaths(
+    log: Log, localVariantInfo: LocalVariantInfo, virtualVariantEnvironmentCache: VirtualVariantEnvironmentCache, package: Package
+) -> list[PackageIncludeDir]:
     allIncludeDirs = package.ResolvedBuildAllIncludeDirs
     if allIncludeDirs is None:
         raise Exception("Package ResolvedBuildAllIncludeDirs was not resolved")
@@ -228,15 +219,15 @@ def _BuildClangTidyPackageIncludePaths(log: Log, localVariantInfo: LocalVariantI
         if not includeDir.Name.startswith("$("):
             packageIncludeDirName = IOUtil.Join(package.AbsolutePath, includeDir.Name)
         else:
-            packageIncludeDirName = __ResolveVariables(includeDir.Name, variableDict, virtualVariantEnvironmentCache);
+            packageIncludeDirName = __ResolveVariables(includeDir.Name, variableDict, virtualVariantEnvironmentCache)
         packageIncludeDirName = IOUtil.NormalizePath(packageIncludeDirName)
         packageIncludeDir = PackageIncludeDir.PatchName(includeDir, packageIncludeDirName)
         includeDirCommands.append(packageIncludeDir)
     return includeDirCommands
 
-def _BuildClangTidyPackageDefines(log: Log, localVariantInfo: LocalVariantInfo, package: Package) -> List[str]:
 
-    defineCommands = [] # type: List[str]
+def _BuildClangTidyPackageDefines(log: Log, localVariantInfo: LocalVariantInfo, package: Package) -> list[str]:
+    defineCommands: list[str] = []
     for define in package.ResolvedBuildAllDefines:
         defineCommands.append(define.Name)
 
@@ -245,28 +236,31 @@ def _BuildClangTidyPackageDefines(log: Log, localVariantInfo: LocalVariantInfo, 
         defineCommands.append(define2)
     return defineCommands
 
-def _LookupEnvironmentVariables(variables: List[str], virtualVariantEnvironmentCache: VirtualVariantEnvironmentCache) -> List[str]:
+
+def _LookupEnvironmentVariables(variables: list[str], virtualVariantEnvironmentCache: VirtualVariantEnvironmentCache) -> list[str]:
     variableDict = StringVariableDict()
-    result = [] # type: List[str]
+    result: list[str] = []
     for entry in variables:
         updated = __ResolveVariables(entry, variableDict, virtualVariantEnvironmentCache)
         result.append(updated)
     return result
 
+
 def __GetResolvedPathFromAbsPath(package: Package, absFilePath: str) -> ResolvedPath:
     if package.Path is None:
         raise Exception("invalid package")
-    packagePath = package.Path.AbsoluteDirPath + '/'
+    packagePath = package.Path.AbsoluteDirPath + "/"
     if not absFilePath.startswith(packagePath):
-        raise Exception("file '{0}' is not part of the package at path '{1}'".format(absFilePath, packagePath))
-    relativePath = absFilePath[len(packagePath):]
+        raise Exception(f"file '{absFilePath}' is not part of the package at path '{packagePath}'")
+    relativePath = absFilePath[len(packagePath) :]
     return ResolvedPath(relativePath, absFilePath)
 
-def _BuildAllFiles(package: Package, filteredFiles: Optional[List[str]], clangTidyConfiguration: ClangTidyConfiguration) -> List[ResolvedPath]:
+
+def _BuildAllFiles(package: Package, filteredFiles: list[str] | None, clangTidyConfiguration: ClangTidyConfiguration) -> list[ResolvedPath]:
     if package.AbsolutePath is None or package.ResolvedBuildAllIncludeFiles is None or package.ResolvedBuildSourceFiles is None:
         raise Exception("invalid package")
 
-    allFiles = [] # type: List[ResolvedPath]
+    allFiles: list[ResolvedPath] = []
     if filteredFiles is None:
         for fileName in package.ResolvedBuildAllIncludeFiles:
             fullPath = IOUtil.Join(package.AbsolutePath, fileName)
@@ -284,19 +278,22 @@ def _BuildAllFiles(package: Package, filteredFiles: Optional[List[str]], clangTi
                 allFiles.append(__GetResolvedPathFromAbsPath(package, fileName))
     return allFiles
 
-def _AddCmdToEachEntry(cmd: str, entries: List[str]) -> List[str]:
+
+def _AddCmdToEachEntry(cmd: str, entries: list[str]) -> list[str]:
     newList = []
     for entry in entries:
         newList.append(cmd)
         newList.append(entry)
     return newList
 
-class TidyPlatformConfig(object):
-    def __init__(self, log: Log, platformId: str, clangTidyConfiguration: ClangTidyConfiguration,
-                 virtualVariantEnvironmentCache: VirtualVariantEnvironmentCache) -> None:
-        platformCompilerFlags = [] # type: List[str]
-        platformDefineCommands = [] # type: List[str]
-        platformStrictChecks = [] # type: List[str]
+
+class TidyPlatformConfig:
+    def __init__(
+        self, log: Log, platformId: str, clangTidyConfiguration: ClangTidyConfiguration, virtualVariantEnvironmentCache: VirtualVariantEnvironmentCache
+    ) -> None:
+        platformCompilerFlags: list[str] = []
+        platformDefineCommands: list[str] = []
+        platformStrictChecks: list[str] = []
         if platformId in clangTidyConfiguration.PlatformDict:
             clangPlatformConfig = clangTidyConfiguration.PlatformDict[platformId]
             platformCompilerFlags = clangPlatformConfig.Compiler.Flags
@@ -316,11 +313,18 @@ class TidyPlatformConfig(object):
         self.PlatformDefineCommands = platformDefineCommands
         self.PlatformStrictChecks = platformStrictChecks
 
-class TidyPackageConfig(object):
-    def __init__(self, log: Log, package: Package, filteredFiles: Optional[List[str]], clangTidyConfiguration: ClangTidyConfiguration,
-                 localVariantInfo: LocalVariantInfo, virtualVariantEnvironmentCache: VirtualVariantEnvironmentCache) -> None:
 
-        self.AllFiles = _BuildAllFiles(package, filteredFiles, clangTidyConfiguration) # type: List[ResolvedPath]
+class TidyPackageConfig:
+    def __init__(
+        self,
+        log: Log,
+        package: Package,
+        filteredFiles: list[str] | None,
+        clangTidyConfiguration: ClangTidyConfiguration,
+        localVariantInfo: LocalVariantInfo,
+        virtualVariantEnvironmentCache: VirtualVariantEnvironmentCache,
+    ) -> None:
+        self.AllFiles: list[ResolvedPath] = _BuildAllFiles(package, filteredFiles, clangTidyConfiguration)
         self.IncludePaths = _BuildClangTidyPackageIncludePaths(log, localVariantInfo, virtualVariantEnvironmentCache, package)
         self.PackageDefineCommands = _BuildClangTidyPackageDefines(log, localVariantInfo, package)
 
@@ -329,7 +333,7 @@ class TidyPackageConfig(object):
         self.PackageDefineCommands.sort()
 
 
-#def _RunClangTidy(log: Log, toolConfig: ToolConfig, platformId: str,
+# def _RunClangTidy(log: Log, toolConfig: ToolConfig, platformId: str,
 #                  performClangTidyConfig: PerformClangTidyConfig,
 #                  clangExeInfo: ClangExeInfo,
 #                  package: Package,
@@ -402,7 +406,6 @@ class TidyPackageConfig(object):
 #    FileFinder.FindClosestFileInRoot(log, toolConfig, currentWorkingDirectory, performClangTidyConfig.ClangTidyConfiguration.CustomTidyFile)
 
 
-
 #    try:
 #        if log.Verbosity >= 4:
 #            log.LogPrint("Running command '{0}' in cwd: {1}".format(buildCommand, currentWorkingDirectory))
@@ -414,46 +417,46 @@ class TidyPackageConfig(object):
 #        log.DoPrintWarning("The command '{0}' failed with 'file not found'. It was run with CWD: '{1}'".format(" ".join(buildCommand), currentWorkingDirectory))
 #        raise
 
-class PackageOutputFolder(object):
+
+class PackageOutputFolder:
     def __init__(self, package: Package, outputFolder: str) -> None:
         self.Package = package
         self.OutputFolder = outputFolder
 
 
-class LocalTidyHelper(object):
-
+class LocalTidyHelper:
     @staticmethod
-    def HandleChecks(log: Log, performClangTidyConfig: PerformClangTidyConfig, tidyPlatformConfig: TidyPlatformConfig) -> Tuple[bool, Optional[str]]:
+    def HandleChecks(log: Log, performClangTidyConfig: PerformClangTidyConfig, tidyPlatformConfig: TidyPlatformConfig) -> tuple[bool, str | None]:
         usingCheckCommand = False
-        customChecks = None # type: Optional[str]
+        customChecks: str | None = None
         if len(performClangTidyConfig.OverrideChecks) > 0:
             customChecks = ",".join(performClangTidyConfig.OverrideChecks)
-            log.LogPrintVerbose(2, "Overriding checks checks '{0}'".format(customChecks))
+            log.LogPrintVerbose(2, f"Overriding checks checks '{customChecks}'")
             if performClangTidyConfig.Profile == ClangTidyProfile.Strict:
                 log.DoPrintWarning("Ignoring strict checks because 'override' is enabled")
             usingCheckCommand = True
         elif performClangTidyConfig.Profile == ClangTidyProfile.Strict and len(tidyPlatformConfig.PlatformStrictChecks) > 0:
             customChecks = ",".join(tidyPlatformConfig.PlatformStrictChecks)
-            log.LogPrintVerbose(2, "Adding strict checks '{0}'".format(customChecks))
+            log.LogPrintVerbose(2, f"Adding strict checks '{customChecks}'")
             usingCheckCommand = True
 
         if len(performClangTidyConfig.AdditionalUserArguments) > 0:
-            if usingCheckCommand and '--checks' in performClangTidyConfig.AdditionalUserArguments:
+            if usingCheckCommand and "--checks" in performClangTidyConfig.AdditionalUserArguments:
                 log.DoPrintWarning("another command is adding '--checks' so it could conflict with the user supplied argument")
         return (usingCheckCommand, customChecks)
 
 
-class ExtractedPackageConfiguration(object):
-    def __init__(self, defines: List[str], includes: List[PackageIncludeDir], systemIncludes: List[PackageIncludeDir]) -> None:
+class ExtractedPackageConfiguration:
+    def __init__(self, defines: list[str], includes: list[PackageIncludeDir], systemIncludes: list[PackageIncludeDir]) -> None:
         super().__init__()
         self.Defines = defines
         self.Includes = includes
         self.SystemIncludes = systemIncludes
 
 
-class CMakeHelper(object):
-    #@staticmethod
-    #def ProcessAllPackages(log: Log, toolConfig: ToolConfig, platformId: str, sdkConfigTemplatePath: str, pythonScriptRoot: str,
+class CMakeHelper:
+    # @staticmethod
+    # def ProcessAllPackages(log: Log, toolConfig: ToolConfig, platformId: str, sdkConfigTemplatePath: str, pythonScriptRoot: str,
     #                       performClangTidyConfig: PerformClangTidyConfig,
     #                       clangExeInfo: ClangExeInfo, clangCppExeInfo: ClangExeInfo, clangTidyExeInfo: ClangExeInfo, clangTidyApplyReplacementsExeInfo: ClangExeInfo,
     #                       ninjaExeInfo: ClangExeInfo, topLevelPackage: Package, packageList: List[Package], cmakeConfig: GeneratorCMakeConfig,
@@ -503,7 +506,6 @@ class CMakeHelper(object):
     #    log.LogPrint("Determining build configurations for each package")
     #    PerformClangTidyHelper2.__DeterminePackageBuildConfiguration(log, topLevelPackage.ResolvedBuildOrder, compilerCommands, localVariantInfo)
 
-
     #    totalProcessedCount, outputFolders = PerformClangTidyHelper2.__GenerateAndRunClangTidy(log, ninjaOutputFile, clangTidyFixOutputFolder,
     #                                                                                           toolVersionOutputFile, toolConfig, platformId,
     #                                                                                           sdkConfigTemplatePath, performClangTidyConfig,
@@ -511,7 +513,6 @@ class CMakeHelper(object):
     #                                                                                           topLevelPackage.ResolvedBuildOrder, sortedPackageList,
     #                                                                                           customPackageFileFilter, localVariantInfo,
     #                                                                                           virtualVariantEnvironmentCache)
-
 
     #    # RunHelper.RunNinja(log, ninjaExeInfo, ninjaOutputFile, currentWorkingDirectory, numBuildThreads, logOutput)
 
@@ -522,77 +523,112 @@ class CMakeHelper(object):
     #    return totalProcessedCount
 
     @staticmethod
-    def ExtractBuildConfiguration(log: Log, toolConfig: ToolConfig, userSetVariables: UserSetVariables, platformId: str, sdkConfigTemplatePath: str,
-                                  performClangTidyConfig: PerformClangTidyConfig, clangExeInfo: ClangExeInfo, clangCppExeInfo: ClangExeInfo,
-                                  clangTidyExeInfo: ClangExeInfo, allPackages: List[Package], cmakeConfig: GeneratorCMakeConfig,
-                                  localVariantInfo: LocalVariantInfo, numBuildThreads: int,
-                                  tidyBuildGeneratorConfig: TidyBuildGeneratorConfig, virtualVariantEnvironmentCache: VirtualVariantEnvironmentCache,
-                                  clangTidyFixOutputFolder: str) -> Dict[str, ExtractedPackageConfiguration]:
+    def ExtractBuildConfiguration(
+        log: Log,
+        toolConfig: ToolConfig,
+        userSetVariables: UserSetVariables,
+        platformId: str,
+        sdkConfigTemplatePath: str,
+        performClangTidyConfig: PerformClangTidyConfig,
+        clangExeInfo: ClangExeInfo,
+        clangCppExeInfo: ClangExeInfo,
+        clangTidyExeInfo: ClangExeInfo,
+        allPackages: list[Package],
+        cmakeConfig: GeneratorCMakeConfig,
+        localVariantInfo: LocalVariantInfo,
+        numBuildThreads: int,
+        tidyBuildGeneratorConfig: TidyBuildGeneratorConfig,
+        virtualVariantEnvironmentCache: VirtualVariantEnvironmentCache,
+        clangTidyFixOutputFolder: str,
+    ) -> dict[str, ExtractedPackageConfiguration]:
         log.LogPrint("Generating a ninja + clang cmake configuration and extracting build commands")
         # Generate the file dependencies (since clang tidy is unable to do that, we use the clang c++ compiler for it)
-        compilerCommands = CMakeHelper.__GenerateAndRunCMakeFile(log, toolConfig, userSetVariables, platformId, sdkConfigTemplatePath,
-                                                                 clangTidyFixOutputFolder, allPackages,
-                                                                 cmakeConfig, performClangTidyConfig, clangExeInfo, clangCppExeInfo,
-                                                                 clangTidyExeInfo, localVariantInfo, numBuildThreads,
-                                                                 tidyBuildGeneratorConfig, virtualVariantEnvironmentCache)
+        compilerCommands = CMakeHelper.__GenerateAndRunCMakeFile(
+            log,
+            toolConfig,
+            userSetVariables,
+            platformId,
+            sdkConfigTemplatePath,
+            clangTidyFixOutputFolder,
+            allPackages,
+            cmakeConfig,
+            performClangTidyConfig,
+            clangExeInfo,
+            clangCppExeInfo,
+            clangTidyExeInfo,
+            localVariantInfo,
+            numBuildThreads,
+            tidyBuildGeneratorConfig,
+            virtualVariantEnvironmentCache,
+        )
 
         log.LogPrint("Determining build configurations for each package")
         return CMakeHelper.__DeterminePackageBuildConfiguration(log, allPackages, compilerCommands, localVariantInfo)
 
-
     @staticmethod
-    def __DeterminePackageBuildConfiguration(log: Log, allPackages: List[Package], compilerCommands: List[CMakeCompileCommandsRecord],
-                                             localVariantInfo: LocalVariantInfo) -> Dict[str, ExtractedPackageConfiguration]:
+    def __DeterminePackageBuildConfiguration(
+        log: Log, allPackages: list[Package], compilerCommands: list[CMakeCompileCommandsRecord], localVariantInfo: LocalVariantInfo
+    ) -> dict[str, ExtractedPackageConfiguration]:
         # During cmake generation in tidy mode we add a define: FSLPACKAGENAME__PACKAGE_NAME which is used to identify the package the compile command belongs to
         # This is used here to group commands based on package names instead
-        packageToCommandsDict = {}  # type: Dict[str, Dict[str, CMakeCompileCommandsRecord]]
+        packageToCommandsDict: dict[str, dict[str, CMakeCompileCommandsRecord]] = {}
         for command in compilerCommands:
             if command.PackageName not in packageToCommandsDict:
                 packageToCommandsDict[command.PackageName] = {}
             fileToCommandDict = packageToCommandsDict[command.PackageName]
             if command.File in fileToCommandDict:
-                raise Exception("Duplicated configuration for file '{0}' in package '{1}'".format(command.File, command.PackageName))
+                raise Exception(f"Duplicated configuration for file '{command.File}' in package '{command.PackageName}'")
             fileToCommandDict[command.File] = command
 
         # foreach package we lookup the compiler flags for all its source files,
         # we then merge this information to generate the package configuration
         emptyVariableReport = GeneratorVariableReport()
-        packageConfigurationDict = {} # type: Dict[str, ExtractedPackageConfiguration]
+        packageConfigurationDict: dict[str, ExtractedPackageConfiguration] = {}
         for package in allPackages:
             if not package.IsVirtual:
                 if package.AbsolutePath is None:
                     raise Exception("unsupported path")
 
                 # A dict of all the package defines, the value is False if the define belongs to the package definition, true if its a new one from the compiler commands
-                uniquePackagesDefines = {}  # type: Dict[str, bool]
+                uniquePackagesDefines: dict[str, bool] = {}
                 for define in package.ResolvedBuildAllDefines:
                     if define.Name not in uniquePackagesDefines:
                         uniquePackagesDefines[define.Name] = False
 
                 # A dict of all the package includes, the value is negative if the define belongs to the package definition, positive to to indicate its from the compiler commands
                 # positive values can also be used to sorting the list so the include order can be restored!
-                uniquePackageIncludes = {}  # type: Dict[str, UniqueIncludeRecord]
+                uniquePackageIncludes: dict[str, UniqueIncludeRecord] = {}
                 if package.ResolvedBuildAllIncludeDirs is not None:
-                    variableReport = localVariantInfo.GeneratorReportDict[package].VariableReport if package in localVariantInfo.GeneratorReportDict else emptyVariableReport
+                    variableReport = (
+                        localVariantInfo.GeneratorReportDict[package].VariableReport if package in localVariantInfo.GeneratorReportDict else emptyVariableReport
+                    )
                     if package.AbsoluteSourcePath is not None:
-                        uniquePackageIncludes[package.AbsoluteSourcePath] = UniqueIncludeRecord(PackageIncludeDir(package.AbsoluteSourcePath, IncludePriority.After), -1)
+                        uniquePackageIncludes[package.AbsoluteSourcePath] = UniqueIncludeRecord(
+                            PackageIncludeDir(package.AbsoluteSourcePath, IncludePriority.After), -1
+                        )
                     for includeDir in package.ResolvedBuildAllIncludeDirs:
                         # expand and normalize the include paths
-                        includeDirName = IOUtil.NormalizePath(ReportVariableFormatter.Format2(includeDir.Name, variableReport, localVariantInfo.ResolvedVariantSettingsDict))
+                        includeDirName = IOUtil.NormalizePath(
+                            ReportVariableFormatter.Format2(includeDir.Name, variableReport, localVariantInfo.ResolvedVariantSettingsDict)
+                        )
                         if not IOUtil.IsAbsolutePath(includeDirName):
                             includeDirName = IOUtil.Join(package.AbsolutePath, includeDirName)
                         if includeDirName not in uniquePackageIncludes:
                             uniquePackageIncludes[includeDirName] = UniqueIncludeRecord(includeDir, -1)
 
-
-                if (package.NameInfo.FullName.Value in packageToCommandsDict and package.ResolvedBuildSourceFiles is not None and len(package.ResolvedBuildSourceFiles) > 0 and package.AbsolutePath is not None):
+                if (
+                    package.NameInfo.FullName.Value in packageToCommandsDict
+                    and package.ResolvedBuildSourceFiles is not None
+                    and len(package.ResolvedBuildSourceFiles) > 0
+                    and package.AbsolutePath is not None
+                ):
                     packagePath = package.AbsolutePath
                     fileToCommandDict = packageToCommandsDict[package.NameInfo.FullName.Value]
                     for sourceFile in package.ResolvedBuildSourceFiles:
                         absPathSourceFile = IOUtil.Join(packagePath, sourceFile)
                         if absPathSourceFile not in fileToCommandDict:
                             if log.Verbosity >= 4:
-                                log.LogPrint("No configuration found for: '{0}'".format(absPathSourceFile))
+                                log.LogPrint(f"No configuration found for: '{absPathSourceFile}'")
                         else:
                             command = fileToCommandDict[absPathSourceFile]
                             # Merge defines
@@ -613,7 +649,7 @@ class CMakeHelper(object):
                 newPackageDefines = [defineName for defineName, isNew in uniquePackagesDefines.items() if isNew]
                 newIncludes = []
                 newSystemIncludes = []
-                for newInclude, includeRecord in uniquePackageIncludes.items():
+                for _newInclude, includeRecord in uniquePackageIncludes.items():
                     if includeRecord.Index >= 0:
                         if includeRecord.Index <= MagicValues.SystemIncludeBaseIndex:
                             newIncludes.append(includeRecord.IncludeDir)
@@ -624,18 +660,27 @@ class CMakeHelper(object):
                 packageConfigurationDict[package.NameInfo.FullName.Value] = ExtractedPackageConfiguration(newPackageDefines, newIncludes, newSystemIncludes)
         return packageConfigurationDict
 
-
     @staticmethod
-    def __GenerateAndRunCMakeFile(log: Log, toolConfig: ToolConfig, userSetVariables: UserSetVariables, platformId: str, sdkConfigTemplatePath: str,
-                                  clangTidyFixOutputFolder: str, allPackageList: List[Package], cmakeConfig: GeneratorCMakeConfig,
-                                  performClangTidyConfig: PerformClangTidyConfig,
-                                  clangExeInfo: ClangExeInfo, clangCppExeInfo: ClangExeInfo, clangTidyExeInfo: ClangExeInfo,
-                                  localVariantInfo: LocalVariantInfo, numBuildThreads: int,
-                                  tidyBuildGeneratorConfig: TidyBuildGeneratorConfig,
-                                  virtualVariantEnvironmentCache: VirtualVariantEnvironmentCache) -> List[CMakeCompileCommandsRecord]:
+    def __GenerateAndRunCMakeFile(
+        log: Log,
+        toolConfig: ToolConfig,
+        userSetVariables: UserSetVariables,
+        platformId: str,
+        sdkConfigTemplatePath: str,
+        clangTidyFixOutputFolder: str,
+        allPackageList: list[Package],
+        cmakeConfig: GeneratorCMakeConfig,
+        performClangTidyConfig: PerformClangTidyConfig,
+        clangExeInfo: ClangExeInfo,
+        clangCppExeInfo: ClangExeInfo,
+        clangTidyExeInfo: ClangExeInfo,
+        localVariantInfo: LocalVariantInfo,
+        numBuildThreads: int,
+        tidyBuildGeneratorConfig: TidyBuildGeneratorConfig,
+        virtualVariantEnvironmentCache: VirtualVariantEnvironmentCache,
+    ) -> list[CMakeCompileCommandsRecord]:
         log.PushIndent()
         try:
-
             workFolder = "1"
             toolchainFilename = "clang-toolchain.cmake"
 
@@ -645,7 +690,7 @@ class CMakeHelper(object):
 
             forceConfigure = CMakeHelper.__GenerateCMakeClangToolchainFile(clangCompilerToolchain, clangExeInfo, clangCppExeInfo, clangTidyExeInfo)
 
-            cmakeToolchainArgument = "-DCMAKE_TOOLCHAIN_FILE={0}".format(clangCompilerToolchain)
+            cmakeToolchainArgument = f"-DCMAKE_TOOLCHAIN_FILE={clangCompilerToolchain}"
             cmakeExportCompileCommands = "-DCMAKE_EXPORT_COMPILE_COMMANDS=ON"
 
             cmakeConfigArguments = [cmakeToolchainArgument, cmakeExportCompileCommands]
@@ -655,19 +700,45 @@ class CMakeHelper(object):
             generatorPlugin.SYS_SetCMakeConfig(cmakeConfig)
 
             variableContext = VariableContextHelper.Create(toolConfig, userSetVariables)
-            generatorContext = GeneratorContext(log, tidyBuildGeneratorConfig.ErrorHelpManager, tidyBuildGeneratorConfig.RecipeFilterManager,
-                                                toolConfig.Experimental, generatorPlugin, variableContext)
+            generatorContext = GeneratorContext(
+                log,
+                tidyBuildGeneratorConfig.ErrorHelpManager,
+                tidyBuildGeneratorConfig.RecipeFilterManager,
+                toolConfig.Experimental,
+                generatorPlugin,
+                variableContext,
+            )
 
             resolvedExternalVariantConstraints = ExternalVariantConstraints.ToExternalVariantConstraints(localVariantInfo.ResolvedVariantSettingsDict)
             config = Config(log, toolConfig, PluginSharedValues.TYPE_DEFAULT, resolvedExternalVariantConstraints, False)
             generatorPlugin.Generate(GenerateContext(generatorContext, config, allPackageList, resolvedExternalVariantConstraints))
 
-            Builder.BuildPackages(log, cmakeBuildDir, tidyBuildGeneratorConfig.ConfigSDKPath, sdkConfigTemplatePath, False, False,
-                                  toolConfig, generatorContext, allPackageList, allPackageList, resolvedExternalVariantConstraints,
-                                  [], None, generatorPlugin, False, False, numBuildThreads, CommandType.ConfigIfChanged, [], False, forceConfigure=forceConfigure)
+            Builder.BuildPackages(
+                log,
+                cmakeBuildDir,
+                tidyBuildGeneratorConfig.ConfigSDKPath,
+                sdkConfigTemplatePath,
+                False,
+                False,
+                toolConfig,
+                generatorContext,
+                allPackageList,
+                allPackageList,
+                resolvedExternalVariantConstraints,
+                [],
+                None,
+                generatorPlugin,
+                False,
+                False,
+                numBuildThreads,
+                CommandType.ConfigIfChanged,
+                [],
+                False,
+                forceConfigure=forceConfigure,
+            )
 
-            cmakeCompileCommandsFile = IOUtil.Join(cmakeBuildDir, 'compile_commands.json')
-            log.LogPrintVerbose(2, "- Parsing cmake '{0}' file to extract build configuration".format(cmakeCompileCommandsFile))
+            cmakeCompileCommandsFile = IOUtil.Join(cmakeBuildDir, "compile_commands.json")
+            log.LogPrintVerbose(2, f"- Parsing cmake '{cmakeCompileCommandsFile}' file to extract build configuration")
 
             basicCommands = CMakeCompileCommandsJson.Load(log, cmakeCompileCommandsFile)
             log.LogPrintVerbose(2, "- Extracting compiler configuration for each source file")
@@ -675,9 +746,10 @@ class CMakeHelper(object):
         finally:
             log.PopIndent()
 
-
     @staticmethod
-    def __PatchCMakeConfig(log: Log, userSetVariables: UserSetVariables, cmakeConfig: GeneratorCMakeConfig, newBuildDir: str, cmakeConfigExtraArguments: List[str]) -> GeneratorCMakeConfig:
+    def __PatchCMakeConfig(
+        log: Log, userSetVariables: UserSetVariables, cmakeConfig: GeneratorCMakeConfig, newBuildDir: str, cmakeConfigExtraArguments: list[str]
+    ) -> GeneratorCMakeConfig:
         if cmakeConfig.GeneratorName != "Ninja":
             raise Exception("CMake generator must be set to Ninja")
 
@@ -694,13 +766,26 @@ class CMakeHelper(object):
         additionalGlobalConfigArguments = cmakeConfig.CMakeConfigUserGlobalArguments
         additionalAppConfigArguments = cmakeConfig.CMakeConfigUserAppArguments + cmakeConfigExtraArguments
         allowFindPackage = cmakeConfig.AllowFindPackage
-        return GeneratorCMakeConfig(log, toolVersion, platformName, buildVariantConfig, userSetVariables, buildDir, buildDirSetByUser, buildDirId, checkDir, generatorName,
-                                    installPrefix, cmakeVersion, additionalGlobalConfigArguments, additionalAppConfigArguments, allowFindPackage)
-
+        return GeneratorCMakeConfig(
+            log,
+            toolVersion,
+            platformName,
+            buildVariantConfig,
+            userSetVariables,
+            buildDir,
+            buildDirSetByUser,
+            buildDirId,
+            checkDir,
+            generatorName,
+            installPrefix,
+            cmakeVersion,
+            additionalGlobalConfigArguments,
+            additionalAppConfigArguments,
+            allowFindPackage,
+        )
 
     @staticmethod
-    def __GenerateCMakeClangToolchainFile(filename: str, clangExeInfo: ClangExeInfo, clangCppExeInfo: ClangExeInfo,
-                                          clangTidyExeInfo: ClangExeInfo) -> bool:
+    def __GenerateCMakeClangToolchainFile(filename: str, clangExeInfo: ClangExeInfo, clangCppExeInfo: ClangExeInfo, clangTidyExeInfo: ClangExeInfo) -> bool:
         """
         Returns true if the toolchain file was modified by this
         """
@@ -709,13 +794,13 @@ class CMakeHelper(object):
         clangC = IOUtil.GetFileName(clangExeInfo.Command)
         clangCpp = IOUtil.GetFileName(clangCppExeInfo.Command)
         content = []
-        content.append('set(CMAKE_C_COMPILER {0})'.format(clangC))
-        content.append('set(CMAKE_CXX_COMPILER {0})'.format(clangCpp))
+        content.append(f"set(CMAKE_C_COMPILER {clangC})")
+        content.append(f"set(CMAKE_CXX_COMPILER {clangCpp})")
         content.append("")
         return IOUtil.WriteFileIfChanged(filename, "\n".join(content))
 
 
-class PerformClangTidyHelper(object):
+class PerformClangTidyHelper:
     RULE_COMPILE = "compile"
     RULE_TIDY = "tidy"
     VAR_PACKAGE_DEFINES = "PACKAGE_DEFINES"
@@ -730,14 +815,28 @@ class PerformClangTidyHelper(object):
     VAR_CUSTOM_CHECKS = "CUSTOM_CHECKS"
 
     @staticmethod
-    def ProcessAllPackages(log: Log, toolConfig: ToolConfig, userSetVariables: UserSetVariables, platformId: str, sdkConfigTemplatePath: str, pythonScriptRoot: str,
-                           performClangTidyConfig: PerformClangTidyConfig, clangExeInfo: ClangExeInfo, clangCppExeInfo: ClangExeInfo,
-                           clangTidyExeInfo: ClangExeInfo, clangTidyApplyReplacementsExeInfo: ClangExeInfo,
-                           ninjaExeInfo: ClangExeInfo, allPackageList: List[Package], packageList: List[Package],
-                           cmakeConfig: GeneratorCMakeConfig, customPackageFileFilter: Optional[CustomPackageFileFilter],
-                           localVariantInfo: LocalVariantInfo, numBuildThreads: int,
-                           tidyBuildGeneratorConfig: TidyBuildGeneratorConfig, useLegacyTidyMethod: bool) -> int:
-
+    def ProcessAllPackages(
+        log: Log,
+        toolConfig: ToolConfig,
+        userSetVariables: UserSetVariables,
+        platformId: str,
+        sdkConfigTemplatePath: str,
+        pythonScriptRoot: str,
+        performClangTidyConfig: PerformClangTidyConfig,
+        clangExeInfo: ClangExeInfo,
+        clangCppExeInfo: ClangExeInfo,
+        clangTidyExeInfo: ClangExeInfo,
+        clangTidyApplyReplacementsExeInfo: ClangExeInfo,
+        ninjaExeInfo: ClangExeInfo,
+        allPackageList: list[Package],
+        packageList: list[Package],
+        cmakeConfig: GeneratorCMakeConfig,
+        customPackageFileFilter: CustomPackageFileFilter | None,
+        localVariantInfo: LocalVariantInfo,
+        numBuildThreads: int,
+        tidyBuildGeneratorConfig: TidyBuildGeneratorConfig,
+        useLegacyTidyMethod: bool,
+    ) -> int:
         virtualVariantEnvironmentCache = VirtualVariantEnvironmentCache(log, pythonScriptRoot, performClangTidyConfig.AllowDynamicVariantCache)
 
         logOutput = False
@@ -750,10 +849,14 @@ class PerformClangTidyHelper(object):
 
         # default to different folders depending on the options set
         tidyFolder = "t" if performClangTidyConfig.Profile == ClangTidyProfile.Strict else "tF"
-        if len(performClangTidyConfig.OverrideChecks) > 0 or len(performClangTidyConfig.PostfixArguments) > 0 or len(performClangTidyConfig.AdditionalUserArguments) > 0:
+        if (
+            len(performClangTidyConfig.OverrideChecks) > 0
+            or len(performClangTidyConfig.PostfixArguments) > 0
+            or len(performClangTidyConfig.AdditionalUserArguments) > 0
+        ):
             tidyFolder = "tC"
         if not useLegacyTidyMethod:
-            tidyFolder = "c{0}".format(tidyFolder.capitalize())
+            tidyFolder = f"c{tidyFolder.capitalize()}"
 
         clangTidyFixOutputFolder = IOUtil.Join(currentWorkingDirectory, tidyFolder)
         currentWorkingDirectory = clangTidyFixOutputFolder
@@ -761,7 +864,7 @@ class PerformClangTidyHelper(object):
         toolVersionOutputFile = IOUtil.Join(clangTidyFixOutputFolder, "ToolVersions.txt")
         IOUtil.SafeMakeDirs(currentWorkingDirectory)
 
-        log.LogPrint("Using path: '{0}'".format(currentWorkingDirectory))
+        log.LogPrint(f"Using path: '{currentWorkingDirectory}'")
 
         # since clang-apply-replacements doesnt 'remove' the applied fixes we need to delete the yaml files :(
         useWorkAround = True
@@ -773,91 +876,127 @@ class PerformClangTidyHelper(object):
         PerformClangTidyHelper.WriteToolVersionFile(log, toolVersionOutputFile, clangExeInfo, clangTidyExeInfo, ninjaExeInfo)
 
         if not useLegacyTidyMethod:
-            buildConfigDict = CMakeHelper.ExtractBuildConfiguration(log, toolConfig, userSetVariables, platformId, sdkConfigTemplatePath, performClangTidyConfig, clangExeInfo,
-                                                                    clangCppExeInfo, clangTidyExeInfo, allPackageList, cmakeConfig, localVariantInfo, numBuildThreads,
-                                                                    tidyBuildGeneratorConfig, virtualVariantEnvironmentCache, clangTidyFixOutputFolder)
+            buildConfigDict = CMakeHelper.ExtractBuildConfiguration(
+                log,
+                toolConfig,
+                userSetVariables,
+                platformId,
+                sdkConfigTemplatePath,
+                performClangTidyConfig,
+                clangExeInfo,
+                clangCppExeInfo,
+                clangTidyExeInfo,
+                allPackageList,
+                cmakeConfig,
+                localVariantInfo,
+                numBuildThreads,
+                tidyBuildGeneratorConfig,
+                virtualVariantEnvironmentCache,
+                clangTidyFixOutputFolder,
+            )
         else:
             buildConfigDict = {}
 
-
         log.LogPrint("Generating ninja tidy file.")
-        totalProcessedCount, outputFolders = PerformClangTidyHelper.GenerateNinjaTidyFile(log, ninjaOutputFile, clangTidyFixOutputFolder,
-                                                                                          toolVersionOutputFile, toolConfig, platformId,
-                                                                                          performClangTidyConfig, clangExeInfo, clangTidyExeInfo,
-                                                                                          sortedPackageList, customPackageFileFilter,
-                                                                                          localVariantInfo, virtualVariantEnvironmentCache,
-                                                                                          buildConfigDict)
+        totalProcessedCount, outputFolders = PerformClangTidyHelper.GenerateNinjaTidyFile(
+            log,
+            ninjaOutputFile,
+            clangTidyFixOutputFolder,
+            toolVersionOutputFile,
+            toolConfig,
+            platformId,
+            performClangTidyConfig,
+            clangExeInfo,
+            clangTidyExeInfo,
+            sortedPackageList,
+            customPackageFileFilter,
+            localVariantInfo,
+            virtualVariantEnvironmentCache,
+            buildConfigDict,
+        )
         log.LogPrint("Executing ninja tidy file.")
 
         RunHelper.RunNinja(log, ninjaExeInfo, ninjaOutputFile, currentWorkingDirectory, numBuildThreads, logOutput)
 
         if performClangTidyConfig.Repair:
-            PerformClangTidyHelper.PerformRepair(log, clangTidyApplyReplacementsExeInfo, currentWorkingDirectory, clangTidyFixOutputFolder,
-                                                 outputFolders, logOutput, useWorkAround)
+            PerformClangTidyHelper.PerformRepair(
+                log, clangTidyApplyReplacementsExeInfo, currentWorkingDirectory, clangTidyFixOutputFolder, outputFolders, logOutput, useWorkAround
+            )
 
         return totalProcessedCount
 
     @staticmethod
-    def PerformRepair(log: Log, clangTidyApplyReplacementsExeInfo: ClangExeInfo, currentWorkingDirectory: str,
-                      clangTidyFixOutputFolder: str, outputFolders: List[PackageOutputFolder], logOutput: bool, useWorkAround: bool) -> None:
+    def PerformRepair(
+        log: Log,
+        clangTidyApplyReplacementsExeInfo: ClangExeInfo,
+        currentWorkingDirectory: str,
+        clangTidyFixOutputFolder: str,
+        outputFolders: list[PackageOutputFolder],
+        logOutput: bool,
+        useWorkAround: bool,
+    ) -> None:
         log.LogPrint("Checking for tidy fixes.")
 
         # Since we delete all yaml files on startup we dont need the more advanced version
-        unusedFixes = [] # type: List[str]
+        unusedFixes: list[str] = []
         if useWorkAround:
             foundFixes = PerformClangTidyHelper.FindFixesSimple(log, clangTidyFixOutputFolder)
         else:
             foundFixes, unusedFixes = PerformClangTidyHelper.FindFixes(log, clangTidyFixOutputFolder, outputFolders)
 
         if len(foundFixes) > 0:
-            log.LogPrint("Applying tidy {0} fixes.".format(len(foundFixes)))
+            log.LogPrint(f"Applying tidy {len(foundFixes)} fixes.")
             if not useWorkAround:
                 # we delete the unused fixes as they might be from a earlier run on a different package set
                 PerformClangTidyHelper.DeleteFixes(log, clangTidyFixOutputFolder, unusedFixes)
-            PerformClangTidyHelper.ApplyFixes(log, clangTidyApplyReplacementsExeInfo, clangTidyFixOutputFolder, foundFixes,
-                                                currentWorkingDirectory, logOutput)
+            PerformClangTidyHelper.ApplyFixes(log, clangTidyApplyReplacementsExeInfo, clangTidyFixOutputFolder, foundFixes, currentWorkingDirectory, logOutput)
             # since clang-apply-replacements doesnt 'remove' the applied fixes we need to delete the yaml files :(
             # but we do that on launch
-            #if useWorkAround:
+            # if useWorkAround:
             #    PerformClangTidyHelper.DeleteFixes(log, clangTidyFixOutputFolder, foundFixes)
         else:
             log.LogPrint("No fixes found")
 
     @staticmethod
-    def WriteToolVersionFile(log: Log, outputFile: str, clangExeInfo: ClangExeInfo, clangTidyExeInfo: ClangExeInfo,
-                             ninjaExeInfo: ClangExeInfo) -> None:
+    def WriteToolVersionFile(log: Log, outputFile: str, clangExeInfo: ClangExeInfo, clangTidyExeInfo: ClangExeInfo, ninjaExeInfo: ClangExeInfo) -> None:
         content = "Tool versions\n"
-        content += "Clang: {0}\n".format(clangExeInfo.Version)
-        content += "ClangTidy: {0}\n".format(clangTidyExeInfo.Version)
-        content += "Ninja: {0}\n".format(ninjaExeInfo.Version)
+        content += f"Clang: {clangExeInfo.Version}\n"
+        content += f"ClangTidy: {clangTidyExeInfo.Version}\n"
+        content += f"Ninja: {ninjaExeInfo.Version}\n"
         IOUtil.WriteFileIfChanged(outputFile, content)
 
     @staticmethod
-    def DeleteFixes(log: Log, clangTidyFixOutputFolder: str, fixFiles: List[str]) -> None:
-        if not clangTidyFixOutputFolder.endswith('/'):
+    def DeleteFixes(log: Log, clangTidyFixOutputFolder: str, fixFiles: list[str]) -> None:
+        if not clangTidyFixOutputFolder.endswith("/"):
             clangTidyFixOutputFolder += "/"
         for fileEntry in fixFiles:
             if fileEntry.startswith(clangTidyFixOutputFolder):
                 if IOUtil.IsFile(fileEntry):
-                    log.LogPrint("Removing file '{0}'".format(fileEntry))
+                    log.LogPrint(f"Removing file '{fileEntry}'")
                     IOUtil.RemoveFile(fileEntry)
             else:
-                log.DoPrintWarning("file '{0}' not at expected location '{1}'".format(fileEntry, clangTidyFixOutputFolder))
+                log.DoPrintWarning(f"file '{fileEntry}' not at expected location '{clangTidyFixOutputFolder}'")
 
             # delete the obj file so we recompile the files with fixes the next time we run this
-            objFilename = "{0}.obj".format(IOUtil.GetFileNameWithoutExtension(fileEntry))
+            objFilename = f"{IOUtil.GetFileNameWithoutExtension(fileEntry)}.obj"
             dirName = IOUtil.GetDirectoryName(fileEntry)
             objFilename = IOUtil.Join(dirName, objFilename)
             if objFilename.startswith(clangTidyFixOutputFolder):
                 if IOUtil.IsFile(objFilename):
-                    log.LogPrint("Removing file '{0}'".format(objFilename))
+                    log.LogPrint(f"Removing file '{objFilename}'")
                     IOUtil.RemoveFile(objFilename)
             else:
-                log.DoPrintWarning("file '{0}' not at expected location '{1}'".format(objFilename, clangTidyFixOutputFolder))
+                log.DoPrintWarning(f"file '{objFilename}' not at expected location '{clangTidyFixOutputFolder}'")
 
     @staticmethod
-    def ApplyFixes(log: Log, clangTidyApplyReplacementsExeInfo: ClangExeInfo, clangTidyFixOutputFolder: str,
-                   fixFiles: List[str], currentWorkingDirectory: str, logOutput: bool) -> None:
+    def ApplyFixes(
+        log: Log,
+        clangTidyApplyReplacementsExeInfo: ClangExeInfo,
+        clangTidyFixOutputFolder: str,
+        fixFiles: list[str],
+        currentWorkingDirectory: str,
+        logOutput: bool,
+    ) -> None:
         # Dump the current warnings
         if log.Verbosity >= 4:
             for fileEntry in fixFiles:
@@ -866,42 +1005,43 @@ class PerformClangTidyHelper(object):
         # Apply the fixes
         PerformClangTidyHelper.RunApplyFixes(log, clangTidyApplyReplacementsExeInfo, clangTidyFixOutputFolder, currentWorkingDirectory, logOutput)
 
-
-
     @staticmethod
-    def RunApplyFixes(log: Log, clangTidyApplyReplacementsExeInfo: ClangExeInfo, clangTidyFixOutputFolder: str, currentWorkingDirectory: str, logOutput: bool) -> None:
+    def RunApplyFixes(
+        log: Log, clangTidyApplyReplacementsExeInfo: ClangExeInfo, clangTidyFixOutputFolder: str, currentWorkingDirectory: str, logOutput: bool
+    ) -> None:
         buildCommand = [clangTidyApplyReplacementsExeInfo.Command, "--format", "-style=file"]
         buildCommand.append(clangTidyFixOutputFolder)
         try:
             if log.Verbosity >= 4:
-                log.LogPrint("Running command '{0}' in cwd: {1}".format(buildCommand, currentWorkingDirectory))
+                log.LogPrint(f"Running command '{buildCommand}' in cwd: {currentWorkingDirectory}")
             result = RunHelper.RunNow(log, buildCommand, currentWorkingDirectory, logOutput)
             if result != 0:
-                log.LogPrintWarning("The command '{0}' failed with '{1}'. It was run with CWD: '{2}'".format(" ".join(buildCommand), result, currentWorkingDirectory))
+                log.LogPrintWarning(
+                    "The command '{}' failed with '{}'. It was run with CWD: '{}'".format(" ".join(buildCommand), result, currentWorkingDirectory)
+                )
                 raise ExitException(result)
         except FileNotFoundError:
-            log.DoPrintWarning("The command '{0}' failed with 'file not found'. It was run with CWD: '{1}'".format(" ".join(buildCommand), currentWorkingDirectory))
+            log.DoPrintWarning(
+                "The command '{}' failed with 'file not found'. It was run with CWD: '{}'".format(" ".join(buildCommand), currentWorkingDirectory)
+            )
             raise
 
     @staticmethod
-    def IsValidPath(currentPath: str, pathSet: Set[str]) -> bool:
-        for entry in pathSet:
-            if currentPath.startswith(entry):
-                return True
-        return False
+    def IsValidPath(currentPath: str, pathSet: set[str]) -> bool:
+        return any(currentPath.startswith(entry) for entry in pathSet)
 
     @staticmethod
-    def FindFixes(log: Log, clangTidyFixOutputFolder: str, outputFolders: List[PackageOutputFolder]) -> Tuple[List[str], List[str]]:
-        outputFolderSet = set()  # type: Set[str]
+    def FindFixes(log: Log, clangTidyFixOutputFolder: str, outputFolders: list[PackageOutputFolder]) -> tuple[list[str], list[str]]:
+        outputFolderSet: set[str] = set()
         for entry in outputFolders:
             if entry.Package.BaseIncludePath is not None:
-                outputFolderSet.add(IOUtil.Join(entry.OutputFolder, entry.Package.BaseIncludePath.Name + '/'))
+                outputFolderSet.add(IOUtil.Join(entry.OutputFolder, entry.Package.BaseIncludePath.Name + "/"))
             if entry.Package.BaseSourcePath is not None:
-                outputFolderSet.add(IOUtil.Join(entry.OutputFolder, entry.Package.BaseSourcePath + '/'))
+                outputFolderSet.add(IOUtil.Join(entry.OutputFolder, entry.Package.BaseSourcePath + "/"))
 
         foundYamlFiles = IOUtil.GetFilePaths(clangTidyFixOutputFolder, ".yaml")
-        yamlFiles = [] # type: List[str]
-        unusedYamlFiles = [] # type: List[str]
+        yamlFiles: list[str] = []
+        unusedYamlFiles: list[str] = []
         for filename in foundYamlFiles:
             if IOUtil.IsFile(filename) and IOUtil.FileLength(filename) > 0:
                 dirName = IOUtil.GetDirectoryName(filename)
@@ -912,24 +1052,31 @@ class PerformClangTidyHelper(object):
         return (yamlFiles, unusedYamlFiles)
 
     @staticmethod
-    def FindFixesSimple(log: Log, clangTidyFixOutputFolder: str) -> List[str]:
+    def FindFixesSimple(log: Log, clangTidyFixOutputFolder: str) -> list[str]:
         foundYamlFiles = IOUtil.GetFilePaths(clangTidyFixOutputFolder, ".yaml")
-        yamlFiles = [] # type: List[str]
-        unusedYamlFiles = [] # type: List[str]
+        yamlFiles: list[str] = []
         for filename in foundYamlFiles:
             if IOUtil.IsFile(filename) and IOUtil.FileLength(filename) > 0:
                 yamlFiles.append(filename)
         return yamlFiles
 
-
     @staticmethod
-    def GenerateNinjaTidyFile(log: Log, ninjaOutputFile: str, clangTidyFixOutputFolder: str, toolVersionOutputFile: str,
-                              toolConfig: ToolConfig, platformId: str, performClangTidyConfig: PerformClangTidyConfig,
-                              clangExeInfo: ClangExeInfo, clangTidyExeInfo: ClangExeInfo, packageList: List[Package],
-                              customPackageFileFilter: Optional[CustomPackageFileFilter],
-                              localVariantInfo: LocalVariantInfo,
-                              virtualVariantEnvironmentCache: VirtualVariantEnvironmentCache,
-                              packageBuildConfigDict: Dict[str, ExtractedPackageConfiguration]) -> Tuple[int, List[PackageOutputFolder]]:
+    def GenerateNinjaTidyFile(
+        log: Log,
+        ninjaOutputFile: str,
+        clangTidyFixOutputFolder: str,
+        toolVersionOutputFile: str,
+        toolConfig: ToolConfig,
+        platformId: str,
+        performClangTidyConfig: PerformClangTidyConfig,
+        clangExeInfo: ClangExeInfo,
+        clangTidyExeInfo: ClangExeInfo,
+        packageList: list[Package],
+        customPackageFileFilter: CustomPackageFileFilter | None,
+        localVariantInfo: LocalVariantInfo,
+        virtualVariantEnvironmentCache: VirtualVariantEnvironmentCache,
+        packageBuildConfigDict: dict[str, ExtractedPackageConfiguration],
+    ) -> tuple[int, list[PackageOutputFolder]]:
         totalProcessedCount = 0
 
         tidyPlatformConfig = TidyPlatformConfig(log, platformId, performClangTidyConfig.ClangTidyConfiguration, virtualVariantEnvironmentCache)
@@ -937,7 +1084,7 @@ class PerformClangTidyHelper(object):
         usingCheckCommand, customChecks = LocalTidyHelper.HandleChecks(log, performClangTidyConfig, tidyPlatformConfig)
 
         if len(performClangTidyConfig.PostfixArguments) > 0:
-            log.LogPrintVerbose(2, "Adding user supplied arguments after '--' {0}".format(performClangTidyConfig.PostfixArguments))
+            log.LogPrintVerbose(2, f"Adding user supplied arguments after '--' {performClangTidyConfig.PostfixArguments}")
 
         availablePackageDict = {}  # Dict[str,Package]
         for package in packageList:
@@ -950,7 +1097,7 @@ class PerformClangTidyHelper(object):
 
             writer = Writer(ninjaFile, 149)
 
-            emptyStringList = [] # type: List[str]
+            emptyStringList: list[str] = []
             writer.variable(key=PerformClangTidyHelper.VAR_FLAGS, value=tidyPlatformConfig.PlatformCompilerFlags)
             writer.variable(key=PerformClangTidyHelper.VAR_PLATFORM_DEFINES, value=_AddCmdToEachEntry("-D", tidyPlatformConfig.PlatformDefineCommands))
             writer.variable(key=PerformClangTidyHelper.VAR_USERARGS_TIDY, value=performClangTidyConfig.AdditionalUserArguments)
@@ -962,51 +1109,57 @@ class PerformClangTidyHelper(object):
             writer.variable(key=PerformClangTidyHelper.VAR_YAML_FILE, value=emptyStringList)
             writer.variable(key=PerformClangTidyHelper.VAR_CUSTOM_CHECKS, value=customChecks)
 
-            compilerArgumentsClang = "${0} ${1} ${2} ${3} ${4} ${5}".format(PerformClangTidyHelper.VAR_FLAGS,
-                                                                            PerformClangTidyHelper.VAR_PLATFORM_DEFINES,
-                                                                            PerformClangTidyHelper.VAR_INCLUDES,
-                                                                            PerformClangTidyHelper.VAR_SYSTEM_INCLUDES,
-                                                                            PerformClangTidyHelper.VAR_PACKAGE_DEFINES,
-                                                                            PerformClangTidyHelper.VAR_POSTFIX_ARGS_CLANG)
-            compilerUserArgumentsTidy = "${0}".format(PerformClangTidyHelper.VAR_USERARGS_TIDY)
-            compilerArgumentsTidy = "${0} ${1} ${2} ${3} ${4} ${5}".format(PerformClangTidyHelper.VAR_FLAGS,
-                                                                           PerformClangTidyHelper.VAR_PLATFORM_DEFINES,
-                                                                           PerformClangTidyHelper.VAR_INCLUDES,
-                                                                           PerformClangTidyHelper.VAR_SYSTEM_INCLUDES,
-                                                                           PerformClangTidyHelper.VAR_PACKAGE_DEFINES,
-                                                                           PerformClangTidyHelper.VAR_POSTFIX_ARGS_TIDY)
+            compilerArgumentsClang = f"${PerformClangTidyHelper.VAR_FLAGS} ${PerformClangTidyHelper.VAR_PLATFORM_DEFINES} ${PerformClangTidyHelper.VAR_INCLUDES} ${PerformClangTidyHelper.VAR_SYSTEM_INCLUDES} ${PerformClangTidyHelper.VAR_PACKAGE_DEFINES} ${PerformClangTidyHelper.VAR_POSTFIX_ARGS_CLANG}"
+            compilerUserArgumentsTidy = f"${PerformClangTidyHelper.VAR_USERARGS_TIDY}"
+            compilerArgumentsTidy = f"${PerformClangTidyHelper.VAR_FLAGS} ${PerformClangTidyHelper.VAR_PLATFORM_DEFINES} ${PerformClangTidyHelper.VAR_INCLUDES} ${PerformClangTidyHelper.VAR_SYSTEM_INCLUDES} ${PerformClangTidyHelper.VAR_PACKAGE_DEFINES} ${PerformClangTidyHelper.VAR_POSTFIX_ARGS_TIDY}"
 
-            writer.rule(name=PerformClangTidyHelper.RULE_COMPILE,
-                        depfile="$out.d",
-                        command="{0} -c -x c++ $in -o $out -MD -MF $out.d {1}".format(clangExeInfo.Command, compilerArgumentsClang),
-                        )
+            writer.rule(
+                name=PerformClangTidyHelper.RULE_COMPILE,
+                depfile="$out.d",
+                command=f"{clangExeInfo.Command} -c -x c++ $in -o $out -MD -MF $out.d {compilerArgumentsClang}",
+            )
 
-            tidyChecks = "" if customChecks is None else "--checks ${0} ".format(PerformClangTidyHelper.VAR_CUSTOM_CHECKS)
+            tidyChecks = "" if customChecks is None else f"--checks ${PerformClangTidyHelper.VAR_CUSTOM_CHECKS} "
             tidyCommand = ""
             if performClangTidyConfig.Repair:
-                tidyCommand = "{0} $in --export-fixes=${1} {2} {3} -- {4}".format(clangTidyExeInfo.Command, PerformClangTidyHelper.VAR_YAML_FILE,
-                                                                                 tidyChecks, compilerUserArgumentsTidy, compilerArgumentsTidy)
+                tidyCommand = f"{clangTidyExeInfo.Command} $in --export-fixes=${PerformClangTidyHelper.VAR_YAML_FILE} {tidyChecks} {compilerUserArgumentsTidy} -- {compilerArgumentsTidy}"
             else:
-                tidyCommand = "{0} $in {1} {2} -- {3}".format(clangTidyExeInfo.Command, tidyChecks, compilerUserArgumentsTidy, compilerArgumentsTidy)
+                tidyCommand = f"{clangTidyExeInfo.Command} $in {tidyChecks} {compilerUserArgumentsTidy} -- {compilerArgumentsTidy}"
 
-            writer.rule(name=PerformClangTidyHelper.RULE_TIDY,
-                        command=tidyCommand,
-                        #rspfile="$out.rsp",
-                        #rspfile_content="{0}-- {1}".format(tidyChecks, compilerArgumentsTidy),
-                        restat=True)
+            writer.rule(
+                name=PerformClangTidyHelper.RULE_TIDY,
+                command=tidyCommand,
+                # rspfile="$out.rsp",
+                # rspfile_content="{0}-- {1}".format(tidyChecks, compilerArgumentsTidy),
+                restat=True,
+            )
 
             toolProjectContextsDict = PackagePathUtil.CreateToolProjectContextsDict(toolConfig.ProjectInfo)
             for package in packageList:
                 filteredFiles = None
                 if customPackageFileFilter is not None:
-                    filteredFiles = customPackageFileFilter.TryLocateFilePatternInPackage(log, package,
-                                                                                          performClangTidyConfig.ClangTidyConfiguration.FileExtensions)
+                    filteredFiles = customPackageFileFilter.TryLocateFilePatternInPackage(
+                        log, package, performClangTidyConfig.ClangTidyConfiguration.FileExtensions
+                    )
                 if customPackageFileFilter is None or filteredFiles is not None:
                     totalProcessedCount += 1
-                    packageOutputFolder = PerformClangTidyHelper.__AddPackage(log, toolConfig, toolVersionOutputFile, writer, clangTidyFixOutputFolder,
-                                                                              toolProjectContextsDict, platformId, performClangTidyConfig, package,
-                                                                              filteredFiles, None, localVariantInfo, virtualVariantEnvironmentCache,
-                                                                              availablePackageDict, packageBuildConfigDict)
+                    packageOutputFolder = PerformClangTidyHelper.__AddPackage(
+                        log,
+                        toolConfig,
+                        toolVersionOutputFile,
+                        writer,
+                        clangTidyFixOutputFolder,
+                        toolProjectContextsDict,
+                        platformId,
+                        performClangTidyConfig,
+                        package,
+                        filteredFiles,
+                        None,
+                        localVariantInfo,
+                        virtualVariantEnvironmentCache,
+                        availablePackageDict,
+                        packageBuildConfigDict,
+                    )
                     packageOutputFolders.append(packageOutputFolder)
 
             # finally we write the ninja file
@@ -1016,27 +1169,36 @@ class PerformClangTidyHelper(object):
         return (totalProcessedCount, packageOutputFolders)
 
     @staticmethod
-    def __AddPackage(log: Log, toolConfig: ToolConfig, toolVersionOutputFile: str,
-                     writer: Writer, clangTidyFixOutputFolder: str, toolProjectContextsDict: Dict[ProjectId, ToolConfigProjectContext],
-                     platformId: str, performClangTidyConfig: PerformClangTidyConfig, package: Package,
-                     filteredFiles: Optional[List[str]],
-                     clangFormatFilename: Optional[str],
-                     localVariantInfo: LocalVariantInfo,
-                     virtualVariantEnvironmentCache: VirtualVariantEnvironmentCache,
-                     availablePackages: Dict[str, Package], packageBuildConfigDict: Dict[str, ExtractedPackageConfiguration]) -> PackageOutputFolder:
-
+    def __AddPackage(
+        log: Log,
+        toolConfig: ToolConfig,
+        toolVersionOutputFile: str,
+        writer: Writer,
+        clangTidyFixOutputFolder: str,
+        toolProjectContextsDict: dict[ProjectId, ToolConfigProjectContext],
+        platformId: str,
+        performClangTidyConfig: PerformClangTidyConfig,
+        package: Package,
+        filteredFiles: list[str] | None,
+        clangFormatFilename: str | None,
+        localVariantInfo: LocalVariantInfo,
+        virtualVariantEnvironmentCache: VirtualVariantEnvironmentCache,
+        availablePackages: dict[str, Package],
+        packageBuildConfigDict: dict[str, ExtractedPackageConfiguration],
+    ) -> PackageOutputFolder:
         if package.AbsolutePath is None or package.ResolvedBuildAllIncludeFiles is None or package.ResolvedBuildSourceFiles is None or package.Path is None:
             raise Exception("invalid package")
-        log.LogPrint("- {0}".format(package.Name))
+        log.LogPrint(f"- {package.Name}")
 
         if clangFormatFilename is not None:
             # Verify that there is a format file for the package
             FileFinder.FindClosestFileInRoot(log, toolConfig, package.Path.AbsoluteDirPath, clangFormatFilename)
 
-        tidyPackageConfig = TidyPackageConfig(log, package, filteredFiles, performClangTidyConfig.ClangTidyConfiguration, localVariantInfo, virtualVariantEnvironmentCache)
+        tidyPackageConfig = TidyPackageConfig(
+            log, package, filteredFiles, performClangTidyConfig.ClangTidyConfiguration, localVariantInfo, virtualVariantEnvironmentCache
+        )
         packageDefines = tidyPackageConfig.PackageDefineCommands
         packageIncludePaths = tidyPackageConfig.IncludePaths
-        packageSystemIncludePaths = [] # type: List[str]
 
         # If there is a build configuration for the package we apply it
         if package.NameInfo.FullName.Value in packageBuildConfigDict:
@@ -1048,11 +1210,12 @@ class PerformClangTidyHelper(object):
             if len(packageBuildConfig.SystemIncludes) > 0:
                 packageIncludePaths += packageBuildConfig.SystemIncludes
 
-
         variables = {}
         variables[PerformClangTidyHelper.VAR_PACKAGE_DEFINES] = _AddCmdToEachEntry("-D", packageDefines)
-        variables[PerformClangTidyHelper.VAR_INCLUDES] = _AddCmdToEachEntry("-I", ['"{0}"'.format(includePath.Name) for includePath in packageIncludePaths])
-        variables[PerformClangTidyHelper.VAR_SYSTEM_INCLUDES] = _AddCmdToEachEntry("-isystem ", ['"{0}"'.format(includePath.Name) for includePath in packageIncludePaths])
+        variables[PerformClangTidyHelper.VAR_INCLUDES] = _AddCmdToEachEntry("-I", [f'"{includePath.Name}"' for includePath in packageIncludePaths])
+        variables[PerformClangTidyHelper.VAR_SYSTEM_INCLUDES] = _AddCmdToEachEntry(
+            "-isystem ", [f'"{includePath.Name}"' for includePath in packageIncludePaths]
+        )
 
         # //build cmake_object_order_depends_target_FslGraphics: phony || cmake_object_order_depends_target_FslBase
 
@@ -1071,19 +1234,34 @@ class PerformClangTidyHelper(object):
         for fileEntry in tidyPackageConfig.AllFiles:
             dstUniqueFileOutputPath = PerformClangTidyHelper._GenerateOutpotPath(clangTidyFixOutputFolder, fileEntry)
 
-            compiledOutputFile = "{0}.obj".format(dstUniqueFileOutputPath)
-            writer.build(outputs=compiledOutputFile, rule=PerformClangTidyHelper.RULE_COMPILE, inputs=fileEntry.ResolvedPath,
-                         implicit=toolVersionOutputFile, variables=variables, order_only=phonyCompileTargetPackageName)
+            compiledOutputFile = f"{dstUniqueFileOutputPath}.obj"
+            writer.build(
+                outputs=compiledOutputFile,
+                rule=PerformClangTidyHelper.RULE_COMPILE,
+                inputs=fileEntry.ResolvedPath,
+                implicit=toolVersionOutputFile,
+                variables=variables,
+                order_only=phonyCompileTargetPackageName,
+            )
 
-            variables[PerformClangTidyHelper.VAR_YAML_FILE] = ["{0}.yaml".format(dstUniqueFileOutputPath)]
+            variables[PerformClangTidyHelper.VAR_YAML_FILE] = [f"{dstUniqueFileOutputPath}.yaml"]
 
-            outputFile = "{0}.dmy".format(dstUniqueFileOutputPath)
+            outputFile = f"{dstUniqueFileOutputPath}.dmy"
             # Locate the closest clang tidy configuration file so we can add it as a implicit package dependency
-            packageClosestTidyPath = FileFinder.FindClosestFileInRoot(log, toolConfig, fileEntry.ResolvedPath, performClangTidyConfig.ClangTidyConfiguration.CustomTidyFile)
+            packageClosestTidyPath = FileFinder.FindClosestFileInRoot(
+                log, toolConfig, fileEntry.ResolvedPath, performClangTidyConfig.ClangTidyConfiguration.CustomTidyFile
+            )
             packageClosestTidyFile = IOUtil.Join(packageClosestTidyPath, performClangTidyConfig.ClangTidyConfiguration.CustomTidyFile)
             implicitDeps = [compiledOutputFile, packageClosestTidyFile, toolVersionOutputFile]
 
-            writer.build(outputs=outputFile, rule=PerformClangTidyHelper.RULE_TIDY, inputs=fileEntry.ResolvedPath, implicit=implicitDeps, variables=variables, order_only=phonyTargetPackageName)
+            writer.build(
+                outputs=outputFile,
+                rule=PerformClangTidyHelper.RULE_TIDY,
+                inputs=fileEntry.ResolvedPath,
+                implicit=implicitDeps,
+                variables=variables,
+                order_only=phonyTargetPackageName,
+            )
 
             # Write a dummy file so ninja finds a file (this is because clang tidy wont generate a fix file unless its needed)
             if not IOUtil.Exists(outputFile):
@@ -1099,11 +1277,11 @@ class PerformClangTidyHelper(object):
 
     @staticmethod
     def _GeneratePhonyCompileTargetName(name: str) -> str:
-        return "magic_compile_order_dependent_target_{0}".format(name)
+        return f"magic_compile_order_dependent_target_{name}"
 
     @staticmethod
-    def _GenerateCompileDependencies(package: Package, availablePackages: Dict[str, Package]) -> List[str]:
-        result = [] # type: List[str]
+    def _GenerateCompileDependencies(package: Package, availablePackages: dict[str, Package]) -> list[str]:
+        result: list[str] = []
         for dep in package.ResolvedDirectDependencies:
             if dep.Name in availablePackages:
                 result.append(PerformClangTidyHelper._GeneratePhonyCompileTargetName(dep.Name))
@@ -1112,27 +1290,39 @@ class PerformClangTidyHelper(object):
 
     @staticmethod
     def _GeneratePhonyTargetName(name: str) -> str:
-        return "magic_order_dependent_target_{0}".format(name)
+        return f"magic_order_dependent_target_{name}"
 
     @staticmethod
-    def _GenerateDependencies(package: Package, availablePackages: Dict[str, Package]) -> List[str]:
-        result = [] # type: List[str]
+    def _GenerateDependencies(package: Package, availablePackages: dict[str, Package]) -> list[str]:
+        result: list[str] = []
         for dep in package.ResolvedDirectDependencies:
             if dep.Name in availablePackages:
                 result.append(PerformClangTidyHelper._GeneratePhonyTargetName(dep.Name))
         result.sort()
         return result
 
-class PerformClangTidy(object):
+
+class PerformClangTidy:
     @staticmethod
-    def Run(log: Log, toolConfig: ToolConfig, userSetVariables: UserSetVariables, platformId: str,
-            topLevelPackage: Package, tidyPackageList: List[Package], externalVariantConstraints: ExternalVariantConstraints,
-            pythonScriptRoot: str, generatorContext: GeneratorContext, sdkConfigTemplatePath: str,
-            packageRecipeResultManager: PackageRecipeResultManager,
-            performClangTidyConfig: PerformClangTidyConfig,
-            customPackageFileFilter: Optional[CustomPackageFileFilter],
-            clangFormatFilename: Optional[str], buildThreads: int, useLegacyTidyMethod: bool,
-            tidyBuildGeneratorConfig: TidyBuildGeneratorConfig) -> None:
+    def Run(
+        log: Log,
+        toolConfig: ToolConfig,
+        userSetVariables: UserSetVariables,
+        platformId: str,
+        topLevelPackage: Package,
+        tidyPackageList: list[Package],
+        externalVariantConstraints: ExternalVariantConstraints,
+        pythonScriptRoot: str,
+        generatorContext: GeneratorContext,
+        sdkConfigTemplatePath: str,
+        packageRecipeResultManager: PackageRecipeResultManager,
+        performClangTidyConfig: PerformClangTidyConfig,
+        customPackageFileFilter: CustomPackageFileFilter | None,
+        clangFormatFilename: str | None,
+        buildThreads: int,
+        useLegacyTidyMethod: bool,
+        tidyBuildGeneratorConfig: TidyBuildGeneratorConfig,
+    ) -> None:
         """
         RunClangTidy on a package at a time
         :param topLevelPackage: the top level system package
@@ -1147,28 +1337,31 @@ class PerformClangTidy(object):
         # Lookup the recommended build threads using the standard build algorithm
         buildThreads = PlatformBuildUtil.GetRecommendedBuildThreads(buildThreads)
 
-        clangExeInfo = PerformClangUtil.LookupRecipeResults(packageRecipeResultManager, performClangTidyConfig.ClangTidyConfiguration.ClangRecipePackageName,
-                                                            MagicValues.ClangCompileCommand)
-        clangCppExeInfo = PerformClangUtil.LookupRecipeResults(packageRecipeResultManager, performClangTidyConfig.ClangTidyConfiguration.ClangRecipePackageName,
-                                                               MagicValues.ClangCppCompileCommand)
+        clangExeInfo = PerformClangUtil.LookupRecipeResults(
+            packageRecipeResultManager, performClangTidyConfig.ClangTidyConfiguration.ClangRecipePackageName, MagicValues.ClangCompileCommand
+        )
+        clangCppExeInfo = PerformClangUtil.LookupRecipeResults(
+            packageRecipeResultManager, performClangTidyConfig.ClangTidyConfiguration.ClangRecipePackageName, MagicValues.ClangCppCompileCommand
+        )
 
-        clangTidyExeInfo = PerformClangUtil.LookupRecipeResults(packageRecipeResultManager, performClangTidyConfig.ClangTidyConfiguration.ClangTidyRecipePackageName,
-                                                                MagicValues.ClangTidyCommand)
-        clangTidyApplyReplacementsExeInfo = PerformClangUtil.LookupRecipeResults(packageRecipeResultManager,
-                                                                                 performClangTidyConfig.ClangTidyConfiguration.ClangTidyRecipePackageName,
-                                                                                 MagicValues.ClangTidyApplyReplacements)
+        clangTidyExeInfo = PerformClangUtil.LookupRecipeResults(
+            packageRecipeResultManager, performClangTidyConfig.ClangTidyConfiguration.ClangTidyRecipePackageName, MagicValues.ClangTidyCommand
+        )
+        clangTidyApplyReplacementsExeInfo = PerformClangUtil.LookupRecipeResults(
+            packageRecipeResultManager, performClangTidyConfig.ClangTidyConfiguration.ClangTidyRecipePackageName, MagicValues.ClangTidyApplyReplacements
+        )
 
-        ninjaExeInfo = PerformClangUtil.LookupRecipeResults(packageRecipeResultManager, performClangTidyConfig.ClangTidyConfiguration.NinjaRecipePackageName,
-                                                            MagicValues.NinjaCommand)
+        ninjaExeInfo = PerformClangUtil.LookupRecipeResults(
+            packageRecipeResultManager, performClangTidyConfig.ClangTidyConfiguration.NinjaRecipePackageName, MagicValues.NinjaCommand
+        )
 
         BuildFlavorUtil.ValidateUserFlavorSettings(log, topLevelPackage, externalVariantConstraints)
         BuildFlavorUtil.LogFlavorSettings(log, externalVariantConstraints)
-        resolvedVariantSettingsDict = BuildVariantUtil.CreateCompleteStaticVariantSettings(topLevelPackage.ResolvedAllVariantDict,
-                                                                                           externalVariantConstraints)
+        resolvedVariantSettingsDict = BuildVariantUtil.CreateCompleteStaticVariantSettings(topLevelPackage.ResolvedAllVariantDict, externalVariantConstraints)
 
-        log.LogPrint("Clang version: {0}".format(clangExeInfo.Version))
-        log.LogPrint("ClangTidy version: {0}".format(clangTidyExeInfo.Version))
-        log.LogPrint("Ninja version: {0}".format(ninjaExeInfo.Version))
+        log.LogPrint(f"Clang version: {clangExeInfo.Version}")
+        log.LogPrint(f"ClangTidy version: {clangTidyExeInfo.Version}")
+        log.LogPrint(f"Ninja version: {ninjaExeInfo.Version}")
 
         log.LogPrint("Running clang-tidy")
 
@@ -1182,20 +1375,37 @@ class PerformClangTidy(object):
         # Validate report dict
         for package in finalPackageList:
             if package not in generatorReportDict:
-                raise Exception("Generator report is missing information for package '{0}'".format(package.Name))
+                raise Exception(f"Generator report is missing information for package '{package.Name}'")
 
         localVariantInfo = LocalVariantInfo(resolvedVariantSettingsDict, generatorReportDict, pythonScriptRoot)
 
         log.LogPrint("Using legacy tidy method")
         allPackages = topLevelPackage.ResolvedBuildOrder
-        count = PerformClangTidyHelper.ProcessAllPackages(log, toolConfig, userSetVariables, platformId, sdkConfigTemplatePath, pythonScriptRoot,
-                                                          performClangTidyConfig, clangExeInfo, clangCppExeInfo, clangTidyExeInfo,
-                                                          clangTidyApplyReplacementsExeInfo, ninjaExeInfo, allPackages, finalPackageList,
-                                                          generatorContext.CMakeConfig, customPackageFileFilter, localVariantInfo, buildThreads,
-                                                          tidyBuildGeneratorConfig, useLegacyTidyMethod)
+        count = PerformClangTidyHelper.ProcessAllPackages(
+            log,
+            toolConfig,
+            userSetVariables,
+            platformId,
+            sdkConfigTemplatePath,
+            pythonScriptRoot,
+            performClangTidyConfig,
+            clangExeInfo,
+            clangCppExeInfo,
+            clangTidyExeInfo,
+            clangTidyApplyReplacementsExeInfo,
+            ninjaExeInfo,
+            allPackages,
+            finalPackageList,
+            generatorContext.CMakeConfig,
+            customPackageFileFilter,
+            localVariantInfo,
+            buildThreads,
+            tidyBuildGeneratorConfig,
+            useLegacyTidyMethod,
+        )
 
         if count == 0:
             if customPackageFileFilter is None:
                 log.DoPrintWarning("No files processed")
             else:
-                log.DoPrintWarning("No files processed, could not find a package that matches {0}".format(customPackageFileFilter))
+                log.DoPrintWarning(f"No files processed, could not find a package that matches {customPackageFileFilter}")

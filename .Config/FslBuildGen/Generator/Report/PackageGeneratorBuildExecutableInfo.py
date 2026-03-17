@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright 2019 NXP
 # All rights reserved.
 #
@@ -29,9 +29,10 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-class PackageGeneratorBuildExecutableInfo(object):
+
+class PackageGeneratorBuildExecutableInfo:
     def __init__(self, buildExePath: str, buildExeCwdPath: str) -> None:
         super().__init__()
         self.BuildExePath = buildExePath

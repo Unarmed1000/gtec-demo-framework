@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright 2017 NXP
 # All rights reserved.
 #
@@ -29,25 +29,30 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-from typing import List
-from typing import Optional
-from FslBuildGen.Log import Log
+
 from FslBuildGen.BuildContent.PathRecord import PathRecord
-from FslBuildGen.BuildContent.Processor.Commands import CommandContentBuildSync
-from FslBuildGen.BuildContent.Processor.Commands import CommandContentSync
+from FslBuildGen.BuildContent.Processor.Commands import CommandContentBuildSync, CommandContentSync
 from FslBuildGen.BuildContent.Processor.ContentBuildCommandFile import ContentBuildCommandFile
 from FslBuildGen.BuildContent.Sync.Content import Content
+from FslBuildGen.Log import Log
 
-class SourceContent(object):
-    def __init__(self, log: Log, contentPath: str, contentSourcePath: str, contentBuildCommandFile: ContentBuildCommandFile,
-                 includeContentPathContent: bool,
-                 removeCommandFilename: Optional[str] = None) -> None:
+
+class SourceContent:
+    def __init__(
+        self,
+        log: Log,
+        contentPath: str,
+        contentSourcePath: str,
+        contentBuildCommandFile: ContentBuildCommandFile,
+        includeContentPathContent: bool,
+        removeCommandFilename: str | None = None,
+    ) -> None:
         super().__init__()
 
-        contentSourceFiles = []  # type: List[PathRecord]
-        contentBuildSourceFiles = []  # type: List[PathRecord]
+        contentSourceFiles: list[PathRecord] = []
+        contentBuildSourceFiles: list[PathRecord] = []
         for command in contentBuildCommandFile.Commands:
             if isinstance(command, CommandContentBuildSync):
                 for entry in command.Files:
@@ -56,7 +61,7 @@ class SourceContent(object):
                 for entry in command.Files:
                     contentSourceFiles.append(entry)
             else:
-                log.LogPrint("WARNING: Unknown command type: {0}".format(command))
+                log.LogPrint(f"WARNING: Unknown command type: {command}")
 
         self.ContentSource = Content(log, contentPath, includeContentPathContent, contentSourceFiles)
         self.ContentBuildSource = Content(log, contentSourcePath, True, contentBuildSourceFiles)

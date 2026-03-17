@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright 2018 NXP
 # All rights reserved.
 #
@@ -29,36 +29,35 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-from typing import Callable
-#from typing import Dict
-from typing import List
-from typing import Optional
-#from typing import Tuple
-#from typing import Union
-#import itertools
-#import os
-from FslBuildGen import IOUtil
-from FslBuildGen import Util
-#from FslBuildGen.Log import Log
+from collections.abc import Callable
+
+# from typing import Dict
+# from typing import Tuple
+# from typing import Union
+# import itertools
+# import os
+from FslBuildGen import IOUtil, Util
+
+# from FslBuildGen.Log import Log
 from FslBuildGen.Generator.Report.VariableDict import VariableDict
 from FslBuildGen.Generator.Report.VariableReport import VariableReport
 
 
 class FormatStringUndefinedVariableNameException(Exception):
     def __init__(self, name: str) -> None:
-        super().__init__("The variable '{0}' was undefined".format(name))
+        super().__init__(f"The variable '{name}' was undefined")
 
 
 class FormatStringUndefinedEnvironmentVariableNameException(Exception):
     def __init__(self, name: str) -> None:
-        super().__init__("The environment variable '{0}' was undefined".format(name))
+        super().__init__(f"The environment variable '{name}' was undefined")
 
 
 class FormatStringInvalidVariableNameException(Exception):
     def __init__(self, name: str) -> None:
-        super().__init__("The name '{0}' is not a valid C variable style name".format(name))
+        super().__init__(f"The name '{name}' is not a valid C variable style name")
 
 
 class FormatStringVariableMissingTerminationException(Exception):
@@ -76,7 +75,7 @@ class FormatStringInvalidException(Exception):
         super().__init__(message)
 
 
-class LookupCommand(object):
+class LookupCommand:
     def __init__(self, name: str, formattedName: str, splitIndex: int) -> None:
         if not Util.IsValidCStyleName(name):
             raise FormatStringInvalidVariableNameException(name)
@@ -89,17 +88,17 @@ class LookupCommand(object):
 
 class LookupVariableCommand(LookupCommand):
     def __init__(self, name: str, report: VariableReport, splitIndex: int) -> None:
-        super().__init__(name, "${{{0}}}".format(name), splitIndex)
+        super().__init__(name, f"${{{name}}}", splitIndex)
         self.Report = report
 
 
 class LookupEnvironmentVariableCommand(LookupCommand):
     def __init__(self, name: str, value: str, splitIndex: int) -> None:
-        super().__init__(name, "$({0})".format(name), splitIndex)
+        super().__init__(name, f"$({name})", splitIndex)
         self.Value = value
 
 
-class ParseState(object):
+class ParseState:
     Scanning = 1
     CommandStart = 2
     VariableBlock = 3
@@ -108,15 +107,20 @@ class ParseState(object):
 
 FormatStringEnvironmentVariableResolver = Callable[[str], str]
 
-class ParsedFormatString(object):
-    def __init__(self, source: str, variableDict: Optional[VariableDict],
-                 environmentVariableResolver: Optional[FormatStringEnvironmentVariableResolver] = None,
-                 noVariableResolve: bool = False,
-                 noEnvVariableResolve: bool = False) -> None:
+
+class ParsedFormatString:
+    def __init__(
+        self,
+        source: str,
+        variableDict: VariableDict | None,
+        environmentVariableResolver: FormatStringEnvironmentVariableResolver | None = None,
+        noVariableResolve: bool = False,
+        noEnvVariableResolve: bool = False,
+    ) -> None:
         super().__init__()
-        self.SplitList = []    # type: List[str]
-        self.VarCommandList = [] # type: List[LookupVariableCommand]
-        self.EnvCommandList = [] # type: List[LookupEnvironmentVariableCommand]
+        self.SplitList: list[str] = []
+        self.VarCommandList: list[LookupVariableCommand] = []
+        self.EnvCommandList: list[LookupEnvironmentVariableCommand] = []
 
         if source == "":
             self.SplitList.append("")
@@ -127,69 +131,68 @@ class ParsedFormatString(object):
         blockStartIndex = 0
         for index, ch in enumerate(source):
             if state == ParseState.Scanning:
-                if ch == '$':
+                if ch == "$":
                     state = ParseState.CommandStart
             elif state == ParseState.CommandStart:
-                if ch == '{':
+                if ch == "{":
                     state = ParseState.VariableBlock
                     if startSplitIndex < index - 1:
-                        self.SplitList.append(source[startSplitIndex:index - 1])
+                        self.SplitList.append(source[startSplitIndex : index - 1])
                     startSplitIndex = index - 1
                     blockStartIndex = index + 1
-                elif ch == '(':
+                elif ch == "(":
                     state = ParseState.EnvBlock
                     if startSplitIndex < index - 1:
-                        self.SplitList.append(source[startSplitIndex:index - 1])
+                        self.SplitList.append(source[startSplitIndex : index - 1])
                     startSplitIndex = index - 1
                     blockStartIndex = index + 1
-                    #stringEndSplitIndex = blockStartIndex-2
+                    # stringEndSplitIndex = blockStartIndex-2
             elif state == ParseState.VariableBlock:
-                if ch == '}':
+                if ch == "}":
                     state = ParseState.Scanning
-                    self.SplitList.append(source[startSplitIndex:index + 1])
+                    self.SplitList.append(source[startSplitIndex : index + 1])
                     startSplitIndex = index + 1
                     # Do the report lookup
-                    variableName = (source[blockStartIndex:index])
+                    variableName = source[blockStartIndex:index]
                     if not Util.IsValidCStyleName(variableName):
                         raise FormatStringInvalidVariableNameException(variableName)
 
                     if noVariableResolve:
-                        variableValue = VariableReport("*NotDefined*", ["*NotDefined*"], None)  # type: Optional[VariableReport]
+                        variableValue: VariableReport | None = VariableReport("*NotDefined*", ["*NotDefined*"], None)
                     else:
                         variableValue = variableDict.TryGetVariableReport(variableName) if variableDict is not None else None
                     if variableValue is None:
                         raise FormatStringUndefinedVariableNameException(variableName)
 
                     self.VarCommandList.append(LookupVariableCommand(variableName, variableValue, len(self.SplitList) - 1))
-                    #stringEndSplitIndex = blockStartIndex
-            elif state == ParseState.EnvBlock:
-                if ch == ')':
-                    state = ParseState.Scanning
-                    self.SplitList.append(source[startSplitIndex:index + 1])
-                    startSplitIndex = index + 1
+                    # stringEndSplitIndex = blockStartIndex
+            elif state == ParseState.EnvBlock and ch == ")":
+                state = ParseState.Scanning
+                self.SplitList.append(source[startSplitIndex : index + 1])
+                startSplitIndex = index + 1
 
-                    envName = source[blockStartIndex:index]
-                    if not Util.IsValidCStyleName(envName):
-                        raise FormatStringInvalidVariableNameException(envName)
+                envName = source[blockStartIndex:index]
+                if not Util.IsValidCStyleName(envName):
+                    raise FormatStringInvalidVariableNameException(envName)
 
-                    if noEnvVariableResolve:
-                        envValue = "*NotDefined*"                                               # type: Optional[str]
-                    elif environmentVariableResolver is None:
-                        envValue = IOUtil.TryGetEnvironmentVariable(envName)
-                    else:
-                        envValue = environmentVariableResolver(envName)
+                if noEnvVariableResolve:
+                    envValue: str | None = "*NotDefined*"
+                elif environmentVariableResolver is None:
+                    envValue = IOUtil.TryGetEnvironmentVariable(envName)
+                else:
+                    envValue = environmentVariableResolver(envName)
 
-                    if envValue is None:
-                        raise FormatStringUndefinedEnvironmentVariableNameException(envName)
+                if envValue is None:
+                    raise FormatStringUndefinedEnvironmentVariableNameException(envName)
 
-                    self.EnvCommandList.append(LookupEnvironmentVariableCommand(envName, envValue, len(self.SplitList) - 1))
+                self.EnvCommandList.append(LookupEnvironmentVariableCommand(envName, envValue, len(self.SplitList) - 1))
 
         if startSplitIndex < len(source):
             self.SplitList.append(source[startSplitIndex:])
 
         if state != ParseState.Scanning and state != ParseState.CommandStart:
             if state == ParseState.VariableBlock:
-                raise FormatStringVariableMissingTerminationException("The string '{0}' is missing a terminating '}}' ".format(source))
+                raise FormatStringVariableMissingTerminationException(f"The string '{source}' is missing a terminating '}}' ")
             elif state == ParseState.EnvBlock:
-                raise FormatStringEnvironmentVariableMissingTerminationException("The string '{0}' is missing a terminating ')' ".format(source))
-            raise FormatStringInvalidException("The string '{0}' contained invalid format codes".format(source))
+                raise FormatStringEnvironmentVariableMissingTerminationException(f"The string '{source}' is missing a terminating ')' ")
+            raise FormatStringInvalidException(f"The string '{source}' contained invalid format codes")

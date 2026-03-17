@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright 2017 NXP
 # All rights reserved.
 #
@@ -29,21 +28,19 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-from typing import Dict
-from typing import List
-from typing import Set
-from typing import Union
+
 from FslBuildGen import IOUtil
-from FslBuildGen.Info.AppInfo import AppInfo
 from FslBuildGen.Info import AppInfoJson
+from FslBuildGen.Info.AppInfo import AppInfo
 from FslBuildGen.Log import Log
 
 
-class AppInfoLoader(object):
-    def __init__(self, log: Log, appInfoFilename: str, requestedFiles: Union[List[str], Set[str]],
-                 scanSubdirectories: bool, currentPath: str, activePlatformNameId: str) -> None:
+class AppInfoLoader:
+    def __init__(
+        self, log: Log, appInfoFilename: str, requestedFiles: list[str] | set[str], scanSubdirectories: bool, currentPath: str, activePlatformNameId: str
+    ) -> None:
         self.Log = log
 
         requestedFileSet = set(requestedFiles)
@@ -56,33 +53,28 @@ class AppInfoLoader(object):
         requestedFiles = list(requestedFileSet)
         requestedFiles.sort()
 
-        self.CacheDict = {} # type: Dict[str, AppInfo]
+        self.CacheDict: dict[str, AppInfo] = {}
         self.__CacheFiles(self.CacheDict, requestedFiles, activePlatformNameId)
-
 
     def IsEmpty(self) -> bool:
         return len(self.CacheDict) <= 0
 
-
-    def GetDict(self) -> Dict[str, AppInfo]:
+    def GetDict(self) -> dict[str, AppInfo]:
         return self.CacheDict
 
-
-    def __ScanSubdirectories(self, scanPath: str, appInfoFilename: str) -> List[str]:
+    def __ScanSubdirectories(self, scanPath: str, appInfoFilename: str) -> list[str]:
         filesFound = IOUtil.GetFilePaths(scanPath, appInfoFilename)
         return [entry for entry in filesFound if IOUtil.GetFileName(entry) == appInfoFilename]
 
-
-    def __CacheFiles(self, rCacheDict: Dict[str, AppInfo], fileList: List[str], activePlatformNameId: str) -> None:
+    def __CacheFiles(self, rCacheDict: dict[str, AppInfo], fileList: list[str], activePlatformNameId: str) -> None:
         for filePath in fileList:
             appInfo = self.__Load(filePath)
             if appInfo.PlatformName.lower() != activePlatformNameId:
-                raise Exception("The file '{0}' contained information for '{1}' not '{2}'".format(filePath, appInfo.PlatformName, activePlatformNameId))
+                raise Exception(f"The file '{filePath}' contained information for '{appInfo.PlatformName}' not '{activePlatformNameId}'")
             rCacheDict[filePath] = appInfo
-
 
     def __Load(self, filename: str) -> AppInfo:
         appInfo = AppInfoJson.TryLoad(self.Log, filename)
         if appInfo is None:
-            raise Exception("Failed to load requested file: {0}".format(filename))
+            raise Exception(f"Failed to load requested file: {filename}")
         return appInfo

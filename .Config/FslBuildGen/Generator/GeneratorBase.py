@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright 2017 NXP
 # All rights reserved.
 #
@@ -29,15 +28,13 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-from typing import Dict
-from typing import Set
 
-class GeneratorBase(object):
+class GeneratorBase:
     def __init__(self) -> None:
-        self.GitIgnoreDict = {}  # type: Dict[str, Set[str]]
+        self.GitIgnoreDict: dict[str, set[str]] = {}
 
-    def GetPackageGitIgnoreDict(self) -> Dict[str, Set[str]]:
-        """ Return a dictionary of packages and a list of strings that should be added to git ignore for it """
+    def GetPackageGitIgnoreDict(self) -> dict[str, set[str]]:
+        """Return a dictionary of packages and a list of strings that should be added to git ignore for it"""
         return self.GitIgnoreDict

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 # Copyright (c) 2014 Freescale Semiconductor, Inc.
 # All rights reserved.
 #
@@ -29,39 +29,26 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#****************************************************************************************************************************************************
+# ****************************************************************************************************************************************************
 
-from typing import Dict
-from typing import List
-from typing import Optional
 from FslBuildGen.Config import Config
 from FslBuildGen.Context.PlatformContext import PlatformContext
-from FslBuildGen.DataTypes import BuildVariantType
-from FslBuildGen.DataTypes import LegacyGeneratorType
-from FslBuildGen.DataTypes import PackageLanguage
+from FslBuildGen.DataTypes import BuildVariantType, LegacyGeneratorType, PackageLanguage
 from FslBuildGen.Exceptions import UnsupportedException
 from FslBuildGen.ExternalVariantConstraints import ExternalVariantConstraints
 from FslBuildGen.Generator.GeneratorBase import GeneratorBase
 from FslBuildGen.Generator.GeneratorDot import GeneratorDot
 from FslBuildGen.Generator.GeneratorGitIgnore import GeneratorGitIgnore
-from FslBuildGen.Generator.GeneratorPluginBase2 import GeneratorVariant
-from FslBuildGen.Generator.GeneratorPluginBase2 import GeneratorPluginBase2
+from FslBuildGen.Generator.GeneratorPluginBase2 import GeneratorPluginBase2, GeneratorVariant
 from FslBuildGen.Log import Log
-from FslBuildGen.PackageLoader import PackageLoader
 from FslBuildGen.Packages.Package import Package
-from FslBuildGen.SharedGeneration import ToolAddedVariant
-from FslBuildGen.SharedGeneration import ToolAddedVariantOptions
+from FslBuildGen.SharedGeneration import ToolAddedVariant, ToolAddedVariantOptions
+
+GENERATOR_TYPES = {"default": LegacyGeneratorType.Default, "deprecated": LegacyGeneratorType.Deprecated, "experimental": LegacyGeneratorType.Experimental}
 
 
-GENERATOR_TYPES = {
-    "default" : LegacyGeneratorType.Default,
-    "deprecated" : LegacyGeneratorType.Deprecated,
-    "experimental" : LegacyGeneratorType.Experimental
-}
-
-class GenerateContext(object):
-    def __init__(self, platformContext: PlatformContext, config: Config, packages: List[Package],
-                 variantConstraints: ExternalVariantConstraints) -> None:
+class GenerateContext:
+    def __init__(self, platformContext: PlatformContext, config: Config, packages: list[Package], variantConstraints: ExternalVariantConstraints) -> None:
         super().__init__()
         self.PlatformContext = platformContext
         self.Config = config
@@ -89,62 +76,57 @@ class GeneratorPlugin(GeneratorPluginBase2):
         self.AddGeneratorVariant(GeneratorVariant(ToolAddedVariant.CONFIG, ToolAddedVariantOptions.CONFIG, "##OPTIONS##", BuildVariantType.Dynamic))
         self.SupportedPackageLanguages = [PackageLanguage.CPP]
 
-    #def SetCustomPlatformName(self, name):
+    # def SetCustomPlatformName(self, name):
     #    """ Change the platform name """
     #    self.Name = name;
-        #self.Id = name.lower()
-
+    # self.Id = name.lower()
 
     def SetLegacyGeneratorType(self, legacyGeneratorType: str) -> None:
         if legacyGeneratorType in GENERATOR_TYPES:
             self.LegacyGeneratorType = GENERATOR_TYPES[legacyGeneratorType]
         else:
-            raise Exception("Unsupported generator type: '{0}'".format(legacyGeneratorType))
-
+            raise Exception(f"Unsupported generator type: '{legacyGeneratorType}'")
 
     def AddGeneratorVariant(self, generatorVariant: GeneratorVariant) -> None:
-        """ protected. intended for generators so they can add their variant """
+        """protected. intended for generators so they can add their variant"""
         if generatorVariant.Name in self.GeneratorVariants:
-            raise Exception("The variant name already exist '{0}'".format(generatorVariant.Name))
+            raise Exception(f"The variant name already exist '{generatorVariant.Name}'")
         self.GeneratorVariants[generatorVariant.Name] = generatorVariant
 
     def AddGeneratorVariantConfigOption(self, optionName: str) -> None:
         variant = self.GeneratorVariants[ToolAddedVariant.CONFIG]
         variant.Options.append(optionName)
         if len(variant.Description) > 0:
-            variant.Description = "{0},{1}".format(variant.Description, optionName)
+            variant.Description = f"{variant.Description},{optionName}"
         else:
             variant.Description = optionName
 
-
-
-    def Generate(self, generateContext: GenerateContext) -> List[Package]:
-        """ General generate method, does a bit of processing then calls the plugin DoGenerate method """
-        if not generateContext.Config.ToolConfig.DefaultPackageLanguage in self.SupportedPackageLanguages:
-            raise UnsupportedException("The package language '{0}' is not supported by the generator '{1}'".format(PackageLanguage.ToString(generateContext.Config.ToolConfig.DefaultPackageLanguage), self.PlatformName))
+    def Generate(self, generateContext: GenerateContext) -> list[Package]:
+        """General generate method, does a bit of processing then calls the plugin DoGenerate method"""
+        if generateContext.Config.ToolConfig.DefaultPackageLanguage not in self.SupportedPackageLanguages:
+            raise UnsupportedException(
+                f"The package language '{PackageLanguage.ToString(generateContext.Config.ToolConfig.DefaultPackageLanguage)}' is not supported by the generator '{self.PlatformName}'"
+            )
         return self.DoGenerate(generateContext)
 
-
-    def DoGenerate(self, generateContext: GenerateContext) -> List[Package]:
+    def DoGenerate(self, generateContext: GenerateContext) -> list[Package]:
         return []
 
-
-    def GenerateDone(self, config: Config, packages: List[Package], name: str, activeGenerator: GeneratorBase) -> List[Package]:
+    def GenerateDone(self, config: Config, packages: list[Package], name: str, activeGenerator: GeneratorBase) -> list[Package]:
         toolConfig = config.ToolConfig
         configSDKConfigTemplatePath = config.SDKConfigTemplatePath
         configDisableWrite = config.DisableWrite
 
         if self.DotEnabled:
             GeneratorDot(self.Log, toolConfig, packages, name)
-        #if config.IsQuery:
+        # if config.IsQuery:
         #    GenerateQuery.Answer(config, packages, name)
 
         self.__GenerateGitIgnore(configSDKConfigTemplatePath, configDisableWrite, packages, name, activeGenerator)
         self.LastActiveGenerator = activeGenerator
         return packages
 
-
-    def __GenerateGitIgnore(self, configSDKConfigTemplatePath: str, configDisableWrite: bool, packages: List[Package], name: str, activeGenerator: GeneratorBase) -> None:
-        ignore = GeneratorGitIgnore(configSDKConfigTemplatePath, configDisableWrite, packages, name, activeGenerator)
-
-
+    def __GenerateGitIgnore(
+        self, configSDKConfigTemplatePath: str, configDisableWrite: bool, packages: list[Package], name: str, activeGenerator: GeneratorBase
+    ) -> None:
+        GeneratorGitIgnore(configSDKConfigTemplatePath, configDisableWrite, packages, name, activeGenerator)
