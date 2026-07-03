@@ -43,11 +43,21 @@ class PackageIncludeDir:
     def PatchName(src: "PackageIncludeDir", newName: str) -> "PackageIncludeDir":
         return PackageIncludeDir(newName, src.Priority)
 
-    def __eq__(self, other: Any) -> NoReturn:
-        raise TypeError(f"{self.__class__.__name__} objects cannot be compared")
+    def __eq__(self, other: object) -> bool:
+        if isinstance(other, PackageIncludeDir):
+            return self.Name == other.Name and self.Priority == other.Priority
+        if isinstance(other, str):
+            return self.Name == other
+        return NotImplemented
 
-    def __ne__(self, other: Any) -> NoReturn:
-        raise TypeError(f"{self.__class__.__name__} objects cannot be compared")
+    def __ne__(self, other: object) -> bool:
+        result = self.__eq__(other)
+        if result is NotImplemented:
+            return result  # type: ignore[return-value]
+        return not result
+
+    def __hash__(self) -> int:
+        return hash((self.Name, self.Priority))
 
     def __lt__(self, other: Any) -> NoReturn:
         raise TypeError(f"{self.__class__.__name__} objects cannot be ordered")

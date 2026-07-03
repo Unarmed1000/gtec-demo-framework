@@ -40,6 +40,7 @@ from typing import cast
 # from FslBuildGen import PackageListUtil
 # from FslBuildGen import PackageUtil
 from FslBuildGen import IOUtil, PackageConfig, PluginSharedValues, Util
+from FslBuildGen.AndroidUtil import AndroidUtil
 from FslBuildGen.BasicConfig import BasicConfig
 
 # from FslBuildGen.Build.Filter import PackageFilter
@@ -405,6 +406,14 @@ def GetDefaultConfigForTest(
 #    return generatorCMakeConfig
 
 
+def __IsAndroidSdkAvailable() -> bool:
+    try:
+        AndroidUtil.GetSDKPath()
+        return True
+    except OSError:
+        return False
+
+
 def __TestGenerateBuildFilesAllPlatforms(
     config: Config, files: list[str], engineResolveConfig: EngineResolveConfig | None, variableContext: VariableContext | None = None
 ) -> dict[str, list[Package]]:
@@ -412,8 +421,11 @@ def __TestGenerateBuildFilesAllPlatforms(
         engineResolveConfig = EngineResolveConfig.CreateDefault()
     if variableContext is None:
         variableContext = VariableContextHelper.CreateDefault(config.ToolConfig)
+    androidSdkAvailable = __IsAndroidSdkAvailable()
     res: dict[str, list[Package]] = {}
     for platformId in PackageConfig.APPROVED_PLATFORM_NAMES:
+        if platformId == PackageConfig.PlatformNameString.ANDROID and not androidSdkAvailable:
+            continue
         errorHelpManager = ErrorHelpManager()
         packageFilters = PackageFilters()
         log: Log = config
@@ -461,6 +473,16 @@ def __TestGetPackageLoader(config: Config, files: list[str], platformId: str, va
     return PackageLoader(config, files, platformGeneratorPlugin)
 
 
+def __TestGetPackageLoaderAllPlatforms(config: Config, files: list[str], variableContext: VariableContext | None = None) -> list[PackageLoader]:
+    androidSdkAvailable = __IsAndroidSdkAvailable()
+    res: list[PackageLoader] = []
+    for platformId in PackageConfig.APPROVED_PLATFORM_NAMES:
+        if platformId == PackageConfig.PlatformNameString.ANDROID and not androidSdkAvailable:
+            continue
+        res.append(__TestGetPackageLoader(config, files, platformId, variableContext))
+    return res
+
+
 def TEST_AddPackageRoots(config: Config, customUnitTestRoots: ToolConfigPackageConfigurationAddLocationType, replaceExistingLocations: bool = False) -> None:
     unitTestRootList = CustomUnitTestRootsToUnitTestPaths(config, customUnitTestRoots)
     activePackageConfiguration = config.ToolConfig.PackageConfiguration[PluginSharedValues.TYPE_UNIT_TEST]
@@ -505,7 +527,4 @@ def SimpleTestHookFilesEx(theFiles: list[str], config: Config, engineResolveConf
 def SimpleTestHookGetPackageLoaderOneFileEx(file: str, config: Config) -> list[PackageLoader]:
     config.ForceDisableAllWrite()
     theFiles = ToUnitTestPaths(config, [file])
-    res: list[PackageLoader] = []
-    for platformId in PackageConfig.APPROVED_PLATFORM_NAMES:
-        res.append(__TestGetPackageLoader(config, theFiles, platformId))
-    return res
+    return __TestGetPackageLoaderAllPlatforms(config, theFiles)

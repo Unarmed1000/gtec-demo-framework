@@ -38,7 +38,7 @@ from FslBuildGen import IOUtil
 # from FslBuildGen import PackageUtil
 # from FslBuildGen.Build.Filter import PackageFilter
 from FslBuildGen.Context.GeneratorContext import GeneratorContext
-from FslBuildGen.DataTypes import PackageCreationYearString, PackageType
+from FslBuildGen.DataTypes import AccessType, PackageCreationYearString, PackageType
 from FslBuildGen.Generator.GeneratorConfig import GeneratorConfig
 from FslBuildGen.Generator.Report.Datatypes import FormatStringEnvironmentVariableResolveMethod
 from FslBuildGen.Generator.Report.GeneratorExecutableReport import GeneratorExecutableReport
@@ -47,7 +47,7 @@ from FslBuildGen.Generator.Report.PackageGeneratorReport import PackageGenerator
 from FslBuildGen.Generator.Report.VariableReport import VariableReport
 from FslBuildGen.Info.AppInfoJson import JsonRootKey
 from FslBuildGen.Log import Log
-from FslBuildGen.Packages.Package import Package
+from FslBuildGen.Packages.Package import Package, PackageDependency
 from FslBuildGen.Packages.PackageRequirement import PackageRequirement
 
 # TODO: this should really generate and save the Info objects instead, but the code was originally written as simple export only code
@@ -64,6 +64,13 @@ class JsonRequirement:
             self.Version = requirement.Version
         if len(requirement.Extends) > 0:
             self.Extends = requirement.Extends
+
+
+class JsonPackageDependency:
+    def __init__(self, dependency: PackageDependency) -> None:
+        super().__init__()
+        self.Name = dependency.Name
+        self.Access = AccessType.ToString(dependency.Access)
 
 
 class JsonPackageVariableReport:
@@ -118,6 +125,8 @@ class JsonPackage:
         # self.PlatformName = package.ResolvedPlatformName
 
         self.AllRequirements = [JsonRequirement(requirement) for requirement in package.ResolvedAllRequirements]
+        # The direct dependency edges of this package, so the exported json describes the full package graph.
+        self.DirectDependencies = [JsonPackageDependency(dependency) for dependency in sorted(package.ResolvedDirectDependencies, key=lambda entry: entry.Name)]
         if not package.ResolvedPlatformSupported:
             self.Supported: bool = package.ResolvedPlatformSupported
 
@@ -132,6 +141,7 @@ class ComplexEncoder(json.JSONEncoder):
             (
                 JsonPackage,
                 JsonRequirement,
+                JsonPackageDependency,
                 JsonPackageGeneratorReport,
                 JsonPackageGeneratorVariableReport,
                 JsonPackageVariableReport,

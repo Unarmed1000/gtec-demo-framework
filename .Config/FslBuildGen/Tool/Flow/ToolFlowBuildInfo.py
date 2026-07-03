@@ -47,7 +47,9 @@ from FslBuildGen.DataTypes import PackageType
 # from FslBuildGen.Generator import PluginConfig
 from FslBuildGen.Engine.EngineResolveConfig import EngineResolveConfig
 from FslBuildGen.Generator.GeneratorConfig import GeneratorConfig
-from FslBuildGen.Info import InfoSaver
+from FslBuildGen.Generator.GeneratorDot import GeneratorDot
+from FslBuildGen.Info import InfoSaver, PackageGraphQuery
+from FslBuildGen.Info.PackageGraphQuery import PackageGraphIndex, QueryFormat
 
 # from FslBuildGen.Log import Log
 # from FslBuildGen.PackageConfig import PlatformNameString
@@ -82,6 +84,13 @@ class DefaultValue:
     PackageConfigurationType = PluginSharedValues.TYPE_DEFAULT
     SaveJson: str | None = None
     IncludeGeneratorReport = False
+    Graph = False
+    DependsOn: str | None = None
+    UsedBy: str | None = None
+    DependencyPath: list[str] | None = None
+    DumpGraph = False
+    Transitive = False
+    Format = QueryFormat.Text
 
 
 class LocalToolConfig(ToolAppConfig):
@@ -103,6 +112,13 @@ class LocalToolConfig(ToolAppConfig):
         self.PackageConfigurationType = DefaultValue.PackageConfigurationType
         self.SaveJson = DefaultValue.SaveJson
         self.IncludeGeneratorReport = DefaultValue.IncludeGeneratorReport
+        self.Graph = DefaultValue.Graph
+        self.DependsOn = DefaultValue.DependsOn
+        self.UsedBy = DefaultValue.UsedBy
+        self.DependencyPath = DefaultValue.DependencyPath
+        self.DumpGraph = DefaultValue.DumpGraph
+        self.Transitive = DefaultValue.Transitive
+        self.Format = DefaultValue.Format
 
 
 def GetDefaultLocalConfig() -> LocalToolConfig:
@@ -137,6 +153,13 @@ class ToolFlowBuildInfo(AToolAppFlow):
         localToolConfig.PackageConfigurationType = args.type
         localToolConfig.SaveJson = args.SaveJson
         localToolConfig.IncludeGeneratorReport = args.IncludeGeneratorReport
+        localToolConfig.Graph = args.graph
+        localToolConfig.DependsOn = args.DependsOn
+        localToolConfig.UsedBy = args.UsedBy
+        localToolConfig.DependencyPath = args.DependencyPath
+        localToolConfig.DumpGraph = args.DumpGraph
+        localToolConfig.Transitive = args.Transitive
+        localToolConfig.Format = args.Format
 
         self.Process(currentDirPath, toolConfig, localToolConfig)
 
@@ -150,7 +173,10 @@ class ToolFlowBuildInfo(AToolAppFlow):
         if localToolConfig.IgnoreNotSupported:
             config.IgnoreNotSupported = True
 
-        self.Log.PrintTitle()
+        # When emitting machine readable json for the graph queries we keep stdout to a single json document
+        # (no title banner) so a consumer like a MCP server can parse it directly.
+        if not self.__WantsCleanJsonOutput(localToolConfig):
+            self.Log.PrintTitle()
 
         packageFilters = localToolConfig.BuildPackageFilters
 
@@ -219,6 +245,13 @@ class ToolFlowBuildInfo(AToolAppFlow):
         if localToolConfig.Stats:
             self.__ShowStats(topLevelPackage)
 
+        if self.__HasGraphQuery(localToolConfig):
+            self.__ProcessGraphQueries(topLevelPackage, localToolConfig)
+
+        if localToolConfig.Graph:
+            # Reuse the exact same dependency graph renderer that 'FslBuildGen --graph' uses.
+            GeneratorDot(self.Log, config.ToolConfig, packages, generator.PlatformName)
+
     def __ShowStats(self, topLevelPackage: Package) -> None:
         exeCount = 0
         libCount = 0
@@ -244,6 +277,81 @@ class ToolFlowBuildInfo(AToolAppFlow):
         self.Log.DoPrint(f"- HeaderLib:  {headerLibCount}")
         self.Log.DoPrint(f"- ToolRecipe: {toolRecipe}")
 
+    @staticmethod
+    def __HasGraphQuery(localToolConfig: LocalToolConfig) -> bool:
+        return (
+            localToolConfig.DependsOn is not None
+            or localToolConfig.UsedBy is not None
+            or localToolConfig.DependencyPath is not None
+            or localToolConfig.DumpGraph
+        )
+
+    @staticmethod
+    def __WantsCleanJsonOutput(localToolConfig: LocalToolConfig) -> bool:
+        return localToolConfig.Format == QueryFormat.Json and ToolFlowBuildInfo.__HasGraphQuery(localToolConfig)
+
+    def __ProcessGraphQueries(self, topLevelPackage: Package, localToolConfig: LocalToolConfig) -> None:
+        index = PackageGraphIndex(topLevelPackage)
+        asJson = localToolConfig.Format == QueryFormat.Json
+        transitive = localToolConfig.Transitive
+
+        # In json mode we collect every requested query into a single document so a consumer (e.g. a MCP server)
+        # can parse stdout directly without stripping anything.
+        jsonResults: list[dict[str, Any]] = []
+
+        if localToolConfig.DependsOn is not None:
+            package = self.__ResolveQueryPackage(index, localToolConfig.DependsOn, asJson, jsonResults)
+            if package is not None:
+                edges = index.GetDependencies(package, transitive)
+                if asJson:
+                    jsonResults.append(PackageGraphQuery.BuildDependenciesResult(package, edges, transitive))
+                else:
+                    PackageGraphQuery.PrintDependencies(self.Log, package, edges, transitive)
+
+        if localToolConfig.UsedBy is not None:
+            package = self.__ResolveQueryPackage(index, localToolConfig.UsedBy, asJson, jsonResults)
+            if package is not None:
+                edges = index.GetDependents(package, transitive)
+                if asJson:
+                    jsonResults.append(PackageGraphQuery.BuildDependentsResult(package, edges, transitive))
+                else:
+                    PackageGraphQuery.PrintDependents(self.Log, package, edges, transitive)
+
+        if localToolConfig.DependencyPath is not None:
+            fromPackage = self.__ResolveQueryPackage(index, localToolConfig.DependencyPath[0], asJson, jsonResults)
+            toPackage = self.__ResolveQueryPackage(index, localToolConfig.DependencyPath[1], asJson, jsonResults)
+            if fromPackage is not None and toPackage is not None:
+                paths = index.FindDependencyPaths(fromPackage, toPackage, None if asJson else self.Log)
+                if asJson:
+                    jsonResults.append(PackageGraphQuery.BuildDependencyPathsResult(fromPackage, toPackage, paths))
+                else:
+                    PackageGraphQuery.PrintDependencyPaths(self.Log, fromPackage, toPackage, paths)
+
+        if localToolConfig.DumpGraph:
+            adjacency = index.BuildAdjacency()
+            if asJson:
+                jsonResults.append(PackageGraphQuery.BuildGraphDumpResult(adjacency))
+            else:
+                PackageGraphQuery.PrintGraphDump(self.Log, adjacency)
+
+        if asJson:
+            self.Log.DoPrint(PackageGraphQuery.ResultsToJsonText(jsonResults))
+
+    def __ResolveQueryPackage(self, index: PackageGraphIndex, name: str, asJson: bool, jsonResults: list[dict[str, Any]]) -> Package | None:
+        package = index.TryResolve(name)
+        if package is not None:
+            return package
+        suggestions = index.GetSuggestions(name)
+        if asJson:
+            # Keep errors inside the json document instead of writing plain text to stdout.
+            jsonResults.append(PackageGraphQuery.BuildNotFoundResult(name, suggestions))
+        else:
+            message = f"Package '{name}' not found"
+            if len(suggestions) > 0:
+                message += ". Did you mean: {}".format(", ".join(suggestions))
+            self.Log.DoPrint(message)
+        return None
+
 
 class ToolAppFlowFactory(AToolAppFlowFactory):
     # def __init__(self) -> None:
@@ -268,7 +376,7 @@ class ToolAppFlowFactory(AToolAppFlowFactory):
         packageTypes = PackageType.AllStrings()
         packageTypes.sort()
 
-        # parser.add_argument('--graph', action='store_true', help='Generate a dependency graph using dot (requires the graphviz dot executable in path)')
+        parser.add_argument("--graph", action="store_true", help="Generate a dependency graph image using dot (requires the graphviz dot executable in path)")
         parser.add_argument("--IgnoreNotSupported", action="store_true", help="try to build things that are marked as not supported")
 
         parser.add_argument("--ListBuildVariants", action="store_true", help="List all build-variants")
@@ -280,6 +388,18 @@ class ToolAppFlowFactory(AToolAppFlowFactory):
 
         parser.add_argument("--stats", action="store_true", help="Show stats")
         parser.add_argument("--details", action="store_true", help="Provide extended details")
+
+        # Package dependency graph queries
+        parser.add_argument("--DependsOn", default=DefaultValue.DependsOn, help="Show what the given package depends on")
+        parser.add_argument("--UsedBy", default=DefaultValue.UsedBy, help="Show which packages depend on the given package")
+        parser.add_argument(
+            "--DependencyPath", default=DefaultValue.DependencyPath, nargs=2, metavar=("FROM", "TO"), help="Show the dependency path(s) from FROM to TO"
+        )
+        parser.add_argument("--DumpGraph", action="store_true", help="Dump the full package graph as an adjacency list")
+        parser.add_argument(
+            "--Transitive", action="store_true", help="Include the full transitive closure for --DependsOn and --UsedBy (default is direct only)"
+        )
+        parser.add_argument("--Format", default=DefaultValue.Format, choices=QueryFormat.AllStrings(), help="Output format for the dependency graph queries")
 
         parser.add_argument(
             "-t", "--type", default=DefaultValue.PackageConfigurationType, choices=[PluginSharedValues.TYPE_DEFAULT, "sdk"], help="Select generator type"
