@@ -67,7 +67,7 @@ from FslBuildGen.ToolConfig import ToolConfig
 from FslBuildGen.Version import Version
 from FslBuildGen.Xml.Project.XmlProjectRootConfigFile import XmlProjectRootConfigFile
 
-CurrentVersion = Version(3, 10, 0, 0)
+CurrentVersion = Version(3, 11, 0, 0)
 
 
 def __AddDefaultOptions(parser: argparse.ArgumentParser, allowStandaloneMode: bool) -> None:

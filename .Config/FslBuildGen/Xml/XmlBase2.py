@@ -34,7 +34,7 @@
 import xml.etree.ElementTree as ET
 
 from FslBuildGen import Util
-from FslBuildGen.DataTypes import AccessType
+from FslBuildGen.DataTypes import AccessType, DependencyOutputType
 
 # from FslBuildGen.Exceptions import UsageErrorException
 from FslBuildGen.Log import Log
@@ -50,7 +50,14 @@ from FslBuildGen.Xml.XmlGenFileIgnore import XmlGenFileIgnore
 
 
 class FakeXmlGenFileDependency(XmlGenFileDependency):
-    def __init__(self, log: Log, name: str, access: AccessType) -> None:
+    def __init__(
+        self,
+        log: Log,
+        name: str,
+        access: AccessType,
+        outputType: DependencyOutputType = DependencyOutputType.Reference,
+        referenceOutputAssembly: bool = True,
+    ) -> None:
         fakeXmlElementAttribs = {"Name": name, "Access": AccessType.ToString(access)}
         fakeXmlElement = FakeXmlElementFactory.Create("FakeXmlGenFileDependency", fakeXmlElementAttribs)
         super().__init__(log, fakeXmlElement)
@@ -58,6 +65,10 @@ class FakeXmlGenFileDependency(XmlGenFileDependency):
             raise Exception("Failed to setting fake element name")
         if self.Access != access:
             raise Exception("Failed to setting fake element access")
+        # OutputType and ReferenceOutputAssembly can no longer be described on a Dependency element, so they are applied here instead.
+        # This is what <SourceGeneration><Generator/></SourceGeneration> is translated into.
+        self.OutputType = outputType
+        self.ReferenceOutputAssembly = referenceOutputAssembly
 
 
 class XmlBase2(XmlBase):
@@ -136,5 +147,11 @@ class XmlBase2(XmlBase):
                     elements.append(xmlDep)
         return elements
 
-    def _CreateFakeXMLDependencies(self, dependencyName: str, access: AccessType = AccessType.Public) -> FakeXmlGenFileDependency:
-        return FakeXmlGenFileDependency(self.Log, dependencyName, access)
+    def _CreateFakeXMLDependencies(
+        self,
+        dependencyName: str,
+        access: AccessType = AccessType.Public,
+        outputType: DependencyOutputType = DependencyOutputType.Reference,
+        referenceOutputAssembly: bool = True,
+    ) -> FakeXmlGenFileDependency:
+        return FakeXmlGenFileDependency(self.Log, dependencyName, access, outputType, referenceOutputAssembly)

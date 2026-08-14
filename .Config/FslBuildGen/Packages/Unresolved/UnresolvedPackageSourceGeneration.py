@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
+
 # ****************************************************************************************************************************************************
 # * BSD 3-Clause License
 # *
-# * Copyright (c) 2025, Mana Battery
+# * Copyright (c) 2026, Mana Battery
 # * All rights reserved.
 # *
 # * Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
@@ -21,54 +22,35 @@
 # * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 # ****************************************************************************************************************************************************
 
-from typing import Any, NoReturn, final
-
-from FslBuildGen.DataTypes import IncludePriority
+from FslBuildGen.DataTypes import SourceGenerationVisiblePropertyName
 
 
-@final
-class PackageIncludeDir:
-    def __init__(self, name: str, priority: IncludePriority) -> None:
+class UnresolvedPackageSourceGenerationInputFile:
+    def __init__(self, path: str) -> None:
+        super().__init__()
+        self.Path = path
+
+
+class UnresolvedPackageSourceGenerationVisibleProperty:
+    def __init__(self, name: str, isRaw: bool, conceptName: SourceGenerationVisiblePropertyName | None) -> None:
         super().__init__()
         self.Name = name
-        self.Priority = priority
+        self.IsRaw = isRaw
+        self.ConceptName = conceptName
 
-    def __str__(self) -> str:
-        return f"{self.Name} ({self.Priority.name})"
 
-    def __repr__(self) -> str:
-        return f"PackageIncludeDir(include={self.Name!r}, priority={self.Priority!r})"
+class UnresolvedPackageSourceGeneration:
+    """Describes that this package takes part in source generation.
+    The declared generators are not stored here as they are translated into normal package dependencies.
+    """
 
-    @staticmethod
-    def PatchName(src: "PackageIncludeDir", newName: str) -> "PackageIncludeDir":
-        return PackageIncludeDir(newName, src.Priority)
-
-    def __eq__(self, other: object) -> bool:
-        if isinstance(other, PackageIncludeDir):
-            return self.Name == other.Name and self.Priority == other.Priority
-        if isinstance(other, str):
-            return self.Name == other
-        return NotImplemented
-
-    def __ne__(self, other: object) -> bool:
-        # this mirrors __eq__ instead of delegating to it, as calling __eq__ directly is blocked by the forbid_comparison plugin
-        if isinstance(other, PackageIncludeDir):
-            return self.Name != other.Name or self.Priority != other.Priority
-        if isinstance(other, str):
-            return self.Name != other
-        return NotImplemented
-
-    def __hash__(self) -> int:
-        return hash((self.Name, self.Priority))
-
-    def __lt__(self, other: Any) -> NoReturn:
-        raise TypeError(f"{self.__class__.__name__} objects cannot be ordered")
-
-    def __le__(self, other: Any) -> NoReturn:
-        raise TypeError(f"{self.__class__.__name__} objects cannot be ordered")
-
-    def __gt__(self, other: Any) -> NoReturn:
-        raise TypeError(f"{self.__class__.__name__} objects cannot be ordered")
-
-    def __ge__(self, other: Any) -> NoReturn:
-        raise TypeError(f"{self.__class__.__name__} objects cannot be ordered")
+    def __init__(
+        self,
+        outputPath: str | None,
+        inputFiles: list[UnresolvedPackageSourceGenerationInputFile],
+        visibleProperties: list[UnresolvedPackageSourceGenerationVisibleProperty],
+    ) -> None:
+        super().__init__()
+        self.OutputPath = outputPath
+        self.InputFiles = inputFiles
+        self.VisibleProperties = visibleProperties

@@ -50,6 +50,7 @@ from FslBuildGen.DataTypes import (
     GrpcServices,
     PackageLanguage,
     PackageType,
+    SourceGenerationVisiblePropertyName,
     SpecialFiles,
     VariantType,
     VisualStudioVersion,
@@ -391,6 +392,13 @@ class GeneratorVC(GeneratorBase):
         else:
             excludeDirs = ""
 
+        sourceGenerationProperties = self.__GenerateSourceGenerationProperties(template.SourceGenerationProperties, package)
+
+        additionalFiles = self.__GenerateAdditionalFiles(template.AdditionalFiles, template.AdditionalFiles_1, config, package)
+        compilerVisibleProperties = self.__GenerateCompilerVisibleProperties(
+            template.CompilerVisibleProperties, template.CompilerVisibleProperties_1, config, package
+        )
+
         resolvedBuildAllIncludeFiles = self.__GetPackageResolvedBuildAllIncludeFiles(config.GenFileName, package)
         includeFiles = self.__CreateVisualStudioStyleFileList(template.AddHeaderFile, resolvedBuildAllIncludeFiles)
         sourceFiles = self.__CreateVisualStudioStyleFileList(template.AddSourceFile, package.ResolvedBuildSourceFiles)
@@ -426,6 +434,9 @@ class GeneratorVC(GeneratorBase):
         build = build.replace("##ADD_FILE_REFERENCES##", fileReferences)
         build = build.replace("##ADD_GENERATE_SECTION##", customGenerateSection)
         build = build.replace("##ADD_EXCLUDE_PACKAGE_DIRS##", excludeDirs)
+        build = build.replace("##ADD_SOURCE_GENERATION_PROPERTIES##", sourceGenerationProperties)
+        build = build.replace("##ADD_ADDITIONAL_FILES##", additionalFiles)
+        build = build.replace("##ADD_COMPILER_VISIBLE_PROPERTIES##", compilerVisibleProperties)
         build = build.replace("##ADD_INCLUDE_FILES##", includeFiles)
         build = build.replace("##ADD_SOURCE_FILES##", sourceFiles)
         build = build.replace("##ADD_CONFIGURATIONS##", variantConfigurations)
@@ -1256,21 +1267,78 @@ class GeneratorVC(GeneratorBase):
         return "{}\\{}.{}".format(path.replace("/", "\\"), entry.Name, projectExtension)
 
     def __GenerateCustomGenerateSections(self, snippetGroup: str, snippetEntry: str, snippetGrpcService: str, config: Config, package: Package) -> str:
-        result = ""
-        if len(package.ResolvedGenerateGrpcProtoFileList) > 0:
-            res: list[str] = []
-            if package.PackageLanguage == PackageLanguage.CSharp:
-                for entry in package.ResolvedGenerateGrpcProtoFileList:
-                    strEntry = snippetEntry
-                    strEntry = strEntry.replace("##INCLUDE##", entry.Include.SourcePath)
-                    grpcService = ""
-                    if entry.GrpcServices is not None:
-                        grpcService = " " + snippetGrpcService.replace("##VALUE##", GrpcServices.ToString(entry.GrpcServices))
-                    strEntry = strEntry.replace("##GRPC_SERVICES##", grpcService)
-                    res.append(strEntry)
-            allEntries = "\n".join(res)
-            result = "\n" + snippetGroup.replace("##SNIPPET##", allEntries)
-        return result
+        # The language check has to be done before we decide to emit the group, else we emit a empty ItemGroup for a non C# package
+        if package.PackageLanguage != PackageLanguage.CSharp or len(package.ResolvedGenerateGrpcProtoFileList) <= 0:
+            return ""
+        res: list[str] = []
+        for entry in package.ResolvedGenerateGrpcProtoFileList:
+            strEntry = snippetEntry
+            strEntry = strEntry.replace("##INCLUDE##", entry.Include.SourcePath)
+            grpcService = ""
+            if entry.GrpcServices is not None:
+                grpcService = " " + snippetGrpcService.replace("##VALUE##", GrpcServices.ToString(entry.GrpcServices))
+            strEntry = strEntry.replace("##GRPC_SERVICES##", grpcService)
+            res.append(strEntry)
+        return "\n" + snippetGroup.replace("##SNIPPET##", "\n".join(res))
+
+    # The concept level property names are mapped to the name MSBuild knows them by
+    __VisiblePropertyBackendNames = {
+        SourceGenerationVisiblePropertyName.BuildConfiguration: "Configuration",
+        SourceGenerationVisiblePropertyName.TargetFramework: "TargetFramework",
+        SourceGenerationVisiblePropertyName.RootNamespace: "RootNamespace",
+        SourceGenerationVisiblePropertyName.AssemblyName: "AssemblyName",
+    }
+
+    @staticmethod
+    def __DescribeTemplateType(package: Package) -> str:
+        return f"'{package.TemplateType}'" if len(package.TemplateType) > 0 else "the default template"
+
+    def __GenerateSourceGenerationProperties(self, snippet: str | None, package: Package) -> str:
+        if package.PackageLanguage != PackageLanguage.CSharp:
+            return ""
+        sourceGeneration = package.SourceGeneration
+        outputPath = sourceGeneration.OutputPath if sourceGeneration is not None else None
+        templateTypeDesc = GeneratorVC.__DescribeTemplateType(package)
+        if snippet is None:
+            if outputPath is not None:
+                raise UnsupportedException(
+                    f"Package '{package.Name}' uses <SourceGeneration OutputPath=\"{outputPath}\"/> but {templateTypeDesc} does not support source generation"
+                )
+            return ""
+        if outputPath is None:
+            raise UnsupportedException(f"Package '{package.Name}' uses {templateTypeDesc} which requires a <SourceGeneration OutputPath=\"...\"/> element")
+        return snippet.replace("##OUTPUT_PATH##", outputPath)
+
+    @staticmethod
+    def __WarnMissingSourceGenerationSnippet(config: Config, package: Package, elementName: str, snippetName: str) -> None:
+        config.LogPrintWarning(
+            f"Package '{package.Name}' uses <SourceGeneration><{elementName}/></SourceGeneration> but "
+            f"{GeneratorVC.__DescribeTemplateType(package)} has no {snippetName} snippet, the entries are ignored"
+        )
+
+    def __GenerateAdditionalFiles(self, snippetGroup: str | None, snippetEntry: str | None, config: Config, package: Package) -> str:
+        if package.PackageLanguage != PackageLanguage.CSharp or package.SourceGeneration is None:
+            return ""
+        entries = package.SourceGeneration.InputFiles
+        if len(entries) <= 0:
+            return ""
+        if snippetGroup is None or snippetEntry is None:
+            GeneratorVC.__WarnMissingSourceGenerationSnippet(config, package, "InputFile", "AdditionalFiles")
+            return ""
+        # The path is written as authored since it can contain glob patterns
+        return snippetGroup.replace("##SNIPPET##", "\n".join(snippetEntry.replace("##FILE_PATH##", entry.Path) for entry in entries))
+
+    def __GenerateCompilerVisibleProperties(self, snippetGroup: str | None, snippetEntry: str | None, config: Config, package: Package) -> str:
+        if package.PackageLanguage != PackageLanguage.CSharp or package.SourceGeneration is None:
+            return ""
+        entries = package.SourceGeneration.VisibleProperties
+        if len(entries) <= 0:
+            return ""
+        if snippetGroup is None or snippetEntry is None:
+            GeneratorVC.__WarnMissingSourceGenerationSnippet(config, package, "VisibleProperty", "CompilerVisibleProperties")
+            return ""
+        names = [entry.Name if entry.ConceptName is None else GeneratorVC.__VisiblePropertyBackendNames[entry.ConceptName] for entry in entries]
+        return snippetGroup.replace("##SNIPPET##", "\n".join(snippetEntry.replace("##PROPERTY_NAME##", name) for name in names))
 
     @staticmethod
     def __GenerateExcludeDirSection(snippetList: list[str], dirListSet: set[str]) -> list[str]:
@@ -1300,6 +1368,9 @@ class GeneratorVC(GeneratorBase):
                 )
                 for ignoreItem in package.DirectIgnores:
                     excludeDirs.add(ignoreItem.Path)
+                # The source generation output directory is never a compile input
+                if package.SourceGeneration is not None and package.SourceGeneration.OutputPath is not None:
+                    excludeDirs.add(package.SourceGeneration.OutputPath)
                 res = GeneratorVC.__GenerateExcludeDirSection(snippetList, excludeDirs)
         return "\n".join(res)
 

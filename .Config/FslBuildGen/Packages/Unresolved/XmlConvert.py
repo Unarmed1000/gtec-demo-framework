@@ -61,6 +61,11 @@ from FslBuildGen.Packages.Unresolved.UnresolvedPackageGenerate import Unresolved
 from FslBuildGen.Packages.Unresolved.UnresolvedPackageGenerateGrpcProtoFile import UnresolvedPackageGenerateGrpcProtoFile
 from FslBuildGen.Packages.Unresolved.UnresolvedPackageIgnore import UnresolvedPackageIgnore
 from FslBuildGen.Packages.Unresolved.UnresolvedPackageRequirement import UnresolvedPackageRequirement
+from FslBuildGen.Packages.Unresolved.UnresolvedPackageSourceGeneration import (
+    UnresolvedPackageSourceGeneration,
+    UnresolvedPackageSourceGenerationInputFile,
+    UnresolvedPackageSourceGenerationVisibleProperty,
+)
 from FslBuildGen.Packages.Unresolved.UnresolvedPackageVariant import UnresolvedPackageVariant
 from FslBuildGen.Packages.Unresolved.UnresolvedPackageVariantOption import UnresolvedPackageVariantOption
 from FslBuildGen.Xml.Flavor.XmlGenFileFlavor import XmlGenFileFlavor
@@ -77,6 +82,7 @@ from FslBuildGen.Xml.XmlGenFileGenerate import XmlGenFileGenerate
 from FslBuildGen.Xml.XmlGenFileGenerateGrpcProtoFile import XmlGenFileGenerateGrpcProtoFile
 from FslBuildGen.Xml.XmlGenFileIgnore import XmlGenFileIgnore
 from FslBuildGen.Xml.XmlGenFileRequirement import XmlGenFileRequirement
+from FslBuildGen.Xml.XmlGenFileSourceGeneration import XmlGenFileSourceGeneration
 from FslBuildGen.Xml.XmlStuff import XmlGenFilePlatform, XmlGenFileVariant, XmlGenFileVariantOption
 
 
@@ -114,6 +120,16 @@ class XmlConvert:
     @staticmethod
     def ToUnresolvedPackageIgnore(xmlIgnore: XmlGenFileIgnore) -> UnresolvedPackageIgnore:
         return UnresolvedPackageIgnore(xmlIgnore.Path)
+
+    @staticmethod
+    def TryToUnresolvedPackageSourceGeneration(xmlSourceGeneration: XmlGenFileSourceGeneration | None) -> UnresolvedPackageSourceGeneration | None:
+        if xmlSourceGeneration is None:
+            return None
+        inputFiles = [UnresolvedPackageSourceGenerationInputFile(entry.Path) for entry in xmlSourceGeneration.InputFiles]
+        visibleProperties = [
+            UnresolvedPackageSourceGenerationVisibleProperty(entry.Name, entry.IsRaw, entry.ConceptName) for entry in xmlSourceGeneration.VisibleProperties
+        ]
+        return UnresolvedPackageSourceGeneration(xmlSourceGeneration.OutputPath, inputFiles, visibleProperties)
 
     @staticmethod
     def ToUnresolvedPackageVariant(xmlVariant: XmlGenFileVariant) -> UnresolvedPackageVariant:
@@ -216,6 +232,7 @@ class XmlConvert:
         directRequirements = XmlConvert.ToUnresolvedPackageRequirementList(xmlValue.DirectRequirements)
         directDefines = XmlConvert.ToUnresolvedPackageDefineList(xmlValue.DirectDefines)
         directIgnores = XmlConvert.ToUnresolvedPackageIgnoreList(xmlValue.DirectIgnores)
+        sourceGeneration = XmlConvert.TryToUnresolvedPackageSourceGeneration(xmlValue.SourceGeneration)
         externalDependencies = XmlConvert.ToUnresolvedExternalDependencyList(xmlValue.ExternalDependencies)
         path = UnresolvedPackagePaths(
             xmlValue.IncludePath, xmlValue.SourcePath, xmlValue.ContentPath, xmlValue.ContentSourcePath, xmlValue.BaseIncludePath, xmlValue.BaseSourcePath
@@ -249,6 +266,7 @@ class XmlConvert:
             directRequirements,
             directDefines,
             directIgnores,
+            sourceGeneration,
             externalDependencies,
             path,
             templateType,

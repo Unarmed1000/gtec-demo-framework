@@ -148,6 +148,80 @@
   </xs:complexType>
 
 
+  <xs:simpleType name="_TP_SourceGenerationVisiblePropertyName">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="BuildConfiguration"/>
+      <xs:enumeration value="TargetFramework"/>
+      <xs:enumeration value="RootNamespace"/>
+      <xs:enumeration value="AssemblyName"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+
+  <xs:complexType name="_T_SourceGenerationGenerator">
+    <xs:annotation>
+      <xs:documentation>Attaches the named package as a source generator</xs:documentation>
+    </xs:annotation>
+    <xs:attribute name="Name" type="xs:string" use="required"/>
+    <xs:attribute name="Reference" type="xs:boolean" use="optional"/>
+    <xs:attribute name="Access" type="_TP_DependencyAccess" use="optional"/>
+  </xs:complexType>
+
+
+  <xs:complexType name="_T_SourceGenerationInputFile">
+    <xs:annotation>
+      <xs:documentation>Declares a file as a input to the source generation, the path can contain glob patterns</xs:documentation>
+    </xs:annotation>
+    <xs:attribute name="Path" type="xs:string" use="required"/>
+  </xs:complexType>
+
+
+  <xs:complexType name="_T_SourceGenerationVisibleProperty">
+    <xs:annotation>
+      <xs:documentation>Makes a build property visible to the source generation. Set Raw to use a backend specific name</xs:documentation>
+    </xs:annotation>
+    <xs:attribute name="Name" type="xs:string" use="required"/>
+    <xs:attribute name="Raw" type="xs:boolean" use="optional"/>
+  </xs:complexType>
+
+
+  <xs:complexType name="_T_SourceGeneration">
+    <xs:annotation>
+      <xs:documentation>Describes that this package takes part in source generation</xs:documentation>
+    </xs:annotation>
+    <xs:sequence>
+      <xs:element name="Generator" type="_T_SourceGenerationGenerator" minOccurs="0" maxOccurs="unbounded"/>
+      <xs:element name="InputFile" type="_T_SourceGenerationInputFile" minOccurs="0" maxOccurs="unbounded"/>
+      <xs:element name="VisibleProperty" type="_T_SourceGenerationVisibleProperty" minOccurs="0" maxOccurs="unbounded"/>
+    </xs:sequence>
+    <xs:attribute name="OutputPath" type="xs:string" use="optional"/>
+  </xs:complexType>
+
+
+  <xs:simpleType name="_TP_IncludePriority">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="After"/>
+      <xs:enumeration value="Before"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+
+  <xs:complexType name="_T_Ignore">
+    <xs:annotation>
+      <xs:documentation>Excludes a package relative directory from the generated project</xs:documentation>
+    </xs:annotation>
+    <xs:attribute name="Path" type="xs:string" use="required"/>
+  </xs:complexType>
+
+
+  <xs:complexType name="_T_CopyFile">
+    <xs:annotation>
+      <xs:documentation>Copies the named file to the output directory</xs:documentation>
+    </xs:annotation>
+    <xs:attribute name="Name" type="xs:string" use="required"/>
+  </xs:complexType>
+
+
   <xs:complexType name="_T_ExternalDependencyPackageManager">
     <xs:annotation>
       <xs:documentation>.</xs:documentation>
@@ -164,7 +238,7 @@
     <xs:annotation>
       <xs:documentation>Specifies a direct dependency to something external. If this dependency is used a lot consider creating a ExternalLibrary package for it instead.</xs:documentation>
     </xs:annotation>
-    <xs:group ref="_G_ExternalDependencyCommandList"/>
+    <xs:group ref="_G_ExternalDependencyCommandList" minOccurs="0" maxOccurs="unbounded"/>
     <xs:attribute name="Access" type="_TP_Access" use="optional"/>
     <xs:attribute name="Culture" type="xs:string" use="optional"/>
     <xs:attribute name="DebugName" type="xs:string" use="optional"/>
@@ -231,6 +305,7 @@
     </xs:annotation>
     <xs:group ref="_G_FlavorCommandList"/>
     <xs:attribute name="Name" type="xs:string" use="required"/>
+    <xs:attribute name="QuickName" type="xs:string" use="optional"/>
   </xs:complexType>
 
   <xs:complexType name="_T_FlavorExtension">
@@ -298,6 +373,24 @@
 	</xs:choice>
   </xs:group>
 
+  <xs:group name="_G_IgnoreElement">
+    <xs:choice>
+      <xs:element name="Ignore" type="_T_Ignore"/>
+    </xs:choice>
+  </xs:group>
+
+  <xs:group name="_G_CopyFileElement">
+    <xs:choice>
+      <xs:element name="CopyFile" type="_T_CopyFile"/>
+    </xs:choice>
+  </xs:group>
+
+  <xs:group name="_G_SourceGenerationElement">
+    <xs:choice>
+      <xs:element name="SourceGeneration" type="_T_SourceGeneration"/>
+    </xs:choice>
+  </xs:group>
+
   <xs:group name="_G_GenerateGrpcProtoFileElement">
 	<xs:choice>
 	  <xs:element name="GenerateGrpcProtoFile" type="_T_GenerateGrpcProtoFile"/>
@@ -319,6 +412,7 @@
   <xs:group name="_G_DefineElement">
     <xs:choice>
       <xs:element name="Define" type="_T_Define"/>
+      <xs:element name="CPPDefine" type="_T_Define"/>
     </xs:choice>
   </xs:group>
 
@@ -386,6 +480,9 @@
 	  <xs:group ref="_G_FindPackageElement" minOccurs="0" maxOccurs="unbounded"/>
       <xs:group ref="_G_ExternalDependencyElement" minOccurs="0" maxOccurs="unbounded"/>
       <xs:group ref="_G_DefineElement" minOccurs="0" maxOccurs="unbounded"/>
+      <xs:group ref="_G_CopyFileElement" minOccurs="0" maxOccurs="unbounded"/>
+      <xs:group ref="_G_IgnoreElement" minOccurs="0" maxOccurs="unbounded"/>
+      <xs:group ref="_G_SourceGenerationElement" minOccurs="0" maxOccurs="1"/>
       <xs:group ref="_G_PlatformElement" minOccurs="0" maxOccurs="unbounded"/>
     </xs:sequence>
   </xs:group>
@@ -451,6 +548,8 @@
     <xs:attribute name="PackageNameBasedIncludePath" type="_TP_Bool" use="optional"/>
     <xs:attribute name="UnitTest" type="_TP_Bool" use="optional"/>
     <xs:attribute name="ShowInMainReadme" type="_TP_Bool" use="optional"/>
+    <xs:attribute name="EnableExtendedSourceExtensions" type="_TP_Bool" use="optional"/>
+    <xs:attribute name="OverrideIncludePriority" type="_TP_IncludePriority" use="optional"/>
   </xs:complexType>
 
   <xs:complexType name="_T_Library">
@@ -467,6 +566,11 @@
     <xs:attribute name="AllowCombinedDirectory" type="_TP_Bool" use="optional"/>
     <xs:attribute name="AllowCheck" type="_TP_Bool" use="optional"/>
     <xs:attribute name="PackageNameBasedIncludePath" type="_TP_Bool" use="optional"/>
+    <xs:attribute name="EnableExtendedSourceExtensions" type="_TP_Bool" use="optional"/>
+    <xs:attribute name="NoInclude" type="_TP_Bool" use="optional"/>
+    <xs:attribute name="OverrideIncludePriority" type="_TP_IncludePriority" use="optional"/>
+    <xs:attribute name="ShowInMainReadme" type="_TP_Bool" use="optional"/>
+    <xs:attribute name="UnitTest" type="_TP_Bool" use="optional"/>
   </xs:complexType>
 
   <xs:complexType name="_T_ExternalLibrary">
@@ -479,6 +583,11 @@
     <xs:attribute name="CreationYear" type="xs:integer" use="optional"/>
     <xs:attribute name="TemplateType" type="xs:string" use="optional"/>
     <xs:attribute name="AllowCheck" type="_TP_Bool" use="optional"/>
+    <xs:attribute name="EnableExtendedSourceExtensions" type="_TP_Bool" use="optional"/>
+    <xs:attribute name="NoInclude" type="_TP_Bool" use="optional"/>
+    <xs:attribute name="OverrideIncludePriority" type="_TP_IncludePriority" use="optional"/>
+    <xs:attribute name="ShowInMainReadme" type="_TP_Bool" use="optional"/>
+    <xs:attribute name="UnitTest" type="_TP_Bool" use="optional"/>
   </xs:complexType>
 
 
@@ -496,6 +605,11 @@
     <xs:attribute name="AllowCombinedDirectory" type="_TP_Bool" use="optional"/>
     <xs:attribute name="AllowCheck" type="_TP_Bool" use="optional"/>
     <xs:attribute name="PackageNameBasedIncludePath" type="_TP_Bool" use="optional"/>
+    <xs:attribute name="EnableExtendedSourceExtensions" type="_TP_Bool" use="optional"/>
+    <xs:attribute name="NoInclude" type="_TP_Bool" use="optional"/>
+    <xs:attribute name="OverrideIncludePriority" type="_TP_IncludePriority" use="optional"/>
+    <xs:attribute name="ShowInMainReadme" type="_TP_Bool" use="optional"/>
+    <xs:attribute name="UnitTest" type="_TP_Bool" use="optional"/>
   </xs:complexType>
 
 
@@ -686,7 +800,7 @@
       <xs:documentation>Check if a executable file can be found in the path. The executable name will be stripped of any extension and the platform default executable extension will be added</xs:documentation>
     </xs:annotation>
     <xs:attribute name="Name" type="xs:string" use="required"/>
-    <xs:attribute name="Alternatives" type="xs:string" use="required"/>
+    <xs:attribute name="Alternatives" type="xs:string" use="optional"/>
 	<xs:attribute name="MinVersion" type="xs:string" use="optional"/>
 	<xs:attribute name="VersionCommand" type="xs:string" use="optional"/>
 	<xs:attribute name="VersionRegEx" type="xs:string" use="optional"/>
@@ -725,6 +839,10 @@
       <xs:documentation>Automatically ensures the tool is added as a tool available to the FslBuild toolchain.</xs:documentation>
     </xs:annotation>
     <xs:attribute name="Name" type="xs:string" use="required"/>
+    <xs:attribute name="MinVersion" type="xs:string" use="optional"/>
+    <xs:attribute name="VersionCommand" type="xs:string" use="optional"/>
+    <xs:attribute name="VersionRegEx" type="xs:string" use="optional"/>
+    <xs:attribute name="VersionSplitChar" type="xs:string" use="optional"/>
     <xs:attribute name="Help" type="xs:string" use="optional"/>
   </xs:complexType>
 
@@ -830,6 +948,7 @@
       <xs:group ref="_G_UsesFeatureElement" minOccurs="0" maxOccurs="unbounded"/>
       <xs:group ref="_G_DependencyElement" minOccurs="0" maxOccurs="unbounded"/>
       <xs:group ref="_G_DefineElement" minOccurs="0" maxOccurs="unbounded"/>
+      <xs:group ref="_G_ExperimentalRecipeElement" minOccurs="0" maxOccurs="1"/>
       <xs:group ref="_G_PlatformExternalElement" minOccurs="0" maxOccurs="unbounded"/>
     </xs:sequence>
   </xs:group>
@@ -857,6 +976,11 @@
     <xs:attribute name="Name" type="xs:string" use="required"/>
     <xs:attribute name="Company" type="xs:string" use="optional"/>
     <xs:attribute name="CreationYear" type="xs:integer" use="optional"/>
+    <xs:attribute name="EnableExtendedSourceExtensions" type="_TP_Bool" use="optional"/>
+    <xs:attribute name="NoInclude" type="_TP_Bool" use="optional"/>
+    <xs:attribute name="OverrideIncludePriority" type="_TP_IncludePriority" use="optional"/>
+    <xs:attribute name="ShowInMainReadme" type="_TP_Bool" use="optional"/>
+    <xs:attribute name="UnitTest" type="_TP_Bool" use="optional"/>
   </xs:complexType>
 
 

@@ -54,6 +54,7 @@ from FslBuildGen.Packages.Unresolved.UnresolvedPackageGenerate import Unresolved
 from FslBuildGen.Packages.Unresolved.UnresolvedPackageGenerateGrpcProtoFile import UnresolvedPackageGenerateGrpcProtoFile
 from FslBuildGen.Packages.Unresolved.UnresolvedPackageIgnore import UnresolvedPackageIgnore
 from FslBuildGen.Packages.Unresolved.UnresolvedPackageRequirement import UnresolvedPackageRequirement
+from FslBuildGen.Packages.Unresolved.UnresolvedPackageSourceGeneration import UnresolvedPackageSourceGeneration
 from FslBuildGen.Xml.XmlExperimentalRecipe import XmlExperimentalRecipe
 from FslBuildGen.Xml.XmlStuff import XmlGenFileBuildCustomization
 
@@ -79,6 +80,7 @@ class ProcessedFactory:
         directRequirements: list[UnresolvedPackageRequirement],
         directDefines: list[UnresolvedPackageDefine],
         directIgnores: list[UnresolvedPackageIgnore],
+        sourceGeneration: UnresolvedPackageSourceGeneration | None,
         externalDependencies: list[UnresolvedExternalDependency],
         path: ProcessedPackagePaths,
         templateType: str,
@@ -112,6 +114,7 @@ class ProcessedFactory:
             directRequirements,
             directDefines,
             directIgnores,
+            sourceGeneration,
             externalDependencies,
             path,
             templateType,

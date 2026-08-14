@@ -134,6 +134,12 @@ class CodeTemplateVC:
         self.GrpcProtoFilesGroupEntry = self.SafeReadFile(IOUtil.Join(strTemplateProjectPath, "GrpcProtoFilesGroupFile.txt"), "")
         self.GrpcProtoFilesGroupEntryGrpcService = self.SafeReadFile(IOUtil.Join(strTemplateProjectPath, "GrpcProtoFilesGroupFile_GrpcServices.txt"), "")
 
+        self.SourceGenerationProperties = IOUtil.TryReadFile(IOUtil.Join(strTemplateProjectPath, "SourceGenerationProperties.txt"))
+        self.AdditionalFiles = IOUtil.TryReadFile(IOUtil.Join(strTemplateProjectPath, "AdditionalFiles.txt"))
+        self.AdditionalFiles_1 = IOUtil.TryReadFile(IOUtil.Join(strTemplateProjectPath, "AdditionalFiles_1.txt"))
+        self.CompilerVisibleProperties = IOUtil.TryReadFile(IOUtil.Join(strTemplateProjectPath, "CompilerVisibleProperties.txt"))
+        self.CompilerVisibleProperties_1 = IOUtil.TryReadFile(IOUtil.Join(strTemplateProjectPath, "CompilerVisibleProperties_1.txt"))
+
         self.ExcludePackageDirs = IOUtil.TryReadFile(IOUtil.Join(strTemplateProjectPath, "ExcludePackageDirs.txt"))
         self.ExcludePackageDirsComplexEntry = self.__GenerateExcludePackageDirsCoplexEntry(strTemplateProjectPath)
         self.AssemblyReferenceSimple = IOUtil.TryReadFile(IOUtil.Join(strTemplateProjectPath, "AssemblyReferenceSimple.txt"))

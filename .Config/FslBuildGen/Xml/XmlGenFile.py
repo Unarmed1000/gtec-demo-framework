@@ -39,7 +39,7 @@ from typing import Any, cast
 
 from FslBuildGen import IOUtil, PackageConfig, ToolSharedValues, Util
 from FslBuildGen.Config import Config
-from FslBuildGen.DataTypes import IncludePriority, PackageCreationYearString, PackageLanguage, PackageString, PackageType
+from FslBuildGen.DataTypes import DependencyOutputType, IncludePriority, PackageCreationYearString, PackageLanguage, PackageString, PackageType
 from FslBuildGen.Exceptions import (
     FileNotFoundException,
     PackageMissingRequiredIncludeDirectoryException,
@@ -82,6 +82,7 @@ from FslBuildGen.Xml.XmlGenFileGenerate import XmlGenFileGenerate
 from FslBuildGen.Xml.XmlGenFileGenerateGrpcProtoFile import XmlGenFileGenerateGrpcProtoFile
 from FslBuildGen.Xml.XmlGenFileIgnore import XmlGenFileIgnore
 from FslBuildGen.Xml.XmlGenFileRequirement import XmlGenFileRequirement
+from FslBuildGen.Xml.XmlGenFileSourceGeneration import XmlGenFileSourceGeneration
 from FslBuildGen.Xml.XmlStuff import (
     DefaultValueName,
     LocalPackageDefaultValues,
@@ -139,6 +140,7 @@ class XmlGenFile(XmlCommonFslBuild):
         self.IsVirtual = False
         self.GenerateList: list[XmlGenFileGenerate] = []
         self.GenerateGrpcProtoFileList: list[XmlGenFileGenerateGrpcProtoFile] = []
+        self.SourceGeneration: XmlGenFileSourceGeneration | None = None
         self.CopyFileList: list[XmlGenFileCopyFile] = []
         self.DirectDependencies: list[XmlGenFileDependency] = []
         self.DirectRequirements: list[XmlGenFileRequirement] = []
@@ -222,6 +224,11 @@ class XmlGenFile(XmlCommonFslBuild):
         self.GenerateList = self.__GetGenerateList(log, elem)
         self.GenerateGrpcProtoFileList = self.__GetGenerateGrpcProtoFileList(log, elem)
         self.CopyFileList = self.__GetCopyFileList(log, elem)
+
+        self.SourceGeneration = self.__TryGetSourceGeneration(log, elem, packageName)
+        if self.SourceGeneration is not None:
+            self.DirectDependencies += self.__CreateSourceGenerationDependencies(self.SourceGeneration, packageName, self.DirectDependencies)
+
         requirements = self._GetXMLRequirements(elem)
         allowRecipes = self.__DoesTypeAllowRecipes(theType)
 
@@ -362,6 +369,47 @@ class XmlGenFile(XmlCommonFslBuild):
         foundElements = xmlElement.findall("GenerateGrpcProtoFile")
         for element in foundElements:
             res.append(XmlGenFileGenerateGrpcProtoFile(log, element))
+        return res
+
+    def __TryGetSourceGeneration(self, log: Log, xmlElement: ET.Element, packageName: str) -> XmlGenFileSourceGeneration | None:
+        foundElements = xmlElement.findall("SourceGeneration")
+        if len(foundElements) <= 0:
+            return None
+        if len(foundElements) > 1:
+            raise XmlException2(f"Package '{packageName}' contains more than one SourceGeneration element")
+
+        result = XmlGenFileSourceGeneration(log, foundElements[0])
+
+        # The generated output directory used to be hidden with a <Ignore Path="..."/>, that is now described by the OutputPath attribute
+        if result.OutputPath is not None:
+            for ignoreEntry in self.DirectIgnores:
+                if ignoreEntry.Path == result.OutputPath:
+                    raise XmlException2(
+                        f"Package '{packageName}' contains a <Ignore Path=\"{ignoreEntry.Path}\"/> that is already described by "
+                        f'<SourceGeneration OutputPath="{result.OutputPath}"/>, please remove the Ignore element'
+                    )
+
+        if self.PackageLanguage != PackageLanguage.CSharp:
+            log.LogPrintWarning(
+                f"Package '{packageName}' uses SourceGeneration which is not supported for the package language "
+                f"'{PackageLanguage.ToString(self.PackageLanguage)}', it will be ignored"
+            )
+        return result
+
+    def __CreateSourceGenerationDependencies(
+        self, sourceGeneration: XmlGenFileSourceGeneration, packageName: str, existingDependencies: list[XmlGenFileDependency]
+    ) -> list[XmlGenFileDependency]:
+        """A source generator is just a dependency with a specific output type, so we translate it into one here"""
+        existingNames = {entry.Name for entry in existingDependencies}
+        res: list[XmlGenFileDependency] = []
+        for generator in sourceGeneration.Generators:
+            if generator.Name in existingNames:
+                raise XmlException2(
+                    f"Package '{packageName}' has both a <Generator Name='{generator.Name}'/> and a <Dependency Name='{generator.Name}'/>, "
+                    "a package can only be depended upon once"
+                )
+            self._ValidateName(sourceGeneration.XMLElement, generator.Name)
+            res.append(self._CreateFakeXMLDependencies(generator.Name, generator.Access, DependencyOutputType.Analyzer, generator.Reference))
         return res
 
     def __GetCopyFileList(self, log: Log, xmlElement: ET.Element) -> list[XmlGenFileCopyFile]:

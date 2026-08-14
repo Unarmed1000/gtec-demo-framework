@@ -686,6 +686,45 @@ class FilterMode(Enum):
     TrimUnrequestedPackages = 1  # Trim packages that where not imported because of a user request
 
 
+class SourceGenerationVisiblePropertyName(Enum):
+    """The concept level build properties that can be made visible to a source generator.
+    Each backend is responsible for mapping these to its own property name.
+    """
+
+    BuildConfiguration = 0
+    TargetFramework = 1
+    RootNamespace = 2
+    AssemblyName = 3
+
+    @staticmethod
+    def ToString(value: "SourceGenerationVisiblePropertyName") -> str:
+        if value == SourceGenerationVisiblePropertyName.BuildConfiguration:
+            return "BuildConfiguration"
+        elif value == SourceGenerationVisiblePropertyName.TargetFramework:
+            return "TargetFramework"
+        elif value == SourceGenerationVisiblePropertyName.RootNamespace:
+            return "RootNamespace"
+        elif value == SourceGenerationVisiblePropertyName.AssemblyName:
+            return "AssemblyName"
+        raise Exception(f"Unknown SourceGenerationVisiblePropertyName: {value}")
+
+    @staticmethod
+    def TryFromString(value: str) -> Optional["SourceGenerationVisiblePropertyName"]:
+        if value == "BuildConfiguration":
+            return SourceGenerationVisiblePropertyName.BuildConfiguration
+        elif value == "TargetFramework":
+            return SourceGenerationVisiblePropertyName.TargetFramework
+        elif value == "RootNamespace":
+            return SourceGenerationVisiblePropertyName.RootNamespace
+        elif value == "AssemblyName":
+            return SourceGenerationVisiblePropertyName.AssemblyName
+        return None
+
+    @staticmethod
+    def GetAllNames() -> list[str]:
+        return [SourceGenerationVisiblePropertyName.ToString(entry) for entry in SourceGenerationVisiblePropertyName]
+
+
 class GrpcServices(Enum):
     Both = 0
     Server = 1

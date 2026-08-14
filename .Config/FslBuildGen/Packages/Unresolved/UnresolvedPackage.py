@@ -54,6 +54,7 @@ from FslBuildGen.Packages.Unresolved.UnresolvedPackageGenerate import Unresolved
 from FslBuildGen.Packages.Unresolved.UnresolvedPackageGenerateGrpcProtoFile import UnresolvedPackageGenerateGrpcProtoFile
 from FslBuildGen.Packages.Unresolved.UnresolvedPackageIgnore import UnresolvedPackageIgnore
 from FslBuildGen.Packages.Unresolved.UnresolvedPackageRequirement import UnresolvedPackageRequirement
+from FslBuildGen.Packages.Unresolved.UnresolvedPackageSourceGeneration import UnresolvedPackageSourceGeneration
 from FslBuildGen.Xml.XmlExperimentalRecipe import XmlExperimentalRecipe
 from FslBuildGen.Xml.XmlStuff import XmlGenFileBuildCustomization
 
@@ -117,6 +118,7 @@ class UnresolvedPackage:
         directRequirements: list[UnresolvedPackageRequirement],
         directDefines: list[UnresolvedPackageDefine],
         directIgnores: list[UnresolvedPackageIgnore],
+        sourceGeneration: UnresolvedPackageSourceGeneration | None,
         externalDependencies: list[UnresolvedExternalDependency],
         path: UnresolvedPackagePaths,
         templateType: str,
@@ -150,6 +152,7 @@ class UnresolvedPackage:
         self.DirectRequirements = directRequirements
         self.DirectDefines = directDefines
         self.DirectIgnores = directIgnores
+        self.SourceGeneration = sourceGeneration
         self.ExternalDependencies = externalDependencies
 
         # self.Platforms = {}  # type: Dict[str, XmlGenFilePlatform]

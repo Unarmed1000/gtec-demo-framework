@@ -36,7 +36,7 @@ import xml.etree.ElementTree as ET
 from FslBuildGen import Util
 from FslBuildGen.DataTypes import AccessType, DependencyOutputType
 from FslBuildGen.Log import Log
-from FslBuildGen.Xml.Exceptions import XmlFormatException
+from FslBuildGen.Xml.Exceptions import XmlException2, XmlFormatException
 from FslBuildGen.Xml.XmlBase import XmlBase
 
 
@@ -44,21 +44,21 @@ class XmlGenFileDependency(XmlBase):
     __AttribName = "Name"
     __AttribFlavor = "Flavor"
     __AttribAccess = "Access"
-    __AttribOutputType = "OutputType"
-    __AttribReferenceOutputAssembly = "ReferenceOutputAssembly"
     __AttribIf = "If"
+
+    # These used to describe how a source generator was attached, that is now done by <SourceGeneration><Generator/></SourceGeneration>.
+    # They are kept here so we can produce a error that names the replacement instead of a generic 'unknown attribute' error.
+    __RemovedAttribOutputType = "OutputType"
+    __RemovedAttribReferenceOutputAssembly = "ReferenceOutputAssembly"
 
     def __init__(self, log: Log, xmlElement: ET.Element) -> None:
         super().__init__(log, xmlElement)
-        self._CheckAttributes(
-            {self.__AttribName, self.__AttribFlavor, self.__AttribAccess, self.__AttribOutputType, self.__AttribReferenceOutputAssembly, self.__AttribIf}
-        )
+        self.__CheckRemovedAttributes(xmlElement)
+        self._CheckAttributes({self.__AttribName, self.__AttribFlavor, self.__AttribAccess, self.__AttribIf})
         self.Name: str = self._ReadAttrib(xmlElement, self.__AttribName)
         flavor: str | None = self._TryReadAttrib(xmlElement, self.__AttribFlavor)
         self.Flavor = self.__TryParseFlavor(flavor)
         access: str = self._ReadAttrib(xmlElement, self.__AttribAccess, "Public")
-        outputType: str = self._ReadAttrib(xmlElement, self.__AttribOutputType, "Reference")
-        self.ReferenceOutputAssembly = self._ReadBoolAttrib(xmlElement, self.__AttribReferenceOutputAssembly, True)
         self.IfCondition: str | None = self._TryReadAttrib(xmlElement, self.__AttribIf)
 
         if access == "Public":
@@ -70,9 +70,22 @@ class XmlGenFileDependency(XmlBase):
         else:
             raise XmlFormatException(f"Unknown access type '{access}' on Dependency: '{self.Name}'")
 
-        self.OutputType = DependencyOutputType.FromString(outputType)
-        if self.OutputType != DependencyOutputType.Reference and self.Access != self.Access:
-            raise XmlFormatException(f"OutputType '{outputType}' requires AccessType: 'Private'")
+        # A dependency written in a gen file is always a plain reference, everything else is described by <SourceGeneration>
+        self.OutputType = DependencyOutputType.Reference
+        self.ReferenceOutputAssembly = True
+
+    def __CheckRemovedAttributes(self, xmlElement: ET.Element) -> None:
+        name = self._TryReadAttrib(xmlElement, self.__AttribName, "")
+        if self._HasAttrib(xmlElement, self.__RemovedAttribOutputType):
+            raise XmlException2(
+                f"Dependency '{name}' uses the removed attribute '{self.__RemovedAttribOutputType}'. "
+                f'Use <SourceGeneration><Generator Name="{name}"/></SourceGeneration> instead'
+            )
+        if self._HasAttrib(xmlElement, self.__RemovedAttribReferenceOutputAssembly):
+            raise XmlException2(
+                f"Dependency '{name}' uses the removed attribute '{self.__RemovedAttribReferenceOutputAssembly}'. "
+                f'Use <SourceGeneration><Generator Name="{name}" Reference="true|false"/></SourceGeneration> instead'
+            )
 
     def __TryParseFlavor(self, flavor: str | None) -> dict[str, str]:
         if flavor is None or len(flavor) <= 0:

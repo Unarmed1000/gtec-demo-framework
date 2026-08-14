@@ -250,6 +250,7 @@ class PackageManager2:
         directDependencies = PackageManager2.__ToProcessedDependencyList(instance.DirectDependencies)
         directRequirements, directDefines, externalDependencies = PackageManager2.__ExtractInstanceRequirementsAndDefinesAndExtDeps(instance, originalPackage)
         directIgnores = originalPackage.DirectIgnores
+        sourceGeneration = originalPackage.SourceGeneration
         path = PackageManager2.__ToProcessedPackagePaths(originalPackage.Path)
         templateType = originalPackage.TemplateType
         buildCustomization = originalPackage.BuildCustomization
@@ -292,6 +293,7 @@ class PackageManager2:
             directRequirements,
             directDefines,
             directIgnores,
+            sourceGeneration,
             externalDependencies,
             path,
             templateType,
@@ -429,6 +431,7 @@ class PackageManager2:
         directRequirements = unresolvedPackage.DirectRequirements
         directDefines = unresolvedPackage.DirectDefines
         directIgnores = unresolvedPackage.DirectIgnores
+        sourceGeneration = unresolvedPackage.SourceGeneration
         externalDependencies = unresolvedPackage.ExternalDependencies
         path = PackageManager2.__ToProcessedPackagePaths(unresolvedPackage.Path)
         templateType = unresolvedPackage.TemplateType
@@ -465,6 +468,7 @@ class PackageManager2:
             directRequirements,
             directDefines,
             directIgnores,
+            sourceGeneration,
             externalDependencies,
             path,
             templateType,

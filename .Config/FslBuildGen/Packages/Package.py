@@ -150,6 +150,7 @@ class Package:
         self.PlatformDefaultSupportedValue = unresolvedPackage.Flags.PlatformDefaultSupportedValue
         self.DirectDefines = unresolvedPackage.DirectDefines
         self.DirectIgnores = unresolvedPackage.DirectIgnores
+        self.SourceGeneration = unresolvedPackage.SourceGeneration
         self.Path: PackagePath | None = unresolvedPackage.PackageFile
         self.AbsolutePath = None if unresolvedPackage.PackageFile is None else unresolvedPackage.PackageFile.AbsoluteDirPath
         self.AbsoluteIncludePath = None if unresolvedPackage.Path.IncludePath is None else unresolvedPackage.Path.IncludePath.AbsoluteDirPath
