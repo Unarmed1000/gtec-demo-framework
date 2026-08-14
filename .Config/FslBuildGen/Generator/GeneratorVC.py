@@ -1347,7 +1347,6 @@ class GeneratorVC(GeneratorBase):
         res: list[str] = []
         for snippet in snippetList:
             for subDir in dirList:
-                subDir + "/"
                 subDirName = IOUtil.GetFileName(subDir)
                 strContent = snippet.replace("##DIR_NAME##", subDirName)
                 res.append(strContent)

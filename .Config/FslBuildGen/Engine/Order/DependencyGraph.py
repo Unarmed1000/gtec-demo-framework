@@ -99,20 +99,18 @@ class DependencyGraph:
 
     def AddEdge(self, fromObj: DependencyGraphNode | EvaluationPackage, toObj: DependencyGraphNode | EvaluationPackage) -> None:
         if isinstance(fromObj, EvaluationPackage):
-            if fromObj in self.__uniqueNodeDict:
-                fromNode = self.__uniqueNodeDict[fromObj]
+            if fromObj not in self.__uniqueNodeDict:
+                raise Exception(f"Unknown node: '{fromObj.Name}'")
+            fromNode = self.__uniqueNodeDict[fromObj]
         else:
             fromNode = fromObj
-            # if fromNode not in self.__nodes:
-            #    raise Exception("Unknown node: '{0}'".format(fromNode))
 
         if isinstance(toObj, EvaluationPackage):
-            if toObj in self.__uniqueNodeDict:
-                toNode = self.__uniqueNodeDict[toObj]
+            if toObj not in self.__uniqueNodeDict:
+                raise Exception(f"Unknown node: '{toObj.Name}'")
+            toNode = self.__uniqueNodeDict[toObj]
         else:
             toNode = toObj
-            # if toNode not in self.__nodes:
-            #    raise Exception("Unknown node: '{0}'".format(toNode))
 
         fromNode.AddEdge(toNode)
 

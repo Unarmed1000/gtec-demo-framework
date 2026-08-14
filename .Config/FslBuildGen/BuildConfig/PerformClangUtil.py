@@ -78,10 +78,9 @@ class PerformClangUtil:
 
     @staticmethod
     def ShowVersion(log: Log, clangExeInfo: ClangExeInfo) -> None:
+        versionCommand = [clangExeInfo.Command, "-version"]
         try:
             log.LogPrint("Listing version")
-            cmd = clangExeInfo.Command
-            versionCommand = [cmd, "-version"]
             result = subprocess.call(versionCommand)
             if result != 0:
                 log.LogPrintWarning("The command '{}' failed with '{}'.".format(" ".join(versionCommand), result))

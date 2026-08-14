@@ -451,6 +451,7 @@ class ToolFlowBuildNew(AToolAppFlow):
 
         reservedProjectNames: set[str] = set()
         packages: list[Package] | None = None
+        generator = None
         variableContext = VariableContextHelper.Create(toolConfig, localToolConfig.UserSetVariables)
         if not localToolConfig.NoParse:
             # Get the generator and see if its supported on this platform
@@ -496,6 +497,8 @@ class ToolFlowBuildNew(AToolAppFlow):
         GenerateProject(config, localConfig, configVariant, visualStudioGUID, localToolConfig.GenFileOnly)
 
         if not localToolConfig.NoBuildGen:
+            if generator is None:
+                raise Exception("Generating build files requires the packages to be parsed, so it can not be combined with NoParse")
             config.DoPrint("Generating build files")
             projectConfig = Config(
                 self.Log, toolConfig, PluginSharedValues.TYPE_DEFAULT, localToolConfig.BuildVariantConstraints, localToolConfig.AllowDevelopmentPlugins

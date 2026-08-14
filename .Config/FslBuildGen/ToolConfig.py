@@ -70,7 +70,7 @@ from FslBuildGen.ToolConfigRootDirectory import ToolConfigRootDirectory
 from FslBuildGen.ToolMinimalConfig import ToolMinimalConfig
 from FslBuildGen.Vars.VariableProcessor import VariableProcessor
 from FslBuildGen.Version import Version
-from FslBuildGen.Xml.Exceptions import XmlDuplicatedCompilerConfigurationException, XmlException2, XmlUnsupportedCompilerVersionException
+from FslBuildGen.Xml.Exceptions import XmlDuplicatedCompilerConfigurationException, XmlUnsupportedCompilerVersionException
 from FslBuildGen.Xml.Project.XmlBuildDocConfiguration import XmlBuildDocConfiguration
 from FslBuildGen.Xml.Project.XmlClangTidyConfiguration import XmlClangTidyConfiguration
 from FslBuildGen.Xml.Project.XmlClangTidyPlatform import XmlClangTidyPlatform
@@ -171,8 +171,6 @@ class ToolConfigDirectory:
         self.DecodedName = envName
         self.BashName = IOUtil.Join("$" + self.DecodedName, rest)
         self.DosName = IOUtil.Join("%" + self.DecodedName + "%", rest)
-        if self.Name is None:
-            raise XmlException2(basedUponXML.XmlElement, "Dirs are expected to contain environment variables")
         self.ResolvedPath = IOUtil.Join(IOUtil.GetEnvironmentVariableForDirectory(self.DecodedName), rest)
         self.ResolvedPathEx = f"{self.ResolvedPath}/" if len(self.ResolvedPath) > 0 else ""
 

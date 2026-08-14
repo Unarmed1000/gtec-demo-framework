@@ -324,8 +324,9 @@ class ValidationEngine:
         versionSplitChar: str,
     ) -> list[int]:
         output = ""
+        # built before the try so the error handler below can always report it
+        runCmd = [cmd, versionCommand]
         try:
-            runCmd = [cmd, versionCommand]
             with subprocess.Popen(runCmd, stderr=subprocess.STDOUT, stdout=subprocess.PIPE, universal_newlines=True) as proc:
                 output = proc.stdout.read().strip() if proc.stdout is not None else ""
                 if proc.stdout is not None:
@@ -390,6 +391,9 @@ class ValidationEngine:
         retry = True
         currentCommandName = ""
         newErrors: list[ErrorRecord] = []
+        # the loop below always runs at least once, but these are needed for the reporting after it
+        result = False
+        value: str | None = None
         while retry and len(alternatives) > 0:
             currentCommandName = alternatives[0]
             retry = False

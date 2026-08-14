@@ -275,11 +275,13 @@ def __ParsePackageGeneratorReport(log: Log, packageName: str, jsonDict: dict[str
             raise Exception("Invalid file format")
         executableReport = __ParsePackageGeneratorExecutableReport(log, packageName, jsonExecutableReportDict)
 
-    if JsonPackageGeneratorReport.VariableReport in jsonDict:
-        jsonVariableReportDict = jsonDict[JsonPackageGeneratorReport.VariableReport]
-        if not isinstance(jsonVariableReportDict, dict):
-            raise Exception("Invalid file format")
-        variableReport = __ParsePackageGeneratorVariableReport(log, packageName, jsonVariableReportDict)
+    # the variable report is required, without it there is no report to return
+    if JsonPackageGeneratorReport.VariableReport not in jsonDict:
+        raise Exception("Invalid file format")
+    jsonVariableReportDict = jsonDict[JsonPackageGeneratorReport.VariableReport]
+    if not isinstance(jsonVariableReportDict, dict):
+        raise Exception("Invalid file format")
+    variableReport = __ParsePackageGeneratorVariableReport(log, packageName, jsonVariableReportDict)
 
     return PackageGeneratorReportInfo(executableReport, variableReport)
 

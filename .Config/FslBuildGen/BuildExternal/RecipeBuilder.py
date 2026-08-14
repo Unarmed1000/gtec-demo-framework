@@ -110,6 +110,7 @@ def __TryValidateInstallation(
     # Check if the user decided to do a build override by creating the required file.
     # This allows the user to tell the system that it has been build and it should mind its own buisness
     packageHasUserBuildOverride = False
+    overrideFilename = ""
     if installPath is not None:
         overrideFilename = IOUtil.Join(installPath.ResolvedPath, __g_BuildPackageInformationOverrideFilename)
         packageHasUserBuildOverride = IOUtil.IsFile(overrideFilename)

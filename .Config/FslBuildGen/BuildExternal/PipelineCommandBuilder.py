@@ -97,10 +97,10 @@ class PipelineCommandDownload(PipelineCommandFetch):
         self.__SourceCommand = sourceCommand
 
     def DoExecute(self) -> None:
+        # resolved before the try so the error handler below can always reference it
+        targetFilename = PipelineCommandDownload.GetTargetFilename(self.__SourceCommand)
+        archiveFilePath = IOUtil.Join(self.Info.DstRootPath, targetFilename)
         try:
-            targetFilename = PipelineCommandDownload.GetTargetFilename(self.__SourceCommand)
-            archiveFilePath = IOUtil.Join(self.Info.DstRootPath, targetFilename)
-
             if not self.Info.AllowDownloads and not PipelineCommandDownload.IsValidCacheFile(archiveFilePath, self.__SourceCommand):
                 raise Exception(
                     f"Could not download {self.__SourceCommand.URL} to {archiveFilePath} as downloads have been disabled. Enable downloads or download it manually."
@@ -154,8 +154,9 @@ class PipelineCommandGitClone(PipelineCommandFetch):
         self.AutoCreateDstDirectory = False
 
     def DoExecute(self) -> None:
+        # resolved before the try so the error handler below can always reference it
+        dstPath = self.Info.DstRootPath
         try:
-            dstPath = self.Info.DstRootPath
             if not self.Info.AllowDownloads and not IOUtil.IsDirectory(dstPath):
                 raise Exception(
                     f"Could not git clone {self.__SourceCommand.URL} to {dstPath} as downloads have been disabled. Enable downloads or clone it manually."

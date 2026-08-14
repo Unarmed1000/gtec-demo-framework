@@ -59,7 +59,7 @@ class XmlConfigPackageLocation(XmlBase):
         self.Name: str = self._ReadAttrib(xmlElement, self.__AttribName)
         self.Blacklist = self.__LoadBlacklist(xmlElement)
         self.ScanMethod = ScanMethod.FromString(self._ReadAttrib(xmlElement, self.__AttribScanMethod, ScanMethod.ToString(defaultScanMethod)))
-        self.Id = self.Name.lower() if self.Name is not None else None
+        self.Id = self.Name.lower()
         self.ResolvedActualPath = None
 
     def __LoadBlacklist(self, xmlElement: ET.Element) -> list[XmlConfigPackageLocationBlacklist]:

@@ -26,13 +26,11 @@ import os
 
 from FslBuildGen import IOUtil
 
-# Try importing pathspec
+# Try importing pathspec, a None module is what tells us it is unavailable
 try:
     import pathspec
-
-    HAS_PATHSPEC = True
 except ImportError:
-    HAS_PATHSPEC = False
+    pathspec = None
 
 
 class GitDirResult:
@@ -58,7 +56,7 @@ class GitIgnoreFile:
         ignored = set()
         kept = set()
 
-        if HAS_PATHSPEC:
+        if pathspec is not None:
             try:
                 spec = pathspec.PathSpec.from_lines("gitwildmatch", lines)
             except Exception:

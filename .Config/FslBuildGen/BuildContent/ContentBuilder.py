@@ -79,7 +79,8 @@ class ContentProcessorManager:
 
         contentProcessors: list[BasicContentProcessor] = []
         #        contentProcessors = [VulkanContentProcessor()]
-        contentProcessors += self.__AddBasicContentProcessors(log, toolFinder, toolConfig.ContentBuilderConfiguration)
+        if toolConfig.ContentBuilderConfiguration is not None:
+            contentProcessors += self.__AddBasicContentProcessors(log, toolFinder, toolConfig.ContentBuilderConfiguration)
         self.__ContentProcessors = self.__FilterProcessorsBasedOnFeatures(contentProcessors, features)
 
     def TryFindContentProcessor(self, contentFile: PathRecord) -> BasicContentProcessor | None:

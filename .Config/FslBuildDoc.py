@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 #****************************************************************************************************************************************************
 # Copyright 2017 NXP
 # All rights reserved.
@@ -33,6 +32,7 @@
 
 
 from FslBuildGen import PythonVersionCheck
+
 PythonVersionCheck.CheckVersion()
 
 from FslBuildGen.Tool import ToolAppMain

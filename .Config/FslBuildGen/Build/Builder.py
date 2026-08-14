@@ -747,8 +747,8 @@ class Builder:
             return
         if package.AbsolutePath is None:
             raise Exception("Invalid package")
+        currentWorkingDirectory = runCmdInfo.RunPath
         try:
-            currentWorkingDirectory = runCmdInfo.RunPath
             if self.Log.Verbosity >= 1:
                 self.Log.LogPrint(f"Running run command '{self.__SafeJoinCommandArguments(runCmdInfo.RunCommands)}' in '{currentWorkingDirectory}'")
             result = subprocess.call(runCmdInfo.RunCommands, cwd=currentWorkingDirectory, env=buildEnv)

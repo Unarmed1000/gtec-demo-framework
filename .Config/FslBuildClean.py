@@ -31,6 +31,7 @@
 #****************************************************************************************************************************************************
 
 from FslBuildGen import PythonVersionCheck
+
 PythonVersionCheck.CheckVersion()
 
 from FslBuildGen.Tool import ToolAppMain

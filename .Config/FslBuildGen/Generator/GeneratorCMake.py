@@ -413,12 +413,12 @@ class GeneratorCMake(GeneratorBase):
                 if package.BaseIncludePath is not None:
                     if dirName == package.BaseIncludePath.Name:
                         sourceGroupName = "Include Files"
-                    elif dirName.startswith(packageBaseIncludePathEx):
+                    elif packageBaseIncludePathEx is not None and dirName.startswith(packageBaseIncludePathEx):
                         sourceGroupName = "Include Files/" + dirName[len(packageBaseIncludePathEx) :]
                 if package.BaseSourcePath is not None:
                     if dirName == package.BaseSourcePath:
                         sourceGroupName = "Source Files"
-                    elif dirName.startswith(packageBaseSourcePathEx):
+                    elif packageBaseSourcePathEx is not None and dirName.startswith(packageBaseSourcePathEx):
                         sourceGroupName = "Source Files/" + dirName[len(packageBaseSourcePathEx) :]
                 res.append(f'source_group("{sourceGroupName}" FILES {files})')
 

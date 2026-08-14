@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 #****************************************************************************************************************************************************
 # Copyright (c) 2016 Freescale Semiconductor, Inc.
 # All rights reserved.
@@ -32,6 +31,7 @@
 #****************************************************************************************************************************************************
 
 from FslBuildGen import PythonVersionCheck
+
 PythonVersionCheck.CheckVersion()
 
 from FslBuildGen.Tool import ToolAppMain

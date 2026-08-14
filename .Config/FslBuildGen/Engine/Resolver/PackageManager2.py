@@ -599,7 +599,7 @@ class PackageManager2:
                                 unsusedFlavorSet = set()
                                 packageUnusedFlavorExtensionsDict[srcPackage.Name.Value] = unsusedFlavorSet
                             else:
-                                unsusedFlavorSet.add(flavorExtension.Name.Value)
+                                unsusedFlavorSet = packageUnusedFlavorExtensionsDict[srcPackage.Name.Value]
                             unsusedFlavorSet.add(flavorExtension.Name.Value)
 
         if len(packageUnusedFlavorExtensionsDict) > 0:

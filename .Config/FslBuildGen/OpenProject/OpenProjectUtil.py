@@ -87,14 +87,14 @@ class OpenProjectUtil:
 
     @staticmethod
     def __RunVSCode(log: Log, buildPlatformType: BuildPlatformType, sourcePath: str, openCommandArgs: list[str]) -> None:
+        # built before the try so the error handler below can always report it
+        codeCmd = OpenProjectUtil.__GetCodeCmd(buildPlatformType)
+        vsCodeCommand = [codeCmd, "."]
+        if len(openCommandArgs) > 0:
+            vsCodeCommand += openCommandArgs
         try:
             if log.Verbosity >= 1:
                 log.LogPrint(f"Opening visual studio code in '{sourcePath}'")
-
-            codeCmd = OpenProjectUtil.__GetCodeCmd(buildPlatformType)
-            vsCodeCommand = [codeCmd, "."]
-            if len(openCommandArgs) > 0:
-                vsCodeCommand += openCommandArgs
             if log.Verbosity >= 4:
                 log.LogPrint(f"Running vs code with the arguments {vsCodeCommand}")
             result = subprocess.call(vsCodeCommand, cwd=sourcePath)

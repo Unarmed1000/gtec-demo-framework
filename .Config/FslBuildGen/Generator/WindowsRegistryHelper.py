@@ -30,17 +30,18 @@
 #
 # ****************************************************************************************************************************************************
 
-import os
 from typing import cast
 
-if os.name == "nt":
+try:
     import winreg
+except ImportError:
+    winreg = None
 
 
 class WindowsRegistryHelper:
     @staticmethod
     def TryReadRegistryLocalMachineStringValue(registryKey: str, valueName: str) -> str | None:
-        if os.name != "nt":
+        if winreg is None:
             return None
         try:
             with winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE, registryKey) as regKey:
@@ -51,7 +52,7 @@ class WindowsRegistryHelper:
 
     @staticmethod
     def TryReadRegistryCurrentUserStringValue(registryKey: str, valueName: str) -> str | None:
-        if os.name != "nt":
+        if winreg is None:
             return None
         try:
             with winreg.OpenKey(winreg.HKEY_CURRENT_USER, registryKey) as regKey:

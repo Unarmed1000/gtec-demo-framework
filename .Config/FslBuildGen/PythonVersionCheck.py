@@ -30,6 +30,14 @@
 #
 # ****************************************************************************************************************************************************
 
+import sys
+
+# The tools require Python 3.11+, tomllib and various typing features depend on it
+MinVersionMajor = 3
+MinVersionMinor = 11
+
 
 def CheckVersion() -> None:
-    pass
+    if sys.version_info < (MinVersionMajor, MinVersionMinor):
+        currentVersion = f"{sys.version_info[0]}.{sys.version_info[1]}"
+        raise Exception(f"This tool requires Python {MinVersionMajor}.{MinVersionMinor} or newer, the current version is {currentVersion}")

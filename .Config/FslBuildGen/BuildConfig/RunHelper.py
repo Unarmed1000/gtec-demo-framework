@@ -64,6 +64,8 @@ class RunHelper:
     def RunNow(log: Log, buildCommand: list[str], currentWorkingDirectory: str, logOutput: bool) -> int:
         if not logOutput:
             return subprocess.call(buildCommand, cwd=currentWorkingDirectory)
+        # this has to exist before the try, else a failure inside it makes the finally raise NameError and hide the real error
+        output = ""
         try:
             with subprocess.Popen(buildCommand, cwd=currentWorkingDirectory, stderr=subprocess.STDOUT, stdout=subprocess.PIPE, universal_newlines=True) as proc:
                 output = proc.stdout.read().strip() if proc.stdout is not None else ""

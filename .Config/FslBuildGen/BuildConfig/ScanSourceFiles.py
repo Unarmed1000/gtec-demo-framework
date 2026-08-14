@@ -344,13 +344,14 @@ def __SafeJoinCommandArguments(strings: list[str]) -> str:
 
 
 def __TryCheckForFileModifications(log: Log, gitExeName: str, filename: str, yearsSet: set[int], minimumLinesChanged: int) -> int | None:
+    # diff  --stat release/5.6.0 master VertexMatrix.hpp
+    # latestBranch = 'release/5.6.0'
+    oldestBranch = "master"
+    # runCommands = [gitExeName, 'diff', '--stat', latestBranch, oldestBranch, '--', filename]
+    # these are built before the try so the error handlers below can always report them
+    runCommands = [gitExeName, "diff", "--stat", oldestBranch, "--", filename]
+    currentWorkingDirectory = IOUtil.GetDirectoryName(filename)
     try:
-        # diff  --stat release/5.6.0 master VertexMatrix.hpp
-        # latestBranch = 'release/5.6.0'
-        oldestBranch = "master"
-        # runCommands = [gitExeName, 'diff', '--stat', latestBranch, oldestBranch, '--', filename]
-        runCommands = [gitExeName, "diff", "--stat", oldestBranch, "--", filename]
-        currentWorkingDirectory = IOUtil.GetDirectoryName(filename)
         if log.Verbosity >= 1:
             log.LogPrint(f"Running run command '{__SafeJoinCommandArguments(runCommands)}' in '{currentWorkingDirectory}'")
         res = subprocess.check_output(runCommands, cwd=currentWorkingDirectory, universal_newlines=True)

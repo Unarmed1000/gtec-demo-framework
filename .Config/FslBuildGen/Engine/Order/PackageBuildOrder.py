@@ -207,7 +207,7 @@ class PackageBuildOrder:
                         else:
                             depRecord = packageNameToNodeDict[dep.Name]
                             record.Resolved.DirectDependencies.append(
-                                EvaluationPackage.DependencyRecord(depRecord.Resolved, FlavorInfo(flavor.Name, flavorOption.Name))
+                                EvaluationPackage.DependencyRecord(depRecord.Resolved, FlavorInfo(flavorExtension.Name, flavorOption.Name))
                             )
 
             record.Resolved.Seal()

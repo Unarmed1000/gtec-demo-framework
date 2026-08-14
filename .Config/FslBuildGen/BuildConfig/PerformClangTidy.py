@@ -633,7 +633,7 @@ class CMakeHelper:
                             command = fileToCommandDict[absPathSourceFile]
                             # Merge defines
                             for newDefine in command.Defines:
-                                if define.Name not in uniquePackagesDefines:
+                                if newDefine not in uniquePackagesDefines:
                                     uniquePackagesDefines[newDefine] = True
                             # merge includes
                             for index, newIncludeDir in enumerate(command.Includes):
