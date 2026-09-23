@@ -4,7 +4,7 @@
     <Default.Platform.Supported Value="false"/>
     <Requirement Name="EarlyAccess" Type="feature"/>
 
-    <Platform Name="Ubuntu" Supported="true">
+    <Platform Name="Apple;Ubuntu" Supported="true">
       <ExperimentalRecipe Name="KhronosOpenVX" Version="1.2">
         <Pipeline>
           <Download URL="https://registry.khronos.org/OpenVX/sample/openvx_sample_1.2.tar.bz2" Hash="8f61203572668f7719bc9f86bc24ca06c51a98531ca7941264bd7cbbaa7b9aaa"/>

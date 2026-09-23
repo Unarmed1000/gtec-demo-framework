@@ -187,7 +187,7 @@ namespace Fsl
   };
 }    // namespace Fsl
 
-#elif defined(__linux__)
+#elif defined(__linux__) || defined(FSL_PLATFORM_APPLE)
 #if defined(FSL_WINDOWSYSTEM_X11)
 #include <X11/Xlib.h>
 namespace Fsl

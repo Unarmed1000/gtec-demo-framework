@@ -6,6 +6,7 @@
     <Requirement Name="OpenCV" Type="feature"/>
     <Requirement Name="EarlyAccess" Type="feature"/>
     <Define Name="FSL_FEATURE_OPENCV" Access="Public"/> 
+    <Platform Name="Apple" Supported="true"/>
     <Platform Name="Ubuntu" Supported="true"/>
     <Platform Name="Windows" Supported="true"/>
     <Platform Name="Yocto" Supported="true"/>

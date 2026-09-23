@@ -3,6 +3,9 @@
   <ExternalLibrary Name="Vulkan" CreationYear="2017">
     <Dependency Name="VulkanBase"/>
     <Dependency Name="WindowSystem"/>
+    <Platform Name="RDK_Yocto">
+      <Define Name="VK_USE_PLATFORM_WAYLAND_KHR" Access="Public"/>
+    </Platform>
     <Platform Name="Yocto">
       <FlavorExtension Name="WindowSystem.Impl">
         <Option Name="FB" />

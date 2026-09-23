@@ -15,6 +15,8 @@
     * DynamicTerrainTessellation, TessellationPNTriangles: vertex/tessellation shader interface mismatch.
   * The vk_layer_settings.txt files now use the VK_LAYER_KHRONOS_validation settings.
   * IVulkanDeviceCreationCustomizer::Configure now also receives the VkInstance.
+* Experimental RDK Yocto platform support.
+* Experimental Apple platform support (see Doc/Setup_guide_apple.md).
 * Misc
   * The recommended platforms are now Ubuntu 24.04 and Windows 11+.
   * Visual Studio 2026 is now the default on windows.

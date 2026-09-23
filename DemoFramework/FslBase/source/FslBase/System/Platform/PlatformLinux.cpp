@@ -1,4 +1,4 @@
-#if defined(__linux__) || defined(FSL_PLATFORM_EMSCRIPTEN)
+#if defined(__linux__) || defined(FSL_PLATFORM_EMSCRIPTEN) || defined(FSL_PLATFORM_APPLE)
 /****************************************************************************************************************************************************
  * Copyright (c) 2014 Freescale Semiconductor, Inc.
  * All rights reserved.

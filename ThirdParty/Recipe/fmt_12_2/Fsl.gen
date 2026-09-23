@@ -3,7 +3,7 @@
   <ExternalLibrary Name="Recipe.fmt_12_2" CreationYear="2023">
     <Default.Platform.Supported Value="false"/>
 
-    <Platform Name="Android;Ubuntu;QNX;Emscripten" Supported="true">
+    <Platform Name="Android;Apple;RDK_Yocto;Ubuntu;QNX;Emscripten" Supported="true">
       <ExperimentalRecipe Name="fmt" Version="12.2.0" Find="false">
         <Pipeline>
           <Download URL="https://github.com/fmtlib/fmt/releases/download/12.2.0/fmt-12.2.0.zip" To="fmt-12.2.0.zip" Hash="a2f4a8d51178f954e4c339007f77edd76ba0cb2e36f87a48e5a5403d9be5878f"/> 

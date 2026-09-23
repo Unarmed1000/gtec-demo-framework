@@ -3,7 +3,7 @@
   <ExternalLibrary Name="Recipe.GTest_1_18" CreationYear="2017">
     <Default.Platform.Supported Value="false"/>
     <Requirement Name="GoogleUnitTest" Type="feature"/>
-    <Platform Name="Ubuntu" Supported="true">
+    <Platform Name="Apple;Ubuntu" Supported="true">
       <ExperimentalRecipe Name="GTest" Version="1.18" FindTargetName="GTest::GTest GTest::Main">
         <Pipeline>
           <Download URL="https://github.com/google/googletest/releases/download/v1.18.0/googletest-1.18.0.tar.gz" To="googletest-1.18.0.tar.gz" Hash="6e3191c1455468b3fc35a417fb565c1c5071aee1b7e7f85e30cf48a98d37d8b5"/>

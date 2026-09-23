@@ -13,7 +13,7 @@
       <!--Dependency Name="Platform.Android.NDKHelper" Access="Private"/-->
       <Dependency Name="Platform.Android.JNIUtil" Access="Private"/>
     </Platform>
-    <Platform Name="Ubuntu"/>
+    <Platform Name="Apple;Ubuntu"/>
     <Platform Name="QNX"/>
     <Platform Name="Yocto"/>
     <Platform Name="Windows" ProjectId="5D828207-1B76-40FE-8817-CAA002DE8144"/>

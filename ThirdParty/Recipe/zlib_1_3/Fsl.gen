@@ -21,7 +21,7 @@
     </Platform>
 
     
-    <Platform Name="Ubuntu;QNX" Supported="true">
+    <Platform Name="Apple;RDK_Yocto;Ubuntu;QNX" Supported="true">
       <ExperimentalRecipe Name="ZLIB" Version="1.3.2" FindTargetName="ZLIB::ZLIB">
         <Pipeline>
           <Download URL="https://github.com/madler/zlib/releases/download/v1.3.2/zlib-1.3.2.tar.gz" Hash="bb329a0a2cd0274d05519d61c667c062e06990d72e125ee2dfa8de64f0119d16"/>

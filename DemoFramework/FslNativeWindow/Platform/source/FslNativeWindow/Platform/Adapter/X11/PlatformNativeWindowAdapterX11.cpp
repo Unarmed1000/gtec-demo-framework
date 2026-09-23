@@ -1,4 +1,5 @@
-#if !defined(__ANDROID__) && defined(__linux__) && defined(FSL_WINDOWSYSTEM_X11)
+#if !defined(__ANDROID__) && (defined(__linux__) || defined(FSL_PLATFORM_APPLE)) && defined(FSL_WINDOWSYSTEM_X11)
+// fix
 /****************************************************************************************************************************************************
  * Copyright (c) 2014 Freescale Semiconductor, Inc.
  * All rights reserved.
