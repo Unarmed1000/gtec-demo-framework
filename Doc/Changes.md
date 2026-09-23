@@ -26,6 +26,7 @@
   * Updated Google benchmark to 1.9.5
   * Updated OpenCV to 4.14.0
   * Updated pugixml to 1.16
+  * Updated RapidVulkan to 1.4.357.0
   * Updated stb to the latest version
   * Updated zlib to 1.3.2
 
