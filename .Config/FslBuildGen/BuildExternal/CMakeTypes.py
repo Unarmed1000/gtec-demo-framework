@@ -83,7 +83,7 @@ class CMakeGeneratorName:
         if name == CMakeGeneratorName.VisualStudio2022_X64:
             return "143"
         if name == CMakeGeneratorName.VisualStudio2026_X64:
-            return "143"
+            return "145"
         return ""
 
 

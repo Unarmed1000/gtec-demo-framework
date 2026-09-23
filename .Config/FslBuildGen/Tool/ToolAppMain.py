@@ -41,7 +41,7 @@ from datetime import timedelta
 # from typing import Callable
 from typing import Any
 
-from FslBuildGen import IOUtil, ParseUtil
+from FslBuildGen import IOUtil, ParseUtil, __version__
 
 # from FslBuildGen import PluginSharedValues
 # from FslBuildGen import Util
@@ -67,7 +67,7 @@ from FslBuildGen.ToolConfig import ToolConfig
 from FslBuildGen.Version import Version
 from FslBuildGen.Xml.Project.XmlProjectRootConfigFile import XmlProjectRootConfigFile
 
-CurrentVersion = Version(3, 11, 1, 0)
+CurrentVersion = Version.FromString(__version__)
 
 
 def __AddDefaultOptions(parser: argparse.ArgumentParser, allowStandaloneMode: bool) -> None:
