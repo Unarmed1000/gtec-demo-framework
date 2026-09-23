@@ -670,7 +670,7 @@ namespace Fsl
       bufferBarrier.dstQueueFamilyIndex =
         m_vulkanDevice.GetQueueFamilyIndices().Compute;    // Required as compute and graphics queue may have different families
 
-      vkCmdPipelineBarrier(m_compute.CommandBuffer.Get(), VK_PIPELINE_STAGE_VERTEX_SHADER_BIT, VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
+      vkCmdPipelineBarrier(m_compute.CommandBuffer.Get(), VK_PIPELINE_STAGE_VERTEX_INPUT_BIT, VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
                            Willems::Config::FLAGS_NONE, 0, nullptr, 1, &bufferBarrier, 0, nullptr);
 
       vkCmdBindPipeline(m_compute.CommandBuffer.Get(), VK_PIPELINE_BIND_POINT_COMPUTE, m_compute.Pipeline.Get());
@@ -693,7 +693,7 @@ namespace Fsl
       bufferBarrier.dstQueueFamilyIndex =
         m_vulkanDevice.GetQueueFamilyIndices().Graphics;    // Required as compute and graphics queue may have different families
 
-      vkCmdPipelineBarrier(m_compute.CommandBuffer.Get(), VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT, VK_PIPELINE_STAGE_VERTEX_SHADER_BIT,
+      vkCmdPipelineBarrier(m_compute.CommandBuffer.Get(), VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT, VK_PIPELINE_STAGE_VERTEX_INPUT_BIT,
                            Willems::Config::FLAGS_NONE, 0, nullptr, 1, &bufferBarrier, 0, nullptr);
     }
     m_compute.CommandBuffer.End();
