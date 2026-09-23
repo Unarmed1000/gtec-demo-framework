@@ -194,7 +194,7 @@ Operating System | Build system
 -----------------|---------------------
 Android          | gradle + cmake (Android Studio can be used with the generated projects)
 Ubuntu           | cmake (ninja)
-Windows          | cmake (Visual studio 2022 x64)
+Windows          | cmake (Visual studio 2026 x64)
 Yocto            | cmake (ninja)
 
 ## Scripts

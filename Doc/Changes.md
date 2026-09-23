@@ -17,6 +17,7 @@
   * IVulkanDeviceCreationCustomizer::Configure now also receives the VkInstance.
 * Misc
   * The recommended platforms are now Ubuntu 24.04 and Windows 11+.
+  * Visual Studio 2026 is now the default on windows.
   * Fixed --ExitAfterDuration never parsing the duration.
   * Updated assimp to 6.0.5
   * Updated fmt to 12.2.0

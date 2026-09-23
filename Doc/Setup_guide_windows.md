@@ -26,7 +26,7 @@
 # Prerequisites
 
 * Windows 11 or newer
-* [Visual Studio 2022](https://visualstudio.microsoft.com/vs/community/)
+* [Visual Studio 2026](https://visualstudio.microsoft.com/vs/community/)
   (community or better)
 * [CMake 3.16 or newer](https://cmake.org/download/)
 * [Python 3.10+](https://www.python.org/ftp/python/3.10.11/python-3.10.11-amd64.exe)
@@ -44,7 +44,7 @@ It's also a good idea to read the introduction to the [FslBuild toolchain](./Fsl
 1. Decide what API's you want to compile and run apps for, then install them using one of the guides below.
 2. Start a windows console (cmd.exe) in the DemoFramework folder
 3. Run the visual studio ```vcvarsall.bat x64``` to prepare your command line compiler environment for x64 compilation.
-   * For VS2022 its often located here: ```"C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Auxiliary\Build\vcvarsall.bat" x64```
+   * For VS2026 its often located here: ```"C:\Program Files\Microsoft Visual Studio\18\Community\VC\Auxiliary\Build\vcvarsall.bat" x64```
 4. Run the `prepare.bat` file located in the root of the framework folder to
    configure the necessary environment variables and paths.
    Please beware that the `prepare.bat` file requires the current working
