@@ -16,6 +16,17 @@ then compiled and deployed without code changes for other supported platforms.
 The framework also allows for ‘real’ comparative benchmarks between the different OS and windowing systems,
 since the exact same demo/benchmark code run on all of them.
 
+## About this repository
+
+This repository continues the development of the [official DemoFramework](https://github.com/nxp-imx/gtec-demo-framework) released by NXP.
+It is developed and maintained by Rene Thrane, the original developer and maintainer of the official DemoFramework,
+with the goal of keeping the framework up to date with the latest compilers, SDKs, third party libraries and platforms.
+
+* The official NXP releases remain available in the [nxp-imx/gtec-demo-framework](https://github.com/nxp-imx/gtec-demo-framework) repository.
+* This is an unofficial release. It is not an NXP product and is not endorsed or supported by NXP.
+* The framework is distributed under the same BSD-3-Clause license as the official releases, see [License.md](License.md).
+* Please report issues and suggestions for this repository here rather than to NXP.
+
 ## Supported app templates
 
 * Console. A freestyle project that runs in a console like environment.
