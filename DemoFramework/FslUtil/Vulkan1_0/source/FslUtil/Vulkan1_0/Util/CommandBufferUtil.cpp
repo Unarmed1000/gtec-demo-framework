@@ -101,11 +101,6 @@ namespace Fsl::Vulkan::CommandBufferUtil
       break;
     case VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL:
       // Image will be read in a shader (sampler, input attachment)
-      // Make sure any writes to the image have been finished
-      if (imageMemoryBarrier.srcAccessMask == 0)
-      {
-        imageMemoryBarrier.srcAccessMask = VK_ACCESS_HOST_WRITE_BIT | VK_ACCESS_TRANSFER_WRITE_BIT;
-      }
       imageMemoryBarrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
       break;
     default:
@@ -113,8 +108,12 @@ namespace Fsl::Vulkan::CommandBufferUtil
       break;
     }
 
+    // Host writes are only covered by the host stage (which is not part of VK_PIPELINE_STAGE_ALL_COMMANDS_BIT)
+    const VkPipelineStageFlags finalSrcStageMask =
+      (imageMemoryBarrier.srcAccessMask & VK_ACCESS_HOST_WRITE_BIT) != 0 ? (srcStageMask | VK_PIPELINE_STAGE_HOST_BIT) : srcStageMask;
+
     // Put barrier inside setup command buffer
-    vkCmdPipelineBarrier(cmdBuffer, srcStageMask, dstStageMask, 0, 0, nullptr, 0, nullptr, 1, &imageMemoryBarrier);
+    vkCmdPipelineBarrier(cmdBuffer, finalSrcStageMask, dstStageMask, 0, 0, nullptr, 0, nullptr, 1, &imageMemoryBarrier);
   }
 
 

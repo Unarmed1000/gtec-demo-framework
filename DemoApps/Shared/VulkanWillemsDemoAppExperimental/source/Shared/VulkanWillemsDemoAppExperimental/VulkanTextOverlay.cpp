@@ -128,7 +128,7 @@ namespace Fsl
       imageInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
       imageInfo.usage = VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
       imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-      imageInfo.initialLayout = VK_IMAGE_LAYOUT_PREINITIALIZED;
+      imageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
       m_image.Reset(m_pVulkanDevice->GetDevice(), imageInfo);
 
       VkMemoryRequirements memReqs = m_image.GetImageMemoryRequirements();
@@ -165,7 +165,7 @@ namespace Fsl
           copyCmd.Begin(cmdBufInfo);
 
           // Prepare for transfer
-          CommandBufferUtil::SetImageLayout(copyCmd.Get(), m_image.Get(), VK_IMAGE_ASPECT_COLOR_BIT, VK_IMAGE_LAYOUT_PREINITIALIZED,
+          CommandBufferUtil::SetImageLayout(copyCmd.Get(), m_image.Get(), VK_IMAGE_ASPECT_COLOR_BIT, VK_IMAGE_LAYOUT_UNDEFINED,
                                             VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
 
           VkBufferImageCopy bufferCopyRegion{};
