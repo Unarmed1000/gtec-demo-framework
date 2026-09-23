@@ -2,6 +2,8 @@
 # DemoFramework 6.7.0 Unofficial
 <!-- #AG_PROJECT_CAPTION_END# -->
 
+[![CI](https://github.com/Unarmed1000/gtec-demo-framework/actions/workflows/ci.yml/badge.svg?branch=unofficial%2F6.7.0)](https://github.com/Unarmed1000/gtec-demo-framework/actions/workflows/ci.yml?query=branch%3Aunofficial%2F6.7.0)
+
 A multi-platform framework for fast and easy demo development.
 
 The framework abstracts away all the boilerplate & OS specific code of allocating windows, creating the context,
