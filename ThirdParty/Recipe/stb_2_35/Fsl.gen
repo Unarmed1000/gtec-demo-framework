@@ -1,12 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <FslBuildGen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../FslBuildGen.xsd">
   <ExternalLibrary Name="Recipe.stb_2_35" CreationYear="2017">
-    <ExperimentalRecipe Name="stb" Version="2.35.0.4">
+    <ExperimentalRecipe Name="stb" Version="2.35.0.5">
       <Pipeline>
-        <GitClone URL="https://github.com/nothings/stb" Hash="f58f558c120e9b32c217290b80bad1a0729fbb2c"/>
+        <GitClone URL="https://github.com/nothings/stb" Hash="2c980bb59875b0d32144a71867fbdebb2f77cd20"/>
         <Copy>
           <Delete Path=".git"/>
           <Delete Path=".github"/>
+          <Delete Path=".NO_AI"/>
           <Delete Path="data"/>
           <Delete Path="deprecated"/>
           <Delete Path="docs"/>
