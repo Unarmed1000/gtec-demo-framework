@@ -139,8 +139,9 @@ namespace Fsl
       const PhysicalDeviceConfigUtil::DeviceConfigAsCharArrays deviceConfigEx(deviceConfig);
       const ReadOnlySpan<const char*> extensions = SpanUtil::AsReadOnlySpan(deviceConfigEx.Extensions);
 
-      auto vulkanDeviceSetup = Vulkan::VulkanDeviceSetupUtil::CreateSetup(
-        m_physicalDevice, m_surface, requiredFeatures, extensions, appHostConfig->TryGetDeviceCreationCustomizer().get(), pExtraDeviceCreateInfoNext);
+      auto vulkanDeviceSetup =
+        Vulkan::VulkanDeviceSetupUtil::CreateSetup(vulkanHostInfo->GetInstance(), m_physicalDevice, m_surface, requiredFeatures, extensions,
+                                                   appHostConfig->TryGetDeviceCreationCustomizer().get(), pExtraDeviceCreateInfoNext);
       m_deviceActiveFeatures = vulkanDeviceSetup.DeviceFeatures;
       m_device = std::move(vulkanDeviceSetup.Device);
       m_deviceCreateInfo = vulkanDeviceSetup.DeviceCreateInfo;

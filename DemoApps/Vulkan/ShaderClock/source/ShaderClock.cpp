@@ -32,6 +32,8 @@
 #include "ShaderClock.hpp"
 #include <FslBase/Log/Log3Fmt.hpp>
 #include <FslBase/UncheckedNumericCast.hpp>
+#include <FslDemoApp/Base/Service/Host/IHostInfo.hpp>
+#include <FslDemoHost/Vulkan/Config/DemoAppHostConfigVulkan.hpp>
 #include <FslSimpleUI/App/Theme/ThemeSelector.hpp>
 #include <FslSimpleUI/Base/Control/Background.hpp>
 #include <FslSimpleUI/Base/Control/Label.hpp>
@@ -46,6 +48,7 @@
 #include <vulkan/vulkan.h>
 #include <array>
 #include "OptionParser.hpp"
+#include "ShaderClockDeviceCustomizer.hpp"
 
 namespace Fsl
 {
@@ -78,7 +81,18 @@ namespace Fsl
     }
 
 
-    bool IsHeatmapSupported(const VkPhysicalDevice device, const VkPhysicalDeviceFeatures& deviceActiveFeatures)
+    //! Check if the 'shaderDeviceClock' feature was enabled by our device creation customizer
+    bool IsDeviceClockEnabled(const DemoAppConfig& config)
+    {
+      const auto appHostConfig =
+        std::dynamic_pointer_cast<DemoAppHostConfigVulkan>(config.DemoServiceProvider.Get<IHostInfo>()->TryGetAppHostConfig());
+      const auto customizer =
+        appHostConfig ? std::dynamic_pointer_cast<ShaderClockDeviceCustomizer>(appHostConfig->TryGetDeviceCreationCustomizer()) : nullptr;
+      return customizer && customizer->IsDeviceClockEnabled();
+    }
+
+
+    bool IsHeatmapSupported(const DemoAppConfig& config, const VkPhysicalDevice device, const VkPhysicalDeviceFeatures& deviceActiveFeatures)
     {
       FSLLOG3_INFO("Checking heatmap requirements");
       bool isSupported = true;
@@ -106,6 +120,13 @@ namespace Fsl
         }
       }
 
+      // The heatmap shader uses clockRealtimeEXT which requires the device clock
+      if (!IsDeviceClockEnabled(config))
+      {
+        FSLLOG3_INFO("- VkPhysicalDeviceShaderClockFeaturesKHR 'shaderDeviceClock' not supported");
+        isSupported = false;
+      }
+
       FSLLOG3_INFO("Heatmap requirements supported: {}", isSupported);
       return isSupported;
     }
@@ -114,7 +135,7 @@ namespace Fsl
 
   ShaderClock::ShaderClock(const DemoAppConfig& config)
     : VulkanBasic::DemoAppVulkanBasic(config)
-    , m_heatmapSupport(IsHeatmapSupported(m_device.GetPhysicalDevice().Device, m_deviceActiveFeatures))
+    , m_heatmapSupport(IsHeatmapSupported(config, m_device.GetPhysicalDevice().Device, m_deviceActiveFeatures))
     , m_uiEventListener(this)    // The UI listener forwards call to 'this' object
     , m_uiExtension(std::make_shared<UIDemoAppExtension>(config, m_uiEventListener.GetListener(), "UIAtlas/UIAtlas_160dpi"))
     , m_resources(CreateResources(m_device, m_deviceQueue, GetRenderConfig()))

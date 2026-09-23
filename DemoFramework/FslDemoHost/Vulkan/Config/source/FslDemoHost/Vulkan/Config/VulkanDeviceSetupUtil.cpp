@@ -44,7 +44,8 @@
 
 namespace Fsl::Vulkan
 {
-  VulkanDeviceSetup VulkanDeviceSetupUtil::CreateSetup(const VUPhysicalDeviceRecord& physicalDevice, const VkSurfaceKHR surface,
+  VulkanDeviceSetup VulkanDeviceSetupUtil::CreateSetup(const VkInstance instance, const VUPhysicalDeviceRecord& physicalDevice,
+                                                       const VkSurfaceKHR surface,
                                                        const std::deque<PhysicalDeviceFeatureRequest>& featureRequestDeque,
                                                        const ReadOnlySpan<const char*>& extensions,
                                                        IVulkanDeviceCreationCustomizer* const pDeviceCreationCustomizer,
@@ -75,7 +76,7 @@ namespace Fsl::Vulkan
       // Allow the app to tweak the next pointer
       if (pDeviceCreationCustomizer != nullptr)
       {
-        pDeviceCreationCustomizer->Configure(physicalDevice.Device);
+        pDeviceCreationCustomizer->Configure(instance, physicalDevice.Device);
         deviceCreateInfo.pNext = pDeviceCreationCustomizer->GetVkDeviceCreateInfoNextPointer();
       }
 

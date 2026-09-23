@@ -32,6 +32,7 @@
 #include <FslDemoApp/Vulkan/Setup/RegisterDemoApp.hpp>
 #include "OptionParser.hpp"
 #include "ShaderClock.hpp"
+#include "ShaderClockDeviceCustomizer.hpp"
 
 namespace Fsl
 {
@@ -52,6 +53,8 @@ namespace Fsl
 
     // https://www.khronos.org/registry/vulkan/specs/1.2-extensions/man/html/VK_KHR_shader_clock.html
     config.AddDeviceExtensionRequest("VK_KHR_shader_clock", Vulkan::FeatureRequirement::Optional);
+    // Enables the supported shader clock features
+    config.SetDeviceCreationCustomizer(std::make_shared<ShaderClockDeviceCustomizer>());
 
     DemoAppRegister::Vulkan::Register<ShaderClock, OptionParser>(rSetup, "Vulkan.ShaderClock", config, customDemoAppConfig);
   }

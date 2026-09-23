@@ -46,7 +46,7 @@ namespace Fsl::Vulkan
   public:
     //! @param pExtraDeviceCreateInfoNext if not null this structure (which must have a null pNext) is inserted at the front of the
     //!                                   VkDeviceCreateInfo pNext chain.
-    static VulkanDeviceSetup CreateSetup(const VUPhysicalDeviceRecord& physicalDevice, const VkSurfaceKHR surface,
+    static VulkanDeviceSetup CreateSetup(const VkInstance instance, const VUPhysicalDeviceRecord& physicalDevice, const VkSurfaceKHR surface,
                                          const std::deque<PhysicalDeviceFeatureRequest>& featureRequestDeque,
                                          const ReadOnlySpan<const char*>& extensions,
                                          IVulkanDeviceCreationCustomizer* const pDeviceCreationCustomizer = nullptr,

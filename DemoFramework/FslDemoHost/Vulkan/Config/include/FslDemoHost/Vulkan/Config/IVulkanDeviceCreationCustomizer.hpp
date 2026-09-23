@@ -40,7 +40,8 @@ namespace Fsl::Vulkan
   public:
     virtual ~IVulkanDeviceCreationCustomizer() = default;
 
-    virtual void Configure(const VkPhysicalDevice physicalDevice) = 0;
+    //! @param instance the instance (can be used to query extension functions like vkGetPhysicalDeviceFeatures2KHR)
+    virtual void Configure(const VkInstance instance, const VkPhysicalDevice physicalDevice) = 0;
 
     //! @brief the returned pointer must be valid as long as this object is alive!
     virtual const void* GetVkDeviceCreateInfoNextPointer() const = 0;
