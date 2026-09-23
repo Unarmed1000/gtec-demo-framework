@@ -117,17 +117,12 @@ jobs:
           key: thirdparty-windows-${{ env.FSL_CI_VS_VERSION }}-${{ hashFiles('ThirdParty/**/Fsl.gen', 'ThirdParty/**/*.patch') }}
           restore-keys: thirdparty-windows-${{ env.FSL_CI_VS_VERSION }}-
 
-      # Build the framework and apps recursively instead of using '-t sdk', as the sdk build validates the OpenGL ES emulator
-      # installation even when OpenGL ES is not part of the requested features (and the runner has no emulator).
       - name: Build
         shell: cmd
         run: |
           call "%FSL_CI_VCVARSALL%" x64 || exit /b 1
           call "%GITHUB_WORKSPACE%\prepare.bat" || exit /b 1
-          for %%d in (DemoFramework DemoApps) do (
-            cd /d "%GITHUB_WORKSPACE%\%%d" || exit /b 1
-            python "%GITHUB_WORKSPACE%\.Config\FslBuild.py" --noGitHash --VSVersion %FSL_CI_VS_VERSION% -r --BuildTime --UseFeatures %FSL_CI_FEATURES_WINDOWS% || exit /b 1
-          )
+          python .Config\FslBuild.py --noGitHash --VSVersion %FSL_CI_VS_VERSION% -t sdk --BuildTime --UseFeatures %FSL_CI_FEATURES_WINDOWS% || exit /b 1
 
       - name: Unit tests
         shell: cmd
@@ -135,12 +130,7 @@ jobs:
           call "%FSL_CI_VCVARSALL%" x64 || exit /b 1
           call "%GITHUB_WORKSPACE%\prepare.bat" || exit /b 1
           mkdir "%FSL_TEST_REPORTS%"
-          rem FslBuild parses --ForAllExe like a posix shell (backslashes are removed), so give gtest a path with forward slashes
-          set "FSL_TEST_REPORTS_GTEST=%FSL_TEST_REPORTS:\=/%"
-          for %%d in (DemoFramework DemoApps) do (
-            cd /d "%GITHUB_WORKSPACE%\%%d" || exit /b 1
-            python "%GITHUB_WORKSPACE%\.Config\FslBuild.py" --noGitHash --VSVersion %FSL_CI_VS_VERSION% -r --UseFeatures %FSL_CI_FEATURES_WINDOWS% --RequireFeature [GoogleUnitTest] --ForAllExe "(EXE) --gtest_output=xml:%FSL_TEST_REPORTS_GTEST%/(PACKAGE_NAME).xml" || exit /b 1
-          )
+          python .Config\FslBuild.py --noGitHash --VSVersion %FSL_CI_VS_VERSION% -t sdk --UseFeatures %FSL_CI_FEATURES_WINDOWS% --RequireFeature [GoogleUnitTest] --ForAllExe "(EXE) --gtest_output=xml:%FSL_TEST_REPORTS%\(PACKAGE_NAME).xml" || exit /b 1
 
       - name: Upload unit test reports
         if: always()
