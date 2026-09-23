@@ -53,6 +53,7 @@
 #include <Shared/UI/Benchmark/Persistence/Bench/AppBenchmarkData.hpp>
 #include <Shared/UI/Benchmark/Scene/Dialog/ResultDetailsDialogActivity.hpp>
 #include <fmt/chrono.h>
+#include <ctime>
 #include <utility>
 #include "BenchResultManager.hpp"
 #include "Control/CustomControlFactory.hpp"
@@ -103,6 +104,18 @@ namespace Fsl
       std::shared_ptr<UI::ChartData> Data;
       AverageRecord Average;
     };
+
+    //! Thread safe std::localtime (fmt::localtime was removed in fmt 12)
+    std::tm ToLocalTime(const std::time_t time)
+    {
+      std::tm result{};
+#ifdef _WIN32
+      localtime_s(&result, &time);
+#else
+      localtime_r(&time, &result);
+#endif
+      return result;
+    }
 
     ChartData ExtractData(const std::shared_ptr<DataBinding::DataBindingService>& dataBindingService, const AppBenchmarkData& sourceData)
     {
@@ -230,7 +243,7 @@ namespace Fsl
       // layout->AddChild(labelVal4, 1, 4);
       // return layout;
 
-      auto dateString = fmt::format("{0:%Y-%m-%d} {0:%H:%M:%S}", fmt::localtime(sourceData.Time));
+      auto dateString = fmt::format("{0:%Y-%m-%d} {0:%H:%M:%S}", ToLocalTime(sourceData.Time));
       auto debugString = sourceData.Info.AppDebugMode ? StringViewLite(" (Debug)") : StringViewLite();
       auto descLabel =
         uiFactory.CreateLabel(fmt::format(FMT_STRING("Scene: {}, {}x{}px {}dpi, {}, {} V{}{}"), static_cast<uint32_t>(sourceData.Info.Scene),

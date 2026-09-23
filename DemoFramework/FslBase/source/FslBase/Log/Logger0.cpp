@@ -60,7 +60,7 @@ namespace
   inline void IdeLog(fmt::format_string<Args...> formatString, const Args&... args)
   {
     fmt::memory_buffer buf;
-    fmt::vformat_to(std::back_inserter(buf), formatString, fmt::make_format_args(args...));
+    fmt::vformat_to(std::back_inserter(buf), formatString.get(), fmt::make_format_args(args...));
     buf.push_back(0);
     OutputDebugStringA(buf.data());
   }

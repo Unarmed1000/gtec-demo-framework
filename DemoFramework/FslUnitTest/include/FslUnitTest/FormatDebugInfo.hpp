@@ -43,7 +43,7 @@ namespace Fsl
   {
     if (currentValue != expectedValue)
     {
-      rStr += fmt::vformat(formatString, fmt::make_format_args(currentValue, expectedValue));
+      rStr += fmt::vformat(formatString.get(), fmt::make_format_args(currentValue, expectedValue));
     }
   }
 

@@ -44,7 +44,7 @@ namespace Fsl::Logger
   {
     try
     {
-      WriteLine(logType, fmt::vformat(formatString, fmt::make_format_args(strViewArg0)));
+      WriteLine(logType, fmt::vformat(formatString.get(), fmt::make_format_args(strViewArg0)));
     }
     catch (const std::exception&)
     {
@@ -56,7 +56,7 @@ namespace Fsl::Logger
   {
     try
     {
-      WriteLine(logLocation, logType, fmt::vformat(formatString, fmt::make_format_args(strViewArg0)));
+      WriteLine(logLocation, logType, fmt::vformat(formatString.get(), fmt::make_format_args(strViewArg0)));
     }
     catch (const std::exception&)
     {
@@ -69,7 +69,7 @@ namespace Fsl::Logger
     try
     {
       fmt::memory_buffer buf;
-      fmt::vformat_to(std::back_inserter(buf), formatString, fmt::make_format_args(args...));
+      fmt::vformat_to(std::back_inserter(buf), formatString.get(), fmt::make_format_args(args...));
       buf.push_back(0);
       WriteLine(logType, buf.data());
     }
@@ -85,7 +85,7 @@ namespace Fsl::Logger
     try
     {
       fmt::memory_buffer buf;
-      fmt::vformat_to(std::back_inserter(buf), formatString, fmt::make_format_args(args...));
+      fmt::vformat_to(std::back_inserter(buf), formatString.get(), fmt::make_format_args(args...));
       buf.push_back(0);
       WriteLine(logLocation, logType, buf.data());
     }

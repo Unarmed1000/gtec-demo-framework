@@ -60,11 +60,11 @@ namespace
   public:
     std::string Format(fmt::format_string<std::string_view> formatString, const std::string_view str) final
     {
-      return fmt::vformat(formatString, fmt::make_format_args(str));
+      return fmt::vformat(formatString.get(), fmt::make_format_args(str));
     }
     std::string Format(fmt::format_string<uint32_t> formatString, const uint32_t arg0) final
     {
-      return fmt::vformat(formatString, fmt::make_format_args(arg0));
+      return fmt::vformat(formatString.get(), fmt::make_format_args(arg0));
     }
   };
 
