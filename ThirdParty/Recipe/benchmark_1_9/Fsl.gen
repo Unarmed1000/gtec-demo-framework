@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <FslBuildGen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../FslBuildGen.xsd">
-  <ExternalLibrary Name="Recipe.benchmark_1_8" CreationYear="2022">
+  <ExternalLibrary Name="Recipe.benchmark_1_9" CreationYear="2022">
     <Requirement Name="GoogleBenchmark" Type="feature"/>
     <!--Dependency Name="GTest"/-->
     <Default.Platform.Supported Value="false"/>
     <Platform Name="Ubuntu" Supported="true">
-      <ExperimentalRecipe Name="benchmark" Version="1.8" FindTargetName="benchmark::benchmark benchmark::benchmark_main">
+      <ExperimentalRecipe Name="benchmark" Version="1.9" FindTargetName="benchmark::benchmark benchmark::benchmark_main">
         <Pipeline>
-          <Download URL="https://github.com/google/benchmark/archive/refs/tags/v1.8.3.tar.gz" To="googlebenchmark-1.8.3.tar.gz" Hash="6bc180a57d23d4d9515519f92b0c83d61b05b5bab188961f36ac7b06b0d9e9ce"/>
-          <Unpack File="googlebenchmark-1.8.3.tar.gz" OutputPath="benchmark-1.8.3"/>
+          <Download URL="https://github.com/google/benchmark/archive/refs/tags/v1.9.5.tar.gz" To="googlebenchmark-1.9.5.tar.gz" Hash="9631341c82bac4a288bef951f8b26b41f69021794184ece969f8473977eaa340"/>
+          <Unpack File="googlebenchmark-1.9.5.tar.gz" OutputPath="benchmark-1.9.5"/>
           <CMakeBuild Project="bvenhmark" Target="install" Configuration="release" Options="-DBENCHMARK_ENABLE_TESTING=OFF -DBENCHMARK_USE_BUNDLED_GTEST=OFF" OutputPath="_Install"/>
         </Pipeline>
         <Installation>
@@ -20,10 +20,10 @@
       </ExperimentalRecipe>
     </Platform>
     <Platform Name="Windows" Supported="true">
-      <ExperimentalRecipe Name="benchmark" Version="1.8" FindTargetName="benchmark::benchmark benchmark::benchmark_main" Find="true">
+      <ExperimentalRecipe Name="benchmark" Version="1.9" FindTargetName="benchmark::benchmark benchmark::benchmark_main" Find="true">
         <Pipeline>
-          <Download URL="https://github.com/google/benchmark/archive/refs/tags/v1.8.3.tar.gz" To="googlebenchmark-1.8.3.tar.gz" Hash="6bc180a57d23d4d9515519f92b0c83d61b05b5bab188961f36ac7b06b0d9e9ce"/>
-          <Unpack File="googlebenchmark-1.8.3.tar.gz" OutputPath="benchmark-1.8.3"/>
+          <Download URL="https://github.com/google/benchmark/archive/refs/tags/v1.9.5.tar.gz" To="googlebenchmark-1.9.5.tar.gz" Hash="9631341c82bac4a288bef951f8b26b41f69021794184ece969f8473977eaa340"/>
+          <Unpack File="googlebenchmark-1.9.5.tar.gz" OutputPath="benchmark-1.9.5"/>
           <Copy>
             <GitApply From="{RECIPE_PATH}/patch_debug.patch"/>
           </Copy>
