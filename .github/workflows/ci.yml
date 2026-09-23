@@ -1,0 +1,206 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - 'unofficial/**'
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  LLVM_VERSION: 23
+  VULKAN_SDK_VERSION: 1.4.357.0
+  # Same feature set as the Jenkins ubuntu review build
+  FSL_CI_FEATURES_UBUNTU: '[ConsoleHost,WindowHost,Test_RequireUserInputToExit,EarlyAccess,EGL,GoogleBenchmark,GoogleUnitTest,OpenCL1.2,OpenCV4,OpenGLES2,OpenGLES3,OpenGLES3.1,OpenGLES3.2,OpenVX,OpenVX1.2,Vulkan,Lib_NlohmannJson,Lib_pugixml]'
+  # The hosted windows runners have no OpenGL ES emulator, OpenCL, OpenCV or OpenVX sdk
+  FSL_CI_FEATURES_WINDOWS: '[ConsoleHost,WindowHost,Test_RequireUserInputToExit,EarlyAccess,GoogleBenchmark,GoogleUnitTest,Vulkan,Lib_NlohmannJson,Lib_pugixml]'
+
+jobs:
+  ubuntu:
+    name: Ubuntu 24.04 build + unit tests
+    runs-on: ubuntu-24.04
+    timeout-minutes: 350
+    container:
+      image: sigil/graphics-compute-api-test:u24_04
+      options: --user root
+    env:
+      FSL_GRAPHICS_SDK_THIRD_PARTY_LIBS_DIR: /fsl-thirdparty
+      FSL_TEST_REPORTS: /fsl-reports
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Cache third party libraries
+        uses: actions/cache@v4
+        with:
+          path: /fsl-thirdparty
+          key: thirdparty-ubuntu-build-${{ hashFiles('ThirdParty/**/Fsl.gen', 'ThirdParty/**/*.patch') }}
+          restore-keys: thirdparty-ubuntu-build-
+
+      - name: Build
+        shell: bash
+        run: |
+          source ./prepare.sh
+          FslBuild.py --noGitHash -t sdk --BuildTime --UseFeatures "$FSL_CI_FEATURES_UBUNTU"
+
+      - name: Unit tests
+        shell: bash
+        run: |
+          source ./prepare.sh
+          mkdir -p "$FSL_TEST_REPORTS"
+          FslBuild.py --noGitHash -t sdk --UseFeatures "$FSL_CI_FEATURES_UBUNTU" --RequireFeature [GoogleUnitTest] --ForAllExe "(EXE) --gtest_output=xml:$FSL_TEST_REPORTS/(PACKAGE_NAME).xml"
+
+      - name: Upload unit test reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: unit-test-reports-ubuntu
+          path: /fsl-reports
+          if-no-files-found: ignore
+
+  windows:
+    name: Windows build + unit tests
+    runs-on: windows-2025
+    timeout-minutes: 350
+    env:
+      FSL_GRAPHICS_SDK_THIRD_PARTY_LIBS_DIR: C:\fsl-thirdparty
+      FSL_TEST_REPORTS: C:\fsl-reports
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Cache Vulkan SDK
+        id: cache-vulkan-sdk
+        uses: actions/cache@v4
+        with:
+          path: C:\VulkanSDK\${{ env.VULKAN_SDK_VERSION }}
+          key: vulkansdk-windows-${{ env.VULKAN_SDK_VERSION }}
+
+      - name: Install Vulkan SDK
+        if: steps.cache-vulkan-sdk.outputs.cache-hit != 'true'
+        shell: pwsh
+        run: |
+          $installer = Join-Path $env:RUNNER_TEMP 'vulkansdk.exe'
+          Invoke-WebRequest -Uri "https://sdk.lunarg.com/sdk/download/$env:VULKAN_SDK_VERSION/windows/vulkansdk-windows-X64-$env:VULKAN_SDK_VERSION.exe" -OutFile $installer
+          $process = Start-Process -FilePath $installer -Wait -PassThru -ArgumentList '--root', "C:\VulkanSDK\$env:VULKAN_SDK_VERSION", '--accept-licenses', '--default-answer', '--confirm-command', 'install'
+          if ($process.ExitCode -ne 0) { throw "Vulkan SDK installation failed with $($process.ExitCode)" }
+
+      - name: Configure environment
+        shell: pwsh
+        run: |
+          $sdk = "C:\VulkanSDK\$env:VULKAN_SDK_VERSION"
+          "VK_SDK_PATH=$sdk" | Out-File -FilePath $env:GITHUB_ENV -Append
+          "VULKAN_SDK=$sdk" | Out-File -FilePath $env:GITHUB_ENV -Append
+          "$sdk\Bin" | Out-File -FilePath $env:GITHUB_PATH -Append
+          # Use the newest installed Visual Studio (2026 if available, otherwise 2022)
+          $vswhere = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe"
+          $vs = & $vswhere -latest -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -format json | ConvertFrom-Json | Select-Object -First 1
+          $major = [int]($vs.installationVersion.Split('.')[0])
+          $vsVersion = switch ($major) { 18 { '2026' } 17 { '2022' } default { throw "Unsupported Visual Studio version $($vs.installationVersion)" } }
+          Write-Host "Using Visual Studio $vsVersion ($($vs.installationVersion)) at $($vs.installationPath)"
+          "FSL_CI_VS_VERSION=$vsVersion" | Out-File -FilePath $env:GITHUB_ENV -Append
+          "FSL_CI_VCVARSALL=$($vs.installationPath)\VC\Auxiliary\Build\vcvarsall.bat" | Out-File -FilePath $env:GITHUB_ENV -Append
+
+      - name: Cache third party libraries
+        uses: actions/cache@v4
+        with:
+          path: C:\fsl-thirdparty
+          key: thirdparty-windows-${{ env.FSL_CI_VS_VERSION }}-${{ hashFiles('ThirdParty/**/Fsl.gen', 'ThirdParty/**/*.patch') }}
+          restore-keys: thirdparty-windows-${{ env.FSL_CI_VS_VERSION }}-
+
+      - name: Build
+        shell: cmd
+        run: |
+          call "%FSL_CI_VCVARSALL%" x64 || exit /b 1
+          call "%GITHUB_WORKSPACE%\prepare.bat" || exit /b 1
+          python .Config\FslBuild.py --noGitHash --VSVersion %FSL_CI_VS_VERSION% -t sdk --BuildTime --UseFeatures %FSL_CI_FEATURES_WINDOWS% || exit /b 1
+
+      - name: Unit tests
+        shell: cmd
+        run: |
+          call "%FSL_CI_VCVARSALL%" x64 || exit /b 1
+          call "%GITHUB_WORKSPACE%\prepare.bat" || exit /b 1
+          mkdir "%FSL_TEST_REPORTS%"
+          python .Config\FslBuild.py --noGitHash --VSVersion %FSL_CI_VS_VERSION% -t sdk --UseFeatures %FSL_CI_FEATURES_WINDOWS% --RequireFeature [GoogleUnitTest] --ForAllExe "(EXE) --gtest_output=xml:%FSL_TEST_REPORTS%/(PACKAGE_NAME).xml" || exit /b 1
+
+      - name: Upload unit test reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: unit-test-reports-windows
+          path: C:\fsl-reports
+          if-no-files-found: ignore
+
+  clang-format:
+    name: clang-format
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install clang-format ${{ env.LLVM_VERSION }}
+        run: |
+          wget -qO- https://apt.llvm.org/llvm-snapshot.gpg.key | sudo tee /etc/apt/trusted.gpg.d/apt.llvm.org.asc > /dev/null
+          echo "deb http://apt.llvm.org/noble/ llvm-toolchain-noble-${LLVM_VERSION} main" | sudo tee /etc/apt/sources.list.d/llvm.list
+          sudo apt-get update
+          sudo apt-get install -y clang-format-${LLVM_VERSION} ninja-build
+
+      - name: Format all files
+        run: |
+          source ./prepare.sh
+          FslBuildCheck.py --noGitHash -r --format
+
+      - name: Check for formatting changes
+        run: |
+          if ! git diff --quiet; then
+            echo "::error::Some files are not formatted with clang-format ${LLVM_VERSION}, please run 'FslBuildCheck.py -r --format' and commit the result"
+            git --no-pager diff --stat
+            git --no-pager diff
+            exit 1
+          fi
+
+  clang-tidy:
+    name: clang-tidy (changed files)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 240
+    container:
+      image: sigil/graphics-compute-api-test:u24_04
+      options: --user root
+    env:
+      FSL_GRAPHICS_SDK_THIRD_PARTY_LIBS_DIR: /fsl-thirdparty
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install clang ${{ env.LLVM_VERSION }}
+        run: |
+          apt-get update
+          apt-get install -y wget gnupg
+          wget -qO- https://apt.llvm.org/llvm-snapshot.gpg.key > /etc/apt/trusted.gpg.d/apt.llvm.org.asc
+          echo "deb http://apt.llvm.org/noble/ llvm-toolchain-noble-${LLVM_VERSION} main" > /etc/apt/sources.list.d/llvm.list
+          apt-get update
+          apt-get install -y clang-${LLVM_VERSION} clang-tidy-${LLVM_VERSION} clang-tools-${LLVM_VERSION}
+
+      - name: Cache third party libraries
+        uses: actions/cache@v4
+        with:
+          path: /fsl-thirdparty
+          key: thirdparty-ubuntu-tidy-${{ hashFiles('ThirdParty/**/Fsl.gen', 'ThirdParty/**/*.patch') }}
+          restore-keys: thirdparty-ubuntu-tidy-
+
+      - name: clang-tidy
+        shell: bash
+        env:
+          TIDY_BASE: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || github.event.before }}
+        run: |
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
+          bash .github/scripts/tidy-changed-files.sh "$TIDY_BASE" "$FSL_CI_FEATURES_UBUNTU"
