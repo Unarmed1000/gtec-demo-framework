@@ -32,8 +32,8 @@ since the exact same demo/benchmark code run on all of them.
 
 * Android NDK
 * Linux with various windowing systems (Yocto).
-* Ubuntu 22.04
-* Windows 10+
+* Ubuntu 24.04
+* Windows 11+
 
 ## Table of contents
 
@@ -113,7 +113,7 @@ uses [RAII](http://en.wikipedia.org/wiki/Resource_Acquisition_Is_Initialization)
 See the setup guides for your platform:
 
 * [Android](Doc/Setup_guide_android_sdk+ndk_on_windows.md)
-* [Ubuntu 22.04](Doc/Setup_guide_ubuntu22.04.md)
+* [Ubuntu 24.04](Doc/Setup_guide_ubuntu22.04.md)
 * [Windows](Doc/Setup_guide_windows.md)
 * [Yocto](Doc/Setup_guide_yocto.md)
 

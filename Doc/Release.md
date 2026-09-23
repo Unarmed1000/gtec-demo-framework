@@ -16,6 +16,7 @@
   * The vk_layer_settings.txt files now use the VK_LAYER_KHRONOS_validation settings.
   * IVulkanDeviceCreationCustomizer::Configure now also receives the VkInstance.
 * Misc
+  * The recommended platforms are now Ubuntu 24.04 and Windows 11+.
   * Fixed --ExitAfterDuration never parsing the duration.
   * Updated assimp to 6.0.5
   * Updated fmt to 12.2.0

@@ -1,5 +1,5 @@
 
-# Setup guide Ubuntu 22.04
+# Setup guide Ubuntu 24.04
 
 ## Table of contents
 
@@ -24,7 +24,7 @@
 
 # Prerequisites
 
-* Ubuntu22.04 64 bit
+* Ubuntu 24.04 64 bit
 * Build tools and xrand
 
     ```bash
@@ -77,7 +77,7 @@ It's also a good idea to read the introduction to the [FslBuild toolchain](./Fsl
     * Mesa OpenGL ES 2 (might not run OpenGL ES 3 apps)
 
         ```bash
-        sudo apt-get install libgles2-mesa-dev
+        sudo apt-get install libgles-dev
         ```
 
     * [ANGLE - Almost Native Graphics Layer Engine](https://github.com/google/angle)
@@ -115,7 +115,7 @@ Install the Vulkan SDK, See the [official SDK guide](https://vulkan.lunarg.com/d
 2. Install the optional packages
 
     ```bash
-    sudo apt-get install python-dev python-numpy libtbb2 libtbb-dev libjpeg-dev libpng-dev libtiff-dev libjasper-dev libdc1394-22-dev
+    sudo apt-get install python3-dev python3-numpy libtbb12 libtbb-dev libjpeg-dev libpng-dev libtiff-dev libdc1394-dev
     ```
 
 3. Create a sdk directory

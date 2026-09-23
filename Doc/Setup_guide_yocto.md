@@ -49,9 +49,9 @@ This tend to be the fastest way to get started.
 
 ## Prerequisites
 
-* Ubuntu 22.04
+* Ubuntu 24.04
 * [CMake 3.16 or newer](https://cmake.org/download/)
-* Python 3.10 (this is standard from Ubuntu 22.04 and forward)
+* Python 3.10 or newer (Ubuntu 24.04 comes with Python 3.12)
 * A prebuild sdk for your board typically called something like ```toolchain.sh```
 * A prebuild sd-card image for your board typically called ```BoardName.rootfs.sdcard.bz2```
 * Git

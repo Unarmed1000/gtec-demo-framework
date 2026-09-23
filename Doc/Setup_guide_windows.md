@@ -25,6 +25,7 @@
 
 # Prerequisites
 
+* Windows 11 or newer
 * [Visual Studio 2022](https://visualstudio.microsoft.com/vs/community/)
   (community or better)
 * [CMake 3.16 or newer](https://cmake.org/download/)
