@@ -62,6 +62,7 @@ namespace Fsl::InstanceConfigUtil
       constexpr auto ApiDumpLayerName = "VK_LAYER_LUNARG_api_dump";
     }
 
+    // NOLINTNEXTLINE(bugprone-exception-escape)
     struct InstanceConfigRequest
     {
       std::deque<Vulkan::FeatureRequest> LayerRequests;

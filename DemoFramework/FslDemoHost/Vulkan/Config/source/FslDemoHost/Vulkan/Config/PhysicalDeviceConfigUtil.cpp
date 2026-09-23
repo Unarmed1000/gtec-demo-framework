@@ -46,6 +46,7 @@ namespace Fsl::PhysicalDeviceConfigUtil
 {
   namespace
   {
+    // NOLINTNEXTLINE(bugprone-exception-escape)
     struct DeviceConfigRequest
     {
       std::deque<Vulkan::FeatureRequest> ExtensionRequests;
