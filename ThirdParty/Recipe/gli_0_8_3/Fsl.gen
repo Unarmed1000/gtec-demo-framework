@@ -25,11 +25,12 @@
     </Platform> -->
     <Platform Name="*">
       <!-- Find was disabled since the find_package call fails under linux -->
-      <ExperimentalRecipe Name="gli" Version="0.8.3.2" Find="false" FindTargetName="gli" FindVersion="0.8.3">
+      <ExperimentalRecipe Name="gli" Version="0.8.3.3" Find="false" FindTargetName="gli" FindVersion="0.8.3">
         <Pipeline>
           <GitClone URL="https://github.com/g-truc/gli.git" Hash="3542f8830178061e0661f5df1e89d36ba7d7b0ab"/>
           <Copy>
             <GitApply From="{RECIPE_PATH}/cmake-version.patch"/>
+            <GitApply From="{RECIPE_PATH}/glm1-compat.patch"/>
           </Copy>
           <CMakeBuild Project="gli" Target="install" Configuration="release" OutputPath="_Install"/>
         </Pipeline>

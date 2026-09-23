@@ -2,6 +2,6 @@
 <FslBuildGen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../FslBuildGen.xsd">
   <ExternalLibrary Name="glm.Core" CreationYear="2016">
     <Define Name="GLM_FORCE_RADIANS" Access="Public"/>
-    <Dependency Name="Recipe.glm_0_9_9"/>
+    <Dependency Name="Recipe.glm_1_0"/>
   </ExternalLibrary>
 </FslBuildGen>

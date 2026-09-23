@@ -1,0 +1,13 @@
+--- a/gli/core/storage_linear.hpp
++++ b/gli/core/storage_linear.hpp
+@@ -15,6 +15,10 @@
+ // GLM
+ #include <glm/gtc/round.hpp>
+ #include <glm/gtc/bitfield.hpp>
++// glm 1.0 requires GLM_ENABLE_EXPERIMENTAL for all gtx headers
++#ifndef GLM_ENABLE_EXPERIMENTAL
++#define GLM_ENABLE_EXPERIMENTAL
++#endif
+ #include <glm/gtx/component_wise.hpp>
+ 
+ static_assert(GLM_VERSION >= 99, "GLI requires at least GLM 0.9.9");
