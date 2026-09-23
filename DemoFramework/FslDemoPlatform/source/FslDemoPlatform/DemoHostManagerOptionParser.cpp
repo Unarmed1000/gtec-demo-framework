@@ -344,12 +344,12 @@ namespace Fsl
     if (input.ends_with("ms"))
     {
       durationFormat = DurationFormat::Milliseconds;
-      input.substr(0, input.size() - 2);
+      input = input.substr(0, input.size() - 2);
     }
     else if (input.ends_with("s"))
     {
       durationFormat = DurationFormat::Seconds;
-      input.substr(0, input.size() - 1);
+      input = input.substr(0, input.size() - 1);
     }
 
     if (durationFormat == DurationFormat::Invalid || input.empty())
