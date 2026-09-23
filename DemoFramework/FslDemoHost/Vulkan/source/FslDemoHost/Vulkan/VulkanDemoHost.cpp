@@ -33,6 +33,7 @@
 #include <FslBase/Log/Log3Fmt.hpp>
 #include <FslDemoApp/Shared/Host/DemoHostFeatureUtil.hpp>
 #include <FslDemoHost/Base/Service/WindowHost/IWindowHostInfoControl.hpp>
+#include <FslDemoHost/Vulkan/Config/InstanceApiVersionUtil.hpp>
 #include <FslDemoHost/Vulkan/Config/InstanceConfigUtil.hpp>
 #include <FslDemoHost/Vulkan/VulkanDemoHost.hpp>
 #include <FslDemoHost/Vulkan/VulkanDemoHostOptionParser.hpp>
@@ -352,7 +353,8 @@ namespace Fsl
 
 
       const uint32_t appVersion = demoHostConfig->GetInstanceAppVersion();
-      const uint32_t apiVersion = demoHostConfig->GetInstanceApiVersion();
+      const uint32_t apiVersion =
+        Vulkan::InstanceApiVersionUtil::Select(demoHostConfig->GetInstanceApiVersion(), m_options->GetInstanceApiVersionOverride());
       m_instance = InstanceUtil::CreateInstance(applicationName, appVersion, apiVersion, 0, instanceConfig.Layers, instanceConfig.Extensions,
                                                 m_instanceCreateInfo.get());
     }

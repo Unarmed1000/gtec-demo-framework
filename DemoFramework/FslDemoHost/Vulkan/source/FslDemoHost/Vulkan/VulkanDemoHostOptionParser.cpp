@@ -34,6 +34,7 @@
 #include <FslBase/Log/Log3Fmt.hpp>
 #include <FslBase/Log/String/FmtStringViewLite.hpp>
 #include <FslBase/String/StringParseUtil.hpp>
+#include <FslDemoHost/Vulkan/Config/InstanceApiVersionUtil.hpp>
 #include <FslDemoHost/Vulkan/VulkanDemoHostOptionParser.hpp>
 #include <algorithm>
 #include <array>
@@ -58,6 +59,7 @@ namespace Fsl
         LogSurfaceFormats,
         VkScreenshot,
         VkSwapchainMaintenance1,
+        VkApiVersion,
       };
     };
 
@@ -180,6 +182,8 @@ namespace Fsl
     rOptions.emplace_back("VkSwapchainMaintenance1", OptionArgument::OptionRequired, CommandId::VkSwapchainMaintenance1,
                           "Enable/disable the use of VK_KHR/EXT_swapchain_maintenance1 present fences (defaults to enabled if supported)",
                           OptionGroup::Host);
+    rOptions.emplace_back("VkApiVersion", OptionArgument::OptionRequired, CommandId::VkApiVersion,
+                          Vulkan::InstanceApiVersionUtil::g_optionDescription, OptionGroup::Host);
   }
 
 
@@ -229,6 +233,9 @@ namespace Fsl
       StringParseUtil::Parse(boolValue, strOptArg);
       m_launchOptions.SwapchainMaintenance1 = boolValue ? OptionUserChoice::On : OptionUserChoice::Off;
       return OptionParseResult::Parsed;
+    case CommandId::VkApiVersion:
+      return Vulkan::InstanceApiVersionUtil::TryParse(strOptArg, m_instanceApiVersionOverride) ? OptionParseResult::Parsed
+                                                                                               : OptionParseResult::Failed;
     default:
       return ADemoHostOptionParser::Parse(cmdId, strOptArg);
     }

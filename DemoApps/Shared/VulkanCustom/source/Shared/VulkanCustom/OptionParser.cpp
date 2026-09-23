@@ -35,6 +35,7 @@
 #include <FslBase/Log/Log3Fmt.hpp>
 #include <FslBase/Math/MathHelper.hpp>
 #include <FslBase/String/StringParseUtil.hpp>
+#include <FslDemoHost/Vulkan/Config/InstanceApiVersionUtil.hpp>
 #include <Shared/VulkanCustom/OptionParser.hpp>
 #include <algorithm>
 #include <cmath>
@@ -50,6 +51,7 @@ namespace Fsl
       {
         VkPhysicalDevice = DEMO_APP_OPTION_BASE,
         VkValidate = DEMO_APP_OPTION_BASE + 1,
+        VkApiVersion = DEMO_APP_OPTION_BASE + 2,
 
         // NOLINTNEXTLINE(readability-identifier-naming)
         DEMO_APP_VULKAN_OPTION_BASE = (DEMO_APP_OPTION_BASE + 0x100)
@@ -72,6 +74,8 @@ namespace Fsl
     rOptions.emplace_back("VkPhysicalDevice", OptionArgument::OptionRequired, CommandId::VkPhysicalDevice, "Set the physical device index.");
     rOptions.emplace_back("VkValidate", OptionArgument::OptionRequired, CommandId::VkValidate,
                           "Enable/disable the VK_LAYER_LUNARG_standard_validation layer.");
+    rOptions.emplace_back("VkApiVersion", OptionArgument::OptionRequired, CommandId::VkApiVersion,
+                          Vulkan::InstanceApiVersionUtil::g_optionDescription);
   }
 
 
@@ -87,6 +91,9 @@ namespace Fsl
       StringParseUtil::Parse(boolValue, strOptArg);
       m_validationLayer = boolValue ? OptionUserChoice::On : OptionUserChoice::Off;
       return OptionParseResult::Parsed;
+    case CommandId::VkApiVersion:
+      return Vulkan::InstanceApiVersionUtil::TryParse(strOptArg, m_instanceApiVersionOverride) ? OptionParseResult::Parsed
+                                                                                               : OptionParseResult::Failed;
     default:
       return OptionParseResult::NotHandled;
     }

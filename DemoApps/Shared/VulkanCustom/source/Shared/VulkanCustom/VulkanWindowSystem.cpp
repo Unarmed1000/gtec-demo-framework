@@ -36,6 +36,7 @@
 #include <FslDemoApp/Base/Service/Options/IOptions.hpp>
 #include <FslDemoApp/Base/Service/Options/Options.hpp>
 #include <FslDemoHost/Vulkan/Config/DemoAppHostConfigVulkan.hpp>
+#include <FslDemoHost/Vulkan/Config/InstanceApiVersionUtil.hpp>
 #include <FslDemoHost/Vulkan/Config/InstanceConfigUtil.hpp>
 #include <FslNativeWindow/Vulkan/IVulkanNativeWindowSystem.hpp>
 #include <FslNativeWindow/Vulkan/NativeVulkanSetup.hpp>
@@ -61,6 +62,9 @@ namespace Fsl
     auto appOptionParser = optionsService.GetOptionParser<OptionParser>();
     const auto physicialDeviceIndex = appOptionParser->GetPhysicalDeviceIndex();
     const auto userChoiceValidationLayer = appOptionParser->GetValidationLayer();
+    const auto demoAppHostConfig = std::dynamic_pointer_cast<DemoAppHostConfigVulkan>(setup.CustomDemoAppHostConfig);
+    const uint32_t apiVersion = Vulkan::InstanceApiVersionUtil::Select(
+      demoAppHostConfig ? demoAppHostConfig->GetInstanceApiVersion() : VK_API_VERSION_1_0, appOptionParser->GetInstanceApiVersionOverride());
 
     auto vulkanWindowSystem = std::dynamic_pointer_cast<IVulkanNativeWindowSystem>(m_windowSystem);
     if (!vulkanWindowSystem)
@@ -71,11 +75,10 @@ namespace Fsl
     const std::string khrSurfaceExtensionName = vulkanWindowSystem->GetKHRSurfaceExtensionName();
 
     {
-      const auto instanceConfig = InstanceConfigUtil::InstanceConfigAsCharArrays(
-        InstanceConfigUtil::BuildInstanceConfig(khrSurfaceExtensionName, InstanceConfigUtil::InstanceUserChoice(userChoiceValidationLayer),
-                                                std::dynamic_pointer_cast<DemoAppHostConfigVulkan>(setup.CustomDemoAppHostConfig)));
+      const auto instanceConfig = InstanceConfigUtil::InstanceConfigAsCharArrays(InstanceConfigUtil::BuildInstanceConfig(
+        khrSurfaceExtensionName, InstanceConfigUtil::InstanceUserChoice(userChoiceValidationLayer), demoAppHostConfig));
 
-      m_instance = InstanceUtil::CreateInstance("VulkanWindowSystem", VK_MAKE_VERSION(1, 0, 0), VK_API_VERSION_1_0, 0, instanceConfig.Layers,
+      m_instance = InstanceUtil::CreateInstance("VulkanWindowSystem", VK_MAKE_VERSION(1, 0, 0), apiVersion, 0, instanceConfig.Layers,
                                                 instanceConfig.Extensions, m_instanceCreateInfo.get());
     }
     m_physicalDevice = VUPhysicalDeviceRecord(InstanceUtil::GetPhysicalDevice(m_instance.Get(), physicialDeviceIndex));

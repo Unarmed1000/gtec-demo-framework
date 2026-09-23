@@ -46,6 +46,8 @@ namespace Fsl
     bool m_logExtensions = false;
     bool m_logLayers = false;
     bool m_logSurfaceFormats = false;
+    //! The user requested instance api version (0 = no override)
+    uint32_t m_instanceApiVersionOverride = 0;
 
   public:
     VulkanDemoHostOptionParser();
@@ -68,6 +70,12 @@ namespace Fsl
     VulkanLaunchOptions GetLaunchOptions() const
     {
       return m_launchOptions;
+    }
+
+    //! @return the user requested instance api version (0 = no override)
+    uint32_t GetInstanceApiVersionOverride() const
+    {
+      return m_instanceApiVersionOverride;
     }
 
     bool IsLogExtensionsEnabled() const
