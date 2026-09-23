@@ -285,7 +285,7 @@ namespace Fsl
           if (m_deviceFeatures.pipelineStatisticsQuery != VK_FALSE)
           {
             // Begin pipeline statistics query
-            vkCmdBeginQuery(m_drawCmdBuffers[i], m_queryPool.Get(), 0, VK_QUERY_CONTROL_PRECISE_BIT);
+            vkCmdBeginQuery(m_drawCmdBuffers[i], m_queryPool.Get(), 0, 0);
           }
           // Render
           vkCmdBindPipeline(m_drawCmdBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS,
