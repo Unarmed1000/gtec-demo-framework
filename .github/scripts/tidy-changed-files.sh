@@ -23,8 +23,11 @@ fi
 
 echo "Running clang-tidy on ${#files[@]} changed file(s)"
 
+# prepare.sh references variables that might not be set, so it can not be sourced with "set -u"
+set +u
 # shellcheck disable=SC1091
 source ./prepare.sh
+set -u
 
 root=$(pwd)
 log=$(mktemp)

@@ -34,10 +34,10 @@ jobs:
       FSL_GRAPHICS_SDK_THIRD_PARTY_LIBS_DIR: /fsl-thirdparty
       FSL_TEST_REPORTS: /fsl-reports
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Cache third party libraries
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: /fsl-thirdparty
           key: thirdparty-ubuntu-build-${{ hashFiles('ThirdParty/**/Fsl.gen', 'ThirdParty/**/*.patch') }}
@@ -58,7 +58,7 @@ jobs:
 
       - name: Upload unit test reports
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: unit-test-reports-ubuntu
           path: /fsl-reports
@@ -72,15 +72,15 @@ jobs:
       FSL_GRAPHICS_SDK_THIRD_PARTY_LIBS_DIR: C:\fsl-thirdparty
       FSL_TEST_REPORTS: C:\fsl-reports
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v7
         with:
           python-version: '3.12'
 
       - name: Cache Vulkan SDK
         id: cache-vulkan-sdk
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: C:\VulkanSDK\${{ env.VULKAN_SDK_VERSION }}
           key: vulkansdk-windows-${{ env.VULKAN_SDK_VERSION }}
@@ -111,18 +111,23 @@ jobs:
           "FSL_CI_VCVARSALL=$($vs.installationPath)\VC\Auxiliary\Build\vcvarsall.bat" | Out-File -FilePath $env:GITHUB_ENV -Append
 
       - name: Cache third party libraries
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: C:\fsl-thirdparty
           key: thirdparty-windows-${{ env.FSL_CI_VS_VERSION }}-${{ hashFiles('ThirdParty/**/Fsl.gen', 'ThirdParty/**/*.patch') }}
           restore-keys: thirdparty-windows-${{ env.FSL_CI_VS_VERSION }}-
 
+      # Build the framework and apps recursively instead of using '-t sdk', as the sdk build validates the OpenGL ES emulator
+      # installation even when OpenGL ES is not part of the requested features (and the runner has no emulator).
       - name: Build
         shell: cmd
         run: |
           call "%FSL_CI_VCVARSALL%" x64 || exit /b 1
           call "%GITHUB_WORKSPACE%\prepare.bat" || exit /b 1
-          python .Config\FslBuild.py --noGitHash --VSVersion %FSL_CI_VS_VERSION% -t sdk --BuildTime --UseFeatures %FSL_CI_FEATURES_WINDOWS% || exit /b 1
+          for %%d in (DemoFramework DemoApps) do (
+            cd /d "%GITHUB_WORKSPACE%\%%d" || exit /b 1
+            python "%GITHUB_WORKSPACE%\.Config\FslBuild.py" --noGitHash --VSVersion %FSL_CI_VS_VERSION% -r --BuildTime --UseFeatures %FSL_CI_FEATURES_WINDOWS% || exit /b 1
+          )
 
       - name: Unit tests
         shell: cmd
@@ -130,11 +135,16 @@ jobs:
           call "%FSL_CI_VCVARSALL%" x64 || exit /b 1
           call "%GITHUB_WORKSPACE%\prepare.bat" || exit /b 1
           mkdir "%FSL_TEST_REPORTS%"
-          python .Config\FslBuild.py --noGitHash --VSVersion %FSL_CI_VS_VERSION% -t sdk --UseFeatures %FSL_CI_FEATURES_WINDOWS% --RequireFeature [GoogleUnitTest] --ForAllExe "(EXE) --gtest_output=xml:%FSL_TEST_REPORTS%/(PACKAGE_NAME).xml" || exit /b 1
+          rem FslBuild parses --ForAllExe like a posix shell (backslashes are removed), so give gtest a path with forward slashes
+          set "FSL_TEST_REPORTS_GTEST=%FSL_TEST_REPORTS:\=/%"
+          for %%d in (DemoFramework DemoApps) do (
+            cd /d "%GITHUB_WORKSPACE%\%%d" || exit /b 1
+            python "%GITHUB_WORKSPACE%\.Config\FslBuild.py" --noGitHash --VSVersion %FSL_CI_VS_VERSION% -r --UseFeatures %FSL_CI_FEATURES_WINDOWS% --RequireFeature [GoogleUnitTest] --ForAllExe "(EXE) --gtest_output=xml:%FSL_TEST_REPORTS_GTEST%/(PACKAGE_NAME).xml" || exit /b 1
+          )
 
       - name: Upload unit test reports
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: unit-test-reports-windows
           path: C:\fsl-reports
@@ -145,7 +155,7 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 60
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Install clang-format ${{ env.LLVM_VERSION }}
         run: |
@@ -178,7 +188,7 @@ jobs:
     env:
       FSL_GRAPHICS_SDK_THIRD_PARTY_LIBS_DIR: /fsl-thirdparty
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
 
@@ -192,7 +202,7 @@ jobs:
           apt-get install -y clang-${LLVM_VERSION} clang-tidy-${LLVM_VERSION} clang-tools-${LLVM_VERSION}
 
       - name: Cache third party libraries
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: /fsl-thirdparty
           key: thirdparty-ubuntu-tidy-${{ hashFiles('ThirdParty/**/Fsl.gen', 'ThirdParty/**/*.patch') }}
