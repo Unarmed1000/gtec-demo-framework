@@ -34,7 +34,6 @@
 #include <RapidVulkan/CommandBuffers.hpp>
 #include <RapidVulkan/CommandPool.hpp>
 #include <RapidVulkan/DescriptorPool.hpp>
-#include <deque>
 #include <utility>
 #include <vector>
 
@@ -61,7 +60,8 @@ namespace Fsl::Vulkan
     VkDevice m_device;
     VkDescriptorSetLayout m_descriptorSetLayoutTexture;
 
-    std::deque<Bucket> m_buckets;
+    //! std::vector as its move constructor is noexcept (unlike the MSVC std::deque one)
+    std::vector<Bucket> m_buckets;
 
     std::vector<VkDescriptorSet> m_activeSets;
     uint32_t m_activeCount;

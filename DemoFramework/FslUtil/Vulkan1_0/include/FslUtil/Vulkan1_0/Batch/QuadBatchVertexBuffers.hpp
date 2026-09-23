@@ -33,7 +33,6 @@
 
 #include <FslUtil/Vulkan1_0/VUBufferMemory.hpp>
 #include <FslUtil/Vulkan1_0/VUPhysicalDeviceRecord.hpp>
-#include <deque>
 #include <vector>
 
 namespace Fsl
@@ -49,7 +48,8 @@ namespace Fsl
       VUPhysicalDeviceRecord m_physicalDevice;
       VkDevice m_device;
       uint32_t m_segmentVertexCount;
-      std::deque<VUBufferMemory> m_buckets;
+      //! std::vector as its move constructor is noexcept (unlike the MSVC std::deque one)
+      std::vector<VUBufferMemory> m_buckets;
 
       uint32_t m_activeCount = 0;
 
