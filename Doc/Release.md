@@ -19,6 +19,7 @@
   * The recommended platforms are now Ubuntu 24.04 and Windows 11+.
   * Visual Studio 2026 is now the default on windows.
   * Upgraded to FslBuild 3.11.2 (fixed the Visual Studio 2026 toolset version used for the external libraries).
+  * clang-format and clang-tidy 23 are now required (all files are formatted with clang-format 23).
   * Fixed --ExitAfterDuration never parsing the duration.
   * Updated assimp to 6.0.5
   * Updated fmt to 12.2.0
