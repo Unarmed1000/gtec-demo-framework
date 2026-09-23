@@ -107,6 +107,7 @@ namespace Fsl::ConfigUtil
       // If we didnt find the extension then check for the alternative name
       if (itrFind == properties.end() && request.AlternativeNames)
       {
+        bool foundAlternative = false;
         auto itrAlternativeName = request.AlternativeNames->begin();
         while (itrAlternativeName != request.AlternativeNames->end())
         {
@@ -117,10 +118,16 @@ namespace Fsl::ConfigUtil
           {
             // Found, so just push it
             rDst.push_back(alternativeName);
-            FSLLOG3_VERBOSE("- {} found", alternativeName, request.Name);
-            return;
+            FSLLOG3_VERBOSE("- {} found (alternative to {})", alternativeName, request.Name);
+            foundAlternative = true;
+            break;
           }
           ++itrAlternativeName;
+        }
+        if (foundAlternative)
+        {
+          // Continue with the next request
+          continue;
         }
       }
 
