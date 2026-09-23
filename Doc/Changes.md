@@ -1,5 +1,33 @@
 # Latest version
 
+## Release 6.7.0
+
+* Vulkan
+  * Fixed the swapchain present semaphore reuse (VUID-vkQueueSubmit-pSignalSemaphores-00067). The render complete semaphores are now per swapchain image.
+  * The demo host uses VK_KHR/EXT_swapchain_maintenance1 present fences when available (can be disabled with --VkSwapchainMaintenance1 false).
+  * New --VkApiVersion option to override the instance api version (GPU assisted validation requires 1.1).
+  * Fixed validation and synchronization issues reported by the latest validation layers
+    * VulkanWillemsDemoAppExperimental: depth attachment clear hazard and text overlay image barrier.
+    * Window.VulkanTriangle: swapchain acquire write-after-read hazard.
+    * ShaderClock: the shaderDeviceClock feature is now enabled when the heatmap shader is used.
+    * ComputeParticles: vertex attribute barrier stages.
+    * DynamicTerrainTessellation: invalid pipeline statistics query flag.
+    * DynamicTerrainTessellation, TessellationPNTriangles: vertex/tessellation shader interface mismatch.
+  * The vk_layer_settings.txt files now use the VK_LAYER_KHRONOS_validation settings.
+  * IVulkanDeviceCreationCustomizer::Configure now also receives the VkInstance.
+* Misc
+  * Fixed --ExitAfterDuration never parsing the duration.
+  * Updated assimp to 6.0.5
+  * Updated fmt to 12.2.0
+  * Updated gli to the latest version
+  * Updated glm to 1.0.3
+  * Updated GoogleTest to 1.18.0
+  * Updated Google benchmark to 1.9.5
+  * Updated OpenCV to 4.14.0
+  * Updated pugixml to 1.16
+  * Updated stb to the latest version
+  * Updated zlib to 1.3.2
+
 ## Release 6.6.0
 
 * GLES2, GLES3, Vulkan.SdfFonts

@@ -1,6 +1,6 @@
 <!-- #AG_PROJECT_NAMESPACE_ROOT# -->
 <!-- #AG_PROJECT_CAPTION_BEGIN# -->
-# DemoFramework 6.6.1 OpenVG
+# DemoFramework 6.7.0 Unofficial OpenVG
 
 To [main document](../../README.md)
 <!-- #AG_PROJECT_CAPTION_END# -->
