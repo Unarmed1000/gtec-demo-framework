@@ -4,10 +4,10 @@
     <Default.Platform.Supported Value="false"/>
 
     <Platform Name="Android" Supported="false">
-      <ExperimentalRecipe Name="ZLIB" Version="1.3.1" FindTargetName="ZLIB::ZLIB">
+      <ExperimentalRecipe Name="ZLIB" Version="1.3.2" FindTargetName="ZLIB::ZLIB">
         <Pipeline>
-          <Download URL="https://zlib.net/zlib-1.3.1.tar.gz" Hash="9a93b2b7dfdac77ceba5a558a580e74667dd6fede4585b91eefb60f03b72df23"/>
-          <Unpack File="zlib-1.3.1.tar.gz" OutputPath="zlib-1.3.1"/>
+          <Download URL="https://github.com/madler/zlib/releases/download/v1.3.2/zlib-1.3.2.tar.gz" Hash="bb329a0a2cd0274d05519d61c667c062e06990d72e125ee2dfa8de64f0119d16"/>
+          <Unpack File="zlib-1.3.2.tar.gz" OutputPath="zlib-1.3.2"/>
           <CMakeBuild Project="" Target="install" Configuration="release" OutputPath="_Install"/>
         </Pipeline>
         <Installation>
@@ -22,10 +22,10 @@
 
     
     <Platform Name="Ubuntu;QNX" Supported="true">
-      <ExperimentalRecipe Name="ZLIB" Version="1.3.1" FindTargetName="ZLIB::ZLIB">
+      <ExperimentalRecipe Name="ZLIB" Version="1.3.2" FindTargetName="ZLIB::ZLIB">
         <Pipeline>
-          <Download URL="https://zlib.net/zlib-1.3.1.tar.gz" Hash="9a93b2b7dfdac77ceba5a558a580e74667dd6fede4585b91eefb60f03b72df23"/>
-          <Unpack File="zlib-1.3.1.tar.gz" OutputPath="zlib-1.3.1"/>
+          <Download URL="https://github.com/madler/zlib/releases/download/v1.3.2/zlib-1.3.2.tar.gz" Hash="bb329a0a2cd0274d05519d61c667c062e06990d72e125ee2dfa8de64f0119d16"/>
+          <Unpack File="zlib-1.3.2.tar.gz" OutputPath="zlib-1.3.2"/>
           <CMakeBuild Project="" Target="install" Configuration="release" OutputPath="_Install"/>
         </Pipeline>
         <Installation>
@@ -39,16 +39,16 @@
     </Platform>
 
     <Platform Name="Windows" Supported="true">
-      <ExperimentalRecipe Name="ZLIB" Version="1.3.1">
+      <ExperimentalRecipe Name="ZLIB" Version="1.3.2">
         <Pipeline>
-          <Download URL="https://zlib.net/zlib-1.3.1.tar.gz" Hash="9a93b2b7dfdac77ceba5a558a580e74667dd6fede4585b91eefb60f03b72df23"/>
-          <Unpack File="zlib-1.3.1.tar.gz" OutputPath="zlib-1.3.1"/>
+          <Download URL="https://github.com/madler/zlib/releases/download/v1.3.2/zlib-1.3.2.tar.gz" Hash="bb329a0a2cd0274d05519d61c667c062e06990d72e125ee2dfa8de64f0119d16"/>
+          <Unpack File="zlib-1.3.2.tar.gz" OutputPath="zlib-1.3.2"/>
           <CMakeBuild Project="" Target="install" Configuration="release" OutputPath="_Install"/>
         </Pipeline>
         <Installation>
           <AddHeaders Name="include"/>
-          <AddLib Name="lib/zlib.lib"/>
-          <AddDLL Name="bin/zlib.dll"/>
+          <AddLib Name="lib/z.lib"/>
+          <AddDLL Name="bin/z.dll"/>
           <Path Name="include/zconf.h" Method="IsFile"/>
           <Path Name="include/zlib.h" Method="IsFile"/>
         </Installation>
