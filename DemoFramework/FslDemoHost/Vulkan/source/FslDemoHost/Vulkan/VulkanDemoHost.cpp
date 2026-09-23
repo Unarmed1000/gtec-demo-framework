@@ -344,7 +344,8 @@ namespace Fsl
 
       const auto demoHostConfig = m_demoHostConfig.GetDemoHostAppSetup().GetDemoAppHostConfig<DemoAppHostConfigVulkan>();
 
-      InstanceConfigUtil::InstanceUserChoice instanceUserChoice(userChoiceValidationLayer, userChoiceApiDump);
+      InstanceConfigUtil::InstanceUserChoice instanceUserChoice(userChoiceValidationLayer, userChoiceApiDump,
+                                                                m_options->GetLaunchOptions().SwapchainMaintenance1);
 
       const auto instanceConfig = InstanceConfigUtil::InstanceConfigAsCharArrays(
         InstanceConfigUtil::BuildInstanceConfig(khrSurfaceExtensionName, instanceUserChoice, demoHostConfig));

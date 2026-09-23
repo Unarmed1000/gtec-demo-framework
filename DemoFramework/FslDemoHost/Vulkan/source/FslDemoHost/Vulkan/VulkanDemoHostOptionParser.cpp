@@ -57,6 +57,7 @@ namespace Fsl
         LogLayers,
         LogSurfaceFormats,
         VkScreenshot,
+        VkSwapchainMaintenance1,
       };
     };
 
@@ -176,6 +177,9 @@ namespace Fsl
                           "Output the supported surface formats to the log", OptionGroup::Host);
     rOptions.emplace_back("VkScreenshot", OptionArgument::OptionRequired, CommandId::VkScreenshot,
                           "Enable/disable screenshot support (defaults to enabled)", OptionGroup::Host);
+    rOptions.emplace_back("VkSwapchainMaintenance1", OptionArgument::OptionRequired, CommandId::VkSwapchainMaintenance1,
+                          "Enable/disable the use of VK_KHR/EXT_swapchain_maintenance1 present fences (defaults to enabled if supported)",
+                          OptionGroup::Host);
   }
 
 
@@ -220,6 +224,10 @@ namespace Fsl
     case CommandId::VkScreenshot:
       StringParseUtil::Parse(boolValue, strOptArg);
       m_launchOptions.ScreenshotsEnabled = boolValue ? OptionUserChoice::On : OptionUserChoice::Off;
+      return OptionParseResult::Parsed;
+    case CommandId::VkSwapchainMaintenance1:
+      StringParseUtil::Parse(boolValue, strOptArg);
+      m_launchOptions.SwapchainMaintenance1 = boolValue ? OptionUserChoice::On : OptionUserChoice::Off;
       return OptionParseResult::Parsed;
     default:
       return ADemoHostOptionParser::Parse(cmdId, strOptArg);

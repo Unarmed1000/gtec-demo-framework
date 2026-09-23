@@ -73,6 +73,8 @@ namespace Fsl::InstanceConfigUtil
   {
     OptionUserChoice ValidationLayer = OptionUserChoice::Default;
     OptionUserChoice UserChoiceApiDump = OptionUserChoice::Default;
+    //! If Off the instance extensions needed by swapchain maintenance1 are not requested
+    OptionUserChoice SwapchainMaintenance1 = OptionUserChoice::Default;
 
     InstanceUserChoice() = default;
 
@@ -84,6 +86,13 @@ namespace Fsl::InstanceConfigUtil
     InstanceUserChoice(const OptionUserChoice validationLayer, const OptionUserChoice userChoiceApiDump)
       : ValidationLayer(validationLayer)
       , UserChoiceApiDump(userChoiceApiDump)
+    {
+    }
+
+    InstanceUserChoice(const OptionUserChoice validationLayer, const OptionUserChoice userChoiceApiDump, const OptionUserChoice swapchainMaintenance1)
+      : ValidationLayer(validationLayer)
+      , UserChoiceApiDump(userChoiceApiDump)
+      , SwapchainMaintenance1(swapchainMaintenance1)
     {
     }
   };

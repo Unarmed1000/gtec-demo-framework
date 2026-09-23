@@ -50,6 +50,10 @@ namespace Fsl
     // Controls whether we enable screenshots.
     // By default applications allow it, but the app can configure it (the command line option always overrides any app choices)
     OptionUserChoice ScreenshotsEnabled{OptionUserChoice::Default};
+
+    // Controls whether VK_KHR/EXT_swapchain_maintenance1 (present fences) is used.
+    // Default and On use it if supported, Off disables it (useful for testing the fallback path).
+    OptionUserChoice SwapchainMaintenance1{OptionUserChoice::Default};
   };
 }
 

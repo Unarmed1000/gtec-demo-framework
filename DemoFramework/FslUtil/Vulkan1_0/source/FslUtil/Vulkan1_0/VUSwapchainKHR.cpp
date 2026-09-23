@@ -310,12 +310,13 @@ namespace Fsl::Vulkan
 
 
   VkResult VUSwapchainKHR::TryQueuePresent(const VkQueue queue, const uint32_t waitSemaphoreCount, const VkSemaphore* pWaitSemaphores,
-                                           const uint32_t* pImageIndices, VkResult* pResults) const
+                                           const uint32_t* pImageIndices, VkResult* pResults, const void* const pNext) const
   {
     VkSwapchainKHR swapchain = m_swapchain.Get();
 
     VkPresentInfoKHR presentInfo{};
     presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
+    presentInfo.pNext = pNext;
     presentInfo.waitSemaphoreCount = waitSemaphoreCount;
     presentInfo.pWaitSemaphores = pWaitSemaphores;
     presentInfo.swapchainCount = 1;

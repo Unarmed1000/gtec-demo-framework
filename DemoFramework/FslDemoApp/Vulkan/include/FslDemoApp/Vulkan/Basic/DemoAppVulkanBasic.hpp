@@ -89,10 +89,13 @@ namespace Fsl
       struct FrameDrawRecord
       {
         RapidVulkan::Semaphore ImageAcquiredSemaphore;
-        RapidVulkan::Semaphore ImageReleasedSemaphore;
         RapidVulkan::Fence QueueSubmitFence;
+        //! Given to vkQueuePresentKHR (only valid if swapchain maintenance1 is enabled)
+        RapidVulkan::Fence PresentFence;
         uint32_t AssignedSwapImageIndex{0};
         bool HasSwapBufferImage{false};
+        //! True if PresentFence was given to a present operation that has not been waited for yet
+        bool PresentFencePending{false};
 
         FrameDrawRecord() noexcept = default;
 
@@ -101,13 +104,15 @@ namespace Fsl
 
         FrameDrawRecord(FrameDrawRecord&& other) noexcept
           : ImageAcquiredSemaphore(std::move(other.ImageAcquiredSemaphore))
-          , ImageReleasedSemaphore(std::move(other.ImageReleasedSemaphore))
           , QueueSubmitFence(std::move(other.QueueSubmitFence))
+          , PresentFence(std::move(other.PresentFence))
           , AssignedSwapImageIndex(other.AssignedSwapImageIndex)
           , HasSwapBufferImage(other.HasSwapBufferImage)
+          , PresentFencePending(other.PresentFencePending)
         {
           other.AssignedSwapImageIndex = 0;
           other.HasSwapBufferImage = false;
+          other.PresentFencePending = false;
         }
 
         FrameDrawRecord& operator=(FrameDrawRecord&& other) noexcept
@@ -117,13 +122,15 @@ namespace Fsl
             Reset();
 
             ImageAcquiredSemaphore = std::move(other.ImageAcquiredSemaphore);
-            ImageReleasedSemaphore = std::move(other.ImageReleasedSemaphore);
             QueueSubmitFence = std::move(other.QueueSubmitFence);
+            PresentFence = std::move(other.PresentFence);
             AssignedSwapImageIndex = other.AssignedSwapImageIndex;
             HasSwapBufferImage = other.HasSwapBufferImage;
+            PresentFencePending = other.PresentFencePending;
 
             other.AssignedSwapImageIndex = 0;
             other.HasSwapBufferImage = false;
+            other.PresentFencePending = false;
           }
           return *this;
         }
@@ -131,10 +138,11 @@ namespace Fsl
         void Reset() noexcept
         {
           // Reset in destruction order
+          PresentFencePending = false;
           HasSwapBufferImage = false;
           AssignedSwapImageIndex = 0;
+          PresentFence.Reset();
           QueueSubmitFence.Reset();
-          ImageReleasedSemaphore.Reset();
           ImageAcquiredSemaphore.Reset();
         }
       };
@@ -144,6 +152,9 @@ namespace Fsl
       {
         RapidVulkan::ImageView SwapchainImageView;
         RapidVulkan::Framebuffer Framebuffer;
+        //! Signaled when rendering to this image completes, waited on by vkQueuePresentKHR.
+        //! This is per swapchain image (not per frame) since the presentation engine can still be using it until the image is re-acquired.
+        RapidVulkan::Semaphore ImageReleasedSemaphore;
         //! This is the frame index it was assigned to
         uint32_t AssignedFrameIndex{0};
         //! This is true if this swapchain record has been assigned to a frame index
@@ -157,6 +168,7 @@ namespace Fsl
         SwapchainRecord(SwapchainRecord&& other) noexcept
           : SwapchainImageView(std::move(other.SwapchainImageView))
           , Framebuffer(std::move(other.Framebuffer))
+          , ImageReleasedSemaphore(std::move(other.ImageReleasedSemaphore))
           , AssignedFrameIndex(other.AssignedFrameIndex)
           , HasAssignedFrame(other.HasAssignedFrame)
         {
@@ -172,6 +184,7 @@ namespace Fsl
 
             SwapchainImageView = std::move(other.SwapchainImageView);
             Framebuffer = std::move(other.Framebuffer);
+            ImageReleasedSemaphore = std::move(other.ImageReleasedSemaphore);
             AssignedFrameIndex = other.AssignedFrameIndex;
             HasAssignedFrame = other.HasAssignedFrame;
 
@@ -186,6 +199,7 @@ namespace Fsl
           // Reset in destruction order
           HasAssignedFrame = false;
           AssignedFrameIndex = 0;
+          ImageReleasedSemaphore.Reset();
           Framebuffer.Reset();
           SwapchainImageView.Reset();
         }
@@ -367,7 +381,10 @@ namespace Fsl
       }
 
     private:
-      static std::vector<FrameDrawRecord> CreateFrameSyncObjects(const VkDevice device, const uint32_t maxFramesInFlight);
+      static std::vector<FrameDrawRecord> CreateFrameSyncObjects(const VkDevice device, const uint32_t maxFramesInFlight,
+                                                                 const bool createPresentFence);
+      //! Wait for the frames present fence (if pending) and reset it
+      AppDrawResult TryWaitForPresentFence(FrameDrawRecord& rFrame);
       void BuildSwapchainImageView(SwapchainRecord& rSwapchainRecord, const uint32_t swapBufferIndex);
 
       RecreateSwapchainResult TryRecreateSwapchain();

@@ -36,6 +36,7 @@
 #include <FslDemoApp/Base/Service/Options/IOptions.hpp>
 #include <FslDemoApp/Base/Service/Options/Options.hpp>
 #include <FslDemoHost/Vulkan/Config/InstanceConfigUtil.hpp>
+#include <FslDemoHost/Vulkan/Config/SwapchainMaintenance1Util.hpp>
 #include <FslUtil/Vulkan1_0/SafeType/InstanceCreateInfoCopy.hpp>
 #include <FslUtil/Vulkan1_0/Util/InstanceUtil.hpp>
 #include <algorithm>
@@ -110,6 +111,11 @@ namespace Fsl::InstanceConfigUtil
       // Always add the SURFACE extensions the extension ConfigControl does not modify this
       instanceConfig.ExtensionRequests.emplace_back(VK_KHR_SURFACE_EXTENSION_NAME, Vulkan::FeatureRequirement::Mandatory);
       instanceConfig.ExtensionRequests.emplace_back(khrSurfaceExtensionName, Vulkan::FeatureRequirement::Mandatory);
+      // Optional extensions needed for swapchain present fences
+      if (instanceUserChoice.SwapchainMaintenance1 != OptionUserChoice::Off)
+      {
+        Vulkan::SwapchainMaintenance1Util::AppendInstanceExtensionRequests(instanceConfig.ExtensionRequests);
+      }
 
       // if (instanceLayerConfigControl == ConfigControl::Overwrite)
       //{

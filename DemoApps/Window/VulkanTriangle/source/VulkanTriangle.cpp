@@ -65,7 +65,6 @@ namespace Fsl
     BuildResources();
 
     m_imageAcquiredSemaphore.Reset(m_device.Get(), 0);
-    m_renderingCompleteSemaphore.Reset(m_device.Get(), 0);
 
     FSLLOG3_INFO("VulkanTriangle app created");
   }
@@ -129,7 +128,7 @@ namespace Fsl
 
 
     const VkSemaphore waitSemaphores = m_imageAcquiredSemaphore.Get();
-    const VkSemaphore signalSemaphores = m_renderingCompleteSemaphore.Get();
+    const VkSemaphore signalSemaphores = m_renderingCompleteSemaphore[currentBuffer].Get();
 
     const VkPipelineStageFlags waitDstStageMask = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
 
@@ -245,9 +244,11 @@ namespace Fsl
     m_swapchainImageView.clear();
     m_framebuffer.clear();
     m_cmdBuffer.clear();
+    m_renderingCompleteSemaphore.clear();
     m_swapchainImageView.resize(swapchainImagesCount);
     m_framebuffer.resize(swapchainImagesCount);
     m_cmdBuffer.resize(swapchainImagesCount);
+    m_renderingCompleteSemaphore.resize(swapchainImagesCount);
 
     BuildRenderPass();
     BuildPipeline();
@@ -257,6 +258,7 @@ namespace Fsl
       BuildSwapchainImageView(i);
       BuildFramebuffer(i);
       BuildCmdBuffer(i);
+      m_renderingCompleteSemaphore[i].Reset(m_device.Get(), 0);
     }
   }
 

@@ -137,8 +137,9 @@ namespace Fsl::Vulkan
     void CmdPipelineBarrier(const VkCommandBuffer cmdBuffer, const VkAccessFlags dstAccessMask, const VkImageLayout newLayout,
                             const VkPipelineStageFlags srcStageMask, const VkPipelineStageFlags dstStageMask, const uint32_t imageIndex);
 
+    //! @param pNext the VkPresentInfoKHR pNext chain (for example a VkSwapchainPresentFenceInfoKHR)
     VkResult TryQueuePresent(const VkQueue queue, const uint32_t waitSemaphoreCount, const VkSemaphore* pWaitSemaphores,
-                             const uint32_t* pImageIndices, VkResult* pResults) const;
+                             const uint32_t* pImageIndices, VkResult* pResults, const void* const pNext = nullptr) const;
   };
 }
 

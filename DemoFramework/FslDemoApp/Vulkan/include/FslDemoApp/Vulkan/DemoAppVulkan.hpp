@@ -56,6 +56,8 @@ namespace Fsl
     VkSurfaceKHR m_surface = VK_NULL_HANDLE;
     Vulkan::VUPhysicalDeviceRecord m_physicalDevice;
     VkPhysicalDeviceFeatures m_deviceActiveFeatures{};
+    //! True if VK_KHR/EXT_swapchain_maintenance1 was enabled (which means VkSwapchainPresentFenceInfoKHR can be used)
+    bool m_swapchainMaintenance1Enabled{false};
     Vulkan::VUDevice m_device;
     std::shared_ptr<Vulkan::DeviceCreateInfoCopy> m_deviceCreateInfo;
 

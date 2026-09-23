@@ -37,6 +37,7 @@
 #include <FslDemoApp/Base/Service/Host/IHostInfo.hpp>
 #include <FslDemoApp/Vulkan/Basic/DemoAppVulkanBasic.hpp>
 #include <FslDemoHost/Vulkan/Config/DemoAppHostConfigVulkan.hpp>
+#include <FslDemoHost/Vulkan/Config/SwapchainMaintenance1Util.hpp>
 #include <FslDemoService/Graphics/Control/GraphicsBeginFrameInfo.hpp>
 #include <FslDemoService/Graphics/Control/GraphicsDependentCreateInfo.hpp>
 #include <FslDemoService/Graphics/Control/IGraphicsServiceHost.hpp>
@@ -160,6 +161,22 @@ namespace Fsl::VulkanBasic
       }
       return AppDrawResult::Completed;
     }
+
+    //! Check if the present operation was enqueued, which means the present fence will be signaled.
+    //! Even when the presentation engine rejects the request with some errors the queue operations are still considered to be enqueued.
+    constexpr bool IsPresentFenceSignalExpected(const VkResult result) noexcept
+    {
+      switch (result)
+      {
+      case VK_SUCCESS:
+      case VK_SUBOPTIMAL_KHR:
+      case VK_ERROR_OUT_OF_DATE_KHR:
+      case VK_ERROR_SURFACE_LOST_KHR:
+        return true;
+      default:
+        return false;
+      }
+    }
   }
 
   DemoAppVulkanBasic::DemoAppVulkanBasic(const DemoAppConfig& demoAppConfig, const DemoAppVulkanSetup& demoAppVulkanSetup)
@@ -187,7 +204,7 @@ namespace Fsl::VulkanBasic
     m_surfaceFormatInfo = FindPreferredSurfaceInfo(m_physicalDevice.Device, m_surface, m_demoHostConfig->GetPreferredSurfaceFormats());
 
     m_resources.MainCommandPool.Reset(m_device.Get(), VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT, m_deviceQueue.QueueFamilyIndex);
-    m_resources.Frames = CreateFrameSyncObjects(m_device.Get(), GetRenderConfig().MaxFramesInFlight);
+    m_resources.Frames = CreateFrameSyncObjects(m_device.Get(), GetRenderConfig().MaxFramesInFlight, m_swapchainMaintenance1Enabled);
   }
 
 
@@ -317,7 +334,8 @@ namespace Fsl::VulkanBasic
     const auto currentFrameIndex = frameInfo.FrameIndex;
     const FrameDrawRecord& frameRecord = m_resources.Frames[currentFrameIndex];
     // Allow the app to draw
-    const VkFramebuffer framebuffer = m_dependentResources.SwapchainRecords[frameRecord.AssignedSwapImageIndex].Framebuffer.Get();
+    const SwapchainRecord& swapchainRecord = m_dependentResources.SwapchainRecords[frameRecord.AssignedSwapImageIndex];
+    const VkFramebuffer framebuffer = swapchainRecord.Framebuffer.Get();
 
     // Possible improvement:
     // We could replace the VulkanDraw with a normal Draw call but that would just mean that all implementations would have
@@ -331,7 +349,7 @@ namespace Fsl::VulkanBasic
 
     assert(frameRecord.ImageAcquiredSemaphore.IsValid());
     const VkSemaphore waitSemaphore = frameRecord.ImageAcquiredSemaphore.Get();
-    const VkSemaphore signalSemaphore = frameRecord.ImageReleasedSemaphore.Get();
+    const VkSemaphore signalSemaphore = swapchainRecord.ImageReleasedSemaphore.Get();
     const VkFence queueSubmitFence = frameRecord.QueueSubmitFence.Get();
 
     // Submit the draw operations
@@ -456,6 +474,7 @@ namespace Fsl::VulkanBasic
 
         FrameBufferCreateContext frameBufferCreateContext(swapchainImageView, m_swapchain.GetImageExtent(), mainRenderPass, depthImageView);
         m_dependentResources.SwapchainRecords[i].Framebuffer = CreateFramebuffer(frameBufferCreateContext);
+        m_dependentResources.SwapchainRecords[i].ImageReleasedSemaphore.Reset(m_device.Get(), 0);
       }
 
       // Create a struct containing all relevant information to be able to capture a screenshot on demand
@@ -498,8 +517,15 @@ namespace Fsl::VulkanBasic
       m_graphicsServiceHost->DestroyDependentResources();
     }
 
+    // Device idle does not cover the presentation engine, so when possible we wait for it to release the semaphores before destroying them
+    for (auto& rFrame : m_resources.Frames)
+    {
+      TryWaitForPresentFence(rFrame);
+    }
+
     for (std::size_t i = 0; i < m_dependentResources.SwapchainRecords.size(); ++i)
     {
+      m_dependentResources.SwapchainRecords[i].ImageReleasedSemaphore.Reset();
       m_dependentResources.SwapchainRecords[i].Framebuffer.Reset();
       m_dependentResources.SwapchainRecords[i].SwapchainImageView.Reset();
     }
@@ -622,7 +648,8 @@ namespace Fsl::VulkanBasic
   }
 
 
-  std::vector<DemoAppVulkanBasic::FrameDrawRecord> DemoAppVulkanBasic::CreateFrameSyncObjects(const VkDevice device, const uint32_t maxFramesInFlight)
+  std::vector<DemoAppVulkanBasic::FrameDrawRecord> DemoAppVulkanBasic::CreateFrameSyncObjects(const VkDevice device, const uint32_t maxFramesInFlight,
+                                                                                              const bool createPresentFence)
   {
     FSLLOG3_VERBOSE2("DemoAppVulkanBasic::CreateFrameSyncObjects()");
 
@@ -634,8 +661,12 @@ namespace Fsl::VulkanBasic
       assert(rFrame.AssignedSwapImageIndex == 0);
       assert(!rFrame.ImageAcquiredSemaphore.IsValid());
       // rFrame.ImageAcquiredSemaphore.Reset(device, 0);  // We set this on demand, so we start with a empty one
-      rFrame.ImageReleasedSemaphore.Reset(device, 0);
       rFrame.QueueSubmitFence.Reset(device, VK_FENCE_CREATE_SIGNALED_BIT);
+      if (createPresentFence)
+      {
+        // Must be unsignaled when given to vkQueuePresentKHR
+        rFrame.PresentFence.Reset(device, 0);
+      }
     }
     return framesDrawRecords;
   }
@@ -759,8 +790,13 @@ namespace Fsl::VulkanBasic
   // Per frame:
   // - ImageAcquiredSemaphore - Given to vkAcquireNextImageKHR, used by vkQueueSubmit (set when the presentation engine is finished using the
   // image).
-  // - ImageReleasedSemaphore - Given to vkQueuePresentKHR, used by vkQueueSubmit. (set when the command buffer has finished executing)
   // - QueueSubmitFence       - Given to vkQueueSubmit, and its signaled once all submitted command buffers have completed execution
+  // - PresentFence           - Given to vkQueuePresentKHR (only with swapchain maintenance1), its signaled once the presentation engine
+  //                            no longer needs the wait semaphores. Waited for before its reused and before the semaphores are destroyed.
+  //
+  // Per swapchain image:
+  // - ImageReleasedSemaphore - Given to vkQueueSubmit, waited on by vkQueuePresentKHR (set when the command buffer has finished executing).
+  //                            The presentation engine may still use it until the image is re-acquired, so it can't be tied to the frame fence.
 
 
   AppDrawResult DemoAppVulkanBasic::TryDoPrepareDraw(const FrameInfo& frameInfo)
@@ -803,6 +839,12 @@ namespace Fsl::VulkanBasic
       {
         {    // Wait for the frame to be ready, so we know the frame resources can be reused
           AppDrawResult waitResult = WaitForFenceAndResetIt(m_device.Get(), m_resources.Frames[currentFrameIndex].QueueSubmitFence.Get());
+          if (waitResult != AppDrawResult::Completed)
+          {
+            return waitResult;
+          }
+          // Ensure the present fence can be reused
+          waitResult = TryWaitForPresentFence(m_resources.Frames[currentFrameIndex]);
           if (waitResult != AppDrawResult::Completed)
           {
             return waitResult;
@@ -865,10 +907,29 @@ namespace Fsl::VulkanBasic
   {
     FSL_PARAM_NOT_USED(frameInfo);
 
-    const FrameDrawRecord& frameResources = m_resources.Frames[frameInfo.FrameIndex];
-    const VkSemaphore signalSemaphore = frameResources.ImageReleasedSemaphore.Get();
+    FrameDrawRecord& rFrame = m_resources.Frames[frameInfo.FrameIndex];
+    const VkSemaphore signalSemaphore = m_dependentResources.SwapchainRecords[rFrame.AssignedSwapImageIndex].ImageReleasedSemaphore.Get();
 
-    auto result = m_swapchain.TryQueuePresent(m_deviceQueue.Queue, 1, &signalSemaphore, &frameResources.AssignedSwapImageIndex, nullptr);
+    const void* pPresentInfoNext = nullptr;
+#ifdef FSL_VULKAN_SWAPCHAIN_MAINTENANCE1_SUPPORTED
+    Vulkan::SwapchainMaintenance1Util::SwapchainPresentFenceInfo presentFenceInfo{};
+    if (rFrame.PresentFence.IsValid())
+    {
+      // Normally a no-op since TryDoPrepareDraw already did this
+      const AppDrawResult waitResult = TryWaitForPresentFence(rFrame);
+      if (waitResult != AppDrawResult::Completed)
+      {
+        return waitResult;
+      }
+      presentFenceInfo.sType = Vulkan::SwapchainMaintenance1Util::SwapchainPresentFenceInfoSType;
+      presentFenceInfo.swapchainCount = 1;
+      presentFenceInfo.pFences = rFrame.PresentFence.GetPointer();
+      pPresentInfoNext = &presentFenceInfo;
+    }
+#endif
+
+    auto result = m_swapchain.TryQueuePresent(m_deviceQueue.Queue, 1, &signalSemaphore, &rFrame.AssignedSwapImageIndex, nullptr, pPresentInfoNext);
+    rFrame.PresentFencePending = pPresentInfoNext != nullptr && IsPresentFenceSignalExpected(result);
 
     switch (result)
     {
@@ -886,6 +947,17 @@ namespace Fsl::VulkanBasic
       // This case should restart the app and demo host
       return AppDrawResult::Failed;
     }
+  }
+
+
+  AppDrawResult DemoAppVulkanBasic::TryWaitForPresentFence(FrameDrawRecord& rFrame)
+  {
+    if (!rFrame.PresentFencePending)
+    {
+      return AppDrawResult::Completed;
+    }
+    rFrame.PresentFencePending = false;
+    return WaitForFenceAndResetIt(m_device.Get(), rFrame.PresentFence.Get());
   }
 
 

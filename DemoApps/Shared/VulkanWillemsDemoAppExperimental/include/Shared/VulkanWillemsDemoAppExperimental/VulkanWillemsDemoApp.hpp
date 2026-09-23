@@ -40,6 +40,7 @@
 #include <vulkan/vulkan.h>
 #include <functional>
 #include <string>
+#include <vector>
 
 namespace Fsl::Willems
 {
@@ -61,8 +62,9 @@ namespace Fsl::Willems
     {
       // Swap chain image presentation
       RapidVulkan::Semaphore PresentComplete;
-      // Command buffer submission and execution
-      RapidVulkan::Semaphore RenderComplete;
+      // Command buffer submission and execution (one per swapchain image, since the presentation engine can still be using it until the
+      // image is re-acquired)
+      std::vector<RapidVulkan::Semaphore> RenderComplete;
       // Text overlay submission and execution
       RapidVulkan::Semaphore TextOverlayComplete;
     };

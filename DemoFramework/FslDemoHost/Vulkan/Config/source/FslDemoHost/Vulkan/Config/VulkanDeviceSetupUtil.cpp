@@ -38,6 +38,7 @@
 #include <FslUtil/Vulkan1_0/Util/PhysicalDeviceKHRUtil.hpp>
 #include <FslUtil/Vulkan1_0/Util/QueueUtil.hpp>
 #include <array>
+#include <cassert>
 #include <deque>
 #include <utility>
 
@@ -46,7 +47,8 @@ namespace Fsl::Vulkan
   VulkanDeviceSetup VulkanDeviceSetupUtil::CreateSetup(const VUPhysicalDeviceRecord& physicalDevice, const VkSurfaceKHR surface,
                                                        const std::deque<PhysicalDeviceFeatureRequest>& featureRequestDeque,
                                                        const ReadOnlySpan<const char*>& extensions,
-                                                       IVulkanDeviceCreationCustomizer* const pDeviceCreationCustomizer)
+                                                       IVulkanDeviceCreationCustomizer* const pDeviceCreationCustomizer,
+                                                       VkBaseInStructure* const pExtraDeviceCreateInfoNext)
   {
     {
       const auto deviceQueueFamilyProperties = PhysicalDeviceUtil::GetPhysicalDeviceQueueFamilyProperties(physicalDevice.Device);
@@ -75,6 +77,13 @@ namespace Fsl::Vulkan
       {
         pDeviceCreationCustomizer->Configure(physicalDevice.Device);
         deviceCreateInfo.pNext = pDeviceCreationCustomizer->GetVkDeviceCreateInfoNextPointer();
+      }
+
+      if (pExtraDeviceCreateInfoNext != nullptr)
+      {
+        assert(pExtraDeviceCreateInfoNext->pNext == nullptr);
+        pExtraDeviceCreateInfoNext->pNext = static_cast<const VkBaseInStructure*>(deviceCreateInfo.pNext);
+        deviceCreateInfo.pNext = pExtraDeviceCreateInfoNext;
       }
 
       // Lookup the user defines feature requirements and set them

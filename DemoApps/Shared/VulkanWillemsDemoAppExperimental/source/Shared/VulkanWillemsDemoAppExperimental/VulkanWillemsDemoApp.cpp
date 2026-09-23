@@ -312,16 +312,14 @@ namespace Fsl
       // Create a semaphore used to synchronize image presentation
       // Ensures that the image is displayed before we start submitting new commands to the queue
       m_semaphores.PresentComplete.Reset(m_device.Get(), semaphoreCreateInfo);
-      // Create a semaphore used to synchronize command submission
-      // Ensures that the image is not presented until all commands have been submitted and executed
-      m_semaphores.RenderComplete.Reset(m_device.Get(), semaphoreCreateInfo);
+      // The RenderComplete semaphores are created per swapchain image in SetupSwapchain
       // Create a semaphore used to synchronize command submission
       // Ensures that the image is not presented until all commands for the text overlay have been submitted and executed
       // Will be inserted after the render complete semaphore if the text overlay is enabled
       m_semaphores.TextOverlayComplete.Reset(m_device.Get(), semaphoreCreateInfo);
 
       // Set up submit info structure
-      // Semaphores will stay the same during application lifetime
+      // The wait semaphore stays the same during application lifetime, the signal semaphore is set per swapchain image in TryPrepareFrame
       // Command buffer submission info is set by each example submitInfo{};
       m_submitInfo = VkSubmitInfo{};
       m_submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
@@ -330,7 +328,7 @@ namespace Fsl
       m_submitInfo.waitSemaphoreCount = 1;
       m_submitInfo.pWaitSemaphores = m_semaphores.PresentComplete.GetPointer();
       m_submitInfo.signalSemaphoreCount = 1;
-      m_submitInfo.pSignalSemaphores = m_semaphores.RenderComplete.GetPointer();
+      m_submitInfo.pSignalSemaphores = nullptr;
 
 #ifdef __ANDROID__
       FSLLOG3_INFO("Forcing vsync on");
@@ -424,6 +422,17 @@ namespace Fsl
     {
       const auto screenExtent = GetScreenExtent();
       m_swapchain.Reset(m_physicalDevice.Device, m_device.Get(), m_surface, screenExtent, m_enableVSync);
+
+      // Create a semaphore per swapchain image used to synchronize command submission
+      // Ensures that the image is not presented until all commands have been submitted and executed
+      VkSemaphoreCreateInfo semaphoreCreateInfo{};
+      semaphoreCreateInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+      m_semaphores.RenderComplete.clear();
+      m_semaphores.RenderComplete.resize(m_swapchain.GetImageCount());
+      for (auto& rSemaphore : m_semaphores.RenderComplete)
+      {
+        rSemaphore.Reset(m_device.Get(), semaphoreCreateInfo);
+      }
     }
 
 
@@ -795,6 +804,7 @@ namespace Fsl
       {
         throw std::runtime_error("Could not acquire next image.");
       }
+      m_submitInfo.pSignalSemaphores = m_semaphores.RenderComplete[m_currentBufferIndex].GetPointer();
       return true;
     }
 
@@ -805,7 +815,7 @@ namespace Fsl
       // Pass the semaphore signaled by the command buffer submission from the submit info as the wait semaphore for swap chain presentation
       // This ensures that the image is not presented to the windowing system until all commands have been submitted
 
-      const VkSemaphore semaphore = m_semaphores.RenderComplete.Get();
+      const VkSemaphore semaphore = m_semaphores.RenderComplete[m_currentBufferIndex].Get();
       const auto result = m_swapchain.TryQueuePresent(m_deviceQueue.Queue, m_currentBufferIndex, semaphore);
       if (result == VK_ERROR_OUT_OF_DATE_KHR)
       {

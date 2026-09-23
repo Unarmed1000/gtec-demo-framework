@@ -65,7 +65,8 @@ namespace Fsl
     RapidVulkan::GraphicsPipeline m_pipeline;
 
     RapidVulkan::Semaphore m_imageAcquiredSemaphore;
-    RapidVulkan::Semaphore m_renderingCompleteSemaphore;
+    //! One per swapchain image, since the presentation engine can still be using it until the image is re-acquired
+    std::vector<RapidVulkan::Semaphore> m_renderingCompleteSemaphore;
 
   public:
     explicit VulkanTriangle(const DemoAppConfig& config);

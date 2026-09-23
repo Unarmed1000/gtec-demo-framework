@@ -40,6 +40,7 @@
 #include <FslDemoHost/Vulkan/Config/PhysicalDeviceFeatureRequestUtil.hpp>
 #include <FslDemoHost/Vulkan/Config/PhysicalDeviceFeatureUtil.hpp>
 #include <FslDemoHost/Vulkan/Config/Service/IVulkanHostInfo.hpp>
+#include <FslDemoHost/Vulkan/Config/SwapchainMaintenance1Util.hpp>
 #include <FslDemoHost/Vulkan/Config/VulkanDeviceSetupUtil.hpp>
 #include <FslDemoHost/Vulkan/Config/VulkanValidationUtil.hpp>
 #include <FslDemoService/Graphics/Control/GraphicsDeviceCreateInfo.hpp>
@@ -51,6 +52,7 @@
 #include <FslUtil/Vulkan1_0/Util/PhysicalDeviceUtil.hpp>
 #include <FslUtil/Vulkan1_0/Util/QueueUtil.hpp>
 #include <array>
+#include <vector>
 
 namespace Fsl
 {
@@ -104,15 +106,41 @@ namespace Fsl
     }
 
     {
-      std::array<Vulkan::FeatureRequest, 1> hostExtensions = {
+      std::vector<Vulkan::FeatureRequest> hostExtensions = {
         Vulkan::FeatureRequest(VK_KHR_SWAPCHAIN_EXTENSION_NAME, Vulkan::FeatureRequirement::Mandatory)};
+
+      // Enable swapchain present fences if supported
+      VkBaseInStructure* pExtraDeviceCreateInfoNext = nullptr;
+#ifdef FSL_VULKAN_SWAPCHAIN_MAINTENANCE1_SUPPORTED
+      Vulkan::SwapchainMaintenance1Util::PhysicalDeviceSwapchainMaintenance1Features swapchainMaintenance1Features{};
+      if (m_launchOptions.SwapchainMaintenance1 == OptionUserChoice::Off)
+      {
+        FSLLOG3_INFO("Swapchain maintenance1: disabled by user");
+      }
+      else
+      {
+        const char* const pszSwapchainMaintenance1 =
+          Vulkan::SwapchainMaintenance1Util::TryGetDeviceExtensionName(vulkanHostInfo->GetInstance(), m_physicalDevice.Device);
+        FSLLOG3_WARNING_IF(pszSwapchainMaintenance1 == nullptr && m_launchOptions.SwapchainMaintenance1 == OptionUserChoice::On,
+                           "Swapchain maintenance1 was requested but is unsupported");
+        if (pszSwapchainMaintenance1 != nullptr)
+        {
+          hostExtensions.emplace_back(pszSwapchainMaintenance1, Vulkan::FeatureRequirement::Mandatory);
+          swapchainMaintenance1Features.sType = Vulkan::SwapchainMaintenance1Util::PhysicalDeviceSwapchainMaintenance1FeaturesSType;
+          swapchainMaintenance1Features.swapchainMaintenance1 = VK_TRUE;
+          pExtraDeviceCreateInfoNext = reinterpret_cast<VkBaseInStructure*>(&swapchainMaintenance1Features);
+          m_swapchainMaintenance1Enabled = true;
+        }
+        FSLLOG3_VERBOSE("Swapchain maintenance1: {}", pszSwapchainMaintenance1 != nullptr ? pszSwapchainMaintenance1 : "unsupported");
+      }
+#endif
 
       auto deviceConfig = PhysicalDeviceConfigUtil::BuildConfig(m_physicalDevice.Device, appHostConfig, SpanUtil::AsReadOnlySpan(hostExtensions));
       const PhysicalDeviceConfigUtil::DeviceConfigAsCharArrays deviceConfigEx(deviceConfig);
       const ReadOnlySpan<const char*> extensions = SpanUtil::AsReadOnlySpan(deviceConfigEx.Extensions);
 
-      auto vulkanDeviceSetup = Vulkan::VulkanDeviceSetupUtil::CreateSetup(m_physicalDevice, m_surface, requiredFeatures, extensions,
-                                                                          appHostConfig->TryGetDeviceCreationCustomizer().get());
+      auto vulkanDeviceSetup = Vulkan::VulkanDeviceSetupUtil::CreateSetup(
+        m_physicalDevice, m_surface, requiredFeatures, extensions, appHostConfig->TryGetDeviceCreationCustomizer().get(), pExtraDeviceCreateInfoNext);
       m_deviceActiveFeatures = vulkanDeviceSetup.DeviceFeatures;
       m_device = std::move(vulkanDeviceSetup.Device);
       m_deviceCreateInfo = vulkanDeviceSetup.DeviceCreateInfo;
