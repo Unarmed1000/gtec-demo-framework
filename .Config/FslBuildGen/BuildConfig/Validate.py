@@ -90,9 +90,9 @@ def CheckWindowsGLES(log: Log) -> None:
         if emulator == "arm" or emulator == "default":
             CheckWindowsGLESArm(log)
         elif emulator == "mesa":
-            CheckWindowsGLESPowerVR(log)
-        elif emulator == "powervr":
             CheckWindowsGLESMesa(log)
+        elif emulator == "powervr":
+            CheckWindowsGLESPowerVR(log)
         elif emulator == "qualcomm":
             CheckWindowsGLESQualcomm(log)
         elif emulator == "vivante":

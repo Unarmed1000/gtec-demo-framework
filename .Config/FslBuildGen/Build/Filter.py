@@ -370,8 +370,19 @@ class PackageFilter:
         return allAvailablePackageListInResolvedBuildOrder
 
     @staticmethod
-    def __FiltersRecipePackages(log: Log, resolvedPackageOrder: list[CommonPackage], requestedPackages: list[CommonPackage] | None) -> list[CommonPackage]:
-        return [package for package in resolvedPackageOrder if not package.ContainsRecipe() or (requestedPackages is not None and package in requestedPackages)]
+    def __FiltersDependencyOnlyPackages(
+        log: Log, resolvedPackageOrder: list[CommonPackage], requestedPackages: list[CommonPackage] | None
+    ) -> list[CommonPackage]:
+        """Remove recipe and external library packages that were not explicitly requested.
+        They are added back if one of the remaining packages depends on them. This prevents a unused external library
+        (for example one whose users were all removed by the feature filter) from pulling in recipes that are not needed.
+        """
+        return [
+            package
+            for package in resolvedPackageOrder
+            if (not package.ContainsRecipe() and package.Type != PackageType.ExternalLibrary)
+            or (requestedPackages is not None and package in requestedPackages)
+        ]
 
     @staticmethod
     def FilterNotSupported(log: Log, topLevelPackage: Package, requestedPackages: list[Package] | None) -> list[Package]:
@@ -431,8 +442,8 @@ class PackageFilter:
         # Try to determine what the user is interested in building
         requestedPackagesInOrder = PackageFilter.__DetermineActualUserBuildRequest(resolvedBuildOrder, requestedPackages)
 
-        # Remove recipe packages
-        requestedPackagesInOrder = PackageFilter.__FiltersRecipePackages(log, requestedPackagesInOrder, requestedPackages)
+        # Remove recipe and external library packages (they are added back if a remaining package depends on them)
+        requestedPackagesInOrder = PackageFilter.__FiltersDependencyOnlyPackages(log, requestedPackagesInOrder, requestedPackages)
 
         # Remove packages based on the users required features request
         requestedPackagesInOrder = PackageFilter.__FiltersPackagesByRequiredFeature(log, requestedPackagesInOrder, packageFilters.RequiredFeatureNameList)
@@ -465,7 +476,7 @@ class PackageFilter:
             appInfoRequirementTree.SetExtensionSupport(log, extensionNameList)
 
         # Remove recipe packages (we dont have recipe packages in the app info)
-        # requestedPackagesInOrder = PackageFilter.__FiltersRecipePackages(log, requestedPackagesInOrder)
+        # requestedPackagesInOrder = PackageFilter.__FiltersDependencyOnlyPackages(log, requestedPackagesInOrder)
 
         # Remove packages based on the users required features request (app must have feature, if no executables in resolvedBuildOrder no filtering is done!)
         resolvedBuildOrder = PackageFilter.__FiltersPackagesByRequiredFeature(log, resolvedBuildOrder, packageFilters.RequiredFeatureNameList)

@@ -37,15 +37,13 @@
 import os
 
 # import multiprocessing
-import shlex
-
 # import sys
 import subprocess
 from collections.abc import Callable
 from enum import Enum
 
 # from typing import cast
-from FslBuildGen import IOUtil, PackageListUtil, PackageUtil, ToolSharedValues
+from FslBuildGen import IOUtil, PackageListUtil, PackageUtil, ParseUtil, ToolSharedValues
 from FslBuildGen.Build.BuildConfigRecord import BuildConfigRecord
 from FslBuildGen.Build.BuildConfigureCache import BuildConfigureCache
 from FslBuildGen.Build.BuildFlavorUtil import BuildFlavorUtil
@@ -491,7 +489,7 @@ class Builder:
                 # Run commands
                 forAllConfig = buildConfig.ForAllConfig
                 if forAllConfig is not None and Builder.HasRequiredFeatures(package, forAllConfig):
-                    userRunCommands = shlex.split(forAllConfig.RunCommand)
+                    userRunCommands = ParseUtil.SplitCommandLine(forAllConfig.RunCommand)
                     if forAllConfig.Mode == ForAllMode.RunExe:
                         runCmdInfo = self.TryGenerateRunCommandForExecutable(buildContext, package, buildConfig, userRunCommands, generatorConfig)
                         self.__RunPackage(buildContext, package, buildEnv, runCmdInfo)

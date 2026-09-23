@@ -31,6 +31,8 @@
 #
 # ****************************************************************************************************************************************************
 
+import os
+import shlex
 
 from FslBuildGen import Util
 
@@ -175,6 +177,38 @@ def ParseBool(value: str) -> bool:
         return False
     else:
         raise Exception(f"Unsupported bool value '{value}'")
+
+
+def __SplitWindowsCommandLine(value: str) -> list[str]:
+    import ctypes
+    from ctypes import wintypes
+
+    commandLineToArgvW = ctypes.windll.shell32.CommandLineToArgvW
+    commandLineToArgvW.argtypes = [wintypes.LPCWSTR, ctypes.POINTER(ctypes.c_int)]
+    commandLineToArgvW.restype = ctypes.POINTER(wintypes.LPWSTR)
+    localFree = ctypes.windll.kernel32.LocalFree
+    localFree.argtypes = [wintypes.HLOCAL]
+    localFree.restype = wintypes.HLOCAL
+
+    # The first entry is parsed with the special program name rules, so prefix a dummy program name and drop it again
+    argc = ctypes.c_int(0)
+    argv = commandLineToArgvW(f"x {value}", ctypes.byref(argc))
+    if not argv:
+        raise ctypes.WinError()
+    try:
+        return [argv[i] for i in range(1, argc.value)]
+    finally:
+        localFree(ctypes.cast(argv, wintypes.HLOCAL))
+
+
+def SplitCommandLine(value: str) -> list[str]:
+    """
+    Split a user supplied command line into its arguments using the rules of the host OS.
+    On windows backslashes are path separators, so they must not be treated as escape characters like shlex does.
+    """
+    if os.name == "nt":
+        return __SplitWindowsCommandLine(value)
+    return shlex.split(value)
 
 
 def __ParseExternalVariantConstraints(variants: str | None) -> dict[str, str]:
