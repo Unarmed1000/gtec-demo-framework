@@ -20,7 +20,7 @@
 * Misc
   * The recommended platforms are now Ubuntu 24.04 and Windows 11+.
   * Visual Studio 2026 is now the default on windows.
-  * Upgraded to FslBuild 3.11.2 (fixed the Visual Studio 2026 toolset version used for the external libraries).
+  * Upgraded to FslBuild 3.11.3 (fixed the Visual Studio 2026 toolset version used for the external libraries, recipe downloads now use a FslBuild user agent).
   * clang-format and clang-tidy 23 are now required (all files are formatted with clang-format 23).
   * Added GitHub Actions CI: Ubuntu and Windows builds with unit tests, clang-format and clang-tidy (changed files).
   * Fixed --ExitAfterDuration never parsing the duration.

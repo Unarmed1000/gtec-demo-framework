@@ -38,7 +38,7 @@ import urllib.parse
 import urllib.request
 from collections.abc import Callable
 
-from FslBuildGen import IOUtil
+from FslBuildGen import IOUtil, __version__
 
 # from FslBuildGen import PackageConfig
 from FslBuildGen.Build.BuildUtil import PlatformBuildTypeInfo, PlatformBuildUtil
@@ -80,6 +80,10 @@ class BasicTask:
 
 
 class DownloadTask(BasicTask):
+    # Some servers (like registry.khronos.org) reject the default 'Python-urllib' user agent
+    USER_AGENT = f"FslBuild/{__version__}"
+    BLOCK_SIZE = 64 * 1024
+
     # def __init__(self, generatorContext: GeneratorContext) -> None:
     #    super().__init__(generatorContext)
 
@@ -106,7 +110,27 @@ class DownloadTask(BasicTask):
 
         self.DoPrint(f"Downloading '{url}' to '{dstPath}'")
         reporter = DownloadTask.__MakeDownReporter(self.DoPrint, IOUtil.GetFileName(dstPath))
-        urllib.request.urlretrieve(url, dstPath, reporthook=reporter)
+        # Download to a temporary file first so a interrupted download is never mistaken for a completed one
+        tmpPath = f"{dstPath}.part"
+        request = urllib.request.Request(url, headers={"User-Agent": DownloadTask.USER_AGENT})
+        try:
+            with urllib.request.urlopen(request) as response, open(tmpPath, "wb") as dstFile:
+                contentLength = response.headers.get("Content-Length")
+                totalSize = int(contentLength) if contentLength is not None else -1
+                count = 0
+                reporter(count, DownloadTask.BLOCK_SIZE, totalSize)
+                while True:
+                    block = response.read(DownloadTask.BLOCK_SIZE)
+                    if not block:
+                        break
+                    dstFile.write(block)
+                    count += 1
+                    reporter(count, DownloadTask.BLOCK_SIZE, totalSize)
+            os.replace(tmpPath, dstPath)
+        except BaseException:
+            if os.path.isfile(tmpPath):
+                os.remove(tmpPath)
+            raise
 
 
 class GitBaseTask(BasicTask):
