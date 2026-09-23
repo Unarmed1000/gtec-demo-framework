@@ -9,7 +9,7 @@
       <ExternalDependency Name="gtest_main" Access="Public" Type="StaticLib"/>
     </Platform>    
     <Platform Name="Ubuntu;Windows" Supported="true">
-      <Dependency Name="Recipe.GTest_1_17"/>
+      <Dependency Name="Recipe.GTest_1_18"/>
     </Platform>    
     
   </ExternalLibrary>
