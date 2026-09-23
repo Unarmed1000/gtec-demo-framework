@@ -2,7 +2,8 @@
 set FSL_GRAPHICS_SDK=%cd%
 rem If ANT_HOME is defined make sure we have access to the bin directory
 if defined ANT_HOME set PATH=%path%;%ANT_HOME%\bin
-if defined OPENCV_DIR set PATH=%path%;%OPENCV_DIR%\x64\vc14\bin
+rem If OPENCV_DIR is defined make sure the OpenCV dll directory is in the path (the OpenCV recipe uses the vc16 libraries)
+if defined OPENCV_DIR if exist "%OPENCV_DIR%\x64\vc16\bin" set "PATH=%path%;%OPENCV_DIR%\x64\vc16\bin"
 
 if not defined FSL_GRAPHICS_SDK_THIRD_PARTY_LIBS_DIR (
   set FSL_GRAPHICS_SDK_THIRD_PARTY_LIBS_DIR=%FSL_GRAPHICS_SDK%\.Thirdparty
