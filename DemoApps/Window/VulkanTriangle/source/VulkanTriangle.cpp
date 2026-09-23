@@ -130,7 +130,8 @@ namespace Fsl
     const VkSemaphore waitSemaphores = m_imageAcquiredSemaphore.Get();
     const VkSemaphore signalSemaphores = m_renderingCompleteSemaphore[currentBuffer].Get();
 
-    const VkPipelineStageFlags waitDstStageMask = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
+    // The first command is a layout transition barrier with a COLOR_ATTACHMENT_OUTPUT source stage, so it chains with this wait
+    const VkPipelineStageFlags waitDstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
 
     VkSubmitInfo submitInfo{};
     submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
@@ -462,7 +463,7 @@ namespace Fsl
     m_cmdBuffer[bufferIndex].Begin(0, VK_NULL_HANDLE, 0, VK_NULL_HANDLE, VK_FALSE, 0, 0);
     {
       m_swapchain.CmdPipelineBarrier(m_cmdBuffer[bufferIndex].Get(), VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
-                                     VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, bufferIndex);
+                                     VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, bufferIndex);
 
       std::array<VkClearValue, 1> clearValues{};
       clearValues[0].color = {{0.0f, 0.0f, 1.0f, 1.0f}};
@@ -506,7 +507,7 @@ namespace Fsl
       m_cmdBuffer[bufferIndex].CmdEndRenderPass();
 
       m_swapchain.CmdPipelineBarrier(m_cmdBuffer[bufferIndex].Get(), VK_ACCESS_MEMORY_READ_BIT, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
-                                     VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, bufferIndex);
+                                     VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, bufferIndex);
     }
     m_cmdBuffer[bufferIndex].End();
   }

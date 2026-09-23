@@ -297,8 +297,8 @@ namespace Fsl::Vulkan
     imageMemoryBarrier.dstAccessMask = dstAccessMask;
     imageMemoryBarrier.oldLayout = m_info[imageIndex].ImageLayout;
     imageMemoryBarrier.newLayout = newLayout;
-    imageMemoryBarrier.srcQueueFamilyIndex = 0;
-    imageMemoryBarrier.dstQueueFamilyIndex = 0;
+    imageMemoryBarrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+    imageMemoryBarrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
     imageMemoryBarrier.image = m_images[imageIndex];
     imageMemoryBarrier.subresourceRange = {VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1};
 
