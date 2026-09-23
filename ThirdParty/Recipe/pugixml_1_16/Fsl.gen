@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <FslBuildGen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../FslBuildGen.xsd">
-  <ExternalLibrary Name="Recipe.pugixml_1_15" CreationYear="2022">
+  <ExternalLibrary Name="Recipe.pugixml_1_16" CreationYear="2022">
     <Default.Platform.Supported Value="false"/>
 
     <Platform Name="Android" Supported="true">
-      <ExperimentalRecipe Name="pugixml" Version="1.15" Find="false">
+      <ExperimentalRecipe Name="pugixml" Version="1.16" Find="false">
         <Pipeline>
-          <Download URL="https://github.com/zeux/pugixml/releases/download/v1.15/pugixml-1.15.tar.gz" Hash="655ade57fa703fb421c2eb9a0113b5064bddb145d415dd1f88c79353d90d511a"/> 
-          <Unpack File="pugixml-1.15.tar.gz" OutputPath="pugixml-1.15"/>
+          <Download URL="https://github.com/zeux/pugixml/releases/download/v1.16/pugixml-1.16.tar.gz" Hash="4cee1ca4aad395170f4c7a07824f3bdd41f28316c6e1e1090a1425b278ec0b4b"/> 
+          <Unpack File="pugixml-1.16.tar.gz" OutputPath="pugixml-1.16"/>
           <CMakeBuild Project="pugixml" Target="install" Configuration="release" OutputPath="_Install"/>
         </Pipeline>
         <Installation>
@@ -20,10 +20,10 @@
     </Platform>
 
     <Platform Name="Ubuntu;QNX;Emscripten" Supported="true">
-      <ExperimentalRecipe Name="pugixml" Version="1.15" Find="true">
+      <ExperimentalRecipe Name="pugixml" Version="1.16" Find="true">
         <Pipeline>
-          <Download URL="https://github.com/zeux/pugixml/releases/download/v1.15/pugixml-1.15.tar.gz" Hash="655ade57fa703fb421c2eb9a0113b5064bddb145d415dd1f88c79353d90d511a"/> 
-          <Unpack File="pugixml-1.15.tar.gz" OutputPath="pugixml-1.15"/>
+          <Download URL="https://github.com/zeux/pugixml/releases/download/v1.16/pugixml-1.16.tar.gz" Hash="4cee1ca4aad395170f4c7a07824f3bdd41f28316c6e1e1090a1425b278ec0b4b"/> 
+          <Unpack File="pugixml-1.16.tar.gz" OutputPath="pugixml-1.16"/>
           <CMakeBuild Project="pugixml" Target="install" Configuration="release" OutputPath="_Install"/>
         </Pipeline>
         <Installation>
@@ -36,10 +36,10 @@
     </Platform>
     
     <Platform Name="Windows" Supported="true">
-      <ExperimentalRecipe Name="pugixml" Version="1.15" Find="true">
+      <ExperimentalRecipe Name="pugixml" Version="1.16" Find="true">
         <Pipeline>
-          <Download URL="https://github.com/zeux/pugixml/releases/download/v1.15/pugixml-1.15.tar.gz" Hash="655ade57fa703fb421c2eb9a0113b5064bddb145d415dd1f88c79353d90d511a"/> 
-          <Unpack File="pugixml-1.15.tar.gz" OutputPath="pugixml-1.15"/>
+          <Download URL="https://github.com/zeux/pugixml/releases/download/v1.16/pugixml-1.16.tar.gz" Hash="4cee1ca4aad395170f4c7a07824f3bdd41f28316c6e1e1090a1425b278ec0b4b"/> 
+          <Unpack File="pugixml-1.16.tar.gz" OutputPath="pugixml-1.16"/>
           <CMakeBuild Project="pugixml" Target="install" Configuration="debug;release" Options="-DPUGIXML_USE_POSTFIX=ON" OutputPath="_Install"/>
         </Pipeline>
         <Installation>
