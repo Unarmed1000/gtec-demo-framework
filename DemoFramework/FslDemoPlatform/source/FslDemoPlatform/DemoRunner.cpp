@@ -212,7 +212,7 @@ namespace Fsl
 
       bool enableFirewallRequest = false;
 
-      std::unique_ptr<ServiceFramework> serviceFramework(new ServiceFramework());
+      std::unique_ptr<ServiceFramework> serviceFramework = std::make_unique<ServiceFramework>();
 
       // basic setup
       auto demoBasicSetup = DemoSetupManager::GetSetup(demoRunnerConfig.SetupManagerConfig, rExceptionMessageFormatter,
