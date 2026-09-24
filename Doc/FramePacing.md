@@ -73,6 +73,9 @@ the given duration). `GetRunDuration()` and `GetRunMeasuredTime()` report the pr
 - The marker must reach the capture unmodified: it is drawn opaque, pure black/white and pixel aligned at the swapchain resolution.
   Use a lossless capture and keep at least 3 stored pixels per module (`--FramePacing.CaptureHeight` computes that for you).
 - HDR swapchains may alter pure black and white, prefer SDR apps for measurements.
+- On OpenGL ES the `--Stats` overlay is drawn after the marker, avoid combining the two if the stats overlap the marker slots.
+- If the marker is enabled at runtime (instead of on the command line) it is first shown the frame after it was enabled, as the render
+  resources it needs are created on demand.
 - The marker library is pinned to a commit of mb-framepacing until the first `marker-v0.1.0` release is published.
 
 ## Implementation
@@ -82,3 +85,8 @@ Package                             | Content
 `ThirdParty/mb_framemarker`         | The mb-framepacing C++ marker library (via `Recipe.mb_framemarker_0_1`).
 `FslDemoService.FramePacing`        | The public `IFramePacingService` interface (header only, available on all platforms).
 `FslDemoService.FramePacing.Impl`   | The service, its command line options, the run state machine and the overlay that draws the marker.
+
+The overlay renders the triangles produced by `MB::FrameMarker::GenerateTriangles` on the GPU through the FslGraphics3D
+`IBasicRenderSystem` (one dynamic vertex buffer, an opaque material without depth test or culling and a pixel aligned orthographic
+projection), so the same code is used for OpenGL ES 2, OpenGL ES 3 and Vulkan. The host draws it inside the frame after the app has drawn
+(`DemoAppManager` for OpenGL ES and `DemoAppVulkanBasic::AddSystemUI` for Vulkan).

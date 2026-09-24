@@ -256,6 +256,14 @@ namespace Fsl
     try
     {
       m_record.DemoApp->_Draw(frameInfo);
+#ifdef FSL_FEATURE_FRAMEPACING
+      // The frame pacing marker must be the last thing the app frame draws (it is rendered with the basic render system, so it has to be
+      // drawn inside the frame)
+      if (m_framePacingOverlay && m_state == DemoState::Running)
+      {
+        m_framePacingOverlay->Draw(m_demoAppConfig.WindowMetrics);
+      }
+#endif
       m_record.DemoApp->_EndDraw(frameInfo);
     }
     catch (std::exception& ex)
@@ -271,14 +279,6 @@ namespace Fsl
     {
       m_demoAppProfilerOverlay->Draw(m_demoAppConfig.WindowMetrics);
     }
-
-#ifdef FSL_FEATURE_FRAMEPACING
-    // The frame pacing marker must be the very last thing drawn
-    if (m_framePacingOverlay && m_state == DemoState::Running)
-    {
-      m_framePacingOverlay->Draw(m_demoAppConfig.WindowMetrics);
-    }
-#endif
 
     ManageExitRequests(false);
 
