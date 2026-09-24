@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<FslBuildGen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../../FslBuildGen.xsd">
+  <ToolRecipe Name="Recipe.BuildTool.Conan" CreationYear="2026">
+    <ExperimentalRecipe>
+      <Installation>
+        <FindExecutableFileInPath Name="conan" MinVersion="2.0" VersionCommand="--version" VersionRegEx="version\s*([\d.]+)" Help="Please install conan 2.0+ (pip install conan) as it is used to acquire the packages of the Conan recipes."/>
+      </Installation>
+    </ExperimentalRecipe>
+  </ToolRecipe>
+</FslBuildGen>
