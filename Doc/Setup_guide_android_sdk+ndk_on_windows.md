@@ -36,12 +36,12 @@
   * Android studio must be at least 4.1.2
   * Get the android studio full package and enable the default packages.
   * Configure the SDK manager
-    * "SDK Platforms" add if necessary "Android 12.0" which is **SDK 31!**
+    * "SDK Platforms" add if necessary "Android 15.0" which is **SDK 35!**
     * "SDK Tools" add if necessary "CMake, LLDB, NDK, Android Support Repository"
   * Make sure to configure ANDROID_HOME to point to the android sdk directory
   * Make sure to configure ANDROID_NDK to point to the android ndk directory
-  * Make sure you have at least android-ndk-r25b.
-    * We recommend the latest LTS which currently is **NDK r25b**.
+  * Make sure you have at least android-ndk-r27d.
+    * We recommend the latest LTS which currently is **NDK r30**.
 
 * [Python 3.14+](https://www.python.org/downloads/)
 
