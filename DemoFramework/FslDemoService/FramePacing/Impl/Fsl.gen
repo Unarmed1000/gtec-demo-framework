@@ -7,7 +7,7 @@
     <Dependency Name="FslDemoApp.Base"/>
     <Dependency Name="FslDemoService.FramePacing"/>
     <Dependency Name="FslService.Impl"/>
-    <Platform Name="Apple;Ubuntu;Windows" Supported="true">
+    <Platform Name="Android;Apple;RDK_Yocto;Ubuntu;Windows;QNX;Emscripten" Supported="true">
       <Dependency Name="mb_framemarker" Access="Private"/>
     </Platform>
   </Library>

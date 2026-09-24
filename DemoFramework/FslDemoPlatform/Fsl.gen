@@ -12,11 +12,14 @@
       <Dependency Name="Platform.Android.GameActivity" Access="Public"/>
       <!--Dependency Name="Platform.Android.NDKHelper" Access="Private"/-->
       <Dependency Name="Platform.Android.JNIUtil" Access="Private"/>
-    </Platform>
-    <Platform Name="Apple;Ubuntu">
       <Dependency Name="FslDemoService.FramePacing.Impl" Access="Private"/>
     </Platform>
-    <Platform Name="QNX"/>
+    <Platform Name="Apple;Emscripten;RDK_Yocto;Ubuntu">
+      <Dependency Name="FslDemoService.FramePacing.Impl" Access="Private"/>
+    </Platform>
+    <Platform Name="QNX">
+      <Dependency Name="FslDemoService.FramePacing.Impl" Access="Private"/>
+    </Platform>
     <Platform Name="Yocto"/>
     <Platform Name="Windows" ProjectId="5D828207-1B76-40FE-8817-CAA002DE8144">
       <Dependency Name="FslDemoService.FramePacing.Impl" Access="Private"/>

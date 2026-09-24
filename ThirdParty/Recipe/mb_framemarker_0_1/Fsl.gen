@@ -3,12 +3,32 @@
   <ExternalLibrary Name="Recipe.mb_framemarker_0_1" CreationYear="2026">
     <Default.Platform.Supported Value="false"/>
 
-    <!-- mb_framemarker requires CMake 4.0+ so only the platforms where that is the norm are enabled -->
     <!-- There is no marker-v0.1.0 release yet, so we pin a commit. Switch to the release archive (URL + SHA256) once it is published -->
-    <Platform Name="Apple;Ubuntu" Supported="true">
+    <!-- mb_framemarker requires CMake 4.0+ -->
+    <Platform Name="Apple;RDK_Yocto;Ubuntu;QNX;Emscripten" Supported="true">
       <ExperimentalRecipe Name="mb_framemarker" Version="0.1.0" Find="false">
         <Pipeline>
           <GitClone URL="https://github.com/Unarmed1000/mb-framepacing" Hash="7c5b03b8165eb04fc699b89f8d32a21f73b35a26"/>
+          <CMakeBuild Source="marker/cpp" Project="mb_framemarker" Target="install" Configuration="release" Options="-DMB_FRAMEMARKER_BUILD_TESTS=OFF -DMB_FRAMEMARKER_BUILD_TOOLS=OFF -DMB_FRAMEMARKER_WARNINGS_AS_ERRORS=OFF" OutputPath="_Install"/>
+        </Pipeline>
+        <Installation>
+          <AddHeaders Name="include"/>
+          <AddLib Name="lib/libmb_framemarker.a"/>
+          <Path Name="include/mb/framemarker/FrameMarker.hpp" Method="IsFile"/>
+          <Path Name="include/mb/framemarker/Version.hpp" Method="IsFile"/>
+        </Installation>
+      </ExperimentalRecipe>
+    </Platform>
+
+    <!-- The CMake used for Android builds can be older than 4.0, with the tests disabled the library only uses CMake 3.23 features
+         so the minimum version is lowered for Android only -->
+    <Platform Name="Android" Supported="true">
+      <ExperimentalRecipe Name="mb_framemarker" Version="0.1.0" Find="false">
+        <Pipeline>
+          <GitClone URL="https://github.com/Unarmed1000/mb-framepacing" Hash="7c5b03b8165eb04fc699b89f8d32a21f73b35a26"/>
+          <Copy>
+            <GitApply From="{RECIPE_PATH}/android-cmake-minimum-version.patch"/>
+          </Copy>
           <CMakeBuild Source="marker/cpp" Project="mb_framemarker" Target="install" Configuration="release" Options="-DMB_FRAMEMARKER_BUILD_TESTS=OFF -DMB_FRAMEMARKER_BUILD_TOOLS=OFF -DMB_FRAMEMARKER_WARNINGS_AS_ERRORS=OFF" OutputPath="_Install"/>
         </Pipeline>
         <Installation>

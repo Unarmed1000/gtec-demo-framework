@@ -3,7 +3,7 @@
   <ExternalLibrary Name="mb_framemarker" CreationYear="2026">
     <Default.Platform.Supported Value="false"/>
     <Define Name="FSL_ENABLE_MB_FRAMEMARKER" Access="Public"/>
-    <Platform Name="Apple;Ubuntu;Windows" Supported="true">
+    <Platform Name="Android;Apple;RDK_Yocto;Ubuntu;Windows;QNX;Emscripten" Supported="true">
       <Dependency Name="Recipe.mb_framemarker_0_1"/>
     </Platform>
   </ExternalLibrary>
