@@ -118,12 +118,14 @@ jobs:
           key: thirdparty-windows-${{ env.FSL_CI_VS_VERSION }}-${{ hashFiles('ThirdParty/**/Fsl.gen', 'ThirdParty/**/*.patch') }}
           restore-keys: thirdparty-windows-${{ env.FSL_CI_VS_VERSION }}-
 
+      # Each project already compiles its files in parallel (/MP), so only build two projects at a time.
+      # The default (cpu count + 2 projects) starves the 4 core runner.
       - name: Build
         shell: cmd
         run: |
           call "%FSL_CI_VCVARSALL%" x64 || exit /b 1
           call "%GITHUB_WORKSPACE%\prepare.bat" || exit /b 1
-          python .Config\FslBuild.py --noGitHash --VSVersion %FSL_CI_VS_VERSION% -t sdk --BuildTime --UseFeatures %FSL_CI_FEATURES_WINDOWS% || exit /b 1
+          python .Config\FslBuild.py --noGitHash --VSVersion %FSL_CI_VS_VERSION% -t sdk --BuildThreads 2 --BuildTime --UseFeatures %FSL_CI_FEATURES_WINDOWS% || exit /b 1
 
       - name: Unit tests
         shell: cmd
@@ -131,7 +133,7 @@ jobs:
           call "%FSL_CI_VCVARSALL%" x64 || exit /b 1
           call "%GITHUB_WORKSPACE%\prepare.bat" || exit /b 1
           mkdir "%FSL_TEST_REPORTS%"
-          python .Config\FslBuild.py --noGitHash --VSVersion %FSL_CI_VS_VERSION% -t sdk --UseFeatures %FSL_CI_FEATURES_WINDOWS% --RequireFeature [GoogleUnitTest] --ForAllExe "(EXE) --gtest_output=xml:%FSL_TEST_REPORTS%\(PACKAGE_NAME).xml" || exit /b 1
+          python .Config\FslBuild.py --noGitHash --VSVersion %FSL_CI_VS_VERSION% -t sdk --BuildThreads 2 --UseFeatures %FSL_CI_FEATURES_WINDOWS% --RequireFeature [GoogleUnitTest] --ForAllExe "(EXE) --gtest_output=xml:%FSL_TEST_REPORTS%\(PACKAGE_NAME).xml" || exit /b 1
 
       - name: Upload unit test reports
         if: always()
