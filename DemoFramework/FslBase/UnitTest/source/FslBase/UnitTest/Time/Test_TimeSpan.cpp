@@ -53,6 +53,22 @@ TEST(TestTime_TimeSpan, Construct_Ticks)
   EXPECT_EQ(10, value.Ticks());
 }
 
+TEST(TestTime_TimeSpan, Construct_DaysHoursMinutesSecondsMilliseconds)
+{
+  const TimeSpan value(1, 2, 3, 4, 5);
+  EXPECT_EQ((1 * TimeSpan::TicksPerDay) + (2 * TimeSpan::TicksPerHour) + (3 * TimeSpan::TicksPerMinute) + (4 * TimeSpan::TicksPerSecond) +
+              (5 * TimeSpan::TicksPerMillisecond),
+            value.Ticks());
+}
+
+TEST(TestTime_TimeSpan, Construct_DaysHoursMinutesSecondsMilliseconds_LargeMilliseconds)
+{
+  // 1000000ms * 10000 ticks per millisecond does not fit in a int32_t
+  const TimeSpan value(0, 0, 0, 0, 1000000);
+  EXPECT_EQ(int64_t{1000000} * TimeSpan::TicksPerMillisecond, value.Ticks());
+  EXPECT_EQ(1000.0, value.TotalSeconds());
+}
+
 TEST(TestTime_TimeSpan, Days)
 {
   constexpr auto Units = 2;

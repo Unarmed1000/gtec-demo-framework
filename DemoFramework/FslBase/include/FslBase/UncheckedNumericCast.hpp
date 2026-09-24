@@ -91,7 +91,7 @@ namespace Fsl
     }
   }
 
-  template <typename TTo, typename TFrom, typename = std::enable_if<std::is_integral<TTo>::value && std::is_integral<TFrom>::value>>
+  template <typename TTo, typename TFrom, typename = std::enable_if_t<std::is_integral_v<TTo> && std::is_integral_v<TFrom>>>
   constexpr inline TTo UncheckedNumericCast(const TFrom& value) noexcept
   {
     return IntegralConverter::UncheckedConvertIntegral<TTo>(value);

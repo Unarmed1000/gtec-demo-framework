@@ -34,6 +34,7 @@
 #include <FslBase/Attributes.hpp>
 #include <FslBase/Exceptions.hpp>
 #include <FslBase/UncheckedNumericCast.hpp>
+#include <type_traits>
 
 namespace Fsl
 {
@@ -98,7 +99,7 @@ namespace Fsl
     }
   }
 
-  template <typename TTo, typename TFrom, typename = std::enable_if<std::is_integral<TTo>::value && std::is_integral<TFrom>::value>>
+  template <typename TTo, typename TFrom, typename = std::enable_if_t<std::is_integral_v<TTo> && std::is_integral_v<TFrom>>>
   constexpr inline TTo NumericCast(const TFrom& value)
   {
     return IntegralConverter::ConvertIntegral<TTo>(value);

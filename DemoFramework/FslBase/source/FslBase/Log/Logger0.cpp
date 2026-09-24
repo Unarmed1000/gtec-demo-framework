@@ -135,6 +135,8 @@ namespace Fsl
         __android_log_print(androidLogType, "FSL_LOG_TAG", "%s", psz);
 #else
         SafePrint(logType, psz);
+        // IDE_LOG is a no-op in release builds, so the branches are identical there
+        // NOLINTBEGIN(bugprone-branch-clone)
         switch (logType)
         {
         case LogType::Warning:
@@ -147,6 +149,7 @@ namespace Fsl
           IDE_LOG("{}\n", psz);
           break;
         }
+        // NOLINTEND(bugprone-branch-clone)
 #endif
       }
       catch (const std::exception&)
@@ -181,6 +184,8 @@ namespace Fsl
         __android_log_print(androidLogType, "FSL_LOG_TAG", "%s", psz);
 #else
         SafePrint(logType, psz);
+        // IDE_LOG is a no-op in release builds, so the branches are identical there
+        // NOLINTBEGIN(bugprone-branch-clone)
         switch (logType)
         {
         case LogType::Warning:
@@ -193,6 +198,7 @@ namespace Fsl
           IDE_LOG("{}({}): {}\n", location.pszFile, location.Line, psz);
           break;
         }
+        // NOLINTEND(bugprone-branch-clone)
 #endif
       }
       catch (const std::exception&)

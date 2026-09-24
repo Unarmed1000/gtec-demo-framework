@@ -48,7 +48,7 @@ namespace Fsl
     using value_type = float;
     using size_type = std::size_t;
 
-    static constexpr size_type NumElements = 3 * 4;
+    static constexpr size_type NumElements = size_type{3} * size_type{4};
 
     constexpr size_type size() const    // NOLINT(readability-convert-member-functions-to-static,readability-identifier-naming)
     {

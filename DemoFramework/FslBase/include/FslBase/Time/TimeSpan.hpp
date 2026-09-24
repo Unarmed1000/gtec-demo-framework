@@ -56,7 +56,7 @@ namespace Fsl
     //! The number of ticks per millisecond
     static constexpr uint16_t TicksPerMillisecond = 10000;
     //! The number of ticks per second
-    static constexpr int64_t TicksPerSecond = TicksPerMillisecond * 1000;
+    static constexpr int64_t TicksPerSecond = int64_t{TicksPerMillisecond} * 1000;
     //! The number of ticks per minute
     static constexpr int64_t TicksPerMinute = TicksPerSecond * 60;
     //! The number of ticks per hour
@@ -98,7 +98,7 @@ namespace Fsl
     constexpr explicit TimeSpan(const int32_t days, const int32_t hours, const int32_t minutes, const int32_t seconds,
                                 const int32_t milliseconds) noexcept
       : TimeSpan((days * TicksPerDay) + (hours * TicksPerHour) + (minutes * TicksPerMinute) + (seconds * TicksPerSecond) +
-                 (milliseconds * TicksPerMillisecond))
+                 (static_cast<int64_t>(milliseconds) * TicksPerMillisecond))
     {
     }
 
