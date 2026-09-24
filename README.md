@@ -45,7 +45,7 @@ with the goal of keeping the framework up to date with the latest compilers, SDK
 
 * Android NDK
 * Linux with various windowing systems (Yocto).
-* Ubuntu 24.04
+* Ubuntu 26.04
 * Windows 11+
 
 ## Table of contents
@@ -126,7 +126,7 @@ uses [RAII](http://en.wikipedia.org/wiki/Resource_Acquisition_Is_Initialization)
 See the setup guides for your platform:
 
 * [Android](Doc/Setup_guide_android_sdk+ndk_on_windows.md)
-* [Ubuntu 24.04](Doc/Setup_guide_ubuntu24.04.md)
+* [Ubuntu 26.04](Doc/Setup_guide_ubuntu26.04.md)
 * [Windows](Doc/Setup_guide_windows.md)
 * [Yocto](Doc/Setup_guide_yocto.md)
 

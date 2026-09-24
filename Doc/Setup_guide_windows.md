@@ -31,6 +31,8 @@
 * [CMake 3.16 or newer](https://cmake.org/download/)
 * [Python 3.14+](https://www.python.org/downloads/)
   To be able run python scripts.
+* [LLVM 23](https://github.com/llvm/llvm-project/releases) (clang-format and clang-tidy 23)
+  Only needed to format and tidy the code with `FslBuildCheck.py`.
 * Download the source from git.
 
 For OpenGL ES, OpenCL, OpenCV, OpenVX and Vulkan support additional packages are required, see below.

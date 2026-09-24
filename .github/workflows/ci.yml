@@ -25,11 +25,12 @@ env:
 
 jobs:
   ubuntu:
-    name: Ubuntu 24.04 build + unit tests
-    runs-on: ubuntu-24.04
+    name: Ubuntu 26.04 build + unit tests
+    runs-on: ubuntu-26.04
     timeout-minutes: 350
+    # The image provides Python 3.14 (the Ubuntu 26.04 system python), OpenCV 5 and the Vulkan SDK
     container:
-      image: sigil/graphics-compute-api-test:u24_04
+      image: sigil/graphics-compute-api-test:u26_04
       options: --user root
     env:
       FSL_GRAPHICS_SDK_THIRD_PARTY_LIBS_DIR: /fsl-thirdparty
@@ -37,16 +38,12 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
-      - uses: actions/setup-python@v7
-        with:
-          python-version: '3.14'
-
       - name: Cache third party libraries
         uses: actions/cache@v6
         with:
           path: /fsl-thirdparty
-          key: thirdparty-ubuntu-build-${{ hashFiles('ThirdParty/**/Fsl.gen', 'ThirdParty/**/*.patch') }}
-          restore-keys: thirdparty-ubuntu-build-
+          key: thirdparty-ubuntu26.04-build-${{ hashFiles('ThirdParty/**/Fsl.gen', 'ThirdParty/**/*.patch') }}
+          restore-keys: thirdparty-ubuntu26.04-build-
 
       - name: Build
         shell: bash
@@ -149,7 +146,7 @@ jobs:
 
   clang-format:
     name: clang-format
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     timeout-minutes: 60
     steps:
       - uses: actions/checkout@v7
@@ -161,7 +158,8 @@ jobs:
       - name: Install clang-format ${{ env.LLVM_VERSION }}
         run: |
           wget -qO- https://apt.llvm.org/llvm-snapshot.gpg.key | sudo tee /etc/apt/trusted.gpg.d/apt.llvm.org.asc > /dev/null
-          echo "deb http://apt.llvm.org/noble/ llvm-toolchain-noble-${LLVM_VERSION} main" | sudo tee /etc/apt/sources.list.d/llvm.list
+          codename=$(. /etc/os-release && echo "$VERSION_CODENAME")
+          echo "deb http://apt.llvm.org/${codename}/ llvm-toolchain-${codename}-${LLVM_VERSION} main" | sudo tee /etc/apt/sources.list.d/llvm.list
           sudo apt-get update
           sudo apt-get install -y clang-format-${LLVM_VERSION} ninja-build
 
@@ -181,10 +179,10 @@ jobs:
 
   clang-tidy:
     name: clang-tidy (changed files)
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     timeout-minutes: 240
     container:
-      image: sigil/graphics-compute-api-test:u24_04
+      image: sigil/graphics-compute-api-test:u26_04
       options: --user root
     env:
       FSL_GRAPHICS_SDK_THIRD_PARTY_LIBS_DIR: /fsl-thirdparty
@@ -193,16 +191,10 @@ jobs:
         with:
           fetch-depth: 0
 
-      - uses: actions/setup-python@v7
-        with:
-          python-version: '3.14'
-
+      # The image already has the apt.llvm.org ${LLVM_VERSION} source configured (and clang-format/clang-tidy installed),
+      # adding it again with different signing options would break 'apt-get update'
       - name: Install clang ${{ env.LLVM_VERSION }}
         run: |
-          apt-get update
-          apt-get install -y wget gnupg
-          wget -qO- https://apt.llvm.org/llvm-snapshot.gpg.key > /etc/apt/trusted.gpg.d/apt.llvm.org.asc
-          echo "deb http://apt.llvm.org/noble/ llvm-toolchain-noble-${LLVM_VERSION} main" > /etc/apt/sources.list.d/llvm.list
           apt-get update
           apt-get install -y clang-${LLVM_VERSION} clang-tidy-${LLVM_VERSION} clang-tools-${LLVM_VERSION}
 
@@ -210,8 +202,8 @@ jobs:
         uses: actions/cache@v6
         with:
           path: /fsl-thirdparty
-          key: thirdparty-ubuntu-tidy-${{ hashFiles('ThirdParty/**/Fsl.gen', 'ThirdParty/**/*.patch') }}
-          restore-keys: thirdparty-ubuntu-tidy-
+          key: thirdparty-ubuntu26.04-tidy-${{ hashFiles('ThirdParty/**/Fsl.gen', 'ThirdParty/**/*.patch') }}
+          restore-keys: thirdparty-ubuntu26.04-tidy-
 
       - name: clang-tidy
         shell: bash

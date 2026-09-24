@@ -1,5 +1,5 @@
 
-# Setup guide Ubuntu 24.04
+# Setup guide Ubuntu 26.04
 
 ## Table of contents
 
@@ -24,7 +24,7 @@
 
 # Prerequisites
 
-* Ubuntu 24.04 64 bit
+* Ubuntu 26.04 64 bit
 * Build tools and xrand
 
     ```bash
@@ -39,17 +39,22 @@
     ```
 
 * Python 3.14+
-  To be able run python scripts, they are needed to build.
-  Ubuntu 24.04 comes with Python 3.12, so install 3.14 from the deadsnakes PPA and use it from a virtual environment.
-  The virtual environment makes `python3` refer to 3.14 without changing the system python.
+  The build scripts require it. Ubuntu 26.04 ships Python 3.14 as its system python, so it should already be installed.
 
     ```bash
-    sudo add-apt-repository ppa:deadsnakes/ppa
-    sudo apt-get install python3.14 python3.14-venv
-    python3.14 -m venv ~/.venv/fsl
+    sudo apt-get install python3
     ```
 
-  Remember to activate it with `source ~/.venv/fsl/bin/activate` before running `source prepare.sh`.
+* clang-format and clang-tidy 23 (only needed to format and tidy the code with `FslBuildCheck.py`)
+  Ubuntu 26.04 only ships up to LLVM 22, so install them from [apt.llvm.org](https://apt.llvm.org/).
+
+    ```bash
+    wget -qO- https://apt.llvm.org/llvm-snapshot.gpg.key | sudo tee /etc/apt/trusted.gpg.d/apt.llvm.org.asc
+    echo "deb http://apt.llvm.org/resolute/ llvm-toolchain-resolute-23 main" | sudo tee /etc/apt/sources.list.d/llvm.list
+    sudo apt-get update
+    sudo apt-get install clang-23 clang-format-23 clang-tidy-23 clang-tools-23
+    ```
+
 * DevIL (Developer's Image Library)
 
     ```bash

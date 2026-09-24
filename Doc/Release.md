@@ -18,7 +18,7 @@
 * Experimental RDK Yocto platform support.
 * Experimental Apple platform support (see Doc/Setup_guide_apple.md).
 * Misc
-  * The recommended platforms are now Ubuntu 24.04 and Windows 11+.
+  * The recommended platforms are now Ubuntu 26.04 and Windows 11+ (the Ubuntu CI builds use the u26_04 image).
   * Visual Studio 2026 is now the default on windows.
   * Android NDK r30 (LTS) is now the recommended NDK and is used by the CI builds.
   * Python 3.14 or better is now required.
