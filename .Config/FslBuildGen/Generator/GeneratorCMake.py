@@ -300,6 +300,10 @@ class GeneratorCMake(GeneratorBase):
             log, package, template.SnippetTargetCompileFeaturesDefault, template.SnippetTargetCompileFeaturesInterface
         )
         targetCompileOptions = CMakeGeneratorUtil.BuildCompileOptions(log, package, template.SnippetTargetCompileOptionsDefault)
+        hasObjectiveCppSource = GeneratorCMake.__HasObjectiveCppSource(package)
+        projectLanguages = "CXX OBJCXX" if hasObjectiveCppSource else "CXX"
+        if hasObjectiveCppSource:
+            targetCompileOptions += f"\ntarget_compile_options({packageName} PRIVATE $<$<COMPILE_LANGUAGE:OBJCXX>:-fobjc-arc>)\n"
         targetFileCopy = CMakeGeneratorUtil.BuildFileCopy(log, package, template.PackageTargetCopyFile, template.PackageTargetCopyFilePath)
 
         cacheVariants = CMakeGeneratorUtil.GetCacheVariants(package, template.SnippetCacheVariant)
@@ -363,6 +367,7 @@ class GeneratorCMake(GeneratorBase):
         buildCMakeFile = buildCMakeFile.replace("##PACKAGE_TARGET_SPECIAL_FILES##", packageTargetSpecialFiles)
         buildCMakeFile = buildCMakeFile.replace("##PACKAGE_PATH##", packagePath)
         buildCMakeFile = buildCMakeFile.replace("##PACKAGE_EMSCRIPTEN##", packageEmscripten)
+        buildCMakeFile = buildCMakeFile.replace("##PROJECT_LANGUAGES##", projectLanguages)
 
         buildCMakeFile = buildCMakeFile.replace("##PACKAGE_SOURCE_GROUP##", sourceGroups)
 
@@ -387,6 +392,12 @@ class GeneratorCMake(GeneratorBase):
             IOUtil.SafeMakeDirs(dstFilenameDir)
             self.__SaveFile(dstFilename, buildCMakeFile)
             # GitIgnoreHelper.SafeAddEntry(self.GitIgnoreDict, package, "CMakeLists.txt")
+
+    @staticmethod
+    def __HasObjectiveCppSource(package: Package) -> bool:
+        if package.ResolvedBuildSourceFiles is None:
+            return False
+        return any(fileName.lower().endswith(".mm") for fileName in package.ResolvedBuildSourceFiles)
 
     @staticmethod
     def __GenerateSourceGroups(toolConfig: ToolConfig, package: Package) -> str:

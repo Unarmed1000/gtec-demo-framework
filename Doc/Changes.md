@@ -17,6 +17,11 @@
   * IVulkanDeviceCreationCustomizer::Configure now also receives the VkInstance.
 * Experimental RDK Yocto platform support.
 * Experimental Apple platform support (see Doc/Setup_guide_apple.md).
+  * Native macOS window system (Cocoa/AppKit with a CAMetalLayer) with Vulkan support via MoltenVK. This is the new default window system.
+  * The XQuartz (X11) + Mesa path is still available via --Variants [WindowSystem=X11] and is currently required for OpenGL ES.
+  * The Vulkan demo host enables VK_KHR_portability_enumeration and VK_KHR_portability_subset when available.
+  * FslBuild: Objective-C++ (.mm) source files are compiled on Apple, added the 'Framework' external dependency type and .dylib support.
+  * FslConfigure.sh now auto detects macOS.
 * Misc
   * The recommended platforms are now Ubuntu 26.04 and Windows 11+ (the Ubuntu CI builds use the u26_04 image).
   * Visual Studio 2026 is now the default on windows.

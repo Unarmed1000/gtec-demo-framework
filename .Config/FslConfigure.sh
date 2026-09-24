@@ -10,6 +10,8 @@ if [ ! -n "${FSL_PLATFORM_NAME+1}" ]; then
     fi
   elif [ -n "${QNX_TARGET+1}" ]; then
     export FSL_PLATFORM_NAME=QNX
+  elif [ "$(uname -s)" = "Darwin" ]; then
+    export FSL_PLATFORM_NAME=Apple
   else
     export FSL_PLATFORM_NAME=Ubuntu
   fi

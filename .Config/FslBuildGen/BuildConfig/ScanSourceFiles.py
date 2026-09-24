@@ -43,7 +43,7 @@ from FslBuildGen.Log import Log
 from FslBuildGen.Packages.Package import Package
 
 __g_includeExtensionList = [".h", ".hpp"]
-__g_sourceExtensionList = [".cpp", ".c"]
+__g_sourceExtensionList = [".cpp", ".c", ".mm"]
 __g_shaderExtensionList = [".frag", ".vert", ".geom", ".tesc", ".tese"]
 
 _g_companyName = " NXP"

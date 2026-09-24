@@ -74,6 +74,7 @@ Argument           | Description
 Platform | Build system
 ---------|--------------------------------
 Android  | gradle + cmake
+Apple    | cmake -> ninja
 Qnx      | make
 Ubuntu   | cmake -> ninja
 Windows  | Visual studio (IDE or nmake)

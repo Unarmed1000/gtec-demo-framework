@@ -296,7 +296,7 @@ def __BuildTargetLinkLibrariesForDirectExternalDependencies(
     for entry in resolvedDirectExternalDependencies:
         libraryName = LibUtil.ToUnixLibName(entry.Name)
         if libraryName not in ignoreLibs:
-            if entry.Type == ExternalDependencyType.StaticLib or (entry.Type == ExternalDependencyType.DLL and entry.Name.lower().endswith(".so")):
+            if entry.Type == ExternalDependencyType.StaticLib or (entry.Type == ExternalDependencyType.DLL and entry.Name.lower().endswith((".so", ".dylib"))):
                 location = entry.Location if entry.Location is not None and (entry.IsManaged or not isExternalLibrary) else ""
                 libraryName = libraryName if len(location) <= 0 else entry.Name
                 fullPathLinkDir = Util.ChangeToCMakeEnvVariables(IOUtil.Join(location, libraryName))
@@ -312,6 +312,8 @@ def __BuildTargetLinkLibrariesForDirectExternalDependencies(
                 deps += f"\n  {GetAccessTypeString(package, entry.Access, False)} {linkName}"
             elif entry.Type == ExternalDependencyType.CMakeFindModern:
                 deps += f"\n  {GetAccessTypeString(package, entry.Access, False)} {entry.TargetName}"
+            elif entry.Type == ExternalDependencyType.Framework:
+                deps += f'\n  {GetAccessTypeString(package, entry.Access, False)} "-framework {entry.Name}"'
         else:
             log.LogPrintVerbose(2, f"INFO: Force ignored '{libraryName}'")
     return deps

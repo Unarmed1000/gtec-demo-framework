@@ -9,8 +9,14 @@
       <ExternalDependency Name="EGL" Type="StaticLib"/>
     </Platform>
     <Platform Name="Apple" Supported="true">
-      <Define Name="USE_X11" Access="Public"/>
-      <ExternalDependency Name="EGL" Type="StaticLib"/>
+      <FlavorExtension Name="WindowSystem.Impl">
+        <!-- EGL is currently only available through the XQuartz (X11) + Mesa path -->
+        <Option Name="Cocoa" Supported="false"/>
+        <Option Name="X11">
+          <Define Name="USE_X11" Access="Public"/>
+          <ExternalDependency Name="EGL" Type="StaticLib"/>
+        </Option>
+      </FlavorExtension>
     </Platform>
     <Platform Name="RDK_Yocto" Supported="true">
       <ExternalDependency Name="EGL" Type="StaticLib"/>

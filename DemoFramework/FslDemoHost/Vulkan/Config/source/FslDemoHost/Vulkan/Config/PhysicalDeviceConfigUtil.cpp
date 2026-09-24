@@ -46,6 +46,11 @@ namespace Fsl::PhysicalDeviceConfigUtil
 {
   namespace
   {
+    namespace LocalConfig
+    {
+      constexpr auto PortabilitySubsetExtensionName = "VK_KHR_portability_subset";
+    }
+
     // NOLINTNEXTLINE(bugprone-exception-escape)
     struct DeviceConfigRequest
     {
@@ -62,6 +67,9 @@ namespace Fsl::PhysicalDeviceConfigUtil
       {
         deviceConfig.ExtensionRequests.emplace_back(hostExtensionRequests[i]);
       }
+      // The spec requires that this extension is enabled if the device supports it (portability implementations like MoltenVK).
+      // The name is used directly as the define is only available when VK_ENABLE_BETA_EXTENSIONS is defined.
+      deviceConfig.ExtensionRequests.emplace_back(LocalConfig::PortabilitySubsetExtensionName, Vulkan::FeatureRequirement::Optional);
       return deviceConfig;
     }
 

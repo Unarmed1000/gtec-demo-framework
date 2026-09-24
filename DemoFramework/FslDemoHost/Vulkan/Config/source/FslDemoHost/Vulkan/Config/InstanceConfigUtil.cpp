@@ -112,6 +112,12 @@ namespace Fsl::InstanceConfigUtil
       // Always add the SURFACE extensions the extension ConfigControl does not modify this
       instanceConfig.ExtensionRequests.emplace_back(VK_KHR_SURFACE_EXTENSION_NAME, Vulkan::FeatureRequirement::Mandatory);
       instanceConfig.ExtensionRequests.emplace_back(khrSurfaceExtensionName, Vulkan::FeatureRequirement::Mandatory);
+#if defined(FSL_PLATFORM_APPLE) && defined(VK_KHR_portability_enumeration)
+      // MoltenVK is a portability implementation, so it is only enumerated when this extension is enabled.
+      // VK_KHR_portability_subset (enabled on the device) depends on VK_KHR_get_physical_device_properties2 for Vulkan 1.0 instances.
+      instanceConfig.ExtensionRequests.emplace_back(VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME, Vulkan::FeatureRequirement::Optional);
+      instanceConfig.ExtensionRequests.emplace_back(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME, Vulkan::FeatureRequirement::Optional);
+#endif
       // Optional extensions needed for swapchain present fences
       if (instanceUserChoice.SwapchainMaintenance1 != OptionUserChoice::Off)
       {

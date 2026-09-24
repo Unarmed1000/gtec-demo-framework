@@ -45,6 +45,8 @@
 #include <FslNativeWindow/Platform/Adapter/Android/PlatformNativeWindowSystemAdapterAndroid.hpp>
 #elif defined(__QNXNTO__)
 #include <FslNativeWindow/Platform/Adapter/QNX/PlatformNativeWindowSystemAdapterQNX.hpp>
+#elif defined(FSL_WINDOWSYSTEM_COCOA)
+#include <FslNativeWindow/Platform/Adapter/Cocoa/PlatformNativeWindowSystemAdapterCocoa.hpp>
 #elif defined(__linux__) || defined(FSL_PLATFORM_APPLE)
 #if defined(FSL_WINDOWSYSTEM_X11)
 #include <FslNativeWindow/Platform/Adapter/X11/PlatformNativeWindowSystemAdapterX11.hpp>

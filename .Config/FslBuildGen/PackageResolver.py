@@ -321,12 +321,13 @@ class PackageResolver:
             package.ResolvedBuildPath = f"{configBuildDir}/{package.ResolvedPlatformName}"
             package.ResolvedMakeObjectPath = f"{package.ResolvedBuildPath}/obj{package.ResolvedMakeVariantNameHint}/$(config)"
 
-    def __GetExtensions(self, packageLanguage: PackageLanguage, enableExtendedExtensions: bool) -> str | tuple[str, ...]:
+    def __GetExtensions(self, packageLanguage: PackageLanguage, enableExtendedExtensions: bool, platformName: str) -> str | tuple[str, ...]:
         if packageLanguage == PackageLanguage.CPP:
-            if not enableExtendedExtensions:
-                return (".cpp", ".c")
-            else:
-                return (".cpp", ".c", ".cc")
+            extensions = (".cpp", ".c") if not enableExtendedExtensions else (".cpp", ".c", ".cc")
+            # Objective-C++ is only compiled on apple platforms
+            if platformName == PackageConfig.PlatformNameString.APPLE:
+                extensions = extensions + (".mm",)
+            return extensions
         elif packageLanguage == PackageLanguage.CSharp:
             return ".cs"
         else:
@@ -338,7 +339,9 @@ class PackageResolver:
                 if package.AbsolutePath is None or package.AbsoluteSourcePath is None:
                     raise Exception("package in invalid")
                 startIdx = len(package.AbsolutePath) + 1
-                languageSourceExtensions = self.__GetExtensions(package.PackageLanguage, package.EnableExtendedSourceExtensions)
+                languageSourceExtensions = self.__GetExtensions(
+                    package.PackageLanguage, package.EnableExtendedSourceExtensions, package.ResolvedPlatformName
+                )
                 files = IOUtil.GetFilePaths(package.AbsoluteSourcePath, languageSourceExtensions)
                 files = [Util.UTF8ToAscii(file[startIdx:].replace("\\", "/")) for file in files]
                 files.sort(key=lambda s: s.lower())

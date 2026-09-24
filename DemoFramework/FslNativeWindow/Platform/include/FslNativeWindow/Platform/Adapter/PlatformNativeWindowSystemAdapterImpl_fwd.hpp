@@ -70,6 +70,14 @@ namespace Fsl
   using PlatformNativeWindowAdapterImpl = PlatformNativeWindowAdapterQNX;
   using PlatformNativeWindowSystemAdapterImpl = PlatformNativeWindowSystemAdapterQNX;
 }    // namespace Fsl
+#elif defined(FSL_WINDOWSYSTEM_COCOA)
+namespace Fsl
+{
+  class PlatformNativeWindowAdapterCocoa;
+  class PlatformNativeWindowSystemAdapterCocoa;
+  using PlatformNativeWindowAdapterImpl = PlatformNativeWindowAdapterCocoa;
+  using PlatformNativeWindowSystemAdapterImpl = PlatformNativeWindowSystemAdapterCocoa;
+}    // namespace Fsl
 #elif defined(__linux__) || defined(FSL_PLATFORM_APPLE)
 #if defined(FSL_WINDOWSYSTEM_X11)
 namespace Fsl

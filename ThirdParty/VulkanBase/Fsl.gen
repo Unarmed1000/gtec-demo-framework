@@ -12,7 +12,7 @@
       <ExternalDependency Name="GLESv3" Type="StaticLib"/>
     </Platform>
     <Platform Name="Apple" Supported="true">
-      <Define Name="VK_USE_PLATFORM_XLIB_KHR" Access="Public"/>
+      <!-- The VK_USE_PLATFORM define is set by the Vulkan package as it depends on the WindowSystem flavor -->
       <FindPackage Name="Vulkan" Version="1.0"/>
       <ExternalDependency Name="vulkan" Include="$(VULKAN_SDK)/include" Access="Public" Type="StaticLib" If="!AllowFindPackage"/>
     </Platform>

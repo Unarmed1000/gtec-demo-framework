@@ -126,6 +126,7 @@ uses [RAII](http://en.wikipedia.org/wiki/Resource_Acquisition_Is_Initialization)
 See the setup guides for your platform:
 
 * [Android](Doc/Setup_guide_android_sdk+ndk_on_windows.md)
+* [macOS](Doc/Setup_guide_apple.md) (experimental)
 * [Ubuntu 26.04](Doc/Setup_guide_ubuntu26.04.md)
 * [Windows](Doc/Setup_guide_windows.md)
 * [Yocto](Doc/Setup_guide_yocto.md)
@@ -206,6 +207,7 @@ android gradle+cmake build.
 Operating System | Build system
 -----------------|---------------------
 Android          | gradle + cmake (Android Studio can be used with the generated projects)
+Apple (macOS)    | cmake (ninja)
 Ubuntu           | cmake (ninja)
 Windows          | cmake (Visual studio 2026 x64)
 Yocto            | cmake (ninja)

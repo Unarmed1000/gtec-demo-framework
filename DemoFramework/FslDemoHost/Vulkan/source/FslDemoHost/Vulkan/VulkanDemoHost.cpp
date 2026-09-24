@@ -145,6 +145,23 @@ namespace Fsl
 #endif
       }
     }
+
+    //! Portability implementations (like MoltenVK) are only enumerated if the instance is created with the portability enumeration flag
+    VkInstanceCreateFlags DetermineInstanceCreateFlags(const std::vector<const char*>& enabledExtensions)
+    {
+#ifdef VK_KHR_portability_enumeration
+      for (const char* const pszExtension : enabledExtensions)
+      {
+        if (std::strcmp(pszExtension, VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME) == 0)
+        {
+          return VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR;
+        }
+      }
+#else
+      FSL_PARAM_NOT_USED(enabledExtensions);
+#endif
+      return 0;
+    }
   }
 
 
@@ -355,8 +372,9 @@ namespace Fsl
       const uint32_t appVersion = demoHostConfig->GetInstanceAppVersion();
       const uint32_t apiVersion =
         Vulkan::InstanceApiVersionUtil::Select(demoHostConfig->GetInstanceApiVersion(), m_options->GetInstanceApiVersionOverride());
-      m_instance = InstanceUtil::CreateInstance(applicationName, appVersion, apiVersion, 0, instanceConfig.Layers, instanceConfig.Extensions,
-                                                m_instanceCreateInfo.get());
+      const VkInstanceCreateFlags instanceCreateFlags = DetermineInstanceCreateFlags(instanceConfig.Extensions);
+      m_instance = InstanceUtil::CreateInstance(applicationName, appVersion, apiVersion, instanceCreateFlags, instanceConfig.Layers,
+                                                instanceConfig.Extensions, m_instanceCreateInfo.get());
     }
 
     // Select the physical device

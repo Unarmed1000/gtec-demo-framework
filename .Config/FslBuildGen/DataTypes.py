@@ -197,6 +197,8 @@ class ExternalDependencyType(Enum):
     # CMake specific
     CMakeFindLegacy = 6
     CMakeFindModern = 7
+    # Apple specific
+    Framework = 8
 
     @staticmethod
     def ToString(value: ExternalDependencyType) -> str:
@@ -214,6 +216,8 @@ class ExternalDependencyType(Enum):
             return "CMakeFindLegacy"
         elif value == ExternalDependencyType.CMakeFindModern:
             return "CMakeFindModern"
+        elif value == ExternalDependencyType.Framework:
+            return "Framework"
         raise Exception(f"Unknown ExternalDependencyType: {value}")
 
     @staticmethod
@@ -232,6 +236,8 @@ class ExternalDependencyType(Enum):
             return ExternalDependencyType.CMakeFindLegacy
         elif value == "CMakeFindModern":
             return ExternalDependencyType.CMakeFindModern
+        elif value == "Framework":
+            return ExternalDependencyType.Framework
         return None
 
     @staticmethod
@@ -239,7 +245,7 @@ class ExternalDependencyType(Enum):
         result = ExternalDependencyType.TryFromString(value)
         if result is not None:
             return result
-        raise Exception(f"Unknown external dependency type: '{value}' expected: StaticLib, DLL, Headers, Assembly, CMakeFindLegacy, CMakeFindModern")
+        raise Exception(f"Unknown external dependency type: '{value}' expected: StaticLib, DLL, Headers, Assembly, CMakeFindLegacy, CMakeFindModern, Framework")
 
     @staticmethod
     def AllStrings() -> list[str]:
@@ -251,6 +257,7 @@ class ExternalDependencyType(Enum):
             ExternalDependencyType.ToString(ExternalDependencyType.PackageReference),
             ExternalDependencyType.ToString(ExternalDependencyType.CMakeFindLegacy),
             ExternalDependencyType.ToString(ExternalDependencyType.CMakeFindModern),
+            ExternalDependencyType.ToString(ExternalDependencyType.Framework),
         ]
 
 

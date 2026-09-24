@@ -44,6 +44,8 @@ namespace Fsl
 {
   using EGLNATIVEWINDOWSYSTEM = EGLNativeWindowSystemAdapterWin32;
 }
+#elif defined(FSL_WINDOWSYSTEM_COCOA)
+#error EGL/OpenGL ES is not supported by the Cocoa window system, use the X11 window system instead (--Variants [WindowSystem=X11])
 #elif defined(__ANDROID__)
 #include "Android/EGLNativeWindowSystemAdapterAndroid.hpp"
 namespace Fsl

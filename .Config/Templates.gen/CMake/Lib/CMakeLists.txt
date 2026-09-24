@@ -32,7 +32,7 @@ option(CODE_COVERAGE "Enable code coverage (only works with GCC)" OFF)
 project(
   ##PACKAGE_NAME##
   VERSION ##PROJECT_VERSION##
-  LANGUAGES CXX
+  LANGUAGES ##PROJECT_LANGUAGES##
 )
 
 ##PROJECT_PREVENT_IN_SOURCE_BUILDS##

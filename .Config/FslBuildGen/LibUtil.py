@@ -38,6 +38,8 @@ class LibUtil:
             libName = libName[:-2]
         elif libName.endswith(".so"):
             libName = libName[:-3]
+        elif libName.endswith(".dylib"):
+            libName = libName[:-6]
         if libName.startswith("lib"):
             libName = libName[3:]
         return libName

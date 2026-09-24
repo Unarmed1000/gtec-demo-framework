@@ -44,6 +44,12 @@ namespace Fsl
 {
   using VULKANNATIVEWINDOWSYSTEM = VulkanNativeWindowSystemAdapterSDL;
 }
+#elif defined(FSL_WINDOWSYSTEM_COCOA)
+#include "Cocoa/VulkanNativeWindowSystemAdapterCocoa.hpp"
+namespace Fsl
+{
+  using VULKANNATIVEWINDOWSYSTEM = VulkanNativeWindowSystemAdapterCocoa;
+}
 #elif defined(__ANDROID__)
 #include "Android/VulkanNativeWindowSystemAdapterAndroid.hpp"
 namespace Fsl

@@ -3,6 +3,15 @@
   <ExternalLibrary Name="Vulkan" CreationYear="2017">
     <Dependency Name="VulkanBase"/>
     <Dependency Name="WindowSystem"/>
+    <Platform Name="Apple">
+      <FlavorExtension Name="WindowSystem.Impl">
+        <Option Name="Cocoa">
+          <Define Name="VK_USE_PLATFORM_METAL_EXT" Access="Public"/>
+        </Option>
+        <!-- MoltenVK does not support Xlib surfaces -->
+        <Option Name="X11" Supported="false"/>
+      </FlavorExtension>
+    </Platform>
     <Platform Name="RDK_Yocto">
       <Define Name="VK_USE_PLATFORM_WAYLAND_KHR" Access="Public"/>
     </Platform>

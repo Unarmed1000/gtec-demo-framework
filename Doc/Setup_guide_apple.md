@@ -1,11 +1,122 @@
-# Setup guide for Apple devices - very experimental
+# Setup guide for macOS (Apple) - experimental
 
-The current branch is very much a 'proof of concept'.
-It will need to take advantage of the new FslBuild Apple platform support and we need to configure the real apple target correctly.
+This guide uses [Homebrew](https://brew.sh/) for all dependencies and builds the demos with the native Cocoa window system and Vulkan via [MoltenVK](https://github.com/KhronosGroup/MoltenVK).
 
-## Lets get started
+The Apple platform is still experimental, so expect some of the demo apps to fail (MoltenVK does not support every Vulkan feature, for example geometry shaders).
 
-Install homebrew then install XQuartz, Mesa, CMake and Ninja
+## Table of contents
+
+* [Prerequisites](#prerequisites)
+* [Install the dependencies](#install-the-dependencies)
+* [Configure the environment](#configure-the-environment)
+* [Verify the Vulkan installation](#verify-the-vulkan-installation)
+* [To compile and run an existing Vulkan sample application](#to-compile-and-run-an-existing-vulkan-sample-application)
+* [Troubleshooting](#troubleshooting)
+* [Appendix A: Using the LunarG Vulkan SDK instead of Homebrew](#appendix-a-using-the-lunarg-vulkan-sdk-instead-of-homebrew)
+* [Appendix B: Legacy X11 window system (XQuartz + Mesa)](#appendix-b-legacy-x11-window-system-xquartz--mesa)
+
+## Prerequisites
+
+* macOS 13 or newer (Apple silicon or Intel)
+* Xcode command line tools
+
+    ```bash
+    xcode-select --install
+    ```
+
+* [Homebrew](https://brew.sh/)
+
+## Install the dependencies
+
+Build tools (CMake, Ninja and Python 3.14+)
+
+```bash
+brew install cmake ninja python@3.14
+```
+
+Vulkan: the loader, headers, MoltenVK (the Vulkan driver that runs on top of Metal), validation layers and tools
+
+```bash
+brew install vulkan-headers vulkan-loader molten-vk vulkan-validationlayers vulkan-tools
+```
+
+Optional: clang-format and clang-tidy 23 (only needed to format and tidy the code with `FslBuildCheck.py`)
+
+```bash
+brew install llvm
+```
+
+## Configure the environment
+
+Run this in every terminal you build or run the demos from (or add the `export` to your `~/.zshrc`).
+`prepare.sh` automatically selects the `Apple` platform on macOS.
+
+```bash
+# Let CMake find the Homebrew packages (/opt/homebrew is not a default CMake search path)
+export CMAKE_PREFIX_PATH="$(brew --prefix)${CMAKE_PREFIX_PATH:+:$CMAKE_PREFIX_PATH}"
+
+cd gtec-demo-framework
+source prepare.sh
+```
+
+Make sure that `python3 --version` reports 3.14 or newer.
+
+## Verify the Vulkan installation
+
+```bash
+vulkaninfo --summary
+```
+
+The output should list your GPU with `MoltenVK` as the driver.
+
+## To compile and run an existing Vulkan sample application
+
+```bash
+cd DemoApps/Vulkan/Triangle
+FslBuild.py
+FslBuildRun.py
+```
+
+The native Cocoa window system is the default, so no variant needs to be specified.
+The window size (`--Window [x,y,width,height]`) is in points (so it is independent of the display scale factor), while the size reported to the app is in pixels.
+
+## Troubleshooting
+
+* CMake can't find Vulkan: check that `CMAKE_PREFIX_PATH` contains `$(brew --prefix)`, then delete the build directory and build again.
+* The demo reports no Vulkan physical devices (or `VK_ERROR_INCOMPATIBLE_DRIVER`): the Vulkan loader didn't find MoltenVK. Run `vulkaninfo --summary` to check the installation, and try `brew reinstall molten-vk vulkan-loader`.
+* A demo fails during device or pipeline creation: it most likely uses a feature that MoltenVK doesn't support.
+
+## Appendix A: Using the LunarG Vulkan SDK instead of Homebrew
+
+The [LunarG Vulkan SDK for macOS](https://vulkan.lunarg.com/sdk/home#mac) contains the same Vulkan components (loader, MoltenVK, validation layers and tools) and is useful if you need a specific SDK version.
+
+1. Download and run the installer. By default it installs to `~/VulkanSDK/<version>/`.
+   The optional 'System Global Installation' also copies the files to `/usr/local`, so the demos can find MoltenVK without any environment setup.
+2. Configure the Vulkan environment in each terminal you build or run from (instead of the Homebrew `CMAKE_PREFIX_PATH` export)
+
+    ```bash
+    source ~/VulkanSDK/<version>/setup-env.sh
+    ```
+
+    This sets `VULKAN_SDK` (used by CMake to find Vulkan) and points the Vulkan loader at MoltenVK and the validation layers.
+3. Continue with `source prepare.sh` as described in [Configure the environment](#configure-the-environment).
+
+Don't mix a Homebrew and a LunarG Vulkan installation in the same terminal, as the loader could pick up the wrong driver or layers.
+
+## Appendix B: Legacy X11 window system (XQuartz + Mesa)
+
+The Apple platform supports two window systems, which are selected with the `WindowSystem` variant:
+
+WindowSystem     | Description                                                      | APIs
+-----------------|------------------------------------------------------------------|---------------------------
+Cocoa (default)  | Native AppKit window with a CAMetalLayer                         | Vulkan (via MoltenVK), console apps
+X11              | Legacy XQuartz (X11) + Mesa path (a 'proof of concept')          | OpenGL ES (via Mesa EGL)
+
+The X11 window system is currently required for the OpenGL ES samples as EGL is only available through Mesa.
+It is selected by adding `--Variants [WindowSystem=X11]` to the `FslBuild.py` and `FslBuildRun.py` commands.
+Vulkan is not supported with the X11 window system as MoltenVK does not support Xlib surfaces.
+
+Install XQuartz and Mesa
 
 ```bash
 # Install XQuartz (X11 server)
@@ -13,11 +124,6 @@ brew install --cask xquartz
 
 # Install Mesa (OpenGL implementation)
 brew install mesa
-
-# Install CMake
-brew install cmake
-
-brew install ninja
 ```
 
 Prepare a helper script to configure your environment:
@@ -26,15 +132,6 @@ Prepare a helper script to configure your environment:
 #!/usr/bin/env bash
 # setup-x11-mesa-env.sh
 # Configure environment variables for building with X11 and Mesa on macOS
-
-# -------------------------------
-# Save current "errexit" state and enable -e
-# -------------------------------
-SAVED_OPT_E=false
-if [[ $- == *e* ]]; then
-    SAVED_OPT_E=true
-fi
-set -e
 
 # -------------------------------
 # X11 (from XQuartz)
@@ -68,24 +165,6 @@ else
 fi
 
 # -------------------------------
-# devil (optional)
-# -------------------------------
-# if brew list devil &>/dev/null; then
-#     DEVIL_DIR="$(brew --prefix devil)"
-#     export PKG_CONFIG_PATH="${DEVIL_DIR}/lib/pkgconfig${PKG_CONFIG_PATH:+:$PKG_CONFIG_PATH}"
-# fi
-
-# -------------------------------
-# Use GCC-14 (if installed)
-# -------------------------------
-#if command -v gcc-14 >/dev/null 2>&1; then
-#    export CC=gcc-14
-#    export CXX=g++-14
-#else
-#    echo "Warning: gcc-14 not found in PATH, using system compiler"
-#fi
-
-# -------------------------------
 # Start XQuartz if it's not running
 # -------------------------------
 if ! pgrep -x "XQuartz" >/dev/null 2>&1; then
@@ -94,55 +173,16 @@ if ! pgrep -x "XQuartz" >/dev/null 2>&1; then
     # Give it a moment to start
     sleep 2
 fi
-
-# Export the DISPLAY variable
 export DISPLAY=:0
-echo "DISPLAY is set to $DISPLAY"
-
-# -------------------------------
-# Configure the vulkan environment
-# -------------------------------
-
-#pushd ~/VulkanSDK/1.4.321.0
-#source ./setup-env.sh
-#popd
-
-# -------------------------------
-# Show confirmation
-# -------------------------------
-echo "Configured environment for X11 + Mesa (GCC-14):"
-[ -n "${MESA_DIR:-}" ] && echo "  MESA_DIR=${MESA_DIR}"
-echo "  PKG_CONFIG_PATH=${PKG_CONFIG_PATH}"
-echo "  CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}"
-echo "  LIBRARY_PATH=${LIBRARY_PATH}"
-echo "  C_INCLUDE_PATH=${C_INCLUDE_PATH}"
-echo "  CPLUS_INCLUDE_PATH=${CPLUS_INCLUDE_PATH}"
-echo "  CC=${CC:-not set}"
-echo "  CXX=${CXX:-not set}"
-
-# -------------------------------
-# Change to project directory and source prepare.sh
-# -------------------------------
-export FSL_PLATFORM_NAME=Apple
-
-if [ -d "gtec-demo-framework" ]; then
-    cd gtec-demo-framework
-    if [ -f "prepare.sh" ]; then
-        echo "Sourcing gtec-demo-framework/prepare.sh..."
-        source prepare.sh
-    else
-        echo "Warning: prepare.sh not found in gtec-demo-framework/"
-    fi
-else
-    echo "Warning: gtec-demo-framework directory not found"
-fi
-
-# -------------------------------
-# Restore original -e state
-# -------------------------------
-if [ "$SAVED_OPT_E" = false ]; then
-    set +e
-fi
 ```
 
-Once you run this you should be ready to try out this experimental branch.
+Then source the script before `prepare.sh` and build with the X11 variant, for example:
+
+```bash
+source setup-x11-mesa-env.sh
+cd gtec-demo-framework
+source prepare.sh
+cd DemoApps/GLES2/S01_SimpleTriangle
+FslBuild.py --Variants [WindowSystem=X11]
+FslBuildRun.py --Variants [WindowSystem=X11]
+```

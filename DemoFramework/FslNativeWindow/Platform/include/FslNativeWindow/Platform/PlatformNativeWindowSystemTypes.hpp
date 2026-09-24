@@ -186,7 +186,31 @@ namespace Fsl
     }
   };
 }    // namespace Fsl
+#elif defined(FSL_WINDOWSYSTEM_COCOA)
+// Plain C++ types so the Objective-C runtime headers never leak into C++ translation units.
+namespace Fsl
+{
+  //! Not used by the Cocoa backend (the NSApplication is a singleton)
+  using PlatformNativeDisplayType = void*;
+  //! The CAMetalLayer* that backs the window content view (usable with VK_EXT_metal_surface)
+  using PlatformNativeWindowType = void*;
 
+  struct PlatformNativeWindowSystemParams
+  {
+    // Its important that the default constructor exist as this is what we use for as a default parameter value
+    PlatformNativeWindowSystemParams() = default;
+  };
+
+  struct PlatformNativeWindowParams
+  {
+    PlatformNativeDisplayType PlatformDisplay;
+
+    explicit PlatformNativeWindowParams(const PlatformNativeDisplayType& platformDisplay)
+      : PlatformDisplay(platformDisplay)
+    {
+    }
+  };
+}    // namespace Fsl
 #elif defined(__linux__) || defined(FSL_PLATFORM_APPLE)
 #if defined(FSL_WINDOWSYSTEM_X11)
 #include <X11/Xlib.h>

@@ -4,16 +4,22 @@
     <Default.Platform.Supported Value="false"/>
     <Platform Name="Android" Supported="true"/>
     <Platform Name="Apple" Supported="true">
-      <!-- Use X11 -->
-      <!--ExternalDependency Name="Xi" Type="StaticLib"/-->
-      <ExternalDependency Name="Xrandr" Type="StaticLib"/>
-      <ExternalDependency Name="X11" Type="StaticLib"/>
-      <Define Name="FSL_WINDOWSYSTEM_X11" Access="Public"/>
-      <!-- Use SDl -->
-      <!--
-      <Define Name="FSL_WINDOWSYSTEM_SDL2" Access="Public"/>
-      <Dependency Name="SDL2"/>
-      -->
+      <Flavor Name="Impl" QuickName="WindowSystem">
+        <!-- Native AppKit window with a CAMetalLayer (Vulkan via MoltenVK) -->
+        <Option Name="Cocoa">
+          <ExternalDependency Name="Cocoa" Type="Framework"/>
+          <ExternalDependency Name="QuartzCore" Type="Framework"/>
+          <ExternalDependency Name="CoreGraphics" Type="Framework"/>
+          <Define Name="FSL_WINDOWSYSTEM_COCOA" Access="Public"/>
+        </Option>
+        <!-- Legacy XQuartz (X11) + Mesa path -->
+        <Option Name="X11">
+          <!--ExternalDependency Name="Xi" Type="StaticLib"/-->
+          <ExternalDependency Name="Xrandr" Type="StaticLib"/>
+          <ExternalDependency Name="X11" Type="StaticLib"/>
+          <Define Name="FSL_WINDOWSYSTEM_X11" Access="Public"/>
+        </Option>
+      </Flavor>
     </Platform>
     <Platform Name="Emscripten" Supported="true">
       <Dependency Name="SDL2"/>
