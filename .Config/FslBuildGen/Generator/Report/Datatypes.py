@@ -42,11 +42,11 @@ class FormatStringEnvironmentVariableResolveMethod(Enum):
     OSShellEnvironmentVariable = 1
 
     @staticmethod
-    def ToInt(value: "FormatStringEnvironmentVariableResolveMethod") -> int:
+    def ToInt(value: FormatStringEnvironmentVariableResolveMethod) -> int:
         return value.value
 
     @staticmethod
-    def Convert(value: int) -> "FormatStringEnvironmentVariableResolveMethod":
+    def Convert(value: int) -> FormatStringEnvironmentVariableResolveMethod:
         if value == FormatStringEnvironmentVariableResolveMethod.Lookup.value:
             return FormatStringEnvironmentVariableResolveMethod.Lookup
         elif value == FormatStringEnvironmentVariableResolveMethod.OSShellEnvironmentVariable.value:

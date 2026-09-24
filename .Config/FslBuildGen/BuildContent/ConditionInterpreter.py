@@ -98,12 +98,7 @@ class ConditionInterpreterNodeTransformer(ast.NodeTransformer):
 
     def visit_Name(self, node: Any) -> Any:
         featureInList: bool = node.id.lower() in self.__FeatureIds
-        # workaround the issue that ast.Num no longer accepts a bool in python3 and
-        # ast.Constant is python 3.6+
-        val = ast.Num(1 if featureInList else 0)
-        #        if sys.version_info < (3, 6):
-        #       else:
-        #           val = ast.Constant(featureInList)
+        val = ast.Constant(1 if featureInList else 0)
         return ast.copy_location(val, node)
 
 
@@ -128,9 +123,7 @@ class EvaluateLocalNodeVisitor(ast.NodeVisitor):
                     ast.Or,
                     ast.And,
                     ast.Name,
-                    ast.NameConstant,
                     ast.Compare,
-                    ast.Str,
                     ast.Load,
                 ),
             )

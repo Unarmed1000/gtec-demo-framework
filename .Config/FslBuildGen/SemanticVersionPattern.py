@@ -22,7 +22,6 @@
 # ****************************************************************************************************************************************************
 
 import re
-from typing import Optional
 
 # A regular expression to parse a single semantic version.
 # Handles Major.Minor.Patch.Revision, pre-release tags, and build metadata.
@@ -48,7 +47,7 @@ class SemanticVersion:
         self.Prerelease = prerelease
 
     @staticmethod
-    def try_parse(versionString: str) -> Optional["SemanticVersion"]:
+    def try_parse(versionString: str) -> SemanticVersion | None:
         """Parses a version string into a SemanticVersion object."""
         match = SEMVER_VERSION_PATTERN.match(versionString)
         if not match:
@@ -61,10 +60,10 @@ class SemanticVersion:
             revision = int(match.group("revision")) if match.group("revision") else 0
             prerelease = match.group("prerelease")
             return SemanticVersion(major, minor, patch, revision, prerelease)
-        except (ValueError, TypeError):
+        except ValueError, TypeError:
             return None
 
-    def __lt__(self, other: "SemanticVersion") -> bool:
+    def __lt__(self, other: SemanticVersion) -> bool:
         """Less than comparison for two versions."""
         if not isinstance(other, SemanticVersion):
             return NotImplemented
@@ -101,7 +100,7 @@ class SemanticVersion:
 
         return False  # Versions are equal
 
-    def __le__(self, other: "SemanticVersion") -> bool:
+    def __le__(self, other: SemanticVersion) -> bool:
         return self.__lt__(other) or self.__eq__(other)
 
     def __eq__(self, other: object) -> bool:
@@ -109,10 +108,10 @@ class SemanticVersion:
             return NotImplemented
         return (self.Major, self.Minor, self.Patch, self.Revision, self.Prerelease) == (other.Major, other.Minor, other.Patch, other.Revision, other.Prerelease)
 
-    def __gt__(self, other: "SemanticVersion") -> bool:
+    def __gt__(self, other: SemanticVersion) -> bool:
         return not self.__le__(other)
 
-    def __ge__(self, other: "SemanticVersion") -> bool:
+    def __ge__(self, other: SemanticVersion) -> bool:
         return not self.__lt__(other)
 
     def get_numeric_parts(self) -> tuple[int, int, int, int]:
@@ -148,7 +147,7 @@ class SemanticVersionPattern:
         self.OriginalString = originalString
 
     @staticmethod
-    def TryFromString(versionString: str) -> Optional["SemanticVersionPattern"]:
+    def TryFromString(versionString: str) -> SemanticVersionPattern | None:
         """
         Parses a NuGet version constraint string and returns a boolean
         and a SemanticVersionPattern instance if successful.
@@ -240,7 +239,7 @@ class SemanticVersionPattern:
 
         return lowerMatch and upperMatch
 
-    def IsCompatible(self, other: "SemanticVersionPattern") -> bool:
+    def IsCompatible(self, other: SemanticVersionPattern) -> bool:
         """
         Checks if this version pattern is compatible with another.
         Compatibility means that the intersection of the two patterns is non-empty.

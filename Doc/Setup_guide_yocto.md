@@ -51,7 +51,7 @@ This tend to be the fastest way to get started.
 
 * Ubuntu 24.04
 * [CMake 3.16 or newer](https://cmake.org/download/)
-* Python 3.10 or newer (Ubuntu 24.04 comes with Python 3.12)
+* Python 3.14 or newer (Ubuntu 24.04 comes with Python 3.12, see the [Ubuntu setup guide](./Setup_guide_ubuntu24.04.md) for how to install 3.14)
 * A prebuild sdk for your board typically called something like ```toolchain.sh```
 * A prebuild sd-card image for your board typically called ```BoardName.rootfs.sdcard.bz2```
 * Git
@@ -131,7 +131,7 @@ This process provides the most flexible solution but it also takes significantly
 
 * The Ubuntu version required by the BSP release.
 * [CMake 3.16 or newer](https://cmake.org/download/)
-* Python 3.10+ It should be part of the default Ubuntu install.
+* Python 3.14+ (see the [Ubuntu setup guide](./Setup_guide_ubuntu24.04.md) for how to install it)
 * Ninja build
 
     ```bash

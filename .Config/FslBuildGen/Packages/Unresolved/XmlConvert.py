@@ -88,7 +88,7 @@ from FslBuildGen.Xml.XmlStuff import XmlGenFilePlatform, XmlGenFileVariant, XmlG
 
 class XmlConvert:
     @staticmethod
-    def CreateFromXmlGenFilePlatform(createContext: FactoryCreateContext, name: str, xmlGenFilePlatform: XmlGenFilePlatform) -> "PackagePlatform":
+    def CreateFromXmlGenFilePlatform(createContext: FactoryCreateContext, name: str, xmlGenFilePlatform: XmlGenFilePlatform) -> PackagePlatform:
         if xmlGenFilePlatform is not None and xmlGenFilePlatform.Name != name:
             raise Exception("the xmlGenFilePlatform.Name and name must be equal")
 

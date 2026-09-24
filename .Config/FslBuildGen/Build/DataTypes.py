@@ -43,7 +43,7 @@ class CommandType(Enum):
     ConfigIfChanged = 6
 
     @staticmethod
-    def FromString(value: str) -> "CommandType":
+    def FromString(value: str) -> CommandType:
         if value == "build":
             return CommandType.Build
         elif value == "clean":
@@ -61,14 +61,14 @@ class CommandType(Enum):
         raise Exception(f"Unsupported Command '{value}'")
 
     @staticmethod
-    def ToString(value: "CommandType") -> str:
+    def ToString(value: CommandType) -> str:
         result = CommandType.TryToString(value)
         if result is not None:
             return result
         raise Exception(f"Unsupported Command '{value}'")
 
     @staticmethod
-    def TryToString(value: "CommandType") -> str | None:
+    def TryToString(value: CommandType) -> str | None:
         if value == CommandType.Build:
             return "build"
         elif value == CommandType.Clean:

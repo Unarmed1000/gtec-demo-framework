@@ -41,6 +41,6 @@ class RequirementTreeNode:
         self.Children: list[RequirementTreeNode] = []
         self.Supported = True
 
-    def AddChild(self, node: "RequirementTreeNode") -> None:
+    def AddChild(self, node: RequirementTreeNode) -> None:
         node.Parent = self
         self.Children.append(node)

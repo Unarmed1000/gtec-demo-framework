@@ -109,5 +109,5 @@ class UnresolvedBasicPackage:
         return None
 
     @staticmethod
-    def Create2(packageName: UnresolvedPackageName, packageType: PackageType) -> "UnresolvedBasicPackage":
+    def Create2(packageName: UnresolvedPackageName, packageType: PackageType) -> UnresolvedBasicPackage:
         return UnresolvedBasicPackage(packageName, packageType, [], [], [])

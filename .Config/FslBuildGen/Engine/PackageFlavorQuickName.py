@@ -42,7 +42,7 @@ class PackageFlavorQuickName:
 
         self.Value = name.Value
 
-    def CompareTo(self, other: "PackageFlavorQuickName") -> int:
+    def CompareTo(self, other: PackageFlavorQuickName) -> int:
         if self.Value < other.Value:
             return -1
         return 0 if self.Value == other.Value else 1

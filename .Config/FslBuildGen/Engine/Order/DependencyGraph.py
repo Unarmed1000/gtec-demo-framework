@@ -43,7 +43,7 @@ class DependencyGraphNode:
         self.From: list[DependencyGraphNode] = []
         self.To: list[DependencyGraphNode] = []
 
-    def AddEdge(self, toNode: "DependencyGraphNode") -> None:
+    def AddEdge(self, toNode: DependencyGraphNode) -> None:
         if toNode == self:
             raise Exception("Can't add edge to self")
 

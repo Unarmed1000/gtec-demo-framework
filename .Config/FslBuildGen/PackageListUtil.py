@@ -30,13 +30,9 @@
 #
 # ****************************************************************************************************************************************************
 
-from typing import TypeVar
-
 from FslBuildGen.DataTypes import PackageType
 from FslBuildGen.Engine.Resolver.PreResolvePackageResult import PreResolvePackageResult
 from FslBuildGen.Packages.Package import Package
-
-CommonPackage = TypeVar("CommonPackage", Package, PreResolvePackageResult)
 
 
 def TryFindFirstExecutablePackage(packages: list[Package]) -> Package | None:
@@ -59,7 +55,7 @@ def GetExecutablePackages(packages: list[Package]) -> list[Package]:
     return [package for package in packages if package.Type == PackageType.Executable]
 
 
-def GetTopLevelPackage(packages: list[CommonPackage]) -> CommonPackage:
+def GetTopLevelPackage[CommonPackage: (Package, PreResolvePackageResult)](packages: list[CommonPackage]) -> CommonPackage:
     """Given a list of packages locate the TopLevel one or raise a exception if not found"""
     for package in packages:
         if package.Type == PackageType.TopLevel:
@@ -67,7 +63,7 @@ def GetTopLevelPackage(packages: list[CommonPackage]) -> CommonPackage:
     raise Exception("No TopLevel package")
 
 
-def BuildReferencedPackageSet(packageList: list[CommonPackage]) -> set[CommonPackage]:
+def BuildReferencedPackageSet[CommonPackage: (Package, PreResolvePackageResult)](packageList: list[CommonPackage]) -> set[CommonPackage]:
     """build a set of packages that is referenced by the packages in packageList.
     This is basically all packages in the package list and any packages that they depend upon.
     """
@@ -79,7 +75,9 @@ def BuildReferencedPackageSet(packageList: list[CommonPackage]) -> set[CommonPac
     return referencedPackageSet
 
 
-def GetRequiredPackagesInSourcePackageListOrder(packageList: list[CommonPackage], sourcePackageList: list[CommonPackage]) -> list[CommonPackage]:
+def GetRequiredPackagesInSourcePackageListOrder[CommonPackage: (Package, PreResolvePackageResult)](
+    packageList: list[CommonPackage], sourcePackageList: list[CommonPackage]
+) -> list[CommonPackage]:
     """Generate a list of all the packages that are required to build the packages in packageList in resolved build order."""
 
     # From the packageList build a set of all packages required to build

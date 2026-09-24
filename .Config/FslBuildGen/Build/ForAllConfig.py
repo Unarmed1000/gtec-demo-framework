@@ -31,7 +31,6 @@
 # ****************************************************************************************************************************************************
 
 from enum import Enum
-from typing import Optional
 
 
 class ForAllMode(Enum):
@@ -41,11 +40,11 @@ class ForAllMode(Enum):
 
 class ForAllConfig:
     @staticmethod
-    def CreateForAllExeConfig(forAllExe: str, filterFeatureNameList: list[str] | None = None) -> Optional["ForAllConfig"]:
+    def CreateForAllExeConfig(forAllExe: str, filterFeatureNameList: list[str] | None = None) -> ForAllConfig | None:
         return ForAllConfig(ForAllMode.RunExe, forAllExe, filterFeatureNameList)
 
     @staticmethod
-    def CreateForAllPackagesConfig(forAll: str, filterFeatureNameList: list[str] | None = None) -> Optional["ForAllConfig"]:
+    def CreateForAllPackagesConfig(forAll: str, filterFeatureNameList: list[str] | None = None) -> ForAllConfig | None:
         return ForAllConfig(ForAllMode.RunCustom, forAll, filterFeatureNameList)
 
     def __init__(self, mode: ForAllMode, runCommand: str, filterFeatureNameList: list[str] | None = None) -> None:

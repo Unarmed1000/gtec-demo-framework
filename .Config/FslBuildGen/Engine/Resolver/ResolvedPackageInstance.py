@@ -40,7 +40,7 @@ from FslBuildGen.Engine.Unresolved.UnresolvedPackageDependency import Unresolved
 
 
 class ResolvedPackageInstanceDependency:
-    def __init__(self, package: "ResolvedPackageInstance", sourceDependency: UnresolvedPackageDependency) -> None:
+    def __init__(self, package: ResolvedPackageInstance, sourceDependency: UnresolvedPackageDependency) -> None:
         super().__init__()
         self.Package = package
         self.SourceDependency = sourceDependency

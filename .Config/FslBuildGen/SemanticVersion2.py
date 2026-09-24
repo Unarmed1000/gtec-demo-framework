@@ -30,8 +30,6 @@
 #
 # ****************************************************************************************************************************************************
 
-from typing import Optional
-
 
 class SemanticVersion2:
     def __init__(self, major: int, minor: int = -1, patch: int = -1, revision: int = -1, suffix: str | None = None) -> None:
@@ -49,7 +47,7 @@ class SemanticVersion2:
         self.__Set |= 2 if patch >= 0 else 0
         self.__Set |= 1 if revision >= 0 else 0
 
-    def IsCompatible(self, other: "SemanticVersion2") -> bool:
+    def IsCompatible(self, other: SemanticVersion2) -> bool:
         if self.Major != other.Major:
             return False
         if self.Minor > other.Minor:
@@ -96,7 +94,7 @@ class SemanticVersion2:
         return True
 
     @staticmethod
-    def TryFromString(strValue: str) -> Optional["SemanticVersion2"]:
+    def TryFromString(strValue: str) -> SemanticVersion2 | None:
         suffix: str | None = None
         if "-" in strValue:
             strValue, suffix = strValue.split("-", 1)
@@ -118,7 +116,7 @@ class SemanticVersion2:
             return None
 
     @staticmethod
-    def FromString(strValue: str) -> "SemanticVersion2":
+    def FromString(strValue: str) -> SemanticVersion2:
         result = SemanticVersion2.TryFromString(strValue)
         if result is None:
             raise Exception(f"Version string '{strValue} was not of the expected '1.2.3.4' or '1.2.3.4-suffix' format")

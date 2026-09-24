@@ -52,7 +52,7 @@ class EdgeType(Enum):
 
 
 class EdgeRecord:
-    def __init__(self, node: "ResolvedPackageGraphNode", edgeType: EdgeType, constraint: PackageFlavorSelections | None, desc: str | None) -> None:
+    def __init__(self, node: ResolvedPackageGraphNode, edgeType: EdgeType, constraint: PackageFlavorSelections | None, desc: str | None) -> None:
         super().__init__()
         self.Node = node
         self.Constraint = constraint
@@ -66,7 +66,7 @@ class ResolvedPackageGraphNode:
         self.From: list[ResolvedPackageGraphNode] = []
         self.To: list[EdgeRecord] = []
 
-    def AddEdge(self, toNode: "ResolvedPackageGraphNode", edgeType: EdgeType, constraint: PackageFlavorSelections | None, desc: str | None) -> None:
+    def AddEdge(self, toNode: ResolvedPackageGraphNode, edgeType: EdgeType, constraint: PackageFlavorSelections | None, desc: str | None) -> None:
         if toNode == self:
             raise Exception("Can't add edge to self")
 
@@ -76,7 +76,7 @@ class ResolvedPackageGraphNode:
 
     @staticmethod
     def __FindIndex(
-        edgeRecords: list[EdgeRecord], toNode: "ResolvedPackageGraphNode", edgeType: EdgeType, constraint: PackageFlavorSelections | None, desc: str | None
+        edgeRecords: list[EdgeRecord], toNode: ResolvedPackageGraphNode, edgeType: EdgeType, constraint: PackageFlavorSelections | None, desc: str | None
     ) -> int:
         for index, x in enumerate(edgeRecords):
             if x.Node == toNode and x.Type == edgeType and x.Constraint == constraint and x.Desc == desc:

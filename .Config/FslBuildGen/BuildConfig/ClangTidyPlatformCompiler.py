@@ -39,5 +39,5 @@ class ClangTidyPlatformCompiler:
         super().__init__()
         self.Flags = flags
 
-    def Merge(self, compiler: "ClangTidyPlatformCompiler") -> None:
+    def Merge(self, compiler: ClangTidyPlatformCompiler) -> None:
         self.Flags += compiler.Flags

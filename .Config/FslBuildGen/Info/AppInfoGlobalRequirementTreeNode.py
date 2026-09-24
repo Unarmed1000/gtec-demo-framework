@@ -41,6 +41,6 @@ class AppInfoGlobalRequirementTreeNode:
         self.Children: list[AppInfoGlobalRequirementTreeNode] = []
         self.Supported = True
 
-    def AddChild(self, node: "AppInfoGlobalRequirementTreeNode") -> None:
+    def AddChild(self, node: AppInfoGlobalRequirementTreeNode) -> None:
         node.Parent = self
         self.Children.append(node)

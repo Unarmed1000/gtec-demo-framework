@@ -50,7 +50,7 @@ class GitIgnoreFile:
         try:
             with open(gitignoreFile) as f:
                 lines = [line.strip() for line in f if line.strip() and not line.startswith("#")]
-        except (OSError, UnicodeDecodeError):
+        except OSError, UnicodeDecodeError:
             return None
 
         ignored = set()
@@ -58,7 +58,7 @@ class GitIgnoreFile:
 
         if pathspec is not None:
             try:
-                spec = pathspec.PathSpec.from_lines("gitwildmatch", lines)
+                spec = pathspec.GitIgnoreSpec.from_lines(lines)
             except Exception:
                 # fallback to fnmatch if pathspec fails
                 spec = None

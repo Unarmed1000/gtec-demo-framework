@@ -32,7 +32,6 @@
 # ****************************************************************************************************************************************************
 
 import json
-from typing import Optional
 
 from FslBuildGen import IOUtil, Util
 from FslBuildGen.Exceptions import InvalidPackageNameException
@@ -72,7 +71,7 @@ class JsonProjectIdCache:
         self.ProjectIdDict.pop(packageName)
 
     @staticmethod
-    def TryLoad(log: Log, cacheFilename: str) -> Optional["JsonProjectIdCache"]:
+    def TryLoad(log: Log, cacheFilename: str) -> JsonProjectIdCache | None:
         try:
             strJson = IOUtil.TryReadFile(cacheFilename)
             if strJson is None:
@@ -95,13 +94,13 @@ class JsonProjectIdCache:
             return None
 
     @staticmethod
-    def Save(log: Log, cacheFilename: str, JsonProjectIdCache: "JsonProjectIdCache") -> None:
+    def Save(log: Log, cacheFilename: str, JsonProjectIdCache: JsonProjectIdCache) -> None:
         log.LogPrintVerbose(LocalVerbosityLevel.Trace, f"- Saving cache '{cacheFilename}'")
         jsonText = json.dumps(JsonProjectIdCache.__dict__, ensure_ascii=False, sort_keys=True, indent=2)
         IOUtil.WriteFileIfChanged(cacheFilename, jsonText)
 
     @staticmethod
-    def IsEqual(lhs: "JsonProjectIdCache", rhs: "JsonProjectIdCache") -> bool:
+    def IsEqual(lhs: JsonProjectIdCache, rhs: JsonProjectIdCache) -> bool:
         if lhs.Version != rhs.Version or len(lhs.ProjectIdDict) != len(rhs.ProjectIdDict):
             return False
         return all(not (key not in rhs.ProjectIdDict or value != rhs.ProjectIdDict[key]) for key, value in lhs.ProjectIdDict.items())

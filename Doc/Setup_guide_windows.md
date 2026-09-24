@@ -29,7 +29,7 @@
 * [Visual Studio 2026](https://visualstudio.microsoft.com/vs/community/)
   (community or better)
 * [CMake 3.16 or newer](https://cmake.org/download/)
-* [Python 3.10+](https://www.python.org/ftp/python/3.10.11/python-3.10.11-amd64.exe)
+* [Python 3.14+](https://www.python.org/downloads/)
   To be able run python scripts.
 * Download the source from git.
 

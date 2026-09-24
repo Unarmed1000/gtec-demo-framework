@@ -50,7 +50,7 @@ class PackageName:
         self.Unresolved = baseName
         self.FlavorSelections = flavorSelections
 
-    def CompareTo(self, other: "PackageName") -> int:
+    def CompareTo(self, other: PackageName) -> int:
         if self.Value < other.Value:
             return -1
         return 0 if self.Value == other.Value else 1
@@ -90,7 +90,7 @@ class PackageName:
         return f"PackageName({self.Value})"
 
     @staticmethod
-    def __CreateFullName2(packageName: "PackageName", flavorSelections: PackageFlavorSelections) -> str:
+    def __CreateFullName2(packageName: PackageName, flavorSelections: PackageFlavorSelections) -> str:
         return PackageName.__CreateFullName(packageName.Unresolved, flavorSelections)
 
     @staticmethod
@@ -117,16 +117,16 @@ class PackageName:
         return PackageFlavorSelections(res)
 
     @staticmethod
-    def CreateName(packageName: UnresolvedPackageName) -> "PackageName":
+    def CreateName(packageName: UnresolvedPackageName) -> PackageName:
         return PackageName(packageName.Value, packageName.Value, packageName, PackageFlavorSelectionsEmpty.Empty)
 
     @staticmethod
-    def CreateUnresolvedNameAndSelection(packageName: UnresolvedPackageName, flavorSelections: PackageFlavorSelections) -> "PackageName":
+    def CreateUnresolvedNameAndSelection(packageName: UnresolvedPackageName, flavorSelections: PackageFlavorSelections) -> PackageName:
         name = PackageName.__CreateFullName(packageName, flavorSelections)
         return PackageName(name, name, packageName, flavorSelections)
 
     @staticmethod
-    def CreateNameAndSelection(packageName: "PackageName", flavorSelections: PackageFlavorSelections, isFlavorSingleton: bool) -> "PackageName":
+    def CreateNameAndSelection(packageName: PackageName, flavorSelections: PackageFlavorSelections, isFlavorSingleton: bool) -> PackageName:
         name = PackageName.__CreateFullName2(packageName, flavorSelections)
         if isFlavorSingleton:
             return PackageName(name, packageName.Value, packageName.Unresolved, flavorSelections)

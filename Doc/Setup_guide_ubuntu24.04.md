@@ -38,9 +38,18 @@
     sudo apt-get install cmake
     ```
 
-* Python 3.10+
-  To be able run python scripts, they are not needed to build.
-  It should be part of the default Ubuntu install.
+* Python 3.14+
+  To be able run python scripts, they are needed to build.
+  Ubuntu 24.04 comes with Python 3.12, so install 3.14 from the deadsnakes PPA and use it from a virtual environment.
+  The virtual environment makes `python3` refer to 3.14 without changing the system python.
+
+    ```bash
+    sudo add-apt-repository ppa:deadsnakes/ppa
+    sudo apt-get install python3.14 python3.14-venv
+    python3.14 -m venv ~/.venv/fsl
+    ```
+
+  Remember to activate it with `source ~/.venv/fsl/bin/activate` before running `source prepare.sh`.
 * DevIL (Developer's Image Library)
 
     ```bash

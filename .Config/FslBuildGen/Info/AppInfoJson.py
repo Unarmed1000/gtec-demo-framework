@@ -299,7 +299,7 @@ def __ParsePackage(log: Log, packageName: str, jsonPackageDict: dict[str, object
     packageType = PackageType.FromString(strPackageType)
     supported = __ReadDictBoolAttrib(jsonPackageDict, JsonPackageKey.Supported, True)
 
-    jsonPackageGeneratorReport = jsonPackageDict.get(JsonPackageKey.GeneratorReport, None)
+    jsonPackageGeneratorReport = jsonPackageDict.get(JsonPackageKey.GeneratorReport)
     generatorReport: PackageGeneratorReportInfo | None = None
     if jsonPackageGeneratorReport is not None:
         if not isinstance(jsonPackageGeneratorReport, dict):

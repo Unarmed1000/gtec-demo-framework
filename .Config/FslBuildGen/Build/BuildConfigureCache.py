@@ -32,7 +32,6 @@
 # ****************************************************************************************************************************************************
 
 import json
-from typing import Optional
 
 from FslBuildGen import IOUtil
 from FslBuildGen.Log import Log
@@ -62,7 +61,7 @@ class BuildConfigureCache:
         self.AllowFindPackage = allowFindPackage
 
     @staticmethod
-    def TryLoad(log: Log, cacheFilename: str) -> Optional["BuildConfigureCache"]:
+    def TryLoad(log: Log, cacheFilename: str) -> BuildConfigureCache | None:
         try:
             strJson = IOUtil.TryReadFile(cacheFilename)
             if strJson is None:
@@ -110,13 +109,13 @@ class BuildConfigureCache:
             return None
 
     @staticmethod
-    def Save(log: Log, cacheFilename: str, buildConfigureCache: "BuildConfigureCache") -> None:
+    def Save(log: Log, cacheFilename: str, buildConfigureCache: BuildConfigureCache) -> None:
         log.LogPrintVerbose(4, f"- Saving generated file hash cache '{cacheFilename}'")
         jsonText = json.dumps(buildConfigureCache.__dict__, ensure_ascii=False, sort_keys=True, indent=2)
         IOUtil.WriteFileIfChanged(cacheFilename, jsonText)
 
     @staticmethod
-    def IsEqual(lhs: "BuildConfigureCache", rhs: "BuildConfigureCache") -> bool:
+    def IsEqual(lhs: BuildConfigureCache, rhs: BuildConfigureCache) -> bool:
         if (
             lhs.Version != rhs.Version
             or len(lhs.EnvironmentDict) != len(rhs.EnvironmentDict)

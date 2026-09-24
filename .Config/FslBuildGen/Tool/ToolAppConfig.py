@@ -87,7 +87,7 @@ class ToolAppConfig:
         self.UserSetVariables = UserSetVariables({})
         self.ExePackageNameFilter = DefaultValue.ExePackageNameFilter
 
-    def SetToolAppConfigValues(self, toolAppConfig: "ToolAppConfig") -> None:
+    def SetToolAppConfigValues(self, toolAppConfig: ToolAppConfig) -> None:
         if toolAppConfig.PlatformName is None:
             raise Exception("Platform name can not be None")
 

@@ -31,7 +31,6 @@
 #
 # ****************************************************************************************************************************************************
 
-from typing import Optional
 
 from FslBuildGen.Location.ResolvedPath import ResolvedPath
 from FslBuildGen.ProjectId import ProjectId
@@ -48,7 +47,7 @@ class ToolConfigProjectContext:
         projectDirectory: str,
         gitHash: str | None,
         basePackages: list[ToolConfigBasePackage],
-        parentContext: Optional["ToolConfigProjectContext"],
+        parentContext: ToolConfigProjectContext | None,
     ) -> None:
         super().__init__()
         self.ProjectId = projectId

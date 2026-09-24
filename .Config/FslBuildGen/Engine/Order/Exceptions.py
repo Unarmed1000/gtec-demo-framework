@@ -111,13 +111,13 @@ class FlavorCanNotExtendPackageItsNotDependentUponException(Exception):
         super().__init__(message)
 
     @staticmethod
-    def CreateSimple(packageName: PackageName, flavor: UnresolvedPackageFlavor) -> "FlavorCanNotExtendPackageItsNotDependentUponException":
+    def CreateSimple(packageName: PackageName, flavor: UnresolvedPackageFlavor) -> FlavorCanNotExtendPackageItsNotDependentUponException:
         return FlavorCanNotExtendPackageItsNotDependentUponException(
             f"Package '{packageName}' can not extend flavor: '{flavor}' as no dependency to the source package '{flavor.Name.OwnerPackageName}' exist"
         )
 
     @staticmethod
-    def CreateComplex(packageToUnusedFlavorExtensionDict: dict[str, set[str]]) -> "FlavorCanNotExtendPackageItsNotDependentUponException":
+    def CreateComplex(packageToUnusedFlavorExtensionDict: dict[str, set[str]]) -> FlavorCanNotExtendPackageItsNotDependentUponException:
         res = ""
         for key, valueSet in packageToUnusedFlavorExtensionDict.items():
             for flavor in valueSet:

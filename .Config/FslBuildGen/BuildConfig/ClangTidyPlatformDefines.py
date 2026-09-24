@@ -41,7 +41,7 @@ class ClangTidyPlatformDefines:
         self.Debug = debug
         self.Release = release
 
-    def Merge(self, defines: "ClangTidyPlatformDefines") -> None:
+    def Merge(self, defines: ClangTidyPlatformDefines) -> None:
         self.All += defines.All
         self.Debug += defines.Debug
         self.Release += defines.Release

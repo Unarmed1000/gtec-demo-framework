@@ -53,28 +53,28 @@ class CMakeVersion:
             return NotImplemented
         return self.Major != rhs.Major or self.Minor != rhs.Minor or self.Build != rhs.Build
 
-    def __lt__(self, rhs: "CMakeVersion") -> bool:
+    def __lt__(self, rhs: CMakeVersion) -> bool:
         return (
             (self.Major < rhs.Major)
             or (self.Major == rhs.Major and self.Minor < rhs.Minor)
             or (self.Major == rhs.Major and self.Minor == rhs.Minor and self.Build < rhs.Build)
         )
 
-    def __le__(self, rhs: "CMakeVersion") -> bool:
+    def __le__(self, rhs: CMakeVersion) -> bool:
         return (
             (self.Major < rhs.Major)
             or (self.Major == rhs.Major and self.Minor < rhs.Minor)
             or (self.Major == rhs.Major and self.Minor == rhs.Minor and self.Build <= rhs.Build)
         )
 
-    def __gt__(self, rhs: "CMakeVersion") -> bool:
+    def __gt__(self, rhs: CMakeVersion) -> bool:
         return (
             (self.Major > rhs.Major)
             or (self.Major == rhs.Major and self.Minor > rhs.Minor)
             or (self.Major == rhs.Major and self.Minor == rhs.Minor and self.Build > rhs.Build)
         )
 
-    def __ge__(self, rhs: "CMakeVersion") -> bool:
+    def __ge__(self, rhs: CMakeVersion) -> bool:
         return (
             (self.Major > rhs.Major)
             or (self.Major == rhs.Major and self.Minor > rhs.Minor)

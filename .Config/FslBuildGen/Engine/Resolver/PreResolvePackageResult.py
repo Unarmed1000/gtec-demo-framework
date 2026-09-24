@@ -45,7 +45,7 @@ class PreResolvePackageResult:
         resolvedDirectUsedFeatures: list[PackageRequirement],
         resolvedAllUsedFeatures: list[PackageRequirement],
         resolvedBuildIndex: int,
-        resolvedBuildOrder: list["PreResolvePackageResult"],
+        resolvedBuildOrder: list[PreResolvePackageResult],
     ) -> None:
         super().__init__()
         self.Type = sourcePackage.Type

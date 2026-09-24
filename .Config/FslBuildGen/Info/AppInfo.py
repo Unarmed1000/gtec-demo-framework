@@ -49,7 +49,7 @@ class AppInfo:
         self.ResolvedPackageList = resolvedPackageList
 
     @staticmethod
-    def CreateAppInfo(platformName: str, resolvedPackageList: list[PackageInfo]) -> "AppInfo":
+    def CreateAppInfo(platformName: str, resolvedPackageList: list[PackageInfo]) -> AppInfo:
         return AppInfo(platformName, resolvedPackageList)
 
 

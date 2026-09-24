@@ -35,7 +35,7 @@
 import os
 import os.path
 import xml.etree.ElementTree as ET
-from typing import Any, Optional
+from typing import Any
 
 from FslBuildGen import IOUtil
 from FslBuildGen.DataTypes import MagicStrings, PackageLanguage
@@ -187,7 +187,7 @@ class XmlExperimental(XmlBase):
                 platformDict[platform.Id] = platform
         return platformDict
 
-    def Merge(self, src: Optional["XmlExperimental"]) -> None:
+    def Merge(self, src: XmlExperimental | None) -> None:
         if src is None:
             return
         if src.DefaultThirdPartyInstallDirectory is not None:

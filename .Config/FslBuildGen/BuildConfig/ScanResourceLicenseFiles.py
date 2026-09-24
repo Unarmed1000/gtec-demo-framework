@@ -109,7 +109,7 @@ class JsonBasicLicense:
         self.Tags = tags
         self.TagsIdList = [entry.lower() for entry in tags.split(";") if len(entry) > 0]
 
-    def Compare(self, license: "JsonBasicLicense") -> bool:
+    def Compare(self, license: JsonBasicLicense) -> bool:
         return (
             self.Origin == license.Origin
             and self.License == license.License
@@ -125,7 +125,7 @@ class JsonComplexLicense:
         self.Comment = comment if comment is not None else ""
         self.Licenses = list(licenses)
 
-    def Compare(self, license: "JsonComplexLicense") -> bool:
+    def Compare(self, license: JsonComplexLicense) -> bool:
         return self.Comment == license.Comment and self.__IsConsideredEqual(license.Licenses)
 
     def __IsConsideredEqual(self, otherLicenses: list[JsonBasicLicense]) -> bool:
@@ -134,7 +134,7 @@ class JsonComplexLicense:
     def __IsMember(self, license: JsonBasicLicense) -> bool:
         return any(entry.Compare(license) for entry in self.Licenses)
 
-    def Merge(self, license: "JsonComplexLicense") -> None:
+    def Merge(self, license: JsonComplexLicense) -> None:
         for entry in license.Licenses:
             if not self.__IsMember(entry):
                 self.Licenses.append(entry)

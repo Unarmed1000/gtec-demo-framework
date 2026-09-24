@@ -32,9 +32,9 @@
 
 import sys
 
-# The tools require Python 3.11+, tomllib and various typing features depend on it
+# The tools require Python 3.14+, tomllib and various typing features depend on it
 MinVersionMajor = 3
-MinVersionMinor = 11
+MinVersionMinor = 14
 
 
 def CheckVersion() -> None:

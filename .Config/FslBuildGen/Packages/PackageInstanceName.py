@@ -42,7 +42,7 @@ class PackageInstanceName:
 
         self.Value = name
 
-    def CompareTo(self, other: "PackageInstanceName") -> int:
+    def CompareTo(self, other: PackageInstanceName) -> int:
         if self.Value < other.Value:
             return -1
         return 0 if self.Value == other.Value else 1

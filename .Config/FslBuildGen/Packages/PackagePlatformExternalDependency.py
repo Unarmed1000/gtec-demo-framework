@@ -31,7 +31,6 @@
 #
 # ****************************************************************************************************************************************************
 
-from typing import Union
 
 from FslBuildGen.DataTypes import AccessType, ExternalDependencyType
 from FslBuildGen.PackageIncludeDir import PackageIncludeDir
@@ -41,7 +40,7 @@ from FslBuildGen.Packages.Unresolved.UnresolvedExternalDependency import Unresol
 
 # TODO: eliminate this class and reuse the PackageExternalDependency if possible
 class PackagePlatformExternalDependency(PackageElement):
-    def __init__(self, base: Union[UnresolvedExternalDependency, "PackagePlatformExternalDependency"], allowPrivate: bool) -> None:
+    def __init__(self, base: UnresolvedExternalDependency | PackagePlatformExternalDependency, allowPrivate: bool) -> None:
         super().__init__(base.Name)
         self.DebugName: str = base.DebugName
         self.TargetName: str = base.TargetName

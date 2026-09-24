@@ -40,7 +40,7 @@ class PackageIncludeDir:
         return f"PackageIncludeDir(include={self.Name!r}, priority={self.Priority!r})"
 
     @staticmethod
-    def PatchName(src: "PackageIncludeDir", newName: str) -> "PackageIncludeDir":
+    def PatchName(src: PackageIncludeDir, newName: str) -> PackageIncludeDir:
         return PackageIncludeDir(newName, src.Priority)
 
     def __eq__(self, other: object) -> bool:

@@ -45,7 +45,7 @@ class ClangTidyPlatform:
         self.Defines = defines
         self.StrictChecks = list(strictChecks)
 
-    def Merge(self, platform: "ClangTidyPlatform") -> None:
+    def Merge(self, platform: ClangTidyPlatform) -> None:
         self.Compiler.Merge(platform.Compiler)
         self.Defines.Merge(platform.Defines)
         self.StrictChecks += platform.StrictChecks

@@ -44,7 +44,7 @@ class ExternalFlavorConstraints:
         return len(self.Dict) > 0
 
     @staticmethod
-    def ToExternalFlavorConstraints(sourceDict: dict[str, str]) -> "ExternalFlavorConstraints":
+    def ToExternalFlavorConstraints(sourceDict: dict[str, str]) -> ExternalFlavorConstraints:
         convertedDict: dict[PackageFlavorName, PackageFlavorOptionName] = {}
         for key, value in sourceDict.items():
             convertedDict[PackageFlavorName.FromString(key)] = PackageFlavorOptionName(value)

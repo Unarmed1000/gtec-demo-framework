@@ -42,7 +42,7 @@ class CompanyName:
 
         self.Value = name
 
-    def CompareTo(self, other: "CompanyName") -> int:
+    def CompareTo(self, other: CompanyName) -> int:
         if self.Value < other.Value:
             return -1
         return 0 if self.Value == other.Value else 1

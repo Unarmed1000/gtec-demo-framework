@@ -90,7 +90,7 @@ class JsonRecipeCMakeConfig:
         )
 
     @staticmethod
-    def GetDiff(lhs: "JsonRecipeCMakeConfig", rhs: "JsonRecipeCMakeConfig") -> str:
+    def GetDiff(lhs: JsonRecipeCMakeConfig, rhs: JsonRecipeCMakeConfig) -> str:
         res: list[str] = []
         if lhs.GeneratorName != rhs.GeneratorName:
             res.append(f"GeneratorName: '{lhs.GeneratorName}'!='{rhs.GeneratorName}'")

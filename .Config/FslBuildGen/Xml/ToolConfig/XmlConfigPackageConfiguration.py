@@ -58,7 +58,7 @@ class XmlConfigPackageConfiguration(XmlBase):
             res.append(XmlConfigPackageLocation(log, foundElement))
         return res
 
-    def Merge(self, other: "XmlConfigPackageConfiguration") -> None:
+    def Merge(self, other: XmlConfigPackageConfiguration) -> None:
         if self.Name != other.Name or self.Id != other.Id:
             raise Exception("Usage error, can only merge two configurations with the same id")
         for entry in other.Locations:

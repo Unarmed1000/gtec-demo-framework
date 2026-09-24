@@ -59,7 +59,7 @@ class ExternalVariantConstraints:
         return len(self.Dict) > 0
 
     @staticmethod
-    def ToExternalVariantConstraints(srcDict: dict[str, str]) -> "ExternalVariantConstraints":
+    def ToExternalVariantConstraints(srcDict: dict[str, str]) -> ExternalVariantConstraints:
         constraintsDict: dict[UnresolvedPackageFlavorName, PackageFlavorOptionName] = {}
         for key, value in srcDict.items():
             constraintsDict[UnresolvedPackageFlavorName(key)] = PackageFlavorOptionName(value)

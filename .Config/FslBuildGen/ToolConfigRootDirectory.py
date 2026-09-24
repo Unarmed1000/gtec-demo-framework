@@ -31,7 +31,6 @@
 #
 # ****************************************************************************************************************************************************
 
-from typing import Optional
 
 from FslBuildGen import IOUtil
 from FslBuildGen.Log import Log
@@ -46,7 +45,7 @@ class ToolConfigRootDirectory:
         log: Log,
         basedUponXML: XmlConfigFileAddRootDirectory | None,
         projectId: ProjectId,
-        dynamicSourceRootDir: XmlConfigFileAddRootDirectory | None | Optional["ToolConfigRootDirectory"] = None,
+        dynamicSourceRootDir: XmlConfigFileAddRootDirectory | None | ToolConfigRootDirectory | None = None,
         dynamicRootName: str | None = None,
         dynamicPath: str | None = None,
     ) -> None:

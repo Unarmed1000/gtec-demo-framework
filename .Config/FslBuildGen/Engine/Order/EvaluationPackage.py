@@ -47,7 +47,7 @@ class FlavorInfo:
 
 class EvaluationPackage:
     class DependencyRecord:
-        def __init__(self, package: "EvaluationPackage", flavorInfo: FlavorInfo | None) -> None:
+        def __init__(self, package: EvaluationPackage, flavorInfo: FlavorInfo | None) -> None:
             super().__init__()
             self.Package = package
             self.FlavorInfo = flavorInfo
@@ -104,7 +104,7 @@ class EvaluationPackage:
                 raise exceptionList[0]
 
     @staticmethod
-    def __IsDuplicatedDependency(entries: list["EvaluationPackage.DependencyRecord"]) -> bool:
+    def __IsDuplicatedDependency(entries: list[EvaluationPackage.DependencyRecord]) -> bool:
         if len(entries) <= 1:
             return False
 
@@ -117,7 +117,7 @@ class EvaluationPackage:
 
     @staticmethod
     def __ToDuplicatedDependencyHelp(
-        fromPackageName: UnresolvedPackageName, toPackageName: UnresolvedPackageName, entries: list["EvaluationPackage.DependencyRecord"]
+        fromPackageName: UnresolvedPackageName, toPackageName: UnresolvedPackageName, entries: list[EvaluationPackage.DependencyRecord]
     ) -> str:
         res: list[str] = []
         for entry in entries:

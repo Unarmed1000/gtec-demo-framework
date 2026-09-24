@@ -42,7 +42,7 @@ from FslBuildGen.Engine.Resolver.ResolvedPackage import ResolvedPackage
 
 
 class ResolvedPackageTemplateDependency:
-    def __init__(self, template: "ResolvedPackageTemplate", flavorConstraints: PackageFlavorSelections) -> None:
+    def __init__(self, template: ResolvedPackageTemplate, flavorConstraints: PackageFlavorSelections) -> None:
         super().__init__()
         self.Template = template
         self.FlavorConstraints = flavorConstraints

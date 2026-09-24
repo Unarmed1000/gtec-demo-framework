@@ -33,7 +33,6 @@
 
 import datetime
 import os
-from typing import Optional
 
 from FslBuildGen import IOUtil
 from FslBuildGen.BuildContent.PathRecord import PathRecord
@@ -86,10 +85,10 @@ class ContentState(BasicContentState):
         self.CacheState = CacheState.New
         self.ModificationComment = ""
 
-    def IsSameState(self, entry: "ContentState") -> bool:
+    def IsSameState(self, entry: ContentState) -> bool:
         return self.Name == entry.Name and self.Length == entry.Length and self.ModifiedDate == entry.ModifiedDate and self.Checksum == entry.Checksum
 
-    def GetDifferenceString(self, entry: "ContentState") -> str:
+    def GetDifferenceString(self, entry: ContentState) -> str:
         res = ""
         if self.Name != entry.Name:
             res = self.__AddToString(res, f"Name: {self.Name} != {entry.Name}")
@@ -280,7 +279,7 @@ class SyncState:
         IOUtil.WriteFileIfChanged(path, "".join(result))
 
     def BuildContentState(
-        self, log: Log, pathFileRecord: PathRecord, allowCaching: bool, allowNew: bool, cachedSyncState: Optional["SyncState"] = None
+        self, log: Log, pathFileRecord: PathRecord, allowCaching: bool, allowNew: bool, cachedSyncState: SyncState | None = None
     ) -> ContentState:
         fileState = ContentState()
         fileState.Name = pathFileRecord.RelativePath

@@ -30,7 +30,6 @@
 #
 # ****************************************************************************************************************************************************
 
-from typing import Optional
 
 from FslBuildGen.Engine.Unresolved.UnresolvedPackageFlavorUnqualifiedName import UnresolvedPackageFlavorUnqualifiedName
 
@@ -48,7 +47,7 @@ class PackageFlavorName:
         self.Value = f"{ownerPackageName.Value}.{name}" if len(name.Value) > 0 else ownerPackageName.Value
         self.Id = self.Value.upper()
 
-    def CompareTo(self, other: "PackageFlavorName") -> int:
+    def CompareTo(self, other: PackageFlavorName) -> int:
         if self.Value < other.Value:
             return -1
         return 0 if self.Value == other.Value else 1
@@ -88,14 +87,14 @@ class PackageFlavorName:
         return f"PackageFlavorName({self.Value})"
 
     @staticmethod
-    def FromString(value: str) -> "PackageFlavorName":
+    def FromString(value: str) -> PackageFlavorName:
         res = PackageFlavorName.TryFromString(value)
         if res is None:
             raise Exception(f"Invalid package flavor name '{value}', package flavor names must contain atleast one '.'")
         return res
 
     @staticmethod
-    def TryFromString(value: str) -> Optional["PackageFlavorName"]:
+    def TryFromString(value: str) -> PackageFlavorName | None:
         lastDotIndex = value.rfind(".")
         if lastDotIndex < 0:
             return None

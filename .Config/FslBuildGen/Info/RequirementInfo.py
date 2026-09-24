@@ -67,10 +67,10 @@ class RequirementInfo:
         self.Version = version
         self.Extends = extends
 
-    def IsContentEqual(self, src: "RequirementInfo") -> bool:
+    def IsContentEqual(self, src: RequirementInfo) -> bool:
         return self.Name == src.Name and self.Type == src.Type and self.Version == src.Version and self.Extends == src.Extends
 
-    def DebugGetDifferenceString(self, src: "RequirementInfo") -> str:
+    def DebugGetDifferenceString(self, src: RequirementInfo) -> str:
         strDiff = ""
         if self.Name != src.Name:
             strDiff = self.__AppendStr(strDiff, f"Name '{self.Name}' != '{src.Name}'")

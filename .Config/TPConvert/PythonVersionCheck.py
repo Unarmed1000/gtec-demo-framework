@@ -22,11 +22,11 @@
 #* EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #****************************************************************************************************************************************************
 
-import os
 import sys
 
 def CheckVersion():
     # type: () -> None
-    if sys.version_info < (3, 5):
-        print("This script requires python 3.5+")
+    # Same requirement as the FslBuild tools
+    if sys.version_info < (3, 14):
+        print("This script requires python 3.14+")
         sys.exit(1)

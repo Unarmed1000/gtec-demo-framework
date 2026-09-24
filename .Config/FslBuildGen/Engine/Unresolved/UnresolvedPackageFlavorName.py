@@ -41,7 +41,7 @@ class UnresolvedPackageFlavorName:
             raise InvalidUnresolvedPackageFlavorNameException(f"Invalid flavor name {name}")
         self.Value = name
 
-    def CompareTo(self, other: "UnresolvedPackageFlavorName") -> int:
+    def CompareTo(self, other: UnresolvedPackageFlavorName) -> int:
         if self.Value < other.Value:
             return -1
         return 0 if self.Value == other.Value else 1

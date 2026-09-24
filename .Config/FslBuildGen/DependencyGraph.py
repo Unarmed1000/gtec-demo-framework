@@ -43,7 +43,7 @@ class DependencyGraphNode:
         self.To: list[DependencyGraphNode] = []
         self.Package: Package = package
 
-    def AddEdge(self, toNode: "DependencyGraphNode") -> None:
+    def AddEdge(self, toNode: DependencyGraphNode) -> None:
         if toNode not in self.To:
             self.To.append(toNode)
             toNode.From.append(self)

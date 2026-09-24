@@ -47,9 +47,7 @@ class ComplexExternalFlavorConstraints:
         return self.DefaultFlavorConstraints.HasConstraints() or len(self.PackageFlavorContraintDict) > 0
 
     @staticmethod
-    def Merge(
-        flavorConstraints: "ComplexExternalFlavorConstraints", newConstraints: dict[str, ExternalFlavorConstraints]
-    ) -> "ComplexExternalFlavorConstraints":
+    def Merge(flavorConstraints: ComplexExternalFlavorConstraints, newConstraints: dict[str, ExternalFlavorConstraints]) -> ComplexExternalFlavorConstraints:
         mergedPackageFlavorDict: dict[str, ExternalFlavorConstraints] = {}
         for packageName, packageFlavorConstraints in newConstraints.items():
             if packageName in flavorConstraints.PackageFlavorContraintDict:

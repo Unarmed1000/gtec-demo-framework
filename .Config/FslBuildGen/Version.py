@@ -30,8 +30,6 @@
 #
 # ****************************************************************************************************************************************************
 
-from typing import Optional
-
 
 class Version:
     def __init__(self, major: int, minor: int = -1, patch: int = -1, tweak: int = -1) -> None:
@@ -48,7 +46,7 @@ class Version:
         self.__Set |= 2 if patch >= 0 else 0
         self.__Set |= 1 if tweak >= 0 else 0
 
-    def IsCompatible(self, other: "Version") -> bool:
+    def IsCompatible(self, other: Version) -> bool:
         if self.Major != other.Major:
             return False
         if self.Minor > other.Minor:
@@ -87,7 +85,7 @@ class Version:
         return True
 
     @staticmethod
-    def TryFromString(strValue: str) -> Optional["Version"]:
+    def TryFromString(strValue: str) -> Version | None:
         entries = strValue.split(".")
         if len(entries) < 1 or len(entries) > 4:
             return None
@@ -103,7 +101,7 @@ class Version:
             return None
 
     @staticmethod
-    def FromString(strValue: str) -> "Version":
+    def FromString(strValue: str) -> Version:
         result = Version.TryFromString(strValue)
         if result is None:
             raise Exception(f"Version string '{strValue} was not of the expected '1.2.3.4' format")
