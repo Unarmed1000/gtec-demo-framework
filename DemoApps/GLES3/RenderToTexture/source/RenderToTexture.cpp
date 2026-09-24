@@ -40,6 +40,7 @@
 #include <FslUtil/OpenGLES3/Exceptions.hpp>
 #include <FslUtil/OpenGLES3/GLCheck.hpp>
 #include <GLES3/gl3.h>
+#include <cstring>
 
 namespace Fsl
 {

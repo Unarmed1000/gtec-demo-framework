@@ -38,6 +38,7 @@
 #include <FslGraphics/Texture/RawTextureHelper.hpp>
 #include <FslGraphics/Texture/TextureBlobBuilder.hpp>
 #include <FslGraphics/Texture/TextureMipMapUtil.hpp>
+#include <cstring>
 
 namespace Fsl
 {

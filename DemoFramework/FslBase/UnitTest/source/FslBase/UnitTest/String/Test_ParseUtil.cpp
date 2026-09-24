@@ -37,6 +37,7 @@
 #include <FslBase/UnitTest/Helper/TestFixtureFslBase.hpp>
 #include <array>
 #include <cmath>
+#include <cstring>
 #include <limits>
 #include <vector>
 

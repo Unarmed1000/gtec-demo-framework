@@ -47,6 +47,7 @@
 #include <glm/ext/matrix_transform.hpp>     // glm::translate, glm::rotate, glm::scale
 #include <vulkan/vulkan.h>
 #include <array>
+#include <cstring>
 
 namespace Fsl
 {

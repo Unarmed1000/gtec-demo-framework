@@ -34,6 +34,7 @@
 #include <FslGraphics/PixelFormatUtil.hpp>
 #include <Shared/Camera/Adapter/OpenCV/CameraAdapterOpenCV.hpp>
 #include <cassert>
+#include <cstring>
 
 namespace Fsl::Helios
 {
