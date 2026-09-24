@@ -134,13 +134,13 @@ Install the Vulkan SDK, See the [official SDK guide](https://vulkan.lunarg.com/d
     cd ~/sdk
     ```
 
-4. Download the 4.14.0 release for ubuntu, unzip it, remove the download, enter the directory
+4. Download the 5.0.0 release for ubuntu, unzip it, remove the download, enter the directory
 
     ```bash
-    wget https://github.com/opencv/opencv/archive/4.14.0.zip
-    unzip 4.14.0.zip
-    rm 4.14.0.zip
-    cd opencv-4.14.0
+    wget https://github.com/opencv/opencv/archive/5.0.0.zip
+    unzip 5.0.0.zip
+    rm 5.0.0.zip
+    cd opencv-5.0.0
     ```
 
 5. Build OpenCV
@@ -153,10 +153,10 @@ Install the Vulkan SDK, See the [official SDK guide](https://vulkan.lunarg.com/d
     sudo ninja install
     ```
 
-6. Ensure that the OpenCV 4 headers are where they used to be
+6. Ensure that the OpenCV 5 headers are where they used to be
 
     ```bash
-    sudo ln -s /usr/local/include/opencv4/opencv2/ /usr/local/include/opencv2
+    sudo ln -s /usr/local/include/opencv5/opencv2/ /usr/local/include/opencv2
     ```
 
 7. Ensure that you can locate the OpenCV .so files
@@ -171,7 +171,7 @@ Install the Vulkan SDK, See the [official SDK guide](https://vulkan.lunarg.com/d
 
 ## Add OpenVX support
 
-1. Follow the guide for setting up OpenCL and OpenCV support. (need OpenCV4.14)
+1. Follow the guide for setting up OpenCL and OpenCV support. (need OpenCV 5.0)
 2. Continue the normal setup.
 
 The build chain will download and compile a OpenVX implementation.
@@ -260,7 +260,7 @@ In this example we will utilize the GLES2.S06_Texturing app.
     FslBuildNew.py <TEMPLATE-NAME> CoolNewDemo
     ```
 
-    Example TEMPLATE-NAME's: GLES2, GLES3, OpenCL1_2, OpenCV4, Vulkan.
+    Example TEMPLATE-NAME's: GLES2, GLES3, OpenCL1_2, OpenCV5, Vulkan.
 
     To get a full list run ```FslBuildNew.py . . --List```
 

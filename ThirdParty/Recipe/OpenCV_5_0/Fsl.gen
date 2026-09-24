@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <FslBuildGen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../FslBuildGen.xsd">
-  <ExternalLibrary Name="Recipe.OpenCV_4_14" CreationYear="2017">
+  <ExternalLibrary Name="Recipe.OpenCV_5_0" CreationYear="2017">
     <Default.Platform.Supported Value="false"/>
 
     <!--Platform Name="Apple;Ubuntu">
@@ -19,11 +19,11 @@
       </ExperimentalRecipe>
     </Platform-->
     <Platform Name="Windows" Supported="true">
-      <ExperimentalRecipe Name="OpenCV" Version="4.14.0" ExternalInstallDirectory="$(OPENCV_DIR)">
+      <ExperimentalRecipe Name="OpenCV" Version="5.0.0" ExternalInstallDirectory="$(OPENCV_DIR)">
         <Installation>
           <AddHeaders Name="include"/>
-          <AddLib Name="x64/vc16/lib/opencv_world4140.lib" DebugName="x64/vc16/lib/opencv_world4140d.lib"/>
-          <AddDLL Name="x64/vc16/bin/opencv_world4140.dll" DebugName="x64/vc16/bin/opencv_world4140d.dll"/>
+          <AddLib Name="x64/vc16/lib/opencv_world500.lib" DebugName="x64/vc16/lib/opencv_world500d.lib"/>
+          <AddDLL Name="x64/vc16/bin/opencv_world500.dll" DebugName="x64/vc16/bin/opencv_world500d.dll"/>
           <Path Name="include/opencv2/opencv.hpp" Method="IsFile"/>
         </Installation>
       </ExperimentalRecipe>

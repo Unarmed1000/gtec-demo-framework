@@ -405,7 +405,7 @@ In this example we will utilize the `GLES2.S06_Texturing` app.
     FslBuildNew.py <TEMPLATE-NAME> CoolNewDemo
     ```
 
-    Example TEMPLATE-NAME's: GLES2, GLES3, OpenCL1_2, OpenCV4, Vulkan.
+    Example TEMPLATE-NAME's: GLES2, GLES3, OpenCL1_2, OpenCV5, Vulkan.
 
     To get a full list run ```FslBuildNew.py . . --List```
 

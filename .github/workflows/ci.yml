@@ -19,7 +19,7 @@ env:
   VULKAN_SDK_VERSION: 1.4.357.0
   # Same feature set as the Jenkins ubuntu review build, except OpenVX: registry.khronos.org (Cloudflare) blocks the
   # OpenVX 1.2 sample download from the GitHub hosted runners
-  FSL_CI_FEATURES_UBUNTU: '[ConsoleHost,WindowHost,Test_RequireUserInputToExit,EarlyAccess,EGL,GoogleBenchmark,GoogleUnitTest,OpenCL1.2,OpenCV4,OpenGLES2,OpenGLES3,OpenGLES3.1,OpenGLES3.2,Vulkan,Lib_NlohmannJson,Lib_pugixml]'
+  FSL_CI_FEATURES_UBUNTU: '[ConsoleHost,WindowHost,Test_RequireUserInputToExit,EarlyAccess,EGL,GoogleBenchmark,GoogleUnitTest,OpenCL1.2,OpenCV5,OpenGLES2,OpenGLES3,OpenGLES3.1,OpenGLES3.2,Vulkan,Lib_NlohmannJson,Lib_pugixml]'
   # The hosted windows runners have no OpenGL ES emulator, OpenCL, OpenCV or OpenVX sdk
   FSL_CI_FEATURES_WINDOWS: '[ConsoleHost,WindowHost,Test_RequireUserInputToExit,EarlyAccess,GoogleBenchmark,GoogleUnitTest,Vulkan,Lib_NlohmannJson,Lib_pugixml]'
 

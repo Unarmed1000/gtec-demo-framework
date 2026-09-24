@@ -2,6 +2,6 @@
 <FslBuildGen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../FslBuildGen.xsd">
   <Library Name="Shared.OpenCVExperimental" CreationYear="2017">
     <Dependency Name="FslGraphics"/>
-    <Dependency Name="OpenCV4"/>
+    <Dependency Name="OpenCV5"/>
   </Library>
 </FslBuildGen>

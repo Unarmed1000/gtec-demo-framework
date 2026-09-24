@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <FslBuildGen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../FslBuildGen.xsd">
   <Executable Name="OpenCV.OpenCV101" NoInclude="true" CreationYear="2016">
-    <ImportTemplate Name="DemoAppOpenCV4"/>
+    <ImportTemplate Name="DemoAppOpenCV5"/>
     <Requirement Name="Test_RequireUserInputToExit" Type="feature"/>
   </Executable>
 </FslBuildGen>
