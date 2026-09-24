@@ -47,6 +47,8 @@ namespace Fsl
     std::vector<uint8_t> m_rawInputScratchpad;
     VirtualMouseButtonFlags m_rawMouseButtonFlags;
     Point2 m_cachedDPIValue;
+    HMONITOR m_cachedMonitor{nullptr};
+    NativeWindowDisplayInfo m_cachedDisplayInfo;
     bool m_mouseCaptureEnabled;
     bool m_mouseInternalCaptureEnabled;
     bool m_mouseIsCaptured;
@@ -63,6 +65,8 @@ namespace Fsl
     bool TryCaptureMouse(const bool enableCapture) override;
 
     void OnDPIChanged(const MillisecondTickCount32 timestamp, const Point2 value);
+    void OnWindowMoved();
+    void OnDisplayChanged();
 
     void OnRawInput(const std::shared_ptr<INativeWindowEventQueue>& eventQueue, const MillisecondTickCount32 timestamp, const LPARAM lParam);
     void OnMouseMove(const std::shared_ptr<INativeWindowEventQueue>& eventQueue, const MillisecondTickCount32 timestamp, const PxPoint2 positionPx);
@@ -78,6 +82,10 @@ namespace Fsl
   protected:
     bool TryGetNativeSize(PxPoint2& rSize) const override;
     bool TryGetNativeDpi(Vector2& rDPI) const override;
+    NativeWindowDisplayInfo TryGetNativeDisplayInfo() const override;
+
+  private:
+    void UpdateDisplayInfo(const bool forceRefresh);
   };
 }    // namespace Fsl
 

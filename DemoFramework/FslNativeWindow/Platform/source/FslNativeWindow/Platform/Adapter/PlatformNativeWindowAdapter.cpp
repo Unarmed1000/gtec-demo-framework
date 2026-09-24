@@ -169,6 +169,16 @@ namespace Fsl
   }
 
 
+  NativeWindowDisplayInfo PlatformNativeWindowAdapter::TryGetDisplayInfo() const
+  {
+    if (!NativeWindowCapabilityFlagsUtil::IsFlagged(m_capabilityFlags, NativeWindowCapabilityFlags::GetDisplayInfo))
+    {
+      return {};
+    }
+    return TryGetNativeDisplayInfo();
+  }
+
+
   bool PlatformNativeWindowAdapter::TryGetExtent(PxExtent2D& rExtent) const
   {
     PxPoint2 size;

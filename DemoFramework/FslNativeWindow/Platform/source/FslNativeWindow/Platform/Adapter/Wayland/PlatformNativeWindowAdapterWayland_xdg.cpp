@@ -32,6 +32,7 @@
 #include <FslBase/Log/Math/Pixel/FmtPxSize2D.hpp>
 #include <FslBase/Math/Pixel/TypeConverter_Math.hpp>
 #include <FslBase/Math/Vector2.hpp>
+#include <FslBase/Time/TimeSpanUtil.hpp>
 #include <FslBase/UncheckedNumericCast.hpp>
 #include <FslNativeWindow/Base/NativeWindowEventHelper.hpp>
 #include <FslNativeWindow/Base/NativeWindowSetup.hpp>
@@ -94,14 +95,40 @@ namespace Fsl
     //   // }
     // }
 
+    void PostWindowConfigChanged(const PlatformNativeWindowContextWayland& window)
+    {
+      auto eventQueue = window.EventQueue.lock();
+      if (eventQueue)
+      {
+        eventQueue->PostEvent(NativeWindowEventHelper::EncodeWindowConfigChanged());
+      }
+    }
+
     void OnWaylandWindowContext_HandleSurfaceEnter(void* data, wl_surface* pSurface, wl_output* pOutput)
     {
       FSLLOG3_VERBOSE5("OnWaylandWindowContext_HandleSurfaceEnter");
+      auto* pWindow = static_cast<PlatformNativeWindowContextWayland*>(data);
+      if (pWindow == nullptr || pOutput == nullptr)
+      {
+        return;
+      }
+      pWindow->EnteredOutputs.push_back(pOutput);
+      // The display info might have changed
+      PostWindowConfigChanged(*pWindow);
     }
 
     void OnWaylandWindowContext_HandleSurfaceLeave(void* data, wl_surface* pSurface, wl_output* pOutput)
     {
       FSLLOG3_VERBOSE5("OnWaylandWindowContext_HandleSurfaceLeave");
+      auto* pWindow = static_cast<PlatformNativeWindowContextWayland*>(data);
+      if (pWindow == nullptr)
+      {
+        return;
+      }
+      auto& rEnteredOutputs = pWindow->EnteredOutputs;
+      rEnteredOutputs.erase(std::remove(rEnteredOutputs.begin(), rEnteredOutputs.end(), pOutput), rEnteredOutputs.end());
+      // The display info might have changed
+      PostWindowConfigChanged(*pWindow);
     }
 
     // void OnWaylandWindowContext_HandlePreferredBufferScale(void *data, wl_surface *wl_surface, int32_t factor)
@@ -112,7 +139,8 @@ namespace Fsl
     // }
 
     const wl_surface_listener g_surfaceListener = {
-      OnWaylandWindowContext_HandleSurfaceEnter, OnWaylandWindowContext_HandleSurfaceLeave,
+      OnWaylandWindowContext_HandleSurfaceEnter,
+      OnWaylandWindowContext_HandleSurfaceLeave,
       // OnWaylandWindowContext_HandlePreferredBufferScale,
       // OnWaylandWindowContext_HandlePreferredBufferTransform
     };
@@ -257,6 +285,7 @@ namespace Fsl
       {
         // Ensure no pre-existing handles are valid
         rWindow.Handles.reset();
+        rWindow.EnteredOutputs.clear();
 
         rWindow.Handles.Surface.reset(wl_compositor_create_surface(context.Handles.Compositor.get()));
         if (!rWindow.Handles.Surface)
@@ -671,6 +700,11 @@ namespace Fsl
       mode.Height = height;
       mode.Refresh = refresh;
 
+      if ((flags & WL_OUTPUT_MODE_CURRENT) != 0u)
+      {
+        output->CurrentRefreshMilliHz = refresh;
+      }
+
       output->Modes.push_back(mode);
     }
 
@@ -970,7 +1004,9 @@ namespace Fsl
   PlatformNativeWindowAdapterWayland::PlatformNativeWindowAdapterWayland(
     const NativeWindowSetup& nativeWindowSetup, const PlatformNativeWindowParams& platformWindowParams,
     const PlatformNativeWindowAllocationParams* const pPlatformCustomWindowAllocationParams)
-    : PlatformNativeWindowAdapter(nativeWindowSetup, platformWindowParams, pPlatformCustomWindowAllocationParams, NativeWindowCapabilityFlags::GetDpi)
+    : PlatformNativeWindowAdapter(nativeWindowSetup, platformWindowParams, pPlatformCustomWindowAllocationParams,
+                                  NativeWindowCapabilityFlags::GetDpi | NativeWindowCapabilityFlags::GetDisplayInfo)
+    , m_windowSystemContext(platformWindowParams.WindowSystemWaylandContext)
   {
     const NativeWindowConfig nativeWindowConfig = nativeWindowSetup.GetConfig();
     auto windowSystemContext = platformWindowParams.WindowSystemWaylandContext.lock();
@@ -1104,6 +1140,42 @@ namespace Fsl
   {
     rDPI = Vector2(m_cachedScreenDPI.X, m_cachedScreenDPI.Y);
     return true;
+  }
+
+
+  NativeWindowDisplayInfo PlatformNativeWindowAdapterWayland::TryGetNativeDisplayInfo() const
+  {
+    const auto windowSystemContext = m_windowSystemContext.lock();
+    if (!windowSystemContext)
+    {
+      return {};
+    }
+    const auto& outputs = windowSystemContext->Outputs;
+
+    const OutputInfo* pOutputInfo = nullptr;
+    // Use the most recently entered output that we know about
+    const auto& enteredOutputs = m_windowContext->EnteredOutputs;
+    for (auto itr = enteredOutputs.rbegin(); itr != enteredOutputs.rend() && pOutputInfo == nullptr; ++itr)
+    {
+      const wl_output* const pEnteredOutput = *itr;
+      auto itrFind = std::find_if(outputs.begin(), outputs.end(),
+                                  [pEnteredOutput](const std::unique_ptr<OutputInfo>& info) { return info && info->Output.get() == pEnteredOutput; });
+      if (itrFind != outputs.end())
+      {
+        pOutputInfo = itrFind->get();
+      }
+    }
+    // If the surface has not entered a output yet we can only be sure which output it is on if there is only one
+    if (pOutputInfo == nullptr && enteredOutputs.empty() && outputs.size() == 1u)
+    {
+      pOutputInfo = outputs.front().get();
+    }
+
+    if (pOutputInfo == nullptr || pOutputInfo->CurrentRefreshMilliHz <= 0)
+    {
+      return {};
+    }
+    return NativeWindowDisplayInfo(TimeSpanUtil::FromFrequencyRational(static_cast<uint64_t>(pOutputInfo->CurrentRefreshMilliHz), 1000u));
   }
 }
 #endif

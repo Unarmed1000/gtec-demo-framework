@@ -121,6 +121,32 @@ namespace Fsl::TimeSpanUtil
 
   // -----------------------------------------------------------------------------------------------------------------------------------------------
 
+  //! @brief Convert a frequency given as a rational (numerator / denominator Hz) to the period of one cycle.
+  //!        Example: 60000/1001 Hz (59.94 Hz) -> 166833 ticks.
+  //! @return the period rounded to the nearest tick or TimeSpan() if the input is invalid or the result can not be represented.
+  inline constexpr TimeSpan FromFrequencyRational(const uint64_t numerator, const uint64_t denominator) noexcept
+  {
+    constexpr auto TicksPerSecond = static_cast<uint64_t>(TimeSpan::TicksPerSecond);
+    if (numerator == 0u || denominator == 0u || denominator > (std::numeric_limits<uint64_t>::max() / TicksPerSecond))
+    {
+      return {};
+    }
+    const uint64_t scaledDenominator = denominator * TicksPerSecond;
+    const uint64_t halfNumerator = numerator / 2u;
+    if (scaledDenominator > (std::numeric_limits<uint64_t>::max() - halfNumerator))
+    {
+      return {};
+    }
+    const uint64_t ticks = (scaledDenominator + halfNumerator) / numerator;
+    if (ticks > static_cast<uint64_t>(std::numeric_limits<int64_t>::max()))
+    {
+      return {};
+    }
+    return TimeSpan(static_cast<int64_t>(ticks));
+  }
+
+  // -----------------------------------------------------------------------------------------------------------------------------------------------
+
   inline constexpr int32_t ToMicrosecondsInt32(const TimeSpan transitionTime)
   {
     return NumericCast<int32_t>(transitionTime.Ticks() / TimeSpan::TicksPerMicrosecond);

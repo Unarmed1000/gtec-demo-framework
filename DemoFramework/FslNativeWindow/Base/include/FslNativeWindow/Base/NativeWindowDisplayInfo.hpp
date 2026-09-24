@@ -1,7 +1,7 @@
-#ifndef FSLNATIVEWINDOW_BASE_NATIVEWINDOWCAPABILITYFLAGS_HPP
-#define FSLNATIVEWINDOW_BASE_NATIVEWINDOWCAPABILITYFLAGS_HPP
+#ifndef FSLNATIVEWINDOW_BASE_NATIVEWINDOWDISPLAYINFO_HPP
+#define FSLNATIVEWINDOW_BASE_NATIVEWINDOWDISPLAYINFO_HPP
 /****************************************************************************************************************************************************
- * Copyright 2020 NXP
+ * Copyright 2026 NXP
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -31,37 +31,55 @@
  *
  ****************************************************************************************************************************************************/
 
+
 #include <FslBase/BasicTypes.hpp>
+#include <FslBase/Time/TimeSpan.hpp>
 
 namespace Fsl
 {
-  enum class NativeWindowCapabilityFlags : uint32_t
+  //! Information about the display the window is presented on.
+  //! Every member uses its default value to indicate 'unknown', so a backend only fills in what it knows.
+  //! If a member is added remember to update operator==.
+  struct NativeWindowDisplayInfo
   {
-    // Identifies no flags
-    NoFlags = 0x00,
-    CaptureMouse = 0x01,
-    GetDpi = 0x02,
-    GetDensityDpi = 0x04,
-    //! The native window can supply NativeWindowDisplayInfo (the individual members might still be unknown)
-    GetDisplayInfo = 0x08
+    //! The time between two display refreshes (TimeSpan() if unknown)
+    TimeSpan RefreshInterval;
+
+    constexpr NativeWindowDisplayInfo() noexcept = default;
+
+    constexpr explicit NativeWindowDisplayInfo(const TimeSpan refreshInterval) noexcept
+      : RefreshInterval(refreshInterval.Ticks() > 0 ? refreshInterval : TimeSpan())
+    {
+    }
+
+    //! @return true if this contains no information, false if it contains valid info
+    constexpr bool IsDefault() const noexcept;
+
+    constexpr bool HasRefreshInterval() const noexcept
+    {
+      return RefreshInterval.Ticks() > 0;
+    }
+
+    //! @return the refresh rate in Hz or 0.0 if unknown
+    constexpr double RefreshRateHz() const noexcept
+    {
+      return HasRefreshInterval() ? static_cast<double>(TimeSpan::TicksPerSecond) / static_cast<double>(RefreshInterval.Ticks()) : 0.0;
+    }
   };
 
-  inline constexpr NativeWindowCapabilityFlags operator|(const NativeWindowCapabilityFlags lhs, const NativeWindowCapabilityFlags rhs) noexcept
+  constexpr inline bool operator==(const NativeWindowDisplayInfo& lhs, const NativeWindowDisplayInfo& rhs) noexcept
   {
-    return static_cast<NativeWindowCapabilityFlags>(static_cast<uint32_t>(lhs) | static_cast<uint32_t>(rhs));
+    return lhs.RefreshInterval == rhs.RefreshInterval;
   }
 
-  inline constexpr NativeWindowCapabilityFlags operator&(const NativeWindowCapabilityFlags lhs, const NativeWindowCapabilityFlags rhs) noexcept
+  constexpr inline bool operator!=(const NativeWindowDisplayInfo& lhs, const NativeWindowDisplayInfo& rhs) noexcept
   {
-    return static_cast<NativeWindowCapabilityFlags>(static_cast<uint32_t>(lhs) & static_cast<uint32_t>(rhs));
+    return !(lhs == rhs);
   }
 
-  namespace NativeWindowCapabilityFlagsUtil
+  constexpr inline bool NativeWindowDisplayInfo::IsDefault() const noexcept
   {
-    inline constexpr bool IsFlagged(const NativeWindowCapabilityFlags srcFlags, const NativeWindowCapabilityFlags flags) noexcept
-    {
-      return (srcFlags & flags) == flags;
-    }
+    return *this == NativeWindowDisplayInfo();
   }
 }
 

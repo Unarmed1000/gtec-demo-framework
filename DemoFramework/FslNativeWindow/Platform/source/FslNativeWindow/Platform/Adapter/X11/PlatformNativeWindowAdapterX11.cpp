@@ -39,6 +39,7 @@
 #include <FslBase/Math/Pixel/PxPoint2.hpp>
 #include <FslBase/Math/Point2.hpp>
 #include <FslBase/Math/Vector2.hpp>
+#include <FslBase/Time/TimeSpanUtil.hpp>
 #include <FslNativeWindow/Base/INativeWindowEventQueue.hpp>
 #include <FslNativeWindow/Base/NativeWindowEventHelper.hpp>
 #include <FslNativeWindow/Base/NativeWindowSetup.hpp>
@@ -319,6 +320,135 @@ namespace Fsl
     }
 
 
+    //! Calculate the refresh interval of a RandR mode (the same way the xrandr tool calculates the refresh rate)
+    TimeSpan CalcRefreshInterval(const XRRModeInfo& mode)
+    {
+      uint64_t dotClock = mode.dotClock;
+      uint64_t vTotal = mode.vTotal;
+      if ((mode.modeFlags & RR_DoubleScan) != 0u)
+      {
+        vTotal *= 2u;
+      }
+      if ((mode.modeFlags & RR_Interlace) != 0u)
+      {
+        dotClock *= 2u;
+      }
+      return TimeSpanUtil::FromFrequencyRational(dotClock, static_cast<uint64_t>(mode.hTotal) * vTotal);
+    }
+
+
+    const XRRModeInfo* TryFindMode(const XRRScreenResources& resources, const RRMode modeId)
+    {
+      for (int i = 0; i < resources.nmode; ++i)
+      {
+        if (resources.modes[i].id == modeId)
+        {
+          return &resources.modes[i];
+        }
+      }
+      return nullptr;
+    }
+
+
+    bool CrtcContainsOutput(const XRRCrtcInfo& crtcInfo, const RROutput output)
+    {
+      for (int i = 0; i < crtcInfo.noutput; ++i)
+      {
+        if (crtcInfo.outputs[i] == output)
+        {
+          return true;
+        }
+      }
+      return false;
+    }
+
+
+    struct X11DisplayInfoLookupResult
+    {
+      NativeWindowDisplayInfo Info;
+      uint32_t ActiveCrtcCount{0};
+    };
+
+
+    //! Lookup the refresh rate of the CRTC showing the center of the window using RandR 1.2+.
+    //! @note This is not free, so only call it when something changed.
+    X11DisplayInfoLookupResult LookupDisplayInfoRandR12(PlatformNativeDisplayType platformDisplay, PlatformNativeWindowType platformWindow,
+                                                        const PxPoint2 windowSize)
+    {
+      X11DisplayInfoLookupResult result;
+      const Window rootWindow = DefaultRootWindow(platformDisplay);
+
+      // XRRGetScreenResourcesCurrent does not poll the hardware
+      XRRScreenResources* pResources = XRRGetScreenResourcesCurrent(platformDisplay, rootWindow);
+      if (pResources == nullptr)
+      {
+        return result;
+      }
+
+      // Find the window center in root window coordinates
+      int centerX = 0;
+      int centerY = 0;
+      Window child = 0;
+      const bool hasCenter = XTranslateCoordinates(platformDisplay, platformWindow, rootWindow, windowSize.X.Value / 2, windowSize.Y.Value / 2,
+                                                   &centerX, &centerY, &child) != 0;
+
+      const RROutput primaryOutput = XRRGetOutputPrimary(platformDisplay, rootWindow);
+      RRMode windowMode = None;
+      RRMode primaryMode = None;
+      RRMode firstActiveMode = None;
+      for (int i = 0; i < pResources->ncrtc; ++i)
+      {
+        XRRCrtcInfo* pCrtcInfo = XRRGetCrtcInfo(platformDisplay, pResources, pResources->crtcs[i]);
+        if (pCrtcInfo == nullptr)
+        {
+          continue;
+        }
+        if (pCrtcInfo->mode != None)
+        {
+          ++result.ActiveCrtcCount;
+          if (firstActiveMode == None)
+          {
+            firstActiveMode = pCrtcInfo->mode;
+          }
+          if (windowMode == None && hasCenter && centerX >= pCrtcInfo->x && centerY >= pCrtcInfo->y &&
+              centerX < (pCrtcInfo->x + static_cast<int>(pCrtcInfo->width)) && centerY < (pCrtcInfo->y + static_cast<int>(pCrtcInfo->height)))
+          {
+            windowMode = pCrtcInfo->mode;
+          }
+          if (primaryMode == None && primaryOutput != None && CrtcContainsOutput(*pCrtcInfo, primaryOutput))
+          {
+            primaryMode = pCrtcInfo->mode;
+          }
+        }
+        XRRFreeCrtcInfo(pCrtcInfo);
+      }
+
+      const RRMode selectedMode = windowMode != None ? windowMode : (primaryMode != None ? primaryMode : firstActiveMode);
+      const XRRModeInfo* pModeInfo = selectedMode != None ? TryFindMode(*pResources, selectedMode) : nullptr;
+      if (pModeInfo != nullptr)
+      {
+        result.Info = NativeWindowDisplayInfo(CalcRefreshInterval(*pModeInfo));
+      }
+      XRRFreeScreenResources(pResources);
+      return result;
+    }
+
+
+    //! Fallback that only provides a integer refresh rate
+    //! @note This is not free, so only call it when something changed.
+    NativeWindowDisplayInfo LookupDisplayInfoRandR10(PlatformNativeDisplayType platformDisplay, PlatformNativeWindowType platformWindow)
+    {
+      XRRScreenConfiguration* pScreenInfo = XRRGetScreenInfo(platformDisplay, platformWindow);
+      if (pScreenInfo == nullptr)
+      {
+        return {};
+      }
+      const short rate = XRRConfigCurrentRate(pScreenInfo);
+      XRRFreeScreenConfigInfo(pScreenInfo);
+      return rate > 0 ? NativeWindowDisplayInfo(TimeSpanUtil::FromFrequencyRational(static_cast<uint64_t>(rate), 1u)) : NativeWindowDisplayInfo();
+    }
+
+
     std::shared_ptr<IPlatformNativeWindowAdapter>
       AllocateWindow(const NativeWindowSetup& nativeWindowSetup, const PlatformNativeWindowParams& windowParams,
                      const PlatformNativeWindowAllocationParams* const pPlatformCustomWindowAllocationParams)
@@ -558,6 +688,10 @@ namespace Fsl
           {
             window->OnRRScreenChangeNotify(&event, eventQueue);
           }
+          else if (event.type == m_rrEventBase + RRNotify)
+          {
+            window->OnRRNotify(&event, eventQueue);
+          }
         }
         break;
       }
@@ -582,9 +716,11 @@ namespace Fsl
   PlatformNativeWindowAdapterX11::PlatformNativeWindowAdapterX11(
     const NativeWindowSetup& nativeWindowSetup, const PlatformNativeWindowParams& platformWindowParams,
     const PlatformNativeWindowAllocationParams* const pPlatformCustomWindowAllocationParams)
-    : PlatformNativeWindowAdapter(nativeWindowSetup, platformWindowParams, pPlatformCustomWindowAllocationParams, NativeWindowCapabilityFlags::GetDpi)
+    : PlatformNativeWindowAdapter(nativeWindowSetup, platformWindowParams, pPlatformCustomWindowAllocationParams,
+                                  NativeWindowCapabilityFlags::GetDpi | NativeWindowCapabilityFlags::GetDisplayInfo)
     , m_pVisual(nullptr)
     , m_cachedScreenDPI(MAGIC_DEFAULT_DPI, MAGIC_DEFAULT_DPI)
+    , m_extensionRREnabled(platformWindowParams.ExtensionRREnabled)
   {
     FSLLOG3_VERBOSE3("PlatformNativeWindowAdapterX11| Constructing");
 
@@ -673,11 +809,14 @@ namespace Fsl
     // Enable some XRR events.
     if (platformWindowParams.ExtensionRREnabled)
     {
-      XRRSelectInput(m_platformDisplay, m_platformWindow, RRScreenChangeNotifyMask);
+      // RRCrtcChangeNotifyMask lets us detect refresh rate changes that do not change the screen size
+      XRRSelectInput(m_platformDisplay, m_platformWindow, RRScreenChangeNotifyMask | RRCrtcChangeNotifyMask);
     }
 
     m_cachedWindowSize = PxPoint2::Create(windowWidth, windowHeight);
+    m_cachedWindowPosition = PxPoint2::Create(windowX, windowY);
     TryUpdateDPI(m_platformDisplay, m_platformWindow, m_cachedScreenDPI);
+    UpdateDisplayInfo({});
 
     {    // Post the activation message to let the framework know we are ready
       std::shared_ptr<INativeWindowEventQueue> eventQueue = g_eventQueue.lock();
@@ -704,6 +843,17 @@ namespace Fsl
 
   void PlatformNativeWindowAdapterX11::OnConfigureNotify(const XConfigureEvent& event, const std::shared_ptr<INativeWindowEventQueue>& eventQueue)
   {
+    const PxPoint2 newPosition(PxPoint2::Create(event.x, event.y));
+    if (newPosition != m_cachedWindowPosition)
+    {
+      m_cachedWindowPosition = newPosition;
+      // A move can only change the display info if there is more than one active display
+      if (m_cachedActiveCrtcCount > 1u)
+      {
+        UpdateDisplayInfo(eventQueue);
+      }
+    }
+
     PxPoint2 newSize(PxPoint2::Create(event.width, event.height));
     if (newSize == m_cachedWindowSize)
     {
@@ -723,6 +873,8 @@ namespace Fsl
   void PlatformNativeWindowAdapterX11::OnRRScreenChangeNotify(XEvent* pEvent, const std::shared_ptr<INativeWindowEventQueue>& eventQueue)
   {
     XRRUpdateConfiguration(pEvent);
+    UpdateDisplayInfo(eventQueue);
+
     auto* pSpecificEvent = reinterpret_cast<XRRScreenChangeNotifyEvent*>(pEvent);
 
     Point2 newDPI(CalcDPI(pSpecificEvent->width, pSpecificEvent->mwidth), CalcDPI(pSpecificEvent->height, pSpecificEvent->mheight));
@@ -749,6 +901,46 @@ namespace Fsl
   {
     rDPI = Vector2(m_cachedScreenDPI.X, m_cachedScreenDPI.Y);
     return true;
+  }
+
+
+  void PlatformNativeWindowAdapterX11::OnRRNotify(XEvent* pEvent, const std::shared_ptr<INativeWindowEventQueue>& eventQueue)
+  {
+    XRRUpdateConfiguration(pEvent);
+    UpdateDisplayInfo(eventQueue);
+  }
+
+
+  NativeWindowDisplayInfo PlatformNativeWindowAdapterX11::TryGetNativeDisplayInfo() const
+  {
+    return m_cachedDisplayInfo;
+  }
+
+
+  void PlatformNativeWindowAdapterX11::UpdateDisplayInfo(const std::shared_ptr<INativeWindowEventQueue>& eventQueue)
+  {
+    NativeWindowDisplayInfo newDisplayInfo;
+    if (m_extensionRREnabled)
+    {
+      const X11DisplayInfoLookupResult result = LookupDisplayInfoRandR12(m_platformDisplay, m_platformWindow, m_cachedWindowSize);
+      newDisplayInfo = result.Info;
+      m_cachedActiveCrtcCount = result.ActiveCrtcCount;
+    }
+    if (newDisplayInfo.IsDefault())
+    {
+      newDisplayInfo = LookupDisplayInfoRandR10(m_platformDisplay, m_platformWindow);
+    }
+
+    if (newDisplayInfo == m_cachedDisplayInfo)
+    {
+      return;
+    }
+    m_cachedDisplayInfo = newDisplayInfo;
+    FSLLOG3_VERBOSE2("PlatformNativeWindowAdapterX11| Display refresh rate {}Hz", m_cachedDisplayInfo.RefreshRateHz());
+    if (eventQueue)
+    {
+      eventQueue->PostEvent(NativeWindowEventHelper::EncodeWindowConfigChanged());
+    }
   }
 
 }    // namespace Fsl

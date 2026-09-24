@@ -36,6 +36,7 @@
 #include <FslBase/Log/Math/FmtVector2.hpp>
 #include <FslBase/Log/Math/Pixel/FmtPxExtent2D.hpp>
 #include <FslBase/Log/Math/Pixel/FmtPxPoint2.hpp>
+#include <FslBase/Log/Time/FmtTimeSpan.hpp>
 #include <FslBase/Math/Point2.hpp>
 #include <FslBase/Math/Vector2.hpp>
 #include <FslDemoHost/Base/Service/WindowHost/IWindowHostInfo.hpp>
@@ -91,6 +92,19 @@ namespace Fsl
         else
         {
           FSLLOG3_INFO("- DensityDPI: Failed");
+        }
+
+        const bool hasDisplayInfoCapability =
+          NativeWindowCapabilityFlagsUtil::IsFlagged(window->GetCapabilityFlags(), NativeWindowCapabilityFlags::GetDisplayInfo);
+        FSLLOG3_INFO("- Capability.GetDisplayInfo: {}", hasDisplayInfoCapability);
+        const NativeWindowDisplayInfo displayInfo = window->TryGetDisplayInfo();
+        if (displayInfo.HasRefreshInterval())
+        {
+          FSLLOG3_INFO("- DisplayInfo.RefreshInterval: {} ({}Hz)", displayInfo.RefreshInterval, displayInfo.RefreshRateHz());
+        }
+        else
+        {
+          FSLLOG3_INFO("- DisplayInfo.RefreshInterval: Unknown");
         }
 
         auto windowMetrics = window->GetWindowMetrics();

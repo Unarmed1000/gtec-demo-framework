@@ -35,6 +35,7 @@
 #include <FslBase/Math/Rectangle.hpp>
 #include <FslBase/Math/Vector2.hpp>
 #include <FslBase/System/Platform/PlatformWin32.hpp>
+#include <FslBase/Time/TimeSpanUtil.hpp>
 #include <FslNativeWindow/Base/INativeWindowEventQueue.hpp>
 #include <FslNativeWindow/Base/NativeWindowEventHelper.hpp>
 #include <FslNativeWindow/Base/NativeWindowSetup.hpp>
@@ -48,10 +49,12 @@
 #include <algorithm>
 #include <array>
 #include <cassert>
+#include <cwchar>
 #include <deque>
 #include <iostream>
 #include <memory>
 #include <utility>
+#include <vector>
 #include "DPIHelperWin32.hpp"
 
 #if 0
@@ -87,6 +90,77 @@ namespace Fsl
     {
       constexpr bool UseForceActivated = true;    // For now we always force activation (meaning we dont lose deactivate on windows focus loss)
       constexpr uint32_t MagicDefaultDpi = 96;
+    }
+
+    //! Lookup the exact refresh rate (as a rational) of the display path whose source is the given GDI device.
+    //! @note This is not free, so only call it when something changed.
+    TimeSpan TryLookupRefreshIntervalUsingDisplayConfig(const wchar_t* const pszGdiDeviceName)
+    {
+      std::vector<DISPLAYCONFIG_PATH_INFO> paths;
+      std::vector<DISPLAYCONFIG_MODE_INFO> modes;
+      UINT32 pathCount = 0;
+      UINT32 modeCount = 0;
+      LONG result = ERROR_SUCCESS;
+      do
+      {
+        if (GetDisplayConfigBufferSizes(QDC_ONLY_ACTIVE_PATHS, &pathCount, &modeCount) != ERROR_SUCCESS)
+        {
+          return {};
+        }
+        paths.resize(pathCount);
+        modes.resize(modeCount);
+        // The configuration can change between the two calls, so retry if the buffers were too small
+        result = QueryDisplayConfig(QDC_ONLY_ACTIVE_PATHS, &pathCount, paths.data(), &modeCount, modes.data(), nullptr);
+      } while (result == ERROR_INSUFFICIENT_BUFFER);
+
+      if (result != ERROR_SUCCESS)
+      {
+        return {};
+      }
+      paths.resize(pathCount);
+
+      for (const DISPLAYCONFIG_PATH_INFO& path : paths)
+      {
+        DISPLAYCONFIG_SOURCE_DEVICE_NAME sourceName{};
+        sourceName.header.type = DISPLAYCONFIG_DEVICE_INFO_GET_SOURCE_NAME;
+        sourceName.header.size = sizeof(sourceName);
+        sourceName.header.adapterId = path.sourceInfo.adapterId;
+        sourceName.header.id = path.sourceInfo.id;
+        if (DisplayConfigGetDeviceInfo(&sourceName.header) == ERROR_SUCCESS && wcscmp(sourceName.viewGdiDeviceName, pszGdiDeviceName) == 0)
+        {
+          const DISPLAYCONFIG_RATIONAL& refreshRate = path.targetInfo.refreshRate;
+          return TimeSpanUtil::FromFrequencyRational(refreshRate.Numerator, refreshRate.Denominator);
+        }
+      }
+      return {};
+    }
+
+    //! @note This is not free, so only call it when something changed.
+    NativeWindowDisplayInfo TryLookupDisplayInfo(const HMONITOR hMonitor)
+    {
+      MONITORINFOEXW monitorInfo{};
+      monitorInfo.cbSize = sizeof(MONITORINFOEXW);
+      if (hMonitor == nullptr || GetMonitorInfoW(hMonitor, &monitorInfo) == 0)
+      {
+        return {};
+      }
+
+      {    // Prefer the exact rational refresh rate (59.94Hz is reported as 60000/1001)
+        const TimeSpan refreshInterval = TryLookupRefreshIntervalUsingDisplayConfig(monitorInfo.szDevice);
+        if (refreshInterval.Ticks() > 0)
+        {
+          return NativeWindowDisplayInfo(refreshInterval);
+        }
+      }
+
+      // Fallback to the integer refresh rate (0 and 1 means 'hardware default')
+      DEVMODEW devMode{};
+      devMode.dmSize = sizeof(DEVMODEW);
+      if (EnumDisplaySettingsW(monitorInfo.szDevice, ENUM_CURRENT_SETTINGS, &devMode) != 0 && devMode.dmDisplayFrequency > 1u)
+      {
+        return NativeWindowDisplayInfo(TimeSpanUtil::FromFrequencyRational(devMode.dmDisplayFrequency, 1u));
+      }
+      return {};
     }
 
     inline void UpdateButton(uint32_t& rButtonFlags, const uint16_t wButtons, const uint16_t xinputFlag, const VirtualGamepadButton virtualFlag)
@@ -533,6 +607,24 @@ namespace Fsl
       return 0;
     }
 
+    void OnMove(HWND hWnd)
+    {
+      auto window = TryGetWindow(hWnd);
+      if (window)
+      {
+        window->OnWindowMoved();
+      }
+    }
+
+    void OnDisplayChange(HWND hWnd)
+    {
+      auto window = TryGetWindow(hWnd);
+      if (window)
+      {
+        window->OnDisplayChanged();
+      }
+    }
+
     LRESULT OnDPICHanged(HWND hWnd, const MillisecondTickCount32 timestamp, WPARAM wParam, LPARAM lParam)
     {
       FSL_PARAM_NOT_USED(lParam);
@@ -621,6 +713,12 @@ namespace Fsl
             break;
           case WM_SIZE:
             return windowSystemState->OnSize(hWnd, eventQueue, timestamp, wParam, lParam);
+          case WM_MOVE:
+            windowSystemState->OnMove(hWnd);
+            break;
+          case WM_DISPLAYCHANGE:
+            windowSystemState->OnDisplayChange(hWnd);
+            break;
           case WM_DPICHANGED:
             return windowSystemState->OnDPICHanged(hWnd, timestamp, wParam, lParam);
           case WM_CAPTURECHANGED:
@@ -863,7 +961,8 @@ namespace Fsl
     const NativeWindowSetup& nativeWindowSetup, const PlatformNativeWindowParams& platformWindowParams,
     const PlatformNativeWindowAllocationParams* const pPlatformCustomWindowAllocationParams)
     : PlatformNativeWindowAdapter(nativeWindowSetup, platformWindowParams, pPlatformCustomWindowAllocationParams,
-                                  NativeWindowCapabilityFlags::CaptureMouse | NativeWindowCapabilityFlags::GetDpi)
+                                  NativeWindowCapabilityFlags::CaptureMouse | NativeWindowCapabilityFlags::GetDpi |
+                                    NativeWindowCapabilityFlags::GetDisplayInfo)
     , m_dpiHelper(platformWindowParams.DpiHelper)
     , m_mouseCaptureEnabled(false)
     , m_mouseInternalCaptureEnabled(false)
@@ -969,6 +1068,10 @@ namespace Fsl
       m_cachedDPIValue = Point2(LocalConfig::MagicDefaultDpi, LocalConfig::MagicDefaultDpi);
     }
 
+    m_cachedMonitor = MonitorFromWindow(m_platformWindow, MONITOR_DEFAULTTONEAREST);
+    m_cachedDisplayInfo = TryLookupDisplayInfo(m_cachedMonitor);
+    FSLLOG3_VERBOSE2("PlatformNativeWindowAdapterWin32: Display refresh rate {}Hz", m_cachedDisplayInfo.RefreshRateHz());
+
     // Register for raw input
     {
       std::array<RAWINPUTDEVICE, 1> rid{};
@@ -1017,6 +1120,9 @@ namespace Fsl
   void PlatformNativeWindowAdapterWin32::OnDPIChanged(const MillisecondTickCount32 timestamp, const Point2 value)
   {
     FSL_PARAM_NOT_USED(timestamp);
+    // A DPI change often means the window moved to another monitor
+    UpdateDisplayInfo(false);
+
     if (value == m_cachedDPIValue)
     {
       return;
@@ -1262,6 +1368,51 @@ namespace Fsl
   {
     rDPI = Vector2(m_cachedDPIValue.X, m_cachedDPIValue.Y);
     return true;
+  }
+
+
+  NativeWindowDisplayInfo PlatformNativeWindowAdapterWin32::TryGetNativeDisplayInfo() const
+  {
+    return m_cachedDisplayInfo;
+  }
+
+
+  void PlatformNativeWindowAdapterWin32::OnWindowMoved()
+  {
+    // Cheap unless the window moved to another monitor
+    UpdateDisplayInfo(false);
+  }
+
+
+  void PlatformNativeWindowAdapterWin32::OnDisplayChanged()
+  {
+    // The display settings changed, so we always need to refresh
+    UpdateDisplayInfo(true);
+  }
+
+
+  void PlatformNativeWindowAdapterWin32::UpdateDisplayInfo(const bool forceRefresh)
+  {
+    const HMONITOR hMonitor = MonitorFromWindow(m_platformWindow, MONITOR_DEFAULTTONEAREST);
+    if (hMonitor == m_cachedMonitor && !forceRefresh)
+    {
+      return;
+    }
+    m_cachedMonitor = hMonitor;
+
+    const NativeWindowDisplayInfo newDisplayInfo = TryLookupDisplayInfo(hMonitor);
+    if (newDisplayInfo == m_cachedDisplayInfo)
+    {
+      return;
+    }
+    m_cachedDisplayInfo = newDisplayInfo;
+    FSLLOG3_VERBOSE2("PlatformNativeWindowAdapterWin32: Display refresh rate changed to {}Hz", m_cachedDisplayInfo.RefreshRateHz());
+
+    auto eventQueue = TryGetEventQueue();
+    if (eventQueue)
+    {
+      eventQueue->PostEvent(NativeWindowEventHelper::EncodeWindowConfigChanged());
+    }
   }
 
 }    // namespace Fsl

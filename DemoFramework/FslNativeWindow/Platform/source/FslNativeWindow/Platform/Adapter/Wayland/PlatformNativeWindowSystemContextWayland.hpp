@@ -95,6 +95,10 @@ namespace Fsl
     // bool RequestClose{false};
     std::function<void(void*, int, int, int, int)> ResizeWindowCallback;
 
+    //! The outputs the surface is currently shown on (in the order they were entered).
+    //! Beware these are not guaranteed to be outputs bound by us (another library could have bound its own wl_output).
+    std::vector<wl_output*> EnteredOutputs;
+
 
     explicit PlatformNativeWindowContextWayland(std::weak_ptr<INativeWindowEventQueue> eventQueue)
       : EventQueue(std::move(eventQueue))
@@ -149,6 +153,9 @@ namespace Fsl
     OutputGeometryInfo Geometry;
 
     std::vector<OutputModeRecord> Modes;
+
+    //! The refresh rate of the current mode in mHz (0 if unknown)
+    int32_t CurrentRefreshMilliHz{0};
 
     OutputInfo() = default;
     OutputInfo(GlobalInfo global, const uint32_t version)

@@ -51,6 +51,10 @@ namespace Fsl
     Colormap m_colormap;
     PxPoint2 m_cachedWindowSize;
     Point2 m_cachedScreenDPI;
+    bool m_extensionRREnabled;
+    PxPoint2 m_cachedWindowPosition;
+    NativeWindowDisplayInfo m_cachedDisplayInfo;
+    uint32_t m_cachedActiveCrtcCount{0};
 
   public:
     Atom m_wm_delete_window;
@@ -61,10 +65,16 @@ namespace Fsl
 
     void OnConfigureNotify(const XConfigureEvent& event, const std::shared_ptr<INativeWindowEventQueue>& eventQueue);
     void OnRRScreenChangeNotify(XEvent* pEvent, const std::shared_ptr<INativeWindowEventQueue>& eventQueue);
+    void OnRRNotify(XEvent* pEvent, const std::shared_ptr<INativeWindowEventQueue>& eventQueue);
 
   protected:
     bool TryGetNativeSize(PxPoint2& rSize) const override;
     bool TryGetNativeDpi(Vector2& rDPI) const override;
+    NativeWindowDisplayInfo TryGetNativeDisplayInfo() const override;
+
+  private:
+    //! @param eventQueue if not null a WindowConfigChanged event is posted when the display info changed.
+    void UpdateDisplayInfo(const std::shared_ptr<INativeWindowEventQueue>& eventQueue);
   };
 }    // namespace Fsl
 

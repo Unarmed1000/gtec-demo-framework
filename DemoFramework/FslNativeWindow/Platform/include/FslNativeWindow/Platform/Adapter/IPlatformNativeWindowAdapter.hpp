@@ -32,6 +32,7 @@
  ****************************************************************************************************************************************************/
 
 #include <FslNativeWindow/Base/NativeWindowCapabilityFlags.hpp>
+#include <FslNativeWindow/Base/NativeWindowDisplayInfo.hpp>
 #include <FslNativeWindow/Base/NativeWindowMetrics.hpp>
 
 namespace Fsl
@@ -52,6 +53,10 @@ namespace Fsl
 
     //! @brief Get window metrics
     virtual NativeWindowMetrics GetWindowMetrics() const = 0;
+
+    //! @brief Get information about the display the window is presented on.
+    //! @return the display info, members that are unknown are left at their default value (IsDefault() is true if nothing is known).
+    virtual NativeWindowDisplayInfo TryGetDisplayInfo() const = 0;
 
     //! @brief Get the windows native DPI.
     //! @return true if the DPI could be retrieved, else false

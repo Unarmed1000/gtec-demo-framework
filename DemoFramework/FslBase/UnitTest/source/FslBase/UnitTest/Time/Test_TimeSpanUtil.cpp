@@ -558,3 +558,49 @@ TEST(TestTime_TimeSpanUtil, ToSecondsF_Max)
 }
 
 // ---------------------------------------------------------------------------------------------------------------------------------------------------
+
+TEST(TestTime_TimeSpanUtil, FromFrequencyRational_60Hz)
+{
+  // 10000000 / 60 = 166666.67
+  EXPECT_EQ(TimeSpan(166667), TimeSpanUtil::FromFrequencyRational(60u, 1u));
+}
+
+TEST(TestTime_TimeSpanUtil, FromFrequencyRational_59_94Hz_Ntsc)
+{
+  // 10000000 * 1001 / 60000 = 166833.33
+  EXPECT_EQ(TimeSpan(166833), TimeSpanUtil::FromFrequencyRational(60000u, 1001u));
+}
+
+TEST(TestTime_TimeSpanUtil, FromFrequencyRational_59_94Hz_MilliHz)
+{
+  // 10000000 * 1000 / 59940 = 166833.50017
+  EXPECT_EQ(TimeSpan(166834), TimeSpanUtil::FromFrequencyRational(59940u, 1000u));
+}
+
+TEST(TestTime_TimeSpanUtil, FromFrequencyRational_144Hz)
+{
+  // 10000000 / 144 = 69444.44
+  EXPECT_EQ(TimeSpan(69444), TimeSpanUtil::FromFrequencyRational(144u, 1u));
+}
+
+TEST(TestTime_TimeSpanUtil, FromFrequencyRational_1Hz)
+{
+  EXPECT_EQ(TimeSpan(TimeSpan::TicksPerSecond), TimeSpanUtil::FromFrequencyRational(1u, 1u));
+}
+
+TEST(TestTime_TimeSpanUtil, FromFrequencyRational_Zero)
+{
+  EXPECT_EQ(TimeSpan(), TimeSpanUtil::FromFrequencyRational(0u, 1u));
+  EXPECT_EQ(TimeSpan(), TimeSpanUtil::FromFrequencyRational(60u, 0u));
+  EXPECT_EQ(TimeSpan(), TimeSpanUtil::FromFrequencyRational(0u, 0u));
+}
+
+TEST(TestTime_TimeSpanUtil, FromFrequencyRational_Overflow)
+{
+  EXPECT_EQ(TimeSpan(), TimeSpanUtil::FromFrequencyRational(1u, std::numeric_limits<uint64_t>::max()));
+  // Scaled denominator fits in uint64 but the result does not fit in a int64
+  EXPECT_EQ(TimeSpan(),
+            TimeSpanUtil::FromFrequencyRational(1u, std::numeric_limits<uint64_t>::max() / static_cast<uint64_t>(TimeSpan::TicksPerSecond)));
+}
+
+// ---------------------------------------------------------------------------------------------------------------------------------------------------

@@ -71,6 +71,17 @@ namespace Fsl
   }
 
 
+  NativeWindowDisplayInfo PlatformNativeWindow::TryGetDisplayInfo() const
+  {
+    if (!m_adapter)
+    {
+      FSLLOG3_WARNING("TryGetDisplayInfo: Object shutdown");
+      return {};
+    }
+    return m_adapter->TryGetDisplayInfo();
+  }
+
+
   bool PlatformNativeWindow::TryGetDpi(Vector2& rDPI) const
   {
     if (!m_adapter)

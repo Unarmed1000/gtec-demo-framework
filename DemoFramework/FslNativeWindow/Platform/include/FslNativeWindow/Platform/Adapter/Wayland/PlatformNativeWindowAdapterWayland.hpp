@@ -40,6 +40,7 @@
 namespace Fsl
 {
   class PlatformNativeWindowContextWayland;
+  class PlatformNativeWindowSystemContextWayland;
 
   class PlatformNativeWindowAdapterWayland : public PlatformNativeWindowAdapter
   {
@@ -53,6 +54,7 @@ namespace Fsl
     };
 
   private:
+    std::weak_ptr<PlatformNativeWindowSystemContextWayland> m_windowSystemContext;
     std::unique_ptr<PlatformNativeWindowContextWayland> m_windowContext;
     std::function<void(void*)> m_destroyWindowCallback;
     wl_surface* m_platformSurface;
@@ -72,6 +74,7 @@ namespace Fsl
   protected:
     bool TryGetNativeSize(PxPoint2& rSize) const override;
     bool TryGetNativeDpi(Vector2& rDPI) const override;
+    NativeWindowDisplayInfo TryGetNativeDisplayInfo() const override;
     // Wayland hopefully sends a event when the dpi is changed, and we then need to notify the framework with
     // eventQueue->PostEvent(NativeWindowEventHelper::EncodeWindowConfigChanged());
     // virtual bool TryGetNativeDpi(Vector2& rDPI) const override;
