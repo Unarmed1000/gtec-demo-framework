@@ -57,7 +57,7 @@ namespace Fsl
     uint32_t m_cachedActiveCrtcCount{0};
 
   public:
-    Atom m_wm_delete_window;
+    Atom WmDeleteWindow;
 
     PlatformNativeWindowAdapterX11(const NativeWindowSetup& nativeWindowSetup, const PlatformNativeWindowParams& platformWindowParams,
                                    const PlatformNativeWindowAllocationParams* const pPlatformCustomWindowAllocationParams);

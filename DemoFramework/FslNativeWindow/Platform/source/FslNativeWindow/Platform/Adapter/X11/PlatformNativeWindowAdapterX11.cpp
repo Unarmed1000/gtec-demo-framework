@@ -39,6 +39,8 @@
 #include <FslBase/Math/Pixel/PxPoint2.hpp>
 #include <FslBase/Math/Point2.hpp>
 #include <FslBase/Math/Vector2.hpp>
+#include <FslBase/NumericCast.hpp>
+#include <FslBase/Time/MillisecondTickCount32.hpp>
 #include <FslBase/Time/TimeSpanUtil.hpp>
 #include <FslNativeWindow/Base/INativeWindowEventQueue.hpp>
 #include <FslNativeWindow/Base/NativeWindowEventHelper.hpp>
@@ -62,7 +64,13 @@ namespace Fsl
 {
   namespace
   {
-    const int32_t MAGIC_DEFAULT_DPI = 96;
+    constexpr int32_t MagicDefaultDpi = 96;
+
+    //! The X11 'Time' is a wrapping 32bit millisecond counter (stored in a unsigned long), so only the low 32 bits are relevant.
+    inline MillisecondTickCount32 ToMillisecondTickCount32(const Time time) noexcept
+    {
+      return MillisecondTickCount32::FromMilliseconds(static_cast<int32_t>(static_cast<uint32_t>(time & 0xFFFFFFFFu)));
+    }
 
     std::weak_ptr<INativeWindowEventQueue> g_eventQueue;
     int WaitForMap(Display* /*display*/, XEvent* event, XPointer arg)    // NOLINT(readability-non-const-parameter)
@@ -510,7 +518,7 @@ namespace Fsl
 
     // Lookup the default visual
     auto* defaultVisual = DefaultVisual(m_platformDisplay, 0);
-    m_visualId = XVisualIDFromVisual(defaultVisual);
+    m_visualId = NumericCast<int32_t>(XVisualIDFromVisual(defaultVisual));
 
     // Get some extension info
     m_extensionRREnabled = (XRRQueryExtension(m_platformDisplay, &m_rrEventBase, &m_rrErrorBase) != 0);
@@ -582,7 +590,7 @@ namespace Fsl
     VirtualMouseButton mouseButton = VirtualMouseButton::Undefined;
     bool bQuit = false;
     XEvent event;
-    static int wheelEvents = 0;
+    static int g_wheelEvents = 0;
 
     while (XPending(m_platformDisplay) > 0)
     {
@@ -603,7 +611,7 @@ namespace Fsl
       case ClientMessage:
         if (window)
         {
-          if (static_cast<Atom>(event.xclient.data.l[0]) == window->m_wm_delete_window)
+          if (static_cast<Atom>(event.xclient.data.l[0]) == window->WmDeleteWindow)
           {
             bQuit = true;
           }
@@ -611,7 +619,7 @@ namespace Fsl
         }
       case ButtonPress:
         {
-          const auto timestamp = MillisecondTickCount32::FromMilliseconds(event.xbutton.time);
+          const auto timestamp = ToMillisecondTickCount32(event.xbutton.time);
           mousePosition = PxPoint2::Create(event.xbutton.x, event.xbutton.y);
           if (event.xbutton.button < Button4)
           {
@@ -627,22 +635,22 @@ namespace Fsl
             // Wheel Event
             if (Button4 == event.xbutton.button)
             {
-              wheelEvents++;
+              g_wheelEvents++;
             }
             else if (Button5 == event.xbutton.button)
             {
-              wheelEvents--;
+              g_wheelEvents--;
             }
             if (eventQueue)
             {
-              eventQueue->PostEvent(NativeWindowEventHelper::EncodeInputMouseWheelEvent(timestamp, wheelEvents, mousePosition));
+              eventQueue->PostEvent(NativeWindowEventHelper::EncodeInputMouseWheelEvent(timestamp, g_wheelEvents, mousePosition));
             }
           }
           break;
         }
       case ButtonRelease:
         {
-          const auto timestamp = MillisecondTickCount32::FromMilliseconds(event.xbutton.time);
+          const auto timestamp = ToMillisecondTickCount32(event.xbutton.time);
           mousePosition = PxPoint2::Create(event.xbutton.x, event.xbutton.y);
           mouseButton = MouseToVirtualMouse(event.xbutton.button);
           if (eventQueue)
@@ -653,7 +661,7 @@ namespace Fsl
         }
       case KeyPress:
         {
-          // const auto timestamp = MillisecondTickCount32::FromMilliseconds(event.xbutton.time);
+          // const auto timestamp = ToMillisecondTickCount32(event.xbutton.time);
           keyCode = KeyToVirtualKey(&event.xkey);
           if (eventQueue)
           {
@@ -663,7 +671,7 @@ namespace Fsl
         }
       case KeyRelease:
         {
-          // const auto timestamp = MillisecondTickCount32::FromMilliseconds(event.xbutton.time);
+          // const auto timestamp = ToMillisecondTickCount32(event.xbutton.time);
           keyCode = KeyToVirtualKey(&event.xkey);
           if (eventQueue)
           {
@@ -673,7 +681,7 @@ namespace Fsl
         }
       case MotionNotify:
         {
-          const auto timestamp = MillisecondTickCount32::FromMilliseconds(event.xmotion.time);
+          const auto timestamp = ToMillisecondTickCount32(event.xmotion.time);
           mousePosition = PxPoint2::Create(event.xmotion.x, event.xmotion.y);
           if (eventQueue)
           {
@@ -719,7 +727,7 @@ namespace Fsl
     : PlatformNativeWindowAdapter(nativeWindowSetup, platformWindowParams, pPlatformCustomWindowAllocationParams,
                                   NativeWindowCapabilityFlags::GetDpi | NativeWindowCapabilityFlags::GetDisplayInfo)
     , m_pVisual(nullptr)
-    , m_cachedScreenDPI(MAGIC_DEFAULT_DPI, MAGIC_DEFAULT_DPI)
+    , m_cachedScreenDPI(MagicDefaultDpi, MagicDefaultDpi)
     , m_extensionRREnabled(platformWindowParams.ExtensionRREnabled)
   {
     FSLLOG3_VERBOSE3("PlatformNativeWindowAdapterX11| Constructing");
@@ -798,8 +806,8 @@ namespace Fsl
     XFlush(m_platformDisplay);
 
     // Hook up and listen for window close
-    m_wm_delete_window = XInternAtom(m_platformDisplay, "WM_DELETE_WINDOW", True);
-    XSetWMProtocols(m_platformDisplay, m_platformWindow, &m_wm_delete_window, 1);
+    WmDeleteWindow = XInternAtom(m_platformDisplay, "WM_DELETE_WINDOW", True);
+    XSetWMProtocols(m_platformDisplay, m_platformWindow, &WmDeleteWindow, 1);
 
     // Listen for various events
     const long evMask = ExposureMask | StructureNotifyMask | VisibilityChangeMask | ButtonPressMask | ButtonReleaseMask | KeyPressMask |
