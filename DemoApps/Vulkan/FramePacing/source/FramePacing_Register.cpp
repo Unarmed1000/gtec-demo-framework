@@ -1,5 +1,3 @@
-#ifndef GLES3_FRAMEPACING_FRAMEPACING_HPP
-#define GLES3_FRAMEPACING_FRAMEPACING_HPP
 //****************************************************************************************************************************************************
 //* BSD 3-Clause License
 //*
@@ -22,27 +20,19 @@
 //* EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //****************************************************************************************************************************************************
 
-#include <FslDemoApp/OpenGLES3/DemoAppGLES3.hpp>
-#include <Shared/FramePacing/FramePacingShared.hpp>
+#include <FslDemoApp/Vulkan/Setup/RegisterDemoApp.hpp>
+#include "FramePacing.hpp"
 
 namespace Fsl
 {
-  class FramePacing final : public DemoAppGLES3
+  // Configure the demo environment to run this demo app in a Vulkan host environment
+  void ConfigureDemoAppEnvironment(HostDemoAppSetup& rSetup)
   {
-    using base_type = DemoAppGLES3;
+    CustomDemoAppConfig customDemoAppConfig;
+    customDemoAppConfig.RestartFlags = CustomDemoAppConfigRestartFlags::Never;
 
-    //! All the actual sample code can be found in the shared class since its reused for all FramePacing samples.
-    FramePacingShared m_shared;
+    DemoAppHostConfigVulkan config;
 
-  public:
-    explicit FramePacing(const DemoAppConfig& config);
-
-  protected:
-    void OnKeyEvent(const KeyEvent& event) final;
-    void ConfigurationChanged(const DemoWindowMetrics& windowMetrics) final;
-    void Update(const DemoTime& demoTime) final;
-    void Draw(const FrameInfo& frameInfo) final;
-  };
+    DemoAppRegister::Vulkan::Register<FramePacing>(rSetup, "Vulkan.FramePacing", config, customDemoAppConfig);
+  }
 }
-
-#endif

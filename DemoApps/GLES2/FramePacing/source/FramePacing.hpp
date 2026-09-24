@@ -1,5 +1,5 @@
-#ifndef GLES3_FRAMEPACING_FRAMEPACING_HPP
-#define GLES3_FRAMEPACING_FRAMEPACING_HPP
+#ifndef GLES2_FRAMEPACING_FRAMEPACING_HPP
+#define GLES2_FRAMEPACING_FRAMEPACING_HPP
 //****************************************************************************************************************************************************
 //* BSD 3-Clause License
 //*
@@ -22,14 +22,14 @@
 //* EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //****************************************************************************************************************************************************
 
-#include <FslDemoApp/OpenGLES3/DemoAppGLES3.hpp>
+#include <FslDemoApp/OpenGLES2/DemoAppGLES2.hpp>
 #include <Shared/FramePacing/FramePacingShared.hpp>
 
 namespace Fsl
 {
-  class FramePacing final : public DemoAppGLES3
+  class FramePacing final : public DemoAppGLES2
   {
-    using base_type = DemoAppGLES3;
+    using base_type = DemoAppGLES2;
 
     //! All the actual sample code can be found in the shared class since its reused for all FramePacing samples.
     FramePacingShared m_shared;

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <FslBuildGen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../FslBuildGen.xsd">
-  <Executable Name="GLES3.FramePacing" NoInclude="true" CreationYear="2026">
-    <ImportTemplate Name="DemoAppGLES3"/>
+  <Executable Name="GLES2.FramePacing" NoInclude="true" CreationYear="2026">
+    <ImportTemplate Name="DemoAppGLES2"/>
     <Dependency Name="Shared.FramePacing"/>
   </Executable>
 </FslBuildGen>

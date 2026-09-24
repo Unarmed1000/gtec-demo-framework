@@ -21,14 +21,14 @@
 //****************************************************************************************************************************************************
 
 #include "FramePacing.hpp"
-#include <FslDemoApp/Base/FrameInfo.hpp>
-#include <GLES3/gl3.h>
+#include <FslBase/UncheckedNumericCast.hpp>
+#include <array>
 
 namespace Fsl
 {
   FramePacing::FramePacing(const DemoAppConfig& config)
-    : DemoAppGLES3(config)
-    , m_shared(config, "GLES3.FramePacing")
+    : VulkanBasic::DemoAppVulkanBasic(config)
+    , m_shared(config, "Vulkan.FramePacing")
   {
     // Give the UI a chance to intercept the various DemoApp events.
     RegisterExtension(m_shared.GetUIDemoAppExtension());
@@ -55,12 +55,50 @@ namespace Fsl
   }
 
 
-  void FramePacing::Draw(const FrameInfo& frameInfo)
+  void FramePacing::VulkanDraw(const DemoTime& demoTime, RapidVulkan::CommandBuffers& rCmdBuffers, const VulkanBasic::DrawContext& drawContext)
   {
-    const auto clearColor = FramePacingShared::ClearColor.ToVector4();
-    glClearColor(clearColor.X, clearColor.Y, clearColor.Z, clearColor.W);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+    const uint32_t currentFrameIndex = drawContext.CurrentFrameIndex;
 
-    m_shared.Draw(frameInfo.Time);
+    const VkCommandBuffer hCmdBuffer = rCmdBuffers[currentFrameIndex];
+    rCmdBuffers.Begin(currentFrameIndex, VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT, VK_NULL_HANDLE, 0, VK_NULL_HANDLE, VK_FALSE, 0, 0);
+    {
+      const auto clearColor = FramePacingShared::ClearColor.ToVector4();
+      std::array<VkClearValue, 1> clearValues{};
+      clearValues[0].color = {{clearColor.X, clearColor.Y, clearColor.Z, clearColor.W}};
+
+      VkRenderPassBeginInfo renderPassBeginInfo{};
+      renderPassBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+      renderPassBeginInfo.renderPass = m_dependentResources.MainRenderPass.Get();
+      renderPassBeginInfo.framebuffer = drawContext.Framebuffer;
+      renderPassBeginInfo.renderArea.offset.x = 0;
+      renderPassBeginInfo.renderArea.offset.y = 0;
+      renderPassBeginInfo.renderArea.extent = drawContext.SwapchainImageExtent;
+      renderPassBeginInfo.clearValueCount = UncheckedNumericCast<uint32_t>(clearValues.size());
+      renderPassBeginInfo.pClearValues = clearValues.data();
+
+      rCmdBuffers.CmdBeginRenderPass(currentFrameIndex, &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
+      {
+        m_shared.Draw(demoTime);
+
+        // Remember to call this as the last operation in your renderPass (this is also where the frame pacing marker is drawn)
+        AddSystemUI(hCmdBuffer, currentFrameIndex);
+      }
+      rCmdBuffers.CmdEndRenderPass(currentFrameIndex);
+    }
+    rCmdBuffers.End(currentFrameIndex);
+  }
+
+
+  VkRenderPass FramePacing::OnBuildResources(const VulkanBasic::BuildResourcesContext& /*context*/)
+  {
+    // Since we only draw using the NativeBatch we just create the most basic render pass that is compatible
+    m_dependentResources.MainRenderPass = CreateBasicRenderPass();
+    return m_dependentResources.MainRenderPass.Get();
+  }
+
+
+  void FramePacing::OnFreeResources()
+  {
+    m_dependentResources.Reset();
   }
 }

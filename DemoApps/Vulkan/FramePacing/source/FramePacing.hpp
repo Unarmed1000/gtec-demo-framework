@@ -1,5 +1,5 @@
-#ifndef GLES3_FRAMEPACING_FRAMEPACING_HPP
-#define GLES3_FRAMEPACING_FRAMEPACING_HPP
+#ifndef VULKAN_FRAMEPACING_FRAMEPACING_HPP
+#define VULKAN_FRAMEPACING_FRAMEPACING_HPP
 //****************************************************************************************************************************************************
 //* BSD 3-Clause License
 //*
@@ -22,14 +22,33 @@
 //* EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //****************************************************************************************************************************************************
 
-#include <FslDemoApp/OpenGLES3/DemoAppGLES3.hpp>
+#include <FslDemoApp/Vulkan/Basic/DemoAppVulkanBasic.hpp>
 #include <Shared/FramePacing/FramePacingShared.hpp>
 
 namespace Fsl
 {
-  class FramePacing final : public DemoAppGLES3
+  class FramePacing final : public VulkanBasic::DemoAppVulkanBasic
   {
-    using base_type = DemoAppGLES3;
+    using base_type = VulkanBasic::DemoAppVulkanBasic;
+
+    struct DependentResources
+    {
+      RapidVulkan::RenderPass MainRenderPass;
+
+      DependentResources() = default;
+      DependentResources(const DependentResources&) = delete;
+      DependentResources& operator=(const DependentResources&) = delete;
+      DependentResources(DependentResources&& other) noexcept = delete;
+      DependentResources& operator=(DependentResources&& other) noexcept = delete;
+
+      void Reset() noexcept
+      {
+        // Reset in destruction order
+        MainRenderPass.Reset();
+      }
+    };
+
+    DependentResources m_dependentResources;
 
     //! All the actual sample code can be found in the shared class since its reused for all FramePacing samples.
     FramePacingShared m_shared;
@@ -41,7 +60,10 @@ namespace Fsl
     void OnKeyEvent(const KeyEvent& event) final;
     void ConfigurationChanged(const DemoWindowMetrics& windowMetrics) final;
     void Update(const DemoTime& demoTime) final;
-    void Draw(const FrameInfo& frameInfo) final;
+    void VulkanDraw(const DemoTime& demoTime, RapidVulkan::CommandBuffers& rCmdBuffers, const VulkanBasic::DrawContext& drawContext) final;
+
+    VkRenderPass OnBuildResources(const VulkanBasic::BuildResourcesContext& context) final;
+    void OnFreeResources() final;
   };
 }
 

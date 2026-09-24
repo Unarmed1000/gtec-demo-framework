@@ -59,7 +59,8 @@ A run is either open ended (zero duration, it lasts until `EndRun`) or timed (it
 the given duration). `GetRunDuration()` and `GetRunMeasuredTime()` report the progress of a timed run.
 
 `IFramePacingService` also exposes the slot, module size, capture height, run state and run id. See the
-[GLES3.FramePacing](../DemoApps/GLES3/FramePacing) sample.
+[GLES2.FramePacing](../DemoApps/GLES2/FramePacing), [GLES3.FramePacing](../DemoApps/GLES3/FramePacing) and
+[Vulkan.FramePacing](../DemoApps/Vulkan/FramePacing) samples (they share their code in [Shared/FramePacing](../DemoApps/Shared/FramePacing)).
 
 ## What the marker reports
 

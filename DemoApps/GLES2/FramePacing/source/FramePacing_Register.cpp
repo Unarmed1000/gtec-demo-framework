@@ -1,5 +1,3 @@
-#ifndef GLES3_FRAMEPACING_FRAMEPACING_HPP
-#define GLES3_FRAMEPACING_FRAMEPACING_HPP
 //****************************************************************************************************************************************************
 //* BSD 3-Clause License
 //*
@@ -22,27 +20,27 @@
 //* EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //****************************************************************************************************************************************************
 
-#include <FslDemoApp/OpenGLES3/DemoAppGLES3.hpp>
-#include <Shared/FramePacing/FramePacingShared.hpp>
+#include <FslDemoApp/OpenGLES2/Setup/RegisterDemoApp.hpp>
+#include <EGL/egl.h>
+#include <array>
+#include "FramePacing.hpp"
 
 namespace Fsl
 {
-  class FramePacing final : public DemoAppGLES3
+  namespace
   {
-    using base_type = DemoAppGLES3;
+    // Custom EGL config (these will per default overwrite the custom settings. However a exact EGL config can be used)
+    const std::array<EGLint, 1> g_eglConfigAttribs = {EGL_NONE};
+  }
 
-    //! All the actual sample code can be found in the shared class since its reused for all FramePacing samples.
-    FramePacingShared m_shared;
+  // Configure the demo environment to run this demo app in a OpenGLES2 host environment
+  void ConfigureDemoAppEnvironment(HostDemoAppSetup& rSetup)
+  {
+    CustomDemoAppConfig customDemoAppConfig;
+    customDemoAppConfig.RestartFlags = CustomDemoAppConfigRestartFlags::Never;
 
-  public:
-    explicit FramePacing(const DemoAppConfig& config);
+    DemoAppHostConfigEGL config(g_eglConfigAttribs.data());
 
-  protected:
-    void OnKeyEvent(const KeyEvent& event) final;
-    void ConfigurationChanged(const DemoWindowMetrics& windowMetrics) final;
-    void Update(const DemoTime& demoTime) final;
-    void Draw(const FrameInfo& frameInfo) final;
-  };
+    DemoAppRegister::GLES2::Register<FramePacing>(rSetup, "GLES2.FramePacing", config, customDemoAppConfig);
+  }
 }
-
-#endif

@@ -1,5 +1,3 @@
-#ifndef GLES3_FRAMEPACING_FRAMEPACING_HPP
-#define GLES3_FRAMEPACING_FRAMEPACING_HPP
 //****************************************************************************************************************************************************
 //* BSD 3-Clause License
 //*
@@ -22,27 +20,47 @@
 //* EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //****************************************************************************************************************************************************
 
-#include <FslDemoApp/OpenGLES3/DemoAppGLES3.hpp>
-#include <Shared/FramePacing/FramePacingShared.hpp>
+#include "FramePacing.hpp"
+#include <FslDemoApp/Base/FrameInfo.hpp>
+#include <GLES2/gl2.h>
 
 namespace Fsl
 {
-  class FramePacing final : public DemoAppGLES3
+  FramePacing::FramePacing(const DemoAppConfig& config)
+    : DemoAppGLES2(config)
+    , m_shared(config, "GLES2.FramePacing")
   {
-    using base_type = DemoAppGLES3;
+    // Give the UI a chance to intercept the various DemoApp events.
+    RegisterExtension(m_shared.GetUIDemoAppExtension());
+  }
 
-    //! All the actual sample code can be found in the shared class since its reused for all FramePacing samples.
-    FramePacingShared m_shared;
 
-  public:
-    explicit FramePacing(const DemoAppConfig& config);
+  void FramePacing::OnKeyEvent(const KeyEvent& event)
+  {
+    base_type::OnKeyEvent(event);
+    m_shared.OnKeyEvent(event);
+  }
 
-  protected:
-    void OnKeyEvent(const KeyEvent& event) final;
-    void ConfigurationChanged(const DemoWindowMetrics& windowMetrics) final;
-    void Update(const DemoTime& demoTime) final;
-    void Draw(const FrameInfo& frameInfo) final;
-  };
+
+  void FramePacing::ConfigurationChanged(const DemoWindowMetrics& windowMetrics)
+  {
+    base_type::ConfigurationChanged(windowMetrics);
+    m_shared.ConfigurationChanged(windowMetrics);
+  }
+
+
+  void FramePacing::Update(const DemoTime& /*demoTime*/)
+  {
+    m_shared.Update();
+  }
+
+
+  void FramePacing::Draw(const FrameInfo& frameInfo)
+  {
+    const auto clearColor = FramePacingShared::ClearColor.ToVector4();
+    glClearColor(clearColor.X, clearColor.Y, clearColor.Z, clearColor.W);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+
+    m_shared.Draw(frameInfo.Time);
+  }
 }
-
-#endif
