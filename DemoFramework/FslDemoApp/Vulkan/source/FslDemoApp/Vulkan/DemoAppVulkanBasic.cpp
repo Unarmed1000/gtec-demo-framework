@@ -60,6 +60,9 @@
 #include <cassert>
 #include <iostream>
 #include <memory>
+#ifdef FSL_FEATURE_FRAMEPACING
+#include <FslDemoService/FramePacing/Impl/FramePacingOverlay.hpp>
+#endif
 
 namespace Fsl::VulkanBasic
 {
@@ -190,6 +193,9 @@ namespace Fsl::VulkanBasic
     {
       m_demoAppProfilerOverlay = std::make_unique<DemoAppProfilerOverlay>(demoAppConfig.DemoServiceProvider, hostConfig.LogStatsFlags);
     }
+#ifdef FSL_FEATURE_FRAMEPACING
+    m_framePacingOverlay = FramePacingOverlay::TryCreate(demoAppConfig.DemoServiceProvider);
+#endif
     auto demoHostConfig = hostInfo->TryGetAppHostConfig();
     if (!demoHostConfig)
     {
@@ -388,6 +394,13 @@ namespace Fsl::VulkanBasic
     {
       m_demoAppProfilerOverlay->Draw(GetWindowMetrics());
     }
+#ifdef FSL_FEATURE_FRAMEPACING
+    // The frame pacing marker must be the very last thing drawn
+    if (m_framePacingOverlay)
+    {
+      m_framePacingOverlay->Draw(GetWindowMetrics());
+    }
+#endif
   }
 
 

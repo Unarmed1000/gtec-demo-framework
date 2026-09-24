@@ -51,6 +51,10 @@
 #include <cassert>
 #include <memory>
 #include <utility>
+#ifdef FSL_FEATURE_FRAMEPACING
+#include <FslDemoService/FramePacing/Impl/FramePacingOverlay.hpp>
+#include <FslDemoService/FramePacing/Impl/IFramePacingServiceControl.hpp>
+#endif
 
 namespace Fsl
 {
@@ -83,6 +87,13 @@ namespace Fsl
     {
       m_demoAppProfilerOverlay = std::make_unique<DemoAppProfilerOverlay>(demoAppConfig.DemoServiceProvider, logStatsFlags);
     }
+#ifdef FSL_FEATURE_FRAMEPACING
+    m_framePacingServiceControl = m_demoAppConfig.DemoServiceProvider.TryGet<IFramePacingServiceControl>();
+    if (renderSystemOverlay)
+    {
+      m_framePacingOverlay = FramePacingOverlay::TryCreate(m_demoAppConfig.DemoServiceProvider);
+    }
+#endif
     m_demoAppControl = m_demoAppConfig.DemoServiceProvider.Get<IDemoAppControlEx>();
     m_graphicsService = m_demoAppConfig.DemoServiceProvider.TryGet<IGraphicsServiceControl>();
     m_profilerServiceControl = m_demoAppConfig.DemoServiceProvider.Get<IProfilerServiceControl>();
@@ -234,6 +245,13 @@ namespace Fsl
       return result;
     }
 
+#ifdef FSL_FEATURE_FRAMEPACING
+    if (m_framePacingServiceControl)
+    {
+      m_framePacingServiceControl->BeginFrame(frameInfo);
+    }
+#endif
+
     m_record.DemoApp->_BeginDraw(frameInfo);
     try
     {
@@ -253,6 +271,14 @@ namespace Fsl
     {
       m_demoAppProfilerOverlay->Draw(m_demoAppConfig.WindowMetrics);
     }
+
+#ifdef FSL_FEATURE_FRAMEPACING
+    // The frame pacing marker must be the very last thing drawn
+    if (m_framePacingOverlay && m_state == DemoState::Running)
+    {
+      m_framePacingOverlay->Draw(m_demoAppConfig.WindowMetrics);
+    }
+#endif
 
     ManageExitRequests(false);
 

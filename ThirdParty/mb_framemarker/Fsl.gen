@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<FslBuildGen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../FslBuildGen.xsd">
+  <ExternalLibrary Name="mb_framemarker" CreationYear="2026">
+    <Default.Platform.Supported Value="false"/>
+    <Define Name="FSL_ENABLE_MB_FRAMEMARKER" Access="Public"/>
+    <Platform Name="Apple;Ubuntu;Windows" Supported="true">
+      <Dependency Name="Recipe.mb_framemarker_0_1"/>
+    </Platform>
+  </ExternalLibrary>
+</FslBuildGen>

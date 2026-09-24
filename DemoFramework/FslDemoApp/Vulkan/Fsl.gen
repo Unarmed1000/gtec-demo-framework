@@ -9,6 +9,11 @@
     <Dependency Name="FslDemoPlatform.Link" Access="Private"/>
     <Dependency Name="FslDemoService.Graphics.Impl" Access="Private"/>
     <Dependency Name="FslDemoService.NativeGraphics.Vulkan" Access="Private"/>
-    <Platform Name="Windows" ProjectId="36325AFF-1384-491B-84F0-99ABCB694B85"/>
+    <Platform Name="Apple;Ubuntu">
+      <Dependency Name="FslDemoService.FramePacing.Impl" Access="Private"/>
+    </Platform>
+    <Platform Name="Windows" ProjectId="36325AFF-1384-491B-84F0-99ABCB694B85">
+      <Dependency Name="FslDemoService.FramePacing.Impl" Access="Private"/>
+    </Platform>
   </Library>
 </FslBuildGen>

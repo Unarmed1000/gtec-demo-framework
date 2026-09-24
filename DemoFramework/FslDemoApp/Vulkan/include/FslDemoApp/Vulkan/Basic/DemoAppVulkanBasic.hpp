@@ -57,6 +57,7 @@ namespace Fsl
 {
   class DemoAppHostConfigVulkan;
   class DemoAppProfilerOverlay;
+  class FramePacingOverlay;
 
   namespace Vulkan
   {
@@ -303,6 +304,8 @@ namespace Fsl
 
       AppState m_currentAppState = AppState::Ready;
       std::unique_ptr<DemoAppProfilerOverlay> m_demoAppProfilerOverlay;
+      //! Only used if FSL_FEATURE_FRAMEPACING is defined
+      std::shared_ptr<FramePacingOverlay> m_framePacingOverlay;
       PxExtent2D m_cachedExtentPx;
 
     protected:

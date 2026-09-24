@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<FslBuildGen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../../../FslBuildGen.xsd">
+  <Executable Name="FslDemoService.FramePacing.Impl.UnitTest" NoInclude="true" CreationYear="2026">
+    <Default.Platform.Supported Value="false"/>
+    <Dependency Name="FslDemoService.FramePacing.Impl"/>
+    <Dependency Name="FslBase.UnitTest.Helper"/>
+    <Platform Name="Apple;Ubuntu;Windows" Supported="true"/>
+  </Executable>
+</FslBuildGen>

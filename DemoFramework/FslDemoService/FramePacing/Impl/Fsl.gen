@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<FslBuildGen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../../FslBuildGen.xsd">
+  <Library Name="FslDemoService.FramePacing.Impl" CreationYear="2026">
+    <Default.Platform.Supported Value="false"/>
+    <!-- Lets dependent packages compile their frame pacing hooks in/out -->
+    <Define Name="FSL_FEATURE_FRAMEPACING" Access="Public"/>
+    <Dependency Name="FslDemoApp.Base"/>
+    <Dependency Name="FslDemoService.FramePacing"/>
+    <Dependency Name="FslService.Impl"/>
+    <Platform Name="Apple;Ubuntu;Windows" Supported="true">
+      <Dependency Name="mb_framemarker" Access="Private"/>
+    </Platform>
+  </Library>
+</FslBuildGen>

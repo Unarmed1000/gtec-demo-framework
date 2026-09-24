@@ -58,6 +58,9 @@
 #include <cassert>
 #include "../Configuration/PlatformConfig.hpp"
 
+#ifdef FSL_FEATURE_FRAMEPACING
+#include <FslDemoService/FramePacing/Impl/FramePacingServiceFactory.hpp>
+#endif
 
 namespace Fsl
 {
@@ -115,6 +118,9 @@ namespace Fsl
     serviceRegistry.Register<ContentMonitorServiceFactory>(ServicePriorityList::ContentMonitor());
     serviceRegistry.Register<AppInfoServiceFactory>(ServicePriorityList::AppInfoService());
     serviceRegistry.Register<OptionsServiceFactory>(ServicePriorityList::Options());
+#ifdef FSL_FEATURE_FRAMEPACING
+    serviceRegistry.Register<FramePacingServiceFactory>();
+#endif
 
     // Prepare the hosts
     PlatformConfig::Configure(hostRegistry, serviceRegistry, rEnableFirewallRequest);
