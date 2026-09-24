@@ -42,6 +42,7 @@ from FslBuildGen.BuildExternal.PackageExperimentalRecipe import PackageExperimen
 
 # from FslBuildGen.BuildExternal.PipelineBasicCommand import PipelineBasicCommand
 from FslBuildGen.BuildExternal.PipelineCommand import PipelineCommand
+from FslBuildGen.BuildExternal.PipelineCommandConanInstall import PipelineCommandConanInstall
 from FslBuildGen.BuildExternal.PipelineInfo import PipelineInfo
 
 # from FslBuildGen.BuildExternal.PipelineJoinCommand import PipelineJoinCommand
@@ -70,6 +71,7 @@ from FslBuildGen.Xml.XmlExperimentalRecipe import (
     XmlRecipePipelineFetchCommandGitClone,
     XmlRecipePipelineFetchCommandSource,
 )
+from FslBuildGen.Xml.XmlRecipePipelineFetchCommandConanInstall import XmlRecipePipelineFetchCommandConanInstall
 
 
 class PipelineCommandFetch(PipelineCommand):
@@ -542,6 +544,21 @@ class PipelineCommandBuilder:
             if not isinstance(sourceCommand, XmlRecipePipelineFetchCommandSource):
                 raise Exception("Internal error, sourceCommand was not XmlRecipePipelineFetchCommandSource")
             return self.__CreateCommandSource(sourceCommand, srcRootPath)
+        elif sourceCommand.CommandType == BuildRecipePipelineCommand.ConanInstall:
+            if not isinstance(sourceCommand, XmlRecipePipelineFetchCommandConanInstall):
+                raise Exception("Internal error, sourceCommand was not XmlRecipePipelineFetchCommandConanInstall")
+            # Conan has its own package cache, so the readonly download cache is not used
+            info = PipelineInfo(
+                self.PipelineTasks,
+                self.__SourcePackage,
+                self.__PathBuilder,
+                srcRootPath,
+                srcRootPathReadOnly,
+                self.__GetTempDirectoryName(sourceCommand),
+                False,
+                allowDownloads=self.__AllowDownloads,
+            )
+            return PipelineCommandConanInstall(self.__Log, sourceCommand, info)
         elif sourceCommand.CommandType == BuildRecipePipelineCommand.Unpack:
             if not isinstance(sourceCommand, XmlRecipePipelineCommandUnpack):
                 raise Exception("Internal error, sourceCommand was not XmlRecipePipelineCommandUnpack")

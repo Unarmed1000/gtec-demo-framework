@@ -513,6 +513,7 @@ class BuildRecipePipelineCommand(Enum):
     JoinUnpack = 9
     JoinGitApply = 10
     JoinDelete = 11
+    ConanInstall = 12
 
 
 class BuildRecipeValidateCommand(Enum):

@@ -46,7 +46,7 @@ from FslBuildGen.Xml.XmlBase import XmlBase
 # from FslBuildGen import PackageConfig
 
 g_validJoinCommands = ["Copy", "Unpack", "GitApply", "Delete"]
-g_validFetchCommands = ["GitClone", "Download", "Source"]
+g_validFetchCommands = ["GitClone", "Download", "Source", "ConanInstall"]
 g_validCommands = ["Unpack", "CMakeBuild", "Combine", "Copy"]
 g_validValidateCommands = ["EnvironmentVariable", "Path", "FindFileInPath", "FindExecutableFileInPath", "AddHeaders", "AddLib", "AddDLL", "AddTool"]
 g_validValidCombineCommands = ["CMakeBuild"]
@@ -632,6 +632,11 @@ def _TryAllocatePipelineFetchCommand(log: Log, xmlElement: ET.Element) -> XmlRec
         return XmlRecipePipelineFetchCommandDownload(log, xmlElement)
     elif xmlElement.tag == "Source":
         return XmlRecipePipelineFetchCommandSource(log, xmlElement)
+    elif xmlElement.tag == "ConanInstall":
+        # Imported here as the command lives in its own module that derives from the classes in this one
+        from FslBuildGen.Xml.XmlRecipePipelineFetchCommandConanInstall import XmlRecipePipelineFetchCommandConanInstall
+
+        return XmlRecipePipelineFetchCommandConanInstall(log, xmlElement)
     return None
 
 
@@ -711,13 +716,16 @@ class XmlExperimentalRecipe(XmlBase):
         self.ExternalInstallDirectory = self._TryReadAttrib(xmlElement, self.__AttribExternalInstallDirectory)
         self.FindVersion: Version | None = self._TryReadAttribAsVersion(xmlElement, self.__AttribFindVersion)
         self.FindTargetName = self._TryReadAttrib(xmlElement, self.__AttribFindTargetName)
-        findResult = self._ReadBoolAttrib(xmlElement, self.__AttribFind, False)
+        # None when Find is not specified, which allows FindVersion and FindTargetName to enable it
+        findResult: bool | None = (
+            self._ReadBoolAttrib(xmlElement, self.__AttribFind) if self._TryReadAttrib(xmlElement, self.__AttribFind) is not None else None
+        )
         self.Find = False if findResult is None else findResult
 
         if self.FindVersion is not None:
             if findResult is not None and not findResult:
-                self.FindVersion = None
                 log.LogPrintVerbose(2, f"Recipe specified Find=False, so discarding the specified FindVersion '{self.FindVersion}'")
+                self.FindVersion = None
             else:
                 self.Find = True
                 if self.Version is not None and not self.FindVersion.IsCompatible(self.Version):
@@ -725,8 +733,8 @@ class XmlExperimentalRecipe(XmlBase):
 
         if self.FindTargetName is not None:
             if findResult is not None and not findResult:
-                self.FindTargetName = None
                 log.LogPrintVerbose(2, f"Recipe specified Find=False, so discarding the specified FindTargetName '{self.FindTargetName}'")
+                self.FindTargetName = None
             else:
                 self.Find = True
 

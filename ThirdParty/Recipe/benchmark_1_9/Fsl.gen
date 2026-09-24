@@ -5,7 +5,7 @@
     <!--Dependency Name="GTest"/-->
     <Default.Platform.Supported Value="false"/>
     <Platform Name="Apple;Ubuntu" Supported="true">
-      <ExperimentalRecipe Name="benchmark" Version="1.9" FindTargetName="benchmark::benchmark benchmark::benchmark_main">
+      <ExperimentalRecipe Name="benchmark" Version="1.9" FindTargetName="benchmark::benchmark benchmark::benchmark_main" Find="false">
         <Pipeline>
           <Download URL="https://github.com/google/benchmark/archive/refs/tags/v1.9.5.tar.gz" To="googlebenchmark-1.9.5.tar.gz" Hash="9631341c82bac4a288bef951f8b26b41f69021794184ece969f8473977eaa340"/>
           <Unpack File="googlebenchmark-1.9.5.tar.gz" OutputPath="benchmark-1.9.5"/>
