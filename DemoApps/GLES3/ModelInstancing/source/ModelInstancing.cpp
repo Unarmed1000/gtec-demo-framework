@@ -108,9 +108,8 @@ namespace Fsl
 
       std::size_t vertexCount = 0;
       std::size_t indexCount = 0;
-      for (std::size_t i = 0; i < scene->Meshes.size(); ++i)
+      for (auto mesh : scene->Meshes)
       {
-        auto mesh = scene->Meshes[i];
         m_resources.IndexBuffer.Reset(meshRecord.Indices, GL_STATIC_DRAW);
         m_resources.VertexBuffer.Reset(meshRecord.Vertices, GL_STATIC_DRAW);
 

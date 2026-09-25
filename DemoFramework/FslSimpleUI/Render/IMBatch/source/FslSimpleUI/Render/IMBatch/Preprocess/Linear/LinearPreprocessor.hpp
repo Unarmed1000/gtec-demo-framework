@@ -37,6 +37,7 @@
 #include <FslBase/Span/SpanUtil_Vector.hpp>
 #include <FslSimpleUI/Render/Base/Command/EncodedCommand.hpp>
 #include <FslSimpleUI/Render/IMBatch/DrawReorderMethod.hpp>
+#include <algorithm>
 #include <vector>
 #include "../../MaterialStats.hpp"
 #include "../../MeshManager.hpp"
@@ -203,10 +204,7 @@ namespace Fsl::UI::RenderIMBatch
               dstSpan[moveIndex].OriginalCommandIndex = recordToMove.OriginalCommandIndex;
               // Remap the material cache index
               MaterialCacheRecord& rMaterialCacheEntry = materialCache[srcSpan[recordToMove.OriginalCommandIndex].MaterialId.Value];
-              if (rMaterialCacheEntry.Index < moveIndex)
-              {
-                rMaterialCacheEntry.Index = moveIndex;
-              }
+              rMaterialCacheEntry.Index = std::max(rMaterialCacheEntry.Index, moveIndex);
             }
             dstSpan[insertAtIndex].OriginalCommandIndex = i;
             materialCache[src.MaterialId.Value].Index = insertAtIndex;

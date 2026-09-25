@@ -99,7 +99,7 @@ namespace Fsl
     {
       throw ServiceRegistryUnavailableException("");
     }
-    return registry->SetServiceGroupName(serviceGroupId, groupNameUniqueId);
+    registry->SetServiceGroupName(serviceGroupId, groupNameUniqueId);
   }
 
 

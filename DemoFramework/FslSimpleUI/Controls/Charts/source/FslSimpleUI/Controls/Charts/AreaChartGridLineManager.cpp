@@ -176,9 +176,9 @@ namespace Fsl::UI
     , m_gridLineRecords(RenderAreaChartConfig::MaxGridLines)
     , m_viewRecord(transitionTime)
   {
-    for (std::size_t i = 0; i < m_gridLineRecords.size(); ++i)
+    for (auto& rRecord : m_gridLineRecords)
     {
-      m_gridLineRecords[i] = GridLineRecord(transitionTimespanLabels);
+      rRecord = GridLineRecord(transitionTimespanLabels);
     }
   }
 

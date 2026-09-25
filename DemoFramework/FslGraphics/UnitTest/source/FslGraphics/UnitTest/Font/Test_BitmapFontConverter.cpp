@@ -74,11 +74,11 @@ namespace
   BitmapFontChar Get(const ReadOnlySpan<BitmapFontChar>& charSpan, const int32_t id)
   {
     const auto orgId = NumericCast<uint32_t>(id);
-    for (std::size_t i = 0; i < charSpan.size(); ++i)
+    for (const auto& entry : charSpan)
     {
-      if (charSpan[i].Id == orgId)
+      if (entry.Id == orgId)
       {
-        return charSpan[i];
+        return entry;
       }
     }
     throw NotFoundException("Could not find the expected char id");

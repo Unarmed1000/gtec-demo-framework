@@ -86,10 +86,10 @@ namespace Fsl::UI
       return Layout::ArrangeOverride(finalSizePx);
     }
 
-    for (auto itr = begin(); itr != end(); ++itr)
+    for (auto& rEntry : *this)
     {
-      const auto desiredPx = itr->Window->DesiredSizePx();
-      itr->Window->Arrange(PxRectangle(itr->PositionPx, desiredPx));
+      const auto desiredPx = rEntry.Window->DesiredSizePx();
+      rEntry.Window->Arrange(PxRectangle(rEntry.PositionPx, desiredPx));
     }
     return finalSizePx;
   }

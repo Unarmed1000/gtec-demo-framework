@@ -104,9 +104,9 @@ namespace Fsl::SceneFormat
     explicit InternalVertexDeclaration(const SFVertexDeclaration& declaration)
       : SFVertexDeclaration(declaration)
     {
-      for (auto itr = declaration.Elements.begin(); itr != declaration.Elements.end(); ++itr)
+      for (const auto& element : declaration.Elements)
       {
-        VertexByteSize += CalcByteSize(*itr);
+        VertexByteSize += CalcByteSize(element);
       }
     }
 
@@ -539,13 +539,13 @@ namespace Fsl::SceneFormat
       const auto& vertexDeclarations = scene.VertexDeclarations;
       const auto& meshes = scene.Meshes;
 
-      for (auto itr = meshes.begin(); itr != meshes.end(); ++itr)
+      for (const auto& meshEntry : meshes)
       {
-        assert(itr->SourceMesh);
-        const auto& mesh = itr->SourceMesh;
+        assert(meshEntry.SourceMesh);
+        const auto& mesh = meshEntry.SourceMesh;
         cbMeshes += SizeofMeshHeader;
-        cbMeshes += vertexDeclarations[itr->VertexDeclarationIndex].VertexByteSize * mesh->GetVertexCount();
-        cbMeshes += itr->IndexByteSize * mesh->GetIndexCount();
+        cbMeshes += vertexDeclarations[meshEntry.VertexDeclarationIndex].VertexByteSize * mesh->GetVertexCount();
+        cbMeshes += meshEntry.IndexByteSize * mesh->GetIndexCount();
         cbMeshes += mesh->GetName().GetByteSize() + 1;    // +1 because we write the terminating zero as well
       }
       return cbMeshes;
@@ -805,9 +805,9 @@ namespace Fsl::SceneFormat
       const auto srcVertexStride = srcVertexDeclaration.VertexByteSize;
 
       std::size_t srcInterleaveOffset = 0;
-      for (auto itr = srcVertexDeclaration.Elements.begin(); itr != srcVertexDeclaration.Elements.end(); ++itr)
+      for (const auto& element : srcVertexDeclaration.Elements)
       {
-        switch (itr->Format)
+        switch (element.Format)
         {
         case SceneFormat::VertexElementFormat::Single:
           ConvertFloat1ArrayLE(pSrc, srcLength, srcVertexStride, srcInterleaveOffset, vertexCount);
@@ -847,10 +847,10 @@ namespace Fsl::SceneFormat
       const auto dstStride = dstVertexDeclaration.VertexByteSize;
 
       std::size_t dstInterleaveOffset = 0;
-      for (auto itr = dstVertexDeclaration.Elements.begin(); itr != dstVertexDeclaration.Elements.end(); ++itr)
+      for (const auto& element : dstVertexDeclaration.Elements)
       {
-        const std::size_t srcInterleaveOffset = LocateOffset(meshVertexDeclaration, itr->Usage, itr->UsageIndex);
-        switch (itr->Format)
+        const std::size_t srcInterleaveOffset = LocateOffset(meshVertexDeclaration, element.Usage, element.UsageIndex);
+        switch (element.Format)
         {
         case SceneFormat::VertexElementFormat::Single:
           WriteFloat1ArrayLE(pDst, dstLength, dstIndex, dstStride, dstInterleaveOffset, pVertices, cbSrcVertices, srcVertexStride,
@@ -967,11 +967,11 @@ namespace Fsl::SceneFormat
 
       auto dstItr = elements.begin();
       uint32_t offset = 0;
-      for (auto itr = internalVertexDeclaration.Elements.begin(); itr != internalVertexDeclaration.Elements.end(); ++itr)
+      for (const auto& element : internalVertexDeclaration.Elements)
       {
-        *dstItr = VertexElement(offset, Conversion::Convert(itr->Format), Conversion::Convert(itr->Usage), itr->UsageIndex);
+        *dstItr = VertexElement(offset, Conversion::Convert(element.Format), Conversion::Convert(element.Usage), element.UsageIndex);
         ++dstItr;
-        offset += InternalVertexDeclaration::CalcByteSize(*itr);
+        offset += InternalVertexDeclaration::CalcByteSize(element);
       }
       assert(offset == internalVertexDeclaration.VertexByteSize);
       return {elements.data(), elements.size(), internalVertexDeclaration.VertexByteSize};
@@ -1146,19 +1146,19 @@ namespace Fsl::SceneFormat
 #if !defined(NDEBUG)
       auto dstStartIndex = dstIndex;
 #endif
-      for (auto itr = meshes.begin(); itr != meshes.end(); ++itr)
+      for (const auto& meshEntry : meshes)
       {
-        assert(itr->SourceMesh);
-        const auto& mesh = itr->SourceMesh;
+        assert(meshEntry.SourceMesh);
+        const auto& mesh = meshEntry.SourceMesh;
 
         const uint32_t vertexCount = mesh->GetVertexCount();
         const uint32_t indexCount = mesh->GetIndexCount();
         const int32_t nameLength = mesh->GetName().GetByteSize() + 1;    // +1 to write the terminating zero as well
         const uint32_t materialIndex = mesh->GetMaterialIndex();
         const auto primitiveType = static_cast<uint32_t>(Conversion::Convert(mesh->GetPrimitiveType()));
-        assert(itr->IndexByteSize <= 255);
-        const auto indexType = static_cast<uint8_t>(itr->IndexByteSize);
-        uint8_t vertexDeclarationIndex = itr->VertexDeclarationIndex;
+        assert(meshEntry.IndexByteSize <= 255);
+        const auto indexType = static_cast<uint8_t>(meshEntry.IndexByteSize);
+        uint8_t vertexDeclarationIndex = meshEntry.VertexDeclarationIndex;
 
         if (nameLength < 0 || primitiveType > 255)
         {
@@ -1182,9 +1182,9 @@ namespace Fsl::SceneFormat
         dstIndex += ByteArrayUtil::WriteUInt8LE(content.data(), content.size(), dstIndex, indexType);
 
         // write vertex data
-        dstIndex += WriteVerticesLE(content.data(), content.size(), dstIndex, *itr, vertexDeclarations);
+        dstIndex += WriteVerticesLE(content.data(), content.size(), dstIndex, meshEntry, vertexDeclarations);
         // write index data
-        dstIndex += WriteIndicesLE(content.data(), content.size(), dstIndex, *itr);
+        dstIndex += WriteIndicesLE(content.data(), content.size(), dstIndex, meshEntry);
         // write name
         dstIndex += ByteArrayUtil::WriteBytes(content.data(), content.size(), dstIndex,
                                               reinterpret_cast<const uint8_t*>(mesh->GetName().ToUTF8String().c_str()), nameLength);
@@ -1516,7 +1516,7 @@ namespace Fsl::SceneFormat
 
       // Runtime verification of endian assumptions
       uint32_t tmp = 0;
-      auto* pUInt32 = reinterpret_cast<uint32_t*>(&tmp);
+      auto* pUInt32 = &tmp;
       auto* pFloat = reinterpret_cast<float*>(&tmp);
       auto* pTmp = reinterpret_cast<uint8_t*>(&tmp);
       *pUInt32 = 0x01020304;

@@ -130,9 +130,9 @@ namespace Fsl::UI
         for (uint32_t segmentIndex = 0; segmentIndex < dataInfo.SegmentCount; ++segmentIndex)
         {
           const auto span = pDataView->SegmentDataAsReadOnlySpan(segmentIndex);
-          for (uint32_t spanIndex = 0; spanIndex < span.size(); ++spanIndex)
+          for (const auto& entry : span)
           {
-            const auto newValue = span[spanIndex].Values[m_dataChannelIndex];
+            const auto newValue = entry.Values[m_dataChannelIndex];
             m_cachedSortedData.insert(std::lower_bound(m_cachedSortedData.begin(), m_cachedSortedData.end(), newValue), newValue);
             min = min <= newValue ? min : newValue;
             max = max >= newValue ? max : newValue;

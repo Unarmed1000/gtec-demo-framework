@@ -190,11 +190,11 @@ namespace Fsl
     }
     else
     {
-      for (auto itr = m_scenes.begin(); itr != m_scenes.end(); ++itr)
+      for (const auto& entry : m_scenes)
       {
-        if (source == itr->Button && itr->Button->IsChecked())
+        if (source == entry.Button && entry.Button->IsChecked())
         {
-          m_scene = itr->Scene;
+          m_scene = entry.Scene;
           UpdateUIWithSceneSettings();
         }
       }

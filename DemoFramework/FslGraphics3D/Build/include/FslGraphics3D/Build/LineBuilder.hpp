@@ -402,12 +402,12 @@ namespace Fsl
 
       void AddGridXY(const Rect& rect, const float posZ, const uint32_t steps, const Color& color)
       {
-        return AddGridXY(rect, posZ, steps, steps, color);
+        AddGridXY(rect, posZ, steps, steps, color);
       }
 
       void AddGridXY(const Rect& rect, const float posZ, const uint32_t steps, const Color& color, const Matrix& matrix)
       {
-        return AddGridXY(rect, posZ, steps, steps, color, matrix);
+        AddGridXY(rect, posZ, steps, steps, color, matrix);
       }
 
       void AddGridXY(const Rect& rect, const float posZ, const uint32_t stepsX, const uint32_t stepsY, const Color& color);

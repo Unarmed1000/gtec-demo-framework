@@ -90,7 +90,7 @@ namespace Fsl::DataBinding
 
   void DependencyObject::ExtractProperties(DependencyPropertyDefinitionVector& rProperties)
   {
-    return ExtractAllProperties(rProperties);
+    ExtractAllProperties(rProperties);
   }
 
 }

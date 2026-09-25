@@ -146,9 +146,9 @@ namespace Fsl
 
 
       PxPoint2 posPx(PxValue(0), sizePx.Height() - fontSize.Height() * PxSize1D::Create(static_cast<int32_t>(m_console.size())));
-      for (uint32_t i = 0; i < m_console.size(); ++i)
+      for (const auto& line : m_console)
       {
-        m_basic2D->DrawString(m_console[i], posPx);
+        m_basic2D->DrawString(line, posPx);
         posPx.Y += fontSize.Height();
       }
 

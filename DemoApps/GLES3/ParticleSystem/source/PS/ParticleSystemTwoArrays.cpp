@@ -67,9 +67,9 @@ namespace Fsl
   {
     // Allow the emitters to create new particles
     // BEWARE that this allows the emitters to call the 'AddParticles' functions
-    for (auto itr = m_emitters.begin(); itr != m_emitters.end(); ++itr)
+    for (const auto& emitter : m_emitters)
     {
-      (*itr)->Update(*this, demoTime);
+      emitter->Update(*this, demoTime);
     }
 
 

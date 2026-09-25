@@ -349,10 +349,10 @@ namespace Fsl
       Vector3 position(static_cast<float>(border), 0, 0);
       Color color = Colors::White();
       Vector2 lineStateY = m_lineAnimationState;
-      for (std::size_t i = 0; i < tmpVertices.size(); ++i)
+      for (auto& rVertex : tmpVertices)
       {
         position.Y = yOffset + ((std::sin(lineStateY.X) * yDist0) + (std::sin(lineStateY.Y) * yDist1));
-        tmpVertices[i] = VertexPositionColor(position, color);
+        rVertex = VertexPositionColor(position, color);
         position.X += addXPxf;
         lineStateY += m_lineAnimationAdd;
       }
@@ -546,12 +546,12 @@ namespace Fsl
     const float screenOffsetY = screenHeight / 2.0f;
 
     const float xPos0 = -screenOffsetX + static_cast<float>(offsetX * QuadSizE1 * 2);
-    const float xPos1 = -screenOffsetX + static_cast<float>(offsetX * QuadSizE1 * 2) + static_cast<float>(QuadSizE1 * 0.25f);
-    const float xPos2 = -screenOffsetX + static_cast<float>(offsetX * QuadSizE1 * 2) + static_cast<float>(QuadSizE1 * 0.25f * 2.0f);
+    const float xPos1 = -screenOffsetX + static_cast<float>(offsetX * QuadSizE1 * 2) + (QuadSizE1 * 0.25f);
+    const float xPos2 = -screenOffsetX + static_cast<float>(offsetX * QuadSizE1 * 2) + (QuadSizE1 * 0.25f * 2.0f);
 
     const float yPos0 = -screenOffsetY + static_cast<float>(offsetY * QuadSizE1 * 2);
-    const float yPos1 = -screenOffsetY + static_cast<float>(offsetY * QuadSizE1 * 2) + static_cast<float>(QuadSizE1 * 0.25f);
-    const float yPos2 = -screenOffsetY + static_cast<float>(offsetY * QuadSizE1 * 2) + static_cast<float>(QuadSizE1 * 0.25f * 2.0f);
+    const float yPos1 = -screenOffsetY + static_cast<float>(offsetY * QuadSizE1 * 2) + (QuadSizE1 * 0.25f);
+    const float yPos2 = -screenOffsetY + static_cast<float>(offsetY * QuadSizE1 * 2) + (QuadSizE1 * 0.25f * 2.0f);
 
     const float zPos0 = 7.0f;
     const float zPos1 = 8.0f;

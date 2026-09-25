@@ -79,6 +79,6 @@ namespace Fsl
 
   void AsynchronousServiceFactory::FillInterfaceType(ServiceSupportedInterfaceDeque& rServiceInterfaceTypeDeque) const
   {
-    return m_proxyFactory->FillInterfaceType(rServiceInterfaceTypeDeque);
+    m_proxyFactory->FillInterfaceType(rServiceInterfaceTypeDeque);
   }
 }

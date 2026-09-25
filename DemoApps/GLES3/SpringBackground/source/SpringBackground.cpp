@@ -238,45 +238,45 @@ namespace Fsl
       const float boundaryTop = 0;
       const auto boundaryBottom = static_cast<float>(windowSizePx.RawHeight());
       const float bounce = 1.0f;
-      for (auto itr = m_balls.begin(); itr != m_balls.end(); ++itr)
+      for (auto& rBall : m_balls)
       {
-        Vector2 velocity = itr->Position - itr->OldPosition;
-        itr->OldPosition = itr->Position;
-        itr->Position += velocity;
+        Vector2 velocity = rBall.Position - rBall.OldPosition;
+        rBall.OldPosition = rBall.Position;
+        rBall.Position += velocity;
 
-        m_gridScene->ApplyDirectedForce(Vector3(velocity.X, velocity.Y, 0.0f) * 1.0f, Vector3(itr->Position.X, itr->Position.Y, 0.0f), 40);
+        m_gridScene->ApplyDirectedForce(Vector3(velocity.X, velocity.Y, 0.0f) * 1.0f, Vector3(rBall.Position.X, rBall.Position.Y, 0.0f), 40);
 
-        // m_gridScene->ApplyDirectedForce(Vector3(0, 0, 100.0f), Vector3(itr->Position.X, itr->Position.Y, 0.0f), 40);
-        // m_gridScene->ApplyDirectedForce(Vector3(0, 0, -100.0f), Vector3(itr->Position.X, itr->Position.Y, 0.0f), 40);
-        // m_gridScene->ApplyImplosiveForce(-100, Vector3(itr->Position.X, itr->Position.Y, 0.0f), 40);
-        // m_gridScene->ApplyImplosiveForce(100, Vector3(itr->Position.X, itr->Position.Y, 0.0f), 40);
-        // m_gridScene->ApplyImplosiveForce(30, Vector3(itr->Position.X, itr->Position.Y, 0.0f), 40);
-        // m_gridScene->ApplyImplosiveForce(10, Vector3(itr->Position.X, itr->Position.Y, 0.0f), 40);
+        // m_gridScene->ApplyDirectedForce(Vector3(0, 0, 100.0f), Vector3(rBall.Position.X, rBall.Position.Y, 0.0f), 40);
+        // m_gridScene->ApplyDirectedForce(Vector3(0, 0, -100.0f), Vector3(rBall.Position.X, rBall.Position.Y, 0.0f), 40);
+        // m_gridScene->ApplyImplosiveForce(-100, Vector3(rBall.Position.X, rBall.Position.Y, 0.0f), 40);
+        // m_gridScene->ApplyImplosiveForce(100, Vector3(rBall.Position.X, rBall.Position.Y, 0.0f), 40);
+        // m_gridScene->ApplyImplosiveForce(30, Vector3(rBall.Position.X, rBall.Position.Y, 0.0f), 40);
+        // m_gridScene->ApplyImplosiveForce(10, Vector3(rBall.Position.X, rBall.Position.Y, 0.0f), 40);
 
-        // m_gridScene->ApplyExplosiveForce(100, Vector3(itr->Position.X, itr->Position.Y, 0.0f), 40);
-        // m_gridScene->ApplyExplosiveForce(-100, Vector3(itr->Position.X, itr->Position.Y, 0.0f), 40);
-        // m_gridScene->ApplyExplosiveForce(-30, Vector3(itr->Position.X, itr->Position.Y, 0.0f), 40);
+        // m_gridScene->ApplyExplosiveForce(100, Vector3(rBall.Position.X, rBall.Position.Y, 0.0f), 40);
+        // m_gridScene->ApplyExplosiveForce(-100, Vector3(rBall.Position.X, rBall.Position.Y, 0.0f), 40);
+        // m_gridScene->ApplyExplosiveForce(-30, Vector3(rBall.Position.X, rBall.Position.Y, 0.0f), 40);
 
 
-        if (itr->Position.X > boundaryRight)
+        if (rBall.Position.X > boundaryRight)
         {
-          itr->Position.X = boundaryRight;
-          itr->OldPosition.X = itr->Position.X + (velocity.X * bounce);
+          rBall.Position.X = boundaryRight;
+          rBall.OldPosition.X = rBall.Position.X + (velocity.X * bounce);
         }
-        else if (itr->Position.X < boundaryLeft)
+        else if (rBall.Position.X < boundaryLeft)
         {
-          itr->Position.X = boundaryLeft;
-          itr->OldPosition.X = itr->Position.X + (velocity.X * bounce);
+          rBall.Position.X = boundaryLeft;
+          rBall.OldPosition.X = rBall.Position.X + (velocity.X * bounce);
         }
-        if (itr->Position.Y > boundaryBottom)
+        if (rBall.Position.Y > boundaryBottom)
         {
-          itr->Position.Y = boundaryBottom;
-          itr->OldPosition.Y = itr->Position.Y + (velocity.Y * bounce);
+          rBall.Position.Y = boundaryBottom;
+          rBall.OldPosition.Y = rBall.Position.Y + (velocity.Y * bounce);
         }
-        else if (itr->Position.Y < boundaryTop)
+        else if (rBall.Position.Y < boundaryTop)
         {
-          itr->Position.Y = boundaryTop;
-          itr->OldPosition.Y = itr->Position.Y + (velocity.Y * bounce);
+          rBall.Position.Y = boundaryTop;
+          rBall.OldPosition.Y = rBall.Position.Y + (velocity.Y * bounce);
         }
       }
     }
@@ -316,9 +316,9 @@ namespace Fsl
       const Color ballColor = Colors::White();
       Vector2 scale(1, 1);
       Vector2 origin(static_cast<float>(m_texBall.GetSize().RawWidth()) * 0.5f, static_cast<float>(m_texBall.GetSize().RawHeight()) * 0.5f);
-      for (auto itr = m_balls.begin(); itr != m_balls.end(); ++itr)
+      for (const auto& ball : m_balls)
       {
-        m_batch->Draw(m_texBall, itr->Position, ballColor, origin, scale);
+        m_batch->Draw(m_texBall, ball.Position, ballColor, origin, scale);
       }
 
       m_batch->End();

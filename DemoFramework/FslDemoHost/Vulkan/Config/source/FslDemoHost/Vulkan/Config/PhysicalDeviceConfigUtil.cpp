@@ -58,9 +58,9 @@ namespace Fsl::PhysicalDeviceConfigUtil
       // FIX: add support for config control
       FSL_PARAM_NOT_USED(configControl);
       DeviceConfigRequest deviceConfig;
-      for (std::size_t i = 0; i < hostExtensionRequests.size(); ++i)
+      for (const auto& hostExtensionRequest : hostExtensionRequests)
       {
-        deviceConfig.ExtensionRequests.emplace_back(hostExtensionRequests[i]);
+        deviceConfig.ExtensionRequests.emplace_back(hostExtensionRequest);
       }
       return deviceConfig;
     }

@@ -536,11 +536,11 @@ namespace Fsl::VulkanBasic
       TryWaitForPresentFence(rFrame);
     }
 
-    for (std::size_t i = 0; i < m_dependentResources.SwapchainRecords.size(); ++i)
+    for (auto& rRecord : m_dependentResources.SwapchainRecords)
     {
-      m_dependentResources.SwapchainRecords[i].ImageReleasedSemaphore.Reset();
-      m_dependentResources.SwapchainRecords[i].Framebuffer.Reset();
-      m_dependentResources.SwapchainRecords[i].SwapchainImageView.Reset();
+      rRecord.ImageReleasedSemaphore.Reset();
+      rRecord.Framebuffer.Reset();
+      rRecord.SwapchainImageView.Reset();
     }
     m_dependentResources.SwapchainRecords.clear();
 

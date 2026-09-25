@@ -79,8 +79,8 @@ namespace Fsl::ByteArrayUtil
     assert(srcLength >= 4);
     assert((index + 3) < srcLength);
 
-    return static_cast<uint32_t>(static_cast<uint32_t>(pSrc[index]) | (static_cast<uint32_t>(pSrc[index + 1]) << 8) |
-                                 (static_cast<uint32_t>(pSrc[index + 2]) << 16) | (static_cast<uint32_t>(pSrc[index + 3]) << 24));
+    return (static_cast<uint32_t>(pSrc[index]) | (static_cast<uint32_t>(pSrc[index + 1]) << 8) | (static_cast<uint32_t>(pSrc[index + 2]) << 16) |
+            (static_cast<uint32_t>(pSrc[index + 3]) << 24));
   }
 
 
@@ -101,10 +101,10 @@ namespace Fsl::ByteArrayUtil
     assert(srcLength >= 8);
     assert((index + 7) < srcLength);
 
-    return static_cast<uint64_t>(static_cast<uint64_t>(pSrc[index]) | (static_cast<uint64_t>(pSrc[index + 1]) << 8) |
-                                 (static_cast<uint64_t>(pSrc[index + 2]) << 16) | (static_cast<uint64_t>(pSrc[index + 3]) << 24) |
-                                 (static_cast<uint64_t>(pSrc[index + 4]) << 32) | (static_cast<uint64_t>(pSrc[index + 5]) << 40) |
-                                 (static_cast<uint64_t>(pSrc[index + 6]) << 48) | (static_cast<uint64_t>(pSrc[index + 7]) << 56));
+    return (static_cast<uint64_t>(pSrc[index]) | (static_cast<uint64_t>(pSrc[index + 1]) << 8) | (static_cast<uint64_t>(pSrc[index + 2]) << 16) |
+            (static_cast<uint64_t>(pSrc[index + 3]) << 24) | (static_cast<uint64_t>(pSrc[index + 4]) << 32) |
+            (static_cast<uint64_t>(pSrc[index + 5]) << 40) | (static_cast<uint64_t>(pSrc[index + 6]) << 48) |
+            (static_cast<uint64_t>(pSrc[index + 7]) << 56));
   }
 
   int64_t ReadInt64LE(const uint8_t* const pSrc, [[maybe_unused]] const std::size_t srcLength, const std::size_t index)
@@ -113,10 +113,10 @@ namespace Fsl::ByteArrayUtil
     assert(srcLength >= 8);
     assert((index + 7) < srcLength);
 
-    return static_cast<int64_t>(static_cast<int64_t>(pSrc[index]) | (static_cast<int64_t>(pSrc[index + 1]) << 8) |
-                                (static_cast<int64_t>(pSrc[index + 2]) << 16) | (static_cast<int64_t>(pSrc[index + 3]) << 24) |
-                                (static_cast<int64_t>(pSrc[index + 4]) << 32) | (static_cast<int64_t>(pSrc[index + 5]) << 40) |
-                                (static_cast<int64_t>(pSrc[index + 6]) << 48) | (static_cast<int64_t>(pSrc[index + 7]) << 56));
+    return (static_cast<int64_t>(pSrc[index]) | (static_cast<int64_t>(pSrc[index + 1]) << 8) | (static_cast<int64_t>(pSrc[index + 2]) << 16) |
+            (static_cast<int64_t>(pSrc[index + 3]) << 24) | (static_cast<int64_t>(pSrc[index + 4]) << 32) |
+            (static_cast<int64_t>(pSrc[index + 5]) << 40) | (static_cast<int64_t>(pSrc[index + 6]) << 48) |
+            (static_cast<int64_t>(pSrc[index + 7]) << 56));
   }
 
 
@@ -168,8 +168,8 @@ namespace Fsl::ByteArrayUtil
     assert((index + 3) < srcLength);
 
 
-    return static_cast<uint32_t>(static_cast<uint32_t>(pSrc[index + 3]) | (static_cast<uint32_t>(pSrc[index + 2]) << 8) |
-                                 (static_cast<uint32_t>(pSrc[index + 1]) << 16) | (static_cast<uint32_t>(pSrc[index]) << 24));
+    return (static_cast<uint32_t>(pSrc[index + 3]) | (static_cast<uint32_t>(pSrc[index + 2]) << 8) | (static_cast<uint32_t>(pSrc[index + 1]) << 16) |
+            (static_cast<uint32_t>(pSrc[index]) << 24));
   }
 
 
@@ -191,10 +191,10 @@ namespace Fsl::ByteArrayUtil
     assert(srcLength >= 8);
     assert((index + 7) < srcLength);
 
-    return static_cast<uint64_t>(static_cast<uint64_t>(pSrc[index + 7]) | (static_cast<uint64_t>(pSrc[index + 6]) << 8) |
-                                 (static_cast<uint64_t>(pSrc[index + 5]) << 16) | (static_cast<uint64_t>(pSrc[index + 4]) << 24) |
-                                 (static_cast<uint64_t>(pSrc[index + 3]) << 32) | (static_cast<uint64_t>(pSrc[index + 2]) << 40) |
-                                 (static_cast<uint64_t>(pSrc[index + 1]) << 48) | (static_cast<uint64_t>(pSrc[index + 0]) << 56));
+    return (static_cast<uint64_t>(pSrc[index + 7]) | (static_cast<uint64_t>(pSrc[index + 6]) << 8) | (static_cast<uint64_t>(pSrc[index + 5]) << 16) |
+            (static_cast<uint64_t>(pSrc[index + 4]) << 24) | (static_cast<uint64_t>(pSrc[index + 3]) << 32) |
+            (static_cast<uint64_t>(pSrc[index + 2]) << 40) | (static_cast<uint64_t>(pSrc[index + 1]) << 48) |
+            (static_cast<uint64_t>(pSrc[index + 0]) << 56));
   }
 
 
@@ -204,10 +204,10 @@ namespace Fsl::ByteArrayUtil
     assert(srcLength >= 8);
     assert((index + 7) < srcLength);
 
-    return static_cast<int64_t>(static_cast<int64_t>(pSrc[index + 7]) | (static_cast<int64_t>(pSrc[index + 6]) << 8) |
-                                (static_cast<int64_t>(pSrc[index + 5]) << 16) | (static_cast<int64_t>(pSrc[index + 4]) << 24) |
-                                (static_cast<int64_t>(pSrc[index + 3]) << 32) | (static_cast<int64_t>(pSrc[index + 2]) << 40) |
-                                (static_cast<int64_t>(pSrc[index + 1]) << 48) | (static_cast<int64_t>(pSrc[index + 0]) << 56));
+    return (static_cast<int64_t>(pSrc[index + 7]) | (static_cast<int64_t>(pSrc[index + 6]) << 8) | (static_cast<int64_t>(pSrc[index + 5]) << 16) |
+            (static_cast<int64_t>(pSrc[index + 4]) << 24) | (static_cast<int64_t>(pSrc[index + 3]) << 32) |
+            (static_cast<int64_t>(pSrc[index + 2]) << 40) | (static_cast<int64_t>(pSrc[index + 1]) << 48) |
+            (static_cast<int64_t>(pSrc[index + 0]) << 56));
   }
 
 

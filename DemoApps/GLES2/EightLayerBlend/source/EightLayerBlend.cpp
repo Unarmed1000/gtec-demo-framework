@@ -114,9 +114,9 @@ namespace Fsl
     float xRangeLast = (1920.0f / 2.0f);
     float xRangeAdd = (xRangeLast - xRangeFirst) / static_cast<float>(m_layers.size() - 1u);
     float xRange = xRangeFirst;
-    for (std::size_t i = 0; i < m_layers.size(); ++i)
+    for (auto& rLayer : m_layers)
     {
-      m_layers[i].Position = pos * xRange;
+      rLayer.Position = pos * xRange;
       xRange += xRangeAdd;
     }
 

@@ -63,9 +63,9 @@ namespace
                                                             ReadOnlySpan<uint32_t> span)
   {
     auto chartData = std::make_shared<UI::ChartData>(dataBinding, NumericCast<uint32_t>(span.size()), 1, UI::ChartData::Constraints());
-    for (std::size_t i = 0; i < span.size(); ++i)
+    for (const auto value : span)
     {
-      chartData->Append(UI::ChartDataEntry(span[i]));
+      chartData->Append(UI::ChartDataEntry(value));
     }
     return std::make_shared<UI::ChartDataView>(chartData);
   }

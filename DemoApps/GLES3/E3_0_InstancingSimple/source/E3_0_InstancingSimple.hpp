@@ -36,9 +36,9 @@ namespace Fsl
         , MvpVbo(GLES3::GLValues::InvalidHandle)
         , IndicesIbo(GLES3::GLValues::InvalidHandle)
       {
-        for (int i = 0; i < NUM_INSTANCES; ++i)
+        for (float& rAngle : Angle)
         {
-          Angle[i] = 0;
+          rAngle = 0;
         }
       }
     };

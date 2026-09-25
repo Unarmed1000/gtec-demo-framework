@@ -49,9 +49,9 @@ namespace Fsl
       IO::PathDeque files;
       IO::Directory::GetFiles(files, contentPath, IO::SearchOptions::AllDirectories);
 
-      for (auto itr = files.begin(); itr != files.end(); ++itr)
+      for (auto& file : files)
       {
-        rPathWatcher.Add(**itr);
+        rPathWatcher.Add(*file);
       }
     }
 

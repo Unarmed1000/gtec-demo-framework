@@ -451,9 +451,8 @@ namespace Fsl
 
         const PxSize1D lineStart = smallStartPos;
         const PxSize1D lineEnd = lineStart + (smallBoxYAdd * PxSize1D::Create(3)) + SmallDemoBlockSize;
-        for (std::size_t i = 0; i < timingRecords.size(); ++i)
+        for (const auto& entry : timingRecords)
         {
-          const auto& entry = timingRecords[i];
           yPos = lineStart;
           batch.DebugDrawLine(fillTexture, PxPoint2(entry.Box0Position, yPos), PxPoint2(entry.Box0Position, lineEnd), LineColor0);
           yPos += smallBoxYAdd;

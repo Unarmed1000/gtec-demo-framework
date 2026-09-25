@@ -265,9 +265,9 @@ namespace Fsl
       Span<SpriteFontGlyphPosition> positionSpan(scratchpadSpan.subspan(0, strView.size()));
 
       const PxVector2 dstPositionPxf = TypeConverter::To<PxVector2>(dstPositionPx);
-      for (std::size_t i = 0; i < positionSpan.size(); ++i)
+      for (const auto& entry : positionSpan)
       {
-        auto dstRectPxf = PxAreaRectangleF::AddLocation(dstPositionPxf, positionSpan[i].DstRectPxf);
+        auto dstRectPxf = PxAreaRectangleF::AddLocation(dstPositionPxf, entry.DstRectPxf);
         nativeBatch.DebugDrawRectangle(m_fillTexture, dstRectPxf, Color(0x80, 0, 0, 0xFF));
       }
     }

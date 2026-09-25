@@ -201,7 +201,7 @@ namespace Fsl::Vulkan
                                             const Texture2DFilterHint filterHint, const TextureFlags textureFlags)
   {
     // The texture factory handles the disposed case
-    return m_textureFactory.SetTextureData(hTexture, texture, filterHint, textureFlags);
+    m_textureFactory.SetTextureData(hTexture, texture, filterHint, textureFlags);
   }
 
 

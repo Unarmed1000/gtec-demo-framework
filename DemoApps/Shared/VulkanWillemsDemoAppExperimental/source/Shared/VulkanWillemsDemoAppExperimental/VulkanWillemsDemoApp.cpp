@@ -734,7 +734,7 @@ namespace Fsl
     void VulkanWillemsDemoApp::CreateBuffer(RapidVulkan::Buffer& rBuffer, RapidVulkan::Memory& rMemory, const VkBufferUsageFlags usage,
                                             const VkDeviceSize size, const void* const pData)
     {
-      return CreateBuffer(rBuffer, rMemory, usage, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT, size, pData);
+      CreateBuffer(rBuffer, rMemory, usage, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT, size, pData);
     }
 
 

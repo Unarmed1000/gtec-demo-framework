@@ -175,26 +175,26 @@ namespace Fsl
     // Write Dirt Factor
     glUniform1f(m_mixFactorLoc, m_mixFactor);
 
-    for (unsigned int i = 0; i < m_mesh.size(); i++)
+    for (const auto& mesh : m_mesh)
     {
-      glBindVertexArray(m_mesh[i].VAO);
+      glBindVertexArray(mesh.VAO);
       if (m_diffuseLoc != GLValues::InvalidLocation)
       {
-        GL_CHECK(glUniform3fv(m_diffuseLoc, 1, m_mesh[i].Diffuse));
+        GL_CHECK(glUniform3fv(m_diffuseLoc, 1, mesh.Diffuse));
       }
       if (m_ambientLoc != GLValues::InvalidLocation)
       {
-        GL_CHECK(glUniform3fv(m_ambientLoc, 1, m_mesh[i].Ambient));
+        GL_CHECK(glUniform3fv(m_ambientLoc, 1, mesh.Ambient));
       }
       if (m_specularLoc != GLValues::InvalidLocation)
       {
-        GL_CHECK(glUniform3fv(m_specularLoc, 1, m_mesh[i].Specular));
+        GL_CHECK(glUniform3fv(m_specularLoc, 1, mesh.Specular));
       }
       if (m_shininessLoc != GLValues::InvalidLocation)
       {
-        GL_CHECK(glUniform1f(m_shininessLoc, m_mesh[i].Shininess));
+        GL_CHECK(glUniform1f(m_shininessLoc, mesh.Shininess));
       }
-      glDrawElements(GL_TRIANGLES, m_mesh[i].NumFaces * 3, GL_UNSIGNED_INT, nullptr);
+      glDrawElements(GL_TRIANGLES, mesh.NumFaces * 3, GL_UNSIGNED_INT, nullptr);
       glBindVertexArray(0);
     }
   }

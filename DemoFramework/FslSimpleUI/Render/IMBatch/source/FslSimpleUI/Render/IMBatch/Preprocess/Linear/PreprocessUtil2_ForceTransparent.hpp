@@ -61,13 +61,13 @@ namespace Fsl::UI::RenderIMBatch::PreprocessUtil2
     const MaterialLookup& materialLookup = meshManager.GetMaterialLookup();
 
     constexpr uint32_t InvalidMaterialCacheIndex = 0xFFFFFFFF;
-    for (std::size_t i = 0; i < opaqueMaterialCache.size(); ++i)
+    for (auto& rEntry : opaqueMaterialCache)
     {
-      opaqueMaterialCache[i] = MaterialCacheRecord(InvalidMaterialCacheIndex);
+      rEntry = MaterialCacheRecord(InvalidMaterialCacheIndex);
     }
-    for (std::size_t i = 0; i < transparentMaterialCache.size(); ++i)
+    for (auto& rEntry : transparentMaterialCache)
     {
-      transparentMaterialCache[i] = MaterialCacheRecord(InvalidMaterialCacheIndex);
+      rEntry = MaterialCacheRecord(InvalidMaterialCacheIndex);
     }
 
     const std::size_t capacity = (commandSpan.size() * 2u);

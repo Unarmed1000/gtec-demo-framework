@@ -281,7 +281,7 @@ namespace Fsl
     void PatchSpriteFont(std::shared_ptr<SpriteFont> font, const SpriteMaterialId& spriteMaterialId, const IO::PathView& fontName) final;
     void PatchSpriteFont(std::shared_ptr<SpriteFont> font, const SpriteMaterialId& spriteMaterialId, const IO::Path& fontName) final
     {
-      return PatchSpriteFont(font, spriteMaterialId, fontName.AsPathView());
+      PatchSpriteFont(font, spriteMaterialId, fontName.AsPathView());
     }
 
 

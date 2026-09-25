@@ -121,14 +121,14 @@ namespace Fsl::Willems
       // It's the lowest latency non-tearing present mode available
       if (!enableVSync)
       {
-        for (std::size_t i = 0; i < presentModes.size(); ++i)
+        for (auto presentMode : presentModes)
         {
-          if (presentModes[i] == VK_PRESENT_MODE_MAILBOX_KHR)
+          if (presentMode == VK_PRESENT_MODE_MAILBOX_KHR)
           {
             swapchainPresentMode = VK_PRESENT_MODE_MAILBOX_KHR;
             break;
           }
-          if ((swapchainPresentMode != VK_PRESENT_MODE_MAILBOX_KHR) && (presentModes[i] == VK_PRESENT_MODE_IMMEDIATE_KHR))
+          if ((swapchainPresentMode != VK_PRESENT_MODE_MAILBOX_KHR) && (presentMode == VK_PRESENT_MODE_IMMEDIATE_KHR))
           {
             swapchainPresentMode = VK_PRESENT_MODE_IMMEDIATE_KHR;
           }

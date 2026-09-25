@@ -159,27 +159,27 @@ namespace Fsl
   {
     const float gravity = 0.5f;
 
-    for (auto itr = particles.begin(); itr != particles.end(); ++itr)
+    for (auto& particle : particles)
     {
-      auto velocity = (itr->Position - itr->OldPosition) * friction;
-      itr->OldPosition = itr->Position;
-      itr->Position += velocity;
-      itr->Position.Y += gravity;
+      auto velocity = (particle.Position - particle.OldPosition) * friction;
+      particle.OldPosition = particle.Position;
+      particle.Position += velocity;
+      particle.Position.Y += gravity;
     }
   }
 
 
   void VerletIntegration101::UpdateSticks(std::deque<Particle>& particles, std::deque<Stick>& sticks)
   {
-    for (auto itr = sticks.begin(); itr != sticks.end(); ++itr)
+    for (auto& stick : sticks)
     {
-      auto delta = particles[itr->PointIndex1].Position - particles[itr->PointIndex0].Position;
+      auto delta = particles[stick.PointIndex1].Position - particles[stick.PointIndex0].Position;
       auto distance = delta.Length();
-      auto difference = itr->Length - distance;
+      auto difference = stick.Length - distance;
       auto percent = (difference / distance) * 0.5f;
       auto offset = delta * percent;
-      particles[itr->PointIndex0].Position -= offset;
-      particles[itr->PointIndex1].Position += offset;
+      particles[stick.PointIndex0].Position -= offset;
+      particles[stick.PointIndex1].Position += offset;
     }
   }
 
@@ -193,28 +193,28 @@ namespace Fsl
 
     const float bounce = 0.90f;
 
-    for (auto itr = particles.begin(); itr != particles.end(); ++itr)
+    for (auto& particle : particles)
     {
-      auto velocity = (itr->Position - itr->OldPosition) * friction;
-      if (itr->Position.X > boundaryRight)
+      auto velocity = (particle.Position - particle.OldPosition) * friction;
+      if (particle.Position.X > boundaryRight)
       {
-        itr->Position.X = boundaryRight;
-        itr->OldPosition.X = itr->Position.X + (velocity.X * bounce);
+        particle.Position.X = boundaryRight;
+        particle.OldPosition.X = particle.Position.X + (velocity.X * bounce);
       }
-      else if (itr->Position.X < boundaryLeft)
+      else if (particle.Position.X < boundaryLeft)
       {
-        itr->Position.X = boundaryLeft;
-        itr->OldPosition.X = itr->Position.X + (velocity.X * bounce);
+        particle.Position.X = boundaryLeft;
+        particle.OldPosition.X = particle.Position.X + (velocity.X * bounce);
       }
-      if (itr->Position.Y > boundaryBottom)
+      if (particle.Position.Y > boundaryBottom)
       {
-        itr->Position.Y = boundaryBottom;
-        itr->OldPosition.Y = itr->Position.Y + (velocity.Y * bounce);
+        particle.Position.Y = boundaryBottom;
+        particle.OldPosition.Y = particle.Position.Y + (velocity.Y * bounce);
       }
-      else if (itr->Position.Y < boundaryTop)
+      else if (particle.Position.Y < boundaryTop)
       {
-        itr->Position.Y = boundaryTop;
-        itr->OldPosition.Y = itr->Position.Y + (velocity.Y * bounce);
+        particle.Position.Y = boundaryTop;
+        particle.OldPosition.Y = particle.Position.Y + (velocity.Y * bounce);
       }
     }
   }
@@ -223,10 +223,10 @@ namespace Fsl
   void VerletIntegration101::DrawSticks(const std::deque<Particle>& particles, const std::deque<Stick>& sticks)
   {
     const auto color = Colors::White();
-    for (auto itr = sticks.begin(); itr != sticks.end(); ++itr)
+    for (const auto& stick : sticks)
     {
-      auto from = particles[itr->PointIndex0].Position;
-      auto to = particles[itr->PointIndex1].Position;
+      auto from = particles[stick.PointIndex0].Position;
+      auto to = particles[stick.PointIndex1].Position;
       m_batch->DebugDrawLine(m_texFill, TypeConverter::To<PxVector2>(from), TypeConverter::To<PxVector2>(to), color);
     }
   }
@@ -238,9 +238,9 @@ namespace Fsl
     const Vector2 origin(static_cast<float>(m_texBall.GetSize().RawWidth()) * 0.5f, static_cast<float>(m_texBall.GetSize().RawHeight()) * 0.5f);
     const auto color = Colors::White();
 
-    for (auto itr = particles.begin(); itr != particles.end(); ++itr)
+    for (const auto& particle : particles)
     {
-      m_batch->Draw(m_texBall, itr->Position, color, origin, scale);
+      m_batch->Draw(m_texBall, particle.Position, color, origin, scale);
     }
   }
 }

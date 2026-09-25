@@ -145,14 +145,8 @@ namespace Fsl::Graphics3D
     m_pitch = Clamp(m_pitch);
 
     // Make sure that when pitch is out of bounds, screen doesn't get flipped
-    if (m_pitch > LocalConfig::MaxPitch)
-    {
-      m_pitch = LocalConfig::MaxPitch;
-    }
-    if (m_pitch < -LocalConfig::MaxPitch)
-    {
-      m_pitch = -LocalConfig::MaxPitch;
-    }
+    m_pitch = std::min(m_pitch, LocalConfig::MaxPitch);
+    m_pitch = std::max(m_pitch, -LocalConfig::MaxPitch);
 
     RecalcCameraVectors();
   }

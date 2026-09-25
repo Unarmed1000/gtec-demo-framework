@@ -95,9 +95,9 @@ TEST(TestMath_Plane_MonoGame, BoundingSphereTests)
                                               Vector3(1145.415f, 505.913f, -212.5173f),  Vector3(611.4731f, 505.9535f, 1031.893f),
                                               Vector3(617.7462f, -239.7422f, 1034.584f), Vector3(1151.687f, -239.7035f, -209.8246f)};
   auto eightPoint = BoundingSphere::CreateFromPoints(eightPointTestInput);
-  for (std::size_t i = 0; i < eightPointTestInput.size(); ++i)
+  for (const auto& point : eightPointTestInput)
   {
-    EXPECT_NE(eightPoint.Contains(eightPointTestInput[i]), ContainmentType::Disjoint);
+    EXPECT_NE(eightPoint.Contains(point), ContainmentType::Disjoint);
   }
 
   std::vector<Vector3> empty;

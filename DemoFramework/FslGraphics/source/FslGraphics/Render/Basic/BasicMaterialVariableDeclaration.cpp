@@ -112,10 +112,7 @@ namespace Fsl
             rDstElements[tmpIndex + 1] = rDstElements[tmpIndex];
             --tmpIndex;
           }
-          if (tmpIndex < 0)
-          {
-            tmpIndex = 0;
-          }
+          tmpIndex = std::max(tmpIndex, 0);
           rDstElements[tmpIndex] = pSrcElement[i];
         }
         ++dstIndex;
@@ -160,7 +157,7 @@ namespace Fsl
     //{
     //  throw NotSupportedException("We only support 32bit of elements");
     //}
-    CopyElements(m_elements, span.data(), static_cast<uint32_t>(span.size()));
+    CopyElements(m_elements, span.data(), span.size());
     // We do not need to verify elements as the span has been validated
     // VerifyElements(m_elements, m_stride);
   }

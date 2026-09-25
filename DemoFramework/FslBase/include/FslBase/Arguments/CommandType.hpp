@@ -51,11 +51,11 @@ namespace Fsl::Arguments
     // A optional switch argument (on/off)
     Switch = 1,
     // A optional switch argument that can be specified multiple times, for example to increase verbosity levels '-v', '-vv' or '-v -v'
-    MultiSwitch = (static_cast<int>(Switch) | static_cast<int>(CommandTypeFlags::Multi)),
+    MultiSwitch = (Switch | static_cast<int>(CommandTypeFlags::Multi)),
     // A optional argument with a associated value
     Value = (2 | static_cast<int>(CommandTypeFlags::Value)),
     // A optional argument with a associated value that can be specified multiple times
-    MultiValue = (static_cast<int>(Value) | static_cast<int>(CommandTypeFlags::Multi)),
+    MultiValue = (Value | static_cast<int>(CommandTypeFlags::Multi)),
     // A optional positional value argument without a name
     PositionalValue = 3 | static_cast<int>(CommandTypeFlags::Positional),
     // A optional positional value argument without a name that can be specified multiple times

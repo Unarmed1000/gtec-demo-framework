@@ -83,9 +83,9 @@ namespace Fsl
     uint32_t CheckVerbosityLevel(Span<StringViewLite> arguments)
     {
       uint32_t verbosityLevel = 0;
-      for (std::size_t i = 0; i < arguments.size(); ++i)
+      for (auto& rArgument : arguments)
       {
-        const StringViewLite& strArgument = arguments[i];
+        const StringViewLite& strArgument = rArgument;
         if (!strArgument.empty())
         {
           if (strArgument.starts_with("-v"))
@@ -97,7 +97,7 @@ namespace Fsl
               if (verbosityLevel > 1)
               {
                 // The other option parse we use dont support the '-vvvv' style to replace the fancy one with a normal verbose
-                arguments[i] = g_normalVerbosityArgument.data();
+                rArgument = g_normalVerbosityArgument.data();
               }
             }
           }
@@ -125,9 +125,9 @@ namespace Fsl
       if (demoSetup.Host.ServiceOptionParsers)
       {
         int32_t offset = DEMO_SERVICE_OPTION_BASE;
-        for (auto itr = demoSetup.Host.ServiceOptionParsers->begin(); itr != demoSetup.Host.ServiceOptionParsers->end(); ++itr)
+        for (const auto& parser : *demoSetup.Host.ServiceOptionParsers)
         {
-          inputParsers.emplace_back(itr->get(), offset);
+          inputParsers.emplace_back(parser.get(), offset);
           offset += DEMO_SERVICE_OPTION_INTERVAL;
         }
       }
@@ -169,9 +169,9 @@ namespace Fsl
       }
       if (demoSetup.Host.ServiceOptionParsers)
       {
-        for (auto itr = demoSetup.Host.ServiceOptionParsers->begin(); itr != demoSetup.Host.ServiceOptionParsers->end(); ++itr)
+        for (const auto& parser : *demoSetup.Host.ServiceOptionParsers)
         {
-          optionService->AddOptionParser(*itr);
+          optionService->AddOptionParser(parser);
         }
       }
       if (demoSetup.App.AppSetup.OptionParser)

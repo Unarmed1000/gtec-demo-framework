@@ -56,9 +56,9 @@ namespace Fsl
 
   void Grid::FixedUpdate()
   {
-    for (size_t i = 0; i < m_springs.size(); i++)
+    for (auto& rSpring : m_springs)
     {
-      m_springs[i].FixedUpdate();
+      rSpring.FixedUpdate();
     }
 
     for (int i = 0; i < m_gridX * m_gridY; i++)

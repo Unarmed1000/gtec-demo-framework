@@ -61,10 +61,10 @@ namespace Fsl::UI
   PxSize2D CanvasLayout::ArrangeOverride(const PxSize2D& finalSizePx)
   {
     const SpriteUnitConverter& unitConverter = GetContext()->UnitConverter;
-    for (auto itr = begin(); itr != end(); ++itr)
+    for (auto& rEntry : *this)
     {
-      auto positionPx = unitConverter.ToPxPoint2(itr->PositionDp);
-      itr->Window->Arrange(PxRectangle(positionPx, finalSizePx));
+      auto positionPx = unitConverter.ToPxPoint2(rEntry.PositionDp);
+      rEntry.Window->Arrange(PxRectangle(positionPx, finalSizePx));
     }
 
     return finalSizePx;
@@ -73,9 +73,9 @@ namespace Fsl::UI
 
   PxSize2D CanvasLayout::MeasureOverride(const PxAvailableSize& availableSizePx)
   {
-    for (auto itr = begin(); itr != end(); ++itr)
+    for (auto& rEntry : *this)
     {
-      itr->Window->Measure(availableSizePx);
+      rEntry.Window->Measure(availableSizePx);
     }
 
     // The canvas content does not affect its measurements.

@@ -59,7 +59,7 @@ namespace Fsl
 
   void GamepadsService::SetDeadZoneType(const GamepadDeadZoneType type)
   {
-    return m_state->SetDeadZoneType(type);
+    m_state->SetDeadZoneType(type);
   }
 
 

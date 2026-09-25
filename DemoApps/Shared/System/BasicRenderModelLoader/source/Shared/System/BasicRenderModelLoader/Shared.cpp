@@ -188,9 +188,8 @@ namespace Fsl
   void Shared::DrawModel(IBasicRenderSystem& render, const ModelRenderRecord& modelRecord)
   {
     render.CmdBindMaterial(modelRecord.Material);
-    for (std::size_t i = 0; i < modelRecord.Model.SubMeshes.size(); ++i)
+    for (const auto& submesh : modelRecord.Model.SubMeshes)
     {
-      const auto& submesh = modelRecord.Model.SubMeshes[i];
       render.CmdBindVertexBuffer(submesh.VertexBuffer);
       render.CmdBindIndexBuffer(submesh.IndexBuffer);
       render.CmdDrawIndexed(submesh.IndexCount, 0);

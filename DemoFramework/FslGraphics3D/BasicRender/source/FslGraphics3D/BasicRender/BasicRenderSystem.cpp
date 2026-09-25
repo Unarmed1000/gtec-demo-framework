@@ -392,7 +392,7 @@ namespace Fsl::Graphics3D
     {
       throw UsageErrorException("SetMaterialInfo called on disposed object");
     }
-    return m_deviceResources->Materials.SetMaterialInfo(sourceMaterial, materialInfo);
+    m_deviceResources->Materials.SetMaterialInfo(sourceMaterial, materialInfo);
   }
 
   std::shared_ptr<INativeTexture2D> BasicRenderSystem::GetMaterialTexture(const BasicMaterial& hMaterial) const

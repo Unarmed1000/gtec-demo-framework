@@ -109,7 +109,7 @@ namespace Fsl::Procedural
         theta = verticalAngularStride * static_cast<float>(verticalIndex);
         const float sinTheta = std::sin(theta);
         const float cosTheta = std::cos(theta);
-        const auto uCurrent = static_cast<float>(u1 + (static_cast<float>(verticalIndex) * uAdd));
+        const auto uCurrent = (u1 + (static_cast<float>(verticalIndex) * uAdd));
 
         GenerateRingVertices(rVertices, vertexIndex, minorSegments, radius, ringRadius, mod, horizontalAngularStride, sinTheta, cosTheta, uCurrent,
                              v1, v2, vAdd);

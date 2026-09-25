@@ -34,6 +34,7 @@
 #include <FslBase/Math/Pixel/PxRectangleU32.hpp>
 #include <FslBase/Math/Vector2.hpp>
 #include <FslGraphics/TextureAtlas/AtlasTextureInfo.hpp>
+#include <algorithm>
 #include <cassert>
 
 namespace Fsl::AtlasTextureInfoUtil
@@ -72,15 +73,9 @@ namespace Fsl::AtlasTextureInfoUtil
       clippedSrcRectTopPx = static_cast<int32_t>(texInfo.TrimmedRectPx.RawTop());
     }
 
-    if (clippedSrcRectRightPx >= static_cast<int32_t>(texInfo.TrimmedRectPx.RawRight()))
-    {
-      clippedSrcRectRightPx = static_cast<int32_t>(texInfo.TrimmedRectPx.RawRight());
-    }
+    clippedSrcRectRightPx = std::min(clippedSrcRectRightPx, static_cast<int32_t>(texInfo.TrimmedRectPx.RawRight()));
 
-    if (clippedSrcRectBottomPx >= static_cast<int32_t>(texInfo.TrimmedRectPx.RawBottom()))
-    {
-      clippedSrcRectBottomPx = static_cast<int32_t>(texInfo.TrimmedRectPx.RawBottom());
-    }
+    clippedSrcRectBottomPx = std::min(clippedSrcRectBottomPx, static_cast<int32_t>(texInfo.TrimmedRectPx.RawBottom()));
 
     assert(clippedSrcRectLeftPx >= 0);
     assert(clippedSrcRectTopPx >= 0);

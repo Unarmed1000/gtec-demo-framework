@@ -40,6 +40,7 @@
 #include <FslBase/Span/SpanUtil_Vector.hpp>
 #include <FslSimpleUI/Render/Base/Command/EncodedCommand.hpp>
 #include <FslSimpleUI/Render/IMBatch/DrawReorderMethod.hpp>
+#include <algorithm>
 #include <unordered_map>
 #include <vector>
 #include "../../MaterialStats.hpp"
@@ -220,22 +221,10 @@ namespace Fsl::UI::RenderIMBatch
             float clippedDstRawR = src.DstAreaRectanglePxf.RawRight();
             float clippedDstRawT = src.DstAreaRectanglePxf.RawTop();
             float clippedDstRawB = src.DstAreaRectanglePxf.RawBottom();
-            if (clippedDstRawL < 0)
-            {
-              clippedDstRawL = 0;
-            }
-            if (clippedDstRawR >= clipWidthPxf)
-            {
-              clippedDstRawR = clipWidthPxf;
-            }
-            if (clippedDstRawT < 0)
-            {
-              clippedDstRawT = 0;
-            }
-            if (clippedDstRawB >= clipHeightPxf)
-            {
-              clippedDstRawB = clipHeightPxf;
-            }
+            clippedDstRawL = std::max<float>(clippedDstRawL, 0);
+            clippedDstRawR = std::min(clippedDstRawR, clipWidthPxf);
+            clippedDstRawT = std::max<float>(clippedDstRawT, 0);
+            clippedDstRawB = std::min(clippedDstRawB, clipHeightPxf);
 
             {
               // We expect that all fully outside bounds elements have been removed
@@ -302,10 +291,7 @@ namespace Fsl::UI::RenderIMBatch
 
               // Remap the material cache index
               MaterialCacheRecord& rMaterialCacheEntry = materialCache[srcSpan[recordToMove.OriginalCommandIndex].MaterialId.Value];
-              if (rMaterialCacheEntry.Index < moveIndex)
-              {
-                rMaterialCacheEntry.Index = moveIndex;
-              }
+              rMaterialCacheEntry.Index = std::max(rMaterialCacheEntry.Index, moveIndex);
             }
             materialCache[src.MaterialId.Value].Index = insertAtIndex;
             dstSpan[insertAtIndex].OriginalCommandIndex = i;

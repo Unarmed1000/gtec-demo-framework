@@ -97,11 +97,11 @@ namespace Fsl
     float x2Ang = m_x2Ang;
     float y1Ang = m_y1Ang;
     float y2Ang = m_y2Ang;
-    for (std::size_t i = 0; i < m_points.size(); ++i)
+    for (auto& rPoint : m_points)
     {
       x = sx2 + ((std::sin(x1Ang) * xdist1) + (std::cos(x2Ang) * xdist2));
       y = sy2 + ((std::cos(y1Ang) * ydist1) + (std::sin(y2Ang) * ydist2));
-      m_points[i] = Vector2(x, y);
+      rPoint = Vector2(x, y);
       x1Ang += xAdd1;
       x2Ang += xAdd2;
       y1Ang += yAdd1;

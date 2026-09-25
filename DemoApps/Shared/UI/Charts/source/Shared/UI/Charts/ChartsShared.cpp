@@ -117,9 +117,9 @@ namespace Fsl
     {
       std::array<std::shared_ptr<UI::ChartDataView>, 4> dataViews;
       {    // Configure data views
-        for (std::size_t i = 0; i < dataViews.size(); ++i)
+        for (auto& dataView : dataViews)
         {
-          dataViews[i] = std::make_shared<UI::ChartDataView>(data);
+          dataView = std::make_shared<UI::ChartDataView>(data);
         }
         dataViews[2]->SetCustomMinMax(LocalConfig::ChartDataFixedMinMax);
         dataViews[3]->SetCustomMinMax(LocalConfig::ChartDataFixedMinMax);

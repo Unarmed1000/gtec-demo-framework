@@ -106,15 +106,15 @@ TEST(TestCompression_ValueCompression_Span, WriteSimpleReadSimple_Unsigned)
   ReadOnlySpan<uint8_t> remainingSpan(temp.data(), temp.size());
 
   std::size_t currentOffset = 0;
-  for (std::size_t i = 0; i < src.size(); ++i)
+  for (const auto value : src)
   {
-    std::size_t bytesWritten = ValueCompression::WriteSimple(dstSpan, currentOffset, src[i]);
+    std::size_t bytesWritten = ValueCompression::WriteSimple(dstSpan, currentOffset, value);
     uint32_t result = 0;
     auto bytesRead = ValueCompression::ReadSimple(result, dstSpan, currentOffset);
     EXPECT_EQ(bytesWritten, bytesRead);
-    EXPECT_EQ(src[i], result);
+    EXPECT_EQ(value, result);
     result = ValueCompression::ReadSimpleUInt32(remainingSpan);
-    EXPECT_EQ(src[i], result);
+    EXPECT_EQ(value, result);
     currentOffset += bytesWritten;
   }
 }
@@ -129,15 +129,15 @@ TEST(TestCompression_ValueCompression_Span, WriteSimpleReadSimple_Signed)
   ReadOnlySpan<uint8_t> remainingSpan(temp.data(), temp.size());
 
   std::size_t currentOffset = 0;
-  for (std::size_t i = 0; i < src.size(); ++i)
+  for (const auto value : src)
   {
-    std::size_t bytesWritten = ValueCompression::WriteSimple(dstSpan, currentOffset, src[i]);
+    std::size_t bytesWritten = ValueCompression::WriteSimple(dstSpan, currentOffset, value);
     int32_t result = 0;
     auto bytesRead = ValueCompression::ReadSimple(result, dstSpan, currentOffset);
     EXPECT_EQ(bytesWritten, bytesRead);
-    EXPECT_EQ(src[i], result);
+    EXPECT_EQ(value, result);
     result = ValueCompression::ReadSimpleInt32(remainingSpan);
-    EXPECT_EQ(src[i], result);
+    EXPECT_EQ(value, result);
     currentOffset += bytesWritten;
   }
 }

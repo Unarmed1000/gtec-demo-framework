@@ -135,19 +135,19 @@ namespace Fsl
     }
     static void CheckBlend0Span(const Fsl::TestStrategySortByTransparency& strategy, const std::vector<Fsl::TestQuad>& content)
     {
-      return TestConfigHelper::CheckOpaqueSpan(strategy, content);
+      TestConfigHelper::CheckOpaqueSpan(strategy, content);
     }
     static void CheckBlend1Span(const Fsl::TestStrategySortByTransparency& strategy, const std::vector<Fsl::TestQuad>& content)
     {
-      return TestConfigHelper::CheckTranspSpan(strategy, content);
+      TestConfigHelper::CheckTranspSpan(strategy, content);
     }
     static void CheckBlend0Segment(const Fsl::TestStrategySortByTransparency& strategy, const std::vector<Fsl::TestSegment>& content)
     {
-      return TestConfigHelper::CheckOpaqueSegment(strategy, content);
+      TestConfigHelper::CheckOpaqueSegment(strategy, content);
     }
     static void CheckBlend1Segment(const Fsl::TestStrategySortByTransparency& strategy, const std::vector<Fsl::TestSegment>& content)
     {
-      return TestConfigHelper::CheckTranspSegment(strategy, content);
+      TestConfigHelper::CheckTranspSegment(strategy, content);
     }
   };
 
@@ -179,19 +179,19 @@ namespace Fsl
     }
     static void CheckBlend0Span(const Fsl::TestStrategySortByTransparency& strategy, const std::vector<Fsl::TestQuad>& content)
     {
-      return TestConfigHelper::CheckTranspSpan(strategy, content);
+      TestConfigHelper::CheckTranspSpan(strategy, content);
     }
     static void CheckBlend1Span(const Fsl::TestStrategySortByTransparency& strategy, const std::vector<Fsl::TestQuad>& content)
     {
-      return TestConfigHelper::CheckOpaqueSpan(strategy, content);
+      TestConfigHelper::CheckOpaqueSpan(strategy, content);
     }
     static void CheckBlend0Segment(const Fsl::TestStrategySortByTransparency& strategy, const std::vector<Fsl::TestSegment>& content)
     {
-      return TestConfigHelper::CheckTranspSegment(strategy, content);
+      TestConfigHelper::CheckTranspSegment(strategy, content);
     }
     static void CheckBlend1Segment(const Fsl::TestStrategySortByTransparency& strategy, const std::vector<Fsl::TestSegment>& content)
     {
-      return TestConfigHelper::CheckOpaqueSegment(strategy, content);
+      TestConfigHelper::CheckOpaqueSegment(strategy, content);
     }
   };
 
@@ -240,32 +240,32 @@ namespace Fsl
 
     void CheckOpaqueSpan(const std::vector<Fsl::TestQuad>& content) const
     {
-      return CheckOpaqueSpan(m_strategy, content);
+      CheckOpaqueSpan(m_strategy, content);
     }
 
     void CheckTranspSpan(const std::vector<Fsl::TestQuad>& content) const
     {
-      return CheckTranspSpan(m_strategy, content);
+      CheckTranspSpan(m_strategy, content);
     }
 
     void CheckOpaqueSegment(const std::vector<Fsl::TestSegment>& content) const
     {
-      return CheckOpaqueSegment(m_strategy, content);
+      CheckOpaqueSegment(m_strategy, content);
     }
 
     void CheckTranspSegment(const std::vector<Fsl::TestSegment>& content) const
     {
-      return CheckTranspSegment(m_strategy, content);
+      CheckTranspSegment(m_strategy, content);
     }
 
     static void CheckOpaqueSpan(const strategy_type& strategy, const std::vector<Fsl::TestQuad>& content)
     {
-      return TestConfigHelper::CheckOpaqueSpan(strategy, content);
+      TestConfigHelper::CheckOpaqueSpan(strategy, content);
     }
 
     static void CheckTranspSpan(const strategy_type& strategy, const std::vector<Fsl::TestQuad>& content)
     {
-      return TestConfigHelper::CheckTranspSpan(strategy, content);
+      TestConfigHelper::CheckTranspSpan(strategy, content);
     }
 
     static void CheckOpaqueSegment(const strategy_type& rStrategy, const std::vector<Fsl::TestSegment>& content)

@@ -104,11 +104,11 @@ namespace Fsl
     bool TryParseAsString(VkPresentModeKHR& rPresentMode, const StringViewLite& strOptArg)
     {
       // Try to see if we can find a string match
-      for (std::size_t i = 0; i < PresentModeCount; ++i)
+      for (const auto& entry : PresentModes)
       {
-        if (strOptArg == PresentModes[i].StrMode)
+        if (strOptArg == entry.StrMode)
         {
-          rPresentMode = PresentModes[i].Mode;
+          rPresentMode = entry.Mode;
           return true;
         }
       }
@@ -129,11 +129,11 @@ namespace Fsl
       {
         return false;
       }
-      for (std::size_t i = 0; i < PresentModeCount; ++i)
+      for (const auto& entry : PresentModes)
       {
-        if (value == PresentModes[i].Mode)
+        if (value == entry.Mode)
         {
-          rPresentMode = PresentModes[i].Mode;
+          rPresentMode = entry.Mode;
           return true;
         }
       }

@@ -79,23 +79,21 @@ namespace Fsl
     const EGLDisplay eglDisplay = eglHostInfo->GetDisplay();
 
     FSLLOG3_INFO("Checking for EGL colorspace extensions");
-    for (std::size_t i = 0; i < g_eglColorspaceExtensions.size(); ++i)
+    for (auto extension : g_eglColorspaceExtensions)
     {
-      FSLLOG3_INFO("- {}: {}", g_eglColorspaceExtensions[i],
-                   EGLUtil::HasExtension(eglDisplay, g_eglColorspaceExtensions[i]) ? "Supported" : "Not supported");
+      FSLLOG3_INFO("- {}: {}", extension, EGLUtil::HasExtension(eglDisplay, extension) ? "Supported" : "Not supported");
     }
 
     FSLLOG3_INFO("Checking for colorspace meta data extensions");
-    for (std::size_t i = 0; i < g_eglColorspaceMetaDataExtensions.size(); ++i)
+    for (auto extension : g_eglColorspaceMetaDataExtensions)
     {
-      FSLLOG3_INFO("- {}: {}", g_eglColorspaceMetaDataExtensions[i],
-                   EGLUtil::HasExtension(eglDisplay, g_eglColorspaceMetaDataExtensions[i]) ? "Supported" : "Not supported");
+      FSLLOG3_INFO("- {}: {}", extension, EGLUtil::HasExtension(eglDisplay, extension) ? "Supported" : "Not supported");
     }
 
     FSLLOG3_INFO("Checking for other relevant extensions");
-    for (std::size_t i = 0; i < g_otherExtensions.size(); ++i)
+    for (auto extension : g_otherExtensions)
     {
-      FSLLOG3_INFO("- {}: {}", g_otherExtensions[i], EGLUtil::HasExtension(eglDisplay, g_otherExtensions[i]) ? "Supported" : "Not supported");
+      FSLLOG3_INFO("- {}: {}", extension, EGLUtil::HasExtension(eglDisplay, extension) ? "Supported" : "Not supported");
     }
 
     // Close the app

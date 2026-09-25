@@ -214,7 +214,7 @@ namespace Fsl::AppInputCommandListIO
       }
       if (currentVersion >= VersionId::Version3)
       {
-        timestamp = static_cast<int32_t>(ValueCompression::ReadSimpleInt32(rSrcSpan));
+        timestamp = ValueCompression::ReadSimpleInt32(rSrcSpan);
       }
       return {frameIndex, commandId, MillisecondTickCount32(timestamp), CustomWindowId(windowId), windowRectPx, mousePositionPx, isTouch};
     }
@@ -231,7 +231,7 @@ namespace Fsl::AppInputCommandListIO
       {
         commandList[i] = ReadInputCommandRecord(rSrcSpan, currentVersion);
       }
-      return {recordResolution, recordDensityDpi, std ::move(commandList), frameCount};
+      return {recordResolution, recordDensityDpi, std::move(commandList), frameCount};
     }
   }
 

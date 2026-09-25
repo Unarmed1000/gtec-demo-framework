@@ -122,9 +122,8 @@ namespace Fsl
       auto chartData = std::make_shared<UI::ChartData>(dataBindingService, NumericCast<uint32_t>(sourceData.CpuData.Entries.size()),
                                                        CustomControlFactory::MaxCpuProfileDataEntries(), UI::ChartData::Constraints(0, {}));
       AverageRecord average;
-      for (std::size_t i = 0; i < sourceData.CpuData.Entries.size(); ++i)
+      for (const auto& srcEntry : sourceData.CpuData.Entries)
       {
-        const auto& srcEntry = sourceData.CpuData.Entries[i];
         UI::ChartDataEntry entry;
         entry.Values[0] = srcEntry.UIDrawSchedule;
         entry.Values[1] = srcEntry.UIDrawFillBuffers;
@@ -164,9 +163,8 @@ namespace Fsl
       auto chartData = std::make_shared<UI::ChartData>(dataBindingService, NumericCast<uint32_t>(gpuData.Entries.size()),
                                                        CustomControlFactory::MaxCpuProfileDataEntries(), UI::ChartData::Constraints(0, {}));
       AverageRecord average;
-      for (std::size_t i = 0; i < gpuData.Entries.size(); ++i)
+      for (const auto& srcEntry : gpuData.Entries)
       {
-        const auto& srcEntry = gpuData.Entries[i];
         UI::ChartDataEntry entry;
         entry.Values[0] = srcEntry.UIRenderTime;
         chartData->Append(entry);

@@ -81,9 +81,9 @@ namespace Fsl
 
       UserData()
       {
-        for (int i = 0; i < NUM_PARTICLES * PARTICLE_SIZE; ++i)
+        for (float& rValue : particleData)
         {
-          particleData[i] = 0.0f;
+          rValue = 0.0f;
         }
       }
     };

@@ -78,9 +78,9 @@ namespace Fsl::Graphics3D
 
     void ClearCreateSpan(Span<BasicNativeMaterialCreateInfo> createSpan)
     {
-      for (uint32_t i = 0; i < createSpan.size(); ++i)
+      for (auto& rEntry : createSpan)
       {
-        createSpan[i] = {};
+        rEntry = {};
       }
     }
 

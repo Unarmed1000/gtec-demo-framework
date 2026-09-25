@@ -63,9 +63,8 @@ namespace Fsl::UI
     float VectorNorm(const ReadOnlySpan<float> a) noexcept
     {
       float r = 0;
-      for (std::size_t i = 0; i < a.size(); ++i)
+      for (const float t : a)
       {
-        const float t = a[i];
         r += t * t;
       }
       return std::sqrt(r);

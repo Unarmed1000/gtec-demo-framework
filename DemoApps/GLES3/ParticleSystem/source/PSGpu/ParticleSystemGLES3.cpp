@@ -128,10 +128,10 @@ namespace Fsl
       std::uniform_real_distribution<float> randomPositionZ(-100, 100);
       std::uniform_real_distribution<float> randomVelocityY(8.0f, 20.00f);
 
-      for (auto itr = rParticles.begin(); itr != rParticles.end(); ++itr)
+      for (auto& rParticle : rParticles)
       {
-        itr->Position = Vector3(randomPositionX(random), randomPositionY(random), randomPositionZ(random));
-        itr->Velocity = Vector3(0, randomVelocityY(random), 0);
+        rParticle.Position = Vector3(randomPositionX(random), randomPositionY(random), randomPositionZ(random));
+        rParticle.Velocity = Vector3(0, randomVelocityY(random), 0);
       }
     }
 

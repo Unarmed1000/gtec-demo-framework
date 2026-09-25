@@ -43,6 +43,7 @@
 #include <FslSimpleUI/App/UIAppConfig.hpp>
 #include <FslSimpleUI/Render/Builder/UIVertex.hpp>
 #include <fmt/format.h>
+#include <algorithm>
 
 namespace Fsl::SimpleUIApp
 {
@@ -298,17 +299,11 @@ namespace Fsl::SimpleUIApp
     while (m_usedDynamicIds.contains(m_nextDynamicId))
     {
       ++m_nextDynamicId;
-      if (m_nextDynamicId < UIAppConfig::MaterialId::DynamicOffset.Value)
-      {
-        m_nextDynamicId = UIAppConfig::MaterialId::DynamicOffset.Value;
-      }
+      m_nextDynamicId = std::max(m_nextDynamicId, UIAppConfig::MaterialId::DynamicOffset.Value);
     }
     const uint32_t dynamicId = m_nextDynamicId;
     ++m_nextDynamicId;
-    if (m_nextDynamicId < UIAppConfig::MaterialId::DynamicOffset.Value)
-    {
-      m_nextDynamicId = UIAppConfig::MaterialId::DynamicOffset.Value;
-    }
+    m_nextDynamicId = std::max(m_nextDynamicId, UIAppConfig::MaterialId::DynamicOffset.Value);
 
     assert(dynamicId >= UIAppConfig::MaterialId::DynamicOffset.Value);
     m_usedDynamicIds.insert(dynamicId);

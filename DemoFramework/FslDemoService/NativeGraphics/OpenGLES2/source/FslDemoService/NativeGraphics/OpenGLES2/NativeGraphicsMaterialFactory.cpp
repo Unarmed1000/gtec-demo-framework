@@ -201,12 +201,12 @@ namespace Fsl::GLES2
     catch (const std::exception&)
     {
       // Clear all temporarily written handles
-      for (uint32_t i = 0; i < dstMaterialHandles.size(); ++i)
+      for (auto& dstMaterialHandle : dstMaterialHandles)
       {
-        if (dstMaterialHandles[i].IsValid())
+        if (dstMaterialHandle.IsValid())
         {
-          m_dependentResources.Materials.Remove(dstMaterialHandles[i].Value);
-          dstMaterialHandles[i] = {};
+          m_dependentResources.Materials.Remove(dstMaterialHandle.Value);
+          dstMaterialHandle = {};
         }
       }
       throw;

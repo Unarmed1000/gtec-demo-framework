@@ -1208,9 +1208,9 @@ namespace Fsl::UI
     {
       ProcessEvents(&m_nodeScratchpad, TreeNodeFlags::UpdateEnabled);
       // Ensure that all newly allocated windows gets their expected update
-      for (auto itr = m_nodeScratchpad.begin(); itr != m_nodeScratchpad.end(); ++itr)
+      for (const auto& node : m_nodeScratchpad)
       {
-        (*itr)->Update(timespan);
+        node->Update(timespan);
       }
       m_nodeScratchpad.clear();
     }
@@ -1232,25 +1232,25 @@ namespace Fsl::UI
       {
         ProcessEvents(&m_nodeScratchpad, TreeNodeFlags(TreeNodeFlags::UpdateEnabled | TreeNodeFlags::ResolveEnabled));
         // Ensure that all newly allocated windows gets their expected update
-        for (auto itr = m_nodeScratchpad.begin(); itr != m_nodeScratchpad.end(); ++itr)
+        for (const auto& node : m_nodeScratchpad)
         {
-          auto flags = (*itr)->GetFlags();
+          auto flags = node->GetFlags();
           if (flags.IsFlagged(TreeNodeFlags::UpdateEnabled))
           {
-            (*itr)->Update(timespan);
+            node->Update(timespan);
           }
           if (flags.IsFlagged(TreeNodeFlags::ResolveEnabled))
           {
             // Delay all resolve operations until all newly spawned windows during update has been processed
-            m_nodeScratchpadPostResolve.push_back(*itr);
+            m_nodeScratchpadPostResolve.push_back(node);
           }
         }
         m_nodeScratchpad.clear();
       }
       // Updates on new windows have finished, so lets resolve the new windows
-      for (auto itr = m_nodeScratchpadPostResolve.begin(); itr != m_nodeScratchpadPostResolve.end(); ++itr)
+      for (const auto& node : m_nodeScratchpadPostResolve)
       {
-        (*itr)->Resolve(timespan);
+        node->Resolve(timespan);
       }
       m_nodeScratchpadPostResolve.clear();
     }

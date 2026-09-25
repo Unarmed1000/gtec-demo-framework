@@ -110,7 +110,7 @@ namespace Fsl::Vulkan
     //! @note  Function: vkGetDeviceQueue
     void GetDeviceQueue(const uint32_t queueFamilyIndex, const uint32_t queueIndex, VkQueue* pQueue)
     {
-      return m_device.GetDeviceQueue(queueFamilyIndex, queueIndex, pQueue);
+      m_device.GetDeviceQueue(queueFamilyIndex, queueIndex, pQueue);
     }
 
     //! @note  Function: vkDeviceWaitIdle

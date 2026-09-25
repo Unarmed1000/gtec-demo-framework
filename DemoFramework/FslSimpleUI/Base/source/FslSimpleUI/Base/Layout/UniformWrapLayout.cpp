@@ -96,9 +96,9 @@ namespace Fsl::UI
     {
       const PxSize2D addPx(m_elementUniformSizePx + spacingPx);
       PxPoint2 positionPx;
-      for (auto itr = begin(); itr != end(); ++itr)
+      for (const auto& entry : *this)
       {
-        itr->Window->Arrange(PxRectangle(positionPx, m_elementUniformSizePx));
+        entry.Window->Arrange(PxRectangle(positionPx, m_elementUniformSizePx));
         positionPx.X += addPx.Width();
         if ((positionPx.X + m_elementUniformSizePx.Width()) > finalSizePx.Width())
         {
@@ -111,9 +111,9 @@ namespace Fsl::UI
     {
       const PxSize2D addPx(m_elementUniformSizePx + spacingPx);
       PxPoint2 positionPx;
-      for (auto itr = begin(); itr != end(); ++itr)
+      for (const auto& entry : *this)
       {
-        itr->Window->Arrange(PxRectangle(positionPx, m_elementUniformSizePx));
+        entry.Window->Arrange(PxRectangle(positionPx, m_elementUniformSizePx));
         positionPx.Y += addPx.Height();
         if ((positionPx.Y + m_elementUniformSizePx.Height()) > finalSizePx.Height())
         {

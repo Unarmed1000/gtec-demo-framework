@@ -280,11 +280,11 @@ namespace Fsl
 
 
       // Enable the attribs the meshes use once (since we use the same mesh layout for everything)
-      for (std::size_t i = 0; i < m_attribLink.size(); ++i)
+      for (const auto& entry : m_attribLink)
       {
-        if (m_attribLink[i].AttribIndex >= 0)
+        if (entry.AttribIndex >= 0)
         {
-          glEnableVertexAttribArray(m_attribLink[i].AttribIndex);
+          glEnableVertexAttribArray(entry.AttribIndex);
         }
       }
 

@@ -77,6 +77,6 @@ namespace Fsl
     {
       throw ServiceProviderUnavailableException("The service provider is unavailable");
     }
-    return serviceProvider->Get(rServices, serviceId);
+    serviceProvider->Get(rServices, serviceId);
   }
 }

@@ -38,6 +38,7 @@
 #include <FslSimpleUI/Base/WindowContext.hpp>
 #include <Shared/UI/Benchmark/Activity/ActivityStack.hpp>
 #include <Shared/UI/Benchmark/Activity/FakeActivity.hpp>
+#include <ranges>
 
 namespace Fsl::UI
 {
@@ -53,11 +54,11 @@ namespace Fsl::UI
 
   ActivityStack::~ActivityStack()
   {
-    for (auto itr = m_stack.rbegin(); itr != m_stack.rend(); ++itr)
+    for (auto& rEntry : std::views::reverse(m_stack))
     {
       try
       {
-        itr->Promise.set_exception(std::make_exception_ptr(std::runtime_error("activity canceled")));
+        rEntry.Promise.set_exception(std::make_exception_ptr(std::runtime_error("activity canceled")));
       }
       catch (const std::exception& ex)
       {

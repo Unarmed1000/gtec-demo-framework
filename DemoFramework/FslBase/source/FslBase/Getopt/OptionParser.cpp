@@ -195,10 +195,7 @@ namespace Fsl
             break;
           }
 
-          if (len > maxLength)
-          {
-            maxLength = len;
-          }
+          maxLength = std::max(len, maxLength);
         }
         ++itr;
       }
@@ -562,9 +559,9 @@ namespace Fsl
                                                 StringViewLite strHelpCaption)
   {
     std::deque<ParserRecord> inputOptionParsersEx;
-    for (auto itr = inputOptionParsers.begin(); itr != inputOptionParsers.end(); ++itr)
+    for (auto inputOptionParser : inputOptionParsers)
     {
-      inputOptionParsersEx.emplace_back(*itr, 0);
+      inputOptionParsersEx.emplace_back(inputOptionParser, 0);
     }
     return Parse(args, inputOptionParsersEx, strHelpCaption);
   }

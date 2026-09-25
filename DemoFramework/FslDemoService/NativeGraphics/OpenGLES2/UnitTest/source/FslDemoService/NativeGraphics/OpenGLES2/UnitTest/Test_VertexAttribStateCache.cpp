@@ -42,9 +42,9 @@ namespace
 
   bool ContainsArrayIndex(const ReadOnlySpan<GLES2::GLVertexElementAttribConfig> span, const GLuint attribIndex)
   {
-    for (std::size_t i = 0; i < span.size(); ++i)
+    for (const auto& entry : span)
     {
-      if (span[i].AttribIndex == attribIndex)
+      if (entry.AttribIndex == attribIndex)
       {
         return true;
       }
@@ -57,9 +57,8 @@ namespace
   {
     auto vertexStride = NumericCast<GLint>(attribLinks.VertexStride());
     auto span = attribLinks.AsSpan();
-    for (std::size_t i = 0; i < span.size(); ++i)
+    for (const auto& spanEntry : span)
     {
-      const auto& spanEntry = span[i];
       const auto& stateAttribEntry = currentState[spanEntry.AttribIndex];
       EXPECT_TRUE(stateAttribEntry.Enabled);
       EXPECT_EQ(stateAttribEntry.Basic.Size, spanEntry.Size);

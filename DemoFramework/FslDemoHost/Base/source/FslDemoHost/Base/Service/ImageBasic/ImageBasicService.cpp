@@ -94,21 +94,21 @@ namespace Fsl
 
     // Query all libs for their supported extensions (note its optional for them to provide this list)
     std::deque<ImageFormat> formats;
-    for (auto itr = m_imageLibraryServices.begin(); itr != m_imageLibraryServices.end(); ++itr)
+    for (const auto& imageLibraryService : m_imageLibraryServices)
     {
       formats.clear();
-      (*itr)->ExtractSupportedImageFormats(formats);
-      for (auto itrFormat = formats.begin(); itrFormat != formats.end(); ++itrFormat)
+      imageLibraryService->ExtractSupportedImageFormats(formats);
+      for (auto& format : formats)
       {
-        auto itrFind = m_formatToImageLibrary.find(*itrFormat);
+        auto itrFind = m_formatToImageLibrary.find(format);
         if (itrFind == m_formatToImageLibrary.end())
         {
-          m_formatToImageLibrary[*itrFormat] = std::make_shared<ImageLibraryDeque>();
-          m_formatToImageLibrary[*itrFormat]->push_back(*itr);
+          m_formatToImageLibrary[format] = std::make_shared<ImageLibraryDeque>();
+          m_formatToImageLibrary[format]->push_back(imageLibraryService);
         }
         else
         {
-          itrFind->second->push_back(*itr);
+          itrFind->second->push_back(imageLibraryService);
         }
       }
     }
@@ -405,9 +405,9 @@ namespace Fsl
     }
 
     // No such luck, so lets just try all the registered image service
-    for (auto itr = m_imageLibraryServices.begin(); itr != m_imageLibraryServices.end(); ++itr)
+    for (const auto& imageLibraryService : m_imageLibraryServices)
     {
-      if ((*itr)->TryWrite(absPath, bitmap, imageFormat, true))
+      if (imageLibraryService->TryWrite(absPath, bitmap, imageFormat, true))
       {
         return;
       }
@@ -458,9 +458,9 @@ namespace Fsl
 
 
     // No such luck, so lets just try all the registered image service
-    for (auto itr = m_imageLibraryServices.begin(); itr != m_imageLibraryServices.end(); ++itr)
+    for (const auto& imageLibraryService : m_imageLibraryServices)
     {
-      if ((*itr)->TryWrite(absPath, bitmap, imageFormat, true))
+      if (imageLibraryService->TryWrite(absPath, bitmap, imageFormat, true))
       {
         return;
       }

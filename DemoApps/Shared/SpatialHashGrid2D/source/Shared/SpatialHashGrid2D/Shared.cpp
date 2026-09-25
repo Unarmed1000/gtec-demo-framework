@@ -318,9 +318,9 @@ namespace Fsl
             for (int32_t x = cellStartX; x <= cellEndX; ++x)
             {
               auto span = m_resData.SpatialHashGrid.GetChunkEntries(x, y);
-              for (std::size_t i = 0; i < span.size(); ++i)
+              for (const auto& entry : span)
               {
-                m_resData.Records[span[i].Id].BaseColor = RenderColor::Candidate;
+                m_resData.Records[entry.Id].BaseColor = RenderColor::Candidate;
               }
             }
           }

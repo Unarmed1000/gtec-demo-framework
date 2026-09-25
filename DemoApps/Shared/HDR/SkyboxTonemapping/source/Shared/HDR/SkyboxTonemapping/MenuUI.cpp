@@ -185,9 +185,9 @@ namespace Fsl
 
     uint32_t flag = 1;
     uint32_t enabledFlags = 0;
-    for (std::size_t i = 0; i < m_checkboxes.size(); ++i)
+    for (const auto& checkbox : m_checkboxes)
     {
-      if (m_checkboxes[i]->IsChecked())
+      if (checkbox->IsChecked())
       {
         enabledFlags |= flag;
       }
@@ -210,16 +210,16 @@ namespace Fsl
 
     m_nativeBatch->Begin(BlendState::AlphaBlend);
     int32_t startX = 0;
-    for (std::size_t i = 0; i < m_render.size(); ++i)
+    for (const auto& entry : m_render)
     {
-      const auto endX = static_cast<int32_t>(m_render[i].SplitX.GetValue());
-      const auto color = m_render[i].LabelAlpha.GetValue();
+      const auto endX = static_cast<int32_t>(entry.SplitX.GetValue());
+      const auto color = entry.LabelAlpha.GetValue();
       if (color >= 0.001f && pFont != nullptr)
       {
         const Color fontColor(color, color, color, color);
-        const auto dim = pFont->MeasureString(m_render[i].Name.c_str());
+        const auto dim = pFont->MeasureString(entry.Name.c_str());
         const float position = ((static_cast<float>(endX - startX - dim.RawWidth()) / 2.0f) + static_cast<float>(startX));
-        m_nativeBatch->DrawString(*pFont, m_render[i].Name, Vector2(position, 0), fontColor);
+        m_nativeBatch->DrawString(*pFont, entry.Name, Vector2(position, 0), fontColor);
       }
       startX = endX;
     }
@@ -273,17 +273,17 @@ namespace Fsl
       const auto segmentSize = static_cast<float>(extent.Width.Value) / static_cast<float>(activeSegments);
       uint32_t sceneFlags = m_sceneRenderFlags;
       float currentSplitX = segmentSize;
-      for (std::size_t i = 0; i < m_render.size(); ++i)
+      for (auto& rEntry : m_render)
       {
         if ((sceneFlags & 1) == 0)
         {
-          m_render[i].LabelAlpha.SetValue(0.0f);
-          m_render[i].SplitX.SetValue(currentSplitX - segmentSize);
+          rEntry.LabelAlpha.SetValue(0.0f);
+          rEntry.SplitX.SetValue(currentSplitX - segmentSize);
         }
         else
         {
-          m_render[i].LabelAlpha.SetValue(1.0f);
-          m_render[i].SplitX.SetValue(currentSplitX);
+          rEntry.LabelAlpha.SetValue(1.0f);
+          rEntry.SplitX.SetValue(currentSplitX);
           currentSplitX += segmentSize;
         }
         sceneFlags >>= 1;
@@ -291,19 +291,19 @@ namespace Fsl
     }
     else
     {
-      for (std::size_t i = 0; i < m_render.size(); ++i)
+      for (auto& rEntry : m_render)
       {
-        m_render[i].LabelAlpha.SetValue(0);
-        m_render[i].SplitX.SetValue(0);
+        rEntry.LabelAlpha.SetValue(0);
+        rEntry.SplitX.SetValue(0);
       }
     }
 
     if (forceInstant)
     {
-      for (std::size_t i = 0; i < m_render.size(); ++i)
+      for (auto& rEntry : m_render)
       {
-        m_render[i].LabelAlpha.ForceComplete();
-        m_render[i].SplitX.ForceComplete();
+        rEntry.LabelAlpha.ForceComplete();
+        rEntry.SplitX.ForceComplete();
       }
     }
 
@@ -407,10 +407,10 @@ namespace Fsl
     stackLayout->SetAlignmentX(UI::ItemAlignment::Stretch);
     stackLayout->SetAlignmentY(UI::ItemAlignment::Stretch);
     stackLayout->SetOrientation(UI::LayoutOrientation::Horizontal);
-    for (std::size_t i = 0; i < m_checkboxes.size(); ++i)
+    for (const auto& checkbox : m_checkboxes)
     {
       stackLayout->PushLayoutLength(UI::LayoutLength(UI::LayoutUnitType::Star, 1.0f));
-      stackLayout->AddChild(m_checkboxes[i]);
+      stackLayout->AddChild(checkbox);
     }
 
     auto stackLayout2 = std::make_shared<UI::ComplexStackLayout>(context);

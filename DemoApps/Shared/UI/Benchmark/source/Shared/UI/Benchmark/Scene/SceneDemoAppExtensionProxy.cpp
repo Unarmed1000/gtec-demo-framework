@@ -221,7 +221,7 @@ namespace Fsl
 
   void SceneDemoAppExtensionProxy::SetRecording(ReadOnlySpan<InputCommandRecord> span, const uint32_t frameCount)
   {
-    return m_recorder->SetRecording(span, frameCount);
+    m_recorder->SetRecording(span, frameCount);
   }
 
 
@@ -239,7 +239,7 @@ namespace Fsl
   {
     StopAll();
     m_controlledDemoTime = {};
-    return m_recorder->RecordBegin();
+    m_recorder->RecordBegin();
   }
 
   void SceneDemoAppExtensionProxy::RecordEnd()
@@ -318,30 +318,30 @@ namespace Fsl
       return;
     }
 
-    for (std::size_t i = 0; i < span.size(); ++i)
+    for (const auto& command : span)
     {
-      switch (span[i].CommandId)
+      switch (command.CommandId)
       {
       case InputCommandId::MouseDown:
-        GenerateFakeMouseDown(span[i]);
+        GenerateFakeMouseDown(command);
         break;
       case InputCommandId::MouseUp:
-        GenerateFakeMouseUp(span[i]);
+        GenerateFakeMouseUp(command);
         break;
       case InputCommandId::MouseDownMove:
-        GenerateFakeMouseDownMove(span[i]);
+        GenerateFakeMouseDownMove(command);
         break;
       case InputCommandId::MouseMove:
-        GenerateFakeMouseMove(span[i]);
+        GenerateFakeMouseMove(command);
         break;
       case InputCommandId::MouseMoveClear:
-        GenerateFakeMouseClear(span[i]);
+        GenerateFakeMouseClear(command);
         break;
       case InputCommandId::Invalid:
         FSLLOG3_ERROR("InputCommandId::Invaid should never be recorded");
         break;
       default:
-        FSLLOG3_ERROR("Unsupported command id found: '{}'", static_cast<uint32_t>(span[i].CommandId));
+        FSLLOG3_ERROR("Unsupported command id found: '{}'", static_cast<uint32_t>(command.CommandId));
         break;
       }
     }

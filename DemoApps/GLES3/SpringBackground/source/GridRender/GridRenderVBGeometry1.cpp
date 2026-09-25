@@ -118,9 +118,9 @@ namespace Fsl
     {
       Vector4 color(0.12f, 0.12f, 0.55f, 0.33f);
       VertexPositionColorF defaultVertex(Vector3(), color);
-      for (std::size_t i = 0; i < m_coordinates.size(); ++i)
+      for (auto& rCoordinate : m_coordinates)
       {
-        m_coordinates[i] = defaultVertex;
+        rCoordinate = defaultVertex;
       }
 
       const std::ptrdiff_t dstStrideX = m_gridFinalSize.X + 2;

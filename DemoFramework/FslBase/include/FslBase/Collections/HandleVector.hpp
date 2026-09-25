@@ -730,9 +730,9 @@ namespace Fsl
     {
       std::vector<int32_t> taken(m_data.size());
       {    // Validate indices to handle conversions
-        for (std::size_t i = 0; i < taken.size(); ++i)
+        for (auto& rEntry : taken)
         {
-          taken[i] = -1;
+          rEntry = -1;
         }
         for (handle_type i = 0; i < UncheckedNumericCast<handle_type>(m_data.size()); ++i)
         {
@@ -746,9 +746,9 @@ namespace Fsl
       }
 
       {    // Validate handle to index conversions
-        for (std::size_t i = 0; i < taken.size(); ++i)
+        for (auto& rEntry : taken)
         {
-          taken[i] = -1;
+          rEntry = -1;
         }
         for (handle_type handle = 0; handle < UncheckedNumericCast<handle_type>(m_data.size()); ++handle)
         {

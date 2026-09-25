@@ -177,7 +177,7 @@ namespace Fsl
                                            const PixelFormat desiredPixelFormat)
   {
     const IO::Path absPath(ToAbsolutePath(m_persistentDataPath, relativePath));
-    return m_imageService->Write(absPath, bitmap, imageFormat, desiredPixelFormat);
+    m_imageService->Write(absPath, bitmap, imageFormat, desiredPixelFormat);
   }
 
 
@@ -185,7 +185,7 @@ namespace Fsl
                                                      const PixelFormat desiredPixelFormat)
   {
     const IO::Path absPath(ToAbsolutePath(m_persistentDataPath, relativePath));
-    return m_imageService->WriteExactImage(absPath, bitmap, imageFormat, desiredPixelFormat);
+    m_imageService->WriteExactImage(absPath, bitmap, imageFormat, desiredPixelFormat);
   }
 
 

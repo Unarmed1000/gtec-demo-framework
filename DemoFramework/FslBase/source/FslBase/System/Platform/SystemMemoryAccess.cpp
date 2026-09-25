@@ -58,20 +58,20 @@ namespace Fsl
   void SystemMemoryAccess::SetUInt8(const std::size_t targetAddress, const uint8_t value)
   {
     ScopedSystemMemoryAccess access(targetAddress);
-    return access.SetUInt8(value);
+    access.SetUInt8(value);
   }
 
 
   void SystemMemoryAccess::SetUInt16(const std::size_t targetAddress, const uint16_t value)
   {
     ScopedSystemMemoryAccess access(targetAddress);
-    return access.SetUInt16(value);
+    access.SetUInt16(value);
   }
 
 
   void SystemMemoryAccess::SetUInt32(const std::size_t targetAddress, const uint32_t value)
   {
     ScopedSystemMemoryAccess access(targetAddress);
-    return access.SetUInt32(value);
+    access.SetUInt32(value);
   }
 }

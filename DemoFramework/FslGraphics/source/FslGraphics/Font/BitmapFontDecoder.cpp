@@ -150,9 +150,9 @@ namespace Fsl
     {
       const uint32_t entries = ValueCompression::ReadSimpleUInt32(rSpan);
       std::vector<BitmapFontChar> result(entries);
-      for (std::size_t i = 0; i < result.size(); ++i)
+      for (auto& rEntry : result)
       {
-        result[i] = DecodeChar(rSpan);
+        rEntry = DecodeChar(rSpan);
       }
       return result;
     }
@@ -161,9 +161,9 @@ namespace Fsl
     {
       const uint32_t entries = ValueCompression::ReadSimpleUInt32(rSpan);
       std::vector<BitmapFontKerning> result(entries);
-      for (std::size_t i = 0; i < result.size(); ++i)
+      for (auto& rEntry : result)
       {
-        result[i] = DecodeKerning(rSpan);
+        rEntry = DecodeKerning(rSpan);
       }
       return result;
     }

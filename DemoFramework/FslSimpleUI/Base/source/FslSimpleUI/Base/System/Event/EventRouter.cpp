@@ -40,6 +40,7 @@
 #include <FslSimpleUI/Base/Event/WindowEvent.hpp>
 #include <FslSimpleUI/Base/Event/WindowEventPool.hpp>
 #include <cassert>
+#include <ranges>
 #include <utility>
 #include "../ITreeNodeClickInputTargetLocater.hpp"
 #include "../TreeNode.hpp"
@@ -79,15 +80,15 @@ namespace Fsl::UI
       if (node->IsConsideredRunning() && currentClipRectPx.Contains(eventPosPx.X, eventPosPx.Y))
       {
         const auto& children = node->m_children;
-        for (auto itr = children.rbegin(); itr != children.rend(); ++itr)
+        for (const auto& child : std::views::reverse(children))
         {
           PxPoint2 childTopLeftPx;
           PxClipRectangle childClipRectPx;
-          CalcClipRect(childTopLeftPx, childClipRectPx, currentTopLeftPx, currentClipRectPx, *itr);
+          CalcClipRect(childTopLeftPx, childClipRectPx, currentTopLeftPx, currentClipRectPx, child);
 
-          // assert(EqualHelper::IsEqual(childClipRect, (*itr)->CalcScreenClipRect()));
+          // assert(EqualHelper::IsEqual(childClipRect, (*child)->CalcScreenClipRect()));
 
-          std::shared_ptr<TreeNode> res = RecursiveLocateTopChildThatWasHit(childTopLeftPx, childClipRectPx, *itr, eventPosPx, flags);
+          std::shared_ptr<TreeNode> res = RecursiveLocateTopChildThatWasHit(childTopLeftPx, childClipRectPx, child, eventPosPx, flags);
           if (res)
           {
             return res;

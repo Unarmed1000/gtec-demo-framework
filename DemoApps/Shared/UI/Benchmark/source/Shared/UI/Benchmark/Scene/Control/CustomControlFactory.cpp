@@ -162,9 +162,9 @@ namespace Fsl::CustomControlFactory
     cpuTimeChart->SetLabelBackground(uiFactory.GetResources().GetToolTipNineSliceSprite());
     cpuTimeChart->SetRenderPolicy(UI::ChartRenderPolicy::FillAvailable);
     auto cpuProfileRecords = CustomControlFactory::GetCpuProfileRecords();
-    for (uint32_t i = 0; i < cpuProfileRecords.size(); ++i)
+    for (const auto& cpuProfileRecord : cpuProfileRecords)
     {
-      data->SetChannelMetaData(cpuProfileRecords[i].Index, cpuProfileRecords[i].ItemColor);
+      data->SetChannelMetaData(cpuProfileRecord.Index, cpuProfileRecord.ItemColor);
     }
     return cpuTimeChart;
   }

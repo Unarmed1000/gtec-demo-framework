@@ -129,8 +129,8 @@ namespace Fsl
   void Plane::Normalize()
   {
     const Vector3 normal = Vector3::Normalize(Normal);
-    const float factor = static_cast<float>(std::sqrt(Normal.X * Normal.X + Normal.Y * Normal.Y + Normal.Z * Normal.Z)) /
-                         static_cast<float>(std::sqrt(normal.X * normal.X + normal.Y * normal.Y + normal.Z * normal.Z));
+    const float factor = std::sqrt(Normal.X * Normal.X + Normal.Y * Normal.Y + Normal.Z * Normal.Z) /
+                         std::sqrt(normal.X * normal.X + normal.Y * normal.Y + normal.Z * normal.Z);
     D = D * factor;
   }
 
@@ -146,9 +146,8 @@ namespace Fsl
   void Plane::Normalize(const Plane& value, Plane& rResult)
   {
     rResult.Normal = Vector3::Normalize(value.Normal);
-    const float factor =
-      static_cast<float>(std::sqrt(rResult.Normal.X * rResult.Normal.X + rResult.Normal.Y * rResult.Normal.Y + rResult.Normal.Z * rResult.Normal.Z)) /
-      static_cast<float>(std::sqrt(value.Normal.X * value.Normal.X + value.Normal.Y * value.Normal.Y + value.Normal.Z * value.Normal.Z));
+    const float factor = std::sqrt(rResult.Normal.X * rResult.Normal.X + rResult.Normal.Y * rResult.Normal.Y + rResult.Normal.Z * rResult.Normal.Z) /
+                         std::sqrt(value.Normal.X * value.Normal.X + value.Normal.Y * value.Normal.Y + value.Normal.Z * value.Normal.Z);
     rResult.D = value.D * factor;
   }
 

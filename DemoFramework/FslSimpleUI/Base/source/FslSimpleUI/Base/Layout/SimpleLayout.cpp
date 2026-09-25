@@ -55,10 +55,10 @@ namespace Fsl::UI
     Layout::OnPropertiesUpdated(flags);
     if (flags.IsFlagged(PropertyType::BaseColor) && !m_children.empty())
     {
-      for (auto itr = m_children.begin(); itr != m_children.end(); ++itr)
+      for (auto& rEntry : m_children)
       {
-        assert(itr->Window);
-        itr->Window->SYS_SetParentBaseColor(GetFinalBaseColor());
+        assert(rEntry.Window);
+        rEntry.Window->SYS_SetParentBaseColor(GetFinalBaseColor());
       }
     }
   }

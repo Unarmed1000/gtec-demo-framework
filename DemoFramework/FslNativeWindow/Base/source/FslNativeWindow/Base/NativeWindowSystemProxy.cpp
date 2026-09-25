@@ -62,6 +62,6 @@ namespace Fsl
 
   void NativeWindowSystemProxy::Shutdown()
   {
-    return m_windowSystem->Shutdown();
+    m_windowSystem->Shutdown();
   }
 }

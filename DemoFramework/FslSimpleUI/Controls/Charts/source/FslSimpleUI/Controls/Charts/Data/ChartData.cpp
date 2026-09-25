@@ -426,17 +426,11 @@ namespace Fsl::UI
   MinMax<ChartData::value_type> ChartData::CalcSpanMinMax(ReadOnlySpan<ChartDataEntry> span, const uint32_t dataEntries, value_type min,
                                                           value_type max) noexcept
   {
-    for (std::size_t i = 0; i < span.size(); ++i)
+    for (const auto& entry : span)
     {
-      const value_type val = CalcSum(span[i], dataEntries);
-      if (val < min)
-      {
-        min = val;
-      }
-      if (val > max)
-      {
-        max = val;
-      }
+      const value_type val = CalcSum(entry, dataEntries);
+      min = std::min(val, min);
+      max = std::max(val, max);
     }
     return MinMax<value_type>(min, max);
   }

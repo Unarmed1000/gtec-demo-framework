@@ -131,9 +131,8 @@ namespace Fsl::UI
         auto startPositionPxf = dstPositionPxf;
         const auto baseColor = rBuilder.GetColor();
         const auto medianColor = UIRenderColor::Premultiply(pDrawData->MedianColor * baseColor);
-        for (std::size_t spanIndex = 0; spanIndex < span.size(); ++spanIndex)
+        for (const auto& spanEntry : span)
         {
-          const auto& spanEntry = span[spanIndex];
           const auto primaryColor = UIRenderColor::Premultiply(spanEntry.PrimaryColor * baseColor);
           rBuilder.SetColor(primaryColor);
 

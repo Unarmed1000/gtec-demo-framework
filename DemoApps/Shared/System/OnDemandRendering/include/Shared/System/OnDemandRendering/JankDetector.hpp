@@ -34,6 +34,7 @@
 #include <FslBase/Math/Pixel/PxValue.hpp>
 #include <FslBase/Span/ReadOnlySpan.hpp>
 #include <FslDemoApp/Shared/Host/DemoWindowMetrics.hpp>
+#include <algorithm>
 #include <cassert>
 #include <vector>
 
@@ -181,10 +182,7 @@ namespace Fsl
           Entries.push_back(entry);
         }
         ++Count;
-        if (Count > ValidEntries)
-        {
-          ValidEntries = Count;
-        }
+        ValidEntries = std::max(Count, ValidEntries);
         assert(Count <= ValidEntries);
         assert(ValidEntries <= Entries.size());
         assert(Count <= Entries.size());

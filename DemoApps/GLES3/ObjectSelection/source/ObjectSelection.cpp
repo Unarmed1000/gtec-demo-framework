@@ -346,11 +346,11 @@ namespace Fsl
     glUniform3fv(m_resources.ProgDirectionalLight.LocAmbientColor, 1, m_lightFragUboData.AmbientColor.DirectAccess());
 
     // Enable the attribs the meshes use once (since we use the same mesh layout for everything)
-    for (std::size_t i = 0; i < m_resources.AttribLink.size(); ++i)
+    for (const auto& entry : m_resources.AttribLink)
     {
-      if (m_resources.AttribLink[i].AttribIndex >= 0)
+      if (entry.AttribIndex >= 0)
       {
-        glEnableVertexAttribArray(m_resources.AttribLink[i].AttribIndex);
+        glEnableVertexAttribArray(entry.AttribIndex);
       }
     }
 

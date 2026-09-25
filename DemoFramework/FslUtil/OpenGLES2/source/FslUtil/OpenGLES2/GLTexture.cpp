@@ -476,7 +476,7 @@ namespace Fsl::GLES2
     }
 
     Texture::ScopedDirectReadAccess directAccessSrc(texture);
-    return SetData(directAccessSrc.AsRawTexture(), textureParameters, textureFlags);
+    SetData(directAccessSrc.AsRawTexture(), textureParameters, textureFlags);
   }
 
 
