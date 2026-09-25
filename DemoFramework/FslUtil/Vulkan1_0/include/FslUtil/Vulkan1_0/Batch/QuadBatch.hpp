@@ -51,11 +51,9 @@
 #include <RapidVulkan/PipelineCache.hpp>
 #include <RapidVulkan/PipelineLayout.hpp>
 #include <RapidVulkan/ShaderModule.hpp>
-#include <cstdint>
 #include <vector>
 #include "QuadBatchDescriptorSets.hpp"
 #include "QuadBatchVertexBuffers.hpp"
-
 
 namespace Fsl::Vulkan
 {
@@ -64,7 +62,7 @@ namespace Fsl::Vulkan
   //!       will do no drawing, but the calls will appear to work. This can prevent that nasty crashes occur.
   class QuadBatch final
   {
-    enum class FrameState : uint8_t
+    enum class FrameState
     {
       NotReady,
       DrawFrame,

@@ -34,7 +34,6 @@
 #include <FslBase/Getopt/IOptionParser.hpp>
 #include <FslBase/Span/ReadOnlySpan.hpp>
 #include <FslBase/String/StringViewLite.hpp>
-#include <cstdint>
 #include <deque>
 
 
@@ -61,7 +60,7 @@ namespace Fsl
       }
     };
 
-    enum class Result : uint8_t
+    enum class Result
     {
       Failed = 0,
       OK = 1,

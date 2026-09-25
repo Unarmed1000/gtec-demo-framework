@@ -32,11 +32,9 @@
  ****************************************************************************************************************************************************/
 
 
-#include <cstdint>
-
 namespace Fsl::UI::Theme
 {
-  enum class ImageButtonType : uint8_t
+  enum class ImageButtonType
   {
     Normal,
     Small,

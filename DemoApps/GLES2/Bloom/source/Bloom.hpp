@@ -40,7 +40,6 @@
 #include <FslUtil/OpenGLES2/GLFrameBuffer.hpp>
 #include <FslUtil/OpenGLES2/GLProgram.hpp>
 #include <Shared/Bloom/MenuUI.hpp>
-#include <cstdint>
 #include <deque>
 #include <vector>
 
@@ -53,7 +52,7 @@ namespace Fsl
   {
     using base_type = DemoAppGLES2;
 
-    enum class BlurShaderType : uint8_t
+    enum class BlurShaderType
     {
       Gaussian5X5,
       Gaussian9X9,

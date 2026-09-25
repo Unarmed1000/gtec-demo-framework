@@ -33,11 +33,9 @@
 
 #include <FslDemoApp/Base/ADemoOptionParser.hpp>
 
-#include <cstdint>
-
 namespace Fsl
 {
-  enum class SceneState : uint8_t
+  enum class SceneState
   {
     Split2 = 0,
     Scene1 = 1,

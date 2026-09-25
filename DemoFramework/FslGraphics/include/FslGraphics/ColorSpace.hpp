@@ -31,11 +31,9 @@
  *
  ****************************************************************************************************************************************************/
 
-#include <cstdint>
-
 namespace Fsl
 {
-  enum class ColorSpace : uint8_t
+  enum class ColorSpace
   {
     //! The normal non linear SRGB color space
     SRGBNonLinear = 0,

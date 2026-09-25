@@ -32,11 +32,9 @@
  ****************************************************************************************************************************************************/
 
 
-#include <cstdint>
-
 namespace Fsl
 {
-  enum class LogStatsMode : uint8_t
+  enum class LogStatsMode
   {
     //! Logging of stats is disabled
     Disabled = 0,

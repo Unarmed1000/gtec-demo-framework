@@ -33,11 +33,9 @@
 
 #include <FslBase/BasicTypes.hpp>
 
-#include <cstdint>
-
 namespace Fsl::UI
 {
-  enum class ScrollModeFlags : uint8_t
+  enum class ScrollModeFlags : uint32_t
   {
     // A empty flag
     NotDefined = 0x00,

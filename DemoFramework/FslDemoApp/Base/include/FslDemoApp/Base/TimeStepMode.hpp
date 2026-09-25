@@ -31,11 +31,9 @@
  *
  ****************************************************************************************************************************************************/
 
-#include <cstdint>
-
 namespace Fsl
 {
-  enum class TimeStepMode : uint8_t
+  enum class TimeStepMode
   {
     // Show everything using the normal timestep
     Normal,

@@ -31,11 +31,9 @@
  *
  ****************************************************************************************************************************************************/
 
-#include <cstdint>
-
 namespace Fsl::DataBinding::Internal
 {
-  enum class PropertySetResult : uint8_t
+  enum class PropertySetResult
   {
     //! The value was not changed as it was already equal to the new value
     ValueUnchanged = 0,

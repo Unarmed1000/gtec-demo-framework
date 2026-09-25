@@ -35,7 +35,7 @@
 
 namespace Fsl::Graphics3D
 {
-  enum class NativeTextureFactoryCaps : uint8_t
+  enum class NativeTextureFactoryCaps : uint32_t
   {
     // A empty flag
     NotDefined = 0x00,

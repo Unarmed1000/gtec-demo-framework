@@ -31,11 +31,9 @@
  *
  ****************************************************************************************************************************************************/
 
-#include <cstdint>
-
 namespace Fsl::Willems::MeshLoader
 {
-  enum class VertexLayout : uint8_t
+  enum class VertexLayout
   {
     // NOLINTNEXTLINE(readability-identifier-naming)
     VERTEX_LAYOUT_POSITION = 0x0,

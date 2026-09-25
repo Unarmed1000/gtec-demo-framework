@@ -40,13 +40,11 @@
 #include <FslDataBinding/Base/PropertyChangeReason.hpp>
 #include <FslDataBinding/Base/TwoWayDataBindingGroupManager.hpp>
 #include <array>
-#include <cstdint>
 #include <deque>
 #include <memory>
 #include <queue>
 #include <typeindex>
 #include <utility>
-
 
 namespace Fsl::DataBinding
 {
@@ -68,7 +66,7 @@ namespace Fsl::DataBinding
   {
     friend class DataBindingServiceDebug;
 
-    enum class CallContextState : uint8_t
+    enum class CallContextState
     {
       Idle,
       ExecutingChanges,

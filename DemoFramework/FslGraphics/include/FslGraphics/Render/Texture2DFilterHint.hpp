@@ -33,11 +33,9 @@
 
 #include <FslBase/BasicTypes.hpp>
 
-#include <cstdint>
-
 namespace Fsl
 {
-  enum class Texture2DFilterHint : uint8_t
+  enum class Texture2DFilterHint
   {
     Nearest = 0,
     Smooth = 1,

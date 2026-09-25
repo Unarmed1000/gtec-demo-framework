@@ -34,11 +34,9 @@
 #include <FslBase/BasicTypes.hpp>
 #include <FslBase/Math/Pixel/PxSize2D.hpp>
 #include <FslUtil/OpenGLES2/GLProgram.hpp>
-#include <cstdint>
 #include <memory>
 #include <vector>
 #include "Config.hpp"
-
 
 namespace Fsl
 {
@@ -47,7 +45,7 @@ namespace Fsl
   class TwoPassShaders
   {
   public:
-    enum Enum : uint8_t
+    enum Enum
     {
       Normal,
       Linear,

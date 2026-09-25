@@ -31,11 +31,9 @@
  *
  ****************************************************************************************************************************************************/
 
-#include <cstdint>
-
 namespace Fsl
 {
-  enum class NativeWindowEventType : uint8_t
+  enum class NativeWindowEventType
   {
     //! No operation (a empty message)
     NOP,

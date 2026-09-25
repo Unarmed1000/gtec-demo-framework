@@ -31,11 +31,9 @@
  *
  ****************************************************************************************************************************************************/
 
-#include <cstdint>
-
 namespace Fsl
 {
-  enum class BasicBufferType : uint8_t
+  enum class BasicBufferType
   {
     Index,
     Vertex

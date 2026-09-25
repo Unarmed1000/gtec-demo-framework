@@ -44,9 +44,7 @@
 #include <FslUtil/OpenGLES3/GLTexture.hpp>
 #include <FslUtil/OpenGLES3/GLVertexArray.hpp>
 #include <FslUtil/OpenGLES3/GLVertexBuffer.hpp>
-#include <cstdint>
 #include <vector>
-
 
 namespace Fsl
 {
@@ -54,7 +52,7 @@ namespace Fsl
     : public DemoAppGLES3
     , public UI::EventListener
   {
-    enum class State : uint8_t
+    enum class State
     {
       Split2,
       Scene1,

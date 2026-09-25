@@ -31,11 +31,9 @@
  *
  ****************************************************************************************************************************************************/
 
-#include <cstdint>
-
 namespace Fsl::UI
 {
-  enum class EventTypeId : uint8_t
+  enum class EventTypeId
   {
     // ActivityCompleted,
     // Focus,

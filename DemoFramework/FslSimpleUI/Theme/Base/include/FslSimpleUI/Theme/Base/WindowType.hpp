@@ -32,11 +32,9 @@
  ****************************************************************************************************************************************************/
 
 
-#include <cstdint>
-
 namespace Fsl::UI::Theme
 {
-  enum class WindowType : uint8_t
+  enum class WindowType
   {
     Normal = 0,
     Transparent = 1,

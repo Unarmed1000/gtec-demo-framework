@@ -32,9 +32,7 @@
  ****************************************************************************************************************************************************/
 
 #include <FslDemoApp/Base/ADemoOptionParser.hpp>
-#include <cstdint>
 #include "Config.hpp"
-
 
 namespace Fsl
 {
@@ -42,7 +40,7 @@ namespace Fsl
   {
     struct ModifiedFlags
     {
-      enum Enum : uint8_t
+      enum Enum
       {
         RenderMode = 0x01,
         Iterations = 0x02,

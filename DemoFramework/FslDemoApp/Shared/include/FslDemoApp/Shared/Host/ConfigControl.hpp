@@ -31,11 +31,9 @@
  *
  ****************************************************************************************************************************************************/
 
-#include <cstdint>
-
 namespace Fsl
 {
-  enum class ConfigControl : uint8_t
+  enum class ConfigControl
   {
     //! Use the default setting (overwrite is the default setting)
     Default = 0,

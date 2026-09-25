@@ -37,9 +37,7 @@
 #include <FslDemoPlatform/DurationExitConfig.hpp>
 #include <FslDemoPlatform/MainLoopCallbackFunc.hpp>
 #include <FslDemoPlatform/Setup/DemoSetup.hpp>
-#include <cstdint>
 #include <memory>
-
 
 namespace Fsl
 {
@@ -58,7 +56,7 @@ namespace Fsl
 
   class DemoHostManager
   {
-    enum class State : uint8_t
+    enum class State
     {
       Suspended = 0,
       Idle = 1,

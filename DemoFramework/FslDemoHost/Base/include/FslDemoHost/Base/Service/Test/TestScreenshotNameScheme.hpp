@@ -31,11 +31,9 @@
  *
  ****************************************************************************************************************************************************/
 
-#include <cstdint>
-
 namespace Fsl
 {
-  enum class TestScreenshotNameScheme : uint8_t
+  enum class TestScreenshotNameScheme
   {
     //! The rendered frame number
     FrameNumber = 0,

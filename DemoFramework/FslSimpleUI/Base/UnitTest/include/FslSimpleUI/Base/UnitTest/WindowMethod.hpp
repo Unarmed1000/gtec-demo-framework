@@ -33,7 +33,7 @@
 
 #include <cstdint>
 
-enum class WindowMethod : uint16_t
+enum class WindowMethod : uint32_t
 {
   WinInit = 0x0001,
   WinMarkLayoutAsDirty = 0x0002,

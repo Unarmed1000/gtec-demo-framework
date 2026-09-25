@@ -22,12 +22,10 @@
 //* EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //****************************************************************************************************************************************************
 
-#include <cstdint>
-
 namespace Fsl
 {
   //! The state of a measured frame pacing run.
-  enum class FramePacingRunState : uint8_t
+  enum class FramePacingRunState
   {
     //! No run is active, frame markers are still drawn (if enabled) but they are not bracketed by start/end markers.
     Idle,

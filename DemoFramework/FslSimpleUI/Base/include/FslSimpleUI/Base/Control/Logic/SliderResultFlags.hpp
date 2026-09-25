@@ -33,12 +33,10 @@
 
 #include <FslBase/BasicTypes.hpp>
 
-#include <cstdint>
-
 namespace Fsl::UI
 {
   //! Represents the operations that was performed
-  enum class SliderResultFlags : uint8_t
+  enum class SliderResultFlags : uint32_t
   {
     //! Nothing was done (as the request would not change anything)
     NoChange = 0x00,

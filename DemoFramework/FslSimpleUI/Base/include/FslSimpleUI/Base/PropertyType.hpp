@@ -31,11 +31,9 @@
  *
  ****************************************************************************************************************************************************/
 
-#include <cstdint>
-
 namespace Fsl::UI
 {
-  enum class PropertyType : uint8_t
+  enum class PropertyType
   {
     //! Content updates modifies layout calculations
     Content = 0x01,

@@ -31,11 +31,9 @@
  *
  ****************************************************************************************************************************************************/
 
-#include <cstdint>
-
 namespace Fsl
 {
-  enum class BasicCullMode : uint8_t
+  enum class BasicCullMode
   {
     //! Can not be called 'None' because that clases with X11 macros.. That header file always cause problems.
     Disabled = 0,

@@ -33,11 +33,9 @@
 
 #include <FslBase/BasicTypes.hpp>
 
-#include <cstdint>
-
 namespace Fsl::UI
 {
-  enum class ResizeableAreaDragAxis : uint8_t
+  enum class ResizeableAreaDragAxis
   {
     Disabled = 0,
     X = 1,

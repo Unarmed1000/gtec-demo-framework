@@ -34,15 +34,13 @@
 #include <FslDemoApp/Base/ADemoOptionParser.hpp>
 #include <Shared/FurShellRendering/Config.hpp>
 
-#include <cstdint>
-
 namespace Fsl
 {
   class OptionParser : public ADemoOptionParser
   {
     struct ModifiedFlags
     {
-      enum Enum : uint8_t
+      enum Enum
       {
         LayerCount = 0x01,
         FurTextureDimension = 0x02,
@@ -69,7 +67,7 @@ namespace Fsl
       }
     };
 
-    enum class Quality : uint8_t
+    enum class Quality
     {
       Custom,
       Low,

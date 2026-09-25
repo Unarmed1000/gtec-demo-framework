@@ -31,11 +31,9 @@
  *
  ****************************************************************************************************************************************************/
 
-#include <cstdint>
-
 namespace Fsl
 {
-  enum class ImageConvertResult : uint8_t
+  enum class ImageConvertResult
   {
     // The operation is not supported
     NotSupported,

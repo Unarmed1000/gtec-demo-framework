@@ -33,14 +33,13 @@
 
 #include <FslDemoHost/Base/ADemoHostOptionParser.hpp>
 #include <EGL/egl.h>
-#include <cstdint>
 
 namespace Fsl
 {
   class EGLDemoHostOptionParser : public ADemoHostOptionParser
   {
   public:
-    enum class ConfigLogMode : uint8_t
+    enum class ConfigLogMode
     {
       Off = 0,
       All = 1,

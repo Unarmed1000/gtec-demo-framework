@@ -31,11 +31,9 @@
  *
  ****************************************************************************************************************************************************/
 
-#include <cstdint>
-
 namespace Fsl::DataBinding
 {
-  enum class DataBindingInstanceState : uint8_t
+  enum class DataBindingInstanceState
   {
     Alive = 0,
     DestroyScheduled = 1,

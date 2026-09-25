@@ -33,11 +33,9 @@
 
 #include <FslBase/BasicTypes.hpp>
 
-#include <cstdint>
-
 namespace Fsl::Graphics3D
 {
-  enum class PredefinedShaderType : uint8_t
+  enum class PredefinedShaderType : uint16_t
   {
     PositionColorTextureVertex = 0,
     PositionColorTextureFragment = 1,

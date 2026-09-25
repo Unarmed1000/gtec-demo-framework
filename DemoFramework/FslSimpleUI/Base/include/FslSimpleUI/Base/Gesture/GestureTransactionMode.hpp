@@ -31,11 +31,9 @@
  *
  ****************************************************************************************************************************************************/
 
-#include <cstdint>
-
 namespace Fsl::UI
 {
-  enum class GestureTransactionMode : uint8_t
+  enum class GestureTransactionMode
   {
     //! Not in a transaction
     Invalid = 0,

@@ -13,14 +13,12 @@
 #include <array>
 #include <cmath>
 
-#include <cstdint>
-
 namespace Fsl::Willems
 {
   class Frustum
   {
   public:
-    enum Side : uint8_t
+    enum Side
     {
       LEFT = 0,
       RIGHT = 1,

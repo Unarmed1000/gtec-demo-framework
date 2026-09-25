@@ -34,9 +34,7 @@
 #include <FslDemoService/Graphics/Impl/GraphicsServiceOptionParser.hpp>
 #include <algorithm>
 #include <cassert>
-#include <cstdint>
 #include <cstring>
-
 
 namespace Fsl
 {
@@ -44,7 +42,7 @@ namespace Fsl
   {
     struct CommandId
     {
-      enum Enum : uint8_t
+      enum Enum
       {
         Profile,
       };

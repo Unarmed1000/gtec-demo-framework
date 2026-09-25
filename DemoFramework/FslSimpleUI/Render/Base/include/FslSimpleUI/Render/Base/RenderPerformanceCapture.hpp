@@ -32,11 +32,10 @@
  ****************************************************************************************************************************************************/
 
 #include <FslBase/System/BasicPerformanceCapture.hpp>
-#include <cstdint>
 
 namespace Fsl::UI
 {
-  enum class RenderPerformanceCaptureId : uint8_t
+  enum class RenderPerformanceCaptureId
   {
     PreprocessDrawCommands = 0u,
     GenerateMeshes = 1u,

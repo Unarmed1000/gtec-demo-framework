@@ -31,8 +31,6 @@
  *
  ****************************************************************************************************************************************************/
 
-#include <cstdint>
-
 namespace Fsl
 {
   struct TextureTypeFlags
@@ -83,7 +81,7 @@ namespace Fsl
   };
 
 
-  enum class TextureType : uint16_t
+  enum class TextureType
   {
     Undefined = 0,
     Tex1D = 1 | TextureTypeFlags::Dim1D,

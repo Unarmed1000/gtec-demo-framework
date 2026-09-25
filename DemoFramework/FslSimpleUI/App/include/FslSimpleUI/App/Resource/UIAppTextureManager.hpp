@@ -46,10 +46,8 @@
 #include <FslSimpleUI/App/UIAppTextureResourceCreationInfo.hpp>
 #include <FslSimpleUI/App/UITestPatternMode.hpp>
 #include <cassert>
-#include <cstdint>
 #include <map>
 #include <memory>
-
 
 namespace Fsl
 {
@@ -63,7 +61,7 @@ namespace Fsl
   {
     class UIAppTextureManager
     {
-      enum class TextureType : uint8_t
+      enum class TextureType
       {
         Managed,
         External

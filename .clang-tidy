@@ -72,6 +72,7 @@ modernize-use-transparent-functors,
 modernize-use-uncaught-exceptions,
 modernize-use-using,
 performance-*,
+-performance-enum-size,
 -performance-faster-string-find,
 -performance-no-int-to-ptr,
 -performance-string-view-conversions,
@@ -134,9 +135,6 @@ CheckOptions:
     value:           'false'
   - key:             modernize-loop-convert.NamingStyle
     value:           camelBack
-  # Enums that are created from file data or command line values keep 'int' so out of range values are not truncated into valid ones
-  - key:             performance-enum-size.EnumIgnoreList
-    value:           'AnimationMode;BitmapFontType;ChunkType;DemoScene;InputCommandId;PrimitiveType;RenderMode;VersionId;VertexElementFormat;VertexElementUsage'
   - key:             readability-identifier-naming.AbstractClassCase
     value:           CamelCase
   - key:             readability-identifier-naming.AbstractClassPrefix

@@ -31,11 +31,9 @@
  *
  ****************************************************************************************************************************************************/
 
-#include <cstdint>
-
 namespace Fsl
 {
-  enum class BasicRenderSystemEvent : uint8_t
+  enum class BasicRenderSystemEvent
   {
     SwapchainLost,
     SwapchainRecreated

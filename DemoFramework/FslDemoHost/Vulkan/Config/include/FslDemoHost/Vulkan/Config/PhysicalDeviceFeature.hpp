@@ -35,12 +35,10 @@
 #include <FslUtil/Vulkan1_0/Common.hpp>
 #include <vulkan/vulkan.h>
 
-#include <cstdint>
-
 namespace Fsl::Vulkan
 {
   //! @brief Based on VkPhysicalDeviceFeatures
-  enum class PhysicalDeviceFeature : uint8_t
+  enum class PhysicalDeviceFeature
   {
     //! This is not a valid feature
     Invalid = 0,

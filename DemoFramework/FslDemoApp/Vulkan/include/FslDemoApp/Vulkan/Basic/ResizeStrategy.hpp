@@ -31,11 +31,9 @@
  *
  ****************************************************************************************************************************************************/
 
-#include <cstdint>
-
 namespace Fsl::VulkanBasic
 {
-  enum class ResizeStrategy : uint8_t
+  enum class ResizeStrategy
   {
     Disabled = 0,
     RebuildResources = 1,

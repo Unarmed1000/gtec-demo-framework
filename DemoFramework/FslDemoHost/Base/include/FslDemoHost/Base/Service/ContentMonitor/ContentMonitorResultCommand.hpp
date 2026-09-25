@@ -32,11 +32,9 @@
  ****************************************************************************************************************************************************/
 
 
-#include <cstdint>
-
 namespace Fsl
 {
-  enum class ContentMonitorResultCommand : uint8_t
+  enum class ContentMonitorResultCommand
   {
     Restart
   };

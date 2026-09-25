@@ -35,9 +35,7 @@
 #include <FslDemoService/NativeGraphics/Base/INativeGraphicsServiceControl.hpp>
 #include <FslGraphics/Render/Basic/BasicRenderSystemEvent.hpp>
 #include <FslService/Impl/ServiceType/Local/ThreadLocalService.hpp>
-#include <cstdint>
 #include <memory>
-
 
 namespace Fsl
 {
@@ -46,7 +44,7 @@ namespace Fsl
     , public INativeGraphicsService
     , public INativeGraphicsServiceControl
   {
-    enum class State : uint8_t
+    enum class State
     {
       Uninitialized = 0,
       DeviceReady = 1,

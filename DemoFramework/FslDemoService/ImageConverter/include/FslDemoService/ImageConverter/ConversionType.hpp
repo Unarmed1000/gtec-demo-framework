@@ -31,11 +31,9 @@
  *
  ****************************************************************************************************************************************************/
 
-#include <cstdint>
-
 namespace Fsl
 {
-  enum class ConversionType : uint8_t
+  enum class ConversionType
   {
     Bitmap,
     Texture,

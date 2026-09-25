@@ -34,11 +34,9 @@
 #include <FslBase/BasicTypes.hpp>
 #include <cassert>
 
-#include <cstdint>
-
 namespace Fsl
 {
-  enum class TextureType : uint16_t;
+  enum class TextureType;
 
   struct TextureInfo
   {

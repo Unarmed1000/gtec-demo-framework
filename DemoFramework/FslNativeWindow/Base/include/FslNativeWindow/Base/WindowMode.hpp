@@ -31,11 +31,9 @@
  *
  ****************************************************************************************************************************************************/
 
-#include <cstdint>
-
 namespace Fsl
 {
-  enum class WindowMode : uint8_t
+  enum class WindowMode
   {
     // Use a fullscreen native sized window
     Fullscreen = 0,

@@ -33,13 +33,11 @@
 
 #include <FslBase/BasicTypes.hpp>
 
-#include <cstdint>
-
 namespace Fsl
 {
   struct DemoAppManagerProcessResult
   {
-    enum class Command : uint8_t
+    enum class Command
     {
       Draw,
       SkipDraw,

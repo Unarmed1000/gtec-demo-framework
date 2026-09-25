@@ -22,12 +22,10 @@
 //* EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //****************************************************************************************************************************************************
 
-#include <cstdint>
-
 namespace Fsl
 {
   //! Where the frame pacing marker is drawn (all positions are inset from the left edge of the window).
-  enum class FramePacingMarkerSlot : uint8_t
+  enum class FramePacingMarkerSlot
   {
     TopLeft,
     MiddleLeft,

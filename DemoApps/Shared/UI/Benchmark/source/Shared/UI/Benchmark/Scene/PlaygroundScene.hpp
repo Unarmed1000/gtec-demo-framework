@@ -52,12 +52,10 @@
 #include <Shared/UI/Benchmark/Persistence/Bench/AppBenchmarkScene.hpp>
 #include <Shared/UI/Benchmark/RenderMethodInfo.hpp>
 #include <Shared/UI/Benchmark/Scene/Control/RenderOptionControls.hpp>
-#include <cstdint>
 #include <future>
 #include <memory>
 #include "Control/CpuDetailedLegendRecord.hpp"
 #include "IScene.hpp"
-
 
 namespace Fsl
 {
@@ -83,7 +81,7 @@ namespace Fsl
 
   class PlaygroundScene final : public IScene
   {
-    enum class InputState : uint8_t
+    enum class InputState
     {
       Playground,
       SettingsSubActivity,

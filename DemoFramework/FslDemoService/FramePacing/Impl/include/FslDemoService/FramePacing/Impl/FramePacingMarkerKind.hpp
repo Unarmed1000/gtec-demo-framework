@@ -22,12 +22,10 @@
 //* EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //****************************************************************************************************************************************************
 
-#include <cstdint>
-
 namespace Fsl
 {
   //! The kind of marker to draw for a frame (mirrors MB::FrameMarker::MarkerKind).
-  enum class FramePacingMarkerKind : uint8_t
+  enum class FramePacingMarkerKind
   {
     Frame,
     SequenceStart,

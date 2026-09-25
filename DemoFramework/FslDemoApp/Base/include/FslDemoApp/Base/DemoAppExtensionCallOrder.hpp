@@ -31,11 +31,9 @@
  *
  ****************************************************************************************************************************************************/
 
-#include <cstdint>
-
 namespace Fsl
 {
-  enum class DemoAppExtensionCallOrder : uint8_t
+  enum class DemoAppExtensionCallOrder
   {
     PreApp,
     PostApp

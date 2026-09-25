@@ -33,11 +33,9 @@
 
 #include <FslBase/BasicTypes.hpp>
 
-#include <cstdint>
-
 namespace Fsl
 {
-  enum class SupportedSampleCountFlags : uint8_t
+  enum class SupportedSampleCountFlags : uint32_t
   {
     NoFlags = 0,
     Samples1 = 1,

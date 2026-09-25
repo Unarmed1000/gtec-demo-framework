@@ -34,8 +34,6 @@
 #include <FslBase/BasicTypes.hpp>
 #include <FslSimpleUI/Base/ItemVisibility.hpp>
 
-#include <cstdint>
-
 namespace Fsl::UI
 {
   static_assert(static_cast<uint32_t>(ItemVisibility::Visible) == 0, "ItemVisibility enum expectation not met");
@@ -56,7 +54,7 @@ namespace Fsl::UI
     static constexpr int BitsReserved = FlagBitsReserved + VisibilityBitsReserved;
     static constexpr const uint32_t MASK = (1 << BitsReserved) - 1;
 
-    enum Enum : uint16_t
+    enum Enum
     {
       //! enabled the WinInit callback (called when the window has been added to the window manager
       WinInit = 0x01,

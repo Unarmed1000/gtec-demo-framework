@@ -31,11 +31,9 @@
  *
  ****************************************************************************************************************************************************/
 
-#include <cstdint>
-
 namespace Fsl
 {
-  enum class ServiceGroupType : uint8_t
+  enum class ServiceGroupType
   {
     Invalid,
     MainThread,

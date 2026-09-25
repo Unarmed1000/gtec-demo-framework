@@ -31,11 +31,9 @@
  *
  ****************************************************************************************************************************************************/
 
-#include <cstdint>
-
 namespace Fsl::UI
 {
-  enum class LayoutOrientation : uint8_t
+  enum class LayoutOrientation
   {
     Vertical,
     Horizontal

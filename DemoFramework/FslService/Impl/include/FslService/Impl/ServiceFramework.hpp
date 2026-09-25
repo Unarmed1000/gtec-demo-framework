@@ -31,9 +31,7 @@
  *
  ****************************************************************************************************************************************************/
 
-#include <cstdint>
 #include <memory>
-
 
 namespace Fsl
 {
@@ -49,7 +47,7 @@ namespace Fsl
 
   class ServiceFramework
   {
-    enum class State : uint8_t
+    enum class State
     {
       RegisterServices,
       ServicesPrepared,

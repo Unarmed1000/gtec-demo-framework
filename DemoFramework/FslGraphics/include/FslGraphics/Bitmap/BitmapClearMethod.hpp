@@ -32,11 +32,9 @@
  ****************************************************************************************************************************************************/
 
 
-#include <cstdint>
-
 namespace Fsl
 {
-  enum class BitmapClearMethod : uint8_t
+  enum class BitmapClearMethod
   {
     //! Only clears the 'padding' area if one exist
     DontClear,

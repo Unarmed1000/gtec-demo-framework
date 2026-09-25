@@ -31,11 +31,9 @@
  *
  ****************************************************************************************************************************************************/
 
-#include <cstdint>
-
 namespace Fsl
 {
-  enum class ServiceTypeEx : uint8_t
+  enum class ServiceTypeEx
   {
     //! A thread safe synchronous service
     ThreadSafeSynchronous,

@@ -32,10 +32,8 @@
  ****************************************************************************************************************************************************/
 
 #include <FslDemoApp/Shared/Host/DemoWindowMetrics.hpp>
-#include <cstdint>
 #include <memory>
 #include "IScene.hpp"
-
 
 namespace Fsl
 {
@@ -53,7 +51,7 @@ namespace Fsl
 
   class BasicScene : public IScene
   {
-    enum class SceneState : uint8_t
+    enum class SceneState
     {
       Ready,
       Closing,

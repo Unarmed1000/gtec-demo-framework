@@ -19,16 +19,14 @@
 // Simplified and adapted for use in the NXP demo framework 2024.
 
 #include <array>
-#include <cstdint>
 #include "AccumulatingVelocityTrackerStrategy.hpp"
-
 
 namespace Fsl::UI
 {
   class LeastSquaresVelocityTrackerStrategy final : public AccumulatingVelocityTrackerStrategy
   {
   public:
-    enum class Weighting : uint8_t
+    enum class Weighting
     {
       //! No weights applied.  All data points are equally reliable.
       Disabled,

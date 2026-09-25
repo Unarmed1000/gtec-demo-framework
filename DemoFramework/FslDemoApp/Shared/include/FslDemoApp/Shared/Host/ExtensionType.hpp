@@ -31,11 +31,9 @@
  *
  ****************************************************************************************************************************************************/
 
-#include <cstdint>
-
 namespace Fsl
 {
-  enum class ExtensionType : uint8_t
+  enum class ExtensionType
   {
     Invalid = 0,
     EGL,

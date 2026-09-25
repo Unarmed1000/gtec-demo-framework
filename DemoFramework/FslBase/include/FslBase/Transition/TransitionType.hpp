@@ -31,11 +31,9 @@
  *
  ****************************************************************************************************************************************************/
 
-#include <cstdint>
-
 namespace Fsl
 {
-  enum class TransitionType : uint8_t
+  enum class TransitionType
   {
     // Linear speed (lerp)
     Linear,

@@ -31,12 +31,10 @@
  *
  ****************************************************************************************************************************************************/
 
-#include <cstdint>
-
 namespace Fsl
 {
   // Please beware that the enum values matches the values that getopt option.has_flag expects
-  enum class OptionArgument : uint8_t
+  enum class OptionArgument
   {
     //! The option does not take a argument
     // If you get an error at None it might be because you have accidentally been contaminated with x11 header files

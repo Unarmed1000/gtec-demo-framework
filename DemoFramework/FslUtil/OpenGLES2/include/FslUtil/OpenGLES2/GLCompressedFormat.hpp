@@ -31,12 +31,10 @@
  *
  ****************************************************************************************************************************************************/
 
-#include <cstdint>
-
 namespace Fsl::GLES2
 {
   // Custom formats supported by some GPU's under OpenGL ES2.
-  enum class GLCompressedFormat : uint16_t
+  enum class GLCompressedFormat
   {
     // NOLINTNEXTLINE(readability-identifier-naming)
     R11_EAC = 0x9270,

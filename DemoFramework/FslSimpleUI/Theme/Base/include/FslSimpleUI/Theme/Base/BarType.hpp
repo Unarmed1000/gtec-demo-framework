@@ -32,11 +32,9 @@
  ****************************************************************************************************************************************************/
 
 
-#include <cstdint>
-
 namespace Fsl::UI::Theme
 {
-  enum class BarType : uint8_t
+  enum class BarType
   {
     Normal,
     Transparent

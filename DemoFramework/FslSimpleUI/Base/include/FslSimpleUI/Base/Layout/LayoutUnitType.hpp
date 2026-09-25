@@ -31,11 +31,9 @@
  *
  ****************************************************************************************************************************************************/
 
-#include <cstdint>
-
 namespace Fsl::UI
 {
-  enum class LayoutUnitType : uint8_t
+  enum class LayoutUnitType
   {
     //@brief Takes as much space as needed by the contained control.
     Auto,

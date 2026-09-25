@@ -40,10 +40,8 @@
 #include <FslUtil/OpenGLES3/GLTexture.hpp>
 #include <FslUtil/OpenGLES3/GLVertexBuffer.hpp>
 #include <array>
-#include <cstdint>
 #include "AScene.hpp"
 #include "PS/ParticleDrawContext.hpp"
-
 
 namespace Fsl
 {
@@ -63,7 +61,7 @@ namespace Fsl
 
   class ParticleSystemScene : public AScene
   {
-    enum class ParticleSystemType : uint8_t
+    enum class ParticleSystemType
     {
       Points,
       Quads,

@@ -33,13 +33,11 @@
 
 #include <FslBase/BasicTypes.hpp>
 
-#include <cstdint>
-
 namespace Fsl
 {
   struct DemoHostCaps
   {
-    enum class Flags : uint8_t
+    enum class Flags
     {
       AppRenderedSystemOverlay = 0x01,
       //! If this is defined the Host will call SetActiveApi/ClearActiveApi on the graphics service

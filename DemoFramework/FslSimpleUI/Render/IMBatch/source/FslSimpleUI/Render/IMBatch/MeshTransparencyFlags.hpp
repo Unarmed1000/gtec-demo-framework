@@ -33,11 +33,9 @@
 
 #include <FslBase/BasicTypes.hpp>
 
-#include <cstdint>
-
 namespace Fsl::UI::RenderIMBatch
 {
-  enum class MeshTransparencyFlags : uint8_t
+  enum class MeshTransparencyFlags : uint32_t
   {
     NoFlags = 0x00,
     Opaque = 0x01,

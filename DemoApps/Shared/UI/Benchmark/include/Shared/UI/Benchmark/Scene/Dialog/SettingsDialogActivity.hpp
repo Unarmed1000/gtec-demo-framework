@@ -36,10 +36,8 @@
 #include <Shared/UI/Benchmark/Activity/DialogActivity.hpp>
 #include <Shared/UI/Benchmark/Persistence/AppTestSettings.hpp>
 #include <Shared/UI/Benchmark/RenderMethodInfo.hpp>
-#include <cstdint>
 #include <memory>
 #include <vector>
-
 
 namespace Fsl::UI
 {
@@ -56,7 +54,7 @@ namespace Fsl::UI
       std::vector<std::shared_ptr<UI::RadioButton>> Methods;
     };
 
-    enum class State : uint8_t
+    enum class State
     {
       Ready,
       Closing,

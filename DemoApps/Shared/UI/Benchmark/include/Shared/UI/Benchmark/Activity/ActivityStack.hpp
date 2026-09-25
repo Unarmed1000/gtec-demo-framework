@@ -35,10 +35,8 @@
 #include <FslSimpleUI/Base/Transition/TransitionUIColor.hpp>
 #include <FslSimpleUI/Base/UIColors.hpp>
 #include <Shared/UI/Benchmark/Activity/IActivityStack.hpp>
-#include <cstdint>
 #include <deque>
 #include <utility>
-
 
 namespace Fsl
 {
@@ -53,12 +51,12 @@ namespace Fsl
       : public FillLayout
       , public IActivityStack
     {
-      enum class ActivityState : uint8_t
+      enum class ActivityState
       {
         Ready,
         Closing,
       };
-      enum class ActivityPopResult : uint8_t
+      enum class ActivityPopResult
       {
         NotSet,
         Completed,

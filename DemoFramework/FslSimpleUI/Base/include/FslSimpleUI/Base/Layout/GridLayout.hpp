@@ -37,8 +37,6 @@
 #include <FslSimpleUI/Base/Layout/ComplexLayout.hpp>
 #include <FslSimpleUI/Base/Layout/GridRowColumnDefinition.hpp>
 
-#include <cstdint>
-
 namespace Fsl::UI
 {
   struct GridWindowCollectionRecord : public GenericWindowCollectionRecordBase
@@ -56,7 +54,7 @@ namespace Fsl::UI
   {
     using base_type = ComplexLayout<GridWindowCollectionRecord>;
 
-    enum class InternalGridUnitType : uint8_t
+    enum class InternalGridUnitType
     {
       //! Fixed size
       Fixed = 0,

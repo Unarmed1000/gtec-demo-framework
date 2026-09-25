@@ -31,11 +31,9 @@
  *
  ****************************************************************************************************************************************************/
 
-#include <cstdint>
-
 namespace Fsl
 {
-  enum class BasicViewportMode : uint8_t
+  enum class BasicViewportMode
   {
     Fullscreen = 0,
     CustomOriginTopLeft = 1,

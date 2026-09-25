@@ -31,11 +31,9 @@
  *
  ****************************************************************************************************************************************************/
 
-#include <cstdint>
-
 namespace Fsl
 {
-  enum class AppBenchmarkScene : uint8_t
+  enum class AppBenchmarkScene
   {
     Scene0 = 0,
     Dev = 0xFF,

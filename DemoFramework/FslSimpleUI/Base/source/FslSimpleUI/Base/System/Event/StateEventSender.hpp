@@ -31,14 +31,12 @@
  *
  ****************************************************************************************************************************************************/
 
-#include <cstdint>
 #include "../Modules/IModuleCallbackReceiver.hpp"
 #include "EventRoute.hpp"
 #include "FunctionCreateTargetWindowDeathEvent.hpp"
 #include "IStateEventSender.hpp"
 #include "StateEventInfo.hpp"
 #include "StateEventSenderHistory.hpp"
-
 
 namespace Fsl::UI
 {
@@ -54,7 +52,7 @@ namespace Fsl::UI
     : public IStateEventSender
     , public IModuleCallbackReceiver
   {
-    enum class State : uint8_t
+    enum class State
     {
       Normal,
       BuildingHistory,

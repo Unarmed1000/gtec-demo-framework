@@ -32,11 +32,9 @@
  ****************************************************************************************************************************************************/
 
 
-#include <cstdint>
-
 namespace Fsl::UI::Declarative
 {
-  enum class ControlType : uint8_t
+  enum class ControlType
   {
     Normal,
     Content,

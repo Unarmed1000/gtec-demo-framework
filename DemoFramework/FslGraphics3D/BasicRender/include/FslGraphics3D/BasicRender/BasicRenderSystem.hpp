@@ -41,9 +41,7 @@
 #include <FslGraphics3D/BasicRender/Material/BasicMaterialManager.hpp>
 #include <FslGraphics3D/BasicRender/Shader/BasicShaderManager.hpp>
 #include <FslGraphics3D/BasicRender/Texture/BasicTextureManager.hpp>
-#include <cstdint>
 #include <memory>
-
 
 namespace Fsl
 {
@@ -141,7 +139,7 @@ namespace Fsl
         }
       };
 
-      enum class CachingState : uint8_t
+      enum class CachingState
       {
         Invalid,
         UserCached,

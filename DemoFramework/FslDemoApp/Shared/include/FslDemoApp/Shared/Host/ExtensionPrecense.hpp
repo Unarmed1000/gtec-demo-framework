@@ -31,11 +31,9 @@
  *
  ****************************************************************************************************************************************************/
 
-#include <cstdint>
-
 namespace Fsl
 {
-  enum class ExtensionPrecense : uint8_t
+  enum class ExtensionPrecense
   {
     Invalid = 0,
     Mandatory,

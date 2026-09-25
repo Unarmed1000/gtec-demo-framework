@@ -31,11 +31,9 @@
  *
  ****************************************************************************************************************************************************/
 
-#include <cstdint>
-
 namespace Fsl
 {
-  enum class AntiAliasingMethod : uint8_t
+  enum class AntiAliasingMethod
   {
     Disabled,
     MSAA2X,

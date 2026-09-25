@@ -33,11 +33,9 @@
 
 #include <FslBase/Log/LogLocation.hpp>
 
-#include <cstdint>
-
 namespace Fsl
 {
-  enum class LogType : uint8_t
+  enum class LogType
   {
     Error = 0,
     Warning = 1,

@@ -31,11 +31,9 @@
  *
  ****************************************************************************************************************************************************/
 
-#include <cstdint>
-
 namespace Fsl::VulkanBasic
 {
-  enum class DepthBufferMode : uint8_t
+  enum class DepthBufferMode
   {
     Disabled,
     Enabled

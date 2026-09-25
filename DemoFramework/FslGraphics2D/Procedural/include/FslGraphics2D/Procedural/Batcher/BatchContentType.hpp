@@ -31,11 +31,9 @@
  *
  ****************************************************************************************************************************************************/
 
-#include <cstdint>
-
 namespace Fsl
 {
-  enum class BatchContentType : uint8_t
+  enum class BatchContentType
   {
     Vertices,
     VerticesAndIndices,

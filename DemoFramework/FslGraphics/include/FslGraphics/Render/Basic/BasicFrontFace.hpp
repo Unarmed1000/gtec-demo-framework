@@ -31,11 +31,9 @@
  *
  ****************************************************************************************************************************************************/
 
-#include <cstdint>
-
 namespace Fsl
 {
-  enum class BasicFrontFace : uint8_t
+  enum class BasicFrontFace
   {
     CounterClockwise = 0,
     Clockwise = 1

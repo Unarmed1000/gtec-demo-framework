@@ -39,11 +39,9 @@
 #include <FslSimpleUI/Base/Mesh/SizedSpriteMesh.hpp>
 #include <FslSimpleUI/Base/Property/DependencyPropertyUIColor.hpp>
 #include <FslSimpleUI/Base/Transition/TransitionUIRenderColor.hpp>
-#include <cstdint>
 #include <memory>
 #include <string>
 #include <utility>
-
 
 namespace Fsl
 {
@@ -58,7 +56,7 @@ namespace Fsl
     {
       using base_type = BaseWindow;
 
-      enum class EventButtonState : uint8_t
+      enum class EventButtonState
       {
         Up,
         Down,

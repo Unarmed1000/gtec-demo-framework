@@ -31,11 +31,9 @@
  *
  ****************************************************************************************************************************************************/
 
-#include <cstdint>
-
 namespace Fsl::UI::RenderIMBatch
 {
-  enum class DrawReorderMethod : uint8_t
+  enum class DrawReorderMethod
   {
     Disabled,
     LinearConstrained,

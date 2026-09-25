@@ -34,10 +34,8 @@
 #include <FslSimpleUI/Theme/Base/WindowType.hpp>
 #include <Shared/UI/Benchmark/Activity/DialogActivity.hpp>
 #include <Shared/UI/Benchmark/Persistence/Bench/AppBenchmarkData.hpp>
-#include <cstdint>
 #include <memory>
 #include <optional>
-
 
 namespace Fsl::UI
 {
@@ -46,7 +44,7 @@ namespace Fsl::UI
 
   class ResultDetailsDialogActivity final : public DialogActivity
   {
-    enum class State : uint8_t
+    enum class State
     {
       Ready,
       Closing,

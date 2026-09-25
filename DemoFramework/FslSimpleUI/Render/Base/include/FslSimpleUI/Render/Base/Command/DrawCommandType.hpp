@@ -31,11 +31,9 @@
  *
  ****************************************************************************************************************************************************/
 
-#include <cstdint>
-
 namespace Fsl::UI
 {
-  enum class DrawCommandType : uint8_t
+  enum class DrawCommandType
   {
     Nop = 0,
     DrawAtOffsetAndSize = 1,

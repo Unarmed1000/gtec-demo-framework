@@ -31,11 +31,9 @@
  *
  ****************************************************************************************************************************************************/
 
-#include <cstdint>
-
 namespace Fsl::UI
 {
-  enum class ItemScalePolicy : uint8_t
+  enum class ItemScalePolicy
   {
     //! No scaling will be done the item will be drawn at full size (exceeding its window rect if necessary)
     NoScaling,

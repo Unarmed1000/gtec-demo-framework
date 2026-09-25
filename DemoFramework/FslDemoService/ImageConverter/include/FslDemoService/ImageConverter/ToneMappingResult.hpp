@@ -31,11 +31,9 @@
  *
  ****************************************************************************************************************************************************/
 
-#include <cstdint>
-
 namespace Fsl
 {
-  enum class ToneMappingResult : uint8_t
+  enum class ToneMappingResult
   {
     // The operation is not supported
     NotSupported,

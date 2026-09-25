@@ -31,11 +31,9 @@
  *
  ****************************************************************************************************************************************************/
 
-#include <cstdint>
-
 namespace Fsl
 {
-  enum class OptionUserChoice : uint8_t
+  enum class OptionUserChoice
   {
     // Use the default setting for the demo host
     Default,

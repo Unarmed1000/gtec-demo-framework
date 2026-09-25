@@ -32,14 +32,12 @@
  ****************************************************************************************************************************************************/
 
 
-#include <cstdint>
-
 namespace Fsl
 {
   struct VirtualKeyMetaState
   {
     // The virtual key meta state is actually mask values that can be used to check if certain bits are set
-    enum Enum : uint16_t
+    enum Enum
     {
       AltLeftOn = 0x001,
       AltRightOn = 0x002,

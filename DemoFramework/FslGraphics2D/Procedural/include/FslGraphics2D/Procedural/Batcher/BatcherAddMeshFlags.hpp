@@ -33,11 +33,9 @@
 
 #include <FslBase/BasicTypes.hpp>
 
-#include <cstdint>
-
 namespace Fsl
 {
-  enum class BatcherAddMeshFlags : uint8_t
+  enum class BatcherAddMeshFlags : uint32_t
   {
     // Can not use 'None' because of the x11 header, so NoFlags it is
     NoFlags = 0,

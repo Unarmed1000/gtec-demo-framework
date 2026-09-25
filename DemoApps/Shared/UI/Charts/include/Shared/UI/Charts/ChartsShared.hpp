@@ -39,9 +39,7 @@
 #include <Shared/UI/Charts/DataGenerator/DataGenerator1.hpp>
 #include <Shared/UI/Charts/DataGenerator/DataGenerator2.hpp>
 #include <array>
-#include <cstdint>
 #include <memory>
-
 
 namespace Fsl
 {
@@ -117,7 +115,7 @@ namespace Fsl
       UIBoxPlotsRecord BoxPlots;
     };
 
-    enum class DataMode : uint8_t
+    enum class DataMode
     {
       Continuous,
       Periodically,
@@ -127,7 +125,7 @@ namespace Fsl
       GenerateLots,
     };
 
-    enum class CachedDataConfig : uint8_t
+    enum class CachedDataConfig
     {
       NotCached,
       BasicData,

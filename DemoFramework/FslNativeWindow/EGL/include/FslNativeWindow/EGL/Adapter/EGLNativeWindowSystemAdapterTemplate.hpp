@@ -36,13 +36,12 @@
 #include <FslNativeWindow/EGL/Adapter/IEGLNativeWindowSystemAdapter.hpp>
 #include <FslNativeWindow/EGL/NativeEGLSetup.hpp>
 #include <FslNativeWindow/Platform/PlatformNativeWindowAllocationFunction.hpp>
-#include <cstdint>
 
 namespace Fsl
 {
   class NativeEGLSetup;
 
-  enum class EGLHandleForceConvert : uint8_t
+  enum class EGLHandleForceConvert
   {
     Enabled
   };

@@ -31,11 +31,9 @@
  *
  ****************************************************************************************************************************************************/
 
-#include <cstdint>
-
 namespace Fsl::DataBinding
 {
-  enum class BindingMode : uint8_t
+  enum class BindingMode
   {
     OneWay = 0,
     TwoWay = 1

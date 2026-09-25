@@ -35,11 +35,9 @@
 #include <FslBase/Math/Point2.hpp>
 #include <Shared/FractalShader/DefaultValues.hpp>
 
-#include <cstdint>
-
 namespace Fsl
 {
-  enum class Quality : uint8_t
+  enum class Quality
   {
     Low,
     Medium,

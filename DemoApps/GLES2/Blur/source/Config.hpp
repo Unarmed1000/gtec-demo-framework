@@ -33,13 +33,12 @@
 
 #include <FslBase/Exceptions.hpp>
 #include <FslBase/Math/Point2.hpp>
-#include <cstdint>
 
 namespace Fsl
 {
   struct RenderMode
   {
-    enum Enum : uint8_t
+    enum Enum
     {
       ReferenceTwoPass,
       ReferenceTwoPassLinear,
@@ -52,7 +51,7 @@ namespace Fsl
 
   struct ShaderType
   {
-    enum Enum : uint8_t
+    enum Enum
     {
       HardCoded,
       NonDependent,
@@ -62,7 +61,7 @@ namespace Fsl
 
   struct CaptionType
   {
-    enum Enum : uint8_t
+    enum Enum
     {
       Disabled,
       Algorithm,

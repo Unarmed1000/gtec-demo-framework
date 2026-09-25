@@ -44,11 +44,9 @@
 #include <RapidVulkan/DescriptorSetLayout.hpp>
 #include <Shared/Bloom/GaussianShaderBuilder.hpp>
 #include <Shared/Bloom/MenuUI.hpp>
-#include <cstdint>
 #include <deque>
 #include <vector>
 #include "VBHelper.hpp"
-
 
 namespace Fsl
 {
@@ -56,7 +54,7 @@ namespace Fsl
 
   class Bloom : public VulkanBasic::DemoAppVulkanBasic
   {
-    enum class BlurShaderType : uint8_t
+    enum class BlurShaderType
     {
       Gaussian5X5,
       Gaussian9X9,

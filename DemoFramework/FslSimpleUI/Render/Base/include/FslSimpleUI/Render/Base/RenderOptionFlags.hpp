@@ -32,11 +32,10 @@
  ****************************************************************************************************************************************************/
 
 #include <FslBase/BasicTypes.hpp>
-#include <cstdint>
 
 namespace Fsl::UI
 {
-  enum class RenderOptionFlags : uint8_t
+  enum class RenderOptionFlags : uint32_t
   {
     NoFlags = 0x00,
     Batch = 0x01,

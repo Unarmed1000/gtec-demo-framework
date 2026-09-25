@@ -31,21 +31,19 @@
  *
  ****************************************************************************************************************************************************/
 
-#include <cstdint>
-
 namespace Fsl
 {
-  enum class OptimizationFlag : uint8_t
+  enum class OptimizationFlag
   {
     NoInitialization
   };
 
-  enum class OptimizationCheckFlag : uint8_t
+  enum class OptimizationCheckFlag
   {
     NoCheck
   };
 
-  enum class OptimizationInternal : uint8_t
+  enum class OptimizationInternal
   {
     Internal
   };

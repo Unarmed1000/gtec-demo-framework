@@ -31,11 +31,9 @@
  *
  ****************************************************************************************************************************************************/
 
-#include <cstdint>
-
 namespace Fsl::UI
 {
-  enum class EventRoutingStrategy : uint8_t
+  enum class EventRoutingStrategy
   {
     Tunnel,
     Bubble,

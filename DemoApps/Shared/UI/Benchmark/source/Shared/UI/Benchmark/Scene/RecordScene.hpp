@@ -34,9 +34,7 @@
 #include <FslBase/IO/Path.hpp>
 #include <FslSimpleUI/Base/Control/FmtValueLabel.hpp>
 #include <FslSimpleUI/Base/Transition/TransitionUIColor.hpp>
-#include <cstdint>
 #include "BasicTestScene.hpp"
-
 
 namespace Fsl
 {
@@ -50,7 +48,7 @@ namespace Fsl
 
   class RecordScene final : public BasicTestScene
   {
-    enum class State : uint8_t
+    enum class State
     {
       Ready,
       Recording,

@@ -31,12 +31,10 @@
  *
  ****************************************************************************************************************************************************/
 
-#include <cstdint>
-
 namespace Fsl
 {
   //! WARNINGS: its important that these numbers are in the range 0x0000-0xFFFF
-  enum class BlendState : uint8_t
+  enum class BlendState
   {
     //! Additive blending without using alpha
     Additive = 0,

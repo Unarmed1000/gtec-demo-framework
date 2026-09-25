@@ -31,13 +31,11 @@
  *
  ****************************************************************************************************************************************************/
 
-#include <cstdint>
-
 namespace Fsl::UI
 {
   //! WARNING: Do not modify the values of these enums as we encode this into a bitfield elsewhere and we therefore rely on these values
   //!          being able to fit into the allocated bits
-  enum class ItemVisibility : uint8_t
+  enum class ItemVisibility
   {
     //! Display the element (default setting)
     Visible = 0,

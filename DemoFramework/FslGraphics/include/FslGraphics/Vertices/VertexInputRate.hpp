@@ -31,11 +31,9 @@
  *
  ****************************************************************************************************************************************************/
 
-#include <cstdint>
-
 namespace Fsl
 {
-  enum class VertexInputRate : uint8_t
+  enum class VertexInputRate
   {
     Vertex = 0,
     Instance = 1

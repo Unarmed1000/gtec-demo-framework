@@ -31,11 +31,9 @@
  *
  ****************************************************************************************************************************************************/
 
-#include <cstdint>
-
 namespace Fsl::UI
 {
-  enum class LayoutDirection : uint8_t
+  enum class LayoutDirection
   {
     NearToFar = 0,
     FarToNear = 1

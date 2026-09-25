@@ -51,12 +51,10 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
-#include <cstdint>
-
 
 namespace Fsl
 {
-  enum class TextureBacking : uint8_t
+  enum class TextureBacking
   {
     // NOLINTNEXTLINE(readability-identifier-naming)
     G2D = 0,

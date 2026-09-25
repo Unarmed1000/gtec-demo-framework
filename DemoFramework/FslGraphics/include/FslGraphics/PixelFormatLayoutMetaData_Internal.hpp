@@ -36,11 +36,9 @@
 #include <array>
 #include <cassert>
 
-#include <cstdint>
-
 namespace Fsl::PixelFormatLayoutMetaData::Internal
 {
-  enum class SwizzleCompatibilityId : uint8_t
+  enum class SwizzleCompatibilityId
   {
     Undefined,
     // NOLINTNEXTLINE(readability-identifier-naming)

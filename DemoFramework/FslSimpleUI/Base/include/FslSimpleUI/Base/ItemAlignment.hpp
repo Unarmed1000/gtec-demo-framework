@@ -31,11 +31,9 @@
  *
  ****************************************************************************************************************************************************/
 
-#include <cstdint>
-
 namespace Fsl::UI
 {
-  enum class ItemAlignment : uint8_t
+  enum class ItemAlignment
   {
     Near = 0,
     Center = 1,

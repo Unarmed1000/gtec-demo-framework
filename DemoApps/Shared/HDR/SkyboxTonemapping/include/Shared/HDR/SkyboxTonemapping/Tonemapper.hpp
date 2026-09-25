@@ -31,13 +31,11 @@
  *
  ****************************************************************************************************************************************************/
 
-#include <cstdint>
-
 namespace Fsl
 {
   struct Tonemapper
   {
-    enum Enum : uint8_t
+    enum Enum
     {
       LinearNoGamma = 0,
       Linear = 1,

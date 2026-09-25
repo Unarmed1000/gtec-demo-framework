@@ -31,14 +31,12 @@
  *
  ****************************************************************************************************************************************************/
 
-#include <cstdint>
-
 namespace Fsl
 {
   // Using old school enum to allow int conversion, its basically just a const value list
   struct CubeMapFace
   {
-    enum Enum : uint8_t
+    enum Enum
     {
       PosX = 0,
       NegX = 1,

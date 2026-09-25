@@ -31,11 +31,9 @@
  *
  ****************************************************************************************************************************************************/
 
-#include <cstdint>
-
 namespace Fsl
 {
-  enum class ContentWindowId : uint8_t
+  enum class ContentWindowId
   {
     Car,
     Knight,

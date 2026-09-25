@@ -31,13 +31,11 @@
  *
  ****************************************************************************************************************************************************/
 
-#include <cstdint>
-
 namespace Fsl
 {
   struct DemoHostFeatureName
   {
-    enum Enum : uint8_t
+    enum Enum
     {
       OpenGLES,
       OpenVG,

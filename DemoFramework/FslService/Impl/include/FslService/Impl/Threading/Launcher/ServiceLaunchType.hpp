@@ -31,11 +31,9 @@
  *
  ****************************************************************************************************************************************************/
 
-#include <cstdint>
-
 namespace Fsl
 {
-  enum class ServiceLaunchType : uint8_t
+  enum class ServiceLaunchType
   {
     Invalid,
     //! a instance of the service

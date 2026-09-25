@@ -31,13 +31,11 @@
  *
  ****************************************************************************************************************************************************/
 
-#include <cstdint>
-
 namespace Fsl::DataBinding::Internal
 {
   //! WARNING: the values in this needs to be keept in sync with Internals::PropertyChangeState so that the assumptions done in
   //!          Internals::PropertyChangeStateUtil::Convert methods still works.
-  enum class PropertyChangeState : uint8_t
+  enum class PropertyChangeState
   {
     //! Nothing was changed, do nothing
     Unchanged = 0,

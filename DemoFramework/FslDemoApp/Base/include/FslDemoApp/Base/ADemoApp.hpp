@@ -45,9 +45,7 @@
 #include <FslDemoApp/Base/Service/Events/Basic/RawMouseMoveEvent.hpp>
 #include <FslDemoApp/Base/Service/Events/Basic/TimeStateEvent.hpp>
 #include <FslDemoApp/Base/Service/Persistent/IPersistentDataManager.hpp>
-#include <cstdint>
 #include <memory>
-
 
 namespace Fsl
 {
@@ -56,7 +54,7 @@ namespace Fsl
   class ADemoApp : public IDemoApp
   {
   protected:
-    enum class ObjectLifeCycle : uint8_t
+    enum class ObjectLifeCycle
     {
       Constructing,
       Constructed,

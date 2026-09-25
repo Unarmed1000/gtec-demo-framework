@@ -31,11 +31,9 @@
  *
  ****************************************************************************************************************************************************/
 
-#include <cstdint>
-
 namespace Fsl::UI
 {
-  enum class EventHandlingStatus : uint8_t
+  enum class EventHandlingStatus
   {
     Unhandled = 0,
     Handled = 1,

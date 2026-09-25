@@ -35,11 +35,9 @@
 #include <Shared/UI/Benchmark/Persistence/Bench/AppBenchmarkGpuRecord.hpp>
 #include <Shared/UI/Benchmark/Persistence/Bench/AppBenchmarkInfo.hpp>
 #include <Shared/UI/Benchmark/Persistence/Bench/AppBenchmarkRenderInfo.hpp>
-#include <cstdint>
 #include <memory>
 #include <vector>
 #include "BasicTestScene.hpp"
-
 
 namespace Fsl
 {
@@ -51,7 +49,7 @@ namespace Fsl
 
   class BenchmarkScene final : public BasicTestScene
   {
-    enum class State : uint8_t
+    enum class State
     {
       Playing,
       Closing
