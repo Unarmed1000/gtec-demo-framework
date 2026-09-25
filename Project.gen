@@ -46,6 +46,10 @@
           <!-- The clang static analyzer is slow, so it only runs with the strict profile (the default). All other checks are in .clang-tidy -->
           clang-analyzer-core.*
           clang-analyzer-cplusplus.*
+          clang-analyzer-deadcode.DeadStores
+          clang-analyzer-optin.cplusplus.UninitializedObject
+          clang-analyzer-optin.cplusplus.VirtualCall
+          clang-analyzer-unix.Malloc
         </StrictChecks>
       </Platform>
       <Platform Name="Android">
