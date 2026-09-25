@@ -152,7 +152,7 @@ namespace Fsl
         // NOLINTEND(bugprone-branch-clone)
 #endif
       }
-      catch (const std::exception&)
+      catch (const std::exception&)    // NOLINT(bugprone-empty-catch)
       {
         /// the logging functionality should never kill the program
       }
@@ -201,7 +201,7 @@ namespace Fsl
         // NOLINTEND(bugprone-branch-clone)
 #endif
       }
-      catch (const std::exception&)
+      catch (const std::exception&)    // NOLINT(bugprone-empty-catch)
       {
         /// the logging functionality should never kill the program
       }

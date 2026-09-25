@@ -45,6 +45,7 @@ namespace Fsl
   public:
     HighResolutionTimer(const HighResolutionTimer&) = delete;
     HighResolutionTimer& operator=(const HighResolutionTimer&) = delete;
+    ~HighResolutionTimer() = default;
 
     HighResolutionTimer();
 

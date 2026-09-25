@@ -932,7 +932,7 @@ TEST(TestTime_MillisecondTickCount32, Op_Sub_TickCount_TickCount_Underflow1)
 
   const TimeSpan result(value0 - value1);
   // Due to wraparound this gives a difference of 1
-  const int64_t expectedResult = 1u * TimeSpan::TicksPerMillisecond;
+  const int64_t expectedResult = int64_t{1} * TimeSpan::TicksPerMillisecond;
 
   EXPECT_EQ(expectedResult, result.Ticks());
 }

@@ -45,6 +45,7 @@ namespace Fsl
   public:
     ConcurrentBasicVector(const ConcurrentBasicVector<T>&) = delete;
     ConcurrentBasicVector& operator=(const ConcurrentBasicVector<T>&) = delete;
+    ~ConcurrentBasicVector() = default;
     ConcurrentBasicVector() = default;
 
     using value_type = T;

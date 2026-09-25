@@ -53,6 +53,9 @@ namespace
     {
     }
 
+    ScopedLogLevel(const ScopedLogLevel&) = delete;
+    ScopedLogLevel& operator=(const ScopedLogLevel&) = delete;
+
     ~ScopedLogLevel()
     {
       Fsl::LogConfig::SetLogLevel(m_logLevel);

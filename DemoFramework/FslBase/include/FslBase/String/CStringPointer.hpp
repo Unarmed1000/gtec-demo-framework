@@ -60,7 +60,6 @@ namespace Fsl
 
   public:
     constexpr CStringPointer() noexcept = default;
-    constexpr CStringPointer(const CStringPointer& other) noexcept = default;
 
     constexpr CStringPointer(const const_pointer psz) noexcept    // NOLINT(google-explicit-constructor)
       : m_psz(psz != nullptr ? psz : Empty)

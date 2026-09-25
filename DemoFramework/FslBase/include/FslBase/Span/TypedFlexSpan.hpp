@@ -81,7 +81,6 @@ namespace Fsl
 
   public:
     constexpr TypedFlexSpan() noexcept = default;
-    constexpr TypedFlexSpan(const TypedFlexSpan& other) noexcept = default;
 
     //! @brief overload that allows you to create a ReadOnlyFlexibleSpan from pointer and count that is noexcept.
     //!        only use this in cases where you are 100% sure that your input is valid

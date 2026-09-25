@@ -34,7 +34,9 @@
 #include <FslBase/Getopt/IOptionParser.hpp>
 #include <FslBase/Span/ReadOnlySpan.hpp>
 #include <FslBase/String/StringViewLite.hpp>
+#include <cstdint>
 #include <deque>
+
 
 namespace Fsl
 {
@@ -42,8 +44,7 @@ namespace Fsl
   {
   public:
     // Switched to C++11 way of doing it
-    OptionParser(const OptionParser&) = delete;
-    OptionParser& operator=(const OptionParser&) = delete;
+    OptionParser() = delete;
 
 
     struct ParserRecord
@@ -60,7 +61,7 @@ namespace Fsl
       }
     };
 
-    enum class Result
+    enum class Result : uint8_t
     {
       Failed = 0,
       OK = 1,

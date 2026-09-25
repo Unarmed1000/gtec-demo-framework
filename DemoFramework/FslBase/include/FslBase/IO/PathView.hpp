@@ -40,7 +40,6 @@ namespace Fsl::IO
   struct PathView : public StringViewLite
   {
     constexpr PathView() noexcept = default;
-    constexpr PathView(const PathView& other) noexcept = default;
 
     //! @brief overload that allows you to create a PathView from pointer and count that is noexcept.
     //!        only use this in cases where you are 100% sure that your input is valid and contains no backslashes

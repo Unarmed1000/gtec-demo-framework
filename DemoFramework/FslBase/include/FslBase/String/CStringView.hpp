@@ -80,7 +80,6 @@ namespace Fsl
 
   public:
     constexpr CStringView() noexcept = default;
-    constexpr CStringView(const CStringView& other) noexcept = default;
     //! @brief overload that allows you to create a StringViewLite from pointer and count that is noexcept.
     //!        only use this in cases where you are 100% sure that your input is valid
 

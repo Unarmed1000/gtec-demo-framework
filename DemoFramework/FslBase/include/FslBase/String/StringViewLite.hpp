@@ -71,7 +71,6 @@ namespace Fsl
 
   public:
     constexpr StringViewLite() noexcept = default;
-    constexpr StringViewLite(const StringViewLite& other) noexcept = default;
 
 
     explicit constexpr StringViewLite(const const_pointer pStr, size_type count)

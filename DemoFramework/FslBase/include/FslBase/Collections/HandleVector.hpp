@@ -85,11 +85,6 @@ namespace Fsl
   public:
     static constexpr const auto ElementByteSize = sizeof(Record);
 
-    HandleVector(const HandleVector&) = default;
-    HandleVector& operator=(const HandleVector&) = default;
-    HandleVector(HandleVector&&) noexcept = default;
-    HandleVector& operator=(HandleVector&&) noexcept = default;
-
     HandleVector() = default;
 
     explicit HandleVector(const size_type capacity)

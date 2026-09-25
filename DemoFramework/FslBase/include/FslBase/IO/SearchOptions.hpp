@@ -31,9 +31,11 @@
  *
  ****************************************************************************************************************************************************/
 
+#include <cstdint>
+
 namespace Fsl::IO
 {
-  enum class SearchOptions
+  enum class SearchOptions : uint8_t
   {
     AllDirectories,
     TopDirectoryOnly,

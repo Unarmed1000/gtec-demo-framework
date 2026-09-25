@@ -31,9 +31,11 @@
  *
  ****************************************************************************************************************************************************/
 
+#include <cstdint>
+
 namespace Fsl::Arguments
 {
-  enum class CommandTypeFlags
+  enum class CommandTypeFlags : uint16_t
   {
     //! The argument type is followed by a value
     Value = 0x1000,
@@ -44,7 +46,7 @@ namespace Fsl::Arguments
   };
 
 
-  enum class CommandType
+  enum class CommandType : uint16_t
   {
     //! Not used.
     Undefined = 0,

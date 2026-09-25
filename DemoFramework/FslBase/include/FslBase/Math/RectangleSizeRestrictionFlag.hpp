@@ -35,7 +35,7 @@
 
 namespace Fsl
 {
-  enum class RectangleSizeRestrictionFlag : uint32_t
+  enum class RectangleSizeRestrictionFlag : uint8_t
   {
     NoRestrictions = 0x00,
     Power2 = 0x01,

@@ -27,9 +27,11 @@ SOFTWARE.
 
 // The functions in this file are a port of an MIT licensed library: MonoGame - ContainmentType.cs.
 
+#include <cstdint>
+
 namespace Fsl
 {
-  enum class ContainmentType
+  enum class ContainmentType : uint8_t
   {
     Disjoint = 0,
     Contains = 1,

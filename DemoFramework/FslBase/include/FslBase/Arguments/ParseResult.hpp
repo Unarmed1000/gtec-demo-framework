@@ -31,9 +31,11 @@
  *
  ****************************************************************************************************************************************************/
 
+#include <cstdint>
+
 namespace Fsl::Arguments
 {
-  enum class ParseResult
+  enum class ParseResult : uint8_t
   {
     //! A internal error occurred
     InternalError,

@@ -31,9 +31,11 @@
  *
  ****************************************************************************************************************************************************/
 
+#include <cstdint>
+
 namespace Fsl
 {
-  enum class OptionParseResult
+  enum class OptionParseResult : uint8_t
   {
     //! The argument was parsed successfully
     Parsed,

@@ -46,8 +46,7 @@ namespace Fsl::IO
   class PlatformFileSystem
   {
   public:
-    PlatformFileSystem(const PlatformFileSystem&) = delete;
-    PlatformFileSystem& operator=(const PlatformFileSystem&) = delete;
+    PlatformFileSystem() = delete;
 
     //! @brief get the attributes associated with the file or directory
     //! @return true if the attributes could be found, false if the path couldn't be located

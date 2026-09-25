@@ -27,9 +27,11 @@ SOFTWARE.
 
 // The functions in this file are a port of an MIT licensed library: MonoGame - PlaneItersectionType.cs.
 
+#include <cstdint>
+
 namespace Fsl
 {
-  enum class PlaneIntersectionType
+  enum class PlaneIntersectionType : uint8_t
   {
     Front,
     Back,

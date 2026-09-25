@@ -49,6 +49,7 @@ namespace Fsl
   public:
     ConcurrentQueue(const ConcurrentQueue&) = delete;
     ConcurrentQueue& operator=(const ConcurrentQueue&) = delete;
+    ~ConcurrentQueue() = default;
     ConcurrentQueue() = default;
 
     using value_type = T;

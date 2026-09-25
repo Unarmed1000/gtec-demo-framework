@@ -31,9 +31,11 @@
  *
  ****************************************************************************************************************************************************/
 
+#include <cstdint>
+
 namespace Fsl
 {
-  enum class TransitionState
+  enum class TransitionState : uint8_t
   {
     Idle,
     StartDelay,

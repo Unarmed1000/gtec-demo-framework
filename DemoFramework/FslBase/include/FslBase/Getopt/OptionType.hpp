@@ -31,11 +31,13 @@
  *
  ****************************************************************************************************************************************************/
 
+#include <cstdint>
+
 namespace Fsl
 {
   struct OptionType
   {
-    enum Enum
+    enum Enum : uint8_t
     {
       Default,
       Rectangle

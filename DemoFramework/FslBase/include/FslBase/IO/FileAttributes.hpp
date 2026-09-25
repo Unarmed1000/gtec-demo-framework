@@ -37,7 +37,7 @@ namespace Fsl::IO
 {
   struct FileAttributes
   {
-    enum Enum
+    enum Enum : uint8_t
     {
       Directory = 0x01,
       File = 0x02,

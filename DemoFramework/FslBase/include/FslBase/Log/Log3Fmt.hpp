@@ -46,8 +46,9 @@ namespace Fsl::Logger
     {
       WriteLine(logType, fmt::vformat(formatString.get(), fmt::make_format_args(strViewArg0)));
     }
-    catch (const std::exception&)
+    catch (const std::exception&)    // NOLINT(bugprone-empty-catch)
     {
+      // The logging functionality should never kill the program
     }
   }
 
@@ -58,8 +59,9 @@ namespace Fsl::Logger
     {
       WriteLine(logLocation, logType, fmt::vformat(formatString.get(), fmt::make_format_args(strViewArg0)));
     }
-    catch (const std::exception&)
+    catch (const std::exception&)    // NOLINT(bugprone-empty-catch)
     {
+      // The logging functionality should never kill the program
     }
   }
 
@@ -73,8 +75,9 @@ namespace Fsl::Logger
       buf.push_back(0);
       WriteLine(logType, buf.data());
     }
-    catch (const std::exception&)
+    catch (const std::exception&)    // NOLINT(bugprone-empty-catch)
     {
+      // The logging functionality should never kill the program
     }
   }
 
@@ -89,8 +92,9 @@ namespace Fsl::Logger
       buf.push_back(0);
       WriteLine(logLocation, logType, buf.data());
     }
-    catch (const std::exception&)
+    catch (const std::exception&)    // NOLINT(bugprone-empty-catch)
     {
+      // The logging functionality should never kill the program
     }
   }
 }

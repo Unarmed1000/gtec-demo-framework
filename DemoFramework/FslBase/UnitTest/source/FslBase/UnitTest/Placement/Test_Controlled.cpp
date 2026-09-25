@@ -72,6 +72,8 @@ namespace
       other.m_id = 0;
     }
 
+    A& operator=(const A&) = delete;
+
     // A& operator=(A&& other) noexcept = default;
     A& operator=(A&& other) noexcept
     {
@@ -120,6 +122,8 @@ namespace
       other.m_id = 0;
       FSLLOG3_INFO("B{} Move construct", m_id);
     }
+
+    B& operator=(const B&) = delete;
 
     // B& operator=(B&& other) noexcept = default;
     B& operator=(B&& other) noexcept
@@ -177,6 +181,8 @@ namespace
       other.m_id = 0;
       FSLLOG3_INFO("C{} Move construct done", m_id);
     }
+
+    C& operator=(const C&) = delete;
 
     // C& operator=(C&& other) noexcept = default;
     C& operator=(C&& other) noexcept

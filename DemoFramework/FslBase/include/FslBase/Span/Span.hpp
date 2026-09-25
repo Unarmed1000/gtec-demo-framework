@@ -63,7 +63,6 @@ namespace Fsl
 
   public:
     constexpr Span() noexcept = default;
-    constexpr Span(const Span& other) noexcept = default;
 
     explicit constexpr Span(pointer pData, size_type count) noexcept
       : m_span(SpanUtil::CreateStd(pData, count))

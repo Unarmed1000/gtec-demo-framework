@@ -47,7 +47,7 @@ namespace Fsl::Arguments
       constexpr uint32_t EmptyIndex = 0;
     }
 
-    enum class ParserMode
+    enum class ParserMode : uint8_t
     {
       ErrorOut,
       ParseArgumentType,
@@ -57,14 +57,14 @@ namespace Fsl::Arguments
       AddUnhandledArguments,
     };
 
-    enum class ArgParseMode
+    enum class ArgParseMode : uint8_t
     {
       Identify,
       ShortArgument,
       LongArgument,
     };
 
-    enum class ArgParseResult
+    enum class ArgParseResult : uint8_t
     {
       //! A short argument
       ShortArgument,
@@ -362,7 +362,7 @@ namespace Fsl::Arguments
       }
     }
 
-    enum class UnhandledArgumentMode
+    enum class UnhandledArgumentMode : uint8_t
     {
       NotKnown,
       Allowed,

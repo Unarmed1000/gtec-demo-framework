@@ -31,9 +31,11 @@
  *
  ****************************************************************************************************************************************************/
 
+#include <cstdint>
+
 namespace Fsl
 {
-  enum class TransitionTimeUnit
+  enum class TransitionTimeUnit : uint8_t
   {
     Milliseconds,
     Microseconds
