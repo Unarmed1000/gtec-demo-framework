@@ -52,6 +52,7 @@ namespace Fsl
     DeviceBuffer& operator=(DeviceBuffer&& other) noexcept;
     // move constructor
     DeviceBuffer(DeviceBuffer&& other) noexcept;
+    ~DeviceBuffer() = default;
 
     DeviceBuffer();
     DeviceBuffer(Vulkan::VUBuffer&& buffer, Vulkan::VUDeviceMemory&& deviceMemory);

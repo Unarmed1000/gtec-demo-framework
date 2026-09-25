@@ -348,7 +348,7 @@ namespace Fsl::Vulkan
         rFrame.VertUboBuffer = CreateUBO(device, sizeOfVertexUBOData);
         rFrame.DescriptorSet = CreateDescriptorSet(m_resources.MainDescriptorPool, m_resources.MainDescriptorSetLayout);
         // Prepare a dynamic vertex buffer that can hold LINE_CAPACITY lines
-        rFrame.LineVertBuffer.Reset(bufferManager, LocalConfig::VerticesPerLine * initialLineCapacity,
+        rFrame.LineVertBuffer.Reset(bufferManager, static_cast<std::size_t>(LocalConfig::VerticesPerLine) * initialLineCapacity,
                                     VertexPositionColor::AsVertexDeclarationSpan());
         UpdateDescriptorSet(device.Get(), rFrame.DescriptorSet, rFrame.VertUboBuffer);
       }

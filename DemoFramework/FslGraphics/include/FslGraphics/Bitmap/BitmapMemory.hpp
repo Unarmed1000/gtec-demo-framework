@@ -58,6 +58,7 @@ namespace Fsl
     // Request that the compiler generates a copy constructor and assignment operator
     BitmapMemory(const BitmapMemory&) = default;
     BitmapMemory& operator=(const BitmapMemory&) = default;
+    ~BitmapMemory() = default;
 
     BitmapMemory() = default;
 

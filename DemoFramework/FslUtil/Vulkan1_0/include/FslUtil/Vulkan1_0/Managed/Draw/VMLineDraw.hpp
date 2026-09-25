@@ -94,6 +94,7 @@ namespace Fsl::Vulkan
         }
         return *this;
       }
+      ~FrameResources() = default;
     };
 
     struct Resources
@@ -133,6 +134,7 @@ namespace Fsl::Vulkan
         }
         return *this;
       }
+      ~Resources() = default;
 
 
       Resources() = default;
@@ -185,6 +187,7 @@ namespace Fsl::Vulkan
         }
         return *this;
       }
+      ~DependentResources() = default;
 
       DependentResources() = default;
 
@@ -222,6 +225,9 @@ namespace Fsl::Vulkan
       }
       return *this;
     }
+    VMLineDraw(const VMLineDraw&) = delete;
+    VMLineDraw& operator=(const VMLineDraw&) = delete;
+    ~VMLineDraw() = default;
 
 
     VMLineDraw() = default;

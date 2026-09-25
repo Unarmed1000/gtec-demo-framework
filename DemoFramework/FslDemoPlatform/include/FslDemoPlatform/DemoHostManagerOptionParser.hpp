@@ -64,6 +64,7 @@ namespace Fsl
   public:
     DemoHostManagerOptionParser(const DemoHostManagerOptionParser&) = delete;
     DemoHostManagerOptionParser& operator=(const DemoHostManagerOptionParser&) = delete;
+    ~DemoHostManagerOptionParser() = default;
 
     DemoHostManagerOptionParser(const ColorSpaceType colorSpaceType, const bool hdrEnabled);
 

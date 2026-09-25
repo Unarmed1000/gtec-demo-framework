@@ -63,6 +63,9 @@ namespace Fsl
         {
         }
 
+        ScopedDrawCommandBufferAccess(const ScopedDrawCommandBufferAccess&) = delete;
+        ScopedDrawCommandBufferAccess& operator=(const ScopedDrawCommandBufferAccess&) = delete;
+
         ~ScopedDrawCommandBufferAccess()
         {
           m_rSystem.ReleaseDrawCommandBuffer();

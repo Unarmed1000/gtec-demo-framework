@@ -101,6 +101,7 @@ namespace Fsl
 
     SpriteFontFastLookup(const SpriteFontFastLookup&) = delete;
     SpriteFontFastLookup& operator=(const SpriteFontFastLookup&) = delete;
+    ~SpriteFontFastLookup() = default;
 
     SpriteFontFastLookup() = default;
 

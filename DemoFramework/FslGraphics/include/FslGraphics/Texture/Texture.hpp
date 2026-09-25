@@ -341,6 +341,9 @@ namespace Fsl
       {
       }
 
+      ScopedDirectReadWriteAccess(const ScopedDirectReadWriteAccess&) = delete;
+      ScopedDirectReadWriteAccess& operator=(const ScopedDirectReadWriteAccess&) = delete;
+
       ~ScopedDirectReadWriteAccess() noexcept
       {
         try

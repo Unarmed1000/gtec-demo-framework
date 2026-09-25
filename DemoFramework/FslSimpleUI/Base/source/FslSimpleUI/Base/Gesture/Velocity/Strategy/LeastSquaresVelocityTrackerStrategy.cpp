@@ -353,10 +353,10 @@ namespace Fsl::UI
     }
 
     // Apply the Gram-Schmidt process to A to obtain its QR decomposition.
-    std::array<float, LocalConfig::MaxMatrixElements> tmpQ{};           // orthonormal basis, column-major order
-    std::array<float, LocalConfig::MaxN * LocalConfig::MaxN> tmpR{};    // upper triangular matrix, row-major order
+    std::array<float, LocalConfig::MaxMatrixElements> tmpQ{};                                     // orthonormal basis, column-major order
+    std::array<float, static_cast<std::size_t>(LocalConfig::MaxN) * LocalConfig::MaxN> tmpR{};    // upper triangular matrix, row-major order
     Span<float> spanQ = SpanUtil::UncheckedAsSpan(tmpQ, 0, n * m);
-    Span<float> spanR = SpanUtil::UncheckedAsSpan(tmpR, 0, n * n);
+    Span<float> spanR = SpanUtil::UncheckedAsSpan(tmpR, 0, static_cast<typename Span<float>::size_type>(n) * n);
     for (uint32_t j = 0; j < n; ++j)
     {
       for (uint32_t h = 0; h < m; ++h)

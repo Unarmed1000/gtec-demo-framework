@@ -67,6 +67,9 @@ namespace Fsl::UI
       : m_context(std::move(other.m_context))
     {
     }
+    CustomContext(const CustomContext&) = delete;
+    CustomContext& operator=(const CustomContext&) = delete;
+    ~CustomContext() = default;
 
 
     CustomContext() = default;

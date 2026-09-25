@@ -56,6 +56,9 @@ namespace Fsl
         CurrentExePath::SetCurrentExePath(psz);
       }
 
+      ScopedExePath(const ScopedExePath&) = delete;
+      ScopedExePath& operator=(const ScopedExePath&) = delete;
+
       ~ScopedExePath()
       {
         CurrentExePath::SetCurrentExePath(nullptr);

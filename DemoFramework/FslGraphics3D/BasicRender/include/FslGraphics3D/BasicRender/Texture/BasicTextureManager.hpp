@@ -115,6 +115,7 @@ namespace Fsl::Graphics3D
         }
         return *this;
       }
+      ~StaticRecord() = default;
 
       void Reset() noexcept
       {
@@ -176,6 +177,7 @@ namespace Fsl::Graphics3D
         }
         return *this;
       }
+      ~DynamicRecord() = default;
 
       void Reset() noexcept
       {

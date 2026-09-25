@@ -66,8 +66,8 @@ TEST(Test_RawBitmapEx, R8G8B8ToGrayscaleLuminanceNTSC)
   constexpr PxExtent2D Extent = PxExtent2D::Create(2, 3);
   constexpr PixelFormat PixelFormat = PixelFormat::R8G8B8_UNORM;
   constexpr BitmapOrigin Origin = BitmapOrigin::UpperLeft;
-  std::array<uint8_t, 3 * Extent.Width.Value * Extent.Height.Value> srcContent{0x00, 0x10, 0x20, 0x30, 0x40, 0x50, 0x01, 0x11, 0x21,
-                                                                               0x31, 0x41, 0x51, 0x02, 0x12, 0x22, 0x32, 0x42, 0x52};
+  std::array<uint8_t, static_cast<std::size_t>(3) * Extent.Width.Value * Extent.Height.Value> srcContent{
+    0x00, 0x10, 0x20, 0x30, 0x40, 0x50, 0x01, 0x11, 0x21, 0x31, 0x41, 0x51, 0x02, 0x12, 0x22, 0x32, 0x42, 0x52};
 
   const auto result = RawBitmapEx::Create(SpanUtil::AsSpan(srcContent), Extent, PixelFormat, Origin);
 
@@ -85,8 +85,8 @@ TEST(Test_RawBitmapEx, R8G8B8ToGrayscaleLuminanceNTSC_Stride)
   constexpr PixelFormat PixelFormat = PixelFormat::R8G8B8_UNORM;
   constexpr uint16_t SrcStride = (Extent.Width.Value * 3) + 1;
   constexpr BitmapOrigin Origin = BitmapOrigin::UpperLeft;
-  std::array<uint8_t, SrcStride * Extent.Height.Value> srcContent{0x00, 0x10, 0x20, 0x30, 0x40, 0x50, 0xFF, 0x01, 0x11, 0x21, 0x31,
-                                                                  0x41, 0x51, 0xFF, 0x02, 0x12, 0x22, 0x32, 0x42, 0x52, 0xFF};
+  std::array<uint8_t, static_cast<std::size_t>(SrcStride) * Extent.Height.Value> srcContent{
+    0x00, 0x10, 0x20, 0x30, 0x40, 0x50, 0xFF, 0x01, 0x11, 0x21, 0x31, 0x41, 0x51, 0xFF, 0x02, 0x12, 0x22, 0x32, 0x42, 0x52, 0xFF};
 
   const auto result = RawBitmapEx::Create(SpanUtil::AsSpan(srcContent), Extent, PixelFormat, SrcStride, Origin);
 
@@ -141,8 +141,8 @@ TEST(Test_RawBitmapEx, R8G8B8ToGrayscaleLuminanceNTSC_StrideTooLarge)
   constexpr PixelFormat PixelFormat = PixelFormat::R8G8B8_UNORM;
   constexpr uint16_t SrcStride = (Extent.Width.Value * 3) + 1;
   constexpr BitmapOrigin Origin = BitmapOrigin::UpperLeft;
-  std::array<uint8_t, SrcStride * Extent.Height.Value> srcContent{0x00, 0x10, 0x20, 0x30, 0x40, 0x50, 0xFF, 0x01, 0x11, 0x21, 0x31,
-                                                                  0x41, 0x51, 0xFF, 0x02, 0x12, 0x22, 0x32, 0x42, 0x52, 0xFF};
+  std::array<uint8_t, static_cast<std::size_t>(SrcStride) * Extent.Height.Value> srcContent{
+    0x00, 0x10, 0x20, 0x30, 0x40, 0x50, 0xFF, 0x01, 0x11, 0x21, 0x31, 0x41, 0x51, 0xFF, 0x02, 0x12, 0x22, 0x32, 0x42, 0x52, 0xFF};
 
   EXPECT_THROW(RawBitmapEx::Create(SpanUtil::AsSpan(srcContent), Extent, PixelFormat, SrcStride + 1, Origin), std::invalid_argument);
 }

@@ -53,9 +53,9 @@ namespace Fsl
     const uint16_t* pSrcIndices = mesh.GetIndices();
     const VertexPositionNormalTexture* const src = mesh.GetVertices();
     const uint32_t vertexCount = mesh.GetVertexCount();
-    m_pVertices = new float[3 * vertexCount];
-    m_pNormals = new float[3 * vertexCount];
-    m_pTextureCoords = new float[2 * vertexCount];
+    m_pVertices = new float[static_cast<std::size_t>(3) * vertexCount];
+    m_pNormals = new float[static_cast<std::size_t>(3) * vertexCount];
+    m_pTextureCoords = new float[static_cast<std::size_t>(2) * vertexCount];
     m_pIndices = new unsigned short[indexCount];
     for (uint32_t i = 0; i < vertexCount; ++i)
     {

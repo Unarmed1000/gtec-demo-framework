@@ -52,6 +52,9 @@ namespace Fsl::UI
     {
     }
 
+    ExternalModuleHost(const ExternalModuleHost&) = delete;
+    ExternalModuleHost& operator=(const ExternalModuleHost&) = delete;
+
     ~ExternalModuleHost() final
     {
       m_basicInfo->Dispose();

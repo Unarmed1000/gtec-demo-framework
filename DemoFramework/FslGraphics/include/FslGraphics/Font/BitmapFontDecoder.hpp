@@ -42,6 +42,7 @@ namespace Fsl
   public:
     BitmapFontDecoder(const BitmapFontDecoder&) = delete;
     BitmapFontDecoder& operator=(const BitmapFontDecoder&) = delete;
+    ~BitmapFontDecoder() = default;
 
     //! @brief Load the bitmap font
     //! @param strFilename the file to load.

@@ -42,8 +42,8 @@ namespace Fsl
   Grid::Grid(const Rect& rect, const Point2& gridResolution)
     : m_gridX(gridResolution.X + (gridResolution.X & 1))
     , m_gridY(gridResolution.Y + (gridResolution.Y & 1))
-    , m_points(m_gridX * m_gridY)
-    , m_fixedPoints(m_gridX * m_gridY)    // TODO: reduce the amount of fixed points we need to allocate
+    , m_points(static_cast<std::size_t>(m_gridX) * m_gridY)
+    , m_fixedPoints(static_cast<std::size_t>(m_gridX) * m_gridY)    // TODO: reduce the amount of fixed points we need to allocate
   {
     assert((m_gridX & 1) == 0);
     assert((m_gridY & 1) == 0);

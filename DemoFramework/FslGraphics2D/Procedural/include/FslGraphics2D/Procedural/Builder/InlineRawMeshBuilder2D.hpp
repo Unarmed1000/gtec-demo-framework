@@ -101,7 +101,6 @@ namespace Fsl
 
   public:
     inline constexpr InlineRawMeshBuilder2D() noexcept = default;
-    inline constexpr InlineRawMeshBuilder2D(const InlineRawMeshBuilder2D& other) noexcept = default;
 
     //! @brief overload that allows you to create a InlineRawMeshBuilder2D from pointers and capacities that is noexcept.
     //!        only use this in cases where you are 100% sure that your input is valid

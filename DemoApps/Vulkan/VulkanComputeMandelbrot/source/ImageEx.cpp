@@ -123,7 +123,7 @@ namespace Fsl
     try
     {
       m_image.Reset(device, createInfo);
-      m_imageLayers.resize(createInfo.mipLevels * createInfo.arrayLayers);
+      m_imageLayers.resize(static_cast<std::size_t>(createInfo.mipLevels) * createInfo.arrayLayers);
     }
     catch (const std::exception&)
     {

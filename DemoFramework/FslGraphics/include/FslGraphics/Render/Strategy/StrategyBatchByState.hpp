@@ -119,7 +119,7 @@ namespace Fsl
     StrategyBatchByState& operator=(StrategyBatchByState&& other) = delete;
 
     explicit StrategyBatchByState(const uint32_t quadCapacity = 4096)
-      : m_quadVertices((std::max(quadCapacity, 1u) + SAFETY) * VerticesPerQuad)
+      : m_quadVertices((static_cast<std::size_t>(std::max(quadCapacity, 1u) + SAFETY)) * VerticesPerQuad)
       , m_segments(std::max(quadCapacity, 1u) + SAFETY)
       , m_addQuad(AddQuadPointers(m_quadVertices.data(), m_segments.data()))
     {

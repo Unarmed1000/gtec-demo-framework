@@ -40,7 +40,7 @@ namespace Fsl
                                               const BitmapOrigin origin)
   {
     const auto stride = PixelFormatUtil::CalcMinimumStride(extentPx.Width, pixelFormat);
-    if ((extentPx.Height.Value * stride) > span.size())
+    if ((static_cast<std::size_t>(extentPx.Height.Value) * stride) > span.size())
     {
       throw std::invalid_argument("span is not large enough to contain a bitmap of the given dimensions");
     }
@@ -55,7 +55,7 @@ namespace Fsl
     {
       throw std::invalid_argument("stride is smaller than the width allows");
     }
-    if ((extentPx.Height.Value * stride) > span.size())
+    if ((static_cast<std::size_t>(extentPx.Height.Value) * stride) > span.size())
     {
       throw std::invalid_argument("span is not large enough to contain a bitmap of the given dimensions");
     }

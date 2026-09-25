@@ -133,8 +133,8 @@ namespace Fsl
     const auto size4 = static_cast<int32_t>(m_points.size() / 4);
     m_basic2D->DrawPoints(m_points.data(), size4, Colors::White());
     m_basic2D->DrawPoints(m_points.data() + size4, size4, Colors::Red());
-    m_basic2D->DrawPoints(m_points.data() + size4 * 2, size4, Colors::Green());
-    m_basic2D->DrawPoints(m_points.data() + size4 * 3, size4, Colors::Blue());
+    m_basic2D->DrawPoints(m_points.data() + static_cast<std::ptrdiff_t>(size4) * 2, size4, Colors::Green());
+    m_basic2D->DrawPoints(m_points.data() + static_cast<std::ptrdiff_t>(size4) * 3, size4, Colors::Blue());
 
 
     m_basic2D->DrawString("Hello world!", Vector2(0, 1));

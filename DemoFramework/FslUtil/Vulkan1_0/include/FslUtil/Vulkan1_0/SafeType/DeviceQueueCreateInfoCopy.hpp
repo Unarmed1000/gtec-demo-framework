@@ -52,6 +52,7 @@ namespace Fsl::Vulkan
 
     DeviceQueueCreateInfoCopy& operator=(DeviceQueueCreateInfoCopy&& other) noexcept;
     DeviceQueueCreateInfoCopy(DeviceQueueCreateInfoCopy&& other) noexcept;
+    ~DeviceQueueCreateInfoCopy() = default;
 
     DeviceQueueCreateInfoCopy();
     explicit DeviceQueueCreateInfoCopy(const VkDeviceQueueCreateInfo& value);

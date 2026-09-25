@@ -62,6 +62,7 @@ namespace Fsl
     // Request that the compiler generates a copy constructor and assignment operator
     TextureBlobBuilder(const TextureBlobBuilder&) = default;
     TextureBlobBuilder& operator=(const TextureBlobBuilder&) = default;
+    ~TextureBlobBuilder() = default;
 
     TextureBlobBuilder();
     TextureBlobBuilder(const TextureType textureType, const PxExtent3D& extent, const PixelFormat pixelFormat, const TextureInfo& textureInfo,

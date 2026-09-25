@@ -73,6 +73,7 @@ namespace Fsl::GLES2
       CommandsRecord& operator=(const CommandsRecord&) = delete;
       CommandsRecord& operator=(CommandsRecord&& other) noexcept = default;
       CommandsRecord(CommandsRecord&& other) noexcept = default;
+      ~CommandsRecord() = default;
 
       CommandsRecord() = default;
       explicit CommandsRecord(const bool /*dummy*/)

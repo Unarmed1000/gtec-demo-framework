@@ -80,6 +80,7 @@ namespace Fsl
       other.m_recordDensityDpi = 0;
       other.m_frameCount = 0;
     }
+    ~AppInputCommandList() = default;
 
     AppInputCommandList() = default;
     AppInputCommandList(const PxSize2D recordResolution, const uint32_t recordDensityDpi, const ReadOnlySpan<InputCommandRecord> entries,

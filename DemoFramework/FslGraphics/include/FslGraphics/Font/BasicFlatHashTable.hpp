@@ -78,6 +78,7 @@ namespace Fsl
 
     BasicFlatHashTable& operator=(BasicFlatHashTable&& other) noexcept = default;
     BasicFlatHashTable(BasicFlatHashTable&& other) noexcept = default;
+    ~BasicFlatHashTable() = default;
 
     BasicFlatHashTable()
       : BasicFlatHashTable(ReadOnlySpan<element_type>())

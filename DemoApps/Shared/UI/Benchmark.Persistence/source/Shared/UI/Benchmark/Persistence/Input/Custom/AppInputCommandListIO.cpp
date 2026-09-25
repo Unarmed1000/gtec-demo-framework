@@ -96,11 +96,11 @@ namespace Fsl::AppInputCommandListIO
     constexpr std::size_t CalcInputCommandRecordMaxSize() noexcept
     {
       std::size_t size = 0;
-      size += ValueCompression::Details::MaxByteSizeUInt32;       // uint32_t FrameIndex       - uint32_t
-      size += ValueCompression::Details::MaxByteSizeUInt32;       // InputCommandId CommandId  - uint32_t
-      size += sizeof(uint64_t);                                   // CustomWindowId WindowId   - uint64_t
-      size += ValueCompression::Details::MaxByteSizeInt32 * 4;    // PxRectangle WindowRectPx  - 4x int32_t
-      size += ValueCompression::Details::MaxByteSizeInt32 * 4;    // PxPoint2 MousePosition    - 2x int32_t
+      size += ValueCompression::Details::MaxByteSizeUInt32;                                 // uint32_t FrameIndex       - uint32_t
+      size += ValueCompression::Details::MaxByteSizeUInt32;                                 // InputCommandId CommandId  - uint32_t
+      size += sizeof(uint64_t);                                                             // CustomWindowId WindowId   - uint64_t
+      size += static_cast<std::size_t>(ValueCompression::Details::MaxByteSizeInt32) * 4;    // PxRectangle WindowRectPx  - 4x int32_t
+      size += static_cast<std::size_t>(ValueCompression::Details::MaxByteSizeInt32) * 4;    // PxPoint2 MousePosition    - 2x int32_t
       return size;
     }
 

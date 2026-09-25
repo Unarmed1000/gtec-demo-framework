@@ -78,7 +78,7 @@ TEST(TestBitmap_ReadOnlyRawBitmap, Create_Span_Size_PixelFormat_Origin)
   constexpr auto SrcWidthPx = PxSize1D::Create(2);
   constexpr auto SrcHeightPx = PxSize1D::Create(3);
   constexpr PxSize2D SrcSizePx(SrcWidthPx, SrcHeightPx);
-  const std::array<uint8_t, 4 * SrcWidthPx.RawUnsignedValue() * SrcHeightPx.RawUnsignedValue()> srcContent{
+  const std::array<uint8_t, static_cast<std::size_t>(4) * SrcWidthPx.RawUnsignedValue() * SrcHeightPx.RawUnsignedValue()> srcContent{
     0x00, 0x10, 0x20, 0x30, 0x40, 0x50, 0x60, 0x70, 0x01, 0x11, 0x21, 0x31, 0x41, 0x51, 0x61, 0x71, 0x02, 0x12, 0x22, 0x32, 0x42, 0x52, 0x62, 0x72};
   constexpr PixelFormat SrcPixelFormat = PixelFormat::R8G8B8A8_UNORM;
   constexpr BitmapOrigin SrcBitmapOrigin = BitmapOrigin::LowerLeft;
@@ -112,7 +112,7 @@ TEST(TestBitmap_ReadOnlyRawBitmap, Create_Span_Extent_PixelFormat_Origin)
   constexpr auto SrcWidthPx = PxValueU::Create(2);
   constexpr auto SrcHeightPx = PxValueU::Create(3);
   constexpr PxExtent2D SrcExtentPx(SrcWidthPx, SrcHeightPx);
-  const std::array<uint8_t, 4 * SrcWidthPx.Value * SrcHeightPx.Value> srcContent{
+  const std::array<uint8_t, static_cast<std::size_t>(4) * SrcWidthPx.Value * SrcHeightPx.Value> srcContent{
     0x00, 0x10, 0x20, 0x30, 0x40, 0x50, 0x60, 0x70, 0x01, 0x11, 0x21, 0x31, 0x41, 0x51, 0x61, 0x71, 0x02, 0x12, 0x22, 0x32, 0x42, 0x52, 0x62, 0x72};
   constexpr PixelFormat SrcPixelFormat = PixelFormat::R8G8B8A8_UNORM;
   constexpr BitmapOrigin SrcBitmapOrigin = BitmapOrigin::LowerLeft;
@@ -146,7 +146,7 @@ TEST(TestBitmap_ReadOnlyRawBitmap, Create_Span_Size_PixelFormat_Stride_Origin)
   constexpr auto SrcWidthPx = PxSize1D::Create(2);
   constexpr auto SrcHeightPx = PxSize1D::Create(3);
   constexpr PxSize2D SrcSizePx(SrcWidthPx, SrcHeightPx);
-  const std::array<uint8_t, 4 * SrcWidthPx.RawUnsignedValue() * SrcHeightPx.RawUnsignedValue()> srcContent{
+  const std::array<uint8_t, static_cast<std::size_t>(4) * SrcWidthPx.RawUnsignedValue() * SrcHeightPx.RawUnsignedValue()> srcContent{
     0x00, 0x10, 0x20, 0x30, 0x40, 0x50, 0x60, 0x70, 0x01, 0x11, 0x21, 0x31, 0x41, 0x51, 0x61, 0x71, 0x02, 0x12, 0x22, 0x32, 0x42, 0x52, 0x62, 0x72};
   constexpr PixelFormat SrcPixelFormat = PixelFormat::R8G8B8A8_UNORM;
   constexpr BitmapOrigin SrcBitmapOrigin = BitmapOrigin::LowerLeft;
@@ -183,7 +183,7 @@ TEST(TestBitmap_ReadOnlyRawBitmap, Create_Span_Extent_PixelFormat_Stride_Origin)
   constexpr auto SrcWidthPx = PxValueU::Create(2);
   constexpr auto SrcHeightPx = PxValueU::Create(3);
   constexpr PxExtent2D SrcExtent(SrcWidthPx, SrcHeightPx);
-  const std::array<uint8_t, 4 * SrcWidthPx.Value * SrcHeightPx.Value> srcContent{
+  const std::array<uint8_t, static_cast<std::size_t>(4) * SrcWidthPx.Value * SrcHeightPx.Value> srcContent{
     0x00, 0x10, 0x20, 0x30, 0x40, 0x50, 0x60, 0x70, 0x01, 0x11, 0x21, 0x31, 0x41, 0x51, 0x61, 0x71, 0x02, 0x12, 0x22, 0x32, 0x42, 0x52, 0x62, 0x72};
 
   constexpr PixelFormat SrcPixelFormat = PixelFormat::R8G8B8A8_UNORM;

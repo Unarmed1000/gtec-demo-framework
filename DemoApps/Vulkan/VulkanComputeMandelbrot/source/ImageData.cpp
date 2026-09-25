@@ -120,7 +120,7 @@ namespace Fsl
     assert(format == VK_FORMAT_R8G8B8A8_UNORM);
 
     m_bytesPerPixel = 4;
-    m_data.resize(width * height * depth * m_bytesPerPixel);
+    m_data.resize(static_cast<std::size_t>(width) * height * depth * m_bytesPerPixel);
   }
 
 
@@ -188,7 +188,7 @@ namespace Fsl
       static_cast<const uint8_t*>(pData) + (arrayLayer * subresourceLayout.arrayPitch) + subresourceLayout.offset;
     uint8_t* pDst = m_data.data() + dstOffset;
 
-    const std::size_t bytesPerLine = m_bytesPerPixel * currentExtent.width;
+    const std::size_t bytesPerLine = static_cast<std::size_t>(m_bytesPerPixel) * currentExtent.width;
 
     for (uint32_t z = 0; z < currentExtent.depth; ++z)
     {
@@ -241,7 +241,7 @@ namespace Fsl
           currentExtent.height = std::max(m_extent3D.height >> (currentMipLevel), 1u);
           currentExtent.depth = std::max(m_extent3D.depth >> (currentMipLevel), 1u);
 
-          offset += m_bytesPerPixel * currentExtent.width * currentExtent.height * currentExtent.depth;
+          offset += static_cast<std::size_t>(m_bytesPerPixel) * currentExtent.width * currentExtent.height * currentExtent.depth;
         }
       }
     }

@@ -113,6 +113,9 @@ namespace
       m_initialState = TestFunctor::GlobalState;
     }
 
+    TestVertexAttribStateCache(const TestVertexAttribStateCache&) = delete;
+    TestVertexAttribStateCache& operator=(const TestVertexAttribStateCache&) = delete;
+
     ~TestVertexAttribStateCache() override
     {
       ValidateState(m_initialState, TestFunctor::GlobalState);

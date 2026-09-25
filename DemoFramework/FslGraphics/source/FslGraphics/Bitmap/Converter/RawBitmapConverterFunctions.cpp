@@ -98,7 +98,7 @@ namespace Fsl::RawBitmapConverterFunctions
     {
       for (uint32_t x = 0; x < width; ++x)
       {
-        const auto r = static_cast<double>(pSrc[(x * 3)]);
+        const auto r = static_cast<double>(pSrc[(static_cast<std::size_t>(x) * 3)]);
         const auto g = static_cast<double>(pSrc[(x * 3) + 1]);
         const auto b = static_cast<double>(pSrc[(x * 3) + 2]);
 

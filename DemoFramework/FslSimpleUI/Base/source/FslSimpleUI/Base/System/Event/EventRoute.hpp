@@ -101,6 +101,9 @@ namespace Fsl::UI
       {
         m_rRoute.Initialize(flags);
       }
+      StackScopedInit(const StackScopedInit&) = delete;
+      StackScopedInit& operator=(const StackScopedInit&) = delete;
+
       ~StackScopedInit()
       {
         m_rRoute.Shutdown();

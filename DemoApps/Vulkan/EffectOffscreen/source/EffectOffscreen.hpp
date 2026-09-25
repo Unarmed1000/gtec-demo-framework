@@ -104,6 +104,7 @@ namespace Fsl
       Resources& operator=(const Resources&) = delete;
       Resources(Resources&& other) noexcept = delete;
       Resources& operator=(Resources&& other) noexcept = delete;
+      ~Resources() = default;
     };
 
     struct OffscreenResources
@@ -118,6 +119,7 @@ namespace Fsl
       OffscreenResources& operator=(const OffscreenResources&) = delete;
       OffscreenResources(OffscreenResources&& other) noexcept = delete;
       OffscreenResources& operator=(OffscreenResources&& other) noexcept = delete;
+      ~OffscreenResources() = default;
 
       void Reset() noexcept
       {
@@ -141,6 +143,7 @@ namespace Fsl
       DependentResources& operator=(const DependentResources&) = delete;
       DependentResources(DependentResources&& other) noexcept = delete;
       DependentResources& operator=(DependentResources&& other) noexcept = delete;
+      ~DependentResources() = default;
 
       void Reset() noexcept
       {

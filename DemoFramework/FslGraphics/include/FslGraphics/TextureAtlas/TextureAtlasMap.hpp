@@ -48,13 +48,8 @@ namespace Fsl
     std::map<IO::Path, AtlasNineSlicePatchInfo, std::less<>> m_ninesliceMap;
 
   public:
-    TextureAtlasMap(const TextureAtlasMap&) = default;
-    TextureAtlasMap& operator=(const TextureAtlasMap&) = default;
-
     // move assignment operator
-    TextureAtlasMap& operator=(TextureAtlasMap&& other) noexcept = default;
     // move constructor
-    TextureAtlasMap(TextureAtlasMap&& other) noexcept = default;
 
     TextureAtlasMap();
     explicit TextureAtlasMap(const ITextureAtlas& atlas);

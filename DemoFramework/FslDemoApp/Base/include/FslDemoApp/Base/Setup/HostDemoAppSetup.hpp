@@ -49,6 +49,7 @@ namespace Fsl
     HostDemoAppSetup(HostDemoAppSetup&& other) = delete;
     HostDemoAppSetup& operator=(const HostDemoAppSetup&) = delete;
     HostDemoAppSetup& operator=(HostDemoAppSetup&&) = delete;
+    ~HostDemoAppSetup() = default;
 
     IDemoHostRegistry& TheHostRegistry;
     ServiceRegistry& TheServiceRegistry;

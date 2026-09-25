@@ -42,7 +42,7 @@
 namespace Fsl::GLES3
 {
   GLLineDraw::GLLineDraw(const uint32_t initialLineCapacity)
-    : LineVertexBuffer(nullptr, initialLineCapacity * 2u, VertexPositionColor::AsVertexDeclarationSpan(), GL_DYNAMIC_DRAW)
+    : LineVertexBuffer(nullptr, static_cast<std::size_t>(initialLineCapacity) * 2u, VertexPositionColor::AsVertexDeclarationSpan(), GL_DYNAMIC_DRAW)
   {
   }
 

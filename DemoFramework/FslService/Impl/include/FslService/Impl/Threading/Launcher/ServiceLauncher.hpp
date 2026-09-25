@@ -48,6 +48,7 @@ namespace Fsl
   public:
     ServiceLauncher(const ServiceLauncher&) = delete;
     ServiceLauncher& operator=(const ServiceLauncher&) = delete;
+    ~ServiceLauncher() = default;
 
     static std::shared_ptr<RegisteredGlobalServiceInfo> Launch(const RegisteredServiceDeque& services);
     static std::shared_ptr<ServiceProviderImpl> Launch(const TypeServiceMaps& globalServiceTypeMaps, const RegisteredServiceDeque& services,

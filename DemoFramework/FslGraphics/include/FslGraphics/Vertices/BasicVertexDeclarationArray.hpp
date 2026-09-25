@@ -50,8 +50,6 @@ namespace Fsl
 
   public:
     // Request that the compiler generates a copy constructor and assignment operator
-    BasicVertexDeclarationArray(const BasicVertexDeclarationArray&) = default;
-    BasicVertexDeclarationArray& operator=(const BasicVertexDeclarationArray&) = default;
 
     constexpr BasicVertexDeclarationArray() = default;
 

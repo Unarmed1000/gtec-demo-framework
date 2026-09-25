@@ -77,6 +77,7 @@ namespace Fsl::UI::Declarative
   public:
     ScopedThemePropertyParser(const ScopedThemePropertyParser&) = delete;
     ScopedThemePropertyParser& operator=(const ScopedThemePropertyParser&) = delete;
+    ~ScopedThemePropertyParser() = default;
 
     ScopedThemePropertyParser(ReadOnlySpan<RegisteredPropertyRecord> registeredProperties, Span<PropertyParserRecord> properties);
 

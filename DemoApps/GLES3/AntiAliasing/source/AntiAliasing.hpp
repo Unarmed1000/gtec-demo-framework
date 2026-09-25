@@ -267,6 +267,7 @@ namespace Fsl
       Resources& operator=(const Resources&) = delete;
       Resources(Resources&& other) noexcept = delete;
       Resources& operator=(Resources&& other) noexcept = delete;
+      ~Resources() = default;
     };
 
     AntiAliasingShared m_shared;

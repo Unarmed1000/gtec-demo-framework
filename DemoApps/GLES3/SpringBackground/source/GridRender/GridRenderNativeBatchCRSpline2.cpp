@@ -54,7 +54,7 @@ namespace Fsl
   //! V1 this one the fly instead.
   GridRenderNativeBatchCRSpline2::GridRenderNativeBatchCRSpline2(const Point2& gridSize)
     : m_gridSize(gridSize)
-    , m_coordinates2D(gridSize.X * gridSize.Y)
+    , m_coordinates2D(static_cast<std::size_t>(gridSize.X) * gridSize.Y)
   {
   }
 
@@ -91,7 +91,7 @@ namespace Fsl
 
     for (int y = 1; y < height; ++y)
     {
-      Vector2 previousPointX = m_coordinates2D[y * gridStride];
+      Vector2 previousPointX = m_coordinates2D[static_cast<std::size_t>(y) * gridStride];
       for (int x = 1; x < width - 1; x++)
       {
         Vector2 left;

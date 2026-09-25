@@ -67,6 +67,7 @@ namespace Fsl
     // Request that the compiler generates a copy constructor and assignment operator
     TightPlanarBitmapR8G8B8(const TightPlanarBitmapR8G8B8&) = default;
     TightPlanarBitmapR8G8B8& operator=(const TightPlanarBitmapR8G8B8&) = default;
+    ~TightPlanarBitmapR8G8B8() = default;
 
     TightPlanarBitmapR8G8B8() = default;
 

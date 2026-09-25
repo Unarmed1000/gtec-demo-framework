@@ -58,6 +58,7 @@ namespace Fsl::Vulkan
 
     DeviceCreateInfoCopy& operator=(DeviceCreateInfoCopy&& other) noexcept;
     DeviceCreateInfoCopy(DeviceCreateInfoCopy&& other) noexcept;
+    ~DeviceCreateInfoCopy() = default;
 
     DeviceCreateInfoCopy();
     explicit DeviceCreateInfoCopy(const VkDeviceCreateInfo& value);

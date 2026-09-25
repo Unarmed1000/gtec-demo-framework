@@ -49,8 +49,6 @@ namespace Fsl
 
   public:
     // Request that the compiler generates a copy constructor and assignment operator
-    BasicMaterialVariableDeclarationSpan(const BasicMaterialVariableDeclarationSpan&) = default;
-    BasicMaterialVariableDeclarationSpan& operator=(const BasicMaterialVariableDeclarationSpan&) = default;
 
     constexpr BasicMaterialVariableDeclarationSpan() noexcept = default;
 

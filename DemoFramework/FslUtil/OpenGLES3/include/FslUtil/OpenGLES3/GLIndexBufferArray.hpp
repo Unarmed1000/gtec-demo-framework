@@ -77,6 +77,9 @@ namespace Fsl::GLES3
       // NOLINTNEXTLINE(bugprone-use-after-move)
       other.m_type = 0;
     }
+    GLIndexBufferArray(const GLIndexBufferArray&) = delete;
+    GLIndexBufferArray& operator=(const GLIndexBufferArray&) = delete;
+    ~GLIndexBufferArray() = default;
 
     //! @brief Create a uninitialized index buffer
     GLIndexBufferArray();

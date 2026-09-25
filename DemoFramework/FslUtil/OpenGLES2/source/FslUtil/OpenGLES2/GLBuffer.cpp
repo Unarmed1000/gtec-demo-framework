@@ -150,7 +150,7 @@ namespace Fsl::GLES2
     {
       throw std::invalid_argument("pElements can not be null");
     }
-    if (((dstIndex + elementCount) * m_elementStride) > (m_elementStride * m_capacity))
+    if (((dstIndex + elementCount) * m_elementStride) > (static_cast<std::size_t>(m_elementStride) * m_capacity))
     {
       throw IndexOutOfRangeException();
     }

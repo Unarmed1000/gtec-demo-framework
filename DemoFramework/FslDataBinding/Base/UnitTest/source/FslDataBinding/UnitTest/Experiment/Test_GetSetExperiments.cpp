@@ -230,6 +230,9 @@ namespace
         , m_hTestValue(m_propertyManager->Create())
       {
       }
+      ExternalDummy(const ExternalDummy&) = delete;
+      ExternalDummy& operator=(const ExternalDummy&) = delete;
+
       ~ExternalDummy()
       {
         m_propertyManager->Destroy(m_hTestValue);

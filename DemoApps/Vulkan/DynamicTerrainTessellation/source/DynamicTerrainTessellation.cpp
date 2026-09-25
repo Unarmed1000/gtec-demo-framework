@@ -63,7 +63,7 @@ namespace Fsl
     public:
       HeightMap(const Bitmap& srcBitmap, const uint32_t patchSize)
         : m_dim(srcBitmap.GetExtent().Width.Value)
-        , m_heightData(m_dim * m_dim)
+        , m_heightData(static_cast<std::size_t>(m_dim) * m_dim)
         , m_scale(m_dim / patchSize)
       {
         assert(srcBitmap.GetExtent().Width == srcBitmap.GetExtent().Height);
@@ -85,7 +85,7 @@ namespace Fsl
         rpos.x = std::max(0, std::min(rpos.x, static_cast<int>(m_dim) - 1));
         rpos.y = std::max(0, std::min(rpos.y, static_cast<int>(m_dim) - 1));
         rpos /= glm::ivec2(UncheckedNumericCast<int>(m_scale));
-        return static_cast<float>(*(m_heightData.data() + (rpos.x + (rpos.y * m_dim)) * m_scale)) / 65535.0f;
+        return static_cast<float>(*(m_heightData.data() + (static_cast<std::size_t>(rpos.x + (rpos.y * m_dim)) * m_scale))) / 65535.0f;
       }
     };
   }
@@ -443,7 +443,7 @@ namespace Fsl
     };
 
 
-    std::vector<Vertex> vertices(PatchSize * PatchSize * 4);
+    std::vector<Vertex> vertices(static_cast<std::size_t>(PatchSize) * PatchSize * 4);
 
     const float wx = 2.0f;
     const float wy = 2.0f;
@@ -498,7 +498,7 @@ namespace Fsl
 
     // Indices
     const uint32_t w = (PatchSize - 1);
-    std::vector<uint32_t> indices(w * w * 4);
+    std::vector<uint32_t> indices(static_cast<std::size_t>(w) * w * 4);
     {
       auto* pDst = indices.data();
       for (uint32_t x = 0; x < w; ++x)
@@ -518,8 +518,8 @@ namespace Fsl
     // meshes.terrain.indexCount = (PATCH_SIZE - 1) * (PATCH_SIZE - 1) * 4;
     const auto terrainIndexCount = (PatchSize - 1) * (PatchSize - 1) * 4;
 
-    const uint32_t vertexBufferSize = (PatchSize * PatchSize * 4) * sizeof(Vertex);
-    const uint32_t indexBufferSize = (w * w * 4) * sizeof(uint32_t);
+    const uint32_t vertexBufferSize = (static_cast<std::size_t>(PatchSize) * PatchSize * 4) * sizeof(Vertex);
+    const uint32_t indexBufferSize = (static_cast<std::size_t>(w) * w * 4) * sizeof(uint32_t);
 
     struct Buffers
     {

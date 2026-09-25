@@ -76,9 +76,6 @@ namespace Fsl
         , IndexCount(indexCount)
       {
       }
-
-      SubMeshRecord& operator=(SubMeshRecord&& other) noexcept = default;
-      SubMeshRecord(SubMeshRecord&& other) noexcept = default;
     };
 
     struct ModelRecord
@@ -184,6 +181,7 @@ namespace Fsl
       Resources& operator=(const Resources&) = delete;
       Resources(Resources&& other) noexcept = delete;
       Resources& operator=(Resources&& other) noexcept = delete;
+      ~Resources() = default;
     };
 
     struct DependentResources
@@ -195,6 +193,7 @@ namespace Fsl
       DependentResources& operator=(const DependentResources&) = delete;
       DependentResources(DependentResources&& other) noexcept = delete;
       DependentResources& operator=(DependentResources&& other) noexcept = delete;
+      ~DependentResources() = default;
 
       void Reset() noexcept
       {

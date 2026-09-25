@@ -295,9 +295,9 @@ namespace Fsl
       VkSubresourceLayout subresourceLayout{};
       subresourceLayout.offset = 0;
       subresourceLayout.size = stageBuffer.GetBuffer().GetSize();
-      subresourceLayout.rowPitch = ImageLength * 4 * sizeof(uint8_t);
-      subresourceLayout.arrayPitch = ImageLength * ImageLength * 4 * sizeof(uint8_t);
-      subresourceLayout.depthPitch = ImageLength * ImageLength * 4 * sizeof(uint8_t);
+      subresourceLayout.rowPitch = static_cast<std::size_t>(ImageLength) * 4 * sizeof(uint8_t);
+      subresourceLayout.arrayPitch = static_cast<std::size_t>(ImageLength) * ImageLength * 4 * sizeof(uint8_t);
+      subresourceLayout.depthPitch = static_cast<std::size_t>(ImageLength) * ImageLength * 4 * sizeof(uint8_t);
 
       stageBuffer.MapMemory(subresourceLayout.offset, subresourceLayout.size, 0);
       {

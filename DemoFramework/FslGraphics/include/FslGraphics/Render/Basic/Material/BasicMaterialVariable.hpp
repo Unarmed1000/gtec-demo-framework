@@ -55,7 +55,6 @@ namespace Fsl
     const BasicMaterialVariableElementFormat ElementFormat{BasicMaterialVariableElementFormat::Undefined};
 
     constexpr BasicMaterialVariable() noexcept = default;
-    constexpr BasicMaterialVariable(const BasicMaterialVariable& other) noexcept = default;
 
 
     explicit constexpr BasicMaterialVariable(const_pointer pData, const size_type dataByteSize, const size_type dataOffset,

@@ -58,10 +58,10 @@ namespace Fsl::Graphics3D
     assert(rawSrc.IndexCount == rawDst.IndexCount);
     assert(rawSrc.VertexCount == rawDst.VertexCount);
 
-    VertexConverter::GenericConvert(rawDst.pVertices, rawDst.VertexStride * rawDst.VertexCount, rDst.AsVertexDeclarationSpan(), rawSrc.pVertices,
-                                    rawSrc.VertexStride * rawSrc.VertexCount, src.AsVertexDeclarationSpan(), rawSrc.VertexCount, pDstDefaultValues,
-                                    cbDstDefaultValues);
-    IndexConverter::GenericConvert(rawDst.pIndices, rawDst.IndexStride * rawDst.IndexCount, rawDst.IndexStride, rawSrc.pIndices,
-                                   rawSrc.IndexStride * rawSrc.IndexCount, rawSrc.IndexStride, rawSrc.IndexCount);
+    VertexConverter::GenericConvert(rawDst.pVertices, static_cast<std::size_t>(rawDst.VertexStride) * rawDst.VertexCount,
+                                    rDst.AsVertexDeclarationSpan(), rawSrc.pVertices, rawSrc.VertexStride * rawSrc.VertexCount,
+                                    src.AsVertexDeclarationSpan(), rawSrc.VertexCount, pDstDefaultValues, cbDstDefaultValues);
+    IndexConverter::GenericConvert(rawDst.pIndices, static_cast<std::size_t>(rawDst.IndexStride) * rawDst.IndexCount, rawDst.IndexStride,
+                                   rawSrc.pIndices, rawSrc.IndexStride * rawSrc.IndexCount, rawSrc.IndexStride, rawSrc.IndexCount);
   }
 }

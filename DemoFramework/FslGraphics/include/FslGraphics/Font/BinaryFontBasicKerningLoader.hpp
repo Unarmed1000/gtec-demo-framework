@@ -43,6 +43,7 @@ namespace Fsl
   public:
     BinaryFontBasicKerningLoader(const BinaryFontBasicKerningLoader&) = delete;
     BinaryFontBasicKerningLoader& operator=(const BinaryFontBasicKerningLoader&) = delete;
+    ~BinaryFontBasicKerningLoader() = default;
 
     //! @brief Load the font kerning from a file
     //! @param rTextureAtlas the atlas that will be filled with the loaded atlas

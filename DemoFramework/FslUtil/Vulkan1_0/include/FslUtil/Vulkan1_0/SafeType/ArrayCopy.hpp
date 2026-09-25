@@ -73,6 +73,7 @@ namespace Fsl::Vulkan
     {
       // Remove the data from other
     }
+    ~ArrayCopy() = default;
 
     ArrayCopy()
       : m_arrayCopy()

@@ -74,6 +74,9 @@ namespace Fsl::GLES2
     {
       // Remove the data from other
     }
+    GLVertexBufferArray(const GLVertexBufferArray&) = delete;
+    GLVertexBufferArray& operator=(const GLVertexBufferArray&) = delete;
+    ~GLVertexBufferArray() = default;
 
     //! @brief Create a empty array
     GLVertexBufferArray() = default;

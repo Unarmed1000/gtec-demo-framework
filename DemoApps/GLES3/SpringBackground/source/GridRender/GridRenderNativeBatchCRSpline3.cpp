@@ -96,7 +96,7 @@ namespace Fsl
     auto* const pSrcArrayEnd = pSrc + m_coordinates2D.size();
 
     {    // Draw horizontal lines
-      auto* const pSrcEnd = pSrc + (m_gridFinalSize.X * m_gridSize.Y);
+      auto* const pSrcEnd = pSrc + (static_cast<std::ptrdiff_t>(m_gridFinalSize.X) * m_gridSize.Y);
       assert(pSrcEnd < pSrcArrayEnd);
       int lineCount = 0;
       while (pSrc < pSrcEnd)
@@ -192,7 +192,8 @@ namespace Fsl
         {
           assert((pDst + (x * 2)) < pDstEnd);
           assert((pDst + (x * 2) + 1) < pDstEnd);
-          pDst[x * 2] = VectorHelper::CatmullRom(pSrc[x].m_position, pSrc[x + 1].m_position, pSrc[x + 2].m_position, pSrc[x + 3].m_position, 0.5f);
+          pDst[static_cast<std::ptrdiff_t>(x) * 2] =
+            VectorHelper::CatmullRom(pSrc[x].m_position, pSrc[x + 1].m_position, pSrc[x + 2].m_position, pSrc[x + 3].m_position, 0.5f);
           pDst[(x * 2) + 1] = pSrc[x + 2].m_position;
         }
         pSrc += srcStride;

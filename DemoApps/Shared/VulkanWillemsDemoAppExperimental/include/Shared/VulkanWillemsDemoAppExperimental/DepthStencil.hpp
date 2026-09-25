@@ -54,6 +54,7 @@ namespace Fsl::Willems
     //! @brief Move constructor
     //! Transfer ownership from other to this
     DepthStencil(DepthStencil&& other) noexcept;
+    ~DepthStencil() = default;
 
     //! @brief Create a 'invalid' DepthStencil
     DepthStencil();

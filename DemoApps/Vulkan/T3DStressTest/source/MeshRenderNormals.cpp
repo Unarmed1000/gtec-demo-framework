@@ -122,7 +122,7 @@ namespace Fsl
 
     VertexBufferInfo<1> BuildVB(const std::shared_ptr<Vulkan::VMBufferManager>& bufferManager, const Procedural::BasicMesh& mesh)
     {
-      std::vector<VertexPosition> vertices(mesh.GetVertexCount() * 2);
+      std::vector<VertexPosition> vertices(static_cast<std::size_t>(mesh.GetVertexCount()) * 2);
       Procedural::VertexUtil::ExtractNormalsAsLineList(vertices, 0, mesh.GetVertexArray(), 5);
 
       VertexBufferInfo<1> info;

@@ -60,7 +60,6 @@ namespace Fsl
 
   public:
     constexpr ReadOnlyFlexVertexSpan() noexcept = default;
-    constexpr ReadOnlyFlexVertexSpan(const ReadOnlyFlexVertexSpan& other) noexcept = default;
 
 
     explicit constexpr ReadOnlyFlexVertexSpan(ReadOnlyFlexSpan span, VertexDeclarationSpan vertexDeclaration)

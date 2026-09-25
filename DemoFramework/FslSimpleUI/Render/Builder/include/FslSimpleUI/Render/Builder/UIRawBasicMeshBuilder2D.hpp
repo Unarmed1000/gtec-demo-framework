@@ -40,7 +40,6 @@ namespace Fsl::UI
   {
   public:
     constexpr UIRawBasicMeshBuilder2D() noexcept = default;
-    constexpr UIRawBasicMeshBuilder2D(const UIRawBasicMeshBuilder2D& other) noexcept = default;
 
     //! @brief overload that allows you to create a InlineRawMeshBuilder2D from pointers and capacities that is noexcept.
     //!        only use this in cases where you are 100% sure that your input is valid

@@ -75,6 +75,9 @@ namespace Fsl::UI
     }
 
 
+    CustomSpriteMesh(const CustomSpriteMesh&) = delete;
+    CustomSpriteMesh& operator=(const CustomSpriteMesh&) = delete;
+
     ~CustomSpriteMesh() noexcept
     {
       DestroyMesh();

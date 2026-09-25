@@ -54,6 +54,7 @@ namespace Fsl
 
     BasicMessageQueue(const BasicMessageQueue&) = delete;
     BasicMessageQueue& operator=(const BasicMessageQueue&) = delete;
+    ~BasicMessageQueue() = default;
 
     explicit BasicMessageQueue(const ServiceGroupId& serviceGroupId);
 

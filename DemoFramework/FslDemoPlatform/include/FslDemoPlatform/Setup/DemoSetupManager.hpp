@@ -44,6 +44,7 @@ namespace Fsl
   public:
     DemoSetupManager(const DemoSetupManager&) = delete;
     DemoSetupManager& operator=(const DemoSetupManager&) = delete;
+    ~DemoSetupManager() = default;
 
     static DemoBasicSetup GetSetup(const DemoSetupManagerConfig& config, ExceptionMessageFormatter& rExceptionMessageFormatter,
                                    const std::weak_ptr<IServiceRegistry>& weakServiceRegistry, const uint32_t verbosityLevel,

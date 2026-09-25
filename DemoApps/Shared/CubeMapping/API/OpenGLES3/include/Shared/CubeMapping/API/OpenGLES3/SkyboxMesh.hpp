@@ -76,6 +76,7 @@ namespace Fsl
     {
       // Remove the data from other
     }
+    ~SkyboxMesh() = default;
 
     SkyboxMesh();
     explicit SkyboxMesh(const GLES3::GLProgram& program);

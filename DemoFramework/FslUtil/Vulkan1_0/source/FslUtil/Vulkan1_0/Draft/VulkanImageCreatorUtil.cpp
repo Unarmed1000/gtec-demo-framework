@@ -556,7 +556,7 @@ namespace Fsl::Vulkan::VulkanImageCreatorUtil
 
     VkBufferCreateInfo bufferCreateInfo{};
     bufferCreateInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-    bufferCreateInfo.size = srcByteSize * 6;
+    bufferCreateInfo.size = static_cast<VkDeviceSize>(srcByteSize) * 6;
     bufferCreateInfo.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
     bufferCreateInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 

@@ -70,6 +70,9 @@ namespace Fsl::UI
     }
 
 
+    SpriteMesh(const SpriteMesh&) = delete;
+    SpriteMesh& operator=(const SpriteMesh&) = delete;
+
     ~SpriteMesh() noexcept
     {
       DestroyMesh();

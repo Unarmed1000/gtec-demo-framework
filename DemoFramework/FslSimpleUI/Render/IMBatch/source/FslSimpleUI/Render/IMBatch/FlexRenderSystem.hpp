@@ -57,6 +57,7 @@ namespace Fsl::UI::RenderIMBatch
   public:
     FlexRenderSystem(const FlexRenderSystem&) = delete;
     FlexRenderSystem& operator=(const FlexRenderSystem&) = delete;
+    ~FlexRenderSystem() = default;
 
     explicit FlexRenderSystem(const RenderSystemCreateInfo& createInfo);
 

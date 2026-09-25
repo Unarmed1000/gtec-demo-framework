@@ -58,6 +58,7 @@ namespace Fsl
       Resources& operator=(const Resources&) = delete;
       Resources(Resources&& other) noexcept = delete;
       Resources& operator=(Resources&& other) noexcept = delete;
+      ~Resources() = default;
 
       Resources(std::shared_ptr<Vulkan::VMBufferManager> bufferManager, RapidVulkan::DescriptorPool descriptorPool)
         : BufferManager(std::move(bufferManager))
@@ -75,6 +76,7 @@ namespace Fsl
       DependentResources& operator=(const DependentResources&) = delete;
       DependentResources(DependentResources&& other) noexcept = delete;
       DependentResources& operator=(DependentResources&& other) noexcept = delete;
+      ~DependentResources() = default;
 
       void Reset() noexcept
       {

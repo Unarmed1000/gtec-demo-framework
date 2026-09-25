@@ -113,7 +113,7 @@ namespace Fsl
     static constexpr RawBitmapEx Create(Span<uint8_t> span, const PxSize2D sizePx, const PixelFormat pixelFormat, const BitmapOrigin origin)
     {
       const auto stride = PixelFormatUtil::CalcMinimumStride(sizePx.Width(), pixelFormat);
-      if ((sizePx.RawUnsignedHeight() * stride) > span.size())
+      if ((static_cast<std::size_t>(sizePx.RawUnsignedHeight()) * stride) > span.size())
       {
         throw std::invalid_argument("span is not large enough to contain a bitmap of the given dimensions");
       }
@@ -127,7 +127,7 @@ namespace Fsl
       {
         throw std::invalid_argument("stride is smaller than the width allows");
       }
-      if ((sizePx.RawUnsignedHeight() * stride) > span.size())
+      if ((static_cast<std::size_t>(sizePx.RawUnsignedHeight()) * stride) > span.size())
       {
         throw std::invalid_argument("span is not large enough to contain a bitmap of the given dimensions");
       }
@@ -138,7 +138,7 @@ namespace Fsl
                                            const BitmapOrigin origin) noexcept
     {
       const auto stride = PixelFormatUtil::CalcMinimumStride(sizePx.Width(), pixelFormat);
-      if ((sizePx.RawUnsignedHeight() * stride) > span.size())
+      if ((static_cast<std::size_t>(sizePx.RawUnsignedHeight()) * stride) > span.size())
       {
         return {};
       }
@@ -148,7 +148,8 @@ namespace Fsl
     static constexpr RawBitmapEx TryCreate(Span<uint8_t> span, const PxSize2D sizePx, const PixelFormat pixelFormat, const uint32_t stride,
                                            const BitmapOrigin origin) noexcept
     {
-      if (stride < PixelFormatUtil::CalcMinimumStride(sizePx.Width(), pixelFormat) || (sizePx.RawUnsignedHeight() * stride) > span.size())
+      if (stride < PixelFormatUtil::CalcMinimumStride(sizePx.Width(), pixelFormat) ||
+          (static_cast<std::size_t>(sizePx.RawUnsignedHeight()) * stride) > span.size())
       {
         return {};
       }

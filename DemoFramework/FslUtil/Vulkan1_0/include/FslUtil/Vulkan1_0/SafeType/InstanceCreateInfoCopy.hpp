@@ -53,6 +53,7 @@ namespace Fsl::Vulkan
 
     InstanceCreateInfoCopy& operator=(InstanceCreateInfoCopy&& other) noexcept;
     InstanceCreateInfoCopy(InstanceCreateInfoCopy&& other) noexcept;
+    ~InstanceCreateInfoCopy() = default;
 
     InstanceCreateInfoCopy();
     explicit InstanceCreateInfoCopy(const VkInstanceCreateInfo& value);

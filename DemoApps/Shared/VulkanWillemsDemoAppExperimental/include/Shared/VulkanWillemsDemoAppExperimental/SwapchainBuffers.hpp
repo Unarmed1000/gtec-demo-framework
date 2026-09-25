@@ -40,6 +40,7 @@ namespace Fsl::Willems
     //! @brief Move constructor
     //! Transfer ownership from other to this
     SwapchainBuffers(SwapchainBuffers&& other) noexcept;
+    ~SwapchainBuffers() = default;
 
     //! @brief Create a 'invalid' swapchain buffers
     SwapchainBuffers();

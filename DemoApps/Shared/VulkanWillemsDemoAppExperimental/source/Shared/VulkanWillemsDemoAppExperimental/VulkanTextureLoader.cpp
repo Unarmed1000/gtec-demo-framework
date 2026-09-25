@@ -86,6 +86,9 @@ namespace Fsl::Willems
         other.ImageLayout = VK_IMAGE_LAYOUT_UNDEFINED;
         other.Config = TexConfig();
       }
+      LocalTexture(const LocalTexture&) = delete;
+      LocalTexture& operator=(const LocalTexture&) = delete;
+      ~LocalTexture() = default;
 
       LocalTexture(RapidVulkan::Image&& image, RapidVulkan::Memory&& memory, const VkImageLayout& imageLayout, const TexConfig& config)
         : Image(std::move(image))
@@ -192,7 +195,7 @@ namespace Fsl::Willems
 
 
       // Setup buffer copy regions for each mip level
-      std::vector<VkBufferImageCopy> bufferCopyRegions(texConfig.Levels * texConfig.Faces * texConfig.Layers);
+      std::vector<VkBufferImageCopy> bufferCopyRegions(static_cast<std::size_t>(texConfig.Levels) * texConfig.Faces * texConfig.Layers);
       std::size_t dstOffset = 0;
       for (uint32_t layerIndex = 0; layerIndex < texConfig.Layers; ++layerIndex)
       {

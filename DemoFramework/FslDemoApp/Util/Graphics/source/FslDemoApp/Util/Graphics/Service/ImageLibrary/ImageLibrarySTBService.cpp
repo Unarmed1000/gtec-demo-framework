@@ -239,7 +239,7 @@ namespace Fsl
       {
         const PixelFormat pixelFormat = (channels == 3 ? PixelFormat::R8G8B8_UINT : PixelFormat::R8G8B8A8_UINT);
         const auto sizePx = PxSize2D::Create(width, height);
-        const std::size_t cbContent = channels * sizePx.RawUnsignedWidth() * sizePx.RawUnsignedHeight();
+        const std::size_t cbContent = static_cast<std::size_t>(channels) * sizePx.RawUnsignedWidth() * sizePx.RawUnsignedHeight();
 
         rBitmap.Reset(SpanUtil::CreateReadOnly(imageData.pContent, cbContent), sizePx, pixelFormat);
         return true;

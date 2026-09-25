@@ -60,6 +60,7 @@ namespace Fsl::UI
     GestureDetector& operator=(GestureDetector&& other) noexcept;
     // move constructor
     GestureDetector(GestureDetector&& other) noexcept;
+    ~GestureDetector() = default;
 
     explicit GestureDetector(const GestureFlags enabledGestures, const GestureAxis axisFlags = GestureAxis::XY);
 

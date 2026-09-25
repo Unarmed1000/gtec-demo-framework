@@ -55,7 +55,7 @@ namespace Fsl
       }
 
       {    // Pack tightly
-        const std::size_t minimumSize = minimumStride * rawBitmap.RawUnsignedHeight();
+        const std::size_t minimumSize = static_cast<std::size_t>(minimumStride) * rawBitmap.RawUnsignedHeight();
         std::vector<uint8_t> tightlyPackedBitmap(minimumSize);
 
         const auto* pSrc = static_cast<const uint8_t*>(rawBitmap.Content());
@@ -112,7 +112,7 @@ namespace Fsl
         }
 
         // Resize the vector so it only fits the tightly packed bitmap size
-        bitmapContent.resize(minimumStride * sizePx.RawUnsignedHeight());
+        bitmapContent.resize(static_cast<std::size_t>(minimumStride) * sizePx.RawUnsignedHeight());
         return {std::move(bitmapContent), sizePx, pixelFormat, origin};
       }
     }
@@ -157,7 +157,7 @@ namespace Fsl
 
 
   TightBitmap::TightBitmap(const PxSize2D sizePx, const PixelFormat pixelFormat, const BitmapOrigin origin)
-    : m_content(sizePx.RawHeight() * PixelFormatUtil::CalcMinimumStride(sizePx.Width(), pixelFormat))
+    : m_content(static_cast<std::size_t>(sizePx.RawHeight()) * PixelFormatUtil::CalcMinimumStride(sizePx.Width(), pixelFormat))
     , m_sizePx(sizePx)
     , m_pixelFormat(pixelFormat)
     , m_origin(origin)
@@ -197,7 +197,8 @@ namespace Fsl
     , m_origin(origin)
     , m_bytesPerPixel(UncheckedNumericCast<uint8_t>(PixelFormatUtil::GetBytesPerPixel(pixelFormat)))
   {
-    if (m_content.size() != (m_bytesPerPixel * TypeConverter::UncheckedTo<PxValueU>(sizePx.Width() * sizePx.Height()).Value))
+    if (m_content.size() !=
+        (static_cast<std::size_t>(m_bytesPerPixel) * TypeConverter::UncheckedTo<PxValueU>(sizePx.Width() * sizePx.Height()).Value))
     {
       throw std::invalid_argument("The content does not match the tightly packed bitmap size");
     }
@@ -207,7 +208,7 @@ namespace Fsl
   TightBitmap::TightBitmap(std::vector<uint8_t> content, const PxExtent2D extentPx, const PixelFormat pixelFormat, const BitmapOrigin origin)
     : TightBitmap(std::move(content), TypeConverter::To<PxSize2D>(extentPx), pixelFormat, origin)
   {
-    if (m_content.size() != (m_bytesPerPixel * (extentPx.Width * extentPx.Height).Value))
+    if (m_content.size() != (static_cast<std::size_t>(m_bytesPerPixel) * (extentPx.Width * extentPx.Height).Value))
     {
       throw std::invalid_argument("The content does not match the tightly packed bitmap size");
     }

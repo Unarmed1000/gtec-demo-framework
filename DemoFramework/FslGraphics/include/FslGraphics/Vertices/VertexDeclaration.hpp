@@ -51,6 +51,7 @@ namespace Fsl
     // Request that the compiler generates a copy constructor and assignment operator
     VertexDeclaration(const VertexDeclaration&) = default;
     VertexDeclaration& operator=(const VertexDeclaration&) = default;
+    ~VertexDeclaration() = default;
 
 
     VertexDeclaration();

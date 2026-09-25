@@ -46,6 +46,7 @@ namespace Fsl
   public:
     AtlasFont(const AtlasFont&) = delete;
     AtlasFont& operator=(const AtlasFont&) = delete;
+    ~AtlasFont() = default;
 
     AtlasFont(const BaseTexture2D& atlasTexture, TextureAtlasSpriteFont textureAtlasSpriteFont);
 

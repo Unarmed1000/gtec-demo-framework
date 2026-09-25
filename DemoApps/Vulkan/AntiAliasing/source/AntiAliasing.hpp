@@ -147,6 +147,7 @@ namespace Fsl
       Resources& operator=(const Resources&) = delete;
       Resources(Resources&& other) noexcept = delete;
       Resources& operator=(Resources&& other) noexcept = delete;
+      ~Resources() = default;
 
       Resources(LineDrawResources line, LineDrawResources dividerLine, PostProcessResources postProcess, ZoomResources zoom,
                 std::unique_ptr<RenderModel> renderModelCar, std::unique_ptr<RenderModel> renderModelKnight,
@@ -185,6 +186,7 @@ namespace Fsl
       FrameBufferResources& operator=(const FrameBufferResources&) = delete;
       FrameBufferResources(FrameBufferResources&& other) noexcept = default;
       FrameBufferResources& operator=(FrameBufferResources&& other) noexcept = default;
+      ~FrameBufferResources() = default;
 
       FrameBufferResources(const AntiAliasingMethod activeAntiAliasingMethod, const PxSize2D sizePx, const VkSampleCountFlagBits sampleCountFlagBit,
                            Vulkan::VUImageMemoryView depthImageView, RapidVulkan::RenderPass rp, Vulkan::VUTexture unresolvedColor,
@@ -265,6 +267,7 @@ namespace Fsl
       CustomZoomFrameBufferResources& operator=(const CustomZoomFrameBufferResources&) = delete;
       CustomZoomFrameBufferResources(CustomZoomFrameBufferResources&& other) noexcept = default;
       CustomZoomFrameBufferResources& operator=(CustomZoomFrameBufferResources&& other) noexcept = default;
+      ~CustomZoomFrameBufferResources() = default;
 
       CustomZoomFrameBufferResources(const PxSize2D sizePx, RapidVulkan::RenderPass rp, Vulkan::VUTexture color, RapidVulkan::Framebuffer fb)
         : m_size(sizePx)
@@ -309,6 +312,7 @@ namespace Fsl
       DependentResources& operator=(const DependentResources&) = delete;
       DependentResources(DependentResources&& other) noexcept = delete;
       DependentResources& operator=(DependentResources&& other) noexcept = delete;
+      ~DependentResources() = default;
 
       void Reset() noexcept
       {

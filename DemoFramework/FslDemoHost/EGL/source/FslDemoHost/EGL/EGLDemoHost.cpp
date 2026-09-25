@@ -350,6 +350,8 @@ namespace Fsl
             FSLLOG3_WARNING("{} can not be negative.", EGLStringUtil::GetConfigEnumToString(finalConfigAttribs[i - 1]));
           }
           break;
+        default:
+          break;
         }
       }
     }

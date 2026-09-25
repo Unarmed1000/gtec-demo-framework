@@ -66,9 +66,6 @@ namespace Fsl
         , IndexCount(indexCount)
       {
       }
-
-      SubMeshRecord& operator=(SubMeshRecord&& other) noexcept = default;
-      SubMeshRecord(SubMeshRecord&& other) noexcept = default;
     };
 
     struct ModelRecord

@@ -44,7 +44,7 @@ namespace Fsl
     int icnt = 0;
     int offset = 0;
 
-    rSphereVertices.resize(width * height);
+    rSphereVertices.resize(static_cast<std::size_t>(width) * height);
 
     int dstIndex = 0;
     for (y = 0; y < height; ++y)
@@ -66,7 +66,7 @@ namespace Fsl
     }
 
     offset = 0;
-    rIndices.resize((width - 1) * (height - 1) * 2 * 3);
+    rIndices.resize(static_cast<std::size_t>(width - 1) * (height - 1) * 2 * 3);
     uint16_t* indexArray = rIndices.data();
 
     for (y = 0; y < height - 1; ++y)

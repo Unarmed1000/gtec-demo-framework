@@ -74,6 +74,7 @@ namespace Fsl::Vulkan
     {
       // Remove the data from other
     }
+    ~QuadBatchRenderRecord() = default;
 
     QuadBatchRenderRecord() = default;
 

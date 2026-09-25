@@ -63,6 +63,7 @@ namespace Fsl::UI
     // Make this object non-copyable
     GenericWindowCollection(const GenericWindowCollection&) = delete;
     GenericWindowCollection& operator=(const GenericWindowCollection&) = delete;
+    ~GenericWindowCollection() = default;
 
     GenericWindowCollection()
       : WindowCollectionBase()

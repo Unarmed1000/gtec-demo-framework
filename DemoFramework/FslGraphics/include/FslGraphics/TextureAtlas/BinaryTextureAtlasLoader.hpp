@@ -43,6 +43,7 @@ namespace Fsl
   public:
     BinaryTextureAtlasLoader(const BinaryTextureAtlasLoader&) = delete;
     BinaryTextureAtlasLoader& operator=(const BinaryTextureAtlasLoader&) = delete;
+    ~BinaryTextureAtlasLoader() = default;
 
     //! @brief Load the texture atlas from a file
     //! @param rTextureAtlas the atlas that will be filled with the loaded atlas

@@ -74,6 +74,9 @@ namespace Fsl::GLES2
     {
       // Remove the data from other
     }
+    GLVertexBuffer(const GLVertexBuffer&) = delete;
+    GLVertexBuffer& operator=(const GLVertexBuffer&) = delete;
+    ~GLVertexBuffer() = default;
 
 
     //! @brief Create a uninitialized vertex buffer

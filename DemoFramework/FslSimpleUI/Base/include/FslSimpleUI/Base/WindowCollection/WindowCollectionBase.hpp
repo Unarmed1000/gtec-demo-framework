@@ -50,6 +50,7 @@ namespace Fsl::UI
     // Make this object non-copyable
     WindowCollectionBase(const WindowCollectionBase&) = delete;
     WindowCollectionBase& operator=(const WindowCollectionBase&) = delete;
+    ~WindowCollectionBase() = default;
 
     WindowCollectionBase();
 

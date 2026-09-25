@@ -79,6 +79,9 @@ namespace Fsl::GLES3
       other.m_originalVertexElementCount = 0;
       other.m_vertexElementStride = 0;
     }
+    GLVertexElements(const GLVertexElements&) = delete;
+    GLVertexElements& operator=(const GLVertexElements&) = delete;
+    ~GLVertexElements() = default;
 
 
     //! @brief Create a uninitialized vertex buffer

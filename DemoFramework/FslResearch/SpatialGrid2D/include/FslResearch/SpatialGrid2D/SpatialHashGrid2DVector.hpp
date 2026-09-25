@@ -58,7 +58,7 @@ namespace Fsl
 
   public:
     SpatialHashGrid2DVector(const uint16_t gridCellCountX, const uint16_t gridCellCountY, const uint8_t shiftX, const uint8_t shiftY)
-      : m_entries(gridCellCountX * gridCellCountY)
+      : m_entries(static_cast<std::size_t>(gridCellCountX) * gridCellCountY)
       , m_gridCellCountX(gridCellCountX)
       , m_gridCellCountY(gridCellCountY)
       , m_shiftX(shiftX)

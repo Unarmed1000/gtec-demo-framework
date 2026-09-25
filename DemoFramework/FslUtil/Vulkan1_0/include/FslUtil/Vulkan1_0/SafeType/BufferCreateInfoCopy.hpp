@@ -52,6 +52,7 @@ namespace Fsl::Vulkan
 
     BufferCreateInfoCopy& operator=(BufferCreateInfoCopy&& other) noexcept;
     BufferCreateInfoCopy(BufferCreateInfoCopy&& other) noexcept;
+    ~BufferCreateInfoCopy() = default;
 
     BufferCreateInfoCopy();
     explicit BufferCreateInfoCopy(const VkBufferCreateInfo& value);

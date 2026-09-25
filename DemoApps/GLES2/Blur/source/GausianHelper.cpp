@@ -136,7 +136,7 @@ namespace Fsl
   void GausianHelper::CalculateGausianKernel(std::vector<double>& rKernel, const int32_t length, const double sigma)
   {
     assert((length & 1) == 1);
-    rKernel.resize(length * length);
+    rKernel.resize(static_cast<std::size_t>(length) * length);
 
     const double calculatedEuler = 1.0 / (2.0 * MathHelper::PI * sigma * sigma);
 

@@ -50,8 +50,6 @@ namespace Fsl
 
   public:
     // Request that the compiler generates a copy constructor and assignment operator
-    VertexDeclarationSpan(const VertexDeclarationSpan&) = default;
-    VertexDeclarationSpan& operator=(const VertexDeclarationSpan&) = default;
 
     constexpr VertexDeclarationSpan() = default;
 

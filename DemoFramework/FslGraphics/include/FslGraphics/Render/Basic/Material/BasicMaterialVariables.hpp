@@ -60,7 +60,6 @@ namespace Fsl
 
   public:
     // constexpr BasicMaterialVariables() noexcept = default;
-    constexpr BasicMaterialVariables(const BasicMaterialVariables& other) noexcept = default;
 
 
     explicit constexpr BasicMaterialVariables(const const_pointer pData, const size_type byteSize,

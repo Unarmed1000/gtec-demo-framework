@@ -211,7 +211,7 @@ namespace Fsl
         {
           assert((pDstLeft + (x * 2)) < pDstEnd);
           assert((pDstLeft + (x * 2) + 1) < pDstEnd);
-          pDstLeft[x * 2].Position =
+          pDstLeft[static_cast<std::ptrdiff_t>(x) * 2].Position =
             VectorHelper::CatmullRom(pSrc[x].m_position, pSrc[x + 1].m_position, pSrc[x + 2].m_position, pSrc[x + 3].m_position, 0.5f);
           pDstLeft[(x * 2) + 1].Position = pSrc[x + 2].m_position;
         }

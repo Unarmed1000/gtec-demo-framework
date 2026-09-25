@@ -45,6 +45,7 @@ namespace Fsl
   public:
     DemoHostAppSetupBuilder(const DemoHostAppSetupBuilder&) = delete;
     DemoHostAppSetupBuilder& operator=(const DemoHostAppSetupBuilder&) = delete;
+    ~DemoHostAppSetupBuilder() = default;
 
     DemoHostAppSetupBuilder();
 

@@ -49,8 +49,6 @@ namespace Fsl
 
   public:
     // Request that the compiler generates a copy constructor and assignment operator
-    BasicMaterialVariableDeclarationArray(const BasicMaterialVariableDeclarationArray&) = default;
-    BasicMaterialVariableDeclarationArray& operator=(const BasicMaterialVariableDeclarationArray&) = default;
 
     constexpr BasicMaterialVariableDeclarationArray() = default;
 

@@ -50,6 +50,7 @@ namespace Fsl::Vulkan
 
     StringArrayCopy& operator=(StringArrayCopy&& other) noexcept;
     StringArrayCopy(StringArrayCopy&& other) noexcept;
+    ~StringArrayCopy() = default;
 
     StringArrayCopy();
     StringArrayCopy(const char* const* ppStrings, const uint32_t entries);

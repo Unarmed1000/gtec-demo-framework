@@ -64,6 +64,7 @@ namespace Fsl
     // Request that the compiler generates a copy constructor and assignment operator
     TightBitmap(const TightBitmap&) = default;
     TightBitmap& operator=(const TightBitmap&) = default;
+    ~TightBitmap() = default;
 
     TightBitmap() = default;
 

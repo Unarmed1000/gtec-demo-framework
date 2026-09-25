@@ -72,6 +72,7 @@ namespace Fsl
   public:
     SpriteUnitConverter(const SpriteUnitConverter&) = delete;
     SpriteUnitConverter& operator=(const SpriteUnitConverter&) = delete;
+    ~SpriteUnitConverter() = default;
 
     explicit SpriteUnitConverter(const uint32_t densityDpi);
 

@@ -61,6 +61,7 @@ namespace Fsl
         DeviceResources& operator=(const DeviceResources&) = delete;
         DeviceResources(DeviceResources&& other) noexcept = delete;
         DeviceResources& operator=(DeviceResources&& other) noexcept = delete;
+        ~DeviceResources() = default;
 
         bool IsValid{false};
         std::shared_ptr<INativeDevice> Device;

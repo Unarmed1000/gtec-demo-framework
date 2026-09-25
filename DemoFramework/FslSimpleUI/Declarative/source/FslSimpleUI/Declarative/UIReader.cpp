@@ -586,8 +586,9 @@ namespace Fsl::UI::Declarative::UIReader
           StringParseUtil::Parse(value, StringViewLite(attr));
           return GridColumnDefinition(GridUnitType::Fixed, value);
         }
-        catch (const std::exception&)
+        catch (const std::exception&)    // NOLINT(bugprone-empty-catch)
         {
+          // Not a float, so fall through and return the empty optional
         }
 
         return {};
@@ -612,8 +613,9 @@ namespace Fsl::UI::Declarative::UIReader
           StringParseUtil::Parse(value, StringViewLite(attr));
           return GridRowDefinition(GridUnitType::Fixed, value);
         }
-        catch (const std::exception&)
+        catch (const std::exception&)    // NOLINT(bugprone-empty-catch)
         {
+          // Not a float, so fall through and return the empty optional
         }
 
         return {};

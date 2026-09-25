@@ -50,6 +50,7 @@ namespace Fsl
     // Request that the compiler generates a copy constructor and assignment operator
     BasicMaterialVariableDeclaration(const BasicMaterialVariableDeclaration&) = default;
     BasicMaterialVariableDeclaration& operator=(const BasicMaterialVariableDeclaration&) = default;
+    ~BasicMaterialVariableDeclaration() = default;
 
 
     BasicMaterialVariableDeclaration();

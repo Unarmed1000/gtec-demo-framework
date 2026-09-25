@@ -61,6 +61,9 @@ namespace Fsl::GLES2
       : GLBuffer(std::move(other))    // NOLINT(bugprone-use-after-move)
     {
     }
+    GLDataBuffer(const GLDataBuffer&) = delete;
+    GLDataBuffer& operator=(const GLDataBuffer&) = delete;
+    ~GLDataBuffer() = default;
 
 
     //! @brief Create a uninitialized index buffer

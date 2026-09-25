@@ -78,7 +78,7 @@ namespace Fsl
     m_cameraTextureConfig = GLRawBitmapUtil::Convert(m_camera.GetPixelFormat(), cameraExtent.Width.Value, cameraStride, true);
 
     // Allocate space for the target bitmap
-    m_bitmapBuffer.resize(cameraExtent.Height.Value * cameraStride);
+    m_bitmapBuffer.resize(static_cast<std::size_t>(cameraExtent.Height.Value) * cameraStride);
 
     // ReadOnlyRawBitmap(pContent, width, height, pixelFormat, stride, origin)
 

@@ -878,7 +878,7 @@ namespace Fsl::SceneFormat
       }
 
       assert(dstInterleaveOffset == dstVertexDeclaration.VertexByteSize);
-      return srcVertexCount * dstVertexDeclaration.VertexByteSize;
+      return static_cast<std::size_t>(srcVertexCount) * dstVertexDeclaration.VertexByteSize;
     }
 
 
@@ -916,7 +916,7 @@ namespace Fsl::SceneFormat
       const auto indexStride = meshContent.IndexStride;
       const auto* pIndices = static_cast<const uint8_t*>(meshContent.pIndices);
 
-      const std::size_t indexOffsetEnd = indexCount * indexStride;
+      const std::size_t indexOffsetEnd = static_cast<std::size_t>(indexCount) * indexStride;
 
       std::size_t currentDstIndex = dstIndex;
       if (record.IndexByteSize == 1)
@@ -1000,10 +1000,11 @@ namespace Fsl::SceneFormat
       const auto cbSrcIndices = indexByteSize * indexCount;
 
       const RawMeshContentEx rawDst = mesh->GenericDirectAccess();
-      VertexConverter::GenericConvert(rawDst.pVertices, rawDst.VertexStride * rawDst.VertexCount, mesh->AsVertexDeclarationSpan(), pVertices,
-                                      cbSrcVertices, srcVertexDeclaration.AsSpan(), vertexCount, pDstDefaultValues, cbDstDefaultValues);
-      IndexConverter::GenericConvert(rawDst.pIndices, rawDst.IndexStride * rawDst.IndexCount, rawDst.IndexStride, pIndices, cbSrcIndices,
-                                     indexByteSize, indexCount);
+      VertexConverter::GenericConvert(rawDst.pVertices, static_cast<std::size_t>(rawDst.VertexStride) * rawDst.VertexCount,
+                                      mesh->AsVertexDeclarationSpan(), pVertices, cbSrcVertices, srcVertexDeclaration.AsSpan(), vertexCount,
+                                      pDstDefaultValues, cbDstDefaultValues);
+      IndexConverter::GenericConvert(rawDst.pIndices, static_cast<std::size_t>(rawDst.IndexStride) * rawDst.IndexCount, rawDst.IndexStride, pIndices,
+                                     cbSrcIndices, indexByteSize, indexCount);
 
       rScene.AddMesh(mesh);
     }

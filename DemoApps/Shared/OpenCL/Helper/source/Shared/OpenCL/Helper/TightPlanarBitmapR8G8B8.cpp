@@ -65,7 +65,7 @@ namespace Fsl
       const auto minimumStride = PixelFormatUtil::CalcMinimumStride(rawBitmap.Width(), rawBitmap.GetPixelFormat());
 
       // Pack tightly into planes
-      const std::size_t minimumSize = minimumStride * rawBitmap.RawUnsignedHeight();
+      const std::size_t minimumSize = static_cast<std::size_t>(minimumStride) * rawBitmap.RawUnsignedHeight();
 
       assert((minimumStride % 3) == 0);
       [[maybe_unused]] const std::size_t minimumPlaneStride = minimumStride / 3;
@@ -191,7 +191,7 @@ namespace Fsl
 
 
   TightPlanarBitmapR8G8B8::TightPlanarBitmapR8G8B8(const PxSize2D sizePx, const PixelFormat pixelFormat, const BitmapOrigin origin)
-    : m_content(sizePx.RawHeight() * PixelFormatUtil::CalcMinimumStride(sizePx.Width(), pixelFormat))
+    : m_content(static_cast<std::size_t>(sizePx.RawHeight()) * PixelFormatUtil::CalcMinimumStride(sizePx.Width(), pixelFormat))
     , m_sizePx(sizePx)
     , m_bytesPerPlane(UncheckedNumericCast<uint32_t>(sizePx.RawWidth() * sizePx.RawHeight() * LocalConfig::BytesPerPlanePixel))
     , m_pixelFormat(pixelFormat)

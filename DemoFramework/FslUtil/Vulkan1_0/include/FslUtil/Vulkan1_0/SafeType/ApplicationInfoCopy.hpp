@@ -52,6 +52,7 @@ namespace Fsl::Vulkan
 
     ApplicationInfoCopy& operator=(ApplicationInfoCopy&& other) noexcept;
     ApplicationInfoCopy(ApplicationInfoCopy&& other) noexcept;
+    ~ApplicationInfoCopy() = default;
 
     ApplicationInfoCopy();
     explicit ApplicationInfoCopy(const VkApplicationInfo& value);

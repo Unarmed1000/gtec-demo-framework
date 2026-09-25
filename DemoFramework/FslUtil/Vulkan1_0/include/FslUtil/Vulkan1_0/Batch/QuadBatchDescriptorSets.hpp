@@ -110,6 +110,7 @@ namespace Fsl::Vulkan
       other.m_descriptorSetLayoutTexture = VK_NULL_HANDLE;
       other.m_activeCount = 0;
     }
+    ~QuadBatchDescriptorSets() = default;
 
     QuadBatchDescriptorSets();
     QuadBatchDescriptorSets(const VkDevice device, const VkDescriptorSetLayout descriptorSetLayout);

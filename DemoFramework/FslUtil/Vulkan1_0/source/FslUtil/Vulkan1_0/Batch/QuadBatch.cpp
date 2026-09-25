@@ -312,7 +312,7 @@ namespace Fsl::Vulkan
     auto& rRender = m_deviceResource.Render[m_activeFrame.FrameIndex];
 
     const VertexPositionColorTexture* pSrcVertices = pVertices;
-    const VertexPositionColorTexture* const pSrcVerticesEnd = pVertices + (length * 4);
+    const VertexPositionColorTexture* const pSrcVerticesEnd = pVertices + (static_cast<std::size_t>(length) * 4);
 
     uint32_t remainingQuads = length;
     while (pSrcVertices < pSrcVerticesEnd)

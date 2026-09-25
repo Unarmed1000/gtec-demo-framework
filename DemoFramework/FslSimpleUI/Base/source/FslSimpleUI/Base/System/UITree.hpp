@@ -284,6 +284,9 @@ namespace Fsl
           m_pThis->m_context = newContext;
         }
 
+        ScopedContextChange(const ScopedContextChange&) = delete;
+        ScopedContextChange& operator=(const ScopedContextChange&) = delete;
+
         inline ~ScopedContextChange()
         {
           m_pThis->m_context = m_oldContext;

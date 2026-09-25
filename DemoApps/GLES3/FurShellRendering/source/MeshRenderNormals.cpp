@@ -42,7 +42,7 @@ namespace Fsl
   using namespace GLES3;
 
   MeshRenderNormals::MeshRenderNormals(const Procedural::BasicMesh& mesh)
-    : m_vertices(mesh.GetVertexCount() * 2)
+    : m_vertices(static_cast<std::size_t>(mesh.GetVertexCount()) * 2)
   {
     Procedural::VertexUtil::ExtractNormalsAsLineList(m_vertices, 0, mesh.GetVertexArray(), 5);
   }

@@ -101,6 +101,7 @@ namespace Fsl
 
     TextureAtlasSpriteFont(const TextureAtlasSpriteFont&) = delete;
     TextureAtlasSpriteFont& operator=(const TextureAtlasSpriteFont&) = delete;
+    ~TextureAtlasSpriteFont() = default;
 
     TextureAtlasSpriteFont() = default;
     TextureAtlasSpriteFont(const SpriteNativeAreaCalc& spriteNativeAreaCalc, const PxExtent2D textureExtentPx, const ITextureAtlas& textureAtlas,

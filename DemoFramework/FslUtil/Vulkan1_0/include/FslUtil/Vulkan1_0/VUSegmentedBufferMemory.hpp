@@ -268,6 +268,9 @@ namespace Fsl::Vulkan
         pMappedMemory = m_rBuffer.Map(offset, size);
       }
 
+      ScopedMap(const ScopedMap&) = delete;
+      ScopedMap& operator=(const ScopedMap&) = delete;
+
       ~ScopedMap() noexcept
       {
         pMappedMemory = nullptr;

@@ -156,8 +156,8 @@ namespace Fsl
 
 
     const auto dstStride = NumericCast<int32_t>(rDstBitmap.Stride());
-    uint8_t* pDst = static_cast<uint8_t*>(rDstBitmap.Content()) + (dstStride * dstPosY);
-    const uint8_t* const pDstEnd = pDst + (dstStride * characterSize.RawHeight());
+    uint8_t* pDst = static_cast<uint8_t*>(rDstBitmap.Content()) + (static_cast<std::size_t>(dstStride) * dstPosY);
+    const uint8_t* const pDstEnd = pDst + (static_cast<std::ptrdiff_t>(dstStride) * characterSize.RawHeight());
     const int srcIndex = (theCharacter - MinCharacter()) * 8;
     const uint8_t* pSrc = MonochromeFont.data() + srcIndex;
 
@@ -181,7 +181,7 @@ namespace Fsl
       break;
     case PixelFormatLayout::R8G8B8:
     case PixelFormatLayout::B8G8R8:
-      pDst += dstPosX * 3;
+      pDst += static_cast<std::size_t>(dstPosX) * 3;
       while (pDst < pDstEnd)
       {
         pDst[0] = ((*pSrc) & 0x80) != 0 ? 255 : 0;
@@ -214,7 +214,7 @@ namespace Fsl
       break;
     case PixelFormatLayout::R8G8B8A8:
     case PixelFormatLayout::B8G8R8A8:
-      pDst += dstPosX * 4;
+      pDst += static_cast<std::size_t>(dstPosX) * 4;
       while (pDst < pDstEnd)
       {
         pDst[0] = ((*pSrc) & 0x80) != 0 ? 255 : 0;

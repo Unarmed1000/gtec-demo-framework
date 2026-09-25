@@ -49,11 +49,6 @@ namespace Fsl
       , TextureInfo(textureInfo)
     {
     }
-
-    NamedAtlasTexture& operator=(NamedAtlasTexture&& other) noexcept = default;
-    NamedAtlasTexture(NamedAtlasTexture&& other) noexcept = default;
-    NamedAtlasTexture(const NamedAtlasTexture&) = default;
-    NamedAtlasTexture& operator=(const NamedAtlasTexture&) = default;
   };
 }
 

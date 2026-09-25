@@ -332,7 +332,6 @@ namespace Fsl
     FSLLOG3_INFO("- loading cubemaps")
     // GLTextureParameters3 texParams(GL_NEAREST, GL_NEAREST, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE);
 
-    const std::string texture = "test";
     // rScene.CubemapTexture = TextureUtil::CreateCubemapTextureFromSix(contentManager, "floral_tent/1024", PixelFormat::R16G16B16A16_SFLOAT);
     rScene.CubemapTexture =
       TextureUtil::CreateCubemapTextureFromSix(contentManager, "Textures/Cubemap/HDR_Lookout/1024", PixelFormat::R16G16B16A16_SFLOAT);

@@ -194,7 +194,7 @@ namespace Fsl
     const uint32_t height = rBitmap.RawUnsignedHeight();
     const uint32_t srcStride = rBitmap.Stride();
     auto* pDstBitmap = static_cast<uint8_t*>(rBitmap.Content());
-    const uint8_t* const pDstBitmapEnd = pDstBitmap + (height * dstStride);
+    const uint8_t* const pDstBitmapEnd = pDstBitmap + (static_cast<std::size_t>(height) * dstStride);
     const uint8_t* pSrcBitmap = pDstBitmap;
     while (pDstBitmap < pDstBitmapEnd)
     {
@@ -245,7 +245,7 @@ namespace Fsl
     if (paddingSize > 0)
     {
       auto* pDst = static_cast<uint8_t*>(rBitmap.Content());
-      const uint8_t* const pDstEnd = pDst + (rBitmap.RawUnsignedHeight() * stride);
+      const uint8_t* const pDstEnd = pDst + (static_cast<std::size_t>(rBitmap.RawUnsignedHeight()) * stride);
 
       // Move to the padding area
       pDst += minimumStride;
@@ -278,9 +278,9 @@ namespace Fsl
 
     const uint32_t dstStride = rBitmap.Stride();
     auto* pDst = static_cast<uint8_t*>(rBitmap.Content());
-    const uint8_t* const pDstEnd = pDst + (dstStride * (rBitmap.RawUnsignedHeight() / 2));
+    const uint8_t* const pDstEnd = pDst + (static_cast<std::size_t>(dstStride) * (rBitmap.RawUnsignedHeight() / 2));
 
-    uint8_t* pSrc = pDst + (dstStride * (rBitmap.RawUnsignedHeight() - 1));
+    uint8_t* pSrc = pDst + (static_cast<std::size_t>(dstStride) * (rBitmap.RawUnsignedHeight() - 1));
 
     uint8_t tmp = 0;
 
@@ -992,7 +992,7 @@ namespace Fsl
 
     const auto* pSrc = static_cast<const uint32_t*>(srcBitmap.Content());
     const uint32_t srcStride = srcBitmap.Stride() / 4;
-    const uint32_t* const pSrcEnd = pSrc + (srcStride * (srcBitmap.RawUnsignedHeight() - 1));
+    const uint32_t* const pSrcEnd = pSrc + (static_cast<std::size_t>(srcStride) * (srcBitmap.RawUnsignedHeight() - 1));
     const uint32_t srcWidth = srcBitmap.RawUnsignedWidth();
     const uint32_t srcStrideAdd = (srcStride * 2) - srcWidth;
 

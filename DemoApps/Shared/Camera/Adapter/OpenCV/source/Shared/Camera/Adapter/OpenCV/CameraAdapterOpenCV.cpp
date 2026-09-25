@@ -151,14 +151,14 @@ namespace Fsl::Helios
     {
     case BitmapOrigin::Undefined:
     case BitmapOrigin::UpperLeft:
-      std::memcpy(rTargetBitmap.Content(), m_vidFrame.ptr(), m_config.Extent.Height.Value * m_config.Stride);
+      std::memcpy(rTargetBitmap.Content(), m_vidFrame.ptr(), static_cast<std::size_t>(m_config.Extent.Height.Value) * m_config.Stride);
       break;
     case BitmapOrigin::LowerLeft:
       {
         // Do a 'horizontal' flip during the copy
         auto* pDst = static_cast<uint8_t*>(rTargetBitmap.Content());
         const auto* const pSrcStart = static_cast<const uint8_t*>(m_vidFrame.ptr());
-        const uint8_t* pSrc = pSrcStart + ((m_config.Extent.Height.Value - 1) * m_config.Stride);
+        const uint8_t* pSrc = pSrcStart + ((static_cast<std::size_t>(m_config.Extent.Height.Value - 1) * m_config.Stride));
         const auto stride = m_config.Stride;
         const auto bytesPerScanline = PixelFormatUtil::CalcMinimumStride(m_config.Extent.Width, m_config.ActivePixelFormat);
         while (pSrc >= pSrcStart)

@@ -96,7 +96,7 @@ namespace Fsl
     // Changed the basic implementation to do add some smoothing based on CatmullRom splines.
     for (int y = 1; y < height; ++y)
     {
-      Vector2 previousPointX = ToVec2(pPoints[(y * gridStride)].m_position, areaSize);
+      Vector2 previousPointX = ToVec2(pPoints[(static_cast<std::ptrdiff_t>(y) * gridStride)].m_position, areaSize);
       for (int x = 1; x < width - 1; x++)
       {
         Vector2 left;

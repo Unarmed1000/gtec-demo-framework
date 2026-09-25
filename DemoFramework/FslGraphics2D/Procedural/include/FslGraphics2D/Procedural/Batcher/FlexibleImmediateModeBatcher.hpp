@@ -227,6 +227,9 @@ namespace Fsl
     {
     }
 
+    FlexibleImmediateModeBatcher(const FlexibleImmediateModeBatcher&) = delete;
+    FlexibleImmediateModeBatcher& operator=(const FlexibleImmediateModeBatcher&) = delete;
+
     ~FlexibleImmediateModeBatcher() noexcept
     {
       FSLLOG3_VERBOSE4("FlexibleImmediateModeBatcher final vertexCapacity: {} indexCapacity: {}", m_vertices.size(), m_indices.size());

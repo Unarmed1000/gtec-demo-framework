@@ -46,13 +46,8 @@ namespace Fsl
     BasicTextureAtlas m_textureAtlas;
 
   public:
-    CompatibilityTextureAtlasMap(const CompatibilityTextureAtlasMap&) = default;
-    CompatibilityTextureAtlasMap& operator=(const CompatibilityTextureAtlasMap&) = default;
-
     // move assignment operator
-    CompatibilityTextureAtlasMap& operator=(CompatibilityTextureAtlasMap&& other) noexcept = default;
     // move constructor
-    CompatibilityTextureAtlasMap(CompatibilityTextureAtlasMap&& other) noexcept = default;
 
     CompatibilityTextureAtlasMap() = default;
 

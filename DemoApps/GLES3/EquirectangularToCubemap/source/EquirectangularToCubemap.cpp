@@ -219,8 +219,6 @@ namespace Fsl
     constexpr PxSize2D Resolution(PxSize2D::Create(2048, 2048));
     m_cubemapTexture = GenerateCubemap(contentManager, texturePath, Resolution, hdrEnabled);
 
-    const std::string texture = "Stairs";
-
     m_skyboxProgram.Reset(contentManager->ReadAllText("skybox.vert"), contentManager->ReadAllText("skybox.frag"));
     m_skyboxMesh.Reset(m_skyboxProgram.Program);
 

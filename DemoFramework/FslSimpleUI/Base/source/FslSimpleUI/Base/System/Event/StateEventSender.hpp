@@ -115,6 +115,9 @@ namespace Fsl::UI
         m_rObj.m_state = scopedState;
       }
 
+      ScopedStateChange(const ScopedStateChange&) = delete;
+      ScopedStateChange& operator=(const ScopedStateChange&) = delete;
+
       ~ScopedStateChange()
       {
         m_rObj.m_state = m_oldState;
