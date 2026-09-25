@@ -282,11 +282,7 @@ namespace Fsl
 
         if (header.AlphaMask == 0xFF000000)
         {
-          if (isR8G8B8)    // NOLINT(bugprone-branch-clone)
-          {
-            ActivePixelFormat = PixelFormat::R8G8B8A8_UINT;
-          }
-          else if (isB8G8R8)
+          if (!isR8G8B8 && isB8G8R8)
           {
             ActivePixelFormat = PixelFormat::B8G8R8A8_UINT;
           }
@@ -297,11 +293,7 @@ namespace Fsl
         }
         else
         {
-          if (isR8G8B8)    // NOLINT(bugprone-branch-clone)
-          {
-            ActivePixelFormat = PixelFormat::R8G8B8_UINT;
-          }
-          else if (isB8G8R8)
+          if (!isR8G8B8 && isB8G8R8)
           {
             ActivePixelFormat = PixelFormat::B8G8R8_UINT;
           }

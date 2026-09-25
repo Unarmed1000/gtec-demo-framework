@@ -267,7 +267,7 @@ namespace Fsl::SimpleUIApp
       auto pathInfo = AnalyzePath(rContentManager, atlasPath, allowDpAware);
       auto selectedDp = DetermineResourceDpi(pathInfo, densityDpi);
 
-      if (textureLookup.find(pathInfo.SrcPath) != textureLookup.end())
+      if (textureLookup.contains(pathInfo.SrcPath))
       {
         throw std::invalid_argument(fmt::format("The texture '{}' resolves to '{}' which has already been created.", atlasPath, pathInfo.SrcPath));
       }

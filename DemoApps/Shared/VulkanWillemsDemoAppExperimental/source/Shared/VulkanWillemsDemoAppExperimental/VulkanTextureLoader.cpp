@@ -107,10 +107,6 @@ namespace Fsl::Willems
       switch (texType)
       {
       case TextureType::Tex1D:
-        texExtent.depth = 1;
-        texFaces = 1;
-        texLayers = 1;
-        break;
       case TextureType::Tex2D:
         texExtent.depth = 1;
         texFaces = 1;
@@ -127,9 +123,6 @@ namespace Fsl::Willems
         texLayers = 1;
         break;
       case TextureType::Tex1DArray:
-        texExtent.depth = 1;
-        texFaces = 1;
-        break;
       case TextureType::Tex2DArray:
         texExtent.depth = 1;
         texFaces = 1;

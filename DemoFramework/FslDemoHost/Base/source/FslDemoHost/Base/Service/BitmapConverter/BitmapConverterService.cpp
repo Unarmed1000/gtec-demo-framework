@@ -60,11 +60,8 @@ namespace Fsl
         {
           return ImageConvertResult::Completed;
         }
-        if (result != ImageConvertResult::Completed && libResult == ImageConvertResult::OriginConversionNotSupported)
-        {
-          result = libResult;
-        }
-        else if (libResult == ImageConvertResult::PixelFormatConversionNotSupported && result == ImageConvertResult::NotSupported)
+        if ((result != ImageConvertResult::Completed && libResult == ImageConvertResult::OriginConversionNotSupported) ||
+            (libResult == ImageConvertResult::PixelFormatConversionNotSupported && result == ImageConvertResult::NotSupported))
         {
           result = libResult;
         }
@@ -88,11 +85,8 @@ namespace Fsl
         {
           return ImageConvertResult::Completed;
         }
-        if (result != ImageConvertResult::Completed && libResult == ImageConvertResult::OriginConversionNotSupported)
-        {
-          result = libResult;
-        }
-        else if (libResult == ImageConvertResult::PixelFormatConversionNotSupported && result == ImageConvertResult::NotSupported)
+        if ((result != ImageConvertResult::Completed && libResult == ImageConvertResult::OriginConversionNotSupported) ||
+            (libResult == ImageConvertResult::PixelFormatConversionNotSupported && result == ImageConvertResult::NotSupported))
         {
           result = libResult;
         }
@@ -112,11 +106,8 @@ namespace Fsl
         {
           return ImageConvertResult::Completed;
         }
-        if (result != ImageConvertResult::Completed && libResult == ImageConvertResult::OriginConversionNotSupported)
-        {
-          result = libResult;
-        }
-        else if (libResult == ImageConvertResult::PixelFormatConversionNotSupported && result == ImageConvertResult::NotSupported)
+        if ((result != ImageConvertResult::Completed && libResult == ImageConvertResult::OriginConversionNotSupported) ||
+            (libResult == ImageConvertResult::PixelFormatConversionNotSupported && result == ImageConvertResult::NotSupported))
         {
           result = libResult;
         }

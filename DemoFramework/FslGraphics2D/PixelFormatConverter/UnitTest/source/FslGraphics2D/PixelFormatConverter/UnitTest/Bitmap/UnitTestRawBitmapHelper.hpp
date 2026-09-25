@@ -181,6 +181,8 @@ namespace Fsl::UnitTestRawBitmapHelper
     {
       throw UsageErrorException("Span does not appear to be compatible");
     }
+    // reinterpret_cast is not allowed in a constexpr function
+    // NOLINTNEXTLINE(bugprone-casting-through-void)
     return ReadOnlySpan<uint16_t>(static_cast<const uint16_t*>(static_cast<const void*>(span.data())), span.size() / 2u);
   }
 
@@ -190,6 +192,8 @@ namespace Fsl::UnitTestRawBitmapHelper
     {
       throw UsageErrorException("Span does not appear to be compatible");
     }
+    // reinterpret_cast is not allowed in a constexpr function
+    // NOLINTNEXTLINE(bugprone-casting-through-void)
     return ReadOnlySpan<float>(static_cast<const float*>(static_cast<const void*>(span.data())), span.size() / 4u);
   }
 

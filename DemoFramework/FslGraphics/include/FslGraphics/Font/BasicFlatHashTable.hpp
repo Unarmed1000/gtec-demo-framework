@@ -117,6 +117,9 @@ namespace Fsl
       return (srcIndex < m_records.size() && m_records[srcIndex].Element.GetId() == id) ? &m_records[srcIndex].Element : nullptr;
     }
 
+    //! The default value can not be a temporary as a reference to it can be returned
+    const_reference Get(const key_type id, element_type&& defaultValue) const = delete;
+
     const_reference Get(const key_type id, const_reference defaultValue) const
     {
       // Do a quick lookup of the hash bin.

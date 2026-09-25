@@ -96,7 +96,7 @@ namespace Fsl::Helios
           throw std::invalid_argument("cameraAdapterSystems contained a null factory");
         }
         const auto cameraType = entry->GetCameraType();
-        if (uniqueTypes.find(entry->GetCameraType()) != uniqueTypes.end())
+        if (uniqueTypes.contains(entry->GetCameraType()))
         {
           throw std::invalid_argument(std::string("cameraAdapterSystems factory type already registered") + ToString(static_cast<int>(cameraType)));
         }

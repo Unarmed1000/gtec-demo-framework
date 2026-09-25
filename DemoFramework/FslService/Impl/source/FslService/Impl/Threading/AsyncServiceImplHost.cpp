@@ -53,7 +53,7 @@ namespace Fsl
 
     for (const auto& entry : sortedList)
     {
-      if (m_providerToMessageHandlerRegistry.find(entry.Id.Get()) != m_providerToMessageHandlerRegistry.end())
+      if (m_providerToMessageHandlerRegistry.contains(entry.Id.Get()))
       {
         throw std::runtime_error("Tried to register the same providerId twice");
       }

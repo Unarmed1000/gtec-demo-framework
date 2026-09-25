@@ -67,8 +67,8 @@ namespace Fsl
     Mat dst;
 
     /// Ask the user enter alpha
-    std::cout << " Simple Linear Blender " << std::endl;
-    std::cout << "-----------------------" << std::endl;
+    std::cout << " Simple Linear Blender " << '\n';
+    std::cout << "-----------------------" << '\n';
     std::cout << "* Enter alpha [0-1]: ";
     // std::cin >> input;
     input = 1;

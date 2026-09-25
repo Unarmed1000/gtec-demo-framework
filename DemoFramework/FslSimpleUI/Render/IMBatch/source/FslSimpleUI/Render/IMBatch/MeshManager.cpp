@@ -45,7 +45,6 @@
 #include <FslSimpleUI/Render/Builder/UITextMeshBuilder.hpp>
 #include "HandleCoding.hpp"
 #include "Log/FmtRenderDrawSpriteType.hpp"
-#include "MeshManager.hpp"
 
 #define LOCAL_SANITY_CHECK
 #ifdef LOCAL_SANITY_CHECK

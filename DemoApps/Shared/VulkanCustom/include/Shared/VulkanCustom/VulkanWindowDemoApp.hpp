@@ -61,8 +61,11 @@ namespace Fsl
     Vulkan::VUDeviceQueueRecord m_deviceQueue;
 
     explicit VulkanWindowDemoApp(const DemoAppConfig& demoAppConfig);
+
+  public:
     ~VulkanWindowDemoApp() override;
 
+  protected:
     void OnDestroy() override;
 
     // Call this during destruction to ensure the device is idle before you destroy resources

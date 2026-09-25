@@ -455,7 +455,6 @@ namespace Fsl::Vulkan
     switch (m_state)
     {
     case State::Uninitialized:
-      break;
     case State::Initialized:
       break;
     case State::DeviceInitialized:

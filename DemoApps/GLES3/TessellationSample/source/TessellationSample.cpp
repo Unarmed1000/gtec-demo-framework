@@ -232,9 +232,7 @@ namespace Fsl
       event.Handled();
       m_checkDisplacement->Toggle();
       break;
-    case VirtualKey::Q:
-      // m_uiExtension->GetWindowManager()->ScheduleClose(m_fillLayout);
-      break;
+    case VirtualKey::Q:    // m_uiExtension->GetWindowManager()->ScheduleClose(m_fillLayout);
     default:
       break;
     }

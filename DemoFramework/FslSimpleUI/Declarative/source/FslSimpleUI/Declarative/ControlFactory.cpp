@@ -186,7 +186,7 @@ namespace Fsl::UI::Declarative
     }
 
     const ControlName& controlName = factory->GetName();
-    if (m_factories.find(controlName) != m_factories.end())
+    if (m_factories.contains(controlName))
     {
       throw UsageErrorException(fmt::format("Can not register a factory twice for the same control '{}'", controlName.AsString()));
     }

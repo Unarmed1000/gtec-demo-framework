@@ -145,7 +145,7 @@ namespace Fsl
       const auto itrEnd = deque.end();
       while (itr != itrEnd)
       {
-        if (multiProviderInterfaces.find(*itr) == multiProviderInterfaces.end())
+        if (!multiProviderInterfaces.contains(*itr))
         {
           assert(rServiceProviderMaps.InterfaceToService.find(*itr) == rServiceProviderMaps.InterfaceToService.end());
           rServiceProviderMaps.InterfaceToService[*itr] = ServiceLaunchRecord(record.Id, ServiceLaunchType::Instance, service);

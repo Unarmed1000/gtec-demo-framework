@@ -555,7 +555,7 @@ namespace Fsl::UI
       throw std::invalid_argument("the parent window is not part of this tree");
     }
 
-    if (m_dict.find(window.get()) != m_dict.end())
+    if (m_dict.contains(window.get()))
     {
       throw std::invalid_argument("the window is already part of this tree");
     }
@@ -607,7 +607,7 @@ namespace Fsl::UI
       FSLLOG3_DEBUG_WARNING("A null window will always return false");
       return false;
     }
-    return (m_dict.find(pWindow) != m_dict.end());
+    return (m_dict.contains(pWindow));
   }
 
   bool UITree::Exists(const std::shared_ptr<BaseWindow>& window) const
@@ -617,7 +617,7 @@ namespace Fsl::UI
       throw UsageErrorException("Internal state must be ready");
     }
     // ScopedContextChange scopedContextChange(this, Context::Internal);  --> Nothing here does callbacks, so no need for a context change
-    return (m_dict.find(window.get()) != m_dict.end());
+    return (m_dict.contains(window.get()));
   }
 
 

@@ -67,7 +67,7 @@ namespace Fsl
   void AsynchronousServiceMessageHandlerRegistryImpl::Register(const std::type_index& messageType,
                                                                const std::function<void(Message& message)>& handler)
   {
-    if (m_lookup.find(messageType) != m_lookup.end())
+    if (m_lookup.contains(messageType))
     {
       throw UsageErrorException("Can only register a message type once");
     }

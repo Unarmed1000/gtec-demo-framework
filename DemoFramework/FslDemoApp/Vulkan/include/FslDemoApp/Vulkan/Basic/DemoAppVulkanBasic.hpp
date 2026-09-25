@@ -310,7 +310,11 @@ namespace Fsl
 
     protected:
       explicit DemoAppVulkanBasic(const DemoAppConfig& demoAppConfig, const DemoAppVulkanSetup& demoAppVulkanSetup = {});
+
+    public:
       ~DemoAppVulkanBasic() override;
+
+    protected:
       void OnConstructed() override;
       void OnDestroy() override;
 

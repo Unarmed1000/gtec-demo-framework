@@ -113,6 +113,9 @@ namespace Fsl
       return m_charLookup.TryGet(id);
     }
 
+    //! The default char can not be a temporary as a reference to it can be returned
+    const SpriteFontCharInfo& GetChar(const uint32_t id, SpriteFontCharInfo&& defaultChar) const = delete;
+
     inline const SpriteFontCharInfo& GetChar(const uint32_t id, const SpriteFontCharInfo& defaultChar) const
     {
       return m_charLookup.Get(id, defaultChar);

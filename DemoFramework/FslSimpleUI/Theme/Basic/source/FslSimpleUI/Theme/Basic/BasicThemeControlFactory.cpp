@@ -51,6 +51,7 @@
 #include <FslSimpleUI/Base/WindowContext.hpp>
 #include <FslSimpleUI/Theme/Basic/BasicThemeControlFactory.hpp>
 #include <FslSimpleUI/Theme/Basic/BasicThemeResources.hpp>
+#include <utility>
 
 namespace Fsl::UI::Theme
 {
@@ -140,7 +141,6 @@ namespace Fsl::UI::Theme
       switch (config.Direction)
       {
       case LayoutDirection::NearToFar:
-        break;
       case LayoutDirection::FarToNear:
         break;
       default:
@@ -195,7 +195,6 @@ namespace Fsl::UI::Theme
       switch (config.Direction)
       {
       case LayoutDirection::NearToFar:
-        break;
       case LayoutDirection::FarToNear:
         break;
       default:
@@ -809,7 +808,7 @@ namespace Fsl::UI::Theme
   std::shared_ptr<FmtValueLabel<uint8_t>> BasicThemeControlFactory::CreateFmtValueLabel(const uint8_t value, std::string&& strFormat)
   {
     auto label = CreateFmtValueLabel(value);
-    label->SetFormatString(strFormat);
+    label->SetFormatString(std::move(strFormat));
     label->FinishAnimation();
     return label;
   }
@@ -845,7 +844,7 @@ namespace Fsl::UI::Theme
   std::shared_ptr<FmtValueLabel<int32_t>> BasicThemeControlFactory::CreateFmtValueLabel(const int32_t value, std::string&& strFormat)
   {
     auto label = CreateFmtValueLabel(value);
-    label->SetFormatString(strFormat);
+    label->SetFormatString(std::move(strFormat));
     label->FinishAnimation();
     return label;
   }
@@ -881,7 +880,7 @@ namespace Fsl::UI::Theme
   std::shared_ptr<FmtValueLabel<uint32_t>> BasicThemeControlFactory::CreateFmtValueLabel(const uint32_t value, std::string&& strFormat)
   {
     auto label = CreateFmtValueLabel(value);
-    label->SetFormatString(strFormat);
+    label->SetFormatString(std::move(strFormat));
     label->FinishAnimation();
     return label;
   }
@@ -917,7 +916,7 @@ namespace Fsl::UI::Theme
   std::shared_ptr<FmtValueLabel<uint64_t>> BasicThemeControlFactory::CreateFmtValueLabel(const uint64_t value, std::string&& strFormat)
   {
     auto label = CreateFmtValueLabel(value);
-    label->SetFormatString(strFormat);
+    label->SetFormatString(std::move(strFormat));
     label->FinishAnimation();
     return label;
   }
@@ -952,7 +951,7 @@ namespace Fsl::UI::Theme
   std::shared_ptr<FmtValueLabel<float>> BasicThemeControlFactory::CreateFmtValueLabel(const float value, std::string&& strFormat)
   {
     auto label = CreateFmtValueLabel(value);
-    label->SetFormatString(strFormat);
+    label->SetFormatString(std::move(strFormat));
     label->FinishAnimation();
     return label;
   }
@@ -1039,7 +1038,7 @@ namespace Fsl::UI::Theme
                                                                                                   std::string&& strFormat, const SliderConfig& config)
   {
     auto newControl = CreateSliderFmtValue(orientation, value, config);
-    newControl->SetFormatString(strFormat);
+    newControl->SetFormatString(std::move(strFormat));
     newControl->FinishAnimation();
     return newControl;
   }
@@ -1093,7 +1092,7 @@ namespace Fsl::UI::Theme
                                                                                                   std::string&& strFormat, const SliderConfig& config)
   {
     auto newControl = CreateSliderFmtValue(orientation, value, config);
-    newControl->SetFormatString(strFormat);
+    newControl->SetFormatString(std::move(strFormat));
     newControl->FinishAnimation();
     return newControl;
   }
@@ -1149,7 +1148,7 @@ namespace Fsl::UI::Theme
                                                                                                    const SliderConfig& config)
   {
     auto newControl = CreateSliderFmtValue(orientation, value, config);
-    newControl->SetFormatString(strFormat);
+    newControl->SetFormatString(std::move(strFormat));
     newControl->FinishAnimation();
     return newControl;
   }
@@ -1203,7 +1202,7 @@ namespace Fsl::UI::Theme
                                                                                                 std::string&& strFormat, const SliderConfig& config)
   {
     auto newControl = CreateSliderFmtValue(orientation, value, config);
-    newControl->SetFormatString(strFormat);
+    newControl->SetFormatString(std::move(strFormat));
     newControl->FinishAnimation();
     return newControl;
   }

@@ -65,7 +65,11 @@ namespace Fsl
 
 
     explicit DemoAppVulkan(const DemoAppConfig& demoAppConfig);
+
+  public:
     ~DemoAppVulkan() override;
+
+  protected:
     void OnDestroy() override;
 
 

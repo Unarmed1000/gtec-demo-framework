@@ -200,7 +200,7 @@ namespace Fsl
       }
     }
 
-    PdhCloseQuery(&m_hQuery);
+    PdhCloseQuery(m_hQuery);
   }
 }
 #endif

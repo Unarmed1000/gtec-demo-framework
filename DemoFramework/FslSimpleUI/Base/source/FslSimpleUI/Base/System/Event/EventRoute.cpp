@@ -292,8 +292,6 @@ namespace Fsl::UI
       switch (m_strategy)
       {
       case EventRoutingStrategy::Direct:
-        SendTo(*pEventHandler, m_windowList, theEvent, true);
-        break;
       case EventRoutingStrategy::Tunnel:
         SendTo(*pEventHandler, m_windowList, theEvent, true);
         break;

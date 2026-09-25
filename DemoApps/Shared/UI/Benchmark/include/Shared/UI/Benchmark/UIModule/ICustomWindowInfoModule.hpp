@@ -42,6 +42,8 @@ namespace Fsl
   class ICustomWindowInfoModule
   {
   public:
+    virtual ~ICustomWindowInfoModule() = default;
+
     //! @brief Try to locate a window that would receive a mouse over event
     virtual CustomWindowId TryGetMouseOverWindow(const PxPoint2& hitPositionPx) const = 0;
 

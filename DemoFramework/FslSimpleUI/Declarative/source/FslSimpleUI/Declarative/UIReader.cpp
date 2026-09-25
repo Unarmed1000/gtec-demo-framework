@@ -675,7 +675,7 @@ namespace Fsl::UI::Declarative::UIReader
             if (!gridOnly)
             {
               FSLLOG3_VERBOSE("Applying attributes: '{}'='{}'", attr.Name.AsString(), attr.Value.AsString());
-              if (m_namedControls.find(attr.Value.AsString()) == m_namedControls.end())
+              if (!m_namedControls.contains(attr.Value.AsString()))
               {
                 m_namedControls.emplace(attr.Value.AsString(), window);
               }

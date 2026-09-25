@@ -81,7 +81,7 @@ namespace Fsl::SimpleUIApp
 
   bool UIAppMaterialManager::Contains(const SpriteMaterialId spriteMaterialId) const
   {
-    return m_materials.find(spriteMaterialId) != m_materials.end();
+    return m_materials.contains(spriteMaterialId);
   }
 
   void UIAppMaterialManager::AddMaterial(IBasicRenderSystem& rRenderSystem, const SpriteMaterialId spriteMaterialId,
@@ -295,7 +295,7 @@ namespace Fsl::SimpleUIApp
   SpriteMaterialId UIAppMaterialManager::CreateDynamicSpriteMaterialId()
   {
     // nasty simple algorithm to find the next non-used id
-    while (m_usedDynamicIds.find(m_nextDynamicId) != m_usedDynamicIds.end())
+    while (m_usedDynamicIds.contains(m_nextDynamicId))
     {
       ++m_nextDynamicId;
       if (m_nextDynamicId < UIAppConfig::MaterialId::DynamicOffset.Value)
