@@ -51,7 +51,7 @@ namespace Fsl
     explicit CustomThreadHost(std::shared_ptr<ConcurrentQueue<int32_t>> threadSafeQueue);
     ~CustomThreadHost();
 
-    const std::future<bool>& GetRunResult() const;
+    [[nodiscard]] const std::future<bool>& GetRunResult() const;
 
     void RequestShutdown();
     bool TryWaitForShutdownResult();

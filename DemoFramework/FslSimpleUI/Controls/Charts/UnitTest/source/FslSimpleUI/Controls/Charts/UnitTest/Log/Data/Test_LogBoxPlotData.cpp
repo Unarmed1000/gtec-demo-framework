@@ -43,7 +43,7 @@ namespace
 
 TEST(Test_Log_Data_LogBoxPlotData, Log)
 {
-  UI::BoxPlotData value(1.1f, 2.1f, 3.1f, 4.1f, 5.1f, 6.1f, 7.1f);
+  const UI::BoxPlotData value(1.1f, 2.1f, 3.1f, 4.1f, 5.1f, 6.1f, 7.1f);
 
   std::stringstream stream;
   stream << value;

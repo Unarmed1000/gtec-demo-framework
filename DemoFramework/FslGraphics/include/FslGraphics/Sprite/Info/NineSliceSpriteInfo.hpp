@@ -59,7 +59,7 @@ namespace Fsl
                         const PxThicknessU& imageTrimMarginPx, const PxRectangleU16& imageTrimmedRectanglePx, const PxThicknessU& nineSlicePx,
                         const PxThicknessU& contentMarginPx, const uint32_t imageDpi, const StringViewLite& debugName);
 
-    bool IsValid() const
+    [[nodiscard]] bool IsValid() const
     {
       return MaterialInfo.IsValid();
     }

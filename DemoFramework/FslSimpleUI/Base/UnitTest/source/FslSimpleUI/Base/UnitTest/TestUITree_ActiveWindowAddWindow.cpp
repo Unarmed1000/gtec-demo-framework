@@ -41,11 +41,11 @@ using namespace Fsl;
 
 TEST_F(TestUITree_ActiveWindow, Add)
 {
-  auto callIdManager = std::make_shared<WindowCallIdManager>(WindowMethod::WinInit | WindowMethod::WinUpdate | WindowMethod::WinResolve);
-  auto startCallId = callIdManager->GetCurrentValue();
+  const auto callIdManager = std::make_shared<WindowCallIdManager>(WindowMethod::WinInit | WindowMethod::WinUpdate | WindowMethod::WinResolve);
+  const auto startCallId = callIdManager->GetCurrentValue();
 
   ASSERT_EQ(1u, m_tree->GetNodeCount());
-  auto window = std::make_shared<UI::BaseWindowTest>(m_windowContext, UI::WindowFlags::Enum::All);
+  const auto window = std::make_shared<UI::BaseWindowTest>(m_windowContext, UI::WindowFlags::Enum::All);
   window->SetCallIdManager(callIdManager);
   m_tree->AddChild(m_mainWindow, window);
   ASSERT_EQ(2u, m_tree->GetNodeCount());
@@ -53,7 +53,7 @@ TEST_F(TestUITree_ActiveWindow, Add)
   // The everything except WinInit does not called before the next update call
   auto callCount = window->GetCallCount();
   ASSERT_EQ(1u, callCount.WinInit);
-  auto callId = window->GetCallId();
+  const auto callId = window->GetCallId();
   ASSERT_EQ(startCallId + 1, callId.WinInit);
   CheckZeroExcept(callCount, WindowMethod::WinInit);
 
@@ -71,7 +71,7 @@ TEST_F(TestUITree_ActiveWindow, Add)
   CheckZeroExcept(callCount, WindowMethod::WinInit | WindowMethod::WinUpdate | WindowMethod::WinResolve);
 
   // Check that the methods got called in the expected order
-  auto callIdNewWindow = window->GetCallId();
+  const auto callIdNewWindow = window->GetCallId();
   ASSERT_EQ(startCallId + 1u, callIdNewWindow.WinInit);
   ASSERT_EQ(startCallId + 2u, callIdNewWindow.WinUpdate);
   ASSERT_EQ(startCallId + 3u, callIdNewWindow.WinResolve);
@@ -79,10 +79,10 @@ TEST_F(TestUITree_ActiveWindow, Add)
 
 TEST_F(TestUITree_ActiveWindow, Add_NoFlags)
 {
-  auto callIdManager = std::make_shared<WindowCallIdManager>(WindowMethod::WinInit | WindowMethod::WinUpdate | WindowMethod::WinResolve);
+  const auto callIdManager = std::make_shared<WindowCallIdManager>(WindowMethod::WinInit | WindowMethod::WinUpdate | WindowMethod::WinResolve);
   // auto startCallId = callIdManager->GetCurrentValue();
 
-  auto window = std::make_shared<UI::BaseWindowTest>(m_windowContext);
+  const auto window = std::make_shared<UI::BaseWindowTest>(m_windowContext);
   window->SetCallIdManager(callIdManager);
 
   ASSERT_EQ(1u, m_tree->GetNodeCount());
@@ -90,7 +90,7 @@ TEST_F(TestUITree_ActiveWindow, Add_NoFlags)
   ASSERT_EQ(2u, m_tree->GetNodeCount());
 
   // The window does not called before the next update call
-  auto callCount = window->GetCallCount();
+  const auto callCount = window->GetCallCount();
   CheckZero(callCount, WindowMethod::All);
 
   const TimeSpan timeSpan(0);
@@ -101,7 +101,7 @@ TEST_F(TestUITree_ActiveWindow, Add_NoFlags)
   CheckZero(callCount, WindowMethod::All);
 
   // Check that the methods got called in the expected order
-  auto callIdNewWindow = window->GetCallId();
+  const auto callIdNewWindow = window->GetCallId();
   ASSERT_EQ(0u, callIdNewWindow.WinInit);
   ASSERT_EQ(0u, callIdNewWindow.WinUpdate);
   ASSERT_EQ(0u, callIdNewWindow.WinResolve);
@@ -111,15 +111,15 @@ TEST_F(TestUITree_ActiveWindow, Add_NoFlags)
 // When adding a window to a existing window without participating in its layout the layout functions will not be called
 TEST_F(TestUITree_ActiveWindow, MainUpdateAddChild_NoLayout)
 {
-  auto callIdManager =
+  const auto callIdManager =
     std::make_shared<WindowCallIdManager>(WindowMethod::WinInit | WindowMethod::WinUpdate | WindowMethod::WinResolve | WindowMethod::WinDraw);
-  auto startCallId = callIdManager->GetCurrentValue();
+  const auto startCallId = callIdManager->GetCurrentValue();
 
-  auto mainWindow = m_mainWindow;
-  auto tree = m_tree;
-  auto newWindow = std::make_shared<UI::BaseWindowTest>(m_windowContext, UI::WindowFlags::Enum::All);
+  const auto mainWindow = m_mainWindow;
+  const auto tree = m_tree;
+  const auto newWindow = std::make_shared<UI::BaseWindowTest>(m_windowContext, UI::WindowFlags::Enum::All);
 
-  auto onUpdate = [newWindow, mainWindow, tree](const TimeSpan& /*timeSpan*/) { tree->AddChild(mainWindow, newWindow); };
+  const auto onUpdate = [newWindow, mainWindow, tree](const TimeSpan& /*timeSpan*/) { tree->AddChild(mainWindow, newWindow); };
 
   m_mainWindow->Callbacks.HookWinUpdate = onUpdate;
 
@@ -159,7 +159,7 @@ TEST_F(TestUITree_ActiveWindow, MainUpdateAddChild_NoLayout)
   CheckZeroExcept(callCount, ignoreFlags);
 
   // Check that the methods got called in the expected order
-  auto callIdNewWindow = newWindow->GetCallId();
+  const auto callIdNewWindow = newWindow->GetCallId();
   ASSERT_EQ(startCallId + 1u, callIdNewWindow.WinInit);
   ASSERT_EQ(startCallId + 2u, callIdNewWindow.WinUpdate);
   ASSERT_EQ(startCallId + 3u, callIdNewWindow.WinResolve);
@@ -172,17 +172,17 @@ TEST_F(TestUITree_ActiveWindow, MainUpdateAddChild_NoLayout)
 // When adding a window to a existing window without participating in its layout the layout functions will not be called
 TEST_F(TestUITree_ActiveWindow, MainUpdateAddChild_UpdateAddChild_NoLayout)
 {
-  auto callIdManager =
+  const auto callIdManager =
     std::make_shared<WindowCallIdManager>(WindowMethod::WinInit | WindowMethod::WinUpdate | WindowMethod::WinResolve | WindowMethod::WinDraw);
-  auto startCallId = callIdManager->GetCurrentValue();
+  const auto startCallId = callIdManager->GetCurrentValue();
 
-  auto mainWindow = m_mainWindow;
-  auto tree = m_tree;
-  auto newWindow1 = std::make_shared<UI::BaseWindowTest>(m_windowContext, UI::WindowFlags::Enum::All);
-  auto mainWindowOnUpdate = [newWindow1, mainWindow, tree](const TimeSpan& /*timeSpan*/) { tree->AddChild(mainWindow, newWindow1); };
+  const auto mainWindow = m_mainWindow;
+  const auto tree = m_tree;
+  const auto newWindow1 = std::make_shared<UI::BaseWindowTest>(m_windowContext, UI::WindowFlags::Enum::All);
+  const auto mainWindowOnUpdate = [newWindow1, mainWindow, tree](const TimeSpan& /*timeSpan*/) { tree->AddChild(mainWindow, newWindow1); };
 
-  auto newWindow2 = std::make_shared<UI::BaseWindowTest>(m_windowContext, UI::WindowFlags::Enum::All);
-  auto newWindowOnUpdate = [newWindow2, newWindow1, tree](const TimeSpan& /*timeSpan*/) { tree->AddChild(newWindow1, newWindow2); };
+  const auto newWindow2 = std::make_shared<UI::BaseWindowTest>(m_windowContext, UI::WindowFlags::Enum::All);
+  const auto newWindowOnUpdate = [newWindow2, newWindow1, tree](const TimeSpan& /*timeSpan*/) { tree->AddChild(newWindow1, newWindow2); };
 
   m_mainWindow->Callbacks.HookWinUpdate = mainWindowOnUpdate;
   newWindow1->Callbacks.HookWinUpdate = newWindowOnUpdate;
@@ -239,8 +239,8 @@ TEST_F(TestUITree_ActiveWindow, MainUpdateAddChild_UpdateAddChild_NoLayout)
   CheckZeroExcept(callCountNewWindow, ignoreFlags);
 
   // Check that the methods got called in the expected order
-  auto callIdNewWindow1 = newWindow1->GetCallId();
-  auto callIdNewWindow2 = newWindow2->GetCallId();
+  const auto callIdNewWindow1 = newWindow1->GetCallId();
+  const auto callIdNewWindow2 = newWindow2->GetCallId();
   ASSERT_EQ(startCallId + 1u, callIdNewWindow1.WinInit);
   ASSERT_EQ(startCallId + 2u, callIdNewWindow1.WinUpdate);
   ASSERT_EQ(startCallId + 3u, callIdNewWindow2.WinInit);
@@ -257,17 +257,17 @@ TEST_F(TestUITree_ActiveWindow, MainUpdateAddChild_UpdateAddChild_NoLayout)
 // When adding a window to a existing window without participating in its layout the layout functions will not be called
 TEST_F(TestUITree_ActiveWindow, MainUpdateAddChild_ResolveAddChild_NoLayout)
 {
-  auto callIdManager =
+  const auto callIdManager =
     std::make_shared<WindowCallIdManager>(WindowMethod::WinInit | WindowMethod::WinUpdate | WindowMethod::WinResolve | WindowMethod::WinDraw);
-  auto startCallId = callIdManager->GetCurrentValue();
+  const auto startCallId = callIdManager->GetCurrentValue();
 
-  auto mainWindow = m_mainWindow;
-  auto tree = m_tree;
-  auto newWindow1 = std::make_shared<UI::BaseWindowTest>(m_windowContext, UI::WindowFlags::Enum::All);
-  auto mainWindowOnUpdate = [newWindow1, mainWindow, tree](const TimeSpan& /*timeSpan*/) { tree->AddChild(mainWindow, newWindow1); };
+  const auto mainWindow = m_mainWindow;
+  const auto tree = m_tree;
+  const auto newWindow1 = std::make_shared<UI::BaseWindowTest>(m_windowContext, UI::WindowFlags::Enum::All);
+  const auto mainWindowOnUpdate = [newWindow1, mainWindow, tree](const TimeSpan& /*timeSpan*/) { tree->AddChild(mainWindow, newWindow1); };
 
-  auto newWindow2 = std::make_shared<UI::BaseWindowTest>(m_windowContext, UI::WindowFlags::Enum::All);
-  auto newWindowOnResolve = [newWindow2, newWindow1, tree](const TimeSpan& /*timeSpan*/) { tree->AddChild(newWindow1, newWindow2); };
+  const auto newWindow2 = std::make_shared<UI::BaseWindowTest>(m_windowContext, UI::WindowFlags::Enum::All);
+  const auto newWindowOnResolve = [newWindow2, newWindow1, tree](const TimeSpan& /*timeSpan*/) { tree->AddChild(newWindow1, newWindow2); };
 
   m_mainWindow->Callbacks.HookWinUpdate = mainWindowOnUpdate;
   newWindow1->Callbacks.HookWinResolve = newWindowOnResolve;
@@ -323,8 +323,8 @@ TEST_F(TestUITree_ActiveWindow, MainUpdateAddChild_ResolveAddChild_NoLayout)
   CheckZeroExcept(callCountNewWindow, ignoreFlags);
 
   // Check that the methods got called in the expected order
-  auto callIdNewWindow1 = newWindow1->GetCallId();
-  auto callIdNewWindow2 = newWindow2->GetCallId();
+  const auto callIdNewWindow1 = newWindow1->GetCallId();
+  const auto callIdNewWindow2 = newWindow2->GetCallId();
   ASSERT_EQ(startCallId + 1u, callIdNewWindow1.WinInit);
   ASSERT_EQ(startCallId + 2u, callIdNewWindow1.WinUpdate);
   ASSERT_EQ(startCallId + 3u, callIdNewWindow1.WinResolve);
@@ -339,15 +339,15 @@ TEST_F(TestUITree_ActiveWindow, MainUpdateAddChild_ResolveAddChild_NoLayout)
 // When adding a window to a existing window without participating in its layout the layout functions will not be called
 TEST_F(TestUITree_ActiveWindow, MainResolveAddChild_NoLayout)
 {
-  auto callIdManager =
+  const auto callIdManager =
     std::make_shared<WindowCallIdManager>(WindowMethod::WinInit | WindowMethod::WinUpdate | WindowMethod::WinResolve | WindowMethod::WinDraw);
-  auto startCallId = callIdManager->GetCurrentValue();
+  const auto startCallId = callIdManager->GetCurrentValue();
 
-  auto mainWindow = m_mainWindow;
-  auto tree = m_tree;
-  auto newWindow = std::make_shared<UI::BaseWindowTest>(m_windowContext, UI::WindowFlags::Enum::All);
+  const auto mainWindow = m_mainWindow;
+  const auto tree = m_tree;
+  const auto newWindow = std::make_shared<UI::BaseWindowTest>(m_windowContext, UI::WindowFlags::Enum::All);
 
-  auto onResolve = [newWindow, mainWindow, tree](const TimeSpan& /*timeSpan*/) { tree->AddChild(mainWindow, newWindow); };
+  const auto onResolve = [newWindow, mainWindow, tree](const TimeSpan& /*timeSpan*/) { tree->AddChild(mainWindow, newWindow); };
 
   m_mainWindow->Callbacks.HookWinResolve = onResolve;
 
@@ -387,7 +387,7 @@ TEST_F(TestUITree_ActiveWindow, MainResolveAddChild_NoLayout)
   CheckZeroExcept(callCount, ignoreFlags);
 
   // Check that the methods got called in the expected order
-  auto callIdNewWindow1 = newWindow->GetCallId();
+  const auto callIdNewWindow1 = newWindow->GetCallId();
   ASSERT_EQ(startCallId + 1, callIdNewWindow1.WinInit);
   ASSERT_EQ(startCallId + 2, callIdNewWindow1.WinUpdate);
   ASSERT_EQ(startCallId + 3, callIdNewWindow1.WinResolve);
@@ -400,17 +400,17 @@ TEST_F(TestUITree_ActiveWindow, MainResolveAddChild_NoLayout)
 // When adding a window to a existing window without participating in its layout the layout functions will not be called
 TEST_F(TestUITree_ActiveWindow, MainResolveAddChild_UpdateAddChild_NoLayout)
 {
-  auto callIdManager =
+  const auto callIdManager =
     std::make_shared<WindowCallIdManager>(WindowMethod::WinInit | WindowMethod::WinUpdate | WindowMethod::WinResolve | WindowMethod::WinDraw);
-  auto startCallId = callIdManager->GetCurrentValue();
+  const auto startCallId = callIdManager->GetCurrentValue();
 
-  auto mainWindow = m_mainWindow;
-  auto tree = m_tree;
-  auto newWindow1 = std::make_shared<UI::BaseWindowTest>(m_windowContext, UI::WindowFlags::Enum::All);
-  auto mainWindowOnResolve = [newWindow1, mainWindow, tree](const TimeSpan& /*timeSpan*/) { tree->AddChild(mainWindow, newWindow1); };
+  const auto mainWindow = m_mainWindow;
+  const auto tree = m_tree;
+  const auto newWindow1 = std::make_shared<UI::BaseWindowTest>(m_windowContext, UI::WindowFlags::Enum::All);
+  const auto mainWindowOnResolve = [newWindow1, mainWindow, tree](const TimeSpan& /*timeSpan*/) { tree->AddChild(mainWindow, newWindow1); };
 
-  auto newWindow2 = std::make_shared<UI::BaseWindowTest>(m_windowContext, UI::WindowFlags::Enum::All);
-  auto newWindowOnUpdate = [newWindow2, newWindow1, tree](const TimeSpan& /*timeSpan*/) { tree->AddChild(newWindow1, newWindow2); };
+  const auto newWindow2 = std::make_shared<UI::BaseWindowTest>(m_windowContext, UI::WindowFlags::Enum::All);
+  const auto newWindowOnUpdate = [newWindow2, newWindow1, tree](const TimeSpan& /*timeSpan*/) { tree->AddChild(newWindow1, newWindow2); };
 
   newWindow1->SetCallIdManager(callIdManager);
   newWindow2->SetCallIdManager(callIdManager);
@@ -467,8 +467,8 @@ TEST_F(TestUITree_ActiveWindow, MainResolveAddChild_UpdateAddChild_NoLayout)
   CheckZeroExcept(callCountNewWindow, ignoreFlags);
 
   // Check that the methods got called in the expected order
-  auto callIdNewWindow1 = newWindow1->GetCallId();
-  auto callIdNewWindow2 = newWindow2->GetCallId();
+  const auto callIdNewWindow1 = newWindow1->GetCallId();
+  const auto callIdNewWindow2 = newWindow2->GetCallId();
   ASSERT_EQ(startCallId + 1, callIdNewWindow1.WinInit);
   ASSERT_EQ(startCallId + 2, callIdNewWindow1.WinUpdate);
   ASSERT_EQ(startCallId + 3, callIdNewWindow2.WinInit);
@@ -485,16 +485,16 @@ TEST_F(TestUITree_ActiveWindow, MainResolveAddChild_UpdateAddChild_NoLayout)
 // When adding a window to a existing window without participating in its layout the layout functions will not be called
 TEST_F(TestUITree_ActiveWindow, MainResolveAddChild_ResolveAddChild_NoLayout)
 {
-  auto callIdManager =
+  const auto callIdManager =
     std::make_shared<WindowCallIdManager>(WindowMethod::WinInit | WindowMethod::WinUpdate | WindowMethod::WinResolve | WindowMethod::WinDraw);
-  auto startCallId = callIdManager->GetCurrentValue();
+  const auto startCallId = callIdManager->GetCurrentValue();
 
-  auto mainWindow = m_mainWindow;
-  auto tree = m_tree;
-  auto newWindow1 = std::make_shared<UI::BaseWindowTest>(m_windowContext, UI::WindowFlags::Enum::All);
-  auto mainWindowOnResolve = [newWindow1, mainWindow, tree](const TimeSpan& /*timeSpan*/) { tree->AddChild(mainWindow, newWindow1); };
-  auto newWindow2 = std::make_shared<UI::BaseWindowTest>(m_windowContext, UI::WindowFlags::Enum::All);
-  auto newWindowOnResolve = [newWindow2, newWindow1, tree](const TimeSpan& /*timeSpan*/) { tree->AddChild(newWindow1, newWindow2); };
+  const auto mainWindow = m_mainWindow;
+  const auto tree = m_tree;
+  const auto newWindow1 = std::make_shared<UI::BaseWindowTest>(m_windowContext, UI::WindowFlags::Enum::All);
+  const auto mainWindowOnResolve = [newWindow1, mainWindow, tree](const TimeSpan& /*timeSpan*/) { tree->AddChild(mainWindow, newWindow1); };
+  const auto newWindow2 = std::make_shared<UI::BaseWindowTest>(m_windowContext, UI::WindowFlags::Enum::All);
+  const auto newWindowOnResolve = [newWindow2, newWindow1, tree](const TimeSpan& /*timeSpan*/) { tree->AddChild(newWindow1, newWindow2); };
 
   newWindow1->SetCallIdManager(callIdManager);
   newWindow2->SetCallIdManager(callIdManager);
@@ -550,8 +550,8 @@ TEST_F(TestUITree_ActiveWindow, MainResolveAddChild_ResolveAddChild_NoLayout)
   CheckZeroExcept(callCountNewWindow, ignoreFlags);
 
   // Check that the methods got called in the expected order
-  auto callIdNewWindow1 = newWindow1->GetCallId();
-  auto callIdNewWindow2 = newWindow2->GetCallId();
+  const auto callIdNewWindow1 = newWindow1->GetCallId();
+  const auto callIdNewWindow2 = newWindow2->GetCallId();
   ASSERT_EQ(startCallId + 1, callIdNewWindow1.WinInit);
   ASSERT_EQ(startCallId + 2, callIdNewWindow1.WinUpdate);
   ASSERT_EQ(startCallId + 3, callIdNewWindow1.WinResolve);
@@ -581,22 +581,22 @@ TEST_F(TestUITree_ActiveWindow, MainResolveAddChild_ResolveAddChild_NoLayout)
 // When adding a window to a existing window without participating in its layout the layout functions will not be called
 TEST_F(TestUITree_ActiveWindow, MainUpdateAddChild_UpdateAddChild_UpdateAddChild_NoLayout)
 {
-  auto callIdManager =
+  const auto callIdManager =
     std::make_shared<WindowCallIdManager>(WindowMethod::WinInit | WindowMethod::WinUpdate | WindowMethod::WinResolve | WindowMethod::WinDraw);
-  auto startCallId = callIdManager->GetCurrentValue();
+  const auto startCallId = callIdManager->GetCurrentValue();
 
-  auto mainWindow = m_mainWindow;
-  auto tree = m_tree;
-  auto newWindow1 = std::make_shared<UI::BaseWindowTest>(m_windowContext, UI::WindowFlags::Enum::All);
-  auto newWindow2 = std::make_shared<UI::BaseWindowTest>(m_windowContext, UI::WindowFlags::Enum::All);
-  auto newWindow3 = std::make_shared<UI::BaseWindowTest>(m_windowContext, UI::WindowFlags::Enum::All);
+  const auto mainWindow = m_mainWindow;
+  const auto tree = m_tree;
+  const auto newWindow1 = std::make_shared<UI::BaseWindowTest>(m_windowContext, UI::WindowFlags::Enum::All);
+  const auto newWindow2 = std::make_shared<UI::BaseWindowTest>(m_windowContext, UI::WindowFlags::Enum::All);
+  const auto newWindow3 = std::make_shared<UI::BaseWindowTest>(m_windowContext, UI::WindowFlags::Enum::All);
   newWindow1->SetCallIdManager(callIdManager);
   newWindow2->SetCallIdManager(callIdManager);
   newWindow3->SetCallIdManager(callIdManager);
 
-  auto mainWindowOnUpdate = [newWindow1, mainWindow, tree](const TimeSpan& /*timeSpan*/) { tree->AddChild(mainWindow, newWindow1); };
-  auto newWindowOnUpdate = [newWindow2, newWindow1, tree](const TimeSpan& /*timeSpan*/) { tree->AddChild(newWindow1, newWindow2); };
-  auto newWindow2OnUpdate = [newWindow3, newWindow2, tree](const TimeSpan& /*timeSpan*/) { tree->AddChild(newWindow2, newWindow3); };
+  const auto mainWindowOnUpdate = [newWindow1, mainWindow, tree](const TimeSpan& /*timeSpan*/) { tree->AddChild(mainWindow, newWindow1); };
+  const auto newWindowOnUpdate = [newWindow2, newWindow1, tree](const TimeSpan& /*timeSpan*/) { tree->AddChild(newWindow1, newWindow2); };
+  const auto newWindow2OnUpdate = [newWindow3, newWindow2, tree](const TimeSpan& /*timeSpan*/) { tree->AddChild(newWindow2, newWindow3); };
 
   m_mainWindow->Callbacks.HookWinUpdate = mainWindowOnUpdate;
   newWindow1->Callbacks.HookWinUpdate = newWindowOnUpdate;
@@ -665,9 +665,9 @@ TEST_F(TestUITree_ActiveWindow, MainUpdateAddChild_UpdateAddChild_UpdateAddChild
   CheckZeroExcept(callCountNewWindow, ignoreFlags);
 
   // Check that the methods got called in the expected order
-  auto callIdNewWindow1 = newWindow1->GetCallId();
-  auto callIdNewWindow2 = newWindow2->GetCallId();
-  auto callIdNewWindow3 = newWindow3->GetCallId();
+  const auto callIdNewWindow1 = newWindow1->GetCallId();
+  const auto callIdNewWindow2 = newWindow2->GetCallId();
+  const auto callIdNewWindow3 = newWindow3->GetCallId();
   ASSERT_EQ(startCallId + 1, callIdNewWindow1.WinInit);
   ASSERT_EQ(startCallId + 2, callIdNewWindow1.WinUpdate);
   ASSERT_EQ(startCallId + 3, callIdNewWindow2.WinInit);
@@ -689,22 +689,22 @@ TEST_F(TestUITree_ActiveWindow, MainUpdateAddChild_UpdateAddChild_UpdateAddChild
 // When adding a window to a existing window without participating in its layout the layout functions will not be called
 TEST_F(TestUITree_ActiveWindow, MainUpdateAddChild_UpdateAddChild_ResolveAddChild_NoLayout)
 {
-  auto callIdManager =
+  const auto callIdManager =
     std::make_shared<WindowCallIdManager>(WindowMethod::WinInit | WindowMethod::WinUpdate | WindowMethod::WinResolve | WindowMethod::WinDraw);
-  auto startCallId = callIdManager->GetCurrentValue();
+  const auto startCallId = callIdManager->GetCurrentValue();
 
-  auto mainWindow = m_mainWindow;
-  auto tree = m_tree;
-  auto newWindow1 = std::make_shared<UI::BaseWindowTest>(m_windowContext, UI::WindowFlags::Enum::All);
-  auto newWindow2 = std::make_shared<UI::BaseWindowTest>(m_windowContext, UI::WindowFlags::Enum::All);
-  auto newWindow3 = std::make_shared<UI::BaseWindowTest>(m_windowContext, UI::WindowFlags::Enum::All);
+  const auto mainWindow = m_mainWindow;
+  const auto tree = m_tree;
+  const auto newWindow1 = std::make_shared<UI::BaseWindowTest>(m_windowContext, UI::WindowFlags::Enum::All);
+  const auto newWindow2 = std::make_shared<UI::BaseWindowTest>(m_windowContext, UI::WindowFlags::Enum::All);
+  const auto newWindow3 = std::make_shared<UI::BaseWindowTest>(m_windowContext, UI::WindowFlags::Enum::All);
   newWindow1->SetCallIdManager(callIdManager);
   newWindow2->SetCallIdManager(callIdManager);
   newWindow3->SetCallIdManager(callIdManager);
 
-  auto mainWindowOnUpdate = [newWindow1, mainWindow, tree](const TimeSpan& /*timeSpan*/) { tree->AddChild(mainWindow, newWindow1); };
-  auto newWindowOnUpdate = [newWindow2, newWindow1, tree](const TimeSpan& /*timeSpan*/) { tree->AddChild(newWindow1, newWindow2); };
-  auto newWindow2OnResolve = [newWindow3, newWindow2, tree](const TimeSpan& /*timeSpan*/) { tree->AddChild(newWindow2, newWindow3); };
+  const auto mainWindowOnUpdate = [newWindow1, mainWindow, tree](const TimeSpan& /*timeSpan*/) { tree->AddChild(mainWindow, newWindow1); };
+  const auto newWindowOnUpdate = [newWindow2, newWindow1, tree](const TimeSpan& /*timeSpan*/) { tree->AddChild(newWindow1, newWindow2); };
+  const auto newWindow2OnResolve = [newWindow3, newWindow2, tree](const TimeSpan& /*timeSpan*/) { tree->AddChild(newWindow2, newWindow3); };
   m_mainWindow->Callbacks.HookWinUpdate = mainWindowOnUpdate;
   newWindow1->Callbacks.HookWinUpdate = newWindowOnUpdate;
   newWindow2->Callbacks.HookWinResolve = newWindow2OnResolve;
@@ -772,9 +772,9 @@ TEST_F(TestUITree_ActiveWindow, MainUpdateAddChild_UpdateAddChild_ResolveAddChil
   CheckZeroExcept(callCountNewWindow, ignoreFlags);
 
   // Check that the methods got called in the expected order
-  auto callIdNewWindow1 = newWindow1->GetCallId();
-  auto callIdNewWindow2 = newWindow2->GetCallId();
-  auto callIdNewWindow3 = newWindow3->GetCallId();
+  const auto callIdNewWindow1 = newWindow1->GetCallId();
+  const auto callIdNewWindow2 = newWindow2->GetCallId();
+  const auto callIdNewWindow3 = newWindow3->GetCallId();
   ASSERT_EQ(startCallId + 1, callIdNewWindow1.WinInit);
   ASSERT_EQ(startCallId + 2, callIdNewWindow1.WinUpdate);
   ASSERT_EQ(startCallId + 3, callIdNewWindow2.WinInit);
@@ -796,22 +796,22 @@ TEST_F(TestUITree_ActiveWindow, MainUpdateAddChild_UpdateAddChild_ResolveAddChil
 // When adding a window to a existing window without participating in its layout the layout functions will not be called
 TEST_F(TestUITree_ActiveWindow, MainUpdateAddChild_ResolveAddChild_UpdateAddChild_NoLayout)
 {
-  auto callIdManager =
+  const auto callIdManager =
     std::make_shared<WindowCallIdManager>(WindowMethod::WinInit | WindowMethod::WinUpdate | WindowMethod::WinResolve | WindowMethod::WinDraw);
-  auto startCallId = callIdManager->GetCurrentValue();
+  const auto startCallId = callIdManager->GetCurrentValue();
 
-  auto mainWindow = m_mainWindow;
-  auto tree = m_tree;
-  auto newWindow1 = std::make_shared<UI::BaseWindowTest>(m_windowContext, UI::WindowFlags::Enum::All);
-  auto newWindow2 = std::make_shared<UI::BaseWindowTest>(m_windowContext, UI::WindowFlags::Enum::All);
-  auto newWindow3 = std::make_shared<UI::BaseWindowTest>(m_windowContext, UI::WindowFlags::Enum::All);
+  const auto mainWindow = m_mainWindow;
+  const auto tree = m_tree;
+  const auto newWindow1 = std::make_shared<UI::BaseWindowTest>(m_windowContext, UI::WindowFlags::Enum::All);
+  const auto newWindow2 = std::make_shared<UI::BaseWindowTest>(m_windowContext, UI::WindowFlags::Enum::All);
+  const auto newWindow3 = std::make_shared<UI::BaseWindowTest>(m_windowContext, UI::WindowFlags::Enum::All);
   newWindow1->SetCallIdManager(callIdManager);
   newWindow2->SetCallIdManager(callIdManager);
   newWindow3->SetCallIdManager(callIdManager);
 
-  auto mainWindowOnUpdate = [newWindow1, mainWindow, tree](const TimeSpan& /*timeSpan*/) { tree->AddChild(mainWindow, newWindow1); };
-  auto newWindowOnResolve = [newWindow2, newWindow1, tree](const TimeSpan& /*timeSpan*/) { tree->AddChild(newWindow1, newWindow2); };
-  auto newWindow2OnUpdate = [newWindow3, newWindow2, tree](const TimeSpan& /*timeSpan*/) { tree->AddChild(newWindow2, newWindow3); };
+  const auto mainWindowOnUpdate = [newWindow1, mainWindow, tree](const TimeSpan& /*timeSpan*/) { tree->AddChild(mainWindow, newWindow1); };
+  const auto newWindowOnResolve = [newWindow2, newWindow1, tree](const TimeSpan& /*timeSpan*/) { tree->AddChild(newWindow1, newWindow2); };
+  const auto newWindow2OnUpdate = [newWindow3, newWindow2, tree](const TimeSpan& /*timeSpan*/) { tree->AddChild(newWindow2, newWindow3); };
 
   m_mainWindow->Callbacks.HookWinUpdate = mainWindowOnUpdate;
   newWindow1->Callbacks.HookWinResolve = newWindowOnResolve;
@@ -880,9 +880,9 @@ TEST_F(TestUITree_ActiveWindow, MainUpdateAddChild_ResolveAddChild_UpdateAddChil
   CheckZeroExcept(callCountNewWindow, ignoreFlags);
 
   // Check that the methods got called in the expected order
-  auto callIdNewWindow1 = newWindow1->GetCallId();
-  auto callIdNewWindow2 = newWindow2->GetCallId();
-  auto callIdNewWindow3 = newWindow3->GetCallId();
+  const auto callIdNewWindow1 = newWindow1->GetCallId();
+  const auto callIdNewWindow2 = newWindow2->GetCallId();
+  const auto callIdNewWindow3 = newWindow3->GetCallId();
   ASSERT_EQ(startCallId + 1, callIdNewWindow1.WinInit);
   ASSERT_EQ(startCallId + 2, callIdNewWindow1.WinUpdate);
   ASSERT_EQ(startCallId + 3, callIdNewWindow1.WinResolve);
@@ -904,22 +904,22 @@ TEST_F(TestUITree_ActiveWindow, MainUpdateAddChild_ResolveAddChild_UpdateAddChil
 // When adding a window to a existing window without participating in its layout the layout functions will not be called
 TEST_F(TestUITree_ActiveWindow, MainUpdateAddChild_ResolveAddChild_ResolveAddChild_NoLayout)
 {
-  auto callIdManager =
+  const auto callIdManager =
     std::make_shared<WindowCallIdManager>(WindowMethod::WinInit | WindowMethod::WinUpdate | WindowMethod::WinResolve | WindowMethod::WinDraw);
-  auto startCallId = callIdManager->GetCurrentValue();
+  const auto startCallId = callIdManager->GetCurrentValue();
 
-  auto mainWindow = m_mainWindow;
-  auto tree = m_tree;
-  auto newWindow1 = std::make_shared<UI::BaseWindowTest>(m_windowContext, UI::WindowFlags::Enum::All);
-  auto newWindow2 = std::make_shared<UI::BaseWindowTest>(m_windowContext, UI::WindowFlags::Enum::All);
-  auto newWindow3 = std::make_shared<UI::BaseWindowTest>(m_windowContext, UI::WindowFlags::Enum::All);
+  const auto mainWindow = m_mainWindow;
+  const auto tree = m_tree;
+  const auto newWindow1 = std::make_shared<UI::BaseWindowTest>(m_windowContext, UI::WindowFlags::Enum::All);
+  const auto newWindow2 = std::make_shared<UI::BaseWindowTest>(m_windowContext, UI::WindowFlags::Enum::All);
+  const auto newWindow3 = std::make_shared<UI::BaseWindowTest>(m_windowContext, UI::WindowFlags::Enum::All);
   newWindow1->SetCallIdManager(callIdManager);
   newWindow2->SetCallIdManager(callIdManager);
   newWindow3->SetCallIdManager(callIdManager);
 
-  auto mainWindowOnUpdate = [newWindow1, mainWindow, tree](const TimeSpan& /*timeSpan*/) { tree->AddChild(mainWindow, newWindow1); };
-  auto newWindowOnResolve = [newWindow2, newWindow1, tree](const TimeSpan& /*timeSpan*/) { tree->AddChild(newWindow1, newWindow2); };
-  auto newWindow2OnResolve = [newWindow3, newWindow2, tree](const TimeSpan& /*timeSpan*/) { tree->AddChild(newWindow2, newWindow3); };
+  const auto mainWindowOnUpdate = [newWindow1, mainWindow, tree](const TimeSpan& /*timeSpan*/) { tree->AddChild(mainWindow, newWindow1); };
+  const auto newWindowOnResolve = [newWindow2, newWindow1, tree](const TimeSpan& /*timeSpan*/) { tree->AddChild(newWindow1, newWindow2); };
+  const auto newWindow2OnResolve = [newWindow3, newWindow2, tree](const TimeSpan& /*timeSpan*/) { tree->AddChild(newWindow2, newWindow3); };
 
   m_mainWindow->Callbacks.HookWinUpdate = mainWindowOnUpdate;
   newWindow1->Callbacks.HookWinResolve = newWindowOnResolve;
@@ -988,9 +988,9 @@ TEST_F(TestUITree_ActiveWindow, MainUpdateAddChild_ResolveAddChild_ResolveAddChi
   CheckZeroExcept(callCountNewWindow, ignoreFlags);
 
   // Check that the methods got called in the expected order
-  auto callIdNewWindow1 = newWindow1->GetCallId();
-  auto callIdNewWindow2 = newWindow2->GetCallId();
-  auto callIdNewWindow3 = newWindow3->GetCallId();
+  const auto callIdNewWindow1 = newWindow1->GetCallId();
+  const auto callIdNewWindow2 = newWindow2->GetCallId();
+  const auto callIdNewWindow3 = newWindow3->GetCallId();
   ASSERT_EQ(startCallId + 1, callIdNewWindow1.WinInit);
   ASSERT_EQ(startCallId + 2, callIdNewWindow1.WinUpdate);
   ASSERT_EQ(startCallId + 3, callIdNewWindow1.WinResolve);
@@ -1014,22 +1014,22 @@ TEST_F(TestUITree_ActiveWindow, MainUpdateAddChild_ResolveAddChild_ResolveAddChi
 // When adding a window to a existing window without participating in its layout the layout functions will not be called
 TEST_F(TestUITree_ActiveWindow, MainResolveAddChild_UpdateAddChild_UpdateAddChild_NoLayout)
 {
-  auto callIdManager =
+  const auto callIdManager =
     std::make_shared<WindowCallIdManager>(WindowMethod::WinInit | WindowMethod::WinUpdate | WindowMethod::WinResolve | WindowMethod::WinDraw);
-  auto startCallId = callIdManager->GetCurrentValue();
+  const auto startCallId = callIdManager->GetCurrentValue();
 
-  auto mainWindow = m_mainWindow;
-  auto tree = m_tree;
-  auto newWindow1 = std::make_shared<UI::BaseWindowTest>(m_windowContext, UI::WindowFlags::Enum::All);
-  auto newWindow2 = std::make_shared<UI::BaseWindowTest>(m_windowContext, UI::WindowFlags::Enum::All);
-  auto newWindow3 = std::make_shared<UI::BaseWindowTest>(m_windowContext, UI::WindowFlags::Enum::All);
+  const auto mainWindow = m_mainWindow;
+  const auto tree = m_tree;
+  const auto newWindow1 = std::make_shared<UI::BaseWindowTest>(m_windowContext, UI::WindowFlags::Enum::All);
+  const auto newWindow2 = std::make_shared<UI::BaseWindowTest>(m_windowContext, UI::WindowFlags::Enum::All);
+  const auto newWindow3 = std::make_shared<UI::BaseWindowTest>(m_windowContext, UI::WindowFlags::Enum::All);
   newWindow1->SetCallIdManager(callIdManager);
   newWindow2->SetCallIdManager(callIdManager);
   newWindow3->SetCallIdManager(callIdManager);
 
-  auto mainWindowOnResolve = [newWindow1, mainWindow, tree](const TimeSpan& /*timeSpan*/) { tree->AddChild(mainWindow, newWindow1); };
-  auto newWindowOnUpdate = [newWindow2, newWindow1, tree](const TimeSpan& /*timeSpan*/) { tree->AddChild(newWindow1, newWindow2); };
-  auto newWindow2OnUpdate = [newWindow3, newWindow2, tree](const TimeSpan& /*timeSpan*/) { tree->AddChild(newWindow2, newWindow3); };
+  const auto mainWindowOnResolve = [newWindow1, mainWindow, tree](const TimeSpan& /*timeSpan*/) { tree->AddChild(mainWindow, newWindow1); };
+  const auto newWindowOnUpdate = [newWindow2, newWindow1, tree](const TimeSpan& /*timeSpan*/) { tree->AddChild(newWindow1, newWindow2); };
+  const auto newWindow2OnUpdate = [newWindow3, newWindow2, tree](const TimeSpan& /*timeSpan*/) { tree->AddChild(newWindow2, newWindow3); };
 
   m_mainWindow->Callbacks.HookWinResolve = mainWindowOnResolve;
   newWindow1->Callbacks.HookWinUpdate = newWindowOnUpdate;
@@ -1098,9 +1098,9 @@ TEST_F(TestUITree_ActiveWindow, MainResolveAddChild_UpdateAddChild_UpdateAddChil
   CheckZeroExcept(callCountNewWindow, ignoreFlags);
 
   // Check that the methods got called in the expected order
-  auto callIdNewWindow1 = newWindow1->GetCallId();
-  auto callIdNewWindow2 = newWindow2->GetCallId();
-  auto callIdNewWindow3 = newWindow3->GetCallId();
+  const auto callIdNewWindow1 = newWindow1->GetCallId();
+  const auto callIdNewWindow2 = newWindow2->GetCallId();
+  const auto callIdNewWindow3 = newWindow3->GetCallId();
   ASSERT_EQ(startCallId + 1, callIdNewWindow1.WinInit);
   ASSERT_EQ(startCallId + 2, callIdNewWindow1.WinUpdate);
   ASSERT_EQ(startCallId + 3, callIdNewWindow2.WinInit);
@@ -1122,22 +1122,22 @@ TEST_F(TestUITree_ActiveWindow, MainResolveAddChild_UpdateAddChild_UpdateAddChil
 // When adding a window to a existing window without participating in its layout the layout functions will not be called
 TEST_F(TestUITree_ActiveWindow, MainResolveAddChild_UpdateAddChild_ResolveAddChild_NoLayout)
 {
-  auto callIdManager =
+  const auto callIdManager =
     std::make_shared<WindowCallIdManager>(WindowMethod::WinInit | WindowMethod::WinUpdate | WindowMethod::WinResolve | WindowMethod::WinDraw);
-  auto startCallId = callIdManager->GetCurrentValue();
+  const auto startCallId = callIdManager->GetCurrentValue();
 
-  auto mainWindow = m_mainWindow;
-  auto tree = m_tree;
-  auto newWindow1 = std::make_shared<UI::BaseWindowTest>(m_windowContext, UI::WindowFlags::Enum::All);
-  auto newWindow2 = std::make_shared<UI::BaseWindowTest>(m_windowContext, UI::WindowFlags::Enum::All);
-  auto newWindow3 = std::make_shared<UI::BaseWindowTest>(m_windowContext, UI::WindowFlags::Enum::All);
+  const auto mainWindow = m_mainWindow;
+  const auto tree = m_tree;
+  const auto newWindow1 = std::make_shared<UI::BaseWindowTest>(m_windowContext, UI::WindowFlags::Enum::All);
+  const auto newWindow2 = std::make_shared<UI::BaseWindowTest>(m_windowContext, UI::WindowFlags::Enum::All);
+  const auto newWindow3 = std::make_shared<UI::BaseWindowTest>(m_windowContext, UI::WindowFlags::Enum::All);
   newWindow1->SetCallIdManager(callIdManager);
   newWindow2->SetCallIdManager(callIdManager);
   newWindow3->SetCallIdManager(callIdManager);
 
-  auto mainWindowOnResolve = [newWindow1, mainWindow, tree](const TimeSpan& /*timeSpan*/) { tree->AddChild(mainWindow, newWindow1); };
-  auto newWindowOnUpdate = [newWindow2, newWindow1, tree](const TimeSpan& /*timeSpan*/) { tree->AddChild(newWindow1, newWindow2); };
-  auto newWindow2OnResolve = [newWindow3, newWindow2, tree](const TimeSpan& /*timeSpan*/) { tree->AddChild(newWindow2, newWindow3); };
+  const auto mainWindowOnResolve = [newWindow1, mainWindow, tree](const TimeSpan& /*timeSpan*/) { tree->AddChild(mainWindow, newWindow1); };
+  const auto newWindowOnUpdate = [newWindow2, newWindow1, tree](const TimeSpan& /*timeSpan*/) { tree->AddChild(newWindow1, newWindow2); };
+  const auto newWindow2OnResolve = [newWindow3, newWindow2, tree](const TimeSpan& /*timeSpan*/) { tree->AddChild(newWindow2, newWindow3); };
   m_mainWindow->Callbacks.HookWinResolve = mainWindowOnResolve;
   newWindow1->Callbacks.HookWinUpdate = newWindowOnUpdate;
   newWindow2->Callbacks.HookWinResolve = newWindow2OnResolve;
@@ -1205,9 +1205,9 @@ TEST_F(TestUITree_ActiveWindow, MainResolveAddChild_UpdateAddChild_ResolveAddChi
   CheckZeroExcept(callCountNewWindow, ignoreFlags);
 
   // Check that the methods got called in the expected order
-  auto callIdNewWindow1 = newWindow1->GetCallId();
-  auto callIdNewWindow2 = newWindow2->GetCallId();
-  auto callIdNewWindow3 = newWindow3->GetCallId();
+  const auto callIdNewWindow1 = newWindow1->GetCallId();
+  const auto callIdNewWindow2 = newWindow2->GetCallId();
+  const auto callIdNewWindow3 = newWindow3->GetCallId();
   ASSERT_EQ(startCallId + 1, callIdNewWindow1.WinInit);
   ASSERT_EQ(startCallId + 2, callIdNewWindow1.WinUpdate);
   ASSERT_EQ(startCallId + 3, callIdNewWindow2.WinInit);
@@ -1229,22 +1229,22 @@ TEST_F(TestUITree_ActiveWindow, MainResolveAddChild_UpdateAddChild_ResolveAddChi
 // When adding a window to a existing window without participating in its layout the layout functions will not be called
 TEST_F(TestUITree_ActiveWindow, MainesolveAddChild_ResolveAddChild_UpdateAddChild_NoLayout)
 {
-  auto callIdManager =
+  const auto callIdManager =
     std::make_shared<WindowCallIdManager>(WindowMethod::WinInit | WindowMethod::WinUpdate | WindowMethod::WinResolve | WindowMethod::WinDraw);
-  auto startCallId = callIdManager->GetCurrentValue();
+  const auto startCallId = callIdManager->GetCurrentValue();
 
-  auto mainWindow = m_mainWindow;
-  auto tree = m_tree;
-  auto newWindow1 = std::make_shared<UI::BaseWindowTest>(m_windowContext, UI::WindowFlags::Enum::All);
-  auto newWindow2 = std::make_shared<UI::BaseWindowTest>(m_windowContext, UI::WindowFlags::Enum::All);
-  auto newWindow3 = std::make_shared<UI::BaseWindowTest>(m_windowContext, UI::WindowFlags::Enum::All);
+  const auto mainWindow = m_mainWindow;
+  const auto tree = m_tree;
+  const auto newWindow1 = std::make_shared<UI::BaseWindowTest>(m_windowContext, UI::WindowFlags::Enum::All);
+  const auto newWindow2 = std::make_shared<UI::BaseWindowTest>(m_windowContext, UI::WindowFlags::Enum::All);
+  const auto newWindow3 = std::make_shared<UI::BaseWindowTest>(m_windowContext, UI::WindowFlags::Enum::All);
   newWindow1->SetCallIdManager(callIdManager);
   newWindow2->SetCallIdManager(callIdManager);
   newWindow3->SetCallIdManager(callIdManager);
 
-  auto mainWindowOnResolve = [newWindow1, mainWindow, tree](const TimeSpan& /*timeSpan*/) { tree->AddChild(mainWindow, newWindow1); };
-  auto newWindowOnResolve = [newWindow2, newWindow1, tree](const TimeSpan& /*timeSpan*/) { tree->AddChild(newWindow1, newWindow2); };
-  auto newWindow2OnUpdate = [newWindow3, newWindow2, tree](const TimeSpan& /*timeSpan*/) { tree->AddChild(newWindow2, newWindow3); };
+  const auto mainWindowOnResolve = [newWindow1, mainWindow, tree](const TimeSpan& /*timeSpan*/) { tree->AddChild(mainWindow, newWindow1); };
+  const auto newWindowOnResolve = [newWindow2, newWindow1, tree](const TimeSpan& /*timeSpan*/) { tree->AddChild(newWindow1, newWindow2); };
+  const auto newWindow2OnUpdate = [newWindow3, newWindow2, tree](const TimeSpan& /*timeSpan*/) { tree->AddChild(newWindow2, newWindow3); };
 
   m_mainWindow->Callbacks.HookWinResolve = mainWindowOnResolve;
   newWindow1->Callbacks.HookWinResolve = newWindowOnResolve;
@@ -1313,9 +1313,9 @@ TEST_F(TestUITree_ActiveWindow, MainesolveAddChild_ResolveAddChild_UpdateAddChil
   CheckZeroExcept(callCountNewWindow, ignoreFlags);
 
   // Check that the methods got called in the expected order
-  auto callIdNewWindow1 = newWindow1->GetCallId();
-  auto callIdNewWindow2 = newWindow2->GetCallId();
-  auto callIdNewWindow3 = newWindow3->GetCallId();
+  const auto callIdNewWindow1 = newWindow1->GetCallId();
+  const auto callIdNewWindow2 = newWindow2->GetCallId();
+  const auto callIdNewWindow3 = newWindow3->GetCallId();
   ASSERT_EQ(startCallId + 1, callIdNewWindow1.WinInit);
   ASSERT_EQ(startCallId + 2, callIdNewWindow1.WinUpdate);
   ASSERT_EQ(startCallId + 3, callIdNewWindow1.WinResolve);
@@ -1337,22 +1337,22 @@ TEST_F(TestUITree_ActiveWindow, MainesolveAddChild_ResolveAddChild_UpdateAddChil
 // When adding a window to a existing window without participating in its layout the layout functions will not be called
 TEST_F(TestUITree_ActiveWindow, MainResolveAddChild_ResolveAddChild_ResolveAddChild_NoLayout)
 {
-  auto callIdManager =
+  const auto callIdManager =
     std::make_shared<WindowCallIdManager>(WindowMethod::WinInit | WindowMethod::WinUpdate | WindowMethod::WinResolve | WindowMethod::WinDraw);
-  auto startCallId = callIdManager->GetCurrentValue();
+  const auto startCallId = callIdManager->GetCurrentValue();
 
-  auto mainWindow = m_mainWindow;
-  auto tree = m_tree;
-  auto newWindow1 = std::make_shared<UI::BaseWindowTest>(m_windowContext, UI::WindowFlags::Enum::All);
-  auto newWindow2 = std::make_shared<UI::BaseWindowTest>(m_windowContext, UI::WindowFlags::Enum::All);
-  auto newWindow3 = std::make_shared<UI::BaseWindowTest>(m_windowContext, UI::WindowFlags::Enum::All);
+  const auto mainWindow = m_mainWindow;
+  const auto tree = m_tree;
+  const auto newWindow1 = std::make_shared<UI::BaseWindowTest>(m_windowContext, UI::WindowFlags::Enum::All);
+  const auto newWindow2 = std::make_shared<UI::BaseWindowTest>(m_windowContext, UI::WindowFlags::Enum::All);
+  const auto newWindow3 = std::make_shared<UI::BaseWindowTest>(m_windowContext, UI::WindowFlags::Enum::All);
   newWindow1->SetCallIdManager(callIdManager);
   newWindow2->SetCallIdManager(callIdManager);
   newWindow3->SetCallIdManager(callIdManager);
 
-  auto mainWindowOnResolve = [newWindow1, mainWindow, tree](const TimeSpan& /*timeSpan*/) { tree->AddChild(mainWindow, newWindow1); };
-  auto newWindowOnResolve = [newWindow2, newWindow1, tree](const TimeSpan& /*timeSpan*/) { tree->AddChild(newWindow1, newWindow2); };
-  auto newWindow2OnResolve = [newWindow3, newWindow2, tree](const TimeSpan& /*timeSpan*/) { tree->AddChild(newWindow2, newWindow3); };
+  const auto mainWindowOnResolve = [newWindow1, mainWindow, tree](const TimeSpan& /*timeSpan*/) { tree->AddChild(mainWindow, newWindow1); };
+  const auto newWindowOnResolve = [newWindow2, newWindow1, tree](const TimeSpan& /*timeSpan*/) { tree->AddChild(newWindow1, newWindow2); };
+  const auto newWindow2OnResolve = [newWindow3, newWindow2, tree](const TimeSpan& /*timeSpan*/) { tree->AddChild(newWindow2, newWindow3); };
 
   m_mainWindow->Callbacks.HookWinResolve = mainWindowOnResolve;
   newWindow1->Callbacks.HookWinResolve = newWindowOnResolve;
@@ -1421,9 +1421,9 @@ TEST_F(TestUITree_ActiveWindow, MainResolveAddChild_ResolveAddChild_ResolveAddCh
   CheckZeroExcept(callCountNewWindow, ignoreFlags);
 
   // Check that the methods got called in the expected order
-  auto callIdNewWindow1 = newWindow1->GetCallId();
-  auto callIdNewWindow2 = newWindow2->GetCallId();
-  auto callIdNewWindow3 = newWindow3->GetCallId();
+  const auto callIdNewWindow1 = newWindow1->GetCallId();
+  const auto callIdNewWindow2 = newWindow2->GetCallId();
+  const auto callIdNewWindow3 = newWindow3->GetCallId();
   ASSERT_EQ(startCallId + 1, callIdNewWindow1.WinInit);
   ASSERT_EQ(startCallId + 2, callIdNewWindow1.WinUpdate);
   ASSERT_EQ(startCallId + 3, callIdNewWindow1.WinResolve);

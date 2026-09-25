@@ -160,13 +160,13 @@ namespace Fsl
       // record UI rendering CPU KPI's.
       const DemoPerformanceCapture& profiler = m_testAppHost->GetProfiler();
 
-      int64_t valUIProcessEvents = profiler.GetResult(DemoPerformanceCaptureId::UIProcessEvents);
-      int64_t valUIUpdate = profiler.GetResult(DemoPerformanceCaptureId::UIUpdate);
+      const int64_t valUIProcessEvents = profiler.GetResult(DemoPerformanceCaptureId::UIProcessEvents);
+      const int64_t valUIUpdate = profiler.GetResult(DemoPerformanceCaptureId::UIUpdate);
       int64_t valUIDraw = profiler.GetResult(DemoPerformanceCaptureId::UIDraw);
-      int64_t valUIDrawPreprocess = profiler.GetResult(DemoPerformanceCaptureId::UIDrawPreprocessDrawCommands);
-      int64_t valUIDrawGenMesh = profiler.GetResult(DemoPerformanceCaptureId::UIDrawGenerateMeshes);
-      int64_t valUIDrawFillBuffers = profiler.GetResult(DemoPerformanceCaptureId::UIDrawUpdateBuffers);
-      int64_t valUIDrawSchedule = profiler.GetResult(DemoPerformanceCaptureId::UIDrawScheduleDraw);
+      const int64_t valUIDrawPreprocess = profiler.GetResult(DemoPerformanceCaptureId::UIDrawPreprocessDrawCommands);
+      const int64_t valUIDrawGenMesh = profiler.GetResult(DemoPerformanceCaptureId::UIDrawGenerateMeshes);
+      const int64_t valUIDrawFillBuffers = profiler.GetResult(DemoPerformanceCaptureId::UIDrawUpdateBuffers);
+      const int64_t valUIDrawSchedule = profiler.GetResult(DemoPerformanceCaptureId::UIDrawScheduleDraw);
 
       valUIDraw -= valUIDrawPreprocess;
       valUIDraw -= valUIDrawGenMesh;
@@ -221,8 +221,8 @@ namespace Fsl
       m_testAppHost->StopTestApp();
       TestAppFactory appFactory(benchSettings.RenderMethod);
 
-      UIDemoAppMaterialCreateInfo materialCreateInfo(benchSettings.BasicOptions.NoOpaqueMaterials, true);
-      UIDemoAppMaterialConfig materialConfig(benchSettings.BasicOptions.UseSdfFonts, renderOptions.value().DepthBuffer);
+      const UIDemoAppMaterialCreateInfo materialCreateInfo(benchSettings.BasicOptions.NoOpaqueMaterials, true);
+      const UIDemoAppMaterialConfig materialConfig(benchSettings.BasicOptions.UseSdfFonts, renderOptions.value().DepthBuffer);
       m_testAppHost->StartTestApp(appFactory, materialCreateInfo, materialConfig);
 
       // Enable/disable the draw cache
@@ -249,19 +249,19 @@ namespace Fsl
 
   bool BenchmarkScene::TrySaveResult()
   {
-    auto currentTime = std::time(nullptr);
+    const auto currentTime = std::time(nullptr);
 
     assert(m_benchResultManager);
 
     const bool gpuProfilingEnabled = m_gpuProfiler && m_gpuProfiler->IsEnabled();
-    std::optional<AppBenchmarkGpuData> gpuData =
+    const std::optional<AppBenchmarkGpuData> gpuData =
       gpuProfilingEnabled ? std::optional<AppBenchmarkGpuData>(AppBenchmarkGpuData(SpanUtil::AsReadOnlySpan(m_gpuEntries, 0, m_entryCount)))
                           : std::optional<AppBenchmarkGpuData>();
 
-    std::optional<AppBenchmarkRenderInfo> renderInfo(m_renderInfo);
+    const std::optional<AppBenchmarkRenderInfo> renderInfo(m_renderInfo);
 
-    AppBenchmarkData benchmarkData(m_info, AppBenchmarkCpuData(SpanUtil::AsReadOnlySpan(m_cpuEntries, 0, m_entryCount)), gpuData, renderInfo,
-                                   currentTime);
+    const AppBenchmarkData benchmarkData(m_info, AppBenchmarkCpuData(SpanUtil::AsReadOnlySpan(m_cpuEntries, 0, m_entryCount)), gpuData, renderInfo,
+                                         currentTime);
     return m_benchResultManager->TrySave(benchmarkData);
   }
 

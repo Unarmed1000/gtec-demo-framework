@@ -43,9 +43,9 @@ namespace
 
 TEST(TestLog_String_FmtStringViewLite, Fmt)
 {
-  StringViewLite value("hello");
+  const StringViewLite value("hello");
   fmt::memory_buffer buf;
-  fmt::memory_buffer buf2;
+  const fmt::memory_buffer buf2;
   if (value.data() != nullptr)
   {
     buf.append(value.data(), value.data() + value.size());

@@ -44,17 +44,17 @@ namespace Fsl::SimpleUIApp
       EncodedValue |= 1 << index;
     }
 
-    constexpr bool Empty() const
+    [[nodiscard]] constexpr bool Empty() const
     {
       return EncodedValue == 0u;
     }
 
-    constexpr uint32_t Count() const
+    [[nodiscard]] constexpr uint32_t Count() const
     {
       return BitsUtil::Count(EncodedValue);
     }
 
-    constexpr bool IsFlagged(const uint32_t bitIndex) const
+    [[nodiscard]] constexpr bool IsFlagged(const uint32_t bitIndex) const
     {
       return (EncodedValue & (1 << bitIndex)) != 0u;
     }

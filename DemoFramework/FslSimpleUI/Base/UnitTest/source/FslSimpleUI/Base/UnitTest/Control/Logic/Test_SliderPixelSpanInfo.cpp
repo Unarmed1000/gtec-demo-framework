@@ -43,7 +43,7 @@ namespace
 
 TEST(TestControlLogic_SliderPixelSpanInfo, Construct_Default)
 {
-  UI::SliderPixelSpanInfo spanInfo;
+  const UI::SliderPixelSpanInfo spanInfo;
   EXPECT_EQ(PxValue(0), spanInfo.GetStartPx());
   EXPECT_EQ(PxValue(0), spanInfo.GetLengthPx());
   EXPECT_FALSE(spanInfo.IsReversedDirection());
@@ -51,7 +51,7 @@ TEST(TestControlLogic_SliderPixelSpanInfo, Construct_Default)
 
 TEST(TestControlLogic_SliderPixelSpanInfo, Construct)
 {
-  UI::SliderPixelSpanInfo spanInfo(PxValue(1), PxSize1D::Create(10), false);
+  const UI::SliderPixelSpanInfo spanInfo(PxValue(1), PxSize1D::Create(10), false);
   EXPECT_EQ(PxValue(1), spanInfo.GetStartPx());
   EXPECT_EQ(PxValue(10), spanInfo.GetLengthPx());
   EXPECT_FALSE(spanInfo.IsReversedDirection());
@@ -76,7 +76,7 @@ TEST(TestControlLogic_SliderPixelSpanInfo, OpNotEqual)
 
 TEST(TestControlLogic_SliderPixelSpanInfo, Construct_Reverse)
 {
-  UI::SliderPixelSpanInfo spanInfo(PxValue(1), PxSize1D::Create(10), true);
+  const UI::SliderPixelSpanInfo spanInfo(PxValue(1), PxSize1D::Create(10), true);
   EXPECT_EQ(PxValue(1), spanInfo.GetStartPx());
   EXPECT_EQ(PxValue(10), spanInfo.GetLengthPx());
   EXPECT_TRUE(spanInfo.IsReversedDirection());
@@ -86,7 +86,7 @@ TEST(TestControlLogic_SliderPixelSpanInfo, Construct_Reverse)
 
 TEST(TestControlLogic_SliderPixelSpanInfo, CalculatePercentage)
 {
-  UI::SliderPixelSpanInfo spanInfo(PxValue(0), PxSize1D::Create(21), false);
+  const UI::SliderPixelSpanInfo spanInfo(PxValue(0), PxSize1D::Create(21), false);
 
   EXPECT_FLOAT_EQ(0 / 20.0f, spanInfo.CalculatePercentage(PxValue(0)));
   EXPECT_FLOAT_EQ(1 / 20.0f, spanInfo.CalculatePercentage(PxValue(1)));
@@ -118,7 +118,7 @@ TEST(TestControlLogic_SliderPixelSpanInfo, CalculatePercentage)
 
 TEST(TestControlLogic_SliderPixelSpanInfo, CalculatePercentage_Offset)
 {
-  UI::SliderPixelSpanInfo spanInfo(PxValue(10), PxSize1D::Create(21), false);
+  const UI::SliderPixelSpanInfo spanInfo(PxValue(10), PxSize1D::Create(21), false);
 
   EXPECT_FLOAT_EQ(0 / 20.0f, spanInfo.CalculatePercentage(PxValue(10)));
   EXPECT_FLOAT_EQ(1 / 20.0f, spanInfo.CalculatePercentage(PxValue(11)));
@@ -150,7 +150,7 @@ TEST(TestControlLogic_SliderPixelSpanInfo, CalculatePercentage_Offset)
 
 TEST(TestControlLogic_SliderPixelSpanInfo, CalculatePercentage_OutOfRange_Low)
 {
-  UI::SliderPixelSpanInfo spanInfo(PxValue(10), PxSize1D::Create(21), false);
+  const UI::SliderPixelSpanInfo spanInfo(PxValue(10), PxSize1D::Create(21), false);
 
   EXPECT_FLOAT_EQ(0.0f, spanInfo.CalculatePercentage(PxValue(9)));
   EXPECT_FLOAT_EQ(0.0f, spanInfo.CalculatePercentage(PxValue(0)));
@@ -160,7 +160,7 @@ TEST(TestControlLogic_SliderPixelSpanInfo, CalculatePercentage_OutOfRange_Low)
 
 TEST(TestControlLogic_SliderPixelSpanInfo, CalculatePercentage_OutOfRange_High)
 {
-  UI::SliderPixelSpanInfo spanInfo(PxValue(10), PxSize1D::Create(21), false);
+  const UI::SliderPixelSpanInfo spanInfo(PxValue(10), PxSize1D::Create(21), false);
 
   EXPECT_FLOAT_EQ(1.0f, spanInfo.CalculatePercentage(PxValue(31)));
   EXPECT_FLOAT_EQ(1.0f, spanInfo.CalculatePercentage(PxValue(32)));
@@ -170,7 +170,7 @@ TEST(TestControlLogic_SliderPixelSpanInfo, CalculatePercentage_OutOfRange_High)
 
 TEST(TestControlLogic_SliderPixelSpanInfo, CalcPercentageToPxPosition)
 {
-  UI::SliderPixelSpanInfo spanInfo(PxValue(10), PxSize1D::Create(21), false);
+  const UI::SliderPixelSpanInfo spanInfo(PxValue(10), PxSize1D::Create(21), false);
 
   EXPECT_EQ(PxValue(10), spanInfo.CalcPercentageToPxPosition(0 / 20.0f));
   EXPECT_EQ(PxValue(11), spanInfo.CalcPercentageToPxPosition(1 / 20.0f));
@@ -202,7 +202,7 @@ TEST(TestControlLogic_SliderPixelSpanInfo, CalcPercentageToPxPosition)
 
 TEST(TestControlLogic_SliderPixelSpanInfo, CalcPercentageToPxPosition_OutOfRange_Low)
 {
-  UI::SliderPixelSpanInfo spanInfo(PxValue(10), PxSize1D::Create(21), false);
+  const UI::SliderPixelSpanInfo spanInfo(PxValue(10), PxSize1D::Create(21), false);
 
   EXPECT_EQ(PxValue(10), spanInfo.CalcPercentageToPxPosition(-0.1f));
   EXPECT_EQ(PxValue(10), spanInfo.CalcPercentageToPxPosition(-1.0f));
@@ -212,7 +212,7 @@ TEST(TestControlLogic_SliderPixelSpanInfo, CalcPercentageToPxPosition_OutOfRange
 
 TEST(TestControlLogic_SliderPixelSpanInfo, CalcPercentageToPxPosition_OutOfRange_High)
 {
-  UI::SliderPixelSpanInfo spanInfo(PxValue(10), PxSize1D::Create(21), false);
+  const UI::SliderPixelSpanInfo spanInfo(PxValue(10), PxSize1D::Create(21), false);
 
   EXPECT_EQ(PxValue(30), spanInfo.CalcPercentageToPxPosition(1.0f));
   EXPECT_EQ(PxValue(30), spanInfo.CalcPercentageToPxPosition(1.2f));
@@ -224,7 +224,7 @@ TEST(TestControlLogic_SliderPixelSpanInfo, CalcPercentageToPxPosition_OutOfRange
 
 TEST(TestControlLogic_SliderPixelSpanInfo, CalculatePercentage_Reversed)
 {
-  UI::SliderPixelSpanInfo spanInfo(PxValue(0), PxSize1D::Create(21), true);
+  const UI::SliderPixelSpanInfo spanInfo(PxValue(0), PxSize1D::Create(21), true);
 
   EXPECT_FLOAT_EQ(20 / 20.0f, spanInfo.CalculatePercentage(PxValue(0)));
   EXPECT_FLOAT_EQ(19 / 20.0f, spanInfo.CalculatePercentage(PxValue(1)));
@@ -256,7 +256,7 @@ TEST(TestControlLogic_SliderPixelSpanInfo, CalculatePercentage_Reversed)
 
 TEST(TestControlLogic_SliderPixelSpanInfo, CalculatePercentage_Reversed_Offset)
 {
-  UI::SliderPixelSpanInfo spanInfo(PxValue(10), PxSize1D::Create(21), true);
+  const UI::SliderPixelSpanInfo spanInfo(PxValue(10), PxSize1D::Create(21), true);
 
   EXPECT_FLOAT_EQ(20 / 20.0f, spanInfo.CalculatePercentage(PxValue(10)));
   EXPECT_FLOAT_EQ(19 / 20.0f, spanInfo.CalculatePercentage(PxValue(11)));
@@ -288,7 +288,7 @@ TEST(TestControlLogic_SliderPixelSpanInfo, CalculatePercentage_Reversed_Offset)
 
 TEST(TestControlLogic_SliderPixelSpanInfo, CalculatePercentage_Reversed_OutOfRange_Low)
 {
-  UI::SliderPixelSpanInfo spanInfo(PxValue(10), PxSize1D::Create(21), true);
+  const UI::SliderPixelSpanInfo spanInfo(PxValue(10), PxSize1D::Create(21), true);
 
   EXPECT_FLOAT_EQ(1.0f, spanInfo.CalculatePercentage(PxValue(9)));
   EXPECT_FLOAT_EQ(1.0f, spanInfo.CalculatePercentage(PxValue(0)));
@@ -298,7 +298,7 @@ TEST(TestControlLogic_SliderPixelSpanInfo, CalculatePercentage_Reversed_OutOfRan
 
 TEST(TestControlLogic_SliderPixelSpanInfo, CalculatePercentage_Reversed_OutOfRange_High)
 {
-  UI::SliderPixelSpanInfo spanInfo(PxValue(10), PxSize1D::Create(21), true);
+  const UI::SliderPixelSpanInfo spanInfo(PxValue(10), PxSize1D::Create(21), true);
 
   EXPECT_FLOAT_EQ(0.0f, spanInfo.CalculatePercentage(PxValue(31)));
   EXPECT_FLOAT_EQ(0.0f, spanInfo.CalculatePercentage(PxValue(32)));
@@ -308,7 +308,7 @@ TEST(TestControlLogic_SliderPixelSpanInfo, CalculatePercentage_Reversed_OutOfRan
 
 TEST(TestControlLogic_SliderPixelSpanInfo, CalcPercentageToPxPosition_Reversed)
 {
-  UI::SliderPixelSpanInfo spanInfo(PxValue(10), PxSize1D::Create(21), true);
+  const UI::SliderPixelSpanInfo spanInfo(PxValue(10), PxSize1D::Create(21), true);
 
   EXPECT_EQ(PxValue(30), spanInfo.CalcPercentageToPxPosition(0 / 20.0f));
   EXPECT_EQ(PxValue(29), spanInfo.CalcPercentageToPxPosition(1 / 20.0f));
@@ -340,7 +340,7 @@ TEST(TestControlLogic_SliderPixelSpanInfo, CalcPercentageToPxPosition_Reversed)
 
 TEST(TestControlLogic_SliderPixelSpanInfo, CalcPercentageToPxPosition_Reversed_OutOfRange_Low)
 {
-  UI::SliderPixelSpanInfo spanInfo(PxValue(10), PxSize1D::Create(21), true);
+  const UI::SliderPixelSpanInfo spanInfo(PxValue(10), PxSize1D::Create(21), true);
 
   EXPECT_EQ(PxValue(30), spanInfo.CalcPercentageToPxPosition(-0.1f));
   EXPECT_EQ(PxValue(30), spanInfo.CalcPercentageToPxPosition(-1.0f));
@@ -350,7 +350,7 @@ TEST(TestControlLogic_SliderPixelSpanInfo, CalcPercentageToPxPosition_Reversed_O
 
 TEST(TestControlLogic_SliderPixelSpanInfo, CalcPercentageToPxPosition_Reversed_OutOfRange_High)
 {
-  UI::SliderPixelSpanInfo spanInfo(PxValue(10), PxSize1D::Create(21), true);
+  const UI::SliderPixelSpanInfo spanInfo(PxValue(10), PxSize1D::Create(21), true);
 
   EXPECT_EQ(PxValue(10), spanInfo.CalcPercentageToPxPosition(1.0f));
   EXPECT_EQ(PxValue(10), spanInfo.CalcPercentageToPxPosition(1.2f));

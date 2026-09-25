@@ -155,10 +155,10 @@ TEST(Test_ColorChannelConverter, UncheckedRawF32ToRawU16)
 {
   for (uint32_t i = 0; i <= 0xFFFFF; ++i)
   {
-    auto valueFloat = static_cast<float>(i) / static_cast<float>(0xFFFFF);
+    const auto valueFloat = static_cast<float>(i) / static_cast<float>(0xFFFFF);
     const uint16_t linearValue = ColorChannelConverter::UncheckedRawF32ToRawU16(valueFloat);
     const auto expectedValue = static_cast<int64_t>(std::round(valueFloat * static_cast<float>(0xFFFF)));
-    FSLLOG3_INFO_IF(expectedValue != linearValue, "expectedValue: {} linearValue: {} i={}", expectedValue, linearValue, i);
+    FSLLOG3_INFO_IF(std::cmp_not_equal(expectedValue, linearValue), "expectedValue: {} linearValue: {} i={}", expectedValue, linearValue, i);
     ASSERT_EQ(expectedValue, linearValue);
   }
 }
@@ -168,10 +168,10 @@ TEST(Test_ColorChannelConverter, RawF32ToRawU16)
 {
   for (uint32_t i = 0; i <= 0xFFFFF; ++i)
   {
-    auto valueFloat = static_cast<float>(i) / static_cast<float>(0xFFFFF);
+    const auto valueFloat = static_cast<float>(i) / static_cast<float>(0xFFFFF);
     const uint16_t linearValue = ColorChannelConverter::RawF32ToRawU16(valueFloat);
     const auto expectedValue = static_cast<int64_t>(std::round(valueFloat * static_cast<float>(0xFFFF)));
-    FSLLOG3_INFO_IF(expectedValue != linearValue, "expectedValue: {} linearValue: {} i={}", expectedValue, linearValue, i);
+    FSLLOG3_INFO_IF(std::cmp_not_equal(expectedValue, linearValue), "expectedValue: {} linearValue: {} i={}", expectedValue, linearValue, i);
     ASSERT_EQ(expectedValue, linearValue);
   }
 }
@@ -179,19 +179,19 @@ TEST(Test_ColorChannelConverter, RawF32ToRawU16)
 TEST(Test_ColorChannelConverter, RawF32ToRawU16_Values)
 {
   {
-    auto valueFloat = 0.0f;
+    const auto valueFloat = 0.0f;
     const uint16_t linearValue = ColorChannelConverter::RawF32ToRawU16(valueFloat);
     const auto expectedValue = static_cast<int64_t>(std::round(valueFloat * static_cast<float>(0xFFFF)));
     ASSERT_EQ(expectedValue, linearValue);
   }
   {
-    auto valueFloat = 1.0f;
+    const auto valueFloat = 1.0f;
     const uint16_t linearValue = ColorChannelConverter::RawF32ToRawU16(valueFloat);
     const auto expectedValue = static_cast<int64_t>(std::round(valueFloat * static_cast<float>(0xFFFF)));
     ASSERT_EQ(expectedValue, linearValue);
   }
   {
-    auto valueFloat = 9.0f / static_cast<float>(0xFFFFF);
+    const auto valueFloat = 9.0f / static_cast<float>(0xFFFFF);
     const uint16_t linearValue = ColorChannelConverter::RawF32ToRawU16(valueFloat);
     const auto expectedValue = static_cast<int64_t>(std::round(valueFloat * static_cast<float>(0xFFFF)));
     ASSERT_EQ(expectedValue, linearValue);

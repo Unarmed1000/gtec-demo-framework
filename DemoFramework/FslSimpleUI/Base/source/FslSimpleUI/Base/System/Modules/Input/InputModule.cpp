@@ -61,8 +61,8 @@ namespace Fsl::UI
   {
     FSL_PARAM_NOT_USED(isTouch);
 
-    auto target = m_targetLocater->TryGetMouseOverWindow(screenPositionPx);
-    auto previousTarget = m_mouseOver.Target.lock();
+    const auto target = m_targetLocater->TryGetMouseOverWindow(screenPositionPx);
+    const auto previousTarget = m_mouseOver.Target.lock();
     if (previousTarget != target)
     {
       bool handled = false;
@@ -107,7 +107,7 @@ namespace Fsl::UI
   {
     if (isTouch && state == EventTransactionState::End)
     {
-      auto previousTarget = m_mouseOver.Target.lock();
+      const auto previousTarget = m_mouseOver.Target.lock();
       if (previousTarget)
       {
         FSLLOG3_VERBOSE5("SendMouseOver end");

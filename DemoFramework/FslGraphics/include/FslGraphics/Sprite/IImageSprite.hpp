@@ -39,7 +39,7 @@ namespace Fsl
   class IImageSprite : public ISizedSprite
   {
   public:
-    virtual RenderImageInfo GetImageRenderInfo() const noexcept = 0;
+    [[nodiscard]] virtual RenderImageInfo GetImageRenderInfo() const noexcept = 0;
   };
 }
 

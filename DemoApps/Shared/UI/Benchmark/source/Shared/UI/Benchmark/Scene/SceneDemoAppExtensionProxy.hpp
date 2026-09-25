@@ -94,25 +94,25 @@ namespace Fsl
     void End(const DemoAppExtensionCallOrder callOrder) final;
 
     // From ISceneTestDemoControl
-    ReadOnlySpan<InputCommandRecord> GetRecordingAsSpan() const final;
+    [[nodiscard]] ReadOnlySpan<InputCommandRecord> GetRecordingAsSpan() const final;
     void SetRecording(ReadOnlySpan<InputCommandRecord> span, const uint32_t frameCount) final;
-    uint32_t FrameCount() const final;
-    bool IsRecording() const final;
+    [[nodiscard]] uint32_t FrameCount() const final;
+    [[nodiscard]] bool IsRecording() const final;
     void RecordBegin() final;
     void RecordEnd() final;
 
-    bool IsPlaying() const final;
-    uint32_t PlayFrameIndex() const final;
+    [[nodiscard]] bool IsPlaying() const final;
+    [[nodiscard]] uint32_t PlayFrameIndex() const final;
     void PlayBegin() final;
     void PlayEnd() final;
 
-    std::optional<DemoTime> TryGetDemoTime() const;
+    [[nodiscard]] std::optional<DemoTime> TryGetDemoTime() const;
 
   private:
     void StopAll();
-    bool AllowInputForwarding() const;
-    bool UseCustomTime() const;
-    DemoTime GetDemoTime(const DemoTime& demoTime) const;
+    [[nodiscard]] bool AllowInputForwarding() const;
+    [[nodiscard]] bool UseCustomTime() const;
+    [[nodiscard]] DemoTime GetDemoTime(const DemoTime& demoTime) const;
     void GenerateFakeInput(ReadOnlySpan<InputCommandRecord> span);
     void GenerateFakeMouseDown(const InputCommandRecord& entry);
     void GenerateFakeMouseUp(const InputCommandRecord& entry);
@@ -120,7 +120,7 @@ namespace Fsl
     void GenerateFakeMouseMove(const InputCommandRecord& entry);
     void GenerateFakeMouseClear(const InputCommandRecord& entry);
 
-    std::optional<PxPoint2> TryRewriteScreenCoordinate(const InputCommandRecord& entry) const;
+    [[nodiscard]] std::optional<PxPoint2> TryRewriteScreenCoordinate(const InputCommandRecord& entry) const;
   };
 }
 

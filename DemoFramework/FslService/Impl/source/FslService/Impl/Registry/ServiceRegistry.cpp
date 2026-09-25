@@ -50,7 +50,7 @@ namespace Fsl
 
   ServiceGroupId ServiceRegistry::CreateServiceGroup()
   {
-    std::shared_ptr<IServiceRegistry> registry = m_registry.lock();
+    const std::shared_ptr<IServiceRegistry> registry = m_registry.lock();
     if (!registry)
     {
       throw ServiceRegistryUnavailableException("");
@@ -61,7 +61,7 @@ namespace Fsl
 
   ServiceGroupId ServiceRegistry::CreateServiceGroup(const uint32_t groupNameUniqueId)
   {
-    std::shared_ptr<IServiceRegistry> registry = m_registry.lock();
+    const std::shared_ptr<IServiceRegistry> registry = m_registry.lock();
     if (!registry)
     {
       throw ServiceRegistryUnavailableException("");
@@ -72,7 +72,7 @@ namespace Fsl
 
   ServiceGroupId ServiceRegistry::GetMainServiceGroup() const
   {
-    std::shared_ptr<IServiceRegistry> registry = m_registry.lock();
+    const std::shared_ptr<IServiceRegistry> registry = m_registry.lock();
     if (!registry)
     {
       throw ServiceRegistryUnavailableException("");
@@ -83,7 +83,7 @@ namespace Fsl
 
   ServiceGroupId ServiceRegistry::GetServiceGroupByName(const uint32_t groupNameUniqueId) const
   {
-    std::shared_ptr<IServiceRegistry> registry = m_registry.lock();
+    const std::shared_ptr<IServiceRegistry> registry = m_registry.lock();
     if (!registry)
     {
       throw ServiceRegistryUnavailableException("");
@@ -94,19 +94,19 @@ namespace Fsl
 
   void ServiceRegistry::SetServiceGroupName(const ServiceGroupId& serviceGroupId, const uint32_t groupNameUniqueId)
   {
-    std::shared_ptr<IServiceRegistry> registry = m_registry.lock();
+    const std::shared_ptr<IServiceRegistry> registry = m_registry.lock();
     if (!registry)
     {
       throw ServiceRegistryUnavailableException("");
     }
-    return registry->SetServiceGroupName(serviceGroupId, groupNameUniqueId);
+    registry->SetServiceGroupName(serviceGroupId, groupNameUniqueId);
   }
 
 
   void ServiceRegistry::Register(const std::shared_ptr<IThreadLocalSingletonServiceFactory>& factory, const Priority& priority,
                                  const ServiceGroupId& serviceGroup)
   {
-    std::shared_ptr<IServiceRegistry> registry = m_registry.lock();
+    const std::shared_ptr<IServiceRegistry> registry = m_registry.lock();
     if (!registry)
     {
       throw ServiceRegistryUnavailableException("");
@@ -117,7 +117,7 @@ namespace Fsl
 
   void ServiceRegistry::Register(const std::shared_ptr<IThreadSafeSynchronousServiceFactory>& factory, const Priority& priority)
   {
-    std::shared_ptr<IServiceRegistry> registry = m_registry.lock();
+    const std::shared_ptr<IServiceRegistry> registry = m_registry.lock();
     if (!registry)
     {
       throw ServiceRegistryUnavailableException("");
@@ -128,7 +128,7 @@ namespace Fsl
 
   void ServiceRegistry::Register(const AsynchronousServiceFactory& factory, const Priority& priority, const ServiceGroupId& serviceGroup)
   {
-    std::shared_ptr<IServiceRegistry> registry = m_registry.lock();
+    const std::shared_ptr<IServiceRegistry> registry = m_registry.lock();
     if (!registry)
     {
       throw ServiceRegistryUnavailableException("");

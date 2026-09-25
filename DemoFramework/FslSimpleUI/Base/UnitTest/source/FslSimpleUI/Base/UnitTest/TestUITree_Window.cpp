@@ -39,10 +39,10 @@ using namespace Fsl;
 
 TEST_F(TestUITree_Window, Window_Add)
 {
-  auto window = std::make_shared<UI::BaseWindowTest>(m_windowContext);
+  const auto window = std::make_shared<UI::BaseWindowTest>(m_windowContext);
   m_tree->Add(window);
 
-  auto callCount = window->GetCallCount();
+  const auto callCount = window->GetCallCount();
 
   CheckZero(callCount, WindowMethod::All);
 }
@@ -54,11 +54,11 @@ TEST_F(TestUITree_Window, AddThenDispose)
 
   ForceShutdown();
 
-  auto callCount = window->GetCallCount();
+  const auto callCount = window->GetCallCount();
   CheckZero(callCount, WindowMethod::All);
 
   // Release the 'last' reference to the window and check that it was indeed released
-  std::weak_ptr<UI::BaseWindowTest> weakWindow = window;
+  const std::weak_ptr<UI::BaseWindowTest> weakWindow = window;
   window.reset();
 
   // Since the UI tree has been shutdown and we release our own reference to the window the weak pointer should be expired.
@@ -69,10 +69,10 @@ TEST_F(TestUITree_Window, AddThenDispose)
 
 TEST_F(TestUITree_Window, Window_Add_WinInit)
 {
-  auto window = std::make_shared<UI::BaseWindowTest>(m_windowContext, UI::WindowFlags::WinInit);
+  const auto window = std::make_shared<UI::BaseWindowTest>(m_windowContext, UI::WindowFlags::WinInit);
   m_tree->Add(window);
 
-  auto callCount = window->GetCallCount();
+  const auto callCount = window->GetCallCount();
 
   ASSERT_EQ(1u, callCount.WinInit);
   CheckZeroExcept(callCount, WindowMethod::WinInit);
@@ -81,11 +81,11 @@ TEST_F(TestUITree_Window, Window_Add_WinInit)
 
 TEST_F(TestUITree_Window, Window_Update)
 {
-  auto window = std::make_shared<UI::BaseWindowTest>(m_windowContext);
+  const auto window = std::make_shared<UI::BaseWindowTest>(m_windowContext);
   m_tree->Add(window);
   m_tree->Update(TimeSpan(0));
 
-  auto callCount = window->GetCallCount();
+  const auto callCount = window->GetCallCount();
 
   // ASSERT_EQ(1u, callCount.WinGetContentRect);
   ASSERT_EQ(1u, callCount.ArrangeOverride);
@@ -97,11 +97,11 @@ TEST_F(TestUITree_Window, Window_Update)
 
 TEST_F(TestUITree_Window, Window_Update_UpdateEnabled)
 {
-  auto window = std::make_shared<UI::BaseWindowTest>(m_windowContext, UI::WindowFlags::UpdateEnabled);
+  const auto window = std::make_shared<UI::BaseWindowTest>(m_windowContext, UI::WindowFlags::UpdateEnabled);
   m_tree->Add(window);
   m_tree->Update(TimeSpan(0));
 
-  auto callCount = window->GetCallCount();
+  const auto callCount = window->GetCallCount();
 
   // ASSERT_EQ(1u, callCount.WinGetContentRect);
   ASSERT_EQ(1u, callCount.WinUpdate);
@@ -115,11 +115,11 @@ TEST_F(TestUITree_Window, Window_Update_UpdateEnabled)
 // As resolve is disabled by default we dont expect it to be called on a newly added window
 TEST_F(TestUITree_Window, Window_Resolve)
 {
-  auto window = std::make_shared<UI::BaseWindowTest>(m_windowContext);
+  const auto window = std::make_shared<UI::BaseWindowTest>(m_windowContext);
   m_tree->Add(window);
   m_tree->Update(TimeSpan(0));
 
-  auto callCount = window->GetCallCount();
+  const auto callCount = window->GetCallCount();
 
   // ASSERT_EQ(1u, callCount.WinGetContentRect);
   ASSERT_EQ(1u, callCount.ArrangeOverride);
@@ -132,11 +132,11 @@ TEST_F(TestUITree_Window, Window_Resolve)
 // As resolve was enabled for the new window it should be called
 TEST_F(TestUITree_Window, Window_Resolve_ResolveEnabled)
 {
-  auto window = std::make_shared<UI::BaseWindowTest>(m_windowContext, UI::WindowFlags::ResolveEnabled);
+  const auto window = std::make_shared<UI::BaseWindowTest>(m_windowContext, UI::WindowFlags::ResolveEnabled);
   m_tree->Add(window);
   m_tree->Update(TimeSpan(0));
 
-  auto callCount = window->GetCallCount();
+  const auto callCount = window->GetCallCount();
 
   // ASSERT_EQ(1u, callCount.WinGetContentRect);
   ASSERT_EQ(1u, callCount.WinResolve);
@@ -148,7 +148,7 @@ TEST_F(TestUITree_Window, Window_Resolve_ResolveEnabled)
 
 TEST_F(TestUITree_Window, Window_Update2X_LayoutCacheCheck)
 {
-  auto window = std::make_shared<UI::BaseWindowTest>(m_windowContext);
+  const auto window = std::make_shared<UI::BaseWindowTest>(m_windowContext);
   m_tree->Add(window);
   m_tree->Update(TimeSpan(0));
 
@@ -178,12 +178,12 @@ TEST_F(TestUITree_Window, Window_Draw)
   // Update must be called before draw
   const TimeSpan timeSpan(0);
 
-  auto window = std::make_shared<UI::BaseWindowTest>(m_windowContext);
+  const auto window = std::make_shared<UI::BaseWindowTest>(m_windowContext);
   m_tree->Add(window);
   m_tree->Update(timeSpan);
   m_tree->Draw(this->m_buffer);
 
-  auto callCount = window->GetCallCount();
+  const auto callCount = window->GetCallCount();
 
   // ASSERT_EQ(1u, callCount.WinGetContentRect);
   // As draw isn't enabled by default we expect zero
@@ -200,12 +200,12 @@ TEST_F(TestUITree_Window, Window_Draw_DrawEnabled)
   // Update must be called before draw
   const TimeSpan timeSpan(0);
 
-  auto window = std::make_shared<UI::BaseWindowTest>(m_windowContext, UI::WindowFlags::DrawEnabled);
+  const auto window = std::make_shared<UI::BaseWindowTest>(m_windowContext, UI::WindowFlags::DrawEnabled);
   m_tree->Add(window);
   m_tree->Update(timeSpan);
   m_tree->Draw(this->m_buffer);
 
-  auto callCount = window->GetCallCount();
+  const auto callCount = window->GetCallCount();
 
   // ASSERT_EQ(1u, callCount.WinGetContentRect);
   // We enabled the draw flag so we should get a draw call
@@ -222,7 +222,7 @@ TEST_F(TestUITree_Window, Window_Draw2x_DrawEnabled)
   // Update must be called before draw
   const TimeSpan timeSpan(0);
 
-  auto window = std::make_shared<UI::BaseWindowTest>(m_windowContext, UI::WindowFlags::DrawEnabled);
+  const auto window = std::make_shared<UI::BaseWindowTest>(m_windowContext, UI::WindowFlags::DrawEnabled);
   m_tree->Add(window);
   m_tree->Update(timeSpan);
   m_tree->Draw(this->m_buffer);

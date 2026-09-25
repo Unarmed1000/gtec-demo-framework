@@ -240,8 +240,8 @@ namespace Fsl
       m_testAppHost->StopTestApp();
       TestAppFactory appFactory(AppRenderMethod::FlexImBatch);
 
-      UIDemoAppMaterialCreateInfo materialCreateInfo(false, true);
-      UIDemoAppMaterialConfig materialConfig(useSdf, depthBuffer);
+      const UIDemoAppMaterialCreateInfo materialCreateInfo(false, true);
+      const UIDemoAppMaterialConfig materialConfig(useSdf, depthBuffer);
       m_testAppHost->StartTestApp(appFactory, materialCreateInfo, materialConfig);
     }
   }
@@ -254,48 +254,48 @@ namespace Fsl
   RecordScene::UIRecord RecordScene::CreateUI(UI::Theme::IThemeControlFactory& controlFactory)
   {
     const UI::Theme::IThemeResources& resources = controlFactory.GetResources();
-    auto context = controlFactory.GetContext();
+    const auto context = controlFactory.GetContext();
 
-    auto buttonBack = controlFactory.CreateFloatingButton(UI::Theme::FloatingButtonType::Back);
+    const auto buttonBack = controlFactory.CreateFloatingButton(UI::Theme::FloatingButtonType::Back);
 
-    auto buttonRecord = controlFactory.CreateImageButton(resources.GetIconSprite(UI::Theme::IconType::MediaRecord));
+    const auto buttonRecord = controlFactory.CreateImageButton(resources.GetIconSprite(UI::Theme::IconType::MediaRecord));
     buttonRecord->SetAlignmentX(UI::ItemAlignment::Stretch);
     buttonRecord->SetAlignmentY(UI::ItemAlignment::Stretch);
-    auto buttonStop = controlFactory.CreateImageButton(resources.GetIconSprite(UI::Theme::IconType::MediaStop));
+    const auto buttonStop = controlFactory.CreateImageButton(resources.GetIconSprite(UI::Theme::IconType::MediaStop));
     buttonStop->SetAlignmentX(UI::ItemAlignment::Stretch);
     buttonStop->SetAlignmentY(UI::ItemAlignment::Stretch);
-    auto buttonPlay = controlFactory.CreateImageButton(resources.GetIconSprite(UI::Theme::IconType::MediaPlay));
+    const auto buttonPlay = controlFactory.CreateImageButton(resources.GetIconSprite(UI::Theme::IconType::MediaPlay));
     buttonPlay->SetAlignmentX(UI::ItemAlignment::Stretch);
     buttonPlay->SetAlignmentY(UI::ItemAlignment::Stretch);
     buttonPlay->SetEnabled(false);
 
 
-    auto frameLabel = controlFactory.CreateLabel("Frame:");
-    auto frameCount = controlFactory.CreateFmtValueLabel(static_cast<uint32_t>(0), "{}");
+    const auto frameLabel = controlFactory.CreateLabel("Frame:");
+    const auto frameCount = controlFactory.CreateFmtValueLabel(static_cast<uint32_t>(0), "{}");
     frameCount->SetAlignmentX(UI::ItemAlignment::Far);
 
-    auto infoLayout = std::make_shared<UI::ComplexStackLayout>(context);
+    const auto infoLayout = std::make_shared<UI::ComplexStackLayout>(context);
     infoLayout->SetOrientation(UI::LayoutOrientation::Horizontal);
     infoLayout->SetAlignmentX(UI::ItemAlignment::Stretch);
     infoLayout->AddChild(frameLabel, UI::LayoutLength(UI::LayoutUnitType::Auto));
     infoLayout->AddChild(frameCount, UI::LayoutLength(UI::LayoutUnitType::Star, 1.0f));
 
-    auto layout = std::make_shared<UI::UniformStackLayout>(context);
+    const auto layout = std::make_shared<UI::UniformStackLayout>(context);
     layout->SetOrientation(UI::LayoutOrientation::Horizontal);
     layout->AddChild(buttonRecord);
     layout->AddChild(buttonStop);
     layout->AddChild(buttonPlay);
 
-    auto stackLayout = std::make_shared<UI::StackLayout>(context);
+    const auto stackLayout = std::make_shared<UI::StackLayout>(context);
     stackLayout->SetOrientation(UI::LayoutOrientation::Vertical);
     stackLayout->AddChild(infoLayout);
     stackLayout->AddChild(layout);
 
-    auto background = controlFactory.CreateBackgroundWindow(UI::Theme::WindowType::DialogTransparent, stackLayout);
+    const auto background = controlFactory.CreateBackgroundWindow(UI::Theme::WindowType::DialogTransparent, stackLayout);
     background->SetAlignmentX(UI::ItemAlignment::Far);
     background->SetAlignmentY(UI::ItemAlignment::Far);
 
-    auto mainLayout = std::make_shared<UI::FillLayout>(context);
+    const auto mainLayout = std::make_shared<UI::FillLayout>(context);
     mainLayout->AddChild(buttonBack);
     mainLayout->AddChild(background);
 
@@ -388,7 +388,8 @@ namespace Fsl
   {
     const auto& demoControl = GetDemoControl();
     const auto windowMetrics = GetwindowMetrics();
-    AppInputCommandList commandList(windowMetrics.GetSizePx(), windowMetrics.DensityDpi, demoControl.GetRecordingAsSpan(), demoControl.FrameCount());
+    const AppInputCommandList commandList(windowMetrics.GetSizePx(), windowMetrics.DensityDpi, demoControl.GetRecordingAsSpan(),
+                                          demoControl.FrameCount());
     return m_inputRecordingManager->TrySetRecording(commandList);
   }
 

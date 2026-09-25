@@ -43,7 +43,7 @@ namespace
 
 TEST(TestMathDp_DpValueU, Construct_Default)
 {
-  DpValueU value;
+  const DpValueU value;
 
   EXPECT_EQ(DpValueU(), value);
   EXPECT_EQ(0u, value.Value);
@@ -52,7 +52,7 @@ TEST(TestMathDp_DpValueU, Construct_Default)
 TEST(TestMathDp_DpValueU, Construct)
 {
   constexpr const uint32_t TestValue = 3;
-  DpValueU value(TestValue);
+  const DpValueU value(TestValue);
 
   EXPECT_EQ(TestValue, value.Value);
 }

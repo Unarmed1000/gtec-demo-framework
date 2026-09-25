@@ -46,7 +46,7 @@ namespace Fsl
   // Configure the demo environment to run this demo app in a OpenGLES3.1 host environment
   void ConfigureDemoAppEnvironment(HostDemoAppSetup& rSetup)
   {
-    DemoAppHostConfigEGL config(g_eglConfigAttribs.data());
+    const DemoAppHostConfigEGL config(g_eglConfigAttribs.data());
 
     DemoAppRegister::GLES3::Register<ParticleSystem, OptionParser>(rSetup, "GLES3.ParticleSystem", config, OpenGLESMinorVersion(1));
   }

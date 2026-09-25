@@ -59,7 +59,7 @@ namespace Fsl::Vulkan
     inline void CmdPushConstants(const VkCommandBuffer hCommandBuffer, const VkPipelineLayout pipelineLayout,
                                  const BasicMaterialVariables& materialVariables, const NativeGraphicsMaterialFactory::VariableInfo& varInfo)
     {
-      BasicMaterialVariable var = materialVariables.GetBasicMaterialVariable(varInfo.VariableElement.Usage, varInfo.VariableElement.UsageIndex);
+      const BasicMaterialVariable var = materialVariables.GetBasicMaterialVariable(varInfo.VariableElement.Usage, varInfo.VariableElement.UsageIndex);
       vkCmdPushConstants(hCommandBuffer, pipelineLayout, varInfo.ShaderStageFlags, varInfo.VariableElement.Offset, varInfo.ByteSize, var.Data);
     }
   }
@@ -201,7 +201,7 @@ namespace Fsl::Vulkan
                                             const Texture2DFilterHint filterHint, const TextureFlags textureFlags)
   {
     // The texture factory handles the disposed case
-    return m_textureFactory.SetTextureData(hTexture, texture, filterHint, textureFlags);
+    m_textureFactory.SetTextureData(hTexture, texture, filterHint, textureFlags);
   }
 
 

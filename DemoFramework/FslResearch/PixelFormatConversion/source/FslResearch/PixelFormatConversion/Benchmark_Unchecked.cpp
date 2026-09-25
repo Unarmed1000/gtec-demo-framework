@@ -38,6 +38,8 @@
 
 using namespace Fsl;
 
+// The benchmark loop variable of 'for (auto _ : state)' is never read by design
+// NOLINTBEGIN(clang-analyzer-deadcode.DeadStores)
 namespace
 {
   TightBitmap CreateSrcBitmap(const PixelFormat pixelFormat)
@@ -57,7 +59,7 @@ namespace
     TightBitmap srcBitmap(CreateSrcBitmap(PixelFormat::R8G8B8_SRGB));
     TightBitmap dstBitmap(srcBitmap.GetSize(), PixelFormat::R8G8B8_SRGB, BitmapOrigin::UpperLeft);
 
-    for (auto _ : state)
+    for (const auto _ : state)
     {
       // This code gets timed
       UncheckedRawBitmapTransformer::TransformChannelsRAWNoMemoryOverlap<uint8_t, uint8_t, 3>(dstBitmap.AsRawBitmap(), srcBitmap.AsRawBitmap(),
@@ -72,7 +74,7 @@ namespace
     TightBitmap srcBitmap(CreateSrcBitmap(PixelFormat::R8G8B8_SRGB));
     TightBitmap dstBitmap(srcBitmap.GetSize(), PixelFormat::R8G8B8_SRGB, BitmapOrigin::UpperLeft);
 
-    for (auto _ : state)
+    for (const auto _ : state)
     {
       // This code gets timed
       UncheckedRawBitmapTransformer::TransformThreeChannelsRAW<uint8_t, uint8_t>(dstBitmap.AsRawBitmap(), srcBitmap.AsRawBitmap(), TestOp);
@@ -87,7 +89,7 @@ namespace
     TightBitmap srcBitmap(CreateSrcBitmap(PixelFormat::R8G8B8A8_SRGB));
     TightBitmap dstBitmap(srcBitmap.GetSize(), PixelFormat::R8G8B8A8_SRGB, BitmapOrigin::UpperLeft);
 
-    for (auto _ : state)
+    for (const auto _ : state)
     {
       // This code gets timed
       UncheckedRawBitmapTransformer::TransformChannelsRAWNoMemoryOverlap<uint8_t, uint8_t, 4>(dstBitmap.AsRawBitmap(), srcBitmap.AsRawBitmap(),
@@ -102,7 +104,7 @@ namespace
     TightBitmap srcBitmap(CreateSrcBitmap(PixelFormat::R8G8B8A8_SRGB));
     TightBitmap dstBitmap(srcBitmap.GetSize(), PixelFormat::R8G8B8A8_SRGB, BitmapOrigin::UpperLeft);
 
-    for (auto _ : state)
+    for (const auto _ : state)
     {
       // This code gets timed
       UncheckedRawBitmapTransformer::TransformFourChannelsRAW<uint8_t, uint8_t>(dstBitmap.AsRawBitmap(), srcBitmap.AsRawBitmap(), TestOp);
@@ -117,7 +119,7 @@ namespace
     TightBitmap srcBitmap(CreateSrcBitmap(PixelFormat::R8G8B8_SRGB));
     TightBitmap dstBitmap(srcBitmap.GetSize(), PixelFormat::R16G16B16_UNORM, BitmapOrigin::UpperLeft);
 
-    for (auto _ : state)
+    for (const auto _ : state)
     {
       // This code gets timed
       FslGraphics2D::RawBitmapConverterFunctions::UncheckedR8G8B8SrgbToR16G16B16UNorm(dstBitmap.AsRawBitmap(), srcBitmap.AsRawBitmap());
@@ -131,7 +133,7 @@ namespace
     TightBitmap srcBitmap(CreateSrcBitmap(PixelFormat::R8G8B8A8_SRGB));
     TightBitmap dstBitmap(srcBitmap.GetSize(), PixelFormat::R16G16B16A16_UNORM, BitmapOrigin::UpperLeft);
 
-    for (auto _ : state)
+    for (const auto _ : state)
     {
       // This code gets timed
       FslGraphics2D::RawBitmapConverterFunctions::UncheckedR8G8B8A8SrgbToR16G16B16A16UNorm(dstBitmap.AsRawBitmap(), srcBitmap.AsRawBitmap());
@@ -146,7 +148,7 @@ namespace
     TightBitmap srcBitmap(CreateSrcBitmap(PixelFormat::R8G8B8_SRGB));
     TightBitmap dstBitmap(srcBitmap.GetSize(), PixelFormat::R16G16B16_SFLOAT, BitmapOrigin::UpperLeft);
 
-    for (auto _ : state)
+    for (const auto _ : state)
     {
       // This code gets timed
       FslGraphics2D::RawBitmapConverterFunctions::UncheckedR8G8B8SrgbToR16G16B16Float(dstBitmap.AsRawBitmap(), srcBitmap.AsRawBitmap());
@@ -160,7 +162,7 @@ namespace
     TightBitmap srcBitmap(CreateSrcBitmap(PixelFormat::R8G8B8A8_SRGB));
     TightBitmap dstBitmap(srcBitmap.GetSize(), PixelFormat::R16G16B16A16_SFLOAT, BitmapOrigin::UpperLeft);
 
-    for (auto _ : state)
+    for (const auto _ : state)
     {
       // This code gets timed
       FslGraphics2D::RawBitmapConverterFunctions::UncheckedR8G8B8A8SrgbToR16G16B16A16Float(dstBitmap.AsRawBitmap(), srcBitmap.AsRawBitmap());
@@ -175,7 +177,7 @@ namespace
     TightBitmap srcBitmap(CreateSrcBitmap(PixelFormat::R8G8B8_SRGB));
     TightBitmap dstBitmap(srcBitmap.GetSize(), PixelFormat::R32G32B32_SFLOAT, BitmapOrigin::UpperLeft);
 
-    for (auto _ : state)
+    for (const auto _ : state)
     {
       // This code gets timed
       FslGraphics2D::RawBitmapConverterFunctions::UncheckedR8G8B8SrgbToR32G32B32Float(dstBitmap.AsRawBitmap(), srcBitmap.AsRawBitmap());
@@ -189,7 +191,7 @@ namespace
     TightBitmap srcBitmap(CreateSrcBitmap(PixelFormat::R8G8B8A8_SRGB));
     TightBitmap dstBitmap(srcBitmap.GetSize(), PixelFormat::R32G32B32A32_SFLOAT, BitmapOrigin::UpperLeft);
 
-    for (auto _ : state)
+    for (const auto _ : state)
     {
       // This code gets timed
       FslGraphics2D::RawBitmapConverterFunctions::UncheckedR8G8B8A8SrgbToR32G32B32A32Float(dstBitmap.AsRawBitmap(), srcBitmap.AsRawBitmap());
@@ -204,7 +206,7 @@ namespace
     TightBitmap srcBitmap(CreateSrcBitmap(PixelFormat::R16G16B16_SFLOAT));
     TightBitmap dstBitmap(srcBitmap.GetSize(), PixelFormat::R32G32B32_SFLOAT, BitmapOrigin::UpperLeft);
 
-    for (auto _ : state)
+    for (const auto _ : state)
     {
       // This code gets timed
       FslGraphics2D::RawBitmapConverterFunctions::UncheckedR16G16B16FloatToR32G32B32Float(dstBitmap.AsRawBitmap(), srcBitmap.AsRawBitmap());
@@ -217,7 +219,7 @@ namespace
     TightBitmap srcBitmap(CreateSrcBitmap(PixelFormat::R32G32B32_SFLOAT));
     TightBitmap dstBitmap(srcBitmap.GetSize(), PixelFormat::R16G16B16_SFLOAT, BitmapOrigin::UpperLeft);
 
-    for (auto _ : state)
+    for (const auto _ : state)
     {
       // This code gets timed
       FslGraphics2D::RawBitmapConverterFunctions::UncheckedR32G32B32FloatToR16G16B16Float(dstBitmap.AsRawBitmap(), srcBitmap.AsRawBitmap());
@@ -232,7 +234,7 @@ namespace
     TightBitmap srcBitmap(CreateSrcBitmap(PixelFormat::R16G16B16A16_SFLOAT));
     TightBitmap dstBitmap(srcBitmap.GetSize(), PixelFormat::R32G32B32A32_SFLOAT, BitmapOrigin::UpperLeft);
 
-    for (auto _ : state)
+    for (const auto _ : state)
     {
       // This code gets timed
       FslGraphics2D::RawBitmapConverterFunctions::UncheckedR16G16B16A16FloatToR32G32B32A32Float(dstBitmap.AsRawBitmap(), srcBitmap.AsRawBitmap());
@@ -245,7 +247,7 @@ namespace
     TightBitmap srcBitmap(CreateSrcBitmap(PixelFormat::R32G32B32A32_SFLOAT));
     TightBitmap dstBitmap(srcBitmap.GetSize(), PixelFormat::R16G16B16A16_SFLOAT, BitmapOrigin::UpperLeft);
 
-    for (auto _ : state)
+    for (const auto _ : state)
     {
       // This code gets timed
       FslGraphics2D::RawBitmapConverterFunctions::UncheckedR32G32B32A32FloatToR16G16B16A16Float(dstBitmap.AsRawBitmap(), srcBitmap.AsRawBitmap());
@@ -260,7 +262,7 @@ namespace
     TightBitmap srcBitmap(CreateSrcBitmap(PixelFormat::R32G32B32A32_SFLOAT));
     TightBitmap dstBitmap(srcBitmap.GetSize(), PixelFormat::R16G16B16A16_UNORM, BitmapOrigin::UpperLeft);
 
-    for (auto _ : state)
+    for (const auto _ : state)
     {
       // This code gets timed
       FslGraphics2D::RawBitmapConverterFunctions::UncheckedR32G32B32A32FloatToR16G16B16A16UNorm(dstBitmap.AsRawBitmap(), srcBitmap.AsRawBitmap());
@@ -272,7 +274,7 @@ namespace
     TightBitmap srcBitmap(CreateSrcBitmap(PixelFormat::R16G16B16A16_UNORM));
     TightBitmap dstBitmap(srcBitmap.GetSize(), PixelFormat::R32G32B32A32_SFLOAT, BitmapOrigin::UpperLeft);
 
-    for (auto _ : state)
+    for (const auto _ : state)
     {
       // This code gets timed
       FslGraphics2D::RawBitmapConverterFunctions::UncheckedR16G16B16A16UNormToR32G32B32A32Float(dstBitmap.AsRawBitmap(), srcBitmap.AsRawBitmap());
@@ -285,7 +287,7 @@ namespace
     TightBitmap srcBitmap(CreateSrcBitmap(PixelFormat::R32G32B32_SFLOAT));
     TightBitmap dstBitmap(srcBitmap.GetSize(), PixelFormat::R16G16B16_UNORM, BitmapOrigin::UpperLeft);
 
-    for (auto _ : state)
+    for (const auto _ : state)
     {
       // This code gets timed
       FslGraphics2D::RawBitmapConverterFunctions::UncheckedR32G32B32FloatToR16G16B16UNorm(dstBitmap.AsRawBitmap(), srcBitmap.AsRawBitmap());
@@ -297,7 +299,7 @@ namespace
     TightBitmap srcBitmap(CreateSrcBitmap(PixelFormat::R16G16B16_UNORM));
     TightBitmap dstBitmap(srcBitmap.GetSize(), PixelFormat::R32G32B32_SFLOAT, BitmapOrigin::UpperLeft);
 
-    for (auto _ : state)
+    for (const auto _ : state)
     {
       // This code gets timed
       FslGraphics2D::RawBitmapConverterFunctions::UncheckedR16G16B16UNormToR32G32B32Float(dstBitmap.AsRawBitmap(), srcBitmap.AsRawBitmap());
@@ -336,3 +338,4 @@ BENCHMARK(UncheckedR32G32B32A32FloatToR16G16B16A16UNorm);
 
 BENCHMARK(UncheckedR16G16B16UNormToR32G32B32Float);
 BENCHMARK(UncheckedR32G32B32FloatToR16G16B16UNorm);
+// NOLINTEND(clang-analyzer-deadcode.DeadStores)

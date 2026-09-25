@@ -101,38 +101,38 @@ namespace Fsl::Vulkan
 
 
     //! @brief Get the associated 'Device'
-    VkDevice GetDevice() const noexcept
+    [[nodiscard]] VkDevice GetDevice() const noexcept
     {
       return m_swapchain.GetDevice();
     }
 
     //! @brief Get the associated resource handle
-    VkSwapchainKHR Get() const noexcept
+    [[nodiscard]] VkSwapchainKHR Get() const noexcept
     {
       return m_swapchain.Get();
     }
 
     //! @brief Check if this object contains a valid resource
-    bool IsValid() const noexcept
+    [[nodiscard]] bool IsValid() const noexcept
     {
       return m_swapchain.IsValid();
     }
 
     void RefreshImages();
 
-    uint32_t GetImageCount() const noexcept;
+    [[nodiscard]] uint32_t GetImageCount() const noexcept;
 
     //! @brief Access the image at the given index
     VkImage operator[](const std::size_t arrayIndex) const;
 
-    VkImageUsageFlags GetImageUsageFlags() const noexcept
+    [[nodiscard]] VkImageUsageFlags GetImageUsageFlags() const noexcept
     {
       return m_imageUsageFlags;
     }
 
-    VkFormat GetImageFormat() const noexcept;
+    [[nodiscard]] VkFormat GetImageFormat() const noexcept;
 
-    VkExtent2D GetImageExtent() const noexcept;
+    [[nodiscard]] VkExtent2D GetImageExtent() const noexcept;
 
     void CmdPipelineBarrier(const VkCommandBuffer cmdBuffer, const VkAccessFlags dstAccessMask, const VkImageLayout newLayout,
                             const VkPipelineStageFlags srcStageMask, const VkPipelineStageFlags dstStageMask, const uint32_t imageIndex);

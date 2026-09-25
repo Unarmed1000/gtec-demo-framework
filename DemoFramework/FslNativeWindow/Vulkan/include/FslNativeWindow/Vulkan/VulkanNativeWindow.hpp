@@ -52,21 +52,21 @@ namespace Fsl
 
     // Done this way because of a "inherit via dominance warning on visual studio'
     // using PlatformNativeWindowSystem::GetCapabilityFlags;
-    NativeWindowCapabilityFlags GetCapabilityFlags() const final
+    [[nodiscard]] NativeWindowCapabilityFlags GetCapabilityFlags() const final
     {
       return PlatformNativeWindow::GetCapabilityFlags();
     }
 
     // Done this way because of a "inherit via dominance warning on visual studio'
     // using PlatformNativeWindowSystem::GetWindowMetrics;
-    NativeWindowMetrics GetWindowMetrics() const final
+    [[nodiscard]] NativeWindowMetrics GetWindowMetrics() const final
     {
       return PlatformNativeWindow::GetWindowMetrics();
     }
 
     // Done this way because of a "inherit via dominance warning on visual studio'
     // using PlatformNativeWindowSystem::TryGetDisplayInfo;
-    NativeWindowDisplayInfo TryGetDisplayInfo() const final
+    [[nodiscard]] NativeWindowDisplayInfo TryGetDisplayInfo() const final
     {
       return PlatformNativeWindow::TryGetDisplayInfo();
     }
@@ -100,8 +100,8 @@ namespace Fsl
     }
 
     // IVulkanNativeWindow
-    PlatformNativeWindowType GetWindowType() const final;
-    VkSurfaceKHR GetVulkanSurface() const final;
+    [[nodiscard]] PlatformNativeWindowType GetWindowType() const final;
+    [[nodiscard]] VkSurfaceKHR GetVulkanSurface() const final;
     bool TryGetActualSize(PxPoint2& rSize) const final;
   };
 }

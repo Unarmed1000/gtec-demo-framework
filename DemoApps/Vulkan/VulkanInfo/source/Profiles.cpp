@@ -89,7 +89,7 @@ namespace Fsl
     }
 
     rWriter.Print("Profiles:");
-    std::vector<VpProfileProperties> profiles = EnumerateProfiles(m_capabilities);
+    const std::vector<VpProfileProperties> profiles = EnumerateProfiles(m_capabilities);
     for (const auto& entry : profiles)
     {
       rWriter.Print("- {}: {}", entry.profileName, entry.specVersion);

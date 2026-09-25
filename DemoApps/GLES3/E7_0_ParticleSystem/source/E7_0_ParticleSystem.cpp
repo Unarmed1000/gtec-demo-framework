@@ -91,7 +91,7 @@ namespace Fsl
 
     for (int i = 0; i < NUM_PARTICLES; i++)
     {
-      float* particleData = &m_userData.particleData[i * PARTICLE_SIZE];
+      float* particleData = &m_userData.particleData[static_cast<std::ptrdiff_t>(i) * PARTICLE_SIZE];
 
       // Lifetime of particle
       (*particleData++) = (static_cast<float>(rand() % 10000) / 10000.0f);
@@ -154,7 +154,7 @@ namespace Fsl
   {
     FSL_PARAM_NOT_USED(frameInfo);
 
-    PxSize2D sizePx = GetWindowSizePx();
+    const PxSize2D sizePx = GetWindowSizePx();
 
     glViewport(0, 0, sizePx.RawWidth(), sizePx.RawHeight());
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);

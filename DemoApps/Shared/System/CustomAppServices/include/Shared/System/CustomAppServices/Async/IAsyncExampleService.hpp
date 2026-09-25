@@ -42,7 +42,7 @@ namespace Fsl
     virtual ~IAsyncExampleService() = default;
 
     //! Really simple and unrealistic example of a service that does "a + b" and returns the result.
-    virtual std::future<int32_t> AddAsync(const int32_t a, const int32_t b) const = 0;
+    [[nodiscard]] virtual std::future<int32_t> AddAsync(const int32_t a, const int32_t b) const = 0;
   };
 }
 

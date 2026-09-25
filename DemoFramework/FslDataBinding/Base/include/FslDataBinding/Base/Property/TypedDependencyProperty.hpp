@@ -275,7 +275,8 @@ namespace Fsl::DataBinding
                                                     const DependencyPropertyDefinition& thisPropertyDef)
     {
       assert(pOwnerThis != nullptr);
-      auto typedMethods = std::dynamic_pointer_cast<Internal::TypedDependencyPropertyMethodsDefinition<StringViewLite>>(thisPropertyDef.GetMethods());
+      const auto typedMethods =
+        std::dynamic_pointer_cast<Internal::TypedDependencyPropertyMethodsDefinition<StringViewLite>>(thisPropertyDef.GetMethods());
       if (!typedMethods)
       {
         throw DependencyPropertyDefinitionException(

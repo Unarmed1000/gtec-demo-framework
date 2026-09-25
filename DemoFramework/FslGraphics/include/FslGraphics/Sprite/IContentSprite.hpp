@@ -40,8 +40,8 @@ namespace Fsl
   class IContentSprite : public ISizedSprite
   {
   public:
-    virtual const PxThickness& GetRenderContentMarginPx() const noexcept = 0;
-    virtual RenderContentInfo GetRenderContentInfo() const noexcept = 0;
+    [[nodiscard]] virtual const PxThickness& GetRenderContentMarginPx() const noexcept = 0;
+    [[nodiscard]] virtual RenderContentInfo GetRenderContentInfo() const noexcept = 0;
   };
 }
 

@@ -47,7 +47,7 @@ namespace Fsl
     }
 
     virtual ~ABlurredDraw() = default;
-    const char* GetName() const
+    [[nodiscard]] const char* GetName() const
     {
       return m_pszName;
     }

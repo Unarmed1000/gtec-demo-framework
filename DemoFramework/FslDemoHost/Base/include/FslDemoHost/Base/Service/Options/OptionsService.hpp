@@ -49,8 +49,8 @@ namespace Fsl
     explicit OptionsService(const ServiceProvider& serviceProvider);
 
     // From IOptions
-    std::shared_ptr<IOptionParser> GetOptionParser(const OptionParserId& optionParserId) const final;
-    std::shared_ptr<IOptionParser> TryGetOptionParser(const OptionParserId& optionParserId) const final;
+    [[nodiscard]] std::shared_ptr<IOptionParser> GetOptionParser(const OptionParserId& optionParserId) const final;
+    [[nodiscard]] std::shared_ptr<IOptionParser> TryGetOptionParser(const OptionParserId& optionParserId) const final;
     std::shared_ptr<IOptionParser> GetOptionParser(const std::function<bool(const std::shared_ptr<IOptionParser>&)>& matchFunction) const final;
     std::shared_ptr<IOptionParser> TryGetOptionParser(const std::function<bool(const std::shared_ptr<IOptionParser>&)>& matchFunction) const final;
 

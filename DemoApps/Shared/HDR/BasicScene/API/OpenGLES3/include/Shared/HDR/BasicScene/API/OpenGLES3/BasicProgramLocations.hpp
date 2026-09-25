@@ -37,19 +37,14 @@ namespace Fsl
 {
   struct BasicProgramLocations
   {
-    GLint ModelMatrix;
-    GLint ViewMatrix;
-    GLint ProjMatrix;
-    GLint LightPositions;
-    GLint LightColors;
+    GLint ModelMatrix{GLES3::GLValues::InvalidLocation};
+    GLint ViewMatrix{GLES3::GLValues::InvalidLocation};
+    GLint ProjMatrix{GLES3::GLValues::InvalidLocation};
+    GLint LightPositions{GLES3::GLValues::InvalidLocation};
+    GLint LightColors{GLES3::GLValues::InvalidLocation};
     BasicProgramLocations()
-      : ModelMatrix(GLES3::GLValues::InvalidLocation)
-      , ViewMatrix(GLES3::GLValues::InvalidLocation)
-      , ProjMatrix(GLES3::GLValues::InvalidLocation)
-      , LightPositions(GLES3::GLValues::InvalidLocation)
-      , LightColors(GLES3::GLValues::InvalidLocation)
-    {
-    }
+
+      = default;
   };
 }
 

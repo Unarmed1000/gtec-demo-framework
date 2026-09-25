@@ -42,7 +42,7 @@ namespace
 
 TEST(Test_AtlasNineSlicePatchInfo, Construct_Default)
 {
-  AtlasNineSlicePatchInfo value;
+  const AtlasNineSlicePatchInfo value;
   EXPECT_EQ(PxThicknessU(), value.NineSlicePx);
   EXPECT_EQ(PxThicknessU(), value.ContentMarginPx);
 }

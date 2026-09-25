@@ -54,7 +54,7 @@ namespace Fsl
     /// <returns>the angle in radians<returns>
     inline float VectorToAngle(const Vector2& vec)
     {
-      Vector2 value(Vector2::Normalize(vec));
+      const Vector2 value(Vector2::Normalize(vec));
       return std::atan2(value.Y, value.X);
     }
 

@@ -51,7 +51,7 @@ namespace
 
 TEST(TestVertices_VertexMatrixColor, Construct_Default)
 {
-  VertexMatrixColor vertex;
+  const VertexMatrixColor vertex;
 
   EXPECT_EQ(Matrix(), vertex.Matrix);
   EXPECT_EQ(Vector4(), vertex.Color);

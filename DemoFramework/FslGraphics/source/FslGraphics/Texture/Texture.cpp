@@ -84,7 +84,7 @@ namespace Fsl
           for (uint32_t face = 0; face < textureInfo.Faces; ++face)
           {
             const std::size_t index = textureInfo.GetBlockIndex(level, face, layer);
-            auto blob = srcBlobs[index];
+            const auto blob = srcBlobs[index];
             // two checks bypasses any overflow issues
             if (blob.Size > contentByteSize)
             {
@@ -387,7 +387,7 @@ namespace Fsl
 
   PxExtent2D Texture::GetExtent2D(const std::size_t level) const
   {
-    auto res = GetExtent(level);
+    const auto res = GetExtent(level);
     if (res.Depth.Value != 1u)
     {
       throw UsageErrorException("GetExtent2D called on a non 2d texture");
@@ -606,7 +606,7 @@ namespace Fsl
 
   void Texture::ChangeCompatiblePixelFormatFlags(const PixelFormatFlags::Enum flag)
   {
-    auto newFormat = PixelFormatUtil::TrySetCompatiblePixelFormatFlag(m_pixelFormat, flag);
+    const auto newFormat = PixelFormatUtil::TrySetCompatiblePixelFormatFlag(m_pixelFormat, flag);
     if (newFormat == PixelFormat::Undefined)
     {
       throw NotSupportedException("Could not change pixel format flags");
@@ -870,7 +870,7 @@ namespace Fsl
       throw UsageErrorException("The texture is not locked");
     }
 
-    BitmapOrigin currentOrigin = texture.GetBitmapOrigin();
+    const BitmapOrigin currentOrigin = texture.GetBitmapOrigin();
     if (currentOrigin != m_bitmapOrigin)
     {
       m_bitmapOrigin = CheckBitmapOrigin(currentOrigin);

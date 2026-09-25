@@ -44,9 +44,9 @@ namespace Fsl::DataBinding
   public:
     virtual ~IComplexBinding() = default;
 
-    virtual BindingType GetBindingType() const noexcept = 0;
+    [[nodiscard]] virtual BindingType GetBindingType() const noexcept = 0;
 
-    virtual BindingCapabilityFlags GetCaps() const noexcept = 0;
+    [[nodiscard]] virtual BindingCapabilityFlags GetCaps() const noexcept = 0;
   };
 }
 

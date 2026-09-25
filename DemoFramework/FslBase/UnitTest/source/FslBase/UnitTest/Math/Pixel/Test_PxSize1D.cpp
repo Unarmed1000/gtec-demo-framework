@@ -43,7 +43,7 @@ namespace
 
 TEST(TestMathPixel_PxSize1D, Construct_Default)
 {
-  PxSize1D value;
+  const PxSize1D value;
 
   EXPECT_EQ(PxSize1D(), value);
   EXPECT_EQ(PxValue::Create(0), value.Value());
@@ -52,7 +52,7 @@ TEST(TestMathPixel_PxSize1D, Construct_Default)
 TEST(TestMathPixel_PxSize1D, Construct)
 {
   constexpr const auto Value = PxValue::Create(3);
-  PxSize1D testValue(Value);
+  const PxSize1D testValue(Value);
 
   EXPECT_EQ(Value, testValue.Value());
 }
@@ -60,7 +60,7 @@ TEST(TestMathPixel_PxSize1D, Construct)
 TEST(TestMathPixel_PxSize1D, Construct_NegativeValue)
 {
   constexpr const auto Value = PxValue::Create(-1);
-  PxSize1D testValue(Value);
+  const PxSize1D testValue(Value);
 
   EXPECT_EQ(PxValue::Create(0), testValue.Value());
 }
@@ -194,7 +194,7 @@ TEST(TestMathPixel_PxSize1D, Add_PxSize1D_PxSize1D)
 {
   const auto val1 = PxSize1D::Create(10);
   const auto val2 = PxSize1D::Create(5);
-  PxSize1D val3 = PxSize1D::Add(val1, val2);
+  const PxSize1D val3 = PxSize1D::Add(val1, val2);
 
   EXPECT_EQ(PxSize1D::Create(15), val3);
 }
@@ -203,7 +203,7 @@ TEST(TestMathPixel_PxSize1D, Add_PxValue_PxSize1D)
 {
   const auto val1 = PxValue::Create(10);
   const auto val2 = PxSize1D::Create(5);
-  PxValue val3 = PxSize1D::Add(val1, val2);
+  const PxValue val3 = PxSize1D::Add(val1, val2);
 
   EXPECT_EQ(PxSize1D::Create(15), val3);
 }
@@ -212,7 +212,7 @@ TEST(TestMathPixel_PxSize1D, Add_PxSize1D_PxValue)
 {
   const auto val1 = PxSize1D::Create(10);
   const auto val2 = PxValue::Create(5);
-  PxValue val3 = PxSize1D::Add(val1, val2);
+  const PxValue val3 = PxSize1D::Add(val1, val2);
 
   EXPECT_EQ(PxSize1D::Create(15), val3);
 }
@@ -222,7 +222,7 @@ TEST(TestMathPixel_PxSize1D, Subtract_PxSize1D_PxSize1D)
 {
   const auto val1 = PxSize1D::Create(10);
   const auto val2 = PxSize1D::Create(5);
-  PxValue val3 = PxSize1D::Subtract(val1, val2);
+  const PxValue val3 = PxSize1D::Subtract(val1, val2);
 
   EXPECT_EQ(PxValue::Create(5), val3);
 }
@@ -232,7 +232,7 @@ TEST(TestMathPixel_PxSize1D, Subtract_PxValue_PxSize1D)
 {
   const auto val1 = PxValue::Create(10);
   const auto val2 = PxSize1D::Create(5);
-  PxValue val3 = PxSize1D::Subtract(val1, val2);
+  const PxValue val3 = PxSize1D::Subtract(val1, val2);
 
   EXPECT_EQ(PxValue::Create(5), val3);
 }
@@ -242,7 +242,7 @@ TEST(TestMathPixel_PxSize1D, Subtract_PxSize1D_PxValue)
 {
   const auto val1 = PxSize1D::Create(10);
   const auto val2 = PxValue::Create(5);
-  PxValue val3 = PxSize1D::Subtract(val1, val2);
+  const PxValue val3 = PxSize1D::Subtract(val1, val2);
 
   EXPECT_EQ(PxValue::Create(5), val3);
 }
@@ -252,7 +252,7 @@ TEST(TestMathPixel_PxSize1D, Multiply_PxSize1D_PxSize1D)
 {
   const auto val1 = PxSize1D::Create(10);
   const auto val2 = PxSize1D::Create(5);
-  PxSize1D val3 = PxSize1D::Multiply(val1, val2);
+  const PxSize1D val3 = PxSize1D::Multiply(val1, val2);
 
   EXPECT_EQ(PxSize1D::Create(10 * 5), val3);
 }
@@ -262,7 +262,7 @@ TEST(TestMathPixel_PxSize1D, Multiply_PxValue_PxSize1D)
 {
   const auto val1 = PxValue::Create(10);
   const auto val2 = PxSize1D::Create(5);
-  PxValue val3 = PxSize1D::Multiply(val1, val2);
+  const PxValue val3 = PxSize1D::Multiply(val1, val2);
 
   EXPECT_EQ(PxValue::Create(10 * 5), val3);
 }
@@ -272,7 +272,7 @@ TEST(TestMathPixel_PxSize1D, Multiply_PxSize1D_PxValue)
 {
   const auto val1 = PxSize1D::Create(10);
   const auto val2 = PxValue::Create(5);
-  PxValue val3 = PxSize1D::Multiply(val1, val2);
+  const PxValue val3 = PxSize1D::Multiply(val1, val2);
 
   EXPECT_EQ(PxValue::Create(10 * 5), val3);
 }
@@ -282,7 +282,7 @@ TEST(TestMathPixel_PxSize1D, Multiply_PxSize1D_PxValue_Negative)
 {
   const auto val1 = PxSize1D::Create(10);
   const auto val2 = PxValue::Create(-5);
-  PxValue val3 = PxSize1D::Multiply(val1, val2);
+  const PxValue val3 = PxSize1D::Multiply(val1, val2);
 
   EXPECT_EQ((val1.Value() * val2), val3);
 }
@@ -292,7 +292,7 @@ TEST(TestMathPixel_PxSize1D, Divide_PxSize1D_PxSize1D)
 {
   const auto val1 = PxSize1D::Create(10);
   const auto val2 = PxSize1D::Create(5);
-  PxSize1D val3 = PxSize1D::Divide(val1, val2);
+  const PxSize1D val3 = PxSize1D::Divide(val1, val2);
 
   EXPECT_EQ(PxSize1D::Create(10 / 5), val3);
 }
@@ -312,7 +312,7 @@ TEST(TestMathPixel_PxSize1D, Divide_PxSize1D_PxValue)
 {
   const auto val1 = PxSize1D::Create(10);
   const auto val2 = PxValue::Create(5);
-  PxValue val3 = PxSize1D::Divide(val1, val2);
+  const PxValue val3 = PxSize1D::Divide(val1, val2);
 
   EXPECT_EQ(PxValue::Create(10 / 5), val3);
 }
@@ -322,7 +322,7 @@ TEST(TestMathPixel_PxSize1D, Divide_PxSize1D_PxValue_Negative)
 {
   const auto val1 = PxSize1D::Create(10);
   const auto val2 = PxValue::Create(-5);
-  PxValue val3 = PxSize1D::Divide(val1, val2);
+  const PxValue val3 = PxSize1D::Divide(val1, val2);
 
   EXPECT_EQ(val1.Value() / val2, val3);
 }
@@ -330,7 +330,7 @@ TEST(TestMathPixel_PxSize1D, Divide_PxSize1D_PxValue_Negative)
 
 TEST(TestMathPixel_PxSize1D, OpAddEqual_PxSize1D)
 {
-  auto val1 = PxSize1D::Create(10);
+  const auto val1 = PxSize1D::Create(10);
   const auto val2 = PxSize1D::Create(1);
   PxSize1D sum = val1;
   sum += val2;
@@ -341,7 +341,7 @@ TEST(TestMathPixel_PxSize1D, OpAddEqual_PxSize1D)
 
 TEST(TestMathPixel_PxSize1D, OpAddEqual_PxValue)
 {
-  auto val1 = PxSize1D::Create(10);
+  const auto val1 = PxSize1D::Create(10);
   const auto val2 = PxValue::Create(1);
   PxSize1D sum = val1;
   sum += val2;
@@ -352,7 +352,7 @@ TEST(TestMathPixel_PxSize1D, OpAddEqual_PxValue)
 
 TEST(TestMathPixel_PxSize1D, OpAddEqual_PxValue_Negative)
 {
-  auto val1 = PxSize1D::Create(10);
+  const auto val1 = PxSize1D::Create(10);
   const auto val2 = PxValue::Create(-1);
   PxSize1D sum = val1;
   sum += val2;
@@ -363,7 +363,7 @@ TEST(TestMathPixel_PxSize1D, OpAddEqual_PxValue_Negative)
 
 TEST(TestMathPixel_PxSize1D, OpSubEqual_PxSize1D)
 {
-  auto val1 = PxSize1D::Create(10);
+  const auto val1 = PxSize1D::Create(10);
   const auto val2 = PxSize1D::Create(1);
   PxSize1D sum = val1;
   sum -= val2;
@@ -374,7 +374,7 @@ TEST(TestMathPixel_PxSize1D, OpSubEqual_PxSize1D)
 
 TEST(TestMathPixel_PxSize1D, OpSubEqual_PxValue)
 {
-  auto val1 = PxSize1D::Create(10);
+  const auto val1 = PxSize1D::Create(10);
   const auto val2 = PxValue::Create(1);
   PxSize1D sum = val1;
   sum -= val2;
@@ -385,7 +385,7 @@ TEST(TestMathPixel_PxSize1D, OpSubEqual_PxValue)
 
 TEST(TestMathPixel_PxSize1D, OpSubEqual_PxValue_Negative)
 {
-  auto val1 = PxSize1D::Create(10);
+  const auto val1 = PxSize1D::Create(10);
   const auto val2 = PxValue::Create(-1);
   PxSize1D sum = val1;
   sum -= val2;
@@ -396,7 +396,7 @@ TEST(TestMathPixel_PxSize1D, OpSubEqual_PxValue_Negative)
 
 TEST(TestMathPixel_PxSize1D, OpSubEqual_PxValue_Val2Largest)
 {
-  auto val1 = PxSize1D::Create(10);
+  const auto val1 = PxSize1D::Create(10);
   const auto val2 = PxValue::Create(100);
   PxSize1D sum = val1;
   sum -= val2;

@@ -175,7 +175,7 @@ namespace Fsl
       std::array<VkWriteDescriptorSet, 1> writeDescriptorSets{};
 
       // Binding 0 : Fragment shader texture sampler
-      auto textureImageInfo = texture.GetDescriptorImageInfo();
+      const auto textureImageInfo = texture.GetDescriptorImageInfo();
       writeDescriptorSets[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
       writeDescriptorSets[0].dstSet = descriptorSet;
       writeDescriptorSets[0].dstBinding = 0;
@@ -249,7 +249,7 @@ namespace Fsl
       viewport.minDepth = 0.0f;
       viewport.maxDepth = 1.0f;
 
-      VkRect2D scissor{{0, 0}, extent};
+      const VkRect2D scissor{{0, 0}, extent};
 
       VkPipelineViewportStateCreateInfo pipelineViewportStateCreateInfo{};
       pipelineViewportStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
@@ -338,7 +338,7 @@ namespace Fsl
     Vulkan::VUTexture ReadTexture(const Vulkan::VUDevice& device, const Vulkan::VUDeviceQueueRecord& deviceQueue,
                                   const IContentManager& contentManager, const IO::Path& path)
     {
-      auto bitmap = contentManager.ReadBitmap(path, PixelFormat::R8G8B8A8_UNORM);
+      const auto bitmap = contentManager.ReadBitmap(path, PixelFormat::R8G8B8A8_UNORM);
       return CreateTexture(device, deviceQueue, bitmap, VK_FILTER_LINEAR, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE);
     }
   }
@@ -355,7 +355,7 @@ namespace Fsl
     m_resources.BufferManager =
       std::make_shared<Vulkan::VMBufferManager>(m_device.GetPhysicalDevice(), m_device.Get(), m_deviceQueue.Queue, m_deviceQueue.QueueFamilyIndex);
 
-    auto contentManager = GetContentManager();
+    const auto contentManager = GetContentManager();
 
     const uint32_t maxFramesInFlight = GetRenderConfig().MaxFramesInFlight;
 
@@ -555,7 +555,7 @@ namespace Fsl
   {
     const PxSize2D currentSizePx = GetWindowSizePx();
 
-    auto contentOffset = m_shared.GetContentOffset();
+    const auto contentOffset = m_shared.GetContentOffset();
     const auto fontDrawConfig = m_shared.GetFontDrawConfig();
     const auto fontScale = PxSize1DF::Create(fontDrawConfig.FontScale);
     const auto fontSdfMode = m_shared.GetSdfMode();
@@ -655,8 +655,8 @@ namespace Fsl
     m_pushConstants.Smoothing = 0.25f / (fontSdfSpread * fontDrawConfig.FontScale);
 
     {
-      auto maxOffsetX = fontSdfSpread / static_cast<float>(fontRecord.Texture.GetSize().RawWidth());
-      auto maxOffsetY = fontSdfSpread / static_cast<float>(fontRecord.Texture.GetSize().RawHeight());
+      const auto maxOffsetX = fontSdfSpread / static_cast<float>(fontRecord.Texture.GetSize().RawWidth());
+      const auto maxOffsetY = fontSdfSpread / static_cast<float>(fontRecord.Texture.GetSize().RawHeight());
       m_pushConstants.ShadowOffsetX = fontDrawConfig.ShadowOffset.X != 0.0f ? maxOffsetX * fontDrawConfig.ShadowOffset.X : 0.0f;
       m_pushConstants.ShadowOffsetY = fontDrawConfig.ShadowOffset.Y != 0.0f ? maxOffsetY * fontDrawConfig.ShadowOffset.Y : 0.0f;
     }
@@ -670,10 +670,10 @@ namespace Fsl
     vkCmdBindPipeline(hCmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.Get());
 
     mesh.Mesh.Touch(currentFrameIndex);
-    VkDeviceSize offsets = mesh.Mesh.GetVertexStartOffset();
+    const VkDeviceSize offsets = mesh.Mesh.GetVertexStartOffset();
     vkCmdBindVertexBuffers(hCmdBuffer, LocalConfig::VertexBufferBindId, 1, mesh.Mesh.GetVBBufferPointer(), &offsets);
     vkCmdBindIndexBuffer(hCmdBuffer, mesh.Mesh.GetIBBuffer(), 0, VK_INDEX_TYPE_UINT16);
-    auto indexRange = mesh.Mesh.GetIndexSpanRange();
+    const auto indexRange = mesh.Mesh.GetIndexSpanRange();
     vkCmdDrawIndexed(hCmdBuffer, indexRange.Length, 1, indexRange.Start, 0, 0);
   }
 
@@ -728,11 +728,11 @@ namespace Fsl
     }
 
     // Extract the render rules
-    auto scratchpadSpan = SpanUtil::AsSpan(rPositionsScratchpad);
+    const auto scratchpadSpan = SpanUtil::AsSpan(rPositionsScratchpad);
     const bool gotRules = font.ExtractRenderRules(scratchpadSpan, strView);
 
-    auto dstVertexSpan = SpanUtil::AsSpan(vertices);
-    auto dstIndexSpan = SpanUtil::AsSpan(indices);
+    const auto dstVertexSpan = SpanUtil::AsSpan(vertices);
+    const auto dstIndexSpan = SpanUtil::AsSpan(indices);
     const auto positionsSpan = scratchpadSpan.subspan(0, gotRules ? strView.size() : 0);
 
     AppHelper::GenerateVertices(dstVertexSpan, dstPositionPx, positionsSpan, LocalConfig::DefaultZPos, fontTextureSize);
@@ -760,11 +760,11 @@ namespace Fsl
     {
       rPositionsScratchpad.resize(strView.size());
     }
-    auto scratchpadSpan = SpanUtil::AsSpan(rPositionsScratchpad);
+    const auto scratchpadSpan = SpanUtil::AsSpan(rPositionsScratchpad);
     const bool gotRules = font.ExtractRenderRules(scratchpadSpan, strView, fontConfig);
     const auto positionsSpan = scratchpadSpan.subspan(0, gotRules ? strView.size() : 0);
 
-    auto dstVertexSpan = rMeshRecord.Mesh.BeginWrite(currentFrameIndex);
+    const auto dstVertexSpan = rMeshRecord.Mesh.BeginWrite(currentFrameIndex);
     {
       AppHelper::GenerateVertices(dstVertexSpan, dstPositionPx, positionsSpan, LocalConfig::DefaultZPos, fontTextureSize);
     }

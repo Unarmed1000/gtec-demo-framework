@@ -48,7 +48,7 @@ namespace
 
 TEST(TestMath_ThicknessF, Default)
 {
-  ThicknessF value;
+  const ThicknessF value;
 
   // ThicknessF stores left, top, right, bottom so they ought to be exact values
   EXPECT_EQ(0.0f, value.Left());
@@ -62,11 +62,11 @@ TEST(TestMath_ThicknessF, Default)
 
 TEST(TestMath_ThicknessF, Values)
 {
-  float left = 1.0f;
-  float top = 2.0f;
-  float right = 3.0f;
-  float bottom = 4.0f;
-  ThicknessF value(left, top, right, bottom);
+  const float left = 1.0f;
+  const float top = 2.0f;
+  const float right = 3.0f;
+  const float bottom = 4.0f;
+  const ThicknessF value(left, top, right, bottom);
 
   // ThicknessF stores left, top, right, bottom so they ought to be exact values
   EXPECT_EQ(left, value.Left());
@@ -79,12 +79,12 @@ TEST(TestMath_ThicknessF, Values)
 
 TEST(TestMath_ThicknessF, OperatorEqual)
 {
-  float left = 1.0f;
-  float top = 2.0f;
-  float right = 3.0f;
-  float bottom = 4.0f;
-  ThicknessF value1(left, top, right, bottom);
-  ThicknessF value2(left, top, right, bottom);
+  const float left = 1.0f;
+  const float top = 2.0f;
+  const float right = 3.0f;
+  const float bottom = 4.0f;
+  const ThicknessF value1(left, top, right, bottom);
+  const ThicknessF value2(left, top, right, bottom);
 
   EXPECT_EQ(value1, value2);
 }
@@ -92,12 +92,12 @@ TEST(TestMath_ThicknessF, OperatorEqual)
 
 TEST(TestMath_ThicknessF, OperatorNotEqual)
 {
-  float left = 1.0f;
-  float top = 2.0f;
-  float right = 3.0f;
-  float bottom = 4.0f;
-  ThicknessF value1(left, top, right, bottom);
-  ThicknessF value2(left, top, right, 5.0f);
+  const float left = 1.0f;
+  const float top = 2.0f;
+  const float right = 3.0f;
+  const float bottom = 4.0f;
+  const ThicknessF value1(left, top, right, bottom);
+  const ThicknessF value2(left, top, right, 5.0f);
 
   EXPECT_NE(value1, value2);
 }

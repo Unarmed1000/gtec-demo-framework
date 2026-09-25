@@ -58,7 +58,7 @@ namespace Fsl
     explicit EnvState(const PxSize2D& windowSizePx);
     ~EnvState() = default;
 
-    PxSize2D GetWindowSizePx() const
+    [[nodiscard]] PxSize2D GetWindowSizePx() const
     {
       return m_windowSizePx;
     }

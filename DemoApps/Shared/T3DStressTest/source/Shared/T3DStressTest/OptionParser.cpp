@@ -38,6 +38,7 @@
 #include <Shared/T3DStressTest/OptionParser.hpp>
 #include <algorithm>
 #include <cmath>
+#include <utility>
 
 namespace Fsl
 {
@@ -172,7 +173,7 @@ namespace Fsl
       {
         return OptionParseResult::Failed;
       }
-      if (intValue < 0 || intValue >= std::numeric_limits<uint16_t>::max())
+      if (intValue < 0 || std::cmp_greater_equal(intValue, std::numeric_limits<uint16_t>::max()))
       {
         throw std::invalid_argument("Texture resolution out of range");
       }

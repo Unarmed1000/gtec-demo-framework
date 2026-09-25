@@ -77,7 +77,7 @@ namespace Fsl::GLES2
                                                                           const ReadOnlySpan<GLVertexAttribLink> attribLinks)
   {
     // This is not optimal but it works for now
-    auto configuration = GLVertexElements(vertexDeclaration).ExtractConfiguration(attribLinks);
+    const auto configuration = GLVertexElements(vertexDeclaration).ExtractConfiguration(attribLinks);
     return ToArray(SpanUtil::AsReadOnlySpan(configuration));
   }
 

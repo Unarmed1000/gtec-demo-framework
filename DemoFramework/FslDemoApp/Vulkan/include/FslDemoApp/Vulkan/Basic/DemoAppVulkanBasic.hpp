@@ -57,6 +57,7 @@ namespace Fsl
 {
   class DemoAppHostConfigVulkan;
   class DemoAppProfilerOverlay;
+  class FramePacingOverlay;
 
   namespace Vulkan
   {
@@ -134,6 +135,7 @@ namespace Fsl
           }
           return *this;
         }
+        ~FrameDrawRecord() = default;
 
         void Reset() noexcept
         {
@@ -193,6 +195,7 @@ namespace Fsl
           }
           return *this;
         }
+        ~SwapchainRecord() = default;
 
         void Reset() noexcept
         {
@@ -220,6 +223,7 @@ namespace Fsl
         Resources& operator=(const Resources&) = delete;
         Resources(Resources&& other) noexcept = delete;
         Resources& operator=(Resources&& other) noexcept = delete;
+        ~Resources() = default;
 
         void Reset() noexcept
         {
@@ -278,6 +282,7 @@ namespace Fsl
         DependentResources& operator=(const DependentResources&) = delete;
         DependentResources(DependentResources&& other) noexcept = delete;
         DependentResources& operator=(DependentResources&& other) noexcept = delete;
+        ~DependentResources() = default;
 
         void Reset() noexcept
         {
@@ -303,11 +308,17 @@ namespace Fsl
 
       AppState m_currentAppState = AppState::Ready;
       std::unique_ptr<DemoAppProfilerOverlay> m_demoAppProfilerOverlay;
+      //! Only used if FSL_FEATURE_FRAMEPACING is defined
+      std::shared_ptr<FramePacingOverlay> m_framePacingOverlay;
       PxExtent2D m_cachedExtentPx;
 
     protected:
       explicit DemoAppVulkanBasic(const DemoAppConfig& demoAppConfig, const DemoAppVulkanSetup& demoAppVulkanSetup = {});
+
+    public:
       ~DemoAppVulkanBasic() override;
+
+    protected:
       void OnConstructed() override;
       void OnDestroy() override;
 
@@ -328,12 +339,12 @@ namespace Fsl
       void FreeResources();
 
       //! Check if the dependent resources are currently allocated
-      bool IsResourcesAllocated() const
+      [[nodiscard]] bool IsResourcesAllocated() const
       {
         return m_dependentResources.Valid;
       }
 
-      VkCommandPool GetCommandPool() const
+      [[nodiscard]] VkCommandPool GetCommandPool() const
       {
         return m_resources.MainCommandPool.Get();
       }
@@ -352,7 +363,7 @@ namespace Fsl
       virtual void VulkanDraw(const DemoTime& demoTime, RapidVulkan::CommandBuffers& rCmdBuffers, const DrawContext& drawContext) = 0;
 
       //! @brief get the swapchain image count
-      uint32_t GetSwapchainImageCount() const
+      [[nodiscard]] uint32_t GetSwapchainImageCount() const
       {
         if (!m_swapchain.IsValid() || m_currentAppState != AppState::Ready)
         {
@@ -375,7 +386,7 @@ namespace Fsl
                                                                  const VkCommandPool commandPool,
                                                                  const VkSampleCountFlagBits sampleCount = VK_SAMPLE_COUNT_1_BIT);
 
-      const Vulkan::SurfaceFormatInfo& GetSurfaceFormatInfo() const
+      [[nodiscard]] const Vulkan::SurfaceFormatInfo& GetSurfaceFormatInfo() const
       {
         return m_surfaceFormatInfo;
       }

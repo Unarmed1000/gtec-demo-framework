@@ -38,8 +38,8 @@ namespace Fsl
 {
   DemoHostSetup StubDemoHostSetup::Get()
   {
-    std::shared_ptr<IDemoHostFactory> demoHostFactory(new TemplateIDemoHostFactory<StubDemoHost>());
-    std::shared_ptr<ADemoHostOptionParser> optionParser(new StubDemoHostOptionParser());
+    const std::shared_ptr<IDemoHostFactory> demoHostFactory(new TemplateIDemoHostFactory<StubDemoHost>());
+    const std::shared_ptr<ADemoHostOptionParser> optionParser(new StubDemoHostOptionParser());
     return {demoHostFactory, optionParser};
   }
 }

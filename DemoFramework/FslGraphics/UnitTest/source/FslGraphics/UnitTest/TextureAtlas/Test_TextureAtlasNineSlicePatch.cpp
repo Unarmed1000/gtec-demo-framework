@@ -42,7 +42,7 @@ namespace
 
 TEST(Test_TextureAtlasNineSlicePatch, Construct_Default)
 {
-  TextureAtlasNineSlicePatch value;
+  const TextureAtlasNineSlicePatch value;
 
   EXPECT_EQ(AtlasNineSlicePatchInfo(), value.Patch);
   EXPECT_EQ(0u, value.TextureIndex);
@@ -53,7 +53,7 @@ TEST(Test_TextureAtlasNineSlicePatch, Construct)
   constexpr AtlasNineSliceFlags Flags{AtlasNineSliceFlags::Transparent};
   constexpr AtlasNineSlicePatchInfo Patch(PxThicknessU::Create(1, 2, 3, 4), PxThicknessU::Create(5, 6, 7, 8), Flags);
   constexpr uint32_t TextureIndex = 9u;
-  TextureAtlasNineSlicePatch value(TextureIndex, Patch);
+  const TextureAtlasNineSlicePatch value(TextureIndex, Patch);
 
   EXPECT_EQ(Patch, value.Patch);
   EXPECT_EQ(TextureIndex, value.TextureIndex);

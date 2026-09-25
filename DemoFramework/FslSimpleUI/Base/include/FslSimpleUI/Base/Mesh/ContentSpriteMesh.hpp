@@ -44,32 +44,32 @@ namespace Fsl::UI
     {
     }
 
-    PxSize2D GetRenderSizePx() const
+    [[nodiscard]] PxSize2D GetRenderSizePx() const
     {
       return IsValid() ? GetSpriteObject().GetRenderSizePx() : PxSize2D();
     }
 
-    PxThickness GetRenderContentMarginPx() const
+    [[nodiscard]] PxThickness GetRenderContentMarginPx() const
     {
       return IsValid() ? GetSpriteObject().GetRenderContentMarginPx() : PxThickness();
     }
 
-    RenderContentInfo GetRenderContentInfo() const
+    [[nodiscard]] RenderContentInfo GetRenderContentInfo() const
     {
       return IsValid() ? GetSpriteObject().GetRenderContentInfo() : RenderContentInfo();
     }
 
-    PxSize2D Measure() const
+    [[nodiscard]] PxSize2D Measure() const
     {
       return IsValid() ? GetSpriteObject().GetRenderSizePx() : PxSize2D();
     }
 
-    PxSize2D Measure(const PxSize2D& finalSizePx) const
+    [[nodiscard]] PxSize2D Measure(const PxSize2D& finalSizePx) const
     {
       return IsValid() ? PxSize2D::Max(finalSizePx, GetSpriteObject().GetRenderSizePx()) : finalSizePx;
     }
 
-    PxSize2D Measure(const PxSize2D& finalSizePx, const bool rotate90CW) const
+    [[nodiscard]] PxSize2D Measure(const PxSize2D& finalSizePx, const bool rotate90CW) const
     {
       PxSize2D spriteSizePx;
       if (IsValid())

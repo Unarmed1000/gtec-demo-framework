@@ -106,7 +106,7 @@ namespace Fsl
 
       void LoadMesh(const std::string& relativePath);
       void LoadMesh(const std::string& relativePath, const int flags);
-      virtual std::size_t GetMeshCount() const;
+      [[nodiscard]] virtual std::size_t GetMeshCount() const;
 
       //! @brief Create Vulkan buffers for the index and vertex buffer using a vertex layout
       //! @note Only does staging if a valid command buffer and transfer queue are passed
@@ -124,7 +124,7 @@ namespace Fsl
       virtual void LoadMeshNow(const std::string& relativePath, std::vector<MeshEntry>& rEntries, Dimension& rDim) = 0;
       virtual void LoadMeshNow(const std::string& relativePath, const int flags, std::vector<MeshEntry>& rEntries, Dimension& rDim) = 0;
 
-      IO::Path GetContentPath() const
+      [[nodiscard]] IO::Path GetContentPath() const
       {
         return m_contentPath;
       }

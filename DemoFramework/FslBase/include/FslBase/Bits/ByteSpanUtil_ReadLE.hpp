@@ -74,8 +74,8 @@ namespace Fsl::ByteSpanUtil
   constexpr inline uint32_t ReadUInt32LE(const ReadOnlySpan<uint8_t> src)
   {
     assert(src.size() >= 4);
-    return static_cast<uint32_t>(static_cast<uint32_t>(src[0]) | (static_cast<uint32_t>(src[1]) << 8) | (static_cast<uint32_t>(src[2]) << 16) |
-                                 (static_cast<uint32_t>(src[3]) << 24));
+    return (static_cast<uint32_t>(src[0]) | (static_cast<uint32_t>(src[1]) << 8) | (static_cast<uint32_t>(src[2]) << 16) |
+            (static_cast<uint32_t>(src[3]) << 24));
   }
 
   //! @brief Read a int32_t from the given index in little endian format
@@ -90,19 +90,18 @@ namespace Fsl::ByteSpanUtil
   constexpr inline uint64_t ReadUInt64LE(const ReadOnlySpan<uint8_t> src)
   {
     assert(src.size() >= 8);
-    return static_cast<uint64_t>(static_cast<uint64_t>(src[0]) | (static_cast<uint64_t>(src[1]) << 8) | (static_cast<uint64_t>(src[2]) << 16) |
-                                 (static_cast<uint64_t>(src[3]) << 24) | (static_cast<uint64_t>(src[4]) << 32) |
-                                 (static_cast<uint64_t>(src[5]) << 40) | (static_cast<uint64_t>(src[6]) << 48) |
-                                 (static_cast<uint64_t>(src[7]) << 56));
+    return (static_cast<uint64_t>(src[0]) | (static_cast<uint64_t>(src[1]) << 8) | (static_cast<uint64_t>(src[2]) << 16) |
+            (static_cast<uint64_t>(src[3]) << 24) | (static_cast<uint64_t>(src[4]) << 32) | (static_cast<uint64_t>(src[5]) << 40) |
+            (static_cast<uint64_t>(src[6]) << 48) | (static_cast<uint64_t>(src[7]) << 56));
   }
 
   //! @brief Read a int64_t from the given index in little endian format
   constexpr inline int64_t ReadInt64LE(const ReadOnlySpan<uint8_t> src)
   {
     assert(src.size() >= 8);
-    return static_cast<int64_t>(static_cast<int64_t>(src[0]) | (static_cast<int64_t>(src[1]) << 8) | (static_cast<int64_t>(src[2]) << 16) |
-                                (static_cast<int64_t>(src[3]) << 24) | (static_cast<int64_t>(src[4]) << 32) | (static_cast<int64_t>(src[5]) << 40) |
-                                (static_cast<int64_t>(src[6]) << 48) | (static_cast<int64_t>(src[7]) << 56));
+    return (static_cast<int64_t>(src[0]) | (static_cast<int64_t>(src[1]) << 8) | (static_cast<int64_t>(src[2]) << 16) |
+            (static_cast<int64_t>(src[3]) << 24) | (static_cast<int64_t>(src[4]) << 32) | (static_cast<int64_t>(src[5]) << 40) |
+            (static_cast<int64_t>(src[6]) << 48) | (static_cast<int64_t>(src[7]) << 56));
   }
 
 

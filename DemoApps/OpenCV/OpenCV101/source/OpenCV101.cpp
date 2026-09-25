@@ -67,8 +67,8 @@ namespace Fsl
     Mat dst;
 
     /// Ask the user enter alpha
-    std::cout << " Simple Linear Blender " << std::endl;
-    std::cout << "-----------------------" << std::endl;
+    std::cout << " Simple Linear Blender " << '\n';
+    std::cout << "-----------------------" << '\n';
     std::cout << "* Enter alpha [0-1]: ";
     // std::cin >> input;
     input = 1;
@@ -79,11 +79,11 @@ namespace Fsl
       alpha = input;
     }
 
-    auto contentManager = GetContentManager();
-    IO::Path contentPath = contentManager->GetContentPath();
+    const auto contentManager = GetContentManager();
+    const IO::Path contentPath = contentManager->GetContentPath();
 
-    IO::Path pathImg1 = IO::Path::Combine(contentPath, "Image1.png");
-    IO::Path pathImg2 = IO::Path::Combine(contentPath, "Image2.png");
+    const IO::Path pathImg1 = IO::Path::Combine(contentPath, "Image1.png");
+    const IO::Path pathImg2 = IO::Path::Combine(contentPath, "Image2.png");
 
 
     /// Read image ( same size, same type )

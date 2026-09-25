@@ -48,7 +48,7 @@ namespace
 
 TEST(TestMath_Rectangle3D, Empty)
 {
-  Rectangle3D value;
+  const Rectangle3D value;
 
   EXPECT_EQ(Offset3D(), value.Offset);
   EXPECT_EQ(Extent3D(), value.Extent);
@@ -58,13 +58,13 @@ TEST(TestMath_Rectangle3D, Empty)
 
 TEST(TestMath_Rectangle3D, Construct1)
 {
-  int32_t offsetX = 1;
-  int32_t offsetY = 2;
-  int32_t offsetZ = 3;
-  uint16_t width = 10;
-  uint16_t height = 20;
-  uint16_t depth = 30;
-  Rectangle3D value(offsetX, offsetY, offsetZ, width, height, depth);
+  const int32_t offsetX = 1;
+  const int32_t offsetY = 2;
+  const int32_t offsetZ = 3;
+  const uint16_t width = 10;
+  const uint16_t height = 20;
+  const uint16_t depth = 30;
+  const Rectangle3D value(offsetX, offsetY, offsetZ, width, height, depth);
 
   EXPECT_EQ(Offset3D(offsetX, offsetY, offsetZ), value.Offset);
   EXPECT_EQ(Extent3D(width, height, depth), value.Extent);
@@ -78,13 +78,13 @@ TEST(TestMath_Rectangle3D, Construct1)
 
 TEST(TestMath_Rectangle3D, FromLeftTopFrontRightBottomBack)
 {
-  int32_t left = 1;
-  int32_t top = 2;
-  int32_t front = 3;
-  int32_t right = 10;
-  int32_t bottom = 20;
-  int32_t back = 30;
-  auto value = Rectangle3D::FromLeftTopFrontRightBottomBack(left, top, front, right, bottom, back);
+  const int32_t left = 1;
+  const int32_t top = 2;
+  const int32_t front = 3;
+  const int32_t right = 10;
+  const int32_t bottom = 20;
+  const int32_t back = 30;
+  const auto value = Rectangle3D::FromLeftTopFrontRightBottomBack(left, top, front, right, bottom, back);
 
   EXPECT_EQ(Offset3D(left, top, front), value.Offset);
   EXPECT_EQ(Extent3D(static_cast<uint32_t>(right - left), static_cast<uint32_t>(bottom - top), static_cast<uint32_t>(back - front)), value.Extent);
@@ -180,9 +180,9 @@ TEST(TestMath_Rectangle3D, Intersects)
   const Rectangle3D rect1(0, 0, 0, 10, 10, 10);
   const Rectangle3D rect2(1, 1, 1, 9, 9, 9);
   const Rectangle3D rect3(11, 0, 0, 10, 10, 10);
-  auto res1 = Rectangle3D::Intersect(rect1, rect2);
-  auto res2 = Rectangle3D::Intersect(rect2, rect1);
-  auto resNoIntersection = Rectangle3D::Intersect(rect1, rect3);
+  const auto res1 = Rectangle3D::Intersect(rect1, rect2);
+  const auto res2 = Rectangle3D::Intersect(rect2, rect1);
+  const auto resNoIntersection = Rectangle3D::Intersect(rect1, rect3);
 
   EXPECT_EQ(rect2, res1);
   EXPECT_EQ(rect2, res2);
@@ -195,7 +195,7 @@ TEST(TestMath_Rectangle3D, Union)
   const Rectangle3D rect1(0, 0, 0, 5, 5, 5);
   const Rectangle3D rect2(0, -1, -2, 4, 5, 8);
 
-  auto res = Rectangle3D::Union(rect1, rect2);
+  const auto res = Rectangle3D::Union(rect1, rect2);
 
   // 0, 5 |  0, 4
   // 0, 5 | -1, 4

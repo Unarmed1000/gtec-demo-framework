@@ -72,6 +72,8 @@ namespace
       other.m_id = 0;
     }
 
+    A& operator=(const A&) = delete;
+
     // A& operator=(A&& other) noexcept = default;
     A& operator=(A&& other) noexcept
     {
@@ -120,6 +122,8 @@ namespace
       other.m_id = 0;
       FSLLOG3_INFO("B{} Move construct", m_id);
     }
+
+    B& operator=(const B&) = delete;
 
     // B& operator=(B&& other) noexcept = default;
     B& operator=(B&& other) noexcept
@@ -178,6 +182,8 @@ namespace
       FSLLOG3_INFO("C{} Move construct done", m_id);
     }
 
+    C& operator=(const C&) = delete;
+
     // C& operator=(C&& other) noexcept = default;
     C& operator=(C&& other) noexcept
     {
@@ -207,11 +213,11 @@ TEST(TestControlled, Construct)
 {
   FSLLOG3_INFO("Normal construct/destruct");
   {
-    C object(10);
+    const C object(10);
   }
   FSLLOG3_INFO("Placement construct/destruct");
   {
-    Controlled<C> object(10);
+    const Controlled<C> object(10);
   }
 }
 
@@ -221,12 +227,12 @@ TEST(TestControlled, MoveConstruct)
   FSLLOG3_INFO("Normal move operator");
   {
     C val(10);
-    C object(std::move(val));
+    const C object(std::move(val));
   }
   FSLLOG3_INFO("Placement move construct/destruct");
   {
     C val(10);
-    Controlled<C> object(std::move(val));
+    const Controlled<C> object(std::move(val));
   }
 }
 

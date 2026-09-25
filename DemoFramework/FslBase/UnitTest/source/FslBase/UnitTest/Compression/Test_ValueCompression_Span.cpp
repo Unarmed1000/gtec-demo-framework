@@ -99,22 +99,22 @@ TEST(TestCompression_ValueCompression_Span, ReadUInt16)
 TEST(TestCompression_ValueCompression_Span, WriteSimpleReadSimple_Unsigned)
 {
   std::array<uint8_t, 512> temp{};
-  std::array<uint32_t, 11> src = {1,      1337,  1,       std::numeric_limits<uint32_t>::max(), std::numeric_limits<uint32_t>::min(), 127, 984545, 23,
-                                  454356, 40000, 0x200000};
+  const std::array<uint32_t, 11> src = {
+    1, 1337, 1, std::numeric_limits<uint32_t>::max(), std::numeric_limits<uint32_t>::min(), 127, 984545, 23, 454356, 40000, 0x200000};
 
-  Span<uint8_t> dstSpan(temp.data(), temp.size());
+  const Span<uint8_t> dstSpan(temp.data(), temp.size());
   ReadOnlySpan<uint8_t> remainingSpan(temp.data(), temp.size());
 
   std::size_t currentOffset = 0;
-  for (std::size_t i = 0; i < src.size(); ++i)
+  for (const auto value : src)
   {
-    std::size_t bytesWritten = ValueCompression::WriteSimple(dstSpan, currentOffset, src[i]);
+    std::size_t bytesWritten = ValueCompression::WriteSimple(dstSpan, currentOffset, value);
     uint32_t result = 0;
-    auto bytesRead = ValueCompression::ReadSimple(result, dstSpan, currentOffset);
+    const auto bytesRead = ValueCompression::ReadSimple(result, dstSpan, currentOffset);
     EXPECT_EQ(bytesWritten, bytesRead);
-    EXPECT_EQ(src[i], result);
+    EXPECT_EQ(value, result);
     result = ValueCompression::ReadSimpleUInt32(remainingSpan);
-    EXPECT_EQ(src[i], result);
+    EXPECT_EQ(value, result);
     currentOffset += bytesWritten;
   }
 }
@@ -123,21 +123,21 @@ TEST(TestCompression_ValueCompression_Span, WriteSimpleReadSimple_Unsigned)
 TEST(TestCompression_ValueCompression_Span, WriteSimpleReadSimple_Signed)
 {
   std::array<uint8_t, 512> temp{};
-  std::array<int32_t, 11> src = {1,       1337,  -1,      std::numeric_limits<int32_t>::max(), std::numeric_limits<int32_t>::min(), 127, 984545, -23,
-                                 -454356, 40000, 0x200000};
-  Span<uint8_t> dstSpan(temp.data(), temp.size());
+  const std::array<int32_t, 11> src = {
+    1, 1337, -1, std::numeric_limits<int32_t>::max(), std::numeric_limits<int32_t>::min(), 127, 984545, -23, -454356, 40000, 0x200000};
+  const Span<uint8_t> dstSpan(temp.data(), temp.size());
   ReadOnlySpan<uint8_t> remainingSpan(temp.data(), temp.size());
 
   std::size_t currentOffset = 0;
-  for (std::size_t i = 0; i < src.size(); ++i)
+  for (const auto value : src)
   {
-    std::size_t bytesWritten = ValueCompression::WriteSimple(dstSpan, currentOffset, src[i]);
+    std::size_t bytesWritten = ValueCompression::WriteSimple(dstSpan, currentOffset, value);
     int32_t result = 0;
-    auto bytesRead = ValueCompression::ReadSimple(result, dstSpan, currentOffset);
+    const auto bytesRead = ValueCompression::ReadSimple(result, dstSpan, currentOffset);
     EXPECT_EQ(bytesWritten, bytesRead);
-    EXPECT_EQ(src[i], result);
+    EXPECT_EQ(value, result);
     result = ValueCompression::ReadSimpleInt32(remainingSpan);
-    EXPECT_EQ(src[i], result);
+    EXPECT_EQ(value, result);
     currentOffset += bytesWritten;
   }
 }

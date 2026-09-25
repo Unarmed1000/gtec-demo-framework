@@ -68,7 +68,7 @@ namespace Fsl::GLES2
         throw std::invalid_argument("fragmentShader should be of type GL_FRAGMENT_SHADER");
       }
 
-      GLuint handle = GL_CHECK(glCreateProgram());
+      const GLuint handle = GL_CHECK(glCreateProgram());
       if (handle == 0)
       {
         throw GLESGraphicsException("Failed to create program", 0, __FILE__, __LINE__);
@@ -80,9 +80,9 @@ namespace Fsl::GLES2
       if (!attributes.empty())
       {
         assert(std::numeric_limits<GLuint>::max() >= attributes.size());
-        for (GLuint i = 0; i < attributes.size(); ++i)
+        for (const auto& attribute : attributes)
         {
-          GL_CHECK(glBindAttribLocation(handle, attributes[i].Index, attributes[i].Name.c_str()));
+          GL_CHECK(glBindAttribLocation(handle, attribute.Index, attribute.Name.c_str()));
         }
       }
 

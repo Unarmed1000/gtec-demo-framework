@@ -38,6 +38,7 @@ import xml.etree.ElementTree as ET
 from typing import Any, cast
 
 from FslBuildGen import IOUtil, PackageConfig, ToolSharedValues, Util
+from FslBuildGen.BuildExternal import ConanRecipeUtil
 from FslBuildGen.Config import Config
 from FslBuildGen.DataTypes import DependencyOutputType, IncludePriority, PackageCreationYearString, PackageLanguage, PackageString, PackageType
 from FslBuildGen.Exceptions import (
@@ -467,7 +468,9 @@ class XmlGenFile(XmlCommonFslBuild):
             return None
         if not allowRecipe:
             raise Exception(f"This package type does not allow '{recipeElementName}' elements")
-        return XmlExperimentalRecipe(self.Log, child, defaultName)
+        recipe = XmlExperimentalRecipe(self.Log, child, defaultName)
+        ConanRecipeUtil.ValidateRecipe(recipe)
+        return recipe
 
     def __GetPipelineToolDependencyNames(self, pipeline: XmlRecipePipeline | None) -> set[str]:
         dependencies: set[str] = set()

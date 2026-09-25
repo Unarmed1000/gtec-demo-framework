@@ -106,7 +106,7 @@ TEST(TestMath_Vector3_MonoGame, Construct)
   constexpr float X = std::numeric_limits<float>::min();
   constexpr float Y = std::numeric_limits<float>::max();
   constexpr float Z = 0.5f;
-  Vector3 value(X, Y, Z);
+  const Vector3 value(X, Y, Z);
 
   EXPECT_EQ(X, value.X);
   EXPECT_EQ(Y, value.Y);

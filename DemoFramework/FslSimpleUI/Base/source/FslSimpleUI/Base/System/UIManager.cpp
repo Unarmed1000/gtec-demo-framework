@@ -278,7 +278,7 @@ namespace Fsl::UI
   {
     if (!m_useDrawCache || IsRedrawRequired())
     {    // Record the draw command list
-      UIRenderSystem::ScopedDrawCommandBufferAccess scopedAccess(m_renderSystem);
+      const UIRenderSystem::ScopedDrawCommandBufferAccess scopedAccess(m_renderSystem);
       m_tree->Draw(scopedAccess.GetDrawCommandBuffer());
     }
     m_renderSystem.Draw(pPerformanceCapture);
@@ -317,8 +317,9 @@ namespace Fsl::UI
 
   void UIManager::ForceInvalidateLayout()
   {
-    BasicWindowMetrics cachedMetrics = m_windowMetrics;
-    BasicWindowMetrics changedWindowMetrics(cachedMetrics.ExtentPx + PxExtent2D::Create(1, 1), cachedMetrics.ExactDpi, cachedMetrics.DensityDpi);
+    const BasicWindowMetrics cachedMetrics = m_windowMetrics;
+    const BasicWindowMetrics changedWindowMetrics(cachedMetrics.ExtentPx + PxExtent2D::Create(1, 1), cachedMetrics.ExactDpi,
+                                                  cachedMetrics.DensityDpi);
     Resized(changedWindowMetrics);
     Resized(cachedMetrics);
   }

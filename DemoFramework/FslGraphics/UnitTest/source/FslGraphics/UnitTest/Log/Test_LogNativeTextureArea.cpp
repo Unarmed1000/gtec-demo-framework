@@ -42,7 +42,7 @@ namespace
 
 TEST(TestLog_LogNativeTextureArea, Log)
 {
-  NativeTextureArea value(1.0f, 2.0f, 3.0f, 4.0f);
+  const NativeTextureArea value(1.0f, 2.0f, 3.0f, 4.0f);
 
   std::stringstream stream;
   stream << value;

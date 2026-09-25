@@ -52,7 +52,7 @@ namespace Fsl
     {
     }
 
-    bool IsEnabled(const Flags flags) const
+    [[nodiscard]] bool IsEnabled(const Flags flags) const
     {
       return (Value & static_cast<uint32_t>(flags)) == static_cast<uint32_t>(flags);
     }

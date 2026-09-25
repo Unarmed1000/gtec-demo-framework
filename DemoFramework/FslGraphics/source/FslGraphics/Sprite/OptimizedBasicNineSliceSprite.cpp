@@ -66,7 +66,7 @@ namespace Fsl
 
   void OptimizedBasicNineSliceSprite::Resize(const uint32_t densityDpi)
   {
-    SpriteUnitConverter unitConverter(densityDpi);
+    const SpriteUnitConverter unitConverter(densityDpi);
 
     m_info.RenderInfo = RenderOptimizedBasicNineSliceInfo(m_info.RenderInfo.TextureArea, m_info.RenderInfo.Flags,
                                                           unitConverter.CalcScaledPxSize2D(m_info.ImageInfo.ExtentPx, m_info.ImageDpi),

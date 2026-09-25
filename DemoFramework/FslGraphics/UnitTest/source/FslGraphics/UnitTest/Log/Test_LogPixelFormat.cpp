@@ -259,7 +259,7 @@ TEST(TestLog_LogPixelFormat, Log)
     std::string str = entry.Desc;
     str += " (";
     str += ToString(static_cast<uint32_t>(entry.Format));
-    str += ")";
+    str += ')';
     EXPECT_EQ(str, ToString(entry.Format)) << entry.Format;
   }
 }

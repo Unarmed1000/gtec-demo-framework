@@ -80,6 +80,7 @@ namespace Fsl
 
     TessellationShader(const TessellationShader&) = delete;
     TessellationShader& operator=(const TessellationShader&) = delete;
+    ~TessellationShader() = default;
 
     TessellationShader(const std::shared_ptr<IContentManager>& contentManager, VertexDeclarationSpan vertexDeclaration);
 

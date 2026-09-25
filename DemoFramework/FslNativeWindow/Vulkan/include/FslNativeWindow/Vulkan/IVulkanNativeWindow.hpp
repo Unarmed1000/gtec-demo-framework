@@ -43,8 +43,8 @@ namespace Fsl
   {
   public:
     ~IVulkanNativeWindow() override = default;
-    virtual PlatformNativeWindowType GetWindowType() const = 0;
-    virtual VkSurfaceKHR GetVulkanSurface() const = 0;
+    [[nodiscard]] virtual PlatformNativeWindowType GetWindowType() const = 0;
+    [[nodiscard]] virtual VkSurfaceKHR GetVulkanSurface() const = 0;
     //! @brief a implementation of TryGetSize that does not call TryGetVulkanSurfaceSize (so this reports the actual native window size)
     virtual bool TryGetActualSize(PxPoint2& rSize) const = 0;
   };

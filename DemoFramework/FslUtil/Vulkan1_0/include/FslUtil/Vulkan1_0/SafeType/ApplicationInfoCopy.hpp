@@ -52,13 +52,14 @@ namespace Fsl::Vulkan
 
     ApplicationInfoCopy& operator=(ApplicationInfoCopy&& other) noexcept;
     ApplicationInfoCopy(ApplicationInfoCopy&& other) noexcept;
+    ~ApplicationInfoCopy() = default;
 
     ApplicationInfoCopy();
     explicit ApplicationInfoCopy(const VkApplicationInfo& value);
     explicit ApplicationInfoCopy(const VkApplicationInfo* const pValue);
 
 
-    const VkApplicationInfo& Get() const
+    [[nodiscard]] const VkApplicationInfo& Get() const
     {
       return m_value;
     }

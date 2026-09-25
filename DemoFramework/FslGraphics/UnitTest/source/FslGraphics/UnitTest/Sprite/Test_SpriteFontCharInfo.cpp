@@ -42,7 +42,7 @@ namespace
 
 TEST(TestFont_SpriteFontCharInfo, Construct_Default)
 {
-  SpriteFontCharInfo value;
+  const SpriteFontCharInfo value;
   EXPECT_EQ(0u, value.CharInfo.Id);
   EXPECT_EQ(PxRectangleU16(), value.CharInfo.SrcTextureRectPx);
   EXPECT_EQ(PxVector2(), value.RenderInfo.OffsetPxf);
@@ -61,8 +61,8 @@ TEST(TestFont_SpriteFontCharInfo, Construct)
   const auto offsetPxf = PxVector2::Create(5.1f, 6.2f);
   const float xAdvancePxf = 42.6f;
 
-  SpriteFontCharInfo value(CoreFontCharInfo(id, srcTextureRectPx, offsetPx, xAdvancePx),
-                           RenderFontCharInfo(nativeTex, scaledSizePxf, offsetPxf, xAdvancePxf));
+  const SpriteFontCharInfo value(CoreFontCharInfo(id, srcTextureRectPx, offsetPx, xAdvancePx),
+                                 RenderFontCharInfo(nativeTex, scaledSizePxf, offsetPxf, xAdvancePxf));
   EXPECT_EQ(id, value.CharInfo.Id);
   EXPECT_EQ(srcTextureRectPx, value.CharInfo.SrcTextureRectPx);
   EXPECT_EQ(nativeTex, value.RenderInfo.TextureArea);

@@ -36,11 +36,11 @@ namespace Fsl::UI::Declarative
 {
   void PrimitiveTypeRegistry::Register(const PrimitiveTypeData& data)
   {
-    if (m_typeToData.find(data.Info.Type) != m_typeToData.end())
+    if (m_typeToData.contains(data.Info.Type))
     {
       throw std::invalid_argument("type already registered");
     }
-    if (m_nameToType.find(data.Info.Name) != m_nameToType.end())
+    if (m_nameToType.contains(data.Info.Name))
     {
       throw std::invalid_argument("type name already registered");
     }

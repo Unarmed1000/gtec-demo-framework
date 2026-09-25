@@ -56,7 +56,7 @@ namespace Fsl
     //! The number of ticks per millisecond
     static constexpr uint16_t TicksPerMillisecond = 10000;
     //! The number of ticks per second
-    static constexpr int64_t TicksPerSecond = TicksPerMillisecond * 1000;
+    static constexpr int64_t TicksPerSecond = int64_t{TicksPerMillisecond} * 1000;
     //! The number of ticks per minute
     static constexpr int64_t TicksPerMinute = TicksPerSecond * 60;
     //! The number of ticks per hour
@@ -98,82 +98,82 @@ namespace Fsl
     constexpr explicit TimeSpan(const int32_t days, const int32_t hours, const int32_t minutes, const int32_t seconds,
                                 const int32_t milliseconds) noexcept
       : TimeSpan((days * TicksPerDay) + (hours * TicksPerHour) + (minutes * TicksPerMinute) + (seconds * TicksPerSecond) +
-                 (milliseconds * TicksPerMillisecond))
+                 (static_cast<int64_t>(milliseconds) * TicksPerMillisecond))
     {
     }
 
 
-    constexpr float DeltaTime() const
+    [[nodiscard]] constexpr float DeltaTime() const
     {
       return static_cast<float>(static_cast<double>(m_ticks) / 10000000.0);
     }
 
-    constexpr int64_t Ticks() const noexcept
+    [[nodiscard]] constexpr int64_t Ticks() const noexcept
     {
       return m_ticks;
     }
 
-    constexpr int32_t Days() const noexcept
+    [[nodiscard]] constexpr int32_t Days() const noexcept
     {
       return UncheckedNumericCast<int32_t>(m_ticks / TicksPerDay);
     }
 
-    constexpr int32_t Hours() const noexcept
+    [[nodiscard]] constexpr int32_t Hours() const noexcept
     {
       return UncheckedNumericCast<int32_t>((m_ticks / TicksPerHour) % 24);
     }
 
-    constexpr int32_t Minutes() const noexcept
+    [[nodiscard]] constexpr int32_t Minutes() const noexcept
     {
       return UncheckedNumericCast<int32_t>((m_ticks / TicksPerMinute) % 60);
     }
 
-    constexpr int32_t Seconds() const noexcept
+    [[nodiscard]] constexpr int32_t Seconds() const noexcept
     {
       return UncheckedNumericCast<int32_t>((m_ticks / TicksPerSecond) % 60);
     }
 
-    constexpr int32_t Milliseconds() const noexcept
+    [[nodiscard]] constexpr int32_t Milliseconds() const noexcept
     {
       return UncheckedNumericCast<int32_t>((m_ticks / TicksPerMillisecond) % 1000);
     }
 
-    constexpr int32_t Microseconds() const noexcept
+    [[nodiscard]] constexpr int32_t Microseconds() const noexcept
     {
       return UncheckedNumericCast<int32_t>((m_ticks / TicksPerMicrosecond) % 1000);
     }
 
-    constexpr double TotalNanoseconds() const noexcept
+    [[nodiscard]] constexpr double TotalNanoseconds() const noexcept
     {
       return static_cast<double>(Ticks()) * static_cast<double>(NanoSecondsPerTick);
     }
 
-    constexpr double TotalMicroseconds() const noexcept
+    [[nodiscard]] constexpr double TotalMicroseconds() const noexcept
     {
       return static_cast<double>(Ticks()) / static_cast<double>(TicksPerMicrosecond);
     }
 
-    constexpr double TotalMilliseconds() const noexcept
+    [[nodiscard]] constexpr double TotalMilliseconds() const noexcept
     {
       return static_cast<double>(Ticks()) / static_cast<double>(TicksPerMillisecond);
     }
 
-    constexpr double TotalSeconds() const noexcept
+    [[nodiscard]] constexpr double TotalSeconds() const noexcept
     {
       return static_cast<double>(Ticks()) / static_cast<double>(TicksPerSecond);
     }
 
-    constexpr double TotalMinutes() const noexcept
+    [[nodiscard]] constexpr double TotalMinutes() const noexcept
     {
       return static_cast<double>(Ticks()) / static_cast<double>(TicksPerMinute);
     }
 
-    constexpr double TotalHours() const noexcept
+    [[nodiscard]] constexpr double TotalHours() const noexcept
     {
       return static_cast<double>(Ticks()) / static_cast<double>(TicksPerHour);
     }
 
-    constexpr double TotalDays() const noexcept
+    [[nodiscard]] constexpr double TotalDays() const noexcept
     {
       return static_cast<double>(Ticks()) / static_cast<double>(TicksPerDay);
     }
@@ -292,7 +292,7 @@ namespace Fsl
       {
         throw OverflowException("exceeded maximum allowed value");
       }
-      double result = static_cast<double>(value) * static_cast<double>(TicksPerSecond);
+      const double result = static_cast<double>(value) * static_cast<double>(TicksPerSecond);
       return TimeSpan(static_cast<int64_t>(result));
     }
 

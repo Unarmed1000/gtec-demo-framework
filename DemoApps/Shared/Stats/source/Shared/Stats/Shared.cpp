@@ -85,13 +85,13 @@ namespace Fsl
       }
     };
 
-    AreaChartUI CreateAreaChart(UI::Theme::IThemeControlFactory& uiFactory, const std::shared_ptr<UI::ChartData>& chartDataView,
+    AreaChartUI CreateAreaChart(const UI::Theme::IThemeControlFactory& uiFactory, const std::shared_ptr<UI::ChartData>& chartDataView,
                                 const std::shared_ptr<UI::BaseWindow>& caption)
     {
       const auto& context = uiFactory.GetContext();
       const auto& resources = uiFactory.GetResources();
 
-      auto chart = std::make_shared<UI::AreaChart>(context);
+      const auto chart = std::make_shared<UI::AreaChart>(context);
       chart->SetAlignmentX(UI::ItemAlignment::Stretch);
       chart->SetAlignmentY(UI::ItemAlignment::Stretch);
       chart->SetOpaqueFillSprite(resources.GetBasicFillSprite(true));
@@ -102,7 +102,7 @@ namespace Fsl
       chart->SetMinHeight(LocalConfig::ChartHeight);
       chart->SetDataView(chartDataView);
 
-      auto layout = std::make_shared<UI::ComplexStackLayout>(context);
+      const auto layout = std::make_shared<UI::ComplexStackLayout>(context);
       layout->SetOrientation(UI::LayoutOrientation::Vertical);
       layout->SetAlignmentX(UI::ItemAlignment::Stretch);
       layout->SetAlignmentY(UI::ItemAlignment::Stretch);
@@ -119,24 +119,24 @@ namespace Fsl
     {
       const auto& context = uiFactory.GetContext();
 
-      auto caption = uiFactory.CreateLabel(strCaption);
+      const auto caption = uiFactory.CreateLabel(strCaption);
 
-      auto fmtValueLabel = uiFactory.CreateFmtValueLabel(0.0f, "{:.1f}");
+      const auto fmtValueLabel = uiFactory.CreateFmtValueLabel(0.0f, "{:.1f}");
       fmtValueLabel->SetAlignmentX(UI::ItemAlignment::Far);
 
-      auto layout = std::make_shared<UI::ComplexStackLayout>(context);
+      const auto layout = std::make_shared<UI::ComplexStackLayout>(context);
       layout->SetOrientation(UI::LayoutOrientation::Horizontal);
       layout->SetAlignmentX(UI::ItemAlignment::Stretch);
       layout->SetAlignmentY(UI::ItemAlignment::Stretch);
       layout->AddChild(caption, UI::LayoutLength(UI::LayoutUnitType::Auto));
       layout->AddChild(fmtValueLabel, UI::LayoutLength(UI::LayoutUnitType::Star, 1.0f));
 
-      auto chartRecord = CreateAreaChart(uiFactory, chartDataView, layout);
+      const auto chartRecord = CreateAreaChart(uiFactory, chartDataView, layout);
       chartRecord.Chart->SetGridLines(std::make_shared<ChartGridLinesCpu>());
       chartRecord.Chart->SetRenderPolicy(UI::ChartRenderPolicy::Measure);
 
       {
-        auto converterBinding = std::make_shared<Fsl::DataBinding::ConverterBinding<float, UI::ChartDataEntry>>(
+        const auto converterBinding = std::make_shared<Fsl::DataBinding::ConverterBinding<float, UI::ChartDataEntry>>(
           [](const UI::ChartDataEntry value) { return static_cast<float>(value.Values[0]); });
 
         fmtValueLabel->SetBinding(UI::FmtValueLabel<float>::PropertyContent,
@@ -151,23 +151,23 @@ namespace Fsl
     {
       const auto& context = uiFactory.GetContext();
 
-      auto caption = uiFactory.CreateLabel(strCaption);
+      const auto caption = uiFactory.CreateLabel(strCaption);
 
-      auto fmtValueLabel = uiFactory.CreateFmtValueLabel(static_cast<uint64_t>(0), "{:10} KB");
+      const auto fmtValueLabel = uiFactory.CreateFmtValueLabel(static_cast<uint64_t>(0), "{:10} KB");
       fmtValueLabel->SetAlignmentX(UI::ItemAlignment::Far);
 
-      auto layout = std::make_shared<UI::ComplexStackLayout>(context);
+      const auto layout = std::make_shared<UI::ComplexStackLayout>(context);
       layout->SetOrientation(UI::LayoutOrientation::Horizontal);
       layout->SetAlignmentX(UI::ItemAlignment::Stretch);
       layout->SetAlignmentY(UI::ItemAlignment::Stretch);
       layout->AddChild(caption, UI::LayoutLength(UI::LayoutUnitType::Auto));
       layout->AddChild(fmtValueLabel, UI::LayoutLength(UI::LayoutUnitType::Star, 1.0f));
 
-      auto chartRecord = CreateAreaChart(uiFactory, chartDataView, layout);
+      const auto chartRecord = CreateAreaChart(uiFactory, chartDataView, layout);
       chartRecord.Chart->SetRenderPolicy(UI::ChartRenderPolicy::FillAvailable);
 
       {
-        auto converterBinding = std::make_shared<Fsl::DataBinding::ConverterBinding<uint64_t, UI::ChartDataEntry>>(
+        const auto converterBinding = std::make_shared<Fsl::DataBinding::ConverterBinding<uint64_t, UI::ChartDataEntry>>(
           [](const UI::ChartDataEntry value) { return UncheckedNumericCast<uint64_t>(value.Values[0]); });
 
         fmtValueLabel->SetBinding(UI::FmtValueLabel<uint64_t>::PropertyContent,
@@ -265,8 +265,8 @@ namespace Fsl
   {
     const auto& context = uiFactory.GetContext();
 
-    auto appUsage = CreateAppUsageUI(uiFactory, chartData);
-    auto cpuUsage = CreateCpuUsageUI(uiFactory, chartData);
+    const auto appUsage = CreateAppUsageUI(uiFactory, chartData);
+    const auto cpuUsage = CreateCpuUsageUI(uiFactory, chartData);
 
     // Create the main layout
     auto mainLayout = std::make_shared<UI::StackLayout>(context);
@@ -282,8 +282,8 @@ namespace Fsl
   {
     const auto& context = uiFactory.GetContext();
 
-    auto chartCpu = CreateCpuAreaChart(uiFactory, chartData.AppCpu.ChartData, "App CPU");
-    auto chartRam = CreateRamAreaChart(uiFactory, chartData.AppRam, "App RAM");
+    const auto chartCpu = CreateCpuAreaChart(uiFactory, chartData.AppCpu.ChartData, "App CPU");
+    const auto chartRam = CreateRamAreaChart(uiFactory, chartData.AppRam, "App RAM");
 
     auto mainLayout = std::make_shared<UI::UniformStackLayout>(context);
     mainLayout->SetAlignmentX(UI::ItemAlignment::Center);
@@ -306,7 +306,7 @@ namespace Fsl
     std::size_t cpuIndex = 0;
     for (const auto& cpuCoreEntry : chartData.Cores)
     {
-      auto coreChart = CreateCpuAreaChart(uiFactory, cpuCoreEntry.ChartData, fmt::format("CPU{}:", cpuIndex));
+      const auto coreChart = CreateCpuAreaChart(uiFactory, cpuCoreEntry.ChartData, fmt::format("CPU{}:", cpuIndex));
       mainLayout->AddChild(coreChart);
       ++cpuIndex;
     }

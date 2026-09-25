@@ -54,6 +54,9 @@ namespace Fsl::UI::Internal
       m_rEvent.SYS_PatchInternals(transactionState, isRepeat, EventHandlingStatus::Unhandled, allowIntercept);
     }
 
+    ScopedWindowTransactionEventPatch(const ScopedWindowTransactionEventPatch&) = delete;
+    ScopedWindowTransactionEventPatch& operator=(const ScopedWindowTransactionEventPatch&) = delete;
+
     ~ScopedWindowTransactionEventPatch()
     {
       m_rEvent.SYS_PatchInternals(m_oldTransactionState, m_oldIsRepeat, m_oldHandlingStatus, m_oldAllowIntercept);

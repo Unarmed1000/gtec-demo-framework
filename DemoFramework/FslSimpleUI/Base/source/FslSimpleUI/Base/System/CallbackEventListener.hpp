@@ -41,6 +41,9 @@ namespace Fsl::UI
     IEventListener* m_callback;
 
   public:
+    CallbackEventListener(const CallbackEventListener&) = delete;
+    CallbackEventListener& operator=(const CallbackEventListener&) = delete;
+
     ~CallbackEventListener() override
     {
       m_callback = nullptr;

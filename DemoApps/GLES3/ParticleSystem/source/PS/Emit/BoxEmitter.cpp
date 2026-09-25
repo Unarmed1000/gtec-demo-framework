@@ -107,7 +107,7 @@ namespace Fsl
       rDst.resize(count);
     }
 
-    Vector3 startPos(m_box * -0.5f);
+    const Vector3 startPos(m_box * -0.5f);
 
     std::uniform_int_distribution<int32_t> randomTexture(m_textureIdMin, m_textureIdMax);
     std::uniform_real_distribution<float> randomPositionX(startPos.X, startPos.X + m_box.X);

@@ -118,7 +118,7 @@ namespace Fsl::GLES3
     ~GLProgram();
 
     //! @brief Check if this contains a valid gl handle.
-    bool IsValid() const noexcept
+    [[nodiscard]] bool IsValid() const noexcept
     {
       return m_handle != GLValues::InvalidHandle;
     }
@@ -157,7 +157,7 @@ namespace Fsl::GLES3
                const std::function<void(GLuint)>& postCompilePreLinkCallback);
 
     //! @brief Get the handle to the shader program
-    GLuint Get() const noexcept
+    [[nodiscard]] GLuint Get() const noexcept
     {
       return m_handle;
     }

@@ -18,7 +18,7 @@ namespace Fsl
   {
     struct UserData
     {
-      GLuint Fbo;
+      GLuint Fbo{GLES3::GLValues::InvalidHandle};
 
       // Texture handle
       std::array<GLuint, 4> ColorTexId{};
@@ -28,7 +28,7 @@ namespace Fsl
       GLsizei TextureHeight{0};
 
       UserData()
-        : Fbo(GLES3::GLValues::InvalidHandle)
+
       {
         ColorTexId[0] = GLES3::GLValues::InvalidHandle;
         ColorTexId[1] = GLES3::GLValues::InvalidHandle;

@@ -67,21 +67,21 @@ namespace Fsl
     ShaderBase(const std::string& strVertexShader, const std::string& strFragmentShader);
     virtual ~ShaderBase();
 
-    ShaderVertexConfig GetShaderConfig() const;
+    [[nodiscard]] ShaderVertexConfig GetShaderConfig() const;
 
   protected:
     ShaderVertexConfig m_shaderConfig;
 
 
-    bool IsValid() const;
-    GLuint Get() const;
-    const GLES3::GLProgram& GetProgram() const
+    [[nodiscard]] bool IsValid() const;
+    [[nodiscard]] GLuint Get() const;
+    [[nodiscard]] const GLES3::GLProgram& GetProgram() const
     {
       return m_program;
     }
     void Load();
     void Unload();
-    bool IsLoaded() const
+    [[nodiscard]] bool IsLoaded() const
     {
       return m_isLoaded;
     }

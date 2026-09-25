@@ -47,7 +47,7 @@ namespace
 
 TEST(TestLog_Math_LogRectangle, Log)
 {
-  Rectangle value(1, 2, 10, 20);
+  const Rectangle value(1, 2, 10, 20);
 
   std::stringstream stream;
   stream << value;

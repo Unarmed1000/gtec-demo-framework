@@ -52,12 +52,12 @@ namespace Fsl::Graphics3D
     RawMeshContentEx(void* const pTheVertices, const uint32_t vertexCount, const uint32_t vertexStride, void* const pTheIndices,
                      const uint32_t indexCount, const uint32_t indexStride, const PrimitiveType primitiveType);
 
-    uint32_t VertexArrayByteSize() const
+    [[nodiscard]] uint32_t VertexArrayByteSize() const
     {
       return VertexStride * VertexCount;
     }
 
-    uint32_t IndexArrayByteSize() const
+    [[nodiscard]] uint32_t IndexArrayByteSize() const
     {
       return IndexStride * IndexCount;
     }

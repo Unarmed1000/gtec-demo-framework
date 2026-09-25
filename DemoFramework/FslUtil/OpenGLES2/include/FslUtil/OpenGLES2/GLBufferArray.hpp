@@ -67,29 +67,29 @@ namespace Fsl::GLES2
 
     virtual ~GLBufferArray();
 
-    bool IsValid() const
+    [[nodiscard]] bool IsValid() const
     {
       return m_target != 0;
     }
 
-    GLenum GetTarget() const
+    [[nodiscard]] GLenum GetTarget() const
     {
       return m_target;
     }
 
-    uint32_t GetElementStride() const
+    [[nodiscard]] uint32_t GetElementStride() const
     {
       return m_elementStride;
     }
 
     //! @brief return the length of the array
-    int32_t Length() const;
+    [[nodiscard]] int32_t Length() const;
 
     //! @brief Release the entire array.
     virtual void Reset() noexcept;
 
     //! @brief Get the entry at the arrayIndex
-    GLBufferArrayEntry Get(const std::size_t arrayIndex) const;
+    [[nodiscard]] GLBufferArrayEntry Get(const std::size_t arrayIndex) const;
 
     //! @brief Set the entry at the arrayIndex
     void Set(const std::size_t arrayIndex, const GLBufferArrayEntry& value);

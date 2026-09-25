@@ -155,7 +155,7 @@ namespace Fsl
     explicit GesturesShared(const DemoAppConfig& config);
     ~GesturesShared() override;
 
-    std::shared_ptr<UIDemoAppExtension> GetUIDemoAppExtension() const
+    [[nodiscard]] std::shared_ptr<UIDemoAppExtension> GetUIDemoAppExtension() const
     {
       return m_uiExtension;
     }

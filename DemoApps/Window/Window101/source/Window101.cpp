@@ -48,10 +48,10 @@ namespace Fsl
   Window101::Window101(const DemoAppConfig& config)
     : DemoAppWindow(config)
   {
-    auto windowHostInfo = config.DemoServiceProvider.Get<IWindowHostInfo>();
+    const auto windowHostInfo = config.DemoServiceProvider.Get<IWindowHostInfo>();
 
     // Be very careful what you call on this
-    auto windowSystem = windowHostInfo->GetWindowSystem();
+    const auto windowSystem = windowHostInfo->GetWindowSystem();
 
     // Get all the active windows
     auto windows = windowHostInfo->GetWindows();
@@ -60,7 +60,7 @@ namespace Fsl
     FSLLOG3_INFO("Active windows: {}", windows.size());
     for (std::size_t i = 0; i < windows.size(); ++i)
     {
-      auto window = windows[i].lock();
+      const auto window = windows[i].lock();
       FSLLOG3_INFO("Window #{}", i);
       if (window)
       {
@@ -107,7 +107,7 @@ namespace Fsl
           FSLLOG3_INFO("- DisplayInfo.RefreshInterval: Unknown");
         }
 
-        auto windowMetrics = window->GetWindowMetrics();
+        const auto windowMetrics = window->GetWindowMetrics();
         FSLLOG3_INFO("- WindowMetrics.ExactDpi: {}", windowMetrics.ExactDpi);
         FSLLOG3_INFO("- WindowMetrics.DensityDpi: {}", windowMetrics.DensityDpi);
         FSLLOG3_INFO("- WindowMetrics.DensityScaleFactor: {}", windowMetrics.DensityScaleFactor);

@@ -54,7 +54,7 @@ namespace Fsl
       //
       // Note: N refers to the normal, d refers to the displacement. '.' means dot product. '*' means cross product
 
-      Vector3 cross = Vector3::Cross(b.Normal, c.Normal);
+      const Vector3 cross = Vector3::Cross(b.Normal, c.Normal);
       const float f = Vector3::Dot(a.Normal, cross) * -1.0f;
       const Vector3 v1 = Vector3::Cross(b.Normal, c.Normal) * a.D;
       const Vector3 v2 = Vector3::Cross(c.Normal, a.Normal) * b.D;
@@ -66,7 +66,7 @@ namespace Fsl
 
     void NormalizePlane(Plane& rPlane)
     {
-      float factor = 1.0f / rPlane.Normal.Length();
+      const float factor = 1.0f / rPlane.Normal.Length();
       rPlane.Normal.X *= factor;
       rPlane.Normal.Y *= factor;
       rPlane.Normal.Z *= factor;
@@ -247,11 +247,11 @@ namespace Fsl
         // TODO: Needs additional test for not 0.0 and null results.
         float minVal = std::numeric_limits<float>::max();
         float maxVal = std::numeric_limits<float>::lowest();
-        for (auto plane : m_planes)
+        for (const auto plane : m_planes)
         {
           const auto normal = plane.Normal;
 
-          float result2 = Vector3::Dot(ray.Direction, normal);
+          const float result2 = Vector3::Dot(ray.Direction, normal);
           float result3 = Vector3::Dot(ray.Position, normal);
 
           result3 += plane.D;
@@ -265,7 +265,7 @@ namespace Fsl
           }
           else
           {
-            float result4 = -result3 / result2;
+            const float result4 = -result3 / result2;
             if (static_cast<double>(result2) < 0.0)
             {
               if (static_cast<double>(result4) > static_cast<double>(maxVal))
@@ -298,7 +298,7 @@ namespace Fsl
           }
         }
 
-        float temp = minVal >= 0.0 ? minVal : maxVal;
+        const float temp = minVal >= 0.0 ? minVal : maxVal;
         if (temp < 0.0)
         {
           return false;

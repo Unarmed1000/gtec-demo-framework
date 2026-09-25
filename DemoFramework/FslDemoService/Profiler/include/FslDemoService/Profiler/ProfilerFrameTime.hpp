@@ -51,7 +51,7 @@ namespace Fsl
     {
     }
 
-    float GetFramePerSecond() const
+    [[nodiscard]] float GetFramePerSecond() const
     {
       return TotalTime > 0 ? (1000000.0f / static_cast<float>(TotalTime)) : 0.0f;
     }

@@ -64,7 +64,7 @@ namespace Fsl
       const auto count = static_cast<uint32_t>(elements.size());
       for (uint32_t i = 0; i < count; ++i)
       {
-        auto offset = elements[i].Offset;
+        const auto offset = elements[i].Offset;
         if (offset < maxOffset)
         {
           throw NotSupportedException("The offsets should be in order: smallest -> largest");
@@ -110,10 +110,7 @@ namespace Fsl
             rDstElements[tmpIndex + 1] = rDstElements[tmpIndex];
             --tmpIndex;
           }
-          if (tmpIndex < 0)
-          {
-            tmpIndex = 0;
-          }
+          tmpIndex = std::max(tmpIndex, 0);
           rDstElements[tmpIndex] = pSrcElement[i];
         }
         ++dstIndex;
@@ -158,7 +155,7 @@ namespace Fsl
     //{
     //  throw NotSupportedException("We only support 32bit of elements");
     //}
-    CopyElements(m_elements, span.DirectAccess(), static_cast<uint32_t>(span.Count()));
+    CopyElements(m_elements, span.DirectAccess(), span.Count());
     // We do not need to verify elements as the span has been validated
     // VerifyElements(m_elements, m_vertexStride);
   }

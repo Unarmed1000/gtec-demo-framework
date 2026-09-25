@@ -165,7 +165,7 @@ namespace Fsl::CommonMethods
     viewport.minDepth = 0.0f;
     viewport.maxDepth = 1.0f;
 
-    VkRect2D scissor{{0, 0}, extent};
+    const VkRect2D scissor{{0, 0}, extent};
 
     VkPipelineViewportStateCreateInfo pipelineViewportStateCreateInfo{};
     pipelineViewportStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;

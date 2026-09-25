@@ -49,27 +49,27 @@ namespace Fsl
     OptionParser();
     ~OptionParser() override;
 
-    int32_t GetScene() const
+    [[nodiscard]] int32_t GetScene() const
     {
       return m_scene;
     }
-    float GetDisplacementFactor() const
+    [[nodiscard]] float GetDisplacementFactor() const
     {
       return m_displacementFactor;
     }
-    float GetDisplacementMod() const
+    [[nodiscard]] float GetDisplacementMod() const
     {
       return m_displacementMod;
     }
-    float GetFieldOfView() const
+    [[nodiscard]] float GetFieldOfView() const
     {
       return m_fieldOfView;
     }
-    Vector3 GetMatSpecular() const
+    [[nodiscard]] Vector3 GetMatSpecular() const
     {
       return m_matSpecular;
     }
-    float GetMatShininess() const
+    [[nodiscard]] float GetMatShininess() const
     {
       return m_matShininess;
     }

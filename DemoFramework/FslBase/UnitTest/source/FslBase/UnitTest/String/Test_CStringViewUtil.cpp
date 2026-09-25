@@ -43,8 +43,8 @@ namespace
 
 TEST(TestString_CStringViewUtil, Construct)
 {
-  std::string empty;
-  auto strView = CStringViewUtil::AsCStringView(empty);
+  const std::string empty;
+  const auto strView = CStringViewUtil::AsCStringView(empty);
 
   EXPECT_TRUE(strView.empty());
   EXPECT_NE(strView.data(), nullptr);
@@ -55,8 +55,8 @@ TEST(TestString_CStringViewUtil, Construct)
 
 TEST(TestString_CStringViewUtil, Construct_FromStr)
 {
-  std::string str("Hello world");
-  auto strView = CStringViewUtil::AsCStringView(str);
+  const std::string str("Hello world");
+  const auto strView = CStringViewUtil::AsCStringView(str);
 
   EXPECT_FALSE(strView.empty());
   EXPECT_NE(strView.data(), nullptr);
@@ -68,8 +68,8 @@ TEST(TestString_CStringViewUtil, Construct_FromStr)
 
 TEST(TestString_CStringViewUtil, ToString_Empty)
 {
-  CStringView empty;
-  auto dstStr = CStringViewUtil::ToString(empty);
+  const CStringView empty;
+  const auto dstStr = CStringViewUtil::ToString(empty);
 
   EXPECT_TRUE(dstStr.empty());
   EXPECT_EQ(0u, dstStr.size());
@@ -79,8 +79,8 @@ TEST(TestString_CStringViewUtil, ToString_Empty)
 
 TEST(TestString_CStringViewUtil, ToString)
 {
-  CStringView str("hello");
-  auto dstStr = CStringViewUtil::ToString(str);
+  const CStringView str("hello");
+  const auto dstStr = CStringViewUtil::ToString(str);
 
   EXPECT_EQ(str, dstStr);
 }
@@ -89,7 +89,7 @@ TEST(TestString_CStringViewUtil, ToString)
 
 TEST(TestString_CStringViewUtil, Set_String_Empty)
 {
-  CStringView empty;
+  const CStringView empty;
   std::string dstStr;
   CStringViewUtil::Set(dstStr, empty);
 
@@ -101,7 +101,7 @@ TEST(TestString_CStringViewUtil, Set_String_Empty)
 
 TEST(TestString_CStringViewUtil, Set_String)
 {
-  CStringView str("hello");
+  const CStringView str("hello");
   std::string dstStr;
   CStringViewUtil::Set(dstStr, str);
 

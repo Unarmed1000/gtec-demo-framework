@@ -179,7 +179,7 @@ namespace Fsl
     //  DestroyCommandBuffers();
     //  CreateCommandBuffers();
     //}
-    auto screenExtent = TypeConverter::UncheckedTo<VkExtent2D>(GetScreenExtent());
+    const auto screenExtent = TypeConverter::UncheckedTo<VkExtent2D>(GetScreenExtent());
 
 
     VkCommandBufferBeginInfo cmdBufInfo{};
@@ -212,7 +212,7 @@ namespace Fsl
     scissor.offset.y = 0;
     scissor.extent = screenExtent;
 
-    VkDeviceSize offsets = 0;
+    const VkDeviceSize offsets = 0;
 
     for (std::size_t i = 0; i < m_drawCmdBuffers.Size(); ++i)
     {
@@ -267,12 +267,12 @@ namespace Fsl
       particle.GradientPos.x = particle.Pos.x / 2.0f;
     }
 
-    VkDeviceSize storageBufferSize = particleBuffer.size() * sizeof(Particle);
+    const VkDeviceSize storageBufferSize = particleBuffer.size() * sizeof(Particle);
 
     // Staging
     // SSBO won't be changed on the host after upload so copy to device local memory
 
-    Willems::VulkanBuffer stagingBuffer =
+    const Willems::VulkanBuffer stagingBuffer =
       m_vulkanDevice.CreateBuffer(VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
                                   storageBufferSize, particleBuffer.data());
 
@@ -338,7 +338,7 @@ namespace Fsl
     m_compute.Ubo.DeltaT = m_frameTimer * 2.5f;
     if (m_animate)
     {
-      m_compute.Ubo.DestX = static_cast<float>(sin(glm::radians(m_timer * 360.0f)) * 0.75f);
+      m_compute.Ubo.DestX = (sin(glm::radians(m_timer * 360.0f)) * 0.75f);
       m_compute.Ubo.DestY = 0.0f;
     }
     else

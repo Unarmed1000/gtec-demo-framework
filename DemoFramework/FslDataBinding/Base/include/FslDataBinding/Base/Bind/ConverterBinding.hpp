@@ -61,17 +61,17 @@ namespace Fsl::DataBinding
       }
     }
 
-    BindingCapabilityFlags GetCaps() const noexcept final
+    [[nodiscard]] BindingCapabilityFlags GetCaps() const noexcept final
     {
       return BindingCapabilityFlags::NoFlags;
     }
 
-    std::type_index GetSourceType() const noexcept final
+    [[nodiscard]] std::type_index GetSourceType() const noexcept final
     {
       return typeid(source_value_type);
     }
 
-    std::type_index GetTargetType() const noexcept final
+    [[nodiscard]] std::type_index GetTargetType() const noexcept final
     {
       return typeid(target_value_type);
     }

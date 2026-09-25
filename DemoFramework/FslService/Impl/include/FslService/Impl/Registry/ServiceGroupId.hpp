@@ -54,13 +54,13 @@ namespace Fsl
     }
 
 
-    uint32_t GetValue() const
+    [[nodiscard]] uint32_t GetValue() const
     {
       return m_value;
     }
 
 
-    bool IsValid() const
+    [[nodiscard]] bool IsValid() const
     {
       return m_value != INVALID;
     }

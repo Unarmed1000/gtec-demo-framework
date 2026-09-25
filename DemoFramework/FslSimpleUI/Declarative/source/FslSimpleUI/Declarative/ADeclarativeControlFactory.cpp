@@ -47,8 +47,8 @@ namespace Fsl::UI::Declarative
   void ADeclarativeControlFactory::AddThemeProperty(std::unique_ptr<ThemeProperty> themeProperty, const bool required)
   {
     const auto propertyName = themeProperty->GetName().AsStringViewLite();
-    auto itrFind = std::find_if(m_properties.begin(), m_properties.end(),
-                                [propertyName](const ControlPropertyRecord& entry) { return (entry.Property->GetName() == propertyName); });
+    const auto itrFind = std::find_if(m_properties.begin(), m_properties.end(),
+                                      [propertyName](const ControlPropertyRecord& entry) { return (entry.Property->GetName() == propertyName); });
     if (itrFind != m_properties.end())
     {
       throw UsageErrorException(fmt::format("A property named '{}' can not be registered multiple times", propertyName.AsStringView()));

@@ -46,7 +46,7 @@ namespace
 
 TEST(Test_DemoTime, Construct)
 {
-  DemoTime demoTime;
+  const DemoTime demoTime;
   EXPECT_EQ(demoTime.CurrentTickCount.Ticks(), 0);
   EXPECT_EQ(demoTime.ElapsedTime.Ticks(), 0);
   EXPECT_FLOAT_EQ(demoTime.DeltaTime, 0.0f);
@@ -55,9 +55,9 @@ TEST(Test_DemoTime, Construct)
 TEST(Test_DemoTime, Construct_OneSecond)
 {
   constexpr auto Ticks = TimeSpan::TicksPerSecond;
-  TickCount totalTimeSpan(Ticks * 2);
-  TimeSpan elapsedTimeSpan(Ticks);
-  DemoTime demoTime(totalTimeSpan, elapsedTimeSpan);
+  const TickCount totalTimeSpan(Ticks * 2);
+  const TimeSpan elapsedTimeSpan(Ticks);
+  const DemoTime demoTime(totalTimeSpan, elapsedTimeSpan);
 
   EXPECT_EQ(demoTime.CurrentTickCount, totalTimeSpan);
   EXPECT_EQ(demoTime.ElapsedTime, elapsedTimeSpan);
@@ -68,9 +68,9 @@ TEST(Test_DemoTime, Construct_OneSecond)
 TEST(Test_DemoTime, Construct_HalfASecond)
 {
   constexpr auto Ticks = TimeSpan::TicksPerSecond / 2;
-  TickCount totalTimeSpan(Ticks * 2);
-  TimeSpan elapsedTimeSpan(Ticks);
-  DemoTime demoTime(totalTimeSpan, elapsedTimeSpan);
+  const TickCount totalTimeSpan(Ticks * 2);
+  const TimeSpan elapsedTimeSpan(Ticks);
+  const DemoTime demoTime(totalTimeSpan, elapsedTimeSpan);
 
   EXPECT_EQ(demoTime.CurrentTickCount, totalTimeSpan);
   EXPECT_EQ(demoTime.ElapsedTime, elapsedTimeSpan);

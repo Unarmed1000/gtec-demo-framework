@@ -47,13 +47,13 @@ namespace Fsl::DataBinding
   class AConverterBinding : public ISingleBinding
   {
   public:
-    BindingType GetBindingType() const noexcept final
+    [[nodiscard]] BindingType GetBindingType() const noexcept final
     {
       return BindingType::AConverterBinding;
     }
 
-    virtual std::type_index GetSourceType() const noexcept = 0;
-    virtual std::type_index GetTargetType() const noexcept = 0;
+    [[nodiscard]] virtual std::type_index GetSourceType() const noexcept = 0;
+    [[nodiscard]] virtual std::type_index GetTargetType() const noexcept = 0;
 
     virtual Internal::PropertySetResult Convert(const Internal::PropertyMethodsImplType setPropertyMethodsImplType,
                                                 Internal::IPropertyMethods* const pSet,

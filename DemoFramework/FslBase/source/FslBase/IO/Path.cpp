@@ -94,7 +94,7 @@ namespace Fsl::IO
 
   void Path::Append(const std::size_t count, const char ch)
   {
-    auto finalChar = ch != '\\' ? ch : '/';
+    const auto finalChar = ch != '\\' ? ch : '/';
     m_content.Append(count, finalChar);
   }
 
@@ -111,7 +111,7 @@ namespace Fsl::IO
 
   void Path::Prepend(const std::size_t count, const char ch)
   {
-    auto finalChar = ch != '\\' ? ch : '/';
+    const auto finalChar = ch != '\\' ? ch : '/';
     m_content.Prepend(count, finalChar);
   }
 
@@ -202,13 +202,13 @@ namespace Fsl::IO
   PathView Path::GetFileNameWithoutExtensionView(const PathView path)
   {
     // locate the last index of '.'
-    auto index = path.rfind('.');
+    const auto index = path.rfind('.');
     if (index == PathView::npos)
     {
       return GetFileNameView(path);
     }
 
-    auto charsToSkip = (path.size() - index);
+    const auto charsToSkip = (path.size() - index);
     assert(charsToSkip <= path.size());
     // locate the last index of '/'
     auto indexSlash = path.rfind('/');
@@ -222,14 +222,14 @@ namespace Fsl::IO
   PathView Path::GetExtensionView(const PathView path)
   {
     // locate the last index of '.'
-    auto dotIndex = path.rfind('.');
+    const auto dotIndex = path.rfind('.');
     if (dotIndex == PathView::npos)
     {
       return {};
     }
 
     // locate the last index of '/'
-    auto indexSlash = path.rfind('/');
+    const auto indexSlash = path.rfind('/');
     if (indexSlash != PathView::npos && dotIndex < indexSlash)
     {
       return {};

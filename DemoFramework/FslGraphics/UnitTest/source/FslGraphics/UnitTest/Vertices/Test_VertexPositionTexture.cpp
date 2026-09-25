@@ -52,7 +52,7 @@ namespace
 
 TEST(TestVertices_VertexPositionTexture, Construct_Default)
 {
-  VertexPositionTexture vertex;
+  const VertexPositionTexture vertex;
 
   EXPECT_EQ(Vector3(), vertex.Position);
   EXPECT_EQ(Vector2(), vertex.TextureCoordinate);

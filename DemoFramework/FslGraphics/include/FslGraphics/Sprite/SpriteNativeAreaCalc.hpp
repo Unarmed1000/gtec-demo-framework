@@ -50,26 +50,28 @@ namespace Fsl
     {
     }
 
-    constexpr inline NativeTextureArea CalcNativeTextureArea(const PxRectangleU16& imageRectanglePx, const PxExtent2D textureExtentPx) const
+    [[nodiscard]] constexpr inline NativeTextureArea CalcNativeTextureArea(const PxRectangleU16& imageRectanglePx,
+                                                                           const PxExtent2D textureExtentPx) const
     {
       return m_pCalcNativeTextureArea(PxRectangleU32(imageRectanglePx.X, imageRectanglePx.Y, imageRectanglePx.Width, imageRectanglePx.Height),
                                       textureExtentPx);
     }
 
-    constexpr inline NativeTextureArea CalcNativeTextureArea(const PxRectangleU32& imageRectanglePx, const PxExtent2D textureExtentPx) const
+    [[nodiscard]] constexpr inline NativeTextureArea CalcNativeTextureArea(const PxRectangleU32& imageRectanglePx,
+                                                                           const PxExtent2D textureExtentPx) const
     {
       return m_pCalcNativeTextureArea(imageRectanglePx, textureExtentPx);
     }
 
-    constexpr inline NativeTextureArea FastCalcNativeTextureArea(const PxRectangleU16& imageRectanglePx,
-                                                                 const PxExtent2D textureExtentPx) const noexcept
+    [[nodiscard]] constexpr inline NativeTextureArea FastCalcNativeTextureArea(const PxRectangleU16& imageRectanglePx,
+                                                                               const PxExtent2D textureExtentPx) const noexcept
     {
       return m_pFastCalcNativeTextureArea(PxRectangleU32(imageRectanglePx.X, imageRectanglePx.Y, imageRectanglePx.Width, imageRectanglePx.Height),
                                           textureExtentPx);
     }
 
-    constexpr inline NativeTextureArea FastCalcNativeTextureArea(const PxRectangleU32& imageRectanglePx,
-                                                                 const PxExtent2D textureExtentPx) const noexcept
+    [[nodiscard]] constexpr inline NativeTextureArea FastCalcNativeTextureArea(const PxRectangleU32& imageRectanglePx,
+                                                                               const PxExtent2D textureExtentPx) const noexcept
     {
       return m_pFastCalcNativeTextureArea(imageRectanglePx, textureExtentPx);
     }

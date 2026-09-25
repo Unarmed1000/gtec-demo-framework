@@ -48,7 +48,7 @@ namespace Fsl::Vulkan
       rVertexElements.resize(vertexDeclaration.Count());
       for (std::size_t i = 0; i < vertexDeclaration.Count(); ++i)
       {
-        auto element = vertexDeclaration.At(i);
+        const auto element = vertexDeclaration.At(i);
         rVertexElements[i] = VMVertexElement(element, VulkanConvert::ToVkFormat(element.Format));
       }
     }
@@ -154,14 +154,14 @@ namespace Fsl::Vulkan
       throw NotSupportedException("elementCapacity should be '<= 0xFFFFFFFF'");
     }
 
-    auto dstOffset = NumericCast<uint32_t>(dstElementOffset * vertexSpan.stride());
+    const auto dstOffset = NumericCast<uint32_t>(dstElementOffset * vertexSpan.stride());
 
     m_vertexBuffer.Upload(dstOffset, vertexSpan.data(), NumericCast<VkDeviceSize>(vertexSpan.byte_size()));
   }
 
   int32_t VMVertexBuffer::GetVertexElementIndex(const VertexElementUsage usage, const uint32_t usageIndex) const
   {
-    auto index = VertexElementIndexOf(usage, usageIndex);
+    const auto index = VertexElementIndexOf(usage, usageIndex);
     if (index < 0)
     {
       throw NotFoundException("The supplied usage and usageIndex combo was not found");
@@ -172,8 +172,8 @@ namespace Fsl::Vulkan
 
   int32_t VMVertexBuffer::VertexElementIndexOf(const VertexElementUsage usage, const uint32_t usageIndex) const
   {
-    auto itrFind = std::find_if(m_vertexElements.begin(), m_vertexElements.end(), [usage, usageIndex](const VMVertexElement& entry)
-                                { return (entry.Usage == usage && entry.UsageIndex == usageIndex); });
+    const auto itrFind = std::find_if(m_vertexElements.begin(), m_vertexElements.end(), [usage, usageIndex](const VMVertexElement& entry)
+                                      { return (entry.Usage == usage && entry.UsageIndex == usageIndex); });
     if (itrFind != m_vertexElements.end())
     {
       return static_cast<int32_t>(std::distance(m_vertexElements.begin(), itrFind));
@@ -193,7 +193,7 @@ namespace Fsl::Vulkan
 
   const VMVertexElement& VMVertexBuffer::GetVertexElement(const VertexElementUsage usage, const uint32_t usageIndex) const
   {
-    auto elementIndex = GetVertexElementIndex(usage, usageIndex);
+    const auto elementIndex = GetVertexElementIndex(usage, usageIndex);
     return m_vertexElements[elementIndex];
   }
 }

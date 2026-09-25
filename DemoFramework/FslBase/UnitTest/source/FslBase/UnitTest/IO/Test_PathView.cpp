@@ -49,7 +49,7 @@ namespace
 
 TEST(TestIO_PathView, Construct_Default)
 {
-  IO::PathView path;
+  const IO::PathView path;
 
   EXPECT_TRUE(path.empty());
 }
@@ -57,8 +57,8 @@ TEST(TestIO_PathView, Construct_Default)
 
 TEST(TestIO_PathView, Construct_Default_StringViewLite_NoCheck)
 {
-  StringViewLite strEmpty;
-  IO::PathView path(strEmpty, OptimizationCheckFlag::NoCheck);
+  const StringViewLite strEmpty;
+  const IO::PathView path(strEmpty, OptimizationCheckFlag::NoCheck);
 
   EXPECT_TRUE(path.empty());
 }
@@ -72,8 +72,8 @@ TEST(TestIO_PathView, Construct_Default_StringViewLite_NoCheck)
 
 TEST(TestIO_PathView, Construct_Default_StringViewLite)
 {
-  StringViewLite strEmpty;
-  IO::PathView path(strEmpty);
+  const StringViewLite strEmpty;
+  const IO::PathView path(strEmpty);
 
   EXPECT_TRUE(path.empty());
 }
@@ -81,7 +81,7 @@ TEST(TestIO_PathView, Construct_Default_StringViewLite)
 TEST(TestIO_PathView, Construct_Default_BasicString)
 {
   const char* const pszNull = nullptr;
-  IO::PathView path(pszNull, 0u);
+  const IO::PathView path(pszNull, 0u);
 
   EXPECT_TRUE(path.empty());
 }
@@ -90,7 +90,7 @@ TEST(TestIO_PathView, Construct_Default_BasicString)
 TEST(TestIO_PathView, Construct_Default_CString)
 {
   const char* const pszNull = nullptr;
-  IO::PathView path(pszNull);
+  const IO::PathView path(pszNull);
 
   EXPECT_TRUE(path.empty());
 }
@@ -102,7 +102,7 @@ namespace
 {
   IO::PathView ConstructBasicStringBackslash()
   {
-    StringViewLite str("hello\\world");
+    const StringViewLite str("hello\\world");
     return IO::PathView(str);
   }
 
@@ -136,7 +136,7 @@ TEST(TestIO_PathView, Construct_CString_Backslash)
 TEST(TestIO_PathView, Construct_CString_NoCheck)
 {
   const char* const psz = "hello";
-  IO::PathView path(psz, 5u, OptimizationCheckFlag::NoCheck);
+  const IO::PathView path(psz, 5u, OptimizationCheckFlag::NoCheck);
 
   EXPECT_EQ(5u, path.size());
   EXPECT_EQ(psz, path);
@@ -145,8 +145,8 @@ TEST(TestIO_PathView, Construct_CString_NoCheck)
 
 TEST(TestIO_PathView, Construct_StringViewLite_NoCheck)
 {
-  StringViewLite str("hello");
-  IO::PathView path(str, OptimizationCheckFlag::NoCheck);
+  const StringViewLite str("hello");
+  const IO::PathView path(str, OptimizationCheckFlag::NoCheck);
 
   EXPECT_EQ(5u, path.size());
   EXPECT_EQ(str, path);
@@ -156,7 +156,7 @@ TEST(TestIO_PathView, Construct_StringViewLite_NoCheck)
 TEST(TestIO_PathView, Construct_Null_Basic_NoCheck)
 {
   const char* const psz = "hello";
-  IO::PathView path(psz, 2u, OptimizationCheckFlag::NoCheck);
+  const IO::PathView path(psz, 2u, OptimizationCheckFlag::NoCheck);
 
   EXPECT_EQ(2u, path.size());
   EXPECT_EQ("he", path);
@@ -164,8 +164,8 @@ TEST(TestIO_PathView, Construct_Null_Basic_NoCheck)
 
 TEST(TestIO_PathView, Construct_StringViewLite)
 {
-  StringViewLite str("hello");
-  IO::PathView path(str);
+  const StringViewLite str("hello");
+  const IO::PathView path(str);
 
   EXPECT_EQ(5u, path.size());
   EXPECT_EQ(str, path);
@@ -174,7 +174,7 @@ TEST(TestIO_PathView, Construct_StringViewLite)
 TEST(TestIO_PathView, Construct_BasicString)
 {
   const char* const psz = "hello";
-  IO::PathView path(psz, 2u);
+  const IO::PathView path(psz, 2u);
 
   EXPECT_EQ(2u, path.size());
   EXPECT_EQ("he", path);
@@ -184,7 +184,7 @@ TEST(TestIO_PathView, Construct_BasicString)
 TEST(TestIO_PathView, Construct_CString)
 {
   const char* const psz = "hello";
-  IO::PathView path(psz);
+  const IO::PathView path(psz);
 
   EXPECT_EQ(5u, path.size());
   EXPECT_EQ(psz, path);
@@ -195,9 +195,9 @@ TEST(TestIO_PathView, Construct_CString)
 TEST(TestIO_PathView, SubPath_Full)
 {
   //                     01234567890
-  IO::PathView pathView("hello world");
+  const IO::PathView pathView("hello world");
 
-  auto pathView2 = pathView.subpath();
+  const auto pathView2 = pathView.subpath();
   EXPECT_EQ(11u, pathView2.size());
   EXPECT_EQ("hello world", pathView2);
 }
@@ -205,9 +205,9 @@ TEST(TestIO_PathView, SubPath_Full)
 TEST(TestIO_PathView, SubPath_PartialEnd)
 {
   //                     01234567890
-  IO::PathView pathView("hello world");
+  const IO::PathView pathView("hello world");
 
-  auto pathView2 = pathView.subpath(6);
+  const auto pathView2 = pathView.subpath(6);
   EXPECT_EQ(5u, pathView2.size());
   EXPECT_EQ("world", pathView2);
 }
@@ -215,13 +215,13 @@ TEST(TestIO_PathView, SubPath_PartialEnd)
 TEST(TestIO_PathView, SubPath_Partial)
 {
   //                     01234567890
-  IO::PathView pathView("hello world");
+  const IO::PathView pathView("hello world");
 
-  auto pathView2 = pathView.subpath(6, 0);
+  const auto pathView2 = pathView.subpath(6, 0);
   EXPECT_EQ(0u, pathView2.size());
   EXPECT_EQ("", pathView2);
 
-  auto pathView3 = pathView.subpath(6, 3);
+  const auto pathView3 = pathView.subpath(6, 3);
   EXPECT_EQ(3u, pathView3.size());
   EXPECT_EQ("wor", pathView3);
 }
@@ -233,7 +233,7 @@ TEST(TestIO_PathView, SubPath_Partial)
 TEST(TestIO_PathView, OpEqual_PathView_PathView)
 {
   //                     01234567890
-  IO::PathView pathView("hello world");
+  const IO::PathView pathView("hello world");
 
   EXPECT_TRUE(pathView == IO::PathView("hello world"));
 }
@@ -242,7 +242,7 @@ TEST(TestIO_PathView, OpEqual_PathView_PathView)
 TEST(TestIO_PathView, OpEqual_PathView_StringViewLite)
 {
   //                     01234567890
-  IO::PathView pathView("hello world");
+  const IO::PathView pathView("hello world");
 
   EXPECT_TRUE(pathView == StringViewLite("hello world"));
 }
@@ -251,7 +251,7 @@ TEST(TestIO_PathView, OpEqual_PathView_StringViewLite)
 TEST(TestIO_PathView, OpEqual_PathView_CString)
 {
   //                     01234567890
-  IO::PathView pathView("hello world");
+  const IO::PathView pathView("hello world");
 
   EXPECT_TRUE(pathView == StringViewLite("hello world"));
 }
@@ -259,7 +259,7 @@ TEST(TestIO_PathView, OpEqual_PathView_CString)
 TEST(TestIO_PathView, OpEqual_StringViewLite_PathView)
 {
   //                     01234567890
-  IO::PathView pathView("hello world");
+  const IO::PathView pathView("hello world");
 
   EXPECT_TRUE(StringViewLite("hello world") == pathView);
 }
@@ -268,7 +268,7 @@ TEST(TestIO_PathView, OpEqual_StringViewLite_PathView)
 TEST(TestIO_PathView, OpEqual_CString_PathView)
 {
   //                     01234567890
-  IO::PathView pathView("hello world");
+  const IO::PathView pathView("hello world");
 
   EXPECT_TRUE(StringViewLite("hello world") == pathView);
 }

@@ -41,7 +41,7 @@ namespace Fsl::UI::Theme::ThemeSelector
   std::shared_ptr<IThemeControlFactory> CreateControlFactory(UIDemoAppExtensionLite& uiAppExtension, const UI::UIColorSpace colorSpace,
                                                              const bool usePrimaryPalette, const bool disableOpaqueMaterials)
   {
-    auto factory = CreateFactory(uiAppExtension, colorSpace, usePrimaryPalette, disableOpaqueMaterials);
+    const auto factory = CreateFactory(uiAppExtension, colorSpace, usePrimaryPalette, disableOpaqueMaterials);
     return factory->Create(uiAppExtension.GetContext());
   }
 
@@ -56,12 +56,12 @@ namespace Fsl::UI::Theme::ThemeSelector
   std::shared_ptr<IThemeFactory> CreateFactory(UIDemoAppExtensionLite& uiAppExtension, const UI::UIColorSpace colorSpace,
                                                const bool usePrimaryPalette, const bool disableOpaqueMaterials)
   {
-    UI::Theme::ThemeFactoryCreateInfo createInfo(uiAppExtension.GetDefaultMaterialId(BasicPrimitiveTopology::TriangleList, true),
-                                                 uiAppExtension.GetDefaultMaterialId(BasicPrimitiveTopology::TriangleList, false),
-                                                 uiAppExtension.GetDefaultMaterialId(BasicPrimitiveTopology::LineList, true),
-                                                 uiAppExtension.GetDefaultMaterialId(BasicPrimitiveTopology::LineList, false),
-                                                 uiAppExtension.GetDefaultFont(), uiAppExtension.GetDefaultHeaderFont(), usePrimaryPalette,
-                                                 disableOpaqueMaterials, colorSpace);
+    const UI::Theme::ThemeFactoryCreateInfo createInfo(uiAppExtension.GetDefaultMaterialId(BasicPrimitiveTopology::TriangleList, true),
+                                                       uiAppExtension.GetDefaultMaterialId(BasicPrimitiveTopology::TriangleList, false),
+                                                       uiAppExtension.GetDefaultMaterialId(BasicPrimitiveTopology::LineList, true),
+                                                       uiAppExtension.GetDefaultMaterialId(BasicPrimitiveTopology::LineList, false),
+                                                       uiAppExtension.GetDefaultFont(), uiAppExtension.GetDefaultHeaderFont(), usePrimaryPalette,
+                                                       disableOpaqueMaterials, colorSpace);
     return std::make_shared<BasicThemeFactory>(uiAppExtension.GetSpriteResourceManager(), createInfo);
   }
 

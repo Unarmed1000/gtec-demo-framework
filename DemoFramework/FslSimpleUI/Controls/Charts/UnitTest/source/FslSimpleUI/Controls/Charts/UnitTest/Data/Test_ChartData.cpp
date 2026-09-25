@@ -51,22 +51,22 @@ namespace
 
 TEST(Test_Data_ChartData, Construct_1_InvalidDataEntryCount)
 {
-  auto dataBinding = std::make_shared<DataBinding::DataBindingService>();
+  const auto dataBinding = std::make_shared<DataBinding::DataBindingService>();
   EXPECT_THROW(UI::ChartData(dataBinding, 1, NumericCast<uint32_t>(std::tuple_size<UI::ChartDataEntry::array_type>() + 1), {}),
                std::invalid_argument);
 }
 
 TEST(Test_Data_ChartData, Construct_0_0)
 {
-  auto dataBinding = std::make_shared<DataBinding::DataBindingService>();
+  const auto dataBinding = std::make_shared<DataBinding::DataBindingService>();
   UI::ChartData chartData(dataBinding, 0, 0, {});
   EXPECT_EQ(0u, chartData.ChangeId());
 
   EXPECT_FALSE(chartData.GetCustomMixMax());
   EXPECT_EQ(0u, chartData.GetSize());
 
-  auto viewConfig = chartData.CreateViewConfig();
-  auto dataInfo = chartData.DataInfo(viewConfig);
+  const auto viewConfig = chartData.CreateViewConfig();
+  const auto dataInfo = chartData.DataInfo(viewConfig);
 
   ASSERT_EQ(0u, dataInfo.ChannelCount);
   ASSERT_EQ(0u, dataInfo.SegmentCount);
@@ -76,14 +76,14 @@ TEST(Test_Data_ChartData, Construct_0_0)
 TEST(Test_Data_ChartData, Construct_0_1)
 {
   const uint32_t channelCount = 1;
-  auto dataBinding = std::make_shared<DataBinding::DataBindingService>();
+  const auto dataBinding = std::make_shared<DataBinding::DataBindingService>();
   UI::ChartData chartData(dataBinding, 0, channelCount, {});
   EXPECT_EQ(0u, chartData.ChangeId());
   EXPECT_FALSE(chartData.GetCustomMixMax());
   EXPECT_EQ(0u, chartData.GetSize());
 
-  auto viewConfig = chartData.CreateViewConfig();
-  auto dataInfo = chartData.DataInfo(viewConfig);
+  const auto viewConfig = chartData.CreateViewConfig();
+  const auto dataInfo = chartData.DataInfo(viewConfig);
 
   ASSERT_EQ(channelCount, dataInfo.ChannelCount);
   ASSERT_EQ(0u, dataInfo.SegmentCount);
@@ -93,20 +93,20 @@ TEST(Test_Data_ChartData, Construct_0_1)
 TEST(Test_Data_ChartData, Construct_1_1)
 {
   const uint32_t channelCount = 1;
-  auto dataBinding = std::make_shared<DataBinding::DataBindingService>();
+  const auto dataBinding = std::make_shared<DataBinding::DataBindingService>();
   UI::ChartData chartData(dataBinding, 1, channelCount, {});
   EXPECT_EQ(0u, chartData.ChangeId());
   EXPECT_FALSE(chartData.GetCustomMixMax());
   EXPECT_EQ(0u, chartData.GetSize());
 
-  auto viewConfig = chartData.CreateViewConfig();
-  auto dataInfo = chartData.DataInfo(viewConfig);
+  const auto viewConfig = chartData.CreateViewConfig();
+  const auto dataInfo = chartData.DataInfo(viewConfig);
 
   ASSERT_EQ(channelCount, dataInfo.ChannelCount);
   ASSERT_EQ(0u, dataInfo.SegmentCount);
   ASSERT_EQ(0u, dataInfo.TotalElementCount);
 
-  auto dataStats = chartData.CalculateDataStats(viewConfig);
+  const auto dataStats = chartData.CalculateDataStats(viewConfig);
   EXPECT_EQ(LocalConfig::EmptyMinMax, dataStats.ValueMinMax);
 }
 
@@ -114,20 +114,20 @@ TEST(Test_Data_ChartData, Construct_1_1_MaximumMin)
 {
   const uint32_t maximumMin = 10;
   const uint32_t channelCount = 1;
-  auto dataBinding = std::make_shared<DataBinding::DataBindingService>();
+  const auto dataBinding = std::make_shared<DataBinding::DataBindingService>();
   UI::ChartData chartData(dataBinding, 1, channelCount, UI::ChartData::Constraints(std::optional<uint32_t>(maximumMin), {}));
   EXPECT_EQ(0u, chartData.ChangeId());
   EXPECT_FALSE(chartData.GetCustomMixMax());
   EXPECT_EQ(0u, chartData.GetSize());
 
-  auto viewConfig = chartData.CreateViewConfig();
-  auto dataInfo = chartData.DataInfo(viewConfig);
+  const auto viewConfig = chartData.CreateViewConfig();
+  const auto dataInfo = chartData.DataInfo(viewConfig);
 
   ASSERT_EQ(channelCount, dataInfo.ChannelCount);
   ASSERT_EQ(0u, dataInfo.SegmentCount);
   ASSERT_EQ(0u, dataInfo.TotalElementCount);
 
-  auto dataStats = chartData.CalculateDataStats(viewConfig);
+  const auto dataStats = chartData.CalculateDataStats(viewConfig);
   EXPECT_EQ(LocalConfig::EmptyMinMax, dataStats.ValueMinMax);
 }
 
@@ -135,20 +135,20 @@ TEST(Test_Data_ChartData, Construct_1_1_MinimumMax)
 {
   const uint32_t minimumMax = 10;
   const uint32_t channelCount = 1;
-  auto dataBinding = std::make_shared<DataBinding::DataBindingService>();
+  const auto dataBinding = std::make_shared<DataBinding::DataBindingService>();
   UI::ChartData chartData(dataBinding, 1, channelCount, UI::ChartData::Constraints({}, std::optional<uint32_t>(minimumMax)));
   EXPECT_EQ(0u, chartData.ChangeId());
   EXPECT_FALSE(chartData.GetCustomMixMax());
   EXPECT_EQ(0u, chartData.GetSize());
 
-  auto viewConfig = chartData.CreateViewConfig();
-  auto dataInfo = chartData.DataInfo(viewConfig);
+  const auto viewConfig = chartData.CreateViewConfig();
+  const auto dataInfo = chartData.DataInfo(viewConfig);
 
   ASSERT_EQ(channelCount, dataInfo.ChannelCount);
   ASSERT_EQ(0u, dataInfo.SegmentCount);
   ASSERT_EQ(0u, dataInfo.TotalElementCount);
 
-  auto dataStats = chartData.CalculateDataStats(viewConfig);
+  const auto dataStats = chartData.CalculateDataStats(viewConfig);
   EXPECT_EQ(LocalConfig::EmptyMinMax.Min(), dataStats.ValueMinMax.Min());
   EXPECT_EQ(minimumMax, dataStats.ValueMinMax.Max());
 }
@@ -158,21 +158,21 @@ TEST(Test_Data_ChartData, Construct_1_11_MaximumMin_MinimumMax)
   const uint32_t maximumMin = 2;
   const uint32_t minimumMax = 10;
   const uint32_t channelCount = 1;
-  auto dataBinding = std::make_shared<DataBinding::DataBindingService>();
+  const auto dataBinding = std::make_shared<DataBinding::DataBindingService>();
   UI::ChartData chartData(dataBinding, 1, channelCount,
                           UI::ChartData::Constraints(std::optional<uint32_t>(maximumMin), std::optional<uint32_t>(minimumMax)));
   EXPECT_EQ(0u, chartData.ChangeId());
   EXPECT_FALSE(chartData.GetCustomMixMax());
   EXPECT_EQ(0u, chartData.GetSize());
 
-  auto viewConfig = chartData.CreateViewConfig();
-  auto dataInfo = chartData.DataInfo(viewConfig);
+  const auto viewConfig = chartData.CreateViewConfig();
+  const auto dataInfo = chartData.DataInfo(viewConfig);
 
   ASSERT_EQ(channelCount, dataInfo.ChannelCount);
   ASSERT_EQ(0u, dataInfo.SegmentCount);
   ASSERT_EQ(0u, dataInfo.TotalElementCount);
 
-  auto dataStats = chartData.CalculateDataStats(viewConfig);
+  const auto dataStats = chartData.CalculateDataStats(viewConfig);
   EXPECT_EQ(LocalConfig::EmptyMinMax.Min(), dataStats.ValueMinMax.Min());
   EXPECT_EQ(minimumMax, dataStats.ValueMinMax.Max());
 }
@@ -182,7 +182,7 @@ TEST(Test_Data_ChartData, SetCustomMinMax)
 {
   const MinMax<uint32_t> customMinMax(10, 20);
   const uint32_t channelCount = 1;
-  auto dataBinding = std::make_shared<DataBinding::DataBindingService>();
+  const auto dataBinding = std::make_shared<DataBinding::DataBindingService>();
   UI::ChartData chartData(dataBinding, 1, channelCount, {});
   EXPECT_FALSE(chartData.GetCustomMixMax());
   EXPECT_EQ(0u, chartData.ChangeId());
@@ -194,14 +194,14 @@ TEST(Test_Data_ChartData, SetCustomMinMax)
   EXPECT_TRUE(testCustomMinMax.has_value());
   EXPECT_EQ(customMinMax, testCustomMinMax.value());
 
-  auto viewConfig = chartData.CreateViewConfig();
-  auto dataInfo = chartData.DataInfo(viewConfig);
+  const auto viewConfig = chartData.CreateViewConfig();
+  const auto dataInfo = chartData.DataInfo(viewConfig);
 
   ASSERT_EQ(channelCount, dataInfo.ChannelCount);
   ASSERT_EQ(0u, dataInfo.SegmentCount);
   ASSERT_EQ(0u, dataInfo.TotalElementCount);
 
-  auto dataStats = chartData.CalculateDataStats(viewConfig);
+  const auto dataStats = chartData.CalculateDataStats(viewConfig);
   EXPECT_EQ(customMinMax, dataStats.ValueMinMax);
 
   // Setting the same value should not modify the change id
@@ -215,7 +215,7 @@ TEST(Test_Data_ChartData, SetCustomMinMaxUpdate)
   const MinMax<uint32_t> customMinMax(10, 20);
   const MinMax<uint32_t> customMinMaxNew(5, 24);
   const uint32_t channelCount = 1;
-  auto dataBinding = std::make_shared<DataBinding::DataBindingService>();
+  const auto dataBinding = std::make_shared<DataBinding::DataBindingService>();
   UI::ChartData chartData(dataBinding, 1, channelCount, {});
   EXPECT_FALSE(chartData.GetCustomMixMax());
 
@@ -227,8 +227,8 @@ TEST(Test_Data_ChartData, SetCustomMinMaxUpdate)
   EXPECT_TRUE(testCustomMinMax.has_value());
   EXPECT_EQ(customMinMax, testCustomMinMax.value());
 
-  auto viewConfig = chartData.CreateViewConfig();
-  auto dataInfo = chartData.DataInfo(viewConfig);
+  const auto viewConfig = chartData.CreateViewConfig();
+  const auto dataInfo = chartData.DataInfo(viewConfig);
 
   ASSERT_EQ(channelCount, dataInfo.ChannelCount);
   ASSERT_EQ(0u, dataInfo.SegmentCount);
@@ -249,7 +249,7 @@ TEST(Test_Data_ChartData, ClearCustomMinMax)
 {
   const MinMax<uint32_t> customMinMax(10, 20);
   const uint32_t channelCount = 1;
-  auto dataBinding = std::make_shared<DataBinding::DataBindingService>();
+  const auto dataBinding = std::make_shared<DataBinding::DataBindingService>();
   UI::ChartData chartData(dataBinding, 1, channelCount, {});
   EXPECT_FALSE(chartData.GetCustomMixMax());
   EXPECT_EQ(0u, chartData.ChangeId());
@@ -271,7 +271,7 @@ TEST(Test_Data_ChartData, Append)
 {
   const uint32_t channelCount = 1;
   const uint32_t value0 = 1337;
-  auto dataBinding = std::make_shared<DataBinding::DataBindingService>();
+  const auto dataBinding = std::make_shared<DataBinding::DataBindingService>();
   UI::ChartData chartData(dataBinding, 1, channelCount, {});
 
   EXPECT_EQ(0u, chartData.ChangeId());
@@ -282,8 +282,8 @@ TEST(Test_Data_ChartData, Append)
   EXPECT_EQ(1u, chartData.ChangeId());
   EXPECT_EQ(1u, chartData.GetSize());
 
-  auto viewConfig = chartData.CreateViewConfig();
-  auto dataInfo = chartData.DataInfo(viewConfig);
+  const auto viewConfig = chartData.CreateViewConfig();
+  const auto dataInfo = chartData.DataInfo(viewConfig);
 
   ASSERT_EQ(channelCount, dataInfo.ChannelCount);
   ASSERT_EQ(1u, dataInfo.SegmentCount);
@@ -292,7 +292,7 @@ TEST(Test_Data_ChartData, Append)
   const auto segmentData = chartData.SegmentDataAsReadOnlySpan(viewConfig, 0);
   FSL_PARAM_NOT_USED(segmentData);
 
-  auto dataStats = chartData.CalculateDataStats(viewConfig);
+  const auto dataStats = chartData.CalculateDataStats(viewConfig);
   EXPECT_EQ(value0, dataStats.ValueMinMax.Min());
   EXPECT_EQ(value0, dataStats.ValueMinMax.Max());
 }
@@ -302,7 +302,7 @@ TEST(Test_Data_ChartData, Append_MaximumMin)
   const uint32_t maximumMin = 10;
   const uint32_t channelCount = 1;
   const uint32_t value0 = 1337;
-  auto dataBinding = std::make_shared<DataBinding::DataBindingService>();
+  const auto dataBinding = std::make_shared<DataBinding::DataBindingService>();
   UI::ChartData chartData(dataBinding, 1, channelCount, UI::ChartData::Constraints(std::optional<uint32_t>(maximumMin), {}));
 
   EXPECT_EQ(0u, chartData.ChangeId());
@@ -313,8 +313,8 @@ TEST(Test_Data_ChartData, Append_MaximumMin)
   EXPECT_EQ(1u, chartData.ChangeId());
   EXPECT_EQ(1u, chartData.GetSize());
 
-  auto viewConfig = chartData.CreateViewConfig();
-  auto dataInfo = chartData.DataInfo(viewConfig);
+  const auto viewConfig = chartData.CreateViewConfig();
+  const auto dataInfo = chartData.DataInfo(viewConfig);
 
   ASSERT_EQ(channelCount, dataInfo.ChannelCount);
   ASSERT_EQ(1u, dataInfo.SegmentCount);
@@ -323,7 +323,7 @@ TEST(Test_Data_ChartData, Append_MaximumMin)
   const auto segmentData = chartData.SegmentDataAsReadOnlySpan(viewConfig, 0);
   FSL_PARAM_NOT_USED(segmentData);
 
-  auto dataStats = chartData.CalculateDataStats(viewConfig);
+  const auto dataStats = chartData.CalculateDataStats(viewConfig);
   EXPECT_EQ(maximumMin, dataStats.ValueMinMax.Min());
   EXPECT_EQ(value0, dataStats.ValueMinMax.Max());
 }
@@ -333,7 +333,7 @@ TEST(Test_Data_ChartData, Append_MinimumMax)
   const uint32_t minimumMax = 2000;
   const uint32_t channelCount = 1;
   const uint32_t value0 = 1337;
-  auto dataBinding = std::make_shared<DataBinding::DataBindingService>();
+  const auto dataBinding = std::make_shared<DataBinding::DataBindingService>();
   UI::ChartData chartData(dataBinding, 1, channelCount, UI::ChartData::Constraints({}, std::optional<uint32_t>(minimumMax)));
 
   EXPECT_EQ(0u, chartData.ChangeId());
@@ -344,8 +344,8 @@ TEST(Test_Data_ChartData, Append_MinimumMax)
   EXPECT_EQ(1u, chartData.ChangeId());
   EXPECT_EQ(1u, chartData.GetSize());
 
-  auto viewConfig = chartData.CreateViewConfig();
-  auto dataInfo = chartData.DataInfo(viewConfig);
+  const auto viewConfig = chartData.CreateViewConfig();
+  const auto dataInfo = chartData.DataInfo(viewConfig);
 
   ASSERT_EQ(channelCount, dataInfo.ChannelCount);
   ASSERT_EQ(1u, dataInfo.SegmentCount);
@@ -354,7 +354,7 @@ TEST(Test_Data_ChartData, Append_MinimumMax)
   const auto segmentData = chartData.SegmentDataAsReadOnlySpan(viewConfig, 0);
   FSL_PARAM_NOT_USED(segmentData);
 
-  auto dataStats = chartData.CalculateDataStats(viewConfig);
+  const auto dataStats = chartData.CalculateDataStats(viewConfig);
   EXPECT_EQ(value0, dataStats.ValueMinMax.Min());
   EXPECT_EQ(minimumMax, dataStats.ValueMinMax.Max());
 }
@@ -365,7 +365,7 @@ TEST(Test_Data_ChartData, Append_MaximumMinMinimumMax)
   const uint32_t minimumMax = 2000;
   const uint32_t channelCount = 1;
   const uint32_t value0 = 1337;
-  auto dataBinding = std::make_shared<DataBinding::DataBindingService>();
+  const auto dataBinding = std::make_shared<DataBinding::DataBindingService>();
   UI::ChartData chartData(dataBinding, 1, channelCount,
                           UI::ChartData::Constraints(std::optional<uint32_t>(maximumMin), std::optional<uint32_t>(minimumMax)));
 
@@ -377,8 +377,8 @@ TEST(Test_Data_ChartData, Append_MaximumMinMinimumMax)
   EXPECT_EQ(1u, chartData.ChangeId());
   EXPECT_EQ(1u, chartData.GetSize());
 
-  auto viewConfig = chartData.CreateViewConfig();
-  auto dataInfo = chartData.DataInfo(viewConfig);
+  const auto viewConfig = chartData.CreateViewConfig();
+  const auto dataInfo = chartData.DataInfo(viewConfig);
 
   ASSERT_EQ(channelCount, dataInfo.ChannelCount);
   ASSERT_EQ(1u, dataInfo.SegmentCount);
@@ -387,7 +387,7 @@ TEST(Test_Data_ChartData, Append_MaximumMinMinimumMax)
   const auto segmentData = chartData.SegmentDataAsReadOnlySpan(viewConfig, 0);
   FSL_PARAM_NOT_USED(segmentData);
 
-  auto dataStats = chartData.CalculateDataStats(viewConfig);
+  const auto dataStats = chartData.CalculateDataStats(viewConfig);
   EXPECT_EQ(maximumMin, dataStats.ValueMinMax.Min());
   EXPECT_EQ(minimumMax, dataStats.ValueMinMax.Max());
 }
@@ -398,7 +398,7 @@ TEST(Test_Data_ChartData, Append_CustomMinMax_LowMax)
   const MinMax<uint32_t> customMinMax(10, 1000);
   const uint32_t channelCount = 1;
   const uint32_t value0 = 1337;
-  auto dataBinding = std::make_shared<DataBinding::DataBindingService>();
+  const auto dataBinding = std::make_shared<DataBinding::DataBindingService>();
   UI::ChartData chartData(dataBinding, 1, channelCount, {});
 
   EXPECT_EQ(0u, chartData.ChangeId());
@@ -412,8 +412,8 @@ TEST(Test_Data_ChartData, Append_CustomMinMax_LowMax)
   EXPECT_EQ(2u, chartData.ChangeId());
   EXPECT_EQ(1u, chartData.GetSize());
 
-  auto viewConfig = chartData.CreateViewConfig();
-  auto dataInfo = chartData.DataInfo(viewConfig);
+  const auto viewConfig = chartData.CreateViewConfig();
+  const auto dataInfo = chartData.DataInfo(viewConfig);
 
   ASSERT_EQ(channelCount, dataInfo.ChannelCount);
   ASSERT_EQ(1u, dataInfo.SegmentCount);
@@ -422,7 +422,7 @@ TEST(Test_Data_ChartData, Append_CustomMinMax_LowMax)
   const auto segmentData = chartData.SegmentDataAsReadOnlySpan(viewConfig, 0);
   FSL_PARAM_NOT_USED(segmentData);
 
-  auto dataStats = chartData.CalculateDataStats(viewConfig);
+  const auto dataStats = chartData.CalculateDataStats(viewConfig);
   EXPECT_EQ(customMinMax, dataStats.ValueMinMax);
 }
 
@@ -431,7 +431,7 @@ TEST(Test_Data_ChartData, Append_CustomMinMax_HighMax)
   const MinMax<uint32_t> customMinMax(10, 2000);
   const uint32_t channelCount = 1;
   const uint32_t value0 = 1337;
-  auto dataBinding = std::make_shared<DataBinding::DataBindingService>();
+  const auto dataBinding = std::make_shared<DataBinding::DataBindingService>();
   UI::ChartData chartData(dataBinding, 1, channelCount, {});
 
   EXPECT_EQ(0u, chartData.ChangeId());
@@ -444,8 +444,8 @@ TEST(Test_Data_ChartData, Append_CustomMinMax_HighMax)
   EXPECT_EQ(2u, chartData.ChangeId());
   EXPECT_EQ(1u, chartData.GetSize());
 
-  auto viewConfig = chartData.CreateViewConfig();
-  auto dataInfo = chartData.DataInfo(viewConfig);
+  const auto viewConfig = chartData.CreateViewConfig();
+  const auto dataInfo = chartData.DataInfo(viewConfig);
 
   ASSERT_EQ(channelCount, dataInfo.ChannelCount);
   ASSERT_EQ(1u, dataInfo.SegmentCount);
@@ -454,7 +454,7 @@ TEST(Test_Data_ChartData, Append_CustomMinMax_HighMax)
   const auto segmentData = chartData.SegmentDataAsReadOnlySpan(viewConfig, 0);
   FSL_PARAM_NOT_USED(segmentData);
 
-  auto dataStats = chartData.CalculateDataStats(viewConfig);
+  const auto dataStats = chartData.CalculateDataStats(viewConfig);
   EXPECT_EQ(customMinMax, dataStats.ValueMinMax);
 }
 
@@ -462,21 +462,21 @@ TEST(Test_Data_ChartData, Append_CustomMinMax_HighMax)
 TEST(Test_Data_ChartData, ClearEmpty)
 {
   const uint32_t channelCount = 1;
-  auto dataBinding = std::make_shared<DataBinding::DataBindingService>();
+  const auto dataBinding = std::make_shared<DataBinding::DataBindingService>();
   UI::ChartData chartData(dataBinding, 1, channelCount, {});
 
   {
     EXPECT_FALSE(chartData.GetCustomMixMax());
     EXPECT_EQ(0u, chartData.GetSize());
 
-    auto viewConfig = chartData.CreateViewConfig();
-    auto dataInfo = chartData.DataInfo(viewConfig);
+    const auto viewConfig = chartData.CreateViewConfig();
+    const auto dataInfo = chartData.DataInfo(viewConfig);
 
     ASSERT_EQ(channelCount, dataInfo.ChannelCount);
     ASSERT_EQ(0u, dataInfo.SegmentCount);
     ASSERT_EQ(0u, dataInfo.TotalElementCount);
 
-    auto dataStats = chartData.CalculateDataStats(viewConfig);
+    const auto dataStats = chartData.CalculateDataStats(viewConfig);
     EXPECT_EQ(LocalConfig::EmptyMinMax, dataStats.ValueMinMax);
   }
 
@@ -491,14 +491,14 @@ TEST(Test_Data_ChartData, ClearEmpty)
     EXPECT_FALSE(chartData.GetCustomMixMax());
     EXPECT_EQ(0u, chartData.GetSize());
 
-    auto viewConfig = chartData.CreateViewConfig();
-    auto dataInfo = chartData.DataInfo(viewConfig);
+    const auto viewConfig = chartData.CreateViewConfig();
+    const auto dataInfo = chartData.DataInfo(viewConfig);
 
     ASSERT_EQ(channelCount, dataInfo.ChannelCount);
     ASSERT_EQ(0u, dataInfo.SegmentCount);
     ASSERT_EQ(0u, dataInfo.TotalElementCount);
 
-    auto dataStats = chartData.CalculateDataStats(viewConfig);
+    const auto dataStats = chartData.CalculateDataStats(viewConfig);
     EXPECT_EQ(LocalConfig::EmptyMinMax, dataStats.ValueMinMax);
   }
 }
@@ -508,7 +508,7 @@ TEST(Test_Data_ChartData, Clear)
 {
   const uint32_t channelCount = 1;
   const uint32_t value0 = 1337;
-  auto dataBinding = std::make_shared<DataBinding::DataBindingService>();
+  const auto dataBinding = std::make_shared<DataBinding::DataBindingService>();
   UI::ChartData chartData(dataBinding, 1, channelCount, {});
 
   EXPECT_EQ(0u, chartData.ChangeId());
@@ -525,14 +525,14 @@ TEST(Test_Data_ChartData, Clear)
     EXPECT_FALSE(chartData.GetCustomMixMax());
     EXPECT_EQ(0u, chartData.GetSize());
 
-    auto viewConfig = chartData.CreateViewConfig();
-    auto dataInfo = chartData.DataInfo(viewConfig);
+    const auto viewConfig = chartData.CreateViewConfig();
+    const auto dataInfo = chartData.DataInfo(viewConfig);
 
     ASSERT_EQ(channelCount, dataInfo.ChannelCount);
     ASSERT_EQ(0u, dataInfo.SegmentCount);
     ASSERT_EQ(0u, dataInfo.TotalElementCount);
 
-    auto dataStats = chartData.CalculateDataStats(viewConfig);
+    const auto dataStats = chartData.CalculateDataStats(viewConfig);
     EXPECT_EQ(LocalConfig::EmptyMinMax, dataStats.ValueMinMax);
   }
 }
@@ -544,21 +544,21 @@ TEST(Test_Data_ChartData, Append_ViewEntries0)
 {
   const uint32_t channelCount = 1;
   const uint32_t value0 = 1337;
-  auto dataBinding = std::make_shared<DataBinding::DataBindingService>();
+  const auto dataBinding = std::make_shared<DataBinding::DataBindingService>();
   UI::ChartData chartData(dataBinding, 1, channelCount, {});
 
   EXPECT_EQ(0u, chartData.GetSize());
   chartData.Append(UI::ChartDataEntry(value0));
   EXPECT_EQ(1u, chartData.GetSize());
 
-  auto viewConfig = chartData.CreateViewConfig(0, false);
-  auto dataInfo = chartData.DataInfo(viewConfig);
+  const auto viewConfig = chartData.CreateViewConfig(0, false);
+  const auto dataInfo = chartData.DataInfo(viewConfig);
 
   ASSERT_EQ(channelCount, dataInfo.ChannelCount);
   ASSERT_EQ(0u, dataInfo.SegmentCount);
   ASSERT_EQ(0u, dataInfo.TotalElementCount);
 
-  auto dataStats = chartData.CalculateDataStats(viewConfig);
+  const auto dataStats = chartData.CalculateDataStats(viewConfig);
   EXPECT_EQ(LocalConfig::EmptyMinMax, dataStats.ValueMinMax);
 
   // Reading the zero segment is really not valid (but it works for safety)
@@ -577,7 +577,7 @@ TEST(Test_Data_ChartData, Append2_Capacity2_ViewEntries1)
   const uint32_t channelCount = 1;
   const uint32_t value0 = 1000;
   const uint32_t value1 = 2000;
-  auto dataBinding = std::make_shared<DataBinding::DataBindingService>();
+  const auto dataBinding = std::make_shared<DataBinding::DataBindingService>();
   UI::ChartData chartData(dataBinding, 2, channelCount, {});
   EXPECT_EQ(2u, chartData.GetCapacity());
 
@@ -593,14 +593,14 @@ TEST(Test_Data_ChartData, Append2_Capacity2_ViewEntries1)
   EXPECT_EQ(2u, chartData.ChangeId());
   EXPECT_EQ(2u, chartData.GetSize());
 
-  auto viewConfig = chartData.CreateViewConfig(1, false);
-  auto dataInfo = chartData.DataInfo(viewConfig);
+  const auto viewConfig = chartData.CreateViewConfig(1, false);
+  const auto dataInfo = chartData.DataInfo(viewConfig);
 
   ASSERT_EQ(channelCount, dataInfo.ChannelCount);
   ASSERT_EQ(1u, dataInfo.SegmentCount);
   ASSERT_EQ(1u, dataInfo.TotalElementCount);
 
-  auto dataStats = chartData.CalculateDataStats(viewConfig);
+  const auto dataStats = chartData.CalculateDataStats(viewConfig);
   EXPECT_EQ(value1, dataStats.ValueMinMax.Min());
   EXPECT_EQ(value1, dataStats.ValueMinMax.Max());
 
@@ -617,7 +617,7 @@ TEST(Test_Data_ChartData, Append2_Capacity2_ViewEntries1_MaximumMin)
   const uint32_t channelCount = 1;
   const uint32_t value0 = 1000;
   const uint32_t value1 = 2000;
-  auto dataBinding = std::make_shared<DataBinding::DataBindingService>();
+  const auto dataBinding = std::make_shared<DataBinding::DataBindingService>();
   UI::ChartData chartData(dataBinding, 2, channelCount, UI::ChartData::Constraints(std::optional<uint32_t>(maximumMin), {}));
   EXPECT_EQ(2u, chartData.GetCapacity());
 
@@ -626,14 +626,14 @@ TEST(Test_Data_ChartData, Append2_Capacity2_ViewEntries1_MaximumMin)
   chartData.Append(UI::ChartDataEntry(value1));
   EXPECT_EQ(2u, chartData.GetSize());
 
-  auto viewConfig = chartData.CreateViewConfig(1, false);
-  auto dataInfo = chartData.DataInfo(viewConfig);
+  const auto viewConfig = chartData.CreateViewConfig(1, false);
+  const auto dataInfo = chartData.DataInfo(viewConfig);
 
   ASSERT_EQ(channelCount, dataInfo.ChannelCount);
   ASSERT_EQ(1u, dataInfo.SegmentCount);
   ASSERT_EQ(1u, dataInfo.TotalElementCount);
 
-  auto dataStats = chartData.CalculateDataStats(viewConfig);
+  const auto dataStats = chartData.CalculateDataStats(viewConfig);
   EXPECT_EQ(maximumMin, dataStats.ValueMinMax.Min());
   EXPECT_EQ(value1, dataStats.ValueMinMax.Max());
 
@@ -650,7 +650,7 @@ TEST(Test_Data_ChartData, Append2_Capacity2_ViewEntries1_MinimumMax)
   const uint32_t channelCount = 1;
   const uint32_t value0 = 1000;
   const uint32_t value1 = 2000;
-  auto dataBinding = std::make_shared<DataBinding::DataBindingService>();
+  const auto dataBinding = std::make_shared<DataBinding::DataBindingService>();
   UI::ChartData chartData(dataBinding, 2, channelCount, UI::ChartData::Constraints({}, std::optional<uint32_t>(minimumMax)));
   EXPECT_EQ(2u, chartData.GetCapacity());
 
@@ -659,14 +659,14 @@ TEST(Test_Data_ChartData, Append2_Capacity2_ViewEntries1_MinimumMax)
   chartData.Append(UI::ChartDataEntry(value1));
   EXPECT_EQ(2u, chartData.GetSize());
 
-  auto viewConfig = chartData.CreateViewConfig(1, false);
-  auto dataInfo = chartData.DataInfo(viewConfig);
+  const auto viewConfig = chartData.CreateViewConfig(1, false);
+  const auto dataInfo = chartData.DataInfo(viewConfig);
 
   ASSERT_EQ(channelCount, dataInfo.ChannelCount);
   ASSERT_EQ(1u, dataInfo.SegmentCount);
   ASSERT_EQ(1u, dataInfo.TotalElementCount);
 
-  auto dataStats = chartData.CalculateDataStats(viewConfig);
+  const auto dataStats = chartData.CalculateDataStats(viewConfig);
   EXPECT_EQ(value1, dataStats.ValueMinMax.Min());
   EXPECT_EQ(minimumMax, dataStats.ValueMinMax.Max());
 
@@ -686,7 +686,7 @@ TEST(Test_Data_ChartData, Append2_Capacity2_ViewEntries1_MaximumMinMinimumMax)
   const uint32_t channelCount = 1;
   const uint32_t value0 = 1000;
   const uint32_t value1 = 2000;
-  auto dataBinding = std::make_shared<DataBinding::DataBindingService>();
+  const auto dataBinding = std::make_shared<DataBinding::DataBindingService>();
   UI::ChartData chartData(dataBinding, 2, channelCount,
                           UI::ChartData::Constraints(std::optional<uint32_t>(maximumMin), std::optional<uint32_t>(minimumMax)));
   EXPECT_EQ(2u, chartData.GetCapacity());
@@ -696,14 +696,14 @@ TEST(Test_Data_ChartData, Append2_Capacity2_ViewEntries1_MaximumMinMinimumMax)
   chartData.Append(UI::ChartDataEntry(value1));
   EXPECT_EQ(2u, chartData.GetSize());
 
-  auto viewConfig = chartData.CreateViewConfig(1, false);
-  auto dataInfo = chartData.DataInfo(viewConfig);
+  const auto viewConfig = chartData.CreateViewConfig(1, false);
+  const auto dataInfo = chartData.DataInfo(viewConfig);
 
   ASSERT_EQ(channelCount, dataInfo.ChannelCount);
   ASSERT_EQ(1u, dataInfo.SegmentCount);
   ASSERT_EQ(1u, dataInfo.TotalElementCount);
 
-  auto dataStats = chartData.CalculateDataStats(viewConfig);
+  const auto dataStats = chartData.CalculateDataStats(viewConfig);
   EXPECT_EQ(maximumMin, dataStats.ValueMinMax.Min());
   EXPECT_EQ(minimumMax, dataStats.ValueMinMax.Max());
 
@@ -722,7 +722,7 @@ TEST(Test_Data_ChartData, Append2_Capacity2_ViewEntries1_CustomMinMax_LowMax)
   const uint32_t channelCount = 1;
   const uint32_t value0 = 1000;
   const uint32_t value1 = 2000;
-  auto dataBinding = std::make_shared<DataBinding::DataBindingService>();
+  const auto dataBinding = std::make_shared<DataBinding::DataBindingService>();
   UI::ChartData chartData(dataBinding, 2, channelCount, {});
   chartData.SetCustomMinMax(customMinMax);
   EXPECT_EQ(2u, chartData.GetCapacity());
@@ -732,14 +732,14 @@ TEST(Test_Data_ChartData, Append2_Capacity2_ViewEntries1_CustomMinMax_LowMax)
   chartData.Append(UI::ChartDataEntry(value1));
   EXPECT_EQ(2u, chartData.GetSize());
 
-  auto viewConfig = chartData.CreateViewConfig(1, false);
-  auto dataInfo = chartData.DataInfo(viewConfig);
+  const auto viewConfig = chartData.CreateViewConfig(1, false);
+  const auto dataInfo = chartData.DataInfo(viewConfig);
 
   ASSERT_EQ(channelCount, dataInfo.ChannelCount);
   ASSERT_EQ(1u, dataInfo.SegmentCount);
   ASSERT_EQ(1u, dataInfo.TotalElementCount);
 
-  auto dataStats = chartData.CalculateDataStats(viewConfig);
+  const auto dataStats = chartData.CalculateDataStats(viewConfig);
   EXPECT_EQ(customMinMax, dataStats.ValueMinMax);
 
   const auto segmentData = chartData.SegmentDataAsReadOnlySpan(viewConfig, 0);
@@ -757,7 +757,7 @@ TEST(Test_Data_ChartData, Append2_Capacity2_ViewEntries1_CustomMinMax_HighMax)
   const uint32_t channelCount = 1;
   const uint32_t value0 = 1000;
   const uint32_t value1 = 2000;
-  auto dataBinding = std::make_shared<DataBinding::DataBindingService>();
+  const auto dataBinding = std::make_shared<DataBinding::DataBindingService>();
   UI::ChartData chartData(dataBinding, 2, channelCount, {});
   chartData.SetCustomMinMax(customMinMax);
   EXPECT_EQ(2u, chartData.GetCapacity());
@@ -767,14 +767,14 @@ TEST(Test_Data_ChartData, Append2_Capacity2_ViewEntries1_CustomMinMax_HighMax)
   chartData.Append(UI::ChartDataEntry(value1));
   EXPECT_EQ(2u, chartData.GetSize());
 
-  auto viewConfig = chartData.CreateViewConfig(1, false);
-  auto dataInfo = chartData.DataInfo(viewConfig);
+  const auto viewConfig = chartData.CreateViewConfig(1, false);
+  const auto dataInfo = chartData.DataInfo(viewConfig);
 
   ASSERT_EQ(channelCount, dataInfo.ChannelCount);
   ASSERT_EQ(1u, dataInfo.SegmentCount);
   ASSERT_EQ(1u, dataInfo.TotalElementCount);
 
-  auto dataStats = chartData.CalculateDataStats(viewConfig);
+  const auto dataStats = chartData.CalculateDataStats(viewConfig);
   EXPECT_EQ(customMinMax, dataStats.ValueMinMax);
 
   const auto segmentData = chartData.SegmentDataAsReadOnlySpan(viewConfig, 0);
@@ -791,7 +791,7 @@ TEST(Test_Data_ChartData, Append2_Capacity2_ViewEntries2)
   const uint32_t channelCount = 1;
   const uint32_t value0 = 1000;
   const uint32_t value1 = 2000;
-  auto dataBinding = std::make_shared<DataBinding::DataBindingService>();
+  const auto dataBinding = std::make_shared<DataBinding::DataBindingService>();
   UI::ChartData chartData(dataBinding, 2, channelCount, {});
   EXPECT_EQ(2u, chartData.GetCapacity());
 
@@ -800,14 +800,14 @@ TEST(Test_Data_ChartData, Append2_Capacity2_ViewEntries2)
   chartData.Append(UI::ChartDataEntry(value1));
   EXPECT_EQ(2u, chartData.GetSize());
 
-  auto viewConfig = chartData.CreateViewConfig(2, false);
-  auto dataInfo = chartData.DataInfo(viewConfig);
+  const auto viewConfig = chartData.CreateViewConfig(2, false);
+  const auto dataInfo = chartData.DataInfo(viewConfig);
 
   ASSERT_EQ(channelCount, dataInfo.ChannelCount);
   ASSERT_EQ(1u, dataInfo.SegmentCount);
   ASSERT_EQ(2u, dataInfo.TotalElementCount);
 
-  auto dataStats = chartData.CalculateDataStats(viewConfig);
+  const auto dataStats = chartData.CalculateDataStats(viewConfig);
   EXPECT_EQ(value0, dataStats.ValueMinMax.Min());
   EXPECT_EQ(value1, dataStats.ValueMinMax.Max());
 
@@ -827,7 +827,7 @@ TEST(Test_Data_ChartData, Append3_Capacity2_ViewEntries1)
   const uint32_t value0 = 1000;
   const uint32_t value1 = 2000;
   const uint32_t value2 = 3000;
-  auto dataBinding = std::make_shared<DataBinding::DataBindingService>();
+  const auto dataBinding = std::make_shared<DataBinding::DataBindingService>();
   UI::ChartData chartData(dataBinding, 2, channelCount, {});
   EXPECT_EQ(2u, chartData.GetCapacity());
 
@@ -837,14 +837,14 @@ TEST(Test_Data_ChartData, Append3_Capacity2_ViewEntries1)
   chartData.Append(UI::ChartDataEntry(value2));
   EXPECT_EQ(2u, chartData.GetSize());
 
-  auto viewConfig = chartData.CreateViewConfig(1, false);
-  auto dataInfo = chartData.DataInfo(viewConfig);
+  const auto viewConfig = chartData.CreateViewConfig(1, false);
+  const auto dataInfo = chartData.DataInfo(viewConfig);
 
   ASSERT_EQ(channelCount, dataInfo.ChannelCount);
   ASSERT_EQ(1u, dataInfo.SegmentCount);
   ASSERT_EQ(1u, dataInfo.TotalElementCount);
 
-  auto dataStats = chartData.CalculateDataStats(viewConfig);
+  const auto dataStats = chartData.CalculateDataStats(viewConfig);
   EXPECT_EQ(value2, dataStats.ValueMinMax.Min());
   EXPECT_EQ(value2, dataStats.ValueMinMax.Max());
 
@@ -861,7 +861,7 @@ TEST(Test_Data_ChartData, Append3_Capacity2_ViewEntries2)
   const uint32_t value0 = 1000;
   const uint32_t value1 = 2000;
   const uint32_t value2 = 3000;
-  auto dataBinding = std::make_shared<DataBinding::DataBindingService>();
+  const auto dataBinding = std::make_shared<DataBinding::DataBindingService>();
   UI::ChartData chartData(dataBinding, 2, channelCount, {});
   EXPECT_EQ(2u, chartData.GetCapacity());
 
@@ -871,14 +871,14 @@ TEST(Test_Data_ChartData, Append3_Capacity2_ViewEntries2)
   chartData.Append(UI::ChartDataEntry(value2));
   EXPECT_EQ(2u, chartData.GetSize());
 
-  auto viewConfig = chartData.CreateViewConfig(2, false);
-  auto dataInfo = chartData.DataInfo(viewConfig);
+  const auto viewConfig = chartData.CreateViewConfig(2, false);
+  const auto dataInfo = chartData.DataInfo(viewConfig);
 
   ASSERT_EQ(channelCount, dataInfo.ChannelCount);
   ASSERT_EQ(2u, dataInfo.SegmentCount);
   ASSERT_EQ(2u, dataInfo.TotalElementCount);
 
-  auto dataStats = chartData.CalculateDataStats(viewConfig);
+  const auto dataStats = chartData.CalculateDataStats(viewConfig);
   EXPECT_EQ(value1, dataStats.ValueMinMax.Min());
   EXPECT_EQ(value2, dataStats.ValueMinMax.Max());
 

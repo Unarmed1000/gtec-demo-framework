@@ -57,7 +57,7 @@ namespace Fsl
 
       if (hasNewFrame)
       {    // Update the native texture (slow)
-        GLTextureParameters textureParameters(GL_LINEAR, GL_LINEAR, GL_REPEAT, GL_REPEAT);
+        const GLTextureParameters textureParameters(GL_LINEAR, GL_LINEAR, GL_REPEAT, GL_REPEAT);
         rDstTexture.SetData(rScratchpadBitmap, textureParameters);
       }
       return hasNewFrame;
@@ -72,7 +72,7 @@ namespace Fsl
     , m_cameraFrameId(0)
   {
     // Set the initial image
-    GLTextureParameters textureParameters(GL_LINEAR, GL_LINEAR, GL_REPEAT, GL_REPEAT);
+    const GLTextureParameters textureParameters(GL_LINEAR, GL_LINEAR, GL_REPEAT, GL_REPEAT);
     m_nativeTexture.SetData(m_cameraFrameBitmap, textureParameters);
 
     FSLLOG3_WARNING("FIX: Some of the camera adapters do not obey our origin request so the image is upside down");
@@ -94,8 +94,8 @@ namespace Fsl
 
     // GLES3 native texture handle at top right corner scaled to a 4th of its size
     constexpr PxSize1D Div4 = PxSize1D::Create(4);
-    PxPoint2 scaledSize(nativeTextureSize.Width() / Div4, nativeTextureSize.Height() / Div4);
-    PxRectangle dstRectangle(resPx.Width() - scaledSize.X, PxValue(0), scaledSize.X, scaledSize.Y);
+    const PxPoint2 scaledSize(nativeTextureSize.Width() / Div4, nativeTextureSize.Height() / Div4);
+    const PxRectangle dstRectangle(resPx.Width() - scaledSize.X, PxValue(0), scaledSize.X, scaledSize.Y);
     nativeBatch->Draw(GLES3::GLTextureInfo(m_nativeTexture.Get(), m_nativeTexture.GetSize()), dstRectangle, Colors::White());
 
     // API independent texture

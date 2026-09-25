@@ -48,22 +48,22 @@ namespace Fsl
     OptionParser();
     ~OptionParser() override;
 
-    ContentWindowId GetContentId() const noexcept
+    [[nodiscard]] ContentWindowId GetContentId() const noexcept
     {
       return m_contentId;
     }
 
-    AntiAliasingMethod GetAAMethod() const noexcept
+    [[nodiscard]] AntiAliasingMethod GetAAMethod() const noexcept
     {
       return m_aaMethod;
     }
 
-    bool EnableFastResolve() const noexcept
+    [[nodiscard]] bool EnableFastResolve() const noexcept
     {
       return m_enableFastResolve;
     }
 
-    bool IsPaused() const noexcept
+    [[nodiscard]] bool IsPaused() const noexcept
     {
       return m_paused;
     }

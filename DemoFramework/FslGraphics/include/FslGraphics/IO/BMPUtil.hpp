@@ -45,6 +45,7 @@ namespace Fsl
   public:
     BMPUtil(const BMPUtil&) = delete;
     BMPUtil& operator=(const BMPUtil&) = delete;
+    ~BMPUtil() = default;
 
     //! @brief Load bitmap from file
     //! @param rBitmap the bitmap that will be resized to fit the loaded bmp image.

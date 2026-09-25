@@ -47,7 +47,7 @@ namespace
 
 TEST(Test_GetRSet_TwoWay, SetBinding_SourceCanNotBeTargetOfOneWayBinding)
 {
-  auto dataBindingService = std::make_shared<DataBinding::DataBindingService>();
+  const auto dataBindingService = std::make_shared<DataBinding::DataBindingService>();
 
   UTReadOnlyDependencyObject t0(dataBindingService);
   UTDependencyObject t1(dataBindingService);
@@ -68,7 +68,7 @@ TEST(Test_GetRSet_TwoWay, SetBinding_SourceCanNotBeTargetOfOneWayBinding)
 
 TEST(Test_GetRSet_TwoWay, SetBinding_OneWayBindTargetCanNotBeTwoWayBindingSource)
 {
-  auto dataBindingService = std::make_shared<DataBinding::DataBindingService>();
+  const auto dataBindingService = std::make_shared<DataBinding::DataBindingService>();
 
   UTReadOnlyDependencyObject t0(dataBindingService);
   UTDependencyObject t1(dataBindingService);
@@ -90,7 +90,7 @@ TEST(Test_GetRSet_TwoWay, SetBinding_OneWayBindTargetCanNotBeTwoWayBindingSource
 
 TEST(Test_GetRSet_TwoWay, SetBinding_DepProperty_DepProperty_ChangeFirstProperty_A)
 {
-  auto dataBindingService = std::make_shared<DataBinding::DataBindingService>();
+  const auto dataBindingService = std::make_shared<DataBinding::DataBindingService>();
 
   UTReadOnlyDependencyObject t0(dataBindingService);
   UTDependencyObject t1(dataBindingService);

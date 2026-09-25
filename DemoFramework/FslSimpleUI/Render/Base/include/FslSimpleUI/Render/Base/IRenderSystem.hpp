@@ -49,11 +49,11 @@ namespace Fsl
     class IRenderSystem : public IRenderSystemBase
     {
     public:
-      virtual VertexDeclarationSpan AsVertexDeclarationSpan() const = 0;
+      [[nodiscard]] virtual VertexDeclarationSpan AsVertexDeclarationSpan() const = 0;
 
       virtual void OnConfigurationChanged(const BasicWindowMetrics& windowMetrics) = 0;
 
-      virtual std::shared_ptr<IMeshManager> GetMeshManager() const = 0;
+      [[nodiscard]] virtual std::shared_ptr<IMeshManager> GetMeshManager() const = 0;
 
       virtual DrawCommandBuffer& AcquireDrawCommandBuffer(const bool clear) = 0;
       virtual void ReleaseDrawCommandBuffer() = 0;

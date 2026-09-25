@@ -47,7 +47,7 @@ namespace
 
 TEST(TestLog_Math_LogOffset3D, Log)
 {
-  Offset3D value(1, 2, 3);
+  const Offset3D value(1, 2, 3);
 
   std::stringstream stream;
   stream << value;

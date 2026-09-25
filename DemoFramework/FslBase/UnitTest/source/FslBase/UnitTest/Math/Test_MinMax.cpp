@@ -44,7 +44,7 @@ namespace
 
 TEST(TestMath_MinMax, Construct_Default)
 {
-  MinMax<int32_t> value;
+  const MinMax<int32_t> value;
 
   EXPECT_EQ(0, value.Min());
   EXPECT_EQ(0, value.Max());
@@ -56,7 +56,7 @@ TEST(TestMath_MinMax, Construct_MinMax)
 {
   const int32_t min = 10;
   const int32_t max = 15;
-  MinMax<int32_t> value(min, max);
+  const MinMax<int32_t> value(min, max);
 
   EXPECT_EQ(min, value.Min());
   EXPECT_EQ(max, value.Max());
@@ -67,7 +67,7 @@ TEST(TestMath_MinMax, Construct_MinMax_Invalid)
 {
   const int32_t min = 10;
   const int32_t max = 15;
-  MinMax<int32_t> value(max, min);
+  const MinMax<int32_t> value(max, min);
 
   EXPECT_EQ(max, value.Min());
   EXPECT_EQ(max, value.Max());
@@ -79,7 +79,7 @@ TEST(TestMath_MinMax, Construct_ValueMinMax)
 {
   const int32_t min = 10;
   const int32_t max = 15;
-  MinMax<int32_t> value(min, max);
+  const MinMax<int32_t> value(min, max);
 
   EXPECT_EQ(min, value.Min());
   EXPECT_EQ(max, value.Max());

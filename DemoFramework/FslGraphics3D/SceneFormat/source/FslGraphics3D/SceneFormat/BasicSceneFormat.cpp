@@ -104,9 +104,9 @@ namespace Fsl::SceneFormat
     explicit InternalVertexDeclaration(const SFVertexDeclaration& declaration)
       : SFVertexDeclaration(declaration)
     {
-      for (auto itr = declaration.Elements.begin(); itr != declaration.Elements.end(); ++itr)
+      for (const auto& element : declaration.Elements)
       {
-        VertexByteSize += CalcByteSize(*itr);
+        VertexByteSize += CalcByteSize(element);
       }
     }
 
@@ -341,7 +341,7 @@ namespace Fsl::SceneFormat
 
     void ExtractUniqueVertexDeclarations(InternalSceneRecord& rSceneRecord, const Scene& scene)
     {
-      int32_t count = scene.GetMeshCount();
+      const int32_t count = scene.GetMeshCount();
       std::shared_ptr<Mesh> mesh;
 
       auto& rMeshes = rSceneRecord.Meshes;
@@ -473,7 +473,7 @@ namespace Fsl::SceneFormat
 
       const auto endPos = rStream.tellg();
       assert(endPos >= startPos);
-      if (static_cast<uint32_t>(endPos - startPos) != header.ByteSize)
+      if (std::cmp_not_equal(endPos - startPos, header.ByteSize))
       {
         throw FormatException("VertexDeclarationChunk was of a unexpected size");
       }
@@ -490,7 +490,7 @@ namespace Fsl::SceneFormat
 
       const uint32_t cbContent = CalcByteSize(uniqueEntries);
 
-      ChunkHeader header(cbContent, ChunkType::VertexDeclarations, ChunkVersionVertexDeclaration);
+      const ChunkHeader header(cbContent, ChunkType::VertexDeclarations, ChunkVersionVertexDeclaration);
       WriteChunkHeader(rStream, header);
 
       // Write the vertex declarations
@@ -539,13 +539,13 @@ namespace Fsl::SceneFormat
       const auto& vertexDeclarations = scene.VertexDeclarations;
       const auto& meshes = scene.Meshes;
 
-      for (auto itr = meshes.begin(); itr != meshes.end(); ++itr)
+      for (const auto& meshEntry : meshes)
       {
-        assert(itr->SourceMesh);
-        const auto& mesh = itr->SourceMesh;
+        assert(meshEntry.SourceMesh);
+        const auto& mesh = meshEntry.SourceMesh;
         cbMeshes += SizeofMeshHeader;
-        cbMeshes += vertexDeclarations[itr->VertexDeclarationIndex].VertexByteSize * mesh->GetVertexCount();
-        cbMeshes += itr->IndexByteSize * mesh->GetIndexCount();
+        cbMeshes += vertexDeclarations[meshEntry.VertexDeclarationIndex].VertexByteSize * mesh->GetVertexCount();
+        cbMeshes += meshEntry.IndexByteSize * mesh->GetIndexCount();
         cbMeshes += mesh->GetName().GetByteSize() + 1;    // +1 because we write the terminating zero as well
       }
       return cbMeshes;
@@ -805,9 +805,9 @@ namespace Fsl::SceneFormat
       const auto srcVertexStride = srcVertexDeclaration.VertexByteSize;
 
       std::size_t srcInterleaveOffset = 0;
-      for (auto itr = srcVertexDeclaration.Elements.begin(); itr != srcVertexDeclaration.Elements.end(); ++itr)
+      for (const auto& element : srcVertexDeclaration.Elements)
       {
-        switch (itr->Format)
+        switch (element.Format)
         {
         case SceneFormat::VertexElementFormat::Single:
           ConvertFloat1ArrayLE(pSrc, srcLength, srcVertexStride, srcInterleaveOffset, vertexCount);
@@ -847,10 +847,10 @@ namespace Fsl::SceneFormat
       const auto dstStride = dstVertexDeclaration.VertexByteSize;
 
       std::size_t dstInterleaveOffset = 0;
-      for (auto itr = dstVertexDeclaration.Elements.begin(); itr != dstVertexDeclaration.Elements.end(); ++itr)
+      for (const auto& element : dstVertexDeclaration.Elements)
       {
-        const std::size_t srcInterleaveOffset = LocateOffset(meshVertexDeclaration, itr->Usage, itr->UsageIndex);
-        switch (itr->Format)
+        const std::size_t srcInterleaveOffset = LocateOffset(meshVertexDeclaration, element.Usage, element.UsageIndex);
+        switch (element.Format)
         {
         case SceneFormat::VertexElementFormat::Single:
           WriteFloat1ArrayLE(pDst, dstLength, dstIndex, dstStride, dstInterleaveOffset, pVertices, cbSrcVertices, srcVertexStride,
@@ -878,7 +878,7 @@ namespace Fsl::SceneFormat
       }
 
       assert(dstInterleaveOffset == dstVertexDeclaration.VertexByteSize);
-      return srcVertexCount * dstVertexDeclaration.VertexByteSize;
+      return static_cast<std::size_t>(srcVertexCount) * dstVertexDeclaration.VertexByteSize;
     }
 
 
@@ -916,7 +916,7 @@ namespace Fsl::SceneFormat
       const auto indexStride = meshContent.IndexStride;
       const auto* pIndices = static_cast<const uint8_t*>(meshContent.pIndices);
 
-      const std::size_t indexOffsetEnd = indexCount * indexStride;
+      const std::size_t indexOffsetEnd = static_cast<std::size_t>(indexCount) * indexStride;
 
       std::size_t currentDstIndex = dstIndex;
       if (record.IndexByteSize == 1)
@@ -967,11 +967,11 @@ namespace Fsl::SceneFormat
 
       auto dstItr = elements.begin();
       uint32_t offset = 0;
-      for (auto itr = internalVertexDeclaration.Elements.begin(); itr != internalVertexDeclaration.Elements.end(); ++itr)
+      for (const auto& element : internalVertexDeclaration.Elements)
       {
-        *dstItr = VertexElement(offset, Conversion::Convert(itr->Format), Conversion::Convert(itr->Usage), itr->UsageIndex);
+        *dstItr = VertexElement(offset, Conversion::Convert(element.Format), Conversion::Convert(element.Usage), element.UsageIndex);
         ++dstItr;
-        offset += InternalVertexDeclaration::CalcByteSize(*itr);
+        offset += InternalVertexDeclaration::CalcByteSize(element);
       }
       assert(offset == internalVertexDeclaration.VertexByteSize);
       return {elements.data(), elements.size(), internalVertexDeclaration.VertexByteSize};
@@ -992,18 +992,19 @@ namespace Fsl::SceneFormat
       const VertexDeclaration srcVertexDeclaration(Create(srcInternalVertexDeclaration));
 
       // Create the mesh container object
-      std::shared_ptr<Mesh> mesh = meshAllocator(vertexCount, indexCount, Conversion::Convert(primitiveType));
+      const std::shared_ptr<Mesh> mesh = meshAllocator(vertexCount, indexCount, Conversion::Convert(primitiveType));
       mesh->SetMaterialIndex(static_cast<int32_t>(materialIndex));
       mesh->SetName(UTF8String(pszName));
 
       const auto cbSrcVertices = srcVertexDeclaration.VertexStride() * vertexCount;
       const auto cbSrcIndices = indexByteSize * indexCount;
 
-      RawMeshContentEx rawDst = mesh->GenericDirectAccess();
-      VertexConverter::GenericConvert(rawDst.pVertices, rawDst.VertexStride * rawDst.VertexCount, mesh->AsVertexDeclarationSpan(), pVertices,
-                                      cbSrcVertices, srcVertexDeclaration.AsSpan(), vertexCount, pDstDefaultValues, cbDstDefaultValues);
-      IndexConverter::GenericConvert(rawDst.pIndices, rawDst.IndexStride * rawDst.IndexCount, rawDst.IndexStride, pIndices, cbSrcIndices,
-                                     indexByteSize, indexCount);
+      const RawMeshContentEx rawDst = mesh->GenericDirectAccess();
+      VertexConverter::GenericConvert(rawDst.pVertices, static_cast<std::size_t>(rawDst.VertexStride) * rawDst.VertexCount,
+                                      mesh->AsVertexDeclarationSpan(), pVertices, cbSrcVertices, srcVertexDeclaration.AsSpan(), vertexCount,
+                                      pDstDefaultValues, cbDstDefaultValues);
+      IndexConverter::GenericConvert(rawDst.pIndices, static_cast<std::size_t>(rawDst.IndexStride) * rawDst.IndexCount, rawDst.IndexStride, pIndices,
+                                     cbSrcIndices, indexByteSize, indexCount);
 
       rScene.AddMesh(mesh);
     }
@@ -1036,7 +1037,7 @@ namespace Fsl::SceneFormat
 
       // Create the scene
       std::shared_ptr<Scene> scene = sceneAllocator(meshCount);
-      MeshAllocatorFunc meshAllocator = scene->GetMeshAllocator();
+      const MeshAllocatorFunc meshAllocator = scene->GetMeshAllocator();
 
       for (uint32_t meshIndex = 0; meshIndex < meshCount; ++meshIndex)
       {
@@ -1103,7 +1104,7 @@ namespace Fsl::SceneFormat
 
       const auto endPos = rStream.tellg();
       assert(endPos >= startPos);
-      if (static_cast<uint32_t>(endPos - startPos) != header.ByteSize)
+      if (std::cmp_not_equal(endPos - startPos, header.ByteSize))
       {
         throw FormatException("MeshesChunk was of a unexpected size");
       }
@@ -1128,7 +1129,7 @@ namespace Fsl::SceneFormat
     void WriteMeshesChunk(std::ofstream& rStream, const InternalSceneRecord& scene)
     {
       const uint32_t cbMeshes = CalcMeshesSize(scene);
-      ChunkHeader header(cbMeshes, ChunkType::Meshes, ChunkVersionMeshes);
+      const ChunkHeader header(cbMeshes, ChunkType::Meshes, ChunkVersionMeshes);
       WriteChunkHeader(rStream, header);
 
       const auto& vertexDeclarations = scene.VertexDeclarations;
@@ -1146,19 +1147,19 @@ namespace Fsl::SceneFormat
 #if !defined(NDEBUG)
       auto dstStartIndex = dstIndex;
 #endif
-      for (auto itr = meshes.begin(); itr != meshes.end(); ++itr)
+      for (const auto& meshEntry : meshes)
       {
-        assert(itr->SourceMesh);
-        const auto& mesh = itr->SourceMesh;
+        assert(meshEntry.SourceMesh);
+        const auto& mesh = meshEntry.SourceMesh;
 
         const uint32_t vertexCount = mesh->GetVertexCount();
         const uint32_t indexCount = mesh->GetIndexCount();
         const int32_t nameLength = mesh->GetName().GetByteSize() + 1;    // +1 to write the terminating zero as well
         const uint32_t materialIndex = mesh->GetMaterialIndex();
         const auto primitiveType = static_cast<uint32_t>(Conversion::Convert(mesh->GetPrimitiveType()));
-        assert(itr->IndexByteSize <= 255);
-        const auto indexType = static_cast<uint8_t>(itr->IndexByteSize);
-        uint8_t vertexDeclarationIndex = itr->VertexDeclarationIndex;
+        assert(meshEntry.IndexByteSize <= 255);
+        const auto indexType = static_cast<uint8_t>(meshEntry.IndexByteSize);
+        const uint8_t vertexDeclarationIndex = meshEntry.VertexDeclarationIndex;
 
         if (nameLength < 0 || primitiveType > 255)
         {
@@ -1182,9 +1183,9 @@ namespace Fsl::SceneFormat
         dstIndex += ByteArrayUtil::WriteUInt8LE(content.data(), content.size(), dstIndex, indexType);
 
         // write vertex data
-        dstIndex += WriteVerticesLE(content.data(), content.size(), dstIndex, *itr, vertexDeclarations);
+        dstIndex += WriteVerticesLE(content.data(), content.size(), dstIndex, meshEntry, vertexDeclarations);
         // write index data
-        dstIndex += WriteIndicesLE(content.data(), content.size(), dstIndex, *itr);
+        dstIndex += WriteIndicesLE(content.data(), content.size(), dstIndex, meshEntry);
         // write name
         dstIndex += ByteArrayUtil::WriteBytes(content.data(), content.size(), dstIndex,
                                               reinterpret_cast<const uint8_t*>(mesh->GetName().ToUTF8String().c_str()), nameLength);
@@ -1227,7 +1228,7 @@ namespace Fsl::SceneFormat
     };
 
 
-    std::size_t ReadNode(std::ifstream& rStream, std::deque<std::shared_ptr<SceneNode>>& rNodes, const std::vector<uint8_t>& srcBuffer,
+    std::size_t ReadNode(const std::ifstream& rStream, std::deque<std::shared_ptr<SceneNode>>& rNodes, const std::vector<uint8_t>& srcBuffer,
                          const std::size_t srcOffset, const uint32_t sceneMeshCount, const bool hostIsLittleEndian)
     {
       FSL_PARAM_NOT_USED(rStream);
@@ -1272,7 +1273,7 @@ namespace Fsl::SceneFormat
         throw FormatException("the name is expected to be zero terminated, so a min length of 1 is expected");
       }
 
-      auto node = std::make_shared<SceneNode>(nodeMeshCount);
+      const auto node = std::make_shared<SceneNode>(nodeMeshCount);
 
       // Read mesh indices
       for (std::size_t i = 0; i < nodeMeshCount; ++i)
@@ -1321,11 +1322,11 @@ namespace Fsl::SceneFormat
       {
         throw FormatException("Name size not supported");
       }
-      if (nodeMeshCount < 0 || nodeMeshCount >= std::numeric_limits<uint8_t>::max())
+      if (nodeMeshCount < 0 || std::cmp_greater_equal(nodeMeshCount, std::numeric_limits<uint8_t>::max()))
       {
         throw FormatException("Mesh count not supported");
       }
-      if (nodeChildCount < 0 || nodeChildCount >= std::numeric_limits<uint8_t>::max())
+      if (nodeChildCount < 0 || std::cmp_greater_equal(nodeChildCount, std::numeric_limits<uint8_t>::max()))
       {
         throw FormatException("Child count not supported");
       }
@@ -1375,7 +1376,7 @@ namespace Fsl::SceneFormat
       // WARNING: the method used for finding the node index is far from optimal, but it works for now
       for (int32_t i = 0; i < nodeChildCount; ++i)
       {
-        auto child = info.Node->GetChildAt(i);
+        const auto child = info.Node->GetChildAt(i);
         const auto itr = std::find_if(allNodes.begin(), allNodes.end(), NodeComp(child));
         if (itr == allNodes.end())
         {
@@ -1425,7 +1426,7 @@ namespace Fsl::SceneFormat
 
       const auto endPos = rStream.tellg();
       assert(endPos >= startPos);
-      if (static_cast<uint32_t>(endPos - startPos) != header.ByteSize)
+      if (std::cmp_not_equal(endPos - startPos, header.ByteSize))
       {
         throw FormatException("NodeChunk was of a unexpected size");
       }
@@ -1474,7 +1475,7 @@ namespace Fsl::SceneFormat
       NodesInfo totalInfo(nodeByteSize, nodeByteSize);
       for (int32_t childIndex = 0; childIndex < nodeChildCount; ++childIndex)
       {
-        NodesInfo info = ExamineNodes(rAllNodes, node->GetChildAt(childIndex));
+        const NodesInfo info = ExamineNodes(rAllNodes, node->GetChildAt(childIndex));
         totalInfo.TotalByteSize += info.TotalByteSize;
         totalInfo.MaxNodeByteSize = std::max(totalInfo.MaxNodeByteSize, info.TotalByteSize);
       }
@@ -1489,10 +1490,10 @@ namespace Fsl::SceneFormat
     void WriteNodesChunk(std::ofstream& rStream, const Scene& scene)
     {
       std::deque<NodeInfo> allNodes;
-      NodesInfo nodesInfo = ExamineNodes(allNodes, scene.GetRootNode());
+      const NodesInfo nodesInfo = ExamineNodes(allNodes, scene.GetRootNode());
 
       assert(nodesInfo.TotalByteSize <= (std::numeric_limits<uint32_t>::max() - SizeofNodelistHeader));
-      ChunkHeader header(static_cast<uint32_t>(SizeofNodelistHeader + nodesInfo.TotalByteSize), ChunkType::Nodes, ChunkVersionNodes);
+      const ChunkHeader header(static_cast<uint32_t>(SizeofNodelistHeader + nodesInfo.TotalByteSize), ChunkType::Nodes, ChunkVersionNodes);
       WriteChunkHeader(rStream, header);
 
       std::vector<uint8_t> content(nodesInfo.MaxNodeByteSize);
@@ -1516,7 +1517,7 @@ namespace Fsl::SceneFormat
 
       // Runtime verification of endian assumptions
       uint32_t tmp = 0;
-      auto* pUInt32 = reinterpret_cast<uint32_t*>(&tmp);
+      auto* pUInt32 = &tmp;
       auto* pFloat = reinterpret_cast<float*>(&tmp);
       auto* pTmp = reinterpret_cast<uint8_t*>(&tmp);
       *pUInt32 = 0x01020304;
@@ -1608,7 +1609,7 @@ namespace Fsl::SceneFormat
       ExtractUniqueVertexDeclarations(*m_sceneScratchpad, scene);
 
       // Write the scene content
-      FormatHeader header(FormatMagic, FormatCurrentVersion);
+      const FormatHeader header(FormatMagic, FormatCurrentVersion);
       WriteHeader(rStream, header);
       WriteVertexDeclarationsChunk(rStream, m_sceneScratchpad->VertexDeclarations);
       WriteMeshesChunk(rStream, *m_sceneScratchpad);

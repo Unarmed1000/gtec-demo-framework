@@ -80,12 +80,12 @@ namespace Fsl::Willems
       return Keys.Left || Keys.Right || Keys.Up || Keys.Down;
     }
 
-    float GetNearClip() const
+    [[nodiscard]] float GetNearClip() const
     {
       return m_zNear;
     }
 
-    float GetFarClip() const
+    [[nodiscard]] float GetFarClip() const
     {
       return m_zFar;
     }
@@ -146,7 +146,7 @@ namespace Fsl::Willems
           camFront.z = std::cos(glm::radians(Rotation.x)) * std::cos(glm::radians(Rotation.y));
           camFront = glm::normalize(camFront);
 
-          float moveSpeed = deltaTime * MovementSpeed;
+          const float moveSpeed = deltaTime * MovementSpeed;
 
           if (Keys.Up)
           {
@@ -190,19 +190,19 @@ namespace Fsl::Willems
         camFront.z = std::cos(glm::radians(Rotation.x)) * std::cos(glm::radians(Rotation.y));
         camFront = glm::normalize(camFront);
 
-        float moveSpeed = deltaTime * MovementSpeed * 2.0f;
-        float rotSpeed = deltaTime * RotationSpeed * 50.0f;
+        const float moveSpeed = deltaTime * MovementSpeed * 2.0f;
+        const float rotSpeed = deltaTime * RotationSpeed * 50.0f;
 
         // Move
         if (std::fabs(axisLeft.y) > deadZone)
         {
-          float pos = (fabsf(axisLeft.y) - deadZone) / range;
+          const float pos = (fabsf(axisLeft.y) - deadZone) / range;
           Position -= camFront * pos * ((axisLeft.y < 0.0f) ? -1.0f : 1.0f) * moveSpeed;
           retVal = true;
         }
         if (std::fabs(axisLeft.x) > deadZone)
         {
-          float pos = (fabsf(axisLeft.x) - deadZone) / range;
+          const float pos = (fabsf(axisLeft.x) - deadZone) / range;
           Position += glm::normalize(glm::cross(camFront, glm::vec3(0.0f, 1.0f, 0.0f))) * pos * ((axisLeft.x < 0.0f) ? -1.0f : 1.0f) * moveSpeed;
           retVal = true;
         }
@@ -210,13 +210,13 @@ namespace Fsl::Willems
         // Rotate
         if (std::fabs(axisRight.x) > deadZone)
         {
-          float pos = (fabsf(axisRight.x) - deadZone) / range;
+          const float pos = (fabsf(axisRight.x) - deadZone) / range;
           Rotation.y += pos * ((axisRight.x < 0.0f) ? -1.0f : 1.0f) * rotSpeed;
           retVal = true;
         }
         if (std::fabs(axisRight.y) > deadZone)
         {
-          float pos = (fabsf(axisRight.y) - deadZone) / range;
+          const float pos = (fabsf(axisRight.y) - deadZone) / range;
           Rotation.x -= pos * ((axisRight.y < 0.0f) ? -1.0f : 1.0f) * rotSpeed;
           retVal = true;
         }

@@ -46,7 +46,7 @@ namespace
 
 TEST(TestMathPixel_PxRectangleU16, Empty)
 {
-  PxRectangleU16 value;
+  const PxRectangleU16 value;
 
   EXPECT_EQ(PxRectangleU16(), PxRectangleU16::Empty());
   EXPECT_EQ(0u, value.RawLeft());
@@ -64,11 +64,11 @@ TEST(TestMathPixel_PxRectangleU16, Empty)
 
 TEST(TestMathPixel_PxRectangleU16, Construct1)
 {
-  PxValueU16 offsetX(1);
-  PxValueU16 offsetY(2);
-  PxValueU16 width(10);
-  PxValueU16 height(20);
-  PxRectangleU16 value(offsetX, offsetY, width, height);
+  const PxValueU16 offsetX(1);
+  const PxValueU16 offsetY(2);
+  const PxValueU16 width(10);
+  const PxValueU16 height(20);
+  const PxRectangleU16 value(offsetX, offsetY, width, height);
 
   EXPECT_EQ(offsetX, value.Left());
   EXPECT_EQ(offsetY, value.Top());
@@ -84,10 +84,10 @@ TEST(TestMathPixel_PxRectangleU16, Construct1)
 
 TEST(TestMathPixel_PxRectangleU16, Create)
 {
-  PxValueU16 offsetX(1);
-  PxValueU16 offsetY(2);
-  PxValueU16 width(10);
-  PxValueU16 height(20);
+  const PxValueU16 offsetX(1);
+  const PxValueU16 offsetY(2);
+  const PxValueU16 width(10);
+  const PxValueU16 height(20);
   const auto value = PxRectangleU16::Create(offsetX.Value, offsetY.Value, width.Value, height.Value);
 
   EXPECT_EQ(offsetX, value.Left());
@@ -104,11 +104,11 @@ TEST(TestMathPixel_PxRectangleU16, Create)
 
 TEST(TestMathPixel_PxRectangleU16, FromLeftTopRightBottom)
 {
-  PxValueU16 left(1);
-  PxValueU16 top(2);
-  PxValueU16 right(10);
-  PxValueU16 bottom(20);
-  auto value = PxRectangleU16::FromLeftTopRightBottom(left, top, right, bottom);
+  const PxValueU16 left(1);
+  const PxValueU16 top(2);
+  const PxValueU16 right(10);
+  const PxValueU16 bottom(20);
+  const auto value = PxRectangleU16::FromLeftTopRightBottom(left, top, right, bottom);
 
   EXPECT_EQ(left, value.Left());
   EXPECT_EQ(top, value.Top());
@@ -124,11 +124,11 @@ TEST(TestMathPixel_PxRectangleU16, FromLeftTopRightBottom)
 
 TEST(TestMathPixel_PxRectangleU16, CreateFromLeftTopRightBottom)
 {
-  PxValueU16 left(1);
-  PxValueU16 top(2);
-  PxValueU16 right(10);
-  PxValueU16 bottom(20);
-  auto value = PxRectangleU16::CreateFromLeftTopRightBottom(left.Value, top.Value, right.Value, bottom.Value);
+  const PxValueU16 left(1);
+  const PxValueU16 top(2);
+  const PxValueU16 right(10);
+  const PxValueU16 bottom(20);
+  const auto value = PxRectangleU16::CreateFromLeftTopRightBottom(left.Value, top.Value, right.Value, bottom.Value);
 
   EXPECT_EQ(left, value.Left());
   EXPECT_EQ(top, value.Top());

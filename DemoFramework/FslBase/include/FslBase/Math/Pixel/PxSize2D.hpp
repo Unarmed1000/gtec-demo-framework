@@ -87,47 +87,47 @@ namespace Fsl
     {
     }
 
-    constexpr inline PxPoint2 Value() const noexcept
+    [[nodiscard]] constexpr inline PxPoint2 Value() const noexcept
     {
       return {m_width, m_height};
     }
 
-    constexpr inline value_type Width() const noexcept
+    [[nodiscard]] constexpr inline value_type Width() const noexcept
     {
       return m_width;
     }
 
-    constexpr inline value_type Height() const noexcept
+    [[nodiscard]] constexpr inline value_type Height() const noexcept
     {
       return m_height;
     }
 
-    constexpr inline unsigned_value_type UnsignedWidth() const noexcept
+    [[nodiscard]] constexpr inline unsigned_value_type UnsignedWidth() const noexcept
     {
       return m_width.UnsignedValue();
     }
 
-    constexpr inline unsigned_value_type UnsignedHeight() const noexcept
+    [[nodiscard]] constexpr inline unsigned_value_type UnsignedHeight() const noexcept
     {
       return m_height.UnsignedValue();
     }
 
-    constexpr inline raw_value_type RawWidth() const noexcept
+    [[nodiscard]] constexpr inline raw_value_type RawWidth() const noexcept
     {
       return m_width.RawValue();
     }
 
-    constexpr inline raw_value_type RawHeight() const noexcept
+    [[nodiscard]] constexpr inline raw_value_type RawHeight() const noexcept
     {
       return m_height.RawValue();
     }
 
-    constexpr inline raw_unsigned_value_type RawUnsignedWidth() const noexcept
+    [[nodiscard]] constexpr inline raw_unsigned_value_type RawUnsignedWidth() const noexcept
     {
       return m_width.RawUnsignedValue();
     }
 
-    constexpr inline raw_unsigned_value_type RawUnsignedHeight() const noexcept
+    [[nodiscard]] constexpr inline raw_unsigned_value_type RawUnsignedHeight() const noexcept
     {
       return m_height.RawUnsignedValue();
     }

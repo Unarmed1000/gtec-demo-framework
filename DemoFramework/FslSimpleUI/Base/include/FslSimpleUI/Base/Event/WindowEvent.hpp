@@ -62,16 +62,16 @@ namespace Fsl::UI
     bool IsSource(const IWindowId* const pWindowId) const noexcept;
 
     //! @brief Get the original source of the event.
-    const std::shared_ptr<IWindowId>& GetOriginalSource() const noexcept;
+    [[nodiscard]] const std::shared_ptr<IWindowId>& GetOriginalSource() const noexcept;
 
     //! @brief Get the source of the event.
-    const std::shared_ptr<IWindowId>& GetSource() const noexcept;
+    [[nodiscard]] const std::shared_ptr<IWindowId>& GetSource() const noexcept;
 
     //! @brief Check if this event has been handled.
-    EventHandlingStatus GetHandlingStatus() const noexcept;
+    [[nodiscard]] EventHandlingStatus GetHandlingStatus() const noexcept;
 
     //! @brief Check if this event has been handled.
-    bool IsHandled() const noexcept;
+    [[nodiscard]] bool IsHandled() const noexcept;
 
     //! @brief mark the event as handled.
     void Handled() noexcept;
@@ -80,13 +80,13 @@ namespace Fsl::UI
     void Claimed();
 
     //! @brief Get the event type id
-    EventTypeId GetEventTypeId() const noexcept
+    [[nodiscard]] EventTypeId GetEventTypeId() const noexcept
     {
       return m_eventTypeId;
     }
 
     //! @brief Get the event description.
-    EventDescription GetDescription() const noexcept
+    [[nodiscard]] EventDescription GetDescription() const noexcept
     {
       return m_eventDescription;
     }
@@ -106,7 +106,7 @@ namespace Fsl::UI
     // NOLINTNEXTLINE(readability-identifier-naming)
     virtual void SYS_Destruct() noexcept;
 
-    bool IsDisposed() const noexcept
+    [[nodiscard]] bool IsDisposed() const noexcept
     {
       return !m_isInitialized;
     }

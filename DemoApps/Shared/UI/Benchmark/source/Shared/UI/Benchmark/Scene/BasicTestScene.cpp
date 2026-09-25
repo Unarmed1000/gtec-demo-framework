@@ -92,7 +92,7 @@ namespace Fsl
   void BasicTestScene::OnDrawSkipped(const FrameInfo& frameInfo)
   {
     const DemoTime customDemoTime = ApplyCustomDemoTime(frameInfo.Time);
-    FrameInfo customFrameInfo(frameInfo.FrameIndex, customDemoTime);
+    const FrameInfo customFrameInfo(frameInfo.FrameIndex, customDemoTime);
     BasicScene::OnDrawSkipped(customFrameInfo);
     m_testAppHost->AppOnDrawSkipped(customFrameInfo);
   }
@@ -102,7 +102,7 @@ namespace Fsl
   {
     if (m_testAppHostExtensionProxy)
     {
-      auto time = m_testAppHostExtensionProxy->TryGetDemoTime();
+      const auto time = m_testAppHostExtensionProxy->TryGetDemoTime();
       return time.value_or(demoTime);
     }
     return demoTime;

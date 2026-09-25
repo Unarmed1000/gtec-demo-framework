@@ -102,7 +102,7 @@ namespace Fsl::Graphics3D
       break;
     }
 
-    for (auto& rEntry : m_dynamicRecords)
+    for (const auto& rEntry : m_dynamicRecords)
     {
       assert(rEntry.Link);
       rEntry.Link->OnRenderSystemEvent(theEvent);
@@ -115,7 +115,7 @@ namespace Fsl::Graphics3D
     assert(m_factory);
 
 
-    auto hNative = m_factory->CreateBuffer(bufferType, bufferData, NumericCast<uint32_t>(bufferData.size()), false);
+    const auto hNative = m_factory->CreateBuffer(bufferType, bufferData, NumericCast<uint32_t>(bufferData.size()), false);
 
     auto basic = std::make_shared<BasicStaticBufferTracker>(bufferType, hNative, NumericCast<uint32_t>(bufferData.size()));
     m_staticRecords.emplace_back(bufferType, hNative, basic, m_maxFramesInFlight);
@@ -132,7 +132,7 @@ namespace Fsl::Graphics3D
 
     const bool setDataSupported = NativeBufferFactoryCapsUtil::IsEnabled(m_factoryCaps, NativeBufferFactoryCaps::Dynamic);
 
-    auto link = std::make_shared<BasicDynamicBufferLink>(m_maxFramesInFlight, m_factory, bufferType, bufferData, capacity, setDataSupported);
+    const auto link = std::make_shared<BasicDynamicBufferLink>(m_maxFramesInFlight, m_factory, bufferType, bufferData, capacity, setDataSupported);
     auto basic = std::make_shared<BasicDynamicBufferTracker>(link);
     m_dynamicRecords.emplace_back(basic, link, m_maxFramesInFlight);
 
@@ -219,7 +219,7 @@ namespace Fsl::Graphics3D
       while (itr != m_staticRecords.end())
       {
         FSLLOG3_VERBOSE5("Destroying buffer ({})", itr->NativeHandle.Value);
-        auto basic = itr->BasicUserObjectTracker.lock();
+        const auto basic = itr->BasicUserObjectTracker.lock();
         if (basic)
         {
           basic->Dispose();
@@ -232,7 +232,7 @@ namespace Fsl::Graphics3D
       auto itr = m_dynamicRecords.begin();
       while (itr != m_dynamicRecords.end())
       {
-        auto basic = itr->BasicUserObject.lock();
+        const auto basic = itr->BasicUserObject.lock();
         if (basic)
         {
           basic->Dispose();

@@ -55,7 +55,7 @@ namespace Fsl
     }
 
     //! @brief  Get the provider id value.
-    uint32_t Get() const
+    [[nodiscard]] uint32_t Get() const
     {
       return m_value;
     }
@@ -66,7 +66,7 @@ namespace Fsl
       return {};
     }
 
-    bool IsValid() const
+    [[nodiscard]] bool IsValid() const
     {
       return m_value != INVALID;
     }

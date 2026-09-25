@@ -106,7 +106,7 @@ namespace Fsl
       void EndFrame() final;
 
       // From INativeGraphicsService
-      bool IsSupported(const DemoHostFeature& activeAPI) const final;
+      [[nodiscard]] bool IsSupported(const DemoHostFeature& activeAPI) const final;
       void Capture(Bitmap& rBitmap, const PxRectangle& srcRectanglePx) final;
       std::shared_ptr<INativeGraphicsBasic2D> CreateBasic2D(const PxExtent2D& currentExtent) final;
       std::shared_ptr<INativeBatch2D> CreateNativeBatch2D(const PxExtent2D& currentExtent) final;

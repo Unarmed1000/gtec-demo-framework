@@ -172,7 +172,7 @@ namespace Fsl::UI
 
     DpPoint2F ApplyScrollModeToVelocity(const ScrollModeFlags scrollMode, const DpPoint2F value, const DpValueF minimumVelocityDpf)
     {
-      DpPoint2F velocityDpf = ApplyScrollMode(scrollMode, value);
+      const DpPoint2F velocityDpf = ApplyScrollMode(scrollMode, value);
       return velocityDpf.LengthSquared() >= (minimumVelocityDpf * minimumVelocityDpf) ? velocityDpf : DpPoint2F();
     }
   }
@@ -522,7 +522,7 @@ namespace Fsl::UI
   {
     // Execute a flick animation
     const DpPoint2F finalOffsetDpf = FinalPosition(dragEndFlickVelocityDpf, dragFlickAccelerationDpf, timeToRest);
-    PxVector2 finalOffsetPxf = m_unitConverter.ToPxVector2(finalOffsetDpf);
+    const PxVector2 finalOffsetPxf = m_unitConverter.ToPxVector2(finalOffsetDpf);
 
     TimeSpan animationTime(static_cast<int64_t>(std::round(timeToRest * TimeSpan::TicksPerSecond * m_config.DragEndAnimTimeMultiplier)));
 

@@ -56,10 +56,10 @@ namespace Fsl
     {
     }
 
-    ContainmentType Contains(const BoundingBox& box) const;
+    [[nodiscard]] ContainmentType Contains(const BoundingBox& box) const;
     // ContainmentType Contains(const BoundingFrustum& frustum) const;
-    ContainmentType Contains(const BoundingSphere& sphere) const;
-    ContainmentType Contains(const Vector3& point) const;
+    [[nodiscard]] ContainmentType Contains(const BoundingSphere& sphere) const;
+    [[nodiscard]] ContainmentType Contains(const Vector3& point) const;
 
     //! @brief Create a bounding box from the given list of points.
     //! @param points The list of Vector3 instances defining the point cloud to bound
@@ -71,15 +71,15 @@ namespace Fsl
     static BoundingBox CreateMerged(const BoundingBox& original, const BoundingBox& additional);
     static void CreateMerged(const BoundingBox& original, const BoundingBox& additional, BoundingBox& rResult);
 
-    std::vector<Vector3> GetCorners() const;
+    [[nodiscard]] std::vector<Vector3> GetCorners() const;
     void GetCorners(std::vector<Vector3>& corners) const;
     void GetCorners(std::array<Vector3, 8>& corners) const;
 
-    bool Intersects(const BoundingBox& box) const;
+    [[nodiscard]] bool Intersects(const BoundingBox& box) const;
     void Intersects(const BoundingBox& box, bool& rResult) const;
-    bool Intersects(const BoundingFrustum& frustum) const;
-    bool Intersects(const BoundingSphere& sphere) const;
-    PlaneIntersectionType Intersects(const Plane& plane) const;
+    [[nodiscard]] bool Intersects(const BoundingFrustum& frustum) const;
+    [[nodiscard]] bool Intersects(const BoundingSphere& sphere) const;
+    [[nodiscard]] PlaneIntersectionType Intersects(const Plane& plane) const;
     bool Intersects(const Ray& ray, float& rResult) const;
 
     //! @brief Tests for equality.

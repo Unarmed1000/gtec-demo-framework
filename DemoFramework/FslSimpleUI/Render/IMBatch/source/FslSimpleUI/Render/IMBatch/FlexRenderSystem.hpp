@@ -57,12 +57,13 @@ namespace Fsl::UI::RenderIMBatch
   public:
     FlexRenderSystem(const FlexRenderSystem&) = delete;
     FlexRenderSystem& operator=(const FlexRenderSystem&) = delete;
+    ~FlexRenderSystem() override = default;
 
     explicit FlexRenderSystem(const RenderSystemCreateInfo& createInfo);
 
     void OnConfigurationChanged(const BasicWindowMetrics& windowMetrics) final;
 
-    const FlexRenderSystemConfig& GetConfig() const final
+    [[nodiscard]] const FlexRenderSystemConfig& GetConfig() const final
     {
       return m_config;
     }
@@ -75,7 +76,7 @@ namespace Fsl::UI::RenderIMBatch
       InvalidateDrawCache();
     }
 
-    uint32_t GetMaxDrawCalls() const final
+    [[nodiscard]] uint32_t GetMaxDrawCalls() const final
     {
       return m_maxDrawCalls;
     }

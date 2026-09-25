@@ -42,16 +42,16 @@ namespace Fsl
     virtual ~IGamepads() = default;
 
     //! @brief Get the current dead-zone type
-    virtual GamepadDeadZoneType GetDeadZoneType() const = 0;
+    [[nodiscard]] virtual GamepadDeadZoneType GetDeadZoneType() const = 0;
 
     //! @brief Set the dead-zone type
     virtual void SetDeadZoneType(const GamepadDeadZoneType type) = 0;
 
     //! @brief Get the maximum number of gamepads
-    virtual uint32_t GetCount() const = 0;
+    [[nodiscard]] virtual uint32_t GetCount() const = 0;
 
     //! @brief Get the current gamepad state
-    virtual GamepadState GetState(const uint32_t gamepadIndex) const = 0;
+    [[nodiscard]] virtual GamepadState GetState(const uint32_t gamepadIndex) const = 0;
   };
 }
 

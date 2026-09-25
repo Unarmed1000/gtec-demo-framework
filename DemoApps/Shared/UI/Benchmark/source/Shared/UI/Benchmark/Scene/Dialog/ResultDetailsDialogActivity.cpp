@@ -66,18 +66,18 @@ namespace Fsl::UI
       if (result.has_value() && result.value().RenderInfo.has_value())
       {
         const auto resultValue = result.value().RenderInfo.value();
-        auto settings0 = uiFactory.CreateLabel(TextConfig::HeaderSettings, Theme::FontType::Header);
-        auto settings1 = CreateSwitch(uiFactory, TextConfig::GpuTimestamps, resultValue.BasicOptions.GpuTimestamps);
-        auto settings2 = CreateSwitch(uiFactory, TextConfig::NoOpaqueMaterials, resultValue.BasicOptions.NoOpaqueMaterials);
-        auto settings3 = CreateSwitch(uiFactory, TextConfig::UseDrawCache, resultValue.BasicOptions.UseDrawCache);
-        auto settings4 = CreateSwitch(uiFactory, TextConfig::OnDemandRendering, resultValue.BasicOptions.UseOnDemandRendering);
-        auto settings5 = CreateSwitch(uiFactory, TextConfig::UseSdfFonts, resultValue.BasicOptions.UseSdfFonts);
+        const auto settings0 = uiFactory.CreateLabel(TextConfig::HeaderSettings, Theme::FontType::Header);
+        const auto settings1 = CreateSwitch(uiFactory, TextConfig::GpuTimestamps, resultValue.BasicOptions.GpuTimestamps);
+        const auto settings2 = CreateSwitch(uiFactory, TextConfig::NoOpaqueMaterials, resultValue.BasicOptions.NoOpaqueMaterials);
+        const auto settings3 = CreateSwitch(uiFactory, TextConfig::UseDrawCache, resultValue.BasicOptions.UseDrawCache);
+        const auto settings4 = CreateSwitch(uiFactory, TextConfig::OnDemandRendering, resultValue.BasicOptions.UseOnDemandRendering);
+        const auto settings5 = CreateSwitch(uiFactory, TextConfig::UseSdfFonts, resultValue.BasicOptions.UseSdfFonts);
 
-        auto renderMethod0 = uiFactory.CreateLabel(TextConfig::HeaderRenderMethod, Theme::FontType::Header);
-        auto renderMethod1 = uiFactory.CreateLabel(Debug::ToString(resultValue.RenderOptions.RenderMethod), Theme::FontType::Default);
+        const auto renderMethod0 = uiFactory.CreateLabel(TextConfig::HeaderRenderMethod, Theme::FontType::Header);
+        const auto renderMethod1 = uiFactory.CreateLabel(Debug::ToString(resultValue.RenderOptions.RenderMethod), Theme::FontType::Default);
         renderMethod1->SetEnabled(false);
         renderMethod1->FinishAnimation();
-        auto renderOptions0 = uiFactory.CreateLabel(TextConfig::HeaderRenderOptions, Theme::FontType::Header);
+        const auto renderOptions0 = uiFactory.CreateLabel(TextConfig::HeaderRenderOptions, Theme::FontType::Header);
 
         RenderOptionControls renderOptions = RenderOptionControlsFactory::CreateRenderMethodControls(uiFactory);
 
@@ -123,10 +123,10 @@ namespace Fsl::UI
     : DialogActivity(std::move(activityStack), themeControlFactory, std::make_shared<GridLayout>(themeControlFactory->GetContext()),
                      Theme::WindowType::DialogNormal, ItemAlignment::Center, ItemAlignment::Center)
   {
-    auto context = themeControlFactory->GetContext();
+    const auto context = themeControlFactory->GetContext();
     auto& uiFactory = *themeControlFactory;
 
-    auto contentLayout = std::make_shared<GridLayout>(context);
+    const auto contentLayout = std::make_shared<GridLayout>(context);
     contentLayout->AddColumnDefinition(GridColumnDefinition(GridUnitType::Auto));
     contentLayout->AddColumnDefinition(GridColumnDefinition(GridUnitType::Fixed, 20));
     contentLayout->AddColumnDefinition(GridColumnDefinition(GridUnitType::Auto));
@@ -159,7 +159,7 @@ namespace Fsl::UI
     rMainLayout.AddRowDefinition(GridRowDefinition(GridUnitType::Auto));
     rMainLayout.AddRowDefinition(GridRowDefinition(GridUnitType::Auto));
 
-    auto caption = themeControlFactory->CreateLabel("Details", Theme::FontType::Header);
+    const auto caption = themeControlFactory->CreateLabel("Details", Theme::FontType::Header);
     caption->SetAlignmentX(ItemAlignment::Center);
 
     m_buttonBack = themeControlFactory->CreateTextButton(Theme::ButtonType::Contained, "Back");

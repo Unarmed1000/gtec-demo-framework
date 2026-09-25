@@ -43,7 +43,7 @@ namespace
 
 TEST(TestMathDp_DpSize1DF, Construct_Default)
 {
-  DpSize1DF value;
+  const DpSize1DF value;
 
   EXPECT_EQ(DpSize1DF(), value);
   EXPECT_EQ(DpValueF::Create(0), value.Value());
@@ -52,7 +52,7 @@ TEST(TestMathDp_DpSize1DF, Construct_Default)
 TEST(TestMathDp_DpSize1DF, Construct)
 {
   constexpr const auto Value = DpValueF::Create(3);
-  DpSize1DF testValue(Value);
+  const DpSize1DF testValue(Value);
 
   EXPECT_EQ(Value, testValue.Value());
 }
@@ -60,7 +60,7 @@ TEST(TestMathDp_DpSize1DF, Construct)
 TEST(TestMathDp_DpSize1DF, Construct_NegativeValue)
 {
   constexpr const auto Value = DpValueF::Create(-1);
-  DpSize1DF testValue(Value);
+  const DpSize1DF testValue(Value);
 
   EXPECT_EQ(DpValueF::Create(0), testValue.Value());
 }
@@ -194,7 +194,7 @@ TEST(TestMathDp_DpSize1DF, Add_DpSize1DF_DpSize1DF)
 {
   const auto val1 = DpSize1DF::Create(10);
   const auto val2 = DpSize1DF::Create(5);
-  DpSize1DF val3 = DpSize1DF::Add(val1, val2);
+  const DpSize1DF val3 = DpSize1DF::Add(val1, val2);
 
   EXPECT_EQ(DpSize1DF::Create(15), val3);
 }
@@ -203,7 +203,7 @@ TEST(TestMathDp_DpSize1DF, Add_DpValueF_DpSize1DF)
 {
   const auto val1 = DpValueF::Create(10);
   const auto val2 = DpSize1DF::Create(5);
-  DpSize1DF val3 = DpSize1DF::Add(val1, val2);
+  const DpSize1DF val3 = DpSize1DF::Add(val1, val2);
 
   EXPECT_EQ(DpSize1DF::Create(15), val3);
 }
@@ -212,7 +212,7 @@ TEST(TestMathDp_DpSize1DF, Add_DpSize1DF_DpValueF)
 {
   const auto val1 = DpSize1DF::Create(10);
   const auto val2 = DpValueF::Create(5);
-  DpSize1DF val3 = DpSize1DF::Add(val1, val2);
+  const DpSize1DF val3 = DpSize1DF::Add(val1, val2);
 
   EXPECT_EQ(DpSize1DF::Create(15), val3);
 }
@@ -222,7 +222,7 @@ TEST(TestMathDp_DpSize1DF, Subtract_DpSize1DF_DpSize1DF)
 {
   const auto val1 = DpSize1DF::Create(10);
   const auto val2 = DpSize1DF::Create(5);
-  DpValueF val3 = DpSize1DF::Subtract(val1, val2);
+  const DpValueF val3 = DpSize1DF::Subtract(val1, val2);
 
   EXPECT_EQ(DpValueF::Create(5), val3);
 }
@@ -232,7 +232,7 @@ TEST(TestMathDp_DpSize1DF, Subtract_DpValueF_DpSize1DF)
 {
   const auto val1 = DpValueF::Create(10);
   const auto val2 = DpSize1DF::Create(5);
-  DpValueF val3 = DpSize1DF::Subtract(val1, val2);
+  const DpValueF val3 = DpSize1DF::Subtract(val1, val2);
 
   EXPECT_EQ(DpValueF::Create(5), val3);
 }
@@ -242,7 +242,7 @@ TEST(TestMathDp_DpSize1DF, Subtract_DpSize1DF_DpValueF)
 {
   const auto val1 = DpSize1DF::Create(10);
   const auto val2 = DpValueF::Create(5);
-  DpValueF val3 = DpSize1DF::Subtract(val1, val2);
+  const DpValueF val3 = DpSize1DF::Subtract(val1, val2);
 
   EXPECT_EQ(DpValueF::Create(5), val3);
 }
@@ -252,7 +252,7 @@ TEST(TestMathDp_DpSize1DF, Multiply_DpSize1DF_DpSize1DF)
 {
   const auto val1 = DpSize1DF::Create(10);
   const auto val2 = DpSize1DF::Create(5);
-  DpSize1DF val3 = DpSize1DF::Multiply(val1, val2);
+  const DpSize1DF val3 = DpSize1DF::Multiply(val1, val2);
 
   EXPECT_EQ(DpSize1DF::Create(10 * 5), val3);
 }
@@ -262,7 +262,7 @@ TEST(TestMathDp_DpSize1DF, Multiply_DpValueF_DpSize1DF)
 {
   const auto val1 = DpValueF::Create(10);
   const auto val2 = DpSize1DF::Create(5);
-  DpValueF val3 = DpSize1DF::Multiply(val1, val2);
+  const DpValueF val3 = DpSize1DF::Multiply(val1, val2);
 
   EXPECT_EQ(DpValueF::Create(10 * 5), val3);
 }
@@ -272,7 +272,7 @@ TEST(TestMathDp_DpSize1DF, Multiply_DpSize1DF_DpValueF)
 {
   const auto val1 = DpSize1DF::Create(10);
   const auto val2 = DpValueF::Create(5);
-  DpValueF val3 = DpSize1DF::Multiply(val1, val2);
+  const DpValueF val3 = DpSize1DF::Multiply(val1, val2);
 
   EXPECT_EQ(DpValueF::Create(10 * 5), val3);
 }
@@ -282,7 +282,7 @@ TEST(TestMathDp_DpSize1DF, Multiply_DpSize1DF_DpValueF_Negative)
 {
   const auto val1 = DpSize1DF::Create(10);
   const auto val2 = DpValueF::Create(-5);
-  DpValueF val3 = DpSize1DF::Multiply(val1, val2);
+  const DpValueF val3 = DpSize1DF::Multiply(val1, val2);
 
   EXPECT_EQ((val1.Value() * val2), val3);
 }
@@ -292,7 +292,7 @@ TEST(TestMathDp_DpSize1DF, Divide_DpSize1DF_DpSize1DF)
 {
   const auto val1 = DpSize1DF::Create(10);
   const auto val2 = DpSize1DF::Create(5);
-  DpSize1DF val3 = DpSize1DF::Divide(val1, val2);
+  const DpSize1DF val3 = DpSize1DF::Divide(val1, val2);
 
   EXPECT_EQ(DpSize1DF::Create(10.0f / 5.0f), val3);
 }
@@ -312,7 +312,7 @@ TEST(TestMathDp_DpSize1DF, Divide_DpSize1DF_DpValueF)
 {
   const auto val1 = DpSize1DF::Create(10);
   const auto val2 = DpValueF::Create(5);
-  DpValueF val3 = DpSize1DF::Divide(val1, val2);
+  const DpValueF val3 = DpSize1DF::Divide(val1, val2);
 
   EXPECT_EQ(DpValueF::Create(10.0f / 5.0f), val3);
 }
@@ -322,7 +322,7 @@ TEST(TestMathDp_DpSize1DF, Divide_DpSize1DF_DpValueF_Negative)
 {
   const auto val1 = DpSize1DF::Create(10);
   const auto val2 = DpValueF::Create(-5);
-  DpValueF val3 = DpSize1DF::Divide(val1, val2);
+  const DpValueF val3 = DpSize1DF::Divide(val1, val2);
 
   EXPECT_EQ((val1.Value() / val2), val3);
 }
@@ -330,7 +330,7 @@ TEST(TestMathDp_DpSize1DF, Divide_DpSize1DF_DpValueF_Negative)
 
 TEST(TestMathDp_DpSize1DF, OpAddEqual_DpSize1DF)
 {
-  auto val1 = DpSize1DF::Create(10);
+  const auto val1 = DpSize1DF::Create(10);
   const auto val2 = DpSize1DF::Create(1);
   DpSize1DF sum = val1;
   sum += val2;
@@ -341,7 +341,7 @@ TEST(TestMathDp_DpSize1DF, OpAddEqual_DpSize1DF)
 
 TEST(TestMathDp_DpSize1DF, OpAddEqual_DpValueF)
 {
-  auto val1 = DpSize1DF::Create(10);
+  const auto val1 = DpSize1DF::Create(10);
   const auto val2 = DpValueF::Create(1);
   DpSize1DF sum = val1;
   sum += val2;
@@ -352,7 +352,7 @@ TEST(TestMathDp_DpSize1DF, OpAddEqual_DpValueF)
 
 TEST(TestMathDp_DpSize1DF, OpAddEqual_DpValueF_Negative)
 {
-  auto val1 = DpSize1DF::Create(10);
+  const auto val1 = DpSize1DF::Create(10);
   const auto val2 = DpValueF::Create(-1);
   DpSize1DF sum = val1;
   sum += val2;
@@ -363,7 +363,7 @@ TEST(TestMathDp_DpSize1DF, OpAddEqual_DpValueF_Negative)
 
 TEST(TestMathDp_DpSize1DF, OpSubEqual_DpSize1DF)
 {
-  auto val1 = DpSize1DF::Create(10);
+  const auto val1 = DpSize1DF::Create(10);
   const auto val2 = DpSize1DF::Create(1);
   DpSize1DF sum = val1;
   sum -= val2;
@@ -374,7 +374,7 @@ TEST(TestMathDp_DpSize1DF, OpSubEqual_DpSize1DF)
 
 TEST(TestMathDp_DpSize1DF, OpSubEqual_DpValueF)
 {
-  auto val1 = DpSize1DF::Create(10);
+  const auto val1 = DpSize1DF::Create(10);
   const auto val2 = DpValueF::Create(1);
   DpSize1DF sum = val1;
   sum -= val2;
@@ -385,7 +385,7 @@ TEST(TestMathDp_DpSize1DF, OpSubEqual_DpValueF)
 
 TEST(TestMathDp_DpSize1DF, OpSubEqual_DpValueF_Negative)
 {
-  auto val1 = DpSize1DF::Create(10);
+  const auto val1 = DpSize1DF::Create(10);
   const auto val2 = DpValueF::Create(-1);
   DpSize1DF sum = val1;
   sum -= val2;
@@ -396,7 +396,7 @@ TEST(TestMathDp_DpSize1DF, OpSubEqual_DpValueF_Negative)
 
 TEST(TestMathDp_DpSize1DF, OpSubEqual_DpValueF_Val2Largest)
 {
-  auto val1 = DpSize1DF::Create(10);
+  const auto val1 = DpSize1DF::Create(10);
   const auto val2 = DpValueF::Create(100);
   DpSize1DF sum = val1;
   sum -= val2;

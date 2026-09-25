@@ -301,7 +301,7 @@ namespace Fsl::GLES3
 
     if (activeInfo.LocSmoothing != GLValues::InvalidLocation)
     {
-      float smoothing = SdfFontUtil::CalcSmooth(sdfRenderConfig.Spread, sdfRenderConfig.Scale);
+      const float smoothing = SdfFontUtil::CalcSmooth(sdfRenderConfig.Spread, sdfRenderConfig.Scale);
       glUniform1f(activeInfo.LocSmoothing, smoothing);
     }
 
@@ -383,9 +383,9 @@ namespace Fsl::GLES3
     uint32_t verticesLeft = length * LocalConfig::QuadVertexCount;
     const auto maxCapacity = m_vertexBuffer.GetCapacity();
     assert(m_vertexOffset <= maxCapacity);
-    auto capacityLeft = maxCapacity - m_vertexOffset;
+    const auto capacityLeft = maxCapacity - m_vertexOffset;
 
-    auto verticesToAdd = (verticesLeft <= capacityLeft ? verticesLeft : capacityLeft);
+    const auto verticesToAdd = (verticesLeft <= capacityLeft ? verticesLeft : capacityLeft);
     if (capacityLeft > 0)
     {
       assert((m_vertexOffset + verticesToAdd) <= m_vertexBuffer.GetCapacity());
@@ -422,7 +422,6 @@ namespace Fsl::GLES3
 
       assert(verticesLeft <= m_vertexBuffer.GetCapacity());
       m_vertexBuffer.SetDataFast(m_vertexOffset, pSrcVertices, verticesLeft);
-      pSrcVertices += verticesLeft;
       m_vertexOffset += verticesLeft;
 
       const int32_t numIndices = 4 + (((UncheckedNumericCast<int32_t>(verticesLeft) / LocalConfig::QuadVertexCount) - 1) * 6);
@@ -430,8 +429,6 @@ namespace Fsl::GLES3
       glDrawElements(GL_TRIANGLE_STRIP, numIndices, m_indexBuffer.GetType(), reinterpret_cast<const void*>(m_indexOffset * sizeof(uint16_t)));
       ++m_stats.DrawCalls;
       m_indexOffset += numIndices + 2;
-      verticesLeft = 0;
-      assert(verticesLeft == 0);
     }
   }
 

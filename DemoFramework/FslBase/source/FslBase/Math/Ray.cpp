@@ -65,7 +65,7 @@ namespace Fsl
 
       if (tMin > tMax)
       {
-        auto temp = tMin;
+        const auto temp = tMin;
         tMin = tMax;
         tMax = temp;
       }
@@ -86,7 +86,7 @@ namespace Fsl
 
       if (tMinY > tMaxY)
       {
-        auto temp = tMinY;
+        const auto temp = tMinY;
         tMinY = tMaxY;
         tMaxY = temp;
       }
@@ -124,7 +124,7 @@ namespace Fsl
 
       if (tMinZ > tMaxZ)
       {
-        auto temp = tMinZ;
+        const auto temp = tMinZ;
         tMinZ = tMaxZ;
         tMaxZ = temp;
       }
@@ -170,10 +170,10 @@ namespace Fsl
   bool Ray::Intersects(const BoundingSphere& sphere, float& rResult) const
   {
     // Find the vector between where the ray starts the the sphere's center
-    Vector3 difference = sphere.Center - Position;
+    const Vector3 difference = sphere.Center - Position;
 
-    float differenceLengthSquared = difference.LengthSquared();
-    float sphereRadiusSquared = sphere.Radius * sphere.Radius;
+    const float differenceLengthSquared = difference.LengthSquared();
+    const float sphereRadiusSquared = sphere.Radius * sphere.Radius;
 
     float distanceAlongRay = 0.0f;
 
@@ -198,7 +198,7 @@ namespace Fsl
     // if y = distance between ray position and sphere center
     // if z = the distance we've traveled along the ray
     // if x^2 + z^2 - y^2 < 0, we do not intersect
-    float dist = sphereRadiusSquared + distanceAlongRay * distanceAlongRay - differenceLengthSquared;
+    const float dist = sphereRadiusSquared + distanceAlongRay * distanceAlongRay - differenceLengthSquared;
 
     if (dist < 0)
     {
@@ -212,7 +212,7 @@ namespace Fsl
 
   bool Ray::Intersects(const Plane& plane, float& rResult) const
   {
-    auto den = Vector3::Dot(Direction, plane.Normal);
+    const auto den = Vector3::Dot(Direction, plane.Normal);
     if (std::abs(den) < 0.00001f)
     {
       rResult = 0;

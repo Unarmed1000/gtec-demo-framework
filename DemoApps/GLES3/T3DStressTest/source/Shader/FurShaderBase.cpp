@@ -299,8 +299,8 @@ namespace Fsl
       m_locLightDirection[0] = rProgram.GetUniformLocation("LightDirection");
       m_locLightColor[0] = rProgram.GetUniformLocation("LightColor");
       m_locLightCount = rProgram.GetUniformLocation("LightCount");
-      m_lightDirection.resize(3 * lightCount);
-      m_lightColor.resize(3 * lightCount);
+      m_lightDirection.resize(static_cast<std::size_t>(3) * lightCount);
+      m_lightColor.resize(static_cast<std::size_t>(3) * lightCount);
       std::fill(m_lightDirection.begin(), m_lightDirection.end(), 0.0f);
       std::fill(m_lightColor.begin(), m_lightColor.end(), 0.0f);
     }
@@ -313,7 +313,7 @@ namespace Fsl
 
 
     {    // Set the default values
-      ScopedUse scope(*this);
+      const ScopedUse scope(*this);
 
       SetWorld(Matrix::GetIdentity());
       SetView(Matrix::GetIdentity());

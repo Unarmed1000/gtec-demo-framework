@@ -73,6 +73,7 @@ namespace Fsl::Vulkan
     {
       // Remove the data from other
     }
+    ~ArrayCopy() = default;
 
     ArrayCopy()
       : m_arrayCopy()
@@ -107,7 +108,7 @@ namespace Fsl::Vulkan
     }
 
     // NOLINTNEXTLINE(readability-identifier-naming)
-    std::size_t size() const
+    [[nodiscard]] std::size_t size() const
     {
       return m_array.size();
     }

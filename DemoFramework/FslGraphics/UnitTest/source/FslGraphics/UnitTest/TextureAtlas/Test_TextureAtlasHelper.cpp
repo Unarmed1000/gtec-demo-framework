@@ -56,7 +56,7 @@ TEST(TestTextureAtlas_TextureAtlasHelper, GetAtlasTextureInfo)
   atlas.SetEntry(0, PxRectangleU32::Create(4, 6, 8, 12), PxThicknessU::Create(3, 4, 9, 14), TestDp, "hello");
 
   {
-    auto textureInfo = TextureAtlasHelper::GetAtlasTextureInfo(atlas, "hello");
+    const auto textureInfo = TextureAtlasHelper::GetAtlasTextureInfo(atlas, "hello");
     EXPECT_EQ(PxPoint2::Create(1, 2), textureInfo.OffsetPx);
     EXPECT_EQ(PxExtent2D::Create(20, 30), textureInfo.ExtentPx);
     EXPECT_EQ(PxThicknessU::Create(3, 4, 9, 14), textureInfo.TrimMarginPx);

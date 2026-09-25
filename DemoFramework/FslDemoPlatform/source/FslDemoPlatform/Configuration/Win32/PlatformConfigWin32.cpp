@@ -71,7 +71,7 @@ namespace Fsl
     //     >(ServicePriorityList::NativeGraphicsService());
     // #endif
 
-    auto cpuStatsServiceFactory = std::make_shared<CpuStatsServiceFactory>([]() { return std::make_unique<CpuStatsAdapterWin32>(); });
+    const auto cpuStatsServiceFactory = std::make_shared<CpuStatsServiceFactory>([]() { return std::make_unique<CpuStatsAdapterWin32>(); });
     serviceRegistry.Register(cpuStatsServiceFactory);
   }
 }

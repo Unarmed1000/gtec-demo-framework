@@ -40,6 +40,7 @@
 #include <FslSimpleUI/Base/Event/WindowEvent.hpp>
 #include <FslSimpleUI/Base/Event/WindowEventPool.hpp>
 #include <cassert>
+#include <ranges>
 #include <utility>
 #include "../ITreeNodeClickInputTargetLocater.hpp"
 #include "../TreeNode.hpp"
@@ -53,11 +54,11 @@ namespace Fsl::UI
     void CalcClipRect(PxPoint2& rTopLeftPx, PxClipRectangle& rClipRectPx, const PxPoint2& parentTopLeftPx, const PxClipRectangle& parentClipRectPx,
                       const std::shared_ptr<TreeNode>& node)
     {
-      PxRectangle boundingRectPx = node->WinGetContentRectanglePx();
+      const PxRectangle boundingRectPx = node->WinGetContentRectanglePx();
       rTopLeftPx = PxPoint2(parentTopLeftPx.X + boundingRectPx.X(), parentTopLeftPx.Y + boundingRectPx.Y());
       {
         // assert(EqualHelper::IsEqual(node->CalcScreenTopLeftCornerPx(), rTopLeft));
-        PxClipRectangle actualRect(rTopLeftPx.X, rTopLeftPx.Y, boundingRectPx.Width(), boundingRectPx.Height());
+        const PxClipRectangle actualRect(rTopLeftPx.X, rTopLeftPx.Y, boundingRectPx.Width(), boundingRectPx.Height());
 
         // Clip the actual rect to the parent rect
         rClipRectPx = PxClipRectangle::Intersect(parentClipRectPx, actualRect);
@@ -79,15 +80,15 @@ namespace Fsl::UI
       if (node->IsConsideredRunning() && currentClipRectPx.Contains(eventPosPx.X, eventPosPx.Y))
       {
         const auto& children = node->m_children;
-        for (auto itr = children.rbegin(); itr != children.rend(); ++itr)
+        for (const auto& child : std::views::reverse(children))
         {
           PxPoint2 childTopLeftPx;
           PxClipRectangle childClipRectPx;
-          CalcClipRect(childTopLeftPx, childClipRectPx, currentTopLeftPx, currentClipRectPx, *itr);
+          CalcClipRect(childTopLeftPx, childClipRectPx, currentTopLeftPx, currentClipRectPx, child);
 
-          // assert(EqualHelper::IsEqual(childClipRect, (*itr)->CalcScreenClipRect()));
+          // assert(EqualHelper::IsEqual(childClipRect, (*child)->CalcScreenClipRect()));
 
-          std::shared_ptr<TreeNode> res = RecursiveLocateTopChildThatWasHit(childTopLeftPx, childClipRectPx, *itr, eventPosPx, flags);
+          std::shared_ptr<TreeNode> res = RecursiveLocateTopChildThatWasHit(childTopLeftPx, childClipRectPx, child, eventPosPx, flags);
           if (res)
           {
             return res;
@@ -130,7 +131,7 @@ namespace Fsl::UI
   void EventRouter::CreateRoute(EventRoute& rRoute, const EventRoutingStrategy routingStrategy, const PxPoint2& hitPositionPx)
   {
     // locate the actual window that was hit
-    std::shared_ptr<TreeNode> hit = LocateWindowByHit(hitPositionPx, rRoute.GetFlags());
+    const std::shared_ptr<TreeNode> hit = LocateWindowByHit(hitPositionPx, rRoute.GetFlags());
     CreateRoute(rRoute, routingStrategy, hit);
   }
 
@@ -143,7 +144,7 @@ namespace Fsl::UI
     }
 
     // locate the actual window that was hit
-    PxClipRectangle clipRectPx(TypeConverter::UncheckedTo<PxClipRectangle>(m_rootNode->WinGetContentRectanglePx()));
+    const PxClipRectangle clipRectPx(TypeConverter::UncheckedTo<PxClipRectangle>(m_rootNode->WinGetContentRectanglePx()));
     const PxPoint2 topLeftPx = clipRectPx.TopLeft();
     return RecursiveLocateTopChildThatWasHit(topLeftPx, clipRectPx, m_rootNode, hitPositionPx, flags);
   }

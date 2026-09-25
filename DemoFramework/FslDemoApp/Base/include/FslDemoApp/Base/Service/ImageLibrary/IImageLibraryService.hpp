@@ -54,7 +54,7 @@ namespace Fsl
     virtual ~IImageLibraryService() = default;
 
     //! @brief Get the name of the library service
-    virtual std::string GetName() const = 0;
+    [[nodiscard]] virtual std::string GetName() const = 0;
 
     //! @brief Get a list of formats that this library supports.
     //! @note  The library is not required to list all supported formats here, but it can help optimize things a bit.

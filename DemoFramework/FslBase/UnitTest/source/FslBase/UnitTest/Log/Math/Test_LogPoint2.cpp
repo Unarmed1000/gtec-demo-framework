@@ -47,7 +47,7 @@ namespace
 
 TEST(TestLog_Math_LogPoint2, Log)
 {
-  Point2 value(1, 2);
+  const Point2 value(1, 2);
 
   std::stringstream stream;
   stream << value;

@@ -75,7 +75,7 @@ namespace Fsl::DataBinding
   DataBindingInstanceHandle ScopedDependencyObject::CreateProperty(const DependencyPropertyDefinition& propertyDefinition,
                                                                    std::unique_ptr<DataBinding::Internal::IDependencyPropertyMethods> methods)
   {
-    auto hInstance = GetInstanceHandleOnDemand();
+    const auto hInstance = GetInstanceHandleOnDemand();
     return m_dataBinding->CreateDependencyObjectProperty(hInstance, propertyDefinition, std::move(methods));
   }
 
@@ -83,7 +83,7 @@ namespace Fsl::DataBinding
   DataBindingInstanceHandle ScopedDependencyObject::CreateReadOnlyProperty(const DependencyPropertyDefinition& propertyDefinition,
                                                                            std::unique_ptr<DataBinding::Internal::IDependencyPropertyMethods> methods)
   {
-    auto hInstance = GetInstanceHandleOnDemand();
+    const auto hInstance = GetInstanceHandleOnDemand();
     return m_dataBinding->CreateReadOnlyDependencyObjectProperty(hInstance, propertyDefinition, std::move(methods));
   }
 

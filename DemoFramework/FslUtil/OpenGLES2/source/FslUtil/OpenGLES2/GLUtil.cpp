@@ -101,7 +101,7 @@ namespace Fsl::GLES2::GLUtil
     GL_CHECK(glGetIntegerv(GL_VIEWPORT, viewport.data()))
 
     const auto srcRectangle = PxRectangle::Create(viewport[0], viewport[1], viewport[2], viewport[3]);
-    return Capture(rBitmap, pixelFormat, srcRectangle);
+    Capture(rBitmap, pixelFormat, srcRectangle);
   }
 
 

@@ -57,7 +57,7 @@ namespace Fsl
     //! @param gridResolution beware we will always use a even grid size, so if you supply a odd one it will become one bigger
     Grid(const Rect& rect, const Point2& gridResolution);
 
-    Point2 GetGridSize() const
+    [[nodiscard]] Point2 GetGridSize() const
     {
       return {m_gridX, m_gridY};
     }

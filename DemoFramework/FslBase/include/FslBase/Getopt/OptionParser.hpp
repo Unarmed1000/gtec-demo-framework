@@ -36,14 +36,14 @@
 #include <FslBase/String/StringViewLite.hpp>
 #include <deque>
 
+
 namespace Fsl
 {
   class OptionParser
   {
   public:
     // Switched to C++11 way of doing it
-    OptionParser(const OptionParser&) = delete;
-    OptionParser& operator=(const OptionParser&) = delete;
+    OptionParser() = delete;
 
 
     struct ParserRecord

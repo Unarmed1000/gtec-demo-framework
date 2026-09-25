@@ -107,20 +107,20 @@ namespace Fsl
                 const bool useCustomModule = false);
     ~TestAppHost() override;
 
-    UI::UIColor GetRootColor() const;
+    [[nodiscard]] UI::UIColor GetRootColor() const;
     bool TrySetRootColor(const UI::UIColor color);
 
     void ClearProfileData();
 
-    const DemoPerformanceCapture& GetProfiler() const
+    [[nodiscard]] const DemoPerformanceCapture& GetProfiler() const
     {
       return *m_demoPerformanceCapture;
     }
 
-    const UI::IRenderSystemBase& GetRenderSystem() const;
+    [[nodiscard]] const UI::IRenderSystemBase& GetRenderSystem() const;
     UI::IRenderSystemBase* TryGetRenderSystem();
 
-    bool IsUIIdle() const;
+    [[nodiscard]] bool IsUIIdle() const;
 
     void StartTestApp(ITestAppFactory& testAppFactory, const UIDemoAppMaterialCreateInfo& materialCreateInfo,
                       const UIDemoAppMaterialConfig& materialConfig);
@@ -134,15 +134,15 @@ namespace Fsl
     void AppDraw(const DemoTime& demoTime);
     void AppOnDrawSkipped(const FrameInfo& frameInfo);
 
-    const UIDemoAppMaterialConfig& GetDefaultMaterialConfig() const;
+    [[nodiscard]] const UIDemoAppMaterialConfig& GetDefaultMaterialConfig() const;
     void SetDefaultMaterialConfig(const UIDemoAppMaterialConfig& config);
 
     void SetEmulatedDpi(const bool emulateDpiEnabled, const uint16_t emulatedDpi);
-    uint16_t GetTexDpi() const;
+    [[nodiscard]] uint16_t GetTexDpi() const;
 
     void SetUseDrawCache(const bool useDrawCache);
 
-    std::shared_ptr<ICustomWindowInfoModule> GetWindowInfoModule() const;
+    [[nodiscard]] std::shared_ptr<ICustomWindowInfoModule> GetWindowInfoModule() const;
 
 
     // IDemoAppExtension

@@ -172,7 +172,7 @@ namespace Fsl
       viewport.minDepth = 0.0f;
       viewport.maxDepth = 1.0f;
 
-      VkRect2D scissor = {{0, 0}, swapchainImageExtent};
+      const VkRect2D scissor = {{0, 0}, swapchainImageExtent};
 
       VkPipelineViewportStateCreateInfo pipelineViewportStateCreateInfo{};
       pipelineViewportStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
@@ -313,7 +313,7 @@ namespace Fsl
       clearColorValue.float32[2] = 1.0f;
       clearColorValue.float32[3] = 1.0f;
 
-      VkClearValue clearValues = {clearColorValue};
+      const VkClearValue clearValues = {clearColorValue};
 
       VkRenderPassBeginInfo renderPassBeginInfo{};
       renderPassBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
@@ -329,7 +329,7 @@ namespace Fsl
       {
         vkCmdBindPipeline(hCmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_dependentResources.Pipeline.Get());
 
-        VkDeviceSize offsets = 0;
+        const VkDeviceSize offsets = 0;
         vkCmdBindVertexBuffers(hCmdBuffer, 0, 1, m_resources.VertexBuffer.GetBufferPointer(), &offsets);
         vkCmdDraw(hCmdBuffer, 3, 1, 0, 0);
 

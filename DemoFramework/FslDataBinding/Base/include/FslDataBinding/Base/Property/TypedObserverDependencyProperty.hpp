@@ -66,8 +66,8 @@ namespace Fsl::DataBinding
   public:
     TypedObserverDependencyProperty()
     {
-      static_assert(std::is_same<T, std::shared_ptr<element_type>>::value, "T must be a std::shared_ptr");
-      static_assert(std::is_base_of<IObservableObject, element_type>::value, "T must be derived from Fsl::DataBinding::IObservableObject");
+      static_assert(std::is_same_v<T, std::shared_ptr<element_type>>, "T must be a std::shared_ptr");
+      static_assert(std::is_base_of_v<IObservableObject, element_type>, "T must be derived from Fsl::DataBinding::IObservableObject");
     }
 
     std::type_index Type() const

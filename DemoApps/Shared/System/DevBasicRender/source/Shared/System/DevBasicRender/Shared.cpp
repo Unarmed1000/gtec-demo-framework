@@ -197,22 +197,22 @@ namespace Fsl
 
     Texture texture;
     contentManager.Read(texture, PathLogo, PixelFormat::R8G8B8A8_UNORM, BitmapOrigin, PixelChannelOrder::Undefined, true);
-    auto textureLogo = m_render->CreateTexture2D(texture, Texture2DFilterHint::Smooth);
+    const auto textureLogo = m_render->CreateTexture2D(texture, Texture2DFilterHint::Smooth);
 
     contentManager.Read(texture, PathOpaqueR, PixelFormat::R8G8B8A8_UNORM, BitmapOrigin, PixelChannelOrder::Undefined, true);
-    auto textureOpaqueR = m_render->CreateTexture2D(texture, Texture2DFilterHint::Smooth);
+    const auto textureOpaqueR = m_render->CreateTexture2D(texture, Texture2DFilterHint::Smooth);
     contentManager.Read(texture, PathOpaqueG, PixelFormat::R8G8B8A8_UNORM, BitmapOrigin, PixelChannelOrder::Undefined, true);
-    auto textureOpaqueG = m_render->CreateTexture2D(texture, Texture2DFilterHint::Smooth);
+    const auto textureOpaqueG = m_render->CreateTexture2D(texture, Texture2DFilterHint::Smooth);
     contentManager.Read(texture, PathOpaqueB, PixelFormat::R8G8B8A8_UNORM, BitmapOrigin, PixelChannelOrder::Undefined, true);
-    auto textureOpaqueB = m_render->CreateTexture2D(texture, Texture2DFilterHint::Smooth);
+    const auto textureOpaqueB = m_render->CreateTexture2D(texture, Texture2DFilterHint::Smooth);
 
     contentManager.Read(texture, PathPreAlpha1, PixelFormat::R8G8B8A8_UNORM, BitmapOrigin, PixelChannelOrder::Undefined, true);
-    auto textureAlpha = m_render->CreateTexture2D(texture, Texture2DFilterHint::Smooth);
+    const auto textureAlpha = m_render->CreateTexture2D(texture, Texture2DFilterHint::Smooth);
     contentManager.Read(texture, PathNonPreAlpha, PixelFormat::R8G8B8A8_UNORM, BitmapOrigin, PixelChannelOrder::Undefined, true);
-    auto textureNonPreAlpha = m_render->CreateTexture2D(texture, Texture2DFilterHint::Smooth);
+    const auto textureNonPreAlpha = m_render->CreateTexture2D(texture, Texture2DFilterHint::Smooth);
 
-    auto vertexSpan = ReadOnlyFlexVertexSpanUtil::AsSpan(g_vertices);
-    auto quadVertexSpan = ReadOnlyFlexVertexSpanUtil::AsSpan(g_quad0Vertices);
+    const auto vertexSpan = ReadOnlyFlexVertexSpanUtil::AsSpan(g_vertices);
+    const auto quadVertexSpan = ReadOnlyFlexVertexSpanUtil::AsSpan(g_quad0Vertices);
 
     const BasicMaterialDepthInfo depthInfo(false, false, BasicCompareOp::Less);
     const BasicMaterialDepthInfo depthInfoR(true, false, BasicCompareOp::Less);
@@ -347,12 +347,12 @@ namespace Fsl
       const float yDist1 = static_cast<float>(areaHeight) * 0.4f;
 
       Vector3 position(static_cast<float>(border), 0, 0);
-      Color color = Colors::White();
+      const Color color = Colors::White();
       Vector2 lineStateY = m_lineAnimationState;
-      for (std::size_t i = 0; i < tmpVertices.size(); ++i)
+      for (auto& rVertex : tmpVertices)
       {
         position.Y = yOffset + ((std::sin(lineStateY.X) * yDist0) + (std::sin(lineStateY.Y) * yDist1));
-        tmpVertices[i] = VertexPositionColor(position, color);
+        rVertex = VertexPositionColor(position, color);
         position.X += addXPxf;
         lineStateY += m_lineAnimationAdd;
       }
@@ -546,12 +546,12 @@ namespace Fsl
     const float screenOffsetY = screenHeight / 2.0f;
 
     const float xPos0 = -screenOffsetX + static_cast<float>(offsetX * QuadSizE1 * 2);
-    const float xPos1 = -screenOffsetX + static_cast<float>(offsetX * QuadSizE1 * 2) + static_cast<float>(QuadSizE1 * 0.25f);
-    const float xPos2 = -screenOffsetX + static_cast<float>(offsetX * QuadSizE1 * 2) + static_cast<float>(QuadSizE1 * 0.25f * 2.0f);
+    const float xPos1 = -screenOffsetX + static_cast<float>(offsetX * QuadSizE1 * 2) + (QuadSizE1 * 0.25f);
+    const float xPos2 = -screenOffsetX + static_cast<float>(offsetX * QuadSizE1 * 2) + (QuadSizE1 * 0.25f * 2.0f);
 
     const float yPos0 = -screenOffsetY + static_cast<float>(offsetY * QuadSizE1 * 2);
-    const float yPos1 = -screenOffsetY + static_cast<float>(offsetY * QuadSizE1 * 2) + static_cast<float>(QuadSizE1 * 0.25f);
-    const float yPos2 = -screenOffsetY + static_cast<float>(offsetY * QuadSizE1 * 2) + static_cast<float>(QuadSizE1 * 0.25f * 2.0f);
+    const float yPos1 = -screenOffsetY + static_cast<float>(offsetY * QuadSizE1 * 2) + (QuadSizE1 * 0.25f);
+    const float yPos2 = -screenOffsetY + static_cast<float>(offsetY * QuadSizE1 * 2) + (QuadSizE1 * 0.25f * 2.0f);
 
     const float zPos0 = 7.0f;
     const float zPos1 = 8.0f;

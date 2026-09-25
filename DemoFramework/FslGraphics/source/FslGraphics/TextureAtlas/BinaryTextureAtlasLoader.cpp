@@ -236,7 +236,7 @@ namespace Fsl
         throw FormatException("Could not read a string of the expected length");
       }
 
-      StringViewLite result(reinterpret_cast<const char* const>(rSpan.data()), stringLength);
+      const StringViewLite result(reinterpret_cast<const char* const>(rSpan.data()), stringLength);
       rSpan = rSpan.subspan(stringLength);
       return result;
     }
@@ -253,7 +253,7 @@ namespace Fsl
       uint32_t parentCount = 0;
       while (currentParentPathIndex > 0)
       {
-        auto index = currentParentPathIndex - 1;
+        const auto index = currentParentPathIndex - 1;
         if (index >= paths.size())
         {
           throw IndexOutOfRangeException("parent path index out of range");
@@ -277,10 +277,10 @@ namespace Fsl
         throw NotSupportedException("trimmed rectangle can not contain negative values");
       }
 
-      auto trimLeft = trimmedRect.Left() - srcRect.Left();
-      auto trimTop = trimmedRect.Top() - srcRect.Top();
-      auto trimRight = srcRect.Right() - trimmedRect.Right();
-      auto trimBottom = srcRect.Bottom() - trimmedRect.Bottom();
+      const auto trimLeft = trimmedRect.Left() - srcRect.Left();
+      const auto trimTop = trimmedRect.Top() - srcRect.Top();
+      const auto trimRight = srcRect.Right() - trimmedRect.Right();
+      const auto trimBottom = srcRect.Bottom() - trimmedRect.Bottom();
       if (trimLeft < 0 || trimTop < 0 || trimRight < 0 || trimBottom < 0)
       {
         throw NotSupportedException("srcRect must fully contain the trimmed rectangle");
@@ -308,8 +308,8 @@ namespace Fsl
       const auto count = NumericCast<int32_t>(numEntries);
       for (int32_t index = 0; index < count; ++index)
       {
-        Rectangle srcRectangle = ReadRectangle(contentSpan);
-        Rectangle trimmedRectangle = ReadRectangle(contentSpan);
+        const Rectangle srcRectangle = ReadRectangle(contentSpan);
+        const Rectangle trimmedRectangle = ReadRectangle(contentSpan);
         IO::Path pathName = ReadPath(contentSpan);
         SetLegacyEntry(rTextureAtlas, index, srcRectangle, trimmedRectangle, std::move(pathName));
       }
@@ -382,7 +382,7 @@ namespace Fsl
       StreamRead(rStream, content.data(), content.size());
 
       auto contentSpan = SpanUtil::AsReadOnlySpan(content);
-      auto pathEntries = ReadBTAPathEntries(contentSpan);
+      const auto pathEntries = ReadBTAPathEntries(contentSpan);
       ReadBTA2AtlasEntries(rTextureAtlas, pathEntries, contentSpan);
     }
 
@@ -393,7 +393,7 @@ namespace Fsl
       StreamRead(rStream, content.data(), content.size());
 
       auto contentSpan = SpanUtil::AsReadOnlySpan(content);
-      auto pathEntries = ReadBTAPathEntries(contentSpan);
+      const auto pathEntries = ReadBTAPathEntries(contentSpan);
       ReadBTA3AtlasEntries(rTextureAtlas, pathEntries, contentSpan);
     }
 
@@ -424,8 +424,8 @@ namespace Fsl
       for (uint32_t i = 0; i < nineSliceEntries; ++i)
       {
         // Read all the nine-slice entries
-        auto nineSlice = ReadThicknessU(rSpan);
-        auto contentMargin = ReadThicknessU(rSpan);
+        const auto nineSlice = ReadThicknessU(rSpan);
+        const auto contentMargin = ReadThicknessU(rSpan);
         const uint32_t textureIndex = ValueCompression::ReadSimpleUInt32(rSpan);
 
         // For older nineslice chunks we just assume they are fully transparent as that will always render correctly

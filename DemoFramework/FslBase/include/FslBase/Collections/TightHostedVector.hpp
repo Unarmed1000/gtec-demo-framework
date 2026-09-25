@@ -98,12 +98,12 @@ namespace Fsl
     }
 
 
-    bool Empty(const size_type hostedArrayIndex) const noexcept
+    [[nodiscard]] bool Empty(const size_type hostedArrayIndex) const noexcept
     {
       return Size(hostedArrayIndex) <= 0u;
     }
 
-    size_type Size(const size_type hostedArrayIndex) const noexcept
+    [[nodiscard]] size_type Size(const size_type hostedArrayIndex) const noexcept
     {
       return hostedArrayIndex > 0u ? m_hosted[hostedArrayIndex].EndIndex - m_hosted[hostedArrayIndex - 1].EndIndex
                                    : m_hosted[hostedArrayIndex].EndIndex;
@@ -228,13 +228,13 @@ namespace Fsl
     }
 
   private:
-    size_type StartIndex(const size_type hostedArrayIndex) const noexcept
+    [[nodiscard]] size_type StartIndex(const size_type hostedArrayIndex) const noexcept
     {
       assert(hostedArrayIndex < TVectorCount);
       return hostedArrayIndex > 0u ? m_hosted[hostedArrayIndex - 1].EndIndex : 0u;
     }
 
-    size_type EndIndex(const size_type hostedArrayIndex) const noexcept
+    [[nodiscard]] size_type EndIndex(const size_type hostedArrayIndex) const noexcept
     {
       assert(hostedArrayIndex < TVectorCount);
       return m_hosted[hostedArrayIndex].EndIndex;

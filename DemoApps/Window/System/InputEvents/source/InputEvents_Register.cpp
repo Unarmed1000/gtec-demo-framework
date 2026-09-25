@@ -37,7 +37,7 @@ namespace Fsl
   // Configure the demo environment to run this demo app in a Window host environment
   void ConfigureDemoAppEnvironment(HostDemoAppSetup& rSetup)
   {
-    DemoAppHostConfigWindow config;
+    const DemoAppHostConfigWindow config;
 
     DemoAppRegister::Window::Register<InputEvents>(rSetup, "Window.System.InputEvents", config);
   }

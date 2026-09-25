@@ -56,6 +56,7 @@ namespace Fsl::Vulkan
     VMBufferManager& operator=(const VMBufferManager&) = delete;
     VMBufferManager(VMBufferManager&& other) noexcept = delete;
     VMBufferManager& operator=(VMBufferManager&& other) noexcept = delete;
+    ~VMBufferManager() = default;
 
     VMBufferManager(const VUPhysicalDeviceRecord& physicalDevice, const VkDevice device, const VkQueue queue, const uint32_t queueFamilyIndex);
 

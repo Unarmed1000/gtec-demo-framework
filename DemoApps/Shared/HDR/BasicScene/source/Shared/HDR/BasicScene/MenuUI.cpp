@@ -93,7 +93,7 @@ namespace Fsl
     }
     if (!m_labelNote)
     {
-      auto context = m_uiExtension->GetContext();
+      const auto context = m_uiExtension->GetContext();
       m_labelNote = std::make_shared<UI::Label>(context);
       m_labelNote->SetAlignmentX(UI::ItemAlignment::Center);
       m_labelNote->SetAlignmentY(UI::ItemAlignment::Far);
@@ -212,7 +212,7 @@ namespace Fsl
       return;
     }
 
-    auto source = theEvent->GetSource();
+    const auto source = theEvent->GetSource();
 
     if (source == m_checkboxLDR)
     {
@@ -368,7 +368,7 @@ namespace Fsl
   void MenuUI::BuildUI()
   {
     // Next up we prepare the actual UI
-    auto context = m_uiExtension->GetContext();
+    const auto context = m_uiExtension->GetContext();
 
     m_rootCanvas = CreateUI(context);
 
@@ -384,7 +384,7 @@ namespace Fsl
       return;
     }
 
-    auto context = m_uiExtension->GetContext();
+    const auto context = m_uiExtension->GetContext();
     m_configWindow = CreateConfigDialog(context, m_uiColorSpace);
     m_rootCanvas->AddChild(m_configWindow);
     UpdateUIState();
@@ -475,7 +475,7 @@ namespace Fsl
 
   std::shared_ptr<UI::BaseWindow> MenuUI::CreateConfigDialog(const std::shared_ptr<UI::WindowContext>& context, const UI::UIColorSpace colorSpace)
   {
-    auto uiControlFactory = UI::Theme::ThemeSelector::CreateControlFactory(*m_uiExtension, colorSpace);
+    const auto uiControlFactory = UI::Theme::ThemeSelector::CreateControlFactory(*m_uiExtension, colorSpace);
     auto& factory = *uiControlFactory;
 
     m_checkboxLDR = factory.CreateSwitch(m_menuTextLDR);
@@ -486,14 +486,14 @@ namespace Fsl
     m_checkboxHDR->SetAlignmentX(UI::ItemAlignment::Near);
     m_checkboxHDR->SetAlignmentY(UI::ItemAlignment::Center);
 
-    auto labelExposure = factory.CreateLabel("Exposure");
+    const auto labelExposure = factory.CreateLabel("Exposure");
     labelExposure->SetAlignmentX(UI::ItemAlignment::Near);
     labelExposure->SetAlignmentY(UI::ItemAlignment::Center);
 
     m_exposureSlider = factory.CreateSliderFmtValue(UI::LayoutOrientation::Horizontal, LocalConfig::Exposure);
     m_exposureSlider->SetAlignmentX(UI::ItemAlignment::Stretch);
 
-    auto layout = std::make_shared<UI::GridLayout>(context);
+    const auto layout = std::make_shared<UI::GridLayout>(context);
     layout->SetAlignmentX(UI::ItemAlignment::Stretch);
     layout->SetAlignmentY(UI::ItemAlignment::Stretch);
     layout->AddColumnDefinition(UI::GridColumnDefinition(UI::GridUnitType::Auto));

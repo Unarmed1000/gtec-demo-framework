@@ -190,123 +190,123 @@ namespace Fsl
       return {};
     }
 
-    constexpr inline value_type X() const noexcept
+    [[nodiscard]] constexpr inline value_type X() const noexcept
     {
       return m_x;
     }
 
-    constexpr inline value_type Y() const noexcept
+    [[nodiscard]] constexpr inline value_type Y() const noexcept
     {
       return m_y;
     }
 
-    constexpr inline raw_value_type RawX() const noexcept
+    [[nodiscard]] constexpr inline raw_value_type RawX() const noexcept
     {
       return m_x.Value;
     }
 
-    constexpr inline raw_value_type RawY() const noexcept
+    [[nodiscard]] constexpr inline raw_value_type RawY() const noexcept
     {
       return m_y.Value;
     }
 
-    constexpr inline size_value_type Width() const noexcept
+    [[nodiscard]] constexpr inline size_value_type Width() const noexcept
     {
       return m_width;
     }
 
-    constexpr inline size_value_type Height() const noexcept
+    [[nodiscard]] constexpr inline size_value_type Height() const noexcept
     {
       return m_height;
     }
 
 
-    constexpr inline raw_size_value_type RawWidth() const noexcept
+    [[nodiscard]] constexpr inline raw_size_value_type RawWidth() const noexcept
     {
       return m_width.RawValue();
     }
 
-    constexpr inline raw_size_value_type RawHeight() const noexcept
+    [[nodiscard]] constexpr inline raw_size_value_type RawHeight() const noexcept
     {
       return m_height.RawValue();
     }
 
 
-    constexpr inline value_type Left() const noexcept
+    [[nodiscard]] constexpr inline value_type Left() const noexcept
     {
       return m_x;
     }
 
-    constexpr inline value_type Top() const noexcept
+    [[nodiscard]] constexpr inline value_type Top() const noexcept
     {
       return m_y;
     }
 
-    constexpr inline value_type Right() const noexcept
+    [[nodiscard]] constexpr inline value_type Right() const noexcept
     {
       return m_x + m_width;
     }
 
-    constexpr inline value_type Bottom() const noexcept
+    [[nodiscard]] constexpr inline value_type Bottom() const noexcept
     {
       return m_y + m_height;
     }
 
 
-    constexpr inline raw_value_type RawLeft() const noexcept
+    [[nodiscard]] constexpr inline raw_value_type RawLeft() const noexcept
     {
       return m_x.Value;
     }
 
-    constexpr inline raw_value_type RawTop() const noexcept
+    [[nodiscard]] constexpr inline raw_value_type RawTop() const noexcept
     {
       return m_y.Value;
     }
 
-    constexpr inline raw_value_type RawRight() const noexcept
+    [[nodiscard]] constexpr inline raw_value_type RawRight() const noexcept
     {
       return m_x.Value + m_width.RawValue();
     }
 
-    constexpr inline raw_value_type RawBottom() const noexcept
+    [[nodiscard]] constexpr inline raw_value_type RawBottom() const noexcept
     {
       return m_y.Value + m_height.RawValue();
     }
 
-    inline constexpr PxSize2D GetSize() const noexcept
+    [[nodiscard]] inline constexpr PxSize2D GetSize() const noexcept
     {
       return {m_width, m_height};
     }
 
-    inline constexpr PxPoint2 TopLeft() const noexcept
+    [[nodiscard]] inline constexpr PxPoint2 TopLeft() const noexcept
     {
       return {m_x, m_y};
     }
 
-    inline constexpr PxPoint2 TopRight() const noexcept
+    [[nodiscard]] inline constexpr PxPoint2 TopRight() const noexcept
     {
       return {Right(), m_y};
     }
 
-    inline constexpr PxPoint2 BottomLeft() const noexcept
+    [[nodiscard]] inline constexpr PxPoint2 BottomLeft() const noexcept
     {
       return {m_x, Bottom()};
     }
 
-    inline constexpr PxPoint2 BottomRight() const noexcept
+    [[nodiscard]] inline constexpr PxPoint2 BottomRight() const noexcept
     {
       return {Right(), Bottom()};
     }
 
     //! @brief Get the center of this rect
-    constexpr PxPoint2 GetCenter() const noexcept
+    [[nodiscard]] constexpr PxPoint2 GetCenter() const noexcept
     {
       constexpr value_type Size2(2);
       return {m_x + (m_width / Size2), m_y + (m_height / Size2)};
     }
 
     //! @brief Get the start location of this rect
-    constexpr PxPoint2 Location() const noexcept
+    [[nodiscard]] constexpr PxPoint2 Location() const noexcept
     {
       return {m_x, m_y};
     }
@@ -378,19 +378,19 @@ namespace Fsl
     }
 
     //! @brief Check if the x,y coordinate is considered to be contained within this rectangle
-    constexpr bool Contains(const value_type posX, const value_type posY) const noexcept
+    [[nodiscard]] constexpr bool Contains(const value_type posX, const value_type posY) const noexcept
     {
       return ((((posX >= m_x) && (posX < Right())) && (posY >= m_y)) && (posY < Bottom()));
     }
 
     //! @brief Check if the x,y coordinate is considered to be contained within this rectangle
-    constexpr bool Contains(const PxPoint2& value) const noexcept
+    [[nodiscard]] constexpr bool Contains(const PxPoint2& value) const noexcept
     {
       return ((((value.X >= m_x) && (value.X < Right())) && (value.Y >= m_y)) && (value.Y < Bottom()));
     }
 
     //! @brief Check if the rectangle is considered to be contained within this rectangle
-    constexpr bool Contains(const PxRectangle& value) const noexcept
+    [[nodiscard]] constexpr bool Contains(const PxRectangle& value) const noexcept
     {
       return ((((value.m_x >= m_x) && (value.Right() <= Right())) && (value.m_y >= m_y)) && ((value.m_y + value.m_height) <= Bottom()));
     }
@@ -398,14 +398,14 @@ namespace Fsl
 
     //! @brief Gets a value that indicates whether the Rectangle is empty
     //!        An empty rectangle has all its values set to 0.
-    constexpr bool IsEmpty() const noexcept
+    [[nodiscard]] constexpr bool IsEmpty() const noexcept
     {
       return m_width.RawValue() == 0 && m_height.RawValue() == 0 && m_x.Value == 0 && m_y.Value == 0;
     }
 
 
     //! @brief Determines whether a specified Rectangle intersects with this Rectangle.
-    constexpr bool Intersects(const PxRectangle& value) const noexcept
+    [[nodiscard]] constexpr bool Intersects(const PxRectangle& value) const noexcept
     {
       return value.Left() < Right() && Left() < value.Right() && value.Top() < Bottom() && Top() < value.Bottom();
     }

@@ -107,65 +107,65 @@ namespace Fsl
     }
 
     //! @brief Check if the string is empty
-    bool IsEmpty() const
+    [[nodiscard]] bool IsEmpty() const
     {
       return m_content.empty();
     }
 
-    int32_t GetByteSize() const
+    [[nodiscard]] int32_t GetByteSize() const
     {
       return static_cast<int32_t>(m_content.size());
     }
 
-    bool Contains(const char ch) const;
+    [[nodiscard]] bool Contains(const char ch) const;
     // bool Contains(const StringViewLite str) const;
-    bool Contains(const UTF8String& str) const;
+    [[nodiscard]] bool Contains(const UTF8String& str) const;
 
-    bool StartsWith(const char ch) const;
+    [[nodiscard]] bool StartsWith(const char ch) const;
 
     bool StartsWith(const char* const psz) const
     {
       return AsStringViewLite().starts_with(psz);
     }
 
-    bool StartsWith(const StringViewLite str) const
+    [[nodiscard]] bool StartsWith(const StringViewLite str) const
     {
       return AsStringViewLite().starts_with(str);
     }
 
-    bool StartsWith(const UTF8String& str) const;
+    [[nodiscard]] bool StartsWith(const UTF8String& str) const;
 
-    bool EndsWith(const char ch) const;
+    [[nodiscard]] bool EndsWith(const char ch) const;
 
     bool EndsWith(const char* const psz) const
     {
       return AsStringViewLite().ends_with(psz);
     }
 
-    bool EndsWith(const StringViewLite str) const
+    [[nodiscard]] bool EndsWith(const StringViewLite str) const
     {
       return AsStringViewLite().ends_with(str);
     }
 
-    bool EndsWith(const UTF8String& path) const;
+    [[nodiscard]] bool EndsWith(const UTF8String& path) const;
 
     void Replace(const char from, const char to);
 
-    int32_t IndexOf(const char ch, const std::size_t fromIndex = 0) const;
+    [[nodiscard]] int32_t IndexOf(const char ch, const std::size_t fromIndex = 0) const;
 
-    int32_t LastIndexOf(const char ch) const;
+    [[nodiscard]] int32_t LastIndexOf(const char ch) const;
 
-    const std::string& AsString() const
+    [[nodiscard]] const std::string& AsString() const
     {
       return m_content;
     }
 
-    const std::string& ToUTF8String() const
+    [[nodiscard]] const std::string& ToUTF8String() const
     {
       return m_content;
     }
 
-    std::string ToAsciiString() const;
+    [[nodiscard]] std::string ToAsciiString() const;
 
     UTF8String& operator=(const StringViewLite str);
 
@@ -225,12 +225,12 @@ namespace Fsl
       return rhs;
     }
 
-    inline StringViewLite AsStringViewLite() const noexcept
+    [[nodiscard]] inline StringViewLite AsStringViewLite() const noexcept
     {
       return {AsStringView()};
     }
 
-    inline std::string_view AsStringView() const noexcept
+    [[nodiscard]] inline std::string_view AsStringView() const noexcept
     {
       return m_content;
     }

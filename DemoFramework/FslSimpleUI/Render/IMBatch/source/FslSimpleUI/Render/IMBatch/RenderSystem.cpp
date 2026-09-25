@@ -590,7 +590,7 @@ namespace Fsl::UI::RenderIMBatch
             break;
           case RenderDrawCommandType::BasicImageSprite_DrawCustomBasicImageAtOffsetAndSize:
             {
-              CommandDrawCustomBasicImageAtOffsetAndSize cmdEx(command);
+              const CommandDrawCustomBasicImageAtOffsetAndSize cmdEx(command);
               const CustomDrawBasicImageInfo& customDrawInfo = commandBuffer.FastGetCustomDrawBasicImageInfo(cmdEx.CustomDrawFunctionIndex());
               if (customDrawInfo.FnDraw != nullptr)
               {
@@ -600,7 +600,7 @@ namespace Fsl::UI::RenderIMBatch
             }
           case RenderDrawCommandType::BasicImageSprite_DrawCustomBasicImageAtOffsetAndSizeBasicMesh:
             {
-              CommandDrawCustomBasicImageAtOffsetAndSizeBasicMesh cmdEx(command);
+              const CommandDrawCustomBasicImageAtOffsetAndSizeBasicMesh cmdEx(command);
               const CustomDrawBasicImageBasicMeshInfo& customDrawInfo =
                 commandBuffer.FastGetCustomDrawBasicImageBasicMeshInfo(cmdEx.CustomDrawFunctionIndex());
               if (customDrawInfo.FnDraw != nullptr)
@@ -618,7 +618,7 @@ namespace Fsl::UI::RenderIMBatch
             break;
           case RenderDrawCommandType::NineSliceSprite_DrawCustomNineSliceAtOffsetAndSize:
             {
-              CommandDrawCustomNineSliceAtOffsetAndSize cmdEx(command);
+              const CommandDrawCustomNineSliceAtOffsetAndSize cmdEx(command);
               const CustomDrawNineSliceInfo& customDrawInfo = commandBuffer.FastGetCustomDrawNineSliceInfo(cmdEx.CustomDrawFunctionIndex());
               if (customDrawInfo.FnDraw != nullptr)
               {
@@ -637,7 +637,7 @@ namespace Fsl::UI::RenderIMBatch
             break;
           case RenderDrawCommandType::SpriteFont_DrawCustomTextAtOffsetAndSize:
             {
-              CommandDrawCustomTextAtOffsetAndSize cmdEx(command);
+              const CommandDrawCustomTextAtOffsetAndSize cmdEx(command);
               const CustomDrawTextInfo& customDrawInfo = commandBuffer.FastGetCustomDrawTextInfo(cmdEx.CustomDrawFunctionIndex());
               if (customDrawInfo.FnDraw != nullptr)
               {
@@ -660,7 +660,7 @@ namespace Fsl::UI::RenderIMBatch
             break;
           case RenderDrawCommandType::BasicImageSprite_DrawCustomBasicImageAtOffsetAndSize:
             {
-              CommandDrawCustomBasicImageAtOffsetAndSize cmdEx(command);
+              const CommandDrawCustomBasicImageAtOffsetAndSize cmdEx(command);
               const CustomDrawBasicImageInfo& customDrawInfo = commandBuffer.FastGetCustomDrawBasicImageInfo(cmdEx.CustomDrawFunctionIndex());
               if (customDrawInfo.FnDraw != nullptr)
               {
@@ -671,7 +671,7 @@ namespace Fsl::UI::RenderIMBatch
             }
           case RenderDrawCommandType::BasicImageSprite_DrawCustomBasicImageAtOffsetAndSizeBasicMesh:
             {
-              CommandDrawCustomBasicImageAtOffsetAndSizeBasicMesh cmdEx(command);
+              const CommandDrawCustomBasicImageAtOffsetAndSizeBasicMesh cmdEx(command);
               const CustomDrawBasicImageBasicMeshInfo& customDrawInfo =
                 commandBuffer.FastGetCustomDrawBasicImageBasicMeshInfo(cmdEx.CustomDrawFunctionIndex());
               if (customDrawInfo.FnDraw != nullptr)
@@ -690,7 +690,7 @@ namespace Fsl::UI::RenderIMBatch
             break;
           case RenderDrawCommandType::NineSliceSprite_DrawCustomNineSliceAtOffsetAndSize:
             {
-              CommandDrawCustomNineSliceAtOffsetAndSize cmdEx(command);
+              const CommandDrawCustomNineSliceAtOffsetAndSize cmdEx(command);
               const CustomDrawNineSliceInfo& customDrawInfo = commandBuffer.FastGetCustomDrawNineSliceInfo(cmdEx.CustomDrawFunctionIndex());
               if (customDrawInfo.FnDraw != nullptr)
               {
@@ -713,7 +713,7 @@ namespace Fsl::UI::RenderIMBatch
             break;
           case RenderDrawCommandType::SpriteFont_DrawCustomTextAtOffsetAndSize:
             {
-              CommandDrawCustomTextAtOffsetAndSize cmdEx(command);
+              const CommandDrawCustomTextAtOffsetAndSize cmdEx(command);
               const CustomDrawTextInfo& customDrawInfo = commandBuffer.FastGetCustomDrawTextInfo(cmdEx.CustomDrawFunctionIndex());
               if (customDrawInfo.FnDraw != nullptr)
               {
@@ -845,7 +845,7 @@ namespace Fsl::UI::RenderIMBatch
           renderSystem.CmdBindIndexBuffer(bufferRecord.IndexBuffer);
         }
         // Draw all the batches stored in this segment
-        auto segmentBatchInfo = batcher.GetSegmentBatchInfo(segmentIndex);
+        const auto segmentBatchInfo = batcher.GetSegmentBatchInfo(segmentIndex);
         const uint32_t batchEndIndex = segmentBatchInfo.BatchRange.End();
         for (uint32_t batchIndex = segmentBatchInfo.BatchRange.Start;
              batchIndex < batchEndIndex && (rStats.DrawCalls + rStats.DrawIndexCalls) < maxDrawCalls; ++batchIndex)
@@ -890,7 +890,7 @@ namespace Fsl::UI::RenderIMBatch
     inline void UpdateStats(RenderSystemStats& rStats, const TBatcher& batcher, const MeshManager& meshManager, const UploadStats& uploadStats,
                             const DrawStats& drawStats)
     {    // Update the stats
-      auto batcherStats = batcher.GetStats();
+      const auto batcherStats = batcher.GetStats();
       rStats.MeshCount = meshManager.GetMeshCount();
       rStats.BatchCount = batcherStats.BatchCount;
       rStats.VertexCount = batcherStats.VertexCount;
@@ -955,7 +955,7 @@ namespace Fsl::UI::RenderIMBatch
     {
       if (isNewCommandBuffer)
       {
-        auto capacity = rMeshManager.GetCapacity();
+        const auto capacity = rMeshManager.GetCapacity();
         rBatcher.EnsureCapacity(capacity.VertexCapacity, capacity.IndexCapacity);
       }
 
@@ -968,7 +968,7 @@ namespace Fsl::UI::RenderIMBatch
           // Process the draw commands which generate all the meshes using a given 'batch' strategy.
           rBatcher.BeginBatch();
           {
-            auto commandSpan = rCommandBuffer.AsReadOnlySpan();
+            const auto commandSpan = rCommandBuffer.AsReadOnlySpan();
             if (!commandSpan.empty())
             {
               if (pPerformanceCapture != nullptr)
@@ -983,9 +983,9 @@ namespace Fsl::UI::RenderIMBatch
                 pPerformanceCapture->EndThenBegin(RenderPerformanceCaptureId::PreprocessDrawCommands, RenderPerformanceCaptureId::GenerateMeshes);
               }
 
-              ReadOnlySpan<ProcessedCommandRecord> opaqueSpan = rPreprocessor.GetOpaqueSpan(rProcessedCommandRecords);
+              const ReadOnlySpan<ProcessedCommandRecord> opaqueSpan = rPreprocessor.GetOpaqueSpan(rProcessedCommandRecords);
               ProcessDrawCommands(rBatcher, rMeshManager, rTextMeshBuilder, opaqueSpan, commandSpan, rCommandBuffer);
-              ReadOnlySpan<ProcessedCommandRecord> transparentSpan = rPreprocessor.GetTransparentSpan(rProcessedCommandRecords);
+              const ReadOnlySpan<ProcessedCommandRecord> transparentSpan = rPreprocessor.GetTransparentSpan(rProcessedCommandRecords);
               ProcessDrawCommands(rBatcher, rMeshManager, rTextMeshBuilder, transparentSpan, commandSpan, rCommandBuffer);
 
               // FSLLOG3_INFO("commandSpan:{} Opaque:{} Transparent:{}", commandSpan.size(), opaqueSpan.size(), transparentSpan.size());

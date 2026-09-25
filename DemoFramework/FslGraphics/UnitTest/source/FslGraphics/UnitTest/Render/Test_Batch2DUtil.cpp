@@ -118,14 +118,14 @@ TEST(TestRender_Batch2DUtil, Clip_BruteForce)
     };
     constexpr auto RectB = PxAreaRectangleF::Create(4, 3, 6, 5);
 
-    auto srcRect = PxAreaRectangleF::Create(10, 20, 40, 80);
+    const auto srcRect = PxAreaRectangleF::Create(10, 20, 40, 80);
 
     for (int32_t y = 0; y < 10; ++y)
     {
       const int32_t yOffset = y * 11;
       for (int32_t x = 0; x < 11; ++x)
       {
-        auto rectA = PxAreaRectangleF::Create(static_cast<float>(x), static_cast<float>(y), 4, 3);
+        const auto rectA = PxAreaRectangleF::Create(static_cast<float>(x), static_cast<float>(y), 4, 3);
         auto resA = rectA;
         auto resSrcA = srcRect;
         auto resB = RectB;
@@ -146,8 +146,8 @@ TEST(TestRender_Batch2DUtil, Clip_BruteForce)
           ASSERT_EQ(std::min(rectA.Right(), RectB.Right()), resA.Right());
           ASSERT_EQ(std::min(rectA.Bottom(), RectB.Bottom()), resA.Bottom());
 
-          auto expectedSrcA = CalcClippedSrcRect(rectA, resA, srcRect);
-          auto expectedSrcB = CalcClippedSrcRect(RectB, resB, srcRect);
+          const auto expectedSrcA = CalcClippedSrcRect(rectA, resA, srcRect);
+          const auto expectedSrcB = CalcClippedSrcRect(RectB, resB, srcRect);
 
           EXPECT_FLOAT_EQ(expectedSrcA.RawLeft(), resSrcA.RawLeft());
           EXPECT_FLOAT_EQ(expectedSrcA.RawTop(), resSrcA.RawTop());

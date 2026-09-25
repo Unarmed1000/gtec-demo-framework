@@ -51,7 +51,7 @@ TEST(TestMathPixel_PxPoint2U, Zero)
 
 TEST(TestMathPixel_PxPoint2U, Construct_Default)
 {
-  PxPoint2U value;
+  const PxPoint2U value;
 
   EXPECT_EQ(PxPoint2U(), value);
   EXPECT_EQ(0u, value.X.Value);
@@ -62,7 +62,7 @@ TEST(TestMathPixel_PxPoint2U, Construct)
 {
   const PxValueU x(3);
   const PxValueU y(2);
-  PxPoint2U value(x, y);
+  const PxPoint2U value(x, y);
 
   EXPECT_EQ(x, value.X);
   EXPECT_EQ(y, value.Y);
@@ -74,7 +74,7 @@ TEST(TestMathPixel_PxPoint2U, OpPlusEqual)
   const PxValueU y0(4);
   const PxValueU x1(3);
   const PxValueU y1(2);
-  PxPoint2U value0(x0, y0);
+  const PxPoint2U value0(x0, y0);
   PxPoint2U value1(x1, y1);
 
   value1 += value0;
@@ -92,7 +92,7 @@ TEST(TestMathPixel_PxPoint2U, OpSubEqual)
   const PxValueU y0(4);
   const PxValueU x1(30);
   const PxValueU y1(20);
-  PxPoint2U value0(x0, y0);
+  const PxPoint2U value0(x0, y0);
   PxPoint2U value1(x1, y1);
 
   value1 -= value0;
@@ -109,7 +109,7 @@ TEST(TestMathPixel_PxPoint2U, OpMulEqual)
   const PxValueU y0(4);
   const PxValueU x1(3);
   const PxValueU y1(2);
-  PxPoint2U value0(x0, y0);
+  const PxPoint2U value0(x0, y0);
   PxPoint2U value1(x1, y1);
 
   value1 *= value0;
@@ -152,10 +152,10 @@ TEST(TestMathPixel_PxPoint2U, OpAdd)
   const PxValueU y0(4);
   const PxValueU x1(3);
   const PxValueU y1(2);
-  PxPoint2U value0(x0, y0);
-  PxPoint2U value1(x1, y1);
+  const PxPoint2U value0(x0, y0);
+  const PxPoint2U value1(x1, y1);
 
-  auto value3 = value1 + value0;
+  const auto value3 = value1 + value0;
 
   EXPECT_EQ(x0, value0.X);
   EXPECT_EQ(y0, value0.Y);
@@ -172,10 +172,10 @@ TEST(TestMathPixel_PxPoint2U, OpSub)
   const PxValueU y0(4);
   const PxValueU x1(30);
   const PxValueU y1(20);
-  PxPoint2U value0(x0, y0);
-  PxPoint2U value1(x1, y1);
+  const PxPoint2U value0(x0, y0);
+  const PxPoint2U value1(x1, y1);
 
-  auto value3 = value1 - value0;
+  const auto value3 = value1 - value0;
 
   EXPECT_EQ(x0, value0.X);
   EXPECT_EQ(y0, value0.Y);
@@ -192,10 +192,10 @@ TEST(TestMathPixel_PxPoint2U, OpMul)
   const PxValueU y0(4);
   const PxValueU x1(3);
   const PxValueU y1(2);
-  PxPoint2U value0(x0, y0);
-  PxPoint2U value1(x1, y1);
+  const PxPoint2U value0(x0, y0);
+  const PxPoint2U value1(x1, y1);
 
-  auto value3 = value1 * value0;
+  const auto value3 = value1 * value0;
 
   EXPECT_EQ(x0, value0.X);
   EXPECT_EQ(y0, value0.Y);
@@ -211,9 +211,9 @@ TEST(TestMathPixel_PxPoint2U, OpMul_Const)
   const PxValueU x0(4);
   const PxValueU y0(3);
   const PxValueU mul(2);
-  PxPoint2U value0(x0, y0);
+  const PxPoint2U value0(x0, y0);
 
-  auto value2 = value0 * mul;
+  const auto value2 = value0 * mul;
 
   EXPECT_EQ(x0, value0.X);
   EXPECT_EQ(y0, value0.Y);
@@ -227,9 +227,9 @@ TEST(TestMathPixel_PxPoint2U, OpMul_Const2)
   const PxValueU x0(4);
   const PxValueU y0(3);
   const PxValueU mul(2);
-  PxPoint2U value0(x0, y0);
+  const PxPoint2U value0(x0, y0);
 
-  auto value2 = mul * value0;
+  const auto value2 = mul * value0;
 
   EXPECT_EQ(x0, value0.X);
   EXPECT_EQ(y0, value0.Y);
@@ -243,9 +243,9 @@ TEST(TestMathPixel_PxPoint2U, OpDiv_Const)
   const PxValueU x0(40);
   const PxValueU y0(30);
   const PxValueU divBy(2);
-  PxPoint2U value0(x0, y0);
+  const PxPoint2U value0(x0, y0);
 
-  auto value2 = value0 / divBy;
+  const auto value2 = value0 / divBy;
 
   EXPECT_EQ(x0, value0.X);
   EXPECT_EQ(y0, value0.Y);

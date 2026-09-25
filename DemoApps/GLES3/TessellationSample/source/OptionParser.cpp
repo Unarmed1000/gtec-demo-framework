@@ -125,7 +125,7 @@ namespace Fsl
       return OptionParseResult::Parsed;
     case CommandId::MatSpecular:
       {
-        auto res = StringParseUtil::ParseArray(SpanUtil::AsSpan(floatArrayValuesMax4), strOptArg);
+        const auto res = StringParseUtil::ParseArray(SpanUtil::AsSpan(floatArrayValuesMax4), strOptArg);
         if (res.ArrayEntries != 3)
         {
           return OptionParseResult::Failed;

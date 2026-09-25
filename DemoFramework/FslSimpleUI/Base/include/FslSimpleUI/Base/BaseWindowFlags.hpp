@@ -72,12 +72,12 @@ namespace Fsl::UI
     {
     }
 
-    inline constexpr bool IsEnabled(Enum flag) const noexcept
+    [[nodiscard]] inline constexpr bool IsEnabled(Enum flag) const noexcept
     {
       return (Value & static_cast<uint32_t>(flag)) != 0;
     }
 
-    inline bool IsEnabled(const WindowFlags& flags) const
+    [[nodiscard]] inline bool IsEnabled(const WindowFlags& flags) const
     {
       return (Value & flags.GetValue()) == flags.GetValue();
     }
@@ -107,7 +107,7 @@ namespace Fsl::UI
       Value = enabled ? (Value | static_cast<uint32_t>(flag)) : (Value & ~static_cast<uint32_t>(flag));
     }
 
-    constexpr inline ItemVisibility GetVisibility() const noexcept
+    [[nodiscard]] constexpr inline ItemVisibility GetVisibility() const noexcept
     {
       return static_cast<ItemVisibility>((Value & WindowFlags::VisibilityMask) >> WindowFlags::VisibilityShift);
     }

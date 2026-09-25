@@ -47,7 +47,7 @@ namespace
 
 TEST(TestLog_Math_LogViewport, Log)
 {
-  Viewport value(2, 3, 10, 20);
+  const Viewport value(2, 3, 10, 20);
 
   std::stringstream stream;
   stream << value;

@@ -37,6 +37,7 @@
 #include <ilm/ivi-application-client-protocol.h>
 #include <sys/types.h>
 #include <unistd.h>
+#include <cstring>
 
 #define IVI_SURFACE_ID 9000
 #endif

@@ -53,10 +53,10 @@ namespace
 
 TEST(Test_GetRSetConvert_TwoWay, ConverterBinding_OneWayConverter_BoundAsTwoWay)
 {
-  auto dataBindingService = std::make_shared<DataBinding::DataBindingService>();
+  const auto dataBindingService = std::make_shared<DataBinding::DataBindingService>();
   UTReadOnlyDependencyObject src(dataBindingService);
 
-  auto convertingBinding =
+  const auto convertingBinding =
     std::make_shared<Fsl::DataBinding::ConverterBinding<uint32_t, float>>([](const float value) { return static_cast<uint32_t>(std::round(value)); });
 
   // A one-way converter binding can not be set as a TwoWay binding
@@ -68,11 +68,11 @@ TEST(Test_GetRSetConvert_TwoWay, ConverterBinding_OneWayConverter_BoundAsTwoWay)
 
 TEST(Test_GetRSetConvert_TwoWay, MultiConverterBinding_OneWayConverter_BoundAsTwoWay)
 {
-  auto dataBindingService = std::make_shared<DataBinding::DataBindingService>();
+  const auto dataBindingService = std::make_shared<DataBinding::DataBindingService>();
   UTReadOnlyDependencyObject src0(dataBindingService);
   UTDependencyObject src1(dataBindingService);
 
-  auto convertingBinding = std::make_shared<Fsl::DataBinding::MultiConverterBinding<uint32_t, float, float>>(
+  const auto convertingBinding = std::make_shared<Fsl::DataBinding::MultiConverterBinding<uint32_t, float, float>>(
     [](const float value0, const float value1) { return static_cast<uint32_t>(std::round(value0 + value1)); });
 
   // A one-way multi-converter binding can not be set as a TwoWay binding
@@ -85,7 +85,7 @@ TEST(Test_GetRSetConvert_TwoWay, MultiConverterBinding_OneWayConverter_BoundAsTw
 
 TEST(Test_GetRSetConvert_TwoWay, SetBinding_DepProperty_DepProperty_Init)
 {
-  auto dataBindingService = std::make_shared<DataBinding::DataBindingService>();
+  const auto dataBindingService = std::make_shared<DataBinding::DataBindingService>();
 
   UTReadOnlyDependencyObject src(dataBindingService);
   UTDependencyObject dst(dataBindingService);
@@ -108,7 +108,7 @@ TEST(Test_GetRSetConvert_TwoWay, SetBinding_DepProperty_DepProperty_Init)
 
   // Binding will change the target to match the source on the next execute
 
-  auto convertingBinding = std::make_shared<Fsl::DataBinding::TwoWayConverterBinding<uint32_t, float>>(
+  const auto convertingBinding = std::make_shared<Fsl::DataBinding::TwoWayConverterBinding<uint32_t, float>>(
     [](const float value) { return static_cast<uint32_t>(std::round(value)); }, [](const uint32_t value) { return static_cast<float>(value); });
 
   EXPECT_THROW(dst.SetBinding(UTDependencyObject::Property0, DataBinding::Binding(convertingBinding, DataBinding::BindingMode::TwoWay,
@@ -119,7 +119,7 @@ TEST(Test_GetRSetConvert_TwoWay, SetBinding_DepProperty_DepProperty_Init)
 
 TEST(Test_GetRSetConvert_TwoWay, SetBinding_DepProperty_DepProperty_SetA)
 {
-  auto dataBindingService = std::make_shared<DataBinding::DataBindingService>();
+  const auto dataBindingService = std::make_shared<DataBinding::DataBindingService>();
 
   UTReadOnlyDependencyObject src(dataBindingService);
   UTDependencyObject dst(dataBindingService);
@@ -142,7 +142,7 @@ TEST(Test_GetRSetConvert_TwoWay, SetBinding_DepProperty_DepProperty_SetA)
 
   // Binding will change the target to match the source on the next execute
 
-  auto convertingBinding = std::make_shared<Fsl::DataBinding::TwoWayConverterBinding<uint32_t, float>>(
+  const auto convertingBinding = std::make_shared<Fsl::DataBinding::TwoWayConverterBinding<uint32_t, float>>(
     [](const float value) { return static_cast<uint32_t>(std::round(value)); }, [](const uint32_t value) { return static_cast<float>(value); });
 
   EXPECT_THROW(dst.SetBinding(UTDependencyObject::Property0, DataBinding::Binding(convertingBinding, DataBinding::BindingMode::TwoWay,
@@ -153,7 +153,7 @@ TEST(Test_GetRSetConvert_TwoWay, SetBinding_DepProperty_DepProperty_SetA)
 
 TEST(Test_GetRSetConvert_TwoWay, SetBinding_DepProperty_Multi_DepProperty_DepProperty_Init)
 {
-  auto dataBindingService = std::make_shared<DataBinding::DataBindingService>();
+  const auto dataBindingService = std::make_shared<DataBinding::DataBindingService>();
 
   UTReadOnlyDependencyObject src0(dataBindingService);
   UTDependencyObject src1(dataBindingService);
@@ -184,7 +184,7 @@ TEST(Test_GetRSetConvert_TwoWay, SetBinding_DepProperty_Multi_DepProperty_DepPro
   EXPECT_EQ(dstDefaultValue, dst.GetProperty1Value());
 
   // Binding will change the target to match the source on the next execute
-  auto convertingBinding = std::make_shared<Fsl::DataBinding::TwoWayMultiConverterBinding<uint32_t, float, float>>(
+  const auto convertingBinding = std::make_shared<Fsl::DataBinding::TwoWayMultiConverterBinding<uint32_t, float, float>>(
     [](const float src0, const float src1)
     {
       return std::clamp(static_cast<uint32_t>(std::round(src0 * 255.0f)), 0u, 255u) |

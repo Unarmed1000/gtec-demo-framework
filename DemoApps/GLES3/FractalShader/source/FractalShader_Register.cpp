@@ -56,7 +56,7 @@ namespace Fsl
     CustomDemoAppConfig customDemoAppConfig;
     customDemoAppConfig.RestartFlags = CustomDemoAppConfigRestartFlags::Never;
 
-    DemoAppHostConfigEGL config(g_eglConfigAttribs.data());
+    const DemoAppHostConfigEGL config(g_eglConfigAttribs.data());
 
     DemoAppRegister::GLES3::Register<FractalShader, OptionParser>(rSetup, "GLES3.FractalShader", config, customDemoAppConfig);
   }

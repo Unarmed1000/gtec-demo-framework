@@ -48,7 +48,7 @@ namespace Fsl
     ~IServiceHost() override = default;
 
     //! @brief Acquire the service provider associated with the host
-    virtual std::shared_ptr<IServiceProvider> GetServiceProvider() const = 0;
+    [[nodiscard]] virtual std::shared_ptr<IServiceProvider> GetServiceProvider() const = 0;
 
     //! @brief Used on 100% managed threads
     virtual void Run() = 0;

@@ -46,10 +46,10 @@ namespace Fsl::UI
       ++CallCount.HandleEventBubble;
     }
 
-    auto clickEvent = std::dynamic_pointer_cast<WindowInputClickEvent>(routedEvent.Content);
+    const auto clickEvent = std::dynamic_pointer_cast<WindowInputClickEvent>(routedEvent.Content);
     if (clickEvent)
     {
-      auto itrFindIntercept = m_clickEventIntercept.find(target);
+      const auto itrFindIntercept = m_clickEventIntercept.find(target);
       if (itrFindIntercept != m_clickEventIntercept.end())
       {
         if (routedEvent.IsTunneling == itrFindIntercept->second)
@@ -59,7 +59,7 @@ namespace Fsl::UI
       }
       if (clickEvent->GetState() == EventTransactionState::Begin && !clickEvent->IsRepeat())
       {
-        auto itrFindHandle = m_clickEventHandleBegin.find(target);
+        const auto itrFindHandle = m_clickEventHandleBegin.find(target);
         if (itrFindHandle != m_clickEventHandleBegin.end())
         {
           if (routedEvent.IsTunneling == itrFindHandle->second)
@@ -85,7 +85,7 @@ namespace Fsl::UI
 
   bool UITreeEventHandlerTest::TestRemoveClickEventIntercept(const std::shared_ptr<TreeNode>& window)
   {
-    auto itrFind = m_clickEventIntercept.find(window);
+    const auto itrFind = m_clickEventIntercept.find(window);
     if (itrFind == m_clickEventIntercept.end())
     {
       return false;
@@ -101,7 +101,7 @@ namespace Fsl::UI
 
   bool UITreeEventHandlerTest::TestRemoveClickEventHandleBegin(const std::shared_ptr<TreeNode>& window)
   {
-    auto itrFind = m_clickEventHandleBegin.find(window);
+    const auto itrFind = m_clickEventHandleBegin.find(window);
     if (itrFind == m_clickEventHandleBegin.end())
     {
       return false;

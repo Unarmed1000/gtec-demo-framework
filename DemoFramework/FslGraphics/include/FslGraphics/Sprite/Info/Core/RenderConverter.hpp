@@ -71,8 +71,8 @@ namespace Fsl::RenderConverter
                                                                                const bool isOpaque) noexcept
   {
     const auto flags = ToAtlasNineSliceFlags(isOpaque);
-    PxTrimmedNineSlice trimmed(renderInfo.ScaledSizePx, PxThicknessF(), TypeConverter::To<PxThicknessF>(renderInfo.ScaledNineSlicePx),
-                               renderInfo.ScaledContentMarginPx);
+    const PxTrimmedNineSlice trimmed(renderInfo.ScaledSizePx, PxThicknessF(), TypeConverter::To<PxThicknessF>(renderInfo.ScaledNineSlicePx),
+                                     renderInfo.ScaledContentMarginPx);
     return {renderInfo.TextureArea, flags, trimmed};
   }
 
@@ -81,8 +81,8 @@ namespace Fsl::RenderConverter
   inline constexpr RenderOptimizedNineSliceInfo ToRenderOptimizedNineSliceInfo(const RenderNineSliceInfo& renderInfo, const bool isOpaque) noexcept
   {
     const auto flags = ToAtlasNineSliceFlags(isOpaque);
-    PxTrimmedNineSlice trimmed(renderInfo.ScaledSizePx, renderInfo.ScaledTrimMarginPxf, renderInfo.ScaledTrimmedNineSlicePxf,
-                               renderInfo.ScaledContentMarginPx);
+    const PxTrimmedNineSlice trimmed(renderInfo.ScaledSizePx, renderInfo.ScaledTrimMarginPxf, renderInfo.ScaledTrimmedNineSlicePxf,
+                                     renderInfo.ScaledContentMarginPx);
     return {renderInfo.TextureArea, flags, trimmed};
   }
 
@@ -90,8 +90,8 @@ namespace Fsl::RenderConverter
 
   inline constexpr RenderOptimizedNineSliceInfo ToRenderOptimizedNineSliceInfo(const RenderOptimizedBasicNineSliceInfo& renderInfo) noexcept
   {
-    PxTrimmedNineSlice trimmed(renderInfo.ScaledSizePx, PxThicknessF(), TypeConverter::To<PxThicknessF>(renderInfo.ScaledNineSlicePx),
-                               renderInfo.ScaledContentMarginPx);
+    const PxTrimmedNineSlice trimmed(renderInfo.ScaledSizePx, PxThicknessF(), TypeConverter::To<PxThicknessF>(renderInfo.ScaledNineSlicePx),
+                                     renderInfo.ScaledContentMarginPx);
     return {renderInfo.TextureArea, renderInfo.Flags, trimmed};
   }
 }

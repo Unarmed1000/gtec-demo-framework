@@ -146,10 +146,10 @@ namespace Fsl::UI
     }
 
 
-    PxSize2D stringSizePx = m_fontMesh.Measure(content);
+    const PxSize2D stringSizePx = m_fontMesh.Measure(content);
     auto dstPosPxf = context.TargetRect.TopLeft();
 
-    PxSize2D renderSizePx = RenderSizePx();
+    const PxSize2D renderSizePx = RenderSizePx();
     dstPosPxf.X += TypeConverter::UncheckedTo<PxValueF>(
       ItemAlignmentUtil::CalcAlignmentPx(m_propertyContentAlignmentX.Get(), renderSizePx.Width() - stringSizePx.Width()));
     dstPosPxf.Y += TypeConverter::UncheckedTo<PxValueF>(
@@ -177,7 +177,7 @@ namespace Fsl::UI
   {
     FSL_PARAM_NOT_USED(availableSizePx);
     const auto content = DoGetContent();
-    auto measureRes = m_fontMesh.ComplexMeasure(content);
+    const auto measureRes = m_fontMesh.ComplexMeasure(content);
     m_cachedMeasureMinimalFontSizePx = measureRes.MinimalSizePx;
     return measureRes.MeasureSizePx;
   }
@@ -185,7 +185,7 @@ namespace Fsl::UI
 
   DataBinding::DataBindingInstanceHandle LabelBase::TryGetPropertyHandleNow(const DataBinding::DependencyPropertyDefinition& sourceDef)
   {
-    auto res = DataBinding::DependencyObjectHelper::TryGetPropertyHandle(
+    const auto res = DataBinding::DependencyObjectHelper::TryGetPropertyHandle(
       this, ThisDependencyObject(), sourceDef, DataBinding::PropLinkRefs(PropertyIsEnabled, m_propertyIsEnabled),
       DataBinding::PropLinkRefs(PropertyFontColor, m_propertyFontColor.ExternalColor),
       DataBinding::PropLinkRefs(PropertyFontDisabledColor, m_propertyFontDisabledColor.ExternalColor),
@@ -198,7 +198,7 @@ namespace Fsl::UI
   DataBinding::PropertySetBindingResult LabelBase::TrySetBindingNow(const DataBinding::DependencyPropertyDefinition& targetDef,
                                                                     const DataBinding::Binding& binding)
   {
-    auto res = DataBinding::DependencyObjectHelper::TrySetBinding(
+    const auto res = DataBinding::DependencyObjectHelper::TrySetBinding(
       this, ThisDependencyObject(), targetDef, binding, DataBinding::PropLinkRefs(PropertyIsEnabled, m_propertyIsEnabled),
       DataBinding::PropLinkRefs(PropertyFontColor, m_propertyFontColor.ExternalColor),
       DataBinding::PropLinkRefs(PropertyFontDisabledColor, m_propertyFontDisabledColor.ExternalColor),

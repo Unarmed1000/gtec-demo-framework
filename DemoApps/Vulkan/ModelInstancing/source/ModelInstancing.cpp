@@ -183,7 +183,7 @@ namespace Fsl
 
       std::array<VkWriteDescriptorSet, 2> writeDescriptorSets{};
       // Binding 0 : Vertex shader uniform buffer
-      auto vertUboBufferInfo = vertUboBuffer.GetDescriptorBufferInfo();
+      const auto vertUboBufferInfo = vertUboBuffer.GetDescriptorBufferInfo();
       writeDescriptorSets[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
       writeDescriptorSets[0].dstSet = descriptorSet;
       writeDescriptorSets[0].dstBinding = 0;
@@ -192,7 +192,7 @@ namespace Fsl
       writeDescriptorSets[0].pBufferInfo = &vertUboBufferInfo;
 
       // Binding 1 : Fragment shader texture sampler
-      auto textureImageInfo = texture.GetDescriptorImageInfo();
+      const auto textureImageInfo = texture.GetDescriptorImageInfo();
       writeDescriptorSets[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
       writeDescriptorSets[1].dstSet = descriptorSet;
       writeDescriptorSets[1].dstBinding = 1;
@@ -256,7 +256,7 @@ namespace Fsl
       viewport.minDepth = 0.0f;
       viewport.maxDepth = 1.0f;
 
-      VkRect2D scissor{{0, 0}, extent};
+      const VkRect2D scissor{{0, 0}, extent};
 
       VkPipelineViewportStateCreateInfo pipelineViewportStateCreateInfo{};
       pipelineViewportStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
@@ -354,14 +354,14 @@ namespace Fsl
 
 
     m_uboData.LightDirection.Normalize();
-    auto contentManager = GetContentManager();
-    auto contentPath = contentManager->GetContentPath();
+    const auto contentManager = GetContentManager();
+    const auto contentPath = contentManager->GetContentPath();
 
     // Load the texture
     FSLLOG3_INFO("Loading texture");
     {
-      Texture texture = contentManager->ReadTexture("Models/Knight2/armor_default_color.jpg", PixelFormat::R8G8B8A8_UNORM, BitmapOrigin::LowerLeft,
-                                                    PixelChannelOrder::Undefined, true);
+      const Texture texture = contentManager->ReadTexture("Models/Knight2/armor_default_color.jpg", PixelFormat::R8G8B8A8_UNORM,
+                                                          BitmapOrigin::LowerLeft, PixelChannelOrder::Undefined, true);
       m_resources.Texture = CreateTexture(m_device, m_deviceQueue, texture, VK_FILTER_LINEAR, VK_SAMPLER_ADDRESS_MODE_REPEAT);
     }
 
@@ -371,7 +371,7 @@ namespace Fsl
     // aiProcessPreset_TargetRealtime_Fast
     // aiProcessPreset_TargetRealtime_Quality
     // aiProcessPreset_TargetRealtime_MaxQuality
-    auto modelPath = IO::Path::Combine(contentPath, "Models/Knight2/armor.obj");
+    const auto modelPath = IO::Path::Combine(contentPath, "Models/Knight2/armor.obj");
     SceneImporter sceneImporter;
     const std::shared_ptr<MeshUtil::DemoScene> scene = sceneImporter.Load<MeshUtil::DemoScene>(modelPath, LocalConfig::DefaultModelScale, true);
 
@@ -380,7 +380,7 @@ namespace Fsl
       throw NotSupportedException("Scene did not contain any meshes");
     }
 
-    auto rootNode = scene->GetRootNode();
+    const auto rootNode = scene->GetRootNode();
     if (!rootNode)
     {
       throw NotSupportedException("Scene did not contain a root node");
@@ -390,15 +390,15 @@ namespace Fsl
 
     // Create index and vertex buffers
     {
-      MeshUtil::DemoMeshRecord meshRecord = MeshUtil::ToSingleMesh(*scene);
+      const MeshUtil::DemoMeshRecord meshRecord = MeshUtil::ToSingleMesh(*scene);
       FSLLOG3_INFO("Total vertex count: {}, Total index count: {}", meshRecord.Vertices.size(), meshRecord.Indices.size());
       m_shared.SetStats(ModelRenderStats(NumericCast<uint32_t>(meshRecord.Vertices.size()), NumericCast<uint32_t>(meshRecord.Indices.size())));
 
       m_resources.BufferManager =
         std::make_shared<Vulkan::VMBufferManager>(m_physicalDevice, m_device.Get(), m_deviceQueue.Queue, m_deviceQueue.QueueFamilyIndex);
 
-      std::array<VertexElementUsage, 4> shaderBindOrder = {VertexElementUsage::Position, VertexElementUsage::Color, VertexElementUsage::Normal,
-                                                           VertexElementUsage::TextureCoordinate};
+      const std::array<VertexElementUsage, 4> shaderBindOrder = {VertexElementUsage::Position, VertexElementUsage::Color, VertexElementUsage::Normal,
+                                                                 VertexElementUsage::TextureCoordinate};
 
       m_resources.Mesh.VertexBuffer.Reset(m_resources.BufferManager, ReadOnlyFlexVertexSpanUtil::AsSpan(meshRecord.Vertices),
                                           Vulkan::VMBufferUsage::STATIC);
@@ -484,14 +484,14 @@ namespace Fsl
   {
     m_shared.Update(demoTime);
 
-    auto matrixInfo = m_shared.GetMatrixInfo();
+    const auto matrixInfo = m_shared.GetMatrixInfo();
 
     // Deal with the new Vulkan coordinate system (see method description for more info).
     // Consider using: https://github.com/KhronosGroup/Vulkan-Docs/blob/master/appendices/VK_KHR_maintenance1.txt
     const auto vulkanClipMatrix = Vulkan::MatrixUtil::GetClipMatrix();
 
     // The ordering in the monogame based Matrix library is the reverse of glm (so perspective * clip instead of clip * perspective)
-    auto matrixProjection = matrixInfo.Proj * vulkanClipMatrix;
+    const auto matrixProjection = matrixInfo.Proj * vulkanClipMatrix;
 
     m_uboData.MatView = matrixInfo.Model * matrixInfo.View;
     m_uboData.MatProjection = matrixProjection;
@@ -567,7 +567,7 @@ namespace Fsl
 
     vkCmdBindPipeline(hCmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_dependentResources.Pipeline.Get());
 
-    VkDeviceSize offsets = 0;
+    const VkDeviceSize offsets = 0;
     vkCmdBindVertexBuffers(hCmdBuffer, LocalConfig::VertexBufferBindId, 1, m_resources.Mesh.VertexBuffer.GetBufferPointer(), &offsets);
     vkCmdBindVertexBuffers(hCmdBuffer, LocalConfig::InstanceBufferBindId, 1, frame.InstanceBuffer.GetBufferPointer(), &offsets);
     vkCmdBindIndexBuffer(hCmdBuffer, m_resources.Mesh.IndexBuffer.GetBuffer(), 0, m_resources.Mesh.IndexBuffer.GetIndexType());

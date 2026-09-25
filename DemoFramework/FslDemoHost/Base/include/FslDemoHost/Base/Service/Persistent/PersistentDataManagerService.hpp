@@ -52,10 +52,10 @@ namespace Fsl
     ~PersistentDataManagerService() final;
 
     // From IPersistentDataManager
-    IO::Path GetPersistentDataPath() const final;
-    bool Exists(const IO::Path& relativePath) const final;
-    uint64_t GetLength(const IO::Path& relativePath) const final;
-    std::string ReadAllText(const IO::Path& relativePath) const final;
+    [[nodiscard]] IO::Path GetPersistentDataPath() const final;
+    [[nodiscard]] bool Exists(const IO::Path& relativePath) const final;
+    [[nodiscard]] uint64_t GetLength(const IO::Path& relativePath) const final;
+    [[nodiscard]] std::string ReadAllText(const IO::Path& relativePath) const final;
     void ReadAllBytes(std::vector<uint8_t>& rTargetArray, const IO::Path& relativePath) const final;
     uint64_t ReadAllBytes(void* pDstArray, const uint64_t cbDstArray, const IO::Path& relativePath) const final;
     void ReadBytes(std::vector<uint8_t>& rTargetArray, const IO::Path& relativePath, const uint64_t fileOffset,
@@ -75,10 +75,10 @@ namespace Fsl
     bool TryReadAllText(std::string& rDst, const IO::Path& relativePath) const final;
     bool TryRead(Bitmap& rBitmap, const IO::Path& relativePath, const PixelFormat desiredPixelFormat = PixelFormat::Undefined,
                  const BitmapOrigin desiredOrigin = BitmapOrigin::Undefined) const final;
-    Bitmap ReadBitmap(const IO::Path& relativePath, const PixelFormat desiredPixelFormat = PixelFormat::Undefined,
-                      const BitmapOrigin desiredOrigin = BitmapOrigin::Undefined) const final;
-    Texture ReadTexture(const IO::Path& relativePath, const PixelFormat desiredPixelFormat = PixelFormat::Undefined,
-                        const BitmapOrigin desiredOrigin = BitmapOrigin::Undefined) const final;
+    [[nodiscard]] Bitmap ReadBitmap(const IO::Path& relativePath, const PixelFormat desiredPixelFormat = PixelFormat::Undefined,
+                                    const BitmapOrigin desiredOrigin = BitmapOrigin::Undefined) const final;
+    [[nodiscard]] Texture ReadTexture(const IO::Path& relativePath, const PixelFormat desiredPixelFormat = PixelFormat::Undefined,
+                                      const BitmapOrigin desiredOrigin = BitmapOrigin::Undefined) const final;
 
   private:
   };

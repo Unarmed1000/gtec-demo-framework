@@ -31,6 +31,8 @@
 # ****************************************************************************************************************************************************
 
 
+from FslBuildGen.BuildExternal.ConanInstallTask import ConanInstallTask
+from FslBuildGen.BuildExternal.ConanProfileBuilder import ConanProfileBuilder
 from FslBuildGen.BuildExternal.Tasks import CMakeAndBuildTask, DownloadTask, GitApplyTask, GitCloneTask, UnpackAndRenameTask
 from FslBuildGen.Context.GeneratorContext import GeneratorContext
 from FslBuildGen.Log import Log
@@ -45,6 +47,9 @@ class PipelineTasks:
         self.TaskGitApply = self.__TryAllocateGitApplyTask(generatorContext, checkBuildCommands)
         self.TaskDownload = DownloadTask(generatorContext)
         self.TaskUnpackAndRename = UnpackAndRenameTask(generatorContext)
+        self.TaskConanInstall = (
+            ConanInstallTask(generatorContext) if ConanProfileBuilder.IsPlatformSupported(generatorContext.CMakeConfig.PlatformName) else None
+        )
 
     def __TryAllocateCMakeAndBuildTask(self, generatorContext: GeneratorContext, checkBuildCommands: bool, buildThreads: int) -> CMakeAndBuildTask | None:
         try:

@@ -94,7 +94,7 @@ namespace Fsl
 
   protected:
     //! @brief Get information about the 'basic' rendering configuration
-    RenderConfig GetRenderConfig() const
+    [[nodiscard]] RenderConfig GetRenderConfig() const
     {
       return m_renderConfig;
     }
@@ -223,33 +223,33 @@ namespace Fsl
     void UnregisterExtension(const std::shared_ptr<IDemoAppExtension>& extension);
 
     //! @brief Get the current window metrics
-    const DemoWindowMetrics& GetWindowMetrics() const
+    [[nodiscard]] const DemoWindowMetrics& GetWindowMetrics() const
     {
       return m_demoAppConfig.WindowMetrics;
     }
 
     //! @brief Get the size of the window client area in pixels.
-    PxSize2D GetWindowSizePx() const;
+    [[nodiscard]] PxSize2D GetWindowSizePx() const;
 
     //! @brief Get the aspect ratio of the window
-    float GetWindowAspectRatio() const;
+    [[nodiscard]] float GetWindowAspectRatio() const;
 
 
-    const PxExtent2D& GetScreenExtent() const
+    [[nodiscard]] const PxExtent2D& GetScreenExtent() const
     {
       return m_demoAppConfig.WindowMetrics.ExtentPx;
     }
 
     //! @brief Get access to the demo app control interface
-    std::shared_ptr<IDemoAppControl> GetDemoAppControl() const;
+    [[nodiscard]] std::shared_ptr<IDemoAppControl> GetDemoAppControl() const;
     //! @brief Access the content manager;
-    std::shared_ptr<IContentManager> GetContentManager() const;
+    [[nodiscard]] std::shared_ptr<IContentManager> GetContentManager() const;
     //! @brief Access the Persistent Data Manager;
-    std::shared_ptr<IPersistentDataManager> GetPersistentDataManager() const;
+    [[nodiscard]] std::shared_ptr<IPersistentDataManager> GetPersistentDataManager() const;
 
-    const ExceptionMessageFormatter& GetExceptionFormatter() const;
+    [[nodiscard]] const ExceptionMessageFormatter& GetExceptionFormatter() const;
 
-    ObjectLifeCycle GetObjectLifeCycleState() const
+    [[nodiscard]] ObjectLifeCycle GetObjectLifeCycleState() const
     {
       return m_currentLifeCycleState;
     }

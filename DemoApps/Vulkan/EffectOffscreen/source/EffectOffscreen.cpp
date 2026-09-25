@@ -196,7 +196,7 @@ namespace Fsl
     {
       VulkanImageCreator imageCreator(device, deviceQueue.Queue, deviceQueue.QueueFamilyIndex);
 
-      Texture texture =
+      const Texture texture =
         contentManager->ReadTexture(filename, PixelFormat::R8G8B8A8_UNORM, BitmapOrigin::Undefined, PixelChannelOrder::Undefined, generateMipMaps);
 
       VkSamplerCreateInfo samplerCreateInfo{};
@@ -332,7 +332,7 @@ namespace Fsl
 
       std::array<VkWriteDescriptorSet, 2> writeDescriptorSets{};
       // Binding 0 : Vertex shader uniform buffer
-      auto uboBufferInfo = uboBuffer.GetDescriptorBufferInfo();
+      const auto uboBufferInfo = uboBuffer.GetDescriptorBufferInfo();
       writeDescriptorSets[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
       writeDescriptorSets[0].pNext = nullptr;
       writeDescriptorSets[0].dstSet = descriptorSet;
@@ -342,7 +342,7 @@ namespace Fsl
       writeDescriptorSets[0].pBufferInfo = &uboBufferInfo;
 
       // Binding 1 : Fragment shader texture sampler
-      auto textureImageInfo = texture.GetDescriptorImageInfo();
+      const auto textureImageInfo = texture.GetDescriptorImageInfo();
       writeDescriptorSets[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
       writeDescriptorSets[1].pNext = nullptr;
       writeDescriptorSets[1].dstSet = descriptorSet;
@@ -367,7 +367,7 @@ namespace Fsl
 
       std::array<VkWriteDescriptorSet, 3> writeDescriptorSets{};
       // Binding 0 : Vertex shader uniform buffer
-      auto uboBufferInfo = uboBuffer.GetDescriptorBufferInfo();
+      const auto uboBufferInfo = uboBuffer.GetDescriptorBufferInfo();
       writeDescriptorSets[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
       writeDescriptorSets[0].pNext = nullptr;
       writeDescriptorSets[0].dstSet = descriptorSet;
@@ -377,7 +377,7 @@ namespace Fsl
       writeDescriptorSets[0].pBufferInfo = &uboBufferInfo;
 
       // Binding 1 : Fragment shader texture sampler
-      auto textureImageInfo0 = texture0.GetDescriptorImageInfo();
+      const auto textureImageInfo0 = texture0.GetDescriptorImageInfo();
       writeDescriptorSets[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
       writeDescriptorSets[1].pNext = nullptr;
       writeDescriptorSets[1].dstSet = descriptorSet;
@@ -387,7 +387,7 @@ namespace Fsl
       writeDescriptorSets[1].pImageInfo = &textureImageInfo0;
 
       // Binding 2 : Fragment shader texture sampler
-      auto textureImageInfo1 = texture1.GetDescriptorImageInfo();
+      const auto textureImageInfo1 = texture1.GetDescriptorImageInfo();
       writeDescriptorSets[2].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
       writeDescriptorSets[2].pNext = nullptr;
       writeDescriptorSets[2].dstSet = descriptorSet;
@@ -416,8 +416,8 @@ namespace Fsl
       assert(device != VK_NULL_HANDLE);
       assert(depthImageFormat != VK_FORMAT_UNDEFINED);
 
-      VkAttachmentReference colorAttachmentReference = {0, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL};
-      VkAttachmentReference depthAttachmentReference = {1, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL};
+      const VkAttachmentReference colorAttachmentReference = {0, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL};
+      const VkAttachmentReference depthAttachmentReference = {1, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL};
 
       std::array<VkSubpassDescription, 1> subpassDescription{};
       // Rendering to a offscreen buffer
@@ -636,7 +636,7 @@ namespace Fsl
   {
     m_dependentResources.MainRenderPass = CreateBasicRenderPass();
 
-    auto offscreenExtent = VkExtent2D{SizeOffscreen, SizeOffscreen};
+    const auto offscreenExtent = VkExtent2D{SizeOffscreen, SizeOffscreen};
     const auto offscreenRenderFormat = context.SwapchainImageFormat;
 
     m_dependentResources.Offscreen.Extent = offscreenExtent;
@@ -647,9 +647,9 @@ namespace Fsl
 
 
     // Update the preallocated tone-mapping descriptor set with the 'dependent' render attachment
-    for (auto& rFrame : m_resources.MainFrameResources)
+    for (const auto& frame : m_resources.MainFrameResources)
     {
-      UpdateEffectDescriptorSet(m_device.Get(), rFrame.DescriptorSetEffect, rFrame.EffectUboBuffer, m_dependentResources.Offscreen.Color,
+      UpdateEffectDescriptorSet(m_device.Get(), frame.DescriptorSetEffect, frame.EffectUboBuffer, m_dependentResources.Offscreen.Color,
                                 m_resources.EffectTexture);
     }
 
@@ -730,9 +730,9 @@ namespace Fsl
 
   void EffectOffscreen::DrawToCommandBuffer(const FrameResources& frame, const VkCommandBuffer commandBuffer, const VkExtent2D& extent)
   {
-    VkDeviceSize offsets = 0;
+    const VkDeviceSize offsets = 0;
 
-    auto vertexCount = m_resources.DoubleQuadVertexBufferInfo.VertexBuffer.GetVertexCount() / 2;
+    const auto vertexCount = m_resources.DoubleQuadVertexBufferInfo.VertexBuffer.GetVertexCount() / 2;
 
     {    // Top
       VkViewport viewport{};
@@ -771,7 +771,7 @@ namespace Fsl
     FSL_PARAM_NOT_USED(programInfo);
     FSL_PARAM_NOT_USED(matModel);
 
-    VkDeviceSize offsets = 0;
+    const VkDeviceSize offsets = 0;
     vkCmdBindVertexBuffers(commandBuffer, VertexBufferBindId, 1, m_resources.CubeVertexBufferInfo.VertexBuffer.GetBufferPointer(), &offsets);
     vkCmdDraw(commandBuffer, m_resources.CubeVertexBufferInfo.VertexBuffer.GetVertexCount(), 1, 0, 0);
   }
@@ -783,7 +783,7 @@ namespace Fsl
     info.VertexBuffer.Reset(bufferManager, ReadOnlyFlexVertexSpanUtil::AsSpan(g_vertices), VMBufferUsage::STATIC);
 
     // Generate attribute description by matching shader layout with the vertex declarations
-    std::array<VertexElementUsage, 2> shaderAttribOrder = {VertexElementUsage::Position, VertexElementUsage::TextureCoordinate};
+    const std::array<VertexElementUsage, 2> shaderAttribOrder = {VertexElementUsage::Position, VertexElementUsage::TextureCoordinate};
 
     Vulkan::VMVertexBufferUtil::FillVertexInputAttributeDescription(info.AttributeDescription, shaderAttribOrder, info.VertexBuffer);
 
@@ -885,7 +885,7 @@ namespace Fsl
     viewport.minDepth = 0.0f;
     viewport.maxDepth = 1.0f;
 
-    VkRect2D scissor{{0, 0}, extent};
+    const VkRect2D scissor{{0, 0}, extent};
 
     VkPipelineViewportStateCreateInfo pipelineViewportStateCreateInfo{};
     pipelineViewportStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
@@ -1034,7 +1034,7 @@ namespace Fsl
     viewport.minDepth = 0.0f;
     viewport.maxDepth = 1.0f;
 
-    VkRect2D scissor{{0, 0}, extent};
+    const VkRect2D scissor{{0, 0}, extent};
 
     VkPipelineViewportStateCreateInfo pipelineViewportStateCreateInfo{};
     pipelineViewportStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;

@@ -70,42 +70,42 @@ namespace Fsl
     }
 
   public:
-    constexpr ColorChannelValueU8 R() const noexcept
+    [[nodiscard]] constexpr ColorChannelValueU8 R() const noexcept
     {
       return ColorChannelValueU8(static_cast<uint8_t>((RawValue >> 16) & 0xFF));
     }
 
-    constexpr ColorChannelValueU8 G() const noexcept
+    [[nodiscard]] constexpr ColorChannelValueU8 G() const noexcept
     {
       return ColorChannelValueU8(static_cast<uint8_t>((RawValue >> 8) & 0xFF));
     }
 
-    constexpr ColorChannelValueU8 B() const noexcept
+    [[nodiscard]] constexpr ColorChannelValueU8 B() const noexcept
     {
       return ColorChannelValueU8(static_cast<uint8_t>((RawValue) & 0xFF));
     }
 
-    constexpr ColorChannelValueU8 A() const noexcept
+    [[nodiscard]] constexpr ColorChannelValueU8 A() const noexcept
     {
       return ColorChannelValueU8(static_cast<uint8_t>((RawValue >> 24) & 0xFF));
     }
 
-    constexpr uint8_t RawR() const noexcept
+    [[nodiscard]] constexpr uint8_t RawR() const noexcept
     {
       return static_cast<uint8_t>((RawValue >> 16) & 0xFF);
     }
 
-    constexpr uint8_t RawG() const noexcept
+    [[nodiscard]] constexpr uint8_t RawG() const noexcept
     {
       return static_cast<uint8_t>((RawValue >> 8) & 0xFF);
     }
 
-    constexpr uint8_t RawB() const noexcept
+    [[nodiscard]] constexpr uint8_t RawB() const noexcept
     {
       return static_cast<uint8_t>((RawValue) & 0xFF);
     }
 
-    constexpr uint8_t RawA() const noexcept
+    [[nodiscard]] constexpr uint8_t RawA() const noexcept
     {
       return static_cast<uint8_t>((RawValue >> 24) & 0xFF);
     }

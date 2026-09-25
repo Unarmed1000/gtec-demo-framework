@@ -105,28 +105,28 @@ namespace Fsl
     void SetMainWindow(const std::shared_ptr<UI::BaseWindow>& mainWindow);
 
     //! @brief Get the window manager
-    std::shared_ptr<UI::IWindowManager> GetWindowManager() const;
+    [[nodiscard]] std::shared_ptr<UI::IWindowManager> GetWindowManager() const;
 
-    const std::shared_ptr<UI::UIContext>& GetUIContext() const;
+    [[nodiscard]] const std::shared_ptr<UI::UIContext>& GetUIContext() const;
 
     //! @brief Check if the UI system is considered idle
-    bool IsIdle() const noexcept;
+    [[nodiscard]] bool IsIdle() const noexcept;
 
     //! @brief Check if the UI requires a redraw due to changes
-    bool IsRedrawRequired() const noexcept;
+    [[nodiscard]] bool IsRedrawRequired() const noexcept;
 
-    const UI::IRenderSystemBase& GetRenderSystem() const;
+    [[nodiscard]] const UI::IRenderSystemBase& GetRenderSystem() const;
     UI::IRenderSystemBase* TryGetRenderSystem();
 
   protected:
     void ForceInvalidateLayout();
 
-    DemoPerformanceCapture* TryGetDemoPerformanceCapture() const;
+    [[nodiscard]] DemoPerformanceCapture* TryGetDemoPerformanceCapture() const;
     void DoDraw();
 
     // NOLINTNEXTLINE(readability-identifier-naming)
-    bool SYS_GetUseYFlipTextureCoordinates() const noexcept;
-    std::shared_ptr<UI::AExternalModule> DoGetExternalModule(const UI::ExternalModuleId& moduleId) const;
+    [[nodiscard]] bool SYS_GetUseYFlipTextureCoordinates() const noexcept;
+    [[nodiscard]] std::shared_ptr<UI::AExternalModule> DoGetExternalModule(const UI::ExternalModuleId& moduleId) const;
   };
 }
 

@@ -63,6 +63,7 @@ namespace Fsl::UI
     // Make this object non-copyable
     GenericWindowCollection(const GenericWindowCollection&) = delete;
     GenericWindowCollection& operator=(const GenericWindowCollection&) = delete;
+    ~GenericWindowCollection() = default;
 
     GenericWindowCollection()
       : WindowCollectionBase()
@@ -153,19 +154,19 @@ namespace Fsl::UI
       }
     }
 
-    bool Contains(const std::shared_ptr<BaseWindow>& window) const
+    [[nodiscard]] bool Contains(const std::shared_ptr<BaseWindow>& window) const
     {
       return (std::find_if(m_entries.begin(), m_entries.end(), [window](const TRecord& record) { return record.Window == window; }) !=
               m_entries.end());
     }
 
-    const std::shared_ptr<BaseWindow>& ChildAt(const uint32_t index) const
+    [[nodiscard]] const std::shared_ptr<BaseWindow>& ChildAt(const uint32_t index) const
     {
       return m_entries[index].Window;
     }
 
     // NOLINTNEXTLINE(readability-identifier-naming)
-    inline bool empty() const noexcept
+    [[nodiscard]] inline bool empty() const noexcept
     {
       return m_entries.empty();
     }

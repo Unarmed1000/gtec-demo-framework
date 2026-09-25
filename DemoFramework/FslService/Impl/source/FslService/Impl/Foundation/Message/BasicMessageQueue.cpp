@@ -56,7 +56,7 @@ namespace Fsl
     const bool isShutdownMessage = false;    // (message.Type == BasicMessageType::ThreadShutdown);
     bool wasEmpty = false;
     {
-      std::lock_guard<std::mutex> lock(m_mutex);
+      const std::lock_guard<std::mutex> lock(m_mutex);
 
       if (m_shutdownMarked)
       {
@@ -82,7 +82,7 @@ namespace Fsl
 
   bool BasicMessageQueue::TryPop(std::queue<BasicMessage>& rQueue)
   {
-    std::lock_guard<std::mutex> lock(m_mutex);
+    const std::lock_guard<std::mutex> lock(m_mutex);
 
     if (m_queue.empty())
     {
@@ -100,7 +100,7 @@ namespace Fsl
 
   bool BasicMessageQueue::TryPop(BasicMessage& rMessage)
   {
-    std::lock_guard<std::mutex> lock(m_mutex);
+    const std::lock_guard<std::mutex> lock(m_mutex);
 
     if (m_queue.empty())
     {

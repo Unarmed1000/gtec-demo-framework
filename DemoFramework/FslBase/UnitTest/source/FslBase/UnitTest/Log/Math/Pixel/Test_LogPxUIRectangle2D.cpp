@@ -47,7 +47,7 @@ namespace
 
 TEST(TestLog_MathPixel_LogPxUIRectangle2D, Log)
 {
-  PxUIRectangle2D value(PxVector2::Create(1.3f, 2.4f), PxSize2D::Create(10, 20));
+  const PxUIRectangle2D value(PxVector2::Create(1.3f, 2.4f), PxSize2D::Create(10, 20));
 
   std::stringstream stream;
   stream << value;

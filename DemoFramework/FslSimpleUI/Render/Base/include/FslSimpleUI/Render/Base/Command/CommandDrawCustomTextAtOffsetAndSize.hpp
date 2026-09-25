@@ -43,32 +43,32 @@ namespace Fsl::UI
       assert(command.State.Type() == DrawCommandType::DrawCustomTextAtOffsetAndSize);
     }
 
-    constexpr MeshHandle GetMesh() const noexcept
+    [[nodiscard]] constexpr MeshHandle GetMesh() const noexcept
     {
       return Mesh;
     }
 
-    constexpr const PxVector2& GetDstPositionPxf() const noexcept
+    [[nodiscard]] constexpr const PxVector2& GetDstPositionPxf() const noexcept
     {
       return DstPositionPxf;
     }
 
-    constexpr const PxSize2D& GetDstSizePx() const noexcept
+    [[nodiscard]] constexpr const PxSize2D& GetDstSizePx() const noexcept
     {
       return DstSizePx;
     }
 
-    constexpr UIRenderColor GetDstColor() const noexcept
+    [[nodiscard]] constexpr UIRenderColor GetDstColor() const noexcept
     {
       return DstColor;
     }
 
-    constexpr uint32_t CustomDrawFunctionIndex() const noexcept
+    [[nodiscard]] constexpr uint32_t CustomDrawFunctionIndex() const noexcept
     {
       return Custom0;
     }
 
-    constexpr PxAreaRectangleF GetClipRectanglePxf() const noexcept
+    [[nodiscard]] constexpr PxAreaRectangleF GetClipRectanglePxf() const noexcept
     {
       return ClipRectanglePxf;
     }

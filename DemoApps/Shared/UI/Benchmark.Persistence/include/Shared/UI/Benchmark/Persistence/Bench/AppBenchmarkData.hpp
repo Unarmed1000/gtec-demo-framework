@@ -61,7 +61,7 @@ namespace Fsl
     {
     }
 
-    bool IsEmpty() const
+    [[nodiscard]] bool IsEmpty() const
     {
       return CpuData.Entries.empty();
     }

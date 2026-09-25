@@ -45,7 +45,7 @@ namespace Fsl
                                 const std::array<VertexElementUsage, 2>& shaderBindOrder)
     {
       SkyboxMesh mesh;
-      auto vertices = SkyboxVertices::GetVertices(1.0f);
+      const auto vertices = SkyboxVertices::GetVertices(1.0f);
       mesh.VertexBuffer.Reset(bufferManager, ReadOnlyFlexVertexSpanUtil::AsSpan(vertices), Vulkan::VMBufferUsage::STATIC);
       Vulkan::VMVertexBufferUtil::FillVertexInputAttributeDescription(mesh.VertexAttributeDescription, shaderBindOrder, mesh.VertexBuffer);
       mesh.VertexInputBindingDescription.binding = 0;
@@ -123,7 +123,7 @@ namespace Fsl
 
       std::array<VkWriteDescriptorSet, 2> writeDescriptorSets{};
       // Binding 0 : Vertex shader uniform buffer
-      auto vertUboBufferInfo = vertUboBuffer.GetDescriptorBufferInfo();
+      const auto vertUboBufferInfo = vertUboBuffer.GetDescriptorBufferInfo();
       writeDescriptorSets[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
       writeDescriptorSets[0].dstSet = descriptorSet;
       writeDescriptorSets[0].dstBinding = 0;
@@ -132,7 +132,7 @@ namespace Fsl
       writeDescriptorSets[0].pBufferInfo = &vertUboBufferInfo;
 
       // Binding 1 : Fragment shader texture sampler
-      auto textureImageInfo = texture.GetDescriptorImageInfo();
+      const auto textureImageInfo = texture.GetDescriptorImageInfo();
       writeDescriptorSets[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
       writeDescriptorSets[1].dstSet = descriptorSet;
       writeDescriptorSets[1].dstBinding = 1;
@@ -155,7 +155,7 @@ namespace Fsl
 
       std::array<VkWriteDescriptorSet, 2> writeDescriptorSets{};
       // Binding 0 : Vertex shader uniform buffer
-      auto vertUboBufferInfo = vertUboBuffer.GetDescriptorBufferInfo();
+      const auto vertUboBufferInfo = vertUboBuffer.GetDescriptorBufferInfo();
       writeDescriptorSets[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
       writeDescriptorSets[0].dstSet = descriptorSet;
       writeDescriptorSets[0].dstBinding = 0;
@@ -164,7 +164,7 @@ namespace Fsl
       writeDescriptorSets[0].pBufferInfo = &vertUboBufferInfo;
 
       // Binding 1 : input attachment
-      auto attachmentImageInfo = attachment.GetDescriptorImageInfo();
+      const auto attachmentImageInfo = attachment.GetDescriptorImageInfo();
       writeDescriptorSets[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
       writeDescriptorSets[1].dstSet = descriptorSet;
       writeDescriptorSets[1].dstBinding = 1;
@@ -229,7 +229,7 @@ namespace Fsl
       viewport.minDepth = 0.0f;
       viewport.maxDepth = 1.0f;
 
-      VkRect2D scissor{{0, 0}, extent};
+      const VkRect2D scissor{{0, 0}, extent};
 
       VkPipelineViewportStateCreateInfo pipelineViewportStateCreateInfo{};
       pipelineViewportStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;

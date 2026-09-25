@@ -91,7 +91,7 @@ namespace Fsl
       void SetData(const ReadOnlyRawTexture& texture, const Texture2DFilterHint filterHint, const TextureFlags textureFlags);
 
       //! @brief Try to get the native texture
-      BasicNativeTextureHandle TryGetNativeHandle() const noexcept
+      [[nodiscard]] BasicNativeTextureHandle TryGetNativeHandle() const noexcept
       {
         return m_activeIndex < m_textures.size() ? m_textures[m_activeIndex].NativeHandle : BasicNativeTextureHandle();
       }

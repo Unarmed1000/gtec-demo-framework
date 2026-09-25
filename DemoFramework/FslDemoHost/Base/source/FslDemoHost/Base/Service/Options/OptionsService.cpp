@@ -101,8 +101,7 @@ namespace Fsl
 
     const OptionParserId optionParserId(typeid(*p));
 
-    FSLLOG3_WARNING_IF(m_optionParsers.find(optionParserId) != m_optionParsers.end(),
-                       "A option parser for the given id has already been registered, request ignored");
+    FSLLOG3_WARNING_IF(m_optionParsers.contains(optionParserId), "A option parser for the given id has already been registered, request ignored");
 
     m_optionParsers[optionParserId] = optionParser;
   }

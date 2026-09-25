@@ -43,7 +43,7 @@ namespace
 
 TEST(TestMathPixel_PxSize2D, Construct_Default)
 {
-  PxSize2D value;
+  const PxSize2D value;
 
   EXPECT_EQ(PxSize2D(), value);
   EXPECT_EQ(PxSize1D(), value.Width());
@@ -56,7 +56,7 @@ TEST(TestMathPixel_PxSize2D, Construct)
 {
   constexpr auto Width = PxSize1D::Create(3);
   constexpr auto Height = PxSize1D::Create(2);
-  PxSize2D value(Width, Height);
+  const PxSize2D value(Width, Height);
 
   EXPECT_EQ(Width, value.Width());
   EXPECT_EQ(Height, value.Height());
@@ -66,7 +66,7 @@ TEST(TestMathPixel_PxSize2D, Create)
 {
   constexpr auto Width = PxSize1D::Create(3);
   constexpr auto Height = PxSize1D::Create(2);
-  PxSize2D value = PxSize2D::Create(Width.RawValue(), Height.RawValue());
+  const PxSize2D value = PxSize2D::Create(Width.RawValue(), Height.RawValue());
 
   EXPECT_EQ(Width, value.Width());
   EXPECT_EQ(Height, value.Height());
@@ -77,7 +77,7 @@ TEST(TestMathPixel_PxSize2D, Construct_NegativeWidth)
 {
   constexpr auto Width = PxSize1D::Create(-1);
   constexpr auto Height = PxSize1D::Create(2);
-  PxSize2D value(Width, Height);
+  const PxSize2D value(Width, Height);
 
   EXPECT_EQ(PxSize1D::Create(0), value.Width());
   EXPECT_EQ(Height, value.Height());
@@ -87,7 +87,7 @@ TEST(TestMathPixel_PxSize2D, Construct_NegativeHeight)
 {
   constexpr auto Width = PxSize1D::Create(3);
   constexpr auto Height = PxSize1D::Create(-1);
-  PxSize2D value(Width, Height);
+  const PxSize2D value(Width, Height);
 
   EXPECT_EQ(Width, value.Width());
   EXPECT_EQ(PxSize1D::Create(0), value.Height());
@@ -265,7 +265,7 @@ TEST(TestMathPixel_PxSize2D, Add)
 {
   const auto val1 = PxSize2D::Create(10, 200);
   const auto val2 = PxSize2D::Create(5, 50);
-  PxSize2D val3 = PxSize2D::Add(val1, val2);
+  const PxSize2D val3 = PxSize2D::Add(val1, val2);
 
   EXPECT_EQ(10, val1.RawWidth());
   EXPECT_EQ(200, val1.RawHeight());
@@ -280,7 +280,7 @@ TEST(TestMathPixel_PxSize2D, Subtract)
   const auto val1 = PxSize2D::Create(10, 200);
   const auto val2 = PxSize2D::Create(5, 50);
 
-  PxPoint2 val3 = PxSize2D::Subtract(val1, val2);
+  const PxPoint2 val3 = PxSize2D::Subtract(val1, val2);
 
   EXPECT_EQ(10, val1.RawWidth());
   EXPECT_EQ(200, val1.RawHeight());
@@ -307,7 +307,7 @@ TEST(TestMathPixel_PxSize2D, OpPlusEqual_PxSize2D)
   const PxValue y0(4);
   const PxValue x1(3);
   const PxValue y1(2);
-  PxSize2D value0(x0, y0);
+  const PxSize2D value0(x0, y0);
   PxPoint2 value1(x1, y1);
 
   value1 += value0;
@@ -324,7 +324,7 @@ TEST(TestMathPixel_PxSize2D, OpSubEqual_PxSize2D)
   const PxValue y0(4);
   const PxValue x1(3);
   const PxValue y1(2);
-  PxSize2D value0(x0, y0);
+  const PxSize2D value0(x0, y0);
   PxPoint2 value1(x1, y1);
 
   value1 -= value0;
@@ -341,7 +341,7 @@ TEST(TestMathPixel_PxSize2D, OpMulEqual_PxSize2D)
   const PxValue y0(4);
   const PxValue x1(3);
   const PxValue y1(2);
-  PxSize2D value0(x0, y0);
+  const PxSize2D value0(x0, y0);
   PxPoint2 value1(x1, y1);
 
   value1 *= value0;
@@ -358,10 +358,10 @@ TEST(TestMathPixel_PxSize2D, OpAdd_PxPoint2_PxSize2D)
   const PxValue y0(4);
   const PxValue x1(3);
   const PxValue y1(2);
-  PxSize2D value0(x0, y0);
-  PxPoint2 value1(x1, y1);
+  const PxSize2D value0(x0, y0);
+  const PxPoint2 value1(x1, y1);
 
-  auto value3 = value1 + value0;
+  const auto value3 = value1 + value0;
 
   EXPECT_EQ(x0, value0.Width());
   EXPECT_EQ(y0, value0.Height());
@@ -377,10 +377,10 @@ TEST(TestMathPixel_PxSize2D, OpAdd_PxSize2D_PxPoint2)
   const PxValue y0(4);
   const PxValue x1(3);
   const PxValue y1(2);
-  PxPoint2 value0(x0, y0);
-  PxSize2D value1(x1, y1);
+  const PxPoint2 value0(x0, y0);
+  const PxSize2D value1(x1, y1);
 
-  auto value3 = value1 + value0;
+  const auto value3 = value1 + value0;
 
   EXPECT_EQ(x0, value0.X);
   EXPECT_EQ(y0, value0.Y);
@@ -396,10 +396,10 @@ TEST(TestMathPixel_PxSize2D, OpSub_PxPoint2_PxSize2D)
   const PxValue y0(4);
   const PxValue x1(3);
   const PxValue y1(2);
-  PxSize2D value0(x0, y0);
-  PxPoint2 value1(x1, y1);
+  const PxSize2D value0(x0, y0);
+  const PxPoint2 value1(x1, y1);
 
-  auto value3 = value1 - value0;
+  const auto value3 = value1 - value0;
 
   EXPECT_EQ(x0, value0.Width());
   EXPECT_EQ(y0, value0.Height());
@@ -416,10 +416,10 @@ TEST(TestMathPixel_PxSize2D, OpSub_PxSize2D_PxPoint2)
   const PxValue y0(4);
   const PxValue x1(3);
   const PxValue y1(2);
-  PxPoint2 value0(x0, y0);
-  PxSize2D value1(x1, y1);
+  const PxPoint2 value0(x0, y0);
+  const PxSize2D value1(x1, y1);
 
-  auto value3 = value1 - value0;
+  const auto value3 = value1 - value0;
 
   EXPECT_EQ(x0, value0.X);
   EXPECT_EQ(y0, value0.Y);
@@ -435,10 +435,10 @@ TEST(TestMathPixel_PxSize2D, OpMul_PxPoint2_PxSize2D)
   const PxValue y0(4);
   const PxValue x1(3);
   const PxValue y1(2);
-  PxSize2D value0(x0, y0);
-  PxPoint2 value1(x1, y1);
+  const PxSize2D value0(x0, y0);
+  const PxPoint2 value1(x1, y1);
 
-  auto value3 = value1 * value0;
+  const auto value3 = value1 * value0;
 
   EXPECT_EQ(x0, value0.Width());
   EXPECT_EQ(y0, value0.Height());
@@ -454,10 +454,10 @@ TEST(TestMathPixel_PxSize2D, OpMul_PxSize2D_PxPoint2)
   const PxValue y0(4);
   const PxValue x1(3);
   const PxValue y1(2);
-  PxPoint2 value0(x0, y0);
-  PxSize2D value1(x1, y1);
+  const PxPoint2 value0(x0, y0);
+  const PxSize2D value1(x1, y1);
 
-  auto value3 = value1 * value0;
+  const auto value3 = value1 * value0;
 
   EXPECT_EQ(x0, value0.X);
   EXPECT_EQ(y0, value0.Y);

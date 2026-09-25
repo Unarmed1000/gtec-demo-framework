@@ -92,7 +92,7 @@ TEST(TestMath_Matrix3, Clear)
 
 TEST(TestMath_Matrix3, Determinant)
 {
-  auto value = Matrix3::GetIdentity();
+  const auto value = Matrix3::GetIdentity();
   EXPECT_FLOAT_EQ(1.0f, value.Determinant());
 }
 

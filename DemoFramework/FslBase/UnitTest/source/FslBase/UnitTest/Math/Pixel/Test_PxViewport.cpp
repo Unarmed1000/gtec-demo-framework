@@ -44,7 +44,7 @@ namespace
 
 TEST(TestMathPixel_PxViewport, Construct_Default)
 {
-  PxViewport value;
+  const PxViewport value;
 
   EXPECT_EQ(value.X(), 0);
   EXPECT_EQ(value.Y(), 0);
@@ -62,7 +62,7 @@ TEST(TestMathPixel_PxViewport, Construct)
   const int32_t y = 2;
   const int32_t width = 20;
   const int32_t height = 21;
-  PxViewport value(x, y, width, height);
+  const PxViewport value(x, y, width, height);
 
   EXPECT_EQ(value.X(), x);
   EXPECT_EQ(value.Y(), y);
@@ -77,7 +77,7 @@ TEST(TestMathPixel_PxViewport, Construct)
 TEST(TestMathPixel_PxViewport, Construct_Rectangle)
 {
   const auto rect = PxRectangle::Create(1, 2, 20, 21);
-  PxViewport value(rect);
+  const PxViewport value(rect);
 
   EXPECT_EQ(value.X(), rect.X().Value);
   EXPECT_EQ(value.Y(), rect.Y().Value);
@@ -92,8 +92,8 @@ TEST(TestMathPixel_PxViewport, Construct_Rectangle2)
 {
   constexpr float MinDepth = 32.0f;
   constexpr float MaxDepth = 42.0f;
-  auto rect = PxRectangle::Create(1, 2, 20, 21);
-  PxViewport value(rect, MinDepth, MaxDepth);
+  const auto rect = PxRectangle::Create(1, 2, 20, 21);
+  const PxViewport value(rect, MinDepth, MaxDepth);
 
   EXPECT_EQ(value.X(), rect.X().Value);
   EXPECT_EQ(value.Y(), rect.Y().Value);

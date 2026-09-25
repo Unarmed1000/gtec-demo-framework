@@ -236,7 +236,7 @@ namespace Fsl::UI
       return;
     }
 
-    auto deltaPositionPx = m_unitConverter.ToPxPoint2(positionDpf) - m_dragInfo.StartPositionPx;
+    const auto deltaPositionPx = m_unitConverter.ToPxPoint2(positionDpf) - m_dragInfo.StartPositionPx;
 
     FSLLOG3_VERBOSE5("CancelDrag position: {} DensityDpi: {}", positionDpf, m_unitConverter.GetDensityDpi());
 

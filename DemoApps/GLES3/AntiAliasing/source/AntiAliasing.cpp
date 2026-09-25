@@ -240,8 +240,8 @@ namespace Fsl
 
   GLES3::GLFrameBuffer AntiAliasing::CreateNoAAFramebuffer(const PxSize2D sizePx)
   {
-    GLES3::GLTextureParameters texParams;
-    GLES3::GLTextureImageParameters texImageParams(GL_RGB, GL_RGB, GL_UNSIGNED_BYTE);
+    const GLES3::GLTextureParameters texParams;
+    const GLES3::GLTextureImageParameters texImageParams(GL_RGB, GL_RGB, GL_UNSIGNED_BYTE);
 
     GLES3::GLFrameBuffer framebuffer;
     framebuffer.Reset(sizePx, texParams, texImageParams, GL_DEPTH_COMPONENT16);
@@ -251,8 +251,8 @@ namespace Fsl
 
   GLES3::GLFrameBuffer AntiAliasing::CreateMSAAResolveFramebuffer(const PxSize2D sizePx)
   {
-    GLES3::GLTextureParameters texParams;
-    GLES3::GLTextureImageParameters texImageParams(GL_RGB8, GL_RGB, GL_UNSIGNED_BYTE);
+    const GLES3::GLTextureParameters texParams;
+    const GLES3::GLTextureImageParameters texImageParams(GL_RGB8, GL_RGB, GL_UNSIGNED_BYTE);
 
     GLES3::GLFrameBuffer framebuffer;
     framebuffer.Reset(sizePx, texParams, texImageParams);
@@ -271,15 +271,15 @@ namespace Fsl
   GLES3::GLMultisampleFrameBufferTextureExt AntiAliasing::CreateMSAAFastResolveFramebuffer(const PxSize2D sizePx, const int32_t maxSamples)
   {
     GLES3::GLMultisampleFrameBufferTextureExt framebuffer;
-    GLES3::GLTextureImageParameters texImageParams(GL_RGB8, GL_RGB, GL_UNSIGNED_BYTE);
+    const GLES3::GLTextureImageParameters texImageParams(GL_RGB8, GL_RGB, GL_UNSIGNED_BYTE);
     framebuffer.Reset(sizePx, maxSamples, texImageParams, GL_DEPTH_COMPONENT16);
     return framebuffer;
   }
 
   GLES3::GLFrameBuffer AntiAliasing::CreateSSAAFramebuffer(const PxSize2D sizePx, const int32_t maxSamples)
   {
-    GLES3::GLTextureParameters texParams(GL_LINEAR, GL_LINEAR, GL_REPEAT, GL_REPEAT);
-    GLES3::GLTextureImageParameters texImageParams(GL_RGB, GL_RGB, GL_UNSIGNED_BYTE);
+    const GLES3::GLTextureParameters texParams(GL_LINEAR, GL_LINEAR, GL_REPEAT, GL_REPEAT);
+    const GLES3::GLTextureImageParameters texImageParams(GL_RGB, GL_RGB, GL_UNSIGNED_BYTE);
 
     const PxSize2D scaledSizePx(sizePx * PxSize2D::Create(maxSamples, maxSamples));
 

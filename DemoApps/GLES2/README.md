@@ -14,6 +14,7 @@ To [main document](../../README.md)
     * [DirectMultiSamplingVideoYUV](#directmultisamplingvideoyuv)
     * [EightLayerBlend](#eightlayerblend)
     * [FractalShader](#fractalshader)
+    * [FramePacing](#framepacing)
     * [LineBuilder101](#linebuilder101)
     * [ModelLoaderBasics](#modelloaderbasics)
     * [ModelViewer](#modelviewer)
@@ -118,6 +119,12 @@ to render each fragment while generating the julia set.
 It uses no textures, has no overdraw and has a minimal bandwidth requirement.
 
 Use the commandline arguments to select the scene and quality.
+
+### [FramePacing](FramePacing)
+
+<a href="FramePacing/Example.jpg"><img src="FramePacing/Example.jpg" height="108px" title="GLES2.FramePacing"></a>
+
+Shows how to control the [mb-framepacing](https://github.com/Unarmed1000/mb-framepacing) frame marker through the IFramePacingService.
 
 ### [LineBuilder101](LineBuilder101)
 

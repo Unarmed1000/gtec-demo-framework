@@ -56,13 +56,13 @@ namespace Fsl
     }
 
     //! @brief Calculates the length of the vector squared.
-    constexpr DpValueF LengthSquared() const noexcept
+    [[nodiscard]] constexpr DpValueF LengthSquared() const noexcept
     {
       return (X * X) + (Y * Y);
     }
 
     //! @brief Calculates the length of the vector squared.
-    constexpr DpValueF Length() const
+    [[nodiscard]] constexpr DpValueF Length() const
     {
       return DpValueF(std::sqrt((X.Value * X.Value) + (Y.Value * Y.Value)));
     }

@@ -46,7 +46,7 @@ namespace
 
 TEST(TestMathPixel_PxAreaRectangleF, ConstructDefault)
 {
-  PxAreaRectangleF value;
+  const PxAreaRectangleF value;
 
   // The rect stores left, top, right, bottom so they ought to be exact values (when constructed from them)
   EXPECT_EQ(PxAreaRectangleF::value_type(0.0f), value.Left());
@@ -68,11 +68,11 @@ TEST(TestMathPixel_PxAreaRectangleF, ConstructDefault)
 
 TEST(TestMathPixel_PxAreaRectangleF, Construct1)
 {
-  PxValueF offsetX(1.0f);
-  PxValueF offsetY(2.0f);
-  PxSize1DF width = PxSize1DF::Create(10.0f);
-  PxSize1DF height = PxSize1DF::Create(20.0f);
-  PxAreaRectangleF value(offsetX, offsetY, width, height);
+  const PxValueF offsetX(1.0f);
+  const PxValueF offsetY(2.0f);
+  const PxSize1DF width = PxSize1DF::Create(10.0f);
+  const PxSize1DF height = PxSize1DF::Create(20.0f);
+  const PxAreaRectangleF value(offsetX, offsetY, width, height);
 
   // The rect stores left, top, right, bottom so they ought to be exact values (when constructed from them)
   EXPECT_EQ(offsetX, value.Left());
@@ -99,10 +99,10 @@ TEST(TestMathPixel_PxAreaRectangleF, Construct1)
 
 TEST(TestMathPixel_PxAreaRectangleF, Create)
 {
-  PxValueF offsetX(1.0f);
-  PxValueF offsetY(2.0f);
-  PxSize1DF width = PxSize1DF::Create(10.0f);
-  PxSize1DF height = PxSize1DF::Create(20.0f);
+  const PxValueF offsetX(1.0f);
+  const PxValueF offsetY(2.0f);
+  const PxSize1DF width = PxSize1DF::Create(10.0f);
+  const PxSize1DF height = PxSize1DF::Create(20.0f);
   const auto value = PxAreaRectangleF::Create(offsetX.Value, offsetY.Value, width.RawValue(), height.RawValue());
 
   // The rect stores left, top, right, bottom so they ought to be exact values (when constructed from them)
@@ -130,10 +130,10 @@ TEST(TestMathPixel_PxAreaRectangleF, Create)
 
 TEST(TestMathPixel_PxAreaRectangleF, UncheckedCreate)
 {
-  PxValueF offsetX(1.0f);
-  PxValueF offsetY(2.0f);
-  PxSize1DF width = PxSize1DF::Create(10.0f);
-  PxSize1DF height = PxSize1DF::Create(20.0f);
+  const PxValueF offsetX(1.0f);
+  const PxValueF offsetY(2.0f);
+  const PxSize1DF width = PxSize1DF::Create(10.0f);
+  const PxSize1DF height = PxSize1DF::Create(20.0f);
   const auto value = PxAreaRectangleF::UncheckedCreate(offsetX.Value, offsetY.Value, width.RawValue(), height.RawValue());
 
   // The rect stores left, top, right, bottom so they ought to be exact values (when constructed from them)
@@ -160,11 +160,11 @@ TEST(TestMathPixel_PxAreaRectangleF, UncheckedCreate)
 
 TEST(TestMathPixel_PxAreaRectangleF, FromLeftTopRightBottom)
 {
-  PxValueF left(1.0f);
-  PxValueF top(2.0f);
-  PxValueF right(10.0f);
-  PxValueF bottom(20.0f);
-  auto value = PxAreaRectangleF::FromLeftTopRightBottom(left, top, right, bottom);
+  const PxValueF left(1.0f);
+  const PxValueF top(2.0f);
+  const PxValueF right(10.0f);
+  const PxValueF bottom(20.0f);
+  const auto value = PxAreaRectangleF::FromLeftTopRightBottom(left, top, right, bottom);
 
   // The rect stores left, top, right, bottom so they ought to be exact values (when constructed from them)
   EXPECT_EQ(left, value.Left());
@@ -186,11 +186,11 @@ TEST(TestMathPixel_PxAreaRectangleF, FromLeftTopRightBottom)
 
 TEST(TestMathPixel_PxAreaRectangleF, CreateFromLeftTopRightBottom)
 {
-  PxValueF left(1.0f);
-  PxValueF top(2.0f);
-  PxValueF right(10.0f);
-  PxValueF bottom(20.0f);
-  auto value = PxAreaRectangleF::CreateFromLeftTopRightBottom(left.Value, top.Value, right.Value, bottom.Value);
+  const PxValueF left(1.0f);
+  const PxValueF top(2.0f);
+  const PxValueF right(10.0f);
+  const PxValueF bottom(20.0f);
+  const auto value = PxAreaRectangleF::CreateFromLeftTopRightBottom(left.Value, top.Value, right.Value, bottom.Value);
 
   // The rect stores left, top, right, bottom so they ought to be exact values (when constructed from them)
   EXPECT_EQ(left, value.Left());
@@ -212,11 +212,11 @@ TEST(TestMathPixel_PxAreaRectangleF, CreateFromLeftTopRightBottom)
 
 TEST(TestMathPixel_PxAreaRectangleF, UncheckedFromLeftTopRightBottom)
 {
-  PxValueF left(1.0f);
-  PxValueF top(2.0f);
-  PxValueF right(10.0f);
-  PxValueF bottom(20.0f);
-  auto value = PxAreaRectangleF::UncheckedFromLeftTopRightBottom(left, top, right, bottom);
+  const PxValueF left(1.0f);
+  const PxValueF top(2.0f);
+  const PxValueF right(10.0f);
+  const PxValueF bottom(20.0f);
+  const auto value = PxAreaRectangleF::UncheckedFromLeftTopRightBottom(left, top, right, bottom);
 
   // The rect stores left, top, right, bottom so they ought to be exact values (when constructed from them)
   EXPECT_EQ(left, value.Left());
@@ -238,11 +238,11 @@ TEST(TestMathPixel_PxAreaRectangleF, UncheckedFromLeftTopRightBottom)
 
 TEST(TestMathPixel_PxAreaRectangleF, UncheckedCreateFromLeftTopRightBottom)
 {
-  PxValueF left(1.0f);
-  PxValueF top(2.0f);
-  PxValueF right(10.0f);
-  PxValueF bottom(20.0f);
-  auto value = PxAreaRectangleF::UncheckedCreateFromLeftTopRightBottom(left.Value, top.Value, right.Value, bottom.Value);
+  const PxValueF left(1.0f);
+  const PxValueF top(2.0f);
+  const PxValueF right(10.0f);
+  const PxValueF bottom(20.0f);
+  const auto value = PxAreaRectangleF::UncheckedCreateFromLeftTopRightBottom(left.Value, top.Value, right.Value, bottom.Value);
 
   // The rect stores left, top, right, bottom so they ought to be exact values (when constructed from them)
   EXPECT_EQ(left, value.Left());
@@ -268,7 +268,7 @@ TEST(TestMathPixel_PxAreaRectangleF, GetSize)
   const PxValueF offsetY(2.0f);
   const PxSize1DF width = PxSize1DF::Create(3.0f);
   const PxSize1DF height = PxSize1DF::Create(4.0f);
-  PxAreaRectangleF value(offsetX, offsetY, width, height);
+  const PxAreaRectangleF value(offsetX, offsetY, width, height);
 
   EXPECT_FLOAT_EQ(width.RawValue(), value.Size().RawWidth());
   EXPECT_FLOAT_EQ(height.RawValue(), value.Size().RawHeight());
@@ -280,7 +280,7 @@ TEST(TestMathPixel_PxAreaRectangleF, TopLeft)
   const PxValueF offsetY(2.0f);
   const PxSize1DF width = PxSize1DF::Create(3.0f);
   const PxSize1DF height = PxSize1DF::Create(4.0f);
-  PxAreaRectangleF value(offsetX, offsetY, width, height);
+  const PxAreaRectangleF value(offsetX, offsetY, width, height);
 
   EXPECT_EQ(offsetX, value.TopLeft().X);
   EXPECT_EQ(offsetY, value.TopLeft().Y);
@@ -292,7 +292,7 @@ TEST(TestMathPixel_PxAreaRectangleF, TopRight)
   const PxValueF offsetY(2.0f);
   const PxSize1DF width = PxSize1DF::Create(3.0f);
   const PxSize1DF height = PxSize1DF::Create(4.0f);
-  PxAreaRectangleF value(offsetX, offsetY, width, height);
+  const PxAreaRectangleF value(offsetX, offsetY, width, height);
 
   EXPECT_EQ(offsetX + width, value.TopRight().X);
   EXPECT_EQ(offsetY, value.TopRight().Y);
@@ -304,7 +304,7 @@ TEST(TestMathPixel_PxAreaRectangleF, BottomLeft)
   const PxValueF offsetY(2.0f);
   const PxSize1DF width = PxSize1DF::Create(3.0f);
   const PxSize1DF height = PxSize1DF::Create(4.0f);
-  PxAreaRectangleF value(offsetX, offsetY, width, height);
+  const PxAreaRectangleF value(offsetX, offsetY, width, height);
 
   EXPECT_EQ(offsetX, value.BottomLeft().X);
   EXPECT_EQ(offsetY + height, value.BottomLeft().Y);
@@ -316,7 +316,7 @@ TEST(TestMathPixel_PxAreaRectangleF, BottomRight)
   const PxValueF offsetY(2.0f);
   const PxSize1DF width = PxSize1DF::Create(3.0f);
   const PxSize1DF height = PxSize1DF::Create(4.0f);
-  PxAreaRectangleF value(offsetX, offsetY, width, height);
+  const PxAreaRectangleF value(offsetX, offsetY, width, height);
 
   EXPECT_EQ(offsetX + width, value.BottomRight().X);
   EXPECT_EQ(offsetY + height, value.BottomRight().Y);
@@ -328,7 +328,7 @@ TEST(TestMathPixel_PxAreaRectangleF, Location)
   const PxValueF offsetY(2.0f);
   const PxSize1DF width = PxSize1DF::Create(3.0f);
   const PxSize1DF height = PxSize1DF::Create(4.0f);
-  PxAreaRectangleF value(offsetX, offsetY, width, height);
+  const PxAreaRectangleF value(offsetX, offsetY, width, height);
 
   EXPECT_EQ(offsetX, value.Location().X);
   EXPECT_EQ(offsetY, value.Location().Y);
@@ -340,7 +340,7 @@ TEST(TestMathPixel_PxAreaRectangleF, Center)
   const PxValueF offsetY(2.0f);
   const PxSize1DF width = PxSize1DF::Create(3.0f);
   const PxSize1DF height = PxSize1DF::Create(4.0f);
-  PxAreaRectangleF value(offsetX, offsetY, width, height);
+  const PxAreaRectangleF value(offsetX, offsetY, width, height);
 
   EXPECT_FLOAT_EQ(offsetX.Value + (width.RawValue() / 2.0f), value.Center().X.Value);
   EXPECT_FLOAT_EQ(offsetY.Value + (height.RawValue() / 2.0f), value.Center().Y.Value);
@@ -493,7 +493,7 @@ TEST(TestMathPixel_PxAreaRectangleF, Contains_PxValueF_PxValueF)
   const PxValueF offsetY(2.0f);
   const PxSize1DF width = PxSize1DF::Create(3.0f);
   const PxSize1DF height = PxSize1DF::Create(4.0f);
-  PxAreaRectangleF value(offsetX, offsetY, width, height);
+  const PxAreaRectangleF value(offsetX, offsetY, width, height);
 
   EXPECT_TRUE(value.Contains(offsetX, offsetY));
   EXPECT_TRUE(value.Contains(offsetX + width - PxValueF(1), offsetY));
@@ -563,7 +563,7 @@ TEST(TestMathPixel_PxAreaRectangleF, Intersects_BruteForce)
       const int32_t yOffset = y * 11;
       for (int32_t x = 0; x < 11; ++x)
       {
-        auto rectA = PxAreaRectangleF::Create(static_cast<float>(x), static_cast<float>(y), 4, 3);
+        const auto rectA = PxAreaRectangleF::Create(static_cast<float>(x), static_cast<float>(y), 4, 3);
         EXPECT_EQ(result[x + yOffset] != 0u, rectA.Intersects(RectB));
         EXPECT_EQ(result[x + yOffset] != 0u, RectB.Intersects(rectA));
       }
@@ -608,8 +608,8 @@ TEST(TestMathPixel_PxAreaRectangleF, Intersect_BruteForce)
       {
         const auto rectA = PxAreaRectangleF::Create(static_cast<float>(x), static_cast<float>(y), 4, 3);
 
-        auto res1 = PxAreaRectangleF::Intersect(rectA, RectB);
-        auto res2 = PxAreaRectangleF::Intersect(RectB, rectA);
+        const auto res1 = PxAreaRectangleF::Intersect(rectA, RectB);
+        const auto res2 = PxAreaRectangleF::Intersect(RectB, rectA);
         EXPECT_EQ(res1, res2);
         // check for intersection
         EXPECT_EQ(result[x + yOffset] != 0u, !res1.IsEmpty());
@@ -634,10 +634,10 @@ TEST(TestMathPixel_PxAreaRectangleF, Union_BruteForce)
   {
     for (int32_t x = 0; x < 11; ++x)
     {
-      auto rectA = PxAreaRectangleF::Create(static_cast<float>(x), static_cast<float>(y), 4, 3);
+      const auto rectA = PxAreaRectangleF::Create(static_cast<float>(x), static_cast<float>(y), 4, 3);
 
-      auto res1 = PxAreaRectangleF::Union(rectA, RectB);
-      auto res2 = PxAreaRectangleF::Union(RectB, rectA);
+      const auto res1 = PxAreaRectangleF::Union(rectA, RectB);
+      const auto res2 = PxAreaRectangleF::Union(RectB, rectA);
       EXPECT_EQ(res1, res2);
 
       EXPECT_EQ(std::min(rectA.Left(), RectB.Left()), res1.Left());

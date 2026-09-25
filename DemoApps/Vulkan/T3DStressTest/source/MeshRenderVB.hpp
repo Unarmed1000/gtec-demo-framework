@@ -134,6 +134,7 @@ namespace Fsl
       Resources& operator=(const Resources&) = delete;
       Resources(Resources&& other) noexcept = delete;
       Resources& operator=(Resources&& other) noexcept = delete;
+      ~Resources() = default;
     };
 
     struct DependentResources
@@ -146,6 +147,7 @@ namespace Fsl
       DependentResources& operator=(const DependentResources&) = delete;
       DependentResources(DependentResources&& other) noexcept = delete;
       DependentResources& operator=(DependentResources&& other) noexcept = delete;
+      ~DependentResources() = default;
 
       void Reset() noexcept
       {
@@ -190,7 +192,7 @@ namespace Fsl
     void SetDisplacement(const Vector3& displacement);
     void SetCurrentLayer(const VkCommandBuffer hCmdBuffer, const float currentLayer);
 
-    int GetLightCount() const;
+    [[nodiscard]] int GetLightCount() const;
     void SetLightDirection(const int index, const Vector3& lightDirection);
     void SetLightColor(const int index, const Vector3& lightColor);
     void SetLightAmbientColor(const Vector3& ambientColor);

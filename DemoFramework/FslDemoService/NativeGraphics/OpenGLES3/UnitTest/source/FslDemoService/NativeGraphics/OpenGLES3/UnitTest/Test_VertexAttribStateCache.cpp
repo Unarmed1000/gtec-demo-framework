@@ -42,9 +42,9 @@ namespace
 
   bool ContainsArrayIndex(const ReadOnlySpan<GLES3::GLVertexElementAttribConfig> span, const GLuint attribIndex)
   {
-    for (std::size_t i = 0; i < span.size(); ++i)
+    for (const auto& entry : span)
     {
-      if (span[i].AttribIndex == attribIndex)
+      if (entry.AttribIndex == attribIndex)
       {
         return true;
       }
@@ -55,11 +55,10 @@ namespace
   void ValidateState(const std::array<GLES3::VertexAttribState, 32>& initialState, const std::array<GLES3::VertexAttribState, 32>& currentState,
                      const GLES3::VertexElementAttribLinks& attribLinks)
   {
-    auto vertexStride = NumericCast<GLint>(attribLinks.VertexStride());
-    auto span = attribLinks.AsSpan();
-    for (std::size_t i = 0; i < span.size(); ++i)
+    const auto vertexStride = NumericCast<GLint>(attribLinks.VertexStride());
+    const auto span = attribLinks.AsSpan();
+    for (const auto& spanEntry : span)
     {
-      const auto& spanEntry = span[i];
       const GLES3::VertexAttribState& stateAttribEntry = currentState[spanEntry.AttribIndex];
       EXPECT_TRUE(stateAttribEntry.Enabled);
       EXPECT_EQ(stateAttribEntry.Basic.Size, spanEntry.Size);
@@ -114,6 +113,9 @@ namespace
       m_initialState = TestFunctor::GlobalState;
     }
 
+    TestVertexAttribStateCache(const TestVertexAttribStateCache&) = delete;
+    TestVertexAttribStateCache& operator=(const TestVertexAttribStateCache&) = delete;
+
     ~TestVertexAttribStateCache() override
     {
       ValidateState(m_initialState, TestFunctor::GlobalState);
@@ -123,7 +125,7 @@ namespace
 
   GLES3::VertexElementAttribLinks CreateAttribLinksWithThreeEntries()
   {
-    std::array<GLES3::GLVertexElementAttribConfig, 3> vertexElementAttribConfigs = {
+    const std::array<GLES3::GLVertexElementAttribConfig, 3> vertexElementAttribConfigs = {
       GLES3::GLVertexElementAttribConfig(10, 1, GL_FLOAT, GL_TRUE, nullptr),
       GLES3::GLVertexElementAttribConfig(11, 2, GL_FLOAT, GL_FALSE, reinterpret_cast<const GLvoid*>(110)),
       GLES3::GLVertexElementAttribConfig(12, 3, GL_FLOAT, GL_TRUE, reinterpret_cast<const GLvoid*>(120)),
@@ -137,7 +139,7 @@ namespace
   // update first, greater, greater
   GLES3::VertexElementAttribLinks CreateAttribLinksWithThreeEntriesUpdateFirstGg()
   {
-    std::array<GLES3::GLVertexElementAttribConfig, 3> vertexElementAttribConfigs = {
+    const std::array<GLES3::GLVertexElementAttribConfig, 3> vertexElementAttribConfigs = {
       GLES3::GLVertexElementAttribConfig(10, 4, GL_FLOAT, GL_FALSE, reinterpret_cast<const GLvoid*>(210)),
       GLES3::GLVertexElementAttribConfig(21, 5, GL_FLOAT, GL_FALSE, nullptr),
       GLES3::GLVertexElementAttribConfig(22, 6, GL_FLOAT, GL_FALSE, reinterpret_cast<const GLvoid*>(220)),
@@ -150,7 +152,7 @@ namespace
   // update second, greater, greater
   GLES3::VertexElementAttribLinks CreateAttribLinksWithThreeEntriesUpdateSecondGg()
   {
-    std::array<GLES3::GLVertexElementAttribConfig, 3> vertexElementAttribConfigs = {
+    const std::array<GLES3::GLVertexElementAttribConfig, 3> vertexElementAttribConfigs = {
       GLES3::GLVertexElementAttribConfig(11, 4, GL_FLOAT, GL_FALSE, reinterpret_cast<const GLvoid*>(210)),
       GLES3::GLVertexElementAttribConfig(21, 5, GL_FLOAT, GL_FALSE, nullptr),
       GLES3::GLVertexElementAttribConfig(22, 6, GL_FLOAT, GL_FALSE, reinterpret_cast<const GLvoid*>(220)),
@@ -163,7 +165,7 @@ namespace
   // update third, greater, greater
   GLES3::VertexElementAttribLinks CreateAttribLinksWithThreeEntriesUpdateThirdGg()
   {
-    std::array<GLES3::GLVertexElementAttribConfig, 3> vertexElementAttribConfigs = {
+    const std::array<GLES3::GLVertexElementAttribConfig, 3> vertexElementAttribConfigs = {
       GLES3::GLVertexElementAttribConfig(12, 4, GL_FLOAT, GL_FALSE, reinterpret_cast<const GLvoid*>(210)),
       GLES3::GLVertexElementAttribConfig(21, 5, GL_FLOAT, GL_FALSE, nullptr),
       GLES3::GLVertexElementAttribConfig(22, 6, GL_FLOAT, GL_FALSE, reinterpret_cast<const GLvoid*>(220)),
@@ -176,7 +178,7 @@ namespace
   // update first, less-than, less-than
   GLES3::VertexElementAttribLinks CreateAttribLinksWithThreeEntriesUpdateFirstLl()
   {
-    std::array<GLES3::GLVertexElementAttribConfig, 3> vertexElementAttribConfigs = {
+    const std::array<GLES3::GLVertexElementAttribConfig, 3> vertexElementAttribConfigs = {
       GLES3::GLVertexElementAttribConfig(4, 4, GL_FLOAT, GL_FALSE, reinterpret_cast<const GLvoid*>(210)),
       GLES3::GLVertexElementAttribConfig(5, 5, GL_FLOAT, GL_FALSE, nullptr),
       GLES3::GLVertexElementAttribConfig(10, 6, GL_FLOAT, GL_FALSE, reinterpret_cast<const GLvoid*>(220)),
@@ -189,7 +191,7 @@ namespace
   // update second, less-than, less-than
   GLES3::VertexElementAttribLinks CreateAttribLinksWithThreeEntriesUpdateSecondLl()
   {
-    std::array<GLES3::GLVertexElementAttribConfig, 3> vertexElementAttribConfigs = {
+    const std::array<GLES3::GLVertexElementAttribConfig, 3> vertexElementAttribConfigs = {
       GLES3::GLVertexElementAttribConfig(4, 4, GL_FLOAT, GL_FALSE, reinterpret_cast<const GLvoid*>(210)),
       GLES3::GLVertexElementAttribConfig(5, 5, GL_FLOAT, GL_FALSE, nullptr),
       GLES3::GLVertexElementAttribConfig(11, 6, GL_FLOAT, GL_FALSE, reinterpret_cast<const GLvoid*>(220)),
@@ -202,7 +204,7 @@ namespace
   // update third, less-than, less-than
   GLES3::VertexElementAttribLinks CreateAttribLinksWithThreeEntriesUpdateThirdLl()
   {
-    std::array<GLES3::GLVertexElementAttribConfig, 3> vertexElementAttribConfigs = {
+    const std::array<GLES3::GLVertexElementAttribConfig, 3> vertexElementAttribConfigs = {
       GLES3::GLVertexElementAttribConfig(4, 4, GL_FLOAT, GL_FALSE, reinterpret_cast<const GLvoid*>(210)),
       GLES3::GLVertexElementAttribConfig(5, 5, GL_FLOAT, GL_FALSE, nullptr),
       GLES3::GLVertexElementAttribConfig(12, 6, GL_FLOAT, GL_FALSE, reinterpret_cast<const GLvoid*>(220)),
@@ -215,7 +217,7 @@ namespace
   // update first, less-than, greater-than
   GLES3::VertexElementAttribLinks CreateAttribLinksWithThreeEntriesUpdateFirstLg()
   {
-    std::array<GLES3::GLVertexElementAttribConfig, 3> vertexElementAttribConfigs = {
+    const std::array<GLES3::GLVertexElementAttribConfig, 3> vertexElementAttribConfigs = {
       GLES3::GLVertexElementAttribConfig(4, 4, GL_FLOAT, GL_FALSE, reinterpret_cast<const GLvoid*>(210)),
       GLES3::GLVertexElementAttribConfig(10, 5, GL_FLOAT, GL_FALSE, nullptr),
       GLES3::GLVertexElementAttribConfig(20, 6, GL_FLOAT, GL_FALSE, reinterpret_cast<const GLvoid*>(220)),
@@ -228,7 +230,7 @@ namespace
   // update second, less-than, greater-than
   GLES3::VertexElementAttribLinks CreateAttribLinksWithThreeEntriesUpdateSecondLg()
   {
-    std::array<GLES3::GLVertexElementAttribConfig, 3> vertexElementAttribConfigs = {
+    const std::array<GLES3::GLVertexElementAttribConfig, 3> vertexElementAttribConfigs = {
       GLES3::GLVertexElementAttribConfig(4, 4, GL_FLOAT, GL_FALSE, reinterpret_cast<const GLvoid*>(210)),
       GLES3::GLVertexElementAttribConfig(11, 5, GL_FLOAT, GL_FALSE, nullptr),
       GLES3::GLVertexElementAttribConfig(20, 6, GL_FLOAT, GL_FALSE, reinterpret_cast<const GLvoid*>(220)),
@@ -241,7 +243,7 @@ namespace
   // update third, less-than, greater-than
   GLES3::VertexElementAttribLinks CreateAttribLinksWithThreeEntriesUpdateThirdLg()
   {
-    std::array<GLES3::GLVertexElementAttribConfig, 3> vertexElementAttribConfigs = {
+    const std::array<GLES3::GLVertexElementAttribConfig, 3> vertexElementAttribConfigs = {
       GLES3::GLVertexElementAttribConfig(4, 4, GL_FLOAT, GL_FALSE, reinterpret_cast<const GLvoid*>(210)),
       GLES3::GLVertexElementAttribConfig(12, 5, GL_FLOAT, GL_FALSE, nullptr),
       GLES3::GLVertexElementAttribConfig(20, 6, GL_FLOAT, GL_FALSE, reinterpret_cast<const GLvoid*>(220)),
@@ -254,7 +256,7 @@ namespace
 
   GLES3::VertexElementAttribLinks CreateAttribLinksWithThreeEntriesNoMatch()
   {
-    std::array<GLES3::GLVertexElementAttribConfig, 3> vertexElementAttribConfigs = {
+    const std::array<GLES3::GLVertexElementAttribConfig, 3> vertexElementAttribConfigs = {
       GLES3::GLVertexElementAttribConfig(20, 4, GL_FLOAT, GL_FALSE, reinterpret_cast<const GLvoid*>(210)),
       GLES3::GLVertexElementAttribConfig(21, 5, GL_FLOAT, GL_FALSE, nullptr),
       GLES3::GLVertexElementAttribConfig(22, 6, GL_FLOAT, GL_FALSE, reinterpret_cast<const GLvoid*>(220)),
@@ -268,14 +270,14 @@ namespace
 
 TEST_F(TestVertexAttribStateCache, Construct)
 {
-  GLES3::VertexAttribStateCache<TestFunctor> cache;
+  const GLES3::VertexAttribStateCache<TestFunctor> cache;
 }
 
 
 TEST_F(TestVertexAttribStateCache, ConstructThenMove)
 {
   GLES3::VertexAttribStateCache<TestFunctor> cache;
-  GLES3::VertexAttribStateCache<TestFunctor> cache2 = std::move(cache);
+  const GLES3::VertexAttribStateCache<TestFunctor> cache2 = std::move(cache);
 }
 
 

@@ -99,14 +99,14 @@ namespace Fsl
       UIAppMaterialManager(const bool allowDepthBuffer, const bool defaultToDynamicMaterials);
       ~UIAppMaterialManager();
 
-      bool IsDepthBufferAllowed() const
+      [[nodiscard]] bool IsDepthBufferAllowed() const
       {
         return m_options.AllowDepthBuffer;
       }
 
       void Clear();
 
-      bool Contains(const SpriteMaterialId spriteMaterialId) const;
+      [[nodiscard]] bool Contains(const SpriteMaterialId spriteMaterialId) const;
 
       void AddMaterial(IBasicRenderSystem& rRenderSystem, const SpriteMaterialId spriteMaterialId, const UIAppTextureHandle hTexture,
                        const UIAppTextureInfo& textureInfo, const BlendState blendState, const BasicPrimitiveTopology primitiveTopology);
@@ -117,9 +117,9 @@ namespace Fsl
 
       bool RemoveMaterial(const SpriteMaterialId id);
 
-      SpriteMaterialInfo GetSpriteMaterialInfo(const SpriteMaterialId spriteMaterialId) const;
+      [[nodiscard]] SpriteMaterialInfo GetSpriteMaterialInfo(const SpriteMaterialId spriteMaterialId) const;
 
-      UIAppMaterialInfo GetMaterialInfo(const SpriteMaterialId spriteMaterialId) const;
+      [[nodiscard]] UIAppMaterialInfo GetMaterialInfo(const SpriteMaterialId spriteMaterialId) const;
 
       bool SetOptions(IBasicRenderSystem& rRenderSystem, const bool allowDepthBuffer);
 

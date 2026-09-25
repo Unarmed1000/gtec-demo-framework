@@ -46,7 +46,7 @@ namespace
 
 TEST(TestTransition_TransitionColorU16, Construct_Default)
 {
-  TransitionColorU16 transitionValue;
+  const TransitionColorU16 transitionValue;
 
   EXPECT_TRUE(transitionValue.IsCompleted());
   EXPECT_EQ(TimeSpan(0), transitionValue.GetStartDelay());
@@ -58,7 +58,7 @@ TEST(TestTransition_TransitionColorU16, Construct_Default)
 
 TEST(TestTransition_TransitionColorU16, Construct_CacheAndTimespan)
 {
-  TransitionColorU16 transitionValue(TimeSpan(10));
+  const TransitionColorU16 transitionValue(TimeSpan(10));
 
   EXPECT_TRUE(transitionValue.IsCompleted());
   EXPECT_EQ(TimeSpan(0), transitionValue.GetStartDelay());

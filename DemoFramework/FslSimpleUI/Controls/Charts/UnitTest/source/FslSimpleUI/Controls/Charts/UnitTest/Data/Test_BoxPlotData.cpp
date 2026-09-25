@@ -41,7 +41,7 @@ namespace
 
 TEST(Test_Data_BoxPlotData, ConstructEmpty)
 {
-  UI::BoxPlotData data;
+  const UI::BoxPlotData data;
   EXPECT_EQ(UI::BoxPlotData::value_type(0.0), data.OutlierMin);
   EXPECT_EQ(UI::BoxPlotData::value_type(0.0), data.Min);
   EXPECT_EQ(UI::BoxPlotData::value_type(0.0), data.Q1);
@@ -54,7 +54,7 @@ TEST(Test_Data_BoxPlotData, ConstructEmpty)
 
 TEST(Test_Data_BoxPlotData, Construct)
 {
-  UI::BoxPlotData data(1, 2, 3, 4, 5, 6, 7);
+  const UI::BoxPlotData data(1, 2, 3, 4, 5, 6, 7);
   EXPECT_EQ(UI::BoxPlotData::value_type(1.0), data.OutlierMin);
   EXPECT_EQ(UI::BoxPlotData::value_type(2.0), data.Min);
   EXPECT_EQ(UI::BoxPlotData::value_type(3.0), data.Q1);
@@ -67,15 +67,15 @@ TEST(Test_Data_BoxPlotData, Construct)
 
 TEST(Test_Data_BoxPlotData, OpEqual)
 {
-  UI::BoxPlotData data(1, 2, 3, 4, 5, 6, 7);
-  UI::BoxPlotData dataEQ(1, 2, 3, 4, 5, 6, 7);
-  UI::BoxPlotData dataNE0(9, 2, 3, 4, 5, 6, 7);
-  UI::BoxPlotData dataNE1(1, 9, 3, 4, 5, 6, 7);
-  UI::BoxPlotData dataNE2(1, 2, 9, 4, 5, 6, 7);
-  UI::BoxPlotData dataNE3(1, 2, 3, 9, 5, 6, 7);
-  UI::BoxPlotData dataNE4(1, 2, 3, 4, 9, 6, 7);
-  UI::BoxPlotData dataNE5(1, 2, 3, 4, 5, 9, 7);
-  UI::BoxPlotData dataNE6(1, 2, 3, 4, 5, 6, 9);
+  const UI::BoxPlotData data(1, 2, 3, 4, 5, 6, 7);
+  const UI::BoxPlotData dataEQ(1, 2, 3, 4, 5, 6, 7);
+  const UI::BoxPlotData dataNE0(9, 2, 3, 4, 5, 6, 7);
+  const UI::BoxPlotData dataNE1(1, 9, 3, 4, 5, 6, 7);
+  const UI::BoxPlotData dataNE2(1, 2, 9, 4, 5, 6, 7);
+  const UI::BoxPlotData dataNE3(1, 2, 3, 9, 5, 6, 7);
+  const UI::BoxPlotData dataNE4(1, 2, 3, 4, 9, 6, 7);
+  const UI::BoxPlotData dataNE5(1, 2, 3, 4, 5, 9, 7);
+  const UI::BoxPlotData dataNE6(1, 2, 3, 4, 5, 6, 9);
 
   EXPECT_TRUE(data == dataEQ);
   EXPECT_FALSE(data == dataNE0);
@@ -89,15 +89,15 @@ TEST(Test_Data_BoxPlotData, OpEqual)
 
 TEST(Test_Data_BoxPlotData, OpNotEqual)
 {
-  UI::BoxPlotData data(1, 2, 3, 4, 5, 6, 7);
-  UI::BoxPlotData dataEQ(1, 2, 3, 4, 5, 6, 7);
-  UI::BoxPlotData dataNE0(9, 2, 3, 4, 5, 6, 7);
-  UI::BoxPlotData dataNE1(1, 9, 3, 4, 5, 6, 7);
-  UI::BoxPlotData dataNE2(1, 2, 9, 4, 5, 6, 7);
-  UI::BoxPlotData dataNE3(1, 2, 3, 9, 5, 6, 7);
-  UI::BoxPlotData dataNE4(1, 2, 3, 4, 9, 6, 7);
-  UI::BoxPlotData dataNE5(1, 2, 3, 4, 5, 9, 7);
-  UI::BoxPlotData dataNE6(1, 2, 3, 4, 5, 6, 9);
+  const UI::BoxPlotData data(1, 2, 3, 4, 5, 6, 7);
+  const UI::BoxPlotData dataEQ(1, 2, 3, 4, 5, 6, 7);
+  const UI::BoxPlotData dataNE0(9, 2, 3, 4, 5, 6, 7);
+  const UI::BoxPlotData dataNE1(1, 9, 3, 4, 5, 6, 7);
+  const UI::BoxPlotData dataNE2(1, 2, 9, 4, 5, 6, 7);
+  const UI::BoxPlotData dataNE3(1, 2, 3, 9, 5, 6, 7);
+  const UI::BoxPlotData dataNE4(1, 2, 3, 4, 9, 6, 7);
+  const UI::BoxPlotData dataNE5(1, 2, 3, 4, 5, 9, 7);
+  const UI::BoxPlotData dataNE6(1, 2, 3, 4, 5, 6, 9);
 
   EXPECT_FALSE(data != dataEQ);
   EXPECT_TRUE(data != dataNE0);

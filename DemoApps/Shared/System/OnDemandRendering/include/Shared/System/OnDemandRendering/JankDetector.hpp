@@ -34,6 +34,7 @@
 #include <FslBase/Math/Pixel/PxValue.hpp>
 #include <FslBase/Span/ReadOnlySpan.hpp>
 #include <FslDemoApp/Shared/Host/DemoWindowMetrics.hpp>
+#include <algorithm>
 #include <cassert>
 #include <vector>
 
@@ -181,10 +182,7 @@ namespace Fsl
           Entries.push_back(entry);
         }
         ++Count;
-        if (Count > ValidEntries)
-        {
-          ValidEntries = Count;
-        }
+        ValidEntries = std::max(Count, ValidEntries);
         assert(Count <= ValidEntries);
         assert(ValidEntries <= Entries.size());
         assert(Count <= Entries.size());
@@ -205,22 +203,22 @@ namespace Fsl
     void OnUpdate(const DemoTime& demoTime);
     void OnDraw(const DemoTime& demoTime);
 
-    AnimationRecord0 GetRecord0() const
+    [[nodiscard]] AnimationRecord0 GetRecord0() const
     {
       return m_animationRecords.Anim0;
     }
 
-    AnimationRecord1 GetRecord1() const
+    [[nodiscard]] AnimationRecord1 GetRecord1() const
     {
       return m_animationRecords.Anim1;
     }
 
-    AnimationRecord1 GetRecord2() const
+    [[nodiscard]] AnimationRecord1 GetRecord2() const
     {
       return m_animationRecords.Anim2;
     }
 
-    ReadOnlySpan<JankDetector::TimingRecords> Record1AsTimingSpan() const;
+    [[nodiscard]] ReadOnlySpan<JankDetector::TimingRecords> Record1AsTimingSpan() const;
   };
 }
 

@@ -43,8 +43,8 @@ namespace
 
 TEST(Test_StringViewLite_Compare, Construct)
 {
-  std::string empty;
-  StringViewLite strView(empty);
+  const std::string empty;
+  const StringViewLite strView(empty);
 
   EXPECT_TRUE(strView.empty());
   EXPECT_NE(strView.data(), nullptr);
@@ -55,8 +55,8 @@ TEST(Test_StringViewLite_Compare, Construct)
 
 TEST(Test_StringViewLite_Compare, Construct_FromStr)
 {
-  std::string str("Hello world");
-  StringViewLite strView(str);
+  const std::string str("Hello world");
+  const StringViewLite strView(str);
 
   EXPECT_FALSE(strView.empty());
   EXPECT_NE(strView.data(), nullptr);
@@ -68,8 +68,8 @@ TEST(Test_StringViewLite_Compare, Construct_FromStr)
 
 TEST(Test_StringViewLite_Compare, ToString_Empty)
 {
-  StringViewLite empty;
-  std::string dstStr(empty);
+  const StringViewLite empty;
+  const std::string dstStr(empty);
 
   EXPECT_TRUE(dstStr.empty());
   EXPECT_EQ(0u, dstStr.size());
@@ -79,8 +79,8 @@ TEST(Test_StringViewLite_Compare, ToString_Empty)
 
 TEST(Test_StringViewLite_Compare, ToString)
 {
-  StringViewLite str("hello");
-  std::string dstStr(str);
+  const StringViewLite str("hello");
+  const std::string dstStr(str);
 
   EXPECT_EQ(str, dstStr);
 }
@@ -89,7 +89,7 @@ TEST(Test_StringViewLite_Compare, ToString)
 
 TEST(Test_StringViewLite_Compare, Set_String_Empty)
 {
-  StringViewLite empty;
+  const StringViewLite empty;
   std::string dstStr;
   dstStr = empty;
 
@@ -101,7 +101,7 @@ TEST(Test_StringViewLite_Compare, Set_String_Empty)
 
 TEST(Test_StringViewLite_Compare, Set_String)
 {
-  StringViewLite str("hello");
+  const StringViewLite str("hello");
   std::string dstStr;
   dstStr = str;
 

@@ -48,13 +48,13 @@ namespace Fsl
 
   void SceneHelper::GetBoundingBoxForNode(const aiScene* pScene, const aiNode* pNode, Vector3& rMin, Vector3& rMax)
   {
-    aiMatrix4x4 prev;
+    const aiMatrix4x4 prev;
     for (std::size_t meshIndex = 0; meshIndex < pNode->mNumMeshes; ++meshIndex)
     {
       const aiMesh* mesh = pScene->mMeshes[pNode->mMeshes[meshIndex]];
       for (std::size_t vertexIndex = 0; vertexIndex < mesh->mNumVertices; ++vertexIndex)
       {
-        aiVector3D tmp = mesh->mVertices[vertexIndex];
+        const aiVector3D tmp = mesh->mVertices[vertexIndex];
 
         rMin.X = std::min(rMin.X, tmp.x);
         rMin.Y = std::min(rMin.Y, tmp.y);

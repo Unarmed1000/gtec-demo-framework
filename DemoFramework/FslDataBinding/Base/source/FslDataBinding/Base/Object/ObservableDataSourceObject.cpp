@@ -67,7 +67,7 @@ namespace Fsl::DataBinding
 
   void ObservableDataSourceObject::ExtractProperties(DependencyPropertyDefinitionVector& rProperties)
   {
-    return ExtractAllProperties(rProperties);
+    ExtractAllProperties(rProperties);
   }
 
 }

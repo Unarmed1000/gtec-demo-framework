@@ -109,10 +109,10 @@ namespace Fsl
   {
     const auto& contentManager = *createInfo.ContentManager;
 
-    auto quadVertexSpan = ReadOnlyFlexVertexSpanUtil::AsSpan(GQuad0Vertices);
+    const auto quadVertexSpan = ReadOnlyFlexVertexSpanUtil::AsSpan(GQuad0Vertices);
     m_resources.QuadMeshVertices = m_render->CreateDynamicBuffer(quadVertexSpan);
 
-    auto shadersRecord = CreateCustomShaders(*m_render, createInfo);
+    const auto shadersRecord = CreateCustomShaders(*m_render, createInfo);
 
     const auto quadVertexDeclaration = quadVertexSpan.AsVertexDeclarationSpan();
     m_resources.Materials = CreateMaterials(contentManager, *m_render, shadersRecord, quadVertexDeclaration);
@@ -191,9 +191,9 @@ namespace Fsl
       VertexAttributeDescription(1, VertexElementFormat::Vector4, VertexElementUsage::Color, 0, "inVertexColor"),
       VertexAttributeDescription(2, VertexElementFormat::Vector2, VertexElementUsage::TextureCoordinate, 0, "inVertexTextureCoord")};
 
-    BasicShaderCreateInfo basicVertFixedColorCreateInfo(
+    const BasicShaderCreateInfo basicVertFixedColorCreateInfo(
       BasicShaderStageFlag::Vertex, SpanUtil::AsReadOnlySpan(devCustomCreateInfo.ShaderBasicVertFixedColor), VertexAttrDesc.AsReadOnlySpan());
-    BasicShaderCreateInfo basicFragFixedColorCreateInfo(SpanUtil::AsReadOnlySpan(devCustomCreateInfo.ShaderBasicFragFixedColor));
+    const BasicShaderCreateInfo basicFragFixedColorCreateInfo(SpanUtil::AsReadOnlySpan(devCustomCreateInfo.ShaderBasicFragFixedColor));
 
     BasicShader basicVertFixedColor = render.CreateShader(basicVertFixedColorCreateInfo);
     BasicShader basicFragFixedColor = render.CreateShader(basicFragFixedColorCreateInfo);
@@ -218,19 +218,19 @@ namespace Fsl
 
     Texture texture;
     contentManager.Read(texture, PathLogo, PixelFormat::R8G8B8A8_UNORM, BitmapOrigin, PixelChannelOrder::Undefined, true);
-    auto textureLogo = render.CreateTexture2D(texture, Texture2DFilterHint::Smooth);
+    const auto textureLogo = render.CreateTexture2D(texture, Texture2DFilterHint::Smooth);
 
     contentManager.Read(texture, PathOpaqueR, PixelFormat::R8G8B8A8_UNORM, BitmapOrigin, PixelChannelOrder::Undefined, true);
-    auto textureOpaqueR = render.CreateTexture2D(texture, Texture2DFilterHint::Smooth);
+    const auto textureOpaqueR = render.CreateTexture2D(texture, Texture2DFilterHint::Smooth);
     contentManager.Read(texture, PathOpaqueG, PixelFormat::R8G8B8A8_UNORM, BitmapOrigin, PixelChannelOrder::Undefined, true);
-    auto textureOpaqueG = render.CreateTexture2D(texture, Texture2DFilterHint::Smooth);
+    const auto textureOpaqueG = render.CreateTexture2D(texture, Texture2DFilterHint::Smooth);
     contentManager.Read(texture, PathOpaqueB, PixelFormat::R8G8B8A8_UNORM, BitmapOrigin, PixelChannelOrder::Undefined, true);
-    auto textureOpaqueB = render.CreateTexture2D(texture, Texture2DFilterHint::Smooth);
+    const auto textureOpaqueB = render.CreateTexture2D(texture, Texture2DFilterHint::Smooth);
 
     contentManager.Read(texture, PathPreAlpha1, PixelFormat::R8G8B8A8_UNORM, BitmapOrigin, PixelChannelOrder::Undefined, true);
-    auto textureAlpha = render.CreateTexture2D(texture, Texture2DFilterHint::Smooth);
+    const auto textureAlpha = render.CreateTexture2D(texture, Texture2DFilterHint::Smooth);
     contentManager.Read(texture, PathNonPreAlpha, PixelFormat::R8G8B8A8_UNORM, BitmapOrigin, PixelChannelOrder::Undefined, true);
-    auto textureNonPreAlpha = render.CreateTexture2D(texture, Texture2DFilterHint::Smooth);
+    const auto textureNonPreAlpha = render.CreateTexture2D(texture, Texture2DFilterHint::Smooth);
 
 
     const BasicMaterialDepthInfo depthInfo(false, false, BasicCompareOp::Less);

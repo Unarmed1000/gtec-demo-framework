@@ -61,9 +61,9 @@ namespace Fsl
     void OnDrawSkipped(const FrameInfo& frameInfo) override;
 
   protected:
-    DemoTime ApplyCustomDemoTime(const DemoTime& demoTime) const;
+    [[nodiscard]] DemoTime ApplyCustomDemoTime(const DemoTime& demoTime) const;
 
-    const ISceneTestDemoControl& GetDemoControl() const;
+    [[nodiscard]] const ISceneTestDemoControl& GetDemoControl() const;
     ISceneTestDemoControl& GetDemoControl();
   };
 }

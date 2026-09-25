@@ -52,9 +52,9 @@ namespace
 
 TEST(TestMath_BoundingSphere, Empty)
 {
-  Vector3 position(1.0f, 2.0f, 3.0f);
-  float radius = 10.0f;
-  BoundingSphere sphere(position, radius);
+  const Vector3 position(1.0f, 2.0f, 3.0f);
+  const float radius = 10.0f;
+  const BoundingSphere sphere(position, radius);
 
   EXPECT_EQ(position, sphere.Center);
   EXPECT_EQ(radius, sphere.Radius);

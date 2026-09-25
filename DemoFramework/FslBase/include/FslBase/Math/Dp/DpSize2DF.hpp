@@ -85,22 +85,22 @@ namespace Fsl
       assert(height >= value_type::value_type(0.0f));
     }
 
-    constexpr inline value_type Width() const
+    [[nodiscard]] constexpr inline value_type Width() const
     {
       return m_width;
     }
 
-    constexpr inline value_type Height() const
+    [[nodiscard]] constexpr inline value_type Height() const
     {
       return m_height;
     }
 
-    constexpr inline raw_value_type RawWidth() const
+    [[nodiscard]] constexpr inline raw_value_type RawWidth() const
     {
       return m_width.RawValue();
     }
 
-    constexpr inline raw_value_type RawHeight() const
+    [[nodiscard]] constexpr inline raw_value_type RawHeight() const
     {
       return m_height.RawValue();
     }

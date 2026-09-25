@@ -63,7 +63,7 @@ namespace Fsl
     public:
       HeightMap(const Bitmap& srcBitmap, const uint32_t patchSize)
         : m_dim(srcBitmap.GetExtent().Width.Value)
-        , m_heightData(m_dim * m_dim)
+        , m_heightData(static_cast<std::size_t>(m_dim) * m_dim)
         , m_scale(m_dim / patchSize)
       {
         assert(srcBitmap.GetExtent().Width == srcBitmap.GetExtent().Height);
@@ -76,7 +76,7 @@ namespace Fsl
         std::memcpy(m_heightData.data(), rawBitmap.Content(), rawBitmap.GetByteSize());
       };
 
-      float GetHeight(const uint32_t x, const uint32_t y) const
+      [[nodiscard]] float GetHeight(const uint32_t x, const uint32_t y) const
       {
         assert(x < m_dim);
         assert(y < m_dim);
@@ -85,7 +85,7 @@ namespace Fsl
         rpos.x = std::max(0, std::min(rpos.x, static_cast<int>(m_dim) - 1));
         rpos.y = std::max(0, std::min(rpos.y, static_cast<int>(m_dim) - 1));
         rpos /= glm::ivec2(UncheckedNumericCast<int>(m_scale));
-        return static_cast<float>(*(m_heightData.data() + (rpos.x + (rpos.y * m_dim)) * m_scale)) / 65535.0f;
+        return static_cast<float>(*(m_heightData.data() + (static_cast<std::size_t>(rpos.x + (rpos.y * m_dim)) * m_scale))) / 65535.0f;
       }
     };
   }
@@ -271,7 +271,7 @@ namespace Fsl
           vkCmdSetScissor(m_drawCmdBuffers[i], 0, 1, &scissor);
           vkCmdSetLineWidth(m_drawCmdBuffers[i], 1.0f);
 
-          VkDeviceSize offsets = 0;
+          const VkDeviceSize offsets = 0;
 
           // Skysphere
           vkCmdBindPipeline(m_drawCmdBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipelines.Skysphere.Get());
@@ -443,7 +443,7 @@ namespace Fsl
     };
 
 
-    std::vector<Vertex> vertices(PatchSize * PatchSize * 4);
+    std::vector<Vertex> vertices(static_cast<std::size_t>(PatchSize) * PatchSize * 4);
 
     const float wx = 2.0f;
     const float wy = 2.0f;
@@ -467,7 +467,7 @@ namespace Fsl
     const Bitmap heightBitmap = GetContentManager()->ReadBitmap("Textures/Terrain/terrain_heightmap_r16.ktx");
 
     // Calculate normals from height map using a sobel filter
-    HeightMap heightMap(heightBitmap, PatchSize);
+    const HeightMap heightMap(heightBitmap, PatchSize);
     for (uint32_t x = 0; x < PatchSize; ++x)
     {
       for (uint32_t y = 0; y < PatchSize; ++y)
@@ -498,7 +498,7 @@ namespace Fsl
 
     // Indices
     const uint32_t w = (PatchSize - 1);
-    std::vector<uint32_t> indices(w * w * 4);
+    std::vector<uint32_t> indices(static_cast<std::size_t>(w) * w * 4);
     {
       auto* pDst = indices.data();
       for (uint32_t x = 0; x < w; ++x)
@@ -518,8 +518,8 @@ namespace Fsl
     // meshes.terrain.indexCount = (PATCH_SIZE - 1) * (PATCH_SIZE - 1) * 4;
     const auto terrainIndexCount = (PatchSize - 1) * (PatchSize - 1) * 4;
 
-    const uint32_t vertexBufferSize = (PatchSize * PatchSize * 4) * sizeof(Vertex);
-    const uint32_t indexBufferSize = (w * w * 4) * sizeof(uint32_t);
+    const uint32_t vertexBufferSize = (static_cast<std::size_t>(PatchSize) * PatchSize * 4) * sizeof(Vertex);
+    const uint32_t indexBufferSize = (static_cast<std::size_t>(w) * w * 4) * sizeof(uint32_t);
 
     struct Buffers
     {
@@ -561,10 +561,10 @@ namespace Fsl
     FlushCommandBuffer(copyCmd, m_deviceQueue.Queue, true);
 
     // Transfer local stack data to m_meshes.Terrain
-    Willems::MeshLoader::MeshDescriptor meshDescriptor(UncheckedNumericCast<uint32_t>(vertices.size()), terrainIndexCount);
+    const Willems::MeshLoader::MeshDescriptor meshDescriptor(UncheckedNumericCast<uint32_t>(vertices.size()), terrainIndexCount);
     Willems::MeshLoader::MeshBufferInfo meshVertices(std::move(terrainVertices.Buffer), std::move(terrainVertices.Memory), vertices.size());
     Willems::MeshLoader::MeshBufferInfo meshIndices(std::move(terrainIndices.Buffer), std::move(terrainIndices.Memory), indices.size());
-    glm::vec3 meshDim;
+    const glm::vec3 meshDim{};
     m_meshes.Terrain.Reset(meshDescriptor, std::move(meshVertices), std::move(meshIndices), terrainIndexCount, meshDim);
   }
 
@@ -593,7 +593,7 @@ namespace Fsl
     // Results are saved in a host visible buffer for easy access by the application
     m_queryResult.Buffer.Reset(m_device.Get(), bufferCreateInfo);
 
-    VkMemoryRequirements memReqs = m_queryResult.Buffer.GetBufferMemoryRequirements();
+    const VkMemoryRequirements memReqs = m_queryResult.Buffer.GetBufferMemoryRequirements();
     memAlloc.allocationSize = memReqs.size;
     memAlloc.memoryTypeIndex = m_vulkanDevice.GetMemoryType(memReqs.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
     m_queryResult.Memory.Reset(m_device.Get(), memAlloc);

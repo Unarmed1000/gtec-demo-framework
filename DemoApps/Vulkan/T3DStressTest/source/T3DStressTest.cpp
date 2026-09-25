@@ -151,7 +151,7 @@ namespace Fsl
       FSLLOG3_INFO("tex1Size: {} textureRepeatCount: {} vertexCount: {} instanceCount: {} shareInstanceVertices: {} useTriangleStrip: {}", tex1Size,
                    textureRepeatCount, vertexCount, instanceCount, shareInstanceVertices, useTriangleStrip);
 
-      TextureRectangle texRect(PxRectangle(PxValue(0), PxValue(0), tex1Size.Width(), tex1Size.Height()), tex1Size);
+      const TextureRectangle texRect(PxRectangle(PxValue(0), PxValue(0), tex1Size.Width(), tex1Size.Height()), tex1Size);
       const NativeTextureArea texArea(Vulkan::VUTextureUtil::CalcTextureArea(texRect, textureRepeatCount, textureRepeatCount));
 
       Procedural::BasicMesh mesh;
@@ -209,7 +209,7 @@ namespace Fsl
     FSLLOG3_INFO("ManualInstances: {} LayerCount: {} HairDensity: {} DepthTest: {}", m_config.GetInstanceCount(), m_config.GetLayerCount(),
                  m_config.GetHairDensity(), m_config.GetEnableDepthTest());
 
-    auto contentManager = GetContentManager();
+    const auto contentManager = GetContentManager();
 
     const int furTextureDim = m_config.GetFurTextureDimensions();
 
@@ -220,11 +220,11 @@ namespace Fsl
     m_resources.MainDescriptorPool = CreateDescriptorPool(m_device, 5, 9, 6, maxFramesInFlight);
 
     {
-      Point2 vertexCount(m_config.GetVertexCountX(), m_config.GetVertexCountY());
-      auto tex1Size =
+      const Point2 vertexCount(m_config.GetVertexCountX(), m_config.GetVertexCountY());
+      const auto tex1Size =
         PxSize2D::Create(static_cast<int32_t>(m_resources.Tex1.GetExtent().width), static_cast<int32_t>(m_resources.Tex1.GetExtent().height));
-      auto mesh = CreateMesh(tex1Size, m_config.GetTextureRepeatCount(), vertexCount, m_config.GetInstanceCount(),
-                             m_config.GetShareInstanceVertices(), m_config.GetUseTriangleStrip());
+      const auto mesh = CreateMesh(tex1Size, m_config.GetTextureRepeatCount(), vertexCount, m_config.GetInstanceCount(),
+                                   m_config.GetShareInstanceVertices(), m_config.GetUseTriangleStrip());
       m_resources.MeshStuff = std::make_unique<MeshStuffRecord>(
         *contentManager, m_device, m_bufferManager, m_resources.MainDescriptorPool, maxFramesInFlight, mesh, m_resources.Tex1, m_resources.Tex2,
         m_config.GetUseHighShaderPrecision(), m_config.GetLightCount(), m_config.GetEnableDepthTest());
@@ -233,8 +233,8 @@ namespace Fsl
     {
       Vector3 lightDirection(0.0f, 0.0f, -1.0f);
       lightDirection.Normalize();
-      Vector3 lightColor(0.9f, 0.9f, 0.9f);
-      Vector3 ambientColor(0.2f, 0.2f, 0.2f);
+      const Vector3 lightColor(0.9f, 0.9f, 0.9f);
+      const Vector3 ambientColor(0.2f, 0.2f, 0.2f);
 
       {    // Prepare the shader
         auto& rRender = m_resources.MeshStuff->RenderVB;
@@ -263,7 +263,7 @@ namespace Fsl
 
   void T3DStressTest::FixedUpdate(const DemoTime& /*demoTime*/)
   {
-    Vector3 forceDirection(std::sin(m_radians), 0, 0);
+    const Vector3 forceDirection(std::sin(m_radians), 0, 0);
     m_displacement = m_gravity + forceDirection;
 
     m_radians += 0.01f;
@@ -395,7 +395,7 @@ namespace Fsl
         rRender.SetProjection(m_perspective);
         rRender.SetDisplacement(m_displacement);
 
-        float layerAdd = (m_config.GetLayerCount() > 1 ? 1.0f / static_cast<float>(m_config.GetLayerCount() - 1) : 1);
+        const float layerAdd = (m_config.GetLayerCount() > 1 ? 1.0f / static_cast<float>(m_config.GetLayerCount() - 1) : 1);
         float layer = 0.0f;
 
         rRender.Bind(hCmdBuffer, frameIndex);

@@ -56,7 +56,7 @@ namespace
 
 TEST(TestReadOnlySpan, Construct)
 {
-  ReadOnlySpan<char> span;
+  const ReadOnlySpan<char> span;
 
   EXPECT_TRUE(span.empty());
   EXPECT_EQ(span.data(), nullptr);
@@ -67,8 +67,8 @@ TEST(TestReadOnlySpan, Construct)
 TEST(TestReadOnlySpan, Construct_FromZeroTerminated)
 {
   const auto* const psz = "Hello world";
-  auto lenPsz = std::strlen(psz);
-  ReadOnlySpan<char> span(psz, lenPsz);
+  const auto lenPsz = std::strlen(psz);
+  const ReadOnlySpan<char> span(psz, lenPsz);
 
   EXPECT_FALSE(span.empty());
   EXPECT_NE(span.data(), nullptr);
@@ -78,8 +78,8 @@ TEST(TestReadOnlySpan, Construct_FromZeroTerminated)
 
 TEST(TestReadOnlySpan, Construct_FromStr)
 {
-  std::string str("Hello world");
-  ReadOnlySpan<char> span = Convert(str);
+  const std::string str("Hello world");
+  const ReadOnlySpan<char> span = Convert(str);
 
   EXPECT_FALSE(span.empty());
   EXPECT_NE(span.data(), nullptr);
@@ -93,7 +93,7 @@ TEST(TestReadOnlySpan, Construct_FromStr)
 TEST(TestReadOnlySpan, SubSpan)
 {
   const char* const psz = "0123456789";
-  ReadOnlySpan<char> span(psz, strlen(psz));
+  const ReadOnlySpan<char> span(psz, strlen(psz));
 
   EXPECT_TRUE(SpanUtil::ValueEquals(span, span.subspan(0)));
   EXPECT_TRUE(SpanUtil::ValueEquals(ReadOnlySpan<char>("123456789", 9), span.subspan(1u)));
@@ -110,7 +110,7 @@ TEST(TestReadOnlySpan, SubSpan)
 
 TEST(TestReadOnlySpan, SubSpan_Empty)
 {
-  ReadOnlySpan<char> span;
+  const ReadOnlySpan<char> span;
   EXPECT_TRUE(SpanUtil::ValueEquals(ReadOnlySpan<char>(), span.subspan(0)));
 }
 
@@ -118,7 +118,7 @@ TEST(TestReadOnlySpan, SubSpan_Empty)
 
 TEST(TestReadOnlySpan, SubSpan_LastChar1)
 {
-  ReadOnlySpan<char> span("0123456789", 10);
+  const ReadOnlySpan<char> span("0123456789", 10);
   const auto subspan = span.subspan(10u, 0u);
   EXPECT_TRUE(subspan.empty());
 }
@@ -127,7 +127,7 @@ TEST(TestReadOnlySpan, SubSpan_LastChar1)
 
 TEST(TestReadOnlySpan, SubSpan_LastChar2)
 {
-  ReadOnlySpan<char> span("0123456789", 10);
+  const ReadOnlySpan<char> span("0123456789", 10);
   const auto subspan = span.subspan(10u);
   EXPECT_TRUE(subspan.empty());
 }
@@ -136,7 +136,7 @@ TEST(TestReadOnlySpan, SubSpan_LastChar2)
 
 TEST(TestReadOnlySpan, SubSpan_InvalidPos)
 {
-  ReadOnlySpan<char> span("0123456789", 10);
+  const ReadOnlySpan<char> span("0123456789", 10);
 
   EXPECT_THROW(span.subspan(10u, 1u), std::out_of_range);
   EXPECT_THROW(span.subspan(11u), std::out_of_range);
@@ -149,7 +149,7 @@ TEST(TestReadOnlySpan, SubSpan_InvalidPos)
 TEST(TestReadOnlySpan, UncheckedSubSpan)
 {
   const char* const psz = "0123456789";
-  ReadOnlySpan<char> span(psz, strlen(psz));
+  const ReadOnlySpan<char> span(psz, strlen(psz));
 
   EXPECT_TRUE(SpanUtil::ValueEquals(span, span.unchecked_subspan(0, span.size())));
   EXPECT_TRUE(SpanUtil::ValueEquals(ReadOnlySpan<char>("123456789", 9), span.unchecked_subspan(1u, span.size() - 1u)));
@@ -166,7 +166,7 @@ TEST(TestReadOnlySpan, UncheckedSubSpan)
 
 TEST(TestReadOnlySpan, UncheckedSubSpan_Empty)
 {
-  ReadOnlySpan<char> span;
+  const ReadOnlySpan<char> span;
   EXPECT_TRUE(SpanUtil::ValueEquals(ReadOnlySpan<char>(), span.unchecked_subspan(0u, 0u)));
 }
 
@@ -177,7 +177,7 @@ TEST(TestReadOnlySpan, UncheckedSubSpan_Empty)
 TEST(TestReadOnlySpan, ClampedSubSpan)
 {
   const char* const psz = "0123456789";
-  ReadOnlySpan<char> span(psz, strlen(psz));
+  const ReadOnlySpan<char> span(psz, strlen(psz));
 
   EXPECT_TRUE(SpanUtil::ValueEquals(span, span.clamped_subspan(0)));
   EXPECT_TRUE(SpanUtil::ValueEquals(ReadOnlySpan<char>("123456789", 9), span.clamped_subspan(1u)));
@@ -192,34 +192,34 @@ TEST(TestReadOnlySpan, ClampedSubSpan)
 
 TEST(TestReadOnlySpan, ClampedSubSpan_Empty)
 {
-  ReadOnlySpan<char> span;
+  const ReadOnlySpan<char> span;
   EXPECT_TRUE(SpanUtil::ValueEquals(ReadOnlySpan<char>(), span.clamped_subspan(0)));
 }
 
 TEST(TestReadOnlySpan, ClampedSubSpan_Last1)
 {
-  ReadOnlySpan<char> span("0123456789", 10);
+  const ReadOnlySpan<char> span("0123456789", 10);
   const auto subspan = span.clamped_subspan(10u, 0u);
   EXPECT_TRUE(subspan.empty());
 }
 
 TEST(TestReadOnlySpan, ClampedSubSpan_Last2)
 {
-  ReadOnlySpan<char> span("0123456789", 10);
+  const ReadOnlySpan<char> span("0123456789", 10);
   const auto subspan = span.clamped_subspan(10u);
   EXPECT_TRUE(subspan.empty());
 }
 
 TEST(TestReadOnlySpan, ClampedSubSpan_InvalidPos1)
 {
-  ReadOnlySpan<char> span("0123456789", 10);
-  ReadOnlySpan<char> subspan = span.clamped_subspan(11u);
+  const ReadOnlySpan<char> span("0123456789", 10);
+  const ReadOnlySpan<char> subspan = span.clamped_subspan(11u);
   EXPECT_TRUE(subspan.empty());
 }
 
 TEST(TestReadOnlySpan, ClampedSubSpan_InvalidPos2)
 {
-  ReadOnlySpan<char> span("0123456789", 10);
+  const ReadOnlySpan<char> span("0123456789", 10);
 
   EXPECT_TRUE(span.clamped_subspan(10u, 0u).empty());
   EXPECT_TRUE(span.clamped_subspan(10u, 1u).empty());
@@ -233,7 +233,7 @@ TEST(TestReadOnlySpan, ClampedSubSpan_InvalidPos2)
 
 TEST(TestReadOnlySpan, UncheckedFirst)
 {
-  ReadOnlySpan<char> span("0123456789", 10);
+  const ReadOnlySpan<char> span("0123456789", 10);
   EXPECT_EQ(span.unchecked_first(0u).size(), 0u);
   EXPECT_EQ(span.unchecked_first(8u).size(), 8u);
   EXPECT_EQ(span.unchecked_first(9u).size(), 9u);
@@ -251,7 +251,7 @@ TEST(TestReadOnlySpan, UncheckedFirst)
 
 TEST(TestReadOnlySpan, First)
 {
-  ReadOnlySpan<char> span("0123456789", 10);
+  const ReadOnlySpan<char> span("0123456789", 10);
   EXPECT_EQ(span.first(0u).size(), 0u);
   EXPECT_EQ(span.first(8u).size(), 8u);
   EXPECT_EQ(span.first(9u).size(), 9u);
@@ -267,7 +267,7 @@ TEST(TestReadOnlySpan, First)
 
 TEST(TestReadOnlySpan, First_InvalidPos)
 {
-  ReadOnlySpan<char> span("0123456789", 10);
+  const ReadOnlySpan<char> span("0123456789", 10);
   EXPECT_THROW(span.first(11u), std::out_of_range);
 }
 
@@ -277,7 +277,7 @@ TEST(TestReadOnlySpan, First_InvalidPos)
 
 TEST(TestReadOnlySpan, ClampedFirst)
 {
-  ReadOnlySpan<char> span("0123456789", 10);
+  const ReadOnlySpan<char> span("0123456789", 10);
   EXPECT_EQ(span.clamped_first(0u).size(), 0u);
   EXPECT_EQ(span.clamped_first(8u).size(), 8u);
   EXPECT_EQ(span.clamped_first(9u).size(), 9u);
@@ -293,7 +293,7 @@ TEST(TestReadOnlySpan, ClampedFirst)
 
 TEST(TestReadOnlySpan, ClampedFirst_InvalidPos)
 {
-  ReadOnlySpan<char> span("0123456789", 10);
+  const ReadOnlySpan<char> span("0123456789", 10);
   EXPECT_EQ(span.clamped_first(11u).size(), 10u);
 }
 
@@ -303,7 +303,7 @@ TEST(TestReadOnlySpan, ClampedFirst_InvalidPos)
 
 TEST(TestReadOnlySpan, UncheckedLast)
 {
-  ReadOnlySpan<char> span("0123456789", 10);
+  const ReadOnlySpan<char> span("0123456789", 10);
   EXPECT_EQ(span.unchecked_last(0u).size(), 0u);
   EXPECT_EQ(span.unchecked_last(8u).size(), 8u);
   EXPECT_EQ(span.unchecked_last(9u).size(), 9u);
@@ -321,7 +321,7 @@ TEST(TestReadOnlySpan, UncheckedLast)
 
 TEST(TestReadOnlySpan, Last)
 {
-  ReadOnlySpan<char> span("0123456789", 10);
+  const ReadOnlySpan<char> span("0123456789", 10);
   EXPECT_EQ(span.last(0u).size(), 0u);
   EXPECT_EQ(span.last(8u).size(), 8u);
   EXPECT_EQ(span.last(9u).size(), 9u);
@@ -337,7 +337,7 @@ TEST(TestReadOnlySpan, Last)
 
 TEST(TestReadOnlySpan, CheckedLast_InvalidPos)
 {
-  ReadOnlySpan<char> span("0123456789", 10);
+  const ReadOnlySpan<char> span("0123456789", 10);
   EXPECT_THROW(span.last(11u), std::out_of_range);
 }
 
@@ -347,7 +347,7 @@ TEST(TestReadOnlySpan, CheckedLast_InvalidPos)
 
 TEST(TestReadOnlySpan, ClampedLast)
 {
-  ReadOnlySpan<char> span("0123456789", 10);
+  const ReadOnlySpan<char> span("0123456789", 10);
   EXPECT_EQ(span.clamped_last(0u).size(), 0u);
   EXPECT_EQ(span.clamped_last(8u).size(), 8u);
   EXPECT_EQ(span.clamped_last(9u).size(), 9u);
@@ -363,7 +363,7 @@ TEST(TestReadOnlySpan, ClampedLast)
 
 TEST(TestReadOnlySpan, ClampedLast_InvalidPos)
 {
-  ReadOnlySpan<char> span("0123456789", 10);
+  const ReadOnlySpan<char> span("0123456789", 10);
   EXPECT_EQ(span.clamped_last(11u).size(), 10u);
 }
 
@@ -374,7 +374,7 @@ TEST(TestReadOnlySpan, ClampedLast_InvalidPos)
 TEST(TestReadOnlySpan, front)
 {
   std::string str("Hello world");
-  ReadOnlySpan<char> span = Convert(str);
+  const ReadOnlySpan<char> span = Convert(str);
 
   EXPECT_EQ(span.front(), str.front());
 }
@@ -383,7 +383,7 @@ TEST(TestReadOnlySpan, front)
 TEST(TestReadOnlySpan, back)
 {
   std::string str("Hello world");
-  ReadOnlySpan<char> span = Convert(str);
+  const ReadOnlySpan<char> span = Convert(str);
 
   EXPECT_EQ(span.back(), str.back());
 }
@@ -392,7 +392,7 @@ TEST(TestReadOnlySpan, back)
 TEST(TestReadOnlySpan, opIndex)
 {
   std::string str("Hello world");
-  ReadOnlySpan<char> span = Convert(str);
+  const ReadOnlySpan<char> span = Convert(str);
 
   for (std::size_t i = 0; i < str.size(); ++i)
   {
@@ -404,7 +404,7 @@ TEST(TestReadOnlySpan, opIndex)
 TEST(TestReadOnlySpan, At)
 {
   std::string str("Hello world");
-  ReadOnlySpan<char> span = Convert(str);
+  const ReadOnlySpan<char> span = Convert(str);
 
   for (std::size_t i = 0; i < str.size(); ++i)
   {
@@ -415,8 +415,8 @@ TEST(TestReadOnlySpan, At)
 
 TEST(TestReadOnlySpan, At_OutOfBounds)
 {
-  std::string str("Hello world");
-  ReadOnlySpan<char> span = Convert(str);
+  const std::string str("Hello world");
+  const ReadOnlySpan<char> span = Convert(str);
 
   EXPECT_THROW(span.at(str.size()), std::out_of_range);
 }
@@ -424,8 +424,8 @@ TEST(TestReadOnlySpan, At_OutOfBounds)
 
 TEST(TestReadOnlySpan, At_Empty_OutOfBounds)
 {
-  std::string str;
-  ReadOnlySpan<char> span = Convert(str);
+  const std::string str;
+  const ReadOnlySpan<char> span = Convert(str);
 
   EXPECT_THROW(span.at(str.size()), std::out_of_range);
 }
@@ -433,13 +433,13 @@ TEST(TestReadOnlySpan, At_Empty_OutOfBounds)
 
 TEST(TestReadOnlySpan, opEqual_Empty)
 {
-  std::string str1;
-  std::string str2;
-  ReadOnlySpan<char> strView1 = Convert(str1);
-  ReadOnlySpan<char> strView2 = Convert(str2);
+  const std::string str1;
+  const std::string str2;
+  const ReadOnlySpan<char> strView1 = Convert(str1);
+  const ReadOnlySpan<char> strView2 = Convert(str2);
 
-  std::span<const char> q1 = strView1;
-  std::span<const char> q2 = strView2;
+  const std::span<const char> q1 = strView1;
+  const std::span<const char> q2 = strView2;
 
   // EXPECT_TRUE(SpanUtil::ValueCompare(strView1, strView2) == 0);
   EXPECT_TRUE(SpanUtil::ValueCompare(q1, q2) == 0);
@@ -452,7 +452,7 @@ TEST(TestReadOnlySpan, opEqual_Empty)
 
 TEST(TestReadOnlySpan, begin_empty)
 {
-  ReadOnlySpan<char> span;
+  const ReadOnlySpan<char> span;
 
   ASSERT_EQ(span.end(), span.begin());
 }
@@ -462,7 +462,7 @@ TEST(TestReadOnlySpan, begin_empty)
 TEST(TestReadOnlySpan, begin_iterator_to_end)
 {
   const std::array<uint8_t, 11> content = {'H', 'e', 'l', 'l', 'o', ' ', 'w', 'o', 'r', 'l', 'd'};
-  ReadOnlySpan<uint8_t> span = Convert(content);
+  const ReadOnlySpan<uint8_t> span = Convert(content);
 
   // NOLINTNEXTLINE(readability-qualified-auto)
   auto itrSource = content.begin();
@@ -470,7 +470,7 @@ TEST(TestReadOnlySpan, begin_iterator_to_end)
   const auto itrSourceEnd = content.end();
 
   auto itr = span.begin();
-  auto itrEnd = span.end();
+  const auto itrEnd = span.end();
   while (itr != itrEnd && itrSource != itrSourceEnd)
   {
     EXPECT_EQ(*itrSource, *itr);
@@ -486,7 +486,7 @@ TEST(TestReadOnlySpan, begin_iterator_to_end)
 TEST(TestReadOnlySpan, begin_foreach_with_compare)
 {
   const std::array<uint8_t, 11> content = {'H', 'e', 'l', 'l', 'o', ' ', 'w', 'o', 'r', 'l', 'd'};
-  ReadOnlySpan<uint8_t> span = Convert(content);
+  const ReadOnlySpan<uint8_t> span = Convert(content);
 
 
   {    // compare span with content using a 'foreach'
@@ -494,7 +494,7 @@ TEST(TestReadOnlySpan, begin_foreach_with_compare)
     auto itrSource = content.begin();
     // NOLINTNEXTLINE(readability-qualified-auto)
     const auto itrSourceEnd = content.end();
-    for (auto entry : span)
+    for (const auto entry : span)
     {
       ASSERT_TRUE(itrSourceEnd != itrSource);
       EXPECT_EQ(*itrSource, entry);

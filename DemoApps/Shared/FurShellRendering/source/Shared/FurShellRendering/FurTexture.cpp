@@ -43,7 +43,7 @@ namespace Fsl
   std::vector<uint8_t> FurTexture::GenerateWave(const int width, const int height, const float /*density*/, const int /*numLayers*/)
   {
     // read the width and height of the texture
-    int totalPixels = width * height;
+    const int totalPixels = width * height;
     const int cbArray = totalPixels * 4;
 
     // an array to hold our pixels
@@ -53,7 +53,7 @@ namespace Fsl
     {
       for (int x = 0; x < width; ++x)
       {
-        float maxLayerN = 0.2f + 0.8f * (std::sin(static_cast<float>(x) / static_cast<float>(height) * 20.0f) / 2.0f + 0.5f);
+        const float maxLayerN = 0.2f + 0.8f * (std::sin(static_cast<float>(x) / static_cast<float>(height) * 20.0f) / 2.0f + 0.5f);
 
         const int dstPixelIndex = (y * width * 4) + (x * 4);
         assert((dstPixelIndex % 4) == 0);
@@ -70,7 +70,7 @@ namespace Fsl
   std::vector<uint8_t> FurTexture::Generate(const int width, const int height, const float density, const int numLayers)
   {
     // read the width and height of the texture
-    int totalPixels = width * height;
+    const int totalPixels = width * height;
 
     const int cbArray = totalPixels * 4;
 
@@ -99,7 +99,7 @@ namespace Fsl
       y = rand() % height;
 
       // compute max layer
-      int maxLayer = i / strandsPerLayer;
+      const int maxLayer = i / strandsPerLayer;
       // normalize into [0..1] range
       float maxLayerN = static_cast<float>(maxLayer) / static_cast<float>(numLayers);
 
@@ -127,7 +127,7 @@ namespace Fsl
   std::vector<uint8_t> FurTexture::GenerateSmooth(const int width, const int height, const float density, const int numLayers)
   {
     // read the width and height of the texture
-    int totalPixels = width * height;
+    const int totalPixels = width * height;
 
     const int cbArray = totalPixels * 4;
 
@@ -158,7 +158,7 @@ namespace Fsl
       y = rand() % height;
 
       // compute max layer
-      int maxLayer = i / strandsPerLayer;
+      const int maxLayer = i / strandsPerLayer;
       // normalize into [0..1] range
       float maxLayerN = static_cast<float>(maxLayer) / static_cast<float>(numLayers);
 

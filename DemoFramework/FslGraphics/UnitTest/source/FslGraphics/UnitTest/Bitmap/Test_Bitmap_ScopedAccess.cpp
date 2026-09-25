@@ -88,7 +88,7 @@ TYPED_TEST(TestFixtureFslGraphics_Bitmap, CheckScopedDirectReadAccess)
   const auto minStride = PixelFormatUtil::CalcMinimumStride(widthPx, pixelFormat);
   const auto bufferLength = heightPx.Value * minStride;
 
-  Bitmap bitmap = template_t::GetBasic4X2(bitmapOrigin);
+  const Bitmap bitmap = template_t::GetBasic4X2(bitmapOrigin);
   const Bitmap::ScopedDirectReadAccess directAccess(bitmap);
 
   // The bitmap defaults to UpperLeft if the origin is undefined.

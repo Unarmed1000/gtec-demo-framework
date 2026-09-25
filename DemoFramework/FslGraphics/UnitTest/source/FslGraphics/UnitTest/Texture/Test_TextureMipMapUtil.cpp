@@ -66,10 +66,12 @@ namespace
 
   uint32_t BoxFilter(const uint32_t pixelColor00, const uint32_t pixelColor10, const uint32_t pixelColor01, const uint32_t pixelColor11)
   {
-    auto c0 = BoxFilterChannel((pixelColor00 >> 24) & 0xFF, (pixelColor10 >> 24) & 0xFF, (pixelColor01 >> 24) & 0xFF, +(pixelColor11 >> 24) & 0xFF);
-    auto c1 = BoxFilterChannel((pixelColor00 >> 16) & 0xFF, (pixelColor10 >> 16) & 0xFF, (pixelColor01 >> 16) & 0xFF, +(pixelColor11 >> 16) & 0xFF);
-    auto c2 = BoxFilterChannel((pixelColor00 >> 8) & 0xFF, (pixelColor10 >> 8) & 0xFF, (pixelColor01 >> 8) & 0xFF, +(pixelColor11 >> 8) & 0xFF);
-    auto c3 = BoxFilterChannel(pixelColor00 & 0xFF, pixelColor10 & 0xFF, pixelColor01 & 0xFF, pixelColor11 & 0xFF);
+    const auto c0 =
+      BoxFilterChannel((pixelColor00 >> 24) & 0xFF, (pixelColor10 >> 24) & 0xFF, (pixelColor01 >> 24) & 0xFF, +(pixelColor11 >> 24) & 0xFF);
+    const auto c1 =
+      BoxFilterChannel((pixelColor00 >> 16) & 0xFF, (pixelColor10 >> 16) & 0xFF, (pixelColor01 >> 16) & 0xFF, +(pixelColor11 >> 16) & 0xFF);
+    const auto c2 = BoxFilterChannel((pixelColor00 >> 8) & 0xFF, (pixelColor10 >> 8) & 0xFF, (pixelColor01 >> 8) & 0xFF, +(pixelColor11 >> 8) & 0xFF);
+    const auto c3 = BoxFilterChannel(pixelColor00 & 0xFF, pixelColor10 & 0xFF, pixelColor01 & 0xFF, pixelColor11 & 0xFF);
     return (c0 << 24) | (c1 << 16) | (c2 << 8) | c3;
   }
 }
@@ -79,7 +81,7 @@ TEST(TestTexture_TextureMipMapUtil, GenerateMipMaps_From1X1Bitmap_Box)
   const uint32_t pixelColor = 0x80604020;
   Bitmap src(1, 1, PixelFormat::R8G8B8A8_UNORM, BitmapOrigin::UpperLeft);
   src.SetNativePixel(0, 0, pixelColor);
-  Texture result = TextureMipMapUtil::GenerateMipMaps(src, TextureMipMapFilter::Box);
+  const Texture result = TextureMipMapUtil::GenerateMipMaps(src, TextureMipMapFilter::Box);
 
   EXPECT_EQ(1u, result.GetLayers());
   EXPECT_EQ(1u, result.GetLevels());
@@ -99,7 +101,7 @@ TEST(TestTexture_TextureMipMapUtil, GenerateMipMaps_From1X1Bitmap_Nearest)
   const uint32_t pixelColor = 0x80604020;
   Bitmap src(1, 1, PixelFormat::R8G8B8A8_UNORM, BitmapOrigin::UpperLeft);
   src.SetNativePixel(0, 0, pixelColor);
-  Texture result = TextureMipMapUtil::GenerateMipMaps(src, TextureMipMapFilter::Nearest);
+  const Texture result = TextureMipMapUtil::GenerateMipMaps(src, TextureMipMapFilter::Nearest);
 
   EXPECT_EQ(1u, result.GetLayers());
   EXPECT_EQ(1u, result.GetLevels());
@@ -125,7 +127,7 @@ TEST(TestTexture_TextureMipMapUtil, GenerateMipMaps_From2X2Bitmap_Box)
   src.SetNativePixel(1, 0, pixelColor10);
   src.SetNativePixel(0, 1, pixelColor01);
   src.SetNativePixel(1, 1, pixelColor11);
-  Texture result = TextureMipMapUtil::GenerateMipMaps(src, TextureMipMapFilter::Box);
+  const Texture result = TextureMipMapUtil::GenerateMipMaps(src, TextureMipMapFilter::Box);
 
   EXPECT_EQ(1u, result.GetLayers());
   EXPECT_EQ(2u, result.GetLevels());
@@ -183,7 +185,7 @@ TEST(TestTexture_TextureMipMapUtil, GenerateMipMaps_From4X4Bitmap_Box)
   src.SetNativePixel(1, 3, pixelColor13);
   src.SetNativePixel(2, 3, pixelColor23);
   src.SetNativePixel(3, 3, pixelColor33);
-  Texture result = TextureMipMapUtil::GenerateMipMaps(src, TextureMipMapFilter::Box);
+  const Texture result = TextureMipMapUtil::GenerateMipMaps(src, TextureMipMapFilter::Box);
 
   EXPECT_EQ(1u, result.GetLayers());
   EXPECT_EQ(3u, result.GetLevels());

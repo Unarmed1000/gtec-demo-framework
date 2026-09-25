@@ -40,7 +40,7 @@ namespace Fsl::DataBinding
   public:
     virtual ~IObservableObject() = default;
 
-    virtual DataBinding::DataBindingInstanceHandle GetSourceInstanceHandle() const = 0;
+    [[nodiscard]] virtual DataBinding::DataBindingInstanceHandle GetSourceInstanceHandle() const = 0;
   };
 }
 

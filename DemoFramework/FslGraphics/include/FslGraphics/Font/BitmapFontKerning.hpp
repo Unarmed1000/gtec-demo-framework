@@ -62,7 +62,7 @@ namespace Fsl
       return !(*this == rhs);
     }
 
-    constexpr uint64_t GetId() const
+    [[nodiscard]] constexpr uint64_t GetId() const
     {
       return (static_cast<uint64_t>(First) << 32) | static_cast<uint64_t>(Second);
     }

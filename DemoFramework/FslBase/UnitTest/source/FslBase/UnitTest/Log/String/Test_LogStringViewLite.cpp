@@ -43,7 +43,7 @@ namespace
 
 TEST(TestLog_String_LogStringViewLite, Log)
 {
-  StringViewLite str("hello");
+  const StringViewLite str("hello");
 
   std::stringstream stream;
   stream << str;
@@ -54,7 +54,7 @@ TEST(TestLog_String_LogStringViewLite, Log)
 
 TEST(TestLog_String_LogStringViewLite, LogEmpty)
 {
-  StringViewLite str;
+  const StringViewLite str;
 
   std::stringstream stream;
   stream << str;

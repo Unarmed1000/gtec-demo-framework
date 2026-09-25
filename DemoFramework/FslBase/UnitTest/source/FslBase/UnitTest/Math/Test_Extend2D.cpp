@@ -89,7 +89,7 @@ TEST(TestMath_Extent2D, Construct_Signed_Negative)
 TEST(TestMath_Extent2D, Construct_Point2)
 {
   const Point2 point(320, 240);
-  Extent2D value(point);
+  const Extent2D value(point);
 
   EXPECT_EQ(static_cast<uint32_t>(point.X), value.Width);
   EXPECT_EQ(static_cast<uint32_t>(point.Y), value.Height);
@@ -105,12 +105,12 @@ TEST(TestMath_Extent2D, Construct_Point2_Negative)
 
 TEST(TestMath_Extent2D, AddEquals)
 {
-  uint32_t width1 = 320;
-  uint32_t height1 = 240;
-  Extent2D value1(width1, height1);
+  const uint32_t width1 = 320;
+  const uint32_t height1 = 240;
+  const Extent2D value1(width1, height1);
 
-  uint32_t width2 = 200;
-  uint32_t height2 = 100;
+  const uint32_t width2 = 200;
+  const uint32_t height2 = 100;
   Extent2D value2(width2, height2);
 
   value2 += value1;
@@ -124,12 +124,12 @@ TEST(TestMath_Extent2D, AddEquals)
 
 TEST(TestMath_Extent2D, SubEquals)
 {
-  uint32_t width1 = 320;
-  uint32_t height1 = 240;
-  Extent2D value1(width1, height1);
+  const uint32_t width1 = 320;
+  const uint32_t height1 = 240;
+  const Extent2D value1(width1, height1);
 
-  uint32_t width2 = 200;
-  uint32_t height2 = 100;
+  const uint32_t width2 = 200;
+  const uint32_t height2 = 100;
   Extent2D value2(width2, height2);
 
   value2 -= value1;
@@ -143,12 +143,12 @@ TEST(TestMath_Extent2D, SubEquals)
 
 TEST(TestMath_Extent2D, MultEquals)
 {
-  uint32_t width1 = 2;
-  uint32_t height1 = 4;
-  Extent2D value1(width1, height1);
+  const uint32_t width1 = 2;
+  const uint32_t height1 = 4;
+  const Extent2D value1(width1, height1);
 
-  uint32_t width2 = 200;
-  uint32_t height2 = 100;
+  const uint32_t width2 = 200;
+  const uint32_t height2 = 100;
   Extent2D value2(width2, height2);
 
   value2 *= value1;
@@ -162,10 +162,10 @@ TEST(TestMath_Extent2D, MultEquals)
 
 TEST(TestMath_Extent2D, MultEqual)
 {
-  int multBy = 2;
+  const int multBy = 2;
 
-  uint32_t width = 200;
-  uint32_t height = 100;
+  const uint32_t width = 200;
+  const uint32_t height = 100;
   Extent2D value(width, height);
 
   value *= multBy;
@@ -177,8 +177,8 @@ TEST(TestMath_Extent2D, MultEqual)
 
 TEST(TestMath_Extent2D, Equal)
 {
-  Extent2D value1(320, 240);
-  Extent2D value2(320, 240);
+  const Extent2D value1(320, 240);
+  const Extent2D value2(320, 240);
 
   EXPECT_EQ(value1, value2);
 }
@@ -186,9 +186,9 @@ TEST(TestMath_Extent2D, Equal)
 
 TEST(TestMath_Extent2D, NotEqual)
 {
-  Extent2D value1(320, 240);
-  Extent2D value2(320, 241);
-  Extent2D value3(321, 240);
+  const Extent2D value1(320, 240);
+  const Extent2D value2(320, 241);
+  const Extent2D value3(321, 240);
 
   EXPECT_NE(value1, value2);
   EXPECT_NE(value1, value3);
@@ -197,7 +197,7 @@ TEST(TestMath_Extent2D, NotEqual)
 
 TEST(TestMath_Extent2D, Zero)
 {
-  Extent2D value = Extent2D::Zero();
+  const Extent2D value = Extent2D::Zero();
 
   EXPECT_EQ(0u, value.Width);
   EXPECT_EQ(0u, value.Height);

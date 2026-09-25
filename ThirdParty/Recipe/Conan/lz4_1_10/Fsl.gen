@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<FslBuildGen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../../FslBuildGen.xsd">
+  <!-- lz4 acquired from Conan. Conan recipes can only be used with the CMake generator with find package enabled, for other generators the package is not supported -->
+  <ExternalLibrary Name="Recipe.Conan.lz4_1_10" CreationYear="2026">
+    <Default.Platform.Supported Value="false"/>
+    <Platform Name="Ubuntu;Windows" Supported="true">
+      <ExperimentalRecipe Name="lz4" Version="1.10.0" FindTargetName="LZ4::lz4_static">
+        <Pipeline>
+          <ConanInstall Reference="lz4/1.10.0" Options="-o lz4/*:shared=False"/>
+        </Pipeline>
+        <Installation>
+          <Path Name="lz4-config.cmake" Method="IsFile"/>
+        </Installation>
+      </ExperimentalRecipe>
+    </Platform>
+  </ExternalLibrary>
+</FslBuildGen>

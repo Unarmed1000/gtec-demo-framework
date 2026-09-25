@@ -49,7 +49,7 @@ namespace Fsl
     OptionParser();
     ~OptionParser() override;
 
-    DemoScene GetScene() const
+    [[nodiscard]] DemoScene GetScene() const
     {
       return m_scene;
     }

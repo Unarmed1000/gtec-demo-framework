@@ -70,7 +70,7 @@ namespace Fsl
     }
 
 
-    bool IsValid() const
+    [[nodiscard]] bool IsValid() const
     {
       return GroupType != ServiceGroupType::Invalid && ServiceHost && MessageQueue;
     }

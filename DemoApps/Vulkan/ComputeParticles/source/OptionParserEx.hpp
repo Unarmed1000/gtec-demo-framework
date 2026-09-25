@@ -42,7 +42,7 @@ namespace Fsl
   public:
     OptionParserEx();
 
-    int32_t GetParticleCount() const
+    [[nodiscard]] int32_t GetParticleCount() const
     {
       return m_particleCount;
     }

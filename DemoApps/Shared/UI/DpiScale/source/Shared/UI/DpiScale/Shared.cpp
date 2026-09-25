@@ -108,9 +108,9 @@ namespace Fsl
                               const SpriteNativeAreaCalc& spriteNativeAreaCalc, const IO::Path& path, const uint32_t imageDpi,
                               const uint32_t densityDpi)
     {
-      IO::Path pathPNG(path + ".png");
-      IO::Path pathBTA(path + ".bta");
-      IO::Path pathFBK(path + "_Font.nbf");
+      const IO::Path pathPNG(path + ".png");
+      const IO::Path pathBTA(path + ".bta");
+      const IO::Path pathFBK(path + "_Font.nbf");
 
       Resources resources;
 
@@ -159,7 +159,7 @@ namespace Fsl
     , m_displayMetrics(config.WindowMetrics)
     , m_exampleYPosition(TimeSpan::FromMilliseconds(400), TransitionType::Smooth)
   {
-    auto optionParser = config.GetOptions<OptionParser>();
+    const auto optionParser = config.GetOptions<OptionParser>();
     const bool enableTestPattern = optionParser->GetEnableTestPattern();
     const bool enableUITestPattern = optionParser->GetEnableUITestPattern();
 
@@ -167,8 +167,8 @@ namespace Fsl
     FSLLOG3_INFO("windowMetrics.DensityDpi: {}", config.WindowMetrics.DensityDpi);
     FSLLOG3_INFO("windowMetrics.DensityScaleFactor: {}", config.WindowMetrics.DensityScaleFactor);
 
-    auto nativeGraphics = config.DemoServiceProvider.Get<IGraphicsService>()->GetNativeGraphics();
-    auto contentManager = config.DemoServiceProvider.Get<IContentManager>();
+    const auto nativeGraphics = config.DemoServiceProvider.Get<IGraphicsService>()->GetNativeGraphics();
+    const auto contentManager = config.DemoServiceProvider.Get<IContentManager>();
 
     FSLLOG3_INFO("Preparing resources");
     const auto& spriteNativeAreaCalc = m_uiExtension->GetSpriteNativeAreaCalc();
@@ -179,28 +179,28 @@ namespace Fsl
 
     FSLLOG3_INFO("Preparing UI");
     {    // Build a simple UI
-      auto windowContext = m_uiExtension->GetContext();
+      const auto windowContext = m_uiExtension->GetContext();
 
-      auto uiControlFactory = UI::Theme::ThemeSelector::CreateControlFactory(*m_uiExtension);
+      const auto uiControlFactory = UI::Theme::ThemeSelector::CreateControlFactory(*m_uiExtension);
       UI::Theme::IThemeControlFactory& uiFactory = *uiControlFactory;
 
       // We use the full fill texture here to get a gradient rendered.
       m_fillSprite = uiFactory.GetResources().GetFillSprite();
 
-      auto dividerSprite = uiFactory.GetResources().GetDividerNineSliceSprite();
+      const auto dividerSprite = uiFactory.GetResources().GetDividerNineSliceSprite();
 
       m_uiRecord = CreateUI(windowContext, uiFactory, config.WindowMetrics.DensityDpi, enableTestPattern, enableUITestPattern);
 
-      auto background = uiFactory.CreateLeftBar(m_uiRecord.MainLayout);
+      const auto background = uiFactory.CreateLeftBar(m_uiRecord.MainLayout);
 
-      auto imageLine = uiFactory.CreateImage(dividerSprite);
+      const auto imageLine = uiFactory.CreateImage(dividerSprite);
       imageLine->SetContent(dividerSprite);
       imageLine->SetAlignmentX(UI::ItemAlignment::Stretch);
       imageLine->SetAlignmentY(UI::ItemAlignment::Stretch);
       imageLine->SetRotateImageCW(true);
       imageLine->SetContentColor(LocalConfig::DividerColor);
 
-      auto imageLineHorizontal = uiFactory.CreateImage(dividerSprite);
+      const auto imageLineHorizontal = uiFactory.CreateImage(dividerSprite);
       imageLineHorizontal->SetAlignmentX(UI::ItemAlignment::Stretch);
       imageLineHorizontal->SetAlignmentY(UI::ItemAlignment::Stretch);
       imageLineHorizontal->SetContentColor(LocalConfig::DividerColor);
@@ -216,7 +216,7 @@ namespace Fsl
       m_dummyText->SetAlignmentX(UI::ItemAlignment::Stretch);
       m_dummyText->SetAlignmentY(UI::ItemAlignment::Stretch);
 
-      auto middleGrid = std::make_shared<UI::GridLayout>(windowContext);
+      const auto middleGrid = std::make_shared<UI::GridLayout>(windowContext);
       middleGrid->SetAlignmentX(UI::ItemAlignment::Stretch);
       middleGrid->SetAlignmentY(UI::ItemAlignment::Stretch);
       middleGrid->AddColumnDefinition(UI::GridColumnDefinition(UI::GridUnitType::Star, 1.0f));
@@ -230,7 +230,7 @@ namespace Fsl
       // If we dont do this it might cause other layout elements with stretch to be bigger than the screen
       middleGrid->SetLimitToAvailableSpace(true);
 
-      auto compareGrid = std::make_shared<UI::GridLayout>(windowContext);
+      const auto compareGrid = std::make_shared<UI::GridLayout>(windowContext);
       compareGrid->SetAlignmentX(UI::ItemAlignment::Stretch);
       compareGrid->SetAlignmentY(UI::ItemAlignment::Stretch);
       compareGrid->AddColumnDefinition(UI::GridColumnDefinition(UI::GridUnitType::Star, 1.0f));
@@ -280,7 +280,7 @@ namespace Fsl
   {
     if (theEvent->GetSource() == m_uiRecord.CheckBoxEmulateDpi)
     {
-      auto isEnabled = m_uiRecord.CheckBoxEmulateDpi->IsChecked();
+      const auto isEnabled = m_uiRecord.CheckBoxEmulateDpi->IsChecked();
       m_uiRecord.SliderDpi->SetEnabled(isEnabled);
       UpdateResourceScale();
     }
@@ -294,7 +294,7 @@ namespace Fsl
     }
     else if (theEvent->GetSource() == m_uiRecord.CheckForceTexDpi)
     {
-      auto isEnabled = m_uiRecord.CheckForceTexDpi->IsChecked();
+      const auto isEnabled = m_uiRecord.CheckForceTexDpi->IsChecked();
       m_uiRecord.SliderTextureDpi->SetEnabled(isEnabled);
     }
   }
@@ -332,28 +332,28 @@ namespace Fsl
     case VirtualKey::Delete:
       if (m_uiRecord.SliderDpi->IsEnabled())
       {
-        auto value = m_uiRecord.SliderDpi->GetValue();
+        const auto value = m_uiRecord.SliderDpi->GetValue();
         m_uiRecord.SliderDpi->SetValue(value >= LocalConfig::SliderDpiTickSlow ? value - LocalConfig::SliderDpiTickSlow : 0u);
       }
       break;
     case VirtualKey::PageDown:
       if (m_uiRecord.SliderDpi->IsEnabled())
       {
-        auto value = m_uiRecord.SliderDpi->GetValue();
+        const auto value = m_uiRecord.SliderDpi->GetValue();
         m_uiRecord.SliderDpi->SetValue(value + LocalConfig::SliderDpiTickSlow);
       }
       break;
     case VirtualKey::LeftArrow:
       if (m_uiRecord.SliderDpi->IsEnabled())
       {
-        auto value = m_uiRecord.SliderDpi->GetValue();
+        const auto value = m_uiRecord.SliderDpi->GetValue();
         m_uiRecord.SliderDpi->SetValue(value >= LocalConfig::SliderDpiTick ? value - LocalConfig::SliderDpiTick : 0u);
       }
       break;
     case VirtualKey::RightArrow:
       if (m_uiRecord.SliderDpi->IsEnabled())
       {
-        auto value = m_uiRecord.SliderDpi->GetValue();
+        const auto value = m_uiRecord.SliderDpi->GetValue();
         m_uiRecord.SliderDpi->SetValue(value + LocalConfig::SliderDpiTick);
       }
       break;
@@ -363,7 +363,7 @@ namespace Fsl
     case VirtualKey::DownArrow:
       if (m_uiRecord.SliderTextureDpi->IsEnabled())
       {
-        auto value = m_uiRecord.SliderTextureDpi->GetValue();
+        const auto value = m_uiRecord.SliderTextureDpi->GetValue();
         m_uiRecord.SliderTextureDpi->SetValue(value >= LocalConfig::SliderForceTextureDensityTick ? value - LocalConfig::SliderForceTextureDensityTick
                                                                                                   : 0u);
       }
@@ -371,7 +371,7 @@ namespace Fsl
     case VirtualKey::UpArrow:
       if (m_uiRecord.SliderTextureDpi->IsEnabled())
       {
-        auto value = m_uiRecord.SliderTextureDpi->GetValue();
+        const auto value = m_uiRecord.SliderTextureDpi->GetValue();
         m_uiRecord.SliderTextureDpi->SetValue(value + LocalConfig::SliderForceTextureDensityTick);
       }
       break;
@@ -386,7 +386,7 @@ namespace Fsl
     case VirtualKey::E:
       if (m_uiRecord.SliderDownscalePreference->IsEnabled())
       {
-        auto value = m_uiRecord.SliderDownscalePreference->GetValue();
+        const auto value = m_uiRecord.SliderDownscalePreference->GetValue();
         m_uiRecord.SliderDownscalePreference->SetValue(value + LocalConfig::SliderDownscalePreferenceTick);
       }
       break;
@@ -440,13 +440,13 @@ namespace Fsl
   {
     const bool useTestAtlas = m_uiRecord.CheckBoxTestPattern->IsChecked();
 
-    auto offsetDpWinPx = m_mainLayout->PointFrom(m_dummyDp.get(), PxPoint2());
-    auto offsetPxWinPx = m_mainLayout->PointFrom(m_dummyPx.get(), PxPoint2());
-    auto offsetTextWinPx = m_mainLayout->PointFrom(m_dummyText.get(), PxPoint2());
+    const auto offsetDpWinPx = m_mainLayout->PointFrom(m_dummyDp.get(), PxPoint2());
+    const auto offsetPxWinPx = m_mainLayout->PointFrom(m_dummyPx.get(), PxPoint2());
+    const auto offsetTextWinPx = m_mainLayout->PointFrom(m_dummyText.get(), PxPoint2());
 
-    auto rectDpWinPx = PxRectangle2D(offsetDpWinPx, m_dummyDp->RenderExtentPx());
-    auto rectPxWinPx = PxRectangle2D(offsetPxWinPx, m_dummyPx->RenderExtentPx());
-    auto rectTextWinPx = PxRectangle2D(offsetTextWinPx, m_dummyText->RenderExtentPx());
+    const auto rectDpWinPx = PxRectangle2D(offsetDpWinPx, m_dummyDp->RenderExtentPx());
+    const auto rectPxWinPx = PxRectangle2D(offsetPxWinPx, m_dummyPx->RenderExtentPx());
+    const auto rectTextWinPx = PxRectangle2D(offsetTextWinPx, m_dummyText->RenderExtentPx());
 
     const bool pixelPerfect = m_uiRecord.CheckBoxPixelPerfect->IsChecked();
     const uint32_t desiredTexDensity = !m_uiRecord.CheckForceTexDpi->IsChecked() ? m_activeDensity : m_uiRecord.SliderTextureDpi->GetValue();
@@ -504,7 +504,7 @@ namespace Fsl
 
     {    // Draw the caption
       auto dstPositionCaptionPx = dstPositionPx;
-      auto captionSizePx = bitmapFont.MeasureString(caption);
+      const auto captionSizePx = bitmapFont.MeasureString(caption);
 
       dstPositionCaptionPx.X += PxValue::Create((dstAreaSizePx.X.Value - captionSizePx.RawWidth()) / 2);
 
@@ -558,7 +558,7 @@ namespace Fsl
 
     {    // Draw the caption
       auto dstPositionCaptionPx = dstPositionPx;
-      auto captionSizePx = bitmapFont.MeasureString(caption, fontConfig);
+      const auto captionSizePx = bitmapFont.MeasureString(caption, fontConfig);
 
       dstPositionCaptionPx.X += PxValue::Create((dstAreaSizePx.X.Value - captionSizePx.RawWidth()) / 2);
 
@@ -615,16 +615,16 @@ namespace Fsl
     const auto& fontAtlasTexture = !useTestAtlas ? resources.Font->GetAtlasTexture() : resources.AtlasTestTexture;
     const auto& bitmapFont = resources.Font->GetTextureAtlasSpriteFont();
 
-    Vector2 origin;
-    Vector2 densityScale(resources.ResolutionDensityScale, resources.ResolutionDensityScale);
+    const Vector2 origin;
+    const Vector2 densityScale(resources.ResolutionDensityScale, resources.ResolutionDensityScale);
     const float lineSpacingPx = static_cast<float>(bitmapFont.LineSpacingPx().RawValue()) * resources.ResolutionDensityScale;
 
 
     {    // Draw the caption
       Vector2 dstPositionCaptionPx = dstPositionPx;
-      auto res = bitmapFont.MeasureString(caption);
-      Vector2 captionSizePx(static_cast<float>(res.RawWidth()) * resources.ResolutionDensityScale,
-                            static_cast<float>(res.RawHeight()) * resources.ResolutionDensityScale);
+      const auto res = bitmapFont.MeasureString(caption);
+      const Vector2 captionSizePx(static_cast<float>(res.RawWidth()) * resources.ResolutionDensityScale,
+                                  static_cast<float>(res.RawHeight()) * resources.ResolutionDensityScale);
 
       dstPositionCaptionPx.X += (dstAreaSizePx.X - captionSizePx.X) / 2.0f;
 
@@ -678,8 +678,8 @@ namespace Fsl
   int32_t Shared::CalcTextAreaHeightPx(const Resources& resources) const
   {
     const auto& bitmapFont = resources.Font->GetTextureAtlasSpriteFont();
-    auto lineSpacingPx = bitmapFont.LineSpacingPx();
-    auto scaledLineSpacingPx = bitmapFont.LineSpacingPx(resources.FontConfig);
+    const auto lineSpacingPx = bitmapFont.LineSpacingPx();
+    const auto scaledLineSpacingPx = bitmapFont.LineSpacingPx(resources.FontConfig);
     return lineSpacingPx.RawValue() + (scaledLineSpacingPx.Value * 7);
   }
 
@@ -708,72 +708,72 @@ namespace Fsl
 
     constexpr auto BaseLineColor = Color(0xFF404040);
     {
-      auto baseLinePx = dstPositionPx + PxPoint2(PxValue(0), scaledBaseLinePx);
-      auto baseLine0Px = baseLinePx;
-      auto baseLine1Px = baseLinePx + PxPoint2(dstAreaSizePx.X, PxValue(0));
+      const auto baseLinePx = dstPositionPx + PxPoint2(PxValue(0), scaledBaseLinePx);
+      const auto baseLine0Px = baseLinePx;
+      const auto baseLine1Px = baseLinePx + PxPoint2(dstAreaSizePx.X, PxValue(0));
       rNativeBatch.DebugDrawLine(m_texFill, baseLine0Px, baseLine1Px, BaseLineColor);
 
       DrawTextNaiveScaling(rNativeBatch, fontAtlasTexture, bitmapFont, fontConfig, Text, dstPositionPx, FontColor, clipRectPxf);
       dstPositionPx.Y += scaledLineSpacingPx;
     }
     {
-      auto baseLinePx = dstPositionPx + PxPoint2(PxValue(0), scaledBaseLinePx);
-      auto baseLine0Px = baseLinePx;
-      auto baseLine1Px = baseLinePx + PxPoint2(dstAreaSizePx.X, PxValue(0));
+      const auto baseLinePx = dstPositionPx + PxPoint2(PxValue(0), scaledBaseLinePx);
+      const auto baseLine0Px = baseLinePx;
+      const auto baseLine1Px = baseLinePx + PxPoint2(dstAreaSizePx.X, PxValue(0));
       rNativeBatch.DebugDrawLine(m_texFill, baseLine0Px, baseLine1Px, BaseLineColor);
 
       DrawTextDstRoundedToFullPixels(rNativeBatch, fontAtlasTexture, bitmapFont, fontConfig, Text, dstPositionPx, FontColor, clipRectPxf);
       dstPositionPx.Y += scaledLineSpacingPx;
     }
     {
-      auto baseLinePx = dstPositionPx + PxPoint2(PxValue(0), scaledBaseLinePx);
-      auto baseLine0Px = baseLinePx;
-      auto baseLine1Px = baseLinePx + PxPoint2(dstAreaSizePx.X, PxValue(0));
+      const auto baseLinePx = dstPositionPx + PxPoint2(PxValue(0), scaledBaseLinePx);
+      const auto baseLine0Px = baseLinePx;
+      const auto baseLine1Px = baseLinePx + PxPoint2(dstAreaSizePx.X, PxValue(0));
       rNativeBatch.DebugDrawLine(m_texFill, baseLine0Px, baseLine1Px, BaseLineColor);
 
       DrawTextBaseLineAware(rNativeBatch, fontAtlasTexture, bitmapFont, fontConfig, Text, dstPositionPx, FontColor, clipRectPxf);
       dstPositionPx.Y += scaledLineSpacingPx;
     }
     {
-      auto baseLinePx = dstPositionPx + PxPoint2(PxValue(0), scaledBaseLinePx);
-      auto baseLine0Px = baseLinePx;
-      auto baseLine1Px = baseLinePx + PxPoint2(dstAreaSizePx.X, PxValue(0));
+      const auto baseLinePx = dstPositionPx + PxPoint2(PxValue(0), scaledBaseLinePx);
+      const auto baseLine0Px = baseLinePx;
+      const auto baseLine1Px = baseLinePx + PxPoint2(dstAreaSizePx.X, PxValue(0));
       rNativeBatch.DebugDrawLine(m_texFill, baseLine0Px, baseLine1Px, BaseLineColor);
 
       DrawTextAlmostPixelPerfect(rNativeBatch, fontAtlasTexture, bitmapFont, fontConfig, Text, dstPositionPx, FontColor, clipRectPxf);
       dstPositionPx.Y += scaledLineSpacingPx;
     }
     {
-      auto baseLinePx = dstPositionPx + PxPoint2(PxValue(0), scaledBaseLinePx);
-      auto baseLine0Px = baseLinePx;
-      auto baseLine1Px = baseLinePx + PxPoint2(dstAreaSizePx.X, PxValue(0));
+      const auto baseLinePx = dstPositionPx + PxPoint2(PxValue(0), scaledBaseLinePx);
+      const auto baseLine0Px = baseLinePx;
+      const auto baseLine1Px = baseLinePx + PxPoint2(dstAreaSizePx.X, PxValue(0));
       rNativeBatch.DebugDrawLine(m_texFill, baseLine0Px, baseLine1Px, BaseLineColor);
 
       DrawTextAlmostPixelPerfect2(rNativeBatch, fontAtlasTexture, bitmapFont, fontConfig, Text, dstPositionPx, FontColor, clipRectPxf);
       dstPositionPx.Y += scaledLineSpacingPx;
     }
     {
-      auto baseLinePx = dstPositionPx + PxPoint2(PxValue(0), scaledBaseLinePx);
-      auto baseLine0Px = baseLinePx;
-      auto baseLine1Px = baseLinePx + PxPoint2(dstAreaSizePx.X, PxValue(0));
+      const auto baseLinePx = dstPositionPx + PxPoint2(PxValue(0), scaledBaseLinePx);
+      const auto baseLine0Px = baseLinePx;
+      const auto baseLine1Px = baseLinePx + PxPoint2(dstAreaSizePx.X, PxValue(0));
       rNativeBatch.DebugDrawLine(m_texFill, baseLine0Px, baseLine1Px, BaseLineColor);
 
       DrawTextPixelPerfect(rNativeBatch, fontAtlasTexture, bitmapFont, fontConfig, Text, dstPositionPx, FontColor, clipRectPxf);
       dstPositionPx.Y += scaledLineSpacingPx;
     }
     {
-      auto baseLinePx = dstPositionPx + PxPoint2(PxValue(0), scaledBaseLinePx);
-      auto baseLine0Px = baseLinePx;
-      auto baseLine1Px = baseLinePx + PxPoint2(dstAreaSizePx.X, PxValue(0));
+      const auto baseLinePx = dstPositionPx + PxPoint2(PxValue(0), scaledBaseLinePx);
+      const auto baseLine0Px = baseLinePx;
+      const auto baseLine1Px = baseLinePx + PxPoint2(dstAreaSizePx.X, PxValue(0));
       rNativeBatch.DebugDrawLine(m_texFill, baseLine0Px, baseLine1Px, BaseLineColor);
 
       DrawTextRenderRules(rNativeBatch, fontAtlasTexture, bitmapFont, fontConfig, Text, dstPositionPx, FontColor, clipRectPxf);
       dstPositionPx.Y += scaledLineSpacingPx;
     }
     {    // finally do a comparison with the NativeBatch rendering (which should be equal to the two above renderings)
-      auto baseLinePx = dstPositionPx + PxPoint2(PxValue(0), scaledBaseLinePx);
-      auto baseLine0Px = baseLinePx;
-      auto baseLine1Px = baseLinePx + PxPoint2(dstAreaSizePx.X, PxValue(0));
+      const auto baseLinePx = dstPositionPx + PxPoint2(PxValue(0), scaledBaseLinePx);
+      const auto baseLine0Px = baseLinePx;
+      const auto baseLine1Px = baseLinePx + PxPoint2(dstAreaSizePx.X, PxValue(0));
       rNativeBatch.DebugDrawLine(m_texFill, baseLine0Px, baseLine1Px, BaseLineColor);
 
       rNativeBatch.DrawString(fontAtlasTexture, bitmapFont, fontConfig, Text, TypeConverter::UncheckedTo<Vector2>(dstPositionPx), FontColor,
@@ -783,9 +783,9 @@ namespace Fsl
 
 
     {
-      auto baseLinePx = dstPositionPx + PxPoint2(PxValue(0), bitmapFont.BaseLinePx());
-      auto baseLine0Px = baseLinePx;
-      auto baseLine1Px = baseLinePx + PxPoint2(dstAreaSizePx.X, PxValue(0));
+      const auto baseLinePx = dstPositionPx + PxPoint2(PxValue(0), bitmapFont.BaseLinePx());
+      const auto baseLine0Px = baseLinePx;
+      const auto baseLine1Px = baseLinePx + PxPoint2(dstAreaSizePx.X, PxValue(0));
       rNativeBatch.DebugDrawLine(m_texFill, baseLine0Px, baseLine1Px, BaseLineColor);
 
       // Draw the font unscaled
@@ -804,7 +804,7 @@ namespace Fsl
       return;
     }
 
-    auto dstPositionPxf = TypeConverter::UncheckedTo<PxVector2>(dstPositionPx);
+    const auto dstPositionPxf = TypeConverter::UncheckedTo<PxVector2>(dstPositionPx);
     const INativeTexture2D* pNativeTexFont = texFont.TryGetNativePointer();
     if (pNativeTexFont != nullptr)
     {
@@ -847,7 +847,7 @@ namespace Fsl
         const float scaledfontCharWidthPxf = static_cast<float>(fontChar.SrcTextureRectPx.Width.Value) * fontScale;
         const float scaledfontCharHeightPxf = static_cast<float>(fontChar.SrcTextureRectPx.Height.Value) * fontScale;
 
-        auto fDstRectPx = PxAreaRectangleF::Create(dstXPxf, dstYPxf, scaledfontCharWidthPxf, scaledfontCharHeightPxf);
+        const auto fDstRectPx = PxAreaRectangleF::Create(dstXPxf, dstYPxf, scaledfontCharWidthPxf, scaledfontCharHeightPxf);
         rNativeBatch.Draw(texFont, fDstRectPx, TypeConverter::To<PxRectangleU32>(fontChar.SrcTextureRectPx), fontColor, clipRectPxf);
       }
       dstPositionPxf.X += static_cast<float>(fontChar.XAdvancePx.Value) * fontScale;
@@ -887,8 +887,8 @@ namespace Fsl
         const auto scaledGlyphHeightPx =
           static_cast<int32_t>(std::round(static_cast<float>(fontCharInfo.CharInfo.SrcTextureRectPx.Height.Value) * fontScale));
 
-        auto fDstRectPx = PxAreaRectangleF::Create(static_cast<float>(dstXPx), static_cast<float>(dstYPx), static_cast<float>(scaledGlyphWidthPx),
-                                                   static_cast<float>(scaledGlyphHeightPx));
+        const auto fDstRectPx = PxAreaRectangleF::Create(static_cast<float>(dstXPx), static_cast<float>(dstYPx),
+                                                         static_cast<float>(scaledGlyphWidthPx), static_cast<float>(scaledGlyphHeightPx));
         rNativeBatch.Draw(texFont, fDstRectPx, TypeConverter::To<PxRectangleU32>(fontCharInfo.CharInfo.SrcTextureRectPx), fontColor, clipRectPxf);
       }
       dstXPosPx += static_cast<int32_t>(std::round(static_cast<float>(fontCharInfo.CharInfo.XAdvancePx.Value) * fontScale));
@@ -936,8 +936,8 @@ namespace Fsl
         const auto scaledGlyphWidthPx = static_cast<int32_t>(std::round(static_cast<float>(fontChar.SrcTextureRectPx.Width.Value) * fontScale));
         const auto scaledGlyphHeightPx = static_cast<int32_t>(std::round(static_cast<float>(fontChar.SrcTextureRectPx.Height.Value) * fontScale));
 
-        auto fDstRectPx = PxAreaRectangleF::Create(static_cast<float>(dstXPx), static_cast<float>(dstYPx), static_cast<float>(scaledGlyphWidthPx),
-                                                   static_cast<float>(scaledGlyphHeightPx));
+        const auto fDstRectPx = PxAreaRectangleF::Create(static_cast<float>(dstXPx), static_cast<float>(dstYPx),
+                                                         static_cast<float>(scaledGlyphWidthPx), static_cast<float>(scaledGlyphHeightPx));
         rNativeBatch.Draw(texFont, fDstRectPx, TypeConverter::To<PxRectangleU32>(fontChar.SrcTextureRectPx), fontColor, clipRectPxf);
       }
       dstXPosPx += static_cast<int32_t>(std::round(static_cast<float>(fontChar.XAdvancePx.Value) * fontScale));
@@ -992,8 +992,8 @@ namespace Fsl
 
         assert(dstXPx <= dstXEndPx);
         assert(dstYPx <= dstYEndPx);
-        auto dstRectPx = PxAreaRectangleF::CreateFromLeftTopRightBottom(static_cast<float>(dstXPx), static_cast<float>(dstYPx),
-                                                                        static_cast<float>(dstXEndPx), static_cast<float>(dstYEndPx));
+        const auto dstRectPx = PxAreaRectangleF::CreateFromLeftTopRightBottom(static_cast<float>(dstXPx), static_cast<float>(dstYPx),
+                                                                              static_cast<float>(dstXEndPx), static_cast<float>(dstYEndPx));
         rNativeBatch.Draw(texFont, dstRectPx, TypeConverter::To<PxRectangleU32>(fontChar.SrcTextureRectPx), fontColor, clipRectPxf);
       }
       dstXPosPxf += static_cast<float>(fontChar.XAdvancePx.Value) * fontScale;
@@ -1050,8 +1050,8 @@ namespace Fsl
         dstXEndPx = std::max(dstXPx, dstXEndPx);
         dstYPx = std::min(dstYPx, dstYEndPx);
 
-        auto fDstRectPx = PxAreaRectangleF::CreateFromLeftTopRightBottom(static_cast<float>(dstXPx), static_cast<float>(dstYPx),
-                                                                         static_cast<float>(dstXEndPx), static_cast<float>(dstYEndPx));
+        const auto fDstRectPx = PxAreaRectangleF::CreateFromLeftTopRightBottom(static_cast<float>(dstXPx), static_cast<float>(dstYPx),
+                                                                               static_cast<float>(dstXEndPx), static_cast<float>(dstYEndPx));
         rNativeBatch.Draw(texFont, fDstRectPx, TypeConverter::To<PxRectangleU32>(fontChar.SrcTextureRectPx), fontColor, clipRectPxf);
       }
       dstXPosPxf += static_cast<float>(fontChar.XAdvancePx.Value) * fontScale;
@@ -1115,8 +1115,8 @@ namespace Fsl
         //  maxErrorDistance = dist;
         //}
 
-        auto fDstRectPx = PxAreaRectangleF::CreateFromLeftTopRightBottom(static_cast<float>(dstXPx), static_cast<float>(dstYPx),
-                                                                         static_cast<float>(dstXEndPx), static_cast<float>(dstYEndPx));
+        const auto fDstRectPx = PxAreaRectangleF::CreateFromLeftTopRightBottom(static_cast<float>(dstXPx), static_cast<float>(dstYPx),
+                                                                               static_cast<float>(dstXEndPx), static_cast<float>(dstYEndPx));
         rNativeBatch.Draw(texFont, fDstRectPx, TypeConverter::To<PxRectangleU32>(fontChar.SrcTextureRectPx), fontColor, clipRectPxf);
       }
       dstXPosPxf += static_cast<float>(fontChar.XAdvancePx.Value) * fontScale;
@@ -1139,7 +1139,7 @@ namespace Fsl
       return;
     }
 
-    auto dstPositionPxf = TypeConverter::To<PxVector2>(dstPositionPx);
+    const auto dstPositionPxf = TypeConverter::To<PxVector2>(dstPositionPx);
 
     // Simple and slow text rendering
     // - the RenderRules now ensure that the glyphs start at full pixel coordinates
@@ -1167,32 +1167,32 @@ namespace Fsl
     UIRecord record;
 
 
-    ConstrainedValue<uint32_t> sliderValue(densityDpi, LocalConfig::SliderDpiTickMin, LocalConfig::SliderDpiTickMax);
-    auto sliderDpi = rUIFactory.CreateSliderFmtValue(UI::LayoutOrientation::Horizontal, sliderValue, "{}");
+    const ConstrainedValue<uint32_t> sliderValue(densityDpi, LocalConfig::SliderDpiTickMin, LocalConfig::SliderDpiTickMax);
+    const auto sliderDpi = rUIFactory.CreateSliderFmtValue(UI::LayoutOrientation::Horizontal, sliderValue, "{}");
     sliderDpi->SetEnabled(false);
 
-    auto sliderTextureDpi = rUIFactory.CreateSliderFmtValue(UI::LayoutOrientation::Horizontal, LocalConfig::SliderForceTextureDensity);
+    const auto sliderTextureDpi = rUIFactory.CreateSliderFmtValue(UI::LayoutOrientation::Horizontal, LocalConfig::SliderForceTextureDensity);
     sliderTextureDpi->SetTickFrequency(LocalConfig::SliderForceTextureDensityTick);
     sliderTextureDpi->SetEnabled(false);
 
-    auto sliderDownscalePreference =
+    const auto sliderDownscalePreference =
       rUIFactory.CreateSliderFmtValue(UI::LayoutOrientation::Horizontal, LocalConfig::SliderDownscalePreference, "{}%");
     sliderDownscalePreference->SetTickFrequency(LocalConfig::SliderDownscalePreferenceTick);
 
-    auto labelResPxCaption = CreateLabel(context, "Resolution: ", UI::ItemAlignment::Near, UI::ItemAlignment::Center);
-    auto labelResDpCaption = CreateLabel(context, "Resolution: ", UI::ItemAlignment::Near, UI::ItemAlignment::Center);
-    auto labelDpiCaption = CreateLabel(context, "Actual DPI: ", UI::ItemAlignment::Near, UI::ItemAlignment::Center);
-    auto labelDensityDpiCaption = CreateLabel(context, "Density DPI: ", UI::ItemAlignment::Near, UI::ItemAlignment::Center);
-    auto labelDensityScaleCaption = CreateLabel(context, "Density Scale: ", UI::ItemAlignment::Near, UI::ItemAlignment::Center);
-    auto labelDownscalePreferenceCaption = CreateLabel(context, "Downscale preference", UI::ItemAlignment::Near, UI::ItemAlignment::Center);
+    const auto labelResPxCaption = CreateLabel(context, "Resolution: ", UI::ItemAlignment::Near, UI::ItemAlignment::Center);
+    const auto labelResDpCaption = CreateLabel(context, "Resolution: ", UI::ItemAlignment::Near, UI::ItemAlignment::Center);
+    const auto labelDpiCaption = CreateLabel(context, "Actual DPI: ", UI::ItemAlignment::Near, UI::ItemAlignment::Center);
+    const auto labelDensityDpiCaption = CreateLabel(context, "Density DPI: ", UI::ItemAlignment::Near, UI::ItemAlignment::Center);
+    const auto labelDensityScaleCaption = CreateLabel(context, "Density Scale: ", UI::ItemAlignment::Near, UI::ItemAlignment::Center);
+    const auto labelDownscalePreferenceCaption = CreateLabel(context, "Downscale preference", UI::ItemAlignment::Near, UI::ItemAlignment::Center);
 
-    auto labelResPx = CreateLabel(context, "", UI::ItemAlignment::Far, UI::ItemAlignment::Center);
-    auto labelResDp = CreateLabel(context, "", UI::ItemAlignment::Far, UI::ItemAlignment::Center);
-    auto labelDpi = CreateLabel(context, "", UI::ItemAlignment::Far, UI::ItemAlignment::Center);
-    auto labelDensityDpi = CreateLabel(context, "", UI::ItemAlignment::Far, UI::ItemAlignment::Center);
-    auto labelDensityScale = CreateLabel(context, "", UI::ItemAlignment::Far, UI::ItemAlignment::Center);
+    const auto labelResPx = CreateLabel(context, "", UI::ItemAlignment::Far, UI::ItemAlignment::Center);
+    const auto labelResDp = CreateLabel(context, "", UI::ItemAlignment::Far, UI::ItemAlignment::Center);
+    const auto labelDpi = CreateLabel(context, "", UI::ItemAlignment::Far, UI::ItemAlignment::Center);
+    const auto labelDensityDpi = CreateLabel(context, "", UI::ItemAlignment::Far, UI::ItemAlignment::Center);
+    const auto labelDensityScale = CreateLabel(context, "", UI::ItemAlignment::Far, UI::ItemAlignment::Center);
 
-    auto gridLayout2 = std::make_shared<UI::GridLayout>(context);
+    const auto gridLayout2 = std::make_shared<UI::GridLayout>(context);
     gridLayout2->SetAlignmentX(UI::ItemAlignment::Stretch);
     gridLayout2->SetAlignmentY(UI::ItemAlignment::Center);
     gridLayout2->AddColumnDefinition(UI::GridColumnDefinition(UI::GridUnitType::Star, 1.0f));
@@ -1215,30 +1215,30 @@ namespace Fsl
     gridLayout2->AddChild(labelDpiCaption, 1, 4);
     gridLayout2->AddChild(labelDpi, 2, 4);
 
-    auto checkBoxPixelPerfect = rUIFactory.CreateSwitch("Pixel perfect", true);
+    const auto checkBoxPixelPerfect = rUIFactory.CreateSwitch("Pixel perfect", true);
     checkBoxPixelPerfect->SetAlignmentX(UI::ItemAlignment::Stretch);
 
-    auto checkBoxTest = rUIFactory.CreateSwitch("Use test pattern", enableTestPattern);
+    const auto checkBoxTest = rUIFactory.CreateSwitch("Use test pattern", enableTestPattern);
     checkBoxTest->SetAlignmentX(UI::ItemAlignment::Stretch);
     // checkBoxTest->SetEnabled(false);
 
-    auto checkBoxUITest = rUIFactory.CreateSwitch("Use UI test pattern", enableUITestPattern);
+    const auto checkBoxUITest = rUIFactory.CreateSwitch("Use UI test pattern", enableUITestPattern);
     checkBoxUITest->SetAlignmentX(UI::ItemAlignment::Stretch);
 
-    auto checkBoxEmulateDpi = rUIFactory.CreateSwitch("Emulate dpi");
+    const auto checkBoxEmulateDpi = rUIFactory.CreateSwitch("Emulate dpi");
     checkBoxEmulateDpi->SetAlignmentX(UI::ItemAlignment::Stretch);
 
-    auto checkForceTexDpi = rUIFactory.CreateSwitch("Force texture dpi");
+    const auto checkForceTexDpi = rUIFactory.CreateSwitch("Force texture dpi");
     checkForceTexDpi->SetAlignmentX(UI::ItemAlignment::Stretch);
 
-    auto checkBoxShowScaleExample = rUIFactory.CreateSwitch("Show text rendering", LocalConfig::ShowScaleExample);
+    const auto checkBoxShowScaleExample = rUIFactory.CreateSwitch("Show text rendering", LocalConfig::ShowScaleExample);
     checkBoxShowScaleExample->SetAlignmentX(UI::ItemAlignment::Stretch);
 
-    auto btnSetDefaultValues = rUIFactory.CreateTextButton(UI::Theme::ButtonType::Contained, "Set default values");
+    const auto btnSetDefaultValues = rUIFactory.CreateTextButton(UI::Theme::ButtonType::Contained, "Set default values");
     btnSetDefaultValues->SetAlignmentX(UI::ItemAlignment::Center);
     btnSetDefaultValues->SetAlignmentY(UI::ItemAlignment::Far);
 
-    auto complexStack = std::make_shared<UI::ComplexStackLayout>(context);
+    const auto complexStack = std::make_shared<UI::ComplexStackLayout>(context);
     complexStack->SetOrientation(UI::LayoutOrientation::Vertical);
     complexStack->PushLayoutLength(UI::LayoutLength(UI::LayoutUnitType::Auto));
     complexStack->PushLayoutLength(UI::LayoutLength(UI::LayoutUnitType::Auto));

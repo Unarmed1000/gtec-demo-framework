@@ -57,7 +57,7 @@ namespace Fsl::MeshUtil
         const uint32_t meshVertexCount = mesh->GetVertexCount();
         const uint32_t meshIndexCount = mesh->GetIndexCount();
         const auto& srcVertices = mesh->GetVertexArray();
-        auto startVertexOffset = vertexOffset;
+        const auto startVertexOffset = vertexOffset;
         for (std::size_t i = 0; i < meshVertexCount; ++i)
         {
           meshRecord.Vertices[vertexOffset] = srcVertices[i];

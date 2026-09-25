@@ -57,7 +57,7 @@ namespace Fsl::UI
 
     // StringViewLite GetText() const;
 
-    const std::string& GetText() const
+    [[nodiscard]] const std::string& GetText() const
     {
       return m_text;
     }
@@ -72,14 +72,14 @@ namespace Fsl::UI
 
     bool SetText(StringViewLite str);
 
-    PxSize2D MinimalMeasure() const;
-    PxSize2D Measure() const;
-    SpriteFontMeasureInfo ComplexMeasure() const;
+    [[nodiscard]] PxSize2D MinimalMeasure() const;
+    [[nodiscard]] PxSize2D Measure() const;
+    [[nodiscard]] SpriteFontMeasureInfo ComplexMeasure() const;
 
     // Custom measure
 
-    PxSize2D Measure(const std::string& str) const;
-    PxSize2D Measure(StringViewLite str) const;
+    [[nodiscard]] PxSize2D Measure(const std::string& str) const;
+    [[nodiscard]] PxSize2D Measure(StringViewLite str) const;
   };
 }
 

@@ -46,8 +46,8 @@
 
 namespace Fsl::UI::Draw9SliceUtil
 {
-  inline static void WinDraw(const std::shared_ptr<INativeBatch2D>& batch2D, const PxAreaRectangleF& dstRectanglePxf, const AtlasTexture2D& texture,
-                             const NineSlice& nineSlice, const Color& color)
+  inline void WinDraw(const std::shared_ptr<INativeBatch2D>& batch2D, const PxAreaRectangleF& dstRectanglePxf, const AtlasTexture2D& texture,
+                      const NineSlice& nineSlice, const Color& color)
   {
     if (!texture.IsValid())
     {
@@ -99,8 +99,8 @@ namespace Fsl::UI::Draw9SliceUtil
     PxSize1DF bgTop = rect0Height;
     PxSize1DF bgRight = rect8Width;
     PxSize1DF bgBottom = rect8Height;
-    PxSize1DF bgSizeX(bgLeft + bgRight + rect4Width);
-    PxSize1DF bgSizeY(bgTop + bgBottom + rect4Height);
+    const PxSize1DF bgSizeX(bgLeft + bgRight + rect4Width);
+    const PxSize1DF bgSizeY(bgTop + bgBottom + rect4Height);
     {
       PxSize2DF bgScale;
       if (!UIScaleUtil::TryCalcScaling(bgScale, dstRectanglePxf.Size(), PxSize2DF(bgSizeX, bgSizeY), ItemScalePolicy::DownscaleKeepAR))
@@ -166,8 +166,8 @@ namespace Fsl::UI::Draw9SliceUtil
     batch2D->Draw(texture, finalDstRectPxf, PxRectangle(srcRightStart, srcBottomStart, srcRightWidth, srcBottomHeight), color);
   }
 
-  inline static void WinDraw(const std::shared_ptr<INativeBatch2D>& batch2D, const PxAreaRectangleF& dstRectanglePxf, const AtlasTexture2D& texture,
-                             const NineSlice& nineSlice, const PxThickness& minimumBackgroundMarginPx, const Color& color)
+  inline void WinDraw(const std::shared_ptr<INativeBatch2D>& batch2D, const PxAreaRectangleF& dstRectanglePxf, const AtlasTexture2D& texture,
+                      const NineSlice& nineSlice, const PxThickness& minimumBackgroundMarginPx, const Color& color)
   {
     if (!texture.IsValid())
     {
@@ -219,8 +219,8 @@ namespace Fsl::UI::Draw9SliceUtil
     PxSize1DF bgTop = std::max(rect0Height, PxSize1DF(minimumBackgroundMarginPx.Top()));
     PxSize1DF bgRight = std::max(rect8Width, PxSize1DF(minimumBackgroundMarginPx.Right()));
     PxSize1DF bgBottom = std::max(rect8Height, PxSize1DF(minimumBackgroundMarginPx.Bottom()));
-    PxSize1DF bgSizeX = bgLeft + bgRight + rect4Width;
-    PxSize1DF bgSizeY = bgTop + bgBottom + rect4Height;
+    const PxSize1DF bgSizeX = bgLeft + bgRight + rect4Width;
+    const PxSize1DF bgSizeY = bgTop + bgBottom + rect4Height;
     {
       PxSize2DF bgScale;
       if (!UIScaleUtil::TryCalcScaling(bgScale, dstRectanglePxf.Size(), PxSize2DF(bgSizeX, bgSizeY), ItemScalePolicy::DownscaleKeepAR))
@@ -286,8 +286,8 @@ namespace Fsl::UI::Draw9SliceUtil
     batch2D->Draw(texture, finalDstRectPxf, PxRectangle(srcRightStart, srcBottomStart, srcRightWidth, srcBottomHeight), color);
   }
 
-  inline static void WinDrawRotated90CW(const std::shared_ptr<INativeBatch2D>& batch2D, const PxAreaRectangleF& dstRectanglePxf,
-                                        const AtlasTexture2D& texture, const NineSlice& nineSlice, const Color& color)
+  inline void WinDrawRotated90CW(const std::shared_ptr<INativeBatch2D>& batch2D, const PxAreaRectangleF& dstRectanglePxf,
+                                 const AtlasTexture2D& texture, const NineSlice& nineSlice, const Color& color)
   {
     if (!texture.IsValid())
     {
@@ -341,8 +341,8 @@ namespace Fsl::UI::Draw9SliceUtil
     PxSize1DF bgTop = rect0Height;
     PxSize1DF bgRight = rect8Width;
     PxSize1DF bgBottom = rect8Height;
-    PxSize1DF bgSizeX = bgLeft + bgRight + rect4Width;
-    PxSize1DF bgSizeY = bgTop + bgBottom + rect4Height;
+    const PxSize1DF bgSizeX = bgLeft + bgRight + rect4Width;
+    const PxSize1DF bgSizeY = bgTop + bgBottom + rect4Height;
     {
       PxSize2DF bgScale;
       if (!UIScaleUtil::TryCalcScaling(bgScale, dstRectanglePxf.Size(), PxSize2DF(bgSizeX, bgSizeY), ItemScalePolicy::DownscaleKeepAR))
@@ -415,9 +415,9 @@ namespace Fsl::UI::Draw9SliceUtil
                   BatchEffect::Rotate90Clockwise);
   }
 
-  inline static void WinDrawRotated90CW(const std::shared_ptr<INativeBatch2D>& batch2D, const PxAreaRectangleF& dstRectanglePxf,
-                                        const AtlasTexture2D& texture, const NineSlice& nineSlice, const ThicknessF& minimumBackgroundMargin,
-                                        const Color& color)
+  inline void WinDrawRotated90CW(const std::shared_ptr<INativeBatch2D>& batch2D, const PxAreaRectangleF& dstRectanglePxf,
+                                 const AtlasTexture2D& texture, const NineSlice& nineSlice, const ThicknessF& minimumBackgroundMargin,
+                                 const Color& color)
   {
     if (!texture.IsValid())
     {
@@ -469,8 +469,8 @@ namespace Fsl::UI::Draw9SliceUtil
     PxSize1DF bgTop = std::max(rect0Height, PxSize1DF::UncheckedCreate(minimumBackgroundMargin.Left()));
     PxSize1DF bgRight = std::max(rect8Width, PxSize1DF::UncheckedCreate(minimumBackgroundMargin.Bottom()));
     PxSize1DF bgBottom = std::max(rect8Height, PxSize1DF::UncheckedCreate(minimumBackgroundMargin.Right()));
-    PxSize1DF bgSizeX = bgLeft + bgRight + rect4Width;
-    PxSize1DF bgSizeY = bgTop + bgBottom + rect4Height;
+    const PxSize1DF bgSizeX = bgLeft + bgRight + rect4Width;
+    const PxSize1DF bgSizeY = bgTop + bgBottom + rect4Height;
     {
       PxSize2DF bgScale;
       if (!UIScaleUtil::TryCalcScaling(bgScale, dstRectanglePxf.Size(), PxSize2DF(bgSizeX, bgSizeY), ItemScalePolicy::DownscaleKeepAR))

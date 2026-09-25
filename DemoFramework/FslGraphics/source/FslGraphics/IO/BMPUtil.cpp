@@ -282,11 +282,7 @@ namespace Fsl
 
         if (header.AlphaMask == 0xFF000000)
         {
-          if (isR8G8B8)    // NOLINT(bugprone-branch-clone)
-          {
-            ActivePixelFormat = PixelFormat::R8G8B8A8_UINT;
-          }
-          else if (isB8G8R8)
+          if (!isR8G8B8 && isB8G8R8)
           {
             ActivePixelFormat = PixelFormat::B8G8R8A8_UINT;
           }
@@ -297,11 +293,7 @@ namespace Fsl
         }
         else
         {
-          if (isR8G8B8)    // NOLINT(bugprone-branch-clone)
-          {
-            ActivePixelFormat = PixelFormat::R8G8B8_UINT;
-          }
-          else if (isB8G8R8)
+          if (!isR8G8B8 && isB8G8R8)
           {
             ActivePixelFormat = PixelFormat::B8G8R8_UINT;
           }
@@ -605,7 +597,7 @@ namespace Fsl
   void BMPUtil::Load(Bitmap& rBitmap, std::ifstream& rStream, const BitmapOrigin originHint)
   {
     const BMPFileHeader fileHeader = ReadFileHeader(rStream);
-    BitmapHeader bitmapHeader = ReadBitmapHeader(rStream);
+    const BitmapHeader bitmapHeader = ReadBitmapHeader(rStream);
 
     // Seek to the bitmap data area
     rStream.seekg(fileHeader.BitmapOffset, std::ios_base::beg);
@@ -691,7 +683,7 @@ namespace Fsl
         // We have to write the image data one scan line at a time to 'compress' the stride to the minimum
         const auto srcStride = bitmap.Stride();
         const auto* pSrc = static_cast<const uint8_t*>(bitmap.Content());
-        const uint8_t* const pSrcEnd = pSrc + (srcStride * bitmap.RawUnsignedHeight());
+        const uint8_t* const pSrcEnd = pSrc + (static_cast<std::size_t>(srcStride) * bitmap.RawUnsignedHeight());
         while (pSrc < pSrcEnd)
         {
           stream.write(reinterpret_cast<const char*>(pSrc), minimumStride);
@@ -703,7 +695,7 @@ namespace Fsl
         // We have to write the image data one scan line at a time to 'compress' the stride to the minimum or to flip it
         const auto srcStride = bitmap.Stride();
         const auto* const pSrcStart = static_cast<const uint8_t*>(bitmap.Content());
-        const uint8_t* pSrc = pSrcStart + (srcStride * (bitmap.RawUnsignedHeight() - 1));
+        const uint8_t* pSrc = pSrcStart + (static_cast<std::size_t>(srcStride) * (bitmap.RawUnsignedHeight() - 1));
         while (pSrc >= pSrcStart)
         {
           stream.write(reinterpret_cast<const char*>(pSrc), minimumStride);

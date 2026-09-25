@@ -41,7 +41,7 @@ namespace Fsl::UI
     virtual ~IRenderSystemBase() = default;
 
     //! @brief Get render stats for the last draw operation
-    virtual RenderSystemStats GetStats() const = 0;
+    [[nodiscard]] virtual RenderSystemStats GetStats() const = 0;
   };
 }
 

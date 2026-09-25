@@ -57,17 +57,17 @@ namespace Fsl
     {
     }
 
-    constexpr value_type SumX() const noexcept
+    [[nodiscard]] constexpr value_type SumX() const noexcept
     {
       return Left + Right;
     }
 
-    constexpr value_type SumY() const noexcept
+    [[nodiscard]] constexpr value_type SumY() const noexcept
     {
       return Top + Bottom;
     }
 
-    constexpr DpExtent2D Sum() const noexcept
+    [[nodiscard]] constexpr DpExtent2D Sum() const noexcept
     {
       return {Left + Right, Top + Bottom};
     }

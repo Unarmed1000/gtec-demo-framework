@@ -72,8 +72,8 @@ TEST_P(TestFixtureFslUtil_Vulkan1_0_TestDeviceMemoryUtil, FastUploadCoherent)
   bufferCreateInfo.usage = GetParam();
   bufferCreateInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
-  RapidVulkan::Buffer buffer(m_device.Get(), bufferCreateInfo);
-  auto memoryRequirements = buffer.GetBufferMemoryRequirements();
+  const RapidVulkan::Buffer buffer(m_device.Get(), bufferCreateInfo);
+  const auto memoryRequirements = buffer.GetBufferMemoryRequirements();
 
   uint32_t memoryTypeIndex = 0;
   if (MemoryTypeUtil::TryGetMemoryTypeIndex(memoryTypeIndex, m_device.GetPhysicalDevice().MemoryProperties, memoryRequirements.memoryTypeBits,
@@ -83,7 +83,7 @@ TEST_P(TestFixtureFslUtil_Vulkan1_0_TestDeviceMemoryUtil, FastUploadCoherent)
     allocateInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
     allocateInfo.allocationSize = memoryRequirements.size;
     allocateInfo.memoryTypeIndex = memoryTypeIndex;
-    RapidVulkan::Memory memory(m_device.Get(), allocateInfo);
+    const RapidVulkan::Memory memory(m_device.Get(), allocateInfo);
 
     const auto selectedMemory = m_device.GetPhysicalDevice().MemoryProperties.memoryTypes[memoryTypeIndex];
 
@@ -116,8 +116,8 @@ TEST_P(TestFixtureFslUtil_Vulkan1_0_TestDeviceMemoryUtil, FastUploadNonCoherent)
   bufferCreateInfo.usage = GetParam();
   bufferCreateInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
-  RapidVulkan::Buffer buffer(m_device.Get(), bufferCreateInfo);
-  auto memoryRequirements = buffer.GetBufferMemoryRequirements();
+  const RapidVulkan::Buffer buffer(m_device.Get(), bufferCreateInfo);
+  const auto memoryRequirements = buffer.GetBufferMemoryRequirements();
 
   uint32_t memoryTypeIndex = 0;
   if (MemoryTypeUtil::TryGetMemoryTypeIndex(memoryTypeIndex, m_device.GetPhysicalDevice().MemoryProperties, memoryRequirements.memoryTypeBits,
@@ -127,10 +127,10 @@ TEST_P(TestFixtureFslUtil_Vulkan1_0_TestDeviceMemoryUtil, FastUploadNonCoherent)
     allocateInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
     allocateInfo.allocationSize = memoryRequirements.size;
     allocateInfo.memoryTypeIndex = memoryTypeIndex;
-    RapidVulkan::Memory memory(m_device.Get(), allocateInfo);
+    const RapidVulkan::Memory memory(m_device.Get(), allocateInfo);
 
 
-    auto dstDeviceMemorySpan = DeviceMemoryUtil::CalcMemorySpan(memoryRequirements.size, nonCoherentAtomSize, 0, cbVertexData);
+    const auto dstDeviceMemorySpan = DeviceMemoryUtil::CalcMemorySpan(memoryRequirements.size, nonCoherentAtomSize, 0, cbVertexData);
     const auto selectedMemory = m_device.GetPhysicalDevice().MemoryProperties.memoryTypes[memoryTypeIndex];
 
     DeviceMemoryUtil::FastUploadNonCoherent(m_device.Get(), nonCoherentAtomSize, memory.Get(), memoryRequirements.size, selectedMemory.propertyFlags,
@@ -163,8 +163,8 @@ TEST_P(TestFixtureFslUtil_Vulkan1_0_TestDeviceMemoryUtil, FastUpload_Coherent)
   bufferCreateInfo.usage = GetParam();
   bufferCreateInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
-  RapidVulkan::Buffer buffer(m_device.Get(), bufferCreateInfo);
-  auto memoryRequirements = buffer.GetBufferMemoryRequirements();
+  const RapidVulkan::Buffer buffer(m_device.Get(), bufferCreateInfo);
+  const auto memoryRequirements = buffer.GetBufferMemoryRequirements();
 
   uint32_t memoryTypeIndex = 0;
   if (MemoryTypeUtil::TryGetMemoryTypeIndex(memoryTypeIndex, m_device.GetPhysicalDevice().MemoryProperties, memoryRequirements.memoryTypeBits,
@@ -174,7 +174,7 @@ TEST_P(TestFixtureFslUtil_Vulkan1_0_TestDeviceMemoryUtil, FastUpload_Coherent)
     allocateInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
     allocateInfo.allocationSize = memoryRequirements.size;
     allocateInfo.memoryTypeIndex = memoryTypeIndex;
-    RapidVulkan::Memory memory(m_device.Get(), allocateInfo);
+    const RapidVulkan::Memory memory(m_device.Get(), allocateInfo);
 
     const auto selectedMemory = m_device.GetPhysicalDevice().MemoryProperties.memoryTypes[memoryTypeIndex];
 
@@ -208,8 +208,8 @@ TEST_P(TestFixtureFslUtil_Vulkan1_0_TestDeviceMemoryUtil, FastUpload_NonCoherent
   bufferCreateInfo.usage = GetParam();
   bufferCreateInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
-  RapidVulkan::Buffer buffer(m_device.Get(), bufferCreateInfo);
-  auto memoryRequirements = buffer.GetBufferMemoryRequirements();
+  const RapidVulkan::Buffer buffer(m_device.Get(), bufferCreateInfo);
+  const auto memoryRequirements = buffer.GetBufferMemoryRequirements();
 
   uint32_t memoryTypeIndex = 0;
   if (MemoryTypeUtil::TryGetMemoryTypeIndex(memoryTypeIndex, m_device.GetPhysicalDevice().MemoryProperties, memoryRequirements.memoryTypeBits,
@@ -219,7 +219,7 @@ TEST_P(TestFixtureFslUtil_Vulkan1_0_TestDeviceMemoryUtil, FastUpload_NonCoherent
     allocateInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
     allocateInfo.allocationSize = memoryRequirements.size;
     allocateInfo.memoryTypeIndex = memoryTypeIndex;
-    RapidVulkan::Memory memory(m_device.Get(), allocateInfo);
+    const RapidVulkan::Memory memory(m_device.Get(), allocateInfo);
 
     const auto selectedMemory = m_device.GetPhysicalDevice().MemoryProperties.memoryTypes[memoryTypeIndex];
 

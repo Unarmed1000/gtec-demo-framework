@@ -109,6 +109,7 @@ namespace Fsl
       Resources& operator=(const Resources&) = delete;
       Resources(Resources&& other) noexcept = delete;
       Resources& operator=(Resources&& other) noexcept = delete;
+      ~Resources() = default;
     };
 
     struct DependentResources
@@ -149,6 +150,7 @@ namespace Fsl
       DependentResources& operator=(const DependentResources&) = delete;
       DependentResources(DependentResources&& other) noexcept = delete;
       DependentResources& operator=(DependentResources&& other) noexcept = delete;
+      ~DependentResources() = default;
 
       void Reset() noexcept
       {
@@ -226,8 +228,8 @@ namespace Fsl
     void DrawOffscreenRenderpasses(RapidVulkan::CommandBuffers& rCmdBuffers, const VulkanBasic::DrawContext& drawContext);
     void DrawFinalComposite(const uint32_t frameIndex, const VkCommandBuffer hCmdBuffer);
     VkPipelineLayout PrepareBlurPipeline(const BlurShaderType shaderType, const VkCommandBuffer hCmdBuffer, const uint32_t texelSize) const;
-    const RapidVulkan::GraphicsPipeline& GetBlurHPipeline(const BlurShaderType shaderType) const;
-    const RapidVulkan::GraphicsPipeline& GetBlurVPipeline(const BlurShaderType shaderType) const;
+    [[nodiscard]] const RapidVulkan::GraphicsPipeline& GetBlurHPipeline(const BlurShaderType shaderType) const;
+    [[nodiscard]] const RapidVulkan::GraphicsPipeline& GetBlurVPipeline(const BlurShaderType shaderType) const;
     void PostProcessBlurH(RapidVulkan::CommandBuffers& rCmdBuffers, const uint32_t frameIndex, const VkRenderPass renderPass,
                           const Vulkan::VUFramebuffer& dst, const VkDescriptorSet& srcDescriptorSet);
     void PostProcessBlurV(RapidVulkan::CommandBuffers& rCmdBuffers, const uint32_t frameIndex, const VkRenderPass renderPass,

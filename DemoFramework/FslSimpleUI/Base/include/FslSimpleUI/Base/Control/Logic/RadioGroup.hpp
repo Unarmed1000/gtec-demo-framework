@@ -48,10 +48,10 @@ namespace Fsl::UI
   public:
     explicit RadioGroup(const StringViewLite& name);
 
-    StringViewLite GetName() const;
+    [[nodiscard]] StringViewLite GetName() const;
 
 
-    std::size_t Count() const
+    [[nodiscard]] std::size_t Count() const
     {
       return m_members.size();
     }

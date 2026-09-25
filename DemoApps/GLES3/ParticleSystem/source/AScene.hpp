@@ -66,13 +66,13 @@ namespace Fsl
     virtual void Draw() {};
 
   protected:
-    PxSize2D GetSizePx() const
+    [[nodiscard]] PxSize2D GetSizePx() const
     {
       return m_sizePx;
     }
-    float GetAspectRatio() const;
+    [[nodiscard]] float GetAspectRatio() const;
 
-    std::shared_ptr<IContentManager> GetContentManager() const
+    [[nodiscard]] std::shared_ptr<IContentManager> GetContentManager() const
     {
       return m_contentManager;
     }

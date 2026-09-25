@@ -55,7 +55,7 @@ namespace Fsl
                                                                                         const ReadOnlySpan<BitmapFontChar> srcSpan,
                                                                                         const uint32_t imageDpi, const uint32_t densityDpi)
   {
-    SpriteUnitConverter unitConverter(densityDpi);
+    const SpriteUnitConverter unitConverter(densityDpi);
     //
 
     const std::size_t count = srcSpan.size();
@@ -64,10 +64,10 @@ namespace Fsl
     {
       const BitmapFontChar& src = srcSpan[i];
 
-      NativeTextureArea textureArea = spriteNativeAreaCalc.CalcNativeTextureArea(src.SrcTextureRectPx, textureExtentPx);
-      PxSize2DF scaledSizePxf = unitConverter.CalcScaledPxSize2DF(src.SrcTextureRectPx.GetExtent(), imageDpi);
-      PxVector2 offsetPxf = unitConverter.CalcScaledOffsetPxVector2(src.OffsetPx, imageDpi);
-      float xAdvancePxf = unitConverter.CalcScaledOffsetValuePxf(src.XAdvancePx.Value, imageDpi);
+      const NativeTextureArea textureArea = spriteNativeAreaCalc.CalcNativeTextureArea(src.SrcTextureRectPx, textureExtentPx);
+      const PxSize2DF scaledSizePxf = unitConverter.CalcScaledPxSize2DF(src.SrcTextureRectPx.GetExtent(), imageDpi);
+      const PxVector2 offsetPxf = unitConverter.CalcScaledOffsetPxVector2(src.OffsetPx, imageDpi);
+      const float xAdvancePxf = unitConverter.CalcScaledOffsetValuePxf(src.XAdvancePx.Value, imageDpi);
 
       dst[i] = SpriteFontCharInfo(CoreFontCharInfo(src.Id, TypeConverter::To<PxRectangleU16>(src.SrcTextureRectPx), src.OffsetPx, src.XAdvancePx),
                                   RenderFontCharInfo(textureArea, scaledSizePxf, offsetPxf, xAdvancePxf));

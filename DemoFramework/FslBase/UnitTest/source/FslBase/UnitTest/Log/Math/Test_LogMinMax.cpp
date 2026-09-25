@@ -43,7 +43,7 @@ namespace
 
 TEST(TestLog_Math_LogMinMax, Log)
 {
-  MinMax<uint32_t> value(1, 2);
+  const MinMax<uint32_t> value(1, 2);
 
   std::stringstream stream;
   stream << value;

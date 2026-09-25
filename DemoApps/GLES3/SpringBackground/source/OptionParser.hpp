@@ -47,19 +47,19 @@ namespace Fsl
     OptionParser();
     ~OptionParser() override;
 
-    int32_t GetRenderId() const
+    [[nodiscard]] int32_t GetRenderId() const
     {
       return m_renderId;
     }
-    bool IsBloomEnabled() const
+    [[nodiscard]] bool IsBloomEnabled() const
     {
       return m_bloomEnabled;
     }
-    bool IsShowBuffersEnabled() const
+    [[nodiscard]] bool IsShowBuffersEnabled() const
     {
       return m_showBuffers;
     }
-    Point2 GetGridResolution() const
+    [[nodiscard]] Point2 GetGridResolution() const
     {
       return m_gridResolution;
     }

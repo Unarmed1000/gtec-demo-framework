@@ -51,13 +51,13 @@ TEST(TestBits_ByteSpanUtil_WriteLE, WriteUInt8LE)
   std::array<uint8_t, 16> src = {0x01, 0x02, 0x03, 0xFF, 0x13, 0x37, 0x42, 0x7F, 0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17};
   std::array<uint8_t, 16> dst{};
   const ReadOnlySpan<uint8_t> srcSpan(src.data(), src.size());
-  Span<uint8_t> dstSpan(dst.data(), dst.size());
+  const Span<uint8_t> dstSpan(dst.data(), dst.size());
 
   for (std::size_t i = 0; i < src.size(); ++i)
   {
-    auto value = ByteSpanUtil::ReadUInt8LE(srcSpan, i);
+    const auto value = ByteSpanUtil::ReadUInt8LE(srcSpan, i);
     ByteSpanUtil::WriteUInt8LE(dstSpan, i, value);
-    auto writtenValue = ByteSpanUtil::ReadUInt8LE(dstSpan, i);
+    const auto writtenValue = ByteSpanUtil::ReadUInt8LE(dstSpan, i);
     EXPECT_EQ(value, writtenValue);
   }
   EXPECT_TRUE(SpanUtil::ValueEquals(srcSpan, dstSpan.AsReadOnlySpan()));
@@ -69,13 +69,13 @@ TEST(TestBits_ByteSpanUtil_WriteLE, WriteUInt16LE)
   std::array<uint8_t, 16> src = {0x01, 0x02, 0x03, 0xFF, 0x13, 0x37, 0x42, 0x7F, 0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17};
   std::array<uint8_t, 16> dst{};
   const ReadOnlySpan<uint8_t> srcSpan(src.data(), src.size());
-  Span<uint8_t> dstSpan(dst.data(), dst.size());
+  const Span<uint8_t> dstSpan(dst.data(), dst.size());
 
   for (std::size_t i = 0; i < (src.size() - 1); ++i)
   {
-    auto value = ByteSpanUtil::ReadUInt16LE(srcSpan, i);
+    const auto value = ByteSpanUtil::ReadUInt16LE(srcSpan, i);
     ByteSpanUtil::WriteUInt16LE(dstSpan, i, value);
-    auto writtenValue = ByteSpanUtil::ReadUInt16LE(dstSpan, i);
+    const auto writtenValue = ByteSpanUtil::ReadUInt16LE(dstSpan, i);
     EXPECT_EQ(value, writtenValue);
   }
 }
@@ -86,13 +86,13 @@ TEST(TestBits_ByteSpanUtil_WriteLE, WriteUInt32LE)
   std::array<uint8_t, 16> src = {0x01, 0x02, 0x03, 0xFF, 0x13, 0x37, 0x42, 0x7F, 0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17};
   std::array<uint8_t, 16> dst{};
   const ReadOnlySpan<uint8_t> srcSpan(src.data(), src.size());
-  Span<uint8_t> dstSpan(dst.data(), dst.size());
+  const Span<uint8_t> dstSpan(dst.data(), dst.size());
 
   for (std::size_t i = 0; i < (src.size() - 3); ++i)
   {
-    auto value = ByteSpanUtil::ReadUInt32LE(srcSpan, i);
+    const auto value = ByteSpanUtil::ReadUInt32LE(srcSpan, i);
     ByteSpanUtil::WriteUInt32LE(dstSpan, i, value);
-    auto writtenValue = ByteSpanUtil::ReadUInt32LE(dstSpan, i);
+    const auto writtenValue = ByteSpanUtil::ReadUInt32LE(dstSpan, i);
     EXPECT_EQ(value, writtenValue);
   }
 }
@@ -103,13 +103,13 @@ TEST(TestBits_ByteSpanUtil_WriteLE, WriteUInt64LE)
   std::array<uint8_t, 16> src = {0x01, 0x02, 0x03, 0xFF, 0x13, 0x37, 0x42, 0x7F, 0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17};
   std::array<uint8_t, 16> dst{};
   const ReadOnlySpan<uint8_t> srcSpan(src.data(), src.size());
-  Span<uint8_t> dstSpan(dst.data(), dst.size());
+  const Span<uint8_t> dstSpan(dst.data(), dst.size());
 
   for (std::size_t i = 0; i < (src.size() - 7); ++i)
   {
-    auto value = ByteSpanUtil::ReadUInt64LE(srcSpan, i);
+    const auto value = ByteSpanUtil::ReadUInt64LE(srcSpan, i);
     ByteSpanUtil::WriteUInt64LE(dstSpan, i, value);
-    auto writtenValue = ByteSpanUtil::ReadUInt64LE(dstSpan, i);
+    const auto writtenValue = ByteSpanUtil::ReadUInt64LE(dstSpan, i);
     EXPECT_EQ(value, writtenValue);
   }
 }
@@ -120,13 +120,13 @@ TEST(TestBits_ByteSpanUtil_WriteLE, WriteInt8LE)
   std::array<uint8_t, 16> src = {0x01, 0x02, 0x03, 0xFF, 0x13, 0x37, 0x42, 0x7F, 0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17};
   std::array<uint8_t, 16> dst{};
   const ReadOnlySpan<uint8_t> srcSpan(src.data(), src.size());
-  Span<uint8_t> dstSpan(dst.data(), dst.size());
+  const Span<uint8_t> dstSpan(dst.data(), dst.size());
 
   for (std::size_t i = 0; i < src.size(); ++i)
   {
-    auto value = ByteSpanUtil::ReadInt8LE(srcSpan, i);
+    const auto value = ByteSpanUtil::ReadInt8LE(srcSpan, i);
     ByteSpanUtil::WriteInt8LE(dstSpan, i, value);
-    auto writtenValue = ByteSpanUtil::ReadInt8LE(dstSpan, i);
+    const auto writtenValue = ByteSpanUtil::ReadInt8LE(dstSpan, i);
     EXPECT_EQ(value, writtenValue);
   }
   EXPECT_TRUE(SpanUtil::ValueEquals(srcSpan, dstSpan.AsReadOnlySpan()));
@@ -138,13 +138,13 @@ TEST(TestBits_ByteSpanUtil_WriteLE, WriteInt16LE)
   std::array<uint8_t, 16> src = {0x01, 0x02, 0x03, 0xFF, 0x13, 0x37, 0x42, 0x7F, 0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17};
   std::array<uint8_t, 16> dst{};
   const ReadOnlySpan<uint8_t> srcSpan(src.data(), src.size());
-  Span<uint8_t> dstSpan(dst.data(), dst.size());
+  const Span<uint8_t> dstSpan(dst.data(), dst.size());
 
   for (std::size_t i = 0; i < (src.size() - 1); ++i)
   {
-    auto value = ByteSpanUtil::ReadInt16LE(srcSpan, i);
+    const auto value = ByteSpanUtil::ReadInt16LE(srcSpan, i);
     ByteSpanUtil::WriteInt16LE(dstSpan, i, value);
-    auto writtenValue = ByteSpanUtil::ReadInt16LE(dstSpan, i);
+    const auto writtenValue = ByteSpanUtil::ReadInt16LE(dstSpan, i);
     EXPECT_EQ(value, writtenValue);
   }
 }
@@ -155,13 +155,13 @@ TEST(TestBits_ByteSpanUtil_WriteLE, WriteInt32LE)
   std::array<uint8_t, 16> src = {0x01, 0x02, 0x03, 0xFF, 0x13, 0x37, 0x42, 0x7F, 0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17};
   std::array<uint8_t, 16> dst{};
   const ReadOnlySpan<uint8_t> srcSpan(src.data(), src.size());
-  Span<uint8_t> dstSpan(dst.data(), dst.size());
+  const Span<uint8_t> dstSpan(dst.data(), dst.size());
 
   for (std::size_t i = 0; i < (src.size() - 3); ++i)
   {
-    auto value = ByteSpanUtil::ReadInt32LE(srcSpan, i);
+    const auto value = ByteSpanUtil::ReadInt32LE(srcSpan, i);
     ByteSpanUtil::WriteInt32LE(dstSpan, i, value);
-    auto writtenValue = ByteSpanUtil::ReadInt32LE(dstSpan, i);
+    const auto writtenValue = ByteSpanUtil::ReadInt32LE(dstSpan, i);
     EXPECT_EQ(value, writtenValue);
   }
 }
@@ -172,13 +172,13 @@ TEST(TestBits_ByteSpanUtil_WriteLE, WriteInt64LE)
   std::array<uint8_t, 16> src = {0x01, 0x02, 0x03, 0xFF, 0x13, 0x37, 0x42, 0x7F, 0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17};
   std::array<uint8_t, 16> dst{};
   const ReadOnlySpan<uint8_t> srcSpan(src.data(), src.size());
-  Span<uint8_t> dstSpan(dst.data(), dst.size());
+  const Span<uint8_t> dstSpan(dst.data(), dst.size());
 
   for (std::size_t i = 0; i < (src.size() - 7); ++i)
   {
-    auto value = ByteSpanUtil::ReadInt64LE(srcSpan, i);
+    const auto value = ByteSpanUtil::ReadInt64LE(srcSpan, i);
     ByteSpanUtil::WriteInt64LE(dstSpan, i, value);
-    auto writtenValue = ByteSpanUtil::ReadInt64LE(dstSpan, i);
+    const auto writtenValue = ByteSpanUtil::ReadInt64LE(dstSpan, i);
     EXPECT_EQ(value, writtenValue);
   }
 }
@@ -191,13 +191,13 @@ TEST(TestBits_ByteSpanUtil_WriteLE, WriteLE_UInt8)
   std::array<uint8_t, 16> src = {0x01, 0x02, 0x03, 0xFF, 0x13, 0x37, 0x42, 0x7F, 0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17};
   std::array<uint8_t, 16> dst{};
   const ReadOnlySpan<uint8_t> srcSpan(src.data(), src.size());
-  Span<uint8_t> dstSpan(dst.data(), dst.size());
+  const Span<uint8_t> dstSpan(dst.data(), dst.size());
 
   for (std::size_t i = 0; i < src.size(); ++i)
   {
-    auto value = ByteSpanUtil::ReadUInt8LE(srcSpan, i);
+    const auto value = ByteSpanUtil::ReadUInt8LE(srcSpan, i);
     ByteSpanUtil::WriteLE(dstSpan, i, value);
-    auto writtenValue = ByteSpanUtil::ReadUInt8LE(dstSpan, i);
+    const auto writtenValue = ByteSpanUtil::ReadUInt8LE(dstSpan, i);
     EXPECT_EQ(value, writtenValue);
   }
   EXPECT_TRUE(SpanUtil::ValueEquals(srcSpan, dstSpan.AsReadOnlySpan()));
@@ -209,13 +209,13 @@ TEST(TestBits_ByteSpanUtil_WriteLE, WriteWriteLE_UInt16)
   std::array<uint8_t, 16> src = {0x01, 0x02, 0x03, 0xFF, 0x13, 0x37, 0x42, 0x7F, 0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17};
   std::array<uint8_t, 16> dst{};
   const ReadOnlySpan<uint8_t> srcSpan(src.data(), src.size());
-  Span<uint8_t> dstSpan(dst.data(), dst.size());
+  const Span<uint8_t> dstSpan(dst.data(), dst.size());
 
   for (std::size_t i = 0; i < (src.size() - 1); ++i)
   {
-    auto value = ByteSpanUtil::ReadUInt16LE(srcSpan, i);
+    const auto value = ByteSpanUtil::ReadUInt16LE(srcSpan, i);
     ByteSpanUtil::WriteLE(dstSpan, i, value);
-    auto writtenValue = ByteSpanUtil::ReadUInt16LE(dstSpan, i);
+    const auto writtenValue = ByteSpanUtil::ReadUInt16LE(dstSpan, i);
     EXPECT_EQ(value, writtenValue);
   }
 }
@@ -226,13 +226,13 @@ TEST(TestBits_ByteSpanUtil_WriteLE, WriteLE_UInt32)
   std::array<uint8_t, 16> src = {0x01, 0x02, 0x03, 0xFF, 0x13, 0x37, 0x42, 0x7F, 0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17};
   std::array<uint8_t, 16> dst{};
   const ReadOnlySpan<uint8_t> srcSpan(src.data(), src.size());
-  Span<uint8_t> dstSpan(dst.data(), dst.size());
+  const Span<uint8_t> dstSpan(dst.data(), dst.size());
 
   for (std::size_t i = 0; i < (src.size() - 3); ++i)
   {
-    auto value = ByteSpanUtil::ReadUInt32LE(srcSpan, i);
+    const auto value = ByteSpanUtil::ReadUInt32LE(srcSpan, i);
     ByteSpanUtil::WriteLE(dstSpan, i, value);
-    auto writtenValue = ByteSpanUtil::ReadUInt32LE(dstSpan, i);
+    const auto writtenValue = ByteSpanUtil::ReadUInt32LE(dstSpan, i);
     EXPECT_EQ(value, writtenValue);
   }
 }
@@ -243,13 +243,13 @@ TEST(TestBits_ByteSpanUtil_WriteLE, WriteLE_UInt64)
   std::array<uint8_t, 16> src = {0x01, 0x02, 0x03, 0xFF, 0x13, 0x37, 0x42, 0x7F, 0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17};
   std::array<uint8_t, 16> dst{};
   const ReadOnlySpan<uint8_t> srcSpan(src.data(), src.size());
-  Span<uint8_t> dstSpan(dst.data(), dst.size());
+  const Span<uint8_t> dstSpan(dst.data(), dst.size());
 
   for (std::size_t i = 0; i < (src.size() - 7); ++i)
   {
-    auto value = ByteSpanUtil::ReadUInt64LE(srcSpan, i);
+    const auto value = ByteSpanUtil::ReadUInt64LE(srcSpan, i);
     ByteSpanUtil::WriteLE(dstSpan, i, value);
-    auto writtenValue = ByteSpanUtil::ReadUInt64LE(dstSpan, i);
+    const auto writtenValue = ByteSpanUtil::ReadUInt64LE(dstSpan, i);
     EXPECT_EQ(value, writtenValue);
   }
 }
@@ -260,13 +260,13 @@ TEST(TestBits_ByteSpanUtil_WriteLE, WriteLE_Int8)
   std::array<uint8_t, 16> src = {0x01, 0x02, 0x03, 0xFF, 0x13, 0x37, 0x42, 0x7F, 0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17};
   std::array<uint8_t, 16> dst{};
   const ReadOnlySpan<uint8_t> srcSpan(src.data(), src.size());
-  Span<uint8_t> dstSpan(dst.data(), dst.size());
+  const Span<uint8_t> dstSpan(dst.data(), dst.size());
 
   for (std::size_t i = 0; i < src.size(); ++i)
   {
-    auto value = ByteSpanUtil::ReadInt8LE(srcSpan, i);
+    const auto value = ByteSpanUtil::ReadInt8LE(srcSpan, i);
     ByteSpanUtil::WriteLE(dstSpan, i, value);
-    auto writtenValue = ByteSpanUtil::ReadInt8LE(dstSpan, i);
+    const auto writtenValue = ByteSpanUtil::ReadInt8LE(dstSpan, i);
     EXPECT_EQ(value, writtenValue);
   }
   EXPECT_TRUE(SpanUtil::ValueEquals(srcSpan, dstSpan.AsReadOnlySpan()));
@@ -278,13 +278,13 @@ TEST(TestBits_ByteSpanUtil_WriteLE, WriteLE_Int16)
   std::array<uint8_t, 16> src = {0x01, 0x02, 0x03, 0xFF, 0x13, 0x37, 0x42, 0x7F, 0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17};
   std::array<uint8_t, 16> dst{};
   const ReadOnlySpan<uint8_t> srcSpan(src.data(), src.size());
-  Span<uint8_t> dstSpan(dst.data(), dst.size());
+  const Span<uint8_t> dstSpan(dst.data(), dst.size());
 
   for (std::size_t i = 0; i < (src.size() - 1); ++i)
   {
-    auto value = ByteSpanUtil::ReadInt16LE(srcSpan, i);
+    const auto value = ByteSpanUtil::ReadInt16LE(srcSpan, i);
     ByteSpanUtil::WriteLE(dstSpan, i, value);
-    auto writtenValue = ByteSpanUtil::ReadInt16LE(dstSpan, i);
+    const auto writtenValue = ByteSpanUtil::ReadInt16LE(dstSpan, i);
     EXPECT_EQ(value, writtenValue);
   }
 }
@@ -295,13 +295,13 @@ TEST(TestBits_ByteSpanUtil_WriteLE, WriteLE_Int32)
   std::array<uint8_t, 16> src = {0x01, 0x02, 0x03, 0xFF, 0x13, 0x37, 0x42, 0x7F, 0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17};
   std::array<uint8_t, 16> dst{};
   const ReadOnlySpan<uint8_t> srcSpan(src.data(), src.size());
-  Span<uint8_t> dstSpan(dst.data(), dst.size());
+  const Span<uint8_t> dstSpan(dst.data(), dst.size());
 
   for (std::size_t i = 0; i < (src.size() - 3); ++i)
   {
-    auto value = ByteSpanUtil::ReadInt32LE(srcSpan, i);
+    const auto value = ByteSpanUtil::ReadInt32LE(srcSpan, i);
     ByteSpanUtil::WriteLE(dstSpan, i, value);
-    auto writtenValue = ByteSpanUtil::ReadInt32LE(dstSpan, i);
+    const auto writtenValue = ByteSpanUtil::ReadInt32LE(dstSpan, i);
     EXPECT_EQ(value, writtenValue);
   }
 }
@@ -312,13 +312,13 @@ TEST(TestBits_ByteSpanUtil_WriteLE, WriteLE_Int64)
   std::array<uint8_t, 16> src = {0x01, 0x02, 0x03, 0xFF, 0x13, 0x37, 0x42, 0x7F, 0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17};
   std::array<uint8_t, 16> dst{};
   const ReadOnlySpan<uint8_t> srcSpan(src.data(), src.size());
-  Span<uint8_t> dstSpan(dst.data(), dst.size());
+  const Span<uint8_t> dstSpan(dst.data(), dst.size());
 
   for (std::size_t i = 0; i < (src.size() - 7); ++i)
   {
-    auto value = ByteSpanUtil::ReadInt64LE(srcSpan, i);
+    const auto value = ByteSpanUtil::ReadInt64LE(srcSpan, i);
     ByteSpanUtil::WriteLE(dstSpan, i, value);
-    auto writtenValue = ByteSpanUtil::ReadInt64LE(dstSpan, i);
+    const auto writtenValue = ByteSpanUtil::ReadInt64LE(dstSpan, i);
     EXPECT_EQ(value, writtenValue);
   }
 }
@@ -341,19 +341,19 @@ TEST(TestBits_ByteSpanUtil_WriteLE, WriteLE_Float)
 
 TEST(TestBits_ByteSpanUtil_WriteLE, WriteLE_Float2)
 {
-  std::array<float, 9> src{1.0f,
-                           0.5f,
-                           1337.0f,
-                           0.9834985f,
-                           std::numeric_limits<float>::infinity(),
-                           std::numeric_limits<float>::min(),
-                           std::numeric_limits<float>::max(),
-                           std::numeric_limits<float>::lowest(),
-                           std::numeric_limits<float>::epsilon()};
+  const std::array<float, 9> src{1.0f,
+                                 0.5f,
+                                 1337.0f,
+                                 0.9834985f,
+                                 std::numeric_limits<float>::infinity(),
+                                 std::numeric_limits<float>::min(),
+                                 std::numeric_limits<float>::max(),
+                                 std::numeric_limits<float>::lowest(),
+                                 std::numeric_limits<float>::epsilon()};
 
   std::array<uint8_t, sizeof(float) * src.size()> dst{};
-  Span<uint8_t> dstSpan(dst.data(), dst.size());
-  ReadOnlySpan<uint8_t> srcSpan(dst.data(), dst.size());
+  const Span<uint8_t> dstSpan(dst.data(), dst.size());
+  const ReadOnlySpan<uint8_t> srcSpan(dst.data(), dst.size());
 
   for (const auto& entry : src)
   {
@@ -386,19 +386,19 @@ TEST(TestBits_ByteSpanUtil_WriteLE, WriteLE_Double)
 
 TEST(TestBits_ByteSpanUtil_WriteLE, WriteLE_Double2)
 {
-  std::array<double, 9> src{1.0,
-                            0.5,
-                            1337.0,
-                            0.9834985,
-                            std::numeric_limits<double>::infinity(),
-                            std::numeric_limits<double>::min(),
-                            std::numeric_limits<double>::max(),
-                            std::numeric_limits<double>::lowest(),
-                            std::numeric_limits<double>::epsilon()};
+  const std::array<double, 9> src{1.0,
+                                  0.5,
+                                  1337.0,
+                                  0.9834985,
+                                  std::numeric_limits<double>::infinity(),
+                                  std::numeric_limits<double>::min(),
+                                  std::numeric_limits<double>::max(),
+                                  std::numeric_limits<double>::lowest(),
+                                  std::numeric_limits<double>::epsilon()};
 
   std::array<uint8_t, sizeof(double) * src.size()> dst{};
-  Span<uint8_t> dstSpan(dst.data(), dst.size());
-  ReadOnlySpan<uint8_t> srcSpan(dst.data(), dst.size());
+  const Span<uint8_t> dstSpan(dst.data(), dst.size());
+  const ReadOnlySpan<uint8_t> srcSpan(dst.data(), dst.size());
 
   for (const auto& entry : src)
   {

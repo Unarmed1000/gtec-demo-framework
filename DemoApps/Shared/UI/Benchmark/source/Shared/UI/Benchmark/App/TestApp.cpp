@@ -107,17 +107,17 @@ namespace Fsl
     {
       if (theEvent->GetSource() == m_uiProfile.Control.ButtonShowDialog0)
       {
-        auto activity = UI::SimpleDialogActivityFactory::CreateLeftDialog(m_uiProfile.ActivityStack, m_controlFactory);
+        const auto activity = UI::SimpleDialogActivityFactory::CreateLeftDialog(m_uiProfile.ActivityStack, m_controlFactory);
         m_uiProfile.ActivityStack->Push(activity);
       }
       else if (theEvent->GetSource() == m_uiProfile.Control.ButtonShowDialog1)
       {
-        auto activity = UI::SimpleDialogActivityFactory::CreateCenterDialog(m_uiProfile.ActivityStack, m_controlFactory);
+        const auto activity = UI::SimpleDialogActivityFactory::CreateCenterDialog(m_uiProfile.ActivityStack, m_controlFactory);
         m_uiProfile.ActivityStack->Push(activity);
       }
       else if (theEvent->GetSource() == m_uiProfile.Control.ButtonShowDialog2)
       {
-        auto activity = UI::SimpleDialogActivityFactory::CreateRightDialog(m_uiProfile.ActivityStack, m_controlFactory);
+        const auto activity = UI::SimpleDialogActivityFactory::CreateRightDialog(m_uiProfile.ActivityStack, m_controlFactory);
         m_uiProfile.ActivityStack->Push(activity);
       }
     }
@@ -193,7 +193,7 @@ namespace Fsl
     m_uiExtension->SYS_SetRenderSystemViewport(viewportPx);
     m_background.SYS_SetRenderSystemViewport(viewportPx);
 
-    DemoWindowMetrics metrics(TypeConverter::To<PxExtent2D>(viewportPx.GetSize()), m_windowMetrics.ExactDpi, m_windowMetrics.DensityDpi);
+    const DemoWindowMetrics metrics(TypeConverter::To<PxExtent2D>(viewportPx.GetSize()), m_windowMetrics.ExactDpi, m_windowMetrics.DensityDpi);
     OnConfigurationChanged(metrics);
   }
 
@@ -271,71 +271,71 @@ namespace Fsl
 
   TestApp::MainUI TestApp::CreateUIScene0(UI::Theme::IThemeControlFactory& uiFactory)
   {
-    auto context = m_uiExtension->GetContext();
+    const auto context = m_uiExtension->GetContext();
 
     // WARNING:
     // The recorded benchmarks are currently dependent on the window creation order for their window-id generation code
     // so keep the order 100% fixed.
 
-    auto winLayout0 = CreateSwitchUI(uiFactory);
-    auto winLayout1 = CreateCheckBoxUI(uiFactory);
-    auto winLayout2 = CreateRadioButtonUI(uiFactory);
-    auto winLayout3 = CreateSliderUI(uiFactory, UI::LayoutOrientation::Horizontal);
-    auto winLayout4 = CreateSliderUI(uiFactory, UI::LayoutOrientation::Vertical);
-    auto winLayout5 = CreateTextButtonUI(uiFactory);
-    auto winLayout6 = CreateFmtValueLabelUI(uiFactory);
-    auto winLayout7 = CreateBasicImageUI(uiFactory);
-    auto winLayout8 = CreateLabelUI(uiFactory);
+    const auto winLayout0 = CreateSwitchUI(uiFactory);
+    const auto winLayout1 = CreateCheckBoxUI(uiFactory);
+    const auto winLayout2 = CreateRadioButtonUI(uiFactory);
+    const auto winLayout3 = CreateSliderUI(uiFactory, UI::LayoutOrientation::Horizontal);
+    const auto winLayout4 = CreateSliderUI(uiFactory, UI::LayoutOrientation::Vertical);
+    const auto winLayout5 = CreateTextButtonUI(uiFactory);
+    const auto winLayout6 = CreateFmtValueLabelUI(uiFactory);
+    const auto winLayout7 = CreateBasicImageUI(uiFactory);
+    const auto winLayout8 = CreateLabelUI(uiFactory);
 
     // auto winLayout8 = CreateSwitchUI(uiFactory);
-    auto winLayout9 = CreateCheckBoxUI(uiFactory);
-    auto winLayout10 = CreateRadioButtonUI(uiFactory);
-    auto winLayout11 = CreateSliderUI2(uiFactory, UI::LayoutOrientation::Horizontal);
-    auto winLayout12 = CreateSliderUI2(uiFactory, UI::LayoutOrientation::Vertical);
-    auto winLayout13 = CreateTextButtonUI(uiFactory);
-    auto winLayout14 = CreateFmtValueLabelUI(uiFactory);
-    auto winLayout15 = CreateBasicImageUI(uiFactory);
+    const auto winLayout9 = CreateCheckBoxUI(uiFactory);
+    const auto winLayout10 = CreateRadioButtonUI(uiFactory);
+    const auto winLayout11 = CreateSliderUI2(uiFactory, UI::LayoutOrientation::Horizontal);
+    const auto winLayout12 = CreateSliderUI2(uiFactory, UI::LayoutOrientation::Vertical);
+    const auto winLayout13 = CreateTextButtonUI(uiFactory);
+    const auto winLayout14 = CreateFmtValueLabelUI(uiFactory);
+    const auto winLayout15 = CreateBasicImageUI(uiFactory);
 
-    auto winLayout16 = CreateSwitchUI(uiFactory);
-    auto winLayout17 = CreateCheckBoxUI(uiFactory);
-    auto winLayout18 = CreateRadioButtonUI(uiFactory);
-    auto winLayout19 = CreateSliderUI(uiFactory, UI::LayoutOrientation::Horizontal);
-    auto winLayout20 = CreateSliderUI(uiFactory, UI::LayoutOrientation::Vertical);
-    auto winLayout21 = CreateTextButtonUI(uiFactory);
-    auto winLayout22 = CreateFmtValueLabelUI(uiFactory);
-    auto winLayout23 = CreateBasicImageUI(uiFactory);
+    const auto winLayout16 = CreateSwitchUI(uiFactory);
+    const auto winLayout17 = CreateCheckBoxUI(uiFactory);
+    const auto winLayout18 = CreateRadioButtonUI(uiFactory);
+    const auto winLayout19 = CreateSliderUI(uiFactory, UI::LayoutOrientation::Horizontal);
+    const auto winLayout20 = CreateSliderUI(uiFactory, UI::LayoutOrientation::Vertical);
+    const auto winLayout21 = CreateTextButtonUI(uiFactory);
+    const auto winLayout22 = CreateFmtValueLabelUI(uiFactory);
+    const auto winLayout23 = CreateBasicImageUI(uiFactory);
 
-    auto top = CreateUIScene0Top(uiFactory);
+    const auto top = CreateUIScene0Top(uiFactory);
 
-    auto window0 = uiFactory.CreateBackgroundWindow(UI::Theme::WindowType::Normal, winLayout0.Content, UI::ItemAlignment::Stretch);
-    auto window1 = uiFactory.CreateBackgroundWindow(UI::Theme::WindowType::Normal, winLayout1.Content, UI::ItemAlignment::Stretch);
-    auto window2 = uiFactory.CreateBackgroundWindow(UI::Theme::WindowType::Normal, winLayout2.Content, UI::ItemAlignment::Stretch);
-    auto window3 = uiFactory.CreateBackgroundWindow(UI::Theme::WindowType::Normal, winLayout3.Content, UI::ItemAlignment::Stretch);
-    auto window4 = uiFactory.CreateBackgroundWindow(UI::Theme::WindowType::Normal, winLayout4.Content, UI::ItemAlignment::Stretch);
-    auto window5 = uiFactory.CreateBackgroundWindow(UI::Theme::WindowType::Normal, winLayout5.Content, UI::ItemAlignment::Stretch);
-    auto window6 = uiFactory.CreateBackgroundWindow(UI::Theme::WindowType::Normal, winLayout6.Content, UI::ItemAlignment::Stretch);
+    const auto window0 = uiFactory.CreateBackgroundWindow(UI::Theme::WindowType::Normal, winLayout0.Content, UI::ItemAlignment::Stretch);
+    const auto window1 = uiFactory.CreateBackgroundWindow(UI::Theme::WindowType::Normal, winLayout1.Content, UI::ItemAlignment::Stretch);
+    const auto window2 = uiFactory.CreateBackgroundWindow(UI::Theme::WindowType::Normal, winLayout2.Content, UI::ItemAlignment::Stretch);
+    const auto window3 = uiFactory.CreateBackgroundWindow(UI::Theme::WindowType::Normal, winLayout3.Content, UI::ItemAlignment::Stretch);
+    const auto window4 = uiFactory.CreateBackgroundWindow(UI::Theme::WindowType::Normal, winLayout4.Content, UI::ItemAlignment::Stretch);
+    const auto window5 = uiFactory.CreateBackgroundWindow(UI::Theme::WindowType::Normal, winLayout5.Content, UI::ItemAlignment::Stretch);
+    const auto window6 = uiFactory.CreateBackgroundWindow(UI::Theme::WindowType::Normal, winLayout6.Content, UI::ItemAlignment::Stretch);
 
-    auto window7 = uiFactory.CreateBackgroundWindow(UI::Theme::WindowType::Normal, winLayout7.Content, UI::ItemAlignment::Stretch);
-    auto window8 = uiFactory.CreateBackgroundWindow(UI::Theme::WindowType::Normal, winLayout8.Content, UI::ItemAlignment::Stretch);
-    auto window9 = uiFactory.CreateBackgroundWindow(UI::Theme::WindowType::Normal, winLayout9.Content, UI::ItemAlignment::Stretch);
-    auto window10 = uiFactory.CreateBackgroundWindow(UI::Theme::WindowType::Normal, winLayout10.Content, UI::ItemAlignment::Stretch);
-    auto window11 = uiFactory.CreateBackgroundWindow(UI::Theme::WindowType::Normal, winLayout11.Content, UI::ItemAlignment::Stretch);
-    auto window12 = uiFactory.CreateBackgroundWindow(UI::Theme::WindowType::Normal, winLayout12.Content, UI::ItemAlignment::Stretch);
-    auto window13 = uiFactory.CreateBackgroundWindow(UI::Theme::WindowType::Normal, winLayout13.Content, UI::ItemAlignment::Stretch);
+    const auto window7 = uiFactory.CreateBackgroundWindow(UI::Theme::WindowType::Normal, winLayout7.Content, UI::ItemAlignment::Stretch);
+    const auto window8 = uiFactory.CreateBackgroundWindow(UI::Theme::WindowType::Normal, winLayout8.Content, UI::ItemAlignment::Stretch);
+    const auto window9 = uiFactory.CreateBackgroundWindow(UI::Theme::WindowType::Normal, winLayout9.Content, UI::ItemAlignment::Stretch);
+    const auto window10 = uiFactory.CreateBackgroundWindow(UI::Theme::WindowType::Normal, winLayout10.Content, UI::ItemAlignment::Stretch);
+    const auto window11 = uiFactory.CreateBackgroundWindow(UI::Theme::WindowType::Normal, winLayout11.Content, UI::ItemAlignment::Stretch);
+    const auto window12 = uiFactory.CreateBackgroundWindow(UI::Theme::WindowType::Normal, winLayout12.Content, UI::ItemAlignment::Stretch);
+    const auto window13 = uiFactory.CreateBackgroundWindow(UI::Theme::WindowType::Normal, winLayout13.Content, UI::ItemAlignment::Stretch);
 
-    auto window14 = uiFactory.CreateBackgroundWindow(UI::Theme::WindowType::Normal, winLayout14.Content, UI::ItemAlignment::Stretch);
-    auto window15 = uiFactory.CreateBackgroundWindow(UI::Theme::WindowType::Normal, winLayout15.Content, UI::ItemAlignment::Stretch);
-    auto window16 = uiFactory.CreateBackgroundWindow(UI::Theme::WindowType::Normal, winLayout16.Content, UI::ItemAlignment::Stretch);
-    auto window17 = uiFactory.CreateBackgroundWindow(UI::Theme::WindowType::Normal, winLayout17.Content, UI::ItemAlignment::Stretch);
-    auto window18 = uiFactory.CreateBackgroundWindow(UI::Theme::WindowType::Normal, winLayout18.Content, UI::ItemAlignment::Stretch);
-    auto window19 = uiFactory.CreateBackgroundWindow(UI::Theme::WindowType::Normal, winLayout19.Content, UI::ItemAlignment::Stretch);
-    auto window20 = uiFactory.CreateBackgroundWindow(UI::Theme::WindowType::Normal, winLayout20.Content, UI::ItemAlignment::Stretch);
+    const auto window14 = uiFactory.CreateBackgroundWindow(UI::Theme::WindowType::Normal, winLayout14.Content, UI::ItemAlignment::Stretch);
+    const auto window15 = uiFactory.CreateBackgroundWindow(UI::Theme::WindowType::Normal, winLayout15.Content, UI::ItemAlignment::Stretch);
+    const auto window16 = uiFactory.CreateBackgroundWindow(UI::Theme::WindowType::Normal, winLayout16.Content, UI::ItemAlignment::Stretch);
+    const auto window17 = uiFactory.CreateBackgroundWindow(UI::Theme::WindowType::Normal, winLayout17.Content, UI::ItemAlignment::Stretch);
+    const auto window18 = uiFactory.CreateBackgroundWindow(UI::Theme::WindowType::Normal, winLayout18.Content, UI::ItemAlignment::Stretch);
+    const auto window19 = uiFactory.CreateBackgroundWindow(UI::Theme::WindowType::Normal, winLayout19.Content, UI::ItemAlignment::Stretch);
+    const auto window20 = uiFactory.CreateBackgroundWindow(UI::Theme::WindowType::Normal, winLayout20.Content, UI::ItemAlignment::Stretch);
 
-    auto window21 = uiFactory.CreateBackgroundWindow(UI::Theme::WindowType::Normal, winLayout21.Content, UI::ItemAlignment::Stretch);
-    auto window22 = uiFactory.CreateBackgroundWindow(UI::Theme::WindowType::Normal, winLayout22.Content, UI::ItemAlignment::Stretch);
-    auto window23 = uiFactory.CreateBackgroundWindow(UI::Theme::WindowType::Normal, winLayout23.Content, UI::ItemAlignment::Stretch);
+    const auto window21 = uiFactory.CreateBackgroundWindow(UI::Theme::WindowType::Normal, winLayout21.Content, UI::ItemAlignment::Stretch);
+    const auto window22 = uiFactory.CreateBackgroundWindow(UI::Theme::WindowType::Normal, winLayout22.Content, UI::ItemAlignment::Stretch);
+    const auto window23 = uiFactory.CreateBackgroundWindow(UI::Theme::WindowType::Normal, winLayout23.Content, UI::ItemAlignment::Stretch);
 
-    auto middleLayout = std::make_shared<UI::UniformWrapLayout>(context);
+    const auto middleLayout = std::make_shared<UI::UniformWrapLayout>(context);
     middleLayout->SetAlignmentX(UI::ItemAlignment::Center);
     middleLayout->SetAlignmentY(UI::ItemAlignment::Center);
     middleLayout->SetOrientation(UI::LayoutOrientation::Horizontal);
@@ -365,9 +365,9 @@ namespace Fsl
     middleLayout->AddChild(window22);
     middleLayout->AddChild(window23);
 
-    auto bottom = CreateUIScene0Bottom(uiFactory);
+    const auto bottom = CreateUIScene0Bottom(uiFactory);
 
-    auto mainLayout = std::make_shared<UI::GridLayout>(context);
+    const auto mainLayout = std::make_shared<UI::GridLayout>(context);
     mainLayout->AddColumnDefinition(UI::GridColumnDefinition(UI::GridUnitType::Star, 1.0f));
     mainLayout->AddRowDefinition(UI::GridRowDefinition(UI::GridUnitType::Auto));
     mainLayout->AddRowDefinition(UI::GridRowDefinition(UI::GridUnitType::Star, 1.0f));
@@ -376,10 +376,10 @@ namespace Fsl
     mainLayout->AddChild(middleLayout, 0, 1);
     mainLayout->AddChild(bottom.Content, 0, 2);
 
-    auto fillLayout = std::make_shared<UI::FillLayout>(context);
+    const auto fillLayout = std::make_shared<UI::FillLayout>(context);
     fillLayout->AddChild(mainLayout);
 
-    auto activityStack = std::make_shared<UI::ActivityStack>(context);
+    const auto activityStack = std::make_shared<UI::ActivityStack>(context);
     fillLayout->AddChild(activityStack);
 
     return {fillLayout, mainLayout, activityStack, bottom};
@@ -388,16 +388,16 @@ namespace Fsl
 
   TestApp::MainUI TestApp::CreateUIDev(UI::Theme::IThemeControlFactory& uiFactory)
   {
-    auto context = m_uiExtension->GetContext();
+    const auto context = m_uiExtension->GetContext();
 
-    auto top = CreateUIScene0Top(uiFactory);
-    auto middle = CreateUIScene0Middle(uiFactory);
-    auto bottom = CreateUIScene0Bottom(uiFactory);
+    const auto top = CreateUIScene0Top(uiFactory);
+    const auto middle = CreateUIScene0Middle(uiFactory);
+    const auto bottom = CreateUIScene0Bottom(uiFactory);
 
-    auto middleScrollViewer = uiFactory.CreateScrollViewer(middle.Content, UI::ScrollModeFlags::TranslateY, false);
+    const auto middleScrollViewer = uiFactory.CreateScrollViewer(middle.Content, UI::ScrollModeFlags::TranslateY, false);
     middleScrollViewer->SetAlignmentY(UI::ItemAlignment::Center);
 
-    auto mainLayout = std::make_shared<UI::GridLayout>(context);
+    const auto mainLayout = std::make_shared<UI::GridLayout>(context);
     mainLayout->AddColumnDefinition(UI::GridColumnDefinition(UI::GridUnitType::Star, 1.0f));
     mainLayout->AddRowDefinition(UI::GridRowDefinition(UI::GridUnitType::Auto));
     mainLayout->AddRowDefinition(UI::GridRowDefinition(UI::GridUnitType::Star, 1.0f));
@@ -407,10 +407,10 @@ namespace Fsl
     mainLayout->AddChild(bottom.Content, 0, 2);
     mainLayout->SetLimitToAvailableSpace(true);
 
-    auto fillLayout = std::make_shared<UI::FillLayout>(context);
+    const auto fillLayout = std::make_shared<UI::FillLayout>(context);
     fillLayout->AddChild(mainLayout);
 
-    auto activityStack = std::make_shared<UI::ActivityStack>(context);
+    const auto activityStack = std::make_shared<UI::ActivityStack>(context);
     fillLayout->AddChild(activityStack);
 
     return {fillLayout, mainLayout, activityStack, bottom};
@@ -419,94 +419,94 @@ namespace Fsl
 
   TestApp::BasicUI TestApp::CreateUIScene0Top(UI::Theme::IThemeControlFactory& uiFactory)
   {
-    auto labelCaption = uiFactory.CreateLabel("UI Benchmark", UI::Theme::FontType::Header);
+    const auto labelCaption = uiFactory.CreateLabel("UI Benchmark", UI::Theme::FontType::Header);
     labelCaption->SetAlignmentX(UI::ItemAlignment::Center);
-    auto topBar = uiFactory.CreateTopBar(labelCaption);
+    const auto topBar = uiFactory.CreateTopBar(labelCaption);
     return {topBar};
   }
 
 
   TestApp::ControlUI TestApp::CreateUIScene0Bottom(UI::Theme::IThemeControlFactory& uiFactory)
   {
-    auto context = m_uiExtension->GetContext();
+    const auto context = m_uiExtension->GetContext();
 
-    auto btnShowDialog0 = uiFactory.CreateTextButton(UI::Theme::ButtonType::Outlined, "Left");
-    auto btnShowDialog1 = uiFactory.CreateTextButton(UI::Theme::ButtonType::Outlined, "Center");
-    auto btnShowDialog2 = uiFactory.CreateTextButton(UI::Theme::ButtonType::Outlined, "Right");
+    const auto btnShowDialog0 = uiFactory.CreateTextButton(UI::Theme::ButtonType::Outlined, "Left");
+    const auto btnShowDialog1 = uiFactory.CreateTextButton(UI::Theme::ButtonType::Outlined, "Center");
+    const auto btnShowDialog2 = uiFactory.CreateTextButton(UI::Theme::ButtonType::Outlined, "Right");
     btnShowDialog0->SetAlignmentX(UI::ItemAlignment::Stretch);
     btnShowDialog1->SetAlignmentX(UI::ItemAlignment::Stretch);
     btnShowDialog2->SetAlignmentX(UI::ItemAlignment::Stretch);
 
-    auto bottomLayout = std::make_shared<UI::UniformStackLayout>(context);
+    const auto bottomLayout = std::make_shared<UI::UniformStackLayout>(context);
     bottomLayout->SetAlignmentX(UI::ItemAlignment::Center);
     bottomLayout->SetOrientation(UI::LayoutOrientation::Horizontal);
     bottomLayout->AddChild(btnShowDialog0);
     bottomLayout->AddChild(btnShowDialog1);
     bottomLayout->AddChild(btnShowDialog2);
 
-    auto bottomBar = uiFactory.CreateBottomBar(bottomLayout);
+    const auto bottomBar = uiFactory.CreateBottomBar(bottomLayout);
     return {bottomBar, btnShowDialog0, btnShowDialog1, btnShowDialog2};
   }
 
 
   TestApp::BasicUI TestApp::CreateUIScene0Middle(UI::Theme::IThemeControlFactory& uiFactory)
   {
-    auto context = m_uiExtension->GetContext();
+    const auto context = m_uiExtension->GetContext();
 
-    auto winLayout0 = CreateSwitchUI(uiFactory);
-    auto winLayout1 = CreateCheckBoxUI(uiFactory);
-    auto winLayout2 = CreateRadioButtonUI(uiFactory);
-    auto winLayout3 = CreateSliderUI(uiFactory, UI::LayoutOrientation::Horizontal);
-    auto winLayout4 = CreateSliderUI(uiFactory, UI::LayoutOrientation::Vertical);
-    auto winLayout5 = CreateTextButtonUI(uiFactory);
-    auto winLayout6 = CreateFmtValueLabelUI(uiFactory);
-    auto winLayout7 = CreateBasicImageUI(uiFactory);
-    auto winLayout8 = CreateLabelUI(uiFactory);
-    auto winLayout9 = CreateCheckBoxUI(uiFactory);
-    auto winLayout10 = CreateRadioButtonUI(uiFactory);
-    auto winLayout11 = CreateSliderUI2(uiFactory, UI::LayoutOrientation::Horizontal);
-    auto winLayout12 = CreateSliderUI2(uiFactory, UI::LayoutOrientation::Vertical);
-    auto winLayout13 = CreateTextButtonUI(uiFactory);
-    auto winLayout14 = CreateFmtValueLabelUI(uiFactory);
-    auto winLayout15 = CreateBasicImageUI(uiFactory);
-    auto winLayout16 = CreateSwitchUI(uiFactory);
-    auto winLayout17 = CreateCheckBoxUI(uiFactory);
-    auto winLayout18 = CreateRadioButtonUI(uiFactory);
-    auto winLayout19 = CreateSliderUI(uiFactory, UI::LayoutOrientation::Horizontal);
-    auto winLayout20 = CreateSliderUI(uiFactory, UI::LayoutOrientation::Vertical);
-    auto winLayout21 = CreateTextButtonUI(uiFactory);
-    auto winLayout22 = CreateFmtValueLabelUI(uiFactory);
-    auto winLayout23 = CreateBasicImageUI(uiFactory);
+    const auto winLayout0 = CreateSwitchUI(uiFactory);
+    const auto winLayout1 = CreateCheckBoxUI(uiFactory);
+    const auto winLayout2 = CreateRadioButtonUI(uiFactory);
+    const auto winLayout3 = CreateSliderUI(uiFactory, UI::LayoutOrientation::Horizontal);
+    const auto winLayout4 = CreateSliderUI(uiFactory, UI::LayoutOrientation::Vertical);
+    const auto winLayout5 = CreateTextButtonUI(uiFactory);
+    const auto winLayout6 = CreateFmtValueLabelUI(uiFactory);
+    const auto winLayout7 = CreateBasicImageUI(uiFactory);
+    const auto winLayout8 = CreateLabelUI(uiFactory);
+    const auto winLayout9 = CreateCheckBoxUI(uiFactory);
+    const auto winLayout10 = CreateRadioButtonUI(uiFactory);
+    const auto winLayout11 = CreateSliderUI2(uiFactory, UI::LayoutOrientation::Horizontal);
+    const auto winLayout12 = CreateSliderUI2(uiFactory, UI::LayoutOrientation::Vertical);
+    const auto winLayout13 = CreateTextButtonUI(uiFactory);
+    const auto winLayout14 = CreateFmtValueLabelUI(uiFactory);
+    const auto winLayout15 = CreateBasicImageUI(uiFactory);
+    const auto winLayout16 = CreateSwitchUI(uiFactory);
+    const auto winLayout17 = CreateCheckBoxUI(uiFactory);
+    const auto winLayout18 = CreateRadioButtonUI(uiFactory);
+    const auto winLayout19 = CreateSliderUI(uiFactory, UI::LayoutOrientation::Horizontal);
+    const auto winLayout20 = CreateSliderUI(uiFactory, UI::LayoutOrientation::Vertical);
+    const auto winLayout21 = CreateTextButtonUI(uiFactory);
+    const auto winLayout22 = CreateFmtValueLabelUI(uiFactory);
+    const auto winLayout23 = CreateBasicImageUI(uiFactory);
 
-    auto window0 = uiFactory.CreateBackgroundWindow(UI::Theme::WindowType::Normal, winLayout0.Content, UI::ItemAlignment::Stretch);
-    auto window1 = uiFactory.CreateBackgroundWindow(UI::Theme::WindowType::Normal, winLayout1.Content, UI::ItemAlignment::Stretch);
-    auto window2 = uiFactory.CreateBackgroundWindow(UI::Theme::WindowType::Normal, winLayout2.Content, UI::ItemAlignment::Stretch);
-    auto window3 = uiFactory.CreateBackgroundWindow(UI::Theme::WindowType::Normal, winLayout3.Content, UI::ItemAlignment::Stretch);
-    auto window4 = uiFactory.CreateBackgroundWindow(UI::Theme::WindowType::Normal, winLayout4.Content, UI::ItemAlignment::Stretch);
-    auto window5 = uiFactory.CreateBackgroundWindow(UI::Theme::WindowType::Normal, winLayout5.Content, UI::ItemAlignment::Stretch);
-    auto window6 = uiFactory.CreateBackgroundWindow(UI::Theme::WindowType::Normal, winLayout6.Content, UI::ItemAlignment::Stretch);
+    const auto window0 = uiFactory.CreateBackgroundWindow(UI::Theme::WindowType::Normal, winLayout0.Content, UI::ItemAlignment::Stretch);
+    const auto window1 = uiFactory.CreateBackgroundWindow(UI::Theme::WindowType::Normal, winLayout1.Content, UI::ItemAlignment::Stretch);
+    const auto window2 = uiFactory.CreateBackgroundWindow(UI::Theme::WindowType::Normal, winLayout2.Content, UI::ItemAlignment::Stretch);
+    const auto window3 = uiFactory.CreateBackgroundWindow(UI::Theme::WindowType::Normal, winLayout3.Content, UI::ItemAlignment::Stretch);
+    const auto window4 = uiFactory.CreateBackgroundWindow(UI::Theme::WindowType::Normal, winLayout4.Content, UI::ItemAlignment::Stretch);
+    const auto window5 = uiFactory.CreateBackgroundWindow(UI::Theme::WindowType::Normal, winLayout5.Content, UI::ItemAlignment::Stretch);
+    const auto window6 = uiFactory.CreateBackgroundWindow(UI::Theme::WindowType::Normal, winLayout6.Content, UI::ItemAlignment::Stretch);
 
-    auto window7 = uiFactory.CreateBackgroundWindow(UI::Theme::WindowType::Normal, winLayout7.Content, UI::ItemAlignment::Stretch);
-    auto window8 = uiFactory.CreateBackgroundWindow(UI::Theme::WindowType::Normal, winLayout8.Content, UI::ItemAlignment::Stretch);
-    auto window9 = uiFactory.CreateBackgroundWindow(UI::Theme::WindowType::Normal, winLayout9.Content, UI::ItemAlignment::Stretch);
-    auto window10 = uiFactory.CreateBackgroundWindow(UI::Theme::WindowType::Normal, winLayout10.Content, UI::ItemAlignment::Stretch);
-    auto window11 = uiFactory.CreateBackgroundWindow(UI::Theme::WindowType::Normal, winLayout11.Content, UI::ItemAlignment::Stretch);
-    auto window12 = uiFactory.CreateBackgroundWindow(UI::Theme::WindowType::Normal, winLayout12.Content, UI::ItemAlignment::Stretch);
-    auto window13 = uiFactory.CreateBackgroundWindow(UI::Theme::WindowType::Normal, winLayout13.Content, UI::ItemAlignment::Stretch);
+    const auto window7 = uiFactory.CreateBackgroundWindow(UI::Theme::WindowType::Normal, winLayout7.Content, UI::ItemAlignment::Stretch);
+    const auto window8 = uiFactory.CreateBackgroundWindow(UI::Theme::WindowType::Normal, winLayout8.Content, UI::ItemAlignment::Stretch);
+    const auto window9 = uiFactory.CreateBackgroundWindow(UI::Theme::WindowType::Normal, winLayout9.Content, UI::ItemAlignment::Stretch);
+    const auto window10 = uiFactory.CreateBackgroundWindow(UI::Theme::WindowType::Normal, winLayout10.Content, UI::ItemAlignment::Stretch);
+    const auto window11 = uiFactory.CreateBackgroundWindow(UI::Theme::WindowType::Normal, winLayout11.Content, UI::ItemAlignment::Stretch);
+    const auto window12 = uiFactory.CreateBackgroundWindow(UI::Theme::WindowType::Normal, winLayout12.Content, UI::ItemAlignment::Stretch);
+    const auto window13 = uiFactory.CreateBackgroundWindow(UI::Theme::WindowType::Normal, winLayout13.Content, UI::ItemAlignment::Stretch);
 
-    auto window14 = uiFactory.CreateBackgroundWindow(UI::Theme::WindowType::Normal, winLayout14.Content, UI::ItemAlignment::Stretch);
-    auto window15 = uiFactory.CreateBackgroundWindow(UI::Theme::WindowType::Normal, winLayout15.Content, UI::ItemAlignment::Stretch);
-    auto window16 = uiFactory.CreateBackgroundWindow(UI::Theme::WindowType::Normal, winLayout16.Content, UI::ItemAlignment::Stretch);
-    auto window17 = uiFactory.CreateBackgroundWindow(UI::Theme::WindowType::Normal, winLayout17.Content, UI::ItemAlignment::Stretch);
-    auto window18 = uiFactory.CreateBackgroundWindow(UI::Theme::WindowType::Normal, winLayout18.Content, UI::ItemAlignment::Stretch);
-    auto window19 = uiFactory.CreateBackgroundWindow(UI::Theme::WindowType::Normal, winLayout19.Content, UI::ItemAlignment::Stretch);
-    auto window20 = uiFactory.CreateBackgroundWindow(UI::Theme::WindowType::Normal, winLayout20.Content, UI::ItemAlignment::Stretch);
+    const auto window14 = uiFactory.CreateBackgroundWindow(UI::Theme::WindowType::Normal, winLayout14.Content, UI::ItemAlignment::Stretch);
+    const auto window15 = uiFactory.CreateBackgroundWindow(UI::Theme::WindowType::Normal, winLayout15.Content, UI::ItemAlignment::Stretch);
+    const auto window16 = uiFactory.CreateBackgroundWindow(UI::Theme::WindowType::Normal, winLayout16.Content, UI::ItemAlignment::Stretch);
+    const auto window17 = uiFactory.CreateBackgroundWindow(UI::Theme::WindowType::Normal, winLayout17.Content, UI::ItemAlignment::Stretch);
+    const auto window18 = uiFactory.CreateBackgroundWindow(UI::Theme::WindowType::Normal, winLayout18.Content, UI::ItemAlignment::Stretch);
+    const auto window19 = uiFactory.CreateBackgroundWindow(UI::Theme::WindowType::Normal, winLayout19.Content, UI::ItemAlignment::Stretch);
+    const auto window20 = uiFactory.CreateBackgroundWindow(UI::Theme::WindowType::Normal, winLayout20.Content, UI::ItemAlignment::Stretch);
 
-    auto window21 = uiFactory.CreateBackgroundWindow(UI::Theme::WindowType::Normal, winLayout21.Content, UI::ItemAlignment::Stretch);
-    auto window22 = uiFactory.CreateBackgroundWindow(UI::Theme::WindowType::Normal, winLayout22.Content, UI::ItemAlignment::Stretch);
-    auto window23 = uiFactory.CreateBackgroundWindow(UI::Theme::WindowType::Normal, winLayout23.Content, UI::ItemAlignment::Stretch);
+    const auto window21 = uiFactory.CreateBackgroundWindow(UI::Theme::WindowType::Normal, winLayout21.Content, UI::ItemAlignment::Stretch);
+    const auto window22 = uiFactory.CreateBackgroundWindow(UI::Theme::WindowType::Normal, winLayout22.Content, UI::ItemAlignment::Stretch);
+    const auto window23 = uiFactory.CreateBackgroundWindow(UI::Theme::WindowType::Normal, winLayout23.Content, UI::ItemAlignment::Stretch);
 
-    auto middleLayout = std::make_shared<UI::UniformWrapLayout>(context);
+    const auto middleLayout = std::make_shared<UI::UniformWrapLayout>(context);
     middleLayout->SetAlignmentX(UI::ItemAlignment::Center);
     middleLayout->SetAlignmentY(UI::ItemAlignment::Center);
     middleLayout->SetOrientation(UI::LayoutOrientation::Horizontal);
@@ -541,15 +541,15 @@ namespace Fsl
 
   TestApp::BasicUI TestApp::CreateSwitchUI(UI::Theme::IThemeControlFactory& uiFactory)
   {
-    auto context = m_uiExtension->GetContext();
+    const auto context = m_uiExtension->GetContext();
 
-    auto winLabel = uiFactory.CreateLabel("Switches", UI::Theme::FontType::Header);
+    const auto winLabel = uiFactory.CreateLabel("Switches", UI::Theme::FontType::Header);
     winLabel->SetAlignmentX(UI::ItemAlignment::Center);
-    auto win0 = uiFactory.CreateSwitch("Switch #0", true);
-    auto win1 = uiFactory.CreateSwitch("Switch #1", false);
-    auto win2 = uiFactory.CreateSwitch("Switch #2", true);
+    const auto win0 = uiFactory.CreateSwitch("Switch #0", true);
+    const auto win1 = uiFactory.CreateSwitch("Switch #1", false);
+    const auto win2 = uiFactory.CreateSwitch("Switch #2", true);
 
-    auto layout = std::make_shared<UI::StackLayout>(context);
+    const auto layout = std::make_shared<UI::StackLayout>(context);
     layout->SetOrientation(UI::LayoutOrientation::Vertical);
     layout->SetAlignmentX(UI::ItemAlignment::Stretch);
     layout->AddChild(winLabel);
@@ -561,15 +561,15 @@ namespace Fsl
 
   TestApp::BasicUI TestApp::CreateCheckBoxUI(UI::Theme::IThemeControlFactory& uiFactory)
   {
-    auto context = m_uiExtension->GetContext();
+    const auto context = m_uiExtension->GetContext();
 
-    auto winLabel = uiFactory.CreateLabel("CheckBoxes", UI::Theme::FontType::Header);
+    const auto winLabel = uiFactory.CreateLabel("CheckBoxes", UI::Theme::FontType::Header);
     winLabel->SetAlignmentX(UI::ItemAlignment::Center);
-    auto win0 = uiFactory.CreateCheckBox("CheckBox #0", true);
-    auto win1 = uiFactory.CreateCheckBox("CheckBox #1", false);
-    auto win2 = uiFactory.CreateCheckBox("CheckBox #2", true);
+    const auto win0 = uiFactory.CreateCheckBox("CheckBox #0", true);
+    const auto win1 = uiFactory.CreateCheckBox("CheckBox #1", false);
+    const auto win2 = uiFactory.CreateCheckBox("CheckBox #2", true);
 
-    auto layout = std::make_shared<UI::StackLayout>(context);
+    const auto layout = std::make_shared<UI::StackLayout>(context);
     layout->SetOrientation(UI::LayoutOrientation::Vertical);
     layout->SetAlignmentX(UI::ItemAlignment::Stretch);
     layout->AddChild(winLabel);
@@ -581,16 +581,16 @@ namespace Fsl
 
   TestApp::BasicUI TestApp::CreateRadioButtonUI(UI::Theme::IThemeControlFactory& uiFactory)
   {
-    auto context = m_uiExtension->GetContext();
+    const auto context = m_uiExtension->GetContext();
 
-    auto winLabel = uiFactory.CreateLabel("RadioButtons", UI::Theme::FontType::Header);
+    const auto winLabel = uiFactory.CreateLabel("RadioButtons", UI::Theme::FontType::Header);
     winLabel->SetAlignmentX(UI::ItemAlignment::Center);
-    auto group = uiFactory.CreateRadioGroup("rg0");
-    auto win0 = uiFactory.CreateRadioButton(group, "RadioButton #0", false);
-    auto win1 = uiFactory.CreateRadioButton(group, "RadioButton #1", true);
-    auto win2 = uiFactory.CreateRadioButton(group, "RadioButton #2", false);
+    const auto group = uiFactory.CreateRadioGroup("rg0");
+    const auto win0 = uiFactory.CreateRadioButton(group, "RadioButton #0", false);
+    const auto win1 = uiFactory.CreateRadioButton(group, "RadioButton #1", true);
+    const auto win2 = uiFactory.CreateRadioButton(group, "RadioButton #2", false);
 
-    auto layout = std::make_shared<UI::StackLayout>(context);
+    const auto layout = std::make_shared<UI::StackLayout>(context);
     layout->SetOrientation(UI::LayoutOrientation::Vertical);
     layout->SetAlignmentX(UI::ItemAlignment::Stretch);
     layout->AddChild(winLabel);
@@ -602,18 +602,18 @@ namespace Fsl
 
   TestApp::BasicUI TestApp::CreateSliderUI(UI::Theme::IThemeControlFactory& uiFactory, const UI::LayoutOrientation orientation)
   {
-    auto context = m_uiExtension->GetContext();
+    const auto context = m_uiExtension->GetContext();
 
     const StringViewLite caption(orientation == UI::LayoutOrientation::Horizontal ? "Horz sliders" : "Vert sliders");
 
-    auto winLabel = uiFactory.CreateLabel(caption, UI::Theme::FontType::Header);
+    const auto winLabel = uiFactory.CreateLabel(caption, UI::Theme::FontType::Header);
     winLabel->SetAlignmentX(UI::ItemAlignment::Center);
-    auto win0 = uiFactory.CreateSliderFmtValue(orientation, ConstrainedValue<int32_t>(0, 0, 100));
-    auto win1 = uiFactory.CreateSliderFmtValue(orientation, ConstrainedValue<int32_t>(50, 0, 100));
-    auto win2 = uiFactory.CreateSliderFmtValue(orientation, ConstrainedValue<int32_t>(80, 0, 100));
+    const auto win0 = uiFactory.CreateSliderFmtValue(orientation, ConstrainedValue<int32_t>(0, 0, 100));
+    const auto win1 = uiFactory.CreateSliderFmtValue(orientation, ConstrainedValue<int32_t>(50, 0, 100));
+    const auto win2 = uiFactory.CreateSliderFmtValue(orientation, ConstrainedValue<int32_t>(80, 0, 100));
 
 
-    auto layout = std::make_shared<UI::ComplexStackLayout>(context);
+    const auto layout = std::make_shared<UI::ComplexStackLayout>(context);
     layout->SetOrientation(UI::LayoutOrientation::Vertical);
     layout->SetAlignmentX(UI::ItemAlignment::Stretch);
     layout->SetAlignmentY(UI::ItemAlignment::Stretch);
@@ -627,7 +627,7 @@ namespace Fsl
     }
     else
     {
-      auto layout0 = std::make_shared<UI::StackLayout>(context);
+      const auto layout0 = std::make_shared<UI::StackLayout>(context);
       layout0->SetOrientation(UI::LayoutOrientation::Horizontal);
       layout0->SetAlignmentX(UI::ItemAlignment::Center);
       layout0->SetAlignmentY(UI::ItemAlignment::Stretch);
@@ -642,18 +642,18 @@ namespace Fsl
 
   TestApp::BasicUI TestApp::CreateSliderUI2(UI::Theme::IThemeControlFactory& uiFactory, const UI::LayoutOrientation orientation)
   {
-    auto context = m_uiExtension->GetContext();
+    const auto context = m_uiExtension->GetContext();
 
     const StringViewLite caption(orientation == UI::LayoutOrientation::Horizontal ? "Horz sliders" : " Vert sliders");
 
-    auto winLabel = uiFactory.CreateLabel(caption, UI::Theme::FontType::Header);
+    const auto winLabel = uiFactory.CreateLabel(caption, UI::Theme::FontType::Header);
     winLabel->SetAlignmentX(UI::ItemAlignment::Center);
-    auto win0 = uiFactory.CreateSlider(orientation, ConstrainedValue<int32_t>(0, 0, 100));
-    auto win1 = uiFactory.CreateSlider(orientation, ConstrainedValue<int32_t>(50, 0, 100));
-    auto win2 = uiFactory.CreateSlider(orientation, ConstrainedValue<int32_t>(80, 0, 100));
+    const auto win0 = uiFactory.CreateSlider(orientation, ConstrainedValue<int32_t>(0, 0, 100));
+    const auto win1 = uiFactory.CreateSlider(orientation, ConstrainedValue<int32_t>(50, 0, 100));
+    const auto win2 = uiFactory.CreateSlider(orientation, ConstrainedValue<int32_t>(80, 0, 100));
 
 
-    auto layout = std::make_shared<UI::ComplexStackLayout>(context);
+    const auto layout = std::make_shared<UI::ComplexStackLayout>(context);
     layout->SetOrientation(UI::LayoutOrientation::Vertical);
     layout->SetAlignmentX(UI::ItemAlignment::Stretch);
     layout->SetAlignmentY(UI::ItemAlignment::Stretch);
@@ -667,7 +667,7 @@ namespace Fsl
     }
     else
     {
-      auto layout0 = std::make_shared<UI::StackLayout>(context);
+      const auto layout0 = std::make_shared<UI::StackLayout>(context);
       layout0->SetOrientation(UI::LayoutOrientation::Horizontal);
       layout0->SetAlignmentX(UI::ItemAlignment::Center);
       layout0->SetAlignmentY(UI::ItemAlignment::Stretch);
@@ -682,18 +682,18 @@ namespace Fsl
 
   TestApp::BasicUI TestApp::CreateTextButtonUI(UI::Theme::IThemeControlFactory& uiFactory)
   {
-    auto context = m_uiExtension->GetContext();
+    const auto context = m_uiExtension->GetContext();
 
-    auto winLabel = uiFactory.CreateLabel("Text buttons", UI::Theme::FontType::Header);
+    const auto winLabel = uiFactory.CreateLabel("Text buttons", UI::Theme::FontType::Header);
     winLabel->SetAlignmentX(UI::ItemAlignment::Center);
-    auto win0 = uiFactory.CreateTextButton(UI::Theme::ButtonType::Contained, "Button #0");
-    auto win1 = uiFactory.CreateTextButton(UI::Theme::ButtonType::Outlined, "Button #1");
-    auto win2 = uiFactory.CreateTextButton(UI::Theme::ButtonType::Text, "Button #2");
+    const auto win0 = uiFactory.CreateTextButton(UI::Theme::ButtonType::Contained, "Button #0");
+    const auto win1 = uiFactory.CreateTextButton(UI::Theme::ButtonType::Outlined, "Button #1");
+    const auto win2 = uiFactory.CreateTextButton(UI::Theme::ButtonType::Text, "Button #2");
     win0->SetAlignmentX(UI::ItemAlignment::Stretch);
     win1->SetAlignmentX(UI::ItemAlignment::Stretch);
     win2->SetAlignmentX(UI::ItemAlignment::Stretch);
 
-    auto layout = std::make_shared<UI::StackLayout>(context);
+    const auto layout = std::make_shared<UI::StackLayout>(context);
     layout->SetOrientation(UI::LayoutOrientation::Vertical);
     layout->SetAlignmentX(UI::ItemAlignment::Stretch);
     layout->AddChild(winLabel);
@@ -705,19 +705,19 @@ namespace Fsl
 
   TestApp::BasicUI TestApp::CreateFmtValueLabelUI(UI::Theme::IThemeControlFactory& uiFactory)
   {
-    auto context = m_uiExtension->GetContext();
+    const auto context = m_uiExtension->GetContext();
 
-    auto winLabel = uiFactory.CreateLabel("Labels", UI::Theme::FontType::Header);
+    const auto winLabel = uiFactory.CreateLabel("Labels", UI::Theme::FontType::Header);
     winLabel->SetAlignmentX(UI::ItemAlignment::Center);
-    auto win0 = uiFactory.CreateFmtValueLabel(32, "Value1: {}");
-    auto win1 = uiFactory.CreateFmtValueLabel(3.14f, "Value2: {}. pyq");
-    auto win2 = uiFactory.CreateFmtValueLabel(42, "There are {} items");
+    const auto win0 = uiFactory.CreateFmtValueLabel(32, "Value1: {}");
+    const auto win1 = uiFactory.CreateFmtValueLabel(3.14f, "Value2: {}. pyq");
+    const auto win2 = uiFactory.CreateFmtValueLabel(42, "There are {} items");
     // auto win3 = uiFactory.CreateLabel("Normal label 'pyq,;'", UI::Theme::FontType::Header);
     // auto win4 = uiFactory.CreateLabel("Normal label 'CTP,;'", UI::Theme::FontType::Header);
-    auto win3 = uiFactory.CreateLabel("Normal label 'pyq,;'");
-    auto win4 = uiFactory.CreateLabel("Normal label 'CTP,;'");
+    const auto win3 = uiFactory.CreateLabel("Normal label 'pyq,;'");
+    const auto win4 = uiFactory.CreateLabel("Normal label 'CTP,;'");
 
-    auto contentLayout = std::make_shared<UI::StackLayout>(context);
+    const auto contentLayout = std::make_shared<UI::StackLayout>(context);
     contentLayout->SetOrientation(UI::LayoutOrientation::Vertical);
     contentLayout->SetAlignmentY(UI::ItemAlignment::Center);
     contentLayout->AddChild(win0);
@@ -726,7 +726,7 @@ namespace Fsl
     contentLayout->AddChild(win3);
     contentLayout->AddChild(win4);
 
-    auto layout = std::make_shared<UI::ComplexStackLayout>(context);
+    const auto layout = std::make_shared<UI::ComplexStackLayout>(context);
     layout->SetOrientation(UI::LayoutOrientation::Vertical);
     layout->SetAlignmentX(UI::ItemAlignment::Stretch);
     layout->SetAlignmentY(UI::ItemAlignment::Stretch);
@@ -737,20 +737,20 @@ namespace Fsl
 
   TestApp::BasicUI TestApp::CreateBasicImageUI(UI::Theme::IThemeControlFactory& uiFactory)
   {
-    auto context = m_uiExtension->GetContext();
+    const auto context = m_uiExtension->GetContext();
 
-    auto testSprite = uiFactory.GetResources().GetBasicTestSprite();
+    const auto testSprite = uiFactory.GetResources().GetBasicTestSprite();
 
-    auto winLabel = uiFactory.CreateLabel("BasicImages", UI::Theme::FontType::Header);
+    const auto winLabel = uiFactory.CreateLabel("BasicImages", UI::Theme::FontType::Header);
     winLabel->SetAlignmentX(UI::ItemAlignment::Center);
-    auto win0 = uiFactory.CreateImage(testSprite);
-    auto win1 = uiFactory.CreateImage(testSprite);
-    auto win2 = uiFactory.CreateImage(testSprite);
+    const auto win0 = uiFactory.CreateImage(testSprite);
+    const auto win1 = uiFactory.CreateImage(testSprite);
+    const auto win2 = uiFactory.CreateImage(testSprite);
     win0->SetAlignmentX(UI::ItemAlignment::Near);
     win1->SetAlignmentX(UI::ItemAlignment::Center);
     win2->SetAlignmentX(UI::ItemAlignment::Far);
 
-    auto layout = std::make_shared<UI::StackLayout>(context);
+    const auto layout = std::make_shared<UI::StackLayout>(context);
     layout->SetOrientation(UI::LayoutOrientation::Vertical);
     layout->SetAlignmentX(UI::ItemAlignment::Stretch);
     layout->AddChild(winLabel);
@@ -762,31 +762,31 @@ namespace Fsl
 
   TestApp::BasicUI TestApp::CreateLabelUI(UI::Theme::IThemeControlFactory& uiFactory)
   {
-    auto context = m_uiExtension->GetContext();
+    const auto context = m_uiExtension->GetContext();
 
-    auto fillSprite = uiFactory.GetResources().GetBasicMiniFillSprite(true);
+    const auto fillSprite = uiFactory.GetResources().GetBasicMiniFillSprite(true);
 
     constexpr UI::UIColor Col0(PackedColor32(0xFF303030));
     constexpr UI::UIColor Col1(PackedColor32(0xFF202020));
     // constexpr Color col0(0x60606060);
     // constexpr Color col1(0x40404040);
 
-    auto winLabel = uiFactory.CreateLabel("Labels", UI::Theme::FontType::Header);
+    const auto winLabel = uiFactory.CreateLabel("Labels", UI::Theme::FontType::Header);
     winLabel->SetAlignmentX(UI::ItemAlignment::Center);
-    auto win0 = uiFactory.CreateLabel("CBwfgjpqy", UI::Theme::FontType::Default);
-    auto win1 = uiFactory.CreateLabel("cbWFGJPQY", UI::Theme::FontType::Default);
-    auto win2 = uiFactory.CreateDivider(UI::LayoutOrientation::Horizontal);
+    const auto win0 = uiFactory.CreateLabel("CBwfgjpqy", UI::Theme::FontType::Default);
+    const auto win1 = uiFactory.CreateLabel("cbWFGJPQY", UI::Theme::FontType::Default);
+    const auto win2 = uiFactory.CreateDivider(UI::LayoutOrientation::Horizontal);
     win2->SetAlignmentX(UI::ItemAlignment::Stretch);
-    auto win3 = uiFactory.CreateLabel("CBwfgjpqy", UI::Theme::FontType::Header);
-    auto win4 = uiFactory.CreateLabel("cbWFGJPQY", UI::Theme::FontType::Header);
+    const auto win3 = uiFactory.CreateLabel("CBwfgjpqy", UI::Theme::FontType::Header);
+    const auto win4 = uiFactory.CreateLabel("cbWFGJPQY", UI::Theme::FontType::Header);
 
-    auto img0 = uiFactory.CreateImage(fillSprite);
+    const auto img0 = uiFactory.CreateImage(fillSprite);
     img0->SetScalePolicy(UI::ItemScalePolicy::Fit);
     img0->SetAlignmentX(UI::ItemAlignment::Stretch);
     img0->SetAlignmentY(UI::ItemAlignment::Stretch);
     img0->SetContentColor(Col0);
 
-    auto img1 = uiFactory.CreateImage(fillSprite);
+    const auto img1 = uiFactory.CreateImage(fillSprite);
     img1->SetScalePolicy(UI::ItemScalePolicy::Fit);
     img1->SetAlignmentX(UI::ItemAlignment::Stretch);
     img1->SetAlignmentY(UI::ItemAlignment::Stretch);
@@ -798,25 +798,25 @@ namespace Fsl
     // img2->SetAlignmentY(UI::ItemAlignment::Stretch);
     // img2->SetContentColor(col0);
 
-    auto img3 = uiFactory.CreateImage(fillSprite);
+    const auto img3 = uiFactory.CreateImage(fillSprite);
     img3->SetScalePolicy(UI::ItemScalePolicy::Fit);
     img3->SetAlignmentX(UI::ItemAlignment::Stretch);
     img3->SetAlignmentY(UI::ItemAlignment::Stretch);
     img3->SetContentColor(Col0);
 
-    auto img4 = uiFactory.CreateImage(fillSprite);
+    const auto img4 = uiFactory.CreateImage(fillSprite);
     img4->SetScalePolicy(UI::ItemScalePolicy::Fit);
     img4->SetAlignmentX(UI::ItemAlignment::Stretch);
     img4->SetAlignmentY(UI::ItemAlignment::Stretch);
     img4->SetContentColor(Col1);
 
 
-    auto back0 = std::make_shared<UI::FillLayout>(context);
+    const auto back0 = std::make_shared<UI::FillLayout>(context);
     back0->SetAlignmentX(UI::ItemAlignment::Near);
     back0->AddChild(img0);
     back0->AddChild(win0);
 
-    auto back1 = std::make_shared<UI::FillLayout>(context);
+    const auto back1 = std::make_shared<UI::FillLayout>(context);
     back1->SetAlignmentX(UI::ItemAlignment::Near);
     back1->AddChild(img1);
     back1->AddChild(win1);
@@ -825,17 +825,17 @@ namespace Fsl
     // back2->AddChild(img2);
     // back2->AddChild(win2);
 
-    auto back3 = std::make_shared<UI::FillLayout>(context);
+    const auto back3 = std::make_shared<UI::FillLayout>(context);
     back3->SetAlignmentX(UI::ItemAlignment::Near);
     back3->AddChild(img3);
     back3->AddChild(win3);
 
-    auto back4 = std::make_shared<UI::FillLayout>(context);
+    const auto back4 = std::make_shared<UI::FillLayout>(context);
     back4->SetAlignmentX(UI::ItemAlignment::Near);
     back4->AddChild(img4);
     back4->AddChild(win4);
 
-    auto contentLayout = std::make_shared<UI::StackLayout>(context);
+    const auto contentLayout = std::make_shared<UI::StackLayout>(context);
     contentLayout->SetOrientation(UI::LayoutOrientation::Vertical);
     contentLayout->SetAlignmentX(UI::ItemAlignment::Stretch);
     contentLayout->SetAlignmentY(UI::ItemAlignment::Center);
@@ -845,7 +845,7 @@ namespace Fsl
     contentLayout->AddChild(back3);
     contentLayout->AddChild(back4);
 
-    auto layout = std::make_shared<UI::ComplexStackLayout>(context);
+    const auto layout = std::make_shared<UI::ComplexStackLayout>(context);
     layout->SetOrientation(UI::LayoutOrientation::Vertical);
     layout->SetAlignmentX(UI::ItemAlignment::Stretch);
     layout->SetAlignmentY(UI::ItemAlignment::Stretch);

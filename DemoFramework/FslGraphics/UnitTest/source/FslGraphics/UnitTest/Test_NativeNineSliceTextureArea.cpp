@@ -46,7 +46,7 @@ namespace
 
 TEST(Test_NativeNineSliceTextureArea, Construct_Empty)
 {
-  NativeNineSliceTextureArea area;
+  const NativeNineSliceTextureArea area;
 
   EXPECT_EQ(0.0f, area.X0);
   EXPECT_EQ(0.0f, area.Y0);
@@ -61,7 +61,7 @@ TEST(Test_NativeNineSliceTextureArea, Construct_Empty)
 
 TEST(Test_NativeNineSliceTextureArea, Construct_1)
 {
-  NativeNineSliceTextureArea area(1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f, 7.0f, 8.0f);
+  const NativeNineSliceTextureArea area(1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f, 7.0f, 8.0f);
 
   EXPECT_EQ(1.0f, area.X0);
   EXPECT_EQ(2.0f, area.Y0);
@@ -76,8 +76,8 @@ TEST(Test_NativeNineSliceTextureArea, Construct_1)
 
 TEST(Test_NativeNineSliceTextureArea, OpEqual)
 {
-  NativeNineSliceTextureArea area0(1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f, 7.0f, 8.0f);
-  NativeNineSliceTextureArea areaA(1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f, 7.0f, 8.0f);
+  const NativeNineSliceTextureArea area0(1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f, 7.0f, 8.0f);
+  const NativeNineSliceTextureArea areaA(1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f, 7.0f, 8.0f);
 
   EXPECT_EQ(area0, areaA);
 }
@@ -85,15 +85,15 @@ TEST(Test_NativeNineSliceTextureArea, OpEqual)
 
 TEST(Test_NativeNineSliceTextureArea, OpNotEqual)
 {
-  NativeNineSliceTextureArea area0(1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f, 7.0f, 8.0f);
-  NativeNineSliceTextureArea areaA(9.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f, 7.0f, 8.0f);
-  NativeNineSliceTextureArea areaB(1.0f, 9.0f, 3.0f, 4.0f, 5.0f, 6.0f, 7.0f, 8.0f);
-  NativeNineSliceTextureArea areaC(1.0f, 2.0f, 9.0f, 4.0f, 5.0f, 6.0f, 7.0f, 8.0f);
-  NativeNineSliceTextureArea areaD(1.0f, 2.0f, 3.0f, 9.0f, 5.0f, 6.0f, 7.0f, 8.0f);
-  NativeNineSliceTextureArea areaE(1.0f, 2.0f, 3.0f, 4.0f, 9.0f, 6.0f, 7.0f, 8.0f);
-  NativeNineSliceTextureArea areaF(1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 9.0f, 7.0f, 8.0f);
-  NativeNineSliceTextureArea areaG(1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f, 9.0f, 8.0f);
-  NativeNineSliceTextureArea areaH(1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f, 7.0f, 9.0f);
+  const NativeNineSliceTextureArea area0(1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f, 7.0f, 8.0f);
+  const NativeNineSliceTextureArea areaA(9.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f, 7.0f, 8.0f);
+  const NativeNineSliceTextureArea areaB(1.0f, 9.0f, 3.0f, 4.0f, 5.0f, 6.0f, 7.0f, 8.0f);
+  const NativeNineSliceTextureArea areaC(1.0f, 2.0f, 9.0f, 4.0f, 5.0f, 6.0f, 7.0f, 8.0f);
+  const NativeNineSliceTextureArea areaD(1.0f, 2.0f, 3.0f, 9.0f, 5.0f, 6.0f, 7.0f, 8.0f);
+  const NativeNineSliceTextureArea areaE(1.0f, 2.0f, 3.0f, 4.0f, 9.0f, 6.0f, 7.0f, 8.0f);
+  const NativeNineSliceTextureArea areaF(1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 9.0f, 7.0f, 8.0f);
+  const NativeNineSliceTextureArea areaG(1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f, 9.0f, 8.0f);
+  const NativeNineSliceTextureArea areaH(1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f, 7.0f, 9.0f);
 
   EXPECT_NE(area0, areaA);
   EXPECT_NE(area0, areaB);

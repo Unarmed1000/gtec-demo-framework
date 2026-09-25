@@ -166,30 +166,30 @@ namespace Fsl::Vulkan
 
     void SetData(const uint32_t dstIndex, ReadOnlyFlexSpan span);
 
-    bool IsValid() const noexcept
+    [[nodiscard]] bool IsValid() const noexcept
     {
       return m_buffer.IsValid();
     }
 
     //! @brief Get the element stride (size of one element in bytes)
-    uint32_t GetElementStride() const noexcept
+    [[nodiscard]] uint32_t GetElementStride() const noexcept
     {
       return m_elementStride;
     }
 
     //! @brief Get the associated 'Device'
-    VkDevice GetDevice() const noexcept
+    [[nodiscard]] VkDevice GetDevice() const noexcept
     {
       return m_buffer.GetDevice();
     }
 
     //! @brief Get the associated 'buffer'
-    VkBuffer GetBuffer() const noexcept
+    [[nodiscard]] VkBuffer GetBuffer() const noexcept
     {
       return m_buffer.GetBuffer();
     }
 
-    const VkBuffer* GetBufferPointer() const noexcept
+    [[nodiscard]] const VkBuffer* GetBufferPointer() const noexcept
     {
       return m_buffer.GetBufferPointer();
     }

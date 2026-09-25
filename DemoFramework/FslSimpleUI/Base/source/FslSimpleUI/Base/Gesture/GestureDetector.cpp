@@ -97,7 +97,7 @@ namespace Fsl::UI
     constexpr DpValueF ClampMagnitude(DpValueF src, DpValueF min, DpValueF max)
     {
       const auto length = src.Value >= 0.0f ? src.Value : -src.Value;
-      auto clampedLength = MathHelper::Clamp(length, min.Value, max.Value);
+      const auto clampedLength = MathHelper::Clamp(length, min.Value, max.Value);
       return DpValueF(src.Value >= 0 ? clampedLength : -clampedLength);
     }
 
@@ -139,7 +139,8 @@ namespace Fsl::UI
     return *this;
   }
 
-  GestureDetector::GestureDetector(GestureDetector&& other) noexcept
+  // The member move constructors do not allocate, so this can not throw
+  GestureDetector::GestureDetector(GestureDetector&& other) noexcept    // NOLINT(bugprone-exception-escape)
     : m_enabledGestures(other.m_enabledGestures)
     , m_velocityTracker(std::move(other.m_velocityTracker))
     , m_axisFlags(other.m_axisFlags)
@@ -312,7 +313,7 @@ namespace Fsl::UI
       if (!m_transactionRecord.InMotion())
       {
         deltaPosDpf = ClampToAxis(deltaPosDpf, m_axisFlags);
-        auto distSqrDpf = deltaPosDpf.LengthSquared();
+        const auto distSqrDpf = deltaPosDpf.LengthSquared();
         if (distSqrDpf > LocalConfig::TapDistThresholdSqr)
         {
           m_transactionRecord.MarkAsInMotion();
@@ -370,12 +371,12 @@ namespace Fsl::UI
         DpPoint2F flingVelocityDpf;
         m_velocityTracker.TryGetVelocity(flingVelocityDpf);
 
-        float velocityMagXDp = std::abs(flingVelocityDpf.X.Value);
-        float velocityMagYDp = std::abs(flingVelocityDpf.Y.Value);
+        const float velocityMagXDp = std::abs(flingVelocityDpf.X.Value);
+        const float velocityMagYDp = std::abs(flingVelocityDpf.Y.Value);
 
         if (velocityMagXDp > LocalConfig::FlickVelocityThresholdX.Value || velocityMagYDp > LocalConfig::FlickVelocityThresholdY.Value)
         {
-          auto clampedFlingVelocityDpf =
+          const auto clampedFlingVelocityDpf =
             ClampMagnitude(flingVelocityDpf, LocalConfig::MinFlingVelocityDpf, LocalConfig::MaxFlingVelocityDpf, m_axisFlags);
           // g_logger.Info("flingVelocityDpf {0} clampedFlingVelocityDpf {1}", flingVelocityDpf, clampedFlingVelocityDpf);
           EnqueueGesture(GestureRecord(GestureType::DragComplete, screenPositionDpf, clampedFlingVelocityDpf));
@@ -428,7 +429,7 @@ namespace Fsl::UI
 
     m_velocityTracker.AddMovement(timestamp, screenPositionDpf);
 
-    auto sessionDuration = timestamp - m_transactionRecord.GetDownTimestamp();
+    const auto sessionDuration = timestamp - m_transactionRecord.GetDownTimestamp();
     // Update tap candidate
     if (m_transactionRecord.CanBeTap() && sessionDuration > LocalConfig::MaxTapTime)
     {

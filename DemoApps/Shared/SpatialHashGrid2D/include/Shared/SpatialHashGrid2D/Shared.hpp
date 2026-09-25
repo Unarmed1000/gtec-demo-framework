@@ -100,17 +100,17 @@ namespace Fsl
     DragRecord m_drag;
 
   public:
-    std::shared_ptr<UIDemoAppExtension> GetUIDemoAppExtension() const
+    [[nodiscard]] std::shared_ptr<UIDemoAppExtension> GetUIDemoAppExtension() const
     {
       return m_uiExtension;
     }
 
-    const Fsl::Graphics3D::LineBuilder& GetLineBuilder() const
+    [[nodiscard]] const Fsl::Graphics3D::LineBuilder& GetLineBuilder() const
     {
       return m_lineBuilder;
     }
 
-    const Matrix& GetProjectionMatrix() const
+    [[nodiscard]] const Matrix& GetProjectionMatrix() const
     {
       return m_projectionMatrix;
     }

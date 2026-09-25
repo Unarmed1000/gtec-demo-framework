@@ -41,7 +41,7 @@ namespace Fsl
     CustomDemoAppConfig customDemoAppConfig;
     customDemoAppConfig.RestartFlags = CustomDemoAppConfigRestartFlags::Never;
 
-    DemoAppHostConfigVulkan config;
+    const DemoAppHostConfigVulkan config;
 
     DemoAppRegister::Vulkan::Register<Scissor101, OptionParser>(rSetup, "Vulkan.Scissor101", config, customDemoAppConfig);
   }

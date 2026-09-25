@@ -45,6 +45,7 @@ namespace Fsl
 
   protected:
     Noncopyable() = default;
+    ~Noncopyable() = default;
   };
 }
 

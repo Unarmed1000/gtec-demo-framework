@@ -48,7 +48,7 @@ namespace
 
 TEST(TestMath_RectangleU, Empty)
 {
-  RectangleU value;
+  const RectangleU value;
 
   EXPECT_EQ(RectangleU(), RectangleU::Empty());
   EXPECT_EQ(0u, value.Left());
@@ -66,11 +66,11 @@ TEST(TestMath_RectangleU, Empty)
 
 TEST(TestMath_RectangleU, Construct1)
 {
-  uint32_t offsetX = 1;
-  uint32_t offsetY = 2;
-  uint32_t width = 10;
-  uint32_t height = 20;
-  RectangleU value(offsetX, offsetY, width, height);
+  const uint32_t offsetX = 1;
+  const uint32_t offsetY = 2;
+  const uint32_t width = 10;
+  const uint32_t height = 20;
+  const RectangleU value(offsetX, offsetY, width, height);
 
   EXPECT_EQ(offsetX, value.Left());
   EXPECT_EQ(offsetY, value.Top());
@@ -86,11 +86,11 @@ TEST(TestMath_RectangleU, Construct1)
 
 TEST(TestMath_RectangleU, FromLeftTopRightBottom)
 {
-  uint32_t left = 1;
-  uint32_t top = 2;
-  uint32_t right = 10;
-  uint32_t bottom = 20;
-  auto value = RectangleU::FromLeftTopRightBottom(left, top, right, bottom);
+  const uint32_t left = 1;
+  const uint32_t top = 2;
+  const uint32_t right = 10;
+  const uint32_t bottom = 20;
+  const auto value = RectangleU::FromLeftTopRightBottom(left, top, right, bottom);
 
   EXPECT_EQ(left, value.Left());
   EXPECT_EQ(top, value.Top());

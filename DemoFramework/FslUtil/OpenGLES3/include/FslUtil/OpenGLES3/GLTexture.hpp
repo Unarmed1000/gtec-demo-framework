@@ -137,7 +137,7 @@ namespace Fsl
       ~GLTexture();
 
       //! @brief Check if this contains a valid gl handle.
-      bool IsValid() const
+      [[nodiscard]] bool IsValid() const
       {
         return m_handle != GLValues::InvalidHandle;
       }
@@ -242,7 +242,7 @@ namespace Fsl
 
       //! @brief Get the gl texture handle associated with the texture.
       //! @return the handle or GLValues::InvalidHandle if the texture is unallocated.
-      GLuint Get() const
+      [[nodiscard]] GLuint Get() const
       {
         return m_handle;
       }
@@ -250,26 +250,26 @@ namespace Fsl
       //! @brief Get the gl texture handle associated with the texture.
       //! @return the handle or GLValues::InvalidHandle if the texture is unallocated.
       //! @deprecated use Get instead
-      [[deprecated("use one of the other overloads instead")]] GLuint GetHandle() const
+      [[nodiscard]] [[deprecated("use one of the other overloads instead")]] GLuint GetHandle() const
       {
         return m_handle;
       }
 
       //! @brief Get the gl texture target associated with the texture.
       //! @return the handle or GLValues::InvalidHandle if the texture is unallocated.
-      GLuint GetTarget() const
+      [[nodiscard]] GLuint GetTarget() const
       {
         return m_target;
       }
 
       //! @brief Get the texture size.
-      PxExtent3D GetExtent() const
+      [[nodiscard]] PxExtent3D GetExtent() const
       {
         return m_extent;
       }
 
       //! @brief Extract information about this texture as a GLTextureInfo struct
-      GLTextureInfo GetTextureInfo() const
+      [[nodiscard]] GLTextureInfo GetTextureInfo() const
       {
         return {m_handle, m_extent};
       }
@@ -280,7 +280,7 @@ namespace Fsl
         return {m_handle, m_extent};
       }
 
-      PxSize2D GetSize() const;
+      [[nodiscard]] PxSize2D GetSize() const;
     };
   }
 }

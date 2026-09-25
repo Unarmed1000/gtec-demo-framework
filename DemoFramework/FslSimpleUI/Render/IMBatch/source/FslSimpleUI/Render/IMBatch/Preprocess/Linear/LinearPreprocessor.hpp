@@ -37,6 +37,8 @@
 #include <FslBase/Span/SpanUtil_Vector.hpp>
 #include <FslSimpleUI/Render/Base/Command/EncodedCommand.hpp>
 #include <FslSimpleUI/Render/IMBatch/DrawReorderMethod.hpp>
+#include <algorithm>
+#include <utility>
 #include <vector>
 #include "../../MaterialStats.hpp"
 #include "../../MeshManager.hpp"
@@ -88,15 +90,15 @@ namespace Fsl::UI::RenderIMBatch
       // Ensure that we have enough space in the material cache
       const uint32_t currentMaterialCount = meshManager.GetMaterialLookup().GetCount();
       m_cache.EnsureCapacity(currentMaterialCount);
-      Span<MaterialCacheRecord> opaqueMaterialCache = m_cache.GetOpaqueCacheSpan(currentMaterialCount);
-      Span<MaterialCacheRecord> transparentMaterialCache = m_cache.GetTransparentCacheSpan(currentMaterialCount);
+      const Span<MaterialCacheRecord> opaqueMaterialCache = m_cache.GetOpaqueCacheSpan(currentMaterialCount);
+      const Span<MaterialCacheRecord> transparentMaterialCache = m_cache.GetTransparentCacheSpan(currentMaterialCount);
 
 
-      PreprocessResult result = m_allowDepthBuffer
-                                  ? PreprocessUtil2::PreprocessTwoQueues(rProcessedCommandRecords, opaqueMaterialCache, transparentMaterialCache,
-                                                                         commandSpan, meshManager, m_windowSizePx)
-                                  : PreprocessUtil2::PreprocessForceTransparent(rProcessedCommandRecords, opaqueMaterialCache,
-                                                                                transparentMaterialCache, commandSpan, meshManager, m_windowSizePx);
+      const PreprocessResult result =
+        m_allowDepthBuffer ? PreprocessUtil2::PreprocessTwoQueues(rProcessedCommandRecords, opaqueMaterialCache, transparentMaterialCache,
+                                                                  commandSpan, meshManager, m_windowSizePx)
+                           : PreprocessUtil2::PreprocessForceTransparent(rProcessedCommandRecords, opaqueMaterialCache, transparentMaterialCache,
+                                                                         commandSpan, meshManager, m_windowSizePx);
 
       const uint32_t totalCount = result.OpaqueCount + result.TransparentCount;
 
@@ -159,7 +161,7 @@ namespace Fsl::UI::RenderIMBatch
           // material or a overlapping entry. This will only backtrack for "maxBacktracking" entries before giving up on the reordering
           int32_t targetIndex = static_cast<int32_t>(i) - 1;
           const uint32_t lastKnownMaterialIndex = materialCache[src.MaterialId.Value].Index;
-          if (lastKnownMaterialIndex < static_cast<uint32_t>(targetIndex) &&
+          if (std::cmp_less(lastKnownMaterialIndex, targetIndex) &&
               static_cast<int32_t>(static_cast<uint32_t>(targetIndex) - lastKnownMaterialIndex) <= maxBacktracking)
           {
             const int32_t targetIndexSrcEnd = std::max(targetIndex - maxBacktracking, 0);
@@ -185,7 +187,7 @@ namespace Fsl::UI::RenderIMBatch
           // Here we are interested in using the 're-ordered' elements while we backtrack, so we need to lookup the original index
           // to get access to the src record
           assert(targetIndex < static_cast<int32_t>(i));
-          if (targetIndex >= 0 && static_cast<uint32_t>(targetIndex) == lastKnownMaterialIndex)
+          if (targetIndex >= 0 && std::cmp_equal(targetIndex, lastKnownMaterialIndex))
           {    // We found a previous entry with the same material and the draw commands do not overlap, so we can reorder the draw calls
                // without issues
             assert(srcSpan[dstSpan[targetIndex].OriginalCommandIndex].MaterialId == src.MaterialId);
@@ -203,10 +205,7 @@ namespace Fsl::UI::RenderIMBatch
               dstSpan[moveIndex].OriginalCommandIndex = recordToMove.OriginalCommandIndex;
               // Remap the material cache index
               MaterialCacheRecord& rMaterialCacheEntry = materialCache[srcSpan[recordToMove.OriginalCommandIndex].MaterialId.Value];
-              if (rMaterialCacheEntry.Index < moveIndex)
-              {
-                rMaterialCacheEntry.Index = moveIndex;
-              }
+              rMaterialCacheEntry.Index = std::max(rMaterialCacheEntry.Index, moveIndex);
             }
             dstSpan[insertAtIndex].OriginalCommandIndex = i;
             materialCache[src.MaterialId.Value].Index = insertAtIndex;

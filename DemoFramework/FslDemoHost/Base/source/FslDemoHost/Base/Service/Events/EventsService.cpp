@@ -91,7 +91,7 @@ namespace Fsl
       throw UsageErrorException("Can not unregister during callbacks");
     }
 
-    std::shared_ptr<IEventListener> listenerToRemove = subscriber.lock();
+    const std::shared_ptr<IEventListener> listenerToRemove = subscriber.lock();
     if (!listenerToRemove)
     {
       return;
@@ -147,7 +147,7 @@ namespace Fsl
         auto itr = m_listeners.begin();
         while (itr != m_listeners.end())
         {
-          std::shared_ptr<IEventListener> listener = itr->lock();
+          const std::shared_ptr<IEventListener> listener = itr->lock();
           if (listener)
           {
             listener->OnEvent(pEvent);
@@ -167,7 +167,7 @@ namespace Fsl
         auto itr = m_listeners.begin();
         while (itr != m_listeners.end())
         {
-          std::shared_ptr<IEventListener> listener = itr->lock();
+          const std::shared_ptr<IEventListener> listener = itr->lock();
           if (listener)
           {
             listener->OnEvent(&event);

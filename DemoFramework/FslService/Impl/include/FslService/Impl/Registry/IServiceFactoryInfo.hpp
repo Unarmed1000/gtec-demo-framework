@@ -45,10 +45,10 @@ namespace Fsl
     virtual ~IServiceFactoryInfo() = default;
 
     //! @brief Get the option parser associated with the service (null for none)
-    virtual std::shared_ptr<AServiceOptionParser> GetOptionParser() const = 0;
+    [[nodiscard]] virtual std::shared_ptr<AServiceOptionParser> GetOptionParser() const = 0;
 
     //! @brief Return the service capabilities
-    virtual ServiceCaps::Flags GetFlags() const = 0;
+    [[nodiscard]] virtual ServiceCaps::Flags GetFlags() const = 0;
 
     //! @brief Fill the supplied deque with the interfaces supported by this factory.
     virtual void FillInterfaceType(ServiceSupportedInterfaceDeque& rServiceInterfaceTypeDeque) const = 0;

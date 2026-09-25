@@ -49,9 +49,9 @@ namespace Fsl
     ~IVulkanNativeWindowSystemAdapter() override = default;
 
     //! @brief Retrieve the name of the platform KHR surface extension (for example VK_KHR_WIN32_SURFACE_EXTENSION_NAME)
-    virtual std::string GetKHRSurfaceExtensionName() const = 0;
+    [[nodiscard]] virtual std::string GetKHRSurfaceExtensionName() const = 0;
 
-    virtual PlatformNativeDisplayType GetDisplayType() const = 0;
+    [[nodiscard]] virtual PlatformNativeDisplayType GetDisplayType() const = 0;
 
     virtual std::shared_ptr<IVulkanNativeWindowAdapter> CreateVulkanNativeWindow(const NativeWindowSetup& nativeWindowSetup,
                                                                                  const NativeVulkanSetup& nativeVulkanSetup) = 0;

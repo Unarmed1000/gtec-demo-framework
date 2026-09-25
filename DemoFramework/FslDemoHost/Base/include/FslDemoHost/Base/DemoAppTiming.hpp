@@ -100,7 +100,7 @@ namespace Fsl
     //! @return true if the value was different and therefore changed (false if the value was equal to the existing and therefore did nothing).
     bool SetFixedUpdatesPerSecond(const uint16_t fixedUpdatesPerSecond) noexcept;
 
-    uint16_t GetFixedUpdatesPerSecond() const noexcept
+    [[nodiscard]] uint16_t GetFixedUpdatesPerSecond() const noexcept
     {
       return m_config.FixedUpdatesPerSecond;
     }
@@ -116,12 +116,12 @@ namespace Fsl
     void TimeNow(const TickCount currentTimestamp, const TimeStepMode timeStepMode);
 
 
-    bool HasPendingFixedUpdate() const noexcept;
+    [[nodiscard]] bool HasPendingFixedUpdate() const noexcept;
 
     //! @brief Return a DemoTime if a FixedUpdate should be scheduled, return a empty Optional if not
     std::optional<DemoTime> TryFixedUpdate();
 
-    DemoTime GetUpdateTime() const noexcept
+    [[nodiscard]] DemoTime GetUpdateTime() const noexcept
     {
       return {m_timing.AccumulatedTotalTime, m_timing.LastTimeDiff};
     }
@@ -129,9 +129,9 @@ namespace Fsl
   private:
     void DoTimeNow(const TickCount currentTimestamp, const TimeStepMode timeStepMode, const bool allowForce);
     void ConfigureTimeStepMode(const TimeStepMode mode);
-    TimeSpan ApplyMaxFrameTimpCap(const TimeSpan timeDiff) const noexcept;
+    [[nodiscard]] TimeSpan ApplyMaxFrameTimpCap(const TimeSpan timeDiff) const noexcept;
     void ApplyTimeStepMode(TimeSpan& rTimeDiff, TimeSpan& rAccumulatedTime, const TimeStepMode timeStepMode) const noexcept;
-    TimeSpan ApplyTimeStepModeFixedTimeSteps(const TimeSpan timeDiff, const TimeStepMode timeStepMode) const noexcept;
+    [[nodiscard]] TimeSpan ApplyTimeStepModeFixedTimeSteps(const TimeSpan timeDiff, const TimeStepMode timeStepMode) const noexcept;
   };
 }
 

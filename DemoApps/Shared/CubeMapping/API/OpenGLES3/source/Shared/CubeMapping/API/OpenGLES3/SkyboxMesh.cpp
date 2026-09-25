@@ -67,7 +67,7 @@ namespace Fsl
       VertexBuffer.Reset(SkyboxVertices::GetVertices(1.0f), GL_STATIC_DRAW);
 
       // Use the vertex buffer helper functions to locate the desired elements
-      std::vector<GLES3::GLVertexAttribLink> attribLink = {
+      const std::vector<GLES3::GLVertexAttribLink> attribLink = {
         GLVertexAttribLink(program.GetAttribLocation("VertexPosition"), VertexBuffer.GetVertexElementIndex(VertexElementUsage::Position, 0)),
         GLVertexAttribLink(program.GetAttribLocation("VertexTexCoord"),
                            VertexBuffer.GetVertexElementIndex(VertexElementUsage::TextureCoordinate, 0))};

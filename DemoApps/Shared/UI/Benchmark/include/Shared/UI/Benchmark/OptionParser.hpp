@@ -53,17 +53,17 @@ namespace Fsl
     OptionParser() = default;
     ~OptionParser() override = default;
 
-    std::optional<bool> TryGetChartDisabled() const
+    [[nodiscard]] std::optional<bool> TryGetChartDisabled() const
     {
       return m_disableChart;
     }
 
-    std::optional<bool> TryGetShowIdleEnabled() const
+    [[nodiscard]] std::optional<bool> TryGetShowIdleEnabled() const
     {
       return m_showIdle;
     }
 
-    SceneId GetSceneId() const
+    [[nodiscard]] SceneId GetSceneId() const
     {
       if (m_runDefaultBench)
       {
@@ -72,7 +72,7 @@ namespace Fsl
       return !m_viewReportFile.has_value() ? m_sceneId : SceneId::Result;
     }
 
-    AppBenchmarkScene GetBenchmarkScene() const
+    [[nodiscard]] AppBenchmarkScene GetBenchmarkScene() const
     {
       if (m_runDefaultBench)
       {
@@ -81,17 +81,17 @@ namespace Fsl
       return m_benchmarkScene;
     }
 
-    bool GetRunDefaultBench() const
+    [[nodiscard]] bool GetRunDefaultBench() const
     {
       return m_runDefaultBench;
     }
 
-    std::optional<IO::Path> TryGetCompareReportFile() const
+    [[nodiscard]] std::optional<IO::Path> TryGetCompareReportFile() const
     {
       return m_compareReportFile;
     }
 
-    std::optional<IO::Path> TryGetViewReportFile() const
+    [[nodiscard]] std::optional<IO::Path> TryGetViewReportFile() const
     {
       return m_viewReportFile;
     }

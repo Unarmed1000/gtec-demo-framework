@@ -80,11 +80,11 @@ namespace Fsl
   public:
     BasicGpuProfiler(const VkPhysicalDeviceProperties& physicalDeviceProperties, const VkDevice device);
 
-    bool IsEnabled() const noexcept final;
+    [[nodiscard]] bool IsEnabled() const noexcept final;
     void SetEnabled(const bool enabled) final;
     void BeginTimestamp() final;
     void EndTimestamp() final;
-    uint64_t GetResult() const noexcept final;
+    [[nodiscard]] uint64_t GetResult() const noexcept final;
 
     void BeginDraw(const VkCommandBuffer commandBuffer);
     void EndDraw();

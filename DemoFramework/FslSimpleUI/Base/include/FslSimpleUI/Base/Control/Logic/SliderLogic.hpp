@@ -82,31 +82,31 @@ namespace Fsl::UI
     }
 
     //! @brief Check if the slider is being dragged or not
-    bool IsDragging() const
+    [[nodiscard]] bool IsDragging() const
     {
       return m_drag.IsDragging();
     }
 
     //! @brief Check if we are enabled or disabled
-    bool IsEnabled() const
+    [[nodiscard]] bool IsEnabled() const
     {
       return m_drag.IsEnabled();
     }
 
     //! @brief Get the current percentage
-    float GetPercentage() const
+    [[nodiscard]] float GetPercentage() const
     {
       return m_value.GetPercentage();
     }
 
     //! @brief Get the pixel position inside the 'span'
-    PxValue GetPositionPx() const
+    [[nodiscard]] PxValue GetPositionPx() const
     {
       return m_drag.GetPositionPx(m_value.GetPercentage());
     }
 
     //! @brief Get information about the currently configured span
-    const SliderPixelSpanInfo& GetSpanInfo() const
+    [[nodiscard]] const SliderPixelSpanInfo& GetSpanInfo() const
     {
       return m_drag.GetSpanInfo();
     }

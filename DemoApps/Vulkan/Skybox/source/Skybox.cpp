@@ -100,14 +100,14 @@ namespace Fsl
 
     const auto contentManager = GetContentManager();
 
-    IO::Path texture = options->GetScene() == SceneState::Scene1 ? "Textures/Cubemap/Yokohama3/Raw" : "Textures/Cubemap/Test/Raw";
+    const IO::Path texture = options->GetScene() == SceneState::Scene1 ? "Textures/Cubemap/Yokohama3/Raw" : "Textures/Cubemap/Test/Raw";
 
     VulkanImageCreator imageCreator(m_device, m_deviceQueue.Queue, m_deviceQueue.QueueFamilyIndex);
     m_resources.CubemapTexture = TextureUtil::CreateCubemapTextureFromSix(contentManager, texture, imageCreator, PixelFormat::R8G8B8A8_UNORM);
     m_resources.VertShaderModule.Reset(m_device.Get(), 0, contentManager->ReadBytes("skybox.vert.spv"));
     m_resources.FragShaderModule.Reset(m_device.Get(), 0, contentManager->ReadBytes("skybox.frag.spv"));
 
-    std::array<VertexElementUsage, 2> shaderBindOrder = {VertexElementUsage::Position, VertexElementUsage::TextureCoordinate};
+    const std::array<VertexElementUsage, 2> shaderBindOrder = {VertexElementUsage::Position, VertexElementUsage::TextureCoordinate};
     m_resources.MainSkyboxMesh = CommonMethods::CreateSkyboxMesh(m_bufferManager, shaderBindOrder);
 
     m_resources.MainDescriptorSetLayout = CommonMethods::CreateDescriptorSetLayout(m_device);
@@ -170,7 +170,7 @@ namespace Fsl
     }
     UpdateCameraControlInput(demoTime, m_keyboard->GetState());
 
-    float aspect = GetWindowAspectRatio();
+    const float aspect = GetWindowAspectRatio();
 
     // Deal with the new Vulkan coordinate system (see method description for more info).
     // Consider using: https://github.com/KhronosGroup/Vulkan-Docs/blob/master/appendices/VK_KHR_maintenance1.txt
@@ -243,7 +243,7 @@ namespace Fsl
 
     vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_dependentResources.Pipeline.Get());
 
-    VkDeviceSize offsets = 0;
+    const VkDeviceSize offsets = 0;
     vkCmdBindVertexBuffers(commandBuffer, VertexBufferBindId, 1, m_resources.MainSkyboxMesh.VertexBuffer.GetBufferPointer(), &offsets);
     vkCmdDraw(commandBuffer, m_resources.MainSkyboxMesh.VertexBuffer.GetVertexCount(), 1, 0, 0);
   }

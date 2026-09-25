@@ -97,7 +97,7 @@ TEST(TestMath_Extent3D, Construct_Point2)
 {
   const Point2 point(320, 240);
   const uint32_t depth = 100;
-  Extent3D value(point, depth);
+  const Extent3D value(point, depth);
 
   EXPECT_EQ(static_cast<uint32_t>(point.X), value.Width);
   EXPECT_EQ(static_cast<uint32_t>(point.Y), value.Height);
@@ -116,7 +116,7 @@ TEST(TestMath_Extent3D, Construct_Extend2D)
 {
   const Extent2D extent(320, 240);
   const uint32_t depth = 100;
-  Extent3D value(extent, depth);
+  const Extent3D value(extent, depth);
 
   EXPECT_EQ(extent.Width, value.Width);
   EXPECT_EQ(extent.Height, value.Height);
@@ -126,14 +126,14 @@ TEST(TestMath_Extent3D, Construct_Extend2D)
 
 TEST(TestMath_Extent3D, AddEquals)
 {
-  uint32_t width1 = 320;
-  uint32_t height1 = 240;
-  uint32_t depth1 = 100;
-  Extent3D value1(width1, height1, depth1);
+  const uint32_t width1 = 320;
+  const uint32_t height1 = 240;
+  const uint32_t depth1 = 100;
+  const Extent3D value1(width1, height1, depth1);
 
-  uint32_t width2 = 200;
-  uint32_t height2 = 100;
-  uint32_t depth2 = 50;
+  const uint32_t width2 = 200;
+  const uint32_t height2 = 100;
+  const uint32_t depth2 = 50;
   Extent3D value2(width2, height2, depth2);
 
   value2 += value1;
@@ -149,14 +149,14 @@ TEST(TestMath_Extent3D, AddEquals)
 
 TEST(TestMath_Extent3D, SubEquals)
 {
-  uint32_t width1 = 320;
-  uint32_t height1 = 240;
-  uint32_t depth1 = 100;
-  Extent3D value1(width1, height1, depth1);
+  const uint32_t width1 = 320;
+  const uint32_t height1 = 240;
+  const uint32_t depth1 = 100;
+  const Extent3D value1(width1, height1, depth1);
 
-  uint32_t width2 = 200;
-  uint32_t height2 = 100;
-  uint32_t depth2 = 50;
+  const uint32_t width2 = 200;
+  const uint32_t height2 = 100;
+  const uint32_t depth2 = 50;
   Extent3D value2(width2, height2, depth2);
 
   value2 -= value1;
@@ -172,14 +172,14 @@ TEST(TestMath_Extent3D, SubEquals)
 
 TEST(TestMath_Extent3D, MultEquals)
 {
-  uint32_t width1 = 2;
-  uint32_t height1 = 4;
-  uint32_t depth1 = 8;
-  Extent3D value1(width1, height1, depth1);
+  const uint32_t width1 = 2;
+  const uint32_t height1 = 4;
+  const uint32_t depth1 = 8;
+  const Extent3D value1(width1, height1, depth1);
 
-  uint32_t width2 = 200;
-  uint32_t height2 = 100;
-  uint32_t depth2 = 50;
+  const uint32_t width2 = 200;
+  const uint32_t height2 = 100;
+  const uint32_t depth2 = 50;
   Extent3D value2(width2, height2, depth2);
 
   value2 *= value1;
@@ -195,11 +195,11 @@ TEST(TestMath_Extent3D, MultEquals)
 
 TEST(TestMath_Extent3D, MultEqual)
 {
-  int multBy = 2;
+  const int multBy = 2;
 
-  uint32_t width = 200;
-  uint32_t height = 100;
-  uint32_t depth = 50;
+  const uint32_t width = 200;
+  const uint32_t height = 100;
+  const uint32_t depth = 50;
   Extent3D value(width, height, depth);
 
   value *= multBy;
@@ -212,8 +212,8 @@ TEST(TestMath_Extent3D, MultEqual)
 
 TEST(TestMath_Extent3D, Equal)
 {
-  Extent3D value1(320, 240, 100);
-  Extent3D value2(320, 240, 100);
+  const Extent3D value1(320, 240, 100);
+  const Extent3D value2(320, 240, 100);
 
   EXPECT_EQ(value1, value2);
 }
@@ -221,10 +221,10 @@ TEST(TestMath_Extent3D, Equal)
 
 TEST(TestMath_Extent3D, NotEqual)
 {
-  Extent3D value1(320, 240, 100);
-  Extent3D value2(321, 240, 100);
-  Extent3D value3(320, 241, 100);
-  Extent3D value4(320, 240, 101);
+  const Extent3D value1(320, 240, 100);
+  const Extent3D value2(321, 240, 100);
+  const Extent3D value3(320, 241, 100);
+  const Extent3D value4(320, 240, 101);
 
   EXPECT_NE(value1, value2);
   EXPECT_NE(value1, value3);
@@ -234,7 +234,7 @@ TEST(TestMath_Extent3D, NotEqual)
 
 TEST(TestMath_Extent3D, Zero)
 {
-  auto value = Extent3D::Zero();
+  const auto value = Extent3D::Zero();
 
   EXPECT_EQ(0u, value.Width);
   EXPECT_EQ(0u, value.Height);

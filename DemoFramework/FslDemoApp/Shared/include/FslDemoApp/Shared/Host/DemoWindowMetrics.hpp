@@ -76,15 +76,15 @@ namespace Fsl
     }
 
     //! The size of the window in pixels
-    PxSize2D GetSizePx() const;
+    [[nodiscard]] PxSize2D GetSizePx() const;
 
     //! The aspect ratio of the window
-    constexpr float AspectRatio() const
+    [[nodiscard]] constexpr float AspectRatio() const
     {
       return ExtentPx.Height.Value > 0 ? (static_cast<float>(ExtentPx.Width.Value) / static_cast<float>(ExtentPx.Height.Value)) : 1.0f;
     }
 
-    constexpr bool IsEqualDpi(const DemoWindowMetrics& rhs) const
+    [[nodiscard]] constexpr bool IsEqualDpi(const DemoWindowMetrics& rhs) const
     {
       return ExactDpi == rhs.ExactDpi && DensityDpi == rhs.DensityDpi;
     }

@@ -62,14 +62,14 @@ namespace Fsl::UI
     rMainLayout.AddRowDefinition(GridRowDefinition(GridUnitType::Auto));
     rMainLayout.AddRowDefinition(GridRowDefinition(GridUnitType::Auto));
 
-    auto caption = themeControlFactory->CreateLabel("Frame analysis", Theme::FontType::Header);
+    const auto caption = themeControlFactory->CreateLabel("Frame analysis", Theme::FontType::Header);
     caption->SetAlignmentX(ItemAlignment::Center);
 
     m_buttonOK = themeControlFactory->CreateTextButton(Theme::ButtonType::Contained, "Back");
     m_buttonOK->SetAlignmentX(ItemAlignment::Center);
 
-    auto context = themeControlFactory->GetContext();
-    auto content = std::make_shared<StackLayout>(context);
+    const auto context = themeControlFactory->GetContext();
+    const auto content = std::make_shared<StackLayout>(context);
     {
       m_drawCallSlider =
         themeControlFactory->CreateSliderFmtValue(LayoutOrientation::Horizontal, ConstrainedValue<uint32_t>(maxDrawCalls, 0, maxDrawCalls));

@@ -52,6 +52,7 @@ namespace Fsl::Vulkan
 
     BufferCreateInfoCopy& operator=(BufferCreateInfoCopy&& other) noexcept;
     BufferCreateInfoCopy(BufferCreateInfoCopy&& other) noexcept;
+    ~BufferCreateInfoCopy() = default;
 
     BufferCreateInfoCopy();
     explicit BufferCreateInfoCopy(const VkBufferCreateInfo& value);
@@ -59,7 +60,7 @@ namespace Fsl::Vulkan
     void Reset();
     void Reset(const VkBufferCreateInfo& value);
 
-    const VkBufferCreateInfo& Get() const
+    [[nodiscard]] const VkBufferCreateInfo& Get() const
     {
       return m_value;
     }

@@ -76,7 +76,7 @@ namespace Fsl
 
       inline bool operator()(const std::weak_ptr<IDemoAppExtension>& value) const
       {
-        auto val = value.lock();
+        const auto val = value.lock();
         return (val == m_ext);
       }
     };
@@ -89,7 +89,7 @@ namespace Fsl
       auto itr = rExtensions.begin();
       while (itr != rExtensions.end())
       {
-        auto extension = itr->lock();
+        const auto extension = itr->lock();
         if (extension)
         {
           predicate(*extension);
@@ -109,7 +109,7 @@ namespace Fsl
       auto itr = rExtensions.begin();
       while (itr != rExtensions.end())
       {
-        auto extension = itr->lock();
+        const auto extension = itr->lock();
         if (extension)
         {
           predicate(*extension, DemoAppExtensionCallOrder::PreApp);
@@ -130,7 +130,7 @@ namespace Fsl
       auto itr = rExtensions.rbegin();
       while (itr != rExtensions.rend())
       {
-        auto extension = itr->lock();
+        const auto extension = itr->lock();
         if (extension)
         {
           predicate(*extension, DemoAppExtensionCallOrder::PostApp);
@@ -170,7 +170,7 @@ namespace Fsl
 
   void ADemoApp::RegisterExtension(const std::shared_ptr<IDemoAppExtension>& extension)
   {
-    auto itr = std::find_if(m_extensions.begin(), m_extensions.end(), ExtensionCompare(extension));
+    const auto itr = std::find_if(m_extensions.begin(), m_extensions.end(), ExtensionCompare(extension));
     if (itr != m_extensions.end())
     {
       throw UsageErrorException("A extension can only be registered once");
@@ -182,7 +182,7 @@ namespace Fsl
 
   void ADemoApp::UnregisterExtension(const std::shared_ptr<IDemoAppExtension>& extension)
   {
-    auto itr = std::find_if(m_extensions.begin(), m_extensions.end(), ExtensionCompare(extension));
+    const auto itr = std::find_if(m_extensions.begin(), m_extensions.end(), ExtensionCompare(extension));
     if (itr == m_extensions.end())
     {
       return;
@@ -238,7 +238,7 @@ namespace Fsl
       {
       case EventType::KeyPressed:
         {
-          KeyEvent keyEvent(*pBasicEvent);
+          const KeyEvent keyEvent(*pBasicEvent);
 
           // Call all registered extensions
           CallExtensions(m_extensions, [keyEvent](IDemoAppExtension& rExt) { rExt.OnKeyEvent(keyEvent); });
@@ -252,7 +252,7 @@ namespace Fsl
         }
       case EventType::MouseButton:
         {
-          MouseButtonEvent mouseEvent(*pBasicEvent);
+          const MouseButtonEvent mouseEvent(*pBasicEvent);
           // Call all registered extensions
           CallExtensions(m_extensions, [mouseEvent](IDemoAppExtension& rExt) { rExt.OnMouseButtonEvent(mouseEvent); });
 
@@ -261,7 +261,7 @@ namespace Fsl
         }
       case EventType::MouseMove:
         {
-          MouseMoveEvent mouseEvent(*pBasicEvent);
+          const MouseMoveEvent mouseEvent(*pBasicEvent);
           // Call all registered extensions
           CallExtensions(m_extensions, [mouseEvent](IDemoAppExtension& rExt) { rExt.OnMouseMoveEvent(mouseEvent); });
           OnMouseMoveEvent(mouseEvent);
@@ -269,7 +269,7 @@ namespace Fsl
         }
       case EventType::MouseWheel:
         {
-          MouseWheelEvent mouseEvent(*pBasicEvent);
+          const MouseWheelEvent mouseEvent(*pBasicEvent);
           // Call all registered extensions
           CallExtensions(m_extensions, [mouseEvent](IDemoAppExtension& rExt) { rExt.OnMouseWheelEvent(mouseEvent); });
           OnMouseWheelEvent(mouseEvent);
@@ -277,7 +277,7 @@ namespace Fsl
         }
       case EventType::RawMouseMove:
         {
-          RawMouseMoveEvent mouseEvent(*pBasicEvent);
+          const RawMouseMoveEvent mouseEvent(*pBasicEvent);
           // Call all registered extensions
           CallExtensions(m_extensions, [mouseEvent](IDemoAppExtension& rExt) { rExt.OnRawMouseMoveEvent(mouseEvent); });
           OnRawMouseMoveEvent(mouseEvent);
@@ -285,7 +285,7 @@ namespace Fsl
         }
       case EventType::TimeState:
         {
-          TimeStateEvent timeStateEvent(*pBasicEvent);
+          const TimeStateEvent timeStateEvent(*pBasicEvent);
           // Call all registered extensions
           CallExtensions(m_extensions, [timeStateEvent](IDemoAppExtension& rExt) { rExt.OnTimeStateEvent(timeStateEvent); });
           OnTimeStateEvent(timeStateEvent);
@@ -315,7 +315,7 @@ namespace Fsl
   {
     VERBOSE_LOG("ADemoApp::_Begin()");
 
-    auto fn = [](IDemoAppExtension& rExt, const DemoAppExtensionCallOrder callOrder) { rExt.Begin(callOrder); };
+    const auto fn = [](IDemoAppExtension& rExt, const DemoAppExtensionCallOrder callOrder) { rExt.Begin(callOrder); };
     CallExtensionsPre(m_extensions, fn);
     OnFrameSequenceBegin();
     CallExtensionsPost(m_extensions, fn);
@@ -326,7 +326,7 @@ namespace Fsl
     VERBOSE_LOG("ADemoApp::_PreUpdate()");
 
     // Call all registered extensions
-    auto fn = [demoTime](IDemoAppExtension& rExt, const DemoAppExtensionCallOrder callOrder) { rExt.PreUpdate(callOrder, demoTime); };
+    const auto fn = [demoTime](IDemoAppExtension& rExt, const DemoAppExtensionCallOrder callOrder) { rExt.PreUpdate(callOrder, demoTime); };
     CallExtensionsPre(m_extensions, fn);
 
     // Done this way to prevent common mistakes where people forget to call the base class
@@ -340,7 +340,7 @@ namespace Fsl
   {
     VERBOSE_LOG("ADemoApp::_FixedUpdate()");
     // Call all registered extensions
-    auto fn = [demoTime](IDemoAppExtension& rExt, const DemoAppExtensionCallOrder callOrder) { rExt.FixedUpdate(callOrder, demoTime); };
+    const auto fn = [demoTime](IDemoAppExtension& rExt, const DemoAppExtensionCallOrder callOrder) { rExt.FixedUpdate(callOrder, demoTime); };
     CallExtensionsPre(m_extensions, fn);
 
     // Done this way to prevent common mistakes where people forget to call the base class
@@ -354,7 +354,7 @@ namespace Fsl
   {
     VERBOSE_LOG("ADemoApp::_Update()");
     // Call all registered extensions
-    auto fn = [demoTime](IDemoAppExtension& rExt, const DemoAppExtensionCallOrder callOrder) { rExt.Update(callOrder, demoTime); };
+    const auto fn = [demoTime](IDemoAppExtension& rExt, const DemoAppExtensionCallOrder callOrder) { rExt.Update(callOrder, demoTime); };
     CallExtensionsPre(m_extensions, fn);
 
     // Done this way to prevent common mistakes where people forget to call the base class
@@ -368,7 +368,7 @@ namespace Fsl
   {
     VERBOSE_LOG("ADemoApp::_PostUpdate()");
 
-    auto fn = [demoTime](IDemoAppExtension& rExt, const DemoAppExtensionCallOrder callOrder) { rExt.PostUpdate(callOrder, demoTime); };
+    const auto fn = [demoTime](IDemoAppExtension& rExt, const DemoAppExtensionCallOrder callOrder) { rExt.PostUpdate(callOrder, demoTime); };
     CallExtensionsPre(m_extensions, fn);
 
     // Done this way to prevent common mistakes where people forget to call the base class
@@ -384,7 +384,7 @@ namespace Fsl
   {
     VERBOSE_LOG("ADemoApp::_Resolve()");
 
-    auto fn = [demoTime](IDemoAppExtension& rExt, const DemoAppExtensionCallOrder callOrder) { rExt.Resolve(callOrder, demoTime); };
+    const auto fn = [demoTime](IDemoAppExtension& rExt, const DemoAppExtensionCallOrder callOrder) { rExt.Resolve(callOrder, demoTime); };
     CallExtensionsPre(m_extensions, fn);
 
     // Done this way to prevent common mistakes where people forget to call the base class
@@ -432,7 +432,7 @@ namespace Fsl
     // CallExtensions(m_extensions, PredMethodDraw());
 
     // Done this way to prevent common mistakes where people forget to call the base class
-    auto fn = [frameInfo](IDemoAppExtension& rExt, const DemoAppExtensionCallOrder callOrder) { rExt.OnDrawSkipped(callOrder, frameInfo); };
+    const auto fn = [frameInfo](IDemoAppExtension& rExt, const DemoAppExtensionCallOrder callOrder) { rExt.OnDrawSkipped(callOrder, frameInfo); };
     CallExtensionsPre(m_extensions, fn);
     OnDrawSkipped(frameInfo);
     CallExtensionsPost(m_extensions, fn);
@@ -449,7 +449,7 @@ namespace Fsl
   {
     VERBOSE_LOG("ADemoApp::_End()");
 
-    auto fn = [](IDemoAppExtension& rExt, const DemoAppExtensionCallOrder callOrder) { rExt.End(callOrder); };
+    const auto fn = [](IDemoAppExtension& rExt, const DemoAppExtensionCallOrder callOrder) { rExt.End(callOrder); };
     CallExtensionsPre(m_extensions, fn);
 
     OnFrameSequenceEnd();

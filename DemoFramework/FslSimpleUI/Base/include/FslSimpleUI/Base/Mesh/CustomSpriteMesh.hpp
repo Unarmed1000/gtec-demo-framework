@@ -75,18 +75,21 @@ namespace Fsl::UI
     }
 
 
+    CustomSpriteMesh(const CustomSpriteMesh&) = delete;
+    CustomSpriteMesh& operator=(const CustomSpriteMesh&) = delete;
+
     ~CustomSpriteMesh() noexcept
     {
       DestroyMesh();
     }
 
-    bool IsValid() const noexcept
+    [[nodiscard]] bool IsValid() const noexcept
     {
       return m_hMesh.IsValid();
     }
 
 
-    MeshHandle Get() const noexcept
+    [[nodiscard]] MeshHandle Get() const noexcept
     {
       return m_hMesh;
     }
@@ -196,7 +199,7 @@ namespace Fsl::UI
     }
 
   protected:
-    std::weak_ptr<IMeshManager> GetMeshManager() const
+    [[nodiscard]] std::weak_ptr<IMeshManager> GetMeshManager() const
     {
       return m_meshManager;
     }

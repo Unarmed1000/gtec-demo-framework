@@ -42,7 +42,7 @@ namespace Fsl::IO
   {
     void RecursiveCreate(const Path& path)
     {
-      auto tmpPath = Path::GetDirectoryName(path);
+      const auto tmpPath = Path::GetDirectoryName(path);
       if (tmpPath.GetByteSize() > 0)
       {
         RecursiveCreate(tmpPath);
@@ -91,7 +91,7 @@ namespace Fsl::IO
 
   void Directory::GetFiles(PathDeque& rResult, const Path& path, const SearchOptions searchOptions)
   {
-    return PlatformFileSystem::GetFiles(rResult, path, searchOptions);
+    PlatformFileSystem::GetFiles(rResult, path, searchOptions);
   }
 
 

@@ -59,12 +59,12 @@ namespace Fsl
   WhiteRectScene::WhiteRectScene(const DemoAppConfig& config)
 
   {
-    auto contentManager = config.DemoServiceProvider.Get<IContentManager>();
+    const auto contentManager = config.DemoServiceProvider.Get<IContentManager>();
     m_program.Reset(contentManager->ReadAllText("Shaders/Pass.vert"), contentManager->ReadAllText("Shaders/CopyPass.frag"));
 
     FSLLOG3_INFO("Preparing textures");
     {    // Prepare a white texture
-      GLTextureParameters params(GL_NEAREST, GL_NEAREST, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE);
+      const GLTextureParameters params(GL_NEAREST, GL_NEAREST, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE);
       Bitmap b(1, 1, PixelFormat::R8G8B8A8_UNORM, BitmapOrigin::LowerLeft);
       b.SetNativePixel(0, 0, 0xffffffff);
       m_texWhite.Reset(b, params);

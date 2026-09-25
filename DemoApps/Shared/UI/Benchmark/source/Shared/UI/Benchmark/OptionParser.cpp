@@ -88,17 +88,17 @@ namespace Fsl
         m_sceneId = SceneId::Benchmark;
         return OptionParseResult::Parsed;
       }
-      else if (strOptArg == "play")
+      if (strOptArg == "play")
       {
         m_sceneId = SceneId::Playground;
         return OptionParseResult::Parsed;
       }
-      else if (strOptArg == "record")
+      if (strOptArg == "record")
       {
         m_sceneId = SceneId::Record;
         return OptionParseResult::Parsed;
       }
-      else if (strOptArg == "result")
+      if (strOptArg == "result")
       {
         m_sceneId = SceneId::Result;
         return OptionParseResult::Parsed;
@@ -110,7 +110,7 @@ namespace Fsl
         m_benchmarkScene = AppBenchmarkScene::Scene0;
         return OptionParseResult::Parsed;
       }
-      else if (strOptArg == "dev")
+      if (strOptArg == "dev")
       {
         m_benchmarkScene = AppBenchmarkScene::Dev;
         return OptionParseResult::Parsed;

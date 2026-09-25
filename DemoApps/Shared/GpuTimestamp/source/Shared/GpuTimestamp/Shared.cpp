@@ -91,10 +91,10 @@ namespace Fsl
     m_data->SetChannelMetaData(0, LocalConfig::ChartColor);
 
 
-    std::shared_ptr<OptionParser> options = config.GetOptions<OptionParser>();
+    const std::shared_ptr<OptionParser> options = config.GetOptions<OptionParser>();
     m_defaultIterations = options->GetIterations();
 
-    auto uiControlFactory = UI::Theme::ThemeSelector::CreateControlFactory(*m_uiExtension);
+    const auto uiControlFactory = UI::Theme::ThemeSelector::CreateControlFactory(*m_uiExtension);
     m_ui = CreateUI(*uiControlFactory, m_defaultIterations, m_data, chartSupported);
     m_uiExtension->SetMainWindow(m_ui.MainWindow);
 
@@ -169,7 +169,7 @@ namespace Fsl
   void Shared::Update(const DemoTime& demoTime)
   {
     FSL_PARAM_NOT_USED(demoTime);
-    auto res = m_dataAverage.CalcAverage();
+    const auto res = m_dataAverage.CalcAverage();
     if (!res.empty())
     {
       const auto average = static_cast<float>(res[0]);
@@ -200,27 +200,27 @@ namespace Fsl
   Shared::UIRecord Shared::CreateUI(UI::Theme::IThemeControlFactory& uiFactory, const uint16_t iterations,
                                     const std::shared_ptr<UI::AChartData>& data, const bool chartSupported)
   {
-    auto context = uiFactory.GetContext();
+    const auto context = uiFactory.GetContext();
 
-    auto labelIterations = uiFactory.CreateLabel("Iterations: ");
+    const auto labelIterations = uiFactory.CreateLabel("Iterations: ");
     labelIterations->SetAlignmentY(UI::ItemAlignment::Center);
-    auto sliderIterations = uiFactory.CreateSliderFmtValue(
+    const auto sliderIterations = uiFactory.CreateSliderFmtValue(
       UI::LayoutOrientation::Horizontal, ConstrainedValue<uint32_t>(iterations, LocalConfig::IterationsMin, LocalConfig::IterationsMax));
     sliderIterations->SetAlignmentY(UI::ItemAlignment::Center);
 
-    auto btnDefault = uiFactory.CreateTextButton(UI::Theme::ButtonType::Outlined, "Set defaults");
+    const auto btnDefault = uiFactory.CreateTextButton(UI::Theme::ButtonType::Outlined, "Set defaults");
     btnDefault->SetAlignmentX(UI::ItemAlignment::Stretch);
-    auto btnClearChart = uiFactory.CreateTextButton(UI::Theme::ButtonType::Outlined, "Clear chart");
+    const auto btnClearChart = uiFactory.CreateTextButton(UI::Theme::ButtonType::Outlined, "Clear chart");
     btnClearChart->SetAlignmentX(UI::ItemAlignment::Stretch);
-    auto switchPause = uiFactory.CreateSwitch("Pause");
+    const auto switchPause = uiFactory.CreateSwitch("Pause");
     switchPause->SetAlignmentX(UI::ItemAlignment::Stretch);
     switchPause->SetAlignmentY(UI::ItemAlignment::Far);
 
-    auto gpuTime = uiFactory.CreateLabel("GPU time");
-    auto gpuTimeFmtLabel = uiFactory.CreateFmtValueLabel(0.0f, "{:.2f}ms");
+    const auto gpuTime = uiFactory.CreateLabel("GPU time");
+    const auto gpuTimeFmtLabel = uiFactory.CreateFmtValueLabel(0.0f, "{:.2f}ms");
     gpuTimeFmtLabel->SetAlignmentX(UI::ItemAlignment::Far);
     gpuTimeFmtLabel->SetAlignmentY(UI::ItemAlignment::Far);
-    auto chart = std::make_shared<UI::AreaChart>(context);
+    const auto chart = std::make_shared<UI::AreaChart>(context);
     {
       chart->SetAlignmentX(UI::ItemAlignment::Stretch);
       chart->SetAlignmentY(UI::ItemAlignment::Stretch);
@@ -233,7 +233,7 @@ namespace Fsl
       chart->SetRenderPolicy(UI::ChartRenderPolicy::FillAvailable);
     }
 
-    auto bottomGrid = std::make_shared<UI::GridLayout>(context);
+    const auto bottomGrid = std::make_shared<UI::GridLayout>(context);
     bottomGrid->SetAlignmentX(UI::ItemAlignment::Stretch);
     bottomGrid->SetAlignmentY(UI::ItemAlignment::Stretch);
     bottomGrid->AddColumnDefinition(UI::GridColumnDefinition(UI::GridUnitType::Auto));
@@ -254,7 +254,7 @@ namespace Fsl
     }
     else
     {
-      auto notSupported = uiFactory.CreateLabel("Not supported");
+      const auto notSupported = uiFactory.CreateLabel("Not supported");
       notSupported->SetAlignmentX(UI::ItemAlignment::Center);
       notSupported->SetAlignmentY(UI::ItemAlignment::Center);
       bottomGrid->AddChild(notSupported, 2, 1);

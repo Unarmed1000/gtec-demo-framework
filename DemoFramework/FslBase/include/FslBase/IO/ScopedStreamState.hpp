@@ -49,6 +49,9 @@ namespace Fsl::IO
     {
     }
 
+    ScopedStreamState(const ScopedStreamState&) = delete;
+    ScopedStreamState& operator=(const ScopedStreamState&) = delete;
+
     ~ScopedStreamState()
     {
       m_ostream.precision(m_precision);

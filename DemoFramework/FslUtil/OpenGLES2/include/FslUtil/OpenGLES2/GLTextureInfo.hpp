@@ -89,7 +89,7 @@ namespace Fsl
         Extent = PxExtent3D();
       }
 
-      constexpr bool IsValid() const
+      [[nodiscard]] constexpr bool IsValid() const
       {
         return Handle != GLValues::InvalidHandle;
       }

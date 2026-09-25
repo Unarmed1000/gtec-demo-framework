@@ -72,9 +72,9 @@ namespace Fsl::AppInputCommandListIO
 
     ReadOnlySpan<uint8_t> ReadAndValidateHeader(const ReadOnlySpan<uint8_t>& header, VersionId& rVersion)
     {
-      auto magic = ByteSpanUtil::ReadUInt32LE(header, Header::HeaderOffsetMagic);
+      const auto magic = ByteSpanUtil::ReadUInt32LE(header, Header::HeaderOffsetMagic);
       auto version = ByteSpanUtil::ReadUInt32LE(header, Header::HeaderOffsetVersion);
-      auto contentSize = ByteSpanUtil::ReadUInt32LE(header, Header::HeaderOffsetContentSize);
+      const auto contentSize = ByteSpanUtil::ReadUInt32LE(header, Header::HeaderOffsetContentSize);
       if (magic != Header::Magic)
       {
         throw FormatException("invalid header");
@@ -84,7 +84,7 @@ namespace Fsl::AppInputCommandListIO
         throw FormatException(fmt::format("unsupported AppInputCommandList version {} the currently supported version range is {} to {}", version,
                                           Header::MinVersion, Header::MaxVersion));
       }
-      auto remainingSpan = header.subspan(Header::SizeOfHeader);
+      const auto remainingSpan = header.subspan(Header::SizeOfHeader);
       if (contentSize != remainingSpan.size())
       {
         throw FormatException("content is not of the expected size");
@@ -96,11 +96,11 @@ namespace Fsl::AppInputCommandListIO
     constexpr std::size_t CalcInputCommandRecordMaxSize() noexcept
     {
       std::size_t size = 0;
-      size += ValueCompression::Details::MaxByteSizeUInt32;       // uint32_t FrameIndex       - uint32_t
-      size += ValueCompression::Details::MaxByteSizeUInt32;       // InputCommandId CommandId  - uint32_t
-      size += sizeof(uint64_t);                                   // CustomWindowId WindowId   - uint64_t
-      size += ValueCompression::Details::MaxByteSizeInt32 * 4;    // PxRectangle WindowRectPx  - 4x int32_t
-      size += ValueCompression::Details::MaxByteSizeInt32 * 4;    // PxPoint2 MousePosition    - 2x int32_t
+      size += ValueCompression::Details::MaxByteSizeUInt32;                                 // uint32_t FrameIndex       - uint32_t
+      size += ValueCompression::Details::MaxByteSizeUInt32;                                 // InputCommandId CommandId  - uint32_t
+      size += sizeof(uint64_t);                                                             // CustomWindowId WindowId   - uint64_t
+      size += static_cast<std::size_t>(ValueCompression::Details::MaxByteSizeInt32) * 4;    // PxRectangle WindowRectPx  - 4x int32_t
+      size += static_cast<std::size_t>(ValueCompression::Details::MaxByteSizeInt32) * 4;    // PxPoint2 MousePosition    - 2x int32_t
       return size;
     }
 
@@ -214,7 +214,7 @@ namespace Fsl::AppInputCommandListIO
       }
       if (currentVersion >= VersionId::Version3)
       {
-        timestamp = static_cast<int32_t>(ValueCompression::ReadSimpleInt32(rSrcSpan));
+        timestamp = ValueCompression::ReadSimpleInt32(rSrcSpan);
       }
       return {frameIndex, commandId, MillisecondTickCount32(timestamp), CustomWindowId(windowId), windowRectPx, mousePositionPx, isTouch};
     }
@@ -231,7 +231,7 @@ namespace Fsl::AppInputCommandListIO
       {
         commandList[i] = ReadInputCommandRecord(rSrcSpan, currentVersion);
       }
-      return {recordResolution, recordDensityDpi, std ::move(commandList), frameCount};
+      return {recordResolution, recordDensityDpi, std::move(commandList), frameCount};
     }
   }
 

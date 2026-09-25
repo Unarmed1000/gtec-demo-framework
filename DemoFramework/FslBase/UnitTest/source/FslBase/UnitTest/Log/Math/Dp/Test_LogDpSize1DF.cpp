@@ -43,7 +43,7 @@ namespace
 
 TEST(TestLog_MathDp_LogDpSize1DF, Log)
 {
-  auto value = DpSize1DF::Create(1.1f);
+  const auto value = DpSize1DF::Create(1.1f);
 
   std::stringstream stream;
   stream << value;

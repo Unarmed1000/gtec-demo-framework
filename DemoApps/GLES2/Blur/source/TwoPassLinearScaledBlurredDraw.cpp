@@ -53,8 +53,8 @@ namespace Fsl
 
     int UpdateScaledKernelLength(const int32_t kernelLength)
     {
-      int32_t moddedKernelLength = std::max(kernelLength, 5);
-      int32_t newKernelLength = ((moddedKernelLength / 4) * 4) + 1;
+      const int32_t moddedKernelLength = std::max(kernelLength, 5);
+      const int32_t newKernelLength = ((moddedKernelLength / 4) * 4) + 1;
       return (newKernelLength < moddedKernelLength ? newKernelLength + 4 : newKernelLength);
     }
 
@@ -99,7 +99,7 @@ namespace Fsl
     const int quadWidth = m_screenResolution.RawWidth() / 4;
     int blurFBWidth = quadWidth + (moddedKernelLength / 2);
     blurFBWidth += ((blurFBWidth % 16) != 0 ? (16 - (blurFBWidth % 16)) : 0);
-    int addedPixels = blurFBWidth - quadWidth;
+    const int addedPixels = blurFBWidth - quadWidth;
 
     m_framebufferBlur1.Reset(PxSize2D::Create(blurFBWidth, m_screenResolution.Height() / PxSize1D::Create(2)),
                              GLTextureParameters(GL_LINEAR, GL_LINEAR, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE), g_framebufferImageParams);

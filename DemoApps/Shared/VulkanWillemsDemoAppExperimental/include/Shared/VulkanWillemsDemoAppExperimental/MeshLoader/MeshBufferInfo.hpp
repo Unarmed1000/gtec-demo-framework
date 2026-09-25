@@ -71,33 +71,33 @@ namespace Fsl::Willems::MeshLoader
     void Reset() noexcept;
 
 
-    VkDevice GetDevice() const
+    [[nodiscard]] VkDevice GetDevice() const
     {
       return Buffer.GetDevice();
     }
 
-    VkBuffer GetBuffer() const
+    [[nodiscard]] VkBuffer GetBuffer() const
     {
       return Buffer.Get();
     }
 
-    const VkBuffer* GetBufferPointer() const
+    [[nodiscard]] const VkBuffer* GetBufferPointer() const
     {
       return Buffer.GetPointer();
     }
 
-    VkDeviceMemory GetMemory() const
+    [[nodiscard]] VkDeviceMemory GetMemory() const
     {
       return Memory.Get();
     }
 
-    const VkDeviceMemory* GetMemoryPointer() const
+    [[nodiscard]] const VkDeviceMemory* GetMemoryPointer() const
     {
       return Memory.GetPointer();
     }
 
     //! @brief Check if this object contains a valid resource
-    inline bool IsValid() const
+    [[nodiscard]] inline bool IsValid() const
     {
       return Buffer.IsValid();
     }

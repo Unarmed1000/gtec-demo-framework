@@ -173,7 +173,7 @@ namespace Fsl
     }
 
     ResizeToFit(sizePx, pixelFormat, m_strideRequirement);
-    ReadOnlyRawBitmap srcBitmap(ReadOnlyRawBitmap::UncheckedCreate(contentSpan, sizePx, pixelFormat, stride, m_origin));
+    const ReadOnlyRawBitmap srcBitmap(ReadOnlyRawBitmap::UncheckedCreate(contentSpan, sizePx, pixelFormat, stride, m_origin));
     RawBitmapEx dstBitmap(RawBitmapEx::UncheckedCreate(SpanUtil::AsSpan(m_content), m_sizePx, m_pixelFormat, m_stride, m_origin));
     RawBitmapUtil::MemoryCopy(dstBitmap, srcBitmap);
   }
@@ -429,7 +429,7 @@ namespace Fsl
     }
 
     ResizeToFit(sizePx, pixelFormat, StrideRequirement::Any);
-    ReadOnlyRawBitmap srcBitmap(ReadOnlyRawBitmap::UncheckedCreate(contentSpan, sizePx, pixelFormat, stride, bitmapOrigin));
+    const ReadOnlyRawBitmap srcBitmap(ReadOnlyRawBitmap::UncheckedCreate(contentSpan, sizePx, pixelFormat, stride, bitmapOrigin));
     RawBitmapEx dstBitmap(RawBitmapEx::UncheckedCreate(SpanUtil::AsSpan(m_content), m_sizePx, m_pixelFormat, m_stride, bitmapOrigin));
     RawBitmapUtil::MemoryCopy(dstBitmap, srcBitmap);
     m_origin = dstBitmap.GetOrigin();
@@ -718,7 +718,7 @@ namespace Fsl
       return;
     }
 
-    BitmapOrigin currentOrigin = bitmap.GetOrigin();
+    const BitmapOrigin currentOrigin = bitmap.GetOrigin();
     if (currentOrigin != m_origin)
     {
       m_origin = CheckBitmapOrigin(currentOrigin);

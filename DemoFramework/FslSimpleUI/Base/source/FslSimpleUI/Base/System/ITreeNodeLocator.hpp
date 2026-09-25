@@ -49,7 +49,7 @@ namespace Fsl::UI
 
     //! @brief Locate the node associated with the given window id
     //! @throws NotFoundException if the window can't be found
-    virtual std::shared_ptr<TreeNode> Get(const std::shared_ptr<IWindowId>& windowId) const = 0;
+    [[nodiscard]] virtual std::shared_ptr<TreeNode> Get(const std::shared_ptr<IWindowId>& windowId) const = 0;
 
     //! @brief Try to Locate the node associated with the given window id
     //! @throws null if the window can not be found
@@ -57,7 +57,7 @@ namespace Fsl::UI
 
     //! @brief Try to Locate the node associated with the given window id
     //! @throws null if the window can not be found
-    virtual std::shared_ptr<TreeNode> TryGet(const std::shared_ptr<IWindowId>& windowId) const = 0;
+    [[nodiscard]] virtual std::shared_ptr<TreeNode> TryGet(const std::shared_ptr<IWindowId>& windowId) const = 0;
   };
 }
 

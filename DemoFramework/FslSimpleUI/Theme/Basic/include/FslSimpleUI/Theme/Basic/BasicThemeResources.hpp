@@ -164,7 +164,7 @@ namespace Fsl
       ~BasicThemeResources() override;
 
       // IThemeResources
-      const std::shared_ptr<INineSliceSprite>& GetBackground(const WindowType windowType) const override
+      [[nodiscard]] const std::shared_ptr<INineSliceSprite>& GetBackground(const WindowType windowType) const override
       {
         switch (windowType)
         {
@@ -176,59 +176,59 @@ namespace Fsl
         }
       }
 
-      const std::shared_ptr<BasicImageSprite>& GetBasicFillSprite(const bool opaque) const final
+      [[nodiscard]] const std::shared_ptr<BasicImageSprite>& GetBasicFillSprite(const bool opaque) const final
       {
         return opaque ? FillSprite.Opaque : FillSprite.Transparent;
       }
 
-      const std::shared_ptr<BasicImageSprite>& GetBasicMiniFillSprite(const bool opaque) const final
+      [[nodiscard]] const std::shared_ptr<BasicImageSprite>& GetBasicMiniFillSprite(const bool opaque) const final
       {
         return opaque ? MiniFillSprite.Opaque : MiniFillSprite.Transparent;
       }
 
-      const std::shared_ptr<BasicImageSprite>& GetBasicTestSprite(const bool opaque = true) const final
+      [[nodiscard]] const std::shared_ptr<BasicImageSprite>& GetBasicTestSprite(const bool opaque = true) const final
       {
         return opaque ? TestSprite.Opaque : TestSprite.Transparent;
       }
 
 
-      const std::shared_ptr<BasicImageSprite>& GetLineListSprite(const bool opaque) const final
+      [[nodiscard]] const std::shared_ptr<BasicImageSprite>& GetLineListSprite(const bool opaque) const final
       {
         return opaque ? LineListSprite.Opaque : LineListSprite.Transparent;
       }
 
 
-      const std::shared_ptr<ImageSprite>& GetFillSprite() const final
+      [[nodiscard]] const std::shared_ptr<ImageSprite>& GetFillSprite() const final
       {
         return OpaqueFillSprite;
       }
 
-      const std::shared_ptr<SpriteFont>& GetDefaultSpriteFont() const final
+      [[nodiscard]] const std::shared_ptr<SpriteFont>& GetDefaultSpriteFont() const final
       {
         return DefaultFont;
       }
 
-      const std::shared_ptr<NineSliceSprite>& GetToolTipNineSliceSprite() const final
+      [[nodiscard]] const std::shared_ptr<NineSliceSprite>& GetToolTipNineSliceSprite() const final
       {
         return ToolTipNineSliceSprite;
       }
 
-      const std::shared_ptr<INineSliceSprite>& GetDialogNineSliceSprite() const final
+      [[nodiscard]] const std::shared_ptr<INineSliceSprite>& GetDialogNineSliceSprite() const final
       {
         return DialogNineSliceSprite;
       }
 
-      const std::shared_ptr<INineSliceSprite>& GetDividerNineSliceSprite() const final
+      [[nodiscard]] const std::shared_ptr<INineSliceSprite>& GetDividerNineSliceSprite() const final
       {
         return DividerNineSliceSprite;
       }
 
-      const std::shared_ptr<INineSliceSprite>& GetColorMarkerNineSliceSprite() const final
+      [[nodiscard]] const std::shared_ptr<INineSliceSprite>& GetColorMarkerNineSliceSprite() const final
       {
         return ColorMarkerNineSliceSprite;
       }
 
-      const std::shared_ptr<ImageSprite>& GetIconSprite(const IconType iconType) const final;
+      [[nodiscard]] const std::shared_ptr<ImageSprite>& GetIconSprite(const IconType iconType) const final;
     };
   }
 }

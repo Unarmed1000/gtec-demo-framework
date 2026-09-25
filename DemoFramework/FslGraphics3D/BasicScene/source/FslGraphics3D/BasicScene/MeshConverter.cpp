@@ -34,6 +34,7 @@
 #include <FslGraphics/Vertices/VertexConverter.hpp>
 #include <FslGraphics3D/BasicScene/MeshConverter.hpp>
 #include <cassert>
+#include <utility>
 
 namespace Fsl::Graphics3D
 {
@@ -48,8 +49,8 @@ namespace Fsl::Graphics3D
     const RawMeshContent rawSrc = src.GenericDirectAccess();
     rDst.Reset(rawSrc.VertexCount, rawSrc.IndexCount, rawSrc.ThePrimitiveType);
 
-    RawMeshContentEx rawDst = rDst.GenericDirectAccess();
-    if (static_cast<std::size_t>(cbDstDefaultValues) != rawDst.VertexStride)
+    const RawMeshContentEx rawDst = rDst.GenericDirectAccess();
+    if (std::cmp_not_equal(cbDstDefaultValues, rawDst.VertexStride))
     {
       throw std::invalid_argument("default value not of the expected size");
     }
@@ -57,10 +58,10 @@ namespace Fsl::Graphics3D
     assert(rawSrc.IndexCount == rawDst.IndexCount);
     assert(rawSrc.VertexCount == rawDst.VertexCount);
 
-    VertexConverter::GenericConvert(rawDst.pVertices, rawDst.VertexStride * rawDst.VertexCount, rDst.AsVertexDeclarationSpan(), rawSrc.pVertices,
-                                    rawSrc.VertexStride * rawSrc.VertexCount, src.AsVertexDeclarationSpan(), rawSrc.VertexCount, pDstDefaultValues,
-                                    cbDstDefaultValues);
-    IndexConverter::GenericConvert(rawDst.pIndices, rawDst.IndexStride * rawDst.IndexCount, rawDst.IndexStride, rawSrc.pIndices,
-                                   rawSrc.IndexStride * rawSrc.IndexCount, rawSrc.IndexStride, rawSrc.IndexCount);
+    VertexConverter::GenericConvert(rawDst.pVertices, static_cast<std::size_t>(rawDst.VertexStride) * rawDst.VertexCount,
+                                    rDst.AsVertexDeclarationSpan(), rawSrc.pVertices, rawSrc.VertexStride * rawSrc.VertexCount,
+                                    src.AsVertexDeclarationSpan(), rawSrc.VertexCount, pDstDefaultValues, cbDstDefaultValues);
+    IndexConverter::GenericConvert(rawDst.pIndices, static_cast<std::size_t>(rawDst.IndexStride) * rawDst.IndexCount, rawDst.IndexStride,
+                                   rawSrc.pIndices, rawSrc.IndexStride * rawSrc.IndexCount, rawSrc.IndexStride, rawSrc.IndexCount);
   }
 }

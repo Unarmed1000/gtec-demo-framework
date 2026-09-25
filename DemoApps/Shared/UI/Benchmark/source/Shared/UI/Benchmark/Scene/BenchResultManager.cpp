@@ -141,7 +141,7 @@ namespace Fsl
 
   BenchResultManager::DataSet BenchResultManager::CreateDataSet(const IO::PathView persistentDataPath, const IO::PathView filename)
   {
-    auto path = IO::Path::Combine(persistentDataPath, filename);
+    const auto path = IO::Path::Combine(persistentDataPath, filename);
     return {path, TryLoadInputCommandList(path)};
   }
 

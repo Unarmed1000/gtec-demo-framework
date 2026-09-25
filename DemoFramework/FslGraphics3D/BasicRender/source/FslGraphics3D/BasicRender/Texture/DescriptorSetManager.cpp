@@ -57,18 +57,18 @@ namespace Fsl::Graphics3D
     virtual ~ABasicTextureTracker() = default;
 
 
-    constexpr PxExtent2D GetExtent2D() const
+    [[nodiscard]] constexpr PxExtent2D GetExtent2D() const
     {
       return {m_extentPx.Width, m_extentPx.Height};
     }
 
-    constexpr PxExtent3D GetExtent3D() const
+    [[nodiscard]] constexpr PxExtent3D GetExtent3D() const
     {
       return m_extentPx;
     }
 
   protected:
-    NativeTextureArea DoCalcNativeTextureArea(const PxRectangleU32& imageRectanglePx) const
+    [[nodiscard]] NativeTextureArea DoCalcNativeTextureArea(const PxRectangleU32& imageRectanglePx) const
     {
       const auto extentPx = GetExtent2D();
       if (!m_textureCoordinatesFlipY)

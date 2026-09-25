@@ -70,7 +70,7 @@ namespace Fsl::UI
     void ModuleOnTreeNodeAdd(const std::shared_ptr<TreeNode>& node) final;
     void ModuleOnTreeNodeDispose(const std::shared_ptr<TreeNode>& node) final;
 
-    std::shared_ptr<AExternalModule> GetExternalModule(const ExternalModuleId moduleId) const;
+    [[nodiscard]] std::shared_ptr<AExternalModule> GetExternalModule(const ExternalModuleId moduleId) const;
   };
 }
 

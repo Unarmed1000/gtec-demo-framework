@@ -61,7 +61,7 @@ namespace Fsl
       {
       }
 
-      bool IsEmpty() const noexcept
+      [[nodiscard]] bool IsEmpty() const noexcept
       {
         return m_pStr == m_pStrEnd;
       }

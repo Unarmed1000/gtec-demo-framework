@@ -126,9 +126,9 @@ TEST_F(TestEventRouteClickInput, SetTarget_NullWindow)
 
 TEST_F(TestEventRouteClickInput, SetTarget_NotClick)
 {
-  auto window = std::make_shared<UI::BaseWindowTest>(m_windowContext);
+  const auto window = std::make_shared<UI::BaseWindowTest>(m_windowContext);
   m_tree->Add(window);
-  auto node = m_tree->TryGet(window);
+  const auto node = m_tree->TryGet(window);
 
   m_eventRoute.SetTarget(node, UI::EventRoutingStrategy::Direct);
 
@@ -215,7 +215,7 @@ TEST_F(TestEventRouteClickInput, RemoveWindow_FromList)
 
 TEST_F(TestEventRouteClickInput, SendTo_Empty)
 {
-  auto theEvent = CreateInputClickEvent();
+  const auto theEvent = CreateInputClickEvent();
   EXPECT_FALSE(m_eventRoute.Send(&m_eventHandler, theEvent));
 }
 
@@ -231,7 +231,7 @@ TEST_F(TestEventRouteClickInput, SendTo_Begin_OneWindow_Direct)
   EXPECT_EQ(m_eventRoute.GetTarget(), m_nodeWindow1);
 
   // Lets try to send a event
-  auto theEvent = CreateInputClickEvent();
+  const auto theEvent = CreateInputClickEvent();
   EXPECT_TRUE(m_eventRoute.Send(&m_eventHandler, theEvent));
 
   // Its a direct event so we only expect one call to the target window with the event we send
@@ -251,7 +251,7 @@ TEST_F(TestEventRouteClickInput, SendTo_Begin_OneWindow_Tunnel)
   EXPECT_EQ(m_eventRoute.GetTarget(), m_nodeWindow1);
 
   // Lets try to send a event
-  auto theEvent = CreateInputClickEvent();
+  const auto theEvent = CreateInputClickEvent();
   EXPECT_TRUE(m_eventRoute.Send(&m_eventHandler, theEvent));
 
   // Its a tunnel event so we only expect one call to the target window with the event we send
@@ -271,7 +271,7 @@ TEST_F(TestEventRouteClickInput, SendTo_Begin_OneWindow_Bubble)
   EXPECT_EQ(m_eventRoute.GetTarget(), m_nodeWindow1);
 
   // Lets try to send a event
-  auto theEvent = CreateInputClickEvent();
+  const auto theEvent = CreateInputClickEvent();
   EXPECT_TRUE(m_eventRoute.Send(&m_eventHandler, theEvent));
 
   // Its a bubble event so we only expect one call to the target window with the event we send
@@ -291,7 +291,7 @@ TEST_F(TestEventRouteClickInput, SendTo_Begin_OneWindow_Pair)
   EXPECT_EQ(m_eventRoute.GetTarget(), m_nodeWindow1);
 
   // Lets try to send a event
-  auto theEvent = CreateInputClickEvent();
+  const auto theEvent = CreateInputClickEvent();
   EXPECT_TRUE(m_eventRoute.Send(&m_eventHandler, theEvent));
 
   // Its a paired event so we expect two calls to the target window with the event we send
@@ -321,7 +321,7 @@ TEST_F(TestEventRouteClickInput, SendTo_Begin_TwoWindows_Direct)
   EXPECT_EQ(m_eventRoute.GetTarget(), m_nodeWindow2);
 
   // Lets try to send a event
-  auto theEvent = CreateInputClickEvent();
+  const auto theEvent = CreateInputClickEvent();
   EXPECT_TRUE(m_eventRoute.Send(&m_eventHandler, theEvent));
 
   // Its a direct event so we only expect one call to the target window with the event we send
@@ -341,7 +341,7 @@ TEST_F(TestEventRouteClickInput, SendTo_Begin_TwoWindows_Tunnel)
   EXPECT_EQ(m_eventRoute.GetTarget(), m_nodeWindow2);
 
   // Lets try to send a event
-  auto theEvent = CreateInputClickEvent();
+  const auto theEvent = CreateInputClickEvent();
   EXPECT_TRUE(m_eventRoute.Send(&m_eventHandler, theEvent));
 
   // Its a tunneled event so we only expect one call to the parent window then the target window with the event we send
@@ -365,7 +365,7 @@ TEST_F(TestEventRouteClickInput, SendTo_Begin_TwoWindows_Bubble)
   EXPECT_EQ(m_eventRoute.GetTarget(), m_nodeWindow2);
 
   // Lets try to send a event
-  auto theEvent = CreateInputClickEvent();
+  const auto theEvent = CreateInputClickEvent();
   EXPECT_TRUE(m_eventRoute.Send(&m_eventHandler, theEvent));
 
   // Its a bubble event so we expect one call to the target window with the event we send and one to the parent
@@ -389,7 +389,7 @@ TEST_F(TestEventRouteClickInput, SendTo_Begin_TwoWindows_Pair)
   EXPECT_EQ(m_eventRoute.GetTarget(), m_nodeWindow2);
 
   // Lets try to send a event
-  auto theEvent = CreateInputClickEvent();
+  const auto theEvent = CreateInputClickEvent();
   EXPECT_TRUE(m_eventRoute.Send(&m_eventHandler, theEvent));
 
   // Its a paired event so we expect calls to the parent, target, target then finally the parent

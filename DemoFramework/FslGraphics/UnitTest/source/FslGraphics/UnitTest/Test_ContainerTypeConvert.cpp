@@ -76,7 +76,7 @@ TYPED_TEST(TestFixtureFslGraphics_ContainerTypeConvert, ConvertBasic4X1)
   using current_t = typename TestFixture::current_t;
 
   auto imageFrom = current_t::from_t::GetBasic4X1();
-  auto imageTo = ContainerTypeConvert::Convert(std::move(imageFrom));
+  const auto imageTo = ContainerTypeConvert::Convert(std::move(imageFrom));
   ASSERT_TRUE(current_t::to_t::CheckIsBasic4X1(imageTo));
 }
 
@@ -86,7 +86,7 @@ TYPED_TEST(TestFixtureFslGraphics_ContainerTypeConvert, ConvertBasic4X2)
   using current_t = typename TestFixture::current_t;
 
   auto imageFrom = current_t::from_t::GetBasic4X2();
-  auto imageTo = ContainerTypeConvert::Convert(std::move(imageFrom));
+  const auto imageTo = ContainerTypeConvert::Convert(std::move(imageFrom));
   ASSERT_TRUE(current_t::to_t::CheckIsBasic4X2(imageTo));
 }
 
@@ -97,5 +97,5 @@ TYPED_TEST(TestFixtureFslGraphics_ContainerTypeConvert, ConvertEmpty)
   using fromImage_t = typename current_t::from_t::image_t;
 
   auto imageFrom = fromImage_t();
-  auto imageTo = ContainerTypeConvert::Convert(std::move(imageFrom));
+  const auto imageTo = ContainerTypeConvert::Convert(std::move(imageFrom));
 }

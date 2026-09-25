@@ -23,6 +23,7 @@
 #include <RapidVulkan/Memory.hpp>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+#include <algorithm>
 #include <array>
 #include <cstring>
 #include <iomanip>
@@ -147,7 +148,7 @@ namespace Fsl
 
         vkCmdSetScissor(m_drawCmdBuffers[i], 0, 1, &scissor);
 
-        VkDeviceSize offsets = 0;
+        const VkDeviceSize offsets = 0;
 
         // Skybox
         if (m_displaySkybox)
@@ -358,7 +359,7 @@ namespace Fsl
 
   Willems::VulkanTexture TexturingCubeMap::LoadCubemap(const IO::Path& filename, const VkFormat format, const bool /*forceLinearTiling*/)
   {
-    Texture texCube = GetContentManager()->ReadTexture(filename);
+    const Texture texCube = GetContentManager()->ReadTexture(filename);
 
     assert(texCube.GetFaces() == 6);
 
@@ -374,7 +375,7 @@ namespace Fsl
     bufferCreateInfo.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
     bufferCreateInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
-    RapidVulkan::Buffer stagingBuffer(m_device.Get(), bufferCreateInfo);
+    const RapidVulkan::Buffer stagingBuffer(m_device.Get(), bufferCreateInfo);
 
     // Get memory requirements for the staging buffer (alignment, memory type bits)
     VkMemoryRequirements memReqs = stagingBuffer.GetBufferMemoryRequirements();
@@ -779,14 +780,8 @@ namespace Fsl
   void TexturingCubeMap::ChangeLodBias(const float delta)
   {
     m_uboVS.LodBias += delta;
-    if (m_uboVS.LodBias < 0.0f)
-    {
-      m_uboVS.LodBias = 0.0f;
-    }
-    if (m_uboVS.LodBias > static_cast<float>(m_cubeMap.GetLevels()))
-    {
-      m_uboVS.LodBias = static_cast<float>(m_cubeMap.GetLevels());
-    }
+    m_uboVS.LodBias = std::max(m_uboVS.LodBias, 0.0f);
+    m_uboVS.LodBias = std::min(m_uboVS.LodBias, static_cast<float>(m_cubeMap.GetLevels()));
     UpdateUniformBuffers();
     UpdateTextOverlay();
   }

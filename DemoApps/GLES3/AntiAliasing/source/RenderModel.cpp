@@ -108,7 +108,7 @@ namespace Fsl
     m_matrices.World = Matrix::CreateRotationX(m_rotation.X) * Matrix::CreateRotationY(m_rotation.Y) * Matrix::CreateRotationZ(m_rotation.Z);
 
     const auto cameraRotation = ExtractRotationMatrix(m_matrices.View);
-    Vector4 cameraSpaceLightDirection = Vector4::Transform(m_lightDirection, cameraRotation);
+    const Vector4 cameraSpaceLightDirection = Vector4::Transform(m_lightDirection, cameraRotation);
     m_fragUboData.LightDirection = Vector3(cameraSpaceLightDirection.X, cameraSpaceLightDirection.Y, cameraSpaceLightDirection.Z);
     m_fragUboData.LightDirection.Normalize();
 
@@ -204,7 +204,7 @@ namespace Fsl
                                                         const float modelScale)
   {
     // Load the model
-    auto contentPath = contentManager.GetContentPath();
+    const auto contentPath = contentManager.GetContentPath();
     auto modelRecord = LoadModel(contentPath, srcModelPath, modelScale);
 
     // Load the texture and create the material
@@ -218,7 +218,7 @@ namespace Fsl
   RenderModel::ModelRecord RenderModel::LoadModel(const IO::Path& contentPath, const IO::PathView srcModelPath, const float modelScale)
   {
     FSLLOG3_INFO("Loading model '{}'", srcModelPath);
-    auto modelPath = IO::Path::Combine(contentPath, srcModelPath);
+    const auto modelPath = IO::Path::Combine(contentPath, srcModelPath);
     SceneImporter sceneImporter;
     const std::shared_ptr<TestScene> scene = sceneImporter.Load<TestScene>(modelPath, modelScale, true);
 
@@ -227,7 +227,7 @@ namespace Fsl
       throw NotSupportedException("Scene did not contain any meshes");
     }
 
-    auto rootNode = scene->GetRootNode();
+    const auto rootNode = scene->GetRootNode();
     if (!rootNode)
     {
       throw NotSupportedException("Scene did not contain a root node");
@@ -239,7 +239,7 @@ namespace Fsl
     std::size_t totalIndexCount = 0;
     for (std::size_t i = 0; i < scene->Meshes.size(); ++i)
     {
-      auto mesh = scene->Meshes[i];
+      const auto mesh = scene->Meshes[i];
       subMeshes[i] = SubMeshRecord(GLES3::GLVertexBuffer(mesh->AsReadOnlyFlexVertexSpan(), GL_STATIC_DRAW),
                                    GLES3::GLIndexBuffer(mesh->AsReadOnlyIndexSpan(), GL_STATIC_DRAW), mesh->GetVertexCount(), mesh->GetIndexCount());
       totalVertexCount += mesh->GetVertexCount();

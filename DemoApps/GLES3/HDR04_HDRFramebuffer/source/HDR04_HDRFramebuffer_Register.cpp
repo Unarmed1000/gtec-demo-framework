@@ -104,10 +104,10 @@ namespace Fsl
       FSLLOG3_INFO("EGL_EXT_gl_colorspace_scrgb_linear: {}", hasExtensionSCRGB);
       FSLLOG3_INFO("EGL_EXT_gl_colorspace_bt2020_linear: {}", hasExtensionBT2020);
 
-      Options optionsService(createInfo.TheServiceProvider.Get<IOptions>());
+      const Options optionsService(createInfo.TheServiceProvider.Get<IOptions>());
       const auto options = optionsService.GetOptionParser<OptionParserEx>();
       const auto disableDisplayHDRCheck = options->IsDisplayHDRCheckDisabled();
-      bool isDisplayHdrCompatible = disableDisplayHDRCheck ? true : createInfo.IsDisplayHDRCompatible;
+      const bool isDisplayHdrCompatible = disableDisplayHDRCheck ? true : createInfo.IsDisplayHDRCompatible;
       FSLLOG3_WARNING_IF(disableDisplayHDRCheck, "Display HDR check disabled from command line");
       if (!isDisplayHdrCompatible || !createInfo.IsConfigAttribsHDRCompatible)
       {
@@ -153,7 +153,7 @@ namespace Fsl
     // https://www.khronos.org/registry/OpenGL/extensions/EXT/EXT_color_buffer_float.txt
     config.AddExtensionRequest(ExtensionType::OpenGLES, "GL_EXT_color_buffer_float", ExtensionPrecense::Mandatory);
 
-    CustomDemoAppConfig customDemoAppConfig(sharedData);
+    const CustomDemoAppConfig customDemoAppConfig(sharedData);
     DemoAppRegister::GLES3::HDR::Register<HDR04_HDRFramebuffer, OptionParserEx>(rSetup, "GLES3.HDR04_HDRFramebuffer", config, customDemoAppConfig);
   }
 }

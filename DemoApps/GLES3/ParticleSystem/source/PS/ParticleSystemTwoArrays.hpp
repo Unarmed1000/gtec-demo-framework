@@ -72,7 +72,7 @@ namespace Fsl
 
     ParticleSystemTwoArrays(std::shared_ptr<IParticleDraw> particleDraw, const std::size_t capacity);
 
-    uint32_t GetParticleCount() const override;
+    [[nodiscard]] uint32_t GetParticleCount() const override;
     void AddEmitter(const std::shared_ptr<IParticleEmitter>& emitter) override;
     void Update(const DemoTime& demoTime) override;
     void Draw(const ParticleDrawContext& context) override;

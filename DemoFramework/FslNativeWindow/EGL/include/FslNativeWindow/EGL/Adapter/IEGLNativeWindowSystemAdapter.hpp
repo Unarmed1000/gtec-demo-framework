@@ -47,7 +47,7 @@ namespace Fsl
   public:
     ~IEGLNativeWindowSystemAdapter() override = default;
 
-    virtual EGLNativeDisplayType GetDisplayType() const = 0;
+    [[nodiscard]] virtual EGLNativeDisplayType GetDisplayType() const = 0;
     virtual std::shared_ptr<IEGLNativeWindowAdapter> CreateEGLNativeWindow(const NativeWindowSetup& nativeWindowSetup,
                                                                            const NativeEGLSetup& nativeEglSetup) = 0;
   };

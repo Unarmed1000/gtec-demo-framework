@@ -77,7 +77,7 @@ namespace Fsl
     {
       Bitmap bitmap;
       contentManager->Read(bitmap, "Seamless.jpg", PixelFormat::R8G8B8A8_UNORM);
-      GLTextureParameters texParams1(GL_LINEAR, GL_LINEAR, GL_REPEAT, GL_REPEAT);
+      const GLTextureParameters texParams1(GL_LINEAR, GL_LINEAR, GL_REPEAT, GL_REPEAT);
       return {bitmap, texParams1};
     }
 
@@ -89,14 +89,14 @@ namespace Fsl
       const ReadOnlyRawBitmap furBitmap(ReadOnlyRawBitmap::Create(SpanUtil::AsReadOnlySpan(furBitmapContent),
                                                                   PxSize2D::Create(furTextureDim, furTextureDim), PixelFormat::R8G8B8A8_UNORM,
                                                                   BitmapOrigin::LowerLeft));
-      GLTextureParameters texParams(GL_NEAREST, GL_NEAREST, GL_REPEAT, GL_REPEAT);
+      const GLTextureParameters texParams(GL_NEAREST, GL_NEAREST, GL_REPEAT, GL_REPEAT);
       return {furBitmap, texParams};
     }
 
     Procedural::BasicMesh CreateMesh(const PxSize2D& tex1Size, const int textureRepeatCount, const Point2& vertexCount, int instanceCount,
                                      const bool shareInstanceVertices, const bool useTriangleStrip)
     {
-      TextureRectangle texRect(PxRectangle(PxValue(0), PxValue(0), tex1Size.Width(), tex1Size.Height()), tex1Size);
+      const TextureRectangle texRect(PxRectangle(PxValue(0), PxValue(0), tex1Size.Width(), tex1Size.Height()), tex1Size);
       const NativeTextureArea texArea(TextureUtil::CalcTextureArea(texRect, textureRepeatCount, textureRepeatCount));
 
       BasicMesh mesh;
@@ -136,28 +136,28 @@ namespace Fsl
     , m_gravity(0, -1.0f, 0)
     , m_radians(0.0f)
   {
-    auto contentManager = GetContentManager();
+    const auto contentManager = GetContentManager();
     const int furTextureDim = m_config.GetFurTextureDimensions();
 
     m_resources.Tex1 = CreateMainTexture(contentManager);
     m_resources.Tex2 = CreateFurDensityTexture(furTextureDim, m_config.GetHairDensity(), m_config.GetLayerCount());
 
     {
-      Point2 vertexCount(m_config.GetVertexCountX(), m_config.GetVertexCountY());
-      auto mesh = CreateMesh(m_resources.Tex1.GetSize(), m_config.GetTextureRepeatCount(), vertexCount, m_config.GetInstanceCount(),
-                             m_config.GetShareInstanceVertices(), m_config.GetUseTriangleStrip());
+      const Point2 vertexCount(m_config.GetVertexCountX(), m_config.GetVertexCountY());
+      const auto mesh = CreateMesh(m_resources.Tex1.GetSize(), m_config.GetTextureRepeatCount(), vertexCount, m_config.GetInstanceCount(),
+                                   m_config.GetShareInstanceVertices(), m_config.GetUseTriangleStrip());
       m_resources.MeshStuff = std::make_unique<MeshStuffRecord>(mesh);
     }
 
     {
       Vector3 lightDirection(-0.0f, -0.0f, -1.0f);
       lightDirection.Normalize();
-      Vector3 lightColor(0.9f, 0.9f, 0.9f);
-      Vector3 ambientColor(0.2f, 0.2f, 0.2f);
+      const Vector3 lightColor(0.9f, 0.9f, 0.9f);
+      const Vector3 ambientColor(0.2f, 0.2f, 0.2f);
       // Vector3 ambientColor(0.5f, 0.5f, 0.5f);
 
       {    // Prepare the shader
-        ShaderBase::ScopedUse shaderScope(m_shaderMultiPass);
+        const ShaderBase::ScopedUse shaderScope(m_shaderMultiPass);
         m_shaderMultiPass.SetTexture0(0);
         m_shaderMultiPass.SetTexture1(1);
         m_shaderMultiPass.SetMaxHairLength(m_config.GetHairLength());
@@ -179,7 +179,7 @@ namespace Fsl
   {
     const auto aspectRatio = GetWindowAspectRatio();
 
-    Vector3 forceDirection(std::sin(m_radians), 0, 0);
+    const Vector3 forceDirection(std::sin(m_radians), 0, 0);
     m_displacement = m_gravity + forceDirection;
 
     m_radians += 0.01f;
@@ -273,14 +273,14 @@ namespace Fsl
       // Draw the fur mesh
       if (m_config.GetRenderMode() == RenderMode::MultiPass)
       {
-        ShaderBase::ScopedUse shaderScope(m_shaderMultiPass);
+        const ShaderBase::ScopedUse shaderScope(m_shaderMultiPass);
 
         m_shaderMultiPass.SetWorld(m_world);
         m_shaderMultiPass.SetView(m_view);
         m_shaderMultiPass.SetProjection(m_perspective);
         m_shaderMultiPass.SetDisplacement(m_displacement);
 
-        float layerAdd = (m_config.GetLayerCount() > 1 ? 1.0f / static_cast<float>(m_config.GetLayerCount() - 1) : 1);
+        const float layerAdd = (m_config.GetLayerCount() > 1 ? 1.0f / static_cast<float>(m_config.GetLayerCount() - 1) : 1);
         float layer = 0.0f;
 
         MeshRender& render = m_resources.MeshStuff->Render;
@@ -303,7 +303,7 @@ namespace Fsl
       // Draw normals
       if (m_config.GetShowNormals())
       {
-        ShaderBase::ScopedUse shaderScope(m_shaderWhite);
+        const ShaderBase::ScopedUse shaderScope(m_shaderWhite);
 
         m_shaderWhite.SetWorldViewProjection(m_mvp);
 

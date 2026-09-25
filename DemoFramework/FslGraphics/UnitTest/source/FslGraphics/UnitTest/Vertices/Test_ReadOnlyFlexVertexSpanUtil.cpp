@@ -53,7 +53,7 @@ TEST(TestReadOnlyFlexVertexSpanUtil, Construct_PointerLength)
   };
 
   const auto vertexDeclaration = VertexPosition::AsVertexDeclarationSpan();
-  ReadOnlyFlexVertexSpan span = ReadOnlyFlexVertexSpanUtil::AsSpan(Vertices.data(), Vertices.size(), vertexDeclaration);
+  const ReadOnlyFlexVertexSpan span = ReadOnlyFlexVertexSpanUtil::AsSpan(Vertices.data(), Vertices.size(), vertexDeclaration);
 
   EXPECT_FALSE(span.empty());
   EXPECT_NE(span.data(), nullptr);
@@ -80,7 +80,7 @@ TEST(TestReadOnlyFlexVertexSpanUtil, Construct_PointerLength_NullPointer)
 TEST(TestReadOnlyFlexVertexSpanUtil, Construct_PointerLength_NullPointer_LengthZero)
 {
   const auto vertexDeclaration = VertexPosition::AsVertexDeclarationSpan();
-  ReadOnlyFlexVertexSpan span = ReadOnlyFlexVertexSpanUtil::AsSpan<VertexPosition>(nullptr, 0u, vertexDeclaration);
+  const ReadOnlyFlexVertexSpan span = ReadOnlyFlexVertexSpanUtil::AsSpan<VertexPosition>(nullptr, 0u, vertexDeclaration);
 
   EXPECT_TRUE(span.empty());
   EXPECT_EQ(span.data(), nullptr);
@@ -136,7 +136,7 @@ TEST(TestReadOnlyFlexVertexSpanUtil, Construct_PointerLength_NoCheck)
   };
 
   const auto vertexDeclaration = VertexPosition::AsVertexDeclarationSpan();
-  ReadOnlyFlexVertexSpan span =
+  const ReadOnlyFlexVertexSpan span =
     ReadOnlyFlexVertexSpanUtil::AsSpan(Vertices.data(), Vertices.size(), vertexDeclaration, OptimizationCheckFlag::NoCheck);
 
   EXPECT_FALSE(span.empty());
@@ -172,7 +172,8 @@ TEST(TestReadOnlyFlexVertexSpanUtil, Construct_PointerLength_NoCheck)
 TEST(TestReadOnlyFlexVertexSpanUtil, Construct_PointerLength_NullPointer_LengthZero_NoCheck)
 {
   const auto vertexDeclaration = VertexPosition::AsVertexDeclarationSpan();
-  ReadOnlyFlexVertexSpan span = ReadOnlyFlexVertexSpanUtil::AsSpan<VertexPosition>(nullptr, 0u, vertexDeclaration, OptimizationCheckFlag::NoCheck);
+  const ReadOnlyFlexVertexSpan span =
+    ReadOnlyFlexVertexSpanUtil::AsSpan<VertexPosition>(nullptr, 0u, vertexDeclaration, OptimizationCheckFlag::NoCheck);
 
   EXPECT_TRUE(span.empty());
   EXPECT_EQ(span.data(), nullptr);

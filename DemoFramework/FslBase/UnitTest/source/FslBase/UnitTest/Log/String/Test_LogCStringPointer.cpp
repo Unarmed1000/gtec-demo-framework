@@ -44,7 +44,7 @@ namespace
 
 TEST(TestLog_String_LogCStringPointer, Log)
 {
-  CStringPointer str("hello");
+  const CStringPointer str("hello");
 
   std::stringstream stream;
   stream << str;
@@ -55,7 +55,7 @@ TEST(TestLog_String_LogCStringPointer, Log)
 
 TEST(TestLog_String_LogCStringPointer, LogEmpty)
 {
-  CStringPointer str;
+  const CStringPointer str;
 
   std::stringstream stream;
   stream << str;

@@ -38,6 +38,7 @@
 #include <algorithm>
 #include <cassert>
 #include <limits>
+#include <utility>
 
 namespace Fsl
 {
@@ -124,7 +125,7 @@ namespace Fsl
   ProfilerCustomCounterHandle ProfilerService::CreateCustomCounter(const std::string& name, const int32_t minValue, const int32_t maxValue,
                                                                    const Color& colorHint)
   {
-    if (m_customCounterCount >= static_cast<int32_t>(m_customCounters.size()))
+    if (std::cmp_greater_equal(m_customCounterCount, m_customCounters.size()))
     {
       throw NotSupportedException("Capacity reached");
     }

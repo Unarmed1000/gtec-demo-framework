@@ -64,11 +64,10 @@ namespace Fsl
 
     struct TonemapProgramLocations
     {
-      GLint Exposure;
+      GLint Exposure{GLES3::GLValues::InvalidLocation};
       TonemapProgramLocations()
-        : Exposure(GLES3::GLValues::InvalidLocation)
-      {
-      }
+
+        = default;
     };
 
     struct TonemapProgramInfo

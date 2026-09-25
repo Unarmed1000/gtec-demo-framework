@@ -83,7 +83,7 @@ namespace Fsl::UI
     if (m_animate)
     {
       const SpriteUnitConverter& unitConverter = GetContext()->UnitConverter;
-      auto scrollPaddingPx = unitConverter.ToPxThickness(m_scrollPaddingDp);
+      const auto scrollPaddingPx = unitConverter.ToPxThickness(m_scrollPaddingDp);
 
       PxSize2D contentDesiredSizePx = GetContentDesiredSizePx();
       contentDesiredSizePx.SetWidth(finalSizePx.Width());
@@ -105,7 +105,7 @@ namespace Fsl::UI
 
   PxSize2D VerticalScroller::MeasureOverride(const PxAvailableSize& availableSizePx)
   {
-    PxSize2D desiredSizePx = ContentControl::MeasureOverride(PxAvailableSize(availableSizePx.Width(), PxAvailableSize1D::InfiniteSpacePx()));
+    const PxSize2D desiredSizePx = ContentControl::MeasureOverride(PxAvailableSize(availableSizePx.Width(), PxAvailableSize1D::InfiniteSpacePx()));
     if (desiredSizePx.Height() > availableSizePx.Height())
     {
       // Enable scrolling

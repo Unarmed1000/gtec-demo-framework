@@ -113,7 +113,7 @@ TEST(TestMath_Rectangle_MonoGame, ContainsPoint)
 
 TEST(TestMath_Rectangle_MonoGame, ContainsInts)
 {
-  Rectangle rectangle(0, 0, 64, 64);
+  const Rectangle rectangle(0, 0, 64, 64);
 
   const int x1 = -1;
   const int y1 = -1;
@@ -158,11 +158,11 @@ TEST(TestMath_Rectangle_MonoGame, ContainsFloats)
 
 TEST(TestMath_Rectangle_MonoGame, ContainsRectangle)
 {
-  Rectangle rectangle(0, 0, 64, 64);
-  Rectangle rect1(-1, -1, 32, 32);
-  Rectangle rect2(0, 0, 32, 32);
-  Rectangle rect3(0, 0, 64, 64);
-  Rectangle rect4(1, 1, 64, 64);
+  const Rectangle rectangle(0, 0, 64, 64);
+  const Rectangle rect1(-1, -1, 32, 32);
+  const Rectangle rect2(0, 0, 32, 32);
+  const Rectangle rect3(0, 0, 64, 64);
+  const Rectangle rect4(1, 1, 64, 64);
 
   EXPECT_FALSE(rectangle.Contains(rect1));
   EXPECT_TRUE(rectangle.Contains(rect2));

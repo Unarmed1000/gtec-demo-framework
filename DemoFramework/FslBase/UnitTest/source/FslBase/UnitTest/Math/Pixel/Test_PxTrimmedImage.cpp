@@ -43,7 +43,7 @@ namespace
 
 TEST(TestMathPixel_PxTrimmedImage, Construct_Default)
 {
-  PxTrimmedImage value;
+  const PxTrimmedImage value;
 
   EXPECT_EQ(PxSize2D(), value.SizePx);
   EXPECT_EQ(PxThicknessF(), value.TrimMarginPxf);
@@ -56,7 +56,7 @@ TEST(TestMathPixel_PxTrimmedImage, Construct)
   constexpr auto TrimMarginPxf = PxThicknessF::Create(3.0f, 4.0f, 5.0f, 6.0f);
   constexpr auto TrimmedSizePxf = PxSize2DF::Create(7.0f, 8.0f);
 
-  PxTrimmedImage value(SizePx, TrimMarginPxf, TrimmedSizePxf);
+  const PxTrimmedImage value(SizePx, TrimMarginPxf, TrimmedSizePxf);
 
   EXPECT_EQ(SizePx, value.SizePx);
   EXPECT_EQ(TrimMarginPxf, value.TrimMarginPxf);
@@ -69,8 +69,8 @@ TEST(TestMathPixel_PxTrimmedImage, OpEqual)
   constexpr auto TrimMarginPxf = PxThicknessF::Create(3.0f, 4.0f, 5.0f, 6.0f);
   constexpr auto TrimmedSizePxf = PxSize2DF::Create(7.0f, 8.0f);
 
-  PxTrimmedImage value0(SizePx, TrimMarginPxf, TrimmedSizePxf);
-  PxTrimmedImage value1(SizePx, TrimMarginPxf, TrimmedSizePxf);
+  const PxTrimmedImage value0(SizePx, TrimMarginPxf, TrimmedSizePxf);
+  const PxTrimmedImage value1(SizePx, TrimMarginPxf, TrimmedSizePxf);
 
   EXPECT_EQ(value0, value1);
 }
@@ -81,7 +81,7 @@ TEST(TestMathPixel_PxTrimmedImage, NotOpEqual)
   constexpr auto TrimMarginPxf = PxThicknessF::Create(3.0f, 4.0f, 5.0f, 6.0f);
   constexpr auto TrimmedSizePxf = PxSize2DF::Create(7.0f, 8.0f);
 
-  PxTrimmedImage value(SizePx, TrimMarginPxf, TrimmedSizePxf);
+  const PxTrimmedImage value(SizePx, TrimMarginPxf, TrimmedSizePxf);
 
   const auto size42Px = PxSize1D::Create(42);
   const auto size42Pxf = PxSize1DF::Create(42);

@@ -39,7 +39,7 @@ namespace Fsl
   {
   public:
     virtual ~IEvent() noexcept = default;
-    virtual EventType GetEventType() const noexcept = 0;
+    [[nodiscard]] virtual EventType GetEventType() const noexcept = 0;
   };
 }
 

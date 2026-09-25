@@ -79,7 +79,6 @@ namespace Fsl
 
   public:
     constexpr ReadOnlyTypedFlexSpan() noexcept = default;
-    constexpr ReadOnlyTypedFlexSpan(const ReadOnlyTypedFlexSpan& other) noexcept = default;
 
     //! @brief overload that allows you to create a ReadOnlyFlexibleSpan from pointer and count that is noexcept.
     //!        only use this in cases where you are 100% sure that your input is valid
@@ -108,20 +107,20 @@ namespace Fsl
     }
 
     // NOLINTNEXTLINE(readability-identifier-naming)
-    constexpr size_type size() const noexcept
+    [[nodiscard]] constexpr size_type size() const noexcept
     {
       return m_length;
     }
 
     //! @brief return the element size in bytes
     // NOLINTNEXTLINE(readability-identifier-naming)
-    constexpr size_type stride() const noexcept
+    [[nodiscard]] constexpr size_type stride() const noexcept
     {
       return m_stride;
     }
 
     // NOLINTNEXTLINE(readability-identifier-naming)
-    constexpr bool empty() const noexcept
+    [[nodiscard]] constexpr bool empty() const noexcept
     {
       return m_length == 0;
     }
@@ -145,7 +144,7 @@ namespace Fsl
     }
 
     // NOLINTNEXTLINE(readability-identifier-naming)
-    constexpr size_type byte_size() const noexcept
+    [[nodiscard]] constexpr size_type byte_size() const noexcept
     {
       return m_length * m_stride;
     }

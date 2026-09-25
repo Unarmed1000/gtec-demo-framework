@@ -39,13 +39,6 @@ namespace Fsl::UI
   }
 
 
-  void WindowInputEvent::SYS_DoConstruct(const MillisecondTickCount32 timestamp, const int32_t sourceId, const int32_t sourceSubId,
-                                         const EventTransactionState state, const bool isRepeat) noexcept
-  {
-    WindowTransactionEvent::SYS_DoConstruct(timestamp, sourceId, sourceSubId, state, isRepeat);
-  }
-
-
   void WindowInputEvent::SYS_Destruct() noexcept
   {
     WindowTransactionEvent::SYS_Destruct();

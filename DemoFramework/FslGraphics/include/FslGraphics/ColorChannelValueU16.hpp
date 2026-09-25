@@ -82,7 +82,7 @@ namespace Fsl
     }
 
   public:
-    constexpr float AsFloat() const noexcept
+    [[nodiscard]] constexpr float AsFloat() const noexcept
     {
       return static_cast<float>(RawValue) / static_cast<float>(0xFFFF);
     }

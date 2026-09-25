@@ -55,9 +55,9 @@ namespace Fsl::UI::Declarative
       Register(PrimitiveTypeData(PrimitiveTypeInfo(std::string(name), typeid(T))));
     }
 
-    std::string_view TryGetName(const std::type_index& type) const;
+    [[nodiscard]] std::string_view TryGetName(const std::type_index& type) const;
 
-    std::vector<PrimitiveTypeData> GetAllTypes() const;
+    [[nodiscard]] std::vector<PrimitiveTypeData> GetAllTypes() const;
   };
 }
 

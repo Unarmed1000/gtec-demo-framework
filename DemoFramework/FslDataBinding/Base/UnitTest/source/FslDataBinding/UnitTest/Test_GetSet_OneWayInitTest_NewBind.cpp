@@ -48,7 +48,7 @@ namespace
 
 TEST(Test_GetSet_OneWayInitTest_NewBind, SetBinding_DepProperty_DepProperty_ChangeFirstProperty1)
 {
-  auto dataBindingService = std::make_shared<DataBinding::DataBindingService>();
+  const auto dataBindingService = std::make_shared<DataBinding::DataBindingService>();
 
   UTDependencyObject t0(dataBindingService);
   UTDependencyObject t1(dataBindingService);
@@ -83,7 +83,7 @@ TEST(Test_GetSet_OneWayInitTest_NewBind, SetBinding_DepProperty_DepProperty_Chan
 
 TEST(Test_GetSet_OneWayInitTest_NewBind, SetBinding_DepProperty_DepProperty_ChangeFirstProperty2)
 {
-  auto dataBindingService = std::make_shared<DataBinding::DataBindingService>();
+  const auto dataBindingService = std::make_shared<DataBinding::DataBindingService>();
 
   UTDependencyObject t0(dataBindingService);
   UTDependencyObject t1(dataBindingService);
@@ -119,7 +119,7 @@ TEST(Test_GetSet_OneWayInitTest_NewBind, SetBinding_DepProperty_DepProperty_Chan
 
 TEST(Test_GetSet_OneWayInitTest_NewBind, SetBinding_DepProperty_DepProperty_ChangeSecondProperty1)
 {
-  auto dataBindingService = std::make_shared<DataBinding::DataBindingService>();
+  const auto dataBindingService = std::make_shared<DataBinding::DataBindingService>();
 
   UTDependencyObject t0(dataBindingService);
   UTDependencyObject t1(dataBindingService);
@@ -154,7 +154,7 @@ TEST(Test_GetSet_OneWayInitTest_NewBind, SetBinding_DepProperty_DepProperty_Chan
 
 TEST(Test_GetSet_OneWayInitTest_NewBind, SetBinding_DepProperty_DepProperty_ChangeSecondProperty2)
 {
-  auto dataBindingService = std::make_shared<DataBinding::DataBindingService>();
+  const auto dataBindingService = std::make_shared<DataBinding::DataBindingService>();
 
   UTDependencyObject t0(dataBindingService);
   UTDependencyObject t1(dataBindingService);
@@ -190,7 +190,7 @@ TEST(Test_GetSet_OneWayInitTest_NewBind, SetBinding_DepProperty_DepProperty_Chan
 
 TEST(Test_GetSet_OneWayInitTest_NewBind, SetBinding_DepProperty_DepProperty_DepProperty_ChangeFirstProperty1)
 {
-  auto dataBindingService = std::make_shared<DataBinding::DataBindingService>();
+  const auto dataBindingService = std::make_shared<DataBinding::DataBindingService>();
 
   UTDependencyObject t0(dataBindingService);
   UTDependencyObject t1(dataBindingService);
@@ -234,7 +234,7 @@ TEST(Test_GetSet_OneWayInitTest_NewBind, SetBinding_DepProperty_DepProperty_DepP
 
 TEST(Test_GetSet_OneWayInitTest_NewBind, SetBinding_DepProperty_DepProperty_DepProperty_ChangeFirstProperty2)
 {
-  auto dataBindingService = std::make_shared<DataBinding::DataBindingService>();
+  const auto dataBindingService = std::make_shared<DataBinding::DataBindingService>();
 
   UTDependencyObject t0(dataBindingService);
   UTDependencyObject t1(dataBindingService);
@@ -279,7 +279,7 @@ TEST(Test_GetSet_OneWayInitTest_NewBind, SetBinding_DepProperty_DepProperty_DepP
 
 TEST(Test_GetSet_OneWayInitTest_NewBind, SetBinding_DepProperty_DepProperty_DepProperty_ChangeSecondProperty1)
 {
-  auto dataBindingService = std::make_shared<DataBinding::DataBindingService>();
+  const auto dataBindingService = std::make_shared<DataBinding::DataBindingService>();
 
   UTDependencyObject t0(dataBindingService);
   UTDependencyObject t1(dataBindingService);
@@ -323,7 +323,7 @@ TEST(Test_GetSet_OneWayInitTest_NewBind, SetBinding_DepProperty_DepProperty_DepP
 
 TEST(Test_GetSet_OneWayInitTest_NewBind, SetBinding_DepProperty_DepProperty_DepProperty_ChangeSecondProperty2)
 {
-  auto dataBindingService = std::make_shared<DataBinding::DataBindingService>();
+  const auto dataBindingService = std::make_shared<DataBinding::DataBindingService>();
 
   UTDependencyObject t0(dataBindingService);
   UTDependencyObject t1(dataBindingService);
@@ -367,7 +367,7 @@ TEST(Test_GetSet_OneWayInitTest_NewBind, SetBinding_DepProperty_DepProperty_DepP
 
 TEST(Test_GetSet_OneWayInitTest_NewBind, SetBinding_DepProperty_DepProperty_DepProperty_ChangeThirdProperty1)
 {
-  auto dataBindingService = std::make_shared<DataBinding::DataBindingService>();
+  const auto dataBindingService = std::make_shared<DataBinding::DataBindingService>();
 
   UTDependencyObject t0(dataBindingService);
   UTDependencyObject t1(dataBindingService);
@@ -410,7 +410,7 @@ TEST(Test_GetSet_OneWayInitTest_NewBind, SetBinding_DepProperty_DepProperty_DepP
 
 TEST(Test_GetSet_OneWayInitTest_NewBind, SetBinding_DepProperty_DepProperty_DepProperty_ChangeThirdProperty2)
 {
-  auto dataBindingService = std::make_shared<DataBinding::DataBindingService>();
+  const auto dataBindingService = std::make_shared<DataBinding::DataBindingService>();
 
   UTDependencyObject t0(dataBindingService);
   UTDependencyObject t1(dataBindingService);
@@ -455,7 +455,7 @@ TEST(Test_GetSet_OneWayInitTest_NewBind, SetBinding_DepProperty_DepProperty_DepP
 
 TEST(Test_GetSet_OneWayInitTest_NewBind, SetBinding_ConstrainedDepProperty_DepProperty_ChangeFirstProperty1)
 {
-  auto dataBindingService = std::make_shared<DataBinding::DataBindingService>();
+  const auto dataBindingService = std::make_shared<DataBinding::DataBindingService>();
 
   UTDependencyObject t0(dataBindingService);
   UTDependencyObject t1(dataBindingService);
@@ -493,7 +493,7 @@ TEST(Test_GetSet_OneWayInitTest_NewBind, SetBinding_ConstrainedDepProperty_DepPr
 
 TEST(Test_GetSet_OneWayInitTest_NewBind, SetBinding_ConstrainedDepProperty_DepProperty_ChangeFirstProperty2)
 {
-  auto dataBindingService = std::make_shared<DataBinding::DataBindingService>();
+  const auto dataBindingService = std::make_shared<DataBinding::DataBindingService>();
 
   UTDependencyObject t0(dataBindingService);
   UTDependencyObject t1(dataBindingService);
@@ -532,7 +532,7 @@ TEST(Test_GetSet_OneWayInitTest_NewBind, SetBinding_ConstrainedDepProperty_DepPr
 
 TEST(Test_GetSet_OneWayInitTest_NewBind, SetBinding_DepProperty_ConstrainedDepProperty_ChangeFirstProperty1)
 {
-  auto dataBindingService = std::make_shared<DataBinding::DataBindingService>();
+  const auto dataBindingService = std::make_shared<DataBinding::DataBindingService>();
 
   UTDependencyObject t0(dataBindingService);
   UTDependencyObject t1(dataBindingService);
@@ -570,7 +570,7 @@ TEST(Test_GetSet_OneWayInitTest_NewBind, SetBinding_DepProperty_ConstrainedDepPr
 
 TEST(Test_GetSet_OneWayInitTest_NewBind, SetBinding_DepProperty_ConstrainedDepProperty_ChangeFirstProperty2)
 {
-  auto dataBindingService = std::make_shared<DataBinding::DataBindingService>();
+  const auto dataBindingService = std::make_shared<DataBinding::DataBindingService>();
 
   UTDependencyObject t0(dataBindingService);
   UTDependencyObject t1(dataBindingService);
@@ -609,7 +609,7 @@ TEST(Test_GetSet_OneWayInitTest_NewBind, SetBinding_DepProperty_ConstrainedDepPr
 
 TEST(Test_GetSet_OneWayInitTest_NewBind, SetBinding_ConstrainedDepProperty_DepProperty_ChangeSecondProperty1)
 {
-  auto dataBindingService = std::make_shared<DataBinding::DataBindingService>();
+  const auto dataBindingService = std::make_shared<DataBinding::DataBindingService>();
 
   UTDependencyObject t0(dataBindingService);
   UTDependencyObject t1(dataBindingService);
@@ -647,7 +647,7 @@ TEST(Test_GetSet_OneWayInitTest_NewBind, SetBinding_ConstrainedDepProperty_DepPr
 
 TEST(Test_GetSet_OneWayInitTest_NewBind, SetBinding_ConstrainedDepProperty_DepProperty_ChangeSecondProperty2)
 {
-  auto dataBindingService = std::make_shared<DataBinding::DataBindingService>();
+  const auto dataBindingService = std::make_shared<DataBinding::DataBindingService>();
 
   UTDependencyObject t0(dataBindingService);
   UTDependencyObject t1(dataBindingService);
@@ -687,7 +687,7 @@ TEST(Test_GetSet_OneWayInitTest_NewBind, SetBinding_ConstrainedDepProperty_DepPr
 
 TEST(Test_GetSet_OneWayInitTest_NewBind, SetBinding_DepProperty_ConstrainedDepProperty_ChangeSecondProperty1)
 {
-  auto dataBindingService = std::make_shared<DataBinding::DataBindingService>();
+  const auto dataBindingService = std::make_shared<DataBinding::DataBindingService>();
 
   UTDependencyObject t0(dataBindingService);
   UTDependencyObject t1(dataBindingService);
@@ -726,7 +726,7 @@ TEST(Test_GetSet_OneWayInitTest_NewBind, SetBinding_DepProperty_ConstrainedDepPr
 
 TEST(Test_GetSet_OneWayInitTest_NewBind, SetBinding_DepProperty_ConstrainedDepProperty_ChangeSecondProperty2)
 {
-  auto dataBindingService = std::make_shared<DataBinding::DataBindingService>();
+  const auto dataBindingService = std::make_shared<DataBinding::DataBindingService>();
 
   UTDependencyObject t0(dataBindingService);
   UTDependencyObject t1(dataBindingService);
@@ -765,7 +765,7 @@ TEST(Test_GetSet_OneWayInitTest_NewBind, SetBinding_DepProperty_ConstrainedDepPr
 
 TEST(Test_GetSet_OneWayInitTest_NewBind, SetBinding_ConstrainedDepProperty_ConstrainedDepProperty_ChangeSecondProperty1)
 {
-  auto dataBindingService = std::make_shared<DataBinding::DataBindingService>();
+  const auto dataBindingService = std::make_shared<DataBinding::DataBindingService>();
 
   UTDependencyObject t0(dataBindingService);
   UTDependencyObject t1(dataBindingService);
@@ -806,7 +806,7 @@ TEST(Test_GetSet_OneWayInitTest_NewBind, SetBinding_ConstrainedDepProperty_Const
 
 TEST(Test_GetSet_OneWayInitTest_NewBind, SetBinding_ConstrainedDepProperty_ConstrainedDepProperty_ChangeSecondProperty2)
 {
-  auto dataBindingService = std::make_shared<DataBinding::DataBindingService>();
+  const auto dataBindingService = std::make_shared<DataBinding::DataBindingService>();
 
   UTDependencyObject t0(dataBindingService);
   UTDependencyObject t1(dataBindingService);

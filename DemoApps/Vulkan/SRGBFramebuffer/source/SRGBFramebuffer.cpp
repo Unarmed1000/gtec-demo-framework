@@ -199,7 +199,7 @@ namespace Fsl
 
       std::array<VkWriteDescriptorSet, 3> writeDescriptorSets{};
       // Binding 0 : Vertex shader uniform buffer
-      auto vertUboBufferInfo = vertUboBuffer.GetDescriptorBufferInfo();
+      const auto vertUboBufferInfo = vertUboBuffer.GetDescriptorBufferInfo();
       writeDescriptorSets[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
       writeDescriptorSets[0].dstSet = descriptorSet;
       writeDescriptorSets[0].dstBinding = 0;
@@ -208,7 +208,7 @@ namespace Fsl
       writeDescriptorSets[0].pBufferInfo = &vertUboBufferInfo;
 
       // Binding 1 : Fragment shader texture sampler
-      auto textureImageInfo = texture.GetDescriptorImageInfo();
+      const auto textureImageInfo = texture.GetDescriptorImageInfo();
       writeDescriptorSets[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
       writeDescriptorSets[1].dstSet = descriptorSet;
       writeDescriptorSets[1].dstBinding = 1;
@@ -217,7 +217,7 @@ namespace Fsl
       writeDescriptorSets[1].pImageInfo = &textureImageInfo;
 
       // Binding 2 : Fragment shader uniform buffer
-      auto fragUboBufferInfo = fragUboBuffer.GetDescriptorBufferInfo();
+      const auto fragUboBufferInfo = fragUboBuffer.GetDescriptorBufferInfo();
       writeDescriptorSets[2].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
       writeDescriptorSets[2].dstSet = descriptorSet;
       writeDescriptorSets[2].dstBinding = 2;
@@ -283,7 +283,7 @@ namespace Fsl
       viewport.minDepth = 0.0f;
       viewport.maxDepth = 1.0f;
 
-      VkRect2D scissor{{0, 0}, extent};
+      const VkRect2D scissor{{0, 0}, extent};
 
       VkPipelineViewportStateCreateInfo pipelineViewportStateCreateInfo{};
       pipelineViewportStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
@@ -551,8 +551,8 @@ namespace Fsl
     UpdateSceneTransition(demoTime);
 
     const auto windowSizePx = GetWindowSizePx();
-    auto matrixWorld = Matrix::GetIdentity();
-    auto matrixView = m_camera.GetViewMatrix();
+    const auto matrixWorld = Matrix::GetIdentity();
+    const auto matrixView = m_camera.GetViewMatrix();
 
     // Deal with the new Vulkan coordinate system (see method description for more info).
     // Consider using: https://github.com/KhronosGroup/Vulkan-Docs/blob/master/appendices/VK_KHR_maintenance1.txt
@@ -567,7 +567,7 @@ namespace Fsl
     m_vertexUboDataR.MatProj = Matrix::CreatePerspectiveFieldOfView(MathHelper::ToRadians(45.0f), aspectR, 0.1f, 100.0f) * vulkanClipMatrix;
     m_vertexUboDataR.MatModelView = matrixWorld * matrixView;
 
-    auto cameraPos = m_camera.GetPosition();
+    const auto cameraPos = m_camera.GetPosition();
     m_fragmentUboData.ViewPos = Vector4(cameraPos.X, cameraPos.Y, cameraPos.Z, 1.0f);
   }
 
@@ -656,7 +656,7 @@ namespace Fsl
 
     {    // Keyboard camera movement
       const float movementSpeed = 2.0f * demoTime.DeltaTime;
-      auto keyboardState = m_keyboard->GetState();
+      const auto keyboardState = m_keyboard->GetState();
 
       if (keyboardState.IsKeyDown(VirtualKey::W))
       {
@@ -814,7 +814,7 @@ namespace Fsl
     const float v0 = 10.0f;
     const float v1 = 0.0f;
     const Vector3 normal(0.0f, 1.0f, 0.0f);
-    std::array<VertexPositionNormalTexture, 6> vertices = {
+    const std::array<VertexPositionNormalTexture, 6> vertices = {
       VertexPositionNormalTexture(Vector3(x0, y, z0), normal, Vector2(u0, v0)),
       VertexPositionNormalTexture(Vector3(x0, y, z1), normal, Vector2(u0, v1)),
       VertexPositionNormalTexture(Vector3(x1, y, z1), normal, Vector2(u1, v1)),
@@ -824,8 +824,8 @@ namespace Fsl
       VertexPositionNormalTexture(Vector3(x1, y, z0), normal, Vector2(u1, v0)),
     };
 
-    std::array<VertexElementUsage, 3> shaderBindOrder = {VertexElementUsage::Position, VertexElementUsage::Normal,
-                                                         VertexElementUsage::TextureCoordinate};
+    const std::array<VertexElementUsage, 3> shaderBindOrder = {VertexElementUsage::Position, VertexElementUsage::Normal,
+                                                               VertexElementUsage::TextureCoordinate};
     m_resources.Mesh.VertexBuffer.Reset(m_bufferManager, ReadOnlyFlexVertexSpanUtil::AsSpan(vertices), Vulkan::VMBufferUsage::STATIC);
 
     Vulkan::VMVertexBufferUtil::FillVertexInputAttributeDescription(m_resources.Mesh.VertexAttributeDescription, shaderBindOrder,
@@ -842,9 +842,9 @@ namespace Fsl
     RegisterExtension(m_uiExtension);
 
     // Next up we prepare the actual UI
-    auto context = m_uiExtension->GetContext();
+    const auto context = m_uiExtension->GetContext();
 
-    auto uiControlFactory = UI::Theme::ThemeSelector::CreateControlFactory(*m_uiExtension, m_colorSpace);
+    const auto uiControlFactory = UI::Theme::ThemeSelector::CreateControlFactory(*m_uiExtension, m_colorSpace);
     auto& factory = *uiControlFactory;
 
     // Create a label to write stuff into when a button is pressed
@@ -857,15 +857,16 @@ namespace Fsl
     m_labelRight->SetAlignmentX(UI::ItemAlignment::Far);
     m_labelRight->SetAlignmentY(UI::ItemAlignment::Near);
 
-    auto label1 = factory.CreateLabel(m_hasSRGBFramebuffer ? "SRGB framebuffer" : "SRGB framebuffer not available. Emulating output using shader");
+    const auto label1 =
+      factory.CreateLabel(m_hasSRGBFramebuffer ? "SRGB framebuffer" : "SRGB framebuffer not available. Emulating output using shader");
     label1->SetAlignmentX(UI::ItemAlignment::Center);
     label1->SetAlignmentY(UI::ItemAlignment::Center);
 
-    auto leftCB = factory.CreateSwitch("Incorrect");
-    auto rightCB = factory.CreateSwitch("Correct");
+    const auto leftCB = factory.CreateSwitch("Incorrect");
+    const auto rightCB = factory.CreateSwitch("Correct");
     leftCB->SetAlignmentX(UI::ItemAlignment::Center);
     rightCB->SetAlignmentX(UI::ItemAlignment::Center);
-    auto controls = std::make_shared<UI::ComplexStackLayout>(context);
+    const auto controls = std::make_shared<UI::ComplexStackLayout>(context);
     controls->SetAlignmentX(UI::ItemAlignment::Stretch);
     controls->PushLayoutLength(UI::LayoutLength(UI::LayoutUnitType::Star));
     controls->PushLayoutLength(UI::LayoutLength(UI::LayoutUnitType::Auto));
@@ -876,11 +877,11 @@ namespace Fsl
     controls->AddChild(rightCB);
 
 
-    auto bottomBar = factory.CreateBottomBar(controls);
+    const auto bottomBar = factory.CreateBottomBar(controls);
 
     // Create a 'root' layout we use the recommended fill layout as it will utilize all available space on the screen
     // We then add the 'player' stack to it and the label
-    auto fillLayout = std::make_shared<UI::FillLayout>(context);
+    const auto fillLayout = std::make_shared<UI::FillLayout>(context);
     fillLayout->AddChild(m_labelLeft);
     fillLayout->AddChild(m_labelRight);
     fillLayout->AddChild(bottomBar);

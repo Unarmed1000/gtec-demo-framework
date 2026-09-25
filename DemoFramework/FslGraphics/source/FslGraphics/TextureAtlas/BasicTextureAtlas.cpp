@@ -151,14 +151,14 @@ namespace Fsl
     {
       throw std::invalid_argument("out of bounds");
     }
-    auto itrFind = std::find_if(m_nineSlices.begin(), m_nineSlices.end(),
-                                [textureIndex](const TextureAtlasNineSlicePatch& entry) { return entry.TextureIndex == textureIndex; });
+    const auto itrFind = std::find_if(m_nineSlices.begin(), m_nineSlices.end(),
+                                      [textureIndex](const TextureAtlasNineSlicePatch& entry) { return entry.TextureIndex == textureIndex; });
     if (itrFind != m_nineSlices.end())
     {
       throw UsageErrorException("There can only be one nine slice associated with each texture");
     }
 
-    auto& rTextureEntry = m_entries[textureIndex];
+    const auto& rTextureEntry = m_entries[textureIndex];
     ValidateThicknessU(rTextureEntry, nineSlicePx, "nineslice");
     ValidateThicknessU(rTextureEntry, contentMarginPx, "contentMargin");
 

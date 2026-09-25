@@ -53,18 +53,18 @@ namespace Fsl
   public:
     virtual ~ITestApp() = default;
 
-    virtual UI::UIColor GetRootColor() const = 0;
+    [[nodiscard]] virtual UI::UIColor GetRootColor() const = 0;
     virtual bool TrySetRootColor(const UI::UIColor color) = 0;
 
-    virtual const UI::IRenderSystemBase& GetRenderSystem() const = 0;
+    [[nodiscard]] virtual const UI::IRenderSystemBase& GetRenderSystem() const = 0;
     virtual UI::IRenderSystemBase* TryGetRenderSystem() = 0;
 
-    virtual std::shared_ptr<CustomUIDemoAppExtension> GetCustomUIDemoAppExtension() const = 0;
+    [[nodiscard]] virtual std::shared_ptr<CustomUIDemoAppExtension> GetCustomUIDemoAppExtension() const = 0;
     virtual void SetCustomViewport(const PxViewport& viewportPx) = 0;
     virtual void SetClipRectangle(const bool enabled, const PxRectangle& clipRectanglePx) = 0;
     virtual void SetUseDrawCache(const bool useDrawCache) = 0;
 
-    virtual bool IsUIIdle() const = 0;
+    [[nodiscard]] virtual bool IsUIIdle() const = 0;
 
     virtual void OnConfigurationChanged(const DemoWindowMetrics& windowMetrics) = 0;
     virtual void Update(const DemoTime& demoTime) = 0;

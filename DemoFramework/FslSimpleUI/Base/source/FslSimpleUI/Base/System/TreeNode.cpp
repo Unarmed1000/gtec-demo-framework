@@ -63,7 +63,7 @@ namespace Fsl::UI
 
   void TreeNode::RemoveChild(const std::shared_ptr<TreeNode>& childNode)
   {
-    auto itr = std::find(m_children.begin(), m_children.end(), childNode);
+    const auto itr = std::find(m_children.begin(), m_children.end(), childNode);
     if (itr != m_children.end())
     {
       childNode->m_parent.reset();

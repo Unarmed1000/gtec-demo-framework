@@ -262,7 +262,7 @@ namespace Fsl::UI
 
   DataBinding::DataBindingInstanceHandle MoveableRectangles::TryGetPropertyHandleNow(const DataBinding::DependencyPropertyDefinition& sourceDef)
   {
-    auto res = DataBinding::DependencyObjectHelper::TryGetPropertyHandle(
+    const auto res = DataBinding::DependencyObjectHelper::TryGetPropertyHandle(
       this, ThisDependencyObject(), sourceDef, DataBinding::PropLinkRefs(PropertyDragFlickDeceleration, m_propertyDragFlickDeceleration),
       DataBinding::PropLinkRefs(PropertyDragEndAnimTimeMod, m_propertyDragEndAnimTimeMod));
     return res.IsValid() ? res : base_type::TryGetPropertyHandleNow(sourceDef);
@@ -272,7 +272,7 @@ namespace Fsl::UI
   DataBinding::PropertySetBindingResult MoveableRectangles::TrySetBindingNow(const DataBinding::DependencyPropertyDefinition& targetDef,
                                                                              const DataBinding::Binding& binding)
   {
-    auto res = DataBinding::DependencyObjectHelper::TrySetBinding(
+    const auto res = DataBinding::DependencyObjectHelper::TrySetBinding(
       this, ThisDependencyObject(), targetDef, binding, DataBinding::PropLinkRefs(PropertyDragFlickDeceleration, m_propertyDragFlickDeceleration),
       DataBinding::PropLinkRefs(PropertyDragEndAnimTimeMod, m_propertyDragEndAnimTimeMod));
     return res != DataBinding::PropertySetBindingResult::NotFound ? res : base_type::TrySetBindingNow(targetDef, binding);

@@ -357,12 +357,12 @@ TEST_F(TestBacherFlexibleImmediateModeBatcher, MeshBuild_AddRect)
   EXPECT_EQ(6u, m_batcher.GetStats().IndexCount);
 
   {
-    auto segmentBatchInfo = m_batcher.GetSegmentBatchInfo(0);
+    const auto segmentBatchInfo = m_batcher.GetSegmentBatchInfo(0);
     EXPECT_EQ(0u, segmentBatchInfo.BatchRange.Start);
     EXPECT_EQ(1u, segmentBatchInfo.BatchRange.Length);
   }
   {
-    auto segmentSpans = m_batcher.GetSegmentSpans(0);
+    const auto segmentSpans = m_batcher.GetSegmentSpans(0);
     EXPECT_EQ(4u, segmentSpans.Vertices.size());
     EXPECT_EQ(6u, segmentSpans.Indices.size());
     CheckSpanRect(segmentSpans.Vertices, Quad1X0, Quad1Y0, Quad1X1, Quad1Y1, Color, Quad1TextureArea, LocalConfig::StartZ);
@@ -451,12 +451,12 @@ TEST_F(TestBacherFlexibleImmediateModeBatcher, MeshBuild_AddRect_2X)
   EXPECT_EQ(6u * 2u, m_batcher.GetStats().IndexCount);
 
   {
-    auto segmentBatchInfo = m_batcher.GetSegmentBatchInfo(0);
+    const auto segmentBatchInfo = m_batcher.GetSegmentBatchInfo(0);
     EXPECT_EQ(0u, segmentBatchInfo.BatchRange.Start);
     EXPECT_EQ(1u, segmentBatchInfo.BatchRange.Length);
   }
   {
-    auto segmentSpans = m_batcher.GetSegmentSpans(0);
+    const auto segmentSpans = m_batcher.GetSegmentSpans(0);
     EXPECT_EQ(4u * 2u, segmentSpans.Vertices.size());
     EXPECT_EQ(6u * 2u, segmentSpans.Indices.size());
     CheckSpanRect(segmentSpans.Vertices.subspan(0, 4), Quad1X0, Quad1Y0, Quad1X1, Quad1Y1, Color, Quad1TextureArea, LocalConfig::StartZ);
@@ -547,12 +547,12 @@ TEST_F(TestBacherFlexibleImmediateModeBatcher, MeshBuild_AddRect_2XDiffMaterial)
   EXPECT_EQ(6u * 2u, m_batcher.GetStats().IndexCount);
 
   {
-    auto segmentBatchInfo = m_batcher.GetSegmentBatchInfo(0);
+    const auto segmentBatchInfo = m_batcher.GetSegmentBatchInfo(0);
     EXPECT_EQ(0u, segmentBatchInfo.BatchRange.Start);
     EXPECT_EQ(2u, segmentBatchInfo.BatchRange.Length);
   }
   {
-    auto segmentSpans = m_batcher.GetSegmentSpans(0);
+    const auto segmentSpans = m_batcher.GetSegmentSpans(0);
     EXPECT_EQ(4u * 2u, segmentSpans.Vertices.size());
     EXPECT_EQ(6u * 2u, segmentSpans.Indices.size());
     CheckSpanRect(segmentSpans.Vertices.subspan(0, 4), Quad1X0, Quad1Y0, Quad1X1, Quad1Y1, Color, Quad1TextureArea, LocalConfig::StartZ);
@@ -678,12 +678,12 @@ TEST_F(TestBacherFlexibleImmediateModeBatcher, MeshBuild_AddRect_3X_2xDiffMateri
   EXPECT_EQ(6u * 3u, m_batcher.GetStats().IndexCount);
 
   {
-    auto segmentBatchInfo = m_batcher.GetSegmentBatchInfo(0);
+    const auto segmentBatchInfo = m_batcher.GetSegmentBatchInfo(0);
     EXPECT_EQ(0u, segmentBatchInfo.BatchRange.Start);
     EXPECT_EQ(2u, segmentBatchInfo.BatchRange.Length);
   }
   {
-    auto segmentSpans = m_batcher.GetSegmentSpans(0);
+    const auto segmentSpans = m_batcher.GetSegmentSpans(0);
     EXPECT_EQ(4u * 3u, segmentSpans.Vertices.size());
     EXPECT_EQ(6u * 3u, segmentSpans.Indices.size());
     CheckSpanRect(segmentSpans.Vertices.subspan(0, 4), Quad1X0, Quad1Y0, Quad1X1, Quad1Y1, Color, Quad1TextureArea, LocalConfig::StartZ);
@@ -784,12 +784,12 @@ TEST_F(TestBacherFlexibleImmediateModeBatcher, MeshBuild_AddRect_PxAreaRectangle
   EXPECT_EQ(6u * 2u, m_batcher.GetStats().IndexCount);
 
   {
-    auto segmentBatchInfo = m_batcher.GetSegmentBatchInfo(0);
+    const auto segmentBatchInfo = m_batcher.GetSegmentBatchInfo(0);
     EXPECT_EQ(0u, segmentBatchInfo.BatchRange.Start);
     EXPECT_EQ(2u, segmentBatchInfo.BatchRange.Length);
   }
   {
-    auto segmentSpans = m_batcher.GetSegmentSpans(0);
+    const auto segmentSpans = m_batcher.GetSegmentSpans(0);
     EXPECT_EQ(4u * 2u, segmentSpans.Vertices.size());
     EXPECT_EQ(6u * 2u, segmentSpans.Indices.size());
 
@@ -875,12 +875,12 @@ TEST_F(TestBacherFlexibleImmediateModeBatcher, MeshBuild_AddRect2X)
   EXPECT_EQ(6u * 2u, m_batcher.GetStats().IndexCount);
 
   {
-    auto segmentBatchInfo = m_batcher.GetSegmentBatchInfo(0);
+    const auto segmentBatchInfo = m_batcher.GetSegmentBatchInfo(0);
     EXPECT_EQ(0u, segmentBatchInfo.BatchRange.Start);
     EXPECT_EQ(1u, segmentBatchInfo.BatchRange.Length);
   }
   {
-    auto segmentSpans = m_batcher.GetSegmentSpans(0);
+    const auto segmentSpans = m_batcher.GetSegmentSpans(0);
     EXPECT_EQ(4u * 2u, segmentSpans.Vertices.size());
     EXPECT_EQ(6u * 2u, segmentSpans.Indices.size());
     CheckSpanRect(segmentSpans.Vertices.subspan(0, 4), Quad1X0, Quad1Y0, Quad1X1, Quad1Y1, Color, Quad1TextureArea, LocalConfig::StartZ);
@@ -946,12 +946,12 @@ TEST_F(TestBacherFlexibleImmediateModeBatcher, MeshBuild_AddRect_SwitchBetween)
   EXPECT_EQ(6u, m_batcher.GetStats().IndexCount);
 
   {
-    auto segmentBatchInfo = m_batcher.GetSegmentBatchInfo(0);
+    const auto segmentBatchInfo = m_batcher.GetSegmentBatchInfo(0);
     EXPECT_EQ(0u, segmentBatchInfo.BatchRange.Start);
     EXPECT_EQ(1u, segmentBatchInfo.BatchRange.Length);
   }
   {
-    auto segmentSpans = m_batcher.GetSegmentSpans(0);
+    const auto segmentSpans = m_batcher.GetSegmentSpans(0);
     EXPECT_EQ(4u, segmentSpans.Vertices.size());
     EXPECT_EQ(6u, segmentSpans.Indices.size());
     CheckSpanRect(segmentSpans.Vertices, Quad1X0, Quad1Y0, Quad1X1, Quad1Y1, Color, Quad1TextureArea, LocalConfig::StartZ);
@@ -986,13 +986,13 @@ TEST_F(TestBacherFlexibleImmediateModeBatcher, MeshBuild_AtOverVertexCapacity_Ad
   m_batcher.EnsureCapacity(Mesh0VertexCount + VertexCount, Mesh0IndexCount + IndexCount);
   EXPECT_EQ(0u, m_batcher.GetSegmentCount());
 
-  uint32_t indexOffset = 0u;
+  const uint32_t indexOffset = 0u;
   EXPECT_TRUE(m_batcher.BeginBatch());
   {
     auto meshBuilder = m_batcher.BeginMeshBuild(g_materialInfoTransp0, Mesh0VertexCount, Mesh0IndexCount, Color);
     for (uint32_t i = 0; i < vertices.size(); ++i)
     {
-      auto val = static_cast<float>(i);
+      const auto val = static_cast<float>(i);
       vertices[i] = VertexPositionColorTexture(Vector3(val, val * 10.0f, LocalConfig::StartZ), Color, Vector2(val * 20.0f, val * 30.0f));
       indices[i] = UncheckedNumericCast<uint16_t>(i);
       meshBuilder.AddVertex(vertices[i].Position.X, vertices[i].Position.Y, vertices[i].TextureCoordinate.X, vertices[i].TextureCoordinate.Y);
@@ -1037,24 +1037,24 @@ TEST_F(TestBacherFlexibleImmediateModeBatcher, MeshBuild_AtOverVertexCapacity_Ad
   EXPECT_EQ(Mesh0IndexCount + 6u, m_batcher.GetStats().IndexCount);
 
   {
-    auto segmentBatchInfo = m_batcher.GetSegmentBatchInfo(0);
+    const auto segmentBatchInfo = m_batcher.GetSegmentBatchInfo(0);
     EXPECT_EQ(0u, segmentBatchInfo.BatchRange.Start);
     EXPECT_EQ(1u, segmentBatchInfo.BatchRange.Length);
   }
   {
-    auto segmentBatchInfo = m_batcher.GetSegmentBatchInfo(1);
+    const auto segmentBatchInfo = m_batcher.GetSegmentBatchInfo(1);
     EXPECT_EQ(1u, segmentBatchInfo.BatchRange.Start);
     EXPECT_EQ(1u, segmentBatchInfo.BatchRange.Length);
   }
   {
-    auto segmentSpans = m_batcher.GetSegmentSpans(0);
+    const auto segmentSpans = m_batcher.GetSegmentSpans(0);
     EXPECT_EQ(Mesh0VertexCount, segmentSpans.Vertices.size());
     EXPECT_EQ(Mesh0IndexCount, segmentSpans.Indices.size());
     CheckSpanRect(segmentSpans.Vertices, SpanUtil::AsReadOnlySpan(vertices), LocalConfig::StartZ);
     CheckSpanRect(segmentSpans.Indices, SpanUtil::AsReadOnlySpan(indices), 0);
   }
   {
-    auto segmentSpans = m_batcher.GetSegmentSpans(1);
+    const auto segmentSpans = m_batcher.GetSegmentSpans(1);
     EXPECT_EQ(4u, segmentSpans.Vertices.size());
     EXPECT_EQ(6u, segmentSpans.Indices.size());
     CheckSpanRect(segmentSpans.Vertices, Quad1X0, Quad1Y0, Quad1X1, Quad1Y1, Color, Quad1TextureArea, LocalConfig::StartZ + LocalConfig::ZAdd);

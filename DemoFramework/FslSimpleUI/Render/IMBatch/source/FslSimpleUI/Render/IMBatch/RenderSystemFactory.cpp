@@ -67,7 +67,7 @@ namespace Fsl::UI::RenderIMBatch
     {
     case RenderSystemType::Default:
       {
-        DefaultRenderSystemFactory factory;
+        const DefaultRenderSystemFactory factory;
         return factory.Create(createInfo);
       }
     case RenderSystemType::Normal:

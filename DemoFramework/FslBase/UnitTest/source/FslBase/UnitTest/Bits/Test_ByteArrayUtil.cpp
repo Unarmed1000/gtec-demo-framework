@@ -257,9 +257,9 @@ TEST(TestBits_ByteArrayUtil, WriteUInt8LE)
 
   for (std::size_t i = 0; i < src.size(); ++i)
   {
-    auto value = ByteArrayUtil::ReadUInt8LE(src.data(), src.size(), i);
+    const auto value = ByteArrayUtil::ReadUInt8LE(src.data(), src.size(), i);
     ByteArrayUtil::WriteUInt8LE(dst.data(), dst.size(), i, value);
-    auto writtenValue = ByteArrayUtil::ReadUInt8LE(dst.data(), dst.size(), i);
+    const auto writtenValue = ByteArrayUtil::ReadUInt8LE(dst.data(), dst.size(), i);
     EXPECT_EQ(value, writtenValue);
   }
   ExpectEq(src, dst);
@@ -273,9 +273,9 @@ TEST(TestBits_ByteArrayUtil, WriteUInt8BE)
 
   for (std::size_t i = 0; i < src.size(); ++i)
   {
-    auto value = ByteArrayUtil::ReadUInt8BE(src.data(), src.size(), i);
+    const auto value = ByteArrayUtil::ReadUInt8BE(src.data(), src.size(), i);
     ByteArrayUtil::WriteUInt8BE(dst.data(), dst.size(), i, value);
-    auto writtenValue = ByteArrayUtil::ReadUInt8BE(dst.data(), dst.size(), i);
+    const auto writtenValue = ByteArrayUtil::ReadUInt8BE(dst.data(), dst.size(), i);
     EXPECT_EQ(value, writtenValue);
   }
   ExpectEq(src, dst);
@@ -289,9 +289,9 @@ TEST(TestBits_ByteArrayUtil, WriteUInt16LE)
 
   for (std::size_t i = 0; i < (src.size() - 1); ++i)
   {
-    auto value = ByteArrayUtil::ReadUInt16LE(src.data(), src.size(), i);
+    const auto value = ByteArrayUtil::ReadUInt16LE(src.data(), src.size(), i);
     ByteArrayUtil::WriteUInt16LE(dst.data(), dst.size(), i, value);
-    auto writtenValue = ByteArrayUtil::ReadUInt16LE(dst.data(), dst.size(), i);
+    const auto writtenValue = ByteArrayUtil::ReadUInt16LE(dst.data(), dst.size(), i);
     EXPECT_EQ(value, writtenValue);
   }
 }
@@ -304,9 +304,9 @@ TEST(TestBits_ByteArrayUtil, WriteUInt16BE)
 
   for (std::size_t i = 0; i < (src.size() - 1); ++i)
   {
-    auto value = ByteArrayUtil::ReadUInt16BE(src.data(), src.size(), i);
+    const auto value = ByteArrayUtil::ReadUInt16BE(src.data(), src.size(), i);
     ByteArrayUtil::WriteUInt16BE(dst.data(), dst.size(), i, value);
-    auto writtenValue = ByteArrayUtil::ReadUInt16BE(dst.data(), dst.size(), i);
+    const auto writtenValue = ByteArrayUtil::ReadUInt16BE(dst.data(), dst.size(), i);
     EXPECT_EQ(value, writtenValue);
   }
 }
@@ -319,9 +319,9 @@ TEST(TestBits_ByteArrayUtil, WriteUInt32LE)
 
   for (std::size_t i = 0; i < (src.size() - 3); ++i)
   {
-    auto value = ByteArrayUtil::ReadUInt32LE(src.data(), src.size(), i);
+    const auto value = ByteArrayUtil::ReadUInt32LE(src.data(), src.size(), i);
     ByteArrayUtil::WriteUInt32LE(dst.data(), dst.size(), i, value);
-    auto writtenValue = ByteArrayUtil::ReadUInt32LE(dst.data(), dst.size(), i);
+    const auto writtenValue = ByteArrayUtil::ReadUInt32LE(dst.data(), dst.size(), i);
     EXPECT_EQ(value, writtenValue);
   }
 }
@@ -334,9 +334,9 @@ TEST(TestBits_ByteArrayUtil, WriteUInt32BE)
 
   for (std::size_t i = 0; i < (src.size() - 3); ++i)
   {
-    auto value = ByteArrayUtil::ReadUInt32BE(src.data(), src.size(), i);
+    const auto value = ByteArrayUtil::ReadUInt32BE(src.data(), src.size(), i);
     ByteArrayUtil::WriteUInt32BE(dst.data(), dst.size(), i, value);
-    auto writtenValue = ByteArrayUtil::ReadUInt32BE(dst.data(), dst.size(), i);
+    const auto writtenValue = ByteArrayUtil::ReadUInt32BE(dst.data(), dst.size(), i);
     EXPECT_EQ(value, writtenValue);
   }
 }
@@ -349,9 +349,9 @@ TEST(TestBits_ByteArrayUtil, WriteUInt64LE)
 
   for (std::size_t i = 0; i < (src.size() - 7); ++i)
   {
-    auto value = ByteArrayUtil::ReadUInt64LE(src.data(), src.size(), i);
+    const auto value = ByteArrayUtil::ReadUInt64LE(src.data(), src.size(), i);
     ByteArrayUtil::WriteUInt64LE(dst.data(), dst.size(), i, value);
-    auto writtenValue = ByteArrayUtil::ReadUInt64LE(dst.data(), dst.size(), i);
+    const auto writtenValue = ByteArrayUtil::ReadUInt64LE(dst.data(), dst.size(), i);
     EXPECT_EQ(value, writtenValue);
   }
 }
@@ -364,9 +364,9 @@ TEST(TestBits_ByteArrayUtil, WriteUInt64BE)
 
   for (std::size_t i = 0; i < (src.size() - 7); ++i)
   {
-    auto value = ByteArrayUtil::ReadUInt64BE(src.data(), src.size(), i);
+    const auto value = ByteArrayUtil::ReadUInt64BE(src.data(), src.size(), i);
     ByteArrayUtil::WriteUInt64BE(dst.data(), dst.size(), i, value);
-    auto writtenValue = ByteArrayUtil::ReadUInt64BE(dst.data(), dst.size(), i);
+    const auto writtenValue = ByteArrayUtil::ReadUInt64BE(dst.data(), dst.size(), i);
     EXPECT_EQ(value, writtenValue);
   }
 }
@@ -379,9 +379,9 @@ TEST(TestBits_ByteArrayUtil, WriteInt8LE)
 
   for (std::size_t i = 0; i < src.size(); ++i)
   {
-    auto value = ByteArrayUtil::ReadInt8LE(src.data(), src.size(), i);
+    const auto value = ByteArrayUtil::ReadInt8LE(src.data(), src.size(), i);
     ByteArrayUtil::WriteInt8LE(dst.data(), dst.size(), i, value);
-    auto writtenValue = ByteArrayUtil::ReadInt8LE(dst.data(), dst.size(), i);
+    const auto writtenValue = ByteArrayUtil::ReadInt8LE(dst.data(), dst.size(), i);
     EXPECT_EQ(value, writtenValue);
   }
   ExpectEq(src, dst);
@@ -395,9 +395,9 @@ TEST(TestBits_ByteArrayUtil, WriteInt8BE)
 
   for (std::size_t i = 0; i < src.size(); ++i)
   {
-    auto value = ByteArrayUtil::ReadInt8BE(src.data(), src.size(), i);
+    const auto value = ByteArrayUtil::ReadInt8BE(src.data(), src.size(), i);
     ByteArrayUtil::WriteInt8BE(dst.data(), dst.size(), i, value);
-    auto writtenValue = ByteArrayUtil::ReadInt8BE(dst.data(), dst.size(), i);
+    const auto writtenValue = ByteArrayUtil::ReadInt8BE(dst.data(), dst.size(), i);
     EXPECT_EQ(value, writtenValue);
   }
   ExpectEq(src, dst);
@@ -411,9 +411,9 @@ TEST(TestBits_ByteArrayUtil, WriteInt16LE)
 
   for (std::size_t i = 0; i < (src.size() - 1); ++i)
   {
-    auto value = ByteArrayUtil::ReadInt16LE(src.data(), src.size(), i);
+    const auto value = ByteArrayUtil::ReadInt16LE(src.data(), src.size(), i);
     ByteArrayUtil::WriteInt16LE(dst.data(), dst.size(), i, value);
-    auto writtenValue = ByteArrayUtil::ReadInt16LE(dst.data(), dst.size(), i);
+    const auto writtenValue = ByteArrayUtil::ReadInt16LE(dst.data(), dst.size(), i);
     EXPECT_EQ(value, writtenValue);
   }
 }
@@ -426,9 +426,9 @@ TEST(TestBits_ByteArrayUtil, WriteInt16BE)
 
   for (std::size_t i = 0; i < (src.size() - 1); ++i)
   {
-    auto value = ByteArrayUtil::ReadInt16BE(src.data(), src.size(), i);
+    const auto value = ByteArrayUtil::ReadInt16BE(src.data(), src.size(), i);
     ByteArrayUtil::WriteInt16BE(dst.data(), dst.size(), i, value);
-    auto writtenValue = ByteArrayUtil::ReadInt16BE(dst.data(), dst.size(), i);
+    const auto writtenValue = ByteArrayUtil::ReadInt16BE(dst.data(), dst.size(), i);
     EXPECT_EQ(value, writtenValue);
   }
 }
@@ -441,9 +441,9 @@ TEST(TestBits_ByteArrayUtil, WriteInt32LE)
 
   for (std::size_t i = 0; i < (src.size() - 3); ++i)
   {
-    auto value = ByteArrayUtil::ReadInt32LE(src.data(), src.size(), i);
+    const auto value = ByteArrayUtil::ReadInt32LE(src.data(), src.size(), i);
     ByteArrayUtil::WriteInt32LE(dst.data(), dst.size(), i, value);
-    auto writtenValue = ByteArrayUtil::ReadInt32LE(dst.data(), dst.size(), i);
+    const auto writtenValue = ByteArrayUtil::ReadInt32LE(dst.data(), dst.size(), i);
     EXPECT_EQ(value, writtenValue);
   }
 }
@@ -456,9 +456,9 @@ TEST(TestBits_ByteArrayUtil, WriteInt32BE)
 
   for (std::size_t i = 0; i < (src.size() - 3); ++i)
   {
-    auto value = ByteArrayUtil::ReadInt32BE(src.data(), src.size(), i);
+    const auto value = ByteArrayUtil::ReadInt32BE(src.data(), src.size(), i);
     ByteArrayUtil::WriteInt32BE(dst.data(), dst.size(), i, value);
-    auto writtenValue = ByteArrayUtil::ReadInt32BE(dst.data(), dst.size(), i);
+    const auto writtenValue = ByteArrayUtil::ReadInt32BE(dst.data(), dst.size(), i);
     EXPECT_EQ(value, writtenValue);
   }
 }
@@ -471,9 +471,9 @@ TEST(TestBits_ByteArrayUtil, WriteInt64LE)
 
   for (std::size_t i = 0; i < (src.size() - 7); ++i)
   {
-    auto value = ByteArrayUtil::ReadInt64LE(src.data(), src.size(), i);
+    const auto value = ByteArrayUtil::ReadInt64LE(src.data(), src.size(), i);
     ByteArrayUtil::WriteInt64LE(dst.data(), dst.size(), i, value);
-    auto writtenValue = ByteArrayUtil::ReadInt64LE(dst.data(), dst.size(), i);
+    const auto writtenValue = ByteArrayUtil::ReadInt64LE(dst.data(), dst.size(), i);
     EXPECT_EQ(value, writtenValue);
   }
 }
@@ -486,9 +486,9 @@ TEST(TestBits_ByteArrayUtil, WriteInt64BE)
 
   for (std::size_t i = 0; i < (src.size() - 7); ++i)
   {
-    auto value = ByteArrayUtil::ReadInt64BE(src.data(), src.size(), i);
+    const auto value = ByteArrayUtil::ReadInt64BE(src.data(), src.size(), i);
     ByteArrayUtil::WriteInt64BE(dst.data(), dst.size(), i, value);
-    auto writtenValue = ByteArrayUtil::ReadInt64BE(dst.data(), dst.size(), i);
+    const auto writtenValue = ByteArrayUtil::ReadInt64BE(dst.data(), dst.size(), i);
     EXPECT_EQ(value, writtenValue);
   }
 }
@@ -502,9 +502,9 @@ TEST(TestBits_ByteArrayUtil, WriteLE_UInt8)
 
   for (std::size_t i = 0; i < src.size(); ++i)
   {
-    auto value = ByteArrayUtil::ReadUInt8LE(src.data(), src.size(), i);
+    const auto value = ByteArrayUtil::ReadUInt8LE(src.data(), src.size(), i);
     ByteArrayUtil::WriteLE(dst.data(), dst.size(), i, value);
-    auto writtenValue = ByteArrayUtil::ReadUInt8LE(dst.data(), dst.size(), i);
+    const auto writtenValue = ByteArrayUtil::ReadUInt8LE(dst.data(), dst.size(), i);
     EXPECT_EQ(value, writtenValue);
   }
   ExpectEq(src, dst);
@@ -518,9 +518,9 @@ TEST(TestBits_ByteArrayUtil, WriteBE_UInt8)
 
   for (std::size_t i = 0; i < src.size(); ++i)
   {
-    auto value = ByteArrayUtil::ReadUInt8BE(src.data(), src.size(), i);
+    const auto value = ByteArrayUtil::ReadUInt8BE(src.data(), src.size(), i);
     ByteArrayUtil::WriteBE(dst.data(), dst.size(), i, value);
-    auto writtenValue = ByteArrayUtil::ReadUInt8BE(dst.data(), dst.size(), i);
+    const auto writtenValue = ByteArrayUtil::ReadUInt8BE(dst.data(), dst.size(), i);
     EXPECT_EQ(value, writtenValue);
   }
   ExpectEq(src, dst);
@@ -534,9 +534,9 @@ TEST(TestBits_ByteArrayUtil, WriteWriteLE_UInt16)
 
   for (std::size_t i = 0; i < (src.size() - 1); ++i)
   {
-    auto value = ByteArrayUtil::ReadUInt16LE(src.data(), src.size(), i);
+    const auto value = ByteArrayUtil::ReadUInt16LE(src.data(), src.size(), i);
     ByteArrayUtil::WriteLE(dst.data(), dst.size(), i, value);
-    auto writtenValue = ByteArrayUtil::ReadUInt16LE(dst.data(), dst.size(), i);
+    const auto writtenValue = ByteArrayUtil::ReadUInt16LE(dst.data(), dst.size(), i);
     EXPECT_EQ(value, writtenValue);
   }
 }
@@ -549,9 +549,9 @@ TEST(TestBits_ByteArrayUtil, WriteBE_UInt16)
 
   for (std::size_t i = 0; i < (src.size() - 1); ++i)
   {
-    auto value = ByteArrayUtil::ReadUInt16BE(src.data(), src.size(), i);
+    const auto value = ByteArrayUtil::ReadUInt16BE(src.data(), src.size(), i);
     ByteArrayUtil::WriteBE(dst.data(), dst.size(), i, value);
-    auto writtenValue = ByteArrayUtil::ReadUInt16BE(dst.data(), dst.size(), i);
+    const auto writtenValue = ByteArrayUtil::ReadUInt16BE(dst.data(), dst.size(), i);
     EXPECT_EQ(value, writtenValue);
   }
 }
@@ -564,9 +564,9 @@ TEST(TestBits_ByteArrayUtil, WriteLE_UInt32)
 
   for (std::size_t i = 0; i < (src.size() - 3); ++i)
   {
-    auto value = ByteArrayUtil::ReadUInt32LE(src.data(), src.size(), i);
+    const auto value = ByteArrayUtil::ReadUInt32LE(src.data(), src.size(), i);
     ByteArrayUtil::WriteLE(dst.data(), dst.size(), i, value);
-    auto writtenValue = ByteArrayUtil::ReadUInt32LE(dst.data(), dst.size(), i);
+    const auto writtenValue = ByteArrayUtil::ReadUInt32LE(dst.data(), dst.size(), i);
     EXPECT_EQ(value, writtenValue);
   }
 }
@@ -579,9 +579,9 @@ TEST(TestBits_ByteArrayUtil, WriteBE_UInt32)
 
   for (std::size_t i = 0; i < (src.size() - 3); ++i)
   {
-    auto value = ByteArrayUtil::ReadUInt32BE(src.data(), src.size(), i);
+    const auto value = ByteArrayUtil::ReadUInt32BE(src.data(), src.size(), i);
     ByteArrayUtil::WriteBE(dst.data(), dst.size(), i, value);
-    auto writtenValue = ByteArrayUtil::ReadUInt32BE(dst.data(), dst.size(), i);
+    const auto writtenValue = ByteArrayUtil::ReadUInt32BE(dst.data(), dst.size(), i);
     EXPECT_EQ(value, writtenValue);
   }
 }
@@ -594,9 +594,9 @@ TEST(TestBits_ByteArrayUtil, WriteLE_UInt64)
 
   for (std::size_t i = 0; i < (src.size() - 7); ++i)
   {
-    auto value = ByteArrayUtil::ReadUInt64LE(src.data(), src.size(), i);
+    const auto value = ByteArrayUtil::ReadUInt64LE(src.data(), src.size(), i);
     ByteArrayUtil::WriteLE(dst.data(), dst.size(), i, value);
-    auto writtenValue = ByteArrayUtil::ReadUInt64LE(dst.data(), dst.size(), i);
+    const auto writtenValue = ByteArrayUtil::ReadUInt64LE(dst.data(), dst.size(), i);
     EXPECT_EQ(value, writtenValue);
   }
 }
@@ -609,9 +609,9 @@ TEST(TestBits_ByteArrayUtil, WriteBE_UInt64)
 
   for (std::size_t i = 0; i < (src.size() - 7); ++i)
   {
-    auto value = ByteArrayUtil::ReadUInt64BE(src.data(), src.size(), i);
+    const auto value = ByteArrayUtil::ReadUInt64BE(src.data(), src.size(), i);
     ByteArrayUtil::WriteBE(dst.data(), dst.size(), i, value);
-    auto writtenValue = ByteArrayUtil::ReadUInt64BE(dst.data(), dst.size(), i);
+    const auto writtenValue = ByteArrayUtil::ReadUInt64BE(dst.data(), dst.size(), i);
     EXPECT_EQ(value, writtenValue);
   }
 }
@@ -624,9 +624,9 @@ TEST(TestBits_ByteArrayUtil, WriteLE_Int8)
 
   for (std::size_t i = 0; i < src.size(); ++i)
   {
-    auto value = ByteArrayUtil::ReadInt8LE(src.data(), src.size(), i);
+    const auto value = ByteArrayUtil::ReadInt8LE(src.data(), src.size(), i);
     ByteArrayUtil::WriteLE(dst.data(), dst.size(), i, value);
-    auto writtenValue = ByteArrayUtil::ReadInt8LE(dst.data(), dst.size(), i);
+    const auto writtenValue = ByteArrayUtil::ReadInt8LE(dst.data(), dst.size(), i);
     EXPECT_EQ(value, writtenValue);
   }
   ExpectEq(src, dst);
@@ -640,9 +640,9 @@ TEST(TestBits_ByteArrayUtil, WriteBE_Int8)
 
   for (std::size_t i = 0; i < src.size(); ++i)
   {
-    auto value = ByteArrayUtil::ReadInt8BE(src.data(), src.size(), i);
+    const auto value = ByteArrayUtil::ReadInt8BE(src.data(), src.size(), i);
     ByteArrayUtil::WriteBE(dst.data(), dst.size(), i, value);
-    auto writtenValue = ByteArrayUtil::ReadInt8BE(dst.data(), dst.size(), i);
+    const auto writtenValue = ByteArrayUtil::ReadInt8BE(dst.data(), dst.size(), i);
     EXPECT_EQ(value, writtenValue);
   }
   ExpectEq(src, dst);
@@ -656,9 +656,9 @@ TEST(TestBits_ByteArrayUtil, WriteLE_Int16)
 
   for (std::size_t i = 0; i < (src.size() - 1); ++i)
   {
-    auto value = ByteArrayUtil::ReadInt16LE(src.data(), src.size(), i);
+    const auto value = ByteArrayUtil::ReadInt16LE(src.data(), src.size(), i);
     ByteArrayUtil::WriteLE(dst.data(), dst.size(), i, value);
-    auto writtenValue = ByteArrayUtil::ReadInt16LE(dst.data(), dst.size(), i);
+    const auto writtenValue = ByteArrayUtil::ReadInt16LE(dst.data(), dst.size(), i);
     EXPECT_EQ(value, writtenValue);
   }
 }
@@ -671,9 +671,9 @@ TEST(TestBits_ByteArrayUtil, WriteBE_Int16)
 
   for (std::size_t i = 0; i < (src.size() - 1); ++i)
   {
-    auto value = ByteArrayUtil::ReadInt16BE(src.data(), src.size(), i);
+    const auto value = ByteArrayUtil::ReadInt16BE(src.data(), src.size(), i);
     ByteArrayUtil::WriteBE(dst.data(), dst.size(), i, value);
-    auto writtenValue = ByteArrayUtil::ReadInt16BE(dst.data(), dst.size(), i);
+    const auto writtenValue = ByteArrayUtil::ReadInt16BE(dst.data(), dst.size(), i);
     EXPECT_EQ(value, writtenValue);
   }
 }
@@ -686,9 +686,9 @@ TEST(TestBits_ByteArrayUtil, WriteLE_Int32)
 
   for (std::size_t i = 0; i < (src.size() - 3); ++i)
   {
-    auto value = ByteArrayUtil::ReadInt32LE(src.data(), src.size(), i);
+    const auto value = ByteArrayUtil::ReadInt32LE(src.data(), src.size(), i);
     ByteArrayUtil::WriteLE(dst.data(), dst.size(), i, value);
-    auto writtenValue = ByteArrayUtil::ReadInt32LE(dst.data(), dst.size(), i);
+    const auto writtenValue = ByteArrayUtil::ReadInt32LE(dst.data(), dst.size(), i);
     EXPECT_EQ(value, writtenValue);
   }
 }
@@ -701,9 +701,9 @@ TEST(TestBits_ByteArrayUtil, WriteBE_Int32)
 
   for (std::size_t i = 0; i < (src.size() - 3); ++i)
   {
-    auto value = ByteArrayUtil::ReadInt32BE(src.data(), src.size(), i);
+    const auto value = ByteArrayUtil::ReadInt32BE(src.data(), src.size(), i);
     ByteArrayUtil::WriteBE(dst.data(), dst.size(), i, value);
-    auto writtenValue = ByteArrayUtil::ReadInt32BE(dst.data(), dst.size(), i);
+    const auto writtenValue = ByteArrayUtil::ReadInt32BE(dst.data(), dst.size(), i);
     EXPECT_EQ(value, writtenValue);
   }
 }
@@ -716,9 +716,9 @@ TEST(TestBits_ByteArrayUtil, WriteLE_Int64)
 
   for (std::size_t i = 0; i < (src.size() - 7); ++i)
   {
-    auto value = ByteArrayUtil::ReadInt64LE(src.data(), src.size(), i);
+    const auto value = ByteArrayUtil::ReadInt64LE(src.data(), src.size(), i);
     ByteArrayUtil::WriteLE(dst.data(), dst.size(), i, value);
-    auto writtenValue = ByteArrayUtil::ReadInt64LE(dst.data(), dst.size(), i);
+    const auto writtenValue = ByteArrayUtil::ReadInt64LE(dst.data(), dst.size(), i);
     EXPECT_EQ(value, writtenValue);
   }
 }
@@ -731,9 +731,9 @@ TEST(TestBits_ByteArrayUtil, WriteBE_Int64)
 
   for (std::size_t i = 0; i < (src.size() - 7); ++i)
   {
-    auto value = ByteArrayUtil::ReadInt64BE(src.data(), src.size(), i);
+    const auto value = ByteArrayUtil::ReadInt64BE(src.data(), src.size(), i);
     ByteArrayUtil::WriteBE(dst.data(), dst.size(), i, value);
-    auto writtenValue = ByteArrayUtil::ReadInt64BE(dst.data(), dst.size(), i);
+    const auto writtenValue = ByteArrayUtil::ReadInt64BE(dst.data(), dst.size(), i);
     EXPECT_EQ(value, writtenValue);
   }
 }

@@ -73,7 +73,7 @@ namespace Fsl::UI
       return m_spriteFont.GetInfo();
     }
 
-    UIRenderColor GetColor() const
+    [[nodiscard]] UIRenderColor GetColor() const
     {
       return m_rBuilder.GetColor();
     }
@@ -118,7 +118,7 @@ namespace Fsl::UI
       }
       else
       {
-        auto finalClipRectPxf = PxAreaRectangleF::Intersect(m_clipRectanglePxf, clipRectPxf);
+        const auto finalClipRectPxf = PxAreaRectangleF::Intersect(m_clipRectanglePxf, clipRectPxf);
         m_rTextBuilder.AddString(m_rBuilder, m_spriteFont, dstPositionPxf, strView, finalClipRectPxf);
       }
     }

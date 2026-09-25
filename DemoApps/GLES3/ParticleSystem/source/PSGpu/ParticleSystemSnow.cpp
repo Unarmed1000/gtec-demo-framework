@@ -61,10 +61,10 @@ namespace Fsl
       std::uniform_real_distribution<float> randomPositionZ(-ranges.Z, ranges.Z);
       std::uniform_real_distribution<float> randomVelocityY(-4.0f, -2.00f);
 
-      for (auto itr = rParticles.begin(); itr != rParticles.end(); ++itr)
+      for (auto& rParticle : rParticles)
       {
-        itr->Position = Vector3(randomPositionX(random), randomPositionY(random), randomPositionZ(random));
-        itr->Velocity = Vector3(0, randomVelocityY(random), 0);
+        rParticle.Position = Vector3(randomPositionX(random), randomPositionY(random), randomPositionZ(random));
+        rParticle.Velocity = Vector3(0, randomVelocityY(random), 0);
       }
     }
 
@@ -199,9 +199,9 @@ namespace Fsl
   {
     glUseProgram(0);
 
-    std::string strVert = contentManager->ReadAllText("PSSnow_Render.vert");
-    std::string strFrag = contentManager->ReadAllText("PSSnow_Render.frag");
-    std::string strGeom = contentManager->ReadAllText("PSSnow_Render.geom");
+    const std::string strVert = contentManager->ReadAllText("PSSnow_Render.vert");
+    const std::string strFrag = contentManager->ReadAllText("PSSnow_Render.frag");
+    const std::string strGeom = contentManager->ReadAllText("PSSnow_Render.geom");
 
     {
       // GLShader shaderVert(GL_VERTEX_SHADER, strVert);

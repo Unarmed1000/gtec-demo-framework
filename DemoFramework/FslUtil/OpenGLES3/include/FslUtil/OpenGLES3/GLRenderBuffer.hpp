@@ -106,33 +106,33 @@ namespace Fsl::GLES3
     void Reset(const GLuint handle, const PxSize2D& size, const GLenum format);
 
     //! @brief Check if this buffer contains a valid gl handle.
-    bool IsValid() const
+    [[nodiscard]] bool IsValid() const
     {
       return m_handle != GLValues::InvalidHandle;
     }
 
     //! @brief Get the gl handle associated with the buffer.
     //! @return the handle or GLValues::InvalidHandle if the buffer is unallocated.
-    GLuint Get() const
+    [[nodiscard]] GLuint Get() const
     {
       return m_handle;
     }
 
     //! @brief Get the gl handle associated with the buffer *DEPRECATED*.
     //! @return the handle or GLValues::InvalidHandle if the buffer is unallocated.
-    [[deprecated("use one of the other overloads instead")]] GLuint GetHandle() const
+    [[nodiscard]] [[deprecated("use one of the other overloads instead")]] GLuint GetHandle() const
     {
       return Get();
     }
 
     //! @brief Get the format of the buffer
-    GLenum GetFormat() const
+    [[nodiscard]] GLenum GetFormat() const
     {
       return m_format;
     }
 
     //! @brief Get size of the buffer
-    PxSize2D GetSize() const
+    [[nodiscard]] PxSize2D GetSize() const
     {
       return m_size;
     }

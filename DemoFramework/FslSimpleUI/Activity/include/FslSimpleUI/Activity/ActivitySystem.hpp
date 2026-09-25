@@ -52,12 +52,12 @@ namespace Fsl::UI
     void SetUseDrawCache(const bool useDrawCache);
     void SetClipRectangle(const bool enabled, const PxRectangle& clipRectanglePx);
 
-    std::shared_ptr<AExternalModule> GetExternalModule(const ExternalModuleId& moduleId) const;
+    [[nodiscard]] std::shared_ptr<AExternalModule> GetExternalModule(const ExternalModuleId& moduleId) const;
 
-    const std::shared_ptr<UIContext>& GetUIContext() const;
-    std::shared_ptr<IWindowManager> GetWindowManager() const;
-    const std::shared_ptr<WindowEventPool>& GetEventPool() const;
-    const std::shared_ptr<WindowEventSender>& GetEventSender() const;
+    [[nodiscard]] const std::shared_ptr<UIContext>& GetUIContext() const;
+    [[nodiscard]] std::shared_ptr<IWindowManager> GetWindowManager() const;
+    [[nodiscard]] const std::shared_ptr<WindowEventPool>& GetEventPool() const;
+    [[nodiscard]] const std::shared_ptr<WindowEventSender>& GetEventSender() const;
 
     // bool SendKeyEvent(const KeyEvent& event);
     //! @brief Send a mouse button event
@@ -67,11 +67,11 @@ namespace Fsl::UI
     // bool SendMouseWheelEvent(const MouseWheelEvent& event);
 
     //! Check if the UI system is considered idle
-    bool IsIdle() const noexcept;
+    [[nodiscard]] bool IsIdle() const noexcept;
     //! Check if the UI content has been modified.
-    bool IsRedrawRequired() const noexcept;
+    [[nodiscard]] bool IsRedrawRequired() const noexcept;
 
-    UIStats GetStats() const noexcept;
+    [[nodiscard]] UIStats GetStats() const noexcept;
 
     void ProcessEvents();
 
@@ -82,7 +82,7 @@ namespace Fsl::UI
     void Draw(RenderPerformanceCapture* const pPerformanceCapture);
     void PostDraw();
 
-    const UI::IRenderSystemBase& GetRenderSystem() const;
+    [[nodiscard]] const UI::IRenderSystemBase& GetRenderSystem() const;
     UI::IRenderSystemBase* TryGetRenderSystem();
 
     //! @brief Register a event listener
@@ -92,7 +92,7 @@ namespace Fsl::UI
     void UnregisterEventListener(const std::weak_ptr<IEventListener>& eventListener);
 
     // NOLINTNEXTLINE(readability-identifier-naming)
-    bool SYS_GetUseYFlipTextureCoordinates() const noexcept;
+    [[nodiscard]] bool SYS_GetUseYFlipTextureCoordinates() const noexcept;
 
     void ForceInvalidateLayout();
   };

@@ -60,7 +60,7 @@ namespace Fsl
       return !(*this == rhs);
     }
 
-    constexpr inline uint32_t GetId() const noexcept
+    [[nodiscard]] constexpr inline uint32_t GetId() const noexcept
     {
       return CharInfo.Id;
     }

@@ -54,14 +54,14 @@ namespace Fsl
   {
     constexpr const uint32_t VertexCount = 4;
 
-    auto quadVertexIndex = quadIndex * VertexCount;
+    const auto quadVertexIndex = quadIndex * VertexCount;
     if (quadVertexIndex >= span.VertexCount)
     {
       throw std::invalid_argument("quad index out of bounds");
     }
 
-    Fsl::Vector2 texCoord10(quad.TexCoords1.X, quad.TexCoords0.Y);
-    Fsl::Vector2 texCoord01(quad.TexCoords0.X, quad.TexCoords1.Y);
+    const Fsl::Vector2 texCoord10(quad.TexCoords1.X, quad.TexCoords0.Y);
+    const Fsl::Vector2 texCoord01(quad.TexCoords0.X, quad.TexCoords1.Y);
 
     const auto* pSrcVertices = span.pVertices + quadVertexIndex;
     ASSERT_NE(pSrcVertices, nullptr);

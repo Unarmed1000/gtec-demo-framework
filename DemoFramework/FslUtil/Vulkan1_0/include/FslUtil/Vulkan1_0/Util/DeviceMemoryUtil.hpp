@@ -228,7 +228,7 @@ namespace Fsl::Vulkan::DeviceMemoryUtil
     }
     else
     {
-      auto memorySpan = CalcMemorySpan(dstMemoryCapacity, physicalDeviceLimitNonCoherentAtomSize, dstOffset, srcDataSize);
+      const auto memorySpan = CalcMemorySpan(dstMemoryCapacity, physicalDeviceLimitNonCoherentAtomSize, dstOffset, srcDataSize);
       FastUploadNonCoherent(device, physicalDeviceLimitNonCoherentAtomSize, deviceMemory, dstMemoryCapacity, deviceMemoryPropertyFlags, memorySpan,
                             flags, pSrcData, srcDataSize);
     }

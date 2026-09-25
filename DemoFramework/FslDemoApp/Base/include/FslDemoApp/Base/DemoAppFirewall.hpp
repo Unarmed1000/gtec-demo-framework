@@ -54,7 +54,7 @@ namespace Fsl
     ~DemoAppFirewall() final;
 
     // Check if the app is allocated
-    bool IsAllocated() const
+    [[nodiscard]] bool IsAllocated() const
     {
       return m_app != nullptr;
     }

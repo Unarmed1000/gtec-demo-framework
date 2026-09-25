@@ -65,7 +65,7 @@ TYPED_TEST(Test_Image, Create4X1)
 {
   using current_t = typename TestFixture::current_t;
 
-  auto image = current_t::GetBasic4X1();
+  const auto image = current_t::GetBasic4X1();
   ASSERT_TRUE(current_t::CheckIsBasic4X1(image));
 }
 
@@ -74,7 +74,7 @@ TYPED_TEST(Test_Image, Create4X1_OriginUpperLeft)
 {
   using current_t = typename TestFixture::current_t;
 
-  auto image = current_t::GetBasic4X1(BitmapOrigin::UpperLeft);
+  const auto image = current_t::GetBasic4X1(BitmapOrigin::UpperLeft);
   ASSERT_TRUE(current_t::CheckIsBasic4X1(image));
 }
 
@@ -83,7 +83,7 @@ TYPED_TEST(Test_Image, Create4X1_OriginLowerLeft)
 {
   using current_t = typename TestFixture::current_t;
 
-  auto image = current_t::GetBasic4X1(BitmapOrigin::LowerLeft);
+  const auto image = current_t::GetBasic4X1(BitmapOrigin::LowerLeft);
   ASSERT_TRUE(current_t::CheckIsBasic4X1(image));
 }
 
@@ -92,7 +92,7 @@ TYPED_TEST(Test_Image, Create4X2)
 {
   using current_t = typename TestFixture::current_t;
 
-  auto image = current_t::GetBasic4X2();
+  const auto image = current_t::GetBasic4X2();
   ASSERT_TRUE(current_t::CheckIsBasic4X2(image));
 }
 
@@ -101,7 +101,7 @@ TYPED_TEST(Test_Image, Create4X2_OriginUpperLeft)
 {
   using current_t = typename TestFixture::current_t;
 
-  auto image = current_t::GetBasic4X2(BitmapOrigin::UpperLeft);
+  const auto image = current_t::GetBasic4X2(BitmapOrigin::UpperLeft);
   ASSERT_TRUE(current_t::CheckIsBasic4X2(image));
 }
 
@@ -110,7 +110,7 @@ TYPED_TEST(Test_Image, Create4X2_OriginLowerLeft)
 {
   using current_t = typename TestFixture::current_t;
 
-  auto image = current_t::GetBasic4X2(BitmapOrigin::LowerLeft);
+  const auto image = current_t::GetBasic4X2(BitmapOrigin::LowerLeft);
   ASSERT_TRUE(current_t::CheckIsBasic4X2(image));
 }
 
@@ -119,7 +119,7 @@ TYPED_TEST(Test_Image, Create4X2_OriginLowerLeft_CheckOrigin)
 {
   using current_t = typename TestFixture::current_t;
 
-  auto image = current_t::GetBasic4X2(BitmapOrigin::LowerLeft);
+  const auto image = current_t::GetBasic4X2(BitmapOrigin::LowerLeft);
   ASSERT_TRUE(current_t::CheckIsBasic4X2(image, BitmapOrigin::LowerLeft));
 }
 
@@ -128,7 +128,7 @@ TYPED_TEST(Test_Image, CheckIsBasic4X1_TestCheckInvalidSize)
 {
   using current_t = typename TestFixture::current_t;
 
-  auto image = current_t::GetBasic4X2();
+  const auto image = current_t::GetBasic4X2();
   ASSERT_FALSE(current_t::CheckIsBasic4X1(image));
 }
 
@@ -137,6 +137,6 @@ TYPED_TEST(Test_Image, CheckIsBasic4X2_TestCheckInvalidSize)
 {
   using current_t = typename TestFixture::current_t;
 
-  auto image = current_t::GetBasic4X1();
+  const auto image = current_t::GetBasic4X1();
   ASSERT_FALSE(current_t::CheckIsBasic4X2(image));
 }

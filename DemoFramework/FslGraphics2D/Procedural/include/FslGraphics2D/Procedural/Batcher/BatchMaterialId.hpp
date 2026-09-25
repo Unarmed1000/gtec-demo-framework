@@ -61,7 +61,7 @@ namespace Fsl
       return Value != rhs.Value;
     }
 
-    constexpr bool IsValid() const
+    [[nodiscard]] constexpr bool IsValid() const
     {
       return Value != BatchMaterialIdConfig::Invalid;
     }

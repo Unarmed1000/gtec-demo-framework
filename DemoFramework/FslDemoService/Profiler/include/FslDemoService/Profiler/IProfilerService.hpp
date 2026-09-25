@@ -43,17 +43,17 @@ namespace Fsl
   {
   public:
     virtual ~IProfilerService() = default;
-    virtual ProfilerFrameTime GetLastFrameTime() const = 0;
-    virtual ProfilerFrameTime GetAverageFrameTime() const = 0;
+    [[nodiscard]] virtual ProfilerFrameTime GetLastFrameTime() const = 0;
+    [[nodiscard]] virtual ProfilerFrameTime GetAverageFrameTime() const = 0;
 
     //! @brief Get the maximum number of custom counters that we support
-    virtual int32_t GetCustomCounterCapacity() const = 0;
+    [[nodiscard]] virtual int32_t GetCustomCounterCapacity() const = 0;
 
     //! @brief Get the number of custom counters
-    virtual int32_t GetCustomCounterCount() const = 0;
+    [[nodiscard]] virtual int32_t GetCustomCounterCount() const = 0;
 
     //! @brief Get a custom counter handle by its index (0 <= index < GetCustomCounterCount())
-    virtual ProfilerCustomCounterHandle GetCustomCounterHandle(const int32_t index) const = 0;
+    [[nodiscard]] virtual ProfilerCustomCounterHandle GetCustomCounterHandle(const int32_t index) const = 0;
 
     //! @brief Create a new custom counter for the profiler to track
     //! @param name the name of the counter we only allow ASCII characters.
@@ -67,13 +67,13 @@ namespace Fsl
     virtual void DestroyCustomCounter(const ProfilerCustomCounterHandle& handle) = 0;
 
     //! @brief Get the current value of the custom counter (if not set it will be minValue)
-    virtual int32_t Get(const ProfilerCustomCounterHandle& handle) const = 0;
+    [[nodiscard]] virtual int32_t Get(const ProfilerCustomCounterHandle& handle) const = 0;
 
     //! @brief Update the current value of the custom counter
     virtual void Set(const ProfilerCustomCounterHandle& handle, const int32_t value) = 0;
 
     //! @brief Get a description of the custom counter
-    virtual ProfilerCustomCounterDesc GetDescription(const ProfilerCustomCounterHandle& handle) const = 0;
+    [[nodiscard]] virtual ProfilerCustomCounterDesc GetDescription(const ProfilerCustomCounterHandle& handle) const = 0;
 
     //! @brief The custom configuration revision is modified each time a custom counter is created or removed.
     //! @return the current revision (this will never be zero)
@@ -82,10 +82,10 @@ namespace Fsl
     //         Beware that its technically possible to 'overflow' this counter and make it return the same value
     //         as for a different configuration but it would require 0x100000000 changes between the time you
     //         read this and the next time it was read, so its unlikely to happen.
-    virtual uint32_t GetCustomConfigurationRevision() const = 0;
+    [[nodiscard]] virtual uint32_t GetCustomConfigurationRevision() const = 0;
 
     //! @brief Check if the handle is still considered valid
-    virtual bool IsValidHandle(const ProfilerCustomCounterHandle& handle) const = 0;
+    [[nodiscard]] virtual bool IsValidHandle(const ProfilerCustomCounterHandle& handle) const = 0;
   };
 }
 

@@ -99,7 +99,7 @@ namespace Fsl
 
   private:
     void MaintainCachedCustomEntries();
-    bool IsNewHandle(const ProfilerCustomCounterHandle& handle) const;
+    [[nodiscard]] bool IsNewHandle(const ProfilerCustomCounterHandle& handle) const;
     void UpdateAndDrawCustomCounters(const std::shared_ptr<IBasic2D>& basic2D, const Vector2& dstPos);
   };
 }

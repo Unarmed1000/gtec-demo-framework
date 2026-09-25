@@ -55,7 +55,7 @@ namespace Fsl::Vulkan
 
     void Dispose() noexcept;
 
-    Graphics3D::NativeBufferFactoryCaps GetBufferCaps() const noexcept;
+    [[nodiscard]] Graphics3D::NativeBufferFactoryCaps GetBufferCaps() const noexcept;
 
     BasicNativeBufferHandle CreateBuffer(const BasicBufferType bufferType, ReadOnlyFlexSpan bufferData, const uint32_t bufferElementCapacity,
                                          const bool isDynamic);
@@ -64,7 +64,7 @@ namespace Fsl::Vulkan
 
     void SetBufferData(const BasicNativeBufferHandle hBuffer, const uint32_t dstIndex, ReadOnlyFlexSpan bufferData);
 
-    const VMBuffer& GetBuffer(const BasicNativeBufferHandle buffer) noexcept
+    const VMBuffer& GetBuffer(const BasicNativeBufferHandle buffer)
     {
       return m_buffers.Get(buffer.Value).GetBuffer();
     }

@@ -50,9 +50,8 @@ namespace Fsl::AppHelper
                         const ReadOnlySpan<SpriteFontGlyphPosition>& positions, float zPos, const PxSize2D& /*fontTextureSize*/)
   {
     uint32_t dstVertexIndex = 0;
-    for (std::size_t i = 0; i < positions.size(); ++i)
+    for (const auto& glyph : positions)
     {
-      const auto& glyph = positions[i];
       if (glyph.TextureArea.X1 > glyph.TextureArea.X0)
       {
         const auto dstX0 = static_cast<float>(dstPositionPx.X.Value) + glyph.DstRectPxf.RawLeft();
@@ -74,9 +73,8 @@ namespace Fsl::AppHelper
   {
     uint32_t dstVertexIndex = 0;
     uint32_t dstIBIndex = 0;
-    for (std::size_t i = 0; i < positions.size(); ++i)
+    for (const auto& glyph : positions)
     {
-      const auto& glyph = positions[i];
       if (glyph.TextureArea.X1 > glyph.TextureArea.X0)
       {
         // A B

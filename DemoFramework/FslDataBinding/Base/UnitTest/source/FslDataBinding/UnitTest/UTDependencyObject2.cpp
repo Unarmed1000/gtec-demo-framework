@@ -69,10 +69,10 @@ namespace Fsl
   DataBinding::DataBindingInstanceHandle UTDependencyObject2::TryGetPropertyHandleNow(const DataBinding::DependencyPropertyDefinition& sourceDef)
   {
     using namespace DataBinding;
-    auto res = DependencyObjectHelper::TryGetPropertyHandle(this, ThisDependencyObject(), sourceDef, PropLinkRefs(Property2, m_property2),
-                                                            PropLinkRefs(Property3, m_property3), PropLinkRefs(Property4, m_property4),
-                                                            PropLinkRefs(Property5, m_property5), PropLinkRefs(Property6, m_property6),
-                                                            PropLinkRefs(Property7, m_property7));
+    const auto res = DependencyObjectHelper::TryGetPropertyHandle(this, ThisDependencyObject(), sourceDef, PropLinkRefs(Property2, m_property2),
+                                                                  PropLinkRefs(Property3, m_property3), PropLinkRefs(Property4, m_property4),
+                                                                  PropLinkRefs(Property5, m_property5), PropLinkRefs(Property6, m_property6),
+                                                                  PropLinkRefs(Property7, m_property7));
     return res.IsValid() ? res : UTDependencyObject::TryGetPropertyHandleNow(sourceDef);
   }
 
@@ -81,10 +81,10 @@ namespace Fsl
                                                                               const DataBinding::Binding& binding)
   {
     using namespace DataBinding;
-    auto res = DependencyObjectHelper::TrySetBinding(this, ThisDependencyObject(), targetDef, binding, PropLinkRefs(Property2, m_property2),
-                                                     PropLinkRefs(Property3, m_property3), PropLinkRefs(Property4, m_property4),
-                                                     PropLinkRefs(Property5, m_property5), PropLinkRefs(Property6, m_property6),
-                                                     PropLinkRefs(Property7, m_property7));
+    const auto res = DependencyObjectHelper::TrySetBinding(this, ThisDependencyObject(), targetDef, binding, PropLinkRefs(Property2, m_property2),
+                                                           PropLinkRefs(Property3, m_property3), PropLinkRefs(Property4, m_property4),
+                                                           PropLinkRefs(Property5, m_property5), PropLinkRefs(Property6, m_property6),
+                                                           PropLinkRefs(Property7, m_property7));
     return res != PropertySetBindingResult::NotFound ? res : UTDependencyObject::TrySetBindingNow(targetDef, binding);
   }
 }

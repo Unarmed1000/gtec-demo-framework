@@ -60,7 +60,7 @@ namespace Fsl
   {
     void LogDeviceExtensions(const VkPhysicalDevice device)
     {
-      auto extensionProperties = Vulkan::PhysicalDeviceUtil::EnumerateDeviceExtensionProperties(device);
+      const auto extensionProperties = Vulkan::PhysicalDeviceUtil::EnumerateDeviceExtensionProperties(device);
       FSLLOG3_INFO("Device extensions: ", extensionProperties.size());
       for (const auto& extension : extensionProperties)
       {
@@ -75,18 +75,18 @@ namespace Fsl
     , m_graphicsServiceHost(demoAppConfig.DemoServiceProvider.Get<IGraphicsServiceHost>())
   {
     // FIX: move most of this init code to the Vulkan demo host
-    auto appHostConfigBase = m_hostInfo->TryGetAppHostConfig();
+    const auto appHostConfigBase = m_hostInfo->TryGetAppHostConfig();
     if (!appHostConfigBase)
     {
       throw std::runtime_error("The AppHostConfig was not set");
     }
-    auto appHostConfig = std::dynamic_pointer_cast<DemoAppHostConfigVulkan>(appHostConfigBase);
+    const auto appHostConfig = std::dynamic_pointer_cast<DemoAppHostConfigVulkan>(appHostConfigBase);
     if (!appHostConfig)
     {
       throw std::runtime_error("The AppHostConfig was not of the expected type");
     }
 
-    auto vulkanHostInfo = demoAppConfig.DemoServiceProvider.Get<IVulkanHostInfo>();
+    const auto vulkanHostInfo = demoAppConfig.DemoServiceProvider.Get<IVulkanHostInfo>();
     // Retrieve the launch options
     m_launchOptions = vulkanHostInfo->GetLaunchOptions();
 
@@ -135,7 +135,8 @@ namespace Fsl
       }
 #endif
 
-      auto deviceConfig = PhysicalDeviceConfigUtil::BuildConfig(m_physicalDevice.Device, appHostConfig, SpanUtil::AsReadOnlySpan(hostExtensions));
+      const auto deviceConfig =
+        PhysicalDeviceConfigUtil::BuildConfig(m_physicalDevice.Device, appHostConfig, SpanUtil::AsReadOnlySpan(hostExtensions));
       const PhysicalDeviceConfigUtil::DeviceConfigAsCharArrays deviceConfigEx(deviceConfig);
       const ReadOnlySpan<const char*> extensions = SpanUtil::AsReadOnlySpan(deviceConfigEx.Extensions);
 
@@ -156,7 +157,7 @@ namespace Fsl
       Vulkan::NativeGraphicsCustomVulkanDeviceCreateInfo vulkanCreateInfo(m_device, m_deviceQueue.Queue, m_deviceQueue.QueueFamilyIndex);
 
       const bool preloadBasic2D = m_hostInfo->GetConfig().PreloadBasic2D;
-      GraphicsDeviceCreateInfo createInfo(GetRenderConfig().MaxFramesInFlight, preloadBasic2D, &vulkanCreateInfo);
+      const GraphicsDeviceCreateInfo createInfo(GetRenderConfig().MaxFramesInFlight, preloadBasic2D, &vulkanCreateInfo);
       m_graphicsServiceHost->CreateDevice(createInfo);
     }
   }

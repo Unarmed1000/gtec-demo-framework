@@ -32,9 +32,9 @@
  ****************************************************************************************************************************************************/
 
 #include <FslBase/BasicTypes.hpp>
-#include <FslGraphics/ToneMapping/BasicToneMapper.hpp>
-#include <FslGraphics/PixelFormat.hpp>
 #include <FslDemoService/Graphics/ColorSpaceType.hpp>
+#include <FslGraphics/PixelFormat.hpp>
+#include <FslGraphics/ToneMapping/BasicToneMapper.hpp>
 #include <memory>
 
 namespace Fsl
@@ -51,7 +51,7 @@ namespace Fsl
   public:
     virtual ~IGraphicsService() = default;
 
-    virtual ColorSpaceType GetColorSpaceType() const noexcept = 0;
+    [[nodiscard]] virtual ColorSpaceType GetColorSpaceType() const noexcept = 0;
 
     //! @brief Capture the current content of the display after a glFinish.
     //! @param rBitmap will be resized to fit the screen

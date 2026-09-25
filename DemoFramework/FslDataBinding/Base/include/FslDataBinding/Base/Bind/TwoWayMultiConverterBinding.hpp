@@ -80,17 +80,17 @@ namespace Fsl::DataBinding
       }
     }
 
-    BindingCapabilityFlags GetCaps() const noexcept final
+    [[nodiscard]] BindingCapabilityFlags GetCaps() const noexcept final
     {
       return BindingCapabilityFlags::ConvertBack;
     }
 
-    ReadOnlySpan<PropertyTypeInfo> GetSourceTypes() const final
+    [[nodiscard]] ReadOnlySpan<PropertyTypeInfo> GetSourceTypes() const final
     {
       return SpanUtil::AsReadOnlySpan(Types);
     }
 
-    std::type_index GetTargetType() const final
+    [[nodiscard]] std::type_index GetTargetType() const final
     {
       return typeid(target_value_type);
     }

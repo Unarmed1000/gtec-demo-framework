@@ -82,17 +82,17 @@ namespace Fsl
     explicit Shared(const DemoAppConfig& config, const bool chartSupported);
     ~Shared() override;
 
-    const std::shared_ptr<UIDemoAppExtension>& GetDemoAppExtension() const
+    [[nodiscard]] const std::shared_ptr<UIDemoAppExtension>& GetDemoAppExtension() const
     {
       return m_uiExtension;
     }
 
-    uint32_t GetIterations() const
+    [[nodiscard]] uint32_t GetIterations() const
     {
       return m_ui.SliderIterations->GetValue();
     }
 
-    bool IsPaused() const
+    [[nodiscard]] bool IsPaused() const
     {
       return m_ui.SwitchPause->IsChecked();
     }

@@ -22,12 +22,13 @@
   * The Vulkan demo host enables VK_KHR_portability_enumeration and VK_KHR_portability_subset when available.
   * FslBuild: Objective-C++ (.mm) source files are compiled on Apple, added the 'Framework' external dependency type and .dylib support.
   * FslConfigure.sh now auto detects macOS.
+* Experimental Conan recipe support: recipes can acquire their package from Conan 2 with the ConanInstall pipeline command, only supported by the CMake generator with find package enabled (see Doc/BuildingExternals.md).
 * Misc
   * The recommended platforms are now Ubuntu 26.04 and Windows 11+ (the Ubuntu CI builds use the u26_04 image).
   * Visual Studio 2026 is now the default on windows.
   * Android NDK r30 (LTS) is now the recommended NDK and is used by the CI builds.
   * Python 3.14 or better is now required.
-  * Upgraded to FslBuild 3.12.0 (fixed the Visual Studio 2026 toolset version used for the external libraries, recipe downloads now use a FslBuild user agent, unused external libraries no longer pull in their recipes, --ForAllExe keeps windows paths intact).
+  * Upgraded to FslBuild 3.13.0 (fixed the Visual Studio 2026 toolset version used for the external libraries, recipe downloads now use a FslBuild user agent, unused external libraries no longer pull in their recipes, --ForAllExe keeps windows paths intact, experimental Conan recipe support, recipe FindTargetName/FindVersion enable Find again).
   * clang-format and clang-tidy 23 are now required (all files are formatted with clang-format 23).
   * Added GitHub Actions CI: Ubuntu and Windows builds with unit tests, clang-format and clang-tidy (changed files).
   * Fixed --ExitAfterDuration never parsing the duration.

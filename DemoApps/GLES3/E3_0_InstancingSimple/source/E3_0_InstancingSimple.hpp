@@ -19,10 +19,10 @@ namespace Fsl
   {
     struct UserData
     {
-      GLuint PositionVbo;
-      GLuint ColorVbo;
-      GLuint MvpVbo;
-      GLuint IndicesIbo;
+      GLuint PositionVbo{GLES3::GLValues::InvalidHandle};
+      GLuint ColorVbo{GLES3::GLValues::InvalidHandle};
+      GLuint MvpVbo{GLES3::GLValues::InvalidHandle};
+      GLuint IndicesIbo{GLES3::GLValues::InvalidHandle};
 
       // Number of indices
       int NumIndices{0};
@@ -31,14 +31,11 @@ namespace Fsl
       GLfloat Angle[NUM_INSTANCES]{};    // NOLINT(modernize-avoid-c-arrays)
 
       UserData()
-        : PositionVbo(GLES3::GLValues::InvalidHandle)
-        , ColorVbo(GLES3::GLValues::InvalidHandle)
-        , MvpVbo(GLES3::GLValues::InvalidHandle)
-        , IndicesIbo(GLES3::GLValues::InvalidHandle)
+
       {
-        for (int i = 0; i < NUM_INSTANCES; ++i)
+        for (float& rAngle : Angle)
         {
-          Angle[i] = 0;
+          rAngle = 0;
         }
       }
     };

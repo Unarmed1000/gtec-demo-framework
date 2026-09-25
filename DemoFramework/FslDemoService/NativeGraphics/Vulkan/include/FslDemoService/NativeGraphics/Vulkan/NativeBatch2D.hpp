@@ -70,7 +70,7 @@ namespace Fsl
                     const std::shared_ptr<QuadBatch>& quadRenderer, const PxExtent2D& currentExtent);
       ~NativeBatch2D() override;
 
-      bool SYS_IsTextureCoordinateYFlipped() const final
+      [[nodiscard]] bool SYS_IsTextureCoordinateYFlipped() const final
       {
         return false;
       }
@@ -78,30 +78,30 @@ namespace Fsl
       void Begin() final
       {
         m_current = Record(m_renderSystem.lock(), m_nativeGraphicsDevice.lock());
-        return Batch2D::Begin();
+        Batch2D::Begin();
       }
 
       void Begin(const BlendState blendState) final
       {
         m_current = Record(m_renderSystem.lock(), m_nativeGraphicsDevice.lock());
-        return Batch2D::Begin(blendState);
+        Batch2D::Begin(blendState);
       }
 
       void Begin(const BlendState blendState, const bool restoreState) final
       {
         m_current = Record(m_renderSystem.lock(), m_nativeGraphicsDevice.lock());
-        return Batch2D::Begin(blendState, restoreState);
+        Batch2D::Begin(blendState, restoreState);
       }
 
       void ChangeTo(const BlendState blendState) final
       {
-        return Batch2D::ChangeTo(blendState);
+        Batch2D::ChangeTo(blendState);
       }
 
       void End() final
       {
         m_current = {};
-        return Batch2D::End();
+        Batch2D::End();
       }
 
       void SetScreenExtent(const PxExtent2D& extentPx) final
@@ -109,7 +109,7 @@ namespace Fsl
         Batch2D::SetScreenExtent(extentPx);
       }
 
-      Batch2DStats GetStats() const final
+      [[nodiscard]] Batch2DStats GetStats() const final
       {
         return Batch2D::GetStats();
       }

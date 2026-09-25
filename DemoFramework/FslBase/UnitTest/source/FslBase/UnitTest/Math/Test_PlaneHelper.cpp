@@ -45,7 +45,7 @@ namespace
 
 TEST(TestMath_PlaneHelper, PerpendicularDistance)
 {
-  Plane plane(Vector3::Up(), 1.0f);
+  const Plane plane(Vector3::Up(), 1.0f);
 
   EXPECT_EQ(0.0f, PlaneHelper::PerpendicularDistance(Vector3(0.0f, 0.0f, 0.0f), plane));
   EXPECT_EQ(0.0f, PlaneHelper::PerpendicularDistance(Vector3(1.0f, 0.0f, 0.0f), plane));

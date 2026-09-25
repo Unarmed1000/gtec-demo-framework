@@ -112,7 +112,7 @@ namespace Fsl
     void Update() final;
 
     // From IGraphicsService
-    ColorSpaceType GetColorSpaceType() const noexcept final
+    [[nodiscard]] ColorSpaceType GetColorSpaceType() const noexcept final
     {
       return m_colorSpaceType;
     }

@@ -61,12 +61,12 @@ namespace Fsl
       m_content.insert(m_content.begin(), pSrc, pSrc + texture.GetByteSize());
     }
 
-    BasicNativeTextureHandle TryGetNativeHandle() const noexcept override
+    [[nodiscard]] BasicNativeTextureHandle TryGetNativeHandle() const noexcept override
     {
       return {};
     }
 
-    NativeTextureArea CalcNativeTextureArea(const PxRectangleU32& imageRectanglePx) const override
+    [[nodiscard]] NativeTextureArea CalcNativeTextureArea(const PxRectangleU32& imageRectanglePx) const override
     {
       assert(static_cast<float>(m_extentPx.Width.Value) >= 0.0f);
       assert(static_cast<float>(m_extentPx.Height.Value) >= 0.0f);

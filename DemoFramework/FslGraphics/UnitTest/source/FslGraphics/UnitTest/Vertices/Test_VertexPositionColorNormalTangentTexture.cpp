@@ -53,7 +53,7 @@ namespace
 
 TEST(TestVertices_VertexPositionColorNormalTangentTexture, Construct_Default)
 {
-  VertexPositionColorNormalTangentTexture vertex;
+  const VertexPositionColorNormalTangentTexture vertex;
 
   EXPECT_EQ(Vector3(), vertex.Position);
   EXPECT_EQ(Vector4(), vertex.Color);

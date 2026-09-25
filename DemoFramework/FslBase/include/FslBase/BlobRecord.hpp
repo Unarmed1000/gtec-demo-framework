@@ -52,8 +52,6 @@ namespace Fsl
     }
 
     // Request that the compiler generates a copy constructor and assignment operator
-    constexpr BlobRecord(const BlobRecord&) noexcept = default;
-    constexpr BlobRecord& operator=(const BlobRecord&) noexcept = default;
   };
 }
 

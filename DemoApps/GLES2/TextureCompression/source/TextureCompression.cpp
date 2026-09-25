@@ -209,13 +209,13 @@ namespace Fsl
     {
       constexpr UI::DpLayoutSize1D ForcedSizeDp(DpValue(320));
 
-      Texture2D sourceTexture(context.GraphicsService.GetNativeGraphics(), texture, Texture2DFilterHint::Smooth);
+      const Texture2D sourceTexture(context.GraphicsService.GetNativeGraphics(), texture, Texture2DFilterHint::Smooth);
 
-      std::shared_ptr<BasicImageSprite> spriteTex =
+      const std::shared_ptr<BasicImageSprite> spriteTex =
         context.CustomSpriteResourceManager.CreateCustomTextureSprite(sourceTexture.GetNative(), BlendState::AlphaBlend);
 
 
-      auto label = std::make_shared<UI::Label>(context.WindowContext);
+      const auto label = std::make_shared<UI::Label>(context.WindowContext);
       label->SetAlignmentX(UI::ItemAlignment::Center);
       label->SetAlignmentY(UI::ItemAlignment::Far);
       label->SetContentAlignmentX(UI::ItemAlignment::Center);
@@ -223,7 +223,7 @@ namespace Fsl
       label->SetContent(caption);
       label->SetWidth(ForcedSizeDp);
 
-      auto tex = std::make_shared<UI::Image>(context.WindowContext);
+      const auto tex = std::make_shared<UI::Image>(context.WindowContext);
       tex->SetScalePolicy(UI::ItemScalePolicy::FitKeepAR);
       tex->SetContent(spriteTex);
       tex->SetAlignmentX(UI::ItemAlignment::Center);
@@ -338,7 +338,7 @@ namespace Fsl
     void CreateTextureControlsIfSupported(std::deque<std::shared_ptr<UI::BaseWindow>>& rTextures, const CreateContext& context, const IO::Path& path,
                                           const PixelFormat switchPF, const Texture& notSupportedTexture)
     {
-      auto newPath = IO::Path::Combine(TexturePath, path);
+      const auto newPath = IO::Path::Combine(TexturePath, path);
 
       // If we are loading a compressed texture the 'contentManager' wont modify it and
       // the KTX loader does not report the origin correctly and always returns 'UpperLeft',
@@ -350,7 +350,7 @@ namespace Fsl
       {
         rTextures.push_back(CreateTextureControl(context, texture, notSupportedTexture));
 
-        auto newPixelFormat = PixelFormatUtil::TryTransform(switchPF, PixelFormatFlags::NF_Srgb);
+        const auto newPixelFormat = PixelFormatUtil::TryTransform(switchPF, PixelFormatFlags::NF_Srgb);
         if (newPixelFormat != PixelFormat::Undefined)
         {
           texture.SetCompatiblePixelFormat(newPixelFormat);
@@ -380,9 +380,9 @@ namespace Fsl
   {
     // https://developer.android.com/guide/topics/graphics/opengl.html
 
-    auto compressedTextureFormats = GLUtil::GetCompressedTextureFormats();
+    const auto compressedTextureFormats = GLUtil::GetCompressedTextureFormats();
     FSLLOG3_INFO("Compressed texture formats:");
-    for (auto format : compressedTextureFormats)
+    for (const auto format : compressedTextureFormats)
     {
       FSLLOG3_INFO("- Format: 0x{:x} ({})", static_cast<GLint>(format), TextureFormatToString(format));
     }
@@ -424,7 +424,7 @@ namespace Fsl
     FSLLOG3_INFO("");
 
 
-    std::string supportETC2("0");
+    const std::string supportETC2("0");
 
     FSLLOG3_INFO("Capabilities");
     FSLLOG3_INFO("- Uncompressed SRGB: {}", textureCaps.HasUncompressedSRGB);
@@ -474,15 +474,15 @@ namespace Fsl
     // Give the UI a chance to intercept the various DemoApp events.
     RegisterExtension(m_uiExtension);
 
-    auto contentManager = GetContentManager();
-    auto graphicsService = serviceProvider.Get<IGraphicsService>();
+    const auto contentManager = GetContentManager();
+    const auto graphicsService = serviceProvider.Get<IGraphicsService>();
 
-    CreateContext createContext(*contentManager, m_uiExtension->GetCustomSpriteResourceManager(), *graphicsService, m_uiExtension->GetContext(),
-                                GetTextureCapabilities());
+    const CreateContext createContext(*contentManager, m_uiExtension->GetCustomSpriteResourceManager(), *graphicsService, m_uiExtension->GetContext(),
+                                      GetTextureCapabilities());
 
     FSLLOG3_INFO("Creating UI");
 
-    auto texDefault =
+    const auto texDefault =
       createContext.ContentManager.ReadTexture("Textures/NotSupported/NotSupported_pre.png", PixelFormat::R8G8B8A8_UNORM, BitmapOrigin::LowerLeft);
 
     std::deque<std::shared_ptr<UI::BaseWindow>> textures;
@@ -521,7 +521,7 @@ namespace Fsl
                                        texDefault);
     }
 
-    auto wrapLayout = std::make_shared<UI::WrapLayout>(createContext.WindowContext);
+    const auto wrapLayout = std::make_shared<UI::WrapLayout>(createContext.WindowContext);
     wrapLayout->SetOrientation(UI::LayoutOrientation::Horizontal);
     wrapLayout->SetSpacing(DpSize2DF::Create(4, 4));
     wrapLayout->SetAlignmentX(UI::ItemAlignment::Center);
@@ -540,7 +540,7 @@ namespace Fsl
 
     // Create a 'root' layout we use the recommended fill layout as it will utilize all available space on the screen
     // We then add the 'player' stack to it and the label
-    auto fillLayout = std::make_shared<UI::FillLayout>(createContext.WindowContext);
+    const auto fillLayout = std::make_shared<UI::FillLayout>(createContext.WindowContext);
     fillLayout->AddChild(m_scrollable);
 
     // Finally add everything to the window manager (to ensure its seen)

@@ -40,6 +40,7 @@
 #include <FslUtil/OpenGLES3/Exceptions.hpp>
 #include <FslUtil/OpenGLES3/GLCheck.hpp>
 #include <GLES3/gl3.h>
+#include <cstring>
 
 namespace Fsl
 {
@@ -95,11 +96,11 @@ namespace Fsl
   {
     // Give the UI a chance to intercept the various DemoApp events.
     RegisterExtension(m_uiExtension);
-    auto windowContext = m_uiExtension->GetContext();
-    auto uiControlFactory = UI::Theme::ThemeSelector::CreateControlFactory(*m_uiExtension);
+    const auto windowContext = m_uiExtension->GetContext();
+    const auto uiControlFactory = UI::Theme::ThemeSelector::CreateControlFactory(*m_uiExtension);
     auto& uiFactory = *uiControlFactory;
 
-    auto leftBar = std::make_shared<UI::GridLayout>(windowContext);
+    const auto leftBar = std::make_shared<UI::GridLayout>(windowContext);
     leftBar->SetAlignmentX(UI::ItemAlignment::Center);
     leftBar->SetAlignmentY(UI::ItemAlignment::Center);
     leftBar->AddColumnDefinition(UI::GridColumnDefinition(UI::GridUnitType::Auto));
@@ -114,10 +115,10 @@ namespace Fsl
     m_usingG2D->SetAlignmentX(UI::ItemAlignment::Stretch);
     leftBar->AddChild(m_usingG2D, 0, 1);
 
-    auto background = uiFactory.CreateLeftBar(leftBar);
+    const auto background = uiFactory.CreateLeftBar(leftBar);
 
     // Create the root layout and add it to the window manager
-    auto fillLayout = std::make_shared<UI::FillLayout>(windowContext);
+    const auto fillLayout = std::make_shared<UI::FillLayout>(windowContext);
     fillLayout->AddChild(background);
 
     // Register the root layout with the window manager
@@ -214,7 +215,7 @@ namespace Fsl
 
   void RenderToTexture::PrepareCubeShader()
   {
-    auto contentManager = GetContentManager();
+    const auto contentManager = GetContentManager();
     m_mainProgram.Reset(contentManager->ReadAllText("finalPass.vert"), contentManager->ReadAllText("finalPass.frag"),
                         SpanUtil::AsReadOnlySpan(MpShaderAttributeArray));
 
@@ -322,7 +323,7 @@ namespace Fsl
 
   void RenderToTexture::Prepare3DRenderPassShader()
   {
-    auto contentManager = GetContentManager();
+    const auto contentManager = GetContentManager();
     m_renderPassProgram.Reset(contentManager->ReadAllText("renderPass.vert"), contentManager->ReadAllText("renderPass.frag"),
                               SpanUtil::AsReadOnlySpan(RpShaderAttributeArray));
 

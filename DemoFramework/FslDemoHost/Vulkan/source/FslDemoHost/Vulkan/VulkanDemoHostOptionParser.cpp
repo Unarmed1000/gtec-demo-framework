@@ -104,11 +104,11 @@ namespace Fsl
     bool TryParseAsString(VkPresentModeKHR& rPresentMode, const StringViewLite& strOptArg)
     {
       // Try to see if we can find a string match
-      for (std::size_t i = 0; i < PresentModeCount; ++i)
+      for (const auto& entry : PresentModes)
       {
-        if (strOptArg == PresentModes[i].StrMode)
+        if (strOptArg == entry.StrMode)
         {
-          rPresentMode = PresentModes[i].Mode;
+          rPresentMode = entry.Mode;
           return true;
         }
       }
@@ -129,11 +129,11 @@ namespace Fsl
       {
         return false;
       }
-      for (std::size_t i = 0; i < PresentModeCount; ++i)
+      for (const auto& entry : PresentModes)
       {
-        if (value == PresentModes[i].Mode)
+        if (value == entry.Mode)
         {
-          rPresentMode = PresentModes[i].Mode;
+          rPresentMode = entry.Mode;
           return true;
         }
       }
@@ -162,8 +162,8 @@ namespace Fsl
   {
     ADemoHostOptionParser::ArgumentSetup(rOptions);
 
-    auto presentModes = GetPresentModesString();
-    std::string presentModeDesc = std::string("Override the present mode with the supplied value. Known values: ") + presentModes;
+    const auto presentModes = GetPresentModesString();
+    const std::string presentModeDesc = std::string("Override the present mode with the supplied value. Known values: ") + presentModes;
 
     rOptions.emplace_back("VkPhysicalDevice", OptionArgument::OptionRequired, CommandId::VkPhysicalDevice, "Set the physical device index.",
                           OptionGroup::Host);

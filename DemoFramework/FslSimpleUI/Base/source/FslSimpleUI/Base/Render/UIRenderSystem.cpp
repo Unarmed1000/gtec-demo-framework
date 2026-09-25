@@ -51,7 +51,7 @@ namespace Fsl::UI
 
   void UIRenderSystem::ConfigurationChanged(const BasicWindowMetrics& windowMetrics)
   {
-    return m_renderSystem->OnConfigurationChanged(windowMetrics);
+    m_renderSystem->OnConfigurationChanged(windowMetrics);
   }
 
 
@@ -67,7 +67,7 @@ namespace Fsl::UI
 
   void UIRenderSystem::ReleaseDrawCommandBuffer()
   {
-    return m_renderSystem->ReleaseDrawCommandBuffer();
+    m_renderSystem->ReleaseDrawCommandBuffer();
   }
 
   void UIRenderSystem::PreDraw()

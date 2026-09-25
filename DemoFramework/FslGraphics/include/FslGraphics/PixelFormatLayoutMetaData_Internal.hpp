@@ -88,12 +88,12 @@ namespace Fsl::PixelFormatLayoutMetaData::Internal
     {
     }
 
-    constexpr uint8_t GetChannelCount() const noexcept
+    [[nodiscard]] constexpr uint8_t GetChannelCount() const noexcept
     {
       return m_channelCount;
     }
 
-    constexpr bool HasAlphaChannel() const noexcept
+    [[nodiscard]] constexpr bool HasAlphaChannel() const noexcept
     {
       return m_hasAlphaChannel != 0u;
     }

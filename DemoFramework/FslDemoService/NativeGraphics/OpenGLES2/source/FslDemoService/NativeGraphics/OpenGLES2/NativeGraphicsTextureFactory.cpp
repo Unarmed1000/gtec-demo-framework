@@ -91,7 +91,7 @@ namespace Fsl::GLES2
       throw NotSupportedException("Dynamic textures are not supported");
     }
 
-    auto handle = m_textures.Add(NativeGraphicsTexture(texture, filterHint, textureFlags));
+    const auto handle = m_textures.Add(NativeGraphicsTexture(texture, filterHint, textureFlags));
 
     FSLLOG3_VERBOSE6("NativeGraphicsTextureFactory::CreateTexture handle: {}", handle);
     return BasicNativeTextureHandle(handle);

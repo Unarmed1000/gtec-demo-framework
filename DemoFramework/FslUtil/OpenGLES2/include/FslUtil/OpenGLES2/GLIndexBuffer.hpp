@@ -70,6 +70,9 @@ namespace Fsl::GLES2
       // NOLINTNEXTLINE(bugprone-use-after-move)
       other.m_type = 0;
     }
+    GLIndexBuffer(const GLIndexBuffer&) = delete;
+    GLIndexBuffer& operator=(const GLIndexBuffer&) = delete;
+    ~GLIndexBuffer() override = default;
 
 
     //! @brief Create a uninitialized index buffer
@@ -118,7 +121,7 @@ namespace Fsl::GLES2
     void Reset(const std::vector<uint16_t>& indices, const GLenum usage);
 
     //! @brief Get the type of the buffer content
-    GLenum GetType() const
+    [[nodiscard]] GLenum GetType() const
     {
       return m_type;
     }

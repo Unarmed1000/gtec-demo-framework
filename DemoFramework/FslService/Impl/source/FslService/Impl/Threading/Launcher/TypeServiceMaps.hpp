@@ -72,14 +72,14 @@ namespace Fsl
 
     void AddProvider(const std::type_index& serviceInterfaceType, const ServiceLaunchRecord& launchRecord)
     {
-      auto itrFind = InterfaceToService.find(serviceInterfaceType);
+      const auto itrFind = InterfaceToService.find(serviceInterfaceType);
       if (itrFind != InterfaceToService.end())
       {
         // A existing provider of the interface was found
         if (itrFind->second.LaunchType == ServiceLaunchType::MultipleProviderTag)
         {
           // A interface with multiple providers, so we just extend it
-          auto itrFindMulti = InterfaceMultipleServices.find(serviceInterfaceType);
+          const auto itrFindMulti = InterfaceMultipleServices.find(serviceInterfaceType);
           if (itrFindMulti == InterfaceMultipleServices.end() || !itrFindMulti->second)
           {
             throw std::runtime_error("Internal error, the multi provider entry was not found");
@@ -90,7 +90,7 @@ namespace Fsl
         else
         {
           // Not a multi provider, so we need to change it to one
-          auto itrFindMulti = InterfaceMultipleServices.find(serviceInterfaceType);
+          const auto itrFindMulti = InterfaceMultipleServices.find(serviceInterfaceType);
           if (itrFindMulti != InterfaceMultipleServices.end())
           {
             throw std::runtime_error("Internal error, a existing multi provider entry was found");
@@ -98,7 +98,7 @@ namespace Fsl
 
           // Create a new multi provider deque and register it, then register the existing entry and the new one in it
           // Then patch the lookup so its indicated there is multiple providers now.
-          auto newDeque = std::make_shared<std::deque<ServiceLaunchRecord>>();
+          const auto newDeque = std::make_shared<std::deque<ServiceLaunchRecord>>();
           InterfaceMultipleServices[serviceInterfaceType] = newDeque;
           newDeque->push_back(itrFind->second);
           newDeque->push_back(launchRecord);

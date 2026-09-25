@@ -51,12 +51,12 @@ namespace Fsl
     {
     }
 
-    std::shared_ptr<INativeTexture2D> GetHandle() const
+    [[nodiscard]] std::shared_ptr<INativeTexture2D> GetHandle() const
     {
       return Handle;
     }
 
-    PxSize2D GetSize() const
+    [[nodiscard]] PxSize2D GetSize() const
     {
       return Size;
     }

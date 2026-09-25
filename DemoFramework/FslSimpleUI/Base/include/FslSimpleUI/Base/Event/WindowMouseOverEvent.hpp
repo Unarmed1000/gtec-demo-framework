@@ -48,7 +48,7 @@ namespace Fsl::UI
 
     //! @brief Return the screen position in pixels.
     //! @warning This is not the window position so convert it to window coordinates before using it!!!!)
-    PxPoint2 GetScreenPosition() const noexcept
+    [[nodiscard]] PxPoint2 GetScreenPosition() const noexcept
     {
       return m_screenPositionPx;
     }

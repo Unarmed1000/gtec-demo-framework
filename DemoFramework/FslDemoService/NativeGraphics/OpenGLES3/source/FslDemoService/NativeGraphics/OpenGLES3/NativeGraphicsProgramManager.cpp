@@ -55,7 +55,7 @@ namespace Fsl::GLES3
     GLProgram CreateProgram(std::vector<GLBindAttribLocation>& rScratchpad, const NativeGraphicsShaderManager::ShaderRecord& vertShader,
                             const NativeGraphicsShaderManager::ShaderRecord& fragShader)
     {
-      ReadOnlySpan<GLBindAttribLocation> bindAttribLocationSpan =
+      const ReadOnlySpan<GLBindAttribLocation> bindAttribLocationSpan =
         ConvertBindAttribs(rScratchpad, vertShader.ShaderVertexAttributeDescriptions.AsSpan());
 
       GLProgram program(vertShader.Shader, fragShader.Shader, bindAttribLocationSpan);

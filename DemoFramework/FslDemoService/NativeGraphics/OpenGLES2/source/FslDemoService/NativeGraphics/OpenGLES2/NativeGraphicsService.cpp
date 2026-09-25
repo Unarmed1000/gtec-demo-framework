@@ -73,7 +73,7 @@ namespace Fsl::GLES2
 
   std::shared_ptr<INativeGraphicsBasic2D> NativeGraphicsService::CreateBasic2D(const PxExtent2D& extentPx)
   {
-    auto quadRenderer = std::make_shared<GLBatch2DQuadRenderer>(GenericBatch2DDefaultCapacity);
+    const auto quadRenderer = std::make_shared<GLBatch2DQuadRenderer>(GenericBatch2DDefaultCapacity);
     return std::make_shared<NativeGraphicsBasic2D>(quadRenderer, extentPx);
   }
 

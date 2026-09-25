@@ -107,7 +107,7 @@ namespace Fsl
       int32_t batchVertices = 0;
       if (m_resources.NativeBatch2D)
       {
-        Batch2DStats stats = m_resources.NativeBatch2D->GetStats();
+        const Batch2DStats stats = m_resources.NativeBatch2D->GetStats();
         batchDrawCount = UncheckedNumericCast<int32_t>(std::min(stats.Native.DrawCalls, 0x7FFFFFFFu));
         batchVertices = UncheckedNumericCast<int32_t>(std::min(stats.Native.Vertices, 0x7FFFFFFFu));
       }
@@ -321,7 +321,7 @@ namespace Fsl
 
     if (m_apiResources.NativeServiceControl)
     {
-      NativeGraphicsDeviceCreateInfo nativeCreateInfo(createInfo.MaxFramesInFlight, createInfo.pCustomCreateInfo);
+      const NativeGraphicsDeviceCreateInfo nativeCreateInfo(createInfo.MaxFramesInFlight, createInfo.pCustomCreateInfo);
       m_apiResources.NativeServiceControl->CreateDevice(nativeCreateInfo);
     }
 
@@ -370,7 +370,7 @@ namespace Fsl
 
     if (m_apiResources.NativeServiceControl)
     {
-      BasicNativeDependentCreateInfo nativeCreateInfo(createInfo.ExtentPx, createInfo.pCustomCreateInfo);
+      const BasicNativeDependentCreateInfo nativeCreateInfo(createInfo.ExtentPx, createInfo.pCustomCreateInfo);
       m_apiResources.NativeServiceControl->CreateDependentResources(nativeCreateInfo);
     }
     m_dependentResources = DeviceDependentResources(true);
@@ -403,7 +403,7 @@ namespace Fsl
   {
     if (m_apiResources.NativeServiceControl)
     {
-      BasicNativeBeginFrameInfo nativeFrameInfo(frameInfo.FrameIndex, frameInfo.pCustomInfo);
+      const BasicNativeBeginFrameInfo nativeFrameInfo(frameInfo.FrameIndex, frameInfo.pCustomInfo);
       m_apiResources.NativeServiceControl->BeginFrame(nativeFrameInfo);
     }
   }

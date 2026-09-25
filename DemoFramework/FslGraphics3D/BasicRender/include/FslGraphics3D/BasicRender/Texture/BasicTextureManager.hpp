@@ -115,6 +115,7 @@ namespace Fsl::Graphics3D
         }
         return *this;
       }
+      ~StaticRecord() = default;
 
       void Reset() noexcept
       {
@@ -176,6 +177,7 @@ namespace Fsl::Graphics3D
         }
         return *this;
       }
+      ~DynamicRecord() = default;
 
       void Reset() noexcept
       {
@@ -232,9 +234,9 @@ namespace Fsl::Graphics3D
                                                                     const TextureFlags textureFlags);
 
 
-    PxExtent2D GetTextureExtentPx(const std::shared_ptr<INativeTexture2D>& texture) const noexcept;
+    [[nodiscard]] PxExtent2D GetTextureExtentPx(const std::shared_ptr<INativeTexture2D>& texture) const noexcept;
 
-    const IBasicNativeTexture* TryGetNativeTexture(const BasicNativeTextureHandle hTexture) const noexcept;
+    [[nodiscard]] const IBasicNativeTexture* TryGetNativeTexture(const BasicNativeTextureHandle hTexture) const noexcept;
 
     //! We expect this to be called once, early in the frame
     void PreUpdate();

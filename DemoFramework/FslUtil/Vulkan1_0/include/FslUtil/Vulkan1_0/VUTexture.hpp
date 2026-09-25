@@ -71,48 +71,48 @@ namespace Fsl::Vulkan
     void Reset(VUImageMemoryView&& image, RapidVulkan::Sampler&& sampler);
 
     //! @brief Check if this object contains a valid resource
-    inline bool IsValid() const noexcept
+    [[nodiscard]] inline bool IsValid() const noexcept
     {
       return m_image.IsValid();
     }
 
-    VkDevice GetDevice() const noexcept
+    [[nodiscard]] VkDevice GetDevice() const noexcept
     {
       return m_sampler.GetDevice();
     }
 
-    VkImage GetImage() const noexcept
+    [[nodiscard]] VkImage GetImage() const noexcept
     {
       return m_image.GetImage();
     }
 
-    VkImageView GetImageView() const noexcept
+    [[nodiscard]] VkImageView GetImageView() const noexcept
     {
       return m_image.GetImageView();
     }
 
 
     //! @brief Get the Image associated with this object
-    const VUImage& Image() const noexcept
+    [[nodiscard]] const VUImage& Image() const noexcept
     {
       return m_image.Image();
     }
 
 
     //! @brief Get the ImageView associated with this object
-    const RapidVulkan::ImageView& ImageView() const noexcept
+    [[nodiscard]] const RapidVulkan::ImageView& ImageView() const noexcept
     {
       return m_image.ImageView();
     }
 
     //! @brief Get the Memory associated with this object
-    const RapidVulkan::Memory& Memory() const noexcept
+    [[nodiscard]] const RapidVulkan::Memory& Memory() const noexcept
     {
       return m_image.Memory();
     }
 
     //! @brief Get the Memory associated with this object
-    const RapidVulkan::Sampler& Sampler() const noexcept
+    [[nodiscard]] const RapidVulkan::Sampler& Sampler() const noexcept
     {
       return m_sampler;
     }
@@ -123,22 +123,22 @@ namespace Fsl::Vulkan
       return {m_sampler.Get(), m_image.ImageView().Get(), m_image.Image().GetImageLayout(), m_image.Image().GetExtent()};
     }
 
-    VkExtent3D GetExtent() const noexcept
+    [[nodiscard]] VkExtent3D GetExtent() const noexcept
     {
       return m_image.Image().GetExtent();
     }
 
-    VkExtent2D GetExtent2D() const noexcept
+    [[nodiscard]] VkExtent2D GetExtent2D() const noexcept
     {
       return m_image.Image().GetExtent2D();
     }
 
-    PxSize2D GetSize() const noexcept
+    [[nodiscard]] PxSize2D GetSize() const noexcept
     {
       return m_image.Image().GetSize();
     }
 
-    VkDescriptorImageInfo GetDescriptorImageInfo() const noexcept
+    [[nodiscard]] VkDescriptorImageInfo GetDescriptorImageInfo() const noexcept
     {
       VkDescriptorImageInfo descriptorImageInfo{};
       descriptorImageInfo.sampler = m_sampler.Get();

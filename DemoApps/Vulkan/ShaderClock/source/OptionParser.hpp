@@ -44,12 +44,12 @@ namespace Fsl
     OptionParser();
     ~OptionParser() override;
 
-    uint16_t GetIterations() const
+    [[nodiscard]] uint16_t GetIterations() const
     {
       return m_iterations;
     }
 
-    uint32_t GetHeatmapScale() const
+    [[nodiscard]] uint32_t GetHeatmapScale() const
     {
       return m_heatmapScale;
     }

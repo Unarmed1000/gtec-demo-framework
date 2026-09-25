@@ -268,8 +268,8 @@ namespace Fsl::Procedural
     const int verticesX = segmentsX + 1;
     const int verticesY = segmentsY + 1;
 
-    std::vector<BasicMesh::vertex_type> vertices(verticesX * verticesY);
-    std::vector<BasicMesh::index_type> indices(segmentsX * segmentsY * 6);
+    std::vector<BasicMesh::vertex_type> vertices(static_cast<std::size_t>(verticesX) * verticesY);
+    std::vector<BasicMesh::index_type> indices(static_cast<std::size_t>(segmentsX) * segmentsY * 6);
     GenerateVertices(vertices, dstBox, dstZ, verticesX, verticesY, textureArea);
     GenerateTriangleListIndices(indices, segmentsX, segmentsY, windingOrder);
     return {vertices, indices, PrimitiveType::TriangleList};
@@ -298,7 +298,7 @@ namespace Fsl::Procedural
     const int verticesY = segmentsY + 1;
     const int indexCount = 2 + (segmentsX * segmentsY * 2) + (verticesY - 2) * 2;
 
-    std::vector<BasicMesh::vertex_type> vertices(verticesX * verticesY);
+    std::vector<BasicMesh::vertex_type> vertices(static_cast<std::size_t>(verticesX) * verticesY);
     std::vector<BasicMesh::index_type> indices(indexCount);
 
     GenerateVertices(vertices, dstBox, dstZ, verticesX, verticesY, textureArea);

@@ -85,14 +85,14 @@ namespace Fsl
                                  const bool usePrimaryPalette, const UI::UIColorSpace colorSpace);
         ~BasicThemeControlFactory() override;
 
-        const std::shared_ptr<WindowContext>& GetContext() const final
+        [[nodiscard]] const std::shared_ptr<WindowContext>& GetContext() const final
         {
           return m_context;
         }
 
-        const IThemeResources& GetResources() const final;
-        UIColor GetThemePrimaryDarkColor() const final;
-        DpThicknessF GetDefaultMarginDp(const ElementType elementType) const final;
+        [[nodiscard]] const IThemeResources& GetResources() const final;
+        [[nodiscard]] UIColor GetThemePrimaryDarkColor() const final;
+        [[nodiscard]] DpThicknessF GetDefaultMarginDp(const ElementType elementType) const final;
 
 
         // ----- CreateScrollViewer

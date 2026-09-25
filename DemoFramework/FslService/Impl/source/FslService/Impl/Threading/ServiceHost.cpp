@@ -80,7 +80,7 @@ namespace Fsl
 
     while (!m_messageScratchpad.empty())
     {
-      auto message = m_messageScratchpad.front();
+      const auto message = m_messageScratchpad.front();
       m_messageScratchpad.pop();
 
       ProcessMessage(message);
@@ -122,7 +122,7 @@ namespace Fsl
       break;
     case BasicMessageType::ThreadShutdown:
       {
-        auto messageEx = ThreadShutdownBasicMessage::Decode(message);
+        const auto messageEx = ThreadShutdownBasicMessage::Decode(message);
         // If a exception occurred then rethrow it on this thread so we get a more controlled shutdown
         if (messageEx.Exception)
         {

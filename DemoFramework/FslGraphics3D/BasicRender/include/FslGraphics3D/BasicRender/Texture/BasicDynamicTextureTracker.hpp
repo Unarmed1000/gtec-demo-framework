@@ -72,14 +72,14 @@ namespace Fsl::Graphics3D
       m_hTexture = {};
     }
 
-    BasicNativeTextureHandle TryGetNativeHandle() const noexcept final
+    [[nodiscard]] BasicNativeTextureHandle TryGetNativeHandle() const noexcept final
     {
       BasicDynamicTextureLink* pLink = m_link.get();
       return pLink != nullptr ? pLink->TryGetNativeHandle() : BasicNativeTextureHandle();
     }
 
 
-    NativeTextureArea CalcNativeTextureArea(const PxRectangleU32& imageRectanglePx) const final
+    [[nodiscard]] NativeTextureArea CalcNativeTextureArea(const PxRectangleU32& imageRectanglePx) const final
     {
       return DoCalcNativeTextureArea(imageRectanglePx);
     }

@@ -158,8 +158,8 @@ namespace Fsl::Arguments
 
     ParseResult TryAddArgument(const Command& argument, const EncodedCommand& encodedArgument, ParseContext& rParseContext)
     {
-      auto itrFind = std::find_if(rParseContext.EncodedCommands.begin(), rParseContext.EncodedCommands.end(),
-                                  [argument](const EncodedCommand& entry) { return (entry.Type == argument.Type && entry.Id == argument.Id); });
+      const auto itrFind = std::find_if(rParseContext.EncodedCommands.begin(), rParseContext.EncodedCommands.end(),
+                                        [argument](const EncodedCommand& entry) { return (entry.Type == argument.Type && entry.Id == argument.Id); });
 
       if (itrFind != rParseContext.EncodedCommands.end())
       {
@@ -411,7 +411,8 @@ namespace Fsl::Arguments
           if (unhandledArgumentMode == UnhandledArgumentMode::NotKnown)
           {
             assert(commandIndex < 0);
-            auto itrFind = std::find_if(commands.begin(), commands.end(), [](const Command& entry) { return entry.Type == CommandType::Unhandled; });
+            const auto itrFind =
+              std::find_if(commands.begin(), commands.end(), [](const Command& entry) { return entry.Type == CommandType::Unhandled; });
             if (itrFind == commands.end())
             {
               unhandledArgumentMode = UnhandledArgumentMode::NotAllowed;
@@ -512,10 +513,10 @@ namespace Fsl::Arguments
       {
         if (command.Required)
         {
-          auto commandId = command.Id;
+          const auto commandId = command.Id;
           // Check if the required command was found
-          auto itrFind = std::find_if(encodedCommands.begin(), encodedCommands.end(),
-                                      [commandId](const EncodedCommand& entry) { return (entry.Id == commandId); });
+          const auto itrFind = std::find_if(encodedCommands.begin(), encodedCommands.end(),
+                                            [commandId](const EncodedCommand& entry) { return (entry.Id == commandId); });
           if (itrFind == encodedCommands.end())
           {
             // it was not, error

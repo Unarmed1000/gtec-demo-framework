@@ -163,7 +163,7 @@ namespace Fsl::UI
   PxSize2D Image::ArrangeOverride(const PxSize2D& finalSizePx)
   {
     m_renderSizePx = m_content.Measure(finalSizePx, m_propertyScalePolicy.Get(), m_propertyRotateImageCW.Get());
-    auto spaceLeftPx = finalSizePx - m_renderSizePx;
+    const auto spaceLeftPx = finalSizePx - m_renderSizePx;
     const PxValue offsetXPx = UI::ItemAlignmentUtil::CalcAlignmentPx(m_propertyContentAlignmentX.Get(), spaceLeftPx.X);
     const PxValue offsetYPx = UI::ItemAlignmentUtil::CalcAlignmentPx(m_propertyContentAlignmentY.Get(), spaceLeftPx.Y);
     m_renderOffsetPxf = TypeConverter::To<PxVector2>(PxPoint2(offsetXPx, offsetYPx));
@@ -173,7 +173,7 @@ namespace Fsl::UI
 
   PxSize2D Image::MeasureOverride(const PxAvailableSize& /*availableSizePx*/)
   {
-    PxSize2D desiredSizePx = m_content.Measure();
+    const PxSize2D desiredSizePx = m_content.Measure();
     return !m_propertyRotateImageCW.Get() ? desiredSizePx : PxSize2D::Flip(desiredSizePx);
   }
 
@@ -181,7 +181,7 @@ namespace Fsl::UI
   DataBinding::DataBindingInstanceHandle Image::TryGetPropertyHandleNow(const DataBinding::DependencyPropertyDefinition& sourceDef)
   {
     using namespace DataBinding;
-    auto res = DependencyObjectHelper::TryGetPropertyHandle(
+    const auto res = DependencyObjectHelper::TryGetPropertyHandle(
       this, ThisDependencyObject(), sourceDef, PropLinkRefs(PropertyContentColor, m_propertyContentColor.ExternalColor),
       PropLinkRefs(PropertyScalePolicy, m_propertyScalePolicy), PropLinkRefs(PropertyRotateImageCW, m_propertyRotateImageCW),
       PropLinkRefs(PropertyAlignmentX, m_propertyContentAlignmentX), PropLinkRefs(PropertyAlignmentY, m_propertyContentAlignmentY));
@@ -193,7 +193,7 @@ namespace Fsl::UI
                                                                 const DataBinding::Binding& binding)
   {
     using namespace DataBinding;
-    auto res = DependencyObjectHelper::TrySetBinding(
+    const auto res = DependencyObjectHelper::TrySetBinding(
       this, ThisDependencyObject(), targetDef, binding, PropLinkRefs(PropertyContentColor, m_propertyContentColor.ExternalColor),
       PropLinkRefs(PropertyScalePolicy, m_propertyScalePolicy), PropLinkRefs(PropertyRotateImageCW, m_propertyRotateImageCW),
       PropLinkRefs(PropertyAlignmentX, m_propertyContentAlignmentX), PropLinkRefs(PropertyAlignmentY, m_propertyContentAlignmentY));

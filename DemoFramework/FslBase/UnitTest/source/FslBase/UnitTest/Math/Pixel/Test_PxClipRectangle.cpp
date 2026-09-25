@@ -46,7 +46,7 @@ namespace
 
 TEST(TestMathPixel_PxClipRectangle, ConstructDefault)
 {
-  PxClipRectangle value;
+  const PxClipRectangle value;
 
   // The rect stores left, top, right, bottom so they ought to be exact values
   EXPECT_EQ(0, value.RawLeft());
@@ -68,11 +68,11 @@ TEST(TestMathPixel_PxClipRectangle, ConstructDefault)
 
 TEST(TestMathPixel_PxClipRectangle, Construct1)
 {
-  PxValue offsetX(1);
-  PxValue offsetY(2);
-  PxSize1D width = PxSize1D::Create(10);
-  PxSize1D height = PxSize1D::Create(20);
-  PxClipRectangle value(offsetX, offsetY, width, height);
+  const PxValue offsetX(1);
+  const PxValue offsetY(2);
+  const PxSize1D width = PxSize1D::Create(10);
+  const PxSize1D height = PxSize1D::Create(20);
+  const PxClipRectangle value(offsetX, offsetY, width, height);
 
   // The rect stores left, top, right, bottom so they ought to be exact values
   EXPECT_EQ(offsetX, value.Left());
@@ -98,11 +98,11 @@ TEST(TestMathPixel_PxClipRectangle, Construct1)
 
 TEST(TestMathPixel_PxClipRectangle, Create)
 {
-  PxValue offsetX(1);
-  PxValue offsetY(2);
-  PxSize1D width = PxSize1D::Create(10);
-  PxSize1D height = PxSize1D::Create(20);
-  PxClipRectangle value = PxClipRectangle::Create(offsetX.Value, offsetY.Value, width.RawValue(), height.RawValue());
+  const PxValue offsetX(1);
+  const PxValue offsetY(2);
+  const PxSize1D width = PxSize1D::Create(10);
+  const PxSize1D height = PxSize1D::Create(20);
+  const PxClipRectangle value = PxClipRectangle::Create(offsetX.Value, offsetY.Value, width.RawValue(), height.RawValue());
 
   // The rect stores left, top, right, bottom so they ought to be exact values
   EXPECT_EQ(offsetX, value.Left());
@@ -129,11 +129,11 @@ TEST(TestMathPixel_PxClipRectangle, Create)
 
 TEST(TestMathPixel_PxClipRectangle, FromLeftTopRightBottom)
 {
-  PxValue left(1);
-  PxValue top(2);
-  PxValue right(10);
-  PxValue bottom(20);
-  auto value = PxClipRectangle::FromLeftTopRightBottom(left, top, right, bottom);
+  const PxValue left(1);
+  const PxValue top(2);
+  const PxValue right(10);
+  const PxValue bottom(20);
+  const auto value = PxClipRectangle::FromLeftTopRightBottom(left, top, right, bottom);
 
   // The rect stores left, top, right, bottom so they ought to be exact values
   EXPECT_EQ(left, value.Left());
@@ -155,12 +155,12 @@ TEST(TestMathPixel_PxClipRectangle, FromLeftTopRightBottom)
 
 TEST(TestMathPixel_PxClipRectangle, CreateFromLeftTopRightBottom)
 {
-  PxValue left(1);
-  PxValue top(2);
-  PxValue right(10);
-  PxValue bottom(20);
+  const PxValue left(1);
+  const PxValue top(2);
+  const PxValue right(10);
+  const PxValue bottom(20);
 
-  auto value = PxClipRectangle::CreateFromLeftTopRightBottom(left.Value, top.Value, right.Value, bottom.Value);
+  const auto value = PxClipRectangle::CreateFromLeftTopRightBottom(left.Value, top.Value, right.Value, bottom.Value);
 
   // The rect stores left, top, right, bottom so they ought to be exact values
   EXPECT_EQ(left, value.Left());
@@ -263,7 +263,7 @@ TEST(TestMathPixel_PxClipRectangle, UncheckedFromLeftTopRightBottom)
   const auto top = PxValue::Create(2);
   const auto right = PxValue::Create(10);
   const auto bottom = PxValue::Create(20);
-  auto value = PxClipRectangle::UncheckedFromLeftTopRightBottom(left, top, right, bottom);
+  const auto value = PxClipRectangle::UncheckedFromLeftTopRightBottom(left, top, right, bottom);
 
   // The rect stores left, top, right, bottom so they ought to be exact values
   EXPECT_EQ(left, value.Left());
@@ -289,7 +289,7 @@ TEST(TestMathPixel_PxClipRectangle, UncheckedCreateFromLeftTopRightBottom)
   const auto top = PxValue::Create(2);
   const auto right = PxValue::Create(10);
   const auto bottom = PxValue::Create(20);
-  auto value = PxClipRectangle::UncheckedCreateFromLeftTopRightBottom(left.Value, top.Value, right.Value, bottom.Value);
+  const auto value = PxClipRectangle::UncheckedCreateFromLeftTopRightBottom(left.Value, top.Value, right.Value, bottom.Value);
 
   // The rect stores left, top, right, bottom so they ought to be exact values
   EXPECT_EQ(left, value.Left());
@@ -316,7 +316,7 @@ TEST(TestMathPixel_PxClipRectangle, GetSize)
   const PxValue offsetY(2);
   const PxSize1D width = PxSize1D::Create(3);
   const PxSize1D height = PxSize1D::Create(4);
-  PxClipRectangle value(offsetX, offsetY, width, height);
+  const PxClipRectangle value(offsetX, offsetY, width, height);
 
   EXPECT_EQ(width, value.GetSize().X);
   EXPECT_EQ(height, value.GetSize().Y);
@@ -328,7 +328,7 @@ TEST(TestMathPixel_PxClipRectangle, TopLeft)
   const PxValue offsetY(2);
   const PxSize1D width = PxSize1D::Create(3);
   const PxSize1D height = PxSize1D::Create(4);
-  PxClipRectangle value(offsetX, offsetY, width, height);
+  const PxClipRectangle value(offsetX, offsetY, width, height);
 
   EXPECT_EQ(offsetX, value.TopLeft().X);
   EXPECT_EQ(offsetY, value.TopLeft().Y);
@@ -340,7 +340,7 @@ TEST(TestMathPixel_PxClipRectangle, TopRight)
   const PxValue offsetY(2);
   const PxSize1D width = PxSize1D::Create(3);
   const PxSize1D height = PxSize1D::Create(4);
-  PxClipRectangle value(offsetX, offsetY, width, height);
+  const PxClipRectangle value(offsetX, offsetY, width, height);
 
   EXPECT_EQ(offsetX + width, value.TopRight().X);
   EXPECT_EQ(offsetY, value.TopRight().Y);
@@ -352,7 +352,7 @@ TEST(TestMathPixel_PxClipRectangle, BottomLeft)
   const PxValue offsetY(2);
   const PxSize1D width = PxSize1D::Create(3);
   const PxSize1D height = PxSize1D::Create(4);
-  PxClipRectangle value(offsetX, offsetY, width, height);
+  const PxClipRectangle value(offsetX, offsetY, width, height);
 
   EXPECT_EQ(offsetX, value.BottomLeft().X);
   EXPECT_EQ(offsetY + height, value.BottomLeft().Y);
@@ -364,7 +364,7 @@ TEST(TestMathPixel_PxClipRectangle, BottomRight)
   const PxValue offsetY(2);
   const PxSize1D width = PxSize1D::Create(3);
   const PxSize1D height = PxSize1D::Create(4);
-  PxClipRectangle value(offsetX, offsetY, width, height);
+  const PxClipRectangle value(offsetX, offsetY, width, height);
 
   EXPECT_EQ(offsetX + width, value.BottomRight().X);
   EXPECT_EQ(offsetY + height, value.BottomRight().Y);
@@ -376,7 +376,7 @@ TEST(TestMathPixel_PxClipRectangle, Location)
   const PxValue offsetY(2);
   const PxSize1D width = PxSize1D::Create(3);
   const PxSize1D height = PxSize1D::Create(4);
-  PxClipRectangle value(offsetX, offsetY, width, height);
+  const PxClipRectangle value(offsetX, offsetY, width, height);
 
   EXPECT_EQ(offsetX, value.Location().X);
   EXPECT_EQ(offsetY, value.Location().Y);
@@ -388,7 +388,7 @@ TEST(TestMathPixel_PxClipRectangle, Center)
   const PxValue offsetY(2);
   const PxSize1D width = PxSize1D::Create(3);
   const PxSize1D height = PxSize1D::Create(4);
-  PxClipRectangle value(offsetX, offsetY, width, height);
+  const PxClipRectangle value(offsetX, offsetY, width, height);
 
   EXPECT_EQ(offsetX.Value + (width.RawValue() / 2), value.Center().X.Value);
   EXPECT_EQ(offsetY.Value + (height.RawValue() / 2), value.Center().Y.Value);
@@ -581,7 +581,7 @@ TEST(TestMathPixel_PxClipRectangle, Contains_PxValue_PxValue)
   const PxValue offsetY(2);
   const PxSize1D width = PxSize1D::Create(3);
   const PxSize1D height = PxSize1D::Create(4);
-  PxClipRectangle value(offsetX, offsetY, width, height);
+  const PxClipRectangle value(offsetX, offsetY, width, height);
 
   EXPECT_TRUE(value.Contains(offsetX, offsetY));
   EXPECT_TRUE(value.Contains(offsetX + width - PxValue(1), offsetY));
@@ -651,7 +651,7 @@ TEST(TestMathPixel_PxClipRectangle, Intersects_BruteForce)
       const int32_t yOffset = y * 11;
       for (int32_t x = 0; x < 11; ++x)
       {
-        auto rectA = PxClipRectangle::Create(x, y, 4, 3);
+        const auto rectA = PxClipRectangle::Create(x, y, 4, 3);
         EXPECT_EQ(result[x + yOffset] != 0u, rectA.Intersects(RectB));
         EXPECT_EQ(result[x + yOffset] != 0u, RectB.Intersects(rectA));
       }
@@ -694,10 +694,10 @@ TEST(TestMathPixel_PxClipRectangle, Intersect_BruteForce)
       const int32_t yOffset = y * 11;
       for (int32_t x = 0; x < 11; ++x)
       {
-        auto rectA = PxClipRectangle::Create(x, y, 4, 3);
+        const auto rectA = PxClipRectangle::Create(x, y, 4, 3);
 
-        auto res1 = PxClipRectangle::Intersect(rectA, RectB);
-        auto res2 = PxClipRectangle::Intersect(RectB, rectA);
+        const auto res1 = PxClipRectangle::Intersect(rectA, RectB);
+        const auto res2 = PxClipRectangle::Intersect(RectB, rectA);
         EXPECT_EQ(res1, res2);
         // check for intersection
         EXPECT_EQ(result[x + yOffset] != 0u, !res1.IsEmpty());
@@ -722,10 +722,10 @@ TEST(TestMathPixel_PxClipRectangle, Union_BruteForce)
   {
     for (int32_t x = 0; x < 11; ++x)
     {
-      auto rectA = PxClipRectangle::Create(x, y, 4, 3);
+      const auto rectA = PxClipRectangle::Create(x, y, 4, 3);
 
-      auto res1 = PxClipRectangle::Union(rectA, RectB);
-      auto res2 = PxClipRectangle::Union(RectB, rectA);
+      const auto res1 = PxClipRectangle::Union(rectA, RectB);
+      const auto res2 = PxClipRectangle::Union(RectB, rectA);
       EXPECT_EQ(res1, res2);
 
       EXPECT_EQ(std::min(rectA.Left(), RectB.Left()), res1.Left());

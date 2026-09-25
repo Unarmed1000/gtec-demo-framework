@@ -50,8 +50,10 @@ namespace Fsl
 {
   class DemoAppManagerEventListener;
   class DemoAppProfilerOverlay;
+  class FramePacingOverlay;
   class IDemoAppControlEx;
   class ICpuStatsService;
+  class IFramePacingServiceControl;
   class IGraphicsServiceControl;
   class IProfilerService;
   class IProfilerServiceControl;
@@ -93,6 +95,9 @@ namespace Fsl
     };
 
     std::unique_ptr<DemoAppProfilerOverlay> m_demoAppProfilerOverlay;
+    //! Only used if FSL_FEATURE_FRAMEPACING is defined
+    std::shared_ptr<FramePacingOverlay> m_framePacingOverlay;
+    std::shared_ptr<IFramePacingServiceControl> m_framePacingServiceControl;
     std::shared_ptr<IDemoAppControlEx> m_demoAppControl;
     std::shared_ptr<IGraphicsServiceControl> m_graphicsService;
     std::shared_ptr<IProfilerServiceControl> m_profilerServiceControl;
@@ -122,14 +127,14 @@ namespace Fsl
                    const TimeSpan& forcedUpdateTime, const bool renderSystemOverlay);
     virtual ~DemoAppManager();
 
-    uint32_t GetFrameIndex() const
+    [[nodiscard]] uint32_t GetFrameIndex() const
     {
       return m_record.FrameIndex;
     }
 
     void Suspend(const bool bSuspend);
 
-    DemoState GetState() const;
+    [[nodiscard]] DemoState GetState() const;
 
     DemoAppManagerProcessResult Process(const DemoWindowMetrics& windowMetrics, const bool isConsoleBasedApp);
     AppDrawResult TryDraw();
@@ -146,8 +151,8 @@ namespace Fsl
     void ProcessDone();
 
     void RequestExit();
-    bool HasExitRequest() const;
-    bool HasRestartRequest() const;
+    [[nodiscard]] bool HasExitRequest() const;
+    [[nodiscard]] bool HasRestartRequest() const;
     int CloseApp();
 
   private:

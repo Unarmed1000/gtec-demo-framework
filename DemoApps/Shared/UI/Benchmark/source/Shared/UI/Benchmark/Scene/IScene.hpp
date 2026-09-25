@@ -53,7 +53,7 @@ namespace Fsl
   public:
     virtual ~IScene() = default;
 
-    virtual std::optional<NextSceneRecord> TryGetNextScene() const = 0;
+    [[nodiscard]] virtual std::optional<NextSceneRecord> TryGetNextScene() const = 0;
 
     virtual void OnFrameSequenceBegin() = 0;
 

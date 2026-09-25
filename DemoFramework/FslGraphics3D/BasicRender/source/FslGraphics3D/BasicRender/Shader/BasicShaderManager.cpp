@@ -151,7 +151,7 @@ namespace Fsl::Graphics3D
 
     try
     {
-      ReadOnlySpan<BasicNativeShaderCreateInfo> predefinedShaders = m_factory->GetPredefinedShaders();
+      const ReadOnlySpan<BasicNativeShaderCreateInfo> predefinedShaders = m_factory->GetPredefinedShaders();
       ValidatePredefinedShaders(predefinedShaders);
       if (predefinedShaders.size() != m_predefinedShaders.size())
       {
@@ -161,8 +161,8 @@ namespace Fsl::Graphics3D
       std::size_t predefinedShaderIndex = 0;
       for (const auto& info : predefinedShaders)
       {
-        BasicShaderCreateInfo createInfo(info.Flag, info.Shader, info.VertexAttributeDescSpan);
-        BasicShaderHandle hShader = CreateShader(createInfo);
+        const BasicShaderCreateInfo createInfo(info.Flag, info.Shader, info.VertexAttributeDescSpan);
+        const BasicShaderHandle hShader = CreateShader(createInfo);
         m_predefinedShaders[predefinedShaderIndex] = PredefinedShaderRecord(hShader);
         ++predefinedShaderIndex;
       }
@@ -191,7 +191,7 @@ namespace Fsl::Graphics3D
     assert(m_factory);
 
     const BasicNativeShaderCreateInfo nativeCreateInfo(createInfo.Flag, createInfo.Shader, createInfo.VertexAttributeDescSpan);
-    BasicNativeShaderHandle nativeHandle = m_factory->CreateShader(nativeCreateInfo);
+    const BasicNativeShaderHandle nativeHandle = m_factory->CreateShader(nativeCreateInfo);
     try
     {
       const int32_t hShader = m_records.Add(BasicShaderRecord(nativeHandle));
@@ -245,7 +245,7 @@ namespace Fsl::Graphics3D
     }
 
     // Destroy the native shader instance
-    auto nativeHandle = pRecord->NativeHandle;
+    const auto nativeHandle = pRecord->NativeHandle;
     pRecord->NativeHandle = BasicNativeShaderHandle::Invalid();
     pRecord->ReferenceCount = 0;
 

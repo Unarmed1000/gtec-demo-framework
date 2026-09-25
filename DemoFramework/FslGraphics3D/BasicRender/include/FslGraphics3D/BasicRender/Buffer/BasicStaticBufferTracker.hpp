@@ -67,17 +67,17 @@ namespace Fsl::Graphics3D
     }
 
     // IBasicStaticBuffer
-    BasicBufferType GetType() const noexcept final
+    [[nodiscard]] BasicBufferType GetType() const noexcept final
     {
       return m_type;
     }
 
-    uint32_t Capacity() const noexcept final
+    [[nodiscard]] uint32_t Capacity() const noexcept final
     {
       return m_capacity;
     }
 
-    BasicNativeBufferHandle TryGetNativeHandle() const noexcept final
+    [[nodiscard]] BasicNativeBufferHandle TryGetNativeHandle() const noexcept final
     {
       return m_nativeHandle;
     }

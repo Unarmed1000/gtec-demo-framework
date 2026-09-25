@@ -77,6 +77,9 @@ namespace Fsl::GLES2
       // NOLINTNEXTLINE(bugprone-use-after-move)
       other.m_type = 0;
     }
+    GLIndexBufferArray(const GLIndexBufferArray&) = delete;
+    GLIndexBufferArray& operator=(const GLIndexBufferArray&) = delete;
+    ~GLIndexBufferArray() override = default;
 
     //! @brief Create a uninitialized index buffer
     GLIndexBufferArray();
@@ -116,7 +119,7 @@ namespace Fsl::GLES2
     void Reset(const std::size_t arrayIndex, const std::vector<uint16_t>& indices, const GLenum usage);
 
     //! @brief Get the type of all the arrays
-    GLenum GetType() const
+    [[nodiscard]] GLenum GetType() const
     {
       return m_type;
     }

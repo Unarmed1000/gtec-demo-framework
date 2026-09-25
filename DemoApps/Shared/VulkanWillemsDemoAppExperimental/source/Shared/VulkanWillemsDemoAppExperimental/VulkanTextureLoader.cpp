@@ -86,6 +86,9 @@ namespace Fsl::Willems
         other.ImageLayout = VK_IMAGE_LAYOUT_UNDEFINED;
         other.Config = TexConfig();
       }
+      LocalTexture(const LocalTexture&) = delete;
+      LocalTexture& operator=(const LocalTexture&) = delete;
+      ~LocalTexture() = default;
 
       LocalTexture(RapidVulkan::Image&& image, RapidVulkan::Memory&& memory, const VkImageLayout& imageLayout, const TexConfig& config)
         : Image(std::move(image))
@@ -100,17 +103,13 @@ namespace Fsl::Willems
     TexConfig GetTextureConfig(const Texture& texture, const TextureType texType)
     {
       VkExtent3D texExtent = TypeConverter::UncheckedTo<VkExtent3D>(texture.GetExtent());
-      uint32_t texMipLevels = texture.GetLevels();
-      uint32_t texFaces = texture.GetFaces();
+      const uint32_t texMipLevels = texture.GetLevels();
+      uint32_t texFaces = 0;
       uint32_t texLayers = texture.GetLayers();
 
       switch (texType)
       {
       case TextureType::Tex1D:
-        texExtent.depth = 1;
-        texFaces = 1;
-        texLayers = 1;
-        break;
       case TextureType::Tex2D:
         texExtent.depth = 1;
         texFaces = 1;
@@ -127,9 +126,6 @@ namespace Fsl::Willems
         texLayers = 1;
         break;
       case TextureType::Tex1DArray:
-        texExtent.depth = 1;
-        texFaces = 1;
-        break;
       case TextureType::Tex2DArray:
         texExtent.depth = 1;
         texFaces = 1;
@@ -168,7 +164,7 @@ namespace Fsl::Willems
       bufferCreateInfo.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
       bufferCreateInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
-      Buffer stagingBuffer(device, bufferCreateInfo);
+      const Buffer stagingBuffer(device, bufferCreateInfo);
 
       // Get memory requirements for the staging buffer (alignment, memory type bits)
       VkMemoryRequirements memReqs = stagingBuffer.GetBufferMemoryRequirements();
@@ -199,7 +195,7 @@ namespace Fsl::Willems
 
 
       // Setup buffer copy regions for each mip level
-      std::vector<VkBufferImageCopy> bufferCopyRegions(texConfig.Levels * texConfig.Faces * texConfig.Layers);
+      std::vector<VkBufferImageCopy> bufferCopyRegions(static_cast<std::size_t>(texConfig.Levels) * texConfig.Faces * texConfig.Layers);
       std::size_t dstOffset = 0;
       for (uint32_t layerIndex = 0; layerIndex < texConfig.Layers; ++layerIndex)
       {
@@ -290,7 +286,7 @@ namespace Fsl::Willems
       VkFenceCreateInfo fenceCreateInfo{};
       fenceCreateInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
       fenceCreateInfo.flags = Config::FLAGS_NONE;
-      Fence copyFence(device, fenceCreateInfo);
+      const Fence copyFence(device, fenceCreateInfo);
 
       VkSubmitInfo submitInfo{};
       submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
@@ -345,7 +341,7 @@ namespace Fsl::Willems
       // Load mip map level 0 to linear tiling image
       Image texImage(device, imageCreateInfo);
       // Get memory requirements for this image like size and alignment
-      VkMemoryRequirements memReqs = texImage.GetImageMemoryRequirements();
+      const VkMemoryRequirements memReqs = texImage.GetImageMemoryRequirements();
 
       VkPhysicalDeviceMemoryProperties deviceMemoryProperties;
       vkGetPhysicalDeviceMemoryProperties(physicalDevice, &deviceMemoryProperties);
@@ -385,7 +381,7 @@ namespace Fsl::Willems
       {
         // Copy image data into memory
         Texture::ScopedDirectReadAccess directAccess(texture);
-        ReadOnlyRawTexture rawTexture = directAccess.AsRawTexture();
+        const ReadOnlyRawTexture rawTexture = directAccess.AsRawTexture();
         // Copy image data into memory
         const auto blob0 = rawTexture.GetBlob(0);
         assert(blob0.Size == memReqs.size);

@@ -103,7 +103,7 @@ namespace Fsl
     explicit BloomRender(const DemoAppConfig& config);
     ~BloomRender();
 
-    BloomConfig GetConfig() const
+    [[nodiscard]] BloomConfig GetConfig() const
     {
       return m_config;
     }

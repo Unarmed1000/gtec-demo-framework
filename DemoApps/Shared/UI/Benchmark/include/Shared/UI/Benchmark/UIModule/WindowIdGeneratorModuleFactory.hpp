@@ -38,7 +38,7 @@ namespace Fsl
   class WindowIdGeneratorModuleFactory final : public UI::IExternalModuleFactory
   {
   public:
-    UI::ExternalModuleId GetId() const final;
+    [[nodiscard]] UI::ExternalModuleId GetId() const final;
     std::shared_ptr<UI::AExternalModule> CreateModule(const UI::ExternalModuleCreateInfo& createInfo) final;
   };
 }

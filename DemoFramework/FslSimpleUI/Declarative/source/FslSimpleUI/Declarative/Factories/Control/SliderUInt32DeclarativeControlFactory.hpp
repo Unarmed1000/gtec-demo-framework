@@ -50,8 +50,8 @@ namespace Fsl::UI::Declarative
 
     std::shared_ptr<BaseWindow> Create(const DeclarativeControlFactoryCreateInfo& createInfo) final
     {
-      auto layoutOrientation = createInfo.PropertyParser.ClaimOptional<LayoutOrientationThemeProperty>(0, UI::LayoutOrientation::Horizontal);
-      auto value = createInfo.PropertyParser.ClaimOptional<ConstrainedValueThemeProperty<uint32_t>>(1, ConstrainedValue<uint32_t>(0, 0, 100));
+      const auto layoutOrientation = createInfo.PropertyParser.ClaimOptional<LayoutOrientationThemeProperty>(0, UI::LayoutOrientation::Horizontal);
+      const auto value = createInfo.PropertyParser.ClaimOptional<ConstrainedValueThemeProperty<uint32_t>>(1, ConstrainedValue<uint32_t>(0, 0, 100));
       return createInfo.ThemeControlFactory.CreateSlider(layoutOrientation, value);
     }
   };

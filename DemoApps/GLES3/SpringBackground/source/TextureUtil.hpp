@@ -42,12 +42,12 @@ namespace Fsl::TextureUtil
 {
   inline GLES3::GLBatch2D::texture_type ToNative(const IBasicRenderSystem& renderSystem, const AtlasTexture2D& tex)
   {
-    std::shared_ptr<INativeTexture2D> texNative = tex.TryGetNative();
+    const std::shared_ptr<INativeTexture2D> texNative = tex.TryGetNative();
     if (!texNative)
     {
       throw NotSupportedException("no native");
     }
-    BasicNativeTextureHandle hTexture = texNative->TryGetNativeHandle();
+    const BasicNativeTextureHandle hTexture = texNative->TryGetNativeHandle();
     if (!hTexture.IsValid())
     {
       throw NotSupportedException("There are currently no actual texture associated, call ignored");

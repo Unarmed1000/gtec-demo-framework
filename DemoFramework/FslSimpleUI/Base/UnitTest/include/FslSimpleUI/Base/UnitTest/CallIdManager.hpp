@@ -40,7 +40,7 @@ class CallIdManager
 public:
   //! @brief Get the current value
   //! @note The next claimed value will equal to the returned value + 1
-  uint32_t GetCurrentValue() const
+  [[nodiscard]] uint32_t GetCurrentValue() const
   {
     return m_value;
   }

@@ -40,7 +40,7 @@ namespace Fsl
                                                      const std::array<VertexElementUsage, 3>& shaderBindOrder)
   {
     SimpleMesh mesh;
-    auto vertices = ModelVertices::CreateTunnelVertexArray();
+    const auto vertices = ModelVertices::CreateTunnelVertexArray();
     mesh.VertexBuffer.Reset(bufferManager, ReadOnlyFlexVertexSpanUtil::AsSpan(vertices), Vulkan::VMBufferUsage::STATIC);
     Vulkan::VMVertexBufferUtil::FillVertexInputAttributeDescription(mesh.VertexAttributeDescription, shaderBindOrder, mesh.VertexBuffer);
     mesh.VertexInputBindingDescription.binding = 0;
@@ -54,7 +54,7 @@ namespace Fsl
                                                    const std::array<VertexElementUsage, 2>& shaderBindOrder)
   {
     SimpleMesh mesh;
-    auto vertices = ModelVertices::CreateQuadVertexArray();
+    const auto vertices = ModelVertices::CreateQuadVertexArray();
     mesh.VertexBuffer.Reset(bufferManager, ReadOnlyFlexVertexSpanUtil::AsSpan(vertices), Vulkan::VMBufferUsage::STATIC);
     Vulkan::VMVertexBufferUtil::FillVertexInputAttributeDescription(mesh.VertexAttributeDescription, shaderBindOrder, mesh.VertexBuffer);
     mesh.VertexInputBindingDescription.binding = 0;

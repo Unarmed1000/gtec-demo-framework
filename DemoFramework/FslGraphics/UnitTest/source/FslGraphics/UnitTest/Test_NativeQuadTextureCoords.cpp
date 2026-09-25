@@ -46,7 +46,7 @@ namespace
 
 TEST(Test_NativeQuadTextureCoords, Construct_Empty)
 {
-  NativeQuadTextureCoords area;
+  const NativeQuadTextureCoords area;
 
   EXPECT_EQ(0.0f, area.TopLeft.X);
   EXPECT_EQ(0.0f, area.TopLeft.Y);
@@ -61,7 +61,7 @@ TEST(Test_NativeQuadTextureCoords, Construct_Empty)
 
 TEST(Test_NativeQuadTextureCoords, Construct_1)
 {
-  NativeQuadTextureCoords area(1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f, 7.0f, 8.0f);
+  const NativeQuadTextureCoords area(1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f, 7.0f, 8.0f);
 
   EXPECT_EQ(1.0f, area.TopLeft.X);
   EXPECT_EQ(2.0f, area.TopLeft.Y);
@@ -76,7 +76,7 @@ TEST(Test_NativeQuadTextureCoords, Construct_1)
 
 TEST(Test_NativeQuadTextureCoords, Construct_2)
 {
-  NativeQuadTextureCoords area(Vector2(1.0f, 2.0f), Vector2(3.0f, 4.0f), Vector2(5.0f, 6.0f), Vector2(7.0f, 8.0f));
+  const NativeQuadTextureCoords area(Vector2(1.0f, 2.0f), Vector2(3.0f, 4.0f), Vector2(5.0f, 6.0f), Vector2(7.0f, 8.0f));
 
   EXPECT_EQ(1.0f, area.TopLeft.X);
   EXPECT_EQ(2.0f, area.TopLeft.Y);
@@ -90,23 +90,23 @@ TEST(Test_NativeQuadTextureCoords, Construct_2)
 
 TEST(Test_NativeQuadTextureCoords, OpEqual)
 {
-  NativeQuadTextureCoords area0(1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f, 7.0f, 8.0f);
-  NativeQuadTextureCoords area1(1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f, 7.0f, 8.0f);
+  const NativeQuadTextureCoords area0(1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f, 7.0f, 8.0f);
+  const NativeQuadTextureCoords area1(1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f, 7.0f, 8.0f);
 
   EXPECT_EQ(area0, area1);
 }
 
 TEST(Test_NativeQuadTextureCoords, OpNotEqual)
 {
-  NativeQuadTextureCoords area0(1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f, 7.0f, 8.0f);
-  NativeQuadTextureCoords areaA(9.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f, 7.0f, 8.0f);
-  NativeQuadTextureCoords areaB(1.0f, 9.0f, 3.0f, 4.0f, 5.0f, 6.0f, 7.0f, 8.0f);
-  NativeQuadTextureCoords areaC(1.0f, 2.0f, 9.0f, 4.0f, 5.0f, 6.0f, 7.0f, 8.0f);
-  NativeQuadTextureCoords areaD(1.0f, 2.0f, 3.0f, 9.0f, 5.0f, 6.0f, 7.0f, 8.0f);
-  NativeQuadTextureCoords areaE(1.0f, 2.0f, 3.0f, 4.0f, 9.0f, 6.0f, 7.0f, 8.0f);
-  NativeQuadTextureCoords areaF(1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 9.0f, 7.0f, 8.0f);
-  NativeQuadTextureCoords areaG(1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f, 9.0f, 8.0f);
-  NativeQuadTextureCoords areaH(1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f, 7.0f, 9.0f);
+  const NativeQuadTextureCoords area0(1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f, 7.0f, 8.0f);
+  const NativeQuadTextureCoords areaA(9.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f, 7.0f, 8.0f);
+  const NativeQuadTextureCoords areaB(1.0f, 9.0f, 3.0f, 4.0f, 5.0f, 6.0f, 7.0f, 8.0f);
+  const NativeQuadTextureCoords areaC(1.0f, 2.0f, 9.0f, 4.0f, 5.0f, 6.0f, 7.0f, 8.0f);
+  const NativeQuadTextureCoords areaD(1.0f, 2.0f, 3.0f, 9.0f, 5.0f, 6.0f, 7.0f, 8.0f);
+  const NativeQuadTextureCoords areaE(1.0f, 2.0f, 3.0f, 4.0f, 9.0f, 6.0f, 7.0f, 8.0f);
+  const NativeQuadTextureCoords areaF(1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 9.0f, 7.0f, 8.0f);
+  const NativeQuadTextureCoords areaG(1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f, 9.0f, 8.0f);
+  const NativeQuadTextureCoords areaH(1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f, 7.0f, 9.0f);
 
   EXPECT_NE(area0, areaA);
   EXPECT_NE(area0, areaB);

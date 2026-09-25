@@ -46,7 +46,7 @@ namespace
 
 TEST(Test_GetSet_TwoWay, SetBinding_SourceCanNotBeTargetOfOneWayBinding)
 {
-  auto dataBindingService = std::make_shared<DataBinding::DataBindingService>();
+  const auto dataBindingService = std::make_shared<DataBinding::DataBindingService>();
 
   UTDependencyObject t0(dataBindingService);
   UTDependencyObject t1(dataBindingService);
@@ -68,7 +68,7 @@ TEST(Test_GetSet_TwoWay, SetBinding_SourceCanNotBeTargetOfOneWayBinding)
 
 TEST(Test_GetSet_TwoWay, SetBinding_OneWayBindTargetCanNotBeTwoWayBindingSource)
 {
-  auto dataBindingService = std::make_shared<DataBinding::DataBindingService>();
+  const auto dataBindingService = std::make_shared<DataBinding::DataBindingService>();
 
   UTDependencyObject t0(dataBindingService);
   UTDependencyObject t1(dataBindingService);
@@ -90,7 +90,7 @@ TEST(Test_GetSet_TwoWay, SetBinding_OneWayBindTargetCanNotBeTwoWayBindingSource)
 
 TEST(Test_GetSet_TwoWay, SetBinding_DepProperty_DepProperty_ChangeFirstProperty_A)
 {
-  auto dataBindingService = std::make_shared<DataBinding::DataBindingService>();
+  const auto dataBindingService = std::make_shared<DataBinding::DataBindingService>();
 
   UTDependencyObject t0(dataBindingService);
   UTDependencyObject t1(dataBindingService);
@@ -118,7 +118,7 @@ TEST(Test_GetSet_TwoWay, SetBinding_DepProperty_DepProperty_ChangeFirstProperty_
 
 TEST(Test_GetSet_TwoWay, SetBinding_DepProperty_DepProperty_ChangeSecondProperty_A)
 {
-  auto dataBindingService = std::make_shared<DataBinding::DataBindingService>();
+  const auto dataBindingService = std::make_shared<DataBinding::DataBindingService>();
 
   UTDependencyObject t0(dataBindingService);
   UTDependencyObject t1(dataBindingService);
@@ -146,7 +146,7 @@ TEST(Test_GetSet_TwoWay, SetBinding_DepProperty_DepProperty_ChangeSecondProperty
 
 TEST(Test_GetSet_TwoWay, SetBinding_DepProperty_DepProperty_ChangeFirstProperty_B)
 {
-  auto dataBindingService = std::make_shared<DataBinding::DataBindingService>();
+  const auto dataBindingService = std::make_shared<DataBinding::DataBindingService>();
 
   UTDependencyObject t0(dataBindingService);
   UTDependencyObject t1(dataBindingService);
@@ -177,7 +177,7 @@ TEST(Test_GetSet_TwoWay, SetBinding_DepProperty_DepProperty_ChangeFirstProperty_
 
 TEST(Test_GetSet_TwoWay, SetBinding_DepProperty_DepProperty_ChangeSecondProperty_B)
 {
-  auto dataBindingService = std::make_shared<DataBinding::DataBindingService>();
+  const auto dataBindingService = std::make_shared<DataBinding::DataBindingService>();
 
   UTDependencyObject t0(dataBindingService);
   UTDependencyObject t1(dataBindingService);
@@ -207,7 +207,7 @@ TEST(Test_GetSet_TwoWay, SetBinding_DepProperty_DepProperty_ChangeSecondProperty
 
 TEST(Test_GetSet_TwoWay, SetBinding_DepProperty_DepProperty_DepProperty_ChangeFirstProperty_A)
 {
-  auto dataBindingService = std::make_shared<DataBinding::DataBindingService>();
+  const auto dataBindingService = std::make_shared<DataBinding::DataBindingService>();
 
   UTDependencyObject t0(dataBindingService);
   UTDependencyObject t1(dataBindingService);
@@ -241,7 +241,7 @@ TEST(Test_GetSet_TwoWay, SetBinding_DepProperty_DepProperty_DepProperty_ChangeFi
 
 TEST(Test_GetSet_TwoWay, SetBinding_DepProperty_DepProperty_DepProperty_ChangeSecondProperty_A)
 {
-  auto dataBindingService = std::make_shared<DataBinding::DataBindingService>();
+  const auto dataBindingService = std::make_shared<DataBinding::DataBindingService>();
 
   UTDependencyObject t0(dataBindingService);
   UTDependencyObject t1(dataBindingService);
@@ -275,7 +275,7 @@ TEST(Test_GetSet_TwoWay, SetBinding_DepProperty_DepProperty_DepProperty_ChangeSe
 
 TEST(Test_GetSet_TwoWay, SetBinding_DepProperty_DepProperty_DepProperty_ChangeThirdProperty_A)
 {
-  auto dataBindingService = std::make_shared<DataBinding::DataBindingService>();
+  const auto dataBindingService = std::make_shared<DataBinding::DataBindingService>();
 
   UTDependencyObject t0(dataBindingService);
   UTDependencyObject t1(dataBindingService);
@@ -309,7 +309,7 @@ TEST(Test_GetSet_TwoWay, SetBinding_DepProperty_DepProperty_DepProperty_ChangeTh
 
 TEST(Test_GetSet_TwoWay, SetBinding_DepProperty_DepProperty_DepProperty_ChangeFirstProperty_B)
 {
-  auto dataBindingService = std::make_shared<DataBinding::DataBindingService>();
+  const auto dataBindingService = std::make_shared<DataBinding::DataBindingService>();
 
   UTDependencyObject t0(dataBindingService);
   UTDependencyObject t1(dataBindingService);
@@ -346,7 +346,7 @@ TEST(Test_GetSet_TwoWay, SetBinding_DepProperty_DepProperty_DepProperty_ChangeFi
 
 TEST(Test_GetSet_TwoWay, SetBinding_DepProperty_DepProperty_DepProperty_ChangeSecondProperty_B)
 {
-  auto dataBindingService = std::make_shared<DataBinding::DataBindingService>();
+  const auto dataBindingService = std::make_shared<DataBinding::DataBindingService>();
 
   UTDependencyObject t0(dataBindingService);
   UTDependencyObject t1(dataBindingService);
@@ -383,7 +383,7 @@ TEST(Test_GetSet_TwoWay, SetBinding_DepProperty_DepProperty_DepProperty_ChangeSe
 
 TEST(Test_GetSet_TwoWay, SetBinding_DepProperty_DepProperty_DepProperty_ChangeThirdProperty_B)
 {
-  auto dataBindingService = std::make_shared<DataBinding::DataBindingService>();
+  const auto dataBindingService = std::make_shared<DataBinding::DataBindingService>();
 
   UTDependencyObject t0(dataBindingService);
   UTDependencyObject t1(dataBindingService);
@@ -420,7 +420,7 @@ TEST(Test_GetSet_TwoWay, SetBinding_DepProperty_DepProperty_DepProperty_ChangeTh
 
 TEST(Test_GetSet_TwoWay, ChangeSource_DepProperty_DepProperty_T1T0_T2T1_Constraints)
 {
-  auto dataBindingService = std::make_shared<DataBinding::DataBindingService>();
+  const auto dataBindingService = std::make_shared<DataBinding::DataBindingService>();
 
   UTDependencyObject t0(dataBindingService);
   UTDependencyObject t1(dataBindingService);

@@ -48,7 +48,7 @@ namespace Fsl
     }
 
     //! @brief Check if this handle is considered valid
-    constexpr bool IsValid() const
+    [[nodiscard]] constexpr bool IsValid() const
     {
       return Value >= 0;
     }

@@ -45,21 +45,22 @@ namespace Fsl
   public:
     HighResolutionTimer(const HighResolutionTimer&) = delete;
     HighResolutionTimer& operator=(const HighResolutionTimer&) = delete;
+    ~HighResolutionTimer() = default;
 
     HighResolutionTimer();
 
     //! @return Returns the current timestamp (beware this might offer a lower resolution value than using GetNativeTicks)
-    TickCount GetTimestamp() const noexcept;
+    [[nodiscard]] TickCount GetTimestamp() const noexcept;
 
     //! @return the number of ticks per second
-    uint64_t GetNativeTickFrequency() const noexcept
+    [[nodiscard]] uint64_t GetNativeTickFrequency() const noexcept
     {
       return m_nativeTicksPerSecond;
     }
 
     //! @brief Get the current number of native ticks where a tick is the smallest unit of time can be measured.
     //!        Use GetNativeTickFrequency() to convert ticks to seconds
-    uint64_t GetNativeTicks() const noexcept;
+    [[nodiscard]] uint64_t GetNativeTicks() const noexcept;
   };
 }
 

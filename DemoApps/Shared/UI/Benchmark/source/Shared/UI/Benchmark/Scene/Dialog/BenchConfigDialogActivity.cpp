@@ -69,11 +69,11 @@ namespace Fsl::UI
 
   void BenchConfigDialogActivity::RenderMethodUI::FinishAnimation()
   {
-    for (auto& rEntry : Methods)
+    for (const auto& entry : Methods)
     {
-      if (rEntry.RadioButton)
+      if (entry.RadioButton)
       {
-        rEntry.RadioButton->FinishAnimation();
+        entry.RadioButton->FinishAnimation();
       }
     }
   }
@@ -206,7 +206,7 @@ namespace Fsl::UI
                                                                             const ReadOnlySpan<RenderMethodInfo> renderMethods,
                                                                             const uint32_t activeRenderIndex, const AppBenchSettings& settings)
   {
-    auto context = uiFactory.GetContext();
+    const auto context = uiFactory.GetContext();
 
     rMainLayout.AddColumnDefinition(GridColumnDefinition(GridUnitType::Auto));
     rMainLayout.AddRowDefinition(GridRowDefinition(GridUnitType::Auto));
@@ -215,16 +215,16 @@ namespace Fsl::UI
     rMainLayout.AddRowDefinition(GridRowDefinition(GridUnitType::Auto));
     rMainLayout.AddRowDefinition(GridRowDefinition(GridUnitType::Auto));
 
-    auto caption = uiFactory.CreateLabel("Bench settings", Theme::FontType::Header);
+    const auto caption = uiFactory.CreateLabel("Bench settings", Theme::FontType::Header);
     caption->SetAlignmentX(ItemAlignment::Center);
 
 
-    auto buttonOK = uiFactory.CreateTextButton(Theme::ButtonType::Contained, "Run");
+    const auto buttonOK = uiFactory.CreateTextButton(Theme::ButtonType::Contained, "Run");
     buttonOK->SetAlignmentX(ItemAlignment::Stretch);
-    auto buttonBack = uiFactory.CreateTextButton(Theme::ButtonType::Outlined, "Back");
+    const auto buttonBack = uiFactory.CreateTextButton(Theme::ButtonType::Outlined, "Back");
     buttonBack->SetAlignmentX(ItemAlignment::Stretch);
 
-    auto buttonStack = std::make_shared<UI::UniformStackLayout>(context);
+    const auto buttonStack = std::make_shared<UI::UniformStackLayout>(context);
     buttonStack->SetOrientation(UI::LayoutOrientation::Horizontal);
     buttonStack->SetAlignmentX(UI::ItemAlignment::Center);
     buttonStack->AddChild(buttonOK);
@@ -235,7 +235,7 @@ namespace Fsl::UI
     std::shared_ptr<Switch> switchDrawCache;
     std::shared_ptr<Switch> switchOnDemandRendering;
     std::shared_ptr<Switch> switchUseSdfFonts;
-    auto content0 = std::make_shared<StackLayout>(context);
+    const auto content0 = std::make_shared<StackLayout>(context);
     {
       switchGpuTimestamps = uiFactory.CreateSwitch(TextConfig::GpuTimestamps, settings.BasicOptions.GpuTimestamps);
       switchNoOpaqueMaterials = uiFactory.CreateSwitch(TextConfig::NoOpaqueMaterials, settings.BasicOptions.NoOpaqueMaterials);
@@ -262,13 +262,13 @@ namespace Fsl::UI
     }
 
     RenderMethodUI renderMethod(renderMethods.size());
-    auto content1 = std::make_shared<StackLayout>(context);
+    const auto content1 = std::make_shared<StackLayout>(context);
     {
       content1->SetAlignmentX(ItemAlignment::Stretch);
       content1->SetAlignmentY(ItemAlignment::Stretch);
       content1->SetOrientation(LayoutOrientation::Vertical);
       content1->AddChild(uiFactory.CreateLabel(TextConfig::HeaderRenderMethod, Theme::FontType::Header));
-      auto renderMethodGroup = uiFactory.CreateRadioGroup("RenderMethod");
+      const auto renderMethodGroup = uiFactory.CreateRadioGroup("RenderMethod");
       for (std::size_t i = 0; i < renderMethods.size(); ++i)
       {
         renderMethod.Methods[i] = RenderMethodRecord(renderMethods[i].RenderMethod,
@@ -277,8 +277,8 @@ namespace Fsl::UI
       }
     }
 
-    RenderOptionControls renderOptions = RenderOptionControlsFactory::CreateRenderMethodControls(uiFactory);
-    auto content2 = std::make_shared<StackLayout>(context);
+    const RenderOptionControls renderOptions = RenderOptionControlsFactory::CreateRenderMethodControls(uiFactory);
+    const auto content2 = std::make_shared<StackLayout>(context);
     {
       content2->SetAlignmentX(ItemAlignment::Stretch);
       content2->SetAlignmentY(ItemAlignment::Stretch);
@@ -292,8 +292,8 @@ namespace Fsl::UI
       content2->AddChild(renderOptions.SwitchMeshCaching);
     }
 
-    auto sharedSizeGroup = std::make_shared<UI::LayoutSharedSizeGroup>();
-    auto contentStack = std::make_shared<ComplexStackLayout>(context);
+    const auto sharedSizeGroup = std::make_shared<UI::LayoutSharedSizeGroup>();
+    const auto contentStack = std::make_shared<ComplexStackLayout>(context);
     contentStack->SetOrientation(LayoutOrientation::Horizontal);
     contentStack->SetSpacing(DpSize1DF::Create(8));
     contentStack->AddChild(content0, UI::LayoutLength(UI::LayoutUnitType::Auto, sharedSizeGroup));

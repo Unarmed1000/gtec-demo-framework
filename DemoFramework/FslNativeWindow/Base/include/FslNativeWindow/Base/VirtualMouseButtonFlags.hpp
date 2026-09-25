@@ -54,59 +54,59 @@ namespace Fsl
     }
 
 
-    constexpr bool IsEnabled(const VirtualMouseButton flags) const noexcept
+    [[nodiscard]] constexpr bool IsEnabled(const VirtualMouseButton flags) const noexcept
     {
       return (Flags & static_cast<uint32_t>(flags)) != 0;
     }
 
-    constexpr bool IsLeftButtonPressed() const noexcept
+    [[nodiscard]] constexpr bool IsLeftButtonPressed() const noexcept
     {
       return IsEnabled(VirtualMouseButton::Left);
     }
 
 
-    constexpr bool IsMiddleButtonPressed() const noexcept
+    [[nodiscard]] constexpr bool IsMiddleButtonPressed() const noexcept
     {
       return IsEnabled(VirtualMouseButton::Middle);
     }
 
 
-    constexpr bool IsRightButtonPressed() const noexcept
+    [[nodiscard]] constexpr bool IsRightButtonPressed() const noexcept
     {
       return IsEnabled(VirtualMouseButton::Right);
     }
 
 
-    constexpr bool IsXButton1Pressed() const noexcept
+    [[nodiscard]] constexpr bool IsXButton1Pressed() const noexcept
     {
       return IsEnabled(VirtualMouseButton::X1);
     }
 
 
-    constexpr bool IsXButton2Pressed() const noexcept
+    [[nodiscard]] constexpr bool IsXButton2Pressed() const noexcept
     {
       return IsEnabled(VirtualMouseButton::X2);
     }
 
 
-    constexpr bool IsXButton3Pressed() const noexcept
+    [[nodiscard]] constexpr bool IsXButton3Pressed() const noexcept
     {
       return IsEnabled(VirtualMouseButton::X3);
     }
 
 
-    constexpr bool IsXButton4Pressed() const noexcept
+    [[nodiscard]] constexpr bool IsXButton4Pressed() const noexcept
     {
       return IsEnabled(VirtualMouseButton::X4);
     }
 
 
-    constexpr bool IsXButton5Pressed() const noexcept
+    [[nodiscard]] constexpr bool IsXButton5Pressed() const noexcept
     {
       return IsEnabled(VirtualMouseButton::X5);
     }
 
-    constexpr bool IsUndefined() const noexcept
+    [[nodiscard]] constexpr bool IsUndefined() const noexcept
     {
       return IsEnabled(VirtualMouseButton::Undefined);
     }

@@ -57,13 +57,13 @@ namespace Fsl
     {
     }
 
-    std::string GetKHRSurfaceExtensionName() const override
+    [[nodiscard]] std::string GetKHRSurfaceExtensionName() const override
     {
       return m_khrRSurfaceExtensionName;
     }
 
 
-    PlatformNativeDisplayType GetDisplayType() const override
+    [[nodiscard]] PlatformNativeDisplayType GetDisplayType() const override
     {
       return m_system.GetPlatformDisplay();
     }
@@ -96,7 +96,7 @@ namespace Fsl
     }
 
     //! @brief Check if the display is considered HDR compatible
-    bool IsDisplayHDRCompatible(const int32_t displayId) const override
+    [[nodiscard]] bool IsDisplayHDRCompatible(const int32_t displayId) const override
     {
       return m_system.IsDisplayHDRCompatible(displayId);
     }

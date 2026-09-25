@@ -61,7 +61,7 @@ namespace Fsl::UI
     bool Set(const UIColorConverter converter, DataBinding::ScopedDependencyObject& rDependencyObject, const UIColor value,
              const DataBinding::PropertyChangeReason changeReason = DataBinding::PropertyChangeReason::Modified)
     {
-      bool result = ExternalColor.Set(rDependencyObject, value, changeReason);
+      const bool result = ExternalColor.Set(rDependencyObject, value, changeReason);
       InternalColor = converter.Convert(value);
       return result;
     }

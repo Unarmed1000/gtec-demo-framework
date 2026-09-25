@@ -50,7 +50,7 @@ namespace
 
 TEST(TestTexture_Texture, Construct_Default)
 {
-  Texture texture;
+  const Texture texture;
   EXPECT_FALSE(texture.IsValid());
   EXPECT_EQ(BitmapOrigin::Undefined, texture.GetBitmapOrigin());
   EXPECT_THROW(texture.GetExtent(0), UsageErrorException);

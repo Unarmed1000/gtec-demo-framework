@@ -43,7 +43,7 @@ namespace
 
 TEST(TestLog_LogTextureRectangle, Log)
 {
-  TextureRectangle value(PxRectangle::Create(1, 2, 3, 4), PxSize2D::Create(5, 6));
+  const TextureRectangle value(PxRectangle::Create(1, 2, 3, 4), PxSize2D::Create(5, 6));
 
   std::stringstream stream;
   stream << value;

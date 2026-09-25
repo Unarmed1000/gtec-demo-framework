@@ -61,18 +61,18 @@ namespace Fsl::UI
     TransitionUIRenderColor(const TimeSpan time, const TransitionType type) noexcept;
 
     //! @brief The timespan that we will wait before we start the actual animation (however the animation is considered in progresses while waiting)
-    TimeSpan GetStartDelay() const noexcept;
+    [[nodiscard]] TimeSpan GetStartDelay() const noexcept;
 
     void SetStartDelay(const TimeSpan value) noexcept;
 
     //! @brief Check if the animation is completed
-    bool IsCompleted() const noexcept
+    [[nodiscard]] bool IsCompleted() const noexcept
     {
       return m_currentTime >= m_endTime;
     }
 
     //! @brief Get the current value
-    UIRenderColor GetValue() const noexcept
+    [[nodiscard]] UIRenderColor GetValue() const noexcept
     {
       return m_val;
     }
@@ -80,7 +80,7 @@ namespace Fsl::UI
     void SetValue(const UIRenderColor value) noexcept;
 
     //! @brief Get the actual value (the value the animation will finish at)
-    UIRenderColor GetActualValue() const noexcept
+    [[nodiscard]] UIRenderColor GetActualValue() const noexcept
     {
       return m_target;
     }
@@ -90,7 +90,7 @@ namespace Fsl::UI
 
     void ForceComplete() noexcept;
 
-    TimeSpan GetTransitionTime() const noexcept;
+    [[nodiscard]] TimeSpan GetTransitionTime() const noexcept;
     void SetTransitionTime(const TimeSpan time) noexcept;
     void SetTransitionTime(const TimeSpan time, const TransitionType type) noexcept;
     TransitionState Update(const TimeSpan deltaTime) noexcept;

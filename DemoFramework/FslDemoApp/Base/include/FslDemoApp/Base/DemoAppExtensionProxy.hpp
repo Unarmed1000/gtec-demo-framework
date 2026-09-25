@@ -51,12 +51,12 @@ namespace Fsl
     {
     }
 
-    bool IsEmpty() const
+    [[nodiscard]] bool IsEmpty() const
     {
       return m_proxy.get() == nullptr;
     }
 
-    bool IsReady() const
+    [[nodiscard]] bool IsReady() const
     {
       return m_proxy.get() != nullptr;
     }

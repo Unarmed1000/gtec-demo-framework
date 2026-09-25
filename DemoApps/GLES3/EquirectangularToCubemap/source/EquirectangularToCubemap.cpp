@@ -55,15 +55,12 @@ namespace Fsl
 
     struct ProgramLocations
     {
-      GLint ViewMatrix;
-      GLint ProjMatrix;
-      GLint EquirectangularMap;
+      GLint ViewMatrix{GLES3::GLValues::InvalidLocation};
+      GLint ProjMatrix{GLES3::GLValues::InvalidLocation};
+      GLint EquirectangularMap{GLES3::GLValues::InvalidLocation};
       ProgramLocations()
-        : ViewMatrix(GLES3::GLValues::InvalidLocation)
-        , ProjMatrix(GLES3::GLValues::InvalidLocation)
-        , EquirectangularMap(GLES3::GLValues::InvalidLocation)
-      {
-      }
+
+        = default;
     };
 
     struct ProgramInfo
@@ -88,7 +85,7 @@ namespace Fsl
 
     GLES3::GLFrameBuffer CreateFrameBuffer(const PxSize2D& resolution, const GLTextureImageParameters& texImageParams)
     {
-      GLTextureParameters params(GL_LINEAR, GL_LINEAR, GL_REPEAT, GL_REPEAT);
+      const GLTextureParameters params(GL_LINEAR, GL_LINEAR, GL_REPEAT, GL_REPEAT);
       return {resolution, params, texImageParams, GL_DEPTH_COMPONENT24};
     }
 
@@ -110,7 +107,7 @@ namespace Fsl
     GLTexture GenerateCubemap(const std::shared_ptr<IContentManager>& contentManager, const IO::Path& texturePath, const PxSize2D& resolution,
                               const bool hdr)
     {
-      auto tex = contentManager->ReadTexture(texturePath);
+      const auto tex = contentManager->ReadTexture(texturePath);
       GLTextureImageParameters texImageParams;
       GLTextureParameters texParams;
       if (hdr)
@@ -124,9 +121,9 @@ namespace Fsl
         texParams = GLTextureParameters(GL_LINEAR, GL_LINEAR, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE);
       }
 
-      GLTexture texture(tex, texParams);
-      auto programInfo = CreateShader(contentManager);
-      auto framebuffer = CreateFrameBuffer(resolution, texImageParams);
+      const GLTexture texture(tex, texParams);
+      const auto programInfo = CreateShader(contentManager);
+      const auto framebuffer = CreateFrameBuffer(resolution, texImageParams);
       auto viewpoints = GenerateCubemapViewpoints();
       glm::mat4 captureProjection = glm::perspective(glm::radians(90.0f), 1.0f, 0.1f, 10.0f);
 
@@ -213,13 +210,11 @@ namespace Fsl
       throw GraphicsException("This scene requires support for 'GL_EXT_color_buffer_float'");
     }
 
-    IO::Path texturePath(hdrEnabled ? "Textures/Equirectangular/FloralTent/floral_tent_1k.hdr"
-                                    : "Textures/Equirectangular/Stairs/equirectangular.jpg");
+    const IO::Path texturePath(hdrEnabled ? "Textures/Equirectangular/FloralTent/floral_tent_1k.hdr"
+                                          : "Textures/Equirectangular/Stairs/equirectangular.jpg");
 
     constexpr PxSize2D Resolution(PxSize2D::Create(2048, 2048));
     m_cubemapTexture = GenerateCubemap(contentManager, texturePath, Resolution, hdrEnabled);
-
-    std::string texture = "Stairs";
 
     m_skyboxProgram.Reset(contentManager->ReadAllText("skybox.vert"), contentManager->ReadAllText("skybox.frag"));
     m_skyboxMesh.Reset(m_skyboxProgram.Program);

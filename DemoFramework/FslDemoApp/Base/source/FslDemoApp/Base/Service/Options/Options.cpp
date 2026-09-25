@@ -43,7 +43,7 @@ namespace Fsl
 
   std::shared_ptr<IOptionParser> Options::GetOptionParser(const OptionParserId& optionParserId) const
   {
-    auto options = m_options.lock();
+    const auto options = m_options.lock();
     if (!options)
     {
       throw UsageErrorException("The option parser is no longer valid");
@@ -54,7 +54,7 @@ namespace Fsl
 
   std::shared_ptr<IOptionParser> Options::TryGetOptionParser(const OptionParserId& optionParserId) const
   {
-    auto options = m_options.lock();
+    const auto options = m_options.lock();
     if (!options)
     {
       throw UsageErrorException("The option parser is no longer valid");
@@ -65,7 +65,7 @@ namespace Fsl
 
   std::shared_ptr<IOptionParser> Options::GetOptionParser(const std::function<bool(const std::shared_ptr<IOptionParser>&)>& matchFunction) const
   {
-    auto options = m_options.lock();
+    const auto options = m_options.lock();
     if (!options)
     {
       throw UsageErrorException("The option parser is no longer valid");
@@ -76,7 +76,7 @@ namespace Fsl
 
   std::shared_ptr<IOptionParser> Options::TryGetOptionParser(const std::function<bool(const std::shared_ptr<IOptionParser>&)>& matchFunction) const
   {
-    auto options = m_options.lock();
+    const auto options = m_options.lock();
     if (!options)
     {
       throw UsageErrorException("The option parser is no longer valid");

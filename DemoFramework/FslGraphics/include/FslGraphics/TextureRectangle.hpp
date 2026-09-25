@@ -51,12 +51,12 @@ namespace Fsl
     {
     }
 
-    constexpr const PxRectangle& GetRectangle() const noexcept
+    [[nodiscard]] constexpr const PxRectangle& GetRectangle() const noexcept
     {
       return m_rectangle;
     }
 
-    constexpr const PxSize2D& GetTextureSize() const noexcept
+    [[nodiscard]] constexpr const PxSize2D& GetTextureSize() const noexcept
     {
       return m_textureSize;
     }

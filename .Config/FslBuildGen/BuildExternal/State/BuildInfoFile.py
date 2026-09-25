@@ -33,6 +33,7 @@
 from typing import cast
 
 from FslBuildGen import PackageListUtil
+from FslBuildGen.BuildExternal import ConanRecipeUtil
 from FslBuildGen.BuildExternal.PackageExperimentalRecipe import PackageExperimentalRecipe
 from FslBuildGen.BuildExternal.State.BuildInfoFilePackageDependency import BuildInfoFilePackageDependency
 from FslBuildGen.BuildExternal.State.JsonDictType import JsonDictType
@@ -143,6 +144,9 @@ class BuildInfoFile:
             referencedPackageNameList.sort()
 
             recipeHash = sourcePackage.SourceFileHash
+            conanProfileHash = ConanRecipeUtil.TryGetProfileHash(sourceRecipe.Pipeline, cmakeConfig)
+            if conanProfileHash is not None:
+                recipeHash = f"{recipeHash}-conan-{conanProfileHash}"
 
             jsonRootDict: JsonDictType = {}
             jsonRootDict[BuildInfoFileElements.PackageName] = sourcePackage.Name

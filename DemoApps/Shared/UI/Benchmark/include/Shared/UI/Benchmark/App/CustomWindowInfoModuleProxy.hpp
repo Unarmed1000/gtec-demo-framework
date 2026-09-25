@@ -53,22 +53,22 @@ namespace Fsl
       m_impl = std::move(impl);
     }
 
-    CustomWindowId TryGetMouseOverWindow(const PxPoint2& hitPositionPx) const final
+    [[nodiscard]] CustomWindowId TryGetMouseOverWindow(const PxPoint2& hitPositionPx) const final
     {
       return m_impl ? m_impl->TryGetMouseOverWindow(hitPositionPx) : CustomWindowId();
     }
 
-    CustomWindowId TryGetClickInputWindow(const PxPoint2& hitPositionPx) const final
+    [[nodiscard]] CustomWindowId TryGetClickInputWindow(const PxPoint2& hitPositionPx) const final
     {
       return m_impl ? m_impl->TryGetClickInputWindow(hitPositionPx) : CustomWindowId();
     }
 
-    PxRectangle GetWindowRectanglePx(const CustomWindowId windowId) const final
+    [[nodiscard]] PxRectangle GetWindowRectanglePx(const CustomWindowId windowId) const final
     {
       return m_impl ? m_impl->GetWindowRectanglePx(windowId) : PxRectangle();
     }
 
-    std::optional<PxRectangle> TryGetWindowRectanglePx(const CustomWindowId windowId) const final
+    [[nodiscard]] std::optional<PxRectangle> TryGetWindowRectanglePx(const CustomWindowId windowId) const final
     {
       return m_impl ? m_impl->TryGetWindowRectanglePx(windowId) : PxRectangle();
     }

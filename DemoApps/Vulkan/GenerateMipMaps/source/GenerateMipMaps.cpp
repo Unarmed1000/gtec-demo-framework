@@ -203,8 +203,8 @@ namespace Fsl
     {
       Vulkan::VulkanImageCreator imageCreator(device, deviceQueue.Queue, deviceQueue.QueueFamilyIndex);
 
-      Texture texture = contentManager->ReadTexture("Textures/GPUSdk/SquareLogo512x512.jpg", PixelFormat::R8G8B8A8_UNORM, BitmapOrigin::Undefined,
-                                                    PixelChannelOrder::Undefined, true);
+      const Texture texture = contentManager->ReadTexture("Textures/GPUSdk/SquareLogo512x512.jpg", PixelFormat::R8G8B8A8_UNORM,
+                                                          BitmapOrigin::Undefined, PixelChannelOrder::Undefined, true);
 
       const uint32_t numMipMapLevels = texture.GetLevels();
       const uint32_t finalMipLod = MathHelper::Clamp(minMipLod, 0u, numMipMapLevels);
@@ -298,7 +298,7 @@ namespace Fsl
 
       std::array<VkWriteDescriptorSet, 2> writeDescriptorSets{};
       // Binding 0 : Vertex shader uniform buffer
-      auto uboBufferInfo = uboBuffer.GetDescriptorBufferInfo();
+      const auto uboBufferInfo = uboBuffer.GetDescriptorBufferInfo();
       writeDescriptorSets[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
       writeDescriptorSets[0].pNext = nullptr;
       writeDescriptorSets[0].dstSet = descriptorSet;
@@ -407,7 +407,7 @@ namespace Fsl
         std::make_shared<Vulkan::VMBufferManager>(m_physicalDevice, m_device.Get(), m_deviceQueue.Queue, m_deviceQueue.QueueFamilyIndex))
 
   {
-    auto options = config.GetOptions<OptionParser>();
+    const auto options = config.GetOptions<OptionParser>();
 
     const std::shared_ptr<IContentManager> content = GetContentManager();
 
@@ -575,20 +575,20 @@ namespace Fsl
     RegisterExtension(m_uiExtension);
 
     // Next up we prepare the actual UI
-    auto context = m_uiExtension->GetContext();
-    auto uiControlFactory = UI::Theme::ThemeSelector::CreateControlFactory(*m_uiExtension);
+    const auto context = m_uiExtension->GetContext();
+    const auto uiControlFactory = UI::Theme::ThemeSelector::CreateControlFactory(*m_uiExtension);
     auto& uiFactory = *uiControlFactory;
 
-    auto labelSlider = uiFactory.CreateLabel("MipMap level: ");
+    const auto labelSlider = uiFactory.CreateLabel("MipMap level: ");
     labelSlider->SetAlignmentY(UI::ItemAlignment::Center);
 
-    auto slider = uiFactory.CreateSliderFmtValue(UI::LayoutOrientation::Horizontal,
-                                                 ConstrainedValue<uint32_t>(currentMipMapLevel, 0, (numMipMapLevels > 0 ? numMipMapLevels - 1 : 0)));
+    const auto slider = uiFactory.CreateSliderFmtValue(
+      UI::LayoutOrientation::Horizontal, ConstrainedValue<uint32_t>(currentMipMapLevel, 0, (numMipMapLevels > 0 ? numMipMapLevels - 1 : 0)));
     slider->SetAlignmentY(UI::ItemAlignment::Center);
 
-    auto btnDefault = uiFactory.CreateTextButton(UI::Theme::ButtonType::Contained, "Set defaults");
+    const auto btnDefault = uiFactory.CreateTextButton(UI::Theme::ButtonType::Contained, "Set defaults");
 
-    auto bottomGrid = std::make_shared<UI::GridLayout>(context);
+    const auto bottomGrid = std::make_shared<UI::GridLayout>(context);
     bottomGrid->SetAlignmentX(UI::ItemAlignment::Stretch);
     bottomGrid->SetAlignmentY(UI::ItemAlignment::Stretch);
     bottomGrid->AddColumnDefinition(UI::GridColumnDefinition(UI::GridUnitType::Fixed, 10));
@@ -601,7 +601,7 @@ namespace Fsl
     bottomGrid->AddChild(slider, 2, 0);
     bottomGrid->AddChild(btnDefault, 3, 0);
 
-    auto bottomBar = uiFactory.CreateBottomBar(bottomGrid);
+    const auto bottomBar = uiFactory.CreateBottomBar(bottomGrid);
 
     // Finally add everything to the window manager (to ensure its seen)
     m_uiExtension->GetWindowManager()->Add(bottomBar);
@@ -627,7 +627,7 @@ namespace Fsl
     FSL_PARAM_NOT_USED(programInfo);
     FSL_PARAM_NOT_USED(matModel);
 
-    VkDeviceSize offsets = 0;
+    const VkDeviceSize offsets = 0;
     vkCmdBindVertexBuffers(commandBuffer, VertexBufferBindId, 1, m_resources.MainVertexBufferInfo.VertexBuffer.GetBufferPointer(), &offsets);
     vkCmdDraw(commandBuffer, m_resources.MainVertexBufferInfo.VertexBuffer.GetVertexCount(), 1, 0, 0);
   }
@@ -714,7 +714,7 @@ namespace Fsl
     viewport.minDepth = 0.0f;
     viewport.maxDepth = 1.0f;
 
-    VkRect2D scissor{{0, 0}, extent};
+    const VkRect2D scissor{{0, 0}, extent};
 
     VkPipelineViewportStateCreateInfo pipelineViewportStateCreateInfo{};
     pipelineViewportStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;

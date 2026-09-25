@@ -67,60 +67,60 @@ namespace Fsl
     }
 
 
-    inline constexpr int32_t Left() const noexcept
+    [[nodiscard]] inline constexpr int32_t Left() const noexcept
     {
       return Offset.X;
     }
 
-    inline constexpr int32_t Top() const noexcept
+    [[nodiscard]] inline constexpr int32_t Top() const noexcept
     {
       return Offset.Y;
     }
 
-    inline constexpr int32_t Front() const noexcept
+    [[nodiscard]] inline constexpr int32_t Front() const noexcept
     {
       return Offset.Z;
     }
 
-    inline constexpr int32_t Right() const noexcept
+    [[nodiscard]] inline constexpr int32_t Right() const noexcept
     {
       return Offset.X + UncheckedNumericCast<int32_t>(Extent.Width);
     }
 
-    inline constexpr int32_t Bottom() const noexcept
+    [[nodiscard]] inline constexpr int32_t Bottom() const noexcept
     {
       return Offset.Y + UncheckedNumericCast<int32_t>(Extent.Height);
     }
 
-    inline constexpr int32_t Back() const noexcept
+    [[nodiscard]] inline constexpr int32_t Back() const noexcept
     {
       return Offset.Z + UncheckedNumericCast<int32_t>(Extent.Depth);
     }
 
 
     //! @brief Check if the x,y coordinate is considered to be contained within this rectangle
-    constexpr bool Contains(const int32_t x, const int32_t y, const int32_t z) const noexcept
+    [[nodiscard]] constexpr bool Contains(const int32_t x, const int32_t y, const int32_t z) const noexcept
     {
       return (x >= Left() && x < Right() && y >= Top() && y < Bottom() && z >= Front() && z < Back());
     }
 
 
     //! @brief Check if the x,y coordinate is considered to be contained within this rectangle
-    constexpr bool Contains(const Offset3D& value) const noexcept
+    [[nodiscard]] constexpr bool Contains(const Offset3D& value) const noexcept
     {
       return Contains(value.X, value.Y, value.Z);
     }
 
 
     //! @brief Check if the rectangle is considered to be contained within this rectangle
-    constexpr bool Contains(const Rectangle3D& value) const noexcept
+    [[nodiscard]] constexpr bool Contains(const Rectangle3D& value) const noexcept
     {
       return Contains(value.Offset) && Contains(value.Right(), value.Bottom(), value.Back());
     }
 
 
     //! @brief Get the center of this rect
-    constexpr Offset3D GetCenter() const noexcept
+    [[nodiscard]] constexpr Offset3D GetCenter() const noexcept
     {
       static_assert(static_cast<Extent3D::value_type>(std::numeric_limits<Offset3D::value_type>::max()) <=
                       (std::numeric_limits<Extent3D::value_type>::max() / 2),
@@ -137,14 +137,14 @@ namespace Fsl
 
     //! @brief Gets a value that indicates whether the Rectangle is empty
     //!        An empty rectangle has all its values set to 0.
-    constexpr bool IsEmpty() const noexcept
+    [[nodiscard]] constexpr bool IsEmpty() const noexcept
     {
       return (Offset.X == 0 && Offset.Y == 0 && Offset.Z == 0 && Extent.Width == 0 && Extent.Height == 0 && Extent.Depth == 0);
     }
 
 
     //! @brief Determines whether a specified Rectangle intersects with this Rectangle.
-    constexpr bool Intersects(const Rectangle3D& value) const noexcept
+    [[nodiscard]] constexpr bool Intersects(const Rectangle3D& value) const noexcept
     {
       return value.Left() < Right() && Left() < value.Right() && value.Top() < Bottom() && Top() < value.Bottom() && value.Front() < Back() &&
              Front() < value.Back();

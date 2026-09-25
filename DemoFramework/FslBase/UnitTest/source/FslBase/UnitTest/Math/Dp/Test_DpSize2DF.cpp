@@ -43,7 +43,7 @@ namespace
 
 TEST(TestMathDp_DpSize2DF, Construct_Default)
 {
-  DpSize2DF value;
+  const DpSize2DF value;
 
   EXPECT_EQ(DpSize2DF(), value);
   EXPECT_EQ(DpSize2DF::value_type::Create(0.0f), value.Width());
@@ -54,7 +54,7 @@ TEST(TestMathDp_DpSize2DF, Construct)
 {
   constexpr const DpValueF Width(3.0f);
   constexpr const DpValueF Height(2.0f);
-  DpSize2DF value(Width, Height);
+  const DpSize2DF value(Width, Height);
 
   EXPECT_EQ(Width, value.Width());
   EXPECT_EQ(Height, value.Height());
@@ -64,7 +64,7 @@ TEST(TestMathDp_DpSize2DF, Construct_NegativeWidth)
 {
   constexpr const DpValueF Width(-1);
   constexpr const DpValueF Height(2);
-  DpSize2DF value(Width, Height);
+  const DpSize2DF value(Width, Height);
 
   EXPECT_EQ(DpSize2DF::value_type::Create(0.0f), value.Width());
   EXPECT_EQ(Height, value.Height());
@@ -74,7 +74,7 @@ TEST(TestMathDp_DpSize2DF, Construct_NegativeHeight)
 {
   constexpr const DpValueF Width(3);
   constexpr const DpValueF Height(-1);
-  DpSize2DF value(Width, Height);
+  const DpSize2DF value(Width, Height);
 
   EXPECT_EQ(Width, value.Width());
   EXPECT_EQ(DpSize2DF::value_type::Create(0), value.Height());
@@ -208,7 +208,7 @@ TEST(TestMathDp_DpSize2DF, Add)
 {
   const auto val1 = DpSize2DF::Create(10, 200);
   const auto val2 = DpSize2DF::Create(5, 50);
-  DpSize2DF val3 = DpSize2DF::Add(val1, val2);
+  const DpSize2DF val3 = DpSize2DF::Add(val1, val2);
 
   EXPECT_EQ(DpSize2DF::value_type::Create(10.0f), val1.Width());
   EXPECT_EQ(DpSize2DF::value_type::Create(200.0f), val1.Height());
@@ -222,7 +222,7 @@ TEST(TestMathDp_DpSize2DF, Subtract)
 {
   const auto val1 = DpSize2DF::Create(10, 200);
   const auto val2 = DpSize2DF::Create(5, 50);
-  DpPoint2F val3 = DpSize2DF::Subtract(val1, val2);
+  const DpPoint2F val3 = DpSize2DF::Subtract(val1, val2);
 
   EXPECT_EQ(DpSize2DF::value_type::Create(10.0f), val1.Width());
   EXPECT_EQ(DpSize2DF::value_type::Create(200.0f), val1.Height());
@@ -250,7 +250,7 @@ TEST(TestMathDp_DpSize2DF, OpPlusEqual_DpSize2DF)
   const DpValueF y0(4);
   const DpValueF x1(3);
   const DpValueF y1(2);
-  DpSize2DF value0(x0, y0);
+  const DpSize2DF value0(x0, y0);
   DpPoint2F value1(x1, y1);
 
   value1 += value0;
@@ -267,7 +267,7 @@ TEST(TestMathDp_DpSize2DF, OpSubEqual_DpSize2DF)
   const DpValueF y0(4);
   const DpValueF x1(3);
   const DpValueF y1(2);
-  DpSize2DF value0(x0, y0);
+  const DpSize2DF value0(x0, y0);
   DpPoint2F value1(x1, y1);
 
   value1 -= value0;
@@ -284,7 +284,7 @@ TEST(TestMathDp_DpSize2DF, OpMulEqual_DpSize2DF)
   const DpValueF y0(4);
   const DpValueF x1(3);
   const DpValueF y1(2);
-  DpSize2DF value0(x0, y0);
+  const DpSize2DF value0(x0, y0);
   DpPoint2F value1(x1, y1);
 
   value1 *= value0;
@@ -301,10 +301,10 @@ TEST(TestMathDp_DpSize2DF, OpAdd_DpPoint2F_DpSize2DF)
   const DpValueF y0(4);
   const DpValueF x1(3);
   const DpValueF y1(2);
-  DpSize2DF value0(x0, y0);
-  DpPoint2F value1(x1, y1);
+  const DpSize2DF value0(x0, y0);
+  const DpPoint2F value1(x1, y1);
 
-  auto value3 = value1 + value0;
+  const auto value3 = value1 + value0;
 
   EXPECT_EQ(x0, value0.Width());
   EXPECT_EQ(y0, value0.Height());
@@ -320,10 +320,10 @@ TEST(TestMathDp_DpSize2DF, OpAdd_DpSize2DF_DpPoint2F)
   const DpValueF y0(4);
   const DpValueF x1(3);
   const DpValueF y1(2);
-  DpPoint2F value0(x0, y0);
-  DpSize2DF value1(x1, y1);
+  const DpPoint2F value0(x0, y0);
+  const DpSize2DF value1(x1, y1);
 
-  auto value3 = value1 + value0;
+  const auto value3 = value1 + value0;
 
   EXPECT_EQ(x0, value0.X);
   EXPECT_EQ(y0, value0.Y);
@@ -339,10 +339,10 @@ TEST(TestMathDp_DpSize2DF, OpSub_DpPoint2F_DpSize2DF)
   const DpValueF y0(4);
   const DpValueF x1(3);
   const DpValueF y1(2);
-  DpSize2DF value0(x0, y0);
-  DpPoint2F value1(x1, y1);
+  const DpSize2DF value0(x0, y0);
+  const DpPoint2F value1(x1, y1);
 
-  auto value3 = value1 - value0;
+  const auto value3 = value1 - value0;
 
   EXPECT_EQ(x0, value0.Width());
   EXPECT_EQ(y0, value0.Height());
@@ -358,10 +358,10 @@ TEST(TestMathDp_DpSize2DF, OpSub_DpSize2DF_DpPoint2F)
   const DpValueF y0(4);
   const DpValueF x1(3);
   const DpValueF y1(2);
-  DpPoint2F value0(x0, y0);
-  DpSize2DF value1(x1, y1);
+  const DpPoint2F value0(x0, y0);
+  const DpSize2DF value1(x1, y1);
 
-  auto value3 = value1 - value0;
+  const auto value3 = value1 - value0;
 
   EXPECT_EQ(x0, value0.X);
   EXPECT_EQ(y0, value0.Y);
@@ -377,10 +377,10 @@ TEST(TestMathDp_DpSize2DF, OpMul_DpPoint2F_DpSize2DF)
   const DpValueF y0(4);
   const DpValueF x1(3);
   const DpValueF y1(2);
-  DpSize2DF value0(x0, y0);
-  DpPoint2F value1(x1, y1);
+  const DpSize2DF value0(x0, y0);
+  const DpPoint2F value1(x1, y1);
 
-  auto value3 = value1 * value0;
+  const auto value3 = value1 * value0;
 
   EXPECT_EQ(x0, value0.Width());
   EXPECT_EQ(y0, value0.Height());
@@ -396,10 +396,10 @@ TEST(TestMathDp_DpSize2DF, OpMul_DpSize2DF_DpPoint2F)
   const DpValueF y0(4);
   const DpValueF x1(3);
   const DpValueF y1(2);
-  DpPoint2F value0(x0, y0);
-  DpSize2DF value1(x1, y1);
+  const DpPoint2F value0(x0, y0);
+  const DpSize2DF value1(x1, y1);
 
-  auto value3 = value1 * value0;
+  const auto value3 = value1 * value0;
 
   EXPECT_EQ(x0, value0.X);
   EXPECT_EQ(y0, value0.Y);

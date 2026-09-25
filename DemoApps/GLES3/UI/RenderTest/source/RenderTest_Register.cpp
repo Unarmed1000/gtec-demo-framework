@@ -48,7 +48,7 @@ namespace Fsl
     CustomDemoAppConfig customDemoAppConfig;
     customDemoAppConfig.RestartFlags = CustomDemoAppConfigRestartFlags::Never;
 
-    DemoAppHostConfigEGL config(g_eglConfigAttribs.data());
+    const DemoAppHostConfigEGL config(g_eglConfigAttribs.data());
 
     DemoAppRegister::GLES3::Register<RenderTest>(rSetup, "GLES3.UI.RenderTest", config, customDemoAppConfig);
   }

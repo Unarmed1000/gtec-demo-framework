@@ -84,7 +84,7 @@ namespace Fsl
 
   PxExtent2D RawTextureEx::GetExtent2D(const std::size_t level) const
   {
-    auto res = GetExtent(level);
+    const auto res = GetExtent(level);
     if (res.Depth.Value != 1u)
     {
       throw UsageErrorException("GetExtent2D called on a non 2d texture");

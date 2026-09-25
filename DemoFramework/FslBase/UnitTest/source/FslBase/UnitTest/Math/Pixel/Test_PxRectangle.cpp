@@ -46,7 +46,7 @@ namespace
 
 TEST(TestMathPixel_PxRectangle, Empty)
 {
-  PxRectangle value;
+  const PxRectangle value;
 
   EXPECT_EQ(PxRectangle(), PxRectangle::Empty());
   EXPECT_EQ(0, value.RawLeft());
@@ -65,10 +65,10 @@ TEST(TestMathPixel_PxRectangle, Empty)
 
 TEST(TestMathPixel_PxRectangle, Construct1)
 {
-  PxValue offsetX(1);
-  PxValue offsetY(2);
-  PxSize1D width = PxSize1D::Create(10);
-  PxSize1D height = PxSize1D::Create(20);
+  const PxValue offsetX(1);
+  const PxValue offsetY(2);
+  const PxSize1D width = PxSize1D::Create(10);
+  const PxSize1D height = PxSize1D::Create(20);
   const PxRectangle value(offsetX, offsetY, width, height);
 
   EXPECT_EQ(offsetX, value.Left());
@@ -87,10 +87,10 @@ TEST(TestMathPixel_PxRectangle, Construct1)
 
 TEST(TestMathPixel_PxRectangle, Create)
 {
-  PxValue offsetX(1);
-  PxValue offsetY(2);
-  PxSize1D width = PxSize1D::Create(10);
-  PxSize1D height = PxSize1D::Create(20);
+  const PxValue offsetX(1);
+  const PxValue offsetY(2);
+  const PxSize1D width = PxSize1D::Create(10);
+  const PxSize1D height = PxSize1D::Create(20);
   const PxRectangle value = PxRectangle::Create(offsetX.Value, offsetY.Value, width.RawValue(), height.RawValue());
 
   EXPECT_EQ(offsetX, value.Left());
@@ -109,11 +109,11 @@ TEST(TestMathPixel_PxRectangle, Create)
 
 TEST(TestMathPixel_PxRectangle, Construct_PxPoint_PxPoint)
 {
-  PxValue offsetX(1);
-  PxValue offsetY(2);
-  PxValue width(10);
-  PxValue height(20);
-  PxRectangle value(PxPoint2(offsetX, offsetY), PxPoint2(width, height));
+  const PxValue offsetX(1);
+  const PxValue offsetY(2);
+  const PxValue width(10);
+  const PxValue height(20);
+  const PxRectangle value(PxPoint2(offsetX, offsetY), PxPoint2(width, height));
 
   EXPECT_EQ(offsetX, value.Left());
   EXPECT_EQ(offsetY, value.Top());
@@ -131,11 +131,11 @@ TEST(TestMathPixel_PxRectangle, Construct_PxPoint_PxPoint)
 
 TEST(TestMathPixel_PxRectangle, Construct_PxPoint_PxSize2D)
 {
-  PxValue offsetX(1);
-  PxValue offsetY(2);
-  PxSize1D width = PxSize1D::Create(10);
-  PxSize1D height = PxSize1D::Create(20);
-  PxRectangle value(PxPoint2(offsetX, offsetY), PxSize2D(width, height));
+  const PxValue offsetX(1);
+  const PxValue offsetY(2);
+  const PxSize1D width = PxSize1D::Create(10);
+  const PxSize1D height = PxSize1D::Create(20);
+  const PxRectangle value(PxPoint2(offsetX, offsetY), PxSize2D(width, height));
 
   EXPECT_EQ(offsetX, value.Left());
   EXPECT_EQ(offsetY, value.Top());
@@ -157,7 +157,7 @@ TEST(TestMathPixel_PxRectangle, CreateFromLeftTopRightBottom)
   constexpr PxValue Top(2);
   constexpr PxValue Right(10);
   constexpr PxValue Bottom(20);
-  auto value = PxRectangle::CreateFromLeftTopRightBottom(Left.Value, Top.Value, Right.Value, Bottom.Value);
+  const auto value = PxRectangle::CreateFromLeftTopRightBottom(Left.Value, Top.Value, Right.Value, Bottom.Value);
 
   EXPECT_EQ(Left, value.Left());
   EXPECT_EQ(Top, value.Top());
@@ -179,7 +179,7 @@ TEST(TestMathPixel_PxRectangle, FromLeftTopRightBottom)
   constexpr PxValue Top(2);
   constexpr PxValue Right(10);
   constexpr PxValue Bottom(20);
-  auto value = PxRectangle::FromLeftTopRightBottom(Left, Top, Right, Bottom);
+  const auto value = PxRectangle::FromLeftTopRightBottom(Left, Top, Right, Bottom);
 
   EXPECT_EQ(Left, value.Left());
   EXPECT_EQ(Top, value.Top());
@@ -200,7 +200,7 @@ TEST(TestMathPixel_PxRectangle, FromLeftTopRightBottom_MaxWidth)
   constexpr PxValue Top(2);
   constexpr PxValue Right(std::numeric_limits<int32_t>::max());
   constexpr PxValue Bottom(20);
-  auto value = PxRectangle::FromLeftTopRightBottom(Left, Top, Right, Bottom);
+  const auto value = PxRectangle::FromLeftTopRightBottom(Left, Top, Right, Bottom);
 
   EXPECT_EQ(Left, value.Left());
   EXPECT_EQ(Top, value.Top());
@@ -221,7 +221,7 @@ TEST(TestMathPixel_PxRectangle, FromLeftTopRightBottom_MaxHeight)
   constexpr PxValue Top(0);
   constexpr PxValue Right(10);
   constexpr PxValue Bottom(std::numeric_limits<int32_t>::max());
-  auto value = PxRectangle::FromLeftTopRightBottom(Left, Top, Right, Bottom);
+  const auto value = PxRectangle::FromLeftTopRightBottom(Left, Top, Right, Bottom);
 
   EXPECT_EQ(Left, value.Left());
   EXPECT_EQ(Top, value.Top());
@@ -242,7 +242,7 @@ TEST(TestMathPixel_PxRectangle, UncheckedCreateFromLeftTopRightBottom)
   constexpr PxValue Top(2);
   constexpr PxValue Right(10);
   constexpr PxValue Bottom(20);
-  auto value = PxRectangle::UncheckedCreateFromLeftTopRightBottom(Left.Value, Top.Value, Right.Value, Bottom.Value);
+  const auto value = PxRectangle::UncheckedCreateFromLeftTopRightBottom(Left.Value, Top.Value, Right.Value, Bottom.Value);
 
   EXPECT_EQ(Left, value.Left());
   EXPECT_EQ(Top, value.Top());
@@ -263,7 +263,7 @@ TEST(TestMathPixel_PxRectangle, UncheckedFromLeftTopRightBottom)
   constexpr PxValue Top(2);
   constexpr PxValue Right(10);
   constexpr PxValue Bottom(20);
-  auto value = PxRectangle::UncheckedFromLeftTopRightBottom(Left, Top, Right, Bottom);
+  const auto value = PxRectangle::UncheckedFromLeftTopRightBottom(Left, Top, Right, Bottom);
 
   EXPECT_EQ(Left, value.Left());
   EXPECT_EQ(Top, value.Top());
@@ -284,7 +284,7 @@ TEST(TestMathPixel_PxRectangle, UncheckedFromLeftTopRightBottom_MaxWidth)
   constexpr PxValue Top(2);
   constexpr PxValue Right(std::numeric_limits<int32_t>::max());
   constexpr PxValue Bottom(20);
-  auto value = PxRectangle::UncheckedFromLeftTopRightBottom(Left, Top, Right, Bottom);
+  const auto value = PxRectangle::UncheckedFromLeftTopRightBottom(Left, Top, Right, Bottom);
 
   EXPECT_EQ(Left, value.Left());
   EXPECT_EQ(Top, value.Top());
@@ -305,7 +305,7 @@ TEST(TestMathPixel_PxRectangle, UncheckedFromLeftTopRightBottom_NoCheck_MaxHeigh
   constexpr PxValue Top(0);
   constexpr PxValue Right(10);
   constexpr PxValue Bottom(std::numeric_limits<int32_t>::max());
-  auto value = PxRectangle::UncheckedFromLeftTopRightBottom(Left, Top, Right, Bottom);
+  const auto value = PxRectangle::UncheckedFromLeftTopRightBottom(Left, Top, Right, Bottom);
 
   EXPECT_EQ(Left, value.Left());
   EXPECT_EQ(Top, value.Top());
@@ -395,10 +395,10 @@ TEST(TestMathPixel_PxRectangle, SetHeight_PxSize1D)
 
 TEST(TestMathPixel_PxRectangle, SetLocation_PxPoint2)
 {
-  PxValue offsetX(1);
-  PxValue offsetY(2);
-  PxSize1D width = PxSize1D::Create(10);
-  PxSize1D height = PxSize1D::Create(20);
+  const PxValue offsetX(1);
+  const PxValue offsetY(2);
+  const PxSize1D width = PxSize1D::Create(10);
+  const PxSize1D height = PxSize1D::Create(20);
   PxRectangle value(offsetX, offsetY, width, height);
 
   constexpr PxPoint2 NewLocation = PxPoint2::Create(500, 1000);
@@ -420,11 +420,11 @@ TEST(TestMathPixel_PxRectangle, SetLocation_PxPoint2)
 
 TEST(TestMathPixel_PxRectangle, GetCenter)
 {
-  PxValue offsetX(1);
-  PxValue offsetY(2);
-  PxSize1D width = PxSize1D::Create(10);
-  PxSize1D height = PxSize1D::Create(20);
-  PxRectangle value(offsetX, offsetY, width, height);
+  const PxValue offsetX(1);
+  const PxValue offsetY(2);
+  const PxSize1D width = PxSize1D::Create(10);
+  const PxSize1D height = PxSize1D::Create(20);
+  const PxRectangle value(offsetX, offsetY, width, height);
 
   EXPECT_EQ(PxPoint2::Create(offsetX.Value + (width.RawValue() / 2), offsetY.Value + (height.RawValue() / 2)), value.GetCenter());
 }

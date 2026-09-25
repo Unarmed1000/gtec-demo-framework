@@ -1,0 +1,15 @@
+/.StartProject.bat
+/.vs/
+/CMakeLists.txt
+/FslDemoService.FramePacing.Impl.VC.VC.opendb
+/FslDemoService.FramePacing.Impl.VC.db
+/FslDemoService.FramePacing.Impl.manifest
+/FslDemoService.FramePacing.Impl.opensdf
+/FslDemoService.FramePacing.Impl.sdf
+/FslDemoService.FramePacing.Impl.sln
+/FslDemoService.FramePacing.Impl.v12.sdf
+/FslDemoService.FramePacing.Impl.v12.suo
+/FslDemoService.FramePacing.Impl.vcxproj
+/FslDemoService.FramePacing.Impl.vcxproj.filters
+/FslDemoService.FramePacing.Impl.vcxproj.user
+/build/

@@ -15,6 +15,7 @@ To [main document](../../README.md)
     * [DynamicTerrainTessellation](#dynamicterraintessellation)
     * [EffectOffscreen](#effectoffscreen)
     * [FractalShader](#fractalshader)
+    * [FramePacing](#framepacing)
     * [FurShellRendering](#furshellrendering)
     * [GammaCorrection](#gammacorrection)
     * [Gears](#gears)
@@ -154,6 +155,12 @@ Can render both the julia and mandelbrot set.
 Was used to demonstrates GPU shader performance by using up to 515 instructions each fragment while generating the julia set.
 
 No texture and no overdraw, minimal bandwidth requirements.
+
+### [FramePacing](FramePacing)
+
+<a href="FramePacing/Example.jpg"><img src="FramePacing/Example.jpg" height="108px" title="Vulkan.FramePacing"></a>
+
+Shows how to control the [mb-framepacing](https://github.com/Unarmed1000/mb-framepacing) frame marker through the IFramePacingService.
 
 ### [FurShellRendering](FurShellRendering)
 

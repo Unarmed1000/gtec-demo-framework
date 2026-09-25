@@ -76,11 +76,11 @@ namespace Fsl::DataBinding
         return "AMultiConverterBinding_IncorrectType";
       }
       std::string strSourceTypes;
-      for (PropertyTypeInfo sourceType : pConverter->GetSourceTypes())
+      for (const PropertyTypeInfo sourceType : pConverter->GetSourceTypes())
       {
         if (!strSourceTypes.empty())
         {
-          strSourceTypes += ",";
+          strSourceTypes += ',';
         }
         strSourceTypes += sourceType.TypeIndex.name();
       }

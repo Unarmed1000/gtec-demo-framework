@@ -259,7 +259,7 @@ namespace Fsl
     {
       return false;
     }
-    return (m_content.compare(m_content.size() - path.m_content.size(), path.m_content.size(), path.m_content) == 0);
+    return (m_content.ends_with(path.m_content));
   }
 
   void UTF8String::Replace(const char from, const char to)

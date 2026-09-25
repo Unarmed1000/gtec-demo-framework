@@ -106,7 +106,7 @@ TEST_F(TestIoDirectory, GetFiles_TopDirectory)
   EXPECT_GE(pathDeque.size(), 1u);
 
   // Check that the entries start with the content path and that the Hello file is found
-  IO::Path slashTerminatedContentPath(contentPath.ToUTF8String() + '/');
+  const IO::Path slashTerminatedContentPath(contentPath.ToUTF8String() + '/');
   uint32_t helloCount = 0;
   for (const auto& entry : pathDeque)
   {
@@ -137,7 +137,7 @@ TEST_F(TestIoDirectory, GetFiles_AllDirectories)
   EXPECT_GE(pathDeque.size(), 2u);
 
   // Check that the entries start with the content path and that the Hello file is found
-  IO::Path slashTerminatedContentPath(contentPath.ToUTF8String() + '/');
+  const IO::Path slashTerminatedContentPath(contentPath.ToUTF8String() + '/');
   uint32_t helloCount = 0;
   uint32_t testFileCount = 0;
   for (const auto& entry : pathDeque)

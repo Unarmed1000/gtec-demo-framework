@@ -45,8 +45,8 @@ namespace Fsl
     virtual ~IOptions() = default;
 
     //! @brief
-    virtual std::shared_ptr<IOptionParser> GetOptionParser(const OptionParserId& optionParserId) const = 0;
-    virtual std::shared_ptr<IOptionParser> TryGetOptionParser(const OptionParserId& optionParserId) const = 0;
+    [[nodiscard]] virtual std::shared_ptr<IOptionParser> GetOptionParser(const OptionParserId& optionParserId) const = 0;
+    [[nodiscard]] virtual std::shared_ptr<IOptionParser> TryGetOptionParser(const OptionParserId& optionParserId) const = 0;
     virtual std::shared_ptr<IOptionParser> GetOptionParser(const std::function<bool(const std::shared_ptr<IOptionParser>&)>& matchFunction) const = 0;
     virtual std::shared_ptr<IOptionParser>
       TryGetOptionParser(const std::function<bool(const std::shared_ptr<IOptionParser>&)>& matchFunction) const = 0;

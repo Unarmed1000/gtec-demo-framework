@@ -60,14 +60,14 @@ namespace Fsl
     , m_graphics(config.DemoServiceProvider.Get<IGraphicsService>())
     , m_nativeBatch(m_graphics->GetNativeBatch2D())
   {
-    auto contentManager = config.DemoServiceProvider.Get<IContentManager>();
+    const auto contentManager = config.DemoServiceProvider.Get<IContentManager>();
 
     {    // Prepare the test graphics atlas
       BasicTextureAtlas textureAtlas;
       contentManager->Read(textureAtlas, "TestGraphics/TestGraphicsAtlas.bta");
       m_testAtlas.AtlasMap = TextureAtlasMap(textureAtlas);
 
-      auto texture = contentManager->ReadTexture("TestGraphics/TestGraphicsAtlas.png", PixelFormat::R8G8B8A8_UNORM);
+      const auto texture = contentManager->ReadTexture("TestGraphics/TestGraphicsAtlas.png", PixelFormat::R8G8B8A8_UNORM);
       m_testAtlas.Texture.Reset(m_graphics->GetNativeGraphics(), texture, Texture2DFilterHint::Smooth);
 
       // Extract the atlas textures we need
@@ -86,11 +86,11 @@ namespace Fsl
 
 
     {    // Build a simple UI
-      auto windowContext = m_uiExtension->GetContext();
-      auto uiControlFactory = UI::Theme::ThemeSelector::CreateControlFactory(*m_uiExtension);
+      const auto windowContext = m_uiExtension->GetContext();
+      const auto uiControlFactory = UI::Theme::ThemeSelector::CreateControlFactory(*m_uiExtension);
       auto& uiFactory = *uiControlFactory;
 
-      auto labelSlider = uiFactory.CreateLabel("Pixel offset:");
+      const auto labelSlider = uiFactory.CreateLabel("Pixel offset:");
       labelSlider->SetAlignmentY(UI::ItemAlignment::Center);
 
       m_slider = uiFactory.CreateSliderFmtValue(UI::LayoutOrientation::Horizontal, ConstrainedValue<float>(LocalConfig::DefaultOffset, 0.0f, 1.0f));
@@ -98,7 +98,7 @@ namespace Fsl
 
       m_btnDefault = uiFactory.CreateTextButton(UI::Theme::ButtonType::Contained, "Set defaults");
 
-      auto bottomGrid = std::make_shared<UI::GridLayout>(windowContext);
+      const auto bottomGrid = std::make_shared<UI::GridLayout>(windowContext);
       bottomGrid->SetAlignmentX(UI::ItemAlignment::Stretch);
       bottomGrid->SetAlignmentY(UI::ItemAlignment::Stretch);
       bottomGrid->AddColumnDefinition(UI::GridColumnDefinition(UI::GridUnitType::Fixed, 10));
@@ -111,10 +111,10 @@ namespace Fsl
       bottomGrid->AddChild(m_slider, 2, 0);
       bottomGrid->AddChild(m_btnDefault, 3, 0);
 
-      auto background = uiFactory.CreateBottomBar(bottomGrid);
+      const auto background = uiFactory.CreateBottomBar(bottomGrid);
 
       // Create the root layout and add it to the window manager
-      auto fillLayout = std::make_shared<UI::FillLayout>(windowContext);
+      const auto fillLayout = std::make_shared<UI::FillLayout>(windowContext);
       fillLayout->AddChild(background);
 
       // Register the root layout with the window manager
@@ -190,7 +190,7 @@ namespace Fsl
     // constexpr const int GRID_X_SPACE = 20;
     // constexpr const int GRID_Y_SPACE = 20;
 
-    auto font = m_uiExtension->GetContext()->DefaultFont;
+    const auto font = m_uiExtension->GetContext()->DefaultFont;
 
     const auto texSize = srcTexture.GetSize();
 

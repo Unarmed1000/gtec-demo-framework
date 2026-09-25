@@ -47,7 +47,7 @@ namespace
 
 TEST(TestLog_Math_LogRay, Log)
 {
-  Ray value(Vector3(1.0f, 2.0f, 3.0f), Vector3(4.0f, 5.0f, 6.0f));
+  const Ray value(Vector3(1.0f, 2.0f, 3.0f), Vector3(4.0f, 5.0f, 6.0f));
 
   std::stringstream stream;
   stream << value;

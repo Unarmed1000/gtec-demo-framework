@@ -60,20 +60,21 @@ namespace Fsl::UI
     GestureDetector& operator=(GestureDetector&& other) noexcept;
     // move constructor
     GestureDetector(GestureDetector&& other) noexcept;
+    ~GestureDetector() = default;
 
     explicit GestureDetector(const GestureFlags enabledGestures, const GestureAxis axisFlags = GestureAxis::XY);
 
     void Clear();
 
     //! Check if there is a gesture available
-    bool IsGestureAvailable() const noexcept;
+    [[nodiscard]] bool IsGestureAvailable() const noexcept;
 
-    bool InMomementTransaction() const noexcept;
+    [[nodiscard]] bool InMomementTransaction() const noexcept;
 
-    GestureAxis GetGestureAxis() const noexcept;
+    [[nodiscard]] GestureAxis GetGestureAxis() const noexcept;
     void SetGestureAxis(const GestureAxis value);
 
-    bool HasVelocityEntries() const noexcept;
+    [[nodiscard]] bool HasVelocityEntries() const noexcept;
 
     bool TryReadGesture(GestureRecord& record) noexcept;
 

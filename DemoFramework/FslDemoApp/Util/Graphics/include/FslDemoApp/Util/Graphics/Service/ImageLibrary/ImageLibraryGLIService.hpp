@@ -46,7 +46,7 @@ namespace Fsl
     ~ImageLibraryGLIService() final;
 
     // From IImageLibraryService
-    std::string GetName() const final;
+    [[nodiscard]] std::string GetName() const final;
     void ExtractSupportedImageFormats(std::deque<ImageFormat>& rFormats) final;
     bool TryRead(Bitmap& rBitmap, const IO::Path& absolutePath, const PixelFormat pixelFormatHint, const BitmapOrigin originHint,
                  const PixelChannelOrder preferredChannelOrderHint) final;

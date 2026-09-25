@@ -61,11 +61,11 @@ namespace Fsl
       // information. A proper solution would require us to wrap the host inside the 'content-control'. But that requires us to hookup the 'demo
       // host extensions' and 'demo app' in a different way so we have better control of when the different function are being called. This might be
       // required for run the 'second UI instance' in 'benchmark' mode anyway.
-      std::shared_ptr<UI::BaseWindow> windowEx = m_contentWindow.lock();
+      const std::shared_ptr<UI::BaseWindow> windowEx = m_contentWindow.lock();
       const UI::BaseWindow* const pContentWindow = windowEx.get();
       if (pContentWindow != nullptr)
       {
-        std::shared_ptr<TestAppHost> appHost = m_appHost.lock();
+        const std::shared_ptr<TestAppHost> appHost = m_appHost.lock();
         if (appHost)
         {
           const auto offsetPx = pContentWindow->PointTo(nullptr, PxPoint2());

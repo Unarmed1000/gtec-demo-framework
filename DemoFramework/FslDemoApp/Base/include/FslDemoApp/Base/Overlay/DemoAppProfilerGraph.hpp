@@ -54,7 +54,7 @@ namespace Fsl
   public:
     DemoAppProfilerGraph(const int64_t minValue, const int64_t maxValue, const Point2& size);
 
-    Point2 GetSize() const;
+    [[nodiscard]] Point2 GetSize() const;
     void Add(const int64_t latestValue);
     void Draw(const std::shared_ptr<IBasic2D>& basic2D, const Vector2& dstPosition, const Color& color);
   };

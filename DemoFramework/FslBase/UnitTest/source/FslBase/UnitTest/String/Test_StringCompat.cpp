@@ -52,7 +52,7 @@ TEST(TestString_StringCompat, BasicString)
 {
   std::array<char, 10> dst{1};
 
-  auto res = StringCompat::sprintf_s(dst.data(), dst.size(), "%s", "hello");
+  const auto res = StringCompat::sprintf_s(dst.data(), dst.size(), "%s", "hello");
   EXPECT_EQ(5, res);
   EXPECT_EQ('h', dst[0]);
   EXPECT_EQ('e', dst[1]);

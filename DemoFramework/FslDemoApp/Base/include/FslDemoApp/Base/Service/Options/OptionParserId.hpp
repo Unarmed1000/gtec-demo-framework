@@ -46,7 +46,7 @@ namespace Fsl
     explicit OptionParserId(const std::type_index& typeInfo);
 
     //! @brief  Get the service id value.
-    std::type_index Get() const;
+    [[nodiscard]] std::type_index Get() const;
 
     //! @brief  Return a invalid service id
     // static OptionParserId Invalid();

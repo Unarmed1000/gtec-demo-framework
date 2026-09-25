@@ -53,7 +53,7 @@ namespace Fsl
       TextureAtlasMap AtlasMap;
       Texture2D Texture;
 
-      AtlasTexture2D GetAtlasTexture(const IO::Path& path) const
+      [[nodiscard]] AtlasTexture2D GetAtlasTexture(const IO::Path& path) const
       {
         return {Texture, AtlasMap.GetAtlasTextureInfo(path)};
       }
@@ -92,7 +92,7 @@ namespace Fsl
     explicit Shared(const DemoAppConfig& config);
     ~Shared() override;
 
-    std::shared_ptr<UIDemoAppExtension> GetUIDemoAppExtension() const
+    [[nodiscard]] std::shared_ptr<UIDemoAppExtension> GetUIDemoAppExtension() const
     {
       return m_uiExtension;
     }

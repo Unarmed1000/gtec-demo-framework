@@ -66,7 +66,7 @@ namespace Fsl
     virtual void DrawString(const StringViewLite& strView, const Vector2& dstPosition) = 0;
 
     //! @brief Get the size of one monospaced font character
-    virtual PxSize2D FontSize() const = 0;
+    [[nodiscard]] virtual PxSize2D FontSize() const = 0;
   };
 }
 

@@ -63,12 +63,15 @@ namespace Fsl
         {
         }
 
+        ScopedDrawCommandBufferAccess(const ScopedDrawCommandBufferAccess&) = delete;
+        ScopedDrawCommandBufferAccess& operator=(const ScopedDrawCommandBufferAccess&) = delete;
+
         ~ScopedDrawCommandBufferAccess()
         {
           m_rSystem.ReleaseDrawCommandBuffer();
         }
 
-        DrawCommandBuffer& GetDrawCommandBuffer() const noexcept
+        [[nodiscard]] DrawCommandBuffer& GetDrawCommandBuffer() const noexcept
         {
           return m_rDrawCommandBuffer;
         }
@@ -78,7 +81,7 @@ namespace Fsl
       explicit UIRenderSystem(std::unique_ptr<IRenderSystem> renderSystem, const bool useYFlipTextureCoordinates);
       ~UIRenderSystem();
 
-      std::shared_ptr<IMeshManager> GetMeshManager() const;
+      [[nodiscard]] std::shared_ptr<IMeshManager> GetMeshManager() const;
 
       void ConfigurationChanged(const BasicWindowMetrics& windowMetrics);
 
@@ -86,11 +89,11 @@ namespace Fsl
       void Draw(RenderPerformanceCapture* const pPerformanceCapture);
       void PostDraw();
 
-      const UI::IRenderSystemBase& GetRenderSystem() const;
+      [[nodiscard]] const UI::IRenderSystemBase& GetRenderSystem() const;
       UI::IRenderSystemBase* TryGetRenderSystem();
 
       // NOLINTNEXTLINE(readability-identifier-naming)
-      bool SYS_GetUseYFlipTextureCoordinates() const noexcept
+      [[nodiscard]] bool SYS_GetUseYFlipTextureCoordinates() const noexcept
       {
         return m_useYFlipTextureCoordinates;
       }

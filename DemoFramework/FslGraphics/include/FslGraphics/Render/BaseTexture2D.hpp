@@ -63,7 +63,7 @@ namespace Fsl
     ~BaseTexture2D();
 
     //! @brief Check if this contains a valid texture.
-    bool IsValid() const
+    [[nodiscard]] bool IsValid() const
     {
       return m_native != nullptr;
     }
@@ -72,34 +72,34 @@ namespace Fsl
     void Reset() noexcept;
 
     //! @brief Get the texture size.
-    PxExtent2D GetExtent() const
+    [[nodiscard]] PxExtent2D GetExtent() const
     {
       return m_extent;
     }
 
     //! @brief Get the texture size.
-    PxSize2D GetSize() const noexcept;
+    [[nodiscard]] PxSize2D GetSize() const noexcept;
 
-    PixelFormat GetPixelFormat() const noexcept
+    [[nodiscard]] PixelFormat GetPixelFormat() const noexcept
     {
       return m_pixelFormat;
     }
 
 
     //! @brief Acquire the native texture (returns null if none exist)
-    std::shared_ptr<INativeTexture2D> TryGetNative() const
+    [[nodiscard]] std::shared_ptr<INativeTexture2D> TryGetNative() const
     {
       return m_native;
     }
 
-    const INativeTexture2D* TryGetNativePointer() const
+    [[nodiscard]] const INativeTexture2D* TryGetNativePointer() const
     {
       return m_native.get();
     }
 
 
     //! @brief Acquire the native texture (throws if none exist)
-    std::shared_ptr<INativeTexture2D> GetNative() const;
+    [[nodiscard]] std::shared_ptr<INativeTexture2D> GetNative() const;
 
 
     bool operator==(const BaseTexture2D& rhs) const

@@ -48,7 +48,7 @@ namespace
 
 TEST(TestMath_Viewport, Construct_Default)
 {
-  Viewport value;
+  const Viewport value;
 
   EXPECT_EQ(value.X(), 0);
   EXPECT_EQ(value.Y(), 0);
@@ -66,7 +66,7 @@ TEST(TestMath_Viewport, Construct)
   const int32_t y = 2;
   const int32_t width = 20;
   const int32_t height = 21;
-  Viewport value(x, y, width, height);
+  const Viewport value(x, y, width, height);
 
   EXPECT_EQ(value.X(), x);
   EXPECT_EQ(value.Y(), y);
@@ -81,7 +81,7 @@ TEST(TestMath_Viewport, Construct)
 TEST(TestMath_Viewport, Construct_Rectangle)
 {
   const Rectangle rect(1, 2, 20, 21);
-  Viewport value(rect);
+  const Viewport value(rect);
 
   EXPECT_EQ(value.X(), rect.X());
   EXPECT_EQ(value.Y(), rect.Y());
@@ -96,8 +96,8 @@ TEST(TestMath_Viewport, Construct_Rectangle2)
 {
   constexpr float MinDepth = 32.0f;
   constexpr float MaxDepth = 42.0f;
-  Rectangle rect(1, 2, 20, 21);
-  Viewport value(rect, MinDepth, MaxDepth);
+  const Rectangle rect(1, 2, 20, 21);
+  const Viewport value(rect, MinDepth, MaxDepth);
 
   EXPECT_EQ(value.X(), rect.X());
   EXPECT_EQ(value.Y(), rect.Y());

@@ -67,7 +67,7 @@ namespace Fsl
     GridScene(const DemoAppConfig& config, AtlasTexture2D texFill, const Point2& gridResolution);
     ~GridScene() override;
 
-    const char* GetRenderName() const;
+    [[nodiscard]] const char* GetRenderName() const;
     void PrevGridRender();
     void NextGridRender();
     void SetRenderId(const int32_t renderId);
@@ -81,7 +81,7 @@ namespace Fsl
     void Draw() override;
 
   private:
-    IGridRender* GetActiveRender() const;
+    [[nodiscard]] IGridRender* GetActiveRender() const;
   };
 }
 

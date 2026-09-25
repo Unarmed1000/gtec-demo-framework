@@ -74,7 +74,7 @@ namespace Fsl
 
     void CalcRoundTripTime()
     {
-      uint64_t currentCounter = m_entries.GetCounter();
+      const uint64_t currentCounter = m_entries.GetCounter();
       if (m_isFirst)
       {
         m_isFirst = false;
@@ -113,7 +113,7 @@ namespace Fsl
       m_entries.Set(DemoPerformanceCaptureId::UIDrawScheduleDraw, capture.Get(UI::RenderPerformanceCaptureId::ScheduleDraw));
     }
 
-    int64_t GetResult(const DemoPerformanceCaptureId entry) const
+    [[nodiscard]] int64_t GetResult(const DemoPerformanceCaptureId entry) const
     {
       const BasicPerformanceCaptureRecord& rRecord = m_entries.Get(entry);
       return static_cast<int64_t>(std::round(static_cast<double>(rRecord.End - rRecord.Begin) * m_frequency));

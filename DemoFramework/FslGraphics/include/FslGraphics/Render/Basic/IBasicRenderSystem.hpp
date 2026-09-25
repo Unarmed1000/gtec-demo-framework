@@ -84,9 +84,9 @@ namespace Fsl
     virtual std::shared_ptr<IDynamicNativeTexture2D> CreateDynamicTexture2D(const ReadOnlyRawTexture& texture, const Texture2DFilterHint filterHint,
                                                                             const TextureFlags textureFlags = TextureFlags::NotDefined) = 0;
 
-    virtual PxExtent2D GetTextureExtentPx(const std::shared_ptr<INativeTexture2D>& texture) const noexcept = 0;
+    [[nodiscard]] virtual PxExtent2D GetTextureExtentPx(const std::shared_ptr<INativeTexture2D>& texture) const noexcept = 0;
 
-    virtual const IBasicNativeTexture* TryGetNativeTexture(const BasicNativeTextureHandle& hTexture) const noexcept = 0;
+    [[nodiscard]] virtual const IBasicNativeTexture* TryGetNativeTexture(const BasicNativeTextureHandle& hTexture) const noexcept = 0;
 
     // Generic buffer creation (index buffer)
     virtual std::shared_ptr<IBasicStaticBuffer> CreateBuffer(const ReadOnlySpan<uint16_t> indexSpan, const BasicBufferUsage usage) = 0;
@@ -117,11 +117,11 @@ namespace Fsl
     virtual BasicMaterial CloneMaterial(const BasicMaterial& sourceMaterial, const BasicMaterialInfo& materialInfo, const bool isDynamic = false) = 0;
 
     //! @brief Get basic information about the material
-    virtual BasicMaterialInfo GetMaterialInfo(const BasicMaterial& sourceMaterial) const = 0;
+    [[nodiscard]] virtual BasicMaterialInfo GetMaterialInfo(const BasicMaterial& sourceMaterial) const = 0;
     virtual void SetMaterialInfo(const BasicMaterial& sourceMaterial, const BasicMaterialInfo& materialInfo) = 0;
 
-    virtual std::shared_ptr<INativeTexture2D> GetMaterialTexture(const BasicMaterial& hMaterial) const = 0;
-    virtual std::shared_ptr<INativeTexture2D> TryGetMaterialTexture(const BasicMaterial& hMaterial) const = 0;
+    [[nodiscard]] virtual std::shared_ptr<INativeTexture2D> GetMaterialTexture(const BasicMaterial& hMaterial) const = 0;
+    [[nodiscard]] virtual std::shared_ptr<INativeTexture2D> TryGetMaterialTexture(const BasicMaterial& hMaterial) const = 0;
 
     //! @brief Request that the backend starts the stat caching (if needed) at this point in time
     //!        If BeginCache is called then EndCache must also be called!

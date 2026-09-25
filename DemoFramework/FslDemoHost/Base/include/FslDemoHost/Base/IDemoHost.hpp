@@ -57,12 +57,12 @@ namespace Fsl
     virtual void OnResume() = 0;
 
     //! @brief Check if this is a purely console based host
-    virtual bool IsConsoleBaseHost() const = 0;
+    [[nodiscard]] virtual bool IsConsoleBaseHost() const = 0;
 
     //! @brief Get the currently active API
-    virtual DemoHostFeature GetActiveAPI() const = 0;
+    [[nodiscard]] virtual DemoHostFeature GetActiveAPI() const = 0;
     //! @brief Get the current window metrics
-    virtual DemoWindowMetrics GetWindowMetrics() const = 0;
+    [[nodiscard]] virtual DemoWindowMetrics GetWindowMetrics() const = 0;
 
     //! @brief Called to swap the main buffer.
     //! @return SwapBuffersResult::Completed on success, SwapBuffersResult::Failed if a error occurred.

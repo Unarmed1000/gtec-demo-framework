@@ -787,19 +787,19 @@ namespace Fsl
     //! @note If you use this to draw a lot of instances consider using a more optimal way of rendering it.
     void DebugDrawLine(const texture_type& srcFillTexture, const PxVector2 dstFromPxf, const PxVector2 dstToPxf, const Color color);
 
-    Batch2DStats GetStats() const;
+    [[nodiscard]] Batch2DStats GetStats() const;
 
   protected:
-    inline PxRectangleU32 ClampConvertToPxRectangleU(const PxRectangle& value) const
+    [[nodiscard]] inline PxRectangleU32 ClampConvertToPxRectangleU(const PxRectangle& value) const
     {
       // If left and right is below zero clipping will occur (we consider this a error, hence the reason for the assert)
       // width and height should always be >= 0 in a Rectangle
       assert(value.Width() >= PxSize1D());
       assert(value.Height() >= PxSize1D());
-      auto clippedLeft = std::max(value.RawLeft(), 0);
-      auto clippedTop = std::max(value.RawTop(), 0);
-      auto clippedRight = std::max(value.RawRight(), clippedLeft);
-      auto clippedBottom = std::max(value.RawBottom(), clippedTop);
+      const auto clippedLeft = std::max(value.RawLeft(), 0);
+      const auto clippedTop = std::max(value.RawTop(), 0);
+      const auto clippedRight = std::max(value.RawRight(), clippedLeft);
+      const auto clippedBottom = std::max(value.RawBottom(), clippedTop);
       assert(clippedLeft >= 0 && clippedTop >= 0 && clippedLeft <= clippedRight && clippedTop <= clippedBottom);
       assert((clippedRight - clippedLeft) <= value.Width().RawValue());
       assert((clippedBottom - clippedTop) <= value.Height().RawValue());

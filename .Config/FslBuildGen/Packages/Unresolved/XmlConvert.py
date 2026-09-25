@@ -33,6 +33,7 @@
 
 
 from FslBuildGen import PackageConfig
+from FslBuildGen.BuildExternal import ConanRecipeUtil
 from FslBuildGen.Engine.PackageFlavorName import PackageFlavorName
 from FslBuildGen.Engine.PackageFlavorOptionName import PackageFlavorOptionName
 from FslBuildGen.Engine.PackageFlavorQuickName import PackageFlavorQuickName
@@ -240,6 +241,16 @@ class XmlConvert:
         templateType = xmlValue.TemplateType
         buildCustomization = xmlValue.BuildCustomization
         directExperimentalRecipe = XmlConvert.__TryGetExperimentalRecipe(xmlValue, resolvedPlatform)
+        if (
+            resolvedPlatformDirectSupported
+            and directExperimentalRecipe is not None
+            and ConanRecipeUtil.UsesConan(directExperimentalRecipe.Pipeline)
+            and not ConanRecipeUtil.IsSupportedBy(createContext.GeneratorInfo)
+        ):
+            createContext.Log.LogPrintVerbose(
+                2, f"Package '{xmlValue.Name}' marked as not supported as its Conan recipe requires the CMake generator with find package enabled"
+            )
+            resolvedPlatformDirectSupported = False
 
         visualStudioProjectId = None
         if PackageConfig.PlatformNameString.WINDOWS in xmlValue.Platforms:

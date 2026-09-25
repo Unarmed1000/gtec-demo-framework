@@ -49,7 +49,7 @@ namespace
 
 TEST(TestString_CStringPointer, Construct)
 {
-  CStringPointer strView;
+  const CStringPointer strView;
 
   EXPECT_TRUE(strView.empty());
   EXPECT_NE(strView.data(), nullptr);
@@ -62,8 +62,8 @@ TEST(TestString_CStringPointer, Construct)
 TEST(TestString_CStringPointer, Construct_FromZeroTerminated)
 {
   const auto* const psz = "Hello world";
-  auto lenPsz = std::strlen(psz);
-  CStringPointer strView(psz);
+  const auto lenPsz = std::strlen(psz);
+  const CStringPointer strView(psz);
 
   EXPECT_FALSE(strView.empty());
   EXPECT_NE(strView.data(), nullptr);
@@ -74,8 +74,8 @@ TEST(TestString_CStringPointer, Construct_FromZeroTerminated)
 
 TEST(TestString_CStringPointer, Construct_FromStr)
 {
-  std::string str("Hello world");
-  CStringPointer strView = Convert(str);
+  const std::string str("Hello world");
+  const CStringPointer strView = Convert(str);
 
   EXPECT_FALSE(strView.empty());
   EXPECT_NE(strView.data(), nullptr);
@@ -85,30 +85,30 @@ TEST(TestString_CStringPointer, Construct_FromStr)
 
 TEST(TestString_CStringPointer, opEqual_Empty)
 {
-  std::string str1;
-  std::string str2;
-  CStringPointer strView1 = Convert(str1);
-  CStringPointer strView2 = Convert(str2);
+  const std::string str1;
+  const std::string str2;
+  const CStringPointer strView1 = Convert(str1);
+  const CStringPointer strView2 = Convert(str2);
 
   EXPECT_TRUE(strView1 == strView2);
 }
 
 TEST(TestString_CStringPointer, opEqual1)
 {
-  std::string str1("Hello world");
-  std::string str2("Hello world");
-  CStringPointer strView1 = Convert(str1);
-  CStringPointer strView2 = Convert(str2);
+  const std::string str1("Hello world");
+  const std::string str2("Hello world");
+  const CStringPointer strView1 = Convert(str1);
+  const CStringPointer strView2 = Convert(str2);
 
   EXPECT_TRUE(strView1 == strView2);
 }
 
 TEST(TestString_CStringPointer, opEqual2)
 {
-  std::string str1("Hello world");
-  std::string str2("Hello worlD");
-  CStringPointer strView1 = Convert(str1);
-  CStringPointer strView2 = Convert(str2);
+  const std::string str1("Hello world");
+  const std::string str2("Hello worlD");
+  const CStringPointer strView1 = Convert(str1);
+  const CStringPointer strView2 = Convert(str2);
 
   EXPECT_FALSE(strView1 == strView2);
 }
@@ -116,10 +116,10 @@ TEST(TestString_CStringPointer, opEqual2)
 
 TEST(TestString_CStringPointer, opEqual3)
 {
-  std::string str1("Hello world");
-  std::string str2("Hello worl");
-  CStringPointer strView1 = Convert(str1);
-  CStringPointer strView2 = Convert(str2);
+  const std::string str1("Hello world");
+  const std::string str2("Hello worl");
+  const CStringPointer strView1 = Convert(str1);
+  const CStringPointer strView2 = Convert(str2);
 
   EXPECT_FALSE(strView1 == strView2);
 }
@@ -127,10 +127,10 @@ TEST(TestString_CStringPointer, opEqual3)
 
 TEST(TestString_CStringPointer, opEqual4)
 {
-  std::string str1("Hello world");
-  std::string str2("Hello world2");
-  CStringPointer strView1 = Convert(str1);
-  CStringPointer strView2 = Convert(str2);
+  const std::string str1("Hello world");
+  const std::string str2("Hello world2");
+  const CStringPointer strView1 = Convert(str1);
+  const CStringPointer strView2 = Convert(str2);
 
   EXPECT_FALSE(strView1 == strView2);
 }
@@ -138,10 +138,10 @@ TEST(TestString_CStringPointer, opEqual4)
 
 TEST(TestString_CStringPointer, opEqual5)
 {
-  std::string str1("Hello world");
-  std::string str2;
-  CStringPointer strView1 = Convert(str1);
-  CStringPointer strView2 = Convert(str2);
+  const std::string str1("Hello world");
+  const std::string str2;
+  const CStringPointer strView1 = Convert(str1);
+  const CStringPointer strView2 = Convert(str2);
 
   EXPECT_FALSE(strView1 == strView2);
 }
@@ -149,30 +149,30 @@ TEST(TestString_CStringPointer, opEqual5)
 
 TEST(TestString_CStringPointer, opNotEqual_Empty)
 {
-  std::string str1;
-  std::string str2;
-  CStringPointer strView1 = Convert(str1);
-  CStringPointer strView2 = Convert(str2);
+  const std::string str1;
+  const std::string str2;
+  const CStringPointer strView1 = Convert(str1);
+  const CStringPointer strView2 = Convert(str2);
 
   EXPECT_FALSE(strView1 != strView2);
 }
 
 TEST(TestString_CStringPointer, opNotEqual1)
 {
-  std::string str1("Hello world");
-  std::string str2("Hello world");
-  CStringPointer strView1 = Convert(str1);
-  CStringPointer strView2 = Convert(str2);
+  const std::string str1("Hello world");
+  const std::string str2("Hello world");
+  const CStringPointer strView1 = Convert(str1);
+  const CStringPointer strView2 = Convert(str2);
 
   EXPECT_FALSE(strView1 != strView2);
 }
 
 TEST(TestString_CStringPointer, opNotEqual2)
 {
-  std::string str1("Hello world");
-  std::string str2("Hello worlD");
-  CStringPointer strView1 = Convert(str1);
-  CStringPointer strView2 = Convert(str2);
+  const std::string str1("Hello world");
+  const std::string str2("Hello worlD");
+  const CStringPointer strView1 = Convert(str1);
+  const CStringPointer strView2 = Convert(str2);
 
   EXPECT_TRUE(strView1 != strView2);
 }
@@ -180,10 +180,10 @@ TEST(TestString_CStringPointer, opNotEqual2)
 
 TEST(TestString_CStringPointer, opNotEqual3)
 {
-  std::string str1("Hello world");
-  std::string str2("Hello worl");
-  CStringPointer strView1 = Convert(str1);
-  CStringPointer strView2 = Convert(str2);
+  const std::string str1("Hello world");
+  const std::string str2("Hello worl");
+  const CStringPointer strView1 = Convert(str1);
+  const CStringPointer strView2 = Convert(str2);
 
   EXPECT_TRUE(strView1 != strView2);
 }
@@ -191,10 +191,10 @@ TEST(TestString_CStringPointer, opNotEqual3)
 
 TEST(TestString_CStringPointer, opNotEqual4)
 {
-  std::string str1("Hello world");
-  std::string str2("Hello world2");
-  CStringPointer strView1 = Convert(str1);
-  CStringPointer strView2 = Convert(str2);
+  const std::string str1("Hello world");
+  const std::string str2("Hello world2");
+  const CStringPointer strView1 = Convert(str1);
+  const CStringPointer strView2 = Convert(str2);
 
   EXPECT_TRUE(strView1 != strView2);
 }
@@ -202,10 +202,10 @@ TEST(TestString_CStringPointer, opNotEqual4)
 
 TEST(TestString_CStringPointer, opNotEqual5)
 {
-  std::string str1("Hello world");
-  std::string str2;
-  CStringPointer strView1 = Convert(str1);
-  CStringPointer strView2 = Convert(str2);
+  const std::string str1("Hello world");
+  const std::string str2;
+  const CStringPointer strView1 = Convert(str1);
+  const CStringPointer strView2 = Convert(str2);
 
   EXPECT_TRUE(strView1 != strView2);
 }
@@ -213,10 +213,10 @@ TEST(TestString_CStringPointer, opNotEqual5)
 
 TEST(TestString_CStringPointer, opLess_Empty)
 {
-  std::string str1;
-  std::string str2;
-  CStringPointer strView1 = Convert(str1);
-  CStringPointer strView2 = Convert(str2);
+  const std::string str1;
+  const std::string str2;
+  const CStringPointer strView1 = Convert(str1);
+  const CStringPointer strView2 = Convert(str2);
 
   EXPECT_FALSE(strView1 < strView2);
 }
@@ -224,10 +224,10 @@ TEST(TestString_CStringPointer, opLess_Empty)
 
 TEST(TestString_CStringPointer, opLess1)
 {
-  std::string str1("ab");
-  std::string str2("ac");
-  CStringPointer strView1 = Convert(str1);
-  CStringPointer strView2 = Convert(str2);
+  const std::string str1("ab");
+  const std::string str2("ac");
+  const CStringPointer strView1 = Convert(str1);
+  const CStringPointer strView2 = Convert(str2);
 
   EXPECT_TRUE(strView1 < strView2);
 }
@@ -235,10 +235,10 @@ TEST(TestString_CStringPointer, opLess1)
 
 TEST(TestString_CStringPointer, opLess2)
 {
-  std::string str1("ab");
-  std::string str2("aa");
-  CStringPointer strView1 = Convert(str1);
-  CStringPointer strView2 = Convert(str2);
+  const std::string str1("ab");
+  const std::string str2("aa");
+  const CStringPointer strView1 = Convert(str1);
+  const CStringPointer strView2 = Convert(str2);
 
   EXPECT_FALSE(strView1 < strView2);
 }
@@ -246,10 +246,10 @@ TEST(TestString_CStringPointer, opLess2)
 
 TEST(TestString_CStringPointer, opLess3)
 {
-  std::string str1("ab");
-  std::string str2("ab");
-  CStringPointer strView1 = Convert(str1);
-  CStringPointer strView2 = Convert(str2);
+  const std::string str1("ab");
+  const std::string str2("ab");
+  const CStringPointer strView1 = Convert(str1);
+  const CStringPointer strView2 = Convert(str2);
 
   EXPECT_FALSE(strView1 < strView2);
 }
@@ -257,10 +257,10 @@ TEST(TestString_CStringPointer, opLess3)
 
 TEST(TestString_CStringPointer, opLess4)
 {
-  std::string str1("a");
-  std::string str2("aa");
-  CStringPointer strView1 = Convert(str1);
-  CStringPointer strView2 = Convert(str2);
+  const std::string str1("a");
+  const std::string str2("aa");
+  const CStringPointer strView1 = Convert(str1);
+  const CStringPointer strView2 = Convert(str2);
 
   EXPECT_TRUE(strView1 < strView2);
 }
@@ -268,20 +268,20 @@ TEST(TestString_CStringPointer, opLess4)
 
 TEST(TestString_CStringPointer, opLess5)
 {
-  std::string str1("aa");
-  std::string str2("a");
-  CStringPointer strView1 = Convert(str1);
-  CStringPointer strView2 = Convert(str2);
+  const std::string str1("aa");
+  const std::string str2("a");
+  const CStringPointer strView1 = Convert(str1);
+  const CStringPointer strView2 = Convert(str2);
 
   EXPECT_FALSE(strView1 < strView2);
 }
 
 TEST(TestString_CStringPointer, opLessOrEqual_Empty)
 {
-  std::string str1;
-  std::string str2;
-  CStringPointer strView1 = Convert(str1);
-  CStringPointer strView2 = Convert(str2);
+  const std::string str1;
+  const std::string str2;
+  const CStringPointer strView1 = Convert(str1);
+  const CStringPointer strView2 = Convert(str2);
 
   EXPECT_TRUE(strView1 <= strView2);
 }
@@ -289,10 +289,10 @@ TEST(TestString_CStringPointer, opLessOrEqual_Empty)
 
 TEST(TestString_CStringPointer, opLessOrEqual1)
 {
-  std::string str1("ab");
-  std::string str2("ac");
-  CStringPointer strView1 = Convert(str1);
-  CStringPointer strView2 = Convert(str2);
+  const std::string str1("ab");
+  const std::string str2("ac");
+  const CStringPointer strView1 = Convert(str1);
+  const CStringPointer strView2 = Convert(str2);
 
   EXPECT_TRUE(strView1 <= strView2);
 }
@@ -300,10 +300,10 @@ TEST(TestString_CStringPointer, opLessOrEqual1)
 
 TEST(TestString_CStringPointer, opLessOrEqual2)
 {
-  std::string str1("ab");
-  std::string str2("aa");
-  CStringPointer strView1 = Convert(str1);
-  CStringPointer strView2 = Convert(str2);
+  const std::string str1("ab");
+  const std::string str2("aa");
+  const CStringPointer strView1 = Convert(str1);
+  const CStringPointer strView2 = Convert(str2);
 
   EXPECT_FALSE(strView1 <= strView2);
 }
@@ -311,10 +311,10 @@ TEST(TestString_CStringPointer, opLessOrEqual2)
 
 TEST(TestString_CStringPointer, opLessOrEqual3)
 {
-  std::string str1("ab");
-  std::string str2("ab");
-  CStringPointer strView1 = Convert(str1);
-  CStringPointer strView2 = Convert(str2);
+  const std::string str1("ab");
+  const std::string str2("ab");
+  const CStringPointer strView1 = Convert(str1);
+  const CStringPointer strView2 = Convert(str2);
 
   EXPECT_TRUE(strView1 <= strView2);
 }
@@ -322,10 +322,10 @@ TEST(TestString_CStringPointer, opLessOrEqual3)
 
 TEST(TestString_CStringPointer, opLessOrEqual4)
 {
-  std::string str1("a");
-  std::string str2("aa");
-  CStringPointer strView1 = Convert(str1);
-  CStringPointer strView2 = Convert(str2);
+  const std::string str1("a");
+  const std::string str2("aa");
+  const CStringPointer strView1 = Convert(str1);
+  const CStringPointer strView2 = Convert(str2);
 
   EXPECT_TRUE(strView1 <= strView2);
 }
@@ -333,20 +333,20 @@ TEST(TestString_CStringPointer, opLessOrEqual4)
 
 TEST(TestString_CStringPointer, opLessOrEqual5)
 {
-  std::string str1("aa");
-  std::string str2("a");
-  CStringPointer strView1 = Convert(str1);
-  CStringPointer strView2 = Convert(str2);
+  const std::string str1("aa");
+  const std::string str2("a");
+  const CStringPointer strView1 = Convert(str1);
+  const CStringPointer strView2 = Convert(str2);
 
   EXPECT_FALSE(strView1 <= strView2);
 }
 
 TEST(TestString_CStringPointer, opGreater_Empty)
 {
-  std::string str1;
-  std::string str2;
-  CStringPointer strView1 = Convert(str1);
-  CStringPointer strView2 = Convert(str2);
+  const std::string str1;
+  const std::string str2;
+  const CStringPointer strView1 = Convert(str1);
+  const CStringPointer strView2 = Convert(str2);
 
   EXPECT_FALSE(strView1 > strView2);
 }
@@ -354,10 +354,10 @@ TEST(TestString_CStringPointer, opGreater_Empty)
 
 TEST(TestString_CStringPointer, opGreater1)
 {
-  std::string str1("ab");
-  std::string str2("ac");
-  CStringPointer strView1 = Convert(str1);
-  CStringPointer strView2 = Convert(str2);
+  const std::string str1("ab");
+  const std::string str2("ac");
+  const CStringPointer strView1 = Convert(str1);
+  const CStringPointer strView2 = Convert(str2);
 
   EXPECT_FALSE(strView1 > strView2);
 }
@@ -365,10 +365,10 @@ TEST(TestString_CStringPointer, opGreater1)
 
 TEST(TestString_CStringPointer, opGreater2)
 {
-  std::string str1("ab");
-  std::string str2("aa");
-  CStringPointer strView1 = Convert(str1);
-  CStringPointer strView2 = Convert(str2);
+  const std::string str1("ab");
+  const std::string str2("aa");
+  const CStringPointer strView1 = Convert(str1);
+  const CStringPointer strView2 = Convert(str2);
 
   EXPECT_TRUE(strView1 > strView2);
 }
@@ -376,10 +376,10 @@ TEST(TestString_CStringPointer, opGreater2)
 
 TEST(TestString_CStringPointer, opGreater3)
 {
-  std::string str1("ab");
-  std::string str2("ab");
-  CStringPointer strView1 = Convert(str1);
-  CStringPointer strView2 = Convert(str2);
+  const std::string str1("ab");
+  const std::string str2("ab");
+  const CStringPointer strView1 = Convert(str1);
+  const CStringPointer strView2 = Convert(str2);
 
   EXPECT_FALSE(strView1 > strView2);
 }
@@ -387,10 +387,10 @@ TEST(TestString_CStringPointer, opGreater3)
 
 TEST(TestString_CStringPointer, opGreater4)
 {
-  std::string str1("a");
-  std::string str2("aa");
-  CStringPointer strView1 = Convert(str1);
-  CStringPointer strView2 = Convert(str2);
+  const std::string str1("a");
+  const std::string str2("aa");
+  const CStringPointer strView1 = Convert(str1);
+  const CStringPointer strView2 = Convert(str2);
 
   EXPECT_FALSE(strView1 > strView2);
 }
@@ -398,20 +398,20 @@ TEST(TestString_CStringPointer, opGreater4)
 
 TEST(TestString_CStringPointer, opGreater5)
 {
-  std::string str1("aa");
-  std::string str2("a");
-  CStringPointer strView1 = Convert(str1);
-  CStringPointer strView2 = Convert(str2);
+  const std::string str1("aa");
+  const std::string str2("a");
+  const CStringPointer strView1 = Convert(str1);
+  const CStringPointer strView2 = Convert(str2);
 
   EXPECT_TRUE(strView1 > strView2);
 }
 
 TEST(TestString_CStringPointer, opGreaterOrEqual_Empty)
 {
-  std::string str1;
-  std::string str2;
-  CStringPointer strView1 = Convert(str1);
-  CStringPointer strView2 = Convert(str2);
+  const std::string str1;
+  const std::string str2;
+  const CStringPointer strView1 = Convert(str1);
+  const CStringPointer strView2 = Convert(str2);
 
   EXPECT_TRUE(strView1 >= strView2);
 }
@@ -419,10 +419,10 @@ TEST(TestString_CStringPointer, opGreaterOrEqual_Empty)
 
 TEST(TestString_CStringPointer, opGreaterOrEqual1)
 {
-  std::string str1("ab");
-  std::string str2("ac");
-  CStringPointer strView1 = Convert(str1);
-  CStringPointer strView2 = Convert(str2);
+  const std::string str1("ab");
+  const std::string str2("ac");
+  const CStringPointer strView1 = Convert(str1);
+  const CStringPointer strView2 = Convert(str2);
 
   EXPECT_FALSE(strView1 >= strView2);
 }
@@ -430,10 +430,10 @@ TEST(TestString_CStringPointer, opGreaterOrEqual1)
 
 TEST(TestString_CStringPointer, opGreaterOrEqual2)
 {
-  std::string str1("ab");
-  std::string str2("aa");
-  CStringPointer strView1 = Convert(str1);
-  CStringPointer strView2 = Convert(str2);
+  const std::string str1("ab");
+  const std::string str2("aa");
+  const CStringPointer strView1 = Convert(str1);
+  const CStringPointer strView2 = Convert(str2);
 
   EXPECT_TRUE(strView1 >= strView2);
 }
@@ -441,10 +441,10 @@ TEST(TestString_CStringPointer, opGreaterOrEqual2)
 
 TEST(TestString_CStringPointer, opGreaterOrEqual3)
 {
-  std::string str1("ab");
-  std::string str2("ab");
-  CStringPointer strView1 = Convert(str1);
-  CStringPointer strView2 = Convert(str2);
+  const std::string str1("ab");
+  const std::string str2("ab");
+  const CStringPointer strView1 = Convert(str1);
+  const CStringPointer strView2 = Convert(str2);
 
   EXPECT_TRUE(strView1 >= strView2);
 }
@@ -452,10 +452,10 @@ TEST(TestString_CStringPointer, opGreaterOrEqual3)
 
 TEST(TestString_CStringPointer, opGreaterOrEqual4)
 {
-  std::string str1("a");
-  std::string str2("aa");
-  CStringPointer strView1 = Convert(str1);
-  CStringPointer strView2 = Convert(str2);
+  const std::string str1("a");
+  const std::string str2("aa");
+  const CStringPointer strView1 = Convert(str1);
+  const CStringPointer strView2 = Convert(str2);
 
   EXPECT_FALSE(strView1 >= strView2);
 }
@@ -463,10 +463,10 @@ TEST(TestString_CStringPointer, opGreaterOrEqual4)
 
 TEST(TestString_CStringPointer, opGreaterOrEqual5)
 {
-  std::string str1("aa");
-  std::string str2("a");
-  CStringPointer strView1 = Convert(str1);
-  CStringPointer strView2 = Convert(str2);
+  const std::string str1("aa");
+  const std::string str2("a");
+  const CStringPointer strView1 = Convert(str1);
+  const CStringPointer strView2 = Convert(str2);
 
   EXPECT_TRUE(strView1 >= strView2);
 }

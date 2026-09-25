@@ -80,6 +80,7 @@ namespace Fsl
       other.m_recordDensityDpi = 0;
       other.m_frameCount = 0;
     }
+    ~AppInputCommandList() = default;
 
     AppInputCommandList() = default;
     AppInputCommandList(const PxSize2D recordResolution, const uint32_t recordDensityDpi, const ReadOnlySpan<InputCommandRecord> entries,
@@ -87,17 +88,17 @@ namespace Fsl
     AppInputCommandList(const PxSize2D recordResolution, const uint32_t recordDensityDpi, std::vector<InputCommandRecord> entries,
                         const uint32_t frameCount);
 
-    PxSize2D GetRecordResolution() const noexcept
+    [[nodiscard]] PxSize2D GetRecordResolution() const noexcept
     {
       return m_recordResolution;
     }
 
-    uint32_t GetRecordDensityDpi() const noexcept
+    [[nodiscard]] uint32_t GetRecordDensityDpi() const noexcept
     {
       return m_recordDensityDpi;
     }
 
-    uint32_t GetFrameCount() const noexcept
+    [[nodiscard]] uint32_t GetFrameCount() const noexcept
     {
       return m_frameCount;
     }
@@ -105,7 +106,7 @@ namespace Fsl
     void SetFrameCount(const uint32_t frameCount);
     void SetRecordInfo(const PxSize2D recordResolution, const uint32_t recordDensityDpi);
 
-    const std::vector<InputCommandRecord>& AsVector() const noexcept
+    [[nodiscard]] const std::vector<InputCommandRecord>& AsVector() const noexcept
     {
       return m_entries;
     }
@@ -115,7 +116,7 @@ namespace Fsl
       return m_entries;
     }
 
-    ReadOnlySpan<InputCommandRecord> AsSpan() const;
+    [[nodiscard]] ReadOnlySpan<InputCommandRecord> AsSpan() const;
   };
 }
 

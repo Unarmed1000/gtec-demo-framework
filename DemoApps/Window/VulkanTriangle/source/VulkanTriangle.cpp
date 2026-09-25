@@ -181,9 +181,9 @@ namespace Fsl
 
     m_vertexBuffer.Reset(m_device.Get(), bufferCreateInfo);
 
-    VkMemoryRequirements memoryRequirements = m_vertexBuffer.GetBufferMemoryRequirements();
+    const VkMemoryRequirements memoryRequirements = m_vertexBuffer.GetBufferMemoryRequirements();
 
-    VkPhysicalDeviceMemoryProperties physicalDeviceMemoryProperties = m_physicalDevice.MemoryProperties;
+    const VkPhysicalDeviceMemoryProperties physicalDeviceMemoryProperties = m_physicalDevice.MemoryProperties;
     const auto memoryTypeIndex = Vulkan::MemoryTypeUtil::GetMemoryTypeIndex(physicalDeviceMemoryProperties, memoryRequirements.memoryTypeBits,
                                                                             VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
 
@@ -231,12 +231,12 @@ namespace Fsl
 
   void VulkanTriangle::BuildResources()
   {
-    auto fallbackExtent = TypeConverter::UncheckedTo<VkExtent2D>(GetScreenExtent());
+    const auto fallbackExtent = TypeConverter::UncheckedTo<VkExtent2D>(GetScreenExtent());
     m_swapchain = Vulkan::SwapchainKHRUtil::CreateSwapchain(
       m_physicalDevice.Device, m_device.Get(), 0, m_surface, VktsNumberBuffers, 1, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT, VK_SHARING_MODE_EXCLUSIVE, 0,
       nullptr, VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR, VK_TRUE, m_swapchain.Get(), fallbackExtent, Vulkan::SurfaceFormatInfo());
 
-    uint32_t swapchainImagesCount = m_swapchain.GetImageCount();
+    const uint32_t swapchainImagesCount = m_swapchain.GetImageCount();
     if (swapchainImagesCount == 0)
     {
       throw std::runtime_error("We need at least one image in the swapchain");
@@ -441,8 +441,8 @@ namespace Fsl
 
   void VulkanTriangle::BuildSwapchainImageView(const uint32_t bufferIndex)
   {
-    VkComponentMapping componentMapping = {VK_COMPONENT_SWIZZLE_R, VK_COMPONENT_SWIZZLE_G, VK_COMPONENT_SWIZZLE_B, VK_COMPONENT_SWIZZLE_A};
-    VkImageSubresourceRange imageSubresourceRange = {VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1};
+    const VkComponentMapping componentMapping = {VK_COMPONENT_SWIZZLE_R, VK_COMPONENT_SWIZZLE_G, VK_COMPONENT_SWIZZLE_B, VK_COMPONENT_SWIZZLE_A};
+    const VkImageSubresourceRange imageSubresourceRange = {VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1};
 
     m_swapchainImageView[bufferIndex].Reset(m_device.Get(), 0, m_swapchain[bufferIndex], VK_IMAGE_VIEW_TYPE_2D, m_swapchain.GetImageFormat(),
                                             componentMapping, imageSubresourceRange);

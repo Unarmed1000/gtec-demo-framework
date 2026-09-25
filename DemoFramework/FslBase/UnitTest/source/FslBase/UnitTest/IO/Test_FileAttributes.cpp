@@ -48,7 +48,7 @@ namespace
 
 TEST(TestIO_FileAttributes, Construct_Default)
 {
-  IO::FileAttributes attributes;
+  const IO::FileAttributes attributes;
 
   EXPECT_EQ(0u, attributes.Flags);
   EXPECT_FALSE(attributes.HasFlag(IO::FileAttributes::Directory));
@@ -58,7 +58,7 @@ TEST(TestIO_FileAttributes, Construct_Default)
 
 TEST(TestIO_FileAttributes, Construct_Directory)
 {
-  IO::FileAttributes attributes(IO::FileAttributes::Directory);
+  const IO::FileAttributes attributes(IO::FileAttributes::Directory);
 
   EXPECT_EQ(uint32_t(IO::FileAttributes::Directory), attributes.Flags);
   EXPECT_TRUE(attributes.HasFlag(IO::FileAttributes::Directory));
@@ -68,7 +68,7 @@ TEST(TestIO_FileAttributes, Construct_Directory)
 
 TEST(TestIO_FileAttributes, Construct_File)
 {
-  IO::FileAttributes attributes(IO::FileAttributes::File);
+  const IO::FileAttributes attributes(IO::FileAttributes::File);
 
   EXPECT_EQ(uint32_t(IO::FileAttributes::File), attributes.Flags);
   EXPECT_FALSE(attributes.HasFlag(IO::FileAttributes::Directory));

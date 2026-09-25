@@ -40,6 +40,7 @@
 #include <FslBase/Span/SpanUtil_Vector.hpp>
 #include <FslSimpleUI/Render/Base/Command/EncodedCommand.hpp>
 #include <FslSimpleUI/Render/IMBatch/DrawReorderMethod.hpp>
+#include <algorithm>
 #include <unordered_map>
 #include <vector>
 #include "../../MaterialStats.hpp"
@@ -128,15 +129,15 @@ namespace Fsl::UI::RenderIMBatch
       // Ensure that we have enough space in the material cache
       const uint32_t currentMaterialCount = meshManager.GetMaterialLookup().GetCount();
       m_cache.EnsureCapacity(currentMaterialCount);
-      Span<MaterialCacheRecord> opaqueMaterialCache = m_cache.GetOpaqueCacheSpan(currentMaterialCount);
-      Span<MaterialCacheRecord> transparentMaterialCache = m_cache.GetTransparentCacheSpan(currentMaterialCount);
+      const Span<MaterialCacheRecord> opaqueMaterialCache = m_cache.GetOpaqueCacheSpan(currentMaterialCount);
+      const Span<MaterialCacheRecord> transparentMaterialCache = m_cache.GetTransparentCacheSpan(currentMaterialCount);
 
 
-      PreprocessResult result = m_allowDepthBuffer
-                                  ? PreprocessUtil2::PreprocessTwoQueues(rProcessedCommandRecords, opaqueMaterialCache, transparentMaterialCache,
-                                                                         commandSpan, meshManager, m_windowSizePx)
-                                  : PreprocessUtil2::PreprocessForceTransparent(rProcessedCommandRecords, opaqueMaterialCache,
-                                                                                transparentMaterialCache, commandSpan, meshManager, m_windowSizePx);
+      const PreprocessResult result =
+        m_allowDepthBuffer ? PreprocessUtil2::PreprocessTwoQueues(rProcessedCommandRecords, opaqueMaterialCache, transparentMaterialCache,
+                                                                  commandSpan, meshManager, m_windowSizePx)
+                           : PreprocessUtil2::PreprocessForceTransparent(rProcessedCommandRecords, opaqueMaterialCache, transparentMaterialCache,
+                                                                         commandSpan, meshManager, m_windowSizePx);
 
       const uint32_t totalCount = result.OpaqueCount + result.TransparentCount;
       if (totalCount > m_finalEntries.size())
@@ -220,36 +221,24 @@ namespace Fsl::UI::RenderIMBatch
             float clippedDstRawR = src.DstAreaRectanglePxf.RawRight();
             float clippedDstRawT = src.DstAreaRectanglePxf.RawTop();
             float clippedDstRawB = src.DstAreaRectanglePxf.RawBottom();
-            if (clippedDstRawL < 0)
-            {
-              clippedDstRawL = 0;
-            }
-            if (clippedDstRawR >= clipWidthPxf)
-            {
-              clippedDstRawR = clipWidthPxf;
-            }
-            if (clippedDstRawT < 0)
-            {
-              clippedDstRawT = 0;
-            }
-            if (clippedDstRawB >= clipHeightPxf)
-            {
-              clippedDstRawB = clipHeightPxf;
-            }
+            clippedDstRawL = std::max<float>(clippedDstRawL, 0);
+            clippedDstRawR = std::min(clippedDstRawR, clipWidthPxf);
+            clippedDstRawT = std::max<float>(clippedDstRawT, 0);
+            clippedDstRawB = std::min(clippedDstRawB, clipHeightPxf);
 
             {
               // We expect that all fully outside bounds elements have been removed
               assert(clippedDstRawL < clippedDstRawR && clippedDstRawT < clippedDstRawB);
               // The previous material did not match and we have a previous material entry, so we check all collision candidates to
               // see if there is a collision
-              auto rangeX = m_grid.ToXCell(clippedDstRawL, clippedDstRawR);
-              auto rangeY = m_grid.ToYCell(clippedDstRawT, clippedDstRawB);
+              const auto rangeX = m_grid.ToXCell(clippedDstRawL, clippedDstRawR);
+              const auto rangeY = m_grid.ToYCell(clippedDstRawT, clippedDstRawB);
               bool collision = false;
               for (uint16_t gridY = rangeY.Start; gridY < rangeY.End; ++gridY)
               {
                 for (uint16_t gridX = rangeX.Start; gridX < rangeX.End; ++gridX)
                 {
-                  ReadOnlySpan<uint32_t> candidates = m_grid.UncheckedGetChunkEntries(gridX, gridY);
+                  const ReadOnlySpan<uint32_t> candidates = m_grid.UncheckedGetChunkEntries(gridX, gridY);
                   for (std::size_t candidateIndex = candidates.size(); candidateIndex > 0; --candidateIndex)
                   {
                     const uint32_t srcIndex = candidates[candidateIndex - 1];
@@ -302,10 +291,7 @@ namespace Fsl::UI::RenderIMBatch
 
               // Remap the material cache index
               MaterialCacheRecord& rMaterialCacheEntry = materialCache[srcSpan[recordToMove.OriginalCommandIndex].MaterialId.Value];
-              if (rMaterialCacheEntry.Index < moveIndex)
-              {
-                rMaterialCacheEntry.Index = moveIndex;
-              }
+              rMaterialCacheEntry.Index = std::max(rMaterialCacheEntry.Index, moveIndex);
             }
             materialCache[src.MaterialId.Value].Index = insertAtIndex;
             dstSpan[insertAtIndex].OriginalCommandIndex = i;

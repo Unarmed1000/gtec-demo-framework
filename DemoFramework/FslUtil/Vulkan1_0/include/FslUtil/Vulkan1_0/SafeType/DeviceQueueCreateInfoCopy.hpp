@@ -52,12 +52,13 @@ namespace Fsl::Vulkan
 
     DeviceQueueCreateInfoCopy& operator=(DeviceQueueCreateInfoCopy&& other) noexcept;
     DeviceQueueCreateInfoCopy(DeviceQueueCreateInfoCopy&& other) noexcept;
+    ~DeviceQueueCreateInfoCopy() = default;
 
     DeviceQueueCreateInfoCopy();
     explicit DeviceQueueCreateInfoCopy(const VkDeviceQueueCreateInfo& value);
 
 
-    const VkDeviceQueueCreateInfo& Get() const
+    [[nodiscard]] const VkDeviceQueueCreateInfo& Get() const
     {
       return m_value;
     }

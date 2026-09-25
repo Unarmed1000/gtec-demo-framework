@@ -86,7 +86,7 @@ namespace Fsl
     m_interfaceCollisionChecker->AddInterfaces(deque, TheServiceType);
 
     // Retrieve any option parser associated with the service
-    auto optionParser = factory.GetOptionParser();
+    const auto optionParser = factory.GetOptionParser();
     if (optionParser)
     {
       m_serviceOptionParsers.push_back(optionParser);

@@ -44,7 +44,7 @@ namespace
 
 TEST(TestString_StringUtil, Contains_Char_Empty_StringViewLite)
 {
-  StringViewLite src;
+  const StringViewLite src;
 
   EXPECT_FALSE(StringUtil::Contains(src, ' '));
   EXPECT_FALSE(StringUtil::Contains(src, 'a'));
@@ -62,7 +62,7 @@ TEST(TestString_StringUtil, Contains_Char_Nullptr_CString)
 
 TEST(TestString_StringUtil, Contains_Char_Empty_String)
 {
-  std::string src;
+  const std::string src;
 
   EXPECT_FALSE(StringUtil::Contains(src, ' '));
   EXPECT_FALSE(StringUtil::Contains(src, 'a'));
@@ -72,7 +72,7 @@ TEST(TestString_StringUtil, Contains_Char_Empty_String)
 
 TEST(TestString_StringUtil, Contains_Char_StringViewLite)
 {
-  StringViewLite src("hello world");
+  const StringViewLite src("hello world");
 
   EXPECT_TRUE(StringUtil::Contains(src, 'h'));
   EXPECT_TRUE(StringUtil::Contains(src, ' '));
@@ -96,7 +96,7 @@ TEST(TestString_StringUtil, Contains_Char_CString)
 
 TEST(TestString_StringUtil, Contains_Char_String)
 {
-  std::string src("hello world");
+  const std::string src("hello world");
 
   EXPECT_TRUE(StringUtil::Contains(src, 'h'));
   EXPECT_TRUE(StringUtil::Contains(src, ' '));
@@ -110,7 +110,7 @@ TEST(TestString_StringUtil, Contains_Char_String)
 
 TEST(TestString_StringUtil, Contains_String_Empty)
 {
-  std::string src;
+  const std::string src;
 
   EXPECT_TRUE(StringUtil::Contains(src, ""));
 
@@ -123,7 +123,7 @@ TEST(TestString_StringUtil, Contains_String_Empty)
 
 TEST(TestString_StringUtil, Contains_String)
 {
-  std::string src("hello world");
+  const std::string src("hello world");
 
   EXPECT_TRUE(StringUtil::Contains(src, ""));
   EXPECT_TRUE(StringUtil::Contains(src, "h"));
@@ -140,7 +140,7 @@ TEST(TestString_StringUtil, Contains_String)
 
 TEST(TestString_StringUtil, StartsWith_Char_Empty_StringViewLite)
 {
-  StringViewLite src;
+  const StringViewLite src;
 
   EXPECT_FALSE(StringUtil::StartsWith(src, ' '));
   EXPECT_FALSE(StringUtil::StartsWith(src, 'a'));
@@ -158,7 +158,7 @@ TEST(TestString_StringUtil, StartsWith_Char_Empty_CString)
 
 TEST(TestString_StringUtil, StartsWith_Char_Empty_String)
 {
-  std::string src;
+  const std::string src;
 
   EXPECT_FALSE(StringUtil::StartsWith(src, ' '));
   EXPECT_FALSE(StringUtil::StartsWith(src, 'a'));
@@ -168,7 +168,7 @@ TEST(TestString_StringUtil, StartsWith_Char_Empty_String)
 
 TEST(TestString_StringUtil, StartsWith_Char_StringViewLite)
 {
-  StringViewLite src("hello world");
+  const StringViewLite src("hello world");
 
   EXPECT_TRUE(StringUtil::StartsWith(src, 'h'));
 
@@ -190,7 +190,7 @@ TEST(TestString_StringUtil, StartsWith_Char_CString)
 
 TEST(TestString_StringUtil, StartsWith_Char_String)
 {
-  std::string src("hello world");
+  const std::string src("hello world");
 
   EXPECT_TRUE(StringUtil::StartsWith(src, 'h'));
 
@@ -203,7 +203,7 @@ TEST(TestString_StringUtil, StartsWith_Char_String)
 
 TEST(TestString_StringUtil, StartsWith_Empty_StringViewLite)
 {
-  StringViewLite src;
+  const StringViewLite src;
 
   EXPECT_TRUE(StringUtil::StartsWith(src, ""));
   EXPECT_FALSE(StringUtil::StartsWith(src, " "));
@@ -221,7 +221,7 @@ TEST(TestString_StringUtil, StartsWith_Empty_CString)
 
 TEST(TestString_StringUtil, StartsWith_Empty_String)
 {
-  std::string src;
+  const std::string src;
 
   EXPECT_TRUE(StringUtil::StartsWith(src, ""));
   EXPECT_FALSE(StringUtil::StartsWith(src, " "));
@@ -232,7 +232,7 @@ TEST(TestString_StringUtil, StartsWith_Empty_String)
 
 TEST(TestString_StringUtil, StartsWith_String_Empty_StringViewLite_StringViewLite)
 {
-  StringViewLite src;
+  const StringViewLite src;
 
   EXPECT_TRUE(StringUtil::StartsWith(src, StringViewLite("")));
   EXPECT_FALSE(StringUtil::StartsWith(src, StringViewLite(" ")));
@@ -241,7 +241,7 @@ TEST(TestString_StringUtil, StartsWith_String_Empty_StringViewLite_StringViewLit
 
 TEST(TestString_StringUtil, StartsWith_String_Empty_StringViewLite_CString)
 {
-  StringViewLite src;
+  const StringViewLite src;
 
   EXPECT_TRUE(StringUtil::StartsWith(src, ""));
   EXPECT_FALSE(StringUtil::StartsWith(src, " "));
@@ -250,7 +250,7 @@ TEST(TestString_StringUtil, StartsWith_String_Empty_StringViewLite_CString)
 
 TEST(TestString_StringUtil, StartsWith_String_Empty_StringViewLite_String)
 {
-  StringViewLite src;
+  const StringViewLite src;
 
   EXPECT_TRUE(StringUtil::StartsWith(src, std::string("")));
   EXPECT_FALSE(StringUtil::StartsWith(src, std::string(" ")));
@@ -289,7 +289,7 @@ TEST(TestString_StringUtil, StartsWith_String_Empty_CString_String)
 
 TEST(TestString_StringUtil, StartsWith_String_Empty_String_StringViewLite)
 {
-  std::string src;
+  const std::string src;
 
   EXPECT_TRUE(StringUtil::StartsWith(src, StringViewLite("")));
   EXPECT_FALSE(StringUtil::StartsWith(src, StringViewLite(" ")));
@@ -298,7 +298,7 @@ TEST(TestString_StringUtil, StartsWith_String_Empty_String_StringViewLite)
 
 TEST(TestString_StringUtil, StartsWith_String_Empty_String_CString)
 {
-  std::string src;
+  const std::string src;
 
   EXPECT_TRUE(StringUtil::StartsWith(src, ""));
   EXPECT_FALSE(StringUtil::StartsWith(src, " "));
@@ -307,7 +307,7 @@ TEST(TestString_StringUtil, StartsWith_String_Empty_String_CString)
 
 TEST(TestString_StringUtil, StartsWith_String_Empty_String_String)
 {
-  std::string src;
+  const std::string src;
 
   EXPECT_TRUE(StringUtil::StartsWith(src, std::string("")));
   EXPECT_FALSE(StringUtil::StartsWith(src, std::string(" ")));
@@ -318,7 +318,7 @@ TEST(TestString_StringUtil, StartsWith_String_Empty_String_String)
 
 TEST(TestString_StringUtil, StartsWith_StringViewLite_StringViewLite)
 {
-  StringViewLite src("hello world");
+  const StringViewLite src("hello world");
 
   EXPECT_TRUE(StringUtil::StartsWith(src, StringViewLite("")));
   EXPECT_TRUE(StringUtil::StartsWith(src, StringViewLite("h")));
@@ -341,7 +341,7 @@ TEST(TestString_StringUtil, StartsWith_StringViewLite_StringViewLite)
 
 TEST(TestString_StringUtil, StartsWith_StringViewLite_CString)
 {
-  StringViewLite src("hello world");
+  const StringViewLite src("hello world");
 
   EXPECT_TRUE(StringUtil::StartsWith(src, ""));
   EXPECT_TRUE(StringUtil::StartsWith(src, "h"));
@@ -364,7 +364,7 @@ TEST(TestString_StringUtil, StartsWith_StringViewLite_CString)
 
 TEST(TestString_StringUtil, StartsWith_StringViewLite_String)
 {
-  StringViewLite src("hello world");
+  const StringViewLite src("hello world");
 
   EXPECT_TRUE(StringUtil::StartsWith(src, std::string("")));
   EXPECT_TRUE(StringUtil::StartsWith(src, std::string("h")));
@@ -457,7 +457,7 @@ TEST(TestString_StringUtil, StartsWith_CString_String)
 
 TEST(TestString_StringUtil, StartsWith_String_StringViewLite)
 {
-  std::string src("hello world");
+  const std::string src("hello world");
 
   EXPECT_TRUE(StringUtil::StartsWith(src, StringViewLite("")));
   EXPECT_TRUE(StringUtil::StartsWith(src, StringViewLite("h")));
@@ -480,7 +480,7 @@ TEST(TestString_StringUtil, StartsWith_String_StringViewLite)
 
 TEST(TestString_StringUtil, StartsWith_String_CString)
 {
-  std::string src("hello world");
+  const std::string src("hello world");
 
   EXPECT_TRUE(StringUtil::StartsWith(src, ""));
   EXPECT_TRUE(StringUtil::StartsWith(src, "h"));
@@ -503,7 +503,7 @@ TEST(TestString_StringUtil, StartsWith_String_CString)
 
 TEST(TestString_StringUtil, StartsWith_String_String)
 {
-  std::string src("hello world");
+  const std::string src("hello world");
 
   EXPECT_TRUE(StringUtil::StartsWith(src, std::string("")));
   EXPECT_TRUE(StringUtil::StartsWith(src, std::string("h")));
@@ -526,7 +526,7 @@ TEST(TestString_StringUtil, StartsWith_String_String)
 
 TEST(TestString_StringUtil, EndsWith_Char_Empty_StringViewLite)
 {
-  StringViewLite src;
+  const StringViewLite src;
 
   EXPECT_FALSE(StringUtil::EndsWith(src, ' '));
   EXPECT_FALSE(StringUtil::EndsWith(src, 'a'));
@@ -542,7 +542,7 @@ TEST(TestString_StringUtil, EndsWith_Char_Empty_CString)
 
 TEST(TestString_StringUtil, EndsWith_Char_Empty_String)
 {
-  std::string src;
+  const std::string src;
 
   EXPECT_FALSE(StringUtil::EndsWith(src, ' '));
   EXPECT_FALSE(StringUtil::EndsWith(src, 'a'));
@@ -552,7 +552,7 @@ TEST(TestString_StringUtil, EndsWith_Char_Empty_String)
 
 TEST(TestString_StringUtil, EndsWith_Char_StringViewLite)
 {
-  StringViewLite src("hello world");
+  const StringViewLite src("hello world");
 
   EXPECT_TRUE(StringUtil::EndsWith(src, 'd'));
 
@@ -574,7 +574,7 @@ TEST(TestString_StringUtil, EndsWith_Char_CString)
 
 TEST(TestString_StringUtil, EndsWith_Char_String)
 {
-  std::string src("hello world");
+  const std::string src("hello world");
 
   EXPECT_TRUE(StringUtil::EndsWith(src, 'd'));
 
@@ -587,7 +587,7 @@ TEST(TestString_StringUtil, EndsWith_Char_String)
 
 TEST(TestString_StringUtil, EndsWith_String_Empty_StringViewLite_StringViewLite)
 {
-  StringViewLite src;
+  const StringViewLite src;
 
   EXPECT_TRUE(StringUtil::EndsWith(src, StringViewLite("")));
   EXPECT_FALSE(StringUtil::EndsWith(src, StringViewLite(" ")));
@@ -597,7 +597,7 @@ TEST(TestString_StringUtil, EndsWith_String_Empty_StringViewLite_StringViewLite)
 
 TEST(TestString_StringUtil, EndsWith_String_Empty_StringViewLite_CString)
 {
-  StringViewLite src;
+  const StringViewLite src;
 
   EXPECT_TRUE(StringUtil::EndsWith(src, ""));
   EXPECT_FALSE(StringUtil::EndsWith(src, " "));
@@ -634,7 +634,7 @@ TEST(TestString_StringUtil, EndsWith_CString_Empty_String_CString)
 
 TEST(TestString_StringUtil, EndsWith_CString_Empty_String_String)
 {
-  std::string src;
+  const std::string src;
 
   EXPECT_TRUE(StringUtil::EndsWith(src, std::string("")));
   EXPECT_FALSE(StringUtil::EndsWith(src, std::string(" ")));
@@ -643,7 +643,7 @@ TEST(TestString_StringUtil, EndsWith_CString_Empty_String_String)
 
 TEST(TestString_StringUtil, EndsWith_String_Empty_String_StringViewLite)
 {
-  std::string src;
+  const std::string src;
 
   EXPECT_TRUE(StringUtil::EndsWith(src, StringViewLite("")));
   EXPECT_FALSE(StringUtil::EndsWith(src, StringViewLite(" ")));
@@ -653,7 +653,7 @@ TEST(TestString_StringUtil, EndsWith_String_Empty_String_StringViewLite)
 
 TEST(TestString_StringUtil, EndsWith_String_Empty_String_CString)
 {
-  std::string src;
+  const std::string src;
 
   EXPECT_TRUE(StringUtil::EndsWith(src, ""));
   EXPECT_FALSE(StringUtil::EndsWith(src, " "));
@@ -662,7 +662,7 @@ TEST(TestString_StringUtil, EndsWith_String_Empty_String_CString)
 
 TEST(TestString_StringUtil, EndsWith_String_Empty_String_String)
 {
-  std::string src;
+  const std::string src;
 
   EXPECT_TRUE(StringUtil::EndsWith(src, std::string("")));
   EXPECT_FALSE(StringUtil::EndsWith(src, std::string(" ")));
@@ -673,7 +673,7 @@ TEST(TestString_StringUtil, EndsWith_String_Empty_String_String)
 
 TEST(TestString_StringUtil, EndsWith_String_StringViewLite_StringViewLite)
 {
-  StringViewLite src("hello world");
+  const StringViewLite src("hello world");
 
   EXPECT_TRUE(StringUtil::EndsWith(src, StringViewLite("")));
   EXPECT_TRUE(StringUtil::EndsWith(src, StringViewLite("d")));
@@ -694,7 +694,7 @@ TEST(TestString_StringUtil, EndsWith_String_StringViewLite_StringViewLite)
 
 TEST(TestString_StringUtil, EndsWith_String_StringViewLite_CString)
 {
-  StringViewLite src("hello world");
+  const StringViewLite src("hello world");
 
   EXPECT_TRUE(StringUtil::EndsWith(src, ""));
   EXPECT_TRUE(StringUtil::EndsWith(src, "d"));
@@ -715,7 +715,7 @@ TEST(TestString_StringUtil, EndsWith_String_StringViewLite_CString)
 
 TEST(TestString_StringUtil, EndsWith_String_StringViewLite_String)
 {
-  StringViewLite src("hello world");
+  const StringViewLite src("hello world");
 
   EXPECT_TRUE(StringUtil::EndsWith(src, std::string("")));
   EXPECT_TRUE(StringUtil::EndsWith(src, std::string("d")));
@@ -799,7 +799,7 @@ TEST(TestString_StringUtil, EndsWith_String_CString_String)
 
 TEST(TestString_StringUtil, EndsWith_String_String_StringViewLite)
 {
-  std::string src("hello world");
+  const std::string src("hello world");
 
   EXPECT_TRUE(StringUtil::EndsWith(src, StringViewLite("")));
   EXPECT_TRUE(StringUtil::EndsWith(src, StringViewLite("d")));
@@ -820,7 +820,7 @@ TEST(TestString_StringUtil, EndsWith_String_String_StringViewLite)
 
 TEST(TestString_StringUtil, EndsWith_String_String_CString)
 {
-  std::string src("hello world");
+  const std::string src("hello world");
 
   EXPECT_TRUE(StringUtil::EndsWith(src, ""));
   EXPECT_TRUE(StringUtil::EndsWith(src, "d"));
@@ -841,7 +841,7 @@ TEST(TestString_StringUtil, EndsWith_String_String_CString)
 
 TEST(TestString_StringUtil, EndsWith_String_String_String)
 {
-  std::string src("hello world");
+  const std::string src("hello world");
 
   EXPECT_TRUE(StringUtil::EndsWith(src, std::string("")));
   EXPECT_TRUE(StringUtil::EndsWith(src, std::string("d")));
@@ -864,7 +864,7 @@ TEST(TestString_StringUtil, EndsWith_String_String_String)
 
 TEST(TestString_StringUtil, IndexOfChar_NegativeStartIndex_StringViewLite)
 {
-  StringViewLite src("old school");
+  const StringViewLite src("old school");
 
   EXPECT_LT(StringUtil::IndexOf(src, 'o', -1), 0);
   EXPECT_LT(StringUtil::IndexOf(src, 'o', -2), 0);
@@ -884,7 +884,7 @@ TEST(TestString_StringUtil, IndexOfChar_NegativeStartIndex_CString)
 
 TEST(TestString_StringUtil, IndexOfChar_NegativeStartIndex_String)
 {
-  std::string src("old school");
+  const std::string src("old school");
 
   EXPECT_LT(StringUtil::IndexOf(src, 'o', -1), 0);
   EXPECT_LT(StringUtil::IndexOf(src, 'o', -2), 0);
@@ -897,7 +897,7 @@ TEST(TestString_StringUtil, IndexOfChar_NegativeStartIndex_String)
 TEST(TestString_StringUtil, IndexOfChar_StartIndexTooLarge_StringViewLite)
 {
   //                  0123456789
-  StringViewLite src("old school");
+  const StringViewLite src("old school");
 
   EXPECT_LT(StringUtil::IndexOf(src, 'l', 10), 0);
   EXPECT_LT(StringUtil::IndexOf(src, 'l', 11), 0);
@@ -923,7 +923,7 @@ TEST(TestString_StringUtil, IndexOfChar_StartIndexTooLarge_CString)
 TEST(TestString_StringUtil, IndexOfChar_StartIndexTooLarge_String)
 {
   //               0123456789
-  std::string src("old school");
+  const std::string src("old school");
 
   EXPECT_LT(StringUtil::IndexOf(src, 'l', 10), 0);
   EXPECT_LT(StringUtil::IndexOf(src, 'l', 11), 0);
@@ -938,7 +938,7 @@ TEST(TestString_StringUtil, IndexOfChar_StartIndexTooLarge_String)
 
 TEST(TestString_StringUtil, IndexOfChar_Empty_StringViewLite)
 {
-  StringViewLite src;
+  const StringViewLite src;
 
   EXPECT_LT(StringUtil::IndexOf(src, 'o', -1), 0);
   EXPECT_LT(StringUtil::IndexOf(src, 'o', -2), 0);
@@ -958,7 +958,7 @@ TEST(TestString_StringUtil, IndexOfChar_Empty_CString)
 
 TEST(TestString_StringUtil, IndexOfChar_Empty_String)
 {
-  std::string src;
+  const std::string src;
 
   EXPECT_LT(StringUtil::IndexOf(src, 'o', -1), 0);
   EXPECT_LT(StringUtil::IndexOf(src, 'o', -2), 0);
@@ -971,7 +971,7 @@ TEST(TestString_StringUtil, IndexOfChar_Empty_String)
 TEST(TestString_StringUtil, IndexOfChar_StringViewLite)
 {
   //---------------0123456789
-  StringViewLite src("old school");
+  const StringViewLite src("old school");
 
   EXPECT_EQ(0, StringUtil::IndexOf(src, 'o'));
   EXPECT_EQ(1, StringUtil::IndexOf(src, 'l'));
@@ -1030,7 +1030,7 @@ TEST(TestString_StringUtil, IndexOfChar_CString)
 TEST(TestString_StringUtil, IndexOfChar_String)
 {
   //---------------0123456789
-  std::string src("old school");
+  const std::string src("old school");
 
   EXPECT_EQ(0, StringUtil::IndexOf(src, 'o'));
   EXPECT_EQ(1, StringUtil::IndexOf(src, 'l'));
@@ -1060,7 +1060,7 @@ TEST(TestString_StringUtil, IndexOfChar_String)
 
 TEST(TestString_StringUtil, LastIndexOfChar_Empty_StringViewLite)
 {
-  StringViewLite src;
+  const StringViewLite src;
 
   EXPECT_LT(StringUtil::LastIndexOf(src, 'a'), 0);
   EXPECT_LT(StringUtil::LastIndexOf(src, 'D'), 0);
@@ -1077,7 +1077,7 @@ TEST(TestString_StringUtil, LastIndexOfChar_Empty_CString)
 
 TEST(TestString_StringUtil, LastIndexOfChar_Empty_String)
 {
-  std::string src;
+  const std::string src;
 
   EXPECT_LT(StringUtil::LastIndexOf(src, 'a'), 0);
   EXPECT_LT(StringUtil::LastIndexOf(src, 'D'), 0);
@@ -1088,7 +1088,7 @@ TEST(TestString_StringUtil, LastIndexOfChar_Empty_String)
 TEST(TestString_StringUtil, LastIndexOfChar_StringViewLite)
 {
   //------------------0123456789
-  StringViewLite src("Old school");
+  const StringViewLite src("Old school");
 
   EXPECT_EQ(9, StringUtil::LastIndexOf(src, 'l'));
   EXPECT_EQ(8, StringUtil::LastIndexOf(src, 'o'));
@@ -1125,7 +1125,7 @@ TEST(TestString_StringUtil, LastIndexOfChar_CString)
 TEST(TestString_StringUtil, LastIndexOfChar_String)
 {
   //--------------0123456789
-  std::string src("Old school");
+  const std::string src("Old school");
 
   EXPECT_EQ(9, StringUtil::LastIndexOf(src, 'l'));
   EXPECT_EQ(8, StringUtil::LastIndexOf(src, 'o'));
@@ -1145,7 +1145,7 @@ TEST(TestString_StringUtil, LastIndexOfChar_String)
 
 TEST(TestString_StringUtil, LastIndexOfChar_FromIndex_StartIndexNegative_StringViewLite)
 {
-  StringViewLite src("old school");
+  const StringViewLite src("old school");
 
   EXPECT_LT(StringUtil::LastIndexOf(src, 'l', -1), 0);
   EXPECT_LT(StringUtil::LastIndexOf(src, 'o', -2), 0);
@@ -1165,7 +1165,7 @@ TEST(TestString_StringUtil, LastIndexOfChar_FromIndex_StartIndexNegative_CString
 
 TEST(TestString_StringUtil, LastIndexOfChar_FromIndex_StartIndexNegative_String)
 {
-  std::string src("old school");
+  const std::string src("old school");
 
   EXPECT_LT(StringUtil::LastIndexOf(src, 'l', -1), 0);
   EXPECT_LT(StringUtil::LastIndexOf(src, 'o', -2), 0);
@@ -1178,7 +1178,7 @@ TEST(TestString_StringUtil, LastIndexOfChar_FromIndex_StartIndexNegative_String)
 TEST(TestString_StringUtil, LastIndexOfChar_FromIndex_StringViewLite)
 {
   //------------------0123456789
-  StringViewLite src("old school");
+  const StringViewLite src("old school");
 
   EXPECT_EQ(9, StringUtil::LastIndexOf(src, 'l', 9));
   EXPECT_EQ(1, StringUtil::LastIndexOf(src, 'l', 8));
@@ -1257,7 +1257,7 @@ TEST(TestString_StringUtil, LastIndexOfChar_FromIndex_CString)
 TEST(TestString_StringUtil, LastIndexOfChar_FromIndex_String)
 {
   //---------------0123456789
-  std::string src("old school");
+  const std::string src("old school");
 
   EXPECT_EQ(9, StringUtil::LastIndexOf(src, 'l', 9));
   EXPECT_EQ(1, StringUtil::LastIndexOf(src, 'l', 8));
@@ -1298,7 +1298,7 @@ TEST(TestString_StringUtil, LastIndexOfChar_FromIndex_String)
 
 TEST(TestString_StringUtil, Split_Empty_StringViewLite)
 {
-  StringViewLite src;
+  const StringViewLite src;
   const auto result = StringUtil::Split(src, ' ', false);
 
   ASSERT_EQ(result.size(), 0u);
@@ -1314,7 +1314,7 @@ TEST(TestString_StringUtil, Split_Empty_CString)
 
 TEST(TestString_StringUtil, Split_Empty_String)
 {
-  std::string src;
+  const std::string src;
   const auto result = StringUtil::Split(src, ' ', false);
 
   ASSERT_EQ(result.size(), 0u);
@@ -1324,7 +1324,7 @@ TEST(TestString_StringUtil, Split_Empty_String)
 
 TEST(TestString_StringUtil, Split_HelloWorld_StringViewLite)
 {
-  StringViewLite src("hello world");
+  const StringViewLite src("hello world");
   const auto result = StringUtil::Split(src, ' ', false);
 
   ASSERT_EQ(result.size(), 2u);
@@ -1344,7 +1344,7 @@ TEST(TestString_StringUtil, Split_HelloWorld_CString)
 
 TEST(TestString_StringUtil, Split_HelloWorld_String)
 {
-  std::string src("hello world");
+  const std::string src("hello world");
   const auto result = StringUtil::Split(src, ' ', false);
 
   ASSERT_EQ(result.size(), 2u);
@@ -1356,7 +1356,7 @@ TEST(TestString_StringUtil, Split_HelloWorld_String)
 
 TEST(TestString_StringUtil, Split_HelloWorld2_KeepEmpty_StringViewLite)
 {
-  StringViewLite src("hello  world");
+  const StringViewLite src("hello  world");
   const auto result = StringUtil::Split(src, ' ', false);
 
   ASSERT_EQ(result.size(), 3u);
@@ -1378,7 +1378,7 @@ TEST(TestString_StringUtil, Split_HelloWorld2_KeepEmpty_CString)
 
 TEST(TestString_StringUtil, Split_HelloWorld2_KeepEmpty_String)
 {
-  std::string src("hello  world");
+  const std::string src("hello  world");
   const auto result = StringUtil::Split(src, ' ', false);
 
   ASSERT_EQ(result.size(), 3u);
@@ -1391,7 +1391,7 @@ TEST(TestString_StringUtil, Split_HelloWorld2_KeepEmpty_String)
 
 TEST(TestString_StringUtil, Split_HelloWorld2_RemoveEmpty_StringViewLite)
 {
-  StringViewLite src("hello  world");
+  const StringViewLite src("hello  world");
   const auto result = StringUtil::Split(src, ' ', true);
 
   ASSERT_EQ(result.size(), 2u);
@@ -1411,7 +1411,7 @@ TEST(TestString_StringUtil, Split_HelloWorld2_RemoveEmpty_CString)
 
 TEST(TestString_StringUtil, Split_HelloWorld2_RemoveEmpty_String)
 {
-  std::string src("hello  world");
+  const std::string src("hello  world");
   const auto result = StringUtil::Split(src, ' ', true);
 
   ASSERT_EQ(result.size(), 2u);
@@ -1424,7 +1424,7 @@ TEST(TestString_StringUtil, Split_HelloWorld2_RemoveEmpty_String)
 TEST(TestString_StringUtil, Split_MoreComplex_StringViewLite)
 {
   //                  0     1      2    3  4 5    6           7
-  StringViewLite src("hello world, this is a more complicated example.");
+  const StringViewLite src("hello world, this is a more complicated example.");
   const auto result = StringUtil::Split(src, ' ', false);
 
   ASSERT_EQ(result.size(), 8u);
@@ -1458,7 +1458,7 @@ TEST(TestString_StringUtil, Split_MoreComplex_CString)
 TEST(TestString_StringUtil, Split_MoreComplex_String)
 {
   //               0     1      2    3  4 5    6           7
-  std::string src("hello world, this is a more complicated example.");
+  const std::string src("hello world, this is a more complicated example.");
   const auto result = StringUtil::Split(src, ' ', false);
 
   ASSERT_EQ(result.size(), 8u);
@@ -1476,7 +1476,7 @@ TEST(TestString_StringUtil, Split_MoreComplex_String)
 
 TEST(TestString_StringUtil, StringSplit_Empty_StringViewLite)
 {
-  StringViewLite src;
+  const StringViewLite src;
   const auto result = StringUtil::StringSplit(src, ' ', false);
 
   ASSERT_EQ(result.size(), 0u);
@@ -1492,7 +1492,7 @@ TEST(TestString_StringUtil, StringSplit_Empty_CString)
 
 TEST(TestString_StringUtil, StringSplit_Empty_String)
 {
-  std::string src;
+  const std::string src;
   const auto result = StringUtil::StringSplit(src, ' ', false);
 
   ASSERT_EQ(result.size(), 0u);
@@ -1502,7 +1502,7 @@ TEST(TestString_StringUtil, StringSplit_Empty_String)
 
 TEST(TestString_StringUtil, StringSplit_HelloWorld_StringViewLite)
 {
-  StringViewLite src("hello world");
+  const StringViewLite src("hello world");
   const auto result = StringUtil::StringSplit(src, ' ', false);
 
   ASSERT_EQ(result.size(), 2u);
@@ -1522,7 +1522,7 @@ TEST(TestString_StringUtil, StringSplit_HelloWorld_CString)
 
 TEST(TestString_StringUtil, StringSplit_HelloWorld_String)
 {
-  std::string src("hello world");
+  const std::string src("hello world");
   const auto result = StringUtil::StringSplit(src, ' ', false);
 
   ASSERT_EQ(result.size(), 2u);
@@ -1534,7 +1534,7 @@ TEST(TestString_StringUtil, StringSplit_HelloWorld_String)
 
 TEST(TestString_StringUtil, StringSplit_HelloWorld2_KeepEmpty_StringViewLite)
 {
-  StringViewLite src("hello  world");
+  const StringViewLite src("hello  world");
   const auto result = StringUtil::StringSplit(src, ' ', false);
 
   ASSERT_EQ(result.size(), 3u);
@@ -1556,7 +1556,7 @@ TEST(TestString_StringUtil, StringSplit_HelloWorld2_KeepEmpty_CString)
 
 TEST(TestString_StringUtil, StringSplit_HelloWorld2_KeepEmpty_String)
 {
-  std::string src("hello  world");
+  const std::string src("hello  world");
   const auto result = StringUtil::StringSplit(src, ' ', false);
 
   ASSERT_EQ(result.size(), 3u);
@@ -1569,7 +1569,7 @@ TEST(TestString_StringUtil, StringSplit_HelloWorld2_KeepEmpty_String)
 
 TEST(TestString_StringUtil, StringSplit_HelloWorld2_RemoveEmpty_StringViewLite)
 {
-  StringViewLite src("hello  world");
+  const StringViewLite src("hello  world");
   const auto result = StringUtil::StringSplit(src, ' ', true);
 
   ASSERT_EQ(result.size(), 2u);
@@ -1589,7 +1589,7 @@ TEST(TestString_StringUtil, StringSplit_HelloWorld2_RemoveEmpty_CString)
 
 TEST(TestString_StringUtil, StringSplit_HelloWorld2_RemoveEmpty_String)
 {
-  std::string src("hello  world");
+  const std::string src("hello  world");
   const auto result = StringUtil::StringSplit(src, ' ', true);
 
   ASSERT_EQ(result.size(), 2u);
@@ -1602,7 +1602,7 @@ TEST(TestString_StringUtil, StringSplit_HelloWorld2_RemoveEmpty_String)
 TEST(TestString_StringUtil, StringSplit_MoreComplex_StringViewLite)
 {
   //                  0     1      2    3  4 5    6           7
-  StringViewLite src("hello world, this is a more complicated example.");
+  const StringViewLite src("hello world, this is a more complicated example.");
   const auto result = StringUtil::StringSplit(src, ' ', false);
 
   ASSERT_EQ(result.size(), 8u);
@@ -1636,7 +1636,7 @@ TEST(TestString_StringUtil, StringSplit_MoreComplex_CString)
 TEST(TestString_StringUtil, StringSplit_MoreComplex_String)
 {
   //               0     1      2    3  4 5    6           7
-  std::string src("hello world, this is a more complicated example.");
+  const std::string src("hello world, this is a more complicated example.");
   const auto result = StringUtil::StringSplit(src, ' ', false);
 
   ASSERT_EQ(result.size(), 8u);

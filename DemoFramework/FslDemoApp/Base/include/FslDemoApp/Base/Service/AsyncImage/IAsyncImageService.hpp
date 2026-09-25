@@ -63,9 +63,9 @@ namespace Fsl
     //         The channel order is just a hint and the image service is free to ignore it.
     //! @return the bitmap
     //! @throws IOException if the file isn't found or something goes wrong reading it.
-    virtual std::future<Bitmap> ReadBitmap(const IO::Path& absolutePath, const PixelFormat desiredPixelFormat = PixelFormat::Undefined,
-                                           const BitmapOrigin desiredOrigin = BitmapOrigin::Undefined,
-                                           const PixelChannelOrder preferredChannelOrder = PixelChannelOrder::Undefined) const = 0;
+    [[nodiscard]] virtual std::future<Bitmap> ReadBitmap(const IO::Path& absolutePath, const PixelFormat desiredPixelFormat = PixelFormat::Undefined,
+                                                         const BitmapOrigin desiredOrigin = BitmapOrigin::Undefined,
+                                                         const PixelChannelOrder preferredChannelOrder = PixelChannelOrder::Undefined) const = 0;
 
     //! @brief Read the content of the file as a texture.
     //! @param absolutePath the absolute path to load the content from (a relative path will be treated as a error)
@@ -78,9 +78,10 @@ namespace Fsl
     //         The channel order is just a hint and the image service is free to ignore it.
     //! @return the texture
     //! @throws IOException if the file isn't found or something goes wrong reading it.
-    virtual std::future<Texture> ReadTexture(const IO::Path& absolutePath, const PixelFormat desiredPixelFormat = PixelFormat::Undefined,
-                                             const BitmapOrigin desiredOrigin = BitmapOrigin::Undefined,
-                                             const PixelChannelOrder preferredChannelOrder = PixelChannelOrder::Undefined) const = 0;
+    [[nodiscard]] virtual std::future<Texture> ReadTexture(const IO::Path& absolutePath,
+                                                           const PixelFormat desiredPixelFormat = PixelFormat::Undefined,
+                                                           const BitmapOrigin desiredOrigin = BitmapOrigin::Undefined,
+                                                           const PixelChannelOrder preferredChannelOrder = PixelChannelOrder::Undefined) const = 0;
 
     //! @brief Save the bitmap to a file of ImageFormat type and
     //!        the pixel format stored in the file is the one best matching the the bitmap pixel format.
@@ -119,9 +120,10 @@ namespace Fsl
     //         Informs the image library of the preferred channel ordering when loading content using a undefined pixel-format.
     //         The channel order is just a hint and the image service is free to ignore it.
     //! @return true if the bitmap was loaded, false otherwise
-    virtual std::future<std::pair<bool, Bitmap>> TryRead(const IO::Path& absolutePath, const PixelFormat desiredPixelFormat = PixelFormat::Undefined,
-                                                         const BitmapOrigin desiredOrigin = BitmapOrigin::Undefined,
-                                                         const PixelChannelOrder preferredChannelOrder = PixelChannelOrder::Undefined) const = 0;
+    [[nodiscard]] virtual std::future<std::pair<bool, Bitmap>>
+      TryRead(const IO::Path& absolutePath, const PixelFormat desiredPixelFormat = PixelFormat::Undefined,
+              const BitmapOrigin desiredOrigin = BitmapOrigin::Undefined,
+              const PixelChannelOrder preferredChannelOrder = PixelChannelOrder::Undefined) const = 0;
 
 
     //! @brief Save the bitmap to a file of ImageFormat type and

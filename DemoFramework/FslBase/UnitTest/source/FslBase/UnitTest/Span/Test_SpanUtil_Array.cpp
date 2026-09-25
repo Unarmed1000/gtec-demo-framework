@@ -48,7 +48,7 @@ namespace
 TEST(TestSpanUtil_Array, AsReadOnlySpan)
 {
   constexpr std::array<uint16_t, 10> Data = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
-  ReadOnlySpan<uint16_t> span = SpanUtil::AsReadOnlySpan(Data);
+  const ReadOnlySpan<uint16_t> span = SpanUtil::AsReadOnlySpan(Data);
 
   EXPECT_FALSE(span.empty());
   EXPECT_EQ(span.data(), Data.data());
@@ -60,7 +60,7 @@ TEST(TestSpanUtil_Array, AsReadOnlySpan)
 TEST(TestSpanUtil_Array, AsReadOnlySpan_Empty)
 {
   constexpr std::array<uint16_t, 0> Data{};
-  ReadOnlySpan<uint16_t> span = SpanUtil::AsReadOnlySpan(Data);
+  const ReadOnlySpan<uint16_t> span = SpanUtil::AsReadOnlySpan(Data);
 
   EXPECT_TRUE(span.empty());
   EXPECT_EQ(span.data(), Data.data());
@@ -100,7 +100,7 @@ TEST(TestSpanUtil_Array, AsSpan_Empty)
 TEST(TestSpanUtil_Array, UncheckedAsReadOnlySpan1)
 {
   const std::array<uint16_t, 10> data = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
-  ReadOnlySpan<uint16_t> span = SpanUtil::UncheckedAsReadOnlySpan(data, 0u, data.size());
+  const ReadOnlySpan<uint16_t> span = SpanUtil::UncheckedAsReadOnlySpan(data, 0u, data.size());
 
   EXPECT_FALSE(span.empty());
   EXPECT_EQ(span.data(), data.data());
@@ -113,7 +113,7 @@ TEST(TestSpanUtil_Array, UncheckedAsReadOnlySpan2)
 {
   const std::array<uint16_t, 10> data = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
   const auto offset = data.size() - 2u;
-  ReadOnlySpan<uint16_t> span = SpanUtil::UncheckedAsReadOnlySpan(data, offset, 2u);
+  const ReadOnlySpan<uint16_t> span = SpanUtil::UncheckedAsReadOnlySpan(data, offset, 2u);
 
   EXPECT_FALSE(span.empty());
   EXPECT_EQ(span.data(), data.data() + offset);
@@ -127,7 +127,7 @@ TEST(TestSpanUtil_Array, UncheckedAsReadOnlySpan2)
 TEST(TestSpanUtil_Array, UncheckedAsReadOnlySpan_Empty)
 {
   const std::array<uint16_t, 0> data{};
-  ReadOnlySpan<uint16_t> span = SpanUtil::UncheckedAsReadOnlySpan(data, 0u, data.size());
+  const ReadOnlySpan<uint16_t> span = SpanUtil::UncheckedAsReadOnlySpan(data, 0u, data.size());
 
   EXPECT_TRUE(span.empty());
   EXPECT_EQ(span.data(), data.data());
@@ -206,7 +206,7 @@ TEST(TestSpanUtil_Array, UncheckedAsSpan_Empty)
 TEST(TestSpanUtil_Array, ClampedAsReadOnlySpan1_subspan)
 {
   const std::array<uint16_t, 10> data = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
-  ReadOnlySpan<uint16_t> span = SpanUtil::ClampedAsReadOnlySpan(data, 0u, data.size());
+  const ReadOnlySpan<uint16_t> span = SpanUtil::ClampedAsReadOnlySpan(data, 0u, data.size());
 
   EXPECT_FALSE(span.empty());
   EXPECT_EQ(span.data(), data.data());
@@ -218,7 +218,7 @@ TEST(TestSpanUtil_Array, ClampedAsReadOnlySpan1_subspan)
 TEST(TestSpanUtil_Array, ClampedAsReadOnlySpan2_subspan)
 {
   const std::array<uint16_t, 10> data = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
-  ReadOnlySpan<uint16_t> span = SpanUtil::ClampedAsReadOnlySpan(data, 0u);
+  const ReadOnlySpan<uint16_t> span = SpanUtil::ClampedAsReadOnlySpan(data, 0u);
 
   EXPECT_FALSE(span.empty());
   EXPECT_EQ(span.data(), data.data());
@@ -230,8 +230,8 @@ TEST(TestSpanUtil_Array, ClampedAsReadOnlySpan2_subspan)
 TEST(TestSpanUtil_Array, ClampedAsReadOnlySpan3_subspan)
 {
   const std::array<uint16_t, 10> data = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
-  auto offset = data.size() - 2u;
-  ReadOnlySpan<uint16_t> span = SpanUtil::ClampedAsReadOnlySpan(data, offset);
+  const auto offset = data.size() - 2u;
+  const ReadOnlySpan<uint16_t> span = SpanUtil::ClampedAsReadOnlySpan(data, offset);
 
   EXPECT_FALSE(span.empty());
   EXPECT_EQ(span.data(), data.data() + offset);
@@ -245,8 +245,8 @@ TEST(TestSpanUtil_Array, ClampedAsReadOnlySpan3_subspan)
 TEST(TestSpanUtil_Array, ClampedAsReadOnlySpan4_subspan)
 {
   const std::array<uint16_t, 10> data = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
-  auto offset = data.size() - 2u;
-  ReadOnlySpan<uint16_t> span = SpanUtil::ClampedAsReadOnlySpan(data, offset, 2u);
+  const auto offset = data.size() - 2u;
+  const ReadOnlySpan<uint16_t> span = SpanUtil::ClampedAsReadOnlySpan(data, offset, 2u);
 
   EXPECT_FALSE(span.empty());
   EXPECT_EQ(span.data(), data.data() + offset);
@@ -260,7 +260,7 @@ TEST(TestSpanUtil_Array, ClampedAsReadOnlySpan4_subspan)
 TEST(TestSpanUtil_Array, ClampedAsReadOnlySpan_subspan_Empty1)
 {
   const std::array<uint16_t, 0> data{};
-  ReadOnlySpan<uint16_t> span = SpanUtil::ClampedAsReadOnlySpan(data, 0u);
+  const ReadOnlySpan<uint16_t> span = SpanUtil::ClampedAsReadOnlySpan(data, 0u);
 
   EXPECT_TRUE(span.empty());
   EXPECT_EQ(span.data(), data.data());
@@ -272,7 +272,7 @@ TEST(TestSpanUtil_Array, ClampedAsReadOnlySpan_subspan_Empty1)
 TEST(TestSpanUtil_Array, ClampedAsReadOnlySpan_subspan_Empty2)
 {
   const std::array<uint16_t, 0> data{};
-  ReadOnlySpan<uint16_t> span = SpanUtil::ClampedAsReadOnlySpan(data, 0u, 0u);
+  const ReadOnlySpan<uint16_t> span = SpanUtil::ClampedAsReadOnlySpan(data, 0u, 0u);
 
   EXPECT_TRUE(span.empty());
   EXPECT_EQ(span.data(), data.data());
@@ -284,7 +284,7 @@ TEST(TestSpanUtil_Array, ClampedAsReadOnlySpan_subspan_Empty2)
 TEST(TestSpanUtil_Array, ClampedAsReadOnlySpan_subspan_PositionOverflowHandled)
 {
   const std::array<uint16_t, 10> data = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
-  ReadOnlySpan<uint16_t> span = SpanUtil::ClampedAsReadOnlySpan(data, data.size() + 2, 0u);
+  const ReadOnlySpan<uint16_t> span = SpanUtil::ClampedAsReadOnlySpan(data, data.size() + 2, 0u);
 
   EXPECT_TRUE(span.empty());
   EXPECT_EQ(span.size(), 0u);
@@ -295,7 +295,7 @@ TEST(TestSpanUtil_Array, ClampedAsReadOnlySpan_subspan_PositionOverflowHandled)
 TEST(TestSpanUtil_Array, ClampedAsReadOnlySpan_subspan_SizeOverflowHandled1)
 {
   const std::array<uint16_t, 10> data = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
-  ReadOnlySpan<uint16_t> span = SpanUtil::ClampedAsReadOnlySpan(data, 0u, data.size() + 2);
+  const ReadOnlySpan<uint16_t> span = SpanUtil::ClampedAsReadOnlySpan(data, 0u, data.size() + 2);
 
   EXPECT_FALSE(span.empty());
   EXPECT_EQ(span.data(), data.data());
@@ -307,7 +307,7 @@ TEST(TestSpanUtil_Array, ClampedAsReadOnlySpan_subspan_SizeOverflowHandled1)
 TEST(TestSpanUtil_Array, ClampedAsReadOnlySpan_subspan_SizeOverflowHandled2)
 {
   const std::array<uint16_t, 10> data = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
-  ReadOnlySpan<uint16_t> span = SpanUtil::ClampedAsReadOnlySpan(data, 9, data.size());
+  const ReadOnlySpan<uint16_t> span = SpanUtil::ClampedAsReadOnlySpan(data, 9, data.size());
 
   EXPECT_FALSE(span.empty());
   EXPECT_EQ(span.data(), data.data() + 9u);
@@ -320,7 +320,7 @@ TEST(TestSpanUtil_Array, ClampedAsReadOnlySpan_subspan_SizeOverflowHandled2)
 TEST(TestSpanUtil_Array, ClampedAsReadOnlySpan_subspan_PositionAndSizeOverflowHandled)
 {
   const std::array<uint16_t, 10> data = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
-  ReadOnlySpan<uint16_t> span = SpanUtil::ClampedAsReadOnlySpan(data, data.size() + 2, 2u);
+  const ReadOnlySpan<uint16_t> span = SpanUtil::ClampedAsReadOnlySpan(data, data.size() + 2, 2u);
 
   EXPECT_TRUE(span.empty());
   EXPECT_EQ(span.size(), 0u);
@@ -357,7 +357,7 @@ TEST(TestSpanUtil_Array, ClampedAsSpan2_subspan)
 TEST(TestSpanUtil_Array, ClampedAsSpan3_subspan)
 {
   std::array<uint16_t, 10> data = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
-  auto offset = data.size() - 2u;
+  const auto offset = data.size() - 2u;
   Span<uint16_t> span = SpanUtil::ClampedAsSpan(data, offset);
 
   EXPECT_FALSE(span.empty());
@@ -372,7 +372,7 @@ TEST(TestSpanUtil_Array, ClampedAsSpan3_subspan)
 TEST(TestSpanUtil_Array, ClampedAsSpan4_subspan)
 {
   std::array<uint16_t, 10> data = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
-  auto offset = data.size() - 2u;
+  const auto offset = data.size() - 2u;
   Span<uint16_t> span = SpanUtil::ClampedAsSpan(data, offset, 2u);
 
   EXPECT_FALSE(span.empty());
@@ -411,7 +411,7 @@ TEST(TestSpanUtil_Array, ClampedAsSpan_subspan_Empty2)
 TEST(TestSpanUtil_Array, ClampedAsSpan_subspan_PositionOverflowHandled)
 {
   std::array<uint16_t, 10> data = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
-  Span<uint16_t> span = SpanUtil::ClampedAsSpan(data, data.size() + 2, 0u);
+  const Span<uint16_t> span = SpanUtil::ClampedAsSpan(data, data.size() + 2, 0u);
 
   EXPECT_TRUE(span.empty());
   EXPECT_EQ(span.size(), 0u);
@@ -447,7 +447,7 @@ TEST(TestSpanUtil_Array, ClampedAsSpan_subspan_SizeOverflowHandled2)
 TEST(TestSpanUtil_Array, ClampedAsSpan_subspan_PositionAndSizeOverflowHandled)
 {
   std::array<uint16_t, 10> data = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
-  Span<uint16_t> span = SpanUtil::ClampedAsSpan(data, data.size() + 2, 2u);
+  const Span<uint16_t> span = SpanUtil::ClampedAsSpan(data, data.size() + 2, 2u);
 
   EXPECT_TRUE(span.empty());
   EXPECT_EQ(span.size(), 0u);
@@ -460,7 +460,7 @@ TEST(TestSpanUtil_Array, ClampedAsSpan_subspan_PositionAndSizeOverflowHandled)
 TEST(TestSpanUtil_Array, AsReadOnlySpan1)
 {
   const std::array<uint16_t, 10> data = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
-  ReadOnlySpan<uint16_t> span = SpanUtil::AsReadOnlySpan(data, 0u);
+  const ReadOnlySpan<uint16_t> span = SpanUtil::AsReadOnlySpan(data, 0u);
 
   EXPECT_FALSE(span.empty());
   EXPECT_EQ(span.data(), data.data());
@@ -473,7 +473,7 @@ TEST(TestSpanUtil_Array, AsReadOnlySpan2)
 {
   const std::array<uint16_t, 10> data = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
   const auto offset = 1u;
-  ReadOnlySpan<uint16_t> span = SpanUtil::AsReadOnlySpan(data, 1u, 2u);
+  const ReadOnlySpan<uint16_t> span = SpanUtil::AsReadOnlySpan(data, 1u, 2u);
 
   EXPECT_FALSE(span.empty());
   EXPECT_EQ(span.data(), data.data() + offset);
@@ -488,7 +488,7 @@ TEST(TestSpanUtil_Array, AsReadOnlySpan3)
 {
   const std::array<uint16_t, 10> data = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
   const auto offset = data.size() - 2u;
-  ReadOnlySpan<uint16_t> span = SpanUtil::AsReadOnlySpan(data, offset);
+  const ReadOnlySpan<uint16_t> span = SpanUtil::AsReadOnlySpan(data, offset);
 
   EXPECT_FALSE(span.empty());
   EXPECT_EQ(span.data(), data.data() + offset);
@@ -502,7 +502,7 @@ TEST(TestSpanUtil_Array, AsReadOnlySpan3)
 TEST(TestSpanUtil_Array, AsReadOnlySpan_Empty1)
 {
   const std::array<uint16_t, 0> data{};
-  ReadOnlySpan<uint16_t> span = SpanUtil::AsReadOnlySpan(data, 0u);
+  const ReadOnlySpan<uint16_t> span = SpanUtil::AsReadOnlySpan(data, 0u);
 
   EXPECT_TRUE(span.empty());
   EXPECT_EQ(span.data(), nullptr);
@@ -514,7 +514,7 @@ TEST(TestSpanUtil_Array, AsReadOnlySpan_Empty1)
 TEST(TestSpanUtil_Array, AsReadOnlySpan_Empty2)
 {
   const std::array<uint16_t, 0> data{};
-  ReadOnlySpan<uint16_t> span = SpanUtil::AsReadOnlySpan(data, 0u, 0u);
+  const ReadOnlySpan<uint16_t> span = SpanUtil::AsReadOnlySpan(data, 0u, 0u);
 
   EXPECT_TRUE(span.empty());
   EXPECT_EQ(span.data(), nullptr);
@@ -612,7 +612,7 @@ TEST(TestSpanUtil_Array, AsSpan_Throws)
 TEST(TestSpanUtil_Array, UncheckedFirstReadOnlySpan1)
 {
   const std::array<uint16_t, 10> data = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
-  ReadOnlySpan<uint16_t> span = SpanUtil::UncheckedFirstReadOnlySpan(data, data.size());
+  const ReadOnlySpan<uint16_t> span = SpanUtil::UncheckedFirstReadOnlySpan(data, data.size());
 
   EXPECT_FALSE(span.empty());
   EXPECT_EQ(span.data(), data.data());
@@ -624,7 +624,7 @@ TEST(TestSpanUtil_Array, UncheckedFirstReadOnlySpan1)
 TEST(TestSpanUtil_Array, UncheckedFirstReadOnlySpan2)
 {
   const std::array<uint16_t, 10> data = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
-  ReadOnlySpan<uint16_t> span = SpanUtil::UncheckedFirstReadOnlySpan(data, 2u);
+  const ReadOnlySpan<uint16_t> span = SpanUtil::UncheckedFirstReadOnlySpan(data, 2u);
 
   EXPECT_FALSE(span.empty());
   EXPECT_EQ(span.data(), data.data());
@@ -638,7 +638,7 @@ TEST(TestSpanUtil_Array, UncheckedFirstReadOnlySpan2)
 TEST(TestSpanUtil_Array, UncheckedFirstReadOnlySpan_Empty)
 {
   std::array<uint16_t, 0> data{};
-  ReadOnlySpan<uint16_t> span = SpanUtil::UncheckedFirstReadOnlySpan(data, 0u);
+  const ReadOnlySpan<uint16_t> span = SpanUtil::UncheckedFirstReadOnlySpan(data, 0u);
 
   EXPECT_TRUE(span.empty());
   EXPECT_EQ(span.data(), data.data());
@@ -692,7 +692,7 @@ TEST(TestSpanUtil_Array, UncheckedFirstSpan_Empty)
 TEST(TestSpanUtil_Array, FirstReadOnlySpan1)
 {
   const std::array<uint16_t, 10> data = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
-  ReadOnlySpan<uint16_t> span = SpanUtil::FirstReadOnlySpan(data, data.size());
+  const ReadOnlySpan<uint16_t> span = SpanUtil::FirstReadOnlySpan(data, data.size());
 
   EXPECT_FALSE(span.empty());
   EXPECT_EQ(span.data(), data.data());
@@ -704,7 +704,7 @@ TEST(TestSpanUtil_Array, FirstReadOnlySpan1)
 TEST(TestSpanUtil_Array, FirstReadOnlySpan2)
 {
   const std::array<uint16_t, 10> data = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
-  ReadOnlySpan<uint16_t> span = SpanUtil::FirstReadOnlySpan(data, 2u);
+  const ReadOnlySpan<uint16_t> span = SpanUtil::FirstReadOnlySpan(data, 2u);
 
   EXPECT_FALSE(span.empty());
   EXPECT_EQ(span.data(), data.data());
@@ -718,7 +718,7 @@ TEST(TestSpanUtil_Array, FirstReadOnlySpan2)
 TEST(TestSpanUtil_Array, FirstReadOnlySpan_Empty)
 {
   const std::array<uint16_t, 0> data{};
-  ReadOnlySpan<uint16_t> span = SpanUtil::FirstReadOnlySpan(data, 0u);
+  const ReadOnlySpan<uint16_t> span = SpanUtil::FirstReadOnlySpan(data, 0u);
 
   EXPECT_TRUE(span.empty());
   EXPECT_EQ(span.data(), data.data());

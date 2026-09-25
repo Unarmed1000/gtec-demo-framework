@@ -48,7 +48,7 @@ namespace Fsl
     {
     }
 
-    DemoHostCaps GetCaps() const override
+    [[nodiscard]] DemoHostCaps GetCaps() const override
     {
       return m_caps;
     }

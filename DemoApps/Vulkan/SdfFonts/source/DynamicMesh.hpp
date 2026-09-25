@@ -115,6 +115,9 @@ namespace Fsl
       other.m_spanUsageFlags = {};
       other.m_maxFramesInFlight = {};
     }
+    DynamicMesh(const DynamicMesh&) = delete;
+    DynamicMesh& operator=(const DynamicMesh&) = delete;
+    ~DynamicMesh() = default;
 
     DynamicMesh() = default;
     DynamicMesh(const std::shared_ptr<Vulkan::VMBufferManager>& bufferManager, std::vector<VertexPositionTexture> vertices,

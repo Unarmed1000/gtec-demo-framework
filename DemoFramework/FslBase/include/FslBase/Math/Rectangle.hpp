@@ -69,68 +69,68 @@ namespace Fsl
       return {};
     }
 
-    constexpr inline int32_t X() const noexcept
+    [[nodiscard]] constexpr inline int32_t X() const noexcept
     {
       return m_x;
     }
 
-    constexpr inline int32_t Y() const noexcept
+    [[nodiscard]] constexpr inline int32_t Y() const noexcept
     {
       return m_y;
     }
 
-    constexpr inline int32_t Width() const noexcept
+    [[nodiscard]] constexpr inline int32_t Width() const noexcept
     {
       return m_width;
     }
 
-    constexpr inline int32_t Height() const noexcept
+    [[nodiscard]] constexpr inline int32_t Height() const noexcept
     {
       return m_height;
     }
 
 
-    constexpr inline int32_t Left() const noexcept
+    [[nodiscard]] constexpr inline int32_t Left() const noexcept
     {
       return m_x;
     }
 
-    constexpr inline int32_t Top() const noexcept
+    [[nodiscard]] constexpr inline int32_t Top() const noexcept
     {
       return m_y;
     }
 
-    constexpr inline int32_t Right() const noexcept
+    [[nodiscard]] constexpr inline int32_t Right() const noexcept
     {
       return m_x + m_width;
     }
 
-    constexpr inline int32_t Bottom() const noexcept
+    [[nodiscard]] constexpr inline int32_t Bottom() const noexcept
     {
       return m_y + m_height;
     }
 
-    inline constexpr Point2 GetSize() const noexcept
+    [[nodiscard]] inline constexpr Point2 GetSize() const noexcept
     {
       return {m_width, m_height};
     }
 
-    inline constexpr Point2 TopLeft() const noexcept
+    [[nodiscard]] inline constexpr Point2 TopLeft() const noexcept
     {
       return {m_x, m_y};
     }
 
-    inline constexpr Point2 TopRight() const noexcept
+    [[nodiscard]] inline constexpr Point2 TopRight() const noexcept
     {
       return {Right(), m_y};
     }
 
-    inline constexpr Point2 BottomLeft() const noexcept
+    [[nodiscard]] inline constexpr Point2 BottomLeft() const noexcept
     {
       return {m_x, Bottom()};
     }
 
-    inline constexpr Point2 BottomRight() const noexcept
+    [[nodiscard]] inline constexpr Point2 BottomRight() const noexcept
     {
       return {Right(), Bottom()};
     }
@@ -193,21 +193,21 @@ namespace Fsl
 
 
     //! @brief Check if the x,y coordinate is considered to be contained within this rectangle
-    constexpr bool Contains(const int32_t x, const int32_t y) const noexcept
+    [[nodiscard]] constexpr bool Contains(const int32_t x, const int32_t y) const noexcept
     {
       return ((((x >= m_x) && (x < (m_x + m_width))) && (y >= m_y)) && (y < (m_y + m_height)));
     }
 
 
     //! @brief Check if the x,y coordinate is considered to be contained within this rectangle
-    constexpr bool Contains(const float x, const float y) const
+    [[nodiscard]] constexpr bool Contains(const float x, const float y) const
     {
       return ((((x >= static_cast<float>(m_x)) && (x < static_cast<float>(m_x + m_width))) && (y >= static_cast<float>(m_y))) &&
               (y < static_cast<float>(m_y + m_height)));
     }
 
     //! @brief Check if the x,y coordinate is considered to be contained within this rectangle
-    constexpr bool Contains(const Point2& value) const noexcept
+    [[nodiscard]] constexpr bool Contains(const Point2& value) const noexcept
     {
       return ((((value.X >= m_x) && (value.X < (m_x + m_width))) && (value.Y >= m_y)) && (value.Y < (m_y + m_height)));
     }
@@ -219,7 +219,7 @@ namespace Fsl
     //}
 
     //! @brief Check if the rectangle is considered to be contained within this rectangle
-    constexpr bool Contains(const Rectangle& value) const noexcept
+    [[nodiscard]] constexpr bool Contains(const Rectangle& value) const noexcept
     {
       return ((((value.m_x >= m_x) && ((value.m_x + value.m_width) <= (m_x + m_width))) && (value.m_y >= m_y)) &&
               ((value.m_y + value.m_height) <= (m_y + m_height)));
@@ -227,7 +227,7 @@ namespace Fsl
 
 
     //! @brief Get the start location of this rect
-    constexpr Point2 GetLocation() const noexcept
+    [[nodiscard]] constexpr Point2 GetLocation() const noexcept
     {
       return {m_x, m_y};
     }
@@ -242,7 +242,7 @@ namespace Fsl
 
 
     //! @brief Get the center of this rect
-    constexpr Point2 GetCenter() const noexcept
+    [[nodiscard]] constexpr Point2 GetCenter() const noexcept
     {
       return {m_x + (m_width / 2), m_y + (m_height / 2)};
     }
@@ -261,14 +261,14 @@ namespace Fsl
 
     //! @brief Gets a value that indicates whether the Rectangle is empty
     //!        An empty rectangle has all its values set to 0.
-    constexpr bool IsEmpty() const noexcept
+    [[nodiscard]] constexpr bool IsEmpty() const noexcept
     {
       return ((((m_width == 0) && (m_height == 0)) && (m_x == 0)) && (m_y == 0));
     }
 
 
     //! @brief Determines whether a specified Rectangle intersects with this Rectangle.
-    constexpr bool Intersects(const Rectangle& value) const noexcept
+    [[nodiscard]] constexpr bool Intersects(const Rectangle& value) const noexcept
     {
       return value.Left() < Right() && Left() < value.Right() && value.Top() < Bottom() && Top() < value.Bottom();
     }
@@ -279,10 +279,10 @@ namespace Fsl
     {
       if (rect1.Intersects(rect2))
       {
-        auto rightSide = std::min(rect1.m_x + rect1.m_width, rect2.m_x + rect2.m_width);
-        auto leftSide = std::max(rect1.m_x, rect2.m_x);
-        auto topSide = std::max(rect1.m_y, rect2.m_y);
-        auto bottomSide = std::min(rect1.m_y + rect1.m_height, rect2.m_y + rect2.m_height);
+        const auto rightSide = std::min(rect1.m_x + rect1.m_width, rect2.m_x + rect2.m_width);
+        const auto leftSide = std::max(rect1.m_x, rect2.m_x);
+        const auto topSide = std::max(rect1.m_y, rect2.m_y);
+        const auto bottomSide = std::min(rect1.m_y + rect1.m_height, rect2.m_y + rect2.m_height);
         return {leftSide, topSide, rightSide - leftSide, bottomSide - topSide};
       }
 

@@ -45,7 +45,7 @@ namespace Fsl::MeshUtil
       {
         std::swap(i0, i1);
       }
-      auto itrFind = rEdgeDict.find(i0);
+      const auto itrFind = rEdgeDict.find(i0);
       if (itrFind == rEdgeDict.end())
       {
         // first entry
@@ -55,7 +55,7 @@ namespace Fsl::MeshUtil
       }
 
 
-      auto itrFind2 = std::find(itrFind->second.begin(), itrFind->second.end(), i1);
+      const auto itrFind2 = std::find(itrFind->second.begin(), itrFind->second.end(), i1);
       if (itrFind2 == itrFind->second.end())
       {
         itrFind->second.push_back(i1);
@@ -89,7 +89,7 @@ namespace Fsl::MeshUtil
         const auto meshVertexCount = mesh->GetVertexCount();
         const auto meshIndexCount = mesh->GetIndexCount();
         const auto& srcVertices = mesh->GetVertexArray();
-        auto startVertexOffset = vertexOffset;
+        const auto startVertexOffset = vertexOffset;
         for (std::size_t i = 0; i < meshVertexCount; ++i)
         {
           finalMesh.Vertices[vertexOffset] = srcVertices[i];
@@ -115,9 +115,9 @@ namespace Fsl::MeshUtil
     uint32_t duplicatedEdgeCount = 0u;
     for (std::size_t i = 0; i < mesh.Indices.size(); i += 3)
     {
-      auto i0 = mesh.Indices[i];
-      auto i1 = mesh.Indices[i + 1];
-      auto i2 = mesh.Indices[i + 2];
+      const auto i0 = mesh.Indices[i];
+      const auto i1 = mesh.Indices[i + 1];
+      const auto i2 = mesh.Indices[i + 2];
 
       duplicatedEdgeCount += TryAddEdge(edgeDict, i0, i1) ? 1 : 0;
       duplicatedEdgeCount += TryAddEdge(edgeDict, i0, i2) ? 1 : 0;

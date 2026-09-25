@@ -87,7 +87,7 @@ namespace Fsl::GLES3
     ~GLShader() noexcept;
 
     //! @brief Check if this contains a valid gl handle.
-    bool IsValid() const noexcept
+    [[nodiscard]] bool IsValid() const noexcept
     {
       return m_handle != GLValues::InvalidHandle;
     }
@@ -100,21 +100,21 @@ namespace Fsl::GLES3
 
     void Reset(const GLint shaderType, const char* const pszShaderCode);
 
-    GLint GetType() const noexcept
+    [[nodiscard]] GLint GetType() const noexcept
     {
       return m_shaderType;
     }
 
     //! @brief Get the gl handle associated with the shader.
     //! @return the handle or GLValues::InvalidHandle if the buffer is unallocated.
-    GLuint Get() const noexcept
+    [[nodiscard]] GLuint Get() const noexcept
     {
       return m_handle;
     }
 
     //! @brief Get the gl handle associated with the shader.
     //! @return the handle or GLValues::InvalidHandle if the buffer is unallocated.
-    [[deprecated("use one of the other overloads instead")]] GLuint GetHandle() const
+    [[nodiscard]] [[deprecated("use one of the other overloads instead")]] GLuint GetHandle() const
     {
       return Get();
     }

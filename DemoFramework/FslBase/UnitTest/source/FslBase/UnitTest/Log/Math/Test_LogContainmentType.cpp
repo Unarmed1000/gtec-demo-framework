@@ -43,7 +43,7 @@ namespace
 
 TEST(TestLog_Math_LogContainmentType, Log)
 {
-  ContainmentType value = ContainmentType::Contains;
+  const ContainmentType value = ContainmentType::Contains;
 
   std::stringstream stream;
   stream << value;

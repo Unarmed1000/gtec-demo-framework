@@ -49,9 +49,9 @@ namespace Fsl
       IO::PathDeque files;
       IO::Directory::GetFiles(files, contentPath, IO::SearchOptions::AllDirectories);
 
-      for (auto itr = files.begin(); itr != files.end(); ++itr)
+      for (const auto& file : files)
       {
-        rPathWatcher.Add(**itr);
+        rPathWatcher.Add(*file);
       }
     }
 
@@ -86,7 +86,7 @@ namespace Fsl
 
           if (pathWatcher.Check())
           {
-            std::shared_ptr<ConcurrentQueue<ContentMonitorResultCommand>> ownerQueue = m_ownerQueue.lock();
+            const std::shared_ptr<ConcurrentQueue<ContentMonitorResultCommand>> ownerQueue = m_ownerQueue.lock();
             if (ownerQueue)
             {
               ownerQueue->Enqueue(ContentMonitorResultCommand::Restart);
@@ -120,10 +120,10 @@ namespace Fsl
     {
       try
       {
-        auto localContext = std::dynamic_pointer_cast<LocalThreadContext>(threadContext);
+        const auto localContext = std::dynamic_pointer_cast<LocalThreadContext>(threadContext);
         if (localContext)
         {
-          auto obj = std::make_shared<ContentMonitorThreadTask>(localContext->Queue, localContext->FromQueue, localContext->ContentPath);
+          const auto obj = std::make_shared<ContentMonitorThreadTask>(localContext->Queue, localContext->FromQueue, localContext->ContentPath);
           obj->Run();
         }
       }

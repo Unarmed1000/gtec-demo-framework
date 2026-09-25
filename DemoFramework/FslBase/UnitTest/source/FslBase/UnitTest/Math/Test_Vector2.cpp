@@ -138,7 +138,7 @@ namespace
 
 TEST(TestMath_Vector2, Construct)
 {
-  Vector2 value(1.0f, 2.0f);
+  const Vector2 value(1.0f, 2.0f);
 
   EXPECT_EQ(1.0f, value.X);
   EXPECT_EQ(2.0f, value.Y);

@@ -80,9 +80,9 @@ namespace Fsl::ModelSceneUtil
     {
       throw NotFoundException(fmt::format("Could not find the custom model '{}' in the content directory", customModelPath));
     }
-    auto path = IO::Path::GetDirectoryName(customModelPath);
-    auto filenameWithoutExtension = IO::Path::GetFileNameWithoutExtension(customModelPath);
-    auto customName = IO::Path::Combine(path, filenameWithoutExtension);
+    const auto path = IO::Path::GetDirectoryName(customModelPath);
+    const auto filenameWithoutExtension = IO::Path::GetFileNameWithoutExtension(customModelPath);
+    const auto customName = IO::Path::Combine(path, filenameWithoutExtension);
 
     ModelLoaderConfig loaderConfig{};
     loaderConfig.ModelFileName = customModelPath;

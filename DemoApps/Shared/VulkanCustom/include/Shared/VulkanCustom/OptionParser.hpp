@@ -47,18 +47,18 @@ namespace Fsl
     OptionParser();
     ~OptionParser() override;
 
-    uint32_t GetPhysicalDeviceIndex() const
+    [[nodiscard]] uint32_t GetPhysicalDeviceIndex() const
     {
       return m_physicalDeviceIndex;
     }
 
-    OptionUserChoice GetValidationLayer() const
+    [[nodiscard]] OptionUserChoice GetValidationLayer() const
     {
       return m_validationLayer;
     }
 
     //! @return the user requested instance api version (0 = no override)
-    uint32_t GetInstanceApiVersionOverride() const
+    [[nodiscard]] uint32_t GetInstanceApiVersionOverride() const
     {
       return m_instanceApiVersionOverride;
     }

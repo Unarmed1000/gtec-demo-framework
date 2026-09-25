@@ -47,19 +47,19 @@ namespace Fsl
 
     //! @brief Retrieve a service of the given type (if available)
     //! @return the service if its available or null if not
-    virtual std::shared_ptr<IBasicService> TryGet(const ServiceId& serviceId) const = 0;
+    [[nodiscard]] virtual std::shared_ptr<IBasicService> TryGet(const ServiceId& serviceId) const = 0;
 
     //! @brief Retrieve a service of the given type (if available)
     //! @return the service or throws a exception if its not
-    virtual std::shared_ptr<IBasicService> Get(const ServiceId& serviceId) const = 0;
+    [[nodiscard]] virtual std::shared_ptr<IBasicService> Get(const ServiceId& serviceId) const = 0;
 
     //! @brief Retrieve a service of the given type (if available)
     //! @return the service if its available or null if not
-    virtual std::shared_ptr<IBasicService> TryGet(const ServiceId& serviceId, const ProviderId& providerId) const = 0;
+    [[nodiscard]] virtual std::shared_ptr<IBasicService> TryGet(const ServiceId& serviceId, const ProviderId& providerId) const = 0;
 
     //! @brief Retrieve a service of the given type (if available)
     //! @return the service or throws a exception if its not
-    virtual std::shared_ptr<IBasicService> Get(const ServiceId& serviceId, const ProviderId& providerId) const = 0;
+    [[nodiscard]] virtual std::shared_ptr<IBasicService> Get(const ServiceId& serviceId, const ProviderId& providerId) const = 0;
 
     //! @brief Get all services that supports the given service id
     virtual void Get(BasicServiceDeque& rServices, const ServiceId& serviceId) const = 0;

@@ -104,48 +104,48 @@ namespace Fsl
     }
 
 
-    constexpr inline offset_type::value_type Left() const noexcept
+    [[nodiscard]] constexpr inline offset_type::value_type Left() const noexcept
     {
       return Offset.X;
     }
 
-    constexpr inline offset_type::value_type Top() const noexcept
+    [[nodiscard]] constexpr inline offset_type::value_type Top() const noexcept
     {
       return Offset.Y;
     }
 
-    constexpr inline offset_type::value_type Right() const noexcept
+    [[nodiscard]] constexpr inline offset_type::value_type Right() const noexcept
     {
       return Offset.X + offset_type::value_type(UncheckedNumericCast<int32_t>(Extent.Width.Value));
     }
 
-    constexpr inline offset_type::value_type Bottom() const noexcept
+    [[nodiscard]] constexpr inline offset_type::value_type Bottom() const noexcept
     {
       return Offset.Y + offset_type::value_type(UncheckedNumericCast<int32_t>(Extent.Height.Value));
     }
 
-    constexpr inline offset_type::raw_value_type RawLeft() const noexcept
+    [[nodiscard]] constexpr inline offset_type::raw_value_type RawLeft() const noexcept
     {
       return Offset.X.Value;
     }
 
-    constexpr inline offset_type::raw_value_type RawTop() const noexcept
+    [[nodiscard]] constexpr inline offset_type::raw_value_type RawTop() const noexcept
     {
       return Offset.Y.Value;
     }
 
-    constexpr inline offset_type::raw_value_type RawRight() const noexcept
+    [[nodiscard]] constexpr inline offset_type::raw_value_type RawRight() const noexcept
     {
       return (Offset.X + offset_type::value_type(UncheckedNumericCast<int32_t>(Extent.Width.Value))).Value;
     }
 
-    constexpr inline offset_type::raw_value_type RawBottom() const noexcept
+    [[nodiscard]] constexpr inline offset_type::raw_value_type RawBottom() const noexcept
     {
       return (Offset.Y + offset_type::value_type(UncheckedNumericCast<int32_t>(Extent.Height.Value))).Value;
     }
 
     //! @brief Get the center of this rect
-    constexpr PxPoint2 Center() const noexcept
+    [[nodiscard]] constexpr PxPoint2 Center() const noexcept
     {
       static_assert(static_cast<PxExtent2D::raw_value_type>(std::numeric_limits<PxPoint2::raw_value_type>::max()) <=
                       (std::numeric_limits<PxExtent2D::raw_value_type>::max() / 2),
@@ -156,39 +156,39 @@ namespace Fsl
 
 
     //! @brief Check if the x,y coordinate is considered to be contained within this rectangle
-    constexpr bool Contains(const int32_t x, const int32_t y) const noexcept
+    [[nodiscard]] constexpr bool Contains(const int32_t x, const int32_t y) const noexcept
     {
       return (x >= RawLeft() && x < RawRight() && y >= RawTop() && y < RawBottom());
     }
 
 
-    constexpr bool Contains(const PxValue x, const PxValue y) const noexcept
+    [[nodiscard]] constexpr bool Contains(const PxValue x, const PxValue y) const noexcept
     {
       return (x >= Left() && x < Right() && y >= Top() && y < Bottom());
     }
 
     //! @brief Check if the x,y coordinate is considered to be contained within this rectangle
-    constexpr bool Contains(const PxPoint2 value) const noexcept
+    [[nodiscard]] constexpr bool Contains(const PxPoint2 value) const noexcept
     {
       return Contains(value.X, value.Y);
     }
 
     //! @brief Check if the rectangle is considered to be contained within this rectangle
-    constexpr bool Contains(const PxRectangle2D& value) const noexcept
+    [[nodiscard]] constexpr bool Contains(const PxRectangle2D& value) const noexcept
     {
       return Contains(value.Offset) && Contains(value.Right(), value.Bottom());
     }
 
     //! @brief Gets a value that indicates whether the Rectangle is empty
     //!        An empty rectangle has all its values set to 0.
-    constexpr bool IsEmpty() const noexcept
+    [[nodiscard]] constexpr bool IsEmpty() const noexcept
     {
       return (Offset.X.Value == 0 && Offset.Y.Value == 0 && Extent.Width.Value == 0 && Extent.Height.Value == 0);
     }
 
 
     //! @brief Determines whether a specified Rectangle intersects with this Rectangle.
-    constexpr bool Intersects(const PxRectangle2D& value) const noexcept
+    [[nodiscard]] constexpr bool Intersects(const PxRectangle2D& value) const noexcept
     {
       return value.Left() < Right() && Left() < value.Right() && value.Top() < Bottom() && Top() < value.Bottom();
     }

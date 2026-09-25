@@ -65,7 +65,7 @@ namespace
 
 TEST_F(TestGridLayout, Construct)
 {
-  UI::GridLayout layout(m_windowContext);
+  const UI::GridLayout layout(m_windowContext);
 }
 
 
@@ -154,7 +154,7 @@ TEST_F(TestGridLayout, MeasureStarDefs_NoChildren)
 TEST_F(TestGridLayout, MeasureNoDefs_ChildNoSize)
 {
   UI::GridLayout layout(m_windowContext);
-  auto child = std::make_shared<UI::UTControl>(m_windowContext);
+  const auto child = std::make_shared<UI::UTControl>(m_windowContext);
   layout.AddChild(child);
 
   layout.Measure(m_defaultSizePx);
@@ -167,7 +167,7 @@ TEST_F(TestGridLayout, MeasureNoDefs_ChildNoSize)
 TEST_F(TestGridLayout, MeasureNoDefsX_ChildNoSize)
 {
   UI::GridLayout layout(m_windowContext);
-  auto child = std::make_shared<UI::UTControl>(m_windowContext);
+  const auto child = std::make_shared<UI::UTControl>(m_windowContext);
   layout.AddChild(child);
 
   const float fixedHeight = 10.0f;
@@ -186,7 +186,7 @@ TEST_F(TestGridLayout, MeasureNoDefsX_ChildNoSize)
 TEST_F(TestGridLayout, MeasureNoDefsY_ChildNoSize)
 {
   UI::GridLayout layout(m_windowContext);
-  auto child = std::make_shared<UI::UTControl>(m_windowContext);
+  const auto child = std::make_shared<UI::UTControl>(m_windowContext);
   layout.AddChild(child);
 
   const float fixedWidth = 20.0f;
@@ -205,7 +205,7 @@ TEST_F(TestGridLayout, MeasureNoDefsY_ChildNoSize)
 TEST_F(TestGridLayout, MeasureFixedDefs_ChildNoSize)
 {
   UI::GridLayout layout(m_windowContext);
-  auto child = std::make_shared<UI::UTControl>(m_windowContext);
+  const auto child = std::make_shared<UI::UTControl>(m_windowContext);
   layout.AddChild(child);
 
   const float fixedWidth = 20.0f;
@@ -226,7 +226,7 @@ TEST_F(TestGridLayout, MeasureFixedDefs_ChildNoSize)
 TEST_F(TestGridLayout, MeasureFixedDefs2_ChildNoSize)
 {
   UI::GridLayout layout(m_windowContext);
-  auto child = std::make_shared<UI::UTControl>(m_windowContext);
+  const auto child = std::make_shared<UI::UTControl>(m_windowContext);
   layout.AddChild(child);
 
   const float fixedWidth1 = 20.0f;
@@ -251,7 +251,7 @@ TEST_F(TestGridLayout, MeasureFixedDefs2_ChildNoSize)
 TEST_F(TestGridLayout, MeasureAutoDefs_ChildNoSize)
 {
   UI::GridLayout layout(m_windowContext);
-  auto child = std::make_shared<UI::UTControl>(m_windowContext);
+  const auto child = std::make_shared<UI::UTControl>(m_windowContext);
   layout.AddChild(child);
 
   layout.AddColumnDefinition(UI::GridColumnDefinition(UI::GridUnitType::Auto));
@@ -268,7 +268,7 @@ TEST_F(TestGridLayout, MeasureAutoDefs_ChildNoSize)
 TEST_F(TestGridLayout, MeasureStarDefs_ChildNoSize)
 {
   UI::GridLayout layout(m_windowContext);
-  auto child = std::make_shared<UI::UTControl>(m_windowContext);
+  const auto child = std::make_shared<UI::UTControl>(m_windowContext);
   layout.AddChild(child);
 
   layout.AddColumnDefinition(UI::GridColumnDefinition(UI::GridUnitType::Star, 1.0f));
@@ -286,7 +286,7 @@ TEST_F(TestGridLayout, MeasureStarDefs_ChildNoSize)
 TEST_F(TestGridLayout, MeasureDefsFixedStarXFixedStar_ChildNoSizeAt0x0)
 {
   UI::GridLayout layout(m_windowContext);
-  auto child = std::make_shared<UI::UTControl>(m_windowContext);
+  const auto child = std::make_shared<UI::UTControl>(m_windowContext);
   layout.AddChild(child);
 
   const float fixedWidth = 20.0f;
@@ -312,7 +312,7 @@ TEST_F(TestGridLayout, MeasureDefsFixedStarXFixedStar_ChildNoSizeAt1x0)
 
   // const auto controlDesiredSizePx = PxSize2D::Create(30, 15);
 
-  auto child = std::make_shared<UI::UTControl>(m_windowContext);
+  const auto child = std::make_shared<UI::UTControl>(m_windowContext);
   layout.AddChild(child);
 
   const float fixedWidth = 20.0f;
@@ -335,7 +335,7 @@ TEST_F(TestGridLayout, MeasureDefsFixedStarXFixedStar_ChildNoSizeAt1x0)
 TEST_F(TestGridLayout, MeasureDefsFixedStarXFixedStar_ChildNoSizeAt0x1)
 {
   UI::GridLayout layout(m_windowContext);
-  auto child = std::make_shared<UI::UTControl>(m_windowContext);
+  const auto child = std::make_shared<UI::UTControl>(m_windowContext);
   layout.AddChild(child);
 
   const float fixedWidth = 20.0f;
@@ -358,7 +358,7 @@ TEST_F(TestGridLayout, MeasureDefsFixedStarXFixedStar_ChildNoSizeAt0x1)
 TEST_F(TestGridLayout, MeasureDefsFixedStarXFixedStar_ChildNoSizeAt1x1)
 {
   UI::GridLayout layout(m_windowContext);
-  auto child = std::make_shared<UI::UTControl>(m_windowContext);
+  const auto child = std::make_shared<UI::UTControl>(m_windowContext);
   layout.AddChild(child);
 
   const float fixedWidth = 20.0f;
@@ -384,7 +384,7 @@ TEST_F(TestGridLayout, MeasureAllDefs_ChildNoSizeAt0x0)
 
   const auto controlDesiredSizePx = PxSize2D::Create(30, 15);
 
-  auto child = std::make_shared<UI::UTImageControl>(m_windowContext, controlDesiredSizePx);
+  const auto child = std::make_shared<UI::UTImageControl>(m_windowContext, controlDesiredSizePx);
   layout.AddChild(child);
 
   const float fixedWidth = 20.0f;
@@ -416,7 +416,7 @@ TEST_F(TestGridLayout, MeasureAllDefs_ChildNoSizeAt1x0)
 
   const auto controlDesiredSizePx = PxSize2D::Create(30, 15);
 
-  auto child = std::make_shared<UI::UTImageControl>(m_windowContext, controlDesiredSizePx);
+  const auto child = std::make_shared<UI::UTImageControl>(m_windowContext, controlDesiredSizePx);
   layout.AddChild(child);
 
   const float fixedWidth = 20.0f;
@@ -448,7 +448,7 @@ TEST_F(TestGridLayout, MeasureAllDefs_ChildNoSizeAt2x0)
 
   const auto controlDesiredSizePx = PxSize2D::Create(30, 15);
 
-  auto child = std::make_shared<UI::UTImageControl>(m_windowContext, controlDesiredSizePx);
+  const auto child = std::make_shared<UI::UTImageControl>(m_windowContext, controlDesiredSizePx);
   layout.AddChild(child);
 
   const float fixedWidth = 20.0f;
@@ -481,7 +481,7 @@ TEST_F(TestGridLayout, MeasureAllDefs_ChildNoSizeAt0x1)
 
   const auto controlDesiredSizePx = PxSize2D::Create(30, 15);
 
-  auto child = std::make_shared<UI::UTImageControl>(m_windowContext, controlDesiredSizePx);
+  const auto child = std::make_shared<UI::UTImageControl>(m_windowContext, controlDesiredSizePx);
   layout.AddChild(child);
 
   const float fixedWidth = 20.0f;
@@ -513,7 +513,7 @@ TEST_F(TestGridLayout, MeasureAllDefs_ChildNoSizeAt1x1)
 
   const auto controlDesiredSizePx = PxSize2D::Create(30, 15);
 
-  auto child = std::make_shared<UI::UTImageControl>(m_windowContext, controlDesiredSizePx);
+  const auto child = std::make_shared<UI::UTImageControl>(m_windowContext, controlDesiredSizePx);
   layout.AddChild(child);
 
   const float fixedWidth = 20.0f;
@@ -545,7 +545,7 @@ TEST_F(TestGridLayout, MeasureAllDefs_ChildNoSizeAt2x1)
 
   const auto controlDesiredSizePx = PxSize2D::Create(30, 15);
 
-  auto child = std::make_shared<UI::UTImageControl>(m_windowContext, controlDesiredSizePx);
+  const auto child = std::make_shared<UI::UTImageControl>(m_windowContext, controlDesiredSizePx);
   layout.AddChild(child);
 
   const float fixedWidth = 20.0f;
@@ -578,7 +578,7 @@ TEST_F(TestGridLayout, MeasureAllDefs_ChildNoSizeAt0x2)
 
   const auto controlDesiredSizePx = PxSize2D::Create(30, 15);
 
-  auto child = std::make_shared<UI::UTImageControl>(m_windowContext, controlDesiredSizePx);
+  const auto child = std::make_shared<UI::UTImageControl>(m_windowContext, controlDesiredSizePx);
   layout.AddChild(child);
 
   const float fixedWidth = 20.0f;
@@ -610,7 +610,7 @@ TEST_F(TestGridLayout, MeasureAllDefs_ChildNoSizeAt1x2)
 
   const auto controlDesiredSizePx = PxSize2D::Create(30, 15);
 
-  auto child = std::make_shared<UI::UTImageControl>(m_windowContext, controlDesiredSizePx);
+  const auto child = std::make_shared<UI::UTImageControl>(m_windowContext, controlDesiredSizePx);
   layout.AddChild(child);
 
   const float fixedWidth = 20.0f;
@@ -642,7 +642,7 @@ TEST_F(TestGridLayout, MeasureAllDefs_ChildNoSizeAt2x2)
 
   const auto controlDesiredSizePx = PxSize2D::Create(30, 15);
 
-  auto child = std::make_shared<UI::UTImageControl>(m_windowContext, controlDesiredSizePx);
+  const auto child = std::make_shared<UI::UTImageControl>(m_windowContext, controlDesiredSizePx);
   layout.AddChild(child);
 
   const float fixedWidth = 20.0f;
@@ -1160,7 +1160,7 @@ TEST_F(TestGridLayout, MeasureAllDefs_FixedWidthInfHeight_OneStarByAutoThenTwoSt
   layout.Set(children[1], 0, 1);
   layout.Set(children[2], 0, 2);
 
-  UI::PxAvailableSize layoutAvailableSpacePx(m_defaultSizePx.Width(), UI::PxAvailableSize1D::InfiniteSpacePx());
+  const UI::PxAvailableSize layoutAvailableSpacePx(m_defaultSizePx.Width(), UI::PxAvailableSize1D::InfiniteSpacePx());
   layout.Measure(layoutAvailableSpacePx);
 
   // const int32_t availableStarHeight = (m_defaultSizePx.Height() - controlDesiredSize0Px.Height());
@@ -1190,7 +1190,7 @@ TEST_F(TestGridLayout, MeasureAllDefs_FixedWidthInfHeight_OneStarByAutoThenTwoSt
 
   layout.Arrange(m_finalRectPx);
 
-  PxSize1D currentXPos = PxSize1D::Create(0);
+  const PxSize1D currentXPos = PxSize1D::Create(0);
   PxSize1D currentYPos = PxSize1D::Create(0);
   // Cell 0, 0: Star x Star (Classification: 2)
   ASSERT_EQ(children[0]->WinGetContentRectanglePx().X(), currentXPos);
@@ -1252,7 +1252,7 @@ TEST_F(TestGridLayout, MeasureAllDefs_FixedWidthInfHeight_Stretch_OneStarByAutoT
   layout.Set(children[1], 0, 1);
   layout.Set(children[2], 0, 2);
 
-  UI::PxAvailableSize layoutAvailableSpacePx(m_defaultSizePx.ToPxWidth(), UI::PxAvailableSize1D::InfiniteSpacePx());
+  const UI::PxAvailableSize layoutAvailableSpacePx(m_defaultSizePx.ToPxWidth(), UI::PxAvailableSize1D::InfiniteSpacePx());
   layout.Measure(layoutAvailableSpacePx);
 
   const PxSize1D availableStarHeight = PxSize1D(m_defaultSizePx.ToPxHeight() - controlDesiredSize0Px.Height());
@@ -1282,7 +1282,7 @@ TEST_F(TestGridLayout, MeasureAllDefs_FixedWidthInfHeight_Stretch_OneStarByAutoT
 
   layout.Arrange(m_finalRectPx);
 
-  PxSize1D currentXPos = PxSize1D::Create(0);
+  const PxSize1D currentXPos = PxSize1D::Create(0);
   PxSize1D currentYPos = PxSize1D::Create(0);
   // Cell 0, 0: Star x Star (Classification: 2)
   ASSERT_EQ(children[0]->WinGetContentRectanglePx().X(), currentXPos);
@@ -1338,7 +1338,7 @@ TEST_F(TestGridLayout, MeasureAllDefs_FixedWidthInfHeight_Stretch_OneStarByAutoT
   layout.Set(children[0], 0, 1);
   layout.Set(children[1], 0, 2);
 
-  UI::PxAvailableSize layoutAvailableSpacePx(m_defaultSizePx.ToPxWidth(), UI::PxAvailableSize1D::InfiniteSpacePx());
+  const UI::PxAvailableSize layoutAvailableSpacePx(m_defaultSizePx.ToPxWidth(), UI::PxAvailableSize1D::InfiniteSpacePx());
   layout.Measure(layoutAvailableSpacePx);
 
   const PxSize1D availableStarHeight =
@@ -1367,7 +1367,7 @@ TEST_F(TestGridLayout, MeasureAllDefs_FixedWidthInfHeight_Stretch_OneStarByAutoT
 
   layout.Arrange(PxRectangle(m_finalRectPx.Left(), m_finalRectPx.Top(), m_finalRectPx.Width(), m_finalRectPx.Height() - PxValue(1)));
 
-  PxSize1D currentXPos = PxSize1D::Create(0);
+  const PxSize1D currentXPos = PxSize1D::Create(0);
   PxSize1D currentYPos = PxSize1D::Create(0);
   // Cell 0, 0: Star x Star (Classification: 2)
 

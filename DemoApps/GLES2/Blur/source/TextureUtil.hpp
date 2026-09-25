@@ -46,7 +46,7 @@ namespace Fsl::TextureUtil
     {
       throw NotSupportedException("no native");
     }
-    BasicNativeTextureHandle hTexture = tex->TryGetNativeHandle();
+    const BasicNativeTextureHandle hTexture = tex->TryGetNativeHandle();
     if (!hTexture.IsValid())
     {
       throw NotSupportedException("There are currently no actual texture associated, call ignored");
@@ -57,7 +57,7 @@ namespace Fsl::TextureUtil
       throw NotSupportedException("texture not of expected type");
     }
 
-    GLES2::GLTextureInfo textureInfo = pNativeTexture->ToTextureInfo();
+    const GLES2::GLTextureInfo textureInfo = pNativeTexture->ToTextureInfo();
     if (!textureInfo.IsValid())
     {
       throw UsageErrorException("the texture is not valid");

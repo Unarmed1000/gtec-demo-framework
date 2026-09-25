@@ -158,10 +158,10 @@ namespace Fsl
 
         const float factor = m_fnEasingFunction(progress);
 
-        int32_t valR = m_from.RawR() + static_cast<int32_t>(std::round(static_cast<float>(m_target.RawR() - m_from.RawR()) * factor));
-        int32_t valG = m_from.RawG() + static_cast<int32_t>(std::round(static_cast<float>(m_target.RawG() - m_from.RawG()) * factor));
-        int32_t valB = m_from.RawB() + static_cast<int32_t>(std::round(static_cast<float>(m_target.RawB() - m_from.RawB()) * factor));
-        int32_t valA = m_from.RawA() + static_cast<int32_t>(std::round(static_cast<float>(m_target.RawA() - m_from.RawA()) * factor));
+        const int32_t valR = m_from.RawR() + static_cast<int32_t>(std::round(static_cast<float>(m_target.RawR() - m_from.RawR()) * factor));
+        const int32_t valG = m_from.RawG() + static_cast<int32_t>(std::round(static_cast<float>(m_target.RawG() - m_from.RawG()) * factor));
+        const int32_t valB = m_from.RawB() + static_cast<int32_t>(std::round(static_cast<float>(m_target.RawB() - m_from.RawB()) * factor));
+        const int32_t valA = m_from.RawA() + static_cast<int32_t>(std::round(static_cast<float>(m_target.RawA() - m_from.RawA()) * factor));
         m_val =
           Color(MathHelper::Clamp(valR, 0, 255), MathHelper::Clamp(valG, 0, 255), MathHelper::Clamp(valB, 0, 255), MathHelper::Clamp(valA, 0, 255));
         return TransitionState::Running;

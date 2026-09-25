@@ -36,6 +36,7 @@
 #include <FslGraphics3D/Build/LineBuilder.hpp>
 #include <FslSimpleUI/App/UIDemoAppExtension.hpp>
 #include <FslSimpleUI/Base/Layout/Layout.hpp>
+#include <utility>
 #include <vector>
 
 namespace Fsl
@@ -84,22 +85,22 @@ namespace Fsl
       }
     }
 
-    int32_t GetCellCountX() const
+    [[nodiscard]] int32_t GetCellCountX() const
     {
       return UncheckedNumericCast<int32_t>(m_gridCellCountX);
     }
 
-    int32_t GetCellCountY() const
+    [[nodiscard]] int32_t GetCellCountY() const
     {
       return UncheckedNumericCast<int32_t>(m_gridCellCountY);
     }
 
-    int32_t ToXCell(const int32_t position) const
+    [[nodiscard]] int32_t ToXCell(const int32_t position) const
     {
       return (position >> m_shiftX);
     }
 
-    int32_t ToYCell(const int32_t position) const
+    [[nodiscard]] int32_t ToYCell(const int32_t position) const
     {
       return (position >> m_shiftY);
     }
@@ -111,12 +112,12 @@ namespace Fsl
       int32_t startCellY = (rect.Top() >> m_shiftY);
       int32_t endCellY = (rect.Bottom() >> m_shiftY) + 1;
 
-      if (startCellX < m_gridCellCountX && endCellX > 0 && startCellY < m_gridCellCountY && endCellY > 0)
+      if (std::cmp_less(startCellX, m_gridCellCountX) && endCellX > 0 && std::cmp_less(startCellY, m_gridCellCountY) && endCellY > 0)
       {
         startCellX = startCellX >= 0 ? startCellX : 0;
         startCellY = startCellY >= 0 ? startCellY : 0;
-        endCellX = endCellX <= m_gridCellCountX ? endCellX : m_gridCellCountX;
-        endCellY = endCellY <= m_gridCellCountY ? endCellY : m_gridCellCountY;
+        endCellX = std::cmp_less_equal(endCellX, m_gridCellCountX) ? endCellX : m_gridCellCountX;
+        endCellY = std::cmp_less_equal(endCellY, m_gridCellCountY) ? endCellY : m_gridCellCountY;
         assert(startCellX >= 0);
         assert(startCellY >= 0);
         assert(startCellX <= endCellX);

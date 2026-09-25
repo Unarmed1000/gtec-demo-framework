@@ -44,7 +44,7 @@ namespace
 
 TEST(Test_ColorChannelValueU8, Construct_Empty)
 {
-  ColorChannelValueU8 color;
+  const ColorChannelValueU8 color;
 
   EXPECT_EQ(0u, color.RawValue);
 }
@@ -52,7 +52,7 @@ TEST(Test_ColorChannelValueU8, Construct_Empty)
 
 TEST(Test_ColorChannelValueU8, Construct)
 {
-  ColorChannelValueU8 color(0xFF);
+  const ColorChannelValueU8 color(0xFF);
 
   EXPECT_EQ(0xFF, color.RawValue);
 }
@@ -61,7 +61,7 @@ TEST(Test_ColorChannelValueU8, Construct)
 TEST(Test_ColorChannelValueU8, Create_UInt8)
 {
   const uint8_t val = 0xFF;
-  ColorChannelValueU8 color = ColorChannelValueU8::Create(val);
+  const ColorChannelValueU8 color = ColorChannelValueU8::Create(val);
 
   EXPECT_EQ(val, color.RawValue);
 }
@@ -70,7 +70,7 @@ TEST(Test_ColorChannelValueU8, Create_UInt8)
 TEST(Test_ColorChannelValueU8, Create_Int16)
 {
   const int16_t val = 0xFF;
-  ColorChannelValueU8 color = ColorChannelValueU8::Create(val);
+  const ColorChannelValueU8 color = ColorChannelValueU8::Create(val);
 
   EXPECT_EQ(NumericCast<uint8_t>(val), color.RawValue);
 }
@@ -79,7 +79,7 @@ TEST(Test_ColorChannelValueU8, Create_Int16)
 TEST(Test_ColorChannelValueU8, Create_UInt16)
 {
   const uint16_t val = 0xFF;
-  ColorChannelValueU8 color = ColorChannelValueU8::Create(val);
+  const ColorChannelValueU8 color = ColorChannelValueU8::Create(val);
 
   EXPECT_EQ(NumericCast<uint8_t>(val), color.RawValue);
 }
@@ -88,7 +88,7 @@ TEST(Test_ColorChannelValueU8, Create_UInt16)
 TEST(Test_ColorChannelValueU8, Create_Int32)
 {
   const int32_t val = 0xFF;
-  ColorChannelValueU8 color = ColorChannelValueU8::Create(val);
+  const ColorChannelValueU8 color = ColorChannelValueU8::Create(val);
 
   EXPECT_EQ(NumericCast<uint8_t>(val), color.RawValue);
 }
@@ -97,7 +97,7 @@ TEST(Test_ColorChannelValueU8, Create_Int32)
 TEST(Test_ColorChannelValueU8, Create_UInt32)
 {
   const uint32_t val = 0xFF;
-  ColorChannelValueU8 color = ColorChannelValueU8::Create(val);
+  const ColorChannelValueU8 color = ColorChannelValueU8::Create(val);
 
   EXPECT_EQ(NumericCast<uint8_t>(val), color.RawValue);
 }
@@ -105,9 +105,9 @@ TEST(Test_ColorChannelValueU8, Create_UInt32)
 
 TEST(Test_ColorChannelValueU8, Equals)
 {
-  ColorChannelValueU8 col1(0x12);
-  ColorChannelValueU8 col2(0x12);
-  ColorChannelValueU8 col3(0x23);
+  const ColorChannelValueU8 col1(0x12);
+  const ColorChannelValueU8 col2(0x12);
+  const ColorChannelValueU8 col3(0x23);
 
   EXPECT_TRUE(col1 == col1);
   EXPECT_TRUE(col2 == col2);
@@ -120,9 +120,9 @@ TEST(Test_ColorChannelValueU8, Equals)
 
 TEST(Test_ColorChannelValueU8, NotEquals)
 {
-  ColorChannelValueU8 col1(0x12);
-  ColorChannelValueU8 col2(0x12);
-  ColorChannelValueU8 col3(0x23);
+  const ColorChannelValueU8 col1(0x12);
+  const ColorChannelValueU8 col2(0x12);
+  const ColorChannelValueU8 col3(0x23);
 
   EXPECT_FALSE(col1 != col1);
   EXPECT_FALSE(col2 != col2);

@@ -68,16 +68,16 @@ namespace Fsl
     ServiceFramework();
     ~ServiceFramework();
 
-    std::weak_ptr<IServiceRegistry> GetServiceRegistry() const;
+    [[nodiscard]] std::weak_ptr<IServiceRegistry> GetServiceRegistry() const;
 
     void PrepareServices(ServiceOptionParserDeque& rServiceOptionParsers);
     void LaunchGlobalServices();
     void LaunchThreads();
 
-    std::shared_ptr<IServiceProvider> GetServiceProvider() const;
+    [[nodiscard]] std::shared_ptr<IServiceProvider> GetServiceProvider() const;
 
     //! @brief Get the service host looper (can be called when the framework is running)
-    std::shared_ptr<IServiceHostLooper> GetServiceHostLooper() const;
+    [[nodiscard]] std::shared_ptr<IServiceHostLooper> GetServiceHostLooper() const;
   };
 }
 

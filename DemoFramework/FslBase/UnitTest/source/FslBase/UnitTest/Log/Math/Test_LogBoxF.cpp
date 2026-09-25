@@ -47,7 +47,7 @@ namespace
 
 TEST(TestLog_Math_LogBoxF, Log)
 {
-  BoxF value(1.0f, 2.0f, 3.0f, 4.0f);
+  const BoxF value(1.0f, 2.0f, 3.0f, 4.0f);
 
   std::stringstream stream;
   stream << value;

@@ -91,7 +91,7 @@ TEST_F(TestEventRouteClickInputIntercept, SendTo_Begin_OneWindow_Direct)
   EXPECT_EQ(m_eventRoute.GetTarget(), m_nodeWindow1);
 
   // Lets try to send a event
-  auto theEvent = CreateInputClickEvent();
+  const auto theEvent = CreateInputClickEvent();
   EXPECT_TRUE(m_eventRoute.Send(&m_eventHandler, theEvent));
 
   // Its a direct event so we only expect one call to the target window with the event we send
@@ -118,7 +118,7 @@ TEST_F(TestEventRouteClickInputIntercept, SendTo_Begin_OneWindow_Tunnel)
   EXPECT_EQ(m_eventRoute.GetTarget(), m_nodeWindow1);
 
   // Lets try to send a event
-  auto theEvent = CreateInputClickEvent();
+  const auto theEvent = CreateInputClickEvent();
   EXPECT_TRUE(m_eventRoute.Send(&m_eventHandler, theEvent));
 
   // Its a tunnel event so we only expect one call to the target window with the event we send
@@ -145,7 +145,7 @@ TEST_F(TestEventRouteClickInputIntercept, SendTo_Begin_OneWindow_Bubble)
   EXPECT_EQ(m_eventRoute.GetTarget(), m_nodeWindow1);
 
   // Lets try to send a event
-  auto theEvent = CreateInputClickEvent();
+  const auto theEvent = CreateInputClickEvent();
   EXPECT_TRUE(m_eventRoute.Send(&m_eventHandler, theEvent));
 
   // Its a bubble event so we only expect one call to the target window with the event we send
@@ -172,7 +172,7 @@ TEST_F(TestEventRouteClickInputIntercept, SendTo_Begin_OneWindow_Pair_InterceptT
   EXPECT_EQ(m_eventRoute.GetTarget(), m_nodeWindow1);
 
   // Lets try to send a eventSendTo_Begin_OneWindow_Pair_InterceptTunnel
-  auto theEvent = CreateInputClickEvent();
+  const auto theEvent = CreateInputClickEvent();
   EXPECT_TRUE(m_eventRoute.Send(&m_eventHandler, theEvent));
 
   // Its a paired event so we expect two calls to the target window with the event we send
@@ -207,7 +207,7 @@ TEST_F(TestEventRouteClickInputIntercept, SendTo_Begin_OneWindow_Pair_InterceptB
   EXPECT_EQ(m_eventRoute.GetTarget(), m_nodeWindow1);
 
   // Lets try to send a event
-  auto theEvent = CreateInputClickEvent();
+  const auto theEvent = CreateInputClickEvent();
   EXPECT_TRUE(m_eventRoute.Send(&m_eventHandler, theEvent));
 
   // Its a paired event so we expect two calls to the target window with the event we send
@@ -245,7 +245,7 @@ TEST_F(TestEventRouteClickInputIntercept, SendTo_Begin_TwoWindows_Direct)
   EXPECT_EQ(m_eventRoute.GetTarget(), m_nodeWindow2);
 
   // Lets try to send a event
-  auto theEvent = CreateInputClickEvent();
+  const auto theEvent = CreateInputClickEvent();
   EXPECT_TRUE(m_eventRoute.Send(&m_eventHandler, theEvent));
 
   // Its a direct event so we only expect one call to the target window with the event we send
@@ -275,7 +275,7 @@ TEST_F(TestEventRouteClickInputIntercept, SendTo_Begin_TwoWindows_Tunnel_TargetI
   EXPECT_EQ(m_eventRoute.GetTarget(), m_nodeWindow2);
 
   // Lets try to send a event
-  auto theEvent = CreateInputClickEvent();
+  const auto theEvent = CreateInputClickEvent();
   EXPECT_TRUE(m_eventRoute.Send(&m_eventHandler, theEvent));
 
   // Its a tunneled event so we only expect one call to the parent window then the target window with the event we send
@@ -308,7 +308,7 @@ TEST_F(TestEventRouteClickInputIntercept, SendTo_Begin_TwoWindows_Tunnel_ParentI
   EXPECT_EQ(m_eventRoute.GetTarget(), m_nodeWindow2);
 
   // Lets try to send a event
-  auto theEvent = CreateInputClickEvent();
+  const auto theEvent = CreateInputClickEvent();
   EXPECT_TRUE(m_eventRoute.Send(&m_eventHandler, theEvent));
 
   // Its a tunneled event so we only expect one call to the parent window and since its intercepts the event, it stops there
@@ -338,7 +338,7 @@ TEST_F(TestEventRouteClickInputIntercept, SendTo_Begin_TwoWindows_Bubble_TargetI
   EXPECT_EQ(m_eventRoute.GetTarget(), m_nodeWindow2);
 
   // Lets try to send a event
-  auto theEvent = CreateInputClickEvent();
+  const auto theEvent = CreateInputClickEvent();
   EXPECT_TRUE(m_eventRoute.Send(&m_eventHandler, theEvent));
 
   // Its a bubble event so we expect one call to the target window with the event we send and one to the parent
@@ -377,7 +377,7 @@ TEST_F(TestEventRouteClickInputIntercept, SendTo_Begin_TwoWindows_Bubble_ParentI
   EXPECT_EQ(m_eventRoute.GetTarget(), m_nodeWindow2);
 
   // Lets try to send a event
-  auto theEvent = CreateInputClickEvent();
+  const auto theEvent = CreateInputClickEvent();
   EXPECT_TRUE(m_eventRoute.Send(&m_eventHandler, theEvent));
 
   // Its a bubble event so we expect one call to the target window with the event we send and one to the parent
@@ -423,7 +423,7 @@ TEST_F(TestEventRouteClickInputIntercept, SendTo_Begin_TwoWindows_Pair_TunnelTar
   EXPECT_EQ(m_eventRoute.GetTarget(), m_nodeWindow2);
 
   // Lets try to send a event
-  auto theEvent = CreateInputClickEvent();
+  const auto theEvent = CreateInputClickEvent();
   EXPECT_TRUE(m_eventRoute.Send(&m_eventHandler, theEvent));
 
   // Its a paired event so we expect calls to the parent, target, target then finally the parent
@@ -477,7 +477,7 @@ TEST_F(TestEventRouteClickInputIntercept, SendTo_Begin_TwoWindows_Pair_BubbleTar
   EXPECT_EQ(m_eventRoute.GetTarget(), m_nodeWindow2);
 
   // Lets try to send a event
-  auto theEvent = CreateInputClickEvent();
+  const auto theEvent = CreateInputClickEvent();
   EXPECT_TRUE(m_eventRoute.Send(&m_eventHandler, theEvent));
 
   // Its a paired event so we expect calls to the parent, target, target then finally the parent
@@ -531,7 +531,7 @@ TEST_F(TestEventRouteClickInputIntercept, SendTo_Begin_TwoWindows_Pair_TunnelPar
   EXPECT_EQ(m_eventRoute.GetTarget(), m_nodeWindow2);
 
   // Lets try to send a event
-  auto theEvent = CreateInputClickEvent();
+  const auto theEvent = CreateInputClickEvent();
   EXPECT_TRUE(m_eventRoute.Send(&m_eventHandler, theEvent));
 
   // Its a paired event so we expect calls to the parent, target, target then finally the parent
@@ -574,7 +574,7 @@ TEST_F(TestEventRouteClickInputIntercept, SendTo_Begin_TwoWindows_Pair_BubblePar
   EXPECT_EQ(m_eventRoute.GetTarget(), m_nodeWindow2);
 
   // Lets try to send a event
-  auto theEvent = CreateInputClickEvent();
+  const auto theEvent = CreateInputClickEvent();
   EXPECT_TRUE(m_eventRoute.Send(&m_eventHandler, theEvent));
 
   // Its a paired event so we expect calls to the parent, target, target then finally the parent
@@ -653,7 +653,7 @@ TEST_F(TestEventRouteClickInputIntercept, SendTo_Begin_TwoWindows_Pair_BubblePar
   EXPECT_EQ(m_eventRoute.GetTarget(), m_nodeWindow2);
 
   // Lets try to send a event
-  auto theEvent = CreateInputClickEvent();
+  const auto theEvent = CreateInputClickEvent();
   EXPECT_TRUE(m_eventRoute.Send(&m_eventHandler, theEvent));
 
   // Its a paired event so we expect calls to the parent, target, target then finally the parent

@@ -64,6 +64,7 @@ namespace Fsl
 
     BasicShader(const BasicShader&) = delete;
     BasicShader& operator=(const BasicShader&) = delete;
+    ~BasicShader() = default;
 
     BasicShader(const std::shared_ptr<IContentManager>& contentManager, VertexDeclarationSpan vertexDeclaration);
 

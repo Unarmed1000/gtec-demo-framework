@@ -140,7 +140,7 @@ namespace Fsl
 
     m_camera.SetZoom(DefaultZoom);
 
-    auto contentManager = GetContentManager();
+    const auto contentManager = GetContentManager();
 
     m_allowAdvancedTechniques = GLUtil::HasExtension("GL_EXT_geometry_shader");
     if (m_allowAdvancedTechniques)
@@ -154,7 +154,7 @@ namespace Fsl
 
 
     {    // Load the textures
-      GLTextureParameters textureParams(GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR, GL_REPEAT, GL_REPEAT);
+      const GLTextureParameters textureParams(GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR, GL_REPEAT, GL_REPEAT);
       Bitmap bitmap;
       contentManager->Read(bitmap, "Particle.png", PixelFormat::R8G8B8A8_UNORM);
       m_texParticle.Reset(bitmap, textureParams, TextureFlags::GenerateMipMaps);

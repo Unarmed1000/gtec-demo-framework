@@ -83,7 +83,7 @@ namespace Fsl
     , m_nativeBatch(m_graphics->GetNativeBatch2D())    // We just acquire the completely API independent version (see DFNativeBatch2D if you want
                                                        // access to the Vulkan specific methods)
   {
-    auto contentManager = GetContentManager();
+    const auto contentManager = GetContentManager();
 
     CreateFont(contentManager);
     CreateReferenceTextures(contentManager);
@@ -113,7 +113,7 @@ namespace Fsl
       clearColorValue.float32[2] = 0.5f;
       clearColorValue.float32[3] = 1.0f;
 
-      VkClearValue clearValues = {clearColorValue};
+      const VkClearValue clearValues = {clearColorValue};
 
       VkRenderPassBeginInfo renderPassBeginInfo{};
       renderPassBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
@@ -131,8 +131,8 @@ namespace Fsl
 
         const auto sizeTex1 = m_texTest.GetSize();
 
-        Vector2 dst1;
-        Vector2 dst2(0, sizeTex1.RawHeight());
+        const Vector2 dst1;
+        const Vector2 dst2(0, sizeTex1.RawHeight());
 
         DrawImages(dst1, m_texTest, m_texTestR, m_texTestG, m_texTestB, "Reference");
         DrawImages(dst2, m_texTestMat, m_texTestMatR, m_texTestMatG, m_texTestMatB, "OpenCV");
@@ -168,7 +168,7 @@ namespace Fsl
   {
     assert(pszCaption != nullptr);
 
-    Vector2 dstPos1 = dstPosition;
+    const Vector2 dstPos1 = dstPosition;
     Vector2 dstPosR = dstPosition;
     Vector2 dstPosG = dstPosition;
     Vector2 dstPosB = dstPosition;
@@ -198,7 +198,7 @@ namespace Fsl
     m_nativeBatch->Draw(texG, dstPosG, Colors::White());
     m_nativeBatch->Draw(texB, dstPosB, Colors::White());
 
-    Vector2 dstPosText1(sizeTex1.RawWidth(), dstPosition.Y + static_cast<float>(yAdjust.Value));
+    const Vector2 dstPosText1(sizeTex1.RawWidth(), dstPosition.Y + static_cast<float>(yAdjust.Value));
     Vector2 dstPosTextR = dstPosR;
     Vector2 dstPosTextG = dstPosG;
     Vector2 dstPosTextB = dstPosB;
@@ -223,7 +223,7 @@ namespace Fsl
 
   void OpenCVMatToNativeBatch::CreateFont(const std::shared_ptr<IContentManager>& contentManager)
   {
-    Fsl::Bitmap bitmap = contentManager->ReadBitmap("MainAtlas.png", PixelFormat::R8G8B8A8_UNORM);
+    const Fsl::Bitmap bitmap = contentManager->ReadBitmap("MainAtlas.png", PixelFormat::R8G8B8A8_UNORM);
 
     BasicTextureAtlas atlas;
     contentManager->Read(atlas, "MainAtlas.bta");
@@ -231,7 +231,7 @@ namespace Fsl
     BasicFontKerning fontBasicKerning;
     contentManager->Read(fontBasicKerning, "MainAtlas.fbk");
 
-    SpriteNativeAreaCalc spriteNativeAreaCalc(false);
+    const SpriteNativeAreaCalc spriteNativeAreaCalc(false);
     m_font.Reset(spriteNativeAreaCalc, bitmap.GetExtent(), atlas, fontBasicKerning, 160);
 
     const auto nativeGraphics = m_graphics->GetNativeGraphics();
@@ -241,10 +241,10 @@ namespace Fsl
 
   void OpenCVMatToNativeBatch::CreateReferenceTextures(const std::shared_ptr<IContentManager>& contentManager)
   {
-    auto bitmapTest = contentManager->ReadBitmap(TestImagE1, PixelFormat::R8G8B8A8_UNORM);
-    auto bitmapTestR = contentManager->ReadBitmap(TestImageR, PixelFormat::R8G8B8A8_UNORM);
-    auto bitmapTestG = contentManager->ReadBitmap(TestImageG, PixelFormat::R8G8B8A8_UNORM);
-    auto bitmapTestB = contentManager->ReadBitmap(TestImageB, PixelFormat::R8G8B8A8_UNORM);
+    const auto bitmapTest = contentManager->ReadBitmap(TestImagE1, PixelFormat::R8G8B8A8_UNORM);
+    const auto bitmapTestR = contentManager->ReadBitmap(TestImageR, PixelFormat::R8G8B8A8_UNORM);
+    const auto bitmapTestG = contentManager->ReadBitmap(TestImageG, PixelFormat::R8G8B8A8_UNORM);
+    const auto bitmapTestB = contentManager->ReadBitmap(TestImageB, PixelFormat::R8G8B8A8_UNORM);
 
     const auto nativeGraphics = m_graphics->GetNativeGraphics();
 
@@ -260,10 +260,10 @@ namespace Fsl
   {
     const IO::Path contentPath = contentManager->GetContentPath();
 
-    IO::Path pathImg1 = IO::Path::Combine(contentPath, TestImagE1);
-    IO::Path pathImgR = IO::Path::Combine(contentPath, TestImageR);
-    IO::Path pathImgG = IO::Path::Combine(contentPath, TestImageG);
-    IO::Path pathImgB = IO::Path::Combine(contentPath, TestImageB);
+    const IO::Path pathImg1 = IO::Path::Combine(contentPath, TestImagE1);
+    const IO::Path pathImgR = IO::Path::Combine(contentPath, TestImageR);
+    const IO::Path pathImgG = IO::Path::Combine(contentPath, TestImageG);
+    const IO::Path pathImgB = IO::Path::Combine(contentPath, TestImageB);
 
     // Read a image using OpenCV (we use imread since we want to demonstrate how to convert a OpenCV image to a texture for use by INativeBatch2D)
     const cv::Mat mat1 = SafeImread(pathImg1);

@@ -67,7 +67,6 @@ namespace Fsl
 
   public:
     constexpr ReadOnlySpan() noexcept = default;
-    constexpr ReadOnlySpan(const ReadOnlySpan& other) noexcept = default;
 
     explicit constexpr ReadOnlySpan(const_pointer pData, size_type count) noexcept
       : m_span(SpanUtil::CreateStd(pData, count))
@@ -105,7 +104,7 @@ namespace Fsl
     }
 
     // NOLINTNEXTLINE(readability-identifier-naming)
-    constexpr bool empty() const noexcept
+    [[nodiscard]] constexpr bool empty() const noexcept
     {
       return m_span.empty();
     }

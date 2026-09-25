@@ -59,17 +59,17 @@ namespace Fsl
                          const PlatformNativeWindowAllocationParams* const pPlatformCustomWindowAllocationParams = nullptr) override;
 
 
-    VkInstance GetInstance() const
+    [[nodiscard]] VkInstance GetInstance() const
     {
       return m_instance.Get();
     }
 
-    Vulkan::VUPhysicalDeviceRecord GetPhysicalDevice() const
+    [[nodiscard]] Vulkan::VUPhysicalDeviceRecord GetPhysicalDevice() const
     {
       return m_physicalDevice;
     }
 
-    std::shared_ptr<const Vulkan::InstanceCreateInfoCopy> GetInstanceCreateInfo() const
+    [[nodiscard]] std::shared_ptr<const Vulkan::InstanceCreateInfoCopy> GetInstanceCreateInfo() const
     {
       return m_instanceCreateInfo;
     }

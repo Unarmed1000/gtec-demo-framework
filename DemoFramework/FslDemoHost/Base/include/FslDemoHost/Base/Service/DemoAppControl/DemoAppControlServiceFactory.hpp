@@ -47,13 +47,13 @@ namespace Fsl
     }
 
 
-    std::shared_ptr<AServiceOptionParser> GetOptionParser() const final
+    [[nodiscard]] std::shared_ptr<AServiceOptionParser> GetOptionParser() const final
     {
       return {};
     }
 
 
-    ServiceCaps::Flags GetFlags() const final
+    [[nodiscard]] ServiceCaps::Flags GetFlags() const final
     {
       return ServiceCaps::Default;
     }

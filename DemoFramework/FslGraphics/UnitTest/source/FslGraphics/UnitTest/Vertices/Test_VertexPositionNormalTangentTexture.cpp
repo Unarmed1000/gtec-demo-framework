@@ -52,7 +52,7 @@ namespace
 
 TEST(TestVertices_VertexPositionNormalTangentTexture, Construct_Default)
 {
-  VertexPositionNormalTangentTexture vertex;
+  const VertexPositionNormalTangentTexture vertex;
 
   EXPECT_EQ(Vector3(), vertex.Position);
   EXPECT_EQ(Vector3(), vertex.Normal);

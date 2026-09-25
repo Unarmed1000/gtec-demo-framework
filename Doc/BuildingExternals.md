@@ -17,6 +17,7 @@ The external dependencies are build on a 'as required' basis meaning that we 'fe
 * Python 3.14 or better is required by all our scripts
 * [CMake](https://cmake.org/) is required by most external source packages.
 * Git is required by a few external packages.
+* [Conan 2](https://conan.io/) is required by the recipes that acquire their package from Conan (see [Conan recipes](#conan-recipes)).
 
 ## Commands
 
@@ -104,6 +105,8 @@ ExperimentalRecipe has basic support for CMake find_package as well so we can ge
 | FindTargetName           | CMake only: A optional target name, if not specified we use "Name::Name". (optional)           |
 | ExternalInstallDirectory | A environment variable the specifies the external location of the library (optional)           |
 
+Specifying FindVersion or FindTargetName enables Find, unless Find="false" is specified explicitly.
+
 ```xml
       <ExperimentalRecipe Name="zlib" Version="1.2.11" FindVersion="1.2">
         <Pipeline>
@@ -143,11 +146,12 @@ A build recipe consists of a optional Pipeline and a mandatory ValidationInstall
 
 In a build pipeline the very first step will always be a *Fetch* command which can be either:
 
-| Fetch command | Description                                   |
-|---------------|-----------------------------------------------|
-| Download      | Download a file using the given URL           |
-| GitClone      | Clone a repository using the given URL        |
-| Source        | Fetch from the local directory of the package |
+| Fetch command | Description                                                                                              |
+|---------------|----------------------------------------------------------------------------------------------------------|
+| Download      | Download a file using the given URL                                                                      |
+| GitClone      | Clone a repository using the given URL                                                                   |
+| Source        | Fetch from the local directory of the package                                                            |
+| ConanInstall  | Acquire a package from Conan, it must be the only pipeline command (see [Conan recipes](#conan-recipes)) |
 
 The result of the fetch command will be stored in a 'cache' area so it can be reused in case of build errors.
 
@@ -194,10 +198,11 @@ The installation section is responsible for defining
 
 Examples of existing recipe's can be located here: ```ThirdParty/Recipe```
 
-The recipe's basically come in two variants:
+The recipe's basically come in three variants:
 
 1. Those that deal with a 'pre-installed and pre-compiled' library. These recipes has no Pipeline component.
 2. Those that download the source and compile it. These recipes has both a Pipeline and Install component.
+3. Those that acquire the package from Conan. These recipes has a Pipeline with a single ConanInstall command, see [Conan recipes](#conan-recipes).
 
 ## A recipe for a pre-installed library.
 
@@ -235,6 +240,52 @@ The recipe below, downloads the zlib source, unpacks it and the builds it using 
         </Installation>
       </ExperimentalRecipe>
 ```
+
+# Conan recipes
+
+**Experimental!** A recipe can acquire its package from [Conan 2](https://conan.io/) instead of building it from source.
+The Conan recipes live under ```ThirdParty/Recipe/Conan```, see ```ThirdParty/Recipe/Conan/lz4_1_10``` for a example.
+
+```xml
+      <ExperimentalRecipe Name="lz4" Version="1.10.0" FindTargetName="LZ4::lz4_static">
+        <Pipeline>
+          <ConanInstall Reference="lz4/1.10.0" Options="-o lz4/*:shared=False"/>
+        </Pipeline>
+        <Installation>
+          <Path Name="lz4-config.cmake" Method="IsFile"/>
+        </Installation>
+      </ExperimentalRecipe>
+```
+
+The ConanInstall command runs ```conan install``` for the given reference and deploys the package and all its dependencies
+into the recipe installation directory together with the CMake find_package config files that Conan generates for them.
+The package is then consumed through the recipe Find support, so:
+
+* Conan recipes can only be used with the CMake generator with find package enabled (see ```--CMakeAllowFindPackage```).
+  For all other generators the recipe package, and everything that depends on it, is marked as not supported.
+* The recipe has to enable Find (set FindTargetName, FindVersion or Find="true").
+* The recipe Name must match the name Conan uses for the find_package config file and FindTargetName must be the CMake target
+  it declares. ```conan install``` prints both, for lz4 they are 'find_package(lz4)' and 'LZ4::lz4_static'.
+* The Installation section can not contain AddHeaders, AddLib or AddDLL as find_package supplies that information.
+* The recipe needs the ```conan``` executable, which is located by the ```Recipe.BuildTool.Conan``` tool recipe.
+
+The Conan settings are generated from the FslBuild setup instead of using a Conan profile, so the packages match the rest of the build.
+The profiles used for a package are stored as ```fslbuild_conan_host_<configuration>.profile``` in its installation directory.
+
+Platform | Conan settings
+---------|---------------------------------------------------------------------------------------------------------------
+Windows  | os=Windows, arch=x86_64, compiler=msvc with the version matching the Visual Studio toolset, compiler.runtime=dynamic, cppstd=20
+Ubuntu   | The profile detected by ```conan profile detect``` (which honors CC/CXX) with os=Linux, the host arch and cppstd=20
+
+Packages that Conan has no prebuilt binary for are built from source by Conan (```--build=missing```) using the same CMake generator as FslBuild.
+When downloads are disabled Conan is only allowed to use its local cache.
+
+Current limitations:
+
+* Only Windows and Ubuntu are supported.
+* Conan resolves the dependencies of a package itself, so avoid mixing a Conan package with a normal recipe of the same library
+  in one application. For example FslBase uses fmt, so a Conan fmt recipe would link fmt twice.
+* DLL's of shared Conan packages are not copied next to the executable, so prefer static packages (```-o <name>/*:shared=False```).
 
 # ReadonlyCache
 
@@ -290,6 +341,17 @@ Git clone the specified URL.
 | Tag        | [Optional] If specified this specific branch/tag will be cloned                                                        |
 | Hash       | [Optional] The repo hash, if this is specified the cloned repo will be validated against it.                           |
 | OutputPath | [Optional] Once command has been completely executed, the path specified here will be considered the final output path |
+
+### ConanInstall
+
+Acquire a package and its dependencies from Conan (see [Conan recipes](#conan-recipes)).
+It must be the only command in the pipeline and it does not support OutputPath or join commands.
+
+| Attribute     | Description                                                                                              |
+|---------------|----------------------------------------------------------------------------------------------------------|
+| Reference     | The Conan reference of the package, for example 'lz4/1.10.0'                                             |
+| Configuration | [Optional] The configurations to install. We support 'debug' and 'release'. Defaults to 'debug;release'. |
+| Options       | [Optional] Additional arguments for 'conan install', for example '-o lz4/*:shared=False'                 |
 
 ## Pipeline build commands
 

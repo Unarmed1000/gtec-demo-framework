@@ -18,7 +18,7 @@
       -->
     </Platform>
     <Platform Name="Windows" Supported="true">
-      <ExperimentalRecipe Name="Vulkan" ExternalInstallDirectory="$(VK_SDK_PATH)" FindTargetName="Vulkan::Vulkan">
+      <ExperimentalRecipe Name="Vulkan" ExternalInstallDirectory="$(VK_SDK_PATH)" FindTargetName="Vulkan::Vulkan" Find="false">
         <Installation>
           <AddHeaders Name="include"/>
           <AddLib Name="lib/vulkan-1.lib"/>

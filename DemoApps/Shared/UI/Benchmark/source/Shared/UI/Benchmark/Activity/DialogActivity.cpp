@@ -73,7 +73,7 @@ namespace Fsl::UI
 
   void DialogActivity::SetBackgroundColor(const UI::UIColor color)
   {
-    std::shared_ptr<BaseWindow> content = DoGetContent();
+    const std::shared_ptr<BaseWindow> content = DoGetContent();
     if (content)
     {
       content->SetBaseColor(color);
@@ -83,7 +83,7 @@ namespace Fsl::UI
 
   void DialogActivity::SetWindowAlignmentX(const ItemAlignment alignment)
   {
-    std::shared_ptr<BaseWindow> content = DoGetContent();
+    const std::shared_ptr<BaseWindow> content = DoGetContent();
     if (content)
     {
       content->SetAlignmentX(alignment);
@@ -92,7 +92,7 @@ namespace Fsl::UI
 
   void DialogActivity::SetWindowAlignmentY(const ItemAlignment alignment)
   {
-    std::shared_ptr<BaseWindow> content = DoGetContent();
+    const std::shared_ptr<BaseWindow> content = DoGetContent();
     if (content)
     {
       content->SetAlignmentY(alignment);

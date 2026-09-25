@@ -54,7 +54,7 @@ namespace Fsl::GLES2
         const bool normalized = (i % 2) != 0;
         const auto stride = NumericCast<GLint>(1000 + i);
         const GLvoid* pointer = reinterpret_cast<const GLvoid*>(NumericCast<uintptr_t>(i % 12));
-        BasicVertexAttribState basicState(size, type, normalized, stride, pointer);
+        const BasicVertexAttribState basicState(size, type, normalized, stride, pointer);
         GlobalState[i] = VertexAttribState((i % 1) == 0, basicState);
       }
     }

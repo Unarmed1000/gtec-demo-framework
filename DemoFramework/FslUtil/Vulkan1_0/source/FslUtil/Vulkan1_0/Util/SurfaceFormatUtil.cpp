@@ -50,7 +50,7 @@ namespace Fsl::Vulkan::SurfaceFormatUtil
   {
     for (auto preferred : preferredSurfaceFormats)
     {
-      for (auto candidate : availableSurfaceFormats)
+      for (const auto candidate : availableSurfaceFormats)
       {
         if (candidate.format == preferred.Format && candidate.colorSpace == preferred.ColorSpace)
         {
@@ -66,9 +66,9 @@ namespace Fsl::Vulkan::SurfaceFormatUtil
   SurfaceFormatInfo TryFindPreferredFormatAnyColorspace(ReadOnlySpan<VkSurfaceFormatKHR> availableSurfaceFormats,
                                                         const ReadOnlySpan<SurfaceFormatInfo> preferredSurfaceFormats)
   {
-    for (auto preferred : preferredSurfaceFormats)
+    for (const auto preferred : preferredSurfaceFormats)
     {
-      for (auto candidate : availableSurfaceFormats)
+      for (const auto candidate : availableSurfaceFormats)
       {
         if (candidate.format == preferred.Format)
         {
@@ -82,7 +82,7 @@ namespace Fsl::Vulkan::SurfaceFormatUtil
   //! Find any format of the preferred color-space
   SurfaceFormatInfo TryFindAnyFormatWithColorSpace(ReadOnlySpan<VkSurfaceFormatKHR> availableSurfaceFormats, const VkColorSpaceKHR requiredColorSpace)
   {
-    for (auto candidate : availableSurfaceFormats)
+    for (const auto candidate : availableSurfaceFormats)
     {
       if (candidate.colorSpace == requiredColorSpace)
       {

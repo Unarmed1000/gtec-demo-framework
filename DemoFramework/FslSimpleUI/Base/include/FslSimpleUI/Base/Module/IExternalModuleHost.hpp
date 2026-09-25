@@ -44,10 +44,10 @@ namespace Fsl::UI
     virtual ~IExternalModuleHost() = default;
 
     //! @brief Get the click target locater
-    virtual std::shared_ptr<IWindowClickInputTargetLocater> GetTargetLocater() const = 0;
+    [[nodiscard]] virtual std::shared_ptr<IWindowClickInputTargetLocater> GetTargetLocater() const = 0;
 
     //!@brief get window information
-    virtual std::shared_ptr<IWindowBasicInfo> GetWindowInfo() const = 0;
+    [[nodiscard]] virtual std::shared_ptr<IWindowBasicInfo> GetWindowInfo() const = 0;
   };
 }
 

@@ -141,7 +141,7 @@ namespace Fsl
     ~Shared() override;
 
 
-    std::shared_ptr<UIDemoAppExtension> GetUIDemoAppExtension() const
+    [[nodiscard]] std::shared_ptr<UIDemoAppExtension> GetUIDemoAppExtension() const
     {
       return m_uiExtension;
     }
@@ -155,16 +155,16 @@ namespace Fsl
     void Update(const DemoTime& demoTime);
     void Draw();
 
-    AtlasTexture2D GetFillTexture() const
+    [[nodiscard]] AtlasTexture2D GetFillTexture() const
     {
       return m_fillTexture;
     }
 
-    PxPoint2 GetContentOffset() const;
-    SdfFontMode GetSdfMode() const;
-    bool GetKerningEnabled() const;
-    bool GetBoundingBoxesEnabled() const;
-    FontDrawConfig GetFontDrawConfig() const;
+    [[nodiscard]] PxPoint2 GetContentOffset() const;
+    [[nodiscard]] SdfFontMode GetSdfMode() const;
+    [[nodiscard]] bool GetKerningEnabled() const;
+    [[nodiscard]] bool GetBoundingBoxesEnabled() const;
+    [[nodiscard]] FontDrawConfig GetFontDrawConfig() const;
 
     void DrawBoundingBoxes(INativeBatch2D& nativeBatch, const PxPoint2& dstPositionPx, const StringViewLite& strView,
                            const TextureAtlasSpriteFont& font, const BitmapFontConfig& fontConfig,

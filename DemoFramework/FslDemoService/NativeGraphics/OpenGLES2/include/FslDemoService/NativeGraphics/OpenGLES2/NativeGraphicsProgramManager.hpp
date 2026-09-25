@@ -115,7 +115,7 @@ namespace Fsl::GLES2
       }
     }
 
-    const Record& Get(const NativeProgramHandle hProgram) const
+    [[nodiscard]] const Record& Get(const NativeProgramHandle hProgram) const
     {
       return m_records.Get(hProgram.Value);
     }

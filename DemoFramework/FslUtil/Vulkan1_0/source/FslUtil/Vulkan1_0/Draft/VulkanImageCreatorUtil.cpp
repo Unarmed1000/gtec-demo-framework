@@ -136,7 +136,7 @@ namespace Fsl::Vulkan::VulkanImageCreatorUtil
                         const VkQueue queue, const VkCommandBuffer commandBuffer, const TBitmap& src, const VkAccessFlags accessMask,
                         const VkImageUsageFlags imageUsageFlags)
     {
-      VkSampleCountFlagBits samples = VK_SAMPLE_COUNT_1_BIT;
+      const VkSampleCountFlagBits samples = VK_SAMPLE_COUNT_1_BIT;
 
       const auto srcFormat = VulkanConvert::ToVkFormat(src.GetPixelFormat());
       const VkDeviceSize resourceSize = src.GetByteSize();
@@ -165,7 +165,7 @@ namespace Fsl::Vulkan::VulkanImageCreatorUtil
                          const VkQueue queue, const VkCommandBuffer commandBuffer, const TTexture& src, const VkAccessFlags accessMask,
                          const VkImageUsageFlags imageUsageFlags)
     {
-      VkSampleCountFlagBits samples = VK_SAMPLE_COUNT_1_BIT;
+      const VkSampleCountFlagBits samples = VK_SAMPLE_COUNT_1_BIT;
 
       const TextureInfo textureInfo = src.GetTextureInfo();
       const auto srcFormat = VulkanConvert::ToVkFormat(src.GetPixelFormat());
@@ -195,7 +195,7 @@ namespace Fsl::Vulkan::VulkanImageCreatorUtil
       const auto srcByteSize = rawCubeBitmap.GetNegX().GetByteSize();
       uint32_t faceIndex = 0;
       VkDeviceSize bufferOffset = 0;
-      VkExtent3D imageExtent{srcExtent.Width.Value, srcExtent.Height.Value, 1};
+      const VkExtent3D imageExtent{srcExtent.Width.Value, srcExtent.Height.Value, 1};
       for (auto& rCopyRegion : rCopyRegions)
       {
         rCopyRegion = {};
@@ -271,13 +271,13 @@ namespace Fsl::Vulkan::VulkanImageCreatorUtil
       const auto srcTextureType = src.GetTextureType();
 
       // Now prepare a optimal tiled target image
-      auto imageCreateInfo =
+      const auto imageCreateInfo =
         FillTransferImageCreateInfo(VulkanConvert::ToVkImageType(srcTextureType), VulkanConvert::ToVkFormat(src.GetPixelFormat()),
                                     TypeConverter::UncheckedTo<VkExtent3D>(src.GetExtent()), samples, imageUsageFlags, textureInfo, srcTextureType);
 
       VUImage toImage(device, imageCreateInfo);
 
-      auto memReqs = toImage.GetImageMemoryRequirements();
+      const auto memReqs = toImage.GetImageMemoryRequirements();
       VkMemoryAllocateInfo memoryAllocateInfo{};
       memoryAllocateInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
       memoryAllocateInfo.allocationSize = memReqs.size;
@@ -287,7 +287,7 @@ namespace Fsl::Vulkan::VulkanImageCreatorUtil
 
       RAPIDVULKAN_CHECK(vkBindImageMemory(device, toImage.Get(), toMemory.Get(), 0));
 
-      auto finalImageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+      const auto finalImageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
       UploadFromStagingToImage(device, commandBuffer, queue, textureInfo, fromStagingBuffer.GetBuffer(), toImage.Get(), fromImageSubresourceRanges,
                                finalImageLayout);
 
@@ -371,13 +371,13 @@ namespace Fsl::Vulkan::VulkanImageCreatorUtil
     srcExtent.height = src.RawUnsignedHeight();
     srcExtent.depth = 1;
 
-    auto imageCreateInfo = FillLinearImageCreateInfo(VK_IMAGE_TYPE_2D, VulkanConvert::ToVkFormat(src.GetPixelFormat()), srcExtent, samples,
-                                                     imageUsageFlags, textureInfo, TextureType::Tex2D);
+    const auto imageCreateInfo = FillLinearImageCreateInfo(VK_IMAGE_TYPE_2D, VulkanConvert::ToVkFormat(src.GetPixelFormat()), srcExtent, samples,
+                                                           imageUsageFlags, textureInfo, TextureType::Tex2D);
     VUImage toImage(device, imageCreateInfo);
 
     const VkMemoryPropertyFlags memoryPropertyFlags = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
 
-    auto memReqs = toImage.GetImageMemoryRequirements();
+    const auto memReqs = toImage.GetImageMemoryRequirements();
     VkMemoryAllocateInfo memoryAllocateInfo{};
     memoryAllocateInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
     memoryAllocateInfo.allocationSize = memReqs.size;
@@ -399,6 +399,7 @@ namespace Fsl::Vulkan::VulkanImageCreatorUtil
   }
 
 
+  // NOLINTNEXTLINE(misc-const-correctness): the output parameters are not implemented yet
   void CreateLinear(Vulkan::VUImage& rDstImage, Memory& rDstMemory, const VUPhysicalDeviceRecord& physicalDevice, const VkDevice device,
                     const VkQueue queue, const VkCommandBuffer commandBuffer, const RawCubeBitmap& src, const VkAccessFlags accessMask,
                     const VkSampleCountFlagBits samples, const VkImageUsageFlags imageUsageFlags)
@@ -435,6 +436,7 @@ namespace Fsl::Vulkan::VulkanImageCreatorUtil
   }
 
 
+  // NOLINTNEXTLINE(misc-const-correctness): the output parameters are not implemented yet
   void CreateLinear(Vulkan::VUImage& rDstImage, Memory& rDstMemory, const VUPhysicalDeviceRecord& physicalDevice, const VkDevice device,
                     const VkQueue queue, const VkCommandBuffer commandBuffer, const ReadOnlyRawTexture& src, const VkAccessFlags accessMask,
                     const VkSampleCountFlagBits samples, const VkImageUsageFlags imageUsageFlags)
@@ -508,12 +510,12 @@ namespace Fsl::Vulkan::VulkanImageCreatorUtil
     bufferImageCopy[0].bufferOffset = 0;
 
     // Now prepare a optimal tiled target image
-    auto imageCreateInfo = FillTransferImageCreateInfo(VK_IMAGE_TYPE_2D, VulkanConvert::ToVkFormat(src.GetPixelFormat()), srcExtent, samples,
-                                                       imageUsageFlags, textureInfo, TextureType::Tex2D);
+    const auto imageCreateInfo = FillTransferImageCreateInfo(VK_IMAGE_TYPE_2D, VulkanConvert::ToVkFormat(src.GetPixelFormat()), srcExtent, samples,
+                                                             imageUsageFlags, textureInfo, TextureType::Tex2D);
 
     VUImage toImage(device, imageCreateInfo);
 
-    auto memReqs = toImage.GetImageMemoryRequirements();
+    const auto memReqs = toImage.GetImageMemoryRequirements();
     VkMemoryAllocateInfo memoryAllocateInfo{};
     memoryAllocateInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
     memoryAllocateInfo.allocationSize = memReqs.size;
@@ -523,7 +525,7 @@ namespace Fsl::Vulkan::VulkanImageCreatorUtil
 
     RAPIDVULKAN_CHECK(vkBindImageMemory(device, toImage.Get(), toMemory.Get(), 0));
 
-    auto finalImageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+    const auto finalImageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
     UploadFromStagingToImage(device, commandBuffer, queue, textureInfo, fromStagingBuffer.GetBuffer(), toImage.Get(), bufferImageCopy,
                              finalImageLayout);
 
@@ -556,7 +558,7 @@ namespace Fsl::Vulkan::VulkanImageCreatorUtil
 
     VkBufferCreateInfo bufferCreateInfo{};
     bufferCreateInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-    bufferCreateInfo.size = srcByteSize * 6;
+    bufferCreateInfo.size = static_cast<VkDeviceSize>(srcByteSize) * 6;
     bufferCreateInfo.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
     bufferCreateInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
@@ -577,15 +579,15 @@ namespace Fsl::Vulkan::VulkanImageCreatorUtil
 
     const auto srcExtent = src.GetExtent();
     const VkExtent3D srcExtentEx = {srcExtent.Width.Value, srcExtent.Height.Value, 1};
-    TextureInfo textureInfo(1, 6, 1);
+    const TextureInfo textureInfo(1, 6, 1);
 
     // Now prepare a optimal tiled target image
-    auto imageCreateInfo = FillTransferImageCreateInfo(VK_IMAGE_TYPE_2D, VulkanConvert::ToVkFormat(src.GetPixelFormat()), srcExtentEx, samples,
-                                                       imageUsageFlags, textureInfo, TextureType::TexCube);
+    const auto imageCreateInfo = FillTransferImageCreateInfo(VK_IMAGE_TYPE_2D, VulkanConvert::ToVkFormat(src.GetPixelFormat()), srcExtentEx, samples,
+                                                             imageUsageFlags, textureInfo, TextureType::TexCube);
 
     VUImage toImage(device, imageCreateInfo);
 
-    auto memReqs = toImage.GetImageMemoryRequirements();
+    const auto memReqs = toImage.GetImageMemoryRequirements();
     VkMemoryAllocateInfo memoryAllocateInfo{};
     memoryAllocateInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
     memoryAllocateInfo.allocationSize = memReqs.size;
@@ -595,7 +597,7 @@ namespace Fsl::Vulkan::VulkanImageCreatorUtil
 
     RAPIDVULKAN_CHECK(vkBindImageMemory(device, toImage.Get(), toMemory.Get(), 0));
 
-    auto finalImageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+    const auto finalImageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
     UploadFromStagingToImage(device, commandBuffer, queue, textureInfo, fromStagingBuffer.GetBuffer(), toImage.Get(), fromImageSubresourceRanges,
                              finalImageLayout);
 
@@ -670,7 +672,7 @@ namespace Fsl::Vulkan::VulkanImageCreatorUtil
     }
 
     // Create a fence to make sure that the copies have finished before continuing
-    Fence copyFence(device, 0);
+    const Fence copyFence(device, 0);
 
     VkSubmitInfo submitInfo{};
     submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;

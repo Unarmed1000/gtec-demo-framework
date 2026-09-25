@@ -46,12 +46,12 @@ class TestFixtureFslBaseContent : public TestFixtureFslBase
 public:
   TestFixtureFslBaseContent();
 
-  Fsl::IO::Path GetContentPath() const;
-  Fsl::IO::Path GetContentPath(const Fsl::IO::Path& relativePath) const;
+  [[nodiscard]] Fsl::IO::Path GetContentPath() const;
+  [[nodiscard]] Fsl::IO::Path GetContentPath(const Fsl::IO::Path& relativePath) const;
   // Fsl::IO::Path GetTempPath(const Fsl::IO::Path& relativePath) const;
-  Fsl::IO::Path GetTestPath() const;
-  Fsl::IO::Path GetTestPath(const Fsl::IO::PathView relativePath) const;
-  Fsl::IO::Path GetTestPath(const Fsl::IO::Path& relativePath) const;
+  [[nodiscard]] Fsl::IO::Path GetTestPath() const;
+  [[nodiscard]] Fsl::IO::Path GetTestPath(const Fsl::IO::PathView relativePath) const;
+  [[nodiscard]] Fsl::IO::Path GetTestPath(const Fsl::IO::Path& relativePath) const;
 
 private:
 };

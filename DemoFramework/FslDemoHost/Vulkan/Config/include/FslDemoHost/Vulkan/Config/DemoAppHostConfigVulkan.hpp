@@ -83,17 +83,17 @@ namespace Fsl
     //  return m_demoAppMode;
     //}
 
-    ConfigControl GetInstanceLayerConfigControl() const
+    [[nodiscard]] ConfigControl GetInstanceLayerConfigControl() const
     {
       return m_layerConfigControl;
     }
 
-    ConfigControl GetInstanceExtensionConfigControl() const
+    [[nodiscard]] ConfigControl GetInstanceExtensionConfigControl() const
     {
       return m_extensionConfigControl;
     }
 
-    ConfigControl GetDeviceExtensionConfigControl() const
+    [[nodiscard]] ConfigControl GetDeviceExtensionConfigControl() const
     {
       return m_deviceExtensionConfigControl;
     }
@@ -192,36 +192,36 @@ namespace Fsl
     void ExtractDeviceRequiredFeatures(std::deque<Vulkan::PhysicalDeviceFeatureRequest>& rTarget) const
     {
       rTarget.clear();
-      for (auto entry : m_physicalDeviceFeatureRequest)
+      for (const auto entry : m_physicalDeviceFeatureRequest)
       {
         rTarget.push_back(entry);
       }
     }
 
-    const std::deque<Vulkan::SurfaceFormatInfo>& GetPreferredSurfaceFormats() const
+    [[nodiscard]] const std::deque<Vulkan::SurfaceFormatInfo>& GetPreferredSurfaceFormats() const
     {
       return m_preferedSurfaceFormats;
     }
 
 
-    const std::deque<Vulkan::FeatureRequest>& GetInstanceLayerRequests() const
+    [[nodiscard]] const std::deque<Vulkan::FeatureRequest>& GetInstanceLayerRequests() const
     {
       return m_instanceLayerRequest;
     }
 
 
-    const std::deque<Vulkan::FeatureRequest>& GetInstanceExtensionRequests() const
+    [[nodiscard]] const std::deque<Vulkan::FeatureRequest>& GetInstanceExtensionRequests() const
     {
       return m_instanceExtensionRequest;
     }
 
 
-    const std::deque<Vulkan::FeatureRequest>& GetDeviceExtensionRequests() const
+    [[nodiscard]] const std::deque<Vulkan::FeatureRequest>& GetDeviceExtensionRequests() const
     {
       return m_deviceExtensionRequest;
     }
 
-    uint32_t GetInstanceAppVersion() const
+    [[nodiscard]] uint32_t GetInstanceAppVersion() const
     {
       return m_appVersion;
     }
@@ -231,7 +231,7 @@ namespace Fsl
       m_appVersion = version;
     }
 
-    uint32_t GetInstanceApiVersion() const
+    [[nodiscard]] uint32_t GetInstanceApiVersion() const
     {
       return m_apiVersion;
     }
@@ -243,12 +243,12 @@ namespace Fsl
 
     void SetDeviceCreationCustomizer(std::shared_ptr<Vulkan::IVulkanDeviceCreationCustomizer> customizer);
 
-    const std::shared_ptr<Vulkan::IVulkanDeviceCreationCustomizer>& TryGetDeviceCreationCustomizer() const
+    [[nodiscard]] const std::shared_ptr<Vulkan::IVulkanDeviceCreationCustomizer>& TryGetDeviceCreationCustomizer() const
     {
       return m_customizer;
     }
 
-    bool HasDeviceRequiredFeatures() const
+    [[nodiscard]] bool HasDeviceRequiredFeatures() const
     {
       return !m_physicalDeviceFeatureRequest.empty();
     }

@@ -66,9 +66,9 @@ namespace Fsl
 
   void NineSliceSprite::Resize(const uint32_t densityDpi)
   {
-    SpriteUnitConverter unitConverter(densityDpi);
+    const SpriteUnitConverter unitConverter(densityDpi);
 
-    PxTrimmedNineSlice trimmedNineSlice =
+    const PxTrimmedNineSlice trimmedNineSlice =
       unitConverter.CalcScaledPxTrimmedNineSlice(m_info.ImageInfo.ExtentPx, m_info.ImageInfo.TrimMarginPx, m_info.ImageInfo.TrimmedNineSlicePx,
                                                  m_info.ImageInfo.ContentMarginPx, m_info.ImageDpi);
 

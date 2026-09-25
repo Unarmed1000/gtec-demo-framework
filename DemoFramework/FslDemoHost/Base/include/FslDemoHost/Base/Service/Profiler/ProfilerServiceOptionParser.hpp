@@ -42,7 +42,7 @@ namespace Fsl
   public:
     ProfilerServiceOptionParser();
 
-    std::string GetName() const final
+    [[nodiscard]] std::string GetName() const final
     {
       return {"ProfilerServiceOptionParser"};
     }
@@ -52,7 +52,7 @@ namespace Fsl
     bool OnParsingComplete() final;
 
     //! @brief Get the number of frames to average the FPS over for Average mode.
-    uint32_t GetAverageEntries() const
+    [[nodiscard]] uint32_t GetAverageEntries() const
     {
       return m_averageEntries;
     }

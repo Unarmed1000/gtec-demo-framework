@@ -42,7 +42,7 @@ namespace
 
 TEST(TestLog_LogPropertySetResult, Log)
 {
-  DataBinding::Internal::PropertySetResult value = DataBinding::Internal::PropertySetResult::ValueChanged;
+  const DataBinding::Internal::PropertySetResult value = DataBinding::Internal::PropertySetResult::ValueChanged;
 
   std::stringstream stream;
   stream << value;

@@ -83,7 +83,7 @@ namespace Fsl::UI
     try
     {
       const EventDescription eventDesc = theEvent->GetDescription();
-      EventRoute::StackScopedInit scopedInit(m_eventRoute, eventDesc.RequiredFlags);
+      const EventRoute::StackScopedInit scopedInit(m_eventRoute, eventDesc.RequiredFlags);
       m_eventRouter.CreateRoute(m_eventRoute, eventDesc.RoutingStrategy, target);
       m_eventRoute.Send(m_eventHandler.get(), theEvent);
       const auto result = (theEvent->IsHandled() ? SendResult::Handled : SendResult::Unhandled);
@@ -123,7 +123,7 @@ namespace Fsl::UI
     try
     {
       const EventDescription eventDesc = theEvent->GetDescription();
-      EventRoute::StackScopedInit scopedInit(m_eventRoute, eventDesc.RequiredFlags);
+      const EventRoute::StackScopedInit scopedInit(m_eventRoute, eventDesc.RequiredFlags);
       m_eventRouter.CreateRoute(m_eventRoute, eventDesc.RoutingStrategy, screenHitPositionPx);
       m_eventRoute.Send(m_eventHandler.get(), theEvent);
       const auto result = (theEvent->IsHandled() ? SendResult::Handled : SendResult::Unhandled);

@@ -50,15 +50,15 @@ namespace Fsl
     DynamicNativeTextureTestImpl(const ReadOnlyRawTexture& texture, const Texture2DFilterHint filterHint, const TextureFlags textureFlags)
       : m_extentPx(texture.GetExtent())
     {
-      SetData(texture, filterHint, textureFlags);
+      DynamicNativeTextureTestImpl::SetData(texture, filterHint, textureFlags);
     }
 
-    BasicNativeTextureHandle TryGetNativeHandle() const noexcept override
+    [[nodiscard]] BasicNativeTextureHandle TryGetNativeHandle() const noexcept override
     {
       return {};
     }
 
-    NativeTextureArea CalcNativeTextureArea(const PxRectangleU32& imageRectanglePx) const override
+    [[nodiscard]] NativeTextureArea CalcNativeTextureArea(const PxRectangleU32& imageRectanglePx) const override
     {
       assert(static_cast<float>(m_extentPx.Width.Value) > 0.0f);
       assert(static_cast<float>(m_extentPx.Height.Value) > 0.0f);

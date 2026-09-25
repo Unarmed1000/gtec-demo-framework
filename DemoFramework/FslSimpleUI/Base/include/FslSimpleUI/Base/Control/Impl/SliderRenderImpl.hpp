@@ -153,7 +153,7 @@ namespace Fsl
     public:
       explicit SliderRenderImpl(const UIColorConverter colorConverter, const std::shared_ptr<IMeshManager>& meshManager);
 
-      bool GetEnableVerticalGraphicsRotation() const
+      [[nodiscard]] bool GetEnableVerticalGraphicsRotation() const
       {
         return m_verticalGraphicsRotationEnabled;
       }
@@ -168,14 +168,14 @@ namespace Fsl
         return modified;
       }
 
-      const std::shared_ptr<ISizedSprite>& GetCursorSprite() const
+      [[nodiscard]] const std::shared_ptr<ISizedSprite>& GetCursorSprite() const
       {
         return m_cursor.Sprite.GetSprite();
       }
 
       bool SetCursorSprite(const std::shared_ptr<ISizedSprite>& value);
 
-      UIColor GetCursorColor() const
+      [[nodiscard]] UIColor GetCursorColor() const
       {
         return m_cursor.EnabledColor;
       }
@@ -191,7 +191,7 @@ namespace Fsl
         return modified;
       }
 
-      UIColor GetCursorDisabledColor() const
+      [[nodiscard]] UIColor GetCursorDisabledColor() const
       {
         return m_cursor.DisabledColor;
       }
@@ -207,7 +207,7 @@ namespace Fsl
         return modified;
       }
 
-      const DpPoint2& GetCursorOrigin() const
+      [[nodiscard]] const DpPoint2& GetCursorOrigin() const
       {
         return m_cursor.OriginDp;
       }
@@ -222,7 +222,7 @@ namespace Fsl
         return modified;
       }
 
-      DpSize2D GetCursorSize() const
+      [[nodiscard]] DpSize2D GetCursorSize() const
       {
         return m_cursor.SizeDp;
       }
@@ -240,14 +240,14 @@ namespace Fsl
       // ------
 
 
-      const std::shared_ptr<ISizedSprite>& GetCursorOverlaySprite() const
+      [[nodiscard]] const std::shared_ptr<ISizedSprite>& GetCursorOverlaySprite() const
       {
         return m_cursorOverlay.Sprite.GetSprite();
       }
 
       bool SetCursorOverlaySprite(const std::shared_ptr<ISizedSprite>& value);
 
-      UIColor GetCursorOverlayColor() const
+      [[nodiscard]] UIColor GetCursorOverlayColor() const
       {
         return m_cursorOverlay.EnabledColor;
       }
@@ -265,14 +265,14 @@ namespace Fsl
 
       // ------
 
-      const std::shared_ptr<IContentSprite>& GetBackgroundSprite() const
+      [[nodiscard]] const std::shared_ptr<IContentSprite>& GetBackgroundSprite() const
       {
         return m_background.Sprite.GetSprite();
       }
 
       bool SetBackgroundSprite(const std::shared_ptr<IContentSprite>& value);
 
-      UIColor GetBackgroundColor() const
+      [[nodiscard]] UIColor GetBackgroundColor() const
       {
         return m_background.EnabledColor;
       }
@@ -288,7 +288,7 @@ namespace Fsl
         return modified;
       }
 
-      UIColor GetBackgroundDisabledColor() const
+      [[nodiscard]] UIColor GetBackgroundDisabledColor() const
       {
         return m_background.DisabledColor;
       }

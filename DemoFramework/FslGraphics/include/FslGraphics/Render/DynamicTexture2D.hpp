@@ -99,10 +99,10 @@ namespace Fsl
     void SetData(const ReadOnlyRawTexture& texture, const Texture2DFilterHint filterHint, const TextureFlags textureFlags = TextureFlags::NotDefined);
 
     //! @brief Acquire the native texture (returns null if none exist)
-    std::shared_ptr<IDynamicNativeTexture2D> TryGetDynamicNativeTexture() const;
+    [[nodiscard]] std::shared_ptr<IDynamicNativeTexture2D> TryGetDynamicNativeTexture() const;
 
     //! @brief Acquire the native texture (throws if none exist)
-    std::shared_ptr<IDynamicNativeTexture2D> GetDynamicNativeTexture() const;
+    [[nodiscard]] std::shared_ptr<IDynamicNativeTexture2D> GetDynamicNativeTexture() const;
 
     using BaseTexture2D::operator==;
     using BaseTexture2D::operator!=;

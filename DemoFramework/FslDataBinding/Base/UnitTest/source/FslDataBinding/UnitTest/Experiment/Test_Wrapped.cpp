@@ -44,14 +44,14 @@ namespace
 
 TEST(Test_Wrapped, Construct)
 {
-  UTWrappedTypedDependencyPropertyMethods<int32_t> test;
+  const UTWrappedTypedDependencyPropertyMethods<int32_t> test;
   EXPECT_EQ(0, test.Get());
   EXPECT_EQ(0, test.Property.Get());
 }
 
 TEST(Test_Wrapped, ConstructWithValue)
 {
-  UTWrappedTypedDependencyPropertyMethods<int32_t> test(32);
+  const UTWrappedTypedDependencyPropertyMethods<int32_t> test(32);
   EXPECT_EQ(32, test.Get());
   EXPECT_EQ(32, test.Property.Get());
 }
@@ -70,14 +70,14 @@ TEST(Test_Wrapped, Set)
 
 TEST(Test_Wrapped, ConstructRef)
 {
-  UTWrappedTypedDependencyPropertyRefMethods<int32_t> test;
+  const UTWrappedTypedDependencyPropertyRefMethods<int32_t> test;
   EXPECT_EQ(0, test.Get());
   EXPECT_EQ(0, test.Property.Get());
 }
 
 TEST(Test_Wrapped, ConstructRefWithValue)
 {
-  UTWrappedTypedDependencyPropertyRefMethods<int32_t> test(32);
+  const UTWrappedTypedDependencyPropertyRefMethods<int32_t> test(32);
   EXPECT_EQ(32, test.Get());
   EXPECT_EQ(32, test.Property.Get());
 }

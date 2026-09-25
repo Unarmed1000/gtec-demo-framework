@@ -64,7 +64,7 @@ namespace Fsl
 
   void ImageSprite::Resize(const uint32_t densityDpi)
   {
-    SpriteUnitConverter unitConverter(densityDpi);
+    const SpriteUnitConverter unitConverter(densityDpi);
 
     m_info.RenderInfo = RenderImageInfo(m_info.RenderInfo.TextureArea,
                                         unitConverter.CalcScaledPxTrimmedImage(m_info.ImageInfo.ExtentPx, m_info.ImageInfo.TrimMarginPx,

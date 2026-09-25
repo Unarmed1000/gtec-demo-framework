@@ -36,7 +36,7 @@ namespace Fsl::VulkanWindowSystemHelper
 {
   std::shared_ptr<VulkanWindowSystem> GetWindowSystem(const std::shared_ptr<IWindowHostInfo>& windowHostInfo)
   {
-    auto baseActiveWindowSystem = windowHostInfo->GetWindowSystem().lock();
+    const auto baseActiveWindowSystem = windowHostInfo->GetWindowSystem().lock();
     if (!baseActiveWindowSystem)
     {
       throw std::runtime_error("Failed to get the active window system");
@@ -58,7 +58,7 @@ namespace Fsl::VulkanWindowSystemHelper
       throw NotSupportedException("One active window required");
     }
 
-    auto baseWindow = windows.front().lock();
+    const auto baseWindow = windows.front().lock();
     if (!baseWindow)
     {
       throw std::runtime_error("Failed to get the active window");

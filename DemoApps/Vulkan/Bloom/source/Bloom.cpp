@@ -130,7 +130,7 @@ namespace Fsl
       std::array<VkWriteDescriptorSet, 1> writeDescriptorSets{};
 
       // Binding 0 : Fragment shader texture sampler
-      auto textureImageInfo0 = texture.GetDescriptorImageInfo();
+      const auto textureImageInfo0 = texture.GetDescriptorImageInfo();
       writeDescriptorSets[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
       writeDescriptorSets[0].dstSet = descriptorSet;
       writeDescriptorSets[0].dstBinding = 0;
@@ -231,7 +231,7 @@ namespace Fsl
 
       const bool enableDepth = (depthImageFormat != VK_FORMAT_UNDEFINED);
 
-      VkAttachmentReference colorAttachmentReference = {0, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL};
+      const VkAttachmentReference colorAttachmentReference = {0, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL};
       VkAttachmentReference depthAttachmentReference = {1, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL};
 
       std::array<VkSubpassDescription, 1> subpassDescription{};
@@ -341,7 +341,7 @@ namespace Fsl
       viewport.minDepth = 0.0f;
       viewport.maxDepth = 1.0f;
 
-      VkRect2D scissor{{0, 0}, extent};
+      const VkRect2D scissor{{0, 0}, extent};
 
       VkPipelineViewportStateCreateInfo pipelineViewportStateCreateInfo{};
       pipelineViewportStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
@@ -488,7 +488,7 @@ namespace Fsl
       viewport.minDepth = 0.0f;
       viewport.maxDepth = 1.0f;
 
-      VkRect2D scissor{{0, 0}, extent};
+      const VkRect2D scissor{{0, 0}, extent};
 
       VkPipelineViewportStateCreateInfo pipelineViewportStateCreateInfo{};
       pipelineViewportStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
@@ -1093,7 +1093,7 @@ namespace Fsl
       vkCmdBindDescriptorSets(hCmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, hBloomPipelineLayout, 0, 1, &m_resources.BloomDescriptorSet, 0, nullptr);
       vkCmdBindPipeline(hCmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_dependentResources.PipelineBloom.Get());
 
-      VkDeviceSize offsets = 0;
+      const VkDeviceSize offsets = 0;
       vkCmdBindVertexBuffers(hCmdBuffer, VertexBufferBindId, 1, m_resources.VBFullScreen.VertexBuffer.GetBufferPointer(), &offsets);
       vkCmdDraw(hCmdBuffer, m_resources.VBFullScreen.VertexBuffer.GetVertexCount(), 1, 0, 0);
     }
@@ -1265,7 +1265,7 @@ namespace Fsl
     vkCmdBindDescriptorSets(hCmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, hPipelineLayout, 0, 1, &srcDescriptorSet, 0, nullptr);
     vkCmdBindPipeline(hCmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.Get());
 
-    VkDeviceSize offsets = 0;
+    const VkDeviceSize offsets = 0;
     vkCmdBindVertexBuffers(hCmdBuffer, VertexBufferBindId, 1, m_resources.VBFullScreen.VertexBuffer.GetBufferPointer(), &offsets);
     vkCmdDraw(hCmdBuffer, m_resources.VBFullScreen.VertexBuffer.GetVertexCount(), 1, 0, 0);
   }

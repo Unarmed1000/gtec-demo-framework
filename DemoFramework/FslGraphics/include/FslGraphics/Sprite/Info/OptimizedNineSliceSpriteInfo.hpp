@@ -63,7 +63,7 @@ namespace Fsl
                                  const PxRectangleU16& imageTrimmedRectanglePx, const PxThicknessU& nineSlicePx, const PxThicknessU& contentMarginPx,
                                  const AtlasNineSliceFlags flags, const uint32_t imageDpi, const StringViewLite& debugName);
 
-    bool IsValid() const
+    [[nodiscard]] bool IsValid() const
     {
       return OpaqueMaterialInfo.IsValid() && TransparentMaterialInfo.IsValid();
     }

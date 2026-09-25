@@ -47,7 +47,7 @@ namespace
 
 TEST(TestLog_Math_LogRectangle3D, Log)
 {
-  Rectangle3D value(Offset3D(1, 2, 3), Extent3D(10, 20, 30));
+  const Rectangle3D value(Offset3D(1, 2, 3), Extent3D(10, 20, 30));
 
   std::stringstream stream;
   stream << value;

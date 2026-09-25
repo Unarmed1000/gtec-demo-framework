@@ -92,67 +92,67 @@ namespace Fsl
                std::vector<BitmapFontChar> chars, std::vector<BitmapFontKerning> kernings);
 
 
-    StringViewLite GetName() const
+    [[nodiscard]] StringViewLite GetName() const
     {
       return std::string_view(m_name);
     }
 
-    StringViewLite GetTextureName() const
+    [[nodiscard]] StringViewLite GetTextureName() const
     {
       return std::string_view(m_textureName);
     }
 
-    uint16_t GetDpi() const
+    [[nodiscard]] uint16_t GetDpi() const
     {
       return m_dpi;
     }
 
-    uint16_t GetSize() const
+    [[nodiscard]] uint16_t GetSize() const
     {
       return m_size;
     }
 
-    PxValueU16 GetLineSpacingPx() const
+    [[nodiscard]] PxValueU16 GetLineSpacingPx() const
     {
       return m_lineSpacingPx;
     }
 
-    PxValueU16 GetBaseLinePx() const
+    [[nodiscard]] PxValueU16 GetBaseLinePx() const
     {
       return m_baseLinePx;
     }
 
-    PxThicknessU16 GetPaddingPx() const
+    [[nodiscard]] PxThicknessU16 GetPaddingPx() const
     {
       return m_paddingPx;
     }
 
-    BitmapFontType GetFontType() const
+    [[nodiscard]] BitmapFontType GetFontType() const
     {
       return m_fontType;
     }
 
-    inline std::size_t GetCharCount() const
+    [[nodiscard]] inline std::size_t GetCharCount() const
     {
       return m_chars.size();
     }
 
-    inline ReadOnlySpan<BitmapFontChar> GetChars() const
+    [[nodiscard]] inline ReadOnlySpan<BitmapFontChar> GetChars() const
     {
       return SpanUtil::AsReadOnlySpan(m_chars);
     }
 
-    inline std::size_t GetKerningsCount() const
+    [[nodiscard]] inline std::size_t GetKerningsCount() const
     {
       return m_kernings.size();
     }
 
-    inline ReadOnlySpan<BitmapFontKerning> GetKernings() const
+    [[nodiscard]] inline ReadOnlySpan<BitmapFontKerning> GetKernings() const
     {
       return SpanUtil::AsReadOnlySpan(m_kernings);
     }
 
-    BitmapFontSdfParams GetSdfParams() const
+    [[nodiscard]] BitmapFontSdfParams GetSdfParams() const
     {
       return m_sdfParams;
     }

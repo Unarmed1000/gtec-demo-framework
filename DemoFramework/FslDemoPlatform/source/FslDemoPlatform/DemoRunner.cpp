@@ -83,9 +83,9 @@ namespace Fsl
     uint32_t CheckVerbosityLevel(Span<StringViewLite> arguments)
     {
       uint32_t verbosityLevel = 0;
-      for (std::size_t i = 0; i < arguments.size(); ++i)
+      for (auto& rArgument : arguments)
       {
-        const StringViewLite& strArgument = arguments[i];
+        const StringViewLite& strArgument = rArgument;
         if (!strArgument.empty())
         {
           if (strArgument.starts_with("-v"))
@@ -97,7 +97,7 @@ namespace Fsl
               if (verbosityLevel > 1)
               {
                 // The other option parse we use dont support the '-vvvv' style to replace the fancy one with a normal verbose
-                arguments[i] = g_normalVerbosityArgument.data();
+                rArgument = g_normalVerbosityArgument.data();
               }
             }
           }
@@ -125,9 +125,9 @@ namespace Fsl
       if (demoSetup.Host.ServiceOptionParsers)
       {
         int32_t offset = DEMO_SERVICE_OPTION_BASE;
-        for (auto itr = demoSetup.Host.ServiceOptionParsers->begin(); itr != demoSetup.Host.ServiceOptionParsers->end(); ++itr)
+        for (const auto& parser : *demoSetup.Host.ServiceOptionParsers)
         {
-          inputParsers.emplace_back(itr->get(), offset);
+          inputParsers.emplace_back(parser.get(), offset);
           offset += DEMO_SERVICE_OPTION_INTERVAL;
         }
       }
@@ -156,8 +156,8 @@ namespace Fsl
     void RegisterOptionParsersInOptionsService(const std::shared_ptr<IServiceProvider>& theServiceProvider, const DemoBasicSetup& demoSetup,
                                                const std::shared_ptr<DemoHostManagerOptionParser>& demoHostManagerOptionParser)
     {
-      ServiceProvider serviceProvider(theServiceProvider);
-      auto optionService = serviceProvider.Get<IOptionsServiceControl>();
+      const ServiceProvider serviceProvider(theServiceProvider);
+      const auto optionService = serviceProvider.Get<IOptionsServiceControl>();
 
       if (demoHostManagerOptionParser)
       {
@@ -169,9 +169,9 @@ namespace Fsl
       }
       if (demoSetup.Host.ServiceOptionParsers)
       {
-        for (auto itr = demoSetup.Host.ServiceOptionParsers->begin(); itr != demoSetup.Host.ServiceOptionParsers->end(); ++itr)
+        for (const auto& parser : *demoSetup.Host.ServiceOptionParsers)
         {
-          optionService->AddOptionParser(*itr);
+          optionService->AddOptionParser(parser);
         }
       }
       if (demoSetup.App.AppSetup.OptionParser)
@@ -241,7 +241,7 @@ namespace Fsl
       serviceFramework->LaunchGlobalServices();
       serviceFramework->LaunchThreads();
 
-      auto serviceProvider = serviceFramework->GetServiceProvider();
+      const auto serviceProvider = serviceFramework->GetServiceProvider();
       // This really should not happen, but just check anyway
       if (!serviceProvider)
       {
@@ -251,7 +251,7 @@ namespace Fsl
 
       RegisterOptionParsersInOptionsService(serviceProvider, demoBasicSetup, demoHostManagerOptionParser);
 
-      DemoSetup demoSetup(rExceptionMessageFormatter, serviceProvider, demoBasicSetup.Host, demoBasicSetup.App, demoBasicSetup.VerbosityLevel);
+      const DemoSetup demoSetup(rExceptionMessageFormatter, serviceProvider, demoBasicSetup.Host, demoBasicSetup.App, demoBasicSetup.VerbosityLevel);
       std::unique_ptr<DemoHostManager> demoHostManager;
       try
       {
@@ -280,9 +280,9 @@ namespace Fsl
         return EXIT_FAILURE;
       }
 
-      auto serviceLooper = serviceFramework->GetServiceHostLooper();
+      const auto serviceLooper = serviceFramework->GetServiceHostLooper();
       // Run the demo
-      auto returnValue = demoHostManager->Run(serviceLooper, demoRunnerConfig.MainLoopCallbackFunction);
+      const auto returnValue = demoHostManager->Run(serviceLooper, demoRunnerConfig.MainLoopCallbackFunction);
 
       // Kill the threads and give the looper one last chance to process messages
       serviceFramework.reset();

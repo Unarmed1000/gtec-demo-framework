@@ -60,12 +60,12 @@ namespace Fsl::UI
 
     void TakeControl();
 
-    MillisecondTickCount32 GetDownTimestamp() const noexcept
+    [[nodiscard]] MillisecondTickCount32 GetDownTimestamp() const noexcept
     {
       return m_downTimestamp;
     }
 
-    DpPoint2F GetInitialDownPositionDpf() const noexcept
+    [[nodiscard]] DpPoint2F GetInitialDownPositionDpf() const noexcept
     {
       return m_initialDownPositionDpf;
     }
@@ -74,27 +74,27 @@ namespace Fsl::UI
     MovementTransactionAction ClaimCancelAction(const MovementOwnership movementOwnership);
     MovementTransactionAction ClaimEndAction();
 
-    bool CanBeTap() const noexcept
+    [[nodiscard]] bool CanBeTap() const noexcept
     {
       return m_allowTap && !m_inMotion;
     }
 
-    bool IsHold() const noexcept
+    [[nodiscard]] bool IsHold() const noexcept
     {
       return false;
     }
 
-    bool InMotion() const noexcept
+    [[nodiscard]] bool InMotion() const noexcept
     {
       return m_inMotion;
     }
 
-    GestureTransactionMode Mode() const noexcept
+    [[nodiscard]] GestureTransactionMode Mode() const noexcept
     {
       return m_mode;
     }
 
-    bool IsDefault() const noexcept
+    [[nodiscard]] bool IsDefault() const noexcept
     {
       return m_mode == GestureTransactionMode::Invalid;
     }

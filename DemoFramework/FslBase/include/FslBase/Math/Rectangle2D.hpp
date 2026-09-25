@@ -65,49 +65,49 @@ namespace Fsl
     }
 
 
-    inline int32_t Left() const noexcept
+    [[nodiscard]] inline int32_t Left() const noexcept
     {
       return Offset.X;
     }
 
-    inline int32_t Top() const noexcept
+    [[nodiscard]] inline int32_t Top() const noexcept
     {
       return Offset.Y;
     }
 
-    inline int32_t Right() const noexcept
+    [[nodiscard]] inline int32_t Right() const noexcept
     {
       return Offset.X + UncheckedNumericCast<int32_t>(Extent.Width);
     }
 
-    inline int32_t Bottom() const noexcept
+    [[nodiscard]] inline int32_t Bottom() const noexcept
     {
       return Offset.Y + UncheckedNumericCast<int32_t>(Extent.Height);
     }
 
     //! @brief Check if the x,y coordinate is considered to be contained within this rectangle
-    bool Contains(const int32_t x, const int32_t y) const noexcept
+    [[nodiscard]] bool Contains(const int32_t x, const int32_t y) const noexcept
     {
       return (x >= Left() && x < Right() && y >= Top() && y < Bottom());
     }
 
 
     //! @brief Check if the x,y coordinate is considered to be contained within this rectangle
-    bool Contains(const Offset2D& value) const noexcept
+    [[nodiscard]] bool Contains(const Offset2D& value) const noexcept
     {
       return Contains(value.X, value.Y);
     }
 
 
     //! @brief Check if the rectangle is considered to be contained within this rectangle
-    bool Contains(const Rectangle2D& value) const noexcept
+    [[nodiscard]] bool Contains(const Rectangle2D& value) const noexcept
     {
       return Contains(value.Offset) && Contains(value.Right(), value.Bottom());
     }
 
 
     //! @brief Get the center of this rect
-    Offset2D GetCenter() const noexcept
+    [[nodiscard]] Offset2D GetCenter() const noexcept
     {
       static_assert(static_cast<Extent2D::value_type>(std::numeric_limits<Offset2D::value_type>::max()) <=
                       (std::numeric_limits<Extent2D::value_type>::max() / 2),
@@ -123,14 +123,14 @@ namespace Fsl
 
     //! @brief Gets a value that indicates whether the Rectangle is empty
     //!        An empty rectangle has all its values set to 0.
-    bool IsEmpty() const noexcept
+    [[nodiscard]] bool IsEmpty() const noexcept
     {
       return (Offset.X == 0 && Offset.Y == 0 && Extent.Width == 0 && Extent.Height == 0);
     }
 
 
     //! @brief Determines whether a specified Rectangle intersects with this Rectangle.
-    bool Intersects(const Rectangle2D& value) const noexcept
+    [[nodiscard]] bool Intersects(const Rectangle2D& value) const noexcept
     {
       return value.Left() < Right() && Left() < value.Right() && value.Top() < Bottom() && Top() < value.Bottom();
     }

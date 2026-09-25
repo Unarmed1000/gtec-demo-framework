@@ -44,7 +44,7 @@ namespace
 
 TEST(TestLog_MathDp_LogPxValue, Log)
 {
-  PxValue value(1);
+  const PxValue value(1);
 
   std::stringstream stream;
   stream << value;

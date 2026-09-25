@@ -42,7 +42,7 @@ namespace
 
 TEST(TestControlLogic_SliderResultFlags, SliderResultFlagsUtil_IsFlagged)
 {
-  auto res = (UI::SliderResultFlags::Completed | UI::SliderResultFlags::DragCancelled);
+  const auto res = (UI::SliderResultFlags::Completed | UI::SliderResultFlags::DragCancelled);
 
   EXPECT_TRUE(UI::SliderResultFlagsUtil::IsFlagged(res, UI::SliderResultFlags::Completed));
   EXPECT_TRUE(UI::SliderResultFlagsUtil::IsFlagged(res, UI::SliderResultFlags::DragCancelled));
@@ -52,7 +52,7 @@ TEST(TestControlLogic_SliderResultFlags, SliderResultFlagsUtil_IsFlagged)
 
 TEST(TestControlLogic_SliderResultFlags, Op_Or)
 {
-  auto res = (UI::SliderResultFlags::Completed | UI::SliderResultFlags::DragCancelled);
+  const auto res = (UI::SliderResultFlags::Completed | UI::SliderResultFlags::DragCancelled);
 
   EXPECT_TRUE(UI::SliderResultFlagsUtil::IsFlagged(res, UI::SliderResultFlags::Completed));
   EXPECT_TRUE(UI::SliderResultFlagsUtil::IsFlagged(res, UI::SliderResultFlags::DragCancelled));

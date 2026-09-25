@@ -46,10 +46,10 @@ namespace Fsl::UI
   public:
     virtual ~IRenderSystemFactory() = default;
 
-    virtual RenderSystemInfo GetInfo() const = 0;
+    [[nodiscard]] virtual RenderSystemInfo GetInfo() const = 0;
 
-    virtual std::unique_ptr<IRenderSystem> Create(const RenderSystemCreateInfo& createInfo) const = 0;
-    virtual VertexDeclarationSpan GetVertexDeclarationSpan() const = 0;
+    [[nodiscard]] virtual std::unique_ptr<IRenderSystem> Create(const RenderSystemCreateInfo& createInfo) const = 0;
+    [[nodiscard]] virtual VertexDeclarationSpan GetVertexDeclarationSpan() const = 0;
   };
 }
 

@@ -143,12 +143,12 @@ namespace Fsl
     explicit ModelInstancingShared(const DemoAppConfig& config);
     ~ModelInstancingShared() override;
 
-    std::shared_ptr<UIDemoAppExtension> GetUIDemoAppExtension() const
+    [[nodiscard]] std::shared_ptr<UIDemoAppExtension> GetUIDemoAppExtension() const
     {
       return m_uiExtension;
     }
 
-    MeshInstanceSetup GetInstanceSetup() const noexcept
+    [[nodiscard]] MeshInstanceSetup GetInstanceSetup() const noexcept
     {
       return m_instanceSetup;
     }
@@ -162,12 +162,12 @@ namespace Fsl
     void Update(const DemoTime& demoTime);
     void Draw();
 
-    uint32_t GetInstanceCount() const
+    [[nodiscard]] uint32_t GetInstanceCount() const
     {
       return m_ui.Instances->GetValue();
     }
 
-    MatrixInfo GetMatrixInfo() const noexcept
+    [[nodiscard]] MatrixInfo GetMatrixInfo() const noexcept
     {
       return m_matrices;
     }

@@ -53,7 +53,7 @@ namespace Fsl::Vulkan
   {
     {
       const auto deviceQueueFamilyProperties = PhysicalDeviceUtil::GetPhysicalDeviceQueueFamilyProperties(physicalDevice.Device);
-      auto supportFilter =
+      const auto supportFilter =
         PhysicalDeviceKHRUtil::GetPhysicalDeviceSurfaceSupportKHR(physicalDevice.Device, surface, deviceQueueFamilyProperties.size());
 
       const uint32_t queueFamilyIndex = QueueUtil::GetQueueFamilyIndex(deviceQueueFamilyProperties, VK_QUEUE_GRAPHICS_BIT, 0, &supportFilter);

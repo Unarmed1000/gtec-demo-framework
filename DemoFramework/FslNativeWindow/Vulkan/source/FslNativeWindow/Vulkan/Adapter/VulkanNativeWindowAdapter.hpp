@@ -46,6 +46,8 @@
 
 namespace Fsl
 {
+  // MSVC instantiates all virtual member functions of a class template, so the Windows build verifies them
+  // NOLINTBEGIN(portability-template-virtual-member-function)
   template <typename TPlatformNativeWindow>
   class VulkanNativeWindowAdapter
     : public TPlatformNativeWindow
@@ -68,6 +70,9 @@ namespace Fsl
       }
     }
 
+    VulkanNativeWindowAdapter(const VulkanNativeWindowAdapter&) = delete;
+    VulkanNativeWindowAdapter& operator=(const VulkanNativeWindowAdapter&) = delete;
+
     ~VulkanNativeWindowAdapter() override
     {
       vkDestroySurfaceKHR(m_setup.Instance, m_surface, nullptr);
@@ -78,7 +83,7 @@ namespace Fsl
       return TPlatformNativeWindow::TryCaptureMouse(enableCapture);
     }
 
-    VkSurfaceKHR GetVulkanSurface() const final
+    [[nodiscard]] VkSurfaceKHR GetVulkanSurface() const final
     {
       return m_surface;
     }
@@ -130,6 +135,7 @@ namespace Fsl
       return *pNativeSetup;
     }
   };
+  // NOLINTEND(portability-template-virtual-member-function)
 }
 #endif
 

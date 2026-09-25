@@ -48,7 +48,7 @@ namespace
   class DummyOptionParser : public IOptionParser
   {
   public:
-    std::string GetName() const override
+    [[nodiscard]] std::string GetName() const override
     {
       return {"dummy"};
     }
@@ -77,7 +77,7 @@ TEST(TestGetOpt_OptionParser, Parse0_LegacyArgs)
   std::array<char, 3> pszLegacyOption = {'-', 'v', 0};
   std::array<char*, 2> testArgs = {pszLegacySkipped.data(), pszLegacyOption.data()};
 
-  auto result = OptionParser::Parse(NumericCast<int>(testArgs.size()), testArgs.data(), "help caption");
+  const auto result = OptionParser::Parse(NumericCast<int>(testArgs.size()), testArgs.data(), "help caption");
 
   EXPECT_EQ(OptionParser::Result::OK, result.Status);
   EXPECT_EQ(1u, result.VerbosityLevel);
@@ -91,7 +91,7 @@ TEST(TestGetOpt_OptionParser, Parse1_LegacyArgs)
   std::array<char*, 2> testArgs = {pszLegacySkipped.data(), pszLegacyOption.data()};
 
   DummyOptionParser dummyOptionParser;
-  auto result = OptionParser::Parse(NumericCast<int>(testArgs.size()), testArgs.data(), dummyOptionParser, "help caption");
+  const auto result = OptionParser::Parse(NumericCast<int>(testArgs.size()), testArgs.data(), dummyOptionParser, "help caption");
 
   EXPECT_EQ(OptionParser::Result::OK, result.Status);
   EXPECT_EQ(1u, result.VerbosityLevel);
@@ -108,7 +108,7 @@ TEST(TestGetOpt_OptionParser, Parse2_LegacyArgs)
   std::deque<IOptionParser*> optionParsers;
   optionParsers.push_back(&dummyOptionParser);
 
-  auto result = OptionParser::Parse(NumericCast<int>(testArgs.size()), testArgs.data(), optionParsers, "help caption");
+  const auto result = OptionParser::Parse(NumericCast<int>(testArgs.size()), testArgs.data(), optionParsers, "help caption");
 
   EXPECT_EQ(OptionParser::Result::OK, result.Status);
   EXPECT_EQ(1u, result.VerbosityLevel);
@@ -125,7 +125,7 @@ TEST(TestGetOpt_OptionParser, Parse3_LegacyArgs)
   std::deque<OptionParser::ParserRecord> optionParsers;
   optionParsers.emplace_back(&dummyOptionParser, 0x1000);
 
-  auto result = OptionParser::Parse(NumericCast<int>(testArgs.size()), testArgs.data(), optionParsers, "help caption");
+  const auto result = OptionParser::Parse(NumericCast<int>(testArgs.size()), testArgs.data(), optionParsers, "help caption");
 
   EXPECT_EQ(OptionParser::Result::OK, result.Status);
   EXPECT_EQ(1u, result.VerbosityLevel);
@@ -134,9 +134,9 @@ TEST(TestGetOpt_OptionParser, Parse3_LegacyArgs)
 
 TEST(TestGetOpt_OptionParser, Parse0)
 {
-  std::array<StringViewLite, 1> testArgs = {"-v"};
+  const std::array<StringViewLite, 1> testArgs = {"-v"};
 
-  auto result = OptionParser::Parse(SpanUtil::AsReadOnlySpan(testArgs), "help caption");
+  const auto result = OptionParser::Parse(SpanUtil::AsReadOnlySpan(testArgs), "help caption");
 
   EXPECT_EQ(OptionParser::Result::OK, result.Status);
   EXPECT_EQ(1u, result.VerbosityLevel);
@@ -145,10 +145,10 @@ TEST(TestGetOpt_OptionParser, Parse0)
 
 TEST(TestGetOpt_OptionParser, Parse1)
 {
-  std::array<StringViewLite, 1> testArgs = {"-v"};
+  const std::array<StringViewLite, 1> testArgs = {"-v"};
 
   DummyOptionParser dummyOptionParser;
-  auto result = OptionParser::Parse(SpanUtil::AsReadOnlySpan(testArgs), dummyOptionParser, "help caption");
+  const auto result = OptionParser::Parse(SpanUtil::AsReadOnlySpan(testArgs), dummyOptionParser, "help caption");
 
   EXPECT_EQ(OptionParser::Result::OK, result.Status);
   EXPECT_EQ(1u, result.VerbosityLevel);
@@ -157,13 +157,13 @@ TEST(TestGetOpt_OptionParser, Parse1)
 
 TEST(TestGetOpt_OptionParser, Parse2)
 {
-  std::array<StringViewLite, 1> testArgs = {"-v"};
+  const std::array<StringViewLite, 1> testArgs = {"-v"};
 
   DummyOptionParser dummyOptionParser;
   std::deque<IOptionParser*> optionParsers;
   optionParsers.push_back(&dummyOptionParser);
 
-  auto result = OptionParser::Parse(SpanUtil::AsReadOnlySpan(testArgs), optionParsers, "help caption");
+  const auto result = OptionParser::Parse(SpanUtil::AsReadOnlySpan(testArgs), optionParsers, "help caption");
 
   EXPECT_EQ(OptionParser::Result::OK, result.Status);
   EXPECT_EQ(1u, result.VerbosityLevel);
@@ -172,13 +172,13 @@ TEST(TestGetOpt_OptionParser, Parse2)
 
 TEST(TestGetOpt_OptionParser, Parse3)
 {
-  std::array<StringViewLite, 1> testArgs = {"-v"};
+  const std::array<StringViewLite, 1> testArgs = {"-v"};
 
   DummyOptionParser dummyOptionParser;
   std::deque<OptionParser::ParserRecord> optionParsers;
   optionParsers.emplace_back(&dummyOptionParser, 0x1000);
 
-  auto result = OptionParser::Parse(SpanUtil::AsReadOnlySpan(testArgs), optionParsers, "help caption");
+  const auto result = OptionParser::Parse(SpanUtil::AsReadOnlySpan(testArgs), optionParsers, "help caption");
 
   EXPECT_EQ(OptionParser::Result::OK, result.Status);
   EXPECT_EQ(1u, result.VerbosityLevel);
@@ -187,9 +187,9 @@ TEST(TestGetOpt_OptionParser, Parse3)
 
 TEST(TestGetOpt_OptionParser, Parse_Help)
 {
-  std::array<StringViewLite, 1> testArgs = {"-h"};
+  const std::array<StringViewLite, 1> testArgs = {"-h"};
 
-  auto result = OptionParser::Parse(SpanUtil::AsReadOnlySpan(testArgs), "help caption");
+  const auto result = OptionParser::Parse(SpanUtil::AsReadOnlySpan(testArgs), "help caption");
 
   // We expect help to cause a exit
   EXPECT_EQ(OptionParser::Result::Exit, result.Status);

@@ -78,7 +78,7 @@ TEST(TestFixtureFslUtil_Vulkan1_0_TestDeviceMemoryUtil_BasicDeathTest, CalcMemor
 
 TEST(TestFixtureFslUtil_Vulkan1_0_TestDeviceMemoryUtil_Basic, CalcMemorySpan_Capacity1_PageSize1_Target0_0)
 {
-  auto res = DeviceMemoryUtil::CalcMemorySpan(1, 1, 0, 0);
+  const auto res = DeviceMemoryUtil::CalcMemorySpan(1, 1, 0, 0);
   ASSERT_EQ(0u, res.Touched.Start);
   ASSERT_EQ(0u, res.Touched.Length);
   ASSERT_EQ(0u, res.RelativeStartOffset);
@@ -87,7 +87,7 @@ TEST(TestFixtureFslUtil_Vulkan1_0_TestDeviceMemoryUtil_Basic, CalcMemorySpan_Cap
 
 TEST(TestFixtureFslUtil_Vulkan1_0_TestDeviceMemoryUtil_Basic, CalcMemorySpan_Capacity16_PageSize16_Target0_0)
 {
-  auto res = DeviceMemoryUtil::CalcMemorySpan(16, 16, 0, 0);
+  const auto res = DeviceMemoryUtil::CalcMemorySpan(16, 16, 0, 0);
   ASSERT_EQ(0u, res.Touched.Start);
   ASSERT_EQ(0u, res.Touched.Length);
   ASSERT_EQ(0u, res.RelativeStartOffset);
@@ -96,7 +96,7 @@ TEST(TestFixtureFslUtil_Vulkan1_0_TestDeviceMemoryUtil_Basic, CalcMemorySpan_Cap
 
 TEST(TestFixtureFslUtil_Vulkan1_0_TestDeviceMemoryUtil_Basic, CalcMemorySpan_Capacity128_PageSize16_Target1_5)
 {
-  auto res = DeviceMemoryUtil::CalcMemorySpan(128, 16, 1, 5);
+  const auto res = DeviceMemoryUtil::CalcMemorySpan(128, 16, 1, 5);
   ASSERT_EQ(0u, res.Touched.Start);
   ASSERT_EQ(16u, res.Touched.Length);
   ASSERT_EQ(1u, res.RelativeStartOffset);
@@ -104,7 +104,7 @@ TEST(TestFixtureFslUtil_Vulkan1_0_TestDeviceMemoryUtil_Basic, CalcMemorySpan_Cap
 
 TEST(TestFixtureFslUtil_Vulkan1_0_TestDeviceMemoryUtil_Basic, CalcMemorySpan_Capacity128_PageSize16_Target15_5)
 {
-  auto res = DeviceMemoryUtil::CalcMemorySpan(128, 16, 15, 5);
+  const auto res = DeviceMemoryUtil::CalcMemorySpan(128, 16, 15, 5);
   ASSERT_EQ(0u, res.Touched.Start);
   ASSERT_EQ(32u, res.Touched.Length);
   ASSERT_EQ(15u, res.RelativeStartOffset);
@@ -112,7 +112,7 @@ TEST(TestFixtureFslUtil_Vulkan1_0_TestDeviceMemoryUtil_Basic, CalcMemorySpan_Cap
 
 TEST(TestFixtureFslUtil_Vulkan1_0_TestDeviceMemoryUtil_Basic, CalcMemorySpan_Capacity128_PageSize16_Target16_5)
 {
-  auto res = DeviceMemoryUtil::CalcMemorySpan(128, 16, 16, 5);
+  const auto res = DeviceMemoryUtil::CalcMemorySpan(128, 16, 16, 5);
   ASSERT_EQ(16u, res.Touched.Start);
   ASSERT_EQ(16u, res.Touched.Length);
   ASSERT_EQ(0u, res.RelativeStartOffset);
@@ -120,7 +120,7 @@ TEST(TestFixtureFslUtil_Vulkan1_0_TestDeviceMemoryUtil_Basic, CalcMemorySpan_Cap
 
 TEST(TestFixtureFslUtil_Vulkan1_0_TestDeviceMemoryUtil_Basic, CalcMemorySpan_Capacity128_PageSize16_Target17_5)
 {
-  auto res = DeviceMemoryUtil::CalcMemorySpan(128, 16, 17, 5);
+  const auto res = DeviceMemoryUtil::CalcMemorySpan(128, 16, 17, 5);
   ASSERT_EQ(16u, res.Touched.Start);
   ASSERT_EQ(16u, res.Touched.Length);
   ASSERT_EQ(1u, res.RelativeStartOffset);
@@ -128,7 +128,7 @@ TEST(TestFixtureFslUtil_Vulkan1_0_TestDeviceMemoryUtil_Basic, CalcMemorySpan_Cap
 
 TEST(TestFixtureFslUtil_Vulkan1_0_TestDeviceMemoryUtil_Basic, CalcMemorySpan_Capacity128_PageSize16_Target17_25)
 {
-  auto res = DeviceMemoryUtil::CalcMemorySpan(128, 16, 17, 25);
+  const auto res = DeviceMemoryUtil::CalcMemorySpan(128, 16, 17, 25);
   ASSERT_EQ(16u, res.Touched.Start);
   ASSERT_EQ(32u, res.Touched.Length);
   ASSERT_EQ(1u, res.RelativeStartOffset);

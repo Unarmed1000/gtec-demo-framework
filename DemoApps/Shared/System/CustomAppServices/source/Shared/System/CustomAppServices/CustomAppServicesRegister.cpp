@@ -57,7 +57,7 @@ namespace Fsl
     // Register a async example service that runs on its own thread
     {
       // Creating a service group to ensures it runs on its own thread
-      auto exampleAsyncServiceGroup = serviceRegistry.CreateServiceGroup();
+      const auto exampleAsyncServiceGroup = serviceRegistry.CreateServiceGroup();
       serviceRegistry.Register(
         AsynchronousServiceFactory(std::make_shared<AsyncExampleServiceProxyFactory>(), std::make_shared<AsyncExampleServiceImplFactory>()),
         asyncServicePriority, exampleAsyncServiceGroup);

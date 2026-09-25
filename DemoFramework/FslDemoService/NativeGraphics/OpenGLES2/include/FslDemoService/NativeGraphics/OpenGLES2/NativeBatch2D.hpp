@@ -72,7 +72,7 @@ namespace Fsl
                     const std::shared_ptr<GLBatch2DQuadRenderer>& quadRenderer, const PxExtent2D& extentPx);
       ~NativeBatch2D() override;
 
-      bool SYS_IsTextureCoordinateYFlipped() const final
+      [[nodiscard]] bool SYS_IsTextureCoordinateYFlipped() const final
       {
         return true;
       }
@@ -80,30 +80,30 @@ namespace Fsl
       void Begin() final
       {
         m_current = Record(m_renderSystem.lock(), m_nativeGraphicsDevice.lock());
-        return GLBatch2D::Begin();
+        GLBatch2D::Begin();
       }
 
       void Begin(const BlendState blendState) final
       {
         m_current = Record(m_renderSystem.lock(), m_nativeGraphicsDevice.lock());
-        return GLBatch2D::Begin(blendState);
+        GLBatch2D::Begin(blendState);
       }
 
       void Begin(const BlendState blendState, const bool restoreState) final
       {
         m_current = Record(m_renderSystem.lock(), m_nativeGraphicsDevice.lock());
-        return GLBatch2D::Begin(blendState, restoreState);
+        GLBatch2D::Begin(blendState, restoreState);
       }
 
       void ChangeTo(const BlendState blendState) final
       {
-        return GLBatch2D::ChangeTo(blendState);
+        GLBatch2D::ChangeTo(blendState);
       }
 
       void End() final
       {
         m_current = {};
-        return GLBatch2D::End();
+        GLBatch2D::End();
       }
 
       void SetScreenExtent(const PxExtent2D& extentPx) final
@@ -111,7 +111,7 @@ namespace Fsl
         GLBatch2D::SetScreenExtent(extentPx);
       }
 
-      Batch2DStats GetStats() const final
+      [[nodiscard]] Batch2DStats GetStats() const final
       {
         return GLBatch2D::GetStats();
       }

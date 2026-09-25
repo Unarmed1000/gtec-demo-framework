@@ -56,36 +56,37 @@ namespace Fsl::UI
     {
     }
 
-    constexpr PxValue GetStartPx() const
+    [[nodiscard]] constexpr PxValue GetStartPx() const
     {
       return m_startPx;
     }
 
-    constexpr PxSize1D GetLengthPx() const
+    [[nodiscard]] constexpr PxSize1D GetLengthPx() const
     {
       return m_lengthPx;
     }
 
-    constexpr bool IsReversedDirection() const
+    [[nodiscard]] constexpr bool IsReversedDirection() const
     {
       return m_reverseDirection;
     }
 
     //! @brief Calculate the percentage of the span the position represents
-    constexpr float CalculatePercentage(const PxValue positionPx) const
+    [[nodiscard]] constexpr float CalculatePercentage(const PxValue positionPx) const
     {
       // const auto clampedTickInterval(MathHelper::Clamp(pxTickInterval, 1, std::max(m_lengthPx, 1)));
 
       const auto includedEndPx = GetIncludedEndPx();
       // clamp the position to be inside
-      auto relativePositionPx = MathHelper::Clamp(positionPx, m_startPx, m_startPx + includedEndPx) - m_startPx;
+      const auto relativePositionPx = MathHelper::Clamp(positionPx, m_startPx, m_startPx + includedEndPx) - m_startPx;
       // Calculate the percentage
-      auto percentage = (includedEndPx.Value > 0 ? (static_cast<float>(relativePositionPx.Value) / static_cast<float>(includedEndPx.Value)) : 0.0f);
+      const auto percentage =
+        (includedEndPx.Value > 0 ? (static_cast<float>(relativePositionPx.Value) / static_cast<float>(includedEndPx.Value)) : 0.0f);
 
       return static_cast<float>(!m_reverseDirection ? percentage : (1.0 - percentage));
     }
 
-    PxValue CalcPercentageToPxPosition(const float percentage) const
+    [[nodiscard]] PxValue CalcPercentageToPxPosition(const float percentage) const
     {
       float cappedPercentage = MathHelper::Clamp(percentage, 0.0f, 1.0f);
       cappedPercentage = !m_reverseDirection ? cappedPercentage : (1.0f - cappedPercentage);
@@ -108,7 +109,7 @@ namespace Fsl::UI
   private:
     // The last included pixel in the span range (this is what we need to ensure that all slider values can be selected)
     // beware this is relative to zero not m_startPx
-    constexpr PxValue GetIncludedEndPx() const
+    [[nodiscard]] constexpr PxValue GetIncludedEndPx() const
     {
       return m_lengthPx > PxValue(0) ? (m_lengthPx - PxValue(1)) : PxValue(0);
     }

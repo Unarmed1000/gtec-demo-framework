@@ -52,7 +52,7 @@ namespace
 
 TEST(Test_LineBuilder, Construct_Default)
 {
-  LineBuilder lineBuilder;
+  const LineBuilder lineBuilder;
 
   EXPECT_TRUE(lineBuilder.IsEmpty());
   EXPECT_EQ(0u, lineBuilder.LineCount());
@@ -61,7 +61,7 @@ TEST(Test_LineBuilder, Construct_Default)
 
 TEST(Test_LineBuilder, Construct)
 {
-  LineBuilder lineBuilder(4);
+  const LineBuilder lineBuilder(4);
 
   EXPECT_TRUE(lineBuilder.IsEmpty());
   EXPECT_EQ(0u, lineBuilder.LineCount());

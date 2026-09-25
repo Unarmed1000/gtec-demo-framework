@@ -145,7 +145,7 @@ namespace Fsl
       viewport.minDepth = 0.0f;
       viewport.maxDepth = 1.0f;
 
-      VkRect2D scissor{{0, 0}, extent};
+      const VkRect2D scissor{{0, 0}, extent};
 
       VkPipelineViewportStateCreateInfo pipelineViewportStateCreateInfo{};
       pipelineViewportStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
@@ -243,7 +243,7 @@ namespace Fsl
     , m_allowHeatmap(allowHeatmap)
     , m_showHeatmap(allowHeatmap)
   {
-    std::shared_ptr<OptionParser> options = config.GetOptions<OptionParser>();
+    const std::shared_ptr<OptionParser> options = config.GetOptions<OptionParser>();
     const uint32_t iterations = options->GetIterations();
 
     m_pushConstants.MaxIterations = iterations;
@@ -274,14 +274,14 @@ namespace Fsl
 
     const float v2 = (-1.0f) * scaleY;
 
-    std::array<VertexPositionTexture, 4> vertices = {
+    const std::array<VertexPositionTexture, 4> vertices = {
       VertexPositionTexture(Vector3(-1.0f, 1.0f, 0.0f), Vector2(u1, v2)),
       VertexPositionTexture(Vector3(-1.0f, -1.0f, 0.0f), Vector2(u1, v1)),
       VertexPositionTexture(Vector3(1.0f, 1.0f, 0.0f), Vector2(u2, v2)),
       VertexPositionTexture(Vector3(1.0f, -1.0f, 0.0f), Vector2(u2, v1)),
     };
 
-    std::array<VertexElementUsage, 2> shaderBindOrder = {VertexElementUsage::Position, VertexElementUsage::TextureCoordinate};
+    const std::array<VertexElementUsage, 2> shaderBindOrder = {VertexElementUsage::Position, VertexElementUsage::TextureCoordinate};
     m_resources.Mesh.VertexBuffer.Reset(bufferManager, ReadOnlyFlexVertexSpanUtil::AsSpan(vertices), Vulkan::VMBufferUsage::STATIC);
 
     Vulkan::VMVertexBufferUtil::FillVertexInputAttributeDescription(m_resources.Mesh.AttributeDescription, shaderBindOrder,
@@ -340,8 +340,8 @@ namespace Fsl
     // location = Vector2(0.274f, 0.482f);
     // location = Vector2(0.274f, 0.47975f);
 
-    float tz = 0.5f - 0.5f * std::cos(0.200f * m_angle.X);
-    float scale = std::pow(0.5f, 14.0f * tz);
+    const float tz = 0.5f - 0.5f * std::cos(0.200f * m_angle.X);
+    const float scale = std::pow(0.5f, 14.0f * tz);
     // float scale = std::pow(0.5f, 7.0f * tz);
     // float scale = std::pow(0.5f, 5.0f * tz);
 
@@ -363,7 +363,7 @@ namespace Fsl
     vkCmdBindDescriptorSets(hCmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &m_resources.DescriptorSet, 0, nullptr);
     vkCmdBindPipeline(hCmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
 
-    VkDeviceSize offsets = 0;
+    const VkDeviceSize offsets = 0;
     vkCmdBindVertexBuffers(hCmdBuffer, VertexBufferBindId, 1, m_resources.Mesh.VertexBuffer.GetBufferPointer(), &offsets);
     vkCmdDraw(hCmdBuffer, m_resources.Mesh.VertexBuffer.GetVertexCount(), 1, 0, 0);
   }

@@ -105,18 +105,18 @@ namespace Fsl::GLES2
 
     ~GLESGraphicsException() noexcept override = default;
 
-    int32_t GetError() const noexcept
+    [[nodiscard]] int32_t GetError() const noexcept
     {
       return m_error;
     }
 
 
-    const std::string& GetFilename() const
+    [[nodiscard]] const std::string& GetFilename() const
     {
       return m_filename;
     }
 
-    int32_t GetLineNumber() const noexcept
+    [[nodiscard]] int32_t GetLineNumber() const noexcept
     {
       return m_lineNumber;
     }

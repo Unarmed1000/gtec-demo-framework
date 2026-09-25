@@ -37,7 +37,7 @@
 
 namespace Fsl::StringViewUtil
 {
-  inline constexpr static std::string_view UncheckedCreate(const char* const pStr, const std::size_t count) noexcept
+  inline constexpr std::string_view UncheckedCreate(const char* const pStr, const std::size_t count) noexcept
   {
     assert(pStr != nullptr);
     // Done this was as the 'sv' operator is defined as noexcept and the constructor std::string_view(psz, count) is not.
@@ -46,7 +46,7 @@ namespace Fsl::StringViewUtil
 
   //! @brief A safe way to create a std::string_view from a zero terminated 'c style' string.
   //!        Unfortunately this is not the standard behavior for std::string_view(const char*) overload.
-  inline constexpr static std::string_view Create(const char* const pStr, const std::size_t count)
+  inline constexpr std::string_view Create(const char* const pStr, const std::size_t count)
   {
     if (pStr == nullptr)
     {
@@ -61,7 +61,7 @@ namespace Fsl::StringViewUtil
 
   //! @brief A safe way to create a std::string_view from a zero terminated 'c style' string.
   //!        Unfortunately this is not the standard behavior for std::string_view(const char*) overload.
-  inline constexpr static std::string_view Create(const char* const psz) noexcept
+  inline constexpr std::string_view Create(const char* const psz) noexcept
   {
     return psz != nullptr ? UncheckedCreate(psz, CStringUtil::UncheckedLength(psz)) : std::string_view();
   }
@@ -69,7 +69,7 @@ namespace Fsl::StringViewUtil
 
   //! @brief A safe way to create a std::string_view from a zero terminated 'c style' string.
   //!        Unfortunately this is not the standard behavior for std::string_view(const char*) overload.
-  inline constexpr static std::string_view UncheckedCreate(const char* const psz) noexcept
+  inline constexpr std::string_view UncheckedCreate(const char* const psz) noexcept
   {
     assert(psz != nullptr);
     return UncheckedCreate(psz, CStringUtil::UncheckedLength(psz));

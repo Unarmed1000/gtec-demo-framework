@@ -63,7 +63,7 @@ namespace Fsl
     explicit RenderTestShared(const DemoAppConfig& config);
     ~RenderTestShared() override;
 
-    std::shared_ptr<UIDemoAppExtension> GetUIDemoAppExtension() const
+    [[nodiscard]] std::shared_ptr<UIDemoAppExtension> GetUIDemoAppExtension() const
     {
       return m_uiExtension;
     }

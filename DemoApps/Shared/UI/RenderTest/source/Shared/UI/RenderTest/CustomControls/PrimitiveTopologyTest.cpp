@@ -220,8 +220,8 @@ namespace Fsl::UI::Custom
   DataBinding::DataBindingInstanceHandle PrimitiveTopologyTest::TryGetPropertyHandleNow(const DataBinding::DependencyPropertyDefinition& sourceDef)
   {
     using namespace DataBinding;
-    auto res = DependencyObjectHelper::TryGetPropertyHandle(this, ThisDependencyObject(), sourceDef,
-                                                            PropLinkRefs(PropertyContentColor, m_propertyContentColor.ExternalColor));
+    const auto res = DependencyObjectHelper::TryGetPropertyHandle(this, ThisDependencyObject(), sourceDef,
+                                                                  PropLinkRefs(PropertyContentColor, m_propertyContentColor.ExternalColor));
     return res.IsValid() ? res : base_type::TryGetPropertyHandleNow(sourceDef);
   }
 
@@ -230,8 +230,8 @@ namespace Fsl::UI::Custom
                                                                                 const DataBinding::Binding& binding)
   {
     using namespace DataBinding;
-    auto res = DependencyObjectHelper::TrySetBinding(this, ThisDependencyObject(), targetDef, binding,
-                                                     PropLinkRefs(PropertyContentColor, m_propertyContentColor.ExternalColor));
+    const auto res = DependencyObjectHelper::TrySetBinding(this, ThisDependencyObject(), targetDef, binding,
+                                                           PropLinkRefs(PropertyContentColor, m_propertyContentColor.ExternalColor));
     return res != PropertySetBindingResult::NotFound ? res : base_type::TrySetBindingNow(targetDef, binding);
   }
 

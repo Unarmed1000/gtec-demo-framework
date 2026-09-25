@@ -61,19 +61,19 @@ namespace Fsl::Willems
       Planes[FRONT].z = matrix[2].w - matrix[2].z;
       Planes[FRONT].w = matrix[3].w - matrix[3].z;
 
-      for (std::size_t i = 0; i < Planes.size(); ++i)
+      for (auto& rPlane : Planes)
       {
-        const float length = std::sqrt(Planes[i].x * Planes[i].x + Planes[i].y * Planes[i].y + Planes[i].z * Planes[i].z);
-        Planes[i] /= length;
+        const float length = std::sqrt(rPlane.x * rPlane.x + rPlane.y * rPlane.y + rPlane.z * rPlane.z);
+        rPlane /= length;
       }
     }
 
     // NOLINTNEXTLINE(readability-identifier-naming)
     bool checkSphere(const glm::vec3& pos, float radius)
     {
-      for (std::size_t i = 0; i < Planes.size(); ++i)
+      for (const auto& plane : Planes)
       {
-        if ((Planes[i].x * pos.x) + (Planes[i].y * pos.y) + (Planes[i].z * pos.z) + Planes[i].w <= -radius)
+        if ((plane.x * pos.x) + (plane.y * pos.y) + (plane.z * pos.z) + plane.w <= -radius)
         {
           return false;
         }

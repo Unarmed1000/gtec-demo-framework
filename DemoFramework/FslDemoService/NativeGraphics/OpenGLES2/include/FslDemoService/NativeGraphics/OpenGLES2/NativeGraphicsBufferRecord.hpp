@@ -52,12 +52,12 @@ namespace Fsl::GLES2
     {
     }
 
-    bool IsValid() const
+    [[nodiscard]] bool IsValid() const
     {
       return m_buffer.IsValid();
     }
 
-    const GLBuffer& GetBuffer() const
+    [[nodiscard]] const GLBuffer& GetBuffer() const
     {
       return m_buffer;
     }

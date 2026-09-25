@@ -50,13 +50,14 @@ namespace Fsl::UI
     // Make this object non-copyable
     WindowCollectionBase(const WindowCollectionBase&) = delete;
     WindowCollectionBase& operator=(const WindowCollectionBase&) = delete;
+    ~WindowCollectionBase() = default;
 
     WindowCollectionBase();
 
   protected:
     void DoInit(BaseWindow* const pOwner, const std::shared_ptr<IWindowManager>& windowManager);
 
-    bool IsInitialized() const
+    [[nodiscard]] bool IsInitialized() const
     {
       return m_windowManager != nullptr;
     }

@@ -91,7 +91,7 @@ namespace Fsl
     {
       assert(device != VK_NULL_HANDLE);
 
-      VkAttachmentReference colorAttachmentReference = {0, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL};
+      const VkAttachmentReference colorAttachmentReference = {0, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL};
 
       std::array<VkSubpassDescription, 1> subpassDescription{};
       // Rendering to a offscreen buffer
@@ -145,8 +145,8 @@ namespace Fsl
       assert(device != VK_NULL_HANDLE);
       assert(depthImageFormat != VK_FORMAT_UNDEFINED);
 
-      VkAttachmentReference colorAttachmentReference = {0, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL};
-      VkAttachmentReference depthAttachmentReference = {1, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL};
+      const VkAttachmentReference colorAttachmentReference = {0, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL};
+      const VkAttachmentReference depthAttachmentReference = {1, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL};
 
       std::array<VkSubpassDescription, 1> subpassDescription{};
       // Rendering to a offscreen buffer
@@ -211,9 +211,9 @@ namespace Fsl
       assert(device != VK_NULL_HANDLE);
       assert(depthImageFormat != VK_FORMAT_UNDEFINED);
 
-      VkAttachmentReference colorAttachmentReference = {0, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL};
-      VkAttachmentReference depthAttachmentReference = {1, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL};
-      VkAttachmentReference colorResolveAttachmentReference = {2, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL};
+      const VkAttachmentReference colorAttachmentReference = {0, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL};
+      const VkAttachmentReference depthAttachmentReference = {1, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL};
+      const VkAttachmentReference colorResolveAttachmentReference = {2, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL};
 
       std::array<VkSubpassDescription, 1> subpassDescription{};
       // Rendering to a offscreen buffer
@@ -476,7 +476,7 @@ namespace Fsl
 
       std::array<VkWriteDescriptorSet, 2> writeDescriptorSets{};
       // Binding 0 : Vertex shader uniform buffer
-      auto vertUboBufferInfo = vertUboBuffer.GetDescriptorBufferInfo();
+      const auto vertUboBufferInfo = vertUboBuffer.GetDescriptorBufferInfo();
       writeDescriptorSets[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
       writeDescriptorSets[0].dstSet = descriptorSet;
       writeDescriptorSets[0].dstBinding = 0;
@@ -590,7 +590,7 @@ namespace Fsl
       viewport.minDepth = 0.0f;
       viewport.maxDepth = 1.0f;
 
-      VkRect2D scissor{{0, 0}, extent};
+      const VkRect2D scissor{{0, 0}, extent};
 
       VkPipelineViewportStateCreateInfo pipelineViewportStateCreateInfo{};
       pipelineViewportStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
@@ -922,24 +922,24 @@ namespace Fsl
 
 
     {    // Update the preallocated descriptor set with the 'dependent' render attachment
-      VkDescriptorImageInfo descriptorImageInfo = m_dependentResources.Offscreen.GetDescriptorImageInfo();
+      const VkDescriptorImageInfo descriptorImageInfo = m_dependentResources.Offscreen.GetDescriptorImageInfo();
       VkDescriptorImageInfo nearestDescriptorImageInfo = descriptorImageInfo;
       nearestDescriptorImageInfo.sampler = m_dependentResources.Offscreen.NearestSampler.Get();
-      for (auto& rFrame : m_resources.MainFrameResources)
+      for (const auto& frame : m_resources.MainFrameResources)
       {
-        UpdateDescriptorSet(m_device.Get(), rFrame.DescriptorSetEffect, descriptorImageInfo);
+        UpdateDescriptorSet(m_device.Get(), frame.DescriptorSetEffect, descriptorImageInfo);
         if (m_dependentResources.CustomZoom.FB.IsValid())
         {
           // Render with linear sampling to the custom offscreen buffer to get the data we zoom on in the correct resolution so we can scale it
           // up correctly for the zoom
-          UpdateZoomDescriptorSet(m_device.Get(), rFrame.CustomZoomDescriptorSet, rFrame.CustomZoomVertUboBuffer, descriptorImageInfo);
-          UpdateZoomDescriptorSet(m_device.Get(), rFrame.ZoomDescriptorSet, rFrame.ZoomVertUboBuffer,
+          UpdateZoomDescriptorSet(m_device.Get(), frame.CustomZoomDescriptorSet, frame.CustomZoomVertUboBuffer, descriptorImageInfo);
+          UpdateZoomDescriptorSet(m_device.Get(), frame.ZoomDescriptorSet, frame.ZoomVertUboBuffer,
                                   m_dependentResources.CustomZoom.Color.GetDescriptorImageInfo());
         }
         else
         {
-          UpdateZoomDescriptorSet(m_device.Get(), rFrame.CustomZoomDescriptorSet, rFrame.CustomZoomVertUboBuffer, nearestDescriptorImageInfo);
-          UpdateZoomDescriptorSet(m_device.Get(), rFrame.ZoomDescriptorSet, rFrame.ZoomVertUboBuffer, nearestDescriptorImageInfo);
+          UpdateZoomDescriptorSet(m_device.Get(), frame.CustomZoomDescriptorSet, frame.CustomZoomVertUboBuffer, nearestDescriptorImageInfo);
+          UpdateZoomDescriptorSet(m_device.Get(), frame.ZoomDescriptorSet, frame.ZoomVertUboBuffer, nearestDescriptorImageInfo);
         }
       }
     }
@@ -949,7 +949,7 @@ namespace Fsl
       std::array<VkVertexInputAttributeDescription, 1> attributeDescription{};
       {
         // Generate attribute description by matching shader layout with the vertex declarations
-        std::array<VertexElementUsage, 1> shaderAttribOrder = {VertexElementUsage::Position};
+        const std::array<VertexElementUsage, 1> shaderAttribOrder = {VertexElementUsage::Position};
 
         Vulkan::VMVertexBufferUtil::FillVertexInputAttributeDescription(attributeDescription, shaderAttribOrder,
                                                                         m_resources.PostProcess.VertexBuffer);
@@ -968,7 +968,7 @@ namespace Fsl
       std::array<VkVertexInputAttributeDescription, 2> attributeDescription{};
       {
         // Generate attribute description by matching shader layout with the vertex declarations
-        std::array<VertexElementUsage, 2> shaderAttribOrder = {VertexElementUsage::Position, VertexElementUsage::TextureCoordinate};
+        const std::array<VertexElementUsage, 2> shaderAttribOrder = {VertexElementUsage::Position, VertexElementUsage::TextureCoordinate};
 
         Vulkan::VMVertexBufferUtil::FillVertexInputAttributeDescription(attributeDescription, shaderAttribOrder, m_resources.Zoom.VertexBuffer);
         bindingDescription.stride = m_resources.Zoom.VertexBuffer.GetElementStride();
@@ -1324,7 +1324,7 @@ namespace Fsl
                               &rFrameResources.CustomZoomDescriptorSet, 0, nullptr);
       vkCmdBindPipeline(hCmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_dependentResources.CustomZoomPipeline.Get());
 
-      VkDeviceSize offsets = 0;
+      const VkDeviceSize offsets = 0;
       vkCmdBindVertexBuffers(hCmdBuffer, LocalConfig::ZoomVertexBufferBindId, 1, m_resources.Zoom.VertexBufferCustomZoom.GetBufferPointer(),
                              &offsets);
       vkCmdDraw(hCmdBuffer, m_resources.Zoom.VertexBufferCustomZoom.GetVertexCount(), m_resources.Zoom.VertexBufferCustomZoom.GetVertexCount() / 3u,
@@ -1352,7 +1352,7 @@ namespace Fsl
                             &rFrameResources.DescriptorSetEffect, 0, nullptr);
     vkCmdBindPipeline(hCmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_dependentResources.PostProcessPipeline.Get());
 
-    VkDeviceSize offsets = 0;
+    const VkDeviceSize offsets = 0;
     vkCmdBindVertexBuffers(hCmdBuffer, LocalConfig::PostprocessVertexBufferBindId, 1, m_resources.PostProcess.VertexBuffer.GetBufferPointer(),
                            &offsets);
     vkCmdDraw(hCmdBuffer, m_resources.PostProcess.VertexBuffer.GetVertexCount(), 1, 0, 0);

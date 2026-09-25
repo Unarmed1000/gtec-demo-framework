@@ -75,7 +75,7 @@ TYPED_TEST(TestFixture_SortByTransparency, InitialState)
 
 TYPED_TEST(TestFixture_SortByTransparency, CapacityOfZero)
 {
-  typename TestFixture::strategy_type strategy(0);
+  const typename TestFixture::strategy_type strategy(0);
   // Capacity of zero will always give at least a capacity of 1 quad
   EXPECT_GE(strategy.GetCapacity(), 1u);
 
@@ -143,15 +143,15 @@ TYPED_TEST(TestFixture_SortByTransparency, Limits_Tex0BlendAdd)
 
   {
     strategy.GetActiveTexture();
-    strategy.GetCapacity();
+    static_cast<void>(strategy.GetCapacity());
     const auto opaqueSegementCount = strategy.GetOpaqueSegmentCount();
     const auto transpSegementCount = strategy.GetTransparentSegmentCount();
-    strategy.GetOpaqueVertexCount();
-    strategy.GetTransparentVertexCount();
-    strategy.GetOpaqueQuadCount();
-    strategy.GetTransparentQuadCount();
-    strategy.GetOpaqueSpan();
-    strategy.GetTransparentSpan();
+    static_cast<void>(strategy.GetOpaqueVertexCount());
+    static_cast<void>(strategy.GetTransparentVertexCount());
+    static_cast<void>(strategy.GetOpaqueQuadCount());
+    static_cast<void>(strategy.GetTransparentQuadCount());
+    static_cast<void>(strategy.GetOpaqueSpan());
+    static_cast<void>(strategy.GetTransparentSpan());
     for (uint32_t i = 0; i < opaqueSegementCount; ++i)
     {
       strategy.GetOpaqueSegment(i);
@@ -167,7 +167,7 @@ TYPED_TEST(TestFixture_SortByTransparency, Limits_Tex0BlendAdd)
   }
 
   ASSERT_EQ(strategy.GetActiveTexture(), TexInfo1);
-  auto newCapacity = this->m_strategy.GetCapacity() + 1;
+  const auto newCapacity = this->m_strategy.GetCapacity() + 1;
   this->m_strategy.EnsureCapacity(newCapacity);
   ASSERT_GE(this->m_strategy.GetCapacity(), newCapacity);
   ASSERT_EQ(strategy.GetActiveTexture(), TexInfo1);
@@ -184,15 +184,15 @@ TYPED_TEST(TestFixture_SortByTransparency, Limits_Tex0BlendAdd)
 
   {
     strategy.GetActiveTexture();
-    strategy.GetCapacity();
+    static_cast<void>(strategy.GetCapacity());
     const auto opaqueSegementCount = strategy.GetOpaqueSegmentCount();
     const auto transpSegementCount = strategy.GetTransparentSegmentCount();
-    strategy.GetOpaqueVertexCount();
-    strategy.GetTransparentVertexCount();
-    strategy.GetOpaqueQuadCount();
-    strategy.GetTransparentQuadCount();
-    strategy.GetOpaqueSpan();
-    strategy.GetTransparentSpan();
+    static_cast<void>(strategy.GetOpaqueVertexCount());
+    static_cast<void>(strategy.GetTransparentVertexCount());
+    static_cast<void>(strategy.GetOpaqueQuadCount());
+    static_cast<void>(strategy.GetTransparentQuadCount());
+    static_cast<void>(strategy.GetOpaqueSpan());
+    static_cast<void>(strategy.GetTransparentSpan());
     for (uint32_t i = 0; i < opaqueSegementCount; ++i)
     {
       strategy.GetOpaqueSegment(i);
@@ -232,15 +232,15 @@ TYPED_TEST(TestFixture_SortByTransparency, Limits_Tex0Blend0Add_Blend1Add)
 
   {
     strategy.GetActiveTexture();
-    strategy.GetCapacity();
+    static_cast<void>(strategy.GetCapacity());
     const auto opaqueSegementCount = strategy.GetOpaqueSegmentCount();
     const auto transpSegementCount = strategy.GetTransparentSegmentCount();
-    strategy.GetOpaqueVertexCount();
-    strategy.GetTransparentVertexCount();
-    strategy.GetOpaqueQuadCount();
-    strategy.GetTransparentQuadCount();
-    strategy.GetOpaqueSpan();
-    strategy.GetTransparentSpan();
+    static_cast<void>(strategy.GetOpaqueVertexCount());
+    static_cast<void>(strategy.GetTransparentVertexCount());
+    static_cast<void>(strategy.GetOpaqueQuadCount());
+    static_cast<void>(strategy.GetTransparentQuadCount());
+    static_cast<void>(strategy.GetOpaqueSpan());
+    static_cast<void>(strategy.GetTransparentSpan());
     for (uint32_t i = 0; i < opaqueSegementCount; ++i)
     {
       strategy.GetOpaqueSegment(i);
@@ -256,7 +256,7 @@ TYPED_TEST(TestFixture_SortByTransparency, Limits_Tex0Blend0Add_Blend1Add)
   }
 
   ASSERT_EQ(strategy.GetActiveTexture(), TexInfo1);
-  auto newCapacity = this->m_strategy.GetCapacity() + 1;
+  const auto newCapacity = this->m_strategy.GetCapacity() + 1;
   this->m_strategy.EnsureCapacity(newCapacity);
   ASSERT_GE(this->m_strategy.GetCapacity(), newCapacity);
   ASSERT_EQ(strategy.GetActiveTexture(), TexInfo1);
@@ -273,15 +273,15 @@ TYPED_TEST(TestFixture_SortByTransparency, Limits_Tex0Blend0Add_Blend1Add)
 
   {
     strategy.GetActiveTexture();
-    strategy.GetCapacity();
+    static_cast<void>(strategy.GetCapacity());
     const auto opaqueSegementCount = strategy.GetOpaqueSegmentCount();
     const auto transpSegementCount = strategy.GetTransparentSegmentCount();
-    strategy.GetOpaqueVertexCount();
-    strategy.GetTransparentVertexCount();
-    strategy.GetOpaqueQuadCount();
-    strategy.GetTransparentQuadCount();
-    strategy.GetOpaqueSpan();
-    strategy.GetTransparentSpan();
+    static_cast<void>(strategy.GetOpaqueVertexCount());
+    static_cast<void>(strategy.GetTransparentVertexCount());
+    static_cast<void>(strategy.GetOpaqueQuadCount());
+    static_cast<void>(strategy.GetTransparentQuadCount());
+    static_cast<void>(strategy.GetOpaqueSpan());
+    static_cast<void>(strategy.GetTransparentSpan());
     for (uint32_t i = 0; i < opaqueSegementCount; ++i)
     {
       strategy.GetOpaqueSegment(i);
@@ -623,8 +623,8 @@ TYPED_TEST(TestFixture_SortByTransparency, Blend0Tex0Add_Blend1Tex1Add_Tex0Blend
 
 TYPED_TEST(TestFixture_SortByTransparency, Empty_EnsureCapacity)
 {
-  typename TestFixture::strategy_type strategy(4);
-  auto newCapacity = 8u;
+  const typename TestFixture::strategy_type strategy(4);
+  const auto newCapacity = 8u;
   this->m_strategy.EnsureCapacity(newCapacity);
   ASSERT_GE(this->m_strategy.GetCapacity(), newCapacity);
 
@@ -650,7 +650,7 @@ TYPED_TEST(TestFixture_SortByTransparency, Blend0Tex0Add_EnsureCapacity_GrowOne)
   this->CheckBlend0Segment({TestSegment(1u, TexInfo0, TestFixture::BLEND0)});
   this->CheckBlend1Segment({});
 
-  auto newCapacity = this->m_strategy.GetCapacity() + 1;
+  const auto newCapacity = this->m_strategy.GetCapacity() + 1;
   this->m_strategy.EnsureCapacity(newCapacity);
   ASSERT_GE(this->m_strategy.GetCapacity(), newCapacity);
 
@@ -686,7 +686,7 @@ TYPED_TEST(TestFixture_SortByTransparency, Blend0Tex0Add_Tex1Add_EnsureCapacity_
   this->CheckBlend0Segment({TestSegment(1u, TexInfo0, TestFixture::BLEND0), TestSegment(1u, TexInfo1, TestFixture::BLEND0)});
   this->CheckBlend1Segment({});
 
-  auto newCapacity = this->m_strategy.GetCapacity() + 1;
+  const auto newCapacity = this->m_strategy.GetCapacity() + 1;
   this->m_strategy.EnsureCapacity(newCapacity);
   ASSERT_GE(this->m_strategy.GetCapacity(), newCapacity);
 
@@ -722,7 +722,7 @@ TYPED_TEST(TestFixture_SortByTransparency, Blend0Tex0Add_Blend1Add_EnsureCapacit
   this->CheckBlend0Segment({TestSegment(1u, TexInfo0, TestFixture::BLEND0)});
   this->CheckBlend1Segment({TestSegment(1u, TexInfo0, TestFixture::BLEND1)});
 
-  auto newCapacity = this->m_strategy.GetCapacity() + 1;
+  const auto newCapacity = this->m_strategy.GetCapacity() + 1;
   this->m_strategy.EnsureCapacity(newCapacity);
   ASSERT_GE(this->m_strategy.GetCapacity(), newCapacity);
 
@@ -761,7 +761,7 @@ TYPED_TEST(TestFixture_SortByTransparency, Blend0Tex0Add_Blend1Tex1Add_Tex0Blend
   this->CheckBlend0Segment({TestSegment(2u, TexInfo0, TestFixture::BLEND0)});
   this->CheckBlend1Segment({TestSegment(1u, TexInfo1, TestFixture::BLEND1)});
 
-  auto newCapacity = this->m_strategy.GetCapacity() + 1;
+  const auto newCapacity = this->m_strategy.GetCapacity() + 1;
   this->m_strategy.EnsureCapacity(newCapacity);
   ASSERT_GE(this->m_strategy.GetCapacity(), newCapacity);
 

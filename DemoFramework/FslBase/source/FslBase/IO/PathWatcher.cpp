@@ -105,7 +105,7 @@ namespace Fsl::IO
       return false;
     }
 
-    std::shared_ptr<PlatformPathMonitorToken> token = PlatformFileSystem::CreatePathMonitorToken(fullPath);
+    const std::shared_ptr<PlatformPathMonitorToken> token = PlatformFileSystem::CreatePathMonitorToken(fullPath);
     if (!token)
     {
       return false;
@@ -125,9 +125,9 @@ namespace Fsl::IO
 
   bool PathWatcher::Check()
   {
-    for (auto itr = SysPaths.begin(); itr != SysPaths.end(); ++itr)
+    for (const auto& sysPath : SysPaths)
     {
-      if ((*itr)->CheckForChanges())
+      if (sysPath->CheckForChanges())
       {
         return true;
       }

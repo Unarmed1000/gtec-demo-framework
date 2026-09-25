@@ -56,17 +56,17 @@ namespace Fsl
     HandleVector<Record> m_materials;
 
   public:
-    ReadOnlySpan<BasicNativeShaderCreateInfo> GetPredefinedShaders() const final
+    [[nodiscard]] ReadOnlySpan<BasicNativeShaderCreateInfo> GetPredefinedShaders() const final
     {
-      static VertexAttributeDescriptionArray<3> g_decl = {
+      static const VertexAttributeDescriptionArray<3> g_decl = {
         VertexAttributeDescription(0, VertexElementFormat::Vector3, VertexElementUsage::Position, 0, "inVertexPosition"),
         VertexAttributeDescription(1, VertexElementFormat::Vector4, VertexElementUsage::Color, 0, "inVertexColor"),
         VertexAttributeDescription(2, VertexElementFormat::Vector2, VertexElementUsage::TextureCoordinate, 0, "inVertexTextureCoord")};
-      static VertexAttributeDescriptionArray<2> g_decl2 = {
+      static const VertexAttributeDescriptionArray<2> g_decl2 = {
         VertexAttributeDescription(0, VertexElementFormat::Vector3, VertexElementUsage::Position, 0, "inVertexPosition"),
         VertexAttributeDescription(1, VertexElementFormat::Vector4, VertexElementUsage::Color, 0, "inVertexColor")};
-      static std::array<uint8_t, 1> g_empty{};
-      static std::array<BasicNativeShaderCreateInfo, 5> g_entries = {
+      static const std::array<uint8_t, 1> g_empty{};
+      static const std::array<BasicNativeShaderCreateInfo, 5> g_entries = {
         BasicNativeShaderCreateInfo(BasicShaderStageFlag::Vertex, SpanUtil::AsReadOnlySpan(g_empty), g_decl.AsReadOnlySpan()),
         BasicNativeShaderCreateInfo(BasicShaderStageFlag::Fragment, SpanUtil::AsReadOnlySpan(g_empty), {}),
         BasicNativeShaderCreateInfo(BasicShaderStageFlag::Fragment, SpanUtil::AsReadOnlySpan(g_empty), {}),
@@ -84,7 +84,7 @@ namespace Fsl
         throw std::invalid_argument("must be valid");
       }
 
-      auto handle = m_materials.Add(
+      const auto handle = m_materials.Add(
         Record{createInfo.Flag, SpanUtil::ToVector(createInfo.Shader), VertexAttributeDescriptions(createInfo.VertexAttributeDescSpan)});
 
       return BasicNativeShaderHandle(handle);

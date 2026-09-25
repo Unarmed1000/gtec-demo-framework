@@ -48,7 +48,7 @@ namespace Fsl::Vulkan::ConfigHelper
 
     for (std::size_t i = 0; i < vertexDecl.size(); ++i)
     {
-      auto entry = vertexDecl.At(i);
+      const auto entry = vertexDecl.At(i);
       dstAttributes[i].location = UncheckedNumericCast<uint32_t>(i);
       dstAttributes[i].binding = 0;
       dstAttributes[i].format = VulkanConvert::ToVkFormat(entry.Format);
@@ -222,7 +222,7 @@ namespace Fsl::Vulkan::ConfigHelper
     depthStencilState.front.compareOp = VK_COMPARE_OP_ALWAYS;
     depthStencilState.back.compareOp = VK_COMPARE_OP_ALWAYS;
 
-    auto blendAttachmentState = CreatePipelineColorBlendAttachmentState(blendState);
+    const auto blendAttachmentState = CreatePipelineColorBlendAttachmentState(blendState);
 
     VkPipelineColorBlendStateCreateInfo colorBlendState{};
     colorBlendState.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;

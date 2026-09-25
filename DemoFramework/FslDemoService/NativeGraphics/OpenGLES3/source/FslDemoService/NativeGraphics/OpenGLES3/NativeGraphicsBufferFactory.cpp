@@ -90,7 +90,7 @@ namespace Fsl::GLES3
       throw NotSupportedException("bufferData does not fit within bufferElementCapacity");
     }
 
-    auto handle = m_buffers.Add(NativeGraphicsBufferRecord(bufferType, bufferData, bufferElementCapacity, isDynamic));
+    const auto handle = m_buffers.Add(NativeGraphicsBufferRecord(bufferType, bufferData, bufferElementCapacity, isDynamic));
     FSLLOG3_VERBOSE6("NativeGraphicsBufferFactory::CreateBuffer handle: {}", handle);
     return BasicNativeBufferHandle(handle);
   }

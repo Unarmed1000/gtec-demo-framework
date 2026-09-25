@@ -1,0 +1,48 @@
+# Vulkan layer settings file (vk_layer_settings.txt)
+#
+#  The Vulkan layers read this file from the current working directory (or from the directory given by the
+#  VK_LAYER_SETTINGS_PATH environment variable). Environment variables and vkconfig override these settings.
+#  Comments are denoted with the "#" char.
+#  Settings lines are of the form "<LayerIdentifier>.<SettingName> = <SettingValue>"
+#
+#  <LayerIdentifier> is the layer name without the VK_LAYER_ prefix in lower case, i.e. 'khronos_validation' for
+#  VK_LAYER_KHRONOS_validation and 'lunarg_api_dump' for VK_LAYER_LUNARG_api_dump.
+#
+#  The available settings for each layer are described in the layer manifest (the .json file next to the layer)
+#  and in the Vulkan SDK documentation.
+
+
+# VK_LAYER_KHRONOS_validation settings (enabled with --VkValidate true)
+# =====================================
+#
+#   debug_action : what to do when a message is reported
+#     VK_DBG_LAYER_ACTION_LOG_MSG      - Log a text message to stdout or to the file given by log_filename
+#     VK_DBG_LAYER_ACTION_DEBUG_OUTPUT - [Windows only] Log using OutputDebugString (the Visual Studio output window)
+#     VK_DBG_LAYER_ACTION_BREAK        - Trigger a breakpoint
+#   report_flags : comma separated list of the message types to report: error,warn,perf,info,debug
+#   log_filename : the output file (stdout if not specified)
+khronos_validation.debug_action = VK_DBG_LAYER_ACTION_LOG_MSG
+khronos_validation.report_flags = error,warn,perf
+khronos_validation.log_filename = stdout
+
+# Optional validation (disabled by default), uncomment to enable:
+# khronos_validation.validate_sync = true
+# khronos_validation.validate_best_practices = true
+# khronos_validation.thread_safety = true
+# GPU assisted validation requires a Vulkan 1.1 instance, so also run the app with '--VkApiVersion 1.1'
+# khronos_validation.gpuav_enable = true
+
+
+# VK_LAYER_LUNARG_api_dump settings (enabled with --VkApiDump)
+# =================================
+#
+#   detailed     : TRUE dumps the parameter details in addition to the API calls
+#   no_addr      : TRUE dumps "address" in place of hex addresses
+#   file         : TRUE writes the output to the file given by log_filename instead of stdout
+#   log_filename : the file to dump to when file = TRUE
+#   flush        : TRUE flushes the output after each line
+lunarg_api_dump.detailed = TRUE
+lunarg_api_dump.no_addr = FALSE
+lunarg_api_dump.file = FALSE
+lunarg_api_dump.log_filename = stdout
+lunarg_api_dump.flush = TRUE

@@ -97,12 +97,12 @@ namespace Fsl::DataBinding::Internal
       SetPropertyMethodsImplType(methodsImplType);
     }
 
-    constexpr inline bool IsObservable() const noexcept
+    [[nodiscard]] constexpr inline bool IsObservable() const noexcept
     {
       return static_cast<Flags>((static_cast<base_type>(m_flags) & static_cast<base_type>(Flags::Observable))) == Flags::Observable;
     }
 
-    constexpr inline bool HasPendingChanges() const noexcept
+    [[nodiscard]] constexpr inline bool HasPendingChanges() const noexcept
     {
       return static_cast<Flags>((static_cast<base_type>(m_flags) & static_cast<base_type>(Flags::HasPendingChanges))) == Flags::HasPendingChanges;
     }
@@ -118,13 +118,13 @@ namespace Fsl::DataBinding::Internal
     }
 
 
-    constexpr inline bool IsEnabled(const Flags flag) const noexcept
+    [[nodiscard]] constexpr inline bool IsEnabled(const Flags flag) const noexcept
     {
       return static_cast<Flags>((static_cast<base_type>(m_flags) & static_cast<base_type>(flag))) == flag;
     }
 
 
-    constexpr inline bool IsAnyEnabled(const Flags flag) const noexcept
+    [[nodiscard]] constexpr inline bool IsAnyEnabled(const Flags flag) const noexcept
     {
       return (static_cast<base_type>(m_flags) & static_cast<base_type>(flag)) != 0u;
     }
@@ -146,17 +146,17 @@ namespace Fsl::DataBinding::Internal
                                            : (static_cast<base_type>(m_flags) & (~static_cast<base_type>(flag))));
     }
 
-    constexpr inline DataBindingInstanceType GetType() const noexcept
+    [[nodiscard]] constexpr inline DataBindingInstanceType GetType() const noexcept
     {
       return static_cast<DataBindingInstanceType>(static_cast<base_type>(m_flags) & static_cast<base_type>(Flags::MASK_DataBindingInstanceType));
     }
 
-    constexpr inline DataBindingInstanceState GetState() const noexcept
+    [[nodiscard]] constexpr inline DataBindingInstanceState GetState() const noexcept
     {
       return static_cast<DataBindingInstanceState>((static_cast<base_type>(m_flags) & static_cast<base_type>(Flags::MASK_DataBindingInstanceState)) >>
                                                    InstanceStateShifts::DataBindingInstanceState);
     }
-    constexpr inline PropertyMethodsImplType GetPropertyMethodsImplType() const noexcept
+    [[nodiscard]] constexpr inline PropertyMethodsImplType GetPropertyMethodsImplType() const noexcept
     {
       return static_cast<PropertyMethodsImplType>((static_cast<base_type>(m_flags) & static_cast<base_type>(Flags::MASK_PropertyMethodsImplType)) >>
                                                   InstanceStateShifts::PropertyMethodsImplType);
@@ -174,7 +174,7 @@ namespace Fsl::DataBinding::Internal
     }
 
 
-    constexpr inline PropertyChangeState GetPropertyChangeState() const noexcept
+    [[nodiscard]] constexpr inline PropertyChangeState GetPropertyChangeState() const noexcept
     {
       return static_cast<PropertyChangeState>((static_cast<base_type>(m_flags) & static_cast<base_type>(Flags::MASK_PropertyChangeState)) >>
                                               InstanceStateShifts::PropertyChangeState);

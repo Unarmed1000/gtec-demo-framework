@@ -42,7 +42,7 @@ namespace Fsl
   public:
     GraphicsServiceOptionParser();
 
-    std::string GetName() const final
+    [[nodiscard]] std::string GetName() const final
     {
       return {"GraphicsServiceOptionParser"};
     }
@@ -52,7 +52,7 @@ namespace Fsl
     bool OnParsingComplete() final;
 
     //! @brief Check if profiling is enabled
-    bool ProfileEnabled() const
+    [[nodiscard]] bool ProfileEnabled() const
     {
       return m_profile;
     }

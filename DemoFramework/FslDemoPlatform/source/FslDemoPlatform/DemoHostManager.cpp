@@ -60,13 +60,14 @@ namespace Fsl
     , m_exitTime(std::chrono::microseconds(m_timer.GetTimestamp().TotalMicrosecondsInt64()) + std::chrono::microseconds(m_exitAfterDuration.Duration))
   {
     // Acquire the various services
-    ServiceProvider serviceProvider(demoSetup.ServiceProvider);
+    const ServiceProvider serviceProvider(demoSetup.ServiceProvider);
     m_graphicsService = serviceProvider.TryGet<IGraphicsServiceControl>();
     m_nativeWindowEventSender = serviceProvider.Get<INativeWindowEventSender>();
     m_hostInfoControl = serviceProvider.Get<IHostInfoControl>();
 
-    HostConfig hostConfig(demoHostManagerOptionParser->IsAppFirewallEnabled(), demoHostManagerOptionParser->IsContentMonitorEnabled(),
-                          demoHostManagerOptionParser->IsStatsEnabled(), m_basic2DPreallocEnabled, demoHostManagerOptionParser->GetAppStatsFlags());
+    const HostConfig hostConfig(demoHostManagerOptionParser->IsAppFirewallEnabled(), demoHostManagerOptionParser->IsContentMonitorEnabled(),
+                                demoHostManagerOptionParser->IsStatsEnabled(), m_basic2DPreallocEnabled,
+                                demoHostManagerOptionParser->GetAppStatsFlags());
     m_hostInfoControl->SetConfig(hostConfig);
 
     // Set the config we are using for the app host so it can be retrieved from IHostInfo
@@ -82,7 +83,7 @@ namespace Fsl
     FSLLOG3_VERBOSE("DemoHostManager: Starting demoAppManager");
 
     // Lets prepare the app manager.
-    auto customAppConfig = demoSetup.App.AppSetup.CustomAppConfig;
+    const auto customAppConfig = demoSetup.App.AppSetup.CustomAppConfig;
     const DemoAppConfig demoAppConfig(demoSetup.App.AppSetup.OptionParser, demoSetup.ExceptionFormatter, m_demoHost->GetWindowMetrics(),
                                       serviceProvider, customAppConfig);
 
@@ -156,7 +157,7 @@ namespace Fsl
     const DemoAppManagerProcessResult processResult = m_demoAppManager->Process(windowMetrics, isConsoleBasedHost);
     if (processResult.Cmd == DemoAppManagerProcessResult::Command::Draw)
     {
-      auto swapBuffersResult = AppDrawAndSwapBuffers();
+      const auto swapBuffersResult = AppDrawAndSwapBuffers();
       switch (swapBuffersResult)
       {
       case SwapBuffersResult::Completed:
@@ -218,7 +219,7 @@ namespace Fsl
       if (result == AppDrawResult::Completed)
       {
         assert(m_demoHost);
-        auto swapBuffersResult = m_demoHost->TrySwapBuffers();
+        const auto swapBuffersResult = m_demoHost->TrySwapBuffers();
         if (swapBuffersResult != SwapBuffersResult::AppControlled)
         {
           //  The swap buffer operation is not app controlled, so use a quick exit.

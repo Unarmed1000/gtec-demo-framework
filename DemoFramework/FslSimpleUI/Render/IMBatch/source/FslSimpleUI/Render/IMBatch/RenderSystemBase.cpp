@@ -57,7 +57,7 @@ namespace Fsl::UI::RenderIMBatch
     // m_batcher2.SetLimitOnlyOneEntryPerBatch(true);
     // m_batcher2.SetLimitOnlyOneBatchPerSegment(true);
 
-    OnConfigurationChanged(createInfo.WindowMetrics);
+    RenderSystemBase::OnConfigurationChanged(createInfo.WindowMetrics);
   }
 
 

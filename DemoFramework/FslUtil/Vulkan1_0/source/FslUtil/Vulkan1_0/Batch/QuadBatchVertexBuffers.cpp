@@ -178,7 +178,7 @@ namespace Fsl::Vulkan
     // take the next available command buffer
     const VkBuffer vertexBuffer = m_buckets[currentBucketIndex].GetBuffer();
     auto* pMapped = static_cast<VertexPositionColorTexture*>(m_buckets[currentBucketIndex].GetMappedPointer()) + indexInsideBucket;
-    auto capacity = std::min(vertexCapacityHint, (currentBucketCapacity / m_segmentVertexCount) * m_segmentVertexCount);
+    const auto capacity = std::min(vertexCapacityHint, (currentBucketCapacity / m_segmentVertexCount) * m_segmentVertexCount);
 
     m_activeCount += capacity;
 

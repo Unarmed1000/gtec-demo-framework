@@ -40,12 +40,12 @@ namespace Fsl
   public:
     VulkanHostServiceFactory();
 
-    std::shared_ptr<AServiceOptionParser> GetOptionParser() const override
+    [[nodiscard]] std::shared_ptr<AServiceOptionParser> GetOptionParser() const override
     {
       return {};
     }
 
-    ServiceCaps::Flags GetFlags() const override;
+    [[nodiscard]] ServiceCaps::Flags GetFlags() const override;
     void FillInterfaceType(ServiceSupportedInterfaceDeque& rServiceInterfaceTypeDeque) const override;
     std::shared_ptr<IService> Allocate(ServiceProvider& provider) override;
   };

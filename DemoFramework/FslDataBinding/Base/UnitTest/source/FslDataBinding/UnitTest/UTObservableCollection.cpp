@@ -69,8 +69,8 @@ namespace Fsl
   DataBinding::DataBindingInstanceHandle UTObservableCollection::TryGetPropertyHandleNow(const DataBinding::DependencyPropertyDefinition& sourceDef)
   {
     using namespace DataBinding;
-    auto res = ObservableDataSourceObjectHelper::TryGetPropertyHandle(this, ThisDataSourceObject(), sourceDef, PropLinkRefs(Property0, m_property0),
-                                                                      PropLinkRefs(Property1, m_property1));
+    const auto res = ObservableDataSourceObjectHelper::TryGetPropertyHandle(
+      this, ThisDataSourceObject(), sourceDef, PropLinkRefs(Property0, m_property0), PropLinkRefs(Property1, m_property1));
     return res.IsValid() ? res : ObservableDataSourceObject::TryGetPropertyHandleNow(sourceDef);
   }
 

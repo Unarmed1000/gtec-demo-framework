@@ -159,8 +159,11 @@ namespace Fsl::Willems
     bool m_commandBuffersDirty = false;
 
     explicit VulkanWillemsDemoApp(const DemoAppConfig& demoAppConfig, MeshLoaderAllocFunc meshLoaderAllocFunc = nullptr);
+
+  public:
     ~VulkanWillemsDemoApp() override;
 
+  protected:
     virtual void Prepare();
     //! @brief Called whenever the view changes
     virtual void OnViewChanged()

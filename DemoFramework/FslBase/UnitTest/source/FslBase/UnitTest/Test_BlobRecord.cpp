@@ -46,7 +46,7 @@ namespace
 
 TEST(Test_BlobRecord, Empty)
 {
-  BlobRecord record;
+  const BlobRecord record;
 
   EXPECT_EQ(record.Offset, 0u);
   EXPECT_EQ(record.Size, 0u);
@@ -55,7 +55,7 @@ TEST(Test_BlobRecord, Empty)
 
 TEST(Test_BlobRecord, Construct)
 {
-  BlobRecord record(1, 2);
+  const BlobRecord record(1, 2);
 
   EXPECT_EQ(record.Offset, 1u);
   EXPECT_EQ(record.Size, 2u);

@@ -64,16 +64,16 @@ namespace Fsl
     {
       Vector3 x = m_pEnd1->m_position - m_pEnd2->m_position;
 
-      float length = x.Length();
+      const float length = x.Length();
 
       if (length > m_targetLength)
       {
         x = (x / length) * (length - m_targetLength);
-        Vector3 v1Velocity = m_pEnd1->m_position - m_pEnd1->m_oldPosition;
-        Vector3 v2Velocity = m_pEnd2->m_position - m_pEnd2->m_oldPosition;
+        const Vector3 v1Velocity = m_pEnd1->m_position - m_pEnd1->m_oldPosition;
+        const Vector3 v2Velocity = m_pEnd2->m_position - m_pEnd2->m_oldPosition;
 
-        Vector3 dv = v2Velocity - v1Velocity;
-        Vector3 force = (m_stiffness * x) - (dv * m_damping);
+        const Vector3 dv = v2Velocity - v1Velocity;
+        const Vector3 force = (m_stiffness * x) - (dv * m_damping);
 
         m_pEnd1->ApplyForce(-force);
         m_pEnd2->ApplyForce(force);

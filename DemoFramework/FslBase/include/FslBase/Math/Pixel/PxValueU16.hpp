@@ -35,6 +35,7 @@
 #include <FslBase/Math/Pixel/PxSize1D.hpp>
 #include <FslBase/Math/Pixel/PxValue.hpp>
 #include <FslBase/Math/Pixel/PxValueU.hpp>
+#include <utility>
 
 namespace Fsl
 {
@@ -112,12 +113,12 @@ namespace Fsl
   // PxValue
   inline constexpr bool operator==(const PxValue lhs, const PxValueU16 rhs) noexcept
   {
-    return lhs.Value == rhs.Value;
+    return std::cmp_equal(lhs.Value, rhs.Value);
   }
 
   inline constexpr bool operator==(const PxValueU16 lhs, const PxValue rhs) noexcept
   {
-    return lhs.Value == rhs.Value;
+    return std::cmp_equal(lhs.Value, rhs.Value);
   }
 
   // PxSize1D
@@ -154,12 +155,12 @@ namespace Fsl
   // PxValue
   inline constexpr bool operator!=(const PxValue lhs, const PxValueU16 rhs) noexcept
   {
-    return lhs.Value != rhs.Value;
+    return std::cmp_not_equal(lhs.Value, rhs.Value);
   }
 
   inline constexpr bool operator!=(const PxValueU16 lhs, const PxValue rhs) noexcept
   {
-    return lhs.Value != rhs.Value;
+    return std::cmp_not_equal(lhs.Value, rhs.Value);
   }
 
 
@@ -197,12 +198,12 @@ namespace Fsl
   // PxValue
   inline constexpr bool operator<(const PxValue lhs, const PxValueU16 rhs) noexcept
   {
-    return lhs.Value < rhs.Value;
+    return std::cmp_less(lhs.Value, rhs.Value);
   }
 
   inline constexpr bool operator<(const PxValueU16 lhs, const PxValue rhs) noexcept
   {
-    return lhs.Value < rhs.Value;
+    return std::cmp_less(lhs.Value, rhs.Value);
   }
 
 
@@ -239,12 +240,12 @@ namespace Fsl
   // PxValue
   inline constexpr bool operator<=(const PxValue lhs, const PxValueU16 rhs) noexcept
   {
-    return lhs.Value <= rhs.Value;
+    return std::cmp_less_equal(lhs.Value, rhs.Value);
   }
 
   inline constexpr bool operator<=(const PxValueU16 lhs, const PxValue rhs) noexcept
   {
-    return lhs.Value <= rhs.Value;
+    return std::cmp_less_equal(lhs.Value, rhs.Value);
   }
 
 
@@ -282,12 +283,12 @@ namespace Fsl
   // PxValue
   inline constexpr bool operator>(const PxValue lhs, const PxValueU16 rhs) noexcept
   {
-    return lhs.Value > rhs.Value;
+    return std::cmp_greater(lhs.Value, rhs.Value);
   }
 
   inline constexpr bool operator>(const PxValueU16 lhs, const PxValue rhs) noexcept
   {
-    return lhs.Value > rhs.Value;
+    return std::cmp_greater(lhs.Value, rhs.Value);
   }
 
 
@@ -324,12 +325,12 @@ namespace Fsl
   // PxValue
   inline constexpr bool operator>=(const PxValue lhs, const PxValueU16 rhs) noexcept
   {
-    return lhs.Value >= rhs.Value;
+    return std::cmp_greater_equal(lhs.Value, rhs.Value);
   }
 
   inline constexpr bool operator>=(const PxValueU16 lhs, const PxValue rhs) noexcept
   {
-    return lhs.Value >= rhs.Value;
+    return std::cmp_greater_equal(lhs.Value, rhs.Value);
   }
 
 

@@ -61,22 +61,22 @@ namespace Fsl
     OptionParser();
     ~OptionParser() override;
 
-    int32_t GetScene() const
+    [[nodiscard]] int32_t GetScene() const
     {
       return m_scene;
     }
 
-    MeshMode GetMeshMode() const
+    [[nodiscard]] MeshMode GetMeshMode() const
     {
       return m_meshMode;
     }
 
-    ShaderMode GetShaderMode() const
+    [[nodiscard]] ShaderMode GetShaderMode() const
     {
       return m_shaderMode;
     }
 
-    IO::Path GetCustomModelPath() const
+    [[nodiscard]] IO::Path GetCustomModelPath() const
     {
       return m_customModelPath;
     }

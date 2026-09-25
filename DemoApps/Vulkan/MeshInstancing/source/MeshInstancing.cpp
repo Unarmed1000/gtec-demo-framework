@@ -134,7 +134,7 @@ namespace Fsl
         vkCmdBindDescriptorSets(m_drawCmdBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipelineLayout.Get(), 0, 1, &m_descriptorSet, 0, nullptr);
         vkCmdBindPipeline(m_drawCmdBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipelines.Solid.Get());
 
-        VkDeviceSize offsets = 0;
+        const VkDeviceSize offsets = 0;
         // Binding point 0 : Mesh vertex buffer
         vkCmdBindVertexBuffers(m_drawCmdBuffers[i], VertexBufferBindId, 1, m_meshes.Example.GetVertices().GetBufferPointer(), &offsets);
         // Binding point 1 : Instance data buffer

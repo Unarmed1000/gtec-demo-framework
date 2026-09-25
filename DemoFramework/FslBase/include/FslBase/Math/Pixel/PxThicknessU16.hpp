@@ -61,17 +61,17 @@ namespace Fsl
     {
     }
 
-    constexpr size_type SumX() const noexcept
+    [[nodiscard]] constexpr size_type SumX() const noexcept
     {
       return Left + Right;
     }
 
-    constexpr size_type SumY() const noexcept
+    [[nodiscard]] constexpr size_type SumY() const noexcept
     {
       return Top + Bottom;
     }
 
-    constexpr PxExtent2D Sum() const noexcept
+    [[nodiscard]] constexpr PxExtent2D Sum() const noexcept
     {
       return {Left + Right, Top + Bottom};
     }

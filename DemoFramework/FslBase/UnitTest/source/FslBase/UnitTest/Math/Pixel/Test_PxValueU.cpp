@@ -43,7 +43,7 @@ namespace
 
 TEST(TestMathPx_PxValueU, Construct_Default)
 {
-  PxValueU value;
+  const PxValueU value;
 
   EXPECT_EQ(PxValueU(), value);
   EXPECT_EQ(0u, value.Value);
@@ -52,7 +52,7 @@ TEST(TestMathPx_PxValueU, Construct_Default)
 TEST(TestMathPx_PxValueU, Construct)
 {
   constexpr const uint32_t TestValue = 3;
-  PxValueU value(TestValue);
+  const PxValueU value(TestValue);
 
   EXPECT_EQ(TestValue, value.Value);
 }

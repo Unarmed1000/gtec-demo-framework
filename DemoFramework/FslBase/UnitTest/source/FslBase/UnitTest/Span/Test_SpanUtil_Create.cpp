@@ -47,7 +47,7 @@ namespace
 TEST(TestSpanUtil_Create, CheckedCheckedCreateReadOnly_PointerLength)
 {
   constexpr std::array<uint16_t, 10> Data = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
-  ReadOnlySpan<uint16_t> span = SpanUtil::CheckedCreateReadOnly(Data.data(), Data.size());
+  const ReadOnlySpan<uint16_t> span = SpanUtil::CheckedCreateReadOnly(Data.data(), Data.size());
 
   EXPECT_FALSE(span.empty());
   EXPECT_EQ(span.data(), Data.data());
@@ -77,7 +77,7 @@ TEST(TestSpanUtil_Create, CheckedCreateReadOnly_PointerLength_NullPtrInvalidLeng
 TEST(TestSpanUtil_Create, CheckedCreateReadOnly_PointerLength)
 {
   constexpr std::array<uint16_t, 10> Data = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
-  ReadOnlySpan<uint16_t> span = SpanUtil::CreateReadOnly(Data.data(), Data.size());
+  const ReadOnlySpan<uint16_t> span = SpanUtil::CreateReadOnly(Data.data(), Data.size());
 
   EXPECT_FALSE(span.empty());
   EXPECT_EQ(span.data(), Data.data());
@@ -88,7 +88,7 @@ TEST(TestSpanUtil_Create, CheckedCreateReadOnly_PointerLength)
 
 TEST(TestSpanUtil_Create, CreateReadOnly_PointerLength_NullPtr)
 {
-  ReadOnlySpan<uint16_t> span = SpanUtil::CreateReadOnly<uint16_t>(nullptr, 0);
+  const ReadOnlySpan<uint16_t> span = SpanUtil::CreateReadOnly<uint16_t>(nullptr, 0);
 
   EXPECT_TRUE(span.empty());
   EXPECT_EQ(span.data(), nullptr);
@@ -101,7 +101,7 @@ TEST(TestSpanUtil_Create, CreateReadOnly_PointerLength_NullPtrInvalidLength)
 {
   constexpr std::array<uint16_t, 10> Data = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
 
-  ReadOnlySpan<uint16_t> span = SpanUtil::CreateReadOnly<uint16_t>(nullptr, Data.size());
+  const ReadOnlySpan<uint16_t> span = SpanUtil::CreateReadOnly<uint16_t>(nullptr, Data.size());
 
   EXPECT_TRUE(span.empty());
   EXPECT_EQ(span.data(), nullptr);
@@ -116,7 +116,7 @@ TEST(TestSpanUtil_Create, CreateReadOnly_PointerLength_NullPtrInvalidLength)
 TEST(TestSpanUtil_Create, UncheckedCreateReadOnly_FromPointerLength_NoCheck)
 {
   constexpr std::array<uint16_t, 10> Data = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
-  ReadOnlySpan<uint16_t> span = SpanUtil::UncheckedCreateReadOnly(Data.data(), Data.size());
+  const ReadOnlySpan<uint16_t> span = SpanUtil::UncheckedCreateReadOnly(Data.data(), Data.size());
 
   EXPECT_FALSE(span.empty());
   EXPECT_EQ(span.data(), Data.data());

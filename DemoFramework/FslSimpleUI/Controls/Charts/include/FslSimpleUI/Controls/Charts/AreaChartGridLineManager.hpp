@@ -74,12 +74,12 @@ namespace Fsl
 
         explicit ViewRecord(const TimeSpan transitionTime);
         bool SetViewMinMax(const MinMax<uint32_t> minMax);
-        uint32_t ViewMin() const;
-        uint32_t ViewMax() const;
-        MinMax<uint32_t> ViewMinMax() const;
+        [[nodiscard]] uint32_t ViewMin() const;
+        [[nodiscard]] uint32_t ViewMax() const;
+        [[nodiscard]] MinMax<uint32_t> ViewMinMax() const;
 
         bool Update(const TimeSpan& timespan);
-        bool IsAnimating() const;
+        [[nodiscard]] bool IsAnimating() const;
         // void FinishAnimation();
       };
 
@@ -102,7 +102,7 @@ namespace Fsl
         explicit GridLineRecord(const TimeSpan transitionTime);
 
         void SetAlpha(const ColorChannelValueU16 alpha);
-        ColorChannelValueU16 GetAlpha() const;
+        [[nodiscard]] ColorChannelValueU16 GetAlpha() const;
 
         void Clear()
         {
@@ -112,7 +112,7 @@ namespace Fsl
           RawDataPosition = 0;
         }
         bool Update(const TimeSpan& timespan);
-        bool IsAnimating() const;
+        [[nodiscard]] bool IsAnimating() const;
       };
 
 
@@ -133,7 +133,7 @@ namespace Fsl
                                const PxSize1D chartLabelSpacingPx);
 
 
-      const std::shared_ptr<ChartDataView>& GetDataView() const
+      [[nodiscard]] const std::shared_ptr<ChartDataView>& GetDataView() const
       {
         return m_dataView;
       }
@@ -143,14 +143,14 @@ namespace Fsl
       bool SetGridLines(const std::shared_ptr<IChartGridLines>& gridLines);
       bool SetDataView(const std::shared_ptr<ChartDataView>& data);
 
-      PxSize1D GetChartEntryWidth() const
+      [[nodiscard]] PxSize1D GetChartEntryWidth() const
       {
         return m_chartEntryWidthPx;
       }
 
       void SetChartEntryWidth(const PxSize1D chartEntryWidthPx);
 
-      PxSize1D GetChartLabelSpacing() const
+      [[nodiscard]] PxSize1D GetChartLabelSpacing() const
       {
         return m_chartLabelSpacingPx;
       }
@@ -161,7 +161,7 @@ namespace Fsl
                            const SpriteFont* const pFont, const bool matchDataViewEntries);
 
       void Update(const TimeSpan& timespan);
-      bool IsAnimating() const;
+      [[nodiscard]] bool IsAnimating() const;
 
     private:
       static void SelectGridLines(std::vector<GridLineRecord>& rGridLines, uint32_t& rGridLineCount, const IChartGridLines* const pGridLines,
@@ -179,7 +179,7 @@ namespace Fsl
 
       static bool AreGridLinePositionsValid(const ReadOnlySpan<GridLineRecord> span);
       static void SanityCheck(const ReadOnlySpan<GridLineRecord> span);
-      bool CheckIsAnimating() const;
+      [[nodiscard]] bool CheckIsAnimating() const;
     };
   }
 }

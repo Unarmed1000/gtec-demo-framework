@@ -177,23 +177,24 @@ TEST(TestBitmap_UncheckedRawBitmapTransformer, IsSafeInplaceModificationOrNoMemo
     constexpr auto SizePx = PxSize2D::Create(10, 10);
     constexpr auto Origin = BitmapOrigin::UpperLeft;
     std::array<uint8_t, 100 * 100> bitmapData{};
-    auto bitmapDataSpan = SpanUtil::AsSpan(bitmapData);
+    const auto bitmapDataSpan = SpanUtil::AsSpan(bitmapData);
 
-    auto src = RawBitmapEx::Create(bitmapDataSpan.subspan(100, 4 * 10 * 10), SizePx, PixelFormat::R8G8B8A8_UNORM, 4 * 10, Origin);
+    const auto src = RawBitmapEx::Create(bitmapDataSpan.subspan(100, 4 * 10 * 10), SizePx, PixelFormat::R8G8B8A8_UNORM, 4 * 10, Origin);
     // Same start location, same pixel byte size and stride
-    auto safeOverlap1 = RawBitmapEx::Create(bitmapDataSpan.subspan(100, 4 * 10 * 10), SizePx, PixelFormat::R8G8B8A8_UNORM, 4 * 10, Origin);
+    const auto safeOverlap1 = RawBitmapEx::Create(bitmapDataSpan.subspan(100, 4 * 10 * 10), SizePx, PixelFormat::R8G8B8A8_UNORM, 4 * 10, Origin);
     // Same start location, dst pixel byte size < src pixel byte size (same stride)
-    auto safeOverlap2 = RawBitmapEx::Create(bitmapDataSpan.subspan(100, 4 * 10 * 10), SizePx, PixelFormat::R8G8B8_UNORM, 4 * 10, Origin);
+    const auto safeOverlap2 = RawBitmapEx::Create(bitmapDataSpan.subspan(100, 4 * 10 * 10), SizePx, PixelFormat::R8G8B8_UNORM, 4 * 10, Origin);
     // Same start location, dst pixel byte size < src pixel byte size, dst stride < src stride
-    auto safeOverlap3 = RawBitmapEx::Create(bitmapDataSpan.subspan(100, 3 * 10 * 10), SizePx, PixelFormat::R8G8B8_UNORM, 3 * 10, Origin);
+    const auto safeOverlap3 = RawBitmapEx::Create(bitmapDataSpan.subspan(100, 3 * 10 * 10), SizePx, PixelFormat::R8G8B8_UNORM, 3 * 10, Origin);
 
     // Unsafe inplace overlap due to start address not being the same
-    auto unsafeOverlap1 = RawBitmapEx::Create(bitmapDataSpan.subspan(99, 4 * 10 * 10), SizePx, PixelFormat::R8G8B8A8_UNORM, 4 * 10, Origin);
-    auto unsafeOverlap2 = RawBitmapEx::Create(bitmapDataSpan.subspan(101, 4 * 10 * 10), SizePx, PixelFormat::R8G8B8A8_UNORM, 4 * 10, Origin);
+    const auto unsafeOverlap1 = RawBitmapEx::Create(bitmapDataSpan.subspan(99, 4 * 10 * 10), SizePx, PixelFormat::R8G8B8A8_UNORM, 4 * 10, Origin);
+    const auto unsafeOverlap2 = RawBitmapEx::Create(bitmapDataSpan.subspan(101, 4 * 10 * 10), SizePx, PixelFormat::R8G8B8A8_UNORM, 4 * 10, Origin);
     // Same start location, dst pixel byte size == src pixel byte size, dst stride > srcStride
-    auto unsafeOverlap3 = RawBitmapEx::Create(bitmapDataSpan.subspan(100, 5 * 10 * 10), SizePx, PixelFormat::R8G8B8A8_UNORM, 5 * 10, Origin);
+    const auto unsafeOverlap3 = RawBitmapEx::Create(bitmapDataSpan.subspan(100, 5 * 10 * 10), SizePx, PixelFormat::R8G8B8A8_UNORM, 5 * 10, Origin);
     // Same start location, dst pixel byte size > src pixel byte size, dst stride > srcStride
-    auto unsafeOverlap4 = RawBitmapEx::Create(bitmapDataSpan.subspan(100, 8 * 10 * 10), SizePx, PixelFormat::R16G16B16A16_UNORM, 8 * 10, Origin);
+    const auto unsafeOverlap4 =
+      RawBitmapEx::Create(bitmapDataSpan.subspan(100, 8 * 10 * 10), SizePx, PixelFormat::R16G16B16A16_UNORM, 8 * 10, Origin);
 
 
     EXPECT_TRUE(UncheckedRawBitmapTransformer::IsSafeInplaceModificationOrNoMemoryOverlap(safeOverlap1, src));
@@ -221,23 +222,24 @@ TEST(TestBitmap_UncheckedRawBitmapTransformer, IsSafeInplaceModificationOrNoMemo
     constexpr auto SizePx = PxSize2D::Create(10, 10);
     constexpr auto Origin = BitmapOrigin::UpperLeft;
     std::array<uint8_t, 100 * 100> bitmapData{};
-    auto bitmapDataSpan = SpanUtil::AsSpan(bitmapData);
+    const auto bitmapDataSpan = SpanUtil::AsSpan(bitmapData);
 
-    auto src = RawBitmapEx::Create(bitmapDataSpan.subspan(100, 9 * 10 * 10), SizePx, PixelFormat::R8G8B8A8_UNORM, 9 * 10, Origin);
+    const auto src = RawBitmapEx::Create(bitmapDataSpan.subspan(100, 9 * 10 * 10), SizePx, PixelFormat::R8G8B8A8_UNORM, 9 * 10, Origin);
     // Same start location, same pixel byte size and stride
-    auto safeOverlap1 = RawBitmapEx::Create(bitmapDataSpan.subspan(100, 9 * 10 * 10), SizePx, PixelFormat::R8G8B8A8_UNORM, 9 * 10, Origin);
+    const auto safeOverlap1 = RawBitmapEx::Create(bitmapDataSpan.subspan(100, 9 * 10 * 10), SizePx, PixelFormat::R8G8B8A8_UNORM, 9 * 10, Origin);
     // Same start location, dst pixel byte size < src pixel byte size (same stride)
-    auto safeOverlap2 = RawBitmapEx::Create(bitmapDataSpan.subspan(100, 9 * 10 * 10), SizePx, PixelFormat::R8G8B8_UNORM, 9 * 10, Origin);
+    const auto safeOverlap2 = RawBitmapEx::Create(bitmapDataSpan.subspan(100, 9 * 10 * 10), SizePx, PixelFormat::R8G8B8_UNORM, 9 * 10, Origin);
     // Same start location, dst pixel byte size < src pixel byte size, dst stride < src stride
-    auto safeOverlap3 = RawBitmapEx::Create(bitmapDataSpan.subspan(100, 3 * 10 * 10), SizePx, PixelFormat::R8G8B8_UNORM, 3 * 10, Origin);
+    const auto safeOverlap3 = RawBitmapEx::Create(bitmapDataSpan.subspan(100, 3 * 10 * 10), SizePx, PixelFormat::R8G8B8_UNORM, 3 * 10, Origin);
 
     // Unsafe inplace overlap due to start address not being the same
-    auto unsafeOverlap1 = RawBitmapEx::Create(bitmapDataSpan.subspan(99, 9 * 10 * 10), SizePx, PixelFormat::R8G8B8A8_UNORM, 9 * 10, Origin);
-    auto unsafeOverlap2 = RawBitmapEx::Create(bitmapDataSpan.subspan(101, 9 * 10 * 10), SizePx, PixelFormat::R8G8B8A8_UNORM, 9 * 10, Origin);
+    const auto unsafeOverlap1 = RawBitmapEx::Create(bitmapDataSpan.subspan(99, 9 * 10 * 10), SizePx, PixelFormat::R8G8B8A8_UNORM, 9 * 10, Origin);
+    const auto unsafeOverlap2 = RawBitmapEx::Create(bitmapDataSpan.subspan(101, 9 * 10 * 10), SizePx, PixelFormat::R8G8B8A8_UNORM, 9 * 10, Origin);
     // Same start location, dst pixel byte size == src pixel byte size, dst stride > srcStride
-    auto unsafeOverlap3 = RawBitmapEx::Create(bitmapDataSpan.subspan(100, 10 * 10 * 10), SizePx, PixelFormat::R8G8B8A8_UNORM, 10 * 10, Origin);
+    const auto unsafeOverlap3 = RawBitmapEx::Create(bitmapDataSpan.subspan(100, 10 * 10 * 10), SizePx, PixelFormat::R8G8B8A8_UNORM, 10 * 10, Origin);
     // Same start location, dst pixel byte size > src pixel byte size, dst stride < srcStride
-    auto unsafeOverlap4 = RawBitmapEx::Create(bitmapDataSpan.subspan(100, 8 * 10 * 10), SizePx, PixelFormat::R16G16B16A16_UNORM, 8 * 10, Origin);
+    const auto unsafeOverlap4 =
+      RawBitmapEx::Create(bitmapDataSpan.subspan(100, 8 * 10 * 10), SizePx, PixelFormat::R16G16B16A16_UNORM, 8 * 10, Origin);
 
 
     EXPECT_TRUE(UncheckedRawBitmapTransformer::IsSafeInplaceModificationOrNoMemoryOverlap(safeOverlap1, src));

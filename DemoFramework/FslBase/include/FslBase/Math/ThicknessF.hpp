@@ -54,27 +54,27 @@ namespace Fsl
     {
     }
 
-    constexpr float Bottom() const
+    [[nodiscard]] constexpr float Bottom() const
     {
       return m_bottom;
     }
-    constexpr float Left() const
+    [[nodiscard]] constexpr float Left() const
     {
       return m_left;
     }
-    constexpr float Right() const
+    [[nodiscard]] constexpr float Right() const
     {
       return m_right;
     }
-    constexpr float Top() const
+    [[nodiscard]] constexpr float Top() const
     {
       return m_top;
     }
-    constexpr float SumX() const
+    [[nodiscard]] constexpr float SumX() const
     {
       return m_left + m_right;
     }
-    constexpr float SumY() const
+    [[nodiscard]] constexpr float SumY() const
     {
       return m_top + m_bottom;
     }

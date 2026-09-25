@@ -165,7 +165,7 @@ namespace Fsl::UI
   {
     const bool isEnabled = IsEnabled();
 
-    auto color =
+    const auto color =
       isEnabled ? (!IsDown() ? m_propertyColorUp.InternalColor : m_propertyColorDown.InternalColor) : m_propertyColorDisabled.InternalColor;
     m_currentColor.SetValue(color);
 
@@ -181,7 +181,7 @@ namespace Fsl::UI
 
   DataBinding::DataBindingInstanceHandle SimpleImageButton::TryGetPropertyHandleNow(const DataBinding::DependencyPropertyDefinition& sourceDef)
   {
-    auto res = DataBinding::DependencyObjectHelper::TryGetPropertyHandle(
+    const auto res = DataBinding::DependencyObjectHelper::TryGetPropertyHandle(
       this, ThisDependencyObject(), sourceDef, DataBinding::PropLinkRefs(PropertyScalePolicy, m_propertyScalePolicy),
       DataBinding::PropLinkRefs(PropertyColorUp, m_propertyColorUp.ExternalColor),
       DataBinding::PropLinkRefs(PropertyColorDown, m_propertyColorDown.ExternalColor),
@@ -193,7 +193,7 @@ namespace Fsl::UI
   DataBinding::PropertySetBindingResult SimpleImageButton::TrySetBindingNow(const DataBinding::DependencyPropertyDefinition& targetDef,
                                                                             const DataBinding::Binding& binding)
   {
-    auto res = DataBinding::DependencyObjectHelper::TrySetBinding(
+    const auto res = DataBinding::DependencyObjectHelper::TrySetBinding(
       this, ThisDependencyObject(), targetDef, binding, DataBinding::PropLinkRefs(PropertyScalePolicy, m_propertyScalePolicy),
       DataBinding::PropLinkRefs(PropertyColorUp, m_propertyColorUp.ExternalColor),
       DataBinding::PropLinkRefs(PropertyColorDown, m_propertyColorDown.ExternalColor),

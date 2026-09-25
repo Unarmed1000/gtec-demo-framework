@@ -116,7 +116,7 @@ namespace Fsl::GLES2
 
     // Create the new shader of the given type
     m_handle = glCreateShader(shaderType);
-    GLenum glError = glGetError();
+    const GLenum glError = glGetError();
     if (m_handle == 0 || glError != GL_NO_ERROR)
     {
       throw GLESGraphicsException("Failed to create shader", UncheckedNumericCast<int32_t>(glError), __FILE__, __LINE__);

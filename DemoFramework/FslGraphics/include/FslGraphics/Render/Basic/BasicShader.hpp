@@ -54,7 +54,7 @@ namespace Fsl
     {
       if (m_handle.IsValid())
       {
-        auto handleManager = m_handleManager.lock();
+        const auto handleManager = m_handleManager.lock();
         if (handleManager)
         {
           handleManager->DestroyHandle(m_handle);
@@ -79,12 +79,12 @@ namespace Fsl
       }
     }
 
-    constexpr bool IsValid() const noexcept
+    [[nodiscard]] constexpr bool IsValid() const noexcept
     {
       return m_handle.IsValid();
     }
 
-    constexpr BasicShaderHandle TryGetHandle() const noexcept
+    [[nodiscard]] constexpr BasicShaderHandle TryGetHandle() const noexcept
     {
       return m_handle;
     }

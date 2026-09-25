@@ -68,7 +68,7 @@ namespace Fsl
     explicit OptionParser(const RenderMode defaultRenderMode = RenderMode::Instanced);
     ~OptionParser() override;
 
-    Config GetConfig() const
+    [[nodiscard]] Config GetConfig() const
     {
       return m_config;
     }

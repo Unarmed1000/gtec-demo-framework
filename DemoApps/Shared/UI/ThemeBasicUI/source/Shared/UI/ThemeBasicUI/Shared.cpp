@@ -89,8 +89,8 @@ namespace Fsl
     Resources CreateResources(const std::shared_ptr<INativeGraphics>& nativeGraphics, const IContentManager& contentManager, const IO::Path& path,
                               const uint32_t /*imageDP*/)
     {
-      IO::Path pathPNG(path + ".png");
-      IO::Path pathBTA(path + ".bta");
+      const IO::Path pathPNG(path + ".png");
+      const IO::Path pathBTA(path + ".bta");
 
       Resources resources;
 
@@ -121,7 +121,7 @@ namespace Fsl
     , m_nativeBatch(m_graphics->GetNativeBatch2D())
     , m_displayMetrics(config.WindowMetrics)
   {
-    auto optionParser = config.GetOptions<OptionParser>();
+    const auto optionParser = config.GetOptions<OptionParser>();
     const bool enableTestPattern = optionParser->GetEnableTestPattern();
     const bool enableUITestPattern = optionParser->GetEnableUITestPattern();
 
@@ -129,8 +129,8 @@ namespace Fsl
     FSLLOG3_INFO("windowMetrics.DensityDpi: {}", config.WindowMetrics.DensityDpi);
     FSLLOG3_INFO("windowMetrics.DensityScaleFactor: {}", config.WindowMetrics.DensityScaleFactor);
 
-    auto nativeGraphics = config.DemoServiceProvider.Get<IGraphicsService>()->GetNativeGraphics();
-    auto contentManager = config.DemoServiceProvider.Get<IContentManager>();
+    const auto nativeGraphics = config.DemoServiceProvider.Get<IGraphicsService>()->GetNativeGraphics();
+    const auto contentManager = config.DemoServiceProvider.Get<IContentManager>();
 
     FSLLOG3_INFO("Preparing resources");
     m_res160 = CreateResources(nativeGraphics, *contentManager, "SpritesUIAtlas/UIAtlas_160dpi", 160);
@@ -244,29 +244,29 @@ namespace Fsl
 
   Shared::UIRecord Shared::CreateUI(const uint32_t /*densityDpi*/, const bool /*enableTestPattern*/, const bool /*enableUITestPattern*/)
   {
-    auto windowContext = m_uiExtension->GetContext();
+    const auto windowContext = m_uiExtension->GetContext();
 
     // auto& rSpriteResourceManager = m_uiExtension->GetSpriteResourceManager();
 
-    auto uiControlFactory = UI::Theme::ThemeSelector::CreateControlFactory(*m_uiExtension);
+    const auto uiControlFactory = UI::Theme::ThemeSelector::CreateControlFactory(*m_uiExtension);
     auto& uiFactory = *uiControlFactory;
 
     {    // Define a new atlas and the LocalConfig::SpriteAtlasMaterialId material
-      UIAppTextureResourceCreationInfo creationInfo(PixelFormat::R8G8B8A8_UNORM, Texture2DFilterHint::Smooth);
+      const UIAppTextureResourceCreationInfo creationInfo(PixelFormat::R8G8B8A8_UNORM, Texture2DFilterHint::Smooth);
       auto hAtlasTexture = m_uiExtension->CreateAtlasTexture(LocalConfig::SpriteAtlasName, creationInfo, true);
       m_uiExtension->AddSpriteMaterial(LocalConfig::SpriteAtlasMaterialId, hAtlasTexture, BlendState::AlphaBlend);
       hAtlasTexture = m_uiExtension->CreateAtlasTexture(LocalConfig::TestSpriteAtlasName, creationInfo, true);
       m_uiExtension->AddSpriteMaterial(LocalConfig::TestAtlasMaterialId, hAtlasTexture, BlendState::Opaque);
     }
 
-    auto uiLeft = CreateUILeftSide(uiFactory, windowContext);
-    auto uiRight = CreateUIRightSide(uiFactory, windowContext);
-    auto uiMiddle = CreateUIMiddle(uiFactory, windowContext);
+    const auto uiLeft = CreateUILeftSide(uiFactory, windowContext);
+    const auto uiRight = CreateUIRightSide(uiFactory, windowContext);
+    const auto uiMiddle = CreateUIMiddle(uiFactory, windowContext);
 
-    auto leftSidebar = uiFactory.CreateLeftBar(uiLeft.Layout);
-    auto rightSidebar = uiFactory.CreateRightBar(uiRight.Layout);
+    const auto leftSidebar = uiFactory.CreateLeftBar(uiLeft.Layout);
+    const auto rightSidebar = uiFactory.CreateRightBar(uiRight.Layout);
 
-    auto mainLayout = std::make_shared<UI::GridLayout>(windowContext);
+    const auto mainLayout = std::make_shared<UI::GridLayout>(windowContext);
     mainLayout->SetAlignmentX(UI::ItemAlignment::Stretch);
     mainLayout->SetAlignmentY(UI::ItemAlignment::Stretch);
     mainLayout->AddColumnDefinition(UI::GridColumnDefinition(UI::GridUnitType::Auto));
@@ -286,27 +286,27 @@ namespace Fsl
 
   Shared::UIRecordLeft Shared::CreateUILeftSide(UI::Theme::IThemeControlFactory& uiFactory, const std::shared_ptr<UI::WindowContext>& windowContext)
   {
-    auto stackButtons = std::make_shared<UI::StackLayout>(windowContext);
+    const auto stackButtons = std::make_shared<UI::StackLayout>(windowContext);
     {
       stackButtons->SetOrientation(UI::LayoutOrientation::Vertical);
 
-      auto stackButtons0 = std::make_shared<UI::StackLayout>(windowContext);
+      const auto stackButtons0 = std::make_shared<UI::StackLayout>(windowContext);
       {
         stackButtons0->SetOrientation(UI::LayoutOrientation::Horizontal);
-        auto btnText = uiFactory.CreateTextButton(UI::Theme::ButtonType::Text, "TextButton");
-        auto btnOutlined = uiFactory.CreateTextButton(UI::Theme::ButtonType::Outlined, "OutlinedButton");
-        auto btnContained = uiFactory.CreateTextButton(UI::Theme::ButtonType::Contained, "ContainedButton");
+        const auto btnText = uiFactory.CreateTextButton(UI::Theme::ButtonType::Text, "TextButton");
+        const auto btnOutlined = uiFactory.CreateTextButton(UI::Theme::ButtonType::Outlined, "OutlinedButton");
+        const auto btnContained = uiFactory.CreateTextButton(UI::Theme::ButtonType::Contained, "ContainedButton");
         btnText->SetAlignmentY(UI::ItemAlignment::Center);
         stackButtons0->AddChild(btnText);
         stackButtons0->AddChild(btnOutlined);
         stackButtons0->AddChild(btnContained);
       }
-      auto stackButtons1 = std::make_shared<UI::StackLayout>(windowContext);
+      const auto stackButtons1 = std::make_shared<UI::StackLayout>(windowContext);
       {
         stackButtons1->SetOrientation(UI::LayoutOrientation::Horizontal);
-        auto btnText = uiFactory.CreateTextButton(UI::Theme::ButtonType::Text, "TextButton");
-        auto btnOutlined = uiFactory.CreateTextButton(UI::Theme::ButtonType::Outlined, "OutlinedButton");
-        auto btnContained = uiFactory.CreateTextButton(UI::Theme::ButtonType::Contained, "ContainedButton");
+        const auto btnText = uiFactory.CreateTextButton(UI::Theme::ButtonType::Text, "TextButton");
+        const auto btnOutlined = uiFactory.CreateTextButton(UI::Theme::ButtonType::Outlined, "OutlinedButton");
+        const auto btnContained = uiFactory.CreateTextButton(UI::Theme::ButtonType::Contained, "ContainedButton");
         btnText->SetAlignmentY(UI::ItemAlignment::Center);
         btnText->SetEnabled(false);
         btnOutlined->SetEnabled(false);
@@ -320,24 +320,24 @@ namespace Fsl
       stackButtons->AddChild(stackButtons1);
     }
 
-    auto stackVertSlider = std::make_shared<UI::StackLayout>(windowContext);
+    const auto stackVertSlider = std::make_shared<UI::StackLayout>(windowContext);
     {
-      auto sliderHorz0 = uiFactory.CreateSlider(UI::LayoutOrientation::Horizontal, ConstrainedValue<int32_t>(25, 0, 100));
-      auto sliderHorz1 = uiFactory.CreateSlider(UI::LayoutOrientation::Horizontal, ConstrainedValue<int32_t>(25, 0, 100),
-                                                UI::Theme::SliderConfig(UI::LayoutDirection::FarToNear));
-      auto sliderHorz2 = uiFactory.CreateSlider(UI::LayoutOrientation::Horizontal, ConstrainedValue<float>(0.25, -1.0f, 1.0f));
-      auto sliderHorz3 = uiFactory.CreateSlider(UI::LayoutOrientation::Horizontal, ConstrainedValue<float>(0.25, -1.0f, 1.0f),
-                                                UI::Theme::SliderConfig(UI::LayoutDirection::FarToNear));
+      const auto sliderHorz0 = uiFactory.CreateSlider(UI::LayoutOrientation::Horizontal, ConstrainedValue<int32_t>(25, 0, 100));
+      const auto sliderHorz1 = uiFactory.CreateSlider(UI::LayoutOrientation::Horizontal, ConstrainedValue<int32_t>(25, 0, 100),
+                                                      UI::Theme::SliderConfig(UI::LayoutDirection::FarToNear));
+      const auto sliderHorz2 = uiFactory.CreateSlider(UI::LayoutOrientation::Horizontal, ConstrainedValue<float>(0.25, -1.0f, 1.0f));
+      const auto sliderHorz3 = uiFactory.CreateSlider(UI::LayoutOrientation::Horizontal, ConstrainedValue<float>(0.25, -1.0f, 1.0f),
+                                                      UI::Theme::SliderConfig(UI::LayoutDirection::FarToNear));
 
-      auto sliderFmtValueHorz0 = uiFactory.CreateSliderFmtValue(UI::LayoutOrientation::Horizontal, ConstrainedValue<int32_t>(25, 0, 100));
-      auto sliderFmtValueHorz1 = uiFactory.CreateSliderFmtValue(UI::LayoutOrientation::Horizontal, ConstrainedValue<int32_t>(25, 0, 100),
-                                                                UI::Theme::SliderConfig(UI::LayoutDirection::FarToNear));
-      auto sliderFmtValueHorz2 = uiFactory.CreateSliderFmtValue(UI::LayoutOrientation::Horizontal, ConstrainedValue<float>(0.25, -1.0f, 1.0f));
-      auto sliderFmtValueHorz3 = uiFactory.CreateSliderFmtValue(UI::LayoutOrientation::Horizontal, ConstrainedValue<float>(0.25, -1.0f, 1.0f),
-                                                                UI::Theme::SliderConfig(UI::LayoutDirection::FarToNear));
-      auto sliderFmtValueHorz4 =
+      const auto sliderFmtValueHorz0 = uiFactory.CreateSliderFmtValue(UI::LayoutOrientation::Horizontal, ConstrainedValue<int32_t>(25, 0, 100));
+      const auto sliderFmtValueHorz1 = uiFactory.CreateSliderFmtValue(UI::LayoutOrientation::Horizontal, ConstrainedValue<int32_t>(25, 0, 100),
+                                                                      UI::Theme::SliderConfig(UI::LayoutDirection::FarToNear));
+      const auto sliderFmtValueHorz2 = uiFactory.CreateSliderFmtValue(UI::LayoutOrientation::Horizontal, ConstrainedValue<float>(0.25, -1.0f, 1.0f));
+      const auto sliderFmtValueHorz3 = uiFactory.CreateSliderFmtValue(UI::LayoutOrientation::Horizontal, ConstrainedValue<float>(0.25, -1.0f, 1.0f),
+                                                                      UI::Theme::SliderConfig(UI::LayoutDirection::FarToNear));
+      const auto sliderFmtValueHorz4 =
         uiFactory.CreateSliderFmtValue(UI::LayoutOrientation::Horizontal, ConstrainedValue<float>(25.0f, 0.0f, 100.0f), "{:.1f}%");
-      auto sliderFmtValueHorz5 =
+      const auto sliderFmtValueHorz5 =
         uiFactory.CreateSliderFmtValue(UI::LayoutOrientation::Horizontal, ConstrainedValue<float>(25.0f, 0.0f, 100.0f), "{:.1f}%");
       sliderFmtValueHorz5->SetEnabled(false);
 
@@ -356,29 +356,29 @@ namespace Fsl
     }
 
 
-    auto stackCB = std::make_shared<UI::StackLayout>(windowContext);
+    const auto stackCB = std::make_shared<UI::StackLayout>(windowContext);
     {
       stackCB->SetSpacing(DpSize1DF::Create(10.0f));
       stackCB->SetOrientation(UI::LayoutOrientation::Vertical);
-      auto stackCB0 = std::make_shared<UI::StackLayout>(windowContext);
+      const auto stackCB0 = std::make_shared<UI::StackLayout>(windowContext);
       {
         stackCB0->SetOrientation(UI::LayoutOrientation::Horizontal);
-        auto switch0 = uiFactory.CreateCheckBox("CheckBox", true);
-        auto switch1 = uiFactory.CreateCheckBox("CheckBox", false);
-        auto switch2 = uiFactory.CreateCheckBox(true);
-        auto switch3 = uiFactory.CreateCheckBox(false);
+        const auto switch0 = uiFactory.CreateCheckBox("CheckBox", true);
+        const auto switch1 = uiFactory.CreateCheckBox("CheckBox", false);
+        const auto switch2 = uiFactory.CreateCheckBox(true);
+        const auto switch3 = uiFactory.CreateCheckBox(false);
         stackCB0->AddChild(switch0);
         stackCB0->AddChild(switch1);
         stackCB0->AddChild(switch2);
         stackCB0->AddChild(switch3);
       }
-      auto stackCB1 = std::make_shared<UI::StackLayout>(windowContext);
+      const auto stackCB1 = std::make_shared<UI::StackLayout>(windowContext);
       {
         stackCB1->SetOrientation(UI::LayoutOrientation::Horizontal);
-        auto switch0Disabled = uiFactory.CreateCheckBox("CheckBox", true);
-        auto switch1Disabled = uiFactory.CreateCheckBox("CheckBox", false);
-        auto switch2Disabled = uiFactory.CreateCheckBox(true);
-        auto switch3Disabled = uiFactory.CreateCheckBox(false);
+        const auto switch0Disabled = uiFactory.CreateCheckBox("CheckBox", true);
+        const auto switch1Disabled = uiFactory.CreateCheckBox("CheckBox", false);
+        const auto switch2Disabled = uiFactory.CreateCheckBox(true);
+        const auto switch3Disabled = uiFactory.CreateCheckBox(false);
         switch0Disabled->SetEnabled(false);
         switch1Disabled->SetEnabled(false);
         switch2Disabled->SetEnabled(false);
@@ -392,35 +392,35 @@ namespace Fsl
       stackCB->AddChild(stackCB1);
     }
 
-    auto stackRB = std::make_shared<UI::StackLayout>(windowContext);
+    const auto stackRB = std::make_shared<UI::StackLayout>(windowContext);
     {
       stackRB->SetSpacing(DpSize1DF::Create(10.0f));
       stackRB->SetOrientation(UI::LayoutOrientation::Vertical);
-      auto stackRB0 = std::make_shared<UI::StackLayout>(windowContext);
+      const auto stackRB0 = std::make_shared<UI::StackLayout>(windowContext);
       {
         stackRB0->SetOrientation(UI::LayoutOrientation::Horizontal);
-        auto radioGroup = uiFactory.CreateRadioGroup(LocalConfig::RadioGroupName1);
-        auto switch0 = uiFactory.CreateRadioButton(radioGroup, "RadioButton", true);
-        auto switch1 = uiFactory.CreateRadioButton(radioGroup, "RadioButton", false);
-        auto switch2 = uiFactory.CreateRadioButton(radioGroup, false);
-        auto switch3 = uiFactory.CreateRadioButton(radioGroup, false);
-        auto switch4 = uiFactory.CreateRadioButton(radioGroup, false);
+        const auto radioGroup = uiFactory.CreateRadioGroup(LocalConfig::RadioGroupName1);
+        const auto switch0 = uiFactory.CreateRadioButton(radioGroup, "RadioButton", true);
+        const auto switch1 = uiFactory.CreateRadioButton(radioGroup, "RadioButton", false);
+        const auto switch2 = uiFactory.CreateRadioButton(radioGroup, false);
+        const auto switch3 = uiFactory.CreateRadioButton(radioGroup, false);
+        const auto switch4 = uiFactory.CreateRadioButton(radioGroup, false);
         stackRB0->AddChild(switch0);
         stackRB0->AddChild(switch1);
         stackRB0->AddChild(switch2);
         stackRB0->AddChild(switch3);
         stackRB0->AddChild(switch4);
       }
-      auto stackRB1 = std::make_shared<UI::StackLayout>(windowContext);
+      const auto stackRB1 = std::make_shared<UI::StackLayout>(windowContext);
       {
         stackRB1->SetOrientation(UI::LayoutOrientation::Horizontal);
-        auto radioGroupA = uiFactory.CreateRadioGroup(LocalConfig::RadioGroupName2A);
-        auto radioGroupB = uiFactory.CreateRadioGroup(LocalConfig::RadioGroupName2B);
-        auto switch0Disabled = uiFactory.CreateRadioButton(radioGroupA, "RadioButton", true);
-        auto switch1Disabled = uiFactory.CreateRadioButton(radioGroupA, "RadioButton", false);
-        auto switch2Disabled = uiFactory.CreateRadioButton(radioGroupB, false);
-        auto switch3Disabled = uiFactory.CreateRadioButton(radioGroupB, false);
-        auto switch4Disabled = uiFactory.CreateRadioButton(radioGroupB, true);
+        const auto radioGroupA = uiFactory.CreateRadioGroup(LocalConfig::RadioGroupName2A);
+        const auto radioGroupB = uiFactory.CreateRadioGroup(LocalConfig::RadioGroupName2B);
+        const auto switch0Disabled = uiFactory.CreateRadioButton(radioGroupA, "RadioButton", true);
+        const auto switch1Disabled = uiFactory.CreateRadioButton(radioGroupA, "RadioButton", false);
+        const auto switch2Disabled = uiFactory.CreateRadioButton(radioGroupB, false);
+        const auto switch3Disabled = uiFactory.CreateRadioButton(radioGroupB, false);
+        const auto switch4Disabled = uiFactory.CreateRadioButton(radioGroupB, true);
         switch0Disabled->SetEnabled(false);
         switch1Disabled->SetEnabled(false);
         switch2Disabled->SetEnabled(false);
@@ -436,29 +436,29 @@ namespace Fsl
       stackRB->AddChild(stackRB1);
     }
 
-    auto stackSwitch = std::make_shared<UI::StackLayout>(windowContext);
+    const auto stackSwitch = std::make_shared<UI::StackLayout>(windowContext);
     {
       stackSwitch->SetSpacing(DpSize1DF::Create(10.0f));
       stackSwitch->SetOrientation(UI::LayoutOrientation::Vertical);
-      auto stackSwitch0 = std::make_shared<UI::StackLayout>(windowContext);
+      const auto stackSwitch0 = std::make_shared<UI::StackLayout>(windowContext);
       {
         stackSwitch0->SetOrientation(UI::LayoutOrientation::Horizontal);
-        auto switch0 = uiFactory.CreateSwitch("Switch", true);
-        auto switch1 = uiFactory.CreateSwitch("Switch", false);
-        auto switch2 = uiFactory.CreateSwitch(true);
-        auto switch3 = uiFactory.CreateSwitch(false);
+        const auto switch0 = uiFactory.CreateSwitch("Switch", true);
+        const auto switch1 = uiFactory.CreateSwitch("Switch", false);
+        const auto switch2 = uiFactory.CreateSwitch(true);
+        const auto switch3 = uiFactory.CreateSwitch(false);
         stackSwitch0->AddChild(switch0);
         stackSwitch0->AddChild(switch1);
         stackSwitch0->AddChild(switch2);
         stackSwitch0->AddChild(switch3);
       }
-      auto stackSwitch1 = std::make_shared<UI::StackLayout>(windowContext);
+      const auto stackSwitch1 = std::make_shared<UI::StackLayout>(windowContext);
       {
         stackSwitch1->SetOrientation(UI::LayoutOrientation::Horizontal);
-        auto switch0Disabled = uiFactory.CreateSwitch("Switch", true);
-        auto switch1Disabled = uiFactory.CreateSwitch("Switch", false);
-        auto switch2Disabled = uiFactory.CreateSwitch(true);
-        auto switch3Disabled = uiFactory.CreateSwitch(false);
+        const auto switch0Disabled = uiFactory.CreateSwitch("Switch", true);
+        const auto switch1Disabled = uiFactory.CreateSwitch("Switch", false);
+        const auto switch2Disabled = uiFactory.CreateSwitch(true);
+        const auto switch3Disabled = uiFactory.CreateSwitch(false);
         switch0Disabled->SetEnabled(false);
         switch1Disabled->SetEnabled(false);
         switch2Disabled->SetEnabled(false);
@@ -473,7 +473,7 @@ namespace Fsl
     }
 
 
-    auto leftLayout = std::make_shared<UI::ComplexStackLayout>(windowContext);
+    const auto leftLayout = std::make_shared<UI::ComplexStackLayout>(windowContext);
     leftLayout->SetAlignmentX(UI::ItemAlignment::Near);
     leftLayout->SetAlignmentY(UI::ItemAlignment::Stretch);
     leftLayout->PushLayoutLength(UI::LayoutLength(UI::LayoutUnitType::Star, 1));
@@ -493,21 +493,21 @@ namespace Fsl
   {
     auto& rSpriteResourceManager = m_uiExtension->GetSpriteResourceManager();
 
-    auto basicSpriteImageCat = rSpriteResourceManager.CreateBasicImageSprite(LocalConfig::SpriteAtlasMaterialId, LocalConfig::CatImageName);
-    auto basicSpriteImageDog = rSpriteResourceManager.CreateBasicImageSprite(LocalConfig::SpriteAtlasMaterialId, LocalConfig::DogImageName);
-    auto spriteImageCat = rSpriteResourceManager.CreateImageSprite(LocalConfig::SpriteAtlasMaterialId, LocalConfig::CatImageName);
-    auto spriteImageDog = rSpriteResourceManager.CreateImageSprite(LocalConfig::SpriteAtlasMaterialId, LocalConfig::DogImageName);
+    const auto basicSpriteImageCat = rSpriteResourceManager.CreateBasicImageSprite(LocalConfig::SpriteAtlasMaterialId, LocalConfig::CatImageName);
+    const auto basicSpriteImageDog = rSpriteResourceManager.CreateBasicImageSprite(LocalConfig::SpriteAtlasMaterialId, LocalConfig::DogImageName);
+    const auto spriteImageCat = rSpriteResourceManager.CreateImageSprite(LocalConfig::SpriteAtlasMaterialId, LocalConfig::CatImageName);
+    const auto spriteImageDog = rSpriteResourceManager.CreateImageSprite(LocalConfig::SpriteAtlasMaterialId, LocalConfig::DogImageName);
 
-    auto stackLabels = std::make_shared<UI::StackLayout>(windowContext);
+    const auto stackLabels = std::make_shared<UI::StackLayout>(windowContext);
     {
       stackLabels->SetOrientation(UI::LayoutOrientation::Vertical);
-      auto label = uiFactory.CreateLabel(StringViewLite("Label"));
-      auto labelDisabled = uiFactory.CreateLabel(StringViewLite("Label"));
+      const auto label = uiFactory.CreateLabel(StringViewLite("Label"));
+      const auto labelDisabled = uiFactory.CreateLabel(StringViewLite("Label"));
       labelDisabled->SetEnabled(false);
-      auto fmtValueLabel0 = uiFactory.CreateFmtValueLabel(static_cast<int32_t>(42));
-      auto fmtValueLabel1 = uiFactory.CreateFmtValueLabel(MathHelper::PI);
-      auto fmtValueLabel2 = uiFactory.CreateFmtValueLabel(static_cast<int32_t>(42), "Hello {} World");
-      auto fmtValueLabel3 = uiFactory.CreateFmtValueLabel(MathHelper::PI, "Hello {:0.4f} world");
+      const auto fmtValueLabel0 = uiFactory.CreateFmtValueLabel(static_cast<int32_t>(42));
+      const auto fmtValueLabel1 = uiFactory.CreateFmtValueLabel(MathHelper::PI);
+      const auto fmtValueLabel2 = uiFactory.CreateFmtValueLabel(static_cast<int32_t>(42), "Hello {} World");
+      const auto fmtValueLabel3 = uiFactory.CreateFmtValueLabel(MathHelper::PI, "Hello {:0.4f} world");
       stackLabels->AddChild(label);
       stackLabels->AddChild(labelDisabled);
       stackLabels->AddChild(fmtValueLabel0);
@@ -517,14 +517,14 @@ namespace Fsl
     }
 
 
-    auto stackHorzSlider = std::make_shared<UI::StackLayout>(windowContext);
+    const auto stackHorzSlider = std::make_shared<UI::StackLayout>(windowContext);
     {
-      auto sliderVert0 = uiFactory.CreateSlider(UI::LayoutOrientation::Vertical, ConstrainedValue<int32_t>(25, 0, 100));
-      auto sliderVert1 = uiFactory.CreateSlider(UI::LayoutOrientation::Vertical, ConstrainedValue<int32_t>(25, 0, 100),
-                                                UI::Theme::SliderConfig(UI::LayoutDirection::FarToNear));
-      auto sliderVert2 = uiFactory.CreateSlider(UI::LayoutOrientation::Vertical, ConstrainedValue<float>(0.25f, -1.0f, 1.0f));
-      auto sliderVert3 = uiFactory.CreateSlider(UI::LayoutOrientation::Vertical, ConstrainedValue<float>(0.25f, -1.0f, 1.0f),
-                                                UI::Theme::SliderConfig(UI::LayoutDirection::FarToNear));
+      const auto sliderVert0 = uiFactory.CreateSlider(UI::LayoutOrientation::Vertical, ConstrainedValue<int32_t>(25, 0, 100));
+      const auto sliderVert1 = uiFactory.CreateSlider(UI::LayoutOrientation::Vertical, ConstrainedValue<int32_t>(25, 0, 100),
+                                                      UI::Theme::SliderConfig(UI::LayoutDirection::FarToNear));
+      const auto sliderVert2 = uiFactory.CreateSlider(UI::LayoutOrientation::Vertical, ConstrainedValue<float>(0.25f, -1.0f, 1.0f));
+      const auto sliderVert3 = uiFactory.CreateSlider(UI::LayoutOrientation::Vertical, ConstrainedValue<float>(0.25f, -1.0f, 1.0f),
+                                                      UI::Theme::SliderConfig(UI::LayoutDirection::FarToNear));
 
       stackHorzSlider->SetOrientation(UI::LayoutOrientation::Horizontal);
       stackHorzSlider->SetAlignmentY(UI::ItemAlignment::Stretch);
@@ -534,16 +534,16 @@ namespace Fsl
       stackHorzSlider->AddChild(sliderVert3);
     }
 
-    auto stackHorzSlider2 = std::make_shared<UI::StackLayout>(windowContext);
+    const auto stackHorzSlider2 = std::make_shared<UI::StackLayout>(windowContext);
     {
-      auto sliderFmtValueVert0 = uiFactory.CreateSliderFmtValue(UI::LayoutOrientation::Vertical, ConstrainedValue<int32_t>(25, 0, 100));
-      auto sliderFmtValueVert1 = uiFactory.CreateSliderFmtValue(UI::LayoutOrientation::Vertical, ConstrainedValue<int32_t>(25, 0, 100),
-                                                                UI::Theme::SliderConfig(UI::LayoutDirection::FarToNear));
-      auto sliderFmtValueVert2 = uiFactory.CreateSliderFmtValue(UI::LayoutOrientation::Vertical, ConstrainedValue<float>(0.25f, -1.0f, 1.0f));
-      auto sliderFmtValueVert3 = uiFactory.CreateSliderFmtValue(UI::LayoutOrientation::Vertical, ConstrainedValue<float>(0.25f, -1.0f, 1.0f));
-      auto sliderFmtValueVert4 =
+      const auto sliderFmtValueVert0 = uiFactory.CreateSliderFmtValue(UI::LayoutOrientation::Vertical, ConstrainedValue<int32_t>(25, 0, 100));
+      const auto sliderFmtValueVert1 = uiFactory.CreateSliderFmtValue(UI::LayoutOrientation::Vertical, ConstrainedValue<int32_t>(25, 0, 100),
+                                                                      UI::Theme::SliderConfig(UI::LayoutDirection::FarToNear));
+      const auto sliderFmtValueVert2 = uiFactory.CreateSliderFmtValue(UI::LayoutOrientation::Vertical, ConstrainedValue<float>(0.25f, -1.0f, 1.0f));
+      const auto sliderFmtValueVert3 = uiFactory.CreateSliderFmtValue(UI::LayoutOrientation::Vertical, ConstrainedValue<float>(0.25f, -1.0f, 1.0f));
+      const auto sliderFmtValueVert4 =
         uiFactory.CreateSliderFmtValue(UI::LayoutOrientation::Vertical, ConstrainedValue<float>(25.0f, 0.0f, 100.0f), "{:.1f}%");
-      auto sliderFmtValueVert5 =
+      const auto sliderFmtValueVert5 =
         uiFactory.CreateSliderFmtValue(UI::LayoutOrientation::Vertical, ConstrainedValue<float>(25.0f, 0.0f, 100.0f), "{:.1f}%");
       sliderFmtValueVert5->SetEnabled(false);
 
@@ -557,7 +557,7 @@ namespace Fsl
       stackHorzSlider2->AddChild(sliderFmtValueVert5);
     }
 
-    auto stackMisc = std::make_shared<UI::StackLayout>(windowContext);
+    const auto stackMisc = std::make_shared<UI::StackLayout>(windowContext);
     {
       stackMisc->SetOrientation(UI::LayoutOrientation::Horizontal);
 
@@ -569,14 +569,14 @@ namespace Fsl
       // histogram->SetWidth(100);
       // histogram->SetHeight(100);
 
-      auto background0 = std::make_shared<UI::Background>(windowContext);
+      const auto background0 = std::make_shared<UI::Background>(windowContext);
       background0->SetBackground(uiFactory.GetResources().GetDialogNineSliceSprite());
       background0->SetBackgroundColor(uiFactory.GetThemePrimaryDarkColor());
 
-      auto label = uiFactory.CreateLabel(StringViewLite("Hey people!"));
+      const auto label = uiFactory.CreateLabel(StringViewLite("Hey people!"));
       label->SetAlignmentX(UI::ItemAlignment::Center);
       label->SetAlignmentY(UI::ItemAlignment::Center);
-      auto background1 = std::make_shared<UI::Background>(windowContext);
+      const auto background1 = std::make_shared<UI::Background>(windowContext);
       background1->SetBackground(uiFactory.GetResources().GetDialogNineSliceSprite());
       background1->SetContent(label);
       background1->SetBackgroundColor(uiFactory.GetThemePrimaryDarkColor());
@@ -586,14 +586,14 @@ namespace Fsl
       stackMisc->AddChild(background1);
     }
 
-    auto stackImages = std::make_shared<UI::StackLayout>(windowContext);
+    const auto stackImages = std::make_shared<UI::StackLayout>(windowContext);
     {
       stackImages->SetOrientation(UI::LayoutOrientation::Horizontal);
 
-      auto image0 = uiFactory.CreateImage(basicSpriteImageCat);
-      auto image1 = uiFactory.CreateImage(basicSpriteImageDog);
-      auto image2 = uiFactory.CreateImage(spriteImageCat);
-      auto image3 = uiFactory.CreateImage(spriteImageDog);
+      const auto image0 = uiFactory.CreateImage(basicSpriteImageCat);
+      const auto image1 = uiFactory.CreateImage(basicSpriteImageDog);
+      const auto image2 = uiFactory.CreateImage(spriteImageCat);
+      const auto image3 = uiFactory.CreateImage(spriteImageDog);
 
       stackImages->AddChild(image0);
       stackImages->AddChild(image1);
@@ -601,7 +601,7 @@ namespace Fsl
       stackImages->AddChild(image3);
     }
 
-    auto rightLayout = std::make_shared<UI::ComplexStackLayout>(windowContext);
+    const auto rightLayout = std::make_shared<UI::ComplexStackLayout>(windowContext);
     rightLayout->SetAlignmentX(UI::ItemAlignment::Near);
     rightLayout->SetAlignmentY(UI::ItemAlignment::Stretch);
     rightLayout->PushLayoutLength(UI::LayoutLength(UI::LayoutUnitType::Star, 1));
@@ -622,13 +622,13 @@ namespace Fsl
   {
     auto& rSpriteResourceManager = m_uiExtension->GetSpriteResourceManager();
 
-    auto basicNineSlice0 = rSpriteResourceManager.CreateBasicNineSliceSprite(LocalConfig::TestAtlasMaterialId, LocalConfig::BasicNineSlice0);
-    auto nineSlice0 = rSpriteResourceManager.CreateNineSliceSprite(LocalConfig::TestAtlasMaterialId, LocalConfig::NineSlice0);
+    const auto basicNineSlice0 = rSpriteResourceManager.CreateBasicNineSliceSprite(LocalConfig::TestAtlasMaterialId, LocalConfig::BasicNineSlice0);
+    const auto nineSlice0 = rSpriteResourceManager.CreateNineSliceSprite(LocalConfig::TestAtlasMaterialId, LocalConfig::NineSlice0);
 
-    auto image0A = uiFactory.CreateImage(basicNineSlice0);
-    auto image0B = uiFactory.CreateImage(basicNineSlice0);
-    auto image0C = uiFactory.CreateImage(basicNineSlice0);
-    auto image0D = uiFactory.CreateImage(basicNineSlice0);
+    const auto image0A = uiFactory.CreateImage(basicNineSlice0);
+    const auto image0B = uiFactory.CreateImage(basicNineSlice0);
+    const auto image0C = uiFactory.CreateImage(basicNineSlice0);
+    const auto image0D = uiFactory.CreateImage(basicNineSlice0);
     image0A->SetAlignmentX(UI::ItemAlignment::Stretch);
     image0A->SetAlignmentY(UI::ItemAlignment::Stretch);
     image0B->SetAlignmentX(UI::ItemAlignment::Stretch);
@@ -638,10 +638,10 @@ namespace Fsl
     image0D->SetAlignmentX(UI::ItemAlignment::Stretch);
     image0D->SetAlignmentY(UI::ItemAlignment::Stretch);
 
-    auto image1A = uiFactory.CreateImage(nineSlice0);
-    auto image1B = uiFactory.CreateImage(nineSlice0);
-    auto image1C = uiFactory.CreateImage(nineSlice0);
-    auto image1D = uiFactory.CreateImage(nineSlice0);
+    const auto image1A = uiFactory.CreateImage(nineSlice0);
+    const auto image1B = uiFactory.CreateImage(nineSlice0);
+    const auto image1C = uiFactory.CreateImage(nineSlice0);
+    const auto image1D = uiFactory.CreateImage(nineSlice0);
     image1A->SetAlignmentX(UI::ItemAlignment::Stretch);
     image1A->SetAlignmentY(UI::ItemAlignment::Stretch);
     image1B->SetAlignmentX(UI::ItemAlignment::Stretch);
@@ -653,7 +653,7 @@ namespace Fsl
 
     constexpr float Spacing = 8.0f;
 
-    auto gridLayout0 = std::make_shared<UI::GridLayout>(windowContext);
+    const auto gridLayout0 = std::make_shared<UI::GridLayout>(windowContext);
     gridLayout0->SetAlignmentX(UI::ItemAlignment::Stretch);
     gridLayout0->SetAlignmentY(UI::ItemAlignment::Stretch);
     gridLayout0->AddColumnDefinition(UI::GridColumnDefinition(UI::GridUnitType::Fixed, Spacing));
@@ -672,7 +672,7 @@ namespace Fsl
     gridLayout0->AddChild(image0D, 3, 3);
 
 
-    auto gridLayout1 = std::make_shared<UI::GridLayout>(windowContext);
+    const auto gridLayout1 = std::make_shared<UI::GridLayout>(windowContext);
     gridLayout1->SetAlignmentX(UI::ItemAlignment::Stretch);
     gridLayout1->SetAlignmentY(UI::ItemAlignment::Stretch);
     gridLayout1->AddColumnDefinition(UI::GridColumnDefinition(UI::GridUnitType::Fixed, Spacing));
@@ -688,9 +688,9 @@ namespace Fsl
     gridLayout1->AddChild(image1C, 1, 2);
     gridLayout1->AddChild(image1D, 2, 2);
 
-    auto stats = CreateStatsUI(uiFactory);
+    const auto stats = CreateStatsUI(uiFactory);
 
-    auto layout = std::make_shared<UI::ComplexStackLayout>(windowContext);
+    const auto layout = std::make_shared<UI::ComplexStackLayout>(windowContext);
     layout->SetOrientation(UI::LayoutOrientation::Vertical);
     layout->SetAlignmentX(UI::ItemAlignment::Stretch);
     layout->SetAlignmentY(UI::ItemAlignment::Stretch);
@@ -707,13 +707,13 @@ namespace Fsl
 
   Shared::StatsUIRecord Shared::CreateStatsUI(UI::Theme::IThemeControlFactory& uiFactory)
   {
-    auto windowContext = m_uiExtension->GetContext();
+    const auto windowContext = m_uiExtension->GetContext();
 
-    auto labelResPxCaption = uiFactory.CreateLabel("Resolution: ");
-    auto labelResDpCaption = uiFactory.CreateLabel("Resolution: ");
-    auto labelDpiCaption = uiFactory.CreateLabel("Actual DPI: ");
-    auto labelDensityDpiCaption = uiFactory.CreateLabel("Density DPI: ");
-    auto labelDensityScaleCaption = uiFactory.CreateLabel("Density Scale: ");
+    const auto labelResPxCaption = uiFactory.CreateLabel("Resolution: ");
+    const auto labelResDpCaption = uiFactory.CreateLabel("Resolution: ");
+    const auto labelDpiCaption = uiFactory.CreateLabel("Actual DPI: ");
+    const auto labelDensityDpiCaption = uiFactory.CreateLabel("Density DPI: ");
+    const auto labelDensityScaleCaption = uiFactory.CreateLabel("Density Scale: ");
     labelResPxCaption->SetAlignmentX(UI::ItemAlignment::Near);
     labelResPxCaption->SetAlignmentY(UI::ItemAlignment::Center);
     labelResDpCaption->SetAlignmentX(UI::ItemAlignment::Near);
@@ -725,11 +725,11 @@ namespace Fsl
     labelDensityScaleCaption->SetAlignmentX(UI::ItemAlignment::Near);
     labelDensityScaleCaption->SetAlignmentY(UI::ItemAlignment::Center);
 
-    auto labelResPx = uiFactory.CreateLabel("");
-    auto labelResDp = uiFactory.CreateLabel("");
-    auto labelDpi = uiFactory.CreateLabel("");
-    auto labelDensityDpi = uiFactory.CreateLabel("");
-    auto labelDensityScale = uiFactory.CreateLabel("");
+    const auto labelResPx = uiFactory.CreateLabel("");
+    const auto labelResDp = uiFactory.CreateLabel("");
+    const auto labelDpi = uiFactory.CreateLabel("");
+    const auto labelDensityDpi = uiFactory.CreateLabel("");
+    const auto labelDensityScale = uiFactory.CreateLabel("");
     labelResPx->SetAlignmentX(UI::ItemAlignment::Far);
     labelResPx->SetAlignmentY(UI::ItemAlignment::Center);
     labelResDp->SetAlignmentX(UI::ItemAlignment::Far);
@@ -741,7 +741,7 @@ namespace Fsl
     labelDensityScale->SetAlignmentX(UI::ItemAlignment::Far);
     labelDensityScale->SetAlignmentY(UI::ItemAlignment::Center);
 
-    auto gridLayout = std::make_shared<UI::GridLayout>(windowContext);
+    const auto gridLayout = std::make_shared<UI::GridLayout>(windowContext);
     gridLayout->SetAlignmentX(UI::ItemAlignment::Center);
     gridLayout->SetAlignmentY(UI::ItemAlignment::Center);
     gridLayout->AddColumnDefinition(UI::GridColumnDefinition(UI::GridUnitType::Auto));

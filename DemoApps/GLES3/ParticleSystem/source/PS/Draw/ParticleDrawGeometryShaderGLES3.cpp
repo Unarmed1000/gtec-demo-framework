@@ -54,7 +54,7 @@ namespace Fsl
     VertexDeclarationArray<2> GetVertexDeclarationArray(const uint32_t cbParticleRecord)
     {
       assert(cbParticleRecord >= sizeof(Particle));
-      static std::array<VertexElement, 2> g_elements = {
+      static const std::array<VertexElement, 2> g_elements = {
         VertexElement(offsetof(Particle, Position), VertexElementFormat::Vector3, VertexElementUsage::Position, 0),
         VertexElement(offsetof(Particle, Size), VertexElementFormat::Single, VertexElementUsage::PointSize, 0),
       };
@@ -145,9 +145,9 @@ namespace Fsl
   {
     glUseProgram(0);
 
-    std::string strVert = contentManager->ReadAllText("CPUParticlesGeometryShader.vert");
-    std::string strFrag = contentManager->ReadAllText("CPUParticlesGeometryShader.frag");
-    std::string strGeom = contentManager->ReadAllText("CPUParticlesGeometryShader.geom");
+    const std::string strVert = contentManager->ReadAllText("CPUParticlesGeometryShader.vert");
+    const std::string strFrag = contentManager->ReadAllText("CPUParticlesGeometryShader.frag");
+    const std::string strGeom = contentManager->ReadAllText("CPUParticlesGeometryShader.geom");
 
     {
       // GLShader shaderVert(GL_VERTEX_SHADER, strVert);

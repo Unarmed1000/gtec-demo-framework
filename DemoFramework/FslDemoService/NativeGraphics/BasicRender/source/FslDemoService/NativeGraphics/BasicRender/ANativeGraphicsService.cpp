@@ -54,7 +54,7 @@ namespace Fsl
     if (m_state != State::Uninitialized)
     {
       FSLLOG3_DEBUG_WARNING("ANativeGraphicsService device still initialized at shutdown");
-      DestroyDevice();
+      ANativeGraphicsService::DestroyDevice();
     }
   }
 
@@ -105,7 +105,7 @@ namespace Fsl
     {
       m_state = State::DeviceReady;
 
-      Graphics3D::BasicRenderSystemCreateInfo renderCreateInfo(createInfo.MaxFramesInFlight, GetNativeDevice());
+      const Graphics3D::BasicRenderSystemCreateInfo renderCreateInfo(createInfo.MaxFramesInFlight, GetNativeDevice());
       m_renderSystem = std::make_shared<Graphics3D::BasicRenderSystem>(renderCreateInfo);
     }
     catch (std::exception& ex)
@@ -130,7 +130,7 @@ namespace Fsl
       try
       {
         FSLLOG3_WARNING("Dependent resources still allocated on device shutdown, trying to free them");
-        DestroyDependentResources();
+        ANativeGraphicsService::DestroyDependentResources();
       }
       catch (std::exception& ex)
       {

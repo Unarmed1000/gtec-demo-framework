@@ -44,7 +44,7 @@ namespace Fsl
     virtual void RequestExit() = 0;
 
     // Check if a exit request exist
-    virtual bool HasExitRequest() const = 0;
+    [[nodiscard]] virtual bool HasExitRequest() const = 0;
 
   protected:
     IDemoPlatformControl() = default;

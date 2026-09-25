@@ -48,7 +48,7 @@ namespace
 
 TEST(TestBitmap_RawCubeBitmap, Construct_Default)
 {
-  RawCubeBitmap bitmap;
+  const RawCubeBitmap bitmap;
 
   ASSERT_TRUE(bitmap.IsValid());
   EXPECT_EQ(0u, bitmap.Width());

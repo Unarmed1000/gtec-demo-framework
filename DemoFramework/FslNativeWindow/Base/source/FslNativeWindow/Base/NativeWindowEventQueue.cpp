@@ -42,7 +42,7 @@ namespace Fsl
 
   void NativeWindowEventQueue::Clear()
   {
-    return m_queue.Clear();
+    m_queue.Clear();
   }
 
 

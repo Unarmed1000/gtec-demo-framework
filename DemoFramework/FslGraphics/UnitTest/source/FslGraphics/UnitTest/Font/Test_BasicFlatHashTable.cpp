@@ -53,7 +53,7 @@ namespace
 
 TEST(TestFont_BasicFlatHashTable, Construct_TryGet)
 {
-  BasicFlatHashTable<BitmapFontChar, uint32_t, 256u> fastlookup(SpanUtil::AsReadOnlySpan(g_chars));
+  const BasicFlatHashTable<BitmapFontChar, uint32_t, 256u> fastlookup(SpanUtil::AsReadOnlySpan(g_chars));
 
   for (std::size_t i = 0; i < g_chars.size(); ++i)
   {
@@ -69,7 +69,7 @@ TEST(TestFont_BasicFlatHashTable, Construct_TryGet)
 
 TEST(TestFont_BasicFlatHashTable, TryGet_NotFound)
 {
-  BasicFlatHashTable<BitmapFontChar, uint32_t, 256u> fastlookup(SpanUtil::AsReadOnlySpan(g_chars));
+  const BasicFlatHashTable<BitmapFontChar, uint32_t, 256u> fastlookup(SpanUtil::AsReadOnlySpan(g_chars));
 
   EXPECT_TRUE(nullptr == fastlookup.TryGet(0x39));
   EXPECT_TRUE(nullptr == fastlookup.TryGet(0x139));

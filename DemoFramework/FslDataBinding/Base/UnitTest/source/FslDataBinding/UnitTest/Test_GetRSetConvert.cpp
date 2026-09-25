@@ -51,7 +51,7 @@ namespace
 
 TEST(Test_GetRSetConvert, SetBinding_DepProperty_DepProperty_Init)
 {
-  auto dataBindingService = std::make_shared<DataBinding::DataBindingService>();
+  const auto dataBindingService = std::make_shared<DataBinding::DataBindingService>();
 
   UTReadOnlyDependencyObject src(dataBindingService);
   UTDependencyObject dst(dataBindingService);
@@ -74,7 +74,7 @@ TEST(Test_GetRSetConvert, SetBinding_DepProperty_DepProperty_Init)
 
   // Binding will change the target to match the source on the next execute
 
-  auto convertingBinding =
+  const auto convertingBinding =
     std::make_shared<Fsl::DataBinding::ConverterBinding<uint32_t, float>>([](const float value) { return static_cast<uint32_t>(std::round(value)); });
 
   EXPECT_TRUE(dst.SetBinding(UTDependencyObject::Property0,
@@ -101,7 +101,7 @@ TEST(Test_GetRSetConvert, SetBinding_DepProperty_DepProperty_Init)
 
 TEST(Test_GetRSetConvert, SetBinding_DepProperty_DepProperty_Set)
 {
-  auto dataBindingService = std::make_shared<DataBinding::DataBindingService>();
+  const auto dataBindingService = std::make_shared<DataBinding::DataBindingService>();
 
   UTReadOnlyDependencyObject src(dataBindingService);
   UTDependencyObject dst(dataBindingService);
@@ -124,7 +124,7 @@ TEST(Test_GetRSetConvert, SetBinding_DepProperty_DepProperty_Set)
 
   // Binding will change the target to match the source on the next execute
 
-  auto convertingBinding =
+  const auto convertingBinding =
     std::make_shared<Fsl::DataBinding::ConverterBinding<uint32_t, float>>([](const float value) { return static_cast<uint32_t>(std::round(value)); });
 
   EXPECT_TRUE(dst.SetBinding(UTDependencyObject::Property0,
@@ -169,7 +169,7 @@ TEST(Test_GetRSetConvert, SetBinding_DepProperty_DepProperty_Set)
 
 TEST(Test_GetRSetConvert, SetBinding_DepProperty_Multi_DepProperty_DepProperty_Init)
 {
-  auto dataBindingService = std::make_shared<DataBinding::DataBindingService>();
+  const auto dataBindingService = std::make_shared<DataBinding::DataBindingService>();
 
   UTReadOnlyDependencyObject src0(dataBindingService);
   UTDependencyObject src1(dataBindingService);
@@ -200,7 +200,7 @@ TEST(Test_GetRSetConvert, SetBinding_DepProperty_Multi_DepProperty_DepProperty_I
 
   // Binding will change the target to match the source on the next execute
 
-  auto convertingBinding = std::make_shared<Fsl::DataBinding::MultiConverterBinding<uint32_t, float, float>>(
+  const auto convertingBinding = std::make_shared<Fsl::DataBinding::MultiConverterBinding<uint32_t, float, float>>(
     [](const float value0, const float value1) { return static_cast<uint32_t>(std::round(value0 + value1)); });
 
   EXPECT_TRUE(dst.SetBinding(UTDependencyObject::Property0,
@@ -230,7 +230,7 @@ TEST(Test_GetRSetConvert, SetBinding_DepProperty_Multi_DepProperty_DepProperty_I
 
 TEST(Test_GetRSetConvert, SetBinding_DepProperty_Multi_DepProperty_DepProperty_Set_Src0)
 {
-  auto dataBindingService = std::make_shared<DataBinding::DataBindingService>();
+  const auto dataBindingService = std::make_shared<DataBinding::DataBindingService>();
 
   UTReadOnlyDependencyObject src0(dataBindingService);
   UTDependencyObject src1(dataBindingService);
@@ -261,7 +261,7 @@ TEST(Test_GetRSetConvert, SetBinding_DepProperty_Multi_DepProperty_DepProperty_S
 
   // Binding will change the target to match the source on the next execute
 
-  auto convertingBinding = std::make_shared<Fsl::DataBinding::MultiConverterBinding<uint32_t, float, float>>(
+  const auto convertingBinding = std::make_shared<Fsl::DataBinding::MultiConverterBinding<uint32_t, float, float>>(
     [](const float value0, const float value1) { return static_cast<uint32_t>(std::round(value0 + value1)); });
 
   EXPECT_TRUE(dst.SetBinding(UTDependencyObject::Property0,
@@ -312,7 +312,7 @@ TEST(Test_GetRSetConvert, SetBinding_DepProperty_Multi_DepProperty_DepProperty_S
 
 TEST(Test_GetRSetConvert, SetBinding_DepProperty_Multi_DepProperty_DepProperty_Set_Src1)
 {
-  auto dataBindingService = std::make_shared<DataBinding::DataBindingService>();
+  const auto dataBindingService = std::make_shared<DataBinding::DataBindingService>();
 
   UTReadOnlyDependencyObject src0(dataBindingService);
   UTDependencyObject src1(dataBindingService);
@@ -343,7 +343,7 @@ TEST(Test_GetRSetConvert, SetBinding_DepProperty_Multi_DepProperty_DepProperty_S
 
   // Binding will change the target to match the source on the next execute
 
-  auto convertingBinding = std::make_shared<Fsl::DataBinding::MultiConverterBinding<uint32_t, float, float>>(
+  const auto convertingBinding = std::make_shared<Fsl::DataBinding::MultiConverterBinding<uint32_t, float, float>>(
     [](const float value0, const float value1) { return static_cast<uint32_t>(std::round(value0 + value1)); });
 
   EXPECT_TRUE(dst.SetBinding(UTDependencyObject::Property0,
@@ -394,7 +394,7 @@ TEST(Test_GetRSetConvert, SetBinding_DepProperty_Multi_DepProperty_DepProperty_S
 
 TEST(Test_GetRSetConvert, SetBinding_DepProperty_Multi_DepProperty_DepProperty_Set_Src0AndSrc1)
 {
-  auto dataBindingService = std::make_shared<DataBinding::DataBindingService>();
+  const auto dataBindingService = std::make_shared<DataBinding::DataBindingService>();
 
   UTReadOnlyDependencyObject src0(dataBindingService);
   UTDependencyObject src1(dataBindingService);
@@ -425,7 +425,7 @@ TEST(Test_GetRSetConvert, SetBinding_DepProperty_Multi_DepProperty_DepProperty_S
 
   // Binding will change the target to match the source on the next execute
 
-  auto convertingBinding = std::make_shared<Fsl::DataBinding::MultiConverterBinding<uint32_t, float, float>>(
+  const auto convertingBinding = std::make_shared<Fsl::DataBinding::MultiConverterBinding<uint32_t, float, float>>(
     [](const float value0, const float value1) { return static_cast<uint32_t>(std::round(value0 + value1)); });
 
   EXPECT_TRUE(dst.SetBinding(UTDependencyObject::Property0,

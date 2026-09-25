@@ -85,22 +85,22 @@ namespace Fsl
     //   return m_value;
     // }
 
-    constexpr inline value_type Value() const noexcept
+    [[nodiscard]] constexpr inline value_type Value() const noexcept
     {
       return m_value;
     }
 
-    constexpr inline unsigned_value_type UnsignedValue() const noexcept
+    [[nodiscard]] constexpr inline unsigned_value_type UnsignedValue() const noexcept
     {
       return PxValueU(static_cast<raw_unsigned_value_type>(m_value.Value));
     }
 
-    constexpr inline raw_value_type RawValue() const noexcept
+    [[nodiscard]] constexpr inline raw_value_type RawValue() const noexcept
     {
       return m_value.Value;
     }
 
-    constexpr inline raw_unsigned_value_type RawUnsignedValue() const noexcept
+    [[nodiscard]] constexpr inline raw_unsigned_value_type RawUnsignedValue() const noexcept
     {
       return static_cast<raw_unsigned_value_type>(m_value.Value);
     }

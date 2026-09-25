@@ -44,7 +44,7 @@ namespace Fsl::UI
     CircularFixedSizeBuffer<ChartDataEntry> m_buffer;
     ChartDataEntry m_currentSum;
 
-    std::array<double, std::tuple_size<ChartDataEntry::array_type>::value> m_averageScratchpad{};
+    std::array<double, std::tuple_size_v<ChartDataEntry::array_type>> m_averageScratchpad{};
 
   public:
     explicit AverageData(const uint32_t entries);
@@ -59,7 +59,7 @@ namespace Fsl::UI
   private:
     static void Sub(ChartDataEntry& rDst, const ChartDataEntry& value);
     static void Add(ChartDataEntry& rDst, const ChartDataEntry& value);
-    ChartDataEntry CalcSum() const;
+    [[nodiscard]] ChartDataEntry CalcSum() const;
     void SanityCheck();
   };
 }

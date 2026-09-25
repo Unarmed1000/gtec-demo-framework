@@ -123,7 +123,7 @@ namespace Fsl::Vulkan
     allocateInfo.allocationSize = memoryRequirements.size;
     allocateInfo.memoryTypeIndex = memoryTypeIndex;
 
-    auto actualPropertyFlags = physicalDeviceMemoryProperties.memoryTypes[memoryTypeIndex].propertyFlags;
+    const auto actualPropertyFlags = physicalDeviceMemoryProperties.memoryTypes[memoryTypeIndex].propertyFlags;
 
     Reset(device, allocateInfo, actualPropertyFlags, physicalDeviceLimitNonCoherentAtomSize);
   }
@@ -312,7 +312,7 @@ namespace Fsl::Vulkan
       // Validate upload operation
       ValidateInsideMappedRange(m_mappedSpan, dstOffset, srcDataSize);
 
-      auto relativeDstOffset = dstOffset - m_mappedSpan.Start;
+      const auto relativeDstOffset = dstOffset - m_mappedSpan.Start;
 
       if ((m_memoryPropertyFlags & VK_MEMORY_PROPERTY_HOST_COHERENT_BIT) != 0u)
       {
@@ -320,8 +320,8 @@ namespace Fsl::Vulkan
       }
       else
       {
-        auto dstSpan = DeviceMemoryUtil::MemorySpan(m_mappedSpan, relativeDstOffset);
-        auto result =
+        const auto dstSpan = DeviceMemoryUtil::MemorySpan(m_mappedSpan, relativeDstOffset);
+        const auto result =
           DeviceMemoryUtil::TryFastCopyDataNonCoherent(m_deviceMemory.GetDevice(), m_physicalDeviceLimitNonCoherentAtomSize, m_deviceMemory.Get(),
                                                        m_capacity, m_memoryPropertyFlags, dstSpan, m_pData, pSrcData, srcDataSize);
         RapidVulkan::CheckError(result, "vkFlushMappedMemoryRanges", __FILE__, __LINE__);

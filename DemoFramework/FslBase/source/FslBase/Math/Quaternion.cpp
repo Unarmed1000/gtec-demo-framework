@@ -65,18 +65,18 @@ namespace Fsl
 
   Quaternion Quaternion::Concatenate(const Quaternion& lhs, const Quaternion& rhs)
   {
-    float x = rhs.X;
-    float y = rhs.Y;
-    float z = rhs.Z;
-    float w = rhs.W;
-    float num4 = lhs.X;
-    float num3 = lhs.Y;
-    float num2 = lhs.Z;
-    float num = lhs.W;
-    float num12 = (y * num2) - (z * num3);
-    float num11 = (z * num4) - (x * num2);
-    float num10 = (x * num3) - (y * num4);
-    float num9 = ((x * num4) + (y * num3)) + (z * num2);
+    const float x = rhs.X;
+    const float y = rhs.Y;
+    const float z = rhs.Z;
+    const float w = rhs.W;
+    const float num4 = lhs.X;
+    const float num3 = lhs.Y;
+    const float num2 = lhs.Z;
+    const float num = lhs.W;
+    const float num12 = (y * num2) - (z * num3);
+    const float num11 = (z * num4) - (x * num2);
+    const float num10 = (x * num3) - (y * num4);
+    const float num9 = ((x * num4) + (y * num3)) + (z * num2);
 
     // Quaternion quaternion(OptimizationFlag::NoInitialization);
     Quaternion quaternion;
@@ -168,7 +168,7 @@ namespace Fsl
   {
     const float* const pMatrix = matrix.DirectAccess();
 
-    float num8 = (pMatrix[_M11] + pMatrix[_M22]) + pMatrix[_M33];
+    const float num8 = (pMatrix[_M11] + pMatrix[_M22]) + pMatrix[_M33];
     // Quaternion quaternion(OptimizationFlag::NoInitialization);
     Quaternion quaternion;
     if (num8 > 0.0f)
@@ -416,7 +416,7 @@ namespace Fsl
     const float num2 = 1.0f - num;
     // Quaternion quaternion(OptimizationFlag::NoInitialization);
     Quaternion quaternion;
-    float num5 =
+    const float num5 =
       (((quaternion1.X * quaternion2.X) + (quaternion1.Y * quaternion2.Y)) + (quaternion1.Z * quaternion2.Z)) + (quaternion1.W * quaternion2.W);
     if (num5 >= 0.0f)
     {
@@ -432,8 +432,9 @@ namespace Fsl
       quaternion.Z = (num2 * quaternion1.Z) - (num * quaternion2.Z);
       quaternion.W = (num2 * quaternion1.W) - (num * quaternion2.W);
     }
-    float num4 = (((quaternion.X * quaternion.X) + (quaternion.Y * quaternion.Y)) + (quaternion.Z * quaternion.Z)) + (quaternion.W * quaternion.W);
-    float num3 = 1.0f / (std::sqrt(num4));
+    const float num4 =
+      (((quaternion.X * quaternion.X) + (quaternion.Y * quaternion.Y)) + (quaternion.Z * quaternion.Z)) + (quaternion.W * quaternion.W);
+    const float num3 = 1.0f / (std::sqrt(num4));
     quaternion.X *= num3;
     quaternion.Y *= num3;
     quaternion.Z *= num3;
@@ -475,7 +476,7 @@ namespace Fsl
   {
     float num2 = 0.0f;
     float num3 = 0.0f;
-    float num = amount;
+    const float num = amount;
     float num4 =
       (((quaternion1.X * quaternion2.X) + (quaternion1.Y * quaternion2.Y)) + (quaternion1.Z * quaternion2.Z)) + (quaternion1.W * quaternion2.W);
     bool flag = false;
@@ -491,8 +492,8 @@ namespace Fsl
     }
     else
     {
-      auto num5 = static_cast<float>(std::acos(static_cast<double>(num4)));
-      auto num6 = static_cast<float>(1.0 / std::sin(static_cast<double>(num5)));
+      const auto num5 = static_cast<float>(std::acos(static_cast<double>(num4)));
+      const auto num6 = static_cast<float>(1.0 / std::sin(static_cast<double>(num5)));
       num3 = (static_cast<float>(std::sin(static_cast<double>((1.0f - num) * num5)))) * num6;
       num2 = flag ? ((static_cast<float>(-std::sin(static_cast<double>(num * num5)))) * num6)
                   : ((static_cast<float>(std::sin(static_cast<double>(num * num5)))) * num6);
@@ -512,7 +513,7 @@ namespace Fsl
   {
     float num2 = 0.0f;
     float num3 = 0.0f;
-    float num = amount;
+    const float num = amount;
     float num4 =
       (((quaternion1.X * quaternion2.X) + (quaternion1.Y * quaternion2.Y)) + (quaternion1.Z * quaternion2.Z)) + (quaternion1.W * quaternion2.W);
     bool flag = false;
@@ -528,8 +529,8 @@ namespace Fsl
     }
     else
     {
-      auto num5 = static_cast<float>(std::acos(static_cast<double>(num4)));
-      auto num6 = static_cast<float>(1.0 / std::sin(static_cast<double>(num5)));
+      const auto num5 = static_cast<float>(std::acos(static_cast<double>(num4)));
+      const auto num6 = static_cast<float>(1.0 / std::sin(static_cast<double>(num5)));
       num3 = (static_cast<float>(std::sin(static_cast<double>((1.0f - num) * num5)))) * num6;
       num2 = flag ? ((static_cast<float>(-std::sin(static_cast<double>(num * num5)))) * num6)
                   : ((static_cast<float>(std::sin(static_cast<double>(num * num5)))) * num6);

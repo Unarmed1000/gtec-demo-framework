@@ -66,9 +66,9 @@ namespace Fsl
     {
       glUseProgram(0);
 
-      std::string strVert = contentManager->ReadAllText("Shaders/GeometryLine.vert");
-      std::string strFrag = contentManager->ReadAllText("Shaders/GeometryLine.frag");
-      std::string strGeom = contentManager->ReadAllText("Shaders/GeometryLine.geom");
+      const std::string strVert = contentManager->ReadAllText("Shaders/GeometryLine.vert");
+      const std::string strFrag = contentManager->ReadAllText("Shaders/GeometryLine.frag");
+      const std::string strGeom = contentManager->ReadAllText("Shaders/GeometryLine.geom");
 
       {
         // GLShader shaderVert(GL_VERTEX_SHADER, strVert);
@@ -105,22 +105,22 @@ namespace Fsl
     const float fov = 60.0f;
 
     // Calc distance that z=0 has to be away from the camera for the width and height to match the resolution
-    float yMax = std::tan(fov * MathHelper::PI / 360.0f);
-    float depth = screenHeight / 2.0f / yMax;
+    const float yMax = std::tan(fov * MathHelper::PI / 360.0f);
+    const float depth = screenHeight / 2.0f / yMax;
 
-    Matrix world = Matrix::CreateRotationX(MathHelper::TO_RADS * 180);
-    Matrix view = Matrix::CreateTranslation(-screenWidth * 0.5f, screenHeight * 0.5f, -depth);
-    Matrix projection = Matrix::CreatePerspectiveFieldOfView(MathHelper::ToRadians(fov), aspectRatio, 1.0f, 2000.0f);
+    const Matrix world = Matrix::CreateRotationX(MathHelper::TO_RADS * 180);
+    const Matrix view = Matrix::CreateTranslation(-screenWidth * 0.5f, screenHeight * 0.5f, -depth);
+    const Matrix projection = Matrix::CreatePerspectiveFieldOfView(MathHelper::ToRadians(fov), aspectRatio, 1.0f, 2000.0f);
 
     m_worldView = world * view;
     m_worldViewProjection = m_worldView * projection;
 
     {
-      Vector4 color(0.12f, 0.12f, 0.55f, 0.33f);
-      VertexPositionColorF defaultVertex(Vector3(), color);
-      for (std::size_t i = 0; i < m_coordinates.size(); ++i)
+      const Vector4 color(0.12f, 0.12f, 0.55f, 0.33f);
+      const VertexPositionColorF defaultVertex(Vector3(), color);
+      for (auto& rCoordinate : m_coordinates)
       {
-        m_coordinates[i] = defaultVertex;
+        rCoordinate = defaultVertex;
       }
 
       const std::ptrdiff_t dstStrideX = m_gridFinalSize.X + 2;
@@ -201,7 +201,7 @@ namespace Fsl
   {
     int32_t pointsWritten = 0;
     pointsWritten += CreateLinesHorizontal(rDst, points, pointsWritten);
-    pointsWritten += CreateLinesVertical(rDst, points, pointsWritten);
+    CreateLinesVertical(rDst, points, pointsWritten);
     m_vertexBuffer.SetData(0, m_coordinates.data(), m_coordinates.size());
   }
 
@@ -216,7 +216,7 @@ namespace Fsl
     const std::ptrdiff_t srcStride = srcGridMaxX;
     const std::ptrdiff_t dstStride = dstGridMaxX + 2;
 
-    const auto* const pDstEnd = rDst.data() + rDst.size();
+    [[maybe_unused]] const auto* const pDstEnd = rDst.data() + rDst.size();
 
     // Create the horizontal border points as they are a special case
     {
@@ -297,7 +297,7 @@ namespace Fsl
         {
           assert((pDstLeft + (x * 2)) < pDstEnd);
           assert((pDstLeft + (x * 2) + 1) < pDstEnd);
-          pDstLeft[x * 2].Position =
+          pDstLeft[static_cast<std::ptrdiff_t>(x) * 2].Position =
             VectorHelper::CatmullRom(pSrc[x].m_position, pSrc[x + 1].m_position, pSrc[x + 2].m_position, pSrc[x + 3].m_position, 0.5f);
           pDstLeft[(x * 2) + 1].Position = pSrc[x + 2].m_position;
         }
@@ -333,7 +333,7 @@ namespace Fsl
     const std::ptrdiff_t srcStride = srcGridMaxX;
     const std::ptrdiff_t dstStride = dstGridMaxY + 2;
 
-    const auto* const pDstEnd = rDst.data() + rDst.size();
+    [[maybe_unused]] const auto* const pDstEnd = rDst.data() + rDst.size();
 
     // Create the vertical border points as they are a special case
     {

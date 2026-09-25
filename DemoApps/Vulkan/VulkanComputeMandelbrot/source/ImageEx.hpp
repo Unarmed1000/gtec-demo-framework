@@ -88,58 +88,58 @@ namespace Fsl
                const uint32_t* queueFamilyIndices, const VkImageLayout initialLayout, const VkAccessFlags accessMask);
 
     //! @brief Get the device associated with this object
-    VkDevice GetDevice() const
+    [[nodiscard]] VkDevice GetDevice() const
     {
       return m_image.GetDevice();
     }
 
     //! @brief Get the handle associated with this object
-    VkImage Get() const
+    [[nodiscard]] VkImage Get() const
     {
       return m_image.Get();
     }
 
 
     //! @brief Check if this object is valid
-    bool IsValid() const
+    [[nodiscard]] bool IsValid() const
     {
       return m_image.IsValid();
     }
 
 
-    VkImageCreateFlags GetFlags() const
+    [[nodiscard]] VkImageCreateFlags GetFlags() const
     {
       return m_createInfo.flags;
     }
 
 
-    VkFormat GetFormat() const
+    [[nodiscard]] VkFormat GetFormat() const
     {
       return m_createInfo.format;
     }
 
-    VkMemoryRequirements GetImageMemoryRequirements() const
+    [[nodiscard]] VkMemoryRequirements GetImageMemoryRequirements() const
     {
       return m_image.GetImageMemoryRequirements();
     }
 
-    VkSubresourceLayout GetImageSubresourceLayout(const VkImageSubresource& imageSubresource) const
+    [[nodiscard]] VkSubresourceLayout GetImageSubresourceLayout(const VkImageSubresource& imageSubresource) const
     {
       return m_image.GetImageSubresourceLayout(imageSubresource);
     }
 
-    uint32_t GetMipLevels() const
+    [[nodiscard]] uint32_t GetMipLevels() const
     {
       return m_createInfo.mipLevels;
     }
 
-    VkExtent3D GetExtent() const
+    [[nodiscard]] VkExtent3D GetExtent() const
     {
       return m_createInfo.extent;
     }
 
-    VkAccessFlags GetAccessMask(const uint32_t mipLevel, const uint32_t arrayLayer) const;
-    VkImageLayout GetImageLayout(const uint32_t mipLevel, const uint32_t arrayLayer) const;
+    [[nodiscard]] VkAccessFlags GetAccessMask(const uint32_t mipLevel, const uint32_t arrayLayer) const;
+    [[nodiscard]] VkImageLayout GetImageLayout(const uint32_t mipLevel, const uint32_t arrayLayer) const;
 
     void CmdPipelineBarrier(const VkCommandBuffer cmdBuffer, const VkAccessFlags dstAccessMask, const VkImageLayout newLayout,
                             const VkImageSubresourceRange& subresourceRange);

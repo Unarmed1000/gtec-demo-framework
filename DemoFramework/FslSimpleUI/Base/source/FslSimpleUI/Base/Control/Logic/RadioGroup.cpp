@@ -43,7 +43,7 @@ namespace Fsl::UI
       auto itrFind = members.begin();
       while (itrFind != members.end())
       {
-        auto entry = itrFind->lock();
+        const auto entry = itrFind->lock();
         if (entry == value)
         {
           return itrFind;
@@ -63,7 +63,7 @@ namespace Fsl::UI
       auto itrFind = members.begin();
       while (itrFind != members.end())
       {
-        auto entry = itrFind->lock();
+        const auto entry = itrFind->lock();
         if (entry.get() == value)
         {
           return itrFind;
@@ -84,7 +84,7 @@ namespace Fsl::UI
       auto itrFind = members.begin();
       while (itrFind != members.end())
       {
-        auto entry = itrFind->lock();
+        const auto entry = itrFind->lock();
         if (entry.get() == value)
         {
           return itrFind;
@@ -112,7 +112,7 @@ namespace Fsl::UI
     {
       throw std::invalid_argument("Can not add a null entry");
     }
-    auto itrFind = Find(m_members, entry);
+    const auto itrFind = Find(m_members, entry);
     if (itrFind != m_members.end())
     {
       throw std::invalid_argument("entry already added");
@@ -123,7 +123,7 @@ namespace Fsl::UI
 
   bool RadioGroup::Remove(const std::shared_ptr<RadioButton>& entry)
   {
-    auto itrFind = Find(m_members, entry);
+    const auto itrFind = Find(m_members, entry);
     if (itrFind == m_members.end())
     {
       return false;
@@ -139,7 +139,7 @@ namespace Fsl::UI
 
   bool RadioGroup::Remove(const RadioButton* const pButton)
   {
-    auto itrFind = Find(m_members, pButton);
+    const auto itrFind = Find(m_members, pButton);
     if (itrFind == m_members.end())
     {
       return false;

@@ -47,7 +47,7 @@ TEST(TestReadOnlyFlexSpanUtilReadOnlySpan, AsSpan)
 {
   constexpr static std::array<char, 11> Data = {'h', 'e', 'l', 'l', 'o', ' ', 'w', 'o', 'r', 'l', 'd'};
   const auto srcData = SpanUtil::AsReadOnlySpan(Data);
-  ReadOnlyFlexSpan span = ReadOnlyFlexSpanUtil::AsSpan(srcData);
+  const ReadOnlyFlexSpan span = ReadOnlyFlexSpanUtil::AsSpan(srcData);
 
   EXPECT_FALSE(span.empty());
   EXPECT_EQ(span.data(), Data.data());
@@ -61,7 +61,7 @@ TEST(TestReadOnlyFlexSpanUtilReadOnlySpan, AsSpan_Empty)
 {
   constexpr static std::array<char, 0> Data{};
   const auto srcData = SpanUtil::AsReadOnlySpan(Data);
-  ReadOnlyFlexSpan span = ReadOnlyFlexSpanUtil::AsSpan(srcData);
+  const ReadOnlyFlexSpan span = ReadOnlyFlexSpanUtil::AsSpan(srcData);
 
   EXPECT_TRUE(span.empty());
   EXPECT_EQ(span.data(), Data.data());

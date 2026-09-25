@@ -73,12 +73,12 @@ namespace Fsl::UI::RenderIMBatch
   public:
     explicit MaterialLookup(const SpriteMaterialInfo& defaultMaterialInfo);
 
-    const MaterialStats& GetStats() const
+    [[nodiscard]] const MaterialStats& GetStats() const
     {
       return m_stats;
     }
 
-    uint32_t GetCount() const
+    [[nodiscard]] uint32_t GetCount() const
     {
       return UncheckedNumericCast<uint32_t>(m_materials.Count());
     }
@@ -96,18 +96,18 @@ namespace Fsl::UI::RenderIMBatch
       m_materials[index].MaterialInfo = materialInfo;
     }
 
-    const SpriteMaterialInfo& GetSpriteMaterialInfo(const BatchMaterialHandle batchMaterialHandle) const noexcept
+    [[nodiscard]] const SpriteMaterialInfo& GetSpriteMaterialInfo(const BatchMaterialHandle batchMaterialHandle) const noexcept
     {
       assert(m_materials.IsValidHandle(batchMaterialHandle.Value));
       return batchMaterialHandle != m_defaultHandle ? m_materials.FastGet(batchMaterialHandle.Value).MaterialInfo : m_defaultMaterialInfo;
     }
 
-    const SpriteMaterialInfo& FastGetSpriteMaterialInfo(const BatchMaterialId batchMaterialId) const noexcept
+    [[nodiscard]] const SpriteMaterialInfo& FastGetSpriteMaterialInfo(const BatchMaterialId batchMaterialId) const noexcept
     {
       return m_materials[batchMaterialId.Value].MaterialInfo;
     }
 
-    BatchMaterialId GetMaterialIndex(const BatchMaterialHandle batchMaterialHandle) const
+    [[nodiscard]] BatchMaterialId GetMaterialIndex(const BatchMaterialHandle batchMaterialHandle) const
     {
       assert(m_materials.IsValidHandle(batchMaterialHandle.Value));
       return batchMaterialHandle != m_defaultHandle ? BatchMaterialId(m_materials.FastHandleToIndex(batchMaterialHandle.Value)) : BatchMaterialId();

@@ -75,7 +75,7 @@ namespace Fsl
     ParticleSystemSnow(const uint32_t capacity, const std::shared_ptr<IContentManager>& contentManager, const Vector3& ranges, const float pointSize);
     ~ParticleSystemSnow();
 
-    uint32_t GetParticleCount() const
+    [[nodiscard]] uint32_t GetParticleCount() const
     {
       return m_capacity;
     }

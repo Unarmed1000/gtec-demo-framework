@@ -69,7 +69,7 @@ namespace Fsl
       return ::testing::AssertionSuccess();
     }
 
-    std::string strError = fmt::format("Extent {0} did not match the expected value of {1}", currentValue, expectedValue);
+    const std::string strError = fmt::format("Extent {0} did not match the expected value of {1}", currentValue, expectedValue);
 
     return ::testing::AssertionFailure() << strError;
   }

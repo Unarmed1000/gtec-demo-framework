@@ -109,7 +109,7 @@ namespace Fsl::Graphics3D
       break;
     }
 
-    for (auto& rEntry : m_dynamicRecords)
+    for (const auto& rEntry : m_dynamicRecords)
     {
       assert(rEntry.LinkTexture);
       rEntry.LinkTexture->OnRenderSystemEvent(theEvent);
@@ -121,7 +121,7 @@ namespace Fsl::Graphics3D
                                                                          const TextureFlags textureFlags)
   {
     assert(m_factory);
-    BasicNativeTextureHandle hNative = m_factory->CreateTexture(texture, filterHint, textureFlags, false);
+    const BasicNativeTextureHandle hNative = m_factory->CreateTexture(texture, filterHint, textureFlags, false);
 
     const bool textureCoordinatesFlipY = NativeTextureFactoryCapsUtil::IsEnabled(m_factoryCaps, NativeTextureFactoryCaps::TextureCoordinatesFlipY);
     const auto hTexture = BasicTextureHandle(m_textures.Add(TextureRecord(false)));
@@ -143,7 +143,8 @@ namespace Fsl::Graphics3D
 
     const bool setDataSupported = NativeTextureFactoryCapsUtil::IsEnabled(m_factoryCaps, NativeTextureFactoryCaps::Dynamic);
 
-    auto linkTexture = std::make_shared<BasicDynamicTextureLink>(m_maxFramesInFlight, m_factory, texture, filterHint, textureFlags, setDataSupported);
+    const auto linkTexture =
+      std::make_shared<BasicDynamicTextureLink>(m_maxFramesInFlight, m_factory, texture, filterHint, textureFlags, setDataSupported);
     const bool textureCoordinatesFlipY = NativeTextureFactoryCapsUtil::IsEnabled(m_factoryCaps, NativeTextureFactoryCaps::TextureCoordinatesFlipY);
     const auto hTexture = BasicTextureHandle(m_textures.Add(TextureRecord(true)));
     auto tracker = std::make_shared<BasicDynamicTextureTracker>(hTexture, texture.GetExtent(), textureCoordinatesFlipY, linkTexture);
@@ -215,7 +216,7 @@ namespace Fsl::Graphics3D
           {
             m_factory->DestroyTexture(itr->NativeHandle);
             m_textures.Remove(itr->Handle.Value);
-            auto tex = itr->Texture.lock();
+            const auto tex = itr->Texture.lock();
             if (tex)
             {
               tex->Dispose();
@@ -248,7 +249,7 @@ namespace Fsl::Graphics3D
           FSLLOG3(LocalConfig::LogType, "BasicTextureManager: Destroying texture ({})", reinterpret_cast<intptr_t>(itr->LinkTexture.get()));
           {
             itr->LinkTexture->Destroy();
-            auto tex = itr->Texture.lock();
+            const auto tex = itr->Texture.lock();
             if (tex)
             {
               tex->Dispose();
@@ -281,7 +282,7 @@ namespace Fsl::Graphics3D
         {
           m_factory->DestroyTexture(itr->NativeHandle);
           m_textures.Remove(itr->Handle.Value);
-          auto tex = itr->Texture.lock();
+          const auto tex = itr->Texture.lock();
           if (tex)
           {
             tex->Dispose();
@@ -296,7 +297,7 @@ namespace Fsl::Graphics3D
       {
         {
           itr->LinkTexture->Destroy();
-          auto tex = itr->Texture.lock();
+          const auto tex = itr->Texture.lock();
           if (tex)
           {
             tex->Dispose();

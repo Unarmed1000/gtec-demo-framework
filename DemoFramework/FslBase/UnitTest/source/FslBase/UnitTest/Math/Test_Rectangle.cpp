@@ -48,7 +48,7 @@ namespace
 
 TEST(TestMath_Rectangle, Empty)
 {
-  Rectangle value;
+  const Rectangle value;
 
   EXPECT_EQ(Rectangle(), Rectangle::Empty());
   EXPECT_EQ(0, value.Left());
@@ -66,11 +66,11 @@ TEST(TestMath_Rectangle, Empty)
 
 TEST(TestMath_Rectangle, Construct1)
 {
-  int32_t offsetX = 1;
-  int32_t offsetY = 2;
-  int32_t width = 10;
-  int32_t height = 20;
-  Rectangle value(offsetX, offsetY, width, height);
+  const int32_t offsetX = 1;
+  const int32_t offsetY = 2;
+  const int32_t width = 10;
+  const int32_t height = 20;
+  const Rectangle value(offsetX, offsetY, width, height);
 
   EXPECT_EQ(offsetX, value.Left());
   EXPECT_EQ(offsetY, value.Top());
@@ -86,11 +86,11 @@ TEST(TestMath_Rectangle, Construct1)
 
 TEST(TestMath_Rectangle, FromLeftTopRigtBottom)
 {
-  int32_t left = 1;
-  int32_t top = 2;
-  int32_t right = 10;
-  int32_t bottom = 20;
-  auto value = Rectangle::FromLeftTopRigtBottom(left, top, right, bottom);
+  const int32_t left = 1;
+  const int32_t top = 2;
+  const int32_t right = 10;
+  const int32_t bottom = 20;
+  const auto value = Rectangle::FromLeftTopRigtBottom(left, top, right, bottom);
 
   EXPECT_EQ(left, value.Left());
   EXPECT_EQ(top, value.Top());
@@ -197,14 +197,14 @@ TEST(TestMath_Rectangle, Intersects_BruteForce)
       0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,    // 8
       0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,    // 9
     };
-    Rectangle rectB(4, 3, 6, 5);
+    const Rectangle rectB(4, 3, 6, 5);
 
     for (int32_t y = 0; y < 10; ++y)
     {
       const int32_t yOffset = y * 11;
       for (int32_t x = 0; x < 11; ++x)
       {
-        Rectangle rectA(x, y, 4, 3);
+        const Rectangle rectA(x, y, 4, 3);
         EXPECT_EQ(result[x + yOffset] != 0u, rectA.Intersects(rectB));
         EXPECT_EQ(result[x + yOffset] != 0u, rectB.Intersects(rectA));
       }
@@ -241,17 +241,17 @@ TEST(TestMath_Rectangle, Intersect_BruteForce)
       0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,    // 8
       0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,    // 9
     };
-    Rectangle rectB(4, 3, 6, 5);
+    const Rectangle rectB(4, 3, 6, 5);
 
     for (int32_t y = 0; y < 10; ++y)
     {
       const int32_t yOffset = y * 11;
       for (int32_t x = 0; x < 11; ++x)
       {
-        Rectangle rectA(x, y, 4, 3);
+        const Rectangle rectA(x, y, 4, 3);
 
-        auto res1 = Rectangle::Intersect(rectA, rectB);
-        auto res2 = Rectangle::Intersect(rectB, rectA);
+        const auto res1 = Rectangle::Intersect(rectA, rectB);
+        const auto res2 = Rectangle::Intersect(rectB, rectA);
         EXPECT_EQ(res1, res2);
         // check for intersection
         EXPECT_EQ(result[x + yOffset] != 0u, !res1.IsEmpty());
@@ -270,16 +270,16 @@ TEST(TestMath_Rectangle, Intersect_BruteForce)
 
 TEST(TestMath_Rectangle, Union_BruteForce)
 {
-  Rectangle rectB(4, 3, 6, 5);
+  const Rectangle rectB(4, 3, 6, 5);
 
   for (int32_t y = 0; y < 10; ++y)
   {
     for (int32_t x = 0; x < 11; ++x)
     {
-      Rectangle rectA(x, y, 4u, 3u);
+      const Rectangle rectA(x, y, 4u, 3u);
 
-      auto res1 = Rectangle::Union(rectA, rectB);
-      auto res2 = Rectangle::Union(rectB, rectA);
+      const auto res1 = Rectangle::Union(rectA, rectB);
+      const auto res2 = Rectangle::Union(rectB, rectA);
       EXPECT_EQ(res1, res2);
 
       EXPECT_EQ(std::min(rectA.Left(), rectB.Left()), res1.Left());

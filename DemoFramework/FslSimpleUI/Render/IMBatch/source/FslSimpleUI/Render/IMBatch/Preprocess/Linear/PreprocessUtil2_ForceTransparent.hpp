@@ -61,13 +61,13 @@ namespace Fsl::UI::RenderIMBatch::PreprocessUtil2
     const MaterialLookup& materialLookup = meshManager.GetMaterialLookup();
 
     constexpr uint32_t InvalidMaterialCacheIndex = 0xFFFFFFFF;
-    for (std::size_t i = 0; i < opaqueMaterialCache.size(); ++i)
+    for (auto& rEntry : opaqueMaterialCache)
     {
-      opaqueMaterialCache[i] = MaterialCacheRecord(InvalidMaterialCacheIndex);
+      rEntry = MaterialCacheRecord(InvalidMaterialCacheIndex);
     }
-    for (std::size_t i = 0; i < transparentMaterialCache.size(); ++i)
+    for (auto& rEntry : transparentMaterialCache)
     {
-      transparentMaterialCache[i] = MaterialCacheRecord(InvalidMaterialCacheIndex);
+      rEntry = MaterialCacheRecord(InvalidMaterialCacheIndex);
     }
 
     const std::size_t capacity = (commandSpan.size() * 2u);
@@ -160,8 +160,8 @@ namespace Fsl::UI::RenderIMBatch::PreprocessUtil2
             const PxSize1DF dstWidthPxf(command.DstSizePx.Width());
             const PxSize1DF dstHeightPxf(command.DstSizePx.Height());
             // We need to apply the scaling and trim
-            PxSize1DF finalScalingX = dstWidthPxf / PxSize1DF(meshRecord.Primitive.RenderInfo.ScaledSizePx.Width());
-            PxSize1DF finalScalingY = dstHeightPxf / PxSize1DF(meshRecord.Primitive.RenderInfo.ScaledSizePx.Height());
+            const PxSize1DF finalScalingX = dstWidthPxf / PxSize1DF(meshRecord.Primitive.RenderInfo.ScaledSizePx.Width());
+            const PxSize1DF finalScalingY = dstHeightPxf / PxSize1DF(meshRecord.Primitive.RenderInfo.ScaledSizePx.Height());
 
             dstRectanglePxf =
               PxAreaRectangleF(command.DstPositionPxf.X + (meshRecord.Primitive.RenderInfo.ScaledTrimMarginPxf.Left() * finalScalingX),

@@ -60,6 +60,9 @@
 #include <cassert>
 #include <iostream>
 #include <memory>
+#ifdef FSL_FEATURE_FRAMEPACING
+#include <FslDemoService/FramePacing/Impl/FramePacingOverlay.hpp>
+#endif
 
 namespace Fsl::VulkanBasic
 {
@@ -90,7 +93,7 @@ namespace Fsl::VulkanBasic
       int bitIndex = BitsUtil::IndexOf(srcFlags);
       while (bitIndex >= 0)
       {
-        VkImageUsageFlags flag = static_cast<uint32_t>(1u) << bitIndex;
+        const VkImageUsageFlags flag = static_cast<uint32_t>(1u) << bitIndex;
         if ((surfaceCapabilities.supportedUsageFlags & flag) != 0u)
         {
           supportedFlags |= flag;
@@ -112,7 +115,7 @@ namespace Fsl::VulkanBasic
     {
       std::vector<Vulkan::SurfaceFormatInfo> finalPreferredFormats(preferredFormats.begin(), preferredFormats.end());
 
-      auto supportedFormats = Vulkan::PhysicalDeviceKHRUtil::GetPhysicalDeviceSurfaceFormatsKHR(physicalDevice, surface);
+      const auto supportedFormats = Vulkan::PhysicalDeviceKHRUtil::GetPhysicalDeviceSurfaceFormatsKHR(physicalDevice, surface);
       if (!preferredFormats.empty())
       {
         auto res = Vulkan::SurfaceFormatUtil::TryFindPreferredFormat(SpanUtil::AsReadOnlySpan(supportedFormats),
@@ -144,15 +147,15 @@ namespace Fsl::VulkanBasic
     AppDrawResult WaitForFenceAndResetIt(const VkDevice device, const VkFence fence)
     {
       {    // Wait for the current frames fence and reset it
-        // time to synchronize by waiting for the fence before we modify command queues etc.
-        auto waitResult = vkWaitForFences(device, 1, &fence, VK_TRUE, LocalConfig::DefaultTimeout);
+           // time to synchronize by waiting for the fence before we modify command queues etc.
+        const auto waitResult = vkWaitForFences(device, 1, &fence, VK_TRUE, LocalConfig::DefaultTimeout);
         if (waitResult != VK_SUCCESS)
         {
           FSLLOG3_WARNING("vkWaitForFences failed with: {}", RapidVulkan::Debug::ToString(waitResult));
           return AppDrawResult::Failed;
         }
 
-        auto resetResult = vkResetFences(device, 1, &fence);
+        const auto resetResult = vkResetFences(device, 1, &fence);
         if (resetResult != VK_SUCCESS)
         {
           FSLLOG3_WARNING("vkResetFences failed with: {}", RapidVulkan::Debug::ToString(resetResult));
@@ -184,13 +187,16 @@ namespace Fsl::VulkanBasic
     , AppSetup(ProcessDemoAppSetup(demoAppVulkanSetup))
     , m_cachedExtentPx(demoAppConfig.WindowMetrics.ExtentPx)
   {
-    auto hostInfo = demoAppConfig.DemoServiceProvider.Get<IHostInfo>();
-    auto hostConfig = hostInfo->GetConfig();
+    const auto hostInfo = demoAppConfig.DemoServiceProvider.Get<IHostInfo>();
+    const auto hostConfig = hostInfo->GetConfig();
     if (hostConfig.StatOverlay)
     {
       m_demoAppProfilerOverlay = std::make_unique<DemoAppProfilerOverlay>(demoAppConfig.DemoServiceProvider, hostConfig.LogStatsFlags);
     }
-    auto demoHostConfig = hostInfo->TryGetAppHostConfig();
+#ifdef FSL_FEATURE_FRAMEPACING
+    m_framePacingOverlay = FramePacingOverlay::TryCreate(demoAppConfig.DemoServiceProvider);
+#endif
+    const auto demoHostConfig = hostInfo->TryGetAppHostConfig();
     if (!demoHostConfig)
     {
       throw NotSupportedException("Could not access the demo host config");
@@ -212,7 +218,7 @@ namespace Fsl::VulkanBasic
   {
     if (m_dependentResources.Valid)
     {
-      auto currentLifeCycleState = GetObjectLifeCycleState();
+      const auto currentLifeCycleState = GetObjectLifeCycleState();
       try
       {
         FSLLOG3_WARNING_IF(currentLifeCycleState != ObjectLifeCycle::Constructing,
@@ -267,7 +273,7 @@ namespace Fsl::VulkanBasic
 
   AppDrawResult DemoAppVulkanBasic::TryPrepareDraw(const FrameInfo& frameInfo)
   {
-    auto result = TryDoPrepareDraw(frameInfo);
+    const auto result = TryDoPrepareDraw(frameInfo);
     SetAppState(result);
 
     const FrameDrawRecord& frameResources = m_resources.Frames[frameInfo.FrameIndex];
@@ -292,7 +298,7 @@ namespace Fsl::VulkanBasic
     if (m_graphicsServiceHost)
     {
       Vulkan::BasicNativeBeginCustomVulkanFrameInfo vulkanBeginInfo(m_dependentResources.CmdBuffers[frameInfo.FrameIndex]);
-      GraphicsBeginFrameInfo beginInfo(frameInfo.FrameIndex, &vulkanBeginInfo);
+      const GraphicsBeginFrameInfo beginInfo(frameInfo.FrameIndex, &vulkanBeginInfo);
       m_graphicsServiceHost->BeginFrame(beginInfo);
     }
     m_frameRecord = FrameRecord(frameInfo.FrameIndex);
@@ -344,7 +350,7 @@ namespace Fsl::VulkanBasic
     //    VulkanDrawContext& GetVulkanDrawContext() const
     // The context would be non copyable and contain the above mentioned things
 
-    DrawContext drawContext(m_swapchain.GetImageExtent(), framebuffer, currentFrameIndex);
+    const DrawContext drawContext(m_swapchain.GetImageExtent(), framebuffer, currentFrameIndex);
     VulkanDraw(frameInfo.Time, m_dependentResources.CmdBuffers, drawContext);
 
     assert(frameRecord.ImageAcquiredSemaphore.IsValid());
@@ -371,7 +377,7 @@ namespace Fsl::VulkanBasic
 
   AppDrawResult DemoAppVulkanBasic::TrySwapBuffers(const FrameInfo& frameInfo)
   {
-    auto result = TryDoSwapBuffers(frameInfo);
+    const auto result = TryDoSwapBuffers(frameInfo);
     SetAppState(result);
     return result;
   }
@@ -388,6 +394,13 @@ namespace Fsl::VulkanBasic
     {
       m_demoAppProfilerOverlay->Draw(GetWindowMetrics());
     }
+#ifdef FSL_FEATURE_FRAMEPACING
+    // The frame pacing marker must be the very last thing drawn
+    if (m_framePacingOverlay)
+    {
+      m_framePacingOverlay->Draw(GetWindowMetrics());
+    }
+#endif
   }
 
 
@@ -414,7 +427,7 @@ namespace Fsl::VulkanBasic
         desiredSwapchainImageUsageFlags |= VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
       }
 
-      auto fallbackExtent = TypeConverter::UncheckedTo<VkExtent2D>(GetScreenExtent());
+      const auto fallbackExtent = TypeConverter::UncheckedTo<VkExtent2D>(GetScreenExtent());
       const VkPresentModeKHR presentMode = !m_launchOptions.OverridePresentMode ? AppSetup.DesiredSwapchainPresentMode : m_launchOptions.PresentMode;
       const auto supportedImageUsageFlags = FilterUnsupportedImageUsageFlags(m_physicalDevice.Device, m_surface, desiredSwapchainImageUsageFlags);
       const VkImageUsageFlags desiredImageUsageFlags = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | supportedImageUsageFlags;
@@ -424,7 +437,7 @@ namespace Fsl::VulkanBasic
                                                   desiredImageUsageFlags, VK_SHARING_MODE_EXCLUSIVE, 0, nullptr, VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR,
                                                   presentMode, VK_TRUE, m_swapchain.Get(), fallbackExtent, m_surfaceFormatInfo);
 
-      uint32_t swapchainImageCount = m_swapchain.GetImageCount();
+      const uint32_t swapchainImageCount = m_swapchain.GetImageCount();
       if (swapchainImageCount == 0)
       {
         throw std::runtime_error("We need at least one image in the swapchain");
@@ -457,9 +470,9 @@ namespace Fsl::VulkanBasic
       const VkFormat depthImageFormat = m_dependentResources.DepthImage.GetFormat();
       const VkExtent2D depthImageExtent = m_dependentResources.DepthImage.GetExtent2D();
 
-      BuildResourcesContext buildResourcesContext(m_swapchain.GetImageExtent(), m_swapchain.GetImageFormat(), swapchainImageCount,
-                                                  m_dependentResources.FramesInFlightCount, depthImageView, depthImageFormat, depthImageExtent,
-                                                  m_resources.MainCommandPool.Get());
+      const BuildResourcesContext buildResourcesContext(m_swapchain.GetImageExtent(), m_swapchain.GetImageFormat(), swapchainImageCount,
+                                                        m_dependentResources.FramesInFlightCount, depthImageView, depthImageFormat, depthImageExtent,
+                                                        m_resources.MainCommandPool.Get());
       const VkRenderPass mainRenderPass = OnBuildResources(buildResourcesContext);
 
       FSLLOG3_VERBOSE2("DemoAppVulkanBasic::BuildResources(): Populate swapchain records");
@@ -472,7 +485,7 @@ namespace Fsl::VulkanBasic
         BuildSwapchainImageView(m_dependentResources.SwapchainRecords[i], i);
         const VkImageView swapchainImageView = m_dependentResources.SwapchainRecords[i].SwapchainImageView.Get();
 
-        FrameBufferCreateContext frameBufferCreateContext(swapchainImageView, m_swapchain.GetImageExtent(), mainRenderPass, depthImageView);
+        const FrameBufferCreateContext frameBufferCreateContext(swapchainImageView, m_swapchain.GetImageExtent(), mainRenderPass, depthImageView);
         m_dependentResources.SwapchainRecords[i].Framebuffer = CreateFramebuffer(frameBufferCreateContext);
         m_dependentResources.SwapchainRecords[i].ImageReleasedSemaphore.Reset(m_device.Get(), 0);
       }
@@ -489,7 +502,7 @@ namespace Fsl::VulkanBasic
         Vulkan::BasicNativeDependentCustomVulkanCreateInfo vulkanCreateInfo(pipelineCache, mainRenderPass, AppSetup.SubpassSystemUI,
                                                                             m_dependentResources.NGScreenshotLink);
 
-        GraphicsDependentCreateInfo createInfo(GetScreenExtent(), &vulkanCreateInfo);
+        const GraphicsDependentCreateInfo createInfo(GetScreenExtent(), &vulkanCreateInfo);
         m_graphicsServiceHost->CreateDependentResources(createInfo);
       }
     }
@@ -523,11 +536,11 @@ namespace Fsl::VulkanBasic
       TryWaitForPresentFence(rFrame);
     }
 
-    for (std::size_t i = 0; i < m_dependentResources.SwapchainRecords.size(); ++i)
+    for (auto& rRecord : m_dependentResources.SwapchainRecords)
     {
-      m_dependentResources.SwapchainRecords[i].ImageReleasedSemaphore.Reset();
-      m_dependentResources.SwapchainRecords[i].Framebuffer.Reset();
-      m_dependentResources.SwapchainRecords[i].SwapchainImageView.Reset();
+      rRecord.ImageReleasedSemaphore.Reset();
+      rRecord.Framebuffer.Reset();
+      rRecord.SwapchainImageView.Reset();
     }
     m_dependentResources.SwapchainRecords.clear();
 
@@ -675,8 +688,9 @@ namespace Fsl::VulkanBasic
   // m_swapchain.GetImageExtent()
   void DemoAppVulkanBasic::BuildSwapchainImageView(SwapchainRecord& rSwapchainRecord, const uint32_t swapBufferIndex)
   {
-    VkComponentMapping componentMapping{};    // = {VK_COMPONENT_SWIZZLE_R, VK_COMPONENT_SWIZZLE_G, VK_COMPONENT_SWIZZLE_B, VK_COMPONENT_SWIZZLE_A};
-    VkImageSubresourceRange imageSubresourceRange = {VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1};
+    const VkComponentMapping
+      componentMapping{};    // = {VK_COMPONENT_SWIZZLE_R, VK_COMPONENT_SWIZZLE_G, VK_COMPONENT_SWIZZLE_B, VK_COMPONENT_SWIZZLE_A};
+    const VkImageSubresourceRange imageSubresourceRange = {VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1};
 
     rSwapchainRecord.SwapchainImageView.Reset(m_device.Get(), 0, m_swapchain[swapBufferIndex], VK_IMAGE_VIEW_TYPE_2D, m_swapchain.GetImageFormat(),
                                               componentMapping, imageSubresourceRange);
@@ -864,7 +878,7 @@ namespace Fsl::VulkanBasic
             const FrameDrawRecord& rOldFrame = m_resources.Frames[rSwapchainRecord.AssignedFrameIndex];
 
             // We only wait for the other frames fence (and it will be up to the frame to reset it once we get to it)
-            auto waitResult = vkWaitForFences(m_device.Get(), 1, rOldFrame.QueueSubmitFence.GetPointer(), VK_TRUE, LocalConfig::DefaultTimeout);
+            const auto waitResult = vkWaitForFences(m_device.Get(), 1, rOldFrame.QueueSubmitFence.GetPointer(), VK_TRUE, LocalConfig::DefaultTimeout);
             if (waitResult != VK_SUCCESS)
             {
               FSLLOG3_WARNING("vkWaitForFences failed with: {}", RapidVulkan::Debug::ToString(waitResult));
@@ -928,7 +942,8 @@ namespace Fsl::VulkanBasic
     }
 #endif
 
-    auto result = m_swapchain.TryQueuePresent(m_deviceQueue.Queue, 1, &signalSemaphore, &rFrame.AssignedSwapImageIndex, nullptr, pPresentInfoNext);
+    const auto result =
+      m_swapchain.TryQueuePresent(m_deviceQueue.Queue, 1, &signalSemaphore, &rFrame.AssignedSwapImageIndex, nullptr, pPresentInfoNext);
     rFrame.PresentFencePending = pPresentInfoNext != nullptr && IsPresentFenceSignalExpected(result);
 
     switch (result)

@@ -51,7 +51,7 @@ namespace Fsl::Arguments
     Command(std::string shortName, std::string name, const uint32_t commandId, const CommandType commandType, const bool required = false);
 
     void Validate() const;
-    bool IsValid() const;
+    [[nodiscard]] bool IsValid() const;
   };
 }
 

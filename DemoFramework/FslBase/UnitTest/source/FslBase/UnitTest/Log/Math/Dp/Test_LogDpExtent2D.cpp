@@ -44,7 +44,7 @@ namespace
 
 TEST(TestLog_MathDp_LogDpExtent2D, Log)
 {
-  auto value = DpExtent2D::Create(1, 2);
+  const auto value = DpExtent2D::Create(1, 2);
 
   std::stringstream stream;
   stream << value;

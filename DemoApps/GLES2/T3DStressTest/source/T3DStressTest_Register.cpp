@@ -56,7 +56,7 @@ namespace Fsl
   // Configure the demo environment to run this demo app in a OpenGLES2 host environment
   void ConfigureDemoAppEnvironment(HostDemoAppSetup& rSetup)
   {
-    DemoAppHostConfigEGL config(g_eglConfigAttribs.data());
+    const DemoAppHostConfigEGL config(g_eglConfigAttribs.data());
 
     DemoAppRegister::GLES2::Register<T3DStressTest, CustomOptionParser>(rSetup, "GLES2.T3DStressTest", config);
   }

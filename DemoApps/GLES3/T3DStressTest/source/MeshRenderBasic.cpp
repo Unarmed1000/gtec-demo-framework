@@ -70,7 +70,7 @@ namespace Fsl
 
   void MeshRenderBasic::Bind(const ShaderBase& shader)
   {
-    ShaderVertexConfig shaderConfig = shader.GetShaderConfig();
+    const ShaderVertexConfig shaderConfig = shader.GetShaderConfig();
     if (shaderConfig.Position != GLValues::InvalidLocation)
     {
       static_assert(sizeof(Vector3) == (sizeof(GLfloat) * 3), "Vector3 not of the expected size");

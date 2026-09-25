@@ -62,7 +62,7 @@ namespace Fsl::DataBinding::Internal
       return {PropertyMethodUtil::TypedGetRefMemberCallProxy<value_type, T, TGetMethod>, typeid(T)};
     }
 
-    std::type_index GetTargetClass() const
+    [[nodiscard]] std::type_index GetTargetClass() const
     {
       return m_targetClass;
     }
@@ -77,12 +77,12 @@ namespace Fsl::DataBinding::Internal
 
     // IDependencyPropertyGetSetMethods
 
-    std::type_index GetTargetClassType() const final
+    [[nodiscard]] std::type_index GetTargetClassType() const final
     {
       return m_targetClass;
     }
 
-    std::type_index GetValueType() const final
+    [[nodiscard]] std::type_index GetValueType() const final
     {
       return typeid(TPropertyValueType);
     }

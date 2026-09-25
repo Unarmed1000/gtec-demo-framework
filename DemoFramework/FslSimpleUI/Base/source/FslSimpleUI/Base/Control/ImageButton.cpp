@@ -216,7 +216,7 @@ namespace Fsl::UI
   {
     ButtonBase::WinDraw(context);
 
-    PxSize2D renderSizePx = RenderSizePx();
+    const PxSize2D renderSizePx = RenderSizePx();
     const UIRenderColor finalColor(GetFinalBaseColor());
     {
       // auto* backgroundSprite = (!IsEnabled() || !m_isHovering) ? m_background.Sprite.get() : m_background.HoverSprite.get();
@@ -228,10 +228,10 @@ namespace Fsl::UI
     }
 
     {
-      auto desiredImageSizePx = m_content.Measure(renderSizePx, m_propertyScalePolicy.Get());
+      const auto desiredImageSizePx = m_content.Measure(renderSizePx, m_propertyScalePolicy.Get());
 
-      PxPoint2 adjustPx = (renderSizePx - desiredImageSizePx) / PxValue(2);
-      PxVector2 dstPositionPxf = context.TargetRect.Location() + TypeConverter::To<PxVector2>(adjustPx);
+      const PxPoint2 adjustPx = (renderSizePx - desiredImageSizePx) / PxValue(2);
+      const PxVector2 dstPositionPxf = context.TargetRect.Location() + TypeConverter::To<PxVector2>(adjustPx);
       // ImageImpl::Draw(*m_windowContext->Batch2D, m_content.get(), dstPositionPxf, desiredImageSize, m_currentColor.GetValue());
       context.CommandBuffer.Draw(m_content.Get(), dstPositionPxf, desiredImageSizePx, finalColor * m_currentColor.GetValue(), context.ClipContext);
     }
@@ -248,9 +248,9 @@ namespace Fsl::UI
   PxSize2D ImageButton::ArrangeOverride(const PxSize2D& finalSizePx)
   {
     const auto backgroundScalePolicy = m_background.PropertyScalePolicy.Get();
-    PxSize2D desiredBackgroudSize0Px = m_background.Sprite.Measure(finalSizePx, backgroundScalePolicy);
-    PxSize2D desiredBackgroudSize1Px = m_background.HoverSprite.Measure(finalSizePx, backgroundScalePolicy);
-    PxSize2D desiredImageSizePx = m_content.Measure(finalSizePx, m_propertyScalePolicy.Get());
+    const PxSize2D desiredBackgroudSize0Px = m_background.Sprite.Measure(finalSizePx, backgroundScalePolicy);
+    const PxSize2D desiredBackgroudSize1Px = m_background.HoverSprite.Measure(finalSizePx, backgroundScalePolicy);
+    const PxSize2D desiredImageSizePx = m_content.Measure(finalSizePx, m_propertyScalePolicy.Get());
     return PxSize2D::Max(PxSize2D::Max(desiredBackgroudSize0Px, desiredImageSizePx), desiredBackgroudSize1Px);
   }
 
@@ -259,16 +259,16 @@ namespace Fsl::UI
   {
     FSL_PARAM_NOT_USED(availableSizePx);
 
-    auto desiredBackgroudSize0Px = m_background.Sprite.Measure();
-    auto desiredBackgroudSize1Px = m_background.HoverSprite.Measure();
-    auto desiredImageSizePx = m_content.Measure();
+    const auto desiredBackgroudSize0Px = m_background.Sprite.Measure();
+    const auto desiredBackgroudSize1Px = m_background.HoverSprite.Measure();
+    const auto desiredImageSizePx = m_content.Measure();
     return PxSize2D::Max(PxSize2D::Max(desiredBackgroudSize0Px, desiredImageSizePx), desiredBackgroudSize1Px);
   }
 
 
   DataBinding::DataBindingInstanceHandle ImageButton::TryGetPropertyHandleNow(const DataBinding::DependencyPropertyDefinition& sourceDef)
   {
-    auto res = DataBinding::DependencyObjectHelper::TryGetPropertyHandle(
+    const auto res = DataBinding::DependencyObjectHelper::TryGetPropertyHandle(
       this, ThisDependencyObject(), sourceDef,
       DataBinding::PropLinkRefs(PropertyBackgroundColorHoverUp, m_background.PropertyColorHoverUp.ExternalColor),
       DataBinding::PropLinkRefs(PropertyBackgroundColorUp, m_background.PropertyColorUp.ExternalColor),
@@ -286,7 +286,7 @@ namespace Fsl::UI
   DataBinding::PropertySetBindingResult ImageButton::TrySetBindingNow(const DataBinding::DependencyPropertyDefinition& targetDef,
                                                                       const DataBinding::Binding& binding)
   {
-    auto res = DataBinding::DependencyObjectHelper::TrySetBinding(
+    const auto res = DataBinding::DependencyObjectHelper::TrySetBinding(
       this, ThisDependencyObject(), targetDef, binding,
       DataBinding::PropLinkRefs(PropertyBackgroundColorHoverUp, m_background.PropertyColorHoverUp.ExternalColor),
       DataBinding::PropLinkRefs(PropertyBackgroundColorUp, m_background.PropertyColorUp.ExternalColor),
@@ -327,13 +327,14 @@ namespace Fsl::UI
     const bool isEnabled = IsEnabled();
     const bool isUp = !IsDown();
 
-    auto backgroundColor = isEnabled
-                             ? (isUp ? (!m_isHovering ? m_background.PropertyColorUp.InternalColor : m_background.PropertyColorHoverUp.InternalColor)
-                                     : m_background.PropertyColorDown.InternalColor)
-                             : m_background.PropertyColorDisabled.InternalColor;
+    const auto backgroundColor =
+      isEnabled ? (isUp ? (!m_isHovering ? m_background.PropertyColorUp.InternalColor : m_background.PropertyColorHoverUp.InternalColor)
+                        : m_background.PropertyColorDown.InternalColor)
+                : m_background.PropertyColorDisabled.InternalColor;
     m_backgroundCurrentColor.SetValue(backgroundColor);
 
-    auto color = isEnabled ? (isUp ? m_propertyColorUp.InternalColor : m_propertyColorDown.InternalColor) : m_propertyColorDisabled.InternalColor;
+    const auto color =
+      isEnabled ? (isUp ? m_propertyColorUp.InternalColor : m_propertyColorDown.InternalColor) : m_propertyColorDisabled.InternalColor;
     m_currentColor.SetValue(color);
 
     if (forceCompleteAnimation)

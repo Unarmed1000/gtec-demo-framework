@@ -62,7 +62,7 @@ namespace Fsl
 
   public:
     JuliaHelper(const BasicConfig& config, const AnimationMode animationMode, const ServiceProvider& serviceProvider, const bool allowBanner = true);
-    Vector2 GetLocation() const
+    [[nodiscard]] Vector2 GetLocation() const
     {
       return m_location;
     }

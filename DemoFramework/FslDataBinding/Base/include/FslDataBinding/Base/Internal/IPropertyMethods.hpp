@@ -51,11 +51,11 @@ namespace Fsl::DataBinding::Internal
 
     virtual ~IPropertyMethods() = default;
 
-    virtual bool IsReadOnly() const noexcept = 0;
+    [[nodiscard]] virtual bool IsReadOnly() const noexcept = 0;
 
-    virtual std::type_index GetType() const = 0;
+    [[nodiscard]] virtual std::type_index GetType() const = 0;
 
-    virtual PropertyMethodsImplType GetImplType() const noexcept = 0;
+    [[nodiscard]] virtual PropertyMethodsImplType GetImplType() const noexcept = 0;
 
     // Valid for 'get/set' type bindings
     virtual PropertySetResult TrySet(const IPropertyMethods* const pGet) = 0;

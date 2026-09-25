@@ -41,7 +41,7 @@ namespace Fsl
   public:
     ~IEGLNativeWindowAdapter() override = default;
 
-    virtual EGLNativeWindowType GetWindowType() const = 0;
+    [[nodiscard]] virtual EGLNativeWindowType GetWindowType() const = 0;
   };
 }
 

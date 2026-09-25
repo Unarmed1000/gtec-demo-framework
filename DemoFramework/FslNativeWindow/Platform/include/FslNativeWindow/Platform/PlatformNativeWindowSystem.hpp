@@ -57,13 +57,13 @@ namespace Fsl
     bool ProcessMessages(const NativeWindowProcessMessagesArgs& args) override;
 
     //! @brief Check if the display is considered HDR compatible
-    bool IsDisplayHDRCompatible(const int32_t displayId) const override;
+    [[nodiscard]] bool IsDisplayHDRCompatible(const int32_t displayId) const override;
 
     void Shutdown() override;
 
 
   protected:
-    IPlatformNativeWindowSystemAdapter* TryGetAdapter() const
+    [[nodiscard]] IPlatformNativeWindowSystemAdapter* TryGetAdapter() const
     {
       return m_adapter.get();
     }

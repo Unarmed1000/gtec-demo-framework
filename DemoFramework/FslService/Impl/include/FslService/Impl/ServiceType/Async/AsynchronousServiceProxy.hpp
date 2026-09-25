@@ -63,7 +63,7 @@ namespace Fsl
       // move the content into the shared_ptr message instance
       *newMessage = std::forward<TMessage>(message);
 
-      auto serviceQueue = m_serviceQueue.lock();
+      const auto serviceQueue = m_serviceQueue.lock();
       if (!serviceQueue)
       {
         throw std::runtime_error("The service is no longer running");

@@ -46,10 +46,10 @@ namespace Fsl
     KeyboardState(const VirtualKey::Enum* const pKeys, const uint32_t entries);
 
     //! @brief Check if the given key is up
-    bool IsKeyUp(const VirtualKey::Enum key) const;
+    [[nodiscard]] bool IsKeyUp(const VirtualKey::Enum key) const;
 
     //! @brief Check if the given key is down
-    bool IsKeyDown(const VirtualKey::Enum key) const;
+    [[nodiscard]] bool IsKeyDown(const VirtualKey::Enum key) const;
 
     // bool GetPressedKeys() const;
   };

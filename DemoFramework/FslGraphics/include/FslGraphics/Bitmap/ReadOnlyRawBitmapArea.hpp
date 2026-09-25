@@ -78,12 +78,12 @@ namespace Fsl
   public:
     constexpr ReadOnlyRawBitmapArea() noexcept = default;
 
-    constexpr bool IsValid() const noexcept
+    [[nodiscard]] constexpr bool IsValid() const noexcept
     {
       return ContentPtr != nullptr && Stride > 0;
     }
 
-    constexpr PxExtent2D Extent() const noexcept
+    [[nodiscard]] constexpr PxExtent2D Extent() const noexcept
     {
       return {SizePx.UnsignedWidth(), SizePx.UnsignedHeight()};
     }

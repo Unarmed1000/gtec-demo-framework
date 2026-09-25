@@ -81,7 +81,7 @@ namespace Fsl
         const auto itrItfEnd = interfaces.end();
         while (itrItf != itrItfEnd)
         {
-          auto itrFind = rInterfaceMap.find(*itrItf);
+          const auto itrFind = rInterfaceMap.find(*itrItf);
           if (itrFind != rInterfaceMap.end())
           {
             ++itrFind->second;
@@ -117,7 +117,7 @@ namespace Fsl
     }
 
 
-    std::shared_ptr<IService> StartService(std::set<std::type_index>& multiProviderInterfaces, ServiceProvider& provider,
+    std::shared_ptr<IService> StartService(const std::set<std::type_index>& multiProviderInterfaces, ServiceProvider& provider,
                                            TypeServiceMaps& rServiceProviderMaps, const RegisteredServiceRecord& record)
     {
       ServiceSupportedInterfaceDeque deque;
@@ -145,7 +145,7 @@ namespace Fsl
       const auto itrEnd = deque.end();
       while (itr != itrEnd)
       {
-        if (multiProviderInterfaces.find(*itr) == multiProviderInterfaces.end())
+        if (!multiProviderInterfaces.contains(*itr))
         {
           assert(rServiceProviderMaps.InterfaceToService.find(*itr) == rServiceProviderMaps.InterfaceToService.end());
           rServiceProviderMaps.InterfaceToService[*itr] = ServiceLaunchRecord(record.Id, ServiceLaunchType::Instance, service);
@@ -156,7 +156,7 @@ namespace Fsl
           rServiceProviderMaps.InterfaceToService[*itr] = ServiceLaunchRecord(ProviderId::Invalid(), ServiceLaunchType::MultipleProviderTag);
 
           std::shared_ptr<std::deque<ServiceLaunchRecord>> serviceDeque;
-          auto itrFind = rServiceProviderMaps.InterfaceMultipleServices.find(*itr);
+          const auto itrFind = rServiceProviderMaps.InterfaceMultipleServices.find(*itr);
           if (itrFind == rServiceProviderMaps.InterfaceMultipleServices.end())
           {
             serviceDeque = std::make_shared<std::deque<ServiceLaunchRecord>>();
@@ -177,7 +177,7 @@ namespace Fsl
 
 
     void StartService(const RegisteredServiceDeque& services, TypeServiceMaps& rServiceProviderMaps,
-                      std::set<std::type_index>& rMultiProviderInterfaces)
+                      std::set<std::type_index> const& rMultiProviderInterfaces)
     {
       // Sort the services according to priority
       RegisteredServiceDeque sortedServices(services);

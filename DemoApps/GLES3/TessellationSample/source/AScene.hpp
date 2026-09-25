@@ -97,7 +97,7 @@ namespace Fsl
     virtual void Update(const DemoTime& demoTime, const RenderDrawConfig& config);
     virtual void Draw(const RenderDrawConfig& config);
 
-    virtual RenderTessellationConfig GetRenderTessellationConfig() const
+    [[nodiscard]] virtual RenderTessellationConfig GetRenderTessellationConfig() const
     {
       return m_tessellationConfig;
     };
@@ -105,7 +105,7 @@ namespace Fsl
     {
       m_tessellationConfig = value;
     };
-    virtual RenderMaterial GetRenderMaterial() const
+    [[nodiscard]] virtual RenderMaterial GetRenderMaterial() const
     {
       return m_material;
     };

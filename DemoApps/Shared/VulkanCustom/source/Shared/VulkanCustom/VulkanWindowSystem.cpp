@@ -58,15 +58,15 @@ namespace Fsl
     , m_instanceCreateInfo(std::make_shared<Vulkan::InstanceCreateInfoCopy>())
   {
     FSLLOG3_INFO("VulkanWindowSystem creating");
-    Options optionsService(setup.Provider.Get<IOptions>());
-    auto appOptionParser = optionsService.GetOptionParser<OptionParser>();
+    const Options optionsService(setup.Provider.Get<IOptions>());
+    const auto appOptionParser = optionsService.GetOptionParser<OptionParser>();
     const auto physicialDeviceIndex = appOptionParser->GetPhysicalDeviceIndex();
     const auto userChoiceValidationLayer = appOptionParser->GetValidationLayer();
     const auto demoAppHostConfig = std::dynamic_pointer_cast<DemoAppHostConfigVulkan>(setup.CustomDemoAppHostConfig);
     const uint32_t apiVersion = Vulkan::InstanceApiVersionUtil::Select(
       demoAppHostConfig ? demoAppHostConfig->GetInstanceApiVersion() : VK_API_VERSION_1_0, appOptionParser->GetInstanceApiVersionOverride());
 
-    auto vulkanWindowSystem = std::dynamic_pointer_cast<IVulkanNativeWindowSystem>(m_windowSystem);
+    const auto vulkanWindowSystem = std::dynamic_pointer_cast<IVulkanNativeWindowSystem>(m_windowSystem);
     if (!vulkanWindowSystem)
     {
       throw NotSupportedException("The window system was not of the expected type");

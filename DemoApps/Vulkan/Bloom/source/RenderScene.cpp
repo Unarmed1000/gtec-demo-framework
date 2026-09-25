@@ -206,7 +206,7 @@ namespace Fsl
 
       std::array<VkWriteDescriptorSet, 4> writeDescriptorSets{};
       // Binding 0 : Vertex shader uniform buffer
-      auto vertUboBufferInfo = vertUboBuffer.GetDescriptorBufferInfo();
+      const auto vertUboBufferInfo = vertUboBuffer.GetDescriptorBufferInfo();
       writeDescriptorSets[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
       writeDescriptorSets[0].dstSet = descriptorSet;
       writeDescriptorSets[0].dstBinding = 0;
@@ -216,7 +216,7 @@ namespace Fsl
 
       assert(texture.IsValid());
       // Binding 1 : Fragment shader texture sampler
-      auto textureImageInfo1 = texture.GetDescriptorImageInfo();
+      const auto textureImageInfo1 = texture.GetDescriptorImageInfo();
       writeDescriptorSets[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
       writeDescriptorSets[1].dstSet = descriptorSet;
       writeDescriptorSets[1].dstBinding = 1;
@@ -226,7 +226,7 @@ namespace Fsl
 
       // Binding 2 : Fragment shader texture sampler
       const auto& rTexture2 = textureNormal.IsValid() ? textureNormal : texture;
-      auto textureImageInfo2 = rTexture2.GetDescriptorImageInfo();
+      const auto textureImageInfo2 = rTexture2.GetDescriptorImageInfo();
       writeDescriptorSets[2].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
       writeDescriptorSets[2].dstSet = descriptorSet;
       writeDescriptorSets[2].dstBinding = 2;
@@ -236,7 +236,7 @@ namespace Fsl
 
       // Binding 3 : Fragment shader texture sampler
       const auto& rTexture3 = textureSpecular.IsValid() ? textureSpecular : texture;
-      auto textureImageInfo3 = rTexture3.GetDescriptorImageInfo();
+      const auto textureImageInfo3 = rTexture3.GetDescriptorImageInfo();
       writeDescriptorSets[3].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
       writeDescriptorSets[3].dstSet = descriptorSet;
       writeDescriptorSets[3].dstBinding = 3;
@@ -269,8 +269,8 @@ namespace Fsl
   {
     m_lightDirection.Normalize();
 
-    auto contentManager = config.DemoServiceProvider.Get<IContentManager>();
-    auto textureService = config.DemoServiceProvider.TryGet<ITextureService>();
+    const auto contentManager = config.DemoServiceProvider.Get<IContentManager>();
+    const auto textureService = config.DemoServiceProvider.TryGet<ITextureService>();
 
     IO::Path strFileName;
     IO::Path strTextureFileName;
@@ -303,7 +303,7 @@ namespace Fsl
 
     FSLLOG3_INFO("Loading scene '{}'", fullModelPath);
     SceneFormat::BasicSceneFormat sceneFormat;
-    auto scene = sceneFormat.Load<BasicScene>(fullModelPath);
+    const auto scene = sceneFormat.Load<BasicScene>(fullModelPath);
 
 
     FSLLOG3_INFO("Preparing textures");
@@ -311,7 +311,7 @@ namespace Fsl
       const auto bitmapOrigin = BitmapOrigin::LowerLeft;
 
       Bitmap bitmap;
-      auto texturePath = IO::Path::Combine(ModelsPath, strTextureFileName);
+      const auto texturePath = IO::Path::Combine(ModelsPath, strTextureFileName);
 
       if (strTextureGloss.IsEmpty())
       {
@@ -321,7 +321,7 @@ namespace Fsl
       else
       {
         Bitmap bitmapGloss;
-        auto glossTexturePath = IO::Path::Combine(ModelsPath, strTextureGloss);
+        const auto glossTexturePath = IO::Path::Combine(ModelsPath, strTextureGloss);
         FSLLOG3_INFO("- Diffuse '{}'", texturePath);
         contentManager->Read(bitmap, texturePath, PixelFormat::R8G8B8A8_UNORM, bitmapOrigin);
         FSLLOG3_INFO("- Gloss '{}'", glossTexturePath);
@@ -331,8 +331,8 @@ namespace Fsl
         {
           for (uint32_t x = 0; x < bitmap.RawUnsignedWidth(); ++x)
           {
-            auto col1 = bitmap.GetNativePixel(x, y);
-            auto col2 = bitmapGloss.GetNativePixel(x, y);
+            const auto col1 = bitmap.GetNativePixel(x, y);
+            const auto col2 = bitmapGloss.GetNativePixel(x, y);
             const uint32_t color = (col1 & 0xFFFFFF) | ((col2 & 0xFF) << 24);
             bitmap.SetNativePixel(x, y, color);
           }
@@ -345,7 +345,7 @@ namespace Fsl
 
       if (!strTextureSpecular.IsEmpty())
       {
-        auto specTexturePath = IO::Path::Combine(ModelsPath, strTextureSpecular);
+        const auto specTexturePath = IO::Path::Combine(ModelsPath, strTextureSpecular);
         FSLLOG3_INFO("- Specular '{}'", specTexturePath);
         contentManager->Read(bitmap, specTexturePath, PixelFormat::R8G8B8A8_UNORM, bitmapOrigin);
         // m_textureSpecular.SetData(bitmap, texParams, TextureFlags::GenerateMipMaps);
@@ -355,7 +355,7 @@ namespace Fsl
 
       if (!strTextureNormal.IsEmpty())
       {
-        auto normTexturePath = IO::Path::Combine(ModelsPath, strTextureNormal);
+        const auto normTexturePath = IO::Path::Combine(ModelsPath, strTextureNormal);
         FSLLOG3_INFO("- Normal '{}'", normTexturePath);
         contentManager->Read(bitmap, normTexturePath, PixelFormat::R8G8B8A8_UNORM, bitmapOrigin);
         m_resources.TextureNormal =
@@ -393,7 +393,7 @@ namespace Fsl
           const auto meshVertexCount = mesh->GetVertexCount();
           const auto meshIndexCount = mesh->GetIndexCount();
           const auto& srcVertices = mesh->GetVertexArray();
-          auto startVertexOffset = vertexOffset;
+          const auto startVertexOffset = vertexOffset;
           for (std::size_t i = 0; i < meshVertexCount; ++i)
           {
             vertices[vertexOffset] = srcVertices[i];
@@ -408,8 +408,8 @@ namespace Fsl
         }
       }
 
-      std::array<VertexElementUsage, 4> shaderBindOrder = {VertexElementUsage::Position, VertexElementUsage::Normal, VertexElementUsage::Tangent,
-                                                           VertexElementUsage::TextureCoordinate};
+      const std::array<VertexElementUsage, 4> shaderBindOrder = {VertexElementUsage::Position, VertexElementUsage::Normal,
+                                                                 VertexElementUsage::Tangent, VertexElementUsage::TextureCoordinate};
 
       m_resources.Mesh.VertexBuffer.Reset(bufferManager, ReadOnlyFlexVertexSpanUtil::AsSpan(vertices), Vulkan::VMBufferUsage::STATIC);
       m_resources.Mesh.IndexBuffer.Reset(bufferManager, indices, Vulkan::VMBufferUsage::STATIC);
@@ -494,7 +494,7 @@ namespace Fsl
                             nullptr);
     vkCmdBindPipeline(hCmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_dependentResources.Pipeline.Get());
 
-    VkDeviceSize offsets = 0;
+    const VkDeviceSize offsets = 0;
     vkCmdBindVertexBuffers(hCmdBuffer, VertexBufferBindId, 1, m_resources.Mesh.VertexBuffer.GetBufferPointer(), &offsets);
     vkCmdBindIndexBuffer(hCmdBuffer, m_resources.Mesh.IndexBuffer.GetBuffer(), 0, VK_INDEX_TYPE_UINT16);
     vkCmdDrawIndexed(hCmdBuffer, m_resources.Mesh.IndexBuffer.GetIndexCount(), 1, 0, 0, 0);
@@ -503,7 +503,7 @@ namespace Fsl
   void RenderScene::PrepareShader(const VkDevice device, const std::shared_ptr<IContentManager>& contentManager, const bool useSpecMap,
                                   const bool useGlossMap, const bool useNormalMap)
   {
-    IO::Path shaderPath = "Shaders";
+    const IO::Path shaderPath = "Shaders";
 
     std::string baseShaderName("PerPixelDirectionalSpecular");
     if (useSpecMap)
@@ -572,7 +572,7 @@ namespace Fsl
     viewport.minDepth = 0.0f;
     viewport.maxDepth = 1.0f;
 
-    VkRect2D scissor{{0, 0}, extent};
+    const VkRect2D scissor{{0, 0}, extent};
 
     VkPipelineViewportStateCreateInfo pipelineViewportStateCreateInfo{};
     pipelineViewportStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;

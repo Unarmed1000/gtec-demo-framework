@@ -50,73 +50,73 @@ namespace Fsl
     RawCubeBitmap(const ReadOnlyRawBitmap& bitmapPosX, const ReadOnlyRawBitmap& bitmapNegX, const ReadOnlyRawBitmap& bitmapPosY,
                   const ReadOnlyRawBitmap& bitmapNegY, const ReadOnlyRawBitmap& bitmapPosZ, const ReadOnlyRawBitmap& bitmapNegZ);
 
-    constexpr bool IsValid() const
+    [[nodiscard]] constexpr bool IsValid() const
     {
       return m_bitmapPosX.IsValid();
     }
 
     //! The width of the bitmap in pixels
-    constexpr uint32_t Width() const
+    [[nodiscard]] constexpr uint32_t Width() const
     {
       return m_bitmapPosX.RawUnsignedWidth();
     }
 
     //! The height of the bitmap in pixels
-    constexpr uint32_t Height() const
+    [[nodiscard]] constexpr uint32_t Height() const
     {
       return m_bitmapPosX.RawUnsignedHeight();
     }
 
     //! @brief Get the extent
-    constexpr PxExtent2D GetExtent() const
+    [[nodiscard]] constexpr PxExtent2D GetExtent() const
     {
       return m_bitmapPosX.GetExtent();
     }
 
     //! Get the pixel format of the raw bitmap
-    constexpr PixelFormat GetPixelFormat() const
+    [[nodiscard]] constexpr PixelFormat GetPixelFormat() const
     {
       return m_bitmapPosX.GetPixelFormat();
     }
 
     //! Get the origin all the raw bitmaps
-    constexpr BitmapOrigin GetOrigin() const
+    [[nodiscard]] constexpr BitmapOrigin GetOrigin() const
     {
       return m_bitmapPosX.GetOrigin();
     }
 
-    constexpr ReadOnlyRawBitmap GetPosX() const
+    [[nodiscard]] constexpr ReadOnlyRawBitmap GetPosX() const
     {
       return m_bitmapPosX;
     }
-    constexpr ReadOnlyRawBitmap GetNegX() const
+    [[nodiscard]] constexpr ReadOnlyRawBitmap GetNegX() const
     {
       return m_bitmapNegX;
     }
-    constexpr ReadOnlyRawBitmap GetPosY() const
+    [[nodiscard]] constexpr ReadOnlyRawBitmap GetPosY() const
     {
       return m_bitmapPosY;
     }
-    constexpr ReadOnlyRawBitmap GetNegY() const
+    [[nodiscard]] constexpr ReadOnlyRawBitmap GetNegY() const
     {
       return m_bitmapNegY;
     }
-    constexpr ReadOnlyRawBitmap GetPosZ() const
+    [[nodiscard]] constexpr ReadOnlyRawBitmap GetPosZ() const
     {
       return m_bitmapPosZ;
     }
-    constexpr ReadOnlyRawBitmap GetNegZ() const
+    [[nodiscard]] constexpr ReadOnlyRawBitmap GetNegZ() const
     {
       return m_bitmapNegZ;
     }
 
-    constexpr uint32_t GetByteSize() const
+    [[nodiscard]] constexpr uint32_t GetByteSize() const
     {
       return m_bitmapPosX.GetByteSize() + m_bitmapNegX.GetByteSize() + m_bitmapPosY.GetByteSize() + m_bitmapNegY.GetByteSize() +
              m_bitmapPosZ.GetByteSize() + m_bitmapNegZ.GetByteSize();
     }
 
-    constexpr TextureInfo GetTextureInfo() const
+    [[nodiscard]] constexpr TextureInfo GetTextureInfo() const
     {
       return {1u, 6u, 1u};
     }

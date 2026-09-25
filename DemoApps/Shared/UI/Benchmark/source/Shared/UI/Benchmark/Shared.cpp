@@ -84,13 +84,13 @@ namespace Fsl
 
     SceneAppInfo BuildAppInfo(const ServiceProvider& serviceProvider)
     {
-      auto appInfo = serviceProvider.Get<IAppInfoService>();
+      const auto appInfo = serviceProvider.Get<IAppInfoService>();
       return {std::string(appInfo->GetAppName()), VersionInfo(1, 0), appInfo->IsDebugBuild()};
     }
 
     std::shared_ptr<BenchResultManager> CreateBenchResultManager(const DemoAppConfig& config, const bool appDebugMode)
     {
-      auto optionParser = config.GetOptions<OptionParser>();
+      const auto optionParser = config.GetOptions<OptionParser>();
       return std::make_shared<BenchResultManager>(config.DemoServiceProvider, optionParser->TryGetViewReportFile(),
                                                   optionParser->TryGetCompareReportFile(), appDebugMode);
     }
@@ -122,7 +122,7 @@ namespace Fsl
     // Ensure that the active render index is within the allowed range
     m_settings->Test.ActiveRenderIndex = std::clamp(m_settings->Test.ActiveRenderIndex, static_cast<uint32_t>(0), RenderConfig::GetSize());
 
-    auto options = config.GetOptions<OptionParser>();
+    const auto options = config.GetOptions<OptionParser>();
     {    // Command line override of the settings
       auto optionLineShowIdleEnabled = options->TryGetShowIdleEnabled();
       if (optionLineShowIdleEnabled.has_value())
@@ -144,9 +144,9 @@ namespace Fsl
     m_mainLayout->AddChild(m_overlayFillImage);
     m_uiExtension->SetMainWindow(m_mainLayout);
 
-    SceneCreateInfo createInfo(m_appInfo, m_benchmarkScene, m_serviceProvider, config.WindowMetrics, m_forwarder, m_uiControlFactory, m_sceneLayout,
-                               m_settings, m_uiExtension, m_gpuProfiler);
-    NextSceneRecord nextSceneRecord(options->GetSceneId());
+    const SceneCreateInfo createInfo(m_appInfo, m_benchmarkScene, m_serviceProvider, config.WindowMetrics, m_forwarder, m_uiControlFactory,
+                                     m_sceneLayout, m_settings, m_uiExtension, m_gpuProfiler);
+    const NextSceneRecord nextSceneRecord(options->GetSceneId());
     m_sceneRecord = SelectScene(*m_demoAppControl, nextSceneRecord, createInfo, m_inputRecordingManager, m_benchResultManager);
 
     OnConfigurationChanged(config.WindowMetrics);
@@ -250,8 +250,8 @@ namespace Fsl
         {
           CloseScene();
           // Launch the next scene
-          SceneCreateInfo createInfo(m_appInfo, m_benchmarkScene, m_serviceProvider, m_windowMetrics, m_forwarder, m_uiControlFactory, m_sceneLayout,
-                                     m_settings, m_uiExtension, m_gpuProfiler);
+          const SceneCreateInfo createInfo(m_appInfo, m_benchmarkScene, m_serviceProvider, m_windowMetrics, m_forwarder, m_uiControlFactory,
+                                           m_sceneLayout, m_settings, m_uiExtension, m_gpuProfiler);
           m_sceneRecord = SelectScene(*m_demoAppControl, closeRes.value(), createInfo, m_inputRecordingManager, m_benchResultManager);
         }
       }
@@ -325,7 +325,7 @@ namespace Fsl
     {
     case SceneId::Benchmark:
       {
-        BenchSceneConfig defaultSceneConfig;
+        const BenchSceneConfig defaultSceneConfig;
         const BenchSceneConfig* pSceneConfig = nullptr;
         if (scene.Config)
         {

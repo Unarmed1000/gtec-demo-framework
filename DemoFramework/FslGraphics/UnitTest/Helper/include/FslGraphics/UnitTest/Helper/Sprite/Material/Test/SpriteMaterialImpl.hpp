@@ -53,12 +53,12 @@ namespace Fsl
     {
     }
 
-    SpriteMaterialId GetId() const
+    [[nodiscard]] SpriteMaterialId GetId() const
     {
       return m_materialId;
     }
 
-    PxExtent2D GetExtent() const
+    [[nodiscard]] PxExtent2D GetExtent() const
     {
       return m_extentPx;
     }

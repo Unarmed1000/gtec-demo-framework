@@ -97,11 +97,11 @@ namespace Fsl
     float x2Ang = m_x2Ang;
     float y1Ang = m_y1Ang;
     float y2Ang = m_y2Ang;
-    for (std::size_t i = 0; i < m_points.size(); ++i)
+    for (auto& rPoint : m_points)
     {
       x = sx2 + ((std::sin(x1Ang) * xdist1) + (std::cos(x2Ang) * xdist2));
       y = sy2 + ((std::cos(y1Ang) * ydist1) + (std::sin(y2Ang) * ydist2));
-      m_points[i] = Vector2(x, y);
+      rPoint = Vector2(x, y);
       x1Ang += xAdd1;
       x2Ang += xAdd2;
       y1Ang += yAdd1;
@@ -133,8 +133,8 @@ namespace Fsl
     const auto size4 = static_cast<int32_t>(m_points.size() / 4);
     m_basic2D->DrawPoints(m_points.data(), size4, Colors::White());
     m_basic2D->DrawPoints(m_points.data() + size4, size4, Colors::Red());
-    m_basic2D->DrawPoints(m_points.data() + size4 * 2, size4, Colors::Green());
-    m_basic2D->DrawPoints(m_points.data() + size4 * 3, size4, Colors::Blue());
+    m_basic2D->DrawPoints(m_points.data() + static_cast<std::ptrdiff_t>(size4) * 2, size4, Colors::Green());
+    m_basic2D->DrawPoints(m_points.data() + static_cast<std::ptrdiff_t>(size4) * 3, size4, Colors::Blue());
 
 
     m_basic2D->DrawString("Hello world!", Vector2(0, 1));

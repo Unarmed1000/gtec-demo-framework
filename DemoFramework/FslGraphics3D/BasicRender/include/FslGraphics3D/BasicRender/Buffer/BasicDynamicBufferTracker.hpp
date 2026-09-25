@@ -69,18 +69,18 @@ namespace Fsl::Graphics3D
     }
 
     // IBasicDynamicBuffer
-    BasicBufferType GetType() const noexcept final
+    [[nodiscard]] BasicBufferType GetType() const noexcept final
     {
       return m_type;
     }
 
-    BasicNativeBufferHandle TryGetNativeHandle() const noexcept final
+    [[nodiscard]] BasicNativeBufferHandle TryGetNativeHandle() const noexcept final
     {
       const BasicDynamicBufferLink* const pLink = m_link.get();
       return pLink != nullptr ? pLink->TryGetNativeHandle() : BasicNativeBufferHandle();
     }
 
-    uint32_t Capacity() const noexcept final
+    [[nodiscard]] uint32_t Capacity() const noexcept final
     {
       const BasicDynamicBufferLink* const pLink = m_link.get();
       return pLink != nullptr ? pLink->Capacity() : 0u;

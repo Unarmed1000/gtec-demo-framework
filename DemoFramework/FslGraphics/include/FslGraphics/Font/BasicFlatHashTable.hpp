@@ -59,7 +59,7 @@ namespace Fsl
   private:
     static_assert(TBinCount > 0, "The bin count must be larger than zero");
     static_assert((TBinCount - 1) <= std::numeric_limits<TKey>::max(), "The bin count must fit inside the key type");
-    static_assert(std::is_unsigned<TKey>::value, "The key type must be unsigned");
+    static_assert(std::is_unsigned_v<TKey>, "The key type must be unsigned");
 
     struct Record
     {
@@ -78,6 +78,7 @@ namespace Fsl
 
     BasicFlatHashTable& operator=(BasicFlatHashTable&& other) noexcept = default;
     BasicFlatHashTable(BasicFlatHashTable&& other) noexcept = default;
+    ~BasicFlatHashTable() = default;
 
     BasicFlatHashTable()
       : BasicFlatHashTable(ReadOnlySpan<element_type>())
@@ -91,7 +92,7 @@ namespace Fsl
     {
     }
 
-    bool Empty() const
+    [[nodiscard]] bool Empty() const
     {
       return m_isEmpty;
     }
@@ -116,6 +117,9 @@ namespace Fsl
       }
       return (srcIndex < m_records.size() && m_records[srcIndex].Element.GetId() == id) ? &m_records[srcIndex].Element : nullptr;
     }
+
+    //! The default value can not be a temporary as a reference to it can be returned
+    const_reference Get(const key_type id, element_type&& defaultValue) const = delete;
 
     const_reference Get(const key_type id, const_reference defaultValue) const
     {

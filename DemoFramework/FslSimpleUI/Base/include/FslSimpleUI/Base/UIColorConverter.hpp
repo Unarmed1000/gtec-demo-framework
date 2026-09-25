@@ -45,12 +45,12 @@ namespace Fsl::UI
   public:
     explicit UIColorConverter(const UIColorSpace colorSpace) noexcept;
 
-    UIColorSpace GetColorSpace() const noexcept
+    [[nodiscard]] UIColorSpace GetColorSpace() const noexcept
     {
       return m_colorSpace;
     }
 
-    UIRenderColor Convert(const UIColor color) const noexcept;
+    [[nodiscard]] UIRenderColor Convert(const UIColor color) const noexcept;
   };
 }
 

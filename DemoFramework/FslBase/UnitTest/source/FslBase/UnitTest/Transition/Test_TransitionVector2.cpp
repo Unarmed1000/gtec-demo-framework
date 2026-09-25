@@ -47,7 +47,7 @@ namespace
 
 TEST(TestTransition_TransitionVector2, Construct_Default)
 {
-  TransitionVector2 transitionValue;
+  const TransitionVector2 transitionValue;
 
   EXPECT_TRUE(transitionValue.IsCompleted());
   EXPECT_EQ(TimeSpan(0), transitionValue.GetStartDelay());
@@ -60,7 +60,7 @@ TEST(TestTransition_TransitionVector2, Construct_Default)
 
 TEST(TestTransition_TransitionVector2, Construct_CacheAndTimespan)
 {
-  TransitionVector2 transitionValue(TimeSpan(10));
+  const TransitionVector2 transitionValue(TimeSpan(10));
 
   EXPECT_TRUE(transitionValue.IsCompleted());
   EXPECT_EQ(TimeSpan(0), transitionValue.GetStartDelay());

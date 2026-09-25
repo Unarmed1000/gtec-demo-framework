@@ -52,7 +52,7 @@ namespace Fsl::UI
     explicit CustomChartGridLines();
 
     // From IChartGridLines
-    ReadOnlySpan<ChartGridLineInfo> GetSuggestedGridLines(const MinMax<uint32_t> minMax) const final;
+    [[nodiscard]] ReadOnlySpan<ChartGridLineInfo> GetSuggestedGridLines(const MinMax<uint32_t> minMax) const final;
     StringViewLite GetDescriptionString(const uint32_t microseconds) final;
   };
 }

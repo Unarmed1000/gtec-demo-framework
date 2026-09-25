@@ -70,7 +70,7 @@ namespace Fsl
     virtual ~INativeBatch2D() = default;
 
     // NOLINTNEXTLINE(readability-identifier-naming)
-    virtual bool SYS_IsTextureCoordinateYFlipped() const = 0;
+    [[nodiscard]] virtual bool SYS_IsTextureCoordinateYFlipped() const = 0;
 
     //! @brief Set the screen resolution used by the batch2d instance
     virtual void SetScreenExtent(const PxExtent2D& extentPx) = 0;
@@ -92,7 +92,7 @@ namespace Fsl
 
 
     //! @brief Get basic drawing stats
-    virtual Batch2DStats GetStats() const = 0;
+    [[nodiscard]] virtual Batch2DStats GetStats() const = 0;
 
     // ---------- 0
 

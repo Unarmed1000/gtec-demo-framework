@@ -53,7 +53,7 @@ namespace Fsl
   {
     RegisterExtension(m_uiExtension);
 
-    auto optionParser = config.GetOptions<OptionParser>();
+    const auto optionParser = config.GetOptions<OptionParser>();
 
 
     switch (optionParser->GetScene())

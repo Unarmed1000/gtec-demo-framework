@@ -47,7 +47,7 @@ namespace Fsl::Graphics3D
     virtual ~INativeShaderFactory() noexcept = default;
 
     //! @brief Get the predefined shaders.
-    virtual ReadOnlySpan<BasicNativeShaderCreateInfo> GetPredefinedShaders() const = 0;
+    [[nodiscard]] virtual ReadOnlySpan<BasicNativeShaderCreateInfo> GetPredefinedShaders() const = 0;
 
     virtual BasicNativeShaderHandle CreateShader(const BasicNativeShaderCreateInfo& createInfo) = 0;
 

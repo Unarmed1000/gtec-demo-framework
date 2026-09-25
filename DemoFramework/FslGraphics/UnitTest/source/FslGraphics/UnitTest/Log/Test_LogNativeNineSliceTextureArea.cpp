@@ -42,7 +42,7 @@ namespace
 
 TEST(TestLog_LogNativeNineSliceTextureArea, Log)
 {
-  NativeNineSliceTextureArea value(1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f, 7.0f, 8.0f);
+  const NativeNineSliceTextureArea value(1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f, 7.0f, 8.0f);
 
   std::stringstream stream;
   stream << value;

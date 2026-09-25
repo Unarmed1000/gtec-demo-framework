@@ -44,29 +44,29 @@ namespace Fsl
     int icnt = 0;
     int offset = 0;
 
-    rSphereVertices.resize(width * height);
+    rSphereVertices.resize(static_cast<std::size_t>(width) * height);
 
     int dstIndex = 0;
     for (y = 0; y < height; ++y)
     {
-      float normY = static_cast<float>(y) / static_cast<float>(height - 1);
-      float polar = MathHelper::PI * normY;
-      float polarSin = std::sin(polar);
-      float polarCos = std::cos(polar);
+      const float normY = static_cast<float>(y) / static_cast<float>(height - 1);
+      const float polar = MathHelper::PI * normY;
+      const float polarSin = std::sin(polar);
+      const float polarCos = std::cos(polar);
 
       for (x = 0; x < width; ++x)
       {
-        float normX = static_cast<float>(x) / static_cast<float>(width - 1);
-        float azim = 2.0f * MathHelper::PI * normX;
-        float azimSin = std::sin(azim);
-        float azimCos = std::cos(azim);
+        const float normX = static_cast<float>(x) / static_cast<float>(width - 1);
+        const float azim = 2.0f * MathHelper::PI * normX;
+        const float azimSin = std::sin(azim);
+        const float azimCos = std::cos(azim);
         rSphereVertices[dstIndex].Position = Vector3(polarSin * azimCos, polarSin * azimSin, polarCos);
         ++dstIndex;
       }
     }
 
     offset = 0;
-    rIndices.resize((width - 1) * (height - 1) * 2 * 3);
+    rIndices.resize(static_cast<std::size_t>(width - 1) * (height - 1) * 2 * 3);
     uint16_t* indexArray = rIndices.data();
 
     for (y = 0; y < height - 1; ++y)

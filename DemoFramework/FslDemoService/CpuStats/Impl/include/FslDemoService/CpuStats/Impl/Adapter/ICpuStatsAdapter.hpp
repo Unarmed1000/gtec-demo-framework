@@ -46,7 +46,7 @@ namespace Fsl
     virtual void Process() = 0;
 
     //! @brief Get the number of CPU's available
-    virtual uint32_t GetCpuCount() const = 0;
+    [[nodiscard]] virtual uint32_t GetCpuCount() const = 0;
 
     //! @brief Get the current usage for the given cpuIndex.
     virtual bool TryGetCpuUsage(CpuUsageRecord& rUsageRecord, const uint32_t cpuIndex) const = 0;

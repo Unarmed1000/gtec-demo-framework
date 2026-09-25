@@ -163,7 +163,7 @@ TEST(TestMath_Matrix, Clear)
 
 TEST(TestMath_Matrix, Determinant)
 {
-  auto value = Matrix::GetIdentity();
+  const auto value = Matrix::GetIdentity();
   EXPECT_FLOAT_EQ(1.0f, value.Determinant());
 }
 
@@ -329,7 +329,7 @@ TEST(TestMath_Matrix, SetIdentity)
 
 TEST(TestMath_Matrix, CreateScale_float)
 {
-  auto matScale = Matrix::CreateScale(2.0f);
+  const auto matScale = Matrix::CreateScale(2.0f);
 
   //--------------------M11---M12---M13---M14---M21---M22---M23---M24---M31---M32---M33---M34---M41---M42---M43---M44
   //--------------------0-----1-----2-----3-----4-----5-----6-----7-----8-----9-----10----11----12----13----14----15
@@ -345,7 +345,7 @@ TEST(TestMath_Matrix, CreateScale_float)
 
 TEST(TestMath_Matrix, CreateScale_floats)
 {
-  auto matScale = Matrix::CreateScale(2.0f, 3.0f, 4.0f);
+  const auto matScale = Matrix::CreateScale(2.0f, 3.0f, 4.0f);
 
   //--------------------M11---M12---M13---M14---M21---M22---M23---M24---M31---M32---M33---M34---M41---M42---M43---M44
   //--------------------0-----1-----2-----3-----4-----5-----6-----7-----8-----9-----10----11----12----13----14----15
@@ -361,7 +361,7 @@ TEST(TestMath_Matrix, CreateScale_floats)
 
 TEST(TestMath_Matrix, CreateScale_Vector3)
 {
-  auto matScale = Matrix::CreateScale(Vector3(2.0f, 3.0f, 4.0f));
+  const auto matScale = Matrix::CreateScale(Vector3(2.0f, 3.0f, 4.0f));
 
   //--------------------M11---M12---M13---M14---M21---M22---M23---M24---M31---M32---M33---M34---M41---M42---M43---M44
   //--------------------0-----1-----2-----3-----4-----5-----6-----7-----8-----9-----10----11----12----13----14----15
@@ -377,7 +377,7 @@ TEST(TestMath_Matrix, CreateScale_Vector3)
 
 TEST(TestMath_Matrix, CreateTranslation_floats)
 {
-  auto matScale = Matrix::CreateTranslation(2.0f, 3.0f, 4.0f);
+  const auto matScale = Matrix::CreateTranslation(2.0f, 3.0f, 4.0f);
 
   //--------------------M11---M12---M13---M14---M21---M22---M23---M24---M31---M32---M33---M34---M41---M42---M43---M44
   //--------------------0-----1-----2-----3-----4-----5-----6-----7-----8-----9-----10----11----12----13----14----15
@@ -393,7 +393,7 @@ TEST(TestMath_Matrix, CreateTranslation_floats)
 
 TEST(TestMath_Matrix, CreateTranslation_Vector3)
 {
-  auto matScale = Matrix::CreateTranslation(Vector3(2.0f, 3.0f, 4.0f));
+  const auto matScale = Matrix::CreateTranslation(Vector3(2.0f, 3.0f, 4.0f));
 
   //--------------------M11---M12---M13---M14---M21---M22---M23---M24---M31---M32---M33---M34---M41---M42---M43---M44
   //--------------------0-----1-----2-----3-----4-----5-----6-----7-----8-----9-----10----11----12----13----14----15
@@ -456,8 +456,8 @@ TEST(TestMath_Matrix, CreatePerspective_Invalid)
 
 TEST(TestMath_Matrix, CreatePerspectiveFieldOfView_Invalid)
 {
-  float fieldOfView = MathHelper::ToRadians(90.0f);
-  float aspectRatio = 320.0f / 240.0f;
+  const float fieldOfView = MathHelper::ToRadians(90.0f);
+  const float aspectRatio = 320.0f / 240.0f;
   EXPECT_THROW(Matrix::CreatePerspectiveFieldOfView(0.0f, aspectRatio, 0.001f, 10.0f), std::invalid_argument);
   EXPECT_THROW(Matrix::CreatePerspectiveFieldOfView(-fieldOfView, aspectRatio, 0.001f, 10.0f), std::invalid_argument);
 
@@ -535,7 +535,7 @@ TEST(TestMath_Matrix, Add)
   const Matrix expectedResult(102.0f, 104.0f, 106.0f, 108.0f, 110.0f, 112.0f, 114.0f, 116.0f, 118.0f, 120.0f, 122.0f, 124.0f, 126.0f, 128.0f, 130.0f,
                               132.0f);
 
-  auto res = Matrix::Add(value1, value2);
+  const auto res = Matrix::Add(value1, value2);
   EXPECT_EQ(expectedResult, res);
 
   Matrix res2;

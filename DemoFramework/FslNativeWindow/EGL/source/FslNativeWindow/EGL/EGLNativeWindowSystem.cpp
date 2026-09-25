@@ -72,7 +72,7 @@ namespace Fsl
 
     std::shared_ptr<IEGLNativeWindowAdapter> adapterEx;
     {
-      std::shared_ptr<IPlatformNativeWindowAdapter> adapter =
+      const std::shared_ptr<IPlatformNativeWindowAdapter> adapter =
         m_pCachedAdapter->CreateNativeWindow(nativeWindowSetup, pPlatformCustomWindowAllocationParams);
 
       adapterEx = std::dynamic_pointer_cast<IEGLNativeWindowAdapter>(adapter);
@@ -104,7 +104,7 @@ namespace Fsl
       throw ObjectShutdownException("CreateEGLNativeWindow");
     }
 
-    auto windowAdapter = m_pCachedAdapter->CreateEGLNativeWindow(nativeWindowSetup, nativeEglSetup);
+    const auto windowAdapter = m_pCachedAdapter->CreateEGLNativeWindow(nativeWindowSetup, nativeEglSetup);
     return std::make_shared<EGLNativeWindow>(windowAdapter);
   }
 }

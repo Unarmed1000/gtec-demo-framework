@@ -47,7 +47,7 @@ namespace
 
 TEST(TestLog_Math_LogVector3, Log)
 {
-  Vector3 value(1.0f, 2.0f, 3.0f);
+  const Vector3 value(1.0f, 2.0f, 3.0f);
 
   std::stringstream stream;
   stream << value;

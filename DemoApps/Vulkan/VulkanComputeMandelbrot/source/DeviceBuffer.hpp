@@ -52,6 +52,7 @@ namespace Fsl
     DeviceBuffer& operator=(DeviceBuffer&& other) noexcept;
     // move constructor
     DeviceBuffer(DeviceBuffer&& other) noexcept;
+    ~DeviceBuffer() = default;
 
     DeviceBuffer();
     DeviceBuffer(Vulkan::VUBuffer&& buffer, Vulkan::VUDeviceMemory&& deviceMemory);
@@ -59,7 +60,7 @@ namespace Fsl
     void Reset() noexcept;
     void Reset(Vulkan::VUBuffer&& buffer, Vulkan::VUDeviceMemory&& deviceMemory);
 
-    const Vulkan::VUBuffer& GetBuffer() const
+    [[nodiscard]] const Vulkan::VUBuffer& GetBuffer() const
     {
       return m_buffer;
     }
@@ -69,7 +70,7 @@ namespace Fsl
       return m_buffer;
     }
 
-    const Vulkan::VUDeviceMemory& GetDeviceMemory() const
+    [[nodiscard]] const Vulkan::VUDeviceMemory& GetDeviceMemory() const
     {
       return m_memory;
     }
@@ -79,7 +80,7 @@ namespace Fsl
       m_memory.MapMemory(offset, size, flags);
     }
 
-    const void* GetMappedMemoryPointer() const
+    [[nodiscard]] const void* GetMappedMemoryPointer() const
     {
       return m_memory.GetMappedMemoryPointer();
     }
@@ -91,7 +92,7 @@ namespace Fsl
 
     void InvalidateMappedMemoryRanges(const VkDeviceSize offset, const VkDeviceSize size)
     {
-      return m_memory.InvalidateMappedMemoryRanges(offset, size);
+      m_memory.InvalidateMappedMemoryRanges(offset, size);
     }
 
     void UnmapMemory()

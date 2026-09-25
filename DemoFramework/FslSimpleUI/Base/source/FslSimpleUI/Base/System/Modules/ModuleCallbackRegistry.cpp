@@ -68,7 +68,7 @@ namespace Fsl::UI
     auto itr = m_receivers.begin();
     while (itr != m_receivers.end())
     {
-      std::shared_ptr<IModuleCallbackReceiver> receiver = itr->lock();
+      const std::shared_ptr<IModuleCallbackReceiver> receiver = itr->lock();
       if (receiver)
       {
         receiver->ModuleOnTreeNodeAdd(node);
@@ -88,7 +88,7 @@ namespace Fsl::UI
     auto itr = m_receivers.begin();
     while (itr != m_receivers.end())
     {
-      std::shared_ptr<IModuleCallbackReceiver> receiver = itr->lock();
+      const std::shared_ptr<IModuleCallbackReceiver> receiver = itr->lock();
       if (receiver)
       {
         receiver->ModuleOnTreeNodeDispose(node);
@@ -110,8 +110,8 @@ namespace Fsl::UI
 
   void ModuleCallbackRegistry::RemoveCallbackReceiver(const std::weak_ptr<IModuleCallbackReceiver>& module)
   {
-    auto entry = module.lock();
-    auto itr = std::find_if(m_receivers.begin(), m_receivers.end(), ReceiverComp(entry));
+    const auto entry = module.lock();
+    const auto itr = std::find_if(m_receivers.begin(), m_receivers.end(), ReceiverComp(entry));
     if (itr == m_receivers.end())
     {
       return;

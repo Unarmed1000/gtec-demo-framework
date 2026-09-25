@@ -48,11 +48,11 @@ namespace Fsl
 
       //! @brief Locate the top window at the hit location that is marked with the given flags
       //! @return a nullptr if none could be found
-      virtual std::shared_ptr<TreeNode> TryGetMouseOverWindow(const PxPoint2& hitPositionPx) const = 0;
+      [[nodiscard]] virtual std::shared_ptr<TreeNode> TryGetMouseOverWindow(const PxPoint2& hitPositionPx) const = 0;
 
       //! @brief Locate the top window at the hit location that is marked for ClickInput
       //! @return a nullptr if none could be found
-      virtual std::shared_ptr<TreeNode> TryGetClickInputWindow(const PxPoint2& hitPositionPx) const = 0;
+      [[nodiscard]] virtual std::shared_ptr<TreeNode> TryGetClickInputWindow(const PxPoint2& hitPositionPx) const = 0;
     };
   }
 }

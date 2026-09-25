@@ -50,20 +50,20 @@ namespace Fsl
     public:
       virtual ~IThemeResources() = default;
 
-      virtual const std::shared_ptr<INineSliceSprite>& GetBackground(const WindowType windowType) const = 0;
+      [[nodiscard]] virtual const std::shared_ptr<INineSliceSprite>& GetBackground(const WindowType windowType) const = 0;
 
-      virtual const std::shared_ptr<BasicImageSprite>& GetBasicFillSprite(const bool opaque = true) const = 0;
-      virtual const std::shared_ptr<BasicImageSprite>& GetBasicMiniFillSprite(const bool opaque) const = 0;
-      virtual const std::shared_ptr<BasicImageSprite>& GetBasicTestSprite(const bool opaque = true) const = 0;
-      virtual const std::shared_ptr<BasicImageSprite>& GetLineListSprite(const bool opaque) const = 0;
+      [[nodiscard]] virtual const std::shared_ptr<BasicImageSprite>& GetBasicFillSprite(const bool opaque = true) const = 0;
+      [[nodiscard]] virtual const std::shared_ptr<BasicImageSprite>& GetBasicMiniFillSprite(const bool opaque) const = 0;
+      [[nodiscard]] virtual const std::shared_ptr<BasicImageSprite>& GetBasicTestSprite(const bool opaque = true) const = 0;
+      [[nodiscard]] virtual const std::shared_ptr<BasicImageSprite>& GetLineListSprite(const bool opaque) const = 0;
 
-      virtual const std::shared_ptr<ImageSprite>& GetFillSprite() const = 0;
-      virtual const std::shared_ptr<SpriteFont>& GetDefaultSpriteFont() const = 0;
-      virtual const std::shared_ptr<NineSliceSprite>& GetToolTipNineSliceSprite() const = 0;
-      virtual const std::shared_ptr<INineSliceSprite>& GetDialogNineSliceSprite() const = 0;
-      virtual const std::shared_ptr<INineSliceSprite>& GetDividerNineSliceSprite() const = 0;
-      virtual const std::shared_ptr<INineSliceSprite>& GetColorMarkerNineSliceSprite() const = 0;
-      virtual const std::shared_ptr<ImageSprite>& GetIconSprite(const IconType iconType) const = 0;
+      [[nodiscard]] virtual const std::shared_ptr<ImageSprite>& GetFillSprite() const = 0;
+      [[nodiscard]] virtual const std::shared_ptr<SpriteFont>& GetDefaultSpriteFont() const = 0;
+      [[nodiscard]] virtual const std::shared_ptr<NineSliceSprite>& GetToolTipNineSliceSprite() const = 0;
+      [[nodiscard]] virtual const std::shared_ptr<INineSliceSprite>& GetDialogNineSliceSprite() const = 0;
+      [[nodiscard]] virtual const std::shared_ptr<INineSliceSprite>& GetDividerNineSliceSprite() const = 0;
+      [[nodiscard]] virtual const std::shared_ptr<INineSliceSprite>& GetColorMarkerNineSliceSprite() const = 0;
+      [[nodiscard]] virtual const std::shared_ptr<ImageSprite>& GetIconSprite(const IconType iconType) const = 0;
     };
   }
 }

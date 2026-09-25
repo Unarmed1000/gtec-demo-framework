@@ -48,7 +48,7 @@ namespace Fsl::UI
     explicit CallbackEventListenerScope(IEventListener* const pForwardTo);
     ~CallbackEventListenerScope();
 
-    std::shared_ptr<IEventListener> GetListener() const;
+    [[nodiscard]] std::shared_ptr<IEventListener> GetListener() const;
   };
 }
 

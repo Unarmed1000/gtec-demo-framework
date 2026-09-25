@@ -75,7 +75,7 @@ namespace Fsl
 
   public:
     explicit TextureAtlasScene(const ServiceProvider& serviceProvider, const SpriteNativeAreaCalc& spriteNativeAreaCalc, const uint32_t densityDpi);
-    PxSize1D GetGridOffsetY() const;
+    [[nodiscard]] PxSize1D GetGridOffsetY() const;
     void OnKeyEvent(const KeyEvent& event);
     void Update(const DemoTime& demoTime);
     void Draw(const PxSize2D& windowSizePx);

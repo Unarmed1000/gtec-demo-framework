@@ -104,7 +104,7 @@ namespace Fsl::FslGraphics2D::RawBitmapToneMapperFunctions
 
   void UncheckedHableR32G32B32A32FloatToRG32B32A32Float(RawBitmapEx dstBitmap, const ReadOnlyRawBitmap& srcBitmap, const float exposure) noexcept
   {
-    ToneMapperHable tonemapper(exposure);
+    const ToneMapperHable tonemapper(exposure);
     UncheckedRawBitmapTransformer::TransformThreeChannelsTransformFourth<float, PixelFormat::R32G32B32A32_SFLOAT, float,
                                                                          PixelFormat::R32G32B32A32_SFLOAT>(dstBitmap, srcBitmap, tonemapper,
                                                                                                            KeepValue);
@@ -112,7 +112,7 @@ namespace Fsl::FslGraphics2D::RawBitmapToneMapperFunctions
 
   void UncheckedReinhardR32G32B32A32FloatToRG32B32A32Float(RawBitmapEx dstBitmap, const ReadOnlyRawBitmap& srcBitmap, const float exposure) noexcept
   {
-    ToneMapperReinhard tonemapper(exposure);
+    const ToneMapperReinhard tonemapper(exposure);
     UncheckedRawBitmapTransformer::TransformThreeChannelsTransformFourth<float, PixelFormat::R32G32B32A32_SFLOAT, float,
                                                                          PixelFormat::R32G32B32A32_SFLOAT>(dstBitmap, srcBitmap, tonemapper,
                                                                                                            KeepValue);

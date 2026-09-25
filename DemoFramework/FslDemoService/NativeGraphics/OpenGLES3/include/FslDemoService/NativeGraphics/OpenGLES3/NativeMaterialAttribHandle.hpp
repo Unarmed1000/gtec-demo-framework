@@ -56,7 +56,7 @@ namespace Fsl::GLES3
       return Value != rhs.Value;
     }
 
-    constexpr bool IsValid() const noexcept
+    [[nodiscard]] constexpr bool IsValid() const noexcept
     {
       return Value != HandleVectorConfig::InvalidHandle;
     }

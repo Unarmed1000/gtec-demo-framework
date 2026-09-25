@@ -58,22 +58,22 @@ namespace Fsl::UI
   public:
     constexpr PxAvailableSize() noexcept = default;
 
-    constexpr value_type Width() const noexcept
+    [[nodiscard]] constexpr value_type Width() const noexcept
     {
       return m_width;
     }
 
-    constexpr value_type Height() const noexcept
+    [[nodiscard]] constexpr value_type Height() const noexcept
     {
       return m_height;
     }
 
-    constexpr raw_value_type RawWidth() const noexcept
+    [[nodiscard]] constexpr raw_value_type RawWidth() const noexcept
     {
       return m_width.Value();
     }
 
-    constexpr raw_value_type RawHeight() const noexcept
+    [[nodiscard]] constexpr raw_value_type RawHeight() const noexcept
     {
       return m_height.Value();
     }
@@ -137,50 +137,50 @@ namespace Fsl::UI
       m_height.UncheckedSetNormalValue(valuePx);
     }
 
-    constexpr PxSize2D ToPxSize2D() const noexcept
+    [[nodiscard]] constexpr PxSize2D ToPxSize2D() const noexcept
     {
       return {m_width.ToPxSize1D(), m_height.ToPxSize1D()};
     }
 
 
-    constexpr PxSize1D ToPxWidth() const noexcept
+    [[nodiscard]] constexpr PxSize1D ToPxWidth() const noexcept
     {
       return m_width.ToPxSize1D();
     }
 
 
-    constexpr PxSize1D ToPxHeight() const noexcept
+    [[nodiscard]] constexpr PxSize1D ToPxHeight() const noexcept
     {
       return m_height.ToPxSize1D();
     }
 
 
-    inline constexpr bool IsInfinityWidth() const noexcept
+    [[nodiscard]] inline constexpr bool IsInfinityWidth() const noexcept
     {
       return m_width.IsInfinity();
     }
 
-    inline constexpr bool IsInfinityHeight() const
+    [[nodiscard]] inline constexpr bool IsInfinityHeight() const
     {
       return m_height.IsInfinity();
     }
 
-    inline constexpr bool IsNormalWidth() const
+    [[nodiscard]] inline constexpr bool IsNormalWidth() const
     {
       return m_width.IsNormal();
     }
 
-    inline constexpr bool IsNormalHeight() const
+    [[nodiscard]] inline constexpr bool IsNormalHeight() const
     {
       return m_height.IsNormal();
     }
 
-    inline constexpr bool IsNormal() const
+    [[nodiscard]] inline constexpr bool IsNormal() const
     {
       return IsNormalWidth() && IsNormalHeight();
     }
 
-    inline constexpr bool ContainsInfinity() const noexcept
+    [[nodiscard]] inline constexpr bool ContainsInfinity() const noexcept
     {
       return IsInfinityWidth() || IsInfinityHeight();
     }

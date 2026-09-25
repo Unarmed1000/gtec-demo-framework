@@ -131,7 +131,7 @@ namespace Fsl
       imageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
       m_image.Reset(m_pVulkanDevice->GetDevice(), imageInfo);
 
-      VkMemoryRequirements memReqs = m_image.GetImageMemoryRequirements();
+      const VkMemoryRequirements memReqs = m_image.GetImageMemoryRequirements();
       VkMemoryAllocateInfo allocInfo{};
       allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
       allocInfo.pNext = nullptr;
@@ -434,7 +434,7 @@ namespace Fsl
 
       // Calculate text width
       float textWidth = 0;
-      for (auto letter : text)
+      for (const auto letter : text)
       {
         stb_fontchar* charData = &g_stbFontData[static_cast<uint32_t>(letter) - STB_FIRST_CHAR];
         textWidth += charData->advance * charW;
@@ -453,7 +453,7 @@ namespace Fsl
       }
 
       // Generate a uv mapped quad per char in the new text
-      for (auto letter : text)
+      for (const auto letter : text)
       {
         stb_fontchar* charData = &g_stbFontData[static_cast<uint32_t>(letter) - STB_FIRST_CHAR];
 
@@ -523,7 +523,7 @@ namespace Fsl
       vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipeline.Get());
       vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipelineLayout.Get(), 0, 1, &m_descriptorSet, 0, nullptr);
 
-      VkDeviceSize offsets = 0;
+      const VkDeviceSize offsets = 0;
       vkCmdBindVertexBuffers(commandBuffer, 0, 1, m_vertexBuffer.GetBufferPointer(), &offsets);
       vkCmdBindVertexBuffers(commandBuffer, 1, 1, m_vertexBuffer.GetBufferPointer(), &offsets);
       for (uint32_t j = 0; j < m_numLetters; j++)

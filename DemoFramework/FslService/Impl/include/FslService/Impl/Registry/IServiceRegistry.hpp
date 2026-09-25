@@ -56,10 +56,10 @@ namespace Fsl
     virtual ServiceGroupId CreateServiceGroup(const uint32_t groupNameUniqueId) = 0;
 
     //! @brief Get the service group belonging to the main thread
-    virtual ServiceGroupId GetMainServiceGroup() const = 0;
+    [[nodiscard]] virtual ServiceGroupId GetMainServiceGroup() const = 0;
 
     //! @brief Associate a name with a existing unnamed service group
-    virtual ServiceGroupId GetServiceGroupByName(const uint32_t groupNameUniqueId) const = 0;
+    [[nodiscard]] virtual ServiceGroupId GetServiceGroupByName(const uint32_t groupNameUniqueId) const = 0;
 
     //! @brief Create a service group that can be used to group services and give it a unique name that can be used to query the ServiceGroupId.
     virtual void SetServiceGroupName(const ServiceGroupId& serviceGroupId, const uint32_t groupNameUniqueId) = 0;

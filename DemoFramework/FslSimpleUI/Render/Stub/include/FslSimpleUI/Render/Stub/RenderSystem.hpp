@@ -48,7 +48,7 @@ namespace Fsl::UI::RenderStub
     RenderSystem();
     ~RenderSystem() override;
 
-    VertexDeclarationSpan AsVertexDeclarationSpan() const final
+    [[nodiscard]] VertexDeclarationSpan AsVertexDeclarationSpan() const final
     {
       return GetVertexDeclarationSpan();
     }
@@ -58,7 +58,7 @@ namespace Fsl::UI::RenderStub
       FSL_PARAM_NOT_USED(windowMetrics);
     }
 
-    std::shared_ptr<IMeshManager> GetMeshManager() const final;
+    [[nodiscard]] std::shared_ptr<IMeshManager> GetMeshManager() const final;
     DrawCommandBuffer& AcquireDrawCommandBuffer(const bool clear) final;
     void ReleaseDrawCommandBuffer() final;
 
@@ -66,7 +66,7 @@ namespace Fsl::UI::RenderStub
     void Draw(RenderPerformanceCapture* const pPerformanceCapture) final;
     void PostDraw() final {};
 
-    RenderSystemStats GetStats() const final
+    [[nodiscard]] RenderSystemStats GetStats() const final
     {
       return {};
     }

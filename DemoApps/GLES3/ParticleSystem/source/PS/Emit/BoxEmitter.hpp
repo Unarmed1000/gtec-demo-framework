@@ -66,7 +66,7 @@ namespace Fsl
   public:
     BoxEmitter();
 
-    int32_t GetParticlesPerSecond() const;
+    [[nodiscard]] int32_t GetParticlesPerSecond() const;
     void SetParticlesPerSecond(const int32_t value);
     void Update(IParticleContainer& container, const DemoTime& demoTime) override;
 

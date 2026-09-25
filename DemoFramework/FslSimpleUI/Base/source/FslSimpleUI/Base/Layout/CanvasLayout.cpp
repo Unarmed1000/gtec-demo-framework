@@ -48,7 +48,7 @@ namespace Fsl::UI
 
   void CanvasLayout::SetChildPosition(const std::shared_ptr<BaseWindow>& window, const DpPoint2F& positionDp)
   {
-    auto itr = std::find_if(begin(), end(), [window](const collection_type::record_type& record) { return record.Window == window; });
+    const auto itr = std::find_if(begin(), end(), [window](const collection_type::record_type& record) { return record.Window == window; });
     if (itr == end())
     {
       throw NotFoundException("The window is not part of this layout");
@@ -61,10 +61,10 @@ namespace Fsl::UI
   PxSize2D CanvasLayout::ArrangeOverride(const PxSize2D& finalSizePx)
   {
     const SpriteUnitConverter& unitConverter = GetContext()->UnitConverter;
-    for (auto itr = begin(); itr != end(); ++itr)
+    for (const auto& rEntry : *this)
     {
-      auto positionPx = unitConverter.ToPxPoint2(itr->PositionDp);
-      itr->Window->Arrange(PxRectangle(positionPx, finalSizePx));
+      const auto positionPx = unitConverter.ToPxPoint2(rEntry.PositionDp);
+      rEntry.Window->Arrange(PxRectangle(positionPx, finalSizePx));
     }
 
     return finalSizePx;
@@ -73,9 +73,9 @@ namespace Fsl::UI
 
   PxSize2D CanvasLayout::MeasureOverride(const PxAvailableSize& availableSizePx)
   {
-    for (auto itr = begin(); itr != end(); ++itr)
+    for (const auto& rEntry : *this)
     {
-      itr->Window->Measure(availableSizePx);
+      rEntry.Window->Measure(availableSizePx);
     }
 
     // The canvas content does not affect its measurements.

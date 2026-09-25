@@ -127,7 +127,7 @@ namespace Fsl::Vulkan
 
     try
     {
-      VkBufferCreateInfo bufferCreateInfoEx = bufferCreateInfo;
+      const VkBufferCreateInfo bufferCreateInfoEx = bufferCreateInfo;
 
       m_buffer.Reset(device, bufferCreateInfoEx);
       const VkMemoryRequirements memoryRequirements = m_buffer.GetBufferMemoryRequirements();

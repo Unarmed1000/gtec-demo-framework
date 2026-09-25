@@ -43,8 +43,8 @@ namespace
 
 TEST(Test_StringViewUtil_Compatibility, Construct)
 {
-  std::string empty;
-  std::string_view strView(empty);
+  const std::string empty;
+  const std::string_view strView(empty);
 
   EXPECT_TRUE(strView.empty());
   EXPECT_NE(strView.data(), nullptr);
@@ -55,8 +55,8 @@ TEST(Test_StringViewUtil_Compatibility, Construct)
 
 TEST(Test_StringViewUtil_Compatibility, Construct_FromStr)
 {
-  std::string str("Hello world");
-  std::string_view strView(str);
+  const std::string str("Hello world");
+  const std::string_view strView(str);
 
   EXPECT_FALSE(strView.empty());
   EXPECT_NE(strView.data(), nullptr);
@@ -68,8 +68,8 @@ TEST(Test_StringViewUtil_Compatibility, Construct_FromStr)
 
 TEST(Test_StringViewUtil_Compatibility, ToString_Empty)
 {
-  std::string_view empty;
-  auto dstStr = std::string(empty);
+  const std::string_view empty;
+  const auto dstStr = std::string(empty);
 
   EXPECT_TRUE(dstStr.empty());
   EXPECT_EQ(0u, dstStr.size());
@@ -79,8 +79,8 @@ TEST(Test_StringViewUtil_Compatibility, ToString_Empty)
 
 TEST(Test_StringViewUtil_Compatibility, ToString)
 {
-  std::string_view str("hello");
-  auto dstStr = std::string(str);
+  const std::string_view str("hello");
+  const auto dstStr = std::string(str);
 
   EXPECT_EQ(str, dstStr);
 }
@@ -89,7 +89,7 @@ TEST(Test_StringViewUtil_Compatibility, ToString)
 
 TEST(Test_StringViewUtil_Compatibility, Set_String_Empty)
 {
-  std::string_view empty;
+  const std::string_view empty;
   std::string dstStr;
   dstStr = empty;
 
@@ -101,7 +101,7 @@ TEST(Test_StringViewUtil_Compatibility, Set_String_Empty)
 
 TEST(Test_StringViewUtil_Compatibility, Set_String)
 {
-  std::string_view str("hello");
+  const std::string_view str("hello");
   std::string dstStr;
   dstStr = str;
 

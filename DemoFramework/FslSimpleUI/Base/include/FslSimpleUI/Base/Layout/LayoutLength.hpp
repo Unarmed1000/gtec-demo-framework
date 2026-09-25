@@ -76,17 +76,17 @@ namespace Fsl::UI
     {
     }
 
-    float Value() const
+    [[nodiscard]] float Value() const
     {
       return m_value;
     }
 
-    LayoutUnitType UnitType() const
+    [[nodiscard]] LayoutUnitType UnitType() const
     {
       return m_unitType;
     }
 
-    const std::shared_ptr<LayoutSharedSizeGroup>& SharedSizeGroup() const
+    [[nodiscard]] const std::shared_ptr<LayoutSharedSizeGroup>& SharedSizeGroup() const
     {
       return m_sharedSizeGroup;
     }

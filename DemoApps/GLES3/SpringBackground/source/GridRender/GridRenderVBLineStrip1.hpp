@@ -56,7 +56,7 @@ namespace Fsl
   public:
     GridRenderVBLineStrip1(const Point2& gridSize, const Point2& screenSize, const std::shared_ptr<IContentManager>& contentManager);
 
-    const char* GetName() const override;
+    [[nodiscard]] const char* GetName() const override;
     void Update(const DemoTime& demoTime, const Vector2& areaSize, const std::vector<PointMass>& points) override;
     void Draw(const GridRenderDrawContext& drawContext, const std::vector<PointMass>& points) override;
 

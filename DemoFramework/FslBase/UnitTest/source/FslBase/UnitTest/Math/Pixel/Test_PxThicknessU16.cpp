@@ -46,7 +46,7 @@ namespace
 
 TEST(TestMathPixel_PxThicknessU16, Default)
 {
-  PxThicknessU16 value;
+  const PxThicknessU16 value;
 
   const auto size0Px = PxValueU16(0);
 
@@ -65,7 +65,7 @@ TEST(TestMathPixel_PxThicknessU16, Values)
   constexpr auto Top = PxValueU16(2);
   constexpr auto Right = PxValueU16(3);
   constexpr auto Bottom = PxValueU16(4);
-  PxThicknessU16 value(Left, Top, Right, Bottom);
+  const PxThicknessU16 value(Left, Top, Right, Bottom);
 
   EXPECT_EQ(Left, value.Left);
   EXPECT_EQ(Top, value.Top);
@@ -81,8 +81,8 @@ TEST(TestMathPixel_PxThicknessU16, OperatorEqual)
   constexpr auto Top = PxValueU16(2);
   constexpr auto Right = PxValueU16(3);
   constexpr auto Bottom = PxValueU16(4);
-  PxThicknessU16 value1(Left, Top, Right, Bottom);
-  PxThicknessU16 value2(Left, Top, Right, Bottom);
+  const PxThicknessU16 value1(Left, Top, Right, Bottom);
+  const PxThicknessU16 value2(Left, Top, Right, Bottom);
 
   EXPECT_EQ(value1, value2);
 }
@@ -94,8 +94,8 @@ TEST(TestMathPixel_PxThicknessU16, OperatorNotEqual)
   constexpr auto Top = PxValueU16(2);
   constexpr auto Right = PxValueU16(3);
   constexpr auto Bottom = PxValueU16(4);
-  PxThicknessU16 value1(Left, Top, Right, Bottom);
-  PxThicknessU16 value2(Left, Top, Right, PxValueU16(5));
+  const PxThicknessU16 value1(Left, Top, Right, Bottom);
+  const PxThicknessU16 value2(Left, Top, Right, PxValueU16(5));
 
   EXPECT_NE(value1, value2);
 }

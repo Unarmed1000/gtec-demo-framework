@@ -78,13 +78,13 @@ namespace Fsl::UI
     }
 
     //! @brief Get the current command count
-    std::size_t Count() const
+    [[nodiscard]] std::size_t Count() const
     {
       return m_commandCount;
     }
 
     //! @brief Get the current command capacity
-    std::size_t Capacity() const
+    [[nodiscard]] std::size_t Capacity() const
     {
       return m_commandRecords.size();
     }
@@ -197,30 +197,30 @@ namespace Fsl::UI
       m_customDrawTextCount = 0;
     }
 
-    inline ReadOnlySpan<EncodedCommand> DoAsReadOnlySpan() const
+    [[nodiscard]] inline ReadOnlySpan<EncodedCommand> DoAsReadOnlySpan() const
     {
       return ReadOnlySpan<EncodedCommand>(m_commandRecords.data(), m_commandCount);
     }
 
-    inline const CustomDrawBasicImageInfo& DoFastGetCustomDrawBasicImageInfo(const uint32_t index) const noexcept
+    [[nodiscard]] inline const CustomDrawBasicImageInfo& DoFastGetCustomDrawBasicImageInfo(const uint32_t index) const noexcept
     {
       assert(index < m_customDrawBasicImageCount);
       return m_customDrawBasicImage[index];
     }
 
-    inline const CustomDrawBasicImageBasicMeshInfo& DoFastGetCustomDrawBasicImageBasicMeshInfo(const uint32_t index) const noexcept
+    [[nodiscard]] inline const CustomDrawBasicImageBasicMeshInfo& DoFastGetCustomDrawBasicImageBasicMeshInfo(const uint32_t index) const noexcept
     {
       assert(index < m_customDrawBasicImageBasicMeshCount);
       return m_customDrawBasicImageBasicMesh[index];
     }
 
-    inline const CustomDrawNineSliceInfo& DoFastGetCustomDrawNineSliceInfo(const uint32_t index) const noexcept
+    [[nodiscard]] inline const CustomDrawNineSliceInfo& DoFastGetCustomDrawNineSliceInfo(const uint32_t index) const noexcept
     {
       assert(index < m_customDrawNineSliceCount);
       return m_customDrawNineSlice[index];
     }
 
-    inline const CustomDrawTextInfo& DoFastGetCustomDrawTextInfo(const uint32_t index) const noexcept
+    [[nodiscard]] inline const CustomDrawTextInfo& DoFastGetCustomDrawTextInfo(const uint32_t index) const noexcept
     {
       assert(index < m_customDrawTextCount);
       return m_customDrawText[index];

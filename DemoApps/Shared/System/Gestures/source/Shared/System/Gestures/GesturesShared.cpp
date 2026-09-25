@@ -301,7 +301,7 @@ namespace Fsl
     m_resolutionBuffer3.clear();
     fmt::format_to(std::back_inserter(m_resolutionBuffer3), "DensityDpi: {}", m_cachedWindowMetrics.DensityDpi);
 
-    auto averageFrameTime = m_profiler->GetAverageFrameTime();
+    const auto averageFrameTime = m_profiler->GetAverageFrameTime();
 
     m_fpsBuffer1.clear();
     fmt::format_to(std::back_inserter(m_fpsBuffer1), "FPS: {:.0f}", averageFrameTime.GetFramePerSecond());

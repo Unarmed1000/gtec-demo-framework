@@ -57,7 +57,7 @@ namespace Fsl
 
     // Inherited via IServiceHost
     void ProcessMessages(const bool useTimeout = true, const std::chrono::milliseconds& duration = std::chrono::milliseconds(0)) override;
-    std::shared_ptr<IServiceProvider> GetServiceProvider() const override;
+    [[nodiscard]] std::shared_ptr<IServiceProvider> GetServiceProvider() const override;
     void Run() override;
 
   private:

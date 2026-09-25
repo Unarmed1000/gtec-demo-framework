@@ -44,7 +44,7 @@ namespace Fsl
 
     static constexpr size_type NumElements = 2;
 
-    constexpr size_type size() const    // NOLINT(readability-convert-member-functions-to-static,readability-identifier-naming)
+    [[nodiscard]] constexpr size_type size() const    // NOLINT(readability-convert-member-functions-to-static,readability-identifier-naming)
     {
       return NumElements;
     }
@@ -109,7 +109,7 @@ namespace Fsl
     // Vector2(const OptimizationFlag flag){};
 
     //! @brief Get direct access to the elements
-    const float* DirectAccess() const noexcept
+    [[nodiscard]] const float* DirectAccess() const noexcept
     {
       return &X;
     }
@@ -228,10 +228,10 @@ namespace Fsl
                         Vector2& rResult);
 
     //! @brief Calculates the length of the vector.
-    float Length() const;
+    [[nodiscard]] float Length() const;
 
     //! @brief Calculates the length of the vector squared.
-    constexpr float LengthSquared() const
+    [[nodiscard]] constexpr float LengthSquared() const
     {
       return (X * X) + (Y * Y);
     }

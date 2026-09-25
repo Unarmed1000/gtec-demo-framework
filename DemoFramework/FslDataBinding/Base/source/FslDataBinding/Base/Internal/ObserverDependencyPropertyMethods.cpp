@@ -57,7 +57,7 @@ namespace Fsl::DataBinding::Internal
 
   bool ObserverDependencyPropertyMethods::TryInvoke(const DataBindingInstanceHandle hSource)
   {
-    bool ready = m_pObserver != nullptr;
+    const bool ready = m_pObserver != nullptr;
     if (ready)
     {
       m_pObserver->OnChanged(hSource);

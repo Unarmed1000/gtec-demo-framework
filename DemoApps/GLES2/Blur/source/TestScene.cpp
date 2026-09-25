@@ -60,7 +60,7 @@ namespace Fsl
     {
       Bitmap bitmap;
       contentManager->Read(bitmap, "Test.jpg", PixelFormat::R8G8B8_UNORM);
-      GLES2::GLTextureParameters params(GL_LINEAR, GL_LINEAR, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE);
+      const GLES2::GLTextureParameters params(GL_LINEAR, GL_LINEAR, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE);
       m_texture.SetData(bitmap, params);
     }
 

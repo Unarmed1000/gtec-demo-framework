@@ -61,7 +61,7 @@ namespace Fsl
 
       for (std::size_t i = 0; i < createInfoSpan.size(); ++i)
       {
-        auto handle = m_materials.Add(Record{createInfoSpan[i]});
+        const auto handle = m_materials.Add(Record{createInfoSpan[i]});
         dstMaterialHandles[i] = BasicNativeMaterialHandle(handle);
       }
     }

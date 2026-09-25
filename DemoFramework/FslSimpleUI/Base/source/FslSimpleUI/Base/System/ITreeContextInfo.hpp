@@ -38,7 +38,7 @@ namespace Fsl::UI
   public:
     virtual ~ITreeContextInfo() = default;
 
-    virtual bool IsInSystemContext() const = 0;
+    [[nodiscard]] virtual bool IsInSystemContext() const = 0;
   };
 }
 

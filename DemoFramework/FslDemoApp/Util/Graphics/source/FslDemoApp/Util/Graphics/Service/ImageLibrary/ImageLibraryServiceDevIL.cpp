@@ -154,12 +154,12 @@ namespace Fsl
           rPixelFormat = PixelFormat::R8G8B8_UINT;
           return true;
         }
-        else if (format.Type == IL_HALF)
+        if (format.Type == IL_HALF)
         {
           rPixelFormat = PixelFormat::R16G16B16_SFLOAT;
           return true;
         }
-        else if (format.Type == IL_FLOAT)
+        if (format.Type == IL_FLOAT)
         {
           rPixelFormat = PixelFormat::R32G32B32_SFLOAT;
           return true;
@@ -178,12 +178,12 @@ namespace Fsl
           rPixelFormat = PixelFormat::R8G8B8A8_UINT;
           return true;
         }
-        else if (format.Type == IL_FLOAT)
+        if (format.Type == IL_FLOAT)
         {
           rPixelFormat = PixelFormat::R32G32B32A32_SFLOAT;
           return true;
         }
-        else if (format.Type == IL_HALF)
+        if (format.Type == IL_HALF)
         {
           rPixelFormat = PixelFormat::R16G16B16A16_SFLOAT;
           return true;
@@ -331,7 +331,7 @@ namespace Fsl
         }
       }
 
-      ScopedDevILImage image;
+      const ScopedDevILImage image;
 
       ilBindImage(image.Id);
       // FIX: investigate if DevIL supports UTF8 on all platforms.
@@ -353,8 +353,8 @@ namespace Fsl
       // int bpp = ilGetInteger(IL_IMAGE_BITS_PER_PIXEL);
       // int bytesPP = ilGetInteger(IL_IMAGE_BYTES_PER_PIXEL);
 
-      int width = ilGetInteger(IL_IMAGE_WIDTH);
-      int height = ilGetInteger(IL_IMAGE_HEIGHT);
+      const int width = ilGetInteger(IL_IMAGE_WIDTH);
+      const int height = ilGetInteger(IL_IMAGE_HEIGHT);
       const int imageFormat = ilGetInteger(IL_IMAGE_FORMAT);
       const int imageType = ilGetInteger(IL_IMAGE_TYPE);
       DevILPixelFormat currentPixelFormat(imageFormat, imageType);

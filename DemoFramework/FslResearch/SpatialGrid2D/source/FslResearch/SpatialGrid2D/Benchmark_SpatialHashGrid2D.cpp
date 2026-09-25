@@ -203,7 +203,7 @@ namespace
     const auto testDataSpan = SpanUtil::AsReadOnlySpan(testData);
 
     // Perform setup here
-    for (auto _ : state)
+    for (const auto _ : state)
     {
       state.PauseTiming();
       grid.Clear();
@@ -224,7 +224,7 @@ namespace
     const auto testDataSpan = SpanUtil::AsReadOnlySpan(testData);
 
     // Perform setup here
-    for (auto _ : state)
+    for (const auto _ : state)
     {
       state.PauseTiming();
       grid.Clear();
@@ -245,7 +245,7 @@ namespace
     const auto testDataSpan = SpanUtil::AsReadOnlySpan(testData);
 
     // Perform setup here
-    for (auto _ : state)
+    for (const auto _ : state)
     {
       state.PauseTiming();
       grid.Clear();
@@ -266,7 +266,7 @@ namespace
     const auto testDataSpan = SpanUtil::AsReadOnlySpan(testData);
 
     // Perform setup here
-    for (auto _ : state)
+    for (const auto _ : state)
     {
       state.PauseTiming();
       TryAdd(grid, testDataSpan);
@@ -294,7 +294,7 @@ namespace
     const auto testChunkSpan = SpanUtil::AsReadOnlySpan(testChunks);
 
     // Perform setup here
-    for (auto _ : state)
+    for (const auto _ : state)
     {
       // This code gets timed
       TryGetChunkEntries(grid, testChunkSpan);
@@ -318,7 +318,7 @@ namespace
     const auto testChunkSpan = SpanUtil::AsReadOnlySpan(testChunks);
 
     // Perform setup here
-    for (auto _ : state)
+    for (const auto _ : state)
     {
       // This code gets timed
       UncheckedGetChunkEntries(grid, testChunkSpan);

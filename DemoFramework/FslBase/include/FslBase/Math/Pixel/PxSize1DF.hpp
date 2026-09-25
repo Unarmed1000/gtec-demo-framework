@@ -93,12 +93,12 @@ namespace Fsl
     //   return m_value;
     // }
 
-    constexpr inline value_type Value() const noexcept
+    [[nodiscard]] constexpr inline value_type Value() const noexcept
     {
       return m_value;
     }
 
-    constexpr inline value_type::value_type RawValue() const noexcept
+    [[nodiscard]] constexpr inline value_type::value_type RawValue() const noexcept
     {
       return m_value.Value;
     }

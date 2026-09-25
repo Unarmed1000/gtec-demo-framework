@@ -39,7 +39,7 @@ namespace Fsl
   class INineSliceSprite : public IContentSprite
   {
   public:
-    virtual RenderOptimizedNineSliceInfo GetNineSliceRenderInfo() const noexcept = 0;
+    [[nodiscard]] virtual RenderOptimizedNineSliceInfo GetNineSliceRenderInfo() const noexcept = 0;
   };
 }
 

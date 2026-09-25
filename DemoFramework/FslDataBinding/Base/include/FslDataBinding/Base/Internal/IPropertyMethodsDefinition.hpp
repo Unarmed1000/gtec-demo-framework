@@ -41,8 +41,8 @@ namespace Fsl::DataBinding::Internal
     IPropertyMethodsDefinition() = default;
     virtual ~IPropertyMethodsDefinition() = default;
 
-    virtual std::type_index GetTargetClassType() const = 0;
-    virtual std::type_index GetValueType() const = 0;
+    [[nodiscard]] virtual std::type_index GetTargetClassType() const = 0;
+    [[nodiscard]] virtual std::type_index GetValueType() const = 0;
   };
 }
 

@@ -142,13 +142,13 @@ namespace Fsl
     void SYS_SetRenderSystemViewport(const PxViewport& viewPortPx);
     void ConfigurationChanged(const DemoWindowMetrics& windowMetrics);
 
-    bool FontExists(const UIAppTextureHandle textureHandle, IO::PathView fontName) const;
+    [[nodiscard]] bool FontExists(const UIAppTextureHandle textureHandle, IO::PathView fontName) const;
 
 
     // --- platform dependent interface (the platform here is NativeBatch and IBasicRenderSystem)
 
     // [[deprecated("use the new sprites instead, as this doesnt support dp awareness")]]
-    const CompatibilityTextureAtlasMap& GetLegacyTextureAtlasMap(const UIAppTextureHandle hTexture) const;
+    [[nodiscard]] const CompatibilityTextureAtlasMap& GetLegacyTextureAtlasMap(const UIAppTextureHandle hTexture) const;
 
 
     //! The define native material signature is defined by the render engine
@@ -281,7 +281,7 @@ namespace Fsl
     void PatchSpriteFont(std::shared_ptr<SpriteFont> font, const SpriteMaterialId& spriteMaterialId, const IO::PathView& fontName) final;
     void PatchSpriteFont(std::shared_ptr<SpriteFont> font, const SpriteMaterialId& spriteMaterialId, const IO::Path& fontName) final
     {
-      return PatchSpriteFont(font, spriteMaterialId, fontName.AsPathView());
+      PatchSpriteFont(font, spriteMaterialId, fontName.AsPathView());
     }
 
 
@@ -293,7 +293,7 @@ namespace Fsl
     //! @return true if it was modified.
     bool SetTestPattern(const bool enabled);
 
-    const SpriteNativeAreaCalc& GetSpriteNativeAreaCalc() const
+    [[nodiscard]] const SpriteNativeAreaCalc& GetSpriteNativeAreaCalc() const
     {
       return m_manager.GetSpriteNativeAreaCalc();
     }

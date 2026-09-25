@@ -58,7 +58,7 @@ namespace
 
 TEST(MeshBuilder, AppendStripToIncompatible)
 {
-  SimpleMesh mesh(Vertices.data(), Vertices.size(), Indices.data(), Indices.size(), g_primitiveType);
+  const SimpleMesh mesh(Vertices.data(), Vertices.size(), Indices.data(), Indices.size(), g_primitiveType);
 
   EXPECT_EQ(2u, mesh.GetPrimitiveCount());
 
@@ -69,7 +69,7 @@ TEST(MeshBuilder, AppendStripToIncompatible)
 
 TEST(MeshBuilder, AppendTriangleStrip)
 {
-  SimpleMesh mesh(Vertices.data(), Vertices.size(), Indices.data(), Indices.size(), g_primitiveType);
+  const SimpleMesh mesh(Vertices.data(), Vertices.size(), Indices.data(), Indices.size(), g_primitiveType);
 
   EXPECT_EQ(2u, mesh.GetPrimitiveCount());
 
@@ -91,7 +91,7 @@ namespace
 {
   void AppendInstances(const int instances, const bool shareInstanceVertices)
   {
-    SimpleMesh mesh(Vertices.data(), Vertices.size(), Indices.data(), Indices.size(), g_primitiveType);
+    const SimpleMesh mesh(Vertices.data(), Vertices.size(), Indices.data(), Indices.size(), g_primitiveType);
 
     EXPECT_EQ(2u, mesh.GetPrimitiveCount());
 

@@ -103,7 +103,7 @@ namespace Fsl
       {
         return {};
       }
-      if (str.size() > static_cast<typename std::make_unsigned<int>::type>(std::numeric_limits<int>::max()))
+      if (str.size() > static_cast<std::make_unsigned_t<int>>(std::numeric_limits<int>::max()))
       {
         throw std::runtime_error("UTF8 to UTF16 conversion failed");
       }

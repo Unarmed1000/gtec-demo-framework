@@ -88,7 +88,7 @@ namespace Fsl
     {
     }
 
-    constexpr bool IsValid() const
+    [[nodiscard]] constexpr bool IsValid() const
     {
       return !VertexDeclaration.Empty();
     }

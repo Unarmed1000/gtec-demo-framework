@@ -51,10 +51,10 @@ namespace Fsl::UI
   PxSize2D FillLayout::ArrangeOverride(const PxSize2D& finalSizePx)
   {
     // FSLLOG3_INFO("Arrange: finalSize: {}", finalSize);
-    for (auto itr = begin(); itr != end(); ++itr)
+    for (const auto& entry : *this)
     {
-      itr->Window->Arrange(PxRectangle(PxValue(0), PxValue(0), finalSizePx.Width(), finalSizePx.Height()));
-      // FSLLOG3_INFO("Arrange: RenderSize: {}", itr->Window->RenderSize());
+      entry.Window->Arrange(PxRectangle(PxValue(0), PxValue(0), finalSizePx.Width(), finalSizePx.Height()));
+      // FSLLOG3_INFO("Arrange: RenderSize: {}", entry.Window->RenderSize());
     }
     return finalSizePx;
   }
@@ -65,10 +65,10 @@ namespace Fsl::UI
     if (availableSizePx.ContainsInfinity())
     {
       PxSize2D maxSize;
-      for (auto itr = begin(); itr != end(); ++itr)
+      for (const auto& entry : *this)
       {
-        itr->Window->Measure(availableSizePx);
-        maxSize = PxSize2D::Max(maxSize, itr->Window->DesiredSizePx());
+        entry.Window->Measure(availableSizePx);
+        maxSize = PxSize2D::Max(maxSize, entry.Window->DesiredSizePx());
       }
       if (availableSizePx.IsInfinityWidth())
       {
@@ -89,10 +89,10 @@ namespace Fsl::UI
     }
 
     // FSLLOG3_INFO("Measure: availableSize: {}", availableSize);
-    for (auto itr = begin(); itr != end(); ++itr)
+    for (const auto& entry : *this)
     {
-      itr->Window->Measure(availableSizePx);
-      // FSLLOG3_INFO("Measure: DesiredSize: {}", itr->Window->DesiredSize());
+      entry.Window->Measure(availableSizePx);
+      // FSLLOG3_INFO("Measure: DesiredSize: {}", entry.Window->DesiredSize());
     }
     return availableSizePx.ToPxSize2D();
   }

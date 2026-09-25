@@ -91,13 +91,13 @@ namespace Fsl
       return m_system.ProcessMessages(args);
     }
 
-    bool IsDisplayHDRCompatible(const int32_t displayId) const override
+    [[nodiscard]] bool IsDisplayHDRCompatible(const int32_t displayId) const override
     {
       return m_system.IsDisplayHDRCompatible(displayId);
     }
 
     // From IEGLNativeWindowSystemAdapter
-    EGLNativeDisplayType GetDisplayType() const override
+    [[nodiscard]] EGLNativeDisplayType GetDisplayType() const override
     {
       return m_displayType;
     }

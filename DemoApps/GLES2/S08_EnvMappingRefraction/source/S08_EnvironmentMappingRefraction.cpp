@@ -64,7 +64,7 @@ namespace Fsl
     {
       Texture tex;
       content->Read(tex, "Textures/Cubemap/Yokohama3/Yokohama3_512.dds", PixelFormat::R8G8B8_UNORM);
-      GLTextureParameters params(GL_LINEAR, GL_LINEAR, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE);
+      const GLTextureParameters params(GL_LINEAR, GL_LINEAR, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE);
       m_cubeTexture.Reset(tex, params);
     }
 

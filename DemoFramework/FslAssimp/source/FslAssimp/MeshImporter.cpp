@@ -116,13 +116,13 @@ namespace Fsl
       const auto indexVertices = dstVertexDeclaration.VertexElementIndexOf(VertexElementUsage::Position, 0);
       if (pSrcMesh->mVertices != nullptr && indexVertices >= 0)
       {
-        VertexElement vertexElement = dstVertexDeclaration.At(indexVertices);
+        const VertexElement vertexElement = dstVertexDeclaration.At(indexVertices);
         if (vertexElement.Format != VertexElementFormat::Vector3)
         {
           throw NotSupportedException("We only support vertex positions of the type Vector3");
         }
-        TypedFlexSpan<Vector3> dstSpan = TypedFlexSpanUtil::UnsafeVoidAsSpan<Vector3>(dstRawMeshContent.pVertices, dstRawMeshContent.VertexCount,
-                                                                                      vertexElement.Offset, dstRawMeshContent.VertexStride);
+        const TypedFlexSpan<Vector3> dstSpan = TypedFlexSpanUtil::UnsafeVoidAsSpan<Vector3>(
+          dstRawMeshContent.pVertices, dstRawMeshContent.VertexCount, vertexElement.Offset, dstRawMeshContent.VertexStride);
         MeshImporter::FastExtractVertexPosition(dstSpan, pSrcMesh, positionMod, scale);
       }
     }
@@ -135,14 +135,14 @@ namespace Fsl
       const auto indexNormals = dstVertexDeclaration.VertexElementIndexOf(VertexElementUsage::Normal, 0);
       if (pSrcMesh->mNormals != nullptr && indexNormals >= 0)
       {
-        VertexElement vertexElement = dstVertexDeclaration.At(indexNormals);
+        const VertexElement vertexElement = dstVertexDeclaration.At(indexNormals);
         if (vertexElement.Format != VertexElementFormat::Vector3)
         {
           throw NotSupportedException("We only support vertex normals of the type Vector3");
         }
 
-        TypedFlexSpan<Vector3> dstSpan = TypedFlexSpanUtil::UnsafeVoidAsSpan<Vector3>(dstRawMeshContent.pVertices, dstRawMeshContent.VertexCount,
-                                                                                      vertexElement.Offset, dstRawMeshContent.VertexStride);
+        const TypedFlexSpan<Vector3> dstSpan = TypedFlexSpanUtil::UnsafeVoidAsSpan<Vector3>(
+          dstRawMeshContent.pVertices, dstRawMeshContent.VertexCount, vertexElement.Offset, dstRawMeshContent.VertexStride);
         MeshImporter::FastExtractVertexNormals(dstSpan, pSrcMesh);
       }
     }
@@ -155,13 +155,13 @@ namespace Fsl
       const auto indexTangents = dstVertexDeclaration.VertexElementIndexOf(VertexElementUsage::Tangent, 0);
       if (pSrcMesh->mTangents != nullptr && indexTangents >= 0)
       {
-        VertexElement vertexElement = dstVertexDeclaration.At(indexTangents);
+        const VertexElement vertexElement = dstVertexDeclaration.At(indexTangents);
         if (vertexElement.Format != VertexElementFormat::Vector3)
         {
           throw NotSupportedException("We only support vertex tangents of the type Vector3");
         }
-        TypedFlexSpan<Vector3> dstSpan = TypedFlexSpanUtil::UnsafeVoidAsSpan<Vector3>(dstRawMeshContent.pVertices, dstRawMeshContent.VertexCount,
-                                                                                      vertexElement.Offset, dstRawMeshContent.VertexStride);
+        const TypedFlexSpan<Vector3> dstSpan = TypedFlexSpanUtil::UnsafeVoidAsSpan<Vector3>(
+          dstRawMeshContent.pVertices, dstRawMeshContent.VertexCount, vertexElement.Offset, dstRawMeshContent.VertexStride);
         MeshImporter::FastExtractVertexTangents(dstSpan, pSrcMesh);
       }
     }
@@ -174,14 +174,14 @@ namespace Fsl
       const auto indexBitangents = dstVertexDeclaration.VertexElementIndexOf(VertexElementUsage::Bitangent, 0);
       if (pSrcMesh->mBitangents != nullptr && indexBitangents >= 0)
       {
-        VertexElement vertexElement = dstVertexDeclaration.At(indexBitangents);
+        const VertexElement vertexElement = dstVertexDeclaration.At(indexBitangents);
         if (vertexElement.Format != VertexElementFormat::Vector3)
         {
           throw NotSupportedException("We only support vertex bitangents of the type Vector3");
         }
 
-        TypedFlexSpan<Vector3> dstSpan = TypedFlexSpanUtil::UnsafeVoidAsSpan<Vector3>(dstRawMeshContent.pVertices, dstRawMeshContent.VertexCount,
-                                                                                      vertexElement.Offset, dstRawMeshContent.VertexStride);
+        const TypedFlexSpan<Vector3> dstSpan = TypedFlexSpanUtil::UnsafeVoidAsSpan<Vector3>(
+          dstRawMeshContent.pVertices, dstRawMeshContent.VertexCount, vertexElement.Offset, dstRawMeshContent.VertexStride);
         MeshImporter::FastExtractVertexBitangents(dstSpan, pSrcMesh);
       }
     }
@@ -196,19 +196,19 @@ namespace Fsl
         const auto indexTexture = dstVertexDeclaration.VertexElementIndexOf(VertexElementUsage::TextureCoordinate, usageIndex);
         if (pSrcMesh->mTextureCoords[usageIndex] != nullptr && indexTexture >= 0)
         {
-          VertexElement vertexElement = dstVertexDeclaration.At(indexTexture);
+          const VertexElement vertexElement = dstVertexDeclaration.At(indexTexture);
           switch (vertexElement.Format)
           {
           case VertexElementFormat::Vector2:
             {
-              TypedFlexSpan<Vector2> dstSpan = TypedFlexSpanUtil::UnsafeVoidAsSpan<Vector2>(
+              const TypedFlexSpan<Vector2> dstSpan = TypedFlexSpanUtil::UnsafeVoidAsSpan<Vector2>(
                 dstRawMeshContent.pVertices, dstRawMeshContent.VertexCount, vertexElement.Offset, dstRawMeshContent.VertexStride);
               MeshImporter::FastExtractTextureCoordinates2(dstSpan, pSrcMesh, usageIndex);
               break;
             }
           case VertexElementFormat::Vector3:
             {
-              TypedFlexSpan<Vector3> dstSpan = TypedFlexSpanUtil::UnsafeVoidAsSpan<Vector3>(
+              const TypedFlexSpan<Vector3> dstSpan = TypedFlexSpanUtil::UnsafeVoidAsSpan<Vector3>(
                 dstRawMeshContent.pVertices, dstRawMeshContent.VertexCount, vertexElement.Offset, dstRawMeshContent.VertexStride);
               MeshImporter::FastExtractTextureCoordinates3(dstSpan, pSrcMesh, usageIndex);
               break;
@@ -228,7 +228,7 @@ namespace Fsl
         const auto indexColor = dstVertexDeclaration.VertexElementIndexOf(VertexElementUsage::Color, usageIndex);
         if (indexColor >= 0)
         {
-          VertexElement vertexElement = dstVertexDeclaration.At(indexColor);
+          const VertexElement vertexElement = dstVertexDeclaration.At(indexColor);
           if (pSrcMesh->mNumVertices > dstRawMeshContent.VertexCount)
           {
             throw IndexOutOfRangeException("The buffer could not contain all the entries");
@@ -236,17 +236,19 @@ namespace Fsl
 
           if (vertexElement.Format == VertexElementFormat::Vector4)
           {
-            TypedFlexSpan<Vector4> dstSpan = TypedFlexSpanUtil::UnsafeVoidAsSpan<Vector4>(dstRawMeshContent.pVertices, dstRawMeshContent.VertexCount,
-                                                                                          vertexElement.Offset, dstRawMeshContent.VertexStride)
-                                               .subspan(0, pSrcMesh->mNumVertices);
+            const TypedFlexSpan<Vector4> dstSpan =
+              TypedFlexSpanUtil::UnsafeVoidAsSpan<Vector4>(dstRawMeshContent.pVertices, dstRawMeshContent.VertexCount, vertexElement.Offset,
+                                                           dstRawMeshContent.VertexStride)
+                .subspan(0, pSrcMesh->mNumVertices);
 
             MeshImporter::FastExtractColors(dstSpan, pSrcMesh, usageIndex, Vector4::One());
           }
           else if (vertexElement.Format == VertexElementFormat::X8Y8Z8W8_UNORM)
           {
-            TypedFlexSpan<Color> dstSpan = TypedFlexSpanUtil::UnsafeVoidAsSpan<Color>(dstRawMeshContent.pVertices, dstRawMeshContent.VertexCount,
-                                                                                      vertexElement.Offset, dstRawMeshContent.VertexStride)
-                                             .subspan(0, pSrcMesh->mNumVertices);
+            const TypedFlexSpan<Color> dstSpan =
+              TypedFlexSpanUtil::UnsafeVoidAsSpan<Color>(dstRawMeshContent.pVertices, dstRawMeshContent.VertexCount, vertexElement.Offset,
+                                                         dstRawMeshContent.VertexStride)
+                .subspan(0, pSrcMesh->mNumVertices);
 
             MeshImporter::FastExtractColors(dstSpan, pSrcMesh, usageIndex, Colors::White());
           }
@@ -315,8 +317,8 @@ namespace Fsl
       throw UsageErrorException("The allocator failed to allocate a mesh");
     }
 
-    auto vertexDeclaration = mesh->AsVertexDeclarationSpan();
-    RawMeshContentEx rawMeshContent = mesh->GenericDirectAccess();
+    const auto vertexDeclaration = mesh->AsVertexDeclarationSpan();
+    const RawMeshContentEx rawMeshContent = mesh->GenericDirectAccess();
 
     assert(rawMeshContent.pVertices != nullptr);
     assert(rawMeshContent.pIndices != nullptr);

@@ -64,7 +64,7 @@ namespace Fsl::UI
     rMainLayout.AddRowDefinition(GridRowDefinition(GridUnitType::Auto));
     rMainLayout.AddRowDefinition(GridRowDefinition(GridUnitType::Auto));
 
-    auto caption = themeControlFactory->CreateLabel("Basic right dialog", Theme::FontType::Header);
+    const auto caption = themeControlFactory->CreateLabel("Basic right dialog", Theme::FontType::Header);
     caption->SetAlignmentX(ItemAlignment::Center);
 
     m_buttonBack = themeControlFactory->CreateTextButton(Theme::ButtonType::Contained, "Back");
@@ -73,8 +73,8 @@ namespace Fsl::UI
     m_buttonDetails = themeControlFactory->CreateTextButton(Theme::ButtonType::Outlined, "Details");
     m_buttonDetails->SetAlignmentX(ItemAlignment::Stretch);
 
-    auto context = themeControlFactory->GetContext();
-    auto bottomStack = std::make_shared<UniformStackLayout>(context);
+    const auto context = themeControlFactory->GetContext();
+    const auto bottomStack = std::make_shared<UniformStackLayout>(context);
     bottomStack->SetAlignmentX(ItemAlignment::Center);
     bottomStack->SetOrientation(LayoutOrientation::Horizontal);
     bottomStack->SetSpacing(DpSize1DF::Create(4.0f));
@@ -84,7 +84,7 @@ namespace Fsl::UI
     }
     bottomStack->AddChild(m_buttonBack);
 
-    auto content = std::make_shared<GridLayout>(context);
+    const auto content = std::make_shared<GridLayout>(context);
     {
       const auto label0 = themeControlFactory->CreateLabel("Dexterity");
       const auto label1 = themeControlFactory->CreateLabel("Luck");
@@ -137,7 +137,7 @@ namespace Fsl::UI
       }
       else if (theEvent->GetSource() == m_buttonDetails)
       {
-        auto controlFactory = GetThemeControlFactory();
+        const auto controlFactory = GetThemeControlFactory();
         PushActivity(SimpleDialogActivityFactory::CreateLeftDialog(GetWeakActivityStack(), controlFactory));
       }
     }

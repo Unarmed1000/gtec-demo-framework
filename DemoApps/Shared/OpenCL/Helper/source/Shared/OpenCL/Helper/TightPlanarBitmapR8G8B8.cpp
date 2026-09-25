@@ -65,7 +65,7 @@ namespace Fsl
       const auto minimumStride = PixelFormatUtil::CalcMinimumStride(rawBitmap.Width(), rawBitmap.GetPixelFormat());
 
       // Pack tightly into planes
-      const std::size_t minimumSize = minimumStride * rawBitmap.RawUnsignedHeight();
+      const std::size_t minimumSize = static_cast<std::size_t>(minimumStride) * rawBitmap.RawUnsignedHeight();
 
       assert((minimumStride % 3) == 0);
       [[maybe_unused]] const std::size_t minimumPlaneStride = minimumStride / 3;
@@ -109,8 +109,8 @@ namespace Fsl
       const auto origin = bitmapMemory.GetOrigin();
       const auto stride = bitmapMemory.Stride();
 
-      std::vector<uint8_t> content = bitmapMemory.Release();
-      ReadOnlyRawBitmap rawBitmap(ReadOnlyRawBitmap::Create(SpanUtil::AsReadOnlySpan(content), extent, pixelFormat, stride, origin));
+      const std::vector<uint8_t> content = bitmapMemory.Release();
+      const ReadOnlyRawBitmap rawBitmap(ReadOnlyRawBitmap::Create(SpanUtil::AsReadOnlySpan(content), extent, pixelFormat, stride, origin));
 
       return ConvertToPlanar(rawBitmap);
     }
@@ -191,7 +191,7 @@ namespace Fsl
 
 
   TightPlanarBitmapR8G8B8::TightPlanarBitmapR8G8B8(const PxSize2D sizePx, const PixelFormat pixelFormat, const BitmapOrigin origin)
-    : m_content(sizePx.RawHeight() * PixelFormatUtil::CalcMinimumStride(sizePx.Width(), pixelFormat))
+    : m_content(static_cast<std::size_t>(sizePx.RawHeight()) * PixelFormatUtil::CalcMinimumStride(sizePx.Width(), pixelFormat))
     , m_sizePx(sizePx)
     , m_bytesPerPlane(UncheckedNumericCast<uint32_t>(sizePx.RawWidth() * sizePx.RawHeight() * LocalConfig::BytesPerPlanePixel))
     , m_pixelFormat(pixelFormat)

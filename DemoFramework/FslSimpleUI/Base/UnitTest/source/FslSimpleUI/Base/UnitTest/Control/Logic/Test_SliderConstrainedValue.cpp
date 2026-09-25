@@ -42,7 +42,7 @@ namespace
 
 TEST(TestControlLogic_SliderConstrainedValue, Construct_Default)
 {
-  UI::SliderConstrainedValue<int32_t> value;
+  const UI::SliderConstrainedValue<int32_t> value;
 
   EXPECT_EQ(0, value.Min());
   EXPECT_EQ(0, value.Max());
@@ -56,7 +56,7 @@ TEST(TestControlLogic_SliderConstrainedValue, Construct_MinMax)
 {
   const int32_t min = 10;
   const int32_t max = 15;
-  UI::SliderConstrainedValue<int32_t> value(min, max);
+  const UI::SliderConstrainedValue<int32_t> value(min, max);
 
   EXPECT_EQ(min, value.Min());
   EXPECT_EQ(max, value.Max());
@@ -69,7 +69,7 @@ TEST(TestControlLogic_SliderConstrainedValue, Construct_MinMax_Invalid)
 {
   const int32_t min = 10;
   const int32_t max = 15;
-  UI::SliderConstrainedValue<int32_t> value(max, min);
+  const UI::SliderConstrainedValue<int32_t> value(max, min);
 
   EXPECT_EQ(max, value.Min());
   EXPECT_EQ(max, value.Max());
@@ -84,7 +84,7 @@ TEST(TestControlLogic_SliderConstrainedValue, Construct_ValueMinMax)
   const int32_t val = 12;
   const int32_t min = 10;
   const int32_t max = 15;
-  UI::SliderConstrainedValue<int32_t> value(val, min, max);
+  const UI::SliderConstrainedValue<int32_t> value(val, min, max);
 
   EXPECT_EQ(min, value.Min());
   EXPECT_EQ(max, value.Max());
@@ -98,7 +98,7 @@ TEST(TestControlLogic_SliderConstrainedValue, Construct_ValueMinMax_InvalidMinMa
   const int32_t val = 12;
   const int32_t min = 10;
   const int32_t max = 15;
-  UI::SliderConstrainedValue<int32_t> value(val, max, min);
+  const UI::SliderConstrainedValue<int32_t> value(val, max, min);
 
   EXPECT_EQ(max, value.Min());
   EXPECT_EQ(max, value.Max());
@@ -112,7 +112,7 @@ TEST(TestControlLogic_SliderConstrainedValue, Construct_ValueMinMax_ValueOutOfBo
   const int32_t val = 9;
   const int32_t min = 10;
   const int32_t max = 15;
-  UI::SliderConstrainedValue<int32_t> value(val, min, max);
+  const UI::SliderConstrainedValue<int32_t> value(val, min, max);
 
   EXPECT_EQ(min, value.Min());
   EXPECT_EQ(max, value.Max());
@@ -126,7 +126,7 @@ TEST(TestControlLogic_SliderConstrainedValue, Construct_ValueMinMax_ValueOutOfBo
   const int32_t val = 16;
   const int32_t min = 10;
   const int32_t max = 15;
-  UI::SliderConstrainedValue<int32_t> value(val, min, max);
+  const UI::SliderConstrainedValue<int32_t> value(val, min, max);
 
   EXPECT_EQ(min, value.Min());
   EXPECT_EQ(max, value.Max());
@@ -141,7 +141,7 @@ TEST(TestControlLogic_SliderConstrainedValue, Construct_ValueMinMaxTickFrequency
   const int32_t min = 10;
   const int32_t max = 15;
   const int32_t tickFrequency = 2;
-  UI::SliderConstrainedValue<int32_t> value(val, min, max, tickFrequency);
+  const UI::SliderConstrainedValue<int32_t> value(val, min, max, tickFrequency);
 
   EXPECT_EQ(min, value.Min());
   EXPECT_EQ(max, value.Max());
@@ -155,7 +155,7 @@ TEST(TestControlLogic_SliderConstrainedValue, Construct_ValueMinMaxTickFrequency
   const int32_t val = 12;
   const int32_t min = 10;
   const int32_t max = 15;
-  UI::SliderConstrainedValue<int32_t> value(val, min, max, 0);
+  const UI::SliderConstrainedValue<int32_t> value(val, min, max, 0);
 
   EXPECT_EQ(min, value.Min());
   EXPECT_EQ(max, value.Max());
@@ -169,7 +169,7 @@ TEST(TestControlLogic_SliderConstrainedValue, Construct_ValueMinMaxTickFrequency
   const int32_t val = 12;
   const int32_t min = 10;
   const int32_t max = 15;
-  UI::SliderConstrainedValue<int32_t> value(val, min, max, -1);
+  const UI::SliderConstrainedValue<int32_t> value(val, min, max, -1);
 
   EXPECT_EQ(min, value.Min());
   EXPECT_EQ(max, value.Max());
@@ -183,7 +183,7 @@ TEST(TestControlLogic_SliderConstrainedValue, Construct_ValueMinMaxTickFrequency
   const int32_t val = 12;
   const int32_t min = 10;
   const int32_t max = 15;
-  UI::SliderConstrainedValue<int32_t> value(val, min, max, std::numeric_limits<int32_t>::min());
+  const UI::SliderConstrainedValue<int32_t> value(val, min, max, std::numeric_limits<int32_t>::min());
 
   EXPECT_EQ(min, value.Min());
   EXPECT_EQ(max, value.Max());
@@ -197,7 +197,7 @@ TEST(TestControlLogic_SliderConstrainedValue, Construct_ValueMinMaxTickFrequency
   const int32_t val = 12;
   const int32_t min = 10;
   const int32_t max = 15;
-  UI::SliderConstrainedValue<int32_t> value(val, min, max, max + 1);
+  const UI::SliderConstrainedValue<int32_t> value(val, min, max, max + 1);
 
   EXPECT_EQ(min, value.Min());
   EXPECT_EQ(max, value.Max());
@@ -211,7 +211,7 @@ TEST(TestControlLogic_SliderConstrainedValue, Construct_ValueMinMaxTickFrequency
   const int32_t val = 12;
   const int32_t min = 10;
   const int32_t max = 15;
-  UI::SliderConstrainedValue<int32_t> value(val, min, max, std::numeric_limits<int32_t>::max());
+  const UI::SliderConstrainedValue<int32_t> value(val, min, max, std::numeric_limits<int32_t>::max());
 
   EXPECT_EQ(min, value.Min());
   EXPECT_EQ(max, value.Max());
@@ -226,7 +226,7 @@ TEST(TestControlLogic_SliderConstrainedValue, Construct_ValueMinMaxTickFrequency
   const int32_t min = 10;
   const int32_t max = 20;
   const int32_t tickFrequency = 5;
-  UI::SliderConstrainedValue<int32_t> value(val, min, max, tickFrequency);
+  const UI::SliderConstrainedValue<int32_t> value(val, min, max, tickFrequency);
 
   EXPECT_EQ(min, value.Min());
   EXPECT_EQ(max, value.Max());
@@ -241,7 +241,7 @@ TEST(TestControlLogic_SliderConstrainedValue, Construct_ValueMinMaxTickFrequency
   const float min = 10;
   const float max = 20;
   const float tickFrequency = 5;
-  UI::SliderConstrainedValue<float> value(val, min, max, tickFrequency);
+  const UI::SliderConstrainedValue<float> value(val, min, max, tickFrequency);
 
   EXPECT_EQ(min, value.Min());
   EXPECT_EQ(max, value.Max());
@@ -256,7 +256,7 @@ TEST(TestControlLogic_SliderConstrainedValue, Construct_ValueMinMaxTickFrequency
   const double min = 10;
   const double max = 20;
   const double tickFrequency = 5;
-  UI::SliderConstrainedValue<double> value(val, min, max, tickFrequency);
+  const UI::SliderConstrainedValue<double> value(val, min, max, tickFrequency);
 
   EXPECT_EQ(min, value.Min());
   EXPECT_EQ(max, value.Max());

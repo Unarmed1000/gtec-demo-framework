@@ -98,8 +98,8 @@ namespace Fsl
     {    // prepare the vertex buffer
       // const Point2 screenResolution = config.ScreenResolution;
 
-      float magicX = 100;
-      float magicY = 100;
+      const float magicX = 100;
+      const float magicY = 100;
 
       const std::array<VertexPosition, 6> vertices = {
         VertexPosition(Vector3(-magicX, magicY, 0.0f)),      VertexPosition(Vector3(-magicX, -magicY, 0.0f)),

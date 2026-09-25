@@ -47,7 +47,7 @@ namespace
 
 TEST(Test_VertexElementAttribLinks, Construct_Empty1)
 {
-  GLES3::VertexElementAttribLinks empty;
+  const GLES3::VertexElementAttribLinks empty;
   EXPECT_TRUE(empty.AsSpan().empty());
   EXPECT_EQ(empty.VertexStride(), 0u);
 }
@@ -55,10 +55,10 @@ TEST(Test_VertexElementAttribLinks, Construct_Empty1)
 
 TEST(Test_VertexElementAttribLinks, Construct_FromEmptyVertexDeclaration)
 {
-  VertexDeclarationSpan vertexDeclaration;
-  ReadOnlySpan<GLES3::GLVertexAttribLink> attribLinks;
+  const VertexDeclarationSpan vertexDeclaration;
+  const ReadOnlySpan<GLES3::GLVertexAttribLink> attribLinks;
 
-  GLES3::VertexElementAttribLinks empty(vertexDeclaration, attribLinks);
+  const GLES3::VertexElementAttribLinks empty(vertexDeclaration, attribLinks);
   EXPECT_TRUE(empty.AsSpan().empty());
   EXPECT_EQ(empty.VertexStride(), vertexDeclaration.VertexStride());
 }
@@ -69,7 +69,7 @@ TEST(Test_VertexElementAttribLinks, Construct_FromEmptySpan)
   const ReadOnlySpan<GLES3::GLVertexElementAttribConfig> vertexElementAttribConfigs;
   const uint32_t vertexStride = 0;
 
-  GLES3::VertexElementAttribLinks empty(vertexElementAttribConfigs, vertexStride);
+  const GLES3::VertexElementAttribLinks empty(vertexElementAttribConfigs, vertexStride);
   EXPECT_TRUE(empty.AsSpan().empty());
   EXPECT_EQ(empty.VertexStride(), vertexStride);
 }
@@ -83,15 +83,15 @@ TEST(Test_VertexElementAttribLinks, Construct_FromVertexDeclaration_InOrder)
   };
   const uint32_t vertexStride = (1 + 2 + 3) * 4;
 
-  VertexDeclarationSpan vertexDeclaration(SpanUtil::AsReadOnlySpan(vertexElements), vertexStride);
+  const VertexDeclarationSpan vertexDeclaration(SpanUtil::AsReadOnlySpan(vertexElements), vertexStride);
 
-  std::array<GLES3::GLVertexAttribLink, 3> attribLinks = {
+  const std::array<GLES3::GLVertexAttribLink, 3> attribLinks = {
     GLES3::GLVertexAttribLink(31, 0),
     GLES3::GLVertexAttribLink(32, 1),
     GLES3::GLVertexAttribLink(33, 2),
   };
 
-  GLES3::VertexElementAttribLinks links(vertexDeclaration, SpanUtil::AsReadOnlySpan(attribLinks));
+  const GLES3::VertexElementAttribLinks links(vertexDeclaration, SpanUtil::AsReadOnlySpan(attribLinks));
 
   const auto span = links.AsSpan();
   EXPECT_FALSE(span.empty());
@@ -114,15 +114,15 @@ TEST(Test_VertexElementAttribLinks, Construct_FromVertexDeclaration_OutOfOrder)
   };
   const uint32_t vertexStride = (1 + 2 + 3) * 4;
 
-  VertexDeclarationSpan vertexDeclaration(SpanUtil::AsReadOnlySpan(vertexElements), vertexStride);
+  const VertexDeclarationSpan vertexDeclaration(SpanUtil::AsReadOnlySpan(vertexElements), vertexStride);
 
-  std::array<GLES3::GLVertexAttribLink, 3> attribLinks = {
+  const std::array<GLES3::GLVertexAttribLink, 3> attribLinks = {
     GLES3::GLVertexAttribLink(33, 2),
     GLES3::GLVertexAttribLink(32, 1),
     GLES3::GLVertexAttribLink(31, 0),
   };
 
-  GLES3::VertexElementAttribLinks links(vertexDeclaration, SpanUtil::AsReadOnlySpan(attribLinks));
+  const GLES3::VertexElementAttribLinks links(vertexDeclaration, SpanUtil::AsReadOnlySpan(attribLinks));
 
   const auto span = links.AsSpan();
   EXPECT_FALSE(span.empty());
@@ -145,7 +145,7 @@ TEST(Test_VertexElementAttribLinks, Construct_FromSpan_InOrder)
   };
   const uint32_t vertexStride = (1 + 2 + 3) * 4;
 
-  GLES3::VertexElementAttribLinks links(SpanUtil::AsReadOnlySpan(vertexElementAttribConfigs), vertexStride);
+  const GLES3::VertexElementAttribLinks links(SpanUtil::AsReadOnlySpan(vertexElementAttribConfigs), vertexStride);
   const auto span = links.AsSpan();
   EXPECT_FALSE(span.empty());
   EXPECT_EQ(span.size(), vertexElementAttribConfigs.size());
@@ -165,7 +165,7 @@ TEST(Test_VertexElementAttribLinks, Construct_FromSpan_OutOfOrder)
   };
   const uint32_t vertexStride = (1 + 2 + 3) * 4;
 
-  GLES3::VertexElementAttribLinks links(SpanUtil::AsReadOnlySpan(vertexElementAttribConfigs), vertexStride);
+  const GLES3::VertexElementAttribLinks links(SpanUtil::AsReadOnlySpan(vertexElementAttribConfigs), vertexStride);
   const auto span = links.AsSpan();
   EXPECT_FALSE(span.empty());
   EXPECT_EQ(span.size(), vertexElementAttribConfigs.size());

@@ -136,12 +136,12 @@ namespace Fsl
 
     OptionParseResult TryParseStatsFlags(DemoAppStatsFlags& rFlags, const StringViewLite& strArg)
     {
-      auto entries = StringUtil::Split(strArg, '|', true);
+      const auto entries = StringUtil::Split(strArg, '|', true);
 
       uint32_t flags = 0u;
       for (const auto& entry : entries)
       {
-        auto flag = OptionArgUtil::Parse(SpanUtil::AsReadOnlySpan(StatsFlagsArgs), entry, DemoAppStatsFlags::Nothing);
+        const auto flag = OptionArgUtil::Parse(SpanUtil::AsReadOnlySpan(StatsFlagsArgs), entry, DemoAppStatsFlags::Nothing);
         if (flag == DemoAppStatsFlags::Nothing)
         {
           FSLLOG3_WARNING("Unknown stats flag: {}", entry);
@@ -380,7 +380,7 @@ namespace Fsl
   {
     try
     {
-      IO::Path path(strOptArg);
+      const IO::Path path(strOptArg);
       if (IO::Path::GetFileName(path) != path)
       {
         FSLLOG3_ERROR("The prefix can only contain a filename prefix, not a path '{}'", path);

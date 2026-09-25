@@ -64,7 +64,8 @@ namespace
   }
 }
 
-int main(int argc, char* argv[])
+// Unhandled exceptions are rethrown so the runtime reports them
+int main(int argc, char* argv[])    // NOLINT(bugprone-exception-escape)
 {
   //_CrtSetBreakAlloc(280);
 
@@ -84,10 +85,10 @@ int main(int argc, char* argv[])
 
     const std::shared_ptr<Fsl::ITag> nativeWindowTag;
 
-    auto strPersistentPath = Fsl::IO::Directory::GetCurrentWorkingDirectory();
-    auto strContentPath = Fsl::IO::Path::Combine(strPersistentPath, "Content");
+    const auto strPersistentPath = Fsl::IO::Directory::GetCurrentWorkingDirectory();
+    const auto strContentPath = Fsl::IO::Path::Combine(strPersistentPath, "Content");
 
-    Fsl::DemoRunnerConfig config(true, strContentPath, strPersistentPath, nativeWindowTag);
+    const Fsl::DemoRunnerConfig config(true, strContentPath, strPersistentPath, nativeWindowTag);
     result = Fsl::RunDemo(argc, argv, config);
 
     CloseHandle(g_currentMainThread);

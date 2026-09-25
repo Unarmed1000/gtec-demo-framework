@@ -59,7 +59,7 @@ namespace Fsl::FslGraphics2D::RawBitmapConverterFunctions
       {
         return 1.0f;
       }
-      auto res = std::pow((valueSRGB + 0.055f) / 1.055f, 2.4f);
+      const auto res = std::pow((valueSRGB + 0.055f) / 1.055f, 2.4f);
       assert(res >= 0.0f && res <= 1.0f);
       return res;
     }
@@ -104,7 +104,7 @@ namespace Fsl::FslGraphics2D::RawBitmapConverterFunctions
       {
         return 1.0f;
       }
-      auto res = std::pow(valueLinear, 1.0f / 2.4f) * 1.055f - 0.055f;
+      const auto res = std::pow(valueLinear, 1.0f / 2.4f) * 1.055f - 0.055f;
       assert(res >= 0.0f && res <= 1.0f);
       return res;
     }
@@ -165,7 +165,7 @@ namespace Fsl::FslGraphics2D::RawBitmapConverterFunctions
 
     uint8_t ConvertLinearFloatToLinearUInt8(const float valueLinear) noexcept
     {
-      auto converted = static_cast<int32_t>(std::round(MathHelper::Clamp(valueLinear, 0.0f, 1.0f) * std::numeric_limits<uint8_t>::max()));
+      const auto converted = static_cast<int32_t>(std::round(MathHelper::Clamp(valueLinear, 0.0f, 1.0f) * std::numeric_limits<uint8_t>::max()));
       return static_cast<uint8_t>(MathHelper::Clamp(converted, 0, 255));
     }
 

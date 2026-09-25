@@ -47,14 +47,14 @@ namespace
 TEST(Test_Data_ChartDataView, ConstructFromEmpty)
 {
   const uint32_t channelCount = 0;
-  auto dataBinding = std::make_shared<DataBinding::DataBindingService>();
-  auto chartData = std::make_shared<UI::ChartData>(dataBinding, 0, channelCount, UI::ChartData::Constraints());
-  UI::ChartDataView testView(chartData);
+  const auto dataBinding = std::make_shared<DataBinding::DataBindingService>();
+  const auto chartData = std::make_shared<UI::ChartData>(dataBinding, 0, channelCount, UI::ChartData::Constraints());
+  const UI::ChartDataView testView(chartData);
 
   ASSERT_EQ(0u, testView.ChannelCount());
   ASSERT_EQ(0u, testView.Count());
 
-  auto dataInfo = testView.DataInfo();
+  const auto dataInfo = testView.DataInfo();
   ASSERT_EQ(channelCount, dataInfo.ChannelCount);
   ASSERT_EQ(0u, dataInfo.SegmentCount);
   ASSERT_EQ(0u, dataInfo.TotalElementCount);
@@ -64,14 +64,14 @@ TEST(Test_Data_ChartDataView, ConstructFromEmpty)
 TEST(Test_Data_ChartDataView, Construct)
 {
   const uint32_t channelCount = 1;
-  auto dataBinding = std::make_shared<DataBinding::DataBindingService>();
-  auto chartData = std::make_shared<UI::ChartData>(dataBinding, 10, channelCount, UI::ChartData::Constraints());
-  UI::ChartDataView testView(chartData);
+  const auto dataBinding = std::make_shared<DataBinding::DataBindingService>();
+  const auto chartData = std::make_shared<UI::ChartData>(dataBinding, 10, channelCount, UI::ChartData::Constraints());
+  const UI::ChartDataView testView(chartData);
 
   ASSERT_EQ(channelCount, testView.ChannelCount());
   ASSERT_EQ(0u, testView.Count());
 
-  auto dataInfo = testView.DataInfo();
+  const auto dataInfo = testView.DataInfo();
   ASSERT_EQ(channelCount, dataInfo.ChannelCount);
   ASSERT_EQ(0u, dataInfo.SegmentCount);
   ASSERT_EQ(0u, dataInfo.TotalElementCount);
@@ -80,11 +80,11 @@ TEST(Test_Data_ChartDataView, Construct)
 
 TEST(Test_Data_ChartDataView, CalculateDataStats_Empty0)
 {
-  auto dataBinding = std::make_shared<DataBinding::DataBindingService>();
-  auto chartData = std::make_shared<UI::ChartData>(dataBinding, 0, 0, UI::ChartData::Constraints());
-  UI::ChartDataView testView(chartData);
+  const auto dataBinding = std::make_shared<DataBinding::DataBindingService>();
+  const auto chartData = std::make_shared<UI::ChartData>(dataBinding, 0, 0, UI::ChartData::Constraints());
+  const UI::ChartDataView testView(chartData);
 
-  auto dataStats = testView.CalculateDataStats();
+  const auto dataStats = testView.CalculateDataStats();
   EXPECT_EQ(MinMax<uint32_t>(), dataStats.ValueMinMax);
 }
 
@@ -92,11 +92,11 @@ TEST(Test_Data_ChartDataView, CalculateDataStats_Empty0)
 TEST(Test_Data_ChartDataView, CalculateDataStats_Empty1)
 {
   const uint32_t channelCount = 1;
-  auto dataBinding = std::make_shared<DataBinding::DataBindingService>();
-  auto chartData = std::make_shared<UI::ChartData>(dataBinding, 10, channelCount, UI::ChartData::Constraints());
-  UI::ChartDataView testView(chartData);
+  const auto dataBinding = std::make_shared<DataBinding::DataBindingService>();
+  const auto chartData = std::make_shared<UI::ChartData>(dataBinding, 10, channelCount, UI::ChartData::Constraints());
+  const UI::ChartDataView testView(chartData);
 
-  auto dataStats = testView.CalculateDataStats();
+  const auto dataStats = testView.CalculateDataStats();
   EXPECT_EQ(MinMax<uint32_t>(), dataStats.ValueMinMax);
 }
 
@@ -105,8 +105,8 @@ TEST(Test_Data_ChartDataView, CalculateDataStats_Empty_SetCustomMinMax)
   const uint32_t channelCount = 1;
   const MinMax<uint32_t> customMinMax(10, 100);
 
-  auto dataBinding = std::make_shared<DataBinding::DataBindingService>();
-  auto chartData = std::make_shared<UI::ChartData>(dataBinding, 10, channelCount, UI::ChartData::Constraints());
+  const auto dataBinding = std::make_shared<DataBinding::DataBindingService>();
+  const auto chartData = std::make_shared<UI::ChartData>(dataBinding, 10, channelCount, UI::ChartData::Constraints());
 
   UI::ChartDataView testView(chartData);
 
@@ -114,7 +114,7 @@ TEST(Test_Data_ChartDataView, CalculateDataStats_Empty_SetCustomMinMax)
   testView.SetCustomMinMax(customMinMax);
   EXPECT_NE(initalChangeId, testView.ChangeId());
 
-  auto dataStats = testView.CalculateDataStats();
+  const auto dataStats = testView.CalculateDataStats();
   EXPECT_EQ(customMinMax, dataStats.ValueMinMax);
 }
 
@@ -123,8 +123,8 @@ TEST(Test_Data_ChartDataView, CalculateDataStats_SetCustomMinMax_Append)
   const uint32_t channelCount = 1;
   const MinMax<uint32_t> customMinMax(10, 100);
 
-  auto dataBinding = std::make_shared<DataBinding::DataBindingService>();
-  auto chartData = std::make_shared<UI::ChartData>(dataBinding, 10, channelCount, UI::ChartData::Constraints());
+  const auto dataBinding = std::make_shared<DataBinding::DataBindingService>();
+  const auto chartData = std::make_shared<UI::ChartData>(dataBinding, 10, channelCount, UI::ChartData::Constraints());
 
   UI::ChartDataView testView(chartData);
 

@@ -119,7 +119,7 @@ namespace Fsl
 
         vkCmdBindDescriptorSets(m_drawCmdBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipelineLayout.Get(), 0, 1, &m_descriptorSet, 0, nullptr);
 
-        VkDeviceSize offsets = 0;
+        const VkDeviceSize offsets = 0;
         vkCmdBindVertexBuffers(m_drawCmdBuffers[i], VertexBufferBindId, 1, m_meshes.Quad.GetVertices().GetBufferPointer(), &offsets);
         vkCmdBindIndexBuffer(m_drawCmdBuffers[i], m_meshes.Quad.GetIndices().GetBuffer(), 0, VK_INDEX_TYPE_UINT32);
         vkCmdBindPipeline(m_drawCmdBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipelines.Solid.Get());
@@ -214,8 +214,8 @@ namespace Fsl
 
   Willems::VulkanTexture TexturingArrays::LoadTextureArray(const IO::Path& filename, const VkFormat format)
   {
-    auto pixelFormat = Vulkan::VulkanConvert::ToPixelFormat(format);
-    auto textureArray = GetContentManager()->ReadTexture(filename, pixelFormat);
+    const auto pixelFormat = Vulkan::VulkanConvert::ToPixelFormat(format);
+    const auto textureArray = GetContentManager()->ReadTexture(filename, pixelFormat);
     auto texExtent = textureArray.GetExtent();
     texExtent.Depth = PxValueU(1);
 
@@ -233,7 +233,7 @@ namespace Fsl
     bufferCreateInfo.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
     bufferCreateInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
-    RapidVulkan::Buffer stagingBuffer(m_device.Get(), bufferCreateInfo);
+    const RapidVulkan::Buffer stagingBuffer(m_device.Get(), bufferCreateInfo);
 
     // Get memory requirements for the staging buffer (alignment, memory type bits)
     VkMemoryRequirements memReqs = stagingBuffer.GetBufferMemoryRequirements();
@@ -267,7 +267,7 @@ namespace Fsl
     std::vector<VkBufferImageCopy> bufferCopyRegions;
 
     // Check if all array layers have the same dimensions
-    bool sameDims = true;
+    const bool sameDims = true;
     // NOTE: the Texture class does not support multiple layers of different sizes
     // for (uint32_t layer = 0; layer < textureArray.GetLayers(); ++layer)
     //{
@@ -447,7 +447,7 @@ namespace Fsl
 
     // Array indices and model matrices are fixed
     const float offset = -1.5f;
-    float center = (static_cast<float>(layerCount) * offset) / 2.0f;
+    const float center = (static_cast<float>(layerCount) * offset) / 2.0f;
     for (uint32_t i = 0; i < layerCount; ++i)
     {
       // Instance model matrix
@@ -459,8 +459,8 @@ namespace Fsl
 
     // Update instanced part of the uniform buffer
     void* pData = nullptr;
-    uint32_t dataOffset = sizeof(m_uboVS.Matrices);
-    uint32_t dataSize = layerCount * sizeof(UboInstanceData);
+    const uint32_t dataOffset = sizeof(m_uboVS.Matrices);
+    const uint32_t dataSize = layerCount * sizeof(UboInstanceData);
 
     m_uniformData.VertexShader.Memory.MapMemory(dataOffset, dataSize, 0, &pData);
     {

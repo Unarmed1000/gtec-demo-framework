@@ -45,19 +45,20 @@ namespace Fsl
     explicit AsyncImageServiceProxy(const AsynchronousServiceProxyCreateInfo& createInfo);
 
     // Inherited via IAsyncImageService
-    std::future<Bitmap> ReadBitmap(const IO::Path& absolutePath, const PixelFormat desiredPixelFormat = PixelFormat::Undefined,
-                                   const BitmapOrigin desiredOrigin = BitmapOrigin::Undefined,
-                                   const PixelChannelOrder preferredChannelOrder = PixelChannelOrder::Undefined) const final;
-    std::future<Texture> ReadTexture(const IO::Path& absolutePath, const PixelFormat desiredPixelFormat = PixelFormat::Undefined,
-                                     const BitmapOrigin desiredOrigin = BitmapOrigin::Undefined,
-                                     const PixelChannelOrder preferredChannelOrder = PixelChannelOrder::Undefined) const final;
+    [[nodiscard]] std::future<Bitmap> ReadBitmap(const IO::Path& absolutePath, const PixelFormat desiredPixelFormat = PixelFormat::Undefined,
+                                                 const BitmapOrigin desiredOrigin = BitmapOrigin::Undefined,
+                                                 const PixelChannelOrder preferredChannelOrder = PixelChannelOrder::Undefined) const final;
+    [[nodiscard]] std::future<Texture> ReadTexture(const IO::Path& absolutePath, const PixelFormat desiredPixelFormat = PixelFormat::Undefined,
+                                                   const BitmapOrigin desiredOrigin = BitmapOrigin::Undefined,
+                                                   const PixelChannelOrder preferredChannelOrder = PixelChannelOrder::Undefined) const final;
     std::future<void> Write(const IO::Path& absolutePath, const Bitmap& bitmap, const ImageFormat imageFormat = ImageFormat::Undefined,
                             const PixelFormat desiredPixelFormat = PixelFormat::Undefined) final;
     std::future<void> WriteExactImage(const IO::Path& absolutePath, const Bitmap& bitmap, const ImageFormat imageFormat,
                                       const PixelFormat desiredPixelFormat = PixelFormat::Undefined) final;
-    std::future<std::pair<bool, Bitmap>> TryRead(const IO::Path& absolutePath, const PixelFormat desiredPixelFormat = PixelFormat::Undefined,
-                                                 const BitmapOrigin desiredOrigin = BitmapOrigin::Undefined,
-                                                 const PixelChannelOrder preferredChannelOrder = PixelChannelOrder::Undefined) const final;
+    [[nodiscard]] std::future<std::pair<bool, Bitmap>>
+      TryRead(const IO::Path& absolutePath, const PixelFormat desiredPixelFormat = PixelFormat::Undefined,
+              const BitmapOrigin desiredOrigin = BitmapOrigin::Undefined,
+              const PixelChannelOrder preferredChannelOrder = PixelChannelOrder::Undefined) const final;
     std::future<bool> TryWrite(const IO::Path& absolutePath, const Bitmap& bitmap, const ImageFormat imageFormat = ImageFormat::Undefined,
                                const PixelFormat desiredPixelFormat = PixelFormat::Undefined) final;
     std::future<bool> TryWriteExactImage(const IO::Path& absolutePath, const Bitmap& bitmap, const ImageFormat imageFormat,

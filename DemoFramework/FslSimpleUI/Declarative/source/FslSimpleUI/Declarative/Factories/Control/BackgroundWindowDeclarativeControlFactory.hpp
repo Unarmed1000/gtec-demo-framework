@@ -48,7 +48,7 @@ namespace Fsl::UI::Declarative
 
     std::shared_ptr<BaseWindow> Create(const DeclarativeControlFactoryCreateInfo& createInfo) final
     {
-      auto windowType = createInfo.PropertyParser.ClaimRequired<WindowTypeThemeProperty>(0);
+      const auto windowType = createInfo.PropertyParser.ClaimRequired<WindowTypeThemeProperty>(0);
       return createInfo.ThemeControlFactory.CreateBackgroundWindow(windowType);
     }
   };

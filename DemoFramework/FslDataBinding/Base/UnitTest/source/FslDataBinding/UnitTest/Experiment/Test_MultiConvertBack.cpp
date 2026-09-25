@@ -114,9 +114,9 @@ namespace
 
 TEST(Test_MultiConvertBack, Construct)
 {
-  std::array<DataBinding::Internal::PropertySetInfo, 4> setters{};
+  const std::array<DataBinding::Internal::PropertySetInfo, 4> setters{};
 
   TestConvertBackHelper(0x10203040u, SpanUtil::AsReadOnlySpan(setters));
-  auto result = TestConvertBackHelper2(0x10203040u, SpanUtil::AsReadOnlySpan(setters));
+  const auto result = TestConvertBackHelper2(0x10203040u, SpanUtil::AsReadOnlySpan(setters));
   ASSERT_EQ(result.size(), 10u);
 }

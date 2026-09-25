@@ -80,11 +80,11 @@ namespace Fsl
       auto asyncLaunchRecords = BuildAsyncServiceImplLaunchFactoryRecordDeque(serviceGroup.AsyncServices);
 
       // Launch the local 'main thread' host instance
-      ServiceHostContext hostContext(hostReceiveQueue);
+      const ServiceHostContext hostContext(hostReceiveQueue);
       const ThreadLocalServiceConfig serviceConfig(id, globalServiceInfo.GlobalServiceTypeMaps, std::move(asyncLaunchRecords),
                                                    serviceGroup.ThreadLocalServices);
-      ServiceHostCreateInfo createInfo(hostContext, serviceConfig);
-      auto mainHost = std::make_shared<ServiceHost>(createInfo, false);
+      const ServiceHostCreateInfo createInfo(hostContext, serviceConfig);
+      const auto mainHost = std::make_shared<ServiceHost>(createInfo, false);
       return {serviceGroup.Type, mainHost, hostReceiveQueue};
     }
   }
@@ -143,16 +143,16 @@ namespace Fsl
     {
       rHostRecord.MessageQueue = std::make_shared<BasicMessageQueue>(rHostRecord.Group.Id);
 
-      for (auto& rRecord : rHostRecord.Group.AsyncServices)
+      for (const auto& rRecord : rHostRecord.Group.AsyncServices)
       {
-        auto proxyFactory = rRecord.Factory.GetProxyFactory();
+        const auto proxyFactory = rRecord.Factory.GetProxyFactory();
 
         serviceInterfaces.clear();
         proxyFactory->FillInterfaceType(serviceInterfaces);
         for (const auto& serviceInterfaceType : serviceInterfaces)
         {
           // Link the queue and the proxy factory so we can launch instances as needed
-          auto launchFactory =
+          const auto launchFactory =
             std::make_shared<AsynchronousServiceProxyLaunchFactory>(rRecord.Id, rHostRecord.MessageQueue, rRecord.Factory.GetProxyFactory());
 
           rGlobalServiceTypeMaps.AddProvider(serviceInterfaceType,
@@ -183,7 +183,7 @@ namespace Fsl
     const auto mainThreadRecord = m_hostRecords.front();
     m_hostRecords.pop_front();
 
-    auto mainHost = PrepareMainThread(mainThreadRecord.Group.Id, mainThreadRecord.MessageQueue, globalServiceInfo, mainThreadRecord.Group);
+    const auto mainHost = PrepareMainThread(mainThreadRecord.Group.Id, mainThreadRecord.MessageQueue, globalServiceInfo, mainThreadRecord.Group);
     rCustomHosts.push_back(mainHost);
 
 

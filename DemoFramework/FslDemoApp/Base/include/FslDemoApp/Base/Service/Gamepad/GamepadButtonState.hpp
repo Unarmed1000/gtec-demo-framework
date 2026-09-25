@@ -43,7 +43,7 @@ namespace Fsl
     constexpr GamepadButtonState() noexcept = default;
 
 
-    constexpr bool IsPressed(const VirtualGamepadButton button) const noexcept
+    [[nodiscard]] constexpr bool IsPressed(const VirtualGamepadButton button) const noexcept
     {
       return (State & static_cast<uint32_t>(button)) == static_cast<uint32_t>(button);
     }

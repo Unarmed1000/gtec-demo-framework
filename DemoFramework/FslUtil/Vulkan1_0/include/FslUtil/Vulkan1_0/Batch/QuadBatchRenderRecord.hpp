@@ -74,10 +74,11 @@ namespace Fsl::Vulkan
     {
       // Remove the data from other
     }
+    ~QuadBatchRenderRecord() = default;
 
     QuadBatchRenderRecord() = default;
 
-    bool IsValid() const noexcept
+    [[nodiscard]] bool IsValid() const noexcept
     {
       return TextureDescriptorSets.IsValid() && VertexBuffers.IsValid();
     }

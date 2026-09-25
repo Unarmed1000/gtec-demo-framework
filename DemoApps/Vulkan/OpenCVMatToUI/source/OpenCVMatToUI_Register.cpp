@@ -37,7 +37,7 @@ namespace Fsl
   // Configure the demo environment to run this demo app in a Vulkan host environment
   void ConfigureDemoAppEnvironment(HostDemoAppSetup& rSetup)
   {
-    DemoAppHostConfigVulkan config;
+    const DemoAppHostConfigVulkan config;
 
     DemoAppRegister::Vulkan::Register<OpenCVMatToUI>(rSetup, "Vulkan.OpenCVMatToUI", config);
   }

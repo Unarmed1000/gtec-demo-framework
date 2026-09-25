@@ -47,7 +47,7 @@ namespace Fsl
 
     // From IDemoPlatformControl
     void RequestExit() override;
-    bool HasExitRequest() const override;
+    [[nodiscard]] bool HasExitRequest() const override;
 
   private:
   };

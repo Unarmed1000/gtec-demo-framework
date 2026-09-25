@@ -141,9 +141,9 @@ namespace Fsl
       assert(swapchainImageFormat != VK_FORMAT_UNDEFINED);
       assert(depthImageFormat != VK_FORMAT_UNDEFINED);
 
-      VkAttachmentReference colorAttachmentReference = {0, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL};
-      VkAttachmentReference depthAttachmentReference = {1, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL};
-      VkAttachmentReference finalColorAttachmentReference = {2, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL};
+      const VkAttachmentReference colorAttachmentReference = {0, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL};
+      const VkAttachmentReference depthAttachmentReference = {1, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL};
+      const VkAttachmentReference finalColorAttachmentReference = {2, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL};
 
       std::array<VkSubpassDescription, 2> subpassDescription{};
       // Main rendering to a HDR buffer
@@ -153,7 +153,7 @@ namespace Fsl
       subpassDescription[0].pDepthStencilAttachment = &depthAttachmentReference;
 
       // Tone-mapping pass
-      VkAttachmentReference inputReferencesTonemapping = {0, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL};
+      const VkAttachmentReference inputReferencesTonemapping = {0, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL};
       subpassDescription[1].pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
       subpassDescription[1].inputAttachmentCount = 1;
       subpassDescription[1].pInputAttachments = &inputReferencesTonemapping;
@@ -295,7 +295,7 @@ namespace Fsl
       viewport.minDepth = 0.0f;
       viewport.maxDepth = 1.0f;
 
-      VkRect2D scissor{{0, 0}, extent};
+      const VkRect2D scissor{{0, 0}, extent};
 
       VkPipelineViewportStateCreateInfo pipelineViewportStateCreateInfo{};
       pipelineViewportStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
@@ -414,7 +414,7 @@ namespace Fsl
     m_resources.ProgramTonemap = CreateTonemappers(m_device.Get(), contentManager);
     m_resources.TonemapDescriptorSetLayout = CreateTonemapDescriptorSetLayout(m_device);
 
-    std::array<VertexElementUsage, 2> quadShaderBindOrder = {VertexElementUsage::Position, VertexElementUsage::TextureCoordinate};
+    const std::array<VertexElementUsage, 2> quadShaderBindOrder = {VertexElementUsage::Position, VertexElementUsage::TextureCoordinate};
     m_resources.MeshQuad = CreateQuadVertexArray(m_bufferManager, quadShaderBindOrder);
 
     const uint32_t maxFramesInFlight = GetRenderConfig().MaxFramesInFlight;
@@ -491,7 +491,7 @@ namespace Fsl
 
     // m_vertexUboData.MatModel = Matrix::GetIdentity();
     m_vertexUboData.MatView = m_camera.GetViewMatrix();
-    float aspect = GetWindowAspectRatio();    // ok since we divide both by two when we show four screens
+    const float aspect = GetWindowAspectRatio();    // ok since we divide both by two when we show four screens
 
     // Deal with the new Vulkan coordinate system (see method description for more info).
     // Consider using: https://github.com/KhronosGroup/Vulkan-Docs/blob/master/appendices/VK_KHR_maintenance1.txt
@@ -548,16 +548,16 @@ namespace Fsl
     // Table 47. Mandatory format support : 16 - bit channels
     // https://www.khronos.org/registry/vulkan/specs/1.0/pdf/vkspec.pdf
     // This format is mandatory, so it should be safe to use
-    VkFormat renderFormat = VK_FORMAT_R16G16B16A16_SFLOAT;
+    const VkFormat renderFormat = VK_FORMAT_R16G16B16A16_SFLOAT;
 
     m_dependentResources.MainRenderPass =
       CreateRenderPass(m_device.Get(), context.SwapchainImageFormat, context.DepthBufferImageFormat, renderFormat);
     m_dependentResources.RenderAttachment = CreateRenderAttachment(m_device, context.SwapchainImageExtent, renderFormat, "RenderHDR");
 
     // Update the preallocated tone-mapping descriptor set with the 'dependent' render attachment
-    for (auto& rFrame : m_resources.MainFrameResources)
+    for (const auto& frame : m_resources.MainFrameResources)
     {
-      CommonMethods::UpdateDescriptorSet(m_device.Get(), rFrame.TonemapDescriptorSet, rFrame.TonemapVertUboBuffer,
+      CommonMethods::UpdateDescriptorSet(m_device.Get(), frame.TonemapDescriptorSet, frame.TonemapVertUboBuffer,
                                          m_dependentResources.RenderAttachment);
     }
 
@@ -618,8 +618,8 @@ namespace Fsl
     for (std::size_t i = 0; i < m_dependentResources.PipelineTonemapper.size(); ++i)
     {
       vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_dependentResources.PipelineTonemapper[i].Get());
-      auto endX = static_cast<uint32_t>(rRenderRecords[i].SplitX.GetValue());
-      VkRect2D scissor{{static_cast<int32_t>(startX), 0}, {endX - startX, res.Height.Value}};
+      const auto endX = static_cast<uint32_t>(rRenderRecords[i].SplitX.GetValue());
+      const VkRect2D scissor{{static_cast<int32_t>(startX), 0}, {endX - startX, res.Height.Value}};
       vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
       startX = endX;
 
@@ -691,7 +691,7 @@ namespace Fsl
 
     vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_dependentResources.ScenePipeline.Get());
 
-    VkDeviceSize offsets = 0;
+    const VkDeviceSize offsets = 0;
     vkCmdBindVertexBuffers(commandBuffer, VertexBufferBindId, 1, scene.Mesh.VertexBuffer.GetBufferPointer(), &offsets);
     vkCmdDraw(commandBuffer, scene.Mesh.VertexBuffer.GetVertexCount(), 1, 0, 0);
   }
@@ -699,7 +699,7 @@ namespace Fsl
 
   void HDR03_SkyboxToneMapping::DrawTonemappedScene(const FrameResources& /*frame*/, const VkCommandBuffer commandBuffer)
   {
-    VkDeviceSize offsets = 0;
+    const VkDeviceSize offsets = 0;
     vkCmdBindVertexBuffers(commandBuffer, VertexBufferBindId, 1, m_resources.MeshQuad.VertexBuffer.GetBufferPointer(), &offsets);
     vkCmdDraw(commandBuffer, m_resources.MeshQuad.VertexBuffer.GetVertexCount(), 1, 0, 0);
   }
@@ -720,7 +720,7 @@ namespace Fsl
     rScene.VertShaderModule.Reset(m_device.Get(), 0, contentManager->ReadBytes("skybox.vert.spv"));
     rScene.FragShaderModule.Reset(m_device.Get(), 0, contentManager->ReadBytes("skybox.frag.spv"));
 
-    std::array<VertexElementUsage, 2> shaderBindOrder = {VertexElementUsage::Position, VertexElementUsage::TextureCoordinate};
+    const std::array<VertexElementUsage, 2> shaderBindOrder = {VertexElementUsage::Position, VertexElementUsage::TextureCoordinate};
     rScene.Mesh = CommonMethods::CreateSkyboxMesh(m_bufferManager, shaderBindOrder);
     rScene.SceneDescriptorSetLayout = CommonMethods::CreateDescriptorSetLayout(m_device);
     rScene.ScenePipelineLayout = CommonMethods::CreatePipelineLayout(rScene.SceneDescriptorSetLayout);
@@ -761,7 +761,7 @@ namespace Fsl
     const float v0 = 0.0f;
     const float v1 = 1.0f;
 
-    std::array<VertexPositionTexture, 6> vertices = {
+    const std::array<VertexPositionTexture, 6> vertices = {
       // Floor
       VertexPositionTexture(Vector3(x0, y1, zPos), Vector2(u0, v1)), VertexPositionTexture(Vector3(x0, y0, zPos), Vector2(u0, v0)),
       VertexPositionTexture(Vector3(x1, y0, zPos), Vector2(u1, v0)),

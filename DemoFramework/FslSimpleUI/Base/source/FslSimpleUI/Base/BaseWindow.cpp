@@ -133,7 +133,7 @@ namespace Fsl::UI
     {
     case EventTypeId::InputClick:
       {
-        auto event = SafeDynamicPointerCast<WindowInputClickEvent>(routedEvent.Content);
+        const auto event = SafeDynamicPointerCast<WindowInputClickEvent>(routedEvent.Content);
         if (routedEvent.IsTunneling)
         {
           OnClickInputPreview(event);
@@ -146,7 +146,7 @@ namespace Fsl::UI
       }
     case EventTypeId::MouseOver:
       {
-        auto event = SafeDynamicPointerCast<WindowMouseOverEvent>(routedEvent.Content);
+        const auto event = SafeDynamicPointerCast<WindowMouseOverEvent>(routedEvent.Content);
         if (routedEvent.IsTunneling)
         {
           OnMouseOverPreview(event);
@@ -159,14 +159,14 @@ namespace Fsl::UI
       }
     case EventTypeId::Select:
       {
-        auto event = SafeDynamicPointerCast<WindowSelectEvent>(routedEvent.Content);
+        const auto event = SafeDynamicPointerCast<WindowSelectEvent>(routedEvent.Content);
         assert(!routedEvent.IsTunneling);
         OnSelect(event);
         break;
       }
     case EventTypeId::ContentChanged:
       {
-        auto event = SafeDynamicPointerCast<WindowContentChangedEvent>(routedEvent.Content);
+        const auto event = SafeDynamicPointerCast<WindowContentChangedEvent>(routedEvent.Content);
         assert(!routedEvent.IsTunneling);
         OnContentChanged(event);
         break;
@@ -268,10 +268,10 @@ namespace Fsl::UI
           PxAvailableSize localAvailableSpacePx(PxAvailableSize::Subtract(availableSizePx, marginSizePx));
 
           // Calc constraints
-          int32_t widthMinPx = unitConverter.ToPxInt32(m_propertyMinWidthDpf.Get());
-          int32_t heightMinPx = unitConverter.ToPxInt32(m_propertyMinHeightDpf.Get());
-          PxAvailableSize1D widthMaxPx = ToPxAvailableSize1D(unitConverter, m_propertyMaxWidthDpf.Get());
-          PxAvailableSize1D heightMaxPx = ToPxAvailableSize1D(unitConverter, m_propertyMaxHeightDpf.Get());
+          const int32_t widthMinPx = unitConverter.ToPxInt32(m_propertyMinWidthDpf.Get());
+          const int32_t heightMinPx = unitConverter.ToPxInt32(m_propertyMinHeightDpf.Get());
+          const PxAvailableSize1D widthMaxPx = ToPxAvailableSize1D(unitConverter, m_propertyMaxWidthDpf.Get());
+          const PxAvailableSize1D heightMaxPx = ToPxAvailableSize1D(unitConverter, m_propertyMaxHeightDpf.Get());
 
           PxAvailableSize constraintMaxPx;
           PxSize2D constraintMinPx;
@@ -325,7 +325,7 @@ namespace Fsl::UI
                      PxAvailableSize1D::MinPxSize1D(MathHelper::Max(minContentSizePx.Height(), constraintMinPx.Height()), constraintMaxPx.Height()));
 
           // Reapply margin to the desired space (Add ensures it wont be negative)
-          PxSize2D desiredSizePx(PxSize2D::Add(minContentSizePx, marginSizePx));
+          const PxSize2D desiredSizePx(PxSize2D::Add(minContentSizePx, marginSizePx));
           m_layoutCache.DesiredSizePx = desiredSizePx;
         }
         else
@@ -462,7 +462,7 @@ namespace Fsl::UI
       PropertyUpdated(PropertyType::Layout);
 
       // Inform the window manager about the change
-      auto uiContext = GetContext()->TheUIContext.Get();
+      const auto uiContext = GetContext()->TheUIContext.Get();
       uiContext->WindowManager->TrySetWindowVisibility(this, value);
     }
   }
@@ -470,30 +470,30 @@ namespace Fsl::UI
 
   PxPoint2 BaseWindow::PointFromScreen(const PxPoint2& screenPointPx) const
   {
-    auto uiContext = GetContext()->TheUIContext.Get();
+    const auto uiContext = GetContext()->TheUIContext.Get();
     return uiContext->WindowManager->PointFromScreen(this, screenPointPx);
   }
 
   PxPoint2 BaseWindow::PointToScreen(const PxPoint2& windowPointPx) const
   {
-    auto uiContext = GetContext()->TheUIContext.Get();
+    const auto uiContext = GetContext()->TheUIContext.Get();
     return uiContext->WindowManager->PointToScreen(this, windowPointPx);
   }
 
   PxPoint2 BaseWindow::PointFrom(const IWindowId* const pFromWin, const PxPoint2& pointPx) const
   {
-    auto uiContext = GetContext()->TheUIContext.Get();
+    const auto uiContext = GetContext()->TheUIContext.Get();
     const auto& windowManager = uiContext->WindowManager;
-    PxPoint2 screenPointPx = windowManager->PointToScreen(pFromWin, pointPx);
+    const PxPoint2 screenPointPx = windowManager->PointToScreen(pFromWin, pointPx);
     return windowManager->PointFromScreen(this, screenPointPx);
   }
 
 
   PxPoint2 BaseWindow::PointTo(const IWindowId* const pToWin, const PxPoint2& pointPx) const
   {
-    auto uiContext = GetContext()->TheUIContext.Get();
+    const auto uiContext = GetContext()->TheUIContext.Get();
     const auto& windowManager = uiContext->WindowManager;
-    PxPoint2 screenPoint = windowManager->PointToScreen(this, pointPx);
+    const PxPoint2 screenPoint = windowManager->PointToScreen(this, pointPx);
     return windowManager->PointFromScreen(pToWin, screenPoint);
   }
 
@@ -517,7 +517,7 @@ namespace Fsl::UI
     }
 
 
-    auto uiContext = GetContext()->TheUIContext.Get();
+    const auto uiContext = GetContext()->TheUIContext.Get();
     if (!uiContext->WindowManager->Exists(this))
     {
       return false;
@@ -530,7 +530,7 @@ namespace Fsl::UI
 
   void BaseWindow::SendEvent(const std::shared_ptr<WindowEvent>& event)
   {
-    auto uiContext = GetContext()->TheUIContext.Get();
+    const auto uiContext = GetContext()->TheUIContext.Get();
     uiContext->EventSender->SendEvent(event, this);
   }
 
@@ -543,7 +543,7 @@ namespace Fsl::UI
 
   const std::shared_ptr<WindowEventPool>& BaseWindow::GetEventPool() const
   {
-    auto uiContext = GetContext()->TheUIContext.Get();
+    const auto uiContext = GetContext()->TheUIContext.Get();
     return uiContext->EventSender->EventPool;
   }
 
@@ -554,7 +554,7 @@ namespace Fsl::UI
     {
       m_flags.Enable(flags);
 
-      auto uiContext = GetContext()->TheUIContext.Get();
+      const auto uiContext = GetContext()->TheUIContext.Get();
       uiContext->WindowManager->TrySetWindowFlags(this, flags, true);
     }
   }
@@ -566,7 +566,7 @@ namespace Fsl::UI
     {
       m_flags.Disable(flags);
 
-      auto uiContext = GetContext()->TheUIContext.Get();
+      const auto uiContext = GetContext()->TheUIContext.Get();
       uiContext->WindowManager->TrySetWindowFlags(this, flags, false);
     }
   }
@@ -585,7 +585,7 @@ namespace Fsl::UI
         m_flags.Disable(flags);
       }
 
-      auto uiContext = GetContext()->TheUIContext.Get();
+      const auto uiContext = GetContext()->TheUIContext.Get();
       uiContext->WindowManager->TrySetWindowFlags(this, flags, enabled);
     }
   }
@@ -629,7 +629,7 @@ namespace Fsl::UI
     {
       if (isDirty)
       {
-        auto uiContext = GetContext()->TheUIContext.Get();
+        const auto uiContext = GetContext()->TheUIContext.Get();
         uiContext->WindowManager->TrySetWindowFlags(this, WindowFlags::LayoutDirty, true);
       }
       else
@@ -681,7 +681,7 @@ namespace Fsl::UI
 
   DataBinding::DataBindingInstanceHandle BaseWindow::TryGetPropertyHandleNow(const DataBinding::DependencyPropertyDefinition& sourceDef)
   {
-    auto res = DataBinding::DependencyObjectHelper::TryGetPropertyHandle(
+    const auto res = DataBinding::DependencyObjectHelper::TryGetPropertyHandle(
       this, ThisDependencyObject(), sourceDef, DataBinding::PropLinkRefs(PropertyWidthDp, m_propertyWidthDp),
       DataBinding::PropLinkRefs(PropertyHeightDp, m_propertyHeightDp), DataBinding::PropLinkRefs(PropertyMinWidthDp, m_propertyMinWidthDpf),
       DataBinding::PropLinkRefs(PropertyMinHeightDp, m_propertyMinHeightDpf), DataBinding::PropLinkRefs(PropertyMaxWidthDp, m_propertyMaxWidthDpf),
@@ -695,7 +695,7 @@ namespace Fsl::UI
   DataBinding::PropertySetBindingResult BaseWindow::TrySetBindingNow(const DataBinding::DependencyPropertyDefinition& targetDef,
                                                                      const DataBinding::Binding& binding)
   {
-    auto res = DataBinding::DependencyObjectHelper::TrySetBinding(
+    const auto res = DataBinding::DependencyObjectHelper::TrySetBinding(
       this, ThisDependencyObject(), targetDef, binding, DataBinding::PropLinkRefs(PropertyWidthDp, m_propertyWidthDp),
       DataBinding::PropLinkRefs(PropertyHeightDp, m_propertyHeightDp), DataBinding::PropLinkRefs(PropertyMinWidthDp, m_propertyMinWidthDpf),
       DataBinding::PropLinkRefs(PropertyMinHeightDp, m_propertyMinHeightDpf), DataBinding::PropLinkRefs(PropertyMaxWidthDp, m_propertyMaxWidthDpf),

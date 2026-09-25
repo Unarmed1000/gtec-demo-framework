@@ -246,7 +246,7 @@ namespace Fsl
 
       std::array<VkWriteDescriptorSet, 4> writeDescriptorSets{};
       // Binding 0 : Vertex shader uniform buffer
-      auto vertUboBufferInfo = vertUboBuffer.GetDescriptorBufferInfo();
+      const auto vertUboBufferInfo = vertUboBuffer.GetDescriptorBufferInfo();
       writeDescriptorSets[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
       writeDescriptorSets[0].dstSet = descriptorSet;
       writeDescriptorSets[0].dstBinding = 0;
@@ -256,7 +256,7 @@ namespace Fsl
 
       assert(texture.IsValid());
       // Binding 1 : Fragment shader texture sampler
-      auto textureImageInfo1 = texture.GetDescriptorImageInfo();
+      const auto textureImageInfo1 = texture.GetDescriptorImageInfo();
       writeDescriptorSets[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
       writeDescriptorSets[1].dstSet = descriptorSet;
       writeDescriptorSets[1].dstBinding = 1;
@@ -266,7 +266,7 @@ namespace Fsl
 
       // Binding 2 : Fragment shader texture sampler
       const auto& rTexture2 = textureNormal.IsValid() ? textureNormal : texture;
-      auto textureImageInfo2 = rTexture2.GetDescriptorImageInfo();
+      const auto textureImageInfo2 = rTexture2.GetDescriptorImageInfo();
       writeDescriptorSets[2].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
       writeDescriptorSets[2].dstSet = descriptorSet;
       writeDescriptorSets[2].dstBinding = 2;
@@ -276,7 +276,7 @@ namespace Fsl
 
       // Binding 3 : Fragment shader texture sampler
       const auto& rTexture3 = textureSpecular.IsValid() ? textureSpecular : texture;
-      auto textureImageInfo3 = rTexture3.GetDescriptorImageInfo();
+      const auto textureImageInfo3 = rTexture3.GetDescriptorImageInfo();
       writeDescriptorSets[3].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
       writeDescriptorSets[3].dstSet = descriptorSet;
       writeDescriptorSets[3].dstBinding = 3;
@@ -343,7 +343,7 @@ namespace Fsl
       viewport.minDepth = 0.0f;
       viewport.maxDepth = 1.0f;
 
-      VkRect2D scissor{{0, 0}, extent};
+      const VkRect2D scissor{{0, 0}, extent};
 
       VkPipelineViewportStateCreateInfo pipelineViewportStateCreateInfo{};
       pipelineViewportStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
@@ -514,7 +514,7 @@ namespace Fsl
     m_matrices.Proj = Matrix::CreatePerspectiveFieldOfView(MathHelper::ToRadians(45.0f), aspectRatio, 1.0f, 1000.0f) * vulkanClipMatrix;
 
     const auto cameraRotation = ExtractRotationMatrix(m_matrices.View);
-    Vector4 cameraSpaceLightDirection = Vector4::Transform(m_lightDirection, cameraRotation);
+    const Vector4 cameraSpaceLightDirection = Vector4::Transform(m_lightDirection, cameraRotation);
     // Update UBO data
     m_uboData.LightDirection = Vector4(cameraSpaceLightDirection.X, cameraSpaceLightDirection.Y, cameraSpaceLightDirection.Z, 0.0f);
     m_uboData.LightDirection.Normalize();
@@ -556,7 +556,7 @@ namespace Fsl
       {
         if (subMesh.IndexBuffer.GetIndexCount() > 0)
         {
-          VkDeviceSize offsets = 0;
+          const VkDeviceSize offsets = 0;
           vkCmdBindVertexBuffers(hCmdBuffer, LocalConfig::VertexBufferBindId, 1, subMesh.VertexBuffer.GetBufferPointer(), &offsets);
           vkCmdBindIndexBuffer(hCmdBuffer, subMesh.IndexBuffer.GetBuffer(), 0, VK_INDEX_TYPE_UINT16);
           vkCmdDrawIndexed(hCmdBuffer, subMesh.IndexBuffer.GetIndexCount(), 1, 0, 0, 0);
@@ -574,7 +574,7 @@ namespace Fsl
                                                         const IO::Path& normalTexturePath, const float modelScale)
   {
     // Load the model
-    auto contentPath = contentManager.GetContentPath();
+    const auto contentPath = contentManager.GetContentPath();
     auto modelRecord = LoadModel(device, bufferManager, contentPath, srcModelPath, modelScale);
 
     // Load the texture and create the material
@@ -589,7 +589,7 @@ namespace Fsl
                                                   const IO::Path& contentPath, const IO::PathView srcModelPath, const float modelScale)
   {
     FSLLOG3_INFO("Loading model '{}'", srcModelPath);
-    auto modelPath = IO::Path::Combine(contentPath, srcModelPath);
+    const auto modelPath = IO::Path::Combine(contentPath, srcModelPath);
     SceneImporter sceneImporter;
     const std::shared_ptr<TestScene> scene = sceneImporter.Load<TestScene>(modelPath, modelScale, true);
 
@@ -598,7 +598,7 @@ namespace Fsl
       throw NotSupportedException("Scene did not contain any meshes");
     }
 
-    auto rootNode = scene->GetRootNode();
+    const auto rootNode = scene->GetRootNode();
     if (!rootNode)
     {
       throw NotSupportedException("Scene did not contain a root node");
@@ -610,7 +610,7 @@ namespace Fsl
     std::size_t totalIndexCount = 0;
     for (std::size_t i = 0; i < scene->Meshes.size(); ++i)
     {
-      auto mesh = scene->Meshes[i];
+      const auto mesh = scene->Meshes[i];
       subMeshes[i] = SubMeshRecord(Vulkan::VMVertexBuffer(bufferManager, mesh->AsReadOnlyFlexVertexSpan(), Vulkan::VMBufferUsage::STATIC),
                                    Vulkan::VMIndexBuffer(bufferManager, mesh->AsReadOnlyIndexSpan(), Vulkan::VMBufferUsage::STATIC),
                                    mesh->GetVertexCount(), mesh->GetIndexCount());

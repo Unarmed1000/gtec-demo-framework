@@ -134,51 +134,51 @@ namespace Fsl::GLES3
     virtual void Reset() noexcept;
 
     //! @brief Check if this buffer contains a valid gl handle.
-    bool IsValid() const noexcept
+    [[nodiscard]] bool IsValid() const noexcept
     {
       return m_handle != GLValues::InvalidHandle;
     }
 
     //! @brief Get the gl handle associated with the buffer.
     //! @return the handle or GLValues::InvalidHandle if the buffer is unallocated.
-    GLuint Get() const noexcept
+    [[nodiscard]] GLuint Get() const noexcept
     {
       return m_handle;
     }
 
     //! @brief Get the gl handle associated with the buffer.
     //! @return the handle or GLValues::InvalidHandle if the buffer is unallocated.
-    [[deprecated("use one of the other overloads instead")]] GLuint GetHandle() const
+    [[nodiscard]] [[deprecated("use one of the other overloads instead")]] GLuint GetHandle() const
     {
       return m_handle;
     }
 
     //! @brief Get the buffer target
-    GLenum GetTarget() const noexcept
+    [[nodiscard]] GLenum GetTarget() const noexcept
     {
       return m_target;
     }
 
     //! @brief Get the capacity
-    uint32_t GetCapacity() const noexcept
+    [[nodiscard]] uint32_t GetCapacity() const noexcept
     {
       return m_capacity;
     }
 
     //! @brief Get the GL capacity
-    GLsizei GetGLCapacity() const noexcept
+    [[nodiscard]] GLsizei GetGLCapacity() const noexcept
     {
       return UncheckedNumericCast<GLsizei>(m_capacity);
     }
 
     //! @brief Get the element stride (size of one element in bytes)
-    uint32_t GetElementStride() const noexcept
+    [[nodiscard]] uint32_t GetElementStride() const noexcept
     {
       return m_elementStride;
     }
 
     //! @brief Get the buffer usage
-    GLenum GetUsage() const noexcept
+    [[nodiscard]] GLenum GetUsage() const noexcept
     {
       return m_usage;
     }

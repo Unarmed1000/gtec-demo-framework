@@ -47,9 +47,9 @@ namespace
 TEST(Test_AtlasTextureInfoUtil, AdjustSourceRect_Trim_LeftOfTrim)
 {
   // src rect(-7, -4, 18, 15) on texture
-  AtlasTextureInfo atlasTextureInfo(PxRectangleU32::Create(1, 2, 3, 4), PxThicknessU::Create(8, 6, 7, 5), TestDp);
+  const AtlasTextureInfo atlasTextureInfo(PxRectangleU32::Create(1, 2, 3, 4), PxThicknessU::Create(8, 6, 7, 5), TestDp);
 
-  auto srcRectOrg = PxRectangleU32::Create(0, 0, 8, 15);
+  const auto srcRectOrg = PxRectangleU32::Create(0, 0, 8, 15);
 
   Vector2 srcOrigin;
   auto srcRect = srcRectOrg;
@@ -66,9 +66,9 @@ TEST(Test_AtlasTextureInfoUtil, AdjustSourceRect_Trim_LeftOfTrim)
 TEST(Test_AtlasTextureInfoUtil, AdjustSourceRect_Trim_RightOfTrim)
 {
   // src rect(-7, -4, 18, 15) on texture
-  AtlasTextureInfo atlasTextureInfo(PxRectangleU32::Create(1, 2, 3, 4), PxThicknessU::Create(8, 6, 7, 5), TestDp);
+  const AtlasTextureInfo atlasTextureInfo(PxRectangleU32::Create(1, 2, 3, 4), PxThicknessU::Create(8, 6, 7, 5), TestDp);
 
-  auto srcRectOrg = PxRectangleU32::Create(11, 0, 7, 15);
+  const auto srcRectOrg = PxRectangleU32::Create(11, 0, 7, 15);
 
   Vector2 srcOrigin;
   auto srcRect = srcRectOrg;
@@ -85,9 +85,9 @@ TEST(Test_AtlasTextureInfoUtil, AdjustSourceRect_Trim_RightOfTrim)
 TEST(Test_AtlasTextureInfoUtil, AdjustSourceRect_Trim_TopOfTrim)
 {
   // src rect(-7, -4, 18, 15) on texture
-  AtlasTextureInfo atlasTextureInfo(PxRectangleU32::Create(1, 2, 3, 4), PxThicknessU::Create(8, 6, 7, 5), TestDp);
+  const AtlasTextureInfo atlasTextureInfo(PxRectangleU32::Create(1, 2, 3, 4), PxThicknessU::Create(8, 6, 7, 5), TestDp);
 
-  auto srcRectOrg = PxRectangleU32::Create(0, 0, 18, 6);
+  const auto srcRectOrg = PxRectangleU32::Create(0, 0, 18, 6);
 
   Vector2 srcOrigin;
   auto srcRect = srcRectOrg;
@@ -104,9 +104,9 @@ TEST(Test_AtlasTextureInfoUtil, AdjustSourceRect_Trim_TopOfTrim)
 TEST(Test_AtlasTextureInfoUtil, AdjustSourceRect_Trim_BottomOfTrim)
 {
   // src rect(-7, -4, 18, 15) on texture
-  AtlasTextureInfo atlasTextureInfo(PxRectangleU32::Create(1, 2, 3, 4), PxThicknessU::Create(8, 6, 7, 5), TestDp);
+  const AtlasTextureInfo atlasTextureInfo(PxRectangleU32::Create(1, 2, 3, 4), PxThicknessU::Create(8, 6, 7, 5), TestDp);
 
-  auto srcRectOrg = PxRectangleU32::Create(0, 10, 18, 5);
+  const auto srcRectOrg = PxRectangleU32::Create(0, 10, 18, 5);
 
   Vector2 srcOrigin;
   auto srcRect = srcRectOrg;
@@ -123,9 +123,9 @@ TEST(Test_AtlasTextureInfoUtil, AdjustSourceRect_Trim_BottomOfTrim)
 TEST(Test_AtlasTextureInfoUtil, AdjustSourceRect_Trim_FullSrc)
 {
   // src rect(-7, -4, 18, 15) on texture
-  AtlasTextureInfo atlasTextureInfo(PxRectangleU32::Create(1, 2, 3, 4), PxThicknessU::Create(8, 6, 7, 5), TestDp);
+  const AtlasTextureInfo atlasTextureInfo(PxRectangleU32::Create(1, 2, 3, 4), PxThicknessU::Create(8, 6, 7, 5), TestDp);
 
-  auto srcRectOrg = PxRectangleU32::Create(0, 0, 18, 15);
+  const auto srcRectOrg = PxRectangleU32::Create(0, 0, 18, 15);
 
   Vector2 srcOrigin;
   auto srcRect = srcRectOrg;
@@ -142,9 +142,9 @@ TEST(Test_AtlasTextureInfoUtil, AdjustSourceRect_Trim_FullSrc)
 TEST(Test_AtlasTextureInfoUtil, AdjustSourceRect_Trim_FullyInsideTrim)
 {
   // src rect(-7, -4, 18, 15) on texture
-  AtlasTextureInfo atlasTextureInfo(PxRectangleU32::Create(1, 2, 3, 4), PxThicknessU::Create(8, 6, 7, 5), TestDp);
+  const AtlasTextureInfo atlasTextureInfo(PxRectangleU32::Create(1, 2, 3, 4), PxThicknessU::Create(8, 6, 7, 5), TestDp);
 
-  auto srcRectOrg = PxRectangleU32::Create(8, 6, 2, 3);
+  const auto srcRectOrg = PxRectangleU32::Create(8, 6, 2, 3);
 
   Vector2 srcOrigin;
   auto srcRect = srcRectOrg;
@@ -160,9 +160,9 @@ TEST(Test_AtlasTextureInfoUtil, AdjustSourceRect_Trim_FullyInsideTrim)
 TEST(Test_AtlasTextureInfoUtil, AdjustSourceRect_Trim_FullTrim)
 {
   // src rect(-7, -4, 18, 15) on texture
-  AtlasTextureInfo atlasTextureInfo(PxRectangleU32::Create(1, 2, 3, 4), PxThicknessU::Create(8, 6, 7, 5), TestDp);
+  const AtlasTextureInfo atlasTextureInfo(PxRectangleU32::Create(1, 2, 3, 4), PxThicknessU::Create(8, 6, 7, 5), TestDp);
 
-  auto srcRectOrg = PxRectangleU32::Create(8, 6, 3, 4);
+  const auto srcRectOrg = PxRectangleU32::Create(8, 6, 3, 4);
 
   Vector2 srcOrigin;
   auto srcRect = srcRectOrg;

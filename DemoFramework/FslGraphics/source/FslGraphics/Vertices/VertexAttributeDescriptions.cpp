@@ -65,7 +65,7 @@ namespace Fsl
       const auto count = static_cast<uint32_t>(elements.size());
       for (uint32_t i = 0; i < count; ++i)
       {
-        auto location = elements[i].Location;
+        const auto location = elements[i].Location;
         if (location < maxLocation)
         {
           throw NotSupportedException("The offsets should be in order: smallest -> largest");
@@ -88,13 +88,13 @@ namespace Fsl
 
       uint32_t maxLocation = 0;
       uint32_t dstIndex = 0;
-      for (std::size_t i = 0; i < srcSpan.size(); ++i)
+      for (const auto& srcEntry : srcSpan)
       {
-        const auto currentLocation = srcSpan[i].Location;
+        const auto currentLocation = srcEntry.Location;
         if (currentLocation >= maxLocation)
         {
           maxLocation = currentLocation;
-          rDstElements[dstIndex] = srcSpan[i];
+          rDstElements[dstIndex] = srcEntry;
         }
         else
         {
@@ -106,11 +106,8 @@ namespace Fsl
             rDstElements[tmpIndex + 1] = rDstElements[tmpIndex];
             --tmpIndex;
           }
-          if (tmpIndex < 0)
-          {
-            tmpIndex = 0;
-          }
-          rDstElements[tmpIndex] = srcSpan[i];
+          tmpIndex = std::max(tmpIndex, 0);
+          rDstElements[tmpIndex] = srcEntry;
         }
         ++dstIndex;
       }
@@ -142,10 +139,7 @@ namespace Fsl
             rDstElements[tmpIndex + 1] = rDstElements[tmpIndex];
             --tmpIndex;
           }
-          if (tmpIndex < 0)
-          {
-            tmpIndex = 0;
-          }
+          tmpIndex = std::max(tmpIndex, 0);
           rDstElements[tmpIndex] = srcEntry;
         }
         ++dstIndex;

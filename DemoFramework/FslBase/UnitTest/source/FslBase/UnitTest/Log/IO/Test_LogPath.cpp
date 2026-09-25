@@ -47,7 +47,7 @@ namespace
 
 TEST(TestLog_IO_LogPath, Log)
 {
-  IO::Path path("hello");
+  const IO::Path path("hello");
 
   std::stringstream stream;
   stream << path;

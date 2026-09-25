@@ -40,7 +40,7 @@ namespace Fsl
     CustomDemoAppConfig customDemoAppConfig;
     customDemoAppConfig.RestartFlags = CustomDemoAppConfigRestartFlags::Never;
 
-    DemoAppHostConfigVulkan config;
+    const DemoAppHostConfigVulkan config;
 
     DemoAppRegister::Vulkan::Register<DevNativeTexture2D>(rSetup, "Vulkan.System.DevNativeTexture2D", config, customDemoAppConfig);
   }

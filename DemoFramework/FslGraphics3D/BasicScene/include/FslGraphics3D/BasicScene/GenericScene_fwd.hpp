@@ -51,8 +51,8 @@ namespace Fsl::Graphics3D
 
     void AddMesh(const std::shared_ptr<TMesh>& mesh);
 
-    int32_t GetMeshCount() const override;
-    std::shared_ptr<Mesh> GetMeshAt(const int32_t index) const override;
+    [[nodiscard]] int32_t GetMeshCount() const override;
+    [[nodiscard]] std::shared_ptr<Mesh> GetMeshAt(const int32_t index) const override;
     void AddMesh(const std::shared_ptr<Mesh>& mesh) override;
   };
 }

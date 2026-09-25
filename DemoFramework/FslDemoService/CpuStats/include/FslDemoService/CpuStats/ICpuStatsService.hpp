@@ -42,7 +42,7 @@ namespace Fsl
     virtual ~ICpuStatsService() = default;
 
     //! @brief Get the number of CPU's available
-    virtual uint32_t GetCpuCount() const = 0;
+    [[nodiscard]] virtual uint32_t GetCpuCount() const = 0;
 
     //! @brief Get the current usage for the given cpuIndex.
     virtual bool TryGetCpuUsage(float& rUsagePercentage, const uint32_t cpuIndex) const = 0;

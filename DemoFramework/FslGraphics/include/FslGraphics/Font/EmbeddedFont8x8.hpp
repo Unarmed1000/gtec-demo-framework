@@ -48,6 +48,7 @@ namespace Fsl
   public:
     EmbeddedFont8x8(const EmbeddedFont8x8&) = delete;
     EmbeddedFont8x8& operator=(const EmbeddedFont8x8&) = delete;
+    ~EmbeddedFont8x8() = default;
 
     static uint8_t MinCharacter();
     static uint8_t MaxCharacter();

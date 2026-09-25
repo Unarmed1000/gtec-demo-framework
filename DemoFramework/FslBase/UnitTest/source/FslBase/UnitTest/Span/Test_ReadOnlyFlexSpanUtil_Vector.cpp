@@ -46,7 +46,7 @@ namespace
 TEST(TestReadOnlyFlexSpanUtilVector, AsSpan)
 {
   const std::vector<char> data = {'h', 'e', 'l', 'l', 'o', ' ', 'w', 'o', 'r', 'l', 'd'};
-  ReadOnlyFlexSpan span = ReadOnlyFlexSpanUtil::AsSpan(data);
+  const ReadOnlyFlexSpan span = ReadOnlyFlexSpanUtil::AsSpan(data);
 
   EXPECT_FALSE(span.empty());
   EXPECT_EQ(span.data(), data.data());
@@ -59,7 +59,7 @@ TEST(TestReadOnlyFlexSpanUtilVector, AsSpan)
 TEST(TestReadOnlyFlexSpanUtilVector, AsSpan_Empty)
 {
   const std::vector<char> data{};
-  ReadOnlyFlexSpan span = ReadOnlyFlexSpanUtil::AsSpan(data);
+  const ReadOnlyFlexSpan span = ReadOnlyFlexSpanUtil::AsSpan(data);
 
   EXPECT_TRUE(span.empty());
   EXPECT_EQ(span.data(), data.data());

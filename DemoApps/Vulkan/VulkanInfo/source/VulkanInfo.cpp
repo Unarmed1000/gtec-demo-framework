@@ -545,7 +545,7 @@ namespace Fsl
         const auto format = g_allFormats[i];
         rWriter.Print("- Format #{} ({})", i, format);
 
-        VkFormatProperties formatProperties = PhysicalDeviceUtil::GetPhysicalDeviceFormatProperties(physicalDevice.Device, format);
+        const VkFormatProperties formatProperties = PhysicalDeviceUtil::GetPhysicalDeviceFormatProperties(physicalDevice.Device, format);
 
         rWriter.Print("  - linearTilingFeatures: {}",
                       Debug::GetBitflagsString(static_cast<VkFormatFeatureFlagBits>(formatProperties.linearTilingFeatures)));
@@ -617,9 +617,9 @@ namespace Fsl
   {
     CustomWriter writer;
 
-    auto instance = InstanceUtil::CreateInstance("VulkanInfo", VK_MAKE_VERSION(1, 0, 0), VK_API_VERSION_1_0, 0, 0, nullptr, 0, nullptr);
+    const auto instance = InstanceUtil::CreateInstance("VulkanInfo", VK_MAKE_VERSION(1, 0, 0), VK_API_VERSION_1_0, 0, 0, nullptr, 0, nullptr);
 
-    auto instanceLayerProperties = InstanceUtil::EnumerateInstanceLayerProperties();
+    const auto instanceLayerProperties = InstanceUtil::EnumerateInstanceLayerProperties();
     LogInstanceLayerProperties(writer, instanceLayerProperties);
     LogVulkanCoreExtensions(writer);
 

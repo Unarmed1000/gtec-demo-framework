@@ -129,71 +129,71 @@ namespace Fsl::Vulkan
                const uint32_t* queueFamilyIndices, const VkImageLayout initialLayout);
 
     //! @brief Get the device associated with this object
-    VkDevice GetDevice() const noexcept
+    [[nodiscard]] VkDevice GetDevice() const noexcept
     {
       return m_image.GetDevice();
     }
 
     //! @brief Get the handle associated with this object
-    VkImage Get() const noexcept
+    [[nodiscard]] VkImage Get() const noexcept
     {
       return m_image.Get();
     }
 
 
     //! @brief Check if this object is valid
-    bool IsValid() const noexcept
+    [[nodiscard]] bool IsValid() const noexcept
     {
       return m_image.IsValid();
     }
 
 
-    VkImageCreateFlags GetFlags() const noexcept
+    [[nodiscard]] VkImageCreateFlags GetFlags() const noexcept
     {
       return m_flags;
     }
 
 
-    VkFormat GetFormat() const noexcept
+    [[nodiscard]] VkFormat GetFormat() const noexcept
     {
       return m_format;
     }
 
-    VkMemoryRequirements GetImageMemoryRequirements() const
+    [[nodiscard]] VkMemoryRequirements GetImageMemoryRequirements() const
     {
       return m_image.GetImageMemoryRequirements();
     }
 
-    VkSubresourceLayout GetImageSubresourceLayout(const VkImageSubresource& imageSubresource) const
+    [[nodiscard]] VkSubresourceLayout GetImageSubresourceLayout(const VkImageSubresource& imageSubresource) const
     {
       return m_image.GetImageSubresourceLayout(imageSubresource);
     }
 
-    uint32_t GetMipLevels() const noexcept
+    [[nodiscard]] uint32_t GetMipLevels() const noexcept
     {
       return m_mipLevels;
     }
 
-    VkExtent2D GetExtent2D() const noexcept
+    [[nodiscard]] VkExtent2D GetExtent2D() const noexcept
     {
       return VkExtent2D{m_extent.width, m_extent.height};
     }
 
-    PxSize2D GetSize() const noexcept
+    [[nodiscard]] PxSize2D GetSize() const noexcept
     {
       return PxSize2D::Create(UncheckedNumericCast<PxSize2D::raw_value_type>(m_extent.width),
                               UncheckedNumericCast<PxSize2D::raw_value_type>(m_extent.height));
     }
 
 
-    VkExtent3D GetExtent() const noexcept
+    [[nodiscard]] VkExtent3D GetExtent() const noexcept
     {
       return m_extent;
     }
 
     //! @brief Beware that the image layout can easily be changed outside of this classes control,
     //         so its up to you to keep it up to date with SetImageLayout
-    VkImageLayout GetImageLayout() const noexcept
+    [[nodiscard]] VkImageLayout GetImageLayout() const noexcept
     {
       return m_layout;
     }

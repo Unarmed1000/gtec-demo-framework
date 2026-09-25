@@ -42,7 +42,7 @@ namespace Fsl
   public:
     OptionParserEx();
 
-    uint32_t GetInstanceCount() const
+    [[nodiscard]] uint32_t GetInstanceCount() const
     {
       return m_instanceCount;
     }

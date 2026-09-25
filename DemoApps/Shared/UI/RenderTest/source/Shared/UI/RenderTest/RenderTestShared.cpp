@@ -83,11 +83,11 @@ namespace Fsl
     std::shared_ptr<UI::BaseWindow> CreateCaptionedBackground(UI::Theme::IThemeControlFactory& uiFactory,
                                                               const std::shared_ptr<UI::BaseWindow>& control, const StringViewLite caption)
     {
-      auto lblCaption = uiFactory.CreateLabel(caption, UI::Theme::FontType::Header);
+      const auto lblCaption = uiFactory.CreateLabel(caption, UI::Theme::FontType::Header);
       lblCaption->SetAlignmentX(UI::ItemAlignment::Center);
       lblCaption->SetAlignmentY(UI::ItemAlignment::Center);
 
-      auto layout = std::make_shared<UI::ComplexStackLayout>(uiFactory.GetContext());
+      const auto layout = std::make_shared<UI::ComplexStackLayout>(uiFactory.GetContext());
       layout->SetAlignmentX(UI::ItemAlignment::Stretch);
       layout->SetAlignmentY(UI::ItemAlignment::Stretch);
       layout->SetSpacing(DpSize1DF::Create(8));
@@ -104,7 +104,7 @@ namespace Fsl
 
     std::shared_ptr<UI::BaseWindow> CreatePrimitiveTopologyLineListTest(UI::Theme::IThemeControlFactory& uiFactory)
     {
-      auto control = std::make_shared<UI::Custom::PrimitiveTopologyTest>(uiFactory.GetContext());
+      const auto control = std::make_shared<UI::Custom::PrimitiveTopologyTest>(uiFactory.GetContext());
       control->SetAlignmentX(UI::ItemAlignment::Stretch);
       control->SetAlignmentY(UI::ItemAlignment::Stretch);
       control->SetMinWidth(DpSize1DF::Create(64));
@@ -116,7 +116,7 @@ namespace Fsl
 
     std::shared_ptr<UI::BaseWindow> CreatePrimitiveTopologyTriangleList(UI::Theme::IThemeControlFactory& uiFactory)
     {
-      auto control = std::make_shared<UI::Custom::PrimitiveTopologyTest>(uiFactory.GetContext());
+      const auto control = std::make_shared<UI::Custom::PrimitiveTopologyTest>(uiFactory.GetContext());
       control->SetAlignmentX(UI::ItemAlignment::Stretch);
       control->SetAlignmentY(UI::ItemAlignment::Stretch);
       control->SetMinWidth(DpSize1DF::Create(64));
@@ -128,7 +128,7 @@ namespace Fsl
 
     std::shared_ptr<UI::BaseWindow> CreateEasingFunctionGraph(UI::Theme::IThemeControlFactory& uiFactory, const TransitionType transitionType)
     {
-      auto control = std::make_shared<UI::Custom::EasingFunctionGraph>(uiFactory.GetContext());
+      const auto control = std::make_shared<UI::Custom::EasingFunctionGraph>(uiFactory.GetContext());
       control->SetAlignmentX(UI::ItemAlignment::Stretch);
       control->SetAlignmentY(UI::ItemAlignment::Stretch);
       control->SetMinWidth(DpSize1DF::Create(256));
@@ -144,7 +144,7 @@ namespace Fsl
     : m_uiEventListener(this)
     , m_uiExtension(std::make_shared<UIDemoAppExtension>(config, m_uiEventListener.GetListener(), LocalConfig::MainUIAtlas))
   {
-    auto uiControlFactory = UI::Theme::ThemeSelector::CreateControlFactory(*m_uiExtension);
+    const auto uiControlFactory = UI::Theme::ThemeSelector::CreateControlFactory(*m_uiExtension);
 
     m_ui = CreateUI(*uiControlFactory);
 
@@ -186,8 +186,8 @@ namespace Fsl
   {
     const auto& windowContext = uiFactory.GetContext();
 
-    auto testPrimitiveLineList = CreatePrimitiveTopologyLineListTest(uiFactory);
-    auto testPrimitiveTriangleList = CreatePrimitiveTopologyTriangleList(uiFactory);
+    const auto testPrimitiveLineList = CreatePrimitiveTopologyLineListTest(uiFactory);
+    const auto testPrimitiveTriangleList = CreatePrimitiveTopologyTriangleList(uiFactory);
 
 
     // Create the root layout and add it to the window manager
@@ -198,9 +198,9 @@ namespace Fsl
     mainLayout->AddChild(testPrimitiveLineList);
     mainLayout->AddChild(testPrimitiveTriangleList);
 
-    for (auto easingFunction : EasingFunctions)
+    for (const auto easingFunction : EasingFunctions)
     {
-      auto testEasingFunction = CreateEasingFunctionGraph(uiFactory, easingFunction);
+      const auto testEasingFunction = CreateEasingFunctionGraph(uiFactory, easingFunction);
       mainLayout->AddChild(testEasingFunction);
     }
 

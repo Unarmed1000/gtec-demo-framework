@@ -53,10 +53,10 @@ namespace Fsl
     std::vector<TextureAtlasNineSlicePatch> m_nineSlices;
 
   public:
-    uint32_t Count() const final;
-    const NamedAtlasTexture& GetEntry(const uint32_t index) const final;
-    uint32_t NineSliceCount() const final;
-    const TextureAtlasNineSlicePatch& GetNineSlicePatch(const uint32_t index) const final;
+    [[nodiscard]] uint32_t Count() const final;
+    [[nodiscard]] const NamedAtlasTexture& GetEntry(const uint32_t index) const final;
+    [[nodiscard]] uint32_t NineSliceCount() const final;
+    [[nodiscard]] const TextureAtlasNineSlicePatch& GetNineSlicePatch(const uint32_t index) const final;
 
     void Reset(const uint32_t capacity);
 

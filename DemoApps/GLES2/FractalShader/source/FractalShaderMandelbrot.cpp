@@ -53,8 +53,8 @@ namespace Fsl
     , m_locCoordinateScale(GLValues::InvalidLocation)
     , m_angle(0, 1.0f)
   {
-    std::shared_ptr<OptionParser> options = config.GetOptions<OptionParser>();
-    Config cfg = options->GetConfig();
+    const std::shared_ptr<OptionParser> options = config.GetOptions<OptionParser>();
+    const Config cfg = options->GetConfig();
 
     const std::shared_ptr<IContentManager> contentManager = config.DemoServiceProvider.Get<IContentManager>();
     {
@@ -133,9 +133,9 @@ namespace Fsl
     // Quad-spiral valley
     // location = Vector2(0.274, 0.482);
 
-    float tz = 0.5f - 0.5f * std::cos(0.225f * m_angle.X);
+    const float tz = 0.5f - 0.5f * std::cos(0.225f * m_angle.X);
     // float scale = std::pow(0.5f, 7.0f * tz);
-    float scale = std::pow(0.5f, 5.0f * tz);
+    const float scale = std::pow(0.5f, 5.0f * tz);
 
     glUseProgram(hProgram);
     glUniform2f(m_locCoordinateOffset, location.X, location.Y);

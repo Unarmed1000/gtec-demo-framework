@@ -46,8 +46,8 @@ namespace Fsl::Helios
     CameraSystemAdapterOpenCV();
     ~CameraSystemAdapterOpenCV() override;
 
-    CameraType GetCameraType() const override;
-    uint32_t GetCameraCount() const override;
+    [[nodiscard]] CameraType GetCameraType() const override;
+    [[nodiscard]] uint32_t GetCameraCount() const override;
     std::shared_ptr<ICameraAdapter> Allocate(const CameraAdapterAllocateInfo& allocateInfo) override;
   };
 }

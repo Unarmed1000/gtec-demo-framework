@@ -42,7 +42,7 @@ namespace
 
 TEST(TestLog_Time_LogMillisecondTickCount32, Log)
 {
-  MillisecondTickCount32 value(2000);
+  const MillisecondTickCount32 value(2000);
   std::stringstream stream;
   stream << value;
   EXPECT_EQ(std::string("2000ms"), stream.str());

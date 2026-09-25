@@ -44,9 +44,9 @@ namespace Fsl::Vulkan::PropertyUtil
       return false;
     }
 
-    for (uint32_t i = 0; i < layerProperties.size(); ++i)
+    for (const auto& layerProperty : layerProperties)
     {
-      if (layerName == layerProperties[i].layerName)
+      if (layerName == layerProperty.layerName)
       {
         return true;
       }
@@ -63,9 +63,9 @@ namespace Fsl::Vulkan::PropertyUtil
       return false;
     }
 
-    for (uint32_t i = 0; i < extensionProperties.size(); ++i)
+    for (const auto& extensionProperty : extensionProperties)
     {
-      if (extensionName == extensionProperties[i].extensionName)
+      if (extensionName == extensionProperty.extensionName)
       {
         return true;
       }

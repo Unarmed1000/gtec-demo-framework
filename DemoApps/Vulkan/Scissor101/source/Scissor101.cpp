@@ -150,7 +150,7 @@ namespace Fsl
     {
       Vulkan::VulkanImageCreator imageCreator(device, deviceQueue.Queue, deviceQueue.QueueFamilyIndex);
 
-      Texture texture =
+      const Texture texture =
         contentManager->ReadTexture("Texturing.png", PixelFormat::R8G8B8A8_UNORM, BitmapOrigin::Undefined, PixelChannelOrder::Undefined, true);
 
       VkSamplerCreateInfo samplerCreateInfo{};
@@ -252,7 +252,7 @@ namespace Fsl
 
       std::array<VkWriteDescriptorSet, 2> writeDescriptorSets{};
       // Binding 0 : Vertex shader uniform buffer
-      auto uboBufferInfo = uboBuffer.GetDescriptorBufferInfo();
+      const auto uboBufferInfo = uboBuffer.GetDescriptorBufferInfo();
       writeDescriptorSets[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
       writeDescriptorSets[0].pNext = nullptr;
       writeDescriptorSets[0].dstSet = descriptorSet;
@@ -262,7 +262,7 @@ namespace Fsl
       writeDescriptorSets[0].pBufferInfo = &uboBufferInfo;
 
       // Binding 1 : Fragment shader texture sampler
-      auto textureImageInfo = texture.GetDescriptorImageInfo();
+      const auto textureImageInfo = texture.GetDescriptorImageInfo();
       writeDescriptorSets[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
       writeDescriptorSets[1].pNext = nullptr;
       writeDescriptorSets[1].dstSet = descriptorSet;
@@ -496,7 +496,7 @@ namespace Fsl
 
   void Scissor101::DrawToCommandBuffer(const FrameResources& frame, const VkCommandBuffer commandBuffer)
   {
-    auto sizePx = GetWindowSizePx();
+    const auto sizePx = GetWindowSizePx();
 
     assert(m_clip1.X >= 0 && m_clip1.X <= sizePx.RawWidth());
     assert(m_clip1.Y >= 0 && m_clip1.Y <= sizePx.RawHeight());
@@ -550,7 +550,7 @@ namespace Fsl
     FSL_PARAM_NOT_USED(programInfo);
     FSL_PARAM_NOT_USED(matModel);
 
-    VkDeviceSize offsets = 0;
+    const VkDeviceSize offsets = 0;
     vkCmdBindVertexBuffers(commandBuffer, VertexBufferBindId, 1, m_resources.MainVertexBufferInfo.VertexBuffer.GetBufferPointer(), &offsets);
     vkCmdDraw(commandBuffer, m_resources.MainVertexBufferInfo.VertexBuffer.GetVertexCount(), 1, 0, 0);
   }
@@ -637,7 +637,7 @@ namespace Fsl
     viewport.minDepth = 0.0f;
     viewport.maxDepth = 1.0f;
 
-    VkRect2D scissor{{0, 0}, extent};
+    const VkRect2D scissor{{0, 0}, extent};
 
     VkPipelineViewportStateCreateInfo pipelineViewportStateCreateInfo{};
     pipelineViewportStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;

@@ -126,7 +126,7 @@ namespace Fsl
       Fsl::Bitmap bitmap;
       contentManager->Read(bitmap, "TextureAtlas/MainAtlas.png", PixelFormat::R8G8B8A8_UNORM);
 
-      SpriteNativeAreaCalc spriteNativeAreaCalc(true);
+      const SpriteNativeAreaCalc spriteNativeAreaCalc(true);
       m_font.Reset(spriteNativeAreaCalc, bitmap.GetExtent(), atlas, fontKerning, 160);
 
       m_texFontAtlas.Reset(m_graphicsService->GetNativeGraphics(), bitmap, Texture2DFilterHint::Smooth);
@@ -140,15 +140,15 @@ namespace Fsl
       const AtlasTextureInfo atlasInfo = m_texDescription.GetInfo();
 
       // texSize.X / tex
-      float x1 = -1.0f - (static_cast<float>(atlasInfo.OffsetPx.X.Value) / res.X);
-      float x2 = x1 + (static_cast<float>(atlasInfo.TrimmedRectPx.Width.Value) / res.X);
-      float y1 = -1.0f - (static_cast<float>(atlasInfo.OffsetPx.Y.Value) / res.Y);
-      float y2 = y1 + (static_cast<float>(atlasInfo.TrimmedRectPx.Height.Value) / res.Y);
+      const float x1 = -1.0f - (static_cast<float>(atlasInfo.OffsetPx.X.Value) / res.X);
+      const float x2 = x1 + (static_cast<float>(atlasInfo.TrimmedRectPx.Width.Value) / res.X);
+      const float y1 = -1.0f - (static_cast<float>(atlasInfo.OffsetPx.Y.Value) / res.Y);
+      const float y2 = y1 + (static_cast<float>(atlasInfo.TrimmedRectPx.Height.Value) / res.Y);
 
-      float u1 = static_cast<float>(atlasInfo.TrimmedRectPx.RawLeft()) / atlasSize.X;
-      float v1 = 1.0f - (static_cast<float>(atlasInfo.TrimmedRectPx.RawTop()) / atlasSize.Y);
-      float u2 = static_cast<float>(atlasInfo.TrimmedRectPx.RawRight()) / atlasSize.X;
-      float v2 = 1.0f - (static_cast<float>(atlasInfo.TrimmedRectPx.RawBottom()) / atlasSize.Y);
+      const float u1 = static_cast<float>(atlasInfo.TrimmedRectPx.RawLeft()) / atlasSize.X;
+      const float v1 = 1.0f - (static_cast<float>(atlasInfo.TrimmedRectPx.RawTop()) / atlasSize.Y);
+      const float u2 = static_cast<float>(atlasInfo.TrimmedRectPx.RawRight()) / atlasSize.X;
+      const float v2 = 1.0f - (static_cast<float>(atlasInfo.TrimmedRectPx.RawBottom()) / atlasSize.Y);
 
       VBHelper::BuildVB(m_vbDescription, BoxF(x1, -y2, x2, -y1), BoxF(u1, v2, u2, v1));
     }
@@ -186,7 +186,7 @@ namespace Fsl
 
   void BlurredScene::Draw()
   {
-    GLuint hTexAtlas = TextureUtil::ToNative(*m_basicRenderSystem, m_texFontAtlas.GetNative());
+    const GLuint hTexAtlas = TextureUtil::ToNative(*m_basicRenderSystem, m_texFontAtlas.GetNative());
 
     m_blurredDraw->Draw(m_scene.get());
 

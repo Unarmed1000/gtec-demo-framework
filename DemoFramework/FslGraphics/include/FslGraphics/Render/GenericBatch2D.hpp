@@ -1690,7 +1690,7 @@ namespace Fsl
     }
 
     m_batchStrategy.SetTexture(srcTexture);
-    PxVector2 dstPositionPxf2 = TypeConverter::To<PxVector2>(dstPositionPxf);
+    const PxVector2 dstPositionPxf2 = TypeConverter::To<PxVector2>(dstPositionPxf);
     for (std::size_t i = 0; i < strView.size(); ++i)
     {
       const SpriteFontGlyphPosition& srcGlyph = glyphScratchpadSpan[i];
@@ -2001,8 +2001,8 @@ namespace Fsl
       return;
     }
 
-    Vector2 delta(dstToPx.X.Value - dstFromPx.X.Value, dstToPx.Y.Value - dstFromPx.Y.Value);
-    auto len = delta.Length();
+    const Vector2 delta(dstToPx.X.Value - dstFromPx.X.Value, dstToPx.Y.Value - dstFromPx.Y.Value);
+    const auto len = delta.Length();
     Vector2 scale(len, 1.0f);
     const float rotation = VectorHelper::VectorToAngle(delta);
 
@@ -2045,8 +2045,8 @@ namespace Fsl
     }
 
 
-    Vector2 delta(dstToPxf.X.Value - dstFromPxf.X.Value, dstToPxf.Y.Value - dstFromPxf.Y.Value);
-    auto len = delta.Length();
+    const Vector2 delta(dstToPxf.X.Value - dstFromPxf.X.Value, dstToPxf.Y.Value - dstFromPxf.Y.Value);
+    const auto len = delta.Length();
     Vector2 scale(len, 1.0f);
     const float rotation = VectorHelper::VectorToAngle(delta);
 
@@ -2088,8 +2088,8 @@ namespace Fsl
       return;
     }
 
-    Vector2 delta(dstToPx.X.Value - dstFromPx.X.Value, dstToPx.Y.Value - dstFromPx.Y.Value);
-    auto len = delta.Length();
+    const Vector2 delta(dstToPx.X.Value - dstFromPx.X.Value, dstToPx.Y.Value - dstFromPx.Y.Value);
+    const auto len = delta.Length();
     Vector2 scale(len, 1.0f);
     const float rotation = VectorHelper::VectorToAngle(delta);
 
@@ -2131,8 +2131,8 @@ namespace Fsl
       return;
     }
 
-    Vector2 delta(dstToPxf.X.Value - dstFromPxf.X.Value, dstToPxf.Y.Value - dstFromPxf.Y.Value);
-    auto len = delta.Length();
+    const Vector2 delta(dstToPxf.X.Value - dstFromPxf.X.Value, dstToPxf.Y.Value - dstFromPxf.Y.Value);
+    const auto len = delta.Length();
     Vector2 scale(len, 1.0f);
     const float rotation = VectorHelper::VectorToAngle(delta);
 

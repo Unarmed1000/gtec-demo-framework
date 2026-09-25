@@ -47,10 +47,10 @@ namespace Fsl::UI
     {
       m_text = std::move(str);
       changed = true;
-      MeshHandle hMesh = Get();
+      const MeshHandle hMesh = Get();
       if (hMesh.IsValid())
       {
-        auto meshManager = GetMeshManager().lock();
+        const auto meshManager = GetMeshManager().lock();
         if (!meshManager)
         {
           throw UsageErrorException("mesh manager no longer valid");
@@ -70,10 +70,10 @@ namespace Fsl::UI
     {
       m_text = str;
       changed = true;
-      MeshHandle hMesh = Get();
+      const MeshHandle hMesh = Get();
       if (hMesh.IsValid())
       {
-        auto meshManager = GetMeshManager().lock();
+        const auto meshManager = GetMeshManager().lock();
         if (!meshManager)
         {
           throw UsageErrorException("mesh manager no longer valid");

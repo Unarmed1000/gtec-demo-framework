@@ -47,7 +47,7 @@ namespace
 TEST(TestMath_Ray_MonoGame, BoundingBoxIntersects)
 {
   // Our test box.
-  BoundingBox box(Vector3(-10.0f, -20.0f, -30.0f), Vector3(10.0f, 20.0f, 30.0f));
+  const BoundingBox box(Vector3(-10.0f, -20.0f, -30.0f), Vector3(10.0f, 20.0f, 30.0f));
   const auto center = (box.Max + box.Min) * 0.5f;
 
   // Test misses.

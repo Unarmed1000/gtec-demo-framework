@@ -46,13 +46,8 @@ namespace Fsl
     BasicTextureAtlas m_textureAtlas;
 
   public:
-    CompatibilityTextureAtlasMap(const CompatibilityTextureAtlasMap&) = default;
-    CompatibilityTextureAtlasMap& operator=(const CompatibilityTextureAtlasMap&) = default;
-
     // move assignment operator
-    CompatibilityTextureAtlasMap& operator=(CompatibilityTextureAtlasMap&& other) noexcept = default;
     // move constructor
-    CompatibilityTextureAtlasMap(CompatibilityTextureAtlasMap&& other) noexcept = default;
 
     CompatibilityTextureAtlasMap() = default;
 
@@ -62,22 +57,22 @@ namespace Fsl
     {
     }
 
-    uint32_t Count() const final
+    [[nodiscard]] uint32_t Count() const final
     {
       return m_textureAtlas.Count();
     }
 
-    const NamedAtlasTexture& GetEntry(const uint32_t index) const final
+    [[nodiscard]] const NamedAtlasTexture& GetEntry(const uint32_t index) const final
     {
       return m_textureAtlas.GetEntry(index);
     }
 
-    uint32_t NineSliceCount() const final
+    [[nodiscard]] uint32_t NineSliceCount() const final
     {
       return m_textureAtlas.NineSliceCount();
     }
 
-    const TextureAtlasNineSlicePatch& GetNineSlicePatch(const uint32_t index) const final
+    [[nodiscard]] const TextureAtlasNineSlicePatch& GetNineSlicePatch(const uint32_t index) const final
     {
       return m_textureAtlas.GetNineSlicePatch(index);
     }

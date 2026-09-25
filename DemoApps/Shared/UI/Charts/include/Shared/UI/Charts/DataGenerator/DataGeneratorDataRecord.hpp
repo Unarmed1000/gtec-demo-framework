@@ -58,7 +58,7 @@ namespace Fsl
     {
     }
 
-    uint32_t Sum() const
+    [[nodiscard]] uint32_t Sum() const
     {
       return UIProcessEvents + UIUpdate + UIDraw + UIDrawPreprocess + UIDrawGenMesh + UIDrawFillBuffers + UIDrawSchedule;
     }

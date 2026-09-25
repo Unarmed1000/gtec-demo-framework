@@ -57,7 +57,7 @@ namespace Fsl::UI
     }
 
 
-    bool GetEnableVerticalGraphicsRotation() const
+    [[nodiscard]] bool GetEnableVerticalGraphicsRotation() const
     {
       return m_impl.GetEnableVerticalGraphicsRotation();
     }
@@ -70,7 +70,7 @@ namespace Fsl::UI
       }
     }
 
-    const std::shared_ptr<ISizedSprite>& GetCursorSprite() const
+    [[nodiscard]] const std::shared_ptr<ISizedSprite>& GetCursorSprite() const
     {
       return m_impl.GetCursorSprite();
     }
@@ -83,7 +83,7 @@ namespace Fsl::UI
       }
     }
 
-    DpPoint2 GetCursorOrigin() const
+    [[nodiscard]] DpPoint2 GetCursorOrigin() const
     {
       return m_impl.GetCursorOrigin();
     }
@@ -96,7 +96,7 @@ namespace Fsl::UI
       }
     }
 
-    DpSize2D GetCursorSize() const
+    [[nodiscard]] DpSize2D GetCursorSize() const
     {
       return m_impl.GetCursorSize();
     }
@@ -109,7 +109,7 @@ namespace Fsl::UI
       }
     }
 
-    UIColor GetCursorColor() const
+    [[nodiscard]] UIColor GetCursorColor() const
     {
       return m_impl.GetCursorColor();
     }
@@ -122,7 +122,7 @@ namespace Fsl::UI
       }
     }
 
-    UIColor GetCursorDisabledColor() const
+    [[nodiscard]] UIColor GetCursorDisabledColor() const
     {
       return m_impl.GetCursorDisabledColor();
     }
@@ -137,7 +137,7 @@ namespace Fsl::UI
 
     // ------
 
-    const std::shared_ptr<ISizedSprite>& GetCursorOverlaySprite() const
+    [[nodiscard]] const std::shared_ptr<ISizedSprite>& GetCursorOverlaySprite() const
     {
       return m_impl.GetCursorOverlaySprite();
     }
@@ -150,7 +150,7 @@ namespace Fsl::UI
       }
     }
 
-    UIColor GetCursorOverlayColor() const
+    [[nodiscard]] UIColor GetCursorOverlayColor() const
     {
       return m_impl.GetCursorOverlayColor();
     }
@@ -165,7 +165,7 @@ namespace Fsl::UI
 
     // ------
 
-    const std::shared_ptr<IContentSprite>& GetBackgroundSprite() const
+    [[nodiscard]] const std::shared_ptr<IContentSprite>& GetBackgroundSprite() const
     {
       return m_impl.GetBackgroundSprite();
     }
@@ -178,7 +178,7 @@ namespace Fsl::UI
       }
     }
 
-    UIColor GetBackgroundColor() const
+    [[nodiscard]] UIColor GetBackgroundColor() const
     {
       return m_impl.GetBackgroundColor();
     }
@@ -191,7 +191,7 @@ namespace Fsl::UI
       }
     }
 
-    UIColor GetBackgroundDisabledColor() const
+    [[nodiscard]] UIColor GetBackgroundDisabledColor() const
     {
       return m_impl.GetBackgroundDisabledColor();
     }

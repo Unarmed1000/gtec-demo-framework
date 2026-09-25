@@ -70,7 +70,7 @@ namespace Fsl
     SkyboxProgram(const std::string& strVertexShader, const std::string& strFragmentShader);
     ~SkyboxProgram();
 
-    bool IsValid() const
+    [[nodiscard]] bool IsValid() const
     {
       return Program.IsValid();
     }

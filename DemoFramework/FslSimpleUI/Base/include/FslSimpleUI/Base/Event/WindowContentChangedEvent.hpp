@@ -46,9 +46,9 @@ namespace Fsl::UI
   public:
     WindowContentChangedEvent() noexcept;
 
-    uint32_t GetContentId() const noexcept;
-    int32_t GetParam1() const noexcept;
-    int32_t GetParam2() const noexcept;
+    [[nodiscard]] uint32_t GetContentId() const noexcept;
+    [[nodiscard]] int32_t GetParam1() const noexcept;
+    [[nodiscard]] int32_t GetParam2() const noexcept;
 
   protected:
     // NOLINTNEXTLINE(readability-identifier-naming)

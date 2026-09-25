@@ -50,7 +50,7 @@ namespace
 
 TEST(TestReadOnlyFlexSpan, Construct)
 {
-  ReadOnlyFlexSpan span;
+  const ReadOnlyFlexSpan span;
 
   EXPECT_TRUE(span.empty());
   EXPECT_EQ(span.data(), nullptr);
@@ -74,8 +74,8 @@ TEST(TestReadOnlyFlexSpan, Construct_constexpr)
 TEST(TestReadOnlyFlexSpan, Construct_FromZeroTerminated)
 {
   const auto* const psz = "Hello world";
-  auto lenPsz = std::strlen(psz);
-  ReadOnlyFlexSpan span(psz, lenPsz, sizeof(char));
+  const auto lenPsz = std::strlen(psz);
+  const ReadOnlyFlexSpan span(psz, lenPsz, sizeof(char));
 
   EXPECT_FALSE(span.empty());
   EXPECT_NE(span.data(), nullptr);
@@ -101,8 +101,8 @@ TEST(TestReadOnlyFlexSpan, Construct_FromZeroTerminated_constexpr)
 
 TEST(TestReadOnlyFlexSpan, Construct_FromStr)
 {
-  std::string str("Hello world");
-  ReadOnlyFlexSpan span = Convert(str);
+  const std::string str("Hello world");
+  const ReadOnlyFlexSpan span = Convert(str);
 
   EXPECT_FALSE(span.empty());
   EXPECT_NE(span.data(), nullptr);
@@ -115,10 +115,10 @@ TEST(TestReadOnlyFlexSpan, Construct_FromStr)
 TEST(TestReadOnlyFlexSpan, SubSpan)
 {
   std::array<uint16_t, 10> testArray = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
-  ReadOnlyFlexSpan span(testArray.data(), testArray.size(), sizeof(uint16_t));
+  const ReadOnlyFlexSpan span(testArray.data(), testArray.size(), sizeof(uint16_t));
 
   {
-    ReadOnlyFlexSpan res = span.subspan();
+    const ReadOnlyFlexSpan res = span.subspan();
     EXPECT_EQ(testArray.size(), res.size());
     EXPECT_EQ(&testArray[0], res.data());
     EXPECT_EQ(sizeof(uint16_t), res.stride());
@@ -126,28 +126,28 @@ TEST(TestReadOnlyFlexSpan, SubSpan)
   }
 
   {
-    ReadOnlyFlexSpan res = span.subspan(1u);
+    const ReadOnlyFlexSpan res = span.subspan(1u);
     EXPECT_EQ(9u, res.size());
     EXPECT_EQ(&testArray[1], res.data());
     EXPECT_EQ(sizeof(uint16_t), res.stride());
     EXPECT_EQ(res.size(), res.length());
   }
   {
-    ReadOnlyFlexSpan res = span.subspan(9u);
+    const ReadOnlyFlexSpan res = span.subspan(9u);
     EXPECT_EQ(1u, res.size());
     EXPECT_EQ(&testArray[9], res.data());
     EXPECT_EQ(sizeof(uint16_t), res.stride());
     EXPECT_EQ(res.size(), res.length());
   }
   {
-    ReadOnlyFlexSpan res = span.subspan(1u, 2u);
+    const ReadOnlyFlexSpan res = span.subspan(1u, 2u);
     EXPECT_EQ(2u, res.size());
     EXPECT_EQ(&testArray[1], res.data());
     EXPECT_EQ(sizeof(uint16_t), res.stride());
     EXPECT_EQ(res.size(), res.length());
   }
   {
-    ReadOnlyFlexSpan res = span.subspan(9u, 2u);
+    const ReadOnlyFlexSpan res = span.subspan(9u, 2u);
     EXPECT_EQ(1u, res.size());
     EXPECT_EQ(&testArray[9], res.data());
     EXPECT_EQ(sizeof(uint16_t), res.stride());
@@ -155,7 +155,7 @@ TEST(TestReadOnlyFlexSpan, SubSpan)
   }
   // its ok to read the last entry
   {
-    ReadOnlyFlexSpan res = span.subspan(testArray.size());
+    const ReadOnlyFlexSpan res = span.subspan(testArray.size());
     EXPECT_EQ(0u, res.size());
     EXPECT_EQ(sizeof(uint16_t), res.stride());
     EXPECT_EQ(res.size(), res.length());
@@ -164,9 +164,9 @@ TEST(TestReadOnlyFlexSpan, SubSpan)
 
 TEST(TestReadOnlyFlexSpan, SubSpan_Empty)
 {
-  ReadOnlyFlexSpan span;
+  const ReadOnlyFlexSpan span;
   {
-    ReadOnlyFlexSpan res = span.subspan();
+    const ReadOnlyFlexSpan res = span.subspan();
     EXPECT_EQ(0u, res.size());
     EXPECT_EQ(0u, res.stride());
     EXPECT_EQ(0u, res.length());
@@ -176,7 +176,7 @@ TEST(TestReadOnlyFlexSpan, SubSpan_Empty)
 
 TEST(TestReadOnlyFlexSpan, SubSpan_InvalidPos)
 {
-  ReadOnlyFlexSpan span("0123456789", 10, sizeof(char));
+  const ReadOnlyFlexSpan span("0123456789", 10, sizeof(char));
 
-  EXPECT_THROW(span.subspan(11u), std::out_of_range);
+  EXPECT_THROW(static_cast<void>(span.subspan(11u)), std::out_of_range);
 }

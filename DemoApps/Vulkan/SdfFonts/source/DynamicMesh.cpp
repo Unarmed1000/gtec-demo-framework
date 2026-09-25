@@ -98,7 +98,7 @@ namespace Fsl
   Span<VertexPositionTexture> DynamicMesh::BeginWrite(const uint32_t currentFrameIndex)
   {
     m_spanUsageFlags = GarbageCollectFrame(m_spanUsageFlags, currentFrameIndex, m_maxFramesInFlight);
-    uint32_t index = FindFreeSpan(m_spanUsageFlags, currentFrameIndex, m_maxFramesInFlight);
+    const uint32_t index = FindFreeSpan(m_spanUsageFlags, currentFrameIndex, m_maxFramesInFlight);
 
     m_activeSpanRange.Start = UncheckedNumericCast<uint32_t>(index * m_vertices.size());
     return SpanUtil::AsSpan(m_vertices);
@@ -115,7 +115,7 @@ namespace Fsl
   {
     m_spanUsageFlags = GarbageCollectFrame(m_spanUsageFlags, currentFrameIndex, m_maxFramesInFlight);
 
-    auto spanIndex = m_activeSpanRange.Start / m_activeSpanRange.Length;
+    const auto spanIndex = m_activeSpanRange.Start / m_activeSpanRange.Length;
     const auto srcBitFlag = 1 << currentFrameIndex;
     m_spanUsageFlags |= (srcBitFlag << (spanIndex * m_maxFramesInFlight));
   }

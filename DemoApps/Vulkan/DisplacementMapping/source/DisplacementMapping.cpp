@@ -173,7 +173,7 @@ namespace Fsl
 
           vkCmdBindDescriptorSets(m_drawCmdBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipelineLayout.Get(), 0, 1, &m_descriptorSet, 0, nullptr);
 
-          VkDeviceSize offsets = 0;
+          const VkDeviceSize offsets = 0;
           vkCmdBindVertexBuffers(m_drawCmdBuffers[i], VertexBufferBindId, 1, m_meshes.Object.GetVertices().GetBufferPointer(), &offsets);
           vkCmdBindIndexBuffer(m_drawCmdBuffers[i], m_meshes.Object.GetIndices().GetBuffer(), 0, VK_INDEX_TYPE_UINT32);
 
@@ -361,7 +361,7 @@ namespace Fsl
     }
 
     // Tessellation control
-    float savedLevel = m_uboTC.TessLevel;
+    const float savedLevel = m_uboTC.TessLevel;
     if (!m_displacement)
     {
       m_uboTC.TessLevel = 1.0f;

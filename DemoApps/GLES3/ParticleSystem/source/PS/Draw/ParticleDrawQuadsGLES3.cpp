@@ -83,7 +83,7 @@ namespace Fsl
     glUniformMatrix4fv(m_locWorldViewMatrix, 1, 0, context.MatrixWorldView.DirectAccess());
     glUniformMatrix4fv(m_locProjMatrix, 1, 0, context.MatrixProjection.DirectAccess());
 
-    Vector4 col = Colors::White().ToVector4();
+    const Vector4 col = Colors::White().ToVector4();
 
     // HighResolutionTimer timer;
     // auto start = timer.GetTime();
@@ -141,7 +141,7 @@ namespace Fsl
     // FSLLOG3_INFO("Particles-ToVertices Time: " << end - start);
 
     glBindBuffer(m_pCurrentBuffer->GetTarget(), m_pCurrentBuffer->Get());
-    m_pCurrentBuffer->SetDataFast(0, m_buffer.data(), particleCount * 6);
+    m_pCurrentBuffer->SetDataFast(0, m_buffer.data(), static_cast<std::size_t>(particleCount) * 6);
     m_pCurrentBuffer->EnableAttribArrays(m_particleAttribLink);
 
     glDrawArrays(GL_TRIANGLES, 0, UncheckedNumericCast<GLsizei>(particleCount * 6));

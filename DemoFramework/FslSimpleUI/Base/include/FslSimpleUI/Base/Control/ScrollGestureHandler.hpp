@@ -77,7 +77,7 @@ namespace Fsl::UI
       AnimStatus Status{AnimStatus::Idle};
       TransitionPxVector2 Anim;
 
-      AnimRecord() noexcept
+      AnimRecord()
         : Anim(TimeSpan::FromSeconds(1), TransitionType::EaseOutSine)
       {
       }
@@ -101,7 +101,7 @@ namespace Fsl::UI
     MovementTransactionAction AddMovement(const MillisecondTickCount32 eventTimestamp, const PxPoint2 screenPositionPx,
                                           const EventTransactionState state, const bool isRepeat, const MovementOwnership movementOwnership);
 
-    bool IsScrollingEnabled() const noexcept;
+    [[nodiscard]] bool IsScrollingEnabled() const noexcept;
 
     void SetScrollMode(const ScrollModeFlags value) noexcept;
 

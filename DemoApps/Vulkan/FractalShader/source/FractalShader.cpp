@@ -67,8 +67,8 @@ namespace Fsl
   FractalShader::FractalShader(const DemoAppConfig& config)
     : VulkanBasic::DemoAppVulkanBasic(config)
   {
-    std::shared_ptr<OptionParser> options = config.GetOptions<OptionParser>();
-    Config cfg = options->GetConfig();
+    const std::shared_ptr<OptionParser> options = config.GetOptions<OptionParser>();
+    const Config cfg = options->GetConfig();
 
     m_resources.BufferManager =
       std::make_shared<Vulkan::VMBufferManager>(m_device.GetPhysicalDevice(), m_device.Get(), m_deviceQueue.Queue, m_deviceQueue.QueueFamilyIndex);

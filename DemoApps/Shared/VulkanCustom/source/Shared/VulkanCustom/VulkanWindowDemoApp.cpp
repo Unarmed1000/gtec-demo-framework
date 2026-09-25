@@ -62,20 +62,20 @@ namespace Fsl
     , m_deviceActiveFeatures{}
     , m_deviceCreateInfo(std::make_shared<Vulkan::DeviceCreateInfoCopy>())
   {
-    auto hostInfo = demoAppConfig.DemoServiceProvider.Get<IHostInfo>();
-    auto appHostConfigBase = hostInfo->TryGetAppHostConfig();
+    const auto hostInfo = demoAppConfig.DemoServiceProvider.Get<IHostInfo>();
+    const auto appHostConfigBase = hostInfo->TryGetAppHostConfig();
     if (!appHostConfigBase)
     {
       throw std::runtime_error("The AppHostConfig was not set");
     }
-    auto appHostConfig = std::dynamic_pointer_cast<DemoAppHostConfigWindow>(appHostConfigBase);
+    const auto appHostConfig = std::dynamic_pointer_cast<DemoAppHostConfigWindow>(appHostConfigBase);
     if (!appHostConfig)
     {
       throw std::runtime_error("The AppHostConfig was not of the expected type");
     }
 
-    auto windowHostInfo = demoAppConfig.DemoServiceProvider.Get<IWindowHostInfo>();
-    auto windowSystem = VulkanWindowSystemHelper::GetWindowSystem(windowHostInfo);
+    const auto windowHostInfo = demoAppConfig.DemoServiceProvider.Get<IWindowHostInfo>();
+    const auto windowSystem = VulkanWindowSystemHelper::GetWindowSystem(windowHostInfo);
     m_nativeWindow = VulkanWindowSystemHelper::GetActiveWindow(windowHostInfo);
 
 
@@ -87,7 +87,7 @@ namespace Fsl
       m_physicalDevice = windowSystem->GetPhysicalDevice();
 
       const auto deviceQueueFamilyProperties = PhysicalDeviceUtil::GetPhysicalDeviceQueueFamilyProperties(m_physicalDevice.Device);
-      auto supportFilter =
+      const auto supportFilter =
         PhysicalDeviceKHRUtil::GetPhysicalDeviceSurfaceSupportKHR(m_physicalDevice.Device, m_surface, deviceQueueFamilyProperties.size());
 
       const uint32_t queueFamilyIndex = QueueUtil::GetQueueFamilyIndex(deviceQueueFamilyProperties, VK_QUEUE_GRAPHICS_BIT, 0, &supportFilter);
@@ -110,7 +110,7 @@ namespace Fsl
       deviceCreateInfo.ppEnabledExtensionNames = extensions.data();
 
       // Lookup the user defines feature requirements and set them
-      auto demoAppHostConfigVulkan = appHostConfig->TryGetCustomDemoAppHostConfig<DemoAppHostConfigVulkan>();
+      const auto demoAppHostConfigVulkan = appHostConfig->TryGetCustomDemoAppHostConfig<DemoAppHostConfigVulkan>();
       if (demoAppHostConfigVulkan && demoAppHostConfigVulkan->HasDeviceRequiredFeatures())
       {
         std::deque<Vulkan::PhysicalDeviceFeatureRequest> requiredFeatures;

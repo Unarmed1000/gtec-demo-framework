@@ -54,13 +54,13 @@ namespace Fsl::UI::Custom
       m_fnEasingFunction = EasingFunctionUtil::GetEasingFunction(m_transitionType);
     }
 
-    TransitionType GetTransitionType() const noexcept
+    [[nodiscard]] TransitionType GetTransitionType() const noexcept
     {
       return m_transitionType;
     }
 
 
-    EasingFunctionUtil::FNEasingFunction TryGet() const noexcept
+    [[nodiscard]] EasingFunctionUtil::FNEasingFunction TryGet() const noexcept
     {
       return m_fnEasingFunction;
     }

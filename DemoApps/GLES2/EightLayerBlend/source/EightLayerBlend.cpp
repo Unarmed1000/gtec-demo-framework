@@ -56,7 +56,7 @@ namespace Fsl
 
     {
       Bitmap bitmap;
-      GLTextureParameters texParms(GL_NEAREST, GL_NEAREST, GL_REPEAT, GL_REPEAT);
+      const GLTextureParameters texParms(GL_NEAREST, GL_NEAREST, GL_REPEAT, GL_REPEAT);
       // contentManager->Read(bitmap, "Textures/EightLayers/1_new.jpg", PixelFormat::R8G8B8_UNORM);
       contentManager->Read(bitmap, "Textures/EightLayers/1_old.jpg", PixelFormat::R8G8B8_UNORM);
       m_layers[0].Texture.Reset(bitmap, texParms);
@@ -108,15 +108,15 @@ namespace Fsl
 
   void EightLayerBlend::Update(const DemoTime& demoTime)
   {
-    float pos = std::sin(m_angle);
+    const float pos = std::sin(m_angle);
 
-    float xRangeFirst = (1200.0f / 2.0f);
-    float xRangeLast = (1920.0f / 2.0f);
-    float xRangeAdd = (xRangeLast - xRangeFirst) / static_cast<float>(m_layers.size() - 1u);
+    const float xRangeFirst = (1200.0f / 2.0f);
+    const float xRangeLast = (1920.0f / 2.0f);
+    const float xRangeAdd = (xRangeLast - xRangeFirst) / static_cast<float>(m_layers.size() - 1u);
     float xRange = xRangeFirst;
-    for (std::size_t i = 0; i < m_layers.size(); ++i)
+    for (auto& rLayer : m_layers)
     {
-      m_layers[i].Position = pos * xRange;
+      rLayer.Position = pos * xRange;
       xRange += xRangeAdd;
     }
 

@@ -50,9 +50,9 @@ namespace Fsl
 
     explicit ScopedSystemMemoryAccessDummy(const std::size_t targetAddress);
     ~ScopedSystemMemoryAccessDummy() = default;
-    uint8_t GetUInt8() const;
-    uint16_t GetUInt16() const;
-    uint32_t GetUInt32() const;
+    [[nodiscard]] uint8_t GetUInt8() const;
+    [[nodiscard]] uint16_t GetUInt16() const;
+    [[nodiscard]] uint32_t GetUInt32() const;
     void SetUInt8(const uint8_t value);
     void SetUInt16(const uint16_t value);
     void SetUInt32(const uint32_t value);

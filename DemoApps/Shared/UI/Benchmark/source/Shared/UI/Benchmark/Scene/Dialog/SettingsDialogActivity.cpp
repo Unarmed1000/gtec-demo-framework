@@ -76,7 +76,7 @@ namespace Fsl::UI
     rMainLayout.AddRowDefinition(GridRowDefinition(GridUnitType::Auto));
     rMainLayout.AddRowDefinition(GridRowDefinition(GridUnitType::Auto));
 
-    auto caption = themeControlFactory->CreateLabel("Settings", Theme::FontType::Header);
+    const auto caption = themeControlFactory->CreateLabel("Settings", Theme::FontType::Header);
     caption->SetAlignmentX(ItemAlignment::Center);
 
     m_buttonOK = themeControlFactory->CreateTextButton(Theme::ButtonType::Contained, "OK");
@@ -84,9 +84,9 @@ namespace Fsl::UI
 
     m_renderMethodUI = CreateRenderMethodUI(*themeControlFactory, renderRecordSpan, m_settings->ActiveRenderIndex);
 
-    auto context = themeControlFactory->GetContext();
-    auto group = std::make_shared<UI::LayoutSharedSizeGroup>();
-    auto content = std::make_shared<ComplexStackLayout>(context);
+    const auto context = themeControlFactory->GetContext();
+    const auto group = std::make_shared<UI::LayoutSharedSizeGroup>();
+    const auto content = std::make_shared<ComplexStackLayout>(context);
     {
       m_switchNoOpaqueMaterials = themeControlFactory->CreateSwitch(TextConfig::NoOpaqueMaterials, m_settings->NoOpaqueMaterials);
       m_switchStats = themeControlFactory->CreateSwitch("UI stats", m_settings->ShowStats);
@@ -94,7 +94,7 @@ namespace Fsl::UI
       m_switchEnableClipping = themeControlFactory->CreateSwitch("Enable clipping", m_settings->EnableClipping);
       m_switchShowClipRectangle = themeControlFactory->CreateSwitch("Show clip rectangle", m_settings->ShowClipRectangle);
 
-      auto switchStack = std::make_shared<StackLayout>(context);
+      const auto switchStack = std::make_shared<StackLayout>(context);
       switchStack->SetOrientation(UI::LayoutOrientation::Vertical);
       switchStack->AddChild(m_switchNoOpaqueMaterials);
       switchStack->AddChild(m_switchStats);
@@ -189,19 +189,19 @@ namespace Fsl::UI
                                                                                       const ReadOnlySpan<RenderMethodInfo> renderRecordSpan,
                                                                                       const uint32_t activeRenderIndex)
   {
-    auto layout = std::make_shared<UI::StackLayout>(uiFactory.GetContext());
+    const auto layout = std::make_shared<UI::StackLayout>(uiFactory.GetContext());
     layout->SetAlignmentX(UI::ItemAlignment::Stretch);
     layout->SetAlignmentY(UI::ItemAlignment::Center);
     layout->SetOrientation(UI::LayoutOrientation::Vertical);
 
-    auto labelRenderMethod = uiFactory.CreateLabel(TextConfig::HeaderRenderMethod, UI::Theme::FontType::Header);
-    auto radioGroup = uiFactory.CreateRadioGroup("Render");
+    const auto labelRenderMethod = uiFactory.CreateLabel(TextConfig::HeaderRenderMethod, UI::Theme::FontType::Header);
+    const auto radioGroup = uiFactory.CreateRadioGroup("Render");
 
     layout->AddChild(labelRenderMethod);
     RenderMethodUI renderMethodUI;
     for (uint32_t i = 0; i < renderRecordSpan.size(); ++i)
     {
-      auto radioButton = uiFactory.CreateRadioButton(radioGroup, renderRecordSpan[i].Name, i == activeRenderIndex);
+      const auto radioButton = uiFactory.CreateRadioButton(radioGroup, renderRecordSpan[i].Name, i == activeRenderIndex);
       layout->AddChild(radioButton);
       renderMethodUI.Methods.push_back(radioButton);
     }

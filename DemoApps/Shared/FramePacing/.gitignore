@@ -1,0 +1,16 @@
+/.StartProject.bat
+/.vs/
+/CMakeLists.txt
+/GNUmakefile_Yocto
+/Shared.FramePacing.VC.VC.opendb
+/Shared.FramePacing.VC.db
+/Shared.FramePacing.manifest
+/Shared.FramePacing.opensdf
+/Shared.FramePacing.sdf
+/Shared.FramePacing.sln
+/Shared.FramePacing.v12.sdf
+/Shared.FramePacing.v12.suo
+/Shared.FramePacing.vcxproj
+/Shared.FramePacing.vcxproj.filters
+/Shared.FramePacing.vcxproj.user
+/build/

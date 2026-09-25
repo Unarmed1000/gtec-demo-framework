@@ -52,6 +52,9 @@ namespace Fsl::UI
     {
     }
 
+    ExternalModuleHost(const ExternalModuleHost&) = delete;
+    ExternalModuleHost& operator=(const ExternalModuleHost&) = delete;
+
     ~ExternalModuleHost() final
     {
       m_basicInfo->Dispose();
@@ -59,12 +62,12 @@ namespace Fsl::UI
     }
 
     // From IExternalModuleHost
-    std::shared_ptr<IWindowClickInputTargetLocater> GetTargetLocater() const final
+    [[nodiscard]] std::shared_ptr<IWindowClickInputTargetLocater> GetTargetLocater() const final
     {
       return m_targetLocator;
     }
 
-    std::shared_ptr<IWindowBasicInfo> GetWindowInfo() const final
+    [[nodiscard]] std::shared_ptr<IWindowBasicInfo> GetWindowInfo() const final
     {
       return m_basicInfo;
     }

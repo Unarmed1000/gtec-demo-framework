@@ -78,7 +78,7 @@ namespace Fsl
     m_cameraTextureConfig = GLRawBitmapUtil::Convert(m_camera.GetPixelFormat(), cameraExtent.Width.Value, cameraStride, true);
 
     // Allocate space for the target bitmap
-    m_bitmapBuffer.resize(cameraExtent.Height.Value * cameraStride);
+    m_bitmapBuffer.resize(static_cast<std::size_t>(cameraExtent.Height.Value) * cameraStride);
 
     // ReadOnlyRawBitmap(pContent, width, height, pixelFormat, stride, origin)
 
@@ -158,7 +158,7 @@ namespace Fsl
     RawBitmapEx targetBitmap(RawBitmapEx::Create(SpanUtil::AsSpan(m_bitmapBuffer), m_camera.GetExtent(), m_camera.GetPixelFormat(),
                                                  m_camera.GetStride(), BitmapOrigin::UpperLeft));
 
-    bool hasNewFrame = m_camera.TryRender(targetBitmap, m_frameId);
+    const bool hasNewFrame = m_camera.TryRender(targetBitmap, m_frameId);
 
     // Do not cull polygons
     glDisable(GL_CULL_FACE);

@@ -47,8 +47,8 @@ namespace
 
 TEST(TestGetOpt_Option, Construct_Default)
 {
-  int32_t cmdId = 0;
-  Option option;
+  const int32_t cmdId = 0;
+  const Option option;
 
   EXPECT_EQ(std::string(""), option.ShortName);
   EXPECT_EQ(std::string(""), option.Name);
@@ -63,12 +63,12 @@ TEST(TestGetOpt_Option, Construct_Default)
 
 TEST(TestGetOpt_Option, Construct_Smartname1)
 {
-  std::string smartName("h");
-  auto hasArg = OptionArgument::OptionRequired;
-  int32_t cmdId = 42;
-  std::string description("world");
+  const std::string smartName("h");
+  const auto hasArg = OptionArgument::OptionRequired;
+  const int32_t cmdId = 42;
+  const std::string description("world");
 
-  Option option(smartName, hasArg, cmdId, description);
+  const Option option(smartName, hasArg, cmdId, description);
 
   EXPECT_EQ(smartName, option.ShortName);
   EXPECT_EQ(std::string(""), option.Name);
@@ -83,12 +83,12 @@ TEST(TestGetOpt_Option, Construct_Smartname1)
 
 TEST(TestGetOpt_Option, Construct_Smartname2)
 {
-  std::string smartName("hello");
-  auto hasArg = OptionArgument::OptionRequired;
-  int32_t cmdId = 42;
-  std::string description("world");
+  const std::string smartName("hello");
+  const auto hasArg = OptionArgument::OptionRequired;
+  const int32_t cmdId = 42;
+  const std::string description("world");
 
-  Option option(smartName, hasArg, cmdId, description);
+  const Option option(smartName, hasArg, cmdId, description);
 
   EXPECT_EQ(std::string(""), option.ShortName);
   EXPECT_EQ(smartName, option.Name);
@@ -103,13 +103,13 @@ TEST(TestGetOpt_Option, Construct_Smartname2)
 
 TEST(TestGetOpt_Option, Construct_Smartname1_Group)
 {
-  std::string smartName("h");
-  auto hasArg = OptionArgument::OptionRequired;
-  int32_t cmdId = 42;
-  std::string description("world");
-  OptionGroup::Enum group = OptionGroup::Custom1;
+  const std::string smartName("h");
+  const auto hasArg = OptionArgument::OptionRequired;
+  const int32_t cmdId = 42;
+  const std::string description("world");
+  const OptionGroup::Enum group = OptionGroup::Custom1;
 
-  Option option(smartName, hasArg, cmdId, description, group);
+  const Option option(smartName, hasArg, cmdId, description, group);
 
   EXPECT_EQ(smartName, option.ShortName);
   EXPECT_EQ(std::string(""), option.Name);
@@ -124,13 +124,13 @@ TEST(TestGetOpt_Option, Construct_Smartname1_Group)
 
 TEST(TestGetOpt_Option, Construct_Smartname2_Group)
 {
-  std::string smartName("hello");
-  auto hasArg = OptionArgument::OptionRequired;
-  int32_t cmdId = 42;
-  std::string description("world");
-  OptionGroup::Enum group = OptionGroup::Custom1;
+  const std::string smartName("hello");
+  const auto hasArg = OptionArgument::OptionRequired;
+  const int32_t cmdId = 42;
+  const std::string description("world");
+  const OptionGroup::Enum group = OptionGroup::Custom1;
 
-  Option option(smartName, hasArg, cmdId, description, group);
+  const Option option(smartName, hasArg, cmdId, description, group);
 
   EXPECT_EQ(std::string(""), option.ShortName);
   EXPECT_EQ(smartName, option.Name);
@@ -145,13 +145,13 @@ TEST(TestGetOpt_Option, Construct_Smartname2_Group)
 
 TEST(TestGetOpt_Option, Construct_TwoNames)
 {
-  std::string shortName("h");
-  std::string name("hello");
-  auto hasArg = OptionArgument::OptionRequired;
-  int32_t cmdId = 42;
-  std::string description("world");
+  const std::string shortName("h");
+  const std::string name("hello");
+  const auto hasArg = OptionArgument::OptionRequired;
+  const int32_t cmdId = 42;
+  const std::string description("world");
 
-  Option option(shortName, name, hasArg, cmdId, description);
+  const Option option(shortName, name, hasArg, cmdId, description);
 
   EXPECT_EQ(shortName, option.ShortName);
   EXPECT_EQ(name, option.Name);
@@ -166,14 +166,14 @@ TEST(TestGetOpt_Option, Construct_TwoNames)
 
 TEST(TestGetOpt_Option, Construct_TwoNamesAndGroup)
 {
-  std::string shortName("h");
-  std::string name("hello");
-  auto hasArg = OptionArgument::OptionRequired;
-  int32_t cmdId = 42;
-  std::string description("world");
-  OptionGroup::Enum group = OptionGroup::Custom1;
+  const std::string shortName("h");
+  const std::string name("hello");
+  const auto hasArg = OptionArgument::OptionRequired;
+  const int32_t cmdId = 42;
+  const std::string description("world");
+  const OptionGroup::Enum group = OptionGroup::Custom1;
 
-  Option option(shortName, name, hasArg, cmdId, description, group);
+  const Option option(shortName, name, hasArg, cmdId, description, group);
 
   EXPECT_EQ(shortName, option.ShortName);
   EXPECT_EQ(name, option.Name);
@@ -188,12 +188,12 @@ TEST(TestGetOpt_Option, Construct_TwoNamesAndGroup)
 
 TEST(TestGetOpt_Option, Construct_PositionalOption)
 {
-  std::string name("hello");
-  auto hasArg = OptionArgument::OptionRequired;
-  int32_t cmdId = 42;
-  std::string description("world");
+  const std::string name("hello");
+  const auto hasArg = OptionArgument::OptionRequired;
+  const int32_t cmdId = 42;
+  const std::string description("world");
 
-  PositionalOption option(name, hasArg, cmdId, description);
+  const PositionalOption option(name, hasArg, cmdId, description);
 
   EXPECT_EQ(std::string(""), option.ShortName);
   EXPECT_EQ(name, option.Name);
@@ -208,13 +208,13 @@ TEST(TestGetOpt_Option, Construct_PositionalOption)
 
 TEST(TestGetOpt_Option, Construct_PositionalOption_Group)
 {
-  std::string name("hello");
-  auto hasArg = OptionArgument::OptionRequired;
-  int32_t cmdId = 42;
-  std::string description("world");
-  OptionGroup::Enum group = OptionGroup::Custom1;
+  const std::string name("hello");
+  const auto hasArg = OptionArgument::OptionRequired;
+  const int32_t cmdId = 42;
+  const std::string description("world");
+  const OptionGroup::Enum group = OptionGroup::Custom1;
 
-  PositionalOption option(name, hasArg, cmdId, description, group);
+  const PositionalOption option(name, hasArg, cmdId, description, group);
 
   EXPECT_EQ(std::string(""), option.ShortName);
   EXPECT_EQ(name, option.Name);

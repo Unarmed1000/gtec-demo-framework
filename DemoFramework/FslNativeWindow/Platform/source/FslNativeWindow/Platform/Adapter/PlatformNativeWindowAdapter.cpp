@@ -127,7 +127,7 @@ namespace Fsl
     }
 
     uint32_t densityDpi{};
-    bool gotDensityDPI = NativeWindowCapabilityFlagsUtil::IsFlagged(m_capabilityFlags, NativeWindowCapabilityFlags::GetDensityDpi);
+    const bool gotDensityDPI = NativeWindowCapabilityFlagsUtil::IsFlagged(m_capabilityFlags, NativeWindowCapabilityFlags::GetDensityDpi);
     if (!gotDensityDPI || !TryGetDensityDpi(densityDpi))
     {
       // densityDpi = uint32_t(exactDpi.X);
@@ -149,7 +149,6 @@ namespace Fsl
           "NativeWindow did not support TryGetDpi and TryGetDensityDpi so using custom density dpi of {} based on physical dpi {} instead",
           densityDpi, exactDpi);
       }
-      gotDensityDPI = false;
     }
     else if (gotDensityDPI && densityDpi < LocalConfig::MinDensityDpi)
     {

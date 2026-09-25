@@ -56,19 +56,19 @@ namespace Fsl
       assert(IsValid());
     }
 
-    constexpr bool IsValid() const noexcept
+    [[nodiscard]] constexpr bool IsValid() const noexcept
     {
       return Levels > 0 && Faces > 0 && Layers > 0;
     }
 
-    constexpr uint32_t GetBlobCount() const noexcept
+    [[nodiscard]] constexpr uint32_t GetBlobCount() const noexcept
     {
       return Levels * Faces * Layers;
     }
 
     //! @brief Helper function for acquiring the right index for a block given levels, faces and layers
     //! @note Prevents code duplication and makes it easier to modify
-    constexpr inline uint32_t GetBlockIndex(const uint32_t level, const uint32_t face, const uint32_t layer) const noexcept
+    [[nodiscard]] constexpr inline uint32_t GetBlockIndex(const uint32_t level, const uint32_t face, const uint32_t layer) const noexcept
     {
       assert(level <= Levels);
       assert(face <= Faces);

@@ -83,7 +83,7 @@ namespace Fsl
       const float x = dimensions.X * 0.5f;
       const float y = dimensions.Y * 0.5f;
       const float z = dimensions.Z * 0.5f;
-      std::array<VertexPositionColorTexture, 6 * 6> vertices = {
+      const std::array<VertexPositionColorTexture, 6 * 6> vertices = {
         // Front
         VertexPositionColorTexture(Vector3(-x, +y, +z), Colors::White(), Vector2(0, 1)),
         VertexPositionColorTexture(Vector3(-x, -y, +z), Colors::White(), Vector2(0, 0)),
@@ -164,10 +164,10 @@ namespace Fsl
 
     BuildCube(m_vbCube, Vector3(2, 2, 2));
 
-    auto contentManager = GetContentManager();
+    const auto contentManager = GetContentManager();
 
     {    // Load the textures
-      GLTextureParameters textureParams(GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR, GL_REPEAT, GL_REPEAT);
+      const GLTextureParameters textureParams(GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR, GL_REPEAT, GL_REPEAT);
       Bitmap bitmap;
       contentManager->Read(bitmap, "Particle.png", PixelFormat::R8G8B8A8_UNORM);
       m_texParticle.Reset(bitmap, textureParams, TextureFlags::GenerateMipMaps);
@@ -209,7 +209,7 @@ namespace Fsl
 
   void ParticleSystemScene::OnContentChanged(const std::shared_ptr<WindowContentChangedEvent>& theEvent)
   {
-    auto source = theEvent->GetSource();
+    const auto source = theEvent->GetSource();
 
     if (source == m_sliderEmit && m_boxEmitter)
     {
@@ -487,36 +487,36 @@ namespace Fsl
   void ParticleSystemScene::BuildUI(const std::shared_ptr<IContentManager>& /*contentManager*/,
                                     const std::shared_ptr<UIDemoAppExtension>& uiExtension)
   {
-    auto context = uiExtension->GetContext();
-    auto uiControlFactory = UI::Theme::ThemeSelector::CreateControlFactory(*uiExtension);
+    const auto context = uiExtension->GetContext();
+    const auto uiControlFactory = UI::Theme::ThemeSelector::CreateControlFactory(*uiExtension);
     auto& factory = *uiControlFactory;
 
 
     m_valueLabelParticleCount = factory.CreateFmtValueLabel(static_cast<int32_t>(10));
 
-    auto labelParticles = factory.CreateLabel("Particles: ");
+    const auto labelParticles = factory.CreateLabel("Particles: ");
 
-    auto stackLayout = std::make_shared<StackLayout>(context);
+    const auto stackLayout = std::make_shared<StackLayout>(context);
     stackLayout->SetOrientation(LayoutOrientation::Horizontal);
     stackLayout->AddChild(labelParticles);
     stackLayout->AddChild(m_valueLabelParticleCount);
 
     m_sliderEmit = factory.CreateSliderFmtValue(UI::LayoutOrientation::Horizontal, LocalConfig::EmitRange);
 
-    auto outerStack = std::make_shared<StackLayout>(context);
+    const auto outerStack = std::make_shared<StackLayout>(context);
     outerStack->SetOrientation(LayoutOrientation::Vertical);
     outerStack->AddChild(stackLayout);
     outerStack->AddChild(m_sliderEmit);
 
 
     {
-      auto radioGroup = factory.CreateRadioGroup("technique");
+      const auto radioGroup = factory.CreateRadioGroup("technique");
       m_particleSystemPoints = factory.CreateRadioButton(radioGroup, "Point sprites");
       m_particleSystemPoints->SetAlignmentX(UI::ItemAlignment::Stretch);
       m_particleSystemQuads = factory.CreateRadioButton(radioGroup, "Quads");
       m_particleSystemQuads->SetAlignmentX(UI::ItemAlignment::Stretch);
 
-      auto stackLayoutQ = std::make_shared<StackLayout>(context);
+      const auto stackLayoutQ = std::make_shared<StackLayout>(context);
       if (m_allowAdvancedTechniques)
       {
         m_particleSystemGeometryShader = factory.CreateRadioButton(radioGroup, "Geometry shader");
@@ -528,13 +528,13 @@ namespace Fsl
 
         m_valueLabelGPUParticleCount = factory.CreateFmtValueLabel(static_cast<int32_t>(10));
 
-        auto labelParticles2 = factory.CreateLabel("GPUParticles: ");
+        const auto labelParticles2 = factory.CreateLabel("GPUParticles: ");
         stackLayoutQ->SetOrientation(LayoutOrientation::Horizontal);
         stackLayoutQ->AddChild(labelParticles2);
         stackLayoutQ->AddChild(m_valueLabelGPUParticleCount);
       }
 
-      auto comboStack = std::make_shared<StackLayout>(context);
+      const auto comboStack = std::make_shared<StackLayout>(context);
       comboStack->SetOrientation(LayoutOrientation::Vertical);
       if (m_particleSystemPoints)
       {
@@ -565,8 +565,8 @@ namespace Fsl
     }
 
 
-    auto bar = factory.CreateLeftBar(outerStack, UI::Theme::BarType::Transparent);
-    auto layout = std::make_shared<FillLayout>(context);
+    const auto bar = factory.CreateLeftBar(outerStack, UI::Theme::BarType::Transparent);
+    const auto layout = std::make_shared<FillLayout>(context);
     layout->AddChild(bar);
 
     // Add the fill layout to the window manager to ensure it is visible

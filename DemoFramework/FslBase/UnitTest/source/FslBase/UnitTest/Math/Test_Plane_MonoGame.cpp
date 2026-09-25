@@ -113,7 +113,7 @@ TEST(TestMath_Plane_MonoGame, TransformByRefQuaternion)
   Plane result;
   Plane::Transform(plane, quaternion, result);
 
-  Plane expectedResult(Vector3(0.7273929f, -0.3636965f, 0.5819144f), 1.818482f);
+  const Plane expectedResult(Vector3(0.7273929f, -0.3636965f, 0.5819144f), 1.818482f);
 
   EXPECT_TRUE(Fsl::Test::IsFloatEqual(expectedResult, result));
 

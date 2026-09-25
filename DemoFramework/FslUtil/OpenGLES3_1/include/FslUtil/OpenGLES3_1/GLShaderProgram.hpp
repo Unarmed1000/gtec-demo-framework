@@ -87,7 +87,7 @@ namespace Fsl::GLES3
     ~GLShaderProgram();
 
     //! @brief Check if this contains a valid gl handle.
-    bool IsValid() const
+    [[nodiscard]] bool IsValid() const
     {
       return m_handle != GLValues::InvalidHandle;
     }
@@ -95,17 +95,17 @@ namespace Fsl::GLES3
     void Reset() noexcept;
     void Reset(const GLint shaderType, const std::string& strShaderCode);
 
-    GLint GetType() const
+    [[nodiscard]] GLint GetType() const
     {
       return m_shaderType;
     }
 
-    GLuint Get() const
+    [[nodiscard]] GLuint Get() const
     {
       return m_handle;
     }
 
-    [[deprecated("use one of the other overloads instead")]] GLuint GetHandle() const
+    [[nodiscard]] [[deprecated("use one of the other overloads instead")]] GLuint GetHandle() const
     {
       return Get();
     }

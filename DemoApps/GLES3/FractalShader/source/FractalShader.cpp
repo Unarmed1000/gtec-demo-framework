@@ -52,8 +52,8 @@ namespace Fsl
   FractalShader::FractalShader(const DemoAppConfig& config)
     : DemoAppGLES3(config)
   {
-    std::shared_ptr<OptionParser> options = config.GetOptions<OptionParser>();
-    Config cfg = options->GetConfig();
+    const std::shared_ptr<OptionParser> options = config.GetOptions<OptionParser>();
+    const Config cfg = options->GetConfig();
 
     switch (cfg.Scene)
     {

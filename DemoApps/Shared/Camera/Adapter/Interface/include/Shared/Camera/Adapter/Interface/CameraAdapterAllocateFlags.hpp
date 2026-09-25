@@ -61,7 +61,7 @@ namespace Fsl::Helios
     }
 
 
-    inline bool IsEnabled(Enum flag) const
+    [[nodiscard]] inline bool IsEnabled(Enum flag) const
     {
       return (Value & static_cast<uint32_t>(flag)) != 0;
     }

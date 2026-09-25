@@ -107,12 +107,12 @@ namespace Fsl::Vulkan
 
 
     NativeTexture2DHelper::CheckTextureFlags(textureFlags);
-    VkSamplerCreateInfo samplerCreateInfo = NativeTexture2DHelper::Convert(filterHint);
+    const VkSamplerCreateInfo samplerCreateInfo = NativeTexture2DHelper::Convert(filterHint);
     auto nativeTexture = m_imageCreator->CreateTexture(texture, samplerCreateInfo);
 
     VkDescriptorSet descriptorSet = m_descriptorManager.AcquireDescriptorSet(nativeTexture.GetDescriptorImageInfo());
-    auto handle = m_textures.Add(NativeGraphicsTexture(texture.GetExtent(0), std::move(nativeTexture),
-                                                       NativeGraphicsTextureScopedDescriptorSet(m_descriptorManager, descriptorSet)));
+    const auto handle = m_textures.Add(NativeGraphicsTexture(texture.GetExtent(0), std::move(nativeTexture),
+                                                             NativeGraphicsTextureScopedDescriptorSet(m_descriptorManager, descriptorSet)));
 
     FSLLOG3_VERBOSE6("NativeGraphicsTextureFactory::CreateTexture handle: {}", handle);
     return BasicNativeTextureHandle(handle);

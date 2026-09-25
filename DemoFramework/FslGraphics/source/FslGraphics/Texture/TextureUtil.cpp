@@ -53,8 +53,8 @@ namespace Fsl
     Texture CreateTargetTexture(const Texture& srcTexture, const PixelFormat desiredPixelFormat)
     {
       assert(!PixelFormatUtil::IsCompressed(srcTexture.GetPixelFormat()));
-      TextureBlobBuilder builder(srcTexture.GetTextureType(), srcTexture.GetExtent(), desiredPixelFormat, srcTexture.GetTextureInfo(),
-                                 srcTexture.GetBitmapOrigin(), true);
+      const TextureBlobBuilder builder(srcTexture.GetTextureType(), srcTexture.GetExtent(), desiredPixelFormat, srcTexture.GetTextureInfo(),
+                                       srcTexture.GetBitmapOrigin(), true);
       return Texture(builder);
     }
 
@@ -98,8 +98,8 @@ namespace Fsl
               const auto rawBlob = rawTexture.GetTextureBlob(level, face, layer);
               for (uint32_t z = 0; z < extent.Depth.Value; ++z)
               {
-                auto rawSrcBitmap = RawBitmapEx::UncheckedCreate(pContent + rawBlob.Offset + (z * fullTextureStride), extent.Height.Value * srcStride,
-                                                                 sizePx, srcPixelFormat, srcStride, srcOrigin);
+                auto rawSrcBitmap = RawBitmapEx::UncheckedCreate(pContent + rawBlob.Offset + (static_cast<std::size_t>(z) * fullTextureStride),
+                                                                 extent.Height.Value * srcStride, sizePx, srcPixelFormat, srcStride, srcOrigin);
 
                 // TODO: use a more generic converter, this relies on the fact we know that there is only two origins
                 try
@@ -170,7 +170,7 @@ namespace Fsl
               const auto rawBlob = rawTexture.GetTextureBlob(level, face, layer);
               for (uint32_t z = 0; z < extent.Depth.Value; ++z)
               {
-                RawBitmapEx rawSrcBitmap(RawBitmapEx::UncheckedCreate(pContent + rawBlob.Offset + (z * fullTextureStride),
+                RawBitmapEx rawSrcBitmap(RawBitmapEx::UncheckedCreate(pContent + rawBlob.Offset + (static_cast<std::size_t>(z) * fullTextureStride),
                                                                       extent.Height.Value * srcStride, PxExtent2D(extent.Width, extent.Height),
                                                                       srcPixelFormat, srcStride, srcOrigin));
 
@@ -236,12 +236,12 @@ namespace Fsl
               const auto rawDstBlob = rawDstTexture.GetTextureBlob(level, face, layer);
               for (uint32_t z = 0; z < srcExtent.Depth.Value; ++z)
               {
-                ReadOnlyRawBitmap rawSrcBitmap(
-                  ReadOnlyRawBitmap::UncheckedCreate(pSrcContent + rawSrcBlob.Offset + (z * srcFullTextureStride), srcExtent.Height.Value * srcStride,
-                                                     PxExtent2D(srcExtent.Width, srcExtent.Height), srcPixelFormat, srcStride, srcOrigin));
-                RawBitmapEx rawDstBitmap(
-                  RawBitmapEx::UncheckedCreate(pDstContent + rawDstBlob.Offset + (z * dstFullTextureStride), srcExtent.Height.Value * dstStride,
-                                               PxExtent2D(srcExtent.Width, srcExtent.Height), desiredPixelFormat, dstStride, srcOrigin));
+                const ReadOnlyRawBitmap rawSrcBitmap(ReadOnlyRawBitmap::UncheckedCreate(
+                  pSrcContent + rawSrcBlob.Offset + (static_cast<std::size_t>(z) * srcFullTextureStride), srcExtent.Height.Value * srcStride,
+                  PxExtent2D(srcExtent.Width, srcExtent.Height), srcPixelFormat, srcStride, srcOrigin));
+                RawBitmapEx rawDstBitmap(RawBitmapEx::UncheckedCreate(
+                  pDstContent + rawDstBlob.Offset + (static_cast<std::size_t>(z) * dstFullTextureStride), srcExtent.Height.Value * dstStride,
+                  PxExtent2D(srcExtent.Width, srcExtent.Height), desiredPixelFormat, dstStride, srcOrigin));
 
                 // Try the raw bitmap converter
                 if (!RawBitmapConverter::TryConvert(rawDstBitmap, rawSrcBitmap))
@@ -359,7 +359,7 @@ namespace Fsl
     uint32_t totalTexels = 0;
     for (uint32_t level = 0; level < textureInfo.Levels; ++level)
     {
-      auto currentExtend = GetExtentForLevel(extent, level);
+      const auto currentExtend = GetExtentForLevel(extent, level);
       totalTexels += (currentExtend.Width * currentExtend.Height * currentExtend.Depth).Value;
     }
     totalTexels *= textureInfo.Layers * textureInfo.Faces;
