@@ -76,20 +76,20 @@ namespace Fsl
     ~FramePacingService() final;
 
     // From IFramePacingService
-    bool IsEnabled() const noexcept final;
+    [[nodiscard]] bool IsEnabled() const noexcept final;
     void SetEnabled(const bool enabled) noexcept final;
-    FramePacingMarkerSlot GetSlot() const noexcept final;
+    [[nodiscard]] FramePacingMarkerSlot GetSlot() const noexcept final;
     void SetSlot(const FramePacingMarkerSlot slot) noexcept final;
-    int32_t GetModuleSizePx() const noexcept final;
+    [[nodiscard]] int32_t GetModuleSizePx() const noexcept final;
     void SetModuleSizePx(const int32_t moduleSizePx) noexcept final;
-    int32_t GetCaptureHeightPx() const noexcept final;
+    [[nodiscard]] int32_t GetCaptureHeightPx() const noexcept final;
     void SetCaptureHeightPx(const int32_t captureHeightPx) noexcept final;
     bool BeginRun(const StringViewLite name, const TimeSpan duration) final;
     void EndRun() noexcept final;
-    FramePacingRunState GetRunState() const noexcept final;
-    uint32_t GetRunId() const noexcept final;
-    TimeSpan GetRunDuration() const noexcept final;
-    TimeSpan GetRunMeasuredTime() const noexcept final;
+    [[nodiscard]] FramePacingRunState GetRunState() const noexcept final;
+    [[nodiscard]] uint32_t GetRunId() const noexcept final;
+    [[nodiscard]] TimeSpan GetRunDuration() const noexcept final;
+    [[nodiscard]] TimeSpan GetRunMeasuredTime() const noexcept final;
 
     // From IFramePacingServiceControl
     void BeginFrame(const FrameInfo& frameInfo) final;

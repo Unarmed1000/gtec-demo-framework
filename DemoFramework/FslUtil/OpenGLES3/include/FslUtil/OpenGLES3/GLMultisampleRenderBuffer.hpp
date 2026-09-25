@@ -101,26 +101,26 @@ namespace Fsl::GLES3
     void Reset(const PxSize2D& size, const GLsizei samples, const GLenum internalFormat);
 
     //! @brief Check if this buffer contains a valid gl handle.
-    bool IsValid() const noexcept
+    [[nodiscard]] bool IsValid() const noexcept
     {
       return m_handle != GLValues::InvalidHandle;
     }
 
     //! @brief Get the gl handle associated with the buffer.
     //! @return the handle or GLValues::InvalidHandle if the buffer is unallocated.
-    GLuint Get() const
+    [[nodiscard]] GLuint Get() const
     {
       return m_handle;
     }
 
     //! @brief Get the format of the buffer
-    GLenum GetFormat() const noexcept
+    [[nodiscard]] GLenum GetFormat() const noexcept
     {
       return m_format;
     }
 
     //! @brief Get size of the buffer
-    PxSize2D GetSize() const noexcept
+    [[nodiscard]] PxSize2D GetSize() const noexcept
     {
       return m_size;
     }

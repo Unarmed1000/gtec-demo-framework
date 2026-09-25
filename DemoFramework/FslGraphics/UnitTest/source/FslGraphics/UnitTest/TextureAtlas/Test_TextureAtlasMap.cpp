@@ -50,8 +50,8 @@ namespace
 
 TEST(TestTextureAtlas_TextureAtlasMap, Construct_Default)
 {
-  TextureAtlasMap map;
-  EXPECT_THROW(map.GetAtlasTextureInfo("hello"), NotFoundException);
+  const TextureAtlasMap map;
+  EXPECT_THROW(static_cast<void>(map.GetAtlasTextureInfo("hello")), NotFoundException);
 }
 
 
@@ -71,8 +71,8 @@ TEST(TestTextureAtlas_TextureAtlasMap, GetAtlasTextureInfo)
   atlas.Reset(1);
   atlas.SetEntry(0, PxRectangleU32::Create(4, 6, 8, 12), PxThicknessU::Create(3, 4, 9, 14), TestDp, "hello");
 
-  TextureAtlasMap map(atlas);
-  auto textureInfo = map.GetAtlasTextureInfo("hello");
+  const TextureAtlasMap map(atlas);
+  const auto textureInfo = map.GetAtlasTextureInfo("hello");
   EXPECT_EQ(PxPoint2::Create(1, 2), textureInfo.OffsetPx);
   EXPECT_EQ(PxExtent2D::Create(20, 30), textureInfo.ExtentPx);
   EXPECT_EQ(PxThicknessU::Create(3, 4, 9, 14), textureInfo.TrimMarginPx);
@@ -87,9 +87,9 @@ TEST(TestTextureAtlas_TextureAtlasMap, NotFound)
   atlas.Reset(1);
   atlas.SetEntry(0, PxRectangleU32::Create(4, 6, 8, 12), PxThicknessU::Create(3, 4, 9, 14), TestDp, "hello");
 
-  TextureAtlasMap map(atlas);
-  EXPECT_THROW(map.GetAtlasTextureInfo("/hello"), NotFoundException);
-  EXPECT_THROW(map.GetAtlasTextureInfo(""), NotFoundException);
-  EXPECT_THROW(map.GetAtlasTextureInfo("hello/"), NotFoundException);
-  EXPECT_THROW(map.GetAtlasTextureInfo("Hello"), NotFoundException);
+  const TextureAtlasMap map(atlas);
+  EXPECT_THROW(static_cast<void>(map.GetAtlasTextureInfo("/hello")), NotFoundException);
+  EXPECT_THROW(static_cast<void>(map.GetAtlasTextureInfo("")), NotFoundException);
+  EXPECT_THROW(static_cast<void>(map.GetAtlasTextureInfo("hello/")), NotFoundException);
+  EXPECT_THROW(static_cast<void>(map.GetAtlasTextureInfo("Hello")), NotFoundException);
 }

@@ -49,19 +49,19 @@ namespace Fsl
     FramePacingSequence() noexcept;
     FramePacingSequence(const TimeSpan startMarkerDuration, const TimeSpan endMarkerDuration) noexcept;
 
-    FramePacingRunState GetState() const noexcept
+    [[nodiscard]] FramePacingRunState GetState() const noexcept
     {
       return m_state;
     }
 
     //! @brief The duration of the measured part of the current (or last) run, zero means until EndRun is called.
-    TimeSpan GetMeasureDuration() const noexcept
+    [[nodiscard]] TimeSpan GetMeasureDuration() const noexcept
     {
       return m_measureDuration;
     }
 
     //! @brief How long the run has been measuring at the given time (zero unless the state is Measuring).
-    TimeSpan GetMeasuredTime(const TickCount now) const noexcept;
+    [[nodiscard]] TimeSpan GetMeasuredTime(const TickCount now) const noexcept;
 
     //! @brief Begin a run.
     //! @param measureDuration the duration of the measured part, zero means until EndRun is called.
@@ -76,7 +76,7 @@ namespace Fsl
 
   private:
     void SetState(const FramePacingRunState state) noexcept;
-    bool IsMarkerDone(const TickCount now, const TimeSpan duration) const noexcept;
+    [[nodiscard]] bool IsMarkerDone(const TickCount now, const TimeSpan duration) const noexcept;
   };
 }
 

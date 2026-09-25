@@ -203,8 +203,8 @@ namespace Fsl::UI::Declarative
     const auto itrFind = m_factories.find(name);
     if (itrFind != m_factories.end())
     {
-      Span<RegisteredPropertyRecord> registeredProperties = FillScratchpad(m_registeredPropertyScratchpad, itrFind->second->Properties());
-      Span<PropertyParserRecord> properties = FillScratchpad(m_createPropertiesScratchpad, SpanUtil::AsReadOnlySpan(rPropertyRecords));
+      const Span<RegisteredPropertyRecord> registeredProperties = FillScratchpad(m_registeredPropertyScratchpad, itrFind->second->Properties());
+      const Span<PropertyParserRecord> properties = FillScratchpad(m_createPropertiesScratchpad, SpanUtil::AsReadOnlySpan(rPropertyRecords));
 
       ScopedThemePropertyParser propertyParser(registeredProperties, properties);
       auto res = itrFind->second->Create(DeclarativeControlFactoryCreateInfo(uiFactory, rRadioGroupManager, propertyParser));
@@ -244,7 +244,7 @@ namespace Fsl::UI::Declarative
 
   DataBinding::DependencyPropertyDefinitionVector ControlFactory::GetControlProperties(const ControlName& name)
   {
-    auto window = TryCreateDummyControl(name.AsString());
+    const auto window = TryCreateDummyControl(name.AsString());
     if (!window)
     {
       return {};
@@ -258,7 +258,7 @@ namespace Fsl::UI::Declarative
 
   ControlType ControlFactory::GetControlType(const ControlName& name)
   {
-    auto window = TryCreateDummyControl(name.AsString());
+    const auto window = TryCreateDummyControl(name.AsString());
     if (!window)
     {
       return ControlType::Normal;
@@ -290,7 +290,7 @@ namespace Fsl::UI::Declarative
     std::uint32_t groupNameCount = 0;
     for (const auto& propertyRecord : itrFind->second->Properties())
     {
-      std::span<const ThemePropertyValueRecord> validValues = propertyRecord.Property->ValidValues();
+      const std::span<const ThemePropertyValueRecord> validValues = propertyRecord.Property->ValidValues();
       if (propertyRecord.Required)
       {
         if (!validValues.empty())
@@ -301,7 +301,7 @@ namespace Fsl::UI::Declarative
         else
         {
           // FIX: this is kind of a workaround, as we dont really know for sure its a groupname. But it works for now
-          std::string groupName(fmt::format("groupName:{}", groupNameCount));
+          const std::string groupName(fmt::format("groupName:{}", groupNameCount));
           propertyRecordsDummy.emplace_back(propertyRecord.Property->GetName(), PropertyValue(groupName));
           dummyRadioGroupManager.Get(groupName.c_str());
           ++groupNameCount;

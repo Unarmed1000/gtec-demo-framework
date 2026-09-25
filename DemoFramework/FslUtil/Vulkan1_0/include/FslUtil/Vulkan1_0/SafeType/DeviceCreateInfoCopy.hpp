@@ -62,7 +62,7 @@ namespace Fsl::Vulkan
     DeviceCreateInfoCopy();
     explicit DeviceCreateInfoCopy(const VkDeviceCreateInfo& value);
 
-    const VkDeviceCreateInfo& Get() const
+    [[nodiscard]] const VkDeviceCreateInfo& Get() const
     {
       return m_value;
     }

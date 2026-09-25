@@ -36,6 +36,7 @@
 #include <FslBase/Span/ReadOnlySpan.hpp>
 #include <FslBase/Span/SpanUtil_Create.hpp>
 #include <FslBase/UncheckedNumericCast.hpp>
+#include <utility>
 #include <vector>
 
 namespace Fsl
@@ -87,12 +88,12 @@ namespace Fsl
       }
     }
 
-    constexpr int32_t GetCellCountX() const noexcept
+    [[nodiscard]] constexpr int32_t GetCellCountX() const noexcept
     {
       return UncheckedNumericCast<int32_t>(m_gridCellCountX);
     }
 
-    constexpr int32_t GetCellCountY() const noexcept
+    [[nodiscard]] constexpr int32_t GetCellCountY() const noexcept
     {
       return UncheckedNumericCast<int32_t>(m_gridCellCountY);
     }
@@ -125,15 +126,17 @@ namespace Fsl
       const int32_t startCellY = static_cast<int32_t>(rectangle.RawTop()) >> m_shiftY;
       const int32_t endCellY = (static_cast<int32_t>(rectangle.RawBottom() + 1.0f) >> m_shiftY) + 1;
 
-      const bool add = startCellX < m_gridCellCountX && endCellX > 0 && startCellY < m_gridCellCountY && endCellY > 0;
+      const bool add = std::cmp_less(startCellX, m_gridCellCountX) && endCellX > 0 && std::cmp_less(startCellY, m_gridCellCountY) && endCellY > 0;
       if (add)
       {
         const uint32_t gridStride = m_gridStride;
 
         const uint32_t startOffsetX = (startCellX >= 0 ? static_cast<uint32_t>(startCellX) : 0) * TMaxEntriesPerChunk;
         const uint32_t startOffsetY = (startCellY >= 0 ? static_cast<uint32_t>(startCellY) : 0) * gridStride;
-        const uint32_t endOffsetX = (endCellX <= m_gridCellCountX ? static_cast<uint32_t>(endCellX) : m_gridCellCountX) * TMaxEntriesPerChunk;
-        const uint32_t endOffsetY = (endCellY <= m_gridCellCountY ? static_cast<uint32_t>(endCellY) : m_gridCellCountY) * gridStride;
+        const uint32_t endOffsetX =
+          (std::cmp_less_equal(endCellX, m_gridCellCountX) ? static_cast<uint32_t>(endCellX) : m_gridCellCountX) * TMaxEntriesPerChunk;
+        const uint32_t endOffsetY =
+          (std::cmp_less_equal(endCellY, m_gridCellCountY) ? static_cast<uint32_t>(endCellY) : m_gridCellCountY) * gridStride;
         assert(startOffsetX <= endOffsetX);
         assert(startOffsetY <= endOffsetY);
 
@@ -172,15 +175,17 @@ namespace Fsl
       const int32_t startCellY = static_cast<int32_t>(rectangle.RawTop()) >> m_shiftY;
       const int32_t endCellY = (static_cast<int32_t>(rectangle.RawBottom() + 1.0f) >> m_shiftY) + 1;
 
-      const bool add = startCellX < m_gridCellCountX && endCellX > 0 && startCellY < m_gridCellCountY && endCellY > 0;
+      const bool add = std::cmp_less(startCellX, m_gridCellCountX) && endCellX > 0 && std::cmp_less(startCellY, m_gridCellCountY) && endCellY > 0;
       if (add)
       {
         const uint32_t gridStride = m_gridStride;
 
         const uint32_t startOffsetX = (startCellX >= 0 ? static_cast<uint32_t>(startCellX) : 0) * TMaxEntriesPerChunk;
         const uint32_t startOffsetY = (startCellY >= 0 ? static_cast<uint32_t>(startCellY) : 0) * gridStride;
-        const uint32_t endOffsetX = (endCellX <= m_gridCellCountX ? static_cast<uint32_t>(endCellX) : m_gridCellCountX) * TMaxEntriesPerChunk;
-        const uint32_t endOffsetY = (endCellY <= m_gridCellCountY ? static_cast<uint32_t>(endCellY) : m_gridCellCountY) * gridStride;
+        const uint32_t endOffsetX =
+          (std::cmp_less_equal(endCellX, m_gridCellCountX) ? static_cast<uint32_t>(endCellX) : m_gridCellCountX) * TMaxEntriesPerChunk;
+        const uint32_t endOffsetY =
+          (std::cmp_less_equal(endCellY, m_gridCellCountY) ? static_cast<uint32_t>(endCellY) : m_gridCellCountY) * gridStride;
         assert(startOffsetX <= endOffsetX);
         assert(startOffsetY <= endOffsetY);
 
@@ -210,15 +215,17 @@ namespace Fsl
       const int32_t startCellY = static_cast<int32_t>(rectangle.RawTop()) >> m_shiftY;
       const int32_t endCellY = (static_cast<int32_t>(rectangle.RawBottom() + 1.0f) >> m_shiftY) + 1;
 
-      const bool add = startCellX < m_gridCellCountX && endCellX > 0 && startCellY < m_gridCellCountY && endCellY > 0;
+      const bool add = std::cmp_less(startCellX, m_gridCellCountX) && endCellX > 0 && std::cmp_less(startCellY, m_gridCellCountY) && endCellY > 0;
       if (add)
       {
         const uint32_t gridStride = m_gridStride;
 
         const uint32_t startOffsetX = (startCellX >= 0 ? static_cast<uint32_t>(startCellX) : 0) * TMaxEntriesPerChunk;
         const uint32_t startOffsetY = (startCellY >= 0 ? static_cast<uint32_t>(startCellY) : 0) * gridStride;
-        const uint32_t endOffsetX = (endCellX <= m_gridCellCountX ? static_cast<uint32_t>(endCellX) : m_gridCellCountX) * TMaxEntriesPerChunk;
-        const uint32_t endOffsetY = (endCellY <= m_gridCellCountY ? static_cast<uint32_t>(endCellY) : m_gridCellCountY) * gridStride;
+        const uint32_t endOffsetX =
+          (std::cmp_less_equal(endCellX, m_gridCellCountX) ? static_cast<uint32_t>(endCellX) : m_gridCellCountX) * TMaxEntriesPerChunk;
+        const uint32_t endOffsetY =
+          (std::cmp_less_equal(endCellY, m_gridCellCountY) ? static_cast<uint32_t>(endCellY) : m_gridCellCountY) * gridStride;
         assert(startOffsetX <= endOffsetX);
         assert(startOffsetY <= endOffsetY);
 
@@ -250,7 +257,7 @@ namespace Fsl
       return add;
     }
 
-    constexpr ReadOnlySpan<uint32_t> TryGetChunkEntries(const uint32_t chunkX, const uint32_t chunkY) const noexcept
+    [[nodiscard]] constexpr ReadOnlySpan<uint32_t> TryGetChunkEntries(const uint32_t chunkX, const uint32_t chunkY) const noexcept
     {
       const uint32_t offsetX = chunkX * TMaxEntriesPerChunk;
       const uint32_t offsetY = chunkY * m_gridStride;
@@ -259,7 +266,7 @@ namespace Fsl
                                                                       : ReadOnlySpan<uint32_t>();
     }
 
-    constexpr ReadOnlySpan<uint32_t> UncheckedGetChunkEntries(const uint32_t chunkX, const uint32_t chunkY) const noexcept
+    [[nodiscard]] constexpr ReadOnlySpan<uint32_t> UncheckedGetChunkEntries(const uint32_t chunkX, const uint32_t chunkY) const noexcept
     {
       const uint32_t offsetX = chunkX * TMaxEntriesPerChunk;
       const uint32_t offsetY = chunkY * m_gridStride;

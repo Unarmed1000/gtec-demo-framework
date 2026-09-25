@@ -46,7 +46,7 @@ namespace Fsl::UI
 
   void EventListenerManager::UnregisterEventListener(const std::weak_ptr<IEventListener>& eventListener)
   {
-    auto listener = eventListener.lock();
+    const auto listener = eventListener.lock();
     // If the pointer has become invalid we just ignore the request as the next broadcast will remove the entry
     if (!listener)
     {
@@ -54,8 +54,8 @@ namespace Fsl::UI
       return;
     }
 
-    auto itr = std::find_if(m_eventListeners.begin(), m_eventListeners.end(),
-                            [listener](const std::weak_ptr<IEventListener>& record) { return record.lock() == listener; });
+    const auto itr = std::find_if(m_eventListeners.begin(), m_eventListeners.end(),
+                                  [listener](const std::weak_ptr<IEventListener>& record) { return record.lock() == listener; });
     if (itr != m_eventListeners.end())
     {
       m_eventListeners.erase(itr);

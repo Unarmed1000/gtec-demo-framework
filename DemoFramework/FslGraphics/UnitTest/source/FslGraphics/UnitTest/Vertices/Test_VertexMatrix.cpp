@@ -52,7 +52,7 @@ namespace
 
 TEST(TestVertices_VertexMatrix, Construct_Default)
 {
-  VertexMatrix vertex;
+  const VertexMatrix vertex;
   EXPECT_EQ(Matrix(), vertex.Matrix);
 }
 

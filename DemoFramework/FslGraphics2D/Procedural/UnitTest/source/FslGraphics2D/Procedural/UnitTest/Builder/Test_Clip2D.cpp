@@ -64,7 +64,7 @@ TEST(TestBuilder_Clip2D, Clip2_ExactMatch)
                                                  PxVector2::Create(LocalConfig::X1.Value, LocalConfig::U1)};
   std::array<PxVector2, 2> coordsPxf(orgCoordsPxf);
 
-  ReadOnlySpan<PxVector2> clippedEntries = Clip2DUtil::Clip(coordsPxf, clipRangePxf);
+  const ReadOnlySpan<PxVector2> clippedEntries = Clip2DUtil::Clip(coordsPxf, clipRangePxf);
 
   EXPECT_EQ(clippedEntries.size(), coordsPxf.size());
   for (uint32_t i = 0; i < clippedEntries.size(); ++i)
@@ -82,7 +82,7 @@ TEST(TestBuilder_Clip2D, Clip2_ClipAreaLeftOf)
                                                  PxVector2::Create(LocalConfig::X1.Value, LocalConfig::U1)};
   std::array<PxVector2, 2> coordsPxf(orgCoordsPxf);
 
-  ReadOnlySpan<PxVector2> clippedEntries = Clip2DUtil::Clip(coordsPxf, clipRangePxf);
+  const ReadOnlySpan<PxVector2> clippedEntries = Clip2DUtil::Clip(coordsPxf, clipRangePxf);
 
   EXPECT_EQ(clippedEntries.size(), 0u);
   for (uint32_t i = 0; i < orgCoordsPxf.size(); ++i)
@@ -100,7 +100,7 @@ TEST(TestBuilder_Clip2D, Clip2_ClipAreaRightOf)
                                                  PxVector2::Create(LocalConfig::X1.Value, LocalConfig::U1)};
   std::array<PxVector2, 2> coordsPxf(orgCoordsPxf);
 
-  ReadOnlySpan<PxVector2> clippedEntries = Clip2DUtil::Clip(coordsPxf, clipRangePxf);
+  const ReadOnlySpan<PxVector2> clippedEntries = Clip2DUtil::Clip(coordsPxf, clipRangePxf);
 
   EXPECT_EQ(clippedEntries.size(), 0u);
   for (uint32_t i = 0; i < orgCoordsPxf.size(); ++i)
@@ -118,17 +118,17 @@ TEST(TestBuilder_Clip2D, Clip2_PartialLeft0)
                                                  PxVector2::Create(LocalConfig::X1.Value, LocalConfig::U1)};
   std::array<PxVector2, 2> coordsPxf(orgCoordsPxf);
 
-  ReadOnlySpan<PxVector2> clippedEntries = Clip2DUtil::Clip(coordsPxf, clipRangePxf);
+  const ReadOnlySpan<PxVector2> clippedEntries = Clip2DUtil::Clip(coordsPxf, clipRangePxf);
 
   EXPECT_EQ(clippedEntries.size(), 2u);
   EXPECT_EQ(clippedEntries[0].X, orgCoordsPxf[0].X);
   EXPECT_EQ(clippedEntries[1].X, clipRangePxf.Y);
   EXPECT_EQ(clippedEntries[0].Y, orgCoordsPxf[0].Y);
 
-  auto delta = orgCoordsPxf[1] - orgCoordsPxf[0];
-  auto deltaNew = clipRangePxf.Y - orgCoordsPxf[0].X;
-  auto percentage = deltaNew / delta.X;
-  PxVector2 clipped(clipRangePxf.Y, orgCoordsPxf[0].Y + (delta.Y * percentage));
+  const auto delta = orgCoordsPxf[1] - orgCoordsPxf[0];
+  const auto deltaNew = clipRangePxf.Y - orgCoordsPxf[0].X;
+  const auto percentage = deltaNew / delta.X;
+  const PxVector2 clipped(clipRangePxf.Y, orgCoordsPxf[0].Y + (delta.Y * percentage));
   EXPECT_EQ(clippedEntries[1].X, clipped.X);
   EXPECT_FLOAT_EQ(clippedEntries[1].Y.Value, clipped.Y.Value);
 }
@@ -142,17 +142,17 @@ TEST(TestBuilder_Clip2D, Clip2_PartialLeft1)
                                                  PxVector2::Create(LocalConfig::X1.Value, LocalConfig::U1)};
   std::array<PxVector2, 2> coordsPxf(orgCoordsPxf);
 
-  ReadOnlySpan<PxVector2> clippedEntries = Clip2DUtil::Clip(coordsPxf, clipRangePxf);
+  const ReadOnlySpan<PxVector2> clippedEntries = Clip2DUtil::Clip(coordsPxf, clipRangePxf);
 
   EXPECT_EQ(clippedEntries.size(), 2u);
   EXPECT_EQ(clippedEntries[0].X, orgCoordsPxf[0].X);
   EXPECT_EQ(clippedEntries[1].X, clipRangePxf.Y);
   EXPECT_EQ(clippedEntries[0].Y, orgCoordsPxf[0].Y);
 
-  auto delta = orgCoordsPxf[1] - orgCoordsPxf[0];
-  auto deltaNew = clipRangePxf.Y - orgCoordsPxf[0].X;
-  auto percentage = deltaNew / delta.X;
-  PxVector2 clipped(clipRangePxf.Y, orgCoordsPxf[0].Y + (delta.Y * percentage));
+  const auto delta = orgCoordsPxf[1] - orgCoordsPxf[0];
+  const auto deltaNew = clipRangePxf.Y - orgCoordsPxf[0].X;
+  const auto percentage = deltaNew / delta.X;
+  const PxVector2 clipped(clipRangePxf.Y, orgCoordsPxf[0].Y + (delta.Y * percentage));
   EXPECT_EQ(clippedEntries[1].X, clipped.X);
   EXPECT_FLOAT_EQ(clippedEntries[1].Y.Value, clipped.Y.Value);
 }
@@ -167,17 +167,17 @@ TEST(TestBuilder_Clip2D, Clip2_PartialRight0)
                                                  PxVector2::Create(LocalConfig::X1.Value, LocalConfig::U1)};
   std::array<PxVector2, 2> coordsPxf(orgCoordsPxf);
 
-  ReadOnlySpan<PxVector2> clippedEntries = Clip2DUtil::Clip(coordsPxf, clipRangePxf);
+  const ReadOnlySpan<PxVector2> clippedEntries = Clip2DUtil::Clip(coordsPxf, clipRangePxf);
 
   EXPECT_EQ(clippedEntries.size(), 2u);
   EXPECT_EQ(clippedEntries[0].X, clipRangePxf.X);
   EXPECT_EQ(clippedEntries[1].X, orgCoordsPxf[1].X);
   EXPECT_EQ(clippedEntries[1].Y, orgCoordsPxf[1].Y);
 
-  auto delta = orgCoordsPxf[1] - orgCoordsPxf[0];
-  auto deltaNew = clipRangePxf.X - orgCoordsPxf[0].X;
-  auto percentage = deltaNew / delta.X;
-  PxVector2 clipped(clipRangePxf.X, orgCoordsPxf[0].Y + (delta.Y * percentage));
+  const auto delta = orgCoordsPxf[1] - orgCoordsPxf[0];
+  const auto deltaNew = clipRangePxf.X - orgCoordsPxf[0].X;
+  const auto percentage = deltaNew / delta.X;
+  const PxVector2 clipped(clipRangePxf.X, orgCoordsPxf[0].Y + (delta.Y * percentage));
   EXPECT_EQ(clippedEntries[0].X, clipped.X);
   EXPECT_FLOAT_EQ(clippedEntries[0].Y.Value, clipped.Y.Value);
 }
@@ -191,17 +191,17 @@ TEST(TestBuilder_Clip2D, Clip2_PartialRight)
                                                  PxVector2::Create(LocalConfig::X1.Value, LocalConfig::U1)};
   std::array<PxVector2, 2> coordsPxf(orgCoordsPxf);
 
-  ReadOnlySpan<PxVector2> clippedEntries = Clip2DUtil::Clip(coordsPxf, clipRangePxf);
+  const ReadOnlySpan<PxVector2> clippedEntries = Clip2DUtil::Clip(coordsPxf, clipRangePxf);
 
   EXPECT_EQ(clippedEntries.size(), 2u);
   EXPECT_EQ(clippedEntries[0].X, clipRangePxf.X);
   EXPECT_EQ(clippedEntries[1].X, orgCoordsPxf[1].X);
   EXPECT_EQ(clippedEntries[1].Y, orgCoordsPxf[1].Y);
 
-  auto delta = orgCoordsPxf[1] - orgCoordsPxf[0];
-  auto deltaNew = clipRangePxf.X - orgCoordsPxf[0].X;
-  auto percentage = deltaNew / delta.X;
-  PxVector2 clipped(clipRangePxf.X, orgCoordsPxf[0].Y + (delta.Y * percentage));
+  const auto delta = orgCoordsPxf[1] - orgCoordsPxf[0];
+  const auto deltaNew = clipRangePxf.X - orgCoordsPxf[0].X;
+  const auto percentage = deltaNew / delta.X;
+  const PxVector2 clipped(clipRangePxf.X, orgCoordsPxf[0].Y + (delta.Y * percentage));
   EXPECT_EQ(clippedEntries[0].X, clipped.X);
   EXPECT_FLOAT_EQ(clippedEntries[0].Y.Value, clipped.Y.Value);
 }
@@ -215,18 +215,18 @@ TEST(TestBuilder_Clip2D, Clip2_Inside)
                                                  PxVector2::Create(LocalConfig::X1.Value, LocalConfig::U1)};
   std::array<PxVector2, 2> coordsPxf(orgCoordsPxf);
 
-  ReadOnlySpan<PxVector2> clippedEntries = Clip2DUtil::Clip(coordsPxf, clipRangePxf);
+  const ReadOnlySpan<PxVector2> clippedEntries = Clip2DUtil::Clip(coordsPxf, clipRangePxf);
 
   EXPECT_EQ(clippedEntries.size(), 2u);
 
-  auto delta = orgCoordsPxf[1] - orgCoordsPxf[0];
-  auto deltaNewL = clipRangePxf.X - orgCoordsPxf[0].X;
-  auto deltaNewR = clipRangePxf.Y - orgCoordsPxf[0].X;
-  auto percentageL = deltaNewL / delta.X;
-  auto percentageR = deltaNewR / delta.X;
+  const auto delta = orgCoordsPxf[1] - orgCoordsPxf[0];
+  const auto deltaNewL = clipRangePxf.X - orgCoordsPxf[0].X;
+  const auto deltaNewR = clipRangePxf.Y - orgCoordsPxf[0].X;
+  const auto percentageL = deltaNewL / delta.X;
+  const auto percentageR = deltaNewR / delta.X;
 
-  PxVector2 clippedL(clipRangePxf.X, orgCoordsPxf[0].Y + (delta.Y * percentageL));
-  PxVector2 clippedR(clipRangePxf.Y, orgCoordsPxf[0].Y + (delta.Y * percentageR));
+  const PxVector2 clippedL(clipRangePxf.X, orgCoordsPxf[0].Y + (delta.Y * percentageL));
+  const PxVector2 clippedR(clipRangePxf.Y, orgCoordsPxf[0].Y + (delta.Y * percentageR));
 
   EXPECT_EQ(clippedEntries[0].X, clippedL.X);
   EXPECT_FLOAT_EQ(clippedEntries[0].Y.Value, clippedL.Y.Value);
@@ -247,7 +247,7 @@ TEST(TestBuilder_Clip2D, Clip3_ExactMatch)
                                                  PxVector2::Create(LocalConfig::X2.Value, LocalConfig::U2)};
   std::array<PxVector2, 3> coordsPxf(orgCoordsPxf);
 
-  ReadOnlySpan<PxVector2> clippedEntries = Clip2DUtil::Clip(coordsPxf, clipRangePxf);
+  const ReadOnlySpan<PxVector2> clippedEntries = Clip2DUtil::Clip(coordsPxf, clipRangePxf);
 
   EXPECT_EQ(clippedEntries.size(), coordsPxf.size());
   for (uint32_t i = 0; i < orgCoordsPxf.size(); ++i)
@@ -266,7 +266,7 @@ TEST(TestBuilder_Clip2D, Clip3_ClipAreaLeftOf)
                                                  PxVector2::Create(LocalConfig::X2.Value, LocalConfig::U2)};
   std::array<PxVector2, 3> coordsPxf(orgCoordsPxf);
 
-  ReadOnlySpan<PxVector2> clippedEntries = Clip2DUtil::Clip(coordsPxf, clipRangePxf);
+  const ReadOnlySpan<PxVector2> clippedEntries = Clip2DUtil::Clip(coordsPxf, clipRangePxf);
 
   EXPECT_EQ(clippedEntries.size(), 0u);
   for (uint32_t i = 0; i < orgCoordsPxf.size(); ++i)
@@ -285,7 +285,7 @@ TEST(TestBuilder_Clip2D, Clip3_ClipAreaRightOf)
                                                  PxVector2::Create(LocalConfig::X2.Value, LocalConfig::U2)};
   std::array<PxVector2, 3> coordsPxf(orgCoordsPxf);
 
-  ReadOnlySpan<PxVector2> clippedEntries = Clip2DUtil::Clip(coordsPxf, clipRangePxf);
+  const ReadOnlySpan<PxVector2> clippedEntries = Clip2DUtil::Clip(coordsPxf, clipRangePxf);
 
   EXPECT_EQ(clippedEntries.size(), 0u);
   for (uint32_t i = 0; i < orgCoordsPxf.size(); ++i)
@@ -304,17 +304,17 @@ TEST(TestBuilder_Clip2D, Clip3_PartialLeft0)
                                                  PxVector2::Create(LocalConfig::X2.Value, LocalConfig::U2)};
   std::array<PxVector2, 3> coordsPxf(orgCoordsPxf);
 
-  ReadOnlySpan<PxVector2> clippedEntries = Clip2DUtil::Clip(coordsPxf, clipRangePxf);
+  const ReadOnlySpan<PxVector2> clippedEntries = Clip2DUtil::Clip(coordsPxf, clipRangePxf);
 
   EXPECT_EQ(clippedEntries.size(), 2u);
   EXPECT_EQ(clippedEntries[0].X, orgCoordsPxf[0].X);
   EXPECT_EQ(clippedEntries[1].X, clipRangePxf.Y);
   EXPECT_EQ(clippedEntries[0].Y, orgCoordsPxf[0].Y);
 
-  auto delta = orgCoordsPxf[1] - orgCoordsPxf[0];
-  auto deltaNew = clipRangePxf.Y - orgCoordsPxf[0].X;
-  auto percentage = deltaNew / delta.X;
-  PxVector2 clipped(clipRangePxf.Y, orgCoordsPxf[0].Y + (delta.Y * percentage));
+  const auto delta = orgCoordsPxf[1] - orgCoordsPxf[0];
+  const auto deltaNew = clipRangePxf.Y - orgCoordsPxf[0].X;
+  const auto percentage = deltaNew / delta.X;
+  const PxVector2 clipped(clipRangePxf.Y, orgCoordsPxf[0].Y + (delta.Y * percentage));
   EXPECT_EQ(clippedEntries[1].X, clipped.X);
   EXPECT_FLOAT_EQ(clippedEntries[1].Y.Value, clipped.Y.Value);
 }
@@ -329,17 +329,17 @@ TEST(TestBuilder_Clip2D, Clip3_PartialLeft1)
                                                  PxVector2::Create(LocalConfig::X2.Value, LocalConfig::U2)};
   std::array<PxVector2, 3> coordsPxf(orgCoordsPxf);
 
-  ReadOnlySpan<PxVector2> clippedEntries = Clip2DUtil::Clip(coordsPxf, clipRangePxf);
+  const ReadOnlySpan<PxVector2> clippedEntries = Clip2DUtil::Clip(coordsPxf, clipRangePxf);
 
   EXPECT_EQ(clippedEntries.size(), 2u);
   EXPECT_EQ(clippedEntries[0].X, orgCoordsPxf[0].X);
   EXPECT_EQ(clippedEntries[1].X, clipRangePxf.Y);
   EXPECT_EQ(clippedEntries[0].Y, orgCoordsPxf[0].Y);
 
-  auto delta = orgCoordsPxf[1] - orgCoordsPxf[0];
-  auto deltaNew = clipRangePxf.Y - orgCoordsPxf[0].X;
-  auto percentage = deltaNew / delta.X;
-  PxVector2 clipped(clipRangePxf.Y, orgCoordsPxf[0].Y + (delta.Y * percentage));
+  const auto delta = orgCoordsPxf[1] - orgCoordsPxf[0];
+  const auto deltaNew = clipRangePxf.Y - orgCoordsPxf[0].X;
+  const auto percentage = deltaNew / delta.X;
+  const PxVector2 clipped(clipRangePxf.Y, orgCoordsPxf[0].Y + (delta.Y * percentage));
   EXPECT_EQ(clippedEntries[1].X, clipped.X);
   EXPECT_FLOAT_EQ(clippedEntries[1].Y.Value, clipped.Y.Value);
 }
@@ -355,17 +355,17 @@ TEST(TestBuilder_Clip2D, Clip3_PartialRight0)
                                                  PxVector2::Create(LocalConfig::X2.Value, LocalConfig::U2)};
   std::array<PxVector2, 3> coordsPxf(orgCoordsPxf);
 
-  ReadOnlySpan<PxVector2> clippedEntries = Clip2DUtil::Clip(coordsPxf, clipRangePxf);
+  const ReadOnlySpan<PxVector2> clippedEntries = Clip2DUtil::Clip(coordsPxf, clipRangePxf);
 
   EXPECT_EQ(clippedEntries.size(), 2u);
   EXPECT_EQ(clippedEntries[0].X, clipRangePxf.X);
   EXPECT_EQ(clippedEntries[1].X, orgCoordsPxf[2].X);
   EXPECT_EQ(clippedEntries[1].Y, orgCoordsPxf[2].Y);
 
-  auto delta = orgCoordsPxf[2] - orgCoordsPxf[1];
-  auto deltaNew = clipRangePxf.X - orgCoordsPxf[1].X;
-  auto percentage = deltaNew / delta.X;
-  PxVector2 clipped(clipRangePxf.X, orgCoordsPxf[1].Y + (delta.Y * percentage));
+  const auto delta = orgCoordsPxf[2] - orgCoordsPxf[1];
+  const auto deltaNew = clipRangePxf.X - orgCoordsPxf[1].X;
+  const auto percentage = deltaNew / delta.X;
+  const PxVector2 clipped(clipRangePxf.X, orgCoordsPxf[1].Y + (delta.Y * percentage));
   EXPECT_EQ(clippedEntries[0].X, clipped.X);
   EXPECT_FLOAT_EQ(clippedEntries[0].Y.Value, clipped.Y.Value);
 }
@@ -380,17 +380,17 @@ TEST(TestBuilder_Clip2D, Clip3_PartialRight)
                                                  PxVector2::Create(LocalConfig::X2.Value, LocalConfig::U2)};
   std::array<PxVector2, 3> coordsPxf(orgCoordsPxf);
 
-  ReadOnlySpan<PxVector2> clippedEntries = Clip2DUtil::Clip(coordsPxf, clipRangePxf);
+  const ReadOnlySpan<PxVector2> clippedEntries = Clip2DUtil::Clip(coordsPxf, clipRangePxf);
 
   EXPECT_EQ(clippedEntries.size(), 2u);
   EXPECT_EQ(clippedEntries[0].X, clipRangePxf.X);
   EXPECT_EQ(clippedEntries[1].X, orgCoordsPxf[2].X);
   EXPECT_EQ(clippedEntries[1].Y, orgCoordsPxf[2].Y);
 
-  auto delta = orgCoordsPxf[2] - orgCoordsPxf[1];
-  auto deltaNew = clipRangePxf.X - orgCoordsPxf[1].X;
-  auto percentage = deltaNew / delta.X;
-  PxVector2 clipped(clipRangePxf.X, orgCoordsPxf[1].Y + (delta.Y * percentage));
+  const auto delta = orgCoordsPxf[2] - orgCoordsPxf[1];
+  const auto deltaNew = clipRangePxf.X - orgCoordsPxf[1].X;
+  const auto percentage = deltaNew / delta.X;
+  const PxVector2 clipped(clipRangePxf.X, orgCoordsPxf[1].Y + (delta.Y * percentage));
   EXPECT_EQ(clippedEntries[0].X, clipped.X);
   EXPECT_FLOAT_EQ(clippedEntries[0].Y.Value, clipped.Y.Value);
 }
@@ -404,18 +404,18 @@ TEST(TestBuilder_Clip2D, Clip3_InsideAB)
                                                  PxVector2::Create(LocalConfig::X1.Value, LocalConfig::U1),
                                                  PxVector2::Create(LocalConfig::X2.Value, LocalConfig::U2)};
   std::array<PxVector2, 3> coordsPxf(orgCoordsPxf);
-  ReadOnlySpan<PxVector2> clippedEntries = Clip2DUtil::Clip(coordsPxf, clipRangePxf);
+  const ReadOnlySpan<PxVector2> clippedEntries = Clip2DUtil::Clip(coordsPxf, clipRangePxf);
 
   EXPECT_EQ(clippedEntries.size(), 2u);
 
-  auto delta = orgCoordsPxf[1] - orgCoordsPxf[0];
-  auto deltaNewL = clipRangePxf.X - orgCoordsPxf[0].X;
-  auto deltaNewR = clipRangePxf.Y - orgCoordsPxf[0].X;
-  auto percentageL = deltaNewL / delta.X;
-  auto percentageR = deltaNewR / delta.X;
+  const auto delta = orgCoordsPxf[1] - orgCoordsPxf[0];
+  const auto deltaNewL = clipRangePxf.X - orgCoordsPxf[0].X;
+  const auto deltaNewR = clipRangePxf.Y - orgCoordsPxf[0].X;
+  const auto percentageL = deltaNewL / delta.X;
+  const auto percentageR = deltaNewR / delta.X;
 
-  PxVector2 clippedL(clipRangePxf.X, orgCoordsPxf[0].Y + (delta.Y * percentageL));
-  PxVector2 clippedR(clipRangePxf.Y, orgCoordsPxf[0].Y + (delta.Y * percentageR));
+  const PxVector2 clippedL(clipRangePxf.X, orgCoordsPxf[0].Y + (delta.Y * percentageL));
+  const PxVector2 clippedR(clipRangePxf.Y, orgCoordsPxf[0].Y + (delta.Y * percentageR));
 
   EXPECT_EQ(clippedEntries[0].X, clippedL.X);
   EXPECT_FLOAT_EQ(clippedEntries[0].Y.Value, clippedL.Y.Value);
@@ -432,21 +432,21 @@ TEST(TestBuilder_Clip2D, Clip3_InsideAC)
                                                  PxVector2::Create(LocalConfig::X1.Value, LocalConfig::U1),
                                                  PxVector2::Create(LocalConfig::X2.Value, LocalConfig::U2)};
   std::array<PxVector2, 3> coordsPxf(orgCoordsPxf);
-  ReadOnlySpan<PxVector2> clippedEntries = Clip2DUtil::Clip(coordsPxf, clipRangePxf);
+  const ReadOnlySpan<PxVector2> clippedEntries = Clip2DUtil::Clip(coordsPxf, clipRangePxf);
 
   EXPECT_EQ(clippedEntries.size(), 3u);
 
-  auto deltaL = orgCoordsPxf[1] - orgCoordsPxf[0];
-  auto deltaR = orgCoordsPxf[2] - orgCoordsPxf[1];
+  const auto deltaL = orgCoordsPxf[1] - orgCoordsPxf[0];
+  const auto deltaR = orgCoordsPxf[2] - orgCoordsPxf[1];
 
-  auto deltaNewL = clipRangePxf.X - orgCoordsPxf[0].X;
-  auto deltaNewR = clipRangePxf.Y - orgCoordsPxf[1].X;
+  const auto deltaNewL = clipRangePxf.X - orgCoordsPxf[0].X;
+  const auto deltaNewR = clipRangePxf.Y - orgCoordsPxf[1].X;
 
-  auto percentageL = deltaNewL / deltaL.X;
-  auto percentageR = deltaNewR / deltaR.X;
+  const auto percentageL = deltaNewL / deltaL.X;
+  const auto percentageR = deltaNewR / deltaR.X;
 
-  PxVector2 clippedL(clipRangePxf.X, orgCoordsPxf[0].Y + (deltaL.Y * percentageL));
-  PxVector2 clippedR(clipRangePxf.Y, orgCoordsPxf[1].Y + (deltaR.Y * percentageR));
+  const PxVector2 clippedL(clipRangePxf.X, orgCoordsPxf[0].Y + (deltaL.Y * percentageL));
+  const PxVector2 clippedR(clipRangePxf.Y, orgCoordsPxf[1].Y + (deltaR.Y * percentageR));
 
   EXPECT_EQ(clippedEntries[0].X, clippedL.X);
   EXPECT_FLOAT_EQ(clippedEntries[0].Y.Value, clippedL.Y.Value);
@@ -465,18 +465,18 @@ TEST(TestBuilder_Clip2D, Clip3_InsideBC)
                                                  PxVector2::Create(LocalConfig::X1.Value, LocalConfig::U1),
                                                  PxVector2::Create(LocalConfig::X2.Value, LocalConfig::U2)};
   std::array<PxVector2, 3> coordsPxf(orgCoordsPxf);
-  ReadOnlySpan<PxVector2> clippedEntries = Clip2DUtil::Clip(coordsPxf, clipRangePxf);
+  const ReadOnlySpan<PxVector2> clippedEntries = Clip2DUtil::Clip(coordsPxf, clipRangePxf);
 
   EXPECT_EQ(clippedEntries.size(), 2u);
 
-  auto deltaR = orgCoordsPxf[2] - orgCoordsPxf[1];
-  auto deltaNewL = clipRangePxf.X - orgCoordsPxf[1].X;
-  auto deltaNewR = clipRangePxf.Y - orgCoordsPxf[1].X;
-  auto percentageL = deltaNewL / deltaR.X;
-  auto percentageR = deltaNewR / deltaR.X;
+  const auto deltaR = orgCoordsPxf[2] - orgCoordsPxf[1];
+  const auto deltaNewL = clipRangePxf.X - orgCoordsPxf[1].X;
+  const auto deltaNewR = clipRangePxf.Y - orgCoordsPxf[1].X;
+  const auto percentageL = deltaNewL / deltaR.X;
+  const auto percentageR = deltaNewR / deltaR.X;
 
-  PxVector2 clippedL(clipRangePxf.X, orgCoordsPxf[1].Y + (deltaR.Y * percentageL));
-  PxVector2 clippedR(clipRangePxf.Y, orgCoordsPxf[1].Y + (deltaR.Y * percentageR));
+  const PxVector2 clippedL(clipRangePxf.X, orgCoordsPxf[1].Y + (deltaR.Y * percentageL));
+  const PxVector2 clippedR(clipRangePxf.Y, orgCoordsPxf[1].Y + (deltaR.Y * percentageR));
 
   EXPECT_EQ(clippedEntries[0].X, clippedL.X);
   EXPECT_FLOAT_EQ(clippedEntries[0].Y.Value, clippedL.Y.Value);
@@ -498,7 +498,7 @@ TEST(TestBuilder_Clip2D, Clip3_ExactMatch_OverlappingCoordsAB)
                                                  PxVector2::Create(LocalConfig::X2.Value, LocalConfig::U2)};
   std::array<PxVector2, 3> coordsPxf(orgCoordsPxf);
 
-  ReadOnlySpan<PxVector2> clippedEntries = Clip2DUtil::Clip(coordsPxf, clipRangePxf);
+  const ReadOnlySpan<PxVector2> clippedEntries = Clip2DUtil::Clip(coordsPxf, clipRangePxf);
 
   EXPECT_EQ(clippedEntries.size(), coordsPxf.size());
   for (uint32_t i = 0; i < orgCoordsPxf.size(); ++i)
@@ -517,7 +517,7 @@ TEST(TestBuilder_Clip2D, Clip3_ClipAreaLeftOf_OverlappingCoordsAB)
                                                  PxVector2::Create(LocalConfig::X2.Value, LocalConfig::U2)};
   std::array<PxVector2, 3> coordsPxf(orgCoordsPxf);
 
-  ReadOnlySpan<PxVector2> clippedEntries = Clip2DUtil::Clip(coordsPxf, clipRangePxf);
+  const ReadOnlySpan<PxVector2> clippedEntries = Clip2DUtil::Clip(coordsPxf, clipRangePxf);
 
   EXPECT_EQ(clippedEntries.size(), 0u);
   for (uint32_t i = 0; i < orgCoordsPxf.size(); ++i)
@@ -536,7 +536,7 @@ TEST(TestBuilder_Clip2D, Clip3_ClipAreaRightOf_OverlappingCoordsAB)
                                                  PxVector2::Create(LocalConfig::X2.Value, LocalConfig::U2)};
   std::array<PxVector2, 3> coordsPxf(orgCoordsPxf);
 
-  ReadOnlySpan<PxVector2> clippedEntries = Clip2DUtil::Clip(coordsPxf, clipRangePxf);
+  const ReadOnlySpan<PxVector2> clippedEntries = Clip2DUtil::Clip(coordsPxf, clipRangePxf);
 
   EXPECT_EQ(clippedEntries.size(), 0u);
   for (uint32_t i = 0; i < orgCoordsPxf.size(); ++i)
@@ -555,7 +555,7 @@ TEST(TestBuilder_Clip2D, Clip3_PartialLeft0_OverlappingCoordsAB)
                                                  PxVector2::Create(LocalConfig::X2.Value, LocalConfig::U2)};
   std::array<PxVector2, 3> coordsPxf(orgCoordsPxf);
 
-  ReadOnlySpan<PxVector2> clippedEntries = Clip2DUtil::Clip(coordsPxf, clipRangePxf);
+  const ReadOnlySpan<PxVector2> clippedEntries = Clip2DUtil::Clip(coordsPxf, clipRangePxf);
 
   EXPECT_EQ(clippedEntries.size(), 3u);
   EXPECT_EQ(clippedEntries[0].X, orgCoordsPxf[0].X);
@@ -564,10 +564,10 @@ TEST(TestBuilder_Clip2D, Clip3_PartialLeft0_OverlappingCoordsAB)
   EXPECT_EQ(clippedEntries[0].Y, orgCoordsPxf[0].Y);
   EXPECT_EQ(clippedEntries[1].Y, orgCoordsPxf[1].Y);
 
-  auto delta = orgCoordsPxf[2] - orgCoordsPxf[1];
-  auto deltaNew = clipRangePxf.Y - orgCoordsPxf[1].X;
-  auto percentage = deltaNew / delta.X;
-  PxVector2 clipped(clipRangePxf.Y, orgCoordsPxf[1].Y + (delta.Y * percentage));
+  const auto delta = orgCoordsPxf[2] - orgCoordsPxf[1];
+  const auto deltaNew = clipRangePxf.Y - orgCoordsPxf[1].X;
+  const auto percentage = deltaNew / delta.X;
+  const PxVector2 clipped(clipRangePxf.Y, orgCoordsPxf[1].Y + (delta.Y * percentage));
   EXPECT_EQ(clippedEntries[2].X, clipped.X);
   EXPECT_FLOAT_EQ(clippedEntries[2].Y.Value, clipped.Y.Value);
 }
@@ -582,7 +582,7 @@ TEST(TestBuilder_Clip2D, Clip3_PartialLeft1_OverlappingCoordsAB)
                                                  PxVector2::Create(LocalConfig::X2.Value, LocalConfig::U2)};
   std::array<PxVector2, 3> coordsPxf(orgCoordsPxf);
 
-  ReadOnlySpan<PxVector2> clippedEntries = Clip2DUtil::Clip(coordsPxf, clipRangePxf);
+  const ReadOnlySpan<PxVector2> clippedEntries = Clip2DUtil::Clip(coordsPxf, clipRangePxf);
 
   EXPECT_EQ(clippedEntries.size(), 3u);
   EXPECT_EQ(clippedEntries[0].X, orgCoordsPxf[0].X);
@@ -591,10 +591,10 @@ TEST(TestBuilder_Clip2D, Clip3_PartialLeft1_OverlappingCoordsAB)
   EXPECT_EQ(clippedEntries[0].Y, orgCoordsPxf[0].Y);
   EXPECT_EQ(clippedEntries[1].Y, orgCoordsPxf[1].Y);
 
-  auto delta = orgCoordsPxf[2] - orgCoordsPxf[1];
-  auto deltaNew = clipRangePxf.Y - orgCoordsPxf[1].X;
-  auto percentage = deltaNew / delta.X;
-  PxVector2 clipped(clipRangePxf.Y, orgCoordsPxf[1].Y + (delta.Y * percentage));
+  const auto delta = orgCoordsPxf[2] - orgCoordsPxf[1];
+  const auto deltaNew = clipRangePxf.Y - orgCoordsPxf[1].X;
+  const auto percentage = deltaNew / delta.X;
+  const PxVector2 clipped(clipRangePxf.Y, orgCoordsPxf[1].Y + (delta.Y * percentage));
   EXPECT_EQ(clippedEntries[2].X, clipped.X);
   EXPECT_FLOAT_EQ(clippedEntries[2].Y.Value, clipped.Y.Value);
 }
@@ -610,17 +610,17 @@ TEST(TestBuilder_Clip2D, Clip3_PartialRight0_OverlappingCoordsAB)
                                                  PxVector2::Create(LocalConfig::X2.Value, LocalConfig::U2)};
   std::array<PxVector2, 3> coordsPxf(orgCoordsPxf);
 
-  ReadOnlySpan<PxVector2> clippedEntries = Clip2DUtil::Clip(coordsPxf, clipRangePxf);
+  const ReadOnlySpan<PxVector2> clippedEntries = Clip2DUtil::Clip(coordsPxf, clipRangePxf);
 
   EXPECT_EQ(clippedEntries.size(), 2u);
   EXPECT_EQ(clippedEntries[0].X, clipRangePxf.X);
   EXPECT_EQ(clippedEntries[1].X, orgCoordsPxf[2].X);
   EXPECT_EQ(clippedEntries[1].Y, orgCoordsPxf[2].Y);
 
-  auto delta = orgCoordsPxf[2] - orgCoordsPxf[1];
-  auto deltaNew = clipRangePxf.X - orgCoordsPxf[1].X;
-  auto percentage = deltaNew / delta.X;
-  PxVector2 clipped(clipRangePxf.X, orgCoordsPxf[1].Y + (delta.Y * percentage));
+  const auto delta = orgCoordsPxf[2] - orgCoordsPxf[1];
+  const auto deltaNew = clipRangePxf.X - orgCoordsPxf[1].X;
+  const auto percentage = deltaNew / delta.X;
+  const PxVector2 clipped(clipRangePxf.X, orgCoordsPxf[1].Y + (delta.Y * percentage));
   EXPECT_EQ(clippedEntries[0].X, clipped.X);
   EXPECT_FLOAT_EQ(clippedEntries[0].Y.Value, clipped.Y.Value);
 }
@@ -635,17 +635,17 @@ TEST(TestBuilder_Clip2D, Clip3_PartialRight_OverlappingCoordsAB)
                                                  PxVector2::Create(LocalConfig::X2.Value, LocalConfig::U2)};
   std::array<PxVector2, 3> coordsPxf(orgCoordsPxf);
 
-  ReadOnlySpan<PxVector2> clippedEntries = Clip2DUtil::Clip(coordsPxf, clipRangePxf);
+  const ReadOnlySpan<PxVector2> clippedEntries = Clip2DUtil::Clip(coordsPxf, clipRangePxf);
 
   EXPECT_EQ(clippedEntries.size(), 2u);
   EXPECT_EQ(clippedEntries[0].X, clipRangePxf.X);
   EXPECT_EQ(clippedEntries[1].X, orgCoordsPxf[2].X);
   EXPECT_EQ(clippedEntries[1].Y, orgCoordsPxf[2].Y);
 
-  auto delta = orgCoordsPxf[2] - orgCoordsPxf[1];
-  auto deltaNew = clipRangePxf.X - orgCoordsPxf[1].X;
-  auto percentage = deltaNew / delta.X;
-  PxVector2 clipped(clipRangePxf.X, orgCoordsPxf[1].Y + (delta.Y * percentage));
+  const auto delta = orgCoordsPxf[2] - orgCoordsPxf[1];
+  const auto deltaNew = clipRangePxf.X - orgCoordsPxf[1].X;
+  const auto percentage = deltaNew / delta.X;
+  const PxVector2 clipped(clipRangePxf.X, orgCoordsPxf[1].Y + (delta.Y * percentage));
   EXPECT_EQ(clippedEntries[0].X, clipped.X);
   EXPECT_FLOAT_EQ(clippedEntries[0].Y.Value, clipped.Y.Value);
 }
@@ -659,18 +659,18 @@ TEST(TestBuilder_Clip2D, Clip3_InsideBC_OverlappingCoordsAB)
                                                  PxVector2::Create(LocalConfig::X0.Value, LocalConfig::U1),
                                                  PxVector2::Create(LocalConfig::X2.Value, LocalConfig::U2)};
   std::array<PxVector2, 3> coordsPxf(orgCoordsPxf);
-  ReadOnlySpan<PxVector2> clippedEntries = Clip2DUtil::Clip(coordsPxf, clipRangePxf);
+  const ReadOnlySpan<PxVector2> clippedEntries = Clip2DUtil::Clip(coordsPxf, clipRangePxf);
 
   EXPECT_EQ(clippedEntries.size(), 2u);
 
-  auto deltaR = orgCoordsPxf[2] - orgCoordsPxf[1];
-  auto deltaNewL = clipRangePxf.X - orgCoordsPxf[1].X;
-  auto deltaNewR = clipRangePxf.Y - orgCoordsPxf[1].X;
-  auto percentageL = deltaNewL / deltaR.X;
-  auto percentageR = deltaNewR / deltaR.X;
+  const auto deltaR = orgCoordsPxf[2] - orgCoordsPxf[1];
+  const auto deltaNewL = clipRangePxf.X - orgCoordsPxf[1].X;
+  const auto deltaNewR = clipRangePxf.Y - orgCoordsPxf[1].X;
+  const auto percentageL = deltaNewL / deltaR.X;
+  const auto percentageR = deltaNewR / deltaR.X;
 
-  PxVector2 clippedL(clipRangePxf.X, orgCoordsPxf[1].Y + (deltaR.Y * percentageL));
-  PxVector2 clippedR(clipRangePxf.Y, orgCoordsPxf[1].Y + (deltaR.Y * percentageR));
+  const PxVector2 clippedL(clipRangePxf.X, orgCoordsPxf[1].Y + (deltaR.Y * percentageL));
+  const PxVector2 clippedR(clipRangePxf.Y, orgCoordsPxf[1].Y + (deltaR.Y * percentageR));
 
   EXPECT_EQ(clippedEntries[0].X, clippedL.X);
   EXPECT_FLOAT_EQ(clippedEntries[0].Y.Value, clippedL.Y.Value);
@@ -692,7 +692,7 @@ TEST(TestBuilder_Clip2D, Clip3_ExactMatch_OverlappignCoordsBC)
                                                  PxVector2::Create(LocalConfig::X1.Value, LocalConfig::U2)};
   std::array<PxVector2, 3> coordsPxf(orgCoordsPxf);
 
-  ReadOnlySpan<PxVector2> clippedEntries = Clip2DUtil::Clip(coordsPxf, clipRangePxf);
+  const ReadOnlySpan<PxVector2> clippedEntries = Clip2DUtil::Clip(coordsPxf, clipRangePxf);
 
   EXPECT_EQ(clippedEntries.size(), coordsPxf.size());
   for (uint32_t i = 0; i < orgCoordsPxf.size(); ++i)
@@ -711,7 +711,7 @@ TEST(TestBuilder_Clip2D, Clip3_ClipAreaLeftOf_OverlappignCoordsBC)
                                                  PxVector2::Create(LocalConfig::X1.Value, LocalConfig::U2)};
   std::array<PxVector2, 3> coordsPxf(orgCoordsPxf);
 
-  ReadOnlySpan<PxVector2> clippedEntries = Clip2DUtil::Clip(coordsPxf, clipRangePxf);
+  const ReadOnlySpan<PxVector2> clippedEntries = Clip2DUtil::Clip(coordsPxf, clipRangePxf);
 
   EXPECT_EQ(clippedEntries.size(), 0u);
   for (uint32_t i = 0; i < orgCoordsPxf.size(); ++i)
@@ -730,7 +730,7 @@ TEST(TestBuilder_Clip2D, Clip3_ClipAreaRightOf_OverlappignCoordsBC)
                                                  PxVector2::Create(LocalConfig::X1.Value, LocalConfig::U2)};
   std::array<PxVector2, 3> coordsPxf(orgCoordsPxf);
 
-  ReadOnlySpan<PxVector2> clippedEntries = Clip2DUtil::Clip(coordsPxf, clipRangePxf);
+  const ReadOnlySpan<PxVector2> clippedEntries = Clip2DUtil::Clip(coordsPxf, clipRangePxf);
 
   EXPECT_EQ(clippedEntries.size(), 0u);
   for (uint32_t i = 0; i < orgCoordsPxf.size(); ++i)
@@ -749,17 +749,17 @@ TEST(TestBuilder_Clip2D, Clip3_PartialLeft0_OverlappignCoordsBC)
                                                  PxVector2::Create(LocalConfig::X1.Value, LocalConfig::U2)};
   std::array<PxVector2, 3> coordsPxf(orgCoordsPxf);
 
-  ReadOnlySpan<PxVector2> clippedEntries = Clip2DUtil::Clip(coordsPxf, clipRangePxf);
+  const ReadOnlySpan<PxVector2> clippedEntries = Clip2DUtil::Clip(coordsPxf, clipRangePxf);
 
   EXPECT_EQ(clippedEntries.size(), 2u);
   EXPECT_EQ(clippedEntries[0].X, orgCoordsPxf[0].X);
   EXPECT_EQ(clippedEntries[1].X, clipRangePxf.Y);
   EXPECT_EQ(clippedEntries[0].Y, orgCoordsPxf[0].Y);
 
-  auto delta = orgCoordsPxf[1] - orgCoordsPxf[0];
-  auto deltaNew = clipRangePxf.Y - orgCoordsPxf[0].X;
-  auto percentage = deltaNew / delta.X;
-  PxVector2 clipped(clipRangePxf.Y, orgCoordsPxf[0].Y + (delta.Y * percentage));
+  const auto delta = orgCoordsPxf[1] - orgCoordsPxf[0];
+  const auto deltaNew = clipRangePxf.Y - orgCoordsPxf[0].X;
+  const auto percentage = deltaNew / delta.X;
+  const PxVector2 clipped(clipRangePxf.Y, orgCoordsPxf[0].Y + (delta.Y * percentage));
   EXPECT_EQ(clippedEntries[1].X, clipped.X);
   EXPECT_FLOAT_EQ(clippedEntries[1].Y.Value, clipped.Y.Value);
 }
@@ -774,17 +774,17 @@ TEST(TestBuilder_Clip2D, Clip3_PartialLeft1_OverlappignCoordsBC)
                                                  PxVector2::Create(LocalConfig::X1.Value, LocalConfig::U2)};
   std::array<PxVector2, 3> coordsPxf(orgCoordsPxf);
 
-  ReadOnlySpan<PxVector2> clippedEntries = Clip2DUtil::Clip(coordsPxf, clipRangePxf);
+  const ReadOnlySpan<PxVector2> clippedEntries = Clip2DUtil::Clip(coordsPxf, clipRangePxf);
 
   EXPECT_EQ(clippedEntries.size(), 2u);
   EXPECT_EQ(clippedEntries[0].X, orgCoordsPxf[0].X);
   EXPECT_EQ(clippedEntries[1].X, clipRangePxf.Y);
   EXPECT_EQ(clippedEntries[0].Y, orgCoordsPxf[0].Y);
 
-  auto delta = orgCoordsPxf[1] - orgCoordsPxf[0];
-  auto deltaNew = clipRangePxf.Y - orgCoordsPxf[0].X;
-  auto percentage = deltaNew / delta.X;
-  PxVector2 clipped(clipRangePxf.Y, orgCoordsPxf[0].Y + (delta.Y * percentage));
+  const auto delta = orgCoordsPxf[1] - orgCoordsPxf[0];
+  const auto deltaNew = clipRangePxf.Y - orgCoordsPxf[0].X;
+  const auto percentage = deltaNew / delta.X;
+  const PxVector2 clipped(clipRangePxf.Y, orgCoordsPxf[0].Y + (delta.Y * percentage));
   EXPECT_EQ(clippedEntries[1].X, clipped.X);
   EXPECT_FLOAT_EQ(clippedEntries[1].Y.Value, clipped.Y.Value);
 }
@@ -800,7 +800,7 @@ TEST(TestBuilder_Clip2D, Clip3_PartialRight0_OverlappignCoordsBC)
                                                  PxVector2::Create(LocalConfig::X1.Value, LocalConfig::U2)};
   std::array<PxVector2, 3> coordsPxf(orgCoordsPxf);
 
-  ReadOnlySpan<PxVector2> clippedEntries = Clip2DUtil::Clip(coordsPxf, clipRangePxf);
+  const ReadOnlySpan<PxVector2> clippedEntries = Clip2DUtil::Clip(coordsPxf, clipRangePxf);
 
   EXPECT_EQ(clippedEntries.size(), 3u);
   EXPECT_EQ(clippedEntries[0].X, clipRangePxf.X);
@@ -809,10 +809,10 @@ TEST(TestBuilder_Clip2D, Clip3_PartialRight0_OverlappignCoordsBC)
   EXPECT_EQ(clippedEntries[1].Y, orgCoordsPxf[1].Y);
   EXPECT_EQ(clippedEntries[2].Y, orgCoordsPxf[2].Y);
 
-  auto delta = orgCoordsPxf[1] - orgCoordsPxf[0];
-  auto deltaNew = clipRangePxf.X - orgCoordsPxf[0].X;
-  auto percentage = deltaNew / delta.X;
-  PxVector2 clipped(clipRangePxf.X, orgCoordsPxf[0].Y + (delta.Y * percentage));
+  const auto delta = orgCoordsPxf[1] - orgCoordsPxf[0];
+  const auto deltaNew = clipRangePxf.X - orgCoordsPxf[0].X;
+  const auto percentage = deltaNew / delta.X;
+  const PxVector2 clipped(clipRangePxf.X, orgCoordsPxf[0].Y + (delta.Y * percentage));
   EXPECT_EQ(clippedEntries[0].X, clipped.X);
   EXPECT_FLOAT_EQ(clippedEntries[0].Y.Value, clipped.Y.Value);
 }
@@ -827,7 +827,7 @@ TEST(TestBuilder_Clip2D, Clip3_PartialRight_OverlappignCoordsBC)
                                                  PxVector2::Create(LocalConfig::X1.Value, LocalConfig::U2)};
   std::array<PxVector2, 3> coordsPxf(orgCoordsPxf);
 
-  ReadOnlySpan<PxVector2> clippedEntries = Clip2DUtil::Clip(coordsPxf, clipRangePxf);
+  const ReadOnlySpan<PxVector2> clippedEntries = Clip2DUtil::Clip(coordsPxf, clipRangePxf);
 
   EXPECT_EQ(clippedEntries.size(), 3u);
   EXPECT_EQ(clippedEntries[0].X, clipRangePxf.X);
@@ -836,10 +836,10 @@ TEST(TestBuilder_Clip2D, Clip3_PartialRight_OverlappignCoordsBC)
   EXPECT_EQ(clippedEntries[1].Y, orgCoordsPxf[1].Y);
   EXPECT_EQ(clippedEntries[2].Y, orgCoordsPxf[2].Y);
 
-  auto delta = orgCoordsPxf[1] - orgCoordsPxf[0];
-  auto deltaNew = clipRangePxf.X - orgCoordsPxf[0].X;
-  auto percentage = deltaNew / delta.X;
-  PxVector2 clipped(clipRangePxf.X, orgCoordsPxf[0].Y + (delta.Y * percentage));
+  const auto delta = orgCoordsPxf[1] - orgCoordsPxf[0];
+  const auto deltaNew = clipRangePxf.X - orgCoordsPxf[0].X;
+  const auto percentage = deltaNew / delta.X;
+  const PxVector2 clipped(clipRangePxf.X, orgCoordsPxf[0].Y + (delta.Y * percentage));
   EXPECT_EQ(clippedEntries[0].X, clipped.X);
   EXPECT_FLOAT_EQ(clippedEntries[0].Y.Value, clipped.Y.Value);
 }
@@ -853,18 +853,18 @@ TEST(TestBuilder_Clip2D, Clip3_InsideAB_OverlappignCoordsBC)
                                                  PxVector2::Create(LocalConfig::X1.Value, LocalConfig::U1),
                                                  PxVector2::Create(LocalConfig::X1.Value, LocalConfig::U2)};
   std::array<PxVector2, 3> coordsPxf(orgCoordsPxf);
-  ReadOnlySpan<PxVector2> clippedEntries = Clip2DUtil::Clip(coordsPxf, clipRangePxf);
+  const ReadOnlySpan<PxVector2> clippedEntries = Clip2DUtil::Clip(coordsPxf, clipRangePxf);
 
   EXPECT_EQ(clippedEntries.size(), 2u);
 
-  auto delta = orgCoordsPxf[1] - orgCoordsPxf[0];
-  auto deltaNewL = clipRangePxf.X - orgCoordsPxf[0].X;
-  auto deltaNewR = clipRangePxf.Y - orgCoordsPxf[0].X;
-  auto percentageL = deltaNewL / delta.X;
-  auto percentageR = deltaNewR / delta.X;
+  const auto delta = orgCoordsPxf[1] - orgCoordsPxf[0];
+  const auto deltaNewL = clipRangePxf.X - orgCoordsPxf[0].X;
+  const auto deltaNewR = clipRangePxf.Y - orgCoordsPxf[0].X;
+  const auto percentageL = deltaNewL / delta.X;
+  const auto percentageR = deltaNewR / delta.X;
 
-  PxVector2 clippedL(clipRangePxf.X, orgCoordsPxf[0].Y + (delta.Y * percentageL));
-  PxVector2 clippedR(clipRangePxf.Y, orgCoordsPxf[0].Y + (delta.Y * percentageR));
+  const PxVector2 clippedL(clipRangePxf.X, orgCoordsPxf[0].Y + (delta.Y * percentageL));
+  const PxVector2 clippedR(clipRangePxf.Y, orgCoordsPxf[0].Y + (delta.Y * percentageR));
 
   EXPECT_EQ(clippedEntries[0].X, clippedL.X);
   EXPECT_FLOAT_EQ(clippedEntries[0].Y.Value, clippedL.Y.Value);

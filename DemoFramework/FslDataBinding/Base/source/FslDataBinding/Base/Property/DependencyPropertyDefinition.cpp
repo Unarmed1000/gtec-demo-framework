@@ -79,7 +79,7 @@ namespace Fsl::DataBinding
     }
 
     static uint64_t g_uniqueId{0};
-    auto uniqueId = g_uniqueId;
+    const auto uniqueId = g_uniqueId;
     assert(g_uniqueId < std::numeric_limits<uint64_t>::max());
     ++g_uniqueId;
     return DependencyPropertyDefinition(uniqueId, name, type, ownerType, std::move(methods));

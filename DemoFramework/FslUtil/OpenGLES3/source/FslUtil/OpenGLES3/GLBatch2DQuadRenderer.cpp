@@ -301,7 +301,7 @@ namespace Fsl::GLES3
 
     if (activeInfo.LocSmoothing != GLValues::InvalidLocation)
     {
-      float smoothing = SdfFontUtil::CalcSmooth(sdfRenderConfig.Spread, sdfRenderConfig.Scale);
+      const float smoothing = SdfFontUtil::CalcSmooth(sdfRenderConfig.Spread, sdfRenderConfig.Scale);
       glUniform1f(activeInfo.LocSmoothing, smoothing);
     }
 
@@ -383,9 +383,9 @@ namespace Fsl::GLES3
     uint32_t verticesLeft = length * LocalConfig::QuadVertexCount;
     const auto maxCapacity = m_vertexBuffer.GetCapacity();
     assert(m_vertexOffset <= maxCapacity);
-    auto capacityLeft = maxCapacity - m_vertexOffset;
+    const auto capacityLeft = maxCapacity - m_vertexOffset;
 
-    auto verticesToAdd = (verticesLeft <= capacityLeft ? verticesLeft : capacityLeft);
+    const auto verticesToAdd = (verticesLeft <= capacityLeft ? verticesLeft : capacityLeft);
     if (capacityLeft > 0)
     {
       assert((m_vertexOffset + verticesToAdd) <= m_vertexBuffer.GetCapacity());

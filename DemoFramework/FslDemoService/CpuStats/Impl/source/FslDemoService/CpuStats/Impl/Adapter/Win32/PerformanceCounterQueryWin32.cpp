@@ -152,7 +152,7 @@ namespace Fsl
     }
 
     // Ensure that we only cache the counters after the desired time has passed
-    auto deltaTime = currentTime - m_lastTryGetCpuUsage;
+    const auto deltaTime = currentTime - m_lastTryGetCpuUsage;
     if (deltaTime >= LocalConfig::MinIntervalCoreCpuUsage)
     {
       m_lastTryGetCpuUsage = currentTime;
@@ -195,7 +195,7 @@ namespace Fsl
       if (m_cpuStats[cpuIndex].Initialized)
       {
         m_cpuStats[cpuIndex].Initialized = false;
-        auto result = PdhRemoveCounter(m_cpuStats[cpuIndex].Counter);
+        const auto result = PdhRemoveCounter(m_cpuStats[cpuIndex].Counter);
         FSLLOG3_ERROR_IF(result != ERROR_SUCCESS, "PdhRemoveCounter failed with: {:#x}", result);
       }
     }

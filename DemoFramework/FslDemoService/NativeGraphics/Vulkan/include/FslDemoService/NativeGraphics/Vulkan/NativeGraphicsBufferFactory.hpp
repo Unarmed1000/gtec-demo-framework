@@ -55,7 +55,7 @@ namespace Fsl::Vulkan
 
     void Dispose() noexcept;
 
-    Graphics3D::NativeBufferFactoryCaps GetBufferCaps() const noexcept;
+    [[nodiscard]] Graphics3D::NativeBufferFactoryCaps GetBufferCaps() const noexcept;
 
     BasicNativeBufferHandle CreateBuffer(const BasicBufferType bufferType, ReadOnlyFlexSpan bufferData, const uint32_t bufferElementCapacity,
                                          const bool isDynamic);

@@ -112,7 +112,7 @@ namespace Fsl::UI
   {
     const ChartDataView* pDataView = m_dataView.get();
     assert(pDataView != nullptr);
-    auto currentViewChangeId = m_dataView->ChangeId();
+    const auto currentViewChangeId = m_dataView->ChangeId();
     if (currentViewChangeId != m_cachedViewChangeId)
     {
       // Resort the view data

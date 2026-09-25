@@ -45,7 +45,7 @@ namespace Fsl
     ~ImageConverterLibraryBasicService() final;
 
     // From IImageConverterService
-    ReadOnlySpan<SupportedConversion> GetSupportedConversions(const ConversionType conversionType) const noexcept final;
+    [[nodiscard]] ReadOnlySpan<SupportedConversion> GetSupportedConversions(const ConversionType conversionType) const noexcept final;
     ImageConvertResult TryConvert(Bitmap& rBitmap, const PixelFormat desiredPixelFormat) final;
     ImageConvertResult TryConvert(Texture& rTexture, const PixelFormat desiredPixelFormat) final;
     ImageConvertResult TryConvert(Bitmap& rDstBitmap, const Bitmap& srcBitmap) final;

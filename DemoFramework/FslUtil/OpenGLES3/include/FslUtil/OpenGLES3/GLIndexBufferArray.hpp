@@ -116,7 +116,7 @@ namespace Fsl::GLES3
     void Reset(const std::size_t arrayIndex, const std::vector<uint16_t>& indices, const GLenum usage);
 
     //! @brief Get the type of all the arrays
-    GLenum GetType() const
+    [[nodiscard]] GLenum GetType() const
     {
       return m_type;
     }

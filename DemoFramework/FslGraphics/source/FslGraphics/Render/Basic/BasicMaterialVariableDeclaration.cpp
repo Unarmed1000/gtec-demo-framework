@@ -65,7 +65,7 @@ namespace Fsl
       const auto count = static_cast<uint32_t>(elements.size());
       for (uint32_t i = 0; i < count; ++i)
       {
-        auto offset = elements[i].Offset + BasicMaterialVariableElementFormatUtil::GetBytesPerElement(elements[i].Format);
+        const auto offset = elements[i].Offset + BasicMaterialVariableElementFormatUtil::GetBytesPerElement(elements[i].Format);
         if (offset < maxOffset)
         {
           throw NotSupportedException("The offsets should be in order: smallest -> largest");

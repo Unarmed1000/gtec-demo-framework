@@ -60,17 +60,17 @@ namespace Fsl
       rStrategy.AddQuad(quad.Vec0, quad.Vec1, quad.Vec2, quad.Vec3, quad.TexCoords0, quad.TexCoords1, quad.Color);
     }
 
-    uint32_t GetSegmentCount() const
+    [[nodiscard]] uint32_t GetSegmentCount() const
     {
       return m_strategy.GetSegmentCount();
     }
 
-    uint32_t GetVertexCount() const
+    [[nodiscard]] uint32_t GetVertexCount() const
     {
       return m_strategy.GetVertexCount();
     }
 
-    uint32_t GetQuadCount() const
+    [[nodiscard]] uint32_t GetQuadCount() const
     {
       return m_strategy.GetQuadCount();
     }
@@ -102,7 +102,7 @@ namespace Fsl
 
     static void CheckSpan(const strategy_type& strategy, const std::vector<Fsl::TestQuad>& content)
     {
-      auto span = strategy.GetSpan();
+      const auto span = strategy.GetSpan();
       ASSERT_NE(span.pVertices, nullptr);
       EXPECT_EQ(span.VertexCount, static_cast<uint32_t>(content.size() * strategy_type::VerticesPerQuad));
 
@@ -120,7 +120,7 @@ namespace Fsl
       const auto segmentCount = static_cast<uint32_t>(content.size());
       for (uint32_t i = 0; i < segmentCount; ++i)
       {
-        auto segment = strategy.GetSegment(i);
+        const auto segment = strategy.GetSegment(i);
         EXPECT_EQ(segment.VertexCount / strategy_type::VerticesPerQuad, content[i].QuadCount);
         EXPECT_EQ(segment.TextureInfo, content[i].TextureInfo);
         EXPECT_EQ(segment.ActiveBlendState, content[i].ActiveBlendState);

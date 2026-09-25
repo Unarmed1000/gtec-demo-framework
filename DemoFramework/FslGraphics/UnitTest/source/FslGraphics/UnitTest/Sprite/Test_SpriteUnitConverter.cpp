@@ -57,7 +57,7 @@ TEST(TestSprite_SpriteUnitConverter, Construct_Invalid)
 
 TEST(TestSprite_SpriteUnitConverter, Construct_BaseDpi)
 {
-  SpriteUnitConverter converter(SpriteDpConfig::BaseDpi);
+  const SpriteUnitConverter converter(SpriteDpConfig::BaseDpi);
 
   EXPECT_EQ(SpriteDpConfig::BaseDpi, converter.GetDensityDpi());
 }
@@ -86,7 +86,7 @@ TEST(TestSprite_SpriteUnitConverter, SetDensityDpi)
 
 TEST(TestSprite_SpriteUnitConverter, PxToDpInt32_int32_1x)
 {
-  SpriteUnitConverter converter(SpriteDpConfig::BaseDpi);
+  const SpriteUnitConverter converter(SpriteDpConfig::BaseDpi);
 
   // Since its the base dpi no conversion should take place
   EXPECT_EQ(int32_t(42), converter.PxToDpInt32(int32_t(42)));
@@ -94,7 +94,7 @@ TEST(TestSprite_SpriteUnitConverter, PxToDpInt32_int32_1x)
 
 TEST(TestSprite_SpriteUnitConverter, PxToDpInt32_float_1x)
 {
-  SpriteUnitConverter converter(SpriteDpConfig::BaseDpi);
+  const SpriteUnitConverter converter(SpriteDpConfig::BaseDpi);
 
   // Since its the base dpi no conversion should take place
   EXPECT_EQ(int32_t(42), converter.PxToDpInt32(float(42)));
@@ -102,7 +102,7 @@ TEST(TestSprite_SpriteUnitConverter, PxToDpInt32_float_1x)
 
 TEST(TestSprite_SpriteUnitConverter, DpToPxInt32_int32_1x)
 {
-  SpriteUnitConverter converter(SpriteDpConfig::BaseDpi);
+  const SpriteUnitConverter converter(SpriteDpConfig::BaseDpi);
 
   // Since its the base dpi no conversion should take place
   EXPECT_EQ(int32_t(42), converter.DpToPxInt32(int32_t(42)));
@@ -110,7 +110,7 @@ TEST(TestSprite_SpriteUnitConverter, DpToPxInt32_int32_1x)
 
 TEST(TestSprite_SpriteUnitConverter, DpToPxInt32_float_1x)
 {
-  SpriteUnitConverter converter(SpriteDpConfig::BaseDpi);
+  const SpriteUnitConverter converter(SpriteDpConfig::BaseDpi);
 
   // Since its the base dpi no conversion should take place
   EXPECT_EQ(int32_t(42), converter.DpToPxInt32(float(42)));
@@ -119,7 +119,7 @@ TEST(TestSprite_SpriteUnitConverter, DpToPxInt32_float_1x)
 
 TEST(TestSprite_SpriteUnitConverter, ToDpValue_DpValue_1x)
 {
-  SpriteUnitConverter converter(SpriteDpConfig::BaseDpi);
+  const SpriteUnitConverter converter(SpriteDpConfig::BaseDpi);
 
   // Since its the base dpi no conversion should take place
   EXPECT_EQ(DpValue(1337), converter.ToDpValue(PxValue(1337)));
@@ -127,7 +127,7 @@ TEST(TestSprite_SpriteUnitConverter, ToDpValue_DpValue_1x)
 
 TEST(TestSprite_SpriteUnitConverter, ToDpValue_DpValueF_1x)
 {
-  SpriteUnitConverter converter(SpriteDpConfig::BaseDpi);
+  const SpriteUnitConverter converter(SpriteDpConfig::BaseDpi);
 
   // Since its the base dpi no conversion should take place
   EXPECT_EQ(DpValue(1337), converter.ToDpValue(PxValueF(1337)));
@@ -135,7 +135,7 @@ TEST(TestSprite_SpriteUnitConverter, ToDpValue_DpValueF_1x)
 
 TEST(TestSprite_SpriteUnitConverter, ToDpValue_DpValueU_1x)
 {
-  SpriteUnitConverter converter(SpriteDpConfig::BaseDpi);
+  const SpriteUnitConverter converter(SpriteDpConfig::BaseDpi);
 
   // Since its the base dpi no conversion should take place
   EXPECT_EQ(DpValue(1337), converter.ToDpValue(PxValueU(1337)));
@@ -144,7 +144,7 @@ TEST(TestSprite_SpriteUnitConverter, ToDpValue_DpValueU_1x)
 
 TEST(TestSprite_SpriteUnitConverter, ToDpValueF_DpValue_1x)
 {
-  SpriteUnitConverter converter(SpriteDpConfig::BaseDpi);
+  const SpriteUnitConverter converter(SpriteDpConfig::BaseDpi);
 
   // Since its the base dpi no conversion should take place
   EXPECT_EQ(DpValueF(1337), converter.ToDpValueF(PxValue(1337)));
@@ -152,7 +152,7 @@ TEST(TestSprite_SpriteUnitConverter, ToDpValueF_DpValue_1x)
 
 TEST(TestSprite_SpriteUnitConverter, ToDpValueF_DpValueF_1x)
 {
-  SpriteUnitConverter converter(SpriteDpConfig::BaseDpi);
+  const SpriteUnitConverter converter(SpriteDpConfig::BaseDpi);
 
   // Since its the base dpi no conversion should take place
   EXPECT_EQ(DpValueF(1337), converter.ToDpValueF(PxValueF(1337)));
@@ -160,7 +160,7 @@ TEST(TestSprite_SpriteUnitConverter, ToDpValueF_DpValueF_1x)
 
 TEST(TestSprite_SpriteUnitConverter, ToDpValueF_DpValueU_1x)
 {
-  SpriteUnitConverter converter(SpriteDpConfig::BaseDpi);
+  const SpriteUnitConverter converter(SpriteDpConfig::BaseDpi);
 
   // Since its the base dpi no conversion should take place
   EXPECT_EQ(DpValueF(1337), converter.ToDpValueF(PxValueU(1337)));
@@ -169,7 +169,7 @@ TEST(TestSprite_SpriteUnitConverter, ToDpValueF_DpValueU_1x)
 
 TEST(TestSprite_SpriteUnitConverter, ToDpValueU_DpValue_1x)
 {
-  SpriteUnitConverter converter(SpriteDpConfig::BaseDpi);
+  const SpriteUnitConverter converter(SpriteDpConfig::BaseDpi);
 
   // Since its the base dpi no conversion should take place
   EXPECT_EQ(DpValueU(1337), converter.ToDpValueU(PxValue(1337)));
@@ -177,7 +177,7 @@ TEST(TestSprite_SpriteUnitConverter, ToDpValueU_DpValue_1x)
 
 TEST(TestSprite_SpriteUnitConverter, ToDpValueU_DpValueF_1x)
 {
-  SpriteUnitConverter converter(SpriteDpConfig::BaseDpi);
+  const SpriteUnitConverter converter(SpriteDpConfig::BaseDpi);
 
   // Since its the base dpi no conversion should take place
   EXPECT_EQ(DpValueU(1337), converter.ToDpValueU(PxValueF(1337)));
@@ -185,7 +185,7 @@ TEST(TestSprite_SpriteUnitConverter, ToDpValueU_DpValueF_1x)
 
 TEST(TestSprite_SpriteUnitConverter, ToDpValueU_DpValueU_1x)
 {
-  SpriteUnitConverter converter(SpriteDpConfig::BaseDpi);
+  const SpriteUnitConverter converter(SpriteDpConfig::BaseDpi);
 
   // Since its the base dpi no conversion should take place
   EXPECT_EQ(DpValueU(1337), converter.ToDpValueU(PxValueU(1337)));
@@ -194,7 +194,7 @@ TEST(TestSprite_SpriteUnitConverter, ToDpValueU_DpValueU_1x)
 
 TEST(TestSprite_SpriteUnitConverter, ToDpExtent2D_PxExtent2D_1x)
 {
-  SpriteUnitConverter converter(SpriteDpConfig::BaseDpi);
+  const SpriteUnitConverter converter(SpriteDpConfig::BaseDpi);
 
   // Since its the base dpi no conversion should take place
   EXPECT_EQ(DpExtent2D::Create(42, 1337), converter.ToDpExtent2D(PxExtent2D::Create(42, 1337)));
@@ -202,7 +202,7 @@ TEST(TestSprite_SpriteUnitConverter, ToDpExtent2D_PxExtent2D_1x)
 
 TEST(TestSprite_SpriteUnitConverter, ToDpPoint2_PxPoint2_1x)
 {
-  SpriteUnitConverter converter(SpriteDpConfig::BaseDpi);
+  const SpriteUnitConverter converter(SpriteDpConfig::BaseDpi);
 
   // Since its the base dpi no conversion should take place
   EXPECT_EQ(DpPoint2::Create(42, 1337), converter.ToDpPoint2(PxPoint2::Create(42, 1337)));
@@ -210,7 +210,7 @@ TEST(TestSprite_SpriteUnitConverter, ToDpPoint2_PxPoint2_1x)
 
 TEST(TestSprite_SpriteUnitConverter, ToDpSize2D_PxPoint2_1x)
 {
-  SpriteUnitConverter converter(SpriteDpConfig::BaseDpi);
+  const SpriteUnitConverter converter(SpriteDpConfig::BaseDpi);
 
   // Since its the base dpi no conversion should take place
   EXPECT_EQ(DpSize2D::Create(42, 1337), converter.ToDpSize2D(PxPoint2::Create(42, 1337)));
@@ -219,7 +219,7 @@ TEST(TestSprite_SpriteUnitConverter, ToDpSize2D_PxPoint2_1x)
 
 TEST(TestSprite_SpriteUnitConverter, ToDpSize2D_PxSize2D_1x)
 {
-  SpriteUnitConverter converter(SpriteDpConfig::BaseDpi);
+  const SpriteUnitConverter converter(SpriteDpConfig::BaseDpi);
 
   // Since its the base dpi no conversion should take place
   EXPECT_EQ(DpSize2D::Create(42, 1337), converter.ToDpSize2D(PxSize2D::Create(42, 1337)));
@@ -227,7 +227,7 @@ TEST(TestSprite_SpriteUnitConverter, ToDpSize2D_PxSize2D_1x)
 
 TEST(TestSprite_SpriteUnitConverter, ToDpThicknessU_PxThicknessU_1x)
 {
-  SpriteUnitConverter converter(SpriteDpConfig::BaseDpi);
+  const SpriteUnitConverter converter(SpriteDpConfig::BaseDpi);
 
   // Since its the base dpi no conversion should take place
   EXPECT_EQ(DpThicknessU::Create(42, 1337, 10, 20), converter.ToDpThicknessU(PxThicknessU::Create(42, 1337, 10, 20)));
@@ -240,7 +240,7 @@ TEST(TestSprite_SpriteUnitConverter, ToDpThicknessU_PxThicknessU_1x)
 
 TEST(TestSprite_SpriteUnitConverter, PxToDpf_int32_t_1x)
 {
-  SpriteUnitConverter converter(SpriteDpConfig::BaseDpi);
+  const SpriteUnitConverter converter(SpriteDpConfig::BaseDpi);
 
   // Since its the base dpi no conversion should take place
   EXPECT_EQ(float(42), converter.PxToDpf(int32_t(42)));
@@ -248,7 +248,7 @@ TEST(TestSprite_SpriteUnitConverter, PxToDpf_int32_t_1x)
 
 TEST(TestSprite_SpriteUnitConverter, PxToDpf_float_1x)
 {
-  SpriteUnitConverter converter(SpriteDpConfig::BaseDpi);
+  const SpriteUnitConverter converter(SpriteDpConfig::BaseDpi);
 
   // Since its the base dpi no conversion should take place
   EXPECT_EQ(float(42), converter.PxToDpf(float(42)));
@@ -257,7 +257,7 @@ TEST(TestSprite_SpriteUnitConverter, PxToDpf_float_1x)
 
 TEST(TestSprite_SpriteUnitConverter, ToPxInt32_DpValue_1x)
 {
-  SpriteUnitConverter converter(SpriteDpConfig::BaseDpi);
+  const SpriteUnitConverter converter(SpriteDpConfig::BaseDpi);
 
   // Since its the base dpi no conversion should take place
   EXPECT_EQ(int32_t(1337), converter.ToPxInt32(DpValue(1337)));
@@ -265,7 +265,7 @@ TEST(TestSprite_SpriteUnitConverter, ToPxInt32_DpValue_1x)
 
 TEST(TestSprite_SpriteUnitConverter, ToPxInt32_DpValueF_1x)
 {
-  SpriteUnitConverter converter(SpriteDpConfig::BaseDpi);
+  const SpriteUnitConverter converter(SpriteDpConfig::BaseDpi);
 
   // Since its the base dpi no conversion should take place
   EXPECT_EQ(int32_t(1337), converter.ToPxInt32(DpValueF(1337)));
@@ -273,7 +273,7 @@ TEST(TestSprite_SpriteUnitConverter, ToPxInt32_DpValueF_1x)
 
 TEST(TestSprite_SpriteUnitConverter, ToPxInt32_DpValueU_1x)
 {
-  SpriteUnitConverter converter(SpriteDpConfig::BaseDpi);
+  const SpriteUnitConverter converter(SpriteDpConfig::BaseDpi);
 
   // Since its the base dpi no conversion should take place
   EXPECT_EQ(int32_t(1337), converter.ToPxInt32(DpValueU(1337)));
@@ -282,7 +282,7 @@ TEST(TestSprite_SpriteUnitConverter, ToPxInt32_DpValueU_1x)
 
 TEST(TestSprite_SpriteUnitConverter, ToPxValue_DpValue_1x)
 {
-  SpriteUnitConverter converter(SpriteDpConfig::BaseDpi);
+  const SpriteUnitConverter converter(SpriteDpConfig::BaseDpi);
 
   // Since its the base dpi no conversion should take place
   EXPECT_EQ(PxValue(1337), converter.ToPxValue(DpValue(1337)));
@@ -290,7 +290,7 @@ TEST(TestSprite_SpriteUnitConverter, ToPxValue_DpValue_1x)
 
 TEST(TestSprite_SpriteUnitConverter, ToPxValue_DpValueF_1x)
 {
-  SpriteUnitConverter converter(SpriteDpConfig::BaseDpi);
+  const SpriteUnitConverter converter(SpriteDpConfig::BaseDpi);
 
   // Since its the base dpi no conversion should take place
   EXPECT_EQ(PxValue(1337), converter.ToPxValue(DpValueF(1337)));
@@ -298,7 +298,7 @@ TEST(TestSprite_SpriteUnitConverter, ToPxValue_DpValueF_1x)
 
 TEST(TestSprite_SpriteUnitConverter, ToPxValue_DpValueU_1x)
 {
-  SpriteUnitConverter converter(SpriteDpConfig::BaseDpi);
+  const SpriteUnitConverter converter(SpriteDpConfig::BaseDpi);
 
   // Since its the base dpi no conversion should take place
   EXPECT_EQ(PxValue(1337), converter.ToPxValue(DpValueU(1337)));
@@ -307,7 +307,7 @@ TEST(TestSprite_SpriteUnitConverter, ToPxValue_DpValueU_1x)
 
 TEST(TestSprite_SpriteUnitConverter, ToPxValueF_DpValue_1x)
 {
-  SpriteUnitConverter converter(SpriteDpConfig::BaseDpi);
+  const SpriteUnitConverter converter(SpriteDpConfig::BaseDpi);
 
   // Since its the base dpi no conversion should take place
   EXPECT_EQ(PxValueF(1337), converter.ToPxValueF(DpValue(1337)));
@@ -315,7 +315,7 @@ TEST(TestSprite_SpriteUnitConverter, ToPxValueF_DpValue_1x)
 
 TEST(TestSprite_SpriteUnitConverter, ToPxValueF_DpValueF_1x)
 {
-  SpriteUnitConverter converter(SpriteDpConfig::BaseDpi);
+  const SpriteUnitConverter converter(SpriteDpConfig::BaseDpi);
 
   // Since its the base dpi no conversion should take place
   EXPECT_EQ(PxValueF(1337), converter.ToPxValueF(DpValueF(1337)));
@@ -323,7 +323,7 @@ TEST(TestSprite_SpriteUnitConverter, ToPxValueF_DpValueF_1x)
 
 TEST(TestSprite_SpriteUnitConverter, ToPxValueF_DpValueU_1x)
 {
-  SpriteUnitConverter converter(SpriteDpConfig::BaseDpi);
+  const SpriteUnitConverter converter(SpriteDpConfig::BaseDpi);
 
   // Since its the base dpi no conversion should take place
   EXPECT_EQ(PxValueF(1337), converter.ToPxValueF(DpValueU(1337)));
@@ -332,7 +332,7 @@ TEST(TestSprite_SpriteUnitConverter, ToPxValueF_DpValueU_1x)
 
 TEST(TestSprite_SpriteUnitConverter, ToPxValueU_DpValue_1x)
 {
-  SpriteUnitConverter converter(SpriteDpConfig::BaseDpi);
+  const SpriteUnitConverter converter(SpriteDpConfig::BaseDpi);
 
   // Since its the base dpi no conversion should take place
   EXPECT_EQ(PxValueU(1337), converter.ToPxValueU(DpValue(1337)));
@@ -340,7 +340,7 @@ TEST(TestSprite_SpriteUnitConverter, ToPxValueU_DpValue_1x)
 
 TEST(TestSprite_SpriteUnitConverter, ToPxValueU_DpValueF_1x)
 {
-  SpriteUnitConverter converter(SpriteDpConfig::BaseDpi);
+  const SpriteUnitConverter converter(SpriteDpConfig::BaseDpi);
 
   // Since its the base dpi no conversion should take place
   EXPECT_EQ(PxValueU(1337), converter.ToPxValueU(DpValueF(1337)));
@@ -348,7 +348,7 @@ TEST(TestSprite_SpriteUnitConverter, ToPxValueU_DpValueF_1x)
 
 TEST(TestSprite_SpriteUnitConverter, ToPxValueU_DpValueU_1x)
 {
-  SpriteUnitConverter converter(SpriteDpConfig::BaseDpi);
+  const SpriteUnitConverter converter(SpriteDpConfig::BaseDpi);
 
   // Since its the base dpi no conversion should take place
   EXPECT_EQ(PxValueU(1337), converter.ToPxValueU(DpValueU(1337)));
@@ -357,7 +357,7 @@ TEST(TestSprite_SpriteUnitConverter, ToPxValueU_DpValueU_1x)
 
 TEST(TestSprite_SpriteUnitConverter, ToPxPoint2_DpPoint2_1x)
 {
-  SpriteUnitConverter converter(SpriteDpConfig::BaseDpi);
+  const SpriteUnitConverter converter(SpriteDpConfig::BaseDpi);
 
   // Since its the base dpi no conversion should take place
   EXPECT_EQ(PxPoint2::Create(42, 1337), converter.ToPxPoint2(DpPoint2::Create(42, 1337)));
@@ -365,7 +365,7 @@ TEST(TestSprite_SpriteUnitConverter, ToPxPoint2_DpPoint2_1x)
 
 TEST(TestSprite_SpriteUnitConverter, ToPxPoint2_DpPoint2F_1x)
 {
-  SpriteUnitConverter converter(SpriteDpConfig::BaseDpi);
+  const SpriteUnitConverter converter(SpriteDpConfig::BaseDpi);
 
   // Since its the base dpi no conversion should take place
   EXPECT_EQ(PxPoint2::Create(42, 1337), converter.ToPxPoint2(DpPoint2F::Create(42, 1337)));
@@ -373,7 +373,7 @@ TEST(TestSprite_SpriteUnitConverter, ToPxPoint2_DpPoint2F_1x)
 
 TEST(TestSprite_SpriteUnitConverter, ToPxPoint2_DpSize2D_1x)
 {
-  SpriteUnitConverter converter(SpriteDpConfig::BaseDpi);
+  const SpriteUnitConverter converter(SpriteDpConfig::BaseDpi);
 
   // Since its the base dpi no conversion should take place
   EXPECT_EQ(PxPoint2::Create(42, 1337), converter.ToPxPoint2(DpSize2D::Create(42, 1337)));
@@ -382,7 +382,7 @@ TEST(TestSprite_SpriteUnitConverter, ToPxPoint2_DpSize2D_1x)
 
 TEST(TestSprite_SpriteUnitConverter, ToPxSize2D_DpExtent2D_1x)
 {
-  SpriteUnitConverter converter(SpriteDpConfig::BaseDpi);
+  const SpriteUnitConverter converter(SpriteDpConfig::BaseDpi);
 
   // Since its the base dpi no conversion should take place
   EXPECT_EQ(PxSize2D::Create(42, 1337), converter.ToPxSize2D(DpExtent2D::Create(42, 1337)));
@@ -390,7 +390,7 @@ TEST(TestSprite_SpriteUnitConverter, ToPxSize2D_DpExtent2D_1x)
 
 TEST(TestSprite_SpriteUnitConverter, ToPxSize2D_DpSize2DF_1x)
 {
-  SpriteUnitConverter converter(SpriteDpConfig::BaseDpi);
+  const SpriteUnitConverter converter(SpriteDpConfig::BaseDpi);
 
   // Since its the base dpi no conversion should take place
   EXPECT_EQ(PxSize2D::Create(42, 1337), converter.ToPxSize2D(DpSize2DF::Create(42, 1337)));
@@ -398,7 +398,7 @@ TEST(TestSprite_SpriteUnitConverter, ToPxSize2D_DpSize2DF_1x)
 
 TEST(TestSprite_SpriteUnitConverter, ToPxThickness_DpThickness_1x)
 {
-  SpriteUnitConverter converter(SpriteDpConfig::BaseDpi);
+  const SpriteUnitConverter converter(SpriteDpConfig::BaseDpi);
 
   // Since its the base dpi no conversion should take place
   EXPECT_EQ(PxThickness::Create(42, 1337, 10, 20), converter.ToPxThickness(DpThickness::Create(42, 1337, 10, 20)));
@@ -406,7 +406,7 @@ TEST(TestSprite_SpriteUnitConverter, ToPxThickness_DpThickness_1x)
 
 TEST(TestSprite_SpriteUnitConverter, ToPxThickness_DpThicknessF_1x)
 {
-  SpriteUnitConverter converter(SpriteDpConfig::BaseDpi);
+  const SpriteUnitConverter converter(SpriteDpConfig::BaseDpi);
 
   // Since its the base dpi no conversion should take place
   EXPECT_EQ(PxThickness::Create(42, 1337, 10, 20), converter.ToPxThickness(DpThicknessF::Create(42, 1337, 10, 20)));
@@ -414,7 +414,7 @@ TEST(TestSprite_SpriteUnitConverter, ToPxThickness_DpThicknessF_1x)
 
 TEST(TestSprite_SpriteUnitConverter, ToPxThickness_DpThicknessU_1x)
 {
-  SpriteUnitConverter converter(SpriteDpConfig::BaseDpi);
+  const SpriteUnitConverter converter(SpriteDpConfig::BaseDpi);
 
   // Since its the base dpi no conversion should take place
   EXPECT_EQ(PxThickness::Create(42, 1337, 10, 20), converter.ToPxThickness(DpThicknessU::Create(42, 1337, 10, 20)));
@@ -422,7 +422,7 @@ TEST(TestSprite_SpriteUnitConverter, ToPxThickness_DpThicknessU_1x)
 
 TEST(TestSprite_SpriteUnitConverter, ToPxVector2_DpPoint2F_1x)
 {
-  SpriteUnitConverter converter(SpriteDpConfig::BaseDpi);
+  const SpriteUnitConverter converter(SpriteDpConfig::BaseDpi);
 
   // Since its the base dpi no conversion should take place
   EXPECT_EQ(PxVector2::Create(42, 1337), converter.ToPxVector2(DpPoint2F::Create(42, 1337)));
@@ -435,7 +435,7 @@ TEST(TestSprite_SpriteUnitConverter, ToPxVector2_DpPoint2F_1x)
 
 TEST(TestSprite_SpriteUnitConverter, PxToDpInt32_int32_2x)
 {
-  SpriteUnitConverter converter(SpriteDpConfig::BaseDpi * 2);
+  const SpriteUnitConverter converter(SpriteDpConfig::BaseDpi * 2);
 
   // Since its the base dpi no conversion should take place
   EXPECT_EQ(int32_t(42 / 2), converter.PxToDpInt32(int32_t(42)));
@@ -443,7 +443,7 @@ TEST(TestSprite_SpriteUnitConverter, PxToDpInt32_int32_2x)
 
 TEST(TestSprite_SpriteUnitConverter, PxToDpInt32_float_2x)
 {
-  SpriteUnitConverter converter(SpriteDpConfig::BaseDpi * 2);
+  const SpriteUnitConverter converter(SpriteDpConfig::BaseDpi * 2);
 
   // Since its the base dpi no conversion should take place
   EXPECT_EQ(int32_t(42 / 2), converter.PxToDpInt32(float(42)));
@@ -451,7 +451,7 @@ TEST(TestSprite_SpriteUnitConverter, PxToDpInt32_float_2x)
 
 TEST(TestSprite_SpriteUnitConverter, PxToDpf_int32_t_2x)
 {
-  SpriteUnitConverter converter(SpriteDpConfig::BaseDpi * 2);
+  const SpriteUnitConverter converter(SpriteDpConfig::BaseDpi * 2);
 
   // Since its the base dpi no conversion should take place
   EXPECT_EQ(float(42.0f / 2.0f), converter.PxToDpf(int32_t(42)));
@@ -459,7 +459,7 @@ TEST(TestSprite_SpriteUnitConverter, PxToDpf_int32_t_2x)
 
 TEST(TestSprite_SpriteUnitConverter, PxToDpf_float_2x)
 {
-  SpriteUnitConverter converter(SpriteDpConfig::BaseDpi * 2);
+  const SpriteUnitConverter converter(SpriteDpConfig::BaseDpi * 2);
 
   // Since its the base dpi no conversion should take place
   EXPECT_EQ(float(42.0f / 2.0f), converter.PxToDpf(float(42)));
@@ -468,7 +468,7 @@ TEST(TestSprite_SpriteUnitConverter, PxToDpf_float_2x)
 
 TEST(TestSprite_SpriteUnitConverter, ToDpValue_DpValue_2x)
 {
-  SpriteUnitConverter converter(SpriteDpConfig::BaseDpi * 2);
+  const SpriteUnitConverter converter(SpriteDpConfig::BaseDpi * 2);
 
   // Since its the base dpi no conversion should take place
   EXPECT_EQ(DpValue((1337 / 2) + 1), converter.ToDpValue(PxValue(1337)));
@@ -476,7 +476,7 @@ TEST(TestSprite_SpriteUnitConverter, ToDpValue_DpValue_2x)
 
 TEST(TestSprite_SpriteUnitConverter, ToDpValue_DpValueF_2x)
 {
-  SpriteUnitConverter converter(SpriteDpConfig::BaseDpi * 2);
+  const SpriteUnitConverter converter(SpriteDpConfig::BaseDpi * 2);
 
   // Since its the base dpi no conversion should take place
   EXPECT_EQ(DpValue((1337 / 2) + 1), converter.ToDpValue(PxValueF(1337)));
@@ -484,7 +484,7 @@ TEST(TestSprite_SpriteUnitConverter, ToDpValue_DpValueF_2x)
 
 TEST(TestSprite_SpriteUnitConverter, ToDpValue_DpValueU_2x)
 {
-  SpriteUnitConverter converter(SpriteDpConfig::BaseDpi * 2);
+  const SpriteUnitConverter converter(SpriteDpConfig::BaseDpi * 2);
 
   // Since its the base dpi no conversion should take place
   EXPECT_EQ(DpValue((1337 / 2) + 1), converter.ToDpValue(PxValueU(1337)));
@@ -493,7 +493,7 @@ TEST(TestSprite_SpriteUnitConverter, ToDpValue_DpValueU_2x)
 
 TEST(TestSprite_SpriteUnitConverter, ToDpValueF_DpValue_2x)
 {
-  SpriteUnitConverter converter(SpriteDpConfig::BaseDpi * 2);
+  const SpriteUnitConverter converter(SpriteDpConfig::BaseDpi * 2);
 
   // Since its the base dpi no conversion should take place
   EXPECT_EQ(DpValueF(1337.0f / 2.0f), converter.ToDpValueF(PxValue(1337)));
@@ -501,7 +501,7 @@ TEST(TestSprite_SpriteUnitConverter, ToDpValueF_DpValue_2x)
 
 TEST(TestSprite_SpriteUnitConverter, ToDpValueF_DpValueF_2x)
 {
-  SpriteUnitConverter converter(SpriteDpConfig::BaseDpi * 2);
+  const SpriteUnitConverter converter(SpriteDpConfig::BaseDpi * 2);
 
   // Since its the base dpi no conversion should take place
   EXPECT_EQ(DpValueF(1337.0f / 2.0f), converter.ToDpValueF(PxValueF(1337)));
@@ -509,7 +509,7 @@ TEST(TestSprite_SpriteUnitConverter, ToDpValueF_DpValueF_2x)
 
 TEST(TestSprite_SpriteUnitConverter, ToDpValueF_DpValueU_2x)
 {
-  SpriteUnitConverter converter(SpriteDpConfig::BaseDpi * 2);
+  const SpriteUnitConverter converter(SpriteDpConfig::BaseDpi * 2);
 
   // Since its the base dpi no conversion should take place
   EXPECT_EQ(DpValueF(1337.0f / 2.0f), converter.ToDpValueF(PxValueU(1337)));
@@ -518,7 +518,7 @@ TEST(TestSprite_SpriteUnitConverter, ToDpValueF_DpValueU_2x)
 
 TEST(TestSprite_SpriteUnitConverter, ToDpValueU_DpValue_2x)
 {
-  SpriteUnitConverter converter(SpriteDpConfig::BaseDpi * 2);
+  const SpriteUnitConverter converter(SpriteDpConfig::BaseDpi * 2);
 
   // Since its the base dpi no conversion should take place
   EXPECT_EQ(DpValueU((1337 / 2) + 1), converter.ToDpValueU(PxValue(1337)));
@@ -526,7 +526,7 @@ TEST(TestSprite_SpriteUnitConverter, ToDpValueU_DpValue_2x)
 
 TEST(TestSprite_SpriteUnitConverter, ToDpValueU_DpValueF_2x)
 {
-  SpriteUnitConverter converter(SpriteDpConfig::BaseDpi * 2);
+  const SpriteUnitConverter converter(SpriteDpConfig::BaseDpi * 2);
 
   // Since its the base dpi no conversion should take place
   EXPECT_EQ(DpValueU((1337 / 2) + 1), converter.ToDpValueU(PxValueF(1337)));
@@ -534,7 +534,7 @@ TEST(TestSprite_SpriteUnitConverter, ToDpValueU_DpValueF_2x)
 
 TEST(TestSprite_SpriteUnitConverter, ToDpValueU_DpValueU_2x)
 {
-  SpriteUnitConverter converter(SpriteDpConfig::BaseDpi * 2);
+  const SpriteUnitConverter converter(SpriteDpConfig::BaseDpi * 2);
 
   // Since its the base dpi no conversion should take place
   EXPECT_EQ(DpValueU((1337 / 2) + 1), converter.ToDpValueU(PxValueU(1337)));
@@ -543,7 +543,7 @@ TEST(TestSprite_SpriteUnitConverter, ToDpValueU_DpValueU_2x)
 
 TEST(TestSprite_SpriteUnitConverter, ToDpExtent2D_PxExtent2D_2x)
 {
-  SpriteUnitConverter converter(SpriteDpConfig::BaseDpi * 2);
+  const SpriteUnitConverter converter(SpriteDpConfig::BaseDpi * 2);
 
   // Since its the base dpi no conversion should take place
   EXPECT_EQ(DpExtent2D::Create(42 / 2, (1337 / 2) + 1), converter.ToDpExtent2D(PxExtent2D::Create(42, 1337)));
@@ -552,7 +552,7 @@ TEST(TestSprite_SpriteUnitConverter, ToDpExtent2D_PxExtent2D_2x)
 
 TEST(TestSprite_SpriteUnitConverter, ToDpPoint2_PxPoint2_2x)
 {
-  SpriteUnitConverter converter(SpriteDpConfig::BaseDpi * 2);
+  const SpriteUnitConverter converter(SpriteDpConfig::BaseDpi * 2);
 
   // Since its the base dpi no conversion should take place
   EXPECT_EQ(DpPoint2::Create(42 / 2, (1337 / 2) + 1), converter.ToDpPoint2(PxPoint2::Create(42, 1337)));
@@ -561,7 +561,7 @@ TEST(TestSprite_SpriteUnitConverter, ToDpPoint2_PxPoint2_2x)
 
 TEST(TestSprite_SpriteUnitConverter, ToDpSize2D_PxPoint2_2x)
 {
-  SpriteUnitConverter converter(SpriteDpConfig::BaseDpi * 2);
+  const SpriteUnitConverter converter(SpriteDpConfig::BaseDpi * 2);
 
   // Since its the base dpi no conversion should take place
   EXPECT_EQ(DpSize2D::Create(42 / 2, (1337 / 2) + 1), converter.ToDpSize2D(PxPoint2::Create(42, 1337)));
@@ -570,7 +570,7 @@ TEST(TestSprite_SpriteUnitConverter, ToDpSize2D_PxPoint2_2x)
 
 TEST(TestSprite_SpriteUnitConverter, ToDpSize2D_PxSize2D_2x)
 {
-  SpriteUnitConverter converter(SpriteDpConfig::BaseDpi * 2);
+  const SpriteUnitConverter converter(SpriteDpConfig::BaseDpi * 2);
 
   // Since its the base dpi no conversion should take place
   EXPECT_EQ(DpSize2D::Create(42 / 2, (1337 / 2) + 1), converter.ToDpSize2D(PxSize2D::Create(42, 1337)));
@@ -578,7 +578,7 @@ TEST(TestSprite_SpriteUnitConverter, ToDpSize2D_PxSize2D_2x)
 
 TEST(TestSprite_SpriteUnitConverter, ToDpThicknessU_PxThicknessU_2x)
 {
-  SpriteUnitConverter converter(SpriteDpConfig::BaseDpi * 2);
+  const SpriteUnitConverter converter(SpriteDpConfig::BaseDpi * 2);
 
   // Since its the base dpi no conversion should take place
   EXPECT_EQ(DpThicknessU::Create(42 / 2, (1337 / 2) + 1, 10 / 2, 20 / 2), converter.ToDpThicknessU(PxThicknessU::Create(42, 1337, 10, 20)));
@@ -590,7 +590,7 @@ TEST(TestSprite_SpriteUnitConverter, ToDpThicknessU_PxThicknessU_2x)
 
 TEST(TestSprite_SpriteUnitConverter, DpToPxInt32_int32_2x)
 {
-  SpriteUnitConverter converter(SpriteDpConfig::BaseDpi * 2);
+  const SpriteUnitConverter converter(SpriteDpConfig::BaseDpi * 2);
 
   // Since its the base dpi no conversion should take place
   EXPECT_EQ(int32_t(42 * 2), converter.DpToPxInt32(int32_t(42)));
@@ -598,7 +598,7 @@ TEST(TestSprite_SpriteUnitConverter, DpToPxInt32_int32_2x)
 
 TEST(TestSprite_SpriteUnitConverter, DpToPxInt32_float_2x)
 {
-  SpriteUnitConverter converter(SpriteDpConfig::BaseDpi * 2);
+  const SpriteUnitConverter converter(SpriteDpConfig::BaseDpi * 2);
 
   // Since its the base dpi no conversion should take place
   EXPECT_EQ(int32_t(42 * 2), converter.DpToPxInt32(float(42)));
@@ -606,7 +606,7 @@ TEST(TestSprite_SpriteUnitConverter, DpToPxInt32_float_2x)
 
 TEST(TestSprite_SpriteUnitConverter, ToPxInt32_DpValue_2x)
 {
-  SpriteUnitConverter converter(SpriteDpConfig::BaseDpi * 2);
+  const SpriteUnitConverter converter(SpriteDpConfig::BaseDpi * 2);
 
   // Since its the base dpi no conversion should take place
   EXPECT_EQ(int32_t(1337 * 2), converter.ToPxInt32(DpValue(1337)));
@@ -614,7 +614,7 @@ TEST(TestSprite_SpriteUnitConverter, ToPxInt32_DpValue_2x)
 
 TEST(TestSprite_SpriteUnitConverter, ToPxInt32_DpValueF_2x)
 {
-  SpriteUnitConverter converter(SpriteDpConfig::BaseDpi * 2);
+  const SpriteUnitConverter converter(SpriteDpConfig::BaseDpi * 2);
 
   // Since its the base dpi no conversion should take place
   EXPECT_EQ(int32_t(1337 * 2), converter.ToPxInt32(DpValueF(1337)));
@@ -622,7 +622,7 @@ TEST(TestSprite_SpriteUnitConverter, ToPxInt32_DpValueF_2x)
 
 TEST(TestSprite_SpriteUnitConverter, ToPxInt32_DpValueU_2x)
 {
-  SpriteUnitConverter converter(SpriteDpConfig::BaseDpi * 2);
+  const SpriteUnitConverter converter(SpriteDpConfig::BaseDpi * 2);
 
   // Since its the base dpi no conversion should take place
   EXPECT_EQ(int32_t(1337 * 2), converter.ToPxInt32(DpValueU(1337)));
@@ -631,7 +631,7 @@ TEST(TestSprite_SpriteUnitConverter, ToPxInt32_DpValueU_2x)
 
 TEST(TestSprite_SpriteUnitConverter, ToPxValue_DpValue_2x)
 {
-  SpriteUnitConverter converter(SpriteDpConfig::BaseDpi * 2);
+  const SpriteUnitConverter converter(SpriteDpConfig::BaseDpi * 2);
 
   // Since its the base dpi no conversion should take place
   EXPECT_EQ(PxValue(1337 * 2), converter.ToPxValue(DpValue(1337)));
@@ -639,7 +639,7 @@ TEST(TestSprite_SpriteUnitConverter, ToPxValue_DpValue_2x)
 
 TEST(TestSprite_SpriteUnitConverter, ToPxValue_DpValueF_2x)
 {
-  SpriteUnitConverter converter(SpriteDpConfig::BaseDpi * 2);
+  const SpriteUnitConverter converter(SpriteDpConfig::BaseDpi * 2);
 
   // Since its the base dpi no conversion should take place
   EXPECT_EQ(PxValue(1337 * 2), converter.ToPxValue(DpValueF(1337)));
@@ -647,7 +647,7 @@ TEST(TestSprite_SpriteUnitConverter, ToPxValue_DpValueF_2x)
 
 TEST(TestSprite_SpriteUnitConverter, ToPxValue_DpValueU_2x)
 {
-  SpriteUnitConverter converter(SpriteDpConfig::BaseDpi * 2);
+  const SpriteUnitConverter converter(SpriteDpConfig::BaseDpi * 2);
 
   // Since its the base dpi no conversion should take place
   EXPECT_EQ(PxValue(1337 * 2), converter.ToPxValue(DpValueU(1337)));
@@ -656,7 +656,7 @@ TEST(TestSprite_SpriteUnitConverter, ToPxValue_DpValueU_2x)
 
 TEST(TestSprite_SpriteUnitConverter, ToPxValueF_DpValue_2x)
 {
-  SpriteUnitConverter converter(SpriteDpConfig::BaseDpi * 2);
+  const SpriteUnitConverter converter(SpriteDpConfig::BaseDpi * 2);
 
   // Since its the base dpi no conversion should take place
   EXPECT_EQ(PxValueF(1337 * 2), converter.ToPxValueF(DpValue(1337)));
@@ -664,7 +664,7 @@ TEST(TestSprite_SpriteUnitConverter, ToPxValueF_DpValue_2x)
 
 TEST(TestSprite_SpriteUnitConverter, ToPxValueF_DpValueF_2x)
 {
-  SpriteUnitConverter converter(SpriteDpConfig::BaseDpi * 2);
+  const SpriteUnitConverter converter(SpriteDpConfig::BaseDpi * 2);
 
   // Since its the base dpi no conversion should take place
   EXPECT_EQ(PxValueF(1337 * 2), converter.ToPxValueF(DpValueF(1337)));
@@ -672,7 +672,7 @@ TEST(TestSprite_SpriteUnitConverter, ToPxValueF_DpValueF_2x)
 
 TEST(TestSprite_SpriteUnitConverter, ToPxValueF_DpValueU_2x)
 {
-  SpriteUnitConverter converter(SpriteDpConfig::BaseDpi * 2);
+  const SpriteUnitConverter converter(SpriteDpConfig::BaseDpi * 2);
 
   // Since its the base dpi no conversion should take place
   EXPECT_EQ(PxValueF(1337 * 2), converter.ToPxValueF(DpValueU(1337)));
@@ -681,7 +681,7 @@ TEST(TestSprite_SpriteUnitConverter, ToPxValueF_DpValueU_2x)
 
 TEST(TestSprite_SpriteUnitConverter, ToPxValueU_DpValue_2x)
 {
-  SpriteUnitConverter converter(SpriteDpConfig::BaseDpi * 2);
+  const SpriteUnitConverter converter(SpriteDpConfig::BaseDpi * 2);
 
   // Since its the base dpi no conversion should take place
   EXPECT_EQ(PxValueU::Create(1337 * 2), converter.ToPxValueU(DpValue(1337)));
@@ -689,7 +689,7 @@ TEST(TestSprite_SpriteUnitConverter, ToPxValueU_DpValue_2x)
 
 TEST(TestSprite_SpriteUnitConverter, ToPxValueU_DpValueF_2x)
 {
-  SpriteUnitConverter converter(SpriteDpConfig::BaseDpi * 2);
+  const SpriteUnitConverter converter(SpriteDpConfig::BaseDpi * 2);
 
   // Since its the base dpi no conversion should take place
   EXPECT_EQ(PxValueU::Create(1337 * 2), converter.ToPxValueU(DpValueF(1337)));
@@ -697,7 +697,7 @@ TEST(TestSprite_SpriteUnitConverter, ToPxValueU_DpValueF_2x)
 
 TEST(TestSprite_SpriteUnitConverter, ToPxValueU_DpValueU_2x)
 {
-  SpriteUnitConverter converter(SpriteDpConfig::BaseDpi * 2);
+  const SpriteUnitConverter converter(SpriteDpConfig::BaseDpi * 2);
 
   // Since its the base dpi no conversion should take place
   EXPECT_EQ(PxValueU::Create(1337 * 2), converter.ToPxValueU(DpValueU(1337)));
@@ -706,7 +706,7 @@ TEST(TestSprite_SpriteUnitConverter, ToPxValueU_DpValueU_2x)
 
 TEST(TestSprite_SpriteUnitConverter, ToPxPoint2_DpPoint2_2x)
 {
-  SpriteUnitConverter converter(SpriteDpConfig::BaseDpi * 2);
+  const SpriteUnitConverter converter(SpriteDpConfig::BaseDpi * 2);
 
   // Since its the base dpi no conversion should take place
   EXPECT_EQ(PxPoint2::Create(42 * 2, 1337 * 2), converter.ToPxPoint2(DpPoint2::Create(42, 1337)));
@@ -715,7 +715,7 @@ TEST(TestSprite_SpriteUnitConverter, ToPxPoint2_DpPoint2_2x)
 
 TEST(TestSprite_SpriteUnitConverter, ToPxPoint2_DpPoint2F_2x)
 {
-  SpriteUnitConverter converter(SpriteDpConfig::BaseDpi * 2);
+  const SpriteUnitConverter converter(SpriteDpConfig::BaseDpi * 2);
 
   // Since its the base dpi no conversion should take place
   EXPECT_EQ(PxPoint2::Create(42 * 2, 1337 * 2), converter.ToPxPoint2(DpPoint2F::Create(42, 1337)));
@@ -724,7 +724,7 @@ TEST(TestSprite_SpriteUnitConverter, ToPxPoint2_DpPoint2F_2x)
 
 TEST(TestSprite_SpriteUnitConverter, ToPxPoint2_DpSize2D_2x)
 {
-  SpriteUnitConverter converter(SpriteDpConfig::BaseDpi * 2);
+  const SpriteUnitConverter converter(SpriteDpConfig::BaseDpi * 2);
 
   // Since its the base dpi no conversion should take place
   EXPECT_EQ(PxPoint2::Create(42 * 2, 1337 * 2), converter.ToPxPoint2(DpSize2D::Create(42, 1337)));
@@ -733,7 +733,7 @@ TEST(TestSprite_SpriteUnitConverter, ToPxPoint2_DpSize2D_2x)
 
 TEST(TestSprite_SpriteUnitConverter, ToPxSize2D_DpExtent2D_2x)
 {
-  SpriteUnitConverter converter(SpriteDpConfig::BaseDpi * 2);
+  const SpriteUnitConverter converter(SpriteDpConfig::BaseDpi * 2);
 
   // Since its the base dpi no conversion should take place
   EXPECT_EQ(PxSize2D::Create(42 * 2, 1337 * 2), converter.ToPxSize2D(DpExtent2D::Create(42, 1337)));
@@ -741,7 +741,7 @@ TEST(TestSprite_SpriteUnitConverter, ToPxSize2D_DpExtent2D_2x)
 
 TEST(TestSprite_SpriteUnitConverter, ToPxSize2D_DpSize2DF_2x)
 {
-  SpriteUnitConverter converter(SpriteDpConfig::BaseDpi * 2);
+  const SpriteUnitConverter converter(SpriteDpConfig::BaseDpi * 2);
 
   // Since its the base dpi no conversion should take place
   EXPECT_EQ(PxSize2D::Create(42 * 2, 1337 * 2), converter.ToPxSize2D(DpSize2DF::Create(42, 1337)));
@@ -749,7 +749,7 @@ TEST(TestSprite_SpriteUnitConverter, ToPxSize2D_DpSize2DF_2x)
 
 TEST(TestSprite_SpriteUnitConverter, ToPxThickness_DpThickness_2x)
 {
-  SpriteUnitConverter converter(SpriteDpConfig::BaseDpi * 2);
+  const SpriteUnitConverter converter(SpriteDpConfig::BaseDpi * 2);
 
   // Since its the base dpi no conversion should take place
   EXPECT_EQ(PxThickness::Create(42 * 2, 1337 * 2, 10 * 2, 20 * 2), converter.ToPxThickness(DpThickness::Create(42, 1337, 10, 20)));
@@ -757,7 +757,7 @@ TEST(TestSprite_SpriteUnitConverter, ToPxThickness_DpThickness_2x)
 
 TEST(TestSprite_SpriteUnitConverter, ToPxThickness_DpThicknessF_2x)
 {
-  SpriteUnitConverter converter(SpriteDpConfig::BaseDpi * 2);
+  const SpriteUnitConverter converter(SpriteDpConfig::BaseDpi * 2);
 
   // Since its the base dpi no conversion should take place
   EXPECT_EQ(PxThickness::Create(42 * 2, 1337 * 2, 10 * 2, 20 * 2), converter.ToPxThickness(DpThicknessF::Create(42, 1337, 10, 20)));
@@ -765,7 +765,7 @@ TEST(TestSprite_SpriteUnitConverter, ToPxThickness_DpThicknessF_2x)
 
 TEST(TestSprite_SpriteUnitConverter, ToPxThickness_DpThicknessU_2x)
 {
-  SpriteUnitConverter converter(SpriteDpConfig::BaseDpi * 2);
+  const SpriteUnitConverter converter(SpriteDpConfig::BaseDpi * 2);
 
   // Since its the base dpi no conversion should take place
   EXPECT_EQ(PxThickness::Create(42 * 2, 1337 * 2, 10 * 2, 20 * 2), converter.ToPxThickness(DpThicknessU::Create(42, 1337, 10, 20)));
@@ -773,7 +773,7 @@ TEST(TestSprite_SpriteUnitConverter, ToPxThickness_DpThicknessU_2x)
 
 TEST(TestSprite_SpriteUnitConverter, ToPxVector2_DpPoint2F_2x)
 {
-  SpriteUnitConverter converter(SpriteDpConfig::BaseDpi * 2);
+  const SpriteUnitConverter converter(SpriteDpConfig::BaseDpi * 2);
 
   // Since its the base dpi no conversion should take place
   EXPECT_EQ(PxVector2::Create(42 * 2, 1337 * 2), converter.ToPxVector2(DpPoint2F::Create(42, 1337)));
@@ -786,11 +786,11 @@ TEST(TestSprite_SpriteUnitConverter, ToPxVector2_DpPoint2F_2x)
 
 TEST(TestSprite_SpriteUnitConverter, ToPxSize2D_Scale1)
 {
-  SpriteUnitConverter converter(SpriteDpConfig::BaseDpi);
+  const SpriteUnitConverter converter(SpriteDpConfig::BaseDpi);
 
   constexpr auto Extent = DpExtent2D::Create(32u, 128u);
 
-  auto res = converter.ToPxSize2D(Extent);
+  const auto res = converter.ToPxSize2D(Extent);
   EXPECT_EQ(NumericCast<int32_t>(Extent.Width.Value), res.RawWidth());
   EXPECT_EQ(NumericCast<int32_t>(Extent.Height.Value), res.RawHeight());
 }
@@ -798,18 +798,18 @@ TEST(TestSprite_SpriteUnitConverter, ToPxSize2D_Scale1)
 
 TEST(TestSprite_SpriteUnitConverter, ToPxSize2D_Scale2)
 {
-  SpriteUnitConverter converter(SpriteDpConfig::BaseDpi * 2);
+  const SpriteUnitConverter converter(SpriteDpConfig::BaseDpi * 2);
 
   constexpr auto Extent = DpExtent2D::Create(32u, 128u);
 
-  auto res = converter.ToPxSize2D(Extent);
+  const auto res = converter.ToPxSize2D(Extent);
   EXPECT_EQ(NumericCast<int32_t>(Extent.Width.Value * 2u), res.RawWidth());
   EXPECT_EQ(NumericCast<int32_t>(Extent.Height.Value * 2u), res.RawHeight());
 }
 
 TEST(TestSprite_SpriteUnitConverter, ToPxSize2D_Scale0_25)
 {
-  SpriteUnitConverter converter(SpriteDpConfig::BaseDpi / 4);
+  const SpriteUnitConverter converter(SpriteDpConfig::BaseDpi / 4);
 
   constexpr auto Extent0 = DpExtent2D::Create(32u, 128u);
   constexpr auto Extent1 = DpExtent2D::Create(0u, 1u);
@@ -831,7 +831,7 @@ TEST(TestSprite_SpriteUnitConverter, ToPxSize2D_Scale0_25)
 
 TEST(TestSprite_SpriteUnitConverter, ToPxSize2D_Scale0_5)
 {
-  SpriteUnitConverter converter(SpriteDpConfig::BaseDpi / 2);
+  const SpriteUnitConverter converter(SpriteDpConfig::BaseDpi / 2);
 
   constexpr auto Extent0 = DpExtent2D::Create(32u, 128u);
   constexpr auto Extent1 = DpExtent2D::Create(31u, 127u);
@@ -849,11 +849,11 @@ TEST(TestSprite_SpriteUnitConverter, ToPxSize2D_Scale0_5)
 
 TEST(TestSprite_SpriteUnitConverter, ToPxExtent2D_Scale1)
 {
-  SpriteUnitConverter converter(SpriteDpConfig::BaseDpi);
+  const SpriteUnitConverter converter(SpriteDpConfig::BaseDpi);
 
   constexpr auto Extent = DpExtent2D::Create(32u, 128u);
 
-  auto res = converter.ToPxExtent2D(Extent);
+  const auto res = converter.ToPxExtent2D(Extent);
   EXPECT_EQ(Extent.Width.Value, res.Width.Value);
   EXPECT_EQ(Extent.Height.Value, res.Height.Value);
 }
@@ -861,18 +861,18 @@ TEST(TestSprite_SpriteUnitConverter, ToPxExtent2D_Scale1)
 
 TEST(TestSprite_SpriteUnitConverter, ToPxExtent2D_Scale2)
 {
-  SpriteUnitConverter converter(SpriteDpConfig::BaseDpi * 2);
+  const SpriteUnitConverter converter(SpriteDpConfig::BaseDpi * 2);
 
   constexpr auto Extent = DpExtent2D::Create(32u, 128u);
 
-  auto res = converter.ToPxExtent2D(Extent);
+  const auto res = converter.ToPxExtent2D(Extent);
   EXPECT_EQ(Extent.Width.Value * 2u, res.Width.Value);
   EXPECT_EQ(Extent.Height.Value * 2u, res.Height.Value);
 }
 
 TEST(TestSprite_SpriteUnitConverter, ToPxExtent2D_Scale0_25)
 {
-  SpriteUnitConverter converter(SpriteDpConfig::BaseDpi / 4);
+  const SpriteUnitConverter converter(SpriteDpConfig::BaseDpi / 4);
 
   constexpr auto Extent0 = DpExtent2D::Create(32u, 128u);
   constexpr auto Extent1 = DpExtent2D::Create(0u, 1u);
@@ -894,7 +894,7 @@ TEST(TestSprite_SpriteUnitConverter, ToPxExtent2D_Scale0_25)
 
 TEST(TestSprite_SpriteUnitConverter, ToPxExtent2D_Scale0_5)
 {
-  SpriteUnitConverter converter(SpriteDpConfig::BaseDpi / 2);
+  const SpriteUnitConverter converter(SpriteDpConfig::BaseDpi / 2);
 
   constexpr auto Extent0 = DpExtent2D::Create(32u, 128u);
   constexpr auto Extent1 = DpExtent2D::Create(31u, 127u);
@@ -920,7 +920,7 @@ TEST(TestSprite_SpriteUnitConverter, CalcImageDensityScale_1_1)
   const uint32_t imageScale = 1;
   const uint32_t densityDpi = SpriteDpConfig::BaseDpi * screenScale;
   const uint32_t imageDpi = SpriteDpConfig::BaseDpi * imageScale;
-  SpriteUnitConverter unitConverter(densityDpi);
+  const SpriteUnitConverter unitConverter(densityDpi);
 
   EXPECT_FLOAT_EQ((float(screenScale) / float(imageScale)), unitConverter.CalcImageDensityScale(imageDpi));
 }
@@ -934,7 +934,7 @@ TEST(TestSprite_SpriteUnitConverter, CalcImageDensityScale_1_2)
   const uint32_t imageScale = 2;
   const uint32_t densityDpi = SpriteDpConfig::BaseDpi * screenScale;
   const uint32_t imageDpi = SpriteDpConfig::BaseDpi * imageScale;
-  SpriteUnitConverter unitConverter(densityDpi);
+  const SpriteUnitConverter unitConverter(densityDpi);
 
   EXPECT_FLOAT_EQ((float(screenScale) / float(imageScale)), unitConverter.CalcImageDensityScale(imageDpi));
 }
@@ -948,7 +948,7 @@ TEST(TestSprite_SpriteUnitConverter, CalcImageDensityScale_1_4)
   const uint32_t imageScale = 4;
   const uint32_t densityDpi = SpriteDpConfig::BaseDpi * screenScale;
   const uint32_t imageDpi = SpriteDpConfig::BaseDpi * imageScale;
-  SpriteUnitConverter unitConverter(densityDpi);
+  const SpriteUnitConverter unitConverter(densityDpi);
 
   EXPECT_FLOAT_EQ((float(screenScale) / float(imageScale)), unitConverter.CalcImageDensityScale(imageDpi));
 }
@@ -962,7 +962,7 @@ TEST(TestSprite_SpriteUnitConverter, CalcImageDensityScale_2_1)
   const uint32_t imageScale = 1;
   const uint32_t densityDpi = SpriteDpConfig::BaseDpi * screenScale;
   const uint32_t imageDpi = SpriteDpConfig::BaseDpi * imageScale;
-  SpriteUnitConverter unitConverter(densityDpi);
+  const SpriteUnitConverter unitConverter(densityDpi);
 
   EXPECT_FLOAT_EQ((float(screenScale) / float(imageScale)), unitConverter.CalcImageDensityScale(imageDpi));
 }
@@ -976,7 +976,7 @@ TEST(TestSprite_SpriteUnitConverter, CalcImageDensityScale_2_2)
   const uint32_t imageScale = 2;
   const uint32_t densityDpi = SpriteDpConfig::BaseDpi * screenScale;
   const uint32_t imageDpi = SpriteDpConfig::BaseDpi * imageScale;
-  SpriteUnitConverter unitConverter(densityDpi);
+  const SpriteUnitConverter unitConverter(densityDpi);
 
   EXPECT_FLOAT_EQ((float(screenScale) / float(imageScale)), unitConverter.CalcImageDensityScale(imageDpi));
 }
@@ -990,7 +990,7 @@ TEST(TestSprite_SpriteUnitConverter, CalcImageDensityScale_2_4)
   const uint32_t imageScale = 4;
   const uint32_t densityDpi = SpriteDpConfig::BaseDpi * screenScale;
   const uint32_t imageDpi = SpriteDpConfig::BaseDpi * imageScale;
-  SpriteUnitConverter unitConverter(densityDpi);
+  const SpriteUnitConverter unitConverter(densityDpi);
 
   EXPECT_FLOAT_EQ((float(screenScale) / float(imageScale)), unitConverter.CalcImageDensityScale(imageDpi));
 }
@@ -1049,7 +1049,7 @@ TEST(TestSprite_SpriteUnitConverter, CalcImageExtentDp2)
   constexpr uint32_t ScaleFactor = 4;
   constexpr uint32_t ImageDpi = SpriteDpConfig::BaseDpi * ScaleFactor;
   constexpr auto ExtentPx = PxExtent2D::Create(33u, 128u);
-  DpExtent2D valuePx = SpriteUnitConverter::CalcImageDpExtent2D(ExtentPx, ImageDpi);
+  const DpExtent2D valuePx = SpriteUnitConverter::CalcImageDpExtent2D(ExtentPx, ImageDpi);
 
   const float extentXDpf = std::round(static_cast<float>(ExtentPx.Width.Value) / static_cast<float>(ScaleFactor));
   const float extentYDpf = std::round(static_cast<float>(ExtentPx.Height.Value) / static_cast<float>(ScaleFactor));

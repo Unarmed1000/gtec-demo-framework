@@ -83,7 +83,7 @@ namespace Fsl
 
   void SpriteFont::Resize(const uint32_t densityDpi)
   {
-    SpriteUnitConverter unitConverter(densityDpi);
+    const SpriteUnitConverter unitConverter(densityDpi);
     auto scale = unitConverter.CalcImageDensityScale(m_info.ImageDpi);
     if (m_info.IsSdfBased && m_info.SdfScale != 1.0f)
     {

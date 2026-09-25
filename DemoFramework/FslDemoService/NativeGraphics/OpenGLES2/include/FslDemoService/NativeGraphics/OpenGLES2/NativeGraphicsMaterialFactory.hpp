@@ -90,7 +90,7 @@ namespace Fsl::GLES2
       {
       }
 
-      bool IsValid() const
+      [[nodiscard]] bool IsValid() const
       {
         return ProgramHandle.IsValid();
       }
@@ -145,7 +145,7 @@ namespace Fsl::GLES2
     void DestroyDependentResources();
 
 
-    ReadOnlySpan<BasicNativeShaderCreateInfo> GetPredefinedShaders() const;
+    [[nodiscard]] ReadOnlySpan<BasicNativeShaderCreateInfo> GetPredefinedShaders() const;
     BasicNativeShaderHandle CreateShader(const BasicNativeShaderCreateInfo& createInfo);
     bool DestroyShader(const BasicNativeShaderHandle hShader) noexcept;
 
@@ -171,13 +171,14 @@ namespace Fsl::GLES2
       m_resources.ProgramManager.SetMaterialCameraInfo(materialRecord.ProgramHandle, cameraChangeId, cameraInfo);
     }
 
-    inline const VertexElementAttribLinks& GetVertexElementAttribLinks(const NativeGraphicsMaterialFactory::MaterialRecord& materialRecord) const
+    [[nodiscard]] inline const VertexElementAttribLinks&
+      GetVertexElementAttribLinks(const NativeGraphicsMaterialFactory::MaterialRecord& materialRecord) const
     {
       assert(materialRecord.IsValid());
       return m_attribManager.GetVertexElementAttribLinks(materialRecord.AttribLinkHandle);
     }
 
-    inline const VertexElementAttribLinks*
+    [[nodiscard]] inline const VertexElementAttribLinks*
       TryGetVertexElementAttribLinks(const NativeGraphicsMaterialFactory::MaterialRecord& materialRecord) const noexcept
     {
       assert(materialRecord.IsValid());
@@ -185,12 +186,12 @@ namespace Fsl::GLES2
     }
 
 
-    const MaterialRecord& GetMaterial(const BasicNativeMaterialHandle hMaterial) const
+    [[nodiscard]] const MaterialRecord& GetMaterial(const BasicNativeMaterialHandle hMaterial) const
     {
       return m_dependentResources.Materials.Get(hMaterial.Value);
     }
 
-    const MaterialRecord* TryGetMaterial(const BasicNativeMaterialHandle hMaterial) const noexcept
+    [[nodiscard]] const MaterialRecord* TryGetMaterial(const BasicNativeMaterialHandle hMaterial) const noexcept
     {
       return m_dependentResources.Materials.TryGet(hMaterial.Value);
     }

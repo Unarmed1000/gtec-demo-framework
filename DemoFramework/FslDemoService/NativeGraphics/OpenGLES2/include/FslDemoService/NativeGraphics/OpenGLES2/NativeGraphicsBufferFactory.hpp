@@ -51,19 +51,19 @@ namespace Fsl::GLES2
 
     void Dispose() noexcept;
 
-    Graphics3D::NativeBufferFactoryCaps GetBufferCaps() const noexcept;
+    [[nodiscard]] Graphics3D::NativeBufferFactoryCaps GetBufferCaps() const noexcept;
 
     BasicNativeBufferHandle CreateBuffer(const BasicBufferType bufferType, ReadOnlyFlexSpan bufferData, const uint32_t bufferElementCapacity,
                                          const bool isDynamic);
     bool DestroyBuffer(const BasicNativeBufferHandle hBuffer) noexcept;
     void SetBufferData(const BasicNativeBufferHandle hBuffer, const uint32_t dstIndex, ReadOnlyFlexSpan bufferData);
 
-    const NativeGraphicsBufferRecord& GetBuffer(const BasicNativeBufferHandle buffer) const
+    [[nodiscard]] const NativeGraphicsBufferRecord& GetBuffer(const BasicNativeBufferHandle buffer) const
     {
       return m_buffers.Get(buffer.Value);
     }
 
-    const NativeGraphicsBufferRecord* TryGetBuffer(const BasicNativeBufferHandle buffer) const noexcept
+    [[nodiscard]] const NativeGraphicsBufferRecord* TryGetBuffer(const BasicNativeBufferHandle buffer) const noexcept
     {
       return m_buffers.TryGet(buffer.Value);
     }

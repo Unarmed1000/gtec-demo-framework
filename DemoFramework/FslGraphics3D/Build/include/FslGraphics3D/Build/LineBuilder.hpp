@@ -92,24 +92,24 @@ namespace Fsl
       {
       }
 
-      inline uint32_t VertexCapacity() const
+      [[nodiscard]] inline uint32_t VertexCapacity() const
       {
         // Validate the cast
         assert(m_vertices.size() <= std::numeric_limits<uint32_t>::max());
         return static_cast<uint32_t>(m_vertices.size());
       }
 
-      inline uint32_t VertexCount() const
+      [[nodiscard]] inline uint32_t VertexCount() const
       {
         return m_entries;
       }
 
-      inline VertexSpan<vertex_type> GetVertexSpan() const
+      [[nodiscard]] inline VertexSpan<vertex_type> GetVertexSpan() const
       {
         return {m_vertices.data(), m_entries};
       }
 
-      inline bool IsEmpty() const
+      [[nodiscard]] inline bool IsEmpty() const
       {
         return m_entries == 0u;
       }
@@ -119,7 +119,7 @@ namespace Fsl
         m_entries = 0u;
       }
 
-      inline uint32_t LineCount() const
+      [[nodiscard]] inline uint32_t LineCount() const
       {
         assert((m_entries % VerticesPerLine) == 0u);
         return m_entries / VerticesPerLine;

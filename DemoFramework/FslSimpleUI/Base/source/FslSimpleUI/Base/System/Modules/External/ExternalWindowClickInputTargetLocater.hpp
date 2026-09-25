@@ -55,21 +55,21 @@ namespace Fsl::UI
     }
 
     // From IWindowClickInputTargetLocater
-    std::shared_ptr<IWindowId> TryGetMouseOverWindow(const PxPoint2& hitPositionPx) const final
+    [[nodiscard]] std::shared_ptr<IWindowId> TryGetMouseOverWindow(const PxPoint2& hitPositionPx) const final
     {
       if (m_targetLocator)
       {
-        auto node = m_targetLocator->TryGetMouseOverWindow(hitPositionPx);
+        const auto node = m_targetLocator->TryGetMouseOverWindow(hitPositionPx);
         return node ? node->GetWindow() : std::shared_ptr<IWindowId>();
       }
       return {};
     }
 
-    std::shared_ptr<IWindowId> TryGetClickInputWindow(const PxPoint2& hitPositionPx) const final
+    [[nodiscard]] std::shared_ptr<IWindowId> TryGetClickInputWindow(const PxPoint2& hitPositionPx) const final
     {
       if (m_targetLocator)
       {
-        auto node = m_targetLocator->TryGetClickInputWindow(hitPositionPx);
+        const auto node = m_targetLocator->TryGetClickInputWindow(hitPositionPx);
         return node ? node->GetWindow() : std::shared_ptr<IWindowId>();
       }
       return {};

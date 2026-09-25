@@ -514,7 +514,7 @@ namespace Fsl
         }
       }
 
-      const ReadOnlyRawBitmap& AsRawBitmap() const noexcept
+      [[nodiscard]] const ReadOnlyRawBitmap& AsRawBitmap() const noexcept
       {
         return m_rawBitmap;
       }
@@ -554,7 +554,7 @@ namespace Fsl
         }
       }
 
-      const RawBitmapEx& AsRawBitmap() const noexcept
+      [[nodiscard]] const RawBitmapEx& AsRawBitmap() const noexcept
       {
         return m_rawBitmap;
       }

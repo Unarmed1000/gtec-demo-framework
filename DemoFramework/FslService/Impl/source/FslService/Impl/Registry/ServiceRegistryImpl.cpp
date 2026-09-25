@@ -58,21 +58,21 @@ namespace Fsl
 
   ServiceGroupId ServiceRegistryImpl::CreateServiceGroup()
   {
-    auto serviceGroupRegistry = DoCreateServiceGroup(ServiceGroupType::Managed);
+    const auto serviceGroupRegistry = DoCreateServiceGroup(ServiceGroupType::Managed);
     return serviceGroupRegistry->Id;
   }
 
 
   ServiceGroupId ServiceRegistryImpl::CreateServiceGroup(const uint32_t groupNameUniqueId)
   {
-    auto itrFind = std::find_if(m_nameToGroup.begin(), m_nameToGroup.end(),
-                                [groupNameUniqueId](const ServiceGroupRecord& val) { return (val.UniqueName == groupNameUniqueId); });
+    const auto itrFind = std::find_if(m_nameToGroup.begin(), m_nameToGroup.end(),
+                                      [groupNameUniqueId](const ServiceGroupRecord& val) { return (val.UniqueName == groupNameUniqueId); });
     if (itrFind != m_nameToGroup.end())
     {
       throw UsageErrorException("The unique group name has already been registered");
     }
 
-    auto serviceGroupRegistry = DoCreateServiceGroup(ServiceGroupType::Managed);
+    const auto serviceGroupRegistry = DoCreateServiceGroup(ServiceGroupType::Managed);
 
     m_nameToGroup.emplace_back(groupNameUniqueId, serviceGroupRegistry->Id);
     return serviceGroupRegistry->Id;
@@ -87,8 +87,8 @@ namespace Fsl
 
   ServiceGroupId ServiceRegistryImpl::GetServiceGroupByName(const uint32_t groupNameUniqueId) const
   {
-    auto itrFind = std::find_if(m_nameToGroup.begin(), m_nameToGroup.end(),
-                                [groupNameUniqueId](const ServiceGroupRecord& val) { return (val.UniqueName == groupNameUniqueId); });
+    const auto itrFind = std::find_if(m_nameToGroup.begin(), m_nameToGroup.end(),
+                                      [groupNameUniqueId](const ServiceGroupRecord& val) { return (val.UniqueName == groupNameUniqueId); });
     if (itrFind == m_nameToGroup.end())
     {
       throw NotFoundException("GetServiceGroupByName the name was not found");
@@ -105,8 +105,8 @@ namespace Fsl
       throw std::invalid_argument("ServiceGroupId must be valid");
     }
 
-    auto itrFind = std::find_if(m_nameToGroup.begin(), m_nameToGroup.end(),
-                                [groupNameUniqueId](const ServiceGroupRecord& val) { return (val.UniqueName == groupNameUniqueId); });
+    const auto itrFind = std::find_if(m_nameToGroup.begin(), m_nameToGroup.end(),
+                                      [groupNameUniqueId](const ServiceGroupRecord& val) { return (val.UniqueName == groupNameUniqueId); });
     if (itrFind != m_nameToGroup.end())
     {
       throw UsageErrorException("The unique group name has already been registered");
@@ -120,7 +120,7 @@ namespace Fsl
   {
     m_threadGlobalServiceRegistry.LockAndExtractServices(rServices.GlobalServices, rServiceOptionParsers);
 
-    for (auto& serviceGroup : m_serviceGroups)
+    for (const auto& serviceGroup : m_serviceGroups)
     {
       RegisteredServiceGroupRecord group(serviceGroup->Id, serviceGroup->Type);
 
@@ -167,7 +167,7 @@ namespace Fsl
 
     // TODO: m_collisionDict really needs to be 'global+async' and then one 'thread-local' for each service group
     //       This will allow us to have thread-local services that expose the same interface inside all serviceGroups
-    ServiceGroupId serviceGroupId(m_serviceGroupId);
+    const ServiceGroupId serviceGroupId(m_serviceGroupId);
     auto serviceGroup = std::make_shared<ServiceGroupRegistry>(serviceGroupId, serviceGroupType, m_providerIdGenerator, m_interfaceCollisionChecker);
 
     m_serviceGroups.push_back(serviceGroup);
@@ -178,7 +178,7 @@ namespace Fsl
   std::shared_ptr<ServiceGroupRegistry> ServiceRegistryImpl::GetServiceGroup(const ServiceGroupId& serviceGroupId)
   {
     const auto id = serviceGroupId.GetValue();
-    auto compareFunc = [id](const std::shared_ptr<ServiceGroupRegistry>& val)
+    const auto compareFunc = [id](const std::shared_ptr<ServiceGroupRegistry>& val)
     {
       assert(val);
       return (val->Id.GetValue() == id);

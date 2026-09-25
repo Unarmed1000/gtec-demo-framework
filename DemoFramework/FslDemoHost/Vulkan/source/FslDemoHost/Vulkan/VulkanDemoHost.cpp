@@ -104,7 +104,7 @@ namespace Fsl
   {
     void LogExtensions()
     {
-      auto extensionProperties = InstanceUtil::EnumerateInstanceExtensionProperties(nullptr);
+      const auto extensionProperties = InstanceUtil::EnumerateInstanceExtensionProperties(nullptr);
       FSLLOG3_INFO("Core extensions: ", extensionProperties.size());
       for (const auto& extension : extensionProperties)
       {
@@ -114,13 +114,13 @@ namespace Fsl
 
     void LogLayers()
     {
-      auto layerProperties = InstanceUtil::EnumerateInstanceLayerProperties();
+      const auto layerProperties = InstanceUtil::EnumerateInstanceLayerProperties();
       FSLLOG3_INFO("Instance layer properties: {}", layerProperties.size());
       for (const auto& layer : layerProperties)
       {
         FSLLOG3_INFO("- layer: '{}' specVersion: {} implementationVersion: {} description: '{}'", layer.layerName,
                      EncodedVulkanVersion(layer.specVersion), layer.implementationVersion, layer.description);
-        auto extensionProperties = InstanceUtil::EnumerateInstanceExtensionProperties(layer.layerName);
+        const auto extensionProperties = InstanceUtil::EnumerateInstanceExtensionProperties(layer.layerName);
         if (!extensionProperties.empty())
         {
           for (const auto& prop : extensionProperties)
@@ -253,7 +253,7 @@ namespace Fsl
 
   DemoWindowMetrics VulkanDemoHost::GetWindowMetrics() const
   {
-    auto nativeWindowMetrics = (m_window ? m_window->GetWindowMetrics() : NativeWindowMetrics());
+    const auto nativeWindowMetrics = (m_window ? m_window->GetWindowMetrics() : NativeWindowMetrics());
     return {nativeWindowMetrics.ExtentPx, nativeWindowMetrics.ExactDpi, nativeWindowMetrics.DensityDpi};
   }
 
@@ -273,7 +273,7 @@ namespace Fsl
   {
     // This will be called while suspended
     // Allow the native window to process messages
-    NativeWindowProcessMessagesArgs args(allowBlock);
+    const NativeWindowProcessMessagesArgs args(allowBlock);
     return m_windowSystem->ProcessMessages(args);
   }
 
@@ -345,8 +345,8 @@ namespace Fsl
 
       const auto demoHostConfig = m_demoHostConfig.GetDemoHostAppSetup().GetDemoAppHostConfig<DemoAppHostConfigVulkan>();
 
-      InstanceConfigUtil::InstanceUserChoice instanceUserChoice(userChoiceValidationLayer, userChoiceApiDump,
-                                                                m_options->GetLaunchOptions().SwapchainMaintenance1);
+      const InstanceConfigUtil::InstanceUserChoice instanceUserChoice(userChoiceValidationLayer, userChoiceApiDump,
+                                                                      m_options->GetLaunchOptions().SwapchainMaintenance1);
 
       const auto instanceConfig = InstanceConfigUtil::InstanceConfigAsCharArrays(
         InstanceConfigUtil::BuildInstanceConfig(khrSurfaceExtensionName, instanceUserChoice, demoHostConfig));

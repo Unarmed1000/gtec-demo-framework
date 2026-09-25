@@ -188,8 +188,8 @@ namespace Fsl::UI::RenderIMBatch::PreprocessUtil2
             const PxSize1DF dstWidthPxf(command.DstSizePx.Width());
             const PxSize1DF dstHeightPxf(command.DstSizePx.Height());
             // We need to apply the scaling and trim
-            PxSize1DF finalScalingX = dstWidthPxf / PxSize1DF(meshRecord.Primitive.RenderInfo.ScaledSizePx.Width());
-            PxSize1DF finalScalingY = dstHeightPxf / PxSize1DF(meshRecord.Primitive.RenderInfo.ScaledSizePx.Height());
+            const PxSize1DF finalScalingX = dstWidthPxf / PxSize1DF(meshRecord.Primitive.RenderInfo.ScaledSizePx.Width());
+            const PxSize1DF finalScalingY = dstHeightPxf / PxSize1DF(meshRecord.Primitive.RenderInfo.ScaledSizePx.Height());
 
             dstRectanglePxf =
               PxAreaRectangleF(command.DstPositionPxf.X + (meshRecord.Primitive.RenderInfo.ScaledTrimMarginPxf.Left() * finalScalingX),

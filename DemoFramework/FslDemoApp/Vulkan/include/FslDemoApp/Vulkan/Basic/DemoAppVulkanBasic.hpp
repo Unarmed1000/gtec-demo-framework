@@ -335,12 +335,12 @@ namespace Fsl
       void FreeResources();
 
       //! Check if the dependent resources are currently allocated
-      bool IsResourcesAllocated() const
+      [[nodiscard]] bool IsResourcesAllocated() const
       {
         return m_dependentResources.Valid;
       }
 
-      VkCommandPool GetCommandPool() const
+      [[nodiscard]] VkCommandPool GetCommandPool() const
       {
         return m_resources.MainCommandPool.Get();
       }
@@ -359,7 +359,7 @@ namespace Fsl
       virtual void VulkanDraw(const DemoTime& demoTime, RapidVulkan::CommandBuffers& rCmdBuffers, const DrawContext& drawContext) = 0;
 
       //! @brief get the swapchain image count
-      uint32_t GetSwapchainImageCount() const
+      [[nodiscard]] uint32_t GetSwapchainImageCount() const
       {
         if (!m_swapchain.IsValid() || m_currentAppState != AppState::Ready)
         {
@@ -382,7 +382,7 @@ namespace Fsl
                                                                  const VkCommandPool commandPool,
                                                                  const VkSampleCountFlagBits sampleCount = VK_SAMPLE_COUNT_1_BIT);
 
-      const Vulkan::SurfaceFormatInfo& GetSurfaceFormatInfo() const
+      [[nodiscard]] const Vulkan::SurfaceFormatInfo& GetSurfaceFormatInfo() const
       {
         return m_surfaceFormatInfo;
       }

@@ -64,7 +64,7 @@ namespace Fsl::UI
   public:
     explicit FmtValueLabel(const std::shared_ptr<WindowContext>& context)
       : LabelBase(context)
-      , m_format(std::is_floating_point<value_type>::value ? "{:.2f}" : "{}")
+      , m_format(std::is_floating_point_v<value_type> ? "{:.2f}" : "{}")
     {
       RebuildCache();
     }

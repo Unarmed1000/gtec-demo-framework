@@ -59,9 +59,9 @@ namespace Fsl::DataBinding
     std::unordered_map<uint32_t, DataBindingGroupInstanceHandle> m_instanceToGroupMap;
 
   public:
-    DataBindingGroupInstanceHandle TryGetGroup(const DataBindingInstanceHandle hInstance) const noexcept
+    [[nodiscard]] DataBindingGroupInstanceHandle TryGetGroup(const DataBindingInstanceHandle hInstance) const noexcept
     {
-      auto itrFind = m_instanceToGroupMap.find(hInstance.Value);
+      const auto itrFind = m_instanceToGroupMap.find(hInstance.Value);
       return itrFind != m_instanceToGroupMap.end() ? itrFind->second : DataBindingGroupInstanceHandle();
     }
 
@@ -72,7 +72,7 @@ namespace Fsl::DataBinding
     bool TryAddToGroup(const DataBindingGroupInstanceHandle hGroup, const DataBindingInstanceHandle hInstance);
     void ClearGroups();
 
-    uint32_t GroupCount() const noexcept
+    [[nodiscard]] uint32_t GroupCount() const noexcept
     {
       return m_groups.Count();
     }

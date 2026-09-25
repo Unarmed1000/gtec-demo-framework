@@ -48,30 +48,30 @@ namespace Fsl::GLES2
 
     GLBufferArrayEntry();
 
-    bool IsValid() const;
+    [[nodiscard]] bool IsValid() const;
 
-    GLuint Get() const noexcept
+    [[nodiscard]] GLuint Get() const noexcept
     {
       return Handle;
     }
 
-    [[deprecated("use one of the other overloads instead")]] GLuint GetHandle() const
+    [[nodiscard]] [[deprecated("use one of the other overloads instead")]] GLuint GetHandle() const
     {
       return Handle;
     }
 
-    uint32_t GetCapacity() const noexcept
+    [[nodiscard]] uint32_t GetCapacity() const noexcept
     {
       return Capacity;
     }
 
     //! @brief Get the GL capacity
-    GLsizei GetGLCapacity() const noexcept
+    [[nodiscard]] GLsizei GetGLCapacity() const noexcept
     {
       return UncheckedNumericCast<GLsizei>(Capacity);
     }
 
-    GLenum GetUsage() const noexcept
+    [[nodiscard]] GLenum GetUsage() const noexcept
     {
       return Usage;
     }

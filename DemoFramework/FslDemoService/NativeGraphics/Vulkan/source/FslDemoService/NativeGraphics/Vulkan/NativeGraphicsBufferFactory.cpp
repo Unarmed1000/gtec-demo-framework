@@ -97,10 +97,10 @@ namespace Fsl::Vulkan
       throw NotSupportedException("bufferData does not fit within bufferElementCapacity");
     }
 
-    VkBufferUsageFlags bufferUsageFlags = TypeConverter::ChangeTo<VkBufferUsageFlags>(bufferType);
+    const VkBufferUsageFlags bufferUsageFlags = TypeConverter::ChangeTo<VkBufferUsageFlags>(bufferType);
     VMBuffer nativeBuffer(m_bufferManager, bufferData, bufferElementCapacity, bufferUsageFlags,
                           isDynamic ? VMBufferUsage::DYNAMIC : VMBufferUsage::STATIC);
-    auto handle = m_buffers.Add(NativeGraphicsBufferRecord(std::move(nativeBuffer)));
+    const auto handle = m_buffers.Add(NativeGraphicsBufferRecord(std::move(nativeBuffer)));
     FSLLOG3_VERBOSE6("NativeGraphicsBufferFactory::CreateBuffer handle: {} isDynamic: {}", handle, isDynamic);
     return BasicNativeBufferHandle(handle);
   }

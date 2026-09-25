@@ -48,20 +48,20 @@ namespace
 
 TEST(TestTexture_ReadOnlyRawTexture, Construct_Default)
 {
-  ReadOnlyRawTexture texture;
+  const ReadOnlyRawTexture texture;
   ASSERT_FALSE(texture.IsValid());
-  EXPECT_THROW(texture.GetTextureBlob(0u, 0u, 0u), UsageErrorException);
+  EXPECT_THROW(static_cast<void>(texture.GetTextureBlob(0u, 0u, 0u)), UsageErrorException);
   EXPECT_EQ(BitmapOrigin::Undefined, texture.GetBitmapOrigin());
   EXPECT_EQ(nullptr, texture.GetContent());
   EXPECT_EQ(0u, texture.GetByteSize());
-  EXPECT_THROW(texture.GetStride(0u), UsageErrorException);
-  EXPECT_THROW(texture.GetExtent(0u), UsageErrorException);
+  EXPECT_THROW(static_cast<void>(texture.GetStride(0u)), UsageErrorException);
+  EXPECT_THROW(static_cast<void>(texture.GetExtent(0u)), UsageErrorException);
   EXPECT_EQ(0u, texture.GetFaces());
   EXPECT_EQ(0u, texture.GetLayers());
   EXPECT_EQ(0u, texture.GetLevels());
   EXPECT_EQ(TextureInfo(), texture.GetTextureInfo());
   EXPECT_EQ(PixelFormat::Undefined, texture.GetPixelFormat());
   EXPECT_EQ(TextureType::Undefined, texture.GetTextureType());
-  EXPECT_THROW(texture.GetBlob(0u), UsageErrorException);
+  EXPECT_THROW(static_cast<void>(texture.GetBlob(0u)), UsageErrorException);
   EXPECT_EQ(0u, texture.GetBlobCount());
 }

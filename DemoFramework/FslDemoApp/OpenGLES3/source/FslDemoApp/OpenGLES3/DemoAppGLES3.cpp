@@ -78,7 +78,7 @@ namespace Fsl
     ADemoApp::_PostConstruct();
     assert(m_graphicsServiceHost);
 
-    GraphicsDependentCreateInfo createInfo(GetScreenExtent(), nullptr);
+    const GraphicsDependentCreateInfo createInfo(GetScreenExtent(), nullptr);
     m_graphicsServiceHost->CreateDependentResources(createInfo);
   }
 
@@ -93,7 +93,7 @@ namespace Fsl
   void DemoAppGLES3::_BeginDraw(const FrameInfo& frameInfo)
   {
     ADemoApp::_BeginDraw(frameInfo);
-    GraphicsBeginFrameInfo graphicsFrameInfo(frameInfo.FrameIndex);
+    const GraphicsBeginFrameInfo graphicsFrameInfo(frameInfo.FrameIndex);
     m_graphicsServiceHost->BeginFrame(graphicsFrameInfo);
   }
 
@@ -112,7 +112,7 @@ namespace Fsl
       const PxSize2D sizePx = windowMetrics.GetSizePx();
       glViewport(0, 0, sizePx.RawWidth(), sizePx.RawHeight());
     }
-    GraphicsDependentCreateInfo createInfo(windowMetrics.ExtentPx, nullptr);
+    const GraphicsDependentCreateInfo createInfo(windowMetrics.ExtentPx, nullptr);
     m_graphicsServiceHost->CreateDependentResources(createInfo);
   }
 }

@@ -124,7 +124,7 @@ namespace Fsl
       void Reset() noexcept;
       void Reset(const VUPhysicalDeviceRecord& physicalDevice, const VkDevice device, const uint32_t minimumVertexCountRequest);
 
-      bool IsValid() const noexcept
+      [[nodiscard]] bool IsValid() const noexcept
       {
         return m_physicalDevice.IsValid();
       }

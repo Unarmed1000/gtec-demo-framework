@@ -53,37 +53,37 @@ namespace Fsl::UI
     bool m_allowIntercept{false};
 
   public:
-    MillisecondTickCount32 GetTimestamp() const noexcept
+    [[nodiscard]] MillisecondTickCount32 GetTimestamp() const noexcept
     {
       return m_timestamp;
     }
 
-    int32_t GetSourceId() const noexcept
+    [[nodiscard]] int32_t GetSourceId() const noexcept
     {
       return m_sourceId;
     }
 
-    int32_t GetSourceSubId() const noexcept
+    [[nodiscard]] int32_t GetSourceSubId() const noexcept
     {
       return m_sourceSubId;
     }
 
-    EventTransactionState GetState() const noexcept
+    [[nodiscard]] EventTransactionState GetState() const noexcept
     {
       return m_state;
     }
 
-    bool IsRepeat() const noexcept
+    [[nodiscard]] bool IsRepeat() const noexcept
     {
       return m_isRepeat;
     }
 
-    bool GetAllowIntercept() const noexcept
+    [[nodiscard]] bool GetAllowIntercept() const noexcept
     {
       return m_allowIntercept;
     }
 
-    bool Intercepted() const noexcept
+    [[nodiscard]] bool Intercepted() const noexcept
     {
       return m_interceptionCount > 0;
     }
@@ -95,7 +95,7 @@ namespace Fsl::UI
 
 
     //! @brief Internal and test use only
-    uint32_t GetInterceptionCount() const noexcept
+    [[nodiscard]] uint32_t GetInterceptionCount() const noexcept
     {
       return m_interceptionCount;
     }
@@ -104,7 +104,7 @@ namespace Fsl::UI
     // NOLINTNEXTLINE(readability-identifier-naming)
     bool SYS_SetAllowIntercept(bool allowIntercept)
     {
-      bool changed = m_allowIntercept != allowIntercept;
+      const bool changed = m_allowIntercept != allowIntercept;
       m_allowIntercept = allowIntercept;
       return changed;
     }

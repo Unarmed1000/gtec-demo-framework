@@ -63,7 +63,7 @@ namespace Fsl
 
     // Done this way because of a "inherit via dominance warning on visual studio'
     // using PlatformNativeWindowSystem::IsDisplayHDRCompatible;
-    bool IsDisplayHDRCompatible(const int32_t displayId) const final
+    [[nodiscard]] bool IsDisplayHDRCompatible(const int32_t displayId) const final
     {
       return PlatformNativeWindowSystem::IsDisplayHDRCompatible(displayId);
     }
@@ -73,7 +73,7 @@ namespace Fsl
 
     // IEGLNativeWindowSystem
 
-    EGLNativeDisplayType GetDisplayType() const final;
+    [[nodiscard]] EGLNativeDisplayType GetDisplayType() const final;
     std::shared_ptr<IEGLNativeWindow> CreateEGLNativeWindow(const NativeWindowSetup& nativeWindowSetup, const NativeEGLSetup& nativeEglSetup) final;
   };
 }

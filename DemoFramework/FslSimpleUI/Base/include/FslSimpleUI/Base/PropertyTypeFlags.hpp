@@ -69,29 +69,29 @@ namespace Fsl::UI
     }
 
 
-    constexpr bool IsFlagged(const PropertyType type) const noexcept
+    [[nodiscard]] constexpr bool IsFlagged(const PropertyType type) const noexcept
     {
       return (Value & static_cast<uint16_t>(type)) == static_cast<uint16_t>(type);
     }
 
     //! @brief check if parts or all of the flags are enabled
-    constexpr bool IsPartiallyEnabled(const PropertyType type) const noexcept
+    [[nodiscard]] constexpr bool IsPartiallyEnabled(const PropertyType type) const noexcept
     {
       return (Value & static_cast<uint16_t>(type)) != 0;
     }
 
-    constexpr bool IsLayoutRelated() const noexcept
+    [[nodiscard]] constexpr bool IsLayoutRelated() const noexcept
     {
       return (Value & MASK_LayoutRelated) != 0;
     }
 
-    constexpr bool IsDrawRelated() const noexcept
+    [[nodiscard]] constexpr bool IsDrawRelated() const noexcept
     {
       return (Value & MASK_DrawRelated) != 0;
     }
 
     //! @brief Gets the value ensuring all non PropertyTypeFlags are set to zero.
-    constexpr uint16_t GetSafeValue() const noexcept
+    [[nodiscard]] constexpr uint16_t GetSafeValue() const noexcept
     {
       return (Value & MASK_PropertyTypeFlags);
     }

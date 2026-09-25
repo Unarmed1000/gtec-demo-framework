@@ -66,26 +66,26 @@ namespace Fsl
     void Reset(const ReadOnlySpan<VertexAttributeDescription> span);
 
     //! @brief Get the number of elements
-    uint32_t Count() const noexcept;
+    [[nodiscard]] uint32_t Count() const noexcept;
 
-    VertexAttributeDescription At(const std::size_t index) const
+    [[nodiscard]] VertexAttributeDescription At(const std::size_t index) const
     {
       return m_elements[index];
     }
 
     //! @brief Get direct access to the elements
-    const VertexAttributeDescription* DirectAccess() const noexcept;
+    [[nodiscard]] const VertexAttributeDescription* DirectAccess() const noexcept;
 
     //! @brief Get the element index of for the given usage and usageIndex (if not found a NotFoundException is thrown)
-    int32_t VertexElementGetIndexOf(const VertexElementUsage usage, const uint32_t usageIndex) const;
+    [[nodiscard]] int32_t VertexElementGetIndexOf(const VertexElementUsage usage, const uint32_t usageIndex) const;
 
     //! @brief Find the element index of for the given usage and usageIndex (if not found <0 is returned)
-    int32_t VertexElementIndexOf(const VertexElementUsage usage, const uint32_t usageIndex) const noexcept;
+    [[nodiscard]] int32_t VertexElementIndexOf(const VertexElementUsage usage, const uint32_t usageIndex) const noexcept;
 
     //! @brief Get the element for the given usage and usageIndex (if not found a NotFoundException is thrown)
-    VertexAttributeDescription VertexElementGet(const VertexElementUsage usage, const uint32_t usageIndex) const;
+    [[nodiscard]] VertexAttributeDescription VertexElementGet(const VertexElementUsage usage, const uint32_t usageIndex) const;
 
-    VertexAttributeDescriptionSpan AsSpan() const noexcept;
+    [[nodiscard]] VertexAttributeDescriptionSpan AsSpan() const noexcept;
 
     bool operator==(const VertexAttributeDescriptions& rhs) const noexcept;
     bool operator!=(const VertexAttributeDescriptions& rhs) const noexcept;

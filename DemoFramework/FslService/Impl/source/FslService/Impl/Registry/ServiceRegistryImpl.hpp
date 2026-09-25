@@ -81,8 +81,8 @@ namespace Fsl
     // From IServiceRegistry
     ServiceGroupId CreateServiceGroup() override;
     ServiceGroupId CreateServiceGroup(const uint32_t groupNameUniqueId) override;
-    ServiceGroupId GetMainServiceGroup() const override;
-    ServiceGroupId GetServiceGroupByName(const uint32_t groupNameUniqueId) const override;
+    [[nodiscard]] ServiceGroupId GetMainServiceGroup() const override;
+    [[nodiscard]] ServiceGroupId GetServiceGroupByName(const uint32_t groupNameUniqueId) const override;
     void SetServiceGroupName(const ServiceGroupId& serviceGroupId, const uint32_t groupNameUniqueId) override;
     void Register(const std::shared_ptr<IThreadLocalSingletonServiceFactory>& factory, const Priority& priority = Priority(),
                   const ServiceGroupId& serviceGroupId = ServiceGroupId()) override;

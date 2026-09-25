@@ -43,7 +43,7 @@ namespace
 
 TEST(TestFont_BitmapFont, Construct_Default)
 {
-  BitmapFont font;
+  const BitmapFont font;
   EXPECT_EQ("", font.GetName());
   EXPECT_EQ("", font.GetTextureName());
   EXPECT_EQ(0u, font.GetSize());
@@ -70,10 +70,10 @@ TEST(TestFont_BitmapFont, Construct)
   constexpr const BitmapFontChar Char0(0u, PxRectangleU32::Create(1, 2, 3, 4), PxPoint2::Create(5, 6), PxValueU16(7));
   constexpr const BitmapFontKerning Kerning0(0u, 1u, PxValue::Create(-1));
 
-  std::vector<BitmapFontChar> chars = {Char0};
-  std::vector<BitmapFontKerning> kernings = {Kerning0};
+  const std::vector<BitmapFontChar> chars = {Char0};
+  const std::vector<BitmapFontKerning> kernings = {Kerning0};
 
-  BitmapFont font(name, dpi, size, lineSpacingPx, baseLinePx, paddingPx, textureName, fontType, sdfParams, chars, kernings);
+  const BitmapFont font(name, dpi, size, lineSpacingPx, baseLinePx, paddingPx, textureName, fontType, sdfParams, chars, kernings);
 
   EXPECT_EQ(name, font.GetName());
   EXPECT_EQ(textureName, font.GetTextureName());
@@ -106,11 +106,11 @@ TEST(TestFont_BitmapFont, Construct_SortChars)
   constexpr const BitmapFontChar Char2(1u, PxRectangleU32::Create(1, 2, 3, 4), PxPoint2::Create(5, 6), PxValueU16(7));
   constexpr const BitmapFontKerning Kerning0(0u, 1u, PxValue::Create(-1));
 
-  std::vector<BitmapFontChar> chars = {Char0, Char1, Char2};
-  std::vector<BitmapFontChar> sortedChars = {Char2, Char1, Char0};
-  std::vector<BitmapFontKerning> kernings = {Kerning0};
+  const std::vector<BitmapFontChar> chars = {Char0, Char1, Char2};
+  const std::vector<BitmapFontChar> sortedChars = {Char2, Char1, Char0};
+  const std::vector<BitmapFontKerning> kernings = {Kerning0};
 
-  BitmapFont font(name, dpi, size, lineSpacingPx, baseLinePx, paddingPx, textureName, fontType, sdfParams, chars, kernings);
+  const BitmapFont font(name, dpi, size, lineSpacingPx, baseLinePx, paddingPx, textureName, fontType, sdfParams, chars, kernings);
 
   EXPECT_EQ(name, font.GetName());
   EXPECT_EQ(textureName, font.GetTextureName());
@@ -146,11 +146,11 @@ TEST(TestFont_BitmapFont, SortedKernings)
   constexpr const BitmapFontKerning Kerning3(2u, 0u, PxValue::Create(-4));
   constexpr const BitmapFontKerning Kerning4(2u, 5u, PxValue::Create(-4));
 
-  std::vector<BitmapFontChar> chars = {Char0};
-  std::vector<BitmapFontKerning> kernings = {Kerning0, Kerning1, Kerning2, Kerning3, Kerning4};
-  std::vector<BitmapFontKerning> sortedKernings = {Kerning1, Kerning3, Kerning2, Kerning4, Kerning0};
+  const std::vector<BitmapFontChar> chars = {Char0};
+  const std::vector<BitmapFontKerning> kernings = {Kerning0, Kerning1, Kerning2, Kerning3, Kerning4};
+  const std::vector<BitmapFontKerning> sortedKernings = {Kerning1, Kerning3, Kerning2, Kerning4, Kerning0};
 
-  BitmapFont font(name, dpi, size, lineSpacingPx, baseLinePx, paddingPx, textureName, fontType, sdfParams, chars, kernings);
+  const BitmapFont font(name, dpi, size, lineSpacingPx, baseLinePx, paddingPx, textureName, fontType, sdfParams, chars, kernings);
 
   EXPECT_EQ(name, font.GetName());
   EXPECT_EQ(textureName, font.GetTextureName());
@@ -181,8 +181,8 @@ TEST(TestFont_BitmapFont, Construct_DuplicatedChar)
   constexpr const BitmapFontChar Char1(1u, PxRectangleU32::Create(1, 2, 3, 4), PxPoint2::Create(5, 6), PxValueU16(7));
   constexpr const BitmapFontKerning Kerning0(0u, 1u, PxValue(-1));
 
-  std::vector<BitmapFontChar> chars = {Char0, Char1, Char0};
-  std::vector<BitmapFontKerning> kernings = {Kerning0};
+  const std::vector<BitmapFontChar> chars = {Char0, Char1, Char0};
+  const std::vector<BitmapFontKerning> kernings = {Kerning0};
 
   EXPECT_THROW(BitmapFont(name, dpi, size, lineSpacingPx, baseLinePx, paddingPx, textureName, fontType, sdfParams, chars, kernings),
                std::invalid_argument);
@@ -205,8 +205,8 @@ TEST(TestFont_BitmapFont, Construct_DuplicatedKerning)
   constexpr const BitmapFontKerning Kerning0(0u, 1u, PxValue(-1));
   constexpr const BitmapFontKerning Kerning1(1u, 0u, PxValue(-2));
 
-  std::vector<BitmapFontChar> chars = {Char0};
-  std::vector<BitmapFontKerning> kernings = {Kerning0, Kerning1, Kerning0};
+  const std::vector<BitmapFontChar> chars = {Char0};
+  const std::vector<BitmapFontKerning> kernings = {Kerning0, Kerning1, Kerning0};
 
   EXPECT_THROW(BitmapFont(name, dpi, size, lineSpacingPx, baseLinePx, paddingPx, textureName, fontType, sdfParams, chars, kernings),
                std::invalid_argument);

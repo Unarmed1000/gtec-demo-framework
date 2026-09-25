@@ -54,7 +54,7 @@ namespace Fsl
 
     void Update() final;
 
-    uint32_t GetCpuCount() const final;
+    [[nodiscard]] uint32_t GetCpuCount() const final;
     bool TryGetCpuUsage(float& rUsagePercentage, const uint32_t cpuIndex) const final;
     bool TryGetCpuUsage(CpuUsageRecord& rUsageRecord, const uint32_t cpuIndex) const final;
     bool TryGetApplicationCpuUsage(float& rUsagePercentage) const final;

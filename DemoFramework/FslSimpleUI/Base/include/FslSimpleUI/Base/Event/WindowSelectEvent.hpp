@@ -45,12 +45,12 @@ namespace Fsl::UI
   public:
     WindowSelectEvent() noexcept;
 
-    uint32_t GetContentId() const noexcept
+    [[nodiscard]] uint32_t GetContentId() const noexcept
     {
       return m_contentId;
     }
 
-    const std::shared_ptr<ITag>& GetPayload() const noexcept
+    [[nodiscard]] const std::shared_ptr<ITag>& GetPayload() const noexcept
     {
       return m_payload;
     }

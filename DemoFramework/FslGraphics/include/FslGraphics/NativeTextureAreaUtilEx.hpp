@@ -90,13 +90,13 @@ namespace Fsl
 
     inline constexpr NativeTextureArea CalcNativeTextureAreaClipped(const PxRectangle& imageRectanglePx, const PxSize2D textureSizePx)
     {
-      PxRectangle clippedImageRectanglePx(PxRectangle::Intersect(imageRectanglePx, PxRectangle(PxPoint2(), textureSizePx)));
+      const PxRectangle clippedImageRectanglePx(PxRectangle::Intersect(imageRectanglePx, PxRectangle(PxPoint2(), textureSizePx)));
       return FastCalcNativeTextureArea(clippedImageRectanglePx, textureSizePx);
     }
 
     inline constexpr NativeTextureArea CalcNativeTextureAreaYFlippedClipped(const PxRectangle& imageRectanglePx, const PxSize2D textureSizePx)
     {
-      PxRectangle clippedImageRectanglePx(PxRectangle::Intersect(imageRectanglePx, PxRectangle(PxPoint2(), textureSizePx)));
+      const PxRectangle clippedImageRectanglePx(PxRectangle::Intersect(imageRectanglePx, PxRectangle(PxPoint2(), textureSizePx)));
       return FastCalcNativeTextureAreaYFlipped(clippedImageRectanglePx, textureSizePx);
     }
   };

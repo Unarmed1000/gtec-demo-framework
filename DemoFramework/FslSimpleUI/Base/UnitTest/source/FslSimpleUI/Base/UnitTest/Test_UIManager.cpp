@@ -67,28 +67,28 @@ TEST_F(TestUIManager, Construct)
 
 TEST_F(TestUIManager, GetWindowManager)
 {
-  auto winManager = m_manager.GetWindowManager();
+  const auto winManager = m_manager.GetWindowManager();
   ASSERT_TRUE(winManager);
 }
 
 
 TEST_F(TestUIManager, GetEventPool)
 {
-  auto pool = m_manager.GetEventPool();
+  const auto pool = m_manager.GetEventPool();
   ASSERT_TRUE(pool);
 }
 
 
 TEST_F(TestUIManager, GetEventSender)
 {
-  auto eventSender = m_manager.GetEventSender();
+  const auto eventSender = m_manager.GetEventSender();
   ASSERT_TRUE(eventSender);
 }
 
 
 TEST_F(TestUIManager, SendMouseButtonEventEmpty)
 {
-  auto isHandled = m_manager.SendMouseButtonEvent(MillisecondTickCount32(), PxPoint2::Create(0, 0), true, false);
+  const auto isHandled = m_manager.SendMouseButtonEvent(MillisecondTickCount32(), PxPoint2::Create(0, 0), true, false);
 
   ASSERT_FALSE(isHandled);
 }
@@ -96,8 +96,8 @@ TEST_F(TestUIManager, SendMouseButtonEventEmpty)
 
 TEST_F(TestUIManager, SendMouseMoveEventEmpty)
 {
-  auto pos = PxPoint2::Create(0, 0);
-  auto isHandled = m_manager.SendMouseMoveEvent(MillisecondTickCount32(), pos, false);
+  const auto pos = PxPoint2::Create(0, 0);
+  const auto isHandled = m_manager.SendMouseMoveEvent(MillisecondTickCount32(), pos, false);
 
   ASSERT_FALSE(isHandled);
 }

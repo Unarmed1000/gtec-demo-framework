@@ -40,9 +40,9 @@ namespace Fsl
   public:
     virtual ~IEGLHostInfo() = default;
 
-    virtual EGLDisplay GetDisplay() const = 0;
-    virtual EGLSurface GetSurface() const = 0;
-    virtual EGLContext GetContext() const = 0;
+    [[nodiscard]] virtual EGLDisplay GetDisplay() const = 0;
+    [[nodiscard]] virtual EGLSurface GetSurface() const = 0;
+    [[nodiscard]] virtual EGLContext GetContext() const = 0;
   };
 }
 

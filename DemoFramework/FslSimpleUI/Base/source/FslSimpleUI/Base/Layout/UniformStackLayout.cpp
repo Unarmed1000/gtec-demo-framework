@@ -132,7 +132,7 @@ namespace Fsl::UI
       for (const auto& entry : *this)
       {
         entry.Window->Measure(fakeAvailableSizePx);
-        PxSize2D desiredSizePx = entry.Window->DesiredSizePx();
+        const PxSize2D desiredSizePx = entry.Window->DesiredSizePx();
         maxSizePx.SetMax(desiredSizePx);
       }
       if (!empty())
@@ -151,7 +151,7 @@ namespace Fsl::UI
       for (const auto& entry : *this)
       {
         entry.Window->Measure(fakeAvailableSizePx);
-        PxSize2D desiredSizePx = entry.Window->DesiredSizePx();
+        const PxSize2D desiredSizePx = entry.Window->DesiredSizePx();
         maxSizePx.SetMax(desiredSizePx);
       }
       if (!empty())
@@ -169,9 +169,9 @@ namespace Fsl::UI
 
   DataBinding::DataBindingInstanceHandle UniformStackLayout::TryGetPropertyHandleNow(const DataBinding::DependencyPropertyDefinition& sourceDef)
   {
-    auto res = DataBinding::DependencyObjectHelper::TryGetPropertyHandle(this, ThisDependencyObject(), sourceDef,
-                                                                         DataBinding::PropLinkRefs(PropertyOrientation, m_propertyOrientation),
-                                                                         DataBinding::PropLinkRefs(PropertySpacing, m_propertySpacingDp));
+    const auto res = DataBinding::DependencyObjectHelper::TryGetPropertyHandle(this, ThisDependencyObject(), sourceDef,
+                                                                               DataBinding::PropLinkRefs(PropertyOrientation, m_propertyOrientation),
+                                                                               DataBinding::PropLinkRefs(PropertySpacing, m_propertySpacingDp));
     return res.IsValid() ? res : base_type::TryGetPropertyHandleNow(sourceDef);
   }
 
@@ -179,9 +179,9 @@ namespace Fsl::UI
   DataBinding::PropertySetBindingResult UniformStackLayout::TrySetBindingNow(const DataBinding::DependencyPropertyDefinition& targetDef,
                                                                              const DataBinding::Binding& binding)
   {
-    auto res = DataBinding::DependencyObjectHelper::TrySetBinding(this, ThisDependencyObject(), targetDef, binding,
-                                                                  DataBinding::PropLinkRefs(PropertyOrientation, m_propertyOrientation),
-                                                                  DataBinding::PropLinkRefs(PropertySpacing, m_propertySpacingDp));
+    const auto res = DataBinding::DependencyObjectHelper::TrySetBinding(this, ThisDependencyObject(), targetDef, binding,
+                                                                        DataBinding::PropLinkRefs(PropertyOrientation, m_propertyOrientation),
+                                                                        DataBinding::PropLinkRefs(PropertySpacing, m_propertySpacingDp));
     return res != DataBinding::PropertySetBindingResult::NotFound ? res : base_type::TrySetBindingNow(targetDef, binding);
   }
 

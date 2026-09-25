@@ -196,7 +196,7 @@ namespace Fsl
       int height = 0;
       int channels = 0;
 
-      ScopedSTBImage<float> imageData(stbi_loadf(absolutePath.ToUTF8String().c_str(), &width, &height, &channels, 0));
+      const ScopedSTBImage<float> imageData(stbi_loadf(absolutePath.ToUTF8String().c_str(), &width, &height, &channels, 0));
       if (imageData.pContent == nullptr || width < 0 || height < 0 || (channels != 3 && channels != 4))
       {
         return false;
@@ -205,7 +205,7 @@ namespace Fsl
       try
       {
         const PixelFormat pixelFormat = (channels == 3 ? PixelFormat::R32G32B32_SFLOAT : PixelFormat::R32G32B32A32_SFLOAT);
-        auto sizePx = PxSize2D::Create(width, height);
+        const auto sizePx = PxSize2D::Create(width, height);
         const std::size_t cbContent = (sizeof(float) * channels) * sizePx.RawUnsignedWidth() * sizePx.RawUnsignedHeight();
 
         rBitmap.Reset(SpanUtil::CreateReadOnly(reinterpret_cast<const uint8_t*>(imageData.pContent), cbContent), sizePx, pixelFormat);
@@ -229,7 +229,7 @@ namespace Fsl
       int height = 0;
       int channels = 0;
 
-      ScopedSTBImage<uint8_t> imageData(stbi_load(absolutePath.ToUTF8String().c_str(), &width, &height, &channels, 0));
+      const ScopedSTBImage<uint8_t> imageData(stbi_load(absolutePath.ToUTF8String().c_str(), &width, &height, &channels, 0));
       if (imageData.pContent == nullptr || width < 0 || height < 0 || (channels != 3 && channels != 4))
       {
         return false;
@@ -238,7 +238,7 @@ namespace Fsl
       try
       {
         const PixelFormat pixelFormat = (channels == 3 ? PixelFormat::R8G8B8_UINT : PixelFormat::R8G8B8A8_UINT);
-        auto sizePx = PxSize2D::Create(width, height);
+        const auto sizePx = PxSize2D::Create(width, height);
         const std::size_t cbContent = channels * sizePx.RawUnsignedWidth() * sizePx.RawUnsignedHeight();
 
         rBitmap.Reset(SpanUtil::CreateReadOnly(imageData.pContent, cbContent), sizePx, pixelFormat);
@@ -353,7 +353,7 @@ namespace Fsl
   {
     assert(IsSupported(bitmap.GetPixelFormat(), imageFormat));
     assert(IO::Path::IsPathRooted(dstName));
-    int comp = NumericCast<int32_t>(PixelFormatUtil::GetChannelCount(bitmap.GetPixelFormat()));
+    const int comp = NumericCast<int32_t>(PixelFormatUtil::GetChannelCount(bitmap.GetPixelFormat()));
     if (comp < LocalConfig::MinComp || comp > LocalConfig::MaxComp)
     {
       return false;

@@ -63,7 +63,7 @@ namespace
 
 TEST(Test_PackedColor32, Construct_Default)
 {
-  PackedColor32 color;
+  const PackedColor32 color;
 
   EXPECT_EQ(0u, color.RawR());
   EXPECT_EQ(0u, color.RawG());
@@ -74,7 +74,7 @@ TEST(Test_PackedColor32, Construct_Default)
 
 TEST(Test_PackedColor32, Construct)
 {
-  PackedColor32 color(0x12345678);
+  const PackedColor32 color(0x12345678);
 
   EXPECT_EQ(0x12u, color.RawA());
   EXPECT_EQ(0x34u, color.RawR());
@@ -90,7 +90,7 @@ TEST(Test_PackedColor32, ConstructU8)
   const ColorChannelValueU8 b(0x56);
   const ColorChannelValueU8 a(0x78);
 
-  PackedColor32 color(r, g, b, a);
+  const PackedColor32 color(r, g, b, a);
 
   EXPECT_EQ(r, color.R());
   EXPECT_EQ(g, color.G());
@@ -105,10 +105,10 @@ TEST(Test_PackedColor32, ConstructU8)
     const ColorChannelValueU8 valC(0x56);
     const ColorChannelValueU8 valD(0x78);
 
-    PackedColor32 color1(valI, valB, valC, valD);
-    PackedColor32 color2(valA, valI, valC, valD);
-    PackedColor32 color3(valA, valB, valI, valD);
-    PackedColor32 color4(valA, valB, valC, valI);
+    const PackedColor32 color1(valI, valB, valC, valD);
+    const PackedColor32 color2(valA, valI, valC, valD);
+    const PackedColor32 color3(valA, valB, valI, valD);
+    const PackedColor32 color4(valA, valB, valC, valI);
 
     ASSERT_EQ(valI, color1.R());
     ASSERT_EQ(valB, color1.G());
@@ -140,7 +140,7 @@ TEST(Test_PackedColor32, ConstructU16)
   const ColorChannelValueU16 b(0x9ABC);
   const ColorChannelValueU16 a(0xDEF0);
 
-  PackedColor32 color(r, g, b, a);
+  const PackedColor32 color(r, g, b, a);
 
   EXPECT_EQ(AsU16(r), color.R());
   EXPECT_EQ(AsU16(g), color.G());
@@ -155,10 +155,10 @@ TEST(Test_PackedColor32, ConstructU16)
     const ColorChannelValueU16 valC(0x9ABC);
     const ColorChannelValueU16 valD(0xDEF0);
 
-    PackedColor32 color1(valI, valB, valC, valD);
-    PackedColor32 color2(valA, valI, valC, valD);
-    PackedColor32 color3(valA, valB, valI, valD);
-    PackedColor32 color4(valA, valB, valC, valI);
+    const PackedColor32 color1(valI, valB, valC, valD);
+    const PackedColor32 color2(valA, valI, valC, valD);
+    const PackedColor32 color3(valA, valB, valI, valD);
+    const PackedColor32 color4(valA, valB, valC, valI);
 
     ASSERT_EQ(AsU16(valI), color1.R());
     ASSERT_EQ(AsU16(valB), color1.G());
@@ -185,10 +185,10 @@ TEST(Test_PackedColor32, ConstructU16)
 
 TEST(Test_PackedColor32, Construct_Value)
 {
-  PackedColor32 color1(0xFF010203);
-  PackedColor32 color2(0x01FF0203);
-  PackedColor32 color3(0x0102FF03);
-  PackedColor32 color4(0x010203FF);
+  const PackedColor32 color1(0xFF010203);
+  const PackedColor32 color2(0x01FF0203);
+  const PackedColor32 color3(0x0102FF03);
+  const PackedColor32 color4(0x010203FF);
 
   EXPECT_EQ(0xFFu, color1.RawA());
   EXPECT_EQ(0x01u, color1.RawR());
@@ -213,7 +213,7 @@ TEST(Test_PackedColor32, Construct_Value)
 
 TEST(Test_PackedColor32, Create)
 {
-  PackedColor32 color = PackedColor32::Create(0x12345678);
+  const PackedColor32 color = PackedColor32::Create(0x12345678);
 
   EXPECT_EQ(0x12u, color.RawA());
   EXPECT_EQ(0x34u, color.RawR());
@@ -229,7 +229,7 @@ TEST(Test_PackedColor32, CreateR8G8B8A8UNorm_UInt8)
   const uint8_t b = 0x56;
   const uint8_t a = 0x78;
 
-  PackedColor32 color = PackedColor32::CreateR8G8B8A8UNorm(r, g, b, a);
+  const PackedColor32 color = PackedColor32::CreateR8G8B8A8UNorm(r, g, b, a);
 
   EXPECT_EQ(r, color.RawR());
   EXPECT_EQ(g, color.RawG());
@@ -245,7 +245,7 @@ TEST(Test_PackedColor32, CreateR8G8B8A8UNorm_Int16)
   const int16_t b = 0x56;
   const int16_t a = 0x78;
 
-  PackedColor32 color = PackedColor32::CreateR8G8B8A8UNorm(r, g, b, a);
+  const PackedColor32 color = PackedColor32::CreateR8G8B8A8UNorm(r, g, b, a);
 
   EXPECT_EQ(r, color.RawR());
   EXPECT_EQ(g, color.RawG());
@@ -261,7 +261,7 @@ TEST(Test_PackedColor32, CreateR8G8B8A8UNorm_UInt16)
   const uint16_t b = 0x56;
   const uint16_t a = 0x78;
 
-  PackedColor32 color = PackedColor32::CreateR8G8B8A8UNorm(r, g, b, a);
+  const PackedColor32 color = PackedColor32::CreateR8G8B8A8UNorm(r, g, b, a);
 
   EXPECT_EQ(r, color.RawR());
   EXPECT_EQ(g, color.RawG());
@@ -277,7 +277,7 @@ TEST(Test_PackedColor32, CreateR8G8B8A8UNorm_Int32)
   const int32_t b = 0x56;
   const int32_t a = 0x78;
 
-  PackedColor32 color = PackedColor32::CreateR8G8B8A8UNorm(r, g, b, a);
+  const PackedColor32 color = PackedColor32::CreateR8G8B8A8UNorm(r, g, b, a);
 
   EXPECT_EQ(r, color.RawR());
   EXPECT_EQ(g, color.RawG());
@@ -293,7 +293,7 @@ TEST(Test_PackedColor32, CreateR8G8B8A8UNorm_UInt32)
   const uint32_t b = 0x56;
   const uint32_t a = 0x78;
 
-  PackedColor32 color = PackedColor32::CreateR8G8B8A8UNorm(r, g, b, a);
+  const PackedColor32 color = PackedColor32::CreateR8G8B8A8UNorm(r, g, b, a);
 
   EXPECT_EQ(r, color.RawR());
   EXPECT_EQ(g, color.RawG());
@@ -309,7 +309,7 @@ TEST(Test_PackedColor32, CreateR16G16B16A16UNorm_UInt16)
   const uint16_t b = 0x9ABC;
   const uint16_t a = 0xDEF0;
 
-  PackedColor32 color = PackedColor32::CreateR16G16B16A16UNorm(r, g, b, a);
+  const PackedColor32 color = PackedColor32::CreateR16G16B16A16UNorm(r, g, b, a);
 
   EXPECT_EQ(RawU16ToRawU8(r), color.RawR());
   EXPECT_EQ(RawU16ToRawU8(g), color.RawG());
@@ -325,7 +325,7 @@ TEST(Test_PackedColor32, CreateR16G16B16A16UNorm_Int32)
   const int32_t b = 0x9ABC;
   const int32_t a = 0xDEF0;
 
-  PackedColor32 color = PackedColor32::CreateR16G16B16A16UNorm(r, g, b, a);
+  const PackedColor32 color = PackedColor32::CreateR16G16B16A16UNorm(r, g, b, a);
 
   EXPECT_EQ(RawU16ToRawU8(r), color.RawR());
   EXPECT_EQ(RawU16ToRawU8(g), color.RawG());
@@ -341,7 +341,7 @@ TEST(Test_PackedColor32, CreateR16G16B16A16UNorm_UInt32)
   const uint32_t b = 0x9ABC;
   const uint32_t a = 0xDEF0;
 
-  PackedColor32 color = PackedColor32::CreateR16G16B16A16UNorm(r, g, b, a);
+  const PackedColor32 color = PackedColor32::CreateR16G16B16A16UNorm(r, g, b, a);
 
   EXPECT_EQ(RawU16ToRawU8(r), color.RawR());
   EXPECT_EQ(RawU16ToRawU8(g), color.RawG());
@@ -352,9 +352,9 @@ TEST(Test_PackedColor32, CreateR16G16B16A16UNorm_UInt32)
 
 TEST(Test_PackedColor32, Op_Equal)
 {
-  PackedColor32 color1(0x12345678);
-  PackedColor32 color2(0x12345678);
-  PackedColor32 color3(0x22345678);
+  const PackedColor32 color1(0x12345678);
+  const PackedColor32 color2(0x12345678);
+  const PackedColor32 color3(0x22345678);
 
   EXPECT_TRUE(color1 == color2);
   EXPECT_FALSE(color1 == color3);
@@ -363,8 +363,8 @@ TEST(Test_PackedColor32, Op_Equal)
 
 TEST(Test_PackedColor32, Op_NotEqual)
 {
-  PackedColor32 color1(0x12345678);
-  PackedColor32 color2(0x22345678);
+  const PackedColor32 color1(0x12345678);
+  const PackedColor32 color2(0x22345678);
 
   EXPECT_TRUE(color1 != color2);
   EXPECT_TRUE(color2 != color1);

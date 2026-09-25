@@ -105,7 +105,7 @@ namespace Fsl
     {
       m_state = State::DeviceReady;
 
-      Graphics3D::BasicRenderSystemCreateInfo renderCreateInfo(createInfo.MaxFramesInFlight, GetNativeDevice());
+      const Graphics3D::BasicRenderSystemCreateInfo renderCreateInfo(createInfo.MaxFramesInFlight, GetNativeDevice());
       m_renderSystem = std::make_shared<Graphics3D::BasicRenderSystem>(renderCreateInfo);
     }
     catch (std::exception& ex)

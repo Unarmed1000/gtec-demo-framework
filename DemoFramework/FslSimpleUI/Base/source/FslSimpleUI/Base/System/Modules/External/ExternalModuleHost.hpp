@@ -59,12 +59,12 @@ namespace Fsl::UI
     }
 
     // From IExternalModuleHost
-    std::shared_ptr<IWindowClickInputTargetLocater> GetTargetLocater() const final
+    [[nodiscard]] std::shared_ptr<IWindowClickInputTargetLocater> GetTargetLocater() const final
     {
       return m_targetLocator;
     }
 
-    std::shared_ptr<IWindowBasicInfo> GetWindowInfo() const final
+    [[nodiscard]] std::shared_ptr<IWindowBasicInfo> GetWindowInfo() const final
     {
       return m_basicInfo;
     }

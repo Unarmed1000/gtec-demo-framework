@@ -93,7 +93,8 @@ namespace Fsl
       assert(!materialDeclaration.empty());
     }
 
-    constexpr BasicMaterialVariable GetBasicMaterialVariable(const BasicMaterialVariableElementUsage usage, const uint32_t usageIndex) const
+    [[nodiscard]] constexpr BasicMaterialVariable GetBasicMaterialVariable(const BasicMaterialVariableElementUsage usage,
+                                                                           const uint32_t usageIndex) const
     {
       const BasicMaterialVariableElement& element = m_materialDeclaration.MaterialElementGet(usage, usageIndex);
       return BasicMaterialVariable(m_pData, m_byteSize, element.Offset, element.Format);
@@ -101,24 +102,24 @@ namespace Fsl
 
 
     // NOLINTNEXTLINE(readability-identifier-naming)
-    constexpr const_pointer data() const noexcept
+    [[nodiscard]] constexpr const_pointer data() const noexcept
     {
       return m_pData;
     }
 
     // NOLINTNEXTLINE(readability-identifier-naming)
-    constexpr size_type byteSize() const noexcept
+    [[nodiscard]] constexpr size_type byteSize() const noexcept
     {
       return m_byteSize;
     }
 
     // NOLINTNEXTLINE(readability-identifier-naming)
-    constexpr bool empty() const noexcept
+    [[nodiscard]] constexpr bool empty() const noexcept
     {
       return m_byteSize == 0u;
     }
 
-    constexpr BasicMaterialVariableDeclarationSpan AsBasicMaterialDeclarationSpan() const noexcept
+    [[nodiscard]] constexpr BasicMaterialVariableDeclarationSpan AsBasicMaterialDeclarationSpan() const noexcept
     {
       return m_materialDeclaration;
     }

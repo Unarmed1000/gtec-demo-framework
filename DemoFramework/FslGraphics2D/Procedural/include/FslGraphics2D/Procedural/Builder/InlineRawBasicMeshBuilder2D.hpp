@@ -119,17 +119,17 @@ namespace Fsl
       return ReadOnlySpan<TVertex>(m_pVertexData, m_vertexCount, OptimizationCheckFlag::NoCheck);
     }
 
-    constexpr float GetZPos() const noexcept
+    [[nodiscard]] constexpr float GetZPos() const noexcept
     {
       return m_zPos;
     }
 
-    constexpr size_type GetVertexCount() const noexcept
+    [[nodiscard]] constexpr size_type GetVertexCount() const noexcept
     {
       return m_vertexCount;
     }
 
-    constexpr size_type GetRemainingVertexCapacity() const noexcept
+    [[nodiscard]] constexpr size_type GetRemainingVertexCapacity() const noexcept
     {
       return m_vertexCapacity - m_vertexCount;
     }

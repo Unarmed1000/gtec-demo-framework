@@ -52,7 +52,7 @@ namespace
 
 TEST(TestVertices_VertexPosition, Construct_Default)
 {
-  VertexPosition vertex;
+  const VertexPosition vertex;
   EXPECT_EQ(Vector3(), vertex.Position);
 }
 

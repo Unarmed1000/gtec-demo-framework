@@ -341,7 +341,7 @@ namespace Fsl::SceneFormat
 
     void ExtractUniqueVertexDeclarations(InternalSceneRecord& rSceneRecord, const Scene& scene)
     {
-      int32_t count = scene.GetMeshCount();
+      const int32_t count = scene.GetMeshCount();
       std::shared_ptr<Mesh> mesh;
 
       auto& rMeshes = rSceneRecord.Meshes;
@@ -473,7 +473,7 @@ namespace Fsl::SceneFormat
 
       const auto endPos = rStream.tellg();
       assert(endPos >= startPos);
-      if (static_cast<uint32_t>(endPos - startPos) != header.ByteSize)
+      if (std::cmp_not_equal(endPos - startPos, header.ByteSize))
       {
         throw FormatException("VertexDeclarationChunk was of a unexpected size");
       }
@@ -490,7 +490,7 @@ namespace Fsl::SceneFormat
 
       const uint32_t cbContent = CalcByteSize(uniqueEntries);
 
-      ChunkHeader header(cbContent, ChunkType::VertexDeclarations, ChunkVersionVertexDeclaration);
+      const ChunkHeader header(cbContent, ChunkType::VertexDeclarations, ChunkVersionVertexDeclaration);
       WriteChunkHeader(rStream, header);
 
       // Write the vertex declarations
@@ -992,14 +992,14 @@ namespace Fsl::SceneFormat
       const VertexDeclaration srcVertexDeclaration(Create(srcInternalVertexDeclaration));
 
       // Create the mesh container object
-      std::shared_ptr<Mesh> mesh = meshAllocator(vertexCount, indexCount, Conversion::Convert(primitiveType));
+      const std::shared_ptr<Mesh> mesh = meshAllocator(vertexCount, indexCount, Conversion::Convert(primitiveType));
       mesh->SetMaterialIndex(static_cast<int32_t>(materialIndex));
       mesh->SetName(UTF8String(pszName));
 
       const auto cbSrcVertices = srcVertexDeclaration.VertexStride() * vertexCount;
       const auto cbSrcIndices = indexByteSize * indexCount;
 
-      RawMeshContentEx rawDst = mesh->GenericDirectAccess();
+      const RawMeshContentEx rawDst = mesh->GenericDirectAccess();
       VertexConverter::GenericConvert(rawDst.pVertices, rawDst.VertexStride * rawDst.VertexCount, mesh->AsVertexDeclarationSpan(), pVertices,
                                       cbSrcVertices, srcVertexDeclaration.AsSpan(), vertexCount, pDstDefaultValues, cbDstDefaultValues);
       IndexConverter::GenericConvert(rawDst.pIndices, rawDst.IndexStride * rawDst.IndexCount, rawDst.IndexStride, pIndices, cbSrcIndices,
@@ -1036,7 +1036,7 @@ namespace Fsl::SceneFormat
 
       // Create the scene
       std::shared_ptr<Scene> scene = sceneAllocator(meshCount);
-      MeshAllocatorFunc meshAllocator = scene->GetMeshAllocator();
+      const MeshAllocatorFunc meshAllocator = scene->GetMeshAllocator();
 
       for (uint32_t meshIndex = 0; meshIndex < meshCount; ++meshIndex)
       {
@@ -1103,7 +1103,7 @@ namespace Fsl::SceneFormat
 
       const auto endPos = rStream.tellg();
       assert(endPos >= startPos);
-      if (static_cast<uint32_t>(endPos - startPos) != header.ByteSize)
+      if (std::cmp_not_equal(endPos - startPos, header.ByteSize))
       {
         throw FormatException("MeshesChunk was of a unexpected size");
       }
@@ -1128,7 +1128,7 @@ namespace Fsl::SceneFormat
     void WriteMeshesChunk(std::ofstream& rStream, const InternalSceneRecord& scene)
     {
       const uint32_t cbMeshes = CalcMeshesSize(scene);
-      ChunkHeader header(cbMeshes, ChunkType::Meshes, ChunkVersionMeshes);
+      const ChunkHeader header(cbMeshes, ChunkType::Meshes, ChunkVersionMeshes);
       WriteChunkHeader(rStream, header);
 
       const auto& vertexDeclarations = scene.VertexDeclarations;
@@ -1158,7 +1158,7 @@ namespace Fsl::SceneFormat
         const auto primitiveType = static_cast<uint32_t>(Conversion::Convert(mesh->GetPrimitiveType()));
         assert(meshEntry.IndexByteSize <= 255);
         const auto indexType = static_cast<uint8_t>(meshEntry.IndexByteSize);
-        uint8_t vertexDeclarationIndex = meshEntry.VertexDeclarationIndex;
+        const uint8_t vertexDeclarationIndex = meshEntry.VertexDeclarationIndex;
 
         if (nameLength < 0 || primitiveType > 255)
         {
@@ -1227,7 +1227,7 @@ namespace Fsl::SceneFormat
     };
 
 
-    std::size_t ReadNode(std::ifstream& rStream, std::deque<std::shared_ptr<SceneNode>>& rNodes, const std::vector<uint8_t>& srcBuffer,
+    std::size_t ReadNode(const std::ifstream& rStream, std::deque<std::shared_ptr<SceneNode>>& rNodes, const std::vector<uint8_t>& srcBuffer,
                          const std::size_t srcOffset, const uint32_t sceneMeshCount, const bool hostIsLittleEndian)
     {
       FSL_PARAM_NOT_USED(rStream);
@@ -1272,7 +1272,7 @@ namespace Fsl::SceneFormat
         throw FormatException("the name is expected to be zero terminated, so a min length of 1 is expected");
       }
 
-      auto node = std::make_shared<SceneNode>(nodeMeshCount);
+      const auto node = std::make_shared<SceneNode>(nodeMeshCount);
 
       // Read mesh indices
       for (std::size_t i = 0; i < nodeMeshCount; ++i)
@@ -1321,11 +1321,11 @@ namespace Fsl::SceneFormat
       {
         throw FormatException("Name size not supported");
       }
-      if (nodeMeshCount < 0 || nodeMeshCount >= std::numeric_limits<uint8_t>::max())
+      if (nodeMeshCount < 0 || std::cmp_greater_equal(nodeMeshCount, std::numeric_limits<uint8_t>::max()))
       {
         throw FormatException("Mesh count not supported");
       }
-      if (nodeChildCount < 0 || nodeChildCount >= std::numeric_limits<uint8_t>::max())
+      if (nodeChildCount < 0 || std::cmp_greater_equal(nodeChildCount, std::numeric_limits<uint8_t>::max()))
       {
         throw FormatException("Child count not supported");
       }
@@ -1375,7 +1375,7 @@ namespace Fsl::SceneFormat
       // WARNING: the method used for finding the node index is far from optimal, but it works for now
       for (int32_t i = 0; i < nodeChildCount; ++i)
       {
-        auto child = info.Node->GetChildAt(i);
+        const auto child = info.Node->GetChildAt(i);
         const auto itr = std::find_if(allNodes.begin(), allNodes.end(), NodeComp(child));
         if (itr == allNodes.end())
         {
@@ -1425,7 +1425,7 @@ namespace Fsl::SceneFormat
 
       const auto endPos = rStream.tellg();
       assert(endPos >= startPos);
-      if (static_cast<uint32_t>(endPos - startPos) != header.ByteSize)
+      if (std::cmp_not_equal(endPos - startPos, header.ByteSize))
       {
         throw FormatException("NodeChunk was of a unexpected size");
       }
@@ -1474,7 +1474,7 @@ namespace Fsl::SceneFormat
       NodesInfo totalInfo(nodeByteSize, nodeByteSize);
       for (int32_t childIndex = 0; childIndex < nodeChildCount; ++childIndex)
       {
-        NodesInfo info = ExamineNodes(rAllNodes, node->GetChildAt(childIndex));
+        const NodesInfo info = ExamineNodes(rAllNodes, node->GetChildAt(childIndex));
         totalInfo.TotalByteSize += info.TotalByteSize;
         totalInfo.MaxNodeByteSize = std::max(totalInfo.MaxNodeByteSize, info.TotalByteSize);
       }
@@ -1489,10 +1489,10 @@ namespace Fsl::SceneFormat
     void WriteNodesChunk(std::ofstream& rStream, const Scene& scene)
     {
       std::deque<NodeInfo> allNodes;
-      NodesInfo nodesInfo = ExamineNodes(allNodes, scene.GetRootNode());
+      const NodesInfo nodesInfo = ExamineNodes(allNodes, scene.GetRootNode());
 
       assert(nodesInfo.TotalByteSize <= (std::numeric_limits<uint32_t>::max() - SizeofNodelistHeader));
-      ChunkHeader header(static_cast<uint32_t>(SizeofNodelistHeader + nodesInfo.TotalByteSize), ChunkType::Nodes, ChunkVersionNodes);
+      const ChunkHeader header(static_cast<uint32_t>(SizeofNodelistHeader + nodesInfo.TotalByteSize), ChunkType::Nodes, ChunkVersionNodes);
       WriteChunkHeader(rStream, header);
 
       std::vector<uint8_t> content(nodesInfo.MaxNodeByteSize);
@@ -1608,7 +1608,7 @@ namespace Fsl::SceneFormat
       ExtractUniqueVertexDeclarations(*m_sceneScratchpad, scene);
 
       // Write the scene content
-      FormatHeader header(FormatMagic, FormatCurrentVersion);
+      const FormatHeader header(FormatMagic, FormatCurrentVersion);
       WriteHeader(rStream, header);
       WriteVertexDeclarationsChunk(rStream, m_sceneScratchpad->VertexDeclarations);
       WriteMeshesChunk(rStream, *m_sceneScratchpad);

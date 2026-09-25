@@ -112,70 +112,70 @@ namespace Fsl::UI
     {
     }
 
-    constexpr ColorU16 GetValue() const noexcept
+    [[nodiscard]] constexpr ColorU16 GetValue() const noexcept
     {
       return m_value;
     }
 
-    constexpr UIColorSpace GetColorSpace() const noexcept
+    [[nodiscard]] constexpr UIColorSpace GetColorSpace() const noexcept
     {
       return m_colorSpace;
     }
 
     //------------------------------------------------------------------------------------------------------------------------------------------------
 
-    constexpr inline ColorChannelValueU16 R() const noexcept
+    [[nodiscard]] constexpr inline ColorChannelValueU16 R() const noexcept
     {
       return m_value.R();
     }
 
-    constexpr inline ColorChannelValueU16 G() const noexcept
+    [[nodiscard]] constexpr inline ColorChannelValueU16 G() const noexcept
     {
       return m_value.G();
     }
 
-    constexpr inline ColorChannelValueU16 B() const noexcept
+    [[nodiscard]] constexpr inline ColorChannelValueU16 B() const noexcept
     {
       return m_value.B();
     }
 
-    constexpr inline ColorChannelValueU16 A() const noexcept
+    [[nodiscard]] constexpr inline ColorChannelValueU16 A() const noexcept
     {
       return m_value.A();
     }
 
     //------------------------------------------------------------------------------------------------------------------------------------------------
 
-    constexpr inline uint16_t RawR() const noexcept
+    [[nodiscard]] constexpr inline uint16_t RawR() const noexcept
     {
       return m_value.RawR();
     }
 
-    constexpr inline uint16_t RawG() const noexcept
+    [[nodiscard]] constexpr inline uint16_t RawG() const noexcept
     {
       return m_value.RawG();
     }
 
-    constexpr inline uint16_t RawB() const noexcept
+    [[nodiscard]] constexpr inline uint16_t RawB() const noexcept
     {
       return m_value.RawB();
     }
 
-    constexpr inline uint16_t RawA() const noexcept
+    [[nodiscard]] constexpr inline uint16_t RawA() const noexcept
     {
       return m_value.RawA();
     }
 
     //------------------------------------------------------------------------------------------------------------------------------------------------
 
-    constexpr inline PackedColor32 AsPackedColor32() const noexcept
+    [[nodiscard]] constexpr inline PackedColor32 AsPackedColor32() const noexcept
     {
       return m_value.AsPackedColor32();
     }
 
     //------------------------------------------------------------------------------------------------------------------------------------------------
 
-    constexpr inline PackedColor64 AsPackedColor64() const noexcept
+    [[nodiscard]] constexpr inline PackedColor64 AsPackedColor64() const noexcept
     {
       return m_value.AsPackedColor64();
     }

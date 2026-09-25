@@ -129,15 +129,15 @@ namespace Fsl::UI::RenderIMBatch
       // Ensure that we have enough space in the material cache
       const uint32_t currentMaterialCount = meshManager.GetMaterialLookup().GetCount();
       m_cache.EnsureCapacity(currentMaterialCount);
-      Span<MaterialCacheRecord> opaqueMaterialCache = m_cache.GetOpaqueCacheSpan(currentMaterialCount);
-      Span<MaterialCacheRecord> transparentMaterialCache = m_cache.GetTransparentCacheSpan(currentMaterialCount);
+      const Span<MaterialCacheRecord> opaqueMaterialCache = m_cache.GetOpaqueCacheSpan(currentMaterialCount);
+      const Span<MaterialCacheRecord> transparentMaterialCache = m_cache.GetTransparentCacheSpan(currentMaterialCount);
 
 
-      PreprocessResult result = m_allowDepthBuffer
-                                  ? PreprocessUtil2::PreprocessTwoQueues(rProcessedCommandRecords, opaqueMaterialCache, transparentMaterialCache,
-                                                                         commandSpan, meshManager, m_windowSizePx)
-                                  : PreprocessUtil2::PreprocessForceTransparent(rProcessedCommandRecords, opaqueMaterialCache,
-                                                                                transparentMaterialCache, commandSpan, meshManager, m_windowSizePx);
+      const PreprocessResult result =
+        m_allowDepthBuffer ? PreprocessUtil2::PreprocessTwoQueues(rProcessedCommandRecords, opaqueMaterialCache, transparentMaterialCache,
+                                                                  commandSpan, meshManager, m_windowSizePx)
+                           : PreprocessUtil2::PreprocessForceTransparent(rProcessedCommandRecords, opaqueMaterialCache, transparentMaterialCache,
+                                                                         commandSpan, meshManager, m_windowSizePx);
 
       const uint32_t totalCount = result.OpaqueCount + result.TransparentCount;
       if (totalCount > m_finalEntries.size())
@@ -231,14 +231,14 @@ namespace Fsl::UI::RenderIMBatch
               assert(clippedDstRawL < clippedDstRawR && clippedDstRawT < clippedDstRawB);
               // The previous material did not match and we have a previous material entry, so we check all collision candidates to
               // see if there is a collision
-              auto rangeX = m_grid.ToXCell(clippedDstRawL, clippedDstRawR);
-              auto rangeY = m_grid.ToYCell(clippedDstRawT, clippedDstRawB);
+              const auto rangeX = m_grid.ToXCell(clippedDstRawL, clippedDstRawR);
+              const auto rangeY = m_grid.ToYCell(clippedDstRawT, clippedDstRawB);
               bool collision = false;
               for (uint16_t gridY = rangeY.Start; gridY < rangeY.End; ++gridY)
               {
                 for (uint16_t gridX = rangeX.Start; gridX < rangeX.End; ++gridX)
                 {
-                  ReadOnlySpan<uint32_t> candidates = m_grid.UncheckedGetChunkEntries(gridX, gridY);
+                  const ReadOnlySpan<uint32_t> candidates = m_grid.UncheckedGetChunkEntries(gridX, gridY);
                   for (std::size_t candidateIndex = candidates.size(); candidateIndex > 0; --candidateIndex)
                   {
                     const uint32_t srcIndex = candidates[candidateIndex - 1];

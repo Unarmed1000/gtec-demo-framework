@@ -401,7 +401,7 @@ namespace Fsl::UI
     const auto finalBaseColor = GetFinalBaseColor();
 
     {
-      auto renderCursorInfo = GetRenderCursorInfoX();
+      const auto renderCursorInfo = GetRenderCursorInfoX();
       if (m_cursorX.IsValid() && renderCursorInfo.Enabled)
       {
         const auto positionPxf = context.TargetRect.Location() + TypeConverter::To<PxVector2>(renderCursorInfo.OffsetPx);
@@ -410,7 +410,7 @@ namespace Fsl::UI
       }
     }
     {
-      auto renderCursorInfo = GetRenderCursorInfoY();
+      const auto renderCursorInfo = GetRenderCursorInfoY();
       if (m_cursorY.IsValid() && renderCursorInfo.Enabled)
       {
         const auto positionPxf = context.TargetRect.Location() + TypeConverter::To<PxVector2>(renderCursorInfo.OffsetPx);
@@ -591,7 +591,7 @@ namespace Fsl::UI
 
   DataBinding::DataBindingInstanceHandle ScrollViewer::TryGetPropertyHandleNow(const DataBinding::DependencyPropertyDefinition& sourceDef)
   {
-    auto res = DataBinding::DependencyObjectHelper::TryGetPropertyHandle(
+    const auto res = DataBinding::DependencyObjectHelper::TryGetPropertyHandle(
       this, ThisDependencyObject(), sourceDef, DataBinding::PropLinkRefs(PropertyScrollMode, m_propertyScrollMode),
       DataBinding::PropLinkRefs(PropertyDragFlickDeceleration, m_propertyDragFlickDeceleration),
       DataBinding::PropLinkRefs(PropertyDragFlickTransitionType, m_propertyDragFlickTransitionType),
@@ -608,7 +608,7 @@ namespace Fsl::UI
   DataBinding::PropertySetBindingResult ScrollViewer::TrySetBindingNow(const DataBinding::DependencyPropertyDefinition& targetDef,
                                                                        const DataBinding::Binding& binding)
   {
-    auto res = DataBinding::DependencyObjectHelper::TrySetBinding(
+    const auto res = DataBinding::DependencyObjectHelper::TrySetBinding(
       this, ThisDependencyObject(), targetDef, binding, DataBinding::PropLinkRefs(PropertyScrollMode, m_propertyScrollMode),
       DataBinding::PropLinkRefs(PropertyDragFlickDeceleration, m_propertyDragFlickDeceleration),
       DataBinding::PropLinkRefs(PropertyDragFlickTransitionType, m_propertyDragFlickTransitionType),

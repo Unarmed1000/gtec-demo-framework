@@ -101,7 +101,7 @@ namespace Fsl::Graphics3D
     //! @note The reference is only valid until this object is modified.
     const std::vector<TIndex>& GetIndexArray() const;
 
-    ReadOnlyFlexVertexSpan AsReadOnlyFlexVertexSpan() const;
+    [[nodiscard]] ReadOnlyFlexVertexSpan AsReadOnlyFlexVertexSpan() const;
     ReadOnlySpan<TIndex> AsReadOnlyIndexSpan() const;
 
     //! @brief Get a pointer to the vertices
@@ -112,8 +112,8 @@ namespace Fsl::Graphics3D
     //! @note The pointer is only valid until this object is modified.
     TIndex* DirectAccessIndices();
 
-    VertexDeclarationSpan AsVertexDeclarationSpan() const override;
-    RawMeshContent GenericDirectAccess() const override;
+    [[nodiscard]] VertexDeclarationSpan AsVertexDeclarationSpan() const override;
+    [[nodiscard]] RawMeshContent GenericDirectAccess() const override;
     RawMeshContentEx GenericDirectAccess() override;
   };
 }

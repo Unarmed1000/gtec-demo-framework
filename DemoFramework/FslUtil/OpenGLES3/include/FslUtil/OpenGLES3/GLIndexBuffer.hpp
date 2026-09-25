@@ -134,7 +134,7 @@ namespace Fsl::GLES3
     void Reset(const std::vector<uint16_t>& indices, const GLenum usage);
 
     //! @brief Get the type of the buffer content
-    GLenum GetType() const
+    [[nodiscard]] GLenum GetType() const
     {
       return m_type;
     }

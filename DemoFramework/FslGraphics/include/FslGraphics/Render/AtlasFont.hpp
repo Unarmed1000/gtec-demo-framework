@@ -49,24 +49,24 @@ namespace Fsl
 
     AtlasFont(const BaseTexture2D& atlasTexture, TextureAtlasSpriteFont textureAtlasSpriteFont);
 
-    const BaseTexture2D& GetAtlasTexture() const
+    [[nodiscard]] const BaseTexture2D& GetAtlasTexture() const
     {
       return m_atlasTexture;
     }
 
-    const TextureAtlasSpriteFont& GetTextureAtlasSpriteFont() const
+    [[nodiscard]] const TextureAtlasSpriteFont& GetTextureAtlasSpriteFont() const
     {
       return m_textureAtlasSpriteFont;
     }
 
     //! @brief Measure the string size in pixels
-    PxSize2D MeasureString(const StringViewLite& strView) const
+    [[nodiscard]] PxSize2D MeasureString(const StringViewLite& strView) const
     {
       return m_textureAtlasSpriteFont.MeasureString(strView);
     }
 
     //! @brief Measure the string size in pixels taking into account the font config
-    PxSize2D MeasureString(const StringViewLite& strView, const BitmapFontConfig& fontConfig) const
+    [[nodiscard]] PxSize2D MeasureString(const StringViewLite& strView, const BitmapFontConfig& fontConfig) const
     {
       return m_textureAtlasSpriteFont.MeasureString(strView, fontConfig);
     }

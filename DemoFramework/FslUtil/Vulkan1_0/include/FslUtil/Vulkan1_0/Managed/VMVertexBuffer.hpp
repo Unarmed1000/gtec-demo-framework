@@ -170,48 +170,48 @@ namespace Fsl::Vulkan
 
     void SetData(const uint32_t dstElementOffset, ReadOnlyFlexSpan vertexSpan);
 
-    bool IsValid() const noexcept
+    [[nodiscard]] bool IsValid() const noexcept
     {
       return m_vertexBuffer.IsValid();
     }
 
-    uint32_t GetVertexCount() const noexcept
+    [[nodiscard]] uint32_t GetVertexCount() const noexcept
     {
       return m_vertexCount;
     }
 
     //! @brief Get the element stride (size of one element in bytes)
-    uint32_t GetElementStride() const noexcept
+    [[nodiscard]] uint32_t GetElementStride() const noexcept
     {
       return m_elementStride;
     }
 
     //! @brief Get the associated 'Device'
-    VkDevice GetDevice() const noexcept
+    [[nodiscard]] VkDevice GetDevice() const noexcept
     {
       return m_vertexBuffer.GetDevice();
     }
 
     //! @brief Get the associated 'buffer'
-    VkBuffer GetBuffer() const noexcept
+    [[nodiscard]] VkBuffer GetBuffer() const noexcept
     {
       return m_vertexBuffer.GetBuffer();
     }
 
-    const VkBuffer* GetBufferPointer() const noexcept
+    [[nodiscard]] const VkBuffer* GetBufferPointer() const noexcept
     {
       return m_vertexBuffer.GetBufferPointer();
     }
 
     //! @brief Get the vertex element index, throws a NotSupportedException if the usage and usageIndex combo wasn't found
-    int32_t GetVertexElementIndex(const VertexElementUsage usage, const uint32_t usageIndex) const;
+    [[nodiscard]] int32_t GetVertexElementIndex(const VertexElementUsage usage, const uint32_t usageIndex) const;
 
     //! @brief Find the element index of for the given usage and usageIndex (if not found <0 is returned)
-    int32_t VertexElementIndexOf(const VertexElementUsage usage, const uint32_t usageIndex) const;
+    [[nodiscard]] int32_t VertexElementIndexOf(const VertexElementUsage usage, const uint32_t usageIndex) const;
 
-    const VMVertexElement& GetVertexElementAt(const uint32_t vertexElementIndex) const;
+    [[nodiscard]] const VMVertexElement& GetVertexElementAt(const uint32_t vertexElementIndex) const;
 
-    const VMVertexElement& GetVertexElement(const VertexElementUsage usage, const uint32_t usageIndex) const;
+    [[nodiscard]] const VMVertexElement& GetVertexElement(const VertexElementUsage usage, const uint32_t usageIndex) const;
   };
 }
 

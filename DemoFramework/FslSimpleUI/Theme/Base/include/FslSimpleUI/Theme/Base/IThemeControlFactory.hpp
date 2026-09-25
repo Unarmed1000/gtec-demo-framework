@@ -82,10 +82,10 @@ namespace Fsl
       public:
         virtual ~IThemeControlFactory() = default;
 
-        virtual const std::shared_ptr<WindowContext>& GetContext() const = 0;
-        virtual const IThemeResources& GetResources() const = 0;
-        virtual UIColor GetThemePrimaryDarkColor() const = 0;
-        virtual DpThicknessF GetDefaultMarginDp(const ElementType elementType) const = 0;
+        [[nodiscard]] virtual const std::shared_ptr<WindowContext>& GetContext() const = 0;
+        [[nodiscard]] virtual const IThemeResources& GetResources() const = 0;
+        [[nodiscard]] virtual UIColor GetThemePrimaryDarkColor() const = 0;
+        [[nodiscard]] virtual DpThicknessF GetDefaultMarginDp(const ElementType elementType) const = 0;
 
         // ----- CreateScrollViewer
 

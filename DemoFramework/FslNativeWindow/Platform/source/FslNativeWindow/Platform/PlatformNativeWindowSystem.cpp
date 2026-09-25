@@ -62,7 +62,7 @@ namespace Fsl
     {
       throw ObjectShutdownException("CreateNativeWindow: Object shutdown");
     }
-    std::shared_ptr<IPlatformNativeWindowAdapter> nativeWindow =
+    const std::shared_ptr<IPlatformNativeWindowAdapter> nativeWindow =
       m_adapter->CreateNativeWindow(nativeWindowSetup, pPlatformCustomWindowAllocationParams);
     return std::make_shared<PlatformNativeWindow>(nativeWindow);
   }

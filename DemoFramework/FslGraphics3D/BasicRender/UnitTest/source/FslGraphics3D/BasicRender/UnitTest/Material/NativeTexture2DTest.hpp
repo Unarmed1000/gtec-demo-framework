@@ -46,12 +46,12 @@ namespace Fsl
     {
     }
 
-    BasicNativeTextureHandle TryGetNativeHandle() const noexcept final
+    [[nodiscard]] BasicNativeTextureHandle TryGetNativeHandle() const noexcept final
     {
       return m_handle;
     }
 
-    NativeTextureArea CalcNativeTextureArea(const PxRectangleU32& imageRectanglePx) const final
+    [[nodiscard]] NativeTextureArea CalcNativeTextureArea(const PxRectangleU32& imageRectanglePx) const final
     {
       FSL_PARAM_NOT_USED(imageRectanglePx);
       throw NotImplementedException("CalcNativeTextureArea");

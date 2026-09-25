@@ -64,7 +64,7 @@ namespace
 
 TEST(Test_PackedColor64, Construct_Default)
 {
-  PackedColor64 color;
+  const PackedColor64 color;
 
   EXPECT_EQ(0u, color.RawR());
   EXPECT_EQ(0u, color.RawG());
@@ -75,7 +75,7 @@ TEST(Test_PackedColor64, Construct_Default)
 
 TEST(Test_PackedColor64, Construct)
 {
-  PackedColor64 color(0x123456789ABCDEF0);
+  const PackedColor64 color(0x123456789ABCDEF0);
 
   EXPECT_EQ(0x1234u, color.RawA());
   EXPECT_EQ(0x5678u, color.RawR());
@@ -91,7 +91,7 @@ TEST(Test_PackedColor64, ConstructU8)
   const ColorChannelValueU8 b(0x56);
   const ColorChannelValueU8 a(0x78);
 
-  PackedColor64 color(r, g, b, a);
+  const PackedColor64 color(r, g, b, a);
 
   EXPECT_EQ(AsU16(r), color.R());
   EXPECT_EQ(AsU16(g), color.G());
@@ -106,10 +106,10 @@ TEST(Test_PackedColor64, ConstructU8)
     const ColorChannelValueU8 valC(0x56);
     const ColorChannelValueU8 valD(0x78);
 
-    PackedColor64 color1(valI, valB, valC, valD);
-    PackedColor64 color2(valA, valI, valC, valD);
-    PackedColor64 color3(valA, valB, valI, valD);
-    PackedColor64 color4(valA, valB, valC, valI);
+    const PackedColor64 color1(valI, valB, valC, valD);
+    const PackedColor64 color2(valA, valI, valC, valD);
+    const PackedColor64 color3(valA, valB, valI, valD);
+    const PackedColor64 color4(valA, valB, valC, valI);
 
     ASSERT_EQ(AsU16(valI), color1.R());
     ASSERT_EQ(AsU16(valB), color1.G());
@@ -141,7 +141,7 @@ TEST(Test_PackedColor64, ConstructU16)
   const ColorChannelValueU16 b(0x9ABC);
   const ColorChannelValueU16 a(0xDEF0);
 
-  PackedColor64 color(r, g, b, a);
+  const PackedColor64 color(r, g, b, a);
 
   EXPECT_EQ(r, color.R());
   EXPECT_EQ(g, color.G());
@@ -156,10 +156,10 @@ TEST(Test_PackedColor64, ConstructU16)
     const ColorChannelValueU16 valC(0x56);
     const ColorChannelValueU16 valD(0x78);
 
-    PackedColor64 color1(valI, valB, valC, valD);
-    PackedColor64 color2(valA, valI, valC, valD);
-    PackedColor64 color3(valA, valB, valI, valD);
-    PackedColor64 color4(valA, valB, valC, valI);
+    const PackedColor64 color1(valI, valB, valC, valD);
+    const PackedColor64 color2(valA, valI, valC, valD);
+    const PackedColor64 color3(valA, valB, valI, valD);
+    const PackedColor64 color4(valA, valB, valC, valI);
 
     ASSERT_EQ(valI, color1.R());
     ASSERT_EQ(valB, color1.G());
@@ -186,10 +186,10 @@ TEST(Test_PackedColor64, ConstructU16)
 
 TEST(Test_PackedColor64, Construct_Value)
 {
-  PackedColor64 color1(0xFFFF030405060708);
-  PackedColor64 color2(0x0102FFFF05060708);
-  PackedColor64 color3(0x01020304FFFF0708);
-  PackedColor64 color4(0x010203040506FFFF);
+  const PackedColor64 color1(0xFFFF030405060708);
+  const PackedColor64 color2(0x0102FFFF05060708);
+  const PackedColor64 color3(0x01020304FFFF0708);
+  const PackedColor64 color4(0x010203040506FFFF);
 
   EXPECT_EQ(0xFFFFu, color1.RawA());
   EXPECT_EQ(0x0304u, color1.RawR());
@@ -215,7 +215,7 @@ TEST(Test_PackedColor64, Construct_Value)
 
 TEST(Test_PackedColor64, Create)
 {
-  PackedColor64 color = PackedColor64::Create(0x123456789ABCDEF0);
+  const PackedColor64 color = PackedColor64::Create(0x123456789ABCDEF0);
 
   EXPECT_EQ(0x1234u, color.RawA());
   EXPECT_EQ(0x5678u, color.RawR());
@@ -231,7 +231,7 @@ TEST(Test_PackedColor64, CreateR8G8B8A8UNorm_UInt8)
   const uint8_t b = 0x56;
   const uint8_t a = 0x78;
 
-  PackedColor64 color = PackedColor64::CreateR8G8B8A8UNorm(r, g, b, a);
+  const PackedColor64 color = PackedColor64::CreateR8G8B8A8UNorm(r, g, b, a);
 
   EXPECT_EQ(RawU8ToRawU16(r), color.RawR());
   EXPECT_EQ(RawU8ToRawU16(g), color.RawG());
@@ -247,7 +247,7 @@ TEST(Test_PackedColor64, CreateR8G8B8A8UNorm_Int16)
   const int16_t b = 0x56;
   const int16_t a = 0x78;
 
-  PackedColor64 color = PackedColor64::CreateR8G8B8A8UNorm(r, g, b, a);
+  const PackedColor64 color = PackedColor64::CreateR8G8B8A8UNorm(r, g, b, a);
 
   EXPECT_EQ(RawU8ToRawU16(r), color.RawR());
   EXPECT_EQ(RawU8ToRawU16(g), color.RawG());
@@ -263,7 +263,7 @@ TEST(Test_PackedColor64, CreateR8G8B8A8UNorm_UInt16)
   const uint16_t b = 0x56;
   const uint16_t a = 0x78;
 
-  PackedColor64 color = PackedColor64::CreateR8G8B8A8UNorm(r, g, b, a);
+  const PackedColor64 color = PackedColor64::CreateR8G8B8A8UNorm(r, g, b, a);
 
   EXPECT_EQ(RawU8ToRawU16(r), color.RawR());
   EXPECT_EQ(RawU8ToRawU16(g), color.RawG());
@@ -279,7 +279,7 @@ TEST(Test_PackedColor64, CreateR8G8B8A8UNorm_Int32)
   const int32_t b = 0x56;
   const int32_t a = 0x78;
 
-  PackedColor64 color = PackedColor64::CreateR8G8B8A8UNorm(r, g, b, a);
+  const PackedColor64 color = PackedColor64::CreateR8G8B8A8UNorm(r, g, b, a);
 
   EXPECT_EQ(RawU8ToRawU16(r), color.RawR());
   EXPECT_EQ(RawU8ToRawU16(g), color.RawG());
@@ -295,7 +295,7 @@ TEST(Test_PackedColor64, CreateR8G8B8A8UNorm_UInt32)
   const uint32_t b = 0x56;
   const uint32_t a = 0x78;
 
-  PackedColor64 color = PackedColor64::CreateR8G8B8A8UNorm(r, g, b, a);
+  const PackedColor64 color = PackedColor64::CreateR8G8B8A8UNorm(r, g, b, a);
 
   EXPECT_EQ(RawU8ToRawU16(r), color.RawR());
   EXPECT_EQ(RawU8ToRawU16(g), color.RawG());
@@ -311,7 +311,7 @@ TEST(Test_PackedColor64, CreateR16G16B16A16UNorm_UInt16)
   const uint16_t b = 0x9ABC;
   const uint16_t a = 0xDEF0;
 
-  PackedColor64 color = PackedColor64::CreateR16G16B16A16UNorm(r, g, b, a);
+  const PackedColor64 color = PackedColor64::CreateR16G16B16A16UNorm(r, g, b, a);
 
   EXPECT_EQ(r, color.RawR());
   EXPECT_EQ(g, color.RawG());
@@ -327,7 +327,7 @@ TEST(Test_PackedColor64, CreateR16G16B16A16UNorm_Int32)
   const int32_t b = 0x9ABC;
   const int32_t a = 0xDEF0;
 
-  PackedColor64 color = PackedColor64::CreateR16G16B16A16UNorm(r, g, b, a);
+  const PackedColor64 color = PackedColor64::CreateR16G16B16A16UNorm(r, g, b, a);
 
   EXPECT_EQ(r, color.RawR());
   EXPECT_EQ(g, color.RawG());
@@ -343,7 +343,7 @@ TEST(Test_PackedColor64, CreateR16G16B16A16UNorm_UInt32)
   const uint32_t b = 0x9ABC;
   const uint32_t a = 0xDEF0;
 
-  PackedColor64 color = PackedColor64::CreateR16G16B16A16UNorm(r, g, b, a);
+  const PackedColor64 color = PackedColor64::CreateR16G16B16A16UNorm(r, g, b, a);
 
   EXPECT_EQ(r, color.RawR());
   EXPECT_EQ(g, color.RawG());
@@ -354,9 +354,9 @@ TEST(Test_PackedColor64, CreateR16G16B16A16UNorm_UInt32)
 
 TEST(Test_PackedColor64, Op_Equal)
 {
-  PackedColor64 color1(0x123456789ABCDEF0);
-  PackedColor64 color2(0x123456789ABCDEF0);
-  PackedColor64 color3(0x223456789ABCDEF0);
+  const PackedColor64 color1(0x123456789ABCDEF0);
+  const PackedColor64 color2(0x123456789ABCDEF0);
+  const PackedColor64 color3(0x223456789ABCDEF0);
 
   EXPECT_TRUE(color1 == color2);
   EXPECT_FALSE(color1 == color3);
@@ -365,8 +365,8 @@ TEST(Test_PackedColor64, Op_Equal)
 
 TEST(Test_PackedColor64, Op_NotEqual)
 {
-  PackedColor64 color1(0x123456789ABCDEF0);
-  PackedColor64 color2(0x223456789ABCDEF0);
+  const PackedColor64 color1(0x123456789ABCDEF0);
+  const PackedColor64 color2(0x223456789ABCDEF0);
 
   EXPECT_TRUE(color1 != color2);
   EXPECT_TRUE(color2 != color1);

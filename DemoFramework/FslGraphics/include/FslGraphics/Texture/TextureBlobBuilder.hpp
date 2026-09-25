@@ -75,7 +75,7 @@ namespace Fsl
     void Reset(const TextureType textureType, const PxExtent3D& extent, const PixelFormat pixelFormat, const TextureInfo& textureInfo,
                const BitmapOrigin bitmapOrigin, const std::size_t contentSize);
 
-    BlobRecord GetBlob(const uint32_t level, const uint32_t face, const uint32_t layer) const;
+    [[nodiscard]] BlobRecord GetBlob(const uint32_t level, const uint32_t face, const uint32_t layer) const;
     void SetBlob(const BlobRecord& record, const uint32_t level, const uint32_t face, const uint32_t layer);
 
     //! @brief Set the default blob layout
@@ -83,72 +83,72 @@ namespace Fsl
     void SetDefaultBlobLayout();
 
     //! @brief Get the bitmap origin
-    BitmapOrigin GetBitmapOrigin() const
+    [[nodiscard]] BitmapOrigin GetBitmapOrigin() const
     {
       return m_bitmapOrigin;
     }
 
-    std::size_t GetContentSize() const
+    [[nodiscard]] std::size_t GetContentSize() const
     {
       return m_contentSize;
     }
 
     //! @brief The extent of the texture
-    PxExtent3D GetExtent(const uint32_t level = 0) const;
+    [[nodiscard]] PxExtent3D GetExtent(const uint32_t level = 0) const;
 
     //! @brief The total number of faces (1 for normal textures, 6 for cube maps)
-    uint32_t GetFaces() const
+    [[nodiscard]] uint32_t GetFaces() const
     {
       return m_textureInfo.Faces;
     }
 
     //! @brief The number of array layers (for texture arrays, will be zero for normal textures)
-    uint32_t GetLayers() const
+    [[nodiscard]] uint32_t GetLayers() const
     {
       return m_textureInfo.Layers;
     }
 
     //! @brief The number of levels (commonly used for mip-maps)
-    uint32_t GetLevels() const
+    [[nodiscard]] uint32_t GetLevels() const
     {
       return m_textureInfo.Levels;
     }
 
     //! @brief Get the pixel format
-    PixelFormat GetPixelFormat() const
+    [[nodiscard]] PixelFormat GetPixelFormat() const
     {
       return m_pixelFormat;
     }
 
     //! @brief Get the pixel format layout
-    PixelFormatLayout GetPixelFormatLayout() const;
+    [[nodiscard]] PixelFormatLayout GetPixelFormatLayout() const;
 
 
-    TextureInfo GetTextureInfo() const
+    [[nodiscard]] TextureInfo GetTextureInfo() const
     {
       return m_textureInfo;
     }
 
     //! @brief Get the type of the texture
-    TextureType GetTextureType() const
+    [[nodiscard]] TextureType GetTextureType() const
     {
       return m_textureType;
     }
 
     //! @brief Returns the total number of texels (for all faces, levels, layers, etc)
-    uint32_t GetTotalTexelCount() const
+    [[nodiscard]] uint32_t GetTotalTexelCount() const
     {
       return m_totalTexels;
     }
 
-    std::size_t GetBlobCount() const
+    [[nodiscard]] std::size_t GetBlobCount() const
     {
       return m_blobs.size();
     }
 
-    BlobRecord GetBlobByIndex(const std::size_t index) const;
+    [[nodiscard]] BlobRecord GetBlobByIndex(const std::size_t index) const;
 
-    bool IsValid() const
+    [[nodiscard]] bool IsValid() const
     {
       return m_textureType != TextureType::Undefined;
     }

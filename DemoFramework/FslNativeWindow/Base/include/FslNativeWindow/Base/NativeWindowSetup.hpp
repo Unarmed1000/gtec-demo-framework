@@ -52,17 +52,17 @@ namespace Fsl
     ~NativeWindowSetup();
 
     //! @brief Get the event queue if present
-    std::weak_ptr<INativeWindowEventQueue> GetEventQueue() const;
+    [[nodiscard]] std::weak_ptr<INativeWindowEventQueue> GetEventQueue() const;
 
     //! @brief Get the window config
-    NativeWindowConfig GetConfig() const;
+    [[nodiscard]] NativeWindowConfig GetConfig() const;
 
-    const std::string& GetApplicationName() const
+    [[nodiscard]] const std::string& GetApplicationName() const
     {
       return m_applicationName;
     }
 
-    uint32_t GetVerbosityLevel() const
+    [[nodiscard]] uint32_t GetVerbosityLevel() const
     {
       return m_verbosityLevel;
     }

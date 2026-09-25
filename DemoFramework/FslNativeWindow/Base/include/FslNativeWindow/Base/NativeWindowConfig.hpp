@@ -53,22 +53,22 @@ namespace Fsl
     NativeWindowConfig();
     NativeWindowConfig(const WindowMode windowMode, const Rectangle& windowRectangle);
 
-    WindowMode GetWindowMode() const;
+    [[nodiscard]] WindowMode GetWindowMode() const;
     void SetWindowMode(const WindowMode windowMode);
 
-    Rectangle GetWindowRectangle() const;
+    [[nodiscard]] Rectangle GetWindowRectangle() const;
     void SetWindowRectangle(const Rectangle& rect);
 
-    int32_t GetDisplayId() const;
+    [[nodiscard]] int32_t GetDisplayId() const;
     void SetDisplayId(const int32_t displayId);
 
     //! A negative value means no value has been provided
-    std::optional<uint32_t> GetForcedDensityDpi() const;
+    [[nodiscard]] std::optional<uint32_t> GetForcedDensityDpi() const;
 
     void SetForcedDensityDpi(const std::optional<uint32_t>& densityDpi);
 
     //! A negative value means no value has been provided
-    std::optional<Point2U> GetForcedActualDpi() const;
+    [[nodiscard]] std::optional<Point2U> GetForcedActualDpi() const;
 
     void SetForcedActualDpi(const std::optional<Point2U>& actualDpi);
   };

@@ -59,18 +59,18 @@ namespace Fsl::EGL
       CacheChecks();
     }
 
-    bool HasAlphaChannelRequest() const noexcept
+    [[nodiscard]] bool HasAlphaChannelRequest() const noexcept
     {
       return m_hasAlphaChannelRequest;
     }
 
-    bool IsHDRRequest() const noexcept
+    [[nodiscard]] bool IsHDRRequest() const noexcept
     {
       return m_isHDRRequest;
     }
 
     // NOLINTNEXTLINE(readability-identifier-naming)
-    const EGLint* data() const noexcept
+    [[nodiscard]] const EGLint* data() const noexcept
     {
       return Content.data();
     }

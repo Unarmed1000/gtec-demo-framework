@@ -257,7 +257,7 @@ namespace Fsl::Vulkan
       Draw(commandBuffer, vertices.data(), vertices.size(), frameIndex);
     }
 
-    bool IsValid() const
+    [[nodiscard]] bool IsValid() const
     {
       return m_resources.IsValid;
     }

@@ -61,38 +61,38 @@ namespace Fsl
     ~AtlasTexture2D();
 
     //! @brief Check if this contains a valid texture.
-    bool IsValid() const noexcept;
+    [[nodiscard]] bool IsValid() const noexcept;
 
     //! @brief Get the texture size of the atlas.
-    PxSize2D GetAtlasSize() const noexcept
+    [[nodiscard]] PxSize2D GetAtlasSize() const noexcept
     {
       return m_atlas.GetSize();
     }
 
     //! @brief Get the virtual texture size.
     //! @note Not valid entries will be zero size
-    PxSize2D GetSize() const noexcept;
+    [[nodiscard]] PxSize2D GetSize() const noexcept;
 
-    PxExtent2D GetExtent() const noexcept
+    [[nodiscard]] PxExtent2D GetExtent() const noexcept
     {
       return m_info.ExtentPx;
     }
 
     //! @brief Get the virtual texture size.
-    const AtlasTextureInfo& GetInfo() const noexcept
+    [[nodiscard]] const AtlasTextureInfo& GetInfo() const noexcept
     {
       return m_info;
     }
 
     //! @brief Acquire the native texture (returns null if none exist)
-    std::shared_ptr<INativeTexture2D> TryGetNative() const;
+    [[nodiscard]] std::shared_ptr<INativeTexture2D> TryGetNative() const;
 
-    const INativeTexture2D* TryGetNativePointer() const
+    [[nodiscard]] const INativeTexture2D* TryGetNativePointer() const
     {
       return m_atlas.TryGetNativePointer();
     }
 
-    const BaseTexture2D& GetAtlasTexture() const
+    [[nodiscard]] const BaseTexture2D& GetAtlasTexture() const
     {
       return m_atlas;
     }

@@ -50,13 +50,13 @@ namespace Fsl::DataBinding
   class AMultiConverterBinding : public IMultiBinding
   {
   public:
-    BindingType GetBindingType() const noexcept final
+    [[nodiscard]] BindingType GetBindingType() const noexcept final
     {
       return BindingType::AMultiConverterBinding;
     }
 
-    virtual ReadOnlySpan<PropertyTypeInfo> GetSourceTypes() const = 0;
-    virtual std::type_index GetTargetType() const = 0;
+    [[nodiscard]] virtual ReadOnlySpan<PropertyTypeInfo> GetSourceTypes() const = 0;
+    [[nodiscard]] virtual std::type_index GetTargetType() const = 0;
 
     virtual Internal::PropertySetResult Convert(const Internal::PropertyMethodsImplType setPropertyMethodsImplType,
                                                 Internal::IPropertyMethods* const pSet, const ReadOnlySpan<Internal::PropertyGetInfo> getters) = 0;

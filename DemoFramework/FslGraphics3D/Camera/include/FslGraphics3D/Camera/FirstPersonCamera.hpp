@@ -49,12 +49,12 @@ namespace Fsl::Graphics3D
     ~FirstPersonCamera() = default;
 
     //! @brief Get the current view matrix for the camera
-    Matrix GetViewMatrix() const
+    [[nodiscard]] Matrix GetViewMatrix() const
     {
       return m_base.GetViewMatrix();
     }
 
-    Vector3 GetPosition() const
+    [[nodiscard]] Vector3 GetPosition() const
     {
       return m_base.GetPosition();
     }

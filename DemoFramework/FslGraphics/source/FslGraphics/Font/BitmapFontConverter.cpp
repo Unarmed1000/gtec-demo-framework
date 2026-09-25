@@ -88,7 +88,7 @@ namespace Fsl
         uint32_t totalGlyphs = 0;
         for (int32_t i = 0; i < rangeCount; ++i)
         {
-          auto range = basicFontKerning.GetRange(i);
+          const auto range = basicFontKerning.GetRange(i);
           totalGlyphs += range.Length;
         }
 
@@ -183,7 +183,7 @@ namespace Fsl
         int32_t rangeCharOffsetMod = 0;
         for (int32_t rangeIndex = 0; rangeIndex < endRangeIndex; ++rangeIndex)
         {
-          auto range = basicFontKerning.GetRange(rangeIndex);
+          const auto range = basicFontKerning.GetRange(rangeIndex);
           int32_t rangeGlyphId = range.From;
           // If this assert fires then the ranges are not sorted low to high or they overlap
           assert(rangeGlyphId >= rangeGlyphEndId);
@@ -232,7 +232,7 @@ namespace Fsl
           // Handle 'ending' glyphs not found in the atlas
           while (rangeGlyphId < rangeGlyphEndId)
           {
-            FontGlyphBasicKerning basicKerning = basicFontKerning.Get(rangeGlyphId - rangeCharOffsetMod);
+            const FontGlyphBasicKerning basicKerning = basicFontKerning.Get(rangeGlyphId - rangeCharOffsetMod);
             rFontChars[dstGlyphIndex] = BitmapFontChar(rangeGlyphId, PxRectangleU32(), PxPoint2(), basicKerning.LayoutWidthPx);
             ++dstGlyphIndex;
             ++rangeGlyphId;
@@ -272,14 +272,14 @@ namespace Fsl
 
     BitmapFont ToBitmapFont(const ITextureAtlas& textureAtlas, const IFontBasicKerning& basicFontKerning, const BitmapFontType fontType)
     {
-      auto desc = basicFontKerning.GetDesc();
+      const auto desc = basicFontKerning.GetDesc();
       const uint16_t size = desc.LineSpacing;    // We dont have a better number for this parameter
       const auto lineSpacingPx = PxValueU16(NumericCast<uint16_t>(desc.LineSpacing));
       const auto baseLinePx = PxValueU16(NumericCast<uint16_t>(desc.BaseLine));
 
       uint16_t defaultDpi = 0;
-      auto chars = ExtractChars(textureAtlas, basicFontKerning, defaultDpi);
-      auto kernings = ExtractKernings(textureAtlas, basicFontKerning);
+      const auto chars = ExtractChars(textureAtlas, basicFontKerning, defaultDpi);
+      const auto kernings = ExtractKernings(textureAtlas, basicFontKerning);
       return {basicFontKerning.GetName().AsStringViewLite(),
               defaultDpi,
               size,

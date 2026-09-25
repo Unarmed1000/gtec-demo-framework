@@ -95,35 +95,35 @@ namespace Fsl
     }
 
     //! @brief Get the material stride
-    constexpr uint32_t Stride() const
+    [[nodiscard]] constexpr uint32_t Stride() const
     {
       return m_stride;
     }
 
     //! @brief Get the number of elements
-    constexpr std::size_t Count() const
+    [[nodiscard]] constexpr std::size_t Count() const
     {
       return m_elements.size();
     }
 
-    constexpr const BasicMaterialVariableElement* Data() const
+    [[nodiscard]] constexpr const BasicMaterialVariableElement* Data() const
     {
       return m_elements.data();
     }
 
-    constexpr BasicMaterialVariableElement At(const std::size_t index) const
+    [[nodiscard]] constexpr BasicMaterialVariableElement At(const std::size_t index) const
     {
       return m_elements.at(index);
     }
 
     //! @brief Get direct access to the elements
-    constexpr const BasicMaterialVariableElement* DirectAccess() const
+    [[nodiscard]] constexpr const BasicMaterialVariableElement* DirectAccess() const
     {
       return m_elements.data();
     }
 
     //! @brief Get the element index of for the given usage and usageIndex (if not found a NotFoundException is thrown)
-    constexpr int32_t BasicMaterialElementGetIndexOf(const BasicMaterialVariableElementUsage usage, const uint32_t usageIndex) const
+    [[nodiscard]] constexpr int32_t BasicMaterialElementGetIndexOf(const BasicMaterialVariableElementUsage usage, const uint32_t usageIndex) const
     {
       const int32_t index = BasicMaterialElementIndexOf(usage, usageIndex);
       if (index < 0)
@@ -134,7 +134,7 @@ namespace Fsl
     }
 
     //! @brief Find the element index of for the given usage and usageIndex (if not found <0 is returned)
-    constexpr int32_t BasicMaterialElementIndexOf(const BasicMaterialVariableElementUsage usage, const uint32_t usageIndex) const
+    [[nodiscard]] constexpr int32_t BasicMaterialElementIndexOf(const BasicMaterialVariableElementUsage usage, const uint32_t usageIndex) const
     {
       for (std::size_t i = 0; i < m_elements.size(); ++i)
       {
@@ -147,7 +147,8 @@ namespace Fsl
     }
 
     //! @brief Get the element for the given usage and usageIndex (if not found a NotFoundException is thrown)
-    constexpr BasicMaterialVariableElement MaterialElementGet(const BasicMaterialVariableElementUsage usage, const uint32_t usageIndex) const
+    [[nodiscard]] constexpr BasicMaterialVariableElement MaterialElementGet(const BasicMaterialVariableElementUsage usage,
+                                                                            const uint32_t usageIndex) const
     {
       for (auto element : m_elements)
       {
@@ -159,7 +160,7 @@ namespace Fsl
       throw NotFoundException("Could not locate a material element of the requested type");
     }
 
-    constexpr BasicMaterialVariableDeclarationSpan AsReadOnlySpan() const noexcept
+    [[nodiscard]] constexpr BasicMaterialVariableDeclarationSpan AsReadOnlySpan() const noexcept
     {
       return {ReadOnlySpan<BasicMaterialVariableElement>(m_elements.data(), m_elements.size()), m_stride, OptimizationCheckFlag::NoCheck};
     }

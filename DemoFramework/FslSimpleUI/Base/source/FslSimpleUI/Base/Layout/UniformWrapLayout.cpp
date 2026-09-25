@@ -89,7 +89,7 @@ namespace Fsl::UI
       return Layout::ArrangeOverride(finalSizePx);
     }
     const SpriteUnitConverter& unitConverter = GetContext()->UnitConverter;
-    auto spacingPx = unitConverter.ToPxSize2D(m_propertySpacingDp.Get());
+    const auto spacingPx = unitConverter.ToPxSize2D(m_propertySpacingDp.Get());
 
 
     if (m_propertyOrientation.Get() == LayoutOrientation::Horizontal)
@@ -136,18 +136,18 @@ namespace Fsl::UI
     const SpriteUnitConverter& unitConverter = GetContext()->UnitConverter;
 
     MeasureResult res;
-    auto spacingDp = m_propertySpacingDp.Get();
+    const auto spacingDp = m_propertySpacingDp.Get();
     if (m_propertyOrientation.Get() == LayoutOrientation::Horizontal)
     {
       // If we are supplied with infinity we behave like a stack panel
       if (!availableSizePx.IsInfinityWidth())
       {
-        auto spacingPx = unitConverter.ToPxSize2D(spacingDp);
+        const auto spacingPx = unitConverter.ToPxSize2D(spacingDp);
         res = MeasureHorizontalWrapLayout(begin(), end(), spacingPx, availableSizePx);
       }
       else
       {
-        auto spacingPx = unitConverter.ToPxSize1D(spacingDp.Width());
+        const auto spacingPx = unitConverter.ToPxSize1D(spacingDp.Width());
         res = MeasureHorizontalStackLayout(begin(), end(), spacingPx, availableSizePx);
       }
     }
@@ -156,12 +156,12 @@ namespace Fsl::UI
       // If we are supplied with infinity we behave like a stack panel
       if (!availableSizePx.IsInfinityHeight())
       {
-        auto spacingPx = unitConverter.ToPxSize2D(spacingDp);
+        const auto spacingPx = unitConverter.ToPxSize2D(spacingDp);
         res = MeasureVerticalWrapLayout(begin(), end(), spacingPx, availableSizePx);
       }
       else
       {
-        auto spacingPx = unitConverter.ToPxSize1D(spacingDp.Height());
+        const auto spacingPx = unitConverter.ToPxSize1D(spacingDp.Height());
         res = MeasureVerticalStackLayout(begin(), end(), spacingPx, availableSizePx);
       }
     }
@@ -172,9 +172,9 @@ namespace Fsl::UI
 
   DataBinding::DataBindingInstanceHandle UniformWrapLayout::TryGetPropertyHandleNow(const DataBinding::DependencyPropertyDefinition& sourceDef)
   {
-    auto res = DataBinding::DependencyObjectHelper::TryGetPropertyHandle(this, ThisDependencyObject(), sourceDef,
-                                                                         DataBinding::PropLinkRefs(PropertyOrientation, m_propertyOrientation),
-                                                                         DataBinding::PropLinkRefs(PropertySpacing, m_propertySpacingDp));
+    const auto res = DataBinding::DependencyObjectHelper::TryGetPropertyHandle(this, ThisDependencyObject(), sourceDef,
+                                                                               DataBinding::PropLinkRefs(PropertyOrientation, m_propertyOrientation),
+                                                                               DataBinding::PropLinkRefs(PropertySpacing, m_propertySpacingDp));
     return res.IsValid() ? res : base_type::TryGetPropertyHandleNow(sourceDef);
   }
 
@@ -182,9 +182,9 @@ namespace Fsl::UI
   DataBinding::PropertySetBindingResult UniformWrapLayout::TrySetBindingNow(const DataBinding::DependencyPropertyDefinition& targetDef,
                                                                             const DataBinding::Binding& binding)
   {
-    auto res = DataBinding::DependencyObjectHelper::TrySetBinding(this, ThisDependencyObject(), targetDef, binding,
-                                                                  DataBinding::PropLinkRefs(PropertyOrientation, m_propertyOrientation),
-                                                                  DataBinding::PropLinkRefs(PropertySpacing, m_propertySpacingDp));
+    const auto res = DataBinding::DependencyObjectHelper::TrySetBinding(this, ThisDependencyObject(), targetDef, binding,
+                                                                        DataBinding::PropLinkRefs(PropertyOrientation, m_propertyOrientation),
+                                                                        DataBinding::PropLinkRefs(PropertySpacing, m_propertySpacingDp));
     return res != DataBinding::PropertySetBindingResult::NotFound ? res : base_type::TrySetBindingNow(targetDef, binding);
   }
 
@@ -214,7 +214,7 @@ namespace Fsl::UI
       for (auto itr = itrBegin; itr != itrEnd; ++itr)
       {
         itr->Window->Measure(fakeAvailableSizePx);
-        PxSize2D desiredSizePx = itr->Window->DesiredSizePx();
+        const PxSize2D desiredSizePx = itr->Window->DesiredSizePx();
         maxElementSizePx.SetMax(desiredSizePx);
       }
 
@@ -245,7 +245,7 @@ namespace Fsl::UI
       for (auto itr = itrBegin; itr != itrEnd; ++itr)
       {
         itr->Window->Measure(fakeAvailableSizePx);
-        PxSize2D desiredSizePx = itr->Window->DesiredSizePx();
+        const PxSize2D desiredSizePx = itr->Window->DesiredSizePx();
         maxElementSizePx.SetMax(desiredSizePx);
       }
 
@@ -277,7 +277,7 @@ namespace Fsl::UI
       for (auto itr = itrBegin; itr != itrEnd; ++itr)
       {
         itr->Window->Measure(fakeAvailableSizePx);
-        PxSize2D desiredSizePx = itr->Window->DesiredSizePx();
+        const PxSize2D desiredSizePx = itr->Window->DesiredSizePx();
         maxElementSizePx.SetMax(desiredSizePx);
       }
       const auto childCount = NumericCast<int32_t>(std::distance(itrBegin, itrEnd));
@@ -334,7 +334,7 @@ namespace Fsl::UI
       for (auto itr = itrBegin; itr != itrEnd; ++itr)
       {
         itr->Window->Measure(fakeAvailableSizePx);
-        PxSize2D desiredSizePx = itr->Window->DesiredSizePx();
+        const PxSize2D desiredSizePx = itr->Window->DesiredSizePx();
         maxElementSizePx.SetMax(desiredSizePx);
       }
       const auto childCount = NumericCast<int32_t>(std::distance(itrBegin, itrEnd));

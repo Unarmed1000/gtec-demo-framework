@@ -134,7 +134,7 @@ namespace Fsl
     Run();
 
     // Ensure that app is shutdown
-    auto appControl = GetDemoAppControl();
+    const auto appControl = GetDemoAppControl();
     if (!appControl->HasExitRequest())
     {
       appControl->RequestExit();

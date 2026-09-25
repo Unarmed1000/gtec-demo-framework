@@ -67,7 +67,7 @@ namespace Fsl
     void DrawString(const char* const psz, const PxPoint2& dstPositionPx) final;
     void DrawString(const std::string& str, const PxPoint2& dstPositionPx) final;
     void DrawString(const StringViewLite& strView, const PxPoint2& dstPositionPx) final;
-    PxSize2D FontSize() const final;
+    [[nodiscard]] PxSize2D FontSize() const final;
   };
 }
 

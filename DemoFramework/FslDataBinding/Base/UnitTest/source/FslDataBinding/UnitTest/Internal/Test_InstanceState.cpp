@@ -42,7 +42,7 @@ namespace
 
 TEST(Test_DataBinding, Create)
 {
-  DataBinding::Internal::InstanceState state;
+  const DataBinding::Internal::InstanceState state;
 
   EXPECT_FALSE(state.IsObservable());
   EXPECT_FALSE(state.HasPendingChanges());
@@ -56,7 +56,7 @@ TEST(Test_DataBinding, CreateWithType)
 {
   constexpr auto Type = DataBinding::DataBindingInstanceType::DependencyObserverProperty;
   constexpr auto ImplType = DataBinding::Internal::PropertyMethodsImplType::ATypedDependencyProperty;
-  DataBinding::Internal::InstanceState state(Type, ImplType);
+  const DataBinding::Internal::InstanceState state(Type, ImplType);
 
   EXPECT_FALSE(state.IsObservable());
   EXPECT_FALSE(state.HasPendingChanges());
@@ -71,7 +71,7 @@ TEST(Test_DataBinding, CreateWithTypeAndFlags)
   constexpr auto Type = DataBinding::DataBindingInstanceType::DependencyObserverProperty;
   constexpr auto ImplType = DataBinding::Internal::PropertyMethodsImplType::ATypedDependencyProperty;
   constexpr auto Flag = DataBinding::Internal::InstanceState::Flags::Observable;
-  DataBinding::Internal::InstanceState state(Type, ImplType, Flag);
+  const DataBinding::Internal::InstanceState state(Type, ImplType, Flag);
 
   EXPECT_TRUE(state.IsObservable());
   EXPECT_FALSE(state.HasPendingChanges());

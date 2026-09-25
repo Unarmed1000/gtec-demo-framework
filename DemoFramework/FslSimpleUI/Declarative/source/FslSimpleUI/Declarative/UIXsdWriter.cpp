@@ -100,7 +100,7 @@ namespace Fsl::UI::Declarative::UIXsdWriter
       {
         auto child = rNode.append_child("xs:simpleType");
         auto attrName = child.append_attribute("name");
-        auto formattedTypeName = fmt::format("_TP_{}", FormatTypeName(type.Info.Name));
+        const auto formattedTypeName = fmt::format("_TP_{}", FormatTypeName(type.Info.Name));
         attrName.set_value(formattedTypeName.c_str());
 
         auto restrictionNode = child.append_child("xs:restriction");
@@ -113,7 +113,7 @@ namespace Fsl::UI::Declarative::UIXsdWriter
           {
             auto enumNode = restrictionNode.append_child("xs:enumeration");
             auto attrValue = enumNode.append_attribute("value");
-            auto formattedValueName = FormatEnumValueName(enumValue.Name.AsString());
+            const auto formattedValueName = FormatEnumValueName(enumValue.Name.AsString());
             attrValue.set_value(formattedValueName.c_str());
           }
         }
@@ -121,9 +121,9 @@ namespace Fsl::UI::Declarative::UIXsdWriter
     }
 
 
-    void AddThemeProperties(ControlFactory& controlFactory, pugi::xml_node& rNode, const ControlName& controlName)
+    void AddThemeProperties(const ControlFactory& controlFactory, pugi::xml_node& rNode, const ControlName& controlName)
     {
-      auto themeProperties = controlFactory.GetControlThemeProperties(controlName);
+      const auto themeProperties = controlFactory.GetControlThemeProperties(controlName);
 
       for (const ControlPropertyRecord& themeProperty : themeProperties)
       {
@@ -132,11 +132,12 @@ namespace Fsl::UI::Declarative::UIXsdWriter
         auto child = rNode.append_child("xs:attribute");
         // name
         auto attrName = child.append_attribute("name");
-        auto propertyName = themeProperty.Property->GetName().AsString();
+        const auto propertyName = themeProperty.Property->GetName().AsString();
         attrName.set_value(propertyName.c_str());
 
         // use
-        auto formattedTypeName = fmt::format("_TP_{}", FormatTypeName(controlFactory.GetPrimitiveTypeRegistry(), themeProperty.Property->GetType()));
+        const auto formattedTypeName =
+          fmt::format("_TP_{}", FormatTypeName(controlFactory.GetPrimitiveTypeRegistry(), themeProperty.Property->GetType()));
         auto attrType = child.append_attribute("type");
         attrType.set_value(formattedTypeName.c_str());
 
@@ -191,7 +192,7 @@ namespace Fsl::UI::Declarative::UIXsdWriter
 
     void AddControlProperties(ControlFactory& controlFactory, pugi::xml_node& rNode, const ControlName& controlName)
     {
-      auto controlProperties = controlFactory.GetControlProperties(controlName);
+      const auto controlProperties = controlFactory.GetControlProperties(controlName);
 
       //<xs:attribute name="AlignmentX" type="_TP_ItemAlignment" use="optional"/>
       for (const Fsl::DataBinding::DependencyPropertyDefinition& controlProperty : controlProperties)
@@ -199,11 +200,11 @@ namespace Fsl::UI::Declarative::UIXsdWriter
         auto child = rNode.append_child("xs:attribute");
         // name
         auto attrName = child.append_attribute("name");
-        std::string propertyName(controlProperty.Name());
+        const std::string propertyName(controlProperty.Name());
         attrName.set_value(propertyName.c_str());
 
         // use
-        auto formattedTypeName = fmt::format("_TP_{}", FormatTypeName(controlFactory.GetPrimitiveTypeRegistry(), controlProperty.Type()));
+        const auto formattedTypeName = fmt::format("_TP_{}", FormatTypeName(controlFactory.GetPrimitiveTypeRegistry(), controlProperty.Type()));
         auto attrType = child.append_attribute("type");
         attrType.set_value(formattedTypeName.c_str());
 
@@ -222,7 +223,7 @@ namespace Fsl::UI::Declarative::UIXsdWriter
     //<xs:group name="_G_WindowElement">
     //  <xs:choice>
     //    <xs:element name="BackgroundWindow" type="_T_BackgroundWindow"/>
-    void AddWindowElement(ControlFactory& controlFactory, pugi::xml_node& rNode, std::span<const ControlName> controlNames)
+    void AddWindowElement(const ControlFactory& controlFactory, pugi::xml_node& rNode, std::span<const ControlName> controlNames)
     {
       auto childNode = rNode.append_child("xs:group");
       auto attrChildNodeName = childNode.append_attribute("name");
@@ -236,7 +237,7 @@ namespace Fsl::UI::Declarative::UIXsdWriter
         auto attrElementType = elementNode.append_attribute("type");
 
         attrElementName.set_value(controlName.AsString().c_str());
-        auto formattedName = fmt::format("_T_{}", controlName.AsString());
+        const auto formattedName = fmt::format("_T_{}", controlName.AsString());
         attrElementType.set_value(formattedName.c_str());
       }
     }
@@ -367,7 +368,7 @@ namespace Fsl::UI::Declarative::UIXsdWriter
 
     for (const auto& name : controlNames)
     {
-      auto formattedName = fmt::format("_T_{}", name.AsString());
+      const auto formattedName = fmt::format("_T_{}", name.AsString());
       auto child = rootNode.append_child("xs:complexType");
       auto attrName = child.append_attribute("name");
       attrName.set_value(formattedName.c_str());

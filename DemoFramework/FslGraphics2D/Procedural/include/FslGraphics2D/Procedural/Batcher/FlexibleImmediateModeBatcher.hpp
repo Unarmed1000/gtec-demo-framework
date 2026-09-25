@@ -233,7 +233,7 @@ namespace Fsl
     }
 
 
-    bool GetLimitOnlyOneEntryPerBatch() const noexcept
+    [[nodiscard]] bool GetLimitOnlyOneEntryPerBatch() const noexcept
     {
       return m_meshLimits.OnlyOneEntryPerBatch;
     }
@@ -245,7 +245,7 @@ namespace Fsl
       return changed;
     }
 
-    bool GetLimitOnlyOneBatchPerSegment() const
+    [[nodiscard]] bool GetLimitOnlyOneBatchPerSegment() const
     {
       return m_meshLimits.OnlyOneBatchPerSegment;
     }
@@ -257,17 +257,17 @@ namespace Fsl
       return changed;
     }
 
-    std::size_t VertexCapacity() const noexcept
+    [[nodiscard]] std::size_t VertexCapacity() const noexcept
     {
       return m_vertices.size();
     }
 
-    std::size_t IndexCapacity() const noexcept
+    [[nodiscard]] std::size_t IndexCapacity() const noexcept
     {
       return m_indices.size();
     }
 
-    bool IsInBatchBuild() const noexcept
+    [[nodiscard]] bool IsInBatchBuild() const noexcept
     {
       return m_batchBuildStatus.Building;
     }
@@ -608,7 +608,7 @@ namespace Fsl
     }
 
 
-    inline size_type GetSegmentCount() const noexcept
+    [[nodiscard]] inline size_type GetSegmentCount() const noexcept
     {
       return m_batchBuildStatus.SegmentCount;
     }
@@ -629,13 +629,13 @@ namespace Fsl
       return {m_segments[index].BatchRange};
     }
 
-    inline const BatchRecord& GetBatchRecord(const size_type index) const noexcept
+    [[nodiscard]] inline const BatchRecord& GetBatchRecord(const size_type index) const noexcept
     {
       assert(index < m_batchBuildStatus.BatchCount);
       return m_batches[index];
     }
 
-    FlexibleImmediateModeBatcherStats GetStats() const noexcept
+    [[nodiscard]] FlexibleImmediateModeBatcherStats GetStats() const noexcept
     {
       return {m_batchBuildStatus.SegmentCount, m_batchBuildStatus.BatchCount, m_batchBuildStatus.VertexCount, m_batchBuildStatus.IndexCount};
     }

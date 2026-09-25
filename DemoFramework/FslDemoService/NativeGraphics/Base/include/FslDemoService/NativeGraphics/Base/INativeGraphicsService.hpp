@@ -51,7 +51,7 @@ namespace Fsl
     ~INativeGraphicsService() override = default;
 
     //! @brief Check if the given API is supported by this native graphics service
-    virtual bool IsSupported(const DemoHostFeature& activeAPI) const = 0;
+    [[nodiscard]] virtual bool IsSupported(const DemoHostFeature& activeAPI) const = 0;
 
     //! @brief Capture the current content of the display after a glFinish.
     //! @param rBitmap will be resized to the srcRectangle dimensions and filled with the content of the back buffer.

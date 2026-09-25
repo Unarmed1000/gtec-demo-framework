@@ -42,7 +42,7 @@ namespace
 
 TEST(TestFont_BitmapFontChar, Construct_Default)
 {
-  BitmapFontChar value;
+  const BitmapFontChar value;
   EXPECT_EQ(0u, value.Id);
   EXPECT_EQ(PxRectangleU32(), value.SrcTextureRectPx);
   EXPECT_EQ(PxPoint2(), value.OffsetPx);
@@ -55,9 +55,9 @@ TEST(TestFont_BitmapFontChar, Construct)
   const uint32_t id = 10;
   const auto srcTextureRectPx = PxRectangleU32::Create(1, 2, 3, 4);
   const auto offsetPx = PxPoint2::Create(5, 6);
-  PxValueU16 xAdvance(42);
+  const PxValueU16 xAdvance(42);
 
-  BitmapFontChar value(id, srcTextureRectPx, offsetPx, xAdvance);
+  const BitmapFontChar value(id, srcTextureRectPx, offsetPx, xAdvance);
   EXPECT_EQ(id, value.Id);
   EXPECT_EQ(srcTextureRectPx, value.SrcTextureRectPx);
   EXPECT_EQ(offsetPx, value.OffsetPx);
@@ -69,7 +69,7 @@ TEST(TestFont_BitmapFontChar, OpEqual)
   const uint32_t id = 10;
   const auto srcTextureRectPx = PxRectangleU32::Create(1, 2, 3, 4);
   const auto offsetPx = PxPoint2::Create(5, 6);
-  PxValueU16 xAdvance(42);
+  const PxValueU16 xAdvance(42);
 
   EXPECT_EQ(BitmapFontChar(id, srcTextureRectPx, offsetPx, xAdvance), BitmapFontChar(id, srcTextureRectPx, offsetPx, xAdvance));
 }
@@ -79,7 +79,7 @@ TEST(TestFont_BitmapFontChar, OpNotEqual)
   const uint32_t id = 10;
   const auto srcTextureRectPx = PxRectangleU32::Create(1, 2, 3, 4);
   const auto offsetPx = PxPoint2::Create(5, 6);
-  PxValueU16 xAdvance(42);
+  const PxValueU16 xAdvance(42);
 
   auto almostSrcTextureRectPx = srcTextureRectPx;
   almostSrcTextureRectPx.Add(PxPoint2U::Create(1, 1));

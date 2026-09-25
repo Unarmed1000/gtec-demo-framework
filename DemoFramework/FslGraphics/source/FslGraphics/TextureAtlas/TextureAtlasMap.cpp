@@ -62,7 +62,7 @@ namespace Fsl
 
   AtlasTextureInfo TextureAtlasMap::GetAtlasTextureInfo(const IO::PathView& name) const
   {
-    auto itr = m_map.find(name);
+    const auto itr = m_map.find(name);
     if (itr == m_map.end())
     {
       throw NotFoundException(fmt::format("Unknown texture: '{}'", name));
@@ -72,7 +72,7 @@ namespace Fsl
 
   AtlasNineSlicePatchInfo TextureAtlasMap::GetAtlasNineSlicePatchInfo(const IO::PathView& name) const
   {
-    auto itr = m_ninesliceMap.find(name);
+    const auto itr = m_ninesliceMap.find(name);
     if (itr == m_ninesliceMap.end())
     {
       throw NotFoundException(fmt::format("Unknown texture nine-slice patch: '{}'", name));

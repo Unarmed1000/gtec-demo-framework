@@ -133,7 +133,7 @@ namespace Fsl
     {
       throw std::invalid_argument("imageDpi can not be zero");
     }
-    float scaleFactor = CalcImageDensityScale(imageDpi);
+    const float scaleFactor = CalcImageDensityScale(imageDpi);
 
     const float roundedNewWidthPx = std::round(static_cast<float>(extentPx.Width.Value) * scaleFactor);
     const float roundedNewHeightPx = std::round(static_cast<float>(extentPx.Height.Value) * scaleFactor);
@@ -158,8 +158,8 @@ namespace Fsl
       PxThicknessF::Create(static_cast<float>(trimMarginPx.Left.Value) * finalScaleX, static_cast<float>(trimMarginPx.Top.Value) * finalScaleY,
                            static_cast<float>(trimMarginPx.Right.Value) * finalScaleX, static_cast<float>(trimMarginPx.Bottom.Value) * finalScaleY);
 
-    auto scaledTrimmedSizePxf = PxSize2DF::Create(static_cast<float>(trimmedExtentPx.Width.Value) * finalScaleX,
-                                                  static_cast<float>(trimmedExtentPx.Height.Value) * finalScaleY);
+    const auto scaledTrimmedSizePxf = PxSize2DF::Create(static_cast<float>(trimmedExtentPx.Width.Value) * finalScaleX,
+                                                        static_cast<float>(trimmedExtentPx.Height.Value) * finalScaleY);
     return {roundedScaledSizePx, scaledTrimMarginPxf, scaledTrimmedSizePxf};
   }
 
@@ -172,7 +172,7 @@ namespace Fsl
     {
       throw std::invalid_argument("imageDpi can not be zero");
     }
-    float scaleFactor = CalcImageDensityScale(imageDpi);
+    const float scaleFactor = CalcImageDensityScale(imageDpi);
 
     const float roundedNewWidthPx = std::round(static_cast<float>(extentPx.Width.Value) * scaleFactor);
     const float roundedNewHeightPx = std::round(static_cast<float>(extentPx.Height.Value) * scaleFactor);

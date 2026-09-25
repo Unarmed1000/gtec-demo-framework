@@ -73,49 +73,49 @@ namespace Fsl::UI
     {
     }
 
-    MillisecondTickCount32 Timestamp() const
+    [[nodiscard]] MillisecondTickCount32 Timestamp() const
     {
       return m_timestamp;
     }
 
-    int32_t SourceId() const noexcept
+    [[nodiscard]] int32_t SourceId() const noexcept
     {
       return m_sourceId;
     }
 
-    int32_t SourceSubId() const noexcept
+    [[nodiscard]] int32_t SourceSubId() const noexcept
     {
       return m_sourceSubId;
     }
 
-    EventTransactionState TransactionState() const noexcept
+    [[nodiscard]] EventTransactionState TransactionState() const noexcept
     {
       return m_transactionState;
     }
 
-    bool IsBegin() const noexcept
+    [[nodiscard]] bool IsBegin() const noexcept
     {
       return m_transactionState == EventTransactionState::Begin;
     }
-    bool IsCancel() const noexcept
+    [[nodiscard]] bool IsCancel() const noexcept
     {
       return m_transactionState == EventTransactionState::Canceled;
     }
-    bool IsEnd() const noexcept
+    [[nodiscard]] bool IsEnd() const noexcept
     {
       return m_transactionState == EventTransactionState::End;
     }
-    bool IsRepeat() const noexcept
+    [[nodiscard]] bool IsRepeat() const noexcept
     {
       return m_isRepeat;
     }
 
-    int32_t Tag() const noexcept
+    [[nodiscard]] int32_t Tag() const noexcept
     {
       return m_tag;
     }
 
-    PxPoint2 Param1() const noexcept
+    [[nodiscard]] PxPoint2 Param1() const noexcept
     {
       return m_param1;
     }

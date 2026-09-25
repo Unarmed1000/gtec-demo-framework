@@ -424,7 +424,7 @@ namespace Fsl::GLES3
       {
         assert(attribLinks[i].VertexElementIndex < vertexElementSpan.size());
 
-        GLint attribIndex = attribLinks[i].AttribIndex;
+        const GLint attribIndex = attribLinks[i].AttribIndex;
         const GLVertexElement& vertexElement = vertexElementSpan[attribLinks[i].VertexElementIndex];
 
         res.emplace_back(attribIndex, vertexElement.Size, vertexElement.Type, vertexElement.Normalized, vertexElement.Pointer);

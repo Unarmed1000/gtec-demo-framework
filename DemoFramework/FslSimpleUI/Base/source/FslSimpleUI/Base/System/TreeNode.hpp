@@ -72,13 +72,13 @@ namespace Fsl::UI
     //! @brief A static method to so we dont need to use enable_shared_from_this
     static void AddChild(const std::shared_ptr<TreeNode>& parentNode, const std::shared_ptr<TreeNode>& childNode);
 
-    inline std::shared_ptr<TreeNode> GetParent() const
+    [[nodiscard]] inline std::shared_ptr<TreeNode> GetParent() const
     {
       return m_parent.lock();
     }
 
     //! @brief Get the associated window
-    inline const std::shared_ptr<BaseWindow>& GetWindow() const noexcept
+    [[nodiscard]] inline const std::shared_ptr<BaseWindow>& GetWindow() const noexcept
     {
       return m_window;
     }
@@ -88,30 +88,30 @@ namespace Fsl::UI
       return m_window.get();
     }
 
-    inline const BaseWindow* GetWindowPointer() const noexcept
+    [[nodiscard]] inline const BaseWindow* GetWindowPointer() const noexcept
     {
       return m_window.get();
     }
 
-    inline TreeNodeFlags GetFlags() const noexcept
+    [[nodiscard]] inline TreeNodeFlags GetFlags() const noexcept
     {
       return m_flags;
     }
 
     //! @brief Check if this node is considered to be running
-    inline bool IsConsideredRunning() const noexcept
+    [[nodiscard]] inline bool IsConsideredRunning() const noexcept
     {
       return m_flags.IsRunning();
     }
 
     //! @brief Check if this node is considered to be enabled
-    inline bool IsEnabled() const noexcept
+    [[nodiscard]] inline bool IsEnabled() const noexcept
     {
       return m_flags.IsRunning();
     }
 
     //! @brief Check if this node has been marked as disposed
-    inline bool IsDisposed() const noexcept
+    [[nodiscard]] inline bool IsDisposed() const noexcept
     {
       return m_flags.IsDisposed();
     }
@@ -178,7 +178,7 @@ namespace Fsl::UI
       return m_window->WinMarkLayoutAsDirty();
     }
 
-    inline const PxRectangle& WinGetContentRectanglePx() const
+    [[nodiscard]] inline const PxRectangle& WinGetContentRectanglePx() const
     {
       assert(m_flags.IsRunning());
       return m_window->WinGetContentRectanglePx();
@@ -190,9 +190,9 @@ namespace Fsl::UI
       m_window->WinHandleEvent(routedEvent);
     }
 
-    inline PxPoint2 CalcScreenTopLeftCornerPx() const
+    [[nodiscard]] inline PxPoint2 CalcScreenTopLeftCornerPx() const
     {
-      std::shared_ptr<TreeNode> parent = m_parent.lock();
+      const std::shared_ptr<TreeNode> parent = m_parent.lock();
       return (parent ? (parent->CalcScreenTopLeftCornerPx() + WinGetContentRectanglePx().TopLeft()) : WinGetContentRectanglePx().TopLeft());
     }
 
@@ -201,7 +201,7 @@ namespace Fsl::UI
       if (m_flags.IsRunning())
       {
         m_window->WinResolutionChanged(info);
-        for (auto& rChild : m_children)
+        for (const auto& rChild : m_children)
         {
           rChild->OnResolutionChanged(info);
         }

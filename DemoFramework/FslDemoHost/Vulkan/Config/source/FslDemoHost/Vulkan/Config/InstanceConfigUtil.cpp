@@ -92,7 +92,7 @@ namespace Fsl::InstanceConfigUtil
       const auto debugLayerRequirement = ConfigUtil::ToFeatureRequirement(userChoice, buildDebugLayerRequirement);
       if (debugLayerRequirement != Vulkan::FeatureRequirement::Invalid)
       {
-        auto alternativeNames = std::make_shared<std::vector<std::string>>();
+        const auto alternativeNames = std::make_shared<std::vector<std::string>>();
         alternativeNames->emplace_back(pszAlternativeLayerName);
         rLayerRequests.emplace_back(pszLayerName, debugLayerRequirement, alternativeNames);
       }

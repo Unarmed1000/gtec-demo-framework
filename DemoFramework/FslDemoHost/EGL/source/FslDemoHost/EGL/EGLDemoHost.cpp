@@ -277,9 +277,9 @@ namespace Fsl
       auto itr = srcConfigAttribs.begin();
       while (itr != srcConfigAttribs.end() && *itr != EGL_NONE)
       {
-        EGLint key = *itr;
+        const EGLint key = *itr;
         ++itr;
-        EGLint value = *itr;
+        const EGLint value = *itr;
         ++itr;
 
         if (!ReplaceAttribute(rConfigAttributes, key, value))
@@ -527,7 +527,8 @@ namespace Fsl
                                   const int eglContextClientVersionMinor, const int eglContextClientVersionMinimumMinor)
     {
       std::array<EGLint, 3> contextAttribListESMajorOnly = {EGL_CONTEXT_CLIENT_VERSION, eglContextClientVersionMajor, EGL_NONE};
-      bool supportsMinorVersion = true;
+      // Only modified when the EGL headers lack the major/minor version attributes (the #else branch)
+      bool supportsMinorVersion = true;    // NOLINT(misc-const-correctness)
 #if defined(EGL_CONTEXT_MAJOR_VERSION) && defined(EGL_CONTEXT_MINOR_VERSION)
       std::array<EGLint, 5> contextAttribListESMajorMinor = {EGL_CONTEXT_MAJOR_VERSION, eglContextClientVersionMajor, EGL_CONTEXT_MINOR_VERSION,
                                                              eglContextClientVersionMinor, EGL_NONE};
@@ -640,7 +641,7 @@ namespace Fsl
                                 const std::shared_ptr<EGLDemoHostOptionParser>& options, const RGBConfig& preferredRGBConfig,
                                 const int32_t preferredDepthBufferSize, EGLConfig& rEGLConfig)
     {
-      auto customAppAglConfigAttribs = RemoveAttribs(appAglConfigAttribs, {EGL_DEPTH_SIZE});
+      const auto customAppAglConfigAttribs = RemoveAttribs(appAglConfigAttribs, {EGL_DEPTH_SIZE});
       {
         FSLLOG3_INFO("- Trying with a different color depth and depth buffer size. (D={})", preferredDepthBufferSize);
         BuildEGLConfig(rFinalConfigAttribs, customAppAglConfigAttribs, configControl, featureConfig, options, preferredRGBConfig,
@@ -663,7 +664,7 @@ namespace Fsl
                                          const EGLDemoHostFeatureConfig& featureConfig, const std::shared_ptr<EGLDemoHostOptionParser>& options,
                                          const RGBConfig& preferredRGBConfig, const int32_t preferredDepthBufferSize, EGLConfig& rEGLConfig)
     {
-      auto customAppAglConfigAttribs = RemoveAttribs(appAglConfigAttribs, {EGL_RED_SIZE, EGL_GREEN_SIZE, EGL_BLUE_SIZE});
+      const auto customAppAglConfigAttribs = RemoveAttribs(appAglConfigAttribs, {EGL_RED_SIZE, EGL_GREEN_SIZE, EGL_BLUE_SIZE});
       {
         FSLLOG3_INFO("- Trying with a different color depth. (R={} G={} B={})", preferredRGBConfig.R, preferredRGBConfig.G, preferredRGBConfig.B);
         BuildEGLConfig(rFinalConfigAttribs, customAppAglConfigAttribs, configControl, featureConfig, options, preferredRGBConfig,
@@ -688,7 +689,7 @@ namespace Fsl
       const auto* pszExtensions = eglQueryString(EGL_NO_DISPLAY, EGL_EXTENSIONS);
       if (pszExtensions == nullptr)
       {
-        auto error = eglGetError();
+        const auto error = eglGetError();
         if (error != EGL_BAD_DISPLAY)
         {
           FSLLOG3_VERBOSE2("Unexpected error from query {}");
@@ -702,7 +703,7 @@ namespace Fsl
 
     bool HasAngleSupport(const bool logExtensions)
     {
-      auto supported = DetectEGLClientExtensionsSupport();
+      const auto supported = DetectEGLClientExtensionsSupport();
       if (!supported)
       {
         return false;
@@ -830,7 +831,7 @@ namespace Fsl
 
       if (m_enableGLES)
       {
-        std::shared_ptr<IImageServiceControl> imageControl = demoHostConfig.GetServiceProvider().Get<IImageServiceControl>();
+        const std::shared_ptr<IImageServiceControl> imageControl = demoHostConfig.GetServiceProvider().Get<IImageServiceControl>();
         imageControl->SetPreferredBitmapOrigin(BitmapOrigin::LowerLeft);
       }
 
@@ -931,9 +932,9 @@ namespace Fsl
 
     const Point2 size = GetEGLSurfaceResolution(m_hDisplay, m_hSurface);
 
-    auto nativeWindowMetrics = (m_window ? m_window->GetWindowMetrics() : NativeWindowMetrics());
+    const auto nativeWindowMetrics = (m_window ? m_window->GetWindowMetrics() : NativeWindowMetrics());
 
-    auto extent = PxExtent2D::Create(std::max(size.X, 0), std::max(size.Y, 0));
+    const auto extent = PxExtent2D::Create(std::max(size.X, 0), std::max(size.Y, 0));
     return {extent, nativeWindowMetrics.ExactDpi, nativeWindowMetrics.DensityDpi};
   }
 
@@ -959,7 +960,7 @@ namespace Fsl
   {
     // This will be called while suspended
     // Allow the native window to process messages
-    NativeWindowProcessMessagesArgs args(allowBlock);
+    const NativeWindowProcessMessagesArgs args(allowBlock);
     return m_windowSystem->ProcessMessages(args);
   }
 
@@ -982,7 +983,7 @@ namespace Fsl
       m_graphicsService->SetActiveApi(m_activeApi);
 
       //! Let the graphics service know that the device is ready
-      GraphicsDeviceCreateInfo createInfo(m_maxFramesInFlight, m_demoHostConfig.GetPreallocateBasic2D(), nullptr);
+      const GraphicsDeviceCreateInfo createInfo(m_maxFramesInFlight, m_demoHostConfig.GetPreallocateBasic2D(), nullptr);
       m_graphicsService->CreateDevice(createInfo);
     }
     catch (const std::exception&)
@@ -1077,17 +1078,17 @@ namespace Fsl
       DoLogConfigs(m_options->GetConfigLogMode(), m_hDisplay);
 
       // Take a copy of the final user desired config so we can use it for logging purposes later.
-      std::vector<EGLint> finalConfigAttribsCopy = m_finalConfigAttribs;
+      const std::vector<EGLint> finalConfigAttribsCopy = m_finalConfigAttribs;
 
       LOCAL_LOG("Asking EGL to chose via eglChooseConfig");
-      EGL::ReadOnlyEGLAttributeSpan finalAttribSpan(SpanUtil::AsReadOnlySpan(m_finalConfigAttribs));
+      const EGL::ReadOnlyEGLAttributeSpan finalAttribSpan(SpanUtil::AsReadOnlySpan(m_finalConfigAttribs));
       const auto chosenConfig = EGLConfigUtil::TryEGLGuidedChooseConfig(m_hDisplay, finalAttribSpan, true);
       if (!chosenConfig.has_value())
       {
         LOCAL_LOG("EGLUtil::TryChooseConfig failed to find a compatible config, trying legacy fallbacks");
         // eglChooseConfig might fail to find HDR requests, so we fallback to our own search
         bool configSelected = false;
-        bool isHDRRequest = IsHDRRequest(m_appEglConfigAttribs);
+        const bool isHDRRequest = IsHDRRequest(m_appEglConfigAttribs);
         if (isHDRRequest)
         {
           configSelected = TryInitEGLHDRConfig(m_appEglConfigAttribs);
@@ -1185,7 +1186,7 @@ namespace Fsl
     if (!isLastResort && !appEglConfigAttribs.empty())
     {
       FSLLOG3_INFO("- Ignoring the app requested config.");
-      std::deque<EGLint> emptyAppAglConfigAttribs = {EGL_NONE};
+      const std::deque<EGLint> emptyAppAglConfigAttribs = {EGL_NONE};
       if (TryInitEGLTryConfigFallback(configControl, emptyAppAglConfigAttribs, true))
       {
         return true;
@@ -1226,7 +1227,8 @@ namespace Fsl
       // We only check for display HDR compatibility when the configs request a HDR buffer
       const bool isDisplayHDRCompatible = isConfigAttribsHDR ? m_windowSystem->IsDisplayHDRCompatible(displayId) : false;
 
-      DemoAppHostCreateWindowSurfaceInfoEGL createInfo(m_demoHostConfig.GetServiceProvider(), m_window, isConfigAttribsHDR, isDisplayHDRCompatible);
+      const DemoAppHostCreateWindowSurfaceInfoEGL createInfo(m_demoHostConfig.GetServiceProvider(), m_window, isConfigAttribsHDR,
+                                                             isDisplayHDRCompatible);
       BuildAttribConfig(tempWindowAttribsDeque, m_appHostConfig->GetEglCreateWindowAttribs(m_hDisplay, createInfo));
 
       std::vector<EGLint> finalCreateWindowAttribs(tempWindowAttribsDeque.begin(), tempWindowAttribsDeque.end());

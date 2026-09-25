@@ -47,14 +47,14 @@ namespace Fsl
     ~ImageConverterLibraryHDRService() final;
 
     // From IImageConverterService
-    ReadOnlySpan<SupportedConversion> GetSupportedConversions(const ConversionType conversionType) const noexcept final;
+    [[nodiscard]] ReadOnlySpan<SupportedConversion> GetSupportedConversions(const ConversionType conversionType) const noexcept final;
     ImageConvertResult TryConvert(Bitmap& rBitmap, const PixelFormat desiredPixelFormat) final;
     ImageConvertResult TryConvert(Texture& rTexture, const PixelFormat desiredPixelFormat) final;
     ImageConvertResult TryConvert(Bitmap& rDstBitmap, const Bitmap& srcBitmap) final;
     ImageConvertResult TryConvert(Texture& rDstTexture, const Texture& srcTexture) final;
 
     // From IImageToneMappingService
-    ReadOnlySpan<SupportedToneMapping> GetSupportedToneMappings(const ConversionType conversionType) const noexcept final;
+    [[nodiscard]] ReadOnlySpan<SupportedToneMapping> GetSupportedToneMappings(const ConversionType conversionType) const noexcept final;
     ToneMappingResult TryToneMap(Bitmap& rBitmap, const BasicToneMapper toneMapping, const float exposure) final;
     ToneMappingResult TryToneMap(Texture& rTexture, const BasicToneMapper toneMapping, const float exposure) final;
   };

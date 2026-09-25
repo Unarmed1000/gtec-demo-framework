@@ -79,8 +79,8 @@ namespace Fsl
     : UIDemoAppExtensionBase(createInfo, eventListener)
     , m_config(createInfo.RenderCreateInfo.MaterialConfig)
   {
-    auto contentManager = createInfo.DemoServiceProvider.Get<IContentManager>();
-    auto graphicsService = createInfo.DemoServiceProvider.Get<IGraphicsService>();
+    const auto contentManager = createInfo.DemoServiceProvider.Get<IContentManager>();
+    const auto graphicsService = createInfo.DemoServiceProvider.Get<IGraphicsService>();
     m_resourceManager = std::make_unique<UIAppResourceManager>(contentManager, graphicsService->GetBasicRenderSystem(), createInfo.WindowMetrics,
                                                                testPatternMode, createInfo.RenderCreateInfo.MaterialConfig.AllowDepthBuffer,
                                                                createInfo.RenderCreateInfo.MaterialCreateInfo.AllowDynamicCustomViewport,
@@ -187,7 +187,7 @@ namespace Fsl
       throw UsageErrorException("resource manager is not valid");
     }
     const auto flags = isUITexture ? UIAppResourceFlag::UIGroup : UIAppResourceFlag::Undefined;
-    auto res = m_resourceManager->CreateTexture(atlasPath, textureCreationInfo, flags);
+    const auto res = m_resourceManager->CreateTexture(atlasPath, textureCreationInfo, flags);
     return res.Handle;
   }
 
@@ -199,7 +199,7 @@ namespace Fsl
       throw UsageErrorException("resource manager is not valid");
     }
     const auto flags = isUITexture ? UIAppResourceFlag::UIGroup | UIAppResourceFlag::Atlas : UIAppResourceFlag::Atlas;
-    auto res = m_resourceManager->CreateTexture(atlasPath, textureCreationInfo, flags);
+    const auto res = m_resourceManager->CreateTexture(atlasPath, textureCreationInfo, flags);
     return res.Handle;
   }
 
@@ -211,7 +211,7 @@ namespace Fsl
       throw UsageErrorException("resource manager is not valid");
     }
     const auto flags = UIAppResourceFlag::Atlas | UIAppResourceFlag::NotDpAware;
-    auto res = m_resourceManager->CreateTexture(atlasPath, textureCreationInfo, flags);
+    const auto res = m_resourceManager->CreateTexture(atlasPath, textureCreationInfo, flags);
     return res.Handle;
   }
 
@@ -319,11 +319,11 @@ namespace Fsl
                                                                              const UIDemoAppMaterialCreateInfo& materialCreateInfo,
                                                                              const bool useSdfFont)
   {
-    IO::Path defaultAtlasTexturePath(atlasName + LocalConfig::FontTextureExtension);
-    UIAppTextureResourceCreationInfo textureCreationInfo(materialCreateInfo.DefaultTexturePixelFormat, LocalConfig::UITextureFilterHint);
+    const IO::Path defaultAtlasTexturePath(atlasName + LocalConfig::FontTextureExtension);
+    const UIAppTextureResourceCreationInfo textureCreationInfo(materialCreateInfo.DefaultTexturePixelFormat, LocalConfig::UITextureFilterHint);
 
     // Texture, material and a default font
-    auto textureResult =
+    const auto textureResult =
       rResourceManager.CreateTexture(defaultAtlasTexturePath, textureCreationInfo, UIAppResourceFlag::Atlas | UIAppResourceFlag::UIGroup);
 
 
@@ -337,11 +337,11 @@ namespace Fsl
     rResourceManager.AddSpriteMaterial(UIAppConfig::MaterialId::DefaultUI_LineListAlphaBlend, textureResult.Handle, BlendState::AlphaBlend,
                                        BasicPrimitiveTopology::LineList);
 
-    IO::PathView headerFontNbf(rResourceManager.FontExists(textureResult.Handle, LocalConfig::HeaderFontNbf) ? LocalConfig::HeaderFontNbf
-                                                                                                             : LocalConfig::FontNbf);
-    IO::PathView sdfHeaderFontNbf(rResourceManager.FontExists(textureResult.Handle, LocalConfig::SdfHeaderFontNbf) ? LocalConfig::SdfHeaderFontNbf
-                                                                                                                   : LocalConfig::SdfFontNbf);
-    PathRecord paths(LocalConfig::FontNbf, headerFontNbf, LocalConfig::SdfFontNbf, sdfHeaderFontNbf);
+    const IO::PathView headerFontNbf(rResourceManager.FontExists(textureResult.Handle, LocalConfig::HeaderFontNbf) ? LocalConfig::HeaderFontNbf
+                                                                                                                   : LocalConfig::FontNbf);
+    const IO::PathView sdfHeaderFontNbf(
+      rResourceManager.FontExists(textureResult.Handle, LocalConfig::SdfHeaderFontNbf) ? LocalConfig::SdfHeaderFontNbf : LocalConfig::SdfFontNbf);
+    const PathRecord paths(LocalConfig::FontNbf, headerFontNbf, LocalConfig::SdfFontNbf, sdfHeaderFontNbf);
 
     auto defaultFont = PrepareFont(rResourceManager, paths.FontNbf, paths.SdfFontNbf, useSdfFont);
     auto defaultHeaderFont = PrepareFont(rResourceManager, paths.HeaderFontNbf, paths.SdfHeaderFontNbf, useSdfFont);

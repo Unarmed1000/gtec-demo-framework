@@ -57,7 +57,7 @@ namespace Fsl
     DemoHostRegistry& operator=(const DemoHostRegistry&) = delete;
 
     DemoHostRegistry();
-    DemoHostSetup GetSetup(const std::deque<DemoHostFeature>& features) const;
+    [[nodiscard]] DemoHostSetup GetSetup(const std::deque<DemoHostFeature>& features) const;
 
     // From IDemoHostRegistry
     void Register(const DemoHostFeatureName::Enum feature, const DemoHostSetup& hostSetup) override;

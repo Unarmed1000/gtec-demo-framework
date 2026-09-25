@@ -58,7 +58,7 @@ namespace Fsl::Vulkan
     explicit ApplicationInfoCopy(const VkApplicationInfo* const pValue);
 
 
-    const VkApplicationInfo& Get() const
+    [[nodiscard]] const VkApplicationInfo& Get() const
     {
       return m_value;
     }

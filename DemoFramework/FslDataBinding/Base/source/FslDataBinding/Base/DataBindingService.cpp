@@ -88,7 +88,7 @@ namespace Fsl::DataBinding
         ++Count;
       }
 
-      ReadOnlySpan<DataBindingInstanceHandle> SourceHandles() const noexcept
+      [[nodiscard]] ReadOnlySpan<DataBindingInstanceHandle> SourceHandles() const noexcept
       {
         return SpanUtil::UncheckedFirstReadOnlySpan(Handles, Count);
       }
@@ -129,7 +129,7 @@ namespace Fsl::DataBinding
     //! Check if 'record' has a two-way bound target
     bool HasTwoWayBoundTarget(const HandleVector<Internal::ServiceBindingRecord>& instances, const Internal::ServiceBindingRecord& record) noexcept
     {
-      auto targets = record.TargetHandles();
+      const auto targets = record.TargetHandles();
       for (const auto target : targets)
       {
         if (instances.FastGet(target.Value).SourceBindingMode() == BindingMode::TwoWay)
@@ -201,7 +201,7 @@ namespace Fsl::DataBinding
 
       const ReadOnlySpan<DataBindingInstanceHandle> sourceHandles = rTargetRecord.SourceHandles();
       FSLLOG3_VERBOSE4("Clearing source bindings from {}", hTarget.Value);
-      for (DataBindingInstanceHandle srcHandle : sourceHandles)
+      for (const DataBindingInstanceHandle srcHandle : sourceHandles)
       {
         FSLLOG3_VERBOSE4("- source {}", srcHandle.Value);
 
@@ -221,8 +221,8 @@ namespace Fsl::DataBinding
     bool IsSourceBindingsBeingChanged(const HandleVector<Internal::ServiceBindingRecord>& instances, const DataBindingInstanceHandle hTarget,
                                       const Binding& binding) noexcept
     {
-      auto newSourceHandles = binding.SourceHandlesAsSpan();
-      auto oldSourceHandles = instances.FastGet(hTarget.Value).SourceHandles();
+      const auto newSourceHandles = binding.SourceHandlesAsSpan();
+      const auto oldSourceHandles = instances.FastGet(hTarget.Value).SourceHandles();
       return !SpanUtil::ValueEquals(newSourceHandles, oldSourceHandles);
     }
 
@@ -516,7 +516,7 @@ namespace Fsl::DataBinding
       if (pMultiConverter != nullptr)
       {
         std::array<Internal::PropertyGetInfo, Internal::DbsConstants::MaxMultiBindSize> getters;
-        auto sourceHandles = target.SourceHandles();
+        const auto sourceHandles = target.SourceHandles();
         assert(sourceHandles.size() <= getters.size());
         for (std::size_t i = 0; i < sourceHandles.size(); ++i)
         {
@@ -544,7 +544,7 @@ namespace Fsl::DataBinding
       if (pMultiConverter != nullptr)
       {
         std::array<Internal::PropertySetInfo, Internal::DbsConstants::MaxMultiBindSize> setters;
-        auto toHandles = from.SourceHandles();
+        const auto toHandles = from.SourceHandles();
         assert(toHandles.size() <= setters.size());
         for (std::size_t i = 0; i < toHandles.size(); ++i)
         {
@@ -629,7 +629,7 @@ namespace Fsl::DataBinding
     }
 
     EnsureDestroyCapacity();
-    auto handle = m_instances.Add(Internal::ServiceBindingRecord(DataBindingInstanceType::DataSourceObject, ToFlags(flags)));
+    const auto handle = m_instances.Add(Internal::ServiceBindingRecord(DataBindingInstanceType::DataSourceObject, ToFlags(flags)));
     return DataBindingInstanceHandle(handle);
   }
 
@@ -642,7 +642,8 @@ namespace Fsl::DataBinding
     }
 
     EnsureDestroyCapacity();
-    auto handle = m_instances.Add(Internal::ServiceBindingRecord(DataBindingInstanceType::DependencyObject, Internal::InstanceState::Flags::NoFlags));
+    const auto handle =
+      m_instances.Add(Internal::ServiceBindingRecord(DataBindingInstanceType::DependencyObject, Internal::InstanceState::Flags::NoFlags));
     return DataBindingInstanceHandle(handle);
   }
 
@@ -949,7 +950,7 @@ namespace Fsl::DataBinding
   {
     assert(rChangedInstance.Instance.IsObservable());
 
-    bool allowChanges = true;
+    const bool allowChanges = true;
     if (rChangedInstance.Instance.GetState() == DataBindingInstanceState::Alive &&
         (rChangedInstance.HasValidSourceHandles() || !rChangedInstance.SysHandles.Empty(Internal::ServicePropertyVectorIndex::Targets)))
     {
@@ -970,7 +971,7 @@ namespace Fsl::DataBinding
            // insert a new one
         assert(instanceChangeState == Internal::PropertyChangeState::Refresh);
         // Replace the 'refresh' request with a more serious modify request
-        auto itrFind = std::find(m_pendingChanges.begin(), m_pendingChanges.end(), hChangedInstance);
+        const auto itrFind = std::find(m_pendingChanges.begin(), m_pendingChanges.end(), hChangedInstance);
         assert(itrFind != m_pendingChanges.end());
         m_pendingChanges.erase(itrFind);
         m_pendingChanges.push_back(hChangedInstance);
@@ -979,7 +980,7 @@ namespace Fsl::DataBinding
       {    // as its a modify we just replace any existing entry with the new state
         assert(instanceChangeState == Internal::PropertyChangeState::Refresh || instanceChangeState == Internal::PropertyChangeState::Modified);
         // Replace the 'refresh' request with a more serious modify request
-        auto itrFind = std::find(m_pendingChanges.begin(), m_pendingChanges.end(), hChangedInstance);
+        const auto itrFind = std::find(m_pendingChanges.begin(), m_pendingChanges.end(), hChangedInstance);
         assert(itrFind != m_pendingChanges.end());
         m_pendingChanges.erase(itrFind);
         rChangedInstance.Instance.SetPropertyChangeState(Internal::PropertyChangeState::Modified);
@@ -995,8 +996,8 @@ namespace Fsl::DataBinding
   {
     assert(rInstance.Instance.GetState() == DataBindingInstanceState::Alive);
 
-    ReadOnlySpan<DataBindingInstanceHandle> sourceHandles = rInstance.SourceHandles();
-    bool wasMarked = rInstance.Instance.HasPendingChanges();
+    const ReadOnlySpan<DataBindingInstanceHandle> sourceHandles = rInstance.SourceHandles();
+    const bool wasMarked = rInstance.Instance.HasPendingChanges();
     rInstance.Instance.MarkPendingChanges();
 
     bool hasSource = !sourceHandles.empty();
@@ -1055,7 +1056,7 @@ namespace Fsl::DataBinding
 
       {
         // Verify that the instance exist
-        for (auto sourceHandle : record.SourceHandles())
+        for (const auto sourceHandle : record.SourceHandles())
         {
           const Internal::ServiceBindingRecord* pSourceRecord = m_instances.TryGet(sourceHandle.Value);
           if (pSourceRecord == nullptr)
@@ -1092,8 +1093,8 @@ namespace Fsl::DataBinding
 
   bool DataBindingService::SanityCheckAllParentSourceMarkedAsChanged(const Internal::ServiceBindingRecord& record) const
   {
-    auto sources = record.SourceHandles();
-    for (auto hSource : sources)
+    const auto sources = record.SourceHandles();
+    for (const auto hSource : sources)
     {
       const Internal::ServiceBindingRecord& sourceRecord = m_instances.FastGet(hSource.Value);
 
@@ -1135,7 +1136,7 @@ namespace Fsl::DataBinding
 
     // We can not cache the returned record as we do a add to m_instances before we need to write to it
     {
-      auto ownerType = m_instances.Get(hOwner.Value).Instance.GetType();
+      const auto ownerType = m_instances.Get(hOwner.Value).Instance.GetType();
       if (ownerType != DataBindingInstanceType::DependencyObject && ownerType != DataBindingInstanceType::DataSourceObject &&
           ownerType != DataBindingInstanceType::ReadOnlyDependencyProperty && ownerType != DataBindingInstanceType::DependencyProperty)
       {
@@ -1256,7 +1257,7 @@ namespace Fsl::DataBinding
         if (!hTwoWayGroup.IsValid())
         {
           hTwoWayGroup = m_groupManager.CreateGroup(hChangedInstance, changeReason);
-          CreateTwoWayGroupContext context(m_groupManager, m_instances, hTwoWayGroup);
+          const CreateTwoWayGroupContext context(m_groupManager, m_instances, hTwoWayGroup);
           AddToGroup(context, hChangedInstance, rChangedInstance);
           assert(hTwoWayGroup.IsValid());
         }

@@ -53,15 +53,15 @@ namespace Fsl
     }
 
     //! @return true if this contains no information, false if it contains valid info
-    constexpr bool IsDefault() const noexcept;
+    [[nodiscard]] constexpr bool IsDefault() const noexcept;
 
-    constexpr bool HasRefreshInterval() const noexcept
+    [[nodiscard]] constexpr bool HasRefreshInterval() const noexcept
     {
       return RefreshInterval.Ticks() > 0;
     }
 
     //! @return the refresh rate in Hz or 0.0 if unknown
-    constexpr double RefreshRateHz() const noexcept
+    [[nodiscard]] constexpr double RefreshRateHz() const noexcept
     {
       return HasRefreshInterval() ? static_cast<double>(TimeSpan::TicksPerSecond) / static_cast<double>(RefreshInterval.Ticks()) : 0.0;
     }

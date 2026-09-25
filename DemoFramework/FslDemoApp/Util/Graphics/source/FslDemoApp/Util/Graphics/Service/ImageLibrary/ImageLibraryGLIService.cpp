@@ -55,7 +55,7 @@ namespace Fsl
 {
   namespace
   {
-    bool TrySwizzle(gli::texture& tex, const PixelFormatLayout srcFormatLayout, const PixelFormatLayout dstFormatLayout)
+    bool TrySwizzle(const gli::texture& tex, const PixelFormatLayout srcFormatLayout, const PixelFormatLayout dstFormatLayout)
     {
       FSL_PARAM_NOT_USED(tex);
       FSL_PARAM_NOT_USED(srcFormatLayout);
@@ -226,7 +226,7 @@ namespace Fsl
       }
 
       const auto gliExtent = tex.extent();
-      auto extent = PxExtent3D::Create(gliExtent.x, gliExtent.y, gliExtent.z);
+      const auto extent = PxExtent3D::Create(gliExtent.x, gliExtent.y, gliExtent.z);
 
       if (tex.faces() > std::numeric_limits<uint32_t>::max())
       {
@@ -254,7 +254,7 @@ namespace Fsl
       for (uint32_t level = 0; level < levels; ++level)
       {
         const auto gliLevelExtent = tex.extent(level);
-        auto levelExtent = PxExtent3D::Create(gliLevelExtent.x, gliLevelExtent.y, gliLevelExtent.z);
+        const auto levelExtent = PxExtent3D::Create(gliLevelExtent.x, gliLevelExtent.y, gliLevelExtent.z);
         if (levelExtent != blobBuilder.GetExtent(level))
         {
           FSLLOG3_DEBUG_WARNING("The blobBuilder and GLI did not agree on the extent size for level: {}", level);

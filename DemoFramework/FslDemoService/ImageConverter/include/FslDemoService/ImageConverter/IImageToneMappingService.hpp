@@ -48,7 +48,7 @@ namespace Fsl
   public:
     virtual ~IImageToneMappingService() = default;
 
-    virtual ReadOnlySpan<SupportedToneMapping> GetSupportedToneMappings(const ConversionType conversionType) const noexcept = 0;
+    [[nodiscard]] virtual ReadOnlySpan<SupportedToneMapping> GetSupportedToneMappings(const ConversionType conversionType) const noexcept = 0;
 
     //! @brief Convert the bitmap to the desired pixel format and origin else return false.
     //! @param rBitmap = the bitmap to read and write the result to (the bitmap will be reset as necessary)

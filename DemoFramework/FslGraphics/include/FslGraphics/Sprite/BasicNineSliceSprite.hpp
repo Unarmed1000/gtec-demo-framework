@@ -55,47 +55,47 @@ namespace Fsl
                     const PxRectangleU16& imageRectanglePx, const PxThicknessU& nineSlicePx, const PxThicknessU& contentMarginPx,
                     const uint32_t imageDpi, const StringViewLite& debugName, const uint32_t densityDpi);
 
-    PxSize2D GetRenderSizePx() const noexcept final
+    [[nodiscard]] PxSize2D GetRenderSizePx() const noexcept final
     {
       return m_info.RenderInfo.ScaledSizePx;
     }
 
-    const PxThickness& GetRenderContentMarginPx() const noexcept final
+    [[nodiscard]] const PxThickness& GetRenderContentMarginPx() const noexcept final
     {
       return m_info.RenderInfo.ScaledContentMarginPx;
     }
 
-    RenderContentInfo GetRenderContentInfo() const noexcept final
+    [[nodiscard]] RenderContentInfo GetRenderContentInfo() const noexcept final
     {
       return {m_info.RenderInfo.ScaledSizePx, m_info.RenderInfo.ScaledContentMarginPx};
     }
 
-    RenderOptimizedNineSliceInfo GetNineSliceRenderInfo() const noexcept final
+    [[nodiscard]] RenderOptimizedNineSliceInfo GetNineSliceRenderInfo() const noexcept final
     {
       return RenderConverter::ToRenderOptimizedNineSliceInfo(GetRenderInfo(), m_info.MaterialInfo.IsOpaque);
     }
 
 
-    const BasicNineSliceSpriteInfo& GetInfo() const noexcept
+    [[nodiscard]] const BasicNineSliceSpriteInfo& GetInfo() const noexcept
     {
       return m_info;
     }
 
-    const CoreBasicNineSliceInfo& GetImageInfo() const noexcept
+    [[nodiscard]] const CoreBasicNineSliceInfo& GetImageInfo() const noexcept
     {
       return m_info.ImageInfo;
     }
 
-    const RenderBasicNineSliceInfo& GetRenderInfo() const noexcept
+    [[nodiscard]] const RenderBasicNineSliceInfo& GetRenderInfo() const noexcept
     {
       return m_info.RenderInfo;
     }
 
-    uint32_t GetMaterialCount() const noexcept final
+    [[nodiscard]] uint32_t GetMaterialCount() const noexcept final
     {
       return 1u;
     }
-    const SpriteMaterialInfo& GetMaterialInfo(const uint32_t index) const final;
+    [[nodiscard]] const SpriteMaterialInfo& GetMaterialInfo(const uint32_t index) const final;
     void Resize(const uint32_t densityDpi) final;
   };
 }

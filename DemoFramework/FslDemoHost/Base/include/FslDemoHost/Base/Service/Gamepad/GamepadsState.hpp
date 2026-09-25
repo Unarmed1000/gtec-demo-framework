@@ -49,19 +49,19 @@ namespace Fsl
   public:
     GamepadsState();
 
-    bool IsConfigured() const
+    [[nodiscard]] bool IsConfigured() const
     {
       return m_isConfigured;
     }
 
-    GamepadDeadZoneType GetDeadZoneType() const
+    [[nodiscard]] GamepadDeadZoneType GetDeadZoneType() const
     {
       return m_deadZoneType;
     }
     void SetDeadZoneType(const GamepadDeadZoneType type);
 
-    uint32_t GetCount() const;
-    GamepadState GetState(const uint32_t gamepadIndex) const;
+    [[nodiscard]] uint32_t GetCount() const;
+    [[nodiscard]] GamepadState GetState(const uint32_t gamepadIndex) const;
 
     // From INativeWindowEventListener
     void OnNativeWindowEvent(const NativeWindowEvent& event) override;

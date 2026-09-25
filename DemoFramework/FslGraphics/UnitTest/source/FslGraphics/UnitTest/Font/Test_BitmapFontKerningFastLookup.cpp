@@ -53,7 +53,7 @@ namespace
 
 TEST(TestFont_BitmapFontKerningFastLookup, Construct)
 {
-  BitmapFontKerningFastLookup fastlookup(SpanUtil::AsReadOnlySpan(g_kernings));
+  const BitmapFontKerningFastLookup fastlookup(SpanUtil::AsReadOnlySpan(g_kernings));
 
   for (std::size_t i = 0; i < g_kernings.size(); ++i)
   {
@@ -70,7 +70,7 @@ TEST(TestFont_BitmapFontKerningFastLookup, Construct)
 
 TEST(TestFont_BitmapFontKerningFastLookup, TryGet_NotFound)
 {
-  BitmapFontKerningFastLookup fastlookup(SpanUtil::AsReadOnlySpan(g_kernings));
+  const BitmapFontKerningFastLookup fastlookup(SpanUtil::AsReadOnlySpan(g_kernings));
 
   EXPECT_TRUE(nullptr == fastlookup.TryGet(0x39, 0));
   EXPECT_TRUE(nullptr == fastlookup.TryGet(0x139, 0));

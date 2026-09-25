@@ -75,8 +75,9 @@ namespace Fsl
       Bitmap::ScopedDirectReadWriteAccess bitmapAccess(rBitmap);
 
       RawBitmapEx srcRawBitmap = bitmapAccess.AsRawBitmap();
-      RawBitmapEx dstRawBitmap = RawBitmapEx::TryCreate(Span<uint8_t>(static_cast<uint8_t*>(srcRawBitmap.Content()), srcRawBitmap.GetByteSize()),
-                                                        srcRawBitmap.GetSize(), desiredPixelFormat, dstPreferredStride, rBitmap.GetOrigin());
+      const RawBitmapEx dstRawBitmap =
+        RawBitmapEx::TryCreate(Span<uint8_t>(static_cast<uint8_t*>(srcRawBitmap.Content()), srcRawBitmap.GetByteSize()), srcRawBitmap.GetSize(),
+                               desiredPixelFormat, dstPreferredStride, rBitmap.GetOrigin());
       if (!dstRawBitmap.IsValid())
       {
         // Inplace conversion is not possible as the RawBitmapEx using the given data is not valid

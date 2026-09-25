@@ -44,7 +44,7 @@ namespace Fsl::Vulkan
     virtual void Configure(const VkInstance instance, const VkPhysicalDevice physicalDevice) = 0;
 
     //! @brief the returned pointer must be valid as long as this object is alive!
-    virtual const void* GetVkDeviceCreateInfoNextPointer() const = 0;
+    [[nodiscard]] virtual const void* GetVkDeviceCreateInfoNextPointer() const = 0;
   };
 }
 

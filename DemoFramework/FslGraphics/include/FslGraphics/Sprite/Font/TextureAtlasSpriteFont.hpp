@@ -122,33 +122,33 @@ namespace Fsl
     void Reset(const SpriteNativeAreaCalc& spriteNativeAreaCalc, const PxExtent2D textureExtentPx, const ITextureAtlas& textureAtlas,
                const IFontBasicKerning& basicFontKerning, const uint32_t densityDpi);
 
-    BitmapFontType GetFontType() const
+    [[nodiscard]] BitmapFontType GetFontType() const
     {
       return m_fontType;
     }
 
 
-    BitmapFontSdfParams GetSdfParams() const
+    [[nodiscard]] BitmapFontSdfParams GetSdfParams() const
     {
       return m_sdfParams;
     }
 
 
-    PxSize1D BaseLinePx() const
+    [[nodiscard]] PxSize1D BaseLinePx() const
     {
       return PxSize1D(m_lookup.GetBaseLinePx());
     }
 
     //! @brief Get the baseline in pixels for the given font config
-    PxValueU16 BaseLinePx(const BitmapFontConfig& fontConfig) const;
+    [[nodiscard]] PxValueU16 BaseLinePx(const BitmapFontConfig& fontConfig) const;
 
-    PxSize1D LineSpacingPx() const
+    [[nodiscard]] PxSize1D LineSpacingPx() const
     {
       return PxSize1D(m_lookup.GetLineSpacingPx());
     }
 
     //! @brief Get the line spacing in pixels for the given font config
-    PxValueU16 LineSpacingPx(const BitmapFontConfig& fontConfig) const;
+    [[nodiscard]] PxValueU16 LineSpacingPx(const BitmapFontConfig& fontConfig) const;
 
 
     //! @brief Measure the string size in pixels
@@ -158,7 +158,7 @@ namespace Fsl
     }
 
     //! @brief Measure the string size in pixels
-    PxSize2D MeasureString(const StringViewLite& strView) const;
+    [[nodiscard]] PxSize2D MeasureString(const StringViewLite& strView) const;
 
     //! @brief Measure the string size in pixels taking into account the font config
     PxSize2D MeasureString(const char* const psz, const BitmapFontConfig& fontConfig) const
@@ -167,7 +167,7 @@ namespace Fsl
     }
 
     //! @brief Measure the string size in pixels taking into account the font config
-    PxSize2D MeasureString(const StringViewLite& strView, const BitmapFontConfig& fontConfig) const;
+    [[nodiscard]] PxSize2D MeasureString(const StringViewLite& strView, const BitmapFontConfig& fontConfig) const;
 
     //! @brief Extract render rules for the supplied string.
     //! @param rDst a vector that can contain at least 'length' entries
@@ -186,13 +186,13 @@ namespace Fsl
     [[nodiscard]] bool ExtractRenderRules(Span<SpriteFontGlyphPosition> dst, const StringViewLite& strView, const BitmapFontConfig& fontConfig) const;
 
     //! @brief Do a glyph info lookup
-    const SpriteFontCharInfo* TryGetChar(const uint32_t charId) const
+    [[nodiscard]] const SpriteFontCharInfo* TryGetChar(const uint32_t charId) const
     {
       return m_lookup.TryGetChar(charId);
     }
 
     //! @brief Do a glyph info lookup
-    const SpriteFontCharInfo& GetBitmapFontChar(const uint32_t charId) const
+    [[nodiscard]] const SpriteFontCharInfo& GetBitmapFontChar(const uint32_t charId) const
     {
       return m_lookup.GetChar(charId, m_unknownChar);
     }

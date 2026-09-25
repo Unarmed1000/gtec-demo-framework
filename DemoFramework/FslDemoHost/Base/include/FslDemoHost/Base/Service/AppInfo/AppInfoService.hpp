@@ -51,8 +51,8 @@ namespace Fsl
     ~AppInfoService() final;
 
     // IAppInfoService
-    StringViewLite GetAppName() const final;
-    bool IsDebugBuild() const final;
+    [[nodiscard]] StringViewLite GetAppName() const final;
+    [[nodiscard]] bool IsDebugBuild() const final;
 
     // IAppInfoControlService
     void SetAppName(const StringViewLite& name) final;

@@ -51,7 +51,7 @@ namespace
 
 TEST(TestBitmap_ReadOnlyRawBitmap, Construct_Default)
 {
-  ReadOnlyRawBitmap rawBitmap;
+  const ReadOnlyRawBitmap rawBitmap;
 
   ASSERT_TRUE(rawBitmap.IsValid());
   EXPECT_EQ(ReadOnlyRawBitmapEmpty::GetEmptyAddress(), rawBitmap.Content());
@@ -83,7 +83,7 @@ TEST(TestBitmap_ReadOnlyRawBitmap, Create_Span_Size_PixelFormat_Origin)
   constexpr PixelFormat SrcPixelFormat = PixelFormat::R8G8B8A8_UNORM;
   constexpr BitmapOrigin SrcBitmapOrigin = BitmapOrigin::LowerLeft;
 
-  auto rawBitmap = ReadOnlyRawBitmap::Create(SpanUtil::AsReadOnlySpan(srcContent), SrcSizePx, SrcPixelFormat, SrcBitmapOrigin);
+  const auto rawBitmap = ReadOnlyRawBitmap::Create(SpanUtil::AsReadOnlySpan(srcContent), SrcSizePx, SrcPixelFormat, SrcBitmapOrigin);
 
   constexpr PxExtent2D SrcExtent = TypeConverter::To<PxExtent2D>(SrcSizePx);
 
@@ -117,7 +117,7 @@ TEST(TestBitmap_ReadOnlyRawBitmap, Create_Span_Extent_PixelFormat_Origin)
   constexpr PixelFormat SrcPixelFormat = PixelFormat::R8G8B8A8_UNORM;
   constexpr BitmapOrigin SrcBitmapOrigin = BitmapOrigin::LowerLeft;
 
-  auto rawBitmap = ReadOnlyRawBitmap::Create(SpanUtil::AsReadOnlySpan(srcContent), SrcExtentPx, SrcPixelFormat, SrcBitmapOrigin);
+  const auto rawBitmap = ReadOnlyRawBitmap::Create(SpanUtil::AsReadOnlySpan(srcContent), SrcExtentPx, SrcPixelFormat, SrcBitmapOrigin);
 
   constexpr PxSize2D SrcSize = TypeConverter::To<PxSize2D>(SrcExtentPx);
 
@@ -153,7 +153,7 @@ TEST(TestBitmap_ReadOnlyRawBitmap, Create_Span_Size_PixelFormat_Stride_Origin)
 
   constexpr uint32_t SrcStride = PixelFormatUtil::CalcMinimumStride(SrcWidthPx, SrcPixelFormat);
 
-  auto rawBitmap = ReadOnlyRawBitmap::Create(SpanUtil::AsReadOnlySpan(srcContent), SrcSizePx, SrcPixelFormat, SrcStride, SrcBitmapOrigin);
+  const auto rawBitmap = ReadOnlyRawBitmap::Create(SpanUtil::AsReadOnlySpan(srcContent), SrcSizePx, SrcPixelFormat, SrcStride, SrcBitmapOrigin);
 
   constexpr PxExtent2D SrcExtent = TypeConverter::To<PxExtent2D>(SrcSizePx);
 
@@ -191,7 +191,7 @@ TEST(TestBitmap_ReadOnlyRawBitmap, Create_Span_Extent_PixelFormat_Stride_Origin)
 
   constexpr uint32_t SrcStride = PixelFormatUtil::CalcMinimumStride(SrcWidthPx, SrcPixelFormat);
 
-  auto rawBitmap = ReadOnlyRawBitmap::Create(SpanUtil::AsReadOnlySpan(srcContent), SrcExtent, SrcPixelFormat, SrcStride, SrcBitmapOrigin);
+  const auto rawBitmap = ReadOnlyRawBitmap::Create(SpanUtil::AsReadOnlySpan(srcContent), SrcExtent, SrcPixelFormat, SrcStride, SrcBitmapOrigin);
 
   constexpr PxSize2D SrcSizePx = TypeConverter::To<PxSize2D>(SrcExtent);
 

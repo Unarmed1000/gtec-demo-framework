@@ -80,7 +80,7 @@ namespace Fsl::UI
     //! @brief check if its expired
     //! @warning Even if this returns true the next call to get might fail
     //!          So if you want to use the custom context and allow for a 'null' result use TryGet
-    bool IsExpired() const
+    [[nodiscard]] bool IsExpired() const
     {
       return m_context.expired();
     }

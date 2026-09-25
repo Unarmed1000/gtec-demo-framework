@@ -79,7 +79,7 @@ namespace Fsl::Vulkan
       Reset();
     }
 
-    VkDescriptorSet Get() const
+    [[nodiscard]] VkDescriptorSet Get() const
     {
       return m_descriptorSet;
     }

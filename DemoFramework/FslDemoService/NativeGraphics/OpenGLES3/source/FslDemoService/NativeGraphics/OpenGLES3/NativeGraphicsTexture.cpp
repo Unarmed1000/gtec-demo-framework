@@ -64,7 +64,7 @@ namespace Fsl::GLES3
 
   void NativeGraphicsTexture::SetData(const ReadOnlyRawTexture& texture, const Texture2DFilterHint filterHint, const TextureFlags textureFlags)
   {
-    auto params = Convert(filterHint);
+    const auto params = Convert(filterHint);
     m_texture.SetData(texture, params, textureFlags);
   }
 

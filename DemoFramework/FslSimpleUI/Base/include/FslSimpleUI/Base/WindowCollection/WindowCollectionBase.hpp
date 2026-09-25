@@ -56,7 +56,7 @@ namespace Fsl::UI
   protected:
     void DoInit(BaseWindow* const pOwner, const std::shared_ptr<IWindowManager>& windowManager);
 
-    bool IsInitialized() const
+    [[nodiscard]] bool IsInitialized() const
     {
       return m_windowManager != nullptr;
     }

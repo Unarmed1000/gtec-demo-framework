@@ -51,20 +51,20 @@ namespace Fsl::UI
     {
     }
 
-    UIColor Get() const noexcept
+    [[nodiscard]] UIColor Get() const noexcept
     {
       return m_externalColor;
     }
 
     bool Set(const UIColorConverter converter, const UIColor value) noexcept
     {
-      bool changed = value != m_externalColor;
+      const bool changed = value != m_externalColor;
       m_externalColor = value;
       m_internalColor = converter.Convert(value);
       return changed;
     }
 
-    UIRenderColor GetInternalColor() const noexcept
+    [[nodiscard]] UIRenderColor GetInternalColor() const noexcept
     {
       return m_internalColor;
     }

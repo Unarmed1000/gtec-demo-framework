@@ -36,10 +36,10 @@
 #include <FslBase/Math/MathHelper_Clamp.hpp>
 #include <FslBase/Math/Vector4.hpp>
 #include <FslGraphics/Color.hpp>
-#include <FslGraphics/ColorU16.hpp>
 #include <FslGraphics/ColorChannelConverter.hpp>
 #include <FslGraphics/ColorChannelValueU16.hpp>
 #include <FslGraphics/ColorChannelValueU8.hpp>
+#include <FslGraphics/ColorU16.hpp>
 #include <FslGraphics/PackedColor32.hpp>
 #include <FslGraphics/PackedColor64.hpp>
 #include <cmath>
@@ -79,13 +79,15 @@ namespace Fsl::UI
     }
 
 
-    constexpr UIRenderColor(const ColorChannelValueU8 r, const ColorChannelValueU8 g, const ColorChannelValueU8 b, const ColorChannelValueU8 a) noexcept
-      : UIRenderColor(ColorChannelConverter::ToU16(r), ColorChannelConverter::ToU16(g), ColorChannelConverter::ToU16(b), ColorChannelConverter::ToU16(a))
+    constexpr UIRenderColor(const ColorChannelValueU8 r, const ColorChannelValueU8 g, const ColorChannelValueU8 b,
+                            const ColorChannelValueU8 a) noexcept
+      : UIRenderColor(ColorChannelConverter::ToU16(r), ColorChannelConverter::ToU16(g), ColorChannelConverter::ToU16(b),
+                      ColorChannelConverter::ToU16(a))
     {
     }
 
     constexpr UIRenderColor(const ColorChannelValueU16 r, const ColorChannelValueU16 g, const ColorChannelValueU16 b,
-                       const ColorChannelValueU16 a) noexcept
+                            const ColorChannelValueU16 a) noexcept
       : m_r(r.RawValue)
       , m_g(g.RawValue)
       , m_b(b.RawValue)
@@ -109,12 +111,12 @@ namespace Fsl::UI
     {
     }
 
-    constexpr bool IsOpaque() const noexcept
+    [[nodiscard]] constexpr bool IsOpaque() const noexcept
     {
       return m_a == 0xFFFF;
     }
 
-    constexpr Vector4 ToVector4() const noexcept
+    [[nodiscard]] constexpr Vector4 ToVector4() const noexcept
     {
       return {static_cast<float>(RawR()) / 65535.0f, static_cast<float>(RawG()) / 65535.0f, static_cast<float>(RawB()) / 65535.0f,
               static_cast<float>(RawA()) / 65535.0f};
@@ -122,61 +124,61 @@ namespace Fsl::UI
 
 
     //! get the packed value
-    constexpr PackedColor32 AsPackedColor32() const noexcept
+    [[nodiscard]] constexpr PackedColor32 AsPackedColor32() const noexcept
     {
       return {ColorChannelConverter::ToU8(R()), ColorChannelConverter::ToU8(G()), ColorChannelConverter::ToU8(B()), ColorChannelConverter::ToU8(A())};
     }
 
     //! get the packed value
-    constexpr PackedColor64 AsPackedColor64() const noexcept
+    [[nodiscard]] constexpr PackedColor64 AsPackedColor64() const noexcept
     {
       return {R(), G(), B(), A()};
     }
 
     //! @brief get the red component
-    constexpr ColorChannelValueU16 R() const noexcept
+    [[nodiscard]] constexpr ColorChannelValueU16 R() const noexcept
     {
       return ColorChannelValueU16(m_r);
     }
 
     //! @brief get the green component
-    constexpr ColorChannelValueU16 G() const noexcept
+    [[nodiscard]] constexpr ColorChannelValueU16 G() const noexcept
     {
       return ColorChannelValueU16(m_g);
     }
 
     //! @brief get the blue component
-    constexpr ColorChannelValueU16 B() const noexcept
+    [[nodiscard]] constexpr ColorChannelValueU16 B() const noexcept
     {
       return ColorChannelValueU16(m_b);
     }
 
     //! @brief get the alpha component
-    constexpr ColorChannelValueU16 A() const noexcept
+    [[nodiscard]] constexpr ColorChannelValueU16 A() const noexcept
     {
       return ColorChannelValueU16(m_a);
     }
 
     //! @brief get the red component
-    constexpr uint16_t RawR() const noexcept
+    [[nodiscard]] constexpr uint16_t RawR() const noexcept
     {
       return m_r;
     }
 
     //! @brief get the green component
-    constexpr uint16_t RawG() const noexcept
+    [[nodiscard]] constexpr uint16_t RawG() const noexcept
     {
       return m_g;
     }
 
     //! @brief get the blue component
-    constexpr uint16_t RawB() const noexcept
+    [[nodiscard]] constexpr uint16_t RawB() const noexcept
     {
       return m_b;
     }
 
     //! @brief get the alpha component
-    constexpr uint16_t RawA() const noexcept
+    [[nodiscard]] constexpr uint16_t RawA() const noexcept
     {
       return m_a;
     }
@@ -367,8 +369,8 @@ namespace Fsl::UI
 
     //------------------------------------------------------------------------------------------------------------------------------------------------
 
-    static inline UIRenderColor Bilinear(const UIRenderColor val00, const UIRenderColor val10, const UIRenderColor val01, const UIRenderColor val11, const float weightX,
-                                    const float weightY) noexcept
+    static inline UIRenderColor Bilinear(const UIRenderColor val00, const UIRenderColor val10, const UIRenderColor val01, const UIRenderColor val11,
+                                         const float weightX, const float weightY) noexcept
     {
       return UncheckedCreate(
         MathHelper::Bilinear(static_cast<float>(val00.RawR()) / 65535.0f, static_cast<float>(val10.RawR()) / 65535.0f,

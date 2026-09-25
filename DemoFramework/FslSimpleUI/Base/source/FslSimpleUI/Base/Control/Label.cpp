@@ -92,8 +92,8 @@ namespace Fsl::UI
 
   DataBinding::DataBindingInstanceHandle Label::TryGetPropertyHandleNow(const DataBinding::DependencyPropertyDefinition& sourceDef)
   {
-    auto res = DataBinding::DependencyObjectHelper::TryGetPropertyHandle(this, ThisDependencyObject(), sourceDef,
-                                                                         DataBinding::PropLinkRefs(PropertyContent, m_propertyContent));
+    const auto res = DataBinding::DependencyObjectHelper::TryGetPropertyHandle(this, ThisDependencyObject(), sourceDef,
+                                                                               DataBinding::PropLinkRefs(PropertyContent, m_propertyContent));
     return res.IsValid() ? res : base_type::TryGetPropertyHandleNow(sourceDef);
   }
 
@@ -101,8 +101,8 @@ namespace Fsl::UI
   DataBinding::PropertySetBindingResult Label::TrySetBindingNow(const DataBinding::DependencyPropertyDefinition& targetDef,
                                                                 const DataBinding::Binding& binding)
   {
-    auto res = DataBinding::DependencyObjectHelper::TrySetBinding(this, ThisDependencyObject(), targetDef, binding,
-                                                                  DataBinding::PropLinkRefs(PropertyContent, m_propertyContent));
+    const auto res = DataBinding::DependencyObjectHelper::TrySetBinding(this, ThisDependencyObject(), targetDef, binding,
+                                                                        DataBinding::PropLinkRefs(PropertyContent, m_propertyContent));
     return res != DataBinding::PropertySetBindingResult::NotFound ? res : base_type::TrySetBindingNow(targetDef, binding);
   }
 

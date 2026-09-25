@@ -337,7 +337,7 @@ namespace Fsl::DataBinding
                                                     const DependencyPropertyDefinition& thisPropertyDef)
     {
       assert(pOwnerThis != nullptr);
-      auto typedMethods =
+      const auto typedMethods =
         std::dynamic_pointer_cast<Internal::TypedReadOnlyDependencyPropertyMethodsDefinition<StringViewLite>>(thisPropertyDef.GetMethods());
       if (!typedMethods)
       {
@@ -355,7 +355,7 @@ namespace Fsl::DataBinding
                                                     const DependencyPropertyDefinition& thisPropertyDef)
     {
       assert(pOwnerThis != nullptr);
-      auto typedMethods =
+      const auto typedMethods =
         std::dynamic_pointer_cast<Internal::TypedReadOnlyDependencyPropertyMethodsDefinition<StringViewLite>>(thisPropertyDef.GetMethods());
       if (!typedMethods)
       {

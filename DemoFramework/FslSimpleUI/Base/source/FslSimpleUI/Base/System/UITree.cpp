@@ -65,7 +65,7 @@ namespace Fsl::UI
 
     inline void RemoveDictEntry(WindowToNodeMap& rDict, const std::shared_ptr<BaseWindow>& window)
     {
-      auto itrNode = rDict.find(window.get());
+      const auto itrNode = rDict.find(window.get());
       if (itrNode != rDict.end())
       {
         rDict.erase(itrNode);
@@ -91,8 +91,8 @@ namespace Fsl::UI
                                        FastTreeNodeVector* pNewWindows)
     {
       // Depth first close
-      auto& nodeChildren = node->m_children;
-      for (auto& child : nodeChildren)
+      const auto& nodeChildren = node->m_children;
+      for (const auto& child : nodeChildren)
       {
         CommandScheduleCloseEx(rDict, rModuleCallbackRegistry, child, pNewWindows);
         assert(child->IsDisposed());
@@ -102,7 +102,7 @@ namespace Fsl::UI
       // Check if its in the newWindowsList and remove it if it was
       if (pNewWindows != nullptr)
       {
-        auto itrFind = std::find(pNewWindows->begin(), pNewWindows->end(), node.get());
+        const auto itrFind = std::find(pNewWindows->begin(), pNewWindows->end(), node.get());
         if (itrFind != pNewWindows->end())
         {
           pNewWindows->erase(itrFind);
@@ -132,7 +132,7 @@ namespace Fsl::UI
       CommandScheduleCloseEx(rDict, rModuleCallbackRegistry, node, pNewWindows);
 
       // Remove the node from the parent
-      auto parent = node->GetParent();
+      const auto parent = node->GetParent();
       if (parent)
       {
         parent->RemoveChild(node);
@@ -144,7 +144,7 @@ namespace Fsl::UI
     inline void CommandScheduleCloseChildren(WindowToNodeMap& rDict, ModuleCallbackRegistry& rModuleCallbackRegistry,
                                              const std::shared_ptr<TreeNode>& node, FastTreeNodeVector* pNewWindows)
     {
-      auto& nodeChildren = node->m_children;
+      const auto& nodeChildren = node->m_children;
       for (const auto& childNode : nodeChildren)
       {
         CommandScheduleCloseEx(rDict, rModuleCallbackRegistry, childNode, pNewWindows);
@@ -222,7 +222,7 @@ namespace Fsl::UI
 
     try
     {
-      auto res = rootWindow->GetScreenResolutionPx();
+      const auto res = rootWindow->GetScreenResolutionPx();
       m_rootWindow = rootWindow;
       m_root = std::make_shared<TreeNode>(m_rootWindow);
       m_rootRectPx = PxRectangle(PxValue(0), PxValue(0), res.Width(), res.Height());
@@ -299,7 +299,7 @@ namespace Fsl::UI
         return;
       }
 
-      ScopedContextChange scopedContextChange(this, Context::Internal);
+      const ScopedContextChange scopedContextChange(this, Context::Internal);
 
       ScheduleCloseAll();
 
@@ -376,7 +376,7 @@ namespace Fsl::UI
     {
       throw UsageErrorException("Internal state must be ready");
     }
-    ScopedContextChange scopedContextChange(this, Context::Internal);
+    const ScopedContextChange scopedContextChange(this, Context::Internal);
 
     ProcessEvents(nullptr);
   }
@@ -388,13 +388,13 @@ namespace Fsl::UI
     {
       throw UsageErrorException("Internal state must be ready");
     }
-    ScopedContextChange scopedContextChange(this, Context::Internal);
+    const ScopedContextChange scopedContextChange(this, Context::Internal);
 
     if (m_rootWindow->SetScreenResolution(extentPx, densityDpi))
     {
       const ResolutionChangedInfo resChangeInfo(densityDpi);
       m_root->OnResolutionChanged(resChangeInfo);
-      auto sizePx = TypeConverter::UncheckedTo<PxPoint2>(extentPx);
+      const auto sizePx = TypeConverter::UncheckedTo<PxPoint2>(extentPx);
       m_rootRectPx = PxRectangle(PxValue(0), PxValue(0), sizePx.X, sizePx.Y);
       m_layoutIsDirty = true;
     }
@@ -406,7 +406,7 @@ namespace Fsl::UI
     {
       throw UsageErrorException("Internal state must be ready");
     }
-    ScopedContextChange scopedContextChange(this, Context::Internal);
+    const ScopedContextChange scopedContextChange(this, Context::Internal);
 
     m_stats = {};
 
@@ -455,7 +455,7 @@ namespace Fsl::UI
       throw UsageErrorException("Internal state must be ready");
     }
 
-    ScopedContextChange scopedContextChange(this, Context::Internal);
+    const ScopedContextChange scopedContextChange(this, Context::Internal);
 
     for (const auto& record : m_vectorDraw)
     {
@@ -473,7 +473,7 @@ namespace Fsl::UI
     {
       return 0;
     }
-    auto result = m_dict.size();
+    const auto result = m_dict.size();
     // We dont report the root node to externals
     return result > 0 ? result - 1 : 0;
   }
@@ -494,7 +494,7 @@ namespace Fsl::UI
       FSLLOG3_WARNING("PointFromScreen unknown window");
       return {};
     }
-    PxPoint2 topLeftPx = itr->second->CalcScreenTopLeftCornerPx();
+    const PxPoint2 topLeftPx = itr->second->CalcScreenTopLeftCornerPx();
     return (topLeftPx + point);
   }
 
@@ -515,7 +515,7 @@ namespace Fsl::UI
     }
 
     // For now we do the px rounding here
-    PxPoint2 topLeftPx = itr->second->CalcScreenTopLeftCornerPx();
+    const PxPoint2 topLeftPx = itr->second->CalcScreenTopLeftCornerPx();
     return (point - topLeftPx);
   }
 
@@ -541,7 +541,7 @@ namespace Fsl::UI
     }
     FSLLOG3_WARNING_IF(m_context == Context::InternalLayout, "Children should not be added during layout");
 
-    ScopedContextChange scopedContextChange(this, Context::Internal);
+    const ScopedContextChange scopedContextChange(this, Context::Internal);
 
     if (parentWindow == nullptr || !window)
     {
@@ -564,7 +564,7 @@ namespace Fsl::UI
 
 
     // We add the element to the lookup dict right away
-    auto node = std::make_shared<TreeNode>(itrParent->second, window);
+    const auto node = std::make_shared<TreeNode>(itrParent->second, window);
     try
     {
       m_dict.emplace(window.get(), node);
@@ -639,7 +639,7 @@ namespace Fsl::UI
     {
       throw UsageErrorException("Internal state must be ready");
     }
-    ScopedContextChange scopedContextChange(this, Context::Internal);
+    const ScopedContextChange scopedContextChange(this, Context::Internal);
 
     if (!tree || !window)
     {
@@ -668,7 +668,7 @@ namespace Fsl::UI
     }
     FSLLOG3_WARNING_IF(m_context == Context::InternalLayout, "Windows should not be closed during layout");
 
-    ScopedContextChange scopedContextChange(this, Context::Internal);
+    const ScopedContextChange scopedContextChange(this, Context::Internal);
 
     if (!window)
     {
@@ -707,7 +707,7 @@ namespace Fsl::UI
     }
     FSLLOG3_WARNING_IF(m_context == Context::InternalLayout, "Windows should not be closed during layout");
 
-    ScopedContextChange scopedContextChange(this, Context::Internal);
+    const ScopedContextChange scopedContextChange(this, Context::Internal);
 
     if (!parentWindow)
     {
@@ -742,7 +742,7 @@ namespace Fsl::UI
 
     FSLLOG3_WARNING_IF(m_context == Context::InternalLayout, "Windows flags should not be touched during layout");
 
-    ScopedContextChange scopedContextChange(this, Context::Internal);
+    const ScopedContextChange scopedContextChange(this, Context::Internal);
 
     if (pWindow == nullptr)
     {
@@ -831,7 +831,7 @@ namespace Fsl::UI
     }
     FSLLOG3_WARNING_IF(m_context == Context::InternalLayout, "Windows flags should not be touched during layout");
 
-    ScopedContextChange scopedContextChange(this, Context::Internal);
+    const ScopedContextChange scopedContextChange(this, Context::Internal);
 
     if (pWindow == nullptr)
     {
@@ -877,7 +877,7 @@ namespace Fsl::UI
       throw UsageErrorException("Internal state must be ready");
     }
     // ScopedContextChange scopedContextChange(this, Context::Internal);  --> Nothing here does callbacks, so no need for a context change
-    auto itr = m_dict.find(pWindowId);
+    const auto itr = m_dict.find(pWindowId);
     if (itr == m_dict.end())
     {
       return {};
@@ -985,8 +985,8 @@ namespace Fsl::UI
     {
       throw UsageErrorException("GetWindowRectanglePx() Unknown window");
     }
-    PxPoint2 topLeftPx = itr->second->CalcScreenTopLeftCornerPx();
-    PxSize2D renderSizePx = itr->second->GetWindow()->RenderSizePx();
+    const PxPoint2 topLeftPx = itr->second->CalcScreenTopLeftCornerPx();
+    const PxSize2D renderSizePx = itr->second->GetWindow()->RenderSizePx();
     return {topLeftPx, renderSizePx};
   }
 
@@ -1004,8 +1004,8 @@ namespace Fsl::UI
     {
       return {};
     }
-    PxPoint2 topLeftPx = itr->second->CalcScreenTopLeftCornerPx();
-    PxSize2D renderSizePx = itr->second->GetWindow()->RenderSizePx();
+    const PxPoint2 topLeftPx = itr->second->CalcScreenTopLeftCornerPx();
+    const PxSize2D renderSizePx = itr->second->GetWindow()->RenderSizePx();
     return {PxRectangle(topLeftPx, renderSizePx)};
   }
 
@@ -1022,7 +1022,7 @@ namespace Fsl::UI
     }
 
     // Move to the system level context
-    ScopedContextChange scopedContextChange(this, Context::Internal);
+    const ScopedContextChange scopedContextChange(this, Context::Internal);
 
     if (!target)
     {
@@ -1062,7 +1062,7 @@ namespace Fsl::UI
   bool UITree::PerformLayout()
   {
     assert(m_state == State::Ready);
-    ScopedContextChange scopedContextChange(this, Context::InternalLayout);
+    const ScopedContextChange scopedContextChange(this, Context::InternalLayout);
 
     bool layoutPerformed = false;
     if (m_layoutIsDirty)
@@ -1076,7 +1076,7 @@ namespace Fsl::UI
       m_rootWindow->Measure(sizePx);
       m_rootWindow->Arrange(m_rootRectPx);
 
-      auto& rRootChildren = m_root->m_children;
+      const auto& rRootChildren = m_root->m_children;
       for (const auto& record : rRootChildren)
       {
         BaseWindow* pWin = record->GetWindowPointer();
@@ -1114,7 +1114,7 @@ namespace Fsl::UI
     m_vectorClickInputTarget.clear();
     m_vectorMouseOverTarget.clear();
 
-    DrawClipContext clipContext(m_clipEnabled, TypeConverter::UncheckedTo<PxAreaRectangleF>(!m_clipEnabled ? m_rootRectPx : m_rootClipRectPx));
+    const DrawClipContext clipContext(m_clipEnabled, TypeConverter::UncheckedTo<PxAreaRectangleF>(!m_clipEnabled ? m_rootRectPx : m_rootClipRectPx));
     RebuildDeques(m_root, m_rootRectPx, ItemVisibility::Visible, clipContext);
   }
 
@@ -1134,7 +1134,7 @@ namespace Fsl::UI
 
     if (flags.IsFlagged(WindowFlags::ClipEnabled))
     {
-      PxAreaRectangleF currentClipRectPxf(TypeConverter::UncheckedTo<PxAreaRectangleF>(currentRectPx));
+      const PxAreaRectangleF currentClipRectPxf(TypeConverter::UncheckedTo<PxAreaRectangleF>(currentRectPx));
       // parentContext.Clip.Enabled == false -> parent doesn't require clipping, but this window does
       // parentContext.Clip.Enabled == true  -> parent require clipping and this window require clipping
       drawClipContext = DrawClipContext(
@@ -1145,7 +1145,7 @@ namespace Fsl::UI
     }
     else if (drawClipContext.Enabled)
     {
-      PxAreaRectangleF currentInputRectPxf =
+      const PxAreaRectangleF currentInputRectPxf =
         PxAreaRectangleF::Intersect(drawClipContext.ClipRectanglePxf, TypeConverter::UncheckedTo<PxAreaRectangleF>(currentInputRectPx));
       // Use the clipped input rectangle
       currentInputRectPx = TypeConverter::UncheckedChangeTo<PxRectangle>(currentInputRectPxf);
@@ -1180,8 +1180,8 @@ namespace Fsl::UI
       m_vectorMouseOverTarget.emplace_back(currentInputRectPx, node);
     }
 
-    auto& nodeChildren = node->m_children;
-    for (auto& entry : nodeChildren)
+    const auto& nodeChildren = node->m_children;
+    for (const auto& entry : nodeChildren)
     {
       RebuildDeques(entry, currentRectPx, visibility, drawClipContext);
     }
@@ -1234,7 +1234,7 @@ namespace Fsl::UI
         // Ensure that all newly allocated windows gets their expected update
         for (const auto& node : m_nodeScratchpad)
         {
-          auto flags = node->GetFlags();
+          const auto flags = node->GetFlags();
           if (flags.IsFlagged(TreeNodeFlags::UpdateEnabled))
           {
             node->Update(timespan);
@@ -1263,7 +1263,7 @@ namespace Fsl::UI
   void UITree::ProcessEvents(FastTreeNodeVector* pNewWindows, const TreeNodeFlags filterFlags)
   {
     assert(m_state == State::Ready);
-    ScopedContextChange scopedContextChange(this, Context::System);
+    const ScopedContextChange scopedContextChange(this, Context::System);
 
     assert(m_eventQueue);
     assert(m_eventRecordQueue);
@@ -1332,7 +1332,7 @@ namespace Fsl::UI
     assert(eventRecord.Event);
 
     const EventDescription eventDesc = eventRecord.Event->GetDescription();
-    EventRoute::StackScopedInit scopedInit(m_eventRoute, eventDesc.RequiredFlags);
+    const EventRoute::StackScopedInit scopedInit(m_eventRoute, eventDesc.RequiredFlags);
     m_eventRoute.SetTarget(eventRecord.Node1, eventDesc.RoutingStrategy);
     m_eventRoute.Send(this, eventRecord.Event);
     m_eventRoute.Clear();

@@ -63,7 +63,7 @@ namespace Fsl
     ~SpriteMaterialInfo();
 
 
-    bool IsValid() const
+    [[nodiscard]] bool IsValid() const
     {
       return static_cast<bool>(Material);
     }

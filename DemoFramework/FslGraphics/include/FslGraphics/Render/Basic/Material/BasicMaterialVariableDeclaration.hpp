@@ -66,33 +66,33 @@ namespace Fsl
     void Reset(const BasicMaterialVariableElement* const pElements, const std::size_t elementCount, const uint32_t stride);
 
     //! @brief Get the vertex stride
-    uint32_t Stride() const
+    [[nodiscard]] uint32_t Stride() const
     {
       return m_stride;
     }
 
     //! @brief Get the number of elements
-    uint32_t Count() const;
+    [[nodiscard]] uint32_t Count() const;
 
 
-    BasicMaterialVariableElement At(const std::size_t index) const
+    [[nodiscard]] BasicMaterialVariableElement At(const std::size_t index) const
     {
       return m_elements[index];
     }
 
     //! @brief Get direct access to the elements
-    const BasicMaterialVariableElement* DirectAccess() const;
+    [[nodiscard]] const BasicMaterialVariableElement* DirectAccess() const;
 
     //! @brief Get the element index of for the given usage and usageIndex (if not found a NotFoundException is thrown)
-    int32_t VertexElementGetIndexOf(const BasicMaterialVariableElementUsage usage, const uint32_t usageIndex) const;
+    [[nodiscard]] int32_t VertexElementGetIndexOf(const BasicMaterialVariableElementUsage usage, const uint32_t usageIndex) const;
 
     //! @brief Find the element index of for the given usage and usageIndex (if not found <0 is returned)
-    int32_t VertexElementIndexOf(const BasicMaterialVariableElementUsage usage, const uint32_t usageIndex) const;
+    [[nodiscard]] int32_t VertexElementIndexOf(const BasicMaterialVariableElementUsage usage, const uint32_t usageIndex) const;
 
     //! @brief Get the element for the given usage and usageIndex (if not found a NotFoundException is thrown)
-    BasicMaterialVariableElement VertexElementGet(const BasicMaterialVariableElementUsage usage, const uint32_t usageIndex) const;
+    [[nodiscard]] BasicMaterialVariableElement VertexElementGet(const BasicMaterialVariableElementUsage usage, const uint32_t usageIndex) const;
 
-    BasicMaterialVariableDeclarationSpan AsSpan() const;
+    [[nodiscard]] BasicMaterialVariableDeclarationSpan AsSpan() const;
 
     bool operator==(const BasicMaterialVariableDeclaration& rhs) const;
     bool operator!=(const BasicMaterialVariableDeclaration& rhs) const;

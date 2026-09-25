@@ -299,7 +299,7 @@ namespace Fsl::GLES2
       FSLLOG3_WARNING(
         "The supplied texture is not using LowerLeft corner as it's origin as OpenGLES expects, causing a software flip before upload (performance "
         "loss)");
-      Bitmap tmpBitmap(bitmap, BitmapOrigin::LowerLeft);
+      const Bitmap tmpBitmap(bitmap, BitmapOrigin::LowerLeft);
       assert(tmpBitmap.GetOrigin() == BitmapOrigin::LowerLeft);
       const Bitmap::ScopedDirectReadAccess directAccess(tmpBitmap);
       SetData(directAccess.AsRawBitmap(), textureParameters, textureFlags);
@@ -380,12 +380,12 @@ namespace Fsl::GLES2
       FSLLOG3_WARNING(
         "The supplied textures is not using LowerLeft corner as it's origin as OpenGLES expects, causing a software flip before upload "
         "(performance loss)");
-      Bitmap tmpPosX(cubeBitmap.GetPosX(), BitmapOrigin::LowerLeft);
-      Bitmap tmpNegX(cubeBitmap.GetNegX(), BitmapOrigin::LowerLeft);
-      Bitmap tmpPosY(cubeBitmap.GetPosY(), BitmapOrigin::LowerLeft);
-      Bitmap tmpNegY(cubeBitmap.GetNegY(), BitmapOrigin::LowerLeft);
-      Bitmap tmpPosZ(cubeBitmap.GetPosZ(), BitmapOrigin::LowerLeft);
-      Bitmap tmpNegZ(cubeBitmap.GetNegZ(), BitmapOrigin::LowerLeft);
+      const Bitmap tmpPosX(cubeBitmap.GetPosX(), BitmapOrigin::LowerLeft);
+      const Bitmap tmpNegX(cubeBitmap.GetNegX(), BitmapOrigin::LowerLeft);
+      const Bitmap tmpPosY(cubeBitmap.GetPosY(), BitmapOrigin::LowerLeft);
+      const Bitmap tmpNegY(cubeBitmap.GetNegY(), BitmapOrigin::LowerLeft);
+      const Bitmap tmpPosZ(cubeBitmap.GetPosZ(), BitmapOrigin::LowerLeft);
+      const Bitmap tmpNegZ(cubeBitmap.GetNegZ(), BitmapOrigin::LowerLeft);
       assert(tmpPosX.GetOrigin() == BitmapOrigin::LowerLeft);
 
       const Bitmap::ScopedDirectReadAccess directAccessPosX(tmpPosX);

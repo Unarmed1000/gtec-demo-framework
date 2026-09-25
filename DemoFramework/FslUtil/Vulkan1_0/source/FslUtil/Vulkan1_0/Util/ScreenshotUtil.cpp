@@ -174,7 +174,7 @@ namespace Fsl::Vulkan::ScreenshotUtil
       const VkDevice device = image.TheImage.GetDevice();
 
       // Get information about the image layout
-      VkImageSubresource subResource{VK_IMAGE_ASPECT_COLOR_BIT, 0, 0};
+      const VkImageSubresource subResource{VK_IMAGE_ASPECT_COLOR_BIT, 0, 0};
       VkSubresourceLayout subResourceLayout{};
       vkGetImageSubresourceLayout(device, image.TheImage.Get(), &subResource, &subResourceLayout);
 
@@ -190,7 +190,7 @@ namespace Fsl::Vulkan::ScreenshotUtil
       // Do the extraction
       void* pImage = nullptr;
       // We use the scoped map class here since it will since its exception safe
-      Vulkan::VUScopedMapMemory scopedMap(device, image.TheMemory.Get(), 0, VK_WHOLE_SIZE, 0, &pImage);
+      const Vulkan::VUScopedMapMemory scopedMap(device, image.TheMemory.Get(), 0, VK_WHOLE_SIZE, 0, &pImage);
 
       assert(pImage != nullptr);
       assert(subResourceLayout.offset <= image.AllocationSize);
@@ -242,7 +242,7 @@ namespace Fsl::Vulkan::ScreenshotUtil
       return {};
     }
 
-    auto pixelFormat = VulkanConvert::ToPixelFormat(srcImageFormat);
+    const auto pixelFormat = VulkanConvert::ToPixelFormat(srcImageFormat);
     if (PixelFormatUtil::IsCompressed(pixelFormat))
     {
       FSLLOG3_WARNING("srcPixelFormat is compressed, capture cancelled");
@@ -261,14 +261,14 @@ namespace Fsl::Vulkan::ScreenshotUtil
     try
     {
       // Prepare the image that we will 'transfer' the screenshot to
-      auto dstImage = PrepareDstImage(physicalDevice, device, srcImageExtent, dstImageFormat);
+      const auto dstImage = PrepareDstImage(physicalDevice, device, srcImageExtent, dstImageFormat);
 
       VkCommandPoolCreateInfo commandPoolCreateInfo{};
       commandPoolCreateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
       commandPoolCreateInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
       commandPoolCreateInfo.queueFamilyIndex = queueFamilyIndex;
 
-      RapidVulkan::CommandPool commandPool(device, commandPoolCreateInfo);
+      const RapidVulkan::CommandPool commandPool(device, commandPoolCreateInfo);
 
       VkCommandBufferAllocateInfo commandBufferAllocateInfo{};
       commandBufferAllocateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;

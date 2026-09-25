@@ -66,7 +66,7 @@ namespace Fsl::UI
     std::string DoGetDescriptionString(const uint32_t microseconds)
     {
       fmt::memory_buffer buffer;
-      auto strView = DoGetDescriptionString(buffer, microseconds);
+      const auto strView = DoGetDescriptionString(buffer, microseconds);
       return std::string(strView);
     }
 

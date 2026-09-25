@@ -59,7 +59,7 @@ namespace Fsl
   private:
     static_assert(TBinCount > 0, "The bin count must be larger than zero");
     static_assert((TBinCount - 1) <= std::numeric_limits<TKey>::max(), "The bin count must fit inside the key type");
-    static_assert(std::is_unsigned<TKey>::value, "The key type must be unsigned");
+    static_assert(std::is_unsigned_v<TKey>, "The key type must be unsigned");
 
     struct Record
     {
@@ -91,7 +91,7 @@ namespace Fsl
     {
     }
 
-    bool Empty() const
+    [[nodiscard]] bool Empty() const
     {
       return m_isEmpty;
     }

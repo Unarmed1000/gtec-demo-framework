@@ -69,12 +69,12 @@ namespace Fsl::UI::Render
     {
     }
 
-    ReadOnlySpan<ChannelRecord> AsReadOnlySpan() const noexcept
+    [[nodiscard]] ReadOnlySpan<ChannelRecord> AsReadOnlySpan() const noexcept
     {
       return SpanUtil::UncheckedAsReadOnlySpan(m_channels, 0, m_channelEntries);
     }
 
-    bool IsEmpty() const noexcept
+    [[nodiscard]] bool IsEmpty() const noexcept
     {
       return m_channelEntries <= 0u;
     }

@@ -44,9 +44,9 @@ namespace Fsl
   public:
     virtual ~INativeTexture2D() = default;
 
-    virtual NativeTextureArea CalcNativeTextureArea(const PxRectangleU32& imageRectanglePx) const = 0;
+    [[nodiscard]] virtual NativeTextureArea CalcNativeTextureArea(const PxRectangleU32& imageRectanglePx) const = 0;
 
-    virtual BasicNativeTextureHandle TryGetNativeHandle() const noexcept = 0;
+    [[nodiscard]] virtual BasicNativeTextureHandle TryGetNativeHandle() const noexcept = 0;
   };
 }
 

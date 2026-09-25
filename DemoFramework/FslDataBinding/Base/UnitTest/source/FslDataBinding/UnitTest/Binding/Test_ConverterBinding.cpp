@@ -60,7 +60,7 @@ TEST(TestBind_ConverterBinding, NormalGetNormalSet)
   DataBinding::ConverterBinding<int32_t, float> binding(ConvertFloatToInt);
   DataBinding::AConverterBinding& genericConvertingBinding = binding;
 
-  auto res = genericConvertingBinding.Convert(valInt32.GetImplType(), &valInt32, valFloat.GetImplType(), &valFloat);
+  const auto res = genericConvertingBinding.Convert(valInt32.GetImplType(), &valInt32, valFloat.GetImplType(), &valFloat);
 
   EXPECT_EQ(DataBinding::Internal::PropertySetResult::ValueChanged, res);
   EXPECT_EQ(int32_t(2), valInt32.Get());
@@ -76,7 +76,7 @@ TEST(TestBind_ConverterBinding, NormalGetRefSet)
   DataBinding::ConverterBinding<int32_t, float> binding(ConvertFloatToInt);
   DataBinding::AConverterBinding& genericConvertingBinding = binding;
 
-  auto res = genericConvertingBinding.Convert(valInt32.GetImplType(), &valInt32, valFloat.GetImplType(), &valFloat);
+  const auto res = genericConvertingBinding.Convert(valInt32.GetImplType(), &valInt32, valFloat.GetImplType(), &valFloat);
 
   EXPECT_EQ(DataBinding::Internal::PropertySetResult::ValueChanged, res);
   EXPECT_EQ(int32_t(2), valInt32.Get());
@@ -94,7 +94,7 @@ TEST(TestBind_ConverterBinding, RefGetNormalSet)
   DataBinding::ConverterBinding<int32_t, float> binding(ConvertFloatToInt);
   DataBinding::AConverterBinding& genericConvertingBinding = binding;
 
-  auto res = genericConvertingBinding.Convert(valInt32.GetImplType(), &valInt32, valFloat.GetImplType(), &valFloat);
+  const auto res = genericConvertingBinding.Convert(valInt32.GetImplType(), &valInt32, valFloat.GetImplType(), &valFloat);
 
   EXPECT_EQ(DataBinding::Internal::PropertySetResult::ValueChanged, res);
   EXPECT_EQ(int32_t(2), valInt32.Get());
@@ -111,7 +111,7 @@ TEST(TestBind_ConverterBinding, RefGetRefSet)
   DataBinding::ConverterBinding<int32_t, float> binding(ConvertFloatToInt);
   DataBinding::AConverterBinding& genericConvertingBinding = binding;
 
-  auto res = genericConvertingBinding.Convert(valInt32.GetImplType(), &valInt32, valFloat.GetImplType(), &valFloat);
+  const auto res = genericConvertingBinding.Convert(valInt32.GetImplType(), &valInt32, valFloat.GetImplType(), &valFloat);
 
   EXPECT_EQ(DataBinding::Internal::PropertySetResult::ValueChanged, res);
   EXPECT_EQ(int32_t(2), valInt32.Get());

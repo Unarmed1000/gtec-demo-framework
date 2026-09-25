@@ -47,12 +47,12 @@ namespace
 
 TEST(Test_UTObservableCollection, Construct)
 {
-  auto dataBindingService = std::make_shared<DataBinding::DataBindingService>();
+  const auto dataBindingService = std::make_shared<DataBinding::DataBindingService>();
 
   EXPECT_EQ(0u, dataBindingService->InstanceCount());
   EXPECT_EQ(0u, dataBindingService->PendingChanges());
 
-  UTObservableCollection t0(dataBindingService);
+  const UTObservableCollection t0(dataBindingService);
 
   // The data binding is on demand so nothing is registered per default
   EXPECT_EQ(0u, dataBindingService->InstanceCount());
@@ -62,26 +62,26 @@ TEST(Test_UTObservableCollection, Construct)
 
 TEST(Test_UTObservableCollection, GetInstanceHandle)
 {
-  auto dataBindingService = std::make_shared<DataBinding::DataBindingService>();
+  const auto dataBindingService = std::make_shared<DataBinding::DataBindingService>();
 
   EXPECT_EQ(0u, dataBindingService->InstanceCount());
   EXPECT_EQ(0u, dataBindingService->PendingChanges());
 
-  UTObservableCollection t0(dataBindingService);
+  const UTObservableCollection t0(dataBindingService);
 
   // The data binding is on demand so nothing is registered per default
   EXPECT_EQ(0u, dataBindingService->InstanceCount());
   EXPECT_EQ(0u, dataBindingService->PendingChanges());
 
   // Getting the instance id will cause the data source to register itself (since its the first time its called)
-  auto hSourceInstance = t0.GetSourceInstanceHandle();
+  const auto hSourceInstance = t0.GetSourceInstanceHandle();
   EXPECT_TRUE(hSourceInstance.IsValid());
 
   EXPECT_EQ(1u, dataBindingService->InstanceCount());
   EXPECT_EQ(0u, dataBindingService->PendingChanges());
 
   // Getting the instance id a second time will return the cached entry
-  auto hSourceInstance2 = t0.GetSourceInstanceHandle();
+  const auto hSourceInstance2 = t0.GetSourceInstanceHandle();
   EXPECT_TRUE(hSourceInstance2.IsValid());
   EXPECT_EQ(hSourceInstance, hSourceInstance2);
 
@@ -92,7 +92,7 @@ TEST(Test_UTObservableCollection, GetInstanceHandle)
 
 TEST(Test_UTObservableCollection, MarkAsChanged_NoTarget)
 {
-  auto dataBindingService = std::make_shared<DataBinding::DataBindingService>();
+  const auto dataBindingService = std::make_shared<DataBinding::DataBindingService>();
 
   EXPECT_EQ(0u, dataBindingService->InstanceCount());
   EXPECT_EQ(0u, dataBindingService->PendingChanges());
@@ -112,9 +112,9 @@ TEST(Test_UTObservableCollection, MarkAsChanged_NoTarget)
 
 TEST(Test_UTObservableCollection, ChangedNotification)
 {
-  auto dataBindingService = std::make_shared<DataBinding::DataBindingService>();
+  const auto dataBindingService = std::make_shared<DataBinding::DataBindingService>();
 
-  auto t0 = std::make_shared<UTObservableCollection>(dataBindingService);
+  const auto t0 = std::make_shared<UTObservableCollection>(dataBindingService);
   UTDependencyObject2 t1(dataBindingService);
 
   EXPECT_EQ(0u, dataBindingService->InstanceCount());
@@ -141,9 +141,9 @@ TEST(Test_UTObservableCollection, ChangedNotification)
 
 TEST(Test_UTObservableCollection, ChangedNotification_PropertiesModified)
 {
-  auto dataBindingService = std::make_shared<DataBinding::DataBindingService>();
+  const auto dataBindingService = std::make_shared<DataBinding::DataBindingService>();
 
-  auto t0 = std::make_shared<UTObservableCollection>(dataBindingService);
+  const auto t0 = std::make_shared<UTObservableCollection>(dataBindingService);
   UTDependencyObject2 t1(dataBindingService);
   UTDependencyObject t2(dataBindingService);
 
@@ -185,7 +185,7 @@ TEST(Test_UTObservableCollection, ChangedNotification_PropertiesModified)
 
 TEST(Test_UTObservableCollection, SetBinding_TypedObserverDependencyProperty_TypedObserverDependencyProperty)
 {
-  auto dataBindingService = std::make_shared<DataBinding::DataBindingService>();
+  const auto dataBindingService = std::make_shared<DataBinding::DataBindingService>();
 
   UTDependencyObject2 t1(dataBindingService);
   UTDependencyObject2 t2(dataBindingService);
@@ -206,10 +206,10 @@ TEST(Test_UTObservableCollection, SetBinding_TypedObserverDependencyProperty_Typ
 
 TEST(Test_UTObservableCollection, ChangeSource_TypedObserverDependencyProperty_TypedObserverDependencyProperty_WithPrebindValue)
 {
-  auto dataBindingService = std::make_shared<DataBinding::DataBindingService>();
+  const auto dataBindingService = std::make_shared<DataBinding::DataBindingService>();
 
-  auto srcCol0 = std::make_shared<UTObservableCollection>(dataBindingService);
-  auto srcCol1 = std::make_shared<UTObservableCollection>(dataBindingService);
+  const auto srcCol0 = std::make_shared<UTObservableCollection>(dataBindingService);
+  const auto srcCol1 = std::make_shared<UTObservableCollection>(dataBindingService);
   UTDependencyObject2 t1(dataBindingService);
   UTDependencyObject2 t2(dataBindingService);
   EXPECT_TRUE(t1.SetProperty5Value(srcCol0));
@@ -272,9 +272,9 @@ TEST(Test_UTObservableCollection, ChangeSource_TypedObserverDependencyProperty_T
 
 TEST(Test_UTObservableCollection, ChangeSource_TypedObserverDependencyProperty_TypedObserverDependencyProperty)
 {
-  auto dataBindingService = std::make_shared<DataBinding::DataBindingService>();
+  const auto dataBindingService = std::make_shared<DataBinding::DataBindingService>();
 
-  auto srcCol0 = std::make_shared<UTObservableCollection>(dataBindingService);
+  const auto srcCol0 = std::make_shared<UTObservableCollection>(dataBindingService);
   UTDependencyObject2 t1(dataBindingService);
   UTDependencyObject2 t2(dataBindingService);
 
@@ -326,9 +326,9 @@ TEST(Test_UTObservableCollection, ChangeSource_TypedObserverDependencyProperty_T
 
 TEST(Test_UTObservableCollection, ChangeSource_TypedObserverDependencyProperty_TypedObserverDependencyProperty_WithPrebindValue_Clear)
 {
-  auto dataBindingService = std::make_shared<DataBinding::DataBindingService>();
+  const auto dataBindingService = std::make_shared<DataBinding::DataBindingService>();
 
-  auto srcCol0 = std::make_shared<UTObservableCollection>(dataBindingService);
+  const auto srcCol0 = std::make_shared<UTObservableCollection>(dataBindingService);
   UTDependencyObject2 t1(dataBindingService);
   UTDependencyObject2 t2(dataBindingService);
   EXPECT_TRUE(t1.SetProperty5Value(srcCol0));
@@ -391,9 +391,9 @@ TEST(Test_UTObservableCollection, ChangeSource_TypedObserverDependencyProperty_T
 
 TEST(Test_UTObservableCollection, ChangeSource_TypedObserverDependencyProperty_TypedObserverDependencyProperty_Clear)
 {
-  auto dataBindingService = std::make_shared<DataBinding::DataBindingService>();
+  const auto dataBindingService = std::make_shared<DataBinding::DataBindingService>();
 
-  auto srcCol0 = std::make_shared<UTObservableCollection>(dataBindingService);
+  const auto srcCol0 = std::make_shared<UTObservableCollection>(dataBindingService);
   UTDependencyObject2 t1(dataBindingService);
   UTDependencyObject2 t2(dataBindingService);
 
@@ -465,7 +465,7 @@ TEST(Test_UTObservableCollection, ChangeSource_TypedObserverDependencyProperty_T
 
 TEST(Test_UTObservableCollection, OnDemandInstancesBind)
 {
-  auto dataBindingService = std::make_shared<DataBinding::DataBindingService>();
+  const auto dataBindingService = std::make_shared<DataBinding::DataBindingService>();
 
   UTObservableCollection t0(dataBindingService);
   UTDependencyObject t1(dataBindingService);
@@ -482,7 +482,7 @@ TEST(Test_UTObservableCollection, OnDemandInstancesBind)
 
 TEST(Test_UTObservableCollection, SetBinding_OneWay_DepProperty_DepProperty)
 {
-  auto dataBindingService = std::make_shared<DataBinding::DataBindingService>();
+  const auto dataBindingService = std::make_shared<DataBinding::DataBindingService>();
 
   UTObservableCollection t0(dataBindingService);
   UTDependencyObject t1(dataBindingService);

@@ -70,7 +70,7 @@ namespace Fsl::DataBinding
     DataBindingInstanceHandle CreateReadOnlyProperty(const DependencyPropertyDefinition& propertyDefinition,
                                                      std::unique_ptr<Internal::IDependencyPropertyMethods> methods);
     bool PropertyChanged(const DataBindingInstanceHandle hInstance, const PropertyChangeReason changeReason);
-    bool IsPropertyReadOnly(const DataBindingInstanceHandle hInstance) const noexcept;
+    [[nodiscard]] bool IsPropertyReadOnly(const DataBindingInstanceHandle hInstance) const noexcept;
     bool DestroyProperty(const DataBindingInstanceHandle hInstance) noexcept;
   };
 

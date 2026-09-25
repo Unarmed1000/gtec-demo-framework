@@ -68,7 +68,7 @@ namespace Fsl::GLES2
         throw std::invalid_argument("fragmentShader should be of type GL_FRAGMENT_SHADER");
       }
 
-      GLuint handle = GL_CHECK(glCreateProgram());
+      const GLuint handle = GL_CHECK(glCreateProgram());
       if (handle == 0)
       {
         throw GLESGraphicsException("Failed to create program", 0, __FILE__, __LINE__);

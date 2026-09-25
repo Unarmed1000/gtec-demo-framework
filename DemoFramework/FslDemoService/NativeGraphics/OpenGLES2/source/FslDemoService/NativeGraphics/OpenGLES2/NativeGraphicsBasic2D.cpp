@@ -111,7 +111,7 @@ namespace Fsl
       // Because GLES requires upside down textures.
       BitmapUtil::FlipHorizontal(fontBitmap);
 
-      GLTextureParameters texParams(GL_NEAREST, GL_NEAREST, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE);
+      const GLTextureParameters texParams(GL_NEAREST, GL_NEAREST, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE);
       m_fontTexture.SetData(fontBitmap, texParams);
     }
 

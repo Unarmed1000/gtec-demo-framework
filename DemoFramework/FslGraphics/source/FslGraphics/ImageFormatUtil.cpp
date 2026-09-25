@@ -115,7 +115,7 @@ namespace Fsl::ImageFormatUtil
 
   ImageFormat TryDetectImageFormatFromExtension(const IO::Path& path)
   {
-    auto extension = IO::Path::GetExtensionView(path.AsPathView());
+    const auto extension = IO::Path::GetExtensionView(path.AsPathView());
     if (extension.empty())
     {
       return ImageFormat::Undefined;

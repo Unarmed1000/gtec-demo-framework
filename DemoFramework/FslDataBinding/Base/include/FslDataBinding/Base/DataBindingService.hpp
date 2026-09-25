@@ -111,12 +111,12 @@ namespace Fsl::DataBinding
         m_handleCount = UncheckedNumericCast<uint32_t>(handles.size());
       }
 
-      bool HandlesEmpty() const
+      [[nodiscard]] bool HandlesEmpty() const
       {
         return m_handleCount <= 0;
       }
 
-      bool ContainsHandle(const DataBindingInstanceHandle handle) const
+      [[nodiscard]] bool ContainsHandle(const DataBindingInstanceHandle handle) const
       {
         for (std::size_t i = 0; i < m_handleCount; ++i)
         {
@@ -177,17 +177,17 @@ namespace Fsl::DataBinding
     ~DataBindingService();
     void MarkShutdownIntend() noexcept;
 
-    std::size_t InstanceCount() const noexcept
+    [[nodiscard]] std::size_t InstanceCount() const noexcept
     {
       return m_instances.Count();
     }
 
-    std::size_t PendingChanges() const noexcept
+    [[nodiscard]] std::size_t PendingChanges() const noexcept
     {
       return m_pendingChanges.size();
     }
 
-    std::size_t PendingDestroys() const noexcept
+    [[nodiscard]] std::size_t PendingDestroys() const noexcept
     {
       return m_scheduledForDestroy.size();
     }
@@ -226,17 +226,17 @@ namespace Fsl::DataBinding
     bool ClearBinding(const DataBindingInstanceHandle hTarget);
     bool SetBinding(const DataBindingInstanceHandle hTarget, const Binding& binding);
     bool Changed(const DataBindingInstanceHandle hInstance, const PropertyChangeReason changeReason);
-    bool IsPropertyReadOnly(const DataBindingInstanceHandle hInstance) const noexcept;
+    [[nodiscard]] bool IsPropertyReadOnly(const DataBindingInstanceHandle hInstance) const noexcept;
 
     //! Execute all pending changes
     void ExecuteChanges();
 
     //! Scan the internal state to see if its consistent
-    bool SanityCheck() const;
+    [[nodiscard]] bool SanityCheck() const;
 
   private:
-    bool SanityCheckAllParentSourceMarkedAsChanged(const Internal::ServiceBindingRecord& record) const;
-    bool SanityCheckNoPropertyChangeState() const;
+    [[nodiscard]] bool SanityCheckAllParentSourceMarkedAsChanged(const Internal::ServiceBindingRecord& record) const;
+    [[nodiscard]] bool SanityCheckNoPropertyChangeState() const;
 
     DataBindingInstanceHandle DoCreateDependencyObjectProperty(const DataBindingInstanceHandle hOwner,
                                                                const DependencyPropertyDefinition& propertyDefinition,
@@ -275,7 +275,7 @@ namespace Fsl::DataBinding
     void CheckForCyclicDependencies(const DataBindingInstanceHandle hTarget, const DataBindingInstanceHandle hSource) const;
     void CheckTwoWayBindingSourceRules(const DataBindingInstanceHandle hSource) const;
     void CheckTwoWayBindingTargetRules(const Internal::ServiceBindingRecord& targetInstance) const;
-    bool IsInstanceTarget(const DataBindingInstanceHandle hInstance, const DataBindingInstanceHandle hEntry) const;
+    [[nodiscard]] bool IsInstanceTarget(const DataBindingInstanceHandle hInstance, const DataBindingInstanceHandle hEntry) const;
   };
 }
 

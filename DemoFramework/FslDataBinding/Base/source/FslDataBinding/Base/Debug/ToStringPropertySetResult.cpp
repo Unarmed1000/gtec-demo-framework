@@ -56,7 +56,7 @@ namespace Fsl::DataBinding::Debug
 
   std::string_view ToString(const Internal::PropertySetResult value)
   {
-    auto res = TryToString(value);
+    const auto res = TryToString(value);
     return !res.empty() ? res : "PropertySetResult::???";
   }
 }

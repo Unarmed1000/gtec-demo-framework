@@ -43,10 +43,10 @@ namespace Fsl::Vulkan
                         const VkPhysicalDeviceFeatures& physicalDeviceFeatures)
     {
       rFilteredFeatures.clear();
-      for (auto entry : requiredFeatures)
+      for (const auto entry : requiredFeatures)
       {
         // Look at the current value
-        auto value = PhysicalDeviceFeatureUtil::Get(physicalDeviceFeatures, entry.Feature);
+        const auto value = PhysicalDeviceFeatureUtil::Get(physicalDeviceFeatures, entry.Feature);
         if (value != VK_FALSE)
         {
           rFilteredFeatures.push_back(entry);
@@ -73,7 +73,7 @@ namespace Fsl::Vulkan
   void PhysicalDeviceFeatureRequestUtil::ApplyFeatures(VkPhysicalDeviceFeatures& rPhysicalDeviceFeatures,
                                                        const std::deque<Vulkan::PhysicalDeviceFeatureRequest>& requiredFeatures)
   {
-    for (auto entry : requiredFeatures)
+    for (const auto entry : requiredFeatures)
     {
       PhysicalDeviceFeatureUtil::Set(rPhysicalDeviceFeatures, entry.Feature, VK_TRUE);
     }

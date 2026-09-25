@@ -127,14 +127,14 @@ namespace Fsl
                    const TimeSpan& forcedUpdateTime, const bool renderSystemOverlay);
     virtual ~DemoAppManager();
 
-    uint32_t GetFrameIndex() const
+    [[nodiscard]] uint32_t GetFrameIndex() const
     {
       return m_record.FrameIndex;
     }
 
     void Suspend(const bool bSuspend);
 
-    DemoState GetState() const;
+    [[nodiscard]] DemoState GetState() const;
 
     DemoAppManagerProcessResult Process(const DemoWindowMetrics& windowMetrics, const bool isConsoleBasedApp);
     AppDrawResult TryDraw();
@@ -151,8 +151,8 @@ namespace Fsl
     void ProcessDone();
 
     void RequestExit();
-    bool HasExitRequest() const;
-    bool HasRestartRequest() const;
+    [[nodiscard]] bool HasExitRequest() const;
+    [[nodiscard]] bool HasRestartRequest() const;
     int CloseApp();
 
   private:

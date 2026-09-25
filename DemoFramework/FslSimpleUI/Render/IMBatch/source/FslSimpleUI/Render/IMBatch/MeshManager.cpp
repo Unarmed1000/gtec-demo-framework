@@ -193,7 +193,7 @@ namespace Fsl::UI::RenderIMBatch
       const bool found = rMeshes.IsValidHandle(hMeshValue);
       if (found)
       {
-        auto index = rMeshes.FastHandleToIndex(hMeshValue);
+        const auto index = rMeshes.FastHandleToIndex(hMeshValue);
         const auto& record = rMeshes[index];
         assert(rCapacity.VertexCapacity >= record.Primitive.MeshVertexCapacity);
         assert(rCapacity.IndexCapacity >= record.Primitive.MeshIndexCapacity);
@@ -213,7 +213,7 @@ namespace Fsl::UI::RenderIMBatch
       const bool found = rMeshes.IsValidHandle(hMeshValue);
       if (found)
       {
-        auto index = rMeshes.FastHandleToIndex(hMeshValue);
+        const auto index = rMeshes.FastHandleToIndex(hMeshValue);
         const auto& record = rMeshes[index];
         assert(rCapacity.VertexCapacity >= record.Primitive.MeshVertexCapacity);
         assert(rCapacity.IndexCapacity >= record.Primitive.MeshIndexCapacity);
@@ -361,7 +361,7 @@ namespace Fsl::UI::RenderIMBatch
       const TextureAtlasSpriteFont& atlasBitmapFont = Sprite->GetTextureAtlasSpriteFont();
 
       // Extract the render rules
-      auto glyphScratchpadSpan = SpanUtil::AsSpan(m_glyphs);
+      const auto glyphScratchpadSpan = SpanUtil::AsSpan(m_glyphs);
       if (atlasBitmapFont.ExtractRenderRules(glyphScratchpadSpan, strTextView, info.FontConfig))
       {
         m_glyphCount = NumericCast<uint32_t>(strTextView.size());
@@ -511,7 +511,7 @@ namespace Fsl::UI::RenderIMBatch
       const uint32_t finalVertexCapacity = std::max(LocalCapacity::SpriteFont::VertexCapacity, vertexCapacity);
       const uint32_t finalIndexCapacity = std::max(LocalCapacity::SpriteFont::IndexCapacity, indexCapacity);
 
-      SpriteFontRenderPrimitive primitive(finalVertexCapacity, finalIndexCapacity, false);
+      const SpriteFontRenderPrimitive primitive(finalVertexCapacity, finalIndexCapacity, false);
       const auto hMeshValue = m_meshesSpriteFont.Add(SpriteFontMeshRecord(primitive, sprite, batchMaterialHandle, spriteMaterialIndex,
                                                                           m_materialLookup.GetSpriteMaterialInfo(batchMaterialHandle).IsOpaque));
 
@@ -682,7 +682,7 @@ namespace Fsl::UI::RenderIMBatch
       if (spriteEx)
       {
         const uint32_t finalVertexCapacity = std::max(LocalCapacity::ImageSprite::MinVertexCapacity, vertexCapacity);
-        ImageRenderPrimitive primitive(finalVertexCapacity, 0, spriteEx->GetImageRenderInfo());
+        const ImageRenderPrimitive primitive(finalVertexCapacity, 0, spriteEx->GetImageRenderInfo());
         const auto hMeshValue =
           m_meshesImageSprite.Add(ImageMeshRecord(primitive, std::move(spriteEx), batchMaterialHandle, spriteMaterialIndex, isOpaque));
         return {RenderDrawSpriteType::BasicImageSprite, finalVertexCapacity, 0u, hMeshValue};
@@ -692,7 +692,7 @@ namespace Fsl::UI::RenderIMBatch
     {
       FSLLOG3_WARNING("Unsupported sprite type, using dummy render");
       const uint32_t finalVertexCapacity = std::max(LocalCapacity::DummySprite::MinVertexCapacity, vertexCapacity);
-      ImageRenderPrimitive primitive(finalVertexCapacity, 0, RenderImageInfo());
+      const ImageRenderPrimitive primitive(finalVertexCapacity, 0, RenderImageInfo());
       const auto hMeshValue = m_meshesDummy.Add(DummySpriteMeshRecord(primitive, sprite, batchMaterialHandle, spriteMaterialIndex, isOpaque));
       return {RenderDrawSpriteType::Dummy, finalVertexCapacity, 0u, hMeshValue};
     }
@@ -710,7 +710,7 @@ namespace Fsl::UI::RenderIMBatch
       {
         const uint32_t finalVertexCapacity = std::max(LocalCapacity::ImageSprite::MinVertexCapacity, vertexCapacity);
         const uint32_t finalIndexCapacity = std::max(LocalCapacity::ImageSprite::MinIndexCapacity, indexCapacity);
-        ImageRenderPrimitive primitive(finalVertexCapacity, finalIndexCapacity, spriteEx->GetImageRenderInfo());
+        const ImageRenderPrimitive primitive(finalVertexCapacity, finalIndexCapacity, spriteEx->GetImageRenderInfo());
         const auto hMeshValue =
           m_meshesImageSprite.Add(ImageMeshRecord(primitive, std::move(spriteEx), batchMaterialHandle, spriteMaterialIndex, isOpaque));
         return {RenderDrawSpriteType::ImageSprite, finalVertexCapacity, finalIndexCapacity, hMeshValue};
@@ -722,7 +722,7 @@ namespace Fsl::UI::RenderIMBatch
       {
         const uint32_t finalVertexCapacity = std::max(LocalCapacity::ImageSprite::MinVertexCapacity, vertexCapacity);
         const uint32_t finalIndexCapacity = std::max(LocalCapacity::ImageSprite::MinIndexCapacity, indexCapacity);
-        ImageRenderPrimitive primitive(finalVertexCapacity, finalIndexCapacity, spriteEx->GetImageRenderInfo());
+        const ImageRenderPrimitive primitive(finalVertexCapacity, finalIndexCapacity, spriteEx->GetImageRenderInfo());
         const auto hMeshValue =
           m_meshesImageSprite.Add(ImageMeshRecord(primitive, std::move(spriteEx), batchMaterialHandle, spriteMaterialIndex, isOpaque));
 
@@ -735,7 +735,7 @@ namespace Fsl::UI::RenderIMBatch
       {
         const uint32_t finalVertexCapacity = std::max(LocalCapacity::NineSliceSprite::MinVertexCapacity, vertexCapacity);
         const uint32_t finalIndexCapacity = std::max(LocalCapacity::NineSliceSprite::MinIndexCapacity, indexCapacity);
-        NineSliceRenderPrimitive primitive(finalVertexCapacity, finalIndexCapacity, spriteEx->GetNineSliceRenderInfo());
+        const NineSliceRenderPrimitive primitive(finalVertexCapacity, finalIndexCapacity, spriteEx->GetNineSliceRenderInfo());
         const auto hMeshValue =
           m_meshesNineSliceSprite.Add(NineSliceMeshRecord(primitive, std::move(spriteEx), batchMaterialHandle, spriteMaterialIndex, isOpaque));
         return {RenderDrawSpriteType::NineSliceSprite, finalVertexCapacity, finalIndexCapacity, hMeshValue};
@@ -747,7 +747,7 @@ namespace Fsl::UI::RenderIMBatch
       {
         const uint32_t finalVertexCapacity = std::max(LocalCapacity::NineSliceSprite::MinVertexCapacity, vertexCapacity);
         const uint32_t finalIndexCapacity = std::max(LocalCapacity::NineSliceSprite::MinIndexCapacity, indexCapacity);
-        NineSliceRenderPrimitive primitive(finalVertexCapacity, finalIndexCapacity, spriteEx->GetNineSliceRenderInfo());
+        const NineSliceRenderPrimitive primitive(finalVertexCapacity, finalIndexCapacity, spriteEx->GetNineSliceRenderInfo());
         const auto hMeshValue =
           m_meshesNineSliceSprite.Add(NineSliceMeshRecord(primitive, std::move(spriteEx), batchMaterialHandle, spriteMaterialIndex, isOpaque));
         return {RenderDrawSpriteType::BasicNineSliceSprite, finalVertexCapacity, finalIndexCapacity, hMeshValue};
@@ -785,7 +785,7 @@ namespace Fsl::UI::RenderIMBatch
 
           const MeshTransparencyFlags meshType = hasOpaqueParts | hasTransparentParts;
 
-          NineSliceRenderPrimitive primitive(finalVertexCapacity, finalIndexCapacity, spriteEx->GetNineSliceRenderInfo());
+          const NineSliceRenderPrimitive primitive(finalVertexCapacity, finalIndexCapacity, spriteEx->GetNineSliceRenderInfo());
 
           const auto hMeshValue = m_meshesOptimizedNineSliceSprite.Add(OptimizedNineSliceSpriteMeshRecord(
             primitive, std::move(spriteEx), batchMaterialHandle, spriteMaterialIndex, batchMaterialHandle1, SpriteMaterialIndex1, meshType));
@@ -806,7 +806,7 @@ namespace Fsl::UI::RenderIMBatch
       FSLLOG3_WARNING("Unsupported sprite type, using dummy render");
       const uint32_t finalVertexCapacity = std::max(LocalCapacity::DummySprite::MinVertexCapacity, vertexCapacity);
       const uint32_t finalIndexCapacity = std::max(LocalCapacity::DummySprite::MinIndexCapacity, indexCapacity);
-      ImageRenderPrimitive primitive(finalVertexCapacity, finalIndexCapacity, RenderImageInfo());
+      const ImageRenderPrimitive primitive(finalVertexCapacity, finalIndexCapacity, RenderImageInfo());
       const auto hMeshValue = m_meshesDummy.Add(DummySpriteMeshRecord(primitive, sprite, batchMaterialHandle, spriteMaterialIndex, isOpaque));
       return {RenderDrawSpriteType::Dummy, finalVertexCapacity, finalIndexCapacity, hMeshValue};
     }

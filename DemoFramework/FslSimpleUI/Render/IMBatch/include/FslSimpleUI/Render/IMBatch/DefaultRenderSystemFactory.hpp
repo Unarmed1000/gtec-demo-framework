@@ -40,9 +40,9 @@ namespace Fsl::UI::RenderIMBatch
   public:
     DefaultRenderSystemFactory() = default;
 
-    RenderSystemInfo GetInfo() const final;
-    std::unique_ptr<IRenderSystem> Create(const RenderSystemCreateInfo& createInfo) const final;
-    VertexDeclarationSpan GetVertexDeclarationSpan() const final;
+    [[nodiscard]] RenderSystemInfo GetInfo() const final;
+    [[nodiscard]] std::unique_ptr<IRenderSystem> Create(const RenderSystemCreateInfo& createInfo) const final;
+    [[nodiscard]] VertexDeclarationSpan GetVertexDeclarationSpan() const final;
 
     static RenderSystemInfo GetRenderInfo();
   };

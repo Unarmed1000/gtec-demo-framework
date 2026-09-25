@@ -93,7 +93,7 @@ namespace Fsl::Vulkan
       Reset();
     }
 
-    bool IsValid() const noexcept
+    [[nodiscard]] bool IsValid() const noexcept
     {
       return m_device != VK_NULL_HANDLE && m_deviceMemory != VK_NULL_HANDLE;
     }

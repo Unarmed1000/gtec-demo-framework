@@ -43,14 +43,14 @@ namespace Fsl
     virtual ~ITestService() = default;
 
     //! @brief Get the current screenshot frequency
-    virtual uint32_t GetScreenshotFrequency() const = 0;
+    [[nodiscard]] virtual uint32_t GetScreenshotFrequency() const = 0;
 
     //! @brief Set the current screenshot frequency
     //! @param frequency to take a screenshot (0 == disabled)
     virtual void SetScreenshotFrequency(const uint32_t frequency) = 0;
 
     //! @brief Get the current name scheme
-    virtual TestScreenshotNameScheme GetScreenshotNameScheme() const = 0;
+    [[nodiscard]] virtual TestScreenshotNameScheme GetScreenshotNameScheme() const = 0;
 
     //! @brief Set the current name scheme
     virtual void SetScreenshotNameScheme(const TestScreenshotNameScheme scheme) = 0;

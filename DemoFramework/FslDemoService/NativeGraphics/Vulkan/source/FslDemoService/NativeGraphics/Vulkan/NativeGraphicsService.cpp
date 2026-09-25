@@ -126,7 +126,7 @@ namespace Fsl::Vulkan
 
       ANativeGraphicsService::CreateDevice(createInfo);
 
-      auto basic2D = m_basic2D.lock();
+      const auto basic2D = m_basic2D.lock();
       if (basic2D)
       {
         basic2D->VulkanDeviceInit(m_resources.ImageCreator);
@@ -136,7 +136,7 @@ namespace Fsl::Vulkan
       auto itr = m_quadBatches.begin();
       while (itr != m_quadBatches.end())
       {
-        auto quadBatch = itr->lock();
+        const auto quadBatch = itr->lock();
         if (quadBatch)
         {
           quadBatch->CreateDeviceResources(pVulkanCreateInfo->Device.GetPhysicalDevice(), pVulkanCreateInfo->Device.Get());
@@ -174,7 +174,7 @@ namespace Fsl::Vulkan
 
     ANativeGraphicsService::DestroyDevice();
 
-    auto basic2D = m_basic2D.lock();
+    const auto basic2D = m_basic2D.lock();
     if (basic2D)
     {
       basic2D->VulkanDeviceShutdown();
@@ -184,7 +184,7 @@ namespace Fsl::Vulkan
     auto itr = m_quadBatches.begin();
     while (itr != m_quadBatches.end())
     {
-      auto quadBatch = itr->lock();
+      const auto quadBatch = itr->lock();
       if (quadBatch)
       {
         quadBatch->DestroyDeviceResources();
@@ -239,7 +239,7 @@ namespace Fsl::Vulkan
       auto itr = m_quadBatches.begin();
       while (itr != m_quadBatches.end())
       {
-        auto quadBatch = itr->lock();
+        const auto quadBatch = itr->lock();
         if (quadBatch)
         {
           quadBatch->CreateDependentResources(m_resources.MaxFramesInFlight, m_dependentResources.RenderPass, m_dependentResources.Subpass,
@@ -283,7 +283,7 @@ namespace Fsl::Vulkan
     auto itr = m_quadBatches.begin();
     while (itr != m_quadBatches.end())
     {
-      auto quadBatch = itr->lock();
+      const auto quadBatch = itr->lock();
       if (quadBatch)
       {
         quadBatch->DestroyDependentResources();
@@ -315,7 +315,7 @@ namespace Fsl::Vulkan
     auto itr = m_quadBatches.begin();
     while (itr != m_quadBatches.end())
     {
-      auto quadBatch = itr->lock();
+      const auto quadBatch = itr->lock();
       if (quadBatch)
       {
         quadBatch->BeginFrame(pVulkanInfo->CommandBuffer, frameInfo.FrameIndex);
@@ -342,7 +342,7 @@ namespace Fsl::Vulkan
     auto itr = m_quadBatches.begin();
     while (itr != m_quadBatches.end())
     {
-      auto quadBatch = itr->lock();
+      const auto quadBatch = itr->lock();
       if (quadBatch)
       {
         quadBatch->EndFrame();
@@ -364,7 +364,7 @@ namespace Fsl::Vulkan
 
   void NativeGraphicsService::Capture(Bitmap& rBitmap, const PxRectangle& /*srcRectanglePx*/)
   {
-    auto swapchainInfo = m_swapchainInfo.lock();
+    const auto swapchainInfo = m_swapchainInfo.lock();
     if (!swapchainInfo || m_resources.Device == VK_NULL_HANDLE)
     {
       FSLLOG3_WARNING("Not ready, capture failed");
@@ -385,7 +385,7 @@ namespace Fsl::Vulkan
       throw UsageErrorException("Only one NativeGraphicsBasic2D instance allowed at a time");
     }
 
-    auto quadBatch = CreateQuadBatch();
+    const auto quadBatch = CreateQuadBatch();
     auto basic2D = std::make_shared<NativeGraphicsBasic2D>(quadBatch, currentExtent);
 
     UpdateState(*basic2D);
@@ -398,8 +398,8 @@ namespace Fsl::Vulkan
   {
     PerformGarbageCollection();
 
-    auto basicRenderSystem = GetBasicRenderSystem();
-    auto quadBatch = CreateQuadBatch();
+    const auto basicRenderSystem = GetBasicRenderSystem();
+    const auto quadBatch = CreateQuadBatch();
     return std::make_shared<NativeBatch2D>(basicRenderSystem, m_resources.NativeDevice, quadBatch, currentExtent);
   }
 
@@ -430,9 +430,9 @@ namespace Fsl::Vulkan
     const auto contentVertShader = QuadBatchShaders::GetVertexShader();
     const auto contentFragShader = QuadBatchShaders::GetFragmentShader();
     const auto contentSdfFragShader = QuadBatchShaders::GetSdfFragmentShader();
-    std::vector<uint8_t> vertShaderBinary(contentVertShader.data(), contentVertShader.data() + contentVertShader.size());
-    std::vector<uint8_t> fragShaderBinary(contentFragShader.data(), contentFragShader.data() + contentFragShader.size());
-    std::vector<uint8_t> sdfFragShaderBinary(contentSdfFragShader.data(), contentSdfFragShader.data() + contentSdfFragShader.size());
+    const std::vector<uint8_t> vertShaderBinary(contentVertShader.data(), contentVertShader.data() + contentVertShader.size());
+    const std::vector<uint8_t> fragShaderBinary(contentFragShader.data(), contentFragShader.data() + contentFragShader.size());
+    const std::vector<uint8_t> sdfFragShaderBinary(contentSdfFragShader.data(), contentSdfFragShader.data() + contentSdfFragShader.size());
 
     auto quadBatch = std::make_shared<QuadBatch>(vertShaderBinary, fragShaderBinary, sdfFragShaderBinary, GenericBatch2DDefaultCapacity);
 

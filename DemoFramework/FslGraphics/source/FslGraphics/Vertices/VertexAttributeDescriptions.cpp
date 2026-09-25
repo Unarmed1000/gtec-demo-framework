@@ -65,7 +65,7 @@ namespace Fsl
       const auto count = static_cast<uint32_t>(elements.size());
       for (uint32_t i = 0; i < count; ++i)
       {
-        auto location = elements[i].Location;
+        const auto location = elements[i].Location;
         if (location < maxLocation)
         {
           throw NotSupportedException("The offsets should be in order: smallest -> largest");

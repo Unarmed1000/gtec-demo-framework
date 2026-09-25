@@ -83,7 +83,7 @@ namespace Fsl::UI::RenderIMBatch
   protected:
     std::vector<ProcessedCommandRecord> m_processedCommandRecords;
 
-    bool GetAllowDepthBuffer() const noexcept
+    [[nodiscard]] bool GetAllowDepthBuffer() const noexcept
     {
       return m_allowDepthBuffer;
     }
@@ -93,7 +93,7 @@ namespace Fsl::UI::RenderIMBatch
     ~RenderSystemBase() override;
 
     void OnConfigurationChanged(const BasicWindowMetrics& windowMetrics) override;
-    std::shared_ptr<IMeshManager> GetMeshManager() const final;
+    [[nodiscard]] std::shared_ptr<IMeshManager> GetMeshManager() const final;
 
     DrawCommandBuffer& AcquireDrawCommandBuffer(const bool clear) final;
     void ReleaseDrawCommandBuffer() final;
@@ -102,12 +102,12 @@ namespace Fsl::UI::RenderIMBatch
     void PreDraw() final;
     void PostDraw() final;
 
-    RenderSystemStats GetStats() const noexcept final
+    [[nodiscard]] RenderSystemStats GetStats() const noexcept final
     {
       return m_stats;
     }
 
-    VertexDeclarationSpan AsVertexDeclarationSpan() const final
+    [[nodiscard]] VertexDeclarationSpan AsVertexDeclarationSpan() const final
     {
       return GetVertexDeclarationSpan();
     }
@@ -118,12 +118,12 @@ namespace Fsl::UI::RenderIMBatch
     }
 
   protected:
-    const BasicWindowMetrics& GetWindowMetrics() const noexcept
+    [[nodiscard]] const BasicWindowMetrics& GetWindowMetrics() const noexcept
     {
       return m_windowMetrics;
     }
 
-    const Matrix& GetMatrixProjection() const noexcept
+    [[nodiscard]] const Matrix& GetMatrixProjection() const noexcept
     {
       return m_matrixProjection;
     }
@@ -149,7 +149,7 @@ namespace Fsl::UI::RenderIMBatch
     /// Check if the command buffer was modified since the last frame
     /// </summary>
     /// <returns></returns>
-    bool IsNewCommandBuffer() const noexcept
+    [[nodiscard]] bool IsNewCommandBuffer() const noexcept
     {
       return m_commandBufferCleared || m_commandBuffer.Count() != m_commandBufferSizeLastFrame;
     }

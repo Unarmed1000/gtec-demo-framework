@@ -60,7 +60,7 @@ namespace Fsl
 
   void DemoAppProfilerGraph::Add(const int64_t latestValue)
   {
-    int64_t cappedValue = std::min(std::max(latestValue - m_minValue, static_cast<int64_t>(0)), m_maxValue - m_minValue);
+    const int64_t cappedValue = std::min(std::max(latestValue - m_minValue, static_cast<int64_t>(0)), m_maxValue - m_minValue);
     m_entries.push_back(cappedValue);
   }
 

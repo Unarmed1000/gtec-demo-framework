@@ -43,7 +43,7 @@ namespace
 
 TEST(TestLog_LogColor, Log)
 {
-  Color value(1u, 2u, 3u, 4u);
+  const Color value(1u, 2u, 3u, 4u);
 
   std::stringstream stream;
   stream << value;

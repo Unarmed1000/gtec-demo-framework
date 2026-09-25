@@ -48,7 +48,7 @@ namespace Fsl::UI::Declarative
 
     std::shared_ptr<BaseWindow> Create(const DeclarativeControlFactoryCreateInfo& createInfo) final
     {
-      auto type = createInfo.PropertyParser.ClaimRequired<FloatingButtonTypeThemeProperty>(0);
+      const auto type = createInfo.PropertyParser.ClaimRequired<FloatingButtonTypeThemeProperty>(0);
       return createInfo.ThemeControlFactory.CreateFloatingButton(type);
     }
   };

@@ -83,7 +83,7 @@ namespace Fsl::UI
 
   bool AreaChartGridLineManager::ViewRecord::SetViewMinMax(const MinMax<uint32_t> minMax)
   {
-    bool wasChanged = minMax != m_actualMinMax;
+    const bool wasChanged = minMax != m_actualMinMax;
     if (wasChanged)
     {
       m_actualMinMax = minMax;
@@ -280,7 +280,7 @@ namespace Fsl::UI
   void AreaChartGridLineManager::SelectGridLines(std::vector<GridLineRecord>& rGridLines, uint32_t& rGridLineCount,
                                                  const IChartGridLines* const pGridLines, const ViewRecord& viewRecord)
   {
-    ChartDataRecord chartRecord = ExtractChartData(pGridLines, viewRecord.ViewMinMax());
+    const ChartDataRecord chartRecord = ExtractChartData(pGridLines, viewRecord.ViewMinMax());
 
     const std::size_t srcSpanSize = chartRecord.Span.size();
     uint32_t dstIndex = 0;

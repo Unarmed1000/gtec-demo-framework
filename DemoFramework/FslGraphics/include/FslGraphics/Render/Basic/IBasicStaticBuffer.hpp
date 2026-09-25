@@ -42,13 +42,13 @@ namespace Fsl
     virtual ~IBasicStaticBuffer() noexcept = default;
 
     // @brief Get the buffer type
-    virtual BasicBufferType GetType() const noexcept = 0;
+    [[nodiscard]] virtual BasicBufferType GetType() const noexcept = 0;
 
     //! @brief Get the current capacity
-    virtual uint32_t Capacity() const noexcept = 0;
+    [[nodiscard]] virtual uint32_t Capacity() const noexcept = 0;
 
     //! @brief Try to acquire the current native handle (do not cache this, it will only be valid until the next frame!)
-    virtual BasicNativeBufferHandle TryGetNativeHandle() const noexcept = 0;
+    [[nodiscard]] virtual BasicNativeBufferHandle TryGetNativeHandle() const noexcept = 0;
   };
 }
 

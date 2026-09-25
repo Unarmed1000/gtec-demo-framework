@@ -50,7 +50,7 @@ TEST(TestBitmapConverter_BitmapConverterFunctions, R8G8B8ToGrayscaleLuminanceNTS
   {
     const PixelFormat dstPixelFormat = PixelFormat::R8_UNORM;
     const Bitmap srcBitmap(PxSize2D(), PixelFormat::R8G8B8_UNORM);
-    auto result = BitmapConverterFunctions::R8G8B8ToGrayscaleLuminanceNTSC(srcBitmap, dstPixelFormat);
+    const auto result = BitmapConverterFunctions::R8G8B8ToGrayscaleLuminanceNTSC(srcBitmap, dstPixelFormat);
 
     EXPECT_EQ(result.GetExtent(), srcBitmap.GetExtent());
     EXPECT_EQ(result.GetOrigin(), srcBitmap.GetOrigin());
@@ -59,7 +59,7 @@ TEST(TestBitmapConverter_BitmapConverterFunctions, R8G8B8ToGrayscaleLuminanceNTS
   {
     const PixelFormat dstPixelFormat = PixelFormat::EX_LUMINANCE8_UNORM;
     const Bitmap srcBitmap(PxSize2D(), PixelFormat::R8G8B8_UNORM);
-    auto result = BitmapConverterFunctions::R8G8B8ToGrayscaleLuminanceNTSC(srcBitmap, dstPixelFormat);
+    const auto result = BitmapConverterFunctions::R8G8B8ToGrayscaleLuminanceNTSC(srcBitmap, dstPixelFormat);
 
     EXPECT_EQ(result.GetExtent(), srcBitmap.GetExtent());
     EXPECT_EQ(result.GetOrigin(), srcBitmap.GetOrigin());
@@ -68,7 +68,7 @@ TEST(TestBitmapConverter_BitmapConverterFunctions, R8G8B8ToGrayscaleLuminanceNTS
   {
     const PixelFormat dstPixelFormat = PixelFormat::EX_ALPHA8_UNORM;
     const Bitmap srcBitmap(PxSize2D(), PixelFormat::R8G8B8_UNORM);
-    auto result = BitmapConverterFunctions::R8G8B8ToGrayscaleLuminanceNTSC(srcBitmap, dstPixelFormat);
+    const auto result = BitmapConverterFunctions::R8G8B8ToGrayscaleLuminanceNTSC(srcBitmap, dstPixelFormat);
 
     EXPECT_EQ(result.GetExtent(), srcBitmap.GetExtent());
     EXPECT_EQ(result.GetOrigin(), srcBitmap.GetOrigin());
@@ -113,7 +113,7 @@ TEST(TestBitmapConverter_BitmapConverterFunctions, R8G8B8ToGrayscaleLuminanceNTS
 
   const Bitmap srcBitmap(SpanUtil::AsReadOnlySpan(srcContent), PxSize2D::Create(SrcWidth, SrcHeight), PixelFormat::R8G8B8_UNORM);
 
-  auto result = BitmapConverterFunctions::R8G8B8ToGrayscaleLuminanceNTSC(srcBitmap, dstPixelFormat);
+  const auto result = BitmapConverterFunctions::R8G8B8ToGrayscaleLuminanceNTSC(srcBitmap, dstPixelFormat);
 
   EXPECT_EQ(result.GetExtent(), srcBitmap.GetExtent());
   EXPECT_EQ(result.GetOrigin(), srcBitmap.GetOrigin());
@@ -132,7 +132,7 @@ TEST(TestBitmapConverter_BitmapConverterFunctions, R8G8B8ToGrayscaleLuminanceNTS
 
   const Bitmap srcBitmap(SpanUtil::AsReadOnlySpan(srcContent), PxSize2D::Create(SrcWidth, SrcHeight), PixelFormat::R8G8B8_UNORM, SrcStride);
 
-  auto result = BitmapConverterFunctions::R8G8B8ToGrayscaleLuminanceNTSC(srcBitmap, dstPixelFormat);
+  const auto result = BitmapConverterFunctions::R8G8B8ToGrayscaleLuminanceNTSC(srcBitmap, dstPixelFormat);
 
   EXPECT_EQ(result.GetExtent(), srcBitmap.GetExtent());
   EXPECT_EQ(result.GetOrigin(), srcBitmap.GetOrigin());

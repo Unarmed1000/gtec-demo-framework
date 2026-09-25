@@ -122,7 +122,7 @@ namespace Fsl::UI
     }
     const AChartData* pChartData = m_chartData.get();
     assert(pChartData != nullptr);
-    auto currentDataChangeId = pChartData->ChangeId();
+    const auto currentDataChangeId = pChartData->ChangeId();
     if (currentDataChangeId != m_dataCache.DataChangeId)
     {
       // the change id was modified so recalculate the stats
@@ -170,7 +170,7 @@ namespace Fsl::UI
     {
       return {StringViewLite(localEntry.MetaData.Label), localEntry.MetaData.PrimaryColor};
     }
-    auto remoteEntry = m_chartData->GetChannelMetaDataInfo(channelIndex);
+    const auto remoteEntry = m_chartData->GetChannelMetaDataInfo(channelIndex);
 
     return {localEntry.IsSetLabel ? StringViewLite(localEntry.MetaData.Label) : remoteEntry.Label,
             localEntry.IsSetColor ? localEntry.MetaData.PrimaryColor : remoteEntry.PrimaryColor};

@@ -62,7 +62,7 @@ namespace Fsl
     {
     }
 
-    int32_t GetStride() const
+    [[nodiscard]] int32_t GetStride() const
     {
       return m_stride;
     }
@@ -91,7 +91,7 @@ namespace Fsl
     {
     }
 
-    std::size_t GetStride() const
+    [[nodiscard]] std::size_t GetStride() const
     {
       return m_stride;
     }
@@ -121,7 +121,7 @@ namespace Fsl
     {
     }
 
-    int GetAlignment() const
+    [[nodiscard]] int GetAlignment() const
     {
       return m_alignment;
     }
@@ -137,7 +137,7 @@ namespace Fsl
     UnsupportedPixelFormatException(const std::string& str, const PixelFormat pixelFormat);
     explicit UnsupportedPixelFormatException(const PixelFormat pixelFormat);
 
-    PixelFormat GetPixelFormat() const
+    [[nodiscard]] PixelFormat GetPixelFormat() const
     {
       return m_pixelFormat;
     }
@@ -166,7 +166,7 @@ namespace Fsl
     {
     }
 
-    VertexElementFormat GetVertexElementFormat() const
+    [[nodiscard]] VertexElementFormat GetVertexElementFormat() const
     {
       return m_vertexElementFormat;
     }
@@ -197,12 +197,12 @@ namespace Fsl
     UnsupportedPixelFormatConversionException(const std::string& str, const PixelFormat fromPixelFormat, const PixelFormat toPixelFormat);
     UnsupportedPixelFormatConversionException(const PixelFormat fromPixelFormat, const PixelFormat toPixelFormat);
 
-    PixelFormat GetFromPixelFormat() const noexcept
+    [[nodiscard]] PixelFormat GetFromPixelFormat() const noexcept
     {
       return m_fromPixelFormat;
     }
 
-    PixelFormat GetToPixelFormat() const noexcept
+    [[nodiscard]] PixelFormat GetToPixelFormat() const noexcept
     {
       return m_toPixelFormat;
     }

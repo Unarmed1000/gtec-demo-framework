@@ -64,13 +64,13 @@ namespace Fsl::UI
     void Initialize(const WindowFlags flags);
     void Shutdown();
 
-    WindowFlags GetFlags() const noexcept
+    [[nodiscard]] WindowFlags GetFlags() const noexcept
     {
       return m_flags;
     }
 
     //! @brief Check if the route is empty
-    bool IsEmpty() const noexcept;
+    [[nodiscard]] bool IsEmpty() const noexcept;
 
     //! @brief Send the event along the route
     bool Send(IEventHandler* const pEventHandler, const std::shared_ptr<WindowEvent>& theEvent);
@@ -79,7 +79,7 @@ namespace Fsl::UI
     void Clear();
 
     //! @brief Get the target
-    const std::shared_ptr<TreeNode>& GetTarget() const
+    [[nodiscard]] const std::shared_ptr<TreeNode>& GetTarget() const
     {
       return m_target;
     }
@@ -107,7 +107,7 @@ namespace Fsl::UI
       }
     };
 
-    std::size_t GetWindowCount() const
+    [[nodiscard]] std::size_t GetWindowCount() const
     {
       return m_windowList.size();
     }

@@ -90,7 +90,7 @@ namespace Fsl
 
   void UIAppResourceManager::SYS_SetRenderSystemViewport(const PxViewport& viewportPx)
   {
-    auto renderSystemPtr = m_renderSystem.lock();
+    const auto renderSystemPtr = m_renderSystem.lock();
     if (!renderSystemPtr)
     {
       throw UsageErrorException("renderSystem is no longer valid");
@@ -108,13 +108,13 @@ namespace Fsl
     }
     m_textureManager.SetDensityDpi(windowMetrics.DensityDpi);
 
-    auto renderSystem = m_renderSystem.lock();
+    const auto renderSystem = m_renderSystem.lock();
     if (!renderSystem)
     {
       throw UsageErrorException("renderSystem is no longer valid");
     }
 
-    auto contentManager = m_contentManager.lock();
+    const auto contentManager = m_contentManager.lock();
     if (!contentManager)
     {
       throw UsageErrorException("contentManager is no longer valid");
@@ -130,7 +130,7 @@ namespace Fsl
 
   bool UIAppResourceManager::FontExists(const UIAppTextureHandle textureHandle, IO::PathView fontName) const
   {
-    auto contentManager = m_contentManager.lock();
+    const auto contentManager = m_contentManager.lock();
     if (!contentManager)
     {
       FSLLOG3_DEBUG_WARNING("content manager is no longer valid");
@@ -150,12 +150,12 @@ namespace Fsl
                                                                      const UIAppTextureResourceCreationInfo& textureCreationInfo,
                                                                      const UIAppResourceFlag flags)
   {
-    auto renderSystem = m_renderSystem.lock();
+    const auto renderSystem = m_renderSystem.lock();
     if (!renderSystem)
     {
       throw UsageErrorException("renderSystem is no longer valid");
     }
-    auto contentManager = m_contentManager.lock();
+    const auto contentManager = m_contentManager.lock();
     if (!contentManager)
     {
       throw UsageErrorException("contentManager is no longer valid");
@@ -168,12 +168,12 @@ namespace Fsl
                                                                                    const UIAppTextureResourceCreationInfo& textureCreationInfo,
                                                                                    const UIAppResourceFlag flags)
   {
-    auto renderSystem = m_renderSystem.lock();
+    const auto renderSystem = m_renderSystem.lock();
     if (!renderSystem)
     {
       throw UsageErrorException("renderSystem is no longer valid");
     }
-    auto contentManager = m_contentManager.lock();
+    const auto contentManager = m_contentManager.lock();
     if (!contentManager)
     {
       throw UsageErrorException("contentManager is no longer valid");
@@ -184,7 +184,7 @@ namespace Fsl
   void UIAppResourceManager::AddSpriteMaterial(const SpriteMaterialId& spriteMaterialId, const UIAppTextureHandle& hTexture,
                                                const BlendState blendState, const BasicPrimitiveTopology primitiveTopology)
   {
-    auto renderSystem = m_renderSystem.lock();
+    const auto renderSystem = m_renderSystem.lock();
     if (!renderSystem)
     {
       throw UsageErrorException("renderSystem is no longer valid");
@@ -194,7 +194,7 @@ namespace Fsl
     {
       throw std::invalid_argument("invalid texture handle");
     }
-    SimpleUIApp::UIAppTextureInfo textureInfo = m_textureManager.GetTextureInfo(hTexture);
+    const SimpleUIApp::UIAppTextureInfo textureInfo = m_textureManager.GetTextureInfo(hTexture);
     m_materialManager.AddMaterial(*renderSystem, spriteMaterialId, hTexture, textureInfo, blendState, primitiveTopology);
   }
 
@@ -207,7 +207,7 @@ namespace Fsl
     {
       throw std::invalid_argument("nativeTexture can not be null");
     }
-    auto renderSystem = m_renderSystem.lock();
+    const auto renderSystem = m_renderSystem.lock();
     if (!renderSystem)
     {
       throw UsageErrorException("renderSystem is no longer valid");
@@ -225,7 +225,7 @@ namespace Fsl
       // Create the material for the sprite, here we do use a material type that keeps that 'texture' object alive as
       // long as the material is registered in the manager. This is ok since we use the sprite object to keep track of the
       // lifetime requirements of it. So once the sprite is deleted we can garbage collect the 'custom' sprite
-      SimpleUIApp::UIAppTextureInfo textureInfo = m_textureManager.GetTextureInfo(hTexture);
+      const SimpleUIApp::UIAppTextureInfo textureInfo = m_textureManager.GetTextureInfo(hTexture);
       dynmamicSpriteMaterialId =
         m_materialManager.AddMaterial(*renderSystem, hTexture, textureInfo, blendState, BasicPrimitiveTopology::TriangleList);
 
@@ -287,7 +287,7 @@ namespace Fsl
     const auto materialInfo = m_materialManager.GetMaterialInfo(spriteMaterialId);
 
     // Lookup the atlas texture information and then add the material to the manager
-    AtlasTextureInfo atlasTextureInfo = m_textureManager.GetAtlasTextureInfo(materialInfo.TextureHandle, atlasPathName);
+    const AtlasTextureInfo atlasTextureInfo = m_textureManager.GetAtlasTextureInfo(materialInfo.TextureHandle, atlasPathName);
     auto sprite = m_manager.AddImageSprite(materialInfo.MaterialInfo, atlasTextureInfo, atlasPathName);
 
     m_images.push_back(ImageRecord{SpriteType::Normal, materialInfo.TextureHandle, IO::Path(atlasPathName), sprite});
@@ -427,21 +427,21 @@ namespace Fsl
     {
       throw std::invalid_argument("fontName can not contain '/'");
     }
-    auto contentManager = m_contentManager.lock();
+    const auto contentManager = m_contentManager.lock();
     if (!contentManager)
     {
       throw UsageErrorException("ContentManager is no longer valid");
     }
 
     const auto materialInfo = m_materialManager.GetMaterialInfo(spriteMaterialId);
-    auto itrFindFont = std::find_if(m_fonts.begin(), m_fonts.end(), [font](const FontRecord& entry) { return entry.Font == font; });
+    const auto itrFindFont = std::find_if(m_fonts.begin(), m_fonts.end(), [font](const FontRecord& entry) { return entry.Font == font; });
     if (itrFindFont == m_fonts.end())
     {
       throw NotFoundException("Unknown font");
     }
 
     // Read the bitmap font file
-    BitmapFont bitmapFont = m_textureManager.ReadSpriteFont(*contentManager, materialInfo.TextureHandle, fontName, false);
+    const BitmapFont bitmapFont = m_textureManager.ReadSpriteFont(*contentManager, materialInfo.TextureHandle, fontName, false);
 
     m_manager.PatchSpriteFont(font, materialInfo.MaterialInfo, bitmapFont, fontName);
 
@@ -460,13 +460,13 @@ namespace Fsl
       return false;
     }
 
-    auto renderSystem = m_renderSystem.lock();
+    const auto renderSystem = m_renderSystem.lock();
     if (renderSystem)
     {
       m_materialManager.SetOptions(*renderSystem, allowDepthBuffer);
 
       {    // Patch all content with the new material
-        auto contentManager = m_contentManager.lock();
+        const auto contentManager = m_contentManager.lock();
         const uint32_t textureCount = m_textureManager.Count();
         for (uint32_t i = 0; i < textureCount; ++i)
         {
@@ -496,7 +496,7 @@ namespace Fsl
     {
       throw std::invalid_argument("fontName can not contain '/'");
     }
-    auto contentManager = m_contentManager.lock();
+    const auto contentManager = m_contentManager.lock();
     if (!contentManager)
     {
       throw UsageErrorException("ContentManager is no longer valid");
@@ -505,7 +505,7 @@ namespace Fsl
     const auto materialInfo = m_materialManager.GetMaterialInfo(spriteMaterialId);
 
     // Read the bitmap font file
-    BitmapFont bitmapFont = m_textureManager.ReadSpriteFont(*contentManager, materialInfo.TextureHandle, fontName, isLegacyFullPathFontName);
+    const BitmapFont bitmapFont = m_textureManager.ReadSpriteFont(*contentManager, materialInfo.TextureHandle, fontName, isLegacyFullPathFontName);
 
     auto spriteFont = m_manager.AddSpriteFont(materialInfo.MaterialInfo, bitmapFont, spriteFontConfig, fontName);
     m_fonts.push_back(FontRecord{materialInfo.TextureHandle, fontName, spriteFont});
@@ -529,7 +529,7 @@ namespace Fsl
         {
           const auto hTexture = m_textureManager.FastIndexToHandle(i);
           // Free the texture from all sprite fonts that use it
-          for (auto& rFontRecord : m_fonts)
+          for (const auto& rFontRecord : m_fonts)
           {
             if (hTexture == rFontRecord.TextureHandle)
             {
@@ -555,7 +555,7 @@ namespace Fsl
         // auto& rEntry = m_textureManager.FastAt(i);
         if (m_textureManager.FastIsTextureMissing(i))
         {
-          auto hTexture = m_textureManager.ReloadTextureAt(i, contentManager, rRenderSystem);
+          const auto hTexture = m_textureManager.ReloadTextureAt(i, contentManager, rRenderSystem);
 
           const auto* pTextureInfo = m_textureManager.TryFastGetTextureInfoAt(i);
           if (pTextureInfo != nullptr)
@@ -670,18 +670,18 @@ namespace Fsl
 
   void UIAppResourceManager::PatchFonts(const UIAppTextureHandle srcTextureHandle, const PxExtent2D srcExtentPx, IContentManager& contentManager)
   {
-    for (auto& rFontRecord : m_fonts)
+    for (const auto& rFontRecord : m_fonts)
     {
       if (srcTextureHandle == rFontRecord.TextureHandle)
       {
         FSLLOG3_VERBOSE2("Reloading font: '{}'", rFontRecord.FontName);
-        auto bitmapFont = m_textureManager.ReadSpriteFont(contentManager, rFontRecord.TextureHandle, rFontRecord.FontName.AsPathView(), false);
+        const auto bitmapFont = m_textureManager.ReadSpriteFont(contentManager, rFontRecord.TextureHandle, rFontRecord.FontName.AsPathView(), false);
 
         const auto& oldInfo = rFontRecord.Font->GetInfo().MaterialInfo;
         const auto oldMaterialInfo = m_materialManager.GetMaterialInfo(oldInfo.Id);
         assert(oldMaterialInfo.TextureHandle == srcTextureHandle);
 
-        SpriteMaterialInfo newMaterialInfo = m_materialManager.PatchSpriteFontMaterial(oldInfo.Id, srcExtentPx, bitmapFont, srcTextureHandle);
+        const SpriteMaterialInfo newMaterialInfo = m_materialManager.PatchSpriteFontMaterial(oldInfo.Id, srcExtentPx, bitmapFont, srcTextureHandle);
 
         // Patch the material info with the new information
         m_manager.PatchSpriteFont(rFontRecord.Font, newMaterialInfo, bitmapFont, rFontRecord.FontName.AsPathView());

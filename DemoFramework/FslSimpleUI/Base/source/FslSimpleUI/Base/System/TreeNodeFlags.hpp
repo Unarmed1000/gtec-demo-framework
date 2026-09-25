@@ -70,25 +70,25 @@ namespace Fsl::UI
     {
     }
 
-    constexpr bool IsRunning() const noexcept
+    [[nodiscard]] constexpr bool IsRunning() const noexcept
     {
       return !IsFlagged(Disposed);
     }
 
 
-    constexpr bool IsDisposed() const noexcept
+    [[nodiscard]] constexpr bool IsDisposed() const noexcept
     {
       return IsFlagged(Disposed);
     }
 
 
-    constexpr inline bool IsFlagged(Enum flag) const noexcept
+    [[nodiscard]] constexpr inline bool IsFlagged(Enum flag) const noexcept
     {
       return ((Value & static_cast<uint32_t>(flag)) == static_cast<uint32_t>(flag));
     }
 
 
-    constexpr bool IsFlagged(const WindowFlags flags) const noexcept
+    [[nodiscard]] constexpr bool IsFlagged(const WindowFlags flags) const noexcept
     {
       return ((Value & flags.GetValue()) == flags.GetValue());
     }
@@ -98,7 +98,7 @@ namespace Fsl::UI
       Value |= static_cast<uint32_t>(flag);
     }
 
-    constexpr inline ItemVisibility GetVisibility() const noexcept
+    [[nodiscard]] constexpr inline ItemVisibility GetVisibility() const noexcept
     {
       return static_cast<ItemVisibility>((Value & WindowFlags::VisibilityMask) >> WindowFlags::VisibilityShift);
     }

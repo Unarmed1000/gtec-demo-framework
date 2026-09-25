@@ -78,7 +78,7 @@ namespace Fsl
       return TPlatformNativeWindow::TryCaptureMouse(enableCapture);
     }
 
-    VkSurfaceKHR GetVulkanSurface() const final
+    [[nodiscard]] VkSurfaceKHR GetVulkanSurface() const final
     {
       return m_surface;
     }

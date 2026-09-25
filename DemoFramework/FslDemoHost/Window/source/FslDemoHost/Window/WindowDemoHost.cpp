@@ -83,7 +83,7 @@ namespace Fsl
     const auto demoAppHostConfigWindow = demoHostAppSetup.GetDemoAppHostConfig<DemoAppHostConfigWindow>();
 
     // Get the native window system from the app, if none was supplied use the Platform one.
-    auto customWindowSystemAllocator = demoAppHostConfigWindow->TryGetCustomWindowSystemAllocator();
+    const auto customWindowSystemAllocator = demoAppHostConfigWindow->TryGetCustomWindowSystemAllocator();
 
 
     // Prepare the native window setup
@@ -160,7 +160,7 @@ namespace Fsl
 
   DemoWindowMetrics WindowDemoHost::GetWindowMetrics() const
   {
-    auto nativeWindowMetrics = (m_window ? m_window->GetWindowMetrics() : NativeWindowMetrics());
+    const auto nativeWindowMetrics = (m_window ? m_window->GetWindowMetrics() : NativeWindowMetrics());
     return {nativeWindowMetrics.ExtentPx, nativeWindowMetrics.ExactDpi, nativeWindowMetrics.DensityDpi};
   }
 
@@ -190,7 +190,7 @@ namespace Fsl
   {
     // This will be called while suspended
     // Allow the native window to process messages
-    NativeWindowProcessMessagesArgs args(allowBlock);
+    const NativeWindowProcessMessagesArgs args(allowBlock);
     return m_windowSystem->ProcessMessages(args);
   }
 

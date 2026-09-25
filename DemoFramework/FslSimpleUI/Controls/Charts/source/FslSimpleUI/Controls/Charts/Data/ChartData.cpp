@@ -150,7 +150,7 @@ namespace Fsl::UI
     if (newCapacity < m_buffer.capacity())
     {
       m_buffer.resize_pop_front(newCapacity);
-      auto newMinMax = CalculateMinMax();
+      const auto newMinMax = CalculateMinMax();
       UpdateCachedValues(newMinMax);
       MarkAsChanged();
     }
@@ -169,7 +169,7 @@ namespace Fsl::UI
   void ChartData::SetChannelMetaData(const uint32_t channelIndex, const ChartChannelMetaData& metaData)
   {
     auto& rEntry = m_channelMetaData.at(channelIndex);
-    bool changed = metaData != rEntry;
+    const bool changed = metaData != rEntry;
     if (changed)
     {
       rEntry = metaData;
@@ -180,7 +180,7 @@ namespace Fsl::UI
   void ChartData::SetChannelMetaData(const uint32_t channelIndex, const StringViewLite label)
   {
     auto& rEntry = m_channelMetaData.at(channelIndex);
-    bool changed = StringViewLite(rEntry.Label) != label;
+    const bool changed = StringViewLite(rEntry.Label) != label;
     if (changed)
     {
       rEntry.Label = label;
@@ -191,7 +191,7 @@ namespace Fsl::UI
   void ChartData::SetChannelMetaData(const uint32_t channelIndex, const UIColor primaryColor)
   {
     auto& rEntry = m_channelMetaData.at(channelIndex);
-    bool changed = rEntry.PrimaryColor != primaryColor;
+    const bool changed = rEntry.PrimaryColor != primaryColor;
     if (changed)
     {
       rEntry.PrimaryColor = primaryColor;
@@ -228,7 +228,7 @@ namespace Fsl::UI
       return m_cachedDataStats;
     }
     // This view shows less entries than we have cached stats for so we need to calculate some custom stats for the view.
-    auto minMax = ApplyConstraints(CalculateMinMax(viewConfig.MaxEntries));
+    const auto minMax = ApplyConstraints(CalculateMinMax(viewConfig.MaxEntries));
     return ChartDataStats(minMax);
   }
 
@@ -260,7 +260,7 @@ namespace Fsl::UI
     }
     // There are two segments, so we need to determine if the last segment contains everything
     assert(m_buffer.segment_count() == 2u);
-    auto lastSpan = m_buffer.AsReadOnlySpan(1u);
+    const auto lastSpan = m_buffer.AsReadOnlySpan(1u);
     return {viewConfig.MaxEntries, viewConfig.MaxEntries <= lastSpan.size() ? 1u : 2u, m_dataChannelCount};
   }
 
@@ -285,7 +285,7 @@ namespace Fsl::UI
     if (m_buffer.segment_count() <= 1u)
     {
       assert(segmentIndex == 0u);
-      auto lastSpan = m_buffer.AsReadOnlySpan(0u);
+      const auto lastSpan = m_buffer.AsReadOnlySpan(0u);
       if (viewConfig.MaxEntries <= lastSpan.size())
       {
         return lastSpan.subspan(lastSpan.size() - viewConfig.MaxEntries, viewConfig.MaxEntries);
@@ -294,7 +294,7 @@ namespace Fsl::UI
 
     // So there are two segments, so we need to determine if the last segment contains everything
     assert(m_buffer.segment_count() == 2u);
-    auto lastSpan = m_buffer.AsReadOnlySpan(1u);
+    const auto lastSpan = m_buffer.AsReadOnlySpan(1u);
     if (viewConfig.MaxEntries <= lastSpan.size())
     {
       assert(segmentIndex == 0u);
@@ -306,8 +306,8 @@ namespace Fsl::UI
       return lastSpan;
     }
     assert(viewConfig.MaxEntries >= lastSpan.size());
-    auto entriesLeft = viewConfig.MaxEntries - UncheckedNumericCast<uint32_t>(lastSpan.size());
-    auto span = m_buffer.AsReadOnlySpan(0u);
+    const auto entriesLeft = viewConfig.MaxEntries - UncheckedNumericCast<uint32_t>(lastSpan.size());
+    const auto span = m_buffer.AsReadOnlySpan(0u);
     return span.subspan(span.size() - entriesLeft, entriesLeft);
   }
 
@@ -326,7 +326,7 @@ namespace Fsl::UI
 
   DataBinding::DataBindingInstanceHandle ChartData::TryGetPropertyHandleNow(const DataBinding::DependencyPropertyDefinition& sourceDef)
   {
-    auto res = DataBinding::ObservableDataSourceObjectHelper::TryGetPropertyHandle(
+    const auto res = DataBinding::ObservableDataSourceObjectHelper::TryGetPropertyHandle(
       this, ThisDataSourceObject(), sourceDef, DataBinding::PropLinkRefs(PropertyLatestEntry, m_propertyLatestEntry));
     return res.IsValid() ? res : base_type::TryGetPropertyHandleNow(sourceDef);
   }
@@ -341,7 +341,7 @@ namespace Fsl::UI
 
   void ChartData::UpdateCachedValues(const MinMax<value_type> minMax)
   {
-    auto constrainedMinMax = ApplyConstraints(minMax);
+    const auto constrainedMinMax = ApplyConstraints(minMax);
     m_viewInfo.SetMinMax(constrainedMinMax);
     m_cachedDataStats.ValueMinMax = constrainedMinMax;
   }
@@ -358,9 +358,9 @@ namespace Fsl::UI
     value_type max = std::numeric_limits<value_type>::min();
     for (uint32_t segmentIndex = 0; segmentIndex < m_buffer.segment_count(); ++segmentIndex)
     {
-      auto span = m_buffer.AsReadOnlySpan(segmentIndex);
+      const auto span = m_buffer.AsReadOnlySpan(segmentIndex);
       assert(span.size() > 0);
-      auto minMax = CalcSpanMinMax(span, m_dataChannelCount, min, max);
+      const auto minMax = CalcSpanMinMax(span, m_dataChannelCount, min, max);
       min = minMax.Min();
       max = minMax.Max();
     }
@@ -396,7 +396,7 @@ namespace Fsl::UI
         span = span.unchecked_subspan(span.size() - entriesLeft, entriesLeft);
       }
       assert(span.size() > 0);
-      auto minMax = CalcSpanMinMax(span, m_dataChannelCount, min, max);
+      const auto minMax = CalcSpanMinMax(span, m_dataChannelCount, min, max);
       assert(entriesLeft >= span.size());
       entriesLeft -= UncheckedNumericCast<uint32_t>(span.size());
       min = minMax.Min();

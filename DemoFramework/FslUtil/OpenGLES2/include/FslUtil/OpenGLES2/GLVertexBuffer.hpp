@@ -285,33 +285,33 @@ namespace Fsl::GLES2
     }
 
     //! @brief Get the number of attrib's associated with the vertex structure currently stored in this buffer
-    uint32_t VertexAttribCount() const
+    [[nodiscard]] uint32_t VertexAttribCount() const
     {
       return m_vertexElements.VertexAttribCount();
     }
 
     //! @brief Get the number of attrib's associated with the vertex structure currently stored in this buffer
     //!        the expanded attribs are included (unlike the VertexAttribCount which only includes the original VertexDeclaration size)
-    uint32_t ExpandedVertexAttribCount() const
+    [[nodiscard]] uint32_t ExpandedVertexAttribCount() const
     {
       return m_vertexElements.ExpandedVertexAttribCount();
     }
 
     //! @brief Get direct access to the vertex attrib elements.
     //! @note The returned pointer is only valid until the next buffer modification method is called on this object.
-    const GLVertexElement* VertexAttribDirectAccess() const
+    [[nodiscard]] const GLVertexElement* VertexAttribDirectAccess() const
     {
       return m_vertexElements.VertexAttribDirectAccess();
     }
 
     //! @brief Get the vertex element index, throws a NotSupportedException if the usage and usageIndex combo wasn't found
-    int32_t GetVertexElementIndex(const VertexElementUsage usage, const uint32_t usageIndex) const
+    [[nodiscard]] int32_t GetVertexElementIndex(const VertexElementUsage usage, const uint32_t usageIndex) const
     {
       return m_vertexElements.GetVertexElementIndex(usage, usageIndex);
     }
 
     //! @brief Find the element index of for the given usage and usageIndex (if not found <0 is returned)
-    int32_t VertexElementIndexOf(const VertexElementUsage usage, const uint32_t usageIndex) const
+    [[nodiscard]] int32_t VertexElementIndexOf(const VertexElementUsage usage, const uint32_t usageIndex) const
     {
       return m_vertexElements.VertexElementIndexOf(usage, usageIndex);
     }

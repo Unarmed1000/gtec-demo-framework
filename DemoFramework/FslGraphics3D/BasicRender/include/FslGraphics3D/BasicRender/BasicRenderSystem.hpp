@@ -243,9 +243,9 @@ namespace Fsl
       std::shared_ptr<IDynamicNativeTexture2D> CreateDynamicTexture2D(const ReadOnlyRawTexture& texture, const Texture2DFilterHint filterHint,
                                                                       const TextureFlags textureFlags) final;
 
-      PxExtent2D GetTextureExtentPx(const std::shared_ptr<INativeTexture2D>& texture) const noexcept final;
+      [[nodiscard]] PxExtent2D GetTextureExtentPx(const std::shared_ptr<INativeTexture2D>& texture) const noexcept final;
 
-      const IBasicNativeTexture* TryGetNativeTexture(const BasicNativeTextureHandle& hTexture) const noexcept final;
+      [[nodiscard]] const IBasicNativeTexture* TryGetNativeTexture(const BasicNativeTextureHandle& hTexture) const noexcept final;
 
       std::shared_ptr<IBasicStaticBuffer> CreateBuffer(const ReadOnlySpan<uint16_t> indexSpan, const BasicBufferUsage usage) final;
       std::shared_ptr<IBasicDynamicBuffer> CreateDynamicBuffer(const ReadOnlySpan<uint16_t> indexSpan) final;
@@ -265,11 +265,11 @@ namespace Fsl
       // void DestroyMaterial(BasicMaterial)
       BasicMaterial CloneMaterial(const BasicMaterial& sourceMaterial, const std::shared_ptr<INativeTexture2D>& texture, const bool isDynamic) final;
       BasicMaterial CloneMaterial(const BasicMaterial& sourceMaterial, const BasicMaterialInfo& materialInfo, const bool isDynamic) final;
-      BasicMaterialInfo GetMaterialInfo(const BasicMaterial& sourceMaterial) const final;
+      [[nodiscard]] BasicMaterialInfo GetMaterialInfo(const BasicMaterial& sourceMaterial) const final;
       void SetMaterialInfo(const BasicMaterial& sourceMaterial, const BasicMaterialInfo& materialInfo) final;
 
-      std::shared_ptr<INativeTexture2D> GetMaterialTexture(const BasicMaterial& hMaterial) const final;
-      std::shared_ptr<INativeTexture2D> TryGetMaterialTexture(const BasicMaterial& hMaterial) const final;
+      [[nodiscard]] std::shared_ptr<INativeTexture2D> GetMaterialTexture(const BasicMaterial& hMaterial) const final;
+      [[nodiscard]] std::shared_ptr<INativeTexture2D> TryGetMaterialTexture(const BasicMaterial& hMaterial) const final;
 
       void BeginCache() final;
       void EndCache() final;

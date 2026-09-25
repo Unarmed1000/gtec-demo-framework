@@ -52,7 +52,7 @@ namespace Fsl
     virtual ~IImageService() = default;
 
     //! @brief Get the hosts preferred bitmap origin.
-    virtual BitmapOrigin GetPreferredBitmapOrigin() const = 0;
+    [[nodiscard]] virtual BitmapOrigin GetPreferredBitmapOrigin() const = 0;
 
     //! @brief Read the content of the file as a bitmap.
     //! @param absolutePath the absolute path to load the content from (a relative path will be treated as a error)

@@ -81,49 +81,49 @@ namespace Fsl::Vulkan
 
 
     //! @brief Check if this object contains a valid resource
-    inline bool IsValid() const noexcept
+    [[nodiscard]] inline bool IsValid() const noexcept
     {
       return m_image.IsValid();
     }
 
-    VkDevice GetDevice() const noexcept
+    [[nodiscard]] VkDevice GetDevice() const noexcept
     {
       return m_image.GetDevice();
     }
 
     //! @return the format or VK_FORMAT_UNDEFINED if the object is invalid
-    VkFormat GetFormat() const noexcept
+    [[nodiscard]] VkFormat GetFormat() const noexcept
     {
       return m_image.GetFormat();
     }
 
     //! @return the image (or VK_NULL_HANDLE if the object is invalid)
-    VkImage GetImage() const noexcept
+    [[nodiscard]] VkImage GetImage() const noexcept
     {
       return m_image.Get();
     }
 
     //! @return the imageview (or VK_NULL_HANDLE if the object is invalid)
-    VkImageView GetImageView() const noexcept
+    [[nodiscard]] VkImageView GetImageView() const noexcept
     {
       return m_imageView.Get();
     }
 
     //! @brief
     //! @return the extent (or VkExtent3D{} if the object is invalid)
-    VkExtent3D GetExtent() const noexcept
+    [[nodiscard]] VkExtent3D GetExtent() const noexcept
     {
       return m_image.GetExtent();
     }
 
     //! @return the extent (or VkExtent2D{} if the object is invalid)
-    VkExtent2D GetExtent2D() const noexcept
+    [[nodiscard]] VkExtent2D GetExtent2D() const noexcept
     {
       return IsValid() ? VkExtent2D{m_image.GetExtent().width, m_image.GetExtent().height} : VkExtent2D{};
     }
 
     //! @brief Get the Image associated with this object
-    const VUImage& Image() const noexcept
+    [[nodiscard]] const VUImage& Image() const noexcept
     {
       return m_image;
     }
@@ -136,13 +136,13 @@ namespace Fsl::Vulkan
 
 
     //! @brief Get the ImageView associated with this object
-    const RapidVulkan::ImageView& ImageView() const noexcept
+    [[nodiscard]] const RapidVulkan::ImageView& ImageView() const noexcept
     {
       return m_imageView;
     }
 
     //! @brief Get the Memory associated with this object
-    const RapidVulkan::Memory& Memory() const noexcept
+    [[nodiscard]] const RapidVulkan::Memory& Memory() const noexcept
     {
       return m_memory;
     }
@@ -153,7 +153,7 @@ namespace Fsl::Vulkan
       m_image.SetImageLayout(newLayout);
     }
 
-    VkDescriptorImageInfo GetDescriptorImageInfo() const
+    [[nodiscard]] VkDescriptorImageInfo GetDescriptorImageInfo() const
     {
       VkDescriptorImageInfo descriptorImageInfo{};
       descriptorImageInfo.imageView = m_imageView.Get();

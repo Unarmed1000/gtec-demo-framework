@@ -54,40 +54,40 @@ namespace Fsl
                     const PxRectangleU16& imageRectanglePx, const uint32_t imageDpi, const StringViewLite& debugName, const uint32_t densityDpi);
 
 
-    PxSize2D GetRenderSizePx() const noexcept final
+    [[nodiscard]] PxSize2D GetRenderSizePx() const noexcept final
     {
       return m_info.RenderInfo.ScaledSizePx;
     }
 
 
-    RenderImageInfo GetImageRenderInfo() const noexcept final
+    [[nodiscard]] RenderImageInfo GetImageRenderInfo() const noexcept final
     {
       return RenderConverter::ToRenderImageInfo(GetRenderInfo());
     }
 
 
-    const BasicImageSpriteInfo& GetInfo() const noexcept
+    [[nodiscard]] const BasicImageSpriteInfo& GetInfo() const noexcept
     {
       return m_info;
     }
 
-    const CoreBasicImageInfo& GetImageInfo() const noexcept
+    [[nodiscard]] const CoreBasicImageInfo& GetImageInfo() const noexcept
     {
       return m_info.ImageInfo;
     }
 
-    const RenderBasicImageInfo& GetRenderInfo() const noexcept
+    [[nodiscard]] const RenderBasicImageInfo& GetRenderInfo() const noexcept
     {
       return m_info.RenderInfo;
     }
 
 
-    uint32_t GetMaterialCount() const noexcept final
+    [[nodiscard]] uint32_t GetMaterialCount() const noexcept final
     {
       return 1u;
     }
 
-    const SpriteMaterialInfo& GetMaterialInfo(const uint32_t index) const final;
+    [[nodiscard]] const SpriteMaterialInfo& GetMaterialInfo(const uint32_t index) const final;
     void Resize(const uint32_t densityDpi) final;
   };
 }

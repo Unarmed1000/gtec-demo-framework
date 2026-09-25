@@ -58,16 +58,16 @@ namespace Fsl::Vulkan
     void Reset() noexcept;
     void Reset(const VkPhysicalDevice physicalDevice);
 
-    bool IsValid() const noexcept
+    [[nodiscard]] bool IsValid() const noexcept
     {
       return Device != VK_NULL_HANDLE;
     }
 
     //! @brief
-    uint32_t GetMemoryTypeIndex(const uint32_t typeBits, const VkMemoryPropertyFlags properties) const;
+    [[nodiscard]] uint32_t GetMemoryTypeIndex(const uint32_t typeBits, const VkMemoryPropertyFlags properties) const;
 
 
-    VkFormatProperties GetPhysicalDeviceFormatProperties(const VkFormat format) const
+    [[nodiscard]] VkFormatProperties GetPhysicalDeviceFormatProperties(const VkFormat format) const
     {
       VkFormatProperties properties;
       vkGetPhysicalDeviceFormatProperties(Device, format, &properties);
@@ -80,8 +80,9 @@ namespace Fsl::Vulkan
     }
 
 
-    VkImageFormatProperties GetPhysicalDeviceImageFormatProperties(const VkFormat format, const VkImageType type, const VkImageTiling tiling,
-                                                                   const VkImageUsageFlags usage, const VkImageCreateFlags flags) const
+    [[nodiscard]] VkImageFormatProperties GetPhysicalDeviceImageFormatProperties(const VkFormat format, const VkImageType type,
+                                                                                 const VkImageTiling tiling, const VkImageUsageFlags usage,
+                                                                                 const VkImageCreateFlags flags) const
     {
       VkImageFormatProperties properties;
       RapidVulkan::CheckError(vkGetPhysicalDeviceImageFormatProperties(Device, format, type, tiling, usage, flags, &properties),
@@ -126,7 +127,7 @@ namespace Fsl::Vulkan
     }
 
     //! @brief Find a VK_IMAGE_TILING_OPTIMAL depth format
-    VkFormat FindDepthFormat(const bool enableStencil) const
+    [[nodiscard]] VkFormat FindDepthFormat(const bool enableStencil) const
     {
       return PhysicalDeviceUtil::FindDepthFormat(Device, enableStencil);
     }

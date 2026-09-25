@@ -205,7 +205,7 @@ namespace Fsl::Graphics3D
       EnsureCapacity(src.size());
 
       // Extract material creation info so we can request them all at once
-      auto createSpan = SpanUtil::AsSpan(m_materialCreationScratchpad).subspan(0, src.size());
+      const auto createSpan = SpanUtil::AsSpan(m_materialCreationScratchpad).subspan(0, src.size());
       auto tmpSpan = SpanUtil::AsSpan(m_nativeMaterialsScratchpad).subspan(0, src.size());
       CreateNativeMaterials(m_shaderLookup, tmpSpan, *m_factory, createSpan, src);
       try
@@ -214,8 +214,8 @@ namespace Fsl::Graphics3D
         for (std::size_t i = 0; i < dst.size(); ++i)
         {
           BasicNativeMaterialRecord& rDst = dst[i];
-          auto nativeHandle = tmpSpan[i];
-          auto localHandle = m_nativeTextures.Add(nativeHandle);
+          const auto nativeHandle = tmpSpan[i];
+          const auto localHandle = m_nativeTextures.Add(nativeHandle);
           rDst = BasicNativeMaterialRecord(InternalMaterialHandle(localHandle), nativeHandle);
           tmpSpan[i] = {};
         }

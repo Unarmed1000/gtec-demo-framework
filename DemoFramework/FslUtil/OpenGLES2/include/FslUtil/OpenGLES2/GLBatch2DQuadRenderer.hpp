@@ -130,7 +130,7 @@ namespace Fsl
       void End();
       void DrawQuads(const VertexPositionColorTexture* const pVertices, const uint32_t length, const GLTextureInfo& textureInfo);
 
-      NativeBatch2DStats GetStats() const
+      [[nodiscard]] NativeBatch2DStats GetStats() const
       {
         return m_stats;
       }

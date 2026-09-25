@@ -91,7 +91,7 @@ namespace Fsl::Vulkan
       {
       }
 
-      bool IsValid() const
+      [[nodiscard]] bool IsValid() const
       {
         return CommandBuffer != VK_NULL_HANDLE;
       }
@@ -112,10 +112,10 @@ namespace Fsl::Vulkan
     void Dispose() noexcept;
 
 
-    VUTextureInfo TryGetTextureInfo(const BasicNativeTextureHandle hTexture) const noexcept;
+    [[nodiscard]] VUTextureInfo TryGetTextureInfo(const BasicNativeTextureHandle hTexture) const noexcept;
 
     // Graphics3D::INativeBufferFactory
-    Graphics3D::NativeBufferFactoryCaps GetBufferCaps() const noexcept final;
+    [[nodiscard]] Graphics3D::NativeBufferFactoryCaps GetBufferCaps() const noexcept final;
 
     BasicNativeBufferHandle CreateBuffer(const BasicBufferType bufferType, ReadOnlyFlexSpan bufferData, const uint32_t bufferElementCapacity,
                                          const bool isDynamic) final;
@@ -125,7 +125,7 @@ namespace Fsl::Vulkan
 
     // Graphics3D::INativeShaderFactory
 
-    ReadOnlySpan<BasicNativeShaderCreateInfo> GetPredefinedShaders() const final;
+    [[nodiscard]] ReadOnlySpan<BasicNativeShaderCreateInfo> GetPredefinedShaders() const final;
     BasicNativeShaderHandle CreateShader(const BasicNativeShaderCreateInfo& createInfo) final;
     bool DestroyShader(const BasicNativeShaderHandle hShader) noexcept final;
 
@@ -135,7 +135,7 @@ namespace Fsl::Vulkan
     bool DestroyMaterial(const BasicNativeMaterialHandle hMaterial) noexcept final;
 
     // Graphics3D::INativeTextureFactory
-    Graphics3D::NativeTextureFactoryCaps GetTextureCaps() const noexcept final;
+    [[nodiscard]] Graphics3D::NativeTextureFactoryCaps GetTextureCaps() const noexcept final;
 
     BasicNativeTextureHandle CreateTexture(const ReadOnlyRawTexture& texture, const Texture2DFilterHint filterHint, const TextureFlags textureFlags,
                                            const bool isDynamic) final;
@@ -144,7 +144,7 @@ namespace Fsl::Vulkan
 
     void SetTextureData(const BasicNativeTextureHandle hTexture, const ReadOnlyRawTexture& texture, const Texture2DFilterHint filterHint,
                         const TextureFlags textureFlags) final;
-    const IBasicNativeTexture* TryGetTexture(const BasicNativeTextureHandle hTexture) const noexcept final;
+    [[nodiscard]] const IBasicNativeTexture* TryGetTexture(const BasicNativeTextureHandle hTexture) const noexcept final;
 
     // Graphics3D::INativeDevice
     void CreateDependentResources(const BasicNativeDependentCreateInfo& createInfo) final;

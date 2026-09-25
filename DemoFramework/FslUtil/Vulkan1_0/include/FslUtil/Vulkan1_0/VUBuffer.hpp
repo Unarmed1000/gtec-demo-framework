@@ -114,49 +114,49 @@ namespace Fsl::Vulkan
     void Reset(const VkDevice device, const VkBufferCreateInfo& createInfo);
 
     //! @brief Get the device associated with this object
-    VkDevice GetDevice() const noexcept
+    [[nodiscard]] VkDevice GetDevice() const noexcept
     {
       return m_buffer.GetDevice();
     }
 
     //! @brief Get the buffer handle associated with this object
-    VkBuffer Get() const noexcept
+    [[nodiscard]] VkBuffer Get() const noexcept
     {
       return m_buffer.Get();
     }
 
     //! @brief Get a pointer to the associated resource handle
-    const VkBuffer* GetPointer() const noexcept
+    [[nodiscard]] const VkBuffer* GetPointer() const noexcept
     {
       return m_buffer.GetPointer();
     }
 
     //! @brief Check if this buffer object is valid
-    bool IsValid() const noexcept
+    [[nodiscard]] bool IsValid() const noexcept
     {
       return m_buffer.IsValid();
     }
 
 
-    VkMemoryRequirements GetBufferMemoryRequirements() const noexcept
+    [[nodiscard]] VkMemoryRequirements GetBufferMemoryRequirements() const noexcept
     {
       return m_buffer.GetBufferMemoryRequirements();
     }
 
 
-    VkAccessFlags GetAccessMask() const noexcept
+    [[nodiscard]] VkAccessFlags GetAccessMask() const noexcept
     {
       return m_accessMask;
     }
 
 
-    VkDeviceSize GetSize() const noexcept
+    [[nodiscard]] VkDeviceSize GetSize() const noexcept
     {
       return m_size;
     }
 
 
-    VkBufferUsageFlags GetUsage() const noexcept
+    [[nodiscard]] VkBufferUsageFlags GetUsage() const noexcept
     {
       return m_usage;
     }

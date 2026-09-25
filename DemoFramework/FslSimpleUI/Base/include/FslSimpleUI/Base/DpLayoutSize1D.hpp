@@ -68,28 +68,28 @@ namespace Fsl::UI
     {
     }
 
-    constexpr bool HasValue() const noexcept
+    [[nodiscard]] constexpr bool HasValue() const noexcept
     {
       return m_value >= value_type(0.0f);
     }
 
-    constexpr value_type Value() const noexcept
+    [[nodiscard]] constexpr value_type Value() const noexcept
     {
       return (m_value >= value_type(0.0f) ? m_value : value_type(0.0f));
     }
 
-    constexpr DpSize1DF Size() const noexcept
+    [[nodiscard]] constexpr DpSize1DF Size() const noexcept
     {
       return DpSize1DF::Create(m_value);
     }
 
-    constexpr DpSize1DF SizeOr(const DpSize1DF defaultValue) const noexcept
+    [[nodiscard]] constexpr DpSize1DF SizeOr(const DpSize1DF defaultValue) const noexcept
     {
-      return m_value.Value >= 0 ? DpSize1DF ::Create(m_value, OptimizationCheckFlag::NoCheck) : defaultValue;
+      return m_value.Value >= 0 ? DpSize1DF::Create(m_value, OptimizationCheckFlag::NoCheck) : defaultValue;
     }
 
     //! @brief Get the unfiltered value
-    constexpr value_type RawValue() const noexcept
+    [[nodiscard]] constexpr value_type RawValue() const noexcept
     {
       return m_value;
     }

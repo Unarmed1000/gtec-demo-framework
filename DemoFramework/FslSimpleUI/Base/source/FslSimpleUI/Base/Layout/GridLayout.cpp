@@ -100,7 +100,7 @@ namespace Fsl::UI
       throw std::invalid_argument("index out of bounds");
     }
 
-    auto itrFind = std::find_if(begin(), end(), [window](const GridWindowCollectionRecord& record) { return record.Window == window; });
+    const auto itrFind = std::find_if(begin(), end(), [window](const GridWindowCollectionRecord& record) { return record.Window == window; });
     if (itrFind == end())
     {
       throw std::invalid_argument("window not a child of this layout");
@@ -120,7 +120,7 @@ namespace Fsl::UI
     {
       throw std::invalid_argument("index out of bounds");
     }
-    auto itrFind = std::find_if(begin(), end(), [window](const GridWindowCollectionRecord& record) { return record.Window == window; });
+    const auto itrFind = std::find_if(begin(), end(), [window](const GridWindowCollectionRecord& record) { return record.Window == window; });
     if (itrFind == end())
     {
       throw std::invalid_argument("window not a child of this layout");
@@ -144,7 +144,7 @@ namespace Fsl::UI
     {
       throw std::invalid_argument(fmt::format("rowIndex {} out of bounds", rowIndex));
     }
-    auto itrFind = std::find_if(begin(), end(), [window](const GridWindowCollectionRecord& record) { return record.Window == window; });
+    const auto itrFind = std::find_if(begin(), end(), [window](const GridWindowCollectionRecord& record) { return record.Window == window; });
     if (itrFind == end())
     {
       throw std::invalid_argument("window not a child of this layout");
@@ -225,7 +225,7 @@ namespace Fsl::UI
 
     MeasureCellGroup3(unitConverter, m_cellInfo.FirstIndexCellGroup3, availableSizePx);
 
-    auto resolvedSize = ResolveMeasureSize();
+    const auto resolvedSize = ResolveMeasureSize();
     return !m_limitToAvailableSpace
              ? resolvedSize
              : PxSize2D(SafeLimit(availableSizePx.Width(), resolvedSize.Width()), SafeLimit(availableSizePx.Height(), resolvedSize.Height()));
@@ -234,7 +234,7 @@ namespace Fsl::UI
 
   PxSize2D GridLayout::ArrangeOverride(const PxSize2D& finalSizePx)
   {
-    PxSize2D sizePx = FinalizeSizes(finalSizePx);
+    const PxSize2D sizePx = FinalizeSizes(finalSizePx);
 
     for (uint32_t index = 0; index < m_cellRecords.size(); ++index)
     {
@@ -247,8 +247,8 @@ namespace Fsl::UI
       assert(PxAvailableSizeUtil::IsNormalValue(m_definitionsX[cell.IndexX].ArrangeMinimumSizePx.RawValue()));
       assert(PxAvailableSizeUtil::IsNormalValue(m_definitionsY[cell.IndexY].ArrangeMinimumSizePx.RawValue()));
 
-      PxRectangle rectPx(m_definitionsX[cell.IndexX].TempValue, m_definitionsY[cell.IndexY].TempValue,
-                         m_definitionsX[cell.IndexX].ArrangeMinimumSizePx, m_definitionsY[cell.IndexY].ArrangeMinimumSizePx);
+      const PxRectangle rectPx(m_definitionsX[cell.IndexX].TempValue, m_definitionsY[cell.IndexY].TempValue,
+                               m_definitionsX[cell.IndexX].ArrangeMinimumSizePx, m_definitionsY[cell.IndexY].ArrangeMinimumSizePx);
 
       ChildAt(index)->Arrange(rectPx);
     }
@@ -488,7 +488,7 @@ namespace Fsl::UI
       assert(m_cellRecords[index].UnitTypeFlagsY == GridUnitType::Auto || m_cellRecords[index].UnitTypeFlagsY == GridUnitType::Fixed ||
              m_cellRecords[index].UnitTypeFlagsY == GridUnitType::FixedPx);
 
-      auto window = ChildAt(index);
+      const auto window = ChildAt(index);
       assert(window);
 
       const uint32_t indexX = m_cellRecords[index].IndexX;
@@ -512,7 +512,7 @@ namespace Fsl::UI
               unitConverter.PxfToPxInt32(m_definitionsY[indexY].Size) == m_definitionsY[indexY].MinimumSizePx.RawValue()));
 
       // Apply the measured window dimensions to the minimum cell size
-      PxSize2D desiredSizePx = window->DesiredSizePx();
+      const PxSize2D desiredSizePx = window->DesiredSizePx();
       if (m_definitionsX[indexX].MeasureUnitType != InternalGridUnitType::Fixed)
       {
         m_definitionsX[indexX].ApplyMeasureMinSize(desiredSizePx.Width());
@@ -549,7 +549,7 @@ namespace Fsl::UI
       assert(m_cellRecords[index].UnitTypeFlagsX == GridUnitType::Auto);
       assert(m_cellRecords[index].UnitTypeFlagsY == GridUnitType::Star);
 
-      auto window = ChildAt(index);
+      const auto window = ChildAt(index);
       assert(window);
 
       const auto indexX = m_cellRecords[index].IndexX;
@@ -561,14 +561,14 @@ namespace Fsl::UI
       const PxAvailableSize avail(PxAvailableSize1D::InfiniteSpacePx(),
                                   !useInfinityY ? m_definitionsY[indexY].MeasureSizePx : PxAvailableSize1D::InfiniteSpacePx());
 
-      int32_t oldWidthPx = window->DesiredSizePx().RawWidth();
+      const int32_t oldWidthPx = window->DesiredSizePx().RawWidth();
       // Finally measure the cell
       window->Measure(avail);
 
       widthModified |= (oldWidthPx != window->DesiredSizePx().RawWidth());
 
       // Apply the measured window dimensions to the minimum cell size
-      PxSize2D desiredSizePx = window->DesiredSizePx();
+      const PxSize2D desiredSizePx = window->DesiredSizePx();
       if (!ignoreDesiredX)
       {
         m_definitionsX[indexX].ApplyMeasureMinSize(desiredSizePx.Width());
@@ -603,7 +603,7 @@ namespace Fsl::UI
       assert(m_cellRecords[index].UnitTypeFlagsY == GridUnitType::Fixed || m_cellRecords[index].UnitTypeFlagsY == GridUnitType::FixedPx ||
              m_cellRecords[index].UnitTypeFlagsY == GridUnitType::Auto);
 
-      auto window = ChildAt(index);
+      const auto window = ChildAt(index);
       assert(window);
 
       const auto indexX = m_cellRecords[index].IndexX;
@@ -624,7 +624,7 @@ namespace Fsl::UI
               unitConverter.PxfToPxInt32(m_definitionsY[indexY].Size) == m_definitionsY[indexY].MinimumSizePx.RawValue()));
 
       // Apply the measured window dimensions to the minimum cell size
-      PxSize2D desiredSizePx = window->DesiredSizePx();
+      const PxSize2D desiredSizePx = window->DesiredSizePx();
       m_definitionsX[indexX].ApplyMeasureMinSize(desiredSizePx.Width());
       if (m_definitionsY[indexY].MeasureUnitType != InternalGridUnitType::Fixed)
       {
@@ -655,7 +655,7 @@ namespace Fsl::UI
              m_cellRecords[index].UnitTypeFlagsX == GridUnitType::Star);
       assert(m_cellRecords[index].UnitTypeFlagsY == GridUnitType::Star);
 
-      auto window = ChildAt(index);
+      const auto window = ChildAt(index);
       assert(window);
 
       const auto indexX = m_cellRecords[index].IndexX;
@@ -674,7 +674,7 @@ namespace Fsl::UI
               unitConverter.PxfToPxInt32(m_definitionsX[indexX].Size == m_definitionsX[indexX].MinimumSizePx.RawValue())));
 
       // Apply the measured window dimensions to the minimum cell size
-      PxSize2D desiredSizePx = window->DesiredSizePx();
+      const PxSize2D desiredSizePx = window->DesiredSizePx();
       if (m_definitionsX[indexX].MeasureUnitType != InternalGridUnitType::Fixed)
       {
         m_definitionsX[indexX].ApplyMeasureMinSize(desiredSizePx.Width());
@@ -722,7 +722,7 @@ namespace Fsl::UI
       {
         if (rEntry.MeasureUnitType == InternalGridUnitType::Star)
         {
-          auto staredSpacePxf = static_cast<float>(spaceLeftPx.RawValue()) * (rEntry.Size / totalStar);
+          const auto staredSpacePxf = static_cast<float>(spaceLeftPx.RawValue()) * (rEntry.Size / totalStar);
           rEntry.MeasureSizePx = PxAvailableSize1D::UncheckedCreate(static_cast<int32_t>(std::round(staredSpacePxf)));
           rEntry.ApplyMeasureMinSize(rEntry.MeasureSizePx.ToPxSize1D());
         }
@@ -802,7 +802,7 @@ namespace Fsl::UI
         if ((static_cast<uint32_t>(rEntry.MeasureUnitType) & static_cast<uint32_t>(InternalGridUnitType::Star)) ==
             static_cast<uint32_t>(InternalGridUnitType::Star))
         {
-          auto staredSpacePxf = static_cast<float>(spaceLeftPx.RawValue()) * (rEntry.Size / totalStar);
+          const auto staredSpacePxf = static_cast<float>(spaceLeftPx.RawValue()) * (rEntry.Size / totalStar);
           rEntry.MeasureSizePx = PxAvailableSize1D::UncheckedCreate(static_cast<int32_t>(std::round(staredSpacePxf)));
           sizePx += MathHelper::Max(rEntry.MeasureSizePx.ToPxSize1D(), rEntry.MinimumSizePx);
         }

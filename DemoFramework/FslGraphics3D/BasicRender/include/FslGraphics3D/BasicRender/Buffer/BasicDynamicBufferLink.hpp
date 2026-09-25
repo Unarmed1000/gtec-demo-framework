@@ -78,18 +78,18 @@ namespace Fsl::Graphics3D
 
 
     //! @brief Get the content type
-    BasicBufferType GetType() const noexcept
+    [[nodiscard]] BasicBufferType GetType() const noexcept
     {
       return m_bufferType;
     }
 
-    uint32_t Capacity() const noexcept
+    [[nodiscard]] uint32_t Capacity() const noexcept
     {
       return m_bufferElementCapacity;
     }
 
     //! @brief Try to get the native texture
-    BasicNativeBufferHandle TryGetNativeHandle() const noexcept
+    [[nodiscard]] BasicNativeBufferHandle TryGetNativeHandle() const noexcept
     {
       return m_activeIndex < m_buffers.size() ? m_buffers[m_activeIndex].NativeHandle : BasicNativeBufferHandle::Invalid();
     }

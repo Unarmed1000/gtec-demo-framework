@@ -223,7 +223,7 @@ namespace Fsl::Graphics3D
       // If we introduce support for more material types then the FindIndexOfMaterial code needs to be updated as well
 
       constexpr auto PushConstantDeclArray = BasicMaterial::GetPushConstantDeclarationArray();
-      auto pushConstantDeclSpan = PushConstantDeclArray.AsReadOnlySpan();
+      const auto pushConstantDeclSpan = PushConstantDeclArray.AsReadOnlySpan();
 
       // The given configuration do not exist, creating new material
       materialTracker = std::make_shared<BasicMaterialTracker>();
@@ -285,25 +285,25 @@ namespace Fsl::Graphics3D
   BasicMaterial BasicMaterialManager::CloneMaterial(const BasicMaterial& sourceMaterial, const std::shared_ptr<INativeTexture2D>& texture,
                                                     const bool isDynamic)
   {
-    BasicMaterialHandle hSource = sourceMaterial.TryGetHandle();
+    const BasicMaterialHandle hSource = sourceMaterial.TryGetHandle();
     const BasicMaterialRecord& record = m_records.Get(hSource.Value);
-    BasicMaterialCreateInfo createInfo(record.Details.MaterialInfo, record.Details.VertexDecl.AsSpan());
+    const BasicMaterialCreateInfo createInfo(record.Details.MaterialInfo, record.Details.VertexDecl.AsSpan());
     return CreateMaterial(createInfo, texture, record.IsDynamic || isDynamic);
   }
 
 
   BasicMaterial BasicMaterialManager::CloneMaterial(const BasicMaterial& sourceMaterial, const BasicMaterialInfo& materialInfo, const bool isDynamic)
   {
-    BasicMaterialHandle hSource = sourceMaterial.TryGetHandle();
+    const BasicMaterialHandle hSource = sourceMaterial.TryGetHandle();
     const BasicMaterialRecord& record = m_records.Get(hSource.Value);
-    BasicMaterialCreateInfo createInfo(materialInfo, record.Details.VertexDecl.AsSpan());
+    const BasicMaterialCreateInfo createInfo(materialInfo, record.Details.VertexDecl.AsSpan());
     return CreateMaterial(createInfo, record.Texture, record.IsDynamic || isDynamic);
   }
 
 
   BasicMaterialInfo BasicMaterialManager::GetMaterialInfo(const BasicMaterial& sourceMaterial) const
   {
-    BasicMaterialHandle hSource = sourceMaterial.TryGetHandle();
+    const BasicMaterialHandle hSource = sourceMaterial.TryGetHandle();
     const BasicMaterialRecord& record = m_records.Get(hSource.Value);
     return record.Details.MaterialInfo;
   }
@@ -311,7 +311,7 @@ namespace Fsl::Graphics3D
 
   void BasicMaterialManager::SetMaterialInfo(const BasicMaterial& sourceMaterial, const BasicMaterialInfo& materialInfo)
   {
-    BasicMaterialHandle hSource = sourceMaterial.TryGetHandle();
+    const BasicMaterialHandle hSource = sourceMaterial.TryGetHandle();
     const BasicMaterialRecord* pRecord = m_records.TryGet(hSource.Value);
     if (pRecord == nullptr)
     {
@@ -346,7 +346,7 @@ namespace Fsl::Graphics3D
 
   std::shared_ptr<INativeTexture2D> BasicMaterialManager::TryGetMaterialTexture(const BasicMaterial& sourceMaterial)
   {
-    BasicMaterialHandle hSource = sourceMaterial.TryGetHandle();
+    const BasicMaterialHandle hSource = sourceMaterial.TryGetHandle();
     const BasicMaterialRecord* pRecord = m_records.TryGet(hSource.Value);
     return pRecord != nullptr ? pRecord->Texture : std::shared_ptr<INativeTexture2D>();
   }
@@ -354,7 +354,7 @@ namespace Fsl::Graphics3D
 
   BasicNativeMaterialHandle BasicMaterialManager::TryGetNativeHandle(const BasicMaterial& material) const
   {
-    BasicMaterialHandle handle = material.TryGetHandle();
+    const BasicMaterialHandle handle = material.TryGetHandle();
     const BasicMaterialRecord* pRecord = m_records.TryGet(handle.Value);
     return pRecord != nullptr ? pRecord->Native.NativeHandle : BasicNativeMaterialHandle::Invalid();
   }
@@ -382,7 +382,7 @@ namespace Fsl::Graphics3D
     for (uint32_t indexOneTooLarge = m_records.Count(); indexOneTooLarge > 0; --indexOneTooLarge)
     {
       assert(indexOneTooLarge > 0);
-      uint32_t i = indexOneTooLarge - 1;
+      const uint32_t i = indexOneTooLarge - 1;
       BasicMaterialRecord& rRecord = m_records[i];
 
       if (rRecord.BasicUserObjectTracker.expired())

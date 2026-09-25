@@ -51,18 +51,18 @@ namespace Fsl::Procedural
         phi = horizontalAngularStride * static_cast<float>(horizontalIndex);
 
         // position
-        float z = ringRadius * std::sin(phi);
+        const float z = ringRadius * std::sin(phi);
         const float cosPhi = std::cos(phi);
         {
-          float x = cosTheta * (radius + ringRadius * cosPhi);
-          float y = sinTheta * (radius + ringRadius * cosPhi);
+          const float x = cosTheta * (radius + ringRadius * cosPhi);
+          const float y = sinTheta * (radius + ringRadius * cosPhi);
 
           rVertices[rVertexIndex].Position = Vector3(x, z, y);
         }
         // normal
         {
-          float x = cosTheta * (ringRadius * cosPhi);
-          float y = sinTheta * (ringRadius * cosPhi);
+          const float x = cosTheta * (ringRadius * cosPhi);
+          const float y = sinTheta * (ringRadius * cosPhi);
 
           Vector3 pos = Vector3(x * mod, z * mod, y * mod);
           pos.Normalize();
@@ -127,7 +127,7 @@ namespace Fsl::Procedural
     void GenerateTriangleListIndices(std::vector<BasicMesh::index_type>& rIndices, const int majorSegments, const int minorSegments,
                                      const WindingOrder::Enum windingOrder)
     {
-      int numVerticesPerRow = minorSegments + 1;
+      const int numVerticesPerRow = minorSegments + 1;
 
       const int offset0 = (windingOrder == WindingOrder::CCW ? 0 : 1);
       const int offset1 = (windingOrder == WindingOrder::CCW ? 1 : 0);
@@ -137,11 +137,11 @@ namespace Fsl::Procedural
       {
         for (int horizontalIndex = 0; horizontalIndex < minorSegments; ++horizontalIndex)
         {
-          int lt = ((horizontalIndex + 0) + (verticalIndex + 1) * (numVerticesPerRow));
-          int rt = ((horizontalIndex + 1) + (verticalIndex + 1) * (numVerticesPerRow));
+          const int lt = ((horizontalIndex + 0) + (verticalIndex + 1) * (numVerticesPerRow));
+          const int rt = ((horizontalIndex + 1) + (verticalIndex + 1) * (numVerticesPerRow));
 
-          int lb = ((horizontalIndex + 0) + (verticalIndex + 0) * (numVerticesPerRow));
-          int rb = ((horizontalIndex + 1) + (verticalIndex + 0) * (numVerticesPerRow));
+          const int lb = ((horizontalIndex + 0) + (verticalIndex + 0) * (numVerticesPerRow));
+          const int rb = ((horizontalIndex + 1) + (verticalIndex + 0) * (numVerticesPerRow));
 
           rIndices[index + offset0] = rt;
           rIndices[index + offset1] = lt;

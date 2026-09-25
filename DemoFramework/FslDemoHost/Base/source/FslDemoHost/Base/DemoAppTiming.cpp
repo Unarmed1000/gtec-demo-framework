@@ -71,7 +71,7 @@ namespace Fsl
 
   bool DemoAppTiming::SetFixedUpdatesPerSecond(const uint16_t fixedUpdatesPerSecond) noexcept
   {
-    bool wasChanged = m_config.SetFixedUpdatesPerSecond(fixedUpdatesPerSecond);
+    const bool wasChanged = m_config.SetFixedUpdatesPerSecond(fixedUpdatesPerSecond);
     if (wasChanged)
     {
       m_timing.FixedTime.ExpectedFrameTime = m_config.ExpectedFixedFrameTime;
@@ -90,7 +90,7 @@ namespace Fsl
 
   void DemoAppTiming::AdvanceFixedTimeStep()
   {
-    auto oldTimeTicks = m_timing.TimeThen;
+    const auto oldTimeTicks = m_timing.TimeThen;
     m_timing.TimeThen -= m_timing.FixedTime.ExpectedFrameTime;
     DoTimeNow(oldTimeTicks, TimeStepMode::Normal, true);
   }

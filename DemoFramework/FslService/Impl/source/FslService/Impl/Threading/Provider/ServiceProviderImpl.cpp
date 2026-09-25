@@ -64,7 +64,7 @@ namespace Fsl
 
   std::shared_ptr<IBasicService> ServiceProviderImpl::TryGet(const ServiceId& serviceId) const
   {
-    auto res = TryGetNow(serviceId);
+    const auto res = TryGetNow(serviceId);
     FSLLOG3_DEBUG_WARNING_IF(res.LaunchType == ServiceLaunchType::MultipleProviderTag,
                              "Service has multiple providers, please specify which one you want.");
 
@@ -79,7 +79,7 @@ namespace Fsl
 
   std::shared_ptr<IBasicService> ServiceProviderImpl::Get(const ServiceId& serviceId) const
   {
-    auto res = TryGetNow(serviceId);
+    const auto res = TryGetNow(serviceId);
     switch (res.LaunchType)
     {
     case ServiceLaunchType::MultipleProviderTag:
@@ -104,7 +104,7 @@ namespace Fsl
 
   std::shared_ptr<IBasicService> ServiceProviderImpl::TryGet(const ServiceId& serviceId, const ProviderId& providerId) const
   {
-    auto res = TryGetNow(serviceId, providerId);
+    const auto res = TryGetNow(serviceId, providerId);
     FSLLOG3_DEBUG_WARNING_IF(res.LaunchType == ServiceLaunchType::MultipleProviderTag,
                              "Service has multiple providers, please specify which one you want.");
 
@@ -119,7 +119,7 @@ namespace Fsl
 
   std::shared_ptr<IBasicService> ServiceProviderImpl::Get(const ServiceId& serviceId, const ProviderId& providerId) const
   {
-    auto res = TryGetNow(serviceId, providerId);
+    const auto res = TryGetNow(serviceId, providerId);
     switch (res.LaunchType)
     {
     case ServiceLaunchType::MultipleProviderTag:
@@ -152,7 +152,7 @@ namespace Fsl
     //}
 
     // See if we already have a instance of the service
-    auto itrFind = m_serviceProviderMaps.InterfaceToService.find(serviceId.Get());
+    const auto itrFind = m_serviceProviderMaps.InterfaceToService.find(serviceId.Get());
     if (itrFind == m_serviceProviderMaps.InterfaceToService.end())
     {
       return;
@@ -168,11 +168,11 @@ namespace Fsl
     }
     else
     {
-      auto itrServices = m_serviceProviderMaps.InterfaceMultipleServices.find(serviceId.Get());
+      const auto itrServices = m_serviceProviderMaps.InterfaceMultipleServices.find(serviceId.Get());
       assert(itrServices != m_serviceProviderMaps.InterfaceMultipleServices.end());
       if (itrServices != m_serviceProviderMaps.InterfaceMultipleServices.end())
       {
-        for (auto& entry : *itrServices->second)
+        for (const auto& entry : *itrServices->second)
         {
           rServices.push_back(entry.Service);
         }
@@ -190,7 +190,7 @@ namespace Fsl
     //}
 
     // See if we already have a instance of the service
-    auto itrService = m_serviceProviderMaps.InterfaceToService.find(serviceId.Get());
+    const auto itrService = m_serviceProviderMaps.InterfaceToService.find(serviceId.Get());
 
     return (itrService != m_serviceProviderMaps.InterfaceToService.end() ? itrService->second : ServiceLaunchRecord());
   }
@@ -205,7 +205,7 @@ namespace Fsl
     //}
 
     // See if we already have a instance of the service
-    auto itrService = m_serviceProviderMaps.InterfaceMultipleServices.find(serviceId.Get());
+    const auto itrService = m_serviceProviderMaps.InterfaceMultipleServices.find(serviceId.Get());
     if (itrService != m_serviceProviderMaps.InterfaceMultipleServices.end())
     {
       const auto itrFind = std::find_if(itrService->second->begin(), itrService->second->end(),

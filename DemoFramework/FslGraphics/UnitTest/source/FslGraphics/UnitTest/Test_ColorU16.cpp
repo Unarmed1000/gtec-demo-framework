@@ -105,81 +105,81 @@ namespace
 
   ColorU16 MultiplyRGB(const ColorU16 color, const float factor)
   {
-    double alpha = MathHelper::Clamp(factor, 0.0f, 1.0f);
-    auto r = NumericCast<uint32_t>(MathHelper::Clamp(static_cast<int64_t>(std::round(alpha * static_cast<double>(color.RawR()))),
-                                                     static_cast<int64_t>(0), static_cast<int64_t>(0xFFFF)));
-    auto g = NumericCast<uint32_t>(MathHelper::Clamp(static_cast<int64_t>(std::round(alpha * static_cast<double>(color.RawG()))),
-                                                     static_cast<int64_t>(0), static_cast<int64_t>(0xFFFF)));
-    auto b = NumericCast<uint32_t>(MathHelper::Clamp(static_cast<int64_t>(std::round(alpha * static_cast<double>(color.RawB()))),
-                                                     static_cast<int64_t>(0), static_cast<int64_t>(0xFFFF)));
+    const double alpha = MathHelper::Clamp(factor, 0.0f, 1.0f);
+    const auto r = NumericCast<uint32_t>(MathHelper::Clamp(static_cast<int64_t>(std::round(alpha * static_cast<double>(color.RawR()))),
+                                                           static_cast<int64_t>(0), static_cast<int64_t>(0xFFFF)));
+    const auto g = NumericCast<uint32_t>(MathHelper::Clamp(static_cast<int64_t>(std::round(alpha * static_cast<double>(color.RawG()))),
+                                                           static_cast<int64_t>(0), static_cast<int64_t>(0xFFFF)));
+    const auto b = NumericCast<uint32_t>(MathHelper::Clamp(static_cast<int64_t>(std::round(alpha * static_cast<double>(color.RawB()))),
+                                                           static_cast<int64_t>(0), static_cast<int64_t>(0xFFFF)));
     return ColorU16::CreateR16G16B16A16UNorm(r, g, b, static_cast<uint32_t>(color.RawA()));
   }
 
   ColorU16 MultiplyRGBA(const ColorU16 color, const float factor)
   {
-    double alpha = MathHelper::Clamp(factor, 0.0f, 1.0f);
-    auto r = NumericCast<uint32_t>(MathHelper::Clamp(static_cast<int64_t>(std::round(alpha * static_cast<double>(color.RawR()))),
-                                                     static_cast<int64_t>(0), static_cast<int64_t>(0xFFFF)));
-    auto g = NumericCast<uint32_t>(MathHelper::Clamp(static_cast<int64_t>(std::round(alpha * static_cast<double>(color.RawG()))),
-                                                     static_cast<int64_t>(0), static_cast<int64_t>(0xFFFF)));
-    auto b = NumericCast<uint32_t>(MathHelper::Clamp(static_cast<int64_t>(std::round(alpha * static_cast<double>(color.RawB()))),
-                                                     static_cast<int64_t>(0), static_cast<int64_t>(0xFFFF)));
-    auto a = NumericCast<uint32_t>(MathHelper::Clamp(static_cast<int64_t>(std::round(alpha * static_cast<double>(color.RawA()))),
-                                                     static_cast<int64_t>(0), static_cast<int64_t>(0xFFFF)));
+    const double alpha = MathHelper::Clamp(factor, 0.0f, 1.0f);
+    const auto r = NumericCast<uint32_t>(MathHelper::Clamp(static_cast<int64_t>(std::round(alpha * static_cast<double>(color.RawR()))),
+                                                           static_cast<int64_t>(0), static_cast<int64_t>(0xFFFF)));
+    const auto g = NumericCast<uint32_t>(MathHelper::Clamp(static_cast<int64_t>(std::round(alpha * static_cast<double>(color.RawG()))),
+                                                           static_cast<int64_t>(0), static_cast<int64_t>(0xFFFF)));
+    const auto b = NumericCast<uint32_t>(MathHelper::Clamp(static_cast<int64_t>(std::round(alpha * static_cast<double>(color.RawB()))),
+                                                           static_cast<int64_t>(0), static_cast<int64_t>(0xFFFF)));
+    const auto a = NumericCast<uint32_t>(MathHelper::Clamp(static_cast<int64_t>(std::round(alpha * static_cast<double>(color.RawA()))),
+                                                           static_cast<int64_t>(0), static_cast<int64_t>(0xFFFF)));
     return ColorU16::CreateR16G16B16A16UNorm(r, g, b, a);
   }
 
   ColorU16 MultiplyA(const ColorU16 color, const float factor)
   {
-    double alpha = MathHelper::Clamp(factor, 0.0f, 1.0f);
-    auto a = NumericCast<uint32_t>(MathHelper::Clamp(static_cast<int64_t>(std::round(alpha * static_cast<double>(color.RawA()))),
-                                                     static_cast<int64_t>(0), static_cast<int64_t>(0xFFFF)));
+    const double alpha = MathHelper::Clamp(factor, 0.0f, 1.0f);
+    const auto a = NumericCast<uint32_t>(MathHelper::Clamp(static_cast<int64_t>(std::round(alpha * static_cast<double>(color.RawA()))),
+                                                           static_cast<int64_t>(0), static_cast<int64_t>(0xFFFF)));
     return ColorU16::CreateR16G16B16A16UNorm(color.RawR(), color.RawG(), color.RawB(), NumericCast<uint16_t>(a));
   }
 
   ColorU16 MultiplyA(const ColorU16 color, const ColorChannelValueU16 factor)
   {
-    double alpha = static_cast<double>(factor.RawValue) / static_cast<double>(0xFFFF);
-    auto a = NumericCast<uint32_t>(MathHelper::Clamp(static_cast<int64_t>(std::round(alpha * static_cast<double>(color.RawA()))),
-                                                     static_cast<int64_t>(0), static_cast<int64_t>(0xFFFF)));
+    const double alpha = static_cast<double>(factor.RawValue) / static_cast<double>(0xFFFF);
+    const auto a = NumericCast<uint32_t>(MathHelper::Clamp(static_cast<int64_t>(std::round(alpha * static_cast<double>(color.RawA()))),
+                                                           static_cast<int64_t>(0), static_cast<int64_t>(0xFFFF)));
     return ColorU16::CreateR16G16B16A16UNorm(color.RawR(), color.RawG(), color.RawB(), NumericCast<uint16_t>(a));
   }
 
   ColorU16 Premultiply(const ColorU16 color)
   {
-    double alpha = static_cast<double>(color.RawA()) / static_cast<double>(0xFFFF);
-    auto r = NumericCast<uint32_t>(MathHelper::Clamp(static_cast<int64_t>(std::round(alpha * static_cast<double>(color.RawR()))),
-                                                     static_cast<int64_t>(0), static_cast<int64_t>(0xFFFF)));
-    auto g = NumericCast<uint32_t>(MathHelper::Clamp(static_cast<int64_t>(std::round(alpha * static_cast<double>(color.RawG()))),
-                                                     static_cast<int64_t>(0), static_cast<int64_t>(0xFFFF)));
-    auto b = NumericCast<uint32_t>(MathHelper::Clamp(static_cast<int64_t>(std::round(alpha * static_cast<double>(color.RawB()))),
-                                                     static_cast<int64_t>(0), static_cast<int64_t>(0xFFFF)));
+    const double alpha = static_cast<double>(color.RawA()) / static_cast<double>(0xFFFF);
+    const auto r = NumericCast<uint32_t>(MathHelper::Clamp(static_cast<int64_t>(std::round(alpha * static_cast<double>(color.RawR()))),
+                                                           static_cast<int64_t>(0), static_cast<int64_t>(0xFFFF)));
+    const auto g = NumericCast<uint32_t>(MathHelper::Clamp(static_cast<int64_t>(std::round(alpha * static_cast<double>(color.RawG()))),
+                                                           static_cast<int64_t>(0), static_cast<int64_t>(0xFFFF)));
+    const auto b = NumericCast<uint32_t>(MathHelper::Clamp(static_cast<int64_t>(std::round(alpha * static_cast<double>(color.RawB()))),
+                                                           static_cast<int64_t>(0), static_cast<int64_t>(0xFFFF)));
     return ColorU16::CreateR16G16B16A16UNorm(r, g, b, static_cast<uint32_t>(color.RawA()));
   }
 
   ColorU16 Premultiply(const ColorU16 color, const float alphaMul)
   {
-    double alpha = (static_cast<double>(color.RawA()) / static_cast<double>(0xFFFF)) * MathHelper::Clamp(alphaMul, 0.0f, 100.0f);
-    auto r = NumericCast<uint32_t>(MathHelper::Clamp(static_cast<int64_t>(std::round(alpha * static_cast<double>(color.RawR()))),
-                                                     static_cast<int64_t>(0), static_cast<int64_t>(0xFFFF)));
-    auto g = NumericCast<uint32_t>(MathHelper::Clamp(static_cast<int64_t>(std::round(alpha * static_cast<double>(color.RawG()))),
-                                                     static_cast<int64_t>(0), static_cast<int64_t>(0xFFFF)));
-    auto b = NumericCast<uint32_t>(MathHelper::Clamp(static_cast<int64_t>(std::round(alpha * static_cast<double>(color.RawB()))),
-                                                     static_cast<int64_t>(0), static_cast<int64_t>(0xFFFF)));
-    auto a = NumericCast<uint32_t>(MathHelper::Clamp(static_cast<int64_t>(std::round(alpha * static_cast<double>(0xFFFF))), static_cast<int64_t>(0),
-                                                     static_cast<int64_t>(0xFFFF)));
+    const double alpha = (static_cast<double>(color.RawA()) / static_cast<double>(0xFFFF)) * MathHelper::Clamp(alphaMul, 0.0f, 100.0f);
+    const auto r = NumericCast<uint32_t>(MathHelper::Clamp(static_cast<int64_t>(std::round(alpha * static_cast<double>(color.RawR()))),
+                                                           static_cast<int64_t>(0), static_cast<int64_t>(0xFFFF)));
+    const auto g = NumericCast<uint32_t>(MathHelper::Clamp(static_cast<int64_t>(std::round(alpha * static_cast<double>(color.RawG()))),
+                                                           static_cast<int64_t>(0), static_cast<int64_t>(0xFFFF)));
+    const auto b = NumericCast<uint32_t>(MathHelper::Clamp(static_cast<int64_t>(std::round(alpha * static_cast<double>(color.RawB()))),
+                                                           static_cast<int64_t>(0), static_cast<int64_t>(0xFFFF)));
+    const auto a = NumericCast<uint32_t>(MathHelper::Clamp(static_cast<int64_t>(std::round(alpha * static_cast<double>(0xFFFF))),
+                                                           static_cast<int64_t>(0), static_cast<int64_t>(0xFFFF)));
     return ColorU16::CreateR16G16B16A16UNorm(r, g, b, a);
   }
 
   ColorU16 PremultiplyRGB(const ColorU16 color, const float alphaMul, const uint32_t newAlpha)
   {
-    double alpha = (static_cast<double>(color.RawA()) / static_cast<double>(0xFFFF)) * MathHelper::Clamp(alphaMul, 0.0f, 100.0f);
-    auto r = NumericCast<uint32_t>(MathHelper::Clamp(static_cast<int64_t>(std::round(alpha * static_cast<double>(color.RawR()))),
-                                                     static_cast<int64_t>(0), static_cast<int64_t>(0xFFFF)));
-    auto g = NumericCast<uint32_t>(MathHelper::Clamp(static_cast<int64_t>(std::round(alpha * static_cast<double>(color.RawG()))),
-                                                     static_cast<int64_t>(0), static_cast<int64_t>(0xFFFF)));
-    auto b = NumericCast<uint32_t>(MathHelper::Clamp(static_cast<int64_t>(std::round(alpha * static_cast<double>(color.RawB()))),
-                                                     static_cast<int64_t>(0), static_cast<int64_t>(0xFFFF)));
+    const double alpha = (static_cast<double>(color.RawA()) / static_cast<double>(0xFFFF)) * MathHelper::Clamp(alphaMul, 0.0f, 100.0f);
+    const auto r = NumericCast<uint32_t>(MathHelper::Clamp(static_cast<int64_t>(std::round(alpha * static_cast<double>(color.RawR()))),
+                                                           static_cast<int64_t>(0), static_cast<int64_t>(0xFFFF)));
+    const auto g = NumericCast<uint32_t>(MathHelper::Clamp(static_cast<int64_t>(std::round(alpha * static_cast<double>(color.RawG()))),
+                                                           static_cast<int64_t>(0), static_cast<int64_t>(0xFFFF)));
+    const auto b = NumericCast<uint32_t>(MathHelper::Clamp(static_cast<int64_t>(std::round(alpha * static_cast<double>(color.RawB()))),
+                                                           static_cast<int64_t>(0), static_cast<int64_t>(0xFFFF)));
     return ColorU16::CreateR16G16B16A16UNorm(r, g, b, newAlpha);
   }
 }
@@ -187,7 +187,7 @@ namespace
 
 TEST(Test_ColorU16, Construct_Empty)
 {
-  ColorU16 color;
+  const ColorU16 color;
 
   EXPECT_EQ(0u, color.RawR());
   EXPECT_EQ(0u, color.RawG());
@@ -200,12 +200,12 @@ TEST(Test_ColorU16, Construct_Empty)
 
 TEST(Test_ColorU16, Construct_Float)
 {
-  ColorU16 colWhite = ColorU16::Create(1.0f, 1.0f, 1.0f, 1.0f);
-  ColorU16 colR = ColorU16::Create(1.0f, 0.0f, 0.0f, 0.0f);
-  ColorU16 colG = ColorU16::Create(0.0f, 1.0f, 0.0f, 0.0f);
-  ColorU16 colB = ColorU16::Create(0.0f, 0.0f, 1.0f, 0.0f);
-  ColorU16 colA = ColorU16::Create(0.0f, 0.0f, 0.0f, 1.0f);
-  ColorU16 colMisc = ColorU16::Create(0.5f, 0.5f, 0.5f, 0.5f);
+  const ColorU16 colWhite = ColorU16::Create(1.0f, 1.0f, 1.0f, 1.0f);
+  const ColorU16 colR = ColorU16::Create(1.0f, 0.0f, 0.0f, 0.0f);
+  const ColorU16 colG = ColorU16::Create(0.0f, 1.0f, 0.0f, 0.0f);
+  const ColorU16 colB = ColorU16::Create(0.0f, 0.0f, 1.0f, 0.0f);
+  const ColorU16 colA = ColorU16::Create(0.0f, 0.0f, 0.0f, 1.0f);
+  const ColorU16 colMisc = ColorU16::Create(0.5f, 0.5f, 0.5f, 0.5f);
 
   EXPECT_EQ(0xFFFFu, colWhite.RawR());
   EXPECT_EQ(0xFFFFu, colWhite.RawG());
@@ -259,18 +259,18 @@ TEST(Test_ColorU16, Construct_Floats)
 
     const uint16_t expected = CreateU16(value);
     const uint16_t maxValue = 0xFFFF;
-    ColorU16 expectedR = ColorU16::CreateR16G16B16A16UNorm(expected, maxValue, maxValue, maxValue);
-    ColorU16 expectedG = ColorU16::CreateR16G16B16A16UNorm(maxValue, expected, maxValue, maxValue);
-    ColorU16 expectedB = ColorU16::CreateR16G16B16A16UNorm(maxValue, maxValue, expected, maxValue);
-    ColorU16 expectedA = ColorU16::CreateR16G16B16A16UNorm(maxValue, maxValue, maxValue, expected);
+    const ColorU16 expectedR = ColorU16::CreateR16G16B16A16UNorm(expected, maxValue, maxValue, maxValue);
+    const ColorU16 expectedG = ColorU16::CreateR16G16B16A16UNorm(maxValue, expected, maxValue, maxValue);
+    const ColorU16 expectedB = ColorU16::CreateR16G16B16A16UNorm(maxValue, maxValue, expected, maxValue);
+    const ColorU16 expectedA = ColorU16::CreateR16G16B16A16UNorm(maxValue, maxValue, maxValue, expected);
 
-    ColorU16 gotR = ColorU16::Create(value, 1.0f, 1.0f, 1.0f);
+    const ColorU16 gotR = ColorU16::Create(value, 1.0f, 1.0f, 1.0f);
     ASSERT_EQ(expectedR, gotR);
-    ColorU16 gotG = ColorU16::Create(1.0f, value, 1.0f, 1.0f);
+    const ColorU16 gotG = ColorU16::Create(1.0f, value, 1.0f, 1.0f);
     ASSERT_EQ(expectedG, gotG);
-    ColorU16 gotB = ColorU16::Create(1.0f, 1.0f, value, 1.0f);
+    const ColorU16 gotB = ColorU16::Create(1.0f, 1.0f, value, 1.0f);
     ASSERT_EQ(expectedB, gotB);
-    ColorU16 gotA = ColorU16::Create(1.0f, 1.0f, 1.0f, value);
+    const ColorU16 gotA = ColorU16::Create(1.0f, 1.0f, 1.0f, value);
     ASSERT_EQ(expectedA, gotA);
   }
 }
@@ -278,24 +278,24 @@ TEST(Test_ColorU16, Construct_Floats)
 
 TEST(Test_ColorU16, Colors_32)
 {
-  uint32_t colTransparent = 0x00000000;
-  uint32_t colBlack = 0xFF000000;
-  uint32_t colRed = 0xFFFF0000;
-  uint32_t colGreen = 0xFF00FF00;
-  uint32_t colBlue = 0xFF0000FF;
-  uint32_t colCyan = 0xFF00FFFF;
-  uint32_t colYellow = 0xFFFFFF00;
-  uint32_t colWhite = 0xFFFFFFFF;
-  uint32_t colOrange = 0xFFFFA500;
-  uint32_t colPink = 0xFFFAAFBE;
-  uint32_t colPurple = 0xFF800080;
-  uint32_t colMarrom = 0xFF800000;
-  uint32_t colBrown = 0xFFA52A2A;
-  uint32_t colOlive = 0xFF808000;
-  uint32_t colSilver = 0xFFC0C0C0;
-  uint32_t colDarkBlue = 0xFF0000A0;
-  uint32_t colLightBlue = 0xFFADD8E6;
-  uint32_t colLime = 0xFF00FF00;
+  const uint32_t colTransparent = 0x00000000;
+  const uint32_t colBlack = 0xFF000000;
+  const uint32_t colRed = 0xFFFF0000;
+  const uint32_t colGreen = 0xFF00FF00;
+  const uint32_t colBlue = 0xFF0000FF;
+  const uint32_t colCyan = 0xFF00FFFF;
+  const uint32_t colYellow = 0xFFFFFF00;
+  const uint32_t colWhite = 0xFFFFFFFF;
+  const uint32_t colOrange = 0xFFFFA500;
+  const uint32_t colPink = 0xFFFAAFBE;
+  const uint32_t colPurple = 0xFF800080;
+  const uint32_t colMarrom = 0xFF800000;
+  const uint32_t colBrown = 0xFFA52A2A;
+  const uint32_t colOlive = 0xFF808000;
+  const uint32_t colSilver = 0xFFC0C0C0;
+  const uint32_t colDarkBlue = 0xFF0000A0;
+  const uint32_t colLightBlue = 0xFFADD8E6;
+  const uint32_t colLime = 0xFF00FF00;
 
   EXPECT_EQ(colTransparent, ColorsU16::Transparent().AsPackedColor32().RawValue);
   EXPECT_EQ(colBlack, ColorsU16::Black().AsPackedColor32().RawValue);
@@ -400,10 +400,10 @@ TEST(Test_ColorU16, Colors_32)
 
 TEST(Test_ColorU16, ColorsToVector4)
 {
-  auto white = ColorU16(PackedColor32(0xFFFFFFFF)).ToVector4();
-  auto red = ColorU16(PackedColor32(0x00FF0000)).ToVector4();
-  auto green = ColorU16(PackedColor32(0x0000FF00)).ToVector4();
-  auto blue = ColorU16(PackedColor32(0x000000FF)).ToVector4();
+  const auto white = ColorU16(PackedColor32(0xFFFFFFFF)).ToVector4();
+  const auto red = ColorU16(PackedColor32(0x00FF0000)).ToVector4();
+  const auto green = ColorU16(PackedColor32(0x0000FF00)).ToVector4();
+  const auto blue = ColorU16(PackedColor32(0x000000FF)).ToVector4();
 
   EXPECT_FLOAT_EQ(1.0f, white.W);
   EXPECT_FLOAT_EQ(1.0f, white.X);
@@ -428,10 +428,10 @@ TEST(Test_ColorU16, ColorsToVector4)
 
 TEST(Test_ColorU16, ColorsToVector4B)
 {
-  auto white = WorkAroundConstExpr(ColorU16(PackedColor32(0xFFFFFFFF)));
-  auto red = WorkAroundConstExpr(ColorU16(PackedColor32(0x00FF0000)));
-  auto green = WorkAroundConstExpr(ColorU16(PackedColor32(0x0000FF00)));
-  auto blue = WorkAroundConstExpr(ColorU16(PackedColor32(0x000000FF)));
+  const auto white = WorkAroundConstExpr(ColorU16(PackedColor32(0xFFFFFFFF)));
+  const auto red = WorkAroundConstExpr(ColorU16(PackedColor32(0x00FF0000)));
+  const auto green = WorkAroundConstExpr(ColorU16(PackedColor32(0x0000FF00)));
+  const auto blue = WorkAroundConstExpr(ColorU16(PackedColor32(0x000000FF)));
 
   EXPECT_FLOAT_EQ(1.0f, white.W);
   EXPECT_FLOAT_EQ(1.0f, white.X);
@@ -461,9 +461,9 @@ TEST(Test_ColorU16, MultiplyRGB)
   {
     const float factor = static_cast<float>(i) / static_cast<float>(0xFFFF);
     {
-      ColorU16 color(ColorU16::CreateR16G16B16A16UNorm(0xFF32u, 0x8053u, 0x2077u, i));
-      auto expected = MultiplyRGB(color, factor);
-      auto got = ColorU16::MultiplyRGB(color, factor);
+      const ColorU16 color(ColorU16::CreateR16G16B16A16UNorm(0xFF32u, 0x8053u, 0x2077u, i));
+      const auto expected = MultiplyRGB(color, factor);
+      const auto got = ColorU16::MultiplyRGB(color, factor);
       if (expected != got)
       {
         FSLLOG3_INFO("{} != {} (color: {})", expected, got, color);
@@ -472,9 +472,9 @@ TEST(Test_ColorU16, MultiplyRGB)
     }
     for (uint32_t j = 0; j < (2 * 256); j += 128)
     {
-      ColorU16 color(ColorU16::CreateR16G16B16A16UNorm(j, (85 * 256) + j, (85 * 2 * 256) + j, i));
-      ColorU16 expected = MultiplyRGB(color, factor);
-      ColorU16 got = ColorU16::MultiplyRGB(color, factor);
+      const ColorU16 color(ColorU16::CreateR16G16B16A16UNorm(j, (85 * 256) + j, (85 * 2 * 256) + j, i));
+      const ColorU16 expected = MultiplyRGB(color, factor);
+      const ColorU16 got = ColorU16::MultiplyRGB(color, factor);
       if (expected != got)
       {
         FSLLOG3_INFO("{} != {} (color: {})", expected, got, color);
@@ -487,27 +487,27 @@ TEST(Test_ColorU16, MultiplyRGB)
 TEST(Test_ColorU16, MultiplyRGB_Constant)
 {
   {
-    ColorU16 color(ColorU16::CreateR16G16B16A16UNorm(0xFFFF, 0, 0, 0));
-    auto expected = MultiplyRGB(color, 1.0f);
-    auto got = ColorU16::MultiplyRGB(color, 1.0f);
+    const ColorU16 color(ColorU16::CreateR16G16B16A16UNorm(0xFFFF, 0, 0, 0));
+    const auto expected = MultiplyRGB(color, 1.0f);
+    const auto got = ColorU16::MultiplyRGB(color, 1.0f);
     ASSERT_EQ(expected, got);
   }
   {
-    ColorU16 color(ColorU16::CreateR16G16B16A16UNorm(0, 0xFFFF, 0, 0));
-    auto expected = MultiplyRGB(color, 1.0f);
-    auto got = ColorU16::MultiplyRGB(color, 1.0f);
+    const ColorU16 color(ColorU16::CreateR16G16B16A16UNorm(0, 0xFFFF, 0, 0));
+    const auto expected = MultiplyRGB(color, 1.0f);
+    const auto got = ColorU16::MultiplyRGB(color, 1.0f);
     ASSERT_EQ(expected, got);
   }
   {
-    ColorU16 color(ColorU16::CreateR16G16B16A16UNorm(0, 0, 0xFFFF, 0));
-    auto expected = MultiplyRGB(color, 1.0f);
-    auto got = ColorU16::MultiplyRGB(color, 1.0f);
+    const ColorU16 color(ColorU16::CreateR16G16B16A16UNorm(0, 0, 0xFFFF, 0));
+    const auto expected = MultiplyRGB(color, 1.0f);
+    const auto got = ColorU16::MultiplyRGB(color, 1.0f);
     ASSERT_EQ(expected, got);
   }
   {
-    ColorU16 color(ColorU16::CreateR16G16B16A16UNorm(0, 0, 0, 0xFFFF));
-    auto expected = MultiplyRGB(color, 1.0f);
-    auto got = ColorU16::MultiplyRGB(color, 1.0f);
+    const ColorU16 color(ColorU16::CreateR16G16B16A16UNorm(0, 0, 0, 0xFFFF));
+    const auto expected = MultiplyRGB(color, 1.0f);
+    const auto got = ColorU16::MultiplyRGB(color, 1.0f);
     ASSERT_EQ(expected, got);
   }
 }
@@ -518,9 +518,9 @@ TEST(Test_ColorU16, MultiplyRGBA)
   {
     const float factor = static_cast<float>(i) / static_cast<float>(0xFFFF);
     {
-      ColorU16 color(ColorU16::CreateR16G16B16A16UNorm(0xFF32u, 0x8053u, 0x2077u, i));
-      auto expected = MultiplyRGBA(color, factor);
-      auto got = ColorU16::MultiplyRGBA(color, factor);
+      const ColorU16 color(ColorU16::CreateR16G16B16A16UNorm(0xFF32u, 0x8053u, 0x2077u, i));
+      const auto expected = MultiplyRGBA(color, factor);
+      const auto got = ColorU16::MultiplyRGBA(color, factor);
       if (expected != got)
       {
         FSLLOG3_INFO("{} != {} (color: {})", expected, got, color);
@@ -529,9 +529,9 @@ TEST(Test_ColorU16, MultiplyRGBA)
     }
     for (uint32_t j = 0; j < (2 * 256); j += 128)
     {
-      ColorU16 color(ColorU16::CreateR16G16B16A16UNorm(j, (85 * 256) + j, (85 * 2 * 256) + j, i));
-      ColorU16 expected = MultiplyRGBA(color, factor);
-      ColorU16 got = ColorU16::MultiplyRGBA(color, factor);
+      const ColorU16 color(ColorU16::CreateR16G16B16A16UNorm(j, (85 * 256) + j, (85 * 2 * 256) + j, i));
+      const ColorU16 expected = MultiplyRGBA(color, factor);
+      const ColorU16 got = ColorU16::MultiplyRGBA(color, factor);
       if (expected != got)
       {
         FSLLOG3_INFO("{} != {} (color: {})", expected, got, color);
@@ -544,27 +544,27 @@ TEST(Test_ColorU16, MultiplyRGBA)
 TEST(Test_ColorU16, MultiplyRGBA_Constant)
 {
   {
-    ColorU16 color(ColorU16::CreateR16G16B16A16UNorm(0xFFFF, 0, 0, 0));
-    auto expected = MultiplyRGBA(color, 1.0f);
-    auto got = ColorU16::MultiplyRGBA(color, 1.0f);
+    const ColorU16 color(ColorU16::CreateR16G16B16A16UNorm(0xFFFF, 0, 0, 0));
+    const auto expected = MultiplyRGBA(color, 1.0f);
+    const auto got = ColorU16::MultiplyRGBA(color, 1.0f);
     ASSERT_EQ(expected, got);
   }
   {
-    ColorU16 color(ColorU16::CreateR16G16B16A16UNorm(0, 0xFFFF, 0, 0));
-    auto expected = MultiplyRGBA(color, 1.0f);
-    auto got = ColorU16::MultiplyRGBA(color, 1.0f);
+    const ColorU16 color(ColorU16::CreateR16G16B16A16UNorm(0, 0xFFFF, 0, 0));
+    const auto expected = MultiplyRGBA(color, 1.0f);
+    const auto got = ColorU16::MultiplyRGBA(color, 1.0f);
     ASSERT_EQ(expected, got);
   }
   {
-    ColorU16 color(ColorU16::CreateR16G16B16A16UNorm(0, 0, 0xFFFF, 0));
-    auto expected = MultiplyRGBA(color, 1.0f);
-    auto got = ColorU16::MultiplyRGBA(color, 1.0f);
+    const ColorU16 color(ColorU16::CreateR16G16B16A16UNorm(0, 0, 0xFFFF, 0));
+    const auto expected = MultiplyRGBA(color, 1.0f);
+    const auto got = ColorU16::MultiplyRGBA(color, 1.0f);
     ASSERT_EQ(expected, got);
   }
   {
-    ColorU16 color(ColorU16::CreateR16G16B16A16UNorm(0, 0, 0, 0xFFFF));
-    auto expected = MultiplyRGBA(color, 1.0f);
-    auto got = ColorU16::MultiplyRGBA(color, 1.0f);
+    const ColorU16 color(ColorU16::CreateR16G16B16A16UNorm(0, 0, 0, 0xFFFF));
+    const auto expected = MultiplyRGBA(color, 1.0f);
+    const auto got = ColorU16::MultiplyRGBA(color, 1.0f);
     ASSERT_EQ(expected, got);
   }
 }
@@ -575,9 +575,9 @@ TEST(Test_ColorU16, MultiplyA_float)
   {
     const float factor = static_cast<float>(i) / static_cast<float>(0xFFFF);
     {
-      ColorU16 color(ColorU16::CreateR16G16B16A16UNorm(0xFF32u, 0x8053u, 0x2077u, i));
-      auto expected = MultiplyA(color, factor);
-      auto got = ColorU16::MultiplyA(color, factor);
+      const ColorU16 color(ColorU16::CreateR16G16B16A16UNorm(0xFF32u, 0x8053u, 0x2077u, i));
+      const auto expected = MultiplyA(color, factor);
+      const auto got = ColorU16::MultiplyA(color, factor);
       if (expected != got)
       {
         FSLLOG3_INFO("{} != {} (color: {})", expected, got, color);
@@ -586,9 +586,9 @@ TEST(Test_ColorU16, MultiplyA_float)
     }
     for (uint32_t j = 0; j < (2 * 256); j += 128)
     {
-      ColorU16 color(ColorU16::CreateR16G16B16A16UNorm(j, (85 * 256) + j, (85 * 2 * 256) + j, i));
-      ColorU16 expected = MultiplyA(color, factor);
-      ColorU16 got = ColorU16::MultiplyA(color, factor);
+      const ColorU16 color(ColorU16::CreateR16G16B16A16UNorm(j, (85 * 256) + j, (85 * 2 * 256) + j, i));
+      const ColorU16 expected = MultiplyA(color, factor);
+      const ColorU16 got = ColorU16::MultiplyA(color, factor);
       if (expected != got)
       {
         FSLLOG3_INFO("{} != {} (color: {})", expected, got, color);
@@ -601,27 +601,27 @@ TEST(Test_ColorU16, MultiplyA_float)
 TEST(Test_ColorU16, MultiplyA_Constant_float)
 {
   {
-    ColorU16 color(ColorU16::CreateR16G16B16A16UNorm(0xFFFF, 0x89AB, 0x7751, 0));
-    auto expected = MultiplyA(color, 0.0f);
-    auto got = ColorU16::MultiplyA(color, 0.0f);
+    const ColorU16 color(ColorU16::CreateR16G16B16A16UNorm(0xFFFF, 0x89AB, 0x7751, 0));
+    const auto expected = MultiplyA(color, 0.0f);
+    const auto got = ColorU16::MultiplyA(color, 0.0f);
     ASSERT_EQ(expected, got);
   }
   {
-    ColorU16 color(ColorU16::CreateR16G16B16A16UNorm(0xFFFF, 0x89AB, 0x7751, 0));
-    auto expected = MultiplyA(color, 1.0f);
-    auto got = ColorU16::MultiplyA(color, 1.0f);
+    const ColorU16 color(ColorU16::CreateR16G16B16A16UNorm(0xFFFF, 0x89AB, 0x7751, 0));
+    const auto expected = MultiplyA(color, 1.0f);
+    const auto got = ColorU16::MultiplyA(color, 1.0f);
     ASSERT_EQ(expected, got);
   }
   {
-    ColorU16 color(ColorU16::CreateR16G16B16A16UNorm(0xFFFF, 0x89AB, 0x7751, 0xFFFF));
-    auto expected = MultiplyA(color, 0.0f);
-    auto got = ColorU16::MultiplyA(color, 0.0f);
+    const ColorU16 color(ColorU16::CreateR16G16B16A16UNorm(0xFFFF, 0x89AB, 0x7751, 0xFFFF));
+    const auto expected = MultiplyA(color, 0.0f);
+    const auto got = ColorU16::MultiplyA(color, 0.0f);
     ASSERT_EQ(expected, got);
   }
   {
-    ColorU16 color(ColorU16::CreateR16G16B16A16UNorm(0xFFFF, 0x89AB, 0x7751, 0xFFFF));
-    auto expected = MultiplyA(color, 1.0f);
-    auto got = ColorU16::MultiplyA(color, 1.0f);
+    const ColorU16 color(ColorU16::CreateR16G16B16A16UNorm(0xFFFF, 0x89AB, 0x7751, 0xFFFF));
+    const auto expected = MultiplyA(color, 1.0f);
+    const auto got = ColorU16::MultiplyA(color, 1.0f);
     ASSERT_EQ(expected, got);
   }
 }
@@ -632,9 +632,9 @@ TEST(Test_ColorU16, MultiplyA_ColorChannelValueU16)
   {
     const ColorChannelValueU16 factor(i);
     {
-      ColorU16 color(ColorU16::CreateR16G16B16A16UNorm(0xFF32u, 0x8053u, 0x2077u, i));
-      auto expected = MultiplyA(color, factor);
-      auto got = ColorU16::MultiplyA(color, factor);
+      const ColorU16 color(ColorU16::CreateR16G16B16A16UNorm(0xFF32u, 0x8053u, 0x2077u, i));
+      const auto expected = MultiplyA(color, factor);
+      const auto got = ColorU16::MultiplyA(color, factor);
       if (expected != got)
       {
         FSLLOG3_INFO("{} != {} (color: {})", expected, got, color);
@@ -643,9 +643,9 @@ TEST(Test_ColorU16, MultiplyA_ColorChannelValueU16)
     }
     for (uint32_t j = 0; j < (2 * 256); j += 128)
     {
-      ColorU16 color(ColorU16::CreateR16G16B16A16UNorm(j, (85 * 256) + j, (85 * 2 * 256) + j, i));
-      ColorU16 expected = MultiplyA(color, factor);
-      ColorU16 got = ColorU16::MultiplyA(color, factor);
+      const ColorU16 color(ColorU16::CreateR16G16B16A16UNorm(j, (85 * 256) + j, (85 * 2 * 256) + j, i));
+      const ColorU16 expected = MultiplyA(color, factor);
+      const ColorU16 got = ColorU16::MultiplyA(color, factor);
       if (expected != got)
       {
         FSLLOG3_INFO("{} != {} (color: {})", expected, got, color);
@@ -658,27 +658,27 @@ TEST(Test_ColorU16, MultiplyA_ColorChannelValueU16)
 TEST(Test_ColorU16, MultiplyA_Constant_ColorChannelValueU16)
 {
   {
-    ColorU16 color(ColorU16::CreateR16G16B16A16UNorm(0xFFFF, 0x89AB, 0x7751, 0));
-    auto expected = MultiplyA(color, ColorChannelValueU16(0));
-    auto got = ColorU16::MultiplyA(color, ColorChannelValueU16(0));
+    const ColorU16 color(ColorU16::CreateR16G16B16A16UNorm(0xFFFF, 0x89AB, 0x7751, 0));
+    const auto expected = MultiplyA(color, ColorChannelValueU16(0));
+    const auto got = ColorU16::MultiplyA(color, ColorChannelValueU16(0));
     ASSERT_EQ(expected, got);
   }
   {
-    ColorU16 color(ColorU16::CreateR16G16B16A16UNorm(0xFFFF, 0x89AB, 0x7751, 0));
-    auto expected = MultiplyA(color, ColorChannelValueU16(0xFFFF));
-    auto got = ColorU16::MultiplyA(color, ColorChannelValueU16(0xFFFF));
+    const ColorU16 color(ColorU16::CreateR16G16B16A16UNorm(0xFFFF, 0x89AB, 0x7751, 0));
+    const auto expected = MultiplyA(color, ColorChannelValueU16(0xFFFF));
+    const auto got = ColorU16::MultiplyA(color, ColorChannelValueU16(0xFFFF));
     ASSERT_EQ(expected, got);
   }
   {
-    ColorU16 color(ColorU16::CreateR16G16B16A16UNorm(0xFFFF, 0x89AB, 0x7751, 0xFFFF));
-    auto expected = MultiplyA(color, ColorChannelValueU16(0));
-    auto got = ColorU16::MultiplyA(color, ColorChannelValueU16(0));
+    const ColorU16 color(ColorU16::CreateR16G16B16A16UNorm(0xFFFF, 0x89AB, 0x7751, 0xFFFF));
+    const auto expected = MultiplyA(color, ColorChannelValueU16(0));
+    const auto got = ColorU16::MultiplyA(color, ColorChannelValueU16(0));
     ASSERT_EQ(expected, got);
   }
   {
-    ColorU16 color(ColorU16::CreateR16G16B16A16UNorm(0xFFFF, 0x89AB, 0x7751, 0xFFFF));
-    auto expected = MultiplyA(color, ColorChannelValueU16(0xFFFF));
-    auto got = ColorU16::MultiplyA(color, ColorChannelValueU16(0xFFFF));
+    const ColorU16 color(ColorU16::CreateR16G16B16A16UNorm(0xFFFF, 0x89AB, 0x7751, 0xFFFF));
+    const auto expected = MultiplyA(color, ColorChannelValueU16(0xFFFF));
+    const auto got = ColorU16::MultiplyA(color, ColorChannelValueU16(0xFFFF));
     ASSERT_EQ(expected, got);
   }
 }
@@ -689,16 +689,16 @@ TEST(Test_ColorU16, Premultiply)
   for (uint32_t i = 0; i < 256; ++i)
   {
     {
-      ColorU16 color(ColorU16::CreateR8G8B8A8UNorm(0xFFu, 0x80u, 0x20u, i));
-      auto expectedPremultiply = Premultiply(color);
-      auto gotPremultiplied = ColorU16::Premultiply(color);
+      const ColorU16 color(ColorU16::CreateR8G8B8A8UNorm(0xFFu, 0x80u, 0x20u, i));
+      const auto expectedPremultiply = Premultiply(color);
+      const auto gotPremultiplied = ColorU16::Premultiply(color);
       ASSERT_EQ(expectedPremultiply, gotPremultiplied);
     }
     for (uint32_t j = 0; j < 85; ++j)
     {
-      ColorU16 color(ColorU16::CreateR8G8B8A8UNorm(j, 85 + j, (85 * 2) + j, i));
-      ColorU16 expectedPremultiply = Premultiply(color);
-      ColorU16 gotPremultiplied = ColorU16::Premultiply(color);
+      const ColorU16 color(ColorU16::CreateR8G8B8A8UNorm(j, 85 + j, (85 * 2) + j, i));
+      const ColorU16 expectedPremultiply = Premultiply(color);
+      const ColorU16 gotPremultiplied = ColorU16::Premultiply(color);
       if (expectedPremultiply != gotPremultiplied)
       {
         FSLLOG3_INFO("{} != {} (color: {})", expectedPremultiply, gotPremultiplied, color);
@@ -711,9 +711,9 @@ TEST(Test_ColorU16, Premultiply)
 TEST(Test_ColorU16, Premultiply_Values)
 {
   {
-    ColorU16 color = ColorU16::CreateR16G16B16A16UNorm(6939u, 28784u, 50629u, 34181u);
-    auto expectedPremultiply = Premultiply(color);
-    auto gotPremultiplied = ColorU16::Premultiply(color);
+    const ColorU16 color = ColorU16::CreateR16G16B16A16UNorm(6939u, 28784u, 50629u, 34181u);
+    const auto expectedPremultiply = Premultiply(color);
+    const auto gotPremultiplied = ColorU16::Premultiply(color);
     ASSERT_EQ(expectedPremultiply, gotPremultiplied);
   }
 }
@@ -722,44 +722,44 @@ TEST(Test_ColorU16, Premultiply_Constant_Values)
 {
   {
     const float alpha = static_cast<float>(109) / 255.0f;
-    ColorU16 color = ColorU16::CreateR16G16B16A16UNorm(65535u, 32896u, 8224u, 5397u);
-    auto expectedPremultiply = Premultiply(color, alpha);
-    auto gotPremultiplied = ColorU16::Premultiply(color, alpha);
+    const ColorU16 color = ColorU16::CreateR16G16B16A16UNorm(65535u, 32896u, 8224u, 5397u);
+    const auto expectedPremultiply = Premultiply(color, alpha);
+    const auto gotPremultiplied = ColorU16::Premultiply(color, alpha);
     ASSERT_EQ(expectedPremultiply, gotPremultiplied);
   }
   {
     const float alpha = 1.0f;
-    ColorU16 color = ColorU16::CreateR16G16B16A16UNorm(65535u, 32896u, 8224u, 5397u);
-    auto expectedPremultiply = Premultiply(color, alpha);
-    auto gotPremultiplied = ColorU16::Premultiply(color, alpha);
+    const ColorU16 color = ColorU16::CreateR16G16B16A16UNorm(65535u, 32896u, 8224u, 5397u);
+    const auto expectedPremultiply = Premultiply(color, alpha);
+    const auto gotPremultiplied = ColorU16::Premultiply(color, alpha);
     ASSERT_EQ(expectedPremultiply, gotPremultiplied);
   }
   {
     const float alpha = 1.0f;
-    ColorU16 color = ColorU16::CreateR16G16B16A16UNorm(0xFFFFu, 32896u, 8224u, 5397u);
-    auto expectedPremultiply = Premultiply(color, alpha);
-    auto gotPremultiplied = ColorU16::Premultiply(color, alpha);
+    const ColorU16 color = ColorU16::CreateR16G16B16A16UNorm(0xFFFFu, 32896u, 8224u, 5397u);
+    const auto expectedPremultiply = Premultiply(color, alpha);
+    const auto gotPremultiplied = ColorU16::Premultiply(color, alpha);
     ASSERT_EQ(expectedPremultiply, gotPremultiplied);
   }
   {
     const float alpha = 1.0f;
-    ColorU16 color = ColorU16::CreateR16G16B16A16UNorm(65535u, 0xFFFFu, 8224u, 5397u);
-    auto expectedPremultiply = Premultiply(color, alpha);
-    auto gotPremultiplied = ColorU16::Premultiply(color, alpha);
+    const ColorU16 color = ColorU16::CreateR16G16B16A16UNorm(65535u, 0xFFFFu, 8224u, 5397u);
+    const auto expectedPremultiply = Premultiply(color, alpha);
+    const auto gotPremultiplied = ColorU16::Premultiply(color, alpha);
     ASSERT_EQ(expectedPremultiply, gotPremultiplied);
   }
   {
     const float alpha = 1.0f;
-    ColorU16 color = ColorU16::CreateR16G16B16A16UNorm(65535u, 32896u, 0xFFFFu, 5397u);
-    auto expectedPremultiply = Premultiply(color, alpha);
-    auto gotPremultiplied = ColorU16::Premultiply(color, alpha);
+    const ColorU16 color = ColorU16::CreateR16G16B16A16UNorm(65535u, 32896u, 0xFFFFu, 5397u);
+    const auto expectedPremultiply = Premultiply(color, alpha);
+    const auto gotPremultiplied = ColorU16::Premultiply(color, alpha);
     ASSERT_EQ(expectedPremultiply, gotPremultiplied);
   }
   {
     const float alpha = 1.0f;
-    ColorU16 color = ColorU16::CreateR16G16B16A16UNorm(65535u, 32896u, 8224u, 0xFFFFu);
-    auto expectedPremultiply = Premultiply(color, alpha);
-    auto gotPremultiplied = ColorU16::Premultiply(color, alpha);
+    const ColorU16 color = ColorU16::CreateR16G16B16A16UNorm(65535u, 32896u, 8224u, 0xFFFFu);
+    const auto expectedPremultiply = Premultiply(color, alpha);
+    const auto gotPremultiplied = ColorU16::Premultiply(color, alpha);
     ASSERT_EQ(expectedPremultiply, gotPremultiplied);
   }
 }
@@ -772,9 +772,9 @@ TEST(Test_ColorU16, Premultiply_Constant)
     {
       const float alpha = static_cast<float>(a) / 255.0f;
       {
-        ColorU16 color(ColorU16::CreateR8G8B8A8UNorm(0xFFu, 0x80u, 0x20u, i));
-        auto expectedPremultiply = Premultiply(color, alpha);
-        auto gotPremultiplied = ColorU16::Premultiply(color, alpha);
+        const ColorU16 color(ColorU16::CreateR8G8B8A8UNorm(0xFFu, 0x80u, 0x20u, i));
+        const auto expectedPremultiply = Premultiply(color, alpha);
+        const auto gotPremultiplied = ColorU16::Premultiply(color, alpha);
         if (expectedPremultiply != gotPremultiplied)
         {
           FSLLOG3_INFO("{} != {} (color: {}, alpha: {} {})", expectedPremultiply, gotPremultiplied, color, alpha, a);
@@ -793,9 +793,9 @@ TEST(Test_ColorU16, PremultiplyRGB_Constant)
     {
       const float alpha = static_cast<float>(a) / 255.0f;
       {
-        ColorU16 color(ColorU16::CreateR8G8B8A8UNorm(0xFFu, 0x80u, 0x20u, i));
-        auto expectedPremultiply = PremultiplyRGB(color, alpha, 32u);
-        auto gotPremultiplied = ColorU16::PremultiplyRGB(color, alpha, ColorChannelValueU16(32u));
+        const ColorU16 color(ColorU16::CreateR8G8B8A8UNorm(0xFFu, 0x80u, 0x20u, i));
+        const auto expectedPremultiply = PremultiplyRGB(color, alpha, 32u);
+        const auto gotPremultiplied = ColorU16::PremultiplyRGB(color, alpha, ColorChannelValueU16(32u));
         if (expectedPremultiply != gotPremultiplied)
         {
           FSLLOG3_INFO("{} != {} (color: {})", expectedPremultiply, gotPremultiplied, color);
@@ -871,8 +871,8 @@ TEST(Test_ColorU16, Equals)
   EXPECT_EQ(ColorsU16::DarkBlue(), ColorsU16::DarkBlue());
   EXPECT_EQ(ColorsU16::Red(), ColorsU16::Red());
 
-  ColorU16 col1(PackedColor64(0x12345678ABCDEF12));
-  ColorU16 col2(PackedColor64(0x12345678ABCDEF13));
+  const ColorU16 col1(PackedColor64(0x12345678ABCDEF12));
+  const ColorU16 col2(PackedColor64(0x12345678ABCDEF13));
   EXPECT_EQ(col1, col1);
   EXPECT_EQ(col2, col2);
 }
@@ -883,9 +883,9 @@ TEST(Test_ColorU16, NotEquals)
   EXPECT_NE(ColorsU16::DarkBlue(), ColorsU16::Red());
   EXPECT_NE(ColorsU16::Red(), ColorsU16::DarkBlue());
 
-  ColorU16 col1(PackedColor64(0x12345678ABCDEF12));
-  ColorU16 col2(PackedColor64(0x12345678ABCDEF13));
-  ColorU16 col3(PackedColor64(0x22345678ABCDEF12));
+  const ColorU16 col1(PackedColor64(0x12345678ABCDEF12));
+  const ColorU16 col2(PackedColor64(0x12345678ABCDEF13));
+  const ColorU16 col3(PackedColor64(0x22345678ABCDEF12));
   EXPECT_NE(col1, col2);
   EXPECT_NE(col2, col1);
   EXPECT_NE(col1, col3);

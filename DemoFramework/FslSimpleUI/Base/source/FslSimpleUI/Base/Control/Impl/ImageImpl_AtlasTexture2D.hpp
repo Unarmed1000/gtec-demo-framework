@@ -62,7 +62,7 @@ namespace Fsl::UI::ImageImpl
       return finalSizePx;
     }
 
-    PxSize2D contentSize(content.GetSize());
+    const PxSize2D contentSize(content.GetSize());
     PxSize2D calcedSizePx;
     if (!UIScaleUtil::TryCalcSize(calcedSizePx, finalSizePx, contentSize, scalepolicy))
     {

@@ -74,7 +74,7 @@ namespace Fsl
 
     Texture GenerateMipMaps(const ReadOnlyRawBitmap& src, const TextureMipMapFilter filter)
     {
-      ReadOnlyRawTexture srcTexture = RawTextureHelper::ToRawTexture(src);
+      const ReadOnlyRawTexture srcTexture = RawTextureHelper::ToRawTexture(src);
       return GenerateMipMaps(srcTexture, filter);
     }
 
@@ -90,7 +90,7 @@ namespace Fsl
       {
         throw std::invalid_argument("src pixel format can not be compressed");
       }
-      PxExtent2D extent = src.GetExtent2D();
+      const PxExtent2D extent = src.GetExtent2D();
       if (extent.Width != extent.Height || !MathHelper::IsPowerOfTwo(extent.Width.Value))
       {
         throw NotSupportedException("We expect a square pow2 texture");
@@ -122,8 +122,8 @@ namespace Fsl
           const auto* const pSrcStart = static_cast<const uint8_t*>(src.GetContent());
           for (uint32_t faceIndex = 0; faceIndex < textureInfo.Faces; ++faceIndex)
           {
-            BlobRecord srcBlobRecord = src.GetTextureBlob(0, faceIndex, 0);
-            BlobRecord dstBlobRecord = rawDstTexture.GetTextureBlob(0, faceIndex, 0);
+            const BlobRecord srcBlobRecord = src.GetTextureBlob(0, faceIndex, 0);
+            const BlobRecord dstBlobRecord = rawDstTexture.GetTextureBlob(0, faceIndex, 0);
             if (srcBlobRecord.Size != dstBlobRecord.Size)
             {
               throw std::logic_error("internal error, the blob sizes did not match");
@@ -142,10 +142,10 @@ namespace Fsl
           {
             for (uint32_t faceIndex = 0; faceIndex < textureInfo.Faces; ++faceIndex)
             {
-              BlobRecord srcBlobRecord = rawDstTexture.GetTextureBlob(levelIndex, faceIndex, 0);
-              BlobRecord dstBlobRecord = rawDstTexture.GetTextureBlob(levelIndex + 1, faceIndex, 0);
+              const BlobRecord srcBlobRecord = rawDstTexture.GetTextureBlob(levelIndex, faceIndex, 0);
+              const BlobRecord dstBlobRecord = rawDstTexture.GetTextureBlob(levelIndex + 1, faceIndex, 0);
               // Since we copied the original data to dest and are reusing the previous mipmaps pDstStart is the base
-              ReadOnlyRawBitmap srcBitmap(ReadOnlyRawBitmap::UncheckedCreate(
+              const ReadOnlyRawBitmap srcBitmap(ReadOnlyRawBitmap::UncheckedCreate(
                 pDstStart + srcBlobRecord.Offset, NumericCast<uint32_t>(srcBlobRecord.Size), PxExtent2D::Create(width, height), pixelFormat, origin));
               RawBitmapEx dstBitmap(RawBitmapEx::UncheckedCreate(pDstStart + dstBlobRecord.Offset, NumericCast<uint32_t>(dstBlobRecord.Size),
                                                                  PxExtent2D::Create(width / 2, height / 2), pixelFormat, origin));

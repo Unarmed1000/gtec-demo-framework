@@ -60,7 +60,7 @@ namespace Fsl::Vulkan
     {
     }
 
-    VkFormat GetPixelFormat() const
+    [[nodiscard]] VkFormat GetPixelFormat() const
     {
       return m_pixelFormat;
     }

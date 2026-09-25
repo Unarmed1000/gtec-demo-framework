@@ -146,8 +146,8 @@ TEST(Test_LayoutHelperPxfConverter, PxToPxfVector2_PxPoint2)
 
 TEST(Test_LayoutHelperPxfConverter, PxToPxfVector2_PxPoint2_Infinity)
 {
-  auto val0 = UI::LayoutHelperPxfConverter::PxToPxfVector2(PxPoint2::Create(UI::PxAvailableSizeUtil::InfiniteSpacePx, 10));
-  auto val1 = UI::LayoutHelperPxfConverter::PxToPxfVector2(PxPoint2::Create(10, UI ::PxAvailableSizeUtil::InfiniteSpacePx));
+  const auto val0 = UI::LayoutHelperPxfConverter::PxToPxfVector2(PxPoint2::Create(UI::PxAvailableSizeUtil::InfiniteSpacePx, 10));
+  const auto val1 = UI::LayoutHelperPxfConverter::PxToPxfVector2(PxPoint2::Create(10, UI ::PxAvailableSizeUtil::InfiniteSpacePx));
 
   EXPECT_TRUE(std::isinf(val0.X));
   EXPECT_EQ(10.0f, val0.Y);

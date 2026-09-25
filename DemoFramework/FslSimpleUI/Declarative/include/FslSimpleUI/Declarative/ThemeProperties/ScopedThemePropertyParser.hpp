@@ -92,7 +92,7 @@ namespace Fsl::UI::Declarative
     typename T::value_type ClaimOptional(const std::size_t propertyIndex, typename T::value_type defaultValue)
     {
       FoundThemeProperty res;
-      ClaimResult result = DoTryClaim(propertyIndex, res);
+      const ClaimResult result = DoTryClaim(propertyIndex, res);
       if (result != ClaimResult::Claimed)
       {
         return defaultValue;

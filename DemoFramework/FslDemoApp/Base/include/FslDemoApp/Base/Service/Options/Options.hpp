@@ -44,8 +44,8 @@ namespace Fsl
   public:
     explicit Options(std::weak_ptr<IOptions> options);
 
-    std::shared_ptr<IOptionParser> GetOptionParser(const OptionParserId& optionParserId) const;
-    std::shared_ptr<IOptionParser> TryGetOptionParser(const OptionParserId& optionParserId) const;
+    [[nodiscard]] std::shared_ptr<IOptionParser> GetOptionParser(const OptionParserId& optionParserId) const;
+    [[nodiscard]] std::shared_ptr<IOptionParser> TryGetOptionParser(const OptionParserId& optionParserId) const;
     std::shared_ptr<IOptionParser> GetOptionParser(const std::function<bool(const std::shared_ptr<IOptionParser>&)>& matchFunction) const;
     std::shared_ptr<IOptionParser> TryGetOptionParser(const std::function<bool(const std::shared_ptr<IOptionParser>&)>& matchFunction) const;
 

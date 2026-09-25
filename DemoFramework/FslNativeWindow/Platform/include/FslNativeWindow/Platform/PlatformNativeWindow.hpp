@@ -47,9 +47,9 @@ namespace Fsl
     ~PlatformNativeWindow() override;
 
     // INativeWindow
-    NativeWindowCapabilityFlags GetCapabilityFlags() const override;
-    NativeWindowMetrics GetWindowMetrics() const override;
-    NativeWindowDisplayInfo TryGetDisplayInfo() const override;
+    [[nodiscard]] NativeWindowCapabilityFlags GetCapabilityFlags() const override;
+    [[nodiscard]] NativeWindowMetrics GetWindowMetrics() const override;
+    [[nodiscard]] NativeWindowDisplayInfo TryGetDisplayInfo() const override;
     bool TryGetDpi(Vector2& rDPI) const override;
     bool TryGetDensityDpi(uint32_t& rDensityDpi) const override;
     bool TryGetExtent(PxExtent2D& rExtent) const override;

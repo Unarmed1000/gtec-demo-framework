@@ -86,13 +86,13 @@ namespace Fsl
 
     BasicFontKerning() = default;
 
-    const UTF8String& GetName() const final;
-    const IO::Path& GetPathName() const final;
-    FontDesc GetDesc() const final;
-    int32_t RangeCount() const final;
-    FontGlyphRange GetRange(const int32_t index) const final;
-    int32_t Count() const final;
-    FontGlyphBasicKerning Get(const int32_t index) const final;
+    [[nodiscard]] const UTF8String& GetName() const final;
+    [[nodiscard]] const IO::Path& GetPathName() const final;
+    [[nodiscard]] FontDesc GetDesc() const final;
+    [[nodiscard]] int32_t RangeCount() const final;
+    [[nodiscard]] FontGlyphRange GetRange(const int32_t index) const final;
+    [[nodiscard]] int32_t Count() const final;
+    [[nodiscard]] FontGlyphBasicKerning Get(const int32_t index) const final;
 
     void SetRangeCapacity(const int32_t capacity);
     void SetGlyphKerningCapacity(const int32_t capacity);
@@ -104,7 +104,7 @@ namespace Fsl
     void SetRange(const int32_t index, const FontGlyphRange& range);
     void SetGlyphKerning(const int32_t index, const FontGlyphBasicKerning& kerning);
 
-    bool IsValid() const;
+    [[nodiscard]] bool IsValid() const;
 
   private:
     void Clear() noexcept

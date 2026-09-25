@@ -122,8 +122,8 @@ namespace Fsl
 
       basic2D->Begin();
 
-      bool showFPS = true;
-      bool showMilliseconds = true;
+      const bool showFPS = true;
+      const bool showMilliseconds = true;
 
       if (showFPS || showMilliseconds)
       {
@@ -167,7 +167,7 @@ namespace Fsl
           while (itr != m_customCounters.end())
           {
             m_scracthpad.clear();
-            std::string_view formatString(itr->FormatString.data());
+            const std::string_view formatString(itr->FormatString.data());
             const auto stuff = m_profilerService->Get(itr->Handle);
             fmt::vformat_to(std::back_inserter(m_scracthpad), formatString, fmt::make_format_args(stuff));
             if (m_scracthpad.size() > 0u)
@@ -207,7 +207,7 @@ namespace Fsl
 
   void DemoAppProfilerOverlay::MaintainCachedCustomEntries()
   {
-    uint32_t currentRevision = m_profilerService->GetCustomConfigurationRevision();
+    const uint32_t currentRevision = m_profilerService->GetCustomConfigurationRevision();
     if (currentRevision == m_customConfigurationRevision)
     {
       return;
@@ -246,8 +246,8 @@ namespace Fsl
       if (IsNewHandle(handle))
       {
         const ProfilerCustomCounterDesc desc = m_profilerService->GetDescription(handle);
-        auto ptr = std::make_shared<DemoAppProfilerGraph>(desc.MinValue, desc.MaxValue,
-                                                          Point2(LocalConfig::DefaultGraphWidth, LocalConfig::DefaultGraphHeight));
+        const auto ptr = std::make_shared<DemoAppProfilerGraph>(desc.MinValue, desc.MaxValue,
+                                                                Point2(LocalConfig::DefaultGraphWidth, LocalConfig::DefaultGraphHeight));
         m_customCounters.emplace_back(handle, desc, ptr);
       }
     }

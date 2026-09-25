@@ -62,7 +62,7 @@ namespace Fsl
 
     // Done this way because of a "inherit via dominance warning on visual studio'
     // using PlatformNativeWindowSystem::IsDisplayHDRCompatible;
-    bool IsDisplayHDRCompatible(const int32_t displayId) const final
+    [[nodiscard]] bool IsDisplayHDRCompatible(const int32_t displayId) const final
     {
       return PlatformNativeWindowSystem::IsDisplayHDRCompatible(displayId);
     }
@@ -70,8 +70,8 @@ namespace Fsl
     void Shutdown() final;
 
     // From IVulkanNativeWindowSystem
-    std::string GetKHRSurfaceExtensionName() const final;
-    PlatformNativeDisplayType GetDisplayType() const final;
+    [[nodiscard]] std::string GetKHRSurfaceExtensionName() const final;
+    [[nodiscard]] PlatformNativeDisplayType GetDisplayType() const final;
     std::shared_ptr<IVulkanNativeWindow> CreateVulkanNativeWindow(const NativeWindowSetup& nativeWindowSetup,
                                                                   const NativeVulkanSetup& nativeVulkanSetup) final;
   };

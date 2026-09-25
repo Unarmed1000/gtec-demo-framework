@@ -54,9 +54,9 @@ namespace Fsl
     void SetSurface(EGLSurface value);
     void SetContext(EGLContext value);
 
-    EGLDisplay GetDisplay() const override;
-    EGLSurface GetSurface() const override;
-    EGLContext GetContext() const override;
+    [[nodiscard]] EGLDisplay GetDisplay() const override;
+    [[nodiscard]] EGLSurface GetSurface() const override;
+    [[nodiscard]] EGLContext GetContext() const override;
 
   private:
   };

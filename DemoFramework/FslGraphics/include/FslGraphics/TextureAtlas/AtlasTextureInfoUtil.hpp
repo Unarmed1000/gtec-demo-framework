@@ -36,6 +36,7 @@
 #include <FslGraphics/TextureAtlas/AtlasTextureInfo.hpp>
 #include <algorithm>
 #include <cassert>
+#include <utility>
 
 namespace Fsl::AtlasTextureInfoUtil
 {
@@ -52,22 +53,22 @@ namespace Fsl::AtlasTextureInfoUtil
     int32_t clippedSrcRectBottomPx = clippedSrcRectTopPx + static_cast<int32_t>(rPxSrcRect.Height.Value);
 
     // Early abort
-    if (clippedSrcRectLeftPx >= static_cast<int32_t>(texInfo.TrimmedRectPx.RawRight()) ||
-        clippedSrcRectTopPx >= static_cast<int32_t>(texInfo.TrimmedRectPx.RawBottom()) ||
-        clippedSrcRectRightPx <= static_cast<int32_t>(texInfo.TrimmedRectPx.RawLeft()) ||
-        clippedSrcRectBottomPx <= static_cast<int32_t>(texInfo.TrimmedRectPx.RawTop()))
+    if (std::cmp_greater_equal(clippedSrcRectLeftPx, texInfo.TrimmedRectPx.RawRight()) ||
+        std::cmp_greater_equal(clippedSrcRectTopPx, texInfo.TrimmedRectPx.RawBottom()) ||
+        std::cmp_less_equal(clippedSrcRectRightPx, texInfo.TrimmedRectPx.RawLeft()) ||
+        std::cmp_less_equal(clippedSrcRectBottomPx, texInfo.TrimmedRectPx.RawTop()))
     {
       rPxSrcRect = PxRectangleU32();
       return false;
     }
 
-    if (clippedSrcRectLeftPx < static_cast<int32_t>(texInfo.TrimmedRectPx.RawLeft()))
+    if (std::cmp_less(clippedSrcRectLeftPx, texInfo.TrimmedRectPx.RawLeft()))
     {
       rOrigin.X -= static_cast<float>(static_cast<int32_t>(texInfo.TrimmedRectPx.RawLeft()) - clippedSrcRectLeftPx);
       clippedSrcRectLeftPx = static_cast<int32_t>(texInfo.TrimmedRectPx.RawLeft());
     }
 
-    if (clippedSrcRectTopPx < static_cast<int32_t>(texInfo.TrimmedRectPx.RawTop()))
+    if (std::cmp_less(clippedSrcRectTopPx, texInfo.TrimmedRectPx.RawTop()))
     {
       rOrigin.Y -= static_cast<float>(static_cast<int32_t>(texInfo.TrimmedRectPx.RawTop()) - clippedSrcRectTopPx);
       clippedSrcRectTopPx = static_cast<int32_t>(texInfo.TrimmedRectPx.RawTop());

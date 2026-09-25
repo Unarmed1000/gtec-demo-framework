@@ -87,11 +87,11 @@ namespace Fsl
     virtual void Run() {};
 
     //! @brief Get access to the demo app control interface
-    std::shared_ptr<IDemoAppControl> GetDemoAppControl() const;
+    [[nodiscard]] std::shared_ptr<IDemoAppControl> GetDemoAppControl() const;
     //! @brief Access the content manager;
-    std::shared_ptr<IContentManager> GetContentManager() const;
+    [[nodiscard]] std::shared_ptr<IContentManager> GetContentManager() const;
     //! @brief Access the persistent data manager;
-    std::shared_ptr<IPersistentDataManager> GetPersistentDataManager() const;
+    [[nodiscard]] std::shared_ptr<IPersistentDataManager> GetPersistentDataManager() const;
   };
 }
 

@@ -68,7 +68,7 @@ namespace Fsl
       Reset();
     }
 
-    bool IsValid() const
+    [[nodiscard]] bool IsValid() const
     {
       return m_handle.IsValid();
     }

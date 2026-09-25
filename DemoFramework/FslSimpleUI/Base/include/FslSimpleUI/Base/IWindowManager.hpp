@@ -76,21 +76,21 @@ namespace Fsl::UI
     //! @brief Check if the given window exist.
     //! @param window">The window to check (null never exist)  </param>
     //! @return true if the window exists (windows that are scheduled for close but not yet closed will also return true).
-    virtual bool Exists(const std::shared_ptr<BaseWindow>& window) const = 0;
+    [[nodiscard]] virtual bool Exists(const std::shared_ptr<BaseWindow>& window) const = 0;
 
     //! @brief Check if the window is a member of the tree.
     //! @param tree the tree root window
     //! @param window a window
     //! @return true if the window is part of the tree (note the tree node is considered part of the tree)
-    virtual bool IsMemberOfTree(const std::shared_ptr<BaseWindow>& tree, const std::shared_ptr<BaseWindow>& window) const = 0;
+    [[nodiscard]] virtual bool IsMemberOfTree(const std::shared_ptr<BaseWindow>& tree, const std::shared_ptr<BaseWindow>& window) const = 0;
 
     //! @brief Check if the window is a member of the tree.
     //! @param tree the tree root window.
     //! @param window a window.
     //! @param considerTreeRootAMember f false the tree node is not considered part of the tree.
     //! @return true if the window is part of the tree (note the tree node is considered part of the tree).
-    virtual bool IsMemberOfTree(const std::shared_ptr<BaseWindow>& tree, const std::shared_ptr<BaseWindow>& window,
-                                const bool considerTreeRootAMember) const = 0;
+    [[nodiscard]] virtual bool IsMemberOfTree(const std::shared_ptr<BaseWindow>& tree, const std::shared_ptr<BaseWindow>& window,
+                                              const bool considerTreeRootAMember) const = 0;
 
     //! @brief Close the supplied window.
     //! @note Closing a window will also schedule a close of all its children!

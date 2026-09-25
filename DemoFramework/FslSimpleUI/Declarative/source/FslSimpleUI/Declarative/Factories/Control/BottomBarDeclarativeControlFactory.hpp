@@ -48,7 +48,7 @@ namespace Fsl::UI::Declarative
 
     std::shared_ptr<BaseWindow> Create(const DeclarativeControlFactoryCreateInfo& createInfo) final
     {
-      auto barType = createInfo.PropertyParser.ClaimOptional<BarTypeThemeProperty>(0, Fsl::UI::Theme::BarType::Normal);
+      const auto barType = createInfo.PropertyParser.ClaimOptional<BarTypeThemeProperty>(0, Fsl::UI::Theme::BarType::Normal);
 
       return createInfo.ThemeControlFactory.CreateBottomBar(barType);
     }

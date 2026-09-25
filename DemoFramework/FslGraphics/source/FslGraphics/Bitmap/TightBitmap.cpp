@@ -50,7 +50,7 @@ namespace Fsl
       if (minimumStride == rawBitmap.Stride())
       {
         assert(rawBitmap.IsTightlyPacked());
-        ReadOnlySpan<uint8_t> rawSpan(static_cast<const uint8_t*>(rawBitmap.Content()), rawBitmap.GetByteSize());
+        const ReadOnlySpan<uint8_t> rawSpan(static_cast<const uint8_t*>(rawBitmap.Content()), rawBitmap.GetByteSize());
         return {rawSpan, rawBitmap.GetExtent(), rawBitmap.GetPixelFormat(), rawBitmap.GetOrigin()};
       }
 

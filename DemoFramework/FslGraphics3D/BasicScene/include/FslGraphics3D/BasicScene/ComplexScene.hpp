@@ -49,13 +49,13 @@ namespace Fsl::Graphics3D
     {
     }
 
-    int32_t GetMeshCount() const override
+    [[nodiscard]] int32_t GetMeshCount() const override
     {
       return static_cast<int32_t>(Meshes.size());
     }
 
 
-    std::shared_ptr<Mesh> GetMeshAt(const int32_t index) const override
+    [[nodiscard]] std::shared_ptr<Mesh> GetMeshAt(const int32_t index) const override
     {
       return Meshes[index];
     }

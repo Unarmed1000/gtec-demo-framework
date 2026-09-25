@@ -143,7 +143,7 @@ namespace Fsl::Vulkan
           //{
           //  throw NotSupportedException("ModelViewProj format is unsupported");
           //}
-          auto index = materialDeclaration.MaterialElementIndexOf(BasicMaterialVariableElementUsage::SdfSmooth, 0);
+          const auto index = materialDeclaration.MaterialElementIndexOf(BasicMaterialVariableElementUsage::SdfSmooth, 0);
           if (index < 0)
           {
             throw NotSupportedException("materialDeclaration is not compatible");
@@ -284,7 +284,7 @@ namespace Fsl::Vulkan
       depthStencilState.depthWriteEnable = materialInfo.Depth.WriteEnable ? VK_TRUE : VK_FALSE;
       depthStencilState.depthCompareOp = TypeConverter::ChangeTo<VkCompareOp>(materialInfo.Depth.CompareOp);
 
-      auto blendAttachmentState = ConfigHelper::CreatePipelineColorBlendAttachmentState(materialInfo.Blend);
+      const auto blendAttachmentState = ConfigHelper::CreatePipelineColorBlendAttachmentState(materialInfo.Blend);
 
       VkPipelineColorBlendStateCreateInfo colorBlendState{};
       colorBlendState.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
@@ -411,7 +411,7 @@ namespace Fsl::Vulkan
       for (uint32_t i = 0; i < createInfoSpan.size(); ++i)
       {
         assert(!dstMaterialHandles[i].IsValid());
-        int32_t handle = m_dependentResources.Materials.Add(CreateMaterial(createInfoSpan[i]));
+        const int32_t handle = m_dependentResources.Materials.Add(CreateMaterial(createInfoSpan[i]));
         dstMaterialHandles[i] = BasicNativeMaterialHandle(handle);
       }
     }
@@ -444,7 +444,7 @@ namespace Fsl::Vulkan
       return false;
     }
 
-    [[maybe_unused]] bool unreferenced = UnreferencePipeline(pMaterial->PipelineHandle);
+    [[maybe_unused]] const bool unreferenced = UnreferencePipeline(pMaterial->PipelineHandle);
     assert(unreferenced);
     return m_dependentResources.Materials.Remove(hMaterial.Value);
   }
@@ -456,14 +456,14 @@ namespace Fsl::Vulkan
 
     CheckIfMaterialDeclarationIsSupported(createInfo.MaterialInfo.Blend, createInfo.MaterialDeclaration);
 
-    uint32_t index = TryFindPipelineIndex(createInfo);
+    const uint32_t index = TryFindPipelineIndex(createInfo);
     if (index >= m_dependentResources.Pipelines.Count())
     {
       m_dependentResources.Pipelines.Add(CreatePipeline(createInfo));
     }
     assert(index < m_dependentResources.Pipelines.Count());
 
-    auto hPipeline = m_dependentResources.Pipelines.FastIndexToHandle(index);
+    const auto hPipeline = m_dependentResources.Pipelines.FastIndexToHandle(index);
 
     // Reference pipeline
     PipelineRecord& rRecord = m_dependentResources.Pipelines[index];
@@ -507,7 +507,7 @@ namespace Fsl::Vulkan
   bool NativeGraphicsMaterialFactory::UnreferencePipeline(const HandleVector<PipelineRecord>::handle_type hPipeline) noexcept
   {
     PipelineRecord* rPipelineRecord = m_dependentResources.Pipelines.TryGet(hPipeline);
-    bool found = rPipelineRecord != nullptr;
+    const bool found = rPipelineRecord != nullptr;
     if (found)
     {
       assert(rPipelineRecord->ReferenceCount > 0u);

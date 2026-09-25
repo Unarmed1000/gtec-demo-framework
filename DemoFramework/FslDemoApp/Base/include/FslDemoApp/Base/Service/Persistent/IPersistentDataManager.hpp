@@ -48,20 +48,20 @@ namespace Fsl
 
     //! @brief Get the root path of all persistent data (use this if you want to manually open persistent files)
     //! @return the content path.
-    virtual IO::Path GetPersistentDataPath() const = 0;
+    [[nodiscard]] virtual IO::Path GetPersistentDataPath() const = 0;
 
     //! @brief Check if a persistent file exists
-    virtual bool Exists(const IO::Path& relativePath) const = 0;
+    [[nodiscard]] virtual bool Exists(const IO::Path& relativePath) const = 0;
 
     //! @brief Get the length of the persistent file.
     //! @throws IOException if the file isn't found.
-    virtual uint64_t GetLength(const IO::Path& relativePath) const = 0;
+    [[nodiscard]] virtual uint64_t GetLength(const IO::Path& relativePath) const = 0;
 
     //! @brief Read the entire content of the given file into a string.
     //! @param relativePath the relative path to load the content from
     //!        (the path is expected to be relative and will be concatenated with the GetPersistentDataPath automatically)
     //! @throws IOException if the file isn't found or something goes wrong reading it.
-    virtual std::string ReadAllText(const IO::Path& relativePath) const = 0;
+    [[nodiscard]] virtual std::string ReadAllText(const IO::Path& relativePath) const = 0;
 
     //! @brief Read the entire content of the given file into a binary array.
     //! @param rTargetArray the array to load the content into. The array will be resized to fit the file content
@@ -207,8 +207,8 @@ namespace Fsl
     //! GetPreferredBitmapOrigin).
     //         (if the source image uses a different origin it will be converted).
     //! @throws IOException if the file isn't found or something goes wrong reading it.
-    virtual Bitmap ReadBitmap(const IO::Path& relativePath, const PixelFormat desiredPixelFormat = PixelFormat::Undefined,
-                              const BitmapOrigin desiredOrigin = BitmapOrigin::Undefined) const = 0;
+    [[nodiscard]] virtual Bitmap ReadBitmap(const IO::Path& relativePath, const PixelFormat desiredPixelFormat = PixelFormat::Undefined,
+                                            const BitmapOrigin desiredOrigin = BitmapOrigin::Undefined) const = 0;
 
     //! @brief Read the content of the file as a texture.
     //! @param relativePath the relative path to load the content from
@@ -220,8 +220,8 @@ namespace Fsl
     //! GetPreferredBitmapOrigin).
     //         (if the source image uses a different origin it will be converted).
     //! @throws IOException if the file isn't found or something goes wrong reading it.
-    virtual Texture ReadTexture(const IO::Path& relativePath, const PixelFormat desiredPixelFormat = PixelFormat::Undefined,
-                                const BitmapOrigin desiredOrigin = BitmapOrigin::Undefined) const = 0;
+    [[nodiscard]] virtual Texture ReadTexture(const IO::Path& relativePath, const PixelFormat desiredPixelFormat = PixelFormat::Undefined,
+                                              const BitmapOrigin desiredOrigin = BitmapOrigin::Undefined) const = 0;
   };
 }
 

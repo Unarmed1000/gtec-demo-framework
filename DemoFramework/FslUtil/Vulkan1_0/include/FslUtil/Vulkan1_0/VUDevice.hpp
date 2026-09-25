@@ -79,24 +79,24 @@ namespace Fsl::Vulkan
                const uint32_t enabledExtensionCount, const char* const* ppEnabledExtensionNames, VkPhysicalDeviceFeatures* const pEnabledFeatures);
 
     //! @brief Get the physical device
-    const VUPhysicalDeviceRecord& GetPhysicalDevice() const noexcept
+    [[nodiscard]] const VUPhysicalDeviceRecord& GetPhysicalDevice() const noexcept
     {
       return m_physicalDevice;
     }
 
     //! @brief Get the associated 'Device'
-    VkDevice Get() const noexcept
+    [[nodiscard]] VkDevice Get() const noexcept
     {
       return m_device.Get();
     }
 
     //! @brief Get a pointer to the associated resource handle
-    const VkDevice* GetPointer() const noexcept
+    [[nodiscard]] const VkDevice* GetPointer() const noexcept
     {
       return m_device.GetPointer();
     }
 
-    bool IsValid() const noexcept
+    [[nodiscard]] bool IsValid() const noexcept
     {
       return m_device.IsValid();
     }

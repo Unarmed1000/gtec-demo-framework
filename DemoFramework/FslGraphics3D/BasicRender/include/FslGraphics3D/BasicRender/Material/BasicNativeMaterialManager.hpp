@@ -79,7 +79,7 @@ namespace Fsl::Graphics3D
     explicit BasicNativeMaterialManager(const IBasicShaderLookup& shaderLookup);
     ~BasicNativeMaterialManager() noexcept;
 
-    bool IsValid() const noexcept
+    [[nodiscard]] bool IsValid() const noexcept
     {
       return m_factory != nullptr;
     }

@@ -46,7 +46,7 @@ namespace Fsl
 
     virtual ~IDemoHostFactory() = default;
 
-    virtual DemoHostCaps GetCaps() const = 0;
+    [[nodiscard]] virtual DemoHostCaps GetCaps() const = 0;
 
     virtual std::shared_ptr<IDemoHost> Allocate(const DemoHostConfig& config) = 0;
 

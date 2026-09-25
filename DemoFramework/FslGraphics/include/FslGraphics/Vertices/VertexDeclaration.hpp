@@ -67,33 +67,33 @@ namespace Fsl
     void Reset(const VertexElement* const pElements, const std::size_t elementCount, const uint32_t vertexStride);
 
     //! @brief Get the vertex stride
-    uint32_t VertexStride() const noexcept
+    [[nodiscard]] uint32_t VertexStride() const noexcept
     {
       return m_vertexStride;
     }
 
     //! @brief Get the number of elements
-    uint32_t Count() const noexcept;
+    [[nodiscard]] uint32_t Count() const noexcept;
 
 
-    VertexElement At(const std::size_t index) const
+    [[nodiscard]] VertexElement At(const std::size_t index) const
     {
       return m_elements[index];
     }
 
     //! @brief Get direct access to the elements
-    const VertexElement* DirectAccess() const noexcept;
+    [[nodiscard]] const VertexElement* DirectAccess() const noexcept;
 
     //! @brief Get the element index of for the given usage and usageIndex (if not found a NotFoundException is thrown)
-    int32_t VertexElementGetIndexOf(const VertexElementUsage usage, const uint32_t usageIndex) const;
+    [[nodiscard]] int32_t VertexElementGetIndexOf(const VertexElementUsage usage, const uint32_t usageIndex) const;
 
     //! @brief Find the element index of for the given usage and usageIndex (if not found <0 is returned)
-    int32_t VertexElementIndexOf(const VertexElementUsage usage, const uint32_t usageIndex) const noexcept;
+    [[nodiscard]] int32_t VertexElementIndexOf(const VertexElementUsage usage, const uint32_t usageIndex) const noexcept;
 
     //! @brief Get the element for the given usage and usageIndex (if not found a NotFoundException is thrown)
-    VertexElement VertexElementGet(const VertexElementUsage usage, const uint32_t usageIndex) const;
+    [[nodiscard]] VertexElement VertexElementGet(const VertexElementUsage usage, const uint32_t usageIndex) const;
 
-    VertexDeclarationSpan AsSpan() const noexcept;
+    [[nodiscard]] VertexDeclarationSpan AsSpan() const noexcept;
 
     bool operator==(const VertexDeclaration& rhs) const noexcept;
     bool operator!=(const VertexDeclaration& rhs) const noexcept;

@@ -58,12 +58,12 @@ namespace Fsl
         throw std::runtime_error("Tried to register the same providerId twice");
       }
 
-      auto messageHandlerRegistry = std::make_shared<AsynchronousServiceMessageHandlerRegistryImpl>();
+      const auto messageHandlerRegistry = std::make_shared<AsynchronousServiceMessageHandlerRegistryImpl>();
       m_providerToMessageHandlerRegistry[entry.Id.Get()] = messageHandlerRegistry;
 
-      AsynchronousServiceImplCreateInfo createInfo(entry.Id, messageHandlerRegistry);
+      const AsynchronousServiceImplCreateInfo createInfo(entry.Id, messageHandlerRegistry);
 
-      auto serviceInstance = entry.Factory->Allocate(createInfo, theServiceProvider);
+      const auto serviceInstance = entry.Factory->Allocate(createInfo, theServiceProvider);
       m_services.push_back(serviceInstance);
       // Allow for some 'after object creation' fiddeling, if need be
       serviceInstance->Link(theServiceProvider);
@@ -82,7 +82,7 @@ namespace Fsl
       return;
     }
 
-    auto itrFind = m_providerToMessageHandlerRegistry.find(message.TargetId.Get());
+    const auto itrFind = m_providerToMessageHandlerRegistry.find(message.TargetId.Get());
     if (itrFind == m_providerToMessageHandlerRegistry.end())
     {
       FSLLOG3_WARNING("No message handler registry found for providerId: {}  was the messsage send to the correct queue?", message.TargetId.Get());

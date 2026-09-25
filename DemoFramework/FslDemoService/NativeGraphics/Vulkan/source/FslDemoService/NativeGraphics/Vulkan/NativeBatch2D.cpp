@@ -47,7 +47,7 @@ namespace Fsl::Vulkan
   {
     inline VUTextureInfo TryExtract(const NativeGraphicsDevice* const pNativeDevice, const INativeTexture2D& srcTexture)
     {
-      BasicNativeTextureHandle hNativeTexture = srcTexture.TryGetNativeHandle();
+      const BasicNativeTextureHandle hNativeTexture = srcTexture.TryGetNativeHandle();
       if (!hNativeTexture.IsValid())
       {
         FSLLOG3_DEBUG_WARNING("There are currently no actual texture associated, call ignored");
@@ -71,7 +71,7 @@ namespace Fsl::Vulkan
         FSLLOG3_DEBUG_WARNING("pBasicRenderSystem is invalid, call ignored");
         return {};
       }
-      std::shared_ptr<INativeTexture2D> nativeTexture = pBasicRenderSystem->TryGetMaterialTexture(material.Material);
+      const std::shared_ptr<INativeTexture2D> nativeTexture = pBasicRenderSystem->TryGetMaterialTexture(material.Material);
       if (!nativeTexture)
       {
         FSLLOG3_DEBUG_WARNING("material texture not of the expected type, call ignored");

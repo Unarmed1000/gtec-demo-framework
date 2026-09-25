@@ -57,12 +57,12 @@ namespace Fsl::Vulkan
     InstanceCreateInfoCopy();
     explicit InstanceCreateInfoCopy(const VkInstanceCreateInfo& value);
 
-    const VkApplicationInfo& GetApplicationInfo() const
+    [[nodiscard]] const VkApplicationInfo& GetApplicationInfo() const
     {
       return m_applicationInfo.Get();
     }
 
-    const VkInstanceCreateInfo& Get() const
+    [[nodiscard]] const VkInstanceCreateInfo& Get() const
     {
       return m_value;
     }

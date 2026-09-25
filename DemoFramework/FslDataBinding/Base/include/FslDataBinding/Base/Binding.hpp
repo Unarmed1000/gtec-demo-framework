@@ -87,8 +87,9 @@ namespace Fsl::DataBinding
       }
     }
 
-    template <class... THandles, std::enable_if_t<((sizeof...(THandles)) > 0u)>* = nullptr>
+    template <class... THandles>
     explicit Binding(std::shared_ptr<IMultiBinding> multiBinding, const DataBindingInstanceHandle hSource, THandles... sourceHandles)
+      requires((sizeof...(THandles)) > 0u)
       : m_hPrimarySource(hSource)
       , m_complexBinding(std::move(multiBinding))
       , m_multiSource{hSource, (sourceHandles)...}
@@ -98,9 +99,10 @@ namespace Fsl::DataBinding
       assert(m_multiSource.size() == (1u + sizeof...(THandles)));
     }
 
-    template <class... THandles, std::enable_if_t<((sizeof...(THandles)) > 0u)>* = nullptr>
+    template <class... THandles>
     explicit Binding(std::shared_ptr<IMultiBinding> multiBinding, const BindingMode bindingMode, const DataBindingInstanceHandle hSource,
                      THandles... sourceHandles)
+      requires((sizeof...(THandles)) > 0u)
       : m_hPrimarySource(hSource)
       , m_complexBinding(std::move(multiBinding))
       , m_multiSource{hSource, (sourceHandles)...}
@@ -116,24 +118,24 @@ namespace Fsl::DataBinding
       }
     }
 
-    bool HasValidSourceHandles() const noexcept;
+    [[nodiscard]] bool HasValidSourceHandles() const noexcept;
 
-    inline const std::shared_ptr<IComplexBinding>& ComplexBinding() const noexcept
+    [[nodiscard]] inline const std::shared_ptr<IComplexBinding>& ComplexBinding() const noexcept
     {
       return m_complexBinding;
     }
 
-    inline ReadOnlySpan<DataBindingInstanceHandle> SourceHandlesAsSpan() const noexcept
+    [[nodiscard]] inline ReadOnlySpan<DataBindingInstanceHandle> SourceHandlesAsSpan() const noexcept
     {
       return m_multiSource.empty() ? SpanUtil::UncheckedCreateReadOnly(&m_hPrimarySource, 1u) : SpanUtil::AsReadOnlySpan(m_multiSource);
     }
 
-    BindingMode Mode() const noexcept
+    [[nodiscard]] BindingMode Mode() const noexcept
     {
       return m_bindingMode;
     }
 
-    bool ContainsSource(const DataBindingInstanceHandle handle) const noexcept;
+    [[nodiscard]] bool ContainsSource(const DataBindingInstanceHandle handle) const noexcept;
   };
 }
 

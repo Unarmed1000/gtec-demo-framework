@@ -52,13 +52,13 @@ namespace
 
 TEST(TestVertices_VertexDeclaration, Construct_Default)
 {
-  VertexDeclaration decl;
+  const VertexDeclaration decl;
   EXPECT_EQ(0u, decl.VertexStride());
   EXPECT_EQ(0u, decl.Count());
   EXPECT_EQ(nullptr, decl.DirectAccess());
-  EXPECT_THROW(decl.VertexElementGetIndexOf(VertexElementUsage::Position, 0u), NotFoundException);
+  EXPECT_THROW(static_cast<void>(decl.VertexElementGetIndexOf(VertexElementUsage::Position, 0u)), NotFoundException);
   EXPECT_LE(decl.VertexElementIndexOf(VertexElementUsage::Position, 0u), 0);
-  EXPECT_THROW(decl.VertexElementGet(VertexElementUsage::Position, 0u), NotFoundException);
+  EXPECT_THROW(static_cast<void>(decl.VertexElementGet(VertexElementUsage::Position, 0u)), NotFoundException);
   EXPECT_EQ(VertexDeclaration(), decl);
 }
 
@@ -67,7 +67,7 @@ TEST(TestVertices_VertexDeclaration, Construct)
 {
   const std::array<VertexElement, 1> elements = {VertexElement(0, VertexElementFormat::Vector3, VertexElementUsage::Position, 0u)};
 
-  VertexDeclaration decl(elements.data(), elements.size(), sizeof(Vector3));
+  const VertexDeclaration decl(elements.data(), elements.size(), sizeof(Vector3));
 
   EXPECT_EQ(sizeof(Vector3), decl.VertexStride());
   EXPECT_EQ(elements.size(), decl.Count());
@@ -129,7 +129,7 @@ TEST(TestVertices_VertexDeclaration, Construct_OutOfOrder)
   const std::array<VertexElement, 2> elements = {VertexElement(12, VertexElementFormat::Vector3, VertexElementUsage::Position, 0u),
                                                  VertexElement(0, VertexElementFormat::Vector3, VertexElementUsage::Position, 1u)};
 
-  VertexDeclaration decl(elements.data(), elements.size(), sizeof(Vector3) * 2);
+  const VertexDeclaration decl(elements.data(), elements.size(), sizeof(Vector3) * 2);
 
   EXPECT_EQ(sizeof(Vector3) * 2, decl.VertexStride());
   EXPECT_EQ(elements.size(), decl.Count());
@@ -187,7 +187,7 @@ TEST(TestVertices_VertexDeclaration, MoveConstruct)
   std::array<VertexElement, 1> elements = {VertexElement(0, VertexElementFormat::Vector3, VertexElementUsage::Position, 0u)};
 
   VertexDeclaration decl1(elements.data(), elements.size(), sizeof(Vector3));
-  VertexDeclaration decl2(std::move(decl1));
+  const VertexDeclaration decl2(std::move(decl1));
 
   // FslGraphics types prefer to reset their content when moved
   EXPECT_EQ(VertexDeclaration(), decl1);    // NOLINT(bugprone-use-after-move)

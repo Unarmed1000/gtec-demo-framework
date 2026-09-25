@@ -153,7 +153,7 @@ namespace Fsl
   void RawBitmapUtil::Swizzle32To24(RawBitmapEx& rBitmap, const PixelFormat dstPixelFormat, const uint32_t dstStride, const uint32_t srcIdx0,
                                     const uint32_t srcIdx1, const uint32_t srcIdx2)
   {
-    ReadOnlyRawBitmap srcBitmap(rBitmap);    // NOLINT(cppcoreguidelines-slicing)
+    const ReadOnlyRawBitmap srcBitmap(rBitmap);    // NOLINT(cppcoreguidelines-slicing)
     rBitmap.SetStride(dstStride);
     rBitmap.SetPixelFormat(dstPixelFormat);
 
@@ -212,7 +212,7 @@ namespace Fsl
   void RawBitmapUtil::Average24To8(RawBitmapEx& rBitmap, const PixelFormat dstPixelFormat, const uint32_t dstStride, const uint32_t srcIdx0,
                                    const uint32_t srcIdx1, const uint32_t srcIdx2)
   {
-    ReadOnlyRawBitmap srcBitmap(rBitmap);    // NOLINT(cppcoreguidelines-slicing)
+    const ReadOnlyRawBitmap srcBitmap(rBitmap);    // NOLINT(cppcoreguidelines-slicing)
     rBitmap.SetStride(dstStride);
     rBitmap.SetPixelFormat(dstPixelFormat);
 
@@ -223,7 +223,7 @@ namespace Fsl
   void RawBitmapUtil::Average32To8(RawBitmapEx& rBitmap, const PixelFormat dstPixelFormat, const uint32_t dstStride, const uint32_t srcIdx0,
                                    const uint32_t srcIdx1, const uint32_t srcIdx2)
   {
-    ReadOnlyRawBitmap srcBitmap(rBitmap);    // NOLINT(cppcoreguidelines-slicing)
+    const ReadOnlyRawBitmap srcBitmap(rBitmap);    // NOLINT(cppcoreguidelines-slicing)
     rBitmap.SetStride(dstStride);
     rBitmap.SetPixelFormat(dstPixelFormat);
     Average32To8(rBitmap, srcBitmap, srcIdx0, srcIdx1, srcIdx2);

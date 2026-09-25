@@ -62,7 +62,7 @@ namespace Fsl::UI::RenderIMBatch
 
     void OnConfigurationChanged(const BasicWindowMetrics& windowMetrics) final;
 
-    const FlexRenderSystemConfig& GetConfig() const final
+    [[nodiscard]] const FlexRenderSystemConfig& GetConfig() const final
     {
       return m_config;
     }
@@ -75,7 +75,7 @@ namespace Fsl::UI::RenderIMBatch
       InvalidateDrawCache();
     }
 
-    uint32_t GetMaxDrawCalls() const final
+    [[nodiscard]] uint32_t GetMaxDrawCalls() const final
     {
       return m_maxDrawCalls;
     }

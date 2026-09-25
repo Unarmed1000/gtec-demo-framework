@@ -49,7 +49,7 @@ namespace Fsl::UI::Declarative
 
     std::shared_ptr<BaseWindow> Create(const DeclarativeControlFactoryCreateInfo& createInfo) final
     {
-      StringViewLite radioGroupName = createInfo.PropertyParser.ClaimRequired<StringThemeProperty>(0);
+      const StringViewLite radioGroupName = createInfo.PropertyParser.ClaimRequired<StringThemeProperty>(0);
       const std::shared_ptr<RadioGroup>& radioGroup = createInfo.RadioGroups.Get(radioGroupName);
       return createInfo.ThemeControlFactory.CreateRadioButton(radioGroup, Consts::TextNotSet, false);
     }

@@ -59,7 +59,7 @@ namespace Fsl::UI
 
   bool ChartCanvas1D::SetOrientation(const LayoutOrientation value)
   {
-    bool changed = value != m_orientation;
+    const bool changed = value != m_orientation;
     if (changed)
     {
       m_orientation = value;
@@ -81,7 +81,7 @@ namespace Fsl::UI
     // The data view is not allowed to change after we enter after we enter the measure/arrange and draw cycle
     // assert(IsCacheUnchanged());
 
-    Vector2 chartScale{1.0f, 1.0f};
+    const Vector2 chartScale{1.0f, 1.0f};
     // PxSize2D desiredSizePx;
     // const PxSize2D desiredSizePx = PxSize2D(CalculateAxisMinimumPixelSize(), itemHeightPx);
     m_layoutCache.Arrange = ArrangeCache(chartScale);

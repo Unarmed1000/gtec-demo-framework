@@ -56,7 +56,7 @@ namespace Fsl::UI
 
     inline bool Remove(std::vector<std::shared_ptr<TreeNode>>& rNodes, const std::shared_ptr<TreeNode>& node)
     {
-      auto itr = std::find(rNodes.begin(), rNodes.end(), node);
+      const auto itr = std::find(rNodes.begin(), rNodes.end(), node);
       const bool found = itr != rNodes.end();
       if (found)
       {
@@ -70,8 +70,8 @@ namespace Fsl::UI
     void SendCancelEventsViaTunnel(IEventHandler& eventHandler, ReadOnlySpan<std::shared_ptr<TreeNode>> nodeSpan,
                                    const std::shared_ptr<WindowTransactionEvent>& theEvent)
     {
-      RoutedEvent routedEvent(theEvent, true);
-      Internal::ScopedWindowTransactionEventPatch scopedStateChange(*theEvent, EventTransactionState::Canceled, false, false);
+      const RoutedEvent routedEvent(theEvent, true);
+      const Internal::ScopedWindowTransactionEventPatch scopedStateChange(*theEvent, EventTransactionState::Canceled, false, false);
       for (const auto& entry : nodeSpan)
       {
         if (entry->IsConsideredRunning())
@@ -86,8 +86,8 @@ namespace Fsl::UI
     void SendCancelEventsViaBubble(IEventHandler& eventHandler, ReadOnlySpan<std::shared_ptr<TreeNode>> nodeSpan,
                                    const std::shared_ptr<WindowTransactionEvent>& theEvent)
     {
-      RoutedEvent routedEvent(theEvent, false);
-      Internal::ScopedWindowTransactionEventPatch scopedStateChange(*theEvent, EventTransactionState::Canceled, false, false);
+      const RoutedEvent routedEvent(theEvent, false);
+      const Internal::ScopedWindowTransactionEventPatch scopedStateChange(*theEvent, EventTransactionState::Canceled, false, false);
       // Temporarily patch the event so it becomes a cancel event
       for (std::size_t i = nodeSpan.size(); i > 0; --i)
       {
@@ -102,7 +102,8 @@ namespace Fsl::UI
     void SendToViaTunnel(IEventHandler& eventHandler, std::vector<std::shared_ptr<TreeNode>>& rNodes, const RoutedEvent& routedEvent,
                          const bool paired)
     {
-      std::shared_ptr<WindowTransactionEvent> windowTransactionEvent = std::dynamic_pointer_cast<UI::WindowTransactionEvent>(routedEvent.Content);
+      const std::shared_ptr<WindowTransactionEvent> windowTransactionEvent =
+        std::dynamic_pointer_cast<UI::WindowTransactionEvent>(routedEvent.Content);
 
       uint32_t interceptionCount = 0;
       bool allowIntercept = false;
@@ -144,8 +145,8 @@ namespace Fsl::UI
                 }
 
                 {    // Remove all following windows from the route
-                  auto itrRemoveBegin = std::next(rNodes.begin(), UncheckedNumericCast<std::ptrdiff_t>(removeIndex));
-                  auto itrRemoveEnd = std::next(itrRemoveBegin, UncheckedNumericCast<std::ptrdiff_t>(removeCount));
+                  const auto itrRemoveBegin = std::next(rNodes.begin(), UncheckedNumericCast<std::ptrdiff_t>(removeIndex));
+                  const auto itrRemoveEnd = std::next(itrRemoveBegin, UncheckedNumericCast<std::ptrdiff_t>(removeCount));
                   rNodes.erase(itrRemoveBegin, itrRemoveEnd);
                 }
               }
@@ -167,7 +168,8 @@ namespace Fsl::UI
 
     void SendViaBubble(IEventHandler& eventHandler, std::vector<std::shared_ptr<TreeNode>>& rNodes, const RoutedEvent& routedEvent, const bool paired)
     {
-      std::shared_ptr<WindowTransactionEvent> windowTransactionEvent = std::dynamic_pointer_cast<UI::WindowTransactionEvent>(routedEvent.Content);
+      const std::shared_ptr<WindowTransactionEvent> windowTransactionEvent =
+        std::dynamic_pointer_cast<UI::WindowTransactionEvent>(routedEvent.Content);
 
       uint32_t interceptionCount = 0;
       bool allowIntercept = false;
@@ -209,8 +211,8 @@ namespace Fsl::UI
                 SendCancelEventsViaBubble(eventHandler, SpanUtil::AsReadOnlySpan(rNodes, removeIndex, removeCount), windowTransactionEvent);
 
                 {    // Remove all following windows from the route
-                  auto itrRemoveBegin = std::next(rNodes.begin(), UncheckedNumericCast<std::ptrdiff_t>(removeIndex));
-                  auto itrRemoveEnd = std::next(itrRemoveBegin, UncheckedNumericCast<std::ptrdiff_t>(removeCount));
+                  const auto itrRemoveBegin = std::next(rNodes.begin(), UncheckedNumericCast<std::ptrdiff_t>(removeIndex));
+                  const auto itrRemoveEnd = std::next(itrRemoveBegin, UncheckedNumericCast<std::ptrdiff_t>(removeCount));
                   rNodes.erase(itrRemoveBegin, itrRemoveEnd);
                 }
               }
@@ -381,7 +383,7 @@ namespace Fsl::UI
     }
 
     // Continue to send the event while the event isn't marked as handled.
-    RoutedEvent routedEvent(theEvent, isTunneling);
+    const RoutedEvent routedEvent(theEvent, isTunneling);
     if (isTunneling)
     {
       SendToViaTunnel(eventHandler, rNodes, routedEvent, paired);

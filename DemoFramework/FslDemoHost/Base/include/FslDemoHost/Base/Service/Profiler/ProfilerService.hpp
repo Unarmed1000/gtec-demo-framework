@@ -86,25 +86,25 @@ namespace Fsl
     ~ProfilerService() final;
 
     // From IProfilerService
-    ProfilerFrameTime GetLastFrameTime() const final;
-    ProfilerFrameTime GetAverageFrameTime() const final;
-    int32_t GetCustomCounterCapacity() const final;
-    int32_t GetCustomCounterCount() const final;
-    ProfilerCustomCounterHandle GetCustomCounterHandle(const int32_t index) const final;
+    [[nodiscard]] ProfilerFrameTime GetLastFrameTime() const final;
+    [[nodiscard]] ProfilerFrameTime GetAverageFrameTime() const final;
+    [[nodiscard]] int32_t GetCustomCounterCapacity() const final;
+    [[nodiscard]] int32_t GetCustomCounterCount() const final;
+    [[nodiscard]] ProfilerCustomCounterHandle GetCustomCounterHandle(const int32_t index) const final;
     ProfilerCustomCounterHandle CreateCustomCounter(const std::string& name, const int32_t minValue, const int32_t maxValue,
                                                     const Color& colorHint) final;
     void DestroyCustomCounter(const ProfilerCustomCounterHandle& handle) final;
-    int32_t Get(const ProfilerCustomCounterHandle& handle) const final;
+    [[nodiscard]] int32_t Get(const ProfilerCustomCounterHandle& handle) const final;
     void Set(const ProfilerCustomCounterHandle& handle, const int32_t value) final;
-    ProfilerCustomCounterDesc GetDescription(const ProfilerCustomCounterHandle& handle) const final;
-    uint32_t GetCustomConfigurationRevision() const final;
-    bool IsValidHandle(const ProfilerCustomCounterHandle& handle) const final;
+    [[nodiscard]] ProfilerCustomCounterDesc GetDescription(const ProfilerCustomCounterHandle& handle) const final;
+    [[nodiscard]] uint32_t GetCustomConfigurationRevision() const final;
+    [[nodiscard]] bool IsValidHandle(const ProfilerCustomCounterHandle& handle) const final;
 
     // From IProfilerServiceControl
     void AddFrameTimes(const uint64_t updateTime, const uint64_t drawTime, const uint64_t totalTime) final;
 
   private:
-    inline int32_t ConvertHandleToIndex(const ProfilerCustomCounterHandle& handle) const;
+    [[nodiscard]] inline int32_t ConvertHandleToIndex(const ProfilerCustomCounterHandle& handle) const;
   };
 }
 

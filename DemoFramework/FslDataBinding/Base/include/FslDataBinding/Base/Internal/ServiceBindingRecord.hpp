@@ -91,24 +91,24 @@ namespace Fsl::DataBinding::Internal
     {
     }
 
-    bool HasValidSourceHandles() const noexcept
+    [[nodiscard]] bool HasValidSourceHandles() const noexcept
     {
       // There will only be valid handles if the 'primary' source handle is valid
       return m_source.Handle.IsValid();
     }
 
-    BindingMode SourceBindingMode() const noexcept
+    [[nodiscard]] BindingMode SourceBindingMode() const noexcept
     {
       assert(HasValidSourceHandles());
       return m_source.Mode;
     }
 
-    const std::shared_ptr<IComplexBinding>& SourceUserBinding() const noexcept
+    [[nodiscard]] const std::shared_ptr<IComplexBinding>& SourceUserBinding() const noexcept
     {
       return m_source.UserBinding;
     }
 
-    std::size_t SourceHandleCount() const noexcept
+    [[nodiscard]] std::size_t SourceHandleCount() const noexcept
     {
       if (m_source.Handle.IsValid())
       {
@@ -117,7 +117,7 @@ namespace Fsl::DataBinding::Internal
       return 0u;
     }
 
-    ReadOnlySpan<DataBindingInstanceHandle> TargetHandles() const noexcept
+    [[nodiscard]] ReadOnlySpan<DataBindingInstanceHandle> TargetHandles() const noexcept
     {
       return SysHandles.AsReadOnlySpan(Internal::ServicePropertyVectorIndex::Targets);
     }
@@ -127,7 +127,7 @@ namespace Fsl::DataBinding::Internal
       SysHandles.Clear(Internal::ServicePropertyVectorIndex::Targets);
     }
 
-    ReadOnlySpan<DataBindingInstanceHandle> PropertyHandles() const noexcept
+    [[nodiscard]] ReadOnlySpan<DataBindingInstanceHandle> PropertyHandles() const noexcept
     {
       return SysHandles.AsReadOnlySpan(Internal::ServicePropertyVectorIndex::Properties);
     }
@@ -137,7 +137,7 @@ namespace Fsl::DataBinding::Internal
       SysHandles.Clear(Internal::ServicePropertyVectorIndex::Properties);
     }
 
-    ReadOnlySpan<DataBindingInstanceHandle> SourceHandles() const noexcept
+    [[nodiscard]] ReadOnlySpan<DataBindingInstanceHandle> SourceHandles() const noexcept
     {
       if (m_source.Handle.IsValid())
       {
@@ -147,9 +147,9 @@ namespace Fsl::DataBinding::Internal
       return {};
     }
 
-    bool ContainsSource(const DataBindingInstanceHandle handle) const noexcept
+    [[nodiscard]] bool ContainsSource(const DataBindingInstanceHandle handle) const noexcept
     {
-      for (auto srcHandle : SourceHandles())
+      for (const auto srcHandle : SourceHandles())
       {
         if (handle == srcHandle)
         {
@@ -174,7 +174,7 @@ namespace Fsl::DataBinding::Internal
       assert(!m_source.Handle.IsValid());
       assert(!m_source.UserBinding);
       assert(SourceHandles().empty());
-      auto sourceHandles = binding.SourceHandlesAsSpan();
+      const auto sourceHandles = binding.SourceHandlesAsSpan();
       assert(!sourceHandles.empty());
       try
       {

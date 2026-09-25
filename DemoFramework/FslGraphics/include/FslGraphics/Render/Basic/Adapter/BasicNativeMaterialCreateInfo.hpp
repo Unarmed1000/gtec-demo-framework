@@ -61,13 +61,14 @@ namespace Fsl
     {
     }
 
-    constexpr bool IsValid() const noexcept
+    [[nodiscard]] constexpr bool IsValid() const noexcept
     {
       return !MaterialDeclaration.empty() && !VertexDeclaration.Empty() && VertexShaderHandle.IsValid() && FragmentShaderHandle.IsValid();
     }
 
-    constexpr bool IsCompatible(const BasicMaterialInfo& materialInfo, const VertexDeclarationSpan& vertexDecl,
-                                const BasicNativeShaderHandle vertexShaderHandle, const BasicNativeShaderHandle fragmentShaderHandle) const noexcept
+    [[nodiscard]] constexpr bool IsCompatible(const BasicMaterialInfo& materialInfo, const VertexDeclarationSpan& vertexDecl,
+                                              const BasicNativeShaderHandle vertexShaderHandle,
+                                              const BasicNativeShaderHandle fragmentShaderHandle) const noexcept
     {
       return MaterialInfo == materialInfo && VertexDeclaration == vertexDecl && VertexShaderHandle == vertexShaderHandle &&
              FragmentShaderHandle == fragmentShaderHandle;

@@ -90,7 +90,7 @@ namespace Fsl::GLES3
           //{
           //  throw NotSupportedException("ModelViewProj format is unsupported");
           //}
-          auto index = materialDeclaration.MaterialElementIndexOf(BasicMaterialVariableElementUsage::SdfSmooth, 0);
+          const auto index = materialDeclaration.MaterialElementIndexOf(BasicMaterialVariableElementUsage::SdfSmooth, 0);
           if (index < 0)
           {
             throw NotSupportedException("materialDeclaration is not compatible");
@@ -194,7 +194,7 @@ namespace Fsl::GLES3
       for (uint32_t i = 0; i < createInfoSpan.size(); ++i)
       {
         assert(!dstMaterialHandles[i].IsValid());
-        int32_t handle = m_dependentResources.Materials.Add(CreateMaterial(createInfoSpan[i]));
+        const int32_t handle = m_dependentResources.Materials.Add(CreateMaterial(createInfoSpan[i]));
         dstMaterialHandles[i] = BasicNativeMaterialHandle(handle);
       }
     }

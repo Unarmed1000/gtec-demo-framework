@@ -59,8 +59,8 @@ namespace Fsl::ConfigUtil
 
   inline bool TryReplace(std::deque<Vulkan::FeatureRequest>& rRequests, const Vulkan::FeatureRequest& featureRequest)
   {
-    auto itrFind = std::find_if(rRequests.begin(), rRequests.end(),
-                                [featureRequest](const Vulkan::FeatureRequest& entry) { return (entry.Name == featureRequest.Name); });
+    const auto itrFind = std::find_if(rRequests.begin(), rRequests.end(),
+                                      [featureRequest](const Vulkan::FeatureRequest& entry) { return (entry.Name == featureRequest.Name); });
     if (itrFind == rRequests.end())
     {
       return false;
@@ -172,7 +172,7 @@ namespace Fsl::ConfigUtil
 
   inline void FilterFeatureByName(std::deque<Vulkan::FeatureRequest>& rLayerRequests, const std::string& name)
   {
-    auto itrFind =
+    const auto itrFind =
       std::find_if(rLayerRequests.begin(), rLayerRequests.end(), [name](const Vulkan::FeatureRequest& entry) { return (entry.Name == name); });
     if (itrFind != rLayerRequests.end())
     {

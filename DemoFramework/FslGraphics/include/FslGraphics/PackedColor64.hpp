@@ -71,42 +71,42 @@ namespace Fsl
     }
 
   public:
-    constexpr ColorChannelValueU16 R() const noexcept
+    [[nodiscard]] constexpr ColorChannelValueU16 R() const noexcept
     {
       return ColorChannelValueU16(static_cast<uint16_t>((RawValue >> 32) & 0xFFFF));
     }
 
-    constexpr ColorChannelValueU16 G() const noexcept
+    [[nodiscard]] constexpr ColorChannelValueU16 G() const noexcept
     {
       return ColorChannelValueU16(static_cast<uint16_t>((RawValue >> 16) & 0xFFFF));
     }
 
-    constexpr ColorChannelValueU16 B() const noexcept
+    [[nodiscard]] constexpr ColorChannelValueU16 B() const noexcept
     {
       return ColorChannelValueU16(static_cast<uint16_t>((RawValue) & 0xFFFF));
     }
 
-    constexpr ColorChannelValueU16 A() const noexcept
+    [[nodiscard]] constexpr ColorChannelValueU16 A() const noexcept
     {
       return ColorChannelValueU16(static_cast<uint16_t>((RawValue >> 48) & 0xFFFF));
     }
 
-    constexpr uint16_t RawR() const noexcept
+    [[nodiscard]] constexpr uint16_t RawR() const noexcept
     {
       return static_cast<uint16_t>((RawValue >> 32) & 0xFFFF);
     }
 
-    constexpr uint16_t RawG() const noexcept
+    [[nodiscard]] constexpr uint16_t RawG() const noexcept
     {
       return static_cast<uint16_t>((RawValue >> 16) & 0xFFFF);
     }
 
-    constexpr uint16_t RawB() const noexcept
+    [[nodiscard]] constexpr uint16_t RawB() const noexcept
     {
       return static_cast<uint16_t>(RawValue & 0xFFFF);
     }
 
-    constexpr uint16_t RawA() const noexcept
+    [[nodiscard]] constexpr uint16_t RawA() const noexcept
     {
       return static_cast<uint16_t>((RawValue >> 48) & 0xFFFF);
     }

@@ -110,64 +110,64 @@ namespace Fsl::Vulkan
     //           const VkMemoryPropertyFlags memoryPropertyFlags, const VkDeviceSize physicalDeviceLimitNonCoherentAtomSize);
 
     //! @brief Get the associated 'Device'
-    VkDevice GetDevice() const noexcept
+    [[nodiscard]] VkDevice GetDevice() const noexcept
     {
       return m_buffer.GetDevice();
     }
 
     //! @brief Get the associated 'buffer'
-    VkBuffer GetBuffer() const noexcept
+    [[nodiscard]] VkBuffer GetBuffer() const noexcept
     {
       return m_buffer.Get();
     }
 
     //! @brief Get the associated 'buffer'
-    const VkBuffer* GetBufferPointer() const noexcept
+    [[nodiscard]] const VkBuffer* GetBufferPointer() const noexcept
     {
       return m_buffer.GetPointer();
     }
 
     //! @brief Get the associated 'memory'
-    VkDeviceMemory GetMemory() const noexcept
+    [[nodiscard]] VkDeviceMemory GetMemory() const noexcept
     {
       return m_memory.Get();
     }
 
-    VkDescriptorBufferInfo GetDescriptorBufferInfo() const noexcept
+    [[nodiscard]] VkDescriptorBufferInfo GetDescriptorBufferInfo() const noexcept
     {
       return m_descriptorBufferInfo;
     }
 
-    const VkDescriptorBufferInfo* GetDescriptorBufferInfoPointer() const noexcept
+    [[nodiscard]] const VkDescriptorBufferInfo* GetDescriptorBufferInfoPointer() const noexcept
     {
       return &m_descriptorBufferInfo;
     }
 
 
     //! @brief Get the originally requested buffer size
-    VkDeviceSize GetBufferSize() const noexcept
+    [[nodiscard]] VkDeviceSize GetBufferSize() const noexcept
     {
       return m_buffer.GetSize();
     }
 
     //! @brief Beware this might be larger than the initial requested buffer size due to alignment and other requirements.
-    VkDeviceSize GetAllocationSize() const noexcept
+    [[nodiscard]] VkDeviceSize GetAllocationSize() const noexcept
     {
       return m_memory.GetAllocationSize();
     }
 
-    VkBufferUsageFlags GetUsageFlags() const noexcept
+    [[nodiscard]] VkBufferUsageFlags GetUsageFlags() const noexcept
     {
       return m_buffer.GetUsage();
     }
 
-    VkMemoryPropertyFlags GetMemoryPropertyFlags() const noexcept
+    [[nodiscard]] VkMemoryPropertyFlags GetMemoryPropertyFlags() const noexcept
     {
       return m_memory.GetMemoryPropertyFlags();
     }
 
 
-    const void* GetMappedPointer() const noexcept
+    [[nodiscard]] const void* GetMappedPointer() const noexcept
     {
       return m_memory.GetMappedMemoryPointer();
     }
@@ -180,12 +180,12 @@ namespace Fsl::Vulkan
 
 
     //! @brief Check if this object contains a valid resource
-    inline bool IsValid() const noexcept
+    [[nodiscard]] inline bool IsValid() const noexcept
     {
       return m_buffer.IsValid();
     }
 
-    bool IsMapped() const noexcept
+    [[nodiscard]] bool IsMapped() const noexcept
     {
       return m_memory.IsMapped();
     }

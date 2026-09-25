@@ -50,17 +50,17 @@ namespace Fsl
                                const std::shared_ptr<IAsynchronousServiceImplFactory>& implFactory);
     ~AsynchronousServiceFactory() override;
 
-    bool IsValid() const
+    [[nodiscard]] bool IsValid() const
     {
       return m_proxyFactory && m_implFactory;
     }
 
-    std::shared_ptr<IAsynchronousServiceProxyFactory> GetProxyFactory() const;
-    std::shared_ptr<IAsynchronousServiceImplFactory> GetImplFactory() const;
+    [[nodiscard]] std::shared_ptr<IAsynchronousServiceProxyFactory> GetProxyFactory() const;
+    [[nodiscard]] std::shared_ptr<IAsynchronousServiceImplFactory> GetImplFactory() const;
 
     // Inherited via IServiceFactoryInfo
-    std::shared_ptr<AServiceOptionParser> GetOptionParser() const override;
-    ServiceCaps::Flags GetFlags() const override;
+    [[nodiscard]] std::shared_ptr<AServiceOptionParser> GetOptionParser() const override;
+    [[nodiscard]] ServiceCaps::Flags GetFlags() const override;
     void FillInterfaceType(ServiceSupportedInterfaceDeque& rServiceInterfaceTypeDeque) const override;
   };
 }

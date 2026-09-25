@@ -54,9 +54,9 @@ namespace Fsl::UI
 
     void SetText(StringViewLite str);
 
-    PxSize2D MinimalMeasure(StringViewLite str) const;
-    PxSize2D Measure(StringViewLite str) const;
-    SpriteFontMeasureInfo ComplexMeasure(StringViewLite str) const;
+    [[nodiscard]] PxSize2D MinimalMeasure(StringViewLite str) const;
+    [[nodiscard]] PxSize2D Measure(StringViewLite str) const;
+    [[nodiscard]] SpriteFontMeasureInfo ComplexMeasure(StringViewLite str) const;
   };
 }
 

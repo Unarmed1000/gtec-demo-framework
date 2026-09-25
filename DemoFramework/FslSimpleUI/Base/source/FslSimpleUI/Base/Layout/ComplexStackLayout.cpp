@@ -146,7 +146,7 @@ namespace Fsl::UI
       // Fake that we have unlimited space in X and keep Y constrained.
       const PxAvailableSize fakeAvailableSizePx(PxAvailableSize1D::InfiniteSpacePx(), availableSizePx.Height());
       LayoutLength layoutLength;
-      for (auto& rEntry : *this)
+      for (const auto& rEntry : *this)
       {
         if (layoutLengthItr != m_layoutLength.end())
         {
@@ -212,7 +212,7 @@ namespace Fsl::UI
       // Fake that we have unlimited space in Y and keep X constrained.
       const PxAvailableSize fakeAvailableSizePx(availableSizePx.Width(), PxAvailableSize1D::InfiniteSpacePx());
       LayoutLength layoutLength;
-      for (auto& rEntry : *this)
+      for (const auto& rEntry : *this)
       {
         if (layoutLengthItr != m_layoutLength.end())
         {
@@ -281,9 +281,9 @@ namespace Fsl::UI
 
   DataBinding::DataBindingInstanceHandle ComplexStackLayout::TryGetPropertyHandleNow(const DataBinding::DependencyPropertyDefinition& sourceDef)
   {
-    auto res = DataBinding::DependencyObjectHelper::TryGetPropertyHandle(this, ThisDependencyObject(), sourceDef,
-                                                                         DataBinding::PropLinkRefs(PropertyOrientation, m_propertyOrientation),
-                                                                         DataBinding::PropLinkRefs(PropertySpacing, m_propertySpacingDp));
+    const auto res = DataBinding::DependencyObjectHelper::TryGetPropertyHandle(this, ThisDependencyObject(), sourceDef,
+                                                                               DataBinding::PropLinkRefs(PropertyOrientation, m_propertyOrientation),
+                                                                               DataBinding::PropLinkRefs(PropertySpacing, m_propertySpacingDp));
     return res.IsValid() ? res : base_type::TryGetPropertyHandleNow(sourceDef);
   }
 
@@ -291,9 +291,9 @@ namespace Fsl::UI
   DataBinding::PropertySetBindingResult ComplexStackLayout::TrySetBindingNow(const DataBinding::DependencyPropertyDefinition& targetDef,
                                                                              const DataBinding::Binding& binding)
   {
-    auto res = DataBinding::DependencyObjectHelper::TrySetBinding(this, ThisDependencyObject(), targetDef, binding,
-                                                                  DataBinding::PropLinkRefs(PropertyOrientation, m_propertyOrientation),
-                                                                  DataBinding::PropLinkRefs(PropertySpacing, m_propertySpacingDp));
+    const auto res = DataBinding::DependencyObjectHelper::TrySetBinding(this, ThisDependencyObject(), targetDef, binding,
+                                                                        DataBinding::PropLinkRefs(PropertyOrientation, m_propertyOrientation),
+                                                                        DataBinding::PropLinkRefs(PropertySpacing, m_propertySpacingDp));
     return res != DataBinding::PropertySetBindingResult::NotFound ? res : base_type::TrySetBindingNow(targetDef, binding);
   }
 
@@ -462,7 +462,7 @@ namespace Fsl::UI
   void ComplexStackLayout::ArrangeHorizontal(const PxSize1D finalSizeYPx)
   {
     // Run through each element and give it the space it desired in X, but only finalSizeY in Y
-    for (auto& rEntry : *this)
+    for (const auto& rEntry : *this)
     {
       rEntry.Window->Arrange(PxRectangle(rEntry.PositionPx, PxValue(0), rEntry.SizePx, finalSizeYPx));
     }
@@ -472,7 +472,7 @@ namespace Fsl::UI
   void ComplexStackLayout::ArrangeVertical(const PxSize1D finalSizeXPx)
   {
     // Run through each element and give it the space it desired in Y, but only finalSizeX in X
-    for (auto& rEntry : *this)
+    for (const auto& rEntry : *this)
     {
       rEntry.Window->Arrange(PxRectangle(PxValue(0), rEntry.PositionPx, finalSizeXPx, rEntry.SizePx));
     }

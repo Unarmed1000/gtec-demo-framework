@@ -457,7 +457,7 @@ namespace Fsl::UI
         const PxVector2 cursorPositionPxf =
           m_windowContext->UnitConverter.ToPxVector2(TypeConverter::To<DpPoint2F>(m_hoverOverlay.CurrentPositionDp.GetValue()));
 
-        PxValue centeredYPx;
+        const PxValue centeredYPx;
         const PxSize2D cursorSpriteRenderSizePx = m_cursor.Mesh.FastGetRenderSizePx();
         {
           const PxSize2DF cursorOriginPxf(TypeConverter::To<PxSize2DF>(cursorSpriteRenderSizePx) / PxSize1DF::Create(2));
@@ -477,8 +477,8 @@ namespace Fsl::UI
           bool showOverlay = true;
           if (m_hoverOverlay.IsConstrainToGraphics)
           {
-            PxPoint2 positionPx(TypeConverter::UncheckedChangeTo<PxPoint2>(positionPxf));
-            PxRectangle cursorRect(PxPoint2(positionPx.X + m_cachedImageOffsetPx, positionPx.Y + centeredYPx), cursorSpriteRenderSizePx);
+            const PxPoint2 positionPx(TypeConverter::UncheckedChangeTo<PxPoint2>(positionPxf));
+            const PxRectangle cursorRect(PxPoint2(positionPx.X + m_cachedImageOffsetPx, positionPx.Y + centeredYPx), cursorSpriteRenderSizePx);
             showOverlay = cursorRect.Contains(m_hoverOverlay.LastScreenPositionPx);
           }
           if (showOverlay)
@@ -668,7 +668,7 @@ namespace Fsl::UI
 
   DataBinding::DataBindingInstanceHandle ToggleButton::TryGetPropertyHandleNow(const DataBinding::DependencyPropertyDefinition& sourceDef)
   {
-    auto res = DataBinding::DependencyObjectHelper::TryGetPropertyHandle(
+    const auto res = DataBinding::DependencyObjectHelper::TryGetPropertyHandle(
       this, ThisDependencyObject(), sourceDef, DataBinding::PropLinkRefs(PropertyFontColorChecked, m_font.PropertyColorChecked.ExternalColor),
       DataBinding::PropLinkRefs(PropertyFontColorChecked, m_font.PropertyColorChecked.ExternalColor),
       DataBinding::PropLinkRefs(PropertyFontColorDisabled, m_font.PropertyColorDisabled.ExternalColor),
@@ -693,7 +693,7 @@ namespace Fsl::UI
   DataBinding::PropertySetBindingResult ToggleButton::TrySetBindingNow(const DataBinding::DependencyPropertyDefinition& targetDef,
                                                                        const DataBinding::Binding& binding)
   {
-    auto res = DataBinding::DependencyObjectHelper::TrySetBinding(
+    const auto res = DataBinding::DependencyObjectHelper::TrySetBinding(
       this, ThisDependencyObject(), targetDef, binding,
       DataBinding::PropLinkRefs(PropertyFontColorChecked, m_font.PropertyColorChecked.ExternalColor),
       DataBinding::PropLinkRefs(PropertyFontColorChecked, m_font.PropertyColorChecked.ExternalColor),

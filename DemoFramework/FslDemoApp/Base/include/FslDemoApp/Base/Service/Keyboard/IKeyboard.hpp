@@ -39,7 +39,7 @@ namespace Fsl
   {
   public:
     virtual ~IKeyboard() = default;
-    virtual KeyboardState GetState() const = 0;
+    [[nodiscard]] virtual KeyboardState GetState() const = 0;
   };
 }
 

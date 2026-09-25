@@ -51,7 +51,7 @@ namespace Fsl::GLES2
     {
     }
 
-    constexpr bool IsValid() const noexcept
+    [[nodiscard]] constexpr bool IsValid() const noexcept
     {
       return !Name.empty();
     }

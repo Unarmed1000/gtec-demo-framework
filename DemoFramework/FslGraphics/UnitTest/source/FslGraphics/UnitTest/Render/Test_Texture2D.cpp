@@ -50,14 +50,14 @@ namespace
 
 TEST(TestRender_Texture2D, Construct_Empty)
 {
-  Texture2D texture;
+  const Texture2D texture;
 
   EXPECT_FALSE(texture.IsValid());
   EXPECT_EQ(PxExtent2D(), texture.GetExtent());
   EXPECT_EQ(PxSize2D(), texture.GetSize());
   EXPECT_EQ(PixelFormat::Undefined, texture.GetPixelFormat());
   EXPECT_EQ(std::shared_ptr<INativeTexture2D>(), texture.TryGetNative());
-  EXPECT_THROW(texture.GetNative(), GraphicsException);
+  EXPECT_THROW(static_cast<void>(texture.GetNative()), GraphicsException);
 }
 
 
@@ -65,7 +65,7 @@ TEST(TestRender_Texture2D, Construct_Bitmap)
 {
   const auto nativeGraphics = std::make_shared<NativeGraphicsTestImpl>();
   const Bitmap bitmap(PxSize2D::Create(128, 128), PixelFormat::R8G8B8A8_UNORM);
-  Texture2D texture(nativeGraphics, bitmap, Texture2DFilterHint::Smooth);
+  const Texture2D texture(nativeGraphics, bitmap, Texture2DFilterHint::Smooth);
 
   EXPECT_TRUE(texture.IsValid());
   EXPECT_EQ(bitmap.GetExtent(), texture.GetExtent());
@@ -80,7 +80,7 @@ TEST(TestRender_Texture2D, Construct_RawBitmap)
   const auto nativeGraphics = std::make_shared<NativeGraphicsTestImpl>();
   const Bitmap bitmap(PxSize2D::Create(128, 128), PixelFormat::R8G8B8A8_UNORM);
   const Bitmap::ScopedDirectReadAccess directAccess(bitmap);
-  Texture2D texture(nativeGraphics, directAccess.AsRawBitmap(), Texture2DFilterHint::Smooth);
+  const Texture2D texture(nativeGraphics, directAccess.AsRawBitmap(), Texture2DFilterHint::Smooth);
 
   EXPECT_TRUE(texture.IsValid());
   EXPECT_EQ(bitmap.GetExtent(), texture.GetExtent());
@@ -95,9 +95,9 @@ TEST(TestRender_Texture2D, Construct_Texture)
 {
   const auto nativeGraphics = std::make_shared<NativeGraphicsTestImpl>();
   const Texture srcTexture(PxExtent2D::Create(128, 128), PixelFormat::R8G8B8A8_UNORM, BitmapOrigin::UpperLeft);
-  Texture2D texture(nativeGraphics, srcTexture, Texture2DFilterHint::Smooth);
+  const Texture2D texture(nativeGraphics, srcTexture, Texture2DFilterHint::Smooth);
 
-  auto extent = srcTexture.GetExtent();
+  const auto extent = srcTexture.GetExtent();
 
   EXPECT_TRUE(texture.IsValid());
   EXPECT_EQ(PxExtent2D(extent.Width, extent.Height), texture.GetExtent());
@@ -114,9 +114,9 @@ TEST(TestRender_Texture2D, Construct_ReadOnlyRawTexture)
   const auto nativeGraphics = std::make_shared<NativeGraphicsTestImpl>();
   const Texture srcTexture(PxExtent2D::Create(128, 128), PixelFormat::R8G8B8A8_UNORM, BitmapOrigin::UpperLeft);
   Texture::ScopedDirectReadAccess directAccess(srcTexture);
-  Texture2D texture(nativeGraphics, directAccess.AsRawTexture(), Texture2DFilterHint::Smooth);
+  const Texture2D texture(nativeGraphics, directAccess.AsRawTexture(), Texture2DFilterHint::Smooth);
 
-  auto extent = srcTexture.GetExtent();
+  const auto extent = srcTexture.GetExtent();
 
   EXPECT_TRUE(texture.IsValid());
   EXPECT_EQ(PxExtent2D(extent.Width, extent.Height), texture.GetExtent());
@@ -143,13 +143,13 @@ TEST(TestRender_Texture2D, Reset)
   EXPECT_EQ(PxSize2D(), texture.GetSize());
   EXPECT_EQ(PixelFormat::Undefined, texture.GetPixelFormat());
   EXPECT_EQ(std::shared_ptr<INativeTexture2D>(), texture.TryGetNative());
-  EXPECT_THROW(texture.GetNative(), GraphicsException);
+  EXPECT_THROW(static_cast<void>(texture.GetNative()), GraphicsException);
 }
 
 
 TEST(TestRender_Texture2D, Reset_EmptyWithBitmap)
 {
-  auto nativeGraphics = std::make_shared<NativeGraphicsTestImpl>();
+  const auto nativeGraphics = std::make_shared<NativeGraphicsTestImpl>();
   Texture2D texture;
   ASSERT_FALSE(texture.IsValid());
 
@@ -167,7 +167,7 @@ TEST(TestRender_Texture2D, Reset_EmptyWithBitmap)
 
 TEST(TestRender_Texture2D, Reset_NotEmptyWithBitmap)
 {
-  auto nativeGraphics = std::make_shared<NativeGraphicsTestImpl>();
+  const auto nativeGraphics = std::make_shared<NativeGraphicsTestImpl>();
   const Bitmap bitmap1(PxSize2D::Create(128, 128), PixelFormat::R8G8B8A8_UNORM);
   Texture2D texture(nativeGraphics, bitmap1, Texture2DFilterHint::Smooth);
   ASSERT_TRUE(texture.IsValid());
@@ -186,14 +186,14 @@ TEST(TestRender_Texture2D, Reset_NotEmptyWithBitmap)
 
 TEST(TestRender_Texture2D, Reset_EmptyWithTexture)
 {
-  auto nativeGraphics = std::make_shared<NativeGraphicsTestImpl>();
+  const auto nativeGraphics = std::make_shared<NativeGraphicsTestImpl>();
   Texture2D texture;
   ASSERT_FALSE(texture.IsValid());
 
   const Texture srcTexture(PxExtent2D::Create(64, 64), PixelFormat::R8G8B8_UNORM, BitmapOrigin::UpperLeft);
   texture.Reset(nativeGraphics, srcTexture, Texture2DFilterHint::Nearest);
 
-  auto extent = srcTexture.GetExtent();
+  const auto extent = srcTexture.GetExtent();
 
   EXPECT_TRUE(texture.IsValid());
   EXPECT_EQ(PxExtent2D(extent.Width, extent.Height), texture.GetExtent());
@@ -207,7 +207,7 @@ TEST(TestRender_Texture2D, Reset_EmptyWithTexture)
 
 TEST(TestRender_Texture2D, Reset_NotEmptyWithTexture)
 {
-  auto nativeGraphics = std::make_shared<NativeGraphicsTestImpl>();
+  const auto nativeGraphics = std::make_shared<NativeGraphicsTestImpl>();
   const Bitmap bitmap1(PxSize2D::Create(128, 128), PixelFormat::R8G8B8A8_UNORM);
   Texture2D texture(nativeGraphics, bitmap1, Texture2DFilterHint::Smooth);
   ASSERT_TRUE(texture.IsValid());
@@ -215,7 +215,7 @@ TEST(TestRender_Texture2D, Reset_NotEmptyWithTexture)
   const Texture srcTexture(PxExtent2D::Create(64, 64), PixelFormat::R8G8B8_UNORM, BitmapOrigin::UpperLeft);
   texture.Reset(nativeGraphics, srcTexture, Texture2DFilterHint::Nearest);
 
-  auto extent = srcTexture.GetExtent();
+  const auto extent = srcTexture.GetExtent();
 
   EXPECT_TRUE(texture.IsValid());
   EXPECT_EQ(PxExtent2D(extent.Width, extent.Height), texture.GetExtent());

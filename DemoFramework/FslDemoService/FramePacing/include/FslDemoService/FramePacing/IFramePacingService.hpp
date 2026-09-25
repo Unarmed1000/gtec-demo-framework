@@ -46,22 +46,22 @@ namespace Fsl
     virtual ~IFramePacingService() = default;
 
     //! @brief Check if the marker is drawn.
-    virtual bool IsEnabled() const noexcept = 0;
+    [[nodiscard]] virtual bool IsEnabled() const noexcept = 0;
     //! @brief Enable or disable drawing of the marker.
     virtual void SetEnabled(const bool enabled) noexcept = 0;
 
     //! @brief Get the slot the marker is drawn in.
-    virtual FramePacingMarkerSlot GetSlot() const noexcept = 0;
+    [[nodiscard]] virtual FramePacingMarkerSlot GetSlot() const noexcept = 0;
     //! @brief Set the slot the marker is drawn in.
     virtual void SetSlot(const FramePacingMarkerSlot slot) noexcept = 0;
 
     //! @brief The size of one QR module in pixels (only used if the capture height is zero).
-    virtual int32_t GetModuleSizePx() const noexcept = 0;
+    [[nodiscard]] virtual int32_t GetModuleSizePx() const noexcept = 0;
     //! @brief Set the size of one QR module in pixels (clamped to a valid size).
     virtual void SetModuleSizePx(const int32_t moduleSizePx) noexcept = 0;
 
     //! @brief The height in pixels the capture is stored at (0 = unknown, the module size is used as is).
-    virtual int32_t GetCaptureHeightPx() const noexcept = 0;
+    [[nodiscard]] virtual int32_t GetCaptureHeightPx() const noexcept = 0;
     //! @brief Set the height in pixels the capture is stored at, when not zero the module size is calculated so the marker survives the
     //!        downscale of the capture.
     virtual void SetCaptureHeightPx(const int32_t captureHeightPx) noexcept = 0;
@@ -77,16 +77,16 @@ namespace Fsl
     virtual void EndRun() noexcept = 0;
 
     //! @brief Get the run state.
-    virtual FramePacingRunState GetRunState() const noexcept = 0;
+    [[nodiscard]] virtual FramePacingRunState GetRunState() const noexcept = 0;
 
     //! @brief Get the id of the current (or last) run.
-    virtual uint32_t GetRunId() const noexcept = 0;
+    [[nodiscard]] virtual uint32_t GetRunId() const noexcept = 0;
 
     //! @brief Get the duration of the measured part of the current (or last) run, zero if it lasts until EndRun is called.
-    virtual TimeSpan GetRunDuration() const noexcept = 0;
+    [[nodiscard]] virtual TimeSpan GetRunDuration() const noexcept = 0;
 
     //! @brief Get how long the current run has been measuring (zero unless the run state is Measuring).
-    virtual TimeSpan GetRunMeasuredTime() const noexcept = 0;
+    [[nodiscard]] virtual TimeSpan GetRunMeasuredTime() const noexcept = 0;
   };
 }
 

@@ -59,7 +59,7 @@ namespace Fsl
     ~ImageService() final;
 
     // From ImageService
-    BitmapOrigin GetPreferredBitmapOrigin() const final;
+    [[nodiscard]] BitmapOrigin GetPreferredBitmapOrigin() const final;
     void Read(Bitmap& rBitmap, const IO::Path& absolutePath, const PixelFormat desiredPixelFormat = PixelFormat::Undefined,
               const BitmapOrigin desiredOrigin = BitmapOrigin::Undefined,
               const PixelChannelOrder preferredChannelOrder = PixelChannelOrder::Undefined) const final;

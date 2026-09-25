@@ -45,10 +45,10 @@ namespace Fsl::Batch2DUtil
     if (rToClipRect.Left() < clipRect.Right() && clipRect.Left() < rToClipRect.Right() && rToClipRect.Top() < clipRect.Bottom() &&
         clipRect.Top() < rToClipRect.Bottom())
     {
-      auto dx = rToClipRect.Right() - rToClipRect.Left();
-      auto dy = rToClipRect.Bottom() - rToClipRect.Top();
-      auto dsx = rSrcTexRect.Right() - rSrcTexRect.Left();
-      auto dsy = rSrcTexRect.Bottom() - rSrcTexRect.Top();
+      const auto dx = rToClipRect.Right() - rToClipRect.Left();
+      const auto dy = rToClipRect.Bottom() - rToClipRect.Top();
+      const auto dsx = rSrcTexRect.Right() - rSrcTexRect.Left();
+      const auto dsy = rSrcTexRect.Bottom() - rSrcTexRect.Top();
       if (dx.Value <= 0.0f || dy.Value <= 0.0f)
       {
         // The rect was clipped to zero in one direction
@@ -67,32 +67,32 @@ namespace Fsl::Batch2DUtil
 
       if (clippedLeft < clipRect.Left())
       {
-        auto dxClip = clipRect.Left() - clippedLeft;
-        auto len = dxClip / dx;
+        const auto dxClip = clipRect.Left() - clippedLeft;
+        const auto len = dxClip / dx;
 
         clippedSrcLeft += (dsx * len);
         clippedLeft = clipRect.Left();
       }
       if (clippedRight > clipRect.Right())
       {
-        auto dxClip = clippedRight - clipRect.Right();
-        auto len = dxClip / dx;
+        const auto dxClip = clippedRight - clipRect.Right();
+        const auto len = dxClip / dx;
         clippedSrcRight -= (dsx * len);
         clippedRight = clipRect.Right();
       }
 
       if (clippedTop < clipRect.Top())
       {
-        auto dyClip = clipRect.Top() - clippedTop;
-        auto len = dyClip / dy;
+        const auto dyClip = clipRect.Top() - clippedTop;
+        const auto len = dyClip / dy;
 
         clippedSrcTop += (dsy * len);
         clippedTop = clipRect.Top();
       }
       if (clippedBottom > clipRect.Bottom())
       {
-        auto dyClip = clippedBottom - clipRect.Bottom();
-        auto len = dyClip / dy;
+        const auto dyClip = clippedBottom - clipRect.Bottom();
+        const auto len = dyClip / dy;
         clippedSrcBottom -= (dsy * len);
         clippedBottom = clipRect.Bottom();
       }
@@ -119,10 +119,10 @@ namespace Fsl::Batch2DUtil
     if (rToClipRect.Left() < clipRect.Right() && clipRect.Left() < rToClipRect.Right() && rToClipRect.Top() < clipRect.Bottom() &&
         clipRect.Top() < rToClipRect.Bottom())
     {
-      auto dx = rToClipRect.Right() - rToClipRect.Left();
-      auto dy = rToClipRect.Bottom() - rToClipRect.Top();
-      auto dsx = rSrcTexArea.X1 - rSrcTexArea.X0;
-      auto dsy = rSrcTexArea.Y1 - rSrcTexArea.Y0;
+      const auto dx = rToClipRect.Right() - rToClipRect.Left();
+      const auto dy = rToClipRect.Bottom() - rToClipRect.Top();
+      const auto dsx = rSrcTexArea.X1 - rSrcTexArea.X0;
+      const auto dsy = rSrcTexArea.Y1 - rSrcTexArea.Y0;
       if (dx.Value <= 0.0f || dy.Value <= 0.0f)
       {
         // The rect was clipped to zero in one direction
@@ -141,32 +141,32 @@ namespace Fsl::Batch2DUtil
 
       if (clippedLeft < clipRect.Left())
       {
-        auto dxClip = clipRect.Left() - clippedLeft;
-        auto len = dxClip / dx;
+        const auto dxClip = clipRect.Left() - clippedLeft;
+        const auto len = dxClip / dx;
 
         clippedSrcLeft += (dsx * len.Value);
         clippedLeft = clipRect.Left();
       }
       if (clippedRight > clipRect.Right())
       {
-        auto dxClip = clippedRight - clipRect.Right();
-        auto len = dxClip / dx;
+        const auto dxClip = clippedRight - clipRect.Right();
+        const auto len = dxClip / dx;
         clippedSrcRight -= (dsx * len.Value);
         clippedRight = clipRect.Right();
       }
 
       if (clippedTop < clipRect.Top())
       {
-        auto dyClip = clipRect.Top() - clippedTop;
-        auto len = dyClip / dy;
+        const auto dyClip = clipRect.Top() - clippedTop;
+        const auto len = dyClip / dy;
 
         clippedSrcTop += (dsy * len.Value);
         clippedTop = clipRect.Top();
       }
       if (clippedBottom > clipRect.Bottom())
       {
-        auto dyClip = clippedBottom - clipRect.Bottom();
-        auto len = dyClip / dy;
+        const auto dyClip = clippedBottom - clipRect.Bottom();
+        const auto len = dyClip / dy;
         clippedSrcBottom -= (dsy * len.Value);
         clippedBottom = clipRect.Bottom();
       }
@@ -193,10 +193,10 @@ namespace Fsl::Batch2DUtil
     if (rToClipRect.Left() < clipRectRight && clipRectLeft < rToClipRect.Right() && rToClipRect.Top() < clipRectBottom &&
         clipRectTop < rToClipRect.Bottom())
     {
-      auto dx = rToClipRect.Right() - rToClipRect.Left();
-      auto dy = rToClipRect.Bottom() - rToClipRect.Top();
-      auto dsx = rSrcTexRect.Right() - rSrcTexRect.Left();
-      auto dsy = rSrcTexRect.Bottom() - rSrcTexRect.Top();
+      const auto dx = rToClipRect.Right() - rToClipRect.Left();
+      const auto dy = rToClipRect.Bottom() - rToClipRect.Top();
+      const auto dsx = rSrcTexRect.Right() - rSrcTexRect.Left();
+      const auto dsy = rSrcTexRect.Bottom() - rSrcTexRect.Top();
       if (dx.Value <= 0.0f || dy.Value <= 0.0f)
       {
         // The rect was clipped to zero in one direction
@@ -215,32 +215,32 @@ namespace Fsl::Batch2DUtil
 
       if (clippedLeft < clipRectLeft)
       {
-        auto dxClip = clipRectLeft - clippedLeft;
-        auto len = dxClip / dx;
+        const auto dxClip = clipRectLeft - clippedLeft;
+        const auto len = dxClip / dx;
 
         clippedSrcLeft += (dsx * len);
         clippedLeft = clipRectLeft;
       }
       if (clippedRight > clipRectRight)
       {
-        auto dxClip = clippedRight - clipRectRight;
-        auto len = dxClip / dx;
+        const auto dxClip = clippedRight - clipRectRight;
+        const auto len = dxClip / dx;
         clippedSrcRight -= (dsx * len);
         clippedRight = clipRectRight;
       }
 
       if (clippedTop < clipRectTop)
       {
-        auto dyClip = clipRectTop - clippedTop;
-        auto len = dyClip / dy;
+        const auto dyClip = clipRectTop - clippedTop;
+        const auto len = dyClip / dy;
 
         clippedSrcTop += (dsy * len);
         clippedTop = clipRectTop;
       }
       if (clippedBottom > clipRectBottom)
       {
-        auto dyClip = clippedBottom - clipRectBottom;
-        auto len = dyClip / dy;
+        const auto dyClip = clippedBottom - clipRectBottom;
+        const auto len = dyClip / dy;
         clippedSrcBottom -= (dsy * len);
         clippedBottom = clipRectBottom;
       }
@@ -273,10 +273,10 @@ namespace Fsl::Batch2DUtil
     if (rToClipRect.Left() < clipRectRight && clipRectLeft < rToClipRect.Right() && rToClipRect.Top() < clipRectBottom &&
         clipRectTop < rToClipRect.Bottom())
     {
-      auto dx = rToClipRect.Right() - rToClipRect.Left();
-      auto dy = rToClipRect.Bottom() - rToClipRect.Top();
-      auto dsx = rSrcTexArea.X1 - rSrcTexArea.X0;
-      auto dsy = rSrcTexArea.Y1 - rSrcTexArea.Y0;
+      const auto dx = rToClipRect.Right() - rToClipRect.Left();
+      const auto dy = rToClipRect.Bottom() - rToClipRect.Top();
+      const auto dsx = rSrcTexArea.X1 - rSrcTexArea.X0;
+      const auto dsy = rSrcTexArea.Y1 - rSrcTexArea.Y0;
       if (dx.Value <= 0.0f || dy.Value <= 0.0f)
       {
         // The rect was clipped to zero in one direction
@@ -295,32 +295,32 @@ namespace Fsl::Batch2DUtil
 
       if (clippedLeft < clipRectLeft)
       {
-        auto dxClip = clipRectLeft - clippedLeft;
-        auto len = dxClip / dx;
+        const auto dxClip = clipRectLeft - clippedLeft;
+        const auto len = dxClip / dx;
 
         clippedSrcX1 += (dsx * len.Value);
         clippedLeft = clipRectLeft;
       }
       if (clippedRight > clipRectRight)
       {
-        auto dxClip = clippedRight - clipRectRight;
-        auto len = dxClip / dx;
+        const auto dxClip = clippedRight - clipRectRight;
+        const auto len = dxClip / dx;
         clippedSrcX2 -= (dsx * len.Value);
         clippedRight = clipRectRight;
       }
 
       if (clippedTop < clipRectTop)
       {
-        auto dyClip = clipRectTop - clippedTop;
-        auto len = dyClip / dy;
+        const auto dyClip = clipRectTop - clippedTop;
+        const auto len = dyClip / dy;
 
         clippedSrcY1 += (dsy * len.Value);
         clippedTop = clipRectTop;
       }
       if (clippedBottom > clipRectBottom)
       {
-        auto dyClip = clippedBottom - clipRectBottom;
-        auto len = dyClip / dy;
+        const auto dyClip = clippedBottom - clipRectBottom;
+        const auto len = dyClip / dy;
         clippedSrcY2 -= (dsy * len.Value);
         clippedBottom = clipRectBottom;
       }
@@ -348,8 +348,8 @@ namespace Fsl::Batch2DUtil
     if (rToClipRect.Left() < clipRectRight && clipRectLeft < rToClipRect.Right() && rToClipRect.Top() < clipRectBottom &&
         clipRectTop < rToClipRect.Bottom())
     {
-      auto dx = rToClipRect.Right() - rToClipRect.Left();
-      auto dy = rToClipRect.Bottom() - rToClipRect.Top();
+      const auto dx = rToClipRect.Right() - rToClipRect.Left();
+      const auto dy = rToClipRect.Bottom() - rToClipRect.Top();
       const Vector2 ds0 = rSrcTexArea.TopRight - rSrcTexArea.TopLeft;
       const Vector2 ds1 = rSrcTexArea.BottomRight - rSrcTexArea.BottomLeft;
       if (dx.Value <= 0.0f || dy.Value <= 0.0f)
@@ -370,8 +370,8 @@ namespace Fsl::Batch2DUtil
 
       if (clippedLeft < clipRectLeft)
       {
-        auto dxClip = clipRectLeft - clippedLeft;
-        auto len = dxClip / dx;
+        const auto dxClip = clipRectLeft - clippedLeft;
+        const auto len = dxClip / dx;
 
         clippedSrc0.X += (ds0.X * len.Value);
         clippedSrc2.X += (ds1.X * len.Value);
@@ -379,8 +379,8 @@ namespace Fsl::Batch2DUtil
       }
       if (clippedRight > clipRectRight)
       {
-        auto dxClip = clippedRight - clipRectRight;
-        auto len = dxClip / dx;
+        const auto dxClip = clippedRight - clipRectRight;
+        const auto len = dxClip / dx;
         clippedSrc1.X -= (ds0.X * len.Value);
         clippedSrc3.X -= (ds1.X * len.Value);
         clippedRight = clipRectRight;
@@ -388,8 +388,8 @@ namespace Fsl::Batch2DUtil
 
       if (clippedTop < clipRectTop)
       {
-        auto dyClip = clipRectTop - clippedTop;
-        auto len = dyClip / dy;
+        const auto dyClip = clipRectTop - clippedTop;
+        const auto len = dyClip / dy;
 
         clippedSrc0.Y += (ds0.Y * len.Value);
         clippedSrc2.Y += (ds1.Y * len.Value);
@@ -397,8 +397,8 @@ namespace Fsl::Batch2DUtil
       }
       if (clippedBottom > clipRectBottom)
       {
-        auto dyClip = clippedBottom - clipRectBottom;
-        auto len = dyClip / dy;
+        const auto dyClip = clippedBottom - clipRectBottom;
+        const auto len = dyClip / dy;
         clippedSrc1.Y -= (ds0.Y * len.Value);
         clippedSrc3.Y -= (ds1.Y * len.Value);
         clippedBottom = clipRectBottom;

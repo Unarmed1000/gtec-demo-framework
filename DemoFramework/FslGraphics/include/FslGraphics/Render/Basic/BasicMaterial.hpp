@@ -65,7 +65,7 @@ namespace Fsl
     BasicMaterial& operator=(BasicMaterial&& other) noexcept = default;
     BasicMaterial(BasicMaterial&& other) noexcept = default;
 
-    float GetSdfSmooth() const
+    [[nodiscard]] float GetSdfSmooth() const
     {
       return m_pushConstants.SdfSmooth;
     }
@@ -86,12 +86,12 @@ namespace Fsl
       }
     }
 
-    bool IsValid() const noexcept
+    [[nodiscard]] bool IsValid() const noexcept
     {
       return m_material != nullptr;
     }
 
-    BasicMaterialVariables AsPushConstants() const noexcept
+    [[nodiscard]] BasicMaterialVariables AsPushConstants() const noexcept
     {
       return BasicMaterialVariables(&m_pushConstants, sizeof(PushConstants), AsPushConstantDeclarationSpan(), OptimizationCheckFlag::NoCheck);
     }
@@ -108,17 +108,17 @@ namespace Fsl
       return DeclArray;
     }
 
-    BasicMaterialVariableDeclarationSpan AsPushConstantDeclarationSpan() const noexcept
+    [[nodiscard]] BasicMaterialVariableDeclarationSpan AsPushConstantDeclarationSpan() const noexcept
     {
       return m_pushConstantDecl.AsReadOnlySpan();
     }
 
-    BasicMaterialHandle TryGetHandle() const noexcept
+    [[nodiscard]] BasicMaterialHandle TryGetHandle() const noexcept
     {
       return m_handle;
     }
 
-    BasicMaterialHandle GetHandle() const
+    [[nodiscard]] BasicMaterialHandle GetHandle() const
     {
       return m_handle.IsValid() ? m_handle : throw UsageErrorException("handle is invalid");
     }

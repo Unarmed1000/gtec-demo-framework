@@ -75,45 +75,45 @@ namespace Fsl::Vulkan
                const VkImageView depthImageView, const std::string& name);
 
     //! @brief Check if this object contains a valid resource
-    inline bool IsValid() const noexcept
+    [[nodiscard]] inline bool IsValid() const noexcept
     {
       return m_texture.IsValid();
     }
 
-    VkDevice GetDevice() const noexcept
+    [[nodiscard]] VkDevice GetDevice() const noexcept
     {
       return m_texture.GetDevice();
     }
 
-    VkImage GetImage() const noexcept
+    [[nodiscard]] VkImage GetImage() const noexcept
     {
       return m_texture.GetImage();
     }
 
-    VkImageView GetImageView() const noexcept
+    [[nodiscard]] VkImageView GetImageView() const noexcept
     {
       return m_texture.GetImageView();
     }
 
-    VkFramebuffer GetFramebuffer() const noexcept
+    [[nodiscard]] VkFramebuffer GetFramebuffer() const noexcept
     {
       return m_framebuffer.Get();
     }
 
-    VkExtent2D GetExtent2D() const noexcept
+    [[nodiscard]] VkExtent2D GetExtent2D() const noexcept
     {
       return m_texture.GetExtent2D();
     }
 
     //! @brief Get the texture associated with this object
-    const VUTexture& Texture() const noexcept
+    [[nodiscard]] const VUTexture& Texture() const noexcept
     {
       return m_texture;
     }
 
 
     //! @brief Get the ImageView associated with this object
-    const RapidVulkan::Framebuffer& Framebuffer() const noexcept
+    [[nodiscard]] const RapidVulkan::Framebuffer& Framebuffer() const noexcept
     {
       return m_framebuffer;
     }

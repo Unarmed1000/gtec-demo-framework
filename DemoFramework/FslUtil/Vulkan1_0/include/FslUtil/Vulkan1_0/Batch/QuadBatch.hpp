@@ -142,7 +142,7 @@ namespace Fsl::Vulkan
       VUTextureInfo CachedTextureInfo;
       PushConstantRecord CachedPushConstants{-1.0f};
 
-      bool CheckIsEmpty() const
+      [[nodiscard]] bool CheckIsEmpty() const
       {
         return !IsValid && ActivePipeline == VK_NULL_HANDLE && ActivePipelineLayout == VK_NULL_HANDLE && CachedPipeline == VK_NULL_HANDLE &&
                CachedTextureInfo == VUTextureInfo() && CachedPushConstants == PushConstantRecord(-1.0f);
@@ -157,7 +157,7 @@ namespace Fsl::Vulkan
       uint32_t FrameIndex = 0;
       ActiveBlock Block;
 
-      bool CheckIsEmpty() const
+      [[nodiscard]] bool CheckIsEmpty() const
       {
         return CurrentState == FrameState::NotReady && CommandBuffer == VK_NULL_HANDLE && FrameIndex == 0 && Block.CheckIsEmpty();
       }
@@ -196,7 +196,7 @@ namespace Fsl::Vulkan
     void End();
     void EndFrame();
 
-    NativeBatch2DStats GetStats() const
+    [[nodiscard]] NativeBatch2DStats GetStats() const
     {
       return m_stats;
     }

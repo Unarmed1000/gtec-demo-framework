@@ -59,7 +59,7 @@ namespace Fsl
     {
     }
 
-    bool IsFlagged(const Enum flag) const
+    [[nodiscard]] bool IsFlagged(const Enum flag) const
     {
       return (Value & static_cast<uint32_t>(flag)) != 0u;
     }

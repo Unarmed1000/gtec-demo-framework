@@ -42,7 +42,7 @@ namespace Fsl::UI
 
   MeshHandle TestUIMeshManager::CreateBasicMesh(const std::shared_ptr<ISprite>& sprite)
   {
-    auto handle = m_entries.Add(Record(sprite, 1, 0));
+    const auto handle = m_entries.Add(Record(sprite, 1, 0));
     return MeshHandle(handle);
   }
 
@@ -51,14 +51,14 @@ namespace Fsl::UI
   {
     auto record = Record(sprite, 1, 0);
     record.VertexCapacity = vertexCapacity;
-    auto handle = m_entries.Add(record);
+    const auto handle = m_entries.Add(record);
     return MeshHandle(handle);
   }
 
 
   MeshHandle TestUIMeshManager::CreateMesh(const std::shared_ptr<ISprite>& sprite)
   {
-    auto handle = m_entries.Add(Record(sprite, 1, 0));
+    const auto handle = m_entries.Add(Record(sprite, 1, 0));
     return MeshHandle(handle);
   }
 
@@ -68,14 +68,14 @@ namespace Fsl::UI
     auto record = Record(sprite, 1, 0);
     record.VertexCapacity = vertexCapacity;
     record.IndexCapacity = indexCapacity;
-    auto handle = m_entries.Add(record);
+    const auto handle = m_entries.Add(record);
     return MeshHandle(handle);
   }
 
 
   MeshHandle TestUIMeshManager::CreateMesh(const std::shared_ptr<ISprite>& sprite, const uint32_t spriteMaterialIndex)
   {
-    auto handle = m_entries.Add(Record(sprite, 1, spriteMaterialIndex));
+    const auto handle = m_entries.Add(Record(sprite, 1, spriteMaterialIndex));
     return MeshHandle(handle);
   }
 
@@ -86,15 +86,15 @@ namespace Fsl::UI
     auto record = Record(sprite, 1, spriteMaterialIndex);
     record.VertexCapacity = vertexCapacity;
     record.IndexCapacity = indexCapacity;
-    auto handle = m_entries.Add(record);
+    const auto handle = m_entries.Add(record);
     return MeshHandle(handle);
   }
 
 
   MeshHandle TestUIMeshManager::CreateMesh(const std::shared_ptr<SpriteFont>& sprite)
   {
-    auto record = Record(sprite, SpriteFontConfig(), "");
-    auto handle = m_entries.Add(record);
+    const auto record = Record(sprite, SpriteFontConfig(), "");
+    const auto handle = m_entries.Add(record);
     return MeshHandle(handle);
   }
 
@@ -104,7 +104,7 @@ namespace Fsl::UI
     auto record = Record(sprite, SpriteFontConfig(), "");
     record.VertexCapacity = vertexCapacity;
     record.IndexCapacity = indexCapacity;
-    auto handle = m_entries.Add(record);
+    const auto handle = m_entries.Add(record);
     return MeshHandle(handle);
   }
 
@@ -125,7 +125,7 @@ namespace Fsl::UI
     entry.Sprite = sprite;
 
     m_entries.Remove(hMesh.Value);
-    auto newHandle = m_entries.Add(entry);
+    const auto newHandle = m_entries.Add(entry);
     return MeshHandle(newHandle);
   }
 
@@ -140,7 +140,7 @@ namespace Fsl::UI
     entry.Sprite = sprite;
 
     m_entries.Remove(hMesh.Value);
-    auto newHandle = m_entries.Add(entry);
+    const auto newHandle = m_entries.Add(entry);
     return MeshHandle(newHandle);
   }
 
@@ -156,7 +156,7 @@ namespace Fsl::UI
     entry.Sprite = sprite;
 
     m_entries.Remove(hMesh.Value);
-    auto newHandle = m_entries.Add(entry);
+    const auto newHandle = m_entries.Add(entry);
     return MeshHandle(newHandle);
   }
 
@@ -170,7 +170,7 @@ namespace Fsl::UI
     }
     entry.Text = text;
     // For testing purposes we just allocate a new mesh handle
-    auto newHandle = m_entries.Add(entry);
+    const auto newHandle = m_entries.Add(entry);
     return MeshHandle(newHandle);
   }
 

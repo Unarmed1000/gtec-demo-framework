@@ -70,7 +70,7 @@ namespace Fsl
                     const std::shared_ptr<QuadBatch>& quadRenderer, const PxExtent2D& currentExtent);
       ~NativeBatch2D() override;
 
-      bool SYS_IsTextureCoordinateYFlipped() const final
+      [[nodiscard]] bool SYS_IsTextureCoordinateYFlipped() const final
       {
         return false;
       }
@@ -109,7 +109,7 @@ namespace Fsl
         Batch2D::SetScreenExtent(extentPx);
       }
 
-      Batch2DStats GetStats() const final
+      [[nodiscard]] Batch2DStats GetStats() const final
       {
         return Batch2D::GetStats();
       }

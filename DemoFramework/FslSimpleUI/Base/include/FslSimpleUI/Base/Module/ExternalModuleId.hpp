@@ -56,7 +56,7 @@ namespace Fsl::UI
       return !(*this == rhs);
     }
 
-    constexpr bool IsValid() const noexcept
+    [[nodiscard]] constexpr bool IsValid() const noexcept
     {
       return Value != 0u;
     }

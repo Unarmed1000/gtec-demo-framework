@@ -63,7 +63,7 @@ namespace Fsl
 
     std::shared_ptr<IVulkanNativeWindowAdapter> adapterEx;
     {
-      std::shared_ptr<IPlatformNativeWindowAdapter> adapter =
+      const std::shared_ptr<IPlatformNativeWindowAdapter> adapter =
         m_pCachedAdapter->CreateNativeWindow(nativeWindowSetup, pPlatformCustomWindowAllocationParams);
 
       adapterEx = std::dynamic_pointer_cast<IVulkanNativeWindowAdapter>(adapter);
@@ -111,7 +111,7 @@ namespace Fsl
       throw ObjectShutdownException("CreateVulkanNativeWindow");
     }
 
-    std::shared_ptr<IVulkanNativeWindowAdapter> adapter = m_pCachedAdapter->CreateVulkanNativeWindow(nativeWindowSetup, nativeVulkanSetup);
+    const std::shared_ptr<IVulkanNativeWindowAdapter> adapter = m_pCachedAdapter->CreateVulkanNativeWindow(nativeWindowSetup, nativeVulkanSetup);
     return std::make_shared<VulkanNativeWindow>(adapter);
   }
 }

@@ -49,7 +49,7 @@ namespace Fsl
     const auto messageTypeInfo = std::type_index(typeid(*pMessage));
 
     // Try to locate a handler for the message type
-    auto itrFind = m_lookup.find(messageTypeInfo);
+    const auto itrFind = m_lookup.find(messageTypeInfo);
     if (itrFind == m_lookup.end())
     {
       return false;

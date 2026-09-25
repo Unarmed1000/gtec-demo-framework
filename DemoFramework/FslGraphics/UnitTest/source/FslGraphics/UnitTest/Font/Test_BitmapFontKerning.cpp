@@ -42,7 +42,7 @@ namespace
 
 TEST(TestFont_BitmapFontKerning, Construct_Default)
 {
-  BitmapFontKerning value;
+  const BitmapFontKerning value;
   EXPECT_EQ(0u, value.First);
   EXPECT_EQ(0u, value.Second);
   EXPECT_EQ(PxValue(0), value.AmountPx);
@@ -51,7 +51,7 @@ TEST(TestFont_BitmapFontKerning, Construct_Default)
 
 TEST(TestFont_BitmapFontKerning, Construct)
 {
-  BitmapFontKerning value(1u, 2u, PxValue(-1));
+  const BitmapFontKerning value(1u, 2u, PxValue(-1));
   EXPECT_EQ(1u, value.First);
   EXPECT_EQ(2u, value.Second);
   EXPECT_EQ(PxValue::Create(-1), value.AmountPx);

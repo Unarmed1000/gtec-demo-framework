@@ -80,22 +80,22 @@ namespace Fsl::UI
 
 
     //! @brief Check if the slider is being dragged or not
-    constexpr bool IsDragging() const noexcept
+    [[nodiscard]] constexpr bool IsDragging() const noexcept
     {
       return m_dragInfo.State == DragState::Dragging;
     }
 
-    constexpr bool IsEnabled() const noexcept
+    [[nodiscard]] constexpr bool IsEnabled() const noexcept
     {
       return m_isEnabled;
     }
 
-    constexpr PxRectangle GetAreaRectangle() const noexcept
+    [[nodiscard]] constexpr PxRectangle GetAreaRectangle() const noexcept
     {
       return !IsDragging() ? m_areaPx : CalculateDragRectangle(m_dragInfo, m_clampAreaPx, m_areaPx);
     }
 
-    constexpr const PxRectangle& GetClampAreaRectangle() const noexcept
+    [[nodiscard]] constexpr const PxRectangle& GetClampAreaRectangle() const noexcept
     {
       return m_clampAreaPx;
     }

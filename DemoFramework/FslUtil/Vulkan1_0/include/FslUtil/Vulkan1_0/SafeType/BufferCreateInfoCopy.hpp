@@ -59,7 +59,7 @@ namespace Fsl::Vulkan
     void Reset();
     void Reset(const VkBufferCreateInfo& value);
 
-    const VkBufferCreateInfo& Get() const
+    [[nodiscard]] const VkBufferCreateInfo& Get() const
     {
       return m_value;
     }

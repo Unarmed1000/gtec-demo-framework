@@ -59,7 +59,7 @@ namespace
 
 TEST(TestBitmap_BitmapMemory, Construct_Default)
 {
-  BitmapMemory bitmap;
+  const BitmapMemory bitmap;
 }
 
 TEST(TestBitmap_BitmapMemory, ConstructFromReadOnlySpan_Size)
@@ -78,7 +78,7 @@ TEST(TestBitmap_BitmapMemory, ConstructFromReadOnlySpan_Size)
   EXPECT_EQ(result.GetBytesPerPixel(), PixelFormatUtil::GetBytesPerPixel(SrcPixelFormat));
   EXPECT_EQ(result.Stride(), PixelFormatUtil::CalcMinimumStride(Size.Width(), PixelFormatUtil::GetBytesPerPixel(SrcPixelFormat)));
 
-  std::vector<uint8_t> resultVector = result.Release();
+  const std::vector<uint8_t> resultVector = result.Release();
 
   // Since the content is stored with the minimum stride we can just use a span to access the content
 

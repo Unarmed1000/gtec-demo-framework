@@ -117,13 +117,13 @@ namespace Fsl::Vulkan
     void Reset() noexcept;
     void Reset(const VkDevice device, const VkDescriptorSetLayout descriptorSetLayout);
 
-    bool IsValid() const
+    [[nodiscard]] bool IsValid() const
     {
       return m_device != VK_NULL_HANDLE;
     }
 
 
-    VkDescriptorSetLayout GetLayout() const
+    [[nodiscard]] VkDescriptorSetLayout GetLayout() const
     {
       return m_descriptorSetLayoutTexture;
     }
@@ -133,12 +133,12 @@ namespace Fsl::Vulkan
     //! @brief Get the next free
     VkDescriptorSet NextFree();
 
-    uint32_t GetActiveCount() const
+    [[nodiscard]] uint32_t GetActiveCount() const
     {
       return m_activeCount;
     }
 
-    const VkDescriptorSet* GetActivePointer() const
+    [[nodiscard]] const VkDescriptorSet* GetActivePointer() const
     {
       return m_activeSets.data();
     }

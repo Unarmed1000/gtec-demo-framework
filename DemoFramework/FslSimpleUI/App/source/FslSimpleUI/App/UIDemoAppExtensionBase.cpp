@@ -66,10 +66,10 @@ namespace Fsl
                                                             const UIDemoAppExtensionCreateInfo& createInfo,
                                                             const SpriteMaterialInfo& defaultMaterialInfo)
     {
-      UI::RenderSystemCreateInfo renderSystemCreateInfo(Convert(createInfo.WindowMetrics), graphicsService.GetBasicRenderSystem(),
-                                                        defaultMaterialInfo, createInfo.RenderCreateInfo.MaterialConfig.AllowDepthBuffer,
-                                                        createInfo.RenderCreateInfo.Capacity.InitalVertexCapacity,
-                                                        createInfo.RenderCreateInfo.Capacity.InitalIndexCapacity);
+      const UI::RenderSystemCreateInfo renderSystemCreateInfo(Convert(createInfo.WindowMetrics), graphicsService.GetBasicRenderSystem(),
+                                                              defaultMaterialInfo, createInfo.RenderCreateInfo.MaterialConfig.AllowDepthBuffer,
+                                                              createInfo.RenderCreateInfo.Capacity.InitalVertexCapacity,
+                                                              createInfo.RenderCreateInfo.Capacity.InitalIndexCapacity);
       return factory.Create(renderSystemCreateInfo);
     }
 
@@ -77,10 +77,11 @@ namespace Fsl
     std::unique_ptr<UI::ActivitySystem> CreateActivityManager(const std::shared_ptr<DataBinding::DataBindingService>& dataBindingService,
                                                               const UIDemoAppExtensionCreateInfo& createInfo)
     {
-      UI::RenderIMBatch::RenderSystemFactory defaultFactory(UI::RenderIMBatch::RenderSystemFactory::RenderSystemType::Flex);
+      const UI::RenderIMBatch::RenderSystemFactory defaultFactory(UI::RenderIMBatch::RenderSystemFactory::RenderSystemType::Flex);
 
-      const UI::IRenderSystemFactory& factory = createInfo.pRenderSystemFactory != nullptr ? *createInfo.pRenderSystemFactory : defaultFactory;
-      auto graphicsService = createInfo.DemoServiceProvider.Get<IGraphicsService>();
+      const UI::IRenderSystemFactory& factory =
+        createInfo.pRenderSystemFactory != nullptr ? *createInfo.pRenderSystemFactory : static_cast<const UI::IRenderSystemFactory&>(defaultFactory);
+      const auto graphicsService = createInfo.DemoServiceProvider.Get<IGraphicsService>();
 
       return std::make_unique<UI::ActivitySystem>(
         dataBindingService,
@@ -112,7 +113,7 @@ namespace Fsl
   {
     if (m_mainWindow)
     {
-      auto windowManager = GetWindowManager();
+      const auto windowManager = GetWindowManager();
       windowManager->ScheduleClose(m_mainWindow);
       m_mainWindow.reset();
     }
@@ -248,7 +249,7 @@ namespace Fsl
   {
     if (mainWindow != m_mainWindow)
     {
-      auto windowManager = GetWindowManager();
+      const auto windowManager = GetWindowManager();
       // Schedule a close of the old window
       if (m_mainWindow)
       {

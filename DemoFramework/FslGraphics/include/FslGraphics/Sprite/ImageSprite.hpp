@@ -54,38 +54,38 @@ namespace Fsl
                     const StringViewLite& debugName, const uint32_t densityDpi);
 
 
-    PxSize2D GetRenderSizePx() const noexcept final
+    [[nodiscard]] PxSize2D GetRenderSizePx() const noexcept final
     {
       return m_info.RenderInfo.ScaledSizePx;
     }
 
-    RenderImageInfo GetImageRenderInfo() const noexcept final
+    [[nodiscard]] RenderImageInfo GetImageRenderInfo() const noexcept final
     {
       return GetRenderInfo();
     }
 
 
-    const ImageSpriteInfo& GetInfo() const noexcept
+    [[nodiscard]] const ImageSpriteInfo& GetInfo() const noexcept
     {
       return m_info;
     }
 
-    const CoreImageInfo& GetImageInfo() const noexcept
+    [[nodiscard]] const CoreImageInfo& GetImageInfo() const noexcept
     {
       return m_info.ImageInfo;
     }
 
-    const RenderImageInfo& GetRenderInfo() const noexcept
+    [[nodiscard]] const RenderImageInfo& GetRenderInfo() const noexcept
     {
       return m_info.RenderInfo;
     }
 
-    uint32_t GetMaterialCount() const noexcept final
+    [[nodiscard]] uint32_t GetMaterialCount() const noexcept final
     {
       return 1u;
     }
 
-    const SpriteMaterialInfo& GetMaterialInfo(const uint32_t index) const final;
+    [[nodiscard]] const SpriteMaterialInfo& GetMaterialInfo(const uint32_t index) const final;
 
     void Resize(const uint32_t densityDpi) final;
 

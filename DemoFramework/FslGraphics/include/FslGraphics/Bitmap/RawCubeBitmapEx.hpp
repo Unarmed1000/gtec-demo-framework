@@ -51,72 +51,72 @@ namespace Fsl
     RawCubeBitmapEx(const RawBitmapEx& bitmapPosX, const RawBitmapEx& bitmapNegX, const RawBitmapEx& bitmapPosY, const RawBitmapEx& bitmapNegY,
                     const RawBitmapEx& bitmapPosZ, const RawBitmapEx& bitmapNegZ);
 
-    constexpr bool IsValid() const
+    [[nodiscard]] constexpr bool IsValid() const
     {
       return m_bitmapPosX.IsValid();
     }
 
     //! The width of the bitmap in pixels
-    constexpr uint32_t Width() const
+    [[nodiscard]] constexpr uint32_t Width() const
     {
       return m_bitmapPosX.RawUnsignedWidth();
     }
 
     //! The height of the bitmap in pixels
-    constexpr uint32_t Height() const
+    [[nodiscard]] constexpr uint32_t Height() const
     {
       return m_bitmapPosX.RawUnsignedHeight();
     }
 
     //! @brief Get the extent
-    constexpr PxExtent2D GetExtent() const
+    [[nodiscard]] constexpr PxExtent2D GetExtent() const
     {
       return m_bitmapPosX.GetExtent();
     }
 
     //! Get the pixel format of the raw bitmap
-    constexpr PixelFormat GetPixelFormat() const
+    [[nodiscard]] constexpr PixelFormat GetPixelFormat() const
     {
       return m_bitmapPosX.GetPixelFormat();
     }
 
     //! Get the origin all the raw bitmaps
-    constexpr BitmapOrigin GetOrigin() const
+    [[nodiscard]] constexpr BitmapOrigin GetOrigin() const
     {
       return m_bitmapPosX.GetOrigin();
     }
 
-    constexpr RawBitmapEx GetPosX() const
+    [[nodiscard]] constexpr RawBitmapEx GetPosX() const
     {
       return m_bitmapPosX;
     }
 
-    constexpr RawBitmapEx GetNegX() const
+    [[nodiscard]] constexpr RawBitmapEx GetNegX() const
     {
       return m_bitmapNegX;
     }
 
-    constexpr RawBitmapEx GetPosY() const
+    [[nodiscard]] constexpr RawBitmapEx GetPosY() const
     {
       return m_bitmapPosY;
     }
 
-    constexpr RawBitmapEx GetNegY() const
+    [[nodiscard]] constexpr RawBitmapEx GetNegY() const
     {
       return m_bitmapNegY;
     }
 
-    constexpr RawBitmapEx GetPosZ() const
+    [[nodiscard]] constexpr RawBitmapEx GetPosZ() const
     {
       return m_bitmapPosZ;
     }
 
-    constexpr RawBitmapEx GetNegZ() const
+    [[nodiscard]] constexpr RawBitmapEx GetNegZ() const
     {
       return m_bitmapNegZ;
     }
 
-    constexpr uint32_t GetByteSize() const
+    [[nodiscard]] constexpr uint32_t GetByteSize() const
     {
       return m_bitmapPosX.GetByteSize() + m_bitmapNegX.GetByteSize() + m_bitmapPosY.GetByteSize() + m_bitmapNegY.GetByteSize() +
              m_bitmapPosZ.GetByteSize() + m_bitmapNegZ.GetByteSize();

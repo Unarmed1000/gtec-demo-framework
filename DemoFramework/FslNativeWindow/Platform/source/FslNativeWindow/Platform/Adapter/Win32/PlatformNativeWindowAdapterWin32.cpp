@@ -437,20 +437,20 @@ namespace Fsl
     }
 
 
-    std::weak_ptr<INativeWindowEventQueue> GetEventQueue() const
+    [[nodiscard]] std::weak_ptr<INativeWindowEventQueue> GetEventQueue() const
     {
       return m_eventQueue;
     }
 
     std::shared_ptr<PlatformNativeWindowAdapterWin32> TryGetWindow(HWND hWnd) const
     {
-      auto compareFunc = [hWnd](const WindowRecord& val)
+      const auto compareFunc = [hWnd](const WindowRecord& val)
       {
-        auto window = val.Window.lock();
+        const auto window = val.Window.lock();
         return (window && window->GetPlatformWindow() == hWnd);
       };
 
-      auto itr = std::find_if(m_activeWindows.begin(), m_activeWindows.end(), compareFunc);
+      const auto itr = std::find_if(m_activeWindows.begin(), m_activeWindows.end(), compareFunc);
       return (itr != m_activeWindows.end() ? itr->Window.lock() : std::shared_ptr<PlatformNativeWindowAdapterWin32>());
     }
 
@@ -489,7 +489,7 @@ namespace Fsl
         m_mouseButtonState &= ~static_cast<uint32_t>(button);
       }
 
-      auto window = TryGetWindow(hWnd);
+      const auto window = TryGetWindow(hWnd);
       if (window)
       {
         window->SYS_SetMouseCapture(m_mouseButtonState != 0);
@@ -504,7 +504,7 @@ namespace Fsl
       FSL_PARAM_NOT_USED(wParam);
       const auto position = PxPoint2::Create(GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
 
-      auto window = TryGetWindow(hWnd);
+      const auto window = TryGetWindow(hWnd);
       if (window)
       {
         window->OnMouseMove(eventQueue, timestamp, position);
@@ -548,7 +548,7 @@ namespace Fsl
         return;
       }
 
-      auto window = TryGetWindow(hWnd);
+      const auto window = TryGetWindow(hWnd);
       if (window)
       {
         window->OnRawInput(eventQueue, timestamp, lParam);
@@ -609,7 +609,7 @@ namespace Fsl
 
     void OnMove(HWND hWnd)
     {
-      auto window = TryGetWindow(hWnd);
+      const auto window = TryGetWindow(hWnd);
       if (window)
       {
         window->OnWindowMoved();
@@ -618,7 +618,7 @@ namespace Fsl
 
     void OnDisplayChange(HWND hWnd)
     {
-      auto window = TryGetWindow(hWnd);
+      const auto window = TryGetWindow(hWnd);
       if (window)
       {
         window->OnDisplayChanged();
@@ -632,7 +632,7 @@ namespace Fsl
       const auto newDpiX = LOWORD(wParam);
       const auto newDpiY = HIWORD(wParam);
       // for now we just spy on this info
-      auto window = TryGetWindow(hWnd);
+      const auto window = TryGetWindow(hWnd);
       if (window)
       {
         window->OnDPIChanged(timestamp, Point2(newDpiX, newDpiY));
@@ -655,7 +655,7 @@ namespace Fsl
     {
       FSL_PARAM_NOT_USED(timestamp);
       FSL_PARAM_NOT_USED(wParam);
-      auto window = TryGetWindow(hWnd);
+      const auto window = TryGetWindow(hWnd);
       if (window)
       {
         window->OnWindowCaptureChanged(reinterpret_cast<HWND>(lParam));
@@ -670,7 +670,7 @@ namespace Fsl
 
     LRESULT CALLBACK WndProc(HWND hWnd, UINT uiMsg, WPARAM wParam, LPARAM lParam)
     {
-      auto windowSystemState = g_windowSystemState.lock();
+      const auto windowSystemState = g_windowSystemState.lock();
 
 
       if (uiMsg == WM_CLOSE)
@@ -680,7 +680,7 @@ namespace Fsl
       }
       if (windowSystemState)
       {
-        auto eventQueue = windowSystemState->GetEventQueue().lock();
+        const auto eventQueue = windowSystemState->GetEventQueue().lock();
         if (eventQueue)
         {
           const MillisecondTickCount32 timestamp = MillisecondTickCount32::FromMilliseconds(GetMessageTime());
@@ -740,8 +740,8 @@ namespace Fsl
     {
       if (IsWindow(hwnd) != 0)
       {
-        auto dwStyle = static_cast<DWORD>(GetWindowLongPtr(hwnd, GWL_STYLE));
-        auto dwExStyle = static_cast<DWORD>(GetWindowLongPtr(hwnd, GWL_EXSTYLE));
+        const auto dwStyle = static_cast<DWORD>(GetWindowLongPtr(hwnd, GWL_STYLE));
+        const auto dwExStyle = static_cast<DWORD>(GetWindowLongPtr(hwnd, GWL_EXSTYLE));
         HMENU menu = GetMenu(hwnd);
 
         RECT rc = {0, 0, clientWidth, clientHeight};
@@ -849,11 +849,11 @@ namespace Fsl
     }
 
     // Create the singleton state object
-    auto windowSystemState = std::make_shared<PlatformNativeWindowSystemWin32State>(setup.GetEventQueue());
+    const auto windowSystemState = std::make_shared<PlatformNativeWindowSystemWin32State>(setup.GetEventQueue());
     m_windowSystemState = windowSystemState;
     g_windowSystemState = windowSystemState;
 
-    auto eventQueue = m_eventQueue.lock();
+    const auto eventQueue = m_eventQueue.lock();
     if (eventQueue)
     {
       const NativeWindowEvent event = NativeWindowEventHelper::EncodeGamepadConfiguration(static_cast<uint32_t>(m_gamepadState->size()));
@@ -871,7 +871,7 @@ namespace Fsl
   std::shared_ptr<IPlatformNativeWindowAdapter> PlatformNativeWindowSystemAdapterWin32::CreateNativeWindow(
     const NativeWindowSetup& nativeWindowSetup, const PlatformNativeWindowAllocationParams* const pPlatformCustomWindowAllocationParams)
   {
-    auto newBaseWindow =
+    const auto newBaseWindow =
       m_allocationFunction(nativeWindowSetup, PlatformNativeWindowParams(m_platformDisplay, m_dpiHelper), pPlatformCustomWindowAllocationParams);
     auto newWindow = std::dynamic_pointer_cast<PlatformNativeWindowAdapterWin32>(newBaseWindow);
     if (newWindow == nullptr)
@@ -911,7 +911,7 @@ namespace Fsl
 
   void PlatformNativeWindowSystemAdapterWin32::ScanGamepads()
   {
-    auto eventQueue = m_eventQueue.lock();
+    const auto eventQueue = m_eventQueue.lock();
     if (!eventQueue)
     {
       return;
@@ -938,7 +938,7 @@ namespace Fsl
         state = XINPUT_STATE{};
       }
 
-      auto oldState = rGamepadState[deviceIndex];
+      const auto oldState = rGamepadState[deviceIndex];
       const auto newState = PlatformGamepadStateWin32(deviceIndex, isConnected, state);
       rGamepadState[deviceIndex] = newState;
 
@@ -1105,7 +1105,7 @@ namespace Fsl
     m_mouseHideCursorEnabled = enableCapture;
     VERBOSE_LOG("* CaptureMouse: " << enableCapture);
 
-    auto windowSystemState = g_windowSystemState.lock();
+    const auto windowSystemState = g_windowSystemState.lock();
     if (windowSystemState)
     {
       windowSystemState->SetUseForceActivated(enableCapture ? false : LocalConfig::UseForceActivated);
@@ -1130,7 +1130,7 @@ namespace Fsl
 
     m_cachedDPIValue = value;
 
-    auto eventQueue = TryGetEventQueue();
+    const auto eventQueue = TryGetEventQueue();
     if (eventQueue)
     {
       // For now we do not provide a timestamp for this event type
@@ -1408,7 +1408,7 @@ namespace Fsl
     m_cachedDisplayInfo = newDisplayInfo;
     FSLLOG3_VERBOSE2("PlatformNativeWindowAdapterWin32: Display refresh rate changed to {}Hz", m_cachedDisplayInfo.RefreshRateHz());
 
-    auto eventQueue = TryGetEventQueue();
+    const auto eventQueue = TryGetEventQueue();
     if (eventQueue)
     {
       eventQueue->PostEvent(NativeWindowEventHelper::EncodeWindowConfigChanged());

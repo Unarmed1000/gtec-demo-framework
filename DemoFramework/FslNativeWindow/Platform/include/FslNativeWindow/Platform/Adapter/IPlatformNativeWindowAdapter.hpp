@@ -49,14 +49,14 @@ namespace Fsl
 
     //! @brief Get information about what capabilities this native window implementation supports.
     //! @note  The returned capabilities for a specific implementation will always be the same (so it does not change between calls).
-    virtual NativeWindowCapabilityFlags GetCapabilityFlags() const = 0;
+    [[nodiscard]] virtual NativeWindowCapabilityFlags GetCapabilityFlags() const = 0;
 
     //! @brief Get window metrics
-    virtual NativeWindowMetrics GetWindowMetrics() const = 0;
+    [[nodiscard]] virtual NativeWindowMetrics GetWindowMetrics() const = 0;
 
     //! @brief Get information about the display the window is presented on.
     //! @return the display info, members that are unknown are left at their default value (IsDefault() is true if nothing is known).
-    virtual NativeWindowDisplayInfo TryGetDisplayInfo() const = 0;
+    [[nodiscard]] virtual NativeWindowDisplayInfo TryGetDisplayInfo() const = 0;
 
     //! @brief Get the windows native DPI.
     //! @return true if the DPI could be retrieved, else false

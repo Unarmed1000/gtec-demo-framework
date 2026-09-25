@@ -254,7 +254,7 @@ namespace Fsl::UI
         {
           ReadOnlySpan<ChartDataEntry> dataSpan = pData->SegmentDataAsReadOnlySpan(segmentIndex - 1);
           {
-            auto spanAreaToDrawEntries = std::min(UncheckedNumericCast<std::size_t>(entriesLeft), dataSpan.size());
+            const auto spanAreaToDrawEntries = std::min(UncheckedNumericCast<std::size_t>(entriesLeft), dataSpan.size());
             lastSegmentOffset = dataSpan.size() - spanAreaToDrawEntries;
             dataSpan = dataSpan.subspan(lastSegmentOffset, spanAreaToDrawEntries);
           }
@@ -284,7 +284,7 @@ namespace Fsl::UI
           {
             --lastSegmentOffset;
           }
-          ReadOnlySpan<ChartDataEntry> dataSpan = pData->SegmentDataAsReadOnlySpan(segmentIndex).subspan(lastSegmentOffset, 1);
+          const ReadOnlySpan<ChartDataEntry> dataSpan = pData->SegmentDataAsReadOnlySpan(segmentIndex).subspan(lastSegmentOffset, 1);
           if (!dataSpan.empty())
           {
             DrawGraphSegmentNow(rBuilder, dstPositionPxf, PxValue(0), maxYPx, dataInfo.ChannelCount, dataSpan[0], chart.DataRenderScale,
@@ -530,7 +530,7 @@ namespace Fsl::UI
   {
     FSL_PARAM_NOT_USED(info);
 
-    auto context = GetContext();
+    const auto context = GetContext();
 
     m_chartWindowDrawData->Canvas.OnResolutionChanged(context->UnitConverter);
 
@@ -541,12 +541,12 @@ namespace Fsl::UI
 
   void AreaChart::WinPostLayout()
   {
-    PxSize2D renderSizePx = RenderSizePx();
+    const PxSize2D renderSizePx = RenderSizePx();
     // const uint32_t dataIOnfo = 1;
     const int32_t maxEntries = renderSizePx.RawWidth() / m_gridLineManager.GetChartEntryWidth().RawValue() +
                                ((renderSizePx.RawWidth() % m_gridLineManager.GetChartEntryWidth().RawValue()) > 0 ? 1 : 0);
 
-    auto dataView = m_gridLineManager.GetDataView();
+    const auto dataView = m_gridLineManager.GetDataView();
     const uint32_t maxStackedEntries = dataView ? dataView->DataInfo().ChannelCount : 1;
 
     const auto maxPixelsX = UncheckedNumericCast<uint32_t>(maxEntries);
@@ -608,9 +608,9 @@ namespace Fsl::UI
   DataBinding::DataBindingInstanceHandle AreaChart::TryGetPropertyHandleNow(const DataBinding::DependencyPropertyDefinition& sourceDef)
   {
     using namespace DataBinding;
-    auto res = DependencyObjectHelper::TryGetPropertyHandle(this, ThisDependencyObject(), sourceDef,
-                                                            PropLinkRefs(PropertyMatchDataViewEntries, m_propertyMatchDataViewEntries),
-                                                            PropLinkRefs(PropertyDataView, m_propertyDataView));
+    const auto res = DependencyObjectHelper::TryGetPropertyHandle(this, ThisDependencyObject(), sourceDef,
+                                                                  PropLinkRefs(PropertyMatchDataViewEntries, m_propertyMatchDataViewEntries),
+                                                                  PropLinkRefs(PropertyDataView, m_propertyDataView));
     return res.IsValid() ? res : base_type::TryGetPropertyHandleNow(sourceDef);
   }
 
@@ -619,9 +619,9 @@ namespace Fsl::UI
                                                                     const DataBinding::Binding& binding)
   {
     using namespace DataBinding;
-    auto res = DependencyObjectHelper::TrySetBinding(this, ThisDependencyObject(), targetDef, binding,
-                                                     PropLinkRefs(PropertyMatchDataViewEntries, m_propertyMatchDataViewEntries),
-                                                     PropLinkRefs(PropertyDataView, m_propertyDataView));
+    const auto res = DependencyObjectHelper::TrySetBinding(this, ThisDependencyObject(), targetDef, binding,
+                                                           PropLinkRefs(PropertyMatchDataViewEntries, m_propertyMatchDataViewEntries),
+                                                           PropLinkRefs(PropertyDataView, m_propertyDataView));
     return res != PropertySetBindingResult::NotFound ? res : base_type::TrySetBindingNow(targetDef, binding);
   }
 
@@ -679,13 +679,13 @@ namespace Fsl::UI
         const auto channelCount = pDataViewElement->ChannelCount();
         for (uint32_t i = 0; i < channelCount; ++i)
         {
-          auto metaData = pDataViewElement->GetChannelMetaDataInfo(i);
+          const auto metaData = pDataViewElement->GetChannelMetaDataInfo(i);
           rDrawData.SetEntryColor(i, colorConverter.Convert(metaData.PrimaryColor));
         }
       }
 
       {    // Extract axis range
-        auto dataStats = pDataViewElement->CalculateDataStats();
+        const auto dataStats = pDataViewElement->CalculateDataStats();
         requireRelayout = rDrawData.Canvas.SetAxisRange(dataStats.ValueMinMax);
       }
 

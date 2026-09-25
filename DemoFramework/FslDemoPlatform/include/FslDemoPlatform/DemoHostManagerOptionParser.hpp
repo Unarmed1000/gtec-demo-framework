@@ -68,17 +68,17 @@ namespace Fsl
     DemoHostManagerOptionParser(const ColorSpaceType colorSpaceType, const bool hdrEnabled);
 
 
-    ColorSpaceType GetColorSpaceType() const noexcept
+    [[nodiscard]] ColorSpaceType GetColorSpaceType() const noexcept
     {
       return m_colorSpaceType;
     }
 
-    bool IsHdrEnabled() const noexcept
+    [[nodiscard]] bool IsHdrEnabled() const noexcept
     {
       return m_hdrEnabled;
     }
 
-    std::string GetName() const override
+    [[nodiscard]] std::string GetName() const override
     {
       return {"DemoHostManagerOptionParser"};
     }
@@ -88,44 +88,44 @@ namespace Fsl
     bool ParsingComplete() override;
 
     //! Returns a negative value if we should render a unlimited amount of frames.
-    int32_t GetExitAfterFrame() const;
+    [[nodiscard]] int32_t GetExitAfterFrame() const;
 
     //! Return the current duration exit config
-    DurationExitConfig GetDurationExitConfig() const
+    [[nodiscard]] DurationExitConfig GetDurationExitConfig() const
     {
       return m_exitAfterDuration;
     }
 
     //! Returns zero if forced timing is disabled
-    TimeSpan GetForceUpdateTime() const noexcept;
+    [[nodiscard]] TimeSpan GetForceUpdateTime() const noexcept;
 
     //! Get the screenshot config
-    TestScreenshotConfig GetScreenshotConfig() const;
+    [[nodiscard]] TestScreenshotConfig GetScreenshotConfig() const;
 
     //! @brief Get the current log stats mode
-    LogStatsMode GetLogStatsMode() const;
+    [[nodiscard]] LogStatsMode GetLogStatsMode() const;
 
     //! Check if stat is enabled
-    bool IsStatsEnabled() const
+    [[nodiscard]] bool IsStatsEnabled() const
     {
       return m_stats;
     }
 
-    DemoAppStatsFlags GetAppStatsFlags() const
+    [[nodiscard]] DemoAppStatsFlags GetAppStatsFlags() const
     {
       return m_statFlags;
     }
 
     //! Check if the app firewall should be enabled by default
-    bool IsAppFirewallEnabled() const
+    [[nodiscard]] bool IsAppFirewallEnabled() const
     {
       return m_appFirewall;
     }
 
     //! Check if basic2d preallocate is enabled
-    bool IsBasic2DPreallocEnabled() const;
+    [[nodiscard]] bool IsBasic2DPreallocEnabled() const;
     //! Check if content monitoring is enabled
-    bool IsContentMonitorEnabled() const;
+    [[nodiscard]] bool IsContentMonitorEnabled() const;
 
     void RequestEnableAppFirewall();
 

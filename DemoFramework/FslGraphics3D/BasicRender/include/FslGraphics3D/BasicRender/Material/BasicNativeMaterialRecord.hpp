@@ -49,7 +49,7 @@ namespace Fsl::Graphics3D
     {
     }
 
-    constexpr bool IsValid() const
+    [[nodiscard]] constexpr bool IsValid() const
     {
       return InternalHandle.IsValid() && NativeHandle.IsValid();
     }

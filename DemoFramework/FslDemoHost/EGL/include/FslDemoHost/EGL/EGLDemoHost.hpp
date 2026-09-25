@@ -107,18 +107,18 @@ namespace Fsl
     void OnDeactivate() override;
     void OnSuspend() override;
     void OnResume() override;
-    DemoHostFeature GetActiveAPI() const override;
-    DemoWindowMetrics GetWindowMetrics() const override;
+    [[nodiscard]] DemoHostFeature GetActiveAPI() const override;
+    [[nodiscard]] DemoWindowMetrics GetWindowMetrics() const override;
     SwapBuffersResult TrySwapBuffers() override;
     bool ProcessNativeMessages(const bool allowBlock) override;
 
   protected:
-    bool IsLogExtensionsEnabled() const
+    [[nodiscard]] bool IsLogExtensionsEnabled() const
     {
       return m_logExtensions;
     }
 
-    const std::deque<ExtensionRequestRecord>& GetExtensionRequests() const
+    [[nodiscard]] const std::deque<ExtensionRequestRecord>& GetExtensionRequests() const
     {
       return m_extensionRequests;
     }

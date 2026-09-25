@@ -99,14 +99,14 @@ namespace Fsl
     m_profilerServiceControl = m_demoAppConfig.DemoServiceProvider.Get<IProfilerServiceControl>();
     m_profilerService = m_demoAppConfig.DemoServiceProvider.Get<IProfilerService>();
     m_cpuStatsService = m_demoAppConfig.DemoServiceProvider.TryGet<ICpuStatsService>();
-    auto appInfo = m_demoAppConfig.DemoServiceProvider.Get<IAppInfoControlService>();
+    const auto appInfo = m_demoAppConfig.DemoServiceProvider.Get<IAppInfoControlService>();
     appInfo->SetAppName(StringViewLite(m_demoAppSetup.ApplicationName));
 
     m_demoAppControl->SetRenderLoopMaxFramesInFlight(m_demoAppSetup.CustomAppConfig.MaxFramesInFlight);
 
     if (enableContentMonitor)
     {
-      std::shared_ptr<IContentMonitor> contentMonitor = m_demoAppConfig.DemoServiceProvider.Get<IContentMonitor>();
+      const std::shared_ptr<IContentMonitor> contentMonitor = m_demoAppConfig.DemoServiceProvider.Get<IContentMonitor>();
       contentMonitor->Enable(true);
     }
 
@@ -237,9 +237,9 @@ namespace Fsl
 
   AppDrawResult DemoAppManager::TryDraw()
   {
-    FrameInfo frameInfo(m_record.FrameIndex, m_currentDemoTimeDraw);
+    const FrameInfo frameInfo(m_record.FrameIndex, m_currentDemoTimeDraw);
 
-    auto result = m_record.DemoApp->_TryPrepareDraw(frameInfo);
+    const auto result = m_record.DemoApp->_TryPrepareDraw(frameInfo);
     if (result != AppDrawResult::Completed)
     {
       return result;
@@ -302,9 +302,9 @@ namespace Fsl
     {
       return AppDrawResult::Completed;
     }
-    FrameInfo frameInfo(m_record.FrameIndex, m_currentDemoTimeDraw);
+    const FrameInfo frameInfo(m_record.FrameIndex, m_currentDemoTimeDraw);
 
-    AppDrawResult result = m_record.DemoApp->_TrySwapBuffers(frameInfo);
+    const AppDrawResult result = m_record.DemoApp->_TrySwapBuffers(frameInfo);
 
     if (result == AppDrawResult::Completed)
     {    // Increase the frame index
@@ -469,11 +469,11 @@ namespace Fsl
     // FIX: we need to ensure that at least one frame is currently visible, we need more info from the 'owner' as the present could have failed
     if (onDemandFrameInterval != m_onDemandRendering.LastOnDemandFrameInterval)
     {
-      double wait = 60.0 / onDemandFrameInterval;
-      double waitTime = wait > 0 ? 1000000.0 / wait : 1000000.0;
+      const double wait = 60.0 / onDemandFrameInterval;
+      const double waitTime = wait > 0 ? 1000000.0 / wait : 1000000.0;
 
       // Render the first frame after its been enabled
-      auto waitTimeInMicroseconds = NumericCast<uint64_t>(static_cast<int64_t>(std::round(waitTime)));
+      const auto waitTimeInMicroseconds = NumericCast<uint64_t>(static_cast<int64_t>(std::round(waitTime)));
       m_onDemandRendering = OnDemandRendering{onDemandFrameInterval, waitTimeInMicroseconds, 0};
       m_currentDemoTimeDraw = m_appTiming.GetUpdateTime();
       return DemoAppManagerProcessResult(DemoAppManagerProcessResult::Command::Draw);
@@ -512,7 +512,7 @@ namespace Fsl
   {
     assert(m_demoAppControl);
 
-    bool bExitRightAway = !bCheckExternalOnly && !m_record.DemoApp;
+    const bool bExitRightAway = !bCheckExternalOnly && !m_record.DemoApp;
 
     if (!m_hasExitRequest && m_demoAppControl->HasExitRequest())
     {
@@ -579,7 +579,7 @@ namespace Fsl
     // Apply any changes that might have occurred to the fixed update per seconds setting
     m_appTiming.SetFixedUpdatesPerSecond(m_demoAppControl->GetFixedUpdatesPerSecond());
 
-    auto currentTime = m_timer.GetTimestamp();
+    const auto currentTime = m_timer.GetTimestamp();
     m_appTiming.ResetTimer(currentTime);
     m_appTiming.AdvanceFixedTimeStep();
     m_onDemandRendering = {};

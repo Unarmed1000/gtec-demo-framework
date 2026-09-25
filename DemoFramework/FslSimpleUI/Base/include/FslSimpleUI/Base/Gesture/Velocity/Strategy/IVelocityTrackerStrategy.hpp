@@ -46,7 +46,7 @@ namespace Fsl::UI
     virtual void AddMovement(const MillisecondTickCount32 timestamp, const DpValueF positionDpf) = 0;
     virtual void ClearPointer() noexcept = 0;
     virtual bool TryGetVelocity(DpValueF& rVelocityDpf) const noexcept = 0;
-    virtual bool IsEmpty() const noexcept = 0;
+    [[nodiscard]] virtual bool IsEmpty() const noexcept = 0;
   };
 
 }

@@ -38,6 +38,7 @@
 #include <FslBase/Span/SpanUtil_Vector.hpp>
 #include <FslBase/UncheckedNumericCast.hpp>
 #include <map>
+#include <utility>
 #include <vector>
 
 namespace Fsl
@@ -88,12 +89,12 @@ namespace Fsl
       }
     }
 
-    int32_t GetCellCountX() const noexcept
+    [[nodiscard]] int32_t GetCellCountX() const noexcept
     {
       return UncheckedNumericCast<int32_t>(m_gridCellCountX);
     }
 
-    int32_t GetCellCountY() const noexcept
+    [[nodiscard]] int32_t GetCellCountY() const noexcept
     {
       return UncheckedNumericCast<int32_t>(m_gridCellCountY);
     }
@@ -104,17 +105,17 @@ namespace Fsl
       uint16_t End;
     };
 
-    constexpr Range ToXCell(const float left, const float right) const noexcept
+    [[nodiscard]] constexpr Range ToXCell(const float left, const float right) const noexcept
     {
-      int32_t startCellX = static_cast<int32_t>(left) >> m_shiftX;
-      int32_t endCellX = (static_cast<int32_t>(right + 1.0f) >> m_shiftX) + 1;
+      const int32_t startCellX = static_cast<int32_t>(left) >> m_shiftX;
+      const int32_t endCellX = (static_cast<int32_t>(right + 1.0f) >> m_shiftX) + 1;
       return {static_cast<uint16_t>(startCellX), static_cast<uint16_t>(endCellX)};
     }
 
-    constexpr Range ToYCell(const float top, const float bottom) const noexcept
+    [[nodiscard]] constexpr Range ToYCell(const float top, const float bottom) const noexcept
     {
-      int32_t startCellX = static_cast<int32_t>(top) >> m_shiftY;
-      int32_t endCellX = (static_cast<int32_t>(bottom + 1.0f) >> m_shiftY) + 1;
+      const int32_t startCellX = static_cast<int32_t>(top) >> m_shiftY;
+      const int32_t endCellX = (static_cast<int32_t>(bottom + 1.0f) >> m_shiftY) + 1;
       return {static_cast<uint16_t>(startCellX), static_cast<uint16_t>(endCellX)};
     }
 
@@ -125,13 +126,13 @@ namespace Fsl
       const int32_t startCellY = static_cast<int32_t>(rectangle.RawTop()) >> m_shiftY;
       const int32_t endCellY = (static_cast<int32_t>(rectangle.RawBottom() + 1.0f) >> m_shiftY) + 1;
 
-      const bool add = startCellX < m_gridCellCountX && endCellX > 0 && startCellY < m_gridCellCountY && endCellY > 0;
+      const bool add = std::cmp_less(startCellX, m_gridCellCountX) && endCellX > 0 && std::cmp_less(startCellY, m_gridCellCountY) && endCellY > 0;
       if (add)
       {
         const uint32_t startX = startCellX >= 0 ? static_cast<uint32_t>(startCellX) : 0;
         const uint32_t startY = startCellY >= 0 ? static_cast<uint32_t>(startCellY) : 0;
-        const uint32_t endX = endCellX <= m_gridCellCountX ? static_cast<uint32_t>(endCellX) : m_gridCellCountX;
-        const uint32_t endY = endCellY <= m_gridCellCountY ? static_cast<uint32_t>(endCellY) : m_gridCellCountY;
+        const uint32_t endX = std::cmp_less_equal(endCellX, m_gridCellCountX) ? static_cast<uint32_t>(endCellX) : m_gridCellCountX;
+        const uint32_t endY = std::cmp_less_equal(endCellY, m_gridCellCountY) ? static_cast<uint32_t>(endCellY) : m_gridCellCountY;
         assert(startX <= endX);
         assert(startY <= endY);
 
@@ -156,13 +157,13 @@ namespace Fsl
       const int32_t startCellY = static_cast<int32_t>(rectangle.RawTop()) >> m_shiftY;
       const int32_t endCellY = (static_cast<int32_t>(rectangle.RawBottom() + 1.0f) >> m_shiftY) + 1;
 
-      const bool add = startCellX < m_gridCellCountX && endCellX > 0 && startCellY < m_gridCellCountY && endCellY > 0;
+      const bool add = std::cmp_less(startCellX, m_gridCellCountX) && endCellX > 0 && std::cmp_less(startCellY, m_gridCellCountY) && endCellY > 0;
       if (add)
       {
         const uint32_t startX = startCellX >= 0 ? static_cast<uint32_t>(startCellX) : 0;
         const uint32_t startY = startCellY >= 0 ? static_cast<uint32_t>(startCellY) : 0;
-        const uint32_t endX = endCellX <= m_gridCellCountX ? static_cast<uint32_t>(endCellX) : m_gridCellCountX;
-        const uint32_t endY = endCellY <= m_gridCellCountY ? static_cast<uint32_t>(endCellY) : m_gridCellCountY;
+        const uint32_t endX = std::cmp_less_equal(endCellX, m_gridCellCountX) ? static_cast<uint32_t>(endCellX) : m_gridCellCountX;
+        const uint32_t endY = std::cmp_less_equal(endCellY, m_gridCellCountY) ? static_cast<uint32_t>(endCellY) : m_gridCellCountY;
         assert(startX <= endX);
         assert(startY <= endY);
 
@@ -191,7 +192,7 @@ namespace Fsl
     }
 
 
-    ReadOnlySpan<uint32_t> TryGetChunkEntries(const uint16_t chunkX, const uint16_t chunkY) const noexcept
+    [[nodiscard]] ReadOnlySpan<uint32_t> TryGetChunkEntries(const uint16_t chunkX, const uint16_t chunkY) const noexcept
     {
       const uint32_t hashId = (chunkX << 16) | chunkY;
       const auto itrFind = m_entries.find(hashId);
@@ -199,7 +200,7 @@ namespace Fsl
     }
 
 
-    ReadOnlySpan<uint32_t> UncheckedGetChunkEntries(const uint16_t chunkX, const uint16_t chunkY) const noexcept
+    [[nodiscard]] ReadOnlySpan<uint32_t> UncheckedGetChunkEntries(const uint16_t chunkX, const uint16_t chunkY) const noexcept
     {
       assert(chunkX < m_gridCellCountX);
       assert(chunkY < m_gridCellCountY);

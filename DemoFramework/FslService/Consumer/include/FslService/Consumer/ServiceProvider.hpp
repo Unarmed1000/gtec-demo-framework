@@ -50,11 +50,11 @@ namespace Fsl
 
     //! @brief Retrieve a service of the given type (if available)
     //! @return the service if its available or null if not
-    std::shared_ptr<IBasicService> TryGet(const ServiceId& serviceId) const;
+    [[nodiscard]] std::shared_ptr<IBasicService> TryGet(const ServiceId& serviceId) const;
 
     //! @brief Retrieve a service of the given type (if available)
     //! @return the service or throws a exception if its not
-    std::shared_ptr<IBasicService> Get(const ServiceId& serviceId) const;
+    [[nodiscard]] std::shared_ptr<IBasicService> Get(const ServiceId& serviceId) const;
 
     //! @brief Get all services that supports the given service id
     void Get(BasicServiceDeque& rServices, const ServiceId& serviceId) const;

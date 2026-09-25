@@ -107,7 +107,7 @@ namespace Fsl::Vulkan
     }
 
     // NOLINTNEXTLINE(readability-identifier-naming)
-    std::size_t size() const
+    [[nodiscard]] std::size_t size() const
     {
       return m_array.size();
     }

@@ -185,8 +185,8 @@ namespace Fsl::Vulkan
     const Bitmap::ScopedDirectReadAccess directAccessNegY(srcBitmapNegY);
     const Bitmap::ScopedDirectReadAccess directAccessPosZ(srcBitmapPosZ);
     const Bitmap::ScopedDirectReadAccess directAccessNegZ(srcBitmapNegZ);
-    RawCubeBitmap rawCubeBitmap(directAccessPosX.AsRawBitmap(), directAccessNegX.AsRawBitmap(), directAccessPosY.AsRawBitmap(),
-                                directAccessNegY.AsRawBitmap(), directAccessPosZ.AsRawBitmap(), directAccessNegZ.AsRawBitmap());
+    const RawCubeBitmap rawCubeBitmap(directAccessPosX.AsRawBitmap(), directAccessNegX.AsRawBitmap(), directAccessPosY.AsRawBitmap(),
+                                      directAccessNegY.AsRawBitmap(), directAccessPosZ.AsRawBitmap(), directAccessNegZ.AsRawBitmap());
     return CreateImage(rawCubeBitmap, name, imageUsageFlags);
   }
 
@@ -196,7 +196,7 @@ namespace Fsl::Vulkan
                                                     const ReadOnlyRawBitmap& srcBitmapPosZ, const ReadOnlyRawBitmap& srcBitmapNegZ,
                                                     const std::string& name, const VkImageUsageFlags imageUsageFlags)
   {
-    RawCubeBitmap rawCubeBitmap(srcBitmapPosX, srcBitmapNegX, srcBitmapPosY, srcBitmapNegY, srcBitmapPosZ, srcBitmapNegZ);
+    const RawCubeBitmap rawCubeBitmap(srcBitmapPosX, srcBitmapNegX, srcBitmapPosY, srcBitmapNegY, srcBitmapPosZ, srcBitmapNegZ);
     return CreateImage(rawCubeBitmap, name, imageUsageFlags);
   }
 

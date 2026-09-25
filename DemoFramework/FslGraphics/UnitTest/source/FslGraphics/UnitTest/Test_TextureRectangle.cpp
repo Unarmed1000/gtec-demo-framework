@@ -47,10 +47,10 @@ namespace
 
 TEST(Test_TextureRectangle, Construct_Empty)
 {
-  TextureRectangle rectangle;
+  const TextureRectangle rectangle;
 
-  auto rect = rectangle.GetRectangle();
-  auto size = rectangle.GetTextureSize();
+  const auto rect = rectangle.GetRectangle();
+  const auto size = rectangle.GetTextureSize();
 
   EXPECT_EQ(PxRectangle::Create(0, 0, 0, 0), rect);
   EXPECT_EQ(PxSize2D::Create(0, 0), size);
@@ -59,8 +59,8 @@ TEST(Test_TextureRectangle, Construct_Empty)
 
 TEST(Test_TextureRectangle, Equal)
 {
-  TextureRectangle rectangle1(PxRectangle::Create(1, 2, 3, 4), PxSize2D::Create(10, 20));
-  TextureRectangle rectangle2(PxRectangle::Create(1, 2, 3, 4), PxSize2D::Create(10, 20));
+  const TextureRectangle rectangle1(PxRectangle::Create(1, 2, 3, 4), PxSize2D::Create(10, 20));
+  const TextureRectangle rectangle2(PxRectangle::Create(1, 2, 3, 4), PxSize2D::Create(10, 20));
 
   EXPECT_EQ(rectangle1, rectangle2);
 }
@@ -68,13 +68,13 @@ TEST(Test_TextureRectangle, Equal)
 
 TEST(Test_TextureRectangle, NotEqual)
 {
-  TextureRectangle rectangle1(PxRectangle::Create(1, 2, 3, 4), PxSize2D::Create(10, 20));
-  TextureRectangle rectangle2(PxRectangle::Create(1, 2, 3, 4), PxSize2D::Create(10, 21));
-  TextureRectangle rectangle3(PxRectangle::Create(1, 2, 3, 4), PxSize2D::Create(11, 20));
-  TextureRectangle rectangle4(PxRectangle::Create(1, 2, 3, 5), PxSize2D::Create(10, 20));
-  TextureRectangle rectangle5(PxRectangle::Create(1, 2, 4, 4), PxSize2D::Create(10, 20));
-  TextureRectangle rectangle6(PxRectangle::Create(1, 3, 3, 4), PxSize2D::Create(10, 20));
-  TextureRectangle rectangle7(PxRectangle::Create(2, 1, 3, 4), PxSize2D::Create(10, 20));
+  const TextureRectangle rectangle1(PxRectangle::Create(1, 2, 3, 4), PxSize2D::Create(10, 20));
+  const TextureRectangle rectangle2(PxRectangle::Create(1, 2, 3, 4), PxSize2D::Create(10, 21));
+  const TextureRectangle rectangle3(PxRectangle::Create(1, 2, 3, 4), PxSize2D::Create(11, 20));
+  const TextureRectangle rectangle4(PxRectangle::Create(1, 2, 3, 5), PxSize2D::Create(10, 20));
+  const TextureRectangle rectangle5(PxRectangle::Create(1, 2, 4, 4), PxSize2D::Create(10, 20));
+  const TextureRectangle rectangle6(PxRectangle::Create(1, 3, 3, 4), PxSize2D::Create(10, 20));
+  const TextureRectangle rectangle7(PxRectangle::Create(2, 1, 3, 4), PxSize2D::Create(10, 20));
 
   EXPECT_NE(rectangle1, rectangle2);
   EXPECT_NE(rectangle1, rectangle3);

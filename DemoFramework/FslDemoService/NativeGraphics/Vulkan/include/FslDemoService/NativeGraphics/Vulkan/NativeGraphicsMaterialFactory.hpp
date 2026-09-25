@@ -95,7 +95,7 @@ namespace Fsl::Vulkan
       {
       }
 
-      bool IsValid() const
+      [[nodiscard]] bool IsValid() const
       {
         return Pipeline.IsValid();
       }
@@ -143,7 +143,7 @@ namespace Fsl::Vulkan
       {
       }
 
-      bool IsValid() const
+      [[nodiscard]] bool IsValid() const
       {
         return Pipeline != VK_NULL_HANDLE;
       }
@@ -212,7 +212,7 @@ namespace Fsl::Vulkan
     void CreateMaterials(Span<BasicNativeMaterialHandle> dstMaterialHandles, ReadOnlySpan<BasicNativeMaterialCreateInfo> createInfoSpan);
     bool DestroyMaterial(const BasicNativeMaterialHandle hMaterial) noexcept;
 
-    const MaterialRecord& GetMaterial(const BasicNativeMaterialHandle hMaterial) const
+    [[nodiscard]] const MaterialRecord& GetMaterial(const BasicNativeMaterialHandle hMaterial) const
     {
       return m_dependentResources.Materials.Get(hMaterial.Value);
     }

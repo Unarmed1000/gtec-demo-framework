@@ -137,8 +137,8 @@ TEST_F(TestBasicMaterialManager, OnRenderEvent_Empty_NoDepedentResources_Swapcha
 
 TEST_F(TestBasicMaterialManager, CreateMaterial_InvalidCreateInfo)
 {
-  std::shared_ptr<INativeTexture2D> texture = std::make_shared<NativeTexture2DTest>(BasicNativeTextureHandle(1));
-  BasicMaterialCreateInfo createInfo(BlendState::Opaque, VertexDeclarationSpan());
+  const std::shared_ptr<INativeTexture2D> texture = std::make_shared<NativeTexture2DTest>(BasicNativeTextureHandle(1));
+  const BasicMaterialCreateInfo createInfo(BlendState::Opaque, VertexDeclarationSpan());
   EXPECT_THROW(m_manager.CreateMaterial(createInfo, texture, false), std::invalid_argument);
   EXPECT_EQ(0u, m_manager.MaterialCount());
   EXPECT_EQ(0u, m_testFactory->MaterialCount());
@@ -146,8 +146,8 @@ TEST_F(TestBasicMaterialManager, CreateMaterial_InvalidCreateInfo)
 
 TEST_F(TestBasicMaterialManager, CreateMaterial_NullTexture)
 {
-  std::shared_ptr<INativeTexture2D> texture;
-  BasicMaterialCreateInfo createInfo(BlendState::Opaque, LocalConfig::VertexDecl.AsReadOnlySpan());
+  const std::shared_ptr<INativeTexture2D> texture;
+  const BasicMaterialCreateInfo createInfo(BlendState::Opaque, LocalConfig::VertexDecl.AsReadOnlySpan());
   EXPECT_THROW(m_manager.CreateMaterial(createInfo, texture, false), std::invalid_argument);
   EXPECT_EQ(0u, m_manager.MaterialCount());
   EXPECT_EQ(0u, m_testFactory->MaterialCount());
@@ -155,46 +155,46 @@ TEST_F(TestBasicMaterialManager, CreateMaterial_NullTexture)
 
 TEST_F(TestBasicMaterialManager, CreateMaterial)
 {
-  std::shared_ptr<INativeTexture2D> texture = std::make_shared<NativeTexture2DTest>(BasicNativeTextureHandle(1));
-  BasicMaterialCreateInfo createInfo(BlendState::Opaque, LocalConfig::VertexDecl.AsReadOnlySpan());
+  const std::shared_ptr<INativeTexture2D> texture = std::make_shared<NativeTexture2DTest>(BasicNativeTextureHandle(1));
+  const BasicMaterialCreateInfo createInfo(BlendState::Opaque, LocalConfig::VertexDecl.AsReadOnlySpan());
 
-  BasicMaterial mat0 = m_manager.CreateMaterial(createInfo, texture, false);
+  const BasicMaterial mat0 = m_manager.CreateMaterial(createInfo, texture, false);
   EXPECT_EQ(1u, m_manager.MaterialCount());
   EXPECT_EQ(0u, m_testFactory->MaterialCount());
 }
 
 TEST_F(TestBasicMaterialManager, CreateMaterial_2x)
 {
-  std::shared_ptr<INativeTexture2D> texture0 = std::make_shared<NativeTexture2DTest>(BasicNativeTextureHandle(1));
-  std::shared_ptr<INativeTexture2D> texture1 = std::make_shared<NativeTexture2DTest>(BasicNativeTextureHandle(2));
-  BasicMaterialCreateInfo createInfo0(BlendState::Opaque, LocalConfig::VertexDecl.AsReadOnlySpan());
-  BasicMaterialCreateInfo createInfo1(BlendState::AlphaBlend, LocalConfig::VertexDecl.AsReadOnlySpan());
+  const std::shared_ptr<INativeTexture2D> texture0 = std::make_shared<NativeTexture2DTest>(BasicNativeTextureHandle(1));
+  const std::shared_ptr<INativeTexture2D> texture1 = std::make_shared<NativeTexture2DTest>(BasicNativeTextureHandle(2));
+  const BasicMaterialCreateInfo createInfo0(BlendState::Opaque, LocalConfig::VertexDecl.AsReadOnlySpan());
+  const BasicMaterialCreateInfo createInfo1(BlendState::AlphaBlend, LocalConfig::VertexDecl.AsReadOnlySpan());
 
-  BasicMaterial mat0 = m_manager.CreateMaterial(createInfo0, texture0, false);
-  BasicMaterial mat1 = m_manager.CreateMaterial(createInfo1, texture1, false);
+  const BasicMaterial mat0 = m_manager.CreateMaterial(createInfo0, texture0, false);
+  const BasicMaterial mat1 = m_manager.CreateMaterial(createInfo1, texture1, false);
   EXPECT_EQ(2u, m_manager.MaterialCount());
   EXPECT_EQ(0u, m_testFactory->MaterialCount());
 }
 
 TEST_F(TestBasicMaterialManager, CreateMaterial_2x_SameCreateInfo)
 {
-  std::shared_ptr<INativeTexture2D> texture0 = std::make_shared<NativeTexture2DTest>(BasicNativeTextureHandle(1));
-  std::shared_ptr<INativeTexture2D> texture1 = std::make_shared<NativeTexture2DTest>(BasicNativeTextureHandle(2));
-  BasicMaterialCreateInfo createInfo(BlendState::Opaque, LocalConfig::VertexDecl.AsReadOnlySpan());
+  const std::shared_ptr<INativeTexture2D> texture0 = std::make_shared<NativeTexture2DTest>(BasicNativeTextureHandle(1));
+  const std::shared_ptr<INativeTexture2D> texture1 = std::make_shared<NativeTexture2DTest>(BasicNativeTextureHandle(2));
+  const BasicMaterialCreateInfo createInfo(BlendState::Opaque, LocalConfig::VertexDecl.AsReadOnlySpan());
 
-  BasicMaterial mat0 = m_manager.CreateMaterial(createInfo, texture0, false);
-  BasicMaterial mat1 = m_manager.CreateMaterial(createInfo, texture1, false);
+  const BasicMaterial mat0 = m_manager.CreateMaterial(createInfo, texture0, false);
+  const BasicMaterial mat1 = m_manager.CreateMaterial(createInfo, texture1, false);
   EXPECT_EQ(2u, m_manager.MaterialCount());
   EXPECT_EQ(0u, m_testFactory->MaterialCount());
 }
 
 TEST_F(TestBasicMaterialManager, CreateMaterial_2x_SameCreateInfo_SameTexture)
 {
-  std::shared_ptr<INativeTexture2D> texture0 = std::make_shared<NativeTexture2DTest>(BasicNativeTextureHandle(1));
-  BasicMaterialCreateInfo createInfo(BlendState::Opaque, LocalConfig::VertexDecl.AsReadOnlySpan());
+  const std::shared_ptr<INativeTexture2D> texture0 = std::make_shared<NativeTexture2DTest>(BasicNativeTextureHandle(1));
+  const BasicMaterialCreateInfo createInfo(BlendState::Opaque, LocalConfig::VertexDecl.AsReadOnlySpan());
 
-  BasicMaterial mat0 = m_manager.CreateMaterial(createInfo, texture0, false);
-  BasicMaterial mat1 = m_manager.CreateMaterial(createInfo, texture0, false);
+  const BasicMaterial mat0 = m_manager.CreateMaterial(createInfo, texture0, false);
+  const BasicMaterial mat1 = m_manager.CreateMaterial(createInfo, texture0, false);
 
   EXPECT_EQ(1u, m_manager.MaterialCount());
   EXPECT_EQ(0u, m_testFactory->MaterialCount());
@@ -202,13 +202,13 @@ TEST_F(TestBasicMaterialManager, CreateMaterial_2x_SameCreateInfo_SameTexture)
 
 TEST_F(TestBasicMaterialManager, CreateMaterial_2x_SameCreateInfo_SameTexture_ExpiredTracker)
 {
-  std::shared_ptr<INativeTexture2D> texture0 = std::make_shared<NativeTexture2DTest>(BasicNativeTextureHandle(1));
-  BasicMaterialCreateInfo createInfo(BlendState::Opaque, LocalConfig::VertexDecl.AsReadOnlySpan());
+  const std::shared_ptr<INativeTexture2D> texture0 = std::make_shared<NativeTexture2DTest>(BasicNativeTextureHandle(1));
+  const BasicMaterialCreateInfo createInfo(BlendState::Opaque, LocalConfig::VertexDecl.AsReadOnlySpan());
 
   {    // let the tracker expire
-    BasicMaterial mat0 = m_manager.CreateMaterial(createInfo, texture0, false);
+    const BasicMaterial mat0 = m_manager.CreateMaterial(createInfo, texture0, false);
   }
-  BasicMaterial mat1 = m_manager.CreateMaterial(createInfo, texture0, false);
+  const BasicMaterial mat1 = m_manager.CreateMaterial(createInfo, texture0, false);
   EXPECT_EQ(1u, m_manager.MaterialCount());
   EXPECT_EQ(0u, m_testFactory->MaterialCount());
 }
@@ -217,12 +217,12 @@ TEST_F(TestBasicMaterialManager, CreateMaterial_2x_SameCreateInfo_SameTexture_Ex
 
 TEST_F(TestBasicMaterialManager, CloneMaterial)
 {
-  std::shared_ptr<INativeTexture2D> texture0 = std::make_shared<NativeTexture2DTest>(BasicNativeTextureHandle(1));
-  std::shared_ptr<INativeTexture2D> texture1 = std::make_shared<NativeTexture2DTest>(BasicNativeTextureHandle(2));
-  BasicMaterialCreateInfo createInfo(BlendState::Opaque, LocalConfig::VertexDecl.AsReadOnlySpan());
+  const std::shared_ptr<INativeTexture2D> texture0 = std::make_shared<NativeTexture2DTest>(BasicNativeTextureHandle(1));
+  const std::shared_ptr<INativeTexture2D> texture1 = std::make_shared<NativeTexture2DTest>(BasicNativeTextureHandle(2));
+  const BasicMaterialCreateInfo createInfo(BlendState::Opaque, LocalConfig::VertexDecl.AsReadOnlySpan());
 
-  BasicMaterial mat0 = m_manager.CreateMaterial(createInfo, texture0, false);
-  BasicMaterial mat1 = m_manager.CloneMaterial(mat0, texture1, false);
+  const BasicMaterial mat0 = m_manager.CreateMaterial(createInfo, texture0, false);
+  const BasicMaterial mat1 = m_manager.CloneMaterial(mat0, texture1, false);
   EXPECT_EQ(2u, m_manager.MaterialCount());
   EXPECT_EQ(0u, m_testFactory->MaterialCount());
 }
@@ -253,9 +253,9 @@ TEST_F(TestBasicMaterialManager, PreUpdate_2x_Empty)
 
 TEST_F(TestBasicMaterialManager, PreUpdate_Mat1)
 {
-  std::shared_ptr<INativeTexture2D> texture = std::make_shared<NativeTexture2DTest>(BasicNativeTextureHandle(1));
-  BasicMaterialCreateInfo createInfo(BlendState::Opaque, LocalConfig::VertexDecl.AsReadOnlySpan());
-  BasicMaterial mat0 = m_manager.CreateMaterial(createInfo, texture, false);
+  const std::shared_ptr<INativeTexture2D> texture = std::make_shared<NativeTexture2DTest>(BasicNativeTextureHandle(1));
+  const BasicMaterialCreateInfo createInfo(BlendState::Opaque, LocalConfig::VertexDecl.AsReadOnlySpan());
+  const BasicMaterial mat0 = m_manager.CreateMaterial(createInfo, texture, false);
 
   EXPECT_EQ(1u, m_manager.MaterialCount());
   EXPECT_EQ(0u, m_testFactory->MaterialCount());
@@ -267,9 +267,9 @@ TEST_F(TestBasicMaterialManager, PreUpdate_Mat1)
 
 TEST_F(TestBasicMaterialManager, PreUpdate_2x_Mat1)
 {
-  std::shared_ptr<INativeTexture2D> texture = std::make_shared<NativeTexture2DTest>(BasicNativeTextureHandle(1));
-  BasicMaterialCreateInfo createInfo(BlendState::Opaque, LocalConfig::VertexDecl.AsReadOnlySpan());
-  BasicMaterial mat0 = m_manager.CreateMaterial(createInfo, texture, false);
+  const std::shared_ptr<INativeTexture2D> texture = std::make_shared<NativeTexture2DTest>(BasicNativeTextureHandle(1));
+  const BasicMaterialCreateInfo createInfo(BlendState::Opaque, LocalConfig::VertexDecl.AsReadOnlySpan());
+  const BasicMaterial mat0 = m_manager.CreateMaterial(createInfo, texture, false);
 
   EXPECT_EQ(1u, m_manager.MaterialCount());
   EXPECT_EQ(0u, m_testFactory->MaterialCount());
@@ -284,10 +284,10 @@ TEST_F(TestBasicMaterialManager, PreUpdate_2x_Mat1)
 
 TEST_F(TestBasicMaterialManager, PreUpdate_Mat1_Destroyed)
 {
-  std::shared_ptr<INativeTexture2D> texture = std::make_shared<NativeTexture2DTest>(BasicNativeTextureHandle(1));
-  BasicMaterialCreateInfo createInfo(BlendState::Opaque, LocalConfig::VertexDecl.AsReadOnlySpan());
+  const std::shared_ptr<INativeTexture2D> texture = std::make_shared<NativeTexture2DTest>(BasicNativeTextureHandle(1));
+  const BasicMaterialCreateInfo createInfo(BlendState::Opaque, LocalConfig::VertexDecl.AsReadOnlySpan());
   {
-    BasicMaterial mat0 = m_manager.CreateMaterial(createInfo, texture, false);
+    const BasicMaterial mat0 = m_manager.CreateMaterial(createInfo, texture, false);
   }
 
   EXPECT_EQ(1u, m_manager.MaterialCount());
@@ -299,8 +299,8 @@ TEST_F(TestBasicMaterialManager, PreUpdate_Mat1_Destroyed)
 
 TEST_F(TestBasicMaterialManager, PreUpdate_Mat1_Destroyed2)
 {
-  std::shared_ptr<INativeTexture2D> texture = std::make_shared<NativeTexture2DTest>(BasicNativeTextureHandle(1));
-  BasicMaterialCreateInfo createInfo(BlendState::Opaque, LocalConfig::VertexDecl.AsReadOnlySpan());
+  const std::shared_ptr<INativeTexture2D> texture = std::make_shared<NativeTexture2DTest>(BasicNativeTextureHandle(1));
+  const BasicMaterialCreateInfo createInfo(BlendState::Opaque, LocalConfig::VertexDecl.AsReadOnlySpan());
   BasicMaterial mat0 = m_manager.CreateMaterial(createInfo, texture, false);
 
   EXPECT_EQ(1u, m_manager.MaterialCount());
@@ -354,9 +354,9 @@ TEST_F(TestBasicMaterialManager, PreUpdate_2x_Empty_WithDependentResources)
 
 TEST_F(TestBasicMaterialManager, PreUpdate_Mat1_WithDependentResources)
 {
-  std::shared_ptr<INativeTexture2D> texture = std::make_shared<NativeTexture2DTest>(BasicNativeTextureHandle(1));
-  BasicMaterialCreateInfo createInfo(BlendState::Opaque, LocalConfig::VertexDecl.AsReadOnlySpan());
-  BasicMaterial mat0 = m_manager.CreateMaterial(createInfo, texture, false);
+  const std::shared_ptr<INativeTexture2D> texture = std::make_shared<NativeTexture2DTest>(BasicNativeTextureHandle(1));
+  const BasicMaterialCreateInfo createInfo(BlendState::Opaque, LocalConfig::VertexDecl.AsReadOnlySpan());
+  const BasicMaterial mat0 = m_manager.CreateMaterial(createInfo, texture, false);
 
   EXPECT_EQ(0u, m_testFactory->MaterialCount());
   m_manager.CreateDependentResources();
@@ -374,9 +374,9 @@ TEST_F(TestBasicMaterialManager, PreUpdate_Mat1_WithDependentResources)
 
 TEST_F(TestBasicMaterialManager, PreUpdate_2x_Mat1_WithDependentResources)
 {
-  std::shared_ptr<INativeTexture2D> texture = std::make_shared<NativeTexture2DTest>(BasicNativeTextureHandle(1));
-  BasicMaterialCreateInfo createInfo(BlendState::Opaque, LocalConfig::VertexDecl.AsReadOnlySpan());
-  BasicMaterial mat0 = m_manager.CreateMaterial(createInfo, texture, false);
+  const std::shared_ptr<INativeTexture2D> texture = std::make_shared<NativeTexture2DTest>(BasicNativeTextureHandle(1));
+  const BasicMaterialCreateInfo createInfo(BlendState::Opaque, LocalConfig::VertexDecl.AsReadOnlySpan());
+  const BasicMaterial mat0 = m_manager.CreateMaterial(createInfo, texture, false);
 
   EXPECT_EQ(0u, m_testFactory->MaterialCount());
   m_manager.CreateDependentResources();
@@ -397,10 +397,10 @@ TEST_F(TestBasicMaterialManager, PreUpdate_2x_Mat1_WithDependentResources)
 
 TEST_F(TestBasicMaterialManager, PreUpdate_Mat1_Destroyed_WithDependentResources)
 {
-  std::shared_ptr<INativeTexture2D> texture = std::make_shared<NativeTexture2DTest>(BasicNativeTextureHandle(1));
-  BasicMaterialCreateInfo createInfo(BlendState::Opaque, LocalConfig::VertexDecl.AsReadOnlySpan());
+  const std::shared_ptr<INativeTexture2D> texture = std::make_shared<NativeTexture2DTest>(BasicNativeTextureHandle(1));
+  const BasicMaterialCreateInfo createInfo(BlendState::Opaque, LocalConfig::VertexDecl.AsReadOnlySpan());
   {
-    BasicMaterial mat0 = m_manager.CreateMaterial(createInfo, texture, false);
+    const BasicMaterial mat0 = m_manager.CreateMaterial(createInfo, texture, false);
   }
 
   EXPECT_EQ(0u, m_testFactory->MaterialCount());
@@ -421,8 +421,8 @@ TEST_F(TestBasicMaterialManager, PreUpdate_Mat1_Destroyed_WithDependentResources
 
 TEST_F(TestBasicMaterialManager, PreUpdate_Mat1_Destroyed2_WithDependentResources)
 {
-  std::shared_ptr<INativeTexture2D> texture = std::make_shared<NativeTexture2DTest>(BasicNativeTextureHandle(1));
-  BasicMaterialCreateInfo createInfo(BlendState::Opaque, LocalConfig::VertexDecl.AsReadOnlySpan());
+  const std::shared_ptr<INativeTexture2D> texture = std::make_shared<NativeTexture2DTest>(BasicNativeTextureHandle(1));
+  const BasicMaterialCreateInfo createInfo(BlendState::Opaque, LocalConfig::VertexDecl.AsReadOnlySpan());
   BasicMaterial mat0 = m_manager.CreateMaterial(createInfo, texture, false);
 
   EXPECT_EQ(0u, m_testFactory->MaterialCount());
@@ -461,10 +461,10 @@ TEST_F(TestBasicMaterialManager, PreUpdate_Mat1_Destroyed2_WithDependentResource
 
 TEST_F(TestBasicMaterialManager, CreateMaterial_ThenCreateDependent)
 {
-  std::shared_ptr<INativeTexture2D> texture = std::make_shared<NativeTexture2DTest>(BasicNativeTextureHandle(1));
-  BasicMaterialCreateInfo createInfo(BlendState::Opaque, LocalConfig::VertexDecl.AsReadOnlySpan());
+  const std::shared_ptr<INativeTexture2D> texture = std::make_shared<NativeTexture2DTest>(BasicNativeTextureHandle(1));
+  const BasicMaterialCreateInfo createInfo(BlendState::Opaque, LocalConfig::VertexDecl.AsReadOnlySpan());
 
-  BasicMaterial mat0 = m_manager.CreateMaterial(createInfo, texture, false);
+  const BasicMaterial mat0 = m_manager.CreateMaterial(createInfo, texture, false);
 
   EXPECT_EQ(1u, m_manager.MaterialCount());
   EXPECT_EQ(0u, m_testFactory->MaterialCount());
@@ -480,13 +480,13 @@ TEST_F(TestBasicMaterialManager, CreateMaterial_ThenCreateDependent)
 
 TEST_F(TestBasicMaterialManager, CreateMaterial_2x_ThenCreateDependent)
 {
-  std::shared_ptr<INativeTexture2D> texture0 = std::make_shared<NativeTexture2DTest>(BasicNativeTextureHandle(1));
-  std::shared_ptr<INativeTexture2D> texture1 = std::make_shared<NativeTexture2DTest>(BasicNativeTextureHandle(2));
-  BasicMaterialCreateInfo createInfo0(BlendState::Opaque, LocalConfig::VertexDecl.AsReadOnlySpan());
-  BasicMaterialCreateInfo createInfo1(BlendState::AlphaBlend, LocalConfig::VertexDecl.AsReadOnlySpan());
+  const std::shared_ptr<INativeTexture2D> texture0 = std::make_shared<NativeTexture2DTest>(BasicNativeTextureHandle(1));
+  const std::shared_ptr<INativeTexture2D> texture1 = std::make_shared<NativeTexture2DTest>(BasicNativeTextureHandle(2));
+  const BasicMaterialCreateInfo createInfo0(BlendState::Opaque, LocalConfig::VertexDecl.AsReadOnlySpan());
+  const BasicMaterialCreateInfo createInfo1(BlendState::AlphaBlend, LocalConfig::VertexDecl.AsReadOnlySpan());
 
-  BasicMaterial mat0 = m_manager.CreateMaterial(createInfo0, texture0, false);
-  BasicMaterial mat1 = m_manager.CreateMaterial(createInfo1, texture1, false);
+  const BasicMaterial mat0 = m_manager.CreateMaterial(createInfo0, texture0, false);
+  const BasicMaterial mat1 = m_manager.CreateMaterial(createInfo1, texture1, false);
 
   EXPECT_EQ(2u, m_manager.MaterialCount());
   EXPECT_EQ(0u, m_testFactory->MaterialCount());
@@ -502,12 +502,12 @@ TEST_F(TestBasicMaterialManager, CreateMaterial_2x_ThenCreateDependent)
 
 TEST_F(TestBasicMaterialManager, CreateMaterial_2x_SameCreateInfo_ThenCreateDependent)
 {
-  std::shared_ptr<INativeTexture2D> texture0 = std::make_shared<NativeTexture2DTest>(BasicNativeTextureHandle(1));
-  std::shared_ptr<INativeTexture2D> texture1 = std::make_shared<NativeTexture2DTest>(BasicNativeTextureHandle(2));
-  BasicMaterialCreateInfo createInfo(BlendState::Opaque, LocalConfig::VertexDecl.AsReadOnlySpan());
+  const std::shared_ptr<INativeTexture2D> texture0 = std::make_shared<NativeTexture2DTest>(BasicNativeTextureHandle(1));
+  const std::shared_ptr<INativeTexture2D> texture1 = std::make_shared<NativeTexture2DTest>(BasicNativeTextureHandle(2));
+  const BasicMaterialCreateInfo createInfo(BlendState::Opaque, LocalConfig::VertexDecl.AsReadOnlySpan());
 
-  BasicMaterial mat0 = m_manager.CreateMaterial(createInfo, texture0, false);
-  BasicMaterial mat1 = m_manager.CreateMaterial(createInfo, texture1, false);
+  const BasicMaterial mat0 = m_manager.CreateMaterial(createInfo, texture0, false);
+  const BasicMaterial mat1 = m_manager.CreateMaterial(createInfo, texture1, false);
 
   EXPECT_EQ(2u, m_manager.MaterialCount());
   EXPECT_EQ(0u, m_testFactory->MaterialCount());
@@ -523,11 +523,11 @@ TEST_F(TestBasicMaterialManager, CreateMaterial_2x_SameCreateInfo_ThenCreateDepe
 
 TEST_F(TestBasicMaterialManager, CreateMaterial_2x_SameCreateInfo_SameTexture_ThenCreateDependent)
 {
-  std::shared_ptr<INativeTexture2D> texture0 = std::make_shared<NativeTexture2DTest>(BasicNativeTextureHandle(1));
-  BasicMaterialCreateInfo createInfo(BlendState::Opaque, LocalConfig::VertexDecl.AsReadOnlySpan());
+  const std::shared_ptr<INativeTexture2D> texture0 = std::make_shared<NativeTexture2DTest>(BasicNativeTextureHandle(1));
+  const BasicMaterialCreateInfo createInfo(BlendState::Opaque, LocalConfig::VertexDecl.AsReadOnlySpan());
 
-  BasicMaterial mat0 = m_manager.CreateMaterial(createInfo, texture0, false);
-  BasicMaterial mat1 = m_manager.CreateMaterial(createInfo, texture0, false);
+  const BasicMaterial mat0 = m_manager.CreateMaterial(createInfo, texture0, false);
+  const BasicMaterial mat1 = m_manager.CreateMaterial(createInfo, texture0, false);
 
   EXPECT_EQ(1u, m_manager.MaterialCount());
   EXPECT_EQ(0u, m_testFactory->MaterialCount());
@@ -543,13 +543,13 @@ TEST_F(TestBasicMaterialManager, CreateMaterial_2x_SameCreateInfo_SameTexture_Th
 
 TEST_F(TestBasicMaterialManager, CreateMaterial_2x_SameCreateInfo_SameTexture_ExpiredTracker_ThenCreateDependent)
 {
-  std::shared_ptr<INativeTexture2D> texture0 = std::make_shared<NativeTexture2DTest>(BasicNativeTextureHandle(1));
-  BasicMaterialCreateInfo createInfo(BlendState::Opaque, LocalConfig::VertexDecl.AsReadOnlySpan());
+  const std::shared_ptr<INativeTexture2D> texture0 = std::make_shared<NativeTexture2DTest>(BasicNativeTextureHandle(1));
+  const BasicMaterialCreateInfo createInfo(BlendState::Opaque, LocalConfig::VertexDecl.AsReadOnlySpan());
 
   {    // let the tracker expire
-    BasicMaterial mat0 = m_manager.CreateMaterial(createInfo, texture0, false);
+    const BasicMaterial mat0 = m_manager.CreateMaterial(createInfo, texture0, false);
   }
-  BasicMaterial mat1 = m_manager.CreateMaterial(createInfo, texture0, false);
+  const BasicMaterial mat1 = m_manager.CreateMaterial(createInfo, texture0, false);
 
   EXPECT_EQ(1u, m_manager.MaterialCount());
   EXPECT_EQ(0u, m_testFactory->MaterialCount());
@@ -576,8 +576,8 @@ TEST_F(TestBasicMaterialManager, CreateMaterial_DependentResources)
   BasicMaterial mat0;
   m_manager.CreateDependentResources();
   {
-    std::shared_ptr<INativeTexture2D> texture = std::make_shared<NativeTexture2DTest>(BasicNativeTextureHandle(1));
-    BasicMaterialCreateInfo createInfo(BlendState::Opaque, LocalConfig::VertexDecl.AsReadOnlySpan());
+    const std::shared_ptr<INativeTexture2D> texture = std::make_shared<NativeTexture2DTest>(BasicNativeTextureHandle(1));
+    const BasicMaterialCreateInfo createInfo(BlendState::Opaque, LocalConfig::VertexDecl.AsReadOnlySpan());
 
     mat0 = m_manager.CreateMaterial(createInfo, texture, false);
     EXPECT_EQ(1u, m_manager.MaterialCount());
@@ -595,10 +595,10 @@ TEST_F(TestBasicMaterialManager, CreateMaterial_DependentResources_MatDestroyedO
   EXPECT_EQ(0u, m_testFactory->MaterialCount());
   m_manager.CreateDependentResources();
   {
-    std::shared_ptr<INativeTexture2D> texture = std::make_shared<NativeTexture2DTest>(BasicNativeTextureHandle(1));
-    BasicMaterialCreateInfo createInfo(BlendState::Opaque, LocalConfig::VertexDecl.AsReadOnlySpan());
+    const std::shared_ptr<INativeTexture2D> texture = std::make_shared<NativeTexture2DTest>(BasicNativeTextureHandle(1));
+    const BasicMaterialCreateInfo createInfo(BlendState::Opaque, LocalConfig::VertexDecl.AsReadOnlySpan());
 
-    BasicMaterial mat0 = m_manager.CreateMaterial(createInfo, texture, false);
+    const BasicMaterial mat0 = m_manager.CreateMaterial(createInfo, texture, false);
     EXPECT_EQ(1u, m_manager.MaterialCount());
     EXPECT_EQ(1u, m_testFactory->MaterialCount());
   }
@@ -611,10 +611,10 @@ TEST_F(TestBasicMaterialManager, CreateMaterial_DependentResources_MatDestroyedO
 
 TEST_F(TestBasicMaterialManager, CloneMaterial_DependentResources)
 {
-  std::shared_ptr<INativeTexture2D> texture0 = std::make_shared<NativeTexture2DTest>(BasicNativeTextureHandle(1));
-  std::shared_ptr<INativeTexture2D> texture1 = std::make_shared<NativeTexture2DTest>(BasicNativeTextureHandle(2));
-  BasicMaterialCreateInfo createInfo(BlendState::Opaque, LocalConfig::VertexDecl.AsReadOnlySpan());
-  BasicMaterial mat0 = m_manager.CreateMaterial(createInfo, texture0, false);
+  const std::shared_ptr<INativeTexture2D> texture0 = std::make_shared<NativeTexture2DTest>(BasicNativeTextureHandle(1));
+  const std::shared_ptr<INativeTexture2D> texture1 = std::make_shared<NativeTexture2DTest>(BasicNativeTextureHandle(2));
+  const BasicMaterialCreateInfo createInfo(BlendState::Opaque, LocalConfig::VertexDecl.AsReadOnlySpan());
+  const BasicMaterial mat0 = m_manager.CreateMaterial(createInfo, texture0, false);
   BasicMaterial mat1;
 
   EXPECT_EQ(1u, m_manager.MaterialCount());
@@ -637,9 +637,9 @@ TEST_F(TestBasicMaterialManager, CloneMaterial_DependentResources)
 
 TEST_F(TestBasicMaterialManager, CloneMaterial_DependentResources_MatDestroyedOnDependentDestroy)
 {
-  std::shared_ptr<INativeTexture2D> texture0 = std::make_shared<NativeTexture2DTest>(BasicNativeTextureHandle(1));
-  BasicMaterialCreateInfo createInfo(BlendState::Opaque, LocalConfig::VertexDecl.AsReadOnlySpan());
-  BasicMaterial mat0 = m_manager.CreateMaterial(createInfo, texture0, false);
+  const std::shared_ptr<INativeTexture2D> texture0 = std::make_shared<NativeTexture2DTest>(BasicNativeTextureHandle(1));
+  const BasicMaterialCreateInfo createInfo(BlendState::Opaque, LocalConfig::VertexDecl.AsReadOnlySpan());
+  const BasicMaterial mat0 = m_manager.CreateMaterial(createInfo, texture0, false);
 
   EXPECT_EQ(1u, m_manager.MaterialCount());
   EXPECT_EQ(0u, m_testFactory->MaterialCount());
@@ -648,9 +648,9 @@ TEST_F(TestBasicMaterialManager, CloneMaterial_DependentResources_MatDestroyedOn
     EXPECT_EQ(1u, m_manager.MaterialCount());
     EXPECT_EQ(1u, m_testFactory->MaterialCount());
 
-    std::shared_ptr<INativeTexture2D> texture1 = std::make_shared<NativeTexture2DTest>(BasicNativeTextureHandle(2));
+    const std::shared_ptr<INativeTexture2D> texture1 = std::make_shared<NativeTexture2DTest>(BasicNativeTextureHandle(2));
 
-    BasicMaterial mat1 = m_manager.CloneMaterial(mat0, texture1, false);
+    const BasicMaterial mat1 = m_manager.CloneMaterial(mat0, texture1, false);
     EXPECT_EQ(2u, m_manager.MaterialCount());
     EXPECT_EQ(2u, m_testFactory->MaterialCount());
   }

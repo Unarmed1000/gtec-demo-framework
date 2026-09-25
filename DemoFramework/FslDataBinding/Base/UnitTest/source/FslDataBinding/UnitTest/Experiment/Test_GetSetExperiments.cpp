@@ -45,7 +45,7 @@ namespace
   {
     int32_t TestValue{0};
 
-    int32_t GetValue() const noexcept
+    [[nodiscard]] int32_t GetValue() const noexcept
     {
       return TestValue;
     }
@@ -86,7 +86,7 @@ namespace
       {
       }
 
-      virtual T Get() const noexcept
+      [[nodiscard]] virtual T Get() const noexcept
       {
         return m_fnGet();
       }
@@ -126,7 +126,7 @@ namespace
     template <typename T>
     struct ITypedGet : IGet
     {
-      virtual T Get() const noexcept = 0;
+      [[nodiscard]] virtual T Get() const noexcept = 0;
     };
 
     struct ISet
@@ -150,7 +150,7 @@ namespace
       {
       }
 
-      T Get() const noexcept final
+      [[nodiscard]] T Get() const noexcept final
       {
         return m_fnGet(m_pBakedThis);
       }
@@ -209,7 +209,7 @@ namespace
       bool Set(const int32_t handle, const uint32_t value)
       {
         auto& rRecord = m_uint32.Get(handle);
-        bool changed = value != rRecord;
+        const bool changed = value != rRecord;
         if (value != rRecord)
         {
           rRecord = value;
@@ -235,7 +235,7 @@ namespace
         m_propertyManager->Destroy(m_hTestValue);
       }
 
-      uint32_t GetValue() const
+      [[nodiscard]] uint32_t GetValue() const
       {
         return m_propertyManager->Get(m_hTestValue);
       }
@@ -277,14 +277,14 @@ namespace
       // NOLINTNEXTLINE(readability-identifier-naming)
       T m_value{};
 
-      T Get() const noexcept
+      [[nodiscard]] T Get() const noexcept
       {
         return m_value;
       }
 
       bool Set(const T value)
       {
-        bool changed = value != m_value;
+        const bool changed = value != m_value;
         if (changed)
         {
           m_value = value;
@@ -299,7 +299,7 @@ namespace
       // NOLINTNEXTLINE(readability-identifier-naming)
       TypedDependencyProperty<uint32_t> m_property0;
 
-      uint32_t GetValue() const noexcept
+      [[nodiscard]] uint32_t GetValue() const noexcept
       {
         return m_property0.Get();
       }
@@ -373,7 +373,7 @@ namespace
 TEST(Test_GetSetExperiments, MemFn)
 {
   // While interesting, since the type is unspecified its not possible to store it
-  auto func = std::mem_fn(&Dummy::SetValue);
+  const auto func = std::mem_fn(&Dummy::SetValue);
   Dummy t;
   func(t, 42);
   EXPECT_EQ(42, t.TestValue);
@@ -381,7 +381,7 @@ TEST(Test_GetSetExperiments, MemFn)
 
 TEST(Test_GetSetExperiments, Function)
 {
-  std::function<void(Dummy * dummy, const int32_t)> fnSet = &Dummy::SetValue;
+  const std::function<void(Dummy * dummy, const int32_t)> fnSet = &Dummy::SetValue;
   Dummy t;
   fnSet(&t, 42);
   EXPECT_EQ(42, t.TestValue);
@@ -390,7 +390,7 @@ TEST(Test_GetSetExperiments, Function)
 TEST(Test_GetSetExperiments, Lambda)
 {
   Dummy t;
-  std::function<void(const int32_t)> fn = [&t](const int32_t value) { t.SetValue(value); };
+  const std::function<void(const int32_t)> fn = [&t](const int32_t value) { t.SetValue(value); };
   fn(42);
   EXPECT_EQ(42, t.TestValue);
 }
@@ -403,8 +403,8 @@ TEST(Test_GetSetExperiments, MemberFunctionGetSetViaBakedPointers)
   Dummy t0;
   Dummy t1;
 
-  auto typedGet = std::make_unique<TypedGet<int32_t>>([&t0]() { return t0.GetValue(); });
-  auto typedSet = std::make_unique<TypedSet<int32_t>>([&t1](const int32_t value) { t1.SetValue(value); });
+  const auto typedGet = std::make_unique<TypedGet<int32_t>>([&t0]() { return t0.GetValue(); });
+  const auto typedSet = std::make_unique<TypedSet<int32_t>>([&t1](const int32_t value) { t1.SetValue(value); });
 
   t0.SetValue(100);
   EXPECT_EQ(100, t0.TestValue);
@@ -427,8 +427,8 @@ TEST(Test_GetSetExperiments, MemberFunctionGetSetViaBakedPointers2)
   Dummy t0;
   Dummy t1;
 
-  auto typedGet = std::make_unique<TypedGet<Dummy, int32_t>>(&t0, &Dummy::GetValue);
-  auto typedSet = std::make_unique<TypedSet<Dummy, int32_t>>(&t1, &Dummy::SetValue);
+  const auto typedGet = std::make_unique<TypedGet<Dummy, int32_t>>(&t0, &Dummy::GetValue);
+  const auto typedSet = std::make_unique<TypedSet<Dummy, int32_t>>(&t1, &Dummy::SetValue);
 
   t0.SetValue(100);
   EXPECT_EQ(100, t0.TestValue);
@@ -447,15 +447,15 @@ TEST(Test_GetSetExperiments, MemberFunctionGetSetViaExternal)
 {
   using namespace External;
 
-  auto propertyManager = std::make_shared<PropertyManager>();
+  const auto propertyManager = std::make_shared<PropertyManager>();
   ExternalDummy t0(propertyManager);
-  ExternalDummy t1(propertyManager);
+  const ExternalDummy t1(propertyManager);
 
   t0.SetValue(100);
   EXPECT_EQ(100u, t0.GetValue());
   EXPECT_EQ(0u, t1.GetValue());
 
-  auto typedBinding = std::make_unique<TypedBinding<int32_t>>();
+  const auto typedBinding = std::make_unique<TypedBinding<int32_t>>();
 
   IBinding* pBinding = typedBinding.get();
   pBinding->Set(*propertyManager, t1.m_hTestValue, t0.m_hTestValue);
@@ -505,8 +505,8 @@ TEST(Test_GetSetExperiments, MemberFunctionGetSetViaBake)
 
 TEST(Test_GetSetExperiments, TestMemberFunctionPointers)
 {
-  int32_t (Dummy::*pFnGetMethod)() const = &Dummy::GetValue;
-  void (Dummy::*pFnSetMethod)(const int32_t) = &Dummy::SetValue;
+  int32_t (Dummy::* const pFnGetMethod)() const = &Dummy::GetValue;
+  void (Dummy::* const pFnSetMethod)(const int32_t) = &Dummy::SetValue;
 
   Dummy t0;
 
@@ -570,7 +570,7 @@ TEST(Test_GetSetExperiments, TestMemberFunctionPointers_MagicPointer)
 
   Dummy t0;
 
-  SetMemberPointer<int32_t> set = SetMemberPointer<int32_t>::Create<Dummy, &Dummy::SetValue>(&t0);
+  const SetMemberPointer<int32_t> set = SetMemberPointer<int32_t>::Create<Dummy, &Dummy::SetValue>(&t0);
 
   const int32_t defaultValue = 0;
   const int32_t newValue = 100;
@@ -628,7 +628,7 @@ TEST(Test_GetSetExperiments, TestMemberFunctionPointers_MagicPointer2)
 
   Dummy t0;
 
-  SetMemberPointer<int32_t> set = SetMemberPointer<int32_t>::Create<Dummy, &Dummy::SetValue>();
+  const SetMemberPointer<int32_t> set = SetMemberPointer<int32_t>::Create<Dummy, &Dummy::SetValue>();
 
   const int32_t defaultValue = 0;
   const int32_t newValue = 100;
@@ -697,7 +697,7 @@ namespace
     {
       int32_t TestValue{0};
 
-      int32_t GetValue() const noexcept
+      [[nodiscard]] int32_t GetValue() const noexcept
       {
         return TestValue;
       }
@@ -780,7 +780,7 @@ namespace
     {
       int32_t TestValue{0};
 
-      int32_t GetValue() const noexcept
+      [[nodiscard]] int32_t GetValue() const noexcept
       {
         return TestValue;
       }

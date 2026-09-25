@@ -257,7 +257,7 @@ namespace Fsl::UI::Declarative::UIReader
       DataBinding::DataBindingInstanceHandle TryGetPropertyHandleNow(const DataBinding::DependencyPropertyDefinition& sourceDef) final
       {
         using namespace DataBinding;
-        auto res = DependencyObjectHelper::TryGetPropertyHandle(
+        const auto res = DependencyObjectHelper::TryGetPropertyHandle(
           this, ThisDependencyObject(), sourceDef, PropLinkRefs(PropertyBool, m_propertyBool), PropLinkRefs(PropertyUInt8, m_propertyUInt8),
           PropLinkRefs(PropertyInt32, m_propertyInt32), PropLinkRefs(PropertyUInt32, m_propertyUInt32),
           PropLinkRefs(PropertyDpSize1D, m_propertyDpSize1D), PropLinkRefs(PropertyDpSize1DF, m_propertyDpSize1DF),
@@ -272,7 +272,7 @@ namespace Fsl::UI::Declarative::UIReader
                                                              const DataBinding::Binding& binding) final
       {
         using namespace DataBinding;
-        auto res = DependencyObjectHelper::TrySetBinding(
+        const auto res = DependencyObjectHelper::TrySetBinding(
           this, ThisDependencyObject(), targetDef, binding, PropLinkRefs(PropertyBool, m_propertyBool), PropLinkRefs(PropertyUInt8, m_propertyUInt8),
           PropLinkRefs(PropertyInt32, m_propertyInt32), PropLinkRefs(PropertyUInt32, m_propertyUInt32),
           PropLinkRefs(PropertyDpSize1D, m_propertyDpSize1D), PropLinkRefs(PropertyDpSize1DF, m_propertyDpSize1DF),
@@ -384,11 +384,11 @@ namespace Fsl::UI::Declarative::UIReader
           auto* pGrid = dynamic_cast<UI::GridLayout*>(current.get());
           if (pGrid != nullptr)
           {
-            for (pugi::xml_node child : node.children())
+            for (const pugi::xml_node child : node.children())
             {
               if (!TryProcessGridChild(*pGrid, child, depth + 1))
               {
-                auto childControl = TryProcessChildren(child, depth + 1, pGrid);
+                const auto childControl = TryProcessChildren(child, depth + 1, pGrid);
                 if (childControl)
                 {
                   if (!TryAddToContainer(current.get(), childControl))
@@ -410,9 +410,9 @@ namespace Fsl::UI::Declarative::UIReader
           }
           else
           {
-            for (pugi::xml_node child : node.children())
+            for (const pugi::xml_node child : node.children())
             {
-              auto childControl = TryProcessChildren(child, depth + 1);
+              const auto childControl = TryProcessChildren(child, depth + 1);
               if (childControl)
               {
                 if (!TryAddToContainer(current.get(), childControl))
@@ -427,7 +427,7 @@ namespace Fsl::UI::Declarative::UIReader
         {
           if (std::distance(node.children().begin(), node.children().end()) == 1u)
           {
-            auto childControl = TryProcessChildren(*node.children().begin(), depth + 1);
+            const auto childControl = TryProcessChildren(*node.children().begin(), depth + 1);
             if (childControl)
             {
               if (!TryAddToContentControl(current.get(), childControl))
@@ -438,7 +438,7 @@ namespace Fsl::UI::Declarative::UIReader
           }
           else
           {
-            for (pugi::xml_node child : node.children())
+            for (const pugi::xml_node child : node.children())
             {
               FSLLOG3_ERROR("Ignoring children as node is not a container but a content control. Ignored child name: '{}'", child.name());
             }
@@ -446,9 +446,9 @@ namespace Fsl::UI::Declarative::UIReader
         }
         else
         {
-          for (pugi::xml_node child : node.children())
+          for (const pugi::xml_node child : node.children())
           {
-            std::string childName(child.name());
+            const std::string childName(child.name());
             if (childName == "Binding")
             {
               // if(!TryBind(current, child))
@@ -509,14 +509,14 @@ namespace Fsl::UI::Declarative::UIReader
 
       bool TryProcessGridChild(UI::GridLayout& rGrid, pugi::xml_node node, const std::size_t depth = 0)
       {
-        std::string strName(node.name());
+        const std::string strName(node.name());
         if (strName == "GridLayout.ColumnDefinitions")
         {
-          for (pugi::xml_node child : node.children("GridColumnDefinition"))
+          for (const pugi::xml_node child : node.children("GridColumnDefinition"))
           {
-            for (pugi::xml_attribute attr : child.attributes())
+            for (const pugi::xml_attribute attr : child.attributes())
             {
-              std::string attrName(attr.name());
+              const std::string attrName(attr.name());
               if (attrName == "Width")
               {
                 auto result = TryParseGridColumnDefinition(attr.value());
@@ -539,11 +539,11 @@ namespace Fsl::UI::Declarative::UIReader
         }
         if (strName == "GridLayout.RowDefinitions")
         {
-          for (pugi::xml_node child : node.children("GridRowDefinition"))
+          for (const pugi::xml_node child : node.children("GridRowDefinition"))
           {
-            for (pugi::xml_attribute attr : child.attributes())
+            for (const pugi::xml_attribute attr : child.attributes())
             {
-              std::string attrName(attr.name());
+              const std::string attrName(attr.name());
               if (attrName == "Height")
               {
                 auto result = TryParseGridRowDefinition(attr.value());
@@ -621,7 +621,7 @@ namespace Fsl::UI::Declarative::UIReader
 
       void ExtractAttributes(std::vector<PropertyRecord>& rDstAttributes, pugi::xml_node node)
       {
-        for (pugi::xml_attribute attr : node.attributes())
+        for (const pugi::xml_attribute attr : node.attributes())
         {
           rDstAttributes.emplace_back(PropertyName(attr.name()), PropertyValue(attr.value()));
         }
@@ -636,17 +636,17 @@ namespace Fsl::UI::Declarative::UIReader
 
         for (const auto& attr : attributes)
         {
-          auto attrNameView = attr.Name.AsStringViewLite();
+          const auto attrNameView = attr.Name.AsStringViewLite();
 
-          auto itrFind = std::find_if(properties.begin(), properties.end(),
-                                      [attrNameView](const DataBinding::DependencyPropertyDefinition& def) { return def.Name() == attrNameView; });
+          const auto itrFind = std::find_if(properties.begin(), properties.end(), [attrNameView](const DataBinding::DependencyPropertyDefinition& def)
+                                            { return def.Name() == attrNameView; });
 
           if (itrFind != properties.end())
           {
             if (!gridOnly)
             {
               FSLLOG3_VERBOSE("Applying attributes: '{}'='{}'", attr.Name.AsString(), attr.Value.AsString());
-              auto attrValueView = attr.Value.AsStringViewLite();
+              const auto attrValueView = attr.Value.AsStringViewLite();
               SetProperty(*window, *itrFind, attrValueView);
             }
           }
@@ -707,7 +707,7 @@ namespace Fsl::UI::Declarative::UIReader
         auto res = strValue.substr(9);
         res = res.substr(0, res.size() - 1);
 
-        auto splitIndex = res.find(',');
+        const auto splitIndex = res.find(',');
         if (splitIndex >= res.size())
         {
           return;
@@ -729,26 +729,26 @@ namespace Fsl::UI::Declarative::UIReader
         elementName = elementName.substr(12);
         path = path.substr(5);
 
-        auto itrFind = m_namedControls.find(std::string(elementName));
+        const auto itrFind = m_namedControls.find(std::string(elementName));
         if (itrFind == m_namedControls.end())
         {
           FSLLOG3_ERROR("Could not find a named control called: '{}'", elementName);
           return;
         }
 
-        auto srcControl = itrFind->second;
+        const auto srcControl = itrFind->second;
         DataBinding::DependencyPropertyDefinitionVector srcProperties;
         srcControl->ExtractProperties(srcProperties);
 
-        auto itrFindProp = std::find_if(srcProperties.begin(), srcProperties.end(),
-                                        [path](const DataBinding::DependencyPropertyDefinition& def) { return def.Name() == path; });
+        const auto itrFindProp = std::find_if(srcProperties.begin(), srcProperties.end(),
+                                              [path](const DataBinding::DependencyPropertyDefinition& def) { return def.Name() == path; });
         if (itrFindProp == srcProperties.end())
         {
           FSLLOG3_ERROR("Could not find a src property called: '{}'", path);
           return;
         }
 
-        auto hSrc = srcControl->GetPropertyHandle(*itrFindProp);
+        const auto hSrc = srcControl->GetPropertyHandle(*itrFindProp);
         window.SetBinding(targetDef, hSrc);
       }
 
@@ -1154,11 +1154,11 @@ namespace Fsl::UI::Declarative::UIReader
 
     pugi::xml_document doc;
 
-    pugi::xml_parse_result result = doc.load_file(filename.AsUTF8String().AsString().c_str());
+    const pugi::xml_parse_result result = doc.load_file(filename.AsUTF8String().AsString().c_str());
 
     FSLLOG3_INFO("Load result: {}", result.description());
 
-    pugi::xml_node root = doc.child("DeclarativeUITest");
+    const pugi::xml_node root = doc.child("DeclarativeUITest");
     if (!root)
     {
       throw UsageErrorException("RootNode not found");

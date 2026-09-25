@@ -50,12 +50,12 @@ namespace Fsl
     explicit AsynchronousServiceProxyFactoryBase(const std::type_index& interfaceType);
     AsynchronousServiceProxyFactoryBase(const std::type_index& interfaceType, const ServiceCaps::Flags flags);
 
-    std::shared_ptr<AServiceOptionParser> GetOptionParser() const override
+    [[nodiscard]] std::shared_ptr<AServiceOptionParser> GetOptionParser() const override
     {
       return m_optionParser;
     }
 
-    ServiceCaps::Flags GetFlags() const override;
+    [[nodiscard]] ServiceCaps::Flags GetFlags() const override;
 
     void FillInterfaceType(ServiceSupportedInterfaceDeque& rServiceInterfaceTypeDeque) const override;
 

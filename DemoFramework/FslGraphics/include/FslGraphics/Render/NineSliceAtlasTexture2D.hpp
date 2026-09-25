@@ -55,7 +55,7 @@ namespace Fsl
     {
     }
 
-    bool IsValid() const
+    [[nodiscard]] bool IsValid() const
     {
       return Texture.IsValid();
     }

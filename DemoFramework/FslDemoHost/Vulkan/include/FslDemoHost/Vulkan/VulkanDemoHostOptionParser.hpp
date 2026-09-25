@@ -52,43 +52,43 @@ namespace Fsl
   public:
     VulkanDemoHostOptionParser();
 
-    uint32_t GetPhysicalDeviceIndex() const
+    [[nodiscard]] uint32_t GetPhysicalDeviceIndex() const
     {
       return m_physicalDeviceIndex;
     }
 
-    OptionUserChoice GetValidationLayerChoice() const
+    [[nodiscard]] OptionUserChoice GetValidationLayerChoice() const
     {
       return m_validationLayer;
     }
 
-    OptionUserChoice GetApiDumpChoice() const
+    [[nodiscard]] OptionUserChoice GetApiDumpChoice() const
     {
       return m_apiDump;
     }
 
-    VulkanLaunchOptions GetLaunchOptions() const
+    [[nodiscard]] VulkanLaunchOptions GetLaunchOptions() const
     {
       return m_launchOptions;
     }
 
     //! @return the user requested instance api version (0 = no override)
-    uint32_t GetInstanceApiVersionOverride() const
+    [[nodiscard]] uint32_t GetInstanceApiVersionOverride() const
     {
       return m_instanceApiVersionOverride;
     }
 
-    bool IsLogExtensionsEnabled() const
+    [[nodiscard]] bool IsLogExtensionsEnabled() const
     {
       return m_logExtensions;
     }
 
-    bool IsLogLayersEnabled() const
+    [[nodiscard]] bool IsLogLayersEnabled() const
     {
       return m_logLayers;
     }
 
-    bool IsLogSurfaceFormatsEnabled() const
+    [[nodiscard]] bool IsLogSurfaceFormatsEnabled() const
     {
       return m_logSurfaceFormats;
     }

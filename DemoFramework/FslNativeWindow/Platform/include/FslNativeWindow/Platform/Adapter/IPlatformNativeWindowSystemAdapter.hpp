@@ -55,7 +55,7 @@ namespace Fsl
     virtual bool ProcessMessages(const NativeWindowProcessMessagesArgs& args) = 0;
 
     //! @brief Check if the display is considered HDR compatible
-    virtual bool IsDisplayHDRCompatible(const int32_t displayId) const = 0;
+    [[nodiscard]] virtual bool IsDisplayHDRCompatible(const int32_t displayId) const = 0;
   };
 }
 

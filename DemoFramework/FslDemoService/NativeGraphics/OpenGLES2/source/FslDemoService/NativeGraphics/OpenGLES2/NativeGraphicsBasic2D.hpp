@@ -62,7 +62,7 @@ namespace Fsl::GLES2
     void End() final;
     void DrawPoints(const Vector2* const pDst, const uint32_t length, const Color& color) final;
     void DrawString(const StringViewLite& strView, const Vector2& dstPosition) final;
-    PxSize2D FontSize() const final;
+    [[nodiscard]] PxSize2D FontSize() const final;
 
   private:
   };

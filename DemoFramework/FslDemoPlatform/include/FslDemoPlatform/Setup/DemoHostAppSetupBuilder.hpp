@@ -56,7 +56,7 @@ namespace Fsl
     void Register(const DemoAppSetup& demoAppSetup, const std::deque<DemoHostFeature>& demoHostFeatures,
                   const std::shared_ptr<DemoAppHostConfig>& demoHostConfig) override;
 
-    DemoHostAppSetup GetSetup() const;
+    [[nodiscard]] DemoHostAppSetup GetSetup() const;
   };
 }
 

@@ -168,7 +168,7 @@ namespace Fsl
       return;
     }
 
-    bool wasRealtime = m_timestepMode == TimeStepMode::Normal;
+    const bool wasRealtime = m_timestepMode == TimeStepMode::Normal;
 
     m_timestepMode = timeStepMode;
     if (m_timestepMode == TimeStepMode::Normal)

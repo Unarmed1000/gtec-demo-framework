@@ -363,7 +363,7 @@ namespace Fsl::GLES3
     assert(record.IsValid());
     m_frame.Cache.SavedState.UseProgram(record.CachedProgramHandle);
 
-    auto textureInfo = m_textureFactory.TryGetTextureInfo(textures[0]);
+    const auto textureInfo = m_textureFactory.TryGetTextureInfo(textures[0]);
     assert(textureInfo.IsValid());
     m_frame.Cache.SavedState.BindTexture(textureInfo.Handle);
     m_frame.Commands.MaterialHandle = material;
@@ -489,7 +489,7 @@ namespace Fsl::GLES3
       {
         const PxViewport& viewport = record.MaterialInfo.Viewport;
         const int32_t newY = m_dependentResources.WindowSizePx.RawHeight() - viewport.Bottom();
-        PxViewport newViewport(viewport.X(), newY, viewport.Width(), viewport.Height());
+        const PxViewport newViewport(viewport.X(), newY, viewport.Width(), viewport.Height());
         m_frame.Cache.SavedState.SetViewport(newViewport);
         break;
       }

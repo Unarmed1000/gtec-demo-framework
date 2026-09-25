@@ -73,15 +73,15 @@ namespace Fsl::UI
   public:
     GestureManager(const GestureFlags enabledGestures, GestureDetector gestureDetection, const uint16_t densityDpi);
 
-    bool IsEnabled() const noexcept;
+    [[nodiscard]] bool IsEnabled() const noexcept;
     void SetEnabled(const bool value);
 
-    GestureAxis GetGestureAxis() const noexcept;
+    [[nodiscard]] GestureAxis GetGestureAxis() const noexcept;
     void SetGestureAxis(const GestureAxis value);
 
     void SetDpi(const uint16_t densityDpi) noexcept;
 
-    bool IsIdle() const noexcept;
+    [[nodiscard]] bool IsIdle() const noexcept;
 
     bool TryGet(GestureBasicEvent& rEvent) noexcept;
 

@@ -64,7 +64,7 @@ namespace Fsl::UI
       m_callId.WinMarkLayoutAsDirty = m_callIdManager->Claim();
     }
 
-    auto res = BaseWindow::WinMarkLayoutAsDirty();
+    const auto res = BaseWindow::WinMarkLayoutAsDirty();
 
     Callbacks.WinMarkLayoutAsDirty();
     return res;

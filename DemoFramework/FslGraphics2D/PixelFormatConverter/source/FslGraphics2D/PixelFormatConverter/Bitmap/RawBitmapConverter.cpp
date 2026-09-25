@@ -167,21 +167,21 @@ namespace Fsl::FslGraphics2D::RawBitmapConverter
         {
         case PixelFormat::R16G16B16_UNORM:
           {
-            auto dstBitmapMod = RawBitmapEx::UncheckedPatchWithCompatiblePixelFormat(dstBitmap, PixelFormat::R8G8B8_SRGB);
+            const auto dstBitmapMod = RawBitmapEx::UncheckedPatchWithCompatiblePixelFormat(dstBitmap, PixelFormat::R8G8B8_SRGB);
             RawBitmapConverterFunctions::UncheckedR16G16B16UNormToR8G8B8Srgb(dstBitmapMod, srcBitmap);
             RawBitmapUtil::Swizzle24(dstBitmap, 2, 1, 0);
           }
           return true;
         case PixelFormat::R16G16B16_SFLOAT:
           {
-            auto dstBitmapMod = RawBitmapEx::UncheckedPatchWithCompatiblePixelFormat(dstBitmap, PixelFormat::R8G8B8_SRGB);
+            const auto dstBitmapMod = RawBitmapEx::UncheckedPatchWithCompatiblePixelFormat(dstBitmap, PixelFormat::R8G8B8_SRGB);
             UncheckedR16G16B16FloatToR8G8B8Srgb(dstBitmapMod, srcBitmap);
             RawBitmapUtil::Swizzle24(dstBitmap, 2, 1, 0);
           }
           return true;
         case PixelFormat::R32G32B32_SFLOAT:
           {
-            auto dstBitmapMod = RawBitmapEx::UncheckedPatchWithCompatiblePixelFormat(dstBitmap, PixelFormat::R8G8B8_SRGB);
+            const auto dstBitmapMod = RawBitmapEx::UncheckedPatchWithCompatiblePixelFormat(dstBitmap, PixelFormat::R8G8B8_SRGB);
             RawBitmapConverterFunctions::UncheckedR32G32B32FloatToR8G8B8Srgb(dstBitmapMod, srcBitmap);
             RawBitmapUtil::Swizzle24(dstBitmap, 2, 1, 0);
           }
@@ -197,21 +197,21 @@ namespace Fsl::FslGraphics2D::RawBitmapConverter
         {
         case PixelFormat::R16G16B16A16_UNORM:
           {
-            auto dstBitmapMod = RawBitmapEx::UncheckedPatchWithCompatiblePixelFormat(dstBitmap, PixelFormat::R8G8B8A8_SRGB);
+            const auto dstBitmapMod = RawBitmapEx::UncheckedPatchWithCompatiblePixelFormat(dstBitmap, PixelFormat::R8G8B8A8_SRGB);
             RawBitmapConverterFunctions::UncheckedR16G16B16A16UNormToR8G8B8A8Srgb(dstBitmapMod, srcBitmap);
             RawBitmapUtil::Swizzle(dstBitmap, 2, 1, 0, 3);
           }
           return true;
         case PixelFormat::R16G16B16A16_SFLOAT:
           {
-            auto dstBitmapMod = RawBitmapEx::UncheckedPatchWithCompatiblePixelFormat(dstBitmap, PixelFormat::R8G8B8A8_SRGB);
+            const auto dstBitmapMod = RawBitmapEx::UncheckedPatchWithCompatiblePixelFormat(dstBitmap, PixelFormat::R8G8B8A8_SRGB);
             UncheckedR16G16B16A16FloatToR8G8B8A8Srgb(dstBitmapMod, srcBitmap);
             RawBitmapUtil::Swizzle(dstBitmap, 2, 1, 0, 3);
           }
           return true;
         case PixelFormat::R32G32B32A32_SFLOAT:
           {
-            auto dstBitmapMod = RawBitmapEx::UncheckedPatchWithCompatiblePixelFormat(dstBitmap, PixelFormat::R8G8B8A8_SRGB);
+            const auto dstBitmapMod = RawBitmapEx::UncheckedPatchWithCompatiblePixelFormat(dstBitmap, PixelFormat::R8G8B8A8_SRGB);
             RawBitmapConverterFunctions::UncheckedR32G32B32A32FloatToR8G8B8A8Srgb(dstBitmapMod, srcBitmap);
             RawBitmapUtil::Swizzle(dstBitmap, 2, 1, 0, 3);
           }

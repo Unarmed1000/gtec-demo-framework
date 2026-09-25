@@ -129,7 +129,7 @@ namespace Fsl
     ~StrategyBatchByState() = default;
 
 
-    BlendState GetActiveBlendState() const
+    [[nodiscard]] BlendState GetActiveBlendState() const
     {
       // If these assert fire it means we have a internal error
       assert(IsValid());
@@ -138,7 +138,7 @@ namespace Fsl
       return m_addQuad.pCurrentDstSegment->ActiveBlendState;
     }
 
-    const BatchSdfRenderConfig& GetActiveSdfRenderConfig() const
+    [[nodiscard]] const BatchSdfRenderConfig& GetActiveSdfRenderConfig() const
     {
       // If these assert fire it means we have a internal error
       assert(IsValid());
@@ -156,14 +156,14 @@ namespace Fsl
     }
 
 
-    uint32_t GetCapacity() const
+    [[nodiscard]] uint32_t GetCapacity() const
     {
       assert(IsValid());
       return static_cast<uint32_t>(m_segments.size() - SAFETY);
     }
 
 
-    uint32_t GetSegmentCount() const
+    [[nodiscard]] uint32_t GetSegmentCount() const
     {
       assert(IsValid());
       assert(m_addQuad.pCurrentDstSegment != nullptr);
@@ -175,7 +175,7 @@ namespace Fsl
     }
 
 
-    uint32_t GetVertexCount() const
+    [[nodiscard]] uint32_t GetVertexCount() const
     {
       assert(IsValid());
       assert(m_addQuad.pNextDstVertex != nullptr);
@@ -186,7 +186,7 @@ namespace Fsl
     }
 
 
-    uint32_t GetQuadCount() const
+    [[nodiscard]] uint32_t GetQuadCount() const
     {
       // If these assert fire it means we have a internal error
       assert(IsValid());
@@ -195,7 +195,7 @@ namespace Fsl
     }
 
 
-    vertex_span_type GetSpan() const
+    [[nodiscard]] vertex_span_type GetSpan() const
     {
       // If this assert fire it means we have a internal error
       assert(IsValid());
@@ -515,7 +515,7 @@ namespace Fsl
       }
     }
 
-    inline bool IsValid() const
+    [[nodiscard]] inline bool IsValid() const
     {
       // Sanity checks
       return m_addQuad.IsValid(m_quadVertices, m_segments);

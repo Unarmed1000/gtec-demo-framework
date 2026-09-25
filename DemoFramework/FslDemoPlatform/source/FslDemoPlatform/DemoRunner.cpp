@@ -156,8 +156,8 @@ namespace Fsl
     void RegisterOptionParsersInOptionsService(const std::shared_ptr<IServiceProvider>& theServiceProvider, const DemoBasicSetup& demoSetup,
                                                const std::shared_ptr<DemoHostManagerOptionParser>& demoHostManagerOptionParser)
     {
-      ServiceProvider serviceProvider(theServiceProvider);
-      auto optionService = serviceProvider.Get<IOptionsServiceControl>();
+      const ServiceProvider serviceProvider(theServiceProvider);
+      const auto optionService = serviceProvider.Get<IOptionsServiceControl>();
 
       if (demoHostManagerOptionParser)
       {
@@ -241,7 +241,7 @@ namespace Fsl
       serviceFramework->LaunchGlobalServices();
       serviceFramework->LaunchThreads();
 
-      auto serviceProvider = serviceFramework->GetServiceProvider();
+      const auto serviceProvider = serviceFramework->GetServiceProvider();
       // This really should not happen, but just check anyway
       if (!serviceProvider)
       {
@@ -251,7 +251,7 @@ namespace Fsl
 
       RegisterOptionParsersInOptionsService(serviceProvider, demoBasicSetup, demoHostManagerOptionParser);
 
-      DemoSetup demoSetup(rExceptionMessageFormatter, serviceProvider, demoBasicSetup.Host, demoBasicSetup.App, demoBasicSetup.VerbosityLevel);
+      const DemoSetup demoSetup(rExceptionMessageFormatter, serviceProvider, demoBasicSetup.Host, demoBasicSetup.App, demoBasicSetup.VerbosityLevel);
       std::unique_ptr<DemoHostManager> demoHostManager;
       try
       {
@@ -280,9 +280,9 @@ namespace Fsl
         return EXIT_FAILURE;
       }
 
-      auto serviceLooper = serviceFramework->GetServiceHostLooper();
+      const auto serviceLooper = serviceFramework->GetServiceHostLooper();
       // Run the demo
-      auto returnValue = demoHostManager->Run(serviceLooper, demoRunnerConfig.MainLoopCallbackFunction);
+      const auto returnValue = demoHostManager->Run(serviceLooper, demoRunnerConfig.MainLoopCallbackFunction);
 
       // Kill the threads and give the looper one last chance to process messages
       serviceFramework.reset();

@@ -40,12 +40,12 @@ namespace Fsl
   public:
     WindowHostServiceFactory();
 
-    std::shared_ptr<AServiceOptionParser> GetOptionParser() const final
+    [[nodiscard]] std::shared_ptr<AServiceOptionParser> GetOptionParser() const final
     {
       return {};
     }
 
-    ServiceCaps::Flags GetFlags() const final;
+    [[nodiscard]] ServiceCaps::Flags GetFlags() const final;
     void FillInterfaceType(ServiceSupportedInterfaceDeque& rServiceInterfaceTypeDeque) const final;
     std::shared_ptr<IService> Allocate(ServiceProvider& provider) final;
   };

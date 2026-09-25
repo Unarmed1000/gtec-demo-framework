@@ -43,7 +43,7 @@ namespace Fsl::UI
     : m_externalModuleHost(std::make_unique<ExternalModuleHost>(moduleHost))
     , m_modules(factories.size())
   {
-    ExternalModuleCreateInfo createInfo(*m_externalModuleHost);
+    const ExternalModuleCreateInfo createInfo(*m_externalModuleHost);
     for (std::size_t i = 0; i < factories.size(); ++i)
     {
       const auto& factory = factories[i];
@@ -58,7 +58,7 @@ namespace Fsl::UI
   {
     if (node)
     {
-      for (auto& rEntry : m_modules)
+      for (const auto& rEntry : m_modules)
       {
         rEntry.Module->OnWindowAdd(node->GetWindow());
       }
@@ -69,7 +69,7 @@ namespace Fsl::UI
   {
     if (node)
     {
-      for (auto& rEntry : m_modules)
+      for (const auto& rEntry : m_modules)
       {
         rEntry.Module->OnWindowDispose(node->GetWindow());
       }

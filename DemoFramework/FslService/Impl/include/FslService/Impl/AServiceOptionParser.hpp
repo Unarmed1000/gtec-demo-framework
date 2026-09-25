@@ -42,7 +42,7 @@ namespace Fsl
     AServiceOptionParser(const AServiceOptionParser&) = delete;
     AServiceOptionParser& operator=(const AServiceOptionParser&) = delete;
 
-    std::string GetName() const override
+    [[nodiscard]] std::string GetName() const override
     {
       return {"ServiceOptionParser"};
     }

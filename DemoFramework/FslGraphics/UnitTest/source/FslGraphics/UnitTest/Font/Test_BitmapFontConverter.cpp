@@ -85,9 +85,9 @@ namespace
   }
 
 
-  AtlasCharInfo FindAtlasEntry(const StringViewLite strPath, BasicTextureAtlas& atlas, const int32_t charId)
+  AtlasCharInfo FindAtlasEntry(const StringViewLite strPath, const BasicTextureAtlas& atlas, const int32_t charId)
   {
-    IO::Path glyphPath(fmt::format("{}/{:X}", strPath, charId));
+    const IO::Path glyphPath(fmt::format("{}/{:X}", strPath, charId));
 
     for (uint32_t i = 0; i < atlas.Count(); ++i)
     {
@@ -112,7 +112,7 @@ TEST_F(TestFontBitmapFontConverter, Convert)
   BasicFontKerning font;
   BinaryFontBasicKerningLoader::Load(font, m_fontBasicPath);
 
-  auto bitmapFont = BitmapFontConverter::ToBitmapFont(atlas, font);
+  const auto bitmapFont = BitmapFontConverter::ToBitmapFont(atlas, font);
 
   EXPECT_EQ(font.GetName(), bitmapFont.GetName());
   EXPECT_EQ(font.GetPathName(), bitmapFont.GetTextureName());
@@ -122,7 +122,7 @@ TEST_F(TestFontBitmapFontConverter, Convert)
   EXPECT_EQ(BitmapFontType::Bitmap, bitmapFont.GetFontType());
   EXPECT_EQ(NumericCast<std::size_t>(font.Count()), bitmapFont.GetCharCount());
 
-  auto charSpan = bitmapFont.GetChars();
+  const auto charSpan = bitmapFont.GetChars();
   EXPECT_EQ(bitmapFont.GetCharCount(), charSpan.size());
 
   const StringViewLite atlasPath = font.GetPathName().AsStringViewLite();
@@ -130,13 +130,13 @@ TEST_F(TestFontBitmapFontConverter, Convert)
   int32_t charIndex = 0;
   for (int32_t rangeIndex = 0; rangeIndex < font.RangeCount(); ++rangeIndex)
   {
-    auto range = font.GetRange(rangeIndex);
+    const auto range = font.GetRange(rangeIndex);
     auto rangeCharId = range.From;
     const auto rangeCharIdEnd = rangeCharId + range.Length;
     while (rangeCharId < rangeCharIdEnd)
     {
-      auto entry = font.Get(charIndex);
-      auto convertedEntry = Get(charSpan, rangeCharId);
+      const auto entry = font.Get(charIndex);
+      const auto convertedEntry = Get(charSpan, rangeCharId);
       // Compare the parts we can lookup directly in the kerning
       EXPECT_EQ(entry.LayoutWidthPx, convertedEntry.XAdvancePx);
 

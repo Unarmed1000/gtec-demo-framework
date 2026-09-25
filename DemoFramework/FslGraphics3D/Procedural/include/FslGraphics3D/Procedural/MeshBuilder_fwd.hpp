@@ -58,8 +58,8 @@ namespace Fsl
       explicit MeshBuilder(const PrimitiveType primitiveType);
       MeshBuilder(const PrimitiveType primitiveType, const std::size_t vertexCapacity, const std::size_t indexCapacity);
 
-      std::size_t GetVertexCount() const;
-      std::size_t GetIndexCount() const;
+      [[nodiscard]] std::size_t GetVertexCount() const;
+      [[nodiscard]] std::size_t GetIndexCount() const;
 
       void Clear();
       void Append(const Graphics3D::GenericMesh<TVertex, TIndex>& mesh);

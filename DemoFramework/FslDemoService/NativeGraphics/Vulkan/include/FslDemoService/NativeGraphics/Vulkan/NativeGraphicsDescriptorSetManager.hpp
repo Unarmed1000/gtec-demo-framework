@@ -49,7 +49,7 @@ namespace Fsl::Vulkan
     NativeGraphicsDescriptorSetManager(const VUDevice& device, const uint32_t maxFramesInFlight);
     ~NativeGraphicsDescriptorSetManager();
 
-    VkDescriptorSetLayout GetMainDescriptorSetLayout() const
+    [[nodiscard]] VkDescriptorSetLayout GetMainDescriptorSetLayout() const
     {
       return m_mainDescriptorSetLayout.Get();
     }

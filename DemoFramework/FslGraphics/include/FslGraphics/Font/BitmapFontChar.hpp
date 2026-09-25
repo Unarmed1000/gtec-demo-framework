@@ -73,7 +73,7 @@ namespace Fsl
     }
 
 
-    constexpr uint32_t GetId() const
+    [[nodiscard]] constexpr uint32_t GetId() const
     {
       return Id;
     }

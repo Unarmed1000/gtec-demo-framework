@@ -75,7 +75,7 @@ namespace Fsl
     {
     }
 
-    EGLNativeWindowType GetWindowType() const override
+    [[nodiscard]] EGLNativeWindowType GetWindowType() const override
     {
       return reinterpret_cast<EGLNativeWindowType>(TNativeWindow::GetPlatformWindow());
     }
@@ -92,7 +92,7 @@ namespace Fsl
       return TNativeWindow::TryGetNativeSize(rSize);
     }
 
-    const NativeEGLSetup& GetNativeSetup() const
+    [[nodiscard]] const NativeEGLSetup& GetNativeSetup() const
     {
       return m_nativeSetup;
     }

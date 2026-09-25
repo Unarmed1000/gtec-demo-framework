@@ -73,22 +73,22 @@ namespace Fsl::UI
 
 
     //! @brief Check if the slider is being dragged or not
-    constexpr bool IsDragging() const
+    [[nodiscard]] constexpr bool IsDragging() const
     {
       return m_dragInfo.State == DragState::Dragging;
     }
 
-    constexpr bool IsEnabled() const
+    [[nodiscard]] constexpr bool IsEnabled() const
     {
       return m_isEnabled;
     }
 
-    constexpr float GetPercentage() const
+    [[nodiscard]] constexpr float GetPercentage() const
     {
       return m_percentage;
     }
 
-    PxValue GetPositionPx(const float percentage) const
+    [[nodiscard]] PxValue GetPositionPx(const float percentage) const
     {
       return m_spanInfo.CalcPercentageToPxPosition(percentage);
     }
@@ -98,7 +98,7 @@ namespace Fsl::UI
     //  return m_dragInfo;
     //}
 
-    constexpr const SliderPixelSpanInfo& GetSpanInfo() const
+    [[nodiscard]] constexpr const SliderPixelSpanInfo& GetSpanInfo() const
     {
       return m_spanInfo;
     }

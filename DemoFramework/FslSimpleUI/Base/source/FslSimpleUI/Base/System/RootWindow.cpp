@@ -70,7 +70,7 @@ namespace Fsl::UI
 
   bool RootWindow::SetScreenResolution(const PxExtent2D& valuePx, const uint32_t densityDpi)
   {
-    auto sizePx = TypeConverter::UncheckedTo<PxSize2D>(valuePx);
+    const auto sizePx = TypeConverter::UncheckedTo<PxSize2D>(valuePx);
     if (sizePx == m_resolutionPx && densityDpi == m_densityDpi)
     {
       return false;
@@ -96,28 +96,28 @@ namespace Fsl::UI
 
   void RootWindow::OnClickInputPreview(const std::shared_ptr<WindowInputClickEvent>& theEvent)
   {
-    auto lambda = [&theEvent](std::shared_ptr<IEventListener>& listener) { listener->OnClickInputPreview(theEvent); };
+    const auto lambda = [&theEvent](std::shared_ptr<IEventListener>& listener) { listener->OnClickInputPreview(theEvent); };
     m_eventListenerManager.Call(lambda);
   }
 
 
   void RootWindow::OnClickInput(const std::shared_ptr<WindowInputClickEvent>& theEvent)
   {
-    auto lambda = [&theEvent](std::shared_ptr<IEventListener>& listener) { listener->OnClickInput(theEvent); };
+    const auto lambda = [&theEvent](std::shared_ptr<IEventListener>& listener) { listener->OnClickInput(theEvent); };
     m_eventListenerManager.Call(lambda);
   }
 
 
   void RootWindow::OnSelect(const std::shared_ptr<WindowSelectEvent>& theEvent)
   {
-    auto lambda = [&theEvent](std::shared_ptr<IEventListener>& listener) { listener->OnSelect(theEvent); };
+    const auto lambda = [&theEvent](std::shared_ptr<IEventListener>& listener) { listener->OnSelect(theEvent); };
     m_eventListenerManager.Call(lambda);
   }
 
 
   void RootWindow::OnContentChanged(const std::shared_ptr<WindowContentChangedEvent>& theEvent)
   {
-    auto lambda = [&theEvent](std::shared_ptr<IEventListener>& listener) { listener->OnContentChanged(theEvent); };
+    const auto lambda = [&theEvent](std::shared_ptr<IEventListener>& listener) { listener->OnContentChanged(theEvent); };
     m_eventListenerManager.Call(lambda);
   }
 }

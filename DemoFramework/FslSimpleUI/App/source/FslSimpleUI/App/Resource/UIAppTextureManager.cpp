@@ -98,7 +98,7 @@ namespace Fsl::SimpleUIApp
 
     bool IsValidSupportedDp(const uint64_t dp)
     {
-      for (auto entry : LocalConfig::ValidDpis)
+      for (const auto entry : LocalConfig::ValidDpis)
       {
         if (dp == entry)
         {
@@ -114,7 +114,7 @@ namespace Fsl::SimpleUIApp
       static_assert(LocalConfig::ValidDpis.size() <= std::numeric_limits<uint32_t>::max(), "expectation failed");
       for (uint32_t i = 0; i < LocalConfig::ValidDpis.size(); ++i)
       {
-        IO::Path filename(fmt::vformat(patternPath.AsStringView(), fmt::make_format_args(LocalConfig::ValidDpis[i])));
+        const IO::Path filename(fmt::vformat(patternPath.AsStringView(), fmt::make_format_args(LocalConfig::ValidDpis[i])));
         if (contentManager.Exists(filename))
         {
           availableDp.AddIndex(i);
@@ -130,8 +130,8 @@ namespace Fsl::SimpleUIApp
       if (allowDpAware)
       {
         auto pathExtView = IO::Path::GetExtensionView(pathView);
-        auto pathFilenameView = IO::Path::GetFileNameWithoutExtensionView(pathView);
-        auto pathDirectoryView = IO::Path::GetDirectoryNameView(pathView);
+        const auto pathFilenameView = IO::Path::GetFileNameWithoutExtensionView(pathView);
+        const auto pathDirectoryView = IO::Path::GetDirectoryNameView(pathView);
 
         if (pathFilenameView.ends_with(LocalConfig::FilenameDpiPostfix))
         {
@@ -142,7 +142,7 @@ namespace Fsl::SimpleUIApp
           if (index != IO::PathView::npos)
           {
             const auto parsedFilename = parseFilenameView.substr(0, index + 1u);
-            auto parsedDpPart = parseFilenameView.substr(index + 1u);
+            const auto parsedDpPart = parseFilenameView.substr(index + 1u);
             if (!parsedFilename.empty() && !parsedDpPart.empty())
             {
               // We found a possible match, so lets try to parse it as a number
@@ -150,9 +150,9 @@ namespace Fsl::SimpleUIApp
               if (StringToValue::TryParse(value, parsedDpPart) && IsValidSupportedDp(value))
               {
                 // We successfully parsed the value and it was a supported dp, so this is a valid "_<num>dp" pattern
-                auto patternPath = IO::Path::Combine(
+                const auto patternPath = IO::Path::Combine(
                   pathDirectoryView, IO::Path(fmt::format("{}{{}}{}{}", parsedFilename, LocalConfig::FilenameDpiPostfix, pathExtView)));
-                EncodedAvailableDpi availableDp(DetermineAvailableDp(contentManager, patternPath));
+                const EncodedAvailableDpi availableDp(DetermineAvailableDp(contentManager, patternPath));
                 // If there are less than two available graphics resources we just treat the path as a normal one and disable the pattern
                 if (availableDp.Count() > 1u)
                 {
@@ -198,7 +198,8 @@ namespace Fsl::SimpleUIApp
       uint32_t bestDpi = 0u;
       for (uint32_t i = 0; i < LocalConfig::ValidDpis.size(); ++i)
       {
-        float score = analyzedPath.AvailableDpi.IsFlagged(i) ? CalcScore(LocalConfig::ValidDpis[i], densityDpi) : std::numeric_limits<float>::max();
+        const float score =
+          analyzedPath.AvailableDpi.IsFlagged(i) ? CalcScore(LocalConfig::ValidDpis[i], densityDpi) : std::numeric_limits<float>::max();
         if (score < bestScore)
         {
           bestDpi = LocalConfig::ValidDpis[i];
@@ -214,7 +215,7 @@ namespace Fsl::SimpleUIApp
                                         const uint32_t selectedDp, const UIAppTextureResourceCreationInfo& textureCreationInfo,
                                         const UITestPatternMode testPatternMode)
     {
-      IO::Path resourceName(DoBuildResourceName(pathInfo, selectedDp));
+      const IO::Path resourceName(DoBuildResourceName(pathInfo, selectedDp));
 
       FSLLOG3_VERBOSE("Loading texture '{0}'", resourceName)
 
@@ -229,9 +230,9 @@ namespace Fsl::SimpleUIApp
       std::unique_ptr<CompatibilityTextureAtlasMap> textureAtlasMap;
       if (isAtlas)
       {
-        auto directoryname = IO::Path::GetDirectoryNameView(resourceName.AsPathView());
+        const auto directoryname = IO::Path::GetDirectoryNameView(resourceName.AsPathView());
         auto filenameWithoutExt = IO::Path::GetFileNameWithoutExtensionView(resourceName.AsPathView());
-        IO::Path atlasPath(IO::Path::Combine(directoryname, IO::Path(fmt::format("{}{}", filenameWithoutExt, LocalConfig::AtlasExtension))));
+        const IO::Path atlasPath(IO::Path::Combine(directoryname, IO::Path(fmt::format("{}{}", filenameWithoutExt, LocalConfig::AtlasExtension))));
         FSLLOG3_VERBOSE("Loading texture atlas '{0}'", atlasPath)
         BasicTextureAtlas textureAtlas;
         contentManager.Read(textureAtlas, atlasPath);
@@ -257,7 +258,7 @@ namespace Fsl::SimpleUIApp
       return {texture, std::move(textureAtlasMap)};
     }
 
-    PrepareCreateResult PrepareCreateTexture(const std::map<IO::Path, UIAppTextureHandle>& textureLookup, IContentManager& rContentManager,
+    PrepareCreateResult PrepareCreateTexture(const std::map<IO::Path, UIAppTextureHandle>& textureLookup, const IContentManager& rContentManager,
                                              const IO::PathView& atlasPath, const UIAppTextureResourceCreationInfo& textureCreationInfo,
                                              const UIAppResourceFlag flags, const uint32_t densityDpi, const UITestPatternMode testPatternMode)
     {
@@ -265,7 +266,7 @@ namespace Fsl::SimpleUIApp
 
       // Determine if this is a DP aware resource
       auto pathInfo = AnalyzePath(rContentManager, atlasPath, allowDpAware);
-      auto selectedDp = DetermineResourceDpi(pathInfo, densityDpi);
+      const auto selectedDp = DetermineResourceDpi(pathInfo, densityDpi);
 
       if (textureLookup.contains(pathInfo.SrcPath))
       {
@@ -292,8 +293,8 @@ namespace Fsl::SimpleUIApp
 
     IO::Path GetFontName(const AnalyzedPath& pathInfo, const uint32_t dpi, const IO::PathView& fontName)
     {
-      auto resourceName = DoBuildResourceName(pathInfo, dpi);
-      auto directoryView = IO::Path::GetDirectoryNameView(resourceName.AsPathView());
+      const auto resourceName = DoBuildResourceName(pathInfo, dpi);
+      const auto directoryView = IO::Path::GetDirectoryNameView(resourceName.AsPathView());
       auto filenameWithoutExtView = IO::Path::GetFileNameWithoutExtensionView(resourceName.AsPathView());
       return IO::Path::Combine(directoryView, IO::Path(fmt::format("{}_{}", filenameWithoutExtView, fontName)));
     }
@@ -322,7 +323,7 @@ namespace Fsl::SimpleUIApp
       {
         if (texturePathInfo.AvailableDpi.IsFlagged(i))
         {
-          IO::Path resourceFontName(GetFontName(texturePathInfo, LocalConfig::ValidDpis[i], fontName));
+          const IO::Path resourceFontName(GetFontName(texturePathInfo, LocalConfig::ValidDpis[i], fontName));
           if (!contentManager.Exists(resourceFontName))
           {
             return false;
@@ -380,7 +381,7 @@ namespace Fsl::SimpleUIApp
     if (UIAppResourceFlagUtil::IsFlagged(flags, UIAppResourceFlag::UIGroup) &&
         UITestPatternModeUtil::IsFlagged(m_options.TestPatternMode, UITestPatternMode::AllowSwitching))
     {
-      auto res = CreateDynamicTexture(rContentManager, rRenderSystem, atlasPath, textureCreationInfo, flags);
+      const auto res = CreateDynamicTexture(rContentManager, rRenderSystem, atlasPath, textureCreationInfo, flags);
       return {res.Handle, res.Texture, res.ExtentPx, res.TexturePixelFormat};
     }
 
@@ -396,8 +397,9 @@ namespace Fsl::SimpleUIApp
       texture = rRenderSystem.CreateTexture2D(directAccess.AsRawTexture(), textureCreationInfo.Texture.FilterHint, textureCreationInfo.Texture.Flags);
     }
 
-    auto handle = DoAddTexture(prepareCreateResult.CreationInfo, prepareCreateResult.PathInfo, prepareCreateResult.Dpi,
-                               prepareCreateResult.TextureResult.SrcTexture, std::move(prepareCreateResult.TextureResult.Atlas), texture, flags);
+    const auto handle =
+      DoAddTexture(prepareCreateResult.CreationInfo, prepareCreateResult.PathInfo, prepareCreateResult.Dpi,
+                   prepareCreateResult.TextureResult.SrcTexture, std::move(prepareCreateResult.TextureResult.Atlas), texture, flags);
     return {handle, texture, extent, pixelFormat};
   }
 
@@ -421,7 +423,7 @@ namespace Fsl::SimpleUIApp
       texture =
         rRenderSystem.CreateDynamicTexture2D(directAccess.AsRawTexture(), textureCreationInfo.Texture.FilterHint, textureCreationInfo.Texture.Flags);
     }
-    auto handle =
+    const auto handle =
       DoAddTexture(prepareCreateResult.CreationInfo, prepareCreateResult.PathInfo, prepareCreateResult.Dpi,
                    prepareCreateResult.TextureResult.SrcTexture, std::move(prepareCreateResult.TextureResult.Atlas), texture, modifiedFlags);
     return {handle, texture, extent, pixelFormat};
@@ -547,7 +549,7 @@ namespace Fsl::SimpleUIApp
       throw UsageErrorException("texture was not marked as a legacy texture, so can not create a legacy sprite font for it");
     }
 
-    IO::Path resourceFontName(!isLegacyFullPathFontName ? GetFontName(textureInfo.PathInfo, textureInfo.Dpi, fontName) : fontName);
+    const IO::Path resourceFontName(!isLegacyFullPathFontName ? GetFontName(textureInfo.PathInfo, textureInfo.Dpi, fontName) : fontName);
     FSLLOG3_VERBOSE2("Loading font: '{}'", resourceFontName);
 
     const bool isLegacyFontFormat = (isLegacyFullPathFontName && fontName.ends_with(LocalConfig::OldFontExtension));
@@ -731,9 +733,9 @@ namespace Fsl::SimpleUIApp
         const PixelFormat pixelFormat = texture.GetPixelFormat();
         const auto origin = texture.GetBitmapOrigin();
         const auto sizePx = TypeConverter::To<PxSize2D>(texture.GetExtent2D());
-        Texture testTexture = textureDefinition.Atlas
-                                ? TestAtlasTextureGenerator::CreateTestPatternTexture(sizePx, pixelFormat, origin, *textureDefinition.Atlas)
-                                : TestAtlasTextureGenerator::CreateTestPatternTexture(sizePx, pixelFormat, origin);
+        const Texture testTexture = textureDefinition.Atlas
+                                      ? TestAtlasTextureGenerator::CreateTestPatternTexture(sizePx, pixelFormat, origin, *textureDefinition.Atlas)
+                                      : TestAtlasTextureGenerator::CreateTestPatternTexture(sizePx, pixelFormat, origin);
         m_testPatternTextures[hTexture] = TestPatternRecord{std::move(texture), testTexture};
       }
     }

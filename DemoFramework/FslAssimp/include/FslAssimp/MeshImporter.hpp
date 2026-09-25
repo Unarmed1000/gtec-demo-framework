@@ -57,7 +57,7 @@ namespace Fsl
     MeshImporter();
     explicit MeshImporter(Graphics3D::MeshAllocatorFunc meshAllocator);
 
-    Graphics3D::MeshAllocatorFunc GetDefaultAllocator() const;
+    [[nodiscard]] Graphics3D::MeshAllocatorFunc GetDefaultAllocator() const;
 
     //! @brief Extract the mesh
     //! @param pSrcMesh the mesh to extract

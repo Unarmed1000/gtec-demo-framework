@@ -141,7 +141,7 @@ namespace Fsl
         const auto span = service->GetSupportedToneMappings(conversionType);
         for (const auto& mapping : span)
         {
-          auto itrFind = map.find(mapping.ToneMapper);
+          const auto itrFind = map.find(mapping.ToneMapper);
           if (itrFind == map.end())
           {
             map.emplace(mapping.ToneMapper, std::vector<ToneMappingRecord>{ToneMappingRecord(mapping.Format, service)});
@@ -157,7 +157,7 @@ namespace Fsl
 
     bool IsHDRFormat(const PixelFormat pixelFormat) noexcept
     {
-      PixelFormatLayout layout = PixelFormatUtil::GetPixelFormatLayout(pixelFormat);
+      const PixelFormatLayout layout = PixelFormatUtil::GetPixelFormatLayout(pixelFormat);
       switch (layout)
       {
       case PixelFormatLayout::R16G16B16:

@@ -89,7 +89,7 @@ TEST(TestVertices_IndexConverter, Convert_src_uint8_dst_uint8_NullSrc)
 TEST(TestVertices_IndexConverter, Convert_src_uint8_dst_uint8_NullDst)
 {
   const std::array<uint8_t, 3> src = {1, 2, 3};
-  std::array<uint8_t, 3> dst{};
+  const std::array<uint8_t, 3> dst{};
 
   uint8_t* pNull = nullptr;
   EXPECT_THROW(IndexConverter::Convert(pNull, dst.size(), src.data(), src.size()), std::invalid_argument);
@@ -120,7 +120,7 @@ TEST(TestVertices_IndexConverter, Convert_src_uint8_dst_uint16_NullSrc)
 TEST(TestVertices_IndexConverter, Convert_src_uint8_dst_uint16_NullDst)
 {
   const std::array<uint8_t, 3> src = {1, 2, 3};
-  std::array<uint16_t, 3> dst{};
+  const std::array<uint16_t, 3> dst{};
 
   uint16_t* pNull = nullptr;
   EXPECT_THROW(IndexConverter::Convert(pNull, dst.size(), src.data(), src.size()), std::invalid_argument);
@@ -159,7 +159,7 @@ TEST(TestVertices_IndexConverter, Convert_src_uint16_dst_uint8_NullSrc)
 TEST(TestVertices_IndexConverter, Convert_src_uint16_dst_uint8_NullDst)
 {
   const std::array<uint16_t, 3> src = {1, 2, 3};
-  std::array<uint8_t, 3> dst{};
+  const std::array<uint8_t, 3> dst{};
 
   uint8_t* pNull = nullptr;
   EXPECT_THROW(IndexConverter::Convert(pNull, dst.size(), src.data(), src.size()), std::invalid_argument);
@@ -190,7 +190,7 @@ TEST(TestVertices_IndexConverter, Convert_src_uint16_dst_uint16_NullSrc)
 TEST(TestVertices_IndexConverter, Convert_src_uint16_dst_uint16_NullDst)
 {
   const std::array<uint16_t, 3> src = {1, 2, 3};
-  std::array<uint16_t, 3> dst{};
+  const std::array<uint16_t, 3> dst{};
 
   uint16_t* pNull = nullptr;
   EXPECT_THROW(IndexConverter::Convert(pNull, dst.size(), src.data(), src.size()), std::invalid_argument);

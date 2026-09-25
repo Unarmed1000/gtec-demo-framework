@@ -162,8 +162,8 @@ namespace Fsl
   {
     ADemoHostOptionParser::ArgumentSetup(rOptions);
 
-    auto presentModes = GetPresentModesString();
-    std::string presentModeDesc = std::string("Override the present mode with the supplied value. Known values: ") + presentModes;
+    const auto presentModes = GetPresentModesString();
+    const std::string presentModeDesc = std::string("Override the present mode with the supplied value. Known values: ") + presentModes;
 
     rOptions.emplace_back("VkPhysicalDevice", OptionArgument::OptionRequired, CommandId::VkPhysicalDevice, "Set the physical device index.",
                           OptionGroup::Host);

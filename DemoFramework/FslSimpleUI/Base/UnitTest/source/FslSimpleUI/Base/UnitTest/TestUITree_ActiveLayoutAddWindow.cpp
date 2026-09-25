@@ -40,10 +40,10 @@ using namespace Fsl;
 
 TEST_F(TestUITree_ActiveLayout, Add)
 {
-  auto window = std::make_shared<UI::BaseWindowTest>(m_windowContext);
+  const auto window = std::make_shared<UI::BaseWindowTest>(m_windowContext);
   m_tree->AddChild(m_mainWindow, window);
 
-  auto callCount = window->GetCallCount();
+  const auto callCount = window->GetCallCount();
 
   CheckZero(callCount, WindowMethod::All);
 }
@@ -52,11 +52,11 @@ TEST_F(TestUITree_ActiveLayout, Add)
 // When adding a window to a existing window without participating in its layout the layout functions will not be called
 TEST_F(TestUITree_ActiveLayout, UpdateAddChild_NoLayout)
 {
-  auto mainWindow = m_mainWindow;
-  auto tree = m_tree;
-  auto newWindow = std::make_shared<UI::BaseWindowTest>(m_windowContext, UI::WindowFlags::Enum::All);
+  const auto mainWindow = m_mainWindow;
+  const auto tree = m_tree;
+  const auto newWindow = std::make_shared<UI::BaseWindowTest>(m_windowContext, UI::WindowFlags::Enum::All);
 
-  auto onUpdate = [newWindow, mainWindow, tree](const TimeSpan& /*timeSpan*/) { tree->AddChild(mainWindow, newWindow); };
+  const auto onUpdate = [newWindow, mainWindow, tree](const TimeSpan& /*timeSpan*/) { tree->AddChild(mainWindow, newWindow); };
 
   m_mainWindow->Callbacks.HookWinUpdate = onUpdate;
 
@@ -97,8 +97,8 @@ TEST_F(TestUITree_ActiveLayout, UpdateAddChild_NoLayout)
 // When adding a window to a existing layout and participating in its layout the layout functions will be called
 TEST_F(TestUITree_ActiveLayout, Window_UpdateAddChild)
 {
-  auto mainWindow = m_mainWindow;
-  auto newWindow = std::make_shared<UI::BaseWindowTest>(m_windowContext, UI::WindowFlags::Enum::All);
+  const auto mainWindow = m_mainWindow;
+  const auto newWindow = std::make_shared<UI::BaseWindowTest>(m_windowContext, UI::WindowFlags::Enum::All);
 
   m_mainWindow->Callbacks.HookWinUpdate = [newWindow, mainWindow](const TimeSpan& /*timeSpan*/) { mainWindow->AddChild(newWindow); };
 

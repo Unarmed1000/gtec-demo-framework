@@ -67,8 +67,8 @@ namespace
     {
       for (std::size_t x = 0; x < minimumStride; ++x)
       {
-        auto expectedByte = expected[srcIndex];
-        auto resultByte = pResultContent[x + (y * resultStride)];
+        const auto expectedByte = expected[srcIndex];
+        const auto resultByte = pResultContent[x + (y * resultStride)];
         EXPECT_EQ(resultByte, expectedByte);
         ++srcIndex;
       }
@@ -88,8 +88,8 @@ namespace
     {
       for (std::size_t x = 0; x < minimumStride; ++x)
       {
-        auto expectedByte = expected[srcIndex];
-        auto resultByte = pResultContent[x + (y * resultStride)];
+        const auto expectedByte = expected[srcIndex];
+        const auto resultByte = pResultContent[x + (y * resultStride)];
         EXPECT_EQ(resultByte, expectedByte);
         ++srcIndex;
       }
@@ -110,8 +110,8 @@ TEST(TestBitmap_TightBitmap, ConstructFromReadOnlySpan_Size)
   constexpr PxSize2D Size = PxSize2D::Create(2, 3);
   constexpr PixelFormat SrcPixelFormat = PixelFormat::R8G8B8_UNORM;
   constexpr BitmapOrigin Origin = BitmapOrigin::LowerLeft;
-  std::array<uint8_t, 3 * Size.RawWidth() * Size.RawHeight()> srcContent{0x00, 0x10, 0x20, 0x30, 0x40, 0x50, 0x01, 0x11, 0x21,
-                                                                         0x31, 0x41, 0x51, 0x02, 0x12, 0x22, 0x32, 0x42, 0x52};
+  const std::array<uint8_t, 3 * Size.RawWidth() * Size.RawHeight()> srcContent{0x00, 0x10, 0x20, 0x30, 0x40, 0x50, 0x01, 0x11, 0x21,
+                                                                               0x31, 0x41, 0x51, 0x02, 0x12, 0x22, 0x32, 0x42, 0x52};
 
   const TightBitmap result(SpanUtil::AsReadOnlySpan(srcContent), Size, SrcPixelFormat, Origin);
 
@@ -132,8 +132,8 @@ TEST(TestBitmap_TightBitmap, ConstructFromReadOnlySpan_Extend)
   constexpr PxExtent2D Extent = PxExtent2D::Create(2, 3);
   constexpr PixelFormat SrcPixelFormat = PixelFormat::R8G8B8_UNORM;
   constexpr BitmapOrigin Origin = BitmapOrigin::LowerLeft;
-  std::array<uint8_t, 3 * Extent.Width.Value * Extent.Height.Value> srcContent{0x00, 0x10, 0x20, 0x30, 0x40, 0x50, 0x01, 0x11, 0x21,
-                                                                               0x31, 0x41, 0x51, 0x02, 0x12, 0x22, 0x32, 0x42, 0x52};
+  const std::array<uint8_t, 3 * Extent.Width.Value * Extent.Height.Value> srcContent{0x00, 0x10, 0x20, 0x30, 0x40, 0x50, 0x01, 0x11, 0x21,
+                                                                                     0x31, 0x41, 0x51, 0x02, 0x12, 0x22, 0x32, 0x42, 0x52};
 
   const TightBitmap result(SpanUtil::AsReadOnlySpan(srcContent), Extent, SrcPixelFormat, Origin);
 
@@ -154,7 +154,7 @@ TEST(TestBitmap_TightBitmap, ConstructFromVector_Size)
   constexpr PxSize2D SizePx = PxSize2D::Create(2, 3);
   constexpr PixelFormat SrcPixelFormat = PixelFormat::R8G8B8_UNORM;
   constexpr BitmapOrigin Origin = BitmapOrigin::LowerLeft;
-  std::vector<uint8_t> srcContent{0x00, 0x10, 0x20, 0x30, 0x40, 0x50, 0x01, 0x11, 0x21, 0x31, 0x41, 0x51, 0x02, 0x12, 0x22, 0x32, 0x42, 0x52};
+  const std::vector<uint8_t> srcContent{0x00, 0x10, 0x20, 0x30, 0x40, 0x50, 0x01, 0x11, 0x21, 0x31, 0x41, 0x51, 0x02, 0x12, 0x22, 0x32, 0x42, 0x52};
 
   const TightBitmap result(SpanUtil::AsReadOnlySpan(srcContent), SizePx, SrcPixelFormat, Origin);
 
@@ -175,7 +175,7 @@ TEST(TestBitmap_TightBitmap, ConstructFromVector_Extent)
   constexpr PxExtent2D Extent = PxExtent2D::Create(2, 3);
   constexpr PixelFormat SrcPixelFormat = PixelFormat::R8G8B8_UNORM;
   constexpr BitmapOrigin Origin = BitmapOrigin::LowerLeft;
-  std::vector<uint8_t> srcContent{0x00, 0x10, 0x20, 0x30, 0x40, 0x50, 0x01, 0x11, 0x21, 0x31, 0x41, 0x51, 0x02, 0x12, 0x22, 0x32, 0x42, 0x52};
+  const std::vector<uint8_t> srcContent{0x00, 0x10, 0x20, 0x30, 0x40, 0x50, 0x01, 0x11, 0x21, 0x31, 0x41, 0x51, 0x02, 0x12, 0x22, 0x32, 0x42, 0x52};
 
   const TightBitmap result(SpanUtil::AsReadOnlySpan(srcContent), Extent, SrcPixelFormat, Origin);
 
@@ -195,8 +195,8 @@ TEST(TestBitmap_TightBitmap, ConstructFromRawBitmap)
   constexpr PxExtent2D ExtentPx = PxExtent2D::Create(2, 3);
   constexpr PixelFormat SrcPixelFormat = PixelFormat::R8G8B8_UNORM;
   constexpr BitmapOrigin Origin = BitmapOrigin::LowerLeft;
-  std::array<uint8_t, 3 * ExtentPx.Width.Value * ExtentPx.Height.Value> srcContent{0x00, 0x10, 0x20, 0x30, 0x40, 0x50, 0x01, 0x11, 0x21,
-                                                                                   0x31, 0x41, 0x51, 0x02, 0x12, 0x22, 0x32, 0x42, 0x52};
+  const std::array<uint8_t, 3 * ExtentPx.Width.Value * ExtentPx.Height.Value> srcContent{0x00, 0x10, 0x20, 0x30, 0x40, 0x50, 0x01, 0x11, 0x21,
+                                                                                         0x31, 0x41, 0x51, 0x02, 0x12, 0x22, 0x32, 0x42, 0x52};
 
   const ReadOnlyRawBitmap srcRawBitmap = ReadOnlyRawBitmap::Create(SpanUtil::AsReadOnlySpan(srcContent), ExtentPx, SrcPixelFormat, Origin);
   const TightBitmap result(srcRawBitmap);
@@ -220,7 +220,7 @@ TEST(TestBitmap_TightBitmap, ConstructFromRawBitmapEx)
   std::array<uint8_t, 3 * ExtentPx.Width.Value * ExtentPx.Height.Value> srcContent{0x00, 0x10, 0x20, 0x30, 0x40, 0x50, 0x01, 0x11, 0x21,
                                                                                    0x31, 0x41, 0x51, 0x02, 0x12, 0x22, 0x32, 0x42, 0x52};
 
-  RawBitmapEx srcRawBitmap = RawBitmapEx::Create(SpanUtil::AsSpan(srcContent), ExtentPx, SrcPixelFormat, Origin);
+  const RawBitmapEx srcRawBitmap = RawBitmapEx::Create(SpanUtil::AsSpan(srcContent), ExtentPx, SrcPixelFormat, Origin);
   const TightBitmap result(srcRawBitmap);
 
   EXPECT_EQ(result.GetExtent(), ExtentPx);
@@ -239,8 +239,8 @@ TEST(TestBitmap_TightBitmap, ConstructFromBitmapMemory)
   constexpr PxSize2D SizePx = PxSize2D::Create(2, 3);
   constexpr PixelFormat SrcPixelFormat = PixelFormat::R8G8B8_UNORM;
   constexpr BitmapOrigin Origin = BitmapOrigin::LowerLeft;
-  std::array<uint8_t, 3 * SizePx.RawUnsignedWidth() * SizePx.RawUnsignedHeight()> srcContent{0x00, 0x10, 0x20, 0x30, 0x40, 0x50, 0x01, 0x11, 0x21,
-                                                                                             0x31, 0x41, 0x51, 0x02, 0x12, 0x22, 0x32, 0x42, 0x52};
+  const std::array<uint8_t, 3 * SizePx.RawUnsignedWidth() * SizePx.RawUnsignedHeight()> srcContent{
+    0x00, 0x10, 0x20, 0x30, 0x40, 0x50, 0x01, 0x11, 0x21, 0x31, 0x41, 0x51, 0x02, 0x12, 0x22, 0x32, 0x42, 0x52};
 
   const TightBitmap result(Bitmap(SpanUtil::AsReadOnlySpan(srcContent), SizePx, SrcPixelFormat, Origin).Release());
 
@@ -283,8 +283,8 @@ TEST(TestBitmap_TightBitmap, ConstructFromBitmapMemoryWithPadding)
     {
       for (std::size_t x = 0; x < MinStride; ++x)
       {
-        auto expectedByte = srcContent[srcIndex];
-        auto resultByte = resultSpan[x + (y * MinStride)];
+        const auto expectedByte = srcContent[srcIndex];
+        const auto resultByte = resultSpan[x + (y * MinStride)];
         EXPECT_EQ(resultByte, expectedByte);
         ++srcIndex;
       }
@@ -301,8 +301,8 @@ TEST(TestBitmap_TightBitmap, AsRawBitmap)
   constexpr BitmapOrigin Origin = BitmapOrigin::LowerLeft;
   // constexpr uint32_t BytesPerPixel = PixelFormatUtil::GetBytesPerPixel(SrcPixelFormat);
   // constexpr uint32_t Stride = PixelFormatUtil::CalcMinimumStride(Size.Width(), BytesPerPixel);
-  std::array<uint8_t, 3 * Size.RawWidth() * Size.RawHeight()> srcContent{0x00, 0x10, 0x20, 0x30, 0x40, 0x50, 0x01, 0x11, 0x21,
-                                                                         0x31, 0x41, 0x51, 0x02, 0x12, 0x22, 0x32, 0x42, 0x52};
+  const std::array<uint8_t, 3 * Size.RawWidth() * Size.RawHeight()> srcContent{0x00, 0x10, 0x20, 0x30, 0x40, 0x50, 0x01, 0x11, 0x21,
+                                                                               0x31, 0x41, 0x51, 0x02, 0x12, 0x22, 0x32, 0x42, 0x52};
 
   const TightBitmap bitmap(SpanUtil::AsReadOnlySpan(srcContent), Size, SrcPixelFormat, Origin);
   const ReadOnlyRawBitmap result = bitmap.AsRawBitmap();
@@ -323,11 +323,11 @@ TEST(TestBitmap_TightBitmap, AsRawBitmapEx)
   constexpr BitmapOrigin Origin = BitmapOrigin::LowerLeft;
   // constexpr uint32_t BytesPerPixel = PixelFormatUtil::GetBytesPerPixel(SrcPixelFormat);
   // constexpr uint32_t Stride = PixelFormatUtil::CalcMinimumStride(Size.Width(), BytesPerPixel);
-  std::array<uint8_t, 3 * Size.RawWidth() * Size.RawHeight()> srcContent{0x00, 0x10, 0x20, 0x30, 0x40, 0x50, 0x01, 0x11, 0x21,
-                                                                         0x31, 0x41, 0x51, 0x02, 0x12, 0x22, 0x32, 0x42, 0x52};
+  const std::array<uint8_t, 3 * Size.RawWidth() * Size.RawHeight()> srcContent{0x00, 0x10, 0x20, 0x30, 0x40, 0x50, 0x01, 0x11, 0x21,
+                                                                               0x31, 0x41, 0x51, 0x02, 0x12, 0x22, 0x32, 0x42, 0x52};
 
   TightBitmap bitmap(SpanUtil::AsReadOnlySpan(srcContent), Size, SrcPixelFormat, Origin);
-  RawBitmapEx result = bitmap.AsRawBitmap();
+  const RawBitmapEx result = bitmap.AsRawBitmap();
 
   EXPECT_EQ(result.GetExtent(), TypeConverter::To<PxExtent2D>(Size));
   EXPECT_EQ(result.GetPixelFormat(), SrcPixelFormat);
@@ -344,8 +344,8 @@ TEST(TestBitmap_TightBitmap, Reset)
   constexpr BitmapOrigin Origin = BitmapOrigin::LowerLeft;
   // constexpr uint32_t BytesPerPixel = PixelFormatUtil::GetBytesPerPixel(SrcPixelFormat);
   // constexpr uint32_t Stride = PixelFormatUtil::CalcMinimumStride(Size.Width(), BytesPerPixel);
-  std::array<uint8_t, 3 * Size.RawWidth() * Size.RawHeight()> srcContent{0x00, 0x10, 0x20, 0x30, 0x40, 0x50, 0x01, 0x11, 0x21,
-                                                                         0x31, 0x41, 0x51, 0x02, 0x12, 0x22, 0x32, 0x42, 0x52};
+  const std::array<uint8_t, 3 * Size.RawWidth() * Size.RawHeight()> srcContent{0x00, 0x10, 0x20, 0x30, 0x40, 0x50, 0x01, 0x11, 0x21,
+                                                                               0x31, 0x41, 0x51, 0x02, 0x12, 0x22, 0x32, 0x42, 0x52};
 
   TightBitmap result(SpanUtil::AsReadOnlySpan(srcContent), Size, SrcPixelFormat, Origin);
   EXPECT_EQ(result.GetSize(), Size);
@@ -367,10 +367,10 @@ TEST(TestBitmap_TightBitmap, Release)
   constexpr BitmapOrigin Origin = BitmapOrigin::LowerLeft;
   constexpr uint32_t BytesPerPixel = PixelFormatUtil::GetBytesPerPixel(SrcPixelFormat);
   constexpr uint32_t Stride = PixelFormatUtil::CalcMinimumStride(Size.Width(), BytesPerPixel);
-  std::array<uint8_t, 3 * Size.RawWidth() * Size.RawHeight()> srcContent{0x00, 0x10, 0x20, 0x30, 0x40, 0x50, 0x01, 0x11, 0x21,
-                                                                         0x31, 0x41, 0x51, 0x02, 0x12, 0x22, 0x32, 0x42, 0x52};
+  const std::array<uint8_t, 3 * Size.RawWidth() * Size.RawHeight()> srcContent{0x00, 0x10, 0x20, 0x30, 0x40, 0x50, 0x01, 0x11, 0x21,
+                                                                               0x31, 0x41, 0x51, 0x02, 0x12, 0x22, 0x32, 0x42, 0x52};
 
-  Bitmap result(TightBitmap(SpanUtil::AsReadOnlySpan(srcContent), Size, SrcPixelFormat, Origin).Release());
+  const Bitmap result(TightBitmap(SpanUtil::AsReadOnlySpan(srcContent), Size, SrcPixelFormat, Origin).Release());
 
   EXPECT_EQ(result.GetExtent(), TypeConverter::To<PxExtent2D>(Size));
   EXPECT_EQ(result.GetSize(), Size);
@@ -392,8 +392,8 @@ TEST(TestBitmap_TightBitmap, ReleaseAsVector)
   constexpr BitmapOrigin Origin = BitmapOrigin::LowerLeft;
   // constexpr uint32_t BytesPerPixel = PixelFormatUtil::GetBytesPerPixel(SrcPixelFormat);
   // constexpr uint32_t Stride = PixelFormatUtil::CalcMinimumStride(SizePx.Width(), BytesPerPixel);
-  std::array<uint8_t, 3 * SizePx.RawWidth() * SizePx.RawHeight()> srcContent{0x00, 0x10, 0x20, 0x30, 0x40, 0x50, 0x01, 0x11, 0x21,
-                                                                             0x31, 0x41, 0x51, 0x02, 0x12, 0x22, 0x32, 0x42, 0x52};
+  const std::array<uint8_t, 3 * SizePx.RawWidth() * SizePx.RawHeight()> srcContent{0x00, 0x10, 0x20, 0x30, 0x40, 0x50, 0x01, 0x11, 0x21,
+                                                                                   0x31, 0x41, 0x51, 0x02, 0x12, 0x22, 0x32, 0x42, 0x52};
 
   const std::vector<uint8_t> result(TightBitmap(SpanUtil::AsReadOnlySpan(srcContent), SizePx, SrcPixelFormat, Origin).ReleaseAsVector());
 
@@ -408,8 +408,8 @@ TEST(TestBitmap_TightBitmap, ToBitmapMemory)
   constexpr BitmapOrigin Origin = BitmapOrigin::LowerLeft;
   constexpr uint32_t BytesPerPixel = PixelFormatUtil::GetBytesPerPixel(SrcPixelFormat);
   constexpr uint32_t Stride = PixelFormatUtil::CalcMinimumStride(SizePx.Width(), BytesPerPixel);
-  std::array<uint8_t, 3 * SizePx.RawWidth() * SizePx.RawHeight()> srcContent{0x00, 0x10, 0x20, 0x30, 0x40, 0x50, 0x01, 0x11, 0x21,
-                                                                             0x31, 0x41, 0x51, 0x02, 0x12, 0x22, 0x32, 0x42, 0x52};
+  const std::array<uint8_t, 3 * SizePx.RawWidth() * SizePx.RawHeight()> srcContent{0x00, 0x10, 0x20, 0x30, 0x40, 0x50, 0x01, 0x11, 0x21,
+                                                                                   0x31, 0x41, 0x51, 0x02, 0x12, 0x22, 0x32, 0x42, 0x52};
 
   const TightBitmap tmp(SpanUtil::AsReadOnlySpan(srcContent), SizePx, SrcPixelFormat, Origin);
   const Bitmap result(tmp.ToBitmapMemory());

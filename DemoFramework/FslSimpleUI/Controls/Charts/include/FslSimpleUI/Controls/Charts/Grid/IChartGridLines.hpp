@@ -49,7 +49,7 @@ namespace Fsl::UI
 
     //! @brief Get a sorted list of grid line suggestions for the given range. The returned span is sorted from min to max and contains no duplicate
     //! entries.
-    virtual ReadOnlySpan<ChartGridLineInfo> GetSuggestedGridLines(const MinMax<uint32_t> minMax) const = 0;
+    [[nodiscard]] virtual ReadOnlySpan<ChartGridLineInfo> GetSuggestedGridLines(const MinMax<uint32_t> minMax) const = 0;
   };
 }
 

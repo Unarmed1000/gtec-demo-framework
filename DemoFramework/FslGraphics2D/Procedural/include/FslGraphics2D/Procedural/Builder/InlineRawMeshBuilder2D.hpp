@@ -159,7 +159,7 @@ namespace Fsl
     }
 
 
-    inline constexpr float GetZPos() const noexcept
+    [[nodiscard]] inline constexpr float GetZPos() const noexcept
     {
       return m_zPos;
     }
@@ -169,22 +169,22 @@ namespace Fsl
       return m_indexVertexOffset;
     }
 
-    inline constexpr size_type GetVertexCount() const noexcept
+    [[nodiscard]] inline constexpr size_type GetVertexCount() const noexcept
     {
       return m_vertexCount;
     }
 
-    inline constexpr size_type GetIndexCount() const noexcept
+    [[nodiscard]] inline constexpr size_type GetIndexCount() const noexcept
     {
       return m_indexCount;
     }
 
-    inline constexpr size_type GetRemainingVertexCapacity() const noexcept
+    [[nodiscard]] inline constexpr size_type GetRemainingVertexCapacity() const noexcept
     {
       return m_vertexCapacity - m_vertexCount;
     }
 
-    inline constexpr size_type GetRemainingIndexCapacity() const noexcept
+    [[nodiscard]] inline constexpr size_type GetRemainingIndexCapacity() const noexcept
     {
       return m_indexCapacity - m_indexCount;
     }
@@ -1413,16 +1413,16 @@ namespace Fsl
       assert((m_vertexCount + 16) <= m_vertexCapacity);
       assert((m_indexCount + 54) <= m_indexCapacity);
 
-      PxVector2 clipXPxf(clippedTargetRectPxf.Left(), clippedTargetRectPxf.Right());
-      PxVector2 clipYPxf(clippedTargetRectPxf.Top(), clippedTargetRectPxf.Bottom());
+      const PxVector2 clipXPxf(clippedTargetRectPxf.Left(), clippedTargetRectPxf.Right());
+      const PxVector2 clipYPxf(clippedTargetRectPxf.Top(), clippedTargetRectPxf.Bottom());
 
       std::array<PxVector2, 4> coordsX = {PxVector2::Create(x0, texCoordNineSlice.X0), PxVector2::Create(x1, texCoordNineSlice.X1),
                                           PxVector2::Create(x2, texCoordNineSlice.X2), PxVector2::Create(x3, texCoordNineSlice.X3)};
       std::array<PxVector2, 4> coordsY = {PxVector2::Create(y0, texCoordNineSlice.Y0), PxVector2::Create(y1, texCoordNineSlice.Y1),
                                           PxVector2::Create(y2, texCoordNineSlice.Y2), PxVector2::Create(y3, texCoordNineSlice.Y3)};
 
-      ReadOnlySpan<PxVector2> spanX = Clip2DUtil::Clip(coordsX, clipXPxf);
-      ReadOnlySpan<PxVector2> spanY = Clip2DUtil::Clip(coordsY, clipYPxf);
+      const ReadOnlySpan<PxVector2> spanX = Clip2DUtil::Clip(coordsX, clipXPxf);
+      const ReadOnlySpan<PxVector2> spanY = Clip2DUtil::Clip(coordsY, clipYPxf);
       if (spanX.size() >= 2 && spanY.size() >= 2)
       {
         const auto countY = static_cast<uint32_t>(spanY.size());
@@ -1496,18 +1496,18 @@ namespace Fsl
       assert((m_vertexCount + 16) <= m_vertexCapacity);
       assert((m_indexCount + 54) <= m_indexCapacity);
 
-      PxVector2 clipXPxf(clippedTargetRectPxf.Left(), clippedTargetRectPxf.Right());
-      PxVector2 clipYPxf(clippedTargetRectPxf.Top(), clippedTargetRectPxf.Bottom());
+      const PxVector2 clipXPxf(clippedTargetRectPxf.Left(), clippedTargetRectPxf.Right());
+      const PxVector2 clipYPxf(clippedTargetRectPxf.Top(), clippedTargetRectPxf.Bottom());
 
       std::array<PxVector2, 4> coordsX = {PxVector2::Create(x0, texCoordNineSlice.X0), PxVector2::Create(x1, texCoordNineSlice.X1),
                                           PxVector2::Create(x2, texCoordNineSlice.X2), PxVector2::Create(x3, texCoordNineSlice.X3)};
       std::array<PxVector2, 4> coordsY = {PxVector2::Create(y0, texCoordNineSlice.Y0), PxVector2::Create(y1, texCoordNineSlice.Y1),
                                           PxVector2::Create(y2, texCoordNineSlice.Y2), PxVector2::Create(y3, texCoordNineSlice.Y3)};
 
-      SpanRange<std::size_t> spanRangeX = Clip2DUtil::ClipToRange(coordsX, clipXPxf);
-      SpanRange<std::size_t> spanRangeY = Clip2DUtil::ClipToRange(coordsY, clipYPxf);
-      ReadOnlySpan<PxVector2> spanX = SpanUtil::UncheckedAsReadOnlySpan(coordsX, spanRangeX.Start, spanRangeX.Length);
-      ReadOnlySpan<PxVector2> spanY = SpanUtil::UncheckedAsReadOnlySpan(coordsY, spanRangeY.Start, spanRangeY.Length);
+      const SpanRange<std::size_t> spanRangeX = Clip2DUtil::ClipToRange(coordsX, clipXPxf);
+      const SpanRange<std::size_t> spanRangeY = Clip2DUtil::ClipToRange(coordsY, clipYPxf);
+      const ReadOnlySpan<PxVector2> spanX = SpanUtil::UncheckedAsReadOnlySpan(coordsX, spanRangeX.Start, spanRangeX.Length);
+      const ReadOnlySpan<PxVector2> spanY = SpanUtil::UncheckedAsReadOnlySpan(coordsY, spanRangeY.Start, spanRangeY.Length);
       if (spanX.size() >= 2 && spanY.size() >= 2)
       {
         const auto countY = static_cast<uint32_t>(spanY.size());
@@ -1590,8 +1590,8 @@ namespace Fsl
       assert((m_vertexCount + 16) <= m_vertexCapacity);
       assert((m_indexCount + 54) <= m_indexCapacity);
 
-      PxVector2 clipXPxf(clippedTargetRectPxf.Left(), clippedTargetRectPxf.Right());
-      PxVector2 clipYPxf(clippedTargetRectPxf.Top(), clippedTargetRectPxf.Bottom());
+      const PxVector2 clipXPxf(clippedTargetRectPxf.Left(), clippedTargetRectPxf.Right());
+      const PxVector2 clipYPxf(clippedTargetRectPxf.Top(), clippedTargetRectPxf.Bottom());
 
       // Normal                         Rot90CW
       // u0v0, u1v0, u2v0, u3v0         u0v3, u0v2, u0v1, u0v0,
@@ -1601,8 +1601,8 @@ namespace Fsl
       std::array<PxVector2, 4> coordsY = {PxVector2::Create(y0, texCoordNineSlice.X0), PxVector2::Create(y1, texCoordNineSlice.X1),
                                           PxVector2::Create(y2, texCoordNineSlice.X2), PxVector2::Create(y3, texCoordNineSlice.X3)};
 
-      ReadOnlySpan<PxVector2> spanX = Clip2DUtil::Clip(coordsX, clipXPxf);
-      ReadOnlySpan<PxVector2> spanY = Clip2DUtil::Clip(coordsY, clipYPxf);
+      const ReadOnlySpan<PxVector2> spanX = Clip2DUtil::Clip(coordsX, clipXPxf);
+      const ReadOnlySpan<PxVector2> spanY = Clip2DUtil::Clip(coordsY, clipYPxf);
       if (spanX.size() >= 2 && spanY.size() >= 2)
       {
         const auto countY = static_cast<uint32_t>(spanY.size());
@@ -1674,18 +1674,18 @@ namespace Fsl
       assert((m_vertexCount + 16) <= m_vertexCapacity);
       assert((m_indexCount + 54) <= m_indexCapacity);
 
-      PxVector2 clipXPxf(clippedTargetRectPxf.Left(), clippedTargetRectPxf.Right());
-      PxVector2 clipYPxf(clippedTargetRectPxf.Top(), clippedTargetRectPxf.Bottom());
+      const PxVector2 clipXPxf(clippedTargetRectPxf.Left(), clippedTargetRectPxf.Right());
+      const PxVector2 clipYPxf(clippedTargetRectPxf.Top(), clippedTargetRectPxf.Bottom());
 
       std::array<PxVector2, 4> coordsX = {PxVector2::Create(x0, texCoordNineSlice.Y3), PxVector2::Create(x1, texCoordNineSlice.Y2),
                                           PxVector2::Create(x2, texCoordNineSlice.Y1), PxVector2::Create(x3, texCoordNineSlice.Y0)};
       std::array<PxVector2, 4> coordsY = {PxVector2::Create(y0, texCoordNineSlice.X0), PxVector2::Create(y1, texCoordNineSlice.X1),
                                           PxVector2::Create(y2, texCoordNineSlice.X2), PxVector2::Create(y3, texCoordNineSlice.X3)};
 
-      SpanRange<std::size_t> spanRangeX = Clip2DUtil::ClipToRange(coordsX, clipXPxf);
-      SpanRange<std::size_t> spanRangeY = Clip2DUtil::ClipToRange(coordsY, clipYPxf);
-      ReadOnlySpan<PxVector2> spanX = SpanUtil::UncheckedAsReadOnlySpan(coordsX, spanRangeX.Start, spanRangeX.Length);
-      ReadOnlySpan<PxVector2> spanY = SpanUtil::UncheckedAsReadOnlySpan(coordsY, spanRangeY.Start, spanRangeY.Length);
+      const SpanRange<std::size_t> spanRangeX = Clip2DUtil::ClipToRange(coordsX, clipXPxf);
+      const SpanRange<std::size_t> spanRangeY = Clip2DUtil::ClipToRange(coordsY, clipYPxf);
+      const ReadOnlySpan<PxVector2> spanX = SpanUtil::UncheckedAsReadOnlySpan(coordsX, spanRangeX.Start, spanRangeX.Length);
+      const ReadOnlySpan<PxVector2> spanY = SpanUtil::UncheckedAsReadOnlySpan(coordsY, spanRangeY.Start, spanRangeY.Length);
       if (spanX.size() >= 2 && spanY.size() >= 2)
       {
         const auto countY = static_cast<uint32_t>(spanY.size());

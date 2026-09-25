@@ -134,7 +134,7 @@ namespace Fsl::UI
 
 
     //! @brief Get the percentage
-    float GetPercentage() const
+    [[nodiscard]] float GetPercentage() const
     {
       assert(m_min <= m_max);
       const auto delta = m_max - m_min;
@@ -149,7 +149,7 @@ namespace Fsl::UI
       assert(m_min <= m_max);
       const auto clampedPercentage = MathHelper::Clamp(percentage, 0.0f, 1.0f);
       const value_type finalValue =
-        !std::is_floating_point<value_type>::value
+        !std::is_floating_point_v<value_type>
           ? MathHelper::Clamp(static_cast<value_type>(static_cast<value_type>(std::round((m_max - m_min) * clampedPercentage)) + m_min), m_min, m_max)
           : MathHelper::Clamp(value_type(value_type((m_max - m_min) * clampedPercentage) + m_min), m_min, m_max);
       return Set(finalValue);

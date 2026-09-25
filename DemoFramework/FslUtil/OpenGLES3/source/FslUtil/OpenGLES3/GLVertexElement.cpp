@@ -95,7 +95,7 @@ namespace Fsl::GLES3
 
     inline GLint GetElementCount(const VertexElementFormat format)
     {
-      auto res = VertexElementFormatUtil::GetElementCount(format);
+      const auto res = VertexElementFormatUtil::GetElementCount(format);
       assert(res < static_cast<uint32_t>(std::numeric_limits<int32_t>::max()));
       assert(static_cast<GLint>(res) <= std::numeric_limits<GLint>::max());
       return static_cast<GLint>(res);

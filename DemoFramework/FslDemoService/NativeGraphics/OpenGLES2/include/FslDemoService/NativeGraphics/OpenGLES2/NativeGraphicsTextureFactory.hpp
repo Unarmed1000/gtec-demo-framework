@@ -52,13 +52,13 @@ namespace Fsl::GLES2
 
     void Dispose() noexcept;
 
-    GLTextureInfo TryGetTextureInfo(const BasicNativeTextureHandle hTexture) const noexcept
+    [[nodiscard]] GLTextureInfo TryGetTextureInfo(const BasicNativeTextureHandle hTexture) const noexcept
     {
       const NativeGraphicsTexture* const pTexture = m_textures.TryGet(hTexture.Value);
       return pTexture != nullptr ? pTexture->ToTextureInfo() : GLTextureInfo();
     }
 
-    Graphics3D::NativeTextureFactoryCaps GetTextureCaps() const noexcept;
+    [[nodiscard]] Graphics3D::NativeTextureFactoryCaps GetTextureCaps() const noexcept;
     BasicNativeTextureHandle CreateTexture(const ReadOnlyRawTexture& texture, const Texture2DFilterHint filterHint, const TextureFlags textureFlags,
                                            const bool isDynamic);
     bool DestroyTexture(const BasicNativeTextureHandle hTexture) noexcept;
@@ -66,7 +66,7 @@ namespace Fsl::GLES2
     void SetTextureData(const BasicNativeTextureHandle hTexture, const ReadOnlyRawTexture& texture, const Texture2DFilterHint filterHint,
                         const TextureFlags textureFlags);
 
-    const IBasicNativeTexture* TryGetTexture(const BasicNativeTextureHandle hTexture) const noexcept;
+    [[nodiscard]] const IBasicNativeTexture* TryGetTexture(const BasicNativeTextureHandle hTexture) const noexcept;
   };
 }
 

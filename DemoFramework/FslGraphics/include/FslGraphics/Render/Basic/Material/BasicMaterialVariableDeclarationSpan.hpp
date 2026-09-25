@@ -94,20 +94,20 @@ namespace Fsl
     }
 
     // NOLINTNEXTLINE(readability-identifier-naming)
-    constexpr bool empty() const
+    [[nodiscard]] constexpr bool empty() const
     {
       return m_span.empty();
     }
 
     // NOLINTNEXTLINE(readability-identifier-naming)
-    constexpr const BasicMaterialVariableElement* data() const
+    [[nodiscard]] constexpr const BasicMaterialVariableElement* data() const
     {
       return m_span.data();
     }
 
     //! @brief Get the number of elements
     // NOLINTNEXTLINE(readability-identifier-naming)
-    constexpr uint32_t size() const
+    [[nodiscard]] constexpr uint32_t size() const
     {
       assert(m_span.size() <= 0xFFFFFFFFu);
       return static_cast<uint32_t>(m_span.size());
@@ -115,23 +115,23 @@ namespace Fsl
 
     //! @brief Get the material stride
     // NOLINTNEXTLINE(readability-identifier-naming)
-    constexpr uint32_t stride() const
+    [[nodiscard]] constexpr uint32_t stride() const
     {
       return m_materialStride;
     }
 
-    constexpr ReadOnlySpan<BasicMaterialVariableElement> AsReadOnlySpan() const
+    [[nodiscard]] constexpr ReadOnlySpan<BasicMaterialVariableElement> AsReadOnlySpan() const
     {
       return m_span;
     }
 
-    constexpr BasicMaterialVariableElement At(const std::size_t index) const
+    [[nodiscard]] constexpr BasicMaterialVariableElement At(const std::size_t index) const
     {
       return m_span.at(index);
     }
 
     //! @brief Get the element index of for the given usage and usageIndex (if not found a NotFoundException is thrown)
-    constexpr int32_t MaterialElementGetIndexOf(const BasicMaterialVariableElementUsage usage, const uint32_t usageIndex) const
+    [[nodiscard]] constexpr int32_t MaterialElementGetIndexOf(const BasicMaterialVariableElementUsage usage, const uint32_t usageIndex) const
     {
       const int32_t index = MaterialElementIndexOf(usage, usageIndex);
       if (index < 0)
@@ -142,7 +142,7 @@ namespace Fsl
     }
 
     //! @brief Find the element index of for the given usage and usageIndex (if not found <0 is returned)
-    constexpr int32_t MaterialElementIndexOf(const BasicMaterialVariableElementUsage usage, const uint32_t usageIndex) const
+    [[nodiscard]] constexpr int32_t MaterialElementIndexOf(const BasicMaterialVariableElementUsage usage, const uint32_t usageIndex) const
     {
       for (std::size_t i = 0; i < m_span.size(); ++i)
       {
@@ -155,7 +155,8 @@ namespace Fsl
     }
 
     //! @brief Get the element for the given usage and usageIndex (if not found a NotFoundException is thrown)
-    constexpr const BasicMaterialVariableElement& MaterialElementGet(const BasicMaterialVariableElementUsage usage, const uint32_t usageIndex) const
+    [[nodiscard]] constexpr const BasicMaterialVariableElement& MaterialElementGet(const BasicMaterialVariableElementUsage usage,
+                                                                                   const uint32_t usageIndex) const
     {
       return m_span[MaterialElementGetIndexOf(usage, usageIndex)];
     }
@@ -191,7 +192,7 @@ namespace Fsl
       uint32_t maxOffset = 0;
       for (std::size_t i = 0; i < srcElements.size(); ++i)
       {
-        auto offset = srcElements[i].Offset + BasicMaterialVariableElementFormatUtil::GetBytesPerElement(srcElements[i].Format);
+        const auto offset = srcElements[i].Offset + BasicMaterialVariableElementFormatUtil::GetBytesPerElement(srcElements[i].Format);
         if (offset < maxOffset)
         {
           throw NotSupportedException("The offsets should be in order: smallest -> largest");
@@ -217,7 +218,7 @@ namespace Fsl
       uint32_t maxOffset = 0;
       for (std::size_t i = 0; i < srcElements.size(); ++i)
       {
-        auto offset = srcElements[i].Offset + BasicMaterialVariableElementFormatUtil::GetBytesPerElement(srcElements[i].Format);
+        const auto offset = srcElements[i].Offset + BasicMaterialVariableElementFormatUtil::GetBytesPerElement(srcElements[i].Format);
         if (offset < maxOffset)
         {
           return false;

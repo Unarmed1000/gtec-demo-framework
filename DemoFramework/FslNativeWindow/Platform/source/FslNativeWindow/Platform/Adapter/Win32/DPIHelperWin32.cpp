@@ -88,8 +88,8 @@ namespace Fsl
     {
       // Fallback mode if we don't have access to per monitor DPI
       HDC screen = GetDC(nullptr);
-      int dpiX = GetDeviceCaps(screen, LOGPIXELSX);
-      int dpiY = GetDeviceCaps(screen, LOGPIXELSY);
+      const int dpiX = GetDeviceCaps(screen, LOGPIXELSX);
+      const int dpiY = GetDeviceCaps(screen, LOGPIXELSY);
       ReleaseDC(nullptr, screen);
       rDPI = Point2(dpiX, dpiY);
       return true;

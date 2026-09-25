@@ -57,7 +57,7 @@ namespace Fsl
 
   {
     {    // Allocate basic 2D if available
-      auto graphicsService = demoAppConfig.DemoServiceProvider.TryGet<IGraphicsService>();
+      const auto graphicsService = demoAppConfig.DemoServiceProvider.TryGet<IGraphicsService>();
       if (graphicsService)
       {
         m_basic2D = graphicsService->GetBasic2D();

@@ -61,7 +61,7 @@ namespace Fsl::UI
                       const std::shared_ptr<ITreeNodeClickInputTargetLocater>& clickTargetLocater);
     ~SimpleEventSender();
 
-    const std::shared_ptr<WindowEventPool>& GetEventPool() const
+    [[nodiscard]] const std::shared_ptr<WindowEventPool>& GetEventPool() const
     {
       return m_windowEventPool;
     }

@@ -49,20 +49,20 @@ namespace
 
   std::shared_ptr<UI::ChartDataView> CreateFullyEmptyDataView(const std::shared_ptr<DataBinding::DataBindingService>& dataBinding)
   {
-    auto chartData = std::make_shared<UI::ChartData>(dataBinding, 0, 0, UI::ChartData::Constraints());
+    const auto chartData = std::make_shared<UI::ChartData>(dataBinding, 0, 0, UI::ChartData::Constraints());
     return std::make_shared<UI::ChartDataView>(chartData);
   }
 
   std::shared_ptr<UI::ChartDataView> CreateEmptyDataView(const std::shared_ptr<DataBinding::DataBindingService>& dataBinding)
   {
-    auto chartData = std::make_shared<UI::ChartData>(dataBinding, 10, 1, UI::ChartData::Constraints());
+    const auto chartData = std::make_shared<UI::ChartData>(dataBinding, 10, 1, UI::ChartData::Constraints());
     return std::make_shared<UI::ChartDataView>(chartData);
   }
 
   std::shared_ptr<UI::ChartDataView> CreateDataViewFromSpan(const std::shared_ptr<DataBinding::DataBindingService>& dataBinding,
                                                             ReadOnlySpan<uint32_t> span)
   {
-    auto chartData = std::make_shared<UI::ChartData>(dataBinding, NumericCast<uint32_t>(span.size()), 1, UI::ChartData::Constraints());
+    const auto chartData = std::make_shared<UI::ChartData>(dataBinding, NumericCast<uint32_t>(span.size()), 1, UI::ChartData::Constraints());
     for (const auto value : span)
     {
       chartData->Append(UI::ChartDataEntry(value));
@@ -93,24 +93,24 @@ namespace
 
 TEST(Test_Data_ChartSortedDataChannelView, ConstructFromFullyEmpty)
 {
-  auto dataBinding = std::make_shared<DataBinding::DataBindingService>();
+  const auto dataBinding = std::make_shared<DataBinding::DataBindingService>();
   EXPECT_THROW(UI::ChartSortedDataChannelView(CreateFullyEmptyDataView(dataBinding), 0), std::invalid_argument);
 }
 
 TEST(Test_Data_ChartSortedDataChannelView, ConstructFromEmpty)
 {
-  auto dataBinding = std::make_shared<DataBinding::DataBindingService>();
-  UI::ChartSortedDataChannelView testSortedDataView(CreateEmptyDataView(dataBinding), 0);
+  const auto dataBinding = std::make_shared<DataBinding::DataBindingService>();
+  const UI::ChartSortedDataChannelView testSortedDataView(CreateEmptyDataView(dataBinding), 0);
 }
 
 TEST(Test_Data_ChartSortedDataChannelView, ConstructFromSortedLowToHigh)
 {
-  std::array<uint32_t, 5> source = {1, 2, 3, 4, 5};
+  const std::array<uint32_t, 5> source = {1, 2, 3, 4, 5};
 
-  auto dataBinding = std::make_shared<DataBinding::DataBindingService>();
-  UI::ChartSortedDataChannelView testSortedDataView(CreateDataViewFromSpan(dataBinding, source), 0);
+  const auto dataBinding = std::make_shared<DataBinding::DataBindingService>();
+  const UI::ChartSortedDataChannelView testSortedDataView(CreateDataViewFromSpan(dataBinding, source), 0);
 
-  auto sortedSpan = testSortedDataView.GetChannelViewSpan();
+  const auto sortedSpan = testSortedDataView.GetChannelViewSpan();
   ASSERT_EQ(5u, sortedSpan.size());
   EXPECT_EQ(1u, sortedSpan[0]);
   EXPECT_EQ(2u, sortedSpan[1]);
@@ -122,12 +122,12 @@ TEST(Test_Data_ChartSortedDataChannelView, ConstructFromSortedLowToHigh)
 
 TEST(Test_Data_ChartSortedDataChannelView, ConstructFromSortedHighToLow)
 {
-  std::array<uint32_t, 5> source = {5, 4, 3, 2, 1};
+  const std::array<uint32_t, 5> source = {5, 4, 3, 2, 1};
 
-  auto dataBinding = std::make_shared<DataBinding::DataBindingService>();
-  UI::ChartSortedDataChannelView testSortedDataView(CreateDataViewFromSpan(dataBinding, source), 0);
+  const auto dataBinding = std::make_shared<DataBinding::DataBindingService>();
+  const UI::ChartSortedDataChannelView testSortedDataView(CreateDataViewFromSpan(dataBinding, source), 0);
 
-  auto sortedSpan = testSortedDataView.GetChannelViewSpan();
+  const auto sortedSpan = testSortedDataView.GetChannelViewSpan();
   ASSERT_EQ(5u, sortedSpan.size());
   EXPECT_EQ(1u, sortedSpan[0]);
   EXPECT_EQ(2u, sortedSpan[1]);
@@ -139,12 +139,12 @@ TEST(Test_Data_ChartSortedDataChannelView, ConstructFromSortedHighToLow)
 
 TEST(Test_Data_ChartSortedDataChannelView, ConstructFromUnsorted)
 {
-  std::array<uint32_t, 5> source = {1, 5, 2, 4, 3};
+  const std::array<uint32_t, 5> source = {1, 5, 2, 4, 3};
 
-  auto dataBinding = std::make_shared<DataBinding::DataBindingService>();
-  UI::ChartSortedDataChannelView testSortedDataView(CreateDataViewFromSpan(dataBinding, source), 0);
+  const auto dataBinding = std::make_shared<DataBinding::DataBindingService>();
+  const UI::ChartSortedDataChannelView testSortedDataView(CreateDataViewFromSpan(dataBinding, source), 0);
 
-  auto sortedSpan = testSortedDataView.GetChannelViewSpan();
+  const auto sortedSpan = testSortedDataView.GetChannelViewSpan();
   ASSERT_EQ(5u, sortedSpan.size());
   EXPECT_EQ(1u, sortedSpan[0]);
   EXPECT_EQ(2u, sortedSpan[1]);

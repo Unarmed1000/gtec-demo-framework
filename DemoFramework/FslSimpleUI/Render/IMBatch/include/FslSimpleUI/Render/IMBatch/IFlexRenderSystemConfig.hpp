@@ -42,10 +42,10 @@ namespace Fsl::UI::RenderIMBatch
   public:
     virtual ~IFlexRenderSystemConfig() = default;
 
-    virtual const FlexRenderSystemConfig& GetConfig() const = 0;
+    [[nodiscard]] virtual const FlexRenderSystemConfig& GetConfig() const = 0;
     virtual void SetConfig(const FlexRenderSystemConfig& config) = 0;
 
-    virtual uint32_t GetMaxDrawCalls() const = 0;
+    [[nodiscard]] virtual uint32_t GetMaxDrawCalls() const = 0;
     virtual void SetMaxDrawCalls(const uint32_t maxDrawCalls) = 0;
   };
 }

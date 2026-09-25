@@ -46,9 +46,9 @@ namespace
 
 TEST(Test_UTObservableCollection_TwoWay, ChangedNotification_PropertiesModified_ChangeVariable)
 {
-  auto dataBindingService = std::make_shared<DataBinding::DataBindingService>();
+  const auto dataBindingService = std::make_shared<DataBinding::DataBindingService>();
 
-  auto t0 = std::make_shared<UTObservableCollection>(dataBindingService);
+  const auto t0 = std::make_shared<UTObservableCollection>(dataBindingService);
   UTDependencyObject2 t1(dataBindingService);
   UTDependencyObject t2(dataBindingService);
 
@@ -90,7 +90,7 @@ TEST(Test_UTObservableCollection_TwoWay, ChangedNotification_PropertiesModified_
 
 TEST(Test_UTObservableCollection_TwoWay, SetBinding_TypedObserverDependencyProperty_TypedObserverDependencyProperty)
 {
-  auto dataBindingService = std::make_shared<DataBinding::DataBindingService>();
+  const auto dataBindingService = std::make_shared<DataBinding::DataBindingService>();
 
   UTDependencyObject2 t1(dataBindingService);
   UTDependencyObject2 t2(dataBindingService);
@@ -111,10 +111,10 @@ TEST(Test_UTObservableCollection_TwoWay, SetBinding_TypedObserverDependencyPrope
 
 TEST(Test_UTObservableCollection_TwoWay, ChangeSource_TypedObserverDependencyProperty_TypedObserverDependencyProperty_WithPrebindValueA)
 {
-  auto dataBindingService = std::make_shared<DataBinding::DataBindingService>();
+  const auto dataBindingService = std::make_shared<DataBinding::DataBindingService>();
 
-  auto srcCol0 = std::make_shared<UTObservableCollection>(dataBindingService);
-  auto srcCol1 = std::make_shared<UTObservableCollection>(dataBindingService);
+  const auto srcCol0 = std::make_shared<UTObservableCollection>(dataBindingService);
+  const auto srcCol1 = std::make_shared<UTObservableCollection>(dataBindingService);
   UTDependencyObject2 t1(dataBindingService);
   UTDependencyObject2 t2(dataBindingService);
   EXPECT_TRUE(t1.SetProperty5Value(srcCol0));
@@ -177,10 +177,10 @@ TEST(Test_UTObservableCollection_TwoWay, ChangeSource_TypedObserverDependencyPro
 
 TEST(Test_UTObservableCollection_TwoWay, ChangeSource_TypedObserverDependencyProperty_TypedObserverDependencyProperty_WithPrebindValueB)
 {
-  auto dataBindingService = std::make_shared<DataBinding::DataBindingService>();
+  const auto dataBindingService = std::make_shared<DataBinding::DataBindingService>();
 
-  auto srcCol0 = std::make_shared<UTObservableCollection>(dataBindingService);
-  auto srcCol1 = std::make_shared<UTObservableCollection>(dataBindingService);
+  const auto srcCol0 = std::make_shared<UTObservableCollection>(dataBindingService);
+  const auto srcCol1 = std::make_shared<UTObservableCollection>(dataBindingService);
   UTDependencyObject2 t1(dataBindingService);
   UTDependencyObject2 t2(dataBindingService);
   t1.SetProperty5Value(srcCol0);
@@ -243,9 +243,9 @@ TEST(Test_UTObservableCollection_TwoWay, ChangeSource_TypedObserverDependencyPro
 
 TEST(Test_UTObservableCollection_TwoWay, ChangeSource_TypedObserverDependencyProperty_TypedObserverDependencyPropertyA)
 {
-  auto dataBindingService = std::make_shared<DataBinding::DataBindingService>();
+  const auto dataBindingService = std::make_shared<DataBinding::DataBindingService>();
 
-  auto srcCol0 = std::make_shared<UTObservableCollection>(dataBindingService);
+  const auto srcCol0 = std::make_shared<UTObservableCollection>(dataBindingService);
   UTDependencyObject2 t1(dataBindingService);
   UTDependencyObject2 t2(dataBindingService);
 
@@ -299,9 +299,9 @@ TEST(Test_UTObservableCollection_TwoWay, ChangeSource_TypedObserverDependencyPro
 
 TEST(Test_UTObservableCollection_TwoWay, ChangeSource_TypedObserverDependencyProperty_TypedObserverDependencyPropertyB)
 {
-  auto dataBindingService = std::make_shared<DataBinding::DataBindingService>();
+  const auto dataBindingService = std::make_shared<DataBinding::DataBindingService>();
 
-  auto srcCol0 = std::make_shared<UTObservableCollection>(dataBindingService);
+  const auto srcCol0 = std::make_shared<UTObservableCollection>(dataBindingService);
   UTDependencyObject2 t1(dataBindingService);
   UTDependencyObject2 t2(dataBindingService);
 
@@ -355,9 +355,9 @@ TEST(Test_UTObservableCollection_TwoWay, ChangeSource_TypedObserverDependencyPro
 
 TEST(Test_UTObservableCollection_TwoWay, ChangeSource_TypedObserverDependencyProperty_TypedObserverDependencyProperty_WithPrebindValue_ClearA)
 {
-  auto dataBindingService = std::make_shared<DataBinding::DataBindingService>();
+  const auto dataBindingService = std::make_shared<DataBinding::DataBindingService>();
 
-  auto srcCol0 = std::make_shared<UTObservableCollection>(dataBindingService);
+  const auto srcCol0 = std::make_shared<UTObservableCollection>(dataBindingService);
   UTDependencyObject2 t1(dataBindingService);
   UTDependencyObject2 t2(dataBindingService);
   t1.SetProperty5Value(srcCol0);
@@ -421,9 +421,9 @@ TEST(Test_UTObservableCollection_TwoWay, ChangeSource_TypedObserverDependencyPro
 
 TEST(Test_UTObservableCollection_TwoWay, ChangeSource_TypedObserverDependencyProperty_TypedObserverDependencyProperty_WithPrebindValue_ClearB)
 {
-  auto dataBindingService = std::make_shared<DataBinding::DataBindingService>();
+  const auto dataBindingService = std::make_shared<DataBinding::DataBindingService>();
 
-  auto srcCol0 = std::make_shared<UTObservableCollection>(dataBindingService);
+  const auto srcCol0 = std::make_shared<UTObservableCollection>(dataBindingService);
   UTDependencyObject2 t1(dataBindingService);
   UTDependencyObject2 t2(dataBindingService);
   EXPECT_TRUE(t1.SetProperty5Value(srcCol0));
@@ -487,9 +487,9 @@ TEST(Test_UTObservableCollection_TwoWay, ChangeSource_TypedObserverDependencyPro
 
 TEST(Test_UTObservableCollection_TwoWay, ChangeSource_TypedObserverDependencyProperty_TypedObserverDependencyProperty_ClearA)
 {
-  auto dataBindingService = std::make_shared<DataBinding::DataBindingService>();
+  const auto dataBindingService = std::make_shared<DataBinding::DataBindingService>();
 
-  auto srcCol0 = std::make_shared<UTObservableCollection>(dataBindingService);
+  const auto srcCol0 = std::make_shared<UTObservableCollection>(dataBindingService);
   UTDependencyObject2 t1(dataBindingService);
   UTDependencyObject2 t2(dataBindingService);
 
@@ -564,9 +564,9 @@ TEST(Test_UTObservableCollection_TwoWay, ChangeSource_TypedObserverDependencyPro
 
 TEST(Test_UTObservableCollection_TwoWay, ChangeSource_TypedObserverDependencyProperty_TypedObserverDependencyProperty_ClearB)
 {
-  auto dataBindingService = std::make_shared<DataBinding::DataBindingService>();
+  const auto dataBindingService = std::make_shared<DataBinding::DataBindingService>();
 
-  auto srcCol0 = std::make_shared<UTObservableCollection>(dataBindingService);
+  const auto srcCol0 = std::make_shared<UTObservableCollection>(dataBindingService);
   UTDependencyObject2 t1(dataBindingService);
   UTDependencyObject2 t2(dataBindingService);
 

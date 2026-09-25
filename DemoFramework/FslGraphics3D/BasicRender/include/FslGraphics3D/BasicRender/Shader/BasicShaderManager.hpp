@@ -80,13 +80,13 @@ namespace Fsl::Graphics3D
       return m_records.TryGet(handle.Value);
     }
 
-    BasicNativeShaderHandle TryGetNativeHandle(const BasicShaderHandle handle) const noexcept final
+    [[nodiscard]] BasicNativeShaderHandle TryGetNativeHandle(const BasicShaderHandle handle) const noexcept final
     {
       const BasicShaderRecord* pRecord = m_records.TryGet(handle.Value);
       return pRecord != nullptr ? pRecord->NativeHandle : BasicNativeShaderHandle::Invalid();
     }
 
-    uint32_t ShaderCount() const noexcept
+    [[nodiscard]] uint32_t ShaderCount() const noexcept
     {
       return m_records.Count();
     }

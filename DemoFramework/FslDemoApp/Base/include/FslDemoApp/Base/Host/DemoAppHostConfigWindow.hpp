@@ -54,8 +54,8 @@ namespace Fsl
     DemoAppHostConfigWindow(DemoHostCustomWindowSystemAllocationFunction customWindowSystemAllocator,
                             std::shared_ptr<DemoAppHostConfig> customDemoAppHostConfig, const std::shared_ptr<ITag>& userTag);
 
-    DemoHostCustomWindowSystemAllocationFunction TryGetCustomWindowSystemAllocator() const;
-    std::shared_ptr<DemoAppHostConfig> TryGetCustomDemoAppHostConfigBase() const;
+    [[nodiscard]] DemoHostCustomWindowSystemAllocationFunction TryGetCustomWindowSystemAllocator() const;
+    [[nodiscard]] std::shared_ptr<DemoAppHostConfig> TryGetCustomDemoAppHostConfigBase() const;
 
     template <typename T>
     std::shared_ptr<T> TryGetCustomDemoAppHostConfig() const

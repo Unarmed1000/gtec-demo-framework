@@ -45,23 +45,23 @@ namespace Fsl::UI
     {
     }
 
-    PxSize2D FastGetRenderSizePx() const
+    [[nodiscard]] PxSize2D FastGetRenderSizePx() const
     {
       assert(IsValid());
       return GetSpriteObject().GetRenderSizePx();
     }
 
-    PxSize2D GetRenderSizePx() const
+    [[nodiscard]] PxSize2D GetRenderSizePx() const
     {
       return IsValid() ? GetSpriteObject().GetRenderSizePx() : PxSize2D();
     }
 
-    PxSize2D Measure() const
+    [[nodiscard]] PxSize2D Measure() const
     {
       return IsValid() ? GetSpriteObject().GetRenderSizePx() : PxSize2D();
     }
 
-    PxSize2D Measure(const PxSize2D& finalSizePx, const ItemScalePolicy scalePolicy) const
+    [[nodiscard]] PxSize2D Measure(const PxSize2D& finalSizePx, const ItemScalePolicy scalePolicy) const
     {
       PxSize2D desiredSizePx;
       if (IsValid())
@@ -76,7 +76,7 @@ namespace Fsl::UI
       return desiredSizePx;
     }
 
-    PxSize2D Measure(const PxSize2D& finalSizePx, const ItemScalePolicy scalePolicy, const bool rotate90CW) const
+    [[nodiscard]] PxSize2D Measure(const PxSize2D& finalSizePx, const ItemScalePolicy scalePolicy, const bool rotate90CW) const
     {
       PxSize2D desiredSizePx;
       if (IsValid())

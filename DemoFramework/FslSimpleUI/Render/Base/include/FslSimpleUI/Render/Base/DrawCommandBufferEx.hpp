@@ -43,27 +43,27 @@ namespace Fsl::UI
       DoClear();
     }
 
-    inline ReadOnlySpan<EncodedCommand> AsReadOnlySpan() const
+    [[nodiscard]] inline ReadOnlySpan<EncodedCommand> AsReadOnlySpan() const
     {
       return DoAsReadOnlySpan();
     }
 
-    inline const CustomDrawBasicImageInfo& FastGetCustomDrawBasicImageInfo(const uint32_t index) const noexcept
+    [[nodiscard]] inline const CustomDrawBasicImageInfo& FastGetCustomDrawBasicImageInfo(const uint32_t index) const noexcept
     {
       return DoFastGetCustomDrawBasicImageInfo(index);
     }
 
-    inline const CustomDrawBasicImageBasicMeshInfo& FastGetCustomDrawBasicImageBasicMeshInfo(const uint32_t index) const noexcept
+    [[nodiscard]] inline const CustomDrawBasicImageBasicMeshInfo& FastGetCustomDrawBasicImageBasicMeshInfo(const uint32_t index) const noexcept
     {
       return DoFastGetCustomDrawBasicImageBasicMeshInfo(index);
     }
 
-    inline const CustomDrawNineSliceInfo& FastGetCustomDrawNineSliceInfo(const uint32_t index) const noexcept
+    [[nodiscard]] inline const CustomDrawNineSliceInfo& FastGetCustomDrawNineSliceInfo(const uint32_t index) const noexcept
     {
       return DoFastGetCustomDrawNineSliceInfo(index);
     }
 
-    inline const CustomDrawTextInfo& FastGetCustomDrawTextInfo(const uint32_t index) const noexcept
+    [[nodiscard]] inline const CustomDrawTextInfo& FastGetCustomDrawTextInfo(const uint32_t index) const noexcept
     {
       return DoFastGetCustomDrawTextInfo(index);
     }

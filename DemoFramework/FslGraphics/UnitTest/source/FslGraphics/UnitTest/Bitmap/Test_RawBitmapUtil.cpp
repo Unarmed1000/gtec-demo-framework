@@ -62,7 +62,7 @@ TEST(TestBitmap_RawBitmapUtil, CalcAlignment)
 
 TEST(TestBitmap_RawBitmapUtil, CalcAlignment_Bitmap)
 {
-  std::array<uint8_t, 400 * 2> tmp{};
+  const std::array<uint8_t, 400 * 2> tmp{};
 
   EXPECT_EQ(1,
             RawBitmapUtil::CalcAlignment(
@@ -95,7 +95,7 @@ TEST(TestBitmap_RawBitmapUtil, CalcAlignment_Bitmap)
 
 TEST(TestBitmap_RawBitmapUtil, CheckIsUsingMinimumStrideForAlignment)
 {
-  std::array<uint8_t, 400 * 2> tmp{};
+  const std::array<uint8_t, 400 * 2> tmp{};
 
   EXPECT_NO_THROW(RawBitmapUtil::CheckIsUsingMinimumStrideForAlignment(
     ReadOnlyRawBitmap::Create(SpanUtil::AsReadOnlySpan(tmp), PxSize2D::Create(1, 1), PixelFormat::R8_UNORM, BitmapOrigin::UpperLeft), 1u));
@@ -122,7 +122,7 @@ TEST(TestBitmap_RawBitmapUtil, CheckIsUsingMinimumStrideForAlignment)
 
 TEST(TestBitmap_RawBitmapUtil, CheckIsUsingMinimumStrideForAlignment_Unsupported)
 {
-  std::array<uint8_t, 100> tmp{};
+  const std::array<uint8_t, 100> tmp{};
 
   EXPECT_THROW(
     RawBitmapUtil::CheckIsUsingMinimumStrideForAlignment(
@@ -133,7 +133,7 @@ TEST(TestBitmap_RawBitmapUtil, CheckIsUsingMinimumStrideForAlignment_Unsupported
 
 TEST(TestBitmap_RawBitmapUtil, CheckIsUsingMinimumStrideForAlignment_NotMin)
 {
-  std::array<uint8_t, 100> tmp{};
+  const std::array<uint8_t, 100> tmp{};
 
   EXPECT_THROW(
     RawBitmapUtil::CheckIsUsingMinimumStrideForAlignment(
@@ -616,7 +616,7 @@ TEST(TestBitmap_RawBitmapUtil, Swizzle24From012To210_SrcToDst_SameStride)
   const std::array<uint8_t, 2 * (3 + 1)> src{1, 2, 3, 4, 5, 6, 7, 8};
   //----------------------------------------------A, A, A, X, B, B, B, X
   const std::array<uint8_t, 2 * (3 + 1)> expected{3, 2, 1, 0, 7, 6, 5, 0};
-  ReadOnlyRawBitmap rawBitmap(
+  const ReadOnlyRawBitmap rawBitmap(
     ReadOnlyRawBitmap::Create(SpanUtil::AsReadOnlySpan(src), PxSize2D::Create(1, 2), PixelFormat::R8G8B8_UNORM, 4u, BitmapOrigin::UpperLeft));
 
   std::array<uint8_t, 2 * (3 + 1)> dst{};
@@ -636,7 +636,7 @@ TEST(TestBitmap_RawBitmapUtil, Swizzle24From012To210_SrcToDst_DifferentStride)
   const std::array<uint8_t, 2 * (3 + 1)> src{1, 2, 3, 4, 5, 6, 7, 8};
   //----------------------------------------A, A, A, B, B, B
   const std::array<uint8_t, 2 * 3> expected{3, 2, 1, 7, 6, 5};
-  ReadOnlyRawBitmap rawBitmap(
+  const ReadOnlyRawBitmap rawBitmap(
     ReadOnlyRawBitmap::Create(SpanUtil::AsReadOnlySpan(src), PxSize2D::Create(1, 2), PixelFormat::R8G8B8_UNORM, 4u, BitmapOrigin::UpperLeft));
 
   std::array<uint8_t, 2 * 3> dst{};
@@ -1000,7 +1000,7 @@ TEST(TestBitmap_RawBitmapUtil, DownscaleNearest32_Unsupported)
     EXPECT_THROW(RawBitmapUtil::DownscaleNearest32(dstRawBitmap, srcRawBitmap), std::invalid_argument);
   }
   {    // invalid src
-    ReadOnlyRawBitmap srcRawBitmapInvalid;
+    const ReadOnlyRawBitmap srcRawBitmapInvalid;
     RawBitmapEx dstRawBitmap(
       RawBitmapEx::Create(SpanUtil::AsSpan(dst), PxSize2D::Create(1, 1), PixelFormat::R8G8B8A8_UNORM, 8, BitmapOrigin::UpperLeft));
     EXPECT_THROW(RawBitmapUtil::DownscaleNearest32(dstRawBitmap, srcRawBitmapInvalid), std::invalid_argument);
@@ -1015,7 +1015,7 @@ TEST(TestBitmap_RawBitmapUtil, DownscaleNearest32_Unsupported)
     EXPECT_THROW(RawBitmapUtil::DownscaleNearest32(dstRawBitmap, srcRawBitmap), NotSupportedException);
   }
   {    // invalid src stride
-    RawBitmapEx srcRawBitmapInvalid(
+    const RawBitmapEx srcRawBitmapInvalid(
       RawBitmapEx::Create(SpanUtil::AsSpan(dst), PxSize2D::Create(1, 1), PixelFormat::R8G8B8A8_UNORM, 5, BitmapOrigin::UpperLeft));
     RawBitmapEx dstRawBitmap(
       RawBitmapEx::Create(SpanUtil::AsSpan(dst), PxSize2D::Create(1, 1), PixelFormat::R8G8B8A8_UNORM, 4, BitmapOrigin::UpperLeft));
@@ -1106,7 +1106,7 @@ TEST(TestBitmap_RawBitmapUtil, DownscaleBoxFilter32_Unsupported)
     EXPECT_THROW(RawBitmapUtil::DownscaleBoxFilter32(dstRawBitmap, srcRawBitmap2), std::invalid_argument);
   }
   {    // invalid src
-    ReadOnlyRawBitmap srcRawBitmapInvalid;
+    const ReadOnlyRawBitmap srcRawBitmapInvalid;
     RawBitmapEx dstRawBitmap(
       RawBitmapEx::Create(SpanUtil::AsSpan(dst), PxSize2D::Create(1, 1), PixelFormat::R8G8B8A8_UNORM, 4, BitmapOrigin::UpperLeft));
     EXPECT_THROW(RawBitmapUtil::DownscaleBoxFilter32(dstRawBitmap, srcRawBitmapInvalid), std::invalid_argument);
@@ -1121,8 +1121,8 @@ TEST(TestBitmap_RawBitmapUtil, DownscaleBoxFilter32_Unsupported)
     EXPECT_THROW(RawBitmapUtil::DownscaleBoxFilter32(dstRawBitmap, srcRawBitmap), NotSupportedException);
   }
   {    // invalid src stride
-    ReadOnlyRawBitmap srcRawBitmapInvalid(ReadOnlyRawBitmap::Create(SpanUtil::AsReadOnlySpan(srcLarge), PxSize2D::Create(4, 4),
-                                                                    PixelFormat::R8G8B8A8_UNORM, (4 * 4) + 1, BitmapOrigin::UpperLeft));
+    const ReadOnlyRawBitmap srcRawBitmapInvalid(ReadOnlyRawBitmap::Create(SpanUtil::AsReadOnlySpan(srcLarge), PxSize2D::Create(4, 4),
+                                                                          PixelFormat::R8G8B8A8_UNORM, (4 * 4) + 1, BitmapOrigin::UpperLeft));
     RawBitmapEx dstRawBitmap(
       RawBitmapEx::Create(SpanUtil::AsSpan(dstLarge), PxSize2D::Create(2, 2), PixelFormat::R8G8B8A8_UNORM, 2 * 4, BitmapOrigin::UpperLeft));
     EXPECT_THROW(RawBitmapUtil::DownscaleBoxFilter32(dstRawBitmap, srcRawBitmapInvalid), NotSupportedException);

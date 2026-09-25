@@ -52,12 +52,12 @@ namespace Fsl
     ~NativeWindowSystemSetup();
 
     //! @brief Get the event queue if present
-    std::weak_ptr<INativeWindowEventQueue> GetEventQueue() const;
+    [[nodiscard]] std::weak_ptr<INativeWindowEventQueue> GetEventQueue() const;
 
-    uint32_t GetVerbosityLevel() const;
+    [[nodiscard]] uint32_t GetVerbosityLevel() const;
 
     //! @brief Get the associated tag if any
-    std::shared_ptr<ITag> GetTag() const;
+    [[nodiscard]] std::shared_ptr<ITag> GetTag() const;
 
     //! @brief Set the associated tag
     void SetTag(const std::shared_ptr<ITag>& tag);
@@ -75,7 +75,7 @@ namespace Fsl
     }
 
     //! @brief Get the window config
-    NativeWindowConfig GetConfig() const;
+    [[nodiscard]] NativeWindowConfig GetConfig() const;
   };
 }
 

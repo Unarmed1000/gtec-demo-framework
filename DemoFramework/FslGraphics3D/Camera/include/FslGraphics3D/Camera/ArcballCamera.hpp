@@ -66,18 +66,18 @@ namespace Fsl::Graphics3D
     void SetScreenResolution(const PxPoint2& screenResolution);
     void SetScreenResolution(const PxSize2D& screenResolution);
 
-    float GetMinZoom() const;
-    float GetMaxZoom() const;
-    float GetZoom() const;
+    [[nodiscard]] float GetMinZoom() const;
+    [[nodiscard]] float GetMaxZoom() const;
+    [[nodiscard]] float GetZoom() const;
     void SetZoom(const float value);
     void AddZoom(const float value);
 
-    bool GetInvertX() const noexcept
+    [[nodiscard]] bool GetInvertX() const noexcept
     {
       return m_invertX;
     }
 
-    bool GetInvertY() const noexcept
+    [[nodiscard]] bool GetInvertY() const noexcept
     {
       return m_invertY;
     }
@@ -94,7 +94,7 @@ namespace Fsl::Graphics3D
 
 
     //! @brief Check if the camera is being dragged
-    bool IsDragging() const
+    [[nodiscard]] bool IsDragging() const
     {
       return m_isDragging;
     }
@@ -112,10 +112,10 @@ namespace Fsl::Graphics3D
     void CancelDrag();
 
     //! @brief Get the current view matrix for the camera
-    Matrix GetViewMatrix() const;
+    [[nodiscard]] Matrix GetViewMatrix() const;
 
     //! @brief Get the current rotation matrix for the camera
-    Matrix GetRotationMatrix() const;
+    [[nodiscard]] Matrix GetRotationMatrix() const;
 
     //! @brief Reset the rotation
     void ResetRotation();

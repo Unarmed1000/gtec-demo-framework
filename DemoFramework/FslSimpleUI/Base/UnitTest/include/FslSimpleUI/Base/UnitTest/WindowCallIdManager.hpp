@@ -52,7 +52,7 @@ public:
     m_enabledFlags = enabledFlags;
   }
 
-  bool IsEnabled(const WindowMethod windowMethod) const
+  [[nodiscard]] bool IsEnabled(const WindowMethod windowMethod) const
   {
     return m_enabledFlags.IsEnabled(windowMethod);
   }

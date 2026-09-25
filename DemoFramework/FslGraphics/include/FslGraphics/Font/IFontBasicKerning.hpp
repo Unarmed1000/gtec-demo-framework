@@ -45,14 +45,14 @@ namespace Fsl
   public:
     virtual ~IFontBasicKerning() = default;
 
-    virtual const UTF8String& GetName() const = 0;
-    virtual const IO::Path& GetPathName() const = 0;
-    virtual FontDesc GetDesc() const = 0;
-    virtual int32_t RangeCount() const = 0;
+    [[nodiscard]] virtual const UTF8String& GetName() const = 0;
+    [[nodiscard]] virtual const IO::Path& GetPathName() const = 0;
+    [[nodiscard]] virtual FontDesc GetDesc() const = 0;
+    [[nodiscard]] virtual int32_t RangeCount() const = 0;
     //! The ranges are sorted low to high and there will be no overlap
-    virtual FontGlyphRange GetRange(const int32_t index) const = 0;
-    virtual int32_t Count() const = 0;
-    virtual FontGlyphBasicKerning Get(const int32_t index) const = 0;
+    [[nodiscard]] virtual FontGlyphRange GetRange(const int32_t index) const = 0;
+    [[nodiscard]] virtual int32_t Count() const = 0;
+    [[nodiscard]] virtual FontGlyphBasicKerning Get(const int32_t index) const = 0;
   };
 }
 

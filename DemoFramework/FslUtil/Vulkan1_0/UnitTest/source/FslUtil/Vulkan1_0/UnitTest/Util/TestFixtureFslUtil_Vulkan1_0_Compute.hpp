@@ -148,10 +148,10 @@ private:
       VkPhysicalDeviceProperties deviceProperties{};
       vkGetPhysicalDeviceProperties(physicalDevice, &deviceProperties);
 
-      auto queueProperties = Fsl::Vulkan::PhysicalDeviceUtil::GetPhysicalDeviceQueueFamilyProperties(physicalDevice);
+      const auto queueProperties = Fsl::Vulkan::PhysicalDeviceUtil::GetPhysicalDeviceQueueFamilyProperties(physicalDevice);
       vkGetPhysicalDeviceProperties(physicalDevice, &deviceProperties);
 
-      for (auto& queue : queueProperties)
+      for (const auto& queue : queueProperties)
       {
         if ((queue.queueFlags & VK_QUEUE_COMPUTE_BIT) != 0u)
         {

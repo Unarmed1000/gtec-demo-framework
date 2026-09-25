@@ -49,7 +49,7 @@ namespace Fsl
     DataBindingDemoAppExtension();
     ~DataBindingDemoAppExtension() override;
 
-    const std::shared_ptr<DataBinding::DataBindingService>& GetDataBinding() const;
+    [[nodiscard]] const std::shared_ptr<DataBinding::DataBindingService>& GetDataBinding() const;
     std::shared_ptr<DataBinding::DataBindingService> GetDataBinding();
 
     void OnKeyEvent(const KeyEvent& event) override;

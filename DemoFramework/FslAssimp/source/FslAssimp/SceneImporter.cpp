@@ -56,7 +56,7 @@ namespace Fsl
     {
       assert(pNode != nullptr);
 
-      UTF8String name(pNode->mName.C_Str());
+      const UTF8String name(pNode->mName.C_Str());
       dstNode->SetName(name);
       dstNode->SetTransformation(Convert(pNode->mTransformation));
 
@@ -69,7 +69,7 @@ namespace Fsl
       // Process the children
       for (std::size_t i = 0; i < pNode->mNumChildren; ++i)
       {
-        std::shared_ptr<SceneNode> dstchildNode(new SceneNode());
+        const std::shared_ptr<SceneNode> dstchildNode(new SceneNode());
         ProcessSceneNodes(dstScene, dstchildNode, pNode->mChildren[i]);
         dstNode->AddChild(dstchildNode);
       }
@@ -86,7 +86,7 @@ namespace Fsl
         return;
       }
 
-      std::shared_ptr<SceneNode> rootNode(new SceneNode());
+      const std::shared_ptr<SceneNode> rootNode(new SceneNode());
       ProcessSceneNodes(dstScene, rootNode, pScene->mRootNode);
       dstScene->SetRootNode(rootNode);
     }
@@ -100,15 +100,15 @@ namespace Fsl
       Vector3 boundingMax;
       SceneHelper::GetBoundingBox(pScene, boundingMin, boundingMax);
       const auto delta = boundingMax - boundingMin;
-      float currentMax = std::max(delta.X, std::max(delta.Y, delta.Z));
-      float scaleMod = currentMax != 0.0f ? desiredSize / currentMax : 1.0f;
-      Vector3 scale(scaleMod, scaleMod, scaleMod);
-      Vector3 sceneMod = (boundingMin + (delta * 0.5f)) * -1.0f;
+      const float currentMax = std::max(delta.X, std::max(delta.Y, delta.Z));
+      const float scaleMod = currentMax != 0.0f ? desiredSize / currentMax : 1.0f;
+      const Vector3 scale(scaleMod, scaleMod, scaleMod);
+      const Vector3 sceneMod = (boundingMin + (delta * 0.5f)) * -1.0f;
 
 
       std::shared_ptr<Scene> scene(sceneAllocator(pScene->mNumMeshes));
 
-      auto sceneMeshAllocator = scene->GetMeshAllocator();
+      const auto sceneMeshAllocator = scene->GetMeshAllocator();
       if (!sceneMeshAllocator)
       {
         throw NotSupportedException("The scene did not contain a mesh allocator");
@@ -134,7 +134,7 @@ namespace Fsl
 
       std::shared_ptr<Scene> scene(sceneAllocator(pScene->mNumMeshes));
 
-      auto sceneMeshAllocator = scene->GetMeshAllocator();
+      const auto sceneMeshAllocator = scene->GetMeshAllocator();
       if (!sceneMeshAllocator)
       {
         throw NotSupportedException("The scene did not contain a mesh allocator");

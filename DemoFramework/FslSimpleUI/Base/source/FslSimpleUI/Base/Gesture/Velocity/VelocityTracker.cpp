@@ -115,8 +115,8 @@ namespace Fsl::UI
   {
     DpValueF velocityX;
     DpValueF velocityY;
-    bool hasX = m_strategyX->TryGetVelocity(velocityX);
-    bool hasY = m_strategyY->TryGetVelocity(velocityY);
+    const bool hasX = m_strategyX->TryGetVelocity(velocityX);
+    const bool hasY = m_strategyY->TryGetVelocity(velocityY);
     rValue = DpPoint2F(velocityX, velocityY);
     return hasX || hasY;
   }

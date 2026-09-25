@@ -67,20 +67,20 @@ namespace Fsl::GLES3
     void Reset(const PxSize2D& size, const GLsizei maxSamples, const GLenum colorFormat, const GLenum depthBufferFormat);
 
     //! @brief Check if this buffer contains a valid gl handle.
-    bool IsValid() const noexcept
+    [[nodiscard]] bool IsValid() const noexcept
     {
       return m_handle != GLValues::InvalidHandle;
     }
 
     //! @brief Get the gl handle associated with the buffer.
     //! @return the handle or GLValues::InvalidHandle if the buffer is unallocated.
-    GLuint Get() const noexcept
+    [[nodiscard]] GLuint Get() const noexcept
     {
       return m_handle;
     }
 
     //! @brief Get the size of the framebuffer
-    PxSize2D GetSize() const noexcept
+    [[nodiscard]] PxSize2D GetSize() const noexcept
     {
       return m_size;
     }

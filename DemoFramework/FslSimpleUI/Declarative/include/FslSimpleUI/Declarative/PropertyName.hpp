@@ -63,12 +63,12 @@ namespace Fsl::UI::Declarative
     {
     }
 
-    const std::string& AsString() const noexcept
+    [[nodiscard]] const std::string& AsString() const noexcept
     {
       return m_name;
     }
 
-    StringViewLite AsStringViewLite() const noexcept
+    [[nodiscard]] StringViewLite AsStringViewLite() const noexcept
     {
       return std::string_view(m_name);
     }
@@ -86,7 +86,7 @@ namespace Fsl::UI::Declarative
       }
 
       char previous = ' ';
-      for (auto ch : name)
+      for (const auto ch : name)
       {
         if (!IsValidCharacter(ch) || (ch == ':' && previous == ':') || (ch == '.' && previous == '.'))
         {
@@ -118,7 +118,7 @@ namespace Fsl::UI::Declarative
     }
 
     // NOLINTNEXTLINE(readability-identifier-naming)
-    int compare(const PropertyName& value) const noexcept
+    [[nodiscard]] int compare(const PropertyName& value) const noexcept
     {
       return m_name.compare(value.m_name);
     }

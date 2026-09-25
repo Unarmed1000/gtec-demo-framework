@@ -53,11 +53,11 @@ namespace Fsl::UI
     {
     }
 
-    std::shared_ptr<WindowEvent> Content() const
+    [[nodiscard]] std::shared_ptr<WindowEvent> Content() const
     {
       return m_content;
     }
-    StateEventInfo Info() const
+    [[nodiscard]] StateEventInfo Info() const
     {
       return m_info;
     }

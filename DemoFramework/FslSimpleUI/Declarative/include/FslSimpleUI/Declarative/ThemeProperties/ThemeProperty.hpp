@@ -54,31 +54,31 @@ namespace Fsl::UI::Declarative
     virtual ~ThemeProperty() = default;
 
 
-    const PropertyName& GetName() const noexcept
+    [[nodiscard]] const PropertyName& GetName() const noexcept
     {
       return m_name;
     }
 
-    const std::type_index& GetType() const noexcept
+    [[nodiscard]] const std::type_index& GetType() const noexcept
     {
       return m_type;
     }
 
-    std::span<const ThemePropertyValueRecord> ValidValues() const
+    [[nodiscard]] std::span<const ThemePropertyValueRecord> ValidValues() const
     {
       return m_validValues;
     }
 
   protected:
-    bool IsFreeform() const noexcept
+    [[nodiscard]] bool IsFreeform() const noexcept
     {
       return m_validValues.empty();
     }
 
-    uint32_t GenericParse(const StringViewLite value) const;
+    [[nodiscard]] uint32_t GenericParse(const StringViewLite value) const;
 
   private:
-    std::string ValidValuesString() const;
+    [[nodiscard]] std::string ValidValuesString() const;
     static void ValidateProperties(const std::vector<ThemePropertyValueRecord>& validValues);
   };
 }

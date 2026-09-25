@@ -151,7 +151,7 @@ namespace Fsl::UI
 
   DataBinding::DataBindingInstanceHandle Background::TryGetPropertyHandleNow(const DataBinding::DependencyPropertyDefinition& sourceDef)
   {
-    auto res = DataBinding::DependencyObjectHelper::TryGetPropertyHandle(
+    const auto res = DataBinding::DependencyObjectHelper::TryGetPropertyHandle(
       this, ThisDependencyObject(), sourceDef, DataBinding::PropLinkRefs(PropertyBackgroundColor, m_propertyBackgroundColor.ExternalColor));
     return res.IsValid() ? res : base_type::TryGetPropertyHandleNow(sourceDef);
   }
@@ -160,7 +160,7 @@ namespace Fsl::UI
   DataBinding::PropertySetBindingResult Background::TrySetBindingNow(const DataBinding::DependencyPropertyDefinition& targetDef,
                                                                      const DataBinding::Binding& binding)
   {
-    auto res = DataBinding::DependencyObjectHelper::TrySetBinding(
+    const auto res = DataBinding::DependencyObjectHelper::TrySetBinding(
       this, ThisDependencyObject(), targetDef, binding, DataBinding::PropLinkRefs(PropertyBackgroundColor, m_propertyBackgroundColor.ExternalColor));
     return res != DataBinding::PropertySetBindingResult::NotFound ? res : base_type::TrySetBindingNow(targetDef, binding);
   }

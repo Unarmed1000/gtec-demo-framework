@@ -73,7 +73,7 @@ namespace Fsl::UI
       PostLayoutEnabled = 0x200,
 
       All = WinInit | LayoutDirty | UpdateEnabled | DrawEnabled | ClickInput | MouseOver | ClipEnabled | ResolveEnabled | PostLayoutEnabled |
-            ContentRenderingDirty,
+        ContentRenderingDirty,
       InputAll = ClickInput | MouseOver
     };
 
@@ -92,17 +92,17 @@ namespace Fsl::UI
     {
     }
 
-    constexpr inline uint32_t GetValue() const noexcept
+    [[nodiscard]] constexpr inline uint32_t GetValue() const noexcept
     {
       return m_value;
     }
 
-    constexpr inline bool IsEnabled(Enum flag) const noexcept
+    [[nodiscard]] constexpr inline bool IsEnabled(Enum flag) const noexcept
     {
       return (m_value & static_cast<uint32_t>(flag)) != 0;
     }
 
-    constexpr inline bool IsOnlyFlagEnabled(Enum flag) const noexcept
+    [[nodiscard]] constexpr inline bool IsOnlyFlagEnabled(Enum flag) const noexcept
     {
       return (m_value == static_cast<uint32_t>(flag));
     }
@@ -123,7 +123,7 @@ namespace Fsl::UI
     }
 
 
-    constexpr inline ItemVisibility GetVisibility() const noexcept
+    [[nodiscard]] constexpr inline ItemVisibility GetVisibility() const noexcept
     {
       return static_cast<ItemVisibility>((m_value & WindowFlags::VisibilityMask) >> WindowFlags::VisibilityShift);
     }

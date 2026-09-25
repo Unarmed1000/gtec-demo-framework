@@ -49,7 +49,7 @@ namespace Fsl::UI::Declarative
     }
 
   protected:
-    StringViewLite ParseTypedValue(const StringViewLite value) const final
+    [[nodiscard]] StringViewLite ParseTypedValue(const StringViewLite value) const final
     {
       return value;
     }

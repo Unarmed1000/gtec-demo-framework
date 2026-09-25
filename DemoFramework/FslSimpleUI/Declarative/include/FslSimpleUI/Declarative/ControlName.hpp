@@ -63,7 +63,7 @@ namespace Fsl::UI::Declarative
     {
     }
 
-    const std::string& AsString() const noexcept
+    [[nodiscard]] const std::string& AsString() const noexcept
     {
       return m_name;
     }
@@ -80,7 +80,7 @@ namespace Fsl::UI::Declarative
         return false;
       }
 
-      for (auto ch : name)
+      for (const auto ch : name)
       {
         if (!IsValidCharacter(ch))
         {
@@ -111,7 +111,7 @@ namespace Fsl::UI::Declarative
     }
 
     // NOLINTNEXTLINE(readability-identifier-naming)
-    int compare(const ControlName& value) const noexcept
+    [[nodiscard]] int compare(const ControlName& value) const noexcept
     {
       return m_name.compare(value.m_name);
     }

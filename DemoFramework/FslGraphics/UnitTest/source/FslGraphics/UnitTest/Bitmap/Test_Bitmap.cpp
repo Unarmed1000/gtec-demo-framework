@@ -49,7 +49,7 @@ namespace
 
 TEST(TestBitmap_Bitmap, Construct_Default)
 {
-  Bitmap bitmap;
+  const Bitmap bitmap;
   EXPECT_FALSE(bitmap.IsValid());
   EXPECT_EQ(PxSize1D(), bitmap.Width());
   EXPECT_EQ(PxSize1D(), bitmap.Height());

@@ -94,14 +94,14 @@ namespace Fsl::Graphics3D
 
   void FirstPersonCamera::Rotate(const Vector2& amount)
   {
-    Vector2 adjustedAmount(amount.X * m_sensitivity, amount.Y * m_sensitivity);
+    const Vector2 adjustedAmount(amount.X * m_sensitivity, amount.Y * m_sensitivity);
     m_base.Rotate(adjustedAmount);
   }
 
 
   void FirstPersonCamera::RotateByRadians(const Vector2& amount)
   {
-    Vector2 adjustedAmount(amount.X * m_sensitivity, amount.Y * m_sensitivity);
+    const Vector2 adjustedAmount(amount.X * m_sensitivity, amount.Y * m_sensitivity);
     m_base.RotateByRadians(adjustedAmount);
   }
 
@@ -110,7 +110,7 @@ namespace Fsl::Graphics3D
   {
     if (rotateCamera && m_hasOldPosition)
     {
-      PxPoint2 deltaPosition = currentPosition - m_oldPosition;
+      const PxPoint2 deltaPosition = currentPosition - m_oldPosition;
       if (deltaPosition.X.Value != 0 || deltaPosition.Y.Value != 0)
       {
         Rotate(Vector2(deltaPosition.X.Value, -deltaPosition.Y.Value));

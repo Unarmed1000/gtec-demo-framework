@@ -57,7 +57,7 @@ namespace Fsl
     explicit ADemoHostOptionParser(const DemoHostOptionConfig config);
 
 
-    std::string GetName() const override
+    [[nodiscard]] std::string GetName() const override
     {
       return {"DemoHostOptionParser"};
     }
@@ -67,13 +67,13 @@ namespace Fsl
     bool ParsingComplete() override;
 
     //! @brief Get the native window config
-    NativeWindowConfig GetNativeWindowConfig() const;
+    [[nodiscard]] NativeWindowConfig GetNativeWindowConfig() const;
 
     //! @brief Set the native window tag
     void SetNativeWindowTag(const std::shared_ptr<ITag>& tag);
 
     //! @brief Get the native window tag
-    std::shared_ptr<ITag> GetNativeWindowTag() const;
+    [[nodiscard]] std::shared_ptr<ITag> GetNativeWindowTag() const;
   };
 }
 

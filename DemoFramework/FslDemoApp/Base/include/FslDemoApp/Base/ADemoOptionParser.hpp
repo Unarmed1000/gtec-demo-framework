@@ -41,7 +41,7 @@ namespace Fsl
     ADemoOptionParser(const ADemoOptionParser&) = delete;
     ADemoOptionParser& operator=(const ADemoOptionParser&) = delete;
 
-    std::string GetName() const override
+    [[nodiscard]] std::string GetName() const override
     {
       return {"DemoOptionParser"};
     }

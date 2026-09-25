@@ -106,49 +106,49 @@ namespace Fsl
     }
 
     // NOLINTNEXTLINE(readability-identifier-naming)
-    constexpr const_pointer data() const noexcept
+    [[nodiscard]] constexpr const_pointer data() const noexcept
     {
       return m_span.data();
     }
 
     // NOLINTNEXTLINE(readability-identifier-naming)
-    constexpr size_type size() const noexcept
+    [[nodiscard]] constexpr size_type size() const noexcept
     {
       return m_span.size();
     }
 
     //! @brief return the element size in bytes
     // NOLINTNEXTLINE(readability-identifier-naming)
-    constexpr size_type stride() const noexcept
+    [[nodiscard]] constexpr size_type stride() const noexcept
     {
       return m_span.stride();
     }
 
     // NOLINTNEXTLINE(readability-identifier-naming)
-    constexpr bool empty() const noexcept
+    [[nodiscard]] constexpr bool empty() const noexcept
     {
       return m_span.empty();
     }
 
     // NOLINTNEXTLINE(readability-identifier-naming)
-    constexpr size_type length() const noexcept
+    [[nodiscard]] constexpr size_type length() const noexcept
     {
       return m_span.length();
     }
 
-    constexpr ReadOnlyFlexSpan AsFlexSpan() const noexcept
+    [[nodiscard]] constexpr ReadOnlyFlexSpan AsFlexSpan() const noexcept
     {
       return m_span;
     }
 
-    constexpr VertexDeclarationSpan AsVertexDeclarationSpan() const noexcept
+    [[nodiscard]] constexpr VertexDeclarationSpan AsVertexDeclarationSpan() const noexcept
     {
       return m_vertexDeclaration;
     }
 
     //! @brief Returns a view of the substring [pos, pos + rcount), where rcount is the smaller of count and size() - pos.
     // NOLINTNEXTLINE(readability-identifier-naming)
-    constexpr ReadOnlyFlexVertexSpan subspan(size_type pos = 0, size_type count = extent) const
+    [[nodiscard]] constexpr ReadOnlyFlexVertexSpan subspan(size_type pos = 0, size_type count = extent) const
     {
       return ReadOnlyFlexVertexSpan(m_span.subspan(pos, count), m_vertexDeclaration, OptimizationCheckFlag::NoCheck);
     }

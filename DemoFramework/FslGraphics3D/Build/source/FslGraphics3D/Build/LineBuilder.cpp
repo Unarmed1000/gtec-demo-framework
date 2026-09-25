@@ -1376,7 +1376,7 @@ namespace Fsl::Graphics3D
     EnsureCapacityFor(numVertices);
     auto* pDst = m_vertices.data() + m_entries;
 
-    float radiansAdd = MathHelper::RADS360 / static_cast<float>(steps);
+    const float radiansAdd = MathHelper::RADS360 / static_cast<float>(steps);
     {
       float radians = 0.0f;
       float sinRadius = (radius * std::sin(radians));
@@ -1447,7 +1447,7 @@ namespace Fsl::Graphics3D
     EnsureCapacityFor(numVertices);
     auto* pDst = m_vertices.data() + m_entries;
 
-    float radiansAdd = MathHelper::RADS360 / static_cast<float>(steps);
+    const float radiansAdd = MathHelper::RADS360 / static_cast<float>(steps);
     {
       float radians = 0.0f;
       float sinRadius = (radius * std::sin(radians));

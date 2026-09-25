@@ -65,19 +65,19 @@ namespace Fsl
     //!        A warning will be logged in debug builds if this occurs.
     void SetCallbackGetCreateWindowSurfaceAttribs(const EGLCallbackGetCreateWindowSurfaceAttribs& callback);
 
-    const EGLint* GetEglConfigAttribs() const;
+    [[nodiscard]] const EGLint* GetEglConfigAttribs() const;
     const EGLint* GetEglCreateWindowAttribs(const EGLDisplay display, const DemoAppHostCreateWindowSurfaceInfoEGL& createInfo) const;
-    ConfigControl GetConfigControl() const;
+    [[nodiscard]] ConfigControl GetConfigControl() const;
 
-    bool IsMinimumMiniorVersionSet() const;
-    int32_t GetMinimumMiniorVersion() const;
+    [[nodiscard]] bool IsMinimumMiniorVersionSet() const;
+    [[nodiscard]] int32_t GetMinimumMiniorVersion() const;
     void SetMinimumMiniorVersion(const int32_t minimumMiniorVersion);
 
     //! @brief Add a extension request that the host will validate.
     //! @note  Beware it will only check for the precense of the extension not activate it in any way.
     void AddExtensionRequest(const ExtensionType type, const std::string& name, const ExtensionPrecense precense);
 
-    std::deque<ExtensionRequestRecord> GetExtensionRequests() const
+    [[nodiscard]] std::deque<ExtensionRequestRecord> GetExtensionRequests() const
     {
       return m_extensionRequests;
     }

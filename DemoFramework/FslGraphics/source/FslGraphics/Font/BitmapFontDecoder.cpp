@@ -65,9 +65,9 @@ namespace Fsl
 
     ReadOnlySpan<uint8_t> ReadAndValidateHeader(const ReadOnlySpan<uint8_t>& header, uint32_t& rVersion)
     {
-      auto magic = ByteSpanUtil::ReadUInt32LE(header, NBFHeader::HeaderOffsetMagic);
+      const auto magic = ByteSpanUtil::ReadUInt32LE(header, NBFHeader::HeaderOffsetMagic);
       auto version = ByteSpanUtil::ReadUInt32LE(header, NBFHeader::HeaderOffsetVersion);
-      auto contentSize = ByteSpanUtil::ReadUInt32LE(header, NBFHeader::HeaderOffsetContentSize);
+      const auto contentSize = ByteSpanUtil::ReadUInt32LE(header, NBFHeader::HeaderOffsetContentSize);
       if (magic != NBFHeader::Magic)
       {
         throw FormatException("invalid NBF header");
@@ -77,7 +77,7 @@ namespace Fsl
         throw FormatException(fmt::format("unsupported NBF version {} the currently supported version range is {} to {}", version,
                                           NBFHeader::MinVersion, NBFHeader::MaxVersion));
       }
-      auto remainingSpan = header.subspan(NBFHeader::SizeOfHeader);
+      const auto remainingSpan = header.subspan(NBFHeader::SizeOfHeader);
       if (contentSize != remainingSpan.size())
       {
         throw FormatException("content is not of the expected size");
@@ -181,10 +181,10 @@ namespace Fsl
     auto remainingContent = ReadAndValidateHeader(content, currentVersion);
 
     auto name = ReadString(remainingContent);
-    auto dpi = ValueCompression::ReadSimpleUInt16(remainingContent);
-    auto size = ValueCompression::ReadSimpleUInt16(remainingContent);
-    auto lineSpacingPx = PxValueU16(ValueCompression::ReadSimpleUInt16(remainingContent));
-    auto baseLinePx = PxValueU16(ValueCompression::ReadSimpleUInt16(remainingContent));
+    const auto dpi = ValueCompression::ReadSimpleUInt16(remainingContent);
+    const auto size = ValueCompression::ReadSimpleUInt16(remainingContent);
+    const auto lineSpacingPx = PxValueU16(ValueCompression::ReadSimpleUInt16(remainingContent));
+    const auto baseLinePx = PxValueU16(ValueCompression::ReadSimpleUInt16(remainingContent));
     uint16_t sdfDesiredBaseLinePx = 0;
     float sdfDistanceRange = 0.0f;
     uint16_t paddingLeft = 0;
@@ -209,7 +209,7 @@ namespace Fsl
     }
 
     auto textureName = ReadString(remainingContent);
-    auto fontType = ReadBitmapFontType(remainingContent);
+    const auto fontType = ReadBitmapFontType(remainingContent);
 
     auto chars = DecodeChars(remainingContent);
     auto kernings = DecodeKernings(remainingContent);
@@ -220,7 +220,7 @@ namespace Fsl
 
     const float sdfScale = sdfDesiredBaseLinePx == 0 ? 1.0f : static_cast<float>(sdfDesiredBaseLinePx) / static_cast<float>(baseLinePx.Value);
     const auto paddingPx = PxThicknessU16::Create(paddingLeft, paddingTop, paddingRight, paddingBottom);
-    BitmapFontSdfParams sdfParams(sdfDistanceRange, sdfScale);
+    const BitmapFontSdfParams sdfParams(sdfDistanceRange, sdfScale);
     return {std::move(name),        dpi,      size,      lineSpacingPx,    baseLinePx,         paddingPx,
             std::move(textureName), fontType, sdfParams, std::move(chars), std::move(kernings)};
   }

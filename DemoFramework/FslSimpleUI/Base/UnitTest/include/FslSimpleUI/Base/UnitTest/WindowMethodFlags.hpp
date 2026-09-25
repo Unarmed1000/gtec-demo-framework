@@ -49,7 +49,7 @@ struct WindowMethodFlags
   {
   }
 
-  bool IsEnabled(const WindowMethod flag) const
+  [[nodiscard]] bool IsEnabled(const WindowMethod flag) const
   {
     return (Value & static_cast<uint32_t>(flag)) != 0;
   }

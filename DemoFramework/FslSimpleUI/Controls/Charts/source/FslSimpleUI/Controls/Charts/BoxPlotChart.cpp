@@ -493,7 +493,7 @@ namespace Fsl::UI
   DataBinding::DataBindingInstanceHandle BoxPlotChart::TryGetPropertyHandleNow(const DataBinding::DependencyPropertyDefinition& sourceDef)
   {
     using namespace DataBinding;
-    auto res = DependencyObjectHelper::TryGetPropertyHandle(
+    const auto res = DependencyObjectHelper::TryGetPropertyHandle(
       this, ThisDependencyObject(), sourceDef, PropLinkRefs(PropertyMedianColor, m_propertyMedianColor),
       PropLinkRefs(PropertySpacing, m_propertySpacing), PropLinkRefs(PropertyBoxSize, m_propertyBoxSize),
       PropLinkRefs(PropertyWhiskerSize, m_propertyWhiskerSize), PropLinkRefs(PropertyOutlierSize, m_propertyOutlierSize),
@@ -506,7 +506,7 @@ namespace Fsl::UI
                                                                        const DataBinding::Binding& binding)
   {
     using namespace DataBinding;
-    auto res = DependencyObjectHelper::TrySetBinding(
+    const auto res = DependencyObjectHelper::TrySetBinding(
       this, ThisDependencyObject(), targetDef, binding, PropLinkRefs(PropertyMedianColor, m_propertyMedianColor),
       PropLinkRefs(PropertySpacing, m_propertySpacing), PropLinkRefs(PropertyBoxSize, m_propertyBoxSize),
       PropLinkRefs(PropertyWhiskerSize, m_propertyWhiskerSize), PropLinkRefs(PropertyOutlierSize, m_propertyOutlierSize),
@@ -545,7 +545,7 @@ namespace Fsl::UI
 
     if (pDataViewElement != nullptr)
     {    // Extract axis range
-      auto dataStats = pDataViewElement->CalculateDataStats();
+      const auto dataStats = pDataViewElement->CalculateDataStats();
       requireRelayout = rDrawData.Canvas.SetAxisRange(dataStats.ValueMinMax);
     }
 
@@ -572,9 +572,9 @@ namespace Fsl::UI
         rDrawData.Clear();
         for (uint32_t i = 0; i < channels.size(); ++i)
         {
-          auto viewSpan = channels[i].GetChannelViewSpan();
+          const auto viewSpan = channels[i].GetChannelViewSpan();
           assert(viewSpan.size() >= BoxPlotHelper::MinimumEntries);
-          auto boxPlot = BoxPlotHelper::Calculate(viewSpan);
+          const auto boxPlot = BoxPlotHelper::Calculate(viewSpan);
           rDrawData.Add(boxPlot, colorConverter.Convert(pDataView->GetChannelMetaDataInfo(i).PrimaryColor));
         }
       }

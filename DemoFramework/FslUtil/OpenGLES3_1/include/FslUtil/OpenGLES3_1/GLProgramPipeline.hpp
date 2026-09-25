@@ -90,7 +90,7 @@ namespace Fsl::GLES3
     ~GLProgramPipeline();
 
     //! @brief Check if this contains a valid gl handle.
-    bool IsValid() const
+    [[nodiscard]] bool IsValid() const
     {
       return m_handle != GLValues::InvalidHandle;
     }
@@ -107,13 +107,13 @@ namespace Fsl::GLES3
     void Reset(GLuint handle);
 
     //! @brief Get the handle to the shader program
-    GLuint Get() const
+    [[nodiscard]] GLuint Get() const
     {
       return m_handle;
     }
 
     //! @brief Get the handle to the shader program
-    [[deprecated("use one of the other overloads instead")]] GLuint GetHandle() const
+    [[nodiscard]] [[deprecated("use one of the other overloads instead")]] GLuint GetHandle() const
     {
       return Get();
     }

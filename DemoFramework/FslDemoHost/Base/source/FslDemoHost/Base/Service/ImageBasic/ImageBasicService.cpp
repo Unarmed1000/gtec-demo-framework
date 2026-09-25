@@ -88,7 +88,7 @@ namespace Fsl
     serviceProvider.Get<IImageLibraryService>(m_imageLibraryServices);
 
     // Sort the library services by name to ensure that we have a consistent order
-    auto funcByNameComp = [](const std::shared_ptr<IImageLibraryService>& lhs, const std::shared_ptr<IImageLibraryService>& rhs)
+    const auto funcByNameComp = [](const std::shared_ptr<IImageLibraryService>& lhs, const std::shared_ptr<IImageLibraryService>& rhs)
     { return lhs->GetName() > rhs->GetName(); };
     std::sort(m_imageLibraryServices.begin(), m_imageLibraryServices.end(), funcByNameComp);
 
@@ -98,9 +98,9 @@ namespace Fsl
     {
       formats.clear();
       imageLibraryService->ExtractSupportedImageFormats(formats);
-      for (auto& format : formats)
+      for (const auto& format : formats)
       {
-        auto itrFind = m_formatToImageLibrary.find(format);
+        const auto itrFind = m_formatToImageLibrary.find(format);
         if (itrFind == m_formatToImageLibrary.end())
         {
           m_formatToImageLibrary[format] = std::make_shared<ImageLibraryDeque>();

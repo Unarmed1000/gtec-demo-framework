@@ -55,19 +55,19 @@ namespace Fsl::DataBinding
     static DependencyPropertyDefinition Create(StringViewLite name, const std::type_index& type, const std::type_index& ownerType,
                                                std::shared_ptr<Internal::IPropertyMethodsDefinition> methods);
 
-    StringViewLite Name() const;
+    [[nodiscard]] StringViewLite Name() const;
 
-    std::type_index Type() const
+    [[nodiscard]] std::type_index Type() const
     {
       return m_type;
     }
 
-    std::type_index OwnerType() const
+    [[nodiscard]] std::type_index OwnerType() const
     {
       return m_ownerType;
     }
 
-    std::shared_ptr<Internal::IPropertyMethodsDefinition> GetMethods() const
+    [[nodiscard]] std::shared_ptr<Internal::IPropertyMethodsDefinition> GetMethods() const
     {
       // If this returns null there would be a internal error as we don't allow the object to be constructed with a nullptr
       return m_methods;

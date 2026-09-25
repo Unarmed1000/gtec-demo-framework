@@ -57,7 +57,7 @@ namespace Fsl
       m_userTag = userTag;
     }
 
-    std::shared_ptr<ITag> GetUserTag() const
+    [[nodiscard]] std::shared_ptr<ITag> GetUserTag() const
     {
       return m_userTag;
     }

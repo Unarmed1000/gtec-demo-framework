@@ -43,17 +43,17 @@ namespace
 
 TEST(TestSprite_SpriteMaterialInfo, Constuct)
 {
-  SpriteMaterialInfo info;
+  const SpriteMaterialInfo info;
 }
 
 TEST(TestSprite_SpriteMaterialInfo, Constuct_Values)
 {
   constexpr SpriteMaterialId Id(12);
   constexpr auto Extent = PxExtent2D::Create(42, 1337);
-  auto spriteMaterial = std::make_shared<SpriteMaterialImpl>(Id, Extent);
+  const auto spriteMaterial = std::make_shared<SpriteMaterialImpl>(Id, Extent);
 
   constexpr bool IsOpaque = true;
-  SpriteMaterialInfo info(Id, Extent, IsOpaque, BasicPrimitiveTopology::TriangleList, spriteMaterial);
+  const SpriteMaterialInfo info(Id, Extent, IsOpaque, BasicPrimitiveTopology::TriangleList, spriteMaterial);
 
   EXPECT_TRUE(info.IsValid());
   EXPECT_EQ(Id, info.Id);

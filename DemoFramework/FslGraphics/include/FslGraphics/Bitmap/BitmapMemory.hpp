@@ -62,19 +62,19 @@ namespace Fsl
     BitmapMemory() = default;
 
 
-    PxSize2D GetSize() const noexcept
+    [[nodiscard]] PxSize2D GetSize() const noexcept
     {
       return m_sizePx;
     }
 
 
-    PixelFormat GetPixelFormat() const noexcept
+    [[nodiscard]] PixelFormat GetPixelFormat() const noexcept
     {
       return m_pixelFormat;
     }
 
 
-    BitmapOrigin GetOrigin() const noexcept
+    [[nodiscard]] BitmapOrigin GetOrigin() const noexcept
     {
       return m_origin;
     }
@@ -82,16 +82,16 @@ namespace Fsl
 
     //! @brief The stride of the bitmap in bytes.
     //! @warning This will be greater or equal to Width * BytesPerPixel as there might be padding bytes!
-    uint32_t Stride() const noexcept
+    [[nodiscard]] uint32_t Stride() const noexcept
     {
       return m_stride;
     }
 
-    uint32_t GetBytesPerPixel() const noexcept;
+    [[nodiscard]] uint32_t GetBytesPerPixel() const noexcept;
 
 
     //! @brief Returns true if the bitmap data is tightly packed without any padding added to the stride
-    bool IsTightlyPacked() const noexcept;
+    [[nodiscard]] bool IsTightlyPacked() const noexcept;
 
     void Reset() noexcept;
 

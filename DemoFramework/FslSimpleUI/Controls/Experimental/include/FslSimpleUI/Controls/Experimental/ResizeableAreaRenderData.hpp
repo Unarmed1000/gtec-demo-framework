@@ -68,7 +68,7 @@ namespace Fsl::UI
     void SetRenderData(const PxVector2 renderOffsetPxf, const PxRectangle& rectanglePx, const PxSize1D dragHandleSizePx,
                        const ResizeableAreaDragHandleLocation dragHandleLocation, const bool showRenderHandles, const UIRenderColor dragHandleColor);
 
-    int32_t TryGetFindHitIndex(const PxPoint2 positionPx) const noexcept;
+    [[nodiscard]] int32_t TryGetFindHitIndex(const PxPoint2 positionPx) const noexcept;
   };
 }
 #endif

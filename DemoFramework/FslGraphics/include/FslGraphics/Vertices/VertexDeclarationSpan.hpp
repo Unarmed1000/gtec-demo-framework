@@ -93,30 +93,30 @@ namespace Fsl
       assert(IsValidElements(srcElements, m_vertexStride));
     }
 
-    constexpr bool Empty() const noexcept
+    [[nodiscard]] constexpr bool Empty() const noexcept
     {
       return m_span.empty();
     }
 
     //! @brief Get the vertex stride
-    constexpr uint32_t VertexStride() const noexcept
+    [[nodiscard]] constexpr uint32_t VertexStride() const noexcept
     {
       return m_vertexStride;
     }
 
     //! @brief Get the number of elements
-    constexpr uint32_t Count() const noexcept
+    [[nodiscard]] constexpr uint32_t Count() const noexcept
     {
       assert(m_span.size() <= 0xFFFFFFFFu);
       return static_cast<uint32_t>(m_span.size());
     }
 
-    constexpr ReadOnlySpan<VertexElement> AsReadOnlySpan() const noexcept
+    [[nodiscard]] constexpr ReadOnlySpan<VertexElement> AsReadOnlySpan() const noexcept
     {
       return m_span;
     }
 
-    constexpr const VertexElement* DirectAccess() const noexcept
+    [[nodiscard]] constexpr const VertexElement* DirectAccess() const noexcept
     {
       return m_span.data();
     }
@@ -126,13 +126,13 @@ namespace Fsl
       return m_span[pos];
     }
 
-    constexpr const VertexElement& At(const std::size_t index) const
+    [[nodiscard]] constexpr const VertexElement& At(const std::size_t index) const
     {
       return m_span.at(index);
     }
 
     //! @brief Get the element index of for the given usage and usageIndex (if not found a NotFoundException is thrown)
-    constexpr int32_t VertexElementGetIndexOf(const VertexElementUsage usage, const uint32_t usageIndex) const
+    [[nodiscard]] constexpr int32_t VertexElementGetIndexOf(const VertexElementUsage usage, const uint32_t usageIndex) const
     {
       const int32_t index = VertexElementIndexOf(usage, usageIndex);
       if (index < 0)
@@ -143,7 +143,7 @@ namespace Fsl
     }
 
     //! @brief Find the element index of for the given usage and usageIndex (if not found <0 is returned)
-    constexpr int32_t VertexElementIndexOf(const VertexElementUsage usage, const uint32_t usageIndex) const noexcept
+    [[nodiscard]] constexpr int32_t VertexElementIndexOf(const VertexElementUsage usage, const uint32_t usageIndex) const noexcept
     {
       for (std::size_t i = 0; i < m_span.size(); ++i)
       {
@@ -156,7 +156,7 @@ namespace Fsl
     }
 
     //! @brief Get the element for the given usage and usageIndex (if not found a NotFoundException is thrown)
-    constexpr VertexElement VertexElementGet(const VertexElementUsage usage, const uint32_t usageIndex) const
+    [[nodiscard]] constexpr VertexElement VertexElementGet(const VertexElementUsage usage, const uint32_t usageIndex) const
     {
       return m_span[VertexElementGetIndexOf(usage, usageIndex)];
     }
@@ -173,13 +173,13 @@ namespace Fsl
 
 
     // NOLINTNEXTLINE(readability-identifier-naming)
-    constexpr const VertexElement* data() const noexcept
+    [[nodiscard]] constexpr const VertexElement* data() const noexcept
     {
       return m_span.data();
     }
 
     // NOLINTNEXTLINE(readability-identifier-naming)
-    constexpr uint32_t size() const noexcept
+    [[nodiscard]] constexpr uint32_t size() const noexcept
     {
       assert(m_span.size() <= 0xFFFFFFFFu);
       return static_cast<uint32_t>(m_span.size());
@@ -205,7 +205,7 @@ namespace Fsl
       uint32_t maxOffset = 0;
       for (std::size_t i = 0; i < srcElements.size(); ++i)
       {
-        auto offset = srcElements[i].Offset;
+        const auto offset = srcElements[i].Offset;
         if (offset < maxOffset)
         {
           throw NotSupportedException("The offsets should be in order 'smallest -> largest' and can not overlap");
@@ -231,7 +231,7 @@ namespace Fsl
       uint32_t maxOffset = 0;
       for (std::size_t i = 0; i < srcElements.size(); ++i)
       {
-        auto offset = srcElements[i].Offset;
+        const auto offset = srcElements[i].Offset;
         if (offset < maxOffset)
         {
           return false;

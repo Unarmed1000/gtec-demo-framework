@@ -105,7 +105,7 @@ namespace Fsl::UI
 
         if (pRenderData->ShowRenderHandles)
         {
-          auto oldColor = rBuilder.GetColor();
+          const auto oldColor = rBuilder.GetColor();
           rBuilder.SetColor(pRenderData->DragHandleColor);
 
           for (const auto& drag : pRenderData->DragHandles)
@@ -288,7 +288,7 @@ namespace Fsl::UI
       return;
     }
 
-    PxPoint2 posPx = PointFromScreen(theEvent->GetScreenPosition());
+    const PxPoint2 posPx = PointFromScreen(theEvent->GetScreenPosition());
     const int32_t hitIndex = m_renderData->TryGetFindHitIndex(posPx);
     if (hitIndex < 0)
     {
@@ -334,11 +334,11 @@ namespace Fsl::UI
   DataBinding::DataBindingInstanceHandle ResizeableArea::TryGetPropertyHandleNow(const DataBinding::DependencyPropertyDefinition& sourceDef)
   {
     using namespace DataBinding;
-    auto res = DependencyObjectHelper::TryGetPropertyHandle(this, ThisDependencyObject(), sourceDef, PropLinkRefs(PropertyEnabled, m_propertyEnabled),
-                                                            PropLinkRefs(PropertyDragHandleLocation, m_propertyDragHandleLocation),
-                                                            PropLinkRefs(PropertyDragHandleSizeDpf, m_propertyDragHandleSizeDpf),
-                                                            PropLinkRefs(PropertyDragHandleColor, m_propertyDragHandleColor.ExternalColor),
-                                                            PropLinkRefs(PropertyRectangleColor, m_propertyRectangleColor.ExternalColor));
+    const auto res = DependencyObjectHelper::TryGetPropertyHandle(
+      this, ThisDependencyObject(), sourceDef, PropLinkRefs(PropertyEnabled, m_propertyEnabled),
+      PropLinkRefs(PropertyDragHandleLocation, m_propertyDragHandleLocation), PropLinkRefs(PropertyDragHandleSizeDpf, m_propertyDragHandleSizeDpf),
+      PropLinkRefs(PropertyDragHandleColor, m_propertyDragHandleColor.ExternalColor),
+      PropLinkRefs(PropertyRectangleColor, m_propertyRectangleColor.ExternalColor));
     return res.IsValid() ? res : base_type::TryGetPropertyHandleNow(sourceDef);
   }
 
@@ -347,7 +347,7 @@ namespace Fsl::UI
                                                                          const DataBinding::Binding& binding)
   {
     using namespace DataBinding;
-    auto res = DependencyObjectHelper::TrySetBinding(
+    const auto res = DependencyObjectHelper::TrySetBinding(
       this, ThisDependencyObject(), targetDef, binding, PropLinkRefs(PropertyEnabled, m_propertyEnabled),
       PropLinkRefs(PropertyDragHandleLocation, m_propertyDragHandleLocation), PropLinkRefs(PropertyDragHandleSizeDpf, m_propertyDragHandleSizeDpf),
       PropLinkRefs(PropertyDragHandleColor, m_propertyDragHandleColor.ExternalColor),

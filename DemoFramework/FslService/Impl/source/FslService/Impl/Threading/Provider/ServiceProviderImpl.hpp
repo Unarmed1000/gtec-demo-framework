@@ -48,15 +48,15 @@ namespace Fsl
     void Update();
 
     // From IServiceProvider
-    std::shared_ptr<IBasicService> TryGet(const ServiceId& serviceId) const override;
-    std::shared_ptr<IBasicService> Get(const ServiceId& serviceId) const override;
-    std::shared_ptr<IBasicService> TryGet(const ServiceId& serviceId, const ProviderId& providerId) const override;
-    std::shared_ptr<IBasicService> Get(const ServiceId& serviceId, const ProviderId& providerId) const override;
+    [[nodiscard]] std::shared_ptr<IBasicService> TryGet(const ServiceId& serviceId) const override;
+    [[nodiscard]] std::shared_ptr<IBasicService> Get(const ServiceId& serviceId) const override;
+    [[nodiscard]] std::shared_ptr<IBasicService> TryGet(const ServiceId& serviceId, const ProviderId& providerId) const override;
+    [[nodiscard]] std::shared_ptr<IBasicService> Get(const ServiceId& serviceId, const ProviderId& providerId) const override;
     void Get(BasicServiceDeque& rServices, const ServiceId& serviceId) const override;
 
   private:
-    ServiceLaunchRecord TryGetNow(const ServiceId& serviceId) const;
-    ServiceLaunchRecord TryGetNow(const ServiceId& serviceId, const ProviderId& providerId) const;
+    [[nodiscard]] ServiceLaunchRecord TryGetNow(const ServiceId& serviceId) const;
+    [[nodiscard]] ServiceLaunchRecord TryGetNow(const ServiceId& serviceId, const ProviderId& providerId) const;
   };
 }
 

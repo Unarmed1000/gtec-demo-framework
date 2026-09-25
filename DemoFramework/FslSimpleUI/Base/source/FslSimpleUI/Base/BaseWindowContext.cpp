@@ -51,7 +51,7 @@ namespace Fsl::UI
 
   void BaseWindowContext::DoMarkContentRenderingDirty(const BaseWindow* const pWindow)
   {
-    auto uiContext = TheUIContext.Get();
+    const auto uiContext = TheUIContext.Get();
     uiContext->WindowManager->TrySetWindowFlags(pWindow, WindowFlags::ContentRenderingDirty, true);
   }
 }

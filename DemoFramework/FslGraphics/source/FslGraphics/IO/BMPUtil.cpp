@@ -597,7 +597,7 @@ namespace Fsl
   void BMPUtil::Load(Bitmap& rBitmap, std::ifstream& rStream, const BitmapOrigin originHint)
   {
     const BMPFileHeader fileHeader = ReadFileHeader(rStream);
-    BitmapHeader bitmapHeader = ReadBitmapHeader(rStream);
+    const BitmapHeader bitmapHeader = ReadBitmapHeader(rStream);
 
     // Seek to the bitmap data area
     rStream.seekg(fileHeader.BitmapOffset, std::ios_base::beg);

@@ -48,8 +48,8 @@ namespace
 TEST(Test_Exceptions, UnsupportedStrideException_Construct1)
 {
   const std::string message("hello");
-  int32_t stride = 42;
-  UnsupportedStrideException ex(message, stride);
+  const int32_t stride = 42;
+  const UnsupportedStrideException ex(message, stride);
 
   EXPECT_EQ(message, ex.what());
   EXPECT_EQ(stride, ex.GetStride());
@@ -58,8 +58,8 @@ TEST(Test_Exceptions, UnsupportedStrideException_Construct1)
 
 TEST(Test_Exceptions, UnsupportedStrideException_Construct2)
 {
-  int32_t stride = 42;
-  UnsupportedStrideException ex(stride);
+  const int32_t stride = 42;
+  const UnsupportedStrideException ex(stride);
 
   EXPECT_EQ(stride, ex.GetStride());
 }
@@ -69,7 +69,7 @@ TEST(Test_Exceptions, UnsupportedStrideExceptionEx_Construct1)
 {
   const std::string message("hello");
   std::size_t stride = 42;
-  UnsupportedStrideExceptionEx ex(message, stride);
+  const UnsupportedStrideExceptionEx ex(message, stride);
 
   EXPECT_EQ(message, ex.what());
   EXPECT_EQ(stride, ex.GetStride());
@@ -79,7 +79,7 @@ TEST(Test_Exceptions, UnsupportedStrideExceptionEx_Construct1)
 TEST(Test_Exceptions, UnsupportedStrideExceptionEx_Construct2)
 {
   std::size_t stride = 42;
-  UnsupportedStrideExceptionEx ex(stride);
+  const UnsupportedStrideExceptionEx ex(stride);
 
   EXPECT_EQ(stride, ex.GetStride());
 }
@@ -88,8 +88,8 @@ TEST(Test_Exceptions, UnsupportedStrideExceptionEx_Construct2)
 TEST(Test_Exceptions, UnsupportedAlignmentException_Construct1)
 {
   const std::string message("hello");
-  int alignment = 42;
-  UnsupportedAlignmentException ex(message, alignment);
+  const int alignment = 42;
+  const UnsupportedAlignmentException ex(message, alignment);
 
   EXPECT_EQ(message, ex.what());
   EXPECT_EQ(alignment, ex.GetAlignment());
@@ -98,8 +98,8 @@ TEST(Test_Exceptions, UnsupportedAlignmentException_Construct1)
 
 TEST(Test_Exceptions, UnsupportedAlignmentException_Construct2)
 {
-  int alignment = 42;
-  UnsupportedAlignmentException ex(alignment);
+  const int alignment = 42;
+  const UnsupportedAlignmentException ex(alignment);
 
   EXPECT_EQ(alignment, ex.GetAlignment());
 }
@@ -109,7 +109,7 @@ TEST(Test_Exceptions, UnsupportedPixelFormatException_Construct1)
 {
   const std::string message("hello");
   PixelFormat pixelFormat = PixelFormat::A1R5G5B5_UNORM_PACK16;
-  UnsupportedPixelFormatException ex(message, pixelFormat);
+  const UnsupportedPixelFormatException ex(message, pixelFormat);
 
   EXPECT_EQ(fmt::format("{}. PixelFormat: {}", message, pixelFormat), ex.what());
   EXPECT_EQ(pixelFormat, ex.GetPixelFormat());
@@ -118,8 +118,8 @@ TEST(Test_Exceptions, UnsupportedPixelFormatException_Construct1)
 
 TEST(Test_Exceptions, UnsupportedPixelFormatException_Construct2)
 {
-  PixelFormat pixelFormat = PixelFormat::A1R5G5B5_UNORM_PACK16;
-  UnsupportedPixelFormatException ex(pixelFormat);
+  const PixelFormat pixelFormat = PixelFormat::A1R5G5B5_UNORM_PACK16;
+  const UnsupportedPixelFormatException ex(pixelFormat);
 
   EXPECT_EQ(pixelFormat, ex.GetPixelFormat());
 }
@@ -128,8 +128,8 @@ TEST(Test_Exceptions, UnsupportedPixelFormatException_Construct2)
 TEST(Test_Exceptions, UnsupportedVertexElementFormatException_Construct1)
 {
   const std::string message("hello");
-  auto value = VertexElementFormat::Vector2;
-  UnsupportedVertexElementFormatException ex(message, value);
+  const auto value = VertexElementFormat::Vector2;
+  const UnsupportedVertexElementFormatException ex(message, value);
 
   EXPECT_EQ(message, ex.what());
   EXPECT_EQ(value, ex.GetVertexElementFormat());
@@ -138,8 +138,8 @@ TEST(Test_Exceptions, UnsupportedVertexElementFormatException_Construct1)
 
 TEST(Test_Exceptions, UnsupportedVertexElementFormatException_Construct2)
 {
-  auto value = VertexElementFormat::Vector2;
-  UnsupportedVertexElementFormatException ex(value);
+  const auto value = VertexElementFormat::Vector2;
+  const UnsupportedVertexElementFormatException ex(value);
 
   EXPECT_EQ(value, ex.GetVertexElementFormat());
 }
@@ -150,7 +150,7 @@ TEST(Test_Exceptions, UnsupportedPixelFormatConversionException_Construct1)
   const std::string message("hello");
   auto value1 = PixelFormat::A8B8G8R8_SINT_PACK32;
   auto value2 = PixelFormat::BC1_RGB_SRGB_BLOCK;
-  UnsupportedPixelFormatConversionException ex(message, value1, value2);
+  const UnsupportedPixelFormatConversionException ex(message, value1, value2);
 
   EXPECT_EQ(fmt::format("{}. From: {} To: {}", message, value1, value2), ex.what());
   EXPECT_EQ(value1, ex.GetFromPixelFormat());
@@ -160,9 +160,9 @@ TEST(Test_Exceptions, UnsupportedPixelFormatConversionException_Construct1)
 
 TEST(Test_Exceptions, UnsupportedPixelFormatConversionException_Construct2)
 {
-  auto value1 = PixelFormat::A8B8G8R8_SINT_PACK32;
-  auto value2 = PixelFormat::BC1_RGB_SRGB_BLOCK;
-  UnsupportedPixelFormatConversionException ex(value1, value2);
+  const auto value1 = PixelFormat::A8B8G8R8_SINT_PACK32;
+  const auto value2 = PixelFormat::BC1_RGB_SRGB_BLOCK;
+  const UnsupportedPixelFormatConversionException ex(value1, value2);
 
   EXPECT_EQ(value1, ex.GetFromPixelFormat());
   EXPECT_EQ(value2, ex.GetToPixelFormat());

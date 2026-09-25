@@ -79,7 +79,7 @@ namespace Fsl::Graphics3D
     BasicMaterial CloneMaterial(const BasicMaterial& sourceMaterial, const std::shared_ptr<INativeTexture2D>& texture, const bool isDynamic);
     BasicMaterial CloneMaterial(const BasicMaterial& sourceMaterial, const BasicMaterialInfo& materialInfo, const bool isDynamic);
 
-    BasicMaterialInfo GetMaterialInfo(const BasicMaterial& sourceMaterial) const;
+    [[nodiscard]] BasicMaterialInfo GetMaterialInfo(const BasicMaterial& sourceMaterial) const;
     void SetMaterialInfo(const BasicMaterial& sourceMaterial, const BasicMaterialInfo& materialInfo);
 
     const BasicMaterialRecord* TryGetMaterialRecord(const BasicMaterial& sourceMaterial) noexcept
@@ -88,9 +88,9 @@ namespace Fsl::Graphics3D
     }
 
     std::shared_ptr<INativeTexture2D> TryGetMaterialTexture(const BasicMaterial& sourceMaterial);
-    BasicNativeMaterialHandle TryGetNativeHandle(const BasicMaterial& material) const;
+    [[nodiscard]] BasicNativeMaterialHandle TryGetNativeHandle(const BasicMaterial& material) const;
 
-    uint32_t MaterialCount() const noexcept
+    [[nodiscard]] uint32_t MaterialCount() const noexcept
     {
       return m_records.Count();
     }

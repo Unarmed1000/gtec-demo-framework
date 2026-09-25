@@ -143,7 +143,7 @@ namespace Fsl
 
       void Clear();
 
-      uint32_t GetDensityDpi() const
+      [[nodiscard]] uint32_t GetDensityDpi() const
       {
         return m_densityDpi;
       }
@@ -153,17 +153,17 @@ namespace Fsl
         m_densityDpi = value;
       }
 
-      bool IsValidHandle(const UIAppTextureHandle hTexture) const
+      [[nodiscard]] bool IsValidHandle(const UIAppTextureHandle hTexture) const
       {
         return m_textures.IsValidHandle(hTexture.Value);
       }
 
-      UIAppTextureHandle FastIndexToHandle(const index_type index) const
+      [[nodiscard]] UIAppTextureHandle FastIndexToHandle(const index_type index) const
       {
         return UIAppTextureHandle(m_textures.FastIndexToHandle(index));
       }
 
-      UIAppTextureInfo GetTextureInfo(const UIAppTextureHandle hTexture) const
+      [[nodiscard]] UIAppTextureInfo GetTextureInfo(const UIAppTextureHandle hTexture) const
       {
         const auto& record = m_textures.Get(hTexture.Value);
         if (record.Type == TextureType::Managed)
@@ -181,13 +181,13 @@ namespace Fsl
       }
 
 
-      uint32_t Count() const
+      [[nodiscard]] uint32_t Count() const
       {
         return m_textures.Count();
       }
 
 
-      UIAppBasicTextureInfo FastGetInfoAt(const index_type index) const
+      [[nodiscard]] UIAppBasicTextureInfo FastGetInfoAt(const index_type index) const
       {
         const auto& record = m_textures[index];
         assert(record.Type == TextureType::Managed || record.Type == TextureType::External);
@@ -196,7 +196,7 @@ namespace Fsl
                                                                            : m_externalTextures.FastGet(record.ActualHandle).ExtentPx};
       }
 
-      const UIAppTextureInfo* TryFastGetTextureInfoAt(const index_type index) const
+      [[nodiscard]] const UIAppTextureInfo* TryFastGetTextureInfoAt(const index_type index) const
       {
         const auto& record = m_textures[index];
         assert(record.Type == TextureType::Managed || record.Type == TextureType::External);
@@ -216,21 +216,21 @@ namespace Fsl
       UIAppTextureHandle RegisterExternalTexture(IBasicRenderSystem& rRenderSystem, const std::shared_ptr<INativeTexture2D>& texture);
       bool UnregisterTexture(const UIAppTextureHandle hTexture);
 
-      IO::Path BuildResourceName(const AnalyzedPath& analyzedPath, const uint32_t selectedDpi) const;
+      [[nodiscard]] IO::Path BuildResourceName(const AnalyzedPath& analyzedPath, const uint32_t selectedDpi) const;
 
-      const CompatibilityTextureAtlasMap& GetAtlas(const UIAppTextureHandle hTexture) const;
+      [[nodiscard]] const CompatibilityTextureAtlasMap& GetAtlas(const UIAppTextureHandle hTexture) const;
 
-      AtlasTextureInfo GetAtlasTextureInfo(const UIAppTextureHandle hTexture, const IO::PathView& atlasPathName) const;
+      [[nodiscard]] AtlasTextureInfo GetAtlasTextureInfo(const UIAppTextureHandle hTexture, const IO::PathView& atlasPathName) const;
 
 
-      bool SpriteFontExists(const IContentManager& contentManager, const UIAppTextureHandle textureHandle, IO::PathView fontName) const;
+      [[nodiscard]] bool SpriteFontExists(const IContentManager& contentManager, const UIAppTextureHandle textureHandle, IO::PathView fontName) const;
 
-      BitmapFont ReadSpriteFont(const IContentManager& contentManager, const UIAppTextureHandle handle, const IO::PathView& fontName,
-                                const bool isLegacyFullPathFontName) const;
+      [[nodiscard]] BitmapFont ReadSpriteFont(const IContentManager& contentManager, const UIAppTextureHandle handle, const IO::PathView& fontName,
+                                              const bool isLegacyFullPathFontName) const;
 
       bool TryReleaseAtIfDifferentDpi(const index_type textureIndex, const uint32_t densityDpi);
 
-      bool FastIsTextureMissing(const index_type textureIndex) const
+      [[nodiscard]] bool FastIsTextureMissing(const index_type textureIndex) const
       {
         const auto& entry = m_textures[textureIndex];
         return entry.Type == TextureType::Managed && IsManagedTextureMissing(entry.ActualHandle);
@@ -241,8 +241,8 @@ namespace Fsl
       void PerformGarbageCollection();
 
     private:
-      const TextureDefinition& GetManaged(const UIAppTextureHandle hTexture) const;
-      const TextureDefinition* TryGetManaged(const UIAppTextureHandle hTexture) const;
+      [[nodiscard]] const TextureDefinition& GetManaged(const UIAppTextureHandle hTexture) const;
+      [[nodiscard]] const TextureDefinition* TryGetManaged(const UIAppTextureHandle hTexture) const;
 
       UIAppTextureHandle DoAddTexture(const UIAppTextureResourceCreationInfo& creationInfo, const AnalyzedPath& pathInfo, const uint32_t dpi,
                                       const Texture& srcTexture, std::unique_ptr<CompatibilityTextureAtlasMap> srcAtlas,
@@ -251,7 +251,7 @@ namespace Fsl
       void AttachTestPattern(const UIAppTextureHandle hTexture, Texture texture, const UIAppResourceFlag flags);
       void ApplyTestPattern();
 
-      bool IsManagedTextureMissing(const int32_t actualHandle) const
+      [[nodiscard]] bool IsManagedTextureMissing(const int32_t actualHandle) const
       {
         const auto& entry = m_managedTextures.FastGet(actualHandle);
         return (!entry.PathInfo.AvailableDpi.Empty() && !entry.Info.Texture);

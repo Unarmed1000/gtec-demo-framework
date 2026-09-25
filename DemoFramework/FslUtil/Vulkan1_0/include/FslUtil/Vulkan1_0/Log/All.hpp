@@ -48,9 +48,9 @@ namespace Fsl::Vulkan
   // The patch version number is a 12 - bit integer packed into bits 11 - 0.
   inline std::ostream& operator<<(std::ostream& o, const Fsl::Vulkan::EncodedVulkanVersion& value)
   {
-    uint32_t major = (value.Value >> 22) & ((1 << 10) - 1);
-    uint32_t minor = (value.Value >> 12) & ((1 << 10) - 1);
-    uint32_t patch = value.Value & ((1 << 12) - 1);
+    const uint32_t major = (value.Value >> 22) & ((1 << 10) - 1);
+    const uint32_t minor = (value.Value >> 12) & ((1 << 10) - 1);
+    const uint32_t patch = value.Value & ((1 << 12) - 1);
     return o << major << '.' << minor << '.' << patch;
   }
 }
@@ -73,7 +73,7 @@ inline std::ostream& operator<<(std::ostream& o, const VkFormat& value)
   {
     return o << psz;
   }
-  Fsl::IO::ScopedStreamState scopedState(o);
+  const Fsl::IO::ScopedStreamState scopedState(o);
   return o << "0x" << std::hex << static_cast<uint32_t>(value);
 }
 

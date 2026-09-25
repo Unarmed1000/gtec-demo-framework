@@ -144,38 +144,38 @@ namespace Fsl::Vulkan
     VkDeviceMemory Release() noexcept;
 
     //! @brief Get the device associated with this object
-    VkDevice GetDevice() const noexcept
+    [[nodiscard]] VkDevice GetDevice() const noexcept
     {
       return m_deviceMemory.GetDevice();
     }
 
     //! @brief Get the memory handle associated with this object
-    VkDeviceMemory Get() const noexcept
+    [[nodiscard]] VkDeviceMemory Get() const noexcept
     {
       return m_deviceMemory.Get();
     }
 
     //! @brief Check if this memory object is valid
-    bool IsValid() const noexcept
+    [[nodiscard]] bool IsValid() const noexcept
     {
       return m_deviceMemory.IsValid();
     }
 
 
-    VkDeviceSize GetAllocationSize() const noexcept
+    [[nodiscard]] VkDeviceSize GetAllocationSize() const noexcept
     {
       return m_capacity;
     }
 
 
-    VkMemoryPropertyFlags GetMemoryPropertyFlags() const noexcept
+    [[nodiscard]] VkMemoryPropertyFlags GetMemoryPropertyFlags() const noexcept
     {
       return m_memoryPropertyFlags;
     }
 
     void* MapMemory(const VkDeviceSize offset, const VkDeviceSize size, const VkMemoryMapFlags flags);
 
-    const void* GetMappedMemoryPointer() const
+    [[nodiscard]] const void* GetMappedMemoryPointer() const
     {
       FSLLOG3_DEBUG_WARNING_IF(!m_isMapped, "Requested a memory pointer for unmapped device memory, this will be a nullptr.")
       return m_pData;
@@ -187,7 +187,7 @@ namespace Fsl::Vulkan
       return m_pData;
     }
 
-    bool IsMapped() const noexcept
+    [[nodiscard]] bool IsMapped() const noexcept
     {
       return m_isMapped;
     }

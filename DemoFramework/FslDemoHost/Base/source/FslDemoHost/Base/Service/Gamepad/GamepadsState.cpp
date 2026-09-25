@@ -131,7 +131,7 @@ namespace Fsl
         return;
       }
 
-      auto oldState = gamepads[gamepadState.DeviceId];
+      const auto oldState = gamepads[gamepadState.DeviceId];
       auto& rNewState = gamepads[gamepadState.DeviceId];
 
       // FSLLOG3_INFO("R" << rNewState.IsConnected << ", " << (int)rNewState.Buttons << ", " << (int)rNewState.LeftTrigger << ", " <<

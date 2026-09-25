@@ -51,10 +51,10 @@ namespace Fsl
     ~GamepadsService() final;
 
     // From IGamepads
-    GamepadDeadZoneType GetDeadZoneType() const final;
+    [[nodiscard]] GamepadDeadZoneType GetDeadZoneType() const final;
     void SetDeadZoneType(const GamepadDeadZoneType type) final;
-    uint32_t GetCount() const final;
-    GamepadState GetState(const uint32_t gamepadIndex) const final;
+    [[nodiscard]] uint32_t GetCount() const final;
+    [[nodiscard]] GamepadState GetState(const uint32_t gamepadIndex) const final;
   };
 }
 

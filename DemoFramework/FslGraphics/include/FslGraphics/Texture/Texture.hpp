@@ -313,7 +313,7 @@ namespace Fsl
         }
       }
 
-      const ReadOnlyRawTexture& AsRawTexture() const noexcept
+      [[nodiscard]] const ReadOnlyRawTexture& AsRawTexture() const noexcept
       {
         return m_rawTexture;
       }
@@ -354,7 +354,7 @@ namespace Fsl
         }
       }
 
-      const RawTextureEx& AsRawTexture() const noexcept
+      [[nodiscard]] const RawTextureEx& AsRawTexture() const noexcept
       {
         return m_rawTexture;
       }

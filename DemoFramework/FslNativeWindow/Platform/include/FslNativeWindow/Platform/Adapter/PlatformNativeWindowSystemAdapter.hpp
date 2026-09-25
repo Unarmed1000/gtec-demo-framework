@@ -52,13 +52,13 @@ namespace Fsl
       FSL_PARAM_NOT_USED(setup);
     }
 
-    PlatformNativeDisplayType GetPlatformDisplay() const
+    [[nodiscard]] PlatformNativeDisplayType GetPlatformDisplay() const
     {
       return m_platformDisplay;
     }
 
     // @note If you override this then 'dont' call the this version
-    bool IsDisplayHDRCompatible(const int32_t displayId) const override;
+    [[nodiscard]] bool IsDisplayHDRCompatible(const int32_t displayId) const override;
   };
 }
 

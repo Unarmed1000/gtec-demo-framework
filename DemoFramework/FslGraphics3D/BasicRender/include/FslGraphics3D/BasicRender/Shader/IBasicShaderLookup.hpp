@@ -41,7 +41,7 @@ namespace Fsl::Graphics3D
   public:
     virtual ~IBasicShaderLookup() = default;
 
-    virtual BasicNativeShaderHandle TryGetNativeHandle(const BasicShaderHandle hShader) const noexcept = 0;
+    [[nodiscard]] virtual BasicNativeShaderHandle TryGetNativeHandle(const BasicShaderHandle hShader) const noexcept = 0;
   };
 }
 

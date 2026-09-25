@@ -61,7 +61,7 @@ namespace Fsl
       throw UsageErrorException("Can not register during callback");
     }
 
-    std::shared_ptr<INativeWindowEventListener> listenerToRemove = subscriber.lock();
+    const std::shared_ptr<INativeWindowEventListener> listenerToRemove = subscriber.lock();
     if (!listenerToRemove)
     {
       return;
@@ -92,7 +92,7 @@ namespace Fsl
       auto itr = m_listeners.begin();
       while (itr != m_listeners.end())
       {
-        std::shared_ptr<INativeWindowEventListener> listener = itr->lock();
+        const std::shared_ptr<INativeWindowEventListener> listener = itr->lock();
         if (listener)
         {
           listener->OnNativeWindowEvent(event);

@@ -152,7 +152,7 @@ namespace Fsl::UI
       break;
     }
 
-    PxPoint2 offsetPx = CalcOffset(m_propertyDirection.Get(), m_animation.GetValue(), localFinalSizePx);
+    const PxPoint2 offsetPx = CalcOffset(m_propertyDirection.Get(), m_animation.GetValue(), localFinalSizePx);
     ContentControl::CustomArrange(localFinalSizePx, offsetPx);
     return finalSizePx;
   }
@@ -167,9 +167,9 @@ namespace Fsl::UI
 
   DataBinding::DataBindingInstanceHandle SlidingPanel::TryGetPropertyHandleNow(const DataBinding::DependencyPropertyDefinition& sourceDef)
   {
-    auto res = DataBinding::DependencyObjectHelper::TryGetPropertyHandle(this, ThisDependencyObject(), sourceDef,
-                                                                         DataBinding::PropLinkRefs(PropertyDirection, m_propertyDirection),
-                                                                         DataBinding::PropLinkRefs(PropertyShown, m_propertyShown));
+    const auto res = DataBinding::DependencyObjectHelper::TryGetPropertyHandle(this, ThisDependencyObject(), sourceDef,
+                                                                               DataBinding::PropLinkRefs(PropertyDirection, m_propertyDirection),
+                                                                               DataBinding::PropLinkRefs(PropertyShown, m_propertyShown));
     return res.IsValid() ? res : base_type::TryGetPropertyHandleNow(sourceDef);
   }
 
@@ -177,9 +177,9 @@ namespace Fsl::UI
   DataBinding::PropertySetBindingResult SlidingPanel::TrySetBindingNow(const DataBinding::DependencyPropertyDefinition& targetDef,
                                                                        const DataBinding::Binding& binding)
   {
-    auto res = DataBinding::DependencyObjectHelper::TrySetBinding(this, ThisDependencyObject(), targetDef, binding,
-                                                                  DataBinding::PropLinkRefs(PropertyDirection, m_propertyDirection),
-                                                                  DataBinding::PropLinkRefs(PropertyShown, m_propertyShown));
+    const auto res = DataBinding::DependencyObjectHelper::TrySetBinding(this, ThisDependencyObject(), targetDef, binding,
+                                                                        DataBinding::PropLinkRefs(PropertyDirection, m_propertyDirection),
+                                                                        DataBinding::PropLinkRefs(PropertyShown, m_propertyShown));
     return res != DataBinding::PropertySetBindingResult::NotFound ? res : base_type::TrySetBindingNow(targetDef, binding);
   }
 
@@ -193,7 +193,7 @@ namespace Fsl::UI
 
   void SlidingPanel::UpdateAnimation(const TimeSpan& timeSpan)
   {
-    float oldValue = m_animation.GetValue();
+    const float oldValue = m_animation.GetValue();
     m_animation.Update(timeSpan);
     if (oldValue != m_animation.GetValue())
     {
@@ -207,12 +207,12 @@ namespace Fsl::UI
     const auto shown = m_propertyShown.Get();
     m_animation.SetValue(shown ? LocalConfig::Visible : LocalConfig::Hidden);
 
-    bool isAnimating = ContentControl::UpdateAnimationState(forceCompleteAnimation);
+    const bool isAnimating = ContentControl::UpdateAnimationState(forceCompleteAnimation);
     if (forceCompleteAnimation)
     {
       m_animation.ForceComplete();
     }
-    bool isAnimating2 = !m_animation.IsCompleted();
+    const bool isAnimating2 = !m_animation.IsCompleted();
     if (!isAnimating2 && !shown)
     {
       SetContentVisibility(ItemVisibility::Collapsed);

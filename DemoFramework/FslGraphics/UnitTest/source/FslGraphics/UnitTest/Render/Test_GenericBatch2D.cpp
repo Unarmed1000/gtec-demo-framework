@@ -45,7 +45,7 @@ namespace
   {
     PxExtent3D Extent;
 
-    bool IsValid() const
+    [[nodiscard]] bool IsValid() const
     {
       return true;
     }
@@ -83,7 +83,7 @@ TEST(TestRender_GenericBatch2D, Construct)
   const auto quadRenderer = std::make_shared<DummyQuadBatch>();
   const auto currentExtent = PxExtent2D::Create(1024, 768);
 
-  GenericBatch2D<std::shared_ptr<DummyQuadBatch>, DummyTextureInfo, GenericBatch2DFormat::Normal> dummy(quadRenderer, currentExtent);
+  const GenericBatch2D<std::shared_ptr<DummyQuadBatch>, DummyTextureInfo, GenericBatch2DFormat::Normal> dummy(quadRenderer, currentExtent);
 }
 
 TEST(TestRender_GenericBatch2D, BeginEnd)

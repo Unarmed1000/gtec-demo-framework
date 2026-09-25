@@ -126,7 +126,7 @@ namespace Fsl
     rUsageRecord = {};
 
     const auto currentTime = m_timer.GetTimestamp();
-    auto deltaTime = currentTime - m_lastTryGetApplicationCpuUsageTime;
+    const auto deltaTime = currentTime - m_lastTryGetApplicationCpuUsageTime;
     if (deltaTime < LocalConfig::MinIntervalApplicationCpuUsage)
     {
       rUsageRecord = {m_appCpuUsagePercentageTime, m_appCpuUsagePercentage};
@@ -148,8 +148,8 @@ namespace Fsl
       return false;
     }
 
-    auto systemTime = (systemTimes.KernelTime - m_appSystemLast.KernelTime) + (systemTimes.UserTime - m_appSystemLast.UserTime);
-    auto appTime = (processTimes.KernelTime - m_appProcessLast.KernelTime) + (processTimes.UserTime - m_appProcessLast.UserTime);
+    const auto systemTime = (systemTimes.KernelTime - m_appSystemLast.KernelTime) + (systemTimes.UserTime - m_appSystemLast.UserTime);
+    const auto appTime = (processTimes.KernelTime - m_appProcessLast.KernelTime) + (processTimes.UserTime - m_appProcessLast.UserTime);
 
     if (systemTime > 0)
     {

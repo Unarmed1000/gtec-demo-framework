@@ -42,14 +42,14 @@ namespace
 
 TEST(TestControlLogic_SliderDragLogic, Construct)
 {
-  UI::SliderDragLogic logic;
+  const UI::SliderDragLogic logic;
   EXPECT_FALSE(logic.IsDragging());
   EXPECT_TRUE(logic.IsEnabled());
 
   EXPECT_EQ(0.0f, logic.GetPercentage());
   EXPECT_EQ(PxValue(0), logic.GetPositionPx(logic.GetPercentage()));
 
-  auto spanInfo = logic.GetSpanInfo();
+  const auto spanInfo = logic.GetSpanInfo();
   EXPECT_EQ(PxValue(0), spanInfo.GetStartPx());
   EXPECT_EQ(PxValue(0), spanInfo.GetLengthPx());
   EXPECT_FALSE(spanInfo.IsReversedDirection());
@@ -60,7 +60,7 @@ TEST(TestControlLogic_SliderDragLogic, Construct_Span)
 {
   const PxValue startPx(10);
   const auto lengthPx = PxSize1D::Create(5);
-  UI::SliderDragLogic logic(UI::SliderPixelSpanInfo(startPx, lengthPx));
+  const UI::SliderDragLogic logic(UI::SliderPixelSpanInfo(startPx, lengthPx));
 
   EXPECT_FALSE(logic.IsDragging());
   EXPECT_TRUE(logic.IsEnabled());
@@ -68,7 +68,7 @@ TEST(TestControlLogic_SliderDragLogic, Construct_Span)
   EXPECT_EQ(0.0f, logic.GetPercentage());
   EXPECT_EQ(startPx, logic.GetPositionPx(logic.GetPercentage()));
 
-  auto spanInfo = logic.GetSpanInfo();
+  const auto spanInfo = logic.GetSpanInfo();
   EXPECT_EQ(startPx, spanInfo.GetStartPx());
   EXPECT_EQ(lengthPx, spanInfo.GetLengthPx());
   EXPECT_FALSE(spanInfo.IsReversedDirection());
@@ -425,28 +425,28 @@ TEST(TestControlLogic_SliderDragLogic, SetEnabled)
   EXPECT_TRUE(logic.IsEnabled());
 
   {    // First disable -> disabled it
-    auto flags = logic.SetEnabled(false);
+    const auto flags = logic.SetEnabled(false);
     EXPECT_TRUE(UI::SliderResultFlagsUtil::IsFlagged(flags, UI::SliderResultFlags::Completed));
     EXPECT_FALSE(UI::SliderResultFlagsUtil::IsFlagged(flags, UI::SliderResultFlags::DragCancelled));
     EXPECT_FALSE(logic.IsEnabled());
   }
 
   {    // second disable does nothing
-    auto flags = logic.SetEnabled(false);
+    const auto flags = logic.SetEnabled(false);
     EXPECT_FALSE(UI::SliderResultFlagsUtil::IsFlagged(flags, UI::SliderResultFlags::Completed));
     EXPECT_FALSE(UI::SliderResultFlagsUtil::IsFlagged(flags, UI::SliderResultFlags::DragCancelled));
     EXPECT_FALSE(logic.IsEnabled());
   }
 
   {    // First enable -> enables it
-    auto flags = logic.SetEnabled(true);
+    const auto flags = logic.SetEnabled(true);
     EXPECT_TRUE(UI::SliderResultFlagsUtil::IsFlagged(flags, UI::SliderResultFlags::Completed));
     EXPECT_FALSE(UI::SliderResultFlagsUtil::IsFlagged(flags, UI::SliderResultFlags::DragCancelled));
     EXPECT_TRUE(logic.IsEnabled());
   }
 
   {    // second enable does nothing
-    auto flags = logic.SetEnabled(true);
+    const auto flags = logic.SetEnabled(true);
     EXPECT_FALSE(UI::SliderResultFlagsUtil::IsFlagged(flags, UI::SliderResultFlags::Completed));
     EXPECT_FALSE(UI::SliderResultFlagsUtil::IsFlagged(flags, UI::SliderResultFlags::DragCancelled));
     EXPECT_TRUE(logic.IsEnabled());
@@ -477,7 +477,7 @@ TEST(TestControlLogic_SliderDragLogic, SetEnabled_True_CancelDrag)
   EXPECT_EQ(startPx + PxValue(100), logic.GetPositionPx(logic.GetPercentage()));
 
   {    // Setting to enabled does nothing as we are already enabled
-    auto flags = logic.SetEnabled(true);
+    const auto flags = logic.SetEnabled(true);
     EXPECT_FALSE(UI::SliderResultFlagsUtil::IsFlagged(flags, UI::SliderResultFlags::Completed));
     EXPECT_FALSE(UI::SliderResultFlagsUtil::IsFlagged(flags, UI::SliderResultFlags::DragCancelled));
     EXPECT_TRUE(logic.IsEnabled());
@@ -511,7 +511,7 @@ TEST(TestControlLogic_SliderDragLogic, SetEnabled_False_CancelDrag)
   EXPECT_EQ(startPx + PxValue(100), logic.GetPositionPx(logic.GetPercentage()));
 
   // Cancel the drag, restoring the pre-drag state
-  auto flags = logic.SetEnabled(false);
+  const auto flags = logic.SetEnabled(false);
   EXPECT_TRUE(UI::SliderResultFlagsUtil::IsFlagged(flags, UI::SliderResultFlags::Completed));
   EXPECT_TRUE(UI::SliderResultFlagsUtil::IsFlagged(flags, UI::SliderResultFlags::DragCancelled));
   EXPECT_FALSE(logic.IsEnabled());
@@ -704,7 +704,7 @@ TEST(TestControlLogic_SliderDragLogic, Construct_Span_Reversed)
 {
   const PxValue startPx(10);
   const auto lengthPx = PxSize1D::Create(5);
-  UI::SliderDragLogic logic(UI::SliderPixelSpanInfo(startPx, lengthPx, true));
+  const UI::SliderDragLogic logic(UI::SliderPixelSpanInfo(startPx, lengthPx, true));
 
   EXPECT_FALSE(logic.IsDragging());
   EXPECT_TRUE(logic.IsEnabled());
@@ -712,7 +712,7 @@ TEST(TestControlLogic_SliderDragLogic, Construct_Span_Reversed)
   EXPECT_EQ(0.0f, logic.GetPercentage());
   EXPECT_EQ(startPx + lengthPx - PxValue(1), logic.GetPositionPx(logic.GetPercentage()));
 
-  auto spanInfo = logic.GetSpanInfo();
+  const auto spanInfo = logic.GetSpanInfo();
   EXPECT_EQ(startPx, spanInfo.GetStartPx());
   EXPECT_EQ(lengthPx, spanInfo.GetLengthPx());
   EXPECT_TRUE(spanInfo.IsReversedDirection());

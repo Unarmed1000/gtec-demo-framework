@@ -91,13 +91,13 @@ namespace Fsl
     }
 
 
-    std::shared_ptr<AServiceOptionParser> GetOptionParser() const override
+    [[nodiscard]] std::shared_ptr<AServiceOptionParser> GetOptionParser() const override
     {
       return {};
     }
 
 
-    ServiceCaps::Flags GetFlags() const override
+    [[nodiscard]] ServiceCaps::Flags GetFlags() const override
     {
       return m_flags;
     }
@@ -129,7 +129,7 @@ namespace Fsl
     {
     }
 
-    ServiceCaps::Flags GetFlags() const override
+    [[nodiscard]] ServiceCaps::Flags GetFlags() const override
     {
       return m_flags;
     }

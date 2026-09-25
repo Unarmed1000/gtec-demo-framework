@@ -81,7 +81,7 @@ namespace Fsl
         const auto itrItfEnd = interfaces.end();
         while (itrItf != itrItfEnd)
         {
-          auto itrFind = rInterfaceMap.find(*itrItf);
+          const auto itrFind = rInterfaceMap.find(*itrItf);
           if (itrFind != rInterfaceMap.end())
           {
             ++itrFind->second;
@@ -117,7 +117,7 @@ namespace Fsl
     }
 
 
-    std::shared_ptr<IService> StartService(std::set<std::type_index>& multiProviderInterfaces, ServiceProvider& provider,
+    std::shared_ptr<IService> StartService(const std::set<std::type_index>& multiProviderInterfaces, ServiceProvider& provider,
                                            TypeServiceMaps& rServiceProviderMaps, const RegisteredServiceRecord& record)
     {
       ServiceSupportedInterfaceDeque deque;
@@ -156,7 +156,7 @@ namespace Fsl
           rServiceProviderMaps.InterfaceToService[*itr] = ServiceLaunchRecord(ProviderId::Invalid(), ServiceLaunchType::MultipleProviderTag);
 
           std::shared_ptr<std::deque<ServiceLaunchRecord>> serviceDeque;
-          auto itrFind = rServiceProviderMaps.InterfaceMultipleServices.find(*itr);
+          const auto itrFind = rServiceProviderMaps.InterfaceMultipleServices.find(*itr);
           if (itrFind == rServiceProviderMaps.InterfaceMultipleServices.end())
           {
             serviceDeque = std::make_shared<std::deque<ServiceLaunchRecord>>();

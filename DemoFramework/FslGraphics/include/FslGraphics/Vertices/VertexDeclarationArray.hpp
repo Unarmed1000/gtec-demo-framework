@@ -109,35 +109,35 @@ namespace Fsl
     }
 
     //! @brief Get the vertex stride
-    constexpr uint32_t VertexStride() const noexcept
+    [[nodiscard]] constexpr uint32_t VertexStride() const noexcept
     {
       return m_vertexStride;
     }
 
     //! @brief Get the number of elements
-    constexpr std::size_t Count() const noexcept
+    [[nodiscard]] constexpr std::size_t Count() const noexcept
     {
       return m_elements.size();
     }
 
-    constexpr const VertexElement* Data() const noexcept
+    [[nodiscard]] constexpr const VertexElement* Data() const noexcept
     {
       return m_elements.data();
     }
 
-    constexpr VertexElement At(const std::size_t index) const
+    [[nodiscard]] constexpr VertexElement At(const std::size_t index) const
     {
       return m_elements.at(index);
     }
 
     //! @brief Get direct access to the elements
-    constexpr const VertexElement* DirectAccess() const noexcept
+    [[nodiscard]] constexpr const VertexElement* DirectAccess() const noexcept
     {
       return m_elements.data();
     }
 
     //! @brief Get the element index of for the given usage and usageIndex (if not found a NotFoundException is thrown)
-    constexpr int32_t VertexElementGetIndexOf(const VertexElementUsage usage, const uint32_t usageIndex) const
+    [[nodiscard]] constexpr int32_t VertexElementGetIndexOf(const VertexElementUsage usage, const uint32_t usageIndex) const
     {
       const int32_t index = VertexElementIndexOf(usage, usageIndex);
       if (index < 0)
@@ -148,7 +148,7 @@ namespace Fsl
     }
 
     //! @brief Find the element index of for the given usage and usageIndex (if not found <0 is returned)
-    constexpr int32_t VertexElementIndexOf(const VertexElementUsage usage, const uint32_t usageIndex) const noexcept
+    [[nodiscard]] constexpr int32_t VertexElementIndexOf(const VertexElementUsage usage, const uint32_t usageIndex) const noexcept
     {
       for (std::size_t i = 0; i < m_elements.size(); ++i)
       {
@@ -161,7 +161,7 @@ namespace Fsl
     }
 
     //! @brief Get the element for the given usage and usageIndex (if not found a NotFoundException is thrown)
-    constexpr VertexElement VertexElementGet(const VertexElementUsage usage, const uint32_t usageIndex) const
+    [[nodiscard]] constexpr VertexElement VertexElementGet(const VertexElementUsage usage, const uint32_t usageIndex) const
     {
       for (auto element : m_elements)
       {
@@ -173,7 +173,7 @@ namespace Fsl
       throw NotFoundException("Could not locate a vertex element of the requested type");
     }
 
-    constexpr VertexDeclarationSpan AsReadOnlySpan() const noexcept
+    [[nodiscard]] constexpr VertexDeclarationSpan AsReadOnlySpan() const noexcept
     {
       return {ReadOnlySpan<VertexElement>(m_elements.data(), m_elements.size()), m_vertexStride, OptimizationCheckFlag::NoCheck};
     }

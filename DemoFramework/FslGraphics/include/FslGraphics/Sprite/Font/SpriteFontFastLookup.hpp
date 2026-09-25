@@ -108,7 +108,7 @@ namespace Fsl
                                   const uint32_t densityDpi);
 
     //! Lookup the char
-    inline const SpriteFontCharInfo* TryGetChar(const uint32_t id) const
+    [[nodiscard]] inline const SpriteFontCharInfo* TryGetChar(const uint32_t id) const
     {
       return m_charLookup.TryGet(id);
     }
@@ -116,29 +116,29 @@ namespace Fsl
     //! The default char can not be a temporary as a reference to it can be returned
     const SpriteFontCharInfo& GetChar(const uint32_t id, SpriteFontCharInfo&& defaultChar) const = delete;
 
-    inline const SpriteFontCharInfo& GetChar(const uint32_t id, const SpriteFontCharInfo& defaultChar) const
+    [[nodiscard]] inline const SpriteFontCharInfo& GetChar(const uint32_t id, const SpriteFontCharInfo& defaultChar) const
     {
       return m_charLookup.Get(id, defaultChar);
     }
 
     //! Lookup the kerning adjustment for the second glyph when its following the first.
-    inline PxValue GetKerning(const uint32_t first, const uint32_t second) const
+    [[nodiscard]] inline PxValue GetKerning(const uint32_t first, const uint32_t second) const
     {
       const auto* pEntry = m_kerningLookup.TryGet(first, second);
       return pEntry != nullptr ? pEntry->AmountPx : PxValue();
     }
 
-    inline PxValueU16 GetLineSpacingPx() const noexcept
+    [[nodiscard]] inline PxValueU16 GetLineSpacingPx() const noexcept
     {
       return m_lineSpacingPx;
     }
 
-    inline PxValueU16 GetBaseLinePx() const noexcept
+    [[nodiscard]] inline PxValueU16 GetBaseLinePx() const noexcept
     {
       return m_baseLinePx;
     }
 
-    inline bool HasKerning() const
+    [[nodiscard]] inline bool HasKerning() const
     {
       return !m_kerningLookup.Empty();
     }

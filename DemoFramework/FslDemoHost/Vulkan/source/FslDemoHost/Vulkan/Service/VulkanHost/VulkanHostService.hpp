@@ -58,10 +58,10 @@ namespace Fsl
     void SetPhysicalDevice(const Vulkan::VUPhysicalDeviceRecord& value);
     void SetSurfaceKHR(VkSurfaceKHR value);
 
-    VkInstance GetInstance() const override;
-    Vulkan::VUPhysicalDeviceRecord GetPhysicalDevice() const override;
-    VkSurfaceKHR GetSurfaceKHR() const override;
-    VulkanLaunchOptions GetLaunchOptions() const override;
+    [[nodiscard]] VkInstance GetInstance() const override;
+    [[nodiscard]] Vulkan::VUPhysicalDeviceRecord GetPhysicalDevice() const override;
+    [[nodiscard]] VkSurfaceKHR GetSurfaceKHR() const override;
+    [[nodiscard]] VulkanLaunchOptions GetLaunchOptions() const override;
 
   private:
   };

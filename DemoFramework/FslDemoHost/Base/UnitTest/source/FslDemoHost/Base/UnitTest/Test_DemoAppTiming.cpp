@@ -85,7 +85,7 @@ namespace
 
 TEST(Test_DemoAppTiming, Construct)
 {
-  DemoAppTiming timing(LocalConfig::FixedTime1, TimeSpan());
+  const DemoAppTiming timing(LocalConfig::FixedTime1, TimeSpan());
   // We dont expect there to be any pending fixed update after creation and no time has passed
   EXPECT_FALSE(timing.HasPendingFixedUpdate());
 }
@@ -93,7 +93,7 @@ TEST(Test_DemoAppTiming, Construct)
 
 TEST(Test_DemoAppTiming, Construct_ForcedTime)
 {
-  DemoAppTiming timing(LocalConfig::FixedTime1, TimeSpan(100000));
+  const DemoAppTiming timing(LocalConfig::FixedTime1, TimeSpan(100000));
   // We dont expect there to be any pending fixed update after creation and no time has passed
   EXPECT_FALSE(timing.HasPendingFixedUpdate());
 }
@@ -106,7 +106,7 @@ TEST(Test_DemoAppTiming, AdvanceFixedTimeStep)
 
   const auto expectedDeltaTime = CalcDeltaTimeFromFixedUpdatesperSecond(timing.GetFixedUpdatesPerSecond());
 
-  auto updateTime = timing.GetUpdateTime();
+  const auto updateTime = timing.GetUpdateTime();
   EXPECT_EQ(updateTime.ElapsedTime, CalcDeltaTimeSpanFromFixedUpdatesPerSecond(timing.GetFixedUpdatesPerSecond()));
   EXPECT_EQ(updateTime.CurrentTickCount, CalcDeltaTickCountFromFixedUpdatesPerSecond(timing.GetFixedUpdatesPerSecond()));
   LOCAL_CHECK_DELTATIME(updateTime.DeltaTime, expectedDeltaTime);
@@ -122,7 +122,7 @@ TEST(Test_DemoAppTiming, AdvanceFixedTimeStep_120)
 
   const auto expectedDeltaTime = CalcDeltaTimeFromFixedUpdatesperSecond(timing.GetFixedUpdatesPerSecond());
 
-  auto updateTime = timing.GetUpdateTime();
+  const auto updateTime = timing.GetUpdateTime();
   EXPECT_EQ(updateTime.ElapsedTime, CalcDeltaTimeSpanFromFixedUpdatesPerSecond(timing.GetFixedUpdatesPerSecond()));
   EXPECT_EQ(updateTime.CurrentTickCount, CalcDeltaTickCountFromFixedUpdatesPerSecond(timing.GetFixedUpdatesPerSecond()));
   LOCAL_CHECK_DELTATIME(updateTime.DeltaTime, expectedDeltaTime);
@@ -137,7 +137,7 @@ TEST(Test_DemoAppTiming, AdvanceFixedTimeStep_240)
 
   const auto expectedDeltaTime = CalcDeltaTimeFromFixedUpdatesperSecond(timing.GetFixedUpdatesPerSecond());
 
-  auto updateTime = timing.GetUpdateTime();
+  const auto updateTime = timing.GetUpdateTime();
   EXPECT_EQ(updateTime.ElapsedTime, CalcDeltaTimeSpanFromFixedUpdatesPerSecond(timing.GetFixedUpdatesPerSecond()));
   EXPECT_EQ(updateTime.CurrentTickCount, CalcDeltaTickCountFromFixedUpdatesPerSecond(timing.GetFixedUpdatesPerSecond()));
   LOCAL_CHECK_DELTATIME(updateTime.DeltaTime, expectedDeltaTime);
@@ -152,7 +152,7 @@ TEST(Test_DemoAppTiming, AdvanceFixedTimeStep_360)
 
   const auto expectedDeltaTime = CalcDeltaTimeFromFixedUpdatesperSecond(timing.GetFixedUpdatesPerSecond());
 
-  auto updateTime = timing.GetUpdateTime();
+  const auto updateTime = timing.GetUpdateTime();
   EXPECT_EQ(updateTime.ElapsedTime, CalcDeltaTimeSpanFromFixedUpdatesPerSecond(timing.GetFixedUpdatesPerSecond()));
   EXPECT_EQ(updateTime.CurrentTickCount, CalcDeltaTickCountFromFixedUpdatesPerSecond(timing.GetFixedUpdatesPerSecond()));
   LOCAL_CHECK_DELTATIME(updateTime.DeltaTime, expectedDeltaTime);
@@ -167,7 +167,7 @@ TEST(Test_DemoAppTiming, AdvanceFixedTimeStep_900)
 
   const auto expectedDeltaTime = CalcDeltaTimeFromFixedUpdatesperSecond(timing.GetFixedUpdatesPerSecond());
 
-  auto updateTime = timing.GetUpdateTime();
+  const auto updateTime = timing.GetUpdateTime();
   EXPECT_EQ(updateTime.ElapsedTime, CalcDeltaTimeSpanFromFixedUpdatesPerSecond(timing.GetFixedUpdatesPerSecond()));
   EXPECT_EQ(updateTime.CurrentTickCount, CalcDeltaTickCountFromFixedUpdatesPerSecond(timing.GetFixedUpdatesPerSecond()));
   LOCAL_CHECK_DELTATIME(updateTime.DeltaTime, expectedDeltaTime);
@@ -182,7 +182,7 @@ TEST(Test_DemoAppTiming, AdvanceFixedTimeStep_1000)
 
   const auto expectedDeltaTime = CalcDeltaTimeFromFixedUpdatesperSecond(timing.GetFixedUpdatesPerSecond());
 
-  auto updateTime = timing.GetUpdateTime();
+  const auto updateTime = timing.GetUpdateTime();
   EXPECT_EQ(updateTime.ElapsedTime, CalcDeltaTimeSpanFromFixedUpdatesPerSecond(timing.GetFixedUpdatesPerSecond()));
   EXPECT_EQ(updateTime.CurrentTickCount, CalcDeltaTickCountFromFixedUpdatesPerSecond(timing.GetFixedUpdatesPerSecond()));
   LOCAL_CHECK_DELTATIME(updateTime.DeltaTime, expectedDeltaTime);
@@ -195,7 +195,7 @@ TEST(Test_DemoAppTiming, AdvanceFixedTimeStep_ForcedTime1)
   DemoAppTiming timing(LocalConfig::FixedTime1, forcedUpdateTime);
   timing.AdvanceFixedTimeStep();
 
-  auto updateTime = timing.GetUpdateTime();
+  const auto updateTime = timing.GetUpdateTime();
   EXPECT_EQ(updateTime.ElapsedTime, forcedUpdateTime);
   EXPECT_EQ(updateTime.CurrentTickCount.Ticks(), forcedUpdateTime.Ticks());
   LOCAL_CHECK_DELTATIME(updateTime.DeltaTime, CalcDeltaTime(forcedUpdateTime));
@@ -209,7 +209,7 @@ TEST(Test_DemoAppTiming, AdvanceFixedTimeStep_ForcedTime2)
   DemoAppTiming timing(LocalConfig::FixedTime1, forcedUpdateTime);
   timing.AdvanceFixedTimeStep();
 
-  auto updateTime = timing.GetUpdateTime();
+  const auto updateTime = timing.GetUpdateTime();
   EXPECT_EQ(updateTime.ElapsedTime, forcedUpdateTime);
   EXPECT_EQ(updateTime.CurrentTickCount.Ticks(), forcedUpdateTime.Ticks());
   LOCAL_CHECK_DELTATIME(updateTime.DeltaTime, CalcDeltaTime(forcedUpdateTime));
@@ -219,7 +219,7 @@ TEST(Test_DemoAppTiming, AdvanceFixedTimeStep_ForcedTime2)
 
 TEST(Test_DemoAppTiming, GetFixedUpdatesPerSecond)
 {
-  DemoAppTiming timing(LocalConfig::FixedTime1, TimeSpan());
+  const DemoAppTiming timing(LocalConfig::FixedTime1, TimeSpan());
   EXPECT_EQ(timing.GetFixedUpdatesPerSecond(), 60);
 }
 
@@ -234,8 +234,8 @@ TEST(Test_DemoAppTiming, SetFixedUpdatesPerSecond)
 
 TEST(Test_DemoAppTiming, GetUpdateTime_AfterConstruct)
 {
-  DemoAppTiming timing(LocalConfig::FixedTime1, TimeSpan());
-  auto updateTime = timing.GetUpdateTime();
+  const DemoAppTiming timing(LocalConfig::FixedTime1, TimeSpan());
+  const auto updateTime = timing.GetUpdateTime();
 
   EXPECT_EQ(updateTime.ElapsedTime.Ticks(), 0);
   EXPECT_EQ(updateTime.CurrentTickCount.Ticks(), 0);
@@ -246,7 +246,7 @@ TEST(Test_DemoAppTiming, GetUpdateTime_AdvanceFixedTimeStep)
 {
   DemoAppTiming timing(LocalConfig::FixedTime1, TimeSpan());
   timing.AdvanceFixedTimeStep();
-  auto updateTime = timing.GetUpdateTime();
+  const auto updateTime = timing.GetUpdateTime();
   EXPECT_EQ(updateTime.ElapsedTime, CalcDeltaTimeSpanFromFixedUpdatesPerSecond(timing.GetFixedUpdatesPerSecond()));
   EXPECT_EQ(updateTime.CurrentTickCount, CalcDeltaTickCountFromFixedUpdatesPerSecond(timing.GetFixedUpdatesPerSecond()));
   LOCAL_CHECK_DELTATIME(updateTime.DeltaTime, CalcDeltaTimeFromFixedUpdatesperSecond(timing.GetFixedUpdatesPerSecond()));
@@ -256,8 +256,8 @@ TEST(Test_DemoAppTiming, GetUpdateTime_AdvanceFixedTimeStep)
 TEST(Test_DemoAppTiming, GetUpdateTime_AfterConstruct_ForcedUpdateTime)
 {
   constexpr TimeSpan ForcedUpdateTime(100000);
-  DemoAppTiming timing(LocalConfig::FixedTime1, ForcedUpdateTime);
-  auto updateTime = timing.GetUpdateTime();
+  const DemoAppTiming timing(LocalConfig::FixedTime1, ForcedUpdateTime);
+  const auto updateTime = timing.GetUpdateTime();
 
   EXPECT_EQ(updateTime.ElapsedTime.Ticks(), 0);
   EXPECT_EQ(updateTime.CurrentTickCount.Ticks(), 0);
@@ -270,7 +270,7 @@ TEST(Test_DemoAppTiming, GetUpdateTime_AdvanceFixedTimestep_ForcedUpdateTime)
   constexpr TimeSpan ForcedUpdateTime(100000);
   DemoAppTiming timing(LocalConfig::FixedTime1, ForcedUpdateTime);
   timing.AdvanceFixedTimeStep();
-  auto updateTime = timing.GetUpdateTime();
+  const auto updateTime = timing.GetUpdateTime();
 
   EXPECT_EQ(updateTime.ElapsedTime, ForcedUpdateTime);
   EXPECT_EQ(updateTime.CurrentTickCount.Ticks(), ForcedUpdateTime.Ticks());
@@ -283,7 +283,7 @@ TEST(Test_DemoAppTiming, ResetTimer_GetUpdateTime)
   DemoAppTiming timing(LocalConfig::FixedTime1, TimeSpan());
   timing.ResetTimer(LocalConfig::FixedTime2);
 
-  auto updateTime = timing.GetUpdateTime();
+  const auto updateTime = timing.GetUpdateTime();
   EXPECT_EQ(updateTime.ElapsedTime.Ticks(), 0);
   EXPECT_EQ(updateTime.CurrentTickCount.Ticks(), 0);
   EXPECT_FLOAT_EQ(updateTime.DeltaTime, 0.0f);
@@ -316,7 +316,7 @@ TEST(Test_DemoAppTiming, ResetTimer_MultipleResets)
   timing.ResetTimer(LocalConfig::FixedTime2 + TimeSpan(12));
   timing.ResetTimer(LocalConfig::FixedTime2 + TimeSpan(13));
 
-  auto updateTime = timing.GetUpdateTime();
+  const auto updateTime = timing.GetUpdateTime();
   EXPECT_EQ(updateTime.ElapsedTime.Ticks(), 0);
   EXPECT_EQ(updateTime.CurrentTickCount.Ticks(), 0);
   EXPECT_FLOAT_EQ(updateTime.DeltaTime, 0.0f);
@@ -332,7 +332,7 @@ TEST(Test_DemoAppTiming, TimeNow_Normal)
   {
     const TimeSpan deltaTime(LocalConfig::FixedTime2 - LocalConfig::FixedTime1);
 
-    auto updateTime = timing.GetUpdateTime();
+    const auto updateTime = timing.GetUpdateTime();
     EXPECT_EQ(updateTime.ElapsedTime, deltaTime);
     EXPECT_EQ(updateTime.CurrentTickCount.Ticks(), deltaTime.Ticks());
     LOCAL_CHECK_DELTATIME(updateTime.DeltaTime, CalcDeltaTime(deltaTime));
@@ -360,7 +360,7 @@ TEST(Test_DemoAppTiming, TimeNow_Normal_ForcedUpdateTime1)
   DemoAppTiming timing(LocalConfig::FixedTime1, ForcedUpdateTime);
   timing.TimeNow(LocalConfig::FixedTime2, TimeStepMode::Normal);
   {
-    auto updateTime = timing.GetUpdateTime();
+    const auto updateTime = timing.GetUpdateTime();
     EXPECT_EQ(updateTime.ElapsedTime, ForcedUpdateTime);
     EXPECT_EQ(updateTime.CurrentTickCount.Ticks(), ForcedUpdateTime.Ticks());
     LOCAL_CHECK_DELTATIME(updateTime.DeltaTime, CalcDeltaTime(ForcedUpdateTime));
@@ -383,7 +383,7 @@ TEST(Test_DemoAppTiming, TimeNow_Normal_ForcedUpdateTime2)
   DemoAppTiming timing(LocalConfig::FixedTime1, TimeSpan(ForcedUpdateTime));
   timing.TimeNow(LocalConfig::FixedTime2, TimeStepMode::Normal);
   {
-    auto updateTime = timing.GetUpdateTime();
+    const auto updateTime = timing.GetUpdateTime();
     EXPECT_EQ(updateTime.ElapsedTime, ForcedUpdateTime);
     EXPECT_EQ(updateTime.CurrentTickCount.Ticks(), ForcedUpdateTime.Ticks());
     LOCAL_CHECK_DELTATIME(updateTime.DeltaTime, CalcDeltaTime(ForcedUpdateTime));
@@ -428,7 +428,7 @@ TEST(Test_DemoAppTiming, TimeNow_AdvanceTimestep_Normal)
   {
     const TimeSpan deltaTime(LocalConfig::FixedTime2 - LocalConfig::FixedTime1);
 
-    auto updateTime = timing.GetUpdateTime();
+    const auto updateTime = timing.GetUpdateTime();
     EXPECT_EQ(updateTime.ElapsedTime, deltaTime);
     EXPECT_EQ(updateTime.CurrentTickCount, baseTotalTime + deltaTime);
     LOCAL_CHECK_DELTATIME(updateTime.DeltaTime, CalcDeltaTime(deltaTime));

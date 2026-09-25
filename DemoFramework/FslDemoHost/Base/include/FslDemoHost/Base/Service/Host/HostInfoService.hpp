@@ -52,10 +52,10 @@ namespace Fsl
     ~HostInfoService() final;
 
     // From IHostInfo
-    bool IsConsoleBasedHost() const final;
-    DemoHostFeature GetActiveAPI() const final;
-    std::shared_ptr<DemoAppHostConfig> TryGetAppHostConfig() const final;
-    HostConfig GetConfig() const final;
+    [[nodiscard]] bool IsConsoleBasedHost() const final;
+    [[nodiscard]] DemoHostFeature GetActiveAPI() const final;
+    [[nodiscard]] std::shared_ptr<DemoAppHostConfig> TryGetAppHostConfig() const final;
+    [[nodiscard]] HostConfig GetConfig() const final;
 
     // From IHostInfoControl
     void SetIsConsoleBasedHost(const bool isConsoleBasedHost) final;

@@ -53,14 +53,14 @@ namespace Fsl
     PxPoint2 Position;
     PxPoint2 RawPosition;
 
-    bool IsLeftButtonPressed() const;
-    bool IsMiddleButtonPressed() const;
-    bool IsRightButtonPressed() const;
-    bool IsXButton1Pressed() const;
-    bool IsXButton2Pressed() const;
-    bool IsXButton3Pressed() const;
-    bool IsXButton4Pressed() const;
-    bool IsXButton5Pressed() const;
+    [[nodiscard]] bool IsLeftButtonPressed() const;
+    [[nodiscard]] bool IsMiddleButtonPressed() const;
+    [[nodiscard]] bool IsRightButtonPressed() const;
+    [[nodiscard]] bool IsXButton1Pressed() const;
+    [[nodiscard]] bool IsXButton2Pressed() const;
+    [[nodiscard]] bool IsXButton3Pressed() const;
+    [[nodiscard]] bool IsXButton4Pressed() const;
+    [[nodiscard]] bool IsXButton5Pressed() const;
   };
 }
 

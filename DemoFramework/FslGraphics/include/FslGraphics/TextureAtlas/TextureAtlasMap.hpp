@@ -60,19 +60,19 @@ namespace Fsl
     explicit TextureAtlasMap(const ITextureAtlas& atlas);
 
     //! @brief Get the atlas texture info for the supplied texture
-    AtlasTextureInfo GetAtlasTextureInfo(const IO::PathView& name) const;
+    [[nodiscard]] AtlasTextureInfo GetAtlasTextureInfo(const IO::PathView& name) const;
 
     //! @brief Get the atlas texture info for the supplied texture
-    AtlasTextureInfo GetAtlasTextureInfo(const IO::Path& name) const
+    [[nodiscard]] AtlasTextureInfo GetAtlasTextureInfo(const IO::Path& name) const
     {
       return GetAtlasTextureInfo(name.AsPathView());
     }
 
     //! @brief Get the atlas texture info for the supplied texture
-    AtlasNineSlicePatchInfo GetAtlasNineSlicePatchInfo(const IO::PathView& name) const;
+    [[nodiscard]] AtlasNineSlicePatchInfo GetAtlasNineSlicePatchInfo(const IO::PathView& name) const;
 
     //! @brief Get the atlas texture info for the supplied texture
-    AtlasNineSlicePatchInfo GetAtlasNineSlicePatchInfo(const IO::Path& name) const
+    [[nodiscard]] AtlasNineSlicePatchInfo GetAtlasNineSlicePatchInfo(const IO::Path& name) const
     {
       return GetAtlasNineSlicePatchInfo(name.AsPathView());
     }

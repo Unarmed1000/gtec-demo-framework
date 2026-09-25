@@ -37,10 +37,10 @@ namespace Fsl::UI
 {
   void SimpleSpriteFontMesh::SetText(StringViewLite str)
   {
-    MeshHandle hMesh = Get();
+    const MeshHandle hMesh = Get();
     if (hMesh.IsValid())
     {
-      auto meshManager = GetMeshManager().lock();
+      const auto meshManager = GetMeshManager().lock();
       if (!meshManager)
       {
         throw UsageErrorException("mesh manager no longer valid");

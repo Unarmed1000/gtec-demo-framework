@@ -52,25 +52,25 @@ namespace Fsl::Graphics3D
     virtual ~Scene() = default;
 
     //! @brief The amount the scene was scaled during loading (if any)
-    float GetScaleFactor() const;
+    [[nodiscard]] float GetScaleFactor() const;
 
     //! @brief set the scale factor (intended to be set by the loader)
     void SetScaleFactor(const float scaleFactor);
 
     //! @brief Get the scene root node;
-    std::shared_ptr<SceneNode> GetRootNode() const;
+    [[nodiscard]] std::shared_ptr<SceneNode> GetRootNode() const;
 
     //! @brief Set the root node
     void SetRootNode(const std::shared_ptr<SceneNode>& rootNode);
 
     //! @brief Get the mesh allocator (warning it might not be set)
-    MeshAllocatorFunc GetMeshAllocator() const;
+    [[nodiscard]] MeshAllocatorFunc GetMeshAllocator() const;
 
     //! @brief Get the current scene mesh count
-    virtual int32_t GetMeshCount() const = 0;
+    [[nodiscard]] virtual int32_t GetMeshCount() const = 0;
 
     //! @brief Get the current scene mesh count
-    virtual std::shared_ptr<Mesh> GetMeshAt(const int32_t index) const = 0;
+    [[nodiscard]] virtual std::shared_ptr<Mesh> GetMeshAt(const int32_t index) const = 0;
 
     //! @brief Add a mesh to the scene
     virtual void AddMesh(const std::shared_ptr<Mesh>& mesh) = 0;

@@ -137,12 +137,12 @@ namespace Fsl::UI
       return TrySolveUnweightedLeastSquaresDeg2(m_movements, rVelocityDpf);
     }
     // Iterate over movement samples in reverse time order and collect samples.
-    MovementRecord newestMovement = m_movements.back();
+    const MovementRecord newestMovement = m_movements.back();
     std::size_t historyIndex = 0;
     for (int32_t i = UncheckedNumericCast<int32_t>(m_movements.size()) - 1; i >= 0; --i)
     {
       const MovementRecord& movement = m_movements[i];
-      TimeSpan age = newestMovement.EventTime - movement.EventTime;
+      const TimeSpan age = newestMovement.EventTime - movement.EventTime;
       const float w = ChooseWeight(i);
       const auto time = static_cast<float>(-age.TotalSeconds());
       m_scratchpad[historyIndex] = Record(movement.PositionDpf, w, time);
@@ -171,7 +171,7 @@ namespace Fsl::UI
         {
           return 1.0f;
         }
-        double deltaMillis = (m_movements[index + 1].EventTime - m_movements[index].EventTime).TotalMilliseconds();
+        const double deltaMillis = (m_movements[index + 1].EventTime - m_movements[index].EventTime).TotalMilliseconds();
         if (deltaMillis < 0)
         {
           return 0.5f;
@@ -189,7 +189,7 @@ namespace Fsl::UI
         //   age 10ms: 1.0
         //   age 50ms: 1.0
         //   age 60ms: 0.5
-        double ageMillis = (m_movements[size - 1].EventTime - m_movements[index].EventTime).TotalMilliseconds();
+        const double ageMillis = (m_movements[size - 1].EventTime - m_movements[index].EventTime).TotalMilliseconds();
         if (ageMillis < 0)
         {
           return 0.5f;
@@ -214,7 +214,7 @@ namespace Fsl::UI
         //   age   0ms: 1.0
         //   age  50ms: 1.0
         //   age 100ms: 0.5
-        double ageMillis = (m_movements[size - 1].EventTime - m_movements[index].EventTime).TotalMilliseconds();
+        const double ageMillis = (m_movements[size - 1].EventTime - m_movements[index].EventTime).TotalMilliseconds();
         if (ageMillis < 50)
         {
           return 1.0f;
@@ -251,14 +251,14 @@ namespace Fsl::UI
     for (std::size_t i = 0; i < movements.size(); ++i)
     {
       const MovementRecord& movement = movements[i];
-      TimeSpan age = newestMovement.EventTime - movement.EventTime;
-      auto xi = static_cast<float>(-age.TotalSeconds());
-      float yi = movement.PositionDpf.Value;
-      float xi2 = xi * xi;
-      float xi3 = xi2 * xi;
-      float xi4 = xi3 * xi;
-      float xiyi = xi * yi;
-      float xi2yi = xi2 * yi;
+      const TimeSpan age = newestMovement.EventTime - movement.EventTime;
+      const auto xi = static_cast<float>(-age.TotalSeconds());
+      const float yi = movement.PositionDpf.Value;
+      const float xi2 = xi * xi;
+      const float xi3 = xi2 * xi;
+      const float xi4 = xi3 * xi;
+      const float xiyi = xi * yi;
+      const float xi2yi = xi2 * yi;
       sxi += xi;
       sxi2 += xi2;
       sxiyi += xiyi;
@@ -268,12 +268,12 @@ namespace Fsl::UI
       sxi4 += xi4;
     }
 
-    float sxx = sxi2 - sxi * sxi / countF;
-    float sxy = sxiyi - sxi * syi / countF;
-    float sxx2 = sxi3 - sxi * sxi2 / countF;
-    float sx2y = sxi2yi - sxi2 * syi / countF;
-    float sx2x2 = sxi4 - sxi2 * sxi2 / countF;
-    float denominator = sxx * sx2x2 - sxx2 * sxx2;
+    const float sxx = sxi2 - sxi * sxi / countF;
+    const float sxy = sxiyi - sxi * syi / countF;
+    const float sxx2 = sxi3 - sxi * sxi2 / countF;
+    const float sx2y = sxi2yi - sxi2 * syi / countF;
+    const float sx2x2 = sxi4 - sxi2 * sxi2 / countF;
+    const float denominator = sxx * sx2x2 - sxx2 * sxx2;
     if (denominator == 0)
     {
       FSLLOG3_WARNING("division by 0 when computing velocity, Sxx={}, Sx2x2={}, Sxx2={}", sxx, sx2x2, sxx2);

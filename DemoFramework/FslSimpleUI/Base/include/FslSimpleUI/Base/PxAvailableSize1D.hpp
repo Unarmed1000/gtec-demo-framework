@@ -58,7 +58,7 @@ namespace Fsl::UI
   public:
     constexpr PxAvailableSize1D() noexcept = default;
 
-    constexpr value_type Value() const
+    [[nodiscard]] constexpr value_type Value() const
     {
       return m_value;
     }
@@ -91,19 +91,19 @@ namespace Fsl::UI
       m_value = valuePx;
     }
 
-    constexpr PxSize1D ToPxSize1D() const noexcept
+    [[nodiscard]] constexpr PxSize1D ToPxSize1D() const noexcept
     {
       assert(IsNormal());
       return PxSize1D::UncheckedCreate(m_value);
     }
 
 
-    inline constexpr bool IsInfinity() const noexcept
+    [[nodiscard]] inline constexpr bool IsInfinity() const noexcept
     {
       return PxAvailableSizeUtil::IsConsideredInfiniteSpace(m_value);
     }
 
-    inline constexpr bool IsNormal() const noexcept
+    [[nodiscard]] inline constexpr bool IsNormal() const noexcept
     {
       return PxAvailableSizeUtil::IsNormalValue(m_value);
     }

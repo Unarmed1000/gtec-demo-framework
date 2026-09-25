@@ -82,27 +82,27 @@ namespace Fsl::UI
     {
       m_isReceiverDead = true;
     }
-    bool IsLocked() const
+    [[nodiscard]] bool IsLocked() const
     {
       return m_locked;
     }
-    bool IsReceiverDead() const
+    [[nodiscard]] bool IsReceiverDead() const
     {
       return m_isReceiverDead;
     }
-    bool UseHistory() const
+    [[nodiscard]] bool UseHistory() const
     {
       return m_useHistory;
     }
-    bool IsCompleted() const
+    [[nodiscard]] bool IsCompleted() const
     {
       return m_historyCompleted;
     }
-    int32_t LastSourceId() const
+    [[nodiscard]] int32_t LastSourceId() const
     {
       return m_lastSourceId;
     }
-    int32_t LastSourceSubId() const
+    [[nodiscard]] int32_t LastSourceSubId() const
     {
       return m_lastSourceSubId;
     }

@@ -65,21 +65,21 @@ namespace Fsl
     explicit SpriteManager(const uint32_t densityDpi, const bool useYFlipTextureCoordinates);
     ~SpriteManager() = default;
 
-    const SpriteNativeAreaCalc& GetSpriteNativeAreaCalc() const
+    [[nodiscard]] const SpriteNativeAreaCalc& GetSpriteNativeAreaCalc() const
     {
       return m_spriteNativeAreaCalc;
     }
 
-    uint32_t GetDensityDpi() const
+    [[nodiscard]] uint32_t GetDensityDpi() const
     {
       return m_densityDpi;
     }
 
-    std::size_t Count() const;
+    [[nodiscard]] std::size_t Count() const;
     void Clear();
     void Add(std::shared_ptr<ISprite> sprite);
     void Remove(const std::shared_ptr<ISprite>& sprite);
-    bool Contains(const std::shared_ptr<ISprite>& sprite) const;
+    [[nodiscard]] bool Contains(const std::shared_ptr<ISprite>& sprite) const;
 
     void Resize(const uint32_t densityDpi);
 

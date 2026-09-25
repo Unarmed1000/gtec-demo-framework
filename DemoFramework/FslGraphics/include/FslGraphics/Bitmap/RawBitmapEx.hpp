@@ -198,13 +198,13 @@ namespace Fsl
                                        const uint32_t stride, const BitmapOrigin origin) noexcept;
 
 
-    constexpr bool IsValid() const noexcept
+    [[nodiscard]] constexpr bool IsValid() const noexcept
     {
       return m_pixelFormat != PixelFormat::Undefined;
     }
 
     //! @brief Get a pointer to the content (this will never by a nullptr)
-    constexpr const void* Content() const noexcept
+    [[nodiscard]] constexpr const void* Content() const noexcept
     {
       return m_pContent;
     }
@@ -216,95 +216,95 @@ namespace Fsl
     }
 
     //! The width of the bitmap in pixels
-    constexpr PxSize2D::value_type Width() const noexcept
+    [[nodiscard]] constexpr PxSize2D::value_type Width() const noexcept
     {
       return m_sizePx.Width();
     }
 
     //! The height of the bitmap in pixels
-    constexpr PxSize2D::value_type Height() const noexcept
+    [[nodiscard]] constexpr PxSize2D::value_type Height() const noexcept
     {
       return m_sizePx.Height();
     }
 
     //! The width of the bitmap in pixels
-    constexpr PxSize2D::raw_value_type RawWidth() const noexcept
+    [[nodiscard]] constexpr PxSize2D::raw_value_type RawWidth() const noexcept
     {
       return m_sizePx.RawWidth();
     }
 
     //! The height of the bitmap in pixels
-    constexpr PxSize2D::raw_value_type RawHeight() const noexcept
+    [[nodiscard]] constexpr PxSize2D::raw_value_type RawHeight() const noexcept
     {
       return m_sizePx.RawHeight();
     }
 
     //! The width of the bitmap in pixels
-    constexpr PxSize2D::unsigned_value_type UnsignedWidth() const noexcept
+    [[nodiscard]] constexpr PxSize2D::unsigned_value_type UnsignedWidth() const noexcept
     {
       return m_sizePx.UnsignedWidth();
     }
 
     //! The height of the bitmap in pixels
-    constexpr PxSize2D::unsigned_value_type UnsignedHeight() const noexcept
+    [[nodiscard]] constexpr PxSize2D::unsigned_value_type UnsignedHeight() const noexcept
     {
       return m_sizePx.UnsignedHeight();
     }
 
     //! The width of the bitmap in pixels
-    constexpr PxSize2D::raw_unsigned_value_type RawUnsignedWidth() const noexcept
+    [[nodiscard]] constexpr PxSize2D::raw_unsigned_value_type RawUnsignedWidth() const noexcept
     {
       return m_sizePx.RawUnsignedWidth();
     }
 
     //! The height of the bitmap in pixels
-    constexpr PxSize2D::raw_unsigned_value_type RawUnsignedHeight() const noexcept
+    [[nodiscard]] constexpr PxSize2D::raw_unsigned_value_type RawUnsignedHeight() const noexcept
     {
       return m_sizePx.RawUnsignedHeight();
     }
 
     //! @brief The number of bytes that represent one scan line of the bitmap.
     //! @warning This will be greater or equal to Width * BytesPerPixel as there might be padding bytes!
-    constexpr uint32_t Stride() const noexcept
+    [[nodiscard]] constexpr uint32_t Stride() const noexcept
     {
       return m_stride;
     }
 
     //! The number of bytes that can be stored in m_pContent
-    constexpr uint32_t GetByteSize() const noexcept
+    [[nodiscard]] constexpr uint32_t GetByteSize() const noexcept
     {
       return RawUnsignedHeight() * m_stride;
     }
 
-    constexpr PxExtent2D GetExtent() const noexcept
+    [[nodiscard]] constexpr PxExtent2D GetExtent() const noexcept
     {
       return {m_sizePx.UnsignedWidth(), m_sizePx.UnsignedHeight()};
     }
 
-    constexpr PxSize2D GetSize() const noexcept
+    [[nodiscard]] constexpr PxSize2D GetSize() const noexcept
     {
       return m_sizePx;
     }
 
     //! Get the origin of the bitmap
-    constexpr BitmapOrigin GetOrigin() const noexcept
+    [[nodiscard]] constexpr BitmapOrigin GetOrigin() const noexcept
     {
       return m_origin;
     }
 
     //! Get the pixel format of the raw bitmap
-    constexpr PixelFormat GetPixelFormat() const noexcept
+    [[nodiscard]] constexpr PixelFormat GetPixelFormat() const noexcept
     {
       return m_pixelFormat;
     }
 
-    constexpr PixelFormatLayout GetPixelFormatLayout() const noexcept
+    [[nodiscard]] constexpr PixelFormatLayout GetPixelFormatLayout() const noexcept
     {
       return PixelFormatUtil::GetPixelFormatLayout(m_pixelFormat);
     }
 
     //! true if the bitmap does not contain any 'alignment' bytes at the end of each line (basically stride = Width * PixelSizeInBytes)
-    constexpr bool IsTightlyPacked() const noexcept
+    [[nodiscard]] constexpr bool IsTightlyPacked() const noexcept
     {
       return m_stride == PixelFormatUtil::CalcMinimumStride(m_sizePx.Width(), PixelFormatUtil::GetBytesPerPixel(m_pixelFormat));
     }

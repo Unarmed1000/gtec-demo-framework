@@ -101,7 +101,8 @@ namespace Fsl::UI
 
       if (m_arrangeCache.Orientation == LayoutOrientation::Horizontal)
       {
-        PxVector2 cursorPositionPxf(dstPositionPxf.X + TypeConverter::UncheckedTo<PxValueF>(cursorPositionPx - cursorOriginPx.X), dstPositionPxf.Y);
+        const PxVector2 cursorPositionPxf(dstPositionPxf.X + TypeConverter::UncheckedTo<PxValueF>(cursorPositionPx - cursorOriginPx.X),
+                                          dstPositionPxf.Y);
 
         commandBuffer.Draw(m_cursor.Sprite.Get(), cursorPositionPxf, cursorRenderSizePx, finalColor * cursorColor, clipContext);
 
@@ -114,7 +115,8 @@ namespace Fsl::UI
       }
       else
       {
-        PxVector2 cursorPositionPxf(dstPositionPxf.X, dstPositionPxf.Y + TypeConverter::UncheckedTo<PxValueF>(cursorPositionPx - cursorOriginPx.Y));
+        const PxVector2 cursorPositionPxf(dstPositionPxf.X,
+                                          dstPositionPxf.Y + TypeConverter::UncheckedTo<PxValueF>(cursorPositionPx - cursorOriginPx.Y));
 
         commandBuffer.Draw(m_cursor.Sprite.Get(), cursorPositionPxf, cursorRenderSizePx, finalColor * cursorColor, clipContext);
 
@@ -170,7 +172,7 @@ namespace Fsl::UI
       const PxSize1D virtualCursorLengthPx = (cursorSizePx.RawWidth() > 0 ? cursorSizePx.Width() : cursorRenderSizePx.Width());
       const PxSize1D startPx = (virtualCursorLengthPx / PxSize1D::UncheckedCreate(2)) + backgroundContentMarginPx.Left();
 
-      PxSize1D spanLengthPx(finalSizePx.Width() - virtualCursorLengthPx - backgroundContentMarginPx.SumX());
+      const PxSize1D spanLengthPx(finalSizePx.Width() - virtualCursorLengthPx - backgroundContentMarginPx.SumX());
       spanInfo = SliderPixelSpanInfo(startPx.Value(), spanLengthPx, reverseDirection);
     }
     else
@@ -178,7 +180,7 @@ namespace Fsl::UI
       const PxSize1D virtualCursorLengthPx = (cursorSizePx.RawHeight() > 0 ? cursorSizePx.Height() : cursorRenderSizePx.Height());
       const PxSize1D startPx = (virtualCursorLengthPx / PxSize1D::UncheckedCreate(2)) + backgroundContentMarginPx.Top();
 
-      PxSize1D spanLengthPx(finalSizePx.Height() - virtualCursorLengthPx - backgroundContentMarginPx.SumY());
+      const PxSize1D spanLengthPx(finalSizePx.Height() - virtualCursorLengthPx - backgroundContentMarginPx.SumY());
       spanInfo = SliderPixelSpanInfo(startPx.Value(), spanLengthPx, !reverseDirection);
     }
     m_arrangeCache = ArrangeCache(finalSizePx, orientation, layoutDirection, spanInfo);

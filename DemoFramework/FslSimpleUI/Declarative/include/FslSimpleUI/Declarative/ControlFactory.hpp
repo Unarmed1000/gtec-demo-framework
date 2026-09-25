@@ -80,7 +80,7 @@ namespace Fsl::UI::Declarative
       Register(std::make_unique<T>());
     }
 
-    const PrimitiveTypeRegistry& GetPrimitiveTypeRegistry() const
+    [[nodiscard]] const PrimitiveTypeRegistry& GetPrimitiveTypeRegistry() const
     {
       return m_primitiveTypeRegistry;
     }
@@ -88,8 +88,8 @@ namespace Fsl::UI::Declarative
     std::shared_ptr<BaseWindow> TryCreate(RadioGroupManager& rRadioGroupManager, const std::string_view name,
                                           std::vector<PropertyRecord>& rPropertyRecords);
 
-    std::vector<ControlName> GetControlNames() const;
-    std::span<const ControlPropertyRecord> GetControlThemeProperties(const ControlName& name) const;
+    [[nodiscard]] std::vector<ControlName> GetControlNames() const;
+    [[nodiscard]] std::span<const ControlPropertyRecord> GetControlThemeProperties(const ControlName& name) const;
     DataBinding::DependencyPropertyDefinitionVector GetControlProperties(const ControlName& name);
 
     ControlType GetControlType(const ControlName& name);

@@ -59,7 +59,7 @@ namespace Fsl::Vulkan
     inline void CmdPushConstants(const VkCommandBuffer hCommandBuffer, const VkPipelineLayout pipelineLayout,
                                  const BasicMaterialVariables& materialVariables, const NativeGraphicsMaterialFactory::VariableInfo& varInfo)
     {
-      BasicMaterialVariable var = materialVariables.GetBasicMaterialVariable(varInfo.VariableElement.Usage, varInfo.VariableElement.UsageIndex);
+      const BasicMaterialVariable var = materialVariables.GetBasicMaterialVariable(varInfo.VariableElement.Usage, varInfo.VariableElement.UsageIndex);
       vkCmdPushConstants(hCommandBuffer, pipelineLayout, varInfo.ShaderStageFlags, varInfo.VariableElement.Offset, varInfo.ByteSize, var.Data);
     }
   }

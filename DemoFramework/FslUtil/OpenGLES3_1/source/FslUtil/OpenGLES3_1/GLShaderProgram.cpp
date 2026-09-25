@@ -108,7 +108,7 @@ namespace Fsl::GLES3
     assert(shaderCode.size() <= std::make_unsigned<GLsizei>::type(std::numeric_limits<GLsizei>::max()));
     m_handle = glCreateShaderProgramv(shaderType, static_cast<GLsizei>(shaderCode.size()), shaderCode.data());
     shaderCode[0] = nullptr;
-    GLenum glError = glGetError();
+    const GLenum glError = glGetError();
     if (m_handle == 0 || glError != GL_NO_ERROR)
     {
       throw GLESGraphicsException("Failed to create shader", UncheckedNumericCast<int32_t>(glError), __FILE__, __LINE__);

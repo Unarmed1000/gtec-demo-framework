@@ -44,7 +44,7 @@ namespace Fsl
     ADemoHost(const DemoHostConfig& demoHostConfig, const bool isConsoleBasedHost);
     ~ADemoHost() override;
 
-    bool IsConsoleBaseHost() const override
+    [[nodiscard]] bool IsConsoleBaseHost() const override
     {
       return m_isConsoleBasedHost;
     }

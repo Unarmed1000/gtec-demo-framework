@@ -52,19 +52,19 @@ namespace Fsl::GLES3
 
     void Destroy();
 
-    bool IsValid() const noexcept
+    [[nodiscard]] bool IsValid() const noexcept
     {
       return m_texture.IsValid();
     }
 
-    inline GLTextureInfo ToTextureInfo() const noexcept
+    [[nodiscard]] inline GLTextureInfo ToTextureInfo() const noexcept
     {
       assert(IsValid());
       return {Get(), PxExtent3D{m_extentPx.Width, m_extentPx.Height, m_extentPx.Depth}};
     }
 
     //! @brief Get the native texture handle
-    GLuint Get() const noexcept
+    [[nodiscard]] GLuint Get() const noexcept
     {
       assert(IsValid());
       return m_texture.Get();

@@ -164,7 +164,7 @@ namespace Fsl::EGLConfigUtil
 
     void AddIfMissing(std::deque<EGLint>& rConfigAttribs, const EGLint key, const EGLint defaultValue)
     {
-      auto itrFind = std::find(rConfigAttribs.begin(), rConfigAttribs.end(), key);
+      const auto itrFind = std::find(rConfigAttribs.begin(), rConfigAttribs.end(), key);
       if (itrFind != rConfigAttribs.end())
       {
         return;
@@ -376,7 +376,7 @@ namespace Fsl::EGLConfigUtil
   {
     FSLLOG3_VERBOSE4("EGLDemoHost: TryEGLGuidedChooseConfig allowHDR: {}", allowHDR);
     {    // Try some guided choices based on the EGL recommendations
-      std::vector<EGLConfig> configs = EGLUtil::GetChooseConfigs(hDisplay, attributes);
+      const std::vector<EGLConfig> configs = EGLUtil::GetChooseConfigs(hDisplay, attributes);
       if (!configs.empty())
       {
         if (allowHDR && attributes.IsHDRRequest())
@@ -415,7 +415,7 @@ namespace Fsl::EGLConfigUtil
   // NOLINTNEXTLINE(misc-misplaced-const)
   bool TryChooseConfig(const EGLDisplay hDisplay, const std::deque<EGLint>& configAttribs, const bool allowHDR, EGLConfig& rEGLConfig)
   {
-    auto searchConfigAttribs = BuildSearchConfigAttribs(configAttribs);
+    const auto searchConfigAttribs = BuildSearchConfigAttribs(configAttribs);
 
     auto allConfigs = EGLUtil::GetConfigs(hDisplay);
     std::vector<RatedConfigRecord> records(allConfigs.size());
@@ -428,7 +428,7 @@ namespace Fsl::EGLConfigUtil
     {
       EGLConfig activeConfig = allConfigs[i];
       const auto rating = RateConfig(hDisplay, activeConfig, searchConfigAttribs, maxColorBits);
-      RatedConfigRecord current(activeConfig, rating);
+      const RatedConfigRecord current(activeConfig, rating);
       records[i] = current;
       if (current.Rating > bestScore)
       {

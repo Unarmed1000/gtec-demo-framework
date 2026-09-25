@@ -115,18 +115,18 @@ namespace Fsl
     ~EGLGraphicsException() noexcept override = default;
 
 
-    int GetError() const
+    [[nodiscard]] int GetError() const
     {
       return m_error;
     }
 
 
-    const std::string& GetFilename() const
+    [[nodiscard]] const std::string& GetFilename() const
     {
       return m_filename;
     }
 
-    int GetLineNumber() const
+    [[nodiscard]] int GetLineNumber() const
     {
       return m_lineNumber;
     }

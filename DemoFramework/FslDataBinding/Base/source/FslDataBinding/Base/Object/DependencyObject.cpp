@@ -69,7 +69,7 @@ namespace Fsl::DataBinding
 
   bool DependencyObject::SetBinding(const DependencyPropertyDefinition& targetDef, const Binding& binding)
   {
-    auto res = TrySetBindingNow(targetDef, binding);
+    const auto res = TrySetBindingNow(targetDef, binding);
     switch (res)
     {
     case PropertySetBindingResult::Unchanged:

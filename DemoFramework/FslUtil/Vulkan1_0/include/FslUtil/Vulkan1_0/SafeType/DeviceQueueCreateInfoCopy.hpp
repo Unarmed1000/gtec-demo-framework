@@ -57,7 +57,7 @@ namespace Fsl::Vulkan
     explicit DeviceQueueCreateInfoCopy(const VkDeviceQueueCreateInfo& value);
 
 
-    const VkDeviceQueueCreateInfo& Get() const
+    [[nodiscard]] const VkDeviceQueueCreateInfo& Get() const
     {
       return m_value;
     }

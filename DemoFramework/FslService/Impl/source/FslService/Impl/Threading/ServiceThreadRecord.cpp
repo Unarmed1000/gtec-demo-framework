@@ -56,8 +56,8 @@ namespace Fsl
       FSLLOG3_VERBOSE("Thread started for serviceGroupId {} on {}", serviceConfig.Id.GetValue(), fmt::streamed(currentThreadId));
       try
       {
-        ServiceHostContext hostContext(incomingProvider);
-        ServiceHostCreateInfo createInfo(hostContext, serviceConfig);
+        const ServiceHostContext hostContext(incomingProvider);
+        const ServiceHostCreateInfo createInfo(hostContext, serviceConfig);
         // Allocate the host 'inside' the right thread so it lives it life fully in this thread
         const auto serviceHost = serviceHostFactory->Allocate(createInfo);
         serviceHost->Run();

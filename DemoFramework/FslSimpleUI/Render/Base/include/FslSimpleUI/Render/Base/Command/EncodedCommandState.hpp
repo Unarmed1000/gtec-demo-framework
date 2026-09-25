@@ -59,13 +59,13 @@ namespace Fsl::UI
       m_flags |= clippingEnabled ? EncodedCommandStateFlags::ClipEnabled : EncodedCommandStateFlags::Nothing;
     }
 
-    constexpr DrawCommandType Type() const noexcept
+    [[nodiscard]] constexpr DrawCommandType Type() const noexcept
     {
       return static_cast<DrawCommandType>(m_flags & EncodedCommandStateFlags::MaskDrawCommandType);
     }
 
 
-    constexpr bool IsClipEnabled() const noexcept
+    [[nodiscard]] constexpr bool IsClipEnabled() const noexcept
     {
       return EncodedCommandStateFlagsUtil::IsEnabled(m_flags, EncodedCommandStateFlags::ClipEnabled);
     }

@@ -54,11 +54,11 @@ namespace Fsl::UI
     void CalcClipRect(PxPoint2& rTopLeftPx, PxClipRectangle& rClipRectPx, const PxPoint2& parentTopLeftPx, const PxClipRectangle& parentClipRectPx,
                       const std::shared_ptr<TreeNode>& node)
     {
-      PxRectangle boundingRectPx = node->WinGetContentRectanglePx();
+      const PxRectangle boundingRectPx = node->WinGetContentRectanglePx();
       rTopLeftPx = PxPoint2(parentTopLeftPx.X + boundingRectPx.X(), parentTopLeftPx.Y + boundingRectPx.Y());
       {
         // assert(EqualHelper::IsEqual(node->CalcScreenTopLeftCornerPx(), rTopLeft));
-        PxClipRectangle actualRect(rTopLeftPx.X, rTopLeftPx.Y, boundingRectPx.Width(), boundingRectPx.Height());
+        const PxClipRectangle actualRect(rTopLeftPx.X, rTopLeftPx.Y, boundingRectPx.Width(), boundingRectPx.Height());
 
         // Clip the actual rect to the parent rect
         rClipRectPx = PxClipRectangle::Intersect(parentClipRectPx, actualRect);
@@ -131,7 +131,7 @@ namespace Fsl::UI
   void EventRouter::CreateRoute(EventRoute& rRoute, const EventRoutingStrategy routingStrategy, const PxPoint2& hitPositionPx)
   {
     // locate the actual window that was hit
-    std::shared_ptr<TreeNode> hit = LocateWindowByHit(hitPositionPx, rRoute.GetFlags());
+    const std::shared_ptr<TreeNode> hit = LocateWindowByHit(hitPositionPx, rRoute.GetFlags());
     CreateRoute(rRoute, routingStrategy, hit);
   }
 
@@ -144,7 +144,7 @@ namespace Fsl::UI
     }
 
     // locate the actual window that was hit
-    PxClipRectangle clipRectPx(TypeConverter::UncheckedTo<PxClipRectangle>(m_rootNode->WinGetContentRectanglePx()));
+    const PxClipRectangle clipRectPx(TypeConverter::UncheckedTo<PxClipRectangle>(m_rootNode->WinGetContentRectanglePx()));
     const PxPoint2 topLeftPx = clipRectPx.TopLeft();
     return RecursiveLocateTopChildThatWasHit(topLeftPx, clipRectPx, m_rootNode, hitPositionPx, flags);
   }

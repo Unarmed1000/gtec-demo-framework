@@ -45,7 +45,7 @@ namespace
 TEST(Test_Binding, Create_Source)
 {
   constexpr DataBinding::DataBindingInstanceHandle SrcHandle(0);
-  DataBinding::Binding binding(SrcHandle);
+  const DataBinding::Binding binding(SrcHandle);
 
   EXPECT_TRUE(binding.ContainsSource(SrcHandle));
   EXPECT_FALSE(binding.ComplexBinding());
@@ -61,8 +61,9 @@ TEST(Test_Binding, Create_Source_Converter)
 {
   constexpr DataBinding::DataBindingInstanceHandle SrcHandle(0);
 
-  auto converterBinding = std::make_shared<DataBinding::ConverterBinding<float, int32_t>>([](const int32_t val) { return static_cast<float>(val); });
-  DataBinding::Binding binding(converterBinding, SrcHandle);
+  const auto converterBinding =
+    std::make_shared<DataBinding::ConverterBinding<float, int32_t>>([](const int32_t val) { return static_cast<float>(val); });
+  const DataBinding::Binding binding(converterBinding, SrcHandle);
 
   EXPECT_TRUE(binding.ContainsSource(SrcHandle));
   EXPECT_EQ(converterBinding, binding.ComplexBinding());
@@ -78,9 +79,9 @@ TEST(Test_Binding, Create_Source_MultiConverter)
   constexpr DataBinding::DataBindingInstanceHandle SrcHandle0(0);
   constexpr DataBinding::DataBindingInstanceHandle SrcHandle1(1);
 
-  auto converterBinding = std::make_shared<DataBinding::MultiConverterBinding<float, int32_t, int32_t>>([](const int32_t val0, const int32_t val1)
-                                                                                                        { return static_cast<float>(val0 + val1); });
-  DataBinding::Binding binding(converterBinding, SrcHandle0, SrcHandle1);
+  const auto converterBinding = std::make_shared<DataBinding::MultiConverterBinding<float, int32_t, int32_t>>(
+    [](const int32_t val0, const int32_t val1) { return static_cast<float>(val0 + val1); });
+  const DataBinding::Binding binding(converterBinding, SrcHandle0, SrcHandle1);
 
   EXPECT_TRUE(binding.ContainsSource(SrcHandle0));
   EXPECT_EQ(converterBinding, binding.ComplexBinding());

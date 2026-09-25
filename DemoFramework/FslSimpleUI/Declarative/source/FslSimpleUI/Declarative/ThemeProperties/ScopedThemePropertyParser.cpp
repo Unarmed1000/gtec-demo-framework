@@ -92,10 +92,10 @@ namespace Fsl::UI::Declarative
 
   ScopedThemePropertyParser::ClaimResult ScopedThemePropertyParser::TryClaim(const PropertyName& propertyName, StringViewLite& rValue)
   {
-    StringViewLite propertyNameView = propertyName.AsStringViewLite();
+    const StringViewLite propertyNameView = propertyName.AsStringViewLite();
 
-    auto itrFind = std::find_if(m_properties.begin(), m_properties.end(),
-                                [propertyNameView](const PropertyParserRecord& entry) { return (entry.Name == propertyNameView); });
+    const auto itrFind = std::find_if(m_properties.begin(), m_properties.end(),
+                                      [propertyNameView](const PropertyParserRecord& entry) { return (entry.Name == propertyNameView); });
 
     if (itrFind == m_properties.end())
     {

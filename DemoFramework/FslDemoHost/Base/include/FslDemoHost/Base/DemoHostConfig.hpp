@@ -69,12 +69,12 @@ namespace Fsl
       return ptr;
     }
 
-    std::weak_ptr<INativeWindowEventQueue> GetEventQueue() const;
+    [[nodiscard]] std::weak_ptr<INativeWindowEventQueue> GetEventQueue() const;
 
-    const DemoHostAppSetup& GetDemoHostAppSetup() const;
-    ServiceProvider GetServiceProvider() const;
-    bool GetPreallocateBasic2D() const;
-    uint32_t GetVerbosityLevel() const;
+    [[nodiscard]] const DemoHostAppSetup& GetDemoHostAppSetup() const;
+    [[nodiscard]] ServiceProvider GetServiceProvider() const;
+    [[nodiscard]] bool GetPreallocateBasic2D() const;
+    [[nodiscard]] uint32_t GetVerbosityLevel() const;
   };
 }
 

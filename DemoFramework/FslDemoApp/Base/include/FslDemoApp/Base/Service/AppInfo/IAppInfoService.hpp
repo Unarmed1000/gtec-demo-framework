@@ -40,8 +40,8 @@ namespace Fsl
   public:
     virtual ~IAppInfoService() = default;
 
-    virtual StringViewLite GetAppName() const = 0;
-    virtual bool IsDebugBuild() const = 0;
+    [[nodiscard]] virtual StringViewLite GetAppName() const = 0;
+    [[nodiscard]] virtual bool IsDebugBuild() const = 0;
   };
 }
 

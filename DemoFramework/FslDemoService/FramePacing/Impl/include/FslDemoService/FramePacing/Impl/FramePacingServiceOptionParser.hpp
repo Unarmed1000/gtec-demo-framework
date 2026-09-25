@@ -44,7 +44,7 @@ namespace Fsl
   public:
     FramePacingServiceOptionParser();
 
-    std::string GetName() const final
+    [[nodiscard]] std::string GetName() const final
     {
       return {"FramePacingServiceOptionParser"};
     }
@@ -54,40 +54,40 @@ namespace Fsl
     bool OnParsingComplete() final;
 
     //! @brief true if the marker should be drawn from the start
-    bool IsEnabled() const noexcept
+    [[nodiscard]] bool IsEnabled() const noexcept
     {
       return m_enabled;
     }
 
-    int32_t GetModuleSizePx() const noexcept
+    [[nodiscard]] int32_t GetModuleSizePx() const noexcept
     {
       return m_moduleSizePx;
     }
 
-    int32_t GetCaptureHeightPx() const noexcept
+    [[nodiscard]] int32_t GetCaptureHeightPx() const noexcept
     {
       return m_captureHeightPx;
     }
 
-    FramePacingMarkerSlot GetSlot() const noexcept
+    [[nodiscard]] FramePacingMarkerSlot GetSlot() const noexcept
     {
       return m_slot;
     }
 
     //! @brief If set a run with this name is started at the first frame
-    const std::optional<std::string>& GetRunName() const noexcept
+    [[nodiscard]] const std::optional<std::string>& GetRunName() const noexcept
     {
       return m_runName;
     }
 
     //! @brief The duration of the measured part of the automatically started run (zero = until the app exits)
-    TimeSpan GetRunDuration() const noexcept
+    [[nodiscard]] TimeSpan GetRunDuration() const noexcept
     {
       return m_runDuration;
     }
 
     //! @brief If set this is used as the id of the first run
-    std::optional<uint32_t> GetRunId() const noexcept
+    [[nodiscard]] std::optional<uint32_t> GetRunId() const noexcept
     {
       return m_runId;
     }

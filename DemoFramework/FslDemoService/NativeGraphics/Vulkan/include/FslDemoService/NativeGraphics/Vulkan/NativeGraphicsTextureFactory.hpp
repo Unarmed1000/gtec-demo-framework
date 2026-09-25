@@ -65,36 +65,36 @@ namespace Fsl::Vulkan
 
     void Dispose() noexcept;
 
-    bool IsValidHandle(const BasicNativeTextureHandle hTexture) const
+    [[nodiscard]] bool IsValidHandle(const BasicNativeTextureHandle hTexture) const
     {
       return m_textures.IsValidHandle(hTexture.Value);
     }
 
 
-    VkDescriptorSetLayout GetMainDescriptorSetLayout() const
+    [[nodiscard]] VkDescriptorSetLayout GetMainDescriptorSetLayout() const
     {
       return m_descriptorManager.GetMainDescriptorSetLayout();
     }
 
-    VkDescriptorSet GetDescriptorSet(const BasicNativeTextureHandle hTexture) const
+    [[nodiscard]] VkDescriptorSet GetDescriptorSet(const BasicNativeTextureHandle hTexture) const
     {
       return m_textures.Get(hTexture.Value).GetDescriptorSet();
     }
 
-    VUTextureInfo TryGetTextureInfo(const BasicNativeTextureHandle hTexture) const noexcept
+    [[nodiscard]] VUTextureInfo TryGetTextureInfo(const BasicNativeTextureHandle hTexture) const noexcept
     {
       const NativeGraphicsTexture* pRecord = m_textures.TryGet(hTexture.Value);
       return pRecord != nullptr ? pRecord->ToTextureInfo() : VUTextureInfo();
     }
 
-    Graphics3D::NativeTextureFactoryCaps GetTextureCaps() const noexcept;
+    [[nodiscard]] Graphics3D::NativeTextureFactoryCaps GetTextureCaps() const noexcept;
     BasicNativeTextureHandle CreateTexture(const ReadOnlyRawTexture& texture, const Texture2DFilterHint filterHint, const TextureFlags textureFlags,
                                            const bool isDynamic);
     bool DestroyTexture(const BasicNativeTextureHandle hTexture) noexcept;
 
     void SetTextureData(const BasicNativeTextureHandle hTexture, const ReadOnlyRawTexture& texture, const Texture2DFilterHint filterHint,
                         const TextureFlags textureFlags);
-    const IBasicNativeTexture* TryGetTexture(const BasicNativeTextureHandle hTexture) const noexcept;
+    [[nodiscard]] const IBasicNativeTexture* TryGetTexture(const BasicNativeTextureHandle hTexture) const noexcept;
   };
 }
 

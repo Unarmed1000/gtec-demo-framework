@@ -524,7 +524,7 @@ namespace Fsl::UI::Theme
     {
     }
 
-    constexpr UIColor GetBarColor(const BarType type) const
+    [[nodiscard]] constexpr UIColor GetBarColor(const BarType type) const
     {
       switch (type)
       {
@@ -536,7 +536,7 @@ namespace Fsl::UI::Theme
       }
     }
 
-    constexpr UIColor GetWindowColor(const WindowType type) const
+    [[nodiscard]] constexpr UIColor GetWindowColor(const WindowType type) const
     {
       switch (type)
       {

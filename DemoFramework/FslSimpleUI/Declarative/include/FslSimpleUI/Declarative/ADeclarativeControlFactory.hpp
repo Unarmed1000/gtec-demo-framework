@@ -80,13 +80,13 @@ namespace Fsl::UI::Declarative
     }
 
 
-    std::span<const ControlPropertyRecord> Properties() const;
+    [[nodiscard]] std::span<const ControlPropertyRecord> Properties() const;
 
     /// <summary>
     /// The name of the control
     /// </summary>
     /// <returns></returns>
-    const ControlName& GetName() const noexcept;
+    [[nodiscard]] const ControlName& GetName() const noexcept;
 
     /// <summary>
     /// Create a instance of the control

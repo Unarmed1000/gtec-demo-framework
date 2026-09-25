@@ -75,14 +75,14 @@ namespace Fsl::UI
                      FunctionCreateTargetWindowDeathEvent fnCreateTargetWindowDeathEvent);
     ~StateEventSender() final;
 
-    const std::shared_ptr<WindowEventPool>& GetEventPool() const final
+    [[nodiscard]] const std::shared_ptr<WindowEventPool>& GetEventPool() const final
     {
       return m_eventPool;
     }
-    bool HasActiveEvent() const noexcept final;
-    bool HasActiveClickEventThatIsNot(const std::shared_ptr<TreeNode>& target) const final;
+    [[nodiscard]] bool HasActiveEvent() const noexcept final;
+    [[nodiscard]] bool HasActiveClickEventThatIsNot(const std::shared_ptr<TreeNode>& target) const final;
 
-    bool HasHistory() const final;
+    [[nodiscard]] bool HasHistory() const final;
     SendResult Send(const StateEvent& theEvent, const std::shared_ptr<TreeNode>& target) final;
     SendResult Send(const StateEvent& theEvent, const PxPoint2& hitPositionPx) final;
 

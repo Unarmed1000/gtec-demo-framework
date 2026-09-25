@@ -49,7 +49,7 @@ namespace Fsl
 
     using BasicFlatHashTable<BitmapFontKerning, uint64_t, 1024u>::TryGet;
 
-    inline const BitmapFontKerning* TryGet(const uint32_t first, const uint32_t second) const
+    [[nodiscard]] inline const BitmapFontKerning* TryGet(const uint32_t first, const uint32_t second) const
     {
       return TryGet(BitmapFontKerning::ToId(first, second));
     }

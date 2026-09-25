@@ -75,7 +75,7 @@ namespace Fsl::GLES3
     }
 
     //! @brief Check if the content is considered valid
-    constexpr bool IsValid() const
+    [[nodiscard]] constexpr bool IsValid() const
     {
       const bool b1 = (MinFilter == GL_NEAREST || MinFilter == GL_LINEAR || MinFilter == GL_NEAREST_MIPMAP_NEAREST ||
                        MinFilter == GL_LINEAR_MIPMAP_NEAREST || MinFilter == GL_NEAREST_MIPMAP_LINEAR || MinFilter == GL_LINEAR_MIPMAP_LINEAR);

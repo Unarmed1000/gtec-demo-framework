@@ -126,7 +126,7 @@ namespace Fsl
     PlatformConfig::Configure(hostRegistry, serviceRegistry, rEnableFirewallRequest);
 
 
-    DemoHostSetup hostSetup = hostRegistry.GetSetup(*(appSetup.DemoHostFeatures));
+    const DemoHostSetup hostSetup = hostRegistry.GetSetup(*(appSetup.DemoHostFeatures));
 
     return {hostSetup, appSetup, verbosityLevel};
   }

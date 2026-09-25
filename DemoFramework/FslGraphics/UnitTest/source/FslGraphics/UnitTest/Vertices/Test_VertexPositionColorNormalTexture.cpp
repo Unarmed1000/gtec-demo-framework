@@ -52,7 +52,7 @@ namespace
 
 TEST(TestVertices_VertexPositionColorNormalTexture, Construct_Default)
 {
-  VertexPositionColorNormalTexture vertex;
+  const VertexPositionColorNormalTexture vertex;
 
   EXPECT_EQ(Vector3(), vertex.Position);
   EXPECT_EQ(Vector4(), vertex.Color);

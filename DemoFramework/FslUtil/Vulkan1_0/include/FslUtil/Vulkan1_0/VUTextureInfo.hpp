@@ -109,7 +109,7 @@ namespace Fsl::Vulkan
       ImageInfo = {};
     }
 
-    inline bool IsValid() const noexcept
+    [[nodiscard]] inline bool IsValid() const noexcept
     {
       return ImageInfo.sampler != VK_NULL_HANDLE;
     }

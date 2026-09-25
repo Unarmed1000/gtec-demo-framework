@@ -370,73 +370,68 @@ namespace Fsl::Vulkan
   }
 
 
-  static_assert(std::is_same<VkBool32, decltype(VkPhysicalDeviceFeatures::robustBufferAccess)>::value, "struct member not of the expected type");
-  static_assert(std::is_same<VkBool32, decltype(VkPhysicalDeviceFeatures::fullDrawIndexUint32)>::value, "struct member not of the expected type");
-  static_assert(std::is_same<VkBool32, decltype(VkPhysicalDeviceFeatures::imageCubeArray)>::value, "struct member not of the expected type");
-  static_assert(std::is_same<VkBool32, decltype(VkPhysicalDeviceFeatures::independentBlend)>::value, "struct member not of the expected type");
-  static_assert(std::is_same<VkBool32, decltype(VkPhysicalDeviceFeatures::geometryShader)>::value, "struct member not of the expected type");
-  static_assert(std::is_same<VkBool32, decltype(VkPhysicalDeviceFeatures::tessellationShader)>::value, "struct member not of the expected type");
-  static_assert(std::is_same<VkBool32, decltype(VkPhysicalDeviceFeatures::sampleRateShading)>::value, "struct member not of the expected type");
-  static_assert(std::is_same<VkBool32, decltype(VkPhysicalDeviceFeatures::dualSrcBlend)>::value, "struct member not of the expected type");
-  static_assert(std::is_same<VkBool32, decltype(VkPhysicalDeviceFeatures::logicOp)>::value, "struct member not of the expected type");
-  static_assert(std::is_same<VkBool32, decltype(VkPhysicalDeviceFeatures::multiDrawIndirect)>::value, "struct member not of the expected type");
-  static_assert(std::is_same<VkBool32, decltype(VkPhysicalDeviceFeatures::drawIndirectFirstInstance)>::value,
+  static_assert(std::is_same_v<VkBool32, decltype(VkPhysicalDeviceFeatures::robustBufferAccess)>, "struct member not of the expected type");
+  static_assert(std::is_same_v<VkBool32, decltype(VkPhysicalDeviceFeatures::fullDrawIndexUint32)>, "struct member not of the expected type");
+  static_assert(std::is_same_v<VkBool32, decltype(VkPhysicalDeviceFeatures::imageCubeArray)>, "struct member not of the expected type");
+  static_assert(std::is_same_v<VkBool32, decltype(VkPhysicalDeviceFeatures::independentBlend)>, "struct member not of the expected type");
+  static_assert(std::is_same_v<VkBool32, decltype(VkPhysicalDeviceFeatures::geometryShader)>, "struct member not of the expected type");
+  static_assert(std::is_same_v<VkBool32, decltype(VkPhysicalDeviceFeatures::tessellationShader)>, "struct member not of the expected type");
+  static_assert(std::is_same_v<VkBool32, decltype(VkPhysicalDeviceFeatures::sampleRateShading)>, "struct member not of the expected type");
+  static_assert(std::is_same_v<VkBool32, decltype(VkPhysicalDeviceFeatures::dualSrcBlend)>, "struct member not of the expected type");
+  static_assert(std::is_same_v<VkBool32, decltype(VkPhysicalDeviceFeatures::logicOp)>, "struct member not of the expected type");
+  static_assert(std::is_same_v<VkBool32, decltype(VkPhysicalDeviceFeatures::multiDrawIndirect)>, "struct member not of the expected type");
+  static_assert(std::is_same_v<VkBool32, decltype(VkPhysicalDeviceFeatures::drawIndirectFirstInstance)>, "struct member not of the expected type");
+  static_assert(std::is_same_v<VkBool32, decltype(VkPhysicalDeviceFeatures::depthBiasClamp)>, "struct member not of the expected type");
+  static_assert(std::is_same_v<VkBool32, decltype(VkPhysicalDeviceFeatures::fillModeNonSolid)>, "struct member not of the expected type");
+  static_assert(std::is_same_v<VkBool32, decltype(VkPhysicalDeviceFeatures::depthBounds)>, "struct member not of the expected type");
+  static_assert(std::is_same_v<VkBool32, decltype(VkPhysicalDeviceFeatures::wideLines)>, "struct member not of the expected type");
+  static_assert(std::is_same_v<VkBool32, decltype(VkPhysicalDeviceFeatures::largePoints)>, "struct member not of the expected type");
+  static_assert(std::is_same_v<VkBool32, decltype(VkPhysicalDeviceFeatures::alphaToOne)>, "struct member not of the expected type");
+  static_assert(std::is_same_v<VkBool32, decltype(VkPhysicalDeviceFeatures::multiViewport)>, "struct member not of the expected type");
+  static_assert(std::is_same_v<VkBool32, decltype(VkPhysicalDeviceFeatures::samplerAnisotropy)>, "struct member not of the expected type");
+  static_assert(std::is_same_v<VkBool32, decltype(VkPhysicalDeviceFeatures::textureCompressionETC2)>, "struct member not of the expected type");
+  static_assert(std::is_same_v<VkBool32, decltype(VkPhysicalDeviceFeatures::textureCompressionASTC_LDR)>, "struct member not of the expected type");
+  static_assert(std::is_same_v<VkBool32, decltype(VkPhysicalDeviceFeatures::textureCompressionBC)>, "struct member not of the expected type");
+  static_assert(std::is_same_v<VkBool32, decltype(VkPhysicalDeviceFeatures::occlusionQueryPrecise)>, "struct member not of the expected type");
+  static_assert(std::is_same_v<VkBool32, decltype(VkPhysicalDeviceFeatures::pipelineStatisticsQuery)>, "struct member not of the expected type");
+  static_assert(std::is_same_v<VkBool32, decltype(VkPhysicalDeviceFeatures::vertexPipelineStoresAndAtomics)>,
                 "struct member not of the expected type");
-  static_assert(std::is_same<VkBool32, decltype(VkPhysicalDeviceFeatures::depthBiasClamp)>::value, "struct member not of the expected type");
-  static_assert(std::is_same<VkBool32, decltype(VkPhysicalDeviceFeatures::fillModeNonSolid)>::value, "struct member not of the expected type");
-  static_assert(std::is_same<VkBool32, decltype(VkPhysicalDeviceFeatures::depthBounds)>::value, "struct member not of the expected type");
-  static_assert(std::is_same<VkBool32, decltype(VkPhysicalDeviceFeatures::wideLines)>::value, "struct member not of the expected type");
-  static_assert(std::is_same<VkBool32, decltype(VkPhysicalDeviceFeatures::largePoints)>::value, "struct member not of the expected type");
-  static_assert(std::is_same<VkBool32, decltype(VkPhysicalDeviceFeatures::alphaToOne)>::value, "struct member not of the expected type");
-  static_assert(std::is_same<VkBool32, decltype(VkPhysicalDeviceFeatures::multiViewport)>::value, "struct member not of the expected type");
-  static_assert(std::is_same<VkBool32, decltype(VkPhysicalDeviceFeatures::samplerAnisotropy)>::value, "struct member not of the expected type");
-  static_assert(std::is_same<VkBool32, decltype(VkPhysicalDeviceFeatures::textureCompressionETC2)>::value, "struct member not of the expected type");
-  static_assert(std::is_same<VkBool32, decltype(VkPhysicalDeviceFeatures::textureCompressionASTC_LDR)>::value,
+  static_assert(std::is_same_v<VkBool32, decltype(VkPhysicalDeviceFeatures::fragmentStoresAndAtomics)>, "struct member not of the expected type");
+  static_assert(std::is_same_v<VkBool32, decltype(VkPhysicalDeviceFeatures::shaderTessellationAndGeometryPointSize)>,
                 "struct member not of the expected type");
-  static_assert(std::is_same<VkBool32, decltype(VkPhysicalDeviceFeatures::textureCompressionBC)>::value, "struct member not of the expected type");
-  static_assert(std::is_same<VkBool32, decltype(VkPhysicalDeviceFeatures::occlusionQueryPrecise)>::value, "struct member not of the expected type");
-  static_assert(std::is_same<VkBool32, decltype(VkPhysicalDeviceFeatures::pipelineStatisticsQuery)>::value, "struct member not of the expected type");
-  static_assert(std::is_same<VkBool32, decltype(VkPhysicalDeviceFeatures::vertexPipelineStoresAndAtomics)>::value,
+  static_assert(std::is_same_v<VkBool32, decltype(VkPhysicalDeviceFeatures::shaderImageGatherExtended)>, "struct member not of the expected type");
+  static_assert(std::is_same_v<VkBool32, decltype(VkPhysicalDeviceFeatures::shaderStorageImageExtendedFormats)>,
                 "struct member not of the expected type");
-  static_assert(std::is_same<VkBool32, decltype(VkPhysicalDeviceFeatures::fragmentStoresAndAtomics)>::value,
+  static_assert(std::is_same_v<VkBool32, decltype(VkPhysicalDeviceFeatures::shaderStorageImageMultisample)>,
                 "struct member not of the expected type");
-  static_assert(std::is_same<VkBool32, decltype(VkPhysicalDeviceFeatures::shaderTessellationAndGeometryPointSize)>::value,
+  static_assert(std::is_same_v<VkBool32, decltype(VkPhysicalDeviceFeatures::shaderStorageImageReadWithoutFormat)>,
                 "struct member not of the expected type");
-  static_assert(std::is_same<VkBool32, decltype(VkPhysicalDeviceFeatures::shaderImageGatherExtended)>::value,
+  static_assert(std::is_same_v<VkBool32, decltype(VkPhysicalDeviceFeatures::shaderStorageImageWriteWithoutFormat)>,
                 "struct member not of the expected type");
-  static_assert(std::is_same<VkBool32, decltype(VkPhysicalDeviceFeatures::shaderStorageImageExtendedFormats)>::value,
+  static_assert(std::is_same_v<VkBool32, decltype(VkPhysicalDeviceFeatures::shaderUniformBufferArrayDynamicIndexing)>,
                 "struct member not of the expected type");
-  static_assert(std::is_same<VkBool32, decltype(VkPhysicalDeviceFeatures::shaderStorageImageMultisample)>::value,
+  static_assert(std::is_same_v<VkBool32, decltype(VkPhysicalDeviceFeatures::shaderSampledImageArrayDynamicIndexing)>,
                 "struct member not of the expected type");
-  static_assert(std::is_same<VkBool32, decltype(VkPhysicalDeviceFeatures::shaderStorageImageReadWithoutFormat)>::value,
+  static_assert(std::is_same_v<VkBool32, decltype(VkPhysicalDeviceFeatures::shaderStorageBufferArrayDynamicIndexing)>,
                 "struct member not of the expected type");
-  static_assert(std::is_same<VkBool32, decltype(VkPhysicalDeviceFeatures::shaderStorageImageWriteWithoutFormat)>::value,
+  static_assert(std::is_same_v<VkBool32, decltype(VkPhysicalDeviceFeatures::shaderStorageImageArrayDynamicIndexing)>,
                 "struct member not of the expected type");
-  static_assert(std::is_same<VkBool32, decltype(VkPhysicalDeviceFeatures::shaderUniformBufferArrayDynamicIndexing)>::value,
-                "struct member not of the expected type");
-  static_assert(std::is_same<VkBool32, decltype(VkPhysicalDeviceFeatures::shaderSampledImageArrayDynamicIndexing)>::value,
-                "struct member not of the expected type");
-  static_assert(std::is_same<VkBool32, decltype(VkPhysicalDeviceFeatures::shaderStorageBufferArrayDynamicIndexing)>::value,
-                "struct member not of the expected type");
-  static_assert(std::is_same<VkBool32, decltype(VkPhysicalDeviceFeatures::shaderStorageImageArrayDynamicIndexing)>::value,
-                "struct member not of the expected type");
-  static_assert(std::is_same<VkBool32, decltype(VkPhysicalDeviceFeatures::shaderClipDistance)>::value, "struct member not of the expected type");
-  static_assert(std::is_same<VkBool32, decltype(VkPhysicalDeviceFeatures::shaderCullDistance)>::value, "struct member not of the expected type");
-  static_assert(std::is_same<VkBool32, decltype(VkPhysicalDeviceFeatures::shaderFloat64)>::value, "struct member not of the expected type");
-  static_assert(std::is_same<VkBool32, decltype(VkPhysicalDeviceFeatures::shaderInt64)>::value, "struct member not of the expected type");
-  static_assert(std::is_same<VkBool32, decltype(VkPhysicalDeviceFeatures::shaderInt16)>::value, "struct member not of the expected type");
-  static_assert(std::is_same<VkBool32, decltype(VkPhysicalDeviceFeatures::shaderResourceResidency)>::value, "struct member not of the expected type");
-  static_assert(std::is_same<VkBool32, decltype(VkPhysicalDeviceFeatures::shaderResourceMinLod)>::value, "struct member not of the expected type");
-  static_assert(std::is_same<VkBool32, decltype(VkPhysicalDeviceFeatures::sparseBinding)>::value, "struct member not of the expected type");
-  static_assert(std::is_same<VkBool32, decltype(VkPhysicalDeviceFeatures::sparseResidencyBuffer)>::value, "struct member not of the expected type");
-  static_assert(std::is_same<VkBool32, decltype(VkPhysicalDeviceFeatures::sparseResidencyImage2D)>::value, "struct member not of the expected type");
-  static_assert(std::is_same<VkBool32, decltype(VkPhysicalDeviceFeatures::sparseResidencyImage3D)>::value, "struct member not of the expected type");
-  static_assert(std::is_same<VkBool32, decltype(VkPhysicalDeviceFeatures::sparseResidency2Samples)>::value, "struct member not of the expected type");
-  static_assert(std::is_same<VkBool32, decltype(VkPhysicalDeviceFeatures::sparseResidency4Samples)>::value, "struct member not of the expected type");
-  static_assert(std::is_same<VkBool32, decltype(VkPhysicalDeviceFeatures::sparseResidency8Samples)>::value, "struct member not of the expected type");
-  static_assert(std::is_same<VkBool32, decltype(VkPhysicalDeviceFeatures::sparseResidency16Samples)>::value,
-                "struct member not of the expected type");
-  static_assert(std::is_same<VkBool32, decltype(VkPhysicalDeviceFeatures::sparseResidencyAliased)>::value, "struct member not of the expected type");
-  static_assert(std::is_same<VkBool32, decltype(VkPhysicalDeviceFeatures::variableMultisampleRate)>::value, "struct member not of the expected type");
-  static_assert(std::is_same<VkBool32, decltype(VkPhysicalDeviceFeatures::inheritedQueries)>::value, "struct member not of the expected type");
+  static_assert(std::is_same_v<VkBool32, decltype(VkPhysicalDeviceFeatures::shaderClipDistance)>, "struct member not of the expected type");
+  static_assert(std::is_same_v<VkBool32, decltype(VkPhysicalDeviceFeatures::shaderCullDistance)>, "struct member not of the expected type");
+  static_assert(std::is_same_v<VkBool32, decltype(VkPhysicalDeviceFeatures::shaderFloat64)>, "struct member not of the expected type");
+  static_assert(std::is_same_v<VkBool32, decltype(VkPhysicalDeviceFeatures::shaderInt64)>, "struct member not of the expected type");
+  static_assert(std::is_same_v<VkBool32, decltype(VkPhysicalDeviceFeatures::shaderInt16)>, "struct member not of the expected type");
+  static_assert(std::is_same_v<VkBool32, decltype(VkPhysicalDeviceFeatures::shaderResourceResidency)>, "struct member not of the expected type");
+  static_assert(std::is_same_v<VkBool32, decltype(VkPhysicalDeviceFeatures::shaderResourceMinLod)>, "struct member not of the expected type");
+  static_assert(std::is_same_v<VkBool32, decltype(VkPhysicalDeviceFeatures::sparseBinding)>, "struct member not of the expected type");
+  static_assert(std::is_same_v<VkBool32, decltype(VkPhysicalDeviceFeatures::sparseResidencyBuffer)>, "struct member not of the expected type");
+  static_assert(std::is_same_v<VkBool32, decltype(VkPhysicalDeviceFeatures::sparseResidencyImage2D)>, "struct member not of the expected type");
+  static_assert(std::is_same_v<VkBool32, decltype(VkPhysicalDeviceFeatures::sparseResidencyImage3D)>, "struct member not of the expected type");
+  static_assert(std::is_same_v<VkBool32, decltype(VkPhysicalDeviceFeatures::sparseResidency2Samples)>, "struct member not of the expected type");
+  static_assert(std::is_same_v<VkBool32, decltype(VkPhysicalDeviceFeatures::sparseResidency4Samples)>, "struct member not of the expected type");
+  static_assert(std::is_same_v<VkBool32, decltype(VkPhysicalDeviceFeatures::sparseResidency8Samples)>, "struct member not of the expected type");
+  static_assert(std::is_same_v<VkBool32, decltype(VkPhysicalDeviceFeatures::sparseResidency16Samples)>, "struct member not of the expected type");
+  static_assert(std::is_same_v<VkBool32, decltype(VkPhysicalDeviceFeatures::sparseResidencyAliased)>, "struct member not of the expected type");
+  static_assert(std::is_same_v<VkBool32, decltype(VkPhysicalDeviceFeatures::variableMultisampleRate)>, "struct member not of the expected type");
+  static_assert(std::is_same_v<VkBool32, decltype(VkPhysicalDeviceFeatures::inheritedQueries)>, "struct member not of the expected type");
 }

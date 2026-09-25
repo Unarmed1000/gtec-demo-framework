@@ -43,7 +43,7 @@ namespace
 
 TEST(Test_Util_BoxPlotHelper, Calculate_ToSmallSpan)
 {
-  std::array<uint32_t, 4> sortedData = {};
+  const std::array<uint32_t, 4> sortedData = {};
   EXPECT_THROW(UI::BoxPlotHelper::Calculate(SpanUtil::AsReadOnlySpan(sortedData)), NotSupportedException);
 }
 
@@ -52,9 +52,9 @@ TEST(Test_Util_BoxPlotHelper, Calculate_ToSmallSpan)
 TEST(Test_Util_BoxPlotHelper, Calculate_Even)
 {
   //                                       0    1    2    3    4    5    6    7    8    9   10   11
-  std::array<uint32_t, 12> sortedData = {100, 110, 110, 110, 120, 120, 130, 140, 140, 150, 170, 220};
+  const std::array<uint32_t, 12> sortedData = {100, 110, 110, 110, 120, 120, 130, 140, 140, 150, 170, 220};
 
-  auto result = UI::BoxPlotHelper::Calculate(SpanUtil::AsReadOnlySpan(sortedData));
+  const auto result = UI::BoxPlotHelper::Calculate(SpanUtil::AsReadOnlySpan(sortedData));
 
 
   EXPECT_EQ(100.0, result.Min);
@@ -67,9 +67,9 @@ TEST(Test_Util_BoxPlotHelper, Calculate_Even)
 TEST(Test_Util_BoxPlotHelper, Calculate_Odd)
 {
   //                                       0    1    2    3    4    5    6    7    8    9   10
-  std::array<uint32_t, 11> sortedData = {100, 110, 110, 110, 120, 120, 130, 140, 140, 150, 220};
+  const std::array<uint32_t, 11> sortedData = {100, 110, 110, 110, 120, 120, 130, 140, 140, 150, 220};
 
-  auto result = UI::BoxPlotHelper::Calculate(SpanUtil::AsReadOnlySpan(sortedData));
+  const auto result = UI::BoxPlotHelper::Calculate(SpanUtil::AsReadOnlySpan(sortedData));
 
   EXPECT_EQ(100.0, result.Min);
   EXPECT_EQ(110.0, result.Q1);

@@ -77,17 +77,17 @@ namespace Fsl::UI
       // m = dy / dx
       // y = m * x
       // x = y / m
-      PxSize1DF m = srcSize.Height() / srcSize.Width();
+      const PxSize1DF m = srcSize.Height() / srcSize.Width();
 
-      PxSize1DF calcedX = targetSize.Height() / m;
-      PxSize1DF calcedY = m * targetSize.Width();
+      const PxSize1DF calcedX = targetSize.Height() / m;
+      const PxSize1DF calcedY = m * targetSize.Width();
       if (calcedX.RawValue() <= 0.0001f || calcedY.RawValue() <= 0.0001f)
       {
         return {};
       }
 
-      PxSize2DF size1(calcedX, targetSize.Height());
-      PxSize2DF size2(targetSize.Width(), calcedY);
+      const PxSize2DF size1(calcedX, targetSize.Height());
+      const PxSize2DF size2(targetSize.Width(), calcedY);
       // since we keep the aspect ratio the scaling factors will always be uniform
       return (size1.LengthSquared() < size2.LengthSquared() ? size1 : size2);
     }
@@ -114,14 +114,14 @@ namespace Fsl::UI
 
         // Source Y fits but X is too large
         const PxSize1DF newScale = targetSize.Width() / srcSize.Width();
-        PxSize1DF newY = srcSize.Height() * newScale;
+        const PxSize1DF newY = srcSize.Height() * newScale;
         return {targetSize.Width(), CorrectFloatingPointErrors(newY, targetSize.Height())};
       }
       if (srcSize.Height() > targetSize.Height())
       {
         // Source X fits but Y is too large
         const PxSize1DF newScale = targetSize.Height() / srcSize.Height();
-        PxSize1DF newX = srcSize.Width() * newScale;
+        const PxSize1DF newX = srcSize.Width() * newScale;
         return {CorrectFloatingPointErrors(newX, targetSize.Width()), targetSize.Height()};
       }
 
@@ -172,7 +172,7 @@ namespace Fsl::UI
       return false;
     }
 
-    PxSize2DF size = CalcSize(targetSize, srcSize, scalePolicy);
+    const PxSize2DF size = CalcSize(targetSize, srcSize, scalePolicy);
     if (size.RawWidth() < 0 || size.RawHeight() < 0)
     {
       rSize = PxSize2DF();

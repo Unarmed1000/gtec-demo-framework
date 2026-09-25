@@ -57,7 +57,7 @@ namespace Fsl::UI
     virtual ~WindowEventQueue();
 
     //! @brief Check if the queue is empty.
-    inline bool IsEmpty() const
+    [[nodiscard]] inline bool IsEmpty() const
     {
       return m_queue->empty();
     }

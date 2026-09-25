@@ -179,8 +179,8 @@ namespace Fsl
                                     static_cast<int32_t>(std::numeric_limits<int16_t>::max()));
         offsetY = MathHelper::Clamp(offsetY, static_cast<int32_t>(std::numeric_limits<int16_t>::min()),
                                     static_cast<int32_t>(std::numeric_limits<int16_t>::max()));
-        uint16_t layoutWidth2 = MathHelper::Clamp(layoutWidth, static_cast<uint32_t>(std::numeric_limits<uint16_t>::min()),
-                                                  static_cast<uint32_t>(std::numeric_limits<uint16_t>::max()));
+        const uint16_t layoutWidth2 = MathHelper::Clamp(layoutWidth, static_cast<uint32_t>(std::numeric_limits<uint16_t>::min()),
+                                                        static_cast<uint32_t>(std::numeric_limits<uint16_t>::max()));
 
         assert(i <= std::numeric_limits<int32_t>::max());
         rTextureAtlas.SetGlyphKerning(

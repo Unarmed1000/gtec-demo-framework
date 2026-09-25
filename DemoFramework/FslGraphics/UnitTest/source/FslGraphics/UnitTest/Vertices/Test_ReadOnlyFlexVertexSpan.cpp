@@ -47,7 +47,7 @@ namespace
 
 TEST(TestReadOnlyFlexVertexSpan, Construct_Default)
 {
-  ReadOnlyFlexVertexSpan span;
+  const ReadOnlyFlexVertexSpan span;
 
   EXPECT_TRUE(span.empty());
   EXPECT_EQ(span.data(), nullptr);
@@ -68,7 +68,7 @@ TEST(TestReadOnlyFlexVertexSpan, Construct_PointerLength)
   };
 
   const auto vertexDeclaration = VertexPosition::AsVertexDeclarationSpan();
-  ReadOnlyFlexVertexSpan span(Vertices.data(), Vertices.size(), vertexDeclaration);
+  const ReadOnlyFlexVertexSpan span(Vertices.data(), Vertices.size(), vertexDeclaration);
 
   EXPECT_FALSE(span.empty());
   EXPECT_NE(span.data(), nullptr);
@@ -89,7 +89,7 @@ TEST(TestReadOnlyFlexVertexSpan, Construct_PointerLength_NullPointer)
   };
 
   const auto vertexDeclaration = VertexPosition::AsVertexDeclarationSpan();
-  ReadOnlyFlexVertexSpan span(nullptr, Vertices.size(), vertexDeclaration);
+  const ReadOnlyFlexVertexSpan span(nullptr, Vertices.size(), vertexDeclaration);
 
   EXPECT_TRUE(span.empty());
   EXPECT_EQ(span.data(), nullptr);
@@ -110,7 +110,7 @@ TEST(TestReadOnlyFlexVertexSpan, Construct_PointerLength_NullPointer_LengthZero)
   //};
 
   const auto vertexDeclaration = VertexPosition::AsVertexDeclarationSpan();
-  ReadOnlyFlexVertexSpan span(nullptr, 0u, vertexDeclaration);
+  const ReadOnlyFlexVertexSpan span(nullptr, 0u, vertexDeclaration);
 
   EXPECT_TRUE(span.empty());
   EXPECT_EQ(span.data(), nullptr);
@@ -170,10 +170,10 @@ TEST(TestReadOnlyFlexVertexSpan, Construct_ReadOnlyFlexSpan)
     VertexPosition(Vector3(7.0f, 8.0f, 9.0f)),
     VertexPosition(Vector3(9.1f, 9.2f, 9.3f)),
   };
-  auto flexSpan = ReadOnlyFlexSpanUtil::AsSpan(Vertices);
+  const auto flexSpan = ReadOnlyFlexSpanUtil::AsSpan(Vertices);
 
   const auto vertexDeclaration = VertexPosition::AsVertexDeclarationSpan();
-  ReadOnlyFlexVertexSpan span(flexSpan, vertexDeclaration);
+  const ReadOnlyFlexVertexSpan span(flexSpan, vertexDeclaration);
 
   EXPECT_FALSE(span.empty());
   EXPECT_NE(span.data(), nullptr);
@@ -187,15 +187,15 @@ TEST(TestReadOnlyFlexVertexSpan, Construct_ReadOnlyFlexSpan)
 TEST(TestReadOnlyFlexVertexSpan, Construct_EmptyReadOnlyFlexSpan)
 {
   const auto vertexDeclaration = VertexPosition::AsVertexDeclarationSpan();
-  ReadOnlyFlexSpan flexSpan;
+  const ReadOnlyFlexSpan flexSpan;
   EXPECT_THROW(ReadOnlyFlexVertexSpan(flexSpan, vertexDeclaration), std::invalid_argument);
 }
 
 TEST(TestReadOnlyFlexVertexSpan, Construct_EmptyReadOnlyFlexSpan2)
 {
   const auto vertexDeclaration = VertexPosition::AsVertexDeclarationSpan();
-  ReadOnlyFlexSpan flexSpan(nullptr, 0, vertexDeclaration.VertexStride());
-  ReadOnlyFlexVertexSpan span(flexSpan, vertexDeclaration);
+  const ReadOnlyFlexSpan flexSpan(nullptr, 0, vertexDeclaration.VertexStride());
+  const ReadOnlyFlexVertexSpan span(flexSpan, vertexDeclaration);
 
   EXPECT_TRUE(span.empty());
   EXPECT_EQ(span.data(), nullptr);
@@ -210,16 +210,16 @@ TEST(TestReadOnlyFlexVertexSpan, Construct_EmptyReadOnlyFlexSpan2)
 
 TEST(TestReadOnlyFlexVertexSpan, Construct_EmptyReadOnlyFlexSpan_EmptyVertexDecl)
 {
-  VertexDeclarationSpan vertexDeclaration;
-  ReadOnlyFlexSpan flexSpan;
+  const VertexDeclarationSpan vertexDeclaration;
+  const ReadOnlyFlexSpan flexSpan;
   EXPECT_THROW(ReadOnlyFlexVertexSpan span(flexSpan, vertexDeclaration), std::invalid_argument);
 }
 
 
 TEST(TestReadOnlyFlexVertexSpan, Construct_EmptyReadOnlyFlexSpan_EmptyVertexDecl2)
 {
-  VertexDeclarationSpan vertexDeclaration;
-  ReadOnlyFlexSpan flexSpan(nullptr, 0, 1);
+  const VertexDeclarationSpan vertexDeclaration;
+  const ReadOnlyFlexSpan flexSpan(nullptr, 0, 1);
   EXPECT_THROW(ReadOnlyFlexVertexSpan span(flexSpan, vertexDeclaration), std::invalid_argument);
 }
 
@@ -232,8 +232,8 @@ TEST(TestReadOnlyFlexVertexSpan, Construct_ReadOnlyFlexSpan_EmptyVertexDeclarati
     VertexPosition(Vector3(7.0f, 8.0f, 9.0f)),
     VertexPosition(Vector3(9.1f, 9.2f, 9.3f)),
   };
-  auto flexSpan = ReadOnlyFlexSpanUtil::AsSpan(Vertices);
-  VertexDeclarationSpan vertexDeclaration;
+  const auto flexSpan = ReadOnlyFlexSpanUtil::AsSpan(Vertices);
+  const VertexDeclarationSpan vertexDeclaration;
 
   EXPECT_THROW(ReadOnlyFlexVertexSpan(flexSpan, vertexDeclaration), std::invalid_argument);
 }
@@ -246,7 +246,7 @@ TEST(TestReadOnlyFlexVertexSpan, Construct_ReadOnlyFlexSpan_IncompatibleVertexDe
     VertexPosition(Vector3(7.0f, 8.0f, 9.0f)),
     VertexPosition(Vector3(9.1f, 9.2f, 9.3f)),
   };
-  auto flexSpan = ReadOnlyFlexSpanUtil::AsSpan(Vertices);
+  const auto flexSpan = ReadOnlyFlexSpanUtil::AsSpan(Vertices);
   const VertexDeclarationSpan vertexDeclaration = VertexPositionColorF::AsVertexDeclarationSpan();
 
   EXPECT_THROW(ReadOnlyFlexVertexSpan(flexSpan, vertexDeclaration), std::invalid_argument);
@@ -265,7 +265,7 @@ TEST(TestReadOnlyFlexVertexSpan, Construct_PointerLength_NoCheck)
   };
 
   const auto vertexDeclaration = VertexPosition::AsVertexDeclarationSpan();
-  ReadOnlyFlexVertexSpan span(Vertices.data(), Vertices.size(), vertexDeclaration, OptimizationCheckFlag::NoCheck);
+  const ReadOnlyFlexVertexSpan span(Vertices.data(), Vertices.size(), vertexDeclaration, OptimizationCheckFlag::NoCheck);
 
   EXPECT_FALSE(span.empty());
   EXPECT_NE(span.data(), nullptr);
@@ -307,7 +307,7 @@ TEST(TestReadOnlyFlexVertexSpan, Construct_PointerLength_NullPointer_LengthZero_
   // };
 
   const auto vertexDeclaration = VertexPosition::AsVertexDeclarationSpan();
-  ReadOnlyFlexVertexSpan span(nullptr, 0u, vertexDeclaration, OptimizationCheckFlag::NoCheck);
+  const ReadOnlyFlexVertexSpan span(nullptr, 0u, vertexDeclaration, OptimizationCheckFlag::NoCheck);
 
   EXPECT_TRUE(span.empty());
   EXPECT_EQ(span.data(), nullptr);
@@ -371,10 +371,10 @@ TEST(TestReadOnlyFlexVertexSpan, Construct_ReadOnlyFlexSpan_NoCheck)
     VertexPosition(Vector3(7.0f, 8.0f, 9.0f)),
     VertexPosition(Vector3(9.1f, 9.2f, 9.3f)),
   };
-  auto flexSpan = ReadOnlyFlexSpanUtil::AsSpan(Vertices);
+  const auto flexSpan = ReadOnlyFlexSpanUtil::AsSpan(Vertices);
 
   const auto vertexDeclaration = VertexPosition::AsVertexDeclarationSpan();
-  ReadOnlyFlexVertexSpan span(flexSpan, vertexDeclaration, OptimizationCheckFlag::NoCheck);
+  const ReadOnlyFlexVertexSpan span(flexSpan, vertexDeclaration, OptimizationCheckFlag::NoCheck);
 
   EXPECT_FALSE(span.empty());
   EXPECT_NE(span.data(), nullptr);
@@ -405,8 +405,8 @@ TEST(TestReadOnlyFlexVertexSpan, Construct_ReadOnlyFlexSpan_NoCheck)
 TEST(TestReadOnlyFlexVertexSpan, Construct_EmptyReadOnlyFlexSpan_NoCheck)
 {
   const auto vertexDeclaration = VertexPosition::AsVertexDeclarationSpan();
-  ReadOnlyFlexSpan flexSpan(nullptr, 0, vertexDeclaration.VertexStride());
-  ReadOnlyFlexVertexSpan span(flexSpan, vertexDeclaration, OptimizationCheckFlag::NoCheck);
+  const ReadOnlyFlexSpan flexSpan(nullptr, 0, vertexDeclaration.VertexStride());
+  const ReadOnlyFlexVertexSpan span(flexSpan, vertexDeclaration, OptimizationCheckFlag::NoCheck);
 
   EXPECT_TRUE(span.empty());
   EXPECT_EQ(span.data(), nullptr);
@@ -444,12 +444,12 @@ TEST(TestReadOnlyFlexVertexSpan, Subspan)
     VertexPosition(Vector3(7.0f, 8.0f, 9.0f)),
     VertexPosition(Vector3(9.1f, 9.2f, 9.3f)),
   };
-  auto flexSpan = ReadOnlyFlexSpanUtil::AsSpan(Vertices);
+  const auto flexSpan = ReadOnlyFlexSpanUtil::AsSpan(Vertices);
 
   const auto vertexDeclaration = VertexPosition::AsVertexDeclarationSpan();
-  ReadOnlyFlexVertexSpan span(flexSpan, vertexDeclaration);
+  const ReadOnlyFlexVertexSpan span(flexSpan, vertexDeclaration);
 
-  ReadOnlyFlexVertexSpan res = span.subspan();
+  const ReadOnlyFlexVertexSpan res = span.subspan();
 
   EXPECT_FALSE(res.empty());
   EXPECT_NE(res.data(), nullptr);
@@ -471,12 +471,12 @@ TEST(TestReadOnlyFlexVertexSpan, Subspan_Offset1)
     VertexPosition(Vector3(7.0f, 8.0f, 9.0f)),
     VertexPosition(Vector3(9.1f, 9.2f, 9.3f)),
   };
-  auto flexSpan = ReadOnlyFlexSpanUtil::AsSpan(Vertices);
+  const auto flexSpan = ReadOnlyFlexSpanUtil::AsSpan(Vertices);
 
   const auto vertexDeclaration = VertexPosition::AsVertexDeclarationSpan();
-  ReadOnlyFlexVertexSpan span(flexSpan, vertexDeclaration);
+  const ReadOnlyFlexVertexSpan span(flexSpan, vertexDeclaration);
 
-  ReadOnlyFlexVertexSpan res = span.subspan(1);
+  const ReadOnlyFlexVertexSpan res = span.subspan(1);
 
   EXPECT_FALSE(res.empty());
   EXPECT_EQ(res.data(), &Vertices[1]);
@@ -496,12 +496,12 @@ TEST(TestReadOnlyFlexVertexSpan, Subspan_Offset3)
     VertexPosition(Vector3(7.0f, 8.0f, 9.0f)),
     VertexPosition(Vector3(9.1f, 9.2f, 9.3f)),
   };
-  auto flexSpan = ReadOnlyFlexSpanUtil::AsSpan(Vertices);
+  const auto flexSpan = ReadOnlyFlexSpanUtil::AsSpan(Vertices);
 
   const auto vertexDeclaration = VertexPosition::AsVertexDeclarationSpan();
-  ReadOnlyFlexVertexSpan span(flexSpan, vertexDeclaration);
+  const ReadOnlyFlexVertexSpan span(flexSpan, vertexDeclaration);
 
-  ReadOnlyFlexVertexSpan res = span.subspan(3);
+  const ReadOnlyFlexVertexSpan res = span.subspan(3);
 
   EXPECT_FALSE(res.empty());
   EXPECT_EQ(res.data(), &Vertices[3]);
@@ -521,12 +521,12 @@ TEST(TestReadOnlyFlexVertexSpan, Subspan_Offset4)
     VertexPosition(Vector3(7.0f, 8.0f, 9.0f)),
     VertexPosition(Vector3(9.1f, 9.2f, 9.3f)),
   };
-  auto flexSpan = ReadOnlyFlexSpanUtil::AsSpan(Vertices);
+  const auto flexSpan = ReadOnlyFlexSpanUtil::AsSpan(Vertices);
 
   const auto vertexDeclaration = VertexPosition::AsVertexDeclarationSpan();
-  ReadOnlyFlexVertexSpan span(flexSpan, vertexDeclaration);
+  const ReadOnlyFlexVertexSpan span(flexSpan, vertexDeclaration);
 
-  ReadOnlyFlexVertexSpan res = span.subspan(4);
+  const ReadOnlyFlexVertexSpan res = span.subspan(4);
 
   EXPECT_TRUE(res.empty());
   EXPECT_EQ(res.size(), 0u);
@@ -545,12 +545,12 @@ TEST(TestReadOnlyFlexVertexSpan, Subspan_Offset5_Invalid)
     VertexPosition(Vector3(7.0f, 8.0f, 9.0f)),
     VertexPosition(Vector3(9.1f, 9.2f, 9.3f)),
   };
-  auto flexSpan = ReadOnlyFlexSpanUtil::AsSpan(Vertices);
+  const auto flexSpan = ReadOnlyFlexSpanUtil::AsSpan(Vertices);
 
   const auto vertexDeclaration = VertexPosition::AsVertexDeclarationSpan();
-  ReadOnlyFlexVertexSpan span(flexSpan, vertexDeclaration);
+  const ReadOnlyFlexVertexSpan span(flexSpan, vertexDeclaration);
 
-  EXPECT_THROW(span.subspan(5), std::out_of_range);
+  EXPECT_THROW(static_cast<void>(span.subspan(5)), std::out_of_range);
 }
 
 // -----------------------------
@@ -563,12 +563,12 @@ TEST(TestReadOnlyFlexVertexSpan, Subspan_Offset1_Len0)
     VertexPosition(Vector3(7.0f, 8.0f, 9.0f)),
     VertexPosition(Vector3(9.1f, 9.2f, 9.3f)),
   };
-  auto flexSpan = ReadOnlyFlexSpanUtil::AsSpan(Vertices);
+  const auto flexSpan = ReadOnlyFlexSpanUtil::AsSpan(Vertices);
 
   const auto vertexDeclaration = VertexPosition::AsVertexDeclarationSpan();
-  ReadOnlyFlexVertexSpan span(flexSpan, vertexDeclaration);
+  const ReadOnlyFlexVertexSpan span(flexSpan, vertexDeclaration);
 
-  ReadOnlyFlexVertexSpan res = span.subspan(1, 0);
+  const ReadOnlyFlexVertexSpan res = span.subspan(1, 0);
 
   EXPECT_TRUE(res.empty());
   EXPECT_EQ(res.data(), &Vertices[1]);
@@ -588,12 +588,12 @@ TEST(TestReadOnlyFlexVertexSpan, Subspan_Offset1_Len2)
     VertexPosition(Vector3(7.0f, 8.0f, 9.0f)),
     VertexPosition(Vector3(9.1f, 9.2f, 9.3f)),
   };
-  auto flexSpan = ReadOnlyFlexSpanUtil::AsSpan(Vertices);
+  const auto flexSpan = ReadOnlyFlexSpanUtil::AsSpan(Vertices);
 
   const auto vertexDeclaration = VertexPosition::AsVertexDeclarationSpan();
-  ReadOnlyFlexVertexSpan span(flexSpan, vertexDeclaration);
+  const ReadOnlyFlexVertexSpan span(flexSpan, vertexDeclaration);
 
-  ReadOnlyFlexVertexSpan res = span.subspan(1, 2);
+  const ReadOnlyFlexVertexSpan res = span.subspan(1, 2);
 
   EXPECT_FALSE(res.empty());
   EXPECT_EQ(res.data(), &Vertices[1]);

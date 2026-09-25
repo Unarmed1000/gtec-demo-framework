@@ -75,7 +75,7 @@ namespace Fsl::GLES2
         : Value(value)
       {
       }
-      bool IsEnabled(const Enum value) const
+      [[nodiscard]] bool IsEnabled(const Enum value) const
       {
         return (Value & static_cast<uint32_t>(value)) != 0;
       }
@@ -150,33 +150,33 @@ namespace Fsl::GLES2
                const GLenum depthBufferFormat, const GLenum stencilBufferFormat, const Flags::type bufferFlags);
 
     //! @brief Check if this buffer contains a valid gl handle.
-    bool IsValid() const
+    [[nodiscard]] bool IsValid() const
     {
       return m_handle != GLValues::InvalidHandle;
     }
 
     //! @brief Get the gl handle associated with the buffer.
     //! @return the handle or GLValues::InvalidHandle if the buffer is unallocated.
-    GLuint Get() const
+    [[nodiscard]] GLuint Get() const
     {
       return m_handle;
     }
 
     //! @brief Get the gl handle associated with the buffer.
     //! @return the handle or GLValues::InvalidHandle if the buffer is unallocated.
-    [[deprecated("use one of the other overloads instead")]] GLuint GetHandle() const
+    [[nodiscard]] [[deprecated("use one of the other overloads instead")]] GLuint GetHandle() const
     {
       return Get();
     }
 
     //! @brief Get the size of the framebuffer
-    PxSize2D GetSize() const
+    [[nodiscard]] PxSize2D GetSize() const
     {
       return m_size;
     }
 
     //! @brief Get the texture
-    GLTextureInfo GetTextureInfo() const
+    [[nodiscard]] GLTextureInfo GetTextureInfo() const
     {
       return m_texture.GetTextureInfo();
     }

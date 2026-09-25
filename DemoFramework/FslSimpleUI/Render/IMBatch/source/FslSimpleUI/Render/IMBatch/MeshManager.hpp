@@ -203,12 +203,12 @@ namespace Fsl::UI::RenderIMBatch
       {
       }
 
-      constexpr uint32_t GetMaterialCount() const
+      [[nodiscard]] constexpr uint32_t GetMaterialCount() const
       {
         return 2u;
       }
 
-      constexpr MaterialInfo GetMaterialInfo(const uint32_t index) const
+      [[nodiscard]] constexpr MaterialInfo GetMaterialInfo(const uint32_t index) const
       {
         switch (index)
         {
@@ -269,12 +269,12 @@ namespace Fsl::UI::RenderIMBatch
         return changed;
       }
 
-      StringViewLite GetText() const;
+      [[nodiscard]] StringViewLite GetText() const;
 
       bool SetText(const StringViewLite text);
       void UpdateCache();
 
-      ReadOnlySpan<SpriteFontGlyphPosition> GetGlyphs() const noexcept
+      [[nodiscard]] ReadOnlySpan<SpriteFontGlyphPosition> GetGlyphs() const noexcept
       {
         return SpanUtil::UncheckedAsReadOnlySpan(m_glyphs, 0, m_glyphCount);
       }
@@ -297,34 +297,34 @@ namespace Fsl::UI::RenderIMBatch
     void PreDraw();
 
 
-    Capacity GetCapacity() const noexcept
+    [[nodiscard]] Capacity GetCapacity() const noexcept
     {
       return m_capacity;
     }
 
-    uint32_t GetMeshCount() const noexcept
+    [[nodiscard]] uint32_t GetMeshCount() const noexcept
     {
       // return m_meshes.Count();
       return m_meshesImageSprite.Count() + m_meshesNineSliceSprite.Count() + m_meshesOptimizedNineSliceSprite.Count() + m_meshesSpriteFont.Count();
     }
 
 
-    const ImageMeshRecord& UncheckedGetImageSprite(const int32_t handle) const noexcept
+    [[nodiscard]] const ImageMeshRecord& UncheckedGetImageSprite(const int32_t handle) const noexcept
     {
       return m_meshesImageSprite.FastGet(handle);
     }
 
-    const NineSliceMeshRecord& UncheckedGetNineSliceSprite(const int32_t handle) const noexcept
+    [[nodiscard]] const NineSliceMeshRecord& UncheckedGetNineSliceSprite(const int32_t handle) const noexcept
     {
       return m_meshesNineSliceSprite.FastGet(handle);
     }
 
-    const OptimizedNineSliceSpriteMeshRecord& UncheckedGetOptimizedNineSliceSprite(const int32_t handle) const noexcept
+    [[nodiscard]] const OptimizedNineSliceSpriteMeshRecord& UncheckedGetOptimizedNineSliceSprite(const int32_t handle) const noexcept
     {
       return m_meshesOptimizedNineSliceSprite.FastGet(handle);
     }
 
-    const SpriteFontMeshRecord& UncheckedGetSpriteFont(const int32_t handle) const noexcept
+    [[nodiscard]] const SpriteFontMeshRecord& UncheckedGetSpriteFont(const int32_t handle) const noexcept
     {
       return m_meshesSpriteFont.FastGet(handle);
     }
@@ -334,7 +334,7 @@ namespace Fsl::UI::RenderIMBatch
     //  return m_meshes.FastGet(handle);
     //}
 
-    const MaterialLookup& GetMaterialLookup() const
+    [[nodiscard]] const MaterialLookup& GetMaterialLookup() const
     {
       return m_materialLookup;
     }

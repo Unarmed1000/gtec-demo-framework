@@ -59,9 +59,9 @@ namespace Fsl
     OptionParseResult Parse(const int32_t cmdId, const StringViewLite& strOptArg) override;
     bool ParsingComplete() override;
 
-    bool IsLogConfigEnabled() const;
-    bool IsLogExtensionsEnabled() const;
-    ConfigLogMode GetConfigLogMode() const
+    [[nodiscard]] bool IsLogConfigEnabled() const;
+    [[nodiscard]] bool IsLogExtensionsEnabled() const;
+    [[nodiscard]] ConfigLogMode GetConfigLogMode() const
     {
       return m_configLogMode;
     }

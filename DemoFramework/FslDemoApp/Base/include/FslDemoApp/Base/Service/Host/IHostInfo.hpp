@@ -44,14 +44,14 @@ namespace Fsl
   public:
     virtual ~IHostInfo() = default;
 
-    virtual bool IsConsoleBasedHost() const = 0;
+    [[nodiscard]] virtual bool IsConsoleBasedHost() const = 0;
 
-    virtual DemoHostFeature GetActiveAPI() const = 0;
+    [[nodiscard]] virtual DemoHostFeature GetActiveAPI() const = 0;
 
     //! @brief Get the DemoAppHostConfig user tag (beware this can return null if none was set)
-    virtual std::shared_ptr<DemoAppHostConfig> TryGetAppHostConfig() const = 0;
+    [[nodiscard]] virtual std::shared_ptr<DemoAppHostConfig> TryGetAppHostConfig() const = 0;
 
-    virtual HostConfig GetConfig() const = 0;
+    [[nodiscard]] virtual HostConfig GetConfig() const = 0;
   };
 }
 

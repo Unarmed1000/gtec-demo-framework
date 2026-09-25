@@ -248,8 +248,8 @@ namespace Fsl::Vulkan
     }
 
     // Then we check the input parameters
-    if ((static_cast<uint32_t>(sizePx.RawWidth()) != m_deviceResource.CachedScreenExtentPx.Width.Value ||
-         static_cast<uint32_t>(sizePx.RawHeight()) != m_deviceResource.CachedScreenExtentPx.Height.Value) &&
+    if ((std::cmp_not_equal(sizePx.RawWidth(), m_deviceResource.CachedScreenExtentPx.Width.Value) ||
+         std::cmp_not_equal(sizePx.RawHeight(), m_deviceResource.CachedScreenExtentPx.Height.Value)) &&
         m_activeFrame.CurrentState != FrameState::DrawVoidFrame)
     {
       throw NotSupportedException("Dynamic changes of the screen resolution is not supported");
@@ -317,7 +317,7 @@ namespace Fsl::Vulkan
     uint32_t remainingQuads = length;
     while (pSrcVertices < pSrcVerticesEnd)
     {
-      auto current = rRender.VertexBuffers.NextFree(remainingQuads * LocalConfig::InternalQuadVertexCount);
+      const auto current = rRender.VertexBuffers.NextFree(remainingQuads * LocalConfig::InternalQuadVertexCount);
 
       auto* pDst = current.pMapped;
       auto* pDstEnd = current.pMapped + current.VertexCapacity;
@@ -371,7 +371,7 @@ namespace Fsl::Vulkan
                                 static_cast<int32_t>(descriptorSets.size()), descriptorSets.data(), 0, nullptr);
       }
 
-      VkDeviceSize offsets = 0;
+      const VkDeviceSize offsets = 0;
       vkCmdBindVertexBuffers(m_activeFrame.CommandBuffer, 0, 1, &current.VertexBuffer, &offsets);
       vkCmdDraw(m_activeFrame.CommandBuffer, current.VertexCapacity, 1, current.UsedStartIndex, 0);
       ++m_stats.DrawCalls;
@@ -509,7 +509,7 @@ namespace Fsl::Vulkan
 
     try
     {
-      VkDevice const device = m_deviceResource.UniformBuffer.GetDevice();
+      const VkDevice device = m_deviceResource.UniformBuffer.GetDevice();
 
       const auto vertexDecl = VertexPositionColorTexture::AsVertexDeclarationSpan();
 
@@ -574,7 +574,7 @@ namespace Fsl::Vulkan
       return;
     }
 
-    auto waitResult = vkDeviceWaitIdle(m_deviceResource.UniformBuffer.GetDevice());
+    const auto waitResult = vkDeviceWaitIdle(m_deviceResource.UniformBuffer.GetDevice());
     if (waitResult != VK_SUCCESS)
     {
       FSLLOG3_ERROR_IF(m_logEnabled, "vkDeviceWaitIdle failed with: {}({}) at {} line: {}", RapidVulkan::Debug::ToString(waitResult),

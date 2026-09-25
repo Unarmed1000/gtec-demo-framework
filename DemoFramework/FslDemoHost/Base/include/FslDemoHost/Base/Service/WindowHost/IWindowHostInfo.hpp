@@ -45,10 +45,10 @@ namespace Fsl
     virtual ~IWindowHostInfo() = default;
 
     //! @brief Get the active window system
-    virtual std::weak_ptr<INativeWindowSystem> GetWindowSystem() const = 0;
+    [[nodiscard]] virtual std::weak_ptr<INativeWindowSystem> GetWindowSystem() const = 0;
 
     //! @brief Get all the active windows
-    virtual std::deque<std::weak_ptr<INativeWindow>> GetWindows() const = 0;
+    [[nodiscard]] virtual std::deque<std::weak_ptr<INativeWindow>> GetWindows() const = 0;
   };
 }
 

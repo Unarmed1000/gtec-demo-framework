@@ -34,6 +34,7 @@
 #include <FslGraphics/Vertices/VertexConverter.hpp>
 #include <FslGraphics3D/BasicScene/MeshConverter.hpp>
 #include <cassert>
+#include <utility>
 
 namespace Fsl::Graphics3D
 {
@@ -48,8 +49,8 @@ namespace Fsl::Graphics3D
     const RawMeshContent rawSrc = src.GenericDirectAccess();
     rDst.Reset(rawSrc.VertexCount, rawSrc.IndexCount, rawSrc.ThePrimitiveType);
 
-    RawMeshContentEx rawDst = rDst.GenericDirectAccess();
-    if (static_cast<std::size_t>(cbDstDefaultValues) != rawDst.VertexStride)
+    const RawMeshContentEx rawDst = rDst.GenericDirectAccess();
+    if (std::cmp_not_equal(cbDstDefaultValues, rawDst.VertexStride))
     {
       throw std::invalid_argument("default value not of the expected size");
     }

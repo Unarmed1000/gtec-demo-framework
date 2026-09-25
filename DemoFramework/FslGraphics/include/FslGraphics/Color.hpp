@@ -121,72 +121,72 @@ namespace Fsl
     }
 
 
-    constexpr bool IsOpaque() const noexcept
+    [[nodiscard]] constexpr bool IsOpaque() const noexcept
     {
       return m_a == 0xFF;
     }
 
-    constexpr Vector4 ToVector4() const noexcept
+    [[nodiscard]] constexpr Vector4 ToVector4() const noexcept
     {
       return {static_cast<float>(m_r) / 255.0f, static_cast<float>(m_g) / 255.0f, static_cast<float>(m_b) / 255.0f, static_cast<float>(m_a) / 255.0f};
     }
 
 
-    constexpr PackedColor32 AsPackedColor32() const noexcept
+    [[nodiscard]] constexpr PackedColor32 AsPackedColor32() const noexcept
     {
       return PackedColor32::CreateR8G8B8A8UNorm(m_r, m_g, m_b, m_a);
     }
 
     //! get the packed value
-    constexpr PackedColor64 AsPackedColor64() const noexcept
+    [[nodiscard]] constexpr PackedColor64 AsPackedColor64() const noexcept
     {
       return {R(), G(), B(), A()};
     }
 
     //! @brief get the red component
-    constexpr ColorChannelValueU8 R() const noexcept
+    [[nodiscard]] constexpr ColorChannelValueU8 R() const noexcept
     {
       return ColorChannelValueU8(m_r);
     }
 
     //! @brief get the green component
-    constexpr ColorChannelValueU8 G() const noexcept
+    [[nodiscard]] constexpr ColorChannelValueU8 G() const noexcept
     {
       return ColorChannelValueU8(m_g);
     }
 
     //! @brief get the blue component
-    constexpr ColorChannelValueU8 B() const noexcept
+    [[nodiscard]] constexpr ColorChannelValueU8 B() const noexcept
     {
       return ColorChannelValueU8(m_b);
     }
 
     //! @brief get the alpha component
-    constexpr ColorChannelValueU8 A() const noexcept
+    [[nodiscard]] constexpr ColorChannelValueU8 A() const noexcept
     {
       return ColorChannelValueU8(m_a);
     }
 
     //! @brief get the red component
-    constexpr uint8_t RawR() const noexcept
+    [[nodiscard]] constexpr uint8_t RawR() const noexcept
     {
       return m_r;
     }
 
     //! @brief get the green component
-    constexpr uint8_t RawG() const noexcept
+    [[nodiscard]] constexpr uint8_t RawG() const noexcept
     {
       return m_g;
     }
 
     //! @brief get the blue component
-    constexpr uint8_t RawB() const noexcept
+    [[nodiscard]] constexpr uint8_t RawB() const noexcept
     {
       return m_b;
     }
 
     //! @brief get the alpha component
-    constexpr uint8_t RawA() const noexcept
+    [[nodiscard]] constexpr uint8_t RawA() const noexcept
     {
       return m_a;
     }

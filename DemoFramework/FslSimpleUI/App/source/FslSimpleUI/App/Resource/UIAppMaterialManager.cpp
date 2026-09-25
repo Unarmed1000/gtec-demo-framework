@@ -58,8 +58,8 @@ namespace Fsl::SimpleUIApp
     {
       if (bitmapFont.GetFontType() == BitmapFontType::SDF && pBasicMaterial != nullptr)
       {
-        auto sdfParams = bitmapFont.GetSdfParams();
-        float sdfSmooth = SdfFontUtil::CalcSmooth(sdfParams.DistanceRange, sdfParams.Scale);
+        const auto sdfParams = bitmapFont.GetSdfParams();
+        const float sdfSmooth = SdfFontUtil::CalcSmooth(sdfParams.DistanceRange, sdfParams.Scale);
         pBasicMaterial->Material.SetSdfSmooth(sdfSmooth);
       }
     }
@@ -99,12 +99,13 @@ namespace Fsl::SimpleUIApp
     const BasicMaterialDepthInfo transparentDepthInfo(m_options.AllowDepthBuffer, false, LocalConfig::MaterialCompareOp);
     const BasicMaterialDepthInfo& depthInfo = blendState != BlendState::Opaque ? transparentDepthInfo : opaqueDepthInfo;
 
-    BasicMaterialInfo matInfo(blendState, BasicCullMode::Back, BasicFrontFace::Clockwise, depthInfo, primitiveTopology);
-    BasicMaterialCreateInfo matCreateInfo(matInfo, m_vertexDeclaration.AsSpan());
-    auto basicMaterial = std::make_shared<BasicSpriteMaterial>(rRenderSystem.CreateMaterial(matCreateInfo, textureInfo.Texture, m_options.IsDynamic));
+    const BasicMaterialInfo matInfo(blendState, BasicCullMode::Back, BasicFrontFace::Clockwise, depthInfo, primitiveTopology);
+    const BasicMaterialCreateInfo matCreateInfo(matInfo, m_vertexDeclaration.AsSpan());
+    const auto basicMaterial =
+      std::make_shared<BasicSpriteMaterial>(rRenderSystem.CreateMaterial(matCreateInfo, textureInfo.Texture, m_options.IsDynamic));
 
-    SpriteMaterialInfo spriteMaterialInfo(spriteMaterialId, textureInfo.ExtentPx, BlendStateUtil::IsOpaque(blendState), primitiveTopology,
-                                          basicMaterial);
+    const SpriteMaterialInfo spriteMaterialInfo(spriteMaterialId, textureInfo.ExtentPx, BlendStateUtil::IsOpaque(blendState), primitiveTopology,
+                                                basicMaterial);
     m_materials.emplace(spriteMaterialId, MaterialRecord{hTexture, basicMaterial, spriteMaterialInfo, blendState});
   }
 
@@ -140,7 +141,7 @@ namespace Fsl::SimpleUIApp
 
   SpriteMaterialInfo UIAppMaterialManager::GetSpriteMaterialInfo(const SpriteMaterialId spriteMaterialId) const
   {
-    auto itrFind = m_materials.find(spriteMaterialId);
+    const auto itrFind = m_materials.find(spriteMaterialId);
     if (itrFind == m_materials.end())
     {
       throw NotFoundException(fmt::format("Unknown material {}", spriteMaterialId.Value));
@@ -151,7 +152,7 @@ namespace Fsl::SimpleUIApp
 
   UIAppMaterialInfo UIAppMaterialManager::GetMaterialInfo(const SpriteMaterialId spriteMaterialId) const
   {
-    auto itrFind = m_materials.find(spriteMaterialId);
+    const auto itrFind = m_materials.find(spriteMaterialId);
     if (itrFind == m_materials.end())
     {
       throw NotFoundException(fmt::format("Unknown material {}", spriteMaterialId.Value));
@@ -183,10 +184,10 @@ namespace Fsl::SimpleUIApp
       newMaterialInfo.Depth = !oldInfo.IsOpaque ? transparentDepthInfo : opaqueDepthInfo;
 
       // Patch the actual material with the new texture
-      auto newMaterial =
+      const auto newMaterial =
         std::make_shared<BasicSpriteMaterial>(rRenderSystem.CloneMaterial(rMaterialEntry.second.BasicMaterial->Material, newMaterialInfo));
 
-      SpriteMaterialInfo spriteMaterialInfo(oldInfo.Id, oldInfo.ExtentPx, oldInfo.IsOpaque, oldInfo.PrimitiveTopology, newMaterial);
+      const SpriteMaterialInfo spriteMaterialInfo(oldInfo.Id, oldInfo.ExtentPx, oldInfo.IsOpaque, oldInfo.PrimitiveTopology, newMaterial);
 
       rMaterialEntry.second.BasicMaterial = newMaterial;
       rMaterialEntry.second.MaterialInfo = spriteMaterialInfo;
@@ -207,15 +208,15 @@ namespace Fsl::SimpleUIApp
     const BasicMaterialDepthInfo opaqueDepthInfo(m_options.AllowDepthBuffer, m_options.AllowDepthBuffer, LocalConfig::MaterialCompareOp);
     const BasicMaterialDepthInfo transparentDepthInfo(m_options.AllowDepthBuffer, false, LocalConfig::MaterialCompareOp);
 
-    for (auto& rMatrialsPair : m_materials)
+    for (const auto& rMatrialsPair : m_materials)
     {
       const BasicMaterialInfo materialInfo = rRenderSystem.GetMaterialInfo(rMatrialsPair.second.BasicMaterial->Material);
 
       const BasicMaterialDepthInfo& depthInfo = materialInfo.Blend != BlendState::Opaque ? transparentDepthInfo : opaqueDepthInfo;
 
       // Enable custom viewport on the material
-      BasicMaterialInfo newMI(materialInfo.Blend, materialInfo.CullMode, materialInfo.CullFrontFace, depthInfo,
-                              BasicViewportMode::CustomOriginTopLeft, viewportPx);
+      const BasicMaterialInfo newMI(materialInfo.Blend, materialInfo.CullMode, materialInfo.CullFrontFace, depthInfo,
+                                    BasicViewportMode::CustomOriginTopLeft, viewportPx);
       rRenderSystem.SetMaterialInfo(rMatrialsPair.second.BasicMaterial->Material, newMI);
     }
   }
@@ -224,15 +225,15 @@ namespace Fsl::SimpleUIApp
   SpriteMaterialInfo UIAppMaterialManager::PatchMaterial(const SpriteMaterialId spriteMaterialId, const PxExtent2D newExtentPx,
                                                          [[maybe_unused]] const UIAppTextureHandle debugExpectedTextureHandle)
   {
-    auto itrFind = m_materials.find(spriteMaterialId);
+    const auto itrFind = m_materials.find(spriteMaterialId);
     if (itrFind == m_materials.end())
     {
       throw NotFoundException("Could not find material");
     }
     assert(itrFind->second.TextureHandle == debugExpectedTextureHandle);
 
-    SpriteMaterialInfo newInfo(spriteMaterialId, newExtentPx, itrFind->second.MaterialInfo.IsOpaque, itrFind->second.MaterialInfo.PrimitiveTopology,
-                               itrFind->second.BasicMaterial);
+    const SpriteMaterialInfo newInfo(spriteMaterialId, newExtentPx, itrFind->second.MaterialInfo.IsOpaque,
+                                     itrFind->second.MaterialInfo.PrimitiveTopology, itrFind->second.BasicMaterial);
     itrFind->second.MaterialInfo = newInfo;
     return newInfo;
   }
@@ -242,14 +243,14 @@ namespace Fsl::SimpleUIApp
                                                                    const BitmapFont& bitmapFont, const UIAppTextureHandle debugExpectedTextureHandle)
   {
     FSL_PARAM_NOT_USED(debugExpectedTextureHandle);
-    auto itrFind = m_materials.find(spriteMaterialId);
+    const auto itrFind = m_materials.find(spriteMaterialId);
     if (itrFind == m_materials.end())
     {
       throw NotFoundException(fmt::format("Unknown material {}", spriteMaterialId.Value));
     }
 
-    SpriteMaterialInfo newInfo(spriteMaterialId, newExtentPx, itrFind->second.MaterialInfo.IsOpaque, itrFind->second.MaterialInfo.PrimitiveTopology,
-                               itrFind->second.BasicMaterial);
+    const SpriteMaterialInfo newInfo(spriteMaterialId, newExtentPx, itrFind->second.MaterialInfo.IsOpaque,
+                                     itrFind->second.MaterialInfo.PrimitiveTopology, itrFind->second.BasicMaterial);
     itrFind->second.MaterialInfo = newInfo;
 
     DoPatchSpriteFontMaterial(bitmapFont, itrFind->second.BasicMaterial.get());
@@ -268,11 +269,11 @@ namespace Fsl::SimpleUIApp
         FSLLOG3_VERBOSE3("Patching material: {} newExtent: {}, oldExtent: {}", oldInfo.Id.Value, srcExtentPx, oldInfo.ExtentPx);
 
         // Patch the actual material with the new texture
-        auto newMaterial =
+        const auto newMaterial =
           std::make_shared<BasicSpriteMaterial>(rRenderSystem.CloneMaterial(rMaterialEntry.second.BasicMaterial->Material, srcTexture));
 
         // Patch the material info with the new information
-        SpriteMaterialInfo spriteMaterialInfo(oldInfo.Id, srcExtentPx, oldInfo.IsOpaque, oldInfo.PrimitiveTopology, newMaterial);
+        const SpriteMaterialInfo spriteMaterialInfo(oldInfo.Id, srcExtentPx, oldInfo.IsOpaque, oldInfo.PrimitiveTopology, newMaterial);
 
         rMaterialEntry.second.BasicMaterial = newMaterial;
         rMaterialEntry.second.MaterialInfo = spriteMaterialInfo;

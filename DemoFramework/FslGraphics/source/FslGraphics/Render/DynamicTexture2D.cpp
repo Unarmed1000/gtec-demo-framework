@@ -149,7 +149,7 @@ namespace Fsl
 
   void DynamicTexture2D::SetData(const ReadOnlyRawTexture& texture, const Texture2DFilterHint filterHint, const TextureFlags textureFlags)
   {
-    auto native = TryGetDynamicNativeTexture();
+    const auto native = TryGetDynamicNativeTexture();
     if (!native)
     {
       throw UsageErrorException("SetData called on a invalid object");

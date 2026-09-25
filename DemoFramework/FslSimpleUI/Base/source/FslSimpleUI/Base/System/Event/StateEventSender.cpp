@@ -122,7 +122,7 @@ namespace Fsl::UI
       {
         StateEvent lastEvent;
         {    // Callback to get a custom event for 'target window death'
-          ScopedStateChange scopedChange(*this, State::RemovingNode);
+          const ScopedStateChange scopedChange(*this, State::RemovingNode);
           lastEvent = m_fnCreateTargetWindowDeathEvent(m_lastEventInfo, m_eventPool);
           FSLLOG3_WARNING_IF(!lastEvent.Info().IsCancel(), "The WindowDeathEvent is expected to be a cancel event");
         }
@@ -229,7 +229,7 @@ namespace Fsl::UI
     assert(!theEvent.Info().IsRepeat());
 
     // start a new history
-    ScopedStateChange scopedChange(*this, State::BuildingHistory);
+    const ScopedStateChange scopedChange(*this, State::BuildingHistory);
     m_history.Begin(theEvent.Info().SourceId(), theEvent.Info().SourceSubId());
 
     if (isHitBased)

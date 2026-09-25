@@ -47,7 +47,7 @@ namespace Fsl::GLES3
   {
     if (locVertexTextureCoord == GLValues::InvalidLocation)
     {
-      std::array<GLVertexAttribLink, 2> attribLink = {
+      const std::array<GLVertexAttribLink, 2> attribLink = {
         GLVertexAttribLink(locVertexPosition, vertexDeclaration.VertexElementGetIndexOf(VertexElementUsage::Position, 0)),
         GLVertexAttribLink(locVertexColor, vertexDeclaration.VertexElementGetIndexOf(VertexElementUsage::Color, 0))};
 
@@ -62,7 +62,7 @@ namespace Fsl::GLES3
     }
 
     {
-      std::array<GLVertexAttribLink, 3> attribLink = {
+      const std::array<GLVertexAttribLink, 3> attribLink = {
         GLVertexAttribLink(locVertexPosition, vertexDeclaration.VertexElementGetIndexOf(VertexElementUsage::Position, 0)),
         GLVertexAttribLink(locVertexColor, vertexDeclaration.VertexElementGetIndexOf(VertexElementUsage::Color, 0)),
         GLVertexAttribLink(locVertexTextureCoord, vertexDeclaration.VertexElementGetIndexOf(VertexElementUsage::TextureCoordinate, 0))};

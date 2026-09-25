@@ -91,7 +91,7 @@ namespace Fsl::DataBinding
   DataBindingInstanceHandle ScopedDataSourceObject::CreateReadOnlyProperty(const DependencyPropertyDefinition& propertyDefinition,
                                                                            std::unique_ptr<DataBinding::Internal::IDependencyPropertyMethods> methods)
   {
-    auto hInstance = GetInstanceHandleOnDemand();
+    const auto hInstance = GetInstanceHandleOnDemand();
     return m_dataBinding->CreateReadOnlyDependencyObjectProperty(hInstance, propertyDefinition, std::move(methods));
   }
 

@@ -54,8 +54,8 @@ namespace Fsl
 
     ServiceGroupId CreateServiceGroup();
     ServiceGroupId CreateServiceGroup(const uint32_t groupNameUniqueId);
-    ServiceGroupId GetMainServiceGroup() const;
-    ServiceGroupId GetServiceGroupByName(const uint32_t groupNameUniqueId) const;
+    [[nodiscard]] ServiceGroupId GetMainServiceGroup() const;
+    [[nodiscard]] ServiceGroupId GetServiceGroupByName(const uint32_t groupNameUniqueId) const;
     void SetServiceGroupName(const ServiceGroupId& serviceGroupId, const uint32_t groupNameUniqueId);
 
     //! @brief Register a service factory with a specific priority.

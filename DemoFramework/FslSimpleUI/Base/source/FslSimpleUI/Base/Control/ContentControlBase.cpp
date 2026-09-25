@@ -67,7 +67,7 @@ namespace Fsl::UI
     m_isInitialized = true;
     if (m_content)
     {
-      auto uiContext = GetContext()->TheUIContext.Get();
+      const auto uiContext = GetContext()->TheUIContext.Get();
       uiContext->WindowManager->AddChild(this, m_content);
     }
   }
@@ -83,8 +83,8 @@ namespace Fsl::UI
 
   PxSize2D ContentControlBase::GetContentDesiredSizePx() const
   {
-    auto paddingPx = GetContext()->UnitConverter.ToPxThickness(m_propertyPaddingDp.Get());
-    auto paddingSizePx = paddingPx.Sum();
+    const auto paddingPx = GetContext()->UnitConverter.ToPxThickness(m_propertyPaddingDp.Get());
+    const auto paddingSizePx = paddingPx.Sum();
     return m_content ? PxSize2D::Add(m_content->DesiredSizePx(), paddingSizePx) : paddingSizePx;
   }
 
@@ -107,7 +107,7 @@ namespace Fsl::UI
       return;
     }
 
-    auto uiContext = GetContext()->TheUIContext.Get();
+    const auto uiContext = GetContext()->TheUIContext.Get();
     const auto& winMgr = uiContext->WindowManager;
 
     // Remove the old content if any
@@ -172,8 +172,8 @@ namespace Fsl::UI
 
   DataBinding::DataBindingInstanceHandle ContentControlBase::TryGetPropertyHandleNow(const DataBinding::DependencyPropertyDefinition& sourceDef)
   {
-    auto res = DataBinding::DependencyObjectHelper::TryGetPropertyHandle(this, ThisDependencyObject(), sourceDef,
-                                                                         DataBinding::PropLinkRefs(PropertyPadding, m_propertyPaddingDp));
+    const auto res = DataBinding::DependencyObjectHelper::TryGetPropertyHandle(this, ThisDependencyObject(), sourceDef,
+                                                                               DataBinding::PropLinkRefs(PropertyPadding, m_propertyPaddingDp));
     return res.IsValid() ? res : base_type::TryGetPropertyHandleNow(sourceDef);
   }
 
@@ -181,8 +181,8 @@ namespace Fsl::UI
   DataBinding::PropertySetBindingResult ContentControlBase::TrySetBindingNow(const DataBinding::DependencyPropertyDefinition& targetDef,
                                                                              const DataBinding::Binding& binding)
   {
-    auto res = DataBinding::DependencyObjectHelper::TrySetBinding(this, ThisDependencyObject(), targetDef, binding,
-                                                                  DataBinding::PropLinkRefs(PropertyPadding, m_propertyPaddingDp));
+    const auto res = DataBinding::DependencyObjectHelper::TrySetBinding(this, ThisDependencyObject(), targetDef, binding,
+                                                                        DataBinding::PropLinkRefs(PropertyPadding, m_propertyPaddingDp));
     return res != DataBinding::PropertySetBindingResult::NotFound ? res : base_type::TrySetBindingNow(targetDef, binding);
   }
 

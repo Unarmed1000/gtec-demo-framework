@@ -162,7 +162,7 @@ namespace Fsl
       }
 
       // 1. locate a free texture / create a free texture
-      auto itrFind = std::find_if(m_textures.begin(), m_textures.end(), [](const Record& entry) { return !entry.IsInUse; });
+      const auto itrFind = std::find_if(m_textures.begin(), m_textures.end(), [](const Record& entry) { return !entry.IsInUse; });
       if (itrFind == m_textures.end())
       {
         throw NotFoundException("Could not find a free texture (SetData internal error)");
@@ -176,7 +176,7 @@ namespace Fsl
       SetData(*itrFind, *m_factory, texture, filterHint, textureFlags, m_setDataSupported);
 
       // 3. tag current as 'deferred free'
-      auto deferCount = static_cast<uint32_t>(m_textures.size());
+      const auto deferCount = static_cast<uint32_t>(m_textures.size());
       m_textures[m_activeIndex].DeferredReuse = true;
       m_textures[m_activeIndex].DeferCount = deferCount > 0u ? deferCount - 1u : 1u;
 

@@ -306,7 +306,7 @@ namespace Fsl::Graphics3D
 
   std::shared_ptr<IBasicDynamicBuffer> BasicRenderSystem::CreateDynamicBuffer(const VertexDeclarationSpan vertexDeclaration, const uint32_t capacity)
   {
-    ReadOnlyFlexSpan empty(nullptr, 0, vertexDeclaration.VertexStride());
+    const ReadOnlyFlexSpan empty(nullptr, 0, vertexDeclaration.VertexStride());
     return DoCreateDynamicBuffer(BasicBufferType::Vertex, empty, capacity);
   }
 
@@ -328,7 +328,7 @@ namespace Fsl::Graphics3D
       throw UsageErrorException("CreateMaterial called on disposed object");
     }
 
-    BasicShaderHandle hShader = m_deviceResources->Shaders.CreateShader(createInfo);
+    const BasicShaderHandle hShader = m_deviceResources->Shaders.CreateShader(createInfo);
     try
     {
       return {m_handleManager, hShader};
@@ -402,7 +402,7 @@ namespace Fsl::Graphics3D
       throw UsageErrorException("GetMaterialTexture called on disposed object");
     }
 
-    auto ptr = TryGetMaterialTexture(hMaterial);
+    const auto ptr = TryGetMaterialTexture(hMaterial);
     return ptr ? ptr : throw NotFoundException("GetMaterialTexture texture not found");
   }
 
@@ -540,7 +540,7 @@ namespace Fsl::Graphics3D
     // For now we only have one texture per material
     assert(pRecord->Texture);
     assert(pRecord->Native.IsValid());
-    auto hNativeTexture = pRecord->Texture->TryGetNativeHandle();
+    const auto hNativeTexture = pRecord->Texture->TryGetNativeHandle();
     pDeviceResources->Device->CmdBindMaterial(pRecord->Native.NativeHandle, material.AsPushConstants(),
                                               ReadOnlySpan<BasicNativeTextureHandle>(&hNativeTexture, 1));
   }
@@ -565,7 +565,7 @@ namespace Fsl::Graphics3D
     }
 
     // BasicNativeBufferHandle hNative = pDeviceResources->Buffers.TryGetNativeHandle();
-    BasicNativeBufferHandle hNative = indexBuffer->TryGetNativeHandle();
+    const BasicNativeBufferHandle hNative = indexBuffer->TryGetNativeHandle();
     if (!hNative.IsValid())
     {
       FSLLOG3_ERROR("CmdBindIndexBuffer called with unknown index buffer");
@@ -595,7 +595,7 @@ namespace Fsl::Graphics3D
     }
 
     // BasicNativeBufferHandle hNative = pDeviceResources->Buffers.TryGetNativeHandle(vertexBuffer);
-    BasicNativeBufferHandle hNative = vertexBuffer->TryGetNativeHandle();
+    const BasicNativeBufferHandle hNative = vertexBuffer->TryGetNativeHandle();
     if (!hNative.IsValid())
     {
       FSLLOG3_ERROR("CmdBindVertexBuffer called with unknown vertex buffer");

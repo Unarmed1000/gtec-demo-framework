@@ -44,7 +44,7 @@ namespace Fsl::UI
   public:
     virtual ~IExternalModuleFactory() = default;
 
-    virtual ExternalModuleId GetId() const = 0;
+    [[nodiscard]] virtual ExternalModuleId GetId() const = 0;
 
     //! @brief Get the click target locater
     virtual std::shared_ptr<AExternalModule> CreateModule(const ExternalModuleCreateInfo& createInfo) = 0;

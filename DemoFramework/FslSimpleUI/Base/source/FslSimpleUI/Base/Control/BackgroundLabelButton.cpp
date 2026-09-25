@@ -363,7 +363,7 @@ namespace Fsl::UI
   {
     FSL_PARAM_NOT_USED(availableSizePx);
 
-    auto paddingPx = m_windowContext->UnitConverter.ToPxThickness(m_propertyPaddingDp.Get());
+    const auto paddingPx = m_windowContext->UnitConverter.ToPxThickness(m_propertyPaddingDp.Get());
     m_labelMeasureInfo = m_fontMesh.ComplexMeasure(m_propertyContent.Get());
     PxSize2D desiredSizePx = paddingPx.Sum() + m_labelMeasureInfo.MeasureSizePx;
 
@@ -383,7 +383,7 @@ namespace Fsl::UI
 
   DataBinding::DataBindingInstanceHandle BackgroundLabelButton::TryGetPropertyHandleNow(const DataBinding::DependencyPropertyDefinition& sourceDef)
   {
-    auto res = DataBinding::DependencyObjectHelper::TryGetPropertyHandle(
+    const auto res = DataBinding::DependencyObjectHelper::TryGetPropertyHandle(
       this, ThisDependencyObject(), sourceDef,
       DataBinding::PropLinkRefs(PropertyBackgroundHoverOverlayColorUp, m_propertyBackgroundHoverOverlayColorUp.ExternalColor),
       DataBinding::PropLinkRefs(PropertyBackgroundHoverOverlayColorDown, m_propertyBackgroundHoverOverlayColorDown.ExternalColor),
@@ -405,7 +405,7 @@ namespace Fsl::UI
   DataBinding::PropertySetBindingResult BackgroundLabelButton::TrySetBindingNow(const DataBinding::DependencyPropertyDefinition& targetDef,
                                                                                 const DataBinding::Binding& binding)
   {
-    auto res = DataBinding::DependencyObjectHelper::TrySetBinding(
+    const auto res = DataBinding::DependencyObjectHelper::TrySetBinding(
       this, ThisDependencyObject(), targetDef, binding,
       DataBinding::PropLinkRefs(PropertyBackgroundHoverOverlayColorUp, m_propertyBackgroundHoverOverlayColorUp.ExternalColor),
       DataBinding::PropLinkRefs(PropertyBackgroundHoverOverlayColorDown, m_propertyBackgroundHoverOverlayColorDown.ExternalColor),

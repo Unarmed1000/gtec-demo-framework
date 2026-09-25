@@ -93,7 +93,7 @@ namespace Fsl
     public:
       explicit ChartCanvas1D(const SpriteUnitConverter& unitConverter);
 
-      MinMax<uint32_t> GetAxisRange() const noexcept
+      [[nodiscard]] MinMax<uint32_t> GetAxisRange() const noexcept
       {
         return m_axisRange;
       }
@@ -109,7 +109,7 @@ namespace Fsl
       }
 
 
-      LayoutOrientation GetLayoutOrientation() const
+      [[nodiscard]] LayoutOrientation GetLayoutOrientation() const
       {
         return m_orientation;
       }
@@ -119,55 +119,55 @@ namespace Fsl
 
       //! @brief  Transforms a value on the canvas x axis to its pixel coordinate
       //! @note   Cant be noexcept because std::round is not noexcept
-      inline PxValue CanvasAxisToPx(const int32_t value) const
+      [[nodiscard]] inline PxValue CanvasAxisToPx(const int32_t value) const
       {
         return m_layoutCache.UnitConverter.ToPxValue(CanvasAxisToDp(value));
       }
 
       //! @brief  Transforms a value on the canvas x axis to its pixel coordinate
       //! @note   Cant be noexcept because std::round is not noexcept
-      inline PxValue CanvasAxisToPx(const uint32_t value) const
+      [[nodiscard]] inline PxValue CanvasAxisToPx(const uint32_t value) const
       {
         return m_layoutCache.UnitConverter.ToPxValue(CanvasAxisToDp(value));
       }
 
       //! @brief  Transforms a value on the canvas x axis to its pixel coordinate
       //! @note   Cant be noexcept because std::round is not noexcept
-      inline PxValue CanvasAxisToPx(const float value) const
+      [[nodiscard]] inline PxValue CanvasAxisToPx(const float value) const
       {
         return m_layoutCache.UnitConverter.ToPxValue(CanvasAxisToDp(value));
       }
 
       //! @brief  Transforms a value on the canvas x axis to its pixel coordinate
       //! @note   Cant be noexcept because std::round is not noexcept
-      inline PxValue CanvasAxisToPx(const double value) const
+      [[nodiscard]] inline PxValue CanvasAxisToPx(const double value) const
       {
         return m_layoutCache.UnitConverter.ToPxValue(CanvasAxisToDp(value));
       }
 
-      inline DpValueF CanvasAxisToDp(const int32_t value) const noexcept
+      [[nodiscard]] inline DpValueF CanvasAxisToDp(const int32_t value) const noexcept
       {
         return DpValueF(static_cast<float>(value) * m_layoutCache.Arrange.LayoutScale.X);
       }
 
 
-      inline DpValueF CanvasAxisToDp(const uint32_t value) const noexcept
+      [[nodiscard]] inline DpValueF CanvasAxisToDp(const uint32_t value) const noexcept
       {
         return DpValueF(static_cast<float>(value) * m_layoutCache.Arrange.LayoutScale.X);
       }
 
 
-      inline DpValueF CanvasAxisToDp(const float value) const noexcept
+      [[nodiscard]] inline DpValueF CanvasAxisToDp(const float value) const noexcept
       {
         return DpValueF(value * m_layoutCache.Arrange.LayoutScale.X);
       }
 
-      inline DpValueF CanvasAxisToDp(const double value) const noexcept
+      [[nodiscard]] inline DpValueF CanvasAxisToDp(const double value) const noexcept
       {
         return DpValueF(static_cast<float>(value * m_layoutCache.Arrange.LayoutScale.X));
       }
 
-      inline PxSize1D SizeOfOneDpInPixels() const noexcept
+      [[nodiscard]] inline PxSize1D SizeOfOneDpInPixels() const noexcept
       {
         return m_layoutCache.SizeOfOneDpInPixels;
       }
@@ -180,7 +180,7 @@ namespace Fsl
       void OnResolutionChanged(const SpriteUnitConverter& unitConverter);
 
     private:
-      PxSize1D CalculateAxisMinimumPixelSize() const;
+      [[nodiscard]] PxSize1D CalculateAxisMinimumPixelSize() const;
     };
   }
 }

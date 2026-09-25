@@ -57,7 +57,7 @@ namespace Fsl
     static Priority Max();
 
     //! @brief Get the priority value
-    constexpr int32_t GetValue() const noexcept
+    [[nodiscard]] constexpr int32_t GetValue() const noexcept
     {
       return m_value;
     }

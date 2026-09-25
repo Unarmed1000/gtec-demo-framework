@@ -49,7 +49,7 @@ namespace Fsl
     }
 
 
-    std::shared_ptr<AServiceOptionParser> GetOptionParser() const final
+    [[nodiscard]] std::shared_ptr<AServiceOptionParser> GetOptionParser() const final
     {
       return {};
     }

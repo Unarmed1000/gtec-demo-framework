@@ -88,7 +88,7 @@ namespace Fsl
     }
 
 
-    bool IsValid() const
+    [[nodiscard]] bool IsValid() const
     {
       if (!TheProviderId.IsValid() && LaunchType != ServiceLaunchType::MultipleProviderTag)
       {

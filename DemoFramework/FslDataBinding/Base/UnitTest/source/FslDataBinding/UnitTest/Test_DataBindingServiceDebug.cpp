@@ -54,7 +54,7 @@ namespace
 
 TEST_F(Test_DataBindingServiceDebug, SetBinding_OneWay_DepProperty_DepProperty)
 {
-  auto dataBindingService = std::make_shared<DataBinding::DataBindingService>();
+  const auto dataBindingService = std::make_shared<DataBinding::DataBindingService>();
 
   UTDependencyObject t0(dataBindingService);
   UTDependencyObject t1(dataBindingService);
@@ -84,7 +84,7 @@ TEST_F(Test_DataBindingServiceDebug, SetBinding_OneWay_DepProperty_DepProperty)
   EXPECT_EQ(newValue1, t0.GetProperty0Value());
   EXPECT_EQ(newValue1, t1.GetProperty0Value());
 
-  auto res = DataBinding::DataBindingServiceDebug::TryToDotFormatString(*dataBindingService);
+  const auto res = DataBinding::DataBindingServiceDebug::TryToDotFormatString(*dataBindingService);
   EXPECT_TRUE(res.has_value());
 
   EXPECT_TRUE(DataBinding::DataBindingServiceDebug::TryToDotFormatFile(GetTestPath(IO::PathView("DataBinding_OneWay_DepProperty_DepProperty.dot")),
@@ -94,7 +94,7 @@ TEST_F(Test_DataBindingServiceDebug, SetBinding_OneWay_DepProperty_DepProperty)
 
 TEST_F(Test_DataBindingServiceDebug, SetBinding_TwoWay_DepProperty_DepProperty)
 {
-  auto dataBindingService = std::make_shared<DataBinding::DataBindingService>();
+  const auto dataBindingService = std::make_shared<DataBinding::DataBindingService>();
 
   UTDependencyObject t0(dataBindingService);
   UTDependencyObject t1(dataBindingService);
@@ -124,7 +124,7 @@ TEST_F(Test_DataBindingServiceDebug, SetBinding_TwoWay_DepProperty_DepProperty)
   EXPECT_EQ(newValue1, t0.GetProperty0Value());
   EXPECT_EQ(newValue1, t1.GetProperty0Value());
 
-  auto res = DataBinding::DataBindingServiceDebug::TryToDotFormatString(*dataBindingService);
+  const auto res = DataBinding::DataBindingServiceDebug::TryToDotFormatString(*dataBindingService);
   EXPECT_TRUE(res.has_value());
 
   EXPECT_TRUE(DataBinding::DataBindingServiceDebug::TryToDotFormatFile(GetTestPath(IO::PathView("DataBinding_TwoWay_DepProperty_DepProperty.dot")),
@@ -134,7 +134,7 @@ TEST_F(Test_DataBindingServiceDebug, SetBinding_TwoWay_DepProperty_DepProperty)
 
 TEST_F(Test_DataBindingServiceDebug, SetBinding_OneWay_Convert_DepProperty_DepProperty)
 {
-  auto dataBindingService = std::make_shared<DataBinding::DataBindingService>();
+  const auto dataBindingService = std::make_shared<DataBinding::DataBindingService>();
 
   UTDependencyObject src(dataBindingService);
   UTDependencyObject dst(dataBindingService);
@@ -157,7 +157,7 @@ TEST_F(Test_DataBindingServiceDebug, SetBinding_OneWay_Convert_DepProperty_DepPr
 
   // Binding will change the target to match the source on the next execute
 
-  auto convertingBinding =
+  const auto convertingBinding =
     std::make_shared<Fsl::DataBinding::ConverterBinding<uint32_t, float>>([](const float value) { return static_cast<uint32_t>(std::round(value)); });
 
   EXPECT_TRUE(
@@ -180,7 +180,7 @@ TEST_F(Test_DataBindingServiceDebug, SetBinding_OneWay_Convert_DepProperty_DepPr
   EXPECT_EQ(dstConvertedValue, dst.GetProperty0Value());
   EXPECT_EQ(dstDefaultValue, dst.GetProperty1Value());
 
-  auto res = DataBinding::DataBindingServiceDebug::TryToDotFormatString(*dataBindingService);
+  const auto res = DataBinding::DataBindingServiceDebug::TryToDotFormatString(*dataBindingService);
   EXPECT_TRUE(res.has_value());
 
   EXPECT_TRUE(DataBinding::DataBindingServiceDebug::TryToDotFormatFile(
@@ -190,7 +190,7 @@ TEST_F(Test_DataBindingServiceDebug, SetBinding_OneWay_Convert_DepProperty_DepPr
 
 TEST_F(Test_DataBindingServiceDebug, SetBinding_OneWay_Convert_DepProperty_Multi_DepProperty_DepProperty)
 {
-  auto dataBindingService = std::make_shared<DataBinding::DataBindingService>();
+  const auto dataBindingService = std::make_shared<DataBinding::DataBindingService>();
 
   UTDependencyObject src0(dataBindingService);
   UTDependencyObject src1(dataBindingService);
@@ -221,7 +221,7 @@ TEST_F(Test_DataBindingServiceDebug, SetBinding_OneWay_Convert_DepProperty_Multi
 
   // Binding will change the target to match the source on the next execute
 
-  auto convertingBinding = std::make_shared<Fsl::DataBinding::MultiConverterBinding<uint32_t, float, float>>(
+  const auto convertingBinding = std::make_shared<Fsl::DataBinding::MultiConverterBinding<uint32_t, float, float>>(
     [](const float value0, const float value1) { return static_cast<uint32_t>(std::round(value0 + value1)); });
 
   EXPECT_TRUE(
@@ -248,7 +248,7 @@ TEST_F(Test_DataBindingServiceDebug, SetBinding_OneWay_Convert_DepProperty_Multi
   EXPECT_EQ(dstConvertedValue, dst.GetProperty0Value());
   EXPECT_EQ(dstDefaultValue, dst.GetProperty1Value());
 
-  auto res = DataBinding::DataBindingServiceDebug::TryToDotFormatString(*dataBindingService);
+  const auto res = DataBinding::DataBindingServiceDebug::TryToDotFormatString(*dataBindingService);
   EXPECT_TRUE(res.has_value());
 
   EXPECT_TRUE(DataBinding::DataBindingServiceDebug::TryToDotFormatFile(

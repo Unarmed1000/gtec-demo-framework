@@ -49,7 +49,7 @@ namespace Fsl::DataBinding
     ScopedDependencyObject m_dependencyObject;
 
   protected:
-    inline const ScopedDependencyObject& ThisDependencyObject() const noexcept
+    [[nodiscard]] inline const ScopedDependencyObject& ThisDependencyObject() const noexcept
     {
       return m_dependencyObject;
     }

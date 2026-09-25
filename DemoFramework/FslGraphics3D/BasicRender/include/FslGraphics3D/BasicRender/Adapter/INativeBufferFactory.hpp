@@ -45,7 +45,7 @@ namespace Fsl::Graphics3D
   public:
     virtual ~INativeBufferFactory() noexcept = default;
 
-    virtual NativeBufferFactoryCaps GetBufferCaps() const noexcept = 0;
+    [[nodiscard]] virtual NativeBufferFactoryCaps GetBufferCaps() const noexcept = 0;
 
     virtual BasicNativeBufferHandle CreateBuffer(const BasicBufferType bufferType, ReadOnlyFlexSpan bufferData, const uint32_t bufferElementCapacity,
                                                  const bool isDynamic) = 0;

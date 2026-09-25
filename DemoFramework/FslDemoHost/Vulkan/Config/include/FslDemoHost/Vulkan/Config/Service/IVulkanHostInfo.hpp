@@ -42,13 +42,13 @@ namespace Fsl
   public:
     virtual ~IVulkanHostInfo() = default;
 
-    virtual VkInstance GetInstance() const = 0;
+    [[nodiscard]] virtual VkInstance GetInstance() const = 0;
 
-    virtual Vulkan::VUPhysicalDeviceRecord GetPhysicalDevice() const = 0;
+    [[nodiscard]] virtual Vulkan::VUPhysicalDeviceRecord GetPhysicalDevice() const = 0;
 
-    virtual VkSurfaceKHR GetSurfaceKHR() const = 0;
+    [[nodiscard]] virtual VkSurfaceKHR GetSurfaceKHR() const = 0;
 
-    virtual VulkanLaunchOptions GetLaunchOptions() const = 0;
+    [[nodiscard]] virtual VulkanLaunchOptions GetLaunchOptions() const = 0;
   };
 }
 

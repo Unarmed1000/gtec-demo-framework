@@ -81,7 +81,7 @@ namespace Fsl::Vulkan::PhysicalDeviceUtil
                                          const VkImageTiling tiling, const VkFormatFeatureFlags features)
   {
     assert(physicalDevice != VK_NULL_HANDLE);
-    for (VkFormat format : candidates)
+    for (const VkFormat format : candidates)
     {
       VkFormatProperties props;
       vkGetPhysicalDeviceFormatProperties(physicalDevice, format, &props);
@@ -104,7 +104,7 @@ namespace Fsl::Vulkan::PhysicalDeviceUtil
   inline VkFormat FindSupportedFormat(const VkPhysicalDevice physicalDevice, const std::array<VkFormat, TSize>& candidates,
                                       const VkImageTiling tiling, const VkFormatFeatureFlags features)
   {
-    auto foundFormat = TryFindSupportedFormat(physicalDevice, candidates, tiling, features);
+    const auto foundFormat = TryFindSupportedFormat(physicalDevice, candidates, tiling, features);
     if (foundFormat != VK_FORMAT_UNDEFINED)
     {
       return foundFormat;

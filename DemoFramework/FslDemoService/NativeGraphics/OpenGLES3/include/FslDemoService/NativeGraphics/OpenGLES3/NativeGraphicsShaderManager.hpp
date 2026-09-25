@@ -70,7 +70,7 @@ namespace Fsl::GLES3
 
     bool Destroy(const BasicNativeShaderHandle handle);
 
-    const ShaderRecord& Get(const BasicNativeShaderHandle hShader) const
+    [[nodiscard]] const ShaderRecord& Get(const BasicNativeShaderHandle hShader) const
     {
       return m_records.Get(hShader.Value);
     }

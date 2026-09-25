@@ -39,17 +39,17 @@ namespace Fsl::UI
   {
   public:
     //! @brief Check if this is a begin event
-    bool IsBegin() const noexcept
+    [[nodiscard]] bool IsBegin() const noexcept
     {
       return GetState() == EventTransactionState::Begin;
     }
 
-    bool IsCanceled() const noexcept
+    [[nodiscard]] bool IsCanceled() const noexcept
     {
       return GetState() == EventTransactionState::Canceled;
     }
 
-    bool IsEnd() const noexcept
+    [[nodiscard]] bool IsEnd() const noexcept
     {
       return GetState() == EventTransactionState::End;
     }

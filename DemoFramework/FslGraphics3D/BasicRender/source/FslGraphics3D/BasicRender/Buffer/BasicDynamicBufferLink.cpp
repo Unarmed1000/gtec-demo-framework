@@ -182,7 +182,7 @@ namespace Fsl::Graphics3D
     }
 
     // 1. locate a free buffer / create a free buffer
-    auto itrFind = std::find_if(m_buffers.begin(), m_buffers.end(), [](const Record& entry) { return !entry.IsInUse; });
+    const auto itrFind = std::find_if(m_buffers.begin(), m_buffers.end(), [](const Record& entry) { return !entry.IsInUse; });
     if (itrFind == m_buffers.end())
     {
       throw NotFoundException("Could not find a free buffer (SetData internal error)");

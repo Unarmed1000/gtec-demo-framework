@@ -38,6 +38,7 @@
 #include <FslGraphics/Vertices/VertexSpan.hpp>
 #include <algorithm>
 #include <cassert>
+#include <utility>
 #include <vector>
 
 namespace Fsl
@@ -115,7 +116,7 @@ namespace Fsl
         return IsValidVertexPointers(quadVertices) && IsValidSegmentPointers(segments);
       }
 
-      inline bool IsValidVertexPointers(const std::vector<vertex_type>& quadVertices) const
+      [[nodiscard]] inline bool IsValidVertexPointers(const std::vector<vertex_type>& quadVertices) const
       {
         return (pNextVertexOpaque != nullptr && pStartVertexTransp != nullptr && pEndVertexOpaque != nullptr && pEndVertexTransp != nullptr &&
                 pNextVertexOpaque >= quadVertices.data() && pNextVertexOpaque <= pEndVertexOpaque &&
@@ -149,7 +150,8 @@ namespace Fsl
       bool IsValid(const std::vector<segment_type>& segments) const
       {
         return (ppNextDstVertex != nullptr && pFirstDstSegment != nullptr && ppCurrentDstSegment != nullptr && (*ppNextDstVertex) != nullptr &&
-                (*ppCurrentDstSegment) != nullptr && (VertexAdd == VerticesPerQuad || VertexAdd == -static_cast<int32_t>(VerticesPerQuad)) &&
+                (*ppCurrentDstSegment) != nullptr &&
+                (std::cmp_equal(VertexAdd, VerticesPerQuad) || VertexAdd == -static_cast<int32_t>(VerticesPerQuad)) &&
                 IsValidFirstDstSegment(segments));
       }
 
@@ -202,7 +204,7 @@ namespace Fsl
     ~StrategySortByTransparency() = default;
 
 
-    BlendState GetActiveBlendState() const
+    [[nodiscard]] BlendState GetActiveBlendState() const
     {
       // If these assert fire it means we have a internal error
       assert(IsValid());
@@ -212,7 +214,7 @@ namespace Fsl
       return (*m_addQuad.ppCurrentDstSegment)->ActiveBlendState;
     }
 
-    const BatchSdfRenderConfig& GetActiveSdfRenderConfig() const
+    [[nodiscard]] const BatchSdfRenderConfig& GetActiveSdfRenderConfig() const
     {
       // If these assert fire it means we have a internal error
       assert(IsValid());
@@ -234,7 +236,7 @@ namespace Fsl
     }
 
 
-    uint32_t GetCapacity() const
+    [[nodiscard]] uint32_t GetCapacity() const
     {
       assert(IsValid());
       // It must be >= four because we require room for at least one opaque and one transparent quad and one safety allocation in both ends
@@ -243,7 +245,7 @@ namespace Fsl
     }
 
 
-    uint32_t GetOpaqueSegmentCount() const
+    [[nodiscard]] uint32_t GetOpaqueSegmentCount() const
     {
       // If these assert fire it means we have a internal error
       assert(IsValid());
@@ -257,7 +259,7 @@ namespace Fsl
     }
 
 
-    uint32_t GetTransparentSegmentCount() const
+    [[nodiscard]] uint32_t GetTransparentSegmentCount() const
     {
       // If these assert fire it means we have a internal error
       assert(IsValid());
@@ -271,7 +273,7 @@ namespace Fsl
     }
 
 
-    uint32_t GetOpaqueVertexCount() const
+    [[nodiscard]] uint32_t GetOpaqueVertexCount() const
     {
       // If these assert fire it means we have a internal error
       assert(IsValid());
@@ -285,7 +287,7 @@ namespace Fsl
     }
 
 
-    uint32_t GetTransparentVertexCount() const
+    [[nodiscard]] uint32_t GetTransparentVertexCount() const
     {
       // If these assert fire it means we have a internal error
       assert(IsValid());
@@ -297,7 +299,7 @@ namespace Fsl
       return static_cast<uint32_t>((m_buffers.pEndVertexTransp - m_buffers.pStartVertexTransp));
     }
 
-    uint32_t GetOpaqueQuadCount() const
+    [[nodiscard]] uint32_t GetOpaqueQuadCount() const
     {
       // If these assert fire it means we have a internal error
       assert(IsValid());
@@ -305,7 +307,7 @@ namespace Fsl
       return GetOpaqueVertexCount() / VerticesPerQuad;
     }
 
-    uint32_t GetTransparentQuadCount() const
+    [[nodiscard]] uint32_t GetTransparentQuadCount() const
     {
       // If these assert fire it means we have a internal error
       assert(IsValid());
@@ -313,7 +315,7 @@ namespace Fsl
       return GetTransparentVertexCount() / VerticesPerQuad;
     }
 
-    vertex_span_type GetOpaqueSpan() const
+    [[nodiscard]] vertex_span_type GetOpaqueSpan() const
     {
       // If these assert fire it means we have a internal error
       assert(IsValid());
@@ -334,7 +336,7 @@ namespace Fsl
       return vertex_span_type(pStartVertex, vertexCount);
     }
 
-    vertex_span_type GetTransparentSpan() const
+    [[nodiscard]] vertex_span_type GetTransparentSpan() const
     {
       // If these assert fire it means we have a internal error
       assert(IsValid());
@@ -672,7 +674,7 @@ namespace Fsl
       }
     }
 
-    inline bool IsValid() const
+    [[nodiscard]] inline bool IsValid() const
     {
       // Sanity checks
       return (m_segments.size() >= ((MinQuads + Safety) * NumBuffers)) && ((m_quadVertices.size() % NumBuffers) == 0) &&

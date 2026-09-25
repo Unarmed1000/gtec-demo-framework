@@ -58,31 +58,31 @@ namespace Fsl::Graphics3D
     virtual ~Mesh() = default;
 
     //! @brief Get the primitive type
-    PrimitiveType GetPrimitiveType() const
+    [[nodiscard]] PrimitiveType GetPrimitiveType() const
     {
       return m_primitiveType;
     }
 
     //! @brief Get the number of vertices.
-    uint32_t GetVertexCount() const
+    [[nodiscard]] uint32_t GetVertexCount() const
     {
       return m_vertexCount;
     }
 
     //! @brief Get the number of indices.
-    uint32_t GetIndexCount() const
+    [[nodiscard]] uint32_t GetIndexCount() const
     {
       return m_indexCount;
     }
 
     //! @brief Get the number of primitives
-    uint32_t GetPrimitiveCount() const
+    [[nodiscard]] uint32_t GetPrimitiveCount() const
     {
       return m_primitiveCount;
     }
 
     //! @brief Get the material index
-    uint32_t GetMaterialIndex() const
+    [[nodiscard]] uint32_t GetMaterialIndex() const
     {
       return m_materialIndex;
     }
@@ -91,7 +91,7 @@ namespace Fsl::Graphics3D
     void SetMaterialIndex(const uint32_t materialIndex);
 
     //! @brief Get the name of this mesh
-    const UTF8String& GetName() const;
+    [[nodiscard]] const UTF8String& GetName() const;
 
     //! @brief Get the name of this mesh
     void SetName(const UTF8String& name);
@@ -101,14 +101,14 @@ namespace Fsl::Graphics3D
     virtual void Reset(const std::size_t vertexCount, const std::size_t indexCount, const PrimitiveType primitiveType);
 
     //! @brief Get the vertex declaration span
-    virtual VertexDeclarationSpan AsVertexDeclarationSpan() const = 0;
+    [[nodiscard]] virtual VertexDeclarationSpan AsVertexDeclarationSpan() const = 0;
     //! @brief Get readonly direct access to the vertex data
-    virtual RawMeshContent GenericDirectAccess() const = 0;
+    [[nodiscard]] virtual RawMeshContent GenericDirectAccess() const = 0;
     //! @brief Get direct access to the vertex data
     virtual RawMeshContentEx GenericDirectAccess() = 0;
 
     //! @brief Check if the mesh contains valid data
-    bool IsValid() const;
+    [[nodiscard]] bool IsValid() const;
 
   protected:
   };

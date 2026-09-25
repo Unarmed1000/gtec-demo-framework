@@ -42,7 +42,7 @@ namespace
 
 TEST(TestControlLogic_SliderLogic, Construct)
 {
-  UI::SliderLogic<uint32_t> logic;
+  const UI::SliderLogic<uint32_t> logic;
 
   EXPECT_EQ(0u, logic.Min());
   EXPECT_EQ(0u, logic.Max());
@@ -56,7 +56,7 @@ TEST(TestControlLogic_SliderLogic, Construct)
   EXPECT_EQ(0u, logic.GetValue());
   EXPECT_EQ(0u, logic.GetTickFrequency());
 
-  auto spanInfo = logic.GetSpanInfo();
+  const auto spanInfo = logic.GetSpanInfo();
   EXPECT_EQ(PxValue(0), spanInfo.GetStartPx());
   EXPECT_EQ(PxValue(0), spanInfo.GetLengthPx());
   EXPECT_FALSE(spanInfo.IsReversedDirection());
@@ -66,8 +66,8 @@ TEST(TestControlLogic_SliderLogic, Construct_Span_MinValue)
 {
   const PxValue startPx(100);
   const auto lengthPx = PxSize1D::Create(201);
-  UI::SliderConstrainedValue<uint32_t> constrainedValue(1000, 2000);
-  UI::SliderLogic<uint32_t> logic(constrainedValue, UI::SliderPixelSpanInfo(startPx, lengthPx, false));
+  const UI::SliderConstrainedValue<uint32_t> constrainedValue(1000, 2000);
+  const UI::SliderLogic<uint32_t> logic(constrainedValue, UI::SliderPixelSpanInfo(startPx, lengthPx, false));
 
   EXPECT_EQ(constrainedValue.Min(), logic.Min());
   EXPECT_EQ(constrainedValue.Max(), logic.Max());
@@ -80,7 +80,7 @@ TEST(TestControlLogic_SliderLogic, Construct_Span_MinValue)
   EXPECT_EQ(startPx, logic.GetPositionPx());
   EXPECT_EQ(0u, logic.GetTickFrequency());
 
-  auto spanInfo = logic.GetSpanInfo();
+  const auto spanInfo = logic.GetSpanInfo();
   EXPECT_EQ(startPx, spanInfo.GetStartPx());
   EXPECT_EQ(lengthPx, spanInfo.GetLengthPx());
   EXPECT_FALSE(spanInfo.IsReversedDirection());
@@ -90,8 +90,8 @@ TEST(TestControlLogic_SliderLogic, Construct_Span_MaxValue)
 {
   const PxValue startPx(100);
   const auto lengthPx = PxSize1D::Create(201);
-  UI::SliderConstrainedValue<uint32_t> constrainedValue(2000, 1000, 2000);
-  UI::SliderLogic<uint32_t> logic(constrainedValue, UI::SliderPixelSpanInfo(startPx, lengthPx, false));
+  const UI::SliderConstrainedValue<uint32_t> constrainedValue(2000, 1000, 2000);
+  const UI::SliderLogic<uint32_t> logic(constrainedValue, UI::SliderPixelSpanInfo(startPx, lengthPx, false));
 
   EXPECT_EQ(constrainedValue.Min(), logic.Min());
   EXPECT_EQ(constrainedValue.Max(), logic.Max());
@@ -104,7 +104,7 @@ TEST(TestControlLogic_SliderLogic, Construct_Span_MaxValue)
   EXPECT_EQ(startPx + lengthPx - PxValue(1), logic.GetPositionPx());
   EXPECT_EQ(0u, logic.GetTickFrequency());
 
-  auto spanInfo = logic.GetSpanInfo();
+  const auto spanInfo = logic.GetSpanInfo();
   EXPECT_EQ(startPx, spanInfo.GetStartPx());
   EXPECT_EQ(lengthPx, spanInfo.GetLengthPx());
   EXPECT_FALSE(spanInfo.IsReversedDirection());
@@ -115,8 +115,8 @@ TEST(TestControlLogic_SliderLogic, Construct_Span_Value)
 {
   const PxValue startPx(100);
   const auto lengthPx = PxSize1D::Create(201);
-  UI::SliderConstrainedValue<uint32_t> constrainedValue(1250, 1000, 2000);
-  UI::SliderLogic<uint32_t> logic(constrainedValue, UI::SliderPixelSpanInfo(startPx, lengthPx, false));
+  const UI::SliderConstrainedValue<uint32_t> constrainedValue(1250, 1000, 2000);
+  const UI::SliderLogic<uint32_t> logic(constrainedValue, UI::SliderPixelSpanInfo(startPx, lengthPx, false));
 
   EXPECT_EQ(constrainedValue.Min(), logic.Min());
   EXPECT_EQ(constrainedValue.Max(), logic.Max());
@@ -129,7 +129,7 @@ TEST(TestControlLogic_SliderLogic, Construct_Span_Value)
   EXPECT_EQ(startPx + PxValue(50), logic.GetPositionPx());
   EXPECT_EQ(0u, logic.GetTickFrequency());
 
-  auto spanInfo = logic.GetSpanInfo();
+  const auto spanInfo = logic.GetSpanInfo();
   EXPECT_EQ(startPx, spanInfo.GetStartPx());
   EXPECT_EQ(lengthPx, spanInfo.GetLengthPx());
   EXPECT_FALSE(spanInfo.IsReversedDirection());
@@ -142,7 +142,7 @@ TEST(TestControlLogic_SliderLogic, SetPercentage_InRange_MinValue)
 {
   const PxValue startPx(100);
   const auto lengthPx = PxSize1D::Create(201);
-  UI::SliderConstrainedValue<uint32_t> constrainedValue(1000, 2000);
+  const UI::SliderConstrainedValue<uint32_t> constrainedValue(1000, 2000);
   UI::SliderLogic<uint32_t> logic(constrainedValue, UI::SliderPixelSpanInfo(startPx, lengthPx));
 
   EXPECT_TRUE(logic.SetPercentage(1.0f));
@@ -167,7 +167,7 @@ TEST(TestControlLogic_SliderLogic, SetPercentage_InRange_MiddleValue)
 {
   const PxValue startPx(100);
   const auto lengthPx = PxSize1D::Create(201);
-  UI::SliderConstrainedValue<uint32_t> constrainedValue(1000, 2000);
+  const UI::SliderConstrainedValue<uint32_t> constrainedValue(1000, 2000);
   UI::SliderLogic<uint32_t> logic(constrainedValue, UI::SliderPixelSpanInfo(startPx, lengthPx));
 
   EXPECT_TRUE(logic.SetPercentage(0.5f));
@@ -192,7 +192,7 @@ TEST(TestControlLogic_SliderLogic, SetPercentage_InRange_MaxValue)
 {
   const PxValue startPx(100);
   const auto lengthPx = PxSize1D::Create(201);
-  UI::SliderConstrainedValue<uint32_t> constrainedValue(1000, 2000);
+  const UI::SliderConstrainedValue<uint32_t> constrainedValue(1000, 2000);
   UI::SliderLogic<uint32_t> logic(constrainedValue, UI::SliderPixelSpanInfo(startPx, lengthPx));
 
   EXPECT_TRUE(logic.SetPercentage(1.0f));
@@ -217,7 +217,7 @@ TEST(TestControlLogic_SliderLogic, SetPercentage_OutOfRange_Low)
 {
   const PxValue startPx(100);
   const auto lengthPx = PxSize1D::Create(201);
-  UI::SliderConstrainedValue<uint32_t> constrainedValue(1000, 2000);
+  const UI::SliderConstrainedValue<uint32_t> constrainedValue(1000, 2000);
   UI::SliderLogic<uint32_t> logic(constrainedValue, UI::SliderPixelSpanInfo(startPx, lengthPx));
 
   EXPECT_TRUE(logic.SetPercentage(1.0f));
@@ -242,7 +242,7 @@ TEST(TestControlLogic_SliderLogic, SetPercentage_OutOfRange_High)
 {
   const PxValue startPx(100);
   const auto lengthPx = PxSize1D::Create(201);
-  UI::SliderConstrainedValue<uint32_t> constrainedValue(1000, 2000);
+  const UI::SliderConstrainedValue<uint32_t> constrainedValue(1000, 2000);
   UI::SliderLogic<uint32_t> logic(constrainedValue, UI::SliderPixelSpanInfo(startPx, lengthPx));
 
   EXPECT_TRUE(logic.SetPercentage(1.2f));
@@ -269,7 +269,7 @@ TEST(TestControlLogic_SliderLogic, TryBeginDrag_InRange_MinA)
 {
   const PxValue startPx(100);
   const auto lengthPx = PxSize1D::Create(201);
-  UI::SliderConstrainedValue<uint32_t> constrainedValue(1000, 2000);
+  const UI::SliderConstrainedValue<uint32_t> constrainedValue(1000, 2000);
   UI::SliderLogic<uint32_t> logic(constrainedValue, UI::SliderPixelSpanInfo(startPx, lengthPx));
 
   EXPECT_TRUE(logic.TryBeginDrag(startPx));
@@ -284,7 +284,7 @@ TEST(TestControlLogic_SliderLogic, TryBeginDrag_InRange_MinB)
 {
   const PxValue startPx(100);
   const auto lengthPx = PxSize1D::Create(201);
-  UI::SliderConstrainedValue<uint32_t> constrainedValue(1000, 2000);
+  const UI::SliderConstrainedValue<uint32_t> constrainedValue(1000, 2000);
   UI::SliderLogic<uint32_t> logic(constrainedValue, UI::SliderPixelSpanInfo(startPx, lengthPx));
   EXPECT_TRUE(logic.SetPercentage(0.5f));
 
@@ -299,7 +299,7 @@ TEST(TestControlLogic_SliderLogic, TryBeginDrag_InRange_Middle)
 {
   const PxValue startPx(100);
   const auto lengthPx = PxSize1D::Create(201);
-  UI::SliderConstrainedValue<uint32_t> constrainedValue(1000, 2000);
+  const UI::SliderConstrainedValue<uint32_t> constrainedValue(1000, 2000);
   UI::SliderLogic<uint32_t> logic(constrainedValue, UI::SliderPixelSpanInfo(startPx, lengthPx));
 
   EXPECT_TRUE(logic.TryBeginDrag(startPx + PxValue(100)));
@@ -313,7 +313,7 @@ TEST(TestControlLogic_SliderLogic, TryBeginDrag_InRange_Max)
 {
   const PxValue startPx(100);
   const auto lengthPx = PxSize1D::Create(201);
-  UI::SliderConstrainedValue<uint32_t> constrainedValue(1000, 2000);
+  const UI::SliderConstrainedValue<uint32_t> constrainedValue(1000, 2000);
   UI::SliderLogic<uint32_t> logic(constrainedValue, UI::SliderPixelSpanInfo(startPx, lengthPx));
 
   EXPECT_TRUE(logic.TryBeginDrag(startPx + PxValue(200)));
@@ -328,7 +328,7 @@ TEST(TestControlLogic_SliderLogic, TryBeginDrag_InRange_FullCoverage)
 {
   const PxValue startPx(100);
   const auto lengthPx = PxSize1D::Create(11);
-  UI::SliderConstrainedValue<uint32_t> constrainedValue(1000, 2000);
+  const UI::SliderConstrainedValue<uint32_t> constrainedValue(1000, 2000);
   UI::SliderLogic<uint32_t> logic(constrainedValue, UI::SliderPixelSpanInfo(startPx, lengthPx));
 
   EXPECT_TRUE(logic.TryBeginDrag(startPx));
@@ -402,7 +402,7 @@ TEST(TestControlLogic_SliderLogic, TryBeginDrag_OutOfRange_Low1)
 {
   const PxValue startPx(100);
   const auto lengthPx = PxSize1D::Create(201);
-  UI::SliderConstrainedValue<uint32_t> constrainedValue(1000, 2000);
+  const UI::SliderConstrainedValue<uint32_t> constrainedValue(1000, 2000);
   UI::SliderLogic<uint32_t> logic(constrainedValue, UI::SliderPixelSpanInfo(startPx, lengthPx));
 
   EXPECT_TRUE(logic.TryBeginDrag(startPx - PxValue(1)));
@@ -417,7 +417,7 @@ TEST(TestControlLogic_SliderLogic, TryBeginDrag_OutOfRange_Low2)
 {
   const PxValue startPx(100);
   const auto lengthPx = PxSize1D::Create(201);
-  UI::SliderConstrainedValue<uint32_t> constrainedValue(1000, 2000);
+  const UI::SliderConstrainedValue<uint32_t> constrainedValue(1000, 2000);
   UI::SliderLogic<uint32_t> logic(constrainedValue, UI::SliderPixelSpanInfo(startPx, lengthPx));
 
   EXPECT_TRUE(logic.TryBeginDrag(startPx - PxValue(100)));
@@ -432,7 +432,7 @@ TEST(TestControlLogic_SliderLogic, TryBeginDrag_OutOfRange_High1)
 {
   const PxValue startPx(100);
   const auto lengthPx = PxSize1D::Create(201);
-  UI::SliderConstrainedValue<uint32_t> constrainedValue(1000, 2000);
+  const UI::SliderConstrainedValue<uint32_t> constrainedValue(1000, 2000);
   UI::SliderLogic<uint32_t> logic(constrainedValue, UI::SliderPixelSpanInfo(startPx, lengthPx));
 
   EXPECT_TRUE(logic.TryBeginDrag(startPx + lengthPx));
@@ -448,7 +448,7 @@ TEST(TestControlLogic_SliderLogic, TryBeginDrag_OutOfRange_High2)
 {
   const PxValue startPx(100);
   const auto lengthPx = PxSize1D::Create(201);
-  UI::SliderConstrainedValue<uint32_t> constrainedValue(1000, 2000);
+  const UI::SliderConstrainedValue<uint32_t> constrainedValue(1000, 2000);
   UI::SliderLogic<uint32_t> logic(constrainedValue, UI::SliderPixelSpanInfo(startPx, lengthPx));
 
   EXPECT_TRUE(logic.TryBeginDrag(startPx + lengthPx + PxValue(100)));
@@ -463,7 +463,7 @@ TEST(TestControlLogic_SliderLogic, TryDrag_InRange2)
 {
   const PxValue startPx(100);
   const auto lengthPx = PxSize1D::Create(201);
-  UI::SliderConstrainedValue<uint32_t> constrainedValue(1000, 2000);
+  const UI::SliderConstrainedValue<uint32_t> constrainedValue(1000, 2000);
   UI::SliderLogic<uint32_t> logic(constrainedValue, UI::SliderPixelSpanInfo(startPx, lengthPx));
 
   EXPECT_TRUE(logic.TryBeginDrag(startPx + PxValue(100)));
@@ -490,7 +490,7 @@ TEST(TestControlLogic_SliderLogic, TryDrag_InRange_FullCoverage)
 {
   const PxValue startPx(100);
   const auto lengthPx = PxSize1D::Create(11);
-  UI::SliderConstrainedValue<uint32_t> constrainedValue(1000, 2000);
+  const UI::SliderConstrainedValue<uint32_t> constrainedValue(1000, 2000);
   UI::SliderLogic<uint32_t> logic(constrainedValue, UI::SliderPixelSpanInfo(startPx, lengthPx));
 
   EXPECT_TRUE(logic.TryBeginDrag(startPx + PxValue(10)));
@@ -557,7 +557,7 @@ TEST(TestControlLogic_SliderLogic, TryDrag_NotDraging)
 {
   const PxValue startPx(100);
   const auto lengthPx = PxSize1D::Create(201);
-  UI::SliderConstrainedValue<uint32_t> constrainedValue(1000, 2000);
+  const UI::SliderConstrainedValue<uint32_t> constrainedValue(1000, 2000);
   UI::SliderLogic<uint32_t> logic(constrainedValue, UI::SliderPixelSpanInfo(startPx, lengthPx));
   EXPECT_TRUE(logic.SetPercentage(0.5f));
 
@@ -575,7 +575,7 @@ TEST(TestControlLogic_SliderLogic, EndDrag_InRange)
 {
   const PxValue startPx(100);
   const auto lengthPx = PxSize1D::Create(201);
-  UI::SliderConstrainedValue<uint32_t> constrainedValue(1000, 2000);
+  const UI::SliderConstrainedValue<uint32_t> constrainedValue(1000, 2000);
   UI::SliderLogic<uint32_t> logic(constrainedValue, UI::SliderPixelSpanInfo(startPx, lengthPx));
 
   EXPECT_TRUE(logic.TryBeginDrag(startPx + PxValue(100)));
@@ -603,7 +603,7 @@ TEST(TestControlLogic_SliderLogic, EndDrag_InRange_FullCoverage)
 {
   const PxValue startPx(100);
   const auto lengthPx = PxSize1D::Create(11);
-  UI::SliderConstrainedValue<uint32_t> constrainedValue(1000, 2000);
+  const UI::SliderConstrainedValue<uint32_t> constrainedValue(1000, 2000);
   UI::SliderLogic<uint32_t> logic(constrainedValue, UI::SliderPixelSpanInfo(startPx, lengthPx));
 
   EXPECT_TRUE(logic.TryBeginDrag(startPx + PxValue(10)));
@@ -679,7 +679,7 @@ TEST(TestControlLogic_SliderLogic, CancelDrag)
 {
   const PxValue startPx(100);
   const auto lengthPx = PxSize1D::Create(201);
-  UI::SliderConstrainedValue<uint32_t> constrainedValue(1000, 2000);
+  const UI::SliderConstrainedValue<uint32_t> constrainedValue(1000, 2000);
   UI::SliderLogic<uint32_t> logic(constrainedValue, UI::SliderPixelSpanInfo(startPx, lengthPx));
 
   EXPECT_TRUE(logic.SetPercentage(0.5f));
@@ -712,7 +712,7 @@ TEST(TestControlLogic_SliderLogic, EndDrag_NotDraging)
 {
   const PxValue startPx(100);
   const auto lengthPx = PxSize1D::Create(201);
-  UI::SliderConstrainedValue<uint32_t> constrainedValue(1000, 2000);
+  const UI::SliderConstrainedValue<uint32_t> constrainedValue(1000, 2000);
   UI::SliderLogic<uint32_t> logic(constrainedValue, UI::SliderPixelSpanInfo(startPx, lengthPx));
 
   EXPECT_TRUE(logic.SetPercentage(0.5f));
@@ -731,7 +731,7 @@ TEST(TestControlLogic_SliderLogic, CancelDrag_NotDraging)
 {
   const PxValue startPx(100);
   const auto lengthPx = PxSize1D::Create(201);
-  UI::SliderConstrainedValue<uint32_t> constrainedValue(1000, 2000);
+  const UI::SliderConstrainedValue<uint32_t> constrainedValue(1000, 2000);
   UI::SliderLogic<uint32_t> logic(constrainedValue, UI::SliderPixelSpanInfo(startPx, lengthPx));
 
   EXPECT_TRUE(logic.SetPercentage(0.5f));
@@ -751,35 +751,35 @@ TEST(TestControlLogic_SliderLogic, SetEnabled)
 {
   const PxValue startPx(100);
   const auto lengthPx = PxSize1D::Create(201);
-  UI::SliderConstrainedValue<uint32_t> constrainedValue(1000, 2000);
+  const UI::SliderConstrainedValue<uint32_t> constrainedValue(1000, 2000);
   UI::SliderLogic<uint32_t> logic(constrainedValue, UI::SliderPixelSpanInfo(startPx, lengthPx));
 
   EXPECT_FALSE(logic.IsDragging());
   EXPECT_TRUE(logic.IsEnabled());
 
   {    // First disable -> disabled it
-    auto flags = logic.SetEnabled(false);
+    const auto flags = logic.SetEnabled(false);
     EXPECT_TRUE(UI::SliderResultFlagsUtil::IsFlagged(flags, UI::SliderResultFlags::Completed));
     EXPECT_FALSE(UI::SliderResultFlagsUtil::IsFlagged(flags, UI::SliderResultFlags::DragCancelled));
     EXPECT_FALSE(logic.IsEnabled());
   }
 
   {    // second disable does nothing
-    auto flags = logic.SetEnabled(false);
+    const auto flags = logic.SetEnabled(false);
     EXPECT_FALSE(UI::SliderResultFlagsUtil::IsFlagged(flags, UI::SliderResultFlags::Completed));
     EXPECT_FALSE(UI::SliderResultFlagsUtil::IsFlagged(flags, UI::SliderResultFlags::DragCancelled));
     EXPECT_FALSE(logic.IsEnabled());
   }
 
   {    // First enable -> enables it
-    auto flags = logic.SetEnabled(true);
+    const auto flags = logic.SetEnabled(true);
     EXPECT_TRUE(UI::SliderResultFlagsUtil::IsFlagged(flags, UI::SliderResultFlags::Completed));
     EXPECT_FALSE(UI::SliderResultFlagsUtil::IsFlagged(flags, UI::SliderResultFlags::DragCancelled));
     EXPECT_TRUE(logic.IsEnabled());
   }
 
   {    // second enable does nothing
-    auto flags = logic.SetEnabled(true);
+    const auto flags = logic.SetEnabled(true);
     EXPECT_FALSE(UI::SliderResultFlagsUtil::IsFlagged(flags, UI::SliderResultFlags::Completed));
     EXPECT_FALSE(UI::SliderResultFlagsUtil::IsFlagged(flags, UI::SliderResultFlags::DragCancelled));
     EXPECT_TRUE(logic.IsEnabled());
@@ -791,7 +791,7 @@ TEST(TestControlLogic_SliderLogic, SetEnabled_True_NoCancelDrag)
 {
   const PxValue startPx(100);
   const auto lengthPx = PxSize1D::Create(201);
-  UI::SliderConstrainedValue<uint32_t> constrainedValue(1000, 2000);
+  const UI::SliderConstrainedValue<uint32_t> constrainedValue(1000, 2000);
   UI::SliderLogic<uint32_t> logic(constrainedValue, UI::SliderPixelSpanInfo(startPx, lengthPx));
 
 
@@ -813,7 +813,7 @@ TEST(TestControlLogic_SliderLogic, SetEnabled_True_NoCancelDrag)
   EXPECT_EQ(constrainedValue.Center(), logic.GetValue());
 
   {    // Setting to enabled does nothing as we are already enabled
-    auto flags = logic.SetEnabled(true);
+    const auto flags = logic.SetEnabled(true);
     EXPECT_FALSE(UI::SliderResultFlagsUtil::IsFlagged(flags, UI::SliderResultFlags::Completed));
     EXPECT_FALSE(UI::SliderResultFlagsUtil::IsFlagged(flags, UI::SliderResultFlags::DragCancelled));
     EXPECT_TRUE(logic.IsEnabled());
@@ -830,7 +830,7 @@ TEST(TestControlLogic_SliderLogic, SetEnabled_False_CancelDrag)
 {
   const PxValue startPx(100);
   const auto lengthPx = PxSize1D::Create(201);
-  UI::SliderConstrainedValue<uint32_t> constrainedValue(1000, 2000);
+  const UI::SliderConstrainedValue<uint32_t> constrainedValue(1000, 2000);
   UI::SliderLogic<uint32_t> logic(constrainedValue, UI::SliderPixelSpanInfo(startPx, lengthPx));
 
 
@@ -852,7 +852,7 @@ TEST(TestControlLogic_SliderLogic, SetEnabled_False_CancelDrag)
   EXPECT_EQ(constrainedValue.Center(), logic.GetValue());
 
   // Cancel the drag, restoring the pre-drag state
-  auto flags = logic.SetEnabled(false);
+  const auto flags = logic.SetEnabled(false);
   EXPECT_TRUE(UI::SliderResultFlagsUtil::IsFlagged(flags, UI::SliderResultFlags::Completed));
   EXPECT_TRUE(UI::SliderResultFlagsUtil::IsFlagged(flags, UI::SliderResultFlags::DragCancelled));
   EXPECT_FALSE(logic.IsEnabled());
@@ -872,7 +872,7 @@ TEST(TestControlLogic_SliderLogic, TryBeginDrag_Disabled)
 {
   const PxValue startPx(100);
   const auto lengthPx = PxSize1D::Create(201);
-  UI::SliderConstrainedValue<uint32_t> constrainedValue(1000, 2000);
+  const UI::SliderConstrainedValue<uint32_t> constrainedValue(1000, 2000);
   UI::SliderLogic<uint32_t> logic(constrainedValue, UI::SliderPixelSpanInfo(startPx, lengthPx));
   logic.SetEnabled(false);
 
@@ -894,7 +894,7 @@ TEST(TestControlLogic_SliderLogic, TryDrag_Disabled)
 {
   const PxValue startPx(100);
   const auto lengthPx = PxSize1D::Create(201);
-  UI::SliderConstrainedValue<uint32_t> constrainedValue(1000, 2000);
+  const UI::SliderConstrainedValue<uint32_t> constrainedValue(1000, 2000);
   UI::SliderLogic<uint32_t> logic(constrainedValue, UI::SliderPixelSpanInfo(startPx, lengthPx));
   logic.SetEnabled(false);
 
@@ -916,7 +916,7 @@ TEST(TestControlLogic_SliderLogic, EndDrag_Disabled)
 {
   const PxValue startPx(100);
   const auto lengthPx = PxSize1D::Create(201);
-  UI::SliderConstrainedValue<uint32_t> constrainedValue(1000, 2000);
+  const UI::SliderConstrainedValue<uint32_t> constrainedValue(1000, 2000);
   UI::SliderLogic<uint32_t> logic(constrainedValue, UI::SliderPixelSpanInfo(startPx, lengthPx));
   logic.SetEnabled(false);
 
@@ -938,7 +938,7 @@ TEST(TestControlLogic_SliderLogic, CancelDrag_Disabled)
 {
   const PxValue startPx(100);
   const auto lengthPx = PxSize1D::Create(201);
-  UI::SliderConstrainedValue<uint32_t> constrainedValue(1000, 2000);
+  const UI::SliderConstrainedValue<uint32_t> constrainedValue(1000, 2000);
   UI::SliderLogic<uint32_t> logic(constrainedValue, UI::SliderPixelSpanInfo(startPx, lengthPx));
   logic.SetEnabled(false);
 
@@ -960,7 +960,7 @@ TEST(TestControlLogic_SliderLogic, SetSpanInfo_Percentage0)
 {
   const PxValue startPx(100);
   const auto lengthPx = PxSize1D::Create(201);
-  UI::SliderConstrainedValue<uint32_t> constrainedValue(1500, 1000, 2000);
+  const UI::SliderConstrainedValue<uint32_t> constrainedValue(1500, 1000, 2000);
   UI::SliderLogic<uint32_t> logic(constrainedValue, UI::SliderPixelSpanInfo(startPx, lengthPx));
   EXPECT_TRUE(logic.SetPercentage(0));
   EXPECT_EQ(0.0f, logic.GetPercentage());
@@ -982,7 +982,7 @@ TEST(TestControlLogic_SliderLogic, SetSpanInfo_Percentage1)
 {
   const PxValue startPx(100);
   const auto lengthPx = PxSize1D::Create(201);
-  UI::SliderConstrainedValue<uint32_t> constrainedValue(1000, 2000);
+  const UI::SliderConstrainedValue<uint32_t> constrainedValue(1000, 2000);
   UI::SliderLogic<uint32_t> logic(constrainedValue, UI::SliderPixelSpanInfo(startPx, lengthPx));
   EXPECT_TRUE(logic.SetPercentage(1));
   EXPECT_EQ(1.0f, logic.GetPercentage());
@@ -1004,7 +1004,7 @@ TEST(TestControlLogic_SliderLogic, SetSpanInfo_Same_NoCancelDrag)
 {
   const PxValue startPx(100);
   const auto lengthPx = PxSize1D::Create(201);
-  UI::SliderConstrainedValue<uint32_t> constrainedValue(1000, 2000);
+  const UI::SliderConstrainedValue<uint32_t> constrainedValue(1000, 2000);
   UI::SliderLogic<uint32_t> logic(constrainedValue, UI::SliderPixelSpanInfo(startPx, lengthPx));
 
   EXPECT_FALSE(logic.IsDragging());
@@ -1038,7 +1038,7 @@ TEST(TestControlLogic_SliderLogic, SetSpanInfo_New_RecalcPercentage)
 {
   const PxValue startPx(100);
   const auto lengthPx = PxSize1D::Create(201);
-  UI::SliderConstrainedValue<uint32_t> constrainedValue(1000, 2000);
+  const UI::SliderConstrainedValue<uint32_t> constrainedValue(1000, 2000);
   UI::SliderLogic<uint32_t> logic(constrainedValue, UI::SliderPixelSpanInfo(startPx, lengthPx));
 
   EXPECT_FALSE(logic.IsDragging());
@@ -1080,7 +1080,7 @@ TEST(TestControlLogic_SliderLogic, SetValue_Min)
 {
   const PxValue startPx(100);
   const auto lengthPx = PxSize1D::Create(201);
-  UI::SliderConstrainedValue<uint32_t> constrainedValue(1500, 1000, 2000);
+  const UI::SliderConstrainedValue<uint32_t> constrainedValue(1500, 1000, 2000);
   UI::SliderLogic<uint32_t> logic(constrainedValue, UI::SliderPixelSpanInfo(startPx, lengthPx));
   EXPECT_TRUE(logic.SetValue(constrainedValue.Max()));
   EXPECT_EQ(1.0f, logic.GetPercentage());
@@ -1100,7 +1100,7 @@ TEST(TestControlLogic_SliderLogic, SetValue_75percent)
 {
   const PxValue startPx(100);
   const auto lengthPx = PxSize1D::Create(201);
-  UI::SliderConstrainedValue<uint32_t> constrainedValue(1500, 1000, 2000);
+  const UI::SliderConstrainedValue<uint32_t> constrainedValue(1500, 1000, 2000);
   UI::SliderLogic<uint32_t> logic(constrainedValue, UI::SliderPixelSpanInfo(startPx, lengthPx));
   EXPECT_TRUE(logic.SetValue(constrainedValue.Min()));
   EXPECT_EQ(0.0f, logic.GetPercentage());
@@ -1122,7 +1122,7 @@ TEST(TestControlLogic_SliderLogic, SetValue_Max)
 {
   const PxValue startPx(100);
   const auto lengthPx = PxSize1D::Create(201);
-  UI::SliderConstrainedValue<uint32_t> constrainedValue(1500, 1000, 2000);
+  const UI::SliderConstrainedValue<uint32_t> constrainedValue(1500, 1000, 2000);
   UI::SliderLogic<uint32_t> logic(constrainedValue, UI::SliderPixelSpanInfo(startPx, lengthPx));
   EXPECT_TRUE(logic.SetValue(constrainedValue.Min()));
   EXPECT_EQ(0.0f, logic.GetPercentage());
@@ -1143,7 +1143,7 @@ TEST(TestControlLogic_SliderLogic, SetValue_Same_NoCancelDrag)
 {
   const PxValue startPx(100);
   const auto lengthPx = PxSize1D::Create(201);
-  UI::SliderConstrainedValue<uint32_t> constrainedValue(2000, 1000, 2000);
+  const UI::SliderConstrainedValue<uint32_t> constrainedValue(2000, 1000, 2000);
   UI::SliderLogic<uint32_t> logic(constrainedValue, UI::SliderPixelSpanInfo(startPx, lengthPx));
 
   EXPECT_FALSE(logic.IsDragging());
@@ -1171,7 +1171,7 @@ TEST(TestControlLogic_SliderLogic, SetValue_New_NoCancelDrag)
 {
   const PxValue startPx(100);
   const auto lengthPx = PxSize1D::Create(201);
-  UI::SliderConstrainedValue<uint32_t> constrainedValue(2000, 1000, 2000);
+  const UI::SliderConstrainedValue<uint32_t> constrainedValue(2000, 1000, 2000);
   UI::SliderLogic<uint32_t> logic(constrainedValue, UI::SliderPixelSpanInfo(startPx, lengthPx));
 
   EXPECT_FALSE(logic.IsDragging());
@@ -1203,7 +1203,7 @@ TEST(TestControlLogic_SliderLogic, SetRange)
 {
   const PxValue startPx(100);
   const auto lengthPx = PxSize1D::Create(201);
-  UI::SliderConstrainedValue<uint32_t> constrainedValue(1000, 2000);
+  const UI::SliderConstrainedValue<uint32_t> constrainedValue(1000, 2000);
   UI::SliderLogic<uint32_t> logic(constrainedValue, UI::SliderPixelSpanInfo(startPx, lengthPx));
 
   {
@@ -1216,13 +1216,13 @@ TEST(TestControlLogic_SliderLogic, SetRange)
 
     EXPECT_EQ(0.0f, logic.GetPercentage());
 
-    auto spanInfo = logic.GetSpanInfo();
+    const auto spanInfo = logic.GetSpanInfo();
     EXPECT_EQ(startPx, spanInfo.GetStartPx());
     EXPECT_EQ(lengthPx, spanInfo.GetLengthPx());
   }
 
-  uint32_t newMin = 5000;
-  uint32_t newMax = 6000;
+  const uint32_t newMin = 5000;
+  const uint32_t newMax = 6000;
   logic.SetRange(5000, 6000);
 
   {
@@ -1235,7 +1235,7 @@ TEST(TestControlLogic_SliderLogic, SetRange)
 
     EXPECT_EQ(0.0f, logic.GetPercentage());
 
-    auto spanInfo = logic.GetSpanInfo();
+    const auto spanInfo = logic.GetSpanInfo();
     EXPECT_EQ(startPx, spanInfo.GetStartPx());
     EXPECT_EQ(lengthPx, spanInfo.GetLengthPx());
   }
@@ -1246,7 +1246,7 @@ TEST(TestControlLogic_SliderLogic, SetRange_Same_NoCancelDrag)
 {
   const PxValue startPx(100);
   const auto lengthPx = PxSize1D::Create(201);
-  UI::SliderConstrainedValue<uint32_t> constrainedValue(2000, 1000, 2000);
+  const UI::SliderConstrainedValue<uint32_t> constrainedValue(2000, 1000, 2000);
   UI::SliderLogic<uint32_t> logic(constrainedValue, UI::SliderPixelSpanInfo(startPx, lengthPx));
 
   EXPECT_FALSE(logic.IsDragging());
@@ -1274,7 +1274,7 @@ TEST(TestControlLogic_SliderLogic, SetRange_New_RecalculateValue)
 {
   const PxValue startPx(100);
   const auto lengthPx = PxSize1D::Create(201);
-  UI::SliderConstrainedValue<uint32_t> constrainedValue(2000, 1000, 2000);
+  const UI::SliderConstrainedValue<uint32_t> constrainedValue(2000, 1000, 2000);
   UI::SliderLogic<uint32_t> logic(constrainedValue, UI::SliderPixelSpanInfo(startPx, lengthPx));
 
   EXPECT_FALSE(logic.IsDragging());
@@ -1306,7 +1306,7 @@ TEST(TestControlLogic_SliderLogic, SetTickFrequency)
 {
   const PxValue startPx(100);
   const auto lengthPx = PxSize1D::Create(201);
-  UI::SliderConstrainedValue<uint32_t> constrainedValue(1000, 2000);
+  const UI::SliderConstrainedValue<uint32_t> constrainedValue(1000, 2000);
   UI::SliderLogic<uint32_t> logic(constrainedValue, UI::SliderPixelSpanInfo(startPx, lengthPx));
 
   EXPECT_TRUE(logic.SetTickFrequency(200u));
@@ -1326,7 +1326,7 @@ TEST(TestControlLogic_SliderLogic, SetTickFrequency_OutOfRange_Low)
 {
   const PxValue startPx(100);
   const auto lengthPx = PxSize1D::Create(201);
-  UI::SliderConstrainedValue<uint32_t> constrainedValue(1000, 2000);
+  const UI::SliderConstrainedValue<uint32_t> constrainedValue(1000, 2000);
   UI::SliderLogic<uint32_t> logic(constrainedValue, UI::SliderPixelSpanInfo(startPx, lengthPx));
 
   EXPECT_TRUE(logic.SetTickFrequency(200u));
@@ -1340,7 +1340,7 @@ TEST(TestControlLogic_SliderLogic, SetTickFrequency_OutOfRange_Low2)
 {
   const PxValue startPx(100);
   const auto lengthPx = PxSize1D::Create(201);
-  UI::SliderConstrainedValue<int32_t> constrainedValue(1000, 2000);
+  const UI::SliderConstrainedValue<int32_t> constrainedValue(1000, 2000);
   UI::SliderLogic<int32_t> logic(constrainedValue, UI::SliderPixelSpanInfo(startPx, lengthPx));
 
   EXPECT_TRUE(logic.SetTickFrequency(200));
@@ -1362,7 +1362,7 @@ TEST(TestControlLogic_SliderLogic, SetTickFrequency_OutOfRange_Max)
 {
   const PxValue startPx(100);
   const auto lengthPx = PxSize1D::Create(201);
-  UI::SliderConstrainedValue<uint32_t> constrainedValue(1000, 2000);
+  const UI::SliderConstrainedValue<uint32_t> constrainedValue(1000, 2000);
   UI::SliderLogic<uint32_t> logic(constrainedValue, UI::SliderPixelSpanInfo(startPx, lengthPx));
 
   EXPECT_TRUE(logic.SetTickFrequency(200u));
@@ -1380,7 +1380,7 @@ TEST(TestControlLogic_SliderLogic, SetTickFrequency_CheckValueSnap)
 {
   const PxValue startPx(100);
   const auto lengthPx = PxSize1D::Create(201);
-  UI::SliderConstrainedValue<uint32_t> constrainedValue(1900, 1000, 2000);
+  const UI::SliderConstrainedValue<uint32_t> constrainedValue(1900, 1000, 2000);
   UI::SliderLogic<uint32_t> logic(constrainedValue, UI::SliderPixelSpanInfo(startPx, lengthPx));
 
   EXPECT_TRUE(logic.SetTickFrequency(500u));
@@ -1421,8 +1421,8 @@ TEST(TestControlLogic_SliderLogic, Construct_Span_Reversed_MinValue)
 {
   const PxValue startPx(10);
   const auto lengthPx = PxSize1D::Create(5);
-  UI::SliderConstrainedValue<uint32_t> constrainedValue(1000, 2000);
-  UI::SliderLogic<uint32_t> logic(constrainedValue, UI::SliderPixelSpanInfo(startPx, lengthPx, true));
+  const UI::SliderConstrainedValue<uint32_t> constrainedValue(1000, 2000);
+  const UI::SliderLogic<uint32_t> logic(constrainedValue, UI::SliderPixelSpanInfo(startPx, lengthPx, true));
 
   EXPECT_EQ(constrainedValue.Min(), logic.Min());
   EXPECT_EQ(constrainedValue.Max(), logic.Max());
@@ -1434,7 +1434,7 @@ TEST(TestControlLogic_SliderLogic, Construct_Span_Reversed_MinValue)
   EXPECT_EQ(0.0f, logic.GetPercentage());
   EXPECT_EQ(startPx + lengthPx - PxValue(1), logic.GetPositionPx());
 
-  auto spanInfo = logic.GetSpanInfo();
+  const auto spanInfo = logic.GetSpanInfo();
   EXPECT_EQ(startPx, spanInfo.GetStartPx());
   EXPECT_EQ(lengthPx, spanInfo.GetLengthPx());
   EXPECT_TRUE(spanInfo.IsReversedDirection());
@@ -1444,8 +1444,8 @@ TEST(TestControlLogic_SliderLogic, Construct_Span_Reversed_MaxValue)
 {
   const PxValue startPx(10);
   const auto lengthPx = PxSize1D::Create(5);
-  UI::SliderConstrainedValue<uint32_t> constrainedValue(2000, 1000, 2000);
-  UI::SliderLogic<uint32_t> logic(constrainedValue, UI::SliderPixelSpanInfo(startPx, lengthPx, true));
+  const UI::SliderConstrainedValue<uint32_t> constrainedValue(2000, 1000, 2000);
+  const UI::SliderLogic<uint32_t> logic(constrainedValue, UI::SliderPixelSpanInfo(startPx, lengthPx, true));
 
   EXPECT_EQ(constrainedValue.Min(), logic.Min());
   EXPECT_EQ(constrainedValue.Max(), logic.Max());
@@ -1457,7 +1457,7 @@ TEST(TestControlLogic_SliderLogic, Construct_Span_Reversed_MaxValue)
   EXPECT_EQ(1.0f, logic.GetPercentage());
   EXPECT_EQ(startPx, logic.GetPositionPx());
 
-  auto spanInfo = logic.GetSpanInfo();
+  const auto spanInfo = logic.GetSpanInfo();
   EXPECT_EQ(startPx, spanInfo.GetStartPx());
   EXPECT_EQ(lengthPx, spanInfo.GetLengthPx());
   EXPECT_TRUE(spanInfo.IsReversedDirection());
@@ -1468,8 +1468,8 @@ TEST(TestControlLogic_SliderLogic, Construct_Span_Reversed_Value)
 {
   const PxValue startPx(100);
   const auto lengthPx = PxSize1D::Create(201);
-  UI::SliderConstrainedValue<uint32_t> constrainedValue(1250, 1000, 2000);
-  UI::SliderLogic<uint32_t> logic(constrainedValue, UI::SliderPixelSpanInfo(startPx, lengthPx, true));
+  const UI::SliderConstrainedValue<uint32_t> constrainedValue(1250, 1000, 2000);
+  const UI::SliderLogic<uint32_t> logic(constrainedValue, UI::SliderPixelSpanInfo(startPx, lengthPx, true));
 
   EXPECT_EQ(constrainedValue.Min(), logic.Min());
   EXPECT_EQ(constrainedValue.Max(), logic.Max());
@@ -1481,7 +1481,7 @@ TEST(TestControlLogic_SliderLogic, Construct_Span_Reversed_Value)
   EXPECT_FLOAT_EQ(0.25f, logic.GetPercentage());
   EXPECT_EQ(startPx + PxValue(150), logic.GetPositionPx());
 
-  auto spanInfo = logic.GetSpanInfo();
+  const auto spanInfo = logic.GetSpanInfo();
   EXPECT_EQ(startPx, spanInfo.GetStartPx());
   EXPECT_EQ(lengthPx, spanInfo.GetLengthPx());
   EXPECT_TRUE(spanInfo.IsReversedDirection());
@@ -1493,7 +1493,7 @@ TEST(TestControlLogic_SliderLogic, GetPercentage)
 {
   const PxValue startPx(0);
   const auto lengthPx = PxSize1D::Create(21);
-  UI::SliderConstrainedValue<uint32_t> constrainedValue(1500, 1000, 2000);
+  const UI::SliderConstrainedValue<uint32_t> constrainedValue(1500, 1000, 2000);
   UI::SliderLogic<uint32_t> logic(constrainedValue, UI::SliderPixelSpanInfo(startPx, lengthPx, false));
 
   EXPECT_TRUE(logic.SetValue(1000));
@@ -1551,7 +1551,7 @@ TEST(TestControlLogic_SliderLogic, GetValue)
 {
   const PxValue startPx(0);
   const auto lengthPx = PxSize1D::Create(21);
-  UI::SliderConstrainedValue<uint32_t> constrainedValue(1500, 1000, 2000);
+  const UI::SliderConstrainedValue<uint32_t> constrainedValue(1500, 1000, 2000);
   UI::SliderLogic<uint32_t> logic(constrainedValue, UI::SliderPixelSpanInfo(startPx, lengthPx, false));
 
   EXPECT_TRUE(logic.SetValue(1000));
@@ -1608,7 +1608,7 @@ TEST(TestControlLogic_SliderLogic, GetPercentage_Offset)
 {
   const PxValue startPx(0);
   const auto lengthPx = PxSize1D::Create(21);
-  UI::SliderConstrainedValue<uint32_t> constrainedValue(1500, 1000, 2000);
+  const UI::SliderConstrainedValue<uint32_t> constrainedValue(1500, 1000, 2000);
   UI::SliderLogic<uint32_t> logic(constrainedValue, UI::SliderPixelSpanInfo(startPx, lengthPx, false));
 
   EXPECT_TRUE(logic.SetValue(1000));
@@ -1666,7 +1666,7 @@ TEST(TestControlLogic_SliderLogic, GetPercentage_Offset_Tick)
 {
   const PxValue startPx(0);
   const auto lengthPx = PxSize1D::Create(21);
-  UI::SliderConstrainedValue<uint32_t> constrainedValue(1500, 1000, 2000);
+  const UI::SliderConstrainedValue<uint32_t> constrainedValue(1500, 1000, 2000);
   UI::SliderLogic<uint32_t> logic(constrainedValue, UI::SliderPixelSpanInfo(startPx, lengthPx, false));
   // 1000 1250 1500 750 2000
   logic.SetTickFrequency(250u);
@@ -1726,7 +1726,7 @@ TEST(TestControlLogic_SliderLogic, GetValue_Tick)
 {
   const PxValue startPx(0);
   const auto lengthPx = PxSize1D::Create(21);
-  UI::SliderConstrainedValue<uint32_t> constrainedValue(1500, 1000, 2000);
+  const UI::SliderConstrainedValue<uint32_t> constrainedValue(1500, 1000, 2000);
   UI::SliderLogic<uint32_t> logic(constrainedValue, UI::SliderPixelSpanInfo(startPx, lengthPx, false));
   // 1000 1250 1500 750 2000
   logic.SetTickFrequency(250u);
@@ -1784,7 +1784,7 @@ TEST(TestControlLogic_SliderLogic, TryBeginDrag_InRange_FullCoverage_Tick)
 {
   const PxValue startPx(100);
   const auto lengthPx = PxSize1D::Create(11);
-  UI::SliderConstrainedValue<uint32_t> constrainedValue(1000, 2000);
+  const UI::SliderConstrainedValue<uint32_t> constrainedValue(1000, 2000);
   UI::SliderLogic<uint32_t> logic(constrainedValue, UI::SliderPixelSpanInfo(startPx, lengthPx));
   // 1000 1500 2000
   logic.SetTickFrequency(500u);
@@ -1863,7 +1863,7 @@ TEST(TestControlLogic_SliderLogic, TryDrag_InRange_FullCoverage_Tick)
 {
   const PxValue startPx(100);
   const auto lengthPx = PxSize1D::Create(11);
-  UI::SliderConstrainedValue<uint32_t> constrainedValue(1000, 2000);
+  const UI::SliderConstrainedValue<uint32_t> constrainedValue(1000, 2000);
   UI::SliderLogic<uint32_t> logic(constrainedValue, UI::SliderPixelSpanInfo(startPx, lengthPx));
   // 1000 1500 2000
   logic.SetTickFrequency(500u);
@@ -1934,7 +1934,7 @@ TEST(TestControlLogic_SliderLogic, EndDrag_InRange_FullCoverage_Tick)
 {
   const PxValue startPx(100);
   const auto lengthPx = PxSize1D::Create(11);
-  UI::SliderConstrainedValue<uint32_t> constrainedValue(1000, 2000);
+  const UI::SliderConstrainedValue<uint32_t> constrainedValue(1000, 2000);
   UI::SliderLogic<uint32_t> logic(constrainedValue, UI::SliderPixelSpanInfo(startPx, lengthPx));
   // 1000 1500 2000
   logic.SetTickFrequency(500u);
@@ -2013,7 +2013,7 @@ TEST(TestControlLogic_SliderLogic, CancelDrag_InRange_FullCoverage_Tick)
 {
   const PxValue startPx(100);
   const auto lengthPx = PxSize1D::Create(11);
-  UI::SliderConstrainedValue<uint32_t> constrainedValue(1500, 1000, 2000);
+  const UI::SliderConstrainedValue<uint32_t> constrainedValue(1500, 1000, 2000);
   UI::SliderLogic<uint32_t> logic(constrainedValue, UI::SliderPixelSpanInfo(startPx, lengthPx));
   // 1000 1500 2000
   logic.SetTickFrequency(500u);
@@ -2103,7 +2103,7 @@ TEST(TestControlLogic_SliderLogic, CancelDrag_InRange_FullCoverage_DragStartTick
 {
   const PxValue startPx(100);
   const auto lengthPx = PxSize1D::Create(11);
-  UI::SliderConstrainedValue<uint32_t> constrainedValue(1500, 1000, 2000);
+  const UI::SliderConstrainedValue<uint32_t> constrainedValue(1500, 1000, 2000);
   UI::SliderLogic<uint32_t> logic(constrainedValue, UI::SliderPixelSpanInfo(startPx, lengthPx));
   // 1000 1500 2000
   // 01234567890

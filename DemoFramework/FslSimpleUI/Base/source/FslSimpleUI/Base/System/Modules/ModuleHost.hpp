@@ -65,11 +65,11 @@ namespace Fsl::UI
                const std::shared_ptr<SimpleEventSender>& simpleEventSender);
     ~ModuleHost() override;
     //! FromIModuleHost
-    std::shared_ptr<WindowEventPool> GetWindowEventPool() const final;
-    std::shared_ptr<ITreeNodeClickInputTargetLocater> GetTargetLocater() const final;
-    std::shared_ptr<ITreeNodeBasicInfo> GetBasicInfo() const final;
-    std::shared_ptr<WindowEventSender> GetWindowEventSender() const final;
-    std::shared_ptr<SimpleEventSender> GetSimpleEventSender() const final;
+    [[nodiscard]] std::shared_ptr<WindowEventPool> GetWindowEventPool() const final;
+    [[nodiscard]] std::shared_ptr<ITreeNodeClickInputTargetLocater> GetTargetLocater() const final;
+    [[nodiscard]] std::shared_ptr<ITreeNodeBasicInfo> GetBasicInfo() const final;
+    [[nodiscard]] std::shared_ptr<WindowEventSender> GetWindowEventSender() const final;
+    [[nodiscard]] std::shared_ptr<SimpleEventSender> GetSimpleEventSender() const final;
 
     std::shared_ptr<IStateEventSender> CreateStateEventSender(const WindowFlags::Enum inputType,
                                                               const FunctionCreateTargetWindowDeathEvent& fnCreateTargetWindowDeathEvent) final;
