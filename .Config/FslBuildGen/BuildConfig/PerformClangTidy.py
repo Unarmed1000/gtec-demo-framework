@@ -79,7 +79,8 @@ from FslBuildGen.Generator.Report.StringVariableDict import StringVariableDict
 from FslBuildGen.Location.ResolvedPath import ResolvedPath
 from FslBuildGen.Log import Log
 from FslBuildGen.PackageIncludeDir import PackageIncludeDir
-from FslBuildGen.Packages.Package import Package
+from FslBuildGen.Packages.Package import Package, PackageDefine
+from FslBuildGen.Packages.Unresolved.UnresolvedPackageDefine import UnresolvedPackageDefine
 from FslBuildGen.ProjectId import ProjectId
 from FslBuildGen.ToolConfig import ToolConfig
 from FslBuildGen.ToolConfigProjectContext import ToolConfigProjectContext
@@ -126,6 +127,13 @@ def __ResolveVariables(strWithVariables: str, variableDict: StringVariableDict, 
     return "".join(parsedStr.SplitList)
 
 
+def _ToDefineCommand(define: PackageDefine | UnresolvedPackageDefine) -> str:
+    """
+    Format the define the same way as the compile commands do ('NAME' or 'NAME=VALUE')
+    """
+    return define.Name if define.Value is None else f"{define.Name}={define.Value}"
+
+
 def __ExtractVariantDefines(log: Log, localVariantInfo: LocalVariantInfo, package: Package) -> list[str]:
     """
     Extract all static and virtual defines
@@ -140,12 +148,12 @@ def __ExtractVariantDefines(log: Log, localVariantInfo: LocalVariantInfo, packag
                 raise Exception("Unsupported virtual variant type")
             for _externalDep in variant.Options[0].ExternalDependencies:
                 for define in variant.Options[0].DirectDefines:
-                    allDefines.append(define.Name)
+                    allDefines.append(_ToDefineCommand(define))
         else:
             optionName = localVariantInfo.ResolvedVariantSettingsDict[variant.Name]
             selectedOption = variant.OptionDict[optionName]
             for define in selectedOption.DirectDefines:
-                allDefines.append(define.Name)
+                allDefines.append(_ToDefineCommand(define))
 
     return allDefines
 
@@ -229,7 +237,7 @@ def _BuildClangTidyPackageIncludePaths(
 def _BuildClangTidyPackageDefines(log: Log, localVariantInfo: LocalVariantInfo, package: Package) -> list[str]:
     defineCommands: list[str] = []
     for define in package.ResolvedBuildAllDefines:
-        defineCommands.append(define.Name)
+        defineCommands.append(_ToDefineCommand(define))
 
     variantDefines = __ExtractVariantDefines(log, localVariantInfo, package)
     for define2 in variantDefines:
@@ -592,8 +600,9 @@ class CMakeHelper:
                 # A dict of all the package defines, the value is False if the define belongs to the package definition, true if its a new one from the compiler commands
                 uniquePackagesDefines: dict[str, bool] = {}
                 for define in package.ResolvedBuildAllDefines:
-                    if define.Name not in uniquePackagesDefines:
-                        uniquePackagesDefines[define.Name] = False
+                    defineCommand = _ToDefineCommand(define)
+                    if defineCommand not in uniquePackagesDefines:
+                        uniquePackagesDefines[defineCommand] = False
 
                 # A dict of all the package includes, the value is negative if the define belongs to the package definition, positive to to indicate its from the compiler commands
                 # positive values can also be used to sorting the list so the include order can be restored!
