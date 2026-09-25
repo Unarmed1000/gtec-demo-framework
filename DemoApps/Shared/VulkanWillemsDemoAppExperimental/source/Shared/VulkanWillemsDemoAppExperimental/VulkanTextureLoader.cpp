@@ -104,7 +104,7 @@ namespace Fsl::Willems
     {
       VkExtent3D texExtent = TypeConverter::UncheckedTo<VkExtent3D>(texture.GetExtent());
       const uint32_t texMipLevels = texture.GetLevels();
-      uint32_t texFaces = texture.GetFaces();
+      uint32_t texFaces = 0;
       uint32_t texLayers = texture.GetLayers();
 
       switch (texType)

@@ -37,6 +37,7 @@
 #include <FslBase/Math/Matrix.hpp>
 #include <FslBase/Math/Vector3.hpp>
 #include <cassert>
+#include <memory>
 #include <utility>
 
 namespace Fsl
@@ -69,7 +70,7 @@ namespace Fsl
       // Process the children
       for (std::size_t i = 0; i < pNode->mNumChildren; ++i)
       {
-        const std::shared_ptr<SceneNode> dstchildNode(new SceneNode());
+        const std::shared_ptr<SceneNode> dstchildNode = std::make_shared<SceneNode>();
         ProcessSceneNodes(dstScene, dstchildNode, pNode->mChildren[i]);
         dstNode->AddChild(dstchildNode);
       }
@@ -86,7 +87,7 @@ namespace Fsl
         return;
       }
 
-      const std::shared_ptr<SceneNode> rootNode(new SceneNode());
+      const std::shared_ptr<SceneNode> rootNode = std::make_shared<SceneNode>();
       ProcessSceneNodes(dstScene, rootNode, pScene->mRootNode);
       dstScene->SetRootNode(rootNode);
     }

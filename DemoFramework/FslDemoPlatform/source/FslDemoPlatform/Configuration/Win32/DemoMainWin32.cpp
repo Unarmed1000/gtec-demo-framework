@@ -64,7 +64,8 @@ namespace
   }
 }
 
-int main(int argc, char* argv[])
+// Unhandled exceptions are rethrown so the runtime reports them
+int main(int argc, char* argv[])    // NOLINT(bugprone-exception-escape)
 {
   //_CrtSetBreakAlloc(280);
 

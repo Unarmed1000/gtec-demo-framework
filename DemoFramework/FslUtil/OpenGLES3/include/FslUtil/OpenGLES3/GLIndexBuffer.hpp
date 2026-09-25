@@ -72,7 +72,7 @@ namespace Fsl::GLES3
     }
     GLIndexBuffer(const GLIndexBuffer&) = delete;
     GLIndexBuffer& operator=(const GLIndexBuffer&) = delete;
-    ~GLIndexBuffer() = default;
+    ~GLIndexBuffer() override = default;
 
 
     //! @brief Create a uninitialized index buffer

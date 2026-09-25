@@ -82,7 +82,7 @@ namespace Fsl::Graphics3D
     [[nodiscard]] BasicMaterialInfo GetMaterialInfo(const BasicMaterial& sourceMaterial) const;
     void SetMaterialInfo(const BasicMaterial& sourceMaterial, const BasicMaterialInfo& materialInfo);
 
-    const BasicMaterialRecord* TryGetMaterialRecord(const BasicMaterial& sourceMaterial) noexcept
+    const BasicMaterialRecord* TryGetMaterialRecord(const BasicMaterial& sourceMaterial)
     {
       return m_records.TryGet(sourceMaterial.GetHandle().Value);
     }

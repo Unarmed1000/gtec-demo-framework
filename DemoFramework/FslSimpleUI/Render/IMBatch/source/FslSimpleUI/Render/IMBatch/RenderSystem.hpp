@@ -47,7 +47,7 @@ namespace Fsl::UI::RenderIMBatch
   public:
     RenderSystem(const RenderSystem&) = delete;
     RenderSystem& operator=(const RenderSystem&) = delete;
-    ~RenderSystem() = default;
+    ~RenderSystem() override = default;
 
     explicit RenderSystem(const RenderSystemCreateInfo& createInfo);
 

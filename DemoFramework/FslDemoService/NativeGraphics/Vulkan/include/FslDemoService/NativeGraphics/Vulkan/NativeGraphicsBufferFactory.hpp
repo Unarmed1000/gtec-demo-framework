@@ -64,7 +64,7 @@ namespace Fsl::Vulkan
 
     void SetBufferData(const BasicNativeBufferHandle hBuffer, const uint32_t dstIndex, ReadOnlyFlexSpan bufferData);
 
-    const VMBuffer& GetBuffer(const BasicNativeBufferHandle buffer) noexcept
+    const VMBuffer& GetBuffer(const BasicNativeBufferHandle buffer)
     {
       return m_buffers.Get(buffer.Value).GetBuffer();
     }

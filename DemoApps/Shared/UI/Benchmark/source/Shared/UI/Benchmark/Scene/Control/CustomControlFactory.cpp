@@ -150,7 +150,7 @@ namespace Fsl::CustomControlFactory
   std::shared_ptr<UI::AreaChart> CreateAreaChart(const UI::Theme::IThemeControlFactory& uiFactory, const std::shared_ptr<UI::ChartData>& data,
                                                  const OpaqueHack hack)
   {
-    const auto context = uiFactory.GetContext();
+    const auto& context = uiFactory.GetContext();
     auto cpuTimeChart = std::make_shared<UI::AreaChart>(context);
     cpuTimeChart->SetAlignmentX(UI::ItemAlignment::Stretch);
     cpuTimeChart->SetAlignmentY(UI::ItemAlignment::Stretch);

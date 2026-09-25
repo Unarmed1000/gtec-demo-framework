@@ -111,6 +111,7 @@
 #define EGL_PLATFORM_ANGLE_DEBUG_LAYERS_ENABLED 0x3451
 #endif
 #ifndef EGL_PLATFORM_X11_KHR
+// NOLINTNEXTLINE(cppcoreguidelines-macro-usage)
 #define EGL_PLATFORM_X11_KHR 0x31D5
 #endif
 
@@ -1010,7 +1011,7 @@ namespace Fsl
       m_graphicsService->ClearActiveApi();
 
       m_apiInit = false;
-      OnAPIShutdown();
+      EGLDemoHost::OnAPIShutdown();
     }
 
     ShutdownSurfaceAndContext();

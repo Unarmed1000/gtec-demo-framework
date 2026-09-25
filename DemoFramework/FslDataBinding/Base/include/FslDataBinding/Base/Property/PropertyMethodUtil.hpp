@@ -34,25 +34,25 @@
 namespace Fsl::DataBinding::PropertyMethodUtil
 {
   template <typename TPropertyValueType, typename T, TPropertyValueType (T::*TGetMethod)() const>
-  static TPropertyValueType TypedGetMemberCallProxy(void* pObjectThis)
+  TPropertyValueType TypedGetMemberCallProxy(void* pObjectThis)
   {
     return (static_cast<T*>(pObjectThis)->*TGetMethod)();
   }
 
   template <typename TPropertyValueType, typename T, bool (T::*TSetMethod)(const TPropertyValueType)>
-  static bool TypedSetMemberCallProxy(void* pObjectThis, const TPropertyValueType value)
+  bool TypedSetMemberCallProxy(void* pObjectThis, const TPropertyValueType value)
   {
     return (static_cast<T*>(pObjectThis)->*TSetMethod)(value);
   }
 
   template <typename TPropertyValueType, typename T, const TPropertyValueType& (T::*TGetMethod)() const>
-  static const TPropertyValueType& TypedGetRefMemberCallProxy(void* pObjectThis)
+  const TPropertyValueType& TypedGetRefMemberCallProxy(void* pObjectThis)
   {
     return (static_cast<T*>(pObjectThis)->*TGetMethod)();
   }
 
   template <typename TPropertyValueType, typename T, bool (T::*TSetMethod)(const TPropertyValueType&)>
-  static bool TypedSetRefMemberCallProxy(void* pObjectThis, const TPropertyValueType& value)
+  bool TypedSetRefMemberCallProxy(void* pObjectThis, const TPropertyValueType& value)
   {
     return (static_cast<T*>(pObjectThis)->*TSetMethod)(value);
   }

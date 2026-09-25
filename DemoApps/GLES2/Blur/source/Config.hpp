@@ -33,7 +33,6 @@
 
 #include <FslBase/Exceptions.hpp>
 #include <FslBase/Math/Point2.hpp>
-
 #include <cstdint>
 
 namespace Fsl
@@ -80,14 +79,13 @@ namespace Fsl
     float Sigma{17};
     ShaderType::Enum TheShaderType{ShaderType::HardCoded};
     bool CompareEnabled{false};
-    uint32_t CRMFlags;
+    uint32_t CRMFlags{0xFFFFFFFF & ~(1 << static_cast<int>(RenderMode::ReferenceOnePass))};
     CaptionType::Enum TheCaptionType{CaptionType::Algorithm};
     bool UseOptimalSigma{false};
 
     Config()
-      : CRMFlags(0xFFFFFFFF & ~(1 << static_cast<int>(RenderMode::ReferenceOnePass)))
-    {
-    }
+
+      = default;
 
     void SetRenderMode(const RenderMode::Enum value)
     {

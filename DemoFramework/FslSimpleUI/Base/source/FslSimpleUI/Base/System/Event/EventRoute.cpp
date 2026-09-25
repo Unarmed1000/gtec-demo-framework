@@ -48,7 +48,7 @@ namespace Fsl::UI
   {
     constexpr std::size_t InitialNodeCapacity = 32u;
 
-    inline bool Exists(const std::vector<std::shared_ptr<TreeNode>>& nodes, const std::shared_ptr<TreeNode>& node)
+    [[maybe_unused]] inline bool Exists(const std::vector<std::shared_ptr<TreeNode>>& nodes, const std::shared_ptr<TreeNode>& node)
     {
       return std::find(nodes.begin(), nodes.end(), node) != nodes.end();
     }

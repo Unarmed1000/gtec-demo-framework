@@ -38,7 +38,7 @@ namespace Fsl
 {
   namespace EqualHelper
   {
-    inline static bool IsAlmostEqual(const DpValueF lhs, const DpValueF rhs)
+    inline bool IsAlmostEqual(const DpValueF lhs, const DpValueF rhs)
     {
       return IsAlmostEqual(lhs.Value, rhs.Value);
     }

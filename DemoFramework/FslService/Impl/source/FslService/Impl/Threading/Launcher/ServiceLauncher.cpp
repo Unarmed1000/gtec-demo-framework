@@ -177,7 +177,7 @@ namespace Fsl
 
 
     void StartService(const RegisteredServiceDeque& services, TypeServiceMaps& rServiceProviderMaps,
-                      std::set<std::type_index>& rMultiProviderInterfaces)
+                      std::set<std::type_index> const& rMultiProviderInterfaces)
     {
       // Sort the services according to priority
       RegisteredServiceDeque sortedServices(services);

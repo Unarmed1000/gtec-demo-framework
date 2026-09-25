@@ -53,10 +53,10 @@ namespace Fsl::Procedural
       {
         return (currentIndexCount & 1) == 0 ? currentIndexCount + 4 + srcIndexCount : currentIndexCount + 5 + srcIndexCount;
       }
-      else
-      {
-        return srcIndexCount;
-      }
+
+
+      return srcIndexCount;
+
     default:
       throw NotImplementedException("Unknown primitive type");
     }

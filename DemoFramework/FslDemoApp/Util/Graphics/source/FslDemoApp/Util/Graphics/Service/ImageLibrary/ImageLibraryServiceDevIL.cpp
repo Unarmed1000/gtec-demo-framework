@@ -154,12 +154,12 @@ namespace Fsl
           rPixelFormat = PixelFormat::R8G8B8_UINT;
           return true;
         }
-        else if (format.Type == IL_HALF)
+        if (format.Type == IL_HALF)
         {
           rPixelFormat = PixelFormat::R16G16B16_SFLOAT;
           return true;
         }
-        else if (format.Type == IL_FLOAT)
+        if (format.Type == IL_FLOAT)
         {
           rPixelFormat = PixelFormat::R32G32B32_SFLOAT;
           return true;
@@ -178,12 +178,12 @@ namespace Fsl
           rPixelFormat = PixelFormat::R8G8B8A8_UINT;
           return true;
         }
-        else if (format.Type == IL_FLOAT)
+        if (format.Type == IL_FLOAT)
         {
           rPixelFormat = PixelFormat::R32G32B32A32_SFLOAT;
           return true;
         }
-        else if (format.Type == IL_HALF)
+        if (format.Type == IL_HALF)
         {
           rPixelFormat = PixelFormat::R16G16B16A16_SFLOAT;
           return true;

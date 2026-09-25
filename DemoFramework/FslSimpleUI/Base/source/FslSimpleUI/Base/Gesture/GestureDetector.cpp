@@ -139,7 +139,8 @@ namespace Fsl::UI
     return *this;
   }
 
-  GestureDetector::GestureDetector(GestureDetector&& other) noexcept
+  // The member move constructors do not allocate, so this can not throw
+  GestureDetector::GestureDetector(GestureDetector&& other) noexcept    // NOLINT(bugprone-exception-escape)
     : m_enabledGestures(other.m_enabledGestures)
     , m_velocityTracker(std::move(other.m_velocityTracker))
     , m_axisFlags(other.m_axisFlags)

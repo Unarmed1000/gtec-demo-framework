@@ -212,7 +212,7 @@ TEST(TestReadOnlyFlexVertexSpan, Construct_EmptyReadOnlyFlexSpan_EmptyVertexDecl
 {
   const VertexDeclarationSpan vertexDeclaration;
   const ReadOnlyFlexSpan flexSpan;
-  EXPECT_THROW(ReadOnlyFlexVertexSpan span(flexSpan, vertexDeclaration), std::invalid_argument);
+  EXPECT_THROW(const ReadOnlyFlexVertexSpan span(flexSpan, vertexDeclaration), std::invalid_argument);
 }
 
 
@@ -220,7 +220,7 @@ TEST(TestReadOnlyFlexVertexSpan, Construct_EmptyReadOnlyFlexSpan_EmptyVertexDecl
 {
   const VertexDeclarationSpan vertexDeclaration;
   const ReadOnlyFlexSpan flexSpan(nullptr, 0, 1);
-  EXPECT_THROW(ReadOnlyFlexVertexSpan span(flexSpan, vertexDeclaration), std::invalid_argument);
+  EXPECT_THROW(const ReadOnlyFlexVertexSpan span(flexSpan, vertexDeclaration), std::invalid_argument);
 }
 
 

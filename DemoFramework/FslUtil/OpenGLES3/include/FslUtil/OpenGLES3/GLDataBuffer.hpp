@@ -63,7 +63,7 @@ namespace Fsl::GLES3
     }
     GLDataBuffer(const GLDataBuffer&) = delete;
     GLDataBuffer& operator=(const GLDataBuffer&) = delete;
-    ~GLDataBuffer() = default;
+    ~GLDataBuffer() override = default;
 
 
     //! @brief Create a uninitialized index buffer

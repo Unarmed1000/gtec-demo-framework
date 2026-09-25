@@ -99,7 +99,7 @@ namespace Fsl
       return positionPxf;
     }
 
-    void ApplyDropStartEffect(std::span<MoveableRectangleRecord> records) noexcept
+    void ApplyDropStartEffect(std::span<MoveableRectangleRecord> records)
     {
       for (MoveableRectangleRecord& rRecord : records)
       {
@@ -111,8 +111,7 @@ namespace Fsl
       }
     }
 
-    std::array<MoveableRectangleRecord, 3> CreateRectangleRecords(const PxSize2D windowSizePx,
-                                                                  const SpriteUnitConverter& spriteUnitConverter) noexcept
+    std::array<MoveableRectangleRecord, 3> CreateRectangleRecords(const PxSize2D windowSizePx, const SpriteUnitConverter& spriteUnitConverter)
     {
       const PxSize1D size0Px(spriteUnitConverter.ToPxSize1D(DpSize1D::Create(100)));
       const PxSize1D size1Px(spriteUnitConverter.ToPxSize1D(DpSize1D::Create(92)));

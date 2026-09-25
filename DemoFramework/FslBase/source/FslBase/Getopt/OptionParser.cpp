@@ -245,7 +245,7 @@ namespace Fsl
       {
         if (!option.IsPositional)
         {
-          str += "-";
+          str += '-';
         }
         str += option.ShortName;
         if (!option.Name.empty())
@@ -559,7 +559,7 @@ namespace Fsl
                                                 StringViewLite strHelpCaption)
   {
     std::deque<ParserRecord> inputOptionParsersEx;
-    for (auto inputOptionParser : inputOptionParsers)
+    for (auto* inputOptionParser : inputOptionParsers)
     {
       inputOptionParsersEx.emplace_back(inputOptionParser, 0);
     }

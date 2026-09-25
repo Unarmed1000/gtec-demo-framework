@@ -54,7 +54,7 @@ namespace Fsl
     if (m_state != State::Uninitialized)
     {
       FSLLOG3_DEBUG_WARNING("ANativeGraphicsService device still initialized at shutdown");
-      DestroyDevice();
+      ANativeGraphicsService::DestroyDevice();
     }
   }
 
@@ -130,7 +130,7 @@ namespace Fsl
       try
       {
         FSLLOG3_WARNING("Dependent resources still allocated on device shutdown, trying to free them");
-        DestroyDependentResources();
+        ANativeGraphicsService::DestroyDependentResources();
       }
       catch (std::exception& ex)
       {

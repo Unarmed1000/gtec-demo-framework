@@ -399,7 +399,7 @@ namespace Fsl
     };
 
     std::weak_ptr<INativeWindowEventQueue> m_eventQueue;
-    bool m_forceActivated;
+    bool m_forceActivated{LocalConfig::UseForceActivated};
     bool m_activated{false};
     uint32_t m_mouseButtonState{0};
     std::deque<WindowRecord> m_activeWindows;
@@ -407,7 +407,7 @@ namespace Fsl
   public:
     explicit PlatformNativeWindowSystemWin32State(std::weak_ptr<INativeWindowEventQueue> eventQueue)
       : m_eventQueue(std::move(eventQueue))
-      , m_forceActivated(LocalConfig::UseForceActivated)
+
 
     {
     }
@@ -562,7 +562,6 @@ namespace Fsl
       FSL_PARAM_NOT_USED(timestamp);
       FSL_PARAM_NOT_USED(hWnd);
       FSL_PARAM_NOT_USED(lParam);
-      const uint32_t hiWord = ((wParam >> 16) & 0xFFFF);
       const uint32_t lowWord = (wParam & 0xFFFF);
 
       // Order of commands on activate == false and minimize
@@ -978,7 +977,6 @@ namespace Fsl
 
     Rectangle targetRectangle = nativeWindowConfig.GetWindowRectangle();
 
-    bool bFullscreen = false;
     DWORD dwStyle = WS_OVERLAPPEDWINDOW | WS_CLIPSIBLINGS | WS_CLIPCHILDREN;
     switch (nativeWindowConfig.GetWindowMode())
     {
@@ -998,7 +996,6 @@ namespace Fsl
         }
 
         dwStyle = WS_POPUP | WS_VISIBLE | WS_SYSMENU;
-        bFullscreen = true;
 
         FSLLOG3_INFO_IF(nativeWindowSetup.GetVerbosityLevel() > 0, "PlatformNativeWindowAdapterWin32: Creating fullscreen window: {}",
                         targetRectangle);

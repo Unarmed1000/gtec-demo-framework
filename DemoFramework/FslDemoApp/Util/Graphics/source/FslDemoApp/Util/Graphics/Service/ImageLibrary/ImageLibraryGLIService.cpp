@@ -77,7 +77,7 @@ namespace Fsl
     }
 
 
-    bool TryConvert(gli::texture& texture, const PixelFormat srcFormat, const PixelFormat dstFormat)
+    bool TryConvert(gli::texture const& texture, const PixelFormat srcFormat, const PixelFormat dstFormat)
     {
       {    // TODO: try to re-enable this once we upgrade GLI
            // gli::format gliDstFormat = GLIConversionHelper::TryConvert(dstFormat);

@@ -87,7 +87,8 @@ namespace Fsl
 
   namespace RegisterDemoAppUtilGraphics
   {
-    void Setup(HostDemoAppSetup& rSetup)
+    // The signature matches the other demo app setup functions
+    void Setup(HostDemoAppSetup& rSetup)    // NOLINT(misc-const-correctness)
     {
       auto serviceRegistry = rSetup.TheServiceRegistry;
 

@@ -85,21 +85,16 @@ namespace Fsl
         GLint BlendSrcAlpha{0};
         GLint BlendDstRGB{0};
         GLint BlendDstAlpha{0};
-        GLint ActiveTexture;
-        GLint CurrentTexture;
-        GLint CurrentProgram;
-        GLint VertexBuffer;
-        GLint IndexBuffer;
+        GLint ActiveTexture{GLValues::InvalidHandle};
+        GLint CurrentTexture{GLValues::InvalidHandle};
+        GLint CurrentProgram{GLValues::InvalidHandle};
+        GLint VertexBuffer{GLValues::InvalidHandle};
+        GLint IndexBuffer{GLValues::InvalidHandle};
         std::array<OldVertexAttrib, 3> Attrib{};
 
         OldState()
-          : ActiveTexture(GLValues::InvalidHandle)
-          , CurrentTexture(GLValues::InvalidHandle)
-          , CurrentProgram(GLValues::InvalidHandle)
-          , VertexBuffer(GLValues::InvalidHandle)
-          , IndexBuffer(GLValues::InvalidHandle)
-        {
-        }
+
+          = default;
       };
 
       struct ProgramInfo

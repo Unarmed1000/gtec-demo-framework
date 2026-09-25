@@ -73,7 +73,7 @@ namespace Fsl::EGLConfigUtil
         {
           return 0;
         }
-        else if (desiredValue > 0)
+        if (desiredValue > 0)
         {
           return (actualValue >= desiredValue ? 1 : 0);
         }
@@ -83,11 +83,11 @@ namespace Fsl::EGLConfigUtil
         {
           return 0;
         }
-        else if (desiredValue == 0)
+        if (desiredValue == 0)
         {
           return actualValue == 0 ? 10 : 1;
         }
-        else if (actualValue >= 128)
+        if (actualValue >= 128)
         {
           return 1;
         }

@@ -108,7 +108,7 @@ TEST(TestString_StringView, SubStr_InvalidPos)
 {
   const std::string_view strView("0123456789");
 
-  EXPECT_THROW([[maybe_unused]] auto res = strView.substr(11u), std::out_of_range);
+  EXPECT_THROW([[maybe_unused]] const auto res = strView.substr(11u), std::out_of_range);
 }
 
 
@@ -159,7 +159,7 @@ TEST(TestString_StringView, At_OutOfBounds)
   const std::string str("Hello world");
   const std::string_view strView = Convert(str);
 
-  EXPECT_THROW([[maybe_unused]] auto res = strView.at(str.size()), std::out_of_range);
+  EXPECT_THROW([[maybe_unused]] const auto res = strView.at(str.size()), std::out_of_range);
 }
 
 
@@ -168,7 +168,7 @@ TEST(TestString_StringView, At_Empty_OutOfBounds)
   const std::string str;
   const std::string_view strView = Convert(str);
 
-  EXPECT_THROW([[maybe_unused]] auto res = strView.at(str.size()), std::out_of_range);
+  EXPECT_THROW([[maybe_unused]] const auto res = strView.at(str.size()), std::out_of_range);
 }
 
 
@@ -567,7 +567,7 @@ TEST(TestString_StringView, opGreaterOrEqual5)
 TEST(TestString_StringView, compare)
 {
   EXPECT_TRUE(std::string_view("A").compare(std::string_view("B")) < 0);
-  EXPECT_TRUE(std::string_view("B").compare(std::string_view("B")) == 0);
+  EXPECT_TRUE(std::string_view("B") == std::string_view("B"));
   EXPECT_TRUE(std::string_view("C").compare(std::string_view("B")) > 0);
   EXPECT_TRUE(std::string_view("B").compare(std::string_view("A")) > 0);
   EXPECT_TRUE(std::string_view("B").compare(std::string_view("C")) < 0);
@@ -590,7 +590,7 @@ TEST(TestString_StringView, compare)
 TEST(TestString_StringView, compare_string_view)
 {
   EXPECT_TRUE(std::string_view("A").compare(std::string_view("B")) < 0);
-  EXPECT_TRUE(std::string_view("B").compare(std::string_view("B")) == 0);
+  EXPECT_TRUE(std::string_view("B") == std::string_view("B"));
   EXPECT_TRUE(std::string_view("C").compare(std::string_view("B")) > 0);
   EXPECT_TRUE(std::string_view("B").compare(std::string_view("A")) > 0);
   EXPECT_TRUE(std::string_view("B").compare(std::string_view("C")) < 0);
@@ -613,7 +613,7 @@ TEST(TestString_StringView, compare_string_view)
 TEST(TestString_StringView, compare_CString)
 {
   EXPECT_TRUE(std::string_view("A").compare("B") < 0);
-  EXPECT_TRUE(std::string_view("B").compare("B") == 0);
+  EXPECT_TRUE(std::string_view("B") == "B");
   EXPECT_TRUE(std::string_view("C").compare("B") > 0);
   EXPECT_TRUE(std::string_view("B").compare("A") > 0);
   EXPECT_TRUE(std::string_view("B").compare("C") < 0);
@@ -636,9 +636,9 @@ TEST(TestString_StringView, compare_CString)
 
 TEST(TestString_StringView, compare_Empty)
 {
-  EXPECT_TRUE(std::string_view().compare(std::string_view()) == 0);
-  EXPECT_TRUE(std::string_view("").compare(std::string_view()) == 0);
-  EXPECT_TRUE(std::string_view().compare(std::string_view("")) == 0);
+  EXPECT_TRUE(std::string_view().empty());
+  EXPECT_TRUE(std::string_view("").empty());
+  EXPECT_TRUE(std::string_view("").empty());
 }
 
 // TEST(TestString_StringView, compare_Null_CString)
@@ -706,33 +706,33 @@ TEST(TestString_StringView, starts_with_CString)
   // This is unfortunately undefined behavior instead of just a empty view!
   // EXPECT_TRUE(std::string_view("A").starts_with(nullptr));
   EXPECT_TRUE(std::string_view("A").starts_with(""));
-  EXPECT_TRUE(std::string_view("A").starts_with("A"));
+  EXPECT_TRUE(std::string_view("A").starts_with('A'));
 
   // This is unfortunately undefined behavior instead of just a empty view!
   // EXPECT_TRUE(std::string_view("AB").starts_with(nullptr));
   EXPECT_TRUE(std::string_view("AB").starts_with(""));
-  EXPECT_TRUE(std::string_view("AB").starts_with("A"));
+  EXPECT_TRUE(std::string_view("AB").starts_with('A'));
   EXPECT_TRUE(std::string_view("AB").starts_with("AB"));
 
   // This is unfortunately undefined behavior instead of just a empty view!
   // EXPECT_TRUE(std::string_view("ABC").starts_with(nullptr));
   EXPECT_TRUE(std::string_view("ABC").starts_with(""));
-  EXPECT_TRUE(std::string_view("ABC").starts_with("A"));
+  EXPECT_TRUE(std::string_view("ABC").starts_with('A'));
   EXPECT_TRUE(std::string_view("ABC").starts_with("AB"));
   EXPECT_TRUE(std::string_view("ABC").starts_with("ABC"));
 
-  EXPECT_FALSE(std::string_view().starts_with("A"));
+  EXPECT_FALSE(std::string_view().starts_with('A'));
 
-  EXPECT_FALSE(std::string_view("").starts_with("A"));
+  EXPECT_FALSE(std::string_view("").starts_with('A'));
 
-  EXPECT_FALSE(std::string_view("A").starts_with("B"));
+  EXPECT_FALSE(std::string_view("A").starts_with('B'));
   EXPECT_FALSE(std::string_view("A").starts_with("AB"));
 
-  EXPECT_FALSE(std::string_view("AB").starts_with("B"));
+  EXPECT_FALSE(std::string_view("AB").starts_with('B'));
   EXPECT_FALSE(std::string_view("AB").starts_with("AC"));
   EXPECT_FALSE(std::string_view("AB").starts_with("ABC"));
 
-  EXPECT_FALSE(std::string_view("ABC").starts_with("B"));
+  EXPECT_FALSE(std::string_view("ABC").starts_with('B'));
   EXPECT_FALSE(std::string_view("ABC").starts_with("AC"));
   EXPECT_FALSE(std::string_view("ABC").starts_with("ABD"));
   EXPECT_FALSE(std::string_view("ABC").starts_with("ABDA"));
@@ -817,33 +817,33 @@ TEST(TestString_StringView, ends_with_CString)
   // This is unfortunately undefined behavior instead of just a empty view!
   // EXPECT_TRUE(std::string_view("A").ends_with(nullptr));
   EXPECT_TRUE(std::string_view("A").ends_with(""));
-  EXPECT_TRUE(std::string_view("A").ends_with("A"));
+  EXPECT_TRUE(std::string_view("A").ends_with('A'));
 
   // This is unfortunately undefined behavior instead of just a empty view!
   // EXPECT_TRUE(std::string_view("BA").ends_with(nullptr));
   EXPECT_TRUE(std::string_view("BA").ends_with(""));
-  EXPECT_TRUE(std::string_view("BA").ends_with("A"));
+  EXPECT_TRUE(std::string_view("BA").ends_with('A'));
   EXPECT_TRUE(std::string_view("BA").ends_with("BA"));
 
   // This is unfortunately undefined behavior instead of just a empty view!
   // EXPECT_TRUE(std::string_view("CBA").ends_with(nullptr));
   EXPECT_TRUE(std::string_view("CBA").ends_with(""));
-  EXPECT_TRUE(std::string_view("CBA").ends_with("A"));
+  EXPECT_TRUE(std::string_view("CBA").ends_with('A'));
   EXPECT_TRUE(std::string_view("CBA").ends_with("BA"));
   EXPECT_TRUE(std::string_view("CBA").ends_with("CBA"));
 
-  EXPECT_FALSE(std::string_view().ends_with("A"));
+  EXPECT_FALSE(std::string_view().ends_with('A'));
 
-  EXPECT_FALSE(std::string_view("").ends_with("A"));
+  EXPECT_FALSE(std::string_view("").ends_with('A'));
 
-  EXPECT_FALSE(std::string_view("A").ends_with("B"));
+  EXPECT_FALSE(std::string_view("A").ends_with('B'));
   EXPECT_FALSE(std::string_view("A").ends_with("BA"));
 
-  EXPECT_FALSE(std::string_view("BA").ends_with("B"));
+  EXPECT_FALSE(std::string_view("BA").ends_with('B'));
   EXPECT_FALSE(std::string_view("BA").ends_with("CA"));
   EXPECT_FALSE(std::string_view("BA").ends_with("CBA"));
 
-  EXPECT_FALSE(std::string_view("CBA").ends_with("B"));
+  EXPECT_FALSE(std::string_view("CBA").ends_with('B'));
   EXPECT_FALSE(std::string_view("CBA").ends_with("CA"));
   EXPECT_FALSE(std::string_view("CBA").ends_with("DBA"));
   EXPECT_FALSE(std::string_view("CBA").ends_with("ADBA"));

@@ -48,8 +48,8 @@ namespace Fsl::DataBinding::Internal::ConverterUtil
   namespace InternalHelper
   {
     template <typename TTarget, typename... TSource, std::size_t... TIndices>
-    static TTarget DoConvert(const std::function<TTarget(TSource... value)>& fnConvert, const ReadOnlySpan<PropertyGetInfo> getters,
-                             [[maybe_unused]] std::index_sequence<TIndices...> const& /*unused*/)
+    TTarget DoConvert(const std::function<TTarget(TSource... value)>& fnConvert, const ReadOnlySpan<PropertyGetInfo> getters,
+                      [[maybe_unused]] std::index_sequence<TIndices...> const& /*unused*/)
     {
       return fnConvert(Fsl::DataBinding::Internal::TypedPropertyMethodsUtil::Get<TSource>(getters[TIndices])...);
     }
@@ -72,7 +72,7 @@ namespace Fsl::DataBinding::Internal::ConverterUtil
 
   //! @brief Invoke the converter function 'fnConvert' with the right getter
   template <typename TTarget, typename... TSource>
-  static TTarget InvokeConvert(const std::function<TTarget(TSource... value)>& fnConvert, const ReadOnlySpan<PropertyGetInfo> getters)
+  TTarget InvokeConvert(const std::function<TTarget(TSource... value)>& fnConvert, const ReadOnlySpan<PropertyGetInfo> getters)
   {
     return Fsl::DataBinding::Internal::ConverterUtil::InternalHelper::DoConvert<TTarget, TSource...>(
       fnConvert, getters, std::make_integer_sequence<std::size_t, sizeof...(TSource)>());
@@ -80,8 +80,8 @@ namespace Fsl::DataBinding::Internal::ConverterUtil
 
   //! @brief Invoke the converter function 'fnConvert' with the right getter
   template <typename TTarget, typename... TSource>
-  static void InvokeConvertBack(Span<PropertySetResult> resultSpan, const std::function<std::tuple<TSource...>(const TTarget&)>& fnConvertBack,
-                                const ReadOnlySpan<Internal::PropertySetInfo> setters, const Internal::PropertyGetInfo getter)
+  void InvokeConvertBack(Span<PropertySetResult> resultSpan, const std::function<std::tuple<TSource...>(const TTarget&)>& fnConvertBack,
+                         const ReadOnlySpan<Internal::PropertySetInfo> setters, const Internal::PropertyGetInfo getter)
   {
     auto getValue = Fsl::DataBinding::Internal::TypedPropertyMethodsUtil::Get<TTarget>(getter);
     auto convertedTupleValue = fnConvertBack(getValue);

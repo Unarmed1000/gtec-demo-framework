@@ -309,7 +309,7 @@ namespace Fsl
           {
             if (!res.empty())
             {
-              res += "|";
+              res += '|';
             }
             res = fmt::format("SrcTextureRectPx {}!={}", pLhsChar->CharInfo.SrcTextureRectPx, pRhsChar->CharInfo.SrcTextureRectPx);
           }
@@ -317,7 +317,7 @@ namespace Fsl
           {
             if (!res.empty())
             {
-              res += "|";
+              res += '|';
             }
             res = fmt::format("XAdvancePx {}!={}", pLhsChar->CharInfo.XAdvancePx, pRhsChar->CharInfo.XAdvancePx);
           }

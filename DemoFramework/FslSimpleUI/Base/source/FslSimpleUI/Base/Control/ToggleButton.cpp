@@ -116,7 +116,7 @@ namespace Fsl::UI
   {
     assert(m_font.Mesh.GetSprite());
     Enable(WindowFlags(WindowFlags::DrawEnabled | WindowFlags::ClickInput | WindowFlags::MouseOver));
-    UpdateAnimationState(true);
+    ToggleButton::UpdateAnimationState(true);
   }
 
 

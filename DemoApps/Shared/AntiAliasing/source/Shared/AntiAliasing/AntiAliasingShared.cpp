@@ -61,7 +61,7 @@ namespace Fsl
     {
       if (!rStr.empty())
       {
-        rStr += "|";
+        rStr += '|';
       }
       rStr += str;
     }

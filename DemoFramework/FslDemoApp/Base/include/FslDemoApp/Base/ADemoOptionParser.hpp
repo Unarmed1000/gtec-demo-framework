@@ -40,7 +40,7 @@ namespace Fsl
   public:
     ADemoOptionParser(const ADemoOptionParser&) = delete;
     ADemoOptionParser& operator=(const ADemoOptionParser&) = delete;
-    ~ADemoOptionParser() = default;
+    ~ADemoOptionParser() override = default;
 
     [[nodiscard]] std::string GetName() const override
     {

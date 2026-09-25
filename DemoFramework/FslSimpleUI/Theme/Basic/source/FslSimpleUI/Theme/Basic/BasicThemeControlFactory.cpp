@@ -1038,7 +1038,7 @@ namespace Fsl::UI::Theme
                                                                                                   std::string&& strFormat, const SliderConfig& config)
   {
     auto newControl = CreateSliderFmtValue(orientation, value, config);
-    newControl->SetFormatString(std::move(strFormat));
+    newControl->SetFormatString(strFormat);
     newControl->FinishAnimation();
     return newControl;
   }
@@ -1092,7 +1092,7 @@ namespace Fsl::UI::Theme
                                                                                                   std::string&& strFormat, const SliderConfig& config)
   {
     auto newControl = CreateSliderFmtValue(orientation, value, config);
-    newControl->SetFormatString(std::move(strFormat));
+    newControl->SetFormatString(strFormat);
     newControl->FinishAnimation();
     return newControl;
   }
@@ -1148,7 +1148,7 @@ namespace Fsl::UI::Theme
                                                                                                    const SliderConfig& config)
   {
     auto newControl = CreateSliderFmtValue(orientation, value, config);
-    newControl->SetFormatString(std::move(strFormat));
+    newControl->SetFormatString(strFormat);
     newControl->FinishAnimation();
     return newControl;
   }
@@ -1202,7 +1202,7 @@ namespace Fsl::UI::Theme
                                                                                                 std::string&& strFormat, const SliderConfig& config)
   {
     auto newControl = CreateSliderFmtValue(orientation, value, config);
-    newControl->SetFormatString(std::move(strFormat));
+    newControl->SetFormatString(strFormat);
     newControl->FinishAnimation();
     return newControl;
   }

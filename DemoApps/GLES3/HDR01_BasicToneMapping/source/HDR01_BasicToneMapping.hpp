@@ -59,11 +59,10 @@ namespace Fsl
 
     struct ProgramLocations : BasicProgramLocations
     {
-      GLint Exposure;
+      GLint Exposure{GLES3::GLValues::InvalidLocation};
       ProgramLocations()
-        : Exposure(GLES3::GLValues::InvalidLocation)
-      {
-      }
+
+        = default;
     };
 
     struct ProgramInfo

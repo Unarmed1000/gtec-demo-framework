@@ -38,6 +38,8 @@
 
 using namespace Fsl;
 
+// The benchmark loop variable of 'for (auto _ : state)' is never read by design
+// NOLINTBEGIN(clang-analyzer-deadcode.DeadStores)
 namespace
 {
   TightBitmap CreateSrcBitmap(const PixelFormat pixelFormat)
@@ -336,3 +338,4 @@ BENCHMARK(UncheckedR32G32B32A32FloatToR16G16B16A16UNorm);
 
 BENCHMARK(UncheckedR16G16B16UNormToR32G32B32Float);
 BENCHMARK(UncheckedR32G32B32FloatToR16G16B16UNorm);
+// NOLINTEND(clang-analyzer-deadcode.DeadStores)

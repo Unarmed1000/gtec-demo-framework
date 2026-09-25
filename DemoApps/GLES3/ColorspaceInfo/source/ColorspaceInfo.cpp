@@ -79,19 +79,19 @@ namespace Fsl
     const EGLDisplay eglDisplay = eglHostInfo->GetDisplay();
 
     FSLLOG3_INFO("Checking for EGL colorspace extensions");
-    for (auto extension : g_eglColorspaceExtensions)
+    for (const auto* extension : g_eglColorspaceExtensions)
     {
       FSLLOG3_INFO("- {}: {}", extension, EGLUtil::HasExtension(eglDisplay, extension) ? "Supported" : "Not supported");
     }
 
     FSLLOG3_INFO("Checking for colorspace meta data extensions");
-    for (auto extension : g_eglColorspaceMetaDataExtensions)
+    for (const auto* extension : g_eglColorspaceMetaDataExtensions)
     {
       FSLLOG3_INFO("- {}: {}", extension, EGLUtil::HasExtension(eglDisplay, extension) ? "Supported" : "Not supported");
     }
 
     FSLLOG3_INFO("Checking for other relevant extensions");
-    for (auto extension : g_otherExtensions)
+    for (const auto* extension : g_otherExtensions)
     {
       FSLLOG3_INFO("- {}: {}", extension, EGLUtil::HasExtension(eglDisplay, extension) ? "Supported" : "Not supported");
     }

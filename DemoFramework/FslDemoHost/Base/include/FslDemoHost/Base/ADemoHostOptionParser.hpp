@@ -56,7 +56,7 @@ namespace Fsl
   public:
     ADemoHostOptionParser(const ADemoHostOptionParser&) = delete;
     ADemoHostOptionParser& operator=(const ADemoHostOptionParser&) = delete;
-    ~ADemoHostOptionParser() = default;
+    ~ADemoHostOptionParser() override = default;
     explicit ADemoHostOptionParser(const DemoHostOptionConfig config);
 
 

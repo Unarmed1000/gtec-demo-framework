@@ -79,7 +79,7 @@ namespace Fsl::GLES2
     }
     GLIndexBufferArray(const GLIndexBufferArray&) = delete;
     GLIndexBufferArray& operator=(const GLIndexBufferArray&) = delete;
-    ~GLIndexBufferArray() = default;
+    ~GLIndexBufferArray() override = default;
 
     //! @brief Create a uninitialized index buffer
     GLIndexBufferArray();

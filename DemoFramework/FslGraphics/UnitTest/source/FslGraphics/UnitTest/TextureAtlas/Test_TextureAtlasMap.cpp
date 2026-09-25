@@ -61,7 +61,7 @@ TEST(TestTextureAtlas_TextureAtlasMap, Construct)
   atlas.Reset(1);
   atlas.SetEntry(0, PxRectangleU32::Create(4, 6, 8, 12), PxThicknessU::Create(3, 4, 9, 14), TestDp, "hello");
 
-  EXPECT_NO_THROW(TextureAtlasMap dummy(atlas));
+  EXPECT_NO_THROW(const TextureAtlasMap dummy(atlas));
 }
 
 

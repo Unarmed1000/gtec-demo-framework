@@ -399,6 +399,7 @@ namespace Fsl::Vulkan::VulkanImageCreatorUtil
   }
 
 
+  // NOLINTNEXTLINE(misc-const-correctness): the output parameters are not implemented yet
   void CreateLinear(Vulkan::VUImage& rDstImage, Memory& rDstMemory, const VUPhysicalDeviceRecord& physicalDevice, const VkDevice device,
                     const VkQueue queue, const VkCommandBuffer commandBuffer, const RawCubeBitmap& src, const VkAccessFlags accessMask,
                     const VkSampleCountFlagBits samples, const VkImageUsageFlags imageUsageFlags)
@@ -435,6 +436,7 @@ namespace Fsl::Vulkan::VulkanImageCreatorUtil
   }
 
 
+  // NOLINTNEXTLINE(misc-const-correctness): the output parameters are not implemented yet
   void CreateLinear(Vulkan::VUImage& rDstImage, Memory& rDstMemory, const VUPhysicalDeviceRecord& physicalDevice, const VkDevice device,
                     const VkQueue queue, const VkCommandBuffer commandBuffer, const ReadOnlyRawTexture& src, const VkAccessFlags accessMask,
                     const VkSampleCountFlagBits samples, const VkImageUsageFlags imageUsageFlags)

@@ -422,7 +422,6 @@ namespace Fsl::GLES3
 
       assert(verticesLeft <= m_vertexBuffer.GetCapacity());
       m_vertexBuffer.SetDataFast(m_vertexOffset, pSrcVertices, verticesLeft);
-      pSrcVertices += verticesLeft;
       m_vertexOffset += verticesLeft;
 
       const int32_t numIndices = 4 + (((UncheckedNumericCast<int32_t>(verticesLeft) / LocalConfig::QuadVertexCount) - 1) * 6);
@@ -430,8 +429,6 @@ namespace Fsl::GLES3
       glDrawElements(GL_TRIANGLE_STRIP, numIndices, m_indexBuffer.GetType(), reinterpret_cast<const void*>(m_indexOffset * sizeof(uint16_t)));
       ++m_stats.DrawCalls;
       m_indexOffset += numIndices + 2;
-      verticesLeft = 0;
-      assert(verticesLeft == 0);
     }
   }
 

@@ -597,12 +597,10 @@ namespace Fsl
 
   VkRenderPass HDR04_HDRFramebuffer::OnBuildResources(const VulkanBasic::BuildResourcesContext& context)
   {
-    VkFormat renderFormat = context.SwapchainImageFormat;
-
     // Table 47. Mandatory format support : 16 - bit channels
     // https://www.khronos.org/registry/vulkan/specs/1.0/pdf/vkspec.pdf
     // This format is mandatory, so it should be safe to use
-    renderFormat = VK_FORMAT_R16G16B16A16_SFLOAT;
+    const VkFormat renderFormat = VK_FORMAT_R16G16B16A16_SFLOAT;
 
     m_dependentResources.MainRenderPass =
       CreateRenderPass(m_device.Get(), context.SwapchainImageFormat, context.DepthBufferImageFormat, renderFormat);

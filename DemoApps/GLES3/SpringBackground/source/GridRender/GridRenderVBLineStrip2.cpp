@@ -152,7 +152,7 @@ namespace Fsl
   {
     int32_t pointsWritten = 0;
     pointsWritten += CreateLinesHorizontal(rDst, points, pointsWritten);
-    pointsWritten += CreateLinesVertical(rDst, points, pointsWritten);
+    CreateLinesVertical(rDst, points, pointsWritten);
     m_vertexBuffer.SetData(0, m_coordinates.data(), m_coordinates.size());
   }
 

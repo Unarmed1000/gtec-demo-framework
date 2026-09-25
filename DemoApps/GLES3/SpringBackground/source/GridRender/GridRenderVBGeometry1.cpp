@@ -201,7 +201,7 @@ namespace Fsl
   {
     int32_t pointsWritten = 0;
     pointsWritten += CreateLinesHorizontal(rDst, points, pointsWritten);
-    pointsWritten += CreateLinesVertical(rDst, points, pointsWritten);
+    CreateLinesVertical(rDst, points, pointsWritten);
     m_vertexBuffer.SetData(0, m_coordinates.data(), m_coordinates.size());
   }
 
@@ -216,7 +216,7 @@ namespace Fsl
     const std::ptrdiff_t srcStride = srcGridMaxX;
     const std::ptrdiff_t dstStride = dstGridMaxX + 2;
 
-    const auto* const pDstEnd = rDst.data() + rDst.size();
+    [[maybe_unused]] const auto* const pDstEnd = rDst.data() + rDst.size();
 
     // Create the horizontal border points as they are a special case
     {
@@ -333,7 +333,7 @@ namespace Fsl
     const std::ptrdiff_t srcStride = srcGridMaxX;
     const std::ptrdiff_t dstStride = dstGridMaxY + 2;
 
-    const auto* const pDstEnd = rDst.data() + rDst.size();
+    [[maybe_unused]] const auto* const pDstEnd = rDst.data() + rDst.size();
 
     // Create the vertical border points as they are a special case
     {

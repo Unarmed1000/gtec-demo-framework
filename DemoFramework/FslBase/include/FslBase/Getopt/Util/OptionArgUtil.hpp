@@ -109,7 +109,7 @@ namespace Fsl::OptionArgUtil
       {
         res += " (";
         res += arguments.back().Desc;
-        res += ")";
+        res += ')';
       }
     }
     return res;

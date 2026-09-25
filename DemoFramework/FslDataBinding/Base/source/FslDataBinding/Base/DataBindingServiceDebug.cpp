@@ -80,7 +80,7 @@ namespace Fsl::DataBinding
       {
         if (!strSourceTypes.empty())
         {
-          strSourceTypes += ",";
+          strSourceTypes += ',';
         }
         strSourceTypes += sourceType.TypeIndex.name();
       }

@@ -86,7 +86,7 @@ namespace Fsl::GLES3
 
   GLBufferArray::~GLBufferArray()
   {
-    Reset();
+    GLBufferArray::Reset();
   }
 
 

@@ -59,7 +59,7 @@ namespace Fsl
     struct SlotRecord
     {
       StringViewLite Name;
-      FramePacingMarkerSlot Slot;
+      FramePacingMarkerSlot Slot{};
     };
 
     constexpr std::array<SlotRecord, 4> SlotNames = {

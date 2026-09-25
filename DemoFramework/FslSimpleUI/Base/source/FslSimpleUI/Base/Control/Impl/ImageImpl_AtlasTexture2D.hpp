@@ -41,8 +41,8 @@
 
 namespace Fsl::UI::ImageImpl
 {
-  inline static void WinDraw(const UIDrawContext& context, const AtlasTexture2D& content, const ItemScalePolicy scalepolicy, const Color& color,
-                             const std::shared_ptr<INativeBatch2D>& batch2D)
+  inline void WinDraw(const UIDrawContext& context, const AtlasTexture2D& content, const ItemScalePolicy scalepolicy, const Color& color,
+                      const std::shared_ptr<INativeBatch2D>& batch2D)
   {
     FSL_PARAM_NOT_USED(scalepolicy);
 
@@ -55,7 +55,7 @@ namespace Fsl::UI::ImageImpl
     batch2D->Draw(content, context.TargetRect, color);
   }
 
-  inline static PxSize2D ArrangeOverride(const PxSize2D& finalSizePx, const AtlasTexture2D& content, const ItemScalePolicy scalepolicy)
+  inline PxSize2D ArrangeOverride(const PxSize2D& finalSizePx, const AtlasTexture2D& content, const ItemScalePolicy scalepolicy)
   {
     if (!content.IsValid())
     {
@@ -71,7 +71,7 @@ namespace Fsl::UI::ImageImpl
     return calcedSizePx;
   }
 
-  inline static PxSize2D MeasureOverride(const PxAvailableSize& availableSizePx, const AtlasTexture2D& content)
+  inline PxSize2D MeasureOverride(const PxAvailableSize& availableSizePx, const AtlasTexture2D& content)
   {
     FSL_PARAM_NOT_USED(availableSizePx);
     return content.GetSize();

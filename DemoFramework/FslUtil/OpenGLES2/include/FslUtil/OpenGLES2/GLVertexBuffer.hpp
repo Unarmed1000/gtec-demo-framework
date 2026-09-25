@@ -76,7 +76,7 @@ namespace Fsl::GLES2
     }
     GLVertexBuffer(const GLVertexBuffer&) = delete;
     GLVertexBuffer& operator=(const GLVertexBuffer&) = delete;
-    ~GLVertexBuffer() = default;
+    ~GLVertexBuffer() override = default;
 
 
     //! @brief Create a uninitialized vertex buffer

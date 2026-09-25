@@ -76,7 +76,7 @@ namespace Fsl::GLES3
     }
     GLVertexBufferArray(const GLVertexBufferArray&) = delete;
     GLVertexBufferArray& operator=(const GLVertexBufferArray&) = delete;
-    ~GLVertexBufferArray() = default;
+    ~GLVertexBufferArray() override = default;
 
     //! @brief Create a empty array
     GLVertexBufferArray() = default;

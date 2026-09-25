@@ -49,14 +49,12 @@ namespace Fsl
   {
     struct ProgramLocation
     {
-      GLint ModelViewMatrix;
-      GLint ProjMatrix;
+      GLint ModelViewMatrix{GLES3::GLValues::InvalidLocation};
+      GLint ProjMatrix{GLES3::GLValues::InvalidLocation};
 
       ProgramLocation()
-        : ModelViewMatrix(GLES3::GLValues::InvalidLocation)
-        , ProjMatrix(GLES3::GLValues::InvalidLocation)
-      {
-      }
+
+        = default;
     };
 
     struct ProgramInfo

@@ -40,7 +40,7 @@ namespace Fsl
   {
     // Check if two floats are considered equal
     // This works best for relatively small values
-    inline static bool IsAlmostEqual(const float lhs, const float rhs) noexcept
+    inline bool IsAlmostEqual(const float lhs, const float rhs) noexcept
     {
       return (lhs != rhs ? std::fabs(lhs - rhs) <= FLT_EPSILON : true);
     }

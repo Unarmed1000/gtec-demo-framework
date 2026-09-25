@@ -48,7 +48,7 @@ namespace Fsl
     bool Flicking{false};
 
     MoveableRectangleRecord() = default;
-    MoveableRectangleRecord(const PxPoint2 locationPx, const PxSize2D sizePx, const UI::UIColor renderColor) noexcept
+    MoveableRectangleRecord(const PxPoint2 locationPx, const PxSize2D sizePx, const UI::UIColor renderColor)
       : LocationPx(locationPx)
       , SizePx(sizePx)
       , RenderColor(renderColor)

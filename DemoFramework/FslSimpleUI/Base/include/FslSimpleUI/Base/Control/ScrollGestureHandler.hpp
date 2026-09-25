@@ -78,7 +78,7 @@ namespace Fsl::UI
       AnimStatus Status{AnimStatus::Idle};
       TransitionPxVector2 Anim;
 
-      AnimRecord() noexcept
+      AnimRecord()
         : Anim(TimeSpan::FromSeconds(1), TransitionType::EaseOutSine)
       {
       }

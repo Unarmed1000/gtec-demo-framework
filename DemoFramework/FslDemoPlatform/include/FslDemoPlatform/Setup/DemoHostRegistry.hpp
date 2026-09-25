@@ -55,7 +55,7 @@ namespace Fsl
   public:
     DemoHostRegistry(const DemoHostRegistry&) = delete;
     DemoHostRegistry& operator=(const DemoHostRegistry&) = delete;
-    ~DemoHostRegistry() = default;
+    ~DemoHostRegistry() override = default;
 
     DemoHostRegistry();
     [[nodiscard]] DemoHostSetup GetSetup(const std::deque<DemoHostFeature>& features) const;

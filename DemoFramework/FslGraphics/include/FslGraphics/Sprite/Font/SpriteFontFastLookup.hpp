@@ -144,7 +144,8 @@ namespace Fsl
       return !m_kerningLookup.Empty();
     }
 
-    void Clear() noexcept
+    // Resetting the lookup tables does not allocate, so this can not throw
+    void Clear() noexcept    // NOLINT(bugprone-exception-escape)
     {
       m_charLookup = {};
       m_kerningLookup = {};

@@ -83,7 +83,7 @@ namespace Fsl
       other.m_fontDesc = {};
       other.m_range = {};
     }
-    ~BasicFontKerning() = default;
+    ~BasicFontKerning() override = default;
 
     BasicFontKerning() = default;
 

@@ -44,8 +44,8 @@ namespace Fsl::SpanUtil
 
   //! @brief value compare the content of lhs Span to rhs Span
   template <typename T>
-  inline constexpr static bool UncheckedValueEquals(std::span<const T> lhsSpan, std::span<const T> rhsSpan,
-                                                    const typename std::span<T>::size_type count) noexcept
+  inline constexpr bool UncheckedValueEquals(std::span<const T> lhsSpan, std::span<const T> rhsSpan,
+                                             const typename std::span<T>::size_type count) noexcept
   {
     using TSize = typename std::span<T>::size_type;
 
@@ -66,8 +66,7 @@ namespace Fsl::SpanUtil
   // -------------------------------------------------------------------------------------------------------------------------------------------------
 
   template <typename T>
-  inline constexpr static bool UncheckedValueEquals(std::span<const T> lhsSpan, std::span<T> rhsSpan,
-                                                    const typename std::span<T>::size_type count) noexcept
+  inline constexpr bool UncheckedValueEquals(std::span<const T> lhsSpan, std::span<T> rhsSpan, const typename std::span<T>::size_type count) noexcept
   {
     return UncheckedValueEquals(lhsSpan, std::span<const T>(rhsSpan), count);
   }
@@ -75,8 +74,7 @@ namespace Fsl::SpanUtil
   // -------------------------------------------------------------------------------------------------------------------------------------------------
 
   template <typename T>
-  inline constexpr static bool UncheckedValueEquals(std::span<T> lhsSpan, std::span<const T> rhsSpan,
-                                                    const typename std::span<T>::size_type count) noexcept
+  inline constexpr bool UncheckedValueEquals(std::span<T> lhsSpan, std::span<const T> rhsSpan, const typename std::span<T>::size_type count) noexcept
   {
     return UncheckedValueEquals(std::span<const T>(lhsSpan), rhsSpan, count);
   }
@@ -84,7 +82,7 @@ namespace Fsl::SpanUtil
   // -------------------------------------------------------------------------------------------------------------------------------------------------
 
   template <typename T>
-  inline constexpr static bool UncheckedValueEquals(std::span<T> lhsSpan, std::span<T> rhsSpan, const typename std::span<T>::size_type count) noexcept
+  inline constexpr bool UncheckedValueEquals(std::span<T> lhsSpan, std::span<T> rhsSpan, const typename std::span<T>::size_type count) noexcept
   {
     return UncheckedValueEquals(std::span<const T>(lhsSpan), std::span<const T>(rhsSpan), count);
   }
@@ -95,8 +93,8 @@ namespace Fsl::SpanUtil
 
   //! @brief value compare the content of lhs Span to rhs Span
   template <typename T>
-  inline constexpr static int UncheckedValueCompare(std::span<const T> lhsSpan, std::span<const T> rhsSpan,
-                                                    const typename std::span<const T>::size_type count) noexcept
+  inline constexpr int UncheckedValueCompare(std::span<const T> lhsSpan, std::span<const T> rhsSpan,
+                                             const typename std::span<const T>::size_type count) noexcept
   {
     using TSize = typename std::span<const T>::size_type;
 
@@ -119,8 +117,7 @@ namespace Fsl::SpanUtil
 
   //! @brief value compare the content of lhs Span to rhs Span
   template <typename T>
-  inline constexpr static int UncheckedValueCompare(std::span<const T> lhsSpan, std::span<T> rhsSpan,
-                                                    const typename std::span<T>::size_type count) noexcept
+  inline constexpr int UncheckedValueCompare(std::span<const T> lhsSpan, std::span<T> rhsSpan, const typename std::span<T>::size_type count) noexcept
   {
     return UncheckedValueCompare(lhsSpan, std::span<const T>(rhsSpan), count);
   }
@@ -129,8 +126,7 @@ namespace Fsl::SpanUtil
 
   //! @brief value compare the content of lhs Span to rhs Span
   template <typename T>
-  inline constexpr static int UncheckedValueCompare(std::span<T> lhsSpan, std::span<const T> rhsSpan,
-                                                    const typename std::span<T>::size_type count) noexcept
+  inline constexpr int UncheckedValueCompare(std::span<T> lhsSpan, std::span<const T> rhsSpan, const typename std::span<T>::size_type count) noexcept
   {
     return UncheckedValueCompare(std::span<const T>(lhsSpan), rhsSpan, count);
   }
@@ -139,7 +135,7 @@ namespace Fsl::SpanUtil
 
   //! @brief value compare the content of lhs Span to rhs Span
   template <typename T>
-  inline constexpr static int UncheckedValueCompare(std::span<T> lhsSpan, std::span<T> rhsSpan, const typename std::span<T>::size_type count) noexcept
+  inline constexpr int UncheckedValueCompare(std::span<T> lhsSpan, std::span<T> rhsSpan, const typename std::span<T>::size_type count) noexcept
   {
     return UncheckedValueCompare(std::span<const T>(lhsSpan), std::span<const T>(rhsSpan), count);
   }
@@ -148,8 +144,7 @@ namespace Fsl::SpanUtil
 
   //! @brief value compare the content of lhs Span to rhs Span
   template <typename T>
-  inline constexpr static int UncheckedValueCompare(ReadOnlySpan<T> lhsSpan, ReadOnlySpan<T> rhsSpan,
-                                                    const typename std::span<T>::size_type count) noexcept
+  inline constexpr int UncheckedValueCompare(ReadOnlySpan<T> lhsSpan, ReadOnlySpan<T> rhsSpan, const typename std::span<T>::size_type count) noexcept
   {
     return UncheckedValueCompare(std::span<const T>(lhsSpan), std::span<const T>(rhsSpan), count);
   }

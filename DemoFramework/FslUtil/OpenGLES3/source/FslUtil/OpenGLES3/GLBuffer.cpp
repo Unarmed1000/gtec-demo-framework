@@ -70,7 +70,7 @@ namespace Fsl::GLES3
 
   GLBuffer::~GLBuffer()
   {
-    Reset();
+    GLBuffer::Reset();
   }
 
 

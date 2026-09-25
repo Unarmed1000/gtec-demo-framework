@@ -39,7 +39,7 @@ namespace Fsl
 {
   namespace EqualHelper
   {
-    inline static bool IsAlmostEqual(const PxSize2DF lhs, const PxSize2DF rhs)
+    inline bool IsAlmostEqual(const PxSize2DF lhs, const PxSize2DF rhs)
     {
       return IsAlmostEqual(lhs.Width(), rhs.Width()) && IsAlmostEqual(lhs.Height(), rhs.Height());
     }

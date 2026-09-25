@@ -55,15 +55,12 @@ namespace Fsl
 
     struct ProgramLocations
     {
-      GLint ViewMatrix;
-      GLint ProjMatrix;
-      GLint EquirectangularMap;
+      GLint ViewMatrix{GLES3::GLValues::InvalidLocation};
+      GLint ProjMatrix{GLES3::GLValues::InvalidLocation};
+      GLint EquirectangularMap{GLES3::GLValues::InvalidLocation};
       ProgramLocations()
-        : ViewMatrix(GLES3::GLValues::InvalidLocation)
-        , ProjMatrix(GLES3::GLValues::InvalidLocation)
-        , EquirectangularMap(GLES3::GLValues::InvalidLocation)
-      {
-      }
+
+        = default;
     };
 
     struct ProgramInfo
