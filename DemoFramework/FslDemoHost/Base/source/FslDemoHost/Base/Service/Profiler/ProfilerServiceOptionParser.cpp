@@ -35,7 +35,9 @@
 #include <fmt/format.h>
 #include <algorithm>
 #include <cassert>
+#include <cstdint>
 #include <cstring>
+
 
 namespace Fsl
 {
@@ -48,7 +50,7 @@ namespace Fsl
 
     struct CommandId
     {
-      enum Enum
+      enum Enum : uint8_t
       {
         AverageEntries,
       };

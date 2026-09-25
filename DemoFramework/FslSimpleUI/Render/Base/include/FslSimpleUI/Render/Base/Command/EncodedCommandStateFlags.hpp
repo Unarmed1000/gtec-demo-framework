@@ -32,10 +32,11 @@
  ****************************************************************************************************************************************************/
 
 #include <FslBase/BasicTypes.hpp>
+#include <cstdint>
 
 namespace Fsl::UI
 {
-  enum class EncodedCommandStateFlags : uint32_t
+  enum class EncodedCommandStateFlags : uint16_t
   {
     // Can't be called none due to collision with X11 files
     Nothing = 0,

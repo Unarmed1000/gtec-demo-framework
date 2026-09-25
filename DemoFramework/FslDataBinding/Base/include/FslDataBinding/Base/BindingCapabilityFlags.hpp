@@ -33,9 +33,11 @@
 
 #include <FslBase/BasicTypes.hpp>
 
+#include <cstdint>
+
 namespace Fsl::DataBinding
 {
-  enum class BindingCapabilityFlags : uint32_t
+  enum class BindingCapabilityFlags : uint8_t
   {
     NoFlags = 0,
     ConvertBack = 0x01,

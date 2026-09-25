@@ -36,12 +36,14 @@
 #include <FslDemoApp/Base/Service/Events/Basic/BasicEvent.hpp>
 #include <FslNativeWindow/Base/VirtualMouseButton.hpp>
 
+#include <cstdint>
+
 namespace Fsl
 {
   // Basic events must be exactly the same size as a BasicEvent (so they can have no member variables).
   class MouseButtonEvent final : public BasicEvent
   {
-    enum class Flags : int32_t
+    enum class Flags : uint8_t
     {
       NoFlags = 0,
       Pressed = 1,

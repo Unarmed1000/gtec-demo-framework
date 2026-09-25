@@ -34,16 +34,18 @@
 #include <FslBase/IO/Path.hpp>
 #include <FslDemoApp/Base/ADemoOptionParser.hpp>
 
+#include <cstdint>
+
 namespace Fsl
 {
-  enum class MeshMode
+  enum class MeshMode : uint8_t
   {
     SingleMesh = 0,
     MultipleMeshes = 1,
     Wireframe = 2
   };
 
-  enum class ShaderMode
+  enum class ShaderMode : uint8_t
   {
     PerPixelTextured = 0,
     PerPixelNoTextures = 1,

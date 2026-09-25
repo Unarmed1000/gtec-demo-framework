@@ -36,8 +36,10 @@
 #include <FslService/Consumer/ServiceProvider.hpp>
 #include <FslUtil/Vulkan1_0/VUDevice.hpp>
 #include <FslUtil/Vulkan1_0/VUPhysicalDeviceRecord.hpp>
+#include <cstdint>
 #include <list>
 #include <memory>
+
 
 namespace Fsl
 {
@@ -54,7 +56,7 @@ namespace Fsl
 
     class NativeGraphicsService final : public ANativeGraphicsService
     {
-      enum class State
+      enum class State : uint8_t
       {
         Uninitialized = 0x00,
         Initialized = 0x01,

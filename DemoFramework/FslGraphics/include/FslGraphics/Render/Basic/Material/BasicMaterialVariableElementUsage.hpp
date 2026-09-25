@@ -31,9 +31,11 @@
  *
  ****************************************************************************************************************************************************/
 
+#include <cstdint>
+
 namespace Fsl
 {
-  enum class BasicMaterialVariableElementUsage
+  enum class BasicMaterialVariableElementUsage : uint8_t
   {
     Undefined,
     ModelViewProj,

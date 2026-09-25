@@ -31,9 +31,11 @@
  *
  ****************************************************************************************************************************************************/
 
+#include <cstdint>
+
 namespace Fsl::UI
 {
-  enum class ChartRenderPolicy
+  enum class ChartRenderPolicy : uint8_t
   {
     Measure,
     FillAvailable,

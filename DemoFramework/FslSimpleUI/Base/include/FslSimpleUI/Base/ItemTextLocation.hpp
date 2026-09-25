@@ -31,9 +31,11 @@
  *
  ****************************************************************************************************************************************************/
 
+#include <cstdint>
+
 namespace Fsl::UI
 {
-  enum class ItemTextLocation
+  enum class ItemTextLocation : uint8_t
   {
     Left = 0,
     Right = 1,

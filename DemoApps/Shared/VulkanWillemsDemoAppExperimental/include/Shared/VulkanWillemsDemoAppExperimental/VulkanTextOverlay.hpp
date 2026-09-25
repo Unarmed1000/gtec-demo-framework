@@ -28,7 +28,9 @@
 #include <vulkan/vulkan.h>
 #include <array>
 #include <cmath>
+#include <cstdint>
 #include <vector>
+
 
 namespace Fsl::Willems
 {
@@ -63,7 +65,7 @@ namespace Fsl::Willems
     uint32_t m_oldNumLetters{};
 
   public:
-    enum class TextAlign
+    enum class TextAlign : uint8_t
     {
       Left,
       Center,

@@ -33,11 +33,13 @@
 
 #include <FslBase/BasicTypes.hpp>
 
+#include <cstdint>
+
 namespace Fsl::Helios
 {
   struct CameraAdapterAllocateFlags
   {
-    enum Enum
+    enum Enum : uint8_t
     {
       // A empty flag
       NotDefined = 0x00,

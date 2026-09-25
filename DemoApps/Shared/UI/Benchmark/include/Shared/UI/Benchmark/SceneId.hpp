@@ -31,9 +31,11 @@
  *
  ****************************************************************************************************************************************************/
 
+#include <cstdint>
+
 namespace Fsl
 {
-  enum class SceneId
+  enum class SceneId : uint8_t
   {
     Benchmark,
     Playground,

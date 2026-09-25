@@ -53,7 +53,9 @@
 // #include <FslSimpleUI/Base/System/EventListener.hpp>
 // #include <FslSimpleUI/Base/System/UIManager.hpp>
 #include <fmt/format.h>
+#include <cstdint>
 #include <memory>
+
 
 namespace Fsl
 {
@@ -62,7 +64,7 @@ namespace Fsl
     class IThemeControlFactory;
   }
 
-  enum class SdfFontMode
+  enum class SdfFontMode : uint8_t
   {
     Normal = 0,
     Outline = 1,
@@ -77,7 +79,7 @@ namespace Fsl
     return rLhs;
   }
 
-  enum class SdfType
+  enum class SdfType : uint8_t
   {
     Sdf = 0,
     Mtsdf = 1

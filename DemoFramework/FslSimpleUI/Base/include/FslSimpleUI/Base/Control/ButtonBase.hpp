@@ -33,6 +33,8 @@
 
 #include <FslSimpleUI/Base/BaseWindow.hpp>
 
+#include <cstdint>
+
 namespace Fsl::UI
 {
   //! @brief The basic implementation of a button
@@ -45,7 +47,7 @@ namespace Fsl::UI
     bool m_isDown{false};
 
   public:
-    enum class ButtonPressState
+    enum class ButtonPressState : uint8_t
     {
       Down = 0,
       Up = 1,

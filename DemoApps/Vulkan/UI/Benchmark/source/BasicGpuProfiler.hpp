@@ -34,11 +34,13 @@
 #include <RapidVulkan/QueryPool.hpp>
 #include <Shared/UI/Benchmark/IBasicGpuProfiler.hpp>
 
+#include <cstdint>
+
 namespace Fsl
 {
   class BasicGpuProfiler final : public IBasicGpuProfiler
   {
-    enum class TimestampState
+    enum class TimestampState : uint8_t
     {
       NotSet,
       BeginSet,

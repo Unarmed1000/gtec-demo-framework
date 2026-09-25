@@ -32,9 +32,11 @@
  ****************************************************************************************************************************************************/
 
 
+#include <cstdint>
+
 namespace Fsl
 {
-  enum class TimeStateCommand
+  enum class TimeStateCommand : uint8_t
   {
     //! When running based actual time.
     Realtime,

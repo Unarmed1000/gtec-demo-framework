@@ -48,7 +48,9 @@
 #include <RapidVulkan/GraphicsPipeline.hpp>
 #include <RapidVulkan/PipelineLayout.hpp>
 #include <RapidVulkan/ShaderModule.hpp>
+#include <cstdint>
 #include <vector>
+
 
 namespace Fsl
 {
@@ -65,7 +67,7 @@ namespace Fsl
     };
 
   private:
-    enum class State
+    enum class State : uint8_t
     {
       Split2,
       Scene1,

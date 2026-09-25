@@ -33,9 +33,11 @@
 
 #include <FslBase/BasicTypes.hpp>
 
+#include <cstdint>
+
 namespace Fsl::UI
 {
-  enum class GestureAxis : uint32_t
+  enum class GestureAxis : uint8_t
   {
     // A empty flag
     NotDefined = 0x00,

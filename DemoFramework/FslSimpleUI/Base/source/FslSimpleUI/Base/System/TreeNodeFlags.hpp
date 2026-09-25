@@ -34,13 +34,15 @@
 #include <FslBase/BasicTypes.hpp>
 #include <FslSimpleUI/Base/WindowFlags.hpp>
 
+#include <cstdint>
+
 namespace Fsl::UI
 {
   struct TreeNodeFlags
   {
     uint32_t Value{0};
 
-    enum Enum
+    enum Enum : uint16_t
     {
       LayoutDirty = WindowFlags::LayoutDirty,
       UpdateEnabled = WindowFlags::UpdateEnabled,

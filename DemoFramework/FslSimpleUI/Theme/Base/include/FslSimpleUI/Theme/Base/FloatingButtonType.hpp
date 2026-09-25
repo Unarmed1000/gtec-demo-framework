@@ -32,9 +32,11 @@
  ****************************************************************************************************************************************************/
 
 
+#include <cstdint>
+
 namespace Fsl::UI::Theme
 {
-  enum class FloatingButtonType
+  enum class FloatingButtonType : uint8_t
   {
     Back
   };

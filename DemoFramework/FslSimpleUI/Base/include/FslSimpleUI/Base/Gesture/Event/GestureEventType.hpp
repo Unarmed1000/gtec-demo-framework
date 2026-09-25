@@ -31,9 +31,11 @@
  *
  ****************************************************************************************************************************************************/
 
+#include <cstdint>
+
 namespace Fsl::UI
 {
-  enum class GestureEventType
+  enum class GestureEventType : uint8_t
   {
     Nop = 0,
     GestureDragBegin = 1,

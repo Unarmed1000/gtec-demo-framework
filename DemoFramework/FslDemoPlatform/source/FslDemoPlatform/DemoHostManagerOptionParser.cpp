@@ -47,6 +47,8 @@
 #include <fmt/format.h>
 #include <array>
 
+#include <cstdint>
+
 namespace Fsl
 {
   namespace
@@ -96,7 +98,7 @@ namespace Fsl
     };
 
 
-    enum class DurationFormat
+    enum class DurationFormat : uint8_t
     {
       Invalid,
       Milliseconds,

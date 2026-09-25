@@ -31,9 +31,11 @@
  *
  ****************************************************************************************************************************************************/
 
+#include <cstdint>
+
 namespace Fsl
 {
-  enum class ImageFormat
+  enum class ImageFormat : uint8_t
   {
     Undefined = 0,
     Bmp = 1,

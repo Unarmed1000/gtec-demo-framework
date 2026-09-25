@@ -32,10 +32,12 @@
  ****************************************************************************************************************************************************/
 
 
+#include <cstdint>
+
 namespace Fsl
 {
   //! Describes the preferred ordering of color channels
-  enum class PixelChannelOrder
+  enum class PixelChannelOrder : uint8_t
   {
     //! Not defined
     Undefined = 0,

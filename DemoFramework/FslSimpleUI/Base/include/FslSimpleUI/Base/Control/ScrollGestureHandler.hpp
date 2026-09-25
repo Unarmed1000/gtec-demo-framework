@@ -44,6 +44,7 @@
 #include <FslSimpleUI/Base/Gesture/GestureManager.hpp>
 #include <FslSimpleUI/Base/MovementOwnership.hpp>
 #include <FslSimpleUI/Base/MovementTransactionAction.hpp>
+#include <cstdint>
 #include <vector>
 
 
@@ -51,14 +52,14 @@ namespace Fsl::UI
 {
   class ScrollGestureHandler final
   {
-    enum class DragStatus
+    enum class DragStatus : uint8_t
     {
       Idle,
       Dragging,
       Completed
     };
 
-    enum class AnimStatus
+    enum class AnimStatus : uint8_t
     {
       Idle,
       Flick,

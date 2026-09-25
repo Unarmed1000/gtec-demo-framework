@@ -35,6 +35,8 @@
 #include <FslBase/Time/MillisecondTickCount32.hpp>
 #include <FslDemoApp/Base/Service/Events/IEvent.hpp>
 
+#include <cstdint>
+
 namespace Fsl
 {
   //! @brief The basic event is used for small often send messages to prevent memory allocation / deallocation
@@ -43,7 +45,7 @@ namespace Fsl
   {
     struct Flags
     {
-      enum Enum
+      enum Enum : uint8_t
       {
         Handled = 0x01
       };

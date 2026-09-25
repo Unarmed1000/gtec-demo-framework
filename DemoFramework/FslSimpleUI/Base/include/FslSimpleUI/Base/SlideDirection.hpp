@@ -31,9 +31,11 @@
  *
  ****************************************************************************************************************************************************/
 
+#include <cstdint>
+
 namespace Fsl::UI
 {
-  enum class SlideDirection
+  enum class SlideDirection : uint8_t
   {
     Left,
     Right,

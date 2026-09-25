@@ -33,10 +33,12 @@
 
 #include <FslBase/BasicTypes.hpp>
 
+#include <cstdint>
+
 namespace Fsl
 {
   //! WARNING: do not modify the values of this enum as they match the BTA fileformat!
-  enum class AtlasNineSliceFlags : uint32_t
+  enum class AtlasNineSliceFlags : uint16_t
   {
     //! All slices are opaque
     Opaque = 0x00,
@@ -62,7 +64,7 @@ namespace Fsl
 
     //! All slices are transparent
     Transparent = Slice0Transparent | Slice1Transparent | Slice2Transparent | Slice3Transparent | Slice4Transparent | Slice5Transparent |
-                  Slice6Transparent | Slice7Transparent | Slice8Transparent
+      Slice6Transparent | Slice7Transparent | Slice8Transparent
   };
 
   constexpr inline AtlasNineSliceFlags operator|(const AtlasNineSliceFlags lhs, const AtlasNineSliceFlags rhs) noexcept

@@ -31,9 +31,11 @@
  *
  ****************************************************************************************************************************************************/
 
+#include <cstdint>
+
 namespace Fsl
 {
-  enum class ColorSpaceType
+  enum class ColorSpaceType : uint8_t
   {
     //! Using the old gamma color space, apps using this might be using _UNORM and _SRGB to mean the same thing.
     Gamma,

@@ -39,13 +39,15 @@
 #include <algorithm>
 #include <cassert>
 
+#include <cstdint>
+
 namespace Fsl::UI
 {
   //! @brief Contains all logic necessary to implement the drag part of a slider
   struct SliderDragLogic
   {
   private:
-    enum class DragState
+    enum class DragState : uint8_t
     {
       Idle,
       Dragging

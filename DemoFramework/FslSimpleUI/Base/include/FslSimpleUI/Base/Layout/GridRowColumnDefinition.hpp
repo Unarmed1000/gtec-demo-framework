@@ -31,9 +31,11 @@
  *
  ****************************************************************************************************************************************************/
 
+#include <cstdint>
+
 namespace Fsl::UI
 {
-  enum class GridUnitType
+  enum class GridUnitType : uint8_t
   {
     //! Fixed size in dp
     Fixed = 0,

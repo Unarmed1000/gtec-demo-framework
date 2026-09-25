@@ -34,7 +34,9 @@
 #include <FslSimpleUI/Base/Control/SliderAndFmtValueLabel.hpp>
 #include <FslSimpleUI/Theme/Base/WindowType.hpp>
 #include <Shared/UI/Benchmark/Activity/DialogActivity.hpp>
+#include <cstdint>
 #include <memory>
+
 
 namespace Fsl::UI
 {
@@ -43,7 +45,7 @@ namespace Fsl::UI
 
   class FrameAnalysisDialogActivity final : public DialogActivity
   {
-    enum class State
+    enum class State : uint8_t
     {
       Ready,
       Closing,

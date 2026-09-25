@@ -31,9 +31,11 @@
  *
  ****************************************************************************************************************************************************/
 
+#include <cstdint>
+
 namespace Fsl
 {
-  enum class BasicCompareOp
+  enum class BasicCompareOp : uint8_t
   {
     Never,
     //! Due to X11 header defining a Always macro, we had to work around it by using a less optimal name here.

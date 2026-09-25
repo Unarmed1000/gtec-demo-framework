@@ -31,9 +31,11 @@
  *
  ****************************************************************************************************************************************************/
 
+#include <cstdint>
+
 namespace Fsl::UI
 {
-  enum class GestureType
+  enum class GestureType : uint8_t
   {
     // No operation
     Nop = 0,

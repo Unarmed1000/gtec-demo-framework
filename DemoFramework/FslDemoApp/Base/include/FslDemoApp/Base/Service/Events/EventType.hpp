@@ -31,9 +31,11 @@
  *
  ****************************************************************************************************************************************************/
 
+#include <cstdint>
+
 namespace Fsl
 {
-  enum class EventType
+  enum class EventType : uint16_t
   {
     //! Represents a invalid basic event
     Invalid = 0,

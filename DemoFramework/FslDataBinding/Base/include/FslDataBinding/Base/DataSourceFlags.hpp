@@ -33,9 +33,11 @@
 
 #include <FslBase/BasicTypes.hpp>
 
+#include <cstdint>
+
 namespace Fsl::DataBinding
 {
-  enum class DataSourceFlags : uint32_t
+  enum class DataSourceFlags : uint8_t
   {
     NoFlags = 0,
     Observable = 0x01,

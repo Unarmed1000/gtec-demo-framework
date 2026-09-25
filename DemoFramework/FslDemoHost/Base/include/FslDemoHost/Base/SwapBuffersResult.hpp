@@ -31,9 +31,11 @@
  *
  ****************************************************************************************************************************************************/
 
+#include <cstdint>
+
 namespace Fsl
 {
-  enum class SwapBuffersResult
+  enum class SwapBuffersResult : uint8_t
   {
     Failed,
     Completed,

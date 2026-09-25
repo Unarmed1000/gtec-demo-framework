@@ -27,7 +27,9 @@
 #include <fmt/format.h>
 #include <array>
 #include <cmath>
+#include <cstdint>
 #include <string_view>
+
 
 namespace Fsl
 {
@@ -42,7 +44,7 @@ namespace Fsl
 
     struct CommandId
     {
-      enum Enum
+      enum Enum : uint8_t
       {
         Enable,
         ModuleSize,

@@ -31,9 +31,11 @@
  *
  ****************************************************************************************************************************************************/
 
+#include <cstdint>
+
 namespace Fsl::Vulkan
 {
-  enum class FeatureRequirement
+  enum class FeatureRequirement : uint8_t
   {
     Mandatory,
     Optional,

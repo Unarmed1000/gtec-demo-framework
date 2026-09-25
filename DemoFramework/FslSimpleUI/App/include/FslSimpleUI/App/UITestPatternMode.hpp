@@ -33,9 +33,11 @@
 
 #include <FslBase/BasicTypes.hpp>
 
+#include <cstdint>
+
 namespace Fsl
 {
-  enum class UITestPatternMode : uint32_t
+  enum class UITestPatternMode : uint8_t
   {
     // No test pattern atlas is used
     Disabled = 0,

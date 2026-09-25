@@ -33,9 +33,11 @@
 
 #include <FslBase/Span/ReadOnlySpan.hpp>
 #include <FslSimpleUI/Base/DpLayoutSize1D.hpp>
+#include <cstdint>
 #include "CpuDetailedLegendRecord.hpp"
 #include "CpuLegendRecord.hpp"
 #include "CpuProfileRecord.hpp"
+
 
 namespace Fsl
 {
@@ -53,7 +55,7 @@ namespace Fsl
 
   namespace CustomControlFactory
   {
-    enum class OpaqueHack
+    enum class OpaqueHack : uint8_t
     {
       Disabled,
       Enabled

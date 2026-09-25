@@ -48,7 +48,9 @@
 #include <FslSimpleUI/App/UIAppTextureHandle.hpp>
 #include <FslSimpleUI/App/UIAppTextureResourceCreationInfo.hpp>
 #include <FslSimpleUI/App/UITestPatternMode.hpp>
+#include <cstdint>
 #include <memory>
+
 
 namespace Fsl
 {
@@ -72,7 +74,7 @@ namespace Fsl
     : public ISpriteResourceManager
     , public ICustomSpriteResourceManager
   {
-    enum class SpriteType
+    enum class SpriteType : uint8_t
     {
       Basic = 0,
       Normal = 1,

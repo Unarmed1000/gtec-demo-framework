@@ -31,9 +31,11 @@
  *
  ****************************************************************************************************************************************************/
 
+#include <cstdint>
+
 namespace Fsl::UI
 {
-  enum class MovementOwnership
+  enum class MovementOwnership : uint8_t
   {
     //! No one is handling this movement transaction, so it is up for grabs
     Unhandled,

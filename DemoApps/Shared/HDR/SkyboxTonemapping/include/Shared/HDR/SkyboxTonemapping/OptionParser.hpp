@@ -33,9 +33,11 @@
 
 #include <FslDemoApp/Base/ADemoOptionParser.hpp>
 
+#include <cstdint>
+
 namespace Fsl
 {
-  enum class SceneFlags
+  enum class SceneFlags : uint8_t
   {
     Invalid = 0,
     Scene1 = 0x01,

@@ -31,9 +31,11 @@
  *
  ****************************************************************************************************************************************************/
 
+#include <cstdint>
+
 namespace Fsl::UI
 {
-  enum class SendResult
+  enum class SendResult : uint8_t
   {
     Handled,
     Unhandled,

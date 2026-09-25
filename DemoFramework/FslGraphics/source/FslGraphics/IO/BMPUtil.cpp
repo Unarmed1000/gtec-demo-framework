@@ -41,9 +41,11 @@
 #include <fmt/format.h>
 #include <array>
 #include <cassert>
+#include <cstdint>
 #include <cstdlib>
 #include <fstream>
 #include <limits>
+
 
 // BMP format explained:
 // http://en.wikipedia.org/wiki/BMP_file_format#Bitmap_file_header
@@ -54,7 +56,7 @@ namespace Fsl
   namespace
   {
     // These would be called BI_RGB etc when searching the web for them
-    enum class BmpCompression
+    enum class BmpCompression : uint8_t
     {
       // NOLINTNEXTLINE(readability-identifier-naming)
       RGB = 0,

@@ -31,9 +31,11 @@
  *
  ****************************************************************************************************************************************************/
 
+#include <cstdint>
+
 namespace Fsl
 {
-  enum class BitmapOrigin
+  enum class BitmapOrigin : uint8_t
   {
     Undefined = 0,
     UpperLeft,

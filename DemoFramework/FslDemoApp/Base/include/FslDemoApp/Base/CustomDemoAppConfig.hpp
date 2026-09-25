@@ -33,12 +33,14 @@
 
 #include <FslBase/ITag.hpp>
 #include <FslDemoService/Graphics/ColorSpaceType.hpp>
+#include <cstdint>
 #include <memory>
 #include <utility>
 
+
 namespace Fsl
 {
-  enum class CustomDemoAppConfigRestartFlags : uint32_t
+  enum class CustomDemoAppConfigRestartFlags : uint8_t
   {
     //! No flags set, so no restart
     Never = 0x00,

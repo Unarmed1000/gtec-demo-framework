@@ -32,12 +32,14 @@
  ****************************************************************************************************************************************************/
 
 #include <FslService/Impl/Registry/RegisteredServiceGroupRecord.hpp>
+#include <cstdint>
 #include <deque>
 #include <memory>
 #include <utility>
 #include <vector>
 #include "CustomServiceHostRecord.hpp"
 #include "ServiceThreadRecord.hpp"
+
 
 namespace Fsl
 {
@@ -50,7 +52,7 @@ namespace Fsl
 
   class ServiceThreadManager
   {
-    enum class State
+    enum class State : uint8_t
     {
       Waiting,
       PreparedServiceGroups,

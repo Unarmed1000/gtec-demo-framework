@@ -37,9 +37,11 @@
 #include <cassert>
 #include <cmath>
 
+#include <cstdint>
+
 namespace Fsl
 {
-  enum class DemoPerformanceCaptureId
+  enum class DemoPerformanceCaptureId : uint8_t
   {
     Roundtrip = 0,
     UIProcessEvents = 1,

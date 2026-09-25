@@ -33,12 +33,14 @@
 
 #include <FslSimpleUI/Render/Base/IRenderSystemFactory.hpp>
 
+#include <cstdint>
+
 namespace Fsl::UI::RenderIMBatch
 {
   class RenderSystemFactory final : public IRenderSystemFactory
   {
   public:
-    enum class RenderSystemType
+    enum class RenderSystemType : uint8_t
     {
       Default,
       Normal,

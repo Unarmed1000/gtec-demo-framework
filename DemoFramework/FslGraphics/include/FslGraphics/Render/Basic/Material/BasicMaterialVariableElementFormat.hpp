@@ -31,9 +31,11 @@
  *
  ****************************************************************************************************************************************************/
 
+#include <cstdint>
+
 namespace Fsl
 {
-  enum class BasicMaterialVariableElementFormat
+  enum class BasicMaterialVariableElementFormat : uint8_t
   {
     // Undefined, should not be used for valid elements
     Undefined = 0,

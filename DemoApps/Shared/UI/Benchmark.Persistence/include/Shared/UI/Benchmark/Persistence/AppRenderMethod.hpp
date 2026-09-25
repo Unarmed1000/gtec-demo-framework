@@ -33,9 +33,11 @@
 
 #include <FslBase/BasicTypes.hpp>
 
+#include <cstdint>
+
 namespace Fsl
 {
-  enum class AppRenderMethod
+  enum class AppRenderMethod : uint8_t
   {
     FlexImBatch = 0,
     BasicImBatch = 1,

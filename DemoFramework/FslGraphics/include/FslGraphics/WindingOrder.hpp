@@ -33,11 +33,13 @@
 
 #include <FslBase/BasicTypes.hpp>
 
+#include <cstdint>
+
 namespace Fsl
 {
   struct WindingOrder
   {
-    enum Enum
+    enum Enum : uint8_t
     {
       //! Faces that are clockwise are facing forward
       CW,

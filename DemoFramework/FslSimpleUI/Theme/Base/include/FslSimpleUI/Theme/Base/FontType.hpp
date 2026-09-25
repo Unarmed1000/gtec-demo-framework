@@ -32,9 +32,11 @@
  ****************************************************************************************************************************************************/
 
 
+#include <cstdint>
+
 namespace Fsl::UI::Theme
 {
-  enum class FontType
+  enum class FontType : uint8_t
   {
     Default,
     Header

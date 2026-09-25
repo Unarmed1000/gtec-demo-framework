@@ -53,9 +53,11 @@
 #include <Shared/FurShellRendering/OptionParser.hpp>
 #include <GLES3/gl3.h>
 #include <array>
+#include <cstdint>
 #include <memory>
 #include "RenderMode.hpp"
 #include "Shader/ShaderBase.hpp"
+
 
 namespace Fsl
 {
@@ -63,7 +65,7 @@ namespace Fsl
 
   namespace
   {
-    enum class ProceduralPrimitive
+    enum class ProceduralPrimitive : uint8_t
     {
       Torus,
       Box

@@ -38,6 +38,8 @@
 #include <FslUtil/OpenGLES3/GLTexture.hpp>
 #include <FslUtil/OpenGLES3/GLTextureImageParameters.hpp>
 
+#include <cstdint>
+
 namespace Fsl::GLES3
 {
   class GLFrameBuffer
@@ -61,7 +63,7 @@ namespace Fsl::GLES3
     {
       using type = uint32_t;
 
-      enum Enum
+      enum Enum : uint8_t
       {
         ColorBuffer = 0x01,
         DepthBuffer = 0x02,

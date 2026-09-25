@@ -31,9 +31,11 @@
  *
  ****************************************************************************************************************************************************/
 
+#include <cstdint>
+
 namespace Fsl::UI
 {
-  enum class EventFlowType
+  enum class EventFlowType : uint8_t
   {
     Tunnel,
     Bubble

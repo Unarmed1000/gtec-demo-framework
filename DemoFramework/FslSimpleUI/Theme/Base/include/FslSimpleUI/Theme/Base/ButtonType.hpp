@@ -32,9 +32,11 @@
  ****************************************************************************************************************************************************/
 
 
+#include <cstdint>
+
 namespace Fsl::UI::Theme
 {
-  enum class ButtonType
+  enum class ButtonType : uint8_t
   {
     Text,
     Outlined,

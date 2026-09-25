@@ -31,9 +31,11 @@
  *
  ****************************************************************************************************************************************************/
 
+#include <cstdint>
+
 namespace Fsl::Helios
 {
-  enum class CameraType
+  enum class CameraType : uint8_t
   {
     Mipi8X,
     Mipi6Q,

@@ -31,9 +31,11 @@
  *
  ****************************************************************************************************************************************************/
 
+#include <cstdint>
+
 namespace Fsl::UI
 {
-  enum class SliderContentChangedReason
+  enum class SliderContentChangedReason : uint8_t
   {
     DragCanceled = 0,
     DragBegin = 1,

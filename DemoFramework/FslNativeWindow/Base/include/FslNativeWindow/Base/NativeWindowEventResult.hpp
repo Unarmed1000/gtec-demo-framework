@@ -31,11 +31,13 @@
  *
  ****************************************************************************************************************************************************/
 
+#include <cstdint>
+
 namespace Fsl
 {
   struct NativeWindowEventResult
   {
-    enum Enum
+    enum Enum : uint8_t
     {
       Unhandled = 0,
       Handled = 1

@@ -31,9 +31,11 @@
  *
  ****************************************************************************************************************************************************/
 
+#include <cstdint>
+
 namespace Fsl::DataBinding
 {
-  enum class PropertySetBindingResult
+  enum class PropertySetBindingResult : uint8_t
   {
     Changed,
     Unchanged,

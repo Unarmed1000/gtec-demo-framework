@@ -31,9 +31,11 @@
  *
  ****************************************************************************************************************************************************/
 
+#include <cstdint>
+
 namespace Fsl::UI
 {
-  enum class WindowEventQueueRecordType
+  enum class WindowEventQueueRecordType : uint8_t
   {
     Event = 0,
     AddChild = 1,

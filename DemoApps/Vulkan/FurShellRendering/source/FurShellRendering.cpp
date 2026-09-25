@@ -55,7 +55,9 @@
 #include <Shared/FurShellRendering/OptionParser.hpp>
 #include <vulkan/vulkan.h>
 #include <array>
+#include <cstdint>
 #include "RenderMode.hpp"
+
 
 namespace Fsl
 {
@@ -64,7 +66,7 @@ namespace Fsl
     constexpr auto VertexBufferBindId = 0;
 
 
-    enum class ProceduralPrimitive
+    enum class ProceduralPrimitive : uint8_t
     {
       Torus,
       Box

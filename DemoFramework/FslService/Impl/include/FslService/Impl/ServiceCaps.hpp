@@ -33,11 +33,13 @@
 
 #include <FslBase/BasicTypes.hpp>
 
+#include <cstdint>
+
 namespace Fsl
 {
   struct ServiceCaps
   {
-    enum Enum
+    enum Enum : uint8_t
     {
       Default = 0x00000000,
       //! If optional is set the service is not mandatory, meaning a failure to start does not prevent the framework from starting.

@@ -31,9 +31,11 @@
  *
  ****************************************************************************************************************************************************/
 
+#include <cstdint>
+
 namespace Fsl::UI
 {
-  enum class MovementTransactionAction
+  enum class MovementTransactionAction : uint8_t
   {
     //! Not interested in this movement event
     NotInterested,

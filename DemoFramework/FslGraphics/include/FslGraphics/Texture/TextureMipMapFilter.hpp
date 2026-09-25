@@ -32,9 +32,11 @@
  ****************************************************************************************************************************************************/
 
 
+#include <cstdint>
+
 namespace Fsl
 {
-  enum class TextureMipMapFilter
+  enum class TextureMipMapFilter : uint8_t
   {
     Nearest,
     Box,

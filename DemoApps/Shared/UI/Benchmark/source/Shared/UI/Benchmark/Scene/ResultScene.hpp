@@ -34,11 +34,13 @@
 #include <FslSimpleUI/Base/Control/FmtValueLabel.hpp>
 #include <FslSimpleUI/Base/Control/SliderAndFmtValueLabel.hpp>
 #include <Shared/UI/Benchmark/Persistence/Bench/AppBenchmarkData.hpp>
+#include <cstdint>
 #include <memory>
 #include <optional>
 #include <vector>
 #include "BasicScene.hpp"
 #include "Control/CpuDetailedLegendRecord.hpp"
+
 
 namespace Fsl
 {
@@ -61,14 +63,14 @@ namespace Fsl
 
   class ResultScene final : public BasicScene
   {
-    enum class CurrentState
+    enum class CurrentState : uint8_t
     {
       Ready,
       DetailsDialog,
       Closing
     };
 
-    enum class ReportType
+    enum class ReportType : uint8_t
     {
       Cpu = 0x01,
       Gpu = 0x02,

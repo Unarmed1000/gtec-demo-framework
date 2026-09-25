@@ -52,7 +52,9 @@
 #include <FslUtil/OpenGLES2/GLCompressedFormat.hpp>
 #include <FslUtil/OpenGLES2/GLUtil.hpp>
 #include <GLES2/gl2.h>
+#include <cstdint>
 #include <iostream>
+
 
 namespace Fsl
 {
@@ -62,7 +64,7 @@ namespace Fsl
   {
     constexpr auto TexturePath = "Textures/GPUSdkTest";
 
-    enum class CompressionSupport
+    enum class CompressionSupport : uint8_t
     {
       No,
       Yes,

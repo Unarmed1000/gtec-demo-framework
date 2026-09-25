@@ -31,10 +31,12 @@
  *
  ****************************************************************************************************************************************************/
 
+#include <cstdint>
+
 namespace Fsl::GLES3
 {
   // Custom formats supported by some GPU's under OpenGL ES3 (but they are from the 3.2 header).
-  enum class GLCompressedFormat
+  enum class GLCompressedFormat : uint16_t
   {
     // NOLINTNEXTLINE(readability-identifier-naming)
     PALETTE4_RGB8_OES = 0x8B90,

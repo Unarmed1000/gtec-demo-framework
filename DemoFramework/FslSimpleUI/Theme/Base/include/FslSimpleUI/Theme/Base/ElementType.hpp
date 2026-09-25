@@ -32,9 +32,11 @@
  ****************************************************************************************************************************************************/
 
 
+#include <cstdint>
+
 namespace Fsl::UI::Theme
 {
-  enum class ElementType
+  enum class ElementType : uint8_t
   {
     LeftBar,
     TopBar,

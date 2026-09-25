@@ -38,14 +38,16 @@
 #include <FslSimpleUI/Declarative/ThemeProperties/PropertyParserRecord.hpp>
 #include <FslSimpleUI/Declarative/ThemeProperties/RegisteredPropertyRecord.hpp>
 #include <FslSimpleUI/Declarative/ThemeProperties/TypedThemeProperty.hpp>
+#include <cstdint>
 #include <memory>
 #include <optional>
+
 
 namespace Fsl::UI::Declarative
 {
   class ScopedThemePropertyParser final
   {
-    enum ClaimResult
+    enum ClaimResult : uint8_t
     {
       NotFound,
       // The entry was found but had already been claimed (this should not occur as each name can only be registered once, but a user might request

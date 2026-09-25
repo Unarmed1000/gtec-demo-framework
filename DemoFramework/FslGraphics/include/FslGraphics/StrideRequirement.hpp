@@ -32,9 +32,11 @@
  ****************************************************************************************************************************************************/
 
 
+#include <cstdint>
+
 namespace Fsl
 {
-  enum class StrideRequirement
+  enum class StrideRequirement : uint8_t
   {
     //! Use the minimum stride
     Minimum = 0,

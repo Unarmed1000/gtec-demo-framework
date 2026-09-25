@@ -31,9 +31,11 @@
  *
  ****************************************************************************************************************************************************/
 
+#include <cstdint>
+
 namespace Fsl::UI
 {
-  enum class ResizeableAreaDragHandleLocation
+  enum class ResizeableAreaDragHandleLocation : uint8_t
   {
     Inside,
     Centered

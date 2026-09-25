@@ -31,9 +31,11 @@
  *
  ****************************************************************************************************************************************************/
 
+#include <cstdint>
+
 namespace Fsl::UI
 {
-  enum class EventTransactionState
+  enum class EventTransactionState : uint8_t
   {
     Begin,
     End,

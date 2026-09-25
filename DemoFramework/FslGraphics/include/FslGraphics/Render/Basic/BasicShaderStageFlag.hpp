@@ -31,9 +31,11 @@
  *
  ****************************************************************************************************************************************************/
 
+#include <cstdint>
+
 namespace Fsl
 {
-  enum class BasicShaderStageFlag
+  enum class BasicShaderStageFlag : uint8_t
   {
     Undefined = 0x00,
     Vertex = 0x01,

@@ -31,9 +31,11 @@
  *
  ****************************************************************************************************************************************************/
 
+#include <cstdint>
+
 namespace Fsl
 {
-  enum class AppDrawResult
+  enum class AppDrawResult : uint8_t
   {
     //! The operation failed  (use default handling, which is to restart the app)
     Failed,

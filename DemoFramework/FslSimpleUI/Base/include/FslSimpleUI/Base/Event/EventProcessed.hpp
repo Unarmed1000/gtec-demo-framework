@@ -31,9 +31,11 @@
  *
  ****************************************************************************************************************************************************/
 
+#include <cstdint>
+
 namespace Fsl::UI
 {
-  enum class EventProcessed
+  enum class EventProcessed : uint8_t
   {
     Tunnel,
     Bubble,

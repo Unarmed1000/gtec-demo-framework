@@ -40,6 +40,7 @@
 #include <FslSimpleUI/Base/UIDrawContext.hpp>
 #include <FslSimpleUI/Base/UIStats.hpp>
 #include <FslSimpleUI/Render/Base/DrawClipContext.hpp>
+#include <cstdint>
 #include <deque>
 #include <map>
 #include <memory>
@@ -54,6 +55,7 @@
 #include "ITreeNodeLocator.hpp"
 #include "TreeNodeDrawContext.hpp"
 #include "TreeNodeFlags.hpp"
+
 
 namespace Fsl
 {
@@ -114,13 +116,13 @@ namespace Fsl
       , public ITreeNodeBasicInfo
       , public IEventHandler
     {
-      enum class Context
+      enum class Context : uint8_t
       {
         System,
         Internal,
         InternalLayout
       };
-      enum class State
+      enum class State : uint8_t
       {
         WaitForInit,
         Ready,

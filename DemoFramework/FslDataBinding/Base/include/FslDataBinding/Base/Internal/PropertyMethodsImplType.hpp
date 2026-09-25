@@ -31,10 +31,12 @@
  *
  ****************************************************************************************************************************************************/
 
+#include <cstdint>
+
 namespace Fsl::DataBinding::Internal
 {
   // Be careful if you change these values as they are encoded inside the Internal::InstanceState
-  enum class PropertyMethodsImplType
+  enum class PropertyMethodsImplType : uint8_t
   {
     NotAvailable = 0,
     Undefined = 1,

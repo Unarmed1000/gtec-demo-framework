@@ -35,7 +35,7 @@
 
 namespace Fsl
 {
-  enum class BatchEffect : uint32_t
+  enum class BatchEffect : uint8_t
   {
     NoEffect,    // This would have been named 'None' bit it conflicts with X11 headers.
     Rotate90Clockwise = 1,

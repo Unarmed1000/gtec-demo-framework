@@ -31,9 +31,11 @@
  *
  ****************************************************************************************************************************************************/
 
+#include <cstdint>
+
 namespace Fsl
 {
-  enum class BasicToneMapper
+  enum class BasicToneMapper : uint8_t
   {
     //! Colors are just clamped to be in the 0.0-1.0f range
     Clamp = 0,

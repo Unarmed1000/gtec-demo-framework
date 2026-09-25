@@ -32,9 +32,11 @@
  ****************************************************************************************************************************************************/
 
 
+#include <cstdint>
+
 namespace Fsl
 {
-  enum class VirtualMouseButton
+  enum class VirtualMouseButton : uint16_t
   {
     Left = 0x0001,
     Middle = 0x0002,

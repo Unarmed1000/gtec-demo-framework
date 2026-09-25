@@ -31,9 +31,11 @@
  *
  ****************************************************************************************************************************************************/
 
+#include <cstdint>
+
 namespace Fsl::DataBinding
 {
-  enum class DataBindingInstanceType
+  enum class DataBindingInstanceType : uint8_t
   {
     DependencyObject = 0,
     DependencyProperty = 1,

@@ -33,10 +33,12 @@
 
 #include <FslBase/BasicTypes.hpp>
 
+#include <cstdint>
+
 namespace Fsl
 {
   //! Represents the operations that was performed
-  enum class UIAppResourceFlag : uint32_t
+  enum class UIAppResourceFlag : uint16_t
   {
     //! A empty flag
     Undefined = 0,

@@ -49,9 +49,11 @@
 #include <RapidVulkan/Semaphore.hpp>
 #include <vulkan/vulkan.h>
 #include <cassert>
+#include <cstdint>
 #include <memory>
 #include <utility>
 #include <vector>
+
 
 namespace Fsl
 {
@@ -69,7 +71,7 @@ namespace Fsl
     class DemoAppVulkanBasic : public DemoAppVulkan
     {
     private:
-      enum class AppState
+      enum class AppState : uint8_t
       {
         // The app is ready to render
         Ready,
@@ -79,7 +81,7 @@ namespace Fsl
         WaitForSwapchainRecreation
       };
 
-      enum class RecreateSwapchainResult
+      enum class RecreateSwapchainResult : uint8_t
       {
         Failed,
         NotReady,

@@ -31,9 +31,11 @@
  *
  ****************************************************************************************************************************************************/
 
+#include <cstdint>
+
 namespace Fsl
 {
-  enum class BasicMessageType
+  enum class BasicMessageType : uint8_t
   {
     Invalid = 0,    // Invalid message type, should be ignored
     ThreadInit,

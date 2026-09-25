@@ -31,9 +31,11 @@
  *
  ****************************************************************************************************************************************************/
 
+#include <cstdint>
+
 namespace Fsl::UI
 {
-  enum class ResizeableAreaDragCorner
+  enum class ResizeableAreaDragCorner : uint8_t
   {
     TopLeft,
     TopRight,

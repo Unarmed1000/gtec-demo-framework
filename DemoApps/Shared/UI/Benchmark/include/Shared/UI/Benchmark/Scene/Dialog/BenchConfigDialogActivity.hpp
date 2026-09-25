@@ -38,9 +38,11 @@
 #include <Shared/UI/Benchmark/Persistence/AppRenderMethod.hpp>
 #include <Shared/UI/Benchmark/RenderMethodInfo.hpp>
 #include <Shared/UI/Benchmark/Scene/Control/RenderOptionControls.hpp>
+#include <cstdint>
 #include <memory>
 #include <utility>
 #include <vector>
+
 
 namespace Fsl::UI
 {
@@ -51,7 +53,7 @@ namespace Fsl::UI
 
   class BenchConfigDialogActivity final : public DialogActivity
   {
-    enum class State
+    enum class State : uint8_t
     {
       Ready,
       Closing,

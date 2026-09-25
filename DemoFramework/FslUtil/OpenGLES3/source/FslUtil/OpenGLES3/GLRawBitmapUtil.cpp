@@ -38,13 +38,15 @@
 #include <array>
 #include <cassert>
 
+#include <cstdint>
+
 namespace Fsl
 {
   namespace GLES3
   {
     namespace
     {
-      enum class ByteAlignment
+      enum class ByteAlignment : uint16_t
       {
         Undefined = 0,
         B1 = 1,
@@ -54,7 +56,7 @@ namespace Fsl
         Find = 0x8000
       };
 
-      enum class FormatState
+      enum class FormatState : uint8_t
       {
         Invalid = 0,
         Normal = 1,

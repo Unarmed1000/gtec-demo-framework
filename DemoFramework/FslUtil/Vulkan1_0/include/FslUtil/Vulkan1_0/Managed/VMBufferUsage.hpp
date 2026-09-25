@@ -34,9 +34,11 @@
 // Make sure Common.hpp is the first include file (to make the error message as helpful as possible when disabled)
 #include <FslUtil/Vulkan1_0/Common.hpp>
 
+#include <cstdint>
+
 namespace Fsl::Vulkan
 {
-  enum class VMBufferUsage
+  enum class VMBufferUsage : uint8_t
   {
     //! The buffer is almost never updated and its therefore suited to being uploaded to device local memory
     STATIC,

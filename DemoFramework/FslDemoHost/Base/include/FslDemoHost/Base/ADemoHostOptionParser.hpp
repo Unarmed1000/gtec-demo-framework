@@ -34,11 +34,13 @@
 #include <FslBase/Getopt/IOptionParser.hpp>
 #include <FslBase/ITag.hpp>
 #include <FslNativeWindow/Base/NativeWindowConfig.hpp>
+#include <cstdint>
 #include <memory>
+
 
 namespace Fsl
 {
-  enum class DemoHostOptionConfig
+  enum class DemoHostOptionConfig : uint8_t
   {
     ConsoleApp,
     WindowApp

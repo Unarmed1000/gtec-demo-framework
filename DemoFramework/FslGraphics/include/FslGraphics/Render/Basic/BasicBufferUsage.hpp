@@ -31,9 +31,11 @@
  *
  ****************************************************************************************************************************************************/
 
+#include <cstdint>
+
 namespace Fsl
 {
-  enum class BasicBufferUsage
+  enum class BasicBufferUsage : uint8_t
   {
     //! The buffer is almost never updated and its therefore suited to being uploaded to device local memory
     Static,

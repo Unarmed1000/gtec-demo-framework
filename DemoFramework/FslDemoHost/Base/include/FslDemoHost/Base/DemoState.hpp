@@ -32,9 +32,11 @@
  ****************************************************************************************************************************************************/
 
 
+#include <cstdint>
+
 namespace Fsl
 {
-  enum class DemoState
+  enum class DemoState : uint8_t
   {
     Suspended,
     Running

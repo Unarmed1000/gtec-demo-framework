@@ -12,6 +12,8 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/quaternion.hpp>
 
+#include <cstdint>
+
 namespace Fsl::Willems
 {
   class Camera
@@ -43,7 +45,7 @@ namespace Fsl::Willems
     };
 
   public:
-    enum CameraType
+    enum CameraType : uint8_t
     {
       LookAt,
       FirstPerson

@@ -38,13 +38,15 @@
 #include <windows.h>
 #include <windowsx.h>
 
+#include <cstdint>
+
 namespace Fsl
 {
   class DPIHelperWin32
   {
     typedef HRESULT(STDAPICALLTYPE* FuncGetDpiForMonitor)(HMONITOR hmonitor, MONITOR_DPI_TYPE dpiType, UINT* dpiX, UINT* dpiY);    // NOLINT
 
-    enum class Mode
+    enum class Mode : uint8_t
     {
       Basic,
       PerMonitor

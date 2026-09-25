@@ -32,9 +32,11 @@
  ****************************************************************************************************************************************************/
 
 
+#include <cstdint>
+
 namespace Fsl::DataBinding
 {
-  enum class BindingType
+  enum class BindingType : uint8_t
   {
     AConverterBinding,
     AMultiConverterBinding

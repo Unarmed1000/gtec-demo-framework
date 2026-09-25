@@ -31,9 +31,11 @@
  *
  ****************************************************************************************************************************************************/
 
+#include <cstdint>
+
 namespace Fsl
 {
-  enum class GamepadDeadZoneType
+  enum class GamepadDeadZoneType : uint8_t
   {
     Disabled,
     Axial,

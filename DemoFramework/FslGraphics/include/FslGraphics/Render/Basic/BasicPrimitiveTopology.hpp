@@ -31,9 +31,11 @@
  *
  ****************************************************************************************************************************************************/
 
+#include <cstdint>
+
 namespace Fsl
 {
-  enum class BasicPrimitiveTopology
+  enum class BasicPrimitiveTopology : uint8_t
   {
     // PointList = 0,
     LineList = 1,

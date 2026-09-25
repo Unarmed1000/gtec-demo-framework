@@ -33,9 +33,11 @@
 
 #include <FslBase/BasicTypes.hpp>
 
+#include <cstdint>
+
 namespace Fsl
 {
-  enum class TextureFlags : uint32_t
+  enum class TextureFlags : uint8_t
   {
     // A empty flag
     NotDefined = 0x00,

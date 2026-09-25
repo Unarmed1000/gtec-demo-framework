@@ -35,9 +35,11 @@
 #include <FslGraphics/Vertices/VertexDeclarationArray.hpp>
 #include <FslGraphics/Vertices/VertexDeclarationSpan.hpp>
 
+#include <cstdint>
+
 namespace Fsl
 {
-  enum class ParticleGPUType
+  enum class ParticleGPUType : uint8_t
   {
     Normal = 0,
     Emitter = 1,

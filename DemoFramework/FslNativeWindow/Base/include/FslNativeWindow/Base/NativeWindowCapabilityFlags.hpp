@@ -33,9 +33,11 @@
 
 #include <FslBase/BasicTypes.hpp>
 
+#include <cstdint>
+
 namespace Fsl
 {
-  enum class NativeWindowCapabilityFlags : uint32_t
+  enum class NativeWindowCapabilityFlags : uint8_t
   {
     // Identifies no flags
     NoFlags = 0x00,

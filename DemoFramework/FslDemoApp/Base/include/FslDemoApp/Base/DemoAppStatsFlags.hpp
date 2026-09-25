@@ -33,11 +33,13 @@
 
 #include <FslBase/BasicTypes.hpp>
 
+#include <cstdint>
+
 namespace Fsl
 {
   struct DemoAppStatsFlags
   {
-    enum Enum
+    enum Enum : uint8_t
     {
       //! Cant be called none because the X11 header in its wisdom decided to define that :(
       Nothing = 0x00,
