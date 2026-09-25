@@ -31,7 +31,7 @@ namespace Fsl
   namespace
   {
     // MoltenVK presents through a CAMetalLayer
-    const auto PLATFORM_KHR_SURFACE_EXTENSION_NAME = VK_EXT_METAL_SURFACE_EXTENSION_NAME;
+    const auto g_platformKhrSurfaceExtensionName = VK_EXT_METAL_SURFACE_EXTENSION_NAME;
 
 
     std::shared_ptr<IPlatformNativeWindowAdapter>
@@ -44,7 +44,7 @@ namespace Fsl
 
 
   VulkanNativeWindowSystemAdapterCocoa::VulkanNativeWindowSystemAdapterCocoa(const NativeWindowSystemSetup& setup)
-    : VulkanNativeWindowSystemAdapterTemplate<PlatformNativeWindowSystemAdapterCocoa>(setup, PLATFORM_KHR_SURFACE_EXTENSION_NAME, AllocateWindow)
+    : VulkanNativeWindowSystemAdapterTemplate<PlatformNativeWindowSystemAdapterCocoa>(setup, g_platformKhrSurfaceExtensionName, AllocateWindow)
   {
   }
 
