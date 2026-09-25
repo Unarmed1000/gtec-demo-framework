@@ -83,51 +83,51 @@ namespace Fsl
 
 
     // NOLINTNEXTLINE(readability-identifier-naming)
-    constexpr const_pointer data() const noexcept
+    [[nodiscard]] constexpr const_pointer data() const noexcept
     {
       return m_pData;
     }
 
     // NOLINTNEXTLINE(readability-identifier-naming)
-    constexpr size_type size() const noexcept
+    [[nodiscard]] constexpr size_type size() const noexcept
     {
       return m_length;
     }
 
     //! @brief return the element size in bytes
     // NOLINTNEXTLINE(readability-identifier-naming)
-    constexpr size_type stride() const noexcept
+    [[nodiscard]] constexpr size_type stride() const noexcept
     {
       return m_stride;
     }
 
     // NOLINTNEXTLINE(readability-identifier-naming)
-    constexpr bool empty() const noexcept
+    [[nodiscard]] constexpr bool empty() const noexcept
     {
       return m_length == 0;
     }
 
     // NOLINTNEXTLINE(readability-identifier-naming)
-    constexpr size_type length() const noexcept
+    [[nodiscard]] constexpr size_type length() const noexcept
     {
       return m_length;
     }
 
     // NOLINTNEXTLINE(readability-identifier-naming)
-    constexpr size_type byte_size() const noexcept
+    [[nodiscard]] constexpr size_type byte_size() const noexcept
     {
       return m_length * m_stride;
     }
 
     //! @brief Returns a view of the substring [pos, pos + rcount), where rcount is the smaller of count and size() - pos.
     // NOLINTNEXTLINE(readability-identifier-naming)
-    constexpr ReadOnlyFlexSpan subspan(size_type pos = 0, size_type count = extent) const
+    [[nodiscard]] constexpr ReadOnlyFlexSpan subspan(size_type pos = 0, size_type count = extent) const
     {
       if (pos > m_length)
       {
         throw std::out_of_range("pos out of range");
       }
-      auto maxLength = (m_length - pos);
+      const auto maxLength = (m_length - pos);
       return ReadOnlyFlexSpan(static_cast<const uint8_t*>(m_pData) + (m_stride * pos), (count <= maxLength ? count : maxLength), m_stride,
                               OptimizationCheckFlag::NoCheck);
     }

@@ -43,7 +43,7 @@ namespace
 
 TEST(TestString_StringViewLiteArrayUtil, CopyToAndZeroTerminate_Empty)
 {
-  StringViewLite strView;
+  const StringViewLite strView;
   std::array<char, 12> dstArray = {'a', 'a', 'a', 'a', 'a', 'a', 'a', 'a', 'a', 'a', 'a', 'a'};
   StringViewLiteArrayUtil::CopyToAndZeroTerminate(dstArray, strView);
 
@@ -53,7 +53,7 @@ TEST(TestString_StringViewLiteArrayUtil, CopyToAndZeroTerminate_Empty)
 
 TEST(TestString_StringViewLiteArrayUtil, CopyToAndZeroTerminate_Filled)
 {
-  StringViewLite strView("0123456789");
+  const StringViewLite strView("0123456789");
   std::array<char, 12> dstArray = {'a', 'a', 'a', 'a', 'a', 'a', 'a', 'a', 'a', 'a', 'a', 'a'};
   StringViewLiteArrayUtil::CopyToAndZeroTerminate(dstArray, strView);
 
@@ -73,7 +73,7 @@ TEST(TestString_StringViewLiteArrayUtil, CopyToAndZeroTerminate_Filled)
 
 TEST(TestString_StringViewLiteArrayUtil, CopyToAndZeroTerminate_SubStr)
 {
-  StringViewLite strView("0123456789");
+  const StringViewLite strView("0123456789");
   std::array<char, 12> dstArray = {'a', 'a', 'a', 'a', 'a', 'a', 'a', 'a', 'a', 'a', 'a', 'a'};
   StringViewLiteArrayUtil::CopyToAndZeroTerminate(dstArray, strView.substr(2, 2));
 
@@ -85,7 +85,7 @@ TEST(TestString_StringViewLiteArrayUtil, CopyToAndZeroTerminate_SubStr)
 
 TEST(TestString_StringViewLiteArrayUtil, CopyToAndZeroTerminate_FilledOverflow)
 {
-  StringViewLite strView("0123456789ABCDEFG");
+  const StringViewLite strView("0123456789ABCDEFG");
   std::array<char, 12> dstArray = {'a', 'a', 'a', 'a', 'a', 'a', 'a', 'a', 'a', 'a', 'a', 'a'};
   StringViewLiteArrayUtil::CopyToAndZeroTerminate(dstArray, strView);
 
@@ -106,7 +106,7 @@ TEST(TestString_StringViewLiteArrayUtil, CopyToAndZeroTerminate_FilledOverflow)
 
 TEST(TestString_StringViewLiteArrayUtil, ToArray_Empty)
 {
-  StringViewLite strView;
+  const StringViewLite strView;
   std::array<char, 12> dstArray = StringViewLiteArrayUtil::ToArray<12>(strView);
 
   EXPECT_EQ(dstArray[0], '\0');
@@ -115,7 +115,7 @@ TEST(TestString_StringViewLiteArrayUtil, ToArray_Empty)
 
 TEST(TestString_StringViewLiteArrayUtil, ToArray_Filled)
 {
-  StringViewLite strView("0123456789");
+  const StringViewLite strView("0123456789");
   std::array<char, 12> dstArray = StringViewLiteArrayUtil::ToArray<12>(strView);
 
   EXPECT_EQ(dstArray[0], '0');
@@ -134,7 +134,7 @@ TEST(TestString_StringViewLiteArrayUtil, ToArray_Filled)
 
 TEST(TestString_StringViewLiteArrayUtil, ToArray_SubStr)
 {
-  StringViewLite strView("0123456789");
+  const StringViewLite strView("0123456789");
   std::array<char, 12> dstArray = StringViewLiteArrayUtil::ToArray<12>(strView.substr(2, 2));
 
   EXPECT_EQ(dstArray[0], '2');
@@ -145,7 +145,7 @@ TEST(TestString_StringViewLiteArrayUtil, ToArray_SubStr)
 
 TEST(TestString_StringViewLiteArrayUtil, ToArray_FilledOverflow)
 {
-  StringViewLite strView("0123456789ABCDEFG");
+  const StringViewLite strView("0123456789ABCDEFG");
   std::array<char, 12> dstArray = StringViewLiteArrayUtil::ToArray<12>(strView);
 
   EXPECT_EQ(dstArray[0], '0');

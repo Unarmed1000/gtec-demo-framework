@@ -48,7 +48,7 @@ namespace
 
 TEST(TestMath_Thickness, Default)
 {
-  Thickness value;
+  const Thickness value;
 
   EXPECT_EQ(0, value.Left());
   EXPECT_EQ(0, value.Top());
@@ -61,11 +61,11 @@ TEST(TestMath_Thickness, Default)
 
 TEST(TestMath_Thickness, Values)
 {
-  int32_t left = 1;
-  int32_t top = 2;
-  int32_t right = 3;
-  int32_t bottom = 4;
-  Thickness value(left, top, right, bottom);
+  const int32_t left = 1;
+  const int32_t top = 2;
+  const int32_t right = 3;
+  const int32_t bottom = 4;
+  const Thickness value(left, top, right, bottom);
 
   EXPECT_EQ(left, value.Left());
   EXPECT_EQ(top, value.Top());
@@ -77,12 +77,12 @@ TEST(TestMath_Thickness, Values)
 
 TEST(TestMath_Thickness, OperatorEqual)
 {
-  int32_t left = 1;
-  int32_t top = 2;
-  int32_t right = 3;
-  int32_t bottom = 4;
-  Thickness value1(left, top, right, bottom);
-  Thickness value2(left, top, right, bottom);
+  const int32_t left = 1;
+  const int32_t top = 2;
+  const int32_t right = 3;
+  const int32_t bottom = 4;
+  const Thickness value1(left, top, right, bottom);
+  const Thickness value2(left, top, right, bottom);
 
   EXPECT_EQ(value1, value2);
 }
@@ -90,12 +90,12 @@ TEST(TestMath_Thickness, OperatorEqual)
 
 TEST(TestMath_Thickness, OperatorNotEqual)
 {
-  int32_t left = 1;
-  int32_t top = 2;
-  int32_t right = 3;
-  int32_t bottom = 4;
-  Thickness value1(left, top, right, bottom);
-  Thickness value2(left, top, right, 5);
+  const int32_t left = 1;
+  const int32_t top = 2;
+  const int32_t right = 3;
+  const int32_t bottom = 4;
+  const Thickness value1(left, top, right, bottom);
+  const Thickness value2(left, top, right, 5);
 
   EXPECT_NE(value1, value2);
 }

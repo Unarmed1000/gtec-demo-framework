@@ -54,12 +54,12 @@ namespace Fsl
     {
     }
 
-    constexpr value_type SumX() const
+    [[nodiscard]] constexpr value_type SumX() const
     {
       return Left + Right;
     }
 
-    constexpr value_type SumY() const
+    [[nodiscard]] constexpr value_type SumY() const
     {
       return Top + Bottom;
     }

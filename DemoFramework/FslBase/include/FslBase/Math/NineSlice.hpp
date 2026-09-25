@@ -52,22 +52,22 @@ namespace Fsl
     NineSlice(const value_type sliceFromTopLeftX, const value_type sliceFromTopLeftY, const value_type sliceFromBottomRightX,
               const value_type sliceFromBottomRightY);
 
-    constexpr value_type SliceFromTopLeftX() const noexcept
+    [[nodiscard]] constexpr value_type SliceFromTopLeftX() const noexcept
     {
       return m_sliceFromTopLeftX;
     }
 
-    constexpr value_type SliceFromTopLeftY() const noexcept
+    [[nodiscard]] constexpr value_type SliceFromTopLeftY() const noexcept
     {
       return m_sliceFromTopLeftY;
     }
 
-    constexpr value_type SliceFromBottomRightX() const noexcept
+    [[nodiscard]] constexpr value_type SliceFromBottomRightX() const noexcept
     {
       return m_sliceFromBottomRightX;
     }
 
-    constexpr value_type SliceFromBottomRightY() const noexcept
+    [[nodiscard]] constexpr value_type SliceFromBottomRightY() const noexcept
     {
       return m_sliceFromBottomRightY;
     }
@@ -83,17 +83,17 @@ namespace Fsl
       return !(*this == rhs);
     }
 
-    constexpr value_type SumX() const noexcept
+    [[nodiscard]] constexpr value_type SumX() const noexcept
     {
       return m_sliceFromTopLeftX + m_sliceFromBottomRightX;
     }
 
-    constexpr value_type SumY() const noexcept
+    [[nodiscard]] constexpr value_type SumY() const noexcept
     {
       return m_sliceFromTopLeftY + m_sliceFromBottomRightY;
     }
 
-    constexpr bool IsEmpty() const noexcept
+    [[nodiscard]] constexpr bool IsEmpty() const noexcept
     {
       return (m_sliceFromTopLeftX + m_sliceFromTopLeftY + m_sliceFromBottomRightX + m_sliceFromBottomRightY) == 0;
     }

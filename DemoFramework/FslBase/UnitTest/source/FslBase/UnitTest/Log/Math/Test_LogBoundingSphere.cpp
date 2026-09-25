@@ -47,7 +47,7 @@ namespace
 
 TEST(TestLog_Math_LogBoundingSphere, Log)
 {
-  BoundingSphere value(Vector3(1.0f, 2.0f, 3.0f), 10.0f);
+  const BoundingSphere value(Vector3(1.0f, 2.0f, 3.0f), 10.0f);
 
   std::stringstream stream;
   stream << value;

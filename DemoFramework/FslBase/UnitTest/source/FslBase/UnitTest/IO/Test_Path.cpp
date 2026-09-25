@@ -50,7 +50,7 @@ namespace
 
 TEST(TestIO_Path, Construct_Default)
 {
-  IO::Path path;
+  const IO::Path path;
 
   EXPECT_TRUE(path.IsEmpty());
 }
@@ -58,7 +58,7 @@ TEST(TestIO_Path, Construct_Default)
 
 TEST(TestIO_Path, Construct_CString)
 {
-  IO::Path path("hello");
+  const IO::Path path("hello");
 
   EXPECT_FALSE(path.IsEmpty());
   EXPECT_EQ("hello", path);
@@ -68,7 +68,7 @@ TEST(TestIO_Path, Construct_CString)
 TEST(TestIO_Path, Construct_CString_nullptr)
 {
   const char* const pszNull = nullptr;
-  IO::Path path(pszNull);
+  const IO::Path path(pszNull);
 
   EXPECT_TRUE(path.IsEmpty());
   EXPECT_EQ("", path);
@@ -76,7 +76,7 @@ TEST(TestIO_Path, Construct_CString_nullptr)
 
 TEST(TestIO_Path, Construct_CString_BackSlash)
 {
-  IO::Path path("hello\\");
+  const IO::Path path("hello\\");
 
   EXPECT_FALSE(path.IsEmpty());
   EXPECT_EQ("hello/", path);
@@ -85,7 +85,7 @@ TEST(TestIO_Path, Construct_CString_BackSlash)
 
 TEST(TestIO_Path, Construct_StringViewLite)
 {
-  IO::Path path(StringViewLite("hello"));
+  const IO::Path path(StringViewLite("hello"));
 
   EXPECT_FALSE(path.IsEmpty());
   EXPECT_EQ("hello", path);
@@ -94,7 +94,7 @@ TEST(TestIO_Path, Construct_StringViewLite)
 
 TEST(TestIO_Path, Construct_PathView)
 {
-  IO::Path path(IO::PathView("hello"));
+  const IO::Path path(IO::PathView("hello"));
 
   EXPECT_FALSE(path.IsEmpty());
   EXPECT_EQ("hello", path);
@@ -103,8 +103,8 @@ TEST(TestIO_Path, Construct_PathView)
 
 TEST(TestIO_Path, Construct_PathView_Empty)
 {
-  IO::PathView qw;
-  IO::Path path(qw);
+  const IO::PathView qw;
+  const IO::Path path(qw);
 
   EXPECT_TRUE(path.IsEmpty());
   EXPECT_EQ("", path);
@@ -113,8 +113,8 @@ TEST(TestIO_Path, Construct_PathView_Empty)
 
 TEST(TestIO_Path, Construct_StringViewLite_Empty)
 {
-  StringViewLite qw;
-  IO::Path path(qw);
+  const StringViewLite qw;
+  const IO::Path path(qw);
 
   EXPECT_TRUE(path.IsEmpty());
   EXPECT_EQ("", path);
@@ -122,7 +122,7 @@ TEST(TestIO_Path, Construct_StringViewLite_Empty)
 
 TEST(TestIO_Path, Construct_StringViewLite_BackSlash)
 {
-  IO::Path path(StringViewLite("hello\\"));
+  const IO::Path path(StringViewLite("hello\\"));
 
   EXPECT_FALSE(path.IsEmpty());
   EXPECT_EQ("hello/", path);
@@ -131,7 +131,7 @@ TEST(TestIO_Path, Construct_StringViewLite_BackSlash)
 
 TEST(TestIO_Path, Construct_String)
 {
-  IO::Path path(std::string("hello"));
+  const IO::Path path(std::string("hello"));
 
   EXPECT_FALSE(path.IsEmpty());
   EXPECT_EQ("hello", path);
@@ -139,7 +139,7 @@ TEST(TestIO_Path, Construct_String)
 
 TEST(TestIO_Path, Construct_String_BackSlash)
 {
-  IO::Path path(std::string("hello\\"));
+  const IO::Path path(std::string("hello\\"));
 
   EXPECT_FALSE(path.IsEmpty());
   EXPECT_EQ("hello/", path);
@@ -148,7 +148,7 @@ TEST(TestIO_Path, Construct_String_BackSlash)
 
 TEST(TestIO_Path, Construct_UTF8String)
 {
-  IO::Path path(UTF8String("hello"));
+  const IO::Path path(UTF8String("hello"));
 
   EXPECT_FALSE(path.IsEmpty());
   EXPECT_EQ("hello", path);
@@ -156,7 +156,7 @@ TEST(TestIO_Path, Construct_UTF8String)
 
 TEST(TestIO_Path, Construct_UTF8String_BackSlash)
 {
-  IO::Path path(UTF8String("hello\\"));
+  const IO::Path path(UTF8String("hello\\"));
 
   EXPECT_FALSE(path.IsEmpty());
   EXPECT_EQ("hello/", path);
@@ -476,7 +476,7 @@ TEST(TestIO_Path, Prepend_Path_BackSlash)
 
 TEST(TestIO_Path, Contains_Char)
 {
-  IO::Path path("hello");
+  const IO::Path path("hello");
 
   EXPECT_TRUE(path.Contains('h'));
   EXPECT_TRUE(path.Contains('e'));
@@ -489,7 +489,7 @@ TEST(TestIO_Path, Contains_Char)
 
 TEST(TestIO_Path, Contains_String)
 {
-  IO::Path path("hello");
+  const IO::Path path("hello");
 
   EXPECT_TRUE(path.Contains(""));
   EXPECT_TRUE(path.Contains("h"));
@@ -505,7 +505,7 @@ TEST(TestIO_Path, Contains_String)
 
 TEST(TestIO_Path, Contains_UTF8String)
 {
-  IO::Path path(UTF8String("hello"));
+  const IO::Path path(UTF8String("hello"));
 
   EXPECT_TRUE(path.Contains(UTF8String("")));
   EXPECT_TRUE(path.Contains(UTF8String("h")));
@@ -521,7 +521,7 @@ TEST(TestIO_Path, Contains_UTF8String)
 
 TEST(TestIO_Path, Contains_Path)
 {
-  IO::Path path(IO::Path("hello"));
+  const IO::Path path(IO::Path("hello"));
 
   EXPECT_TRUE(path.Contains(IO::Path("")));
   EXPECT_TRUE(path.Contains(IO::Path("h")));
@@ -537,7 +537,7 @@ TEST(TestIO_Path, Contains_Path)
 
 TEST(TestIO_Path, StartsWith_Char)
 {
-  IO::Path path("hello");
+  const IO::Path path("hello");
 
   EXPECT_TRUE(path.StartsWith('h'));
   EXPECT_FALSE(path.StartsWith('e'));
@@ -550,7 +550,7 @@ TEST(TestIO_Path, StartsWith_Char)
 
 TEST(TestIO_Path, StartsWith_CString)
 {
-  IO::Path path("hello");
+  const IO::Path path("hello");
 
   EXPECT_TRUE(path.StartsWith(""));
   EXPECT_TRUE(path.StartsWith("h"));
@@ -567,7 +567,7 @@ TEST(TestIO_Path, StartsWith_CString)
 
 TEST(TestIO_Path, StartsWith_StringViewLite)
 {
-  IO::Path path(UTF8String("hello"));
+  const IO::Path path(UTF8String("hello"));
 
   EXPECT_TRUE(path.StartsWith(StringViewLite("")));
   EXPECT_TRUE(path.StartsWith(StringViewLite("h")));
@@ -584,7 +584,7 @@ TEST(TestIO_Path, StartsWith_StringViewLite)
 
 TEST(TestIO_Path, StartsWith_PathView)
 {
-  IO::Path path(UTF8String("hello"));
+  const IO::Path path(UTF8String("hello"));
 
   EXPECT_TRUE(path.StartsWith(IO::PathView("")));
   EXPECT_TRUE(path.StartsWith(IO::PathView("h")));
@@ -601,7 +601,7 @@ TEST(TestIO_Path, StartsWith_PathView)
 
 TEST(TestIO_Path, StartsWith_UTF8String)
 {
-  IO::Path path(UTF8String("hello"));
+  const IO::Path path(UTF8String("hello"));
 
   EXPECT_TRUE(path.StartsWith(UTF8String("")));
   EXPECT_TRUE(path.StartsWith(UTF8String("h")));
@@ -618,7 +618,7 @@ TEST(TestIO_Path, StartsWith_UTF8String)
 
 TEST(TestIO_Path, StartsWith_Path)
 {
-  IO::Path path(IO::Path("hello"));
+  const IO::Path path(IO::Path("hello"));
 
   EXPECT_TRUE(path.StartsWith(IO::Path("")));
   EXPECT_TRUE(path.StartsWith(IO::Path("h")));
@@ -635,7 +635,7 @@ TEST(TestIO_Path, StartsWith_Path)
 
 TEST(TestIO_Path, EndsWith_Char)
 {
-  IO::Path path("hello");
+  const IO::Path path("hello");
 
   EXPECT_TRUE(path.EndsWith('o'));
   EXPECT_FALSE(path.EndsWith('O'));
@@ -648,7 +648,7 @@ TEST(TestIO_Path, EndsWith_Char)
 
 TEST(TestIO_Path, EndsWith_CString)
 {
-  IO::Path path("hello");
+  const IO::Path path("hello");
 
   EXPECT_TRUE(path.EndsWith(""));
   EXPECT_TRUE(path.EndsWith("o"));
@@ -665,7 +665,7 @@ TEST(TestIO_Path, EndsWith_CString)
 
 TEST(TestIO_Path, EndsWith_StringViewLite)
 {
-  IO::Path path(UTF8String("hello"));
+  const IO::Path path(UTF8String("hello"));
 
   EXPECT_TRUE(path.EndsWith(StringViewLite("")));
   EXPECT_TRUE(path.EndsWith(StringViewLite("o")));
@@ -682,7 +682,7 @@ TEST(TestIO_Path, EndsWith_StringViewLite)
 
 TEST(TestIO_Path, EndsWith_PathView)
 {
-  IO::Path path(UTF8String("hello"));
+  const IO::Path path(UTF8String("hello"));
 
   EXPECT_TRUE(path.EndsWith(IO::PathView("")));
   EXPECT_TRUE(path.EndsWith(IO::PathView("o")));
@@ -698,7 +698,7 @@ TEST(TestIO_Path, EndsWith_PathView)
 
 TEST(TestIO_Path, EndsWith_UTF8String)
 {
-  IO::Path path(UTF8String("hello"));
+  const IO::Path path(UTF8String("hello"));
 
   EXPECT_TRUE(path.EndsWith(UTF8String("")));
   EXPECT_TRUE(path.EndsWith(UTF8String("o")));
@@ -715,7 +715,7 @@ TEST(TestIO_Path, EndsWith_UTF8String)
 
 TEST(TestIO_Path, EndsWith_Path)
 {
-  IO::Path path(IO::Path("hello"));
+  const IO::Path path(IO::Path("hello"));
 
   EXPECT_TRUE(path.EndsWith(IO::Path("")));
   EXPECT_TRUE(path.EndsWith(IO::Path("o")));
@@ -733,7 +733,7 @@ TEST(TestIO_Path, EndsWith_Path)
 TEST(TestIO_Path, IndexOf_Char)
 {
   //-------------01234
-  IO::Path path("hello");
+  const IO::Path path("hello");
 
   EXPECT_EQ(0, path.IndexOf('h'));
   EXPECT_EQ(1, path.IndexOf('e'));
@@ -751,8 +751,8 @@ TEST(TestIO_Path, IndexOf_Char)
 
 TEST(TestIO_Path, ToUTF8String)
 {
-  std::string str("hello");
-  IO::Path path(str);
+  const std::string str("hello");
+  const IO::Path path(str);
 
   const auto& res = path.ToUTF8String();
 
@@ -762,10 +762,10 @@ TEST(TestIO_Path, ToUTF8String)
 
 TEST(TestIO_Path, ToAsciiString)
 {
-  std::string str("hello");
-  IO::Path path(str);
+  const std::string str("hello");
+  const IO::Path path(str);
 
-  auto res = path.ToAsciiString();
+  const auto res = path.ToAsciiString();
 
   EXPECT_EQ(str, res);
 }
@@ -1231,8 +1231,8 @@ TEST(TestIO_Path, GetExtension_Path)
 
 TEST(TestIO_Path, Equal)
 {
-  IO::Path path1("hello");
-  IO::Path path2("hello");
+  const IO::Path path1("hello");
+  const IO::Path path2("hello");
 
   EXPECT_EQ(path1, path2);
 }
@@ -1240,8 +1240,8 @@ TEST(TestIO_Path, Equal)
 
 TEST(TestIO_Path, NotEqual)
 {
-  IO::Path path1("hello");
-  IO::Path path2("world");
+  const IO::Path path1("hello");
+  const IO::Path path2("world");
 
   EXPECT_NE(path1, path2);
 }
@@ -1291,7 +1291,7 @@ TEST(TestIO_Path, OpAssign_UTF8String)
   IO::Path src("old school");
   //---------0123456789
 
-  UTF8String strNew("the quick brown fox");
+  const UTF8String strNew("the quick brown fox");
 
   src = strNew;
   EXPECT_EQ(strNew, src);
@@ -1303,7 +1303,7 @@ TEST(TestIO_Path, OpAssign_Path)
   IO::Path src("old school");
   //---------0123456789
 
-  IO::Path strNew("the quick brown fox");
+  const IO::Path strNew("the quick brown fox");
 
   src = strNew;
   EXPECT_EQ(strNew, src);
@@ -3105,7 +3105,7 @@ TEST(TestIO_Path, OperatorNotEqual_Null)
 TEST(TestIO_Path, Op_Plus_Path_CString)
 {
   //---------------01234567890
-  IO::Path str("hello");
+  const IO::Path str("hello");
 
   EXPECT_EQ(StringViewLite("hello world"), str + " world");
   EXPECT_EQ(StringViewLite("hello there!"), str + " there!");
@@ -3117,7 +3117,7 @@ TEST(TestIO_Path, Op_Plus_Path_CString)
 TEST(TestIO_Path, Op_Plus_Path_StringViewLite)
 {
   //---------------01234567890
-  IO::Path str("hello");
+  const IO::Path str("hello");
 
   EXPECT_EQ(StringViewLite("hello world"), str + StringViewLite(" world"));
   EXPECT_EQ(StringViewLite("hello there!"), str + StringViewLite(" there!"));
@@ -3140,7 +3140,7 @@ TEST(TestIO_Path, Op_Plus_Path_StringViewLite)
 TEST(TestIO_Path, Op_Plus_Path_Path)
 {
   //---------------01234567890
-  IO::Path str("hello");
+  const IO::Path str("hello");
 
   EXPECT_EQ(StringViewLite("hello world"), str + IO::Path(" world"));
   EXPECT_EQ(StringViewLite("hello there!"), str + IO::Path(" there!"));
@@ -3162,7 +3162,7 @@ TEST(TestIO_Path, Op_Plus_CString_Path)
 TEST(TestIO_Path, Op_Plus_StringViewLite_Path)
 {
   //---------------01234567890
-  IO::Path str("hello");
+  const IO::Path str("hello");
 
   EXPECT_EQ(StringViewLite("hello world"), StringViewLite("hello") + IO::Path(" world"));
   EXPECT_EQ(StringViewLite("hello there!"), StringViewLite("hello") + IO::Path(" there!"));
@@ -3258,7 +3258,7 @@ TEST(TestIO_Path, MoveAssignment)
 TEST(TestIO_Path, MoveConstruct)
 {
   IO::Path path1("hello");
-  IO::Path path2(std::move(path1));
+  const IO::Path path2(std::move(path1));
 
   // Move does not have to change the content of str1 so this check could fail
   // EXPECT_EQ(str1, "");

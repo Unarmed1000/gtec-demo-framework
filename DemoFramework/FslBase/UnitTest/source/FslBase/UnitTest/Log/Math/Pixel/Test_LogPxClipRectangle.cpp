@@ -47,7 +47,7 @@ namespace
 
 TEST(TestLog_Math_Pixel_LogPxClipRectangle, Log)
 {
-  auto value = PxClipRectangle::CreateFromLeftTopRightBottom(1, 2, 10, 20);
+  const auto value = PxClipRectangle::CreateFromLeftTopRightBottom(1, 2, 10, 20);
 
   std::stringstream stream;
   stream << value;

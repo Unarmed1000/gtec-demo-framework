@@ -67,11 +67,11 @@ namespace Fsl
     {
     }
 
-    float Dot(const Vector4& value) const;
+    [[nodiscard]] float Dot(const Vector4& value) const;
     void Dot(const Vector4& value, float& rResult) const;
-    float DotCoordinate(const Vector3& value) const;
+    [[nodiscard]] float DotCoordinate(const Vector3& value) const;
     void DotCoordinate(const Vector3& value, float& rResult) const;
-    float DotNormal(const Vector3& value) const;
+    [[nodiscard]] float DotNormal(const Vector3& value) const;
     void DotNormal(const Vector3& value, float& rResult) const;
 
     //! @brief Transforms a normalized plane by a matrix.
@@ -102,10 +102,10 @@ namespace Fsl
     static Plane Normalize(const Plane& value);
     static void Normalize(const Plane& value, Plane& rResult);
 
-    PlaneIntersectionType Intersects(const BoundingBox& box) const;
-    PlaneIntersectionType Intersects(const BoundingFrustum& frustum) const;
-    PlaneIntersectionType Intersects(const BoundingSphere& sphere) const;
-    PlaneIntersectionType Intersects(const Vector3& point) const;
+    [[nodiscard]] PlaneIntersectionType Intersects(const BoundingBox& box) const;
+    [[nodiscard]] PlaneIntersectionType Intersects(const BoundingFrustum& frustum) const;
+    [[nodiscard]] PlaneIntersectionType Intersects(const BoundingSphere& sphere) const;
+    [[nodiscard]] PlaneIntersectionType Intersects(const Vector3& point) const;
 
     //! @brief Tests for equality.
     bool operator==(const Plane& rhs) const

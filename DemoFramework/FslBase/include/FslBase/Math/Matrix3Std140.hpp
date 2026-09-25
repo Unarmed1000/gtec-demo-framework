@@ -50,7 +50,7 @@ namespace Fsl
 
     static constexpr size_type NumElements = size_type{3} * size_type{4};
 
-    constexpr size_type size() const    // NOLINT(readability-convert-member-functions-to-static,readability-identifier-naming)
+    [[nodiscard]] constexpr size_type size() const    // NOLINT(readability-convert-member-functions-to-static,readability-identifier-naming)
     {
       return NumElements;
     }
@@ -81,7 +81,7 @@ namespace Fsl
     // Matrix3Std140(const OptimizationFlag flag){};
 
     //! @brief Direct access to the matrix array
-    const float* DirectAccess() const
+    [[nodiscard]] const float* DirectAccess() const
     {
       return m;
     }
@@ -128,7 +128,7 @@ namespace Fsl
       m[_M33] = 1.0f;
     }
 
-    constexpr float Determinant() const
+    [[nodiscard]] constexpr float Determinant() const
     {
       using namespace Matrix3Std140Fields;
       return (m[_M11] * (m[_M22] * m[_M33] - m[_M23] * m[_M32])) - (m[_M12] * (m[_M21] * m[_M33] - m[_M23] * m[_M31])) +

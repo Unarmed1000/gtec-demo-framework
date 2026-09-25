@@ -48,7 +48,7 @@ namespace
 
 TEST(TestMath_Rect, Empty)
 {
-  Rect value;
+  const Rect value;
 
   // The rect stores left, top, right, bottom so they ought to be exact values
   EXPECT_EQ(Rect(), Rect::Empty());
@@ -71,11 +71,11 @@ TEST(TestMath_Rect, Empty)
 
 TEST(TestMath_Rect, Construct1)
 {
-  float offsetX = 1.0f;
-  float offsetY = 2.0f;
-  float width = 10.0f;
-  float height = 20.0f;
-  Rect value(offsetX, offsetY, width, height);
+  const float offsetX = 1.0f;
+  const float offsetY = 2.0f;
+  const float width = 10.0f;
+  const float height = 20.0f;
+  const Rect value(offsetX, offsetY, width, height);
 
   // The rect stores left, top, right, bottom so they ought to be exact values
   EXPECT_EQ(offsetX, value.Left());
@@ -101,11 +101,11 @@ TEST(TestMath_Rect, Construct1)
 
 TEST(TestMath_Rect, FromLeftTopRightBottom)
 {
-  float left = 1.0f;
-  float top = 2.0f;
-  float right = 10.0f;
-  float bottom = 20.0f;
-  auto value = Rect::FromLeftTopRightBottom(left, top, right, bottom);
+  const float left = 1.0f;
+  const float top = 2.0f;
+  const float right = 10.0f;
+  const float bottom = 20.0f;
+  const auto value = Rect::FromLeftTopRightBottom(left, top, right, bottom);
 
   // The rect stores left, top, right, bottom so they ought to be exact values
   EXPECT_EQ(left, value.Left());
@@ -285,7 +285,7 @@ TEST(TestMath_Rect, GetCenter)
   const float offsetY = 2.0f;
   const float width = 3.0f;
   const float height = 4.0f;
-  Rect value(offsetX, offsetY, width, height);
+  const Rect value(offsetX, offsetY, width, height);
 
   EXPECT_EQ(offsetX + (width / 2.0f), value.GetCenter().X);
   EXPECT_EQ(offsetY + (height / 2.0f), value.GetCenter().Y);
@@ -342,7 +342,7 @@ TEST(TestMath_Rect, Intersects_BruteForce)
       const int32_t yOffset = y * 11;
       for (int32_t x = 0; x < 11; ++x)
       {
-        Rect rectA(static_cast<float>(x), static_cast<float>(y), 4, 3);
+        const Rect rectA(static_cast<float>(x), static_cast<float>(y), 4, 3);
         EXPECT_EQ(result[x + yOffset] != 0u, rectA.Intersects(RectB));
         EXPECT_EQ(result[x + yOffset] != 0u, RectB.Intersects(rectA));
       }
@@ -385,10 +385,10 @@ TEST(TestMath_Rect, Intersect_BruteForce)
       const int32_t yOffset = y * 11;
       for (int32_t x = 0; x < 11; ++x)
       {
-        Rect rectA(static_cast<float>(x), static_cast<float>(y), 4, 3);
+        const Rect rectA(static_cast<float>(x), static_cast<float>(y), 4, 3);
 
-        auto res1 = Rect::Intersect(rectA, RectB);
-        auto res2 = Rect::Intersect(RectB, rectA);
+        const auto res1 = Rect::Intersect(rectA, RectB);
+        const auto res2 = Rect::Intersect(RectB, rectA);
         EXPECT_EQ(res1, res2);
         // check for intersection
         EXPECT_EQ(result[x + yOffset] != 0u, !res1.IsEmpty());
@@ -415,10 +415,10 @@ TEST(TestMath_Rect, Union_BruteForce)
   {
     for (int32_t x = 0; x < 11; ++x)
     {
-      Rect rectA(static_cast<float>(x), static_cast<float>(y), 4, 3);
+      const Rect rectA(static_cast<float>(x), static_cast<float>(y), 4, 3);
 
-      auto res1 = Rect::Union(rectA, RectB);
-      auto res2 = Rect::Union(RectB, rectA);
+      const auto res1 = Rect::Union(rectA, RectB);
+      const auto res2 = Rect::Union(RectB, rectA);
       EXPECT_EQ(res1, res2);
 
       EXPECT_EQ(std::min(rectA.Left(), RectB.Left()), res1.Left());

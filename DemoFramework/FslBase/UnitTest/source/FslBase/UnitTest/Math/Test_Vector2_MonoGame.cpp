@@ -60,7 +60,7 @@ TEST(TestMath_Vector2_MonoGame, CatmullRom)
   EXPECT_TRUE(Fsl::Test::IsFloatEqual(expectedResult, result));
 
   // We expect the two operations to give the exact same result
-  auto result2 = Vector2::CatmullRom(v1, v2, v3, v4, value);
+  const auto result2 = Vector2::CatmullRom(v1, v2, v3, v4, value);
   EXPECT_EQ(result.X, result2.X);
   EXPECT_EQ(result.Y, result2.Y);
 }
@@ -94,7 +94,7 @@ TEST(TestMath_Vector2_MonoGame, Multiply)
   EXPECT_EQ(scaledVec, vector * 0.999f);
   EXPECT_EQ(vector * 0.999f, scaledVec);
 
-  Vector2 vector2(2, 2);
+  const Vector2 vector2(2, 2);
 
   // Test two vectors multiplication.
   EXPECT_EQ(Vector2(vector.X * vector2.X, vector.Y * vector2.Y), vector * vector2);
@@ -116,10 +116,10 @@ TEST(TestMath_Vector2_MonoGame, Hermite)
   const Vector2 v7(1, 2);
   const Vector2 v8(3, 4);
 
-  auto resultHermite1 = Vector2::Hermite(v1, v2, v3, v4, 0.25f);
+  const auto resultHermite1 = Vector2::Hermite(v1, v2, v3, v4, 0.25f);
   EXPECT_TRUE(Fsl::Test::IsFloatEqual(t1, resultHermite1));
 
-  auto resultHermite2 = Vector2::Hermite(v5, v6, v7, v8, 0.45f);
+  const auto resultHermite2 = Vector2::Hermite(v5, v6, v7, v8, 0.45f);
   EXPECT_TRUE(Fsl::Test::IsFloatEqual(t2, resultHermite2));
 
   Vector2 result1;
@@ -149,8 +149,8 @@ TEST(TestMath_Vector2_MonoGame, Transform)
 
   {
     {
-      auto result1 = Vector2::Transform(v1, m1);
-      auto result2 = Vector2::Transform(v2, q2);
+      const auto result1 = Vector2::Transform(v1, m1);
+      const auto result2 = Vector2::Transform(v2, q2);
       EXPECT_TRUE(Fsl::Test::IsFloatEqual(expectedResult1, result1));
       EXPECT_TRUE(Fsl::Test::IsFloatEqual(expectedResult2, result2));
     }
@@ -295,7 +295,7 @@ TEST(TestMath_Vector2_MonoGame, TransformNormal)
     const auto expectedResult2 = expectedResult1;
 
     {
-      auto res1 = Vector2::TransformNormal(normal, matrix);
+      const auto res1 = Vector2::TransformNormal(normal, matrix);
       EXPECT_TRUE(Fsl::Test::IsFloatEqual(expectedResult1, res1));
     }
 
@@ -418,7 +418,7 @@ TEST(TestMath_Vector2_MonoGame, Construct)
 {
   constexpr float X = std::numeric_limits<float>::min();
   constexpr float Y = std::numeric_limits<float>::max();
-  Vector2 value(X, Y);
+  const Vector2 value(X, Y);
 
   EXPECT_EQ(X, value.X);
   EXPECT_EQ(Y, value.Y);

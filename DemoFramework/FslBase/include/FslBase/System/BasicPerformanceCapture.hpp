@@ -61,7 +61,7 @@ namespace Fsl
   public:
     using key_type = TKeyType;
 
-    inline constexpr std::size_t Length() const noexcept
+    [[nodiscard]] inline constexpr std::size_t Length() const noexcept
     {
       return TEntries;
     }
@@ -120,12 +120,12 @@ namespace Fsl
       return m_results[static_cast<uint32_t>(key)];
     }
 
-    inline uint64_t GetCounter() const
+    [[nodiscard]] inline uint64_t GetCounter() const
     {
       return PerformanceCounter::GetPerformanceCounter();
     }
 
-    inline uint64_t GetFrequency() const
+    [[nodiscard]] inline uint64_t GetFrequency() const
     {
       return PerformanceCounter::GetPerformanceFrequency();
     }

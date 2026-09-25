@@ -44,7 +44,7 @@ namespace
 
 TEST(TestMath_ConstrainedValue, Construct_Default)
 {
-  ConstrainedValue<int32_t> value;
+  const ConstrainedValue<int32_t> value;
 
   EXPECT_EQ(0, value.Min());
   EXPECT_EQ(0, value.Max());
@@ -57,7 +57,7 @@ TEST(TestMath_ConstrainedValue, Construct_MinMax)
 {
   const int32_t min = 10;
   const int32_t max = 15;
-  ConstrainedValue<int32_t> value(min, max);
+  const ConstrainedValue<int32_t> value(min, max);
 
   EXPECT_EQ(min, value.Min());
   EXPECT_EQ(max, value.Max());
@@ -69,7 +69,7 @@ TEST(TestMath_ConstrainedValue, Construct_MinMax_Invalid)
 {
   const int32_t min = 10;
   const int32_t max = 15;
-  ConstrainedValue<int32_t> value(max, min);
+  const ConstrainedValue<int32_t> value(max, min);
 
   EXPECT_EQ(max, value.Min());
   EXPECT_EQ(max, value.Max());
@@ -83,7 +83,7 @@ TEST(TestMath_ConstrainedValue, Construct_ValueMinMax)
   const int32_t val = 12;
   const int32_t min = 10;
   const int32_t max = 15;
-  ConstrainedValue<int32_t> value(val, min, max);
+  const ConstrainedValue<int32_t> value(val, min, max);
 
   EXPECT_EQ(min, value.Min());
   EXPECT_EQ(max, value.Max());
@@ -96,7 +96,7 @@ TEST(TestMath_ConstrainedValue, Construct_ValueMinMax_InvalidMinMax)
   const int32_t val = 12;
   const int32_t min = 10;
   const int32_t max = 15;
-  ConstrainedValue<int32_t> value(val, max, min);
+  const ConstrainedValue<int32_t> value(val, max, min);
 
   EXPECT_EQ(max, value.Min());
   EXPECT_EQ(max, value.Max());
@@ -109,7 +109,7 @@ TEST(TestMath_ConstrainedValue, Construct_ValueMinMax_ValueOutOfBounds_Low)
   const int32_t val = 9;
   const int32_t min = 10;
   const int32_t max = 15;
-  ConstrainedValue<int32_t> value(val, min, max);
+  const ConstrainedValue<int32_t> value(val, min, max);
 
   EXPECT_EQ(min, value.Min());
   EXPECT_EQ(max, value.Max());
@@ -122,7 +122,7 @@ TEST(TestMath_ConstrainedValue, Construct_ValueMinMax_ValueOutOfBounds_High)
   const int32_t val = 16;
   const int32_t min = 10;
   const int32_t max = 15;
-  ConstrainedValue<int32_t> value(val, min, max);
+  const ConstrainedValue<int32_t> value(val, min, max);
 
   EXPECT_EQ(min, value.Min());
   EXPECT_EQ(max, value.Max());

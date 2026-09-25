@@ -102,7 +102,7 @@ namespace Fsl
 
 
     //! @brief Get the percentage
-    constexpr float GetPercentage() const
+    [[nodiscard]] constexpr float GetPercentage() const
     {
       assert(m_min <= m_max);
       const auto delta = m_max - m_min;

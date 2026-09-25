@@ -47,7 +47,7 @@ namespace
 
 TEST(TestTransition_TransitionValue, Construct_Default)
 {
-  TransitionValue transitionValue;
+  const TransitionValue transitionValue;
 
   EXPECT_TRUE(transitionValue.IsCompleted());
   EXPECT_EQ(TimeSpan(0), transitionValue.GetStartDelay());
@@ -59,7 +59,7 @@ TEST(TestTransition_TransitionValue, Construct_Default)
 
 TEST(TestTransition_TransitionValue, Construct_CacheAndTimespan)
 {
-  TransitionValue transitionValue(TimeSpan(10));
+  const TransitionValue transitionValue(TimeSpan(10));
 
   EXPECT_TRUE(transitionValue.IsCompleted());
   EXPECT_EQ(TimeSpan(0), transitionValue.GetStartDelay());

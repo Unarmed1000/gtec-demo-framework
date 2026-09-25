@@ -85,67 +85,67 @@ namespace Fsl
       return {};
     }
 
-    constexpr inline value_type Left() const noexcept
+    [[nodiscard]] constexpr inline value_type Left() const noexcept
     {
       return X;
     }
 
-    constexpr inline value_type Top() const noexcept
+    [[nodiscard]] constexpr inline value_type Top() const noexcept
     {
       return Y;
     }
 
-    constexpr inline value_type Right() const noexcept
+    [[nodiscard]] constexpr inline value_type Right() const noexcept
     {
       return X + Width;
     }
 
-    constexpr inline value_type Bottom() const noexcept
+    [[nodiscard]] constexpr inline value_type Bottom() const noexcept
     {
       return Y + Height;
     }
 
-    constexpr inline raw_value_type RawLeft() const noexcept
+    [[nodiscard]] constexpr inline raw_value_type RawLeft() const noexcept
     {
       return X.Value;
     }
 
-    constexpr inline raw_value_type RawTop() const noexcept
+    [[nodiscard]] constexpr inline raw_value_type RawTop() const noexcept
     {
       return Y.Value;
     }
 
-    constexpr inline raw_value_type RawRight() const noexcept
+    [[nodiscard]] constexpr inline raw_value_type RawRight() const noexcept
     {
       return X.Value + Width.Value;
     }
 
-    constexpr inline raw_value_type RawBottom() const noexcept
+    [[nodiscard]] constexpr inline raw_value_type RawBottom() const noexcept
     {
       return Y.Value + Height.Value;
     }
 
-    inline constexpr PxExtent2D GetExtent() const noexcept
+    [[nodiscard]] inline constexpr PxExtent2D GetExtent() const noexcept
     {
       return {Width, Height};
     }
 
-    inline constexpr PxPoint2U TopLeft() const noexcept
+    [[nodiscard]] inline constexpr PxPoint2U TopLeft() const noexcept
     {
       return {X, Y};
     }
 
-    inline constexpr PxPoint2U TopRight() const noexcept
+    [[nodiscard]] inline constexpr PxPoint2U TopRight() const noexcept
     {
       return {Right(), Y};
     }
 
-    inline constexpr PxPoint2U BottomLeft() const noexcept
+    [[nodiscard]] inline constexpr PxPoint2U BottomLeft() const noexcept
     {
       return {X, Bottom()};
     }
 
-    inline constexpr PxPoint2U BottomRight() const noexcept
+    [[nodiscard]] inline constexpr PxPoint2U BottomRight() const noexcept
     {
       return {Right(), Bottom()};
     }
@@ -158,26 +158,26 @@ namespace Fsl
 
 
     //! @brief Check if the x,y coordinate is considered to be contained within this rectangle
-    constexpr bool Contains(const value_type posX, const value_type posY) const noexcept
+    [[nodiscard]] constexpr bool Contains(const value_type posX, const value_type posY) const noexcept
     {
       return ((((posX >= X) && (posX < (X + Width))) && (posY >= Y)) && (posY < (Y + Height)));
     }
 
     //! @brief Check if the x,y coordinate is considered to be contained within this rectangle
-    constexpr bool Contains(const PxPoint2U& value) const noexcept
+    [[nodiscard]] constexpr bool Contains(const PxPoint2U& value) const noexcept
     {
       return ((((value.X >= X) && (value.X < (X + Width))) && (value.Y >= Y)) && (value.Y < (Y + Height)));
     }
 
     //! @brief Check if the rectangle is considered to be contained within this rectangle
-    constexpr bool Contains(const PxRectangleU32& value) const noexcept
+    [[nodiscard]] constexpr bool Contains(const PxRectangleU32& value) const noexcept
     {
       return ((((value.X >= X) && ((value.X + value.Width) <= (X + Width))) && (value.Y >= Y)) && ((value.Y + value.Height) <= (Y + Height)));
     }
 
 
     //! @brief Get the start location of this rect
-    constexpr PxPoint2U GetLocation() const noexcept
+    [[nodiscard]] constexpr PxPoint2U GetLocation() const noexcept
     {
       return {X, Y};
     }
@@ -192,21 +192,21 @@ namespace Fsl
 
 
     //! @brief Get the center of this rect
-    constexpr PxPoint2U GetCenter() const noexcept
+    [[nodiscard]] constexpr PxPoint2U GetCenter() const noexcept
     {
       return PxPoint2U::Create(X.Value + (Width.Value / 2), Y.Value + (Height.Value / 2));
     }
 
     //! @brief Gets a value that indicates whether the Rectangle is empty
     //!        An empty rectangle has all its values set to 0.
-    constexpr bool IsEmpty() const noexcept
+    [[nodiscard]] constexpr bool IsEmpty() const noexcept
     {
       return Width.Value == 0 && Height.Value == 0 && X.Value == 0 && Y.Value == 0;
     }
 
 
     //! @brief Determines whether a specified Rectangle intersects with this Rectangle.
-    constexpr bool Intersects(const PxRectangleU32& value) const noexcept
+    [[nodiscard]] constexpr bool Intersects(const PxRectangleU32& value) const noexcept
     {
       return value.Left() < Right() && Left() < value.Right() && value.Top() < Bottom() && Top() < value.Bottom();
     }

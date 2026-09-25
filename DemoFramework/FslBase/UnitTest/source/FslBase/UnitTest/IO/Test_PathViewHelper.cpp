@@ -48,8 +48,8 @@ namespace
 
 TEST(TestIO_PathViewHelper, ToString_Empty)
 {
-  IO::PathView pathViewer;
-  auto str = IO::PathViewHelper::ToString(pathViewer);
+  const IO::PathView pathViewer;
+  const auto str = IO::PathViewHelper::ToString(pathViewer);
 
   EXPECT_EQ(0u, str.size());
   EXPECT_EQ("", str);
@@ -58,8 +58,8 @@ TEST(TestIO_PathViewHelper, ToString_Empty)
 
 TEST(TestIO_PathViewHelper, ToString)
 {
-  IO::PathView pathViewer("hello");
-  auto str = IO::PathViewHelper::ToString(pathViewer);
+  const IO::PathView pathViewer("hello");
+  const auto str = IO::PathViewHelper::ToString(pathViewer);
 
   EXPECT_EQ(5u, str.size());
   EXPECT_EQ(pathViewer, str);
@@ -72,7 +72,7 @@ TEST(TestIO_PathViewHelper, ToString)
 TEST(TestIO_PathView, OpEqual_PathView_String)
 {
   //                     01234567890
-  IO::PathView pathView("hello world");
+  const IO::PathView pathView("hello world");
 
   EXPECT_TRUE(pathView == std::string("hello world"));
 }
@@ -81,7 +81,7 @@ TEST(TestIO_PathView, OpEqual_PathView_String)
 TEST(TestIO_PathView, OpEqual_PathView_UTF8String)
 {
   //                     01234567890
-  IO::PathView pathView("hello world");
+  const IO::PathView pathView("hello world");
 
   EXPECT_TRUE(pathView == UTF8String("hello world"));
 }
@@ -89,7 +89,7 @@ TEST(TestIO_PathView, OpEqual_PathView_UTF8String)
 TEST(TestIO_PathView, OpEqual_PathView_Path)
 {
   //                     01234567890
-  IO::PathView pathView("hello world");
+  const IO::PathView pathView("hello world");
 
   EXPECT_TRUE(pathView == IO::Path("hello world"));
 }
@@ -98,7 +98,7 @@ TEST(TestIO_PathView, OpEqual_PathView_Path)
 TEST(TestIO_PathView, OpEqual_String_PathView)
 {
   //                     01234567890
-  IO::PathView pathView("hello world");
+  const IO::PathView pathView("hello world");
 
   EXPECT_TRUE(std::string("hello world") == pathView);
 }
@@ -107,7 +107,7 @@ TEST(TestIO_PathView, OpEqual_String_PathView)
 TEST(TestIO_PathView, OpEqual_UTF8String_PathView)
 {
   //                     01234567890
-  IO::PathView pathView("hello world");
+  const IO::PathView pathView("hello world");
 
   EXPECT_TRUE(UTF8String("hello world") == pathView);
 }
@@ -115,7 +115,7 @@ TEST(TestIO_PathView, OpEqual_UTF8String_PathView)
 TEST(TestIO_PathView, OpEqual_Path_PathView)
 {
   //                     01234567890
-  IO::PathView pathView("hello world");
+  const IO::PathView pathView("hello world");
 
   EXPECT_TRUE(IO::Path("hello world") == pathView);
 }

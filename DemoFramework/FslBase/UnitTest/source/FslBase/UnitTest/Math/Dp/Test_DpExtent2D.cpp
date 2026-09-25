@@ -66,7 +66,7 @@ TEST(TestMathDp_DpExtent2D, Construct_Unsigned)
 TEST(TestMathDp_DpExtent2D, Construct_Point2U)
 {
   const auto point = DpPoint2U::Create(320, 240);
-  DpExtent2D value(point);
+  const DpExtent2D value(point);
 
   EXPECT_EQ(point.X, value.Width);
   EXPECT_EQ(point.Y, value.Height);
@@ -75,12 +75,12 @@ TEST(TestMathDp_DpExtent2D, Construct_Point2U)
 
 TEST(TestMathDp_DpExtent2D, AddEquals)
 {
-  DpValueU width1(320);
-  DpValueU height1(240);
-  DpExtent2D value1(width1, height1);
+  const DpValueU width1(320);
+  const DpValueU height1(240);
+  const DpExtent2D value1(width1, height1);
 
-  DpValueU width2(200);
-  DpValueU height2(100);
+  const DpValueU width2(200);
+  const DpValueU height2(100);
   DpExtent2D value2(width2, height2);
 
   value2 += value1;
@@ -94,12 +94,12 @@ TEST(TestMathDp_DpExtent2D, AddEquals)
 
 TEST(TestMathDp_DpExtent2D, SubEquals)
 {
-  DpValueU width1(320);
-  DpValueU height1(240);
-  DpExtent2D value1(width1, height1);
+  const DpValueU width1(320);
+  const DpValueU height1(240);
+  const DpExtent2D value1(width1, height1);
 
-  DpValueU width2(800);
-  DpValueU height2(600);
+  const DpValueU width2(800);
+  const DpValueU height2(600);
   DpExtent2D value2(width2, height2);
 
   value2 -= value1;
@@ -115,7 +115,7 @@ TEST(TestMathDp_DpExtent2D, MultEquals)
 {
   const DpValueU width1(2);
   const DpValueU height1(4);
-  DpExtent2D value1(width1, height1);
+  const DpExtent2D value1(width1, height1);
 
   const DpValueU width2(200);
   const DpValueU height2(100);
@@ -134,8 +134,8 @@ TEST(TestMathDp_DpExtent2D, MultEqual)
 {
   const DpValueU multBy(2);
 
-  DpValueU width(200);
-  DpValueU height(100);
+  const DpValueU width(200);
+  const DpValueU height(100);
   DpExtent2D value(width, height);
 
   value *= multBy;
@@ -149,8 +149,8 @@ TEST(TestMathDp_DpExtent2D, DivEqual)
 {
   const DpValueU divBy(2);
 
-  DpValueU width(200);
-  DpValueU height(100);
+  const DpValueU width(200);
+  const DpValueU height(100);
   DpExtent2D value(width, height);
 
   value /= divBy;
@@ -162,8 +162,8 @@ TEST(TestMathDp_DpExtent2D, DivEqual)
 
 TEST(TestMathDp_DpExtent2D, Equal)
 {
-  auto value1 = DpExtent2D::Create(320, 240);
-  auto value2 = DpExtent2D::Create(320, 240);
+  const auto value1 = DpExtent2D::Create(320, 240);
+  const auto value2 = DpExtent2D::Create(320, 240);
 
   EXPECT_EQ(value1, value2);
 }
@@ -171,9 +171,9 @@ TEST(TestMathDp_DpExtent2D, Equal)
 
 TEST(TestMathDp_DpExtent2D, NotEqual)
 {
-  auto value1 = DpExtent2D::Create(320, 240);
-  auto value2 = DpExtent2D::Create(320, 241);
-  auto value3 = DpExtent2D::Create(321, 240);
+  const auto value1 = DpExtent2D::Create(320, 240);
+  const auto value2 = DpExtent2D::Create(320, 241);
+  const auto value3 = DpExtent2D::Create(321, 240);
 
   EXPECT_NE(value1, value2);
   EXPECT_NE(value1, value3);
@@ -182,7 +182,7 @@ TEST(TestMathDp_DpExtent2D, NotEqual)
 
 TEST(TestMathDp_DpExtent2D, Zero)
 {
-  DpExtent2D value = DpExtent2D::Zero();
+  const DpExtent2D value = DpExtent2D::Zero();
 
   EXPECT_EQ(DpExtent2D::value_type(0u), value.Width);
   EXPECT_EQ(DpExtent2D::value_type(0u), value.Height);
@@ -191,8 +191,8 @@ TEST(TestMathDp_DpExtent2D, Zero)
 
 TEST(TestMathDp_DpExtent2D, OpAdd)
 {
-  auto value1 = DpExtent2D::Create(2, 3);
-  auto value2 = DpExtent2D::Create(40, 80);
+  const auto value1 = DpExtent2D::Create(2, 3);
+  const auto value2 = DpExtent2D::Create(40, 80);
 
   EXPECT_EQ(DpExtent2D::Create(42, 83), value1 + value2);
   EXPECT_EQ(DpExtent2D::Create(42, 83), value2 + value1);
@@ -201,9 +201,9 @@ TEST(TestMathDp_DpExtent2D, OpAdd)
 
 TEST(TestMathDp_DpExtent2D, OpSub)
 {
-  auto value1 = DpExtent2D::Create(2, 3);
-  auto value2 = DpExtent2D::Create(40, 80);
-  auto value3 = DpExtent2D::Create(140, 181);
+  const auto value1 = DpExtent2D::Create(2, 3);
+  const auto value2 = DpExtent2D::Create(40, 80);
+  const auto value3 = DpExtent2D::Create(140, 181);
 
   EXPECT_EQ(DpExtent2D::Create(38, 77), value2 - value1);
   EXPECT_EQ(DpExtent2D::Create(100, 101), value3 - value2);
@@ -212,8 +212,8 @@ TEST(TestMathDp_DpExtent2D, OpSub)
 
 TEST(TestMathDp_DpExtent2D, OpMul_DpExtend2D)
 {
-  auto value1 = DpExtent2D::Create(2, 3);
-  auto value2 = DpExtent2D::Create(41, 80);
+  const auto value1 = DpExtent2D::Create(2, 3);
+  const auto value2 = DpExtent2D::Create(41, 80);
 
   EXPECT_EQ(DpExtent2D::Create(82, 240), value1 * value2);
   EXPECT_EQ(DpExtent2D::Create(82, 240), value2 * value1);
@@ -222,7 +222,7 @@ TEST(TestMathDp_DpExtent2D, OpMul_DpExtend2D)
 
 TEST(TestMathDp_DpExtent2D, OpMul_Const)
 {
-  auto value1 = DpExtent2D::Create(2, 3);
+  const auto value1 = DpExtent2D::Create(2, 3);
 
   EXPECT_EQ(DpExtent2D::Create(4, 6), value1 * DpExtent2D::value_type(2u));
   EXPECT_EQ(DpExtent2D::Create(4, 6), DpExtent2D::value_type(2u) * value1);
@@ -231,7 +231,7 @@ TEST(TestMathDp_DpExtent2D, OpMul_Const)
 
 TEST(TestMathDp_DpExtent2D, OpDiv_Const)
 {
-  auto value1 = DpExtent2D::Create(20, 40);
+  const auto value1 = DpExtent2D::Create(20, 40);
 
   EXPECT_EQ(DpExtent2D::Create(10, 20), value1 / DpExtent2D::value_type(2u));
 }

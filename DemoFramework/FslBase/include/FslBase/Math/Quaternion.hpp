@@ -82,8 +82,8 @@ namespace Fsl
     static Quaternion Inverse(const Quaternion& quaternion);
     static void Inverse(Quaternion& rResult, const Quaternion& quaternion);
 
-    float Length() const;
-    float LengthSquared() const;
+    [[nodiscard]] float Length() const;
+    [[nodiscard]] float LengthSquared() const;
 
     static Quaternion Lerp(const Quaternion& quaternion1, const Quaternion& quaternion2, const float amount);
     static void Lerp(Quaternion& rResult, const Quaternion& quaternion1, const Quaternion& quaternion2, const float amount);

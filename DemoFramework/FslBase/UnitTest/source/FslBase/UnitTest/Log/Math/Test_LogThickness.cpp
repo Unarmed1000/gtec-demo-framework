@@ -47,7 +47,7 @@ namespace
 
 TEST(TestLog_Math_LogThickness, Log)
 {
-  Thickness value(1, 2, 10, 20);
+  const Thickness value(1, 2, 10, 20);
 
   std::stringstream stream;
   stream << value;

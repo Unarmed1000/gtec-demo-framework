@@ -45,7 +45,7 @@ namespace
 TEST(TestReadOnlyFlexSpanUtil, AsSpan_PointerLength)
 {
   constexpr static std::array<char, 11> Data = {'h', 'e', 'l', 'l', 'o', ' ', 'w', 'o', 'r', 'l', 'd'};
-  ReadOnlyFlexSpan span = ReadOnlyFlexSpanUtil::AsSpan(Data.data(), Data.size());
+  const ReadOnlyFlexSpan span = ReadOnlyFlexSpanUtil::AsSpan(Data.data(), Data.size());
 
   EXPECT_FALSE(span.empty());
   EXPECT_EQ(span.data(), Data.data());
@@ -57,7 +57,7 @@ TEST(TestReadOnlyFlexSpanUtil, AsSpan_PointerLength)
 
 TEST(TestReadOnlyFlexSpanUtil, AsSpan_PointerLength_NullPtrZeroLength)
 {
-  ReadOnlyFlexSpan span = ReadOnlyFlexSpanUtil::AsSpan<uint16_t>(nullptr, 0u);
+  const ReadOnlyFlexSpan span = ReadOnlyFlexSpanUtil::AsSpan<uint16_t>(nullptr, 0u);
 
   EXPECT_TRUE(span.empty());
   EXPECT_EQ(span.data(), nullptr);
@@ -77,8 +77,8 @@ TEST(TestReadOnlyFlexSpanUtil, AsSpan_PointerLength_NullPtrInvalidLength)
 TEST(TestReadOnlyFlexSpanUtil, AsSpan_FromZeroTerminated)
 {
   const auto* const psz = "Hello world";
-  auto lenPsz = std::strlen(psz);
-  ReadOnlyFlexSpan span = ReadOnlyFlexSpanUtil::AsSpan(psz, lenPsz);
+  const auto lenPsz = std::strlen(psz);
+  const ReadOnlyFlexSpan span = ReadOnlyFlexSpanUtil::AsSpan(psz, lenPsz);
 
   EXPECT_FALSE(span.empty());
   EXPECT_EQ(span.data(), psz);

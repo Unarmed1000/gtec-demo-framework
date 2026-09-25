@@ -44,7 +44,7 @@ namespace
 
 TEST(TestLog_MathDp_LogDpThickness, Log)
 {
-  auto value = DpThickness::Create(1, 2, 10, 20);
+  const auto value = DpThickness::Create(1, 2, 10, 20);
 
   std::stringstream stream;
   stream << value;

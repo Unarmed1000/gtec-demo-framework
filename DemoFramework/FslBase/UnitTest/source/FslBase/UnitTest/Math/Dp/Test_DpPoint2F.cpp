@@ -51,7 +51,7 @@ TEST(TestMathDp_DpPoint2F, Zero)
 
 TEST(TestMathDp_DpPoint2F, Construct_Default)
 {
-  DpPoint2F value;
+  const DpPoint2F value;
 
   EXPECT_EQ(DpPoint2F(), value);
   EXPECT_EQ(DpPoint2F::value_type(0.0f), value.X);
@@ -62,7 +62,7 @@ TEST(TestMathDp_DpPoint2F, Construct)
 {
   const DpValueF x(3);
   const DpValueF y(2);
-  DpPoint2F value(x, y);
+  const DpPoint2F value(x, y);
 
   EXPECT_EQ(x, value.X);
   EXPECT_EQ(y, value.Y);
@@ -74,7 +74,7 @@ TEST(TestMathDp_DpPoint2F, OpPlusEqual)
   const DpValueF y0(4);
   const DpValueF x1(3);
   const DpValueF y1(2);
-  DpPoint2F value0(x0, y0);
+  const DpPoint2F value0(x0, y0);
   DpPoint2F value1(x1, y1);
 
   value1 += value0;
@@ -92,7 +92,7 @@ TEST(TestMathDp_DpPoint2F, OpSubEqual)
   const DpValueF y0(4);
   const DpValueF x1(3);
   const DpValueF y1(2);
-  DpPoint2F value0(x0, y0);
+  const DpPoint2F value0(x0, y0);
   DpPoint2F value1(x1, y1);
 
   value1 -= value0;
@@ -110,7 +110,7 @@ TEST(TestMathDp_DpPoint2F, OpMulEqual)
   const DpValueF y0(4);
   const DpValueF x1(3);
   const DpValueF y1(2);
-  DpPoint2F value0(x0, y0);
+  const DpPoint2F value0(x0, y0);
   DpPoint2F value1(x1, y1);
 
   value1 *= value0;
@@ -155,10 +155,10 @@ TEST(TestMathDp_DpPoint2F, OpAdd)
   const DpValueF y0(4);
   const DpValueF x1(3);
   const DpValueF y1(2);
-  DpPoint2F value0(x0, y0);
-  DpPoint2F value1(x1, y1);
+  const DpPoint2F value0(x0, y0);
+  const DpPoint2F value1(x1, y1);
 
-  auto value3 = value1 + value0;
+  const auto value3 = value1 + value0;
 
   EXPECT_EQ(x0, value0.X);
   EXPECT_EQ(y0, value0.Y);
@@ -175,10 +175,10 @@ TEST(TestMathDp_DpPoint2F, OpSub)
   const DpValueF y0(4);
   const DpValueF x1(3);
   const DpValueF y1(2);
-  DpPoint2F value0(x0, y0);
-  DpPoint2F value1(x1, y1);
+  const DpPoint2F value0(x0, y0);
+  const DpPoint2F value1(x1, y1);
 
-  auto value3 = value1 - value0;
+  const auto value3 = value1 - value0;
 
   EXPECT_EQ(x0, value0.X);
   EXPECT_EQ(y0, value0.Y);
@@ -195,10 +195,10 @@ TEST(TestMathDp_DpPoint2F, OpMul)
   const DpValueF y0(4);
   const DpValueF x1(3);
   const DpValueF y1(2);
-  DpPoint2F value0(x0, y0);
-  DpPoint2F value1(x1, y1);
+  const DpPoint2F value0(x0, y0);
+  const DpPoint2F value1(x1, y1);
 
-  auto value3 = value1 * value0;
+  const auto value3 = value1 * value0;
 
   EXPECT_EQ(x0, value0.X);
   EXPECT_EQ(y0, value0.Y);
@@ -214,9 +214,9 @@ TEST(TestMathDp_DpPoint2F, OpMul_Const)
   const DpValueF x0(4);
   const DpValueF y0(3);
   const DpValueF mul(2);
-  DpPoint2F value0(x0, y0);
+  const DpPoint2F value0(x0, y0);
 
-  auto value2 = value0 * mul;
+  const auto value2 = value0 * mul;
 
   EXPECT_EQ(x0, value0.X);
   EXPECT_EQ(y0, value0.Y);
@@ -230,9 +230,9 @@ TEST(TestMathDp_DpPoint2F, OpMul_Const2)
   const DpValueF x0(4);
   const DpValueF y0(3);
   const DpValueF mul(2);
-  DpPoint2F value0(x0, y0);
+  const DpPoint2F value0(x0, y0);
 
-  auto value2 = mul * value0;
+  const auto value2 = mul * value0;
 
   EXPECT_EQ(x0, value0.X);
   EXPECT_EQ(y0, value0.Y);
@@ -246,7 +246,7 @@ TEST(TestMathDp_DpPoint2F, OpDiv_Const)
   const DpValueF x0(40);
   const DpValueF y0(30);
   const DpValueF divBy(2);
-  DpPoint2F value0(x0, y0);
+  const DpPoint2F value0(x0, y0);
 
   const auto value2 = value0 / divBy;
 

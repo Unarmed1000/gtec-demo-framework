@@ -43,7 +43,7 @@ namespace
 
 TEST(TestLog_String_LogUTF8String, Log)
 {
-  UTF8String str("hello");
+  const UTF8String str("hello");
 
   std::stringstream stream;
   stream << str;

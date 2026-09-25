@@ -47,7 +47,7 @@ namespace
 
 TEST(TestLog_Math_LogRect, Log)
 {
-  auto value = Rect::FromLeftTopRightBottom(1.0f, 2.0f, 10.0f, 20.0f);
+  const auto value = Rect::FromLeftTopRightBottom(1.0f, 2.0f, 10.0f, 20.0f);
 
   std::stringstream stream;
   stream << value;

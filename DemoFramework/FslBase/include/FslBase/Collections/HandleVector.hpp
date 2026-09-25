@@ -117,7 +117,7 @@ namespace Fsl
       return ReadOnlyTypedFlexSpan<T>(&m_data[0].Element, m_count, sizeof(Record));
     }
 
-    constexpr bool Empty() const noexcept
+    [[nodiscard]] constexpr bool Empty() const noexcept
     {
       return m_count <= 0;
     }
@@ -162,14 +162,14 @@ namespace Fsl
 
 
     //! Convert a handle to a index
-    constexpr index_type FastHandleToIndex(const handle_type handle) const noexcept
+    [[nodiscard]] constexpr index_type FastHandleToIndex(const handle_type handle) const noexcept
     {
       assert(IsValidHandle(handle));
       return m_data[handle].HandleToIndex;
     }
 
     //! @brief Convert a index to the corresponding handle
-    constexpr handle_type FastIndexToHandle(const index_type index) const noexcept
+    [[nodiscard]] constexpr handle_type FastIndexToHandle(const index_type index) const noexcept
     {
       assert(IsValidIndex(index));
       return m_data[index].Handle;
@@ -679,27 +679,27 @@ namespace Fsl
     }
 
     //! @brief the current element count
-    size_type Count() const noexcept
+    [[nodiscard]] size_type Count() const noexcept
     {
       return m_count;
     }
 
     //! @brief The current capacity of the vector
-    size_type Capacity() const noexcept
+    [[nodiscard]] size_type Capacity() const noexcept
     {
       return UncheckedNumericCast<size_type>(m_data.size());
     }
 
     //! @brief Check if the given handle is valid.
     //! @return True if the supplied handle is valid
-    constexpr bool IsValidHandle(const handle_type handle) const noexcept
+    [[nodiscard]] constexpr bool IsValidHandle(const handle_type handle) const noexcept
     {
       return (handle >= 0 && static_cast<std::size_t>(handle) < m_data.size() && m_data[handle].HandleToIndex < m_count);
     }
 
     //! @brief Check if the given index is valid.
     //! @return True if the supplied handle is valid
-    constexpr bool IsValidIndex(const index_type index) const noexcept
+    [[nodiscard]] constexpr bool IsValidIndex(const index_type index) const noexcept
     {
       // Index is unsigned so we can simplify this
       // return (index >= 0u && index < m_count);
@@ -707,7 +707,7 @@ namespace Fsl
     }
 
     // NOLINTNEXTLINE(readability-identifier-naming)
-    bool DEBUG_IsValid() const
+    [[nodiscard]] bool DEBUG_IsValid() const
     {
       for (index_type i = 0; i < m_data.size(); ++i)
       {

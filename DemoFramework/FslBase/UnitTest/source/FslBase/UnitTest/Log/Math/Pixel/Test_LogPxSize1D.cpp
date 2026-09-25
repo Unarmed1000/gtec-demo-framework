@@ -44,7 +44,7 @@ namespace
 
 TEST(TestLog_MathPx_LogPxSize1D, Log)
 {
-  auto value = PxSize1D::Create(1);
+  const auto value = PxSize1D::Create(1);
 
   std::stringstream stream;
   stream << value;

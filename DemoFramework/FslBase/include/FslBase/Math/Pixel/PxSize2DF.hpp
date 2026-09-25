@@ -83,28 +83,28 @@ namespace Fsl
     {
     }
 
-    constexpr inline PxVector2 Value() const noexcept
+    [[nodiscard]] constexpr inline PxVector2 Value() const noexcept
     {
       return {m_width, m_height};
     }
 
-    constexpr inline value_type Width() const noexcept
+    [[nodiscard]] constexpr inline value_type Width() const noexcept
     {
       return m_width;
     }
 
-    constexpr inline value_type Height() const noexcept
+    [[nodiscard]] constexpr inline value_type Height() const noexcept
     {
       return m_height;
     }
 
 
-    constexpr inline raw_value_type RawWidth() const noexcept
+    [[nodiscard]] constexpr inline raw_value_type RawWidth() const noexcept
     {
       return m_width.RawValue();
     }
 
-    constexpr inline raw_value_type RawHeight() const noexcept
+    [[nodiscard]] constexpr inline raw_value_type RawHeight() const noexcept
     {
       return m_height.RawValue();
     }
@@ -158,7 +158,7 @@ namespace Fsl
     }
 
     //! @brief Calculates the length of the size squared.
-    constexpr float LengthSquared() const
+    [[nodiscard]] constexpr float LengthSquared() const
     {
       return (m_width.RawValue() * m_width.RawValue()) + (m_height.RawValue() * m_height.RawValue());
     }

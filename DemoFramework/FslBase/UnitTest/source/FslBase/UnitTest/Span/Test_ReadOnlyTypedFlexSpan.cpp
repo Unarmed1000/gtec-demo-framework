@@ -95,7 +95,7 @@ namespace
 
 TEST(Test_ReadOnlyTypedFlexSpan, Construct_Empty)
 {
-  ReadOnlyTypedFlexSpan<TestRecord> span;
+  const ReadOnlyTypedFlexSpan<TestRecord> span;
 
   EXPECT_TRUE(span.empty());
   EXPECT_EQ(span.flex_data(), nullptr);
@@ -116,7 +116,7 @@ TEST(Test_ReadOnlyTypedFlexSpan, Construct_Empty_constexpr)
 
 TEST(Test_ReadOnlyTypedFlexSpan, Construct_Data)
 {
-  ReadOnlyTypedFlexSpan<TestRecord> span(AsSpan(g_content4));
+  const ReadOnlyTypedFlexSpan<TestRecord> span(AsSpan(g_content4));
 
   EXPECT_FALSE(span.empty());
   EXPECT_NE(span.flex_data(), nullptr);
@@ -127,42 +127,42 @@ TEST(Test_ReadOnlyTypedFlexSpan, Construct_Data)
 
 TEST(Test_ReadOnlyTypedFlexSpan, SubSpan)
 {
-  ReadOnlyTypedFlexSpan<TestRecord> span(AsSpan(g_content10));
+  const ReadOnlyTypedFlexSpan<TestRecord> span(AsSpan(g_content10));
 
   {
-    ReadOnlyTypedFlexSpan<TestRecord> res = span.subspan();
+    const ReadOnlyTypedFlexSpan<TestRecord> res = span.subspan();
     EXPECT_EQ(g_content10.size(), res.size());
     EXPECT_EQ(&g_content10[0].Test, res.flex_data());
     EXPECT_EQ(sizeof(ComplexRecord), res.stride());
   }
 
   {
-    ReadOnlyTypedFlexSpan<TestRecord> res = span.subspan(1u);
+    const ReadOnlyTypedFlexSpan<TestRecord> res = span.subspan(1u);
     EXPECT_EQ(9u, res.size());
     EXPECT_EQ(&g_content10[1].Test, res.flex_data());
     EXPECT_EQ(sizeof(ComplexRecord), res.stride());
   }
   {
-    ReadOnlyTypedFlexSpan<TestRecord> res = span.subspan(9u);
+    const ReadOnlyTypedFlexSpan<TestRecord> res = span.subspan(9u);
     EXPECT_EQ(1u, res.size());
     EXPECT_EQ(&g_content10[9].Test, res.flex_data());
     EXPECT_EQ(sizeof(ComplexRecord), res.stride());
   }
   {
-    ReadOnlyTypedFlexSpan<TestRecord> res = span.subspan(1u, 2u);
+    const ReadOnlyTypedFlexSpan<TestRecord> res = span.subspan(1u, 2u);
     EXPECT_EQ(2u, res.size());
     EXPECT_EQ(&g_content10[1].Test, res.flex_data());
     EXPECT_EQ(sizeof(ComplexRecord), res.stride());
   }
   {
-    ReadOnlyTypedFlexSpan<TestRecord> res = span.subspan(9u, 2u);
+    const ReadOnlyTypedFlexSpan<TestRecord> res = span.subspan(9u, 2u);
     EXPECT_EQ(1u, res.size());
     EXPECT_EQ(&g_content10[9].Test, res.flex_data());
     EXPECT_EQ(sizeof(ComplexRecord), res.stride());
   }
   // its ok to read the last entry
   {
-    ReadOnlyTypedFlexSpan<TestRecord> res = span.subspan(g_content10.size());
+    const ReadOnlyTypedFlexSpan<TestRecord> res = span.subspan(g_content10.size());
     EXPECT_EQ(0u, res.size());
     EXPECT_EQ(sizeof(ComplexRecord), res.stride());
   }
@@ -171,9 +171,9 @@ TEST(Test_ReadOnlyTypedFlexSpan, SubSpan)
 
 TEST(Test_ReadOnlyTypedFlexSpan, SubSpan_Empty)
 {
-  ReadOnlyTypedFlexSpan<TestRecord> span;
+  const ReadOnlyTypedFlexSpan<TestRecord> span;
   {
-    ReadOnlyTypedFlexSpan<TestRecord> res = span.subspan();
+    const ReadOnlyTypedFlexSpan<TestRecord> res = span.subspan();
     EXPECT_EQ(0u, res.size());
     EXPECT_EQ(0u, res.stride());
   }
@@ -182,14 +182,14 @@ TEST(Test_ReadOnlyTypedFlexSpan, SubSpan_Empty)
 
 TEST(Test_ReadOnlyTypedFlexSpan, SubSpan_InvalidPos)
 {
-  ReadOnlyTypedFlexSpan<TestRecord> span(AsSpan(g_content10));
+  const ReadOnlyTypedFlexSpan<TestRecord> span(AsSpan(g_content10));
 
   EXPECT_THROW(span.subspan(11u), std::out_of_range);
 }
 
 TEST(Test_ReadOnlyTypedFlexSpan, front)
 {
-  auto span = AsSpan(g_content10);
+  const auto span = AsSpan(g_content10);
 
   EXPECT_EQ(span.front(), g_content10[0].Test);
 }
@@ -197,14 +197,14 @@ TEST(Test_ReadOnlyTypedFlexSpan, front)
 
 TEST(Test_ReadOnlyTypedFlexSpan, back)
 {
-  auto span = AsSpan(g_content10);
+  const auto span = AsSpan(g_content10);
 
   EXPECT_EQ(span.back(), g_content10[g_content10.size() - 1].Test);
 }
 
 TEST(Test_ReadOnlyTypedFlexSpan, opIndex)
 {
-  auto span = AsSpan(g_content10);
+  const auto span = AsSpan(g_content10);
 
   for (std::size_t i = 0; i < span.size(); ++i)
   {
@@ -214,7 +214,7 @@ TEST(Test_ReadOnlyTypedFlexSpan, opIndex)
 
 TEST(Test_ReadOnlyTypedFlexSpan, At)
 {
-  auto span = AsSpan(g_content10);
+  const auto span = AsSpan(g_content10);
 
   for (std::size_t i = 0; i < span.size(); ++i)
   {
@@ -225,14 +225,14 @@ TEST(Test_ReadOnlyTypedFlexSpan, At)
 
 TEST(Test_ReadOnlyTypedFlexSpan, At_OutOfBounds)
 {
-  auto span = AsSpan(g_content10);
+  const auto span = AsSpan(g_content10);
 
   EXPECT_THROW(span.at(span.size()), std::out_of_range);
 }
 
 TEST(Test_ReadOnlyTypedFlexSpan, At_Empty_OutOfBounds)
 {
-  auto span = AsSpan(g_content0);
+  const auto span = AsSpan(g_content0);
 
   EXPECT_THROW(span.at(span.size()), std::out_of_range);
 }

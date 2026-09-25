@@ -64,7 +64,7 @@ namespace Fsl
     }
 
     //! @brief Get the center of this box
-    Vector2 GetCenter() const
+    [[nodiscard]] Vector2 GetCenter() const
     {
       return {X1 + ((X2 - X1) * 0.5f), Y1 + ((Y2 - Y1) * 0.5f)};
     }

@@ -105,7 +105,7 @@ namespace Fsl::IO
       return false;
     }
 
-    std::shared_ptr<PlatformPathMonitorToken> token = PlatformFileSystem::CreatePathMonitorToken(fullPath);
+    const std::shared_ptr<PlatformPathMonitorToken> token = PlatformFileSystem::CreatePathMonitorToken(fullPath);
     if (!token)
     {
       return false;

@@ -88,14 +88,14 @@ namespace Fsl::IO
 
     //! @brief Returns a view of the substring [pos, pos + rcount), where rcount is the smaller of count and size() - pos.
     // NOLINTNEXTLINE(readability-identifier-naming)
-    constexpr PathView subpath(size_type pos = 0, size_type count = npos) const
+    [[nodiscard]] constexpr PathView subpath(size_type pos = 0, size_type count = npos) const
     {
       const auto currentLength = length();
       if (pos > currentLength)
       {
         throw std::out_of_range("pos out of range");
       }
-      auto maxLength = (currentLength - pos);
+      const auto maxLength = (currentLength - pos);
       return PathView(data() + pos, (count <= maxLength ? count : maxLength), OptimizationCheckFlag::NoCheck);
     }
   };

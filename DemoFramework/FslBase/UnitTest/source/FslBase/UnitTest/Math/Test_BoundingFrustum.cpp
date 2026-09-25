@@ -50,11 +50,11 @@ namespace
 
 TEST(TestMath_BoundingFrustum, Construct)
 {
-  float zNear = 0.001f;
-  float zFar = 10.0f;
-  auto matPerspective = Matrix::CreatePerspective(320.0f, 240.0f, zNear, zFar);
+  const float zNear = 0.001f;
+  const float zFar = 10.0f;
+  const auto matPerspective = Matrix::CreatePerspective(320.0f, 240.0f, zNear, zFar);
 
-  BoundingFrustum frustum(matPerspective);
+  const BoundingFrustum frustum(matPerspective);
 
   // auto nearPlane = frustum.Near();
   // auto farPlane = frustum.Far();
@@ -63,5 +63,5 @@ TEST(TestMath_BoundingFrustum, Construct)
   // EXPECT_FLOAT_EQ(zFar, farPlane.D);
 
   // dummy to prevent warning
-  EXPECT_NO_THROW(frustum.Near());
+  EXPECT_NO_THROW(static_cast<void>(frustum.Near()));
 }

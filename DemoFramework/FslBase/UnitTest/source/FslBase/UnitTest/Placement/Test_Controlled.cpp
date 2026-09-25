@@ -207,11 +207,11 @@ TEST(TestControlled, Construct)
 {
   FSLLOG3_INFO("Normal construct/destruct");
   {
-    C object(10);
+    const C object(10);
   }
   FSLLOG3_INFO("Placement construct/destruct");
   {
-    Controlled<C> object(10);
+    const Controlled<C> object(10);
   }
 }
 
@@ -221,12 +221,12 @@ TEST(TestControlled, MoveConstruct)
   FSLLOG3_INFO("Normal move operator");
   {
     C val(10);
-    C object(std::move(val));
+    const C object(std::move(val));
   }
   FSLLOG3_INFO("Placement move construct/destruct");
   {
     C val(10);
-    Controlled<C> object(std::move(val));
+    const Controlled<C> object(std::move(val));
   }
 }
 

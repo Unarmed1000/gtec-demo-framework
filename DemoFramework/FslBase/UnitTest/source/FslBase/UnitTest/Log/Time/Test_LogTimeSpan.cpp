@@ -42,7 +42,7 @@ namespace
 
 TEST(TestLog_Time_LogTickCount, Log)
 {
-  TickCount value(2000);
+  const TickCount value(2000);
   std::stringstream stream;
   stream << value;
   EXPECT_EQ(std::string("20000ns"), stream.str());

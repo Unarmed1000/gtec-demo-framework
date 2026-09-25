@@ -207,7 +207,7 @@ namespace Fsl
 
     auto minVec = MaxVector3;
     auto maxVec = MinVector3;
-    for (auto point : points)
+    for (const auto point : points)
     {
       minVec.X = (minVec.X < point.X) ? minVec.X : point.X;
       minVec.Y = (minVec.Y < point.Y) ? minVec.Y : point.Y;

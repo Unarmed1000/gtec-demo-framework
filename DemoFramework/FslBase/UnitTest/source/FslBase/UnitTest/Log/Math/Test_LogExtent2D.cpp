@@ -47,7 +47,7 @@ namespace
 
 TEST(TestLog_Math_LogExtent2D, Log)
 {
-  Extent2D value(1, 2);
+  const Extent2D value(1, 2);
 
   std::stringstream stream;
   stream << value;

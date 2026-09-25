@@ -47,7 +47,7 @@ namespace
 
 TEST(TestLog_IO_LogPathView, Log)
 {
-  IO::PathView path("hello/world");
+  const IO::PathView path("hello/world");
 
   std::stringstream stream;
   stream << path;

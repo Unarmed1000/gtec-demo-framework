@@ -86,82 +86,82 @@ namespace Fsl
     {
     }
 
-    constexpr int64_t Ticks() const noexcept
+    [[nodiscard]] constexpr int64_t Ticks() const noexcept
     {
       return static_cast<int64_t>(m_tickCount);
     }
 
-    constexpr uint64_t UnsignedTicks() const noexcept
+    [[nodiscard]] constexpr uint64_t UnsignedTicks() const noexcept
     {
       return static_cast<uint64_t>(m_tickCount);
     }
 
-    constexpr int32_t Days() const noexcept
+    [[nodiscard]] constexpr int32_t Days() const noexcept
     {
       return UncheckedNumericCast<int32_t>(Ticks() / TicksPerDay);
     }
 
-    constexpr int32_t Hours() const noexcept
+    [[nodiscard]] constexpr int32_t Hours() const noexcept
     {
       return UncheckedNumericCast<int32_t>((Ticks() / TicksPerHour) % 24);
     }
 
-    constexpr int32_t Minutes() const noexcept
+    [[nodiscard]] constexpr int32_t Minutes() const noexcept
     {
       return UncheckedNumericCast<int32_t>((Ticks() / TicksPerMinute) % 60);
     }
 
-    constexpr int32_t Seconds() const noexcept
+    [[nodiscard]] constexpr int32_t Seconds() const noexcept
     {
       return UncheckedNumericCast<int32_t>((Ticks() / TicksPerSecond) % 60);
     }
 
-    constexpr int32_t Milliseconds() const noexcept
+    [[nodiscard]] constexpr int32_t Milliseconds() const noexcept
     {
       return UncheckedNumericCast<int32_t>((Ticks() / TicksPerMillisecond) % 1000);
     }
 
-    constexpr int32_t Microseconds() const noexcept
+    [[nodiscard]] constexpr int32_t Microseconds() const noexcept
     {
       return UncheckedNumericCast<int32_t>((Ticks() / TicksPerMicrosecond) % 1000);
     }
 
-    constexpr double TotalNanoseconds() const noexcept
+    [[nodiscard]] constexpr double TotalNanoseconds() const noexcept
     {
       return static_cast<double>(Ticks()) * static_cast<double>(NanoSecondsPerTick);
     }
 
-    constexpr double TotalMicroseconds() const noexcept
+    [[nodiscard]] constexpr double TotalMicroseconds() const noexcept
     {
       return static_cast<double>(Ticks()) / static_cast<double>(TicksPerMicrosecond);
     }
 
-    constexpr double TotalMilliseconds() const noexcept
+    [[nodiscard]] constexpr double TotalMilliseconds() const noexcept
     {
       return static_cast<double>(Ticks()) / static_cast<double>(TicksPerMillisecond);
     }
 
-    constexpr double TotalSeconds() const noexcept
+    [[nodiscard]] constexpr double TotalSeconds() const noexcept
     {
       return static_cast<double>(Ticks()) / static_cast<double>(TicksPerSecond);
     }
 
-    constexpr double TotalMinutes() const noexcept
+    [[nodiscard]] constexpr double TotalMinutes() const noexcept
     {
       return static_cast<double>(Ticks()) / static_cast<double>(TicksPerMinute);
     }
 
-    constexpr double TotalHours() const noexcept
+    [[nodiscard]] constexpr double TotalHours() const noexcept
     {
       return static_cast<double>(Ticks()) / static_cast<double>(TicksPerHour);
     }
 
-    constexpr double TotalDays() const noexcept
+    [[nodiscard]] constexpr double TotalDays() const noexcept
     {
       return static_cast<double>(Ticks()) / static_cast<double>(TicksPerDay);
     }
 
-    constexpr int64_t TotalMicrosecondsInt64() const noexcept
+    [[nodiscard]] constexpr int64_t TotalMicrosecondsInt64() const noexcept
     {
       return Ticks() / TicksPerMicrosecond;
     }

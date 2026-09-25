@@ -54,7 +54,7 @@ namespace Fsl
 
     static constexpr size_type NumElements = size_type{4} * size_type{4};
 
-    constexpr size_type size() const noexcept    // NOLINT(readability-convert-member-functions-to-static,readability-identifier-naming)
+    [[nodiscard]] constexpr size_type size() const noexcept    // NOLINT(readability-convert-member-functions-to-static,readability-identifier-naming)
     {
       return NumElements;
     }
@@ -117,7 +117,7 @@ namespace Fsl
     static void Add(const Matrix& matrix1, const Matrix& matrix2, Matrix& rResult);
 
     //! @brief Direct access to the matrix array
-    constexpr const float* DirectAccess() const noexcept
+    [[nodiscard]] constexpr const float* DirectAccess() const noexcept
     {
       return m;
     }
@@ -129,19 +129,19 @@ namespace Fsl
     }
 
     //! @brief Get the backward vector of the Matrix.
-    Vector3 GetBackward() const;
+    [[nodiscard]] Vector3 GetBackward() const;
 
     //! @brief Set the backward vector of the Matrix.
     void SetBackward(const Vector3& value);
 
     //! @brief Get the down vector of the Matrix.
-    Vector3 GetDown() const;
+    [[nodiscard]] Vector3 GetDown() const;
 
     //! @brief Set the Down vector of the Matrix.
     void SetDown(const Vector3& value);
 
     //! @brief Get the forward vector of the Matrix.
-    Vector3 GetForward() const;
+    [[nodiscard]] Vector3 GetForward() const;
 
     //! @brief Set the forward vector of the Matrix.
     void SetForward(const Vector3& value);
@@ -153,25 +153,25 @@ namespace Fsl
     }
 
     //! @brief Get the left vector of the Matrix.
-    Vector3 GetLeft() const;
+    [[nodiscard]] Vector3 GetLeft() const;
 
     //! @brief Set the left vector of the Matrix.
     void SetLeft(const Vector3& value);
 
     //! @brief Get the right vector of the Matrix.
-    Vector3 GetRight() const;
+    [[nodiscard]] Vector3 GetRight() const;
 
     //! @brief Set the right vector of the Matrix.
     void SetRight(const Vector3& value);
 
     //! @brief Get the translation part of the matrix
-    Vector3 GetTranslation() const;
+    [[nodiscard]] Vector3 GetTranslation() const;
 
     //! @brief Set the translation part of the matrix
     void SetTranslation(const Vector3& value);
 
     //! @brief Get the up part of the matrix
-    Vector3 GetUp() const;
+    [[nodiscard]] Vector3 GetUp() const;
 
     //! @brief Set the up part of the matrix
     void SetUp(const Vector3& value);
@@ -609,7 +609,7 @@ namespace Fsl
 
     //! @brief Calculates the determinant of the matrix.
     //! @return The determinant of the matrix.
-    float Determinant() const;
+    [[nodiscard]] float Determinant() const;
 
     //! @brief Divides the components of a matrix by the corresponding components of another matrix.
     static constexpr Matrix Divide(const Matrix& matrix1, const Matrix& matrix2)

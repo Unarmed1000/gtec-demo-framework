@@ -46,7 +46,7 @@ namespace
 
 TEST(TestMathPixel_PxUIRectangle2D, Empty)
 {
-  PxUIRectangle2D value;
+  const PxUIRectangle2D value;
 
   EXPECT_EQ(PxVector2(), value.Offset);
   EXPECT_EQ(PxSize2D(), value.Size);
@@ -56,11 +56,11 @@ TEST(TestMathPixel_PxUIRectangle2D, Empty)
 
 TEST(TestMathPixel_PxUIRectangle2D, Construct)
 {
-  PxValueF offsetX(1.0f);
-  PxValueF offsetY(2.0f);
-  PxSize1D width(PxSize1D::Create(10));
-  PxSize1D height(PxSize1D::Create(20));
-  PxUIRectangle2D value(offsetX, offsetY, width, height);
+  const PxValueF offsetX(1.0f);
+  const PxValueF offsetY(2.0f);
+  const PxSize1D width(PxSize1D::Create(10));
+  const PxSize1D height(PxSize1D::Create(20));
+  const PxUIRectangle2D value(offsetX, offsetY, width, height);
 
   EXPECT_EQ(PxVector2(offsetX, offsetY), value.Offset);
   EXPECT_EQ(PxSize2D(width, height), value.Size);
@@ -73,11 +73,11 @@ TEST(TestMathPixel_PxUIRectangle2D, Construct)
 
 TEST(TestMathPixel_PxUIRectangle2D, Center)
 {
-  PxValueF x(10);
-  PxValueF y(12);
-  PxSize1D width(PxSize1D::Create(10));
-  PxSize1D height(PxSize1D::Create(20));
-  PxUIRectangle2D value(x, y, width, height);
+  const PxValueF x(10);
+  const PxValueF y(12);
+  const PxSize1D width(PxSize1D::Create(10));
+  const PxSize1D height(PxSize1D::Create(20));
+  const PxUIRectangle2D value(x, y, width, height);
 
   EXPECT_EQ(PxVector2(x, y), value.Offset);
   EXPECT_EQ(PxSize2D(width, height), value.Size);
@@ -147,13 +147,13 @@ TEST(TestMathPixel_PxUIRectangle2D, Contains_PxVector2)
 
 TEST(TestMathPixel_PxUIRectangle2D, Intersects)
 {
-  PxUIRectangle2D rect1 = PxUIRectangle2D::Create(0, 0, 10, 10);
-  PxUIRectangle2D rect2 = PxUIRectangle2D::Create(1, 1, 9, 9);
-  PxUIRectangle2D rect3 = PxUIRectangle2D::Create(11, 0, 10, 10);
+  const PxUIRectangle2D rect1 = PxUIRectangle2D::Create(0, 0, 10, 10);
+  const PxUIRectangle2D rect2 = PxUIRectangle2D::Create(1, 1, 9, 9);
+  const PxUIRectangle2D rect3 = PxUIRectangle2D::Create(11, 0, 10, 10);
 
-  auto res1 = PxUIRectangle2D::Intersect(rect1, rect2);
-  auto res2 = PxUIRectangle2D::Intersect(rect2, rect1);
-  auto resNoIntersection = PxUIRectangle2D::Intersect(rect1, rect3);
+  const auto res1 = PxUIRectangle2D::Intersect(rect1, rect2);
+  const auto res2 = PxUIRectangle2D::Intersect(rect2, rect1);
+  const auto resNoIntersection = PxUIRectangle2D::Intersect(rect1, rect3);
 
   EXPECT_EQ(rect2, res1);
   EXPECT_EQ(rect2, res2);
@@ -166,7 +166,7 @@ TEST(TestMathPixel_PxUIRectangle2D, Union)
   const auto rect1 = PxUIRectangle2D::Create(0.0f, 0.0f, 5, 5);
   const auto rect2 = PxUIRectangle2D::Create(0.0f, -1.0f, 4, 5);
 
-  auto res = PxUIRectangle2D::Union(rect1, rect2);
+  const auto res = PxUIRectangle2D::Union(rect1, rect2);
 
   // 0, 5 |  0, 4
   // 0, 5 | -1, 4
@@ -253,10 +253,10 @@ TEST(TestMathPixel_PxUIRectangle2D, Intersect_BruteForce)
       const int32_t yOffset = y * 11;
       for (int32_t x = 0; x < 11; ++x)
       {
-        auto rectA = PxUIRectangle2D::Create(static_cast<float>(x), static_cast<float>(y), 4u, 3u);
+        const auto rectA = PxUIRectangle2D::Create(static_cast<float>(x), static_cast<float>(y), 4u, 3u);
 
-        auto res1 = PxUIRectangle2D::Intersect(rectA, RectB);
-        auto res2 = PxUIRectangle2D::Intersect(RectB, rectA);
+        const auto res1 = PxUIRectangle2D::Intersect(rectA, RectB);
+        const auto res2 = PxUIRectangle2D::Intersect(RectB, rectA);
         EXPECT_EQ(res1, res2);
         // check for intersection
         EXPECT_EQ(result[x + yOffset] != 0u, !res1.IsEmpty());
@@ -281,10 +281,10 @@ TEST(TestMathPixel_PxUIRectangle2D, Union_BruteForce)
   {
     for (int32_t x = 0; x < 11; ++x)
     {
-      auto rectA = PxUIRectangle2D::Create(static_cast<float>(x), static_cast<float>(y), 4u, 3u);
+      const auto rectA = PxUIRectangle2D::Create(static_cast<float>(x), static_cast<float>(y), 4u, 3u);
 
-      auto res1 = PxUIRectangle2D::Union(rectA, RectB);
-      auto res2 = PxUIRectangle2D::Union(RectB, rectA);
+      const auto res1 = PxUIRectangle2D::Union(rectA, RectB);
+      const auto res2 = PxUIRectangle2D::Union(RectB, rectA);
       EXPECT_EQ(res1, res2);
 
       EXPECT_EQ(std::min(rectA.Left(), RectB.Left()), res1.Left());

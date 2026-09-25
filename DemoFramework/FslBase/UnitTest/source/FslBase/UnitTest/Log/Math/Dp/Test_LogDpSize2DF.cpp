@@ -43,7 +43,7 @@ namespace
 
 TEST(TestLog_MathDp_LogDpSize2DF, Log)
 {
-  auto value = DpSize2DF::Create(1.0f, 2.0f);
+  const auto value = DpSize2DF::Create(1.0f, 2.0f);
 
   std::stringstream stream;
   stream << value;

@@ -43,7 +43,7 @@ namespace
 
 TEST(TestMathPixel_PxSize2DF, Construct_Default)
 {
-  PxSize2DF value;
+  const PxSize2DF value;
 
   EXPECT_EQ(PxSize2DF(), value);
   EXPECT_EQ(0, value.RawWidth());
@@ -54,7 +54,7 @@ TEST(TestMathPixel_PxSize2DF, Construct)
 {
   constexpr const auto Width = PxSize1DF::Create(3);
   constexpr const auto Height = PxSize1DF::Create(2);
-  PxSize2DF value(Width, Height);
+  const PxSize2DF value(Width, Height);
 
   EXPECT_EQ(Width, value.Width());
   EXPECT_EQ(Height, value.Height());
@@ -64,7 +64,7 @@ TEST(TestMathPixel_PxSize2DF, Construct_NegativeWidth)
 {
   constexpr const auto Width = PxValueF::Create(-1);
   constexpr const auto Height = PxValueF::Create(2);
-  PxSize2DF value(Width, Height);
+  const PxSize2DF value(Width, Height);
 
   EXPECT_EQ(0, value.RawWidth());
   EXPECT_EQ(Height, value.Height());
@@ -74,7 +74,7 @@ TEST(TestMathPixel_PxSize2DF, Construct_NegativeHeight)
 {
   constexpr const auto Width = PxValueF::Create(3);
   constexpr const auto Height = PxValueF::Create(-1);
-  PxSize2DF value(Width, Height);
+  const PxSize2DF value(Width, Height);
 
   EXPECT_EQ(Width, value.Width());
   EXPECT_EQ(0, value.RawHeight());
@@ -228,7 +228,7 @@ TEST(TestMathPixel_PxSize2DF, Add)
   const float height2 = 50;
   const auto val1 = PxSize2DF::Create(width1, height1);
   const auto val2 = PxSize2DF::Create(width2, height2);
-  PxSize2DF val3 = PxSize2DF::Add(val1, val2);
+  const PxSize2DF val3 = PxSize2DF::Add(val1, val2);
 
   EXPECT_EQ(width1, val1.RawWidth());
   EXPECT_EQ(height1, val1.RawHeight());
@@ -246,7 +246,7 @@ TEST(TestMathPixel_PxSize2DF, Subtract)
   const float height2 = 50;
   const auto val1 = PxSize2DF::Create(width1, height1);
   const auto val2 = PxSize2DF::Create(width2, height2);
-  PxVector2 val3 = PxSize2DF::Subtract(val1, val2);
+  const PxVector2 val3 = PxSize2DF::Subtract(val1, val2);
 
   EXPECT_EQ(width1, val1.RawWidth());
   EXPECT_EQ(height1, val1.RawHeight());
@@ -273,7 +273,7 @@ TEST(TestMathPixel_PxSize2DF, OpPlusEqual_PxSize2DF)
   const float y0 = 4;
   const float x1 = 3;
   const float y1 = 2;
-  auto value0 = PxSize2DF::Create(x0, y0);
+  const auto value0 = PxSize2DF::Create(x0, y0);
   auto value1 = PxVector2::Create(x1, y1);
 
   value1 += value0;
@@ -291,7 +291,7 @@ TEST(TestMathPixel_PxSize2DF, OpSubEqual_PxSize2DF)
   const float y0 = 4;
   const float x1 = 3;
   const float y1 = 2;
-  auto value0 = PxSize2DF::Create(x0, y0);
+  const auto value0 = PxSize2DF::Create(x0, y0);
   auto value1 = PxVector2::Create(x1, y1);
 
   value1 -= value0;
@@ -308,7 +308,7 @@ TEST(TestMathPixel_PxSize2DF, OpMulEqual_PxSize2DF)
   const float y0 = 4;
   const float x1 = 3;
   const float y1 = 2;
-  auto value0 = PxSize2DF::Create(x0, y0);
+  const auto value0 = PxSize2DF::Create(x0, y0);
   auto value1 = PxVector2::Create(x1, y1);
 
   value1 *= value0;
@@ -325,10 +325,10 @@ TEST(TestMathPixel_PxSize2DF, OpAdd_PxVector2_PxSize2DF)
   const float y0 = 4;
   const float x1 = 3;
   const float y1 = 2;
-  auto value0 = PxSize2DF::Create(x0, y0);
-  auto value1 = PxVector2::Create(x1, y1);
+  const auto value0 = PxSize2DF::Create(x0, y0);
+  const auto value1 = PxVector2::Create(x1, y1);
 
-  auto value3 = value1 + value0;
+  const auto value3 = value1 + value0;
 
   EXPECT_EQ(x0, value0.RawWidth());
   EXPECT_EQ(y0, value0.RawHeight());
@@ -344,10 +344,10 @@ TEST(TestMathPixel_PxSize2DF, OpAdd_PxSize2DF_PxVector2)
   const float y0 = 4;
   const float x1 = 3;
   const float y1 = 2;
-  auto value0 = PxVector2::Create(x0, y0);
-  auto value1 = PxSize2DF::Create(x1, y1);
+  const auto value0 = PxVector2::Create(x0, y0);
+  const auto value1 = PxSize2DF::Create(x1, y1);
 
-  auto value3 = value1 + value0;
+  const auto value3 = value1 + value0;
 
   EXPECT_EQ(x0, value0.X.Value);
   EXPECT_EQ(y0, value0.Y.Value);
@@ -363,10 +363,10 @@ TEST(TestMathPixel_PxSize2DF, OpSub_PxVector2_PxSize2DF)
   const float y0 = 4;
   const float x1 = 3;
   const float y1 = 2;
-  auto value0 = PxSize2DF::Create(x0, y0);
-  auto value1 = PxVector2::Create(x1, y1);
+  const auto value0 = PxSize2DF::Create(x0, y0);
+  const auto value1 = PxVector2::Create(x1, y1);
 
-  auto value3 = value1 - value0;
+  const auto value3 = value1 - value0;
 
   EXPECT_EQ(x0, value0.RawWidth());
   EXPECT_EQ(y0, value0.RawHeight());
@@ -382,10 +382,10 @@ TEST(TestMathPixel_PxSize2DF, OpSub_PxSize2DF_PxVector2)
   const float y0 = 4;
   const float x1 = 3;
   const float y1 = 2;
-  auto value0 = PxVector2::Create(x0, y0);
-  auto value1 = PxSize2DF::Create(x1, y1);
+  const auto value0 = PxVector2::Create(x0, y0);
+  const auto value1 = PxSize2DF::Create(x1, y1);
 
-  auto value3 = value1 - value0;
+  const auto value3 = value1 - value0;
 
   EXPECT_EQ(x0, value0.X.Value);
   EXPECT_EQ(y0, value0.Y.Value);
@@ -401,10 +401,10 @@ TEST(TestMathPixel_PxSize2DF, OpMul_PxVector2_PxSize2DF)
   const float y0 = 4;
   const float x1 = 3;
   const float y1 = 2;
-  auto value0 = PxSize2DF::Create(x0, y0);
-  auto value1 = PxVector2::Create(x1, y1);
+  const auto value0 = PxSize2DF::Create(x0, y0);
+  const auto value1 = PxVector2::Create(x1, y1);
 
-  auto value3 = value1 * value0;
+  const auto value3 = value1 * value0;
 
   EXPECT_EQ(x0, value0.RawWidth());
   EXPECT_EQ(y0, value0.RawHeight());
@@ -421,10 +421,10 @@ TEST(TestMathPixel_PxSize2DF, OpMul_PxSize2DF_PxVector2)
   const float y0 = 4;
   const float x1 = 3;
   const float y1 = 2;
-  auto value0 = PxVector2::Create(x0, y0);
-  auto value1 = PxSize2DF::Create(x1, y1);
+  const auto value0 = PxVector2::Create(x0, y0);
+  const auto value1 = PxSize2DF::Create(x1, y1);
 
-  auto value3 = value1 * value0;
+  const auto value3 = value1 * value0;
 
   EXPECT_EQ(x0, value0.X.Value);
   EXPECT_EQ(y0, value0.Y.Value);

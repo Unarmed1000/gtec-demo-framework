@@ -83,7 +83,7 @@ namespace Fsl
 
           char* pEnd = nullptr;
           errno = 0;
-          auto value = strtoul(tmpBuffer.data(), &pEnd, 10);
+          const auto value = strtoul(tmpBuffer.data(), &pEnd, 10);
           if ((value == ULONG_MAX && errno == ERANGE) || value > std::numeric_limits<uint32_t>::max())
           {
             throw OverflowException("The number is outside than the expected value range");
@@ -346,7 +346,7 @@ namespace Fsl
   std::size_t StringParseUtil::Parse(Point2& rResult, const StringViewLite strView)
   {
     std::array<int32_t, 2> values{};
-    StringParseArrayResult res = ParseArray(SpanUtil::AsSpan(values), strView);
+    const StringParseArrayResult res = ParseArray(SpanUtil::AsSpan(values), strView);
     if (res.ArrayEntries != values.size())
     {
       throw FormatException("Point2 not in the correct format");
@@ -359,7 +359,7 @@ namespace Fsl
   std::size_t StringParseUtil::Parse(Point2U& rResult, const StringViewLite strView)
   {
     std::array<uint32_t, 2> values{};
-    StringParseArrayResult res = ParseArray(SpanUtil::AsSpan(values), strView);
+    const StringParseArrayResult res = ParseArray(SpanUtil::AsSpan(values), strView);
     if (res.ArrayEntries != values.size())
     {
       throw FormatException("Point2U not in the correct format");
@@ -371,7 +371,7 @@ namespace Fsl
   std::size_t StringParseUtil::Parse(PxSize2D& rResult, const StringViewLite strView)
   {
     std::array<int32_t, 2> values{};
-    StringParseArrayResult res = ParseArray(SpanUtil::AsSpan(values), strView);
+    const StringParseArrayResult res = ParseArray(SpanUtil::AsSpan(values), strView);
     if (res.ArrayEntries != values.size())
     {
       throw FormatException("Point2 not in the correct format");
@@ -384,7 +384,7 @@ namespace Fsl
   std::size_t StringParseUtil::Parse(Rectangle& rResult, const StringViewLite strView)
   {
     std::array<int32_t, 4> values{};
-    StringParseArrayResult res = ParseArray(SpanUtil::AsSpan(values), strView);
+    const StringParseArrayResult res = ParseArray(SpanUtil::AsSpan(values), strView);
     if (res.ArrayEntries != values.size())
     {
       throw FormatException("Rectangle not in the correct format");

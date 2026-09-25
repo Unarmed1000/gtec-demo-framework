@@ -46,7 +46,7 @@ namespace
 
 TEST(TestMathPixel_PxRectangleU32, Empty)
 {
-  PxRectangleU32 value;
+  const PxRectangleU32 value;
 
   EXPECT_EQ(PxRectangleU32(), PxRectangleU32::Empty());
   EXPECT_EQ(0u, value.RawLeft());
@@ -64,11 +64,11 @@ TEST(TestMathPixel_PxRectangleU32, Empty)
 
 TEST(TestMathPixel_PxRectangleU32, Construct1)
 {
-  PxValueU offsetX(1);
-  PxValueU offsetY(2);
-  PxValueU width(10);
-  PxValueU height(20);
-  PxRectangleU32 value(offsetX, offsetY, width, height);
+  const PxValueU offsetX(1);
+  const PxValueU offsetY(2);
+  const PxValueU width(10);
+  const PxValueU height(20);
+  const PxRectangleU32 value(offsetX, offsetY, width, height);
 
   EXPECT_EQ(offsetX, value.Left());
   EXPECT_EQ(offsetY, value.Top());
@@ -84,11 +84,11 @@ TEST(TestMathPixel_PxRectangleU32, Construct1)
 
 TEST(TestMathPixel_PxRectangleU32, Create)
 {
-  PxValueU offsetX(1);
-  PxValueU offsetY(2);
-  PxValueU width(10);
-  PxValueU height(20);
-  PxRectangleU32 value = PxRectangleU32::Create(offsetX.Value, offsetY.Value, width.Value, height.Value);
+  const PxValueU offsetX(1);
+  const PxValueU offsetY(2);
+  const PxValueU width(10);
+  const PxValueU height(20);
+  const PxRectangleU32 value = PxRectangleU32::Create(offsetX.Value, offsetY.Value, width.Value, height.Value);
 
   EXPECT_EQ(offsetX, value.Left());
   EXPECT_EQ(offsetY, value.Top());
@@ -105,11 +105,11 @@ TEST(TestMathPixel_PxRectangleU32, Create)
 
 TEST(TestMathPixel_PxRectangleU32, FromLeftTopRightBottom)
 {
-  PxValueU left(1);
-  PxValueU top(2);
-  PxValueU right(10);
-  PxValueU bottom(20);
-  auto value = PxRectangleU32::FromLeftTopRightBottom(left, top, right, bottom);
+  const PxValueU left(1);
+  const PxValueU top(2);
+  const PxValueU right(10);
+  const PxValueU bottom(20);
+  const auto value = PxRectangleU32::FromLeftTopRightBottom(left, top, right, bottom);
 
   EXPECT_EQ(left, value.Left());
   EXPECT_EQ(top, value.Top());
@@ -126,11 +126,11 @@ TEST(TestMathPixel_PxRectangleU32, FromLeftTopRightBottom)
 
 TEST(TestMathPixel_PxRectangleU32, UncheckedFromLeftTopRightBottom)
 {
-  PxValueU left(1);
-  PxValueU top(2);
-  PxValueU right(10);
-  PxValueU bottom(20);
-  auto value = PxRectangleU32::UncheckedFromLeftTopRightBottom(left, top, right, bottom);
+  const PxValueU left(1);
+  const PxValueU top(2);
+  const PxValueU right(10);
+  const PxValueU bottom(20);
+  const auto value = PxRectangleU32::UncheckedFromLeftTopRightBottom(left, top, right, bottom);
 
   EXPECT_EQ(left, value.Left());
   EXPECT_EQ(top, value.Top());
@@ -146,11 +146,11 @@ TEST(TestMathPixel_PxRectangleU32, UncheckedFromLeftTopRightBottom)
 
 TEST(TestMathPixel_PxRectangleU32, CreateFromLeftTopRightBottom)
 {
-  PxValueU left(1);
-  PxValueU top(2);
-  PxValueU right(10);
-  PxValueU bottom(20);
-  auto value = PxRectangleU32::CreateFromLeftTopRightBottom(left.Value, top.Value, right.Value, bottom.Value);
+  const PxValueU left(1);
+  const PxValueU top(2);
+  const PxValueU right(10);
+  const PxValueU bottom(20);
+  const auto value = PxRectangleU32::CreateFromLeftTopRightBottom(left.Value, top.Value, right.Value, bottom.Value);
 
   EXPECT_EQ(left, value.Left());
   EXPECT_EQ(top, value.Top());
@@ -166,11 +166,11 @@ TEST(TestMathPixel_PxRectangleU32, CreateFromLeftTopRightBottom)
 
 TEST(TestMathPixel_PxRectangleU32, UncheckedCreateFromLeftTopRightBottom)
 {
-  PxValueU left(1);
-  PxValueU top(2);
-  PxValueU right(10);
-  PxValueU bottom(20);
-  auto value = PxRectangleU32::UncheckedCreateFromLeftTopRightBottom(left.Value, top.Value, right.Value, bottom.Value);
+  const PxValueU left(1);
+  const PxValueU top(2);
+  const PxValueU right(10);
+  const PxValueU bottom(20);
+  const auto value = PxRectangleU32::UncheckedCreateFromLeftTopRightBottom(left.Value, top.Value, right.Value, bottom.Value);
 
   EXPECT_EQ(left, value.Left());
   EXPECT_EQ(top, value.Top());

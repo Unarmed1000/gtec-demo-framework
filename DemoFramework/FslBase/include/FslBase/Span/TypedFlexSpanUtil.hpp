@@ -68,11 +68,11 @@ namespace Fsl::TypedFlexSpanUtil
       throw std::invalid_argument("offset and type does not fit within the given stride");
     }
     auto* pDst = pData + dataByteOffset;
-    if (!TypeAlignmentUtil::UnsafeIsPointerAligned(pDst, std::alignment_of<T>::value))
+    if (!TypeAlignmentUtil::UnsafeIsPointerAligned(pDst, std::alignment_of_v<T>))
     {
       throw std::invalid_argument("type alignment restrictions not met");
     }
-    if (!TypeAlignmentUtil::IsAligned(stride, std::alignment_of<T>::value))
+    if (!TypeAlignmentUtil::IsAligned(stride, std::alignment_of_v<T>))
     {
       throw std::invalid_argument("type alignment restrictions not met by stride");
     }

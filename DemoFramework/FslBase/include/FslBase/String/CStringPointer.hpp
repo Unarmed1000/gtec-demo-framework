@@ -68,31 +68,31 @@ namespace Fsl
     }
 
     // NOLINTNEXTLINE(readability-identifier-naming)
-    constexpr const_pointer c_str() const noexcept
+    [[nodiscard]] constexpr const_pointer c_str() const noexcept
     {
       return m_psz;
     }
 
     // NOLINTNEXTLINE(readability-identifier-naming)
-    constexpr const_pointer data() const noexcept
+    [[nodiscard]] constexpr const_pointer data() const noexcept
     {
       return m_psz;
     }
 
     // NOLINTNEXTLINE(readability-identifier-naming)
-    constexpr size_type size() const noexcept
+    [[nodiscard]] constexpr size_type size() const noexcept
     {
       return CStringUtil::UncheckedLength(m_psz);
     }
 
     // NOLINTNEXTLINE(readability-identifier-naming)
-    constexpr bool empty() const noexcept
+    [[nodiscard]] constexpr bool empty() const noexcept
     {
       return m_psz[0] == 0;
     }
 
     // NOLINTNEXTLINE(readability-identifier-naming)
-    constexpr size_type length() const noexcept
+    [[nodiscard]] constexpr size_type length() const noexcept
     {
       return CStringUtil::UncheckedLength(m_psz);
     }
@@ -105,18 +105,18 @@ namespace Fsl
     }
 
     // NOLINTNEXTLINE(readability-identifier-naming)
-    constexpr int compare(CStringPointer value) const noexcept
+    [[nodiscard]] constexpr int compare(CStringPointer value) const noexcept
     {
       return compare(value.AsStringView());
     }
 
     // NOLINTNEXTLINE(readability-identifier-naming)
-    constexpr int compare(std::string_view value) const noexcept
+    [[nodiscard]] constexpr int compare(std::string_view value) const noexcept
     {
       return AsStringView().compare(value);
     }
 
-    constexpr std::string_view AsStringView() const noexcept
+    [[nodiscard]] constexpr std::string_view AsStringView() const noexcept
     {
       return StringViewUtil::UncheckedCreate(m_psz);
     }

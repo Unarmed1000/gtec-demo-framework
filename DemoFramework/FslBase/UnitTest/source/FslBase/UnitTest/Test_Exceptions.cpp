@@ -46,7 +46,7 @@ namespace
 
 TEST(Test_Exceptions, UsageErrorException_Construct1)
 {
-  UsageErrorException ex;
+  const UsageErrorException ex;
 
   // Mainly to avoid warning
   EXPECT_THROW(throw ex, UsageErrorException);    // NOLINT(misc-throw-by-value-catch-by-reference)
@@ -56,7 +56,7 @@ TEST(Test_Exceptions, UsageErrorException_Construct1)
 TEST(Test_Exceptions, UsageErrorException_Construct2)
 {
   const std::string message("hello");
-  UsageErrorException ex(message);
+  const UsageErrorException ex(message);
   EXPECT_EQ(message, ex.what());
 }
 
@@ -64,7 +64,7 @@ TEST(Test_Exceptions, UsageErrorException_Construct2)
 TEST(Test_Exceptions, UnknownTypeException_Construct1)
 {
   const std::string message("hello");
-  UnknownTypeException ex(message);
+  const UnknownTypeException ex(message);
 
   EXPECT_EQ(message, ex.what());
 }
@@ -73,7 +73,7 @@ TEST(Test_Exceptions, UnknownTypeException_Construct1)
 TEST(Test_Exceptions, NotFoundException_Construct1)
 {
   const std::string message("hello");
-  NotFoundException ex(message);
+  const NotFoundException ex(message);
 
   EXPECT_EQ(message, ex.what());
 }
@@ -82,7 +82,7 @@ TEST(Test_Exceptions, NotFoundException_Construct1)
 TEST(Test_Exceptions, DirectoryNotFoundException_Construct1)
 {
   const std::string message("hello");
-  DirectoryNotFoundException ex(message);
+  const DirectoryNotFoundException ex(message);
 
   EXPECT_EQ(message, ex.what());
 }
@@ -91,7 +91,7 @@ TEST(Test_Exceptions, DirectoryNotFoundException_Construct1)
 TEST(Test_Exceptions, InitFailedException_Construct1)
 {
   const std::string message("hello");
-  InitFailedException ex(message);
+  const InitFailedException ex(message);
 
   EXPECT_EQ(message, ex.what());
 }
@@ -100,7 +100,7 @@ TEST(Test_Exceptions, InitFailedException_Construct1)
 TEST(Test_Exceptions, NotImplementedException_Construct1)
 {
   const std::string message("hello");
-  NotImplementedException ex(message);
+  const NotImplementedException ex(message);
 
   EXPECT_EQ(message, ex.what());
 }
@@ -108,7 +108,7 @@ TEST(Test_Exceptions, NotImplementedException_Construct1)
 
 TEST(Test_Exceptions, NotImplementedException_Construct2)
 {
-  NotImplementedException ex;
+  const NotImplementedException ex;
 
   // Mainly to avoid warning
   EXPECT_THROW(throw ex, NotImplementedException);    // NOLINT(misc-throw-by-value-catch-by-reference)
@@ -118,7 +118,7 @@ TEST(Test_Exceptions, NotImplementedException_Construct2)
 TEST(Test_Exceptions, NotSupportedException_Construct1)
 {
   const std::string message("hello");
-  NotSupportedException ex(message);
+  const NotSupportedException ex(message);
 
   EXPECT_EQ(message, ex.what());
 }
@@ -126,7 +126,7 @@ TEST(Test_Exceptions, NotSupportedException_Construct1)
 
 TEST(Test_Exceptions, NotSupportedException_Construct2)
 {
-  NotSupportedException ex;
+  const NotSupportedException ex;
 
   // Mainly to avoid warning
   EXPECT_THROW(throw ex, NotSupportedException);    // NOLINT(misc-throw-by-value-catch-by-reference)
@@ -136,7 +136,7 @@ TEST(Test_Exceptions, NotSupportedException_Construct2)
 TEST(Test_Exceptions, IndexOutOfRangeException_Construct1)
 {
   const std::string message("hello");
-  IndexOutOfRangeException ex(message);
+  const IndexOutOfRangeException ex(message);
 
   EXPECT_EQ(message, ex.what());
 }
@@ -144,7 +144,7 @@ TEST(Test_Exceptions, IndexOutOfRangeException_Construct1)
 
 TEST(Test_Exceptions, IndexOutOfRangeException_Construct2)
 {
-  IndexOutOfRangeException ex;
+  const IndexOutOfRangeException ex;
 
   // Mainly to avoid warning
   EXPECT_THROW(throw ex, IndexOutOfRangeException);    // NOLINT(misc-throw-by-value-catch-by-reference)
@@ -154,7 +154,7 @@ TEST(Test_Exceptions, IndexOutOfRangeException_Construct2)
 TEST(Test_Exceptions, GraphicsException_Construct1)
 {
   const std::string message("hello");
-  GraphicsException ex(message);
+  const GraphicsException ex(message);
 
   EXPECT_EQ(message, ex.what());
 }
@@ -163,7 +163,7 @@ TEST(Test_Exceptions, GraphicsException_Construct1)
 TEST(Test_Exceptions, IOException_Construct1)
 {
   const std::string message("hello");
-  IOException ex(message);
+  const IOException ex(message);
 
   EXPECT_EQ(message, ex.what());
 }
@@ -172,7 +172,7 @@ TEST(Test_Exceptions, IOException_Construct1)
 TEST(Test_Exceptions, OverflowException_Construct1)
 {
   const std::string message("hello");
-  OverflowException ex(message);
+  const OverflowException ex(message);
 
   EXPECT_EQ(message, ex.what());
 }
@@ -181,7 +181,7 @@ TEST(Test_Exceptions, OverflowException_Construct1)
 TEST(Test_Exceptions, FormatException_Construct1)
 {
   const std::string message("hello");
-  FormatException ex(message);
+  const FormatException ex(message);
 
   EXPECT_EQ(message, ex.what());
 }
@@ -190,7 +190,7 @@ TEST(Test_Exceptions, FormatException_Construct1)
 TEST(Test_Exceptions, InvalidUTF8StringException_Construct1)
 {
   const std::string message("hello");
-  InvalidUTF8StringException ex(message);
+  const InvalidUTF8StringException ex(message);
 
   EXPECT_EQ(message, ex.what());
 }
@@ -199,14 +199,14 @@ TEST(Test_Exceptions, InvalidUTF8StringException_Construct1)
 TEST(Test_Exceptions, InvalidFormatException_Construct1)
 {
   const std::string message("hello");
-  InvalidFormatException ex(message);
+  const InvalidFormatException ex(message);
 
   EXPECT_EQ(message, ex.what());
 }
 
 TEST(Test_Exceptions, PathFormatErrorException_ConstructDefault)
 {
-  PathFormatErrorException ex;
+  const PathFormatErrorException ex;
 
   EXPECT_EQ(std::string("PathFormatErrorException"), ex.what());
 }
@@ -214,7 +214,7 @@ TEST(Test_Exceptions, PathFormatErrorException_ConstructDefault)
 TEST(Test_Exceptions, PathFormatErrorException_Construct1)
 {
   const std::string message("hello");
-  PathFormatErrorException ex(message);
+  const PathFormatErrorException ex(message);
 
   EXPECT_EQ(message, ex.what());
 }

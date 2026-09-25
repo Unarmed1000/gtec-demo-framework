@@ -49,14 +49,14 @@ namespace
 
 TEST(TestString_UTF8String, Empty)
 {
-  UTF8String src;
+  const UTF8String src;
 }
 
 
 TEST(TestString_UTF8String, Construct_CStyle)
 {
   const char* psz = "old school";
-  UTF8String src(psz);
+  const UTF8String src(psz);
 
   EXPECT_EQ(static_cast<std::size_t>(src.GetByteSize()), std::strlen(psz));
   EXPECT_EQ(src.ToAsciiString(), std::string(psz));
@@ -68,8 +68,8 @@ TEST(TestString_UTF8String, Construct_nullptr)
   const char* psz = nullptr;
   // EXPECT_THROW(UTF8String(psz), InvalidUTF8StringException);
   // EXPECT_THROW(UTF8String(nullptr), InvalidUTF8StringException);
-  UTF8String n1(psz);
-  UTF8String n2(nullptr);
+  const UTF8String n1(psz);
+  const UTF8String n2(nullptr);
 
   EXPECT_EQ(n1.GetByteSize(), 0);
   EXPECT_EQ(n2.GetByteSize(), 0);
@@ -80,9 +80,9 @@ TEST(TestString_UTF8String, Construct_CString)
 {
   //---------------01234567890
   const char* const psz = "hello world";
-  UTF8String src(psz);
+  const UTF8String src(psz);
 
-  std::string str(psz);
+  const std::string str(psz);
   EXPECT_EQ(static_cast<std::size_t>(src.GetByteSize()), str.size());
   EXPECT_EQ(src.ToAsciiString(), str);
   EXPECT_EQ(src.ToUTF8String(), str);
@@ -92,7 +92,7 @@ TEST(TestString_UTF8String, Construct_StringViewLite)
 {
   //---------------01234567890
   constexpr StringViewLite Str("hello world");
-  UTF8String src(Str);
+  const UTF8String src(Str);
 
   EXPECT_EQ(static_cast<std::size_t>(src.GetByteSize()), Str.size());
   EXPECT_EQ(src.ToAsciiString(), Str);
@@ -103,7 +103,7 @@ TEST(TestString_UTF8String, Construct_StringViewLite_Empty)
 {
   //---------------01234567890
   constexpr StringViewLite Str;
-  UTF8String src(Str);
+  const UTF8String src(Str);
 
   EXPECT_EQ(static_cast<std::size_t>(src.GetByteSize()), Str.size());
   EXPECT_EQ(src.ToAsciiString(), Str);
@@ -114,8 +114,8 @@ TEST(TestString_UTF8String, Construct_StringViewLite_Empty)
 TEST(TestString_UTF8String, Construct_StdString)
 {
   //---------------01234567890
-  std::string str("hello world");
-  UTF8String src(str);
+  const std::string str("hello world");
+  const UTF8String src(str);
 
   EXPECT_EQ(static_cast<std::size_t>(src.GetByteSize()), str.size());
   EXPECT_EQ(src.ToAsciiString(), str);
@@ -126,7 +126,7 @@ TEST(TestString_UTF8String, Construct_StdString)
 TEST(TestString_UTF8String, Construct_UTF8String)
 {
   //-------------01234567890
-  UTF8String str("hello world");
+  const UTF8String str("hello world");
   const UTF8String& src(str);
 
   EXPECT_EQ(src.GetByteSize(), str.GetByteSize());
@@ -137,8 +137,8 @@ TEST(TestString_UTF8String, Construct_UTF8String)
 TEST(TestString_UTF8String, ConstructSubString_StdString)
 {
   //---------------01234567890
-  std::string str("hello world");
-  UTF8String src(str, 6, 5);
+  const std::string str("hello world");
+  const UTF8String src(str, 6, 5);
 
   EXPECT_EQ(src.GetByteSize(), 5);
   EXPECT_EQ(src.ToAsciiString(), std::string("world"));
@@ -148,7 +148,7 @@ TEST(TestString_UTF8String, ConstructSubString_StdString)
 TEST(TestString_UTF8String, ConstructSubString_StdString_InvalidStartIndex)
 {
   //---------------01234567890
-  std::string str("hello world");
+  const std::string str("hello world");
 
   EXPECT_THROW(UTF8String(str, 100, 5), std::invalid_argument);
 }
@@ -156,7 +156,7 @@ TEST(TestString_UTF8String, ConstructSubString_StdString_InvalidStartIndex)
 TEST(TestString_UTF8String, ConstructSubString_StdString_InvalidLength)
 {
   //---------------01234567890
-  std::string str("hello world");
+  const std::string str("hello world");
 
   EXPECT_THROW(UTF8String(str, 6, 6), std::invalid_argument);
 }
@@ -165,8 +165,8 @@ TEST(TestString_UTF8String, ConstructSubString_StdString_InvalidLength)
 TEST(TestString_UTF8String, ConstructSubString_UTF8String)
 {
   //-------------01234567890
-  UTF8String str("hello world");
-  UTF8String src(str, 6, 5);
+  const UTF8String str("hello world");
+  const UTF8String src(str, 6, 5);
 
   EXPECT_EQ(src.GetByteSize(), 5);
   EXPECT_EQ(src.ToAsciiString(), std::string("world"));
@@ -176,7 +176,7 @@ TEST(TestString_UTF8String, ConstructSubString_UTF8String)
 TEST(TestString_UTF8String, ConstructSubString_UTF8String_InvalidStartIndex)
 {
   //---------------01234567890
-  UTF8String str("hello world");
+  const UTF8String str("hello world");
 
   EXPECT_THROW(UTF8String(str, 100, 5), std::invalid_argument);
 }
@@ -184,7 +184,7 @@ TEST(TestString_UTF8String, ConstructSubString_UTF8String_InvalidStartIndex)
 TEST(TestString_UTF8String, ConstructSubString_UTF8String_InvalidLength)
 {
   //---------------01234567890
-  UTF8String str("hello world");
+  const UTF8String str("hello world");
 
   EXPECT_THROW(UTF8String(str, 6, 6), std::invalid_argument);
 }
@@ -271,7 +271,7 @@ TEST(TestString_UTF8String, Append_UTF8String_empty)
   //---------------01234567890
   UTF8String str("hello");
 
-  UTF8String empty;
+  const UTF8String empty;
   str.Append(empty);
 
   EXPECT_EQ(StringViewLite("hello"), str);
@@ -362,7 +362,7 @@ TEST(TestString_UTF8String, Prepend_UTF8String_Empty)
   //---------------01234567890
   UTF8String str("world");
 
-  UTF8String empty;
+  const UTF8String empty;
   str.Prepend(empty);
 
   EXPECT_EQ(StringViewLite("world"), str);
@@ -371,7 +371,7 @@ TEST(TestString_UTF8String, Prepend_UTF8String_Empty)
 
 TEST(TestString_UTF8String, IsEmpty)
 {
-  UTF8String src;
+  const UTF8String src;
 
   EXPECT_TRUE(src.IsEmpty());
 }
@@ -379,7 +379,7 @@ TEST(TestString_UTF8String, IsEmpty)
 
 TEST(TestString_UTF8String, IsEmpty_False)
 {
-  UTF8String src("hello world");
+  const UTF8String src("hello world");
 
   EXPECT_FALSE(src.IsEmpty());
 }
@@ -388,7 +388,7 @@ TEST(TestString_UTF8String, IsEmpty_False)
 TEST(TestString_UTF8String, Clear)
 {
   //-------------01234567890
-  UTF8String str("hello world");
+  const UTF8String str("hello world");
   UTF8String src(str);
 
   EXPECT_EQ(src.GetByteSize(), str.GetByteSize());
@@ -401,14 +401,14 @@ TEST(TestString_UTF8String, Clear)
 
 TEST(TestString_UTF8String, ContainsChar_InvalidChar)
 {
-  UTF8String src("old school");
+  const UTF8String src("old school");
 
-  EXPECT_THROW(src.Contains(static_cast<char>(0xFF)), std::invalid_argument);
+  EXPECT_THROW(static_cast<void>(src.Contains(static_cast<char>(0xFF))), std::invalid_argument);
 }
 
 TEST(TestString_UTF8String, ContainsChar)
 {
-  UTF8String src("old school");
+  const UTF8String src("old school");
 
   EXPECT_TRUE(src.Contains('o'));
   EXPECT_TRUE(src.Contains('l'));
@@ -425,7 +425,7 @@ TEST(TestString_UTF8String, ContainsChar)
 
 TEST(TestString_UTF8String, ContainsChar_Empty)
 {
-  UTF8String src("");
+  const UTF8String src("");
 
   EXPECT_FALSE(src.Contains('a'));
   EXPECT_FALSE(src.Contains('O'));
@@ -434,7 +434,7 @@ TEST(TestString_UTF8String, ContainsChar_Empty)
 
 TEST(TestString_UTF8String, ContainsString)
 {
-  UTF8String src("old school");
+  const UTF8String src("old school");
 
   EXPECT_TRUE(src.Contains("old"));
   EXPECT_TRUE(src.Contains("school"));
@@ -455,7 +455,7 @@ TEST(TestString_UTF8String, ContainsString)
 
 TEST(TestString_UTF8String, ContainsString_Empty)
 {
-  UTF8String src("");
+  const UTF8String src("");
 
   EXPECT_TRUE(src.Contains(""));
 
@@ -468,15 +468,15 @@ TEST(TestString_UTF8String, ContainsString_Empty)
 
 TEST(TestString_UTF8String, StartsWithChar_InvalidChar)
 {
-  UTF8String src("old school");
+  const UTF8String src("old school");
 
-  EXPECT_THROW(src.StartsWith(static_cast<char>(0xFF)), std::invalid_argument);
+  EXPECT_THROW(static_cast<void>(src.StartsWith(static_cast<char>(0xFF))), std::invalid_argument);
 }
 
 
 TEST(TestString_UTF8String, StartsWithChar)
 {
-  UTF8String src("old school");
+  const UTF8String src("old school");
 
   EXPECT_TRUE(src.StartsWith('o'));
 
@@ -488,7 +488,7 @@ TEST(TestString_UTF8String, StartsWithChar)
 
 TEST(TestString_UTF8String, StartsWithChar_Empty)
 {
-  UTF8String src("");
+  const UTF8String src("");
 
   EXPECT_FALSE(src.StartsWith('a'));
   EXPECT_FALSE(src.StartsWith('O'));
@@ -498,7 +498,7 @@ TEST(TestString_UTF8String, StartsWithChar_Empty)
 
 TEST(TestString_UTF8String, StartsWith_CString)
 {
-  UTF8String src("old school");
+  const UTF8String src("old school");
 
   EXPECT_TRUE(src.StartsWith(""));
   EXPECT_TRUE(src.StartsWith("o"));
@@ -521,7 +521,7 @@ TEST(TestString_UTF8String, StartsWith_CString)
 
 TEST(TestString_UTF8String, StartsWith_StringViewLite)
 {
-  UTF8String src("old school");
+  const UTF8String src("old school");
 
   EXPECT_TRUE(src.StartsWith(StringViewLite("")));
   EXPECT_TRUE(src.StartsWith(StringViewLite("o")));
@@ -544,7 +544,7 @@ TEST(TestString_UTF8String, StartsWith_StringViewLite)
 
 TEST(TestString_UTF8String, StartsWith_UTF8String)
 {
-  UTF8String src("old school");
+  const UTF8String src("old school");
 
   EXPECT_TRUE(src.StartsWith(UTF8String("")));
   EXPECT_TRUE(src.StartsWith(UTF8String("o")));
@@ -566,7 +566,7 @@ TEST(TestString_UTF8String, StartsWith_UTF8String)
 
 TEST(TestString_UTF8String, StartsWithString_Empty_CString)
 {
-  UTF8String src;
+  const UTF8String src;
 
   EXPECT_TRUE(src.StartsWith(""));
 
@@ -578,7 +578,7 @@ TEST(TestString_UTF8String, StartsWithString_Empty_CString)
 
 TEST(TestString_UTF8String, StartsWithString_Empty_StringViewLite)
 {
-  UTF8String src;
+  const UTF8String src;
 
   EXPECT_TRUE(src.StartsWith(StringViewLite("")));
 
@@ -590,7 +590,7 @@ TEST(TestString_UTF8String, StartsWithString_Empty_StringViewLite)
 
 TEST(TestString_UTF8String, StartsWithString_Empty_UTF8String)
 {
-  UTF8String src;
+  const UTF8String src;
 
   EXPECT_TRUE(src.StartsWith(UTF8String("")));
 
@@ -603,7 +603,7 @@ TEST(TestString_UTF8String, StartsWithString_Empty_UTF8String)
 
 TEST(TestString_UTF8String, StartsWith_CString_Null)
 {
-  UTF8String src("old school");
+  const UTF8String src("old school");
 
   const char* const pszNull = nullptr;
 
@@ -613,9 +613,9 @@ TEST(TestString_UTF8String, StartsWith_CString_Null)
 
 TEST(TestString_UTF8String, StartsWith_StringViewLite_Empty)
 {
-  UTF8String src("old school");
+  const UTF8String src("old school");
 
-  StringViewLite strEmpty;
+  const StringViewLite strEmpty;
 
   EXPECT_TRUE(src.StartsWith(strEmpty));
 }
@@ -623,15 +623,15 @@ TEST(TestString_UTF8String, StartsWith_StringViewLite_Empty)
 
 TEST(TestString_UTF8String, EndsWithChar_InvalidChar)
 {
-  UTF8String src("old school");
+  const UTF8String src("old school");
 
-  EXPECT_THROW(src.EndsWith(static_cast<char>(0xFF)), std::invalid_argument);
+  EXPECT_THROW(static_cast<void>(src.EndsWith(static_cast<char>(0xFF))), std::invalid_argument);
 }
 
 
 TEST(TestString_UTF8String, EndsWithChar)
 {
-  UTF8String src("old school");
+  const UTF8String src("old school");
 
   EXPECT_TRUE(src.EndsWith('l'));
 
@@ -643,7 +643,7 @@ TEST(TestString_UTF8String, EndsWithChar)
 
 TEST(TestString_UTF8String, EndsWithChar_Empty)
 {
-  UTF8String src("");
+  const UTF8String src("");
 
   EXPECT_FALSE(src.EndsWith('l'));
   EXPECT_FALSE(src.EndsWith('L'));
@@ -654,7 +654,7 @@ TEST(TestString_UTF8String, EndsWithChar_Empty)
 
 TEST(TestString_UTF8String, EndsWith_CString)
 {
-  UTF8String src("old school");
+  const UTF8String src("old school");
 
   EXPECT_TRUE(src.EndsWith(""));
   EXPECT_TRUE(src.EndsWith("l"));
@@ -677,7 +677,7 @@ TEST(TestString_UTF8String, EndsWith_CString)
 
 TEST(TestString_UTF8String, EndsWith_StringViewLite)
 {
-  UTF8String src("old school");
+  const UTF8String src("old school");
 
   EXPECT_TRUE(src.EndsWith(StringViewLite("")));
   EXPECT_TRUE(src.EndsWith(StringViewLite("l")));
@@ -700,7 +700,7 @@ TEST(TestString_UTF8String, EndsWith_StringViewLite)
 
 TEST(TestString_UTF8String, EndsWith_UTF8String)
 {
-  UTF8String src("old school");
+  const UTF8String src("old school");
 
   EXPECT_TRUE(src.EndsWith(UTF8String("")));
   EXPECT_TRUE(src.EndsWith(UTF8String("l")));
@@ -723,7 +723,7 @@ TEST(TestString_UTF8String, EndsWith_UTF8String)
 
 TEST(TestString_UTF8String, EndsWithString_Empty_CString)
 {
-  UTF8String src("");
+  const UTF8String src("");
 
   EXPECT_TRUE(src.EndsWith(""));
   EXPECT_FALSE(src.EndsWith("l"));
@@ -732,7 +732,7 @@ TEST(TestString_UTF8String, EndsWithString_Empty_CString)
 
 TEST(TestString_UTF8String, EndsWith_CString_Null)
 {
-  UTF8String src("old school");
+  const UTF8String src("old school");
 
   const char* const pszNull = nullptr;
 
@@ -742,9 +742,9 @@ TEST(TestString_UTF8String, EndsWith_CString_Null)
 
 TEST(TestString_UTF8String, EndsWith_StringViewLite_Empty)
 {
-  UTF8String src("old school");
+  const UTF8String src("old school");
 
-  StringViewLite strEmpty;
+  const StringViewLite strEmpty;
 
   EXPECT_TRUE(src.EndsWith(strEmpty));
 }
@@ -752,9 +752,9 @@ TEST(TestString_UTF8String, EndsWith_StringViewLite_Empty)
 
 TEST(TestString_UTF8String, EndsWith_UTF8String_Empty)
 {
-  UTF8String src("old school");
+  const UTF8String src("old school");
 
-  UTF8String strEmpty;
+  const UTF8String strEmpty;
 
   EXPECT_TRUE(src.EndsWith(strEmpty));
 }
@@ -784,7 +784,7 @@ TEST(TestString_UTF8String, ReplaceChar)
 
   EXPECT_EQ(src, UTF8String("Old schOOl"));
 
-  UTF8String src2("");
+  const UTF8String src2("");
   src.Replace('o', 'O');
   EXPECT_EQ(src2, UTF8String(""));
 }
@@ -793,24 +793,24 @@ TEST(TestString_UTF8String, ReplaceChar)
 TEST(TestString_UTF8String, IndexOfChar_InvalidChar)
 {
   //--------------0123456789
-  UTF8String src("old school");
+  const UTF8String src("old school");
 
-  EXPECT_THROW(src.IndexOf(static_cast<char>(0xFF)), std::invalid_argument);
+  EXPECT_THROW(static_cast<void>(src.IndexOf(static_cast<char>(0xFF))), std::invalid_argument);
 }
 
 TEST(TestString_UTF8String, IndexOfChar2_InvalidChar)
 {
   //--------------0123456789
-  UTF8String src("old school");
+  const UTF8String src("old school");
 
-  EXPECT_THROW(src.IndexOf(static_cast<char>(0xFF), 2u), std::invalid_argument);
+  EXPECT_THROW(static_cast<void>(src.IndexOf(static_cast<char>(0xFF), 2u)), std::invalid_argument);
 }
 
 
 TEST(TestString_UTF8String, IndexOfChar)
 {
   //--------------0123456789
-  UTF8String src("old school");
+  const UTF8String src("old school");
 
   EXPECT_EQ(src.IndexOf('o'), 0);
   EXPECT_EQ(src.IndexOf('l'), 1);
@@ -839,16 +839,16 @@ TEST(TestString_UTF8String, IndexOfChar)
 TEST(TestString_UTF8String, LastIndexOfChar_InvalidChar)
 {
   //--------------0123456789
-  UTF8String src("old school");
+  const UTF8String src("old school");
 
-  EXPECT_THROW(src.LastIndexOf(static_cast<char>(0xFF)), std::invalid_argument);
+  EXPECT_THROW(static_cast<void>(src.LastIndexOf(static_cast<char>(0xFF))), std::invalid_argument);
 }
 
 
 TEST(TestString_UTF8String, LastIndexOfChar)
 {
   //--------------0123456789
-  UTF8String src("old school");
+  const UTF8String src("old school");
 
   EXPECT_EQ(src.LastIndexOf('l'), 9);
   EXPECT_EQ(src.LastIndexOf('o'), 8);
@@ -897,7 +897,7 @@ TEST(TestString_UTF8String, OpAssign_UTF8String)
   UTF8String src("old school");
   //---------0123456789
 
-  UTF8String strNew("the quick brown fox");
+  const UTF8String strNew("the quick brown fox");
 
   src = strNew;
   EXPECT_EQ(strNew, src);
@@ -2334,7 +2334,7 @@ TEST(TestString_UTF8String, OperatorNotEqual_Null)
 TEST(TestString_UTF8String, Op_Plus_UTF8String_CString)
 {
   //---------------01234567890
-  UTF8String str("hello");
+  const UTF8String str("hello");
 
   EXPECT_EQ(StringViewLite("hello world"), str + " world");
   EXPECT_EQ(StringViewLite("hello there!"), str + " there!");
@@ -2346,7 +2346,7 @@ TEST(TestString_UTF8String, Op_Plus_UTF8String_CString)
 TEST(TestString_UTF8String, Op_Plus_UTF8String_StringViewLite)
 {
   //---------------01234567890
-  UTF8String str("hello");
+  const UTF8String str("hello");
 
   EXPECT_EQ(StringViewLite("hello world"), str + StringViewLite(" world"));
   EXPECT_EQ(StringViewLite("hello there!"), str + StringViewLite(" there!"));
@@ -2358,7 +2358,7 @@ TEST(TestString_UTF8String, Op_Plus_UTF8String_StringViewLite)
 TEST(TestString_UTF8String, Op_Plus_UTF8String_UTF8String)
 {
   //---------------01234567890
-  UTF8String str("hello");
+  const UTF8String str("hello");
 
   EXPECT_EQ(StringViewLite("hello world"), str + UTF8String(" world"));
   EXPECT_EQ(StringViewLite("hello there!"), str + UTF8String(" there!"));
@@ -2380,7 +2380,7 @@ TEST(TestString_UTF8String, Op_Plus_CString_UTF8String)
 TEST(TestString_UTF8String, Op_Plus_StringViewLite_UTF8String)
 {
   //---------------01234567890
-  UTF8String str("hello");
+  const UTF8String str("hello");
 
   EXPECT_EQ(StringViewLite("hello world"), StringViewLite("hello") + UTF8String(" world"));
   EXPECT_EQ(StringViewLite("hello there!"), StringViewLite("hello") + UTF8String(" there!"));
@@ -2465,7 +2465,7 @@ TEST(TestString_UTF8String, MoveAssignment)
 TEST(TestString_UTF8String, MoveConstruct)
 {
   UTF8String str1("hello");
-  UTF8String str2(std::move(str1));
+  const UTF8String str2(std::move(str1));
 
   // Move does not have to change the content of str1 so this check could fail
   // EXPECT_EQ(str1, "");

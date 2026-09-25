@@ -48,7 +48,7 @@ namespace
 
 TEST(TestMath_SpanRange, Default)
 {
-  SpanRange<uint32_t> span;
+  const SpanRange<uint32_t> span;
 
   EXPECT_EQ(0u, span.Start);
   EXPECT_EQ(0u, span.Length);
@@ -58,7 +58,7 @@ TEST(TestMath_SpanRange, Default)
 
 TEST(TestMath_SpanRange, Basic)
 {
-  SpanRange<uint32_t> span(1, 10);
+  const SpanRange<uint32_t> span(1, 10);
 
   EXPECT_EQ(1u, span.Start);
   EXPECT_EQ(10u, span.Length);

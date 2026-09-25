@@ -49,8 +49,8 @@ namespace
 
 TEST(TestSpanUtilValueCompareReadOnly, ValueEquals_Empty)
 {
-  std::span<const uint8_t> span1;
-  std::span<const uint8_t> span2;
+  const std::span<const uint8_t> span1;
+  const std::span<const uint8_t> span2;
 
   EXPECT_TRUE(Fsl::SpanUtil::ValueEquals(span1, span2));
 }
@@ -61,13 +61,13 @@ TEST(TestSpanUtilValueCompareReadOnly, UncheckedValueEquals_SpanTypes)
   std::array<uint8_t, 1> contentB = {'B'};
   std::array<uint8_t, 1> contentC = {'C'};
 
-  std::span<const uint8_t> readOnlySpanA(contentA);
-  std::span<const uint8_t> readOnlySpanB(contentB);
-  std::span<const uint8_t> readOnlySpanC(contentC);
+  const std::span<const uint8_t> readOnlySpanA(contentA);
+  const std::span<const uint8_t> readOnlySpanB(contentB);
+  const std::span<const uint8_t> readOnlySpanC(contentC);
 
-  std::span<uint8_t> spanA(contentA);
-  std::span<uint8_t> spanB(contentB);
-  std::span<uint8_t> spanC(contentC);
+  const std::span<uint8_t> spanA(contentA);
+  const std::span<uint8_t> spanB(contentB);
+  const std::span<uint8_t> spanC(contentC);
 
   constexpr std::size_t CharCount = 1;
 
@@ -98,13 +98,13 @@ TEST(TestSpanUtilValueCompareReadOnly, ValueEquals_SpanTypes)
   std::array<uint8_t, 1> contentB = {'B'};
   std::array<uint8_t, 1> contentC = {'C'};
 
-  std::span<const uint8_t> readOnlySpanA(contentA);
-  std::span<const uint8_t> readOnlySpanB(contentB);
-  std::span<const uint8_t> readOnlySpanC(contentC);
+  const std::span<const uint8_t> readOnlySpanA(contentA);
+  const std::span<const uint8_t> readOnlySpanB(contentB);
+  const std::span<const uint8_t> readOnlySpanC(contentC);
 
-  std::span<uint8_t> spanA(contentA);
-  std::span<uint8_t> spanB(contentB);
-  std::span<uint8_t> spanC(contentC);
+  const std::span<uint8_t> spanA(contentA);
+  const std::span<uint8_t> spanB(contentB);
+  const std::span<uint8_t> spanC(contentC);
 
   EXPECT_FALSE(Fsl::SpanUtil::ValueEquals(Convert(contentA), Convert(contentB)));
   EXPECT_TRUE(Fsl::SpanUtil::ValueEquals(Convert(contentB), Convert(contentB)));
@@ -131,8 +131,8 @@ TEST(TestSpanUtilValueCompareReadOnly, opEqual1)
 {
   const std::array<uint8_t, 11> content1 = {'H', 'e', 'l', 'l', 'o', ' ', 'w', 'o', 'r', 'l', 'd'};
   const std::array<uint8_t, 11> content2 = {'H', 'e', 'l', 'l', 'o', ' ', 'w', 'o', 'r', 'l', 'd'};
-  auto span1 = Convert(content1);
-  auto span2 = Convert(content2);
+  const auto span1 = Convert(content1);
+  const auto span2 = Convert(content2);
 
   EXPECT_TRUE(Fsl::SpanUtil::ValueEquals(span1, span2));
 }
@@ -141,8 +141,8 @@ TEST(TestSpanUtilValueCompareReadOnly, opEqual2)
 {
   const std::array<uint8_t, 11> content1 = {'H', 'e', 'l', 'l', 'o', ' ', 'w', 'o', 'r', 'l', 'd'};
   const std::array<uint8_t, 11> content2 = {'H', 'e', 'l', 'l', 'o', ' ', 'w', 'o', 'r', 'l', 'D'};
-  auto span1 = Convert(content1);
-  auto span2 = Convert(content2);
+  const auto span1 = Convert(content1);
+  const auto span2 = Convert(content2);
 
   EXPECT_FALSE(Fsl::SpanUtil::ValueEquals(span1, span2));
 }
@@ -152,8 +152,8 @@ TEST(TestSpanUtilValueCompareReadOnly, opEqual3)
 {
   const std::array<uint8_t, 11> content1 = {'H', 'e', 'l', 'l', 'o', ' ', 'w', 'o', 'r', 'l', 'd'};
   const std::array<uint8_t, 10> content2 = {'H', 'e', 'l', 'l', 'o', ' ', 'w', 'o', 'r', 'l'};
-  auto span1 = Convert(content1);
-  auto span2 = Convert(content2);
+  const auto span1 = Convert(content1);
+  const auto span2 = Convert(content2);
 
   EXPECT_FALSE(Fsl::SpanUtil::ValueEquals(span1, span2));
 }
@@ -163,8 +163,8 @@ TEST(TestSpanUtilValueCompareReadOnly, opEqual4)
 {
   const std::array<uint8_t, 11> content1 = {'H', 'e', 'l', 'l', 'o', ' ', 'w', 'o', 'r', 'l', 'd'};
   const std::array<uint8_t, 12> content2 = {'H', 'e', 'l', 'l', 'o', ' ', 'w', 'o', 'r', 'l', 'd', '2'};
-  auto span1 = Convert(content1);
-  auto span2 = Convert(content2);
+  const auto span1 = Convert(content1);
+  const auto span2 = Convert(content2);
 
   EXPECT_FALSE(Fsl::SpanUtil::ValueEquals(span1, span2));
 }
@@ -174,8 +174,8 @@ TEST(TestSpanUtilValueCompareReadOnly, opEqual5)
 {
   const std::array<uint8_t, 11> content1 = {'H', 'e', 'l', 'l', 'o', ' ', 'w', 'o', 'r', 'l', 'd'};
   const std::array<uint8_t, 0> content2{};
-  auto span1 = Convert(content1);
-  auto span2 = Convert(content2);
+  const auto span1 = Convert(content1);
+  const auto span2 = Convert(content2);
 
   EXPECT_FALSE(Fsl::SpanUtil::ValueEquals(span1, span2));
 }
@@ -185,8 +185,8 @@ TEST(TestSpanUtilValueCompareReadOnly, opLess_Empty)
 {
   const std::array<uint8_t, 0> content1{};
   const std::array<uint8_t, 0> content2{};
-  auto span1 = Convert(content1);
-  auto span2 = Convert(content2);
+  const auto span1 = Convert(content1);
+  const auto span2 = Convert(content2);
 
   EXPECT_FALSE(Fsl::SpanUtil::ValueCompare(span1, span2) < 0);
 }
@@ -197,8 +197,8 @@ TEST(TestSpanUtilValueCompareReadOnly, opLess1)
   const std::array<uint8_t, 2> content1 = {'a', 'b'};
   const std::array<uint8_t, 2> content2 = {'a', 'c'};
 
-  auto span1 = Convert(content1);
-  auto span2 = Convert(content2);
+  const auto span1 = Convert(content1);
+  const auto span2 = Convert(content2);
 
   EXPECT_TRUE(Fsl::SpanUtil::ValueCompare(span1, span2) < 0);
 }
@@ -209,8 +209,8 @@ TEST(TestSpanUtilValueCompareReadOnly, opLess2)
   const std::array<uint8_t, 2> content1 = {'a', 'b'};
   const std::array<uint8_t, 2> content2 = {'a', 'a'};
 
-  auto span1 = Convert(content1);
-  auto span2 = Convert(content2);
+  const auto span1 = Convert(content1);
+  const auto span2 = Convert(content2);
 
   EXPECT_FALSE(Fsl::SpanUtil::ValueCompare(span1, span2) < 0);
 }
@@ -220,8 +220,8 @@ TEST(TestSpanUtilValueCompareReadOnly, opLess3)
 {
   const std::array<uint8_t, 2> content1 = {'a', 'b'};
   const std::array<uint8_t, 2> content2 = {'a', 'b'};
-  auto span1 = Convert(content1);
-  auto span2 = Convert(content2);
+  const auto span1 = Convert(content1);
+  const auto span2 = Convert(content2);
 
   EXPECT_FALSE(Fsl::SpanUtil::ValueCompare(span1, span2) < 0);
 }
@@ -231,8 +231,8 @@ TEST(TestSpanUtilValueCompareReadOnly, opLess4)
 {
   const std::array<uint8_t, 1> content1 = {'a'};
   const std::array<uint8_t, 2> content2 = {'a', 'a'};
-  auto span1 = Convert(content1);
-  auto span2 = Convert(content2);
+  const auto span1 = Convert(content1);
+  const auto span2 = Convert(content2);
 
   EXPECT_TRUE(Fsl::SpanUtil::ValueCompare(span1, span2) < 0);
 }
@@ -242,8 +242,8 @@ TEST(TestSpanUtilValueCompareReadOnly, opLess5)
 {
   const std::array<uint8_t, 2> content1 = {'a', 'a'};
   const std::array<uint8_t, 1> content2 = {'a'};
-  auto span1 = Convert(content1);
-  auto span2 = Convert(content2);
+  const auto span1 = Convert(content1);
+  const auto span2 = Convert(content2);
 
   EXPECT_FALSE(Fsl::SpanUtil::ValueCompare(span1, span2) < 0);
 }
@@ -252,8 +252,8 @@ TEST(TestSpanUtilValueCompareReadOnly, opLessOrEqual_Empty)
 {
   const std::array<uint8_t, 0> content1{};
   const std::array<uint8_t, 0> content2{};
-  auto span1 = Convert(content1);
-  auto span2 = Convert(content2);
+  const auto span1 = Convert(content1);
+  const auto span2 = Convert(content2);
 
   EXPECT_TRUE(Fsl::SpanUtil::ValueCompare(span1, span2) <= 0);
 }
@@ -263,8 +263,8 @@ TEST(TestSpanUtilValueCompareReadOnly, opLessOrEqual1)
 {
   const std::array<uint8_t, 2> content1 = {'a', 'b'};
   const std::array<uint8_t, 2> content2 = {'a', 'c'};
-  auto span1 = Convert(content1);
-  auto span2 = Convert(content2);
+  const auto span1 = Convert(content1);
+  const auto span2 = Convert(content2);
 
   EXPECT_TRUE(Fsl::SpanUtil::ValueCompare(span1, span2) <= 0);
 }
@@ -274,8 +274,8 @@ TEST(TestSpanUtilValueCompareReadOnly, opLessOrEqual2)
 {
   const std::array<uint8_t, 2> content1 = {'a', 'b'};
   const std::array<uint8_t, 2> content2 = {'a', 'a'};
-  auto span1 = Convert(content1);
-  auto span2 = Convert(content2);
+  const auto span1 = Convert(content1);
+  const auto span2 = Convert(content2);
 
   EXPECT_FALSE(Fsl::SpanUtil::ValueCompare(span1, span2) <= 0);
 }
@@ -285,8 +285,8 @@ TEST(TestSpanUtilValueCompareReadOnly, opLessOrEqual3)
 {
   const std::array<uint8_t, 2> content1 = {'a', 'b'};
   const std::array<uint8_t, 2> content2 = {'a', 'b'};
-  auto span1 = Convert(content1);
-  auto span2 = Convert(content2);
+  const auto span1 = Convert(content1);
+  const auto span2 = Convert(content2);
 
   EXPECT_TRUE(Fsl::SpanUtil::ValueCompare(span1, span2) <= 0);
 }
@@ -296,8 +296,8 @@ TEST(TestSpanUtilValueCompareReadOnly, opLessOrEqual4)
 {
   const std::array<uint8_t, 1> content1 = {'a'};
   const std::array<uint8_t, 2> content2 = {'a', 'a'};
-  auto span1 = Convert(content1);
-  auto span2 = Convert(content2);
+  const auto span1 = Convert(content1);
+  const auto span2 = Convert(content2);
 
   EXPECT_TRUE(Fsl::SpanUtil::ValueCompare(span1, span2) <= 0);
 }
@@ -307,8 +307,8 @@ TEST(TestSpanUtilValueCompareReadOnly, opLessOrEqual5)
 {
   const std::array<uint8_t, 2> content1 = {'a', 'a'};
   const std::array<uint8_t, 1> content2 = {'a'};
-  auto span1 = Convert(content1);
-  auto span2 = Convert(content2);
+  const auto span1 = Convert(content1);
+  const auto span2 = Convert(content2);
 
   EXPECT_FALSE(Fsl::SpanUtil::ValueCompare(span1, span2) <= 0);
 }
@@ -317,8 +317,8 @@ TEST(TestSpanUtilValueCompareReadOnly, opGreater_Empty)
 {
   const std::array<uint8_t, 0> content1{};
   const std::array<uint8_t, 0> content2{};
-  auto span1 = Convert(content1);
-  auto span2 = Convert(content2);
+  const auto span1 = Convert(content1);
+  const auto span2 = Convert(content2);
 
   EXPECT_FALSE(Fsl::SpanUtil::ValueCompare(span1, span2) > 0);
 }
@@ -328,8 +328,8 @@ TEST(TestSpanUtilValueCompareReadOnly, opGreater1)
 {
   const std::array<uint8_t, 2> content1 = {'a', 'b'};
   const std::array<uint8_t, 2> content2 = {'a', 'c'};
-  auto span1 = Convert(content1);
-  auto span2 = Convert(content2);
+  const auto span1 = Convert(content1);
+  const auto span2 = Convert(content2);
 
   EXPECT_FALSE(Fsl::SpanUtil::ValueCompare(span1, span2) > 0);
 }
@@ -339,8 +339,8 @@ TEST(TestSpanUtilValueCompareReadOnly, opGreater2)
 {
   const std::array<uint8_t, 2> content1 = {'a', 'b'};
   const std::array<uint8_t, 2> content2 = {'a', 'a'};
-  auto span1 = Convert(content1);
-  auto span2 = Convert(content2);
+  const auto span1 = Convert(content1);
+  const auto span2 = Convert(content2);
 
   EXPECT_TRUE(Fsl::SpanUtil::ValueCompare(span1, span2) > 0);
 }
@@ -350,8 +350,8 @@ TEST(TestSpanUtilValueCompareReadOnly, opGreater3)
 {
   const std::array<uint8_t, 2> content1 = {'a', 'b'};
   const std::array<uint8_t, 2> content2 = {'a', 'b'};
-  auto span1 = Convert(content1);
-  auto span2 = Convert(content2);
+  const auto span1 = Convert(content1);
+  const auto span2 = Convert(content2);
 
   EXPECT_FALSE(Fsl::SpanUtil::ValueCompare(span1, span2) > 0);
 }
@@ -361,8 +361,8 @@ TEST(TestSpanUtilValueCompareReadOnly, opGreater4)
 {
   const std::array<uint8_t, 1> content1 = {'a'};
   const std::array<uint8_t, 2> content2 = {'a', 'a'};
-  auto span1 = Convert(content1);
-  auto span2 = Convert(content2);
+  const auto span1 = Convert(content1);
+  const auto span2 = Convert(content2);
 
   EXPECT_FALSE(Fsl::SpanUtil::ValueCompare(span1, span2) > 0);
 }
@@ -372,8 +372,8 @@ TEST(TestSpanUtilValueCompareReadOnly, opGreater5)
 {
   const std::array<uint8_t, 2> content1 = {'a', 'a'};
   const std::array<uint8_t, 1> content2 = {'a'};
-  auto span1 = Convert(content1);
-  auto span2 = Convert(content2);
+  const auto span1 = Convert(content1);
+  const auto span2 = Convert(content2);
 
   EXPECT_TRUE(Fsl::SpanUtil::ValueCompare(span1, span2) > 0);
 }
@@ -382,8 +382,8 @@ TEST(TestSpanUtilValueCompareReadOnly, opGreaterOrEqual_Empty)
 {
   const std::array<uint8_t, 0> content1{};
   const std::array<uint8_t, 0> content2{};
-  auto span1 = Convert(content1);
-  auto span2 = Convert(content2);
+  const auto span1 = Convert(content1);
+  const auto span2 = Convert(content2);
 
   EXPECT_TRUE(Fsl::SpanUtil::ValueCompare(span1, span2) >= 0);
 }
@@ -393,8 +393,8 @@ TEST(TestSpanUtilValueCompareReadOnly, opGreaterOrEqual1)
 {
   const std::array<uint8_t, 2> content1 = {'a', 'b'};
   const std::array<uint8_t, 2> content2 = {'a', 'c'};
-  auto span1 = Convert(content1);
-  auto span2 = Convert(content2);
+  const auto span1 = Convert(content1);
+  const auto span2 = Convert(content2);
 
   EXPECT_FALSE(Fsl::SpanUtil::ValueCompare(span1, span2) >= 0);
 }
@@ -404,8 +404,8 @@ TEST(TestSpanUtilValueCompareReadOnly, opGreaterOrEqual2)
 {
   const std::array<uint8_t, 2> content1 = {'a', 'b'};
   const std::array<uint8_t, 2> content2 = {'a', 'a'};
-  auto span1 = Convert(content1);
-  auto span2 = Convert(content2);
+  const auto span1 = Convert(content1);
+  const auto span2 = Convert(content2);
 
   EXPECT_TRUE(Fsl::SpanUtil::ValueCompare(span1, span2) >= 0);
 }
@@ -415,8 +415,8 @@ TEST(TestSpanUtilValueCompareReadOnly, opGreaterOrEqual3)
 {
   const std::array<uint8_t, 2> content1 = {'a', 'b'};
   const std::array<uint8_t, 2> content2 = {'a', 'b'};
-  auto span1 = Convert(content1);
-  auto span2 = Convert(content2);
+  const auto span1 = Convert(content1);
+  const auto span2 = Convert(content2);
 
   EXPECT_TRUE(Fsl::SpanUtil::ValueCompare(span1, span2) >= 0);
 }
@@ -426,8 +426,8 @@ TEST(TestSpanUtilValueCompareReadOnly, opGreaterOrEqual4)
 {
   const std::array<uint8_t, 1> content1 = {'a'};
   const std::array<uint8_t, 2> content2 = {'a', 'a'};
-  auto span1 = Convert(content1);
-  auto span2 = Convert(content2);
+  const auto span1 = Convert(content1);
+  const auto span2 = Convert(content2);
 
   EXPECT_FALSE(Fsl::SpanUtil::ValueCompare(span1, span2) >= 0);
 }
@@ -437,8 +437,8 @@ TEST(TestSpanUtilValueCompareReadOnly, opGreaterOrEqual5)
 {
   const std::array<uint8_t, 2> content1 = {'a', 'a'};
   const std::array<uint8_t, 1> content2 = {'a'};
-  auto span1 = Convert(content1);
-  auto span2 = Convert(content2);
+  const auto span1 = Convert(content1);
+  const auto span2 = Convert(content2);
 
   EXPECT_TRUE(Fsl::SpanUtil::ValueCompare(span1, span2) >= 0);
 }
@@ -493,13 +493,13 @@ TEST(TestSpanUtilValueCompareReadOnly, ValueCompare_SpanTypes)
   std::array<uint8_t, 1> contentB = {'B'};
   std::array<uint8_t, 1> contentC = {'C'};
 
-  std::span<const uint8_t> readOnlySpanA(contentA);
-  std::span<const uint8_t> readOnlySpanB(contentB);
-  std::span<const uint8_t> readOnlySpanC(contentC);
+  const std::span<const uint8_t> readOnlySpanA(contentA);
+  const std::span<const uint8_t> readOnlySpanB(contentB);
+  const std::span<const uint8_t> readOnlySpanC(contentC);
 
-  std::span<uint8_t> spanA(contentA);
-  std::span<uint8_t> spanB(contentB);
-  std::span<uint8_t> spanC(contentC);
+  const std::span<uint8_t> spanA(contentA);
+  const std::span<uint8_t> spanB(contentB);
+  const std::span<uint8_t> spanC(contentC);
 
   EXPECT_TRUE(Fsl::SpanUtil::ValueCompare(Convert(contentA), Convert(contentB)) < 0);
   EXPECT_TRUE(Fsl::SpanUtil::ValueCompare(Convert(contentB), Convert(contentB)) == 0);
@@ -528,13 +528,13 @@ TEST(TestSpanUtilValueCompareReadOnly, UncheckedValueCompare_SpanTypes)
   std::array<uint8_t, 1> contentB = {'B'};
   std::array<uint8_t, 1> contentC = {'C'};
 
-  std::span<const uint8_t> readOnlySpanA(contentA);
-  std::span<const uint8_t> readOnlySpanB(contentB);
-  std::span<const uint8_t> readOnlySpanC(contentC);
+  const std::span<const uint8_t> readOnlySpanA(contentA);
+  const std::span<const uint8_t> readOnlySpanB(contentB);
+  const std::span<const uint8_t> readOnlySpanC(contentC);
 
-  std::span<uint8_t> spanA(contentA);
-  std::span<uint8_t> spanB(contentB);
-  std::span<uint8_t> spanC(contentC);
+  const std::span<uint8_t> spanA(contentA);
+  const std::span<uint8_t> spanB(contentB);
+  const std::span<uint8_t> spanC(contentC);
 
   constexpr std::size_t CharCount = 1;
 

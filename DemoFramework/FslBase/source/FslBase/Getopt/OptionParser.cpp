@@ -213,8 +213,8 @@ namespace Fsl
       }
 
       std::string::const_iterator itrFrom = str.begin();
-      std::string::const_iterator itrTo = str.end();
-      std::string strFormat(fmt::format("\n{{:>{}}}", indentation));
+      const std::string::const_iterator itrTo = str.end();
+      const std::string strFormat(fmt::format("\n{{:>{}}}", indentation));
       fmt::memory_buffer buf;
 
       do
@@ -291,7 +291,7 @@ namespace Fsl
       auto itr = options.begin();
       const auto itrEnd = options.end();
 
-      std::string strFormat(fmt::format("  {{:<{}}} = {{}}\n", maxNameLength));
+      const std::string strFormat(fmt::format("  {{:<{}}} = {{}}\n", maxNameLength));
       while (itr != itrEnd)
       {
         if ((optionGroupFlags & static_cast<int32_t>(itr->SourceOption.Group)) != 0)
@@ -514,34 +514,34 @@ namespace Fsl
 
   OptionParser::ParseResult OptionParser::Parse(int argc, char** argv, StringViewLite strHelpCaption)
   {
-    auto args = ToArgsVector(argc, argv);
+    const auto args = ToArgsVector(argc, argv);
     return Parse(SpanUtil::AsReadOnlySpan(args).subspan(1u), strHelpCaption);
   }
 
   OptionParser::ParseResult OptionParser::Parse(int argc, char** argv, IOptionParser& inputOptionParser, StringViewLite strHelpCaption)
   {
-    auto args = ToArgsVector(argc, argv);
+    const auto args = ToArgsVector(argc, argv);
     return Parse(SpanUtil::AsReadOnlySpan(args).subspan(1u), inputOptionParser, strHelpCaption);
   }
 
   OptionParser::ParseResult OptionParser::Parse(int argc, char** argv, const std::deque<IOptionParser*>& inputOptionParsers,
                                                 StringViewLite strHelpCaption)
   {
-    auto args = ToArgsVector(argc, argv);
+    const auto args = ToArgsVector(argc, argv);
     return Parse(SpanUtil::AsReadOnlySpan(args).subspan(1u), inputOptionParsers, strHelpCaption);
   }
 
   OptionParser::ParseResult OptionParser::Parse(int argc, char** argv, const std::deque<ParserRecord>& inputOptionParsers,
                                                 StringViewLite strHelpCaption)
   {
-    auto args = ToArgsVector(argc, argv);
+    const auto args = ToArgsVector(argc, argv);
     return Parse(SpanUtil::AsReadOnlySpan(args).subspan(1u), inputOptionParsers, strHelpCaption);
   }
 
 
   OptionParser::ParseResult OptionParser::Parse(const ReadOnlySpan<StringViewLite> args, StringViewLite strHelpCaption)
   {
-    std::deque<ParserRecord> inputOptionParsers;
+    const std::deque<ParserRecord> inputOptionParsers;
     return Parse(args, inputOptionParsers, strHelpCaption);
   }
 
@@ -570,21 +570,21 @@ namespace Fsl
   OptionParser::ParseResult OptionParser::Parse(const ReadOnlySpan<StringViewLite> args, const std::deque<ParserRecord>& inputOptionParsers,
                                                 StringViewLite strHelpCaption)
   {
-    std::deque<OptionRecord> combinedOptions = ArgumentSetup(inputOptionParsers);
+    const std::deque<OptionRecord> combinedOptions = ArgumentSetup(inputOptionParsers);
 
     uint32_t verbosityLevel = 0;
     bool bForceExit = false;
     int32_t showHelpOptionGroupFlags = 0;
     int optionErrors = 0;
     {    // Parse input arguments
-      auto commands = ToCommands(combinedOptions);
+      const auto commands = ToCommands(combinedOptions);
       Arguments::ParseErrorInfo parseErrorInfo;
       std::deque<Arguments::EncodedCommand> encodedCommands;
-      auto parseResult = Arguments::ArgumentParser::TryParse(encodedCommands, args, commands, &parseErrorInfo);
+      const auto parseResult = Arguments::ArgumentParser::TryParse(encodedCommands, args, commands, &parseErrorInfo);
       if (parseResult != Arguments::ParseResult::Completed)
       {
         ParseErrorFormatter formatter;
-        auto strParseError = Arguments::ArgumentParser::GetErrorString(parseResult, parseErrorInfo, args, commands, formatter);
+        const auto strParseError = Arguments::ArgumentParser::GetErrorString(parseResult, parseErrorInfo, args, commands, formatter);
         throw std::runtime_error(strParseError);
       }
 

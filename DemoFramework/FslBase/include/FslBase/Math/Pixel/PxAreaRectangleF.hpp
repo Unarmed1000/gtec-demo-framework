@@ -133,105 +133,105 @@ namespace Fsl
     }
 
 
-    inline constexpr size_value_type Width() const noexcept
+    [[nodiscard]] inline constexpr size_value_type Width() const noexcept
     {
       assert(m_right >= m_left);
       return size_value_type::UncheckedCreate(m_right - m_left);
     }
 
-    inline constexpr size_value_type Height() const noexcept
+    [[nodiscard]] inline constexpr size_value_type Height() const noexcept
     {
       assert(m_bottom >= m_top);
       return size_value_type::UncheckedCreate(m_bottom - m_top);
     }
 
-    inline constexpr raw_size_value_type RawWidth() const noexcept
+    [[nodiscard]] inline constexpr raw_size_value_type RawWidth() const noexcept
     {
       assert(m_right >= m_left);
       return m_right.Value - m_left.Value;
     }
 
-    inline constexpr raw_size_value_type RawHeight() const noexcept
+    [[nodiscard]] inline constexpr raw_size_value_type RawHeight() const noexcept
     {
       assert(m_bottom >= m_top);
       return m_bottom.Value - m_top.Value;
     }
 
-    inline constexpr value_type Left() const noexcept
+    [[nodiscard]] inline constexpr value_type Left() const noexcept
     {
       return m_left;
     }
 
-    inline constexpr value_type Top() const noexcept
+    [[nodiscard]] inline constexpr value_type Top() const noexcept
     {
       return m_top;
     }
 
-    inline constexpr value_type Right() const noexcept
+    [[nodiscard]] inline constexpr value_type Right() const noexcept
     {
       return m_right;
     }
 
-    inline constexpr value_type Bottom() const noexcept
+    [[nodiscard]] inline constexpr value_type Bottom() const noexcept
     {
       return m_bottom;
     }
 
-    inline constexpr raw_value_type RawLeft() const noexcept
+    [[nodiscard]] inline constexpr raw_value_type RawLeft() const noexcept
     {
       return m_left.Value;
     }
 
-    inline constexpr raw_value_type RawTop() const noexcept
+    [[nodiscard]] inline constexpr raw_value_type RawTop() const noexcept
     {
       return m_top.Value;
     }
 
-    inline constexpr raw_value_type RawRight() const noexcept
+    [[nodiscard]] inline constexpr raw_value_type RawRight() const noexcept
     {
       return m_right.Value;
     }
 
-    inline constexpr raw_value_type RawBottom() const noexcept
+    [[nodiscard]] inline constexpr raw_value_type RawBottom() const noexcept
     {
       return m_bottom.Value;
     }
 
-    inline constexpr PxSize2DF Size() const noexcept
+    [[nodiscard]] inline constexpr PxSize2DF Size() const noexcept
     {
       return {Width(), Height()};
     }
 
-    inline constexpr PxVector2 TopLeft() const noexcept
+    [[nodiscard]] inline constexpr PxVector2 TopLeft() const noexcept
     {
       return {m_left, m_top};
     }
 
-    inline constexpr PxVector2 TopRight() const noexcept
+    [[nodiscard]] inline constexpr PxVector2 TopRight() const noexcept
     {
       return {m_right, m_top};
     }
 
-    inline constexpr PxVector2 BottomLeft() const noexcept
+    [[nodiscard]] inline constexpr PxVector2 BottomLeft() const noexcept
     {
       return {m_left, m_bottom};
     }
 
-    inline constexpr PxVector2 BottomRight() const noexcept
+    [[nodiscard]] inline constexpr PxVector2 BottomRight() const noexcept
     {
       return {m_right, m_bottom};
     }
 
 
     //! @brief Get the start location of this rect
-    constexpr PxVector2 Location() const noexcept
+    [[nodiscard]] constexpr PxVector2 Location() const noexcept
     {
       return {m_left, m_top};
     }
 
 
     //! @brief Get the center of this rect
-    constexpr PxVector2 Center() const noexcept
+    [[nodiscard]] constexpr PxVector2 Center() const noexcept
     {
       constexpr PxSize1DF Size2Px(PxSize1DF::Create(2.0f));
       return {m_left + (Width() / Size2Px), m_top + (Height() / Size2Px)};
@@ -240,7 +240,7 @@ namespace Fsl
 
     //! @brief Gets a value that indicates whether the Rectangle is empty
     //!        An empty rectangle has all its values set to 0.
-    constexpr bool IsEmpty() const noexcept
+    [[nodiscard]] constexpr bool IsEmpty() const noexcept
     {
       return (m_left.Value == 0 && m_top.Value == 0 && m_right.Value == 0 && m_bottom.Value == 0);
     }
@@ -300,14 +300,14 @@ namespace Fsl
 
 
     //! @brief Check if the x,y coordinate is considered to be contained within this rectangle
-    constexpr bool Contains(const value_type x, const value_type y) const noexcept
+    [[nodiscard]] constexpr bool Contains(const value_type x, const value_type y) const noexcept
     {
       return (x >= m_left && x < m_right && y >= m_top && y < m_bottom);
     }
 
 
     //! @brief Determines whether a specified Rectangle intersects with this Rectangle.
-    constexpr bool Intersects(const PxAreaRectangleF& value) const noexcept
+    [[nodiscard]] constexpr bool Intersects(const PxAreaRectangleF& value) const noexcept
     {
       return value.m_left < m_right && m_left < value.m_right && value.m_top < m_bottom && m_top < value.m_bottom;
     }

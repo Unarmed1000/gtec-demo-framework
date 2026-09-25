@@ -56,10 +56,10 @@ namespace Fsl
     BoundingSphere Transform(const Matrix& matrix);
     void Transform(const Matrix& matrix, BoundingSphere& rResult);
 
-    ContainmentType Contains(const BoundingBox& box) const;
-    ContainmentType Contains(const BoundingFrustum& frustum) const;
-    ContainmentType Contains(const BoundingSphere& sphere) const;
-    ContainmentType Contains(const Vector3& point) const;
+    [[nodiscard]] ContainmentType Contains(const BoundingBox& box) const;
+    [[nodiscard]] ContainmentType Contains(const BoundingFrustum& frustum) const;
+    [[nodiscard]] ContainmentType Contains(const BoundingSphere& sphere) const;
+    [[nodiscard]] ContainmentType Contains(const Vector3& point) const;
 
     static BoundingSphere CreateFromBoundingBox(const BoundingBox& box);
     static void CreateFromBoundingBox(const BoundingBox& box, BoundingSphere& rResult);
@@ -68,9 +68,9 @@ namespace Fsl
     static BoundingSphere CreateMerged(const BoundingSphere& original, const BoundingSphere& additional);
     static void CreateMerged(const BoundingSphere& original, const BoundingSphere& additional, BoundingSphere& rResult);
 
-    bool Intersects(const BoundingBox& box) const;
-    bool Intersects(const BoundingSphere& sphere) const;
-    PlaneIntersectionType Intersects(const Plane& plane) const;
+    [[nodiscard]] bool Intersects(const BoundingBox& box) const;
+    [[nodiscard]] bool Intersects(const BoundingSphere& sphere) const;
+    [[nodiscard]] PlaneIntersectionType Intersects(const Plane& plane) const;
     bool Intersects(const Ray& ray, float& rResult) const;
 
     //! @brief Tests for equality.

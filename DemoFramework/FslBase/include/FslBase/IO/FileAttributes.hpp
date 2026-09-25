@@ -52,7 +52,7 @@ namespace Fsl::IO
     {
     }
 
-    bool HasFlag(const Enum flag) const
+    [[nodiscard]] bool HasFlag(const Enum flag) const
     {
       return ((Flags & static_cast<uint32_t>(flag)) != 0);
     }

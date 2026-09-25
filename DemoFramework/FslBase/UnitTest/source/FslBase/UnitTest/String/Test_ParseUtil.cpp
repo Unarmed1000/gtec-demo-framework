@@ -268,7 +268,7 @@ TEST(TestString_StringUtil, ParseUInt32_StrView)
 
   {
     value = 1;
-    auto strView = StringViewLite("102").substr(1, 1);
+    const auto strView = StringViewLite("102").substr(1, 1);
     res = StringParseUtil::Parse(value, strView);
     EXPECT_EQ(1u, res);
     EXPECT_EQ(0u, value);
@@ -276,7 +276,7 @@ TEST(TestString_StringUtil, ParseUInt32_StrView)
 
   {
     value = 0;
-    auto strView = StringViewLite("0+4256").substr(1, 3);
+    const auto strView = StringViewLite("0+4256").substr(1, 3);
     res = StringParseUtil::Parse(value, strView);
     EXPECT_EQ(3u, res);
     EXPECT_EQ(42u, value);
@@ -284,7 +284,7 @@ TEST(TestString_StringUtil, ParseUInt32_StrView)
 
   {
     value = 0;
-    auto strView = StringViewLite("1429496729599").substr(1, 10);
+    const auto strView = StringViewLite("1429496729599").substr(1, 10);
     res = StringParseUtil::Parse(value, strView);
     EXPECT_EQ(10u, res);
     EXPECT_EQ(0xFFFFFFFFu, value);
@@ -513,7 +513,7 @@ TEST(TestString_StringUtil, ParseFloat_StrView)
 
   {
     value = 1;
-    auto strView = StringViewLite("402").substr(1, 1);
+    const auto strView = StringViewLite("402").substr(1, 1);
     res = StringParseUtil::Parse(value, strView);
     EXPECT_EQ(1u, res);
     EXPECT_FLOAT_EQ(value, 0.0f);
@@ -521,7 +521,7 @@ TEST(TestString_StringUtil, ParseFloat_StrView)
 
   {
     value = 0;
-    auto strView = StringViewLite("4-12").substr(1, 2);
+    const auto strView = StringViewLite("4-12").substr(1, 2);
     res = StringParseUtil::Parse(value, strView);
     EXPECT_EQ(2u, res);
     EXPECT_FLOAT_EQ(-1.0f, value);
@@ -529,7 +529,7 @@ TEST(TestString_StringUtil, ParseFloat_StrView)
 
   {
     value = 0;
-    auto strView = StringViewLite("4+429").substr(1, 3);
+    const auto strView = StringViewLite("4+429").substr(1, 3);
     res = StringParseUtil::Parse(value, strView);
     EXPECT_EQ(3u, res);
     EXPECT_FLOAT_EQ(42.0f, value);
@@ -537,7 +537,7 @@ TEST(TestString_StringUtil, ParseFloat_StrView)
 
   {
     value = 0;    // 1234567890
-    auto strView = StringViewLite("9214748364722").substr(1, 10);
+    const auto strView = StringViewLite("9214748364722").substr(1, 10);
     res = StringParseUtil::Parse(value, strView);
     EXPECT_EQ(10u, res);
     EXPECT_FLOAT_EQ(2147483647.0f, value);
@@ -545,7 +545,7 @@ TEST(TestString_StringUtil, ParseFloat_StrView)
 
   {
     value = 0;
-    auto strView = StringViewLite("10.59").substr(1, 3);
+    const auto strView = StringViewLite("10.59").substr(1, 3);
     res = StringParseUtil::Parse(value, strView);
     EXPECT_EQ(3u, res);
     EXPECT_FLOAT_EQ(0.5f, value);
@@ -553,7 +553,7 @@ TEST(TestString_StringUtil, ParseFloat_StrView)
 
   {
     value = 0;
-    auto strView = StringViewLite("4-0.52").substr(1, 4);
+    const auto strView = StringViewLite("4-0.52").substr(1, 4);
     res = StringParseUtil::Parse(value, strView);
     EXPECT_EQ(4u, res);
     EXPECT_FLOAT_EQ(-0.5f, value);
@@ -561,7 +561,7 @@ TEST(TestString_StringUtil, ParseFloat_StrView)
 
   {
     value = 0;    // 12345678901
-    auto strView = StringViewLite("4-21474836489").substr(1, 11);
+    const auto strView = StringViewLite("4-21474836489").substr(1, 11);
     res = StringParseUtil::Parse(value, strView);
     EXPECT_EQ(11u, res);
     EXPECT_FLOAT_EQ(-2147483648.0f, value);
@@ -759,7 +759,7 @@ TEST(TestString_StringUtil, ParseArrayBool)
 {
   StringParseArrayResult res{};
   std::array<bool, 10> dstArray{};
-  auto dstSpan = SpanUtil::AsSpan(dstArray);
+  const auto dstSpan = SpanUtil::AsSpan(dstArray);
 
   res = StringParseUtil::ParseArray(dstSpan, "[true]");
   EXPECT_EQ(6u, res.CharactersConsumed);
@@ -778,7 +778,7 @@ TEST(TestString_StringUtil, ParseArrayBool)
 TEST(TestString_StringUtil, ParseArrayBool_Invalid)
 {
   std::array<bool, 10> dstArray{};
-  auto dstSpan = SpanUtil::AsSpan(dstArray);
+  const auto dstSpan = SpanUtil::AsSpan(dstArray);
   bool* pNull = nullptr;
 
   // nullptr
@@ -807,7 +807,7 @@ TEST(TestString_StringUtil, ParseArrayUInt8)
 {
   StringParseArrayResult res{};
   std::array<uint8_t, 10> dstArray{};
-  auto dstSpan = SpanUtil::AsSpan(dstArray);
+  const auto dstSpan = SpanUtil::AsSpan(dstArray);
 
   res = StringParseUtil::ParseArray(dstSpan, "[1]");
   EXPECT_EQ(3u, res.CharactersConsumed);
@@ -830,7 +830,7 @@ TEST(TestString_StringUtil, ParseArrayUInt8)
 TEST(TestString_StringUtil, ParseArrayUInt8_Invalid)
 {
   std::array<uint8_t, 10> dstArray{};
-  auto dstSpan = SpanUtil::AsSpan(dstArray);
+  const auto dstSpan = SpanUtil::AsSpan(dstArray);
   uint8_t* pNull = nullptr;
 
   // nullptr
@@ -856,7 +856,7 @@ TEST(TestString_StringUtil, ParseArrayUInt8_Invalid)
 TEST(TestString_StringUtil, ParseArrayUInt16_Invalid)
 {
   std::array<uint16_t, 10> dstArray{};
-  auto dstSpan = SpanUtil::AsSpan(dstArray);
+  const auto dstSpan = SpanUtil::AsSpan(dstArray);
   uint16_t* pNull = nullptr;
 
   // nullptr
@@ -883,7 +883,7 @@ TEST(TestString_StringUtil, ParseArrayUInt32)
 {
   StringParseArrayResult res{};
   std::array<uint32_t, 10> dstArray{};
-  auto dstSpan = SpanUtil::AsSpan(dstArray);
+  const auto dstSpan = SpanUtil::AsSpan(dstArray);
 
   res = StringParseUtil::ParseArray(dstSpan, "[1]");
   EXPECT_EQ(3u, res.CharactersConsumed);
@@ -906,7 +906,7 @@ TEST(TestString_StringUtil, ParseArrayUInt32)
 TEST(TestString_StringUtil, ParseArrayUInt32_Invalid)
 {
   std::array<uint32_t, 10> dstArray{};
-  auto dstSpan = SpanUtil::AsSpan(dstArray);
+  const auto dstSpan = SpanUtil::AsSpan(dstArray);
   uint32_t* pNull = nullptr;
 
   // nullptr
@@ -932,7 +932,7 @@ TEST(TestString_StringUtil, ParseArrayUInt32_Invalid)
 TEST(TestString_StringUtil, ParseArrayInt8_Invalid)
 {
   std::array<int8_t, 10> dstArray{};
-  auto dstSpan = SpanUtil::AsSpan(dstArray);
+  const auto dstSpan = SpanUtil::AsSpan(dstArray);
   int8_t* pNull = nullptr;
 
   // nullptr
@@ -956,7 +956,7 @@ TEST(TestString_StringUtil, ParseArrayInt8_Invalid)
 TEST(TestString_StringUtil, ParseArrayInt16_Invalid)
 {
   std::array<int16_t, 10> dstArray{};
-  auto dstSpan = SpanUtil::AsSpan(dstArray);
+  const auto dstSpan = SpanUtil::AsSpan(dstArray);
   int16_t* pNull = nullptr;
 
   // nullptr
@@ -982,7 +982,7 @@ TEST(TestString_StringUtil, ParseArrayInt32)
 {
   StringParseArrayResult res{};
   std::array<int32_t, 10> dstArray{};
-  auto dstSpan = SpanUtil::AsSpan(dstArray);
+  const auto dstSpan = SpanUtil::AsSpan(dstArray);
 
   res = StringParseUtil::ParseArray(dstSpan, "[1]");
   EXPECT_EQ(3u, res.CharactersConsumed);
@@ -1017,7 +1017,7 @@ TEST(TestString_StringUtil, ParseArrayInt32)
 TEST(TestString_StringUtil, ParseArrayInt32_Invalid)
 {
   std::array<int32_t, 10> dstArray{};
-  auto dstSpan = SpanUtil::AsSpan(dstArray);
+  const auto dstSpan = SpanUtil::AsSpan(dstArray);
   int32_t* pNull = nullptr;
 
   // nullptr
@@ -1044,7 +1044,7 @@ TEST(TestString_StringUtil, ParseArrayFloat)
 {
   StringParseArrayResult res{};
   std::array<float, 10> dstArray{};
-  auto dstSpan = SpanUtil::AsSpan(dstArray);
+  const auto dstSpan = SpanUtil::AsSpan(dstArray);
 
   res = StringParseUtil::ParseArray(dstSpan, "[1]");
   EXPECT_EQ(3u, res.CharactersConsumed);
@@ -1087,7 +1087,7 @@ TEST(TestString_StringUtil, ParseArrayFloat)
 TEST(TestString_StringUtil, ParseArrayFloat_Invalid)
 {
   std::array<float, 10> dstArray{};
-  auto dstSpan = SpanUtil::AsSpan(dstArray);
+  const auto dstSpan = SpanUtil::AsSpan(dstArray);
   float* pNull = nullptr;
 
   // nullptr
@@ -1113,7 +1113,7 @@ TEST(TestString_StringUtil, ParseArrayDouble)
 {
   StringParseArrayResult res{};
   std::array<double, 10> dstArray{};
-  auto dstSpan = SpanUtil::AsSpan(dstArray);
+  const auto dstSpan = SpanUtil::AsSpan(dstArray);
 
   res = StringParseUtil::ParseArray(dstSpan, "[1]");
   EXPECT_EQ(3u, res.CharactersConsumed);
@@ -1156,7 +1156,7 @@ TEST(TestString_StringUtil, ParseArrayDouble)
 TEST(TestString_StringUtil, ParseArrayDouble_Invalid)
 {
   std::array<double, 10> dstArray{};
-  auto dstSpan = SpanUtil::AsSpan(dstArray);
+  const auto dstSpan = SpanUtil::AsSpan(dstArray);
   double* pNull = nullptr;
 
   // nullptr

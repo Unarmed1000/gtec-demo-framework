@@ -168,9 +168,9 @@ TEST(TestMath_BoundingBox, Contains_Point_Disjoint)
 
 TEST(TestMath_BoundingBox, CreateFromPoints)
 {
-  std::vector<Vector3> points = {Vector3(0.0f, 0.0f, 0.0f), Vector3(3.0f, 3.0f, 5.0f), Vector3(5.0f, 5.0f, 0.0f)};
+  const std::vector<Vector3> points = {Vector3(0.0f, 0.0f, 0.0f), Vector3(3.0f, 3.0f, 5.0f), Vector3(5.0f, 5.0f, 0.0f)};
 
-  auto box = BoundingBox::CreateFromPoints(points);
+  const auto box = BoundingBox::CreateFromPoints(points);
 
   EXPECT_EQ(BoundingBox(Vector3(0.0f, 0.0f, 0.0f), Vector3(5.0f, 5.0f, 5.0f)), box);
 }
@@ -178,7 +178,7 @@ TEST(TestMath_BoundingBox, CreateFromPoints)
 TEST(TestMath_BoundingBox, CreateFromSphere)
 {
   const BoundingSphere sphere(Vector3(5.0f, 5.0f, 5.0f), 5.0f);
-  auto box = BoundingBox::CreateFromSphere(sphere);
+  const auto box = BoundingBox::CreateFromSphere(sphere);
   const BoundingBox expectedBox(Vector3(0.0f, 0.0f, 0.0f), Vector3(10.0f, 10.0f, 10.0f));
 
   EXPECT_TRUE(Fsl::Test::IsFloatEqual(expectedBox, box));
@@ -192,7 +192,7 @@ TEST(TestMath_BoundingBox, CreateFromSphere)
 
 TEST(TestMath_BoundingBox, GetCorners)
 {
-  BoundingBox box(Vector3(0.0f, 0.0f, 0.0f), Vector3(5.0f, 5.0f, 5.0f));
+  const BoundingBox box(Vector3(0.0f, 0.0f, 0.0f), Vector3(5.0f, 5.0f, 5.0f));
   std::vector<Vector3> corners = box.GetCorners();
 
   EXPECT_EQ(Vector3(0.0f, 5.0f, 5.0f), corners[0]);
@@ -207,7 +207,7 @@ TEST(TestMath_BoundingBox, GetCorners)
 
 TEST(TestMath_BoundingBox, GetCorners_Vector_Ref)
 {
-  BoundingBox box(Vector3(0.0f, 0.0f, 0.0f), Vector3(5.0f, 5.0f, 5.0f));
+  const BoundingBox box(Vector3(0.0f, 0.0f, 0.0f), Vector3(5.0f, 5.0f, 5.0f));
   std::vector<Vector3> corners(8);
   box.GetCorners(corners);
 
@@ -223,7 +223,7 @@ TEST(TestMath_BoundingBox, GetCorners_Vector_Ref)
 
 TEST(TestMath_BoundingBox, GetCorners_Array_Ref)
 {
-  BoundingBox box(Vector3(0.0f, 0.0f, 0.0f), Vector3(5.0f, 5.0f, 5.0f));
+  const BoundingBox box(Vector3(0.0f, 0.0f, 0.0f), Vector3(5.0f, 5.0f, 5.0f));
   std::array<Vector3, 8> corners;
   box.GetCorners(corners);
 
@@ -239,7 +239,7 @@ TEST(TestMath_BoundingBox, GetCorners_Array_Ref)
 
 TEST(TestMath_BoundingBox, GetCorners_Ref_InvalidSize)
 {
-  BoundingBox box(Vector3(0.0f, 0.0f, 0.0f), Vector3(5.0f, 5.0f, 5.0f));
+  const BoundingBox box(Vector3(0.0f, 0.0f, 0.0f), Vector3(5.0f, 5.0f, 5.0f));
   std::vector<Vector3> corners(7);
   EXPECT_THROW(box.GetCorners(corners), std::invalid_argument);
 }
@@ -250,7 +250,7 @@ TEST(TestMath_BoundingBox, CreateMerged)
   const BoundingBox box1(Vector3(0.0f, 0.0f, 0.0f), Vector3(5.0f, 5.0f, 5.0f));
   const BoundingBox box2(Vector3(3.0f, -1.0f, 2.0f), Vector3(3.0f, 4.0f, 6.0f));
 
-  auto mergedBox = BoundingBox::CreateMerged(box1, box2);
+  const auto mergedBox = BoundingBox::CreateMerged(box1, box2);
 
   EXPECT_EQ(0.0f, mergedBox.Min.X);
   EXPECT_EQ(-1.0f, mergedBox.Min.Y);
@@ -286,7 +286,7 @@ TEST(TestMath_BoundingBox, Intersects_Disjoint)
 TEST(TestMath_BoundingBox, Intersects_Frustum)
 {
   const auto matPerspective = Matrix::CreatePerspective(320, 240, 0.001f, 10.0f);
-  BoundingFrustum frustum(matPerspective);
+  const BoundingFrustum frustum(matPerspective);
 
   const BoundingBox box(Vector3(-5.0f, -5.0f, -5.0f), Vector3(10.0f, 10.0f, 10.0f));
 
@@ -297,7 +297,7 @@ TEST(TestMath_BoundingBox, Intersects_Frustum)
 TEST(TestMath_BoundingBox, Intersects_Frustum_Disjoint)
 {
   const auto matPerspective = Matrix::CreatePerspective(320, 240, 0.001f, 10.0f);
-  BoundingFrustum frustum(matPerspective);
+  const BoundingFrustum frustum(matPerspective);
 
   const BoundingBox box(Vector3(0.0f, 0.0f, 0.0f), Vector3(10.0f, 10.0f, 10.0f));
 
@@ -335,9 +335,9 @@ TEST(TestMath_BoundingBox, Intersects_Sphere_Disjoint)
 TEST(TestMath_BoundingBox, Intersects_Ray)
 {
   const BoundingBox box(Vector3(0.0f, 0.0f, 0.0f), Vector3(10.0f, 10.0f, 10.0f));
-  Ray insideRay(Vector3(5.0f, 5.0f, 5.0f), Vector3(0.0f, 1.0f, 0.0f));
-  Ray outsideRay(Vector3(5.0f, -5.0f, 5.0f), Vector3(0.0f, 1.0f, 0.0f));
-  Ray missingRay(Vector3(5.0f, 15.0f, 5.0f), Vector3(0.0f, 1.0f, 0.0f));
+  const Ray insideRay(Vector3(5.0f, 5.0f, 5.0f), Vector3(0.0f, 1.0f, 0.0f));
+  const Ray outsideRay(Vector3(5.0f, -5.0f, 5.0f), Vector3(0.0f, 1.0f, 0.0f));
+  const Ray missingRay(Vector3(5.0f, 15.0f, 5.0f), Vector3(0.0f, 1.0f, 0.0f));
 
   float result = 0.0f;
   EXPECT_TRUE(box.Intersects(insideRay, result));

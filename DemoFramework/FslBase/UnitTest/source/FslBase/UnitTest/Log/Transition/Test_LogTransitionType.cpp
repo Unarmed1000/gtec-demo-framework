@@ -42,7 +42,7 @@ namespace
 
 TEST(TestLog_Transition_LogTransitionType, Log)
 {
-  TransitionType value = TransitionType::Linear;
+  const TransitionType value = TransitionType::Linear;
 
   std::stringstream stream;
   stream << value;

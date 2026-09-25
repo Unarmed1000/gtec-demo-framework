@@ -109,101 +109,101 @@ namespace Fsl
       return PxClipRectangle(left, top, right, bottom, OptimizationInternal::Internal);
     }
 
-    constexpr value_type Width() const
+    [[nodiscard]] constexpr value_type Width() const
     {
       return m_right - m_left;
     }
 
-    constexpr value_type Height() const
+    [[nodiscard]] constexpr value_type Height() const
     {
       return m_bottom - m_top;
     }
 
-    constexpr value_type Left() const
+    [[nodiscard]] constexpr value_type Left() const
     {
       return m_left;
     }
 
-    constexpr value_type Top() const
+    [[nodiscard]] constexpr value_type Top() const
     {
       return m_top;
     }
 
-    constexpr value_type Right() const
+    [[nodiscard]] constexpr value_type Right() const
     {
       return m_right;
     }
 
-    constexpr value_type Bottom() const
+    [[nodiscard]] constexpr value_type Bottom() const
     {
       return m_bottom;
     }
 
-    constexpr raw_value_type RawWidth() const
+    [[nodiscard]] constexpr raw_value_type RawWidth() const
     {
       return m_right.Value - m_left.Value;
     }
 
-    constexpr raw_value_type RawHeight() const
+    [[nodiscard]] constexpr raw_value_type RawHeight() const
     {
       return m_bottom.Value - m_top.Value;
     }
 
-    constexpr raw_value_type RawLeft() const
+    [[nodiscard]] constexpr raw_value_type RawLeft() const
     {
       return m_left.Value;
     }
 
-    constexpr raw_value_type RawTop() const
+    [[nodiscard]] constexpr raw_value_type RawTop() const
     {
       return m_top.Value;
     }
 
-    constexpr raw_value_type RawRight() const
+    [[nodiscard]] constexpr raw_value_type RawRight() const
     {
       return m_right.Value;
     }
 
-    constexpr raw_value_type RawBottom() const
+    [[nodiscard]] constexpr raw_value_type RawBottom() const
     {
       return m_bottom.Value;
     }
 
-    inline constexpr PxPoint2 GetSize() const
+    [[nodiscard]] inline constexpr PxPoint2 GetSize() const
     {
       return {Width(), Height()};
     }
 
-    inline constexpr PxPoint2 TopLeft() const
+    [[nodiscard]] inline constexpr PxPoint2 TopLeft() const
     {
       return {m_left, m_top};
     }
 
-    inline constexpr PxPoint2 TopRight() const
+    [[nodiscard]] inline constexpr PxPoint2 TopRight() const
     {
       return {m_right, m_top};
     }
 
-    inline constexpr PxPoint2 BottomLeft() const
+    [[nodiscard]] inline constexpr PxPoint2 BottomLeft() const
     {
       return {m_left, m_bottom};
     }
 
-    inline constexpr PxPoint2 BottomRight() const
+    [[nodiscard]] inline constexpr PxPoint2 BottomRight() const
     {
       return {m_right, m_bottom};
     }
 
 
     //! @brief Get the start location of this rect
-    constexpr PxPoint2 Location() const
+    [[nodiscard]] constexpr PxPoint2 Location() const
     {
       return {m_left, m_top};
     }
 
 
     //! @brief Get the center of this rect
-    constexpr PxPoint2 Center() const
+    [[nodiscard]] constexpr PxPoint2 Center() const
     {
       constexpr PxValue Size2Px(2);
       return {m_left + (Width() / Size2Px), m_top + (Height() / Size2Px)};
@@ -212,7 +212,7 @@ namespace Fsl
 
     //! @brief Gets a value that indicates whether the Rectangle is empty
     //!        An empty rectangle has all its values set to 0.
-    constexpr bool IsEmpty() const
+    [[nodiscard]] constexpr bool IsEmpty() const
     {
       return (m_left.Value == 0 && m_top.Value == 0 && m_right.Value == 0 && m_bottom.Value == 0);
     }
@@ -259,14 +259,14 @@ namespace Fsl
     }
 
     //! @brief Check if the x,y coordinate is considered to be contained within this rectangle
-    constexpr bool Contains(const value_type x, const value_type y) const noexcept
+    [[nodiscard]] constexpr bool Contains(const value_type x, const value_type y) const noexcept
     {
       return (x >= m_left && x < m_right && y >= m_top && y < m_bottom);
     }
 
 
     //! @brief Determines whether a specified Rectangle intersects with this Rectangle.
-    constexpr bool Intersects(const PxClipRectangle& value) const noexcept
+    [[nodiscard]] constexpr bool Intersects(const PxClipRectangle& value) const noexcept
     {
       return value.m_left < m_right && m_left < value.m_right && value.m_top < m_bottom && m_top < value.m_bottom;
     }

@@ -54,7 +54,7 @@ namespace
 
 TEST(TestCollections_TightHostedVector, Construct)
 {
-  TightHostedVector<uint32_t, 2> buffer;
+  const TightHostedVector<uint32_t, 2> buffer;
 
   ASSERT_TRUE(buffer.Empty(HostedVectorIndex::First));
   ASSERT_TRUE(buffer.Empty(HostedVectorIndex::Second));
@@ -90,8 +90,8 @@ TEST(TestCollections_TightHostedVector, ClearAllH0H0)
 TEST(TestCollections_TightHostedVector, ClearAll_H2H3)
 {
   TightHostedVector<uint32_t, 2> buffer;
-  std::array<uint32_t, 2> test0 = {42, 1337};
-  std::array<uint32_t, 3> test1 = {1, 2, 3};
+  const std::array<uint32_t, 2> test0 = {42, 1337};
+  const std::array<uint32_t, 3> test1 = {1, 2, 3};
   for (const auto value : test0)
   {
     buffer.PushBack(HostedVectorIndex::First, value);
@@ -158,8 +158,8 @@ TEST(TestCollections_TightHostedVector, Clear_1_H0H0)
 TEST(TestCollections_TightHostedVector, Clear_0_H2H3)
 {
   TightHostedVector<uint32_t, 2> buffer;
-  std::array<uint32_t, 2> test0 = {42, 1337};
-  std::array<uint32_t, 3> test1 = {1, 2, 3};
+  const std::array<uint32_t, 2> test0 = {42, 1337};
+  const std::array<uint32_t, 3> test1 = {1, 2, 3};
   for (const auto value : test0)
   {
     buffer.PushBack(HostedVectorIndex::First, value);
@@ -184,8 +184,8 @@ TEST(TestCollections_TightHostedVector, Clear_0_H2H3)
 TEST(TestCollections_TightHostedVector, Clear_1_H2H3)
 {
   TightHostedVector<uint32_t, 2> buffer;
-  std::array<uint32_t, 2> test0 = {42, 1337};
-  std::array<uint32_t, 3> test1 = {1, 2, 3};
+  const std::array<uint32_t, 2> test0 = {42, 1337};
+  const std::array<uint32_t, 3> test1 = {1, 2, 3};
   for (const auto value : test0)
   {
     buffer.PushBack(HostedVectorIndex::First, value);
@@ -935,13 +935,13 @@ TEST(TestCollections_TightHostedVector, AsReadOnlySpan_0_H2H0)
   ASSERT_EQ(0u, buffer.Size(HostedVectorIndex::Second));
 
   {
-    auto span = buffer.AsReadOnlySpan(HostedVectorIndex::First);
+    const auto span = buffer.AsReadOnlySpan(HostedVectorIndex::First);
     ASSERT_EQ(test.size(), span.size());
     EXPECT_EQ(test[0], span[0]);
     EXPECT_EQ(test[1], span[1]);
   }
   {
-    auto span = buffer.AsReadOnlySpan(HostedVectorIndex::Second);
+    const auto span = buffer.AsReadOnlySpan(HostedVectorIndex::Second);
     ASSERT_TRUE(span.empty());
   }
 }
@@ -965,13 +965,13 @@ TEST(TestCollections_TightHostedVector, AsReadOnlySpan_0_H2H3)
   ASSERT_EQ(test1.size(), buffer.Size(HostedVectorIndex::Second));
 
   {
-    auto span = buffer.AsReadOnlySpan(HostedVectorIndex::First);
+    const auto span = buffer.AsReadOnlySpan(HostedVectorIndex::First);
     ASSERT_EQ(test0.size(), span.size());
     EXPECT_EQ(test0[0], span[0]);
     EXPECT_EQ(test0[1], span[1]);
   }
   {
-    auto span = buffer.AsReadOnlySpan(HostedVectorIndex::Second);
+    const auto span = buffer.AsReadOnlySpan(HostedVectorIndex::Second);
     ASSERT_EQ(test1.size(), span.size());
     EXPECT_EQ(test1[0], span[0]);
     EXPECT_EQ(test1[1], span[1]);
@@ -991,11 +991,11 @@ TEST(TestCollections_TightHostedVector, AsReadOnlySpan_1_H0H2)
   ASSERT_EQ(test.size(), buffer.Size(HostedVectorIndex::Second));
 
   {
-    auto span = buffer.AsReadOnlySpan(HostedVectorIndex::First);
+    const auto span = buffer.AsReadOnlySpan(HostedVectorIndex::First);
     ASSERT_TRUE(span.empty());
   }
   {
-    auto span = buffer.AsReadOnlySpan(HostedVectorIndex::Second);
+    const auto span = buffer.AsReadOnlySpan(HostedVectorIndex::Second);
     ASSERT_EQ(test.size(), span.size());
     EXPECT_EQ(test[0], span[0]);
     EXPECT_EQ(test[1], span[1]);
@@ -1017,14 +1017,14 @@ TEST(TestCollections_TightHostedVector, AsReadOnlySpan_1_H3H2)
   }
 
   {
-    auto span = buffer.AsReadOnlySpan(HostedVectorIndex::First);
+    const auto span = buffer.AsReadOnlySpan(HostedVectorIndex::First);
     ASSERT_EQ(test0.size(), span.size());
     EXPECT_EQ(test0[0], span[0]);
     EXPECT_EQ(test0[1], span[1]);
     EXPECT_EQ(test0[2], span[2]);
   }
   {
-    auto span = buffer.AsReadOnlySpan(HostedVectorIndex::Second);
+    const auto span = buffer.AsReadOnlySpan(HostedVectorIndex::Second);
     ASSERT_EQ(test1.size(), span.size());
     EXPECT_EQ(test1[0], span[0]);
     EXPECT_EQ(test1[1], span[1]);
@@ -1064,7 +1064,7 @@ TEST(TestCollections_TightHostedVector, begin_0_H2H3)
 {
   TightHostedVector<uint32_t, 2> buffer;
   std::array<uint32_t, 2> test0 = {42, 1337};
-  std::array<uint32_t, 3> test1 = {1, 2, 3};
+  const std::array<uint32_t, 3> test1 = {1, 2, 3};
   for (const auto value : test0)
   {
     buffer.PushBack(HostedVectorIndex::First, value);
@@ -1114,7 +1114,7 @@ TEST(TestCollections_TightHostedVector, begin_1_H0H2)
 TEST(TestCollections_TightHostedVector, begin_1_H3H2)
 {
   TightHostedVector<uint32_t, 2> buffer;
-  std::array<uint32_t, 3> test0 = {1, 2, 3};
+  const std::array<uint32_t, 3> test0 = {1, 2, 3};
   std::array<uint32_t, 2> test1 = {42, 1337};
   for (const auto value : test0)
   {
@@ -1172,7 +1172,7 @@ TEST(TestCollections_TightHostedVector, cbegin_0_H2H3)
 {
   TightHostedVector<uint32_t, 2> buffer;
   std::array<uint32_t, 2> test0 = {42, 1337};
-  std::array<uint32_t, 3> test1 = {1, 2, 3};
+  const std::array<uint32_t, 3> test1 = {1, 2, 3};
   for (const auto value : test0)
   {
     buffer.PushBack(HostedVectorIndex::First, value);
@@ -1222,7 +1222,7 @@ TEST(TestCollections_TightHostedVector, cbegin_1_H0H2)
 TEST(TestCollections_TightHostedVector, cbegin_1_H3H2)
 {
   TightHostedVector<uint32_t, 2> buffer;
-  std::array<uint32_t, 3> test0 = {1, 2, 3};
+  const std::array<uint32_t, 3> test0 = {1, 2, 3};
   std::array<uint32_t, 2> test1 = {42, 1337};
   for (const auto value : test0)
   {

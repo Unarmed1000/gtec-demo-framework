@@ -44,7 +44,7 @@ namespace
 
 TEST(TestLog_Common_LogVersionInfo2, Log)
 {
-  VersionInfo2 info(1, 2, 3, 4);
+  const VersionInfo2 info(1, 2, 3, 4);
 
   std::stringstream stream;
   stream << info;

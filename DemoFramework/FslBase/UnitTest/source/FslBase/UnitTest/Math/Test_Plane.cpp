@@ -44,7 +44,7 @@ namespace
 
 TEST(TestMath_Plane, Construct_Default)
 {
-  Plane value;
+  const Plane value;
 
   EXPECT_EQ(Vector3(), value.Normal);
   EXPECT_EQ(0.0f, value.D);
@@ -52,7 +52,7 @@ TEST(TestMath_Plane, Construct_Default)
 
 TEST(TestMath_Plane, Construct_ThreePoints)
 {
-  Plane value(Vector3(1.0f, 0.0f, 0.0f), Vector3(0.0f, 1.0f, 0.0f), Vector3(0.0f, 0.0f, 1.0f));
+  const Plane value(Vector3(1.0f, 0.0f, 0.0f), Vector3(0.0f, 1.0f, 0.0f), Vector3(0.0f, 0.0f, 1.0f));
 
   EXPECT_FLOAT_EQ(0.57735f, value.Normal.X);
   EXPECT_FLOAT_EQ(0.57735f, value.Normal.Y);

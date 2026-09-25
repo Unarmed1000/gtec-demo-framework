@@ -78,7 +78,7 @@ TEST(TestSpan, SubSpan)
   std::array<char, 9> content123456789 = {'1', '2', '3', '4', '5', '6', '7', '8', '9'};
   std::array<char, 1> content9 = {'9'};
   std::array<char, 2> content12 = {'1', '2'};
-  Span<char> span(content);
+  const Span<char> span(content);
 
   EXPECT_TRUE(SpanUtil::ValueEquals(span, span.subspan(0)));
   EXPECT_TRUE(SpanUtil::ValueEquals(Span<char>(content123456789), span.subspan(1u)));
@@ -95,7 +95,7 @@ TEST(TestSpan, SubSpan)
 
 TEST(TestSpan, SubSpan_Empty)
 {
-  Span<char> span;
+  const Span<char> span;
   EXPECT_TRUE(SpanUtil::ValueEquals(Span<char>(), span.subspan(0)));
 }
 
@@ -104,7 +104,7 @@ TEST(TestSpan, SubSpan_Empty)
 TEST(TestSpan, SubSpan_LastChar1)
 {
   std::array<char, 10> content = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9'};
-  Span<char> span(content);
+  const Span<char> span(content);
   const auto subspan = span.subspan(10u, 0u);
   EXPECT_TRUE(subspan.empty());
 }
@@ -114,7 +114,7 @@ TEST(TestSpan, SubSpan_LastChar1)
 TEST(TestSpan, SubSpan_LastChar2)
 {
   std::array<char, 10> content = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9'};
-  Span<char> span(content);
+  const Span<char> span(content);
   const auto subspan = span.subspan(10u);
   EXPECT_TRUE(subspan.empty());
 }
@@ -124,7 +124,7 @@ TEST(TestSpan, SubSpan_LastChar2)
 TEST(TestSpan, SubSpan_InvalidPos)
 {
   std::array<char, 10> content = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9'};
-  Span<char> span(content);
+  const Span<char> span(content);
 
   EXPECT_THROW(span.subspan(10u, 1u), std::out_of_range);
   EXPECT_THROW(span.subspan(11u), std::out_of_range);
@@ -140,7 +140,7 @@ TEST(TestSpan, UncheckedSubSpan)
   std::array<char, 9> content123456789 = {'1', '2', '3', '4', '5', '6', '7', '8', '9'};
   std::array<char, 1> content9 = {'9'};
   std::array<char, 2> content12 = {'1', '2'};
-  Span<char> span(content);
+  const Span<char> span(content);
 
   EXPECT_TRUE(SpanUtil::ValueEquals(span, span.unchecked_subspan(0, span.size())));
   EXPECT_TRUE(SpanUtil::ValueEquals(Span<char>(content123456789), span.unchecked_subspan(1u, span.size() - 1u)));
@@ -157,7 +157,7 @@ TEST(TestSpan, UncheckedSubSpan)
 
 TEST(TestSpan, UncheckedSubSpan_Empty)
 {
-  Span<char> span;
+  const Span<char> span;
   EXPECT_TRUE(SpanUtil::ValueEquals(Span<char>(), span.unchecked_subspan(0u, 0u)));
 }
 
@@ -171,7 +171,7 @@ TEST(TestSpan, ClampedSubSpan)
   std::array<char, 9> content123456789 = {'1', '2', '3', '4', '5', '6', '7', '8', '9'};
   std::array<char, 1> content9 = {'9'};
   std::array<char, 2> content12 = {'1', '2'};
-  Span<char> span(content);
+  const Span<char> span(content);
 
   EXPECT_TRUE(SpanUtil::ValueEquals(span, span.clamped_subspan(0)));
   EXPECT_TRUE(SpanUtil::ValueEquals(Span<char>(content123456789), span.clamped_subspan(1u)));
@@ -186,14 +186,14 @@ TEST(TestSpan, ClampedSubSpan)
 
 TEST(TestSpan, ClampedSubSpan_Empty)
 {
-  Span<char> span;
+  const Span<char> span;
   EXPECT_TRUE(SpanUtil::ValueEquals(Span<char>(), span.clamped_subspan(0)));
 }
 
 TEST(TestSpan, ClampedSubSpan_Last1)
 {
   std::array<char, 10> content = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9'};
-  Span<char> span(content);
+  const Span<char> span(content);
   const auto subspan = span.clamped_subspan(10u, 0u);
   EXPECT_TRUE(subspan.empty());
 }
@@ -201,7 +201,7 @@ TEST(TestSpan, ClampedSubSpan_Last1)
 TEST(TestSpan, ClampedSubSpan_Last2)
 {
   std::array<char, 10> content = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9'};
-  Span<char> span(content);
+  const Span<char> span(content);
   const auto subspan = span.clamped_subspan(10u);
   EXPECT_TRUE(subspan.empty());
 }
@@ -209,15 +209,15 @@ TEST(TestSpan, ClampedSubSpan_Last2)
 TEST(TestSpan, ClampedSubSpan_InvalidPos1)
 {
   std::array<char, 10> content = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9'};
-  Span<char> span(content);
-  Span<char> subspan = span.clamped_subspan(11u);
+  const Span<char> span(content);
+  const Span<char> subspan = span.clamped_subspan(11u);
   EXPECT_TRUE(subspan.empty());
 }
 
 TEST(TestSpan, ClampedSubSpan_InvalidPos2)
 {
   std::array<char, 10> content = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9'};
-  Span<char> span(content);
+  const Span<char> span(content);
 
   EXPECT_TRUE(span.clamped_subspan(10u, 0u).empty());
   EXPECT_TRUE(span.clamped_subspan(10u, 1u).empty());
@@ -268,7 +268,7 @@ TEST(TestSpan, First)
 TEST(TestSpan, First_InvalidPos)
 {
   std::array<char, 10> content = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9'};
-  Span<char> span(content);
+  const Span<char> span(content);
   EXPECT_THROW(span.first(11u), std::out_of_range);
 }
 
@@ -295,7 +295,7 @@ TEST(TestSpan, ClampedFirst)
 TEST(TestSpan, ClampedFirst_InvalidPos)
 {
   std::array<char, 10> content = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9'};
-  Span<char> span(content);
+  const Span<char> span(content);
   EXPECT_EQ(span.clamped_first(11u).size(), 10u);
 }
 
@@ -342,7 +342,7 @@ TEST(TestSpan, Last)
 TEST(TestSpan, Last_InvalidPos)
 {
   std::array<char, 10> content = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9'};
-  Span<char> span(content);
+  const Span<char> span(content);
   EXPECT_THROW(span.last(11u), std::out_of_range);
 }
 
@@ -369,7 +369,7 @@ TEST(TestSpan, ClampedLast)
 TEST(TestSpan, ClampedLast_InvalidPos)
 {
   std::array<char, 10> content = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9'};
-  Span<char> span(content);
+  const Span<char> span(content);
   EXPECT_EQ(span.clamped_last(11u).size(), 10u);
 }
 
@@ -1155,7 +1155,7 @@ TEST(TestSpan, begin_iterator_to_end)
   const auto itrSourceEnd = content.end();
 
   auto itr = span.begin();
-  auto itrEnd = span.end();
+  const auto itrEnd = span.end();
   while (itr != itrEnd && itrSource != itrSourceEnd)
   {
     EXPECT_EQ(*itrSource, *itr);
@@ -1181,7 +1181,7 @@ TEST(TestSpan, begin_iterator_to_end_with_mod)
     // NOLINTNEXTLINE(readability-qualified-auto)
     const auto itrSourceEnd = content2.end();
     auto itr = span.begin();
-    auto itrEnd = span.end();
+    const auto itrEnd = span.end();
     while (itr != itrEnd && itrSource != itrSourceEnd)
     {
       *itr = *itrSource;
@@ -1202,7 +1202,7 @@ TEST(TestSpan, begin_iterator_to_end_with_mod)
     const auto itrContent2End = content2.end();
 
     auto itr = span.begin();
-    auto itrEnd = span.end();
+    const auto itrEnd = span.end();
     while (itr != itrEnd && itrContent != itrContentEnd && itrContent2 != itrContent2End)
     {
       EXPECT_EQ(*itrContent2, *itrContent);
@@ -1254,7 +1254,7 @@ TEST(TestSpan, begin_foreach_with_mod)
     const auto itrContent2End = content2.end();
 
     auto itr = span.begin();
-    auto itrEnd = span.end();
+    const auto itrEnd = span.end();
     while (itr != itrEnd && itrContent != itrContentEnd && itrContent2 != itrContent2End)
     {
       EXPECT_EQ(*itrContent2, *itrContent);
@@ -1297,7 +1297,7 @@ TEST(TestSpan, begin_iterator_to_end_const)
   const auto itrSourceEnd = content.end();
 
   auto itr = span.begin();
-  auto itrEnd = span.end();
+  const auto itrEnd = span.end();
   while (itr != itrEnd && itrSource != itrSourceEnd)
   {
     EXPECT_EQ(*itrSource, *itr);
@@ -1320,7 +1320,7 @@ TEST(TestSpan, begin_foreach_with_compare_const)
     auto itrSource = content.begin();
     // NOLINTNEXTLINE(readability-qualified-auto)
     const auto itrSourceEnd = content.end();
-    for (auto entry : span)
+    for (const auto entry : span)
     {
       ASSERT_TRUE(itrSourceEnd != itrSource);
       EXPECT_EQ(*itrSource, entry);

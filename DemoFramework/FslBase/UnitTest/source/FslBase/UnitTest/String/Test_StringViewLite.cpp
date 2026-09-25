@@ -49,7 +49,7 @@ namespace
 
 TEST(TestString_StringViewLite, Construct)
 {
-  StringViewLite strView;
+  const StringViewLite strView;
 
   EXPECT_TRUE(strView.empty());
   EXPECT_EQ(strView.data(), nullptr);
@@ -61,8 +61,8 @@ TEST(TestString_StringViewLite, Construct)
 TEST(TestString_StringViewLite, Construct_FromZeroTerminated)
 {
   const auto* const psz = "Hello world";
-  auto lenPsz = std::strlen(psz);
-  StringViewLite strView(psz, lenPsz);
+  const auto lenPsz = std::strlen(psz);
+  const StringViewLite strView(psz, lenPsz);
 
   EXPECT_FALSE(strView.empty());
   EXPECT_NE(strView.data(), nullptr);
@@ -73,8 +73,8 @@ TEST(TestString_StringViewLite, Construct_FromZeroTerminated)
 
 TEST(TestString_StringViewLite, Construct_FromStr)
 {
-  std::string str("Hello world");
-  StringViewLite strView = Convert(str);
+  const std::string str("Hello world");
+  const StringViewLite strView = Convert(str);
 
   EXPECT_FALSE(strView.empty());
   EXPECT_NE(strView.data(), nullptr);
@@ -85,7 +85,7 @@ TEST(TestString_StringViewLite, Construct_FromStr)
 
 TEST(TestString_StringViewLite, SubStr)
 {
-  StringViewLite strView("0123456789");
+  const StringViewLite strView("0123456789");
 
   EXPECT_EQ(strView, strView.substr());
   EXPECT_EQ("123456789", strView.substr(1u));
@@ -100,7 +100,7 @@ TEST(TestString_StringViewLite, SubStr)
 
 TEST(TestString_StringViewLite, SubStr_Empty)
 {
-  StringViewLite strView;
+  const StringViewLite strView;
 
   EXPECT_EQ(StringViewLite(), strView.substr());
   EXPECT_EQ("", strView.substr());
@@ -109,16 +109,16 @@ TEST(TestString_StringViewLite, SubStr_Empty)
 
 TEST(TestString_StringViewLite, SubStr_InvalidPos)
 {
-  StringViewLite strView("0123456789");
+  const StringViewLite strView("0123456789");
 
-  EXPECT_THROW(strView.substr(11u), std::out_of_range);
+  EXPECT_THROW(static_cast<void>(strView.substr(11u)), std::out_of_range);
 }
 
 
 TEST(TestString_StringViewLite, front)
 {
   std::string str("Hello world");
-  StringViewLite strView = Convert(str);
+  const StringViewLite strView = Convert(str);
 
   EXPECT_EQ(strView.front(), str.front());
 }
@@ -127,7 +127,7 @@ TEST(TestString_StringViewLite, front)
 TEST(TestString_StringViewLite, back)
 {
   std::string str("Hello world");
-  StringViewLite strView = Convert(str);
+  const StringViewLite strView = Convert(str);
 
   EXPECT_EQ(strView.back(), str.back());
 }
@@ -136,7 +136,7 @@ TEST(TestString_StringViewLite, back)
 TEST(TestString_StringViewLite, opIndex)
 {
   std::string str("Hello world");
-  StringViewLite strView = Convert(str);
+  const StringViewLite strView = Convert(str);
 
   for (std::size_t i = 0; i < str.size(); ++i)
   {
@@ -148,7 +148,7 @@ TEST(TestString_StringViewLite, opIndex)
 TEST(TestString_StringViewLite, At)
 {
   std::string str("Hello world");
-  StringViewLite strView = Convert(str);
+  const StringViewLite strView = Convert(str);
 
   for (std::size_t i = 0; i < str.size(); ++i)
   {
@@ -159,48 +159,48 @@ TEST(TestString_StringViewLite, At)
 
 TEST(TestString_StringViewLite, At_OutOfBounds)
 {
-  std::string str("Hello world");
-  StringViewLite strView = Convert(str);
+  const std::string str("Hello world");
+  const StringViewLite strView = Convert(str);
 
-  EXPECT_THROW(strView.at(str.size()), std::out_of_range);
+  EXPECT_THROW(static_cast<void>(strView.at(str.size())), std::out_of_range);
 }
 
 
 TEST(TestString_StringViewLite, At_Empty_OutOfBounds)
 {
-  std::string str;
-  StringViewLite strView = Convert(str);
+  const std::string str;
+  const StringViewLite strView = Convert(str);
 
-  EXPECT_THROW(strView.at(str.size()), std::out_of_range);
+  EXPECT_THROW(static_cast<void>(strView.at(str.size())), std::out_of_range);
 }
 
 
 TEST(TestString_StringViewLite, opEqual_Empty)
 {
-  std::string str1;
-  std::string str2;
-  StringViewLite strView1 = Convert(str1);
-  StringViewLite strView2 = Convert(str2);
+  const std::string str1;
+  const std::string str2;
+  const StringViewLite strView1 = Convert(str1);
+  const StringViewLite strView2 = Convert(str2);
 
   EXPECT_TRUE(strView1 == strView2);
 }
 
 TEST(TestString_StringViewLite, opEqual1)
 {
-  std::string str1("Hello world");
-  std::string str2("Hello world");
-  StringViewLite strView1 = Convert(str1);
-  StringViewLite strView2 = Convert(str2);
+  const std::string str1("Hello world");
+  const std::string str2("Hello world");
+  const StringViewLite strView1 = Convert(str1);
+  const StringViewLite strView2 = Convert(str2);
 
   EXPECT_TRUE(strView1 == strView2);
 }
 
 TEST(TestString_StringViewLite, opEqual2)
 {
-  std::string str1("Hello world");
-  std::string str2("Hello worlD");
-  StringViewLite strView1 = Convert(str1);
-  StringViewLite strView2 = Convert(str2);
+  const std::string str1("Hello world");
+  const std::string str2("Hello worlD");
+  const StringViewLite strView1 = Convert(str1);
+  const StringViewLite strView2 = Convert(str2);
 
   EXPECT_FALSE(strView1 == strView2);
 }
@@ -208,10 +208,10 @@ TEST(TestString_StringViewLite, opEqual2)
 
 TEST(TestString_StringViewLite, opEqual3)
 {
-  std::string str1("Hello world");
-  std::string str2("Hello worl");
-  StringViewLite strView1 = Convert(str1);
-  StringViewLite strView2 = Convert(str2);
+  const std::string str1("Hello world");
+  const std::string str2("Hello worl");
+  const StringViewLite strView1 = Convert(str1);
+  const StringViewLite strView2 = Convert(str2);
 
   EXPECT_FALSE(strView1 == strView2);
 }
@@ -219,10 +219,10 @@ TEST(TestString_StringViewLite, opEqual3)
 
 TEST(TestString_StringViewLite, opEqual4)
 {
-  std::string str1("Hello world");
-  std::string str2("Hello world2");
-  StringViewLite strView1 = Convert(str1);
-  StringViewLite strView2 = Convert(str2);
+  const std::string str1("Hello world");
+  const std::string str2("Hello world2");
+  const StringViewLite strView1 = Convert(str1);
+  const StringViewLite strView2 = Convert(str2);
 
   EXPECT_FALSE(strView1 == strView2);
 }
@@ -230,10 +230,10 @@ TEST(TestString_StringViewLite, opEqual4)
 
 TEST(TestString_StringViewLite, opEqual5)
 {
-  std::string str1("Hello world");
-  std::string str2;
-  StringViewLite strView1 = Convert(str1);
-  StringViewLite strView2 = Convert(str2);
+  const std::string str1("Hello world");
+  const std::string str2;
+  const StringViewLite strView1 = Convert(str1);
+  const StringViewLite strView2 = Convert(str2);
 
   EXPECT_FALSE(strView1 == strView2);
 }
@@ -241,30 +241,30 @@ TEST(TestString_StringViewLite, opEqual5)
 
 TEST(TestString_StringViewLite, opNotEqual_Empty)
 {
-  std::string str1;
-  std::string str2;
-  StringViewLite strView1 = Convert(str1);
-  StringViewLite strView2 = Convert(str2);
+  const std::string str1;
+  const std::string str2;
+  const StringViewLite strView1 = Convert(str1);
+  const StringViewLite strView2 = Convert(str2);
 
   EXPECT_FALSE(strView1 != strView2);
 }
 
 TEST(TestString_StringViewLite, opNotEqual1)
 {
-  std::string str1("Hello world");
-  std::string str2("Hello world");
-  StringViewLite strView1 = Convert(str1);
-  StringViewLite strView2 = Convert(str2);
+  const std::string str1("Hello world");
+  const std::string str2("Hello world");
+  const StringViewLite strView1 = Convert(str1);
+  const StringViewLite strView2 = Convert(str2);
 
   EXPECT_FALSE(strView1 != strView2);
 }
 
 TEST(TestString_StringViewLite, opNotEqual2)
 {
-  std::string str1("Hello world");
-  std::string str2("Hello worlD");
-  StringViewLite strView1 = Convert(str1);
-  StringViewLite strView2 = Convert(str2);
+  const std::string str1("Hello world");
+  const std::string str2("Hello worlD");
+  const StringViewLite strView1 = Convert(str1);
+  const StringViewLite strView2 = Convert(str2);
 
   EXPECT_TRUE(strView1 != strView2);
 }
@@ -272,10 +272,10 @@ TEST(TestString_StringViewLite, opNotEqual2)
 
 TEST(TestString_StringViewLite, opNotEqual3)
 {
-  std::string str1("Hello world");
-  std::string str2("Hello worl");
-  StringViewLite strView1 = Convert(str1);
-  StringViewLite strView2 = Convert(str2);
+  const std::string str1("Hello world");
+  const std::string str2("Hello worl");
+  const StringViewLite strView1 = Convert(str1);
+  const StringViewLite strView2 = Convert(str2);
 
   EXPECT_TRUE(strView1 != strView2);
 }
@@ -283,10 +283,10 @@ TEST(TestString_StringViewLite, opNotEqual3)
 
 TEST(TestString_StringViewLite, opNotEqual4)
 {
-  std::string str1("Hello world");
-  std::string str2("Hello world2");
-  StringViewLite strView1 = Convert(str1);
-  StringViewLite strView2 = Convert(str2);
+  const std::string str1("Hello world");
+  const std::string str2("Hello world2");
+  const StringViewLite strView1 = Convert(str1);
+  const StringViewLite strView2 = Convert(str2);
 
   EXPECT_TRUE(strView1 != strView2);
 }
@@ -294,10 +294,10 @@ TEST(TestString_StringViewLite, opNotEqual4)
 
 TEST(TestString_StringViewLite, opNotEqual5)
 {
-  std::string str1("Hello world");
-  std::string str2;
-  StringViewLite strView1 = Convert(str1);
-  StringViewLite strView2 = Convert(str2);
+  const std::string str1("Hello world");
+  const std::string str2;
+  const StringViewLite strView1 = Convert(str1);
+  const StringViewLite strView2 = Convert(str2);
 
   EXPECT_TRUE(strView1 != strView2);
 }
@@ -305,10 +305,10 @@ TEST(TestString_StringViewLite, opNotEqual5)
 
 TEST(TestString_StringViewLite, opLess_Empty)
 {
-  std::string str1;
-  std::string str2;
-  StringViewLite strView1 = Convert(str1);
-  StringViewLite strView2 = Convert(str2);
+  const std::string str1;
+  const std::string str2;
+  const StringViewLite strView1 = Convert(str1);
+  const StringViewLite strView2 = Convert(str2);
 
   EXPECT_FALSE(strView1 < strView2);
 }
@@ -316,10 +316,10 @@ TEST(TestString_StringViewLite, opLess_Empty)
 
 TEST(TestString_StringViewLite, opLess1)
 {
-  std::string str1("ab");
-  std::string str2("ac");
-  StringViewLite strView1 = Convert(str1);
-  StringViewLite strView2 = Convert(str2);
+  const std::string str1("ab");
+  const std::string str2("ac");
+  const StringViewLite strView1 = Convert(str1);
+  const StringViewLite strView2 = Convert(str2);
 
   EXPECT_TRUE(strView1 < strView2);
 }
@@ -327,10 +327,10 @@ TEST(TestString_StringViewLite, opLess1)
 
 TEST(TestString_StringViewLite, opLess2)
 {
-  std::string str1("ab");
-  std::string str2("aa");
-  StringViewLite strView1 = Convert(str1);
-  StringViewLite strView2 = Convert(str2);
+  const std::string str1("ab");
+  const std::string str2("aa");
+  const StringViewLite strView1 = Convert(str1);
+  const StringViewLite strView2 = Convert(str2);
 
   EXPECT_FALSE(strView1 < strView2);
 }
@@ -338,10 +338,10 @@ TEST(TestString_StringViewLite, opLess2)
 
 TEST(TestString_StringViewLite, opLess3)
 {
-  std::string str1("ab");
-  std::string str2("ab");
-  StringViewLite strView1 = Convert(str1);
-  StringViewLite strView2 = Convert(str2);
+  const std::string str1("ab");
+  const std::string str2("ab");
+  const StringViewLite strView1 = Convert(str1);
+  const StringViewLite strView2 = Convert(str2);
 
   EXPECT_FALSE(strView1 < strView2);
 }
@@ -349,10 +349,10 @@ TEST(TestString_StringViewLite, opLess3)
 
 TEST(TestString_StringViewLite, opLess4)
 {
-  std::string str1("a");
-  std::string str2("aa");
-  StringViewLite strView1 = Convert(str1);
-  StringViewLite strView2 = Convert(str2);
+  const std::string str1("a");
+  const std::string str2("aa");
+  const StringViewLite strView1 = Convert(str1);
+  const StringViewLite strView2 = Convert(str2);
 
   EXPECT_TRUE(strView1 < strView2);
 }
@@ -360,20 +360,20 @@ TEST(TestString_StringViewLite, opLess4)
 
 TEST(TestString_StringViewLite, opLess5)
 {
-  std::string str1("aa");
-  std::string str2("a");
-  StringViewLite strView1 = Convert(str1);
-  StringViewLite strView2 = Convert(str2);
+  const std::string str1("aa");
+  const std::string str2("a");
+  const StringViewLite strView1 = Convert(str1);
+  const StringViewLite strView2 = Convert(str2);
 
   EXPECT_FALSE(strView1 < strView2);
 }
 
 TEST(TestString_StringViewLite, opLessOrEqual_Empty)
 {
-  std::string str1;
-  std::string str2;
-  StringViewLite strView1 = Convert(str1);
-  StringViewLite strView2 = Convert(str2);
+  const std::string str1;
+  const std::string str2;
+  const StringViewLite strView1 = Convert(str1);
+  const StringViewLite strView2 = Convert(str2);
 
   EXPECT_TRUE(strView1 <= strView2);
 }
@@ -381,10 +381,10 @@ TEST(TestString_StringViewLite, opLessOrEqual_Empty)
 
 TEST(TestString_StringViewLite, opLessOrEqual1)
 {
-  std::string str1("ab");
-  std::string str2("ac");
-  StringViewLite strView1 = Convert(str1);
-  StringViewLite strView2 = Convert(str2);
+  const std::string str1("ab");
+  const std::string str2("ac");
+  const StringViewLite strView1 = Convert(str1);
+  const StringViewLite strView2 = Convert(str2);
 
   EXPECT_TRUE(strView1 <= strView2);
 }
@@ -392,10 +392,10 @@ TEST(TestString_StringViewLite, opLessOrEqual1)
 
 TEST(TestString_StringViewLite, opLessOrEqual2)
 {
-  std::string str1("ab");
-  std::string str2("aa");
-  StringViewLite strView1 = Convert(str1);
-  StringViewLite strView2 = Convert(str2);
+  const std::string str1("ab");
+  const std::string str2("aa");
+  const StringViewLite strView1 = Convert(str1);
+  const StringViewLite strView2 = Convert(str2);
 
   EXPECT_FALSE(strView1 <= strView2);
 }
@@ -403,10 +403,10 @@ TEST(TestString_StringViewLite, opLessOrEqual2)
 
 TEST(TestString_StringViewLite, opLessOrEqual3)
 {
-  std::string str1("ab");
-  std::string str2("ab");
-  StringViewLite strView1 = Convert(str1);
-  StringViewLite strView2 = Convert(str2);
+  const std::string str1("ab");
+  const std::string str2("ab");
+  const StringViewLite strView1 = Convert(str1);
+  const StringViewLite strView2 = Convert(str2);
 
   EXPECT_TRUE(strView1 <= strView2);
 }
@@ -414,10 +414,10 @@ TEST(TestString_StringViewLite, opLessOrEqual3)
 
 TEST(TestString_StringViewLite, opLessOrEqual4)
 {
-  std::string str1("a");
-  std::string str2("aa");
-  StringViewLite strView1 = Convert(str1);
-  StringViewLite strView2 = Convert(str2);
+  const std::string str1("a");
+  const std::string str2("aa");
+  const StringViewLite strView1 = Convert(str1);
+  const StringViewLite strView2 = Convert(str2);
 
   EXPECT_TRUE(strView1 <= strView2);
 }
@@ -425,20 +425,20 @@ TEST(TestString_StringViewLite, opLessOrEqual4)
 
 TEST(TestString_StringViewLite, opLessOrEqual5)
 {
-  std::string str1("aa");
-  std::string str2("a");
-  StringViewLite strView1 = Convert(str1);
-  StringViewLite strView2 = Convert(str2);
+  const std::string str1("aa");
+  const std::string str2("a");
+  const StringViewLite strView1 = Convert(str1);
+  const StringViewLite strView2 = Convert(str2);
 
   EXPECT_FALSE(strView1 <= strView2);
 }
 
 TEST(TestString_StringViewLite, opGreater_Empty)
 {
-  std::string str1;
-  std::string str2;
-  StringViewLite strView1 = Convert(str1);
-  StringViewLite strView2 = Convert(str2);
+  const std::string str1;
+  const std::string str2;
+  const StringViewLite strView1 = Convert(str1);
+  const StringViewLite strView2 = Convert(str2);
 
   EXPECT_FALSE(strView1 > strView2);
 }
@@ -446,10 +446,10 @@ TEST(TestString_StringViewLite, opGreater_Empty)
 
 TEST(TestString_StringViewLite, opGreater1)
 {
-  std::string str1("ab");
-  std::string str2("ac");
-  StringViewLite strView1 = Convert(str1);
-  StringViewLite strView2 = Convert(str2);
+  const std::string str1("ab");
+  const std::string str2("ac");
+  const StringViewLite strView1 = Convert(str1);
+  const StringViewLite strView2 = Convert(str2);
 
   EXPECT_FALSE(strView1 > strView2);
 }
@@ -457,10 +457,10 @@ TEST(TestString_StringViewLite, opGreater1)
 
 TEST(TestString_StringViewLite, opGreater2)
 {
-  std::string str1("ab");
-  std::string str2("aa");
-  StringViewLite strView1 = Convert(str1);
-  StringViewLite strView2 = Convert(str2);
+  const std::string str1("ab");
+  const std::string str2("aa");
+  const StringViewLite strView1 = Convert(str1);
+  const StringViewLite strView2 = Convert(str2);
 
   EXPECT_TRUE(strView1 > strView2);
 }
@@ -468,10 +468,10 @@ TEST(TestString_StringViewLite, opGreater2)
 
 TEST(TestString_StringViewLite, opGreater3)
 {
-  std::string str1("ab");
-  std::string str2("ab");
-  StringViewLite strView1 = Convert(str1);
-  StringViewLite strView2 = Convert(str2);
+  const std::string str1("ab");
+  const std::string str2("ab");
+  const StringViewLite strView1 = Convert(str1);
+  const StringViewLite strView2 = Convert(str2);
 
   EXPECT_FALSE(strView1 > strView2);
 }
@@ -479,10 +479,10 @@ TEST(TestString_StringViewLite, opGreater3)
 
 TEST(TestString_StringViewLite, opGreater4)
 {
-  std::string str1("a");
-  std::string str2("aa");
-  StringViewLite strView1 = Convert(str1);
-  StringViewLite strView2 = Convert(str2);
+  const std::string str1("a");
+  const std::string str2("aa");
+  const StringViewLite strView1 = Convert(str1);
+  const StringViewLite strView2 = Convert(str2);
 
   EXPECT_FALSE(strView1 > strView2);
 }
@@ -490,20 +490,20 @@ TEST(TestString_StringViewLite, opGreater4)
 
 TEST(TestString_StringViewLite, opGreater5)
 {
-  std::string str1("aa");
-  std::string str2("a");
-  StringViewLite strView1 = Convert(str1);
-  StringViewLite strView2 = Convert(str2);
+  const std::string str1("aa");
+  const std::string str2("a");
+  const StringViewLite strView1 = Convert(str1);
+  const StringViewLite strView2 = Convert(str2);
 
   EXPECT_TRUE(strView1 > strView2);
 }
 
 TEST(TestString_StringViewLite, opGreaterOrEqual_Empty)
 {
-  std::string str1;
-  std::string str2;
-  StringViewLite strView1 = Convert(str1);
-  StringViewLite strView2 = Convert(str2);
+  const std::string str1;
+  const std::string str2;
+  const StringViewLite strView1 = Convert(str1);
+  const StringViewLite strView2 = Convert(str2);
 
   EXPECT_TRUE(strView1 >= strView2);
 }
@@ -511,10 +511,10 @@ TEST(TestString_StringViewLite, opGreaterOrEqual_Empty)
 
 TEST(TestString_StringViewLite, opGreaterOrEqual1)
 {
-  std::string str1("ab");
-  std::string str2("ac");
-  StringViewLite strView1 = Convert(str1);
-  StringViewLite strView2 = Convert(str2);
+  const std::string str1("ab");
+  const std::string str2("ac");
+  const StringViewLite strView1 = Convert(str1);
+  const StringViewLite strView2 = Convert(str2);
 
   EXPECT_FALSE(strView1 >= strView2);
 }
@@ -522,10 +522,10 @@ TEST(TestString_StringViewLite, opGreaterOrEqual1)
 
 TEST(TestString_StringViewLite, opGreaterOrEqual2)
 {
-  std::string str1("ab");
-  std::string str2("aa");
-  StringViewLite strView1 = Convert(str1);
-  StringViewLite strView2 = Convert(str2);
+  const std::string str1("ab");
+  const std::string str2("aa");
+  const StringViewLite strView1 = Convert(str1);
+  const StringViewLite strView2 = Convert(str2);
 
   EXPECT_TRUE(strView1 >= strView2);
 }
@@ -533,10 +533,10 @@ TEST(TestString_StringViewLite, opGreaterOrEqual2)
 
 TEST(TestString_StringViewLite, opGreaterOrEqual3)
 {
-  std::string str1("ab");
-  std::string str2("ab");
-  StringViewLite strView1 = Convert(str1);
-  StringViewLite strView2 = Convert(str2);
+  const std::string str1("ab");
+  const std::string str2("ab");
+  const StringViewLite strView1 = Convert(str1);
+  const StringViewLite strView2 = Convert(str2);
 
   EXPECT_TRUE(strView1 >= strView2);
 }
@@ -544,10 +544,10 @@ TEST(TestString_StringViewLite, opGreaterOrEqual3)
 
 TEST(TestString_StringViewLite, opGreaterOrEqual4)
 {
-  std::string str1("a");
-  std::string str2("aa");
-  StringViewLite strView1 = Convert(str1);
-  StringViewLite strView2 = Convert(str2);
+  const std::string str1("a");
+  const std::string str2("aa");
+  const StringViewLite strView1 = Convert(str1);
+  const StringViewLite strView2 = Convert(str2);
 
   EXPECT_FALSE(strView1 >= strView2);
 }
@@ -555,10 +555,10 @@ TEST(TestString_StringViewLite, opGreaterOrEqual4)
 
 TEST(TestString_StringViewLite, opGreaterOrEqual5)
 {
-  std::string str1("aa");
-  std::string str2("a");
-  StringViewLite strView1 = Convert(str1);
-  StringViewLite strView2 = Convert(str2);
+  const std::string str1("aa");
+  const std::string str2("a");
+  const StringViewLite strView1 = Convert(str1);
+  const StringViewLite strView2 = Convert(str2);
 
   EXPECT_TRUE(strView1 >= strView2);
 }

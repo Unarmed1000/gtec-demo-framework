@@ -48,7 +48,7 @@ namespace
 
 TEST(TestMath_BoxF, Construct_Default)
 {
-  BoxF value;
+  const BoxF value;
 
   // The box stores these directly so we expect exact values
   EXPECT_EQ(0.0f, value.X1);
@@ -64,7 +64,7 @@ TEST(TestMath_BoxF, Construct_FromValues)
   const float y1 = 2.0f;
   const float x2 = 3.0f;
   const float y2 = 4.0f;
-  BoxF value(x1, y1, x2, y2);
+  const BoxF value(x1, y1, x2, y2);
 
   // The box stores these directly so we expect exact values
   EXPECT_EQ(x1, value.X1);

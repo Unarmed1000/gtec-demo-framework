@@ -48,7 +48,7 @@ namespace
 
 TEST(TestMath_Rectangle2D, Empty)
 {
-  Rectangle2D value;
+  const Rectangle2D value;
 
   EXPECT_EQ(Offset2D(), value.Offset);
   EXPECT_EQ(Extent2D(), value.Extent);
@@ -58,11 +58,11 @@ TEST(TestMath_Rectangle2D, Empty)
 
 TEST(TestMath_Rectangle2D, Construct1)
 {
-  int32_t offsetX = 1;
-  int32_t offsetY = 2;
-  uint32_t width = 10;
-  uint32_t height = 20;
-  Rectangle2D value(offsetX, offsetY, width, height);
+  const int32_t offsetX = 1;
+  const int32_t offsetY = 2;
+  const uint32_t width = 10;
+  const uint32_t height = 20;
+  const Rectangle2D value(offsetX, offsetY, width, height);
 
   EXPECT_EQ(Offset2D(offsetX, offsetY), value.Offset);
   EXPECT_EQ(Extent2D(width, height), value.Extent);
@@ -74,11 +74,11 @@ TEST(TestMath_Rectangle2D, Construct1)
 
 TEST(TestMath_Rectangle2D, Construct2)
 {
-  int32_t left = 1;
-  int32_t top = 2;
-  int32_t right = 10;
-  int32_t bottom = 20;
-  auto value = Rectangle2D::FromLeftTopRightBottom(left, top, right, bottom);
+  const int32_t left = 1;
+  const int32_t top = 2;
+  const int32_t right = 10;
+  const int32_t bottom = 20;
+  const auto value = Rectangle2D::FromLeftTopRightBottom(left, top, right, bottom);
 
   EXPECT_EQ(Offset2D(left, top), value.Offset);
   EXPECT_EQ(Extent2D(static_cast<uint32_t>(right - left), static_cast<uint32_t>(bottom - top)), value.Extent);
@@ -142,13 +142,13 @@ TEST(TestMath_Rectangle2D, Inflate_NegativeY)
 
 TEST(TestMath_Rectangle2D, Intersects)
 {
-  Rectangle2D rect1(0, 0, 10, 10);
-  Rectangle2D rect2(1, 1, 9, 9);
-  Rectangle2D rect3(11, 0, 10, 10);
+  const Rectangle2D rect1(0, 0, 10, 10);
+  const Rectangle2D rect2(1, 1, 9, 9);
+  const Rectangle2D rect3(11, 0, 10, 10);
 
-  auto res1 = Rectangle2D::Intersect(rect1, rect2);
-  auto res2 = Rectangle2D::Intersect(rect2, rect1);
-  auto resNoIntersection = Rectangle2D::Intersect(rect1, rect3);
+  const auto res1 = Rectangle2D::Intersect(rect1, rect2);
+  const auto res2 = Rectangle2D::Intersect(rect2, rect1);
+  const auto resNoIntersection = Rectangle2D::Intersect(rect1, rect3);
 
   EXPECT_EQ(rect2, res1);
   EXPECT_EQ(rect2, res2);
@@ -161,7 +161,7 @@ TEST(TestMath_Rectangle2D, Union)
   const Rectangle2D rect1(0, 0, 5, 5);
   const Rectangle2D rect2(0, -1, 4, 5);
 
-  auto res = Rectangle2D::Union(rect1, rect2);
+  const auto res = Rectangle2D::Union(rect1, rect2);
 
   // 0, 5 |  0, 4
   // 0, 5 | -1, 4

@@ -37,8 +37,8 @@ namespace Fsl::MathHelper
   constexpr inline float Bilinear(const float val00, const float val10, const float val01, const float val11, const float weightX,
                                   const float weightY) noexcept
   {
-    float a = (val00 * (1.0f - weightX)) + (val10 * weightX);
-    float b = (val01 * (1.0f - weightX)) + (val11 * weightX);
+    const float a = (val00 * (1.0f - weightX)) + (val10 * weightX);
+    const float b = (val01 * (1.0f - weightX)) + (val11 * weightX);
     return (a * (1.0f - weightY)) + (b * weightY);
   }
 }

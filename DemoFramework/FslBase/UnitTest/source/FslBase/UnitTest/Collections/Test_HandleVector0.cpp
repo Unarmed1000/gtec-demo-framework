@@ -490,7 +490,7 @@ TEST(TestCollections_HandleVector0, InsertAt_3_Grow)
 
 TEST(TestCollections_HandleVector0, Capacity)
 {
-  HandleVector<std::string> vector(10);
+  const HandleVector<std::string> vector(10);
 
   EXPECT_EQ(10u, vector.Capacity());
 }
@@ -674,9 +674,9 @@ TEST(TestCollections_HandleVector0, Get)
   const std::string val2 = "B";
   const std::string val3 = "C";
 
-  auto item1 = vector.Add(val1);
-  auto item2 = vector.Add(val2);
-  auto item3 = vector.Add(val3);
+  const auto item1 = vector.Add(val1);
+  const auto item2 = vector.Add(val2);
+  const auto item3 = vector.Add(val3);
   EXPECT_TRUE(vector.DEBUG_IsValid());
   EXPECT_EQ(3u, vector.Count());
 
@@ -709,7 +709,7 @@ TEST(TestCollections_HandleVector0, Get_Ref)
   const std::string val1 = "A";
   const std::string val2 = "B";
 
-  auto item1 = vector.Add(val1);
+  const auto item1 = vector.Add(val1);
   EXPECT_TRUE(vector.DEBUG_IsValid());
   EXPECT_EQ(1u, vector.Count());
   EXPECT_EQ(val1, vector.Get(item1));
@@ -730,9 +730,9 @@ TEST(TestCollections_HandleVector0, Remove_First)
   const std::string val2 = "B";
   const std::string val3 = "C";
 
-  auto item1 = vector.Add(val1);
-  auto item2 = vector.Add(val2);
-  auto item3 = vector.Add(val3);
+  const auto item1 = vector.Add(val1);
+  const auto item2 = vector.Add(val2);
+  const auto item3 = vector.Add(val3);
   EXPECT_TRUE(vector.DEBUG_IsValid());
   EXPECT_EQ(3u, vector.Count());
 
@@ -757,9 +757,9 @@ TEST(TestCollections_HandleVector0, Remove_Middle)
   const std::string val2 = "B";
   const std::string val3 = "C";
 
-  auto item1 = vector.Add(val1);
-  auto item2 = vector.Add(val2);
-  auto item3 = vector.Add(val3);
+  const auto item1 = vector.Add(val1);
+  const auto item2 = vector.Add(val2);
+  const auto item3 = vector.Add(val3);
   EXPECT_TRUE(vector.DEBUG_IsValid());
   EXPECT_EQ(3u, vector.Count());
 
@@ -784,9 +784,9 @@ TEST(TestCollections_HandleVector0, Remove_Last)
   const std::string val2 = "B";
   const std::string val3 = "C";
 
-  auto item1 = vector.Add(val1);
-  auto item2 = vector.Add(val2);
-  auto item3 = vector.Add(val3);
+  const auto item1 = vector.Add(val1);
+  const auto item2 = vector.Add(val2);
+  const auto item3 = vector.Add(val3);
   EXPECT_TRUE(vector.DEBUG_IsValid());
   EXPECT_EQ(3u, vector.Count());
 
@@ -811,9 +811,9 @@ TEST(TestCollections_HandleVector0, Remove_LastAtCapacity)
   const std::string val2 = "B";
   const std::string val3 = "C";
 
-  auto item1 = vector.Add(val1);
-  auto item2 = vector.Add(val2);
-  auto item3 = vector.Add(val3);
+  const auto item1 = vector.Add(val1);
+  const auto item2 = vector.Add(val2);
+  const auto item3 = vector.Add(val3);
   EXPECT_TRUE(vector.DEBUG_IsValid());
   EXPECT_EQ(3u, vector.Count());
 
@@ -841,8 +841,8 @@ TEST(TestCollections_HandleVector0, RemoveAt_First)
   const std::string val3 = "C";
 
   vector.Add(val1);
-  auto item2 = vector.Add(val2);
-  auto item3 = vector.Add(val3);
+  const auto item2 = vector.Add(val2);
+  const auto item3 = vector.Add(val3);
   EXPECT_TRUE(vector.DEBUG_IsValid());
   EXPECT_EQ(3u, vector.Count());
 
@@ -867,9 +867,9 @@ TEST(TestCollections_HandleVector0, RemoveAt_Middle)
   const std::string val2 = "B";
   const std::string val3 = "C";
 
-  auto item1 = vector.Add(val1);
+  const auto item1 = vector.Add(val1);
   vector.Add(val2);
-  auto item3 = vector.Add(val3);
+  const auto item3 = vector.Add(val3);
   EXPECT_TRUE(vector.DEBUG_IsValid());
   EXPECT_EQ(3u, vector.Count());
 
@@ -894,8 +894,8 @@ TEST(TestCollections_HandleVector0, RemoveAt_Last)
   const std::string val2 = "B";
   const std::string val3 = "C";
 
-  auto item1 = vector.Add(val1);
-  auto item2 = vector.Add(val2);
+  const auto item1 = vector.Add(val1);
+  const auto item2 = vector.Add(val2);
   vector.Add(val3);
   EXPECT_TRUE(vector.DEBUG_IsValid());
   EXPECT_EQ(3u, vector.Count());
@@ -921,9 +921,9 @@ TEST(TestCollections_HandleVector0, RemoveBySwap_First)
   const std::string val2 = "B";
   const std::string val3 = "C";
 
-  auto item1 = vector.Add(val1);
-  auto item2 = vector.Add(val2);
-  auto item3 = vector.Add(val3);
+  const auto item1 = vector.Add(val1);
+  const auto item2 = vector.Add(val2);
+  const auto item3 = vector.Add(val3);
   EXPECT_TRUE(vector.DEBUG_IsValid());
   EXPECT_EQ(3u, vector.Count());
 
@@ -949,9 +949,9 @@ TEST(TestCollections_HandleVector0, RemoveBySwap_Middle)
   const std::string val2 = "B";
   const std::string val3 = "C";
 
-  auto item1 = vector.Add(val1);
-  auto item2 = vector.Add(val2);
-  auto item3 = vector.Add(val3);
+  const auto item1 = vector.Add(val1);
+  const auto item2 = vector.Add(val2);
+  const auto item3 = vector.Add(val3);
   EXPECT_TRUE(vector.DEBUG_IsValid());
   EXPECT_EQ(3u, vector.Count());
 
@@ -977,9 +977,9 @@ TEST(TestCollections_HandleVector0, FOO)
   const std::string val2 = "B";
   const std::string val3 = "C";
 
-  auto item1 = vector.Add(val1);
-  auto item2 = vector.Add(val2);
-  auto item3 = vector.Add(val3);
+  const auto item1 = vector.Add(val1);
+  const auto item2 = vector.Add(val2);
+  const auto item3 = vector.Add(val3);
   EXPECT_TRUE(vector.DEBUG_IsValid());
   EXPECT_EQ(3u, vector.Count());
 
@@ -1005,9 +1005,9 @@ TEST(TestCollections_HandleVector0, RemoveBySwap_LastAtCapacity)
   const std::string val2 = "B";
   const std::string val3 = "C";
 
-  auto item1 = vector.Add(val1);
-  auto item2 = vector.Add(val2);
-  auto item3 = vector.Add(val3);
+  const auto item1 = vector.Add(val1);
+  const auto item2 = vector.Add(val2);
+  const auto item3 = vector.Add(val3);
   EXPECT_TRUE(vector.DEBUG_IsValid());
   EXPECT_EQ(3u, vector.Count());
 
@@ -1036,8 +1036,8 @@ TEST(TestCollections_HandleVector0, RemoveBySwapAt_First)
   const std::string val3 = "C";
 
   vector.Add(val1);
-  auto item2 = vector.Add(val2);
-  auto item3 = vector.Add(val3);
+  const auto item2 = vector.Add(val2);
+  const auto item3 = vector.Add(val3);
   EXPECT_TRUE(vector.DEBUG_IsValid());
   EXPECT_EQ(3u, vector.Count());
 
@@ -1063,9 +1063,9 @@ TEST(TestCollections_HandleVector0, RemoveBySwapAt_Middle)
   const std::string val2 = "B";
   const std::string val3 = "C";
 
-  auto item1 = vector.Add(val1);
+  const auto item1 = vector.Add(val1);
   vector.Add(val2);
-  auto item3 = vector.Add(val3);
+  const auto item3 = vector.Add(val3);
   EXPECT_TRUE(vector.DEBUG_IsValid());
   EXPECT_EQ(3u, vector.Count());
 
@@ -1091,8 +1091,8 @@ TEST(TestCollections_HandleVector0, RemoveBySwapAt_Last)
   const std::string val2 = "B";
   const std::string val3 = "C";
 
-  auto item1 = vector.Add(val1);
-  auto item2 = vector.Add(val2);
+  const auto item1 = vector.Add(val1);
+  const auto item2 = vector.Add(val2);
   vector.Add(val3);
   EXPECT_TRUE(vector.DEBUG_IsValid());
   EXPECT_EQ(3u, vector.Count());
@@ -1119,8 +1119,8 @@ TEST(TestCollections_HandleVector0, RemoveBySwapAt_LastAtCapacity)
   const std::string val2 = "B";
   const std::string val3 = "C";
 
-  auto item1 = vector.Add(val1);
-  auto item2 = vector.Add(val2);
+  const auto item1 = vector.Add(val1);
+  const auto item2 = vector.Add(val2);
   vector.Add(val3);
   EXPECT_TRUE(vector.DEBUG_IsValid());
   EXPECT_EQ(3u, vector.Count());
@@ -1150,9 +1150,9 @@ TEST(TestCollections_HandleVector0, RemoveRange_3_0_0)
   const std::string val2 = "B";
   const std::string val3 = "C";
 
-  auto item1 = vector.Add(val1);
-  auto item2 = vector.Add(val2);
-  auto item3 = vector.Add(val3);
+  const auto item1 = vector.Add(val1);
+  const auto item2 = vector.Add(val2);
+  const auto item3 = vector.Add(val3);
 
   EXPECT_TRUE(vector.DEBUG_IsValid());
   EXPECT_EQ(3u, vector.Count());
@@ -1182,9 +1182,9 @@ TEST(TestCollections_HandleVector0, RemoveRange_3_0_1)
   const std::string val2 = "B";
   const std::string val3 = "C";
 
-  auto item1 = vector.Add(val1);
-  auto item2 = vector.Add(val2);
-  auto item3 = vector.Add(val3);
+  const auto item1 = vector.Add(val1);
+  const auto item2 = vector.Add(val2);
+  const auto item3 = vector.Add(val3);
 
   EXPECT_TRUE(vector.DEBUG_IsValid());
   EXPECT_EQ(3u, vector.Count());
@@ -1215,9 +1215,9 @@ TEST(TestCollections_HandleVector0, RemoveRange_3_1_1)
   const std::string val2 = "B";
   const std::string val3 = "C";
 
-  auto item1 = vector.Add(val1);
-  auto item2 = vector.Add(val2);
-  auto item3 = vector.Add(val3);
+  const auto item1 = vector.Add(val1);
+  const auto item2 = vector.Add(val2);
+  const auto item3 = vector.Add(val3);
 
   EXPECT_TRUE(vector.DEBUG_IsValid());
   EXPECT_EQ(3u, vector.Count());
@@ -1248,9 +1248,9 @@ TEST(TestCollections_HandleVector0, RemoveRange_3_2_1)
   const std::string val2 = "B";
   const std::string val3 = "C";
 
-  auto item1 = vector.Add(val1);
-  auto item2 = vector.Add(val2);
-  auto item3 = vector.Add(val3);
+  const auto item1 = vector.Add(val1);
+  const auto item2 = vector.Add(val2);
+  const auto item3 = vector.Add(val3);
   EXPECT_TRUE(vector.DEBUG_IsValid());
   EXPECT_EQ(3u, vector.Count());
   EXPECT_EQ(val1, vector.Get(item1));
@@ -1281,10 +1281,10 @@ TEST(TestCollections_HandleVector0, RemoveRange_4_OutOfBoundsStartIndex)
   const std::string val3 = "C";
   const std::string val4 = "D";
 
-  auto item1 = vector.Add(val1);
-  auto item2 = vector.Add(val2);
-  auto item3 = vector.Add(val3);
-  auto item4 = vector.Add(val4);
+  const auto item1 = vector.Add(val1);
+  const auto item2 = vector.Add(val2);
+  const auto item3 = vector.Add(val3);
+  const auto item4 = vector.Add(val4);
   EXPECT_TRUE(vector.DEBUG_IsValid());
   EXPECT_EQ(4u, vector.Count());
   EXPECT_EQ(val1, vector.Get(item1));
@@ -1320,10 +1320,10 @@ TEST(TestCollections_HandleVector0, RemoveRange_4_OutOfBoundsLength)
   const std::string val3 = "C";
   const std::string val4 = "D";
 
-  auto item1 = vector.Add(val1);
-  auto item2 = vector.Add(val2);
-  auto item3 = vector.Add(val3);
-  auto item4 = vector.Add(val4);
+  const auto item1 = vector.Add(val1);
+  const auto item2 = vector.Add(val2);
+  const auto item3 = vector.Add(val3);
+  const auto item4 = vector.Add(val4);
   EXPECT_TRUE(vector.DEBUG_IsValid());
   EXPECT_EQ(4u, vector.Count());
 
@@ -1355,10 +1355,10 @@ TEST(TestCollections_HandleVector0, RemoveRange_4_0_2)
   const std::string val3 = "C";
   const std::string val4 = "D";
 
-  auto item1 = vector.Add(val1);
-  auto item2 = vector.Add(val2);
-  auto item3 = vector.Add(val3);
-  auto item4 = vector.Add(val4);
+  const auto item1 = vector.Add(val1);
+  const auto item2 = vector.Add(val2);
+  const auto item3 = vector.Add(val3);
+  const auto item4 = vector.Add(val4);
   EXPECT_TRUE(vector.DEBUG_IsValid());
   EXPECT_EQ(4u, vector.Count());
   EXPECT_EQ(val1, vector.Get(item1));
@@ -1390,10 +1390,10 @@ TEST(TestCollections_HandleVector0, RemoveRange_4_1_2)
   const std::string val3 = "C";
   const std::string val4 = "D";
 
-  auto item1 = vector.Add(val1);
-  auto item2 = vector.Add(val2);
-  auto item3 = vector.Add(val3);
-  auto item4 = vector.Add(val4);
+  const auto item1 = vector.Add(val1);
+  const auto item2 = vector.Add(val2);
+  const auto item3 = vector.Add(val3);
+  const auto item4 = vector.Add(val4);
   EXPECT_TRUE(vector.DEBUG_IsValid());
   EXPECT_EQ(4u, vector.Count());
   EXPECT_EQ(val1, vector.Get(item1));
@@ -1425,10 +1425,10 @@ TEST(TestCollections_HandleVector0, RemoveRange_4_2_2)
   const std::string val3 = "C";
   const std::string val4 = "D";
 
-  auto item1 = vector.Add(val1);
-  auto item2 = vector.Add(val2);
-  auto item3 = vector.Add(val3);
-  auto item4 = vector.Add(val4);
+  const auto item1 = vector.Add(val1);
+  const auto item2 = vector.Add(val2);
+  const auto item3 = vector.Add(val3);
+  const auto item4 = vector.Add(val4);
   EXPECT_TRUE(vector.DEBUG_IsValid());
   EXPECT_EQ(4u, vector.Count());
   EXPECT_EQ(val1, vector.Get(item1));
@@ -1461,11 +1461,11 @@ TEST(TestCollections_HandleVector0, RemoveRange_5_0_2)
   const std::string val4 = "D";
   const std::string val5 = "E";
 
-  auto item1 = vector.Add(val1);
-  auto item2 = vector.Add(val2);
-  auto item3 = vector.Add(val3);
-  auto item4 = vector.Add(val4);
-  auto item5 = vector.Add(val5);
+  const auto item1 = vector.Add(val1);
+  const auto item2 = vector.Add(val2);
+  const auto item3 = vector.Add(val3);
+  const auto item4 = vector.Add(val4);
+  const auto item5 = vector.Add(val5);
   EXPECT_TRUE(vector.DEBUG_IsValid());
   EXPECT_EQ(5u, vector.Count());
   EXPECT_EQ(val1, vector.Get(item1));
@@ -1501,11 +1501,11 @@ TEST(TestCollections_HandleVector0, RemoveRange_5_1_2)
   const std::string val4 = "D";
   const std::string val5 = "E";
 
-  auto item1 = vector.Add(val1);
-  auto item2 = vector.Add(val2);
-  auto item3 = vector.Add(val3);
-  auto item4 = vector.Add(val4);
-  auto item5 = vector.Add(val5);
+  const auto item1 = vector.Add(val1);
+  const auto item2 = vector.Add(val2);
+  const auto item3 = vector.Add(val3);
+  const auto item4 = vector.Add(val4);
+  const auto item5 = vector.Add(val5);
   EXPECT_TRUE(vector.DEBUG_IsValid());
   EXPECT_EQ(5u, vector.Count());
   EXPECT_EQ(val1, vector.Get(item1));
@@ -1541,11 +1541,11 @@ TEST(TestCollections_HandleVector0, RemoveRange_5_2_2)
   const std::string val4 = "D";
   const std::string val5 = "E";
 
-  auto item1 = vector.Add(val1);
-  auto item2 = vector.Add(val2);
-  auto item3 = vector.Add(val3);
-  auto item4 = vector.Add(val4);
-  auto item5 = vector.Add(val5);
+  const auto item1 = vector.Add(val1);
+  const auto item2 = vector.Add(val2);
+  const auto item3 = vector.Add(val3);
+  const auto item4 = vector.Add(val4);
+  const auto item5 = vector.Add(val5);
   EXPECT_TRUE(vector.DEBUG_IsValid());
   EXPECT_EQ(5u, vector.Count());
   EXPECT_EQ(val1, vector.Get(item1));
@@ -1581,11 +1581,11 @@ TEST(TestCollections_HandleVector0, RemoveRange_5_3_2)
   const std::string val4 = "D";
   const std::string val5 = "E";
 
-  auto item1 = vector.Add(val1);
-  auto item2 = vector.Add(val2);
-  auto item3 = vector.Add(val3);
-  auto item4 = vector.Add(val4);
-  auto item5 = vector.Add(val5);
+  const auto item1 = vector.Add(val1);
+  const auto item2 = vector.Add(val2);
+  const auto item3 = vector.Add(val3);
+  const auto item4 = vector.Add(val4);
+  const auto item5 = vector.Add(val5);
   EXPECT_TRUE(vector.DEBUG_IsValid());
   EXPECT_EQ(5u, vector.Count());
   EXPECT_EQ(val1, vector.Get(item1));

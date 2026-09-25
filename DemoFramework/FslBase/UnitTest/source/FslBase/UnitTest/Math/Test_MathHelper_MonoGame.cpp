@@ -85,7 +85,7 @@ TEST(TestMath_MathHelper_MonoGame, LerpTest)
 
 TEST(TestMath_MathHelper_MonoGame, WrapAngleReturnsExpectedValues)
 {
-  std::vector<Vector2> testValues = {
+  const std::vector<Vector2> testValues = {
     Vector2(0.0f, 0.0f), Vector2(MathHelper::PiOver4, MathHelper::PiOver4), Vector2(-MathHelper::PiOver4, -MathHelper::PiOver4),
     Vector2(MathHelper::PiOver2, MathHelper::PiOver2), Vector2(-MathHelper::PiOver2, -MathHelper::PiOver2), Vector2(MathHelper::PI, MathHelper::PI),
     Vector2(-MathHelper::PI, MathHelper::PI), Vector2(MathHelper::TwoPi, 0.0f), Vector2(-MathHelper::TwoPi, 0.0f), Vector2(10.0f, -2.566371f),
@@ -114,7 +114,7 @@ TEST(TestMath_MathHelper_MonoGame, WrapAngleReturnsExpectedValues)
   {
     const auto angle = entry.X;
     const auto expectedValue = entry.Y;
-    auto actualValue = MathHelper::WrapAngle(angle);
+    const auto actualValue = MathHelper::WrapAngle(angle);
     EXPECT_FLOAT_EQ(expectedValue, actualValue);
   }
 }

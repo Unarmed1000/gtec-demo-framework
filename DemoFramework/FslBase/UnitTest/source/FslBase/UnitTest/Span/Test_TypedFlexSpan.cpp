@@ -165,7 +165,7 @@ TEST(Test_TypedFlexSpan, SubSpan)
   }
   // its ok to read the last entry
   {
-    TypedFlexSpan<TestRecord> res = span.subspan(content10.size());
+    const TypedFlexSpan<TestRecord> res = span.subspan(content10.size());
     EXPECT_EQ(0u, res.size());
     EXPECT_EQ(sizeof(ComplexRecord), res.stride());
   }
@@ -179,39 +179,39 @@ TEST(Test_TypedFlexSpan, SubSpan_Const)
   const TypedFlexSpan<TestRecord> span(AsSpan(content10));
 
   {
-    ReadOnlyTypedFlexSpan<TestRecord> res = span.subspan();
+    const ReadOnlyTypedFlexSpan<TestRecord> res = span.subspan();
     EXPECT_EQ(content10.size(), res.size());
     EXPECT_EQ(&content10[0].Test, res.flex_data());
     EXPECT_EQ(sizeof(ComplexRecord), res.stride());
   }
 
   {
-    ReadOnlyTypedFlexSpan<TestRecord> res = span.subspan(1u);
+    const ReadOnlyTypedFlexSpan<TestRecord> res = span.subspan(1u);
     EXPECT_EQ(9u, res.size());
     EXPECT_EQ(&content10[1].Test, res.flex_data());
     EXPECT_EQ(sizeof(ComplexRecord), res.stride());
   }
   {
-    ReadOnlyTypedFlexSpan<TestRecord> res = span.subspan(9u);
+    const ReadOnlyTypedFlexSpan<TestRecord> res = span.subspan(9u);
     EXPECT_EQ(1u, res.size());
     EXPECT_EQ(&content10[9].Test, res.flex_data());
     EXPECT_EQ(sizeof(ComplexRecord), res.stride());
   }
   {
-    ReadOnlyTypedFlexSpan<TestRecord> res = span.subspan(1u, 2u);
+    const ReadOnlyTypedFlexSpan<TestRecord> res = span.subspan(1u, 2u);
     EXPECT_EQ(2u, res.size());
     EXPECT_EQ(&content10[1].Test, res.flex_data());
     EXPECT_EQ(sizeof(ComplexRecord), res.stride());
   }
   {
-    ReadOnlyTypedFlexSpan<TestRecord> res = span.subspan(9u, 2u);
+    const ReadOnlyTypedFlexSpan<TestRecord> res = span.subspan(9u, 2u);
     EXPECT_EQ(1u, res.size());
     EXPECT_EQ(&content10[9].Test, res.flex_data());
     EXPECT_EQ(sizeof(ComplexRecord), res.stride());
   }
   // its ok to read the last entry
   {
-    ReadOnlyTypedFlexSpan<TestRecord> res = span.subspan(content10.size());
+    const ReadOnlyTypedFlexSpan<TestRecord> res = span.subspan(content10.size());
     EXPECT_EQ(0u, res.size());
     EXPECT_EQ(sizeof(ComplexRecord), res.stride());
   }
@@ -223,7 +223,7 @@ TEST(Test_TypedFlexSpan, SubSpan_Empty)
 {
   TypedFlexSpan<TestRecord> span;
   {
-    TypedFlexSpan<TestRecord> res = span.subspan();
+    const TypedFlexSpan<TestRecord> res = span.subspan();
     EXPECT_EQ(0u, res.size());
     EXPECT_EQ(0u, res.stride());
   }
@@ -235,7 +235,7 @@ TEST(Test_TypedFlexSpan, SubSpan_Const_Empty)
 {
   const TypedFlexSpan<TestRecord> span;
   {
-    ReadOnlyTypedFlexSpan<TestRecord> res = span.subspan();
+    const ReadOnlyTypedFlexSpan<TestRecord> res = span.subspan();
     EXPECT_EQ(0u, res.size());
     EXPECT_EQ(0u, res.stride());
   }

@@ -129,7 +129,7 @@ namespace Fsl::IO
 
   bool PlatformFileSystem::TryGetAttributes(const Path& path, FileAttributes& rAttributes)
   {
-    DWORD res = GetFileAttributes(PlatformWin32::Widen(path.ToUTF8String()).c_str());
+    const DWORD res = GetFileAttributes(PlatformWin32::Widen(path.ToUTF8String()).c_str());
     if (res == INVALID_FILE_ATTRIBUTES)
     {
       return false;
@@ -206,7 +206,7 @@ namespace Fsl::IO
   void PlatformFileSystem::CreateDir(const Path& path)
   {
     const std::wstring name = PlatformWin32::Widen(path.ToUTF8String());
-    auto res = CreateDirectory(name.c_str(), nullptr);
+    const auto res = CreateDirectory(name.c_str(), nullptr);
     if (res == 0 && GetLastError() != ERROR_ALREADY_EXISTS)
     {
       throw IOException("Failed to create directory");

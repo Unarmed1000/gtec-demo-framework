@@ -198,7 +198,7 @@ namespace Fsl::TypeConverter
   template <>
   constexpr inline PxSize1D To<PxSize1D, PxValue>(const PxValue& value)
   {
-    static_assert(std::is_same<PxSize1D::raw_value_type, PxValue::raw_value_type>::value, "we expect the types to be equal");
+    static_assert(std::is_same_v<PxSize1D::raw_value_type, PxValue::raw_value_type>, "we expect the types to be equal");
     return PxSize1D::Create(static_cast<PxSize1D::raw_value_type>(value.Value));
   }
 
@@ -299,7 +299,7 @@ namespace Fsl::TypeConverter
   template <>
   constexpr inline PxClipRectangle To<PxClipRectangle, PxRectangle2D>(const PxRectangle2D& value)
   {
-    static_assert(std::is_same<PxClipRectangle::value_type, PxRectangle2D::offset_type::value_type>::value, "we expect the types to be equal");
+    static_assert(std::is_same_v<PxClipRectangle::value_type, PxRectangle2D::offset_type::value_type>, "we expect the types to be equal");
 
     return {value.Offset.X, value.Offset.Y, To<PxClipRectangle::size_value_type>(value.Extent.Width),
             To<PxClipRectangle::size_value_type>(value.Extent.Height)};
@@ -367,7 +367,7 @@ namespace Fsl::TypeConverter
   template <>
   constexpr inline PxRectangle To<PxRectangle, PxRectangle2D>(const PxRectangle2D& value)
   {
-    static_assert(std::is_same<PxRectangle::value_type, PxRectangle2D::offset_type::value_type>::value, "we expect the types to be equal");
+    static_assert(std::is_same_v<PxRectangle::value_type, PxRectangle2D::offset_type::value_type>, "we expect the types to be equal");
     return {value.Offset.X, value.Offset.Y, To<PxRectangle::size_value_type>(value.Extent.Width),
             To<PxRectangle::size_value_type>(value.Extent.Height)};
   }
@@ -719,7 +719,7 @@ namespace Fsl::TypeConverter
   template <>
   constexpr inline PxClipRectangle UncheckedTo<PxClipRectangle, PxRectangle2D>(const PxRectangle2D& value) noexcept
   {
-    static_assert(std::is_same<PxClipRectangle::value_type, PxRectangle2D::offset_type::value_type>::value, "we expect the types to be equal");
+    static_assert(std::is_same_v<PxClipRectangle::value_type, PxRectangle2D::offset_type::value_type>, "we expect the types to be equal");
 
     return {value.Offset.X, value.Offset.Y, UncheckedTo<PxClipRectangle::size_value_type>(value.Extent.Width),
             UncheckedTo<PxClipRectangle::size_value_type>(value.Extent.Height)};
@@ -799,7 +799,7 @@ namespace Fsl::TypeConverter
   template <>
   constexpr inline PxRectangle UncheckedTo<PxRectangle, PxRectangle2D>(const PxRectangle2D& value) noexcept
   {
-    static_assert(std::is_same<PxRectangle::value_type, PxRectangle2D::offset_type::value_type>::value, "we expect the types to be equal");
+    static_assert(std::is_same_v<PxRectangle::value_type, PxRectangle2D::offset_type::value_type>, "we expect the types to be equal");
     return {value.Offset.X, value.Offset.Y, UncheckedTo<PxRectangle::size_value_type>(value.Extent.Width),
             UncheckedTo<PxRectangle::size_value_type>(value.Extent.Height)};
   }

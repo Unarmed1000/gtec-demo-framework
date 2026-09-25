@@ -51,7 +51,7 @@ TEST(TestMath_Point2U, Zero)
 
 TEST(TestMath_Point2U, Construct_Default)
 {
-  Point2U value;
+  const Point2U value;
 
   EXPECT_EQ(Point2U(), value);
   EXPECT_EQ(0u, value.X);
@@ -62,7 +62,7 @@ TEST(TestMath_Point2U, Construct)
 {
   const uint32_t x = 3;
   const uint32_t y = 2;
-  Point2U value(x, y);
+  const Point2U value(x, y);
 
   EXPECT_EQ(x, value.X);
   EXPECT_EQ(y, value.Y);
@@ -74,7 +74,7 @@ TEST(TestMath_Point2U, OpPlusEqual)
   const uint32_t y0 = 4;
   const uint32_t x1 = 3;
   const uint32_t y1 = 2;
-  Point2U value0(x0, y0);
+  const Point2U value0(x0, y0);
   Point2U value1(x1, y1);
 
   value1 += value0;
@@ -92,7 +92,7 @@ TEST(TestMath_Point2U, OpSubEqual)
   const uint32_t y0 = 4;
   const uint32_t x1 = 3;
   const uint32_t y1 = 2;
-  Point2U value0(x0, y0);
+  const Point2U value0(x0, y0);
   Point2U value1(x1, y1);
 
   value1 -= value0;
@@ -109,7 +109,7 @@ TEST(TestMath_Point2U, OpMulEqual)
   const uint32_t y0 = 4;
   const uint32_t x1 = 3;
   const uint32_t y1 = 2;
-  Point2U value0(x0, y0);
+  const Point2U value0(x0, y0);
   Point2U value1(x1, y1);
 
   value1 *= value0;
@@ -127,10 +127,10 @@ TEST(TestMath_Point2U, OpAdd)
   const uint32_t y0 = 4;
   const uint32_t x1 = 3;
   const uint32_t y1 = 2;
-  Point2U value0(x0, y0);
-  Point2U value1(x1, y1);
+  const Point2U value0(x0, y0);
+  const Point2U value1(x1, y1);
 
-  auto value3 = value1 + value0;
+  const auto value3 = value1 + value0;
 
   EXPECT_EQ(x0, value0.X);
   EXPECT_EQ(y0, value0.Y);
@@ -147,10 +147,10 @@ TEST(TestMath_Point2U, OpSub)
   const uint32_t y0 = 4;
   const uint32_t x1 = 3;
   const uint32_t y1 = 2;
-  Point2U value0(x0, y0);
-  Point2U value1(x1, y1);
+  const Point2U value0(x0, y0);
+  const Point2U value1(x1, y1);
 
-  auto value3 = value1 - value0;
+  const auto value3 = value1 - value0;
 
   EXPECT_EQ(x0, value0.X);
   EXPECT_EQ(y0, value0.Y);
@@ -167,10 +167,10 @@ TEST(TestMath_Point2U, OpMul)
   const uint32_t y0 = 4;
   const uint32_t x1 = 3;
   const uint32_t y1 = 2;
-  Point2U value0(x0, y0);
-  Point2U value1(x1, y1);
+  const Point2U value0(x0, y0);
+  const Point2U value1(x1, y1);
 
-  auto value3 = value1 * value0;
+  const auto value3 = value1 * value0;
 
   EXPECT_EQ(x0, value0.X);
   EXPECT_EQ(y0, value0.Y);
@@ -186,9 +186,9 @@ TEST(TestMath_Point2U, OpMul_Const)
   const uint32_t x0 = 4;
   const uint32_t y0 = 3;
   const uint32_t mul = 2;
-  Point2U value0(x0, y0);
+  const Point2U value0(x0, y0);
 
-  auto value2 = value0 * mul;
+  const auto value2 = value0 * mul;
 
   EXPECT_EQ(x0, value0.X);
   EXPECT_EQ(y0, value0.Y);
@@ -202,9 +202,9 @@ TEST(TestMath_Point2U, OpMul_Const2)
   const uint32_t x0 = 4;
   const uint32_t y0 = 3;
   const uint32_t mul = 2;
-  Point2U value0(x0, y0);
+  const Point2U value0(x0, y0);
 
-  auto value2 = mul * value0;
+  const auto value2 = mul * value0;
 
   EXPECT_EQ(x0, value0.X);
   EXPECT_EQ(y0, value0.Y);

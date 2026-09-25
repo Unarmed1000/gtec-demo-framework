@@ -42,10 +42,10 @@ namespace Fsl
 {
   Plane::Plane(const Vector3& a, const Vector3& b, const Vector3& c)
   {
-    Vector3 ab = b - a;
-    Vector3 ac = c - a;
+    const Vector3 ab = b - a;
+    const Vector3 ac = c - a;
 
-    Vector3 cross = Vector3::Cross(ab, ac);
+    const Vector3 cross = Vector3::Cross(ab, ac);
     Normal = Vector3::Normalize(cross);
     D = -(Vector3::Dot(Normal, a));
   }
@@ -104,7 +104,7 @@ namespace Fsl
     // dumb cast necessary until we remove the deprecated static functions
     Matrix::Transpose(static_cast<const Matrix>(transformedMatrix), transformedMatrix);
 
-    auto vector = Vector4(plane.Normal, plane.D);
+    const auto vector = Vector4(plane.Normal, plane.D);
     Vector4 transformedVector;
     Vector4::Transform(vector, transformedMatrix, transformedVector);
     rResult = Plane(transformedVector);

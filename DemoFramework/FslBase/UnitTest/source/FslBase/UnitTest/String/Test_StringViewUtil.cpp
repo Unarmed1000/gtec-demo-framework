@@ -42,7 +42,7 @@ namespace
 
 TEST(Test_StringViewUtil, Create_CString)
 {
-  std::string_view strView = Fsl::StringViewUtil::Create("hello");
+  const std::string_view strView = Fsl::StringViewUtil::Create("hello");
 
   EXPECT_EQ(strView, "hello");
 }
@@ -58,7 +58,7 @@ TEST(Test_StringViewUtil, Create_CString_constexpr)
 
 TEST(Test_StringViewUtil, Create_CString_nullptr)
 {
-  std::string_view strView = Fsl::StringViewUtil::Create(nullptr);
+  const std::string_view strView = Fsl::StringViewUtil::Create(nullptr);
 
   EXPECT_EQ(strView.size(), 0u);
 }
@@ -75,7 +75,7 @@ TEST(Test_StringViewUtil, Create_CString_nullptr_constexpr)
 
 TEST(Test_StringViewUtil, UncheckedCreate_CString)
 {
-  std::string_view strView = Fsl::StringViewUtil::UncheckedCreate("hello");
+  const std::string_view strView = Fsl::StringViewUtil::UncheckedCreate("hello");
 
   EXPECT_EQ(strView, "hello");
 }
@@ -91,7 +91,7 @@ TEST(Test_StringViewUtil, UncheckedCreate_CString_constexpr)
 
 TEST(Test_StringViewUtil, Create_SubStr)
 {
-  std::string_view strView = Fsl::StringViewUtil::Create("yellow", 4u);
+  const std::string_view strView = Fsl::StringViewUtil::Create("yellow", 4u);
 
   EXPECT_EQ(strView, "yell");
 }
@@ -107,7 +107,7 @@ TEST(Test_StringViewUtil, Create_SubStr_constexpr)
 
 TEST(Test_StringViewUtil, Create_SubStr_nullptr)
 {
-  std::string_view strView = Fsl::StringViewUtil::Create(nullptr, 0u);
+  const std::string_view strView = Fsl::StringViewUtil::Create(nullptr, 0u);
 
   EXPECT_EQ(strView, "");
 }
@@ -130,7 +130,7 @@ TEST(Test_StringViewUtil, Create_SubStr_nullptr_InvalidCount)
 
 TEST(Test_StringViewUtil, UncheckedCreate_SubStr)
 {
-  std::string_view strView = Fsl::StringViewUtil::UncheckedCreate("yellow", 4u);
+  const std::string_view strView = Fsl::StringViewUtil::UncheckedCreate("yellow", 4u);
 
   EXPECT_EQ(strView, "yell");
 }

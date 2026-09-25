@@ -87,14 +87,14 @@ namespace
 
 TEST(TestIterator_PointerIterator, ConstructEmpty)
 {
-  PointerIterator<int32_t> itr;
+  const PointerIterator<int32_t> itr;
   FSL_PARAM_NOT_USED(itr);
 }
 
 TEST(TestIterator_PointerIterator, Construct)
 {
   std::array<int32_t, 3> testData = {1, 2, 3};
-  auto itr = CreateBegin(testData);
+  const auto itr = CreateBegin(testData);
 
   EXPECT_EQ(itr, itr);
 }
@@ -102,7 +102,7 @@ TEST(TestIterator_PointerIterator, Construct)
 TEST(TestIterator_PointerIterator, OpStar)
 {
   std::array<int32_t, 3> testData = {1, 2, 3};
-  auto itr = CreateBegin(testData);
+  const auto itr = CreateBegin(testData);
 
   EXPECT_EQ(testData[0], *itr);
 }
@@ -124,7 +124,7 @@ TEST(TestIterator_PointerIterator, OpArrow)
 TEST(TestIterator_PointerIterator, OpAccess)
 {
   std::array<int32_t, 3> testData = {1, 2, 3};
-  auto itr = CreateBegin(testData);
+  const auto itr = CreateBegin(testData);
 
   EXPECT_EQ(testData[0], itr[0]);
 }
@@ -151,7 +151,7 @@ TEST(TestIterator_PointerIterator, OpAddPost)
   ASSERT_EQ(testData[0], *itr);
   itr++;
   ASSERT_EQ(testData[1], *itr);
-  auto itrCopy = itr;
+  const auto itrCopy = itr;
   ASSERT_EQ(itrCopy, itr++);
 }
 
@@ -175,7 +175,7 @@ TEST(TestIterator_PointerIterator, OpSubPost)
 
   itr--;
   ASSERT_EQ(testData[2], *itr);
-  auto itrCopy = itr;
+  const auto itrCopy = itr;
   ASSERT_EQ(itrCopy, itr--);
 }
 
@@ -237,24 +237,24 @@ TEST(TestIterator_PointerIterator, OpAdd_Value_Itr)
 TEST(TestIterator_PointerIterator, OpSub_Itrs)
 {
   std::array<int32_t, 3> testData = {1, 2, 3};
-  auto itrBegin = CreateBegin(testData);
-  auto itrEnd = CreateEnd(testData);
+  const auto itrBegin = CreateBegin(testData);
+  const auto itrEnd = CreateEnd(testData);
   ASSERT_EQ(UncheckedNumericCast<int64_t>(testData.size()), UncheckedNumericCast<int64_t>(itrEnd - itrBegin));
 }
 
 TEST(TestIterator_PointerIterator, OpSub_ItrCItr)
 {
   std::array<int32_t, 3> testData = {1, 2, 3};
-  auto itrBegin = CreateBegin(testData);
-  auto itrEnd = CreateCEnd(testData);
+  const auto itrBegin = CreateBegin(testData);
+  const auto itrEnd = CreateCEnd(testData);
   ASSERT_EQ(UncheckedNumericCast<int64_t>(testData.size()), UncheckedNumericCast<int64_t>(itrEnd - itrBegin));
 }
 
 TEST(TestIterator_PointerIterator, OpSub_CItrItr)
 {
   std::array<int32_t, 3> testData = {1, 2, 3};
-  auto itrBegin = CreateCBegin(testData);
-  auto itrEnd = CreateEnd(testData);
+  const auto itrBegin = CreateCBegin(testData);
+  const auto itrEnd = CreateEnd(testData);
   ASSERT_EQ(UncheckedNumericCast<int64_t>(testData.size()), UncheckedNumericCast<int64_t>(itrEnd - itrBegin));
 }
 
@@ -262,10 +262,10 @@ TEST(TestIterator_PointerIterator, OpSub_CItrItr)
 TEST(TestIterator_PointerIterator, OpSub_ConversionToConst)
 {
   std::array<int32_t, 3> testData = {1, 2, 3};
-  auto itrBegin = CreateBegin(testData);
-  auto itrCBegin = CreateCBegin(testData);
+  const auto itrBegin = CreateBegin(testData);
+  const auto itrCBegin = CreateCBegin(testData);
 
-  PointerConstIterator<int32_t> itrConverted = itrBegin;
+  const PointerConstIterator<int32_t> itrConverted = itrBegin;
 
   ASSERT_EQ(itrCBegin, itrBegin);
   ASSERT_EQ(itrCBegin, itrConverted);
@@ -276,8 +276,8 @@ TEST(TestIterator_PointerIterator, OpSub_ConversionToConst)
 TEST(TestIterator_PointerIterator, OpEqual_ItrItr)
 {
   std::array<int32_t, 3> testData = {1, 2, 3};
-  auto itrBegin = CreateBegin(testData);
-  auto itrEnd = CreateEnd(testData);
+  const auto itrBegin = CreateBegin(testData);
+  const auto itrEnd = CreateEnd(testData);
 
   EXPECT_TRUE(itrBegin == itrBegin);
   EXPECT_FALSE(itrBegin == itrEnd);
@@ -288,8 +288,8 @@ TEST(TestIterator_PointerIterator, OpEqual_ItrItr)
 TEST(TestIterator_PointerIterator, OpEqual_CItrItr)
 {
   std::array<int32_t, 3> testData = {1, 2, 3};
-  auto itrBegin = CreateCBegin(testData);
-  auto itrEnd = CreateEnd(testData);
+  const auto itrBegin = CreateCBegin(testData);
+  const auto itrEnd = CreateEnd(testData);
 
   EXPECT_TRUE(itrBegin == itrBegin);
   EXPECT_FALSE(itrBegin == itrEnd);
@@ -300,8 +300,8 @@ TEST(TestIterator_PointerIterator, OpEqual_CItrItr)
 TEST(TestIterator_PointerIterator, OpEqual_ItrCItr)
 {
   std::array<int32_t, 3> testData = {1, 2, 3};
-  auto itrBegin = CreateBegin(testData);
-  auto itrEnd = CreateCEnd(testData);
+  const auto itrBegin = CreateBegin(testData);
+  const auto itrEnd = CreateCEnd(testData);
 
   EXPECT_TRUE(itrBegin == itrBegin);
   EXPECT_FALSE(itrBegin == itrEnd);
@@ -314,8 +314,8 @@ TEST(TestIterator_PointerIterator, OpEqual_ItrCItr)
 TEST(TestIterator_PointerIterator, OpNotEqual_ItrItr)
 {
   std::array<int32_t, 3> testData = {1, 2, 3};
-  auto itrBegin = CreateBegin(testData);
-  auto itrEnd = CreateEnd(testData);
+  const auto itrBegin = CreateBegin(testData);
+  const auto itrEnd = CreateEnd(testData);
 
   EXPECT_FALSE(itrBegin != itrBegin);
   EXPECT_TRUE(itrBegin != itrEnd);
@@ -326,8 +326,8 @@ TEST(TestIterator_PointerIterator, OpNotEqual_ItrItr)
 TEST(TestIterator_PointerIterator, OpNotEqual_CItrItr)
 {
   std::array<int32_t, 3> testData = {1, 2, 3};
-  auto itrBegin = CreateCBegin(testData);
-  auto itrEnd = CreateEnd(testData);
+  const auto itrBegin = CreateCBegin(testData);
+  const auto itrEnd = CreateEnd(testData);
 
   EXPECT_FALSE(itrBegin != itrBegin);
   EXPECT_TRUE(itrBegin != itrEnd);
@@ -338,8 +338,8 @@ TEST(TestIterator_PointerIterator, OpNotEqual_CItrItr)
 TEST(TestIterator_PointerIterator, OpNotEqual_ItrCItr)
 {
   std::array<int32_t, 3> testData = {1, 2, 3};
-  auto itrBegin = CreateBegin(testData);
-  auto itrEnd = CreateCEnd(testData);
+  const auto itrBegin = CreateBegin(testData);
+  const auto itrEnd = CreateCEnd(testData);
 
   EXPECT_FALSE(itrBegin != itrBegin);
   EXPECT_TRUE(itrBegin != itrEnd);
@@ -353,8 +353,8 @@ TEST(TestIterator_PointerIterator, OpLess_ItrItr)
 {
   std::array<int32_t, 3> testData = {1, 2, 3};
 
-  auto itrBegin = CreateBegin(testData);
-  auto itrEnd = CreateEnd(testData);
+  const auto itrBegin = CreateBegin(testData);
+  const auto itrEnd = CreateEnd(testData);
 
   EXPECT_FALSE(itrBegin < itrBegin);
   EXPECT_TRUE(itrBegin < itrEnd);
@@ -367,8 +367,8 @@ TEST(TestIterator_PointerIterator, OpLess_CItrItr)
 {
   std::array<int32_t, 3> testData = {1, 2, 3};
 
-  auto itrBegin = CreateCBegin(testData);
-  auto itrEnd = CreateEnd(testData);
+  const auto itrBegin = CreateCBegin(testData);
+  const auto itrEnd = CreateEnd(testData);
 
   EXPECT_FALSE(itrBegin < itrBegin);
   EXPECT_TRUE(itrBegin < itrEnd);
@@ -381,8 +381,8 @@ TEST(TestIterator_PointerIterator, OpLess_ItrCItr)
 {
   std::array<int32_t, 3> testData = {1, 2, 3};
 
-  auto itrBegin = CreateBegin(testData);
-  auto itrEnd = CreateCEnd(testData);
+  const auto itrBegin = CreateBegin(testData);
+  const auto itrEnd = CreateCEnd(testData);
 
   EXPECT_FALSE(itrBegin < itrBegin);
   EXPECT_TRUE(itrBegin < itrEnd);
@@ -396,8 +396,8 @@ TEST(TestIterator_PointerIterator, OpLessOrEqual_ItrItr)
 {
   std::array<int32_t, 3> testData = {1, 2, 3};
 
-  auto itrBegin = CreateBegin(testData);
-  auto itrEnd = CreateEnd(testData);
+  const auto itrBegin = CreateBegin(testData);
+  const auto itrEnd = CreateEnd(testData);
 
   EXPECT_TRUE(itrBegin <= itrBegin);
   EXPECT_TRUE(itrBegin <= itrEnd);
@@ -409,8 +409,8 @@ TEST(TestIterator_PointerIterator, OpLessOrEqual_CItrItr)
 {
   std::array<int32_t, 3> testData = {1, 2, 3};
 
-  auto itrBegin = CreateCBegin(testData);
-  auto itrEnd = CreateEnd(testData);
+  const auto itrBegin = CreateCBegin(testData);
+  const auto itrEnd = CreateEnd(testData);
 
   EXPECT_TRUE(itrBegin <= itrBegin);
   EXPECT_TRUE(itrBegin <= itrEnd);
@@ -422,8 +422,8 @@ TEST(TestIterator_PointerIterator, OpLessOrEqual_ItrCItr)
 {
   std::array<int32_t, 3> testData = {1, 2, 3};
 
-  auto itrBegin = CreateBegin(testData);
-  auto itrEnd = CreateCEnd(testData);
+  const auto itrBegin = CreateBegin(testData);
+  const auto itrEnd = CreateCEnd(testData);
 
   EXPECT_TRUE(itrBegin <= itrBegin);
   EXPECT_TRUE(itrBegin <= itrEnd);
@@ -437,8 +437,8 @@ TEST(TestIterator_PointerIterator, OpGreater_ItrItr)
 {
   std::array<int32_t, 3> testData = {1, 2, 3};
 
-  auto itrBegin = CreateBegin(testData);
-  auto itrEnd = CreateEnd(testData);
+  const auto itrBegin = CreateBegin(testData);
+  const auto itrEnd = CreateEnd(testData);
 
   EXPECT_FALSE(itrBegin > itrBegin);
   EXPECT_FALSE(itrBegin > itrEnd);
@@ -451,8 +451,8 @@ TEST(TestIterator_PointerIterator, OpGreater_CItrItr)
 {
   std::array<int32_t, 3> testData = {1, 2, 3};
 
-  auto itrBegin = CreateCBegin(testData);
-  auto itrEnd = CreateEnd(testData);
+  const auto itrBegin = CreateCBegin(testData);
+  const auto itrEnd = CreateEnd(testData);
 
   EXPECT_FALSE(itrBegin > itrBegin);
   EXPECT_FALSE(itrBegin > itrEnd);
@@ -464,8 +464,8 @@ TEST(TestIterator_PointerIterator, OpGreater_ItrCItr)
 {
   std::array<int32_t, 3> testData = {1, 2, 3};
 
-  auto itrBegin = CreateBegin(testData);
-  auto itrEnd = CreateCEnd(testData);
+  const auto itrBegin = CreateBegin(testData);
+  const auto itrEnd = CreateCEnd(testData);
 
   EXPECT_FALSE(itrBegin > itrBegin);
   EXPECT_FALSE(itrBegin > itrEnd);
@@ -479,8 +479,8 @@ TEST(TestIterator_PointerIterator, OpGreaterOrEqual_ItrItr)
 {
   std::array<int32_t, 3> testData = {1, 2, 3};
 
-  auto itrBegin = CreateBegin(testData);
-  auto itrEnd = CreateEnd(testData);
+  const auto itrBegin = CreateBegin(testData);
+  const auto itrEnd = CreateEnd(testData);
 
   EXPECT_TRUE(itrBegin >= itrBegin);
   EXPECT_FALSE(itrBegin >= itrEnd);
@@ -493,8 +493,8 @@ TEST(TestIterator_PointerIterator, OpGreaterOrEqual_CItrItr)
 {
   std::array<int32_t, 3> testData = {1, 2, 3};
 
-  auto itrBegin = CreateCBegin(testData);
-  auto itrEnd = CreateEnd(testData);
+  const auto itrBegin = CreateCBegin(testData);
+  const auto itrEnd = CreateEnd(testData);
 
   EXPECT_TRUE(itrBegin >= itrBegin);
   EXPECT_FALSE(itrBegin >= itrEnd);
@@ -507,8 +507,8 @@ TEST(TestIterator_PointerIterator, OpGreaterOrEqual_ItrCItr)
 {
   std::array<int32_t, 3> testData = {1, 2, 3};
 
-  auto itrBegin = CreateBegin(testData);
-  auto itrEnd = CreateCEnd(testData);
+  const auto itrBegin = CreateBegin(testData);
+  const auto itrEnd = CreateCEnd(testData);
 
   EXPECT_TRUE(itrBegin >= itrBegin);
   EXPECT_FALSE(itrBegin >= itrEnd);

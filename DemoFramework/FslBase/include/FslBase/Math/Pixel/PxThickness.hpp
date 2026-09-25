@@ -185,78 +185,78 @@ namespace Fsl
     }
 
 
-    constexpr value_type Left() const noexcept
+    [[nodiscard]] constexpr value_type Left() const noexcept
     {
       return m_left;
     }
 
-    constexpr value_type Top() const noexcept
+    [[nodiscard]] constexpr value_type Top() const noexcept
     {
       return m_top;
     }
 
-    constexpr value_type Right() const noexcept
+    [[nodiscard]] constexpr value_type Right() const noexcept
     {
       return m_right;
     }
 
-    constexpr value_type Bottom() const noexcept
+    [[nodiscard]] constexpr value_type Bottom() const noexcept
     {
       return m_bottom;
     }
 
 
-    constexpr raw_value_type RawLeft() const noexcept
+    [[nodiscard]] constexpr raw_value_type RawLeft() const noexcept
     {
       return m_left.RawValue();
     }
 
-    constexpr raw_value_type RawTop() const noexcept
+    [[nodiscard]] constexpr raw_value_type RawTop() const noexcept
     {
       return m_top.RawValue();
     }
 
-    constexpr raw_value_type RawRight() const noexcept
+    [[nodiscard]] constexpr raw_value_type RawRight() const noexcept
     {
       return m_right.RawValue();
     }
 
-    constexpr raw_value_type RawBottom() const noexcept
+    [[nodiscard]] constexpr raw_value_type RawBottom() const noexcept
     {
       return m_bottom.RawValue();
     }
 
-    constexpr PxPoint2 TopLeft() const
+    [[nodiscard]] constexpr PxPoint2 TopLeft() const
     {
       return {m_left, m_top};
     }
 
-    constexpr PxPoint2 TopRight() const
+    [[nodiscard]] constexpr PxPoint2 TopRight() const
     {
       return {m_right, m_top};
     }
 
-    constexpr PxPoint2 BottomLeft() const
+    [[nodiscard]] constexpr PxPoint2 BottomLeft() const
     {
       return {m_left, m_bottom};
     }
 
-    constexpr PxPoint2 BottomRight() const
+    [[nodiscard]] constexpr PxPoint2 BottomRight() const
     {
       return {m_right, m_bottom};
     }
 
-    constexpr PxSize2D Sum() const noexcept
+    [[nodiscard]] constexpr PxSize2D Sum() const noexcept
     {
       return {m_left + m_right, m_top + m_bottom};
     }
 
-    constexpr value_type SumX() const noexcept
+    [[nodiscard]] constexpr value_type SumX() const noexcept
     {
       return m_left + m_right;
     }
 
-    constexpr value_type SumY() const noexcept
+    [[nodiscard]] constexpr value_type SumY() const noexcept
     {
       return m_top + m_bottom;
     }

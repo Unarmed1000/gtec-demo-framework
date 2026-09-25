@@ -52,7 +52,7 @@ namespace Fsl::TypeConverter
   template <>
   constexpr inline PxSize2D To<PxSize2D, Point2>(const Point2& value)
   {
-    static_assert(std::is_same<PxSize2D::raw_value_type, Point2::value_type>::value, "we expect the types to be equal");
+    static_assert(std::is_same_v<PxSize2D::raw_value_type, Point2::value_type>, "we expect the types to be equal");
     return PxSize2D::Create(value.X, value.Y);
   }
 
@@ -89,7 +89,7 @@ namespace Fsl::TypeConverter
   template <>
   constexpr inline Extent2D UncheckedTo<Extent2D, PxExtent2D>(const PxExtent2D& value) noexcept
   {
-    static_assert(std::is_same<Extent2D::value_type, PxExtent2D::raw_value_type>::value, "we expect the types to be equal");
+    static_assert(std::is_same_v<Extent2D::value_type, PxExtent2D::raw_value_type>, "we expect the types to be equal");
     return {value.Width.Value, value.Height.Value};
   }
 
@@ -98,7 +98,7 @@ namespace Fsl::TypeConverter
   template <>
   constexpr inline Offset2D UncheckedTo<Offset2D, PxPoint2>(const PxPoint2& value) noexcept
   {
-    static_assert(std::is_same<Offset2D::value_type, PxPoint2::raw_value_type>::value, "we expect the types to be equal");
+    static_assert(std::is_same_v<Offset2D::value_type, PxPoint2::raw_value_type>, "we expect the types to be equal");
     return {value.X.Value, value.Y.Value};
   }
 
@@ -107,14 +107,14 @@ namespace Fsl::TypeConverter
   template <>
   constexpr inline Point2 UncheckedTo<Point2, PxPoint2>(const PxPoint2& value) noexcept
   {
-    static_assert(std::is_same<Point2::value_type, PxPoint2::raw_value_type>::value, "we expect the types to be equal");
+    static_assert(std::is_same_v<Point2::value_type, PxPoint2::raw_value_type>, "we expect the types to be equal");
     return {value.X.Value, value.Y.Value};
   }
 
   template <>
   constexpr inline Point2 UncheckedTo<Point2, PxSize2D>(const PxSize2D& value) noexcept
   {
-    static_assert(std::is_same<Point2::value_type, PxSize2D::raw_value_type>::value, "we expect the types to be equal");
+    static_assert(std::is_same_v<Point2::value_type, PxSize2D::raw_value_type>, "we expect the types to be equal");
     return {value.RawWidth(), value.RawHeight()};
   }
 
@@ -143,7 +143,7 @@ namespace Fsl::TypeConverter
   template <>
   constexpr inline PxAreaRectangleF UncheckedTo<PxAreaRectangleF, Rect>(const Rect& value) noexcept
   {
-    static_assert(std::is_same<PxAreaRectangleF::raw_value_type, Rect::value_type>::value, "we expect the types to be equal");
+    static_assert(std::is_same_v<PxAreaRectangleF::raw_value_type, Rect::value_type>, "we expect the types to be equal");
 
     // This should always be the case for a Rect (so we only assert check it)
     assert(value.Left() <= value.Right() && value.Top() <= value.Bottom());
@@ -155,7 +155,7 @@ namespace Fsl::TypeConverter
   template <>
   constexpr inline PxExtent2D UncheckedTo<PxExtent2D, Extent2D>(const Extent2D& value) noexcept
   {
-    static_assert(std::is_same<PxExtent2D::raw_value_type, Extent2D::value_type>::value, "we expect the types to be equal");
+    static_assert(std::is_same_v<PxExtent2D::raw_value_type, Extent2D::value_type>, "we expect the types to be equal");
     return PxExtent2D::Create(value.Width, value.Height);
   }
 
@@ -170,7 +170,7 @@ namespace Fsl::TypeConverter
   template <>
   constexpr inline PxPoint2 UncheckedTo<PxPoint2, Point2>(const Point2& value) noexcept
   {
-    static_assert(std::is_same<PxPoint2::raw_value_type, Point2::value_type>::value, "we expect the types to be equal");
+    static_assert(std::is_same_v<PxPoint2::raw_value_type, Point2::value_type>, "we expect the types to be equal");
     return PxPoint2::Create(value.X, value.Y);
   }
 
@@ -237,7 +237,7 @@ namespace Fsl::TypeConverter
   template <>
   constexpr inline PxSize2D UncheckedTo<PxSize2D, Point2>(const Point2& value) noexcept
   {
-    static_assert(std::is_same<PxSize2D::raw_value_type, Point2::value_type>::value, "we expect the types to be equal");
+    static_assert(std::is_same_v<PxSize2D::raw_value_type, Point2::value_type>, "we expect the types to be equal");
     return PxSize2D::Create(value.X, value.Y);
   }
 

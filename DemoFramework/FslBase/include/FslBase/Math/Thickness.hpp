@@ -54,27 +54,27 @@ namespace Fsl
     {
     }
 
-    constexpr int32_t Bottom() const
+    [[nodiscard]] constexpr int32_t Bottom() const
     {
       return m_bottom;
     }
-    constexpr int32_t Left() const
+    [[nodiscard]] constexpr int32_t Left() const
     {
       return m_left;
     }
-    constexpr int32_t Right() const
+    [[nodiscard]] constexpr int32_t Right() const
     {
       return m_right;
     }
-    constexpr int32_t Top() const
+    [[nodiscard]] constexpr int32_t Top() const
     {
       return m_top;
     }
-    constexpr int32_t SumX() const
+    [[nodiscard]] constexpr int32_t SumX() const
     {
       return m_left + m_right;
     }
-    constexpr int32_t SumY() const
+    [[nodiscard]] constexpr int32_t SumY() const
     {
       return m_top + m_bottom;
     }

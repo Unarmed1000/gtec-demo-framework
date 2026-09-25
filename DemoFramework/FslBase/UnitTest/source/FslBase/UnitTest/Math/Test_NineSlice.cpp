@@ -48,7 +48,7 @@ namespace
 
 TEST(TestMath_NineSlice, Construct_Default)
 {
-  NineSlice value;
+  const NineSlice value;
 
   EXPECT_EQ(0, value.SliceFromTopLeftX());
   EXPECT_EQ(0, value.SliceFromTopLeftY());
@@ -62,7 +62,7 @@ TEST(TestMath_NineSlice, Construct_Default)
 
 TEST(TestMath_NineSlice, Construct)
 {
-  NineSlice value(1, 2, 3, 4);
+  const NineSlice value(1, 2, 3, 4);
 
   EXPECT_EQ(1, value.SliceFromTopLeftX());
   EXPECT_EQ(2, value.SliceFromTopLeftY());
@@ -85,8 +85,8 @@ TEST(TestMath_NineSlice, Construct_Invalid)
 
 TEST(TestMath_NineSlice, Equal)
 {
-  NineSlice value1(1, 2, 3, 4);
-  NineSlice value2(1, 2, 3, 4);
+  const NineSlice value1(1, 2, 3, 4);
+  const NineSlice value2(1, 2, 3, 4);
 
   EXPECT_EQ(value1, value2);
   EXPECT_EQ(value1, value1);
@@ -96,11 +96,11 @@ TEST(TestMath_NineSlice, Equal)
 
 TEST(TestMath_NineSlice, NotEqual)
 {
-  NineSlice value1(1, 2, 3, 4);
-  NineSlice value2(5, 2, 3, 4);
-  NineSlice value3(1, 5, 3, 4);
-  NineSlice value4(1, 2, 5, 4);
-  NineSlice value5(1, 2, 3, 5);
+  const NineSlice value1(1, 2, 3, 4);
+  const NineSlice value2(5, 2, 3, 4);
+  const NineSlice value3(1, 5, 3, 4);
+  const NineSlice value4(1, 2, 5, 4);
+  const NineSlice value5(1, 2, 3, 5);
 
   EXPECT_NE(value1, value2);
   EXPECT_NE(value1, value3);

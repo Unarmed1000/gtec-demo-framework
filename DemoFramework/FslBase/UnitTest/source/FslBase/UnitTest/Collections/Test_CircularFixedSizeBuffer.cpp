@@ -49,7 +49,7 @@ namespace
 
 TEST(TestCollections_CircularFixedSizeBuffer, Construct)
 {
-  CircularFixedSizeBuffer<uint32_t> buffer(32);
+  const CircularFixedSizeBuffer<uint32_t> buffer(32);
   EXPECT_TRUE(buffer.empty());
 }
 
@@ -86,9 +86,9 @@ TEST(TestCollections_CircularFixedSizeBuffer, ClearDestructs)
   auto obj1 = std::make_shared<uint32_t>(1u);
   auto obj2 = std::make_shared<uint32_t>(2u);
   auto obj3 = std::make_shared<uint32_t>(3u);
-  std::weak_ptr<uint32_t> weakObj1 = obj1;
-  std::weak_ptr<uint32_t> weakObj2 = obj2;
-  std::weak_ptr<uint32_t> weakObj3 = obj3;
+  const std::weak_ptr<uint32_t> weakObj1 = obj1;
+  const std::weak_ptr<uint32_t> weakObj2 = obj2;
+  const std::weak_ptr<uint32_t> weakObj3 = obj3;
 
   buffer.push_back(obj1);
   buffer.push_back(obj2);
@@ -112,7 +112,7 @@ TEST(TestCollections_CircularFixedSizeBuffer, ClearDestructs)
 
 TEST(TestCollections_CircularFixedSizeBuffer, Empty_Empty)
 {
-  CircularFixedSizeBuffer<uint32_t> buffer(32);
+  const CircularFixedSizeBuffer<uint32_t> buffer(32);
   EXPECT_TRUE(buffer.empty());
 }
 
@@ -372,7 +372,7 @@ TEST(TestCollections_CircularFixedSizeBuffer, Size_Empty)
 
 TEST(TestCollections_CircularFixedSizeBuffer, Size)
 {
-  CircularFixedSizeBuffer<uint32_t> buffer(32);
+  const CircularFixedSizeBuffer<uint32_t> buffer(32);
   EXPECT_EQ(buffer.size(), 0u);
 }
 
@@ -596,7 +596,7 @@ TEST(TestCollections_CircularFixedSizeBuffer, PopFront)
 {
   CircularFixedSizeBuffer<uint32_t> buffer(2);
 
-  auto v1 = 1u;
+  const auto v1 = 1u;
   buffer.push_back(v1);
 
   EXPECT_TRUE(!buffer.empty());
@@ -612,7 +612,7 @@ TEST(TestCollections_CircularFixedSizeBuffer, PopFrontDestructs)
   CircularFixedSizeBuffer<std::shared_ptr<uint32_t>> buffer(2);
 
   auto obj1 = std::make_shared<uint32_t>(1u);
-  std::weak_ptr<uint32_t> weakObj1 = obj1;
+  const std::weak_ptr<uint32_t> weakObj1 = obj1;
 
   buffer.push_back(obj1);
   obj1.reset();
@@ -629,7 +629,7 @@ TEST(TestCollections_CircularFixedSizeBuffer, PopBack)
 {
   CircularFixedSizeBuffer<uint32_t> buffer(2);
 
-  auto v1 = 1u;
+  const auto v1 = 1u;
   buffer.push_back(v1);
 
   EXPECT_TRUE(!buffer.empty());
@@ -645,7 +645,7 @@ TEST(TestCollections_CircularFixedSizeBuffer, PopBackDestructs)
   CircularFixedSizeBuffer<std::shared_ptr<uint32_t>> buffer(2);
 
   auto obj1 = std::make_shared<uint32_t>(1u);
-  std::weak_ptr<uint32_t> weakObj1 = obj1;
+  const std::weak_ptr<uint32_t> weakObj1 = obj1;
 
   buffer.push_back(obj1);
   obj1.reset();
@@ -696,8 +696,8 @@ TEST(TestCollections_CircularFixedSizeBuffer, Grow_TwoSegment_Simple)
   EXPECT_EQ(buffer[0], v2);
   EXPECT_EQ(buffer[1], v3);
   {
-    auto seg0 = buffer.AsReadOnlySpan(0);
-    auto seg1 = buffer.AsReadOnlySpan(1);
+    const auto seg0 = buffer.AsReadOnlySpan(0);
+    const auto seg1 = buffer.AsReadOnlySpan(1);
     EXPECT_EQ(1u, seg0.size());
     EXPECT_EQ(1u, seg1.size());
     EXPECT_EQ(seg0[0], v2);
@@ -712,7 +712,7 @@ TEST(TestCollections_CircularFixedSizeBuffer, Grow_TwoSegment_Simple)
   EXPECT_EQ(buffer[0], v2);
   EXPECT_EQ(buffer[1], v3);
   {
-    auto seg0 = buffer.AsReadOnlySpan(0);
+    const auto seg0 = buffer.AsReadOnlySpan(0);
     EXPECT_EQ(2u, seg0.size());
     EXPECT_EQ(seg0[0], v2);
     EXPECT_EQ(seg0[1], v3);
@@ -740,8 +740,8 @@ TEST(TestCollections_CircularFixedSizeBuffer, Grow_TwoSegment)
   EXPECT_EQ(buffer[1], v4);
   EXPECT_EQ(buffer[2], v5);
   {
-    auto seg0 = buffer.AsReadOnlySpan(0);
-    auto seg1 = buffer.AsReadOnlySpan(1);
+    const auto seg0 = buffer.AsReadOnlySpan(0);
+    const auto seg1 = buffer.AsReadOnlySpan(1);
     EXPECT_EQ(1u, seg0.size());
     EXPECT_EQ(2u, seg1.size());
     EXPECT_EQ(seg0[0], v3);
@@ -758,8 +758,8 @@ TEST(TestCollections_CircularFixedSizeBuffer, Grow_TwoSegment)
   EXPECT_EQ(buffer[1], v4);
   EXPECT_EQ(buffer[2], v5);
   {
-    auto seg0 = buffer.AsReadOnlySpan(0);
-    auto seg1 = buffer.AsReadOnlySpan(1);
+    const auto seg0 = buffer.AsReadOnlySpan(0);
+    const auto seg1 = buffer.AsReadOnlySpan(1);
     EXPECT_EQ(2u, seg0.size());
     EXPECT_EQ(1u, seg1.size());
     EXPECT_EQ(seg0[0], v3);

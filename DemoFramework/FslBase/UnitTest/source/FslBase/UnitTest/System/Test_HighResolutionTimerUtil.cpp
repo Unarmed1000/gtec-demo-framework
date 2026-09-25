@@ -47,13 +47,13 @@ namespace
 
 TEST(TestSystem_HighResolutionTimerUtil, ToTimeSpan)
 {
-  HighResolutionTimer timer;
+  const HighResolutionTimer timer;
 
-  auto startTime = timer.GetNativeTicks();
+  const auto startTime = timer.GetNativeTicks();
   Thread::SleepMilliseconds(2);
-  auto endTime = timer.GetNativeTicks();
+  const auto endTime = timer.GetNativeTicks();
 
-  [[maybe_unused]] TimeSpan timeSpan = HighResolutionTimerUtil::ToTimeSpan(endTime - startTime, timer.GetNativeTickFrequency());
+  [[maybe_unused]] const TimeSpan timeSpan = HighResolutionTimerUtil::ToTimeSpan(endTime - startTime, timer.GetNativeTickFrequency());
 }
 
 // ---------------------------------------------------------------------------------------------------------------------------------------------------
@@ -61,7 +61,7 @@ TEST(TestSystem_HighResolutionTimerUtil, ToTimeSpan)
 TEST(TestSystem_HighResolutionTimerUtil, ToTimeSpanKnown)
 {
   // 10000 / 100 = 100seconds
-  TimeSpan timeSpan = HighResolutionTimerUtil::ToTimeSpan(10000, 100);
+  const TimeSpan timeSpan = HighResolutionTimerUtil::ToTimeSpan(10000, 100);
 
   EXPECT_EQ(timeSpan, TimeSpan::FromSeconds(100));
 }
@@ -71,7 +71,7 @@ TEST(TestSystem_HighResolutionTimerUtil, ToTimeSpanKnown)
 TEST(TestSystem_HighResolutionTimerUtil, ToTimeSpanKnown2)
 {
   // 10000 / 100 = 10000 seconds
-  TimeSpan timeSpan = HighResolutionTimerUtil::ToTimeSpan(10000, 1);
+  const TimeSpan timeSpan = HighResolutionTimerUtil::ToTimeSpan(10000, 1);
 
   EXPECT_EQ(timeSpan, TimeSpan::FromSeconds(10000));
 }

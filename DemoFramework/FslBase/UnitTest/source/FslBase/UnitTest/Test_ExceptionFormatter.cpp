@@ -60,9 +60,9 @@ namespace
 
 TEST(Test_ExceptionMessageFormatter, TryFormatException_Empty)
 {
-  ExceptionMessageFormatter formatter;
+  const ExceptionMessageFormatter formatter;
 
-  IndexOutOfRangeException ex;
+  const IndexOutOfRangeException ex;
   std::string message("foo");
   EXPECT_FALSE(formatter.TryFormatException(ex, message));
   EXPECT_EQ("foo", message);
@@ -74,7 +74,7 @@ TEST(Test_ExceptionMessageFormatter, TryFormatException)
   ExceptionMessageFormatter formatter;
   formatter.Add(TryFormatException);
 
-  IndexOutOfRangeException ex;
+  const IndexOutOfRangeException ex;
   std::string message("foo");
   EXPECT_TRUE(formatter.TryFormatException(ex, message));
   EXPECT_EQ(g_magicFormattedException, message);
@@ -86,7 +86,7 @@ TEST(Test_ExceptionMessageFormatter, TryFormatException_NoMatch)
   ExceptionMessageFormatter formatter;
   formatter.Add(TryFormatException);
 
-  UsageErrorException ex;
+  const UsageErrorException ex;
   std::string message("foo");
   EXPECT_FALSE(formatter.TryFormatException(ex, message));
   EXPECT_EQ("foo", message);

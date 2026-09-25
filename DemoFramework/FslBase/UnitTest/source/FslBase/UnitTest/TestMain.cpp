@@ -35,7 +35,7 @@
 GTEST_API_ int main(int argc, char** argv)
 {
   // Store the exe path while running tests
-  Fsl::CurrentExePath::ScopedExePath exeScope(argc > 0 ? argv[0] : nullptr);
+  const Fsl::CurrentExePath::ScopedExePath exeScope(argc > 0 ? argv[0] : nullptr);
 
   testing::InitGoogleTest(&argc, argv);
 

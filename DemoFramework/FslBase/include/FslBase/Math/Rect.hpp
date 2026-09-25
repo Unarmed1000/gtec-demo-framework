@@ -89,7 +89,7 @@ namespace Fsl
     }
 
     //! @brief Check if the rectangle is considered t be valid
-    constexpr bool IsValid() const
+    [[nodiscard]] constexpr bool IsValid() const
     {
       return m_right >= m_left && m_bottom >= m_top;
     }
@@ -120,67 +120,67 @@ namespace Fsl
       m_bottom = std::max(bottom, top);
     }
 
-    constexpr float X() const
+    [[nodiscard]] constexpr float X() const
     {
       return m_left;
     }
 
-    constexpr float Y() const
+    [[nodiscard]] constexpr float Y() const
     {
       return m_top;
     }
 
-    constexpr float Width() const
+    [[nodiscard]] constexpr float Width() const
     {
       return m_right - m_left;
     }
 
-    constexpr float Height() const
+    [[nodiscard]] constexpr float Height() const
     {
       return m_bottom - m_top;
     }
 
-    constexpr float Left() const
+    [[nodiscard]] constexpr float Left() const
     {
       return m_left;
     }
 
-    constexpr float Top() const
+    [[nodiscard]] constexpr float Top() const
     {
       return m_top;
     }
 
-    constexpr float Right() const
+    [[nodiscard]] constexpr float Right() const
     {
       return m_right;
     }
 
-    constexpr float Bottom() const
+    [[nodiscard]] constexpr float Bottom() const
     {
       return m_bottom;
     }
 
-    inline constexpr Vector2 GetSize() const
+    [[nodiscard]] inline constexpr Vector2 GetSize() const
     {
       return {Width(), Height()};
     }
 
-    inline constexpr Vector2 TopLeft() const
+    [[nodiscard]] inline constexpr Vector2 TopLeft() const
     {
       return {m_left, m_top};
     }
 
-    inline constexpr Vector2 TopRight() const
+    [[nodiscard]] inline constexpr Vector2 TopRight() const
     {
       return {m_right, m_top};
     }
 
-    inline constexpr Vector2 BottomLeft() const
+    [[nodiscard]] inline constexpr Vector2 BottomLeft() const
     {
       return {m_left, m_bottom};
     }
 
-    inline constexpr Vector2 BottomRight() const
+    [[nodiscard]] inline constexpr Vector2 BottomRight() const
     {
       return {m_right, m_bottom};
     }
@@ -189,7 +189,7 @@ namespace Fsl
     void SetHeight(const float value);
 
     //! @brief Check if the x,y coordinate is considered to be contained within this rectangle
-    constexpr bool Contains(const int32_t x, const int32_t y) const
+    [[nodiscard]] constexpr bool Contains(const int32_t x, const int32_t y) const
     {
       return (static_cast<float>(x) >= Left() && static_cast<float>(x) < Right() && static_cast<float>(y) >= Top() &&
               static_cast<float>(y) < Bottom());
@@ -197,33 +197,33 @@ namespace Fsl
 
 
     //! @brief Check if the x,y coordinate is considered to be contained within this rectangle
-    constexpr bool Contains(const float x, const float y) const
+    [[nodiscard]] constexpr bool Contains(const float x, const float y) const
     {
       return (x >= Left() && x < Right() && y >= Top() && y < Bottom());
     }
 
     //! @brief Check if the x,y coordinate is considered to be contained within this rectangle
-    constexpr bool Contains(const Point2& value) const
+    [[nodiscard]] constexpr bool Contains(const Point2& value) const
     {
       return (static_cast<float>(value.X) >= Left() && static_cast<float>(value.X) < Right() && static_cast<float>(value.Y) >= Top() &&
               static_cast<float>(value.Y) < Bottom());
     }
 
     //! @brief Check if the x,y coordinate is considered to be contained within this rectangle
-    constexpr bool Contains(const Vector2& value) const
+    [[nodiscard]] constexpr bool Contains(const Vector2& value) const
     {
       return (value.X >= Left() && value.X < Right() && value.Y >= Top() && value.Y < Bottom());
     }
 
     //! @brief Check if the rectangle is considered to be contained within this rectangle
-    constexpr bool Contains(const Rect& value) const
+    [[nodiscard]] constexpr bool Contains(const Rect& value) const
     {
       return (value.Left() >= Left() && value.Right() <= Right() && value.Top() >= Top() && value.Bottom() <= Bottom());
     }
 
 
     //! @brief Get the start location of this rect
-    constexpr Vector2 GetLocation() const
+    [[nodiscard]] constexpr Vector2 GetLocation() const
     {
       return {m_left, m_top};
     }
@@ -240,7 +240,7 @@ namespace Fsl
 
 
     //! @brief Get the center of this rect
-    constexpr Vector2 GetCenter() const
+    [[nodiscard]] constexpr Vector2 GetCenter() const
     {
       return {m_left + (Width() / 2), m_top + (Height() / 2)};
     }
@@ -259,14 +259,14 @@ namespace Fsl
 
     //! @brief Gets a value that indicates whether the Rectangle is empty
     //!        An empty rectangle has all its values set to 0.
-    constexpr bool IsEmpty() const
+    [[nodiscard]] constexpr bool IsEmpty() const
     {
       return (Width() == 0 && Height() == 0 && X() == 0 && Y() == 0);
     }
 
 
     //! @brief Determines whether a specified Rectangle intersects with this Rectangle.
-    constexpr bool Intersects(const Rect& value) const
+    [[nodiscard]] constexpr bool Intersects(const Rect& value) const
     {
       return value.Left() < Right() && Left() < value.Right() && value.Top() < Bottom() && Top() < value.Bottom();
     }

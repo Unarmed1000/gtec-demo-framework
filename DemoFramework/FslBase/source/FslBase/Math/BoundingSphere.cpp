@@ -76,7 +76,7 @@ namespace Fsl
     bool inside = true;
     std::array<Vector3, 8> corners;
     box.GetCorners(corners);
-    for (auto corner : corners)
+    for (const auto corner : corners)
     {
       if (Contains(corner) == ContainmentType::Disjoint)
       {
@@ -137,7 +137,7 @@ namespace Fsl
 
     std::array<Vector3, 8> corners;
     frustum.GetCorners(corners);
-    for (auto corner : corners)
+    for (const auto corner : corners)
     {
       if (Contains(corner) == ContainmentType::Disjoint)
       {
@@ -151,7 +151,7 @@ namespace Fsl
     }
 
     // check if the distance from sphere center to frustum face < radius
-    double dmin = 0;
+    const double dmin = 0;
     // TODO: calcul dmin
 
     if (dmin <= Radius * Radius)
@@ -237,7 +237,7 @@ namespace Fsl
     auto maxz = maxx;
 
     // Find the most extreme points along the principle axis.
-    for (auto point : points)
+    for (const auto point : points)
     {
       if (point.X < minx.X)
       {
@@ -291,15 +291,15 @@ namespace Fsl
     // From: Mathematics for 3D Game Programming and Computer Graphics, Eric Lengyel, Third Edition.
     // Page 218
     float sqRadius = radius * radius;
-    for (auto point : points)
+    for (const auto point : points)
     {
       const Vector3 diff = (point - center);
       const float sqDist = diff.LengthSquared();
       if (sqDist > sqRadius)
       {
         const float distance = std::sqrt(sqDist);    // equal to diff.Length();
-        Vector3 direction = diff / distance;
-        Vector3 g = center - radius * direction;
+        const Vector3 direction = diff / distance;
+        const Vector3 g = center - radius * direction;
         center = (g + point) / 2;
         radius = Vector3::Distance(point, center);
         sqRadius = radius * radius;

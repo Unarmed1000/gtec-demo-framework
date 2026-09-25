@@ -76,12 +76,12 @@ namespace Fsl
       assert(value >= value_type());
     }
 
-    constexpr inline value_type Value() const noexcept
+    [[nodiscard]] constexpr inline value_type Value() const noexcept
     {
       return m_value;
     }
 
-    constexpr inline raw_value_type RawValue() const noexcept
+    [[nodiscard]] constexpr inline raw_value_type RawValue() const noexcept
     {
       return m_value.Value;
     }

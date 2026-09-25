@@ -72,7 +72,7 @@ TEST(Test_ArgumentParser, Switch_a_none)
 {
   // std::array<StringViewLite, 1> testArgs = {};
 
-  std::deque<Command> commands = {Command("a", 42, CommandType::Switch)};
+  const std::deque<Command> commands = {Command("a", 42, CommandType::Switch)};
   std::deque<EncodedCommand> res;
   ASSERT_EQ(ArgumentParser::TryParse(res, ReadOnlySpan<StringViewLite>(), commands), ParseResult::Completed);
 
@@ -82,9 +82,9 @@ TEST(Test_ArgumentParser, Switch_a_none)
 
 TEST(Test_ArgumentParser, Switch_a_InvalidFormat)
 {
-  std::array<StringViewLite, 1> testArgs = {"---a"};
+  const std::array<StringViewLite, 1> testArgs = {"---a"};
 
-  std::deque<Command> commands = {Command("a", 42, CommandType::Switch)};
+  const std::deque<Command> commands = {Command("a", 42, CommandType::Switch)};
   std::deque<EncodedCommand> res;
   ASSERT_EQ(TryParseNow(res, testArgs, commands), ParseResult::ArgumentFormatError);
 
@@ -94,9 +94,9 @@ TEST(Test_ArgumentParser, Switch_a_InvalidFormat)
 
 TEST(Test_ArgumentParser, Switch_a_EmptyArgument)
 {
-  std::array<StringViewLite, 2> testArgs = {"-", "a"};
+  const std::array<StringViewLite, 2> testArgs = {"-", "a"};
 
-  std::deque<Command> commands = {Command("a", 42, CommandType::Switch)};
+  const std::deque<Command> commands = {Command("a", 42, CommandType::Switch)};
   std::deque<EncodedCommand> res;
   ASSERT_EQ(TryParseNow(res, testArgs, commands), ParseResult::ArgumentFormatError);
 
@@ -106,9 +106,9 @@ TEST(Test_ArgumentParser, Switch_a_EmptyArgument)
 
 TEST(Test_ArgumentParser, Switch_a_UnknownArg)
 {
-  std::array<StringViewLite, 1> testArgs = {"-b"};
+  const std::array<StringViewLite, 1> testArgs = {"-b"};
 
-  std::deque<Command> commands = {Command("a", 42, CommandType::Switch)};
+  const std::deque<Command> commands = {Command("a", 42, CommandType::Switch)};
   std::deque<EncodedCommand> res;
   ASSERT_EQ(TryParseNow(res, testArgs, commands), ParseResult::UnknownArgumentError);
 
@@ -118,7 +118,7 @@ TEST(Test_ArgumentParser, Switch_a_UnknownArg)
 
 TEST(Test_ArgumentParser, Switch_a)
 {
-  std::array<StringViewLite, 1> testArgs = {"-a"};
+  const std::array<StringViewLite, 1> testArgs = {"-a"};
 
   std::deque<Command> commands = {Command("a", 42, CommandType::Switch)};
   auto res = ParseNow(testArgs, commands);
@@ -133,7 +133,7 @@ TEST(Test_ArgumentParser, Switch_a)
 
 TEST(Test_ArgumentParser, Switch_a_UnknownArgument)
 {
-  std::array<StringViewLite, 2> testArgs = {"-a", "test"};
+  const std::array<StringViewLite, 2> testArgs = {"-a", "test"};
 
   std::deque<Command> commands = {Command("a", 42, CommandType::Switch)};
 
@@ -165,7 +165,7 @@ TEST(Test_ArgumentParser, Switch_a_UnknownArgument)
 
 TEST(Test_ArgumentParser, Switch2X_aa)
 {
-  std::array<StringViewLite, 1> testArgs = {"-aa"};
+  const std::array<StringViewLite, 1> testArgs = {"-aa"};
 
   std::deque<Command> commands = {Command("a", 42, CommandType::Switch)};
 
@@ -182,7 +182,7 @@ TEST(Test_ArgumentParser, Switch2X_aa)
 
 TEST(Test_ArgumentParser, Switch2X_a_a)
 {
-  std::array<StringViewLite, 2> testArgs = {"-a", "-a"};
+  const std::array<StringViewLite, 2> testArgs = {"-a", "-a"};
 
   std::deque<Command> commands = {Command("a", 42, CommandType::Switch)};
 
@@ -199,7 +199,7 @@ TEST(Test_ArgumentParser, Switch2X_a_a)
 
 TEST(Test_ArgumentParser, Switch2X_aba)
 {
-  std::array<StringViewLite, 1> testArgs = {"-aba"};
+  const std::array<StringViewLite, 1> testArgs = {"-aba"};
 
   std::deque<Command> commands = {Command("a", 42, CommandType::Switch), Command("b", 1, CommandType::Switch)};
 
@@ -221,7 +221,7 @@ TEST(Test_ArgumentParser, Switch2X_aba)
 
 TEST(Test_ArgumentParser, Switch2X_a_ba)
 {
-  std::array<StringViewLite, 2> testArgs = {"-a", "-ba"};
+  const std::array<StringViewLite, 2> testArgs = {"-a", "-ba"};
 
   std::deque<Command> commands = {Command("a", 42, CommandType::Switch), Command("b", 1, CommandType::Switch)};
 
@@ -243,7 +243,7 @@ TEST(Test_ArgumentParser, Switch2X_a_ba)
 
 TEST(Test_ArgumentParser, Switch2X_ab_a)
 {
-  std::array<StringViewLite, 2> testArgs = {"-ab", "-b"};
+  const std::array<StringViewLite, 2> testArgs = {"-ab", "-b"};
 
   std::deque<Command> commands = {Command("a", 42, CommandType::Switch), Command("b", 1, CommandType::Switch)};
 
@@ -271,7 +271,7 @@ TEST(Test_ArgumentParser, Switch2X_ab_a)
 
 TEST(Test_ArgumentParser, MultiSwitch_a)
 {
-  std::array<StringViewLite, 1> testArgs = {"-a"};
+  const std::array<StringViewLite, 1> testArgs = {"-a"};
 
   std::deque<Command> commands = {Command("a", 42, CommandType::MultiSwitch)};
   auto res = ParseNow(testArgs, commands);
@@ -286,7 +286,7 @@ TEST(Test_ArgumentParser, MultiSwitch_a)
 
 TEST(Test_ArgumentParser, MultiSwitch_aa)
 {
-  std::array<StringViewLite, 1> testArgs = {"-aa"};
+  const std::array<StringViewLite, 1> testArgs = {"-aa"};
 
   std::deque<Command> commands = {Command("a", 42, CommandType::MultiSwitch)};
   auto res = ParseNow(testArgs, commands);
@@ -301,7 +301,7 @@ TEST(Test_ArgumentParser, MultiSwitch_aa)
 
 TEST(Test_ArgumentParser, MultiSwitch_a_a)
 {
-  std::array<StringViewLite, 2> testArgs = {"-a", "-a"};
+  const std::array<StringViewLite, 2> testArgs = {"-a", "-a"};
 
   std::deque<Command> commands = {Command("a", 42, CommandType::MultiSwitch)};
   auto res = ParseNow(testArgs, commands);
@@ -316,7 +316,7 @@ TEST(Test_ArgumentParser, MultiSwitch_a_a)
 
 TEST(Test_ArgumentParser, TwoMultiSwitch_ab)
 {
-  std::array<StringViewLite, 1> testArgs = {"-ab"};
+  const std::array<StringViewLite, 1> testArgs = {"-ab"};
 
   std::deque<Command> commands = {Command("a", 42, CommandType::MultiSwitch), Command("b", 1, CommandType::MultiSwitch)};
   auto res = ParseNow(testArgs, commands);
@@ -336,7 +336,7 @@ TEST(Test_ArgumentParser, TwoMultiSwitch_ab)
 
 TEST(Test_ArgumentParser, TwoMultiSwitch_a_b)
 {
-  std::array<StringViewLite, 2> testArgs = {"-a", "-b"};
+  const std::array<StringViewLite, 2> testArgs = {"-a", "-b"};
 
   std::deque<Command> commands = {Command("a", 42, CommandType::MultiSwitch), Command("b", 1, CommandType::MultiSwitch)};
   auto res = ParseNow(testArgs, commands);
@@ -356,7 +356,7 @@ TEST(Test_ArgumentParser, TwoMultiSwitch_a_b)
 
 TEST(Test_ArgumentParser, TwoMultiSwitch_aba)
 {
-  std::array<StringViewLite, 1> testArgs = {"-aba"};
+  const std::array<StringViewLite, 1> testArgs = {"-aba"};
 
   std::deque<Command> commands = {Command("a", 42, CommandType::MultiSwitch), Command("b", 1, CommandType::MultiSwitch)};
   auto res = ParseNow(testArgs, commands);
@@ -376,7 +376,7 @@ TEST(Test_ArgumentParser, TwoMultiSwitch_aba)
 
 TEST(Test_ArgumentParser, TwoMultiSwitch_a_ba)
 {
-  std::array<StringViewLite, 2> testArgs = {"-a", "-ba"};
+  const std::array<StringViewLite, 2> testArgs = {"-a", "-ba"};
 
   std::deque<Command> commands = {Command("a", 42, CommandType::MultiSwitch), Command("b", 1, CommandType::MultiSwitch)};
   auto res = ParseNow(testArgs, commands);
@@ -396,7 +396,7 @@ TEST(Test_ArgumentParser, TwoMultiSwitch_a_ba)
 
 TEST(Test_ArgumentParser, TwoMultiSwitch_ab_a)
 {
-  std::array<StringViewLite, 2> testArgs = {"-ab", "-a"};
+  const std::array<StringViewLite, 2> testArgs = {"-ab", "-a"};
 
   std::deque<Command> commands = {Command("a", 42, CommandType::MultiSwitch), Command("b", 1, CommandType::MultiSwitch)};
   auto res = ParseNow(testArgs, commands);
@@ -416,7 +416,7 @@ TEST(Test_ArgumentParser, TwoMultiSwitch_ab_a)
 
 TEST(Test_ArgumentParser, TwoMultiSwitch_a_b_a)
 {
-  std::array<StringViewLite, 3> testArgs = {"-a", "-b", "-a"};
+  const std::array<StringViewLite, 3> testArgs = {"-a", "-b", "-a"};
 
   std::deque<Command> commands = {Command("a", 42, CommandType::MultiSwitch), Command("b", 1, CommandType::MultiSwitch)};
   auto res = ParseNow(testArgs, commands);
@@ -436,7 +436,7 @@ TEST(Test_ArgumentParser, TwoMultiSwitch_a_b_a)
 
 TEST(Test_ArgumentParser, TwoMultiSwitch_bab)
 {
-  std::array<StringViewLite, 1> testArgs = {"-bab"};
+  const std::array<StringViewLite, 1> testArgs = {"-bab"};
 
   std::deque<Command> commands = {Command("a", 42, CommandType::MultiSwitch), Command("b", 1, CommandType::MultiSwitch)};
   auto res = ParseNow(testArgs, commands);
@@ -456,7 +456,7 @@ TEST(Test_ArgumentParser, TwoMultiSwitch_bab)
 
 TEST(Test_ArgumentParser, TwoMultiSwitch_ba_b)
 {
-  std::array<StringViewLite, 2> testArgs = {"-ba", "-b"};
+  const std::array<StringViewLite, 2> testArgs = {"-ba", "-b"};
 
   std::deque<Command> commands = {Command("a", 42, CommandType::MultiSwitch), Command("b", 1, CommandType::MultiSwitch)};
   auto res = ParseNow(testArgs, commands);
@@ -476,7 +476,7 @@ TEST(Test_ArgumentParser, TwoMultiSwitch_ba_b)
 
 TEST(Test_ArgumentParser, TwoMultiSwitch_b_ab)
 {
-  std::array<StringViewLite, 2> testArgs = {"-b", "-ab"};
+  const std::array<StringViewLite, 2> testArgs = {"-b", "-ab"};
 
   std::deque<Command> commands = {Command("a", 42, CommandType::MultiSwitch), Command("b", 1, CommandType::MultiSwitch)};
   auto res = ParseNow(testArgs, commands);
@@ -496,7 +496,7 @@ TEST(Test_ArgumentParser, TwoMultiSwitch_b_ab)
 
 TEST(Test_ArgumentParser, TwoMultiSwitch_b_a_b)
 {
-  std::array<StringViewLite, 3> testArgs = {"-b", "-a", "-b"};
+  const std::array<StringViewLite, 3> testArgs = {"-b", "-a", "-b"};
 
   std::deque<Command> commands = {Command("a", 42, CommandType::MultiSwitch), Command("b", 1, CommandType::MultiSwitch)};
   auto res = ParseNow(testArgs, commands);
@@ -521,7 +521,7 @@ TEST(Test_ArgumentParser, TwoMultiSwitch_b_a_b)
 
 TEST(Test_ArgumentParser, Value_a_missing)
 {
-  std::array<StringViewLite, 1> testArgs = {"-a"};
+  const std::array<StringViewLite, 1> testArgs = {"-a"};
 
   std::deque<Command> commands = {Command("a", 42, CommandType::Value)};
   std::deque<EncodedCommand> res;
@@ -581,7 +581,7 @@ TEST(Test_ArgumentParser, Value_a_EmptyValue)
 
 TEST(Test_ArgumentParser, Value_AValueBValue_ValueNotLast)
 {
-  std::array<StringViewLite, 2> testArgs = {"-ab", "hey"};
+  const std::array<StringViewLite, 2> testArgs = {"-ab", "hey"};
 
   std::deque<Command> commands = {Command("a", 42, CommandType::Value), Command("b", 1, CommandType::Value)};
   std::deque<EncodedCommand> res;
@@ -596,7 +596,7 @@ TEST(Test_ArgumentParser, Value_AValueBValue_ValueNotLast)
 
 TEST(Test_ArgumentParser, Value_ab_ValueNotLast)
 {
-  std::array<StringViewLite, 2> testArgs = {"-ab", "hey"};
+  const std::array<StringViewLite, 2> testArgs = {"-ab", "hey"};
 
   std::deque<Command> commands = {Command("a", 42, CommandType::Value), Command("b", 1, CommandType::Switch)};
   std::deque<EncodedCommand> res;
@@ -611,7 +611,7 @@ TEST(Test_ArgumentParser, Value_ab_ValueNotLast)
 
 TEST(Test_ArgumentParser, Value_ab_ValueNotLastAndValueArgMissing)
 {
-  std::array<StringViewLite, 1> testArgs = {"-ab"};
+  const std::array<StringViewLite, 1> testArgs = {"-ab"};
 
   std::deque<Command> commands = {Command("a", 42, CommandType::Value), Command("b", 1, CommandType::Switch)};
   std::deque<EncodedCommand> res;
@@ -626,7 +626,7 @@ TEST(Test_ArgumentParser, Value_ab_ValueNotLastAndValueArgMissing)
 
 TEST(Test_ArgumentParser, Value_ba_ValueArgMissing)
 {
-  std::array<StringViewLite, 1> testArgs = {"-ba"};
+  const std::array<StringViewLite, 1> testArgs = {"-ba"};
 
   std::deque<Command> commands = {Command("a", 42, CommandType::Value), Command("b", 1, CommandType::Switch)};
   std::deque<EncodedCommand> res;
@@ -742,9 +742,9 @@ TEST(Test_ArgumentParser, Value_test_a_duplicated)
 
 TEST(Test_ArgumentParser, LongSwitch_test_AsShortSwitch)
 {
-  std::array<StringViewLite, 1> testArgs = {"-test"};
+  const std::array<StringViewLite, 1> testArgs = {"-test"};
 
-  std::deque<Command> commands = {Command("test", 42, CommandType::Switch)};
+  const std::deque<Command> commands = {Command("test", 42, CommandType::Switch)};
   std::deque<EncodedCommand> res;
   ASSERT_EQ(TryParseNow(res, testArgs, commands), ParseResult::UnknownArgumentError);
 
@@ -754,9 +754,9 @@ TEST(Test_ArgumentParser, LongSwitch_test_AsShortSwitch)
 
 TEST(Test_ArgumentParser, LongSwitch_test_Unknown)
 {
-  std::array<StringViewLite, 1> testArgs = {"--test2"};
+  const std::array<StringViewLite, 1> testArgs = {"--test2"};
 
-  std::deque<Command> commands = {Command("test", 42, CommandType::Switch)};
+  const std::deque<Command> commands = {Command("test", 42, CommandType::Switch)};
   std::deque<EncodedCommand> res;
   ASSERT_EQ(TryParseNow(res, testArgs, commands), ParseResult::UnknownArgumentError);
 
@@ -766,7 +766,7 @@ TEST(Test_ArgumentParser, LongSwitch_test_Unknown)
 
 TEST(Test_ArgumentParser, LongSwitch_test)
 {
-  std::array<StringViewLite, 1> testArgs = {"--test"};
+  const std::array<StringViewLite, 1> testArgs = {"--test"};
 
   std::deque<Command> commands = {Command("test", 42, CommandType::Switch)};
   auto res = ParseNow(testArgs, commands);
@@ -781,7 +781,7 @@ TEST(Test_ArgumentParser, LongSwitch_test)
 
 TEST(Test_ArgumentParser, LongSwitch_test_test)
 {
-  std::array<StringViewLite, 2> testArgs = {"--test", "--test"};
+  const std::array<StringViewLite, 2> testArgs = {"--test", "--test"};
 
   std::deque<Command> commands = {Command("test", 42, CommandType::Switch)};
   std::deque<EncodedCommand> res;
@@ -797,9 +797,9 @@ TEST(Test_ArgumentParser, LongSwitch_test_test)
 
 TEST(Test_ArgumentParser, LongSwitch_test_test_invalid)
 {
-  std::array<StringViewLite, 1> testArgs = {"--test --test"};
+  const std::array<StringViewLite, 1> testArgs = {"--test --test"};
 
-  std::deque<Command> commands = {Command("test", 42, CommandType::Switch)};
+  const std::deque<Command> commands = {Command("test", 42, CommandType::Switch)};
   std::deque<EncodedCommand> res;
   ASSERT_EQ(TryParseNow(res, testArgs, commands), ParseResult::UnknownArgumentError);
 
@@ -816,9 +816,9 @@ TEST(Test_ArgumentParser, LongSwitch_test_test_invalid)
 
 TEST(Test_ArgumentParser, LongMultiSwitch_test_AsShortSwitch)
 {
-  std::array<StringViewLite, 1> testArgs = {"-test"};
+  const std::array<StringViewLite, 1> testArgs = {"-test"};
 
-  std::deque<Command> commands = {Command("test", 42, CommandType::MultiSwitch)};
+  const std::deque<Command> commands = {Command("test", 42, CommandType::MultiSwitch)};
   std::deque<EncodedCommand> res;
   ASSERT_EQ(TryParseNow(res, testArgs, commands), ParseResult::UnknownArgumentError);
 
@@ -828,9 +828,9 @@ TEST(Test_ArgumentParser, LongMultiSwitch_test_AsShortSwitch)
 
 TEST(Test_ArgumentParser, LongMultiSwitch_test_Unknown)
 {
-  std::array<StringViewLite, 1> testArgs = {"--test2"};
+  const std::array<StringViewLite, 1> testArgs = {"--test2"};
 
-  std::deque<Command> commands = {Command("test", 42, CommandType::MultiSwitch)};
+  const std::deque<Command> commands = {Command("test", 42, CommandType::MultiSwitch)};
   std::deque<EncodedCommand> res;
   ASSERT_EQ(TryParseNow(res, testArgs, commands), ParseResult::UnknownArgumentError);
 
@@ -840,7 +840,7 @@ TEST(Test_ArgumentParser, LongMultiSwitch_test_Unknown)
 
 TEST(Test_ArgumentParser, LongMultiSwitch_test)
 {
-  std::array<StringViewLite, 1> testArgs = {"--test"};
+  const std::array<StringViewLite, 1> testArgs = {"--test"};
 
   std::deque<Command> commands = {Command("test", 42, CommandType::MultiSwitch)};
   auto res = ParseNow(testArgs, commands);
@@ -855,7 +855,7 @@ TEST(Test_ArgumentParser, LongMultiSwitch_test)
 
 TEST(Test_ArgumentParser, LongMultiSwitch_test_test)
 {
-  std::array<StringViewLite, 2> testArgs = {"--test", "--test"};
+  const std::array<StringViewLite, 2> testArgs = {"--test", "--test"};
 
   std::deque<Command> commands = {Command("test", 42, CommandType::MultiSwitch)};
   auto res = ParseNow(testArgs, commands);
@@ -870,9 +870,9 @@ TEST(Test_ArgumentParser, LongMultiSwitch_test_test)
 
 TEST(Test_ArgumentParser, LongMultiSwitch_test_test_invalid)
 {
-  std::array<StringViewLite, 1> testArgs = {"--test --test"};
+  const std::array<StringViewLite, 1> testArgs = {"--test --test"};
 
-  std::deque<Command> commands = {Command("test", 42, CommandType::MultiSwitch)};
+  const std::deque<Command> commands = {Command("test", 42, CommandType::MultiSwitch)};
   std::deque<EncodedCommand> res;
   ASSERT_EQ(TryParseNow(res, testArgs, commands), ParseResult::UnknownArgumentError);
 
@@ -923,9 +923,9 @@ TEST(Test_ArgumentParser, PositionalValue_hello_world)
 
 TEST(Test_ArgumentParser, PositionalValue_NotAllowed)
 {
-  std::array<StringViewLite, 1> testArgs = {"hello"};
+  const std::array<StringViewLite, 1> testArgs = {"hello"};
 
-  std::deque<Command> commands = {};
+  const std::deque<Command> commands = {};
   std::deque<EncodedCommand> res;
   ASSERT_EQ(TryParseNow(res, testArgs, commands), ParseResult::UnknownArgumentError);
 
@@ -934,7 +934,7 @@ TEST(Test_ArgumentParser, PositionalValue_NotAllowed)
 
 TEST(Test_ArgumentParser, PositionalValue_NotSpecified)
 {
-  std::array<StringViewLite, 1> testArgs = {"-v"};
+  const std::array<StringViewLite, 1> testArgs = {"-v"};
 
   std::deque<Command> commands = {Command("pos1", 42, CommandType::PositionalValue), Command("v", 43, CommandType::Switch)};
 
@@ -1007,7 +1007,7 @@ TEST(Test_ArgumentParser, RequiredPositionalValue_hello_world)
 
 TEST(Test_ArgumentParser, RequiredPositionalValue_NotSpecified)
 {
-  std::array<StringViewLite, 1> testArgs = {"-v"};
+  const std::array<StringViewLite, 1> testArgs = {"-v"};
 
   std::deque<Command> commands = {Command("pos1", 42, CommandType::PositionalValue, true), Command("v", 43, CommandType::Switch)};
 
@@ -1045,9 +1045,9 @@ TEST(Test_ArgumentParser, RequiredPositionalValue_2x_hello_NotSpecified)
 
 TEST(Test_ArgumentParser, UnhandledArgument_NotAllowed1)
 {
-  std::array<StringViewLite, 2> testArgs = {"--", "hello"};
+  const std::array<StringViewLite, 2> testArgs = {"--", "hello"};
 
-  std::deque<Command> commands = {};
+  const std::deque<Command> commands = {};
   std::deque<EncodedCommand> res;
   ASSERT_EQ(TryParseNow(res, testArgs, commands), ParseResult::UnknownArgumentError);
   ASSERT_EQ(res.size(), 0u);
@@ -1055,9 +1055,9 @@ TEST(Test_ArgumentParser, UnhandledArgument_NotAllowed1)
 
 TEST(Test_ArgumentParser, UnhandledArgument_NotAllowed2)
 {
-  std::array<StringViewLite, 3> testArgs = {"--", "hello", "world"};
+  const std::array<StringViewLite, 3> testArgs = {"--", "hello", "world"};
 
-  std::deque<Command> commands = {};
+  const std::deque<Command> commands = {};
   std::deque<EncodedCommand> res;
   ASSERT_EQ(TryParseNow(res, testArgs, commands), ParseResult::UnknownArgumentError);
   ASSERT_EQ(res.size(), 0u);

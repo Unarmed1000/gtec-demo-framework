@@ -45,7 +45,7 @@ namespace
 
 TEST(TestLog_String_LogCStringView, Log)
 {
-  CStringView str("hello");
+  const CStringView str("hello");
 
   std::stringstream stream;
   stream << str;
@@ -56,7 +56,7 @@ TEST(TestLog_String_LogCStringView, Log)
 
 TEST(TestLog_String_LogCStringView, LogEmpty)
 {
-  CStringView str;
+  const CStringView str;
 
   std::stringstream stream;
   stream << str;

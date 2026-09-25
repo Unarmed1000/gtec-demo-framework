@@ -53,9 +53,8 @@ namespace Fsl
   namespace IntegralConverter
   {
     template <typename TTo, typename TFrom>
-    constexpr typename std::enable_if<
-      std::is_integral<TTo>::value && std::is_integral<TFrom>::value && std::is_signed<TTo>::value && std::is_signed<TFrom>::value, TTo>::type
-      UncheckedConvertIntegral(const TFrom& value) noexcept
+    constexpr TTo UncheckedConvertIntegral(const TFrom& value) noexcept
+      requires(std::is_integral_v<TTo> && std::is_integral_v<TFrom> && std::is_signed_v<TTo> && std::is_signed_v<TFrom>)
     {
       assert(value >= std::numeric_limits<TTo>::min());
       assert(value <= std::numeric_limits<TTo>::max());
@@ -63,18 +62,16 @@ namespace Fsl
     }
 
     template <typename TTo, typename TFrom>
-    constexpr typename std::enable_if<
-      std::is_integral<TTo>::value && std::is_integral<TFrom>::value && std::is_signed<TTo>::value && std::is_unsigned<TFrom>::value, TTo>::type
-      UncheckedConvertIntegral(const TFrom& value) noexcept
+    constexpr TTo UncheckedConvertIntegral(const TFrom& value) noexcept
+      requires(std::is_integral_v<TTo> && std::is_integral_v<TFrom> && std::is_signed_v<TTo> && std::is_unsigned_v<TFrom>)
     {
       assert(value <= static_cast<typename std::make_unsigned<TFrom>::type>(std::numeric_limits<TTo>::max()));
       return static_cast<TTo>(value);
     }
 
     template <typename TTo, typename TFrom>
-    constexpr typename std::enable_if<
-      std::is_integral<TTo>::value && std::is_integral<TFrom>::value && std::is_unsigned<TTo>::value && std::is_signed<TFrom>::value, TTo>::type
-      UncheckedConvertIntegral(const TFrom& value) noexcept
+    constexpr TTo UncheckedConvertIntegral(const TFrom& value) noexcept
+      requires(std::is_integral_v<TTo> && std::is_integral_v<TFrom> && std::is_unsigned_v<TTo> && std::is_signed_v<TFrom>)
     {
       assert(value >= 0);
       assert(static_cast<typename std::make_unsigned<TFrom>::type>(value) <= std::numeric_limits<TTo>::max());
@@ -82,17 +79,17 @@ namespace Fsl
     }
 
     template <typename TTo, typename TFrom>
-    constexpr typename std::enable_if<
-      std::is_integral<TTo>::value && std::is_integral<TFrom>::value && std::is_unsigned<TTo>::value && std::is_unsigned<TFrom>::value, TTo>::type
-      UncheckedConvertIntegral(const TFrom& value) noexcept
+    constexpr TTo UncheckedConvertIntegral(const TFrom& value) noexcept
+      requires(std::is_integral_v<TTo> && std::is_integral_v<TFrom> && std::is_unsigned_v<TTo> && std::is_unsigned_v<TFrom>)
     {
       assert(value <= std::numeric_limits<TTo>::max());
       return static_cast<TTo>(value);
     }
   }
 
-  template <typename TTo, typename TFrom, typename = std::enable_if_t<std::is_integral_v<TTo> && std::is_integral_v<TFrom>>>
+  template <typename TTo, typename TFrom>
   constexpr inline TTo UncheckedNumericCast(const TFrom& value) noexcept
+    requires(std::is_integral_v<TTo> && std::is_integral_v<TFrom>)
   {
     return IntegralConverter::UncheckedConvertIntegral<TTo>(value);
   }

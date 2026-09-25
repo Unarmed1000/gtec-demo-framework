@@ -48,7 +48,7 @@ namespace
 
 TEST(TestStdSpan, Construct)
 {
-  std::span<uint8_t> span;
+  const std::span<uint8_t> span;
 
   EXPECT_TRUE(span.empty());
   EXPECT_EQ(span.data(), nullptr);
@@ -58,7 +58,7 @@ TEST(TestStdSpan, Construct)
 TEST(TestStdSpan, Construct_FromArray)
 {
   std::array<uint8_t, 11> content = {'H', 'e', 'l', 'l', 'o', ' ', 'w', 'o', 'r', 'l', 'd'};
-  auto span = Convert(content);
+  const auto span = Convert(content);
 
   EXPECT_FALSE(span.empty());
   EXPECT_NE(span.data(), nullptr);
@@ -69,7 +69,7 @@ TEST(TestStdSpan, Construct_FromArray)
 TEST(TestStdSpan, SubSpan)
 {
   std::array<uint8_t, 10> content = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9'};
-  auto span = Convert(content);
+  const auto span = Convert(content);
 
   std::array<uint8_t, 9> res123456789 = {'1', '2', '3', '4', '5', '6', '7', '8', '9'};
   std::array<uint8_t, 2> res12 = {'1', '2'};
@@ -88,7 +88,7 @@ TEST(TestStdSpan, SubSpan)
 
 TEST(TestStdSpan, SubSpan_Empty)
 {
-  std::span<uint8_t> span;
+  const std::span<uint8_t> span;
   EXPECT_TRUE(Fsl::SpanUtil::ValueEquals(std::span<uint8_t>(), span.subspan(0u)));
 }
 
@@ -105,7 +105,7 @@ TEST(TestStdSpan, SubSpan_Empty)
 TEST(TestStdSpan, front)
 {
   std::array<uint8_t, 11> content = {'H', 'e', 'l', 'l', 'o', ' ', 'w', 'o', 'r', 'l', 'd'};
-  auto span = Convert(content);
+  const auto span = Convert(content);
 
   EXPECT_EQ(span.front(), content[0]);
 }
@@ -114,7 +114,7 @@ TEST(TestStdSpan, front)
 TEST(TestStdSpan, back)
 {
   std::array<uint8_t, 11> content = {'H', 'e', 'l', 'l', 'o', ' ', 'w', 'o', 'r', 'l', 'd'};
-  auto span = Convert(content);
+  const auto span = Convert(content);
 
   EXPECT_EQ(span.back(), content[content.size() - 1]);
 }
@@ -123,7 +123,7 @@ TEST(TestStdSpan, back)
 TEST(TestStdSpan, opIndex)
 {
   std::array<uint8_t, 11> content = {'H', 'e', 'l', 'l', 'o', ' ', 'w', 'o', 'r', 'l', 'd'};
-  auto span = Convert(content);
+  const auto span = Convert(content);
 
   for (std::size_t i = 0; i < content.size(); ++i)
   {
@@ -134,7 +134,7 @@ TEST(TestStdSpan, opIndex)
 TEST(TestStdSpan, opIndex_write)
 {
   std::array<uint8_t, 11> content = {'H', 'e', 'l', 'l', 'o', ' ', 'w', 'o', 'r', 'l', 'd'};
-  auto span = Convert(content);
+  const auto span = Convert(content);
 
   EXPECT_EQ('H', content[0]);
   EXPECT_EQ('H', span[0]);
@@ -185,7 +185,7 @@ TEST(TestStdSpan, opIndex_write)
 
 TEST(TestStdSpan, begin_empty)
 {
-  std::span<char> span;
+  const std::span<char> span;
 
   ASSERT_EQ(span.end(), span.begin());
 }
@@ -196,7 +196,7 @@ TEST(TestStdSpan, begin_empty)
 TEST(TestStdSpan, begin_iterator_to_end)
 {
   std::array<uint8_t, 11> content = {'H', 'e', 'l', 'l', 'o', ' ', 'w', 'o', 'r', 'l', 'd'};
-  std::span<uint8_t> span = Convert(content);
+  const std::span<uint8_t> span = Convert(content);
 
   // NOLINTNEXTLINE(readability-qualified-auto)
   auto itrSource = content.begin();
@@ -204,7 +204,7 @@ TEST(TestStdSpan, begin_iterator_to_end)
   const auto itrSourceEnd = content.end();
 
   auto itr = span.begin();
-  auto itrEnd = span.end();
+  const auto itrEnd = span.end();
   while (itr != itrEnd && itrSource != itrSourceEnd)
   {
     EXPECT_EQ(*itrSource, *itr);
@@ -221,7 +221,7 @@ TEST(TestStdSpan, begin_iterator_to_end_with_mod)
 {
   std::array<uint8_t, 11> content = {'H', 'e', 'l', 'l', 'o', ' ', 'w', 'o', 'r', 'l', 'd'};
   const std::array<uint8_t, 11> content2 = {'W', 'o', 'r', 'l', 'd', ' ', 'h', 'e', 'l', 'l', 'o'};
-  std::span<uint8_t> span = Convert(content);
+  const std::span<uint8_t> span = Convert(content);
 
 
   {    // overwrite content with content2 using the span
@@ -230,7 +230,7 @@ TEST(TestStdSpan, begin_iterator_to_end_with_mod)
     // NOLINTNEXTLINE(readability-qualified-auto)
     const auto itrSourceEnd = content2.end();
     auto itr = span.begin();
-    auto itrEnd = span.end();
+    const auto itrEnd = span.end();
     while (itr != itrEnd && itrSource != itrSourceEnd)
     {
       *itr = *itrSource;
@@ -251,7 +251,7 @@ TEST(TestStdSpan, begin_iterator_to_end_with_mod)
     const auto itrContent2End = content2.end();
 
     auto itr = span.begin();
-    auto itrEnd = span.end();
+    const auto itrEnd = span.end();
     while (itr != itrEnd && itrContent != itrContentEnd && itrContent2 != itrContent2End)
     {
       EXPECT_EQ(*itrContent2, *itrContent);
@@ -303,7 +303,7 @@ TEST(TestStdSpan, begin_foreach_with_mod)
     const auto itrContent2End = content2.end();
 
     auto itr = span.begin();
-    auto itrEnd = span.end();
+    const auto itrEnd = span.end();
     while (itr != itrEnd && itrContent != itrContentEnd && itrContent2 != itrContent2End)
     {
       EXPECT_EQ(*itrContent2, *itrContent);
@@ -347,7 +347,7 @@ TEST(TestStdSpan, begin_iterator_to_end_const)
   const auto itrSourceEnd = content.end();
 
   auto itr = span.begin();
-  auto itrEnd = span.end();
+  const auto itrEnd = span.end();
   while (itr != itrEnd && itrSource != itrSourceEnd)
   {
     EXPECT_EQ(*itrSource, *itr);
@@ -370,7 +370,7 @@ TEST(TestStdSpan, begin_foreach_with_compare_const)
     auto itrSource = content.begin();
     // NOLINTNEXTLINE(readability-qualified-auto)
     const auto itrSourceEnd = content.end();
-    for (auto entry : span)
+    for (const auto entry : span)
     {
       ASSERT_TRUE(itrSourceEnd != itrSource);
       EXPECT_EQ(*itrSource, entry);

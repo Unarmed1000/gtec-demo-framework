@@ -126,7 +126,7 @@ namespace Fsl
       return ReadOnlyTypedFlexSpan<T>(&m_data[0].Element, m_count, sizeof(Record));
     }
 
-    constexpr bool Empty() const noexcept
+    [[nodiscard]] constexpr bool Empty() const noexcept
     {
       return m_count <= 0;
     }
@@ -186,14 +186,14 @@ namespace Fsl
 
 
     //! Convert a handle to a index
-    constexpr index_type UncheckedHandleToIndex(const handle_type handle) const noexcept
+    [[nodiscard]] constexpr index_type UncheckedHandleToIndex(const handle_type handle) const noexcept
     {
       assert(IsValidHandle(handle));
       return m_data[HandleIndex(handle)].HandleToIndex;
     }
 
     //! @brief Convert a index to the corresponding handle
-    constexpr handle_type UncheckedIndexToHandle(const index_type index) const noexcept
+    [[nodiscard]] constexpr handle_type UncheckedIndexToHandle(const index_type index) const noexcept
     {
       assert(IsValidIndex(index));
       return m_data[index].Handle;
@@ -705,22 +705,22 @@ namespace Fsl
     }
 
     //! @brief the current element count
-    size_type Count() const noexcept
+    [[nodiscard]] size_type Count() const noexcept
     {
       return m_count;
     }
 
     //! @brief The current capacity of the vector
-    size_type Capacity() const noexcept
+    [[nodiscard]] size_type Capacity() const noexcept
     {
       return UncheckedNumericCast<size_type>(m_data.size());
     }
 
     //! @brief Check if the given handle is valid.
     //! @return True if the supplied handle is valid
-    constexpr bool IsValidHandle(const handle_type handle) const noexcept
+    [[nodiscard]] constexpr bool IsValidHandle(const handle_type handle) const noexcept
     {
-      auto unsignedHandle = UncheckedNumericCast<uint32_t>(handle);
+      const auto unsignedHandle = UncheckedNumericCast<uint32_t>(handle);
       uint32_t handleIndex = (unsignedHandle & VersionedHandleVectorInternal::HandleIndexMask);
       return (handleIndex < static_cast<uint32_t>(m_data.size()) && m_data[handleIndex].HandleToIndex < m_count &&
               m_data[m_data[handleIndex].HandleToIndex].Handle == handle);
@@ -728,7 +728,7 @@ namespace Fsl
 
     //! @brief Check if the given index is valid.
     //! @return True if the supplied handle is valid
-    constexpr bool IsValidIndex(const index_type index) const noexcept
+    [[nodiscard]] constexpr bool IsValidIndex(const index_type index) const noexcept
     {
       // Index is unsigned so we can simplify this
       // return (index >= 0u && index < m_count);
@@ -736,7 +736,7 @@ namespace Fsl
     }
 
     // NOLINTNEXTLINE(readability-identifier-naming)
-    bool DEBUG_IsValid() const
+    [[nodiscard]] bool DEBUG_IsValid() const
     {
       if (m_data.size() > VersionedHandleVectorInternal::MaxCapacity)
       {
@@ -927,7 +927,7 @@ namespace Fsl
 
     static constexpr handle_type IncreaseHandleVersion(const handle_type handle) noexcept
     {
-      auto unsignedHandle = static_cast<uint32_t>(handle);
+      const auto unsignedHandle = static_cast<uint32_t>(handle);
       const uint32_t versionOne = (1u << VersionedHandleVectorInternal::HandleVersionShift);
       uint32_t handleVersion = (unsignedHandle & VersionedHandleVectorInternal::HandleVersionMask) + versionOne;
       assert(handleVersion >= versionOne || handleVersion == 0);

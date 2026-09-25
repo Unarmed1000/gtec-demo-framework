@@ -71,13 +71,13 @@ namespace Fsl::MathHelper
       const PxValueU unitsY = newSize / unitSize.Height;
       if ((unitsX * unitsY) < unitCount)
       {
-        PxValueU result1 = (unitsX + PxValueU(1)) * unitSize.Width;
-        PxValueU result2 = (unitsY + PxValueU(1)) * unitSize.Height;
-        PxValueU result = PxValueU::Min(result1, result2);
+        const PxValueU result1 = (unitsX + PxValueU(1)) * unitSize.Width;
+        const PxValueU result2 = (unitsY + PxValueU(1)) * unitSize.Height;
+        const PxValueU result = PxValueU::Min(result1, result2);
         return {result, result};
       }
 
-      PxValueU result = unitsX * unitSize.Width;
+      const PxValueU result = unitsX * unitSize.Width;
       return {result, result};
     }
 
@@ -148,7 +148,7 @@ namespace Fsl::MathHelper
     }
 
     using namespace std;
-    auto result = static_cast<float>(remainder(static_cast<double>(angle), 6.2831854820251465));
+    const auto result = static_cast<float>(remainder(static_cast<double>(angle), 6.2831854820251465));
     if (result <= -3.14159274f)
     {
       return result + 6.28318548f;
@@ -165,7 +165,7 @@ namespace Fsl::MathHelper
     assert(unitSize.X > 0);
     assert(unitSize.Y > 0);
     assert(unitCount > 0);
-    auto res =
+    const auto res =
       CalcOptimalSize(TypeConverter::UncheckedTo<PxExtent2D>(unitSize), PxValueU(static_cast<uint32_t>(std::max(unitCount, 0))), restrictionFlags);
     return TypeConverter::UncheckedTo<Point2>(res);
   }
@@ -175,7 +175,8 @@ namespace Fsl::MathHelper
     assert(unitSize.RawWidth() > 0);
     assert(unitSize.RawHeight() > 0);
     assert(unitCount.RawValue() > 0);
-    auto res = CalcOptimalSize(TypeConverter::UncheckedTo<PxExtent2D>(unitSize), TypeConverter::UncheckedTo<PxValueU>(unitCount), restrictionFlags);
+    const auto res =
+      CalcOptimalSize(TypeConverter::UncheckedTo<PxExtent2D>(unitSize), TypeConverter::UncheckedTo<PxValueU>(unitCount), restrictionFlags);
     return TypeConverter::UncheckedTo<PxSize2D>(res);
   }
 

@@ -104,7 +104,7 @@ TEST(TestString_Test_StringDateUtil, ParseString_InvalidSecond)
 
 TEST(TestString_Test_StringDateUtil, ParseString_BackAndForth)
 {
-  StringViewLite strTime("2021-12-24T12:34:56Z");
+  const StringViewLite strTime("2021-12-24T12:34:56Z");
   auto time = StringDateUtil::Parse(strTime);
   EXPECT_EQ(StringDateUtil::ToString(time), strTime);
 }

@@ -89,12 +89,12 @@ namespace Fsl::IO
     explicit Path(UTF8String str);
     ~Path() noexcept = default;
 
-    bool IsEmpty() const
+    [[nodiscard]] bool IsEmpty() const
     {
       return m_content.IsEmpty();
     }
 
-    bool Contains(const char ch) const
+    [[nodiscard]] bool Contains(const char ch) const
     {
       return m_content.Contains(ch);
     }
@@ -104,17 +104,17 @@ namespace Fsl::IO
       return m_content.Contains(psz);
     }
 
-    bool Contains(const UTF8String& str) const
+    [[nodiscard]] bool Contains(const UTF8String& str) const
     {
       return m_content.Contains(str);
     }
 
-    bool Contains(const Path& path) const
+    [[nodiscard]] bool Contains(const Path& path) const
     {
       return m_content.Contains(path.m_content);
     }
 
-    bool StartsWith(const char ch) const
+    [[nodiscard]] bool StartsWith(const char ch) const
     {
       return m_content.StartsWith(ch);
     }
@@ -124,22 +124,22 @@ namespace Fsl::IO
       return m_content.StartsWith(psz);
     }
 
-    bool StartsWith(const StringViewLite path) const
+    [[nodiscard]] bool StartsWith(const StringViewLite path) const
     {
       return m_content.StartsWith(path);
     }
 
-    bool StartsWith(const UTF8String& path) const
+    [[nodiscard]] bool StartsWith(const UTF8String& path) const
     {
       return m_content.StartsWith(path);
     }
 
-    bool StartsWith(const Path& path) const
+    [[nodiscard]] bool StartsWith(const Path& path) const
     {
       return m_content.StartsWith(path.m_content);
     }
 
-    bool EndsWith(const char ch) const
+    [[nodiscard]] bool EndsWith(const char ch) const
     {
       return m_content.EndsWith(ch);
     }
@@ -149,37 +149,37 @@ namespace Fsl::IO
       return m_content.EndsWith(psz);
     }
 
-    bool EndsWith(const StringViewLite path) const
+    [[nodiscard]] bool EndsWith(const StringViewLite path) const
     {
       return m_content.EndsWith(path);
     }
 
-    bool EndsWith(const UTF8String& path) const
+    [[nodiscard]] bool EndsWith(const UTF8String& path) const
     {
       return m_content.EndsWith(path);
     }
 
-    bool EndsWith(const Path& path) const
+    [[nodiscard]] bool EndsWith(const Path& path) const
     {
       return m_content.EndsWith(path.m_content);
     }
 
-    int32_t IndexOf(const char ch, const std::size_t fromIndex = 0) const
+    [[nodiscard]] int32_t IndexOf(const char ch, const std::size_t fromIndex = 0) const
     {
       return m_content.IndexOf(ch, fromIndex);
     }
 
-    const UTF8String& AsUTF8String() const
+    [[nodiscard]] const UTF8String& AsUTF8String() const
     {
       return m_content;
     }
 
-    const std::string& ToUTF8String() const
+    [[nodiscard]] const std::string& ToUTF8String() const
     {
       return m_content.ToUTF8String();
     }
 
-    std::string ToAsciiString() const;
+    [[nodiscard]] std::string ToAsciiString() const;
 
 
     Path& operator=(const StringViewLite str);
@@ -197,7 +197,7 @@ namespace Fsl::IO
       return *this;
     }
 
-    int32_t GetByteSize() const
+    [[nodiscard]] int32_t GetByteSize() const
     {
       return m_content.GetByteSize();
     }
@@ -462,17 +462,17 @@ namespace Fsl::IO
       return rhs;
     }
 
-    inline StringViewLite AsStringViewLite() const noexcept
+    [[nodiscard]] inline StringViewLite AsStringViewLite() const noexcept
     {
       return m_content.AsStringViewLite();
     }
 
-    inline std::string_view AsStringView() const noexcept
+    [[nodiscard]] inline std::string_view AsStringView() const noexcept
     {
       return m_content.AsStringView();
     }
 
-    inline PathView AsPathView() const noexcept
+    [[nodiscard]] inline PathView AsPathView() const noexcept
     {
       return PathView(m_content.AsStringViewLite(), OptimizationCheckFlag::NoCheck);
     }

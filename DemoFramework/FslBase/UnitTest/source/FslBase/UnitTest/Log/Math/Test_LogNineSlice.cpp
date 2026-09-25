@@ -47,7 +47,7 @@ namespace
 
 TEST(TestFixtureFslBase_TestLogMatNineSlice, Log)
 {
-  NineSlice value(1, 2, 3, 4);
+  const NineSlice value(1, 2, 3, 4);
 
   std::stringstream stream;
   stream << value;

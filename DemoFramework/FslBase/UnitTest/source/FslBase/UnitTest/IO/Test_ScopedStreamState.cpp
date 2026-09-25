@@ -57,7 +57,7 @@ TEST(TestIO_ScopedStreamState, Log)
   stream << " " << 10;
   EXPECT_EQ(std::string("hello: 1337 2a a 10"), stream.str());
   {
-    IO::ScopedStreamState scoped(stream);
+    const IO::ScopedStreamState scoped(stream);
     stream << " " << std::hex << 42;
     stream << " " << 10;
   }

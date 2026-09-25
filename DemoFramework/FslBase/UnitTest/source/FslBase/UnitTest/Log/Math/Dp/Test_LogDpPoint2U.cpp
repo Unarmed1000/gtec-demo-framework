@@ -44,7 +44,7 @@ namespace
 
 TEST(TestLog_MathDp_LogDpPoint2U, Log)
 {
-  auto value = DpPoint2U::Create(1u, 2u);
+  const auto value = DpPoint2U::Create(1u, 2u);
 
   std::stringstream stream;
   stream << value;

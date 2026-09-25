@@ -53,7 +53,7 @@ namespace
 
 TEST(TestMath_Plane_MonoGame, BoxContainsVector3)
 {
-  BoundingBox box(Vector3::Zero(), Vector3::One());
+  const BoundingBox box(Vector3::Zero(), Vector3::One());
 
   EXPECT_EQ(box.Contains(-Vector3::One()), ContainmentType::Disjoint);
   EXPECT_EQ(box.Contains(Vector3(0.5f, 0.5f, -1.0f)), ContainmentType::Disjoint);
@@ -78,29 +78,29 @@ TEST(TestMath_Plane_MonoGame, BoxContainsIdenticalBox)
 
 TEST(TestMath_Plane_MonoGame, BoundingSphereTests)
 {
-  auto zeroPoint = BoundingSphere::CreateFromPoints({Vector3::Zero()});
+  const auto zeroPoint = BoundingSphere::CreateFromPoints({Vector3::Zero()});
   EXPECT_EQ(zeroPoint, BoundingSphere());
 
-  auto onePoint = BoundingSphere::CreateFromPoints({Vector3::One()});
+  const auto onePoint = BoundingSphere::CreateFromPoints({Vector3::One()});
   EXPECT_EQ(onePoint, BoundingSphere(Vector3::One(), 0.0f));
 
-  auto twoPoint = BoundingSphere::CreateFromPoints({Vector3::Zero(), Vector3::One()});
+  const auto twoPoint = BoundingSphere::CreateFromPoints({Vector3::Zero(), Vector3::One()});
   EXPECT_EQ(twoPoint, BoundingSphere(Vector3(0.5f, 0.5f, 0.5f), 0.8660254f));
 
-  auto threePoint = BoundingSphere::CreateFromPoints({Vector3(0.0f, 0.0f, 0.0f), Vector3(-1.0f, 0.0f, 0.0f), Vector3(1.0f, 1.0f, 1.0f)});
+  const auto threePoint = BoundingSphere::CreateFromPoints({Vector3(0.0f, 0.0f, 0.0f), Vector3(-1.0f, 0.0f, 0.0f), Vector3(1.0f, 1.0f, 1.0f)});
   EXPECT_TRUE(Fsl::Test::IsFloatEqual(BoundingSphere(Vector3(0.0f, 0.5f, 0.5f), 1.224745f), threePoint));
 
-  std::vector<Vector3> eightPointTestInput = {Vector3(54.58071f, 124.9063f, 56.0016f),   Vector3(54.52138f, 124.9063f, 56.13985f),
-                                              Vector3(54.52208f, 124.8235f, 56.14014f),  Vector3(54.5814f, 124.8235f, 56.0019f),
-                                              Vector3(1145.415f, 505.913f, -212.5173f),  Vector3(611.4731f, 505.9535f, 1031.893f),
-                                              Vector3(617.7462f, -239.7422f, 1034.584f), Vector3(1151.687f, -239.7035f, -209.8246f)};
-  auto eightPoint = BoundingSphere::CreateFromPoints(eightPointTestInput);
+  const std::vector<Vector3> eightPointTestInput = {Vector3(54.58071f, 124.9063f, 56.0016f),   Vector3(54.52138f, 124.9063f, 56.13985f),
+                                                    Vector3(54.52208f, 124.8235f, 56.14014f),  Vector3(54.5814f, 124.8235f, 56.0019f),
+                                                    Vector3(1145.415f, 505.913f, -212.5173f),  Vector3(611.4731f, 505.9535f, 1031.893f),
+                                                    Vector3(617.7462f, -239.7422f, 1034.584f), Vector3(1151.687f, -239.7035f, -209.8246f)};
+  const auto eightPoint = BoundingSphere::CreateFromPoints(eightPointTestInput);
   for (const auto& point : eightPointTestInput)
   {
     EXPECT_NE(eightPoint.Contains(point), ContainmentType::Disjoint);
   }
 
-  std::vector<Vector3> empty;
+  const std::vector<Vector3> empty;
   EXPECT_THROW(BoundingSphere::CreateFromPoints(empty), std::invalid_argument);
 }
 
@@ -124,23 +124,23 @@ TEST(TestMath_Plane_MonoGame, BoundingBoxContainsBoundingSphere)
 
 TEST(TestMath_Plane_MonoGame, BoundingFrustumToBoundingBoxTests)
 {
-  auto view = Matrix::CreateLookAt(Vector3(0.0f, 0.0f, 5.0f), Vector3::Zero(), Vector3::Up());
-  auto projection = Matrix::CreatePerspectiveFieldOfView(MathHelper::PiOver4, 1.0f, 1.0f, 100.0f);
-  auto testFrustum = BoundingFrustum(view * projection);
+  const auto view = Matrix::CreateLookAt(Vector3(0.0f, 0.0f, 5.0f), Vector3::Zero(), Vector3::Up());
+  const auto projection = Matrix::CreatePerspectiveFieldOfView(MathHelper::PiOver4, 1.0f, 1.0f, 100.0f);
+  const auto testFrustum = BoundingFrustum(view * projection);
 
-  BoundingBox bbox1(Vector3(0.0f, 0.0f, 0.0f), Vector3(1.0f, 1.0f, 1.f));
+  const BoundingBox bbox1(Vector3(0.0f, 0.0f, 0.0f), Vector3(1.0f, 1.0f, 1.f));
   EXPECT_EQ(testFrustum.Contains(bbox1), ContainmentType::Contains);
   EXPECT_TRUE(testFrustum.Intersects(bbox1));
 
-  BoundingBox bbox2(Vector3(-1000.0f, -1000.0f, -1000.0f), Vector3(1000.0f, 1000.0f, 1000.0f));
+  const BoundingBox bbox2(Vector3(-1000.0f, -1000.0f, -1000.0f), Vector3(1000.0f, 1000.0f, 1000.0f));
   EXPECT_EQ(testFrustum.Contains(bbox2), ContainmentType::Intersects);
   EXPECT_TRUE(testFrustum.Intersects(bbox2));
 
-  BoundingBox bbox3(Vector3(-1000.0f, -1000.0f, -1000.0f), Vector3(0.0f, 0.0f, 0.0f));
+  const BoundingBox bbox3(Vector3(-1000.0f, -1000.0f, -1000.0f), Vector3(0.0f, 0.0f, 0.0f));
   EXPECT_EQ(testFrustum.Contains(bbox3), ContainmentType::Intersects);
   EXPECT_TRUE(testFrustum.Intersects(bbox3));
 
-  BoundingBox bbox4(Vector3(-1000.0f, -1000.0f, -1000.0f), Vector3(-500.0f, -500.0f, -500.0f));
+  const BoundingBox bbox4(Vector3(-1000.0f, -1000.0f, -1000.0f), Vector3(-500.0f, -500.0f, -500.0f));
   EXPECT_EQ(testFrustum.Contains(bbox4), ContainmentType::Disjoint);
   EXPECT_FALSE(testFrustum.Intersects(bbox4));
 }
@@ -148,9 +148,9 @@ TEST(TestMath_Plane_MonoGame, BoundingFrustumToBoundingBoxTests)
 
 TEST(TestMath_Plane_MonoGame, BoundingFrustumToBoundingFrustumTests)
 {
-  auto view = Matrix::CreateLookAt(Vector3(0.0f, 0.0f, 5.0f), Vector3::Zero(), Vector3::Up());
-  auto projection = Matrix::CreatePerspectiveFieldOfView(MathHelper::PiOver4, 1.0f, 1.0f, 100.0f);
-  BoundingFrustum testFrustum(view * projection);
+  const auto view = Matrix::CreateLookAt(Vector3(0.0f, 0.0f, 5.0f), Vector3::Zero(), Vector3::Up());
+  const auto projection = Matrix::CreatePerspectiveFieldOfView(MathHelper::PiOver4, 1.0f, 1.0f, 100.0f);
+  const BoundingFrustum testFrustum(view * projection);
 
   // Same frustum.
   EXPECT_EQ(testFrustum.Contains(testFrustum), ContainmentType::Contains);
@@ -159,8 +159,8 @@ TEST(TestMath_Plane_MonoGame, BoundingFrustumToBoundingFrustumTests)
   BoundingFrustum otherFrustum(Matrix::GetIdentity());
 
   // Smaller frustum contained entirely inside.
-  auto view2 = Matrix::CreateLookAt(Vector3(0.0f, 0.0f, 4.0f), Vector3::Zero(), Vector3::Up());
-  auto projection2 = Matrix::CreatePerspectiveFieldOfView(MathHelper::PiOver4, 1.0f, 1.0f, 50.0f);
+  const auto view2 = Matrix::CreateLookAt(Vector3(0.0f, 0.0f, 4.0f), Vector3::Zero(), Vector3::Up());
+  const auto projection2 = Matrix::CreatePerspectiveFieldOfView(MathHelper::PiOver4, 1.0f, 1.0f, 50.0f);
   otherFrustum.SetMatrix(view2 * projection2);
 
   EXPECT_EQ(testFrustum.Contains(otherFrustum), ContainmentType::Contains);
@@ -173,24 +173,24 @@ TEST(TestMath_Plane_MonoGame, BoundingFrustumToBoundingFrustumTests)
   EXPECT_TRUE(testFrustum.Intersects(otherFrustum));
 
   // Same size frustum, pointing in the opposite direction and not overlapping.
-  auto view3 = Matrix::CreateLookAt(Vector3(0.0f, 0.0f, 6.0f), Vector3(0.0f, 0.0f, 7.0f), Vector3::Up());
+  const auto view3 = Matrix::CreateLookAt(Vector3(0.0f, 0.0f, 6.0f), Vector3(0.0f, 0.0f, 7.0f), Vector3::Up());
   otherFrustum.SetMatrix(view3 * projection);
 
   EXPECT_EQ(testFrustum.Contains(otherFrustum), ContainmentType::Disjoint);
   EXPECT_FALSE(testFrustum.Intersects(otherFrustum));
 
   // Larger frustum, entirely containing test frustum.
-  auto view4 = Matrix::CreateLookAt(Vector3(0.0f, 0.0f, 10.0f), Vector3::Zero(), Vector3::Up());
-  auto projection4 = Matrix::CreatePerspectiveFieldOfView(MathHelper::PiOver4, 1.0f, 1.0f, 1000.0f);
+  const auto view4 = Matrix::CreateLookAt(Vector3(0.0f, 0.0f, 10.0f), Vector3::Zero(), Vector3::Up());
+  const auto projection4 = Matrix::CreatePerspectiveFieldOfView(MathHelper::PiOver4, 1.0f, 1.0f, 1000.0f);
   otherFrustum.SetMatrix(view4 * projection4);
 
   EXPECT_EQ(testFrustum.Contains(otherFrustum), ContainmentType::Intersects);
   EXPECT_TRUE(testFrustum.Intersects(otherFrustum));
 
-  BoundingFrustum bf(Matrix::CreateLookAt(Vector3(0.0f, 1.0f, 1.0f), Vector3(0.0f, 0.0f, 0.0f), Vector3::Up()) *
-                     Matrix::CreatePerspectiveFieldOfView(MathHelper::PiOver4, 1.3f, 0.1f, 1000.0f));
-  Ray ray(Vector3(0.0f, 0.5f, 0.5f), Vector3(0.0f, 0.0f, 0.0f));
-  Ray ray2(Vector3(0.0f, 1.0f, 1.0f), Vector3(0.0f, 0.0f, 0.0f));
+  const BoundingFrustum bf(Matrix::CreateLookAt(Vector3(0.0f, 1.0f, 1.0f), Vector3(0.0f, 0.0f, 0.0f), Vector3::Up()) *
+                           Matrix::CreatePerspectiveFieldOfView(MathHelper::PiOver4, 1.3f, 0.1f, 1000.0f));
+  const Ray ray(Vector3(0.0f, 0.5f, 0.5f), Vector3(0.0f, 0.0f, 0.0f));
+  const Ray ray2(Vector3(0.0f, 1.0f, 1.0f), Vector3(0.0f, 0.0f, 0.0f));
 
   float value = 42.0f;
   float value2 = 42.0f;

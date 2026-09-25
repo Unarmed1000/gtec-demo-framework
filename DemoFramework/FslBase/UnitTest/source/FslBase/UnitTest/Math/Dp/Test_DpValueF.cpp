@@ -43,7 +43,7 @@ namespace
 
 TEST(TestMathDp_DpValueF, Construct_Default)
 {
-  DpValueF value;
+  const DpValueF value;
 
   EXPECT_EQ(DpValueF(), value);
   EXPECT_EQ(0, value.Value);
@@ -52,7 +52,7 @@ TEST(TestMathDp_DpValueF, Construct_Default)
 TEST(TestMathDp_DpValueF, Construct)
 {
   constexpr const int32_t TestValue = 3;
-  DpValueF value(TestValue);
+  const DpValueF value(TestValue);
 
   EXPECT_EQ(TestValue, value.Value);
 }
@@ -60,7 +60,7 @@ TEST(TestMathDp_DpValueF, Construct)
 TEST(TestMathDp_DpValueF, Construct_NegativeValue)
 {
   constexpr const int32_t TestValue = -1;
-  DpValueF value(TestValue);
+  const DpValueF value(TestValue);
 
   EXPECT_EQ(TestValue, value.Value);
 }

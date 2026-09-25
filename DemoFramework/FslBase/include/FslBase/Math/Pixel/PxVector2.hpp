@@ -72,7 +72,7 @@ namespace Fsl
     }
 
     //! @brief Calculates the length of the vector squared.
-    constexpr float LengthSquared() const
+    [[nodiscard]] constexpr float LengthSquared() const
     {
       return (X.Value * X.Value) + (Y.Value * Y.Value);
     }

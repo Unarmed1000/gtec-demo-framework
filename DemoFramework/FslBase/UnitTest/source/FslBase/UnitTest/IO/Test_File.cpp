@@ -104,7 +104,7 @@ TEST_F(TestIoFile, Exists_Content_File)
 
 TEST_F(TestIoFile, GetAttributes_File)
 {
-  auto fileAttributes = IO::File::GetAttributes(m_helloWorldFilename);
+  const auto fileAttributes = IO::File::GetAttributes(m_helloWorldFilename);
   EXPECT_TRUE(fileAttributes.HasFlag(IO::FileAttributes::File));
   EXPECT_FALSE(fileAttributes.HasFlag(IO::FileAttributes::Directory));
 }
@@ -112,7 +112,7 @@ TEST_F(TestIoFile, GetAttributes_File)
 
 TEST_F(TestIoFile, GetAttributes_Directory)
 {
-  auto fileAttributes = IO::File::GetAttributes(GetContentPath());
+  const auto fileAttributes = IO::File::GetAttributes(GetContentPath());
   EXPECT_TRUE(fileAttributes.HasFlag(IO::FileAttributes::Directory));
   EXPECT_FALSE(fileAttributes.HasFlag(IO::FileAttributes::File));
 }
@@ -159,7 +159,7 @@ TEST_F(TestIoFile, GetLength)
 
 TEST_F(TestIoFile, ReadAllText)
 {
-  std::string content = IO::File::ReadAllText(m_helloWorldFilename);
+  const std::string content = IO::File::ReadAllText(m_helloWorldFilename);
   EXPECT_EQ(std::string("Hello world"), content);
 }
 
@@ -188,10 +188,10 @@ TEST_F(TestIoFile, TryReadAllText_FileDontExist)
 
 TEST_F(TestIoFile, ReadAllBytes)
 {
-  std::array<uint8_t, HelloFileLength> expectedContent = {static_cast<uint8_t>('H'), static_cast<uint8_t>('e'), static_cast<uint8_t>('l'),
-                                                          static_cast<uint8_t>('l'), static_cast<uint8_t>('o'), static_cast<uint8_t>(' '),
-                                                          static_cast<uint8_t>('w'), static_cast<uint8_t>('o'), static_cast<uint8_t>('r'),
-                                                          static_cast<uint8_t>('l'), static_cast<uint8_t>('d')};
+  const std::array<uint8_t, HelloFileLength> expectedContent = {static_cast<uint8_t>('H'), static_cast<uint8_t>('e'), static_cast<uint8_t>('l'),
+                                                                static_cast<uint8_t>('l'), static_cast<uint8_t>('o'), static_cast<uint8_t>(' '),
+                                                                static_cast<uint8_t>('w'), static_cast<uint8_t>('o'), static_cast<uint8_t>('r'),
+                                                                static_cast<uint8_t>('l'), static_cast<uint8_t>('d')};
 
   std::vector<uint8_t> content;
   IO::File::ReadAllBytes(content, m_helloWorldFilename);
@@ -210,10 +210,10 @@ TEST_F(TestIoFile, ReadAllBytes_FileDontExist)
 
 TEST_F(TestIoFile, ReadAllBytes_OldSchool)
 {
-  std::array<uint8_t, HelloFileLength> expectedContent = {static_cast<uint8_t>('H'), static_cast<uint8_t>('e'), static_cast<uint8_t>('l'),
-                                                          static_cast<uint8_t>('l'), static_cast<uint8_t>('o'), static_cast<uint8_t>(' '),
-                                                          static_cast<uint8_t>('w'), static_cast<uint8_t>('o'), static_cast<uint8_t>('r'),
-                                                          static_cast<uint8_t>('l'), static_cast<uint8_t>('d')};
+  const std::array<uint8_t, HelloFileLength> expectedContent = {static_cast<uint8_t>('H'), static_cast<uint8_t>('e'), static_cast<uint8_t>('l'),
+                                                                static_cast<uint8_t>('l'), static_cast<uint8_t>('o'), static_cast<uint8_t>(' '),
+                                                                static_cast<uint8_t>('w'), static_cast<uint8_t>('o'), static_cast<uint8_t>('r'),
+                                                                static_cast<uint8_t>('l'), static_cast<uint8_t>('d')};
 
   std::array<uint8_t, HelloFileLength> content{};
   IO::File::ReadAllBytes(content.data(), content.size(), m_helloWorldFilename);
@@ -224,7 +224,7 @@ TEST_F(TestIoFile, ReadAllBytes_OldSchool)
 
 TEST_F(TestIoFile, ReadAllBytes_OldSchool_NullPtr)
 {
-  std::array<uint8_t, HelloFileLength> content{};
+  const std::array<uint8_t, HelloFileLength> content{};
   EXPECT_THROW(IO::File::ReadAllBytes(nullptr, content.size(), m_helloWorldFilename), std::invalid_argument);
 }
 
@@ -248,9 +248,9 @@ TEST_F(TestIoFile, ReadBytes_Partial_OldSchool)
   constexpr uint32_t SkipBegin = 2;
   constexpr uint32_t SkipEnd = 1;
   constexpr uint32_t SkipAll = SkipBegin + SkipEnd;
-  std::array<uint8_t, HelloFileLength - SkipAll> expectedContent = {static_cast<uint8_t>('l'), static_cast<uint8_t>('l'), static_cast<uint8_t>('o'),
-                                                                    static_cast<uint8_t>(' '), static_cast<uint8_t>('w'), static_cast<uint8_t>('o'),
-                                                                    static_cast<uint8_t>('r'), static_cast<uint8_t>('l')};
+  const std::array<uint8_t, HelloFileLength - SkipAll> expectedContent = {
+    static_cast<uint8_t>('l'), static_cast<uint8_t>('l'), static_cast<uint8_t>('o'), static_cast<uint8_t>(' '),
+    static_cast<uint8_t>('w'), static_cast<uint8_t>('o'), static_cast<uint8_t>('r'), static_cast<uint8_t>('l')};
 
   std::array<uint8_t, HelloFileLength - SkipAll> content{};
   IO::File::ReadBytes(content.data(), content.size(), 0, m_helloWorldFilename, SkipBegin, content.size());
@@ -264,7 +264,7 @@ TEST_F(TestIoFile, ReadBytes_Partial_OldSchool_NullPtr)
   constexpr uint32_t SkipBegin = 2;
   constexpr uint32_t SkipEnd = 1;
   constexpr uint32_t SkipAll = SkipBegin + SkipEnd;
-  std::array<uint8_t, HelloFileLength - SkipAll> content{};
+  const std::array<uint8_t, HelloFileLength - SkipAll> content{};
   EXPECT_THROW(IO::File::ReadBytes(nullptr, content.size(), 0, m_helloWorldFilename, SkipBegin, content.size()), std::invalid_argument);
 }
 
@@ -293,12 +293,12 @@ TEST_F(TestIoFile, ReadBytes_Partial_OldSchool_FileDontExist)
 
 TEST_F(TestIoFile, ReadBytes)
 {
-  std::array<uint8_t, HelloFileLength> expectedContent = {static_cast<uint8_t>('H'), static_cast<uint8_t>('e'), static_cast<uint8_t>('l'),
-                                                          static_cast<uint8_t>('l'), static_cast<uint8_t>('o'), static_cast<uint8_t>(' '),
-                                                          static_cast<uint8_t>('w'), static_cast<uint8_t>('o'), static_cast<uint8_t>('r'),
-                                                          static_cast<uint8_t>('l'), static_cast<uint8_t>('d')};
+  const std::array<uint8_t, HelloFileLength> expectedContent = {static_cast<uint8_t>('H'), static_cast<uint8_t>('e'), static_cast<uint8_t>('l'),
+                                                                static_cast<uint8_t>('l'), static_cast<uint8_t>('o'), static_cast<uint8_t>(' '),
+                                                                static_cast<uint8_t>('w'), static_cast<uint8_t>('o'), static_cast<uint8_t>('r'),
+                                                                static_cast<uint8_t>('l'), static_cast<uint8_t>('d')};
 
-  std::vector<uint8_t> content = IO::File::ReadBytes(m_helloWorldFilename);
+  const std::vector<uint8_t> content = IO::File::ReadBytes(m_helloWorldFilename);
 
   EXPECT_EQ(expectedContent.size(), content.size());
   ExpectEq(expectedContent, content);
@@ -313,7 +313,7 @@ TEST_F(TestIoFile, ReadBytes_FileDontExist)
 
 TEST_F(TestIoFile, ReadBytes_Offset)
 {
-  std::array<uint8_t, 3> expectedContent = {static_cast<uint8_t>('w'), static_cast<uint8_t>('o'), static_cast<uint8_t>('r')};
+  const std::array<uint8_t, 3> expectedContent = {static_cast<uint8_t>('w'), static_cast<uint8_t>('o'), static_cast<uint8_t>('r')};
 
   std::vector<uint8_t> content;
   IO::File::ReadBytes(content, m_helloWorldFilename, 6u, 3u);

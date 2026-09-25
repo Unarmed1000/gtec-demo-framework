@@ -43,7 +43,7 @@ namespace
 
 TEST(TestMathPixel_PxTrimmedNineSlice, Construct_Default)
 {
-  PxTrimmedNineSlice value;
+  const PxTrimmedNineSlice value;
 
   EXPECT_EQ(PxSize2D(), value.SizePx);
   EXPECT_EQ(PxThicknessF(), value.TrimMarginPxf);
@@ -58,7 +58,7 @@ TEST(TestMathPixel_PxTrimmedNineSlice, Construct)
   constexpr auto TrimmedNineSlicePxf = PxThicknessF::Create(7.0f, 8.0f, 9.0f, 10.0f);
   constexpr auto ContentMarginPx = PxThickness::Create(11, 12, 13, 14);
 
-  PxTrimmedNineSlice value(SizePx, TrimMarginPxf, TrimmedNineSlicePxf, ContentMarginPx);
+  const PxTrimmedNineSlice value(SizePx, TrimMarginPxf, TrimmedNineSlicePxf, ContentMarginPx);
 
   EXPECT_EQ(SizePx, value.SizePx);
   EXPECT_EQ(TrimMarginPxf, value.TrimMarginPxf);
@@ -73,8 +73,8 @@ TEST(TestMathPixel_PxTrimmedNineSlice, OpEqual)
   constexpr auto TrimmedNineSlicePxf = PxThicknessF::Create(7.0f, 8.0f, 9.0f, 10.0f);
   constexpr auto ContentMarginPx = PxThickness::Create(11, 12, 13, 14);
 
-  PxTrimmedNineSlice value0(SizePx, TrimMarginPxf, TrimmedNineSlicePxf, ContentMarginPx);
-  PxTrimmedNineSlice value1(SizePx, TrimMarginPxf, TrimmedNineSlicePxf, ContentMarginPx);
+  const PxTrimmedNineSlice value0(SizePx, TrimMarginPxf, TrimmedNineSlicePxf, ContentMarginPx);
+  const PxTrimmedNineSlice value1(SizePx, TrimMarginPxf, TrimmedNineSlicePxf, ContentMarginPx);
 
   EXPECT_EQ(value0, value1);
 }
@@ -86,7 +86,7 @@ TEST(TestMathPixel_PxTrimmedNineSlice, NotOpEqual)
   constexpr auto TrimmedNineSlicePxf = PxThicknessF::Create(7.0f, 8.0f, 9.0f, 10.0f);
   constexpr auto ContentMarginPx = PxThickness::Create(11, 12, 13, 14);
 
-  PxTrimmedNineSlice value(SizePx, TrimMarginPxf, TrimmedNineSlicePxf, ContentMarginPx);
+  const PxTrimmedNineSlice value(SizePx, TrimMarginPxf, TrimmedNineSlicePxf, ContentMarginPx);
 
   constexpr auto Size42Px = PxSize1D::Create(42);
   constexpr auto Size42Pxf = PxSize1DF::Create(42);

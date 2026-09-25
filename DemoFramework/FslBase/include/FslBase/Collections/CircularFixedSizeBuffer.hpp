@@ -166,19 +166,19 @@ namespace Fsl
     }
 
     // NOLINTNEXTLINE(readability-identifier-naming)
-    bool empty() const noexcept
+    [[nodiscard]] bool empty() const noexcept
     {
       return m_entries <= 0u;
     }
 
     // NOLINTNEXTLINE(readability-identifier-naming)
-    size_type size() const noexcept
+    [[nodiscard]] size_type size() const noexcept
     {
       return m_entries;
     }
 
     // NOLINTNEXTLINE(readability-identifier-naming)
-    size_type capacity() const noexcept
+    [[nodiscard]] size_type capacity() const noexcept
     {
       return m_data.size();
     }
@@ -343,7 +343,7 @@ namespace Fsl
     }
 
     // NOLINTNEXTLINE(readability-identifier-naming)
-    constexpr uint32_t segment_count() const noexcept
+    [[nodiscard]] constexpr uint32_t segment_count() const noexcept
     {
       return m_entries <= (m_data.size() - m_frontIndex) ? (m_entries > 0 ? 1u : 0u) : 2u;
     }

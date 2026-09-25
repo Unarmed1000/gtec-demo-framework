@@ -71,12 +71,12 @@ namespace Fsl::ViewportUtil
 
   Vector3 Unproject(const Viewport& srcViewport, const Vector3& srcCoordinate, const Matrix& projection, const Matrix& view, const Matrix& world)
   {
-    Matrix invertedMatrix = Matrix::Invert(Matrix::Multiply(Matrix::Multiply(world, view), projection));
+    const Matrix invertedMatrix = Matrix::Invert(Matrix::Multiply(Matrix::Multiply(world, view), projection));
     const Vector3 srcVec((((srcCoordinate.X - static_cast<float>(srcViewport.X())) / static_cast<float>(srcViewport.Width())) * 2.0f) - 1.0f,
                          -((((srcCoordinate.Y - static_cast<float>(srcViewport.Y())) / static_cast<float>(srcViewport.Height())) * 2.0f) - 1.0f),
                          (srcCoordinate.Z - srcViewport.MinDepth()) / (srcViewport.MaxDepth() - srcViewport.MinDepth()));
     const float val = Calc(invertedMatrix, srcVec);
-    Vector3 vector = Vector3::Transform(srcVec, invertedMatrix);
+    const Vector3 vector = Vector3::Transform(srcVec, invertedMatrix);
     return !WithinEpsilon(val, 1.0f) ? vector / val : vector;
   }
 }

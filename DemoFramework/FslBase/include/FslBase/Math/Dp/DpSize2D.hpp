@@ -75,12 +75,12 @@ namespace Fsl
       assert(height >= value_type::value_type(0));
     }
 
-    constexpr inline value_type Width() const noexcept
+    [[nodiscard]] constexpr inline value_type Width() const noexcept
     {
       return m_width;
     }
 
-    constexpr inline value_type Height() const noexcept
+    [[nodiscard]] constexpr inline value_type Height() const noexcept
     {
       return m_height;
     }

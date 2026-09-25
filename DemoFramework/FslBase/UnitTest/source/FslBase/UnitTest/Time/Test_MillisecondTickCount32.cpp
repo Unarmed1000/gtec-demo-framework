@@ -153,7 +153,7 @@ TEST(TestTime_MillisecondTickCount32, FromDays_Signed)
 {
   constexpr int32_t Units = 2;
   constexpr auto Ticks = NumericCast<int32_t>(Units * MillisecondTickCount32::TicksPerDay);
-  auto value = MillisecondTickCount32::FromDays(Units);
+  const auto value = MillisecondTickCount32::FromDays(Units);
 
   EXPECT_EQ(Ticks, value.Ticks());
   EXPECT_EQ(Units, value.Days());
@@ -169,7 +169,7 @@ TEST(TestTime_MillisecondTickCount32, FromDays_Signed_MinValue)
 {
   constexpr int32_t Units = (std::numeric_limits<int32_t>::min() / MillisecondTickCount32::TicksPerDay);
   constexpr auto Ticks = NumericCast<int32_t>(Units * MillisecondTickCount32::TicksPerDay);
-  auto value = MillisecondTickCount32::FromDays(Units);
+  const auto value = MillisecondTickCount32::FromDays(Units);
 
   EXPECT_EQ(Ticks, value.Ticks());
   EXPECT_EQ(Units, value.Days());
@@ -185,7 +185,7 @@ TEST(TestTime_MillisecondTickCount32, FromDays_Signed_MaxValue)
 {
   constexpr int32_t Units = std::numeric_limits<int32_t>::max() / MillisecondTickCount32::TicksPerDay;
   constexpr auto Ticks = NumericCast<int32_t>(Units * MillisecondTickCount32::TicksPerDay);
-  auto value = MillisecondTickCount32::FromDays(Units);
+  const auto value = MillisecondTickCount32::FromDays(Units);
 
   EXPECT_EQ(Ticks, value.Ticks());
   EXPECT_EQ(Units, value.Days());
@@ -216,7 +216,7 @@ TEST(TestTime_MillisecondTickCount32, FromHours_Signed)
 {
   constexpr int32_t Units = 2;
   constexpr auto Ticks = NumericCast<int32_t>(Units * MillisecondTickCount32::TicksPerHour);
-  auto value = MillisecondTickCount32::FromHours(Units);
+  const auto value = MillisecondTickCount32::FromHours(Units);
 
   EXPECT_EQ(Ticks, value.Ticks());
   EXPECT_EQ(0, value.Days());
@@ -233,7 +233,7 @@ TEST(TestTime_MillisecondTickCount32, FromHours_Signed_MinValue)
 {
   constexpr int32_t Units = (std::numeric_limits<int32_t>::min() / MillisecondTickCount32::TicksPerHour);
   constexpr auto Ticks = NumericCast<int32_t>(Units * MillisecondTickCount32::TicksPerHour);
-  auto value = MillisecondTickCount32::FromHours(Units);
+  const auto value = MillisecondTickCount32::FromHours(Units);
 
   EXPECT_EQ(Ticks, value.Ticks());
   EXPECT_EQ((Units / 24), value.Days());
@@ -249,7 +249,7 @@ TEST(TestTime_MillisecondTickCount32, FromHours_Signed_MaxValue)
 {
   constexpr int32_t Units = std::numeric_limits<int32_t>::max() / MillisecondTickCount32::TicksPerHour;
   constexpr auto Ticks = NumericCast<int32_t>(Units * MillisecondTickCount32::TicksPerHour);
-  auto value = MillisecondTickCount32::FromHours(Units);
+  const auto value = MillisecondTickCount32::FromHours(Units);
 
   EXPECT_EQ(Ticks, value.Ticks());
   EXPECT_EQ((Units / 24), value.Days());
@@ -281,7 +281,7 @@ TEST(TestTime_MillisecondTickCount32, FromMinutes_Signed)
 {
   constexpr int32_t Units = 2;
   constexpr auto Ticks = NumericCast<int32_t>(Units * MillisecondTickCount32::TicksPerMinute);
-  auto value = MillisecondTickCount32::FromMinutes(Units);
+  const auto value = MillisecondTickCount32::FromMinutes(Units);
 
   EXPECT_EQ(Ticks, value.Ticks());
   EXPECT_EQ(0, value.Days());
@@ -298,7 +298,7 @@ TEST(TestTime_MillisecondTickCount32, FromMinutes_Signed_MinValue)
 {
   constexpr int32_t Units = (std::numeric_limits<int32_t>::min() / MillisecondTickCount32::TicksPerMinute);
   constexpr auto Ticks = NumericCast<int32_t>(Units * MillisecondTickCount32::TicksPerMinute);
-  auto value = MillisecondTickCount32::FromMinutes(Units);
+  const auto value = MillisecondTickCount32::FromMinutes(Units);
 
   EXPECT_EQ(Ticks, value.Ticks());
   EXPECT_EQ((Units / 60 / 24), value.Days());
@@ -314,7 +314,7 @@ TEST(TestTime_MillisecondTickCount32, FromMinutes_Signed_MaxValue)
 {
   constexpr int32_t Units = std::numeric_limits<int32_t>::max() / MillisecondTickCount32::TicksPerMinute;
   constexpr auto Ticks = NumericCast<int32_t>(Units * MillisecondTickCount32::TicksPerMinute);
-  auto value = MillisecondTickCount32::FromMinutes(Units);
+  const auto value = MillisecondTickCount32::FromMinutes(Units);
 
   EXPECT_EQ(Ticks, value.Ticks());
   EXPECT_EQ((Units / 60 / 24), value.Days());
@@ -345,7 +345,7 @@ TEST(TestTime_MillisecondTickCount32, FromSeconds_Signed)
 {
   constexpr int32_t Units = 2;
   constexpr auto Ticks = NumericCast<int32_t>(Units * MillisecondTickCount32::TicksPerSecond);
-  auto value = MillisecondTickCount32::FromSeconds(Units);
+  const auto value = MillisecondTickCount32::FromSeconds(Units);
 
   EXPECT_EQ(Ticks, value.Ticks());
   EXPECT_EQ(0, value.Days());
@@ -362,7 +362,7 @@ TEST(TestTime_MillisecondTickCount32, FromSeconds_Signed_MinValue)
 {
   constexpr int32_t Units = (std::numeric_limits<int32_t>::min() / MillisecondTickCount32::TicksPerSecond);
   constexpr auto Ticks = NumericCast<int32_t>(Units * MillisecondTickCount32::TicksPerSecond);
-  auto value = MillisecondTickCount32::FromSeconds(Units);
+  const auto value = MillisecondTickCount32::FromSeconds(Units);
 
   EXPECT_EQ(Ticks, value.Ticks());
   EXPECT_EQ((Units / 60 / 60 / 24), value.Days());
@@ -378,7 +378,7 @@ TEST(TestTime_MillisecondTickCount32, FromSeconds_Signed_MaxValue)
 {
   constexpr int32_t Units = std::numeric_limits<int32_t>::max() / MillisecondTickCount32::TicksPerSecond;
   constexpr auto Ticks = NumericCast<int32_t>(Units * MillisecondTickCount32::TicksPerSecond);
-  auto value = MillisecondTickCount32::FromSeconds(Units);
+  const auto value = MillisecondTickCount32::FromSeconds(Units);
 
   EXPECT_EQ(Ticks, value.Ticks());
   EXPECT_EQ((Units / 60 / 60 / 24), value.Days());
@@ -409,7 +409,7 @@ TEST(TestTime_MillisecondTickCount32, FromMilliseconds_Signed)
 {
   constexpr int32_t Units = 2;
   constexpr auto Ticks = NumericCast<int32_t>(Units * MillisecondTickCount32::TicksPerMillisecond);
-  auto value = MillisecondTickCount32::FromMilliseconds(Units);
+  const auto value = MillisecondTickCount32::FromMilliseconds(Units);
 
   EXPECT_EQ(Ticks, value.Ticks());
   EXPECT_EQ(0, value.Days());
@@ -426,7 +426,7 @@ TEST(TestTime_MillisecondTickCount32, FromMilliseconds_Signed_MinValue)
 {
   constexpr int32_t Units = (std::numeric_limits<int32_t>::min() / MillisecondTickCount32::TicksPerMillisecond);
   constexpr auto Ticks = NumericCast<int32_t>(Units * MillisecondTickCount32::TicksPerMillisecond);
-  auto value = MillisecondTickCount32::FromMilliseconds(Units);
+  const auto value = MillisecondTickCount32::FromMilliseconds(Units);
 
   EXPECT_EQ(Ticks, value.Ticks());
   EXPECT_EQ((Units / 1000 / 60 / 60 / 24), value.Days());
@@ -442,7 +442,7 @@ TEST(TestTime_MillisecondTickCount32, FromMilliseconds_Signed_MaxValue)
 {
   constexpr int32_t Units = std::numeric_limits<int32_t>::max() / MillisecondTickCount32::TicksPerMillisecond;
   constexpr auto Ticks = NumericCast<int32_t>(Units * MillisecondTickCount32::TicksPerMillisecond);
-  auto value = MillisecondTickCount32::FromMilliseconds(Units);
+  const auto value = MillisecondTickCount32::FromMilliseconds(Units);
 
   EXPECT_EQ(Ticks, value.Ticks());
   EXPECT_EQ((Units / 1000 / 60 / 60 / 24), value.Days());
@@ -464,7 +464,7 @@ TEST(TestTime_MillisecondTickCount32, FromMicroseconds_Signed)
   constexpr int32_t Milliseconds = 2;
   constexpr auto Ticks = NumericCast<int32_t>(Milliseconds);
   constexpr auto Microseconds = NumericCast<int32_t>(Ticks * MillisecondTickCount32::MicrosecondPerTick);
-  auto value = MillisecondTickCount32::FromMicroseconds(Microseconds);
+  const auto value = MillisecondTickCount32::FromMicroseconds(Microseconds);
 
   EXPECT_EQ(Ticks, value.Ticks());
   EXPECT_EQ(0, value.Days());
@@ -481,7 +481,7 @@ TEST(TestTime_MillisecondTickCount32, FromMicroseconds_Signed_MinValue)
 {
   constexpr int32_t Units = std::numeric_limits<int32_t>::min();
   constexpr auto Ticks = NumericCast<int32_t>(Units / MillisecondTickCount32::MicrosecondPerTick);
-  auto value = MillisecondTickCount32::FromMicroseconds(Units);
+  const auto value = MillisecondTickCount32::FromMicroseconds(Units);
 
   EXPECT_EQ(Ticks, value.Ticks());
   EXPECT_EQ((Units / 1000 / 1000 / 60 / 60 / 24), value.Days());
@@ -498,7 +498,7 @@ TEST(TestTime_MillisecondTickCount32, FromMicroseconds_Signed_MaxValue)
 {
   constexpr int32_t Units = std::numeric_limits<int32_t>::max();
   constexpr auto Ticks = NumericCast<int32_t>(Units / MillisecondTickCount32::MicrosecondPerTick);
-  auto value = MillisecondTickCount32::FromMicroseconds(Units);
+  const auto value = MillisecondTickCount32::FromMicroseconds(Units);
 
   EXPECT_EQ(Ticks, value.Ticks());
   EXPECT_EQ((Units / 1000 / 1000 / 60 / 60 / 24), value.Days());
@@ -520,7 +520,7 @@ TEST(TestTime_MillisecondTickCount32, FromNanoseconds_Signed)
   constexpr int32_t Milliseconds = 2;
   constexpr auto Ticks = NumericCast<int32_t>(Milliseconds);
   constexpr auto Nanoseconds = NumericCast<int32_t>(Ticks * MillisecondTickCount32::NanoSecondsPerTick);
-  auto value = MillisecondTickCount32::FromNanoseconds(Nanoseconds);
+  const auto value = MillisecondTickCount32::FromNanoseconds(Nanoseconds);
 
   EXPECT_EQ(Ticks, value.Ticks());
   EXPECT_EQ(0, value.Days());
@@ -536,7 +536,7 @@ TEST(TestTime_MillisecondTickCount32, FromNanoseconds_Signed_MinValue)
 {
   constexpr int32_t Units = std::numeric_limits<int32_t>::min();
   constexpr auto Ticks = NumericCast<int32_t>(Units / MillisecondTickCount32::NanoSecondsPerTick);
-  auto value = MillisecondTickCount32::FromNanoseconds(Units);
+  const auto value = MillisecondTickCount32::FromNanoseconds(Units);
 
   EXPECT_EQ(Ticks, value.Ticks());
   EXPECT_EQ((Units / 1000000 / 1000 / 60 / 60 / 24), value.Days());
@@ -553,7 +553,7 @@ TEST(TestTime_MillisecondTickCount32, FromNanoseconds_Signed_MaxValue)
 {
   constexpr int32_t Units = std::numeric_limits<int32_t>::max();
   constexpr auto Ticks = NumericCast<int32_t>(Units / MillisecondTickCount32::NanoSecondsPerTick);
-  auto value = MillisecondTickCount32::FromNanoseconds(Units);
+  const auto value = MillisecondTickCount32::FromNanoseconds(Units);
 
   EXPECT_EQ(Ticks, value.Ticks());
   EXPECT_EQ((Units / 1000000 / 1000 / 60 / 60 / 24), value.Days());

@@ -70,57 +70,57 @@ namespace Fsl
     {
     }
 
-    constexpr int32_t X() const noexcept
+    [[nodiscard]] constexpr int32_t X() const noexcept
     {
       return m_x;
     }
 
-    constexpr int32_t Y() const noexcept
+    [[nodiscard]] constexpr int32_t Y() const noexcept
     {
       return m_y;
     }
 
-    constexpr int32_t Width() const noexcept
+    [[nodiscard]] constexpr int32_t Width() const noexcept
     {
       return m_width;
     }
 
-    constexpr int32_t Height() const noexcept
+    [[nodiscard]] constexpr int32_t Height() const noexcept
     {
       return m_height;
     }
 
-    constexpr float MinDepth() const noexcept
+    [[nodiscard]] constexpr float MinDepth() const noexcept
     {
       return m_minDepth;
     }
 
-    constexpr float MaxDepth() const noexcept
+    [[nodiscard]] constexpr float MaxDepth() const noexcept
     {
       return m_maxDepth;
     }
 
-    constexpr int32_t Left() const
+    [[nodiscard]] constexpr int32_t Left() const
     {
       return m_x;
     }
 
-    constexpr int32_t Top() const
+    [[nodiscard]] constexpr int32_t Top() const
     {
       return m_y;
     }
 
-    constexpr int32_t Right() const
+    [[nodiscard]] constexpr int32_t Right() const
     {
       return m_x + m_width;
     }
 
-    constexpr int32_t Bottom() const
+    [[nodiscard]] constexpr int32_t Bottom() const
     {
       return m_y + m_height;
     }
 
-    constexpr float GetAspectRatio() const
+    [[nodiscard]] constexpr float GetAspectRatio() const
     {
       return m_width != 0 && m_height != 0 ? static_cast<float>(m_width) / static_cast<float>(m_height) : 0.0f;
     }

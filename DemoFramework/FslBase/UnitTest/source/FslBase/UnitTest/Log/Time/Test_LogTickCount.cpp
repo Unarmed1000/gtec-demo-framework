@@ -42,7 +42,7 @@ namespace
 
 TEST(TestLog_Time_LogTimeSpan, Log)
 {
-  TimeSpan value(2000);
+  const TimeSpan value(2000);
   std::stringstream stream;
   stream << value;
   EXPECT_EQ(std::string("20000ns"), stream.str());

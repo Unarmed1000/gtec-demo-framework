@@ -47,11 +47,11 @@ namespace
 
 TEST(TestSystem_HighResolutionTimer, GetTimestamp)
 {
-  HighResolutionTimer timer;
+  const HighResolutionTimer timer;
 
-  auto startTime = timer.GetTimestamp();
+  const auto startTime = timer.GetTimestamp();
   Thread::SleepMilliseconds(5);
-  auto endTime = timer.GetTimestamp();
+  const auto endTime = timer.GetTimestamp();
 
   EXPECT_GE(endTime - startTime, TimeSpan(0));
 }

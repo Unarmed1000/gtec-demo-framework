@@ -92,7 +92,7 @@ namespace Fsl
     // -----------------------------------------------------------------------------------------------------------------------------------------------
 
     // NOLINTNEXTLINE(readability-identifier-naming)
-    constexpr const_pointer data() const noexcept
+    [[nodiscard]] constexpr const_pointer data() const noexcept
     {
       return m_view.data();
     }
@@ -100,7 +100,7 @@ namespace Fsl
     // -----------------------------------------------------------------------------------------------------------------------------------------------
 
     // NOLINTNEXTLINE(readability-identifier-naming)
-    constexpr size_type size() const noexcept
+    [[nodiscard]] constexpr size_type size() const noexcept
     {
       return m_view.size();
     }
@@ -108,7 +108,7 @@ namespace Fsl
     // -----------------------------------------------------------------------------------------------------------------------------------------------
 
     // NOLINTNEXTLINE(readability-identifier-naming)
-    constexpr size_type max_size() const noexcept
+    [[nodiscard]] constexpr size_type max_size() const noexcept
     {
       return m_view.max_size();
     }
@@ -132,7 +132,7 @@ namespace Fsl
     // -----------------------------------------------------------------------------------------------------------------------------------------------
 
     // NOLINTNEXTLINE(readability-identifier-naming)
-    constexpr const_reference at(size_type pos) const
+    [[nodiscard]] constexpr const_reference at(size_type pos) const
     {
       return m_view.at(pos);
     }
@@ -140,7 +140,7 @@ namespace Fsl
     // -----------------------------------------------------------------------------------------------------------------------------------------------
 
     // NOLINTNEXTLINE(readability-identifier-naming)
-    constexpr size_type length() const noexcept
+    [[nodiscard]] constexpr size_type length() const noexcept
     {
       return m_view.length();
     }
@@ -148,7 +148,7 @@ namespace Fsl
     // -----------------------------------------------------------------------------------------------------------------------------------------------
 
     // NOLINTNEXTLINE(readability-identifier-naming)
-    constexpr const_reference back() const
+    [[nodiscard]] constexpr const_reference back() const
     {
       assert(!empty());
       return m_view.back();
@@ -157,7 +157,7 @@ namespace Fsl
     // -----------------------------------------------------------------------------------------------------------------------------------------------
 
     // NOLINTNEXTLINE(readability-identifier-naming)
-    constexpr const_reference front() const
+    [[nodiscard]] constexpr const_reference front() const
     {
       assert(!empty());
       return m_view.front();
@@ -201,7 +201,7 @@ namespace Fsl
 
     //! @brief Returns a view of the substring [pos, pos + rcount), where rcount is the smaller of count and size() - pos.
     // NOLINTNEXTLINE(readability-identifier-naming)
-    constexpr StringViewLite substr(size_type pos = 0, size_type count = npos) const
+    [[nodiscard]] constexpr StringViewLite substr(size_type pos = 0, size_type count = npos) const
     {
       return {m_view.substr(pos, count)};
     }
@@ -217,7 +217,7 @@ namespace Fsl
     // -----------------------------------------------------------------------------------------------------------------------------------------------
 
     // NOLINTNEXTLINE(readability-identifier-naming)
-    constexpr int compare(std::string_view value) const noexcept
+    [[nodiscard]] constexpr int compare(std::string_view value) const noexcept
     {
       return m_view.compare(value);
     }
@@ -225,7 +225,7 @@ namespace Fsl
     // -----------------------------------------------------------------------------------------------------------------------------------------------
 
     // NOLINTNEXTLINE(readability-identifier-naming)
-    constexpr int compare(StringViewLite value) const noexcept
+    [[nodiscard]] constexpr int compare(StringViewLite value) const noexcept
     {
       return m_view.compare(value.m_view);
     }
@@ -233,7 +233,7 @@ namespace Fsl
     // -----------------------------------------------------------------------------------------------------------------------------------------------
 
     // NOLINTNEXTLINE(readability-identifier-naming)
-    int compare(size_type pos, size_type count, StringViewLite v) const
+    [[nodiscard]] int compare(size_type pos, size_type count, StringViewLite v) const
     {
       return m_view.compare(pos, count, v.m_view);
     }
@@ -241,7 +241,7 @@ namespace Fsl
     // -----------------------------------------------------------------------------------------------------------------------------------------------
 
     // NOLINTNEXTLINE(readability-identifier-naming)
-    constexpr int compare(size_type pos1, size_type count1, std::string_view v) const
+    [[nodiscard]] constexpr int compare(size_type pos1, size_type count1, std::string_view v) const
     {
       return m_view.compare(pos1, count1, v);
     }
@@ -249,7 +249,7 @@ namespace Fsl
     // -----------------------------------------------------------------------------------------------------------------------------------------------
 
     // NOLINTNEXTLINE(readability-identifier-naming)
-    constexpr int compare(size_type pos1, size_type count1, std::string_view v, size_type pos2, size_type count2) const
+    [[nodiscard]] constexpr int compare(size_type pos1, size_type count1, std::string_view v, size_type pos2, size_type count2) const
     {
       return m_view.compare(pos1, count1, v, pos2, count2);
     }
@@ -257,7 +257,7 @@ namespace Fsl
     // -----------------------------------------------------------------------------------------------------------------------------------------------
 
     // NOLINTNEXTLINE(readability-identifier-naming)
-    constexpr int compare(size_type pos1, size_type count1, StringViewLite v, size_type pos2, size_type count2) const
+    [[nodiscard]] constexpr int compare(size_type pos1, size_type count1, StringViewLite v, size_type pos2, size_type count2) const
     {
       return m_view.compare(pos1, count1, v.m_view, pos2, count2);
     }
@@ -291,14 +291,14 @@ namespace Fsl
     // -----------------------------------------------------------------------------------------------------------------------------------------------
 
     // NOLINTNEXTLINE(readability-identifier-naming)
-    constexpr bool starts_with(StringViewLite value) const noexcept
+    [[nodiscard]] constexpr bool starts_with(StringViewLite value) const noexcept
     {
       return m_view.starts_with(value.m_view);
     }
 
     // -----------------------------------------------------------------------------------------------------------------------------------------------
 
-    constexpr bool StartsWith(std::string_view value) const noexcept
+    [[nodiscard]] constexpr bool StartsWith(std::string_view value) const noexcept
     {
       return m_view.starts_with(value);
     }
@@ -306,7 +306,7 @@ namespace Fsl
     // -----------------------------------------------------------------------------------------------------------------------------------------------
 
     // NOLINTNEXTLINE(readability-identifier-naming)
-    constexpr bool starts_with(char ch) const noexcept
+    [[nodiscard]] constexpr bool starts_with(char ch) const noexcept
     {
       return m_view.starts_with(ch);
     }
@@ -324,7 +324,7 @@ namespace Fsl
     // -----------------------------------------------------------------------------------------------------------------------------------------------
 
     // NOLINTNEXTLINE(readability-identifier-naming)
-    constexpr bool ends_with(StringViewLite value) const noexcept
+    [[nodiscard]] constexpr bool ends_with(StringViewLite value) const noexcept
     {
       return m_view.ends_with(value);
     }
@@ -332,7 +332,7 @@ namespace Fsl
     // -----------------------------------------------------------------------------------------------------------------------------------------------
 
     // NOLINTNEXTLINE(readability-identifier-naming)
-    constexpr bool ends_with(std::string_view value) const noexcept
+    [[nodiscard]] constexpr bool ends_with(std::string_view value) const noexcept
     {
       return m_view.ends_with(value);
     }
@@ -340,7 +340,7 @@ namespace Fsl
     // -----------------------------------------------------------------------------------------------------------------------------------------------
 
     // NOLINTNEXTLINE(readability-identifier-naming)
-    constexpr bool ends_with(char ch) const noexcept
+    [[nodiscard]] constexpr bool ends_with(char ch) const noexcept
     {
       return m_view.ends_with(ch);
     }
@@ -358,7 +358,7 @@ namespace Fsl
     // -----------------------------------------------------------------------------------------------------------------------------------------------
 
     // NOLINTNEXTLINE(readability-identifier-naming)
-    constexpr size_type find(StringViewLite v, size_type pos = 0) const noexcept
+    [[nodiscard]] constexpr size_type find(StringViewLite v, size_type pos = 0) const noexcept
     {
       return m_view.find(v.m_view, pos);
     }
@@ -366,7 +366,7 @@ namespace Fsl
     // -----------------------------------------------------------------------------------------------------------------------------------------------
 
     // NOLINTNEXTLINE(readability-identifier-naming)
-    constexpr size_type find(std::string_view v, size_type pos = 0) const noexcept
+    [[nodiscard]] constexpr size_type find(std::string_view v, size_type pos = 0) const noexcept
     {
       return m_view.find(v, pos);
     }
@@ -374,7 +374,7 @@ namespace Fsl
     // -----------------------------------------------------------------------------------------------------------------------------------------------
 
     // NOLINTNEXTLINE(readability-identifier-naming)
-    constexpr size_type find(const value_type ch, size_type pos = 0) const noexcept
+    [[nodiscard]] constexpr size_type find(const value_type ch, size_type pos = 0) const noexcept
     {
       return m_view.find(ch, pos);
     }
@@ -392,7 +392,7 @@ namespace Fsl
     // -----------------------------------------------------------------------------------------------------------------------------------------------
 
     // NOLINTNEXTLINE(readability-identifier-naming)
-    constexpr size_type rfind(StringViewLite v, size_type pos = npos) const noexcept
+    [[nodiscard]] constexpr size_type rfind(StringViewLite v, size_type pos = npos) const noexcept
     {
       return m_view.rfind(v.m_view, pos);
     }
@@ -400,7 +400,7 @@ namespace Fsl
     // -----------------------------------------------------------------------------------------------------------------------------------------------
 
     // NOLINTNEXTLINE(readability-identifier-naming)
-    constexpr size_type rfind(std::string_view v, size_type pos = npos) const noexcept
+    [[nodiscard]] constexpr size_type rfind(std::string_view v, size_type pos = npos) const noexcept
     {
       return m_view.rfind(v, pos);
     }
@@ -408,7 +408,7 @@ namespace Fsl
     // -----------------------------------------------------------------------------------------------------------------------------------------------
 
     // NOLINTNEXTLINE(readability-identifier-naming)
-    constexpr size_type rfind(value_type ch, size_type pos = npos) const noexcept
+    [[nodiscard]] constexpr size_type rfind(value_type ch, size_type pos = npos) const noexcept
     {
       return m_view.rfind(ch, pos);
     }
@@ -426,7 +426,7 @@ namespace Fsl
     // -----------------------------------------------------------------------------------------------------------------------------------------------
 
     // NOLINTNEXTLINE(readability-identifier-naming)
-    constexpr size_type find_first_of(StringViewLite v, size_type pos = 0) const noexcept
+    [[nodiscard]] constexpr size_type find_first_of(StringViewLite v, size_type pos = 0) const noexcept
     {
       return m_view.find_first_not_of(v.m_view, pos);
     }
@@ -434,7 +434,7 @@ namespace Fsl
     // -----------------------------------------------------------------------------------------------------------------------------------------------
 
     // NOLINTNEXTLINE(readability-identifier-naming)
-    constexpr size_type find_first_of(std::string_view v, size_type pos = 0) const noexcept
+    [[nodiscard]] constexpr size_type find_first_of(std::string_view v, size_type pos = 0) const noexcept
     {
       return m_view.find_first_not_of(v, pos);
     }
@@ -442,7 +442,7 @@ namespace Fsl
     // -----------------------------------------------------------------------------------------------------------------------------------------------
 
     // NOLINTNEXTLINE(readability-identifier-naming)
-    constexpr size_type find_first_of(value_type ch, size_type pos = 0) const noexcept
+    [[nodiscard]] constexpr size_type find_first_of(value_type ch, size_type pos = 0) const noexcept
     {
       return m_view.find_first_not_of(ch, pos);
     }
@@ -460,7 +460,7 @@ namespace Fsl
     // -----------------------------------------------------------------------------------------------------------------------------------------------
 
     // NOLINTNEXTLINE(readability-identifier-naming)
-    constexpr size_type find_last_of(StringViewLite v, size_type pos = npos) const noexcept
+    [[nodiscard]] constexpr size_type find_last_of(StringViewLite v, size_type pos = npos) const noexcept
     {
       return m_view.find_last_of(v.m_view, pos);
     }
@@ -468,7 +468,7 @@ namespace Fsl
     // -----------------------------------------------------------------------------------------------------------------------------------------------
 
     // NOLINTNEXTLINE(readability-identifier-naming)
-    constexpr size_type find_last_of(std::string_view v, size_type pos = npos) const noexcept
+    [[nodiscard]] constexpr size_type find_last_of(std::string_view v, size_type pos = npos) const noexcept
     {
       return m_view.find_last_of(v, pos);
     }
@@ -476,7 +476,7 @@ namespace Fsl
     // -----------------------------------------------------------------------------------------------------------------------------------------------
 
     // NOLINTNEXTLINE(readability-identifier-naming)
-    constexpr size_type find_last_of(value_type ch, size_type pos = npos) const noexcept
+    [[nodiscard]] constexpr size_type find_last_of(value_type ch, size_type pos = npos) const noexcept
     {
       return m_view.find_last_of(ch, pos);
     }
@@ -494,7 +494,7 @@ namespace Fsl
     // -----------------------------------------------------------------------------------------------------------------------------------------------
 
     // NOLINTNEXTLINE(readability-identifier-naming)
-    constexpr size_type find_first_not_of(StringViewLite v, size_type pos = 0) const noexcept
+    [[nodiscard]] constexpr size_type find_first_not_of(StringViewLite v, size_type pos = 0) const noexcept
     {
       return m_view.find_first_not_of(v.m_view, pos);
     }
@@ -502,7 +502,7 @@ namespace Fsl
     // -----------------------------------------------------------------------------------------------------------------------------------------------
 
     // NOLINTNEXTLINE(readability-identifier-naming)
-    constexpr size_type find_first_not_of(std::string_view v, size_type pos = 0) const noexcept
+    [[nodiscard]] constexpr size_type find_first_not_of(std::string_view v, size_type pos = 0) const noexcept
     {
       return m_view.find_first_not_of(v, pos);
     }
@@ -510,7 +510,7 @@ namespace Fsl
     // -----------------------------------------------------------------------------------------------------------------------------------------------
 
     // NOLINTNEXTLINE(readability-identifier-naming)
-    constexpr size_type find_first_not_of(value_type ch, size_type pos = 0) const noexcept
+    [[nodiscard]] constexpr size_type find_first_not_of(value_type ch, size_type pos = 0) const noexcept
     {
       return m_view.find_first_not_of(ch, pos);
     }
@@ -528,7 +528,7 @@ namespace Fsl
     // -----------------------------------------------------------------------------------------------------------------------------------------------
 
     // NOLINTNEXTLINE(readability-identifier-naming)
-    constexpr size_type find_last_not_of(StringViewLite v, size_type pos = npos) const noexcept
+    [[nodiscard]] constexpr size_type find_last_not_of(StringViewLite v, size_type pos = npos) const noexcept
     {
       return m_view.find_last_not_of(v.m_view, pos);
     }
@@ -536,7 +536,7 @@ namespace Fsl
     // -----------------------------------------------------------------------------------------------------------------------------------------------
 
     // NOLINTNEXTLINE(readability-identifier-naming)
-    constexpr size_type find_last_not_of(std::string_view v, size_type pos = npos) const noexcept
+    [[nodiscard]] constexpr size_type find_last_not_of(std::string_view v, size_type pos = npos) const noexcept
     {
       return m_view.find_last_not_of(v, pos);
     }
@@ -544,7 +544,7 @@ namespace Fsl
     // -----------------------------------------------------------------------------------------------------------------------------------------------
 
     // NOLINTNEXTLINE(readability-identifier-naming)
-    constexpr size_type find_last_not_of(value_type ch, size_type pos = npos) const noexcept
+    [[nodiscard]] constexpr size_type find_last_not_of(value_type ch, size_type pos = npos) const noexcept
     {
       return m_view.find_last_not_of(ch, pos);
     }
@@ -562,7 +562,7 @@ namespace Fsl
     // -----------------------------------------------------------------------------------------------------------------------------------------------
 
     // NOLINTNEXTLINE(readability-identifier-naming)
-    constexpr const_iterator begin() const noexcept
+    [[nodiscard]] constexpr const_iterator begin() const noexcept
     {
       return m_view.begin();
     }
@@ -570,7 +570,7 @@ namespace Fsl
     // -----------------------------------------------------------------------------------------------------------------------------------------------
 
     // NOLINTNEXTLINE(readability-identifier-naming)
-    constexpr const_iterator end() const noexcept
+    [[nodiscard]] constexpr const_iterator end() const noexcept
     {
       return m_view.end();
     }
@@ -578,7 +578,7 @@ namespace Fsl
     // -----------------------------------------------------------------------------------------------------------------------------------------------
 
     // NOLINTNEXTLINE(readability-identifier-naming)
-    constexpr const_iterator cbegin() const noexcept
+    [[nodiscard]] constexpr const_iterator cbegin() const noexcept
     {
       return m_view.cbegin();
     }
@@ -586,7 +586,7 @@ namespace Fsl
     // -----------------------------------------------------------------------------------------------------------------------------------------------
 
     // NOLINTNEXTLINE(readability-identifier-naming)
-    constexpr const_iterator cend() const noexcept
+    [[nodiscard]] constexpr const_iterator cend() const noexcept
     {
       return m_view.cend();
     }
@@ -594,7 +594,7 @@ namespace Fsl
     // -----------------------------------------------------------------------------------------------------------------------------------------------
 
     // NOLINTNEXTLINE(readability-identifier-naming)
-    constexpr const_reverse_iterator rbegin() const noexcept
+    [[nodiscard]] constexpr const_reverse_iterator rbegin() const noexcept
     {
       return m_view.rbegin();
     }
@@ -602,7 +602,7 @@ namespace Fsl
     // -----------------------------------------------------------------------------------------------------------------------------------------------
 
     // NOLINTNEXTLINE(readability-identifier-naming)
-    constexpr const_reverse_iterator rend() const noexcept
+    [[nodiscard]] constexpr const_reverse_iterator rend() const noexcept
     {
       return m_view.rend();
     }
@@ -610,7 +610,7 @@ namespace Fsl
     // -----------------------------------------------------------------------------------------------------------------------------------------------
 
     // NOLINTNEXTLINE(readability-identifier-naming)
-    constexpr const_reverse_iterator crbegin() const noexcept
+    [[nodiscard]] constexpr const_reverse_iterator crbegin() const noexcept
     {
       return rbegin();
     }
@@ -618,7 +618,7 @@ namespace Fsl
     // -----------------------------------------------------------------------------------------------------------------------------------------------
 
     // NOLINTNEXTLINE(readability-identifier-naming)
-    constexpr const_reverse_iterator crend() const noexcept
+    [[nodiscard]] constexpr const_reverse_iterator crend() const noexcept
     {
       return rend();
     }
@@ -628,7 +628,7 @@ namespace Fsl
     // -----------------------------------------------------------------------------------------------------------------------------------------------
 
     // NOLINTNEXTLINE(readability-identifier-naming)
-    constexpr std::string_view AsStringView() const noexcept
+    [[nodiscard]] constexpr std::string_view AsStringView() const noexcept
     {
       return m_view;
     }

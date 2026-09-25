@@ -63,7 +63,7 @@ namespace
 
 TEST(TestLog_Log3Fmt, Verbose5_ArgCString)
 {
-  ScopedLogLevel scope;
+  const ScopedLogLevel scope;
 
   Fsl::LogConfig::SetLogLevel(LogType::Verbose5);
 
@@ -72,7 +72,7 @@ TEST(TestLog_Log3Fmt, Verbose5_ArgCString)
 
 TEST(TestLog_Log3Fmt, Verbose4_ArgCString)
 {
-  ScopedLogLevel scope;
+  const ScopedLogLevel scope;
   Fsl::LogConfig::SetLogLevel(LogType::Verbose5);
 
   FSLLOG3_VERBOSE4("Hey {}", "hey");
@@ -80,7 +80,7 @@ TEST(TestLog_Log3Fmt, Verbose4_ArgCString)
 
 TEST(TestLog_Log3Fmt, Verbose3_ArgCString)
 {
-  ScopedLogLevel scope;
+  const ScopedLogLevel scope;
   Fsl::LogConfig::SetLogLevel(LogType::Verbose5);
 
   FSLLOG3_VERBOSE3("Hey {}", "hey");
@@ -88,7 +88,7 @@ TEST(TestLog_Log3Fmt, Verbose3_ArgCString)
 
 TEST(TestLog_Log3Fmt, Verbose2_ArgCString)
 {
-  ScopedLogLevel scope;
+  const ScopedLogLevel scope;
   Fsl::LogConfig::SetLogLevel(LogType::Verbose5);
 
   FSLLOG3_VERBOSE2("Hey {}", "hey");
@@ -96,7 +96,7 @@ TEST(TestLog_Log3Fmt, Verbose2_ArgCString)
 
 TEST(TestLog_Log3Fmt, Verbose1_ArgCString)
 {
-  ScopedLogLevel scope;
+  const ScopedLogLevel scope;
   Fsl::LogConfig::SetLogLevel(LogType::Verbose5);
 
   FSLLOG3_VERBOSE("Hey {}", "hey");
@@ -104,7 +104,7 @@ TEST(TestLog_Log3Fmt, Verbose1_ArgCString)
 
 TEST(TestLog_Log3Fmt, Info_ArgCString)
 {
-  ScopedLogLevel scope;
+  const ScopedLogLevel scope;
   Fsl::LogConfig::SetLogLevel(LogType::Verbose5);
 
   FSLLOG3_INFO("Hey {}", "hey");
@@ -112,7 +112,7 @@ TEST(TestLog_Log3Fmt, Info_ArgCString)
 
 TEST(TestLog_Log3Fmt, Warning_ArgCString)
 {
-  ScopedLogLevel scope;
+  const ScopedLogLevel scope;
   Fsl::LogConfig::SetLogLevel(LogType::Verbose5);
 
   FSLLOG3_WARNING("Hey {}", "hey");
@@ -120,7 +120,7 @@ TEST(TestLog_Log3Fmt, Warning_ArgCString)
 
 TEST(TestLog_Log3Fmt, Error_ArgCString)
 {
-  ScopedLogLevel scope;
+  const ScopedLogLevel scope;
   Fsl::LogConfig::SetLogLevel(LogType::Verbose5);
 
   FSLLOG3_ERROR("Hey {}", "hey");
@@ -129,7 +129,7 @@ TEST(TestLog_Log3Fmt, Error_ArgCString)
 
 TEST(TestLog_Log3Fmt, Verbose5_ArgString)
 {
-  ScopedLogLevel scope;
+  const ScopedLogLevel scope;
 
   Fsl::LogConfig::SetLogLevel(LogType::Verbose5);
 
@@ -138,7 +138,7 @@ TEST(TestLog_Log3Fmt, Verbose5_ArgString)
 
 TEST(TestLog_Log3Fmt, Verbose4_ArgString)
 {
-  ScopedLogLevel scope;
+  const ScopedLogLevel scope;
   Fsl::LogConfig::SetLogLevel(LogType::Verbose5);
 
   FSLLOG3_VERBOSE4("Hey {}", std::string("hey"));
@@ -146,7 +146,7 @@ TEST(TestLog_Log3Fmt, Verbose4_ArgString)
 
 TEST(TestLog_Log3Fmt, Verbose3_ArgString)
 {
-  ScopedLogLevel scope;
+  const ScopedLogLevel scope;
   Fsl::LogConfig::SetLogLevel(LogType::Verbose5);
 
   FSLLOG3_VERBOSE3("Hey {}", std::string("hey"));
@@ -154,7 +154,7 @@ TEST(TestLog_Log3Fmt, Verbose3_ArgString)
 
 TEST(TestLog_Log3Fmt, Verbose2_ArgString)
 {
-  ScopedLogLevel scope;
+  const ScopedLogLevel scope;
   Fsl::LogConfig::SetLogLevel(LogType::Verbose5);
 
   FSLLOG3_VERBOSE2("Hey {}", std::string("hey"));
@@ -162,7 +162,7 @@ TEST(TestLog_Log3Fmt, Verbose2_ArgString)
 
 TEST(TestLog_Log3Fmt, Verbose1_ArgString)
 {
-  ScopedLogLevel scope;
+  const ScopedLogLevel scope;
   Fsl::LogConfig::SetLogLevel(LogType::Verbose5);
 
   FSLLOG3_VERBOSE("Hey {}", std::string("hey"));
@@ -170,7 +170,7 @@ TEST(TestLog_Log3Fmt, Verbose1_ArgString)
 
 TEST(TestLog_Log3Fmt, Info_ArgString)
 {
-  ScopedLogLevel scope;
+  const ScopedLogLevel scope;
   Fsl::LogConfig::SetLogLevel(LogType::Verbose5);
 
   FSLLOG3_INFO("Hey {}", std::string("hey"));
@@ -178,7 +178,7 @@ TEST(TestLog_Log3Fmt, Info_ArgString)
 
 TEST(TestLog_Log3Fmt, Warning_ArgString)
 {
-  ScopedLogLevel scope;
+  const ScopedLogLevel scope;
   Fsl::LogConfig::SetLogLevel(LogType::Verbose5);
 
   FSLLOG3_WARNING("Hey {}", std::string("hey"));
@@ -186,7 +186,7 @@ TEST(TestLog_Log3Fmt, Warning_ArgString)
 
 TEST(TestLog_Log3Fmt, Error_ArgString)
 {
-  ScopedLogLevel scope;
+  const ScopedLogLevel scope;
   Fsl::LogConfig::SetLogLevel(LogType::Verbose5);
 
   FSLLOG3_ERROR("Hey {}", std::string("hey"));

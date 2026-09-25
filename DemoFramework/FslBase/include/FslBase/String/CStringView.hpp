@@ -109,25 +109,25 @@ namespace Fsl
     }
 
     // NOLINTNEXTLINE(readability-identifier-naming)
-    constexpr const_pointer c_str() const noexcept
+    [[nodiscard]] constexpr const_pointer c_str() const noexcept
     {
       return m_psz;
     }
 
     // NOLINTNEXTLINE(readability-identifier-naming)
-    constexpr const_pointer data() const noexcept
+    [[nodiscard]] constexpr const_pointer data() const noexcept
     {
       return m_psz;
     }
 
     // NOLINTNEXTLINE(readability-identifier-naming)
-    constexpr size_type size() const noexcept
+    [[nodiscard]] constexpr size_type size() const noexcept
     {
       return m_length;
     }
 
     // NOLINTNEXTLINE(readability-identifier-naming)
-    constexpr bool empty() const noexcept
+    [[nodiscard]] constexpr bool empty() const noexcept
     {
       return m_length == 0;
     }
@@ -140,7 +140,7 @@ namespace Fsl
     }
 
     // NOLINTNEXTLINE(readability-identifier-naming)
-    constexpr const_reference at(size_type pos) const
+    [[nodiscard]] constexpr const_reference at(size_type pos) const
     {
       if (pos >= size())
       {
@@ -151,20 +151,20 @@ namespace Fsl
     }
 
     // NOLINTNEXTLINE(readability-identifier-naming)
-    constexpr size_type length() const noexcept
+    [[nodiscard]] constexpr size_type length() const noexcept
     {
       return m_length;
     }
 
     // NOLINTNEXTLINE(readability-identifier-naming)
-    constexpr const_reference back() const
+    [[nodiscard]] constexpr const_reference back() const
     {
       assert(!empty());
       return m_psz[m_length - 1];
     }
 
     // NOLINTNEXTLINE(readability-identifier-naming)
-    constexpr const_reference front() const
+    [[nodiscard]] constexpr const_reference front() const
     {
       assert(!empty());
       return m_psz[0];
@@ -184,19 +184,19 @@ namespace Fsl
     }
 
     // NOLINTNEXTLINE(readability-identifier-naming)
-    constexpr int compare(CStringView value) const noexcept
+    [[nodiscard]] constexpr int compare(CStringView value) const noexcept
     {
       return compare(value.AsStringViewLite());
     }
 
     // NOLINTNEXTLINE(readability-identifier-naming)
-    constexpr int compare(StringViewLite value) const noexcept
+    [[nodiscard]] constexpr int compare(StringViewLite value) const noexcept
     {
       return AsStringViewLite().compare(value);
     }
 
     // NOLINTNEXTLINE(readability-identifier-naming)
-    constexpr int compare(std::string_view value) const noexcept
+    [[nodiscard]] constexpr int compare(std::string_view value) const noexcept
     {
       return AsStringView().compare(value);
     }
@@ -208,19 +208,19 @@ namespace Fsl
     }
 
     // NOLINTNEXTLINE(readability-identifier-naming)
-    constexpr bool starts_with(CStringView view) const noexcept
+    [[nodiscard]] constexpr bool starts_with(CStringView view) const noexcept
     {
       return starts_with(view.AsStringViewLite());
     }
 
     // NOLINTNEXTLINE(readability-identifier-naming)
-    constexpr bool starts_with(StringViewLite view) const noexcept
+    [[nodiscard]] constexpr bool starts_with(StringViewLite view) const noexcept
     {
       return AsStringViewLite().starts_with(view);
     }
 
     // NOLINTNEXTLINE(readability-identifier-naming)
-    constexpr bool starts_with(char ch) const noexcept
+    [[nodiscard]] constexpr bool starts_with(char ch) const noexcept
     {
       return AsStringViewLite().starts_with(ch);
     }
@@ -232,38 +232,38 @@ namespace Fsl
     }
 
     // NOLINTNEXTLINE(readability-identifier-naming)
-    constexpr bool ends_with(const CStringView view) const noexcept
+    [[nodiscard]] constexpr bool ends_with(const CStringView view) const noexcept
     {
       return ends_with(view.AsStringViewLite());
     }
 
     // NOLINTNEXTLINE(readability-identifier-naming)
-    constexpr bool ends_with(const StringViewLite view) const noexcept
+    [[nodiscard]] constexpr bool ends_with(const StringViewLite view) const noexcept
     {
       return AsStringViewLite().ends_with(view);
     }
 
     // NOLINTNEXTLINE(readability-identifier-naming)
-    constexpr bool ends_with(char ch) const noexcept
+    [[nodiscard]] constexpr bool ends_with(char ch) const noexcept
     {
       return AsStringViewLite().ends_with(ch);
     }
 
 
     // NOLINTNEXTLINE(readability-identifier-naming)
-    constexpr size_type find(const value_type ch, size_type pos = 0) const noexcept
+    [[nodiscard]] constexpr size_type find(const value_type ch, size_type pos = 0) const noexcept
     {
       return AsStringViewLite().find(ch, pos);
     }
 
     // NOLINTNEXTLINE(readability-identifier-naming)
-    constexpr size_type rfind(value_type ch, size_type pos = npos) const noexcept
+    [[nodiscard]] constexpr size_type rfind(value_type ch, size_type pos = npos) const noexcept
     {
       return AsStringViewLite().rfind(ch, pos);
     }
 
     // NOLINTNEXTLINE(readability-identifier-naming)
-    constexpr const_iterator begin() const noexcept
+    [[nodiscard]] constexpr const_iterator begin() const noexcept
     {
 #ifdef NDEBUG
       return const_iterator(m_psz);
@@ -273,7 +273,7 @@ namespace Fsl
     }
 
     // NOLINTNEXTLINE(readability-identifier-naming)
-    constexpr const_iterator end() const noexcept
+    [[nodiscard]] constexpr const_iterator end() const noexcept
     {
 #ifdef NDEBUG
       return const_iterator(m_psz + m_length);
@@ -283,39 +283,39 @@ namespace Fsl
     }
 
     // NOLINTNEXTLINE(readability-identifier-naming)
-    constexpr const_iterator cbegin() const noexcept
+    [[nodiscard]] constexpr const_iterator cbegin() const noexcept
     {
       return begin();
     }
 
     // NOLINTNEXTLINE(readability-identifier-naming)
-    constexpr const_iterator cend() const noexcept
+    [[nodiscard]] constexpr const_iterator cend() const noexcept
     {
       return end();
     }
 
 
     // NOLINTNEXTLINE(readability-identifier-naming)
-    constexpr const_reverse_iterator rbegin() const noexcept
+    [[nodiscard]] constexpr const_reverse_iterator rbegin() const noexcept
     {
       return const_reverse_iterator(end());
     }
 
 
     // NOLINTNEXTLINE(readability-identifier-naming)
-    constexpr const_reverse_iterator rend() const noexcept
+    [[nodiscard]] constexpr const_reverse_iterator rend() const noexcept
     {
       return const_reverse_iterator(begin());
     }
 
     // NOLINTNEXTLINE(readability-identifier-naming)
-    constexpr const_reverse_iterator crbegin() const noexcept
+    [[nodiscard]] constexpr const_reverse_iterator crbegin() const noexcept
     {
       return rbegin();
     }
 
     // NOLINTNEXTLINE(readability-identifier-naming)
-    constexpr const_reverse_iterator crend() const noexcept
+    [[nodiscard]] constexpr const_reverse_iterator crend() const noexcept
     {
       return rend();
     }
@@ -324,14 +324,14 @@ namespace Fsl
     // -----------------------------------------------------------------------------------------------------------------------------------------------
     // -----------------------------------------------------------------------------------------------------------------------------------------------
 
-    constexpr StringViewLite AsStringViewLite() const noexcept
+    [[nodiscard]] constexpr StringViewLite AsStringViewLite() const noexcept
     {
       return StringViewLite::UncheckedCreate(m_psz, m_length);
     }
 
     // -----------------------------------------------------------------------------------------------------------------------------------------------
 
-    constexpr std::string_view AsStringView() const noexcept
+    [[nodiscard]] constexpr std::string_view AsStringView() const noexcept
     {
       return {m_psz, m_length};
     }

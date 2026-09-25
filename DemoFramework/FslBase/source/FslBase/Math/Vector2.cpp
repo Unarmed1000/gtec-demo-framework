@@ -150,7 +150,7 @@ namespace Fsl
 
   void Vector2::Normalize()
   {
-    float factor = Length();
+    const float factor = Length();
     X /= factor;
     Y /= factor;
   }
@@ -167,7 +167,7 @@ namespace Fsl
 
   void Vector2::Normalize(const Vector2& value, Vector2& rResult)
   {
-    float factor = value.Length();
+    const float factor = value.Length();
     rResult.X = value.X / factor;
     rResult.Y = value.Y / factor;
   }
@@ -236,8 +236,8 @@ namespace Fsl
     const Vector3 rot1 = Vector3(rotation.X + rotation.X, rotation.Y + rotation.Y, rotation.Z + rotation.Z);
     const Vector3 rot2 = Vector3(rotation.X, rotation.X, rotation.W);
     const Vector3 rot3 = Vector3(1, rotation.Y, rotation.Z);
-    auto rot4 = rot1 * rot2;
-    auto rot5 = rot1 * rot3;
+    const auto rot4 = rot1 * rot2;
+    const auto rot5 = rot1 * rot3;
 
     Vector2 v;
     v.X = static_cast<float>(static_cast<double>(value.X) * (1.0 - static_cast<double>(rot5.Y) - static_cast<double>(rot5.Z)) +

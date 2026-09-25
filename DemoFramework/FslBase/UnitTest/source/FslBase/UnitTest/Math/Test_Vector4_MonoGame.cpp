@@ -97,7 +97,7 @@ TEST(TestMath_Vector4_MonoGame, Hermite)
   const Vector4 expected(39.0311f, 34.65557f, -132.5473f, -2626.85938f);
 
   {
-    auto result1 = Vector4::Hermite(v1, t1, v2, t2, a);
+    const auto result1 = Vector4::Hermite(v1, t1, v2, t2, a);
     EXPECT_TRUE(Fsl::Test::IsFloatEqual(expected, result1));
   }
 
@@ -112,7 +112,7 @@ TEST(TestMath_Vector4_MonoGame, Hermite)
 
 TEST(TestMath_Vector4_MonoGame, Length)
 {
-  Vector4 vector1(1.0f, 2.0f, 3.0f, 4.0f);
+  const Vector4 vector1(1.0f, 2.0f, 3.0f, 4.0f);
 
   EXPECT_FLOAT_EQ(vector1.Length(), 5.477226f);
 }
@@ -120,7 +120,7 @@ TEST(TestMath_Vector4_MonoGame, Length)
 
 TEST(TestMath_Vector4_MonoGame, LengthSquared)
 {
-  Vector4 vector1(1.0f, 2.0f, 3.0f, 4.0f);
+  const Vector4 vector1(1.0f, 2.0f, 3.0f, 4.0f);
 
   EXPECT_FLOAT_EQ(vector1.LengthSquared(), 30.0f);
 }
@@ -137,7 +137,7 @@ TEST(TestMath_Vector4_MonoGame, Normalize)
 
   const Vector4 vector2(1.0f, 2.0f, 3.0f, 4.0f);
 
-  auto result = Vector4::Normalize(vector2);
+  const auto result = Vector4::Normalize(vector2);
 
   EXPECT_TRUE(Fsl::Test::IsFloatEqual(expected, result));
 }
@@ -149,7 +149,7 @@ TEST(TestMath_Vector4_MonoGame, Construct)
   constexpr float Y = std::numeric_limits<float>::max();
   constexpr float Z = 0.5f;
   constexpr float W = -0.75f;
-  Vector4 value(X, Y, Z, W);
+  const Vector4 value(X, Y, Z, W);
 
   EXPECT_EQ(value.X, X);
   EXPECT_EQ(value.Y, Y);

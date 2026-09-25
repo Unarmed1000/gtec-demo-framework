@@ -46,7 +46,7 @@ namespace
 
 TEST(TestMathDp_DpThicknessF, Default)
 {
-  DpThicknessF value;
+  const DpThicknessF value;
 
   EXPECT_EQ(DpThicknessF::value_type(0.0f), value.Left());
   EXPECT_EQ(DpThicknessF::value_type(0.0f), value.Top());
@@ -63,7 +63,7 @@ TEST(TestMathDp_DpThicknessF, Values)
   const DpValueF top(2.0f);
   const DpValueF right(3.0f);
   const DpValueF bottom(4.0f);
-  DpThicknessF value(left, top, right, bottom);
+  const DpThicknessF value(left, top, right, bottom);
 
   EXPECT_EQ(left, value.Left());
   EXPECT_EQ(top, value.Top());
@@ -79,8 +79,8 @@ TEST(TestMathDp_DpThicknessF, OperatorEqual)
   const DpValueF top(2);
   const DpValueF right(3);
   const DpValueF bottom(4);
-  DpThicknessF value1(left, top, right, bottom);
-  DpThicknessF value2(left, top, right, bottom);
+  const DpThicknessF value1(left, top, right, bottom);
+  const DpThicknessF value2(left, top, right, bottom);
 
   EXPECT_EQ(value1, value2);
 }
@@ -92,8 +92,8 @@ TEST(TestMathDp_DpThicknessF, OperatorNotEqual)
   const DpValueF top(2);
   const DpValueF right(3);
   const DpValueF bottom(4);
-  DpThicknessF value1(left, top, right, bottom);
-  DpThicknessF value2(left, top, right, DpValueF(5));
+  const DpThicknessF value1(left, top, right, bottom);
+  const DpThicknessF value2(left, top, right, DpValueF(5));
 
   EXPECT_NE(value1, value2);
 }

@@ -74,86 +74,86 @@ namespace Fsl
       assert(IsValid());
     }
 
-    constexpr value_type Left() const noexcept
+    [[nodiscard]] constexpr value_type Left() const noexcept
     {
       return m_left;
     }
 
-    constexpr value_type Top() const noexcept
+    [[nodiscard]] constexpr value_type Top() const noexcept
     {
       return m_top;
     }
 
-    constexpr value_type Right() const noexcept
+    [[nodiscard]] constexpr value_type Right() const noexcept
     {
       return m_right;
     }
 
-    constexpr value_type Bottom() const noexcept
+    [[nodiscard]] constexpr value_type Bottom() const noexcept
     {
       return m_bottom;
     }
 
-    constexpr raw_value_type RawLeft() const noexcept
+    [[nodiscard]] constexpr raw_value_type RawLeft() const noexcept
     {
       return m_left.Value;
     }
 
-    constexpr raw_value_type RawTop() const noexcept
+    [[nodiscard]] constexpr raw_value_type RawTop() const noexcept
     {
       return m_top.Value;
     }
 
-    constexpr raw_value_type RawRight() const noexcept
+    [[nodiscard]] constexpr raw_value_type RawRight() const noexcept
     {
       return m_right.Value;
     }
 
-    constexpr raw_value_type RawBottom() const noexcept
+    [[nodiscard]] constexpr raw_value_type RawBottom() const noexcept
     {
       return m_bottom.Value;
     }
 
-    constexpr DpPoint2F TopLeft() const
+    [[nodiscard]] constexpr DpPoint2F TopLeft() const
     {
       return {m_left, m_top};
     }
 
-    constexpr DpPoint2F TopRight() const
+    [[nodiscard]] constexpr DpPoint2F TopRight() const
     {
       return {m_right, m_top};
     }
 
-    constexpr DpPoint2F BottomLeft() const
+    [[nodiscard]] constexpr DpPoint2F BottomLeft() const
     {
       return {m_left, m_bottom};
     }
 
-    constexpr DpPoint2F BottomRight() const
+    [[nodiscard]] constexpr DpPoint2F BottomRight() const
     {
       return {m_right, m_bottom};
     }
 
-    constexpr DpSize2DF Sum() const noexcept
+    [[nodiscard]] constexpr DpSize2DF Sum() const noexcept
     {
       assert(m_left >= value_type(0) && m_right >= value_type(0));
       assert(m_top >= value_type(0) && m_bottom >= value_type(0));
       return {m_left + m_right, m_top + m_bottom, OptimizationCheckFlag::NoCheck};
     }
 
-    constexpr value_type SumX() const noexcept
+    [[nodiscard]] constexpr value_type SumX() const noexcept
     {
       assert(m_left >= value_type(0) && m_right >= value_type(0));
       return m_left + m_right;
     }
 
-    constexpr value_type SumY() const noexcept
+    [[nodiscard]] constexpr value_type SumY() const noexcept
     {
       assert(m_top >= value_type(0) && m_bottom >= value_type(0));
       return m_top + m_bottom;
     }
 
-    constexpr bool IsValid() const
+    [[nodiscard]] constexpr bool IsValid() const
     {
       return m_left >= value_type(0) && m_right >= value_type(0) && m_top >= value_type(0) && m_bottom >= value_type(0);
     }

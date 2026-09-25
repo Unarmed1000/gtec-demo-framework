@@ -47,55 +47,55 @@ namespace
 
 TEST(TestString_ToString, ToStringUInt8)
 {
-  uint8_t value = 42;
+  const uint8_t value = 42;
   EXPECT_EQ("42", ToString(value));
 }
 
 
 TEST(TestString_ToString, ToStringInt8)
 {
-  int8_t value = -42;
+  const int8_t value = -42;
   EXPECT_EQ("-42", ToString(value));
 }
 
 
 TEST(TestString_ToString, ToStringUInt16)
 {
-  uint16_t value = 42;
+  const uint16_t value = 42;
   EXPECT_EQ("42", ToString(value));
 }
 
 
 TEST(TestString_ToString, ToStringInt16)
 {
-  int16_t value = -42;
+  const int16_t value = -42;
   EXPECT_EQ("-42", ToString(value));
 }
 
 
 TEST(TestString_ToString, ToStringUInt32)
 {
-  uint32_t value = 42;
+  const uint32_t value = 42;
   EXPECT_EQ("42", ToString(value));
 }
 
 
 TEST(TestString_ToString, ToStringInt32)
 {
-  int32_t value = -42;
+  const int32_t value = -42;
   EXPECT_EQ("-42", ToString(value));
 }
 
 
 TEST(TestString_ToString, ToStringUInt64)
 {
-  uint64_t value = 42;
+  const uint64_t value = 42;
   EXPECT_EQ("42", ToString(value));
 }
 
 
 TEST(TestString_ToString, ToStringInt64)
 {
-  int64_t value = -42;
+  const int64_t value = -42;
   EXPECT_EQ("-42", ToString(value));
 }

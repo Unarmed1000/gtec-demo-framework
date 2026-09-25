@@ -36,21 +36,21 @@ namespace Fsl
 {
   uint8_t SystemMemoryAccess::GetUInt8(const std::size_t targetAddress)
   {
-    ScopedSystemMemoryAccess access(targetAddress);
+    const ScopedSystemMemoryAccess access(targetAddress);
     return access.GetUInt8();
   }
 
 
   uint16_t SystemMemoryAccess::GetUInt16(const std::size_t targetAddress)
   {
-    ScopedSystemMemoryAccess access(targetAddress);
+    const ScopedSystemMemoryAccess access(targetAddress);
     return access.GetUInt16();
   }
 
 
   uint32_t SystemMemoryAccess::GetUInt32(const std::size_t targetAddress)
   {
-    ScopedSystemMemoryAccess access(targetAddress);
+    const ScopedSystemMemoryAccess access(targetAddress);
     return access.GetUInt32();
   }
 

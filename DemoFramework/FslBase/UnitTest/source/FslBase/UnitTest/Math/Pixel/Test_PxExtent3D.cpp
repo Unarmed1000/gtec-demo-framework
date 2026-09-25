@@ -71,7 +71,7 @@ TEST(TestMathPixel_PxExtent3D, Construct_PxPoint2U)
 {
   const auto point = PxPoint2U::Create(320, 240);
   const PxValueU depth(120);
-  PxExtent3D value(point, depth);
+  const PxExtent3D value(point, depth);
 
   EXPECT_EQ(point.X, value.Width);
   EXPECT_EQ(point.Y, value.Height);
@@ -83,7 +83,7 @@ TEST(TestMathPixel_PxExtent3D, Construct_PxExtent2D)
 {
   const PxExtent2D point = PxExtent2D::Create(320, 240);
   const PxValueU depth(120);
-  PxExtent3D value(point, depth);
+  const PxExtent3D value(point, depth);
 
   EXPECT_EQ(point.Width, value.Width);
   EXPECT_EQ(point.Height, value.Height);
@@ -93,14 +93,14 @@ TEST(TestMathPixel_PxExtent3D, Construct_PxExtent2D)
 
 TEST(TestMathPixel_PxExtent3D, AddEquals)
 {
-  PxValueU width1(320);
-  PxValueU height1(240);
-  PxValueU depth1(120);
-  PxExtent3D value1(width1, height1, depth1);
+  const PxValueU width1(320);
+  const PxValueU height1(240);
+  const PxValueU depth1(120);
+  const PxExtent3D value1(width1, height1, depth1);
 
-  PxValueU width2(200);
-  PxValueU height2(100);
-  PxValueU depth2(50);
+  const PxValueU width2(200);
+  const PxValueU height2(100);
+  const PxValueU depth2(50);
   PxExtent3D value2(width2, height2, depth2);
 
   value2 += value1;
@@ -116,14 +116,14 @@ TEST(TestMathPixel_PxExtent3D, AddEquals)
 
 TEST(TestMathPixel_PxExtent3D, SubEquals)
 {
-  PxValueU width1(320);
-  PxValueU height1(240);
-  PxValueU depth1(120);
-  PxExtent3D value1(width1, height1, depth1);
+  const PxValueU width1(320);
+  const PxValueU height1(240);
+  const PxValueU depth1(120);
+  const PxExtent3D value1(width1, height1, depth1);
 
-  PxValueU width2(2000);
-  PxValueU height2(1000);
-  PxValueU depth2(500);
+  const PxValueU width2(2000);
+  const PxValueU height2(1000);
+  const PxValueU depth2(500);
   PxExtent3D value2(width2, height2, depth2);
 
   value2 -= value1;
@@ -138,14 +138,14 @@ TEST(TestMathPixel_PxExtent3D, SubEquals)
 
 TEST(TestMathPixel_PxExtent3D, MultEquals)
 {
-  PxValueU width1(2);
-  PxValueU height1(4);
-  PxValueU depth1(5);
-  PxExtent3D value1(width1, height1, depth1);
+  const PxValueU width1(2);
+  const PxValueU height1(4);
+  const PxValueU depth1(5);
+  const PxExtent3D value1(width1, height1, depth1);
 
-  PxValueU width2(200);
-  PxValueU height2(100);
-  PxValueU depth2(50);
+  const PxValueU width2(200);
+  const PxValueU height2(100);
+  const PxValueU depth2(50);
   PxExtent3D value2(width2, height2, depth2);
 
   value2 *= value1;
@@ -160,11 +160,11 @@ TEST(TestMathPixel_PxExtent3D, MultEquals)
 
 TEST(TestMathPixel_PxExtent3D, MultEqual)
 {
-  PxValueU multBy(2);
+  const PxValueU multBy(2);
 
-  PxValueU width(200);
-  PxValueU height(100);
-  PxValueU depth(50);
+  const PxValueU width(200);
+  const PxValueU height(100);
+  const PxValueU depth(50);
   PxExtent3D value(width, height, depth);
 
   value *= multBy;
@@ -213,7 +213,7 @@ TEST(TestMathPixel_PxExtent3D, NotEqual)
 
 TEST(TestMathPixel_PxExtent3D, Zero)
 {
-  PxExtent3D value = PxExtent3D::Zero();
+  const PxExtent3D value = PxExtent3D::Zero();
 
   EXPECT_EQ(0u, value.Width.Value);
   EXPECT_EQ(0u, value.Height.Value);

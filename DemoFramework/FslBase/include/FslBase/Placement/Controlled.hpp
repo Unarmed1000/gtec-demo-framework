@@ -51,7 +51,7 @@ namespace Fsl
   template <typename T>
   class Controlled
   {
-    typename std::aligned_storage<sizeof(T), alignof(T)>::type m_buffer;
+    std::aligned_storage_t<sizeof(T), alignof(T)> m_buffer;
 
   public:
     using value_type = T;
@@ -73,16 +73,18 @@ namespace Fsl
       get().~T();
     }
 
-    template <typename U = T, std::enable_if_t<std::is_copy_constructible_v<U>, int> = 0>
+    template <typename U = T>
     // NOLINTNEXTLINE(google-explicit-constructor)
     Controlled(const T& other)
+      requires(std::is_copy_constructible_v<U>)
     {
       // Copy the object from 'other' to 'this'
       new (&m_buffer) T(other);
     }
 
-    template <typename U = T, std::enable_if_t<std::is_copy_constructible_v<U>, int> = 0>
+    template <typename U = T>
     Controlled& operator=(const T& other)
+      requires(std::is_copy_constructible_v<U>)
     {
       // Destroy  the old object to ensure members are destroyed in destructor order.
       get().~T();
@@ -92,17 +94,19 @@ namespace Fsl
     }
 
     // Move constructor
-    template <typename U = T, std::enable_if_t<std::is_move_constructible_v<U>, int> = 0>
+    template <typename U = T>
     // NOLINTNEXTLINE(google-explicit-constructor)
     Controlled(T&& other) noexcept
+      requires(std::is_move_constructible_v<U>)
     {
       // Move the object from 'other' to 'this'
       new (&m_buffer) T(std::move(other));
     }
 
     // Move assignment operator
-    template <typename U = T, std::enable_if_t<std::is_move_constructible_v<U>, int> = 0>
+    template <typename U = T>
     Controlled& operator=(T&& other) noexcept
+      requires(std::is_move_constructible_v<U>)
     {
       // Destroy  the old object to ensure members are destroyed in destructor order.
       get().~T();

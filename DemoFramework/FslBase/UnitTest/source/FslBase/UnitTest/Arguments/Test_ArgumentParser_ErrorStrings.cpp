@@ -112,13 +112,13 @@ namespace
 
 TEST(Test_ArgumentParser_ErrorStrings, Switch_a_InvalidFormat)
 {
-  std::array<StringViewLite, 1> testArgs = {"---a"};
+  const std::array<StringViewLite, 1> testArgs = {"---a"};
 
   ParseErrorInfo errorInfo;
-  std::deque<Command> commands = {Command("a", 42, CommandType::Switch)};
+  const std::deque<Command> commands = {Command("a", 42, CommandType::Switch)};
   std::deque<EncodedCommand> res;
 
-  auto errorCode = TryParseNow(res, testArgs, commands, &errorInfo);
+  const auto errorCode = TryParseNow(res, testArgs, commands, &errorInfo);
   ASSERT_EQ(errorCode, ParseResult::ArgumentFormatError);
 
   FmtErrorFormatter formatter;
@@ -127,13 +127,13 @@ TEST(Test_ArgumentParser_ErrorStrings, Switch_a_InvalidFormat)
 
 TEST(Test_ArgumentParser_ErrorStrings, Switch_a_EmptyArgument)
 {
-  std::array<StringViewLite, 2> testArgs = {"-", "a"};
+  const std::array<StringViewLite, 2> testArgs = {"-", "a"};
 
   ParseErrorInfo errorInfo;
-  std::deque<Command> commands = {Command("a", 42, CommandType::Switch)};
+  const std::deque<Command> commands = {Command("a", 42, CommandType::Switch)};
   std::deque<EncodedCommand> res;
 
-  auto errorCode = TryParseNow(res, testArgs, commands, &errorInfo);
+  const auto errorCode = TryParseNow(res, testArgs, commands, &errorInfo);
   ASSERT_EQ(errorCode, ParseResult::ArgumentFormatError);
 
   FmtErrorFormatter formatter;
@@ -143,13 +143,13 @@ TEST(Test_ArgumentParser_ErrorStrings, Switch_a_EmptyArgument)
 
 TEST(Test_ArgumentParser_ErrorStrings, Switch_a_UnknownArg)
 {
-  std::array<StringViewLite, 1> testArgs = {"-b"};
+  const std::array<StringViewLite, 1> testArgs = {"-b"};
 
   ParseErrorInfo errorInfo;
-  std::deque<Command> commands = {Command("a", 42, CommandType::Switch)};
+  const std::deque<Command> commands = {Command("a", 42, CommandType::Switch)};
   std::deque<EncodedCommand> res;
 
-  auto errorCode = TryParseNow(res, testArgs, commands, &errorInfo);
+  const auto errorCode = TryParseNow(res, testArgs, commands, &errorInfo);
   ASSERT_EQ(errorCode, ParseResult::UnknownArgumentError);
 
   FmtErrorFormatter formatter;
@@ -159,13 +159,13 @@ TEST(Test_ArgumentParser_ErrorStrings, Switch_a_UnknownArg)
 
 TEST(Test_ArgumentParser_ErrorStrings, Switch_a_UnknownArgument)
 {
-  std::array<StringViewLite, 2> testArgs = {"-a", "test"};
+  const std::array<StringViewLite, 2> testArgs = {"-a", "test"};
 
-  std::deque<Command> commands = {Command("a", 42, CommandType::Switch)};
+  const std::deque<Command> commands = {Command("a", 42, CommandType::Switch)};
 
   ParseErrorInfo errorInfo;
   std::deque<EncodedCommand> res;
-  auto errorCode = TryParseNow(res, testArgs, commands, &errorInfo);
+  const auto errorCode = TryParseNow(res, testArgs, commands, &errorInfo);
   ASSERT_EQ(errorCode, ParseResult::UnknownArgumentError);
 
   FmtErrorFormatter formatter;
@@ -191,13 +191,13 @@ TEST(Test_ArgumentParser_ErrorStrings, Switch_a_UnknownArgument)
 
 TEST(Test_ArgumentParser_ErrorStrings, Switch2X_aa)
 {
-  std::array<StringViewLite, 1> testArgs = {"-aa"};
+  const std::array<StringViewLite, 1> testArgs = {"-aa"};
 
-  std::deque<Command> commands = {Command("a", 42, CommandType::Switch)};
+  const std::deque<Command> commands = {Command("a", 42, CommandType::Switch)};
 
   ParseErrorInfo errorInfo;
   std::deque<EncodedCommand> res;
-  auto errorCode = TryParseNow(res, testArgs, commands, &errorInfo);
+  const auto errorCode = TryParseNow(res, testArgs, commands, &errorInfo);
   EXPECT_EQ(errorCode, ParseResult::DuplicatedSwitchArgumentError);
 
   FmtErrorFormatter formatter;
@@ -207,13 +207,13 @@ TEST(Test_ArgumentParser_ErrorStrings, Switch2X_aa)
 
 TEST(Test_ArgumentParser_ErrorStrings, Switch2X_a_a)
 {
-  std::array<StringViewLite, 2> testArgs = {"-a", "-a"};
+  const std::array<StringViewLite, 2> testArgs = {"-a", "-a"};
 
-  std::deque<Command> commands = {Command("a", 42, CommandType::Switch)};
+  const std::deque<Command> commands = {Command("a", 42, CommandType::Switch)};
 
   ParseErrorInfo errorInfo;
   std::deque<EncodedCommand> res;
-  auto errorCode = TryParseNow(res, testArgs, commands, &errorInfo);
+  const auto errorCode = TryParseNow(res, testArgs, commands, &errorInfo);
   EXPECT_EQ(errorCode, ParseResult::DuplicatedSwitchArgumentError);
 
   FmtErrorFormatter formatter;
@@ -223,13 +223,13 @@ TEST(Test_ArgumentParser_ErrorStrings, Switch2X_a_a)
 
 TEST(Test_ArgumentParser_ErrorStrings, Switch2X_aba)
 {
-  std::array<StringViewLite, 1> testArgs = {"-aba"};
+  const std::array<StringViewLite, 1> testArgs = {"-aba"};
 
-  std::deque<Command> commands = {Command("a", 42, CommandType::Switch), Command("b", 1, CommandType::Switch)};
+  const std::deque<Command> commands = {Command("a", 42, CommandType::Switch), Command("b", 1, CommandType::Switch)};
 
   ParseErrorInfo errorInfo;
   std::deque<EncodedCommand> res;
-  auto errorCode = TryParseNow(res, testArgs, commands, &errorInfo);
+  const auto errorCode = TryParseNow(res, testArgs, commands, &errorInfo);
   EXPECT_EQ(errorCode, ParseResult::DuplicatedSwitchArgumentError);
 
   FmtErrorFormatter formatter;
@@ -239,13 +239,13 @@ TEST(Test_ArgumentParser_ErrorStrings, Switch2X_aba)
 
 TEST(Test_ArgumentParser_ErrorStrings, Switch2X_a_ba)
 {
-  std::array<StringViewLite, 2> testArgs = {"-a", "-ba"};
+  const std::array<StringViewLite, 2> testArgs = {"-a", "-ba"};
 
-  std::deque<Command> commands = {Command("a", 42, CommandType::Switch), Command("b", 1, CommandType::Switch)};
+  const std::deque<Command> commands = {Command("a", 42, CommandType::Switch), Command("b", 1, CommandType::Switch)};
 
   ParseErrorInfo errorInfo;
   std::deque<EncodedCommand> res;
-  auto errorCode = TryParseNow(res, testArgs, commands, &errorInfo);
+  const auto errorCode = TryParseNow(res, testArgs, commands, &errorInfo);
   EXPECT_EQ(errorCode, ParseResult::DuplicatedSwitchArgumentError);
 
   FmtErrorFormatter formatter;
@@ -255,13 +255,13 @@ TEST(Test_ArgumentParser_ErrorStrings, Switch2X_a_ba)
 
 TEST(Test_ArgumentParser_ErrorStrings, Switch2X_ab_a)
 {
-  std::array<StringViewLite, 2> testArgs = {"-ab", "-b"};
+  const std::array<StringViewLite, 2> testArgs = {"-ab", "-b"};
 
-  std::deque<Command> commands = {Command("a", 42, CommandType::Switch), Command("b", 1, CommandType::Switch)};
+  const std::deque<Command> commands = {Command("a", 42, CommandType::Switch), Command("b", 1, CommandType::Switch)};
 
   ParseErrorInfo errorInfo;
   std::deque<EncodedCommand> res;
-  auto errorCode = TryParseNow(res, testArgs, commands, &errorInfo);
+  const auto errorCode = TryParseNow(res, testArgs, commands, &errorInfo);
   EXPECT_EQ(errorCode, ParseResult::DuplicatedSwitchArgumentError);
 
   FmtErrorFormatter formatter;
@@ -278,12 +278,12 @@ TEST(Test_ArgumentParser_ErrorStrings, Switch2X_ab_a)
 
 TEST(Test_ArgumentParser_ErrorStrings, Value_a_missing)
 {
-  std::array<StringViewLite, 1> testArgs = {"-a"};
+  const std::array<StringViewLite, 1> testArgs = {"-a"};
 
-  std::deque<Command> commands = {Command("a", 42, CommandType::Value)};
+  const std::deque<Command> commands = {Command("a", 42, CommandType::Value)};
   ParseErrorInfo errorInfo;
   std::deque<EncodedCommand> res;
-  auto errorCode = TryParseNow(res, testArgs, commands, &errorInfo);
+  const auto errorCode = TryParseNow(res, testArgs, commands, &errorInfo);
   ASSERT_EQ(errorCode, ParseResult::ArgumentMissingValueError);
 
   FmtErrorFormatter formatter;
@@ -293,12 +293,12 @@ TEST(Test_ArgumentParser_ErrorStrings, Value_a_missing)
 
 TEST(Test_ArgumentParser_ErrorStrings, Value_AValueBValue_ValueNotLast)
 {
-  std::array<StringViewLite, 2> testArgs = {"-ab", "hey"};
+  const std::array<StringViewLite, 2> testArgs = {"-ab", "hey"};
 
-  std::deque<Command> commands = {Command("a", 42, CommandType::Value), Command("b", 1, CommandType::Value)};
+  const std::deque<Command> commands = {Command("a", 42, CommandType::Value), Command("b", 1, CommandType::Value)};
   ParseErrorInfo errorInfo;
   std::deque<EncodedCommand> res;
-  auto errorCode = TryParseNow(res, testArgs, commands, &errorInfo);
+  const auto errorCode = TryParseNow(res, testArgs, commands, &errorInfo);
   ASSERT_EQ(errorCode, ParseResult::CombinedValueArgumentMustBeLastError);
 
   FmtErrorFormatter formatter;
@@ -308,12 +308,12 @@ TEST(Test_ArgumentParser_ErrorStrings, Value_AValueBValue_ValueNotLast)
 
 TEST(Test_ArgumentParser_ErrorStrings, Value_ab_ValueNotLast)
 {
-  std::array<StringViewLite, 2> testArgs = {"-ab", "hey"};
+  const std::array<StringViewLite, 2> testArgs = {"-ab", "hey"};
 
-  std::deque<Command> commands = {Command("a", 42, CommandType::Value), Command("b", 1, CommandType::Switch)};
+  const std::deque<Command> commands = {Command("a", 42, CommandType::Value), Command("b", 1, CommandType::Switch)};
   ParseErrorInfo errorInfo;
   std::deque<EncodedCommand> res;
-  auto errorCode = TryParseNow(res, testArgs, commands, &errorInfo);
+  const auto errorCode = TryParseNow(res, testArgs, commands, &errorInfo);
   ASSERT_EQ(errorCode, ParseResult::CombinedValueArgumentMustBeLastError);
 
   FmtErrorFormatter formatter;
@@ -323,12 +323,12 @@ TEST(Test_ArgumentParser_ErrorStrings, Value_ab_ValueNotLast)
 
 TEST(Test_ArgumentParser_ErrorStrings, Value_ab_ValueNotLastAndValueArgMissing)
 {
-  std::array<StringViewLite, 1> testArgs = {"-ab"};
+  const std::array<StringViewLite, 1> testArgs = {"-ab"};
 
-  std::deque<Command> commands = {Command("a", 42, CommandType::Value), Command("b", 1, CommandType::Switch)};
+  const std::deque<Command> commands = {Command("a", 42, CommandType::Value), Command("b", 1, CommandType::Switch)};
   ParseErrorInfo errorInfo;
   std::deque<EncodedCommand> res;
-  auto errorCode = TryParseNow(res, testArgs, commands, &errorInfo);
+  const auto errorCode = TryParseNow(res, testArgs, commands, &errorInfo);
   ASSERT_EQ(errorCode, ParseResult::CombinedValueArgumentMustBeLastError);
 
   FmtErrorFormatter formatter;
@@ -338,12 +338,12 @@ TEST(Test_ArgumentParser_ErrorStrings, Value_ab_ValueNotLastAndValueArgMissing)
 
 TEST(Test_ArgumentParser_ErrorStrings, Value_ba_ValueArgMissing)
 {
-  std::array<StringViewLite, 1> testArgs = {"-ba"};
+  const std::array<StringViewLite, 1> testArgs = {"-ba"};
 
-  std::deque<Command> commands = {Command("a", 42, CommandType::Value), Command("b", 1, CommandType::Switch)};
+  const std::deque<Command> commands = {Command("a", 42, CommandType::Value), Command("b", 1, CommandType::Switch)};
   ParseErrorInfo errorInfo;
   std::deque<EncodedCommand> res;
-  auto errorCode = TryParseNow(res, testArgs, commands, &errorInfo);
+  const auto errorCode = TryParseNow(res, testArgs, commands, &errorInfo);
   ASSERT_EQ(errorCode, ParseResult::ArgumentMissingValueError);
 
   FmtErrorFormatter formatter;
@@ -353,12 +353,12 @@ TEST(Test_ArgumentParser_ErrorStrings, Value_ba_ValueArgMissing)
 
 TEST(Test_ArgumentParser_ErrorStrings, Value_a_duplicated)
 {
-  std::array<StringViewLite, 4> testArgs = {"-a", "1", "-a", "2"};
+  const std::array<StringViewLite, 4> testArgs = {"-a", "1", "-a", "2"};
 
-  std::deque<Command> commands = {Command("a", 42, CommandType::Value)};
+  const std::deque<Command> commands = {Command("a", 42, CommandType::Value)};
   ParseErrorInfo errorInfo;
   std::deque<EncodedCommand> res;
-  auto errorCode = TryParseNow(res, testArgs, commands, &errorInfo);
+  const auto errorCode = TryParseNow(res, testArgs, commands, &errorInfo);
   ASSERT_EQ(errorCode, ParseResult::DuplicatedValueArgumentError);
 
   FmtErrorFormatter formatter;
@@ -368,12 +368,12 @@ TEST(Test_ArgumentParser_ErrorStrings, Value_a_duplicated)
 
 TEST(Test_ArgumentParser_ErrorStrings, Value_a_duplicated2)
 {
-  std::array<StringViewLite, 4> testArgs = {"-a", "1", "-ba", "2"};
+  const std::array<StringViewLite, 4> testArgs = {"-a", "1", "-ba", "2"};
 
-  std::deque<Command> commands = {Command("a", 42, CommandType::Value), Command("b", 1, CommandType::Switch)};
+  const std::deque<Command> commands = {Command("a", 42, CommandType::Value), Command("b", 1, CommandType::Switch)};
   ParseErrorInfo errorInfo;
   std::deque<EncodedCommand> res;
-  auto errorCode = TryParseNow(res, testArgs, commands, &errorInfo);
+  const auto errorCode = TryParseNow(res, testArgs, commands, &errorInfo);
   ASSERT_EQ(errorCode, ParseResult::DuplicatedValueArgumentError);
 
   FmtErrorFormatter formatter;
@@ -383,12 +383,12 @@ TEST(Test_ArgumentParser_ErrorStrings, Value_a_duplicated2)
 
 TEST(Test_ArgumentParser_ErrorStrings, Value_test_duplicated)
 {
-  std::array<StringViewLite, 4> testArgs = {"--test", "1", "--test", "2"};
+  const std::array<StringViewLite, 4> testArgs = {"--test", "1", "--test", "2"};
 
-  std::deque<Command> commands = {Command("test", 42, CommandType::Value)};
+  const std::deque<Command> commands = {Command("test", 42, CommandType::Value)};
   ParseErrorInfo errorInfo;
   std::deque<EncodedCommand> res;
-  auto errorCode = TryParseNow(res, testArgs, commands, &errorInfo);
+  const auto errorCode = TryParseNow(res, testArgs, commands, &errorInfo);
   ASSERT_EQ(errorCode, ParseResult::DuplicatedValueArgumentError);
 
   FmtErrorFormatter formatter;
@@ -398,12 +398,12 @@ TEST(Test_ArgumentParser_ErrorStrings, Value_test_duplicated)
 
 TEST(Test_ArgumentParser_ErrorStrings, Value_a_test_duplicated)
 {
-  std::array<StringViewLite, 4> testArgs = {"-a", "1", "--test", "2"};
+  const std::array<StringViewLite, 4> testArgs = {"-a", "1", "--test", "2"};
 
-  std::deque<Command> commands = {Command("a", "test", 42, CommandType::Value)};
+  const std::deque<Command> commands = {Command("a", "test", 42, CommandType::Value)};
   ParseErrorInfo errorInfo;
   std::deque<EncodedCommand> res;
-  auto errorCode = TryParseNow(res, testArgs, commands, &errorInfo);
+  const auto errorCode = TryParseNow(res, testArgs, commands, &errorInfo);
   ASSERT_EQ(errorCode, ParseResult::DuplicatedValueArgumentError);
 
   FmtErrorFormatter formatter;
@@ -413,12 +413,12 @@ TEST(Test_ArgumentParser_ErrorStrings, Value_a_test_duplicated)
 
 TEST(Test_ArgumentParser_ErrorStrings, Value_test_a_duplicated)
 {
-  std::array<StringViewLite, 4> testArgs = {"--test", "1", "-a", "2"};
+  const std::array<StringViewLite, 4> testArgs = {"--test", "1", "-a", "2"};
 
-  std::deque<Command> commands = {Command("a", "test", 42, CommandType::Value)};
+  const std::deque<Command> commands = {Command("a", "test", 42, CommandType::Value)};
   ParseErrorInfo errorInfo;
   std::deque<EncodedCommand> res;
-  auto errorCode = TryParseNow(res, testArgs, commands, &errorInfo);
+  const auto errorCode = TryParseNow(res, testArgs, commands, &errorInfo);
   ASSERT_EQ(errorCode, ParseResult::DuplicatedValueArgumentError);
 
   FmtErrorFormatter formatter;
@@ -434,13 +434,13 @@ TEST(Test_ArgumentParser_ErrorStrings, Value_test_a_duplicated)
 
 TEST(Test_ArgumentParser_ErrorStrings, RequiredValue_NotSpecified)
 {
-  std::array<StringViewLite, 1> testArgs = {"-v"};
+  const std::array<StringViewLite, 1> testArgs = {"-v"};
 
-  std::deque<Command> commands = {Command("a", 42, CommandType::Value, true), Command("v", 43, CommandType::Switch)};
+  const std::deque<Command> commands = {Command("a", 42, CommandType::Value, true), Command("v", 43, CommandType::Switch)};
 
   ParseErrorInfo errorInfo;
   std::deque<EncodedCommand> res;
-  auto errorCode = TryParseNow(res, testArgs, commands, &errorInfo);
+  const auto errorCode = TryParseNow(res, testArgs, commands, &errorInfo);
   ASSERT_EQ(errorCode, ParseResult::RequiredArgumentNotFound);
 
   FmtErrorFormatter formatter;
@@ -450,13 +450,13 @@ TEST(Test_ArgumentParser_ErrorStrings, RequiredValue_NotSpecified)
 
 TEST(Test_ArgumentParser_ErrorStrings, RequiredLongValue_NotSpecified)
 {
-  std::array<StringViewLite, 1> testArgs = {"-v"};
+  const std::array<StringViewLite, 1> testArgs = {"-v"};
 
-  std::deque<Command> commands = {Command("test", 42, CommandType::Value, true), Command("v", 43, CommandType::Switch)};
+  const std::deque<Command> commands = {Command("test", 42, CommandType::Value, true), Command("v", 43, CommandType::Switch)};
 
   ParseErrorInfo errorInfo;
   std::deque<EncodedCommand> res;
-  auto errorCode = TryParseNow(res, testArgs, commands, &errorInfo);
+  const auto errorCode = TryParseNow(res, testArgs, commands, &errorInfo);
   ASSERT_EQ(errorCode, ParseResult::RequiredArgumentNotFound);
 
   FmtErrorFormatter formatter;
@@ -466,12 +466,12 @@ TEST(Test_ArgumentParser_ErrorStrings, RequiredLongValue_NotSpecified)
 
 TEST(Test_ArgumentParser_ErrorStrings, RequiredValue_2x_a_NotSpecified)
 {
-  std::array<StringViewLite, 2> testArgs = {"-a", "1"};
+  const std::array<StringViewLite, 2> testArgs = {"-a", "1"};
 
-  std::deque<Command> commands = {Command("a", 42, CommandType::Value, true), Command("b", 1, CommandType::Value, true)};
+  const std::deque<Command> commands = {Command("a", 42, CommandType::Value, true), Command("b", 1, CommandType::Value, true)};
   ParseErrorInfo errorInfo;
   std::deque<EncodedCommand> res;
-  auto errorCode = TryParseNow(res, testArgs, commands, &errorInfo);
+  const auto errorCode = TryParseNow(res, testArgs, commands, &errorInfo);
   ASSERT_EQ(errorCode, ParseResult::RequiredArgumentNotFound);
 
   FmtErrorFormatter formatter;
@@ -480,12 +480,12 @@ TEST(Test_ArgumentParser_ErrorStrings, RequiredValue_2x_a_NotSpecified)
 
 TEST(Test_ArgumentParser_ErrorStrings, RequiredLongValue_2x_test_NotSpecified)
 {
-  std::array<StringViewLite, 2> testArgs = {"--test", "1"};
+  const std::array<StringViewLite, 2> testArgs = {"--test", "1"};
 
-  std::deque<Command> commands = {Command("test", 42, CommandType::Value, true), Command("best", 1, CommandType::Value, true)};
+  const std::deque<Command> commands = {Command("test", 42, CommandType::Value, true), Command("best", 1, CommandType::Value, true)};
   ParseErrorInfo errorInfo;
   std::deque<EncodedCommand> res;
-  auto errorCode = TryParseNow(res, testArgs, commands, &errorInfo);
+  const auto errorCode = TryParseNow(res, testArgs, commands, &errorInfo);
   ASSERT_EQ(errorCode, ParseResult::RequiredArgumentNotFound);
 
   FmtErrorFormatter formatter;
@@ -501,12 +501,12 @@ TEST(Test_ArgumentParser_ErrorStrings, RequiredLongValue_2x_test_NotSpecified)
 
 TEST(Test_ArgumentParser_ErrorStrings, LongSwitch_test_AsShortSwitch)
 {
-  std::array<StringViewLite, 1> testArgs = {"-test"};
+  const std::array<StringViewLite, 1> testArgs = {"-test"};
 
-  std::deque<Command> commands = {Command("test", 42, CommandType::Switch)};
+  const std::deque<Command> commands = {Command("test", 42, CommandType::Switch)};
   ParseErrorInfo errorInfo;
   std::deque<EncodedCommand> res;
-  auto errorCode = TryParseNow(res, testArgs, commands, &errorInfo);
+  const auto errorCode = TryParseNow(res, testArgs, commands, &errorInfo);
   ASSERT_EQ(errorCode, ParseResult::UnknownArgumentError);
 
   FmtErrorFormatter formatter;
@@ -516,12 +516,12 @@ TEST(Test_ArgumentParser_ErrorStrings, LongSwitch_test_AsShortSwitch)
 
 TEST(Test_ArgumentParser_ErrorStrings, LongSwitch_test_Unknown)
 {
-  std::array<StringViewLite, 1> testArgs = {"--test2"};
+  const std::array<StringViewLite, 1> testArgs = {"--test2"};
 
-  std::deque<Command> commands = {Command("test", 42, CommandType::Switch)};
+  const std::deque<Command> commands = {Command("test", 42, CommandType::Switch)};
   ParseErrorInfo errorInfo;
   std::deque<EncodedCommand> res;
-  auto errorCode = TryParseNow(res, testArgs, commands, &errorInfo);
+  const auto errorCode = TryParseNow(res, testArgs, commands, &errorInfo);
   ASSERT_EQ(errorCode, ParseResult::UnknownArgumentError);
 
   FmtErrorFormatter formatter;
@@ -531,12 +531,12 @@ TEST(Test_ArgumentParser_ErrorStrings, LongSwitch_test_Unknown)
 
 TEST(Test_ArgumentParser_ErrorStrings, LongSwitch_test_test)
 {
-  std::array<StringViewLite, 2> testArgs = {"--test", "--test"};
+  const std::array<StringViewLite, 2> testArgs = {"--test", "--test"};
 
-  std::deque<Command> commands = {Command("test", 42, CommandType::Switch)};
+  const std::deque<Command> commands = {Command("test", 42, CommandType::Switch)};
   ParseErrorInfo errorInfo;
   std::deque<EncodedCommand> res;
-  auto errorCode = TryParseNow(res, testArgs, commands, &errorInfo);
+  const auto errorCode = TryParseNow(res, testArgs, commands, &errorInfo);
   ASSERT_EQ(errorCode, ParseResult::DuplicatedSwitchArgumentError);
 
   FmtErrorFormatter formatter;
@@ -546,12 +546,12 @@ TEST(Test_ArgumentParser_ErrorStrings, LongSwitch_test_test)
 
 TEST(Test_ArgumentParser_ErrorStrings, LongSwitch_test_test_invalid)
 {
-  std::array<StringViewLite, 1> testArgs = {"--test --test"};
+  const std::array<StringViewLite, 1> testArgs = {"--test --test"};
 
-  std::deque<Command> commands = {Command("test", 42, CommandType::Switch)};
+  const std::deque<Command> commands = {Command("test", 42, CommandType::Switch)};
   ParseErrorInfo errorInfo;
   std::deque<EncodedCommand> res;
-  auto errorCode = TryParseNow(res, testArgs, commands, &errorInfo);
+  const auto errorCode = TryParseNow(res, testArgs, commands, &errorInfo);
   ASSERT_EQ(errorCode, ParseResult::UnknownArgumentError);
 
   FmtErrorFormatter formatter;
@@ -567,13 +567,13 @@ TEST(Test_ArgumentParser_ErrorStrings, LongSwitch_test_test_invalid)
 
 TEST(Test_ArgumentParser_ErrorStrings, RequiredMultiSwitch_NotSpecified)
 {
-  std::array<StringViewLite, 1> testArgs = {"-v"};
+  const std::array<StringViewLite, 1> testArgs = {"-v"};
 
-  std::deque<Command> commands = {Command("a", 42, CommandType::MultiSwitch, true), Command("v", 43, CommandType::Switch)};
+  const std::deque<Command> commands = {Command("a", 42, CommandType::MultiSwitch, true), Command("v", 43, CommandType::Switch)};
 
   ParseErrorInfo errorInfo;
   std::deque<EncodedCommand> res;
-  auto errorCode = TryParseNow(res, testArgs, commands, &errorInfo);
+  const auto errorCode = TryParseNow(res, testArgs, commands, &errorInfo);
   ASSERT_EQ(errorCode, ParseResult::RequiredArgumentNotFound);
 
   FmtErrorFormatter formatter;
@@ -583,12 +583,12 @@ TEST(Test_ArgumentParser_ErrorStrings, RequiredMultiSwitch_NotSpecified)
 
 TEST(Test_ArgumentParser_ErrorStrings, RequiredMultiSwitch_2x_a_NotSpecified)
 {
-  std::array<StringViewLite, 1> testArgs = {"-a"};
+  const std::array<StringViewLite, 1> testArgs = {"-a"};
 
-  std::deque<Command> commands = {Command("a", 42, CommandType::MultiSwitch, true), Command("b", 1, CommandType::MultiSwitch, true)};
+  const std::deque<Command> commands = {Command("a", 42, CommandType::MultiSwitch, true), Command("b", 1, CommandType::MultiSwitch, true)};
   ParseErrorInfo errorInfo;
   std::deque<EncodedCommand> res;
-  auto errorCode = TryParseNow(res, testArgs, commands, &errorInfo);
+  const auto errorCode = TryParseNow(res, testArgs, commands, &errorInfo);
   ASSERT_EQ(errorCode, ParseResult::RequiredArgumentNotFound);
 
   FmtErrorFormatter formatter;
@@ -604,12 +604,12 @@ TEST(Test_ArgumentParser_ErrorStrings, RequiredMultiSwitch_2x_a_NotSpecified)
 
 TEST(Test_ArgumentParser_ErrorStrings, LongMultiSwitch_test_AsShortSwitch)
 {
-  std::array<StringViewLite, 1> testArgs = {"-test"};
+  const std::array<StringViewLite, 1> testArgs = {"-test"};
 
-  std::deque<Command> commands = {Command("test", 42, CommandType::MultiSwitch)};
+  const std::deque<Command> commands = {Command("test", 42, CommandType::MultiSwitch)};
   ParseErrorInfo errorInfo;
   std::deque<EncodedCommand> res;
-  auto errorCode = TryParseNow(res, testArgs, commands, &errorInfo);
+  const auto errorCode = TryParseNow(res, testArgs, commands, &errorInfo);
   ASSERT_EQ(errorCode, ParseResult::UnknownArgumentError);
 
   FmtErrorFormatter formatter;
@@ -619,12 +619,12 @@ TEST(Test_ArgumentParser_ErrorStrings, LongMultiSwitch_test_AsShortSwitch)
 
 TEST(Test_ArgumentParser_ErrorStrings, LongMultiSwitch_test_Unknown)
 {
-  std::array<StringViewLite, 1> testArgs = {"--test2"};
+  const std::array<StringViewLite, 1> testArgs = {"--test2"};
 
-  std::deque<Command> commands = {Command("test", 42, CommandType::MultiSwitch)};
+  const std::deque<Command> commands = {Command("test", 42, CommandType::MultiSwitch)};
   ParseErrorInfo errorInfo;
   std::deque<EncodedCommand> res;
-  auto errorCode = TryParseNow(res, testArgs, commands, &errorInfo);
+  const auto errorCode = TryParseNow(res, testArgs, commands, &errorInfo);
   ASSERT_EQ(errorCode, ParseResult::UnknownArgumentError);
 
   FmtErrorFormatter formatter;
@@ -634,12 +634,12 @@ TEST(Test_ArgumentParser_ErrorStrings, LongMultiSwitch_test_Unknown)
 
 TEST(Test_ArgumentParser_ErrorStrings, LongMultiSwitch_test_test_invalid)
 {
-  std::array<StringViewLite, 1> testArgs = {"--test --test"};
+  const std::array<StringViewLite, 1> testArgs = {"--test --test"};
 
-  std::deque<Command> commands = {Command("test", 42, CommandType::MultiSwitch)};
+  const std::deque<Command> commands = {Command("test", 42, CommandType::MultiSwitch)};
   ParseErrorInfo errorInfo;
   std::deque<EncodedCommand> res;
-  auto errorCode = TryParseNow(res, testArgs, commands, &errorInfo);
+  const auto errorCode = TryParseNow(res, testArgs, commands, &errorInfo);
   ASSERT_EQ(errorCode, ParseResult::UnknownArgumentError);
 
   FmtErrorFormatter formatter;
@@ -656,13 +656,13 @@ TEST(Test_ArgumentParser_ErrorStrings, LongMultiSwitch_test_test_invalid)
 
 TEST(Test_ArgumentParser_ErrorStrings, RequiredLongMultiSwitch_NotSpecified)
 {
-  std::array<StringViewLite, 1> testArgs = {"-v"};
+  const std::array<StringViewLite, 1> testArgs = {"-v"};
 
-  std::deque<Command> commands = {Command("test", 42, CommandType::MultiSwitch, true), Command("v", 43, CommandType::Switch)};
+  const std::deque<Command> commands = {Command("test", 42, CommandType::MultiSwitch, true), Command("v", 43, CommandType::Switch)};
 
   ParseErrorInfo errorInfo;
   std::deque<EncodedCommand> res;
-  auto errorCode = TryParseNow(res, testArgs, commands, &errorInfo);
+  const auto errorCode = TryParseNow(res, testArgs, commands, &errorInfo);
   ASSERT_EQ(errorCode, ParseResult::RequiredArgumentNotFound);
 
   FmtErrorFormatter formatter;
@@ -672,12 +672,12 @@ TEST(Test_ArgumentParser_ErrorStrings, RequiredLongMultiSwitch_NotSpecified)
 
 TEST(Test_ArgumentParser_ErrorStrings, RequiredLongMultiSwitch_2x_test_NotSpecified)
 {
-  std::array<StringViewLite, 1> testArgs = {"--test"};
+  const std::array<StringViewLite, 1> testArgs = {"--test"};
 
-  std::deque<Command> commands = {Command("test", 42, CommandType::MultiSwitch, true), Command("best", 1, CommandType::MultiSwitch, true)};
+  const std::deque<Command> commands = {Command("test", 42, CommandType::MultiSwitch, true), Command("best", 1, CommandType::MultiSwitch, true)};
   ParseErrorInfo errorInfo;
   std::deque<EncodedCommand> res;
-  auto errorCode = TryParseNow(res, testArgs, commands, &errorInfo);
+  const auto errorCode = TryParseNow(res, testArgs, commands, &errorInfo);
   ASSERT_EQ(errorCode, ParseResult::RequiredArgumentNotFound);
 
   FmtErrorFormatter formatter;
@@ -692,12 +692,12 @@ TEST(Test_ArgumentParser_ErrorStrings, RequiredLongMultiSwitch_2x_test_NotSpecif
 
 TEST(Test_ArgumentParser_ErrorStrings, Positional_NotAllowed)
 {
-  std::array<StringViewLite, 1> testArgs = {"hello"};
+  const std::array<StringViewLite, 1> testArgs = {"hello"};
 
-  std::deque<Command> commands = {};
+  const std::deque<Command> commands = {};
   ParseErrorInfo errorInfo;
   std::deque<EncodedCommand> res;
-  auto errorCode = TryParseNow(res, testArgs, commands, &errorInfo);
+  const auto errorCode = TryParseNow(res, testArgs, commands, &errorInfo);
   ASSERT_EQ(errorCode, ParseResult::UnknownArgumentError);
 
   FmtErrorFormatter formatter;
@@ -714,13 +714,13 @@ TEST(Test_ArgumentParser_ErrorStrings, Positional_NotAllowed)
 
 TEST(Test_ArgumentParser_ErrorStrings, RequiredPositionalValue_NotSpecified)
 {
-  std::array<StringViewLite, 1> testArgs = {"-v"};
+  const std::array<StringViewLite, 1> testArgs = {"-v"};
 
-  std::deque<Command> commands = {Command("pos1", 42, CommandType::PositionalValue, true), Command("v", 43, CommandType::Switch)};
+  const std::deque<Command> commands = {Command("pos1", 42, CommandType::PositionalValue, true), Command("v", 43, CommandType::Switch)};
 
   ParseErrorInfo errorInfo;
   std::deque<EncodedCommand> res;
-  auto errorCode = TryParseNow(res, testArgs, commands, &errorInfo);
+  const auto errorCode = TryParseNow(res, testArgs, commands, &errorInfo);
   ASSERT_EQ(errorCode, ParseResult::RequiredArgumentNotFound);
 
   FmtErrorFormatter formatter;
@@ -730,12 +730,13 @@ TEST(Test_ArgumentParser_ErrorStrings, RequiredPositionalValue_NotSpecified)
 
 TEST(Test_ArgumentParser_ErrorStrings, RequiredPositionalValue_2x_hello_NotSpecified)
 {
-  std::array<StringViewLite, 1> testArgs = {"hello"};
+  const std::array<StringViewLite, 1> testArgs = {"hello"};
 
-  std::deque<Command> commands = {Command("pos1", 42, CommandType::PositionalValue, true), Command("pos2", 1, CommandType::PositionalValue, true)};
+  const std::deque<Command> commands = {Command("pos1", 42, CommandType::PositionalValue, true),
+                                        Command("pos2", 1, CommandType::PositionalValue, true)};
   ParseErrorInfo errorInfo;
   std::deque<EncodedCommand> res;
-  auto errorCode = TryParseNow(res, testArgs, commands, &errorInfo);
+  const auto errorCode = TryParseNow(res, testArgs, commands, &errorInfo);
   ASSERT_EQ(errorCode, ParseResult::RequiredArgumentNotFound);
 
   FmtErrorFormatter formatter;
@@ -750,12 +751,12 @@ TEST(Test_ArgumentParser_ErrorStrings, RequiredPositionalValue_2x_hello_NotSpeci
 
 TEST(Test_ArgumentParser_ErrorStrings, UnhandledArgument_NotAllowed1)
 {
-  std::array<StringViewLite, 2> testArgs = {"--", "hello"};
+  const std::array<StringViewLite, 2> testArgs = {"--", "hello"};
 
-  std::deque<Command> commands = {};
+  const std::deque<Command> commands = {};
   ParseErrorInfo errorInfo;
   std::deque<EncodedCommand> res;
-  auto errorCode = TryParseNow(res, testArgs, commands, &errorInfo);
+  const auto errorCode = TryParseNow(res, testArgs, commands, &errorInfo);
   ASSERT_EQ(errorCode, ParseResult::UnknownArgumentError);
 
   FmtErrorFormatter formatter;
@@ -764,12 +765,12 @@ TEST(Test_ArgumentParser_ErrorStrings, UnhandledArgument_NotAllowed1)
 
 TEST(Test_ArgumentParser_ErrorStrings, UnhandledArgument_NotAllowed2)
 {
-  std::array<StringViewLite, 3> testArgs = {"--", "hello", "world"};
+  const std::array<StringViewLite, 3> testArgs = {"--", "hello", "world"};
 
-  std::deque<Command> commands = {};
+  const std::deque<Command> commands = {};
   ParseErrorInfo errorInfo;
   std::deque<EncodedCommand> res;
-  auto errorCode = TryParseNow(res, testArgs, commands, &errorInfo);
+  const auto errorCode = TryParseNow(res, testArgs, commands, &errorInfo);
   ASSERT_EQ(errorCode, ParseResult::UnknownArgumentError);
 
   FmtErrorFormatter formatter;

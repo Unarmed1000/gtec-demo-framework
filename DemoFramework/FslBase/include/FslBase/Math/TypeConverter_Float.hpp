@@ -48,7 +48,7 @@ namespace Fsl::TypeConverter
     {
       throw ConversionException("unsupported float value");
     }
-    auto rounded = std::round(value);
+    const auto rounded = std::round(value);
     if (rounded < static_cast<float>(std::numeric_limits<int16_t>::min()) || rounded > static_cast<float>(std::numeric_limits<int16_t>::max()))
     {
       throw ConversionException("overflow");
@@ -65,7 +65,7 @@ namespace Fsl::TypeConverter
     {
       throw ConversionException("unsupported float value");
     }
-    auto rounded = std::round(value);
+    const auto rounded = std::round(value);
     if (rounded < static_cast<float>(std::numeric_limits<int32_t>::min()) || rounded > static_cast<float>(std::numeric_limits<int32_t>::max()))
     {
       throw ConversionException("overflow");
@@ -82,7 +82,7 @@ namespace Fsl::TypeConverter
     {
       throw ConversionException("unsupported float value");
     }
-    auto rounded = std::round(value);
+    const auto rounded = std::round(value);
     if (rounded < static_cast<float>(std::numeric_limits<int64_t>::min()) || rounded > static_cast<float>(std::numeric_limits<int64_t>::max()))
     {
       throw ConversionException("overflow");
@@ -99,7 +99,7 @@ namespace Fsl::TypeConverter
     {
       throw ConversionException("unsupported float value");
     }
-    auto rounded = std::round(value);
+    const auto rounded = std::round(value);
     if (rounded < static_cast<float>(std::numeric_limits<uint16_t>::min()) || rounded > static_cast<float>(std::numeric_limits<uint16_t>::max()))
     {
       throw ConversionException("overflow");
@@ -116,7 +116,7 @@ namespace Fsl::TypeConverter
     {
       throw ConversionException("unsupported float value");
     }
-    auto rounded = std::round(value);
+    const auto rounded = std::round(value);
     if (rounded < static_cast<float>(std::numeric_limits<uint32_t>::min()) || rounded > static_cast<float>(std::numeric_limits<uint32_t>::max()))
     {
       throw ConversionException("overflow");
@@ -133,7 +133,7 @@ namespace Fsl::TypeConverter
     {
       throw ConversionException("unsupported float value");
     }
-    auto rounded = std::round(value);
+    const auto rounded = std::round(value);
     if (rounded < static_cast<float>(std::numeric_limits<uint64_t>::min()) || rounded > static_cast<float>(std::numeric_limits<uint64_t>::max()))
     {
       throw ConversionException("overflow");
@@ -151,7 +151,7 @@ namespace Fsl::TypeConverter
   {
     assert(!std::isinf(value));
     assert(!std::isnan(value));
-    auto rounded = std::round(value);
+    const auto rounded = std::round(value);
     assert(rounded <= static_cast<float>(std::numeric_limits<int16_t>::max()));
     assert(rounded >= static_cast<float>(std::numeric_limits<int16_t>::min()));
     return static_cast<int16_t>(rounded);
@@ -164,7 +164,7 @@ namespace Fsl::TypeConverter
   {
     assert(!std::isinf(value));
     assert(!std::isnan(value));
-    auto rounded = std::round(value);
+    const auto rounded = std::round(value);
     assert(rounded <= static_cast<float>(std::numeric_limits<int32_t>::max()));
     assert(rounded >= static_cast<float>(std::numeric_limits<int32_t>::min()));
     return static_cast<int32_t>(rounded);
@@ -177,7 +177,7 @@ namespace Fsl::TypeConverter
   {
     assert(!std::isinf(value));
     assert(!std::isnan(value));
-    auto rounded = std::round(value);
+    const auto rounded = std::round(value);
     assert(rounded <= static_cast<float>(std::numeric_limits<int64_t>::max()));
     assert(rounded >= static_cast<float>(std::numeric_limits<int64_t>::min()));
     return static_cast<int64_t>(rounded);
@@ -190,7 +190,7 @@ namespace Fsl::TypeConverter
   {
     assert(!std::isinf(value));
     assert(!std::isnan(value));
-    auto rounded = std::round(value);
+    const auto rounded = std::round(value);
     assert(rounded <= static_cast<float>(std::numeric_limits<uint16_t>::max()));
     assert(rounded >= static_cast<float>(std::numeric_limits<uint16_t>::min()));
     return static_cast<uint16_t>(rounded);
@@ -203,7 +203,7 @@ namespace Fsl::TypeConverter
   {
     assert(!std::isinf(value));
     assert(!std::isnan(value));
-    auto rounded = std::round(value);
+    const auto rounded = std::round(value);
     assert(rounded <= static_cast<float>(std::numeric_limits<uint32_t>::max()));
     assert(rounded >= static_cast<float>(std::numeric_limits<uint32_t>::min()));
     return static_cast<uint32_t>(rounded);
@@ -216,7 +216,7 @@ namespace Fsl::TypeConverter
   {
     assert(!std::isinf(value));
     assert(!std::isnan(value));
-    auto rounded = std::round(value);
+    const auto rounded = std::round(value);
     assert(rounded <= static_cast<float>(std::numeric_limits<uint64_t>::max()));
     assert(rounded >= static_cast<float>(std::numeric_limits<uint64_t>::min()));
     return static_cast<uint64_t>(rounded);
