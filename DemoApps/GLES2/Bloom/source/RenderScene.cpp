@@ -82,7 +82,7 @@ namespace Fsl
   {
     m_lightDirection.Normalize();
 
-    auto contentManager = config.DemoServiceProvider.Get<IContentManager>();
+    const auto contentManager = config.DemoServiceProvider.Get<IContentManager>();
 
     IO::Path strFileName;
     IO::Path strTextureFileName;
@@ -115,13 +115,13 @@ namespace Fsl
 
     FSLLOG3_INFO("Loading scene '{}'", fullModelPath);
     BasicSceneFormat sceneFormat;
-    auto scene = sceneFormat.Load<BasicScene>(fullModelPath);
+    const auto scene = sceneFormat.Load<BasicScene>(fullModelPath);
 
 
     FSLLOG3_INFO("Preparing textures");
     {    // prepare textures
       Bitmap bitmap;
-      auto texturePath = IO::Path::Combine(ModelsPath, strTextureFileName);
+      const auto texturePath = IO::Path::Combine(ModelsPath, strTextureFileName);
 
       if (strTextureGloss.IsEmpty())
       {
@@ -131,7 +131,7 @@ namespace Fsl
       else
       {
         Bitmap bitmapGloss;
-        auto glossTexturePath = IO::Path::Combine(ModelsPath, strTextureGloss);
+        const auto glossTexturePath = IO::Path::Combine(ModelsPath, strTextureGloss);
         FSLLOG3_INFO("- Diffuse '{}'", texturePath);
         contentManager->Read(bitmap, texturePath, PixelFormat::R8G8B8A8_UNORM);
         FSLLOG3_INFO("- Gloss '{}'", glossTexturePath);
@@ -141,20 +141,20 @@ namespace Fsl
         {
           for (uint32_t x = 0; x < bitmap.RawUnsignedWidth(); ++x)
           {
-            auto col1 = bitmap.GetNativePixel(x, y);
-            auto col2 = bitmapGloss.GetNativePixel(x, y);
+            const auto col1 = bitmap.GetNativePixel(x, y);
+            const auto col2 = bitmapGloss.GetNativePixel(x, y);
             const uint32_t color = (col1 & 0xFFFFFF) | ((col2 & 0xFF) << 24);
             bitmap.SetNativePixel(x, y, color);
           }
         }
       }
 
-      GLTextureParameters texParams(GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR, GL_REPEAT, GL_REPEAT);
+      const GLTextureParameters texParams(GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR, GL_REPEAT, GL_REPEAT);
       m_texture.SetData(bitmap, texParams, TextureFlags::GenerateMipMaps);
 
       if (!strTextureSpecular.IsEmpty())
       {
-        auto specTexturePath = IO::Path::Combine(ModelsPath, strTextureSpecular);
+        const auto specTexturePath = IO::Path::Combine(ModelsPath, strTextureSpecular);
         FSLLOG3_INFO("- Specular '{}'", specTexturePath);
         contentManager->Read(bitmap, specTexturePath, PixelFormat::R8G8B8A8_UNORM);
         m_textureSpecular.SetData(bitmap, texParams, TextureFlags::GenerateMipMaps);
@@ -162,7 +162,7 @@ namespace Fsl
 
       if (!strTextureNormal.IsEmpty())
       {
-        auto normTexturePath = IO::Path::Combine(ModelsPath, strTextureNormal);
+        const auto normTexturePath = IO::Path::Combine(ModelsPath, strTextureNormal);
         FSLLOG3_INFO("- Normal '{}'", normTexturePath);
         contentManager->Read(bitmap, normTexturePath, PixelFormat::R8G8B8A8_UNORM);
         m_textureNormal.SetData(bitmap, texParams, TextureFlags::GenerateMipMaps);
@@ -180,7 +180,7 @@ namespace Fsl
       std::size_t indexCount = 0;
       for (std::size_t i = 0; i < scene->Meshes.size(); ++i)
       {
-        auto mesh = scene->Meshes[i];
+        const auto mesh = scene->Meshes[i];
         m_indexBuffers.Reset(i, mesh->GetIndexArray(), GL_STATIC_DRAW);
         m_vertexBuffers.Reset(i, mesh->GetVertexArray(), GL_STATIC_DRAW);
 
@@ -206,7 +206,7 @@ namespace Fsl
     m_matrixWorldView = m_matrixWorld * m_matrixView;
     m_matrixWorldViewProjection = m_matrixWorldView * m_matrixProjection;
 
-    Vector4 cameraSpaceLightDirection = Vector4::Transform(m_lightDirection, cameraRotation);
+    const Vector4 cameraSpaceLightDirection = Vector4::Transform(m_lightDirection, cameraRotation);
     m_cameraSpaceLightDirection = Vector3(cameraSpaceLightDirection.X, cameraSpaceLightDirection.Y, cameraSpaceLightDirection.Z);
     m_cameraSpaceLightDirection.Normalize();
     m_matrixNormal = Matrix3::Transpose(Matrix3::Invert(MatrixConverter::ToMatrix3(m_matrixWorldView)));
@@ -309,8 +309,8 @@ namespace Fsl
     const auto indexBufferType = m_indexBuffers.GetType();
     for (int32_t i = 0; i < m_indexBuffers.Length(); ++i)
     {
-      auto indexBuffer = m_indexBuffers.Get(i);
-      auto vertexBuffer = m_vertexBuffers.Get(i);
+      const auto indexBuffer = m_indexBuffers.Get(i);
+      const auto vertexBuffer = m_vertexBuffers.Get(i);
       if (indexBuffer.GetCapacity() > 0)
       {
         // Bind and enable the vertex buffer
@@ -328,7 +328,7 @@ namespace Fsl
   void RenderScene::PrepareShader(const std::shared_ptr<IContentManager>& contentManager, const bool useSpecMap, const bool useGlossMap,
                                   const bool useNormalMap)
   {
-    IO::Path shaderPath("Shaders");
+    const IO::Path shaderPath("Shaders");
 
     std::string baseShaderName("PerPixelDirectionalSpecular");
     if (useSpecMap)

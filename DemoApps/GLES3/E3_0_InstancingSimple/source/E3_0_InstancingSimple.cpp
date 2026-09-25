@@ -256,8 +256,8 @@ namespace Fsl
 
     for (instance = 0; instance < NUM_INSTANCES; instance++)
     {
-      float translateX = (static_cast<float>(instance % numRows) / static_cast<float>(numRows)) * 2.0f - 1.0f;
-      float translateY =
+      const float translateX = (static_cast<float>(instance % numRows) / static_cast<float>(numRows)) * 2.0f - 1.0f;
+      const float translateY =
         (static_cast<float>(instance / numColumns) / static_cast<float>(numColumns)) * 2.0f - 1.0f;    // NOLINT(bugprone-integer-division)
 
       // Compute a rotation angle based on time to rotate the cube
@@ -271,7 +271,7 @@ namespace Fsl
       // Generate a model view matrix to rotate/translate the cube
       // Per-instance translation
       const float angle = m_userData.Angle[instance] * MathHelper::TO_RADS;
-      Matrix matModelView =
+      const Matrix matModelView =
         Matrix::CreateRotationX(angle) * Matrix::CreateRotationZ(angle) * Matrix::CreateTranslation(translateX, translateY, -2.0f);
 
       // Compute the final MVP by multiplying the
@@ -287,7 +287,7 @@ namespace Fsl
   {
     FSL_PARAM_NOT_USED(frameInfo);
 
-    PxSize2D sizePx = GetWindowSizePx();
+    const PxSize2D sizePx = GetWindowSizePx();
 
     glViewport(0, 0, sizePx.RawWidth(), sizePx.RawHeight());
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);

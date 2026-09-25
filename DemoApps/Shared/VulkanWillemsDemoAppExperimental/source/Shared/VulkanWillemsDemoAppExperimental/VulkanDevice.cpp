@@ -283,7 +283,7 @@ namespace Fsl
       fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
       fenceInfo.flags = 0;
 
-      RapidVulkan::Fence fence(m_device, fenceInfo);
+      const RapidVulkan::Fence fence(m_device, fenceInfo);
 
       // Submit to the queue
       RAPIDVULKAN_CHECK(vkQueueSubmit(queue, 1, &submitInfo, fence.Get()));

@@ -83,7 +83,7 @@ namespace Fsl
     glUniformMatrix4fv(m_locWorldViewMatrix, 1, 0, context.MatrixWorldView.DirectAccess());
     glUniformMatrix4fv(m_locProjMatrix, 1, 0, context.MatrixProjection.DirectAccess());
 
-    Vector4 col = Colors::White().ToVector4();
+    const Vector4 col = Colors::White().ToVector4();
 
     // HighResolutionTimer timer;
     // auto start = timer.GetTime();

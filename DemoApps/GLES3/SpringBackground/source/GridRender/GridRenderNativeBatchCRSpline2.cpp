@@ -44,7 +44,7 @@ namespace Fsl
     inline void DrawLine(NativeBatch2D* pBatch, const GLBatch2D::texture_type& texFill, const PxRectangleU32& nativeTexRect, const Vector2& start,
                          const Vector2& end, const Color& color, const float thickness)
     {
-      Vector2 delta = end - start;
+      const Vector2 delta = end - start;
       pBatch->Draw(texFill, start, nativeTexRect, color, VectorHelper::VectorToAngle(delta), Vector2(0, 0), Vector2(delta.Length(), thickness));
     }
   }
@@ -73,7 +73,7 @@ namespace Fsl
 
   void GridRenderNativeBatchCRSpline2::Draw(const GridRenderDrawContext& drawContext, const std::vector<PointMass>& /*points*/)
   {
-    GLBatch2D::texture_type texFillNative = TextureUtil::ToNative(drawContext.RenderSystem, drawContext.TexFill);
+    const GLBatch2D::texture_type texFillNative = TextureUtil::ToNative(drawContext.RenderSystem, drawContext.TexFill);
 
     const auto texTrimmedRect = drawContext.TexFill.GetInfo().TrimmedRectPx;
     constexpr auto Size1Px = PxValueU::Create(1);
@@ -81,9 +81,9 @@ namespace Fsl
     const PxRectangleU32 rectFillTex(texTrimmedRect.X + (texTrimmedRect.Width / Size2Px), texTrimmedRect.Y + (texTrimmedRect.Height / Size2Px),
                                      Size1Px, Size1Px);
 
-    int width = m_gridSize.X;
-    int height = m_gridSize.Y;
-    Color color(0.12f, 0.12f, 0.55f, 0.33f);
+    const int width = m_gridSize.X;
+    const int height = m_gridSize.Y;
+    const Color color(0.12f, 0.12f, 0.55f, 0.33f);
 
     auto* pBatch = drawContext.pBatch;
     const auto gridStride = m_gridSize.X;
@@ -96,16 +96,16 @@ namespace Fsl
       {
         Vector2 left;
         Vector2 up;
-        Vector2 currentPoint = m_coordinates2D[x + (y * gridStride)];
+        const Vector2 currentPoint = m_coordinates2D[x + (y * gridStride)];
         if (x > 1)
         {
           // horizontal
           left = previousPointX;
-          float thickness = (y % 3 == 1) ? 3.0f : 1.0f;
+          const float thickness = (y % 3 == 1) ? 3.0f : 1.0f;
 
-          int clampedX = static_cast<int>(std::min(x + 1, width - 1));
-          Vector2 mid = VectorHelper::CatmullRom(m_coordinates2D[x - 2 + (y * gridStride)], left, currentPoint,
-                                                 m_coordinates2D[clampedX + (y * gridStride)], 0.5f);
+          const int clampedX = static_cast<int>(std::min(x + 1, width - 1));
+          const Vector2 mid = VectorHelper::CatmullRom(m_coordinates2D[x - 2 + (y * gridStride)], left, currentPoint,
+                                                       m_coordinates2D[clampedX + (y * gridStride)], 0.5f);
 
           DrawLine(pBatch, texFillNative, rectFillTex, left, mid, color, thickness);
           DrawLine(pBatch, texFillNative, rectFillTex, mid, currentPoint, color, thickness);
@@ -114,11 +114,11 @@ namespace Fsl
         {
           // vertical
           up = m_coordinates2D[x + ((y - 1) * gridStride)];
-          float thickness = (x % 3 == 1) ? 3.0f : 1.0f;
+          const float thickness = (x % 3 == 1) ? 3.0f : 1.0f;
 
-          int clampedY = static_cast<int>(std::min(y + 1, height - 1));
-          Vector2 mid = VectorHelper::CatmullRom(m_coordinates2D[x + ((y - 2) * gridStride)], up, currentPoint,
-                                                 m_coordinates2D[x + (clampedY * gridStride)], 0.5f);
+          const int clampedY = static_cast<int>(std::min(y + 1, height - 1));
+          const Vector2 mid = VectorHelper::CatmullRom(m_coordinates2D[x + ((y - 2) * gridStride)], up, currentPoint,
+                                                       m_coordinates2D[x + (clampedY * gridStride)], 0.5f);
 
           DrawLine(pBatch, texFillNative, rectFillTex, up, mid, color, thickness);
           DrawLine(pBatch, texFillNative, rectFillTex, mid, currentPoint, color, thickness);
@@ -139,7 +139,7 @@ namespace Fsl
     const Vector2 halfSize(finalSize * 0.5f);
     while (pSrc < pSrcEnd)
     {
-      float factor = (pSrc->m_position.Z + 2000.0f) * 0.0005f;
+      const float factor = (pSrc->m_position.Z + 2000.0f) * 0.0005f;
       pDst->X = ((pSrc->m_position.X - halfSize.X) * factor) + halfSize.X;
       pDst->Y = ((pSrc->m_position.Y - halfSize.Y) * factor) + halfSize.Y;
       ++pSrc;

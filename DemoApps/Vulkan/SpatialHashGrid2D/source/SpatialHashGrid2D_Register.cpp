@@ -40,7 +40,7 @@ namespace Fsl
     CustomDemoAppConfig customDemoAppConfig;
     customDemoAppConfig.RestartFlags = CustomDemoAppConfigRestartFlags::Never;
 
-    DemoAppHostConfigVulkan config;
+    const DemoAppHostConfigVulkan config;
 
     DemoAppRegister::Vulkan::Register<SpatialHashGrid2D>(rSetup, "Vulkan.SpatialHashGrid2D", config, customDemoAppConfig);
   }

@@ -45,7 +45,7 @@ namespace Fsl
     explicit AsyncExampleServiceProxy(const AsynchronousServiceProxyCreateInfo& createInfo);
 
     // Inherited via IAsyncExampleService
-    std::future<int32_t> AddAsync(const int32_t a, const int32_t b) const final;
+    [[nodiscard]] std::future<int32_t> AddAsync(const int32_t a, const int32_t b) const final;
   };
 }
 

@@ -45,17 +45,17 @@ namespace Fsl
     OptionParser() = default;
     ~OptionParser() override;
 
-    uint32_t GetMaxInstancesX() const noexcept
+    [[nodiscard]] uint32_t GetMaxInstancesX() const noexcept
     {
       return m_maxInstancesX;
     }
 
-    uint32_t GetMaxInstancesY() const noexcept
+    [[nodiscard]] uint32_t GetMaxInstancesY() const noexcept
     {
       return m_maxInstancesY;
     }
 
-    uint32_t GetMaxInstancesZ() const noexcept
+    [[nodiscard]] uint32_t GetMaxInstancesZ() const noexcept
     {
       return m_maxInstancesZ;
     }

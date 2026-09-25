@@ -40,7 +40,7 @@ namespace Fsl
     CustomDemoAppConfig customDemoAppConfig;
     customDemoAppConfig.RestartFlags = CustomDemoAppConfigRestartFlags::Never;
 
-    DemoAppHostConfigVulkan config;
+    const DemoAppHostConfigVulkan config;
 
     DemoAppRegister::Vulkan::Register<DFNativeBatch2D>(rSetup, "Vulkan.System.DFNativeBatch2D", config, customDemoAppConfig);
   }

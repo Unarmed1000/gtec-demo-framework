@@ -71,33 +71,33 @@ namespace Fsl
   {
     RegisterExtension(m_uiExtension);
 
-    auto context = m_uiExtension->GetContext();
+    const auto context = m_uiExtension->GetContext();
 
     const auto contentManager = GetContentManager();
 
     BasicTextureAtlas customAtlas;
     contentManager->Read(customAtlas, "Old/MainAtlas.bta");
-    auto texture = contentManager->ReadTexture("Old/MainAtlas.png");
-    Texture2D atlasTexture(m_graphicsService->GetNativeGraphics(), texture, Texture2DFilterHint::Smooth);
-    TextureAtlasMap textureAtlasMap(customAtlas);
+    const auto texture = contentManager->ReadTexture("Old/MainAtlas.png");
+    const Texture2D atlasTexture(m_graphicsService->GetNativeGraphics(), texture, Texture2DFilterHint::Smooth);
+    const TextureAtlasMap textureAtlasMap(customAtlas);
 
     m_texFill = AtlasTexture2D(atlasTexture, textureAtlasMap.GetAtlasTextureInfo("Fill"));
     m_texBall = AtlasTexture2D(atlasTexture, textureAtlasMap.GetAtlasTextureInfo("SliderCursor"));
     m_texTest = AtlasTexture2D(atlasTexture, textureAtlasMap.GetAtlasTextureInfo("Player/Stop"));
 
-    auto screenResolution = config.WindowMetrics.GetSizePx();
+    const auto screenResolution = config.WindowMetrics.GetSizePx();
     const auto safePercentage = PxSize1DF::Create(0.10f);
     const auto safeX = TypeConverter::UncheckedChangeTo<PxSize1D>(PxSize1DF(screenResolution.Width()) * safePercentage);
     const auto safeY = TypeConverter::UncheckedChangeTo<PxSize1D>(PxSize1DF(screenResolution.Height()) * safePercentage);
     constexpr auto Size2Px = PxSize1D::Create(2);
     m_boundaryRect = PxRectangle(safeX, safeY, screenResolution.Width() - (Size2Px * safeX), screenResolution.Height() - (Size2Px * safeY));
 
-    auto offsetX = static_cast<float>(safeX.RawValue());
-    auto offsetY = static_cast<float>(safeY.RawValue());
-    auto p0 = Particle(offsetX + 100.0f, offsetY + 100.0f, offsetX + 85.0f, offsetY + 95.0f);
-    auto p1 = Particle(offsetX + 200.0f, offsetY + 100.0f, offsetX + 200.0f, offsetY + 100.0f);
-    auto p2 = Particle(offsetX + 200.0f, offsetY + 200.0f, offsetX + 200.0f, offsetY + 200.0f);
-    auto p3 = Particle(offsetX + 100.0f, offsetY + 200.0f, offsetX + 100.0f, offsetY + 200.0f);
+    const auto offsetX = static_cast<float>(safeX.RawValue());
+    const auto offsetY = static_cast<float>(safeY.RawValue());
+    const auto p0 = Particle(offsetX + 100.0f, offsetY + 100.0f, offsetX + 85.0f, offsetY + 95.0f);
+    const auto p1 = Particle(offsetX + 200.0f, offsetY + 100.0f, offsetX + 200.0f, offsetY + 100.0f);
+    const auto p2 = Particle(offsetX + 200.0f, offsetY + 200.0f, offsetX + 200.0f, offsetY + 200.0f);
+    const auto p3 = Particle(offsetX + 100.0f, offsetY + 200.0f, offsetX + 100.0f, offsetY + 200.0f);
 
     m_particles.push_back(p0);
     m_particles.push_back(p1);
@@ -161,7 +161,7 @@ namespace Fsl
 
     for (auto& particle : particles)
     {
-      auto velocity = (particle.Position - particle.OldPosition) * friction;
+      const auto velocity = (particle.Position - particle.OldPosition) * friction;
       particle.OldPosition = particle.Position;
       particle.Position += velocity;
       particle.Position.Y += gravity;
@@ -171,13 +171,13 @@ namespace Fsl
 
   void VerletIntegration101::UpdateSticks(std::deque<Particle>& particles, std::deque<Stick>& sticks)
   {
-    for (auto& stick : sticks)
+    for (const auto& stick : sticks)
     {
-      auto delta = particles[stick.PointIndex1].Position - particles[stick.PointIndex0].Position;
-      auto distance = delta.Length();
-      auto difference = stick.Length - distance;
-      auto percent = (difference / distance) * 0.5f;
-      auto offset = delta * percent;
+      const auto delta = particles[stick.PointIndex1].Position - particles[stick.PointIndex0].Position;
+      const auto distance = delta.Length();
+      const auto difference = stick.Length - distance;
+      const auto percent = (difference / distance) * 0.5f;
+      const auto offset = delta * percent;
       particles[stick.PointIndex0].Position -= offset;
       particles[stick.PointIndex1].Position += offset;
     }
@@ -195,7 +195,7 @@ namespace Fsl
 
     for (auto& particle : particles)
     {
-      auto velocity = (particle.Position - particle.OldPosition) * friction;
+      const auto velocity = (particle.Position - particle.OldPosition) * friction;
       if (particle.Position.X > boundaryRight)
       {
         particle.Position.X = boundaryRight;
@@ -225,8 +225,8 @@ namespace Fsl
     const auto color = Colors::White();
     for (const auto& stick : sticks)
     {
-      auto from = particles[stick.PointIndex0].Position;
-      auto to = particles[stick.PointIndex1].Position;
+      const auto from = particles[stick.PointIndex0].Position;
+      const auto to = particles[stick.PointIndex1].Position;
       m_batch->DebugDrawLine(m_texFill, TypeConverter::To<PxVector2>(from), TypeConverter::To<PxVector2>(to), color);
     }
   }

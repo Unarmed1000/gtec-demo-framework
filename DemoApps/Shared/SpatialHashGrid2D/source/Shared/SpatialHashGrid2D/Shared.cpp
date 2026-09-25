@@ -110,10 +110,10 @@ namespace Fsl
 
     std::shared_ptr<UI::Layout> CreateLegend(UI::Theme::IThemeControlFactory& uiFactory, const UI::UIColor color, const StringViewLite strView)
     {
-      auto colorMarkerImage = uiFactory.CreateImage(uiFactory.GetResources().GetColorMarkerNineSliceSprite());
+      const auto colorMarkerImage = uiFactory.CreateImage(uiFactory.GetResources().GetColorMarkerNineSliceSprite());
       colorMarkerImage->SetAlignmentY(UI::ItemAlignment::Center);
       colorMarkerImage->SetContentColor(color);
-      auto label = uiFactory.CreateLabel(strView);
+      const auto label = uiFactory.CreateLabel(strView);
       auto stack = std::make_shared<UI::StackLayout>(uiFactory.GetContext());
       stack->SetOrientation(UI::LayoutOrientation::Horizontal);
       stack->SetSpacing(DpSize1DF::Create(4));
@@ -131,7 +131,7 @@ namespace Fsl
     , m_windowMetrics(config.WindowMetrics)
     , m_resData(LocalConfig::ObjectCount)
   {
-    auto uiControlFactory = UI::Theme::ThemeSelector::CreateControlFactory(*m_uiExtension);
+    const auto uiControlFactory = UI::Theme::ThemeSelector::CreateControlFactory(*m_uiExtension);
 
     m_ui = CreateUI(*uiControlFactory);
     m_uiExtension->GetWindowManager()->Add(m_ui.MainLayout);
@@ -317,7 +317,7 @@ namespace Fsl
           {
             for (int32_t x = cellStartX; x <= cellEndX; ++x)
             {
-              auto span = m_resData.SpatialHashGrid.GetChunkEntries(x, y);
+              const auto span = m_resData.SpatialHashGrid.GetChunkEntries(x, y);
               for (const auto& entry : span)
               {
                 m_resData.Records[entry.Id].BaseColor = RenderColor::Candidate;
@@ -349,13 +349,13 @@ namespace Fsl
 
   Shared::UIRecord Shared::CreateUI(UI::Theme::IThemeControlFactory& uiFactory)
   {
-    auto context = m_uiExtension->GetContext();
+    const auto context = m_uiExtension->GetContext();
 
-    auto legend0 = CreateLegend(uiFactory, UILegendColor::SelectionArea, "Selection area");
-    auto legend1 = CreateLegend(uiFactory, UILegendColor::CandidateArea, "Candidate area");
-    auto legend2 = CreateLegend(uiFactory, UILegendColor::Candidate, "Candidate cells");
+    const auto legend0 = CreateLegend(uiFactory, UILegendColor::SelectionArea, "Selection area");
+    const auto legend1 = CreateLegend(uiFactory, UILegendColor::CandidateArea, "Candidate area");
+    const auto legend2 = CreateLegend(uiFactory, UILegendColor::Candidate, "Candidate cells");
 
-    auto leftBarLayout = std::make_shared<UI::StackLayout>(context);
+    const auto leftBarLayout = std::make_shared<UI::StackLayout>(context);
     leftBarLayout->SetOrientation(UI::LayoutOrientation::Horizontal);
     leftBarLayout->SetAlignmentX(UI::ItemAlignment::Center);
     leftBarLayout->SetSpacing(DpSize1DF::Create(10));
@@ -364,9 +364,9 @@ namespace Fsl
     leftBarLayout->AddChild(legend2);
 
 
-    auto menuBar = uiFactory.CreateBottomBar(leftBarLayout, UI::Theme::BarType::Transparent);
+    const auto menuBar = uiFactory.CreateBottomBar(leftBarLayout, UI::Theme::BarType::Transparent);
 
-    auto mainLayout = std::make_shared<UI::FillLayout>(context);
+    const auto mainLayout = std::make_shared<UI::FillLayout>(context);
     mainLayout->AddChild(menuBar);
     return {mainLayout};
   }

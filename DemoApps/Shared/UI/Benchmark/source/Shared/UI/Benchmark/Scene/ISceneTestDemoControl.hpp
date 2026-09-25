@@ -42,15 +42,15 @@ namespace Fsl
   public:
     virtual ~ISceneTestDemoControl() = default;
 
-    virtual ReadOnlySpan<InputCommandRecord> GetRecordingAsSpan() const = 0;
+    [[nodiscard]] virtual ReadOnlySpan<InputCommandRecord> GetRecordingAsSpan() const = 0;
     virtual void SetRecording(ReadOnlySpan<InputCommandRecord> span, const uint32_t frameCount) = 0;
 
-    virtual uint32_t FrameCount() const = 0;
-    virtual bool IsRecording() const = 0;
+    [[nodiscard]] virtual uint32_t FrameCount() const = 0;
+    [[nodiscard]] virtual bool IsRecording() const = 0;
     virtual void RecordBegin() = 0;
     virtual void RecordEnd() = 0;
-    virtual bool IsPlaying() const = 0;
-    virtual uint32_t PlayFrameIndex() const = 0;
+    [[nodiscard]] virtual bool IsPlaying() const = 0;
+    [[nodiscard]] virtual uint32_t PlayFrameIndex() const = 0;
     virtual void PlayBegin() = 0;
     virtual void PlayEnd() = 0;
   };

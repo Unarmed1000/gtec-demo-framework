@@ -156,8 +156,8 @@ namespace Fsl
     Vulkan::VUTexture CreateMainTexture(const std::shared_ptr<IContentManager>& contentManager, const Vulkan::VUDevice& device,
                                         const Vulkan::VUDeviceQueueRecord& deviceQueue, const int demoId)
     {
-      auto strPath = GetDemoIdTextureName(demoId);
-      auto texture = contentManager->ReadTexture(strPath, PixelFormat::R8G8B8A8_UNORM);
+      const auto strPath = GetDemoIdTextureName(demoId);
+      const auto texture = contentManager->ReadTexture(strPath, PixelFormat::R8G8B8A8_UNORM);
       return CreateTexture(device, deviceQueue, texture, VK_FILTER_LINEAR, VK_SAMPLER_ADDRESS_MODE_REPEAT);
     }
 
@@ -188,7 +188,7 @@ namespace Fsl
     Vulkan::VUTexture CreateMainAtlasTexture(const std::shared_ptr<IContentManager>& contentManager, const Vulkan::VUDevice& device,
                                              const Vulkan::VUDeviceQueueRecord& deviceQueue)
     {
-      auto bitmap = contentManager->ReadBitmap("TextureAtlas/MainAtlas.png", PixelFormat::R8G8B8A8_UNORM);
+      const auto bitmap = contentManager->ReadBitmap("TextureAtlas/MainAtlas.png", PixelFormat::R8G8B8A8_UNORM);
       return CreateTexture(device, deviceQueue, bitmap, VK_FILTER_NEAREST, VK_SAMPLER_ADDRESS_MODE_REPEAT);
     }
 
@@ -220,7 +220,7 @@ namespace Fsl
 
     VertexBufferInfo<2> BuildVB(const std::shared_ptr<Vulkan::VMBufferManager>& bufferManager, const BoxF& coords, const BoxF& uv)
     {
-      std::array<VertexPositionTexture, 4> vertices = {
+      const std::array<VertexPositionTexture, 4> vertices = {
         VertexPositionTexture(Vector3(coords.X1, coords.Y2, 0.0f), Vector2(uv.X1, uv.Y2)),
         VertexPositionTexture(Vector3(coords.X1, coords.Y1, 0.0f), Vector2(uv.X1, uv.Y1)),
         VertexPositionTexture(Vector3(coords.X2, coords.Y2, 0.0f), Vector2(uv.X2, uv.Y2)),
@@ -253,7 +253,7 @@ namespace Fsl
     Procedural::BasicMesh CreateMesh(const ProceduralConfig& proceduralConfig, const PxSize2D& tex1Size, const Point2& textureRepeatCount,
                                      const int torusMajorSegments, const int torusMinorSegments, const bool useTriangleStrip)
     {
-      TextureRectangle texRect(PxRectangle(PxValue(0), PxValue(0), tex1Size.Width(), tex1Size.Height()), tex1Size);
+      const TextureRectangle texRect(PxRectangle(PxValue(0), PxValue(0), tex1Size.Width(), tex1Size.Height()), tex1Size);
       const NativeTextureArea texArea(Vulkan::VUTextureUtil::CalcTextureArea(texRect, textureRepeatCount.X, textureRepeatCount.Y));
       if (proceduralConfig.Primitive == ProceduralPrimitive::Box)
       {
@@ -299,7 +299,7 @@ namespace Fsl
       std::array<VkWriteDescriptorSet, 1> writeDescriptorSets{};
 
       // Binding 0 : Fragment shader texture sampler
-      auto textureImageInfo = texture.GetDescriptorImageInfo();
+      const auto textureImageInfo = texture.GetDescriptorImageInfo();
       writeDescriptorSets[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
       writeDescriptorSets[0].pNext = nullptr;
       writeDescriptorSets[0].dstSet = descriptorSet;
@@ -390,7 +390,7 @@ namespace Fsl
       viewport.minDepth = 0.0f;
       viewport.maxDepth = 1.0f;
 
-      VkRect2D scissor{{0, 0}, extent};
+      const VkRect2D scissor{{0, 0}, extent};
 
       VkPipelineViewportStateCreateInfo pipelineViewportStateCreateInfo{};
       pipelineViewportStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
@@ -512,7 +512,7 @@ namespace Fsl
     const Vector4 color(Color(m_config.GetBackgroundColor()).ToVector4());
     m_backgroundColor = Vector3(color.X, color.Y, color.Z);
 
-    auto contentManager = GetContentManager();
+    const auto contentManager = GetContentManager();
 
     m_resources.Tex1 = CreateMainTexture(contentManager, m_device, m_deviceQueue, m_config.GetDemoId());
     m_resources.Tex2 = CreateFurDensityTexture(m_device, m_deviceQueue, m_config.GetDemoId(), furTextureSize, hairDensity, layerCount);
@@ -590,11 +590,11 @@ namespace Fsl
         break;
       }
 
-      Point2 textureRepeatCount(m_config.GetTextureRepeatCountX(), m_config.GetTextureRepeatCountY());
-      auto tex1Size = PxSize2D::Create(UncheckedNumericCast<int32_t>(m_resources.Tex1.GetExtent().width),
-                                       UncheckedNumericCast<int32_t>(m_resources.Tex1.GetExtent().height));
-      auto mesh = CreateMesh(proceduralConfig, tex1Size, textureRepeatCount, m_config.GetTorusMajorSegments(), m_config.GetTorusMinorSegments(),
-                             m_config.GetUseTriangleStrip());
+      const Point2 textureRepeatCount(m_config.GetTextureRepeatCountX(), m_config.GetTextureRepeatCountY());
+      const auto tex1Size = PxSize2D::Create(UncheckedNumericCast<int32_t>(m_resources.Tex1.GetExtent().width),
+                                             UncheckedNumericCast<int32_t>(m_resources.Tex1.GetExtent().height));
+      const auto mesh = CreateMesh(proceduralConfig, tex1Size, textureRepeatCount, m_config.GetTorusMajorSegments(), m_config.GetTorusMinorSegments(),
+                                   m_config.GetUseTriangleStrip());
 
       // OpenGL ES expects that the index count is <= 0xFFFF
       if (mesh.GetIndexCount() > 0xFFFF)
@@ -694,7 +694,7 @@ namespace Fsl
   {
     if (m_enableForce)
     {
-      Vector3 forceDirection(std::sin(m_radians), 0, 0);
+      const Vector3 forceDirection(std::sin(m_radians), 0, 0);
       m_displacement = m_gravity + forceDirection;
     }
     else
@@ -832,7 +832,7 @@ namespace Fsl
       vkCmdBindPipeline(hCmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_dependentResources.DescPipeline.Get());
 
 
-      VkDeviceSize offsets = 0;
+      const VkDeviceSize offsets = 0;
       vkCmdBindVertexBuffers(hCmdBuffer, VertexBufferBindId, 1, m_resources.VBDescription.VertexBuffer.GetBufferPointer(), &offsets);
       vkCmdDraw(hCmdBuffer, m_resources.VBDescription.VertexBuffer.GetVertexCount(), 1, 0, 0);
     }
@@ -856,7 +856,7 @@ namespace Fsl
     rRender.SetProjection(perspective);
     rRender.SetDisplacement(displacement);
 
-    float layerAdd = (layerCount > 1 ? 1.0f / static_cast<float>(layerCount - 1) : 1.0f);
+    const float layerAdd = (layerCount > 1 ? 1.0f / static_cast<float>(layerCount - 1) : 1.0f);
     float layer = 0.0f;
 
     rRender.SetDrawOpaque(true);

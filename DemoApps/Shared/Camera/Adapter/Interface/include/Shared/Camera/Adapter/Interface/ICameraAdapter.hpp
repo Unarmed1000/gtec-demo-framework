@@ -43,7 +43,7 @@ namespace Fsl::Helios
   public:
     virtual ~ICameraAdapter() = default;
 
-    virtual CameraAdapterConfig GetConfig() const = 0;
+    [[nodiscard]] virtual CameraAdapterConfig GetConfig() const = 0;
 
     //! @brief Try to render a frame to the rTargetBitmap.
     //! @param rTargetBitmap a RawBitmapEx that is compatible with this camera

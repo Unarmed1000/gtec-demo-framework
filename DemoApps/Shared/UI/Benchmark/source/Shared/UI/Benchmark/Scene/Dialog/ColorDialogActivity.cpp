@@ -62,7 +62,7 @@ namespace Fsl::UI
     const auto spriteRightArrow = resources.GetIconSprite(Theme::IconType::NavigationArrowForward);
     const auto spriteImage = resources.GetIconSprite(Theme::IconType::Fill);
 
-    auto layout = std::make_shared<UI::GridLayout>(context);
+    const auto layout = std::make_shared<UI::GridLayout>(context);
     layout->SetAlignmentX(UI::ItemAlignment::Stretch);
     layout->AddColumnDefinition(UI::GridColumnDefinition(UI::GridUnitType::Auto));
     layout->AddColumnDefinition(UI::GridColumnDefinition(UI::GridUnitType::Fixed, 4));
@@ -74,28 +74,28 @@ namespace Fsl::UI
     layout->AddRowDefinition(UI::GridRowDefinition(UI::GridUnitType::Auto));
 
     const Color initialColorR8G8B8A8(initialColor.AsPackedColor32());
-    auto sliderR =
+    const auto sliderR =
       themeControlFactory->CreateSlider(UI::LayoutOrientation::Horizontal, ConstrainedValue<uint8_t>(initialColorR8G8B8A8.RawR(), 0, 255));
-    auto sliderG =
+    const auto sliderG =
       themeControlFactory->CreateSlider(UI::LayoutOrientation::Horizontal, ConstrainedValue<uint8_t>(initialColorR8G8B8A8.RawG(), 0, 255));
-    auto sliderB =
+    const auto sliderB =
       themeControlFactory->CreateSlider(UI::LayoutOrientation::Horizontal, ConstrainedValue<uint8_t>(initialColorR8G8B8A8.RawB(), 0, 255));
-    auto sliderA =
+    const auto sliderA =
       themeControlFactory->CreateSlider(UI::LayoutOrientation::Horizontal, ConstrainedValue<uint8_t>(initialColorR8G8B8A8.RawA(), 0, 255));
     {
-      auto labelR = themeControlFactory->CreateLabel("R:");
-      auto labelG = themeControlFactory->CreateLabel("G:");
-      auto labelB = themeControlFactory->CreateLabel("B:");
-      auto labelA = themeControlFactory->CreateLabel("A:");
+      const auto labelR = themeControlFactory->CreateLabel("R:");
+      const auto labelG = themeControlFactory->CreateLabel("G:");
+      const auto labelB = themeControlFactory->CreateLabel("B:");
+      const auto labelA = themeControlFactory->CreateLabel("A:");
       labelR->SetAlignmentY(UI::ItemAlignment::Center);
       labelG->SetAlignmentY(UI::ItemAlignment::Center);
       labelB->SetAlignmentY(UI::ItemAlignment::Center);
       labelA->SetAlignmentY(UI::ItemAlignment::Center);
 
-      auto lblSliderR = themeControlFactory->CreateFmtValueLabel(static_cast<uint8_t>(0));
-      auto lblSliderG = themeControlFactory->CreateFmtValueLabel(static_cast<uint8_t>(0));
-      auto lblSliderB = themeControlFactory->CreateFmtValueLabel(static_cast<uint8_t>(0));
-      auto lblSliderA = themeControlFactory->CreateFmtValueLabel(static_cast<uint8_t>(0));
+      const auto lblSliderR = themeControlFactory->CreateFmtValueLabel(static_cast<uint8_t>(0));
+      const auto lblSliderG = themeControlFactory->CreateFmtValueLabel(static_cast<uint8_t>(0));
+      const auto lblSliderB = themeControlFactory->CreateFmtValueLabel(static_cast<uint8_t>(0));
+      const auto lblSliderA = themeControlFactory->CreateFmtValueLabel(static_cast<uint8_t>(0));
       lblSliderR->SetAlignmentX(UI::ItemAlignment::Far);
       lblSliderG->SetAlignmentX(UI::ItemAlignment::Far);
       lblSliderB->SetAlignmentX(UI::ItemAlignment::Far);
@@ -154,7 +154,7 @@ namespace Fsl::UI
 
 
     {    // setup a one way data binding between each of the already linked sliders to their label
-      auto multiConverterBinding = std::make_shared<Fsl::DataBinding::MultiConverterBinding<UI::UIColor, uint8_t, uint8_t, uint8_t, uint8_t>>(
+      const auto multiConverterBinding = std::make_shared<Fsl::DataBinding::MultiConverterBinding<UI::UIColor, uint8_t, uint8_t, uint8_t, uint8_t>>(
         [](const uint8_t r, const uint8_t g, const uint8_t b, const uint8_t a) { return UIColor(PackedColor32::CreateR8G8B8A8UNorm(r, g, b, a)); });
 
       const auto hSliderPropertyR = sliderR->GetPropertyHandle(UI::Slider<uint8_t>::PropertyValue);

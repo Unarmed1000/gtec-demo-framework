@@ -78,7 +78,7 @@ namespace Fsl
 
     void FixedUpdate()
     {
-      auto velocity = ((m_position - m_oldPosition) + m_acceleration) * m_damping;
+      const auto velocity = ((m_position - m_oldPosition) + m_acceleration) * m_damping;
       m_oldPosition = m_position;
       m_position += velocity;
 

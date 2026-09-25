@@ -40,7 +40,7 @@ namespace Fsl
     CustomDemoAppConfig customDemoAppConfig;
     customDemoAppConfig.RestartFlags = CustomDemoAppConfigRestartFlags::Never;
 
-    DemoAppHostConfigVulkan config;
+    const DemoAppHostConfigVulkan config;
 
     DemoAppRegister::Vulkan::Register<BasicRenderModelLoader>(rSetup, "Vulkan.System.BasicRenderModelLoader", config, customDemoAppConfig);
   }

@@ -84,11 +84,11 @@ namespace Fsl
     , m_render(config.DemoServiceProvider.Get<IGraphicsService>()->GetBasicRenderSystem())
     , m_rotationSpeed(0.0f, -0.6f, 0.0f)
   {
-    auto uiControlFactory = UI::Theme::ThemeSelector::CreateControlFactory(*m_uiExtension);
+    const auto uiControlFactory = UI::Theme::ThemeSelector::CreateControlFactory(*m_uiExtension);
     m_ui = CreateUI(*uiControlFactory);
     m_uiExtension->SetMainWindow(m_ui.MainWindow);
 
-    auto contentManager = config.DemoServiceProvider.Get<IContentManager>();
+    const auto contentManager = config.DemoServiceProvider.Get<IContentManager>();
     m_modelRecord = LoadModel(*contentManager, *m_render);
 
     m_ui.Stats.LabelVertices->SetContent(NumericCast<uint32_t>(m_modelRecord.Model.VertexCount));
@@ -199,27 +199,27 @@ namespace Fsl
 
   Shared::UIRecord Shared::CreateUI(UI::Theme::IThemeControlFactory& uiFactory)
   {
-    auto context = uiFactory.GetContext();
+    const auto context = uiFactory.GetContext();
 
-    auto btnDefault = uiFactory.CreateTextButton(UI::Theme::ButtonType::Outlined, "Set defaults");
+    const auto btnDefault = uiFactory.CreateTextButton(UI::Theme::ButtonType::Outlined, "Set defaults");
     btnDefault->SetAlignmentX(UI::ItemAlignment::Far);
     btnDefault->SetAlignmentY(UI::ItemAlignment::Center);
 
-    auto switchRotate = uiFactory.CreateSwitch("Rotate", LocalConfig::RotateDefault);
+    const auto switchRotate = uiFactory.CreateSwitch("Rotate", LocalConfig::RotateDefault);
     switchRotate->SetAlignmentX(UI::ItemAlignment::Center);
     switchRotate->SetAlignmentY(UI::ItemAlignment::Center);
 
-    auto stats = CreateStatsOverlayUI(uiFactory, context);
+    const auto stats = CreateStatsOverlayUI(uiFactory, context);
 
-    auto bottomBarLayout = std::make_shared<UI::GridLayout>(context);
+    const auto bottomBarLayout = std::make_shared<UI::GridLayout>(context);
     bottomBarLayout->AddColumnDefinition(UI::GridColumnDefinition(UI::GridUnitType::Star, 1.0f));
     bottomBarLayout->AddRowDefinition(UI::GridRowDefinition(UI::GridUnitType::Auto));
     bottomBarLayout->AddChild(switchRotate, 0, 0);
     bottomBarLayout->AddChild(btnDefault, 0, 0);
 
-    auto bottomBar = uiFactory.CreateBottomBar(bottomBarLayout);
+    const auto bottomBar = uiFactory.CreateBottomBar(bottomBarLayout);
 
-    auto fillLayout = std::make_shared<UI::FillLayout>(context);
+    const auto fillLayout = std::make_shared<UI::FillLayout>(context);
     fillLayout->AddChild(stats.MainOverlay);
     fillLayout->AddChild(bottomBar);
 
@@ -229,18 +229,18 @@ namespace Fsl
 
   Shared::StatsOverlayUI Shared::CreateStatsOverlayUI(UI::Theme::IThemeControlFactory& uiFactory, const std::shared_ptr<UI::WindowContext>& context)
   {
-    auto lblDesc0 = uiFactory.CreateLabel("Vertices:");
-    auto lblDesc1 = uiFactory.CreateLabel("Indices:");
-    auto lblDesc2 = uiFactory.CreateLabel("SubMeshes:");
+    const auto lblDesc0 = uiFactory.CreateLabel("Vertices:");
+    const auto lblDesc1 = uiFactory.CreateLabel("Indices:");
+    const auto lblDesc2 = uiFactory.CreateLabel("SubMeshes:");
 
-    auto lbl0 = uiFactory.CreateFmtValueLabel(static_cast<uint32_t>(0));
-    auto lbl1 = uiFactory.CreateFmtValueLabel(static_cast<uint32_t>(0));
-    auto lbl2 = uiFactory.CreateFmtValueLabel(static_cast<uint32_t>(0));
+    const auto lbl0 = uiFactory.CreateFmtValueLabel(static_cast<uint32_t>(0));
+    const auto lbl1 = uiFactory.CreateFmtValueLabel(static_cast<uint32_t>(0));
+    const auto lbl2 = uiFactory.CreateFmtValueLabel(static_cast<uint32_t>(0));
     lbl0->SetAlignmentX(UI::ItemAlignment::Far);
     lbl1->SetAlignmentX(UI::ItemAlignment::Far);
     lbl2->SetAlignmentX(UI::ItemAlignment::Far);
 
-    auto layout = std::make_shared<UI::GridLayout>(context);
+    const auto layout = std::make_shared<UI::GridLayout>(context);
     layout->AddColumnDefinition(UI::GridColumnDefinition(UI::GridUnitType::Auto));
     layout->AddColumnDefinition(UI::GridColumnDefinition(UI::GridUnitType::Fixed, 70.0f));
 
@@ -256,7 +256,7 @@ namespace Fsl
     layout->AddChild(lbl1, 1, 1);
     layout->AddChild(lbl2, 1, 2);
 
-    std::shared_ptr<UI::Background> mainLayout = uiFactory.CreateBackgroundWindow(UI::Theme::WindowType::Transparent, layout);
+    const std::shared_ptr<UI::Background> mainLayout = uiFactory.CreateBackgroundWindow(UI::Theme::WindowType::Transparent, layout);
     mainLayout->SetAlignmentX(UI::ItemAlignment::Far);
     return {mainLayout, lbl0, lbl1, lbl2};
   }
@@ -265,16 +265,16 @@ namespace Fsl
   Shared::ModelRenderRecord Shared::LoadModel(IContentManager& contentManager, IBasicRenderSystem& render)
   {
     // Load the model
-    auto contentPath = contentManager.GetContentPath();
-    auto modelRecord = LoadModel(render, contentPath, LocalConfig::ModelPath);
+    const auto contentPath = contentManager.GetContentPath();
+    const auto modelRecord = LoadModel(render, contentPath, LocalConfig::ModelPath);
 
     // Load the texture and create the material
     BasicMaterial modelMaterial;
     {
       const BasicMaterialDepthInfo depthInfoWriteCompare(true, true, BasicCompareOp::Less);
       constexpr auto BitmapOrigin = BitmapOrigin::LowerLeft;
-      auto texture = contentManager.ReadTexture(LocalConfig::ModelTexturePath, PixelFormat::R8G8B8A8_UNORM, BitmapOrigin);
-      auto modelTexture = render.CreateTexture2D(texture, Texture2DFilterHint::Smooth);
+      const auto texture = contentManager.ReadTexture(LocalConfig::ModelTexturePath, PixelFormat::R8G8B8A8_UNORM, BitmapOrigin);
+      const auto modelTexture = render.CreateTexture2D(texture, Texture2DFilterHint::Smooth);
       modelMaterial = render.CreateMaterial(BasicMaterialCreateInfo(BlendState::Opaque, BasicCullMode::Back, BasicFrontFace::CounterClockwise,
                                                                     depthInfoWriteCompare, modelRecord.VertexDecl.AsSpan()),
                                             modelTexture);
@@ -286,7 +286,7 @@ namespace Fsl
   Shared::ModelRecord Shared::LoadModel(IBasicRenderSystem& render, const IO::Path& contentPath, const IO::Path& srcModelPath)
   {
     FSLLOG3_INFO("Loading model '{}'", srcModelPath);
-    auto modelPath = IO::Path::Combine(contentPath, srcModelPath);
+    const auto modelPath = IO::Path::Combine(contentPath, srcModelPath);
     SceneImporter sceneImporter;
     const std::shared_ptr<TestScene> scene = sceneImporter.Load<TestScene>(modelPath, LocalConfig::DefaultModelScale, true);
 
@@ -295,7 +295,7 @@ namespace Fsl
       throw NotSupportedException("Scene did not contain any meshes");
     }
 
-    auto rootNode = scene->GetRootNode();
+    const auto rootNode = scene->GetRootNode();
     if (!rootNode)
     {
       throw NotSupportedException("Scene did not contain a root node");
@@ -307,7 +307,7 @@ namespace Fsl
     std::size_t totalIndexCount = 0;
     for (std::size_t i = 0; i < scene->Meshes.size(); ++i)
     {
-      auto mesh = scene->Meshes[i];
+      const auto mesh = scene->Meshes[i];
       subMeshes[i] = SubMeshRecord(render.CreateStaticBuffer(mesh->AsReadOnlyFlexVertexSpan()),
                                    render.CreateStaticBuffer(mesh->AsReadOnlyIndexSpan()), mesh->GetVertexCount(), mesh->GetIndexCount());
       totalVertexCount += mesh->GetVertexCount();

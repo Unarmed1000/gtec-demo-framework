@@ -87,38 +87,38 @@ namespace Fsl::Willems::MeshLoader
                const glm::vec3& dim);
 
     //! @brief Get the associated 'Device'
-    VkDevice GetDevice() const
+    [[nodiscard]] VkDevice GetDevice() const
     {
       return m_vertices.Buffer.GetDevice();
     }
 
-    const std::vector<MeshDescriptor>& GetMeshDescriptors() const
+    [[nodiscard]] const std::vector<MeshDescriptor>& GetMeshDescriptors() const
     {
       return m_meshDescriptors;
     }
 
-    const MeshBufferInfo& GetVertices() const
+    [[nodiscard]] const MeshBufferInfo& GetVertices() const
     {
       return m_vertices;
     }
 
-    const MeshBufferInfo& GetIndices() const
+    [[nodiscard]] const MeshBufferInfo& GetIndices() const
     {
       return m_indices;
     }
 
-    uint32_t GetIndexCount() const
+    [[nodiscard]] uint32_t GetIndexCount() const
     {
       return m_indexCount;
     }
 
-    glm::vec3 GetDim() const
+    [[nodiscard]] glm::vec3 GetDim() const
     {
       return m_dim;
     }
 
     //! @brief Check if this object contains a valid resource
-    inline bool IsValid() const
+    [[nodiscard]] inline bool IsValid() const
     {
       return m_vertices.IsValid();
     }

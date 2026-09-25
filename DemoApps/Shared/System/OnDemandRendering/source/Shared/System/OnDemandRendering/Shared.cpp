@@ -139,7 +139,7 @@ namespace Fsl
     m_dataFixedUpdate->SetChannelMetaData(0, LocalConfig::ChartColor);
 
 
-    auto uiControlFactory = UI::Theme::ThemeSelector::CreateControlFactory(*m_uiExtension);
+    const auto uiControlFactory = UI::Theme::ThemeSelector::CreateControlFactory(*m_uiExtension);
     const auto hasCpuUsage = static_cast<bool>(m_cpuStatsService);
 
     m_ui =
@@ -302,12 +302,12 @@ namespace Fsl
     }
     {    // Update
       UI::ChartDataEntry entry;
-      auto updateTime = TimeSpanUtil::ToClampedMicrosecondsUInt64(demoTime.ElapsedTime);
+      const auto updateTime = TimeSpanUtil::ToClampedMicrosecondsUInt64(demoTime.ElapsedTime);
       entry.Values[0] = UncheckedNumericCast<uint32_t>(MathHelper::Clamp(updateTime, static_cast<uint64_t>(0), static_cast<uint64_t>(0xFFFFFFFF)));
       m_dataUpdate->Append(entry);
       m_dataUpdateAverage.Append(entry);
       {
-        auto res = m_dataUpdateAverage.CalcAverage();
+        const auto res = m_dataUpdateAverage.CalcAverage();
         if (!res.empty())
         {
           const auto average = static_cast<float>(res[0]);
@@ -316,7 +316,7 @@ namespace Fsl
       }
     }
     {    // Draw average one frame more delayed than the rest
-      auto res = m_dataDrawAverage.CalcAverage();
+      const auto res = m_dataDrawAverage.CalcAverage();
       if (!res.empty())
       {
         const auto average = static_cast<float>(res[0]);
@@ -325,7 +325,7 @@ namespace Fsl
     }
 
     {
-      auto res = m_dataFixedUpdateAverage.CalcAverage();
+      const auto res = m_dataFixedUpdateAverage.CalcAverage();
       if (!res.empty())
       {
         const auto average = static_cast<float>(res[0]);
@@ -372,7 +372,7 @@ namespace Fsl
 
     {    // Draw
       UI::ChartDataEntry entry;
-      auto drawTime = TimeSpanUtil::ToClampedMicrosecondsUInt64(demoTime.ElapsedTime);
+      const auto drawTime = TimeSpanUtil::ToClampedMicrosecondsUInt64(demoTime.ElapsedTime);
       entry.Values[0] = UncheckedNumericCast<uint32_t>(MathHelper::Clamp(drawTime, static_cast<uint64_t>(0), static_cast<uint64_t>(0xFFFFFFFF)));
       m_dataDraw->Append(entry);
       m_dataDrawAverage.Append(entry);
@@ -607,45 +607,45 @@ namespace Fsl
                                     const std::shared_ptr<UI::AChartData>& dataDraw, const std::shared_ptr<UI::AChartData>& dataFixedUpdate,
                                     const uint16_t fixedUpdatesPerSecond, const OnDemandState& onDemandRendering, const bool hasCpuStats)
   {
-    auto context = uiFactory.GetContext();
+    const auto context = uiFactory.GetContext();
 
-    auto onDemandFrameInterval = onDemandRendering.IdleFrameInterval;
+    const auto onDemandFrameInterval = onDemandRendering.IdleFrameInterval;
 
-    auto labelIdleFrameInterval = uiFactory.CreateLabel("Idle framerate interval:");
+    const auto labelIdleFrameInterval = uiFactory.CreateLabel("Idle framerate interval:");
     labelIdleFrameInterval->SetAlignmentY(UI::ItemAlignment::Center);
-    auto sliderIdleFrameInterval =
+    const auto sliderIdleFrameInterval =
       uiFactory.CreateSliderFmtValue(UI::LayoutOrientation::Horizontal,
                                      ConstrainedValue<uint32_t>(onDemandFrameInterval, LocalConfig::MinFrameInterval, LocalConfig::MaxFrameInterval));
     sliderIdleFrameInterval->SetAlignmentY(UI::ItemAlignment::Center);
     sliderIdleFrameInterval->SetEnabled(onDemandRendering.Enabled);
     sliderIdleFrameInterval->FinishAnimation();
 
-    auto switchOnDemand = uiFactory.CreateSwitch("On demand", onDemandRendering.Enabled);
+    const auto switchOnDemand = uiFactory.CreateSwitch("On demand", onDemandRendering.Enabled);
     switchOnDemand->SetAlignmentX(UI::ItemAlignment::Stretch);
     // switchOnDemand->SetAlignmentY(UI::ItemAlignment::Near);
 
-    auto labelFixedUpdatesPerSecound = uiFactory.CreateLabel("Fixed updates per second:");
+    const auto labelFixedUpdatesPerSecound = uiFactory.CreateLabel("Fixed updates per second:");
     labelFixedUpdatesPerSecound->SetAlignmentY(UI::ItemAlignment::Center);
-    auto sliderFixedUpdatesPerSecound = uiFactory.CreateSliderFmtValue(
+    const auto sliderFixedUpdatesPerSecound = uiFactory.CreateSliderFmtValue(
       UI::LayoutOrientation::Horizontal,
       ConstrainedValue<uint32_t>(fixedUpdatesPerSecond, LocalConfig::MinFixedUpdatesPerSecond, LocalConfig::MaxFixedUpdatesPerSecond));
     sliderFixedUpdatesPerSecound->SetAlignmentY(UI::ItemAlignment::Center);
 
 
-    auto btnDefault = uiFactory.CreateTextButton(UI::Theme::ButtonType::Outlined, "Set defaults");
+    const auto btnDefault = uiFactory.CreateTextButton(UI::Theme::ButtonType::Outlined, "Set defaults");
     btnDefault->SetAlignmentX(UI::ItemAlignment::Stretch);
     btnDefault->SetAlignmentY(UI::ItemAlignment::Far);
-    auto btnClearChart = uiFactory.CreateTextButton(UI::Theme::ButtonType::Outlined, "Clear charts");
+    const auto btnClearChart = uiFactory.CreateTextButton(UI::Theme::ButtonType::Outlined, "Clear charts");
     btnClearChart->SetAlignmentX(UI::ItemAlignment::Stretch);
     btnClearChart->SetAlignmentY(UI::ItemAlignment::Near);
 
-    auto updateLabel = uiFactory.CreateLabel("Update delta-time");
-    auto updateFmtLabel = uiFactory.CreateFmtValueLabel(0.0f, reinterpret_cast<const char*>(u8"{:.0f}\u03BCs"));
+    const auto updateLabel = uiFactory.CreateLabel("Update delta-time");
+    const auto updateFmtLabel = uiFactory.CreateFmtValueLabel(0.0f, reinterpret_cast<const char*>(u8"{:.0f}\u03BCs"));
     updateFmtLabel->SetAlignmentX(UI::ItemAlignment::Far);
     updateFmtLabel->SetAlignmentY(UI::ItemAlignment::Far);
 
-    auto gridLines = std::make_shared<UI::ChartGridLinesFps>();
-    auto updateChart = std::make_shared<UI::AreaChart>(context);
+    const auto gridLines = std::make_shared<UI::ChartGridLinesFps>();
+    const auto updateChart = std::make_shared<UI::AreaChart>(context);
     {
       updateChart->SetAlignmentX(UI::ItemAlignment::Stretch);
       updateChart->SetAlignmentY(UI::ItemAlignment::Stretch);
@@ -658,11 +658,11 @@ namespace Fsl
       updateChart->SetRenderPolicy(UI::ChartRenderPolicy::FillAvailable);
     }
 
-    auto drawLabel = uiFactory.CreateLabel("Draw delta-time");
-    auto drawFmtLabel = uiFactory.CreateFmtValueLabel(0.0f, reinterpret_cast<const char*>(u8"{:.0f}\u03BCs"));
+    const auto drawLabel = uiFactory.CreateLabel("Draw delta-time");
+    const auto drawFmtLabel = uiFactory.CreateFmtValueLabel(0.0f, reinterpret_cast<const char*>(u8"{:.0f}\u03BCs"));
     drawFmtLabel->SetAlignmentX(UI::ItemAlignment::Far);
     drawFmtLabel->SetAlignmentY(UI::ItemAlignment::Far);
-    auto drawChart = std::make_shared<UI::AreaChart>(context);
+    const auto drawChart = std::make_shared<UI::AreaChart>(context);
     {
       drawChart->SetAlignmentX(UI::ItemAlignment::Stretch);
       drawChart->SetAlignmentY(UI::ItemAlignment::Stretch);
@@ -675,11 +675,11 @@ namespace Fsl
       drawChart->SetRenderPolicy(UI::ChartRenderPolicy::FillAvailable);
     }
 
-    auto fixedUpdateLabel = uiFactory.CreateLabel("Fixed update count");
-    auto fixedUpdateFmtLabel = uiFactory.CreateFmtValueLabel(0.0f, "{:.2f}");
+    const auto fixedUpdateLabel = uiFactory.CreateLabel("Fixed update count");
+    const auto fixedUpdateFmtLabel = uiFactory.CreateFmtValueLabel(0.0f, "{:.2f}");
     fixedUpdateFmtLabel->SetAlignmentX(UI::ItemAlignment::Far);
     fixedUpdateFmtLabel->SetAlignmentY(UI::ItemAlignment::Far);
-    auto fixedUpdateChart = std::make_shared<UI::AreaChart>(context);
+    const auto fixedUpdateChart = std::make_shared<UI::AreaChart>(context);
     {
       fixedUpdateChart->SetAlignmentX(UI::ItemAlignment::Stretch);
       fixedUpdateChart->SetAlignmentY(UI::ItemAlignment::Stretch);
@@ -692,11 +692,11 @@ namespace Fsl
       fixedUpdateChart->SetRenderPolicy(UI::ChartRenderPolicy::FillAvailable);
     }
 
-    auto play = CreatePlayUI(uiFactory, context);
-    auto time = CreateDeltaTimeUI(uiFactory, context);
-    auto stats = CreateStatsOverlayUI(uiFactory, context, hasCpuStats);
+    const auto play = CreatePlayUI(uiFactory, context);
+    const auto time = CreateDeltaTimeUI(uiFactory, context);
+    const auto stats = CreateStatsOverlayUI(uiFactory, context, hasCpuStats);
 
-    auto bottomGrid = std::make_shared<UI::GridLayout>(context);
+    const auto bottomGrid = std::make_shared<UI::GridLayout>(context);
     bottomGrid->SetAlignmentX(UI::ItemAlignment::Stretch);
     bottomGrid->SetAlignmentY(UI::ItemAlignment::Stretch);
     bottomGrid->AddColumnDefinition(UI::GridColumnDefinition(UI::GridUnitType::Auto));
@@ -728,9 +728,9 @@ namespace Fsl
     bottomGrid->AddChild(btnClearChart, 4, 6);
     bottomGrid->AddChild(btnDefault, 4, 6);
 
-    auto bottomBar = uiFactory.CreateBottomBar(bottomGrid);
+    const auto bottomBar = uiFactory.CreateBottomBar(bottomGrid);
 
-    auto playLayout = std::make_shared<UI::GridLayout>(context);
+    const auto playLayout = std::make_shared<UI::GridLayout>(context);
     playLayout->AddColumnDefinition(UI::GridColumnDefinition(UI::GridUnitType::Star, 1.0f));
     playLayout->AddRowDefinition(UI::GridRowDefinition(UI::GridUnitType::Auto));
     playLayout->AddRowDefinition(UI::GridRowDefinition(UI::GridUnitType::Star, 1.0f));
@@ -762,23 +762,23 @@ namespace Fsl
 
   Shared::PlayUI Shared::CreatePlayUI(UI::Theme::IThemeControlFactory& uiFactory, const std::shared_ptr<UI::WindowContext>& context)
   {
-    auto grid = std::make_shared<UI::GridLayout>(context);
+    const auto grid = std::make_shared<UI::GridLayout>(context);
     grid->AddColumnDefinition(UI::GridColumnDefinition(UI::GridUnitType::Fixed, 200));
     grid->AddRowDefinition(UI::GridRowDefinition(UI::GridUnitType::Auto));
     grid->AddRowDefinition(UI::GridRowDefinition(UI::GridUnitType::Auto));
     grid->AddRowDefinition(UI::GridRowDefinition(UI::GridUnitType::Auto));
 
-    auto switchDummy = uiFactory.CreateSwitch("Dummy", true);
+    const auto switchDummy = uiFactory.CreateSwitch("Dummy", true);
     switchDummy->SetAlignmentX(UI::ItemAlignment::Stretch);
-    auto slider = uiFactory.CreateSlider(UI::LayoutOrientation::Horizontal, ConstrainedValue<uint32_t>(0, 0, 100));
-    auto button = uiFactory.CreateTextButton(UI::Theme::ButtonType::Contained, "Dummy");
+    const auto slider = uiFactory.CreateSlider(UI::LayoutOrientation::Horizontal, ConstrainedValue<uint32_t>(0, 0, 100));
+    const auto button = uiFactory.CreateTextButton(UI::Theme::ButtonType::Contained, "Dummy");
     button->SetAlignmentX(UI::ItemAlignment::Stretch);
 
     grid->AddChild(switchDummy, 0, 0);
     grid->AddChild(slider, 0, 1);
     grid->AddChild(button, 0, 2);
 
-    std::shared_ptr<UI::Background> mainLayout = uiFactory.CreateBackgroundWindow(UI::Theme::WindowType::DialogNormal, grid);
+    const std::shared_ptr<UI::Background> mainLayout = uiFactory.CreateBackgroundWindow(UI::Theme::WindowType::DialogNormal, grid);
     mainLayout->SetAlignmentX(UI::ItemAlignment::Near);
     mainLayout->SetAlignmentY(UI::ItemAlignment::Near);
     return {mainLayout};
@@ -787,23 +787,23 @@ namespace Fsl
 
   Shared::DeltaTimeUI Shared::CreateDeltaTimeUI(UI::Theme::IThemeControlFactory& uiFactory, const std::shared_ptr<UI::WindowContext>& context)
   {
-    auto grid = std::make_shared<UI::GridLayout>(context);
+    const auto grid = std::make_shared<UI::GridLayout>(context);
     grid->AddColumnDefinition(UI::GridColumnDefinition(UI::GridUnitType::Auto));
     grid->AddColumnDefinition(UI::GridColumnDefinition(UI::GridUnitType::Star, 1));
     grid->AddColumnDefinition(UI::GridColumnDefinition(UI::GridUnitType::Auto));
     grid->AddRowDefinition(UI::GridRowDefinition(UI::GridUnitType::Auto));
 
-    auto switchAnimate = uiFactory.CreateSwitch("Animate", LocalConfig::DefaultValueAnimate);
+    const auto switchAnimate = uiFactory.CreateSwitch("Animate", LocalConfig::DefaultValueAnimate);
     switchAnimate->SetAlignmentX(UI::ItemAlignment::Stretch);
-    auto sliderExpectedFps = uiFactory.CreateSliderFmtValue(UI::LayoutOrientation::Horizontal, LocalConfig::AnimationExpectedFps);
+    const auto sliderExpectedFps = uiFactory.CreateSliderFmtValue(UI::LayoutOrientation::Horizontal, LocalConfig::AnimationExpectedFps);
 
-    auto btnReset = uiFactory.CreateTextButton(UI::Theme::ButtonType::Contained, "Reset anim");
+    const auto btnReset = uiFactory.CreateTextButton(UI::Theme::ButtonType::Contained, "Reset anim");
 
     grid->AddChild(switchAnimate, 0, 0);
     grid->AddChild(sliderExpectedFps, 1, 0);
     grid->AddChild(btnReset, 2, 0);
 
-    std::shared_ptr<UI::Background> mainLayout = uiFactory.CreateBackgroundWindow(UI::Theme::WindowType::DialogNormal, grid);
+    const std::shared_ptr<UI::Background> mainLayout = uiFactory.CreateBackgroundWindow(UI::Theme::WindowType::DialogNormal, grid);
     mainLayout->SetAlignmentX(UI::ItemAlignment::Far);
     mainLayout->SetAlignmentY(UI::ItemAlignment::Far);
     return {mainLayout, switchAnimate, sliderExpectedFps, btnReset};
@@ -812,30 +812,30 @@ namespace Fsl
   Shared::StatsOverlayUI Shared::CreateStatsOverlayUI(UI::Theme::IThemeControlFactory& uiFactory, const std::shared_ptr<UI::WindowContext>& context,
                                                       const bool hasCpuStats)
   {
-    auto labelIdle = uiFactory.CreateLabel("UI idle");
-    auto imageIdle = uiFactory.CreateImage(uiFactory.GetResources().GetColorMarkerNineSliceSprite());
+    const auto labelIdle = uiFactory.CreateLabel("UI idle");
+    const auto imageIdle = uiFactory.CreateImage(uiFactory.GetResources().GetColorMarkerNineSliceSprite());
     imageIdle->SetAlignmentX(UI::ItemAlignment::Far);
     imageIdle->SetAlignmentY(UI::ItemAlignment::Center);
     imageIdle->SetContentColor(IdleColor::Busy);
     imageIdle->FinishAnimation();
 
 
-    StatsOverlayUI overlay;
+    const StatsOverlayUI overlay;
 
 
-    auto lblDesc0 = uiFactory.CreateLabel("Framerate:");
-    auto lblDesc1 = uiFactory.CreateLabel("Average framerate:");
-    auto lblDesc2 = uiFactory.CreateLabel("On demand frame interval:");
+    const auto lblDesc0 = uiFactory.CreateLabel("Framerate:");
+    const auto lblDesc1 = uiFactory.CreateLabel("Average framerate:");
+    const auto lblDesc2 = uiFactory.CreateLabel("On demand frame interval:");
 
-    auto lbl0 = uiFactory.CreateFmtValueLabel(0.0f, "{:.1f}");
-    auto lbl1 = uiFactory.CreateFmtValueLabel(0.0f, "{:.1f}");
-    auto lbl2 = uiFactory.CreateFmtValueLabel(static_cast<uint32_t>(0));
+    const auto lbl0 = uiFactory.CreateFmtValueLabel(0.0f, "{:.1f}");
+    const auto lbl1 = uiFactory.CreateFmtValueLabel(0.0f, "{:.1f}");
+    const auto lbl2 = uiFactory.CreateFmtValueLabel(static_cast<uint32_t>(0));
     lbl0->SetAlignmentX(UI::ItemAlignment::Far);
     lbl1->SetAlignmentX(UI::ItemAlignment::Far);
     lbl2->SetAlignmentX(UI::ItemAlignment::Far);
 
 
-    auto layout = std::make_shared<UI::GridLayout>(context);
+    const auto layout = std::make_shared<UI::GridLayout>(context);
     layout->AddColumnDefinition(UI::GridColumnDefinition(UI::GridUnitType::Auto));
     layout->AddColumnDefinition(UI::GridColumnDefinition(UI::GridUnitType::Fixed, 70.0f));
 
@@ -857,7 +857,7 @@ namespace Fsl
     std::shared_ptr<UI::FmtValueLabel<float>> optionalCpuUsage;
     if (hasCpuStats)
     {
-      auto cpuUsage = uiFactory.CreateLabel("CPU usage:");
+      const auto cpuUsage = uiFactory.CreateLabel("CPU usage:");
       optionalCpuUsage = uiFactory.CreateFmtValueLabel(0.0f, "{:.1f}");
       optionalCpuUsage->SetAlignmentX(UI::ItemAlignment::Far);
       layout->AddRowDefinition(UI::GridRowDefinition(UI::GridUnitType::Auto));
@@ -865,7 +865,7 @@ namespace Fsl
       layout->AddChild(optionalCpuUsage, 1, 4);
     }
 
-    std::shared_ptr<UI::Background> mainLayout = uiFactory.CreateBackgroundWindow(UI::Theme::WindowType::Transparent, layout);
+    const std::shared_ptr<UI::Background> mainLayout = uiFactory.CreateBackgroundWindow(UI::Theme::WindowType::Transparent, layout);
     mainLayout->SetAlignmentX(UI::ItemAlignment::Far);
     return {mainLayout, imageIdle, lbl0, lbl1, lbl2, optionalCpuUsage};
   }

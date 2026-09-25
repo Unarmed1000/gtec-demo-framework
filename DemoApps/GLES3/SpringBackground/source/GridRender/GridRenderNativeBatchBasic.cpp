@@ -43,7 +43,7 @@ namespace Fsl
   {
     inline Vector2 ToVec2(const Vector3& v, const Vector2& screenSize)
     {
-      float factor = (v.Z + 2000.0f) * 0.0005f;
+      const float factor = (v.Z + 2000.0f) * 0.0005f;
       return (Vector2(v.X, v.Y) - screenSize * 0.5f) * factor + screenSize * 0.5f;
     }
 
@@ -51,7 +51,7 @@ namespace Fsl
     inline void DrawLine(NativeBatch2D* pBatch, const GLBatch2D::texture_type& texFill, const PxRectangleU32& nativeTexRect, const Vector2& start,
                          const Vector2& end, const Color& color, const float thickness)
     {
-      Vector2 delta = end - start;
+      const Vector2 delta = end - start;
 
       pBatch->Draw(texFill, start, nativeTexRect, color, VectorHelper::VectorToAngle(delta), Vector2(0, 0), Vector2(delta.Length(), thickness));
     }
@@ -77,7 +77,7 @@ namespace Fsl
 
   void GridRenderNativeBatchBasic::Draw(const GridRenderDrawContext& drawContext, const std::vector<PointMass>& points)
   {
-    GLBatch2D::texture_type texFillNative = TextureUtil::ToNative(drawContext.RenderSystem, drawContext.TexFill);
+    const GLBatch2D::texture_type texFillNative = TextureUtil::ToNative(drawContext.RenderSystem, drawContext.TexFill);
     const auto texTrimmedRect = drawContext.TexFill.GetInfo().TrimmedRectPx;
     constexpr auto Size1Px = PxValueU::Create(1);
     constexpr auto Size2Px = PxValueU::Create(2);
@@ -87,7 +87,7 @@ namespace Fsl
 
     const int32_t width = m_gridSize.X;
     const int32_t height = m_gridSize.Y;
-    Color color(0.12f, 0.12f, 0.55f, 0.33f);
+    const Color color(0.12f, 0.12f, 0.55f, 0.33f);
 
     auto* pBatch = drawContext.pBatch;
     const auto* const pPoints = points.data();
@@ -102,19 +102,19 @@ namespace Fsl
       {
         Vector2 left;
         Vector2 up;
-        Vector2 currentPoint = ToVec2(pPoints[x + (y * gridStride)].m_position, areaSize);
+        const Vector2 currentPoint = ToVec2(pPoints[x + (y * gridStride)].m_position, areaSize);
         if (x > 1)
         {
           // horizontal
           left = previousPointX;
-          float thickness = (y % 3 == 1) ? 3.0f : 1.0f;
+          const float thickness = (y % 3 == 1) ? 3.0f : 1.0f;
           DrawLine(pBatch, texFillNative, rectFillTex, left, currentPoint, color, thickness);
         }
         if (y > 1)
         {
           // vertical
           up = ToVec2(pPoints[x + ((y - 1) * gridStride)].m_position, areaSize);
-          float thickness = (x % 3 == 1) ? 3.0f : 1.0f;
+          const float thickness = (x % 3 == 1) ? 3.0f : 1.0f;
           DrawLine(pBatch, texFillNative, rectFillTex, up, currentPoint, color, thickness);
         }
         previousPointX = currentPoint;

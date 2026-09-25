@@ -45,8 +45,8 @@ namespace Fsl
     explicit AsyncExampleServiceProxy(const AsynchronousServiceProxyCreateInfo& createInfo);
 
     // Inherited via IAsyncExampleService
-    std::future<bool> RunAsync(std::shared_ptr<ConcurrentQueue<int32_t>> threadSafeQueue,
-                               std::shared_ptr<CustomCancellationToken> cancellationToken) const final;
+    [[nodiscard]] std::future<bool> RunAsync(std::shared_ptr<ConcurrentQueue<int32_t>> threadSafeQueue,
+                                             std::shared_ptr<CustomCancellationToken> cancellationToken) const final;
   };
 }
 

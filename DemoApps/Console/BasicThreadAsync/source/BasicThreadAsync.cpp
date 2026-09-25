@@ -120,12 +120,12 @@ namespace Fsl
 
     const std::chrono::duration totalTime = 2s;
     auto currentTime = std::chrono::system_clock::now();
-    auto endTime = currentTime + totalTime;
+    const auto endTime = currentTime + totalTime;
 
     do
     {
       int32_t queueResult = 0;
-      std::chrono::duration timeLeft = endTime - currentTime;
+      const std::chrono::duration timeLeft = endTime - currentTime;
       FSLLOG3_INFO("App: Waiting for message (ThreadId: {})", threadId);
       if (m_incomingQueue->TryDequeueWait(queueResult, std::chrono::duration_cast<std::chrono::milliseconds>(timeLeft)))
       {

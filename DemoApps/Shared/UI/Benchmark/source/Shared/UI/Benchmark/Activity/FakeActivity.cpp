@@ -118,7 +118,7 @@ namespace Fsl::UI
 
   void FakeActivity::PushActivity(std::shared_ptr<FakeActivity> activity)
   {
-    std::shared_ptr<IActivityStack> activityStack = m_activityStack.lock();
+    const std::shared_ptr<IActivityStack> activityStack = m_activityStack.lock();
     if (!activityStack)
     {
       throw UsageErrorException("Activity stack is no longer valid");
@@ -129,7 +129,7 @@ namespace Fsl::UI
 
   void FakeActivity::ScheduleCloseActivity(const bool completed)
   {
-    std::shared_ptr<IActivityStack> activityStack = m_activityStack.lock();
+    const std::shared_ptr<IActivityStack> activityStack = m_activityStack.lock();
     if (!activityStack)
     {
       throw UsageErrorException("Activity stack is no longer valid");
@@ -140,7 +140,7 @@ namespace Fsl::UI
 
   uint32_t FakeActivity::ActivityCount() const
   {
-    std::shared_ptr<IActivityStack> activityStack = m_activityStack.lock();
+    const std::shared_ptr<IActivityStack> activityStack = m_activityStack.lock();
     return activityStack ? activityStack->Count() : 0;
   }
 

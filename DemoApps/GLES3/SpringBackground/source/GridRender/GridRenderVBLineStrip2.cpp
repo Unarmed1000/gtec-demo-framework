@@ -70,18 +70,18 @@ namespace Fsl
     const float fov = 60.0f;
 
     // Calc distance that z=0 has to be away from the camera for the width and height to match the resolution
-    float yMax = std::tan(fov * MathHelper::PI / 360.0f);
-    float depth = screenHeight / 2.0f / yMax;
+    const float yMax = std::tan(fov * MathHelper::PI / 360.0f);
+    const float depth = screenHeight / 2.0f / yMax;
 
-    Matrix world = Matrix::CreateRotationX(MathHelper::TO_RADS * 180);
-    Matrix view = Matrix::CreateTranslation(-screenWidth * 0.5f, screenHeight * 0.5f, -depth);
-    Matrix projection = Matrix::CreatePerspectiveFieldOfView(MathHelper::ToRadians(fov), aspectRatio, 1.0f, 2000.0f);
+    const Matrix world = Matrix::CreateRotationX(MathHelper::TO_RADS * 180);
+    const Matrix view = Matrix::CreateTranslation(-screenWidth * 0.5f, screenHeight * 0.5f, -depth);
+    const Matrix projection = Matrix::CreatePerspectiveFieldOfView(MathHelper::ToRadians(fov), aspectRatio, 1.0f, 2000.0f);
 
     m_worldViewProjection = world * view * projection;
 
     {
-      Vector4 color(0.12f, 0.12f, 0.55f, 0.33f);
-      VertexPositionColorF defaultVertex(Vector3(), color);
+      const Vector4 color(0.12f, 0.12f, 0.55f, 0.33f);
+      const VertexPositionColorF defaultVertex(Vector3(), color);
       for (auto& rCoordinate : m_coordinates)
       {
         rCoordinate = defaultVertex;
@@ -140,7 +140,7 @@ namespace Fsl
       glUniformMatrix4fv(m_locWorldViewProjection, 1, 0u, m_worldViewProjection.DirectAccess());
     }
 
-    auto& vb = m_vertexBuffer;
+    const auto& vb = m_vertexBuffer;
     glBindBuffer(vb.GetTarget(), vb.Get());
     vb.EnableAttribArrays();
     glDrawArrays(GL_LINE_STRIP, 0, vb.GetGLCapacity());

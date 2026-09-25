@@ -67,17 +67,17 @@ namespace Fsl
     ShaderBase(const std::string& strVertexShader, const std::string& strFragmentShader);
     virtual ~ShaderBase();
 
-    ShaderVertexConfig GetShaderConfig() const;
+    [[nodiscard]] ShaderVertexConfig GetShaderConfig() const;
 
   protected:
     ShaderVertexConfig m_shaderConfig;
 
 
-    bool IsValid() const;
-    GLuint Get() const;
+    [[nodiscard]] bool IsValid() const;
+    [[nodiscard]] GLuint Get() const;
     void Load();
     void Unload();
-    bool IsLoaded() const
+    [[nodiscard]] bool IsLoaded() const
     {
       return m_isLoaded;
     }

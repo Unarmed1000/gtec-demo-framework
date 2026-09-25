@@ -82,61 +82,61 @@ namespace Fsl::Willems
 
 
     //! @brief Get the associated 'Device'
-    VkDevice GetDevice() const
+    [[nodiscard]] VkDevice GetDevice() const
     {
       return m_buffer.GetDevice();
     }
 
     //! @brief Get the associated 'buffer'
-    VkBuffer GetBuffer() const
+    [[nodiscard]] VkBuffer GetBuffer() const
     {
       return m_buffer.Get();
     }
 
     //! @brief Get the associated 'buffer'
-    const VkBuffer* GetBufferPointer() const
+    [[nodiscard]] const VkBuffer* GetBufferPointer() const
     {
       return m_buffer.GetPointer();
     }
 
     //! @brief Get the associated 'memory'
-    VkDeviceMemory GetMemory() const
+    [[nodiscard]] VkDeviceMemory GetMemory() const
     {
       return m_deviceMemory.Get();
     }
 
-    VkDescriptorBufferInfo GetDesciptor() const
+    [[nodiscard]] VkDescriptorBufferInfo GetDesciptor() const
     {
       return m_descriptor;
     }
 
-    const VkDescriptorBufferInfo* GetDescriptorPointer() const
+    [[nodiscard]] const VkDescriptorBufferInfo* GetDescriptorPointer() const
     {
       return &m_descriptor;
     }
 
-    VkDeviceSize GetSize() const
+    [[nodiscard]] VkDeviceSize GetSize() const
     {
       return m_size;
     }
 
-    VkDeviceSize GetAlignment() const
+    [[nodiscard]] VkDeviceSize GetAlignment() const
     {
       return m_alignment;
     }
 
-    VkBufferUsageFlags GetUsageFlags() const
+    [[nodiscard]] VkBufferUsageFlags GetUsageFlags() const
     {
       return m_usageFlags;
     }
 
-    VkMemoryPropertyFlags GetMemoryPropertyFlags() const
+    [[nodiscard]] VkMemoryPropertyFlags GetMemoryPropertyFlags() const
     {
       return m_memoryPropertyFlags;
     }
 
 
-    const void* GetMappedPointer() const
+    [[nodiscard]] const void* GetMappedPointer() const
     {
       return m_pMapped;
     }
@@ -149,7 +149,7 @@ namespace Fsl::Willems
 
 
     //! @brief Check if this object contains a valid resource
-    inline bool IsValid() const
+    [[nodiscard]] inline bool IsValid() const
     {
       return m_buffer.IsValid();
     }

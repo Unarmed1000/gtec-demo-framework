@@ -66,15 +66,15 @@ namespace Fsl
     RegisterExtension(m_shared.GetUIDemoAppExtension());
 
     m_fragUboData.LightDirection.Normalize();
-    auto contentManger = GetContentManager();
-    auto contentPath = contentManger->GetContentPath();
+    const auto contentManger = GetContentManager();
+    const auto contentPath = contentManger->GetContentPath();
 
     // Load the texture
     FSLLOG3_INFO("Loading texture");
     {
       Bitmap bitmap;
       contentManger->Read(bitmap, "Models/Knight2/armor_default_color.jpg", PixelFormat::R8G8B8_UNORM);
-      GLTextureParameters texParams(GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR, GL_REPEAT, GL_REPEAT);
+      const GLTextureParameters texParams(GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR, GL_REPEAT, GL_REPEAT);
       m_resources.Texture.Reset(bitmap, texParams, TextureFlags::GenerateMipMaps);
     }
 
@@ -84,7 +84,7 @@ namespace Fsl
     // aiProcessPreset_TargetRealtime_Fast
     // aiProcessPreset_TargetRealtime_Quality
     // aiProcessPreset_TargetRealtime_MaxQuality
-    auto modelPath = IO::Path::Combine(contentPath, "Models/Knight2/armor.obj");
+    const auto modelPath = IO::Path::Combine(contentPath, "Models/Knight2/armor.obj");
     SceneImporter sceneImporter;
     const std::shared_ptr<MeshUtil::DemoScene> scene = sceneImporter.Load<MeshUtil::DemoScene>(modelPath, LocalConfig::DefaultModelScale, true);
 
@@ -93,7 +93,7 @@ namespace Fsl
       throw NotSupportedException("Scene did not contain any meshes");
     }
 
-    auto rootNode = scene->GetRootNode();
+    const auto rootNode = scene->GetRootNode();
     if (!rootNode)
     {
       throw NotSupportedException("Scene did not contain a root node");
@@ -103,12 +103,12 @@ namespace Fsl
 
     // Create index and vertex buffers
     {
-      MeshUtil::DemoMeshRecord meshRecord = MeshUtil::ToSingleMesh(*scene);
+      const MeshUtil::DemoMeshRecord meshRecord = MeshUtil::ToSingleMesh(*scene);
       m_shared.SetStats(ModelRenderStats(NumericCast<uint32_t>(meshRecord.Vertices.size()), NumericCast<uint32_t>(meshRecord.Indices.size())));
 
       std::size_t vertexCount = 0;
       std::size_t indexCount = 0;
-      for (auto mesh : scene->Meshes)
+      for (const auto& mesh : scene->Meshes)
       {
         m_resources.IndexBuffer.Reset(meshRecord.Indices, GL_STATIC_DRAW);
         m_resources.VertexBuffer.Reset(meshRecord.Vertices, GL_STATIC_DRAW);
@@ -170,7 +170,7 @@ namespace Fsl
   {
     m_shared.Update(demoTime);
 
-    auto matrixInfo = m_shared.GetMatrixInfo();
+    const auto matrixInfo = m_shared.GetMatrixInfo();
 
     // Update Vertex
     m_vertexUboData.MatView = matrixInfo.Model * matrixInfo.View;
@@ -182,7 +182,7 @@ namespace Fsl
   {
     FSL_PARAM_NOT_USED(frameInfo);
 
-    auto span = m_shared.GetInstanceSpan();
+    const auto span = m_shared.GetInstanceSpan();
     m_resources.InstanceBuffer.SetData(0, span);
 
     glDisable(GL_BLEND);

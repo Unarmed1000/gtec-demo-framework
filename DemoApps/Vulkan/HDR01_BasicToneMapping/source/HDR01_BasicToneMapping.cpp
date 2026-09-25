@@ -129,7 +129,7 @@ namespace Fsl
 
       std::array<VkWriteDescriptorSet, 3> writeDescriptorSets{};
       // Binding 0 : Vertex shader uniform buffer
-      auto vertUboBufferInfo = vertUboBuffer.GetDescriptorBufferInfo();
+      const auto vertUboBufferInfo = vertUboBuffer.GetDescriptorBufferInfo();
       writeDescriptorSets[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
       writeDescriptorSets[0].dstSet = descriptorSet;
       writeDescriptorSets[0].dstBinding = 0;
@@ -138,7 +138,7 @@ namespace Fsl
       writeDescriptorSets[0].pBufferInfo = &vertUboBufferInfo;
 
       // Binding 1 : Vertex shader uniform buffer
-      auto fragUboBufferInfo = fragUboBuffer.GetDescriptorBufferInfo();
+      const auto fragUboBufferInfo = fragUboBuffer.GetDescriptorBufferInfo();
       writeDescriptorSets[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
       writeDescriptorSets[1].dstSet = descriptorSet;
       writeDescriptorSets[1].dstBinding = 1;
@@ -147,7 +147,7 @@ namespace Fsl
       writeDescriptorSets[1].pBufferInfo = &fragUboBufferInfo;
 
       // Binding 2 : Fragment shader texture sampler
-      auto textureImageInfo = texture.GetDescriptorImageInfo();
+      const auto textureImageInfo = texture.GetDescriptorImageInfo();
       writeDescriptorSets[2].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
       writeDescriptorSets[2].dstSet = descriptorSet;
       writeDescriptorSets[2].dstBinding = 2;
@@ -191,7 +191,7 @@ namespace Fsl
 
     m_fragmentUboData = PrepareLights();
 
-    auto textureFilename = CommonMethods::GetTextureFile(m_deviceActiveFeatures);
+    const auto textureFilename = CommonMethods::GetTextureFile(m_deviceActiveFeatures);
 
     m_resources.TexSRGB = CommonMethods::CreateTexture(m_device, m_deviceQueue, contentManager, textureFilename);
 
@@ -199,8 +199,8 @@ namespace Fsl
     m_resources.LDRFragShaderModule.Reset(m_device.Get(), 0, contentManager->ReadBytes("ShaderLDR.frag.spv"));
     m_resources.HDRFragShaderModule.Reset(m_device.Get(), 0, contentManager->ReadBytes("ShaderHDR.frag.spv"));
 
-    std::array<VertexElementUsage, 3> shaderBindOrder = {VertexElementUsage::Position, VertexElementUsage::Normal,
-                                                         VertexElementUsage::TextureCoordinate};
+    const std::array<VertexElementUsage, 3> shaderBindOrder = {VertexElementUsage::Position, VertexElementUsage::Normal,
+                                                               VertexElementUsage::TextureCoordinate};
     m_resources.MeshTunnel = SimpleMeshUtil::CreateTunnelVertexArray(m_bufferManager, shaderBindOrder);
     m_resources.MainDescriptorSetLayout = CreateDescriptorSetLayout(m_device);
     const uint32_t maxFramesInFlight = GetRenderConfig().MaxFramesInFlight;
@@ -266,7 +266,7 @@ namespace Fsl
 
     m_vertexUboData.MatModel = Matrix::GetIdentity();
     m_vertexUboData.MatView = m_camera.GetViewMatrix();
-    float aspect = GetWindowAspectRatio();    // ok since we divide both by two when we show four screens
+    const float aspect = GetWindowAspectRatio();    // ok since we divide both by two when we show four screens
 
     // Deal with the new Vulkan coordinate system (see method description for more info).
     // Consider using: https://github.com/KhronosGroup/Vulkan-Docs/blob/master/appendices/VK_KHR_maintenance1.txt
@@ -344,7 +344,7 @@ namespace Fsl
     auto res = GetScreenExtent();
 
     {
-      VkRect2D scissor{{0, 0}, TypeConverter::UncheckedTo<VkExtent2D>(res)};
+      const VkRect2D scissor{{0, 0}, TypeConverter::UncheckedTo<VkExtent2D>(res)};
       vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
     }
 
@@ -362,7 +362,7 @@ namespace Fsl
     {
       if (useClip)
       {
-        VkRect2D scissor{{0, 0}, {splitX, res.Height.Value}};
+        const VkRect2D scissor{{0, 0}, {splitX, res.Height.Value}};
         vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
       }
       vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_dependentResources.PipelineLDR.Get());
@@ -372,7 +372,7 @@ namespace Fsl
     {
       if (useClip)
       {
-        VkRect2D scissor{{static_cast<int32_t>(splitX), 0}, {remainderX, res.Height.Value}};
+        const VkRect2D scissor{{static_cast<int32_t>(splitX), 0}, {remainderX, res.Height.Value}};
         vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
       }
       vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_dependentResources.PipelineHDR.Get());
@@ -434,7 +434,7 @@ namespace Fsl
   {
     FSL_PARAM_NOT_USED(frame);
 
-    VkDeviceSize offsets = 0;
+    const VkDeviceSize offsets = 0;
     vkCmdBindVertexBuffers(commandBuffer, VertexBufferBindId, 1, m_resources.MeshTunnel.VertexBuffer.GetBufferPointer(), &offsets);
     vkCmdDraw(commandBuffer, m_resources.MeshTunnel.VertexBuffer.GetVertexCount(), 1, 0, 0);
   }

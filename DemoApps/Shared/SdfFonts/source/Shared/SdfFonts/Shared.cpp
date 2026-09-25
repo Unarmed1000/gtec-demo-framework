@@ -94,13 +94,13 @@ namespace Fsl
     FSLLOG3_INFO("windowMetrics.DensityDpi: {}", config.WindowMetrics.DensityDpi);
     FSLLOG3_INFO("windowMetrics.DensityScaleFactor: {}", config.WindowMetrics.DensityScaleFactor);
 
-    auto nativeGraphics = m_graphicsService->GetNativeGraphics();
-    auto contentManager = config.DemoServiceProvider.Get<IContentManager>();
+    const auto nativeGraphics = m_graphicsService->GetNativeGraphics();
+    const auto contentManager = config.DemoServiceProvider.Get<IContentManager>();
 
     FSLLOG3_INFO("Preparing UI");
     {    // Build a simple UI
-      auto windowContext = m_uiExtension->GetContext();
-      auto uiFactory = UI::Theme::ThemeSelector::CreateControlFactory(*m_uiExtension);
+      const auto windowContext = m_uiExtension->GetContext();
+      const auto uiFactory = UI::Theme::ThemeSelector::CreateControlFactory(*m_uiExtension);
 
       m_fillSprite = uiFactory->GetResources().GetBasicFillSprite();
 
@@ -259,15 +259,15 @@ namespace Fsl
     {
       rPositionsScratchpad.resize(strView.size());
     }
-    auto scratchpadSpan = SpanUtil::AsSpan(rPositionsScratchpad);
+    const auto scratchpadSpan = SpanUtil::AsSpan(rPositionsScratchpad);
     if (font.ExtractRenderRules(scratchpadSpan, strView, fontConfig))
     {
-      Span<SpriteFontGlyphPosition> positionSpan(scratchpadSpan.subspan(0, strView.size()));
+      const Span<SpriteFontGlyphPosition> positionSpan(scratchpadSpan.subspan(0, strView.size()));
 
       const PxVector2 dstPositionPxf = TypeConverter::To<PxVector2>(dstPositionPx);
       for (const auto& entry : positionSpan)
       {
-        auto dstRectPxf = PxAreaRectangleF::AddLocation(dstPositionPxf, entry.DstRectPxf);
+        const auto dstRectPxf = PxAreaRectangleF::AddLocation(dstPositionPxf, entry.DstRectPxf);
         nativeBatch.DebugDrawRectangle(m_fillTexture, dstRectPxf, Color(0x80, 0, 0, 0xFF));
       }
     }
@@ -293,12 +293,12 @@ namespace Fsl
   void Shared::UpdateLinkedUIState()
   {
     {    // Outline enabled / disabled
-      auto isEnabled = m_uiRecord.DrawOutlineCheckBox->IsChecked();
+      const auto isEnabled = m_uiRecord.DrawOutlineCheckBox->IsChecked();
       m_uiRecord.OutlineSliderLabel->SetEnabled(isEnabled);
       m_uiRecord.OutlineDistanceSlider->SetEnabled(isEnabled);
     }
     {    // Shadow enabled / disabled
-      auto isEnabled = m_uiRecord.DrawShadowCheckBox->IsChecked();
+      const auto isEnabled = m_uiRecord.DrawShadowCheckBox->IsChecked();
       m_uiRecord.ShadowSmoothingLabel->SetEnabled(isEnabled);
       m_uiRecord.ShadowSmoothingSlider->SetEnabled(isEnabled);
       m_uiRecord.ShadowOffsetXLabel->SetEnabled(isEnabled);
@@ -307,7 +307,7 @@ namespace Fsl
       m_uiRecord.ShadowOffsetYSlider->SetEnabled(isEnabled);
     }
     {    // Contours enabled / disabled
-      auto isEnabled = m_uiRecord.DrawContoursCB->IsChecked();
+      const auto isEnabled = m_uiRecord.DrawContoursCB->IsChecked();
       m_uiRecord.ContourScaleSlider->SetEnabled(isEnabled);
     }
   }
@@ -317,57 +317,57 @@ namespace Fsl
   {
     UIRecord record;
 
-    auto labelKerning = rUIFactory.CreateLabel("Kerning");
+    const auto labelKerning = rUIFactory.CreateLabel("Kerning");
     labelKerning->SetAlignmentY(UI::ItemAlignment::Center);
-    auto labelDrawBoundingBoxes = rUIFactory.CreateLabel("B.Boxes");
+    const auto labelDrawBoundingBoxes = rUIFactory.CreateLabel("B.Boxes");
     labelDrawBoundingBoxes->SetAlignmentY(UI::ItemAlignment::Center);
 
-    auto scaleLabel = rUIFactory.CreateLabel("Scale");
+    const auto scaleLabel = rUIFactory.CreateLabel("Scale");
     scaleLabel->SetAlignmentY(UI::ItemAlignment::Center);
-    auto sdfOutlineLabel = rUIFactory.CreateLabel("SDF outline");
+    const auto sdfOutlineLabel = rUIFactory.CreateLabel("SDF outline");
     sdfOutlineLabel->SetAlignmentY(UI::ItemAlignment::Center);
-    auto outlineDistanceLabel = rUIFactory.CreateLabel("Thickness");
+    const auto outlineDistanceLabel = rUIFactory.CreateLabel("Thickness");
     outlineDistanceLabel->SetAlignmentY(UI::ItemAlignment::Center);
-    auto sdfShadowLabel = rUIFactory.CreateLabel("SDF shadow");
+    const auto sdfShadowLabel = rUIFactory.CreateLabel("SDF shadow");
     sdfShadowLabel->SetAlignmentY(UI::ItemAlignment::Center);
-    auto shadowSmoothingLabel = rUIFactory.CreateLabel("Smoothing");
+    const auto shadowSmoothingLabel = rUIFactory.CreateLabel("Smoothing");
     shadowSmoothingLabel->SetAlignmentY(UI::ItemAlignment::Center);
-    auto shadowOffsetXLabel = rUIFactory.CreateLabel("Offset.X");
+    const auto shadowOffsetXLabel = rUIFactory.CreateLabel("Offset.X");
     shadowOffsetXLabel->SetAlignmentY(UI::ItemAlignment::Center);
-    auto shadowOffsetYLabel = rUIFactory.CreateLabel("Offset.Y");
+    const auto shadowOffsetYLabel = rUIFactory.CreateLabel("Offset.Y");
     shadowOffsetYLabel->SetAlignmentY(UI::ItemAlignment::Center);
 
-    auto sdfContoursLabel = rUIFactory.CreateLabel("SDF Contours");
+    const auto sdfContoursLabel = rUIFactory.CreateLabel("SDF Contours");
     sdfContoursLabel->SetAlignmentY(UI::ItemAlignment::Center);
-    auto sdfContourScaleLabel = rUIFactory.CreateLabel("Scale");
+    const auto sdfContourScaleLabel = rUIFactory.CreateLabel("Scale");
     sdfContourScaleLabel->SetAlignmentY(UI::ItemAlignment::Center);
 
-    auto typeLabel = rUIFactory.CreateLabel("Type:");
-    auto radioGroupSdf = rUIFactory.CreateRadioGroup("sdf");
-    auto rbSdf = rUIFactory.CreateRadioButton(radioGroupSdf, "Sdf", true);
-    auto rbMtsdf = rUIFactory.CreateRadioButton(radioGroupSdf, "Mtsdf", false);
+    const auto typeLabel = rUIFactory.CreateLabel("Type:");
+    const auto radioGroupSdf = rUIFactory.CreateRadioGroup("sdf");
+    const auto rbSdf = rUIFactory.CreateRadioButton(radioGroupSdf, "Sdf", true);
+    const auto rbMtsdf = rUIFactory.CreateRadioButton(radioGroupSdf, "Mtsdf", false);
 
-    auto scaleSlider = rUIFactory.CreateSliderFmtValue(UI::LayoutOrientation::Horizontal, LocalConfig::Scale);
-    auto outlineDistanceSlider = rUIFactory.CreateSliderFmtValue(UI::LayoutOrientation::Horizontal, LocalConfig::OutlineDistanceDefaultValue);
-    auto shadowSmoothingSlider = rUIFactory.CreateSliderFmtValue(UI::LayoutOrientation::Horizontal, LocalConfig::ShadowSmoothingDefaultValue);
-    auto shadowOffsetXSlider = rUIFactory.CreateSliderFmtValue(UI::LayoutOrientation::Horizontal, LocalConfig::ShadowOffsetXDefaultValue);
-    auto shadowOffsetYSlider = rUIFactory.CreateSliderFmtValue(UI::LayoutOrientation::Horizontal, LocalConfig::ShadowOffsetYDefaultValue);
-    auto contourScaleSlider = rUIFactory.CreateSliderFmtValue(UI::LayoutOrientation::Horizontal, LocalConfig::ContourScaleDefaultValue);
+    const auto scaleSlider = rUIFactory.CreateSliderFmtValue(UI::LayoutOrientation::Horizontal, LocalConfig::Scale);
+    const auto outlineDistanceSlider = rUIFactory.CreateSliderFmtValue(UI::LayoutOrientation::Horizontal, LocalConfig::OutlineDistanceDefaultValue);
+    const auto shadowSmoothingSlider = rUIFactory.CreateSliderFmtValue(UI::LayoutOrientation::Horizontal, LocalConfig::ShadowSmoothingDefaultValue);
+    const auto shadowOffsetXSlider = rUIFactory.CreateSliderFmtValue(UI::LayoutOrientation::Horizontal, LocalConfig::ShadowOffsetXDefaultValue);
+    const auto shadowOffsetYSlider = rUIFactory.CreateSliderFmtValue(UI::LayoutOrientation::Horizontal, LocalConfig::ShadowOffsetYDefaultValue);
+    const auto contourScaleSlider = rUIFactory.CreateSliderFmtValue(UI::LayoutOrientation::Horizontal, LocalConfig::ContourScaleDefaultValue);
 
 
-    auto kerningCB = rUIFactory.CreateSwitch(LocalConfig::KerningEnabled);
+    const auto kerningCB = rUIFactory.CreateSwitch(LocalConfig::KerningEnabled);
     kerningCB->SetAlignmentX(UI::ItemAlignment::Stretch);
-    auto drawBoundingBoxesCB = rUIFactory.CreateSwitch(LocalConfig::DrawBoundingBoxes);
+    const auto drawBoundingBoxesCB = rUIFactory.CreateSwitch(LocalConfig::DrawBoundingBoxes);
     drawBoundingBoxesCB->SetAlignmentX(UI::ItemAlignment::Stretch);
-    auto drawOutlineCB = rUIFactory.CreateSwitch(LocalConfig::DrawOutlineDefaultValue);
+    const auto drawOutlineCB = rUIFactory.CreateSwitch(LocalConfig::DrawOutlineDefaultValue);
     drawOutlineCB->SetAlignmentX(UI::ItemAlignment::Stretch);
-    auto drawShadowCB = rUIFactory.CreateSwitch(LocalConfig::DrawShadowDefaultValue);
+    const auto drawShadowCB = rUIFactory.CreateSwitch(LocalConfig::DrawShadowDefaultValue);
     drawShadowCB->SetAlignmentX(UI::ItemAlignment::Stretch);
-    auto drawContoursCB = rUIFactory.CreateSwitch(LocalConfig::DrawContoursDefaultValue);
+    const auto drawContoursCB = rUIFactory.CreateSwitch(LocalConfig::DrawContoursDefaultValue);
     drawContoursCB->SetAlignmentX(UI::ItemAlignment::Stretch);
 
 
-    auto menuGrid = std::make_shared<UI::GridLayout>(context);
+    const auto menuGrid = std::make_shared<UI::GridLayout>(context);
     menuGrid->SetAlignmentX(UI::ItemAlignment::Stretch);
     menuGrid->SetAlignmentY(UI::ItemAlignment::Stretch);
     menuGrid->AddColumnDefinition(UI::GridColumnDefinition(UI::GridUnitType::Auto));
@@ -407,7 +407,7 @@ namespace Fsl
     menuGrid->AddChild(contourScaleSlider, 1, 10);
     menuGrid->SetWidth(UI::DpLayoutSize1D(DpValue(250)));
 
-    auto menuStack = std::make_shared<UI::StackLayout>(context);
+    const auto menuStack = std::make_shared<UI::StackLayout>(context);
     // menuStack->SetAlignmentX(UI::ItemAlignment::Stretch);
     menuStack->SetOrientation(UI::LayoutOrientation::Vertical);
     menuStack->AddChild(menuGrid);
@@ -416,27 +416,27 @@ namespace Fsl
     menuStack->AddChild(rbSdf);
     menuStack->AddChild(rbMtsdf);
 
-    auto btnDefault = rUIFactory.CreateTextButton(UI::Theme::ButtonType::Contained, "Set defaults");
+    const auto btnDefault = rUIFactory.CreateTextButton(UI::Theme::ButtonType::Contained, "Set defaults");
     btnDefault->SetAlignmentX(UI::ItemAlignment::Center);
     btnDefault->SetAlignmentY(UI::ItemAlignment::Far);
 
-    auto menuScrollViewer = rUIFactory.CreateScrollViewer(menuStack, UI::ScrollModeFlags::TranslateY, true);
-    auto menuMainLayout = std::make_shared<UI::GridLayout>(context);
+    const auto menuScrollViewer = rUIFactory.CreateScrollViewer(menuStack, UI::ScrollModeFlags::TranslateY, true);
+    const auto menuMainLayout = std::make_shared<UI::GridLayout>(context);
     menuMainLayout->AddColumnDefinition(UI::GridColumnDefinition(UI::GridUnitType::Auto));
     menuMainLayout->AddRowDefinition(UI::GridRowDefinition(UI::GridUnitType::Star, 1.0f));
     menuMainLayout->AddRowDefinition(UI::GridRowDefinition(UI::GridUnitType::Auto));
     menuMainLayout->AddChild(menuScrollViewer, 0, 0);
     menuMainLayout->AddChild(btnDefault, 0, 1);
 
-    auto menuBar = rUIFactory.CreateLeftBar(menuMainLayout);
+    const auto menuBar = rUIFactory.CreateLeftBar(menuMainLayout);
 
-    auto dummy = std::make_shared<UI::BaseWindow>(context);
+    const auto dummy = std::make_shared<UI::BaseWindow>(context);
     dummy->SetAlignmentX(UI::ItemAlignment::Stretch);
     dummy->SetAlignmentY(UI::ItemAlignment::Stretch);
 
 
     // Create the root layout and add it to the window manager
-    auto mainLayout = std::make_shared<UI::GridLayout>(context);
+    const auto mainLayout = std::make_shared<UI::GridLayout>(context);
     mainLayout->SetAlignmentX(UI::ItemAlignment::Stretch);
     mainLayout->SetAlignmentY(UI::ItemAlignment::Stretch);
     mainLayout->AddColumnDefinition(UI::GridColumnDefinition(UI::GridUnitType::Auto));

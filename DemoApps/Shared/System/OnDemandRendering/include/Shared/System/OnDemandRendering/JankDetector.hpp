@@ -203,22 +203,22 @@ namespace Fsl
     void OnUpdate(const DemoTime& demoTime);
     void OnDraw(const DemoTime& demoTime);
 
-    AnimationRecord0 GetRecord0() const
+    [[nodiscard]] AnimationRecord0 GetRecord0() const
     {
       return m_animationRecords.Anim0;
     }
 
-    AnimationRecord1 GetRecord1() const
+    [[nodiscard]] AnimationRecord1 GetRecord1() const
     {
       return m_animationRecords.Anim1;
     }
 
-    AnimationRecord1 GetRecord2() const
+    [[nodiscard]] AnimationRecord1 GetRecord2() const
     {
       return m_animationRecords.Anim2;
     }
 
-    ReadOnlySpan<JankDetector::TimingRecords> Record1AsTimingSpan() const;
+    [[nodiscard]] ReadOnlySpan<JankDetector::TimingRecords> Record1AsTimingSpan() const;
   };
 }
 

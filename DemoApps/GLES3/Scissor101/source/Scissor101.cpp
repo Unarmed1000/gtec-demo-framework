@@ -269,8 +269,8 @@ namespace Fsl
       nearClip.Y = m_clip2.Y;
     }
 
-    int32_t clipX = m_clipX ? nearClip.X : 0;
-    int32_t clipY = m_clipY ? nearClip.Y : 0;
+    const int32_t clipX = m_clipX ? nearClip.X : 0;
+    const int32_t clipY = m_clipY ? nearClip.Y : 0;
     int32_t clipWidth = m_clipX ? (farClip.X - nearClip.X) : windowSizePx.RawWidth();
     int32_t clipHeight = m_clipY ? (farClip.Y - nearClip.Y) : windowSizePx.RawHeight();
 
@@ -340,8 +340,8 @@ namespace Fsl
   GLES3::GLTexture Scissor101::CreateTexture(const std::shared_ptr<IContentManager>& contentManager)
   {
     // Load the texture (we use a scope here, so the bitmap objects is thrown away as soon as we dont need it)
-    Texture texture = contentManager->ReadTexture("Texturing.png", PixelFormat::R8G8B8_UNORM);
-    GLTextureParameters params(GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR, GL_REPEAT, GL_REPEAT);
+    const Texture texture = contentManager->ReadTexture("Texturing.png", PixelFormat::R8G8B8_UNORM);
+    const GLTextureParameters params(GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR, GL_REPEAT, GL_REPEAT);
     return {texture, params, TextureFlags::GenerateMipMaps};
   }
 

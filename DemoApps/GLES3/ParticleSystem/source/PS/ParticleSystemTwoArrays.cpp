@@ -77,7 +77,7 @@ namespace Fsl
     // auto start = timer.GetTime();
 
     const float deltaTime = demoTime.DeltaTime;
-    Vector3 accumulatedGravityVelocity = m_gravity * deltaTime;
+    const Vector3 accumulatedGravityVelocity = m_gravity * deltaTime;
     uint32_t dstIndex = 0;
     ParticleRecord* pParticles = m_pCurrent;
     ParticleRecord* pDstParticles = m_pOld;

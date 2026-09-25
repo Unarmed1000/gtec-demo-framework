@@ -109,7 +109,7 @@ namespace Fsl
   {
     const std::shared_ptr<IContentManager> contentManager = config.DemoServiceProvider.Get<IContentManager>();
 
-    auto uiControlFactory = UI::Theme::ThemeSelector::CreateControlFactory(*m_uiExtension);
+    const auto uiControlFactory = UI::Theme::ThemeSelector::CreateControlFactory(*m_uiExtension);
 
     m_ui = CreateUI(*uiControlFactory);
     m_uiExtension->SetMainWindow(m_ui.MainLayout);
@@ -201,7 +201,7 @@ namespace Fsl
 
     m_batch->Begin(BlendState::Opaque);
 
-    Vector2 dstPositionPx;
+    const Vector2 dstPositionPx;
 
     if (m_ui.CheckBoxShowFramePacingX->IsChecked())
     {
@@ -270,7 +270,7 @@ namespace Fsl
     m_resolutionBuffer3.clear();
     fmt::format_to(std::back_inserter(m_resolutionBuffer3), "DensityDpi: {}", m_cachedWindowMetrics.DensityDpi);
 
-    auto averageFrameTime = m_profiler->GetAverageFrameTime();
+    const auto averageFrameTime = m_profiler->GetAverageFrameTime();
 
     m_fpsBuffer1.clear();
     fmt::format_to(std::back_inserter(m_fpsBuffer1), "FPS: {:.0f}", averageFrameTime.GetFramePerSecond());
@@ -299,16 +299,16 @@ namespace Fsl
 
   GesturesShared::UIRecord GesturesShared::CreateUI(UI::Theme::IThemeControlFactory& uiFactory)
   {
-    auto stats = CreateUIInfo(uiFactory);
+    const auto stats = CreateUIInfo(uiFactory);
 
 
-    auto lblBounceSpringStiffness = uiFactory.CreateLabel("Stiffness");
-    auto lblBounceAnimationTime = uiFactory.CreateLabel("Time");
+    const auto lblBounceSpringStiffness = uiFactory.CreateLabel("Stiffness");
+    const auto lblBounceAnimationTime = uiFactory.CreateLabel("Time");
     lblBounceSpringStiffness->SetAlignmentY(UI::ItemAlignment::Center);
     lblBounceAnimationTime->SetAlignmentY(UI::ItemAlignment::Center);
 
-    auto fmtLblBounceSpringStiffness = uiFactory.CreateFmtValueLabel(1.0f);
-    auto fmtLblBounceAnimationTime = uiFactory.CreateFmtValueLabel(1.0f);
+    const auto fmtLblBounceSpringStiffness = uiFactory.CreateFmtValueLabel(1.0f);
+    const auto fmtLblBounceAnimationTime = uiFactory.CreateFmtValueLabel(1.0f);
     fmtLblBounceSpringStiffness->SetAlignmentX(UI::ItemAlignment::Far);
     fmtLblBounceSpringStiffness->SetAlignmentY(UI::ItemAlignment::Center);
     fmtLblBounceAnimationTime->SetAlignmentX(UI::ItemAlignment::Far);
@@ -316,10 +316,10 @@ namespace Fsl
     fmtLblBounceSpringStiffness->SetFormatString("{:.2f}");
     fmtLblBounceAnimationTime->SetFormatString("{:.2f}");
 
-    auto sliderBounceSpringStiffness = uiFactory.CreateSlider(UI::LayoutOrientation::Horizontal, LocalConfig::BounceSpringStiffness);
-    auto sliderBounceAnimationTime = uiFactory.CreateSlider(UI::LayoutOrientation::Horizontal, LocalConfig::BounceAnimationTime);
+    const auto sliderBounceSpringStiffness = uiFactory.CreateSlider(UI::LayoutOrientation::Horizontal, LocalConfig::BounceSpringStiffness);
+    const auto sliderBounceAnimationTime = uiFactory.CreateSlider(UI::LayoutOrientation::Horizontal, LocalConfig::BounceAnimationTime);
 
-    auto bounceGridLayout = std::make_shared<UI::GridLayout>(uiFactory.GetContext());
+    const auto bounceGridLayout = std::make_shared<UI::GridLayout>(uiFactory.GetContext());
     bounceGridLayout->SetAlignmentX(UI::ItemAlignment::Stretch);
     bounceGridLayout->SetAlignmentY(UI::ItemAlignment::Stretch);
     bounceGridLayout->AddColumnDefinition(UI::GridColumnDefinition(UI::GridUnitType::Auto));
@@ -334,13 +334,13 @@ namespace Fsl
     bounceGridLayout->AddChild(fmtLblBounceSpringStiffness, 2, 0);
     bounceGridLayout->AddChild(fmtLblBounceAnimationTime, 2, 1);
 
-    auto lblFlickDecelerationDpPerSecond = uiFactory.CreateLabel("Deceleration");
-    auto lblFlickAnimationTime = uiFactory.CreateLabel("Time mod");
+    const auto lblFlickDecelerationDpPerSecond = uiFactory.CreateLabel("Deceleration");
+    const auto lblFlickAnimationTime = uiFactory.CreateLabel("Time mod");
     lblFlickDecelerationDpPerSecond->SetAlignmentY(UI::ItemAlignment::Center);
     lblFlickAnimationTime->SetAlignmentY(UI::ItemAlignment::Center);
 
-    auto fmtLblFlickDecelerationDpPerSecond = uiFactory.CreateFmtValueLabel(1.0f);
-    auto fmtLblFlickAnimationTime = uiFactory.CreateFmtValueLabel(1.0f);
+    const auto fmtLblFlickDecelerationDpPerSecond = uiFactory.CreateFmtValueLabel(1.0f);
+    const auto fmtLblFlickAnimationTime = uiFactory.CreateFmtValueLabel(1.0f);
     fmtLblFlickDecelerationDpPerSecond->SetAlignmentX(UI::ItemAlignment::Far);
     fmtLblFlickDecelerationDpPerSecond->SetAlignmentY(UI::ItemAlignment::Center);
     fmtLblFlickAnimationTime->SetAlignmentX(UI::ItemAlignment::Far);
@@ -348,10 +348,10 @@ namespace Fsl
     fmtLblFlickDecelerationDpPerSecond->SetFormatString("{:.1f}");
     fmtLblFlickAnimationTime->SetFormatString("{:.1f}");
 
-    auto sliderFlickDecelerationDpPerSecond = uiFactory.CreateSlider(UI::LayoutOrientation::Horizontal, LocalConfig::FlickDeceleration);
-    auto sliderFlickAnimationTime = uiFactory.CreateSlider(UI::LayoutOrientation::Horizontal, LocalConfig::FlickAnimationTime);
+    const auto sliderFlickDecelerationDpPerSecond = uiFactory.CreateSlider(UI::LayoutOrientation::Horizontal, LocalConfig::FlickDeceleration);
+    const auto sliderFlickAnimationTime = uiFactory.CreateSlider(UI::LayoutOrientation::Horizontal, LocalConfig::FlickAnimationTime);
 
-    auto flickGridLayout = std::make_shared<UI::GridLayout>(uiFactory.GetContext());
+    const auto flickGridLayout = std::make_shared<UI::GridLayout>(uiFactory.GetContext());
     flickGridLayout->SetAlignmentX(UI::ItemAlignment::Stretch);
     flickGridLayout->SetAlignmentY(UI::ItemAlignment::Stretch);
     flickGridLayout->AddColumnDefinition(UI::GridColumnDefinition(UI::GridUnitType::Auto));
@@ -366,19 +366,19 @@ namespace Fsl
     flickGridLayout->AddChild(fmtLblFlickDecelerationDpPerSecond, 2, 0);
     flickGridLayout->AddChild(fmtLblFlickAnimationTime, 2, 1);
 
-    auto checkboxShowFramePacingX = uiFactory.CreateCheckBox("Show X", true);
-    auto checkboxShowFramePacingY = uiFactory.CreateCheckBox("Show Y", true);
+    const auto checkboxShowFramePacingX = uiFactory.CreateCheckBox("Show X", true);
+    const auto checkboxShowFramePacingY = uiFactory.CreateCheckBox("Show Y", true);
 
-    auto lblBounceCaption = uiFactory.CreateLabel("Bounce parameters:", UI::Theme::FontType::Header);
+    const auto lblBounceCaption = uiFactory.CreateLabel("Bounce parameters:", UI::Theme::FontType::Header);
 
 
-    auto lblFlickCaption = uiFactory.CreateLabel("Flick parameters:", UI::Theme::FontType::Header);
-    auto lblFramePacing = uiFactory.CreateLabel("Frame pacing animation:", UI::Theme::FontType::Header);
+    const auto lblFlickCaption = uiFactory.CreateLabel("Flick parameters:", UI::Theme::FontType::Header);
+    const auto lblFramePacing = uiFactory.CreateLabel("Frame pacing animation:", UI::Theme::FontType::Header);
 
-    auto btnSetDefaults = uiFactory.CreateTextButton(UI::Theme::ButtonType::Contained, "Set defaults");
+    const auto btnSetDefaults = uiFactory.CreateTextButton(UI::Theme::ButtonType::Contained, "Set defaults");
     btnSetDefaults->SetAlignmentX(UI::ItemAlignment::Center);
 
-    auto menuLayout = std::make_shared<UI::ComplexStackLayout>(uiFactory.GetContext());
+    const auto menuLayout = std::make_shared<UI::ComplexStackLayout>(uiFactory.GetContext());
     menuLayout->SetAlignmentY(UI::ItemAlignment::Stretch);
     menuLayout->SetOrientation(UI::LayoutOrientation::Vertical);
     menuLayout->AddChild(lblBounceCaption, UI::LayoutLength(UI::LayoutUnitType::Auto));
@@ -395,10 +395,10 @@ namespace Fsl
     menuLayout->AddChild(stats.MainLayout, UI::LayoutLength(UI::LayoutUnitType::Star, 1.0f));
     menuLayout->SetMinWidth(DpSize1DF::Create(400));
 
-    auto leftMenuBar = uiFactory.CreateLeftBar(menuLayout);
+    const auto leftMenuBar = uiFactory.CreateLeftBar(menuLayout);
 
 
-    auto bottomStack = std::make_shared<UI::StackLayout>(uiFactory.GetContext());
+    const auto bottomStack = std::make_shared<UI::StackLayout>(uiFactory.GetContext());
     bottomStack->SetOrientation(UI::LayoutOrientation::Horizontal);
     bottomStack->SetAlignmentY(UI::ItemAlignment::Center);
     bottomStack->SetSpacing(DpSize1DF::Create(4));
@@ -410,20 +410,20 @@ namespace Fsl
       bottomStack->AddChild(lblBottom);
     }
 
-    auto bottomScrollViewerX = uiFactory.CreateScrollViewer(bottomStack, UI::ScrollModeFlags::TranslateX, false);
-    auto bottomMenuBar = uiFactory.CreateBottomBar(bottomScrollViewerX);
+    const auto bottomScrollViewerX = uiFactory.CreateScrollViewer(bottomStack, UI::ScrollModeFlags::TranslateX, false);
+    const auto bottomMenuBar = uiFactory.CreateBottomBar(bottomScrollViewerX);
 
-    auto moveableRects = std::make_shared<UI::MoveableRectangles>(uiFactory.GetContext());
+    const auto moveableRects = std::make_shared<UI::MoveableRectangles>(uiFactory.GetContext());
     moveableRects->SetFillSprite(uiFactory.GetResources().GetFillSprite());
 
-    auto mainLayout = std::make_shared<UI::ComplexStackLayout>(uiFactory.GetContext());
+    const auto mainLayout = std::make_shared<UI::ComplexStackLayout>(uiFactory.GetContext());
     mainLayout->SetOrientation(UI::LayoutOrientation::Horizontal);
     mainLayout->SetAlignmentX(UI::ItemAlignment::Stretch);
     mainLayout->SetAlignmentY(UI::ItemAlignment::Stretch);
     mainLayout->AddChild(leftMenuBar, UI::LayoutLength(UI::LayoutUnitType::Auto));
     mainLayout->AddChild(moveableRects, UI::LayoutLength(UI::LayoutUnitType::Star, 1.0f));
 
-    auto mainLayout2 = std::make_shared<UI::ComplexStackLayout>(uiFactory.GetContext());
+    const auto mainLayout2 = std::make_shared<UI::ComplexStackLayout>(uiFactory.GetContext());
     mainLayout2->SetOrientation(UI::LayoutOrientation::Vertical);
     mainLayout2->SetAlignmentX(UI::ItemAlignment::Stretch);
     mainLayout2->SetAlignmentY(UI::ItemAlignment::Stretch);
@@ -450,7 +450,7 @@ namespace Fsl
       hSliderProperty = sliderBounceAnimationTime->GetPropertyHandle(UI::Slider<float>::PropertyValue);
       fmtLblBounceAnimationTime->SetBinding(UI::FmtValueLabel<float>::PropertyContent, hSliderProperty);
       {
-        auto converterBinding =
+        const auto converterBinding =
           std::make_shared<Fsl::DataBinding::ConverterBinding<TimeSpan, float>>([](const float value) { return TimeSpan::FromSeconds(value); });
 
         bottomScrollViewerX->SetBinding(UI::ScrollViewer::PropertyBounceAnimationTime, DataBinding::Binding(converterBinding, hSliderProperty));
@@ -471,27 +471,27 @@ namespace Fsl
 
   GesturesShared::UIInfoRecord GesturesShared::CreateUIInfo(UI::Theme::IThemeControlFactory& uiFactory)
   {
-    auto labelIdle = uiFactory.CreateLabel("UI idle");
+    const auto labelIdle = uiFactory.CreateLabel("UI idle");
     labelIdle->SetAlignmentY(UI::ItemAlignment::Center);
-    auto imageIdle = uiFactory.CreateImage(uiFactory.GetResources().GetColorMarkerNineSliceSprite());
+    const auto imageIdle = uiFactory.CreateImage(uiFactory.GetResources().GetColorMarkerNineSliceSprite());
     imageIdle->SetAlignmentX(UI::ItemAlignment::Far);
     imageIdle->SetAlignmentY(UI::ItemAlignment::Center);
     imageIdle->SetContentColor(IdleColor::Busy);
     imageIdle->FinishAnimation();
 
-    auto idleLayout = std::make_shared<UI::StackLayout>(uiFactory.GetContext());
+    const auto idleLayout = std::make_shared<UI::StackLayout>(uiFactory.GetContext());
     idleLayout->SetOrientation(UI::LayoutOrientation::Horizontal);
     idleLayout->SetSpacing(DpSize1DF::Create(4));
     idleLayout->AddChild(imageIdle);
     idleLayout->AddChild(labelIdle);
 
-    auto lblWinPx = uiFactory.CreateLabel("WinPx");
-    auto lblWinDp = uiFactory.CreateLabel("WinDp");
-    auto lblWinDpi = uiFactory.CreateLabel("WinDpi");
-    auto lblFps = uiFactory.CreateLabel("Fps");
-    auto lblFpsTime = uiFactory.CreateLabel("FpsTime");
+    const auto lblWinPx = uiFactory.CreateLabel("WinPx");
+    const auto lblWinDp = uiFactory.CreateLabel("WinDp");
+    const auto lblWinDpi = uiFactory.CreateLabel("WinDpi");
+    const auto lblFps = uiFactory.CreateLabel("Fps");
+    const auto lblFpsTime = uiFactory.CreateLabel("FpsTime");
 
-    auto layout = std::make_shared<UI::StackLayout>(uiFactory.GetContext());
+    const auto layout = std::make_shared<UI::StackLayout>(uiFactory.GetContext());
     layout->SetAlignmentX(UI::ItemAlignment::Stretch);
     layout->SetAlignmentY(UI::ItemAlignment::Far);
     layout->AddChild(idleLayout);

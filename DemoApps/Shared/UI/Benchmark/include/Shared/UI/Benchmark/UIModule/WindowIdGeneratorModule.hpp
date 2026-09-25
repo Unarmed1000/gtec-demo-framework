@@ -78,16 +78,16 @@ namespace Fsl
     void OnWindowDispose(const std::shared_ptr<UI::IWindowId>& window) final;
 
     //! @brief Try to locate a window that would receive a mouse over event
-    CustomWindowId TryGetMouseOverWindow(const PxPoint2& hitPositionPx) const final;
+    [[nodiscard]] CustomWindowId TryGetMouseOverWindow(const PxPoint2& hitPositionPx) const final;
 
     //! @brief Try to locate a window that would receive a mouse over event
-    CustomWindowId TryGetClickInputWindow(const PxPoint2& hitPositionPx) const final;
+    [[nodiscard]] CustomWindowId TryGetClickInputWindow(const PxPoint2& hitPositionPx) const final;
 
     //! @brief Get the current screen-space rectangle of the given window
-    PxRectangle GetWindowRectanglePx(const CustomWindowId windowId) const final;
+    [[nodiscard]] PxRectangle GetWindowRectanglePx(const CustomWindowId windowId) const final;
 
     //! @brief Get the current screen-space rectangle of the given window
-    std::optional<PxRectangle> TryGetWindowRectanglePx(const CustomWindowId windowId) const final;
+    [[nodiscard]] std::optional<PxRectangle> TryGetWindowRectanglePx(const CustomWindowId windowId) const final;
 
   private:
     uint64_t CreateWindowId();

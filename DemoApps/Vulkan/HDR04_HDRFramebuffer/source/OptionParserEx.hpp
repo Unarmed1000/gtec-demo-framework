@@ -43,12 +43,12 @@ namespace Fsl
   public:
     OptionParserEx();
 
-    bool IsPatternDisabled() const
+    [[nodiscard]] bool IsPatternDisabled() const
     {
       return m_disablePattern;
     }
 
-    bool IsDisplayHDRCheckDisabled() const
+    [[nodiscard]] bool IsDisplayHDRCheckDisabled() const
     {
       return m_disableDisplayHDRCheck;
     }

@@ -75,11 +75,11 @@ namespace Fsl
 
   void OpenCV102::Run()
   {
-    int edgeThresh = 1;
-    auto contentManager = GetContentManager();
-    IO::Path contentPath = contentManager->GetContentPath();
+    const int edgeThresh = 1;
+    const auto contentManager = GetContentManager();
+    const IO::Path contentPath = contentManager->GetContentPath();
 
-    IO::Path pathImg1 = IO::Path::Combine(contentPath, "Image.png");
+    const IO::Path pathImg1 = IO::Path::Combine(contentPath, "Image.png");
 
     /// Read image ( same size, same type )
     g_image = imread(pathImg1.ToUTF8String());

@@ -63,8 +63,8 @@ namespace Fsl::RenderSystemRuntimeSettingsUtil
     const bool preferFastReorder = UI::RenderOptionFlagsUtil::IsEnabled(settings, UI::RenderOptionFlags::PreferFastReorder);
 
     {    // update the material system if necessary
-      UIDemoAppMaterialConfig newConfig(useSdf, depthBuffer);
-      UIDemoAppMaterialConfig oldConfig = rAppHost.GetDefaultMaterialConfig();
+      const UIDemoAppMaterialConfig newConfig(useSdf, depthBuffer);
+      const UIDemoAppMaterialConfig oldConfig = rAppHost.GetDefaultMaterialConfig();
       if (newConfig != oldConfig)
       {
         rAppHost.SetDefaultMaterialConfig(newConfig);
@@ -77,8 +77,8 @@ namespace Fsl::RenderSystemRuntimeSettingsUtil
       {
         const auto method = SelectReorderMethod(drawReorder, preferFastReorder);
 
-        UI::RenderIMBatch::FlexRenderSystemConfig newConfig(batch, fillBuffers, depthBuffer, method);
-        auto oldConfig = pFlexRenderSystemConfig->GetConfig();
+        const UI::RenderIMBatch::FlexRenderSystemConfig newConfig(batch, fillBuffers, depthBuffer, method);
+        const auto oldConfig = pFlexRenderSystemConfig->GetConfig();
         if (oldConfig != newConfig)
         {
           pFlexRenderSystemConfig->SetConfig(newConfig);

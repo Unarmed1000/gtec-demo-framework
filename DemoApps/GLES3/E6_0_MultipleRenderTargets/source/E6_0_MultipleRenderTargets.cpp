@@ -56,7 +56,7 @@ namespace Fsl
   {
     FSL_PARAM_NOT_USED(frameInfo);
 
-    PxSize2D sizePx = GetWindowSizePx();
+    const PxSize2D sizePx = GetWindowSizePx();
 
     GLint defaultFramebuffer = 0;
     const std::array<GLenum, 4> attachments = {GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2, GL_COLOR_ATTACHMENT3};

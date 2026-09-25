@@ -123,7 +123,7 @@ namespace Fsl
   {
     FSLLOG3_INFO("Preparing UI");
     {    // Build a simple UI
-      auto uiFactory = UI::Theme::ThemeSelector::CreateControlFactory(*m_uiExtension);
+      const auto uiFactory = UI::Theme::ThemeSelector::CreateControlFactory(*m_uiExtension);
       m_uiRecord = CreateUI(*uiFactory);
 
       // Register the root layout with the window manager
@@ -202,47 +202,47 @@ namespace Fsl
   BasicDataBindingShared::UIRecord BasicDataBindingShared::CreateUI(UI::Theme::IThemeControlFactory& uiFactory)
   {
     const auto& context = uiFactory.GetContext();
-    auto exampleLayout = std::make_shared<UI::UniformWrapLayout>(context);
+    const auto exampleLayout = std::make_shared<UI::UniformWrapLayout>(context);
     exampleLayout->SetOrientation(UI::LayoutOrientation::Horizontal);
     exampleLayout->SetSpacing(DpSize2DF::Create(4, 4));
 
-    auto example1 = CreateExample1UI(uiFactory);
-    auto example2 = CreateExample2UI(uiFactory);
-    auto example3 = CreateExample3UI(uiFactory);
-    auto example4 = CreateExample4UI(uiFactory);
+    const auto example1 = CreateExample1UI(uiFactory);
+    const auto example2 = CreateExample2UI(uiFactory);
+    const auto example3 = CreateExample3UI(uiFactory);
+    const auto example4 = CreateExample4UI(uiFactory);
 
     {    // One way data binding
-      auto stackLayout = std::make_shared<UI::StackLayout>(context);
-      auto caption = uiFactory.CreateLabel("One way binding", UI::Theme::FontType::Header);
+      const auto stackLayout = std::make_shared<UI::StackLayout>(context);
+      const auto caption = uiFactory.CreateLabel("One way binding", UI::Theme::FontType::Header);
       stackLayout->AddChild(caption);
       stackLayout->AddChild(example1.Main);
-      auto background = uiFactory.CreateBackgroundWindow(UI::Theme::WindowType::Normal, stackLayout);
+      const auto background = uiFactory.CreateBackgroundWindow(UI::Theme::WindowType::Normal, stackLayout);
       exampleLayout->AddChild(background);
     }
     {    // one way conversion data binding
-      auto stackLayout = std::make_shared<UI::StackLayout>(context);
-      auto caption = uiFactory.CreateLabel("One way binding with conversion", UI::Theme::FontType::Header);
+      const auto stackLayout = std::make_shared<UI::StackLayout>(context);
+      const auto caption = uiFactory.CreateLabel("One way binding with conversion", UI::Theme::FontType::Header);
       stackLayout->AddChild(caption);
       stackLayout->AddChild(example3.Main);
-      auto background = uiFactory.CreateBackgroundWindow(UI::Theme::WindowType::Normal, stackLayout);
+      const auto background = uiFactory.CreateBackgroundWindow(UI::Theme::WindowType::Normal, stackLayout);
       // background->SetAlignmentX(UI::ItemAlignment::Stretch);
       // background->SetAlignmentY(UI::ItemAlignment::Stretch);
       exampleLayout->AddChild(background);
     }
     {    // Two way data binding
-      auto stackLayout = std::make_shared<UI::StackLayout>(context);
-      auto caption = uiFactory.CreateLabel("Two way binding", UI::Theme::FontType::Header);
+      const auto stackLayout = std::make_shared<UI::StackLayout>(context);
+      const auto caption = uiFactory.CreateLabel("Two way binding", UI::Theme::FontType::Header);
       stackLayout->AddChild(caption);
       stackLayout->AddChild(example2.Main);
-      auto background = uiFactory.CreateBackgroundWindow(UI::Theme::WindowType::Normal, stackLayout);
+      const auto background = uiFactory.CreateBackgroundWindow(UI::Theme::WindowType::Normal, stackLayout);
       exampleLayout->AddChild(background);
     }
     {    // Two way data conversion binding
-      auto stackLayout = std::make_shared<UI::StackLayout>(context);
-      auto caption = uiFactory.CreateLabel("Two way conversion binding", UI::Theme::FontType::Header);
+      const auto stackLayout = std::make_shared<UI::StackLayout>(context);
+      const auto caption = uiFactory.CreateLabel("Two way conversion binding", UI::Theme::FontType::Header);
       stackLayout->AddChild(caption);
       stackLayout->AddChild(example4.Main);
-      auto background = uiFactory.CreateBackgroundWindow(UI::Theme::WindowType::Normal, stackLayout);
+      const auto background = uiFactory.CreateBackgroundWindow(UI::Theme::WindowType::Normal, stackLayout);
       exampleLayout->AddChild(background);
     }
     return {exampleLayout, example1, example2};
@@ -262,13 +262,13 @@ namespace Fsl
 
     // auto btnAdd = uiFactory.CreateImageButton(spriteContentAdd);
     // auto btnSub = uiFactory.CreateImageButton(spriteContentRemove);
-    auto btnAdd = uiFactory.CreateTextButton(UI::Theme::ButtonType::Text, "+");
-    auto btnSub = uiFactory.CreateTextButton(UI::Theme::ButtonType::Text, "-");
+    const auto btnAdd = uiFactory.CreateTextButton(UI::Theme::ButtonType::Text, "+");
+    const auto btnSub = uiFactory.CreateTextButton(UI::Theme::ButtonType::Text, "-");
 
-    auto slider = uiFactory.CreateSlider(UI::LayoutOrientation::Horizontal, LocalExample1::Slider1Constraint);
-    auto lbl0 = uiFactory.CreateFmtValueLabel(static_cast<int32_t>(0), "val {}");
-    auto lbl1 = uiFactory.CreateFmtValueLabel(static_cast<int32_t>(0));
-    auto lbl2 = uiFactory.CreateFmtValueLabel(static_cast<int32_t>(0), "{} val");
+    const auto slider = uiFactory.CreateSlider(UI::LayoutOrientation::Horizontal, LocalExample1::Slider1Constraint);
+    const auto lbl0 = uiFactory.CreateFmtValueLabel(static_cast<int32_t>(0), "val {}");
+    const auto lbl1 = uiFactory.CreateFmtValueLabel(static_cast<int32_t>(0));
+    const auto lbl2 = uiFactory.CreateFmtValueLabel(static_cast<int32_t>(0), "{} val");
 
     slider->SetAlignmentX(UI::ItemAlignment::Stretch);
     slider->SetWidth(UI::DpLayoutSize1D::Create(200));
@@ -276,20 +276,20 @@ namespace Fsl
     lbl1->SetAlignmentX(UI::ItemAlignment::Center);
     lbl2->SetAlignmentX(UI::ItemAlignment::Far);
 
-    auto sliderLayout = std::make_shared<UI::ComplexStackLayout>(context);
+    const auto sliderLayout = std::make_shared<UI::ComplexStackLayout>(context);
     sliderLayout->SetOrientation(UI::LayoutOrientation::Horizontal);
     sliderLayout->SetAlignmentX(UI::ItemAlignment::Stretch);
     sliderLayout->AddChild(btnSub, UI::LayoutLength(UI::LayoutUnitType::Auto));
     sliderLayout->AddChild(slider, UI::LayoutLength(UI::LayoutUnitType::Star, 1.0f));
     sliderLayout->AddChild(btnAdd, UI::LayoutLength(UI::LayoutUnitType::Auto));
 
-    auto slider2 = uiFactory.CreateSlider(UI::LayoutOrientation::Horizontal, LocalExample1::Slider2Constraint);
-    auto slider3 = uiFactory.CreateSlider(UI::LayoutOrientation::Horizontal, LocalExample1::Slider3Constraint);
-    auto slider4 = uiFactory.CreateSlider(UI::LayoutOrientation::Horizontal, LocalExample1::Slider4Constraint);
+    const auto slider2 = uiFactory.CreateSlider(UI::LayoutOrientation::Horizontal, LocalExample1::Slider2Constraint);
+    const auto slider3 = uiFactory.CreateSlider(UI::LayoutOrientation::Horizontal, LocalExample1::Slider3Constraint);
+    const auto slider4 = uiFactory.CreateSlider(UI::LayoutOrientation::Horizontal, LocalExample1::Slider4Constraint);
 
-    auto lblSlider2 = uiFactory.CreateFmtValueLabel(static_cast<int32_t>(0));
-    auto lblSlider3 = uiFactory.CreateFmtValueLabel(static_cast<int32_t>(0));
-    auto lblSlider4 = uiFactory.CreateFmtValueLabel(static_cast<int32_t>(0));
+    const auto lblSlider2 = uiFactory.CreateFmtValueLabel(static_cast<int32_t>(0));
+    const auto lblSlider3 = uiFactory.CreateFmtValueLabel(static_cast<int32_t>(0));
+    const auto lblSlider4 = uiFactory.CreateFmtValueLabel(static_cast<int32_t>(0));
     lblSlider2->SetAlignmentX(UI::ItemAlignment::Far);
     lblSlider2->SetAlignmentY(UI::ItemAlignment::Center);
     lblSlider3->SetAlignmentX(UI::ItemAlignment::Far);
@@ -297,7 +297,7 @@ namespace Fsl
     lblSlider4->SetAlignmentX(UI::ItemAlignment::Far);
     lblSlider4->SetAlignmentY(UI::ItemAlignment::Center);
 
-    auto sliderGrid = std::make_shared<UI::GridLayout>(context);
+    const auto sliderGrid = std::make_shared<UI::GridLayout>(context);
     sliderGrid->SetAlignmentX(UI::ItemAlignment::Stretch);
     sliderGrid->AddColumnDefinition(UI::GridColumnDefinition(UI::GridUnitType::Star, 1.0f));
     sliderGrid->AddColumnDefinition(UI::GridColumnDefinition(UI::GridUnitType::Auto));
@@ -315,7 +315,7 @@ namespace Fsl
     sliderGrid->AddChild(lblSlider3, 2, 1);
     sliderGrid->AddChild(lblSlider4, 2, 2);
 
-    auto layout = std::make_shared<UI::StackLayout>(context);
+    const auto layout = std::make_shared<UI::StackLayout>(context);
     layout->SetAlignmentX(UI::ItemAlignment::Stretch);
     layout->SetOrientation(UI::LayoutOrientation::Vertical);
     layout->AddChild(sliderLayout);
@@ -355,15 +355,15 @@ namespace Fsl
     const auto spriteDownArrow = resources.GetIconSprite(UI::Theme::IconType::NavigationArrowDownward);
     const auto spriteRightArrow = resources.GetIconSprite(UI::Theme::IconType::NavigationArrowForward);
 
-    auto slider1 = uiFactory.CreateSlider(UI::LayoutOrientation::Horizontal, LocalExample1::Slider1Constraint);
+    const auto slider1 = uiFactory.CreateSlider(UI::LayoutOrientation::Horizontal, LocalExample1::Slider1Constraint);
     slider1->SetAlignmentX(UI::ItemAlignment::Stretch);
     slider1->SetWidth(UI::DpLayoutSize1D::Create(200));
 
-    auto lblSlider1 = uiFactory.CreateFmtValueLabel(static_cast<int32_t>(0));
+    const auto lblSlider1 = uiFactory.CreateFmtValueLabel(static_cast<int32_t>(0));
     lblSlider1->SetAlignmentX(UI::ItemAlignment::Far);
     lblSlider1->SetAlignmentY(UI::ItemAlignment::Center);
 
-    auto sliderLayout = std::make_shared<UI::ComplexStackLayout>(context);
+    const auto sliderLayout = std::make_shared<UI::ComplexStackLayout>(context);
     sliderLayout->SetOrientation(UI::LayoutOrientation::Horizontal);
     sliderLayout->SetAlignmentX(UI::ItemAlignment::Stretch);
     sliderLayout->AddChild(slider1, UI::LayoutLength(UI::LayoutUnitType::Star, 1.0f));
@@ -371,19 +371,19 @@ namespace Fsl
     sliderLayout->AddChild(lblSlider1, UI::LayoutLength(UI::LayoutUnitType::Fixed, 20));
 
 
-    auto twoWayArrows = std::make_shared<UI::StackLayout>(context);
+    const auto twoWayArrows = std::make_shared<UI::StackLayout>(context);
     twoWayArrows->SetOrientation(UI::LayoutOrientation::Horizontal);
     twoWayArrows->SetAlignmentX(UI::ItemAlignment::Center);
     twoWayArrows->AddChild(CreateArrow(uiFactory, spriteUpArrow));
     twoWayArrows->AddChild(CreateArrow(uiFactory, spriteDownArrow));
 
-    auto slider2 = uiFactory.CreateSlider(UI::LayoutOrientation::Horizontal, LocalExample1::Slider2Constraint);
-    auto slider3 = uiFactory.CreateSlider(UI::LayoutOrientation::Horizontal, LocalExample1::Slider3Constraint);
-    auto slider4 = uiFactory.CreateSlider(UI::LayoutOrientation::Horizontal, LocalExample1::Slider4Constraint);
+    const auto slider2 = uiFactory.CreateSlider(UI::LayoutOrientation::Horizontal, LocalExample1::Slider2Constraint);
+    const auto slider3 = uiFactory.CreateSlider(UI::LayoutOrientation::Horizontal, LocalExample1::Slider3Constraint);
+    const auto slider4 = uiFactory.CreateSlider(UI::LayoutOrientation::Horizontal, LocalExample1::Slider4Constraint);
 
-    auto lblSlider2 = uiFactory.CreateFmtValueLabel(static_cast<int32_t>(0));
-    auto lblSlider3 = uiFactory.CreateFmtValueLabel(static_cast<int32_t>(0));
-    auto lblSlider4 = uiFactory.CreateFmtValueLabel(static_cast<int32_t>(0));
+    const auto lblSlider2 = uiFactory.CreateFmtValueLabel(static_cast<int32_t>(0));
+    const auto lblSlider3 = uiFactory.CreateFmtValueLabel(static_cast<int32_t>(0));
+    const auto lblSlider4 = uiFactory.CreateFmtValueLabel(static_cast<int32_t>(0));
     lblSlider2->SetAlignmentX(UI::ItemAlignment::Far);
     lblSlider2->SetAlignmentY(UI::ItemAlignment::Center);
     lblSlider3->SetAlignmentX(UI::ItemAlignment::Far);
@@ -391,7 +391,7 @@ namespace Fsl
     lblSlider4->SetAlignmentX(UI::ItemAlignment::Far);
     lblSlider4->SetAlignmentY(UI::ItemAlignment::Center);
 
-    auto sliderGrid = std::make_shared<UI::GridLayout>(context);
+    const auto sliderGrid = std::make_shared<UI::GridLayout>(context);
     sliderGrid->SetAlignmentX(UI::ItemAlignment::Stretch);
     sliderGrid->AddColumnDefinition(UI::GridColumnDefinition(UI::GridUnitType::Star, 1.0f));
     sliderGrid->AddColumnDefinition(UI::GridColumnDefinition(UI::GridUnitType::Auto));
@@ -409,7 +409,7 @@ namespace Fsl
     sliderGrid->AddChild(lblSlider3, 2, 1);
     sliderGrid->AddChild(lblSlider4, 2, 2);
 
-    auto layout = std::make_shared<UI::StackLayout>(context);
+    const auto layout = std::make_shared<UI::StackLayout>(context);
     layout->SetAlignmentX(UI::ItemAlignment::Stretch);
     layout->SetOrientation(UI::LayoutOrientation::Vertical);
     layout->AddChild(sliderLayout);
@@ -447,7 +447,7 @@ namespace Fsl
     const auto& spriteImage = resources.GetIconSprite(UI::Theme::IconType::Fill);
 
 
-    auto layout = std::make_shared<UI::GridLayout>(context);
+    const auto layout = std::make_shared<UI::GridLayout>(context);
     layout->SetAlignmentX(UI::ItemAlignment::Stretch);
     layout->AddColumnDefinition(UI::GridColumnDefinition(UI::GridUnitType::Auto));
     layout->AddColumnDefinition(UI::GridColumnDefinition(UI::GridUnitType::Fixed, 4));
@@ -460,24 +460,24 @@ namespace Fsl
     layout->AddRowDefinition(UI::GridRowDefinition(UI::GridUnitType::Auto));
     layout->AddRowDefinition(UI::GridRowDefinition(UI::GridUnitType::Auto));
 
-    auto sliderR = uiFactory.CreateSlider(UI::LayoutOrientation::Horizontal, LocalExample3::SliderColorChannelConstraint);
-    auto sliderG = uiFactory.CreateSlider(UI::LayoutOrientation::Horizontal, LocalExample3::SliderColorChannelConstraint);
-    auto sliderB = uiFactory.CreateSlider(UI::LayoutOrientation::Horizontal, LocalExample3::SliderColorChannelConstraint);
-    auto sliderA = uiFactory.CreateSlider(UI::LayoutOrientation::Horizontal, LocalExample3::SliderColorChannelConstraint);
+    const auto sliderR = uiFactory.CreateSlider(UI::LayoutOrientation::Horizontal, LocalExample3::SliderColorChannelConstraint);
+    const auto sliderG = uiFactory.CreateSlider(UI::LayoutOrientation::Horizontal, LocalExample3::SliderColorChannelConstraint);
+    const auto sliderB = uiFactory.CreateSlider(UI::LayoutOrientation::Horizontal, LocalExample3::SliderColorChannelConstraint);
+    const auto sliderA = uiFactory.CreateSlider(UI::LayoutOrientation::Horizontal, LocalExample3::SliderColorChannelConstraint);
     {
-      auto labelR = uiFactory.CreateLabel("R:");
-      auto labelG = uiFactory.CreateLabel("G:");
-      auto labelB = uiFactory.CreateLabel("B:");
-      auto labelA = uiFactory.CreateLabel("A:");
+      const auto labelR = uiFactory.CreateLabel("R:");
+      const auto labelG = uiFactory.CreateLabel("G:");
+      const auto labelB = uiFactory.CreateLabel("B:");
+      const auto labelA = uiFactory.CreateLabel("A:");
       labelR->SetAlignmentY(UI::ItemAlignment::Center);
       labelG->SetAlignmentY(UI::ItemAlignment::Center);
       labelB->SetAlignmentY(UI::ItemAlignment::Center);
       labelA->SetAlignmentY(UI::ItemAlignment::Center);
 
-      auto lblSliderR = uiFactory.CreateFmtValueLabel(static_cast<uint8_t>(0));
-      auto lblSliderG = uiFactory.CreateFmtValueLabel(static_cast<uint8_t>(0));
-      auto lblSliderB = uiFactory.CreateFmtValueLabel(static_cast<uint8_t>(0));
-      auto lblSliderA = uiFactory.CreateFmtValueLabel(static_cast<uint8_t>(0));
+      const auto lblSliderR = uiFactory.CreateFmtValueLabel(static_cast<uint8_t>(0));
+      const auto lblSliderG = uiFactory.CreateFmtValueLabel(static_cast<uint8_t>(0));
+      const auto lblSliderB = uiFactory.CreateFmtValueLabel(static_cast<uint8_t>(0));
+      const auto lblSliderA = uiFactory.CreateFmtValueLabel(static_cast<uint8_t>(0));
       lblSliderR->SetAlignmentX(UI::ItemAlignment::Far);
       lblSliderG->SetAlignmentX(UI::ItemAlignment::Far);
       lblSliderB->SetAlignmentX(UI::ItemAlignment::Far);
@@ -519,27 +519,27 @@ namespace Fsl
       }
     }
 
-    auto mainLayout = std::make_shared<UI::StackLayout>(context);
+    const auto mainLayout = std::make_shared<UI::StackLayout>(context);
     mainLayout->SetAlignmentX(UI::ItemAlignment::Stretch);
     mainLayout->SetOrientation(UI::LayoutOrientation::Vertical);
     mainLayout->AddChild(layout);
     mainLayout->AddChild(CreateArrow(uiFactory, spriteDownArrow));
     {
-      auto image = uiFactory.CreateImage(spriteImage);
+      const auto image = uiFactory.CreateImage(spriteImage);
       image->SetScalePolicy(UI::ItemScalePolicy::Fit);
       image->SetAlignmentX(UI::ItemAlignment::Stretch);
       image->SetAlignmentY(UI::ItemAlignment::Center);
 
-      auto fmtLblR = uiFactory.CreateFmtValueLabel(0.0f);
-      auto fmtLblG = uiFactory.CreateFmtValueLabel(0.0f);
-      auto fmtLblB = uiFactory.CreateFmtValueLabel(0.0f);
-      auto fmtLblA = uiFactory.CreateFmtValueLabel(0.0f);
+      const auto fmtLblR = uiFactory.CreateFmtValueLabel(0.0f);
+      const auto fmtLblG = uiFactory.CreateFmtValueLabel(0.0f);
+      const auto fmtLblB = uiFactory.CreateFmtValueLabel(0.0f);
+      const auto fmtLblA = uiFactory.CreateFmtValueLabel(0.0f);
       fmtLblR->SetAlignmentX(UI::ItemAlignment::Far);
       fmtLblG->SetAlignmentX(UI::ItemAlignment::Far);
       fmtLblB->SetAlignmentX(UI::ItemAlignment::Far);
       fmtLblA->SetAlignmentX(UI::ItemAlignment::Far);
 
-      auto lineLayout = std::make_shared<UI::ComplexStackLayout>(context);
+      const auto lineLayout = std::make_shared<UI::ComplexStackLayout>(context);
       lineLayout->SetSpacing(DpSize1DF::Create(6));
       lineLayout->SetAlignmentX(UI::ItemAlignment::Stretch);
       lineLayout->SetOrientation(UI::LayoutOrientation::Horizontal);
@@ -556,10 +556,10 @@ namespace Fsl
       mainLayout->AddChild(image);
 
       {    // setup a one way data binding between each of the already linked sliders to their label
-        auto converterBinding = std::make_shared<Fsl::DataBinding::ConverterBinding<float, uint8_t>>([](const uint8_t value)
-                                                                                                     { return static_cast<float>(value) / 255.0f; });
+        const auto converterBinding = std::make_shared<Fsl::DataBinding::ConverterBinding<float, uint8_t>>(
+          [](const uint8_t value) { return static_cast<float>(value) / 255.0f; });
 
-        auto multiConverterBinding = std::make_shared<Fsl::DataBinding::MultiConverterBinding<UI::UIColor, uint8_t, uint8_t, uint8_t, uint8_t>>(
+        const auto multiConverterBinding = std::make_shared<Fsl::DataBinding::MultiConverterBinding<UI::UIColor, uint8_t, uint8_t, uint8_t, uint8_t>>(
           [](const uint8_t r, const uint8_t g, const uint8_t b, const uint8_t a) { return UI::UIColor::CreateR8G8B8A8(r, g, b, a); });
 
         const auto hSliderPropertyR = sliderR->GetPropertyHandle(UI::Slider<uint8_t>::PropertyValue);
@@ -586,17 +586,17 @@ namespace Fsl
     const auto spriteDownArrow = resources.GetIconSprite(UI::Theme::IconType::NavigationArrowDownward);
     const auto spriteRightArrow = resources.GetIconSprite(UI::Theme::IconType::NavigationArrowForward);
 
-    auto slider1 = uiFactory.CreateSlider(UI::LayoutOrientation::Horizontal, LocalExample4::Slider1Constraint);
+    const auto slider1 = uiFactory.CreateSlider(UI::LayoutOrientation::Horizontal, LocalExample4::Slider1Constraint);
     slider1->SetAlignmentX(UI::ItemAlignment::Stretch);
     slider1->SetWidth(UI::DpLayoutSize1D::Create(200));
 
-    auto lblSlider1 = uiFactory.CreateFmtValueLabel(static_cast<uint8_t>(0));
+    const auto lblSlider1 = uiFactory.CreateFmtValueLabel(static_cast<uint8_t>(0));
     lblSlider1->SetAlignmentX(UI::ItemAlignment::Far);
     lblSlider1->SetAlignmentY(UI::ItemAlignment::Center);
 
     const float minSpacingDp = 45;
 
-    auto sliderLayout = std::make_shared<UI::ComplexStackLayout>(context);
+    const auto sliderLayout = std::make_shared<UI::ComplexStackLayout>(context);
     sliderLayout->SetOrientation(UI::LayoutOrientation::Horizontal);
     sliderLayout->SetAlignmentX(UI::ItemAlignment::Stretch);
     sliderLayout->AddChild(slider1, UI::LayoutLength(UI::LayoutUnitType::Star, 1.0f));
@@ -604,19 +604,19 @@ namespace Fsl
     sliderLayout->AddChild(lblSlider1, UI::LayoutLength(UI::LayoutUnitType::Fixed, minSpacingDp));
 
 
-    auto twoWayArrows = std::make_shared<UI::StackLayout>(context);
+    const auto twoWayArrows = std::make_shared<UI::StackLayout>(context);
     twoWayArrows->SetOrientation(UI::LayoutOrientation::Horizontal);
     twoWayArrows->SetAlignmentX(UI::ItemAlignment::Center);
     twoWayArrows->AddChild(CreateArrow(uiFactory, spriteUpArrow));
     twoWayArrows->AddChild(CreateArrow(uiFactory, spriteDownArrow));
 
-    auto slider2 = uiFactory.CreateSlider(UI::LayoutOrientation::Horizontal, LocalExample4::Slider2Constraint);
-    auto slider3 = uiFactory.CreateSlider(UI::LayoutOrientation::Horizontal, LocalExample4::Slider3Constraint);
-    auto slider4 = uiFactory.CreateSlider(UI::LayoutOrientation::Horizontal, LocalExample4::Slider4Constraint);
+    const auto slider2 = uiFactory.CreateSlider(UI::LayoutOrientation::Horizontal, LocalExample4::Slider2Constraint);
+    const auto slider3 = uiFactory.CreateSlider(UI::LayoutOrientation::Horizontal, LocalExample4::Slider3Constraint);
+    const auto slider4 = uiFactory.CreateSlider(UI::LayoutOrientation::Horizontal, LocalExample4::Slider4Constraint);
 
-    auto lblSlider2 = uiFactory.CreateFmtValueLabel(static_cast<float>(0));
-    auto lblSlider3 = uiFactory.CreateFmtValueLabel(static_cast<int32_t>(0));
-    auto lblSlider4 = uiFactory.CreateFmtValueLabel(static_cast<float>(0));
+    const auto lblSlider2 = uiFactory.CreateFmtValueLabel(static_cast<float>(0));
+    const auto lblSlider3 = uiFactory.CreateFmtValueLabel(static_cast<int32_t>(0));
+    const auto lblSlider4 = uiFactory.CreateFmtValueLabel(static_cast<float>(0));
     lblSlider2->SetAlignmentX(UI::ItemAlignment::Far);
     lblSlider2->SetAlignmentY(UI::ItemAlignment::Center);
     lblSlider3->SetAlignmentX(UI::ItemAlignment::Far);
@@ -624,7 +624,7 @@ namespace Fsl
     lblSlider4->SetAlignmentX(UI::ItemAlignment::Far);
     lblSlider4->SetAlignmentY(UI::ItemAlignment::Center);
 
-    auto sliderGrid = std::make_shared<UI::GridLayout>(context);
+    const auto sliderGrid = std::make_shared<UI::GridLayout>(context);
     sliderGrid->SetAlignmentX(UI::ItemAlignment::Stretch);
     sliderGrid->AddColumnDefinition(UI::GridColumnDefinition(UI::GridUnitType::Star, 1.0f));
     sliderGrid->AddColumnDefinition(UI::GridColumnDefinition(UI::GridUnitType::Auto));
@@ -642,7 +642,7 @@ namespace Fsl
     sliderGrid->AddChild(lblSlider3, 2, 1);
     sliderGrid->AddChild(lblSlider4, 2, 2);
 
-    auto layout = std::make_shared<UI::StackLayout>(context);
+    const auto layout = std::make_shared<UI::StackLayout>(context);
     layout->SetAlignmentX(UI::ItemAlignment::Stretch);
     layout->SetOrientation(UI::LayoutOrientation::Vertical);
     layout->AddChild(sliderLayout);
@@ -652,14 +652,14 @@ namespace Fsl
 
     // Basic data binding
     {    // setup a two way data binding from the 'slider' to these four controls
-      auto convertingBinding2 = std::make_shared<Fsl::DataBinding::TwoWayConverterBinding<float, uint8_t>>(
+      const auto convertingBinding2 = std::make_shared<Fsl::DataBinding::TwoWayConverterBinding<float, uint8_t>>(
         [](const uint8_t value) { return static_cast<float>(value) / 255.0f; },
         [](const float value) { return static_cast<uint8_t>(std::clamp(static_cast<int32_t>(std::round(value * 255.0f)), 0, 255)); });
 
-      auto convertingBinding3 = std::make_shared<Fsl::DataBinding::TwoWayConverterBinding<int32_t, uint8_t>>(
+      const auto convertingBinding3 = std::make_shared<Fsl::DataBinding::TwoWayConverterBinding<int32_t, uint8_t>>(
         [](const uint8_t value) { return value; }, [](const int32_t value) { return static_cast<uint8_t>(std::clamp(value, 0, 255)); });
 
-      auto convertingBinding4 = std::make_shared<Fsl::DataBinding::TwoWayConverterBinding<float, uint8_t>>(
+      const auto convertingBinding4 = std::make_shared<Fsl::DataBinding::TwoWayConverterBinding<float, uint8_t>>(
         [](const uint8_t value) { return static_cast<float>(value); },
         [](const float value) { return static_cast<uint8_t>(std::clamp(static_cast<int32_t>(std::round(value)), 0, 255)); });
 

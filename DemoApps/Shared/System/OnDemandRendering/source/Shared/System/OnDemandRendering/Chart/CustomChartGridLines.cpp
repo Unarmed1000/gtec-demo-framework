@@ -58,7 +58,7 @@ namespace Fsl::UI
     std::string DoGetDescriptionString(const uint32_t callCount)
     {
       fmt::memory_buffer buffer;
-      auto strView = DoGetDescriptionString(buffer, callCount);
+      const auto strView = DoGetDescriptionString(buffer, callCount);
       return std::string(strView);
     }
 

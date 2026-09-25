@@ -46,10 +46,10 @@ namespace Fsl
       {
         // Since all depth formats may be optional, we need to find a suitable depth format to use
         // Start with the highest precision packed format
-        std::vector<VkFormat> depthFormats = {VK_FORMAT_D32_SFLOAT_S8_UINT, VK_FORMAT_D32_SFLOAT, VK_FORMAT_D24_UNORM_S8_UINT,
-                                              VK_FORMAT_D16_UNORM_S8_UINT, VK_FORMAT_D16_UNORM};
+        const std::vector<VkFormat> depthFormats = {VK_FORMAT_D32_SFLOAT_S8_UINT, VK_FORMAT_D32_SFLOAT, VK_FORMAT_D24_UNORM_S8_UINT,
+                                                    VK_FORMAT_D16_UNORM_S8_UINT, VK_FORMAT_D16_UNORM};
 
-        for (auto& format : depthFormats)
+        for (const auto& format : depthFormats)
         {
           VkFormatProperties formatProps;
           vkGetPhysicalDeviceFormatProperties(physicalDevice, format, &formatProps);
@@ -469,7 +469,7 @@ namespace Fsl
       m_depthStencil.Image.Reset(m_device.Get(), image);
 
       const VkMemoryRequirements memReqs = m_depthStencil.Image.GetImageMemoryRequirements();
-      VkPhysicalDeviceMemoryProperties physicalDeviceMemoryProperties = m_physicalDevice.MemoryProperties;
+      const VkPhysicalDeviceMemoryProperties physicalDeviceMemoryProperties = m_physicalDevice.MemoryProperties;
       const auto memoryTypeIndex =
         MemoryTypeUtil::GetMemoryTypeIndex(physicalDeviceMemoryProperties, memReqs.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
 
@@ -700,7 +700,7 @@ namespace Fsl
 
         rBuffer.Reset(m_device.Get(), bufferCreateInfo);
 
-        VkMemoryRequirements memReqs = rBuffer.GetBufferMemoryRequirements();
+        const VkMemoryRequirements memReqs = rBuffer.GetBufferMemoryRequirements();
         VkMemoryAllocateInfo memAlloc{};
         memAlloc.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
         memAlloc.pNext = nullptr;
@@ -885,12 +885,12 @@ namespace Fsl
         throw NotSupportedException("Mesh loading is not supported, switch to a VulkanWillemsMeshDemoApp type if you need it");
       }
 
-      auto meshLoader = m_meshLoaderAllocFunc(GetContentManager());
+      const auto meshLoader = m_meshLoaderAllocFunc(GetContentManager());
 
       meshLoader->LoadMesh(filename);
       assert(meshLoader->GetMeshCount() > 0);
 
-      CommandBuffer copyCmd = CreateCommandBuffer(VK_COMMAND_BUFFER_LEVEL_PRIMARY, false);
+      const CommandBuffer copyCmd = CreateCommandBuffer(VK_COMMAND_BUFFER_LEVEL_PRIMARY, false);
       return meshLoader->CreateBuffers(m_vulkanDevice, vertexLayout, pMeshCreateInfo, true, copyCmd.Get(), m_deviceQueue.Queue);
     }
 

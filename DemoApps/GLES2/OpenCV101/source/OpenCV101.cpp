@@ -71,11 +71,11 @@ namespace Fsl
       alpha = input;
     }
 
-    auto contentManager = GetContentManager();
-    IO::Path contentPath = contentManager->GetContentPath();
+    const auto contentManager = GetContentManager();
+    const IO::Path contentPath = contentManager->GetContentPath();
 
-    IO::Path pathImg1 = IO::Path::Combine(contentPath, "Image1.png");
-    IO::Path pathImg2 = IO::Path::Combine(contentPath, "Image2.png");
+    const IO::Path pathImg1 = IO::Path::Combine(contentPath, "Image1.png");
+    const IO::Path pathImg2 = IO::Path::Combine(contentPath, "Image2.png");
 
 
     /// Read image ( same size, same type )

@@ -142,7 +142,7 @@ namespace Fsl
     , m_scene(config, m_device, m_deviceQueue, m_resources.BufferManager, m_resources.DescriptorPool, GetRenderConfig().MaxFramesInFlight,
               m_heatmapSupport)
   {
-    std::shared_ptr<OptionParser> options = config.GetOptions<OptionParser>();
+    const std::shared_ptr<OptionParser> options = config.GetOptions<OptionParser>();
 
     m_defaultHeatmapScale = options->GetHeatmapScale();
     m_defaultIterations = options->GetIterations();
@@ -273,7 +273,7 @@ namespace Fsl
   ShaderClock::Resources ShaderClock::CreateResources(const Vulkan::VUDevice& device, const Vulkan::VUDeviceQueueRecord& deviceQueue,
                                                       const RenderConfig& renderConfig)
   {
-    auto bufferManager =
+    const auto bufferManager =
       std::make_shared<Vulkan::VMBufferManager>(device.GetPhysicalDevice(), device.Get(), deviceQueue.Queue, deviceQueue.QueueFamilyIndex);
 
     auto descriptorPool = CreateDescriptorPool(device, renderConfig.MaxFramesInFlight);
@@ -286,21 +286,21 @@ namespace Fsl
     RegisterExtension(m_uiExtension);
 
     // Next up we prepare the actual UI
-    auto context = m_uiExtension->GetContext();
-    auto uiControlFactory = UI::Theme::ThemeSelector::CreateControlFactory(*m_uiExtension);
+    const auto context = m_uiExtension->GetContext();
+    const auto uiControlFactory = UI::Theme::ThemeSelector::CreateControlFactory(*m_uiExtension);
     auto& uiFactory = *uiControlFactory;
 
-    auto labelHeatmap = uiFactory.CreateLabel("Heatmap scale: ");
+    const auto labelHeatmap = uiFactory.CreateLabel("Heatmap scale: ");
     labelHeatmap->SetAlignmentY(UI::ItemAlignment::Center);
-    auto sliderHeatmap = uiFactory.CreateSliderFmtValue(UI::LayoutOrientation::Horizontal,
-                                                        ConstrainedValue<uint32_t>(heatmapScale, LocalConfig::HeatMapMin, LocalConfig::HeatMapMax));
+    const auto sliderHeatmap = uiFactory.CreateSliderFmtValue(
+      UI::LayoutOrientation::Horizontal, ConstrainedValue<uint32_t>(heatmapScale, LocalConfig::HeatMapMin, LocalConfig::HeatMapMax));
     sliderHeatmap->SetAlignmentY(UI::ItemAlignment::Center);
 
-    auto switchHeatmap = uiFactory.CreateSwitch("Enabled", heatmapSupported);
+    const auto switchHeatmap = uiFactory.CreateSwitch("Enabled", heatmapSupported);
 
-    auto labelIterations = uiFactory.CreateLabel("Iterations: ");
+    const auto labelIterations = uiFactory.CreateLabel("Iterations: ");
     labelIterations->SetAlignmentY(UI::ItemAlignment::Center);
-    auto sliderIterations = uiFactory.CreateSliderFmtValue(
+    const auto sliderIterations = uiFactory.CreateSliderFmtValue(
       UI::LayoutOrientation::Horizontal, ConstrainedValue<uint32_t>(iterations, LocalConfig::IterationsMin, LocalConfig::IterationsMax));
     sliderIterations->SetAlignmentY(UI::ItemAlignment::Center);
 
@@ -311,9 +311,9 @@ namespace Fsl
       switchHeatmap->SetEnabled(false);
     }
 
-    auto btnDefault = uiFactory.CreateTextButton(UI::Theme::ButtonType::Contained, "Set defaults");
+    const auto btnDefault = uiFactory.CreateTextButton(UI::Theme::ButtonType::Contained, "Set defaults");
 
-    auto bottomGrid = std::make_shared<UI::GridLayout>(context);
+    const auto bottomGrid = std::make_shared<UI::GridLayout>(context);
     bottomGrid->SetAlignmentX(UI::ItemAlignment::Stretch);
     bottomGrid->SetAlignmentY(UI::ItemAlignment::Stretch);
     bottomGrid->AddColumnDefinition(UI::GridColumnDefinition(UI::GridUnitType::Auto));
@@ -330,7 +330,7 @@ namespace Fsl
     bottomGrid->AddChild(btnDefault, 3, 1);
 
 
-    auto bottomBar = uiFactory.CreateBottomBar(bottomGrid);
+    const auto bottomBar = uiFactory.CreateBottomBar(bottomGrid);
 
     // Finally add everything to the window manager (to ensure its seen)
     m_uiExtension->GetWindowManager()->Add(bottomBar);

@@ -159,11 +159,11 @@ namespace Fsl
   BackgroundCube::BackgroundRecord BackgroundCube::CreateBackgroundResources(IBasicRenderSystem& render, IContentManager& contentManager)
   {
     constexpr BitmapOrigin BitmapOrigin = BitmapOrigin::LowerLeft;
-    Texture texture =
+    const Texture texture =
       contentManager.ReadTexture(LocalConfig::BackgroundTexture, PixelFormat::R8G8B8A8_UNORM, BitmapOrigin, PixelChannelOrder::Undefined, true);
-    auto textureLogo = render.CreateTexture2D(texture, Texture2DFilterHint::Smooth);
+    const auto textureLogo = render.CreateTexture2D(texture, Texture2DFilterHint::Smooth);
 
-    auto vertexSpan = ReadOnlyFlexVertexSpanUtil::AsSpan(g_vertices);
+    const auto vertexSpan = ReadOnlyFlexVertexSpanUtil::AsSpan(g_vertices);
     const BasicMaterialDepthInfo depthInfo(false, false, BasicCompareOp::Less);
     auto matCubeOpaque = render.CreateMaterial(BasicMaterialCreateInfo(BlendState::Opaque, BasicCullMode::Front, BasicFrontFace::CounterClockwise,
                                                                        depthInfo, vertexSpan.AsVertexDeclarationSpan()),
@@ -199,8 +199,8 @@ namespace Fsl
     const BasicMaterialInfo materialInfo = rRenderSystem.GetMaterialInfo(m_background.MatCubeOpaque);
 
     // Enable custom viewport on the material
-    BasicMaterialInfo newMI(materialInfo.Blend, materialInfo.CullMode, materialInfo.CullFrontFace, materialInfo.Depth,
-                            BasicViewportMode::CustomOriginTopLeft, viewportPx);
+    const BasicMaterialInfo newMI(materialInfo.Blend, materialInfo.CullMode, materialInfo.CullFrontFace, materialInfo.Depth,
+                                  BasicViewportMode::CustomOriginTopLeft, viewportPx);
     rRenderSystem.SetMaterialInfo(m_background.MatCubeOpaque, newMI);
   }
 

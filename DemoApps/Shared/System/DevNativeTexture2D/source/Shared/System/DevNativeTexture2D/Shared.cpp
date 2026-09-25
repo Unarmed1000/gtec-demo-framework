@@ -76,7 +76,7 @@ namespace Fsl
         std::make_shared<UIDemoAppExtension>(config, m_uiEventListener.GetListener(), "UIAtlas/UIAtlas_160dpi"))    // Prepare the extension
     , m_graphics(config.DemoServiceProvider.Get<IGraphicsService>())
   {
-    auto contentManager = config.DemoServiceProvider.Get<IContentManager>();
+    const auto contentManager = config.DemoServiceProvider.Get<IContentManager>();
 
     FSLLOG3_INFO("Preparing textures");
     {
@@ -92,16 +92,16 @@ namespace Fsl
 
     {    // Build a simple UI
 
-      auto windowContext = m_uiExtension->GetContext();
-      auto uiControlFactory = UI::Theme::ThemeSelector::CreateControlFactory(*m_uiExtension);
+      const auto windowContext = m_uiExtension->GetContext();
+      const auto uiControlFactory = UI::Theme::ThemeSelector::CreateControlFactory(*m_uiExtension);
       auto& uiFactory = *uiControlFactory;
 
 
       m_uiRecord = CreateUI(windowContext, uiFactory);
 
-      auto background = uiFactory.CreateLeftBar(m_uiRecord.MainLayout);
+      const auto background = uiFactory.CreateLeftBar(m_uiRecord.MainLayout);
 
-      auto imageLine = uiFactory.CreateImage(uiFactory.GetResources().GetDividerNineSliceSprite());
+      const auto imageLine = uiFactory.CreateImage(uiFactory.GetResources().GetDividerNineSliceSprite());
       imageLine->SetAlignmentX(UI::ItemAlignment::Stretch);
       imageLine->SetAlignmentY(UI::ItemAlignment::Stretch);
       imageLine->SetRotateImageCW(true);
@@ -207,11 +207,11 @@ namespace Fsl
 
   Shared::TestRecord Shared::CreateTestRecord(const Bitmap& bitmap)
   {
-    auto windowContext = m_uiExtension->GetContext();
+    const auto windowContext = m_uiExtension->GetContext();
 
-    Texture2D texture(m_graphics->GetNativeGraphics(), bitmap, Texture2DFilterHint::Smooth);
+    const Texture2D texture(m_graphics->GetNativeGraphics(), bitmap, Texture2DFilterHint::Smooth);
     ICustomSpriteResourceManager& resManager = m_uiExtension->GetCustomSpriteResourceManager();
-    auto contentSprite = resManager.CreateCustomTextureSprite(texture.GetNative(), BlendState::AlphaBlend);
+    const auto contentSprite = resManager.CreateCustomTextureSprite(texture.GetNative(), BlendState::AlphaBlend);
 
     auto image = std::make_shared<UI::Image>(windowContext);
     image->SetContent(contentSprite);
@@ -282,14 +282,14 @@ namespace Fsl
 
   Shared::DynamicTestRecord Shared::CreateDynamicTestRecord()
   {
-    auto windowContext = m_uiExtension->GetContext();
+    const auto windowContext = m_uiExtension->GetContext();
 
-    auto imageIndex = static_cast<uint32_t>(m_dynamicTestRecords.size() & 3);
+    const auto imageIndex = static_cast<uint32_t>(m_dynamicTestRecords.size() & 3);
     const auto& bitmap = GetDynamicBitmap(imageIndex);
 
-    DynamicTexture2D texture(m_graphics->GetNativeGraphics(), bitmap, Texture2DFilterHint::Smooth);
+    const DynamicTexture2D texture(m_graphics->GetNativeGraphics(), bitmap, Texture2DFilterHint::Smooth);
     ICustomSpriteResourceManager& resManager = m_uiExtension->GetCustomSpriteResourceManager();
-    auto contentSprite = resManager.CreateCustomTextureSprite(texture.GetNative(), BlendState::AlphaBlend);
+    const auto contentSprite = resManager.CreateCustomTextureSprite(texture.GetNative(), BlendState::AlphaBlend);
 
     auto image = std::make_shared<UI::Image>(windowContext);
     image->SetContent(contentSprite);
@@ -344,45 +344,45 @@ namespace Fsl
 
   Shared::UIRecord Shared::CreateUI(const std::shared_ptr<UI::WindowContext>& context, UI::Theme::IThemeControlFactory& rUIFactory)
   {
-    auto labelResPxCaption = CreateLabel(context, "Resolution: ", UI::ItemAlignment::Near, UI::ItemAlignment::Center);
-    auto labelDpiCaption = CreateLabel(context, "Actual DPI: ", UI::ItemAlignment::Near, UI::ItemAlignment::Center);
+    const auto labelResPxCaption = CreateLabel(context, "Resolution: ", UI::ItemAlignment::Near, UI::ItemAlignment::Center);
+    const auto labelDpiCaption = CreateLabel(context, "Actual DPI: ", UI::ItemAlignment::Near, UI::ItemAlignment::Center);
 
-    auto buttonType = UI::Theme::ButtonType::Contained;
+    const auto buttonType = UI::Theme::ButtonType::Contained;
 
-    auto buttonAddFront = rUIFactory.CreateTextButton(buttonType, "Add front");
+    const auto buttonAddFront = rUIFactory.CreateTextButton(buttonType, "Add front");
     buttonAddFront->SetAlignmentX(UI::ItemAlignment::Stretch);
 
-    auto buttonRemoveFront = rUIFactory.CreateTextButton(buttonType, "Remove front");
+    const auto buttonRemoveFront = rUIFactory.CreateTextButton(buttonType, "Remove front");
     buttonRemoveFront->SetAlignmentX(UI::ItemAlignment::Stretch);
 
-    auto buttonAddBack = rUIFactory.CreateTextButton(buttonType, "Add back");
+    const auto buttonAddBack = rUIFactory.CreateTextButton(buttonType, "Add back");
     buttonAddBack->SetAlignmentX(UI::ItemAlignment::Stretch);
 
-    auto buttonRemoveBack = rUIFactory.CreateTextButton(buttonType, "Remove back");
+    const auto buttonRemoveBack = rUIFactory.CreateTextButton(buttonType, "Remove back");
     buttonRemoveBack->SetAlignmentX(UI::ItemAlignment::Stretch);
 
-    auto buttonClear = rUIFactory.CreateTextButton(buttonType, "Clear");
+    const auto buttonClear = rUIFactory.CreateTextButton(buttonType, "Clear");
     buttonClear->SetAlignmentX(UI::ItemAlignment::Stretch);
 
-    auto button2AddFront = rUIFactory.CreateTextButton(buttonType, "Add D front");
+    const auto button2AddFront = rUIFactory.CreateTextButton(buttonType, "Add D front");
     button2AddFront->SetAlignmentX(UI::ItemAlignment::Stretch);
 
-    auto button2RemoveFront = rUIFactory.CreateTextButton(buttonType, "Remove D front");
+    const auto button2RemoveFront = rUIFactory.CreateTextButton(buttonType, "Remove D front");
     button2RemoveFront->SetAlignmentX(UI::ItemAlignment::Stretch);
 
-    auto button2AddBack = rUIFactory.CreateTextButton(buttonType, "Add D back");
+    const auto button2AddBack = rUIFactory.CreateTextButton(buttonType, "Add D back");
     button2AddBack->SetAlignmentX(UI::ItemAlignment::Stretch);
 
-    auto button2RemoveBack = rUIFactory.CreateTextButton(buttonType, "Remove D back");
+    const auto button2RemoveBack = rUIFactory.CreateTextButton(buttonType, "Remove D back");
     button2RemoveBack->SetAlignmentX(UI::ItemAlignment::Stretch);
 
-    auto button2Clear = rUIFactory.CreateTextButton(buttonType, "Clear D");
+    const auto button2Clear = rUIFactory.CreateTextButton(buttonType, "Clear D");
     button2Clear->SetAlignmentX(UI::ItemAlignment::Stretch);
 
-    auto buttonClearAll = rUIFactory.CreateTextButton(buttonType, "Clear All");
+    const auto buttonClearAll = rUIFactory.CreateTextButton(buttonType, "Clear All");
     buttonClearAll->SetAlignmentX(UI::ItemAlignment::Stretch);
 
-    auto stackLayout = std::make_shared<UI::StackLayout>(context);
+    const auto stackLayout = std::make_shared<UI::StackLayout>(context);
     stackLayout->SetOrientation(UI::LayoutOrientation::Vertical);
     stackLayout->AddChild(buttonAddFront);
     stackLayout->AddChild(buttonRemoveFront);
@@ -396,7 +396,7 @@ namespace Fsl
     stackLayout->AddChild(button2Clear);
     stackLayout->AddChild(buttonClearAll);
 
-    auto gridLayout = std::make_shared<UI::GridLayout>(context);
+    const auto gridLayout = std::make_shared<UI::GridLayout>(context);
     gridLayout->AddColumnDefinition(UI::GridColumnDefinition(UI::GridUnitType::Star, 0.10f));
     gridLayout->AddColumnDefinition(UI::GridColumnDefinition(UI::GridUnitType::Star, 1.0f));
     gridLayout->AddColumnDefinition(UI::GridColumnDefinition(UI::GridUnitType::Star, 0.10f));

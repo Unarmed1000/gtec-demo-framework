@@ -141,7 +141,7 @@ namespace Fsl
     explicit Shared(const DemoAppConfig& config);
     ~Shared() override;
 
-    std::shared_ptr<UIDemoAppExtension> GetUIDemoAppExtension() const
+    [[nodiscard]] std::shared_ptr<UIDemoAppExtension> GetUIDemoAppExtension() const
     {
       return m_uiExtension;
     }
@@ -165,8 +165,8 @@ namespace Fsl
     void DrawExampleDpFloat(INativeBatch2D& rNativeBatch, const PxRectangle2D& dstRect, const Resources& resources, const StringViewLite& caption,
                             const bool useTestAtlas);
 
-    int32_t CalcPxAreaHeightPx(const Resources& resources) const;
-    int32_t CalcTextAreaHeightPx(const Resources& resources) const;
+    [[nodiscard]] int32_t CalcPxAreaHeightPx(const Resources& resources) const;
+    [[nodiscard]] int32_t CalcTextAreaHeightPx(const Resources& resources) const;
     void DrawTextArea(INativeBatch2D& rNativeBatch, const PxRectangle2D& dstRect, const Resources& resources, const bool useTestAtlas);
     void DrawText(INativeBatch2D& rNativeBatch, const BaseTexture2D& texFont, const TextureAtlasSpriteFont& bitmapFont, const StringViewLite& text,
                   const PxPoint2& dstPositionPx, const Color& fontColor, const PxClipRectangle& clipRectPx);

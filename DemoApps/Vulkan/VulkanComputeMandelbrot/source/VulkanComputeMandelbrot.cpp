@@ -145,13 +145,13 @@ namespace Fsl
       {
         FSLLOG3_INFO("Compute shader done.");
         //
-        auto storedImage = GatherImageData();
+        const auto storedImage = GatherImageData();
 
         // SaveHelper::Save(IMAGE_NAME, storedImage);
         {    // FIX: quick fix to save for now
           ReadOnlyRawBitmap rawBitmap;
-          ImageData::ScopedRawBitmapAccess access(storedImage, rawBitmap);
-          Bitmap bitmap(rawBitmap);
+          const ImageData::ScopedRawBitmapAccess access(storedImage, rawBitmap);
+          const Bitmap bitmap(rawBitmap);
           GetPersistentDataManager()->Write(ImageName, bitmap);
         }
 
@@ -193,7 +193,7 @@ namespace Fsl
 
       m_commandBuffer.Begin(0, VK_NULL_HANDLE, 0, VK_NULL_HANDLE, VK_FALSE, 0, 0);
       {
-        VkImageSubresourceRange imageSubresourceRange = {VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1};
+        const VkImageSubresourceRange imageSubresourceRange = {VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1};
 
         // Prepare stage image for final layout etc.
         stageTexture.ImageCmdPipelineBarrier(m_commandBuffer.Get(), VK_ACCESS_TRANSFER_WRITE_BIT, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
@@ -232,7 +232,7 @@ namespace Fsl
       imageSubresource.mipLevel = 0;
       imageSubresource.arrayLayer = 0;
 
-      VkSubresourceLayout subresourceLayout = stageTexture.GetImage().GetImageSubresourceLayout(imageSubresource);
+      const VkSubresourceLayout subresourceLayout = stageTexture.GetImage().GetImageSubresourceLayout(imageSubresource);
 
       const auto allocationSize = stageTexture.GetAllocationSize();
       stageTexture.MapMemory(0, allocationSize, 0);
@@ -463,7 +463,7 @@ namespace Fsl
       vkCmdBindDescriptorSets(m_commandBuffer.Get(), VK_PIPELINE_BIND_POINT_COMPUTE, m_pipelineLayout.Get(), 0, 1, m_descriptorSets.GetPointer(0), 0,
                               nullptr);
 
-      VkImageSubresourceRange imageSubresourceRange = {VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1};
+      const VkImageSubresourceRange imageSubresourceRange = {VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1};
 
       m_currentTexture.ImageCmdPipelineBarrier(m_commandBuffer.Get(), VK_ACCESS_SHADER_WRITE_BIT, VK_IMAGE_LAYOUT_GENERAL, imageSubresourceRange);
 
@@ -495,7 +495,7 @@ namespace Fsl
                                                        const VkImageLayout initialLayout, const VkMemoryPropertyFlags memoryPropertyFlagBits,
                                                        const VkAccessFlags accessMask)
   {
-    VkExtent3D extent = {ImageLength, ImageLength, 1};
+    const VkExtent3D extent = {ImageLength, ImageLength, 1};
 
     const VkFormat imageFormat = VK_FORMAT_R8G8B8A8_UNORM;
     ImageEx image(device, 0, VK_IMAGE_TYPE_2D, imageFormat, extent, 1, 1, VK_SAMPLE_COUNT_1_BIT, imageTiling, usage, VK_SHARING_MODE_EXCLUSIVE, 0,

@@ -45,10 +45,10 @@ namespace Fsl::Helios
     virtual ~ICameraSystemAdapter() = default;
 
     //! @brief Get the camera type
-    virtual CameraType GetCameraType() const = 0;
+    [[nodiscard]] virtual CameraType GetCameraType() const = 0;
 
     //! @brief Get the number of cameras supported by this system
-    virtual uint32_t GetCameraCount() const = 0;
+    [[nodiscard]] virtual uint32_t GetCameraCount() const = 0;
 
     virtual std::shared_ptr<ICameraAdapter> Allocate(const CameraAdapterAllocateInfo& allocateInfo) = 0;
   };

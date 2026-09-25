@@ -44,7 +44,7 @@ namespace Fsl
   {
     GLVertexBuffer vertexBuffer(ModelVertices::CreateTunnelVertexArray(), GL_STATIC_DRAW);
 
-    std::array<GLES3::GLVertexAttribLink, 3> attribLink = {
+    const std::array<GLES3::GLVertexAttribLink, 3> attribLink = {
       GLVertexAttribLink(program.GetAttribLocation("VertexPosition"), vertexBuffer.GetVertexElementIndex(VertexElementUsage::Position, 0)),
       GLVertexAttribLink(program.GetAttribLocation("VertexNormal"), vertexBuffer.GetVertexElementIndex(VertexElementUsage::Normal, 0)),
       GLVertexAttribLink(program.GetAttribLocation("VertexTexCoord"), vertexBuffer.GetVertexElementIndex(VertexElementUsage::TextureCoordinate, 0))};
@@ -67,7 +67,7 @@ namespace Fsl
   {
     GLVertexBuffer vertexBuffer(ModelVertices::CreateQuadVertexArray(), GL_STATIC_DRAW);
 
-    std::array<GLES3::GLVertexAttribLink, 2> attribLink = {
+    const std::array<GLES3::GLVertexAttribLink, 2> attribLink = {
       GLVertexAttribLink(program.GetAttribLocation("VertexPosition"), vertexBuffer.GetVertexElementIndex(VertexElementUsage::Position, 0)),
       GLVertexAttribLink(program.GetAttribLocation("VertexTexCoord"), vertexBuffer.GetVertexElementIndex(VertexElementUsage::TextureCoordinate, 0))};
 

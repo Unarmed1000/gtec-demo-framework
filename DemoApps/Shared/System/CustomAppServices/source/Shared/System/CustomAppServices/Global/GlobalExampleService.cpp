@@ -52,7 +52,7 @@ namespace Fsl
   int32_t GlobalExampleService::Add(const int32_t a, const int32_t b) const
   {
     //! global services need to be thread safe, so we take a mutex lock here
-    std::lock_guard<std::mutex> lock(m_mutex);
+    const std::lock_guard<std::mutex> lock(m_mutex);
 
     const int32_t result = a + b;
 

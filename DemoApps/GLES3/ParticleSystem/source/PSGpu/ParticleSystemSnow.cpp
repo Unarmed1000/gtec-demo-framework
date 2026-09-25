@@ -199,9 +199,9 @@ namespace Fsl
   {
     glUseProgram(0);
 
-    std::string strVert = contentManager->ReadAllText("PSSnow_Render.vert");
-    std::string strFrag = contentManager->ReadAllText("PSSnow_Render.frag");
-    std::string strGeom = contentManager->ReadAllText("PSSnow_Render.geom");
+    const std::string strVert = contentManager->ReadAllText("PSSnow_Render.vert");
+    const std::string strFrag = contentManager->ReadAllText("PSSnow_Render.frag");
+    const std::string strGeom = contentManager->ReadAllText("PSSnow_Render.geom");
 
     {
       // GLShader shaderVert(GL_VERTEX_SHADER, strVert);

@@ -44,12 +44,12 @@ namespace Fsl
     OptionParser() = default;
     ~OptionParser() override = default;
 
-    bool GetEnableTestPattern() const
+    [[nodiscard]] bool GetEnableTestPattern() const
     {
       return m_enableTestPattern;
     }
 
-    float GetSpeed() const
+    [[nodiscard]] float GetSpeed() const
     {
       return m_speed;
     }

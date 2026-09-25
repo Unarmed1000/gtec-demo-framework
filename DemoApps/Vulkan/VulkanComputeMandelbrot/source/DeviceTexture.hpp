@@ -62,7 +62,7 @@ namespace Fsl
     void Reset(ImageEx&& image, Vulkan::VUDeviceMemory&& deviceMemory, const VkFormat imageFormat);
 
 
-    const ImageEx& GetImage() const
+    [[nodiscard]] const ImageEx& GetImage() const
     {
       return m_image;
     }
@@ -73,24 +73,24 @@ namespace Fsl
       return m_image;
     }
 
-    const Vulkan::VUDeviceMemory& GetDeviceMemory() const
+    [[nodiscard]] const Vulkan::VUDeviceMemory& GetDeviceMemory() const
     {
       return m_memory;
     }
 
 
-    VkFormat GetImageFormat() const
+    [[nodiscard]] VkFormat GetImageFormat() const
     {
       return m_imageFormat;
     }
 
 
-    VkDeviceSize GetAllocationSize() const
+    [[nodiscard]] VkDeviceSize GetAllocationSize() const
     {
       return m_memory.GetAllocationSize();
     }
 
-    VkMemoryPropertyFlags GetMemoryPropertyFlags() const
+    [[nodiscard]] VkMemoryPropertyFlags GetMemoryPropertyFlags() const
     {
       return m_memory.GetMemoryPropertyFlags();
     }
@@ -100,7 +100,7 @@ namespace Fsl
       m_memory.MapMemory(offset, size, flags);
     }
 
-    const void* GetMappedMemoryPointer() const
+    [[nodiscard]] const void* GetMappedMemoryPointer() const
     {
       return m_memory.GetMappedMemoryPointer();
     }
@@ -112,7 +112,7 @@ namespace Fsl
 
     void InvalidateMappedMemoryRanges(const VkDeviceSize offset, const VkDeviceSize size)
     {
-      return m_memory.InvalidateMappedMemoryRanges(offset, size);
+      m_memory.InvalidateMappedMemoryRanges(offset, size);
     }
 
 

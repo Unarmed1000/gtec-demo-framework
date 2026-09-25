@@ -96,8 +96,8 @@ namespace Fsl
     RegisterExtension(m_uiExtension);
 
 
-    auto context = m_uiExtension->GetContext();
-    auto uiControlFactory = UI::Theme::ThemeSelector::CreateControlFactory(*m_uiExtension);
+    const auto context = m_uiExtension->GetContext();
+    const auto uiControlFactory = UI::Theme::ThemeSelector::CreateControlFactory(*m_uiExtension);
 
     m_ui = CreateUI(uiControlFactory);
 
@@ -200,7 +200,7 @@ namespace Fsl
 
   void EasingFunctions::DrawNow()
   {
-    PxRectangle renderRectanglePx = m_ui.RenderArea->WinGetContentRectanglePx();
+    const PxRectangle renderRectanglePx = m_ui.RenderArea->WinGetContentRectanglePx();
 
 
     const auto transitionType = GEasingFunctions[m_ui.Slider->GetValue()];
@@ -233,7 +233,7 @@ namespace Fsl
       float progress = 0.0f;
       for (auto x = renderRectanglePx.RawLeft(); x < renderRectanglePx.RawRight(); ++x)
       {
-        int32_t y = yOffsetPx + heightPx - TypeConverter::ChangeTo<int32_t>(fnEase(progress) * static_cast<float>(heightPx));
+        const int32_t y = yOffsetPx + heightPx - TypeConverter::ChangeTo<int32_t>(fnEase(progress) * static_cast<float>(heightPx));
         m_nativeBatch->Draw(m_texFill, Vector2(x, y), SrcRectanglePx, Color);
         progress += progressAdd;
       }
@@ -248,40 +248,40 @@ namespace Fsl
   {
     const auto context = factory->GetContext();
 
-    auto renderArea = std::make_shared<UI::BaseWindow>(context);
+    const auto renderArea = std::make_shared<UI::BaseWindow>(context);
     renderArea->SetAlignmentX(UI::ItemAlignment::Stretch);
     renderArea->SetAlignmentY(UI::ItemAlignment::Stretch);
 
     static_assert(!GEasingFunctions.empty());
 
-    auto sliderValueLabel = factory->CreateLabel("?");
+    const auto sliderValueLabel = factory->CreateLabel("?");
     sliderValueLabel->SetAlignmentX(UI::ItemAlignment::Center);
 
     const ConstrainedValue<uint32_t> sliderConstraints(0, 0, UncheckedNumericCast<uint32_t>(GEasingFunctions.size() - 1));
-    auto slider = factory->CreateSlider(UI::LayoutOrientation::Horizontal, sliderConstraints);
+    const auto slider = factory->CreateSlider(UI::LayoutOrientation::Horizontal, sliderConstraints);
     slider->SetAlignmentX(UI::ItemAlignment::Stretch);
 
-    auto barLayout = std::make_shared<UI::StackLayout>(context);
+    const auto barLayout = std::make_shared<UI::StackLayout>(context);
     barLayout->SetOrientation(UI::LayoutOrientation::Vertical);
     barLayout->SetAlignmentX(UI::ItemAlignment::Stretch);
     barLayout->SetAlignmentY(UI::ItemAlignment::Stretch);
     barLayout->AddChild(sliderValueLabel);
     barLayout->AddChild(slider);
 
-    auto bottomBar = factory->CreateBottomBar(barLayout, UI::Theme::BarType::Normal);
+    const auto bottomBar = factory->CreateBottomBar(barLayout, UI::Theme::BarType::Normal);
 
 
-    auto mainLayout = std::make_shared<UI::ComplexStackLayout>(context);
+    const auto mainLayout = std::make_shared<UI::ComplexStackLayout>(context);
     mainLayout->SetAlignmentX(UI::ItemAlignment::Stretch);
     mainLayout->SetAlignmentY(UI::ItemAlignment::Stretch);
     mainLayout->AddChild(renderArea, UI::LayoutLength(UI::LayoutUnitType::Star, 1.0f));
     mainLayout->AddChild(bottomBar, UI::LayoutLength(UI::LayoutUnitType::Auto));
 
-    auto fillSprite = factory->GetResources().GetFillSprite();
+    const auto fillSprite = factory->GetResources().GetFillSprite();
 
 
     {
-      auto converterBinding = std::make_shared<Fsl::DataBinding::ConverterBinding<StringViewLite, uint32_t>>(
+      const auto converterBinding = std::make_shared<Fsl::DataBinding::ConverterBinding<StringViewLite, uint32_t>>(
         [](const uint32_t value) { return SimplifyEnumName(Debug::ToString(GEasingFunctions[value])); });
 
       const auto hSrcSlider = slider->GetPropertyHandle(UI::Slider<uint32_t>::PropertyValue);

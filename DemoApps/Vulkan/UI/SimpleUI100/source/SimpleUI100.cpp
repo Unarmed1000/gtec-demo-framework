@@ -58,17 +58,17 @@ namespace Fsl
     RegisterExtension(m_uiExtension);
 
     // Next up we prepare the actual UI
-    auto context = m_uiExtension->GetContext();
+    const auto context = m_uiExtension->GetContext();
     ISpriteResourceManager& spriteResourceManager = m_uiExtension->GetSpriteResourceManager();
-    auto defaultMaterialId = m_uiExtension->GetDefaultMaterialId();
+    const auto defaultMaterialId = m_uiExtension->GetDefaultMaterialId();
 
-    auto uiControlFactory = UI::Theme::ThemeSelector::CreateControlFactory(*m_uiExtension);
+    const auto uiControlFactory = UI::Theme::ThemeSelector::CreateControlFactory(*m_uiExtension);
     auto& factory = *uiControlFactory;
 
-    auto spriteBack = spriteResourceManager.CreateImageSprite(defaultMaterialId, "Icon/Av/ic_skip_previous_white_48dp");
-    auto spriteNext = spriteResourceManager.CreateImageSprite(defaultMaterialId, "Icon/Av/ic_skip_next_white_48dp");
-    auto spritePlay = spriteResourceManager.CreateImageSprite(defaultMaterialId, "Icon/Av/ic_play_arrow_white_48dp");
-    auto spriteStop = spriteResourceManager.CreateImageSprite(defaultMaterialId, "Icon/Av/ic_stop_white_48dp");
+    const auto spriteBack = spriteResourceManager.CreateImageSprite(defaultMaterialId, "Icon/Av/ic_skip_previous_white_48dp");
+    const auto spriteNext = spriteResourceManager.CreateImageSprite(defaultMaterialId, "Icon/Av/ic_skip_next_white_48dp");
+    const auto spritePlay = spriteResourceManager.CreateImageSprite(defaultMaterialId, "Icon/Av/ic_play_arrow_white_48dp");
+    const auto spriteStop = spriteResourceManager.CreateImageSprite(defaultMaterialId, "Icon/Av/ic_stop_white_48dp");
 
     // Allocate the four player buttons
     m_btnBack = factory.CreateImageButton(UI::Theme::ImageButtonType::Normal, spriteBack);
@@ -77,7 +77,7 @@ namespace Fsl
     m_btnStop = factory.CreateImageButton(UI::Theme::ImageButtonType::Normal, spriteStop);
 
     // Create a horizontal stack layout and add the four buttons (in the desired order)
-    auto playerStack = std::make_shared<UI::StackLayout>(context);
+    const auto playerStack = std::make_shared<UI::StackLayout>(context);
     playerStack->SetOrientation(UI::LayoutOrientation::Horizontal);
     playerStack->SetAlignmentX(UI::ItemAlignment::Center);
     playerStack->SetAlignmentY(UI::ItemAlignment::Far);
@@ -87,7 +87,7 @@ namespace Fsl
     playerStack->AddChild(m_btnNext);
 
     // Create a bottom bar for the buttons
-    auto bar = factory.CreateBottomBar(playerStack);
+    const auto bar = factory.CreateBottomBar(playerStack);
 
     // Create a label to write stuff into when a button is pressed
     m_label = std::make_shared<UI::Label>(context);
@@ -96,12 +96,12 @@ namespace Fsl
 
     // Create a 'root' layout we use the recommended fill layout as it will utilize all available space on the screen
     // We then add the 'player' stack to it and the label
-    auto fillLayout = std::make_shared<UI::FillLayout>(context);
+    const auto fillLayout = std::make_shared<UI::FillLayout>(context);
     fillLayout->AddChild(bar);
     fillLayout->AddChild(m_label);
 
     // Finally add everything to the window manager (to ensure its seen)
-    auto windowManager = m_uiExtension->GetWindowManager();
+    const auto windowManager = m_uiExtension->GetWindowManager();
     windowManager->Add(fillLayout);
   }
 

@@ -43,7 +43,7 @@ namespace Fsl
   InputLogger::InputLogger(const ServiceProvider& serviceProvider)
     : m_gamepads(serviceProvider.Get<IGamepads>())
   {
-    auto graphicsService = serviceProvider.TryGet<IGraphicsService>();
+    const auto graphicsService = serviceProvider.TryGet<IGraphicsService>();
     if (graphicsService)
     {
       m_basic2D = graphicsService->GetBasic2D();
@@ -64,7 +64,7 @@ namespace Fsl
   void InputLogger::OnKeyEvent(const KeyEvent& event)
   {
     auto strKey = Fsl::Debug::ToString(event.GetKey());
-    auto str = fmt::format("OnKeyEvent timestamp: {} key: {} pressed: {}", event.GetTimestamp(), strKey, event.IsPressed());
+    const auto str = fmt::format("OnKeyEvent timestamp: {} key: {} pressed: {}", event.GetTimestamp(), strKey, event.IsPressed());
     FSLLOG3_INFO(str);
     m_console.push_back(str);
   }
@@ -74,8 +74,8 @@ namespace Fsl
   {
     auto strButton = Fsl::Debug::ToString(event.GetButton());
 
-    auto str = fmt::format("OnMouseButtonEvent timestamp: {} key: {} pressed: {} position: {}", event.GetTimestamp(), strButton, event.IsPressed(),
-                           event.GetPosition());
+    const auto str = fmt::format("OnMouseButtonEvent timestamp: {} key: {} pressed: {} position: {}", event.GetTimestamp(), strButton,
+                                 event.IsPressed(), event.GetPosition());
     FSLLOG3_INFO(str);
     m_console.push_back(str);
   }
@@ -83,7 +83,7 @@ namespace Fsl
 
   void InputLogger::OnMouseMoveEvent(const MouseMoveEvent& event)
   {
-    auto str = fmt::format("OnMouseMoveEvent timestamp: {} position: {}", event.GetTimestamp(), event.GetPosition());
+    const auto str = fmt::format("OnMouseMoveEvent timestamp: {} position: {}", event.GetTimestamp(), event.GetPosition());
     FSLLOG3_INFO(str);
     m_console.push_back(str);
   }
@@ -91,7 +91,8 @@ namespace Fsl
 
   void InputLogger::OnMouseWheelEvent(const MouseWheelEvent& event)
   {
-    auto str = fmt::format("OnMouseWheelEvent timestamp: {} delta: {} position: {}", event.GetTimestamp(), event.GetDelta(), event.GetPosition());
+    const auto str =
+      fmt::format("OnMouseWheelEvent timestamp: {} delta: {} position: {}", event.GetTimestamp(), event.GetDelta(), event.GetPosition());
     FSLLOG3_INFO(str);
     m_console.push_back(str);
   }
@@ -99,7 +100,7 @@ namespace Fsl
 
   void InputLogger::OnRawMouseMoveEvent(const RawMouseMoveEvent& event)
   {
-    auto str = fmt::format("OnRawMouseMoveEvent timestamp: {} position: {}", event.GetTimestamp(), event.GetPosition());
+    const auto str = fmt::format("OnRawMouseMoveEvent timestamp: {} position: {}", event.GetTimestamp(), event.GetPosition());
     FSLLOG3_INFO(str);
     m_console.push_back(str);
   }
@@ -109,7 +110,7 @@ namespace Fsl
   {
     for (uint32_t i = 0; i < m_gamepadStates.size(); ++i)
     {
-      auto newState = m_gamepads->GetState(i);
+      const auto newState = m_gamepads->GetState(i);
 
       if (newState != m_gamepadStates[i])
       {

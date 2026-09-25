@@ -158,7 +158,7 @@ namespace Fsl
 
     FSLLOG3_INFO("Preparing UI");
     {    // Build a simple UI
-      auto uiFactory = UI::Theme::ThemeSelector::CreateControlFactory(*m_uiExtension);
+      const auto uiFactory = UI::Theme::ThemeSelector::CreateControlFactory(*m_uiExtension);
       m_uiRecord = CreateUI(*uiFactory);
 
       // Register the root layout with the window manager
@@ -298,7 +298,7 @@ namespace Fsl
 
             if (m_uiRecord.Menu.RadioButtonGen1->IsChecked())
             {
-              auto result = m_dataGenerator1.Next(generatorDeltaTime);
+              const auto result = m_dataGenerator1.Next(generatorDeltaTime);
               entry.Values[0] = result.Val0;
               entry.Values[1] = result.Val1;
               // entry.Values[2] = 0;
@@ -309,7 +309,7 @@ namespace Fsl
             }
             else
             {
-              auto result = m_dataGenerator2.Next();
+              const auto result = m_dataGenerator2.Next();
               // entry.Values[0] = result.UIProcessEvents;
               // entry.Values[1] = result.UIUpdate;
               // entry.Values[2] = result.UIDraw;
@@ -396,65 +396,65 @@ namespace Fsl
 
   ChartsShared::UIRecord ChartsShared::CreateUI(UI::Theme::IThemeControlFactory& uiFactory)
   {
-    auto menuUI = CreateMenuUI(uiFactory);
-    auto fullAreaChart = CreateFullAreaChartUI(uiFactory);
-    auto areaCharts = CreateAreaChartsUI(uiFactory, true);
-    auto areaChartsActualSize = CreateAreaChartsUI(uiFactory, false);
-    auto boxPlots = CreateBoxPlotChartsUI(uiFactory);
+    const auto menuUI = CreateMenuUI(uiFactory);
+    const auto fullAreaChart = CreateFullAreaChartUI(uiFactory);
+    const auto areaCharts = CreateAreaChartsUI(uiFactory, true);
+    const auto areaChartsActualSize = CreateAreaChartsUI(uiFactory, false);
+    const auto boxPlots = CreateBoxPlotChartsUI(uiFactory);
 
     const auto& context = uiFactory.GetContext();
 
-    auto exampleLayout = std::make_shared<UI::StackLayout>(context);
+    const auto exampleLayout = std::make_shared<UI::StackLayout>(context);
     exampleLayout->SetOrientation(UI::LayoutOrientation::Vertical);
     exampleLayout->SetSpacing(DpSize1DF::Create(4));
 
 
     {    // Area charts
-      auto stackLayout = std::make_shared<UI::StackLayout>(context);
-      auto caption = uiFactory.CreateLabel("AreaCharts", UI::Theme::FontType::Header);
+      const auto stackLayout = std::make_shared<UI::StackLayout>(context);
+      const auto caption = uiFactory.CreateLabel("AreaCharts", UI::Theme::FontType::Header);
       stackLayout->AddChild(caption);
       stackLayout->AddChild(areaCharts.Main);
-      auto background = uiFactory.CreateBackgroundWindow(UI::Theme::WindowType::Normal, stackLayout);
+      const auto background = uiFactory.CreateBackgroundWindow(UI::Theme::WindowType::Normal, stackLayout);
       exampleLayout->AddChild(background);
     }
     {    // box plots
-      auto stackLayout = std::make_shared<UI::StackLayout>(context);
-      auto caption = uiFactory.CreateLabel("BoxPlots", UI::Theme::FontType::Header);
+      const auto stackLayout = std::make_shared<UI::StackLayout>(context);
+      const auto caption = uiFactory.CreateLabel("BoxPlots", UI::Theme::FontType::Header);
       stackLayout->AddChild(caption);
       stackLayout->AddChild(boxPlots.Main);
-      auto background = uiFactory.CreateBackgroundWindow(UI::Theme::WindowType::Normal, stackLayout);
+      const auto background = uiFactory.CreateBackgroundWindow(UI::Theme::WindowType::Normal, stackLayout);
       exampleLayout->AddChild(background);
     }
 
     {    // Area charts
-      auto stackLayout = std::make_shared<UI::StackLayout>(context);
-      auto caption = uiFactory.CreateLabel("AreaCharts", UI::Theme::FontType::Header);
+      const auto stackLayout = std::make_shared<UI::StackLayout>(context);
+      const auto caption = uiFactory.CreateLabel("AreaCharts", UI::Theme::FontType::Header);
       stackLayout->AddChild(caption);
       stackLayout->AddChild(areaChartsActualSize.Main);
-      auto background = uiFactory.CreateBackgroundWindow(UI::Theme::WindowType::Normal, stackLayout);
+      const auto background = uiFactory.CreateBackgroundWindow(UI::Theme::WindowType::Normal, stackLayout);
       exampleLayout->AddChild(background);
     }
 
 
-    auto bottomLayout = std::make_shared<UI::ComplexStackLayout>(context);
+    const auto bottomLayout = std::make_shared<UI::ComplexStackLayout>(context);
     bottomLayout->SetOrientation(UI::LayoutOrientation::Vertical);
     bottomLayout->SetAlignmentX(UI::ItemAlignment::Stretch);
     bottomLayout->SetAlignmentY(UI::ItemAlignment::Stretch);
 
     {    // Full area chart
-      auto stackLayout = std::make_shared<UI::ComplexStackLayout>(context);
-      auto caption = uiFactory.CreateLabel("Full area chart", UI::Theme::FontType::Header);
+      const auto stackLayout = std::make_shared<UI::ComplexStackLayout>(context);
+      const auto caption = uiFactory.CreateLabel("Full area chart", UI::Theme::FontType::Header);
       stackLayout->SetAlignmentX(UI::ItemAlignment::Stretch);
       stackLayout->SetAlignmentY(UI::ItemAlignment::Stretch);
       stackLayout->AddChild(caption, {});
       stackLayout->AddChild(fullAreaChart.Main, UI::LayoutLength(UI::LayoutUnitType::Star, 1.0f));
-      auto background = uiFactory.CreateBackgroundWindow(UI::Theme::WindowType::Normal, stackLayout);
+      const auto background = uiFactory.CreateBackgroundWindow(UI::Theme::WindowType::Normal, stackLayout);
       background->SetAlignmentX(UI::ItemAlignment::Stretch);
       background->SetAlignmentY(UI::ItemAlignment::Stretch);
       bottomLayout->AddChild(background, UI::LayoutLength(UI::LayoutUnitType::Star, 1.0f));
     }
 
-    auto contentLayout = std::make_shared<UI::ComplexStackLayout>(context);
+    const auto contentLayout = std::make_shared<UI::ComplexStackLayout>(context);
     contentLayout->SetOrientation(UI::LayoutOrientation::Horizontal);
     contentLayout->SetAlignmentX(UI::ItemAlignment::Stretch);
     contentLayout->SetAlignmentY(UI::ItemAlignment::Stretch);
@@ -463,7 +463,7 @@ namespace Fsl
     contentLayout->AddChild(bottomLayout, UI::LayoutLength(UI::LayoutUnitType::Star, 1.0f));
 
 
-    auto rootLayout = std::make_shared<UI::ComplexStackLayout>(context);
+    const auto rootLayout = std::make_shared<UI::ComplexStackLayout>(context);
     rootLayout->SetOrientation(UI::LayoutOrientation::Horizontal);
     rootLayout->SetAlignmentX(UI::ItemAlignment::Stretch);
     rootLayout->SetAlignmentY(UI::ItemAlignment::Stretch);
@@ -491,33 +491,33 @@ namespace Fsl
   {
     const auto& context = uiFactory.GetContext();
 
-    auto labelGen = uiFactory.CreateLabel("Generator");
-    auto radioGroupDataGen = uiFactory.CreateRadioGroup("Data generator");
-    auto rbGen1 = uiFactory.CreateRadioButton(radioGroupDataGen, "SinCurve", true);
-    auto rbGen2 = uiFactory.CreateRadioButton(radioGroupDataGen, "Playback", false);
-    auto switchComplexGen = uiFactory.CreateSwitch("Complex", false);
+    const auto labelGen = uiFactory.CreateLabel("Generator");
+    const auto radioGroupDataGen = uiFactory.CreateRadioGroup("Data generator");
+    const auto rbGen1 = uiFactory.CreateRadioButton(radioGroupDataGen, "SinCurve", true);
+    const auto rbGen2 = uiFactory.CreateRadioButton(radioGroupDataGen, "Playback", false);
+    const auto switchComplexGen = uiFactory.CreateSwitch("Complex", false);
     switchComplexGen->SetAlignmentX(UI::ItemAlignment::Stretch);
 
-    auto btnResetGen = uiFactory.CreateTextButton(UI::Theme::ButtonType::Outlined, "Restart");
+    const auto btnResetGen = uiFactory.CreateTextButton(UI::Theme::ButtonType::Outlined, "Restart");
     btnResetGen->SetAlignmentX(UI::ItemAlignment::Stretch);
 
-    auto labelMode = uiFactory.CreateLabel("Data");
-    auto radioGroupDataMode = uiFactory.CreateRadioGroup("Data mode");
-    auto rbContinuous = uiFactory.CreateRadioButton(radioGroupDataMode, "Continuous", true);
-    auto rbPeriodically = uiFactory.CreateRadioButton(radioGroupDataMode, "Periodically", false);
-    auto rbPaused = uiFactory.CreateRadioButton(radioGroupDataMode, "Paused", false);
+    const auto labelMode = uiFactory.CreateLabel("Data");
+    const auto radioGroupDataMode = uiFactory.CreateRadioGroup("Data mode");
+    const auto rbContinuous = uiFactory.CreateRadioButton(radioGroupDataMode, "Continuous", true);
+    const auto rbPeriodically = uiFactory.CreateRadioButton(radioGroupDataMode, "Periodically", false);
+    const auto rbPaused = uiFactory.CreateRadioButton(radioGroupDataMode, "Paused", false);
 
-    auto btnDataGenOne = uiFactory.CreateTextButton(UI::Theme::ButtonType::Outlined, "Step1");
+    const auto btnDataGenOne = uiFactory.CreateTextButton(UI::Theme::ButtonType::Outlined, "Step1");
     btnDataGenOne->SetAlignmentX(UI::ItemAlignment::Stretch);
-    auto btnDataGenMultiple = uiFactory.CreateTextButton(UI::Theme::ButtonType::Outlined, "Step20");
+    const auto btnDataGenMultiple = uiFactory.CreateTextButton(UI::Theme::ButtonType::Outlined, "Step20");
     btnDataGenMultiple->SetAlignmentX(UI::ItemAlignment::Stretch);
 
 
-    auto btnSetDefaults = uiFactory.CreateTextButton(UI::Theme::ButtonType::Outlined, "Set defaults");
+    const auto btnSetDefaults = uiFactory.CreateTextButton(UI::Theme::ButtonType::Outlined, "Set defaults");
     btnSetDefaults->SetAlignmentX(UI::ItemAlignment::Stretch);
     btnSetDefaults->SetAlignmentY(UI::ItemAlignment::Far);
 
-    auto stack = std::make_shared<UI::ComplexStackLayout>(context);
+    const auto stack = std::make_shared<UI::ComplexStackLayout>(context);
     stack->SetAlignmentY(UI::ItemAlignment::Stretch);
     stack->SetOrientation(UI::LayoutOrientation::Vertical);
     stack->AddChild(labelGen, {});
@@ -535,7 +535,7 @@ namespace Fsl
     stack->AddChild(btnSetDefaults, UI::LayoutLength(UI::LayoutUnitType::Star, 1.0f));
 
 
-    auto bar = uiFactory.CreateRightBar(stack);
+    const auto bar = uiFactory.CreateRightBar(stack);
     return {bar,           rbGen1, rbGen2, switchComplexGen, btnResetGen, rbContinuous, rbPeriodically, rbPaused, btnDataGenOne, btnDataGenMultiple,
             btnSetDefaults};
   }
@@ -546,7 +546,7 @@ namespace Fsl
     const auto& context = uiFactory.GetContext();
     const auto& resources = uiFactory.GetResources();
 
-    auto chart = CreateAreaChart(context, resources);
+    const auto chart = CreateAreaChart(context, resources);
     // chart->SetAlignmentX(UI::ItemAlignment::Near);
     // chart->SetAlignmentY(UI::ItemAlignment::Near);
     chart->SetAlignmentX(UI::ItemAlignment::Stretch);
@@ -555,7 +555,7 @@ namespace Fsl
     chart->SetGridLines(std::make_shared<UI::ChartGridLinesFps>());
     chart->SetRenderPolicy(UI::ChartRenderPolicy::FillAvailable);
 
-    auto boxPlot = CreateBoxPlotChart(context, resources);
+    const auto boxPlot = CreateBoxPlotChart(context, resources);
     boxPlot->SetAlignmentX(UI::ItemAlignment::Stretch);
     boxPlot->SetAlignmentY(UI::ItemAlignment::Stretch);
     boxPlot->SetOrientation(UI::LayoutOrientation::Vertical);
@@ -564,7 +564,7 @@ namespace Fsl
     boxPlot->SetBoxSize(UI::DpLayoutSize1D::Create(14));
 
 
-    auto stack = std::make_shared<UI::ComplexStackLayout>(context);
+    const auto stack = std::make_shared<UI::ComplexStackLayout>(context);
     stack->SetSpacing(DpSize1DF::Create(4.0f));
     stack->SetAlignmentX(UI::ItemAlignment::Stretch);
     stack->SetAlignmentY(UI::ItemAlignment::Stretch);
@@ -585,13 +585,13 @@ namespace Fsl
     const auto& context = uiFactory.GetContext();
     const auto& resources = uiFactory.GetResources();
 
-    auto lblGridDesc0 = uiFactory.CreateLabel("Fit");
-    auto lblGridDesc1 = uiFactory.CreateLabel("Fixed");
+    const auto lblGridDesc0 = uiFactory.CreateLabel("Fit");
+    const auto lblGridDesc1 = uiFactory.CreateLabel("Fixed");
 
-    auto chart0 = CreateAreaChart(context, resources);
-    auto chart1 = CreateAreaChart(context, resources);
-    auto chart2 = CreateAreaChart(context, resources);
-    auto chart3 = CreateAreaChart(context, resources);
+    const auto chart0 = CreateAreaChart(context, resources);
+    const auto chart1 = CreateAreaChart(context, resources);
+    const auto chart2 = CreateAreaChart(context, resources);
+    const auto chart3 = CreateAreaChart(context, resources);
 
     UI::GridRowDefinition gridRowDef(UI::GridUnitType::Auto);
     if (useFixedSize)
@@ -614,14 +614,14 @@ namespace Fsl
       chart3->SetMatchDataViewEntries(false);
     }
 
-    auto gridLines = std::make_shared<ChartGridLinesTest>();
+    const auto gridLines = std::make_shared<ChartGridLinesTest>();
     chart0->SetGridLines(gridLines);
     chart1->SetGridLines(gridLines);
     chart2->SetGridLines(gridLines);
     chart3->SetGridLines(gridLines);
 
 
-    auto layout = std::make_shared<UI::GridLayout>(context);
+    const auto layout = std::make_shared<UI::GridLayout>(context);
     layout->AddColumnDefinition(UI::GridColumnDefinition(UI::GridUnitType::Auto));
     layout->AddColumnDefinition(UI::GridColumnDefinition(UI::GridUnitType::Fixed, 2.0f));
     layout->AddColumnDefinition(UI::GridColumnDefinition(UI::GridUnitType::Auto));
@@ -649,13 +649,13 @@ namespace Fsl
     const auto& context = uiFactory.GetContext();
     const auto& resources = uiFactory.GetResources();
 
-    auto lblGridDesc0 = uiFactory.CreateLabel("Fit");
-    auto lblGridDesc1 = uiFactory.CreateLabel("Fixed");
+    const auto lblGridDesc0 = uiFactory.CreateLabel("Fit");
+    const auto lblGridDesc1 = uiFactory.CreateLabel("Fixed");
 
-    auto chart0 = CreateBoxPlotChart(context, resources);
-    auto chart1 = CreateBoxPlotChart(context, resources);
-    auto chart2 = CreateBoxPlotChart(context, resources);
-    auto chart3 = CreateBoxPlotChart(context, resources);
+    const auto chart0 = CreateBoxPlotChart(context, resources);
+    const auto chart1 = CreateBoxPlotChart(context, resources);
+    const auto chart2 = CreateBoxPlotChart(context, resources);
+    const auto chart3 = CreateBoxPlotChart(context, resources);
 
     // chart0->SetWidth(UI::DpLayoutSize1D(DpValue(250)));
     // chart1->SetWidth(UI::DpLayoutSize1D(DpValue(250)));
@@ -663,7 +663,7 @@ namespace Fsl
     // chart3->SetWidth(UI::DpLayoutSize1D(DpValue(250)));
 
 
-    auto layout = std::make_shared<UI::GridLayout>(context);
+    const auto layout = std::make_shared<UI::GridLayout>(context);
     layout->AddColumnDefinition(UI::GridColumnDefinition(UI::GridUnitType::Auto));
     layout->AddColumnDefinition(UI::GridColumnDefinition(UI::GridUnitType::Fixed, 2.0f));
     layout->AddColumnDefinition(UI::GridColumnDefinition(UI::GridUnitType::Auto));

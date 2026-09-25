@@ -70,7 +70,7 @@ namespace Fsl
     explicit BasicScene(const SceneCreateInfo& createInfo);
     ~BasicScene() override;
 
-    std::optional<NextSceneRecord> TryGetNextScene() const final
+    [[nodiscard]] std::optional<NextSceneRecord> TryGetNextScene() const final
     {
       return m_state == SceneState::Closing ? std::optional<NextSceneRecord>(NextSceneRecord(m_nextSceneId)) : std::optional<NextSceneRecord>();
     }
@@ -87,17 +87,17 @@ namespace Fsl
     void OnFrameSequenceEnd() override;
 
   protected:
-    DemoWindowMetrics GetwindowMetrics() const noexcept
+    [[nodiscard]] DemoWindowMetrics GetwindowMetrics() const noexcept
     {
       return m_windowMetrics;
     }
 
-    bool IsClosing() const
+    [[nodiscard]] bool IsClosing() const
     {
       return m_state == SceneState::Closing;
     }
 
-    bool AllowBackKey() const noexcept
+    [[nodiscard]] bool AllowBackKey() const noexcept
     {
       return m_allowBackKey;
     }

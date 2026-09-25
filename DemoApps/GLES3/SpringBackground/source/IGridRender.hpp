@@ -43,7 +43,7 @@ namespace Fsl
   public:
     virtual ~IGridRender() = default;
     //! @brief Get a descriptive name of the render implementation
-    virtual const char* GetName() const = 0;
+    [[nodiscard]] virtual const char* GetName() const = 0;
     virtual void Update(const DemoTime& demoTime, const Vector2& areaSize, const std::vector<PointMass>& points) = 0;
     virtual void Draw(const GridRenderDrawContext& drawContext, const std::vector<PointMass>& points) = 0;
   };

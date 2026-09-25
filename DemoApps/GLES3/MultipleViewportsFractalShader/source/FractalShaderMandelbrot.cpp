@@ -54,8 +54,8 @@ namespace Fsl
     , m_locCoordinateScale(GLValues::InvalidLocation)
     , m_angle(0, 1.0f)
   {
-    std::shared_ptr<BasicOptionParser> options = config.GetOptions<BasicOptionParser>();
-    auto cfg = options->GetBasicConfig();
+    const std::shared_ptr<BasicOptionParser> options = config.GetOptions<BasicOptionParser>();
+    const auto cfg = options->GetBasicConfig();
 
     const std::shared_ptr<IContentManager> contentManager = config.DemoServiceProvider.Get<IContentManager>();
     {
@@ -99,7 +99,7 @@ namespace Fsl
     const float v1 = (-1.0f) * scaleY;
     const float v2 = (1.0f) * scaleY;
 
-    std::array<VertexPositionTexture, 4> vertices = {
+    const std::array<VertexPositionTexture, 4> vertices = {
       VertexPositionTexture(Vector3(-1.0f, 1.0f, 0.0f), Vector2(u1, v2)),
       VertexPositionTexture(Vector3(-1.0f, -1.0f, 0.0f), Vector2(u1, v1)),
       VertexPositionTexture(Vector3(1.0f, 1.0f, 0.0f), Vector2(u2, v2)),
@@ -145,10 +145,10 @@ namespace Fsl
     }
 
 
-    float tz = 0.5f - 0.5f * std::cos(0.225f * m_angle.X);
+    const float tz = 0.5f - 0.5f * std::cos(0.225f * m_angle.X);
 
     const float depth = (m_sceneIndex & 1) == 0 ? 5.0f : 7.0f;
-    float scale = std::pow(0.5f, depth * tz);
+    const float scale = std::pow(0.5f, depth * tz);
 
     glUseProgram(hProgram);
     glUniform2f(m_locCoordinateOffset, location.X, location.Y);

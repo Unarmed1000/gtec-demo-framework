@@ -59,7 +59,7 @@ namespace Fsl::AppInputCommandListPersistence
 
   void Save(const IO::Path& path, const AppInputCommandList& commandList)
   {
-    auto newContent = AppInputCommandListIO::Encode(commandList);
+    const auto newContent = AppInputCommandListIO::Encode(commandList);
     std::vector<uint8_t> existing;
     if (!IO::File::TryReadAllBytes(existing, path) ||
         !SpanUtil::ValueEquals(SpanUtil::AsReadOnlySpan(existing), SpanUtil::AsReadOnlySpan(newContent)))

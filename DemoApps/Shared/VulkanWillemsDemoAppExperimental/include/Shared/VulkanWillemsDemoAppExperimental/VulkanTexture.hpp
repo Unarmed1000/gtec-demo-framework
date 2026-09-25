@@ -93,63 +93,63 @@ namespace Fsl::Willems
 
 
     //! @brief Get the associated 'Device'
-    VkDevice GetDevice() const
+    [[nodiscard]] VkDevice GetDevice() const
     {
       return m_sampler.GetDevice();
     }
 
-    VkSampler GetSampler() const
+    [[nodiscard]] VkSampler GetSampler() const
     {
       return m_sampler.Get();
     }
 
-    VkImage GetImage() const
+    [[nodiscard]] VkImage GetImage() const
     {
       return m_image.Get();
     }
 
-    VkImageLayout GetImageLayout() const
+    [[nodiscard]] VkImageLayout GetImageLayout() const
     {
       return m_imageLayout;
     }
 
-    VkDeviceMemory GetMemory() const
+    [[nodiscard]] VkDeviceMemory GetMemory() const
     {
       return m_deviceMemory.Get();
     }
 
-    VkImageView GetImageView() const
+    [[nodiscard]] VkImageView GetImageView() const
     {
       return m_view.Get();
     }
 
-    PxExtent3D GetExent() const
+    [[nodiscard]] PxExtent3D GetExent() const
     {
       return m_extent;
     }
 
-    uint32_t GetLevels() const
+    [[nodiscard]] uint32_t GetLevels() const
     {
       return m_mipLevels;
     }
 
-    uint32_t GetLayers() const
+    [[nodiscard]] uint32_t GetLayers() const
     {
       return m_layerCount;
     }
 
-    VkDescriptorImageInfo GetImageDescriptor() const
+    [[nodiscard]] VkDescriptorImageInfo GetImageDescriptor() const
     {
       return m_descriptor;
     }
 
-    const VkDescriptorImageInfo* GetImageDescriptorPointer() const
+    [[nodiscard]] const VkDescriptorImageInfo* GetImageDescriptorPointer() const
     {
       return &m_descriptor;
     }
 
     //! @brief Check if this object contains a valid resource
-    inline bool IsValid() const
+    [[nodiscard]] inline bool IsValid() const
     {
       return m_sampler.IsValid();
     }

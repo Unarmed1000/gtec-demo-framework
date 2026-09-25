@@ -249,14 +249,14 @@ namespace Fsl
     const VkAccessFlags targetAccessMask = rTargetImage.GetAccessMask(imageCopy.dstSubresource.mipLevel, imageCopy.dstSubresource.baseArrayLayer);
 
     // Prepare source image for copy.
-    VkImageSubresourceRange srcImageSubresourceRange = {imageCopy.srcSubresource.aspectMask, imageCopy.srcSubresource.mipLevel, 1,
-                                                        imageCopy.srcSubresource.baseArrayLayer, imageCopy.srcSubresource.layerCount};
+    const VkImageSubresourceRange srcImageSubresourceRange = {imageCopy.srcSubresource.aspectMask, imageCopy.srcSubresource.mipLevel, 1,
+                                                              imageCopy.srcSubresource.baseArrayLayer, imageCopy.srcSubresource.layerCount};
 
     CmdPipelineBarrier(cmdBuffer, VK_ACCESS_TRANSFER_READ_BIT, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, srcImageSubresourceRange);
 
     // Prepare target image for copy.
-    VkImageSubresourceRange dstImageSubresourceRange = {imageCopy.dstSubresource.aspectMask, imageCopy.dstSubresource.mipLevel, 1,
-                                                        imageCopy.dstSubresource.baseArrayLayer, imageCopy.dstSubresource.layerCount};
+    const VkImageSubresourceRange dstImageSubresourceRange = {imageCopy.dstSubresource.aspectMask, imageCopy.dstSubresource.mipLevel, 1,
+                                                              imageCopy.dstSubresource.baseArrayLayer, imageCopy.dstSubresource.layerCount};
 
     rTargetImage.CmdPipelineBarrier(cmdBuffer, VK_ACCESS_TRANSFER_WRITE_BIT, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, dstImageSubresourceRange);
 

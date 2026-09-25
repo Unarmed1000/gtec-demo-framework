@@ -80,7 +80,7 @@ namespace Fsl
     SkyboxMesh();
     explicit SkyboxMesh(const GLES3::GLProgram& program);
 
-    bool IsValid() const
+    [[nodiscard]] bool IsValid() const
     {
       return VertexBuffer.IsValid() && VertexArray.IsValid();
     }

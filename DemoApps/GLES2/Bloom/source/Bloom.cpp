@@ -310,7 +310,7 @@ namespace Fsl
 
     // 1. Render the scene to a low res frame buffer
     {
-      auto& fb = m_fbRender256;
+      const auto& fb = m_fbRender256;
       glBindFramebuffer(GL_FRAMEBUFFER, fb.Get());
       glViewport(0, 0, fb.GetSize().RawWidth(), fb.GetSize().RawHeight());
 
@@ -398,7 +398,7 @@ namespace Fsl
       glEnable(GL_BLEND);
       glBlendFunc(GL_ONE, GL_ONE);
 
-      auto& vb = m_vbFullScreen;
+      const auto& vb = m_vbFullScreen;
 
       glUseProgram(m_programBloomPass.Get());
       glUniform1i(m_locBloomTexture256, 0);
@@ -489,7 +489,7 @@ namespace Fsl
   void Bloom::PostProcess(const GLFrameBuffer& dst, const GLFrameBuffer& src)
   {
     const auto& fb = dst;
-    auto& vb = m_vbFullScreen;
+    const auto& vb = m_vbFullScreen;
     glBindFramebuffer(GL_FRAMEBUFFER, fb.Get());
     glViewport(0, 0, fb.GetSize().RawWidth(), fb.GetSize().RawHeight());
     glClear(GL_COLOR_BUFFER_BIT);
@@ -509,7 +509,7 @@ namespace Fsl
     const float gaussianBlurKernelWeightMod = m_menuUI.GetKernelWeightMod();
     constexpr auto ShaderAttributeSpan = SpanUtil::AsReadOnlySpan(ShaderAttributeArray);
 
-    auto contentManager = GetContentManager();
+    const auto contentManager = GetContentManager();
     switch (shaderType)
     {
     case BlurShaderType::Custom:

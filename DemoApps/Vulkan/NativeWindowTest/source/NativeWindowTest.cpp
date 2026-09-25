@@ -147,7 +147,7 @@ namespace Fsl
   NativeWindowTest::NativeWindowTest(const DemoAppConfig& config)
     : VulkanWindowDemoApp(config)
   {
-    auto windowExtent = TypeConverter::UncheckedTo<VkExtent2D>(GetScreenExtent());
+    const auto windowExtent = TypeConverter::UncheckedTo<VkExtent2D>(GetScreenExtent());
     PxPoint2 actualSize;
     if (GetNativeWindow()->TryGetActualSize(actualSize))
     {
@@ -175,7 +175,7 @@ namespace Fsl
     const VkPresentModeKHR presentMode = VK_PRESENT_MODE_FIFO_KHR;
     const VkImageUsageFlags desiredImageUsageFlags = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
 
-    auto swapchain = Vulkan::SwapchainKHRUtil::CreateSwapchain(
+    const auto swapchain = Vulkan::SwapchainKHRUtil::CreateSwapchain(
       m_physicalDevice.Device, m_device.Get(), 0, m_surface, DesiredMinSwapBufferCount, 1, desiredImageUsageFlags, VK_SHARING_MODE_EXCLUSIVE, 0,
       nullptr, VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR, presentMode, VK_TRUE, VK_NULL_HANDLE, windowExtent, Vulkan::SurfaceFormatInfo());
 

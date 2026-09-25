@@ -142,7 +142,7 @@ namespace Fsl
       // - Delete the host visible (staging) buffer
       // - Use the device local buffers for rendering
 
-      VkPhysicalDeviceMemoryProperties physicalDeviceMemoryProperties = device.GetPhysicalDevice().MemoryProperties;
+      const VkPhysicalDeviceMemoryProperties physicalDeviceMemoryProperties = device.GetPhysicalDevice().MemoryProperties;
 
       BasicMesh stagingBuffers;
 
@@ -575,7 +575,7 @@ namespace Fsl
     : VulkanBasic::DemoAppVulkanBasic(config)
     , m_cameraInfo{glm::vec3(), -2.5f}
   {
-    auto contentManager = GetContentManager();
+    const auto contentManager = GetContentManager();
 
     m_resources.TriangleMesh = PrepareVertices(m_device, m_deviceQueue, GetCommandPool(), g_configUseStaging);
     m_resources.UniformData = PrepareUniformBuffers(m_device, m_cameraInfo, GetWindowAspectRatio());
@@ -634,7 +634,7 @@ namespace Fsl
   {
     FSL_PARAM_NOT_USED(cmdBufferIndex);
 
-    auto screenExtent = GetScreenExtent();
+    const auto screenExtent = GetScreenExtent();
 
     const Mesh& mesh = m_resources.TriangleMesh;
 
@@ -663,7 +663,7 @@ namespace Fsl
     vkCmdBindPipeline(hCmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_dependentResources.Pipeline.Get());
 
     // Bind triangle vertex buffer (contains position and colors)
-    VkDeviceSize offsets = 0;
+    const VkDeviceSize offsets = 0;
     vkCmdBindVertexBuffers(hCmdBuffer, VertexBufferBindId, 1, mesh.Vertices.Content.Buffer.GetPointer(), &offsets);
 
     // Bind triangle index buffer
@@ -703,8 +703,8 @@ namespace Fsl
     //  what should be done a real-world application, where you should allocate large chunks of memory at once instead.
 
     // Setup vertices
-    std::array<Vertex, 3> vertices = {Vertex{{1.0f, 1.0f, 0.0f}, {1.0f, 0.0f, 0.0f}}, Vertex{{-1.0f, 1.0f, 0.0f}, {0.0f, 1.0f, 0.0f}},
-                                      Vertex{{0.0f, -1.0f, 0.0f}, {0.0f, 0.0f, 1.0f}}};
+    const std::array<Vertex, 3> vertices = {Vertex{{1.0f, 1.0f, 0.0f}, {1.0f, 0.0f, 0.0f}}, Vertex{{-1.0f, 1.0f, 0.0f}, {0.0f, 1.0f, 0.0f}},
+                                            Vertex{{0.0f, -1.0f, 0.0f}, {0.0f, 0.0f, 1.0f}}};
 
     // Setup indices
     constexpr std::array<uint32_t, 3> Indices = {0, 1, 2};
@@ -749,7 +749,7 @@ namespace Fsl
 
   Triangle::UniformDataVS Triangle::PrepareUniformBuffers(const Vulkan::VUDevice& device, const CameraInfo& cameraInfo, const float aspectRatio)
   {
-    VkPhysicalDeviceMemoryProperties physicalDeviceMemoryProperties = device.GetPhysicalDevice().MemoryProperties;
+    const VkPhysicalDeviceMemoryProperties physicalDeviceMemoryProperties = device.GetPhysicalDevice().MemoryProperties;
 
     // Prepare and initialize a uniform buffer block containing shader uniforms
     // Single uniforms like in OpenGL are no longer present in Vulkan. All Shader uniforms are passed via uniform buffer blocks

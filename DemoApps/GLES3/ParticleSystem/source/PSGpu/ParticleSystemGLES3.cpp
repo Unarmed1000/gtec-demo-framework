@@ -80,13 +80,13 @@ namespace Fsl
         throw std::invalid_argument("fragmentShader should be of type GL_FRAGMENT_SHADER");
       }
 
-      GLuint handle = GL_CHECK(glCreateProgram());
+      const GLuint handle = GL_CHECK(glCreateProgram());
       if (handle == 0)
       {
         throw GLESGraphicsException("Failed to create program", 0, __FILE__, __LINE__);
       }
 
-      GLShader geomShader(GL_GEOMETRY_SHADER_EXT, contentManager->ReadAllText("PS_TransformFeedbackShader.geom"));
+      const GLShader geomShader(GL_GEOMETRY_SHADER_EXT, contentManager->ReadAllText("PS_TransformFeedbackShader.geom"));
 
       GL_CHECK(glAttachShader(handle, vertexShader.Get()));
       GL_CHECK(glAttachShader(handle, geomShader.Get()));
@@ -145,13 +145,13 @@ namespace Fsl
 
       for (uint32_t i = 0; i < bitmap.RawUnsignedWidth(); ++i)
       {
-        auto r = static_cast<uint8_t>(randomVal(random));
-        auto g = static_cast<uint8_t>(randomVal(random));
-        auto b = static_cast<uint8_t>(randomVal(random));
-        auto a = static_cast<uint8_t>(randomVal(random));
+        const auto r = static_cast<uint8_t>(randomVal(random));
+        const auto g = static_cast<uint8_t>(randomVal(random));
+        const auto b = static_cast<uint8_t>(randomVal(random));
+        const auto a = static_cast<uint8_t>(randomVal(random));
         bitmap.SetNativePixel(i, 0u, PackedColor32::CreateR8G8B8A8UNorm(r, g, b, a).RawValue);
       }
-      GLTextureParameters texParams(GL_LINEAR, GL_LINEAR, GL_REPEAT, GL_REPEAT);
+      const GLTextureParameters texParams(GL_LINEAR, GL_LINEAR, GL_REPEAT, GL_REPEAT);
       rTexture.Reset(bitmap, texParams);
     }
 
@@ -179,9 +179,9 @@ namespace Fsl
     , m_locViewProjectionMatrix(GLValues::InvalidLocation)
     , m_locWorldViewProjectionMatrix(GLValues::InvalidLocation)
   {
-    GLShader vertShader(GL_VERTEX_SHADER, contentManager->ReadAllText("PS_TransformFeedbackShader.vert"));
-    GLShader fragShader(GL_FRAGMENT_SHADER, contentManager->ReadAllText("PS_TransformFeedbackShader.frag"));
-    auto hProg = Build(vertShader, fragShader, PostCompilePreLinkCallback, contentManager);
+    const GLShader vertShader(GL_VERTEX_SHADER, contentManager->ReadAllText("PS_TransformFeedbackShader.vert"));
+    const GLShader fragShader(GL_FRAGMENT_SHADER, contentManager->ReadAllText("PS_TransformFeedbackShader.frag"));
+    const auto hProg = Build(vertShader, fragShader, PostCompilePreLinkCallback, contentManager);
     m_programTransform.Reset(hProg);
 
     std::vector<ParticleGPU> particles(capacity);
@@ -295,9 +295,9 @@ namespace Fsl
   {
     glUseProgram(0);
 
-    std::string strVert = contentManager->ReadAllText("PS_Render.vert");
-    std::string strFrag = contentManager->ReadAllText("PS_Render.frag");
-    std::string strGeom = contentManager->ReadAllText("PS_Render.geom");
+    const std::string strVert = contentManager->ReadAllText("PS_Render.vert");
+    const std::string strFrag = contentManager->ReadAllText("PS_Render.frag");
+    const std::string strGeom = contentManager->ReadAllText("PS_Render.geom");
 
     {
       // GLShader shaderVert(GL_VERTEX_SHADER, strVert);

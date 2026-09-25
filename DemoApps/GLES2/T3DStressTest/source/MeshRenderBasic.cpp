@@ -91,7 +91,7 @@ namespace Fsl
 
   void MeshRenderBasic::Bind(const ShaderBase& shader)
   {
-    ShaderVertexConfig shaderConfig = shader.GetShaderConfig();
+    const ShaderVertexConfig shaderConfig = shader.GetShaderConfig();
     if (shaderConfig.Position != GLValues::InvalidLocation)
     {
       glVertexAttribPointer(shaderConfig.Position, 3, GL_FLOAT, GL_FALSE, 0, m_pVertices);

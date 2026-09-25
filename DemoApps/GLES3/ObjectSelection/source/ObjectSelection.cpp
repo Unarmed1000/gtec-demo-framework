@@ -89,7 +89,7 @@ namespace Fsl
 
     const auto optionParser = config.GetOptions<OptionParser>();
 
-    auto contentManager = GetContentManager();
+    const auto contentManager = GetContentManager();
 
     CreateTextures(contentManager);
 
@@ -205,7 +205,7 @@ namespace Fsl
       m_resources.PlaneObject.MeshAABB = BoundingBoxUtil::CalculateAABB(m_resources.PlaneObject.WorldMatrix, m_resources.MeshPlane.TheBoundingBox);
     }
 
-    auto keyboardState = m_keyboard->GetState();
+    const auto keyboardState = m_keyboard->GetState();
     UpdateCameraControlInput(demoTime, keyboardState);
   }
 
@@ -300,7 +300,7 @@ namespace Fsl
     // Build a ray
     Vector3 direction = farPoint - nearPoint;
     direction.Normalize();
-    Ray mouseRay(nearPoint, direction);
+    const Ray mouseRay(nearPoint, direction);
 
     // Check which AABB's the ray intersect and store the hits in m_pickScratchpad
     m_pickScratchpad.clear();
@@ -437,9 +437,9 @@ namespace Fsl
     // Load the matrices
     if (m_menuUI.IsDrawOrientedBoundingBoxEnabled())
     {
-      for (auto& rEntry : m_resources.Objects)
+      for (const auto& entry : m_resources.Objects)
       {
-        m_resources.LineBuild.Add(m_resources.Meshes[rEntry.MeshIndex].TheBoundingBox, Colors::Red(), rEntry.WorldMatrix);
+        m_resources.LineBuild.Add(m_resources.Meshes[entry.MeshIndex].TheBoundingBox, Colors::Red(), entry.WorldMatrix);
       }
     }
 
@@ -494,7 +494,7 @@ namespace Fsl
   void ObjectSelection::CreateTextures(const std::shared_ptr<IContentManager>& contentManager)
   {
     auto texture = contentManager->ReadTexture("SeamlessFur.png", PixelFormat::R8G8B8A8_UNORM);
-    GLTextureParameters texParams(GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR, GL_REPEAT, GL_REPEAT);
+    const GLTextureParameters texParams(GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR, GL_REPEAT, GL_REPEAT);
     m_resources.Texture.Reset(texture, texParams, TextureFlags::GenerateMipMaps);
 
     texture = contentManager->ReadTexture("MarbleChessboard.jpg", PixelFormat::R8G8B8A8_UNORM);
@@ -505,7 +505,7 @@ namespace Fsl
   ObjectSelection::Mesh ObjectSelection::PreparePlaneMesh(const GLES3::GLTexture& texture)
   {
     const auto tex1Size = texture.GetSize();
-    TextureRectangle texRect(PxRectangle(PxValue(0), PxValue(0), tex1Size.Width(), tex1Size.Height()), tex1Size);
+    const TextureRectangle texRect(PxRectangle(PxValue(0), PxValue(0), tex1Size.Width(), tex1Size.Height()), tex1Size);
     const NativeTextureArea texRepeatArea(TextureUtil::CalcTextureArea(texRect, 15 / 5, 15 / 5));
     const auto mesh = SegmentedQuadGenerator::GenerateStrip(Vector3(0, 0, 0), 1000 / 5.0f, 1000 / 5.0f, 1, 1, texRepeatArea, WindingOrder::CCW);
     return CreateMesh(mesh);
@@ -515,7 +515,7 @@ namespace Fsl
   void ObjectSelection::PrepareMeshes(std::vector<Mesh>& rMeshes, const GLES3::GLTexture& texture)
   {
     const auto tex1Size = texture.GetSize();
-    TextureRectangle texRect(PxRectangle(PxValue(0), PxValue(0), tex1Size.Width(), tex1Size.Height()), tex1Size);
+    const TextureRectangle texRect(PxRectangle(PxValue(0), PxValue(0), tex1Size.Width(), tex1Size.Height()), tex1Size);
 
     const NativeTextureArea texArea(TextureUtil::CalcTextureArea(texRect));
 

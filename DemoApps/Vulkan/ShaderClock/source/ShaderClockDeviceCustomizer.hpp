@@ -77,12 +77,12 @@ namespace Fsl
       m_enabled = m_features.shaderSubgroupClock == VK_TRUE || m_features.shaderDeviceClock == VK_TRUE;
     }
 
-    const void* GetVkDeviceCreateInfoNextPointer() const final
+    [[nodiscard]] const void* GetVkDeviceCreateInfoNextPointer() const final
     {
       return m_enabled ? &m_features : nullptr;
     }
 
-    bool IsDeviceClockEnabled() const noexcept
+    [[nodiscard]] bool IsDeviceClockEnabled() const noexcept
     {
       return m_enabled && m_features.shaderDeviceClock == VK_TRUE;
     }

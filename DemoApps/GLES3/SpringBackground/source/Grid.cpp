@@ -121,7 +121,7 @@ namespace Fsl
 
     for (int i = 0; i < count; ++i)
     {
-      float dist2 = Vector3::DistanceSquared(position, m_points[i].m_position);
+      const float dist2 = Vector3::DistanceSquared(position, m_points[i].m_position);
       if (dist2 < squaredRadius)
       {
         m_points[i].ApplyForce(10.0f * force * (position - m_points[i].m_position) / (100 + dist2));
@@ -139,7 +139,7 @@ namespace Fsl
 
     for (int i = 0; i < count; ++i)
     {
-      float dist2 = Vector3::DistanceSquared(position, m_points[i].m_position);
+      const float dist2 = Vector3::DistanceSquared(position, m_points[i].m_position);
       if (dist2 < squaredRadius)
       {
         m_points[i].ApplyForce(100 * force * (m_points[i].m_position - position) / (10000 + dist2));

@@ -103,7 +103,7 @@ namespace Fsl
   void GridScene::NextGridRender()
   {
     ++m_activeRenderQueueIndex;
-    if (m_activeRenderQueueIndex >= static_cast<int32_t>(m_renderDeque.size()))
+    if (std::cmp_greater_equal(m_activeRenderQueueIndex, m_renderDeque.size()))
     {
       m_activeRenderQueueIndex = 0;
     }
@@ -159,7 +159,7 @@ namespace Fsl
     assert(pActiveGridRender != nullptr);
     assert(m_renderSystem);
 
-    GridRenderDrawContext gridDrawContext(*m_renderSystem, m_batch.get(), m_texFill, m_screenSize);
+    const GridRenderDrawContext gridDrawContext(*m_renderSystem, m_batch.get(), m_texFill, m_screenSize);
 
     m_batch->Begin(BlendState::Additive);
     m_grid.Draw(gridDrawContext, *pActiveGridRender);

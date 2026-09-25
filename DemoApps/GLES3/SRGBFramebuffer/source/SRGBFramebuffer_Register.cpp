@@ -97,7 +97,7 @@ namespace Fsl
     // https://www.khronos.org/registry/EGL/extensions/KHR/EGL_KHR_gl_colorspace.txt
     config.AddExtensionRequest(ExtensionType::EGL, "EGL_KHR_gl_colorspace", ExtensionPrecense::Optional);
 
-    CustomDemoAppConfig customDemoAppConfig(sharedData);
+    const CustomDemoAppConfig customDemoAppConfig(sharedData);
     DemoAppRegister::GLES3::Register<SRGBFramebuffer>(rSetup, "GLES3.SRGBFramebuffer", config, customDemoAppConfig);
   }
 }

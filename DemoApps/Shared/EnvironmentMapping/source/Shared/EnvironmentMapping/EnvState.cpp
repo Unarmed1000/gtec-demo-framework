@@ -52,12 +52,12 @@ namespace Fsl
   {
     m_time += m_timeStep * deltaTime;
     // Compute the angle and advance the time counter.
-    float fAngle = m_time * (2.0f * MathHelper::PI) / m_stepsPerCircle;
+    const float fAngle = m_time * (2.0f * MathHelper::PI) / m_stepsPerCircle;
 
-    Matrix eyeMatrix(Matrix::CreateRotationY(fAngle));
+    const Matrix eyeMatrix(Matrix::CreateRotationY(fAngle));
 
     // Set eye position.
-    Vector4 eyeTransform = Vector4::Transform(Eye, eyeMatrix);
+    const Vector4 eyeTransform = Vector4::Transform(Eye, eyeMatrix);
 
     EyeVector.X = eyeTransform.X;
     EyeVector.Y = eyeTransform.Y;

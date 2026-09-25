@@ -163,7 +163,7 @@ namespace Fsl
 
       std::array<VkWriteDescriptorSet, 3> writeDescriptorSets{};
       // Binding 0 : Vertex shader uniform buffer
-      auto vertUboBufferInfo = vertUboBuffer.GetDescriptorBufferInfo();
+      const auto vertUboBufferInfo = vertUboBuffer.GetDescriptorBufferInfo();
       writeDescriptorSets[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
       writeDescriptorSets[0].dstSet = descriptorSet;
       writeDescriptorSets[0].dstBinding = 0;
@@ -172,7 +172,7 @@ namespace Fsl
       writeDescriptorSets[0].pBufferInfo = &vertUboBufferInfo;
 
       // Binding 1 : Fragment shader uniform buffer
-      auto fragUboBufferInfo = fragUboBuffer.GetDescriptorBufferInfo();
+      const auto fragUboBufferInfo = fragUboBuffer.GetDescriptorBufferInfo();
       writeDescriptorSets[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
       writeDescriptorSets[1].dstSet = descriptorSet;
       writeDescriptorSets[1].dstBinding = 1;
@@ -181,7 +181,7 @@ namespace Fsl
       writeDescriptorSets[1].pBufferInfo = &fragUboBufferInfo;
 
       // Binding 2 : Fragment shader texture sampler
-      auto textureImageInfo = texture.GetDescriptorImageInfo();
+      const auto textureImageInfo = texture.GetDescriptorImageInfo();
       writeDescriptorSets[2].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
       writeDescriptorSets[2].dstSet = descriptorSet;
       writeDescriptorSets[2].dstBinding = 2;
@@ -206,7 +206,7 @@ namespace Fsl
 
       std::array<VkWriteDescriptorSet, 3> writeDescriptorSets{};
       // Binding 0 : Vertex shader uniform buffer
-      auto vertUboBufferInfo = vertUboBuffer.GetDescriptorBufferInfo();
+      const auto vertUboBufferInfo = vertUboBuffer.GetDescriptorBufferInfo();
       writeDescriptorSets[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
       writeDescriptorSets[0].dstSet = descriptorSet;
       writeDescriptorSets[0].dstBinding = 0;
@@ -215,7 +215,7 @@ namespace Fsl
       writeDescriptorSets[0].pBufferInfo = &vertUboBufferInfo;
 
       // Binding 1 : Fragment shader uniform buffer
-      auto fragUboBufferInfo = fragUboBuffer.GetDescriptorBufferInfo();
+      const auto fragUboBufferInfo = fragUboBuffer.GetDescriptorBufferInfo();
       writeDescriptorSets[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
       writeDescriptorSets[1].dstSet = descriptorSet;
       writeDescriptorSets[1].dstBinding = 1;
@@ -224,7 +224,7 @@ namespace Fsl
       writeDescriptorSets[1].pBufferInfo = &fragUboBufferInfo;
 
       // Binding 2 : input attachment
-      auto attachmentImageInfo = attachment.GetDescriptorImageInfo();
+      const auto attachmentImageInfo = attachment.GetDescriptorImageInfo();
       writeDescriptorSets[2].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
       writeDescriptorSets[2].dstSet = descriptorSet;
       writeDescriptorSets[2].dstBinding = 2;
@@ -256,9 +256,9 @@ namespace Fsl
       assert(swapchainImageFormat != VK_FORMAT_UNDEFINED);
       assert(depthImageFormat != VK_FORMAT_UNDEFINED);
 
-      VkAttachmentReference colorAttachmentReference = {0, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL};
-      VkAttachmentReference depthAttachmentReference = {1, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL};
-      VkAttachmentReference finalColorAttachmentReference = {2, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL};
+      const VkAttachmentReference colorAttachmentReference = {0, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL};
+      const VkAttachmentReference depthAttachmentReference = {1, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL};
+      const VkAttachmentReference finalColorAttachmentReference = {2, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL};
 
       std::array<VkSubpassDescription, 2> subpassDescription{};
       // Main rendering to a HDR buffer
@@ -268,7 +268,7 @@ namespace Fsl
       subpassDescription[0].pDepthStencilAttachment = &depthAttachmentReference;
 
       // Tone-mapping pass
-      VkAttachmentReference inputReferencesTonemapping = {0, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL};
+      const VkAttachmentReference inputReferencesTonemapping = {0, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL};
       subpassDescription[1].pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
       subpassDescription[1].inputAttachmentCount = 1;
       subpassDescription[1].pInputAttachments = &inputReferencesTonemapping;
@@ -423,7 +423,7 @@ namespace Fsl
 
     m_fragmentUboData = PrepareLights();
 
-    auto textureFilename = CommonMethods::GetTextureFile(m_deviceActiveFeatures);
+    const auto textureFilename = CommonMethods::GetTextureFile(m_deviceActiveFeatures);
 
     m_resources.TexSRGB = CommonMethods::CreateTexture(m_device, m_deviceQueue, contentManager, textureFilename);
 
@@ -449,10 +449,10 @@ namespace Fsl
     m_resources.TonemapperFragShaderModule.Reset(m_device.Get(), 0, contentManager->ReadBytes(filenameTonemap));
     m_resources.TonemapperDebugFragShaderModule.Reset(m_device.Get(), 0, contentManager->ReadBytes(filenameTonemapDebug));
 
-    std::array<VertexElementUsage, 3> shaderBindOrder = {VertexElementUsage::Position, VertexElementUsage::Normal,
-                                                         VertexElementUsage::TextureCoordinate};
+    const std::array<VertexElementUsage, 3> shaderBindOrder = {VertexElementUsage::Position, VertexElementUsage::Normal,
+                                                               VertexElementUsage::TextureCoordinate};
 
-    std::array<VertexElementUsage, 2> quadShaderBindOrder = {VertexElementUsage::Position, VertexElementUsage::TextureCoordinate};
+    const std::array<VertexElementUsage, 2> quadShaderBindOrder = {VertexElementUsage::Position, VertexElementUsage::TextureCoordinate};
 
     m_resources.MeshTunnel = SimpleMeshUtil::CreateTunnelVertexArray(m_bufferManager, shaderBindOrder);
     m_resources.MeshQuad = SimpleMeshUtil::CreateQuadVertexArray(m_bufferManager, quadShaderBindOrder);
@@ -540,7 +540,7 @@ namespace Fsl
 
     m_vertexUboData.MatModel = Matrix::GetIdentity();
     m_vertexUboData.MatView = m_camera.GetViewMatrix();
-    float aspect = GetWindowAspectRatio();    // ok since we divide both by two when we show four screens
+    const float aspect = GetWindowAspectRatio();    // ok since we divide both by two when we show four screens
 
     // Deal with the new Vulkan coordinate system (see method description for more info).
     // Consider using: https://github.com/KhronosGroup/Vulkan-Docs/blob/master/appendices/VK_KHR_maintenance1.txt
@@ -609,9 +609,9 @@ namespace Fsl
     m_dependentResources.RenderAttachment = CreateRenderAttachment(m_device, context.SwapchainImageExtent, renderFormat, "RenderHDR");
 
     // Update the preallocated tone-mapping descriptor set with the 'dependent' render attachment
-    for (auto& rFrame : m_resources.MainFrameResources)
+    for (const auto& frame : m_resources.MainFrameResources)
     {
-      UpdateDescriptorSet(m_device.Get(), rFrame.DescriptorSetTonemap, rFrame.VertUboBuffer, rFrame.FragUboBuffer,
+      UpdateDescriptorSet(m_device.Get(), frame.DescriptorSetTonemap, frame.VertUboBuffer, frame.FragUboBuffer,
                           m_dependentResources.RenderAttachment);
     }
 
@@ -667,7 +667,7 @@ namespace Fsl
     auto res = GetScreenExtent();
 
     {
-      VkRect2D scissor{{0, 0}, TypeConverter::UncheckedTo<VkExtent2D>(res)};
+      const VkRect2D scissor{{0, 0}, TypeConverter::UncheckedTo<VkExtent2D>(res)};
       vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
     }
 
@@ -693,7 +693,7 @@ namespace Fsl
     {
       if (useClip)
       {
-        VkRect2D scissor{{0, 0}, {splitX, res.Height.Value}};
+        const VkRect2D scissor{{0, 0}, {splitX, res.Height.Value}};
         vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
       }
 
@@ -706,7 +706,7 @@ namespace Fsl
     {
       if (useClip)
       {
-        VkRect2D scissor{{static_cast<int32_t>(splitX), 0}, {remainderX, res.Height.Value}};
+        const VkRect2D scissor{{static_cast<int32_t>(splitX), 0}, {remainderX, res.Height.Value}};
         vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
       }
 
@@ -771,7 +771,7 @@ namespace Fsl
   {
     FSL_PARAM_NOT_USED(frame);
 
-    VkDeviceSize offsets = 0;
+    const VkDeviceSize offsets = 0;
     vkCmdBindVertexBuffers(commandBuffer, VertexBufferBindId, 1, m_resources.MeshTunnel.VertexBuffer.GetBufferPointer(), &offsets);
     vkCmdDraw(commandBuffer, m_resources.MeshTunnel.VertexBuffer.GetVertexCount(), 1, 0, 0);
   }
@@ -781,7 +781,7 @@ namespace Fsl
   {
     FSL_PARAM_NOT_USED(frame);
 
-    VkDeviceSize offsets = 0;
+    const VkDeviceSize offsets = 0;
     vkCmdBindVertexBuffers(commandBuffer, VertexBufferBindId, 1, m_resources.MeshQuad.VertexBuffer.GetBufferPointer(), &offsets);
     vkCmdDraw(commandBuffer, m_resources.MeshQuad.VertexBuffer.GetVertexCount(), 1, 0, 0);
   }

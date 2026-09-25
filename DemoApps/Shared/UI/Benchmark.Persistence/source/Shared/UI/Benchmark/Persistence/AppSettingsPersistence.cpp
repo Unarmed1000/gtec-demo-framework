@@ -280,7 +280,7 @@ namespace Fsl::AppSettingsPersistence
 
   void Save(const IO::Path& path, const AppSettings& settings)
   {
-    std::string strNewJson = Encode(settings);
+    const std::string strNewJson = Encode(settings);
     // Only overwrite the file if it was modified
     std::string existingJsonFile;
     if (!IO::File::TryReadAllText(existingJsonFile, path) || existingJsonFile != strNewJson)

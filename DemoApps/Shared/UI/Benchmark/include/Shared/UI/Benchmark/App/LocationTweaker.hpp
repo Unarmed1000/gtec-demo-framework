@@ -40,7 +40,7 @@ namespace Fsl::UI::LocationTweaker
 {
   inline uint32_t GetDepth(const std::weak_ptr<IActivityStack>& activityStack)
   {
-    auto stack = activityStack.lock();
+    const auto stack = activityStack.lock();
     return stack ? stack->Count() : 0;
   }
 

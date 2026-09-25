@@ -83,7 +83,7 @@ namespace Fsl::Helios
 
     // We check this during construction
     assert(m_nativeCamera);
-    bool result = m_nativeCamera->TryRender(rTargetBitmap, rFrameId);
+    const bool result = m_nativeCamera->TryRender(rTargetBitmap, rFrameId);
     if (result && rFrameId == 0)
     {
       throw std::runtime_error("The camera system returned a invalid frame id");

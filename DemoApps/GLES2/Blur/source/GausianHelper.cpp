@@ -141,7 +141,7 @@ namespace Fsl
     const double calculatedEuler = 1.0 / (2.0 * MathHelper::PI * sigma * sigma);
 
     // coverity[integer_division]
-    double mean = length / 2;    // NOLINT(bugprone-integer-division)
+    const double mean = length / 2;    // NOLINT(bugprone-integer-division)
     double sum = 0.0;
     for (int y = 0; y < length; ++y)
     {
@@ -181,9 +181,9 @@ namespace Fsl
   std::string GausianHelper::GenerateGausianFragmentShader(const std::string& shaderTemplate, const std::vector<double>& kernel, const int32_t length,
                                                            const PxSize2D& texSize)
   {
-    Vector2 texStep(1.0f / static_cast<float>(texSize.RawWidth()), 1.0f / static_cast<float>(texSize.RawHeight()));
+    const Vector2 texStep(1.0f / static_cast<float>(texSize.RawWidth()), 1.0f / static_cast<float>(texSize.RawHeight()));
 
-    int halfLength = length / 2;
+    const int halfLength = length / 2;
 
     std::stringstream str;
     str << std::setprecision(13) << std::fixed;
@@ -213,7 +213,7 @@ namespace Fsl
   void GausianHelper::GenerateGausianFragmentShader(std::string& rGaussianFragX, std::string& rGaussianFragY, const std::vector<double>& kernelSlice,
                                                     const PxSize2D& texSize)
   {
-    Vector2 texStep(1.0f / static_cast<float>(texSize.RawWidth()), 1.0f / static_cast<float>(texSize.RawHeight()));
+    const Vector2 texStep(1.0f / static_cast<float>(texSize.RawWidth()), 1.0f / static_cast<float>(texSize.RawHeight()));
 
     const auto halfLength = static_cast<int32_t>(kernelSlice.size() - 1);
 
@@ -252,7 +252,7 @@ namespace Fsl
   void GausianHelper::GenerateGausianFragmentShaderLinear(std::string& rGaussianFragX, std::string& rGaussianFragY,
                                                           const std::vector<double>& kernelSlice, const PxSize2D& texSize)
   {
-    Vector2 texStep(1.0f / static_cast<float>(texSize.RawWidth()), 1.0f / static_cast<float>(texSize.RawHeight()));
+    const Vector2 texStep(1.0f / static_cast<float>(texSize.RawWidth()), 1.0f / static_cast<float>(texSize.RawHeight()));
     if ((kernelSlice.size() & 1) == 0)
     {
       throw std::invalid_argument("Kernel radius must be odd not even");
@@ -301,7 +301,7 @@ namespace Fsl
   void GausianHelper::GenerateNonDependentShaders(std::string& rGaussianVertX, std::string& rGaussianVertY, std::string& rGaussianFrag,
                                                   const std::vector<double>& kernelSlice, const PxSize2D& texSize)
   {
-    Vector2 texStep(1.0f / static_cast<float>(texSize.RawWidth()), 1.0f / static_cast<float>(texSize.RawHeight()));
+    const Vector2 texStep(1.0f / static_cast<float>(texSize.RawWidth()), 1.0f / static_cast<float>(texSize.RawHeight()));
 
     const auto halfLength = static_cast<int32_t>(kernelSlice.size() - 1);
 
@@ -376,9 +376,9 @@ namespace Fsl
       throw std::invalid_argument("Kernel radius must be odd not even");
     }
 
-    Vector2 texStep(1.0f / static_cast<float>(texSize.RawWidth()), 1.0f / static_cast<float>(texSize.RawHeight()));
+    const Vector2 texStep(1.0f / static_cast<float>(texSize.RawWidth()), 1.0f / static_cast<float>(texSize.RawHeight()));
 
-    int halfLength = static_cast<int32_t>(kernelSlice.size()) / 2;
+    const int halfLength = static_cast<int32_t>(kernelSlice.size()) / 2;
     if (halfLength > MaxKernelSliceLength)
     {
       throw std::invalid_argument("Kernel size is too large");

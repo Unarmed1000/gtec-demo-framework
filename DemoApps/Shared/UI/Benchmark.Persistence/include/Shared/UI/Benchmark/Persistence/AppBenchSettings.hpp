@@ -58,7 +58,7 @@ namespace Fsl
     {
     }
 
-    std::optional<AppRenderOptions> TryGetRenderOptions(const AppRenderMethod renderMethod) const
+    [[nodiscard]] std::optional<AppRenderOptions> TryGetRenderOptions(const AppRenderMethod renderMethod) const
     {
       for (const auto& entry : RenderOptions)
       {

@@ -43,7 +43,7 @@ namespace Fsl
     OptionParser() = default;
     ~OptionParser() override = default;
 
-    uint16_t GetMipMapLevel() const
+    [[nodiscard]] uint16_t GetMipMapLevel() const
     {
       return m_mipMapLevel;
     }

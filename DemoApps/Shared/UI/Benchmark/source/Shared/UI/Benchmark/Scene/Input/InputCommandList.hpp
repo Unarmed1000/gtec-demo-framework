@@ -48,10 +48,10 @@ namespace Fsl
     InputCommandList();
 
     void SetRecording(ReadOnlySpan<InputCommandRecord> span, const uint32_t frameCount);
-    ReadOnlySpan<InputCommandRecord> GetCommandSpan() const;
-    ReadOnlySpan<InputCommandRecord> GetCommandSpanForFrame(const uint32_t frameIndex) const;
+    [[nodiscard]] ReadOnlySpan<InputCommandRecord> GetCommandSpan() const;
+    [[nodiscard]] ReadOnlySpan<InputCommandRecord> GetCommandSpanForFrame(const uint32_t frameIndex) const;
 
-    uint32_t FrameCount() const;
+    [[nodiscard]] uint32_t FrameCount() const;
 
     void Clear();
     void NextFrameIndex();

@@ -44,7 +44,7 @@ namespace Fsl
     inline void DrawLine(NativeBatch2D* pBatch, const GLBatch2D::texture_type& texFill, const PxRectangleU32 nativeTexRect, const Vector2& start,
                          const Vector2& end, const Color& color, const float thickness)
     {
-      Vector2 delta = end - start;
+      const Vector2 delta = end - start;
       pBatch->Draw(texFill, start, nativeTexRect, color, VectorHelper::VectorToAngle(delta), Vector2(0, 0), Vector2(delta.Length(), thickness));
     }
   }
@@ -78,7 +78,7 @@ namespace Fsl
 
   void GridRenderNativeBatchCRSpline3::Draw(const GridRenderDrawContext& drawContext, const std::vector<PointMass>& /*points*/)
   {
-    GLBatch2D::texture_type texFillNative = TextureUtil::ToNative(drawContext.RenderSystem, drawContext.TexFill);
+    const GLBatch2D::texture_type texFillNative = TextureUtil::ToNative(drawContext.RenderSystem, drawContext.TexFill);
 
     const PxRectangleU32 texTrimmedRect(drawContext.TexFill.GetInfo().TrimmedRectPx);
     constexpr auto Size1Px = PxValueU::Create(1);
@@ -88,9 +88,9 @@ namespace Fsl
 
     auto* pBatch = drawContext.pBatch;
 
-    int width = m_gridFinalSize.X;
-    int height = m_gridFinalSize.Y;
-    Color color(0.12f, 0.12f, 0.55f, 0.33f);
+    const int width = m_gridFinalSize.X;
+    const int height = m_gridFinalSize.Y;
+    const Color color(0.12f, 0.12f, 0.55f, 0.33f);
 
     auto* pSrc = m_coordinates2D.data();
     auto* const pSrcArrayEnd = pSrc + m_coordinates2D.size();
@@ -101,7 +101,7 @@ namespace Fsl
       int lineCount = 0;
       while (pSrc < pSrcEnd)
       {
-        float thickness = (lineCount % 5 == 0) ? 3.0f : 1.0f;
+        const float thickness = (lineCount % 5 == 0) ? 3.0f : 1.0f;
         for (int x = 0; x < (width - 1); ++x)
         {
           assert((pSrc + x) < pSrcArrayEnd);
@@ -116,7 +116,7 @@ namespace Fsl
       int lineCount = 0;
       while (pSrc < pSrcArrayEnd)
       {
-        float thickness = (lineCount % 5 == 0) ? 3.0f : 1.0f;
+        const float thickness = (lineCount % 5 == 0) ? 3.0f : 1.0f;
         for (int y = 0; y < (height - 1); ++y)
         {
           assert((pSrc + y) < pSrcArrayEnd);
@@ -132,7 +132,7 @@ namespace Fsl
 
   void GridRenderNativeBatchCRSpline3::Calc3DCoordinates(std::vector<Vector3>& rDst, const std::vector<PointMass>& points)
   {
-    int32_t pointsWritten = CreateLinesHorizontal(rDst, points, 0);
+    const int32_t pointsWritten = CreateLinesHorizontal(rDst, points, 0);
     CreateLinesVertical(rDst, points, pointsWritten);
   }
 
@@ -287,7 +287,7 @@ namespace Fsl
     // Convert to 2D
     while (pSrc < pSrcEnd)
     {
-      float factor = (pSrc->Z + 2000.0f) * 0.0005f;
+      const float factor = (pSrc->Z + 2000.0f) * 0.0005f;
       pDst->X = ((pSrc->X - halfSize.X) * factor) + halfSize.X;
       pDst->Y = ((pSrc->Y - halfSize.Y) * factor) + halfSize.Y;
       ++pSrc;

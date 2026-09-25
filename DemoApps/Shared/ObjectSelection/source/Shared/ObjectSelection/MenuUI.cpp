@@ -131,14 +131,14 @@ namespace Fsl
     UI::Theme::IThemeControlFactory& themeFactory = *m_themeFactory;
 
     // Next up we prepare the actual UI
-    auto context = m_uiExtension->GetContext();
+    const auto context = m_uiExtension->GetContext();
 
     m_rootLayout = std::make_shared<UI::FillLayout>(context);
 
     // Finally add everything to the window manager (to ensure its seen)
     m_uiExtension->GetWindowManager()->Add(m_rootLayout);
 
-    auto stackLayout = std::make_shared<UI::ComplexStackLayout>(context);
+    const auto stackLayout = std::make_shared<UI::ComplexStackLayout>(context);
     stackLayout->SetOrientation(UI::LayoutOrientation::Horizontal);
     stackLayout->PushLayoutLength(UI::LayoutLength(UI::LayoutUnitType::Star, 1.0f));
     stackLayout->PushLayoutLength(UI::LayoutLength(UI::LayoutUnitType::Star, 1.0f));

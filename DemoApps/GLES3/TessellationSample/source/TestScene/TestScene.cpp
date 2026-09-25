@@ -117,7 +117,7 @@ namespace Fsl
 
     const std::shared_ptr<IContentManager> contentManager = config.DemoServiceProvider.Get<IContentManager>();
 
-    bool embedNormalMap = false;
+    const bool embedNormalMap = false;
     ConstructMesh(contentManager, sceneId);
     ConstructTextures(contentManager, embedNormalMap, sceneId);
 
@@ -134,9 +134,9 @@ namespace Fsl
     ModelMesh mesh;
     {
       BasicMesh tmpMesh;
-      WindingOrder::Enum windingOrder = WindingOrder::CCW;
+      const WindingOrder::Enum windingOrder = WindingOrder::CCW;
       constexpr PxSize2D Tex1Size(PxSize2D::Create(128, 128));
-      TextureRectangle texRect(PxRectangle(PxValue(0), PxValue(0), Tex1Size.Width(), Tex1Size.Height()), Tex1Size);
+      const TextureRectangle texRect(PxRectangle(PxValue(0), PxValue(0), Tex1Size.Width(), Tex1Size.Height()), Tex1Size);
       const NativeTextureArea texArea(TextureUtil::CalcTextureArea(texRect));
       const std::array<NativeTextureArea, 6> texAreas = {texArea, texArea, texArea, texArea, texArea, texArea};
       // tmpMesh = BoxGenerator::GenerateList(Vector3::Zero(), 150, 150, 150, texAreas, 6, windingOrder);
@@ -183,11 +183,11 @@ namespace Fsl
           const auto i0 = indices[i + 0];
           const auto i1 = indices[i + 1];
           const auto i2 = indices[i + 2];
-          auto e1p = vertex[i1].Position - vertex[i0].Position;
-          auto e1t = vertex[i1].TextureCoordinate - vertex[i0].TextureCoordinate;
-          auto e2t = vertex[i2].TextureCoordinate - vertex[i0].TextureCoordinate;
+          const auto e1p = vertex[i1].Position - vertex[i0].Position;
+          const auto e1t = vertex[i1].TextureCoordinate - vertex[i0].TextureCoordinate;
+          const auto e2t = vertex[i2].TextureCoordinate - vertex[i0].TextureCoordinate;
           const float urate = std::abs(e1t.X) > std::abs(e2t.X) ? e1t.X : e2t.X;
-          auto tangent = Vector3::Normalize(Vector3(e1p.X / urate, e1p.Y / urate, e1p.Z / urate));
+          const auto tangent = Vector3::Normalize(Vector3(e1p.X / urate, e1p.Y / urate, e1p.Z / urate));
 
           vertex[i0].Tangent += tangent;
           vertex[i1].Tangent += tangent;
@@ -212,7 +212,7 @@ namespace Fsl
     // Create the main texture (we use a scope here so we throw away the bitmap as soon as we don't need it)
     Bitmap bitmap;
     contentManager->Read(bitmap, "Textures/Rocks/TexColor.png", PixelFormat::R8G8B8_UNORM);
-    GLTextureParameters texParams1(GL_LINEAR, GL_LINEAR, GL_REPEAT, GL_REPEAT);
+    const GLTextureParameters texParams1(GL_LINEAR, GL_LINEAR, GL_REPEAT, GL_REPEAT);
     m_textureDiffuse.SetData(bitmap, texParams1);
 
     IO::Path strTexDisplace;
@@ -252,7 +252,7 @@ namespace Fsl
       {
         for (uint32_t x = 0; x < bitmap.RawUnsignedWidth(); ++x)
         {
-          uint32_t pixelNormal = bitmapNormals.GetNativePixel(x, y);
+          const uint32_t pixelNormal = bitmapNormals.GetNativePixel(x, y);
           uint32_t pixel = bitmap.GetNativePixel(x, y);
           pixel = ((pixel << 8) & 0xFF000000) | (pixelNormal & 0xFFFFFF);
           bitmap.SetNativePixel(x, y, pixel);

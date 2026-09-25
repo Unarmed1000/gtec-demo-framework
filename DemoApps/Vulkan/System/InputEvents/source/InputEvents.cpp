@@ -97,7 +97,7 @@ namespace Fsl
       clearColorValue.float32[2] = 0.0f;
       clearColorValue.float32[3] = 1.0f;
 
-      VkClearValue clearValues = {clearColorValue};
+      const VkClearValue clearValues = {clearColorValue};
 
       VkRenderPassBeginInfo renderPassBeginInfo{};
       renderPassBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;

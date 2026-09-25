@@ -43,7 +43,7 @@ namespace Fsl
     OptionParser();
     ~OptionParser() override;
 
-    uint32_t GetPhysicalDeviceIndex() const
+    [[nodiscard]] uint32_t GetPhysicalDeviceIndex() const
     {
       return m_physicalDeviceIndex;
     }

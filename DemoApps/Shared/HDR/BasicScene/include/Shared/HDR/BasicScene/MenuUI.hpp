@@ -88,7 +88,7 @@ namespace Fsl
     explicit MenuUI(const DemoAppConfig& config, const UI::UIColorSpace uiColorSpace);
     ~MenuUI() override;
 
-    std::shared_ptr<UIDemoAppExtension> GetUIDemoAppExtension() const
+    [[nodiscard]] std::shared_ptr<UIDemoAppExtension> GetUIDemoAppExtension() const
     {
       return m_uiExtension;
     }
@@ -112,11 +112,11 @@ namespace Fsl
 
     void UpdateExposureInput(const DemoTime& demoTime, const KeyboardState& keyboardState);
 
-    float GetExposure() const;
+    [[nodiscard]] float GetExposure() const;
 
     void SetExposure(const float value);
 
-    SceneState GetState() const
+    [[nodiscard]] SceneState GetState() const
     {
       return m_state;
     }

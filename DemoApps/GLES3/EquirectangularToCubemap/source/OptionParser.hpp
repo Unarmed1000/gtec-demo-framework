@@ -51,7 +51,7 @@ namespace Fsl
     OptionParser();
     ~OptionParser() override;
 
-    SceneState GetScene() const
+    [[nodiscard]] SceneState GetScene() const
     {
       return m_scene;
     }

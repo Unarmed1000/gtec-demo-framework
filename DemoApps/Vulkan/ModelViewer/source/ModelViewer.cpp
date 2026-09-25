@@ -232,7 +232,7 @@ namespace Fsl
 
       std::array<VkWriteDescriptorSet, 4> writeDescriptorSets{};
       // Binding 0 : Vertex shader uniform buffer
-      auto vertUboBufferInfo = vertUboBuffer.GetDescriptorBufferInfo();
+      const auto vertUboBufferInfo = vertUboBuffer.GetDescriptorBufferInfo();
       writeDescriptorSets[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
       writeDescriptorSets[0].dstSet = descriptorSet;
       writeDescriptorSets[0].dstBinding = 0;
@@ -242,7 +242,7 @@ namespace Fsl
 
       assert(texture.IsValid());
       // Binding 1 : Fragment shader texture sampler
-      auto textureImageInfo1 = texture.GetDescriptorImageInfo();
+      const auto textureImageInfo1 = texture.GetDescriptorImageInfo();
       writeDescriptorSets[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
       writeDescriptorSets[1].dstSet = descriptorSet;
       writeDescriptorSets[1].dstBinding = 1;
@@ -252,7 +252,7 @@ namespace Fsl
 
       // Binding 2 : Fragment shader texture sampler
       const auto& rTexture2 = textureNormal.IsValid() ? textureNormal : texture;
-      auto textureImageInfo2 = rTexture2.GetDescriptorImageInfo();
+      const auto textureImageInfo2 = rTexture2.GetDescriptorImageInfo();
       writeDescriptorSets[2].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
       writeDescriptorSets[2].dstSet = descriptorSet;
       writeDescriptorSets[2].dstBinding = 2;
@@ -262,7 +262,7 @@ namespace Fsl
 
       // Binding 3 : Fragment shader texture sampler
       const auto& rTexture3 = textureSpecular.IsValid() ? textureSpecular : texture;
-      auto textureImageInfo3 = rTexture3.GetDescriptorImageInfo();
+      const auto textureImageInfo3 = rTexture3.GetDescriptorImageInfo();
       writeDescriptorSets[3].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
       writeDescriptorSets[3].dstSet = descriptorSet;
       writeDescriptorSets[3].dstBinding = 3;
@@ -327,7 +327,7 @@ namespace Fsl
       viewport.minDepth = 0.0f;
       viewport.maxDepth = 1.0f;
 
-      VkRect2D scissor{{0, 0}, extent};
+      const VkRect2D scissor{{0, 0}, extent};
 
       VkPipelineViewportStateCreateInfo pipelineViewportStateCreateInfo{};
       pipelineViewportStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
@@ -461,13 +461,13 @@ namespace Fsl
 
     m_camera.SetZoom(LocalConfig::DefaultZoom);
 
-    auto options = config.GetOptions<OptionParser>();
+    const auto options = config.GetOptions<OptionParser>();
 
-    auto contentManager = GetContentManager();
-    auto contentPath = contentManager->GetContentPath();
-    auto textureService = config.DemoServiceProvider.TryGet<ITextureService>();
+    const auto contentManager = GetContentManager();
+    const auto contentPath = contentManager->GetContentPath();
+    const auto textureService = config.DemoServiceProvider.TryGet<ITextureService>();
 
-    auto customModelPath = options->GetCustomModelPath();
+    const auto customModelPath = options->GetCustomModelPath();
     ModelSceneUtil::ModelLoaderConfig loaderConfig;
     if (customModelPath.IsEmpty())
     {
@@ -486,7 +486,7 @@ namespace Fsl
     // aiProcessPreset_TargetRealtime_Quality
     // aiProcessPreset_TargetRealtime_MaxQuality
     // | aiProcess_TransformUVCoords
-    auto modelPath = IO::Path::Combine(contentPath, loaderConfig.ModelFileName);
+    const auto modelPath = IO::Path::Combine(contentPath, loaderConfig.ModelFileName);
     FSLLOG3_INFO("Loading scene '{}'", loaderConfig.ModelFileName);
     SceneImporter sceneImporter;
     const auto scene = sceneImporter.Load<MeshUtil::TestScene>(modelPath, LocalConfig::DefaultModelScale * loaderConfig.ScaleMod, true);
@@ -718,7 +718,7 @@ namespace Fsl
 
     vkCmdBindPipeline(hCmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_dependentResources.Pipeline.Get());
 
-    VkDeviceSize offsets = 0;
+    const VkDeviceSize offsets = 0;
     vkCmdBindVertexBuffers(hCmdBuffer, VertexBufferBindId, 1, m_resources.Mesh.VertexBuffer.GetBufferPointer(), &offsets);
     vkCmdBindIndexBuffer(hCmdBuffer, m_resources.Mesh.IndexBuffer.GetBuffer(), 0, VK_INDEX_TYPE_UINT16);
     vkCmdDrawIndexed(hCmdBuffer, m_resources.Mesh.IndexBuffer.GetIndexCount(), 1, 0, 0, 0);
@@ -729,7 +729,7 @@ namespace Fsl
                                   const bool useSpecularMap, const bool useNormalMap, const std::string& baseShaderName,
                                   const bool /*requireVertexNormal*/)
   {
-    IO::Path shaderPath("Shaders");
+    const IO::Path shaderPath("Shaders");
 
     auto shaderName = baseShaderName;
 
@@ -770,7 +770,7 @@ namespace Fsl
     if (config.TextureFileName.IsEmpty())
     {
       // Create a dummy texture
-      Bitmap bitmap(PxSize2D::Create(32, 32), PixelFormat::R8G8B8A8_UNORM);
+      const Bitmap bitmap(PxSize2D::Create(32, 32), PixelFormat::R8G8B8A8_UNORM);
       m_resources.Texture = CreateTexture(m_device, m_deviceQueue, bitmap, VK_FILTER_LINEAR, VK_SAMPLER_ADDRESS_MODE_REPEAT, nullptr);
       return false;
     }
@@ -796,8 +796,8 @@ namespace Fsl
       {
         for (uint32_t x = 0; x < bitmap.RawUnsignedWidth(); ++x)
         {
-          auto col1 = bitmap.GetNativePixel(x, y);
-          auto col2 = bitmapGloss.GetNativePixel(x, y);
+          const auto col1 = bitmap.GetNativePixel(x, y);
+          const auto col2 = bitmapGloss.GetNativePixel(x, y);
           const uint32_t color = (col1 & 0xFFFFFF) | ((col2 & 0xFF) << 24);
           bitmap.SetNativePixel(x, y, color);
         }

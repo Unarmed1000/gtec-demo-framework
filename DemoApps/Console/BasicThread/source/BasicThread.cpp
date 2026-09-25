@@ -55,7 +55,7 @@ namespace Fsl
 
     try
     {
-      bool result = m_threadHost.Shutdown();
+      const bool result = m_threadHost.Shutdown();
       FSLLOG3_INFO("App: Custom thread shutdown result: {} (ThreadId: {})", result, threadId);
       {    // Pump the last messages (will only be used in case a exception occurs)
         FSLLOG3_INFO("App: Checking for any remaining messsages (ThreadId: {})", threadId);
@@ -83,12 +83,12 @@ namespace Fsl
 
     const std::chrono::duration totalTime = 2s;
     auto currentTime = std::chrono::system_clock::now();
-    auto endTime = currentTime + totalTime;
+    const auto endTime = currentTime + totalTime;
 
     do
     {
       int32_t queueResult = 0;
-      std::chrono::duration timeLeft = endTime - currentTime;
+      const std::chrono::duration timeLeft = endTime - currentTime;
       FSLLOG3_INFO("App: Waiting for message (ThreadId: {})", threadId);
       if (m_incomingQueue->TryDequeueWait(queueResult, std::chrono::duration_cast<std::chrono::milliseconds>(timeLeft)))
       {

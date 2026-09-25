@@ -159,7 +159,7 @@ namespace Fsl
       viewport.minDepth = 0.0f;
       viewport.maxDepth = 1.0f;
 
-      VkRect2D scissor = {{0, 0}, swapchainImageExtent};
+      const VkRect2D scissor = {{0, 0}, swapchainImageExtent};
 
       VkPipelineViewportStateCreateInfo pipelineViewportStateCreateInfo{};
       pipelineViewportStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
@@ -265,7 +265,7 @@ namespace Fsl
                                     const uint32_t densityDpi, const PxExtent2D textureExtentPx, const IO::Path& pathFontInfo)
     {
       FSLLOG3_INFO("  BitmapFont '{}'", pathFontInfo);
-      auto bytes = contentManager.ReadAllBytes(pathFontInfo);
+      const auto bytes = contentManager.ReadAllBytes(pathFontInfo);
 
       return TextureAtlasSpriteFont(spriteNativeAreaCalc, textureExtentPx, BitmapFontDecoder::Decode(SpanUtil::AsReadOnlySpan(bytes)), densityDpi);
     }
@@ -334,7 +334,7 @@ namespace Fsl
   {
     const auto contentManagerEx = GetContentManager();
     const auto& contentManager = *contentManagerEx;
-    SpriteNativeAreaCalc spriteNativeAreaCalc(false);
+    const SpriteNativeAreaCalc spriteNativeAreaCalc(false);
     const uint32_t densityDpi = 160;
 
     m_resources.Textures = CreateTextures(m_device, m_deviceQueue, GetContentManager());
@@ -454,10 +454,10 @@ namespace Fsl
         viewport.maxDepth = 1.0f;
         vkCmdSetViewport(hCmdBuffer, 0, 1, &viewport);
 
-        VkRect2D scissor{{0, 0}, drawContext.SwapchainImageExtent};
+        const VkRect2D scissor{{0, 0}, drawContext.SwapchainImageExtent};
         vkCmdSetScissor(hCmdBuffer, 0, 1, &scissor);
 
-        VkDeviceSize offsets = 0;
+        const VkDeviceSize offsets = 0;
         vkCmdBindVertexBuffers(hCmdBuffer, 0, 1, m_resources.VertexBuffer.GetBufferPointer(), &offsets);
         vkCmdDraw(hCmdBuffer, 3, 1, 0, 0);
 
@@ -483,7 +483,7 @@ namespace Fsl
 
     const auto swapchainImagesCount = context.SwapchainImagesCount;
 
-    auto screenExtent = GetScreenExtent();
+    const auto screenExtent = GetScreenExtent();
     if (m_batch2DQuad)
     {
       m_batch2DQuad->CreateDependentResources(swapchainImagesCount, mainRenderPass, Local::MainSubPass, screenExtent);
@@ -514,20 +514,20 @@ namespace Fsl
   DevBatch::AppTextures DevBatch::CreateTextures(const Vulkan::VUDevice& device, const Vulkan::VUDeviceQueueRecord& deviceQueue,
                                                  const std::shared_ptr<IContentManager>& contentManger)
   {
-    auto texture = contentManger->ReadTexture("Texturing.png", PixelFormat::R8G8B8A8_UNORM);
-    auto texture2 = contentManger->ReadTexture("Icons/boardgamewizard.png", PixelFormat::R8G8B8A8_UNORM);
-    auto texture3 = contentManger->ReadBitmap("Icons/hero_bard.png", PixelFormat::R8G8B8A8_UNORM);
-    auto texture4 = contentManger->ReadBitmap("Knight/Idle1.png", PixelFormat::R8G8B8A8_UNORM);
-    auto texture4Pre = contentManger->ReadBitmap("Knight/Idle1_pre.png", PixelFormat::R8G8B8A8_UNORM);
-    auto textureNormalFont = contentManger->ReadBitmap(Local::PathFontTexture, PixelFormat::R8G8B8A8_UNORM);
+    const auto texture = contentManger->ReadTexture("Texturing.png", PixelFormat::R8G8B8A8_UNORM);
+    const auto texture2 = contentManger->ReadTexture("Icons/boardgamewizard.png", PixelFormat::R8G8B8A8_UNORM);
+    const auto texture3 = contentManger->ReadBitmap("Icons/hero_bard.png", PixelFormat::R8G8B8A8_UNORM);
+    const auto texture4 = contentManger->ReadBitmap("Knight/Idle1.png", PixelFormat::R8G8B8A8_UNORM);
+    const auto texture4Pre = contentManger->ReadBitmap("Knight/Idle1_pre.png", PixelFormat::R8G8B8A8_UNORM);
+    const auto textureNormalFont = contentManger->ReadBitmap(Local::PathFontTexture, PixelFormat::R8G8B8A8_UNORM);
     ;
-    auto textureSdfFont = contentManger->ReadBitmap(Local::PathSdfFontTexture, PixelFormat::R8G8B8A8_UNORM);
+    const auto textureSdfFont = contentManger->ReadBitmap(Local::PathSdfFontTexture, PixelFormat::R8G8B8A8_UNORM);
 
     AppTextures textures;
     {
       VulkanImageCreator imageCreator(device, deviceQueue.Queue, deviceQueue.QueueFamilyIndex);
 
-      bool useStaging = true;
+      const bool useStaging = true;
       VkSamplerCreateInfo samplerCreateInfo{};
       samplerCreateInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
       samplerCreateInfo.magFilter = VK_FILTER_LINEAR;
@@ -566,9 +566,9 @@ namespace Fsl
 
   void DevBatch::DrawQuads(const uint32_t swapBufferIndex, const VkCommandBuffer commandBuffer)
   {
-    auto& rTest = m_test;
-    auto& rBatch2DQuad = m_batch2DQuad;
-    auto& rBatch2D = m_batch2D;
+    const auto& rTest = m_test;
+    const auto& rBatch2DQuad = m_batch2DQuad;
+    const auto& rBatch2D = m_batch2D;
 
     const auto windowSizePx = GetWindowSizePx();
     const auto& texture1 = m_resources.Textures.Texture1;
@@ -579,7 +579,7 @@ namespace Fsl
     const auto& textureNormalFont = m_resources.Textures.NormalFontTexture;
     const auto& textureSdfFont = m_resources.Textures.SdfFontTexture;
     {
-      auto col = Colors::White();
+      const auto col = Colors::White();
 
       std::array<VertexPositionColorTexture, 8> testQuad{};
       testQuad[0].Color = col;
@@ -603,7 +603,7 @@ namespace Fsl
       testQuad[6].TextureCoordinate = Vector2(0.0f, v1);
       testQuad[7].TextureCoordinate = Vector2(1.0f, v1);
 
-      float z = 0;
+      const float z = 0;
       float x = 200;
       float y = 200;
 
@@ -679,11 +679,11 @@ namespace Fsl
 
     const auto sdfFontLineSpacingPxf = static_cast<float>(sdfFont.LineSpacingPx().RawValue());
 
-    BitmapFontConfig fontConfig(1.0f, m_kerningEnabled);
-    BitmapFontConfig fontConfigZoom(2.1f, m_kerningEnabled);
+    const BitmapFontConfig fontConfig(1.0f, m_kerningEnabled);
+    const BitmapFontConfig fontConfigZoom(2.1f, m_kerningEnabled);
     rBatch2D->Begin(BlendState::NonPremultiplied);
 
-    auto sizeInfo = normalFont.MeasureString(strInfo);
+    const auto sizeInfo = normalFont.MeasureString(strInfo);
     rBatch2D->DrawString(textureNormalFont, normalFont, fontConfig, strInfo, Vector2(windowSizePx.RawWidth() - sizeInfo.RawWidth(), 0),
                          Colors::White());
 

@@ -55,7 +55,7 @@ namespace Fsl
     OptionParser();
     ~OptionParser() override;
 
-    uint32_t GetSceneMask() const
+    [[nodiscard]] uint32_t GetSceneMask() const
     {
       return m_sceneMask;
     }

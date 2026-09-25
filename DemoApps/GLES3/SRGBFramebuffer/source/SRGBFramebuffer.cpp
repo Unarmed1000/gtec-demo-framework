@@ -219,8 +219,8 @@ namespace Fsl
     UpdateSceneTransition(demoTime);
 
     const auto windowSizePx = GetWindowSizePx();
-    auto matrixWorld = Matrix::GetIdentity();
-    auto matrixView = m_camera.GetViewMatrix();
+    const auto matrixWorld = Matrix::GetIdentity();
+    const auto matrixView = m_camera.GetViewMatrix();
 
     const float aspectL = m_splitSceneWidthL.GetValue() / static_cast<float>(windowSizePx.RawHeight());
     m_matrixProjectionL = Matrix::CreatePerspectiveFieldOfView(MathHelper::ToRadians(45.0f), aspectL, 0.1f, 100.0f);
@@ -273,7 +273,7 @@ namespace Fsl
 
     {    // Keyboard camera movement
       const float movementSpeed = 2.0f * demoTime.DeltaTime;
-      auto keyboardState = m_keyboard->GetState();
+      const auto keyboardState = m_keyboard->GetState();
 
       if (keyboardState.IsKeyDown(VirtualKey::W))
       {
@@ -416,7 +416,7 @@ namespace Fsl
     // Then override it to match the default GL setting since we know thats the way the texture is stored in the file
     tex.OverrideOrigin(BitmapOrigin::LowerLeft);
 
-    GLTextureParameters texParams(GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR, GL_REPEAT, GL_REPEAT);
+    const GLTextureParameters texParams(GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR, GL_REPEAT, GL_REPEAT);
     // m_texLinear.Reset(tex, texParams, TextureFlags::GenerateMipMaps);
     m_texLinear.Reset(tex, texParams);
     tex.SetCompatiblePixelFormat(PixelFormat::ETC2_R8G8B8_SRGB_BLOCK);
@@ -496,9 +496,9 @@ namespace Fsl
     RegisterExtension(m_uiExtension);
 
     // Next up we prepare the actual UI
-    auto context = m_uiExtension->GetContext();
+    const auto context = m_uiExtension->GetContext();
 
-    auto uiControlFactory = UI::Theme::ThemeSelector::CreateControlFactory(*m_uiExtension, m_colorSpace);
+    const auto uiControlFactory = UI::Theme::ThemeSelector::CreateControlFactory(*m_uiExtension, m_colorSpace);
     auto& factory = *uiControlFactory;
 
     // Create a label to write stuff into when a button is pressed
@@ -511,15 +511,16 @@ namespace Fsl
     m_labelRight->SetAlignmentX(UI::ItemAlignment::Far);
     m_labelRight->SetAlignmentY(UI::ItemAlignment::Near);
 
-    auto label1 = factory.CreateLabel(m_hasSRGBFramebuffer ? "SRGB framebuffer" : "SRGB framebuffer not available. Emulating output using shader");
+    const auto label1 =
+      factory.CreateLabel(m_hasSRGBFramebuffer ? "SRGB framebuffer" : "SRGB framebuffer not available. Emulating output using shader");
     label1->SetAlignmentX(UI::ItemAlignment::Center);
     label1->SetAlignmentY(UI::ItemAlignment::Center);
 
-    auto leftCB = factory.CreateSwitch("Incorrect");
-    auto rightCB = factory.CreateSwitch("Correct");
+    const auto leftCB = factory.CreateSwitch("Incorrect");
+    const auto rightCB = factory.CreateSwitch("Correct");
     leftCB->SetAlignmentX(UI::ItemAlignment::Center);
     rightCB->SetAlignmentX(UI::ItemAlignment::Center);
-    auto controls = std::make_shared<UI::ComplexStackLayout>(context);
+    const auto controls = std::make_shared<UI::ComplexStackLayout>(context);
     controls->SetAlignmentX(UI::ItemAlignment::Stretch);
     controls->PushLayoutLength(UI::LayoutLength(UI::LayoutUnitType::Star));
     controls->PushLayoutLength(UI::LayoutLength(UI::LayoutUnitType::Auto));
@@ -530,11 +531,11 @@ namespace Fsl
     controls->AddChild(rightCB);
 
 
-    auto bottomBar = factory.CreateBottomBar(controls);
+    const auto bottomBar = factory.CreateBottomBar(controls);
 
     // Create a 'root' layout we use the recommended fill layout as it will utilize all available space on the screen
     // We then add the 'player' stack to it and the label
-    auto fillLayout = std::make_shared<UI::FillLayout>(context);
+    const auto fillLayout = std::make_shared<UI::FillLayout>(context);
     fillLayout->AddChild(m_labelLeft);
     fillLayout->AddChild(m_labelRight);
     fillLayout->AddChild(bottomBar);

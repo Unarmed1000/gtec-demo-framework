@@ -90,12 +90,12 @@ namespace Fsl
     void OnKeyEvent(const KeyEvent& event);
 
     // From ITestApp
-    UI::UIColor GetRootColor() const final;
+    [[nodiscard]] UI::UIColor GetRootColor() const final;
     bool TrySetRootColor(const UI::UIColor color) final;
 
-    const UI::IRenderSystemBase& GetRenderSystem() const final;
+    [[nodiscard]] const UI::IRenderSystemBase& GetRenderSystem() const final;
     UI::IRenderSystemBase* TryGetRenderSystem() final;
-    std::shared_ptr<CustomUIDemoAppExtension> GetCustomUIDemoAppExtension() const final
+    [[nodiscard]] std::shared_ptr<CustomUIDemoAppExtension> GetCustomUIDemoAppExtension() const final
     {
       return m_uiExtension;
     }
@@ -104,7 +104,7 @@ namespace Fsl
     void SetClipRectangle(const bool enabled, const PxRectangle& clipRectanglePx) final;
     void SetUseDrawCache(const bool useDrawCache) final;
 
-    bool IsUIIdle() const final;
+    [[nodiscard]] bool IsUIIdle() const final;
 
     void OnConfigurationChanged(const DemoWindowMetrics& windowMetrics) final;
     void Update(const DemoTime& demoTime) final;

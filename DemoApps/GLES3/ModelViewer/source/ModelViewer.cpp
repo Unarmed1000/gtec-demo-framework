@@ -68,7 +68,7 @@ namespace Fsl
       std::size_t indexCount = 0;
       for (std::size_t i = 0; i < scene.Meshes.size(); ++i)
       {
-        auto mesh = scene.Meshes[i];
+        const auto mesh = scene.Meshes[i];
         rIndexBuffers.Reset(i, mesh->GetIndexArray(), GL_STATIC_DRAW);
         rVertexBuffers.Reset(i, mesh->GetVertexArray(), GL_STATIC_DRAW);
 
@@ -80,7 +80,7 @@ namespace Fsl
 
     void ExtractToSingleMesh(GLVertexBufferArray& rVertexBuffers, GLIndexBufferArray& rIndexBuffers, const MeshUtil::TestScene& scene)
     {
-      auto mesh = MeshUtil::ExtractToSingleMesh(scene);
+      const auto mesh = MeshUtil::ExtractToSingleMesh(scene);
 
       rVertexBuffers.Resize(1, MeshUtil::TestMesh::vertex_type::AsVertexDeclarationSpan());
       rIndexBuffers.Resize(1, GL_UNSIGNED_SHORT);
@@ -90,7 +90,7 @@ namespace Fsl
 
     void ExtractMeshEdges(GLVertexBufferArray& rVertexBuffers, GLIndexBufferArray& rIndexBuffers, const MeshUtil::TestScene& scene)
     {
-      auto mesh = MeshUtil::ExtractMeshEdges(scene);
+      const auto mesh = MeshUtil::ExtractMeshEdges(scene);
 
       FSLLOG3_INFO("Building mesh");
       rVertexBuffers.Resize(1, MeshUtil::TestMesh::vertex_type::AsVertexDeclarationSpan());
@@ -141,12 +141,12 @@ namespace Fsl
 
     m_camera.SetZoom(DefaultZoom);
 
-    auto options = config.GetOptions<OptionParser>();
+    const auto options = config.GetOptions<OptionParser>();
 
-    auto contentManager = GetContentManager();
-    auto contentPath = contentManager->GetContentPath();
+    const auto contentManager = GetContentManager();
+    const auto contentPath = contentManager->GetContentPath();
 
-    auto customModelPath = options->GetCustomModelPath();
+    const auto customModelPath = options->GetCustomModelPath();
     ModelSceneUtil::ModelLoaderConfig loaderConfig;
     if (customModelPath.IsEmpty())
     {
@@ -165,7 +165,7 @@ namespace Fsl
     // aiProcessPreset_TargetRealtime_Quality
     // aiProcessPreset_TargetRealtime_MaxQuality
     // | aiProcess_TransformUVCoords
-    auto modelPath = IO::Path::Combine(contentPath, loaderConfig.ModelFileName);
+    const auto modelPath = IO::Path::Combine(contentPath, loaderConfig.ModelFileName);
     FSLLOG3_INFO("Loading scene '{}'", loaderConfig.ModelFileName);
     SceneImporter sceneImporter;
     const auto scene = sceneImporter.Load<MeshUtil::TestScene>(modelPath, DefaultModelScale * loaderConfig.ScaleMod, true);
@@ -311,7 +311,7 @@ namespace Fsl
     m_vertexUboData.MatWorldView = m_matrixWorld * m_matrixView;
     m_vertexUboData.MatWorldViewProjection = m_vertexUboData.MatWorldView * m_matrixProjection;
 
-    Vector4 cameraSpaceLightDirection = Vector4::Transform(m_lightDirection, m_camera.GetRotationMatrix());
+    const Vector4 cameraSpaceLightDirection = Vector4::Transform(m_lightDirection, m_camera.GetRotationMatrix());
     m_fragUboData.LightDirection = Vector3(cameraSpaceLightDirection.X, cameraSpaceLightDirection.Y, cameraSpaceLightDirection.Z);
     m_fragUboData.LightDirection.Normalize();
     m_vertexUboData.MatNormal = Matrix3::Transpose(Matrix3::Invert(MatrixConverter::ToMatrix3(m_vertexUboData.MatWorldView)));
@@ -425,8 +425,8 @@ namespace Fsl
     const auto indexBufferType = m_resources.IndexBuffers.GetType();
     for (int32_t i = 0; i < m_resources.IndexBuffers.Length(); ++i)
     {
-      auto indexBuffer = m_resources.IndexBuffers.Get(i);
-      auto vertexBuffer = m_resources.VertexBuffers.Get(i);
+      const auto indexBuffer = m_resources.IndexBuffers.Get(i);
+      const auto vertexBuffer = m_resources.VertexBuffers.Get(i);
       if (indexBuffer.GetCapacity() > 0)
       {
         // Bind and enable the vertex buffer
@@ -444,8 +444,8 @@ namespace Fsl
 
   void ModelViewer::DrawMeshesAndProfile()
   {
-    HighResolutionTimer timer;
-    auto startTime = timer.GetTimestamp();
+    const HighResolutionTimer timer;
+    const auto startTime = timer.GetTimestamp();
     TimeSpan totalTimeBind;
     TimeSpan totalTimeEnable;
     TimeSpan totalTimeDraw;
@@ -457,8 +457,8 @@ namespace Fsl
     const GLenum drawMode = !m_wireframe ? GL_TRIANGLES : GL_LINES;
     for (int32_t i = 0; i < m_resources.IndexBuffers.Length(); ++i)
     {
-      auto indexBuffer = m_resources.IndexBuffers.Get(i);
-      auto vertexBuffer = m_resources.VertexBuffers.Get(i);
+      const auto indexBuffer = m_resources.IndexBuffers.Get(i);
+      const auto vertexBuffer = m_resources.VertexBuffers.Get(i);
       if (indexBuffer.GetCapacity() > 0)
       {
         // Bind and enable the vertex buffer
@@ -483,8 +483,8 @@ namespace Fsl
         sequenceTimestampStart = sequenceTimestampEnd;
       }
     }
-    auto endTime = timer.GetTimestamp();
-    auto totalTime = endTime - startTime;
+    const auto endTime = timer.GetTimestamp();
+    const auto totalTime = endTime - startTime;
     // FSLLOG3_INFO("DrawCalls: " << m_indexBuffers.Length() << " Time: " << totalTime << " bind: " << totalTimeBind << " enable: " << totalTimeEnable
     // << " draw: " << totalTimeDraw);
 
@@ -532,10 +532,10 @@ namespace Fsl
 
       for (int32_t i = 0; i < meshCount; ++i)
       {
-        int32_t meshIndex = pNode->GetMeshAt(i);
+        const int32_t meshIndex = pNode->GetMeshAt(i);
 
-        auto indexBuffer = m_resources.IndexBuffers.Get(meshIndex);
-        auto vertexBuffer = m_resources.VertexBuffers.Get(meshIndex);
+        const auto indexBuffer = m_resources.IndexBuffers.Get(meshIndex);
+        const auto vertexBuffer = m_resources.VertexBuffers.Get(meshIndex);
         if (indexBuffer.GetCapacity() > 0)
         {
           // Bind and enable the vertex buffer
@@ -555,7 +555,7 @@ namespace Fsl
                                   const bool useSpecularMap, const bool useNormalMap, const std::string& baseShaderName,
                                   const bool requireVertexNormal)
   {
-    IO::Path shaderPath("Shaders");
+    const IO::Path shaderPath("Shaders");
 
     auto shaderName = baseShaderName;
 
@@ -656,15 +656,15 @@ namespace Fsl
       {
         for (uint32_t x = 0; x < bitmap.RawUnsignedWidth(); ++x)
         {
-          auto col1 = bitmap.GetNativePixel(x, y);
-          auto col2 = bitmapGloss.GetNativePixel(x, y);
+          const auto col1 = bitmap.GetNativePixel(x, y);
+          const auto col2 = bitmapGloss.GetNativePixel(x, y);
           const uint32_t color = (col1 & 0xFFFFFF) | ((col2 & 0xFF) << 24);
           bitmap.SetNativePixel(x, y, color);
         }
       }
     }
 
-    GLTextureParameters texParams(GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR, GL_REPEAT, GL_REPEAT);
+    const GLTextureParameters texParams(GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR, GL_REPEAT, GL_REPEAT);
     m_resources.Texture.Reset(bitmap, texParams, TextureFlags::GenerateMipMaps);
 
     if (!config.TextureSpecularFileName.IsEmpty())

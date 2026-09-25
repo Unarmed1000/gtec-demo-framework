@@ -67,7 +67,7 @@ namespace Fsl
 
     const auto contentManager = GetContentManager();
 
-    IO::Path texture(options->GetScene() == SceneState::Scene1 ? "Textures/Cubemap/Yokohama3/Raw" : "Textures/Cubemap/Test/Raw");
+    const IO::Path texture(options->GetScene() == SceneState::Scene1 ? "Textures/Cubemap/Yokohama3/Raw" : "Textures/Cubemap/Test/Raw");
 
     FSLLOG3_INFO("Preparing cubemap");
     m_resources.CubemapTexture = TextureUtil::CreateCubemapTextureFromSix(contentManager, texture, PixelFormat::R8G8B8A8_UNORM);

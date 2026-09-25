@@ -156,7 +156,7 @@ namespace Fsl
     m_cameraConfig.WorldView = m_cameraConfig.World * m_cameraConfig.View;
     m_cameraConfig.WorldViewProjection = m_cameraConfig.WorldView * m_cameraConfig.Projection;
 
-    Vector4 cameraSpaceLightDirection = Vector4::Transform(m_lightDirection, m_camera.GetRotationMatrix());
+    const Vector4 cameraSpaceLightDirection = Vector4::Transform(m_lightDirection, m_camera.GetRotationMatrix());
     m_cameraConfig.CameraSpaceLightDirection = Vector3(cameraSpaceLightDirection.X, cameraSpaceLightDirection.Y, cameraSpaceLightDirection.Z);
     m_cameraConfig.CameraSpaceLightDirection.Normalize();
     m_cameraConfig.NormalMatrix = Matrix3::Transpose(Matrix3::Invert(MatrixConverter::ToMatrix3(m_cameraConfig.WorldView)));
@@ -218,8 +218,8 @@ namespace Fsl
       const auto indexBufferType = m_indexBuffers.GetType();
       for (int32_t i = 0; i < m_indexBuffers.Length(); ++i)
       {
-        auto indexBuffer = m_indexBuffers.Get(i);
-        auto vertexBuffer = m_vertexBuffers.Get(i);
+        const auto indexBuffer = m_indexBuffers.Get(i);
+        const auto vertexBuffer = m_vertexBuffers.Get(i);
 
         // Bind and enable the vertex buffer
         glBindBuffer(m_vertexBuffers.GetTarget(), vertexBuffer.Get());
@@ -294,8 +294,8 @@ namespace Fsl
     const auto indexBufferType = m_indexBuffers.GetType();
     for (int32_t i = 0; i < m_indexBuffers.Length(); ++i)
     {
-      auto indexBuffer = m_indexBuffers.Get(i);
-      auto vertexBuffer = m_vertexBuffers.Get(i);
+      const auto indexBuffer = m_indexBuffers.Get(i);
+      const auto vertexBuffer = m_vertexBuffers.Get(i);
       if (indexBuffer.GetCapacity() > 0)
       {
         // Bind and enable the vertex buffer

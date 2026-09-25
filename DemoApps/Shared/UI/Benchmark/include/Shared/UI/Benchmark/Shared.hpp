@@ -100,7 +100,7 @@ namespace Fsl
     explicit Shared(const DemoAppConfig& config, std::shared_ptr<IBasicGpuProfiler> gpuProfiler = {});
     ~Shared() override;
 
-    std::shared_ptr<IDemoAppExtension> GetDemoAppExtension() const
+    [[nodiscard]] std::shared_ptr<IDemoAppExtension> GetDemoAppExtension() const
     {
       return m_forwarder;
     }

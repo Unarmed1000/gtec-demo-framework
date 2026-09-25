@@ -42,7 +42,7 @@ namespace Fsl
     virtual ~IGlobalExampleService() = default;
 
     //! Really simple and unrealistic example of a service that does "a + b" and returns the result.
-    virtual int32_t Add(const int32_t a, const int32_t b) const = 0;
+    [[nodiscard]] virtual int32_t Add(const int32_t a, const int32_t b) const = 0;
   };
 }
 

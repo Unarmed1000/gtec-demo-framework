@@ -238,7 +238,7 @@ namespace Fsl
       RAPIDVULKAN_CHECK(vkAllocateDescriptorSets(m_device, &allocInfo, &rFrame.DescriptorSet));
 
       // Binding 0 : Vertex shader uniform buffer
-      auto vertUboBufferInfo = rFrame.UniformData.GetDescriptorBufferInfo();
+      const auto vertUboBufferInfo = rFrame.UniformData.GetDescriptorBufferInfo();
       VkWriteDescriptorSet writeDescriptorSet{};
       writeDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
       writeDescriptorSet.pNext = nullptr;
@@ -255,7 +255,7 @@ namespace Fsl
 
   void VulkanGear::Draw(const uint32_t frameIndex, const VkCommandBuffer cmdbuffer, const VkPipelineLayout pipelineLayout)
   {
-    VkDeviceSize offsets = 0;
+    const VkDeviceSize offsets = 0;
 
     vkCmdBindDescriptorSets(cmdbuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &m_resources[frameIndex].DescriptorSet, 0, nullptr);
     vkCmdBindVertexBuffers(cmdbuffer, 0, 1, m_vertexBuffer.GetBufferPointer(), &offsets);
@@ -266,7 +266,7 @@ namespace Fsl
 
   int32_t VulkanGear::NewVertex(std::vector<Vertex>& rVBuffer, const float x, const float y, const float z, const glm::vec3& normal)
   {
-    Vertex v(glm::vec3(x, y, z), normal, m_color);
+    const Vertex v(glm::vec3(x, y, z), normal, m_color);
     rVBuffer.push_back(v);
     return static_cast<int32_t>(rVBuffer.size()) - 1;
   }

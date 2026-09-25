@@ -47,7 +47,7 @@ namespace Fsl
       uint32_t Val0;
       uint32_t Val1;
 
-      uint32_t Sum() const
+      [[nodiscard]] uint32_t Sum() const
       {
         return Val0 + Val1;
       }

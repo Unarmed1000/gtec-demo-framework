@@ -123,7 +123,7 @@ namespace Fsl::Helios
     assert(rTargetBitmap.GetPixelFormat() == m_config.ActivePixelFormat);
     rFrameId = 0;
 
-    bool hasNewFrame = m_cap.read(m_vidFrame);
+    const bool hasNewFrame = m_cap.read(m_vidFrame);
     if (!hasNewFrame)
     {
       FSLLOG3_DEBUG_WARNING("Failed to read a new frame");

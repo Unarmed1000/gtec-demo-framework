@@ -73,8 +73,8 @@ namespace
     {
       for (std::size_t x = 0; x < resultRawBitmap.RawUnsignedWidth(); ++x)
       {
-        auto expectedByte = expected[expectedIndex];
-        auto resultByte = pResultContent[x + (y * resultStride)];
+        const auto expectedByte = expected[expectedIndex];
+        const auto resultByte = pResultContent[x + (y * resultStride)];
         EXPECT_EQ(resultByte, expectedByte);
         expectedIndex += stride;
       }
@@ -95,8 +95,8 @@ namespace
     {
       for (std::size_t x = 0; x < resultRawBitmap.RawUnsignedWidth(); ++x)
       {
-        auto expectedByte = expected[expectedIndex];
-        auto resultByte = pResultContent[x + (y * resultStride)];
+        const auto expectedByte = expected[expectedIndex];
+        const auto resultByte = pResultContent[x + (y * resultStride)];
         EXPECT_EQ(resultByte, expectedByte);
         expectedIndex += stride;
       }
@@ -112,8 +112,8 @@ namespace
     {
       for (std::size_t x = 0; x < srcStride; ++x)
       {
-        auto expectedByte = expected[x + (y * srcStride)];
-        auto resultByte = pResultContent[x + (y * resultStride)];
+        const auto expectedByte = expected[x + (y * srcStride)];
+        const auto resultByte = pResultContent[x + (y * resultStride)];
         EXPECT_EQ(resultByte, expectedByte);
       }
     }
@@ -141,8 +141,8 @@ TEST(Test_TightPlanarBitmapR8G8B8, ConstructFromReadOnlySpan_Size)
   constexpr uint32_t ExpectedPlaneStride = Stride / 3;
   constexpr uint32_t ExpectedBytesPerPlane = ExpectedPlaneStride * Size.RawUnsignedHeight();
 
-  std::array<uint8_t, 3 * Size.RawWidth() * Size.RawHeight()> srcContent{0x00, 0x40, 0x80, 0x10, 0x50, 0x90, 0x01, 0x41, 0x81,
-                                                                         0x11, 0x51, 0x91, 0x02, 0x42, 0x82, 0x12, 0x52, 0x92};
+  const std::array<uint8_t, 3 * Size.RawWidth() * Size.RawHeight()> srcContent{0x00, 0x40, 0x80, 0x10, 0x50, 0x90, 0x01, 0x41, 0x81,
+                                                                               0x11, 0x51, 0x91, 0x02, 0x42, 0x82, 0x12, 0x52, 0x92};
 
   const TightPlanarBitmapR8G8B8 result(SpanUtil::AsReadOnlySpan(srcContent), Size, SrcPixelFormat, Origin);
 
@@ -171,8 +171,8 @@ TEST(Test_TightPlanarBitmapR8G8B8, ConstructFromReadOnlySpan_Extent)
   constexpr uint32_t ExpectedPlaneStride = Stride / 3;
   constexpr uint32_t ExpectedBytesPerPlane = ExpectedPlaneStride * Extent.Height.Value;
 
-  std::array<uint8_t, 3 * Extent.Width.Value * Extent.Height.Value> srcContent{0x00, 0x40, 0x80, 0x10, 0x50, 0x90, 0x01, 0x41, 0x81,
-                                                                               0x11, 0x51, 0x91, 0x02, 0x42, 0x82, 0x12, 0x52, 0x92};
+  const std::array<uint8_t, 3 * Extent.Width.Value * Extent.Height.Value> srcContent{0x00, 0x40, 0x80, 0x10, 0x50, 0x90, 0x01, 0x41, 0x81,
+                                                                                     0x11, 0x51, 0x91, 0x02, 0x42, 0x82, 0x12, 0x52, 0x92};
 
   const TightPlanarBitmapR8G8B8 result(SpanUtil::AsReadOnlySpan(srcContent), Extent, SrcPixelFormat, Origin);
 
@@ -201,8 +201,8 @@ TEST(Test_TightPlanarBitmapR8G8B8, ConstructFromRawBitmap)
   constexpr uint32_t ExpectedPlaneStride = Stride / 3;
   constexpr uint32_t ExpectedBytesPerPlane = ExpectedPlaneStride * Extent.Height.Value;
 
-  std::array<uint8_t, 3 * Extent.Width.Value * Extent.Height.Value> srcContent{0x00, 0x40, 0x80, 0x10, 0x50, 0x90, 0x01, 0x41, 0x81,
-                                                                               0x11, 0x51, 0x91, 0x02, 0x42, 0x82, 0x12, 0x52, 0x92};
+  const std::array<uint8_t, 3 * Extent.Width.Value * Extent.Height.Value> srcContent{0x00, 0x40, 0x80, 0x10, 0x50, 0x90, 0x01, 0x41, 0x81,
+                                                                                     0x11, 0x51, 0x91, 0x02, 0x42, 0x82, 0x12, 0x52, 0x92};
 
   const ReadOnlyRawBitmap srcRawBitmap = ReadOnlyRawBitmap::Create(SpanUtil::AsReadOnlySpan(srcContent), Extent, SrcPixelFormat, Origin);
   const TightPlanarBitmapR8G8B8 result(srcRawBitmap);
@@ -401,8 +401,8 @@ TEST(Test_TightPlanarBitmapR8G8B8, ToBitmap)
   // constexpr uint32_t ExpectedPlaneStride = Stride / 3;
   // constexpr uint32_t ExpectedBytesPerPlane = ExpectedPlaneStride * Size.RawUnsignedHeight();
 
-  std::array<uint8_t, 3 * Size.RawWidth() * Size.RawHeight()> srcContent{0x00, 0x40, 0x80, 0x10, 0x50, 0x90, 0x01, 0x41, 0x81,
-                                                                         0x11, 0x51, 0x91, 0x02, 0x42, 0x82, 0x12, 0x52, 0x92};
+  const std::array<uint8_t, 3 * Size.RawWidth() * Size.RawHeight()> srcContent{0x00, 0x40, 0x80, 0x10, 0x50, 0x90, 0x01, 0x41, 0x81,
+                                                                               0x11, 0x51, 0x91, 0x02, 0x42, 0x82, 0x12, 0x52, 0x92};
 
   const TightPlanarBitmapR8G8B8 tmp(SpanUtil::AsReadOnlySpan(srcContent), Size, SrcPixelFormat, Origin);
   const Bitmap result(tmp.ToBitmapMemory());
@@ -429,8 +429,8 @@ TEST(Test_TightPlanarBitmapR8G8B8, AsRawBitmap)
   constexpr uint32_t ExpectedPlaneStride = Stride / 3;
   constexpr uint32_t ExpectedBytesPerPlane = ExpectedPlaneStride * TypeConverter::To<PxValueU>(Size.Height()).Value;
 
-  std::array<uint8_t, 3 * Size.RawWidth() * Size.RawHeight()> srcContent{0x00, 0x40, 0x80, 0x10, 0x50, 0x90, 0x01, 0x41, 0x81,
-                                                                         0x11, 0x51, 0x91, 0x02, 0x42, 0x82, 0x12, 0x52, 0x92};
+  const std::array<uint8_t, 3 * Size.RawWidth() * Size.RawHeight()> srcContent{0x00, 0x40, 0x80, 0x10, 0x50, 0x90, 0x01, 0x41, 0x81,
+                                                                               0x11, 0x51, 0x91, 0x02, 0x42, 0x82, 0x12, 0x52, 0x92};
 
   const TightPlanarBitmapR8G8B8 result(SpanUtil::AsReadOnlySpan(srcContent), Size, SrcPixelFormat, Origin);
 
@@ -458,8 +458,8 @@ TEST(Test_TightPlanarBitmapR8G8B8, AsRawBitmapEx)
   constexpr uint32_t ExpectedPlaneStride = Stride / 3;
   constexpr uint32_t ExpectedBytesPerPlane = ExpectedPlaneStride * Size.RawUnsignedHeight();
 
-  std::array<uint8_t, 3 * Size.RawWidth() * Size.RawHeight()> srcContent{0x00, 0x40, 0x80, 0x10, 0x50, 0x90, 0x01, 0x41, 0x81,
-                                                                         0x11, 0x51, 0x91, 0x02, 0x42, 0x82, 0x12, 0x52, 0x92};
+  const std::array<uint8_t, 3 * Size.RawWidth() * Size.RawHeight()> srcContent{0x00, 0x40, 0x80, 0x10, 0x50, 0x90, 0x01, 0x41, 0x81,
+                                                                               0x11, 0x51, 0x91, 0x02, 0x42, 0x82, 0x12, 0x52, 0x92};
 
   TightPlanarBitmapR8G8B8 result(SpanUtil::AsReadOnlySpan(srcContent), Size, SrcPixelFormat, Origin);
 

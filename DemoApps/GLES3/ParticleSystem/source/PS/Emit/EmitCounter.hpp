@@ -44,7 +44,7 @@ namespace Fsl
   public:
     EmitCounter() = default;
 
-    uint32_t Count() const
+    [[nodiscard]] uint32_t Count() const
     {
       return m_count;
     }
@@ -52,8 +52,8 @@ namespace Fsl
 
     void Update(const uint64_t millisecondsSinceLastUpdate, const uint32_t particlesPerSecond)
     {
-      uint64_t limit = (static_cast<uint64_t>(particlesPerSecond) << 20);
-      uint64_t particlesPerMillisecond = limit / 1000;
+      const uint64_t limit = (static_cast<uint64_t>(particlesPerSecond) << 20);
+      const uint64_t particlesPerMillisecond = limit / 1000;
       uint64_t particles = particlesPerMillisecond * millisecondsSinceLastUpdate;
       particles += m_emitFraction;
       m_emitFraction = static_cast<uint32_t>(particles & 0xFFFFF);

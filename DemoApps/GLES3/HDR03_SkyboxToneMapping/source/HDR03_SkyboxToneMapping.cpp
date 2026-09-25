@@ -76,8 +76,8 @@ namespace Fsl
 
     GLES3::GLFrameBuffer CreateHdrFrameBuffer(const PxSize2D& sizePx)
     {
-      GLTextureParameters params(GL_LINEAR, GL_LINEAR, GL_REPEAT, GL_REPEAT);
-      GLTextureImageParameters texImageParams(GL_RGBA16F, GL_RGBA, GL_HALF_FLOAT);
+      const GLTextureParameters params(GL_LINEAR, GL_LINEAR, GL_REPEAT, GL_REPEAT);
+      const GLTextureImageParameters texImageParams(GL_RGBA16F, GL_RGBA, GL_HALF_FLOAT);
       return {sizePx, params, texImageParams, GL_DEPTH_COMPONENT16};
     }
   }
@@ -203,7 +203,7 @@ namespace Fsl
     GLint startX = 0;
     for (std::size_t i = 0; i < rRenderRecords.size(); ++i)
     {
-      auto endX = static_cast<GLint>(rRenderRecords[i].SplitX.GetValue());
+      const auto endX = static_cast<GLint>(rRenderRecords[i].SplitX.GetValue());
       glScissor(startX, 0, endX - startX, windowSizePx.RawHeight());
       startX = endX;
       DrawTonemappedScene(m_resources.ProgramTonemap[i], m_resources.HdrFrameBuffer);
@@ -332,7 +332,7 @@ namespace Fsl
     FSLLOG3_INFO("- loading cubemaps")
     // GLTextureParameters3 texParams(GL_NEAREST, GL_NEAREST, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE);
 
-    std::string texture = "test";
+    const std::string texture = "test";
     // rScene.CubemapTexture = TextureUtil::CreateCubemapTextureFromSix(contentManager, "floral_tent/1024", PixelFormat::R16G16B16A16_SFLOAT);
     rScene.CubemapTexture =
       TextureUtil::CreateCubemapTextureFromSix(contentManager, "Textures/Cubemap/HDR_Lookout/1024", PixelFormat::R16G16B16A16_SFLOAT);

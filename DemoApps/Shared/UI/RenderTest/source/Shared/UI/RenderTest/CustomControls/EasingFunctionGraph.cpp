@@ -111,7 +111,7 @@ namespace Fsl::UI::Custom
             const float pixelAdd = widthPxf / static_cast<float>(samplingPoints);
 
             float offsetXPxf = dstPositionPxf.X.Value;
-            float offsetYPxf = dstPositionPxf.Y.Value + static_cast<float>(areaBorderPx);
+            const float offsetYPxf = dstPositionPxf.Y.Value + static_cast<float>(areaBorderPx);
             float transitionValue = 0.0f;
             float lastXPxf = offsetXPxf;
             float lastYPxf = offsetYPxf + (areaHeightPxf - (fnEasingFunction(0.0f) * areaHeightPxf));
@@ -227,8 +227,8 @@ namespace Fsl::UI::Custom
   DataBinding::DataBindingInstanceHandle EasingFunctionGraph::TryGetPropertyHandleNow(const DataBinding::DependencyPropertyDefinition& sourceDef)
   {
     using namespace DataBinding;
-    auto res = DependencyObjectHelper::TryGetPropertyHandle(this, ThisDependencyObject(), sourceDef,
-                                                            PropLinkRefs(PropertyContentColor, m_propertyContentColor.ExternalColor));
+    const auto res = DependencyObjectHelper::TryGetPropertyHandle(this, ThisDependencyObject(), sourceDef,
+                                                                  PropLinkRefs(PropertyContentColor, m_propertyContentColor.ExternalColor));
     return res.IsValid() ? res : base_type::TryGetPropertyHandleNow(sourceDef);
   }
 
@@ -237,9 +237,9 @@ namespace Fsl::UI::Custom
                                                                               const DataBinding::Binding& binding)
   {
     using namespace DataBinding;
-    auto res = DependencyObjectHelper::TrySetBinding(this, ThisDependencyObject(), targetDef, binding,
-                                                     PropLinkRefs(PropertyContentColor, m_propertyContentColor.ExternalColor),
-                                                     PropLinkRefs(PropertyTransitionType, m_propertyTransitionType));
+    const auto res = DependencyObjectHelper::TrySetBinding(this, ThisDependencyObject(), targetDef, binding,
+                                                           PropLinkRefs(PropertyContentColor, m_propertyContentColor.ExternalColor),
+                                                           PropLinkRefs(PropertyTransitionType, m_propertyTransitionType));
     return res != PropertySetBindingResult::NotFound ? res : base_type::TrySetBindingNow(targetDef, binding);
   }
 

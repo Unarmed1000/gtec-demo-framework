@@ -90,26 +90,26 @@ namespace Fsl::CustomControlFactory
 
   CpuLegendRecord CreateCpuLegend(UI::Theme::IThemeControlFactory& uiFactory, const UI::DpLayoutSize1D spacingDp)
   {
-    auto context = uiFactory.GetContext();
-    auto layout = std::make_shared<UI::GridLayout>(context);
+    const auto context = uiFactory.GetContext();
+    const auto layout = std::make_shared<UI::GridLayout>(context);
     layout->AddColumnDefinition(UI::GridColumnDefinition(UI::GridUnitType::Auto));
     layout->AddColumnDefinition(UI::GridColumnDefinition(UI::GridUnitType::Fixed, spacingDp.Value().Value));
     layout->AddColumnDefinition(UI::GridColumnDefinition(UI::GridUnitType::Auto));
     layout->AddColumnDefinition(UI::GridColumnDefinition(UI::GridUnitType::Fixed, spacingDp.Value().Value));
     layout->AddColumnDefinition(UI::GridColumnDefinition(UI::GridUnitType::Fixed, 70.0f));
 
-    auto profileRecords = CustomControlFactory::GetCpuProfileRecords();
+    const auto profileRecords = CustomControlFactory::GetCpuProfileRecords();
     std::vector<CpuLegendRecord::ControlRecord> controls(profileRecords.size());
 
     for (uint32_t i = 0; i < profileRecords.size(); ++i)
     {
       layout->AddRowDefinition(UI::GridRowDefinition(UI::GridUnitType::Auto));
 
-      auto uiImage = uiFactory.CreateImage(uiFactory.GetResources().GetColorMarkerNineSliceSprite());
+      const auto uiImage = uiFactory.CreateImage(uiFactory.GetResources().GetColorMarkerNineSliceSprite());
       uiImage->SetAlignmentY(UI::ItemAlignment::Center);
       uiImage->SetContentColor(profileRecords[i].ItemColor);
-      auto uiLabel = uiFactory.CreateLabel(profileRecords[i].Label);
-      auto uiAverage = uiFactory.CreateFmtValueLabel(0.0f, "{:.2f}ms");
+      const auto uiLabel = uiFactory.CreateLabel(profileRecords[i].Label);
+      const auto uiAverage = uiFactory.CreateFmtValueLabel(0.0f, "{:.2f}ms");
       uiAverage->SetAlignmentX(UI::ItemAlignment::Far);
 
       layout->AddChild(uiImage, 0, i);
@@ -124,21 +124,21 @@ namespace Fsl::CustomControlFactory
 
   CpuDetailedLegendRecord CreateDetailedCpuLegend(UI::Theme::IThemeControlFactory& uiFactory, const UI::DpLayoutSize1D spacingDp)
   {
-    auto context = uiFactory.GetContext();
-    auto cpuProfileLabel = uiFactory.CreateLabel("CPU usage");
-    auto cpuUiAverage = uiFactory.CreateFmtValueLabel(0.0f, "{:.2f}ms");
+    const auto context = uiFactory.GetContext();
+    const auto cpuProfileLabel = uiFactory.CreateLabel("CPU usage");
+    const auto cpuUiAverage = uiFactory.CreateFmtValueLabel(0.0f, "{:.2f}ms");
     cpuUiAverage->SetAlignmentX(UI::ItemAlignment::Far);
 
 
-    auto cpuLabelStack = std::make_shared<UI::ComplexStackLayout>(context);
+    const auto cpuLabelStack = std::make_shared<UI::ComplexStackLayout>(context);
     cpuLabelStack->SetOrientation(UI::LayoutOrientation::Horizontal);
     cpuLabelStack->AddChild(cpuProfileLabel, UI::LayoutLength(UI::LayoutUnitType::Auto));
     cpuLabelStack->AddChild(cpuUiAverage, UI::LayoutLength(UI::LayoutUnitType::Star, 1.0f));
     cpuLabelStack->SetAlignmentX(UI::ItemAlignment::Stretch);
 
-    auto cpuUI = CustomControlFactory::CreateCpuLegend(uiFactory, spacingDp);
+    const auto cpuUI = CustomControlFactory::CreateCpuLegend(uiFactory, spacingDp);
 
-    auto cpuDetails = std::make_shared<UI::StackLayout>(context);
+    const auto cpuDetails = std::make_shared<UI::StackLayout>(context);
     cpuDetails->SetOrientation(UI::LayoutOrientation::Vertical);
     cpuDetails->AddChild(cpuLabelStack);
     cpuDetails->AddChild(cpuUI.MainLayout);
@@ -147,10 +147,10 @@ namespace Fsl::CustomControlFactory
   }
 
 
-  std::shared_ptr<UI::AreaChart> CreateAreaChart(UI::Theme::IThemeControlFactory& uiFactory, const std::shared_ptr<UI::ChartData>& data,
+  std::shared_ptr<UI::AreaChart> CreateAreaChart(const UI::Theme::IThemeControlFactory& uiFactory, const std::shared_ptr<UI::ChartData>& data,
                                                  const OpaqueHack hack)
   {
-    auto context = uiFactory.GetContext();
+    const auto context = uiFactory.GetContext();
     auto cpuTimeChart = std::make_shared<UI::AreaChart>(context);
     cpuTimeChart->SetAlignmentX(UI::ItemAlignment::Stretch);
     cpuTimeChart->SetAlignmentY(UI::ItemAlignment::Stretch);
@@ -161,7 +161,7 @@ namespace Fsl::CustomControlFactory
     cpuTimeChart->SetFont(uiFactory.GetResources().GetDefaultSpriteFont());
     cpuTimeChart->SetLabelBackground(uiFactory.GetResources().GetToolTipNineSliceSprite());
     cpuTimeChart->SetRenderPolicy(UI::ChartRenderPolicy::FillAvailable);
-    auto cpuProfileRecords = CustomControlFactory::GetCpuProfileRecords();
+    const auto cpuProfileRecords = CustomControlFactory::GetCpuProfileRecords();
     for (const auto& cpuProfileRecord : cpuProfileRecords)
     {
       data->SetChannelMetaData(cpuProfileRecord.Index, cpuProfileRecord.ItemColor);

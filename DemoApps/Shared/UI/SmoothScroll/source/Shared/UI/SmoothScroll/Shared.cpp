@@ -92,9 +92,9 @@ namespace Fsl
                               const SpriteNativeAreaCalc& spriteNativeAreaCalc, const IO::Path& path, const uint32_t imageDpi,
                               const uint32_t densityDpi)
     {
-      IO::Path pathPNG(path + ".png");
-      IO::Path pathBTA(path + ".bta");
-      IO::Path pathFBK(path + "_Font.nbf");
+      const IO::Path pathPNG(path + ".png");
+      const IO::Path pathBTA(path + ".bta");
+      const IO::Path pathFBK(path + "_Font.nbf");
 
       Resources resources;
 
@@ -124,7 +124,7 @@ namespace Fsl
 
     PxClipRectangle ExtractWindowRectangle(const std::shared_ptr<UI::BaseWindow>& mainLayout, const std::shared_ptr<UI::BaseWindow>& window)
     {
-      auto offsetTopLeftPx = mainLayout->PointFrom(window.get(), PxPoint2());
+      const auto offsetTopLeftPx = mainLayout->PointFrom(window.get(), PxPoint2());
       return {offsetTopLeftPx, window->RenderSizePx()};
     }
   }
@@ -135,9 +135,9 @@ namespace Fsl
     , m_graphics(config.DemoServiceProvider.Get<IGraphicsService>())
     , m_nativeBatch(m_graphics->GetNativeBatch2D())
   {
-    auto contentManager = config.DemoServiceProvider.Get<IContentManager>();
+    const auto contentManager = config.DemoServiceProvider.Get<IContentManager>();
 
-    auto nativeGraphics = config.DemoServiceProvider.Get<IGraphicsService>()->GetNativeGraphics();
+    const auto nativeGraphics = config.DemoServiceProvider.Get<IGraphicsService>()->GetNativeGraphics();
     m_res480 = CreateResources(nativeGraphics, *contentManager, m_uiExtension->GetSpriteNativeAreaCalc(), LocalConfig::FontUIAtlas, 480, 160);
 
     m_texCircle = AtlasTexture2D(m_res480.AtlasTexture, m_res480.AtlasMap.GetAtlasTextureInfo("Control/White/FloatingSmallRoundButtonN"));
@@ -145,7 +145,7 @@ namespace Fsl
 
     m_ui = CreateUI();
 
-    auto optionParser = config.GetOptions<OptionParser>();
+    const auto optionParser = config.GetOptions<OptionParser>();
     m_ui.TestPatternCheckBox->SetIsChecked(optionParser->GetEnableTestPattern());
     m_ui.Slider->SetValue(optionParser->GetSpeed());
   }
@@ -223,10 +223,10 @@ namespace Fsl
     const bool drawCircle = m_ui.DrawImageCheckBox->IsChecked();
     const bool drawText = m_ui.DrawTextCheckBox->IsChecked();
 
-    auto rectTopLeftPx = ExtractWindowRectangle(m_ui.MainLayout, m_ui.DummyTopLeft);
-    auto rectTopRightPx = ExtractWindowRectangle(m_ui.MainLayout, m_ui.DummyTopRight);
-    auto rectMiddleTopPx = ExtractWindowRectangle(m_ui.MainLayout, m_ui.DummyMiddleTop);
-    auto rectMiddleBottomPx = ExtractWindowRectangle(m_ui.MainLayout, m_ui.DummyMiddleBottom);
+    const auto rectTopLeftPx = ExtractWindowRectangle(m_ui.MainLayout, m_ui.DummyTopLeft);
+    const auto rectTopRightPx = ExtractWindowRectangle(m_ui.MainLayout, m_ui.DummyTopRight);
+    const auto rectMiddleTopPx = ExtractWindowRectangle(m_ui.MainLayout, m_ui.DummyMiddleTop);
+    const auto rectMiddleBottomPx = ExtractWindowRectangle(m_ui.MainLayout, m_ui.DummyMiddleBottom);
     const bool useTestAtlas = m_ui.TestPatternCheckBox->IsChecked();
     const auto& fontAtlasTexture = !useTestAtlas ? m_res480.Font->GetAtlasTexture() : m_res480.AtlasTestTexture;
     const auto& bitmapFont = m_res480.Font->GetTextureAtlasSpriteFont();
@@ -234,10 +234,11 @@ namespace Fsl
 
     const auto& circleTexture = !useTestAtlas ? m_texCircle : m_texCircleTest;
 
-    Vector2 position0(static_cast<float>(rectTopLeftPx.RawLeft()), m_position0 + static_cast<float>(rectTopLeftPx.RawTop()));
-    Vector2 position1(static_cast<float>(rectTopRightPx.RawLeft()), std::round(m_position0) + static_cast<float>(rectTopRightPx.RawTop()));
-    Vector2 position2(m_position1 + static_cast<float>(rectMiddleTopPx.RawLeft()), static_cast<float>(rectMiddleTopPx.RawTop()));
-    Vector2 position3(std::round(m_position1) + static_cast<float>(rectMiddleBottomPx.RawLeft()), static_cast<float>(rectMiddleBottomPx.RawTop()));
+    const Vector2 position0(static_cast<float>(rectTopLeftPx.RawLeft()), m_position0 + static_cast<float>(rectTopLeftPx.RawTop()));
+    const Vector2 position1(static_cast<float>(rectTopRightPx.RawLeft()), std::round(m_position0) + static_cast<float>(rectTopRightPx.RawTop()));
+    const Vector2 position2(m_position1 + static_cast<float>(rectMiddleTopPx.RawLeft()), static_cast<float>(rectMiddleTopPx.RawTop()));
+    const Vector2 position3(std::round(m_position1) + static_cast<float>(rectMiddleBottomPx.RawLeft()),
+                            static_cast<float>(rectMiddleBottomPx.RawTop()));
 
     const int32_t linesHeightPx = bitmapFont.LineSpacingPx().RawValue() * 4;
     const int32_t lineWidth = bitmapFont.MeasureString(LocalConfig::TextLine0).RawWidth();
@@ -278,9 +279,9 @@ namespace Fsl
 
       if (drawCircle)
       {
-        PxRectangleU32 srcCircleRect(PxValueU(0), PxValueU(0), m_texCircle.GetExtent().Width, m_texCircle.GetExtent().Height);
+        const PxRectangleU32 srcCircleRect(PxValueU(0), PxValueU(0), m_texCircle.GetExtent().Width, m_texCircle.GetExtent().Height);
         const uint8_t color = (drawText ? 0x20 : 0xFF);
-        Color circleColor(color, color, color, color);
+        const Color circleColor(color, color, color, color);
         rNativeBatch.Draw(circleTexture, position0, srcCircleRect, circleColor, rectTopLeftPx);
         rNativeBatch.Draw(circleTexture, position1, srcCircleRect, circleColor, rectTopRightPx);
         rNativeBatch.Draw(circleTexture, position2, srcCircleRect, circleColor, rectMiddleTopPx);
@@ -327,10 +328,10 @@ namespace Fsl
   void Shared::DrawText(INativeBatch2D& rNativeBatch, const BaseTexture2D& srcTexture, const TextureAtlasSpriteFont& font,
                         const BitmapFontConfig& fontConfig, const Vector2& positionPxf, const Color& fontColor, const PxClipRectangle& clipRectPx)
   {
-    Vector2 pos0Pxf(positionPxf.X, positionPxf.Y);
-    Vector2 pos1Pxf(positionPxf.X, positionPxf.Y + static_cast<float>(font.LineSpacingPx().RawValue()));
-    Vector2 pos2Pxf(positionPxf.X, positionPxf.Y + static_cast<float>(font.LineSpacingPx().RawValue() * 2));
-    Vector2 pos3Pxf(positionPxf.X, positionPxf.Y + static_cast<float>(font.LineSpacingPx().RawValue() * 3));
+    const Vector2 pos0Pxf(positionPxf.X, positionPxf.Y);
+    const Vector2 pos1Pxf(positionPxf.X, positionPxf.Y + static_cast<float>(font.LineSpacingPx().RawValue()));
+    const Vector2 pos2Pxf(positionPxf.X, positionPxf.Y + static_cast<float>(font.LineSpacingPx().RawValue() * 2));
+    const Vector2 pos3Pxf(positionPxf.X, positionPxf.Y + static_cast<float>(font.LineSpacingPx().RawValue() * 3));
 
     rNativeBatch.DrawString(srcTexture, font, fontConfig, LocalConfig::TextLine0, pos0Pxf, fontColor, clipRectPx);
     rNativeBatch.DrawString(srcTexture, font, fontConfig, LocalConfig::TextLine1, pos1Pxf, fontColor, clipRectPx);
@@ -341,11 +342,11 @@ namespace Fsl
 
   Shared::SimpleUI Shared::CreateUI()
   {
-    auto windowContext = m_uiExtension->GetContext();
-    auto uiControlFactory = UI::Theme::ThemeSelector::CreateControlFactory(*m_uiExtension);
+    const auto windowContext = m_uiExtension->GetContext();
+    const auto uiControlFactory = UI::Theme::ThemeSelector::CreateControlFactory(*m_uiExtension);
     UI::Theme::IThemeControlFactory& uiFactory = *uiControlFactory;
 
-    auto labelSlider = uiFactory.CreateLabel("Scroll speed:");
+    const auto labelSlider = uiFactory.CreateLabel("Scroll speed:");
     labelSlider->SetAlignmentY(UI::ItemAlignment::Center);
 
     auto slider = uiFactory.CreateSliderFmtValue(UI::LayoutOrientation::Horizontal, LocalConfig::ScrollSpeed);
@@ -354,7 +355,7 @@ namespace Fsl
 
     auto btnDefault = uiFactory.CreateTextButton(UI::Theme::ButtonType::Contained, "Set defaults");
 
-    auto bottomGrid = std::make_shared<UI::GridLayout>(windowContext);
+    const auto bottomGrid = std::make_shared<UI::GridLayout>(windowContext);
     bottomGrid->SetAlignmentX(UI::ItemAlignment::Stretch);
     bottomGrid->SetAlignmentY(UI::ItemAlignment::Stretch);
     bottomGrid->AddColumnDefinition(UI::GridColumnDefinition(UI::GridUnitType::Fixed, 10));
@@ -376,24 +377,24 @@ namespace Fsl
     auto testPatternCheckBox = uiFactory.CreateSwitch("TestPattern", LocalConfig::TestPattern);
     testPatternCheckBox->SetAlignmentX(UI::ItemAlignment::Center);
 
-    auto checkboxStack = std::make_shared<UI::StackLayout>(windowContext);
+    const auto checkboxStack = std::make_shared<UI::StackLayout>(windowContext);
     checkboxStack->SetAlignmentX(UI::ItemAlignment::Center);
     checkboxStack->SetOrientation(UI::LayoutOrientation::Horizontal);
     checkboxStack->AddChild(drawTextCheckbox);
     checkboxStack->AddChild(drawImageCheckbox);
     checkboxStack->AddChild(testPatternCheckBox);
 
-    auto bottomStack = std::make_shared<UI::StackLayout>(windowContext);
+    const auto bottomStack = std::make_shared<UI::StackLayout>(windowContext);
     bottomStack->SetAlignmentX(UI::ItemAlignment::Stretch);
     bottomStack->SetAlignmentY(UI::ItemAlignment::Stretch);
     bottomStack->SetOrientation(UI::LayoutOrientation::Vertical);
     bottomStack->AddChild(checkboxStack);
     bottomStack->AddChild(bottomGrid);
 
-    auto background = uiFactory.CreateBottomBar(bottomStack);
+    const auto background = uiFactory.CreateBottomBar(bottomStack);
 
     // We use the full fill texture here to get a gradient rendered.
-    auto uiDividerSprite = uiFactory.GetResources().GetDividerNineSliceSprite();
+    const auto uiDividerSprite = uiFactory.GetResources().GetDividerNineSliceSprite();
 
     auto dummyTopLeft = std::make_shared<UI::BaseWindow>(windowContext);
     dummyTopLeft->SetAlignmentX(UI::ItemAlignment::Stretch);
@@ -408,29 +409,29 @@ namespace Fsl
     dummyMiddleBottom->SetAlignmentX(UI::ItemAlignment::Stretch);
     dummyMiddleBottom->SetAlignmentY(UI::ItemAlignment::Stretch);
 
-    auto imageLineTopMiddle = uiFactory.CreateImage(uiDividerSprite);
+    const auto imageLineTopMiddle = uiFactory.CreateImage(uiDividerSprite);
     imageLineTopMiddle->SetAlignmentX(UI::ItemAlignment::Stretch);
     imageLineTopMiddle->SetAlignmentY(UI::ItemAlignment::Stretch);
     imageLineTopMiddle->SetRotateImageCW(true);
 
-    auto imageLineMiddle0 = uiFactory.CreateImage(uiDividerSprite);
+    const auto imageLineMiddle0 = uiFactory.CreateImage(uiDividerSprite);
     imageLineMiddle0->SetAlignmentX(UI::ItemAlignment::Stretch);
     imageLineMiddle0->SetAlignmentY(UI::ItemAlignment::Stretch);
 
-    auto imageLineMiddle1 = uiFactory.CreateImage(uiDividerSprite);
+    const auto imageLineMiddle1 = uiFactory.CreateImage(uiDividerSprite);
     imageLineMiddle1->SetAlignmentX(UI::ItemAlignment::Stretch);
     imageLineMiddle1->SetAlignmentY(UI::ItemAlignment::Stretch);
 
-    auto topLeftLabel = uiFactory.CreateLabel("Sub pixel");
-    auto topRightLabel = uiFactory.CreateLabel("Per pixel");
-    auto middleTopLabel = uiFactory.CreateLabel("Sub pixel");
-    auto middleBottomLabel = uiFactory.CreateLabel("Per pixel");
+    const auto topLeftLabel = uiFactory.CreateLabel("Sub pixel");
+    const auto topRightLabel = uiFactory.CreateLabel("Per pixel");
+    const auto middleTopLabel = uiFactory.CreateLabel("Sub pixel");
+    const auto middleBottomLabel = uiFactory.CreateLabel("Per pixel");
     middleTopLabel->SetAlignmentX(UI::ItemAlignment::Far);
     middleBottomLabel->SetAlignmentX(UI::ItemAlignment::Far);
 
 
     // Create the root layout and add it to the window manager
-    auto topLayout = std::make_shared<UI::GridLayout>(windowContext);
+    const auto topLayout = std::make_shared<UI::GridLayout>(windowContext);
     topLayout->SetAlignmentX(UI::ItemAlignment::Stretch);
     topLayout->SetAlignmentY(UI::ItemAlignment::Stretch);
     topLayout->AddColumnDefinition(UI::GridColumnDefinition(UI::GridUnitType::Star, 1.0f));

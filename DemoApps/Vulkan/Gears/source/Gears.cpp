@@ -150,7 +150,7 @@ namespace Fsl
       viewport.minDepth = 0.0f;
       viewport.maxDepth = 1.0f;
 
-      VkRect2D scissor{{0, 0}, extent};
+      const VkRect2D scissor{{0, 0}, extent};
 
       VkPipelineViewportStateCreateInfo pipelineViewportStateCreateInfo{};
       pipelineViewportStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
@@ -312,9 +312,9 @@ namespace Fsl
     m_resources.MainDescriptorPool = CreateDescriptorPool(m_device, maxFramesInFlight);
 
 
-    for (auto& rGear : m_resources.Gears)
+    for (const auto& gear : m_resources.Gears)
     {
-      rGear->SetupDescriptorSet(maxFramesInFlight, m_resources.MainDescriptorPool.Get(), m_resources.MainDescriptorSetLayout.Get());
+      gear->SetupDescriptorSet(maxFramesInFlight, m_resources.MainDescriptorPool.Get(), m_resources.MainDescriptorSetLayout.Get());
     }
 
     m_resources.MainPipelineLayout = CreatePipelineLayout(m_resources.MainDescriptorSetLayout);
@@ -400,10 +400,10 @@ namespace Fsl
       const float aspect = GetWindowAspectRatio();
       const glm::mat4 perspective = glm::perspective(glm::radians(60.0f), aspect, 0.001f, 256.0f);
 
-      glm::mat4 matView(ToGlmMat4(m_camera.GetViewMatrix()));
-      for (auto& rGear : m_resources.Gears)
+      const glm::mat4 matView(ToGlmMat4(m_camera.GetViewMatrix()));
+      for (const auto& gear : m_resources.Gears)
       {
-        rGear->UpdateUniformBuffer(currentFrameIndex, perspective, matView, m_timer * 360.0f);
+        gear->UpdateUniformBuffer(currentFrameIndex, perspective, matView, m_timer * 360.0f);
       }
     }
 

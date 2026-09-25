@@ -174,12 +174,12 @@ namespace Fsl
   void MenuUI::BuildUI()
   {
     // Next up we prepare the actual UI
-    auto context = m_uiExtension->GetContext();
+    const auto context = m_uiExtension->GetContext();
 
-    auto uiControlFactory = UI::Theme::ThemeSelector::CreateControlFactory(*m_uiExtension);
+    const auto uiControlFactory = UI::Theme::ThemeSelector::CreateControlFactory(*m_uiExtension);
     auto& factory = *uiControlFactory;
 
-    auto layoutMenu = std::make_shared<UI::StackLayout>(context);
+    const auto layoutMenu = std::make_shared<UI::StackLayout>(context);
     {
       // Create the outer stack for the menu
       layoutMenu->SetOrientation(UI::LayoutOrientation::Vertical);
@@ -201,12 +201,12 @@ namespace Fsl
       m_cbScaleInputSequentially = factory.CreateSwitch("Scale sequentially", true);
       m_cbScaleInputSequentially->SetAlignmentX(UI::ItemAlignment::Stretch);
 
-      auto labelBlur = factory.CreateLabel("Blur");
+      const auto labelBlur = factory.CreateLabel("Blur");
 
       m_sliderBlur = factory.CreateSliderFmtValue(UI::LayoutOrientation::Horizontal, LocalConfig::BlurRange, "{:.3f}");
       m_sliderBlur->SetAlignmentX(UI::ItemAlignment::Stretch);
 
-      auto labelBlend = factory.CreateLabel("Blend");
+      const auto labelBlend = factory.CreateLabel("Blend");
 
       m_sliderBlend = factory.CreateSliderFmtValue(UI::LayoutOrientation::Horizontal, LocalConfig::BlendRange, "{:.3f}");
       m_sliderBlend->SetAlignmentX(UI::ItemAlignment::Stretch);
@@ -229,7 +229,7 @@ namespace Fsl
       UpdateControls();
     }
 
-    auto bar = factory.CreateLeftBar(layoutMenu, UI::Theme::BarType::Transparent);
+    const auto bar = factory.CreateLeftBar(layoutMenu, UI::Theme::BarType::Transparent);
 
     m_rootLayout = std::make_shared<UI::FillLayout>(context);
     m_rootLayout->AddChild(bar);

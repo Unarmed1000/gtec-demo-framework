@@ -57,11 +57,11 @@ namespace Fsl
     {
       const std::shared_ptr<IContentManager> contentManager = serviceProvider.Get<IContentManager>();
       {    // Get the banner atlas texture
-        MainAtlas textureAtlas;
-        AtlasTextureInfo texInfo = TextureAtlasHelper::GetAtlasTextureInfo(textureAtlas, "Banner_Julia");
+        const MainAtlas textureAtlas;
+        const AtlasTextureInfo texInfo = TextureAtlasHelper::GetAtlasTextureInfo(textureAtlas, "Banner_Julia");
         Bitmap bitmap;
         contentManager->Read(bitmap, textureAtlas.GetName(), PixelFormat::R8G8B8A8_UNORM);
-        Texture2D texAtlas(serviceProvider.Get<IGraphicsService>()->GetNativeGraphics(), bitmap, Texture2DFilterHint::Smooth);
+        const Texture2D texAtlas(serviceProvider.Get<IGraphicsService>()->GetNativeGraphics(), bitmap, Texture2DFilterHint::Smooth);
         m_atlasTexBanner.Reset(texAtlas, texInfo);
       }
     }
@@ -105,8 +105,8 @@ namespace Fsl
     const float s1y = 0.08f * 0.2f;
     const float s2y = 0.08f * 0.2f;
 
-    float xMod = (std::sin(m_angle1.X) * s1x) + (std::cos(m_angle2.X) * s2x);
-    float yMod = (std::sin(m_angle1.Y) * s1y) + (std::cos(m_angle2.X) * s2y);
+    const float xMod = (std::sin(m_angle1.X) * s1x) + (std::cos(m_angle2.X) * s2x);
+    const float yMod = (std::sin(m_angle1.Y) * s1y) + (std::cos(m_angle2.X) * s2y);
     m_location.X += xMod;
     m_location.Y += yMod;
 
@@ -131,8 +131,8 @@ namespace Fsl
     const float s1y = 0.08f * 0.5f;
     const float s2y = 0.08f * 0.5f;
 
-    float xMod = (std::sin(m_angle1.X) * s1x) + (std::cos(m_angle2.X) * s2x);
-    float yMod = (std::sin(m_angle1.Y) * s1y) + (std::cos(m_angle2.X) * s2y);
+    const float xMod = (std::sin(m_angle1.X) * s1x) + (std::cos(m_angle2.X) * s2x);
+    const float yMod = (std::sin(m_angle1.Y) * s1y) + (std::cos(m_angle2.X) * s2y);
     m_location.X += xMod;
     m_location.Y += yMod;
 
@@ -157,8 +157,8 @@ namespace Fsl
     const float s1y = 0.08f * 0.4f;
     const float s2y = 0.08f * 0.4f;
 
-    float xMod = (std::sin(m_angle1.X) * s1x) + (std::cos(m_angle2.X) * s2x);
-    float yMod = (std::sin(m_angle1.Y) * s1y) + (std::cos(m_angle2.X) * s2y);
+    const float xMod = (std::sin(m_angle1.X) * s1x) + (std::cos(m_angle2.X) * s2x);
+    const float yMod = (std::sin(m_angle1.Y) * s1y) + (std::cos(m_angle2.X) * s2y);
     m_location.X += xMod;
     m_location.Y += yMod;
 
@@ -192,7 +192,7 @@ namespace Fsl
     Matrix matrix;
 
     matrix = Matrix::CreateRotationZ(m_angle);
-    Vector4 tmp = Vector4::Transform(Vector4(m_location.X, m_location.Y, 0.0f, 0.0f), matrix);
+    const Vector4 tmp = Vector4::Transform(Vector4(m_location.X, m_location.Y, 0.0f, 0.0f), matrix);
 
     m_location.X = tmp.X;
     m_location.Y = tmp.Y;
@@ -226,7 +226,7 @@ namespace Fsl
     Matrix matrix;
 
     matrix = Matrix::CreateRotationZ(m_angle);
-    Vector4 tmp = Vector4::Transform(Vector4(m_location.X, m_location.Y, 0.0f, 0.0f), matrix);
+    const Vector4 tmp = Vector4::Transform(Vector4(m_location.X, m_location.Y, 0.0f, 0.0f), matrix);
 
     m_location.X = (tmp.X * 0.4f) - 0.7f;
     m_location.Y = (tmp.Y * 0.2f) - 0.6f;

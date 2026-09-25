@@ -77,31 +77,31 @@ namespace Fsl::Willems
 
 
     //! @brief Get the associated 'Device'
-    VkDevice GetDevice() const
+    [[nodiscard]] VkDevice GetDevice() const
     {
       return Buffer.GetDevice();
     }
 
     //! @brief Get the associated 'buffer'
-    VkBuffer GetBuffer() const
+    [[nodiscard]] VkBuffer GetBuffer() const
     {
       return Buffer.Get();
     }
 
     //! @brief Get the associated 'buffer'
-    const VkBuffer* GetBufferPointer() const
+    [[nodiscard]] const VkBuffer* GetBufferPointer() const
     {
       return Buffer.GetPointer();
     }
 
     //! @brief Get the associated 'memory'
-    VkDeviceMemory GetMemory() const
+    [[nodiscard]] VkDeviceMemory GetMemory() const
     {
       return Memory.Get();
     }
 
     //! @brief Check if this object contains a valid resource
-    inline bool IsValid() const
+    [[nodiscard]] inline bool IsValid() const
     {
       return Buffer.IsValid();
     }

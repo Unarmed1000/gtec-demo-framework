@@ -68,7 +68,7 @@ namespace Fsl
       using namespace std::chrono_literals;
 
       FSLLOG3_INFO("CustomAppServices: Waiting for result. (ThreadId: {})", threadId);
-      bool busyWait = false;
+      const bool busyWait = false;
       if (!busyWait)
       {
         if (m_futureAdd.wait_for(5s) == std::future_status::ready)

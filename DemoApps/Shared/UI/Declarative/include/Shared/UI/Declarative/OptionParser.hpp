@@ -44,7 +44,7 @@ namespace Fsl
     OptionParser() = default;
     ~OptionParser() override = default;
 
-    IO::Path TryGetXsdSaveFilename() const
+    [[nodiscard]] IO::Path TryGetXsdSaveFilename() const
     {
       return m_saveFilename;
     }

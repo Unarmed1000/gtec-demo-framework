@@ -109,8 +109,8 @@ namespace Fsl
       const auto origin = bitmapMemory.GetOrigin();
       const auto stride = bitmapMemory.Stride();
 
-      std::vector<uint8_t> content = bitmapMemory.Release();
-      ReadOnlyRawBitmap rawBitmap(ReadOnlyRawBitmap::Create(SpanUtil::AsReadOnlySpan(content), extent, pixelFormat, stride, origin));
+      const std::vector<uint8_t> content = bitmapMemory.Release();
+      const ReadOnlyRawBitmap rawBitmap(ReadOnlyRawBitmap::Create(SpanUtil::AsReadOnlySpan(content), extent, pixelFormat, stride, origin));
 
       return ConvertToPlanar(rawBitmap);
     }

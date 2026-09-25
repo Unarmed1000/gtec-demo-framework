@@ -66,9 +66,9 @@ namespace Fsl
     {
       glUseProgram(0);
 
-      std::string strVert = contentManager->ReadAllText("Shaders/GeometryLine.vert");
-      std::string strFrag = contentManager->ReadAllText("Shaders/GeometryLine.frag");
-      std::string strGeom = contentManager->ReadAllText("Shaders/GeometryLine.geom");
+      const std::string strVert = contentManager->ReadAllText("Shaders/GeometryLine.vert");
+      const std::string strFrag = contentManager->ReadAllText("Shaders/GeometryLine.frag");
+      const std::string strGeom = contentManager->ReadAllText("Shaders/GeometryLine.geom");
 
       {
         // GLShader shaderVert(GL_VERTEX_SHADER, strVert);
@@ -105,19 +105,19 @@ namespace Fsl
     const float fov = 60.0f;
 
     // Calc distance that z=0 has to be away from the camera for the width and height to match the resolution
-    float yMax = std::tan(fov * MathHelper::PI / 360.0f);
-    float depth = screenHeight / 2.0f / yMax;
+    const float yMax = std::tan(fov * MathHelper::PI / 360.0f);
+    const float depth = screenHeight / 2.0f / yMax;
 
-    Matrix world = Matrix::CreateRotationX(MathHelper::TO_RADS * 180);
-    Matrix view = Matrix::CreateTranslation(-screenWidth * 0.5f, screenHeight * 0.5f, -depth);
-    Matrix projection = Matrix::CreatePerspectiveFieldOfView(MathHelper::ToRadians(fov), aspectRatio, 1.0f, 2000.0f);
+    const Matrix world = Matrix::CreateRotationX(MathHelper::TO_RADS * 180);
+    const Matrix view = Matrix::CreateTranslation(-screenWidth * 0.5f, screenHeight * 0.5f, -depth);
+    const Matrix projection = Matrix::CreatePerspectiveFieldOfView(MathHelper::ToRadians(fov), aspectRatio, 1.0f, 2000.0f);
 
     m_worldView = world * view;
     m_worldViewProjection = m_worldView * projection;
 
     {
-      Vector4 color(0.12f, 0.12f, 0.55f, 0.33f);
-      VertexPositionColorF defaultVertex(Vector3(), color);
+      const Vector4 color(0.12f, 0.12f, 0.55f, 0.33f);
+      const VertexPositionColorF defaultVertex(Vector3(), color);
       for (auto& rCoordinate : m_coordinates)
       {
         rCoordinate = defaultVertex;

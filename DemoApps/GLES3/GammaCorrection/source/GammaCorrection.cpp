@@ -158,8 +158,8 @@ namespace Fsl
     UpdateInput(demoTime);
     UpdateSceneTransition(demoTime);
 
-    auto matrixWorld = Matrix::GetIdentity();
-    auto matrixView = m_camera.GetViewMatrix();
+    const auto matrixWorld = Matrix::GetIdentity();
+    const auto matrixView = m_camera.GetViewMatrix();
     const float aspect = GetWindowAspectRatio();    // ok since we divide both by two when we show four screens
     m_vertexUboData.MatProj = Matrix::CreatePerspectiveFieldOfView(MathHelper::ToRadians(45.0f), aspect, 0.1f, 100.0f);
     m_vertexUboData.MatModelView = matrixWorld * matrixView;
@@ -211,7 +211,7 @@ namespace Fsl
 
     {    // Keyboard camera movement
       const float movementSpeed = 2.0f * demoTime.DeltaTime;
-      auto keyboardState = m_keyboard->GetState();
+      const auto keyboardState = m_keyboard->GetState();
 
       if (keyboardState.IsKeyDown(VirtualKey::W))
       {
@@ -391,7 +391,7 @@ namespace Fsl
     // Then override it to match the default GL setting since we know thats the way the texture is stored in the file
     tex.OverrideOrigin(BitmapOrigin::LowerLeft);
 
-    GLTextureParameters texParams(GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR, GL_REPEAT, GL_REPEAT);
+    const GLTextureParameters texParams(GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR, GL_REPEAT, GL_REPEAT);
     // m_texLinear.Reset(tex, texParams, TextureFlags::GenerateMipMaps);
     m_resources.TexLinear.Reset(tex, texParams);
     tex.SetCompatiblePixelFormat(PixelFormat::ETC2_R8G8B8_SRGB_BLOCK);
@@ -431,7 +431,7 @@ namespace Fsl
     const float v0 = 10.0f;
     const float v1 = 0.0f;
     const Vector3 normal(0.0f, 1.0f, 0.0f);
-    std::array<VertexPositionNormalTexture, 6> vertices = {
+    const std::array<VertexPositionNormalTexture, 6> vertices = {
       VertexPositionNormalTexture(Vector3(x0, y, z0), normal, Vector2(u0, v0)),
       VertexPositionNormalTexture(Vector3(x0, y, z1), normal, Vector2(u0, v1)),
       VertexPositionNormalTexture(Vector3(x1, y, z1), normal, Vector2(u1, v1)),
@@ -442,7 +442,7 @@ namespace Fsl
     };
 
     constexpr auto VertexDecl = VertexPositionNormalTexture::GetVertexDeclarationArray();
-    std::array<GLVertexAttribLink, 3> attribLink = {
+    const std::array<GLVertexAttribLink, 3> attribLink = {
       GLVertexAttribLink(program.GetAttribLocation("VertexPosition"), VertexDecl.VertexElementGetIndexOf(VertexElementUsage::Position, 0)),
       GLVertexAttribLink(program.GetAttribLocation("VertexNormal"), VertexDecl.VertexElementGetIndexOf(VertexElementUsage::Normal, 0)),
       GLVertexAttribLink(program.GetAttribLocation("VertexTexCoord"), VertexDecl.VertexElementGetIndexOf(VertexElementUsage::TextureCoordinate, 0))};
@@ -469,7 +469,7 @@ namespace Fsl
     RegisterExtension(m_uiExtension);
 
     // Next up we prepare the actual UI
-    auto context = m_uiExtension->GetContext();
+    const auto context = m_uiExtension->GetContext();
 
     // Create a label to write stuff into when a button is pressed
     m_labelTopLeft = std::make_shared<Label>(context);
@@ -494,7 +494,7 @@ namespace Fsl
 
     // Create a 'root' layout we use the recommended fill layout as it will utilize all available space on the screen
     // We then add the 'player' stack to it and the label
-    auto fillLayout = std::make_shared<FillLayout>(context);
+    const auto fillLayout = std::make_shared<FillLayout>(context);
     fillLayout->AddChild(m_labelTopLeft);
     fillLayout->AddChild(m_labelTopRight);
     fillLayout->AddChild(m_labelBottomLeft);

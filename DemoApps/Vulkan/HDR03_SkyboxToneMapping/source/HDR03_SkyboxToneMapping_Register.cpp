@@ -43,7 +43,7 @@ namespace Fsl
     CustomDemoAppConfig customDemoAppConfig;
     customDemoAppConfig.RestartFlags = CustomDemoAppConfigRestartFlags::Never;
 
-    DemoAppHostConfigVulkan config;
+    const DemoAppHostConfigVulkan config;
 
     DemoAppRegister::Vulkan::Register<HDR03_SkyboxToneMapping, OptionParser>(rSetup, "Vulkan.HDR03_SkyboxToneMapping", config, customDemoAppConfig);
   }

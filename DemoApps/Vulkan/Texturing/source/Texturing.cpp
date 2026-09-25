@@ -25,6 +25,7 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <vulkan/vulkan.h>
+#include <algorithm>
 #include <array>
 #include <cstddef>
 #include <cstring>
@@ -69,7 +70,7 @@ namespace Fsl
 
       rBuffer.Buffer.Reset(device, bufferCreateInfo);
 
-      VkMemoryRequirements memReqs = rBuffer.Buffer.GetBufferMemoryRequirements();
+      const VkMemoryRequirements memReqs = rBuffer.Buffer.GetBufferMemoryRequirements();
 
       // Create the memory backing up the buffer handle
       VkMemoryAllocateInfo memAlloc{};
@@ -133,7 +134,7 @@ namespace Fsl
     SetupVertexDescriptions();
     PrepareUniformBuffers();
 
-    bool forceLinearTiling = false;
+    const bool forceLinearTiling = false;
     if (m_deviceFeatures.textureCompressionBC != VK_FALSE)
     {
       LoadTexture("Textures/Pattern02/pattern_02_bc2.ktx", forceLinearTiling);
@@ -209,7 +210,7 @@ namespace Fsl
           vkCmdBindDescriptorSets(m_drawCmdBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipelineLayout.Get(), 0, 1, &m_descriptorSet, 0, nullptr);
           vkCmdBindPipeline(m_drawCmdBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, m_graphicsPipeline.Get());
 
-          VkDeviceSize offsets = 0;
+          const VkDeviceSize offsets = 0;
           vkCmdBindVertexBuffers(m_drawCmdBuffers[i], VertexBufferBindId, 1, m_vertexBuffer.Buffer.GetPointer(), &offsets);
           vkCmdBindIndexBuffer(m_drawCmdBuffers[i], m_indexBuffer.Buffer.Get(), 0, VK_INDEX_TYPE_UINT32);
 
@@ -367,7 +368,7 @@ namespace Fsl
 
     // Vertex shader
     m_uboVS.Projection = glm::perspective(glm::radians(60.0f), aspectRatio, 0.001f, 256.0f);
-    glm::mat4 viewMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, m_zoom));
+    const glm::mat4 viewMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, m_zoom));
 
     m_uboVS.Model = viewMatrix * glm::translate(glm::mat4(1.0f), m_cameraPos);
     m_uboVS.Model = glm::rotate(m_uboVS.Model, glm::radians(m_rotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
@@ -431,7 +432,7 @@ namespace Fsl
       bufferCreateInfo.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
       bufferCreateInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
-      RapidVulkan::Buffer stagingBuffer(m_device.Get(), bufferCreateInfo);
+      const RapidVulkan::Buffer stagingBuffer(m_device.Get(), bufferCreateInfo);
 
 
       // Get memory requirements for the staging buffer (alignment, memory type bits)
@@ -441,7 +442,7 @@ namespace Fsl
       memAllocInfo.memoryTypeIndex = GetMemoryTypeIndex(physicalDeviceMemoryProperties, memReqs.memoryTypeBits,
                                                         VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
 
-      RapidVulkan::Memory stagingMemory(m_device.Get(), memAllocInfo);
+      const RapidVulkan::Memory stagingMemory(m_device.Get(), memAllocInfo);
       RAPIDVULKAN_CHECK(vkBindBufferMemory(m_device.Get(), stagingBuffer.Get(), stagingMemory.Get(), 0));
 
       // Copy texture data into staging buffer
@@ -592,7 +593,7 @@ namespace Fsl
 
 
       // Get memory requirements for this image like size and alignment
-      auto memReqs = m_texture.Image.GetImageMemoryRequirements();
+      const auto memReqs = m_texture.Image.GetImageMemoryRequirements();
       // Set memory allocation size to required memory size
       memAllocInfo.allocationSize = memReqs.size;
       // Get memory type that can be mapped to host memory
@@ -698,7 +699,7 @@ namespace Fsl
 
     if (m_vulkanDevice.GetFeatures().samplerAnisotropy != VK_FALSE)
     {
-      auto maxAnisotropy = m_vulkanDevice.GetProperties().limits.maxSamplerAnisotropy;
+      const auto maxAnisotropy = m_vulkanDevice.GetProperties().limits.maxSamplerAnisotropy;
       FSLLOG3_INFO("Using sampler anisotropy: {}", maxAnisotropy)
       // Use max. level of anisotropy for this example
       sampler.maxAnisotropy = maxAnisotropy;
@@ -907,14 +908,8 @@ namespace Fsl
   void Texturing::ChangeLodBias(const float delta)
   {
     m_uboVS.LodBias += delta;
-    if (m_uboVS.LodBias < 0.0f)
-    {
-      m_uboVS.LodBias = 0.0f;
-    }
-    if (m_uboVS.LodBias > static_cast<float>(m_texture.MipLevels))
-    {
-      m_uboVS.LodBias = static_cast<float>(m_texture.MipLevels);
-    }
+    m_uboVS.LodBias = std::max(m_uboVS.LodBias, 0.0f);
+    m_uboVS.LodBias = std::min(m_uboVS.LodBias, static_cast<float>(m_texture.MipLevels));
     UpdateUniformBuffers();
     UpdateTextOverlay();
   }

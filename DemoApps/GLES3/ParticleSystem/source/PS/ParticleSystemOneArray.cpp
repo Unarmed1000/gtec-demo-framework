@@ -74,7 +74,7 @@ namespace Fsl
     // auto start = timer.GetTime();
 
     const float deltaTime = demoTime.DeltaTime;
-    Vector3 accumulatedGravityVelocity = m_gravity * deltaTime;
+    const Vector3 accumulatedGravityVelocity = m_gravity * deltaTime;
     uint32_t dstIndex = 0;
     ParticleRecord* pParticles = m_particles.data();
     assert(m_particleCount <= m_particles.size());
@@ -193,7 +193,7 @@ namespace Fsl
       }
 
       // move particle entries
-      auto endMoveIndex = rParticles[i].Index;
+      const auto endMoveIndex = rParticles[i].Index;
       while (followingIndex < endMoveIndex)
       {
         assert(finalDstIndex < rNumParticles);

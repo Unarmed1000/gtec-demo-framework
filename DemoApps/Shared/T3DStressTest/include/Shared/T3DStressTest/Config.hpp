@@ -77,52 +77,52 @@ namespace Fsl
   public:
     explicit Config(const RenderMode defaultRenderMode = RenderMode::Instanced);
 
-    RenderMode GetRenderMode() const;
+    [[nodiscard]] RenderMode GetRenderMode() const;
     void SetRenderMode(const RenderMode mode);
 
-    int GetLayerCount() const;
+    [[nodiscard]] int GetLayerCount() const;
     void SetLayerCount(const int value);
-    float GetHairLength() const;
+    [[nodiscard]] float GetHairLength() const;
     void SetHairLength(const float value);
-    float GetHairDensity() const;
+    [[nodiscard]] float GetHairDensity() const;
     void SetHairDensity(const float value);
-    int GetFurTextureDimensions() const;
+    [[nodiscard]] int GetFurTextureDimensions() const;
     void SetFurTextureDimensions(const int value);
-    int GetInstanceCount() const;
+    [[nodiscard]] int GetInstanceCount() const;
     void SetInstanceCount(const int value);
-    int GetVertexCountX() const;
+    [[nodiscard]] int GetVertexCountX() const;
     void SetVertexCountX(const int value);
-    int GetVertexCountY() const;
+    [[nodiscard]] int GetVertexCountY() const;
     void SetVertexCountY(const int value);
 
-    bool GetUseTriangleStrip() const;
+    [[nodiscard]] bool GetUseTriangleStrip() const;
     void SetUseTriangleStrip(const bool value);
 
-    float GetCameraDistance() const;
+    [[nodiscard]] float GetCameraDistance() const;
     void SetCameraDistance(const float value);
 
-    bool GetShowNormals() const;
+    [[nodiscard]] bool GetShowNormals() const;
     void SetShowNormals(const bool value);
 
-    bool GetEnableDepthTest() const;
+    [[nodiscard]] bool GetEnableDepthTest() const;
     void SetEnableDepthTest(const bool value);
 
-    bool GetShareInstanceVertices() const;
+    [[nodiscard]] bool GetShareInstanceVertices() const;
     void SetShareInstanceVertices(const bool value);
 
-    int GetTextureRepeatCount() const;
+    [[nodiscard]] int GetTextureRepeatCount() const;
     void SetTextureRepeatCount(const int value);
 
-    bool GetUseHighShaderPrecision() const;
+    [[nodiscard]] bool GetUseHighShaderPrecision() const;
     void SetUseHighShaderPrecision(const bool bEnabled);
 
-    int GetLightCount() const;
+    [[nodiscard]] int GetLightCount() const;
     void SetLightCount(const int value);
 
-    bool GetToggleMinMax() const;
+    [[nodiscard]] bool GetToggleMinMax() const;
     void SetToggleMinMax(const bool bEnabled);
 
-    bool GetForceFinishEachFrame() const;
+    [[nodiscard]] bool GetForceFinishEachFrame() const;
     void SetForceFinishEachFrame(const bool value);
   };
 }

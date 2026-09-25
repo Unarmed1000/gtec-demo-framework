@@ -75,7 +75,7 @@ namespace Fsl
     explicit MenuUI(const DemoAppConfig& config);
     ~MenuUI() override;
 
-    std::shared_ptr<UIDemoAppExtension> GetUIDemoAppExtension() const
+    [[nodiscard]] std::shared_ptr<UIDemoAppExtension> GetUIDemoAppExtension() const
     {
       return m_uiExtension;
     }
@@ -84,28 +84,28 @@ namespace Fsl
 
     void OnContentChanged(const std::shared_ptr<UI::WindowContentChangedEvent>& theEvent) override;
 
-    bool IsDrawNearPlaneMouseEnabled() const
+    [[nodiscard]] bool IsDrawNearPlaneMouseEnabled() const
     {
       return m_drawNearPlaneMouse;
     }
 
     void SetDrawNearPlaneMouseEnabled(bool enabled);
 
-    bool IsDrawFarPlaneMouseEnabled() const
+    [[nodiscard]] bool IsDrawFarPlaneMouseEnabled() const
     {
       return m_drawFarPlaneMouse;
     }
 
     void SetDrawFarPlaneMouseEnabled(bool enabled);
 
-    bool IsDrawOrientedBoundingBoxEnabled() const
+    [[nodiscard]] bool IsDrawOrientedBoundingBoxEnabled() const
     {
       return m_drawOrientedBoundingBox;
     }
 
     void SetDrawOrientedBoundingBoxEnabled(bool enabled);
 
-    bool IsDrawAxisAlignedBoundingBoxEnabled() const
+    [[nodiscard]] bool IsDrawAxisAlignedBoundingBoxEnabled() const
     {
       return m_drawAxisAlignedBoundingBox;
     }
@@ -115,22 +115,22 @@ namespace Fsl
     // bool IsFinalBloomEnabled() const { return m_renderFinalBloom; }
     // void SetFinalBloomEnabled(bool enabled);
 
-    bool IsRandomSeedEnabled() const
+    [[nodiscard]] bool IsRandomSeedEnabled() const
     {
       return m_randomSeedEnabled;
     }
 
-    bool IsPlaneEnabled() const
+    [[nodiscard]] bool IsPlaneEnabled() const
     {
       return true;
     }
 
-    bool IsObjectsEnabled() const
+    [[nodiscard]] bool IsObjectsEnabled() const
     {
       return true;
     }
 
-    bool IsForceBindEnabled() const
+    [[nodiscard]] bool IsForceBindEnabled() const
     {
       return false;
     }

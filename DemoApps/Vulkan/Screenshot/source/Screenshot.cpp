@@ -124,7 +124,7 @@ namespace Fsl
       const VkDevice device = image.TheImage.GetDevice();
 
       // Get information about the image layout
-      VkImageSubresource subResource{VK_IMAGE_ASPECT_COLOR_BIT, 0, 0};
+      const VkImageSubresource subResource{VK_IMAGE_ASPECT_COLOR_BIT, 0, 0};
       VkSubresourceLayout subResourceLayout{};
       vkGetImageSubresourceLayout(device, image.TheImage.Get(), &subResource, &subResourceLayout);
 
@@ -140,7 +140,7 @@ namespace Fsl
       // Do the extraction
       void* pImage = nullptr;
       // We use the scoped map class here since it will since its exception safe
-      Vulkan::VUScopedMapMemory scopedMap(device, image.TheMemory.Get(), 0, VK_WHOLE_SIZE, 0, &pImage);
+      const Vulkan::VUScopedMapMemory scopedMap(device, image.TheMemory.Get(), 0, VK_WHOLE_SIZE, 0, &pImage);
 
       assert(pImage != nullptr);
       assert(subResourceLayout.offset <= image.AllocationSize);
@@ -232,7 +232,7 @@ namespace Fsl
     // Give the UI a chance to intercept the various DemoApp events.
     RegisterExtension(m_uiExtension);
 
-    auto contentManager = GetContentManager();
+    const auto contentManager = GetContentManager();
     {
       Fsl::Bitmap bitmap;
       contentManager->Read(bitmap, "Test.png", PixelFormat::R8G8B8A8_UNORM);
@@ -241,8 +241,8 @@ namespace Fsl
 
 
     // Next up we prepare the actual UI
-    auto context = m_uiExtension->GetContext();
-    auto uiControlFactory = UI::Theme::ThemeSelector::CreateControlFactory(*m_uiExtension);
+    const auto context = m_uiExtension->GetContext();
+    const auto uiControlFactory = UI::Theme::ThemeSelector::CreateControlFactory(*m_uiExtension);
     auto& uiFactory = *uiControlFactory;
 
 
@@ -256,18 +256,18 @@ namespace Fsl
     m_label->SetAlignmentY(UI::ItemAlignment::Center);
 
     // Create a horizontal stack layout and add the UI elements
-    auto uiStack = std::make_shared<UI::StackLayout>(context);
+    const auto uiStack = std::make_shared<UI::StackLayout>(context);
     uiStack->SetOrientation(UI::LayoutOrientation::Vertical);
     uiStack->SetAlignmentX(UI::ItemAlignment::Center);
     uiStack->SetAlignmentY(UI::ItemAlignment::Far);
     uiStack->AddChild(m_label);
     uiStack->AddChild(m_btnScreenshot);
 
-    auto bottomBar = uiFactory.CreateBottomBar();
+    const auto bottomBar = uiFactory.CreateBottomBar();
     bottomBar->SetContent(uiStack);
 
     // Finally add everything to the window manager (to ensure its seen)
-    auto windowManager = m_uiExtension->GetWindowManager();
+    const auto windowManager = m_uiExtension->GetWindowManager();
     windowManager->Add(bottomBar);
   }
 
@@ -288,10 +288,10 @@ namespace Fsl
       m_screenshotRequested = false;
       // Bitmap bitmap;
       // m_graphicsService->Capture(bitmap, PixelFormat::R8G8B8A8_UINT);
-      auto bitmap = TryCaptureScreenshot();
+      const auto bitmap = TryCaptureScreenshot();
       if (bitmap.IsValid())
       {
-        auto manager = GetPersistentDataManager();
+        const auto manager = GetPersistentDataManager();
         manager->Write("screenshot.png", bitmap);
 
         m_label->SetContent("Screenshot saved");
@@ -351,7 +351,7 @@ namespace Fsl
 
   AppDrawResult Screenshot::TrySwapBuffers(const FrameInfo& frameInfo)
   {
-    auto result = VulkanBasic::DemoAppVulkanBasic::TrySwapBuffers(frameInfo);
+    const auto result = VulkanBasic::DemoAppVulkanBasic::TrySwapBuffers(frameInfo);
     if (result != AppDrawResult::Completed)
     {
       return result;
@@ -396,21 +396,21 @@ namespace Fsl
       FSLLOG3_INFO("Swapchain did not support VK_IMAGE_USAGE_TRANSFER_SRC_BIT, capture cancelled");
       return {};
     }
-    VkFormat srcImageFormat = swapchainInfo.ImageFormat;
+    const VkFormat srcImageFormat = swapchainInfo.ImageFormat;
     if (srcImageFormat == VK_FORMAT_UNDEFINED)
     {
       FSLLOG3_WARNING("Invalid swapchain image format, capture cancelled");
       return {};
     }
 
-    auto srcPixelFormat = Vulkan::VulkanConvert::ToPixelFormat(srcImageFormat);
+    const auto srcPixelFormat = Vulkan::VulkanConvert::ToPixelFormat(srcImageFormat);
     if (PixelFormatUtil::IsCompressed(srcPixelFormat))
     {
       FSLLOG3_WARNING("srcPixelFormat is compressed, capture cancelled");
       return {};
     }
 
-    VkFormat dstImageFormat = VK_FORMAT_R8G8B8A8_UNORM;
+    const VkFormat dstImageFormat = VK_FORMAT_R8G8B8A8_UNORM;
     VkFormatProperties formatProperties{};
     vkGetPhysicalDeviceFormatProperties(m_physicalDevice.Device, srcImageFormat, &formatProperties);
 
@@ -453,13 +453,13 @@ namespace Fsl
 
     VkImage srcImage = swapchainInfo.CurrentImage;
     // We use the same format as the source as the copy command dont convert it for us
-    VkFormat dstImageFormat = swapchainInfo.ImageFormat;
+    const VkFormat dstImageFormat = swapchainInfo.ImageFormat;
 
     // We wait for the device to be idle before we start capturing
     SafeWaitForDeviceIdle();
 
     // Prepare the image that we will 'transfer' the screenshot to
-    auto dstImage = PrepareDstImage(m_device, swapchainInfo.ImageExtent, dstImageFormat);
+    const auto dstImage = PrepareDstImage(m_device, swapchainInfo.ImageExtent, dstImageFormat);
 
 
     VkCommandPoolCreateInfo commandPoolCreateInfo{};
@@ -467,7 +467,7 @@ namespace Fsl
     commandPoolCreateInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
     commandPoolCreateInfo.queueFamilyIndex = m_deviceQueue.QueueFamilyIndex;
 
-    RapidVulkan::CommandPool commandPool(m_device.Get(), commandPoolCreateInfo);
+    const RapidVulkan::CommandPool commandPool(m_device.Get(), commandPoolCreateInfo);
 
     VkCommandBufferAllocateInfo commandBufferAllocateInfo{};
     commandBufferAllocateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;

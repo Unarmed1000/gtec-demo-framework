@@ -63,7 +63,7 @@ namespace Fsl::Willems
     VulkanDevice(const VkPhysicalDevice physicalDevice, const VkDevice device);
     ~VulkanDevice();
 
-    QueueFamilyIndices GetQueueFamilyIndices() const
+    [[nodiscard]] QueueFamilyIndices GetQueueFamilyIndices() const
     {
       return m_queueFamilyIndices;
     }
@@ -73,13 +73,13 @@ namespace Fsl::Willems
     //! @param properties Bitmask of properties for the memory type to request
     //! @return Index of the requested memory type
     //! @throw Throws an exception if memTypeFound is null and no memory type could be found that supports the requested properties
-    uint32_t GetMemoryType(const uint32_t typeBits, const VkMemoryPropertyFlags properties) const;
+    [[nodiscard]] uint32_t GetMemoryType(const uint32_t typeBits, const VkMemoryPropertyFlags properties) const;
 
     //! @brief Get the index of a queue family that supports the requested queue flags
     //! @param queueFlags Queue flags to find a queue family index for
     //! @return Index of the queue family index that matches the flags
     //! @throw Throws an exception if no queue family index could be found that supports the requested flags
-    uint32_t GetQueueFamiliyIndex(const VkQueueFlagBits queueFlags) const;
+    [[nodiscard]] uint32_t GetQueueFamiliyIndex(const VkQueueFlagBits queueFlags) const;
 
     //! @brief Create a buffer on the device
     //! @param rBuffer the buffer object that will be created
@@ -131,23 +131,23 @@ namespace Fsl::Willems
     void FlushCommandBuffer(RapidVulkan::CommandBuffer& rCommandBuffer, const VkQueue queue, const bool free = true);
 
 
-    VkPhysicalDevice GetPhysicalDevice() const
+    [[nodiscard]] VkPhysicalDevice GetPhysicalDevice() const
     {
       return m_physicalDevice;
     }
 
 
-    VkDevice GetDevice() const
+    [[nodiscard]] VkDevice GetDevice() const
     {
       return m_device;
     }
 
-    const VkPhysicalDeviceProperties& GetProperties() const
+    [[nodiscard]] const VkPhysicalDeviceProperties& GetProperties() const
     {
       return m_properties;
     }
 
-    const VkPhysicalDeviceFeatures& GetFeatures() const
+    [[nodiscard]] const VkPhysicalDeviceFeatures& GetFeatures() const
     {
       return m_features;
     }

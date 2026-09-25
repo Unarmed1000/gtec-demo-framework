@@ -43,7 +43,7 @@ namespace Fsl
     OptionParser();
     ~OptionParser() override;
 
-    uint16_t GetIterations() const
+    [[nodiscard]] uint16_t GetIterations() const
     {
       return m_iterations;
     }

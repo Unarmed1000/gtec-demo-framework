@@ -83,8 +83,8 @@ namespace Fsl
 
     GLES3::GLTexture ReadTexture(const IContentManager& contentManager, const IO::Path& path)
     {
-      GLES3::GLTextureParameters params(GL_LINEAR, GL_LINEAR, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE);
-      auto bitmap = contentManager.ReadBitmap(path, PixelFormat::R8G8B8A8_UNORM);
+      const GLES3::GLTextureParameters params(GL_LINEAR, GL_LINEAR, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE);
+      const auto bitmap = contentManager.ReadBitmap(path, PixelFormat::R8G8B8A8_UNORM);
       return {bitmap, params};
     }
   }
@@ -99,7 +99,7 @@ namespace Fsl
     RegisterExtension(m_shared.GetUIDemoAppExtension());
 
 
-    auto contentManager = GetContentManager();
+    const auto contentManager = GetContentManager();
 
 
     const PxSize1D line0YPx = PxSize1D::Create(0);
@@ -181,7 +181,7 @@ namespace Fsl
     glClearColor(0.5f, 0.5f, 0.5f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    auto contentOffset = m_shared.GetContentOffset();
+    const auto contentOffset = m_shared.GetContentOffset();
     const auto fontDrawConfig = m_shared.GetFontDrawConfig();
     const auto fontScale = PxSize1DF::Create(fontDrawConfig.FontScale);
     const auto fontSdfMode = m_shared.GetSdfMode();
@@ -406,7 +406,7 @@ namespace Fsl
     }
 
     // Extract the render rules
-    auto scratchpadSpan = SpanUtil::AsSpan(rPositionsScratchpad);
+    const auto scratchpadSpan = SpanUtil::AsSpan(rPositionsScratchpad);
     const bool gotRules = font.ExtractRenderRules(scratchpadSpan, strView);
     const auto positionsSpan = scratchpadSpan.subspan(0, gotRules ? strView.size() : 0);
 
@@ -423,7 +423,7 @@ namespace Fsl
                                         const FontRecord& fontRecord, const BitmapFontConfig fontConfig, const StringViewLite& strView,
                                         std::vector<SpriteFontGlyphPosition>& rPositionsScratchpad)
   {
-    bool shaderChanged = rMeshRecord.CachedShader != shader.Program.Get();
+    const bool shaderChanged = rMeshRecord.CachedShader != shader.Program.Get();
     if (rMeshRecord.Offset == dstPositionPx && rMeshRecord.FontConfig == fontConfig && !shaderChanged)
     {
       return;
@@ -439,7 +439,7 @@ namespace Fsl
     {
       rPositionsScratchpad.resize(strView.size());
     }
-    auto scratchpadSpan = SpanUtil::AsSpan(rPositionsScratchpad);
+    const auto scratchpadSpan = SpanUtil::AsSpan(rPositionsScratchpad);
     const bool gotRules = font.ExtractRenderRules(scratchpadSpan, strView, fontConfig);
     const auto positionsSpan = scratchpadSpan.subspan(0, gotRules ? strView.size() : 0);
 

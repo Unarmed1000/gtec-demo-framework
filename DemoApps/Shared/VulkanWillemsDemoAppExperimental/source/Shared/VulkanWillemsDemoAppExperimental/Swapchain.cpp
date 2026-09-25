@@ -121,7 +121,7 @@ namespace Fsl::Willems
       // It's the lowest latency non-tearing present mode available
       if (!enableVSync)
       {
-        for (auto presentMode : presentModes)
+        for (const auto presentMode : presentModes)
         {
           if (presentMode == VK_PRESENT_MODE_MAILBOX_KHR)
           {
@@ -162,9 +162,10 @@ namespace Fsl::Willems
       VkFormat colorFormat = VK_FORMAT_UNDEFINED;
       VkColorSpaceKHR colorSpace = VK_COLOR_SPACE_SRGB_NONLINEAR_KHR;
       {    // Format selection
-        // We want to get a format that best suits our needs, so we try to get one from a set of preferred formats
-        // Initialize the format to the first one returned by the implementation in case we can't find one of the preferred formats
-        Vulkan::SurfaceFormatInfo selectedFormat = Vulkan::SurfaceFormatUtil::TryFindSurfaceFormat(SpanUtil::AsReadOnlySpan(availableSurfaceFormats));
+           // We want to get a format that best suits our needs, so we try to get one from a set of preferred formats
+           // Initialize the format to the first one returned by the implementation in case we can't find one of the preferred formats
+        const Vulkan::SurfaceFormatInfo selectedFormat =
+          Vulkan::SurfaceFormatUtil::TryFindSurfaceFormat(SpanUtil::AsReadOnlySpan(availableSurfaceFormats));
         if (selectedFormat.Format == VK_FORMAT_UNDEFINED)
         {
           throw RapidVulkan::VulkanException("TryFindSurfaceFormat failed to locate a suitable surface format");

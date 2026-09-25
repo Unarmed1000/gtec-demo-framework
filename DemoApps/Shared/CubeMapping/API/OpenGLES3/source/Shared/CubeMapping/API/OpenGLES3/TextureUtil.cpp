@@ -91,7 +91,7 @@ namespace Fsl
     const auto texPosZ = contentManager->ReadBitmap(IO::Path::Combine(basePath, files[4]), pixelFormat, BitmapOrigin::UpperLeft);
     const auto texNegZ = contentManager->ReadBitmap(IO::Path::Combine(basePath, files[5]), pixelFormat, BitmapOrigin::UpperLeft);
 
-    GLTextureParameters3 texParams(GL_LINEAR, GL_LINEAR, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE);
+    const GLTextureParameters3 texParams(GL_LINEAR, GL_LINEAR, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE);
     return {texPosX, texNegX, texPosY, texNegY, texPosZ, texNegZ, texParams, TextureFlags::AllowAnyBitmapOrigin};
   }
 }

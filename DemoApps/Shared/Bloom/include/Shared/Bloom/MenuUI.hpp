@@ -79,7 +79,7 @@ namespace Fsl
     explicit MenuUI(const DemoAppConfig& config);
     ~MenuUI() override;
 
-    std::shared_ptr<UIDemoAppExtension> GetUIDemoAppExtension() const
+    [[nodiscard]] std::shared_ptr<UIDemoAppExtension> GetUIDemoAppExtension() const
     {
       return m_uiExtension;
     }
@@ -89,63 +89,63 @@ namespace Fsl
     void OnSelect(const std::shared_ptr<UI::WindowSelectEvent>& theEvent) override;
     void OnContentChanged(const std::shared_ptr<UI::WindowContentChangedEvent>& theEvent) override;
 
-    int32_t GetSceneId() const
+    [[nodiscard]] int32_t GetSceneId() const
     {
       return m_sceneId;
     }
 
-    bool IsRotateEnabled() const
+    [[nodiscard]] bool IsRotateEnabled() const
     {
       return m_rotateEnabled;
     }
     void SetRotateEnabled(bool enabled);
 
-    bool IsBlurEnabled() const
+    [[nodiscard]] bool IsBlurEnabled() const
     {
       return m_blurEnabled;
     }
     void SetBlurEnabled(bool enabled);
 
-    bool IsBrightPassEnabled() const
+    [[nodiscard]] bool IsBrightPassEnabled() const
     {
       return m_brightPassEnabled;
     }
     void SetBrightPassEnabled(bool enabled);
 
-    bool IsFinalSceneEnabled() const
+    [[nodiscard]] bool IsFinalSceneEnabled() const
     {
       return m_renderFinalScene;
     }
     void SetFinalSceneEnabled(bool enabled);
 
-    bool IsFinalBloomEnabled() const
+    [[nodiscard]] bool IsFinalBloomEnabled() const
     {
       return m_renderFinalBloom;
     }
     void SetFinalBloomEnabled(bool enabled);
 
-    bool IsShowBuffersEnabled() const
+    [[nodiscard]] bool IsShowBuffersEnabled() const
     {
       return m_showBuffersEnabled;
     }
     void SetShowBuffersEnabled(bool enabled);
 
-    bool IsScaleInputSequentiallyEnabled() const
+    [[nodiscard]] bool IsScaleInputSequentiallyEnabled() const
     {
       return m_scaleInputSequentially;
     }
     void SetScaleInputSequentiallyEnabled(bool enabled);
 
-    float GetKernelWeightRange() const
+    [[nodiscard]] float GetKernelWeightRange() const
     {
       return 1.0f;
     }
 
-    float GetKernelWeightMod() const
+    [[nodiscard]] float GetKernelWeightMod() const
     {
       return m_kernelWeightMod;
     }
-    float GetBlendLevel() const
+    [[nodiscard]] float GetBlendLevel() const
     {
       return m_blendLevel;
     }

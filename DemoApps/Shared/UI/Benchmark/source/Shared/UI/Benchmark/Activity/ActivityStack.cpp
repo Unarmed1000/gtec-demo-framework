@@ -167,10 +167,10 @@ namespace Fsl::UI
     }
     else
     {
-      for (auto& rEntry : m_stack)
+      for (const auto& entry : m_stack)
       {
-        rEntry.Activity->SetBaseColor(rEntry.BaseColor.GetValue());
-        if (rEntry.IsAnimating())
+        entry.Activity->SetBaseColor(entry.BaseColor.GetValue());
+        if (entry.IsAnimating())
         {
           stackIsAnimating = true;
         }
@@ -178,7 +178,7 @@ namespace Fsl::UI
     }
 
     {    // Pop all closing elements in the right order
-      auto uiContext = m_context->TheUIContext.Get();
+      const auto uiContext = m_context->TheUIContext.Get();
       while (!m_stack.empty() && m_stack.front().State == ActivityState::Closing && !m_stack.front().IsAnimating())
       {
         RemoveChild(m_stack.front().Activity);

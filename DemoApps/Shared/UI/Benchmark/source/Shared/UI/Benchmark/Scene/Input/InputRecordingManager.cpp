@@ -81,9 +81,9 @@ namespace Fsl
       }
 
       {    // fall back to load the default recording
-        auto contentManager = serviceProvider.Get<IContentManager>();
-        auto contentPath = contentManager->GetContentPath();
-        auto defaultRecordingPath = IO::Path::Combine(contentPath, LocalConfig::DefaultInputRecordingFilename);
+        const auto contentManager = serviceProvider.Get<IContentManager>();
+        const auto contentPath = contentManager->GetContentPath();
+        const auto defaultRecordingPath = IO::Path::Combine(contentPath, LocalConfig::DefaultInputRecordingFilename);
 
         std::optional<AppInputCommandList> res = AppInputCommandListPersistence::TryLoad(defaultRecordingPath);
         FSLLOG3_WARNING_IF(!res.has_value(), "Default input recording not found at '{}'", defaultRecordingPath);

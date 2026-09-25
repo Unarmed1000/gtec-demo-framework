@@ -70,7 +70,7 @@ namespace Fsl
     const float v1 = (-1.0f) * scaleY;
     const float v2 = (1.0f) * scaleY;
 
-    std::array<VertexPositionTexture, 4> vertices = {
+    const std::array<VertexPositionTexture, 4> vertices = {
       VertexPositionTexture(Vector3(-1.0f, 1.0f, 0.0f), Vector2(u1, v2)),
       VertexPositionTexture(Vector3(-1.0f, -1.0f, 0.0f), Vector2(u1, v1)),
       VertexPositionTexture(Vector3(1.0f, 1.0f, 0.0f), Vector2(u2, v2)),

@@ -70,7 +70,7 @@ namespace Fsl
   public:
     MenuUI(const DemoAppConfig& config, const std::size_t entries);
 
-    std::shared_ptr<UIDemoAppExtension> GetUIDemoAppExtension() const
+    [[nodiscard]] std::shared_ptr<UIDemoAppExtension> GetUIDemoAppExtension() const
     {
       return m_uiExtension;
     }
@@ -84,9 +84,9 @@ namespace Fsl
 
     void UpdateExposureInput(const DemoTime& demoTime, const KeyboardState& keyboardState);
 
-    float GetExposure() const;
+    [[nodiscard]] float GetExposure() const;
 
-    const std::vector<RenderRecord>& GetRenderRecords() const
+    [[nodiscard]] const std::vector<RenderRecord>& GetRenderRecords() const
     {
       return m_render;
     }

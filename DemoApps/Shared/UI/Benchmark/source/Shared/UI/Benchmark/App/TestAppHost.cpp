@@ -130,8 +130,8 @@ namespace Fsl
       StopTestApp();
     }
 
-    UIDemoAppRenderCreateInfo renderCreateInfo(UI::UIColorSpace::SRGBNonLinear, LocalConfig::DefaultRenderCapacity, materialCreateInfo,
-                                               materialConfig);
+    const UIDemoAppRenderCreateInfo renderCreateInfo(UI::UIColorSpace::SRGBNonLinear, LocalConfig::DefaultRenderCapacity, materialCreateInfo,
+                                                     materialConfig);
     m_appRecord.TestApp = testAppFactory.Create(UIDemoAppExtensionCreateInfo(m_serviceProvider, m_appWindowMetrics, renderCreateInfo,
                                                                              m_demoPerformanceCapture, SpanUtil::AsReadOnlySpan(m_externalModules)),
                                                 m_benchmarkScene);
@@ -274,8 +274,8 @@ namespace Fsl
   {
     if (m_appRecord.DemoExtension)
     {
-      MouseButtonEvent fakeEvent(event.GetTimestamp(), event.GetButton(), event.IsPressed(), event.GetPosition() - m_config.AppViewportPx.Location(),
-                                 event.IsTouch());
+      const MouseButtonEvent fakeEvent(event.GetTimestamp(), event.GetButton(), event.IsPressed(),
+                                       event.GetPosition() - m_config.AppViewportPx.Location(), event.IsTouch());
       m_appRecord.DemoExtension->OnMouseButtonEvent(fakeEvent);
       if (fakeEvent.IsHandled())
       {
@@ -288,8 +288,8 @@ namespace Fsl
   {
     if (m_appRecord.DemoExtension)
     {
-      MouseMoveEvent fakeEvent(event.GetTimestamp(), event.GetPosition() - m_config.AppViewportPx.Location(), event.GetMouseButtonFlags(),
-                               event.IsTouch());
+      const MouseMoveEvent fakeEvent(event.GetTimestamp(), event.GetPosition() - m_config.AppViewportPx.Location(), event.GetMouseButtonFlags(),
+                                     event.IsTouch());
       m_appRecord.DemoExtension->OnMouseMoveEvent(fakeEvent);
       if (fakeEvent.IsHandled())
       {
@@ -302,7 +302,7 @@ namespace Fsl
   {
     if (m_appRecord.DemoExtension)
     {
-      MouseWheelEvent fakeEvent(event.GetTimestamp(), event.GetDelta(), event.GetPosition() - m_config.AppViewportPx.Location());
+      const MouseWheelEvent fakeEvent(event.GetTimestamp(), event.GetDelta(), event.GetPosition() - m_config.AppViewportPx.Location());
       m_appRecord.DemoExtension->OnMouseWheelEvent(fakeEvent);
       if (fakeEvent.IsHandled())
       {
@@ -315,7 +315,7 @@ namespace Fsl
   {
     if (m_appRecord.DemoExtension)
     {
-      RawMouseMoveEvent fakeEvent(event.GetTimestamp(), event.GetPosition() - m_config.AppViewportPx.Location(), event.GetMouseButtonFlags());
+      const RawMouseMoveEvent fakeEvent(event.GetTimestamp(), event.GetPosition() - m_config.AppViewportPx.Location(), event.GetMouseButtonFlags());
       m_appRecord.DemoExtension->OnRawMouseMoveEvent(fakeEvent);
       if (fakeEvent.IsHandled())
       {

@@ -65,19 +65,19 @@ namespace Fsl::Willems
                const bool enableVSync);
 
     //! @brief Get the associated resource handle
-    VkSwapchainKHR Get() const
+    [[nodiscard]] VkSwapchainKHR Get() const
     {
       return m_swapchain.Get();
     }
 
     //! @brief Get a pointer to the associated resource handle
-    const VkSwapchainKHR* GetPointer() const
+    [[nodiscard]] const VkSwapchainKHR* GetPointer() const
     {
       return m_swapchain.GetPointer();
     }
 
     //! @brief Check if this object contains a valid resource
-    inline bool IsValid() const
+    [[nodiscard]] inline bool IsValid() const
     {
       return m_swapchain.IsValid();
     }
@@ -86,12 +86,12 @@ namespace Fsl::Willems
     const SwapchainBuffers& operator[](const std::size_t arrayIndex) const;
 
 
-    uint32_t GetImageCount() const
+    [[nodiscard]] uint32_t GetImageCount() const
     {
       return UncheckedNumericCast<uint32_t>(m_buffers.size());
     }
 
-    VkFormat GetImageFormat() const
+    [[nodiscard]] VkFormat GetImageFormat() const
     {
       return m_createInfo.imageFormat;
     }

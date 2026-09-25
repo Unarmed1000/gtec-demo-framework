@@ -68,13 +68,13 @@ namespace Fsl
     , m_explostionType(false)
   {
     {
-      auto nativeGraphicsService = config.DemoServiceProvider.Get<IGraphicsService>()->GetNativeGraphics();
-      auto contentManager = GetContentManager();
+      const auto nativeGraphicsService = config.DemoServiceProvider.Get<IGraphicsService>()->GetNativeGraphics();
+      const auto contentManager = GetContentManager();
       BasicTextureAtlas atlas;
       contentManager->Read(atlas, "TextureAtlas/MainAtlas.bta");
-      auto texture = contentManager->ReadTexture("TextureAtlas/MainAtlas.png");
-      Texture2D atlasTexture(nativeGraphicsService, texture, Texture2DFilterHint::Smooth);
-      TextureAtlasMap textureAtlasMap(atlas);
+      const auto texture = contentManager->ReadTexture("TextureAtlas/MainAtlas.png");
+      const Texture2D atlasTexture(nativeGraphicsService, texture, Texture2DFilterHint::Smooth);
+      const TextureAtlasMap textureAtlasMap(atlas);
 
       m_texFill = AtlasTexture2D(atlasTexture, textureAtlasMap.GetAtlasTextureInfo("Fill"));
       m_texBall = AtlasTexture2D(atlasTexture, textureAtlasMap.GetAtlasTextureInfo("SliderCursor"));
@@ -84,7 +84,7 @@ namespace Fsl
 
     RegisterExtension(m_uiExtension);
 
-    auto options = config.GetOptions<OptionParser>();
+    const auto options = config.GetOptions<OptionParser>();
 
     if (options->GetRenderId() >= 0)
     {
@@ -181,7 +181,7 @@ namespace Fsl
       m_mousePosition = event.GetPosition();
       if (event.IsPressed())
       {
-        Vector3 mousePos(static_cast<float>(m_mousePosition.X.Value), static_cast<float>(m_mousePosition.Y.Value), 0.0f);
+        const Vector3 mousePos(static_cast<float>(m_mousePosition.X.Value), static_cast<float>(m_mousePosition.Y.Value), 0.0f);
         if (!m_explostionType)
         {
           m_gridScene->ApplyExplosiveForce(30, mousePos, 300);
@@ -197,7 +197,7 @@ namespace Fsl
       m_mousePosition = event.GetPosition();
       if (event.IsPressed())
       {
-        Vector3 mousePos(static_cast<float>(m_mousePosition.X.Value), static_cast<float>(m_mousePosition.Y.Value), 0.0f);
+        const Vector3 mousePos(static_cast<float>(m_mousePosition.X.Value), static_cast<float>(m_mousePosition.Y.Value), 0.0f);
         m_gridScene->ApplyImplosiveForce(500, mousePos, 300);
       }
       break;
@@ -217,9 +217,9 @@ namespace Fsl
   {
     if (m_isLeftButtonDown)
     {
-      Vector3 mousePos(static_cast<float>(m_mousePosition.X.Value), static_cast<float>(m_mousePosition.Y.Value), 0.0f);
-      Vector3 mousePosDeep(mousePos.X, mousePos.Y, 50);
-      Vector3 delta = mousePos - m_oldMouse;
+      const Vector3 mousePos(static_cast<float>(m_mousePosition.X.Value), static_cast<float>(m_mousePosition.Y.Value), 0.0f);
+      const Vector3 mousePosDeep(mousePos.X, mousePos.Y, 50);
+      const Vector3 delta = mousePos - m_oldMouse;
 
       // m_gridScene->ApplyExplosiveForce(30, mousePosDeep, 200);
       // m_gridScene->ApplyExplosiveForce(100, mousePos, 80);
@@ -232,7 +232,7 @@ namespace Fsl
 
     if (m_config.Balls)
     {
-      auto windowSizePx = GetWindowSizePx();
+      const auto windowSizePx = GetWindowSizePx();
       const float boundaryLeft = 0;
       const auto boundaryRight = static_cast<float>(windowSizePx.RawWidth());
       const float boundaryTop = 0;
@@ -240,7 +240,7 @@ namespace Fsl
       const float bounce = 1.0f;
       for (auto& rBall : m_balls)
       {
-        Vector2 velocity = rBall.Position - rBall.OldPosition;
+        const Vector2 velocity = rBall.Position - rBall.OldPosition;
         rBall.OldPosition = rBall.Position;
         rBall.Position += velocity;
 
@@ -287,7 +287,7 @@ namespace Fsl
 
   void SpringBackground::Update(const DemoTime& demoTime)
   {
-    Vector3 mousePos(static_cast<float>(m_mousePosition.X.Value), static_cast<float>(m_mousePosition.Y.Value), 0.0f);
+    const Vector3 mousePos(static_cast<float>(m_mousePosition.X.Value), static_cast<float>(m_mousePosition.Y.Value), 0.0f);
     m_oldMouse = mousePos;
 
     m_gridScene->Update(demoTime);
@@ -314,8 +314,8 @@ namespace Fsl
       m_batch->Begin();
 
       const Color ballColor = Colors::White();
-      Vector2 scale(1, 1);
-      Vector2 origin(static_cast<float>(m_texBall.GetSize().RawWidth()) * 0.5f, static_cast<float>(m_texBall.GetSize().RawHeight()) * 0.5f);
+      const Vector2 scale(1, 1);
+      const Vector2 origin(static_cast<float>(m_texBall.GetSize().RawWidth()) * 0.5f, static_cast<float>(m_texBall.GetSize().RawHeight()) * 0.5f);
       for (const auto& ball : m_balls)
       {
         m_batch->Draw(m_texBall, ball.Position, ballColor, origin, scale);
@@ -331,13 +331,13 @@ namespace Fsl
   void SpringBackground::BuildUI()
   {
     // Next up we prepare the actual UI
-    auto context = m_uiExtension->GetContext();
+    const auto context = m_uiExtension->GetContext();
 
-    auto uiControlFactory = UI::Theme::ThemeSelector::CreateControlFactory(*m_uiExtension);
+    const auto uiControlFactory = UI::Theme::ThemeSelector::CreateControlFactory(*m_uiExtension);
     auto& factory = *uiControlFactory;
 
-    auto layoutMenu = std::make_shared<UI::StackLayout>(context);
-    auto menuBar = factory.CreateBottomBar(layoutMenu, UI::Theme::BarType::Transparent);
+    const auto layoutMenu = std::make_shared<UI::StackLayout>(context);
+    const auto menuBar = factory.CreateBottomBar(layoutMenu, UI::Theme::BarType::Transparent);
     {    // Create the menu
       layoutMenu->SetOrientation(UI::LayoutOrientation::Horizontal);
       layoutMenu->SetAlignmentX(UI::ItemAlignment::Near);
@@ -347,8 +347,8 @@ namespace Fsl
       ISpriteResourceManager& rSpriteManager = m_uiExtension->GetSpriteResourceManager();
       const auto defaultMaterialId = m_uiExtension->GetDefaultMaterialId();
 
-      auto spriteBackSmall = rSpriteManager.CreateImageSprite(defaultMaterialId, "Icon/Navigation/ic_chevron_left_white_36dp");
-      auto spriteNextSmall = rSpriteManager.CreateImageSprite(defaultMaterialId, "Icon/Navigation/ic_chevron_right_white_36dp");
+      const auto spriteBackSmall = rSpriteManager.CreateImageSprite(defaultMaterialId, "Icon/Navigation/ic_chevron_left_white_36dp");
+      const auto spriteNextSmall = rSpriteManager.CreateImageSprite(defaultMaterialId, "Icon/Navigation/ic_chevron_right_white_36dp");
 
       m_menuLabelRenderType = factory.CreateLabel("");
       m_menuLabelRenderType->SetAlignmentY(UI::ItemAlignment::Center);
@@ -362,7 +362,7 @@ namespace Fsl
       m_cbBloom = factory.CreateSwitch("Bloom");
       m_cbBloom->SetAlignmentY(UI::ItemAlignment::Center);
 
-      auto stack = std::make_shared<UI::StackLayout>(context);
+      const auto stack = std::make_shared<UI::StackLayout>(context);
       stack->SetOrientation(UI::LayoutOrientation::Horizontal);
       stack->SetAlignmentY(UI::ItemAlignment::Center);
       stack->AddChild(m_btnRenderTypePrev);

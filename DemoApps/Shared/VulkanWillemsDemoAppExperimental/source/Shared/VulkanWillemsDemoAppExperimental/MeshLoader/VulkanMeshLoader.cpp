@@ -85,7 +85,7 @@ namespace Fsl
       std::vector<float> vertexBuffer;
       for (const auto& entry : m_entries)
       {
-        for (std::size_t i = 0; i < entry.Vertices.size(); ++i)
+        for (const auto& vertex : entry.Vertices)
         {
           // Push vertex data depending on layout
           for (const auto& layoutDetail : layout)
@@ -93,43 +93,43 @@ namespace Fsl
             // Position
             if (layoutDetail == VertexLayout::VERTEX_LAYOUT_POSITION)
             {
-              vertexBuffer.push_back(entry.Vertices[i].m_pos.x * scale.x + center.x);
-              vertexBuffer.push_back(entry.Vertices[i].m_pos.y * scale.y + center.y);
-              vertexBuffer.push_back(entry.Vertices[i].m_pos.z * scale.z + center.z);
+              vertexBuffer.push_back(vertex.m_pos.x * scale.x + center.x);
+              vertexBuffer.push_back(vertex.m_pos.y * scale.y + center.y);
+              vertexBuffer.push_back(vertex.m_pos.z * scale.z + center.z);
             }
             // Normal
             if (layoutDetail == VertexLayout::VERTEX_LAYOUT_NORMAL)
             {
-              vertexBuffer.push_back(entry.Vertices[i].m_normal.x);
-              vertexBuffer.push_back(-entry.Vertices[i].m_normal.y);
-              vertexBuffer.push_back(entry.Vertices[i].m_normal.z);
+              vertexBuffer.push_back(vertex.m_normal.x);
+              vertexBuffer.push_back(-vertex.m_normal.y);
+              vertexBuffer.push_back(vertex.m_normal.z);
             }
             // Texture coordinates
             if (layoutDetail == VertexLayout::VERTEX_LAYOUT_UV)
             {
-              vertexBuffer.push_back(entry.Vertices[i].m_tex.s * uvscale.s);
-              vertexBuffer.push_back(entry.Vertices[i].m_tex.t * uvscale.t);
+              vertexBuffer.push_back(vertex.m_tex.s * uvscale.s);
+              vertexBuffer.push_back(vertex.m_tex.t * uvscale.t);
             }
             // Color
             if (layoutDetail == VertexLayout::VERTEX_LAYOUT_COLOR)
             {
-              vertexBuffer.push_back(entry.Vertices[i].m_color.r);
-              vertexBuffer.push_back(entry.Vertices[i].m_color.g);
-              vertexBuffer.push_back(entry.Vertices[i].m_color.b);
+              vertexBuffer.push_back(vertex.m_color.r);
+              vertexBuffer.push_back(vertex.m_color.g);
+              vertexBuffer.push_back(vertex.m_color.b);
             }
             // Tangent
             if (layoutDetail == VertexLayout::VERTEX_LAYOUT_TANGENT)
             {
-              vertexBuffer.push_back(entry.Vertices[i].m_tangent.x);
-              vertexBuffer.push_back(entry.Vertices[i].m_tangent.y);
-              vertexBuffer.push_back(entry.Vertices[i].m_tangent.z);
+              vertexBuffer.push_back(vertex.m_tangent.x);
+              vertexBuffer.push_back(vertex.m_tangent.y);
+              vertexBuffer.push_back(vertex.m_tangent.z);
             }
             // Bitangent
             if (layoutDetail == VertexLayout::VERTEX_LAYOUT_BITANGENT)
             {
-              vertexBuffer.push_back(entry.Vertices[i].m_binormal.x);
-              vertexBuffer.push_back(entry.Vertices[i].m_binormal.y);
-              vertexBuffer.push_back(entry.Vertices[i].m_binormal.z);
+              vertexBuffer.push_back(vertex.m_binormal.x);
+              vertexBuffer.push_back(vertex.m_binormal.y);
+              vertexBuffer.push_back(vertex.m_binormal.z);
             }
             // Dummy layout components for padding
             if (layoutDetail == VertexLayout::VERTEX_LAYOUT_DUMMY_FLOAT)
@@ -152,10 +152,10 @@ namespace Fsl
       {    // Create mesh descriptors and index buffer
         for (const auto& entry : m_entries)
         {
-          auto indexBase = UncheckedNumericCast<uint32_t>(indexBuffer.size());
-          for (uint32_t i = 0; i < entry.Indices.size(); i++)
+          const auto indexBase = UncheckedNumericCast<uint32_t>(indexBuffer.size());
+          for (const auto index : entry.Indices)
           {
-            indexBuffer.push_back(entry.Indices[i] + indexBase);
+            indexBuffer.push_back(index + indexBase);
           }
           MeshDescriptor descriptor;
           descriptor.IndexBase = indexBase;

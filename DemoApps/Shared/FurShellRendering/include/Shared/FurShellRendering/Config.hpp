@@ -72,47 +72,47 @@ namespace Fsl
 
   public:
     explicit Config(const int32_t defaultRenderMode);
-    int32_t GetRenderMode() const;
+    [[nodiscard]] int32_t GetRenderMode() const;
     void SetRenderMode(const int32_t value);
-    int GetLayerCount() const;
+    [[nodiscard]] int GetLayerCount() const;
     void SetLayerCount(const int value);
-    float GetHairLength() const;
+    [[nodiscard]] float GetHairLength() const;
     void SetHairLength(const float value);
-    float GetHairDensity() const;
+    [[nodiscard]] float GetHairDensity() const;
     void SetHairDensity(const float value);
-    PxSize2D GetFurTextureSize() const;
+    [[nodiscard]] PxSize2D GetFurTextureSize() const;
     void SetFurTextureSize(const PxSize2D value);
     void SetFurTextureSize(const int32_t value);
-    int GetTorusMajorSegments() const;
+    [[nodiscard]] int GetTorusMajorSegments() const;
     void SetTorusMajorSegments(const int value);
-    int GetTorusMinorSegments() const;
+    [[nodiscard]] int GetTorusMinorSegments() const;
     void SetTorusMinorSegments(const int value);
 
-    bool GetUseTriangleStrip() const;
+    [[nodiscard]] bool GetUseTriangleStrip() const;
     void SetUseTriangleStrip(const bool value);
 
-    bool GetShowNormals() const;
+    [[nodiscard]] bool GetShowNormals() const;
     void SetShowNormals(const bool value);
 
-    int GetTextureRepeatCountX() const;
+    [[nodiscard]] int GetTextureRepeatCountX() const;
     void SetTextureRepeatCountX(const int value);
 
-    int GetTextureRepeatCountY() const;
+    [[nodiscard]] int GetTextureRepeatCountY() const;
     void SetTextureRepeatCountY(const int value);
 
-    bool GetUseHighShaderPrecision() const;
+    [[nodiscard]] bool GetUseHighShaderPrecision() const;
     void SetUseHighShaderPrecision(const bool bEnabled);
 
-    int GetLightCount() const;
+    [[nodiscard]] int GetLightCount() const;
     void SetLightCount(const int value);
 
-    bool GetForceFinishEachFrame() const;
+    [[nodiscard]] bool GetForceFinishEachFrame() const;
     void SetForceFinishEachFrame(const bool value);
 
-    uint32_t GetBackgroundColor() const;
+    [[nodiscard]] uint32_t GetBackgroundColor() const;
     void SetBackgroundColor(const uint32_t value);
 
-    int GetDemoId() const;
+    [[nodiscard]] int GetDemoId() const;
     void SetDemoId(const int value);
   };
 }

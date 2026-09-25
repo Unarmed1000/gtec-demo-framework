@@ -48,7 +48,7 @@ namespace Fsl
 
       std::string gaussianFragX(fragTemplate);
       std::string gaussianFragY(fragTemplate);
-      PxSize2D texSizes(sizeTextureBlurX.Width(), sizeTextureBlurY.Height());
+      const PxSize2D texSizes(sizeTextureBlurX.Width(), sizeTextureBlurY.Height());
       switch (mode)
       {
       case TwoPassShaders::Linear:
@@ -77,7 +77,7 @@ namespace Fsl
       std::string gaussianVertX(vertTemplate);
       std::string gaussianVertY(vertTemplate);
       std::string gaussianFrag(fragTemplate);
-      PxSize2D texSizes(sizeTextureBlurX.Width(), sizeTextureBlurY.Height());
+      const PxSize2D texSizes(sizeTextureBlurX.Width(), sizeTextureBlurY.Height());
       switch (mode)
       {
       case TwoPassShaders::Linear:

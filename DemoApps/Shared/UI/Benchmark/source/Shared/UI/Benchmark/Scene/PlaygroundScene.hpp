@@ -160,7 +160,7 @@ namespace Fsl
         OverlayColorStats.Update(deltaTime);
       }
 
-      bool IsBusy() const
+      [[nodiscard]] bool IsBusy() const
       {
         return !OverlayColorStatsApp.IsCompleted() || !OverlayColorStats.IsCompleted();
       }
@@ -211,7 +211,7 @@ namespace Fsl
     //}
 
 
-    std::optional<NextSceneRecord> TryGetNextScene() const final
+    [[nodiscard]] std::optional<NextSceneRecord> TryGetNextScene() const final
     {
       return m_nextSceneRecord;
     }
@@ -242,7 +242,7 @@ namespace Fsl
     void ClearGraph();
     void RestoreUISettings(const RenderMethodInfo& renderMethodInfo);
 
-    uint32_t FrameAnalysisGetCurrentMaxDrawCalls() const;
+    [[nodiscard]] uint32_t FrameAnalysisGetCurrentMaxDrawCalls() const;
     void FrameAnalysisSetMaxDrawCalls(const uint32_t maxDrawCalls);
     static void UpdateStats(StatsOverlayUI& overlay, const UI::RenderSystemStats& stats);
 

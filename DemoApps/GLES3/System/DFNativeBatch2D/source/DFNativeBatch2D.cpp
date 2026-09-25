@@ -58,7 +58,7 @@ namespace Fsl
       m_texture2D.Reset(m_graphics->GetNativeGraphics(), bitmap, Texture2DFilterHint::Nearest);
     }
     {
-      GLES3::GLTextureParameters params(GL_LINEAR, GL_LINEAR, GL_REPEAT, GL_REPEAT);
+      const GLES3::GLTextureParameters params(GL_LINEAR, GL_LINEAR, GL_REPEAT, GL_REPEAT);
       Fsl::Bitmap bitmap;
       contentManager->Read(bitmap, "Test/Test2.png", PixelFormat::R8G8B8_UNORM);
       m_nativeTexture.SetData(bitmap, params);

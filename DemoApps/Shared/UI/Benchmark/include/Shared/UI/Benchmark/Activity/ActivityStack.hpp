@@ -89,7 +89,7 @@ namespace Fsl
           BaseColor.ForceComplete();
         }
 
-        bool IsAnimating() const
+        [[nodiscard]] bool IsAnimating() const
         {
           return !BaseColor.IsCompleted();
         }

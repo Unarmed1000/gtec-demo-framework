@@ -46,7 +46,7 @@ namespace Fsl
     ~LocalExampleService() override;
 
     // Inherited via ILocalExampleService
-    int32_t Add(const int32_t a, const int32_t b) const final;
+    [[nodiscard]] int32_t Add(const int32_t a, const int32_t b) const final;
   };
 }
 

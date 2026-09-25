@@ -69,13 +69,13 @@ namespace Fsl::AppBenchmarkDataPersistence
       {
         throw NotSupportedException("Unsupported version");
       }
-      auto strTime = json[LocalSettings::Time].get<std::string>();
+      const auto strTime = json[LocalSettings::Time].get<std::string>();
 
       std::optional<AppBenchmarkGpuData> gpuData = json.contains(LocalSettings::GpuData)
                                                      ? std::optional<AppBenchmarkGpuData>(json[LocalSettings::GpuData].get<AppBenchmarkGpuData>())
                                                      : std::optional<AppBenchmarkGpuData>();
 
-      std::optional<AppBenchmarkRenderInfo> renderInfo =
+      const std::optional<AppBenchmarkRenderInfo> renderInfo =
         json.contains(LocalSettings::RenderInfo)
           ? std::optional<AppBenchmarkRenderInfo>(json[LocalSettings::RenderInfo].get<AppBenchmarkRenderInfo>())
           : std::optional<AppBenchmarkRenderInfo>();
@@ -123,7 +123,7 @@ namespace Fsl::AppBenchmarkDataPersistence
   void Save(const IO::Path& path, const AppBenchmarkData& data)
   {
     // Since this data contains a timestamp it is likely to have been changed on write.
-    std::string strNewJson = Encode(data);
+    const std::string strNewJson = Encode(data);
     IO::File::WriteAllText(path, strNewJson);
   }
 }

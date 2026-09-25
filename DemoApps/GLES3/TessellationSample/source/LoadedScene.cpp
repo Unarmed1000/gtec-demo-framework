@@ -101,8 +101,8 @@ namespace Fsl
 
     std::shared_ptr<TestScene> LoadScene(const std::shared_ptr<IContentManager>& contentManager, const IO::Path& path)
     {
-      auto contentPath = IO::Path::Combine(contentManager->GetContentPath(), path);
-      auto preprocessedScene = IO::Path::Combine(contentPath, "Scene.fsf");
+      const auto contentPath = IO::Path::Combine(contentManager->GetContentPath(), path);
+      const auto preprocessedScene = IO::Path::Combine(contentPath, "Scene.fsf");
       if (IO::File::Exists(preprocessedScene))
       {
         return LoadSceneBSF(contentManager, preprocessedScene);
@@ -144,11 +144,11 @@ namespace Fsl
 
 
     FSLLOG3_INFO("Loading scene...");
-    std::shared_ptr<TestScene> scene = LoadScene(contentManager, rootDir);
+    const std::shared_ptr<TestScene> scene = LoadScene(contentManager, rootDir);
 
     {    // Create the main texture (we use a scope here so we throw away the bitmap as soon as we don't need it)
       Bitmap bitmap;
-      GLTextureParameters texParams(GL_LINEAR, GL_LINEAR, GL_REPEAT, GL_REPEAT);
+      const GLTextureParameters texParams(GL_LINEAR, GL_LINEAR, GL_REPEAT, GL_REPEAT);
 
       FSLLOG3_INFO("Loading color texture...");
       contentManager->Read(bitmap, IO::Path::Combine(rootDir, "TexColor.png"), PixelFormat::R8G8B8_UNORM);
@@ -184,7 +184,7 @@ namespace Fsl
     std::size_t indexCount = 0;
     for (std::size_t i = 0; i < scene->Meshes.size(); ++i)
     {
-      auto mesh = scene->Meshes[i];
+      const auto mesh = scene->Meshes[i];
       m_indexBuffers.Reset(i, mesh->GetIndexArray(), GL_STATIC_DRAW);
       m_vertexBuffers.Reset(i, mesh->GetVertexArray(), GL_STATIC_DRAW);
 

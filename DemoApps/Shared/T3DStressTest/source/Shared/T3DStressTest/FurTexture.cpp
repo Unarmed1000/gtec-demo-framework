@@ -43,7 +43,7 @@ namespace Fsl
   std::vector<uint8_t> FurTexture::Generate(const int width, const int height, const float density, const int numLayers)
   {
     // read the width and height of the texture
-    int totalPixels = width * height;
+    const int totalPixels = width * height;
 
     const int cbArray = totalPixels * 4;
 
@@ -72,7 +72,7 @@ namespace Fsl
       y = rand() % height;
 
       // compute max layer
-      int maxLayer = i / strandsPerLayer;
+      const int maxLayer = i / strandsPerLayer;
       // normalize into [0..1] range
       float maxLayerN = static_cast<float>(maxLayer) / static_cast<float>(numLayers);
 

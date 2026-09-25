@@ -105,7 +105,7 @@ namespace Fsl
       std::array<VkWriteDescriptorSet, 3> writeDescriptorSets{};
 
       // Binding 0 : Vertex shader uniform buffer
-      auto uboBufferInfo = uboBuffer.GetDescriptorBufferInfo();
+      const auto uboBufferInfo = uboBuffer.GetDescriptorBufferInfo();
       writeDescriptorSets[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
       writeDescriptorSets[0].pNext = nullptr;
       writeDescriptorSets[0].dstSet = descriptorSet;
@@ -114,7 +114,7 @@ namespace Fsl
       writeDescriptorSets[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
       writeDescriptorSets[0].pBufferInfo = &uboBufferInfo;
       // Binding 1 : Fragment shader texture sampler
-      auto textureImageInfo0 = texture0.GetDescriptorImageInfo();
+      const auto textureImageInfo0 = texture0.GetDescriptorImageInfo();
       writeDescriptorSets[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
       writeDescriptorSets[1].pNext = nullptr;
       writeDescriptorSets[1].dstSet = descriptorSet;
@@ -123,7 +123,7 @@ namespace Fsl
       writeDescriptorSets[1].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
       writeDescriptorSets[1].pImageInfo = &textureImageInfo0;
       // Binding 2 : Fragment shader texture sampler
-      auto textureImageInfo1 = texture1.GetDescriptorImageInfo();
+      const auto textureImageInfo1 = texture1.GetDescriptorImageInfo();
       writeDescriptorSets[2].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
       writeDescriptorSets[2].pNext = nullptr;
       writeDescriptorSets[2].dstSet = descriptorSet;
@@ -223,7 +223,7 @@ namespace Fsl
       viewport.minDepth = 0.0f;
       viewport.maxDepth = 1.0f;
 
-      VkRect2D scissor{{0, 0}, extent};
+      const VkRect2D scissor{{0, 0}, extent};
 
       VkPipelineViewportStateCreateInfo pipelineViewportStateCreateInfo{};
       pipelineViewportStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
@@ -417,7 +417,7 @@ namespace Fsl
 
   void MeshRenderVBInstanced::Draw(const VkCommandBuffer hCmdBuffer)
   {
-    VkDeviceSize offsets = 0;
+    const VkDeviceSize offsets = 0;
     vkCmdBindVertexBuffers(hCmdBuffer, VertexBufferBindId, 1, m_resources.VB.VertexBuffer.GetBufferPointer(), &offsets);
     vkCmdBindIndexBuffer(hCmdBuffer, m_resources.IB.GetBuffer(), 0, VK_INDEX_TYPE_UINT16);
     vkCmdDrawIndexed(hCmdBuffer, m_resources.IB.GetIndexCount(), m_instanceCount, 0, 0, 0);

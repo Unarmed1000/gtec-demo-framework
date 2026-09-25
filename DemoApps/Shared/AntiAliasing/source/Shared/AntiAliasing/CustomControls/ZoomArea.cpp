@@ -186,7 +186,7 @@ namespace Fsl::UI::Custom
 
   ZoomInfo ZoomArea::GetResolvedZoomInfo() const
   {
-    auto area = GetResolvedArea();
+    const auto area = GetResolvedArea();
     return {IsZoomEnabled(), GetResolvedAreaInScreenSpace(), area, m_cachedClampedMousePositionPx, area.GetSize(), m_zoomFactorAnim.GetValue()};
   }
 
@@ -252,7 +252,7 @@ namespace Fsl::UI::Custom
       const auto finalContentColor = finalBaseColor * m_zoomBorderColor.GetValue();
 
       // Schedule the rendering
-      PxVector2 positionPxf = context.TargetRect.Location() + TypeConverter::To<PxVector2>(m_cachedClampedOffsetPositionPx);
+      const PxVector2 positionPxf = context.TargetRect.Location() + TypeConverter::To<PxVector2>(m_cachedClampedOffsetPositionPx);
       context.CommandBuffer.DrawCustom(m_content.Get(), positionPxf, m_cachedAreaSizePx, finalContentColor, context.ClipContext, DrawCustomLineList,
                                        {});
     }
@@ -294,7 +294,7 @@ namespace Fsl::UI::Custom
 
   bool ZoomArea::UpdateAnimationState(const bool forceCompleteAnimation)
   {
-    bool isAnimating = base_type::UpdateAnimationState(forceCompleteAnimation);
+    const bool isAnimating = base_type::UpdateAnimationState(forceCompleteAnimation);
     m_zoomFactorAnim.SetValue(m_isDown ? m_propertyZoomFactor.Get() : 1.0f);
     m_zoomBorderColor.SetValue(m_isDown ? m_propertyContentColor.InternalColor : GetContext()->ColorConverter.Convert(UIColors::Transparent()));
 
@@ -310,7 +310,7 @@ namespace Fsl::UI::Custom
   DataBinding::DataBindingInstanceHandle ZoomArea::TryGetPropertyHandleNow(const DataBinding::DependencyPropertyDefinition& sourceDef)
   {
     using namespace DataBinding;
-    auto res = DependencyObjectHelper::TryGetPropertyHandle(
+    const auto res = DependencyObjectHelper::TryGetPropertyHandle(
       this, ThisDependencyObject(), sourceDef, PropLinkRefs(PropertyContentColor, m_propertyContentColor.ExternalColor),
       DataBinding::PropLinkRefs(PropertyAreaWidth, m_propertyAreaWidth), DataBinding::PropLinkRefs(PropertyAreaHeight, m_propertyAreaHeight),
       DataBinding::PropLinkRefs(PropertyZoomFactor, m_propertyZoomFactor));
@@ -322,7 +322,7 @@ namespace Fsl::UI::Custom
                                                                    const DataBinding::Binding& binding)
   {
     using namespace DataBinding;
-    auto res = DependencyObjectHelper::TrySetBinding(
+    const auto res = DependencyObjectHelper::TrySetBinding(
       this, ThisDependencyObject(), targetDef, binding, PropLinkRefs(PropertyContentColor, m_propertyContentColor.ExternalColor),
       DataBinding::PropLinkRefs(PropertyAreaWidth, m_propertyAreaWidth), DataBinding::PropLinkRefs(PropertyAreaHeight, m_propertyAreaHeight),
       DataBinding::PropLinkRefs(PropertyZoomFactor, m_propertyZoomFactor));

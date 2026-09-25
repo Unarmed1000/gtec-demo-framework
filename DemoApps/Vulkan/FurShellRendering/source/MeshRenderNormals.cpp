@@ -95,7 +95,7 @@ namespace Fsl
       std::array<VkWriteDescriptorSet, 1> writeDescriptorSets{};
 
       // Binding 0 : Vertex shader uniform buffer
-      auto uboBufferInfo = uboBuffer.GetDescriptorBufferInfo();
+      const auto uboBufferInfo = uboBuffer.GetDescriptorBufferInfo();
       writeDescriptorSets[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
       writeDescriptorSets[0].pNext = nullptr;
       writeDescriptorSets[0].dstSet = descriptorSet;
@@ -197,7 +197,7 @@ namespace Fsl
       viewport.minDepth = 0.0f;
       viewport.maxDepth = 1.0f;
 
-      VkRect2D scissor{{0, 0}, extent};
+      const VkRect2D scissor{{0, 0}, extent};
 
       VkPipelineViewportStateCreateInfo pipelineViewportStateCreateInfo{};
       pipelineViewportStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
@@ -344,7 +344,7 @@ namespace Fsl
 
   void MeshRenderNormals::Draw(const VkCommandBuffer hCmdBuffer)
   {
-    VkDeviceSize offsets = 0;
+    const VkDeviceSize offsets = 0;
     vkCmdBindVertexBuffers(hCmdBuffer, VertexBufferBindId, 1, m_resources.VB.VertexBuffer.GetBufferPointer(), &offsets);
     vkCmdDraw(hCmdBuffer, m_resources.VB.VertexBuffer.GetVertexCount(), 1, 0, 0);
   }

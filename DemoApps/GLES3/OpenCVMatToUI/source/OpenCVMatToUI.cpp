@@ -84,7 +84,7 @@ namespace Fsl
                                                          ICustomSpriteResourceManager& customSpriteResourceManager, const Texture2D& tex,
                                                          const std::string& strCaption)
     {
-      auto sprite = customSpriteResourceManager.CreateCustomTextureSprite(tex.TryGetNative(), BlendState::AlphaBlend);
+      const auto sprite = customSpriteResourceManager.CreateCustomTextureSprite(tex.TryGetNative(), BlendState::AlphaBlend);
 
       const auto image = std::make_shared<UI::Image>(context);
       image->SetContent(sprite);
@@ -105,7 +105,7 @@ namespace Fsl
                                                      const Texture2D& texR, const Texture2D& texG, const Texture2D& texB,
                                                      const std::string& strCaption)
     {
-      auto sprite1 = customSpriteResourceManager.CreateCustomTextureSprite(tex1.TryGetNative(), BlendState::AlphaBlend);
+      const auto sprite1 = customSpriteResourceManager.CreateCustomTextureSprite(tex1.TryGetNative(), BlendState::AlphaBlend);
 
       const auto image1 = std::make_shared<UI::Image>(context);
       image1->SetContent(sprite1);
@@ -117,7 +117,7 @@ namespace Fsl
       const auto controlGreen = CreateTextureAndText(context, customSpriteResourceManager, texG, "Green");
       const auto controlBlue = CreateTextureAndText(context, customSpriteResourceManager, texB, "Blue");
 
-      auto colorsStackLayout = std::make_shared<UI::StackLayout>(context);
+      const auto colorsStackLayout = std::make_shared<UI::StackLayout>(context);
       colorsStackLayout->SetOrientation(UI::LayoutOrientation::Vertical);
       colorsStackLayout->SetAlignmentY(UI::ItemAlignment::Center);
       colorsStackLayout->AddChild(label);
@@ -147,7 +147,7 @@ namespace Fsl
     RegisterExtension(m_uiExtension);
 
 
-    auto contentManager = GetContentManager();
+    const auto contentManager = GetContentManager();
 
     CreateReferenceTextures(contentManager);
     CreateOpenCVTextures(contentManager);
@@ -180,10 +180,10 @@ namespace Fsl
 
   void OpenCVMatToUI::CreateReferenceTextures(const std::shared_ptr<IContentManager>& contentManager)
   {
-    auto bitmapTest = contentManager->ReadBitmap(TestImage1, PixelFormat::R8G8B8_UNORM);
-    auto bitmapTestR = contentManager->ReadBitmap(TestImageR, PixelFormat::R8G8B8_UNORM);
-    auto bitmapTestG = contentManager->ReadBitmap(TestImageG, PixelFormat::R8G8B8_UNORM);
-    auto bitmapTestB = contentManager->ReadBitmap(TestImageB, PixelFormat::R8G8B8_UNORM);
+    const auto bitmapTest = contentManager->ReadBitmap(TestImage1, PixelFormat::R8G8B8_UNORM);
+    const auto bitmapTestR = contentManager->ReadBitmap(TestImageR, PixelFormat::R8G8B8_UNORM);
+    const auto bitmapTestG = contentManager->ReadBitmap(TestImageG, PixelFormat::R8G8B8_UNORM);
+    const auto bitmapTestB = contentManager->ReadBitmap(TestImageB, PixelFormat::R8G8B8_UNORM);
 
     const auto nativeGraphics = m_graphics->GetNativeGraphics();
 
@@ -199,10 +199,10 @@ namespace Fsl
   {
     const IO::Path contentPath = contentManager->GetContentPath();
 
-    IO::Path pathImg1 = IO::Path::Combine(contentPath, TestImage1);
-    IO::Path pathImgR = IO::Path::Combine(contentPath, TestImageR);
-    IO::Path pathImgG = IO::Path::Combine(contentPath, TestImageG);
-    IO::Path pathImgB = IO::Path::Combine(contentPath, TestImageB);
+    const IO::Path pathImg1 = IO::Path::Combine(contentPath, TestImage1);
+    const IO::Path pathImgR = IO::Path::Combine(contentPath, TestImageR);
+    const IO::Path pathImgG = IO::Path::Combine(contentPath, TestImageG);
+    const IO::Path pathImgB = IO::Path::Combine(contentPath, TestImageB);
 
     // Read a image using OpenCV (we use imread since we want to demonstrate how to convert a OpenCV image to a texture for use by INativeBatch2D)
     const cv::Mat mat1 = SafeImread(pathImg1);
@@ -224,12 +224,12 @@ namespace Fsl
   void OpenCVMatToUI::CreateUI()
   {
     ICustomSpriteResourceManager& customSpriteResourceManager = m_uiExtension->GetCustomSpriteResourceManager();
-    auto context = m_uiExtension->GetContext();
+    const auto context = m_uiExtension->GetContext();
 
     const auto group1 = CreateImageGroup(context, customSpriteResourceManager, m_texTest, m_texTestR, m_texTestG, m_texTestB, "Reference");
     const auto group2 = CreateImageGroup(context, customSpriteResourceManager, m_texTestMat, m_texTestMatR, m_texTestMatG, m_texTestMatB, "OpenCV");
 
-    auto stackLayout = std::make_shared<UI::StackLayout>(context);
+    const auto stackLayout = std::make_shared<UI::StackLayout>(context);
     stackLayout->SetOrientation(UI::LayoutOrientation::Horizontal);
     stackLayout->SetAlignmentX(UI::ItemAlignment::Center);
     stackLayout->SetAlignmentY(UI::ItemAlignment::Center);
@@ -238,7 +238,7 @@ namespace Fsl
 
     // Create a 'root' layout we use the recommended fill layout as it will utilize all available space on the screen
     // We then add the 'player' stack to it and the label
-    auto fillLayout = std::make_shared<UI::FillLayout>(context);
+    const auto fillLayout = std::make_shared<UI::FillLayout>(context);
     fillLayout->AddChild(stackLayout);
 
     // Finally add everything to the window manager (to ensure its seen)

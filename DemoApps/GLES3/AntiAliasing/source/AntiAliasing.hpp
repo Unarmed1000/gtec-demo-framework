@@ -171,7 +171,7 @@ namespace Fsl
       {
       }
 
-      GLuint GetFrameBufferHandle() const noexcept
+      [[nodiscard]] GLuint GetFrameBufferHandle() const noexcept
       {
         if (m_multisampleFramebufferTextureExt.IsValid())
         {
@@ -184,7 +184,7 @@ namespace Fsl
         return m_framebuffer.Get();
       }
 
-      PxSize2D GetFrameBufferSize() const noexcept
+      [[nodiscard]] PxSize2D GetFrameBufferSize() const noexcept
       {
         if (m_multisampleFramebufferTextureExt.IsValid())
         {
@@ -197,27 +197,27 @@ namespace Fsl
         return m_framebuffer.GetSize();
       }
 
-      bool ResolvedRequired() const noexcept
+      [[nodiscard]] bool ResolvedRequired() const noexcept
       {
         return m_multisampleFramebuffer.IsValid();
       }
 
-      const GLES3::GLFrameBuffer& GetCustomZoomFB() const noexcept
+      [[nodiscard]] const GLES3::GLFrameBuffer& GetCustomZoomFB() const noexcept
       {
         return m_framebuffer;
       }
 
-      GLuint GetResolveFBHandle() const noexcept
+      [[nodiscard]] GLuint GetResolveFBHandle() const noexcept
       {
         return m_framebuffer.Get();
       }
 
-      PxSize2D GetResolveFBSize() const noexcept
+      [[nodiscard]] PxSize2D GetResolveFBSize() const noexcept
       {
         return m_framebuffer.GetSize();
       }
 
-      GLES3::GLTextureInfo GetTextureInfo() const
+      [[nodiscard]] GLES3::GLTextureInfo GetTextureInfo() const
       {
         if (m_multisampleFramebufferTextureExt.IsValid())
         {
@@ -226,7 +226,7 @@ namespace Fsl
         return m_framebuffer.GetTextureInfo();
       }
 
-      PxSize2D GetTextureSize() const
+      [[nodiscard]] PxSize2D GetTextureSize() const
       {
         if (m_multisampleFramebufferTextureExt.IsValid())
         {
@@ -242,12 +242,12 @@ namespace Fsl
         m_multisampleFramebufferTextureExt.Reset();
       }
 
-      PxSize2D GetSize() const noexcept
+      [[nodiscard]] PxSize2D GetSize() const noexcept
       {
         return m_sizePx;
       }
 
-      bool IsUsingFastResolve() const noexcept
+      [[nodiscard]] bool IsUsingFastResolve() const noexcept
       {
         return m_multisampleFramebufferTextureExt.IsValid();
       }

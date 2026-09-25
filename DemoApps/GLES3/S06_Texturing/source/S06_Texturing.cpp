@@ -54,59 +54,58 @@ namespace Fsl
                                                                                  GLES3::GLBindAttribLocation(ColorLoc, "g_vColor"),
                                                                                  GLES3::GLBindAttribLocation(VertexTexLoc, "g_vTexCoord")};
 
-    const std::array<float, 24 * 3> g_vertexPositions = {
-      // Draw A Quad
+    const std::array<float, 24 * 3> g_vertexPositions = {// Draw A Quad
 
-      // Top Right Of The Quad (Top)
-      1.0f, 1.0f, -1.0f,
-      // Top Left Of The Quad (Top)
-      -1.0f, 1.0f, -1.0f,
-      // Bottom Right Of The Quad (Top)
-      1.0f, 1.0f, 1.0f,
-      // Bottom Left Of The Quad (Top)
-      -1.0f, 1.0f, 1.0f,
-      // Top Right Of The Quad (Bottom)
-      1.0f, -1.0f, 1.0f,
-      // Top Left Of The Quad (Bottom)
-      -1.0f, -1.0f, 1.0f,
-      // Bottom Right Of The Quad (Bottom)
-      1.0f, -1.0f, -1.0f,
-      // Bottom Left Of The Quad (Bottom)
-      -1.0f, -1.0f, -1.0f,
-      // Top Right Of The Quad (Front)
-      1.0f, 1.0f, 1.0f,
-      // Top Left Of The Quad (Front)
-      -1.0f, 1.0f, 1.0f,
-      // Bottom Right Of The Quad (Front)
-      1.0f, -1.0f, 1.0f,
-      // Bottom Left Of The Quad (Front)
-      -1.0f, -1.0f, 1.0f,
+                                                         // Top Right Of The Quad (Top)
+                                                         1.0f, 1.0f, -1.0f,
+                                                         // Top Left Of The Quad (Top)
+                                                         -1.0f, 1.0f, -1.0f,
+                                                         // Bottom Right Of The Quad (Top)
+                                                         1.0f, 1.0f, 1.0f,
+                                                         // Bottom Left Of The Quad (Top)
+                                                         -1.0f, 1.0f, 1.0f,
+                                                         // Top Right Of The Quad (Bottom)
+                                                         1.0f, -1.0f, 1.0f,
+                                                         // Top Left Of The Quad (Bottom)
+                                                         -1.0f, -1.0f, 1.0f,
+                                                         // Bottom Right Of The Quad (Bottom)
+                                                         1.0f, -1.0f, -1.0f,
+                                                         // Bottom Left Of The Quad (Bottom)
+                                                         -1.0f, -1.0f, -1.0f,
+                                                         // Top Right Of The Quad (Front)
+                                                         1.0f, 1.0f, 1.0f,
+                                                         // Top Left Of The Quad (Front)
+                                                         -1.0f, 1.0f, 1.0f,
+                                                         // Bottom Right Of The Quad (Front)
+                                                         1.0f, -1.0f, 1.0f,
+                                                         // Bottom Left Of The Quad (Front)
+                                                         -1.0f, -1.0f, 1.0f,
 
-      // Top Right Of The Quad (Back)
-      1.0f, -1.0f, -1.0f,
-      // Top Left Of The Quad (Back)
-      -1.0f, -1.0f, -1.0f,
-      // Bottom Right Of The Quad (Back)
-      1.0f, 1.0f, -1.0f,
-      // Bottom Left Of The Quad (Back)
-      -1.0f, 1.0f, -1.0f,
+                                                         // Top Right Of The Quad (Back)
+                                                         1.0f, -1.0f, -1.0f,
+                                                         // Top Left Of The Quad (Back)
+                                                         -1.0f, -1.0f, -1.0f,
+                                                         // Bottom Right Of The Quad (Back)
+                                                         1.0f, 1.0f, -1.0f,
+                                                         // Bottom Left Of The Quad (Back)
+                                                         -1.0f, 1.0f, -1.0f,
 
-      // Top Right Of The Quad (Left)
-      -1.0f, 1.0f, 1.0f,
-      // Top Left Of The Quad (Left)
-      -1.0f, 1.0f, -1.0f,
-      // Bottom Right Of The Quad (Left)
-      -1.0f, -1.0f, 1.0f,
-      // Bottom Left Of The Quad (Left)
-      -1.0f, -1.0f, -1.0f,
-      // Top Right Of The Quad (Right)
-      1.0f, 1.0f, -1.0f,
-      // Top Left Of The Quad (Right)
-      1.0f, 1.0f, 1.0f,
-      // Bottom Right Of The Quad (Right)
-      1.0f, -1.0f, -1.0f,
-      // Bottom Left Of The Quad (Right)
-      1.0f, -1.0f, 1.0f};
+                                                         // Top Right Of The Quad (Left)
+                                                         -1.0f, 1.0f, 1.0f,
+                                                         // Top Left Of The Quad (Left)
+                                                         -1.0f, 1.0f, -1.0f,
+                                                         // Bottom Right Of The Quad (Left)
+                                                         -1.0f, -1.0f, 1.0f,
+                                                         // Bottom Left Of The Quad (Left)
+                                                         -1.0f, -1.0f, -1.0f,
+                                                         // Top Right Of The Quad (Right)
+                                                         1.0f, 1.0f, -1.0f,
+                                                         // Top Left Of The Quad (Right)
+                                                         1.0f, 1.0f, 1.0f,
+                                                         // Bottom Right Of The Quad (Right)
+                                                         1.0f, -1.0f, -1.0f,
+                                                         // Bottom Left Of The Quad (Right)
+                                                         1.0f, -1.0f, 1.0f};
 
     const std::array<float, 24 * 2> g_vertexTexCoords = {
       // Top Face
@@ -169,61 +168,60 @@ namespace Fsl
 
     };
 
-    const std::array<float, 24 * 4> g_vertexColors = {
-      // Red
-      1.0f, 0.0f, 0.0f, 1.0f,
-      // Red
-      1.0f, 0.0f, 0.0f, 1.0f,
+    const std::array<float, 24 * 4> g_vertexColors = {// Red
+                                                      1.0f, 0.0f, 0.0f, 1.0f,
+                                                      // Red
+                                                      1.0f, 0.0f, 0.0f, 1.0f,
 
-      // Green
-      0.0f, 1.0f, 0.0f, 1.0f,
+                                                      // Green
+                                                      0.0f, 1.0f, 0.0f, 1.0f,
 
-      // Green
-      0.0f, 1.0f, 0.0f, 1.0f,
+                                                      // Green
+                                                      0.0f, 1.0f, 0.0f, 1.0f,
 
-      // Blue
-      0.0f, 0.0f, 1.0f, 1.0f,
+                                                      // Blue
+                                                      0.0f, 0.0f, 1.0f, 1.0f,
 
-      // Blue
-      0.0f, 0.0f, 1.0f, 1.0f,
+                                                      // Blue
+                                                      0.0f, 0.0f, 1.0f, 1.0f,
 
-      // Red
-      1.0f, 0.0, 0.0f, 1.0f,
-      // Red
-      1.0f, 0.0, 0.0f, 1.0f,
-      // Blue
-      0.0f, 0.0f, 1.0f, 1.0f,
-      // Blue
-      0.0f, 0.0f, 1.0f, 1.0f,
-      // Green
-      0.0f, 1.0f, 0.0f, 1.0f,
-      // Green
-      0.0f, 1.0f, 0.0f, 1.0f,
-      // Red
-      1.0f, 0.0f, 0.0f, 1.0f,
-      // Red
-      1.0f, 0.0f, 0.0f, 1.0f,
-      // Green
-      0.0f, 1.0f, 0.0f, 1.0f,
-      // Green
-      0.0f, 1.0f, 0.0f, 1.0f,
-      // Blue
-      0.0f, 0.0f, 1.0f, 1.0f,
-      // Blue
-      0.0f, 0.0f, 1.0f, 1.0f,
-      // Red
-      1.0f, 0.0f, 0.0f, 1.0f,
-      // Red
-      1.0f, 0.0f, 0.0f, 1.0f,
-      // Blue
-      0.0f, 0.0f, 1.0f, 1.0f,
-      // Green
-      0.0f, 1.0f, 0.0f, 1.0f,
-      // Blue
-      0.0f, 0.0f, 1.0f, 1.0f,
+                                                      // Red
+                                                      1.0f, 0.0, 0.0f, 1.0f,
+                                                      // Red
+                                                      1.0f, 0.0, 0.0f, 1.0f,
+                                                      // Blue
+                                                      0.0f, 0.0f, 1.0f, 1.0f,
+                                                      // Blue
+                                                      0.0f, 0.0f, 1.0f, 1.0f,
+                                                      // Green
+                                                      0.0f, 1.0f, 0.0f, 1.0f,
+                                                      // Green
+                                                      0.0f, 1.0f, 0.0f, 1.0f,
+                                                      // Red
+                                                      1.0f, 0.0f, 0.0f, 1.0f,
+                                                      // Red
+                                                      1.0f, 0.0f, 0.0f, 1.0f,
+                                                      // Green
+                                                      0.0f, 1.0f, 0.0f, 1.0f,
+                                                      // Green
+                                                      0.0f, 1.0f, 0.0f, 1.0f,
+                                                      // Blue
+                                                      0.0f, 0.0f, 1.0f, 1.0f,
+                                                      // Blue
+                                                      0.0f, 0.0f, 1.0f, 1.0f,
+                                                      // Red
+                                                      1.0f, 0.0f, 0.0f, 1.0f,
+                                                      // Red
+                                                      1.0f, 0.0f, 0.0f, 1.0f,
+                                                      // Blue
+                                                      0.0f, 0.0f, 1.0f, 1.0f,
+                                                      // Green
+                                                      0.0f, 1.0f, 0.0f, 1.0f,
+                                                      // Blue
+                                                      0.0f, 0.0f, 1.0f, 1.0f,
 
-      // Green
-      0.0f, 1.0f, 0.0f, 1.0f};
+                                                      // Green
+                                                      0.0f, 1.0f, 0.0f, 1.0f};
   }
 
 
@@ -238,7 +236,7 @@ namespace Fsl
     {    // Load the texture (we use a scope here, so the bitmap objects is thrown away as soon as we dont need it)
       Bitmap bitmap;
       content->Read(bitmap, "GPUSdk/SquareLogo512x512.jpg", PixelFormat::R8G8B8_UNORM);
-      GLTextureParameters params(GL_LINEAR, GL_LINEAR, GL_REPEAT, GL_REPEAT);
+      const GLTextureParameters params(GL_LINEAR, GL_LINEAR, GL_REPEAT, GL_REPEAT);
       m_texture.SetData(bitmap, params);
     }
 

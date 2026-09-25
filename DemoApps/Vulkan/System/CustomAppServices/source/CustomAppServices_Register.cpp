@@ -41,7 +41,7 @@ namespace Fsl
   {
     CustomAppServicesRegisterServices(rSetup.TheServiceRegistry);
 
-    DemoAppHostConfigVulkan config;
+    const DemoAppHostConfigVulkan config;
 
     DemoAppRegister::Vulkan::Register<CustomAppServices>(rSetup, "Vulkan.System.CustomAppServices", config);
   }

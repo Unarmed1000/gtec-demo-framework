@@ -100,7 +100,7 @@ namespace Fsl::Willems
     TexConfig GetTextureConfig(const Texture& texture, const TextureType texType)
     {
       VkExtent3D texExtent = TypeConverter::UncheckedTo<VkExtent3D>(texture.GetExtent());
-      uint32_t texMipLevels = texture.GetLevels();
+      const uint32_t texMipLevels = texture.GetLevels();
       uint32_t texFaces = texture.GetFaces();
       uint32_t texLayers = texture.GetLayers();
 
@@ -161,7 +161,7 @@ namespace Fsl::Willems
       bufferCreateInfo.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
       bufferCreateInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
-      Buffer stagingBuffer(device, bufferCreateInfo);
+      const Buffer stagingBuffer(device, bufferCreateInfo);
 
       // Get memory requirements for the staging buffer (alignment, memory type bits)
       VkMemoryRequirements memReqs = stagingBuffer.GetBufferMemoryRequirements();
@@ -283,7 +283,7 @@ namespace Fsl::Willems
       VkFenceCreateInfo fenceCreateInfo{};
       fenceCreateInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
       fenceCreateInfo.flags = Config::FLAGS_NONE;
-      Fence copyFence(device, fenceCreateInfo);
+      const Fence copyFence(device, fenceCreateInfo);
 
       VkSubmitInfo submitInfo{};
       submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
@@ -338,7 +338,7 @@ namespace Fsl::Willems
       // Load mip map level 0 to linear tiling image
       Image texImage(device, imageCreateInfo);
       // Get memory requirements for this image like size and alignment
-      VkMemoryRequirements memReqs = texImage.GetImageMemoryRequirements();
+      const VkMemoryRequirements memReqs = texImage.GetImageMemoryRequirements();
 
       VkPhysicalDeviceMemoryProperties deviceMemoryProperties;
       vkGetPhysicalDeviceMemoryProperties(physicalDevice, &deviceMemoryProperties);
@@ -378,7 +378,7 @@ namespace Fsl::Willems
       {
         // Copy image data into memory
         Texture::ScopedDirectReadAccess directAccess(texture);
-        ReadOnlyRawTexture rawTexture = directAccess.AsRawTexture();
+        const ReadOnlyRawTexture rawTexture = directAccess.AsRawTexture();
         // Copy image data into memory
         const auto blob0 = rawTexture.GetBlob(0);
         assert(blob0.Size == memReqs.size);

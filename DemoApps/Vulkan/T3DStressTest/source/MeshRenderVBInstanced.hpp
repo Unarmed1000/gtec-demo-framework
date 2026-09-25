@@ -192,7 +192,7 @@ namespace Fsl
 
     void SetDisplacement(const Vector3& displacement);
 
-    int GetLightCount() const;
+    [[nodiscard]] int GetLightCount() const;
     void SetLightDirection(const int index, const Vector3& lightDirection);
     void SetLightColor(const int index, const Vector3& lightColor);
     void SetLightAmbientColor(const Vector3& ambientColor);

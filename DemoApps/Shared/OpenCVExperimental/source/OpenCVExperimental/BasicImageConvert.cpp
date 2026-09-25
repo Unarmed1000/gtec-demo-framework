@@ -83,8 +83,8 @@ namespace Fsl
 
     // FIX: this should verify the 'src' cv::Mat image format
     const size_t srcByteSize = src.total() * src.elemSize();
-    ReadOnlyRawBitmap rawSrcBitmap(ReadOnlyRawBitmap::Create(SpanUtil::CreateReadOnly(src.data, srcByteSize), PxSize2D::Create(src.cols, src.rows),
-                                                             PixelFormat::B8G8R8_UINT, BitmapOrigin::UpperLeft));
+    const ReadOnlyRawBitmap rawSrcBitmap(ReadOnlyRawBitmap::Create(
+      SpanUtil::CreateReadOnly(src.data, srcByteSize), PxSize2D::Create(src.cols, src.rows), PixelFormat::B8G8R8_UINT, BitmapOrigin::UpperLeft));
 
     rDst.Reset(rawSrcBitmap);
     // FIX: ideally this would utilize the demo framework conversion service instead to support more formats

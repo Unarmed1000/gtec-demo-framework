@@ -417,11 +417,11 @@ namespace Fsl
       UpdateStats(m_uiProfile.StatsOverlay2, stats);
     }
 
-    auto cpuProfileRecords = CustomControlFactory::GetCpuProfileRecords();
+    const auto cpuProfileRecords = CustomControlFactory::GetCpuProfileRecords();
 
     if (m_uiProfile.BottomBar.Enabled && cpuProfileRecords.size() <= m_uiProfile.BottomBar.CpuLegendUI.ChartCpuUI.Controls.size())
     {    // Update average numbers
-      ReadOnlySpan<double> span = m_dataAverage.CalcAverage();
+      const ReadOnlySpan<double> span = m_dataAverage.CalcAverage();
       assert(span.size() >= cpuProfileRecords.size());
       double total = 0.0;
       for (std::size_t i = 0; i < cpuProfileRecords.size(); ++i)
@@ -496,13 +496,13 @@ namespace Fsl
     {
       const DemoPerformanceCapture& profiler = m_testAppHost->GetProfiler();
 
-      int64_t valUIProcessEvents = profiler.GetResult(DemoPerformanceCaptureId::UIProcessEvents);
-      int64_t valUIUpdate = profiler.GetResult(DemoPerformanceCaptureId::UIUpdate);
+      const int64_t valUIProcessEvents = profiler.GetResult(DemoPerformanceCaptureId::UIProcessEvents);
+      const int64_t valUIUpdate = profiler.GetResult(DemoPerformanceCaptureId::UIUpdate);
       int64_t valUIDraw = profiler.GetResult(DemoPerformanceCaptureId::UIDraw);
-      int64_t valUIDrawPreprocess = profiler.GetResult(DemoPerformanceCaptureId::UIDrawPreprocessDrawCommands);
-      int64_t valUIDrawGenMesh = profiler.GetResult(DemoPerformanceCaptureId::UIDrawGenerateMeshes);
-      int64_t valUIDrawFillBuffers = profiler.GetResult(DemoPerformanceCaptureId::UIDrawUpdateBuffers);
-      int64_t valUIDrawSchedule = profiler.GetResult(DemoPerformanceCaptureId::UIDrawScheduleDraw);
+      const int64_t valUIDrawPreprocess = profiler.GetResult(DemoPerformanceCaptureId::UIDrawPreprocessDrawCommands);
+      const int64_t valUIDrawGenMesh = profiler.GetResult(DemoPerformanceCaptureId::UIDrawGenerateMeshes);
+      const int64_t valUIDrawFillBuffers = profiler.GetResult(DemoPerformanceCaptureId::UIDrawUpdateBuffers);
+      const int64_t valUIDrawSchedule = profiler.GetResult(DemoPerformanceCaptureId::UIDrawScheduleDraw);
       // int64_t valRoundtrip = profiler.GetResult(DemoPerformanceCaptureId::Roundtrip);
 
       // valRoundtrip -= valUIProcessEvents;
@@ -736,8 +736,8 @@ namespace Fsl
       m_testAppHost->StopTestApp();
       TestAppFactory appFactory(m_renderRecords[m_settings->Test.ActiveRenderIndex].RenderMethod);
 
-      UIDemoAppMaterialCreateInfo materialCreateInfo(m_settings->Test.NoOpaqueMaterials, true);
-      UIDemoAppMaterialConfig materialConfig(useSdf, depthBuffer);
+      const UIDemoAppMaterialCreateInfo materialCreateInfo(m_settings->Test.NoOpaqueMaterials, true);
+      const UIDemoAppMaterialConfig materialConfig(useSdf, depthBuffer);
       m_testAppHost->StartTestApp(appFactory, materialCreateInfo, materialConfig);
       m_testAppHost->SetUseDrawCache(m_uiProfile.OptionsBar.SwitchUseDrawCache->IsChecked());
     }
@@ -755,34 +755,34 @@ namespace Fsl
   PlaygroundScene::ProfileUI PlaygroundScene::CreateProfileUI(UI::Theme::IThemeControlFactory& uiFactory, const uint16_t currentDensityDpi,
                                                               const std::shared_ptr<UI::ChartData>& data, const AppUISettings& settings)
   {
-    auto context = uiFactory.GetContext();
+    const auto context = uiFactory.GetContext();
 
-    auto resizeableClipArea = std::make_shared<UI::ResizeableArea>(context);
+    const auto resizeableClipArea = std::make_shared<UI::ResizeableArea>(context);
     resizeableClipArea->SetFillSprite(uiFactory.GetResources().GetBasicFillSprite(false));
     resizeableClipArea->SetDragHandleColor(LocalConfig::ClipRectangleHandleColor);
     resizeableClipArea->SetRectangleColor(LocalConfig::ClipRectangleColor);
 
-    auto contentArea = std::make_shared<UI::BaseWindow>(context);
+    const auto contentArea = std::make_shared<UI::BaseWindow>(context);
     contentArea->SetAlignmentX(UI::ItemAlignment::Stretch);
     contentArea->SetAlignmentY(UI::ItemAlignment::Stretch);
 
-    auto optionBarUI = CreateOptionBarUI(uiFactory, context, currentDensityDpi, settings);
+    const auto optionBarUI = CreateOptionBarUI(uiFactory, context, currentDensityDpi, settings);
 
-    auto optionBar = uiFactory.CreateRightBar(optionBarUI.Layout);
+    const auto optionBar = uiFactory.CreateRightBar(optionBarUI.Layout);
 
-    auto bottomBar = CreateBottomBar(uiFactory, context, data);
+    const auto bottomBar = CreateBottomBar(uiFactory, context, data);
 
-    auto overlay = CreateStatsOverlayUI(uiFactory, context);
-    auto overlay2 = CreateStatsOverlayUI(uiFactory, context);
+    const auto overlay = CreateStatsOverlayUI(uiFactory, context);
+    const auto overlay2 = CreateStatsOverlayUI(uiFactory, context);
 
-    auto overlayStack = std::make_shared<UI::UniformStackLayout>(context);
+    const auto overlayStack = std::make_shared<UI::UniformStackLayout>(context);
     overlayStack->SetAlignmentX(UI::ItemAlignment::Far);
     overlayStack->SetSpacing(DpSize1DF::Create(4));
     overlayStack->SetOrientation(UI::LayoutOrientation::Vertical);
     overlayStack->AddChild(overlay.MainLayout);
     overlayStack->AddChild(overlay2.MainLayout);
 
-    auto layout = std::make_shared<UI::GridLayout>(context);
+    const auto layout = std::make_shared<UI::GridLayout>(context);
     layout->SetAlignmentX(UI::ItemAlignment::Stretch);
     layout->SetAlignmentY(UI::ItemAlignment::Stretch);
     layout->AddColumnDefinition(UI::GridColumnDefinition(UI::GridUnitType::Star, 1.0f));
@@ -794,13 +794,13 @@ namespace Fsl
     // layout->AddChild(optionBar, 1, 0);
     layout->AddChild(optionBar, 1, 0);
 
-    auto bottomSlidingPanel = std::make_shared<UI::SlidingPanel>(context);
+    const auto bottomSlidingPanel = std::make_shared<UI::SlidingPanel>(context);
     bottomSlidingPanel->SetDirection(UI::SlideDirection::Down);
     bottomSlidingPanel->SetContent(bottomBar.Main);
     bottomSlidingPanel->SetShown(settings.ShowChart);
     bottomSlidingPanel->FinishAnimation();
 
-    auto uiMainLayout = std::make_shared<UI::ComplexStackLayout>(context);
+    const auto uiMainLayout = std::make_shared<UI::ComplexStackLayout>(context);
     uiMainLayout->SetAlignmentX(UI::ItemAlignment::Stretch);
     uiMainLayout->SetAlignmentY(UI::ItemAlignment::Stretch);
     uiMainLayout->SetOrientation(UI::LayoutOrientation::Vertical);
@@ -808,10 +808,10 @@ namespace Fsl
     uiMainLayout->AddChild(layout, UI::LayoutLength(UI::LayoutUnitType::Star, 1.0f));
     uiMainLayout->AddChild(bottomSlidingPanel, UI::LayoutLength(UI::LayoutUnitType::Auto));
 
-    auto fillLayout = std::make_shared<UI::FillLayout>(context);
+    const auto fillLayout = std::make_shared<UI::FillLayout>(context);
     fillLayout->AddChild(uiMainLayout);
 
-    auto activityStack = std::make_shared<UI::ActivityStack>(context);
+    const auto activityStack = std::make_shared<UI::ActivityStack>(context);
     fillLayout->AddChild(activityStack);
 
     return {bottomSlidingPanel, bottomBar, overlay, overlay2, optionBarUI, fillLayout, uiMainLayout, activityStack, contentArea, resizeableClipArea};
@@ -822,20 +822,20 @@ namespace Fsl
                                                                   const std::shared_ptr<UI::WindowContext>& context, const uint16_t currentDensityDpi,
                                                                   const AppUISettings& settings)
   {
-    RenderOptionControls renderOptions = RenderOptionControlsFactory::CreateRenderMethodControls(uiFactory);
+    const RenderOptionControls renderOptions = RenderOptionControlsFactory::CreateRenderMethodControls(uiFactory);
 
-    auto switchUseDrawCache = uiFactory.CreateSwitch(TextConfig::UseDrawCache, true);
-    auto switchOnDemand = uiFactory.CreateSwitch(TextConfig::OnDemandRendering, false);
-    auto switchSdfFont = uiFactory.CreateSwitch(LocalStrings::SdfFont, false);
+    const auto switchUseDrawCache = uiFactory.CreateSwitch(TextConfig::UseDrawCache, true);
+    const auto switchOnDemand = uiFactory.CreateSwitch(TextConfig::OnDemandRendering, false);
+    const auto switchSdfFont = uiFactory.CreateSwitch(LocalStrings::SdfFont, false);
 
-    auto switchButtons = CreateUISwitchButtons(uiFactory, context, settings);
-    auto switchButtonLayout = std::make_shared<UI::ComplexStackLayout>(context);
+    const auto switchButtons = CreateUISwitchButtons(uiFactory, context, settings);
+    const auto switchButtonLayout = std::make_shared<UI::ComplexStackLayout>(context);
     switchButtonLayout->SetOrientation(UI::LayoutOrientation::Horizontal);
     switchButtonLayout->SetAlignmentX(UI::ItemAlignment::Stretch);
     switchButtonLayout->AddChild(switchButtons.SwitchStats, UI::LayoutLength(UI::LayoutUnitType::Star, 1.0f));
     switchButtonLayout->AddChild(switchButtons.SwitchChart, UI::LayoutLength(UI::LayoutUnitType::Star, 1.0f));
 
-    auto layout = std::make_shared<UI::ComplexStackLayout>(context);
+    const auto layout = std::make_shared<UI::ComplexStackLayout>(context);
     layout->SetOrientation(UI::LayoutOrientation::Vertical);
     layout->SetAlignmentX(UI::ItemAlignment::Stretch);
     layout->SetAlignmentY(UI::ItemAlignment::Stretch);
@@ -843,41 +843,41 @@ namespace Fsl
     layout->AddChild(switchButtonLayout, UI::LayoutLength(UI::LayoutUnitType::Auto));
     layout->AddChild(uiFactory.CreateDivider(UI::LayoutOrientation::Horizontal), UI::LayoutLength(UI::LayoutUnitType::Auto));
 
-    auto switchDpi = uiFactory.CreateSwitch(LocalStrings::EmulateDpi);
-    auto sliderDpi = uiFactory.CreateSliderFmtValue(UI::LayoutOrientation::Horizontal,
-                                                    ConstrainedValue<int32_t>(currentDensityDpi, LocalConfig::DpiMin, LocalConfig::DpiMax));
+    const auto switchDpi = uiFactory.CreateSwitch(LocalStrings::EmulateDpi);
+    const auto sliderDpi = uiFactory.CreateSliderFmtValue(UI::LayoutOrientation::Horizontal,
+                                                          ConstrainedValue<int32_t>(currentDensityDpi, LocalConfig::DpiMin, LocalConfig::DpiMax));
     if (!switchDpi->IsChecked())
     {
       sliderDpi->SetEnabled(false);
       sliderDpi->FinishAnimation();
     }
 
-    auto labelIdle = uiFactory.CreateLabel("UI idle");
+    const auto labelIdle = uiFactory.CreateLabel("UI idle");
     labelIdle->SetAlignmentY(UI::ItemAlignment::Center);
-    auto imageIdle = uiFactory.CreateImage(uiFactory.GetResources().GetColorMarkerNineSliceSprite());
+    const auto imageIdle = uiFactory.CreateImage(uiFactory.GetResources().GetColorMarkerNineSliceSprite());
     imageIdle->SetAlignmentX(UI::ItemAlignment::Center);
     imageIdle->SetAlignmentY(UI::ItemAlignment::Center);
     imageIdle->SetContentColor(IdleColor::Busy);
     imageIdle->FinishAnimation();
-    auto buttonConfig = uiFactory.CreateTextButton(UI::Theme::ButtonType::Text, "Settings");
+    const auto buttonConfig = uiFactory.CreateTextButton(UI::Theme::ButtonType::Text, "Settings");
     buttonConfig->SetAlignmentX(UI::ItemAlignment::Far);
     buttonConfig->SetAlignmentY(UI::ItemAlignment::Center);
 
-    auto buttonFrameAnalysis = uiFactory.CreateTextButton(UI::Theme::ButtonType::Outlined, "Frame analysis");
+    const auto buttonFrameAnalysis = uiFactory.CreateTextButton(UI::Theme::ButtonType::Outlined, "Frame analysis");
     buttonFrameAnalysis->SetAlignmentX(UI::ItemAlignment::Stretch);
 
-    auto buttonRecord = uiFactory.CreateTextButton(UI::Theme::ButtonType::Outlined, "Record");
+    const auto buttonRecord = uiFactory.CreateTextButton(UI::Theme::ButtonType::Outlined, "Record");
     buttonRecord->SetAlignmentX(UI::ItemAlignment::Stretch);
-    auto buttonBench = uiFactory.CreateTextButton(UI::Theme::ButtonType::Contained, "Bench");
+    const auto buttonBench = uiFactory.CreateTextButton(UI::Theme::ButtonType::Contained, "Bench");
     buttonBench->SetAlignmentX(UI::ItemAlignment::Stretch);
 
-    auto buttonStack = std::make_shared<UI::UniformStackLayout>(context);
+    const auto buttonStack = std::make_shared<UI::UniformStackLayout>(context);
     buttonStack->SetOrientation(UI::LayoutOrientation::Horizontal);
     buttonStack->SetAlignmentX(UI::ItemAlignment::Center);
     buttonStack->AddChild(buttonRecord);
     buttonStack->AddChild(buttonBench);
 
-    auto infoStack0 = std::make_shared<UI::StackLayout>(context);
+    const auto infoStack0 = std::make_shared<UI::StackLayout>(context);
     infoStack0->SetSpacing(DpSize1DF(CustomUIConfig::FixedSpacingDp.Value()));
     infoStack0->SetOrientation(UI::LayoutOrientation::Horizontal);
     infoStack0->SetAlignmentX(UI::ItemAlignment::Center);
@@ -885,14 +885,14 @@ namespace Fsl
     infoStack0->AddChild(imageIdle);
     infoStack0->AddChild(labelIdle);
 
-    auto infoStack = std::make_shared<UI::ComplexStackLayout>(context);
+    const auto infoStack = std::make_shared<UI::ComplexStackLayout>(context);
     infoStack->SetOrientation(UI::LayoutOrientation::Horizontal);
     infoStack->SetAlignmentX(UI::ItemAlignment::Stretch);
     infoStack->SetSpacing(DpSize1DF(CustomUIConfig::FixedSpacingDp.Value()));
     infoStack->AddChild(infoStack0, UI::LayoutLength(UI::LayoutUnitType::Star, 1.0f));
     infoStack->AddChild(buttonConfig, UI::LayoutLength(UI::LayoutUnitType::Star, 1.0f));
 
-    auto lastRow = std::make_shared<UI::StackLayout>(context);
+    const auto lastRow = std::make_shared<UI::StackLayout>(context);
     lastRow->SetOrientation(UI::LayoutOrientation::Vertical);
     lastRow->SetAlignmentX(UI::ItemAlignment::Stretch);
     lastRow->SetAlignmentY(UI::ItemAlignment::Far);
@@ -925,9 +925,9 @@ namespace Fsl
                                                                           const AppUISettings& settings)
   {
     FSL_PARAM_NOT_USED(context);
-    auto stats = uiFactory.CreateSwitch("Stats", settings.ShowStats);
+    const auto stats = uiFactory.CreateSwitch("Stats", settings.ShowStats);
     stats->SetAlignmentX(UI::ItemAlignment::Near);
-    auto chart = uiFactory.CreateSwitch("Chart", settings.ShowChart);
+    const auto chart = uiFactory.CreateSwitch("Chart", settings.ShowChart);
     chart->SetAlignmentX(UI::ItemAlignment::Far);
     chart->FinishAnimation();
     return {stats, chart};
@@ -938,23 +938,23 @@ namespace Fsl
                                                                 const std::shared_ptr<UI::WindowContext>& context,
                                                                 const std::shared_ptr<UI::ChartData>& data)
   {
-    auto cpuLegend = CustomControlFactory::CreateDetailedCpuLegend(uiFactory, CustomUIConfig::FixedSpacingDp);
-    auto cpuTimeChart = CustomControlFactory::CreateAreaChart(uiFactory, data);
+    const auto cpuLegend = CustomControlFactory::CreateDetailedCpuLegend(uiFactory, CustomUIConfig::FixedSpacingDp);
+    const auto cpuTimeChart = CustomControlFactory::CreateAreaChart(uiFactory, data);
 
-    auto buttonClearTimeChart = uiFactory.CreateTextButton(UI::Theme::ButtonType::Outlined, "Clear graph");
+    const auto buttonClearTimeChart = uiFactory.CreateTextButton(UI::Theme::ButtonType::Outlined, "Clear graph");
     buttonClearTimeChart->SetAlignmentX(UI::ItemAlignment::Center);
     buttonClearTimeChart->SetAlignmentY(UI::ItemAlignment::Center);
 
-    auto rightStack = std::make_shared<UI::ComplexStackLayout>(context);
+    const auto rightStack = std::make_shared<UI::ComplexStackLayout>(context);
     rightStack->SetAlignmentY(UI::ItemAlignment::Stretch);
     rightStack->SetOrientation(UI::LayoutOrientation::Vertical);
     rightStack->AddChild(buttonClearTimeChart, UI::LayoutLength(UI::LayoutUnitType::Star, 1.0f));
 
 
-    auto marginLeftDp = uiFactory.GetDefaultMarginDp(UI::Theme::ElementType::LeftBar);
-    auto marginRightDp = uiFactory.GetDefaultMarginDp(UI::Theme::ElementType::RightBar);
+    const auto marginLeftDp = uiFactory.GetDefaultMarginDp(UI::Theme::ElementType::LeftBar);
+    const auto marginRightDp = uiFactory.GetDefaultMarginDp(UI::Theme::ElementType::RightBar);
 
-    auto profileLayout = std::make_shared<UI::GridLayout>(context);
+    const auto profileLayout = std::make_shared<UI::GridLayout>(context);
     profileLayout->SetAlignmentX(UI::ItemAlignment::Stretch);
     profileLayout->AddColumnDefinition(UI::GridColumnDefinition(UI::GridUnitType::Fixed, marginLeftDp.Left().Value));
     profileLayout->AddColumnDefinition(UI::GridColumnDefinition(UI::GridUnitType::Auto));
@@ -975,23 +975,23 @@ namespace Fsl
   {
     StatsOverlayUI overlay;
 
-    auto lblDesc0 = uiFactory.CreateLabel(LocalStrings::Meshes);
-    auto lblDesc1 = uiFactory.CreateLabel(LocalStrings::Batches);
-    auto lblDesc2 = uiFactory.CreateLabel(LocalStrings::VBs);
-    auto lblDesc3 = uiFactory.CreateLabel(LocalStrings::IBs);
-    auto lblDesc4 = uiFactory.CreateLabel(LocalStrings::Vertices);
-    auto lblDesc5 = uiFactory.CreateLabel(LocalStrings::Indices);
-    auto lblDesc6 = uiFactory.CreateLabel(LocalStrings::Draw);
-    auto lblDesc7 = uiFactory.CreateLabel(LocalStrings::DrawIndexed);
+    const auto lblDesc0 = uiFactory.CreateLabel(LocalStrings::Meshes);
+    const auto lblDesc1 = uiFactory.CreateLabel(LocalStrings::Batches);
+    const auto lblDesc2 = uiFactory.CreateLabel(LocalStrings::VBs);
+    const auto lblDesc3 = uiFactory.CreateLabel(LocalStrings::IBs);
+    const auto lblDesc4 = uiFactory.CreateLabel(LocalStrings::Vertices);
+    const auto lblDesc5 = uiFactory.CreateLabel(LocalStrings::Indices);
+    const auto lblDesc6 = uiFactory.CreateLabel(LocalStrings::Draw);
+    const auto lblDesc7 = uiFactory.CreateLabel(LocalStrings::DrawIndexed);
 
-    auto lbl0 = uiFactory.CreateFmtValueLabel(static_cast<uint32_t>(0));
-    auto lbl1 = uiFactory.CreateFmtValueLabel(static_cast<uint32_t>(0));
-    auto lbl2 = uiFactory.CreateFmtValueLabel(static_cast<uint32_t>(0));
-    auto lbl3 = uiFactory.CreateFmtValueLabel(static_cast<uint32_t>(0));
-    auto lbl4 = uiFactory.CreateFmtValueLabel(static_cast<uint32_t>(0));
-    auto lbl5 = uiFactory.CreateFmtValueLabel(static_cast<uint32_t>(0));
-    auto lbl6 = uiFactory.CreateFmtValueLabel(static_cast<uint32_t>(0));
-    auto lbl7 = uiFactory.CreateFmtValueLabel(static_cast<uint32_t>(0));
+    const auto lbl0 = uiFactory.CreateFmtValueLabel(static_cast<uint32_t>(0));
+    const auto lbl1 = uiFactory.CreateFmtValueLabel(static_cast<uint32_t>(0));
+    const auto lbl2 = uiFactory.CreateFmtValueLabel(static_cast<uint32_t>(0));
+    const auto lbl3 = uiFactory.CreateFmtValueLabel(static_cast<uint32_t>(0));
+    const auto lbl4 = uiFactory.CreateFmtValueLabel(static_cast<uint32_t>(0));
+    const auto lbl5 = uiFactory.CreateFmtValueLabel(static_cast<uint32_t>(0));
+    const auto lbl6 = uiFactory.CreateFmtValueLabel(static_cast<uint32_t>(0));
+    const auto lbl7 = uiFactory.CreateFmtValueLabel(static_cast<uint32_t>(0));
     lbl0->SetAlignmentX(UI::ItemAlignment::Far);
     lbl1->SetAlignmentX(UI::ItemAlignment::Far);
     lbl2->SetAlignmentX(UI::ItemAlignment::Far);
@@ -1010,7 +1010,7 @@ namespace Fsl
     overlay.Entries[6] = lbl6;
     overlay.Entries[7] = lbl7;
 
-    auto layout = std::make_shared<UI::GridLayout>(context);
+    const auto layout = std::make_shared<UI::GridLayout>(context);
     layout->AddColumnDefinition(UI::GridColumnDefinition(UI::GridUnitType::Auto));
     layout->AddColumnDefinition(UI::GridColumnDefinition(UI::GridUnitType::Fixed, 70.0f));
 

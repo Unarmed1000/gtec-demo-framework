@@ -134,7 +134,7 @@ namespace Fsl
 
         m_nativeBatch->Begin(BlendState::Opaque);
 
-        auto nativeTexExtent = m_nativeTexture.GetExtent();
+        const auto nativeTexExtent = m_nativeTexture.GetExtent();
         const Point2 nativeTexSize(UncheckedNumericCast<int32_t>(nativeTexExtent.width), UncheckedNumericCast<int32_t>(nativeTexExtent.height));
 
         constexpr PxSize1D Size256Px = PxSize1D::Create(256);
@@ -142,8 +142,8 @@ namespace Fsl
 
         // Vulkan native texture handle
         // While VUTextures support automatic conversion to Vulkan::VUTextureInfo, this shows how to fill out a VUTextureInfo manually
-        auto textureInfo = Vulkan::VUTextureInfo(m_nativeTexture.Sampler().Get(), m_nativeTexture.ImageView().Get(),
-                                                 m_nativeTexture.Image().GetImageLayout(), m_nativeTexture.Image().GetExtent());
+        const auto textureInfo = Vulkan::VUTextureInfo(m_nativeTexture.Sampler().Get(), m_nativeTexture.ImageView().Get(),
+                                                       m_nativeTexture.Image().GetImageLayout(), m_nativeTexture.Image().GetExtent());
         m_nativeBatch->Draw(textureInfo, PxRectangle(windowSizePx.Width() - Size256Px, offsetY + Size256Px, Size256Px, Size256Px), Colors::White());
 
         // Vulkan native texture

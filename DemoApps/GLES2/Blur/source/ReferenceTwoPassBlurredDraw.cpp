@@ -52,7 +52,7 @@ namespace Fsl
     int UpdateKernelLength(const int32_t kernelLength)
     {
       int32_t moddedKernelLength = std::max(kernelLength, 3);
-      int newKernelLength = ((moddedKernelLength / 2) * 2) + 1;
+      const int newKernelLength = ((moddedKernelLength / 2) * 2) + 1;
       moddedKernelLength = (newKernelLength < moddedKernelLength ? newKernelLength + 2 : newKernelLength);
       return moddedKernelLength;
     }

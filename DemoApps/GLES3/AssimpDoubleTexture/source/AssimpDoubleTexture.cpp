@@ -61,8 +61,8 @@ namespace Fsl
   AssimpDoubleTexture::AssimpDoubleTexture(const DemoAppConfig& config)
     : DemoAppGLES3(config)
   {
-    auto contentManger = GetContentManager();
-    auto contentPath = contentManger->GetContentPath();
+    const auto contentManger = GetContentManager();
+    const auto contentPath = contentManger->GetContentPath();
 
     m_program3D.Reset(contentManger->ReadAllText("3dAsset.vert"), contentManger->ReadAllText("3dAsset.frag"));
 
@@ -96,7 +96,7 @@ namespace Fsl
     m_lightIntensity = glm::vec3(0.95, 0.95, 0.95);
     GL_CHECK(glUniform3fv(m_lightIntensityLoc, 1, glm::value_ptr(m_lightIntensity)));
 
-    auto modelPath = IO::Path::Combine(contentPath, "Cog/CogUV.obj");
+    const auto modelPath = IO::Path::Combine(contentPath, "Cog/CogUV.obj");
     LoadModel(modelPath.ToAsciiString());
 
     // DOUBLE TEXTURE CODE:

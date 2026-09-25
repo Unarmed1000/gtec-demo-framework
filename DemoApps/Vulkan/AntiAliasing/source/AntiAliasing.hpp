@@ -216,7 +216,7 @@ namespace Fsl
         ActiveAntiAliasingMethod = AntiAliasingMethod::Disabled;
       }
 
-      VkDescriptorImageInfo GetDescriptorImageInfo() const
+      [[nodiscard]] VkDescriptorImageInfo GetDescriptorImageInfo() const
       {
         if (ResolvedColor.IsValid())
         {
@@ -225,7 +225,7 @@ namespace Fsl
         return UnresolvedColor.GetDescriptorImageInfo();
       }
 
-      VkImage GetImage() const
+      [[nodiscard]] VkImage GetImage() const
       {
         if (ResolvedColor.IsValid())
         {
@@ -234,17 +234,17 @@ namespace Fsl
         return UnresolvedColor.GetImage();
       }
 
-      VkExtent2D GetFrameBufferExtent() const noexcept
+      [[nodiscard]] VkExtent2D GetFrameBufferExtent() const noexcept
       {
         return {UncheckedNumericCast<uint32_t>(m_size.RawWidth()), UncheckedNumericCast<uint32_t>(m_size.RawHeight())};
       }
 
-      PxSize2D GetFrameBufferSize() const noexcept
+      [[nodiscard]] PxSize2D GetFrameBufferSize() const noexcept
       {
         return m_size;
       }
 
-      VkSampleCountFlagBits GetSampleCountFlagBit() const noexcept
+      [[nodiscard]] VkSampleCountFlagBits GetSampleCountFlagBit() const noexcept
       {
         return m_sampleCountFlagBit;
       }
@@ -283,13 +283,13 @@ namespace Fsl
         m_size = {};
       }
 
-      VkExtent2D GetFrameBufferExtent() const noexcept
+      [[nodiscard]] VkExtent2D GetFrameBufferExtent() const noexcept
       {
         return {UncheckedNumericCast<uint32_t>(m_size.RawWidth()), UncheckedNumericCast<uint32_t>(m_size.RawHeight())};
       }
 
 
-      PxSize2D GetFrameBufferSize() const noexcept
+      [[nodiscard]] PxSize2D GetFrameBufferSize() const noexcept
       {
         return m_size;
       }

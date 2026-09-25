@@ -43,7 +43,7 @@ namespace Fsl
   public:
     explicit GridRenderNativeBatchBasic(const Point2& gridSize);
 
-    const char* GetName() const override;
+    [[nodiscard]] const char* GetName() const override;
     void Update(const DemoTime& demoTime, const Vector2& areaSize, const std::vector<PointMass>& points) override;
     void Draw(const GridRenderDrawContext& drawContext, const std::vector<PointMass>& points) override;
   };

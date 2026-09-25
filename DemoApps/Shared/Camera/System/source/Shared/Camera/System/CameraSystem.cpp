@@ -69,7 +69,7 @@ namespace Fsl::Helios
     {
       assert(nativeCameraFactory);
 
-      auto nativeCamera = nativeCameraFactory->Allocate(allocateInfo);
+      const auto nativeCamera = nativeCameraFactory->Allocate(allocateInfo);
       if (!nativeCamera)
       {
         throw std::runtime_error("Native camera factory incorrectly returned null");
@@ -82,7 +82,7 @@ namespace Fsl::Helios
         FSLLOG3_WARNING("CameraAdapter extent different than requested: {} vs {}", nativeConfig.Extent, allocateInfo.Extent);
       }
 
-      CameraConfig finalCameraConfig(cameraType, nativeConfig.Extent, nativeConfig.ActivePixelFormat, nativeConfig.Stride);
+      const CameraConfig finalCameraConfig(cameraType, nativeConfig.Extent, nativeConfig.ActivePixelFormat, nativeConfig.Stride);
       return {finalCameraConfig, nativeCamera};
     }
 
@@ -117,34 +117,35 @@ namespace Fsl::Helios
 
   Camera CameraSystem::Create()
   {
-    auto defaultCameraFactory = GetDefaultCameraFactory(m_cameraAdapterSystems);
+    const auto defaultCameraFactory = GetDefaultCameraFactory(m_cameraAdapterSystems);
     const auto cameraType = defaultCameraFactory->GetCameraType();
 
-    CameraAdapterAllocateInfo allocateInfo;
+    const CameraAdapterAllocateInfo allocateInfo;
     return CreateNow(defaultCameraFactory, cameraType, allocateInfo);
   }
 
 
   Camera CameraSystem::Create(const PxExtent2D& cameraExtent)
   {
-    auto defaultCameraFactory = GetDefaultCameraFactory(m_cameraAdapterSystems);
+    const auto defaultCameraFactory = GetDefaultCameraFactory(m_cameraAdapterSystems);
     const auto cameraType = defaultCameraFactory->GetCameraType();
 
-    CameraAdapterAllocateInfo allocateInfo(CameraAdapterAllocateFlags::CustomExtent, cameraExtent);
+    const CameraAdapterAllocateInfo allocateInfo(CameraAdapterAllocateFlags::CustomExtent, cameraExtent);
     return CreateNow(defaultCameraFactory, cameraType, allocateInfo);
   }
 
 
   Camera CameraSystem::Create(const CameraType cameraType, const PxExtent2D& cameraExtent)
   {
-    auto itrFind = std::find_if(m_cameraAdapterSystems.begin(), m_cameraAdapterSystems.end(),
-                                [cameraType](const std::shared_ptr<ICameraSystemAdapter>& val) { return (val->GetCameraType() == cameraType); });
+    const auto itrFind =
+      std::find_if(m_cameraAdapterSystems.begin(), m_cameraAdapterSystems.end(),
+                   [cameraType](const std::shared_ptr<ICameraSystemAdapter>& val) { return (val->GetCameraType() == cameraType); });
     if (itrFind == m_cameraAdapterSystems.end())
     {
       throw NotFoundException("Camera type not found");
     }
 
-    CameraAdapterAllocateInfo allocateInfo(CameraAdapterAllocateFlags::CustomExtent, cameraExtent);
+    const CameraAdapterAllocateInfo allocateInfo(CameraAdapterAllocateFlags::CustomExtent, cameraExtent);
     return CreateNow(*itrFind, cameraType, allocateInfo);
   }
 }

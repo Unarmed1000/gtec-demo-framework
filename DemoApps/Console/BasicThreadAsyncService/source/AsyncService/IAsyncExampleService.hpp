@@ -45,8 +45,8 @@ namespace Fsl
     virtual ~IAsyncExampleService() = default;
 
     //! Really simple async task
-    virtual std::future<bool> RunAsync(std::shared_ptr<ConcurrentQueue<int32_t>> threadSafeQueue,
-                                       std::shared_ptr<CustomCancellationToken> cancellationToken) const = 0;
+    [[nodiscard]] virtual std::future<bool> RunAsync(std::shared_ptr<ConcurrentQueue<int32_t>> threadSafeQueue,
+                                                     std::shared_ptr<CustomCancellationToken> cancellationToken) const = 0;
   };
 }
 

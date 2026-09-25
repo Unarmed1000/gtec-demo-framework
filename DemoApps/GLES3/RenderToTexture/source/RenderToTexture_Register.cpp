@@ -45,7 +45,7 @@ namespace Fsl
   // Configure the demo environment to run this demo app in a OpenGLES3 host environment
   void ConfigureDemoAppEnvironment(HostDemoAppSetup& rSetup)
   {
-    DemoAppHostConfigEGL config(g_eglConfigAttribs.data());
+    const DemoAppHostConfigEGL config(g_eglConfigAttribs.data());
 #ifdef FSL_PLATFORM_YOCTO
     config.AddExtensionRequest(ExtensionType::OpenGLES, "GL_VIV_direct_texture", ExtensionPrecense::Mandatory);
 #endif

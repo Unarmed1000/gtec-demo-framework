@@ -101,7 +101,7 @@ namespace Fsl
       FSLLOG3_INFO("Supported samples: {}", strSampleFlags);
     }
 
-    PxRectangle CalcWindowScreenPosition(UI::BaseWindow& window)
+    PxRectangle CalcWindowScreenPosition(const UI::BaseWindow& window)
     {
       const PxPoint2 offsetPx = window.PointToScreen(PxPoint2());
       const PxSize2D sizePx = window.RenderSizePx();
@@ -121,7 +121,7 @@ namespace Fsl
       rEntry = TransitionPxRectangle(TimeSpan::FromMilliseconds(500), TransitionType::EaseInOutSine);
     }
 
-    auto uiControlFactory = UI::Theme::ThemeSelector::CreateControlFactory(*m_uiExtension);
+    const auto uiControlFactory = UI::Theme::ThemeSelector::CreateControlFactory(*m_uiExtension);
 
     m_ui = CreateUI(*uiControlFactory, aaConfig.SupportedMSAASampleFlags, customUIConfig);
     m_uiExtension->SetMainWindow(m_ui.MainLayout);
@@ -169,8 +169,8 @@ namespace Fsl
   {
     const auto& source = theEvent->GetSource();
     {
-      auto itrFind = std::find_if(m_ui.AntiAliasingSolutions.begin(), m_ui.AntiAliasingSolutions.end(),
-                                  [source](const UIAntiAliasingRecord& entry) { return entry.Button == source; });
+      const auto itrFind = std::find_if(m_ui.AntiAliasingSolutions.begin(), m_ui.AntiAliasingSolutions.end(),
+                                        [source](const UIAntiAliasingRecord& entry) { return entry.Button == source; });
       if (itrFind != m_ui.AntiAliasingSolutions.end())
       {
         m_activeAntiAliasingMethod = itrFind->Method;
@@ -179,7 +179,7 @@ namespace Fsl
     }
 
     {
-      auto itrFind =
+      const auto itrFind =
         std::find_if(m_ui.Scene.begin(), m_ui.Scene.end(), [source](const UIContentSelectionRecord& entry) { return entry.Button == source; });
       if (itrFind != m_ui.Scene.end())
       {
@@ -256,10 +256,10 @@ namespace Fsl
     }
 
     {    // Create a cube rendered with lines
-      auto matAxisX = Matrix::CreateRotationX(m_lineAnim.Radians1);
-      auto matAxisY = Matrix::CreateRotationY(m_lineAnim.Radians2);
-      auto matAxisZ = Matrix::CreateRotationZ(m_lineAnim.Radians3);
-      auto matAxisXYZ = matAxisX * matAxisY * matAxisZ;
+      const auto matAxisX = Matrix::CreateRotationX(m_lineAnim.Radians1);
+      const auto matAxisY = Matrix::CreateRotationY(m_lineAnim.Radians2);
+      const auto matAxisZ = Matrix::CreateRotationZ(m_lineAnim.Radians3);
+      const auto matAxisXYZ = matAxisX * matAxisY * matAxisZ;
 
       m_lineBuilder.Clear();
       m_lineBuilder.Add(BoundingBox(Vector3(-1.0f, -1.0f, -1.0f), Vector3(1.0f, 1.0f, 1.0f)), Colors::White(), matAxisXYZ);
@@ -354,28 +354,28 @@ namespace Fsl
                                                             const SupportedSampleCountFlags supportedMSAASampleFlags,
                                                             const CustomUIConfig& customUIConfig)
   {
-    auto groupAA = uiFactory.CreateRadioGroup("Anti aliasing method");
+    const auto groupAA = uiFactory.CreateRadioGroup("Anti aliasing method");
 
-    auto lblAntiAliasing = uiFactory.CreateLabel("Anti aliasing");
+    const auto lblAntiAliasing = uiFactory.CreateLabel("Anti aliasing");
 
-    auto rbMSAA2 = uiFactory.CreateRadioButton(groupAA, "MSAA 2");
-    auto rbMSAA4 = uiFactory.CreateRadioButton(groupAA, "MSAA 4");
-    auto rbMSAA8 = uiFactory.CreateRadioButton(groupAA, "MSAA 8");
-    auto rbSSAA2 = uiFactory.CreateRadioButton(groupAA, "SSAA 2");
-    auto rbDisabled = uiFactory.CreateRadioButton(groupAA, "Disabled", true);
+    const auto rbMSAA2 = uiFactory.CreateRadioButton(groupAA, "MSAA 2");
+    const auto rbMSAA4 = uiFactory.CreateRadioButton(groupAA, "MSAA 4");
+    const auto rbMSAA8 = uiFactory.CreateRadioButton(groupAA, "MSAA 8");
+    const auto rbSSAA2 = uiFactory.CreateRadioButton(groupAA, "SSAA 2");
+    const auto rbDisabled = uiFactory.CreateRadioButton(groupAA, "Disabled", true);
 
     std::vector<UIAntiAliasingRecord> antiAliasingSolutions = {
       UIAntiAliasingRecord(AntiAliasingMethod::MSAA2X, rbMSAA2), UIAntiAliasingRecord(AntiAliasingMethod::MSAA4X, rbMSAA4),
       UIAntiAliasingRecord(AntiAliasingMethod::MSAA8X, rbMSAA8), UIAntiAliasingRecord(AntiAliasingMethod::SSAA2X, rbSSAA2),
       UIAntiAliasingRecord(AntiAliasingMethod::Disabled, rbDisabled)};
 
-    auto groupScene = uiFactory.CreateRadioGroup("Scene");
+    const auto groupScene = uiFactory.CreateRadioGroup("Scene");
 
-    auto lblScene = uiFactory.CreateLabel("Focus scene");
+    const auto lblScene = uiFactory.CreateLabel("Focus scene");
 
-    auto rbScene1 = uiFactory.CreateRadioButton(groupScene, "Car", true);
-    auto rbScene2 = uiFactory.CreateRadioButton(groupScene, "Knight");
-    auto rbScene3 = uiFactory.CreateRadioButton(groupScene, "Cube");
+    const auto rbScene1 = uiFactory.CreateRadioButton(groupScene, "Car", true);
+    const auto rbScene2 = uiFactory.CreateRadioButton(groupScene, "Knight");
+    const auto rbScene3 = uiFactory.CreateRadioButton(groupScene, "Cube");
 
     std::vector<UIContentSelectionRecord> scene = {UIContentSelectionRecord(ContentWindowId::Car, rbScene1),
                                                    UIContentSelectionRecord(ContentWindowId::Knight, rbScene2),
@@ -386,9 +386,9 @@ namespace Fsl
     switchFastResolve->SetVisibility(customUIConfig.ShowFastResolve ? UI::ItemVisibility::Visible : UI::ItemVisibility::Collapsed);
 
 
-    auto cbPause = uiFactory.CreateCheckBox("Pause", false);
+    const auto cbPause = uiFactory.CreateCheckBox("Pause", false);
 
-    auto stackLayout = std::make_shared<UI::StackLayout>(uiFactory.GetContext());
+    const auto stackLayout = std::make_shared<UI::StackLayout>(uiFactory.GetContext());
     stackLayout->SetOrientation(UI::LayoutOrientation::Vertical);
     stackLayout->AddChild(lblAntiAliasing);
     for (const auto& entry : antiAliasingSolutions)
@@ -405,13 +405,13 @@ namespace Fsl
     stackLayout->AddChild(switchFastResolve);
     stackLayout->AddChild(cbPause);
 
-    auto scrollViewer = uiFactory.CreateScrollViewer(stackLayout, UI::ScrollModeFlags::TranslateY, false);
+    const auto scrollViewer = uiFactory.CreateScrollViewer(stackLayout, UI::ScrollModeFlags::TranslateY, false);
 
-    auto menuBarLayout = uiFactory.CreateLeftBar(scrollViewer);
+    const auto menuBarLayout = uiFactory.CreateLeftBar(scrollViewer);
 
     auto content = CreateContentUI(uiFactory);
 
-    auto mainLayout = std::make_shared<UI::ComplexStackLayout>(uiFactory.GetContext());
+    const auto mainLayout = std::make_shared<UI::ComplexStackLayout>(uiFactory.GetContext());
     mainLayout->SetAlignmentX(UI::ItemAlignment::Stretch);
     mainLayout->SetAlignmentY(UI::ItemAlignment::Stretch);
     mainLayout->SetOrientation(UI::LayoutOrientation::Horizontal);
@@ -428,17 +428,17 @@ namespace Fsl
 
   AntiAliasingShared::UIContentRecord AntiAliasingShared::CreateContentUI(UI::Theme::IThemeControlFactory& uiFactory)
   {
-    auto dividerH = std::make_shared<UI::BaseWindow>(uiFactory.GetContext());
-    auto dividerV = std::make_shared<UI::BaseWindow>(uiFactory.GetContext());
+    const auto dividerH = std::make_shared<UI::BaseWindow>(uiFactory.GetContext());
+    const auto dividerV = std::make_shared<UI::BaseWindow>(uiFactory.GetContext());
     dividerH->SetMinHeight(DpSize1DF::Create(1));
     dividerH->SetAlignmentX(UI::ItemAlignment::Stretch);
     dividerV->SetWidth(UI::DpLayoutSize1D::Create(1));
     dividerV->SetAlignmentX(UI::ItemAlignment::Near);
     dividerV->SetAlignmentY(UI::ItemAlignment::Stretch);
 
-    auto content1 = std::make_shared<UI::BaseWindow>(uiFactory.GetContext());
-    auto content2 = std::make_shared<UI::BaseWindow>(uiFactory.GetContext());
-    auto content3 = std::make_shared<UI::BaseWindow>(uiFactory.GetContext());
+    const auto content1 = std::make_shared<UI::BaseWindow>(uiFactory.GetContext());
+    const auto content2 = std::make_shared<UI::BaseWindow>(uiFactory.GetContext());
+    const auto content3 = std::make_shared<UI::BaseWindow>(uiFactory.GetContext());
     content1->SetAlignmentX(UI::ItemAlignment::Stretch);
     content1->SetAlignmentY(UI::ItemAlignment::Stretch);
     content2->SetAlignmentX(UI::ItemAlignment::Stretch);
@@ -446,7 +446,7 @@ namespace Fsl
     content3->SetAlignmentX(UI::ItemAlignment::Stretch);
     content3->SetAlignmentY(UI::ItemAlignment::Stretch);
 
-    auto contentLayout = std::make_shared<UI::ComplexStackLayout>(uiFactory.GetContext());
+    const auto contentLayout = std::make_shared<UI::ComplexStackLayout>(uiFactory.GetContext());
     contentLayout->SetAlignmentX(UI::ItemAlignment::Stretch);
     contentLayout->SetAlignmentY(UI::ItemAlignment::Stretch);
     contentLayout->SetOrientation(UI::LayoutOrientation::Vertical);
@@ -454,7 +454,7 @@ namespace Fsl
     contentLayout->AddChild(dividerH, UI::LayoutLength(UI::LayoutUnitType::Auto));
     contentLayout->AddChild(content3, UI::LayoutLength(UI::LayoutUnitType::Star, 1.0f));
 
-    auto contentLayout2 = std::make_shared<UI::ComplexStackLayout>(uiFactory.GetContext());
+    const auto contentLayout2 = std::make_shared<UI::ComplexStackLayout>(uiFactory.GetContext());
     contentLayout2->SetAlignmentX(UI::ItemAlignment::Stretch);
     contentLayout2->SetAlignmentY(UI::ItemAlignment::Stretch);
     contentLayout2->SetOrientation(UI::LayoutOrientation::Horizontal);
@@ -462,7 +462,7 @@ namespace Fsl
     contentLayout2->AddChild(dividerV, UI::LayoutLength(UI::LayoutUnitType::Auto));
     contentLayout2->AddChild(contentLayout, UI::LayoutLength(UI::LayoutUnitType::Star, 0.25f));
 
-    auto zoomArea = std::make_shared<UI::Custom::ZoomArea>(uiFactory.GetContext());
+    const auto zoomArea = std::make_shared<UI::Custom::ZoomArea>(uiFactory.GetContext());
     zoomArea->SetAlignmentX(UI::ItemAlignment::Stretch);
     zoomArea->SetAlignmentY(UI::ItemAlignment::Stretch);
     zoomArea->SetAreaWidth(DpSize1DF::Create(500));
@@ -470,7 +470,7 @@ namespace Fsl
     zoomArea->SetContent(uiFactory.GetResources().GetLineListSprite(false));
     zoomArea->SetZoomFactor(4.0f);
 
-    auto mainLayout = std::make_shared<UI::FillLayout>(uiFactory.GetContext());
+    const auto mainLayout = std::make_shared<UI::FillLayout>(uiFactory.GetContext());
     mainLayout->SetAlignmentX(UI::ItemAlignment::Stretch);
     mainLayout->SetAlignmentY(UI::ItemAlignment::Stretch);
     mainLayout->AddChild(zoomArea);
@@ -497,8 +497,8 @@ namespace Fsl
 
   bool AntiAliasingShared::TrySetAAMethod(const AntiAliasingMethod aaMethod)
   {
-    auto itrFind = std::find_if(m_ui.AntiAliasingSolutions.begin(), m_ui.AntiAliasingSolutions.end(),
-                                [aaMethod](const UIAntiAliasingRecord& entry) { return entry.Method == aaMethod; });
+    const auto itrFind = std::find_if(m_ui.AntiAliasingSolutions.begin(), m_ui.AntiAliasingSolutions.end(),
+                                      [aaMethod](const UIAntiAliasingRecord& entry) { return entry.Method == aaMethod; });
     if (itrFind != m_ui.AntiAliasingSolutions.end() && itrFind->Button->IsEnabled())
     {
       itrFind->Button->SetIsChecked(true);
@@ -510,8 +510,8 @@ namespace Fsl
 
   bool AntiAliasingShared::TrySetContent(const ContentWindowId contentWindowId)
   {
-    auto itrFind = std::find_if(m_ui.Scene.begin(), m_ui.Scene.end(),
-                                [contentWindowId](const UIContentSelectionRecord& entry) { return entry.ContentId == contentWindowId; });
+    const auto itrFind = std::find_if(m_ui.Scene.begin(), m_ui.Scene.end(),
+                                      [contentWindowId](const UIContentSelectionRecord& entry) { return entry.ContentId == contentWindowId; });
     if (itrFind != m_ui.Scene.end() && itrFind->Button->IsEnabled())
     {
       itrFind->Button->SetIsChecked(true);

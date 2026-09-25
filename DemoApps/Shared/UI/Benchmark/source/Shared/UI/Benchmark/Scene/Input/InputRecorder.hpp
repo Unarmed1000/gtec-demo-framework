@@ -71,17 +71,17 @@ namespace Fsl
   public:
     explicit InputRecorder(std::shared_ptr<ICustomWindowInfoModule> info);
 
-    bool IsRecording() const
+    [[nodiscard]] bool IsRecording() const
     {
       return m_recording.IsRecording;
     }
 
     void SetRecording(ReadOnlySpan<InputCommandRecord> span, const uint32_t frameCount);
-    ReadOnlySpan<InputCommandRecord> GetCommandSpan() const;
-    ReadOnlySpan<InputCommandRecord> GetCommandSpanForFrame(const uint32_t frameIndex) const;
+    [[nodiscard]] ReadOnlySpan<InputCommandRecord> GetCommandSpan() const;
+    [[nodiscard]] ReadOnlySpan<InputCommandRecord> GetCommandSpanForFrame(const uint32_t frameIndex) const;
 
 
-    uint32_t FrameCount() const;
+    [[nodiscard]] uint32_t FrameCount() const;
 
     void RecordBegin();
     void RecordEnd();

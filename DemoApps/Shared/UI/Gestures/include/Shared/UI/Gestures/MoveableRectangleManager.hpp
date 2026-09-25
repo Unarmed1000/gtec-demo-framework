@@ -74,12 +74,12 @@ namespace Fsl
     void OnConfigurationChanged(const UI::UIColorSpace colorSpace, const uint32_t densityDpi);
     void Arrange(const PxSize2D windowSizePx);
 
-    bool IsDragging() const noexcept
+    [[nodiscard]] bool IsDragging() const noexcept
     {
       return m_dragRecord.IsDragging;
     }
 
-    bool IsAnimating() const noexcept;
+    [[nodiscard]] bool IsAnimating() const noexcept;
 
     void SetDragFlickDeceleration(const DpValueF value) noexcept;
 
@@ -98,15 +98,15 @@ namespace Fsl
 
     void Process(const TimeSpan elapsedTime);
 
-    std::span<const MoveableRectangleInfo> GetDrawInfoSpan() const
+    [[nodiscard]] std::span<const MoveableRectangleInfo> GetDrawInfoSpan() const
     {
       return m_drawInfo;
     }
 
   private:
     int32_t TryFindDragableEntity(const PxPoint2 positionPx);
-    PxPoint2 CalculateFinalLocation(const std::size_t index) const noexcept;
-    PxUIRectangle2D CalculateFinalRectangle(const std::size_t index) const noexcept;
+    [[nodiscard]] PxPoint2 CalculateFinalLocation(const std::size_t index) const noexcept;
+    [[nodiscard]] PxUIRectangle2D CalculateFinalRectangle(const std::size_t index) const noexcept;
     void CompleteDrag();
 
     void ApplyCurrentFlickPositions() noexcept;

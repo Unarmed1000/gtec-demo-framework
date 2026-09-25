@@ -152,7 +152,7 @@ namespace Fsl
       {
       }
 
-      uint16_t CurrentInterval() const noexcept
+      [[nodiscard]] uint16_t CurrentInterval() const noexcept
       {
         return Enabled ? IdleFrameInterval : DisabledFrameInterval;
       }
@@ -193,7 +193,7 @@ namespace Fsl
     explicit Shared(const DemoAppConfig& config);
     ~Shared() override;
 
-    std::shared_ptr<UIDemoAppExtension> GetUIDemoAppExtension() const
+    [[nodiscard]] std::shared_ptr<UIDemoAppExtension> GetUIDemoAppExtension() const
     {
       return m_uiExtension;
     }

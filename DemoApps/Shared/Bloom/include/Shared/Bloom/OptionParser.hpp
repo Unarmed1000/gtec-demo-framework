@@ -50,35 +50,35 @@ namespace Fsl
     OptionParser();
     ~OptionParser() override;
 
-    int32_t GetSceneId() const
+    [[nodiscard]] int32_t GetSceneId() const
     {
       return m_sceneId;
     }
-    bool IsRotateEnabled() const
+    [[nodiscard]] bool IsRotateEnabled() const
     {
       return m_rotateEnabled;
     }
-    bool IsBlurPassEnabled() const
+    [[nodiscard]] bool IsBlurPassEnabled() const
     {
       return m_blurPassEnabled;
     }
-    bool IsBrightPassEnabled() const
+    [[nodiscard]] bool IsBrightPassEnabled() const
     {
       return m_brightPassEnabled;
     }
-    bool IsFinalSceneEnabled() const
+    [[nodiscard]] bool IsFinalSceneEnabled() const
     {
       return m_renderFinalScene;
     }
-    bool IsFinalBloomEnabled() const
+    [[nodiscard]] bool IsFinalBloomEnabled() const
     {
       return m_renderFinalBloom;
     }
-    bool IsShowBuffersEnabled() const
+    [[nodiscard]] bool IsShowBuffersEnabled() const
     {
       return m_showBuffers;
     }
-    bool IsScaleInputSequentiallyEnabled() const
+    [[nodiscard]] bool IsScaleInputSequentiallyEnabled() const
     {
       return m_scaleInputSequentially;
     }

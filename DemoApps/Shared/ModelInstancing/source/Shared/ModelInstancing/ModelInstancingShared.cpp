@@ -97,7 +97,7 @@ namespace Fsl
     FSLLOG3_INFO("MaxInstancesZ: {}", m_instanceSetup.MaxInstancesZ);
     FSLLOG3_INFO("MaxInstances: {}", m_instanceSetup.MaxInstances);
 
-    auto uiControlFactory = UI::Theme::ThemeSelector::CreateControlFactory(*m_uiExtension);
+    const auto uiControlFactory = UI::Theme::ThemeSelector::CreateControlFactory(*m_uiExtension);
     m_ui = CreateUI(*uiControlFactory, m_instanceSetup);
     m_uiExtension->SetMainWindow(m_ui.MainWindow);
 
@@ -117,9 +117,9 @@ namespace Fsl
         {
           for (uint32_t x = 0; x < m_instanceSetup.MaxInstancesX; ++x)
           {
-            float xPos = xStart + static_cast<float>(x) * SpacingX;
-            float yPos = yStart - static_cast<float>(y) * SpacingY;
-            float zPos = zStart - static_cast<float>(z) * SpacingZ;
+            const float xPos = xStart + static_cast<float>(x) * SpacingX;
+            const float yPos = yStart - static_cast<float>(y) * SpacingY;
+            const float zPos = zStart - static_cast<float>(z) * SpacingZ;
             m_instanceData[dstIndex] = MeshInstanceData(Matrix::CreateTranslation(xPos, yPos, zPos));
             ++dstIndex;
           }
@@ -220,14 +220,14 @@ namespace Fsl
     m_ui.Stats.LabelIndices->SetContent(stats.IndexCount);
 
     {    // Data bind
-      auto propertyHandle = m_ui.Instances->GetPropertyHandle(UI::SliderAndFmtValueLabel<uint32_t>::PropertyValue);
+      const auto propertyHandle = m_ui.Instances->GetPropertyHandle(UI::SliderAndFmtValueLabel<uint32_t>::PropertyValue);
 
       const auto vertexCount = stats.VertexCount;
       const auto indexCount = stats.IndexCount;
-      auto totalVertices = std::make_shared<Fsl::DataBinding::ConverterBinding<uint32_t, uint32_t>>([vertexCount](const uint32_t instanceCount)
-                                                                                                    { return instanceCount * vertexCount; });
-      auto totalIndices = std::make_shared<Fsl::DataBinding::ConverterBinding<uint32_t, uint32_t>>([indexCount](const uint32_t instanceCount)
-                                                                                                   { return instanceCount * indexCount; });
+      const auto totalVertices = std::make_shared<Fsl::DataBinding::ConverterBinding<uint32_t, uint32_t>>([vertexCount](const uint32_t instanceCount)
+                                                                                                          { return instanceCount * vertexCount; });
+      const auto totalIndices = std::make_shared<Fsl::DataBinding::ConverterBinding<uint32_t, uint32_t>>([indexCount](const uint32_t instanceCount)
+                                                                                                         { return instanceCount * indexCount; });
 
       m_ui.Stats.LabelTotalIndices->SetBinding(UI::FmtValueLabel<uint32_t>::PropertyContent, DataBinding::Binding(totalIndices, propertyHandle));
       m_ui.Stats.LabelTotalVertices->SetBinding(UI::FmtValueLabel<uint32_t>::PropertyContent, DataBinding::Binding(totalVertices, propertyHandle));
@@ -258,45 +258,45 @@ namespace Fsl
 
   ModelInstancingShared::UIRecord ModelInstancingShared::CreateUI(UI::Theme::IThemeControlFactory& uiFactory, const MeshInstanceSetup instanceSetup)
   {
-    auto context = uiFactory.GetContext();
+    const auto context = uiFactory.GetContext();
 
-    auto btnDefault = uiFactory.CreateTextButton(UI::Theme::ButtonType::Outlined, "Set defaults");
+    const auto btnDefault = uiFactory.CreateTextButton(UI::Theme::ButtonType::Outlined, "Set defaults");
     btnDefault->SetAlignmentX(UI::ItemAlignment::Center);
     btnDefault->SetAlignmentY(UI::ItemAlignment::Far);
 
-    auto lblInstances = uiFactory.CreateLabel("Instances:");
-    ConstrainedValue<uint32_t> instances(instanceSetup.MaxInstances, 0, instanceSetup.MaxInstances);
-    auto sliderInstances = uiFactory.CreateSliderFmtValue(UI::LayoutOrientation::Horizontal, instances);
+    const auto lblInstances = uiFactory.CreateLabel("Instances:");
+    const ConstrainedValue<uint32_t> instances(instanceSetup.MaxInstances, 0, instanceSetup.MaxInstances);
+    const auto sliderInstances = uiFactory.CreateSliderFmtValue(UI::LayoutOrientation::Horizontal, instances);
     sliderInstances->SetAlignmentX(UI::ItemAlignment::Stretch);
     sliderInstances->SetAlignmentY(UI::ItemAlignment::Stretch);
 
-    auto switchRotate = uiFactory.CreateSwitch("Rotate", LocalConfig::RotateDefault);
+    const auto switchRotate = uiFactory.CreateSwitch("Rotate", LocalConfig::RotateDefault);
     switchRotate->SetAlignmentX(UI::ItemAlignment::Stretch);
     switchRotate->SetAlignmentY(UI::ItemAlignment::Stretch);
 
-    auto stack = std::make_shared<UI::StackLayout>(context);
+    const auto stack = std::make_shared<UI::StackLayout>(context);
     stack->SetAlignmentX(UI::ItemAlignment::Stretch);
     stack->SetAlignmentY(UI::ItemAlignment::Center);
     stack->AddChild(lblInstances);
     stack->AddChild(sliderInstances);
     stack->AddChild(switchRotate);
 
-    auto stats = CreateStatsOverlayUI(uiFactory, context);
+    const auto stats = CreateStatsOverlayUI(uiFactory, context);
 
-    auto leftBarLayout = std::make_shared<UI::GridLayout>(context);
+    const auto leftBarLayout = std::make_shared<UI::GridLayout>(context);
     leftBarLayout->AddColumnDefinition(UI::GridColumnDefinition(UI::GridUnitType::Auto));
     leftBarLayout->AddRowDefinition(UI::GridRowDefinition(UI::GridUnitType::Star, 1.0f));
     leftBarLayout->AddChild(stack, 0, 0);
     leftBarLayout->AddChild(btnDefault, 0, 0);
 
-    auto bottomBar = uiFactory.CreateLeftBar(leftBarLayout);
+    const auto bottomBar = uiFactory.CreateLeftBar(leftBarLayout);
 
-    auto fillLayout = std::make_shared<UI::FillLayout>(context);
+    const auto fillLayout = std::make_shared<UI::FillLayout>(context);
     fillLayout->AddChild(stats.MainOverlay);
     fillLayout->AddChild(bottomBar);
 
     {    // Data bind
-      auto binding = sliderInstances->GetPropertyHandle(UI::SliderAndFmtValueLabel<uint32_t>::PropertyValue);
+      const auto binding = sliderInstances->GetPropertyHandle(UI::SliderAndFmtValueLabel<uint32_t>::PropertyValue);
       stats.LabelInstanceCount->SetBinding(UI::FmtValueLabel<uint32_t>::PropertyContent, binding);
     }
 
@@ -307,24 +307,24 @@ namespace Fsl
   ModelInstancingShared::StatsOverlayUI ModelInstancingShared::CreateStatsOverlayUI(UI::Theme::IThemeControlFactory& uiFactory,
                                                                                     const std::shared_ptr<UI::WindowContext>& context)
   {
-    auto lblDesc0 = uiFactory.CreateLabel("Mesh vertices:");
-    auto lblDesc1 = uiFactory.CreateLabel("Mesh indices:");
-    auto lblDesc2 = uiFactory.CreateLabel("Instances:");
-    auto lblDesc3 = uiFactory.CreateLabel("Total vertices:");
-    auto lblDesc4 = uiFactory.CreateLabel("Total indices:");
+    const auto lblDesc0 = uiFactory.CreateLabel("Mesh vertices:");
+    const auto lblDesc1 = uiFactory.CreateLabel("Mesh indices:");
+    const auto lblDesc2 = uiFactory.CreateLabel("Instances:");
+    const auto lblDesc3 = uiFactory.CreateLabel("Total vertices:");
+    const auto lblDesc4 = uiFactory.CreateLabel("Total indices:");
 
-    auto lbl0 = uiFactory.CreateFmtValueLabel(static_cast<uint32_t>(0));
-    auto lbl1 = uiFactory.CreateFmtValueLabel(static_cast<uint32_t>(0));
-    auto lbl2 = uiFactory.CreateFmtValueLabel(static_cast<uint32_t>(1));
-    auto lbl3 = uiFactory.CreateFmtValueLabel(static_cast<uint32_t>(0));
-    auto lbl4 = uiFactory.CreateFmtValueLabel(static_cast<uint32_t>(0));
+    const auto lbl0 = uiFactory.CreateFmtValueLabel(static_cast<uint32_t>(0));
+    const auto lbl1 = uiFactory.CreateFmtValueLabel(static_cast<uint32_t>(0));
+    const auto lbl2 = uiFactory.CreateFmtValueLabel(static_cast<uint32_t>(1));
+    const auto lbl3 = uiFactory.CreateFmtValueLabel(static_cast<uint32_t>(0));
+    const auto lbl4 = uiFactory.CreateFmtValueLabel(static_cast<uint32_t>(0));
     lbl0->SetAlignmentX(UI::ItemAlignment::Far);
     lbl1->SetAlignmentX(UI::ItemAlignment::Far);
     lbl2->SetAlignmentX(UI::ItemAlignment::Far);
     lbl3->SetAlignmentX(UI::ItemAlignment::Far);
     lbl4->SetAlignmentX(UI::ItemAlignment::Far);
 
-    auto layout = std::make_shared<UI::GridLayout>(context);
+    const auto layout = std::make_shared<UI::GridLayout>(context);
     layout->AddColumnDefinition(UI::GridColumnDefinition(UI::GridUnitType::Auto));
     layout->AddColumnDefinition(UI::GridColumnDefinition(UI::GridUnitType::Fixed, 100.0f));
 
@@ -346,7 +346,7 @@ namespace Fsl
     layout->AddChild(lbl3, 1, 3);
     layout->AddChild(lbl4, 1, 4);
 
-    std::shared_ptr<UI::Background> mainLayout = uiFactory.CreateBackgroundWindow(UI::Theme::WindowType::Transparent, layout);
+    const std::shared_ptr<UI::Background> mainLayout = uiFactory.CreateBackgroundWindow(UI::Theme::WindowType::Transparent, layout);
     mainLayout->SetAlignmentX(UI::ItemAlignment::Far);
     return {mainLayout, lbl0, lbl1, lbl2, lbl3, lbl4};
   }

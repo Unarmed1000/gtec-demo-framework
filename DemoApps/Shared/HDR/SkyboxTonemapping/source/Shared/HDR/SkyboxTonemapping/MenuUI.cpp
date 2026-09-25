@@ -126,7 +126,7 @@ namespace Fsl
       return;
     }
 
-    auto source = theEvent->GetSource();
+    const auto source = theEvent->GetSource();
 
     const auto checkbox = TryFindSourceCheckbox(m_checkboxes, source);
     if (checkbox)
@@ -365,7 +365,7 @@ namespace Fsl
   std::shared_ptr<UI::CanvasLayout> MenuUI::CreateUI()
   {
     // Next up we prepare the actual UI
-    auto context = m_uiExtension->GetContext();
+    const auto context = m_uiExtension->GetContext();
 
     // Create a 'root' layout we use the recommended fill layout as it will utilize all available space on the screen
     // We then add the 'player' stack to it and the label
@@ -382,9 +382,9 @@ namespace Fsl
   std::shared_ptr<UI::BaseWindow> MenuUI::CreateConfigDialog(const std::vector<RenderRecord>& render)
   {
     // Next up we prepare the actual UI
-    auto context = m_uiExtension->GetContext();
+    const auto context = m_uiExtension->GetContext();
 
-    auto uiControlFactory = UI::Theme::ThemeSelector::CreateControlFactory(*m_uiExtension);
+    const auto uiControlFactory = UI::Theme::ThemeSelector::CreateControlFactory(*m_uiExtension);
     auto& factory = *uiControlFactory;
 
 
@@ -395,7 +395,7 @@ namespace Fsl
       m_checkboxes[i]->SetAlignmentX(UI::ItemAlignment::Center);
     }
 
-    auto labelExposure = factory.CreateLabel("Exposure");
+    const auto labelExposure = factory.CreateLabel("Exposure");
     labelExposure->SetAlignmentX(UI::ItemAlignment::Near);
     labelExposure->SetAlignmentY(UI::ItemAlignment::Center);
 
@@ -403,7 +403,7 @@ namespace Fsl
     m_exposureSlider->SetAlignmentX(UI::ItemAlignment::Stretch);
 
 
-    auto stackLayout = std::make_shared<UI::ComplexStackLayout>(context);
+    const auto stackLayout = std::make_shared<UI::ComplexStackLayout>(context);
     stackLayout->SetAlignmentX(UI::ItemAlignment::Stretch);
     stackLayout->SetAlignmentY(UI::ItemAlignment::Stretch);
     stackLayout->SetOrientation(UI::LayoutOrientation::Horizontal);
@@ -413,7 +413,7 @@ namespace Fsl
       stackLayout->AddChild(checkbox);
     }
 
-    auto stackLayout2 = std::make_shared<UI::ComplexStackLayout>(context);
+    const auto stackLayout2 = std::make_shared<UI::ComplexStackLayout>(context);
     stackLayout2->SetAlignmentX(UI::ItemAlignment::Stretch);
     stackLayout2->SetAlignmentY(UI::ItemAlignment::Stretch);
     stackLayout2->SetOrientation(UI::LayoutOrientation::Horizontal);
@@ -422,7 +422,7 @@ namespace Fsl
     stackLayout2->PushLayoutLength(UI::LayoutLength(UI::LayoutUnitType::Star, 1.0f));
     stackLayout2->AddChild(m_exposureSlider);
 
-    auto mainStack = std::make_shared<UI::StackLayout>(context);
+    const auto mainStack = std::make_shared<UI::StackLayout>(context);
     mainStack->SetAlignmentX(UI::ItemAlignment::Stretch);
     mainStack->SetAlignmentY(UI::ItemAlignment::Stretch);
     mainStack->SetOrientation(UI::LayoutOrientation::Vertical);

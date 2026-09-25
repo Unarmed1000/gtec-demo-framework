@@ -45,15 +45,15 @@ namespace Fsl
     virtual ~ICustomWindowInfoModule() = default;
 
     //! @brief Try to locate a window that would receive a mouse over event
-    virtual CustomWindowId TryGetMouseOverWindow(const PxPoint2& hitPositionPx) const = 0;
+    [[nodiscard]] virtual CustomWindowId TryGetMouseOverWindow(const PxPoint2& hitPositionPx) const = 0;
 
     //! @brief Try to locate a window that would receive a mouse over event
-    virtual CustomWindowId TryGetClickInputWindow(const PxPoint2& hitPositionPx) const = 0;
+    [[nodiscard]] virtual CustomWindowId TryGetClickInputWindow(const PxPoint2& hitPositionPx) const = 0;
 
     //! @brief Get the current screen-space rectangle of the given window
-    virtual PxRectangle GetWindowRectanglePx(const CustomWindowId windowId) const = 0;
+    [[nodiscard]] virtual PxRectangle GetWindowRectanglePx(const CustomWindowId windowId) const = 0;
 
-    virtual std::optional<PxRectangle> TryGetWindowRectanglePx(const CustomWindowId windowId) const = 0;
+    [[nodiscard]] virtual std::optional<PxRectangle> TryGetWindowRectanglePx(const CustomWindowId windowId) const = 0;
   };
 }
 

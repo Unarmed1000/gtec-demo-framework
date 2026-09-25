@@ -72,7 +72,7 @@ namespace Fsl
     ParticleSystemGLES3(const uint32_t capacity, const std::shared_ptr<IContentManager>& contentManager);
     ~ParticleSystemGLES3();
 
-    uint32_t GetParticleCount() const
+    [[nodiscard]] uint32_t GetParticleCount() const
     {
       return m_primitiveCount;
     }

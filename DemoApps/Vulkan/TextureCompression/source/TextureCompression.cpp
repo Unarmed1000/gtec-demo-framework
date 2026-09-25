@@ -85,13 +85,13 @@ namespace Fsl
     {
       constexpr UI::DpLayoutSize1D ForcedSizeDp(DpValue(320));
 
-      Texture2D sourceTexture(context.GraphicsService.GetNativeGraphics(), texture, Texture2DFilterHint::Smooth);
+      const Texture2D sourceTexture(context.GraphicsService.GetNativeGraphics(), texture, Texture2DFilterHint::Smooth);
 
-      std::shared_ptr<BasicImageSprite> spriteTex =
+      const std::shared_ptr<BasicImageSprite> spriteTex =
         context.CustomSpriteResourceManager.CreateCustomTextureSprite(sourceTexture.GetNative(), BlendState::AlphaBlend);
 
 
-      auto label = std::make_shared<UI::Label>(context.WindowContext);
+      const auto label = std::make_shared<UI::Label>(context.WindowContext);
       label->SetAlignmentX(UI::ItemAlignment::Center);
       label->SetAlignmentY(UI::ItemAlignment::Far);
       label->SetContentAlignmentX(UI::ItemAlignment::Center);
@@ -99,7 +99,7 @@ namespace Fsl
       label->SetContent(caption);
       label->SetWidth(ForcedSizeDp);
 
-      auto tex = std::make_shared<UI::Image>(context.WindowContext);
+      const auto tex = std::make_shared<UI::Image>(context.WindowContext);
       tex->SetScalePolicy(UI::ItemScalePolicy::FitKeepAR);
       tex->SetContent(spriteTex);
       tex->SetAlignmentX(UI::ItemAlignment::Center);
@@ -125,7 +125,7 @@ namespace Fsl
         {
           if ((bitFlags & 0x80000000u) != 0)
           {
-            auto flag = static_cast<VkFormatFeatureFlagBits>(0x80000000u >> i);
+            const auto flag = static_cast<VkFormatFeatureFlagBits>(0x80000000u >> i);
             if (foundCount > 0)
             {
               stream << "|";
@@ -157,8 +157,8 @@ namespace Fsl
     {
       const auto pixelFormat = texture.GetPixelFormat();
       const auto vulkanPixelFormat = Vulkan::VulkanConvert::ToVkFormat(pixelFormat);
-      auto properties = context.PhysicalDevice.GetPhysicalDeviceFormatProperties(vulkanPixelFormat);
-      bool isSupported = properties.optimalTilingFeatures != 0 && properties.linearTilingFeatures != 0;
+      const auto properties = context.PhysicalDevice.GetPhysicalDeviceFormatProperties(vulkanPixelFormat);
+      const bool isSupported = properties.optimalTilingFeatures != 0 && properties.linearTilingFeatures != 0;
 
       FSLLOG3_INFO("- {}: {}", Vulkan::Debug::ToString(vulkanPixelFormat), isSupported);
       if (Fsl::LogConfig::GetLogLevel() >= LogType::Verbose)
@@ -186,7 +186,7 @@ namespace Fsl
     void CreateTextureControlsIfSupported(std::deque<std::shared_ptr<UI::BaseWindow>>& rTextures, const CreateContext& context, const IO::Path& path,
                                           const PixelFormat switchPF, const Texture& notSupportedTexture)
     {
-      IO::Path newPath = IO::Path::Combine(TexturePath, path);
+      const IO::Path newPath = IO::Path::Combine(TexturePath, path);
 
       //  If no format feature flags are supported, the format itself is not supported, and images of that format cannot be created.
       auto texture = context.ContentManager.ReadTexture(newPath, switchPF, BitmapOrigin::UpperLeft);
@@ -194,7 +194,7 @@ namespace Fsl
       {
         rTextures.push_back(CreateTextureControl(context, texture, notSupportedTexture));
 
-        auto newPixelFormat = PixelFormatUtil::TryTransform(switchPF, PixelFormatFlags::NF_Srgb);
+        const auto newPixelFormat = PixelFormatUtil::TryTransform(switchPF, PixelFormatFlags::NF_Srgb);
         if (newPixelFormat != PixelFormat::Undefined)
         {
           texture.SetCompatiblePixelFormat(newPixelFormat);
@@ -265,7 +265,7 @@ namespace Fsl
       clearColorValue.float32[2] = 0.4f;
       clearColorValue.float32[3] = 1.0f;
 
-      VkClearValue clearValues = {clearColorValue};
+      const VkClearValue clearValues = {clearColorValue};
 
       VkRenderPassBeginInfo renderPassBeginInfo{};
       renderPassBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
@@ -312,12 +312,12 @@ namespace Fsl
     // Give the UI a chance to intercept the various DemoApp events.
     RegisterExtension(m_uiExtension);
 
-    auto contentManager = GetContentManager();
-    auto graphicsService = serviceProvider.Get<IGraphicsService>();
-    CreateContext createContext(m_physicalDevice, *contentManager, m_uiExtension->GetCustomSpriteResourceManager(), *graphicsService,
-                                m_uiExtension->GetContext());
+    const auto contentManager = GetContentManager();
+    const auto graphicsService = serviceProvider.Get<IGraphicsService>();
+    const CreateContext createContext(m_physicalDevice, *contentManager, m_uiExtension->GetCustomSpriteResourceManager(), *graphicsService,
+                                      m_uiExtension->GetContext());
 
-    auto texDefault =
+    const auto texDefault =
       createContext.ContentManager.ReadTexture("Textures/NotSupported/NotSupported_pre.png", PixelFormat::R8G8B8A8_UNORM, BitmapOrigin::UpperLeft);
 
 
@@ -366,7 +366,7 @@ namespace Fsl
       CreateTextureControlsIfSupported(textures, createContext, "CustomTexture_ETC2_RGBA.ktx", PixelFormat::ETC2_R8G8B8A8_UNORM_BLOCK, texDefault);
     }
 
-    auto wrapLayout = std::make_shared<UI::WrapLayout>(createContext.WindowContext);
+    const auto wrapLayout = std::make_shared<UI::WrapLayout>(createContext.WindowContext);
     wrapLayout->SetOrientation(UI::LayoutOrientation::Horizontal);
     wrapLayout->SetSpacing(DpSize2DF::Create(4, 4));
     wrapLayout->SetAlignmentX(UI::ItemAlignment::Center);
@@ -385,7 +385,7 @@ namespace Fsl
 
     // Create a 'root' layout we use the recommended fill layout as it will utilize all available space on the screen
     // We then add the 'player' stack to it and the label
-    auto fillLayout = std::make_shared<UI::FillLayout>(createContext.WindowContext);
+    const auto fillLayout = std::make_shared<UI::FillLayout>(createContext.WindowContext);
     fillLayout->AddChild(m_scrollable);
 
     // Finally add everything to the window manager (to ensure its seen)

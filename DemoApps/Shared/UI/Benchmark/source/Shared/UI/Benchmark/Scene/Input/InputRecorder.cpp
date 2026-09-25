@@ -159,7 +159,7 @@ namespace Fsl
       }
       else if (event.IsHandled())
       {
-        auto customWindowId = m_info->TryGetMouseOverWindow(eventPositionPx);
+        const auto customWindowId = m_info->TryGetMouseOverWindow(eventPositionPx);
         if (customWindowId.IsValid())
         {
           const auto windowRectanglePx = m_info->GetWindowRectanglePx(customWindowId);

@@ -40,7 +40,7 @@ namespace Fsl
   public:
     virtual ~IBasicGpuProfiler() = default;
 
-    virtual bool IsEnabled() const noexcept = 0;
+    [[nodiscard]] virtual bool IsEnabled() const noexcept = 0;
 
     //! @brief Enable/disable the gpu profiler
     virtual void SetEnabled(const bool enabled) = 0;
@@ -49,7 +49,7 @@ namespace Fsl
     //! @brief set the end timestamp (this can be done once per frame), begin must be called before end
     virtual void EndTimestamp() = 0;
     //! @brief get the last timestamp result in microseconds
-    virtual uint64_t GetResult() const noexcept = 0;
+    [[nodiscard]] virtual uint64_t GetResult() const noexcept = 0;
   };
 }
 

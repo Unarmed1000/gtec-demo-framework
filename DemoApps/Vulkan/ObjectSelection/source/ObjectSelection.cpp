@@ -157,7 +157,7 @@ namespace Fsl
 
       std::array<VkWriteDescriptorSet, 2> writeDescriptorSets{};
       // Binding 0 : uniform buffer
-      auto vertUboBufferInfo = vertUboBuffer.GetDescriptorBufferInfo();
+      const auto vertUboBufferInfo = vertUboBuffer.GetDescriptorBufferInfo();
       writeDescriptorSets[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
       writeDescriptorSets[0].dstSet = descriptorSet;
       writeDescriptorSets[0].dstBinding = 0;
@@ -166,7 +166,7 @@ namespace Fsl
       writeDescriptorSets[0].pBufferInfo = &vertUboBufferInfo;
 
       // Binding 1 : texture sampler
-      auto textureImageInfo = texture.GetDescriptorImageInfo();
+      const auto textureImageInfo = texture.GetDescriptorImageInfo();
       writeDescriptorSets[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
       writeDescriptorSets[1].dstSet = descriptorSet;
       writeDescriptorSets[1].dstBinding = 1;
@@ -187,7 +187,7 @@ namespace Fsl
 
       std::array<VkWriteDescriptorSet, 1> writeDescriptorSets{};
       // Binding 0 : Vertex shader uniform buffer
-      auto vertUboBufferInfo = vertUboBuffer.GetDescriptorBufferInfo();
+      const auto vertUboBufferInfo = vertUboBuffer.GetDescriptorBufferInfo();
       writeDescriptorSets[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
       writeDescriptorSets[0].dstSet = descriptorSet;
       writeDescriptorSets[0].dstBinding = 0;
@@ -352,7 +352,7 @@ namespace Fsl
       viewport.minDepth = 0.0f;
       viewport.maxDepth = 1.0f;
 
-      VkRect2D scissor{{0, 0}, extent};
+      const VkRect2D scissor{{0, 0}, extent};
 
       VkPipelineViewportStateCreateInfo pipelineViewportStateCreateInfo{};
       pipelineViewportStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
@@ -463,7 +463,7 @@ namespace Fsl
 
     const auto optionParser = config.GetOptions<OptionParser>();
 
-    auto contentManager = GetContentManager();
+    const auto contentManager = GetContentManager();
 
     m_resources.BufferManager =
       std::make_shared<Vulkan::VMBufferManager>(m_physicalDevice, m_device.Get(), m_deviceQueue.Queue, m_deviceQueue.QueueFamilyIndex);
@@ -620,7 +620,7 @@ namespace Fsl
         Matrix3Std140::Transpose(Matrix3Std140::Invert(MatrixConverter::ToMatrix3Std140(m_resources.Objects[i].WorldViewMatrix)));
     }
 
-    auto keyboardState = m_keyboard->GetState();
+    const auto keyboardState = m_keyboard->GetState();
     UpdateCameraControlInput(demoTime, keyboardState);
   }
 
@@ -770,7 +770,7 @@ namespace Fsl
     // Build a ray
     Vector3 direction = farPoint - nearPoint;
     direction.Normalize();
-    Ray mouseRay(nearPoint, direction);
+    const Ray mouseRay(nearPoint, direction);
 
     // Check which AABB's the ray intersect and store the hits in m_pickScratchpad
     m_pickScratchpad.clear();
@@ -816,15 +816,15 @@ namespace Fsl
       const bool forceBind = m_menuUI.IsForceBindEnabled();
       uint32_t oldMeshIndex = std::numeric_limits<uint32_t>::max();
       uint32_t transformOffset = 0;
-      for (auto& rEntry : m_resources.Objects)
+      for (const auto& entry : m_resources.Objects)
       {
         assert(transformOffset < frame.ObjectTransformVertUboBuffer.GetAllocationSize());
 
         vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_resources.ObjectPipelineLayout.Get(), 0, 1,
                                 &frame.ObjectTransformDescriptorSet, 1, &transformOffset);
 
-        DrawMesh(m_resources.Meshes[rEntry.MeshIndex], (forceBind || oldMeshIndex != rEntry.MeshIndex), commandBuffer);
-        oldMeshIndex = rEntry.MeshIndex;
+        DrawMesh(m_resources.Meshes[entry.MeshIndex], (forceBind || oldMeshIndex != entry.MeshIndex), commandBuffer);
+        oldMeshIndex = entry.MeshIndex;
         transformOffset += segmentStride;
       }
     }
@@ -837,7 +837,7 @@ namespace Fsl
                             nullptr);
     vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_dependentResources.PlanePipeline.Get());
 
-    VkDeviceSize offsets = 0;
+    const VkDeviceSize offsets = 0;
     vkCmdBindVertexBuffers(commandBuffer, VertexBufferBindId, 1, m_resources.MeshPlane.VertexBuffer.GetBufferPointer(), &offsets);
     vkCmdBindIndexBuffer(commandBuffer, m_resources.MeshPlane.IndexBuffer.GetBuffer(), 0, m_resources.MeshPlane.IndexBuffer.GetIndexType());
     vkCmdDrawIndexed(commandBuffer, m_resources.MeshPlane.IndexBuffer.GetIndexCount(), 1, 0, 0, 0);
@@ -865,7 +865,7 @@ namespace Fsl
 
     if (bindMesh)
     {
-      VkDeviceSize offsets = 0;
+      const VkDeviceSize offsets = 0;
       vkCmdBindVertexBuffers(commandBuffer, VertexBufferBindId, 1, mesh.VertexBuffer.GetBufferPointer(), &offsets);
       vkCmdBindIndexBuffer(commandBuffer, mesh.IndexBuffer.GetBuffer(), 0, mesh.IndexBuffer.GetIndexType());
     }
@@ -881,9 +881,9 @@ namespace Fsl
     // Load the matrices
     if (m_menuUI.IsDrawOrientedBoundingBoxEnabled())
     {
-      for (auto& rEntry : m_resources.Objects)
+      for (const auto& entry : m_resources.Objects)
       {
-        m_resources.LineBuild.Add(m_resources.Meshes[rEntry.MeshIndex].TheBoundingBox, Colors::Red(), rEntry.WorldMatrix);
+        m_resources.LineBuild.Add(m_resources.Meshes[entry.MeshIndex].TheBoundingBox, Colors::Red(), entry.WorldMatrix);
       }
     }
 
@@ -950,7 +950,7 @@ namespace Fsl
   {
     const auto textureExtent = texture.GetExtent();
     const auto tex1Size = PxSize2D::Create(UncheckedNumericCast<int32_t>(textureExtent.width), UncheckedNumericCast<int32_t>(textureExtent.height));
-    TextureRectangle texRect(PxRectangle(PxValue(0), PxValue(0), tex1Size.Width(), tex1Size.Height()), tex1Size);
+    const TextureRectangle texRect(PxRectangle(PxValue(0), PxValue(0), tex1Size.Width(), tex1Size.Height()), tex1Size);
     const NativeTextureArea texRepeatArea(Vulkan::VUTextureUtil::CalcTextureArea(texRect, 15 / 5, 15 / 5));
     const auto mesh =
       Procedural::SegmentedQuadGenerator::GenerateStrip(Vector3(0, 0, 0), 1000 / 5.0f, 1000 / 5.0f, 1, 1, texRepeatArea, WindingOrder::CCW);
@@ -963,7 +963,7 @@ namespace Fsl
   {
     const auto textureExtent = texture.GetExtent();
     const auto tex1Size = PxSize2D::Create(UncheckedNumericCast<int32_t>(textureExtent.width), UncheckedNumericCast<int32_t>(textureExtent.height));
-    TextureRectangle texRect(PxRectangle(PxValue(0), PxValue(0), tex1Size.Width(), tex1Size.Height()), tex1Size);
+    const TextureRectangle texRect(PxRectangle(PxValue(0), PxValue(0), tex1Size.Width(), tex1Size.Height()), tex1Size);
 
     const NativeTextureArea texArea(Vulkan::VUTextureUtil::CalcTextureArea(texRect, 1, 1));
 
@@ -988,8 +988,8 @@ namespace Fsl
     newMesh.IndexBuffer.Reset(bufferManager, mesh.GetIndexArray(), Vulkan::VMBufferUsage::STATIC);
     newMesh.VertexBuffer.Reset(bufferManager, mesh.AsReadOnlyFlexVertexSpan(), Vulkan::VMBufferUsage::STATIC);
 
-    std::array<VertexElementUsage, 3> shaderBindOrder = {VertexElementUsage::Position, VertexElementUsage::TextureCoordinate,
-                                                         VertexElementUsage::Normal};
+    const std::array<VertexElementUsage, 3> shaderBindOrder = {VertexElementUsage::Position, VertexElementUsage::TextureCoordinate,
+                                                               VertexElementUsage::Normal};
 
     Vulkan::VMVertexBufferUtil::FillVertexInputAttributeDescription(newMesh.VertexAttributeDescription, shaderBindOrder, newMesh.VertexBuffer);
     newMesh.VertexInputBindingDescription.binding = 0;
@@ -1007,8 +1007,8 @@ namespace Fsl
     newMesh.IndexBuffer.Reset(bufferManager, mesh.GetIndexArray(), Vulkan::VMBufferUsage::STATIC);
     newMesh.VertexBuffer.Reset(bufferManager, mesh.AsReadOnlyFlexVertexSpan(), Vulkan::VMBufferUsage::STATIC);
 
-    std::array<VertexElementUsage, 3> shaderBindOrder = {VertexElementUsage::Position, VertexElementUsage::Normal,
-                                                         VertexElementUsage::TextureCoordinate};
+    const std::array<VertexElementUsage, 3> shaderBindOrder = {VertexElementUsage::Position, VertexElementUsage::Normal,
+                                                               VertexElementUsage::TextureCoordinate};
 
     Vulkan::VMVertexBufferUtil::FillVertexInputAttributeDescription(newMesh.VertexAttributeDescription, shaderBindOrder, newMesh.VertexBuffer);
     newMesh.VertexInputBindingDescription.binding = 0;

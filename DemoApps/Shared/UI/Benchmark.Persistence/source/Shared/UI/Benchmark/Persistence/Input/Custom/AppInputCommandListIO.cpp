@@ -72,9 +72,9 @@ namespace Fsl::AppInputCommandListIO
 
     ReadOnlySpan<uint8_t> ReadAndValidateHeader(const ReadOnlySpan<uint8_t>& header, VersionId& rVersion)
     {
-      auto magic = ByteSpanUtil::ReadUInt32LE(header, Header::HeaderOffsetMagic);
+      const auto magic = ByteSpanUtil::ReadUInt32LE(header, Header::HeaderOffsetMagic);
       auto version = ByteSpanUtil::ReadUInt32LE(header, Header::HeaderOffsetVersion);
-      auto contentSize = ByteSpanUtil::ReadUInt32LE(header, Header::HeaderOffsetContentSize);
+      const auto contentSize = ByteSpanUtil::ReadUInt32LE(header, Header::HeaderOffsetContentSize);
       if (magic != Header::Magic)
       {
         throw FormatException("invalid header");
@@ -84,7 +84,7 @@ namespace Fsl::AppInputCommandListIO
         throw FormatException(fmt::format("unsupported AppInputCommandList version {} the currently supported version range is {} to {}", version,
                                           Header::MinVersion, Header::MaxVersion));
       }
-      auto remainingSpan = header.subspan(Header::SizeOfHeader);
+      const auto remainingSpan = header.subspan(Header::SizeOfHeader);
       if (contentSize != remainingSpan.size())
       {
         throw FormatException("content is not of the expected size");

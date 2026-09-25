@@ -83,89 +83,89 @@ namespace Fsl
 
     void Reset() noexcept;
 
-    constexpr PxSize2D GetSize() const noexcept
+    [[nodiscard]] constexpr PxSize2D GetSize() const noexcept
     {
       return m_sizePx;
     }
 
-    constexpr PxSize1D Width() const noexcept
+    [[nodiscard]] constexpr PxSize1D Width() const noexcept
     {
       return m_sizePx.Width();
     }
 
-    constexpr PxSize1D Height() const noexcept
+    [[nodiscard]] constexpr PxSize1D Height() const noexcept
     {
       return m_sizePx.Height();
     }
 
-    constexpr PxValueU UnsignedWidth() const noexcept
+    [[nodiscard]] constexpr PxValueU UnsignedWidth() const noexcept
     {
       return m_sizePx.UnsignedWidth();
     }
 
-    constexpr PxValueU UnsignedHeight() const noexcept
+    [[nodiscard]] constexpr PxValueU UnsignedHeight() const noexcept
     {
       return m_sizePx.UnsignedHeight();
     }
 
-    constexpr PxSize1D::raw_value_type RawWidth() const noexcept
+    [[nodiscard]] constexpr PxSize1D::raw_value_type RawWidth() const noexcept
     {
       return m_sizePx.RawWidth();
     }
 
-    constexpr PxSize1D::raw_value_type RawHeight() const noexcept
+    [[nodiscard]] constexpr PxSize1D::raw_value_type RawHeight() const noexcept
     {
       return m_sizePx.RawHeight();
     }
 
-    constexpr PxValueU::raw_value_type RawUnsignedWidth() const noexcept
+    [[nodiscard]] constexpr PxValueU::raw_value_type RawUnsignedWidth() const noexcept
     {
       return m_sizePx.RawUnsignedWidth();
     }
 
-    constexpr PxValueU::raw_value_type RawUnsignedHeight() const noexcept
+    [[nodiscard]] constexpr PxValueU::raw_value_type RawUnsignedHeight() const noexcept
     {
       return m_sizePx.RawUnsignedHeight();
     }
 
-    PxExtent2D GetExtent() const noexcept;
+    [[nodiscard]] PxExtent2D GetExtent() const noexcept;
 
-    constexpr PixelFormat GetPixelFormat() const noexcept
+    [[nodiscard]] constexpr PixelFormat GetPixelFormat() const noexcept
     {
       return m_pixelFormat;
     }
 
-    constexpr BitmapOrigin GetOrigin() const noexcept
+    [[nodiscard]] constexpr BitmapOrigin GetOrigin() const noexcept
     {
       return m_origin;
     }
 
-    constexpr uint32_t GetBytesPerPlanePixel() const noexcept
+    [[nodiscard]] constexpr uint32_t GetBytesPerPlanePixel() const noexcept
     {
       return 1u;
     }
 
-    uint32_t PlaneStride() const noexcept;
+    [[nodiscard]] uint32_t PlaneStride() const noexcept;
 
-    ReadOnlySpan<uint8_t> AsSpanR() const noexcept;
+    [[nodiscard]] ReadOnlySpan<uint8_t> AsSpanR() const noexcept;
     Span<uint8_t> AsSpanR() noexcept;
 
-    ReadOnlySpan<uint8_t> AsSpanG() const noexcept;
+    [[nodiscard]] ReadOnlySpan<uint8_t> AsSpanG() const noexcept;
     Span<uint8_t> AsSpanG() noexcept;
 
-    ReadOnlySpan<uint8_t> AsSpanB() const noexcept;
+    [[nodiscard]] ReadOnlySpan<uint8_t> AsSpanB() const noexcept;
     Span<uint8_t> AsSpanB() noexcept;
 
-    ReadOnlyRawBitmap AsRawBitmapR() const noexcept;
+    [[nodiscard]] ReadOnlyRawBitmap AsRawBitmapR() const noexcept;
     RawBitmapEx AsRawBitmapR() noexcept;
 
-    ReadOnlyRawBitmap AsRawBitmapG() const noexcept;
+    [[nodiscard]] ReadOnlyRawBitmap AsRawBitmapG() const noexcept;
     RawBitmapEx AsRawBitmapG() noexcept;
 
-    ReadOnlyRawBitmap AsRawBitmapB() const noexcept;
+    [[nodiscard]] ReadOnlyRawBitmap AsRawBitmapB() const noexcept;
     RawBitmapEx AsRawBitmapB() noexcept;
 
-    BitmapMemory ToBitmapMemory() const;
+    [[nodiscard]] BitmapMemory ToBitmapMemory() const;
 
     static TightPlanarBitmapR8G8B8 CreateFromTightPlanar(std::vector<uint8_t> content, const PxSize2D sizePx, const PixelFormat pixelFormat,
                                                          const BitmapOrigin origin);

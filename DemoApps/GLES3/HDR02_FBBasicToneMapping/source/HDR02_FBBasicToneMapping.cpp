@@ -63,14 +63,14 @@ namespace Fsl
       // Then override it to match the default GL setting since we know thats the way the texture is stored in the file
       tex.OverrideOrigin(BitmapOrigin::LowerLeft);
 
-      GLTextureParameters texParams(GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR, GL_REPEAT, GL_REPEAT);
+      const GLTextureParameters texParams(GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR, GL_REPEAT, GL_REPEAT);
       return {tex, texParams};
     }
 
     GLES3::GLFrameBuffer CreateHdrFrameBuffer(const PxSize2D& resolution)
     {
-      GLTextureParameters params(GL_LINEAR, GL_LINEAR, GL_REPEAT, GL_REPEAT);
-      GLTextureImageParameters texImageParams(GL_RGBA16F, GL_RGBA, GL_HALF_FLOAT);
+      const GLTextureParameters params(GL_LINEAR, GL_LINEAR, GL_REPEAT, GL_REPEAT);
+      const GLTextureImageParameters texImageParams(GL_RGBA16F, GL_RGBA, GL_HALF_FLOAT);
       return {resolution, params, texImageParams, GL_DEPTH_COMPONENT16};
     }
   }

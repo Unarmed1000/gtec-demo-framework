@@ -39,7 +39,7 @@ namespace Fsl
   // Configure the demo environment to run this demo app in a Window host environment
   void ConfigureDemoAppEnvironment(HostDemoAppSetup& rSetup)
   {
-    DemoAppHostConfigWindow config(AllocateVulkanWindowSystem);
+    const DemoAppHostConfigWindow config(AllocateVulkanWindowSystem);
 
     DemoAppRegister::Window::Register<NativeWindowTest, OptionParser>(rSetup, "Vulkan.NativeWindowTest", config);
   }

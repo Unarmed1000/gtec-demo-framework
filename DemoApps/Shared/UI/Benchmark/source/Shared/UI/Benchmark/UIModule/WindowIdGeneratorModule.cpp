@@ -61,7 +61,7 @@ namespace Fsl
   void WindowIdGeneratorModule::OnWindowDispose(const std::shared_ptr<UI::IWindowId>& window)
   {
     // Erase the window if it exists
-    auto itrFind = m_mapWindowToId.find(window.get());
+    const auto itrFind = m_mapWindowToId.find(window.get());
     if (itrFind == m_mapWindowToId.end())
     {
       FSLLOG3_DEBUG_WARNING("OnDispose: Unknown window encountered!");
@@ -76,13 +76,13 @@ namespace Fsl
 
   CustomWindowId WindowIdGeneratorModule::TryGetMouseOverWindow(const PxPoint2& hitPositionPx) const
   {
-    auto foundWindow = m_targetLocater->TryGetMouseOverWindow(hitPositionPx);
+    const auto foundWindow = m_targetLocater->TryGetMouseOverWindow(hitPositionPx);
     const UI::IWindowId* pWindowId = foundWindow.get();
     if (pWindowId == nullptr)
     {
       return {};
     }
-    auto itrFind = m_mapWindowToId.find(pWindowId);
+    const auto itrFind = m_mapWindowToId.find(pWindowId);
     if (itrFind == m_mapWindowToId.end())
     {
       FSLLOG3_DEBUG_WARNING("TryGetMouseOverWindow: Unknown window encountered!");
@@ -94,13 +94,13 @@ namespace Fsl
 
   CustomWindowId WindowIdGeneratorModule::TryGetClickInputWindow(const PxPoint2& hitPositionPx) const
   {
-    auto foundWindow = m_targetLocater->TryGetClickInputWindow(hitPositionPx);
+    const auto foundWindow = m_targetLocater->TryGetClickInputWindow(hitPositionPx);
     const UI::IWindowId* pWindowId = foundWindow.get();
     if (pWindowId == nullptr)
     {
       return {};
     }
-    auto itrFind = m_mapWindowToId.find(pWindowId);
+    const auto itrFind = m_mapWindowToId.find(pWindowId);
     if (itrFind == m_mapWindowToId.end())
     {
       FSLLOG3_DEBUG_WARNING("TryGetClickInputWindow: Unknown window encountered!");
@@ -113,7 +113,7 @@ namespace Fsl
 
   PxRectangle WindowIdGeneratorModule::GetWindowRectanglePx(const CustomWindowId windowId) const
   {
-    auto itrFind = m_mapIdToWindow.find(windowId.Value);
+    const auto itrFind = m_mapIdToWindow.find(windowId.Value);
     if (itrFind == m_mapIdToWindow.end())
     {
       throw NotFoundException("Unknown window");
@@ -124,7 +124,7 @@ namespace Fsl
 
   std::optional<PxRectangle> WindowIdGeneratorModule::TryGetWindowRectanglePx(const CustomWindowId windowId) const
   {
-    auto itrFind = m_mapIdToWindow.find(windowId.Value);
+    const auto itrFind = m_mapIdToWindow.find(windowId.Value);
     if (itrFind != m_mapIdToWindow.end())
     {
       return m_info->TryGetWindowRectanglePx(itrFind->second);

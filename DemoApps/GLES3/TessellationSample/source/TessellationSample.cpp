@@ -97,17 +97,17 @@ namespace Fsl
   {
     RegisterExtension(m_uiExtension);
 
-    auto options = config.GetOptions<OptionParser>();
+    const auto options = config.GetOptions<OptionParser>();
 
     const std::shared_ptr<IContentManager> contentManager = config.DemoServiceProvider.Get<IContentManager>();
 
     m_context = m_uiExtension->GetContext();
-    auto uiControlFactory = UI::Theme::ThemeSelector::CreateControlFactory(*m_uiExtension);
+    const auto uiControlFactory = UI::Theme::ThemeSelector::CreateControlFactory(*m_uiExtension);
     auto& factory = *uiControlFactory;
 
     m_buttonStack = std::make_shared<UI::StackLayout>(m_context);
 
-    auto radioGroup = factory.CreateRadioGroup("Scene");
+    const auto radioGroup = factory.CreateRadioGroup("Scene");
     m_scenes.push_back(CreateSceneRecord<LoadedScene>(factory, *m_buttonStack, config, options, 0, "Face", radioGroup));
     m_scenes.push_back(CreateSceneRecord<TestScene>(factory, *m_buttonStack, config, options, 0, "Torus", radioGroup));
     m_scenes.push_back(CreateSceneRecord<TestScene>(factory, *m_buttonStack, config, options, 1, "Rocks", radioGroup));
@@ -146,7 +146,7 @@ namespace Fsl
 
   void TessellationSample::OnContentChanged(const std::shared_ptr<UI::WindowContentChangedEvent>& theEvent)
   {
-    auto source = theEvent->GetSource();
+    const auto source = theEvent->GetSource();
     if (source == m_sliderTInner)
     {
       m_tessellationConfig.TessLevelInner = static_cast<float>(m_sliderTInner->GetValue());
@@ -318,11 +318,11 @@ namespace Fsl
     m_checkTexture = factory.CreateSwitch("Texture", true);
     m_checkRotate = factory.CreateSwitch("Rotate", false);
 
-    auto labalTInner = factory.CreateLabel("Inner tessellation");
-    auto labalTOuter = factory.CreateLabel("Outer tessellation");
-    auto labalDispFactor = factory.CreateLabel("Displacement factor");
-    auto labalDispMod = factory.CreateLabel("Displacement mod");
-    auto labalShininess = factory.CreateLabel("Shininess");
+    const auto labalTInner = factory.CreateLabel("Inner tessellation");
+    const auto labalTOuter = factory.CreateLabel("Outer tessellation");
+    const auto labalDispFactor = factory.CreateLabel("Displacement factor");
+    const auto labalDispMod = factory.CreateLabel("Displacement mod");
+    const auto labalShininess = factory.CreateLabel("Shininess");
     m_sliderTInner = factory.CreateSliderFmtValue(UI::LayoutOrientation::Horizontal, LocalConfig::TInner);
     m_sliderTOuter = factory.CreateSliderFmtValue(UI::LayoutOrientation::Horizontal, LocalConfig::TOuter);
     m_sliderTDispFactor = factory.CreateSliderFmtValue(UI::LayoutOrientation::Horizontal, LocalConfig::DispFactor);
@@ -356,7 +356,7 @@ namespace Fsl
     m_buttonStack->SetAlignmentY(UI::ItemAlignment::Near);
 
 
-    auto bar = factory.CreateLeftBar(m_buttonStack, UI::Theme::BarType::Transparent);
+    const auto bar = factory.CreateLeftBar(m_buttonStack, UI::Theme::BarType::Transparent);
 
     // Add the fill layout to the window manager to ensure it is visible
     m_uiExtension->GetWindowManager()->Add(bar);

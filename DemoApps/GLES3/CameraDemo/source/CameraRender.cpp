@@ -158,7 +158,7 @@ namespace Fsl
     RawBitmapEx targetBitmap(RawBitmapEx::Create(SpanUtil::AsSpan(m_bitmapBuffer), m_camera.GetExtent(), m_camera.GetPixelFormat(),
                                                  m_camera.GetStride(), BitmapOrigin::UpperLeft));
 
-    bool hasNewFrame = m_camera.TryRender(targetBitmap, m_frameId);
+    const bool hasNewFrame = m_camera.TryRender(targetBitmap, m_frameId);
 
     // Do not cull polygons
     glDisable(GL_CULL_FACE);

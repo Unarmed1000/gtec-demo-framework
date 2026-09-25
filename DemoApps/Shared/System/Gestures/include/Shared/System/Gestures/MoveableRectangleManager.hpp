@@ -70,14 +70,14 @@ namespace Fsl
 
     void Process(const TimeSpan elapsedTime);
 
-    std::span<const MoveableRectangleInfo> GetDrawInfoSpan() const
+    [[nodiscard]] std::span<const MoveableRectangleInfo> GetDrawInfoSpan() const
     {
       return m_drawInfo;
     }
 
   private:
     int32_t TryFindDragableEntity(const PxPoint2 positionPx);
-    PxRectangle CalculateFinalRectangle(const std::size_t index) const noexcept;
+    [[nodiscard]] PxRectangle CalculateFinalRectangle(const std::size_t index) const noexcept;
     void CompleteDrag();
 
     void ApplyCurrentFlickPositions() noexcept;

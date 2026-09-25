@@ -48,32 +48,32 @@ namespace Fsl
     OptionParser();
     ~OptionParser() override;
 
-    bool IsNearPlaneMouseEnabled() const
+    [[nodiscard]] bool IsNearPlaneMouseEnabled() const
     {
       return m_nearPlaneMouseEnabled;
     }
 
-    bool IsFarPlaneMouseEnabled() const
+    [[nodiscard]] bool IsFarPlaneMouseEnabled() const
     {
       return m_farPlaneMouseEnabled;
     }
 
-    bool IsOrientedBoundingBoxEnabled() const
+    [[nodiscard]] bool IsOrientedBoundingBoxEnabled() const
     {
       return m_orientedBoundingBoxEnabled;
     }
 
-    bool IsAxisAlignedBoundingBoxEnabled() const
+    [[nodiscard]] bool IsAxisAlignedBoundingBoxEnabled() const
     {
       return m_axisAlignedBoundingBoxEnabled;
     }
 
-    bool IsRandomSeedEnabled() const
+    [[nodiscard]] bool IsRandomSeedEnabled() const
     {
       return m_randomSeedEnabled;
     }
 
-    uint32_t GetObjectCount() const
+    [[nodiscard]] uint32_t GetObjectCount() const
     {
       return m_objectCount;
     }

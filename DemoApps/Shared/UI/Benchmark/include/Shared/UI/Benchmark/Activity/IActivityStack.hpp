@@ -43,7 +43,7 @@ namespace Fsl::UI
   public:
     virtual ~IActivityStack() = default;
 
-    virtual uint32_t Count() const = 0;
+    [[nodiscard]] virtual uint32_t Count() const = 0;
     virtual std::future<bool> Push(std::shared_ptr<FakeActivity> activity) = 0;
     virtual void SchedulePop(const bool completed = true) = 0;
   };

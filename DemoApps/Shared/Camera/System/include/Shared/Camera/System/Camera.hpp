@@ -51,27 +51,27 @@ namespace Fsl::Helios
     Camera(const CameraConfig& cameraConfig, std::shared_ptr<ICameraAdapter> nativeCamera);
     ~Camera();
 
-    CameraType GetType() const
+    [[nodiscard]] CameraType GetType() const
     {
       return m_cameraConfig.Type;
     }
 
     //! @brief Get the camera buffer stride
-    uint32_t GetStride() const
+    [[nodiscard]] uint32_t GetStride() const
     {
       return m_cameraConfig.NativeStride;
     }
 
     //! @brief Returns the camera size (unsigned)
-    PxExtent2D GetExtent() const
+    [[nodiscard]] PxExtent2D GetExtent() const
     {
       return m_cameraConfig.Extent;
     }
 
     //! @brief Returns the camera size (signed)
-    PxSize2D GetSize() const noexcept;
+    [[nodiscard]] PxSize2D GetSize() const noexcept;
 
-    PixelFormat GetPixelFormat() const
+    [[nodiscard]] PixelFormat GetPixelFormat() const
     {
       return m_cameraConfig.NativePixelFormat;
     }

@@ -65,8 +65,8 @@ namespace Fsl
 
   private:
     static DataSet CreateDataSet(const IO::PathView persistentDataPath, const IO::PathView filename);
-    std::size_t DetermineSaveIndex() const;
-    std::size_t DetermineNewestIndex() const;
+    [[nodiscard]] std::size_t DetermineSaveIndex() const;
+    [[nodiscard]] std::size_t DetermineNewestIndex() const;
   };
 }
 

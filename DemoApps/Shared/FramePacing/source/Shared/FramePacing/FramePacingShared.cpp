@@ -94,7 +94,7 @@ namespace Fsl
       m_framePacing->SetEnabled(true);
     }
 
-    auto graphicsService = config.DemoServiceProvider.Get<IGraphicsService>();
+    const auto graphicsService = config.DemoServiceProvider.Get<IGraphicsService>();
     m_nativeBatch = graphicsService->GetNativeBatch2D();
     {
       constexpr std::array<uint8_t, 4> WhitePixel = {0xFF, 0xFF, 0xFF, 0xFF};
@@ -104,22 +104,22 @@ namespace Fsl
     }
 
     // Create a small status panel on the right side (the marker is drawn on the left side)
-    auto uiFactory = UI::Theme::ThemeSelector::CreateControlFactory(*m_uiExtension);
+    const auto uiFactory = UI::Theme::ThemeSelector::CreateControlFactory(*m_uiExtension);
     m_ui.LabelStatus = uiFactory->CreateLabel(m_framePacing ? "Frame pacing marker: enabled" : "Frame pacing is not supported on this platform");
     m_ui.LabelRun = uiFactory->CreateLabel("");
     m_ui.ButtonRun = uiFactory->CreateTextButton(UI::Theme::ButtonType::Contained, "Start run");
     m_ui.ButtonRun->SetAlignmentX(UI::ItemAlignment::Stretch);
     m_ui.ButtonRun->SetEnabled(m_framePacing != nullptr);
-    auto lblDuration = uiFactory->CreateLabel("Timed run duration (seconds)");
+    const auto lblDuration = uiFactory->CreateLabel("Timed run duration (seconds)");
     m_ui.SliderDuration = uiFactory->CreateSliderFmtValue(UI::LayoutOrientation::Horizontal, LocalConfig::TimedRunSeconds);
     m_ui.SliderDuration->SetAlignmentX(UI::ItemAlignment::Stretch);
     m_ui.ButtonTimedRun = uiFactory->CreateTextButton(UI::Theme::ButtonType::Contained, "Start timed run");
     m_ui.ButtonTimedRun->SetAlignmentX(UI::ItemAlignment::Stretch);
     m_ui.ButtonTimedRun->SetEnabled(m_framePacing != nullptr);
-    auto lblHint = uiFactory->CreateLabel("Space: start/end a run");
-    auto lblHintTimed = uiFactory->CreateLabel("T: start a timed run");
+    const auto lblHint = uiFactory->CreateLabel("Space: start/end a run");
+    const auto lblHintTimed = uiFactory->CreateLabel("T: start a timed run");
 
-    auto stackLayout = std::make_shared<UI::StackLayout>(uiFactory->GetContext());
+    const auto stackLayout = std::make_shared<UI::StackLayout>(uiFactory->GetContext());
     stackLayout->SetOrientation(UI::LayoutOrientation::Vertical);
     stackLayout->SetAlignmentY(UI::ItemAlignment::Center);
     stackLayout->AddChild(m_ui.LabelStatus);
@@ -133,11 +133,11 @@ namespace Fsl
     stackLayout->AddChild(lblHint);
     stackLayout->AddChild(lblHintTimed);
 
-    auto mainLayout = std::make_shared<UI::GridLayout>(uiFactory->GetContext());
+    const auto mainLayout = std::make_shared<UI::GridLayout>(uiFactory->GetContext());
     mainLayout->AddColumnDefinition(UI::GridColumnDefinition(UI::GridUnitType::Star, 1.0f));
     mainLayout->AddColumnDefinition(UI::GridColumnDefinition(UI::GridUnitType::Auto));
     mainLayout->AddRowDefinition(UI::GridRowDefinition(UI::GridUnitType::Star, 1.0f));
-    auto rightBar = uiFactory->CreateRightBar(stackLayout);
+    const auto rightBar = uiFactory->CreateRightBar(stackLayout);
     mainLayout->AddChild(rightBar, 1, 0);
     mainLayout->SetLimitToAvailableSpace(true);
     m_uiExtension->SetMainWindow(mainLayout);

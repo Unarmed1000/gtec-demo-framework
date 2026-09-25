@@ -105,10 +105,10 @@ namespace Fsl
     //! Create the main texture
     GLES3::GLTexture CreateMainTexture(const std::shared_ptr<IContentManager>& contentManager, const int demoId)
     {
-      auto strPath = GetDemoIdTextureName(demoId);
-      auto bitmap = contentManager->ReadBitmap(strPath, PixelFormat::R8G8B8_UNORM);
+      const auto strPath = GetDemoIdTextureName(demoId);
+      const auto bitmap = contentManager->ReadBitmap(strPath, PixelFormat::R8G8B8_UNORM);
 
-      GLTextureParameters texParams1(GL_LINEAR, GL_LINEAR, GL_REPEAT, GL_REPEAT);
+      const GLTextureParameters texParams1(GL_LINEAR, GL_LINEAR, GL_REPEAT, GL_REPEAT);
       return {bitmap, texParams1};
     }
 
@@ -122,14 +122,14 @@ namespace Fsl
           FurTexture::GenerateSmooth(furTextureSize.RawWidth(), furTextureSize.RawHeight(), hairDensity, layerCount);
         const ReadOnlyRawBitmap furBitmap(ReadOnlyRawBitmap::Create(SpanUtil::AsReadOnlySpan(furBitmapContent), furTextureSize,
                                                                     PixelFormat::R8G8B8A8_UNORM, BitmapOrigin::LowerLeft));
-        GLTextureParameters texParams(GL_NEAREST, GL_NEAREST, GL_REPEAT, GL_REPEAT);
+        const GLTextureParameters texParams(GL_NEAREST, GL_NEAREST, GL_REPEAT, GL_REPEAT);
         return {furBitmap, texParams};
       }
       const std::vector<uint8_t> furBitmapContent =
         FurTexture::GenerateWave(furTextureSize.RawWidth(), furTextureSize.RawHeight(), hairDensity, layerCount);
       const ReadOnlyRawBitmap furBitmap(
         ReadOnlyRawBitmap::Create(SpanUtil::AsReadOnlySpan(furBitmapContent), furTextureSize, PixelFormat::R8G8B8A8_UNORM, BitmapOrigin::LowerLeft));
-      GLTextureParameters texParams(GL_NEAREST, GL_NEAREST, GL_REPEAT, GL_REPEAT);
+      const GLTextureParameters texParams(GL_NEAREST, GL_NEAREST, GL_REPEAT, GL_REPEAT);
       return {furBitmap, texParams};
 
       // std::string strPath("Density2.png");
@@ -140,8 +140,8 @@ namespace Fsl
 
     GLES3::GLTexture CreateMainAtlasTexture(const std::shared_ptr<IContentManager>& contentManager)
     {
-      auto bitmap = contentManager->ReadBitmap("TextureAtlas/MainAtlas.png", PixelFormat::R8G8B8A8_UNORM);
-      GLTextureParameters texParams(GL_NEAREST, GL_NEAREST, GL_REPEAT, GL_REPEAT);
+      const auto bitmap = contentManager->ReadBitmap("TextureAtlas/MainAtlas.png", PixelFormat::R8G8B8A8_UNORM);
+      const GLTextureParameters texParams(GL_NEAREST, GL_NEAREST, GL_REPEAT, GL_REPEAT);
       return {bitmap, texParams};
     }
 
@@ -156,7 +156,7 @@ namespace Fsl
     Procedural::BasicMesh CreateMesh(const ProceduralConfig& proceduralConfig, const PxSize2D& tex1Size, const Point2& textureRepeatCount,
                                      const int torusMajorSegments, const int torusMinorSegments, const bool useTriangleStrip)
     {
-      TextureRectangle texRect(PxRectangle(PxValue(0), PxValue(0), tex1Size.Width(), tex1Size.Height()), tex1Size);
+      const TextureRectangle texRect(PxRectangle(PxValue(0), PxValue(0), tex1Size.Width(), tex1Size.Height()), tex1Size);
       const NativeTextureArea texArea(TextureUtil::CalcTextureArea(texRect, textureRepeatCount.X, textureRepeatCount.Y));
       if (proceduralConfig.Primitive == ProceduralPrimitive::Box)
       {
@@ -187,15 +187,15 @@ namespace Fsl
       const Vector2 atlasSize(TypeConverter::UncheckedTo<Vector2>(texDescriptionAtlas.GetSize()));
 
       // texSize.X / tex
-      float x1 = -1.0f - (static_cast<float>(texDescription.OffsetPx.X.Value) / res.X);
-      float x2 = x1 + (static_cast<float>(texDescription.TrimmedRectPx.Width.Value) / res.X);
-      float y1 = -1.0f - (static_cast<float>(texDescription.OffsetPx.Y.Value) / res.Y);
-      float y2 = y1 + (static_cast<float>(texDescription.TrimmedRectPx.Height.Value) / res.Y);
+      const float x1 = -1.0f - (static_cast<float>(texDescription.OffsetPx.X.Value) / res.X);
+      const float x2 = x1 + (static_cast<float>(texDescription.TrimmedRectPx.Width.Value) / res.X);
+      const float y1 = -1.0f - (static_cast<float>(texDescription.OffsetPx.Y.Value) / res.Y);
+      const float y2 = y1 + (static_cast<float>(texDescription.TrimmedRectPx.Height.Value) / res.Y);
 
-      float u1 = static_cast<float>(texDescription.TrimmedRectPx.RawLeft()) / atlasSize.X;
-      float v1 = 1.0f - (static_cast<float>(texDescription.TrimmedRectPx.RawTop()) / atlasSize.Y);
-      float u2 = static_cast<float>(texDescription.TrimmedRectPx.RawRight()) / atlasSize.X;
-      float v2 = 1.0f - (static_cast<float>(texDescription.TrimmedRectPx.RawBottom()) / atlasSize.Y);
+      const float u1 = static_cast<float>(texDescription.TrimmedRectPx.RawLeft()) / atlasSize.X;
+      const float v1 = 1.0f - (static_cast<float>(texDescription.TrimmedRectPx.RawTop()) / atlasSize.Y);
+      const float u2 = static_cast<float>(texDescription.TrimmedRectPx.RawRight()) / atlasSize.X;
+      const float v2 = 1.0f - (static_cast<float>(texDescription.TrimmedRectPx.RawBottom()) / atlasSize.Y);
 
       BuildVB(rVB, BoxF(x1, -y2, x2, -y1), BoxF(u1, v2, u2, v1));
     }
@@ -234,7 +234,7 @@ namespace Fsl
     const Vector4 color(Color(m_config.GetBackgroundColor()).ToVector4());
     m_backgroundColor = Vector3(color.X, color.Y, color.Z);
 
-    auto contentManager = GetContentManager();
+    const auto contentManager = GetContentManager();
 
     m_resources.Tex1 = CreateMainTexture(contentManager, m_config.GetDemoId());
     m_resources.Tex2 = CreateFurDensityTexture(m_config.GetDemoId(), furTextureDim, hairDensity, layerCount);
@@ -309,9 +309,9 @@ namespace Fsl
         break;
       }
 
-      Point2 textureRepeatCount(m_config.GetTextureRepeatCountX(), m_config.GetTextureRepeatCountY());
-      auto mesh = CreateMesh(proceduralConfig, m_resources.Tex1.GetSize(), textureRepeatCount, m_config.GetTorusMajorSegments(),
-                             m_config.GetTorusMinorSegments(), m_config.GetUseTriangleStrip());
+      const Point2 textureRepeatCount(m_config.GetTextureRepeatCountX(), m_config.GetTextureRepeatCountY());
+      const auto mesh = CreateMesh(proceduralConfig, m_resources.Tex1.GetSize(), textureRepeatCount, m_config.GetTorusMajorSegments(),
+                                   m_config.GetTorusMinorSegments(), m_config.GetUseTriangleStrip());
 
       // OpenGL ES expects that the index count is <= 0xFFFF
       if (mesh.GetIndexCount() > 0xFFFF)
@@ -328,7 +328,7 @@ namespace Fsl
     lightInfo.Direction.Normalize();
 
     {    // Prepare the shader
-      ShaderBase::ScopedUse shaderScope(m_shaderMultiPass);
+      const ShaderBase::ScopedUse shaderScope(m_shaderMultiPass);
       m_shaderMultiPass.SetTexture0(0);
       m_shaderMultiPass.SetTexture1(1);
       m_shaderMultiPass.SetMaxHairLength(hairLength);
@@ -340,7 +340,7 @@ namespace Fsl
       m_shaderMultiPass.SetLightAmbientColor(lightInfo.AmbientColor);
     }
     {    // Prepare the shader
-      ShaderBase::ScopedUse shaderScope(m_shaderInstanced);
+      const ShaderBase::ScopedUse shaderScope(m_shaderInstanced);
       m_shaderInstanced.SetTexture0(0);
       m_shaderInstanced.SetTexture1(1);
       m_shaderInstanced.SetMaxHairLength(hairLength);
@@ -353,7 +353,7 @@ namespace Fsl
       m_shaderInstanced.SetInstanceCount(layerCount);
     }
     {    // Prepare the shader
-      ShaderBase::ScopedUse shaderScope(m_shaderInstancedLayer0);
+      const ShaderBase::ScopedUse shaderScope(m_shaderInstancedLayer0);
       m_shaderInstancedLayer0.SetTexture0(0);
       m_shaderInstancedLayer0.SetTexture1(1);
       m_shaderInstancedLayer0.SetMaxHairLength(hairLength);
@@ -362,7 +362,7 @@ namespace Fsl
       m_shaderInstancedLayer0.SetLightAmbientColor(lightInfo.AmbientColor);
     }
     {    // Prepare the shader
-      ShaderBase::ScopedUse shaderScope(m_shaderInstancedLayerN);
+      const ShaderBase::ScopedUse shaderScope(m_shaderInstancedLayerN);
       m_shaderInstancedLayerN.SetTexture0(0);
       m_shaderInstancedLayerN.SetTexture1(1);
       m_shaderInstancedLayerN.SetMaxHairLength(hairLength);
@@ -398,7 +398,7 @@ namespace Fsl
   {
     if (m_enableForce)
     {
-      Vector3 forceDirection(std::sin(m_radians), 0, 0);
+      const Vector3 forceDirection(std::sin(m_radians), 0, 0);
       m_displacement = m_gravity + forceDirection;
     }
     else
@@ -457,7 +457,7 @@ namespace Fsl
 
     const int layerCount = m_config.GetLayerCount();
 
-    bool bypassRender = false;
+    const bool bypassRender = false;
     if (!bypassRender)
     {
       // Clear the screen
@@ -490,7 +490,7 @@ namespace Fsl
       // Draw normals
       if (m_config.GetShowNormals())
       {
-        ShaderBase::ScopedUse shaderScope(m_shader2);
+        const ShaderBase::ScopedUse shaderScope(m_shader2);
 
         m_shader2.SetWorldViewProjection(m_mvp);
 
@@ -527,14 +527,14 @@ namespace Fsl
   void FurShellRendering::DrawMultipass(FurShaderMultiPass& rShader, MeshRender& rRender, const Matrix& world, const Matrix& view,
                                         const Matrix& perspective, const Vector3& displacement, const int layerCount)
   {
-    ShaderBase::ScopedUse shaderScope(rShader);
+    const ShaderBase::ScopedUse shaderScope(rShader);
 
     rShader.SetWorld(world);
     rShader.SetView(view);
     rShader.SetProjection(perspective);
     rShader.SetDisplacement(displacement);
 
-    float layerAdd = (layerCount > 1 ? 1.0f / static_cast<float>(layerCount - 1) : 1);
+    const float layerAdd = (layerCount > 1 ? 1.0f / static_cast<float>(layerCount - 1) : 1);
     float layer = 0.0f;
 
     rRender.Bind(rShader);
@@ -561,7 +561,7 @@ namespace Fsl
   void FurShellRendering::DrawInstanced(FurShaderBase& rShader, MeshRender& rRender, const Matrix& world, const Matrix& view,
                                         const Matrix& perspective, const Vector3& displacement)
   {
-    ShaderBase::ScopedUse shaderScope(rShader);
+    const ShaderBase::ScopedUse shaderScope(rShader);
 
     rShader.SetWorld(world);
     rShader.SetView(view);

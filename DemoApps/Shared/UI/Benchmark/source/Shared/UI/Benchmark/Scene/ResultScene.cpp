@@ -93,7 +93,7 @@ namespace Fsl
       {
       }
 
-      double Sum() const
+      [[nodiscard]] double Sum() const
       {
         return UIProcessEvents + UIUpdate + UIDraw + UIDrawPreprocess + UIDrawGenMesh + UIDrawFillBuffers + UIDrawSchedule;
       }
@@ -119,8 +119,8 @@ namespace Fsl
 
     ChartData ExtractData(const std::shared_ptr<DataBinding::DataBindingService>& dataBindingService, const AppBenchmarkData& sourceData)
     {
-      auto chartData = std::make_shared<UI::ChartData>(dataBindingService, NumericCast<uint32_t>(sourceData.CpuData.Entries.size()),
-                                                       CustomControlFactory::MaxCpuProfileDataEntries(), UI::ChartData::Constraints(0, {}));
+      const auto chartData = std::make_shared<UI::ChartData>(dataBindingService, NumericCast<uint32_t>(sourceData.CpuData.Entries.size()),
+                                                             CustomControlFactory::MaxCpuProfileDataEntries(), UI::ChartData::Constraints(0, {}));
       AverageRecord average;
       for (const auto& srcEntry : sourceData.CpuData.Entries)
       {
@@ -160,8 +160,8 @@ namespace Fsl
     ChartData ExtractGpuData(const std::shared_ptr<DataBinding::DataBindingService>& dataBindingService, const AppBenchmarkData& sourceData)
     {
       const AppBenchmarkGpuData& gpuData = sourceData.GpuData.value();
-      auto chartData = std::make_shared<UI::ChartData>(dataBindingService, NumericCast<uint32_t>(gpuData.Entries.size()),
-                                                       CustomControlFactory::MaxCpuProfileDataEntries(), UI::ChartData::Constraints(0, {}));
+      const auto chartData = std::make_shared<UI::ChartData>(dataBindingService, NumericCast<uint32_t>(gpuData.Entries.size()),
+                                                             CustomControlFactory::MaxCpuProfileDataEntries(), UI::ChartData::Constraints(0, {}));
       AverageRecord average;
       for (const auto& srcEntry : gpuData.Entries)
       {
@@ -199,7 +199,7 @@ namespace Fsl
 
     std::shared_ptr<UI::BaseWindow> CreateReportInfoUI(UI::Theme::IThemeControlFactory& uiFactory, const AppBenchmarkData& sourceData)
     {
-      auto context = uiFactory.GetContext();
+      const auto context = uiFactory.GetContext();
 
       // auto label0 = uiFactory.CreateLabel("BenchApp:");
       // auto label1 = uiFactory.CreateLabel("Version:");
@@ -324,7 +324,7 @@ namespace Fsl
         theEvent->Handled();
         if (m_ui.Tabs.Report.CpuReport.ChartData)
         {
-          auto newMaxValue = UncheckedNumericCast<uint32_t>(static_cast<int32_t>(std::round(m_ui.Tabs.Report.CpuChartMaxSlider->GetValue())));
+          const auto newMaxValue = UncheckedNumericCast<uint32_t>(static_cast<int32_t>(std::round(m_ui.Tabs.Report.CpuChartMaxSlider->GetValue())));
           const auto dataStats = m_ui.Tabs.Report.CpuReport.ChartData->CalculateDataStats();
           const MinMax<uint32_t> minMax(dataStats.ValueMinMax.Min(), std::max(dataStats.ValueMinMax.Min() + 20, newMaxValue));
           m_ui.Tabs.Report.CpuReport.ChartData->SetCustomMinMax(minMax);
@@ -339,7 +339,7 @@ namespace Fsl
         theEvent->Handled();
         if (m_ui.Tabs.Report.GpuReport.ChartData)
         {
-          auto newMaxValue = UncheckedNumericCast<uint32_t>(static_cast<int32_t>(std::round(m_ui.Tabs.Report.GpuChartMaxSlider->GetValue())));
+          const auto newMaxValue = UncheckedNumericCast<uint32_t>(static_cast<int32_t>(std::round(m_ui.Tabs.Report.GpuChartMaxSlider->GetValue())));
           const auto dataStats = m_ui.Tabs.Report.GpuReport.ChartData->CalculateDataStats();
           const MinMax<uint32_t> minMax(dataStats.ValueMinMax.Min(), std::max(dataStats.ValueMinMax.Min() + 20, newMaxValue));
           m_ui.Tabs.Report.GpuReport.ChartData->SetCustomMinMax(minMax);
@@ -417,31 +417,31 @@ namespace Fsl
   ResultScene::UIRecord ResultScene::CreateUI(UI::Theme::IThemeControlFactory& uiFactory, const AppBenchmarkData& sourceDataNew,
                                               const std::optional<AppBenchmarkData>& sourceDataOld)
   {
-    auto context = uiFactory.GetContext();
-    auto header = uiFactory.CreateLabel("Results", UI::Theme::FontType::Header);
+    const auto context = uiFactory.GetContext();
+    const auto header = uiFactory.CreateLabel("Results", UI::Theme::FontType::Header);
     header->SetAlignmentX(UI::ItemAlignment::Center);
     header->SetAlignmentY(UI::ItemAlignment::Center);
 
-    auto backButton = uiFactory.CreateFloatingButton(UI::Theme::FloatingButtonType::Back);
+    const auto backButton = uiFactory.CreateFloatingButton(UI::Theme::FloatingButtonType::Back);
     backButton->SetAlignmentX(UI::ItemAlignment::Near);
     backButton->SetAlignmentY(UI::ItemAlignment::Far);
 
-    auto reportLabelStack = std::make_shared<UI::StackLayout>(context);
-    auto reportLabelNew = CreateReportInfoUI(uiFactory, sourceDataNew);
+    const auto reportLabelStack = std::make_shared<UI::StackLayout>(context);
+    const auto reportLabelNew = CreateReportInfoUI(uiFactory, sourceDataNew);
     reportLabelStack->SetOrientation(UI::LayoutOrientation::Vertical);
     reportLabelStack->AddChild(reportLabelNew);
     if (sourceDataOld.has_value())
     {
-      auto reportLabelOld = CreateReportInfoUI(uiFactory, sourceDataOld.value());
+      const auto reportLabelOld = CreateReportInfoUI(uiFactory, sourceDataOld.value());
       reportLabelStack->AddChild(uiFactory.CreateLabel("vs"));
       reportLabelStack->AddChild(reportLabelOld);
     }
 
-    auto detailsButton = uiFactory.CreateTextButton(UI::Theme::ButtonType::Outlined, "Details");
+    const auto detailsButton = uiFactory.CreateTextButton(UI::Theme::ButtonType::Outlined, "Details");
     detailsButton->SetAlignmentX(UI::ItemAlignment::Center);
     detailsButton->SetAlignmentY(UI::ItemAlignment::Center);
 
-    auto topLayout = std::make_shared<UI::GridLayout>(context);
+    const auto topLayout = std::make_shared<UI::GridLayout>(context);
     topLayout->SetAlignmentX(UI::ItemAlignment::Stretch);
     topLayout->AddColumnDefinition(UI::GridColumnDefinition(UI::GridUnitType::Auto));          // 0
     topLayout->AddColumnDefinition(UI::GridColumnDefinition(UI::GridUnitType::Star, 1.0f));    // 1
@@ -453,23 +453,23 @@ namespace Fsl
     topLayout->AddChild(reportLabelStack, 2, 0);
     topLayout->AddChild(detailsButton, 3, 0);
 
-    auto topBar = uiFactory.CreateTopBar(topLayout);
+    const auto topBar = uiFactory.CreateTopBar(topLayout);
 
-    UIReportTabs uiReport = CreateReportUI(uiFactory, sourceDataNew, sourceDataOld);
+    const UIReportTabs uiReport = CreateReportUI(uiFactory, sourceDataNew, sourceDataOld);
 
-    auto bottomBar = uiFactory.CreateBottomBar(uiReport.Layout);
+    const auto bottomBar = uiFactory.CreateBottomBar(uiReport.Layout);
     bottomBar->SetAlignmentY(UI::ItemAlignment::Stretch);
 
-    auto layout = std::make_shared<UI::ComplexStackLayout>(context);
+    const auto layout = std::make_shared<UI::ComplexStackLayout>(context);
     layout->SetAlignmentX(UI::ItemAlignment::Stretch);
     layout->SetAlignmentY(UI::ItemAlignment::Stretch);
     layout->AddChild(topBar, UI::LayoutLength(UI::LayoutUnitType::Auto));
     layout->AddChild(bottomBar, UI::LayoutLength(UI::LayoutUnitType::Star, 1.0f));
 
-    auto fillLayout = std::make_shared<UI::FillLayout>(context);
+    const auto fillLayout = std::make_shared<UI::FillLayout>(context);
     fillLayout->AddChild(layout);
 
-    auto activityStack = std::make_shared<UI::ActivityStack>(context);
+    const auto activityStack = std::make_shared<UI::ActivityStack>(context);
     fillLayout->AddChild(activityStack);
 
     return {fillLayout, layout, backButton, detailsButton, activityStack, uiReport};
@@ -478,7 +478,7 @@ namespace Fsl
   ResultScene::UIReportTabs ResultScene::CreateReportUI(UI::Theme::IThemeControlFactory& uiFactory, const AppBenchmarkData& sourceDataNew,
                                                         const std::optional<AppBenchmarkData>& sourceDataOld)
   {
-    auto context = uiFactory.GetContext();
+    const auto context = uiFactory.GetContext();
 
     const bool haveGpuData = sourceDataNew.GpuData.has_value() && (!sourceDataOld.has_value() || sourceDataOld.value().GpuData.has_value());
 
@@ -496,9 +496,9 @@ namespace Fsl
     // viewLayout->AddChild(radioButtonGpu);
     // viewLayout->AddChild(radioButtonBoth);
 
-    auto reportTab = CreateReportTabUI(uiFactory, sourceDataNew, sourceDataOld, defaultReportType);
+    const auto reportTab = CreateReportTabUI(uiFactory, sourceDataNew, sourceDataOld, defaultReportType);
 
-    auto bottomLayoutStack = std::make_shared<UI::ComplexStackLayout>(context);
+    const auto bottomLayoutStack = std::make_shared<UI::ComplexStackLayout>(context);
     bottomLayoutStack->SetAlignmentX(UI::ItemAlignment::Stretch);
     bottomLayoutStack->SetAlignmentY(UI::ItemAlignment::Stretch);
     bottomLayoutStack->SetOrientation(UI::LayoutOrientation::Vertical);
@@ -515,16 +515,16 @@ namespace Fsl
   ResultScene::UIReport ResultScene::CreateReportTabUI(UI::Theme::IThemeControlFactory& uiFactory, const AppBenchmarkData& sourceDataNew,
                                                        const std::optional<AppBenchmarkData>& sourceDataOld, const ReportType reportType)
   {
-    auto context = uiFactory.GetContext();
+    const auto context = uiFactory.GetContext();
     std::optional<UICpuReport> cpuReportNew =
       reportType != ReportType::Gpu ? CreateCpuReport(uiFactory, sourceDataNew) : std::optional<UICpuReport>();
     std::optional<UIGpuReport> gpuReportNew =
       reportType != ReportType::Cpu ? CreateGpuReport(uiFactory, sourceDataNew) : std::optional<UIGpuReport>();
 
-    auto cpuChartMaxSlider = uiFactory.CreateSlider(UI::LayoutOrientation::Vertical, ConstrainedValue<float>(0, 1, 1));
-    auto gpuChartMaxSlider = uiFactory.CreateSlider(UI::LayoutOrientation::Vertical, ConstrainedValue<float>(0, 1, 1));
+    const auto cpuChartMaxSlider = uiFactory.CreateSlider(UI::LayoutOrientation::Vertical, ConstrainedValue<float>(0, 1, 1));
+    const auto gpuChartMaxSlider = uiFactory.CreateSlider(UI::LayoutOrientation::Vertical, ConstrainedValue<float>(0, 1, 1));
 
-    auto reportLayout = std::make_shared<UI::GridLayout>(context);
+    const auto reportLayout = std::make_shared<UI::GridLayout>(context);
     reportLayout->SetAlignmentX(UI::ItemAlignment::Stretch);
     reportLayout->SetAlignmentY(UI::ItemAlignment::Stretch);
     reportLayout->AddColumnDefinition(UI::GridColumnDefinition(UI::GridUnitType::Auto));
@@ -560,7 +560,7 @@ namespace Fsl
     {
       if (sourceDataOld.has_value())
       {
-        auto sliderLabel = uiFactory.CreateLabel("Report visibility");
+        const auto sliderLabel = uiFactory.CreateLabel("Report visibility");
         sliderLabel->SetAlignmentY(UI::ItemAlignment::Center);
         slider = uiFactory.CreateSliderFmtValue(UI::LayoutOrientation::Horizontal, ConstrainedValue<float>(0, 0, 1.0f));
         // Add the compare alpha slider
@@ -572,10 +572,10 @@ namespace Fsl
         reportLayout->AddChild(cpuReportOld.Chart, 2, reportLayoutRowIndex);
 
         {    // Force both data sets to use the exact same grid
-          auto newGridInfo = cpuReportNew.value().ChartData->CalculateDataStats();
-          auto oldGridInfo = cpuReportOld.ChartData->CalculateDataStats();
-          MinMax<uint32_t> viewMinMax(std::min(oldGridInfo.ValueMinMax.Min(), newGridInfo.ValueMinMax.Min()),
-                                      std::max(oldGridInfo.ValueMinMax.Max(), newGridInfo.ValueMinMax.Max()));
+          const auto newGridInfo = cpuReportNew.value().ChartData->CalculateDataStats();
+          const auto oldGridInfo = cpuReportOld.ChartData->CalculateDataStats();
+          const MinMax<uint32_t> viewMinMax(std::min(oldGridInfo.ValueMinMax.Min(), newGridInfo.ValueMinMax.Min()),
+                                            std::max(oldGridInfo.ValueMinMax.Max(), newGridInfo.ValueMinMax.Max()));
 
           cpuReportNew.value().ChartData->SetCustomMinMax(viewMinMax);
           cpuReportOld.ChartData->SetCustomMinMax(viewMinMax);
@@ -599,10 +599,10 @@ namespace Fsl
         reportLayout->AddChild(gpuReportOld.Chart, 2, gpuReportLayoutRowIndex);
 
         {    // Force both data sets to use the exact same grid
-          auto newGridInfo = gpuReportNew.value().ChartData->CalculateDataStats();
-          auto oldGridInfo = gpuReportOld.ChartData->CalculateDataStats();
-          MinMax<uint32_t> viewMinMax(std::min(oldGridInfo.ValueMinMax.Min(), newGridInfo.ValueMinMax.Min()),
-                                      std::max(oldGridInfo.ValueMinMax.Max(), newGridInfo.ValueMinMax.Max()));
+          const auto newGridInfo = gpuReportNew.value().ChartData->CalculateDataStats();
+          const auto oldGridInfo = gpuReportOld.ChartData->CalculateDataStats();
+          const MinMax<uint32_t> viewMinMax(std::min(oldGridInfo.ValueMinMax.Min(), newGridInfo.ValueMinMax.Min()),
+                                            std::max(oldGridInfo.ValueMinMax.Max(), newGridInfo.ValueMinMax.Max()));
 
           gpuReportNew.value().ChartData->SetCustomMinMax(viewMinMax);
           gpuReportOld.ChartData->SetCustomMinMax(viewMinMax);
@@ -629,28 +629,28 @@ namespace Fsl
 
   ResultScene::UICpuReport ResultScene::CreateCpuReport(UI::Theme::IThemeControlFactory& uiFactory, const AppBenchmarkData& source)
   {
-    auto context = uiFactory.GetContext();
-    auto cpuLegend = CustomControlFactory::CreateDetailedCpuLegend(uiFactory, CustomUIConfig::FixedSpacingDp);
+    const auto context = uiFactory.GetContext();
+    const auto cpuLegend = CustomControlFactory::CreateDetailedCpuLegend(uiFactory, CustomUIConfig::FixedSpacingDp);
 
-    auto newResult = ExtractData(context->UIDataBindingService, source);
+    const auto newResult = ExtractData(context->UIDataBindingService, source);
     newResult.Data->SetChannelMetaData(0, LocalConfig::ChartColor);
     SetCpuAverage(cpuLegend, newResult.Average);
-    auto cpuChartNew = CustomControlFactory::CreateAreaChart(uiFactory, newResult.Data, CustomControlFactory::OpaqueHack::Enabled);
+    const auto cpuChartNew = CustomControlFactory::CreateAreaChart(uiFactory, newResult.Data, CustomControlFactory::OpaqueHack::Enabled);
 
     return {cpuLegend, cpuChartNew, newResult.Data};
   }
 
   ResultScene::UIGpuReport ResultScene::CreateGpuReport(UI::Theme::IThemeControlFactory& uiFactory, const AppBenchmarkData& source)
   {
-    auto context = uiFactory.GetContext();
+    const auto context = uiFactory.GetContext();
 
-    auto newResult = ExtractGpuData(context->UIDataBindingService, source);
+    const auto newResult = ExtractGpuData(context->UIDataBindingService, source);
 
-    auto gpuTime = uiFactory.CreateLabel("GPU time");
-    auto gpuTimeFmtLabel = uiFactory.CreateFmtValueLabel(0.0f, "{:.2f}ms");
+    const auto gpuTime = uiFactory.CreateLabel("GPU time");
+    const auto gpuTimeFmtLabel = uiFactory.CreateFmtValueLabel(0.0f, "{:.2f}ms");
     gpuTimeFmtLabel->SetAlignmentX(UI::ItemAlignment::Far);
     gpuTimeFmtLabel->SetAlignmentY(UI::ItemAlignment::Far);
-    auto chart = std::make_shared<UI::AreaChart>(context);
+    const auto chart = std::make_shared<UI::AreaChart>(context);
     {
       chart->SetAlignmentX(UI::ItemAlignment::Stretch);
       chart->SetAlignmentY(UI::ItemAlignment::Stretch);
@@ -663,13 +663,13 @@ namespace Fsl
       chart->SetRenderPolicy(UI::ChartRenderPolicy::FillAvailable);
     }
 
-    auto gpuDetails = std::make_shared<UI::StackLayout>(context);
+    const auto gpuDetails = std::make_shared<UI::StackLayout>(context);
     gpuDetails->SetAlignmentX(UI::ItemAlignment::Stretch);
     gpuDetails->SetOrientation(UI::LayoutOrientation::Vertical);
     gpuDetails->AddChild(gpuTime);
     gpuDetails->AddChild(gpuTimeFmtLabel);
 
-    GpuLegendRecord gpuLegend{gpuDetails, gpuTimeFmtLabel};
+    const GpuLegendRecord gpuLegend{gpuDetails, gpuTimeFmtLabel};
     SetGpuAverage(gpuLegend, newResult.Average);
 
     return {gpuLegend, chart, newResult.Data};

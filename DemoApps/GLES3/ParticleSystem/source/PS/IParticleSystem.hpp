@@ -44,7 +44,7 @@ namespace Fsl
   public:
     virtual ~IParticleSystem() = default;
 
-    virtual uint32_t GetParticleCount() const = 0;
+    [[nodiscard]] virtual uint32_t GetParticleCount() const = 0;
     virtual void AddEmitter(const std::shared_ptr<IParticleEmitter>& emitter) = 0;
     virtual void Update(const DemoTime& demoTime) = 0;
     virtual void Draw(const ParticleDrawContext& context) = 0;

@@ -52,7 +52,7 @@ namespace Fsl
 
       ModifiedFlags() = default;
 
-      bool IsFlagged(const ModifiedFlags::Enum flag) const
+      [[nodiscard]] bool IsFlagged(const ModifiedFlags::Enum flag) const
       {
         return (Value & static_cast<uint32_t>(flag)) != 0;
       }
@@ -71,7 +71,7 @@ namespace Fsl
     OptionParser();
     ~OptionParser() override;
 
-    Config GetConfig() const
+    [[nodiscard]] Config GetConfig() const
     {
       return m_config;
     }

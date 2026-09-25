@@ -52,7 +52,7 @@ namespace Fsl::Helios
     explicit CameraAdapterOpenCV(const CameraAdapterAllocateInfo& allocateInfo);
     ~CameraAdapterOpenCV() override;
 
-    CameraAdapterConfig GetConfig() const override;
+    [[nodiscard]] CameraAdapterConfig GetConfig() const override;
     bool TryRender(RawBitmapEx& rTargetBitmap, uint32_t& rFrameId) override;
   };
 }

@@ -284,7 +284,7 @@ namespace Fsl
       FSLLOG3_VERBOSE3("TryBeginDrag: Existing drag cancelled due to starting a new drag");
     }
 
-    int32_t foundIndex = TryFindDragableEntity(positionPx);
+    const int32_t foundIndex = TryFindDragableEntity(positionPx);
     if (foundIndex >= 0)
     {
       FSLLOG3_VERBOSE3("TryBeginDrag: starting drag of index {} at position {}px", foundIndex, positionPx);

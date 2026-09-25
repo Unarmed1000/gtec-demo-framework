@@ -57,15 +57,15 @@ namespace Fsl
   {
     FSLLOG3_INFO("Preparing UI");
 
-    auto contentManager = config.DemoServiceProvider.Get<IContentManager>();
+    const auto contentManager = config.DemoServiceProvider.Get<IContentManager>();
 
 
     {    // Build a simple UI
-      auto uiFactory = UI::Theme::ThemeSelector::CreateControlFactory(*m_uiExtension);
+      const auto uiFactory = UI::Theme::ThemeSelector::CreateControlFactory(*m_uiExtension);
 
       {    // Check if the user requested the XSD to be saved
-        auto optionParser = config.GetOptions<OptionParser>();
-        auto saveXsdFilename = optionParser->TryGetXsdSaveFilename();
+        const auto optionParser = config.GetOptions<OptionParser>();
+        const auto saveXsdFilename = optionParser->TryGetXsdSaveFilename();
         if (!saveXsdFilename.IsEmpty())
         {
           FSLLOG3_INFO("Saving UI XSD to '{}'", saveXsdFilename);
@@ -130,8 +130,8 @@ namespace Fsl
 
 
     FSLLOG3_INFO("Loading UI from '{}'", LocalConfig::DeclarativeUI);
-    auto fullPath = IO::Path::Combine(contentManager.GetContentPath(), LocalConfig::DeclarativeUI);
-    std::shared_ptr<UI::BaseWindow> main = UI::Declarative::UIReader::Load(factory, uiFactory->GetContext()->UIDataBindingService, fullPath);
+    const auto fullPath = IO::Path::Combine(contentManager.GetContentPath(), LocalConfig::DeclarativeUI);
+    const std::shared_ptr<UI::BaseWindow> main = UI::Declarative::UIReader::Load(factory, uiFactory->GetContext()->UIDataBindingService, fullPath);
     return {main};
   }
 

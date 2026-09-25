@@ -65,14 +65,14 @@ namespace Fsl
     , m_fragUboData(Vector3(0.0f, 0.0f, 1.0f), Vector3(0.8f, 0.8f, 0.8f), Vector3(0.2f, 0.2f, 0.2f))
   {
     m_fragUboData.LightDirection.Normalize();
-    auto contentManger = GetContentManager();
-    auto contentPath = contentManger->GetContentPath();
+    const auto contentManger = GetContentManager();
+    const auto contentPath = contentManger->GetContentPath();
 
     // Load the texture
     {
       Bitmap bitmap;
       contentManger->Read(bitmap, "Models/Knight2/armor_default_color.jpg", PixelFormat::R8G8B8_UNORM);
-      GLTextureParameters texParams(GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR, GL_REPEAT, GL_REPEAT);
+      const GLTextureParameters texParams(GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR, GL_REPEAT, GL_REPEAT);
       m_resources.Texture.Reset(bitmap, texParams, TextureFlags::GenerateMipMaps);
     }
 
@@ -81,7 +81,7 @@ namespace Fsl
     // aiProcessPreset_TargetRealtime_Fast
     // aiProcessPreset_TargetRealtime_Quality
     // aiProcessPreset_TargetRealtime_MaxQuality
-    auto modelPath = IO::Path::Combine(contentPath, "Models/Knight2/armor.obj");
+    const auto modelPath = IO::Path::Combine(contentPath, "Models/Knight2/armor.obj");
     SceneImporter sceneImporter;
     const std::shared_ptr<TestScene> scene = sceneImporter.Load<TestScene>(modelPath, DefaultModelScale, true);
 
@@ -90,7 +90,7 @@ namespace Fsl
       throw NotSupportedException("Scene did not contain any meshes");
     }
 
-    auto rootNode = scene->GetRootNode();
+    const auto rootNode = scene->GetRootNode();
     if (!rootNode)
     {
       throw NotSupportedException("Scene did not contain a root node");
@@ -104,7 +104,7 @@ namespace Fsl
       std::size_t indexCount = 0;
       for (std::size_t i = 0; i < scene->Meshes.size(); ++i)
       {
-        auto mesh = scene->Meshes[i];
+        const auto mesh = scene->Meshes[i];
         m_resources.IndexBuffers.Reset(i, mesh->GetIndexArray(), GL_STATIC_DRAW);
         m_resources.VertexBuffers.Reset(i, mesh->GetVertexArray(), GL_STATIC_DRAW);
 
@@ -215,8 +215,8 @@ namespace Fsl
     const auto indexBufferType = m_resources.IndexBuffers.GetType();
     for (int32_t i = 0; i < m_resources.IndexBuffers.Length(); ++i)
     {
-      auto indexBuffer = m_resources.IndexBuffers.Get(i);
-      auto vertexBuffer = m_resources.VertexBuffers.Get(i);
+      const auto indexBuffer = m_resources.IndexBuffers.Get(i);
+      const auto vertexBuffer = m_resources.VertexBuffers.Get(i);
       if (indexBuffer.GetCapacity() > 0)
       {
         // Bind and enable the vertex buffer

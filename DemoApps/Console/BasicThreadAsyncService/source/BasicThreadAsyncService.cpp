@@ -62,18 +62,18 @@ namespace Fsl
 
     FSLLOG3_INFO("App: Running (ThreadId: {})", threadId);
 
-    std::shared_ptr<ConcurrentQueue<int32_t>> incomingQueue(std::make_shared<ConcurrentQueue<int32_t>>());
+    const std::shared_ptr<ConcurrentQueue<int32_t>> incomingQueue(std::make_shared<ConcurrentQueue<int32_t>>());
 
-    auto future = m_service->RunAsync(incomingQueue, m_cancellationToken);
+    const auto future = m_service->RunAsync(incomingQueue, m_cancellationToken);
 
     const std::chrono::duration totalTime = 2s;
     auto currentTime = std::chrono::system_clock::now();
-    auto endTime = currentTime + totalTime;
+    const auto endTime = currentTime + totalTime;
 
     do
     {
       int32_t queueResult = 0;
-      std::chrono::duration timeLeft = endTime - currentTime;
+      const std::chrono::duration timeLeft = endTime - currentTime;
       FSLLOG3_INFO("App: Waiting for message (ThreadId: {})", threadId);
       if (incomingQueue->TryDequeueWait(queueResult, std::chrono::duration_cast<std::chrono::milliseconds>(timeLeft)))
       {

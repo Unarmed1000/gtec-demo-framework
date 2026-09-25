@@ -38,12 +38,12 @@ namespace Fsl::RenderOptionControlsFactory
 {
   RenderOptionControls CreateRenderMethodControls(UI::Theme::IThemeControlFactory& uiFactory)
   {
-    auto switchRenderOptionBatch = uiFactory.CreateSwitch(TextConfig::Batch, true);
-    auto switchRenderOptionFillBuffers = uiFactory.CreateSwitch(TextConfig::FillBuffers, true);
-    auto switchRenderOptionDepthBuffer = uiFactory.CreateSwitch(TextConfig::DepthBuffer, true);
-    auto switchRenderOptionDrawReorder = uiFactory.CreateSwitch(TextConfig::DrawReorder, true);
-    auto switchRenderOptionPreferFastReorder = uiFactory.CreateSwitch(TextConfig::PreferFastReorder, false);
-    auto switchRenderOptionMeshCaching = uiFactory.CreateSwitch(TextConfig::MeshCaching, false);
+    const auto switchRenderOptionBatch = uiFactory.CreateSwitch(TextConfig::Batch, true);
+    const auto switchRenderOptionFillBuffers = uiFactory.CreateSwitch(TextConfig::FillBuffers, true);
+    const auto switchRenderOptionDepthBuffer = uiFactory.CreateSwitch(TextConfig::DepthBuffer, true);
+    const auto switchRenderOptionDrawReorder = uiFactory.CreateSwitch(TextConfig::DrawReorder, true);
+    const auto switchRenderOptionPreferFastReorder = uiFactory.CreateSwitch(TextConfig::PreferFastReorder, false);
+    const auto switchRenderOptionMeshCaching = uiFactory.CreateSwitch(TextConfig::MeshCaching, false);
 
     switchRenderOptionBatch->SetAlignmentX(UI::ItemAlignment::Stretch);
     switchRenderOptionFillBuffers->SetAlignmentX(UI::ItemAlignment::Stretch);

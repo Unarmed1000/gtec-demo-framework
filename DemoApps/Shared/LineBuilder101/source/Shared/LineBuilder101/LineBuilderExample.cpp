@@ -102,7 +102,7 @@ namespace Fsl
   {
     UpdateInput(demoTime);
 
-    float aspectRatio = static_cast<float>(windowSizePx.RawWidth()) / static_cast<float>(windowSizePx.RawHeight());
+    const float aspectRatio = static_cast<float>(windowSizePx.RawWidth()) / static_cast<float>(windowSizePx.RawHeight());
     m_matView = m_camera.GetViewMatrix();
     m_matProjection = Matrix::CreatePerspectiveFieldOfView(MathHelper::ToRadians(45.0f), aspectRatio, 0.001f, 500.0f);
 
@@ -206,11 +206,11 @@ namespace Fsl
     m_lineBuilder.Add(Vector3(1.75f, 0.0f, 1.0f), Vector3(1.75f, 0.0f, 0.0f), Colors::Green());
 
     {    // Render three rotating axis
-      auto matAxis1 = Matrix::CreateRotationX(m_radians1) * Matrix::CreateTranslation(0.0f, 0.0f, 1.5f);
-      auto matAxis2 = Matrix::CreateRotationY(m_radians1) * Matrix::CreateTranslation(0.5f, 0.0f, 1.5f);
-      auto matAxis3 = Matrix::CreateRotationZ(m_radians1) * Matrix::CreateTranslation(1.0f, 0.0f, 1.5f);
-      auto matAxis4 = Matrix::CreateRotationX(m_radians1) * Matrix::CreateRotationY(m_radians2) * Matrix::CreateRotationZ(m_radians3) *
-                      Matrix::CreateTranslation(1.5f, 0.0f, 1.5f);
+      const auto matAxis1 = Matrix::CreateRotationX(m_radians1) * Matrix::CreateTranslation(0.0f, 0.0f, 1.5f);
+      const auto matAxis2 = Matrix::CreateRotationY(m_radians1) * Matrix::CreateTranslation(0.5f, 0.0f, 1.5f);
+      const auto matAxis3 = Matrix::CreateRotationZ(m_radians1) * Matrix::CreateTranslation(1.0f, 0.0f, 1.5f);
+      const auto matAxis4 = Matrix::CreateRotationX(m_radians1) * Matrix::CreateRotationY(m_radians2) * Matrix::CreateRotationZ(m_radians3) *
+                            Matrix::CreateTranslation(1.5f, 0.0f, 1.5f);
 
       // Add a few bounding boxes for flavor
       const BoundingBox boundingBox(Vector3(0.0f, 0.0f, 0.0f), Vector3(0.05f, 0.05f, 0.05f));
@@ -239,8 +239,8 @@ namespace Fsl
     constexpr auto TestScale = 0.25f;
     const auto matTest = Matrix::CreatePerspective(3.2f * TestScale, 2.4f * TestScale, 1 * TestScale, 3 * TestScale);
 
-    auto matRot = Matrix::CreateTranslation(-2.0f, 0.0f, 0.0f) * Matrix::CreateRotationX(m_radians1) * Matrix::CreateRotationY(m_radians2) *
-                  Matrix::CreateRotationZ(m_radians3) * Matrix::CreateScale(0.25f) * Matrix::CreateTranslation(-1.0f, 0.0f, 0.0f);
+    const auto matRot = Matrix::CreateTranslation(-2.0f, 0.0f, 0.0f) * Matrix::CreateRotationX(m_radians1) * Matrix::CreateRotationY(m_radians2) *
+                        Matrix::CreateRotationZ(m_radians3) * Matrix::CreateScale(0.25f) * Matrix::CreateTranslation(-1.0f, 0.0f, 0.0f);
 
     m_lineBuilder.AddGridXZ(Rect(-2.0f, -2.0f, 4.0f, 4.0f), 0.0f, 3 + 1, Color(0.5f, 0.5f, 0.5f, 1.0f), matRot);
 
@@ -259,11 +259,11 @@ namespace Fsl
     m_lineBuilder.Add(Vector3(1.75f, 0.0f, 1.0f), Vector3(1.75f, 0.0f, 0.0f), Colors::Green(), matRot);
 
     {    // Render three rotating axis
-      auto matAxis1 = Matrix::CreateRotationX(m_radians1) * Matrix::CreateTranslation(0.0f, 0.0f, 1.5f) * matRot;
-      auto matAxis2 = Matrix::CreateRotationY(m_radians1) * Matrix::CreateTranslation(0.5f, 0.0f, 1.5f) * matRot;
-      auto matAxis3 = Matrix::CreateRotationZ(m_radians1) * Matrix::CreateTranslation(1.0f, 0.0f, 1.5f) * matRot;
-      auto matAxis4 = Matrix::CreateRotationX(m_radians1) * Matrix::CreateRotationY(m_radians2) * Matrix::CreateRotationZ(m_radians3) *
-                      Matrix::CreateTranslation(1.5f, 0.0f, 1.5f) * matRot;
+      const auto matAxis1 = Matrix::CreateRotationX(m_radians1) * Matrix::CreateTranslation(0.0f, 0.0f, 1.5f) * matRot;
+      const auto matAxis2 = Matrix::CreateRotationY(m_radians1) * Matrix::CreateTranslation(0.5f, 0.0f, 1.5f) * matRot;
+      const auto matAxis3 = Matrix::CreateRotationZ(m_radians1) * Matrix::CreateTranslation(1.0f, 0.0f, 1.5f) * matRot;
+      const auto matAxis4 = Matrix::CreateRotationX(m_radians1) * Matrix::CreateRotationY(m_radians2) * Matrix::CreateRotationZ(m_radians3) *
+                            Matrix::CreateTranslation(1.5f, 0.0f, 1.5f) * matRot;
 
       // Add a few bounding boxes for flavor
       const BoundingBox boundingBox(Vector3(0.0f, 0.0f, 0.0f), Vector3(0.05f, 0.05f, 0.05f));

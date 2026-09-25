@@ -120,9 +120,9 @@ namespace Fsl::Willems
       aiVector3D* pTangent = (pAiMesh->HasTangentsAndBitangents()) ? &(pAiMesh->mTangents[i]) : &zero3D;
       aiVector3D* pBiTangent = (pAiMesh->HasTangentsAndBitangents()) ? &(pAiMesh->mBitangents[i]) : &zero3D;
 
-      Vertex v(glm::vec3(pPos->x, -pPos->y, pPos->z), glm::vec2(pTexCoord->x, pTexCoord->y), glm::vec3(pNormal->x, pNormal->y, pNormal->z),
-               glm::vec3(pTangent->x, pTangent->y, pTangent->z), glm::vec3(pBiTangent->x, pBiTangent->y, pBiTangent->z),
-               glm::vec3(pColor.r, pColor.g, pColor.b));
+      const Vertex v(glm::vec3(pPos->x, -pPos->y, pPos->z), glm::vec2(pTexCoord->x, pTexCoord->y), glm::vec3(pNormal->x, pNormal->y, pNormal->z),
+                     glm::vec3(pTangent->x, pTangent->y, pTangent->z), glm::vec3(pBiTangent->x, pBiTangent->y, pBiTangent->z),
+                     glm::vec3(pColor.r, pColor.g, pColor.b));
 
       rDim.max.x = std::max(pPos->x, rDim.max.x);
       rDim.max.y = std::max(pPos->y, rDim.max.y);
@@ -137,7 +137,7 @@ namespace Fsl::Willems
 
     rDim.size = rDim.max - rDim.min;
 
-    auto indexBase = UncheckedNumericCast<uint32_t>(rMeshEntry.Indices.size());
+    const auto indexBase = UncheckedNumericCast<uint32_t>(rMeshEntry.Indices.size());
     for (unsigned int i = 0; i < pAiMesh->mNumFaces; i++)
     {
       const aiFace& face = pAiMesh->mFaces[i];

@@ -170,48 +170,48 @@ namespace Fsl
     explicit AntiAliasingShared(const DemoAppConfig& config, const AntiAliasingConfig& aaConfig, const CustomUIConfig& customUIConfig);
     ~AntiAliasingShared() override;
 
-    std::shared_ptr<UIDemoAppExtension> GetUIDemoAppExtension() const
+    [[nodiscard]] std::shared_ptr<UIDemoAppExtension> GetUIDemoAppExtension() const
     {
       return m_uiExtension;
     }
 
-    const Fsl::Graphics3D::LineBuilder& GetLineBuilder() const
+    [[nodiscard]] const Fsl::Graphics3D::LineBuilder& GetLineBuilder() const
     {
       return m_lineBuilder;
     }
 
-    const Fsl::Graphics3D::LineBuilder& GetDividerLineBuilder() const
+    [[nodiscard]] const Fsl::Graphics3D::LineBuilder& GetDividerLineBuilder() const
     {
       return m_dividerLineBuilder;
     }
 
-    bool IsPaused() const
+    [[nodiscard]] bool IsPaused() const
     {
       return m_ui.CbPause->IsChecked();
     }
 
-    const Matrix& GetViewMatrix() const
+    [[nodiscard]] const Matrix& GetViewMatrix() const
     {
       return m_matView;
     }
 
-    const Matrix& GetProjectionMatrix() const
+    [[nodiscard]] const Matrix& GetProjectionMatrix() const
     {
       return m_matProjection;
     }
 
-    AntiAliasingMethod GetActiveAntiAliasingMethod() const noexcept
+    [[nodiscard]] AntiAliasingMethod GetActiveAntiAliasingMethod() const noexcept
     {
       return m_activeAntiAliasingMethod;
     }
 
-    bool UseMSAAFastResolve() const
+    [[nodiscard]] bool UseMSAAFastResolve() const
     {
       return m_ui.FastResolve->IsChecked();
     }
 
-    PxRectangle GetContentWindowRectangleInScreenspace(const ContentWindowId contentWindowId) const;
-    UI::Custom::ZoomInfo GetResolvedZoomInfo() const;
+    [[nodiscard]] PxRectangle GetContentWindowRectangleInScreenspace(const ContentWindowId contentWindowId) const;
+    [[nodiscard]] UI::Custom::ZoomInfo GetResolvedZoomInfo() const;
 
 
     void OnConfigurationChanged(const DemoWindowMetrics& windowMetrics);

@@ -57,7 +57,7 @@ namespace Fsl
       {
         CustomThread custom(std::move(threadSafeQueue));
 
-        bool result = custom.Run(*cancellationTokenSource);
+        const bool result = custom.Run(*cancellationTokenSource);
 
         FSLLOG3_INFO("CustomThreadHost: OnThreadRun completed with: {} (ThreadId: {})", result, threadId);
         promise.set_value(result);

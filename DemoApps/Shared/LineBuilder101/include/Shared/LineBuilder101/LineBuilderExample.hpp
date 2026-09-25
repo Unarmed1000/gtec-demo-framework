@@ -76,17 +76,17 @@ namespace Fsl
     void Update(const DemoTime& demoTime, const PxSize2D& windowSizePx);
     void Draw(const DemoTime& demoTime);
 
-    const Matrix& GetViewMatrix() const
+    [[nodiscard]] const Matrix& GetViewMatrix() const
     {
       return m_matView;
     }
 
-    const Matrix& GetProjectionMatrix() const
+    [[nodiscard]] const Matrix& GetProjectionMatrix() const
     {
       return m_matProjection;
     }
 
-    const Fsl::Graphics3D::LineBuilder& GetLineBuilder() const
+    [[nodiscard]] const Fsl::Graphics3D::LineBuilder& GetLineBuilder() const
     {
       return m_lineBuilder;
     }

@@ -79,7 +79,7 @@ namespace Fsl
 
   void CameraDemo::Draw(const FrameInfo& frameInfo)
   {
-    auto currentSizePx = GetWindowSizePx();
+    const auto currentSizePx = GetWindowSizePx();
 
     glViewport(0, 0, currentSizePx.RawWidth(), currentSizePx.RawHeight());
 

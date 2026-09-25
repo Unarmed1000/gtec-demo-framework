@@ -280,7 +280,7 @@ namespace Fsl
 
 
     {    // Set the default values
-      ScopedUse scope(*this);
+      const ScopedUse scope(*this);
 
       SetWorld(Matrix::GetIdentity());
       SetView(Matrix::GetIdentity());
