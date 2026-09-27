@@ -399,16 +399,7 @@ class ValidationEngine:
             retry = False
             platformFilename = PlatformUtil.GetPlatformDependentExecuteableName(currentCommandName, PlatformUtil.DetectBuildPlatformType())
 
-            result, value = self.__TryFindFileInPath(newErrors, installationPath, platformFilename, command.ExpectedPath)
-
-            foundVersion = [0]
-            if result and value is not None and command.VersionCommand is not None:
-                if command.VersionCommand is None or command.VersionRegEx is None:
-                    raise Exception("Internal error")
-                foundVersion = self.__TryValidateCommandVersion(
-                    value, command.VersionCommand, command.VersionRegEx, command.MinVersion, command.AddOnErrorWarning, command.VersionSplitChar
-                )
-                result = len(foundVersion) > 0
+            result, value, foundVersion = self.__TryFindExecutableInPath(newErrors, installationPath, platformFilename, command)
 
             # Cache information about what we discovered
             if result and value is not None:
@@ -442,6 +433,49 @@ class ValidationEngine:
             rErrorRecordList += newErrors
 
         return result
+
+    def __TryFindExecutableInPath(
+        self,
+        rErrorRecordList: list[ErrorRecord],
+        installationPath: str | None,
+        platformFilename: str,
+        command: PackageRecipeValidateCommandFindExecutableFileInPath,
+    ) -> tuple[bool, str | None, list[int]]:
+        # With a expected path it's the file the PATH resolves to that matters, so only the first match is checked.
+        # Otherwise use the first match that passes the version check, as a older copy can be earlier in the PATH
+        # (like a pip installed clang-tidy before the LLVM one)
+        candidates = IOUtil.FindAllFilesInPath(platformFilename) if command.ExpectedPath is None else []
+        if len(candidates) <= 1:
+            result, value = self.__TryFindFileInPath(rErrorRecordList, installationPath, platformFilename, command.ExpectedPath)
+            if not result or value is None:
+                return False, value, [0]
+            foundVersion = self.__TryGetValidVersion(value, command)
+            return len(foundVersion) > 0, value, foundVersion
+
+        paths = [IOUtil.NormalizePath(candidate) for candidate in candidates]
+        for path in paths:
+            if self.__Log.Verbosity >= 4:
+                self.__Log.LogPrint(f"Checking '{path}'")
+            foundVersion = self.__TryGetValidVersion(path, command)
+            if len(foundVersion) > 0:
+                return True, path, foundVersion
+        rErrorRecordList.append(
+            ErrorRecord(
+                ErrorClassification.Environment,
+                f"None of the '{platformFilename}' files found in path meet the version requirement: {', '.join(paths)}",
+            )
+        )
+        return False, paths[0], []
+
+    def __TryGetValidVersion(self, path: str, command: PackageRecipeValidateCommandFindExecutableFileInPath) -> list[int]:
+        """Returns a empty list if the version check failed"""
+        if command.VersionCommand is None:
+            return [0]
+        if command.VersionRegEx is None:
+            raise Exception("Internal error")
+        return self.__TryValidateCommandVersion(
+            path, command.VersionCommand, command.VersionRegEx, command.MinVersion, command.AddOnErrorWarning, command.VersionSplitChar
+        )
 
     def __ToVersion(self, foundVersion: list[int]) -> Version:
         if len(foundVersion) >= 4:

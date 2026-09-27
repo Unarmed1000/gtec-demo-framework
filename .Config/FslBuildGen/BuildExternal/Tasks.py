@@ -160,13 +160,17 @@ class GitCloneTask(GitBaseTask):
             IOUtil.SafeRemoveDirectoryTree(targetPath, True)
             raise
 
-    def RunGitCheckout(self, sourcePath: str, branch: str) -> None:
+    def RunGitCheckout(self, sourcePath: str, branch: str, allowFetch: bool) -> None:
+        # A cached clone can predate the requested commit (the recipe was re-pinned), so fetch it when it's missing
+        if not self.__HasCommit(sourcePath, branch):
+            if not allowFetch:
+                raise Exception(
+                    f"The commit '{branch}' is missing from '{sourcePath}' and downloads have been disabled. Enable downloads or fetch it manually."
+                )
+            self.__RunGitFetch(sourcePath, branch)
+
         self.DoPrint(f"Running git checkout {branch} at {sourcePath}")
-        try:
-            self.__RunGitCheckout(sourcePath, branch)
-        except Exception:
-            # A error occurred removing the targetPath
-            raise
+        self.__RunGitCheckout(sourcePath, branch)
 
     def GetCurrentHash(self, path: str) -> str:
         return GitUtil.GetCurrentHash(self.GitCommand, path)
@@ -181,6 +185,22 @@ class GitCloneTask(GitBaseTask):
         result = subprocess.call(buildCommand)
         if result != 0:
             raise Exception(f"git clone failed {buildCommand}")
+
+    def __HasCommit(self, sourcePath: str, commit: str) -> bool:
+        buildCommand = [self.GitCommand, "cat-file", "-e", f"{commit}^{{commit}}"]
+        return subprocess.call(buildCommand, cwd=sourcePath, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL) == 0
+
+    def __RunGitFetch(self, sourcePath: str, commit: str) -> None:
+        self.DoPrint(f"Commit {commit} not found in {sourcePath}, running git fetch")
+        # The clone is single branch, so a plain fetch only updates that branch. If the commit lives elsewhere fetch it directly.
+        buildCommand = [self.GitCommand, "fetch", "origin"]
+        result = subprocess.call(buildCommand, cwd=sourcePath)
+        if result == 0 and self.__HasCommit(sourcePath, commit):
+            return
+        buildCommand = [self.GitCommand, "fetch", "origin", commit]
+        result = subprocess.call(buildCommand, cwd=sourcePath)
+        if result != 0 or not self.__HasCommit(sourcePath, commit):
+            raise Exception(f"git fetch failed to retrieve commit '{commit}' {buildCommand}")
 
     def __RunGitCheckout(self, sourcePath: str, branch: str) -> None:
         if len(branch) <= 0:

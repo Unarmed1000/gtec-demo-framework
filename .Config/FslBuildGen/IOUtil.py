@@ -500,6 +500,23 @@ def TryFindFileInPath(filename: str) -> str | None:
     return None
 
 
+def FindAllFilesInPath(filename: str) -> list[str]:
+    """Find every match in the PATH, in PATH order and without duplicates"""
+    fpath, fname = os.path.split(filename)
+    if fpath:
+        return [filename] if os.path.isfile(filename) else []
+    result: list[str] = []
+    seen: set[str] = set()
+    for path in os.environ["PATH"].split(os.pathsep):
+        path = path.strip('"')
+        exeFile = os.path.join(path, filename)
+        key = os.path.normcase(os.path.normpath(exeFile))
+        if key not in seen and os.path.isfile(exeFile):
+            seen.add(key)
+            result.append(exeFile)
+    return result
+
+
 def GetCurrentWorkingDirectory() -> str:
     return NormalizePath(os.getcwd())
 
