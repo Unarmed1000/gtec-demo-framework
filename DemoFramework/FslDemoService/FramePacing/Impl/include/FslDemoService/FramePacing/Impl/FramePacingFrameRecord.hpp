@@ -23,7 +23,6 @@
 //****************************************************************************************************************************************************
 
 #include <FslBase/String/StringViewLite.hpp>
-#include <FslDemoService/FramePacing/FramePacingMarkerSlot.hpp>
 #include <FslDemoService/FramePacing/Impl/FramePacingMarkerKind.hpp>
 #include <cstdint>
 
@@ -42,7 +41,8 @@ namespace Fsl
     int64_t StartUtcTicks{0};
     //! Start markers only: the name of the run (valid until the next call to the service).
     StringViewLite RunName;
-    FramePacingMarkerSlot Slot{FramePacingMarkerSlot::TopLeft};
+    //! Draw the sync marker at the bottom left as well
+    bool SyncMarkerEnabled{false};
     int32_t ModuleSizePx{0};
     //! 0 if unknown
     int32_t CaptureHeightPx{0};

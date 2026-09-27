@@ -45,7 +45,7 @@ namespace Fsl
     : ThreadLocalService(serviceProvider)
     , m_random(std::random_device{}())
     , m_enabled(optionParser->IsEnabled())
-    , m_slot(optionParser->GetSlot())
+    , m_syncMarkerEnabled(optionParser->IsSyncMarkerEnabled())
     , m_moduleSizePx(ClampModuleSize(optionParser->GetModuleSizePx()))
     , m_captureHeightPx(std::max(optionParser->GetCaptureHeightPx(), 0))
     , m_nextRunId(optionParser->GetRunId())
@@ -73,15 +73,15 @@ namespace Fsl
   }
 
 
-  FramePacingMarkerSlot FramePacingService::GetSlot() const noexcept
+  bool FramePacingService::IsSyncMarkerEnabled() const noexcept
   {
-    return m_slot;
+    return m_syncMarkerEnabled;
   }
 
 
-  void FramePacingService::SetSlot(const FramePacingMarkerSlot slot) noexcept
+  void FramePacingService::SetSyncMarkerEnabled(const bool enabled) noexcept
   {
-    m_slot = slot;
+    m_syncMarkerEnabled = enabled;
   }
 
 
@@ -199,7 +199,7 @@ namespace Fsl
     rRecord.RunId = m_runId;
     rRecord.StartUtcTicks = m_runStartUtcTicks;
     rRecord.RunName = StringViewLite(m_runName);
-    rRecord.Slot = m_slot;
+    rRecord.SyncMarkerEnabled = m_syncMarkerEnabled;
     rRecord.ModuleSizePx = m_moduleSizePx;
     rRecord.CaptureHeightPx = m_captureHeightPx;
     return true;

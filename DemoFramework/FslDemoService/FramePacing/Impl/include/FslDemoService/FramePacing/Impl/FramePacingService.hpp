@@ -52,7 +52,7 @@ namespace Fsl
     FramePacingSequence m_sequence;
 
     bool m_enabled;
-    FramePacingMarkerSlot m_slot;
+    bool m_syncMarkerEnabled;
     int32_t m_moduleSizePx;
     int32_t m_captureHeightPx;
 
@@ -78,8 +78,8 @@ namespace Fsl
     // From IFramePacingService
     [[nodiscard]] bool IsEnabled() const noexcept final;
     void SetEnabled(const bool enabled) noexcept final;
-    [[nodiscard]] FramePacingMarkerSlot GetSlot() const noexcept final;
-    void SetSlot(const FramePacingMarkerSlot slot) noexcept final;
+    [[nodiscard]] bool IsSyncMarkerEnabled() const noexcept final;
+    void SetSyncMarkerEnabled(const bool enabled) noexcept final;
     [[nodiscard]] int32_t GetModuleSizePx() const noexcept final;
     void SetModuleSizePx(const int32_t moduleSizePx) noexcept final;
     [[nodiscard]] int32_t GetCaptureHeightPx() const noexcept final;

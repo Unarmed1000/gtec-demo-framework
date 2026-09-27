@@ -25,7 +25,6 @@
 #include <FslDemoService/FramePacing/IFramePacingService.hpp>
 #include <FslDemoService/FramePacing/Impl/FramePacingServiceOptionParser.hpp>
 #include <fmt/format.h>
-#include <array>
 #include <cmath>
 #include <string_view>
 
@@ -47,22 +46,12 @@ namespace Fsl
         Enable,
         ModuleSize,
         CaptureHeight,
-        Slot,
+        SyncMarker,
         Run,
         Duration,
         RunId,
       };
     };
-
-    struct SlotRecord
-    {
-      StringViewLite Name;
-      FramePacingMarkerSlot Slot{};
-    };
-
-    constexpr std::array<SlotRecord, 4> SlotNames = {
-      SlotRecord{"top", FramePacingMarkerSlot::TopLeft}, SlotRecord{"middle", FramePacingMarkerSlot::MiddleLeft},
-      SlotRecord{"bottom", FramePacingMarkerSlot::BottomLeft}, SlotRecord{"all", FramePacingMarkerSlot::All}};
   }
 
 
@@ -82,8 +71,9 @@ namespace Fsl
     rOptions.emplace_back("FramePacing.CaptureHeight", OptionArgument::OptionRequired, CommandId::CaptureHeight,
                           "The height in pixels the capture is stored at, when set the module size is calculated so the marker survives the "
                           "downscale (overrides FramePacing.ModuleSize).");
-    rOptions.emplace_back("FramePacing.Slot", OptionArgument::OptionRequired, CommandId::Slot,
-                          "Where the frame pacing marker is drawn: top, middle, bottom or all (all detects tearing). Defaults to: top");
+    rOptions.emplace_back("FramePacing.SyncMarker", OptionArgument::OptionNone, CommandId::SyncMarker,
+                          "Also draw the small frame pacing sync marker at the bottom left: it detects tearing, and camera capture needs it for "
+                          "its timing.");
     rOptions.emplace_back("FramePacing.Run", OptionArgument::OptionRequired, CommandId::Run,
                           fmt::format("Start a measured run with the given name (at most {} bytes) at the first frame. Implies --FramePacing.",
                                       IFramePacingService::MaxRunNameBytes));
@@ -125,17 +115,9 @@ namespace Fsl
         m_captureHeightPx = value;
         return OptionParseResult::Parsed;
       }
-    case CommandId::Slot:
-      for (const auto& entry : SlotNames)
-      {
-        if (entry.Name == strOptArg)
-        {
-          m_slot = entry.Slot;
-          return OptionParseResult::Parsed;
-        }
-      }
-      FSLLOG3_ERROR("Unknown FramePacing.Slot '{}', expected top, middle, bottom or all", std::string_view(strOptArg));
-      return OptionParseResult::Failed;
+    case CommandId::SyncMarker:
+      m_syncMarkerEnabled = true;
+      return OptionParseResult::Parsed;
     case CommandId::Run:
       if (strOptArg.size() > IFramePacingService::MaxRunNameBytes)
       {

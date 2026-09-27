@@ -25,8 +25,8 @@ Argument                          | Description
 `--FramePacing`                   | Draw the frame marker on top of every frame.
 `--FramePacing.ModuleSize <px>`   | The size of one QR module in pixels (default 6).
 `--FramePacing.CaptureHeight <px>`| The height the capture is stored at. The module size is calculated so the marker survives the downscale (overrides the module size).
-`--FramePacing.Slot <slot>`       | `top` (default), `middle`, `bottom` or `all`. `all` draws the frame marker three times, which detects tearing.
-`--FramePacing.Run <name>`        | Start a measured run with this name (at most 64 bytes) at the first frame. Implies `--FramePacing`.
+`--FramePacing.SyncMarker`        | Also draw the small sync marker (the frame index only) at the bottom left. The analysis detects tearing when the two markers disagree, and camera capture needs it for its timing.
+`--FramePacing.Run <name>`        | Start a measured run with this name (at most 60 bytes) at the first frame. Implies `--FramePacing`.
 `--FramePacing.Duration <sec>`    | The duration of the measured part of the run (0 = until the app exits).
 `--FramePacing.RunId <id>`        | The id of the run (defaults to a random id).
 
@@ -62,7 +62,7 @@ if (framePacing)
 A run is either open ended (zero duration, it lasts until `EndRun`) or timed (it ends by itself once the measured part has lasted
 the given duration). `GetRunDuration()` and `GetRunMeasuredTime()` report the progress of a timed run.
 
-`IFramePacingService` also exposes the slot, module size, capture height, run state and run id. See the
+`IFramePacingService` also exposes the sync marker, module size, capture height, run state and run id. See the
 [GLES2.FramePacing](../DemoApps/GLES2/FramePacing), [GLES3.FramePacing](../DemoApps/GLES3/FramePacing) and
 [Vulkan.FramePacing](../DemoApps/Vulkan/FramePacing) samples (they share their code in [Shared/FramePacing](../DemoApps/Shared/FramePacing)).
 
@@ -71,13 +71,15 @@ the given duration). `GetRunDuration()` and `GetRunMeasuredTime()` report the pr
 - **Frame index**: a 64 bit counter that increments for every frame the app draws.
 - **Animation time**: `FrameInfo::Time.CurrentTickCount`, the time the app's animation was evaluated for (100ns ticks). Fixed time
   step, pause and forced update time modes are reported exactly as the app sees them.
+- **Intended display time and target frame time**: reported as unknown (0) as the framework has no frame pacer, so the analysis measures
+  every frame against the display's refresh rate (or the `--target-fps` given to the analysis).
 
 ## Notes
 
 - The marker must reach the capture unmodified: it is drawn opaque, pure black/white and pixel aligned at the swapchain resolution.
   Use a lossless capture and keep at least 3 stored pixels per module (`--FramePacing.CaptureHeight` computes that for you).
 - HDR swapchains may alter pure black and white, prefer SDR apps for measurements.
-- On OpenGL ES the `--Stats` overlay is drawn after the marker, avoid combining the two if the stats overlap the marker slots.
+- On OpenGL ES the `--Stats` overlay is drawn after the marker, avoid combining the two if the stats overlap the markers.
 - If the marker is enabled at runtime (instead of on the command line) it is first shown the frame after it was enabled, as the render
   resources it needs are created on demand.
 - The marker library is pinned to a commit of mb-framepacing until the first `marker-v0.1.0` release is published.

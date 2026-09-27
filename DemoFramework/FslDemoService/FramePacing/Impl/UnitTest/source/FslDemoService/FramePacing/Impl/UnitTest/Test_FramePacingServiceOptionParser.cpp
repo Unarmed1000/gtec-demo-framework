@@ -69,7 +69,7 @@ TEST(Test_FramePacingServiceOptionParser, Defaults)
   EXPECT_FALSE(helper.Parser.IsEnabled());
   EXPECT_EQ(IFramePacingService::DefaultModuleSizePx, helper.Parser.GetModuleSizePx());
   EXPECT_EQ(0, helper.Parser.GetCaptureHeightPx());
-  EXPECT_EQ(FramePacingMarkerSlot::TopLeft, helper.Parser.GetSlot());
+  EXPECT_FALSE(helper.Parser.IsSyncMarkerEnabled());
   EXPECT_FALSE(helper.Parser.GetRunName().has_value());
   EXPECT_EQ(TimeSpan(), helper.Parser.GetRunDuration());
   EXPECT_FALSE(helper.Parser.GetRunId().has_value());
@@ -104,18 +104,12 @@ TEST(Test_FramePacingServiceOptionParser, CaptureHeight)
 }
 
 
-TEST(Test_FramePacingServiceOptionParser, Slot)
+TEST(Test_FramePacingServiceOptionParser, SyncMarker)
 {
   ParserHelper helper;
-  EXPECT_EQ(OptionParseResult::Parsed, helper.Parse("FramePacing.Slot", "middle"));
-  EXPECT_EQ(FramePacingMarkerSlot::MiddleLeft, helper.Parser.GetSlot());
-  EXPECT_EQ(OptionParseResult::Parsed, helper.Parse("FramePacing.Slot", "bottom"));
-  EXPECT_EQ(FramePacingMarkerSlot::BottomLeft, helper.Parser.GetSlot());
-  EXPECT_EQ(OptionParseResult::Parsed, helper.Parse("FramePacing.Slot", "all"));
-  EXPECT_EQ(FramePacingMarkerSlot::All, helper.Parser.GetSlot());
-  EXPECT_EQ(OptionParseResult::Parsed, helper.Parse("FramePacing.Slot", "top"));
-  EXPECT_EQ(FramePacingMarkerSlot::TopLeft, helper.Parser.GetSlot());
-  EXPECT_EQ(OptionParseResult::Failed, helper.Parse("FramePacing.Slot", "left"));
+  EXPECT_EQ(OptionParseResult::Parsed, helper.Parse("FramePacing.SyncMarker"));
+  EXPECT_TRUE(helper.Parser.IsSyncMarkerEnabled());
+  EXPECT_FALSE(helper.Parser.IsEnabled());
 }
 
 

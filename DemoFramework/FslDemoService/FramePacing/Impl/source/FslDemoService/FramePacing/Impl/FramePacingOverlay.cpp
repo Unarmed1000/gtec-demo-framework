@@ -38,7 +38,6 @@
 #include <FslGraphics/Vertices/VertexPositionColorTexture.hpp>
 #include <FslService/Consumer/ServiceProvider.hpp>
 #include <mb/framemarker/FrameMarker.hpp>
-#include <algorithm>
 #include <array>
 #include <exception>
 #include <limits>
@@ -54,9 +53,9 @@ namespace Fsl
 
     namespace LocalConfig
     {
-      constexpr std::size_t MaxSlots = 3;
-      //! A start marker is only drawn in one slot, frame and end markers can be drawn in all slots
-      constexpr std::size_t VertexCapacity = std::max(FM::MaxTriangleVertexCount(), MaxSlots* FM::MaxFrameTriangleVertexCount());
+      //! The main marker (frame, start or end) and the optional sync marker
+      constexpr std::size_t MaxMarkers = 2;
+      constexpr std::size_t VertexCapacity = MaxMarkers * FM::MaxTriangleVertexCount();
     }
 
     FM::MarkerKind ToMarkerKind(const FramePacingMarkerKind kind) noexcept
@@ -70,21 +69,6 @@ namespace Fsl
       case FramePacingMarkerKind::Frame:
       default:
         return FM::MarkerKind::Frame;
-      }
-    }
-
-    FM::MarkerSlot ToMarkerSlot(const FramePacingMarkerSlot slot) noexcept
-    {
-      switch (slot)
-      {
-      case FramePacingMarkerSlot::MiddleLeft:
-        return FM::MarkerSlot::MiddleLeft;
-      case FramePacingMarkerSlot::BottomLeft:
-        return FM::MarkerSlot::BottomLeft;
-      case FramePacingMarkerSlot::TopLeft:
-      case FramePacingMarkerSlot::All:
-      default:
-        return FM::MarkerSlot::TopLeft;
       }
     }
 
@@ -194,27 +178,24 @@ namespace Fsl
     const int32_t moduleSizePx = record.CaptureHeightPx > 0 ? FM::RecommendModuleSizePx(windowHeightPx, record.CaptureHeightPx) : record.ModuleSizePx;
     const FM::Options options{moduleSizePx, FM::RecommendedQuietZoneModules};
     const int32_t alignPx = CalcAlignPx(windowHeightPx, record.CaptureHeightPx);
-    const FM::Payload payload{record.FrameIndex, record.AnimationTicks, record.RunId, ToMarkerKind(record.Kind)};
+    // The framework has no frame pacer, so the intended display time and the target frame time are unknown (0)
+    const FM::Payload payload{record.FrameIndex, record.AnimationTicks, record.RunId, ToMarkerKind(record.Kind), 0, 0u};
     const FM::StartMetadata metadata{record.StartUtcTicks, record.RunName.AsStringView()};
 
-    // Start and end markers are only drawn once (the start marker is larger than the frame marker so it could overlap the other slots)
-    std::array<FM::MarkerSlot, LocalConfig::MaxSlots> slots{FM::MarkerSlot::TopLeft, FM::MarkerSlot::MiddleLeft, FM::MarkerSlot::BottomLeft};
-    std::size_t slotCount = LocalConfig::MaxSlots;
-    if (record.Slot != FramePacingMarkerSlot::All || record.Kind != FramePacingMarkerKind::Frame)
-    {
-      slots[0] = ToMarkerSlot(record.Slot);
-      slotCount = 1;
-    }
-
-    // Generate the triangles for all slots (TL, TR, BL)(BL, TR, BR) per quad, every vertex on a pixel corner
+    // Generate the triangles (TL, TR, BL)(BL, TR, BR) per quad, every vertex on a pixel corner.
+    // The main marker (frame, start or end) is drawn at the top left
     const std::span<FM::Vertex> markerVertices(m_buffers->MarkerVertices);
-    std::size_t vertexCount = 0;
-    for (std::size_t slotIndex = 0; slotIndex < slotCount; ++slotIndex)
+    const FM::Point origin = FM::RecommendedOrigin(payload.Kind, windowWidthPx, windowHeightPx, options, alignPx);
+    std::size_t vertexCount = payload.Kind == FM::MarkerKind::SequenceStart
+                                ? FM::GenerateStartTriangles(payload, metadata, options, origin, markerVertices)
+                                : FM::GenerateTriangles(payload, options, origin, markerVertices);
+    if (record.SyncMarkerEnabled && vertexCount > 0)
     {
-      const FM::Point origin = FM::RecommendedOrigin(slots[slotIndex], windowWidthPx, windowHeightPx, options, alignPx);
-      const std::span<FM::Vertex> dst = markerVertices.subspan(vertexCount);
-      vertexCount += record.Kind == FramePacingMarkerKind::SequenceStart ? FM::GenerateStartTriangles(payload, metadata, options, origin, dst)
-                                                                         : FM::GenerateTriangles(payload, options, origin, dst);
+      // The sync marker carries the same frame index at the bottom left (the analysis detects tearing when the two disagree)
+      FM::Payload syncPayload = payload;
+      syncPayload.Kind = FM::MarkerKind::Sync;
+      const FM::Point syncOrigin = FM::RecommendedOrigin(FM::MarkerKind::Sync, windowWidthPx, windowHeightPx, options, alignPx);
+      vertexCount += FM::GenerateTriangles(syncPayload, options, syncOrigin, markerVertices.subspan(vertexCount));
     }
     if (vertexCount == 0)
     {

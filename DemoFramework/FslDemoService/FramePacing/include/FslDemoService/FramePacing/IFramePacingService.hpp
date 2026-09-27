@@ -24,7 +24,6 @@
 
 #include <FslBase/String/StringViewLite.hpp>
 #include <FslBase/Time/TimeSpan.hpp>
-#include <FslDemoService/FramePacing/FramePacingMarkerSlot.hpp>
 #include <FslDemoService/FramePacing/FramePacingRunState.hpp>
 #include <cstddef>
 #include <cstdint>
@@ -39,7 +38,7 @@ namespace Fsl
   {
   public:
     //! The maximum length of a run name in UTF-8 bytes.
-    static constexpr std::size_t MaxRunNameBytes = 64;
+    static constexpr std::size_t MaxRunNameBytes = 60;
     //! The default size of one QR module in pixels.
     static constexpr int32_t DefaultModuleSizePx = 6;
 
@@ -50,10 +49,11 @@ namespace Fsl
     //! @brief Enable or disable drawing of the marker.
     virtual void SetEnabled(const bool enabled) noexcept = 0;
 
-    //! @brief Get the slot the marker is drawn in.
-    [[nodiscard]] virtual FramePacingMarkerSlot GetSlot() const noexcept = 0;
-    //! @brief Set the slot the marker is drawn in.
-    virtual void SetSlot(const FramePacingMarkerSlot slot) noexcept = 0;
+    //! @brief Check if the small sync marker is drawn at the bottom left (the main marker is always drawn at the top left).
+    [[nodiscard]] virtual bool IsSyncMarkerEnabled() const noexcept = 0;
+    //! @brief Enable or disable the sync marker. It carries the frame index so the analysis can detect tearing, camera capture needs it
+    //!        for its timing.
+    virtual void SetSyncMarkerEnabled(const bool enabled) noexcept = 0;
 
     //! @brief The size of one QR module in pixels (only used if the capture height is zero).
     [[nodiscard]] virtual int32_t GetModuleSizePx() const noexcept = 0;

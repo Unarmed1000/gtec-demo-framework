@@ -23,7 +23,6 @@
 //****************************************************************************************************************************************************
 
 #include <FslBase/Time/TimeSpan.hpp>
-#include <FslDemoService/FramePacing/FramePacingMarkerSlot.hpp>
 #include <FslService/Impl/AServiceOptionParser.hpp>
 #include <cstdint>
 #include <optional>
@@ -36,7 +35,7 @@ namespace Fsl
     bool m_enabled{false};
     int32_t m_moduleSizePx;
     int32_t m_captureHeightPx{0};
-    FramePacingMarkerSlot m_slot{FramePacingMarkerSlot::TopLeft};
+    bool m_syncMarkerEnabled{false};
     std::optional<std::string> m_runName;
     TimeSpan m_runDuration;
     std::optional<uint32_t> m_runId;
@@ -69,9 +68,9 @@ namespace Fsl
       return m_captureHeightPx;
     }
 
-    [[nodiscard]] FramePacingMarkerSlot GetSlot() const noexcept
+    [[nodiscard]] bool IsSyncMarkerEnabled() const noexcept
     {
-      return m_slot;
+      return m_syncMarkerEnabled;
     }
 
     //! @brief If set a run with this name is started at the first frame
