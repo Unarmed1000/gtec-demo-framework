@@ -1,5 +1,5 @@
-#ifndef FSLDEMOSERVICE_FRAMEPACING_IMPL_FRAMEPACINGSERVICEFACTORY_HPP
-#define FSLDEMOSERVICE_FRAMEPACING_IMPL_FRAMEPACINGSERVICEFACTORY_HPP
+#ifndef FSLDEMOSERVICE_FRAMEPACING_CONTROL_IFRAMEPACINGOVERLAY_HPP
+#define FSLDEMOSERVICE_FRAMEPACING_CONTROL_IFRAMEPACINGOVERLAY_HPP
 //****************************************************************************************************************************************************
 //* BSD 3-Clause License
 //*
@@ -22,50 +22,19 @@
 //* EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //****************************************************************************************************************************************************
 
-#include <FslDemoService/FramePacing/Impl/FramePacingService.hpp>
-#include <FslDemoService/FramePacing/Impl/FramePacingServiceOptionParser.hpp>
-#include <FslService/Impl/ServiceSupportedInterfaceDeque.hpp>
-#include <FslService/Impl/ServiceType/Local/IThreadLocalSingletonServiceFactory.hpp>
-#include <memory>
-
 namespace Fsl
 {
-  class FramePacingServiceFactory final : public IThreadLocalSingletonServiceFactory
+  struct DemoWindowMetrics;
+
+  //! Draws the frame pacing marker of the current frame. It owns render resources, so the host that created it must release it
+  //! together with its other render resources.
+  class IFramePacingOverlay
   {
-    ServiceCaps::Flags m_flags{ServiceCaps::Default};
-    std::shared_ptr<FramePacingServiceOptionParser> m_optionParser;
-
   public:
-    FramePacingServiceFactory()
-      : m_optionParser(std::make_shared<FramePacingServiceOptionParser>())
-    {
-    }
+    virtual ~IFramePacingOverlay() = default;
 
-
-    [[nodiscard]] std::shared_ptr<AServiceOptionParser> GetOptionParser() const final
-    {
-      return m_optionParser;
-    }
-
-
-    [[nodiscard]] ServiceCaps::Flags GetFlags() const final
-    {
-      return m_flags;
-    }
-
-
-    void FillInterfaceType(ServiceSupportedInterfaceDeque& rServiceInterfaceTypeDeque) const final
-    {
-      rServiceInterfaceTypeDeque.push_back(std::type_index(typeid(IFramePacingService)));
-      rServiceInterfaceTypeDeque.push_back(std::type_index(typeid(IFramePacingServiceControl)));
-      rServiceInterfaceTypeDeque.push_back(std::type_index(typeid(IFramePacingFrameSource)));
-    }
-
-
-    std::shared_ptr<IService> Allocate(ServiceProvider& provider) final
-    {
-      return std::make_shared<FramePacingService>(provider, m_optionParser);
-    }
+    //! @brief Draw the marker (does nothing if the marker is disabled). Must be the very last thing drawn before the frame is presented.
+    virtual void Draw(const DemoWindowMetrics& windowMetrics) = 0;
   };
 }
 

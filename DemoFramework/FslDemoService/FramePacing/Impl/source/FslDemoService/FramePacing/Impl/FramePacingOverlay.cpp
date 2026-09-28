@@ -26,7 +26,7 @@
 #include <FslDemoService/FramePacing/IFramePacingService.hpp>
 #include <FslDemoService/FramePacing/Impl/FramePacingFrameRecord.hpp>
 #include <FslDemoService/FramePacing/Impl/FramePacingOverlay.hpp>
-#include <FslDemoService/FramePacing/Impl/IFramePacingServiceControl.hpp>
+#include <FslDemoService/FramePacing/Impl/IFramePacingFrameSource.hpp>
 #include <FslDemoService/Graphics/IGraphicsService.hpp>
 #include <FslGraphics/Bitmap/ReadOnlyRawBitmap.hpp>
 #include <FslGraphics/Colors.hpp>
@@ -131,7 +131,7 @@ namespace Fsl
 
   std::unique_ptr<FramePacingOverlay> FramePacingOverlay::TryCreate(const ServiceProvider& serviceProvider)
   {
-    auto service = serviceProvider.TryGet<IFramePacingServiceControl>();
+    auto service = serviceProvider.TryGet<IFramePacingFrameSource>();
     auto graphicsService = serviceProvider.TryGet<IGraphicsService>();
     if (!service || !graphicsService)
     {
@@ -144,7 +144,7 @@ namespace Fsl
   }
 
 
-  FramePacingOverlay::FramePacingOverlay(std::shared_ptr<IFramePacingServiceControl> service, std::shared_ptr<IGraphicsService> graphicsService,
+  FramePacingOverlay::FramePacingOverlay(std::shared_ptr<IFramePacingFrameSource> service, std::shared_ptr<IGraphicsService> graphicsService,
                                          const bool createResources)
     : m_service(std::move(service))
     , m_graphicsService(std::move(graphicsService))

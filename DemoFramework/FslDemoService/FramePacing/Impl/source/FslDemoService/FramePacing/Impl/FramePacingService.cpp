@@ -22,6 +22,7 @@
 
 #include <FslBase/Log/Log3Fmt.hpp>
 #include <FslDemoApp/Base/FrameInfo.hpp>
+#include <FslDemoService/FramePacing/Impl/FramePacingOverlay.hpp>
 #include <FslDemoService/FramePacing/Impl/FramePacingService.hpp>
 #include <FslDemoService/FramePacing/Impl/FramePacingServiceOptionParser.hpp>
 #include <mb/framemarker/FrameMarker.hpp>
@@ -200,6 +201,12 @@ namespace Fsl
     // A HighResolutionTimer timestamp, also in 100ns ticks
     m_frameCpuStartTicks = cpuStartTime.Ticks();
     m_hasFrame = true;
+  }
+
+
+  std::unique_ptr<IFramePacingOverlay> FramePacingService::CreateOverlay(const ServiceProvider& serviceProvider)
+  {
+    return FramePacingOverlay::TryCreate(serviceProvider);
   }
 
 

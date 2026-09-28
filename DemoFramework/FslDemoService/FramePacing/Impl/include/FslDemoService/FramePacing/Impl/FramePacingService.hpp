@@ -23,9 +23,10 @@
 //****************************************************************************************************************************************************
 
 #include <FslBase/System/HighResolutionTimer.hpp>
+#include <FslDemoService/FramePacing/Control/IFramePacingServiceControl.hpp>
 #include <FslDemoService/FramePacing/IFramePacingService.hpp>
 #include <FslDemoService/FramePacing/Impl/FramePacingSequence.hpp>
-#include <FslDemoService/FramePacing/Impl/IFramePacingServiceControl.hpp>
+#include <FslDemoService/FramePacing/Impl/IFramePacingFrameSource.hpp>
 #include <FslService/Impl/ServiceType/Local/ThreadLocalService.hpp>
 #include <array>
 #include <cstdint>
@@ -42,6 +43,7 @@ namespace Fsl
     : public ThreadLocalService
     , public IFramePacingService
     , public IFramePacingServiceControl
+    , public IFramePacingFrameSource
   {
     struct PendingRun
     {
@@ -97,6 +99,9 @@ namespace Fsl
 
     // From IFramePacingServiceControl
     void BeginFrame(const FrameInfo& frameInfo, const TickCount cpuStartTime) final;
+    std::unique_ptr<IFramePacingOverlay> CreateOverlay(const ServiceProvider& serviceProvider) final;
+
+    // From IFramePacingFrameSource
     bool TryGetFrameRecord(FramePacingFrameRecord& rRecord) const noexcept final;
 
   private:

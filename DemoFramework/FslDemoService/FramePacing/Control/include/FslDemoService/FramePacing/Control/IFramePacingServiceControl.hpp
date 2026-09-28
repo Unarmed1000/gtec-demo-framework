@@ -1,5 +1,5 @@
-#ifndef FSLDEMOSERVICE_FRAMEPACING_IMPL_IFRAMEPACINGSERVICECONTROL_HPP
-#define FSLDEMOSERVICE_FRAMEPACING_IMPL_IFRAMEPACINGSERVICECONTROL_HPP
+#ifndef FSLDEMOSERVICE_FRAMEPACING_CONTROL_IFRAMEPACINGSERVICECONTROL_HPP
+#define FSLDEMOSERVICE_FRAMEPACING_CONTROL_IFRAMEPACINGSERVICECONTROL_HPP
 //****************************************************************************************************************************************************
 //* BSD 3-Clause License
 //*
@@ -23,13 +23,16 @@
 //****************************************************************************************************************************************************
 
 #include <FslBase/Time/TickCount.hpp>
-#include <FslDemoService/FramePacing/Impl/FramePacingFrameRecord.hpp>
+#include <FslDemoService/FramePacing/Control/IFramePacingOverlay.hpp>
+#include <memory>
 
 namespace Fsl
 {
   struct FrameInfo;
+  class ServiceProvider;
 
   //! The host side of the frame pacing service.
+  //! The service is only registered on platforms that support the marker library, so use TryGet<IFramePacingServiceControl>().
   class IFramePacingServiceControl
   {
   public:
@@ -39,9 +42,9 @@ namespace Fsl
     //! @param cpuStartTime when the CPU started working on the frame (a HighResolutionTimer timestamp taken before the app update).
     virtual void BeginFrame(const FrameInfo& frameInfo, const TickCount cpuStartTime) = 0;
 
-    //! @brief Get the marker for the current frame.
-    //! @return false if no marker should be drawn.
-    virtual bool TryGetFrameRecord(FramePacingFrameRecord& rRecord) const noexcept = 0;
+    //! @brief Create the overlay that draws the marker. The host owns it and draws it as the very last thing of every frame.
+    //! @return null if the overlay can not be created (for example if the graphics service is unavailable).
+    virtual std::unique_ptr<IFramePacingOverlay> CreateOverlay(const ServiceProvider& serviceProvider) = 0;
   };
 }
 

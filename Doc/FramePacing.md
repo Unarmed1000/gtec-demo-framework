@@ -95,7 +95,12 @@ Package                             | Content
 ------------------------------------|---------------------------------------------------------------------------------------------------
 `ThirdParty/mb_framemarker`         | The mb-framepacing C++ marker library (via `Recipe.mb_framemarker_0_1`).
 `FslDemoService.FramePacing`        | The public `IFramePacingService` interface (header only, available on all platforms).
+`FslDemoService.FramePacing.Control`| The host side `IFramePacingServiceControl` and `IFramePacingOverlay` interfaces (header only, available on all platforms).
 `FslDemoService.FramePacing.Impl`   | The service, its command line options, the run state machine and the overlay that draws the marker.
+
+The hosts only use the Control interfaces: they get `IFramePacingServiceControl` with `TryGet` and create the overlay through it. The
+service is only registered (by `FslDemoPlatform`) on the platforms that support the marker library, everywhere else `TryGet` returns
+null and nothing is drawn.
 
 The overlay encodes the marker with `MB::FrameMarker::GenerateModules` and renders the triangles produced by
 `MB::FrameMarker::ModulesToTriangles` on the GPU through the FslGraphics3D `IBasicRenderSystem` (one dynamic vertex buffer, an opaque
