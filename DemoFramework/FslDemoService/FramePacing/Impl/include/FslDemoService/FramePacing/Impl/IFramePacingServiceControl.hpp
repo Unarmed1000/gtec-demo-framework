@@ -22,6 +22,7 @@
 //* EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //****************************************************************************************************************************************************
 
+#include <FslBase/Time/TickCount.hpp>
 #include <FslDemoService/FramePacing/Impl/FramePacingFrameRecord.hpp>
 
 namespace Fsl
@@ -35,7 +36,8 @@ namespace Fsl
     virtual ~IFramePacingServiceControl() = default;
 
     //! @brief Called by the host once per rendered frame before the app starts drawing.
-    virtual void BeginFrame(const FrameInfo& frameInfo) = 0;
+    //! @param cpuStartTime when the CPU started working on the frame (a HighResolutionTimer timestamp taken before the app update).
+    virtual void BeginFrame(const FrameInfo& frameInfo, const TickCount cpuStartTime) = 0;
 
     //! @brief Get the marker for the current frame.
     //! @return false if no marker should be drawn.

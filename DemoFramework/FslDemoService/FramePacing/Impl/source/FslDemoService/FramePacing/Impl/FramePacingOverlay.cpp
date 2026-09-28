@@ -39,9 +39,11 @@
 #include <FslService/Consumer/ServiceProvider.hpp>
 #include <mb/framemarker/FrameMarker.hpp>
 #include <array>
+#include <cstdint>
 #include <exception>
 #include <limits>
 #include <span>
+#include <tuple>
 #include <utility>
 #include <vector>
 
@@ -70,6 +72,20 @@ namespace Fsl
       default:
         return FM::MarkerKind::Frame;
       }
+    }
+
+    static_assert(std::tuple_size_v<decltype(FramePacingFrameRecord::RunSequenceId)> == FM::SequenceIdByteCount);
+
+    //! How long the CPU has worked on the frame so far, in 100ns ticks (0 if unknown)
+    uint32_t CalcCpuBusyTicks(const int64_t cpuStartTicks, const int64_t nowTicks) noexcept
+    {
+      if (cpuStartTicks <= 0 || nowTicks <= cpuStartTicks)
+      {
+        return 0u;
+      }
+      const int64_t busyTicks = nowTicks - cpuStartTicks;
+      return std::cmp_less_equal(busyTicks, std::numeric_limits<uint32_t>::max()) ? static_cast<uint32_t>(busyTicks)
+                                                                                  : std::numeric_limits<uint32_t>::max();
     }
 
     int32_t ToInt32(const uint32_t value) noexcept
@@ -178,24 +194,34 @@ namespace Fsl
     const int32_t moduleSizePx = record.CaptureHeightPx > 0 ? FM::RecommendModuleSizePx(windowHeightPx, record.CaptureHeightPx) : record.ModuleSizePx;
     const FM::Options options{moduleSizePx, FM::RecommendedQuietZoneModules};
     const int32_t alignPx = CalcAlignPx(windowHeightPx, record.CaptureHeightPx);
-    // The framework has no frame pacer, so the intended display time and the target frame time are unknown (0)
-    const FM::Payload payload{record.FrameIndex, record.AnimationTicks, record.RunId, ToMarkerKind(record.Kind), 0, 0u};
-    const FM::StartMetadata metadata{record.StartUtcTicks, record.RunName.AsStringView()};
+    // The framework has no frame pacer, so the intended display time and the target frame time are unknown (0).
+    // The marker is the last thing drawn before the frame is presented, so the CPU busy time is measured now.
+    const uint32_t cpuBusyTicks = CalcCpuBusyTicks(record.CpuStartTicks, m_timer.GetTimestamp().Ticks());
+    const FM::Payload payload{record.FrameIndex,    record.AnimationTicks, record.RunId, ToMarkerKind(record.Kind), 0, 0u,
+                              record.CpuStartTicks, cpuBusyTicks};
+    const FM::StartMetadata metadata{record.StartUtcTicks, FM::SequenceId{record.RunSequenceId}};
 
-    // Generate the triangles (TL, TR, BL)(BL, TR, BR) per quad, every vertex on a pixel corner.
+    // Encode the marker once, then generate the triangles (TL, TR, BL)(BL, TR, BR) per quad, every vertex on a pixel corner.
     // The main marker (frame, start or end) is drawn at the top left
+    FM::ModuleMatrix matrix;
+    if (!FM::GenerateModules(payload, matrix, metadata))
+    {
+      return;
+    }
     const std::span<FM::Vertex> markerVertices(m_buffers->MarkerVertices);
     const FM::Point origin = FM::RecommendedOrigin(payload.Kind, windowWidthPx, windowHeightPx, options, alignPx);
-    std::size_t vertexCount = payload.Kind == FM::MarkerKind::SequenceStart
-                                ? FM::GenerateStartTriangles(payload, metadata, options, origin, markerVertices)
-                                : FM::GenerateTriangles(payload, options, origin, markerVertices);
+    std::size_t vertexCount = FM::ModulesToTriangles(matrix, options, origin, markerVertices);
     if (record.SyncMarkerEnabled && vertexCount > 0)
     {
       // The sync marker carries the same frame index at the bottom left (the analysis detects tearing when the two disagree)
       FM::Payload syncPayload = payload;
       syncPayload.Kind = FM::MarkerKind::Sync;
-      const FM::Point syncOrigin = FM::RecommendedOrigin(FM::MarkerKind::Sync, windowWidthPx, windowHeightPx, options, alignPx);
-      vertexCount += FM::GenerateTriangles(syncPayload, options, syncOrigin, markerVertices.subspan(vertexCount));
+      FM::ModuleMatrix syncMatrix;
+      if (FM::GenerateModules(syncPayload, syncMatrix))
+      {
+        const FM::Point syncOrigin = FM::RecommendedOrigin(FM::MarkerKind::Sync, windowWidthPx, windowHeightPx, options, alignPx);
+        vertexCount += FM::ModulesToTriangles(syncMatrix, options, syncOrigin, markerVertices.subspan(vertexCount));
+      }
     }
     if (vertexCount == 0)
     {

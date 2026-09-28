@@ -130,12 +130,14 @@ TEST(Test_FramePacingServiceOptionParser, Run)
 }
 
 
-TEST(Test_FramePacingServiceOptionParser, Run_NameTooLong)
+TEST(Test_FramePacingServiceOptionParser, Run_LongName)
 {
+  // The name is only logged (the start marker carries a sequence id), so it has no length limit
   ParserHelper helper;
-  const std::string name(IFramePacingService::MaxRunNameBytes + 1, 'x');
-  EXPECT_EQ(OptionParseResult::Failed, helper.Parse("FramePacing.Run", StringViewLite(name)));
-  EXPECT_FALSE(helper.Parser.GetRunName().has_value());
+  const std::string name(100, 'x');
+  EXPECT_EQ(OptionParseResult::Parsed, helper.Parse("FramePacing.Run", StringViewLite(name)));
+  ASSERT_TRUE(helper.Parser.GetRunName().has_value());
+  EXPECT_EQ(name, helper.Parser.GetRunName().value());
 }
 
 

@@ -22,8 +22,8 @@
 //* EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //****************************************************************************************************************************************************
 
-#include <FslBase/String/StringViewLite.hpp>
 #include <FslDemoService/FramePacing/Impl/FramePacingMarkerKind.hpp>
+#include <array>
 #include <cstdint>
 
 namespace Fsl
@@ -36,11 +36,13 @@ namespace Fsl
     uint64_t FrameIndex{0};
     //! The animation time of the frame in 100ns ticks.
     int64_t AnimationTicks{0};
+    //! When the CPU started working on the frame in 100ns ticks (a HighResolutionTimer timestamp), 0 if unknown.
+    int64_t CpuStartTicks{0};
     uint32_t RunId{0};
     //! Start markers only: the wall clock start time of the run as C# DateTime UTC ticks.
     int64_t StartUtcTicks{0};
-    //! Start markers only: the name of the run (valid until the next call to the service).
-    StringViewLite RunName;
+    //! Start markers only: the sequence id of the run (16 random bytes).
+    std::array<uint8_t, 16> RunSequenceId{};
     //! Draw the sync marker at the bottom left as well
     bool SyncMarkerEnabled{false};
     int32_t ModuleSizePx{0};

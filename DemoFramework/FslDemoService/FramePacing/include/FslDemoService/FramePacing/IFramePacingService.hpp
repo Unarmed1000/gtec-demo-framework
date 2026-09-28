@@ -25,7 +25,6 @@
 #include <FslBase/String/StringViewLite.hpp>
 #include <FslBase/Time/TimeSpan.hpp>
 #include <FslDemoService/FramePacing/FramePacingRunState.hpp>
-#include <cstddef>
 #include <cstdint>
 
 namespace Fsl
@@ -37,8 +36,6 @@ namespace Fsl
   class IFramePacingService
   {
   public:
-    //! The maximum length of a run name in UTF-8 bytes.
-    static constexpr std::size_t MaxRunNameBytes = 60;
     //! The default size of one QR module in pixels.
     static constexpr int32_t DefaultModuleSizePx = 6;
 
@@ -67,9 +64,10 @@ namespace Fsl
     virtual void SetCaptureHeightPx(const int32_t captureHeightPx) noexcept = 0;
 
     //! @brief Begin a measured run: a start marker, then frame markers and finally an end marker.
-    //! @param name the name of the run (at most MaxRunNameBytes UTF-8 bytes).
+    //! @param name the name of the run, it is only written to the log. The start marker identifies the run by a random sequence id
+    //!             which is logged next to the name.
     //! @param duration the duration of the measured part, if zero the run lasts until EndRun is called.
-    //! @return true if the run was started, false if a run is already active or the name is too long.
+    //! @return true if the run was started, false if a run is already active.
     //! @note This enables the marker.
     virtual bool BeginRun(const StringViewLite name, const TimeSpan duration) = 0;
 

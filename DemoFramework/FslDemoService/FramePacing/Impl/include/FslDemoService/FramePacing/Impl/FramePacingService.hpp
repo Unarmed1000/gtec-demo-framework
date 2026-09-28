@@ -27,6 +27,8 @@
 #include <FslDemoService/FramePacing/Impl/FramePacingSequence.hpp>
 #include <FslDemoService/FramePacing/Impl/IFramePacingServiceControl.hpp>
 #include <FslService/Impl/ServiceType/Local/ThreadLocalService.hpp>
+#include <array>
+#include <cstdint>
 #include <memory>
 #include <optional>
 #include <random>
@@ -62,6 +64,7 @@ namespace Fsl
 
     uint32_t m_runId{0};
     std::string m_runName;
+    std::array<uint8_t, 16> m_runSequenceId{};
     int64_t m_runStartUtcTicks{0};
 
     //! The number of frames that were started so far
@@ -70,6 +73,7 @@ namespace Fsl
     FramePacingMarkerKind m_frameKind{FramePacingMarkerKind::Frame};
     uint64_t m_frameIndex{0};
     int64_t m_frameAnimationTicks{0};
+    int64_t m_frameCpuStartTicks{0};
 
   public:
     FramePacingService(const ServiceProvider& serviceProvider, const std::shared_ptr<FramePacingServiceOptionParser>& optionParser);
@@ -92,11 +96,12 @@ namespace Fsl
     [[nodiscard]] TimeSpan GetRunMeasuredTime() const noexcept final;
 
     // From IFramePacingServiceControl
-    void BeginFrame(const FrameInfo& frameInfo) final;
+    void BeginFrame(const FrameInfo& frameInfo, const TickCount cpuStartTime) final;
     bool TryGetFrameRecord(FramePacingFrameRecord& rRecord) const noexcept final;
 
   private:
     uint32_t CreateRunId();
+    std::array<uint8_t, 16> CreateSequenceId();
   };
 }
 

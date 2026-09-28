@@ -248,7 +248,8 @@ namespace Fsl
 #ifdef FSL_FEATURE_FRAMEPACING
     if (m_framePacingServiceControl)
     {
-      m_framePacingServiceControl->BeginFrame(frameInfo);
+      // The frame's CPU work starts with the app update
+      m_framePacingServiceControl->BeginFrame(frameInfo, m_stats.TimeBeforeUpdate);
     }
 #endif
 

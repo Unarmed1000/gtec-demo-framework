@@ -26,12 +26,14 @@ Argument                          | Description
 `--FramePacing.ModuleSize <px>`   | The size of one QR module in pixels (default 6).
 `--FramePacing.CaptureHeight <px>`| The height the capture is stored at. The module size is calculated so the marker survives the downscale (overrides the module size).
 `--FramePacing.SyncMarker`        | Also draw the small sync marker (the frame index only) at the bottom left. The analysis detects tearing when the two markers disagree, and camera capture needs it for its timing.
-`--FramePacing.Run <name>`        | Start a measured run with this name (at most 60 bytes) at the first frame. Implies `--FramePacing`.
+`--FramePacing.Run <name>`        | Start a measured run with this name at the first frame. The name is written to the log next to the run's random sequence id. Implies `--FramePacing`.
 `--FramePacing.Duration <sec>`    | The duration of the measured part of the run (0 = until the app exits).
 `--FramePacing.RunId <id>`        | The id of the run (defaults to a random id).
 
-A run is bracketed by a start marker (shown for at least 100ms, it carries the run name and the wall clock start time) and an end
-marker, so the analysis can cut the capture to exactly the measured window.
+A run is bracketed by a start marker (shown for at least 100ms, it carries the run's sequence id and the wall clock start time) and an
+end marker, so the analysis can cut the capture to exactly the measured window. The sequence id is 16 random bytes, which the
+mb-framepacing tools show as 32 hex digits. The run name is not part of the marker, but the log line of the run shows the name, the
+run id and the sequence id, so a capture can be matched to the run that produced it.
 
 Example, measure 30 seconds of an app while capturing at 960x540:
 
@@ -73,6 +75,9 @@ the given duration). `GetRunDuration()` and `GetRunMeasuredTime()` report the pr
   step, pause and forced update time modes are reported exactly as the app sees them.
 - **Intended display time and target frame time**: reported as unknown (0) as the framework has no frame pacer, so the analysis measures
   every frame against the display's refresh rate (or the `--target-fps` given to the analysis).
+- **CPU start time and CPU busy**: the CPU start time is taken by the host just before the app update of the frame, and CPU busy is
+  the time from then until the marker is drawn (the last thing before the frame is presented). The analysis derives the frametime
+  from the step between the CPU start times.
 
 ## Notes
 
@@ -92,7 +97,8 @@ Package                             | Content
 `FslDemoService.FramePacing`        | The public `IFramePacingService` interface (header only, available on all platforms).
 `FslDemoService.FramePacing.Impl`   | The service, its command line options, the run state machine and the overlay that draws the marker.
 
-The overlay renders the triangles produced by `MB::FrameMarker::GenerateTriangles` on the GPU through the FslGraphics3D
-`IBasicRenderSystem` (one dynamic vertex buffer, an opaque material without depth test or culling and a pixel aligned orthographic
-projection), so the same code is used for OpenGL ES 2, OpenGL ES 3 and Vulkan. The host draws it inside the frame after the app has drawn
-(`DemoAppManager` for OpenGL ES and `DemoAppVulkanBasic::AddSystemUI` for Vulkan).
+The overlay encodes the marker with `MB::FrameMarker::GenerateModules` and renders the triangles produced by
+`MB::FrameMarker::ModulesToTriangles` on the GPU through the FslGraphics3D `IBasicRenderSystem` (one dynamic vertex buffer, an opaque
+material without depth test or culling and a pixel aligned orthographic projection), so the same code is used for OpenGL ES 2,
+OpenGL ES 3 and Vulkan. The host draws it inside the frame after the app has drawn (`DemoAppManager` for OpenGL ES and
+`DemoAppVulkanBasic::AddSystemUI` for Vulkan).

@@ -75,8 +75,8 @@ namespace Fsl
                           "Also draw the small frame pacing sync marker at the bottom left: it detects tearing, and camera capture needs it for "
                           "its timing.");
     rOptions.emplace_back("FramePacing.Run", OptionArgument::OptionRequired, CommandId::Run,
-                          fmt::format("Start a measured run with the given name (at most {} bytes) at the first frame. Implies --FramePacing.",
-                                      IFramePacingService::MaxRunNameBytes));
+                          "Start a measured run with the given name at the first frame, the name is written to the log next to the run's "
+                          "random sequence id. Implies --FramePacing.");
     rOptions.emplace_back("FramePacing.Duration", OptionArgument::OptionRequired, CommandId::Duration,
                           "The duration in seconds of the measured part of the run started by FramePacing.Run (0 = until the app exits).");
     rOptions.emplace_back("FramePacing.RunId", OptionArgument::OptionRequired, CommandId::RunId,
@@ -119,11 +119,6 @@ namespace Fsl
       m_syncMarkerEnabled = true;
       return OptionParseResult::Parsed;
     case CommandId::Run:
-      if (strOptArg.size() > IFramePacingService::MaxRunNameBytes)
-      {
-        FSLLOG3_ERROR("FramePacing.Run name can be at most {} bytes", IFramePacingService::MaxRunNameBytes);
-        return OptionParseResult::Failed;
-      }
       m_runName = std::string(std::string_view(strOptArg));
       m_enabled = true;
       return OptionParseResult::Parsed;
