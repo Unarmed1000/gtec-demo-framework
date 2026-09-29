@@ -41,11 +41,12 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
+      # The key includes the FslBuild version, as a new minor version places the recipes in a new directory
       - name: Cache third party libraries
         uses: actions/cache@v6
         with:
           path: /fsl-thirdparty
-          key: thirdparty-ubuntu26.04-build-${{ hashFiles('ThirdParty/**/Fsl.gen', 'ThirdParty/**/*.patch') }}
+          key: thirdparty-ubuntu26.04-build-${{ hashFiles('ThirdParty/**/Fsl.gen', 'ThirdParty/**/*.patch', '.Config/FslBuildGen/__init__.py') }}
           restore-keys: thirdparty-ubuntu26.04-build-
 
       # The install area is restored from actions/cache together with the claim of the run that saved it, so claim it (like Jenkins)
@@ -120,7 +121,7 @@ jobs:
         uses: actions/cache@v6
         with:
           path: C:\fsl-thirdparty
-          key: thirdparty-windows-${{ env.FSL_CI_VS_VERSION }}-${{ hashFiles('ThirdParty/**/Fsl.gen', 'ThirdParty/**/*.patch') }}
+          key: thirdparty-windows-${{ env.FSL_CI_VS_VERSION }}-${{ hashFiles('ThirdParty/**/Fsl.gen', 'ThirdParty/**/*.patch', '.Config/FslBuildGen/__init__.py') }}
           restore-keys: thirdparty-windows-${{ env.FSL_CI_VS_VERSION }}-
 
       # The install area is restored from actions/cache together with the claim of the run that saved it, so claim it (like Jenkins)
@@ -195,17 +196,16 @@ jobs:
           test -f "$driver"
           echo "VK_DRIVER_FILES=$driver" | tee -a "$GITHUB_ENV"
 
-      # Informational: shows if KosmicKrisp can use the runner's virtual GPU, the build and the unit tests don't need a GPU
+      # Informational: KosmicKrisp finds no usable GPU in the runner's virtual machine, the build and the unit tests don't need one
       - name: Vulkan driver info
-        continue-on-error: true
         timeout-minutes: 5
-        run: vulkaninfo --summary
+        run: vulkaninfo --summary || echo "::notice::vulkaninfo found no usable Vulkan GPU on this runner (expected for a virtual machine)"
 
       - name: Cache third party libraries
         uses: actions/cache@v6
         with:
           path: /Users/runner/fsl-thirdparty
-          key: thirdparty-macos26-${{ hashFiles('ThirdParty/**/Fsl.gen', 'ThirdParty/**/*.patch') }}
+          key: thirdparty-macos26-${{ hashFiles('ThirdParty/**/Fsl.gen', 'ThirdParty/**/*.patch', '.Config/FslBuildGen/__init__.py') }}
           restore-keys: thirdparty-macos26-
 
       # The install area is restored from actions/cache together with the claim of the run that saved it, so claim it (like Jenkins)
@@ -289,7 +289,7 @@ jobs:
         uses: actions/cache@v6
         with:
           path: /fsl-thirdparty
-          key: thirdparty-ubuntu26.04-tidy-${{ hashFiles('ThirdParty/**/Fsl.gen', 'ThirdParty/**/*.patch') }}
+          key: thirdparty-ubuntu26.04-tidy-${{ hashFiles('ThirdParty/**/Fsl.gen', 'ThirdParty/**/*.patch', '.Config/FslBuildGen/__init__.py') }}
           restore-keys: thirdparty-ubuntu26.04-tidy-
 
       - name: clang-tidy
