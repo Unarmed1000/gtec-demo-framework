@@ -175,18 +175,19 @@ jobs:
           key: thirdparty-macos26-${{ hashFiles('ThirdParty/**/Fsl.gen', 'ThirdParty/**/*.patch') }}
           restore-keys: thirdparty-macos26-
 
+      # A sdk build contains packages for both window systems, so the WindowSystem flavor has to be selected
       - name: Build
         shell: bash
         run: |
           source ./prepare.sh
-          FslBuild.py --noGitHash -t sdk --BuildTime --UseFeatures "$FSL_CI_FEATURES_MACOS"
+          FslBuild.py --noGitHash -t sdk --BuildTime --UseFeatures "$FSL_CI_FEATURES_MACOS" --Variants [WindowSystem=Cocoa]
 
       - name: Unit tests
         shell: bash
         run: |
           source ./prepare.sh
           mkdir -p "$FSL_TEST_REPORTS"
-          FslBuild.py --noGitHash -t sdk --UseFeatures "$FSL_CI_FEATURES_MACOS" --RequireFeature [GoogleUnitTest] --ForAllExe "(EXE) --gtest_output=xml:$FSL_TEST_REPORTS/(PACKAGE_NAME).xml"
+          FslBuild.py --noGitHash -t sdk --UseFeatures "$FSL_CI_FEATURES_MACOS" --Variants [WindowSystem=Cocoa] --RequireFeature [GoogleUnitTest] --ForAllExe "(EXE) --gtest_output=xml:$FSL_TEST_REPORTS/(PACKAGE_NAME).xml"
 
       - name: Upload unit test reports
         if: always()
