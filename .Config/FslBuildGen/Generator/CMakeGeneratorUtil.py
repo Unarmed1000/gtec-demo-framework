@@ -33,7 +33,7 @@
 
 from enum import Enum
 
-from FslBuildGen import IOUtil, ToolSharedValues, Util
+from FslBuildGen import IOUtil, ToolScriptCommand, ToolSharedValues, Util
 from FslBuildGen.BuildContent.PathRecord import PathRecord
 from FslBuildGen.DataTypes import AccessType, ExternalDependencyType, IncludePriority, PackageType, SpecialFiles, VariantType
 from FslBuildGen.ExternalVariantConstraints import ExternalVariantConstraints
@@ -728,6 +728,14 @@ def _MakeRelativeToCurrentBinaryDirectory(files: list[str]) -> list[str]:
     return ["${CMAKE_CURRENT_BINARY_DIR}/" + filename for filename in files]
 
 
+# Replaced with the command that runs FslBuildContent through the python running this tool
+_FSLBUILDCONTENT_COMMAND_TOKEN = "##FSLBUILDCONTENT_COMMAND##"
+
+
+def _ToCMakeCommand(command: list[str]) -> str:
+    return " ".join(f'"{entry}"' for entry in command)
+
+
 def GetContentBuilder(
     toolConfig: ToolConfig,
     package: Package,
@@ -764,6 +772,8 @@ def GetContentBuilder(
     strExternalVariantConstraints = externalVariantConstraints.AsString()
 
     content = snippetContentBuilder
+    if _FSLBUILDCONTENT_COMMAND_TOKEN in content:
+        content = content.replace(_FSLBUILDCONTENT_COMMAND_TOKEN, _ToCMakeCommand(ToolScriptCommand.GetToolScriptCommand("FslBuildContent.py")))
     content = content.replace("##PLATFORM_NAME##", platformName)
     content = content.replace("##PACKAGE_TARGET_NAME##", targetName)
     content = content.replace("##FEATURE_LIST##", featureList)
