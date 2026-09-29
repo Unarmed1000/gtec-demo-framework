@@ -91,6 +91,8 @@ namespace Fsl
 
   VkRenderPass Stats::OnBuildResources(const VulkanBasic::BuildResourcesContext& context)
   {
+    FSL_PARAM_NOT_USED(context);
+
     // Since we only draw using the NativeBatch we just create the most basic render pass that is compatible
     m_dependentResources.MainRenderPass = CreateBasicRenderPass();
     return m_dependentResources.MainRenderPass.Get();

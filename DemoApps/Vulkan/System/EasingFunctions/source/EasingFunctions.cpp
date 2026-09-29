@@ -145,11 +145,14 @@ namespace Fsl
 
   void EasingFunctions::Update(const DemoTime& demoTime)
   {
+    FSL_PARAM_NOT_USED(demoTime);
   }
 
 
   void EasingFunctions::VulkanDraw(const DemoTime& demoTime, RapidVulkan::CommandBuffers& rCmdBuffers, const VulkanBasic::DrawContext& drawContext)
   {
+    FSL_PARAM_NOT_USED(demoTime);
+
     const uint32_t currentFrameIndex = drawContext.CurrentFrameIndex;
 
     const VkCommandBuffer hCmdBuffer = rCmdBuffers[currentFrameIndex];
@@ -187,6 +190,8 @@ namespace Fsl
 
   VkRenderPass EasingFunctions::OnBuildResources(const VulkanBasic::BuildResourcesContext& context)
   {
+    FSL_PARAM_NOT_USED(context);
+
     m_dependentResources.MainRenderPass = CreateBasicRenderPass();
     return m_dependentResources.MainRenderPass.Get();
   }

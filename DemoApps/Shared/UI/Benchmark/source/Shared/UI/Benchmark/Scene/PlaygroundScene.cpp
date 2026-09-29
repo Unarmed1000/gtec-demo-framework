@@ -87,7 +87,6 @@ namespace Fsl
       constexpr int32_t SliderDpiTick = 40u;
       constexpr int32_t SliderDpiTickSlow = 1u;
 
-      constexpr DpSize1D SizeOfDragAreaDp(DpSize1D::Create(10));
       constexpr UI::UIColor ClipRectangleColor(PackedColor32(0x20808080));
       constexpr UI::UIColor ClipRectangleHandleColor(PackedColor32(0x10808080));
     }

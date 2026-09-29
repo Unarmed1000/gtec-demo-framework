@@ -86,7 +86,7 @@ namespace
       {
       }
 
-      [[nodiscard]] virtual T Get() const noexcept
+      [[nodiscard]] T Get() const noexcept
       {
         return m_fnGet();
       }

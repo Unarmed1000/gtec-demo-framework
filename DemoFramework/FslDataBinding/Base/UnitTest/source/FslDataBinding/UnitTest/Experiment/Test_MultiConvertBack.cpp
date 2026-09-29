@@ -57,6 +57,8 @@ namespace
   template <typename TSet>
   void DoCallSet(DataBinding::Internal::PropertySetInfo setter, const TSet& value)
   {
+    FSL_PARAM_NOT_USED(setter);
+    FSL_PARAM_NOT_USED(value);
   }
 
 

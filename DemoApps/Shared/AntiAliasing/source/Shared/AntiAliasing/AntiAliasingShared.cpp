@@ -326,6 +326,8 @@ namespace Fsl
 
   void AntiAliasingShared::Draw(const DemoTime& demoTime)
   {
+    FSL_PARAM_NOT_USED(demoTime);
+
     m_uiExtension->Draw();
   }
 

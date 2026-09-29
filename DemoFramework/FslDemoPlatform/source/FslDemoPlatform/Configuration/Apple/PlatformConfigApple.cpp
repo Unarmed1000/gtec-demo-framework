@@ -32,8 +32,10 @@ namespace Fsl
 {
   void PlatformConfig::Configure(IDemoHostRegistry& /*registry*/, ServiceRegistry serviceRegistry, bool& /*rEnableFirewallRequest*/)
   {
-  //  auto cpuStatsServiceFactory = std::make_shared<CpuStatsServiceFactory>([]() { return std::make_unique<CpuStatsAdapterLinux>(); });
-//    serviceRegistry.Register(cpuStatsServiceFactory);
+    FSL_PARAM_NOT_USED(serviceRegistry);
+
+    //  auto cpuStatsServiceFactory = std::make_shared<CpuStatsServiceFactory>([]() { return std::make_unique<CpuStatsAdapterLinux>(); });
+    //    serviceRegistry.Register(cpuStatsServiceFactory);
   }
 }
 #endif

@@ -85,6 +85,10 @@ namespace Fsl::UI
     void DrawCustom(UIRawBasicMeshBuilder2D& rBuilder, const PxVector2 dstPositionPxf, const PxSize2D dstSizePx, const DrawClipContext& clipContext,
                     const RenderBasicImageInfo& renderInfo, const ICustomDrawData* const pCustomDrawData)
     {
+      FSL_PARAM_NOT_USED(dstPositionPxf);
+      FSL_PARAM_NOT_USED(dstSizePx);
+      FSL_PARAM_NOT_USED(clipContext);
+
       const auto* const pRenderData = dynamic_cast<const ResizeableAreaRenderData*>(pCustomDrawData);
       if (pRenderData != nullptr)
       {

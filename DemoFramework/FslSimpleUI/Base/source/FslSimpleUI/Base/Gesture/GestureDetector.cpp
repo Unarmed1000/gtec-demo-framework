@@ -299,6 +299,8 @@ namespace Fsl::UI
   MovementTransactionAction GestureDetector::ContinueTransaction(const MillisecondTickCount32 timestamp, const DpPoint2F screenPositionDpf,
                                                                  const MovementOwnership movementOwnership)
   {
+    FSL_PARAM_NOT_USED(movementOwnership);
+
     assert(!m_transactionRecord.IsDefault());
     assert(m_transactionRecord.Mode() == GestureTransactionMode::Control || m_transactionRecord.Mode() == GestureTransactionMode::Handle ||
            m_transactionRecord.Mode() == GestureTransactionMode::Evaluate);
@@ -422,6 +424,8 @@ namespace Fsl::UI
 
   void GestureDetector::UpdateTransactionState(const MillisecondTickCount32 timestamp, const DpPoint2F screenPositionDpf, const bool allowNewGestures)
   {
+    FSL_PARAM_NOT_USED(allowNewGestures);
+
     if (m_transactionRecord.IsDefault())
     {
       return;

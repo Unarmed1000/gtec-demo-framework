@@ -214,6 +214,8 @@ namespace Fsl::UI::Theme
     , m_context(context)
     , m_resources(themeResources)
   {
+    FSL_PARAM_NOT_USED(colorSpace);
+
     if (!context)
     {
       throw std::invalid_argument("context can not be null");

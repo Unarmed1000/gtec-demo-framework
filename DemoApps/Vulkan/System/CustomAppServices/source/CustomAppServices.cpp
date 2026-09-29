@@ -66,6 +66,8 @@ namespace Fsl
 
   void CustomAppServices::Update(const DemoTime& demoTime)
   {
+    FSL_PARAM_NOT_USED(demoTime);
+
     {    // Wait for the result from the async operation started in the constructor
       using namespace std::chrono_literals;
 
@@ -80,6 +82,8 @@ namespace Fsl
 
   void CustomAppServices::VulkanDraw(const DemoTime& demoTime, RapidVulkan::CommandBuffers& rCmdBuffers, const VulkanBasic::DrawContext& drawContext)
   {
+    FSL_PARAM_NOT_USED(demoTime);
+
     const uint32_t currentFrameIndex = drawContext.CurrentFrameIndex;
 
     const VkCommandBuffer hCmdBuffer = rCmdBuffers[currentFrameIndex];
@@ -111,6 +115,8 @@ namespace Fsl
 
   VkRenderPass CustomAppServices::OnBuildResources(const VulkanBasic::BuildResourcesContext& context)
   {
+    FSL_PARAM_NOT_USED(context);
+
     m_dependentResources.MainRenderPass = CreateBasicRenderPass();
     return m_dependentResources.MainRenderPass.Get();
   }

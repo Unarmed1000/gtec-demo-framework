@@ -102,6 +102,8 @@ namespace Fsl::UI
     void DrawCustomBoxPlots(UIRawBasicMeshBuilder2D& rBuilder, const PxVector2 dstPositionPxf, const PxSize2D dstSizePx,
                             const DrawClipContext& clipContext, const RenderBasicImageInfo& renderInfo, const ICustomDrawData* const pCustomDrawData)
     {
+      FSL_PARAM_NOT_USED(clipContext);
+
       if (dstSizePx.Height() < PxSize1D::Create(2))
       {
         return;

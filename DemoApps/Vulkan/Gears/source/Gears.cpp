@@ -394,6 +394,8 @@ namespace Fsl
 
   void Gears::VulkanDraw(const DemoTime& demoTime, RapidVulkan::CommandBuffers& rCmdBuffers, const VulkanBasic::DrawContext& drawContext)
   {
+    FSL_PARAM_NOT_USED(demoTime);
+
     const uint32_t currentFrameIndex = drawContext.CurrentFrameIndex;
 
     {

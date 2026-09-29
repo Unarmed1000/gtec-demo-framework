@@ -1348,6 +1348,8 @@ namespace Fsl
   void AntiAliasing::DrawFinalComposite(FrameResources& rFrameResources, const VkCommandBuffer hCmdBuffer, const VkExtent2D& extent,
                                         const UI::Custom::ZoomInfo& zoomInfo, const bool useCustomZoom)
   {
+    FSL_PARAM_NOT_USED(extent);
+
     vkCmdBindDescriptorSets(hCmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_resources.PostProcess.PipelineLayout.Get(), 0, 1,
                             &rFrameResources.DescriptorSetEffect, 0, nullptr);
     vkCmdBindPipeline(hCmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_dependentResources.PostProcessPipeline.Get());

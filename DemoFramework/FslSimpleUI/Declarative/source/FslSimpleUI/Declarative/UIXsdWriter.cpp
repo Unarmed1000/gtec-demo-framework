@@ -225,6 +225,8 @@ namespace Fsl::UI::Declarative::UIXsdWriter
     //    <xs:element name="BackgroundWindow" type="_T_BackgroundWindow"/>
     void AddWindowElement(const ControlFactory& controlFactory, pugi::xml_node& rNode, std::span<const ControlName> controlNames)
     {
+      FSL_PARAM_NOT_USED(controlFactory);
+
       auto childNode = rNode.append_child("xs:group");
       auto attrChildNodeName = childNode.append_attribute("name");
       attrChildNodeName.set_value("_G_WindowElement");

@@ -63,6 +63,8 @@ namespace Fsl::UI::Custom
     void DrawCustomLineStrip(UIRawBasicMeshBuilder2D& rBuilder, const PxVector2 dstPositionPxf, const PxSize2D dstSizePx,
                              const DrawClipContext& clipContext, const RenderBasicImageInfo& renderInfo, const ICustomDrawData* const pCustomDrawData)
     {
+      FSL_PARAM_NOT_USED(clipContext);
+
       const int32_t widthPx = dstSizePx.RawWidth();
       const auto heightPxf = static_cast<float>(dstSizePx.RawHeight());
       const int32_t areaBorderPx = TypeConverter::ChangeTo<int32_t>(heightPxf * 0.25f);

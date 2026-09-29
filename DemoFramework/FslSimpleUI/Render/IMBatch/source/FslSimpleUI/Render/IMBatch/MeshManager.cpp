@@ -267,11 +267,15 @@ namespace Fsl::UI::RenderIMBatch
 
     bool UpdatePrimitiveRenderInfo(const SpriteFont& sprite) noexcept
     {
+      FSL_PARAM_NOT_USED(sprite);
+
       return false;
     }
 
     RenderImageInfo UpdatePrimitiveRenderInfo(const ISprite& sprite) noexcept
     {
+      FSL_PARAM_NOT_USED(sprite);
+
       return {};
     }
 

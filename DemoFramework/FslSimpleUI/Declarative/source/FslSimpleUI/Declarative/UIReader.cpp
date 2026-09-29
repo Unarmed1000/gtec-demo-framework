@@ -509,6 +509,8 @@ namespace Fsl::UI::Declarative::UIReader
 
       bool TryProcessGridChild(UI::GridLayout& rGrid, pugi::xml_node node, const std::size_t depth = 0)
       {
+        FSL_PARAM_NOT_USED(depth);
+
         const std::string strName(node.name());
         if (strName == "GridLayout.ColumnDefinitions")
         {

@@ -257,6 +257,8 @@ namespace Fsl::UI
 
   bool MoveableRectangles::UpdateAnimationState(const bool forceCompleteAnimation)
   {
+    FSL_PARAM_NOT_USED(forceCompleteAnimation);
+
     return m_moveableRectangleManager.IsAnimating() || !m_gestureManager.IsIdle();
   }
 

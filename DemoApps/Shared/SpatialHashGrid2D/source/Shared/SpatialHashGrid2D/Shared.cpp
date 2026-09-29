@@ -75,7 +75,6 @@ namespace Fsl
 
     namespace UILegendColor
     {
-      constexpr UI::UIColor NotSelected(RenderColor::NotSelected);
       constexpr UI::UIColor Candidate(RenderColor::Candidate);
       constexpr UI::UIColor CandidateArea(RenderColor::CandidateArea);
       constexpr UI::UIColor SelectionArea(RenderColor::SelectionArea);

@@ -60,6 +60,9 @@ namespace Fsl::UI::Custom
     void DrawCustomLineList(UIRawBasicMeshBuilder2D& rBuilder, const PxVector2 dstPositionPxf, const PxSize2D dstSizePx,
                             const DrawClipContext& clipContext, const RenderBasicImageInfo& renderInfo, const ICustomDrawData* const pCustomDrawData)
     {
+      FSL_PARAM_NOT_USED(clipContext);
+      FSL_PARAM_NOT_USED(pCustomDrawData);
+
       const float x0 = dstPositionPxf.X.Value;
       const float x1 = x0 + static_cast<float>(dstSizePx.RawWidth() - 1);
 

@@ -227,6 +227,8 @@ namespace Fsl::UI
     void DrawCustomGraph(UIRawBasicMeshBuilder2D& rBuilder, const PxVector2 dstPositionPxf, const PxSize2D dstSizePx,
                          const DrawClipContext& clipContext, const RenderBasicImageInfo& renderInfo, const ICustomDrawData* const pCustomDrawData)
     {
+      FSL_PARAM_NOT_USED(clipContext);
+
       const auto* pChartWindow = dynamic_cast<const Render::ChartDataWindowDrawData*>(pCustomDrawData);
       if (pChartWindow != nullptr && pChartWindow->DataView)
       {
@@ -297,6 +299,8 @@ namespace Fsl::UI
     void DrawCustomGridLines(UIRawMeshBuilder2D& rBuilder, const PxVector2 dstPositionPxf, const PxSize2D dstSizePx,
                              const DrawClipContext& clipContext, const RenderBasicImageInfo& renderInfo, const ICustomDrawData* const pCustomDrawData)
     {
+      FSL_PARAM_NOT_USED(clipContext);
+
       const auto* pChartWindow = dynamic_cast<const Render::ChartDataWindowDrawData*>(pCustomDrawData);
       if (pChartWindow != nullptr)
       {
@@ -317,6 +321,8 @@ namespace Fsl::UI
                                 const DrawClipContext& clipContext, const RenderOptimizedNineSliceInfo& renderInfo,
                                 const ICustomDrawData* const pCustomDrawData)
     {
+      FSL_PARAM_NOT_USED(clipContext);
+
       const auto* pChartWindow = dynamic_cast<const Render::ChartDataWindowDrawData*>(pCustomDrawData);
       if (pChartWindow != nullptr)
       {

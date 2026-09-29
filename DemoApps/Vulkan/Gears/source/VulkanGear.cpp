@@ -61,6 +61,8 @@ namespace Fsl
 
   void VulkanGear::Generate(const GearInfo& gearinfo, const VkQueue queue)
   {
+    FSL_PARAM_NOT_USED(queue);
+
     m_color = gearinfo.Color;
     m_pos = gearinfo.Pos;
     m_rotOffset = gearinfo.RotOffset;

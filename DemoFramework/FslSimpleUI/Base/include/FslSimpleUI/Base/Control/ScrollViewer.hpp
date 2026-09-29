@@ -64,7 +64,6 @@ namespace Fsl::UI
 
   private:
     ScrollGestureHandler m_gestureHandler;
-    bool m_isDown{false};
     PxPoint2 m_scrollPositionOffsetPx;
 
     ContentSpriteMesh m_cursorX;

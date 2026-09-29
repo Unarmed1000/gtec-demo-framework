@@ -112,6 +112,7 @@ namespace Fsl
 
   void DeclarativeShared::Update(const DemoTime& demoTime)
   {
+    FSL_PARAM_NOT_USED(demoTime);
   }
 
   void DeclarativeShared::Draw()

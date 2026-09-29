@@ -310,6 +310,11 @@ namespace Fsl
   bool BitmapConverterService::TryConvert(Texture& rTexture, const PixelFormat desiredPixelFormat, const BitmapOrigin desiredOrigin,
                                           const BitmapConverterConfig& converterConfig)
   {
+    FSL_PARAM_NOT_USED(rTexture);
+    FSL_PARAM_NOT_USED(desiredPixelFormat);
+    FSL_PARAM_NOT_USED(desiredOrigin);
+    FSL_PARAM_NOT_USED(converterConfig);
+
     return false;
   }
 

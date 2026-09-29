@@ -99,6 +99,9 @@ namespace Fsl
 
   ImageConvertResult ImageConverterLibraryHDRService::TryConvert(Texture& rTexture, const PixelFormat desiredPixelFormat)
   {
+    FSL_PARAM_NOT_USED(rTexture);
+    FSL_PARAM_NOT_USED(desiredPixelFormat);
+
     return ImageConvertResult::NotSupported;
   }
 
@@ -165,6 +168,10 @@ namespace Fsl
 
   ToneMappingResult ImageConverterLibraryHDRService::TryToneMap(Texture& rTexture, const BasicToneMapper toneMapping, const float exposure)
   {
+    FSL_PARAM_NOT_USED(rTexture);
+    FSL_PARAM_NOT_USED(toneMapping);
+    FSL_PARAM_NOT_USED(exposure);
+
     return ToneMappingResult::NotSupported;
   }
 }

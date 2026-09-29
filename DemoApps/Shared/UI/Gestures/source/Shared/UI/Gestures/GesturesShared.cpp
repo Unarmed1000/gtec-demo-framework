@@ -78,11 +78,6 @@ namespace Fsl
       constexpr ConstrainedValue<float> BounceSpringStiffness(5, 1, 100);
       constexpr ConstrainedValue<float> BounceAnimationTime(1, 0.01f, 2);
 
-      constexpr IO::PathView PathSdfAtlas("Font/SdfAtlas/FontAtlas.bta");
-      constexpr IO::PathView PathSdfAtlasTexture("Font/SdfAtlas/FontAtlas.png");
-      constexpr IO::PathView PathSdfAtlasFont("Font/SdfAtlas/FontAtlas_Font.fbk");
-      constexpr IO::PathView PathFillTexture("Fill/Fill.png");
-
       constexpr const StringViewLite TextLine0("**Drag to scroll** The quick brown fox jumps over the lazy dog. 1234567890! Hello World.");
       constexpr const StringViewLite TextLine1("!\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~");
     }
@@ -139,11 +134,13 @@ namespace Fsl
 
   void GesturesShared::OnMouseButtonEvent(const MouseButtonEvent& event)
   {
+    FSL_PARAM_NOT_USED(event);
   }
 
 
   void GesturesShared::OnMouseMoveEvent(const MouseMoveEvent& event)
   {
+    FSL_PARAM_NOT_USED(event);
   }
 
 
@@ -187,6 +184,8 @@ namespace Fsl
 
   void GesturesShared::Update(const DemoTime& demoTime)
   {
+    FSL_PARAM_NOT_USED(demoTime);
+
     RebuildStatsCache();
 
     const UI::UIColor idleColor = m_wasUIIdle ? IdleColor::Idle : IdleColor::Busy;
@@ -196,12 +195,12 @@ namespace Fsl
 
   void GesturesShared::Draw(const DemoTime& demoTime)
   {
+    FSL_PARAM_NOT_USED(demoTime);
+
     UpdateDuringDrawFramePacingAnimation(m_ui.MoveableRects->WinGetContentRectanglePx());
 
 
     m_batch->Begin(BlendState::Opaque);
-
-    const Vector2 dstPositionPx;
 
     if (m_ui.CheckBoxShowFramePacingX->IsChecked())
     {

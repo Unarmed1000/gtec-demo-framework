@@ -504,6 +504,8 @@ namespace Fsl
   void RenderModel::Draw(const VkCommandBuffer hCmdBuffer, const VulkanBasic::DrawContext& drawContext, const DemoTime& demoTime,
                          const PxRectangle windowRectanglePx)
   {
+    FSL_PARAM_NOT_USED(demoTime);
+
     const PxSize2DF windowSizePxf = TypeConverter::To<PxSize2DF>(windowRectanglePx.GetSize());
     const float aspectRatio = windowSizePxf.RawHeight() > 0 ? windowSizePxf.RawWidth() / windowSizePxf.RawHeight() : 1.0f;
 
@@ -588,6 +590,8 @@ namespace Fsl
   RenderModel::ModelRecord RenderModel::LoadModel(const Vulkan::VUDevice& device, const std::shared_ptr<Vulkan::VMBufferManager>& bufferManager,
                                                   const IO::Path& contentPath, const IO::PathView srcModelPath, const float modelScale)
   {
+    FSL_PARAM_NOT_USED(device);
+
     FSLLOG3_INFO("Loading model '{}'", srcModelPath);
     const auto modelPath = IO::Path::Combine(contentPath, srcModelPath);
     SceneImporter sceneImporter;
@@ -656,6 +660,8 @@ namespace Fsl
   RenderModel::MaterialShaderRecord RenderModel::LoadShader(const Vulkan::VUDevice& device, IContentManager& contentManager,
                                                             const IO::PathView shaderPath, const VertexDeclarationSpan vertexDeclarationSpan)
   {
+    FSL_PARAM_NOT_USED(vertexDeclarationSpan);
+
     constexpr IO::PathView StrShaderName("PerPixelDiffuseSpecNormal");
     const IO::Path strVertShaderFilename(StrShaderName + ".vert.spv");
     const IO::Path strFragShaderFilename(StrShaderName + ".frag.spv");

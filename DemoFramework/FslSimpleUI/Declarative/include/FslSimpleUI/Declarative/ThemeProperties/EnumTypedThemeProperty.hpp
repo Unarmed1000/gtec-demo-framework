@@ -57,6 +57,8 @@ namespace Fsl::UI::Declarative
 
     virtual value_type ParseTypedValue(const StringViewLite value) const final
     {
+      FSL_PARAM_NOT_USED(value);
+
       throw InternalErrorException("ParseTypedValue should never be called for this property type");
     }
 

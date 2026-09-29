@@ -70,6 +70,8 @@ namespace Fsl
 
   void RenderTest::VulkanDraw(const DemoTime& demoTime, RapidVulkan::CommandBuffers& rCmdBuffers, const VulkanBasic::DrawContext& drawContext)
   {
+    FSL_PARAM_NOT_USED(demoTime);
+
     const uint32_t currentFrameIndex = drawContext.CurrentFrameIndex;
 
     const VkCommandBuffer hCmdBuffer = rCmdBuffers[currentFrameIndex];

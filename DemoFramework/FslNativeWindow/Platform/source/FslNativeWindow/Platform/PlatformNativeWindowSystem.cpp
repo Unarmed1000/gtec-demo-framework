@@ -41,6 +41,8 @@ namespace Fsl
                                                          std::unique_ptr<IPlatformNativeWindowSystemAdapter> adapter)
     : m_adapter(std::move(adapter))
   {
+    FSL_PARAM_NOT_USED(setup);
+
     if (!m_adapter)
     {
       throw std::invalid_argument("can not be null");

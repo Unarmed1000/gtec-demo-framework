@@ -123,6 +123,8 @@ namespace Fsl
 
   VkRenderPass Gestures::OnBuildResources(const VulkanBasic::BuildResourcesContext& context)
   {
+    FSL_PARAM_NOT_USED(context);
+
     m_dependentResources.MainRenderPass = CreateBasicRenderPass();
     return m_dependentResources.MainRenderPass.Get();
   }

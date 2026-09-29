@@ -224,6 +224,8 @@ namespace Fsl
 
   void GesturesShared::Draw(const DemoTime& demoTime)
   {
+    FSL_PARAM_NOT_USED(demoTime);
+
     UpdateDuringDrawFramePacingAnimation();
 
     m_batch->Begin(BlendState::Sdf);

@@ -113,6 +113,7 @@ namespace Fsl::UI::Theme
         , PrimaryDark(primaryDark)
         , ImageOnPrimary(imageOnPrimary)
       {
+        FSL_PARAM_NOT_USED(dividerOnPrimary);
       }
     };
 

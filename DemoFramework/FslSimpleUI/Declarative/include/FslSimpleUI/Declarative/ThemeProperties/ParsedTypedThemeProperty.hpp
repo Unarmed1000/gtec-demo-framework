@@ -51,6 +51,8 @@ namespace Fsl::UI::Declarative
     //! @brief Convert the record entry to the actual type
     typename TypedThemeProperty<T>::value_type GenericValueIdToActualTypedValue(const uint32_t genericValueId) const final
     {
+      FSL_PARAM_NOT_USED(genericValueId);
+
       throw InternalErrorException("GenericValueIdToActualTypedValue should never be called for this property type");
     }
   };

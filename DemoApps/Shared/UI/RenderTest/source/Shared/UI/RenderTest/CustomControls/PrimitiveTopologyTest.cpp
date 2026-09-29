@@ -57,6 +57,9 @@ namespace Fsl::UI::Custom
     void DrawCustomLineList(UIRawBasicMeshBuilder2D& rBuilder, const PxVector2 dstPositionPxf, const PxSize2D dstSizePx,
                             const DrawClipContext& clipContext, const RenderBasicImageInfo& renderInfo, const ICustomDrawData* const pCustomDrawData)
     {
+      FSL_PARAM_NOT_USED(clipContext);
+      FSL_PARAM_NOT_USED(pCustomDrawData);
+
       const float leftPxf = dstPositionPxf.X.Value;
       const float topPxf = dstPositionPxf.Y.Value;
       const float rightPxf = leftPxf + static_cast<float>(dstSizePx.RawWidth());
@@ -85,6 +88,9 @@ namespace Fsl::UI::Custom
     void DrawCustomLineStrip(UIRawBasicMeshBuilder2D& rBuilder, const PxVector2 dstPositionPxf, const PxSize2D dstSizePx,
                              const DrawClipContext& clipContext, const RenderBasicImageInfo& renderInfo, const ICustomDrawData* const pCustomDrawData)
     {
+      FSL_PARAM_NOT_USED(clipContext);
+      FSL_PARAM_NOT_USED(pCustomDrawData);
+
       const float leftPxf = dstPositionPxf.X.Value;
       const float topPxf = dstPositionPxf.Y.Value;
       const float rightPxf = leftPxf + static_cast<float>(dstSizePx.RawWidth());
@@ -109,6 +115,9 @@ namespace Fsl::UI::Custom
     void DrawCustomTriangle(UIRawBasicMeshBuilder2D& rBuilder, const PxVector2 dstPositionPxf, const PxSize2D dstSizePx,
                             const DrawClipContext& clipContext, const RenderBasicImageInfo& renderInfo, const ICustomDrawData* const pCustomDrawData)
     {
+      FSL_PARAM_NOT_USED(clipContext);
+      FSL_PARAM_NOT_USED(pCustomDrawData);
+
       const float leftPxf = dstPositionPxf.X.Value;
       const float topPxf = dstPositionPxf.Y.Value;
       const float rightPxf = leftPxf + static_cast<float>(dstSizePx.RawWidth());

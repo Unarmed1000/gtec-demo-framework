@@ -243,6 +243,8 @@ namespace Fsl::UI
 
   bool ScrollGestureHandler::UpdateAnimationState(const bool forceCompleteAnimation)
   {
+    FSL_PARAM_NOT_USED(forceCompleteAnimation);
+
     return !m_gestureManager.IsIdle() || m_animRecord.Status != AnimStatus::Idle;
   }
 
