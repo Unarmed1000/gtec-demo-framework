@@ -25,7 +25,7 @@
   * Python 3.14 or better is now required.
   * Upgraded to FslBuild 3.13.3 (fixed the Visual Studio 2026 toolset version used for the external libraries, recipe downloads now use a FslBuild user agent, unused external libraries no longer pull in their recipes, --ForAllExe keeps windows paths intact, experimental Conan recipe support, recipe FindTargetName/FindVersion enable Find again, Visual Studio builds use the MSBuild MultiToolTask to cap the compiler processes across all projects so --BuildThreads is the maximum number of compile jobs).
   * clang-format and clang-tidy 23 are now required (all files are formatted with clang-format 23).
-  * Added GitHub Actions CI: Ubuntu and Windows builds with unit tests, clang-format and clang-tidy (changed files).
+  * Added GitHub Actions CI: Ubuntu, Windows and macOS builds with unit tests, clang-format and clang-tidy (changed files).
   * Fixed --ExitAfterDuration never parsing the duration.
   * Updated assimp to 6.0.5
   * Updated fmt to 12.2.0
