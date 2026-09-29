@@ -1,8 +1,10 @@
 # Setup guide for macOS (Apple) - experimental
 
-This guide uses [Homebrew](https://brew.sh/) for all dependencies and builds the demos with the native Cocoa window system and Vulkan via [MoltenVK](https://github.com/KhronosGroup/MoltenVK).
+This guide builds the demos with the native Cocoa window system and Vulkan.
+On Apple silicon with macOS 26 or newer, Vulkan uses KosmicKrisp, the Vulkan 1.4 conformant driver in the [LunarG Vulkan SDK](https://vulkan.lunarg.com/sdk/home#mac).
+Intel Macs and older macOS versions can use [MoltenVK](https://github.com/KhronosGroup/MoltenVK) instead (see [Appendix A](#appendix-a-moltenvk-for-intel-macs-and-older-macos-versions)).
 
-The Apple platform is still experimental, so expect some of the demo apps to fail (MoltenVK does not support every Vulkan feature, for example geometry shaders).
+The Apple platform is still experimental, so expect some of the demo apps to fail (especially with MoltenVK, which does not support every Vulkan feature, for example geometry shaders).
 
 ## Table of contents
 
@@ -12,19 +14,19 @@ The Apple platform is still experimental, so expect some of the demo apps to fai
 * [Verify the Vulkan installation](#verify-the-vulkan-installation)
 * [To compile and run an existing Vulkan sample application](#to-compile-and-run-an-existing-vulkan-sample-application)
 * [Troubleshooting](#troubleshooting)
-* [Appendix A: Using the LunarG Vulkan SDK instead of Homebrew](#appendix-a-using-the-lunarg-vulkan-sdk-instead-of-homebrew)
+* [Appendix A: MoltenVK for Intel Macs and older macOS versions](#appendix-a-moltenvk-for-intel-macs-and-older-macos-versions)
 * [Appendix B: Legacy X11 window system (XQuartz + Mesa)](#appendix-b-legacy-x11-window-system-xquartz--mesa)
 
 ## Prerequisites
 
-* macOS 13 or newer (Apple silicon or Intel)
+* Apple silicon (M1 or newer) with macOS 26 or newer. For Intel Macs and older macOS versions see [Appendix A](#appendix-a-moltenvk-for-intel-macs-and-older-macos-versions).
 * Xcode command line tools
 
     ```bash
     xcode-select --install
     ```
 
-* [Homebrew](https://brew.sh/)
+* [Homebrew](https://brew.sh/) (for the build tools)
 
 ## Install the dependencies
 
@@ -34,10 +36,13 @@ Build tools (CMake, Ninja and Python 3.14+)
 brew install cmake ninja python@3.14
 ```
 
-Vulkan: the loader, headers, MoltenVK (the Vulkan driver that runs on top of Metal), validation layers, profiles and tools
+Vulkan: the [LunarG Vulkan SDK for macOS](https://vulkan.lunarg.com/sdk/home#mac) 1.4.363.0 or newer.
+It contains the loader, the headers, the KosmicKrisp and MoltenVK drivers, the validation layers, the Vulkan profiles and the tools.
+Download it and run the installer, by default it installs to `~/VulkanSDK/<version>/`.
+The installer can also run from the command line:
 
 ```bash
-brew install vulkan-headers vulkan-loader molten-vk vulkan-validationlayers vulkan-profiles vulkan-tools
+vulkansdk-macOS-<version>.app/Contents/MacOS/vulkansdk-macOS-<version> --root ~/VulkanSDK/<version> --accept-licenses --default-answer --confirm-command install
 ```
 
 Optional: clang-format and clang-tidy 23 (only needed to format and tidy the code with `FslBuildCheck.py`)
@@ -54,12 +59,15 @@ Make sure that `clang-format --version` and `clang-tidy --version` report versio
 
 ## Configure the environment
 
-Run this in every terminal you build or run the demos from (or add the `export` to your `~/.zshrc`).
+Run this in every terminal you build or run the demos from (or add it to your `~/.zshrc`).
 `prepare.sh` automatically selects the `Apple` platform on macOS.
 
 ```bash
-# Let CMake find the Homebrew packages (/opt/homebrew is not a default CMake search path)
-export CMAKE_PREFIX_PATH="$(brew --prefix)${CMAKE_PREFIX_PATH:+:$CMAKE_PREFIX_PATH}"
+# Sets VULKAN_SDK (used by CMake to find Vulkan) and points the Vulkan loader at the SDK's drivers and layers
+source ~/VulkanSDK/<version>/setup-env.sh
+
+# Only load KosmicKrisp, otherwise the SDK's MoltenVK is enumerated first
+export VK_DRIVER_FILES="$VULKAN_SDK/share/vulkan/icd.d/libkosmickrisp_icd.json"
 
 cd gtec-demo-framework
 source prepare.sh
@@ -73,7 +81,7 @@ Make sure that `python3 --version` reports 3.14 or newer.
 vulkaninfo --summary
 ```
 
-The output should list your GPU with `MoltenVK` as the driver.
+The output should list your GPU with the KosmicKrisp driver.
 
 ## To compile and run an existing Vulkan sample application
 
@@ -88,24 +96,42 @@ The window size (`--Window [x,y,width,height]`) is in points (so it is independe
 
 ## Troubleshooting
 
+* CMake can't find Vulkan: check that `VULKAN_SDK` is set (`source ~/VulkanSDK/<version>/setup-env.sh`), then delete the build directory and build again.
+* The demo reports no Vulkan physical devices (or `VK_ERROR_INCOMPATIBLE_DRIVER`): check that `VK_DRIVER_FILES` points at an existing `libkosmickrisp_icd.json` and run `vulkaninfo --summary`.
+  KosmicKrisp requires Apple silicon and macOS 26 or newer, on other Macs use MoltenVK ([Appendix A](#appendix-a-moltenvk-for-intel-macs-and-older-macos-versions)).
+* A demo fails during device or pipeline creation with MoltenVK: it most likely uses a feature that MoltenVK doesn't support.
+
+## Appendix A: MoltenVK for Intel Macs and older macOS versions
+
+[MoltenVK](https://github.com/KhronosGroup/MoltenVK) runs Vulkan on top of Metal on Intel Macs and on macOS 13 or newer.
+It is a Vulkan portability implementation and not a fully conformant driver, so some of the demos don't run (for example the ones that use geometry shaders).
+
+### Using the LunarG Vulkan SDK
+
+The SDK also contains MoltenVK. Configure the environment as described in [Configure the environment](#configure-the-environment), but leave out the `VK_DRIVER_FILES` export so the Vulkan loader uses MoltenVK.
+
+### Using Homebrew
+
+Install the Vulkan loader, headers, MoltenVK, validation layers, profiles and tools
+
+```bash
+brew install vulkan-headers vulkan-loader molten-vk vulkan-validationlayers vulkan-profiles vulkan-tools
+```
+
+Configure the environment in every terminal you build or run the demos from (instead of `setup-env.sh`)
+
+```bash
+# Let CMake find the Homebrew packages (/opt/homebrew is not a default CMake search path)
+export CMAKE_PREFIX_PATH="$(brew --prefix)${CMAKE_PREFIX_PATH:+:$CMAKE_PREFIX_PATH}"
+
+cd gtec-demo-framework
+source prepare.sh
+```
+
+`vulkaninfo --summary` should list your GPU with `MoltenVK` as the driver.
+
 * CMake can't find Vulkan: check that `CMAKE_PREFIX_PATH` contains `$(brew --prefix)`, then delete the build directory and build again.
-* The demo reports no Vulkan physical devices (or `VK_ERROR_INCOMPATIBLE_DRIVER`): the Vulkan loader didn't find MoltenVK. Run `vulkaninfo --summary` to check the installation, and try `brew reinstall molten-vk vulkan-loader`.
-* A demo fails during device or pipeline creation: it most likely uses a feature that MoltenVK doesn't support.
-
-## Appendix A: Using the LunarG Vulkan SDK instead of Homebrew
-
-The [LunarG Vulkan SDK for macOS](https://vulkan.lunarg.com/sdk/home#mac) contains the same Vulkan components (loader, MoltenVK, validation layers and tools) and is useful if you need a specific SDK version.
-
-1. Download and run the installer. By default it installs to `~/VulkanSDK/<version>/`.
-   The optional 'System Global Installation' also copies the files to `/usr/local`, so the demos can find MoltenVK without any environment setup.
-2. Configure the Vulkan environment in each terminal you build or run from (instead of the Homebrew `CMAKE_PREFIX_PATH` export)
-
-    ```bash
-    source ~/VulkanSDK/<version>/setup-env.sh
-    ```
-
-    This sets `VULKAN_SDK` (used by CMake to find Vulkan) and points the Vulkan loader at MoltenVK and the validation layers.
-3. Continue with `source prepare.sh` as described in [Configure the environment](#configure-the-environment).
+* The demo reports no Vulkan physical devices: the Vulkan loader didn't find MoltenVK, try `brew reinstall molten-vk vulkan-loader`.
 
 Don't mix a Homebrew and a LunarG Vulkan installation in the same terminal, as the loader could pick up the wrong driver or layers.
 
@@ -115,12 +141,12 @@ The Apple platform supports two window systems, which are selected with the `Win
 
 WindowSystem     | Description                                                      | APIs
 -----------------|------------------------------------------------------------------|---------------------------
-Cocoa (default)  | Native AppKit window with a CAMetalLayer                         | Vulkan (via MoltenVK), console apps
+Cocoa (default)  | Native AppKit window with a CAMetalLayer                         | Vulkan (via KosmicKrisp or MoltenVK), console apps
 X11              | Legacy XQuartz (X11) + Mesa path (a 'proof of concept')          | OpenGL ES (via Mesa EGL)
 
 The X11 window system is currently required for the OpenGL ES samples as EGL is only available through Mesa.
 It is selected by adding `--Variants [WindowSystem=X11]` to the `FslBuild.py` and `FslBuildRun.py` commands.
-Vulkan is not supported with the X11 window system as MoltenVK does not support Xlib surfaces.
+Vulkan is not supported with the X11 window system, as Vulkan on Apple presents through a CAMetalLayer.
 
 Install XQuartz and Mesa
 

@@ -30,7 +30,7 @@ namespace Fsl
 {
   namespace
   {
-    // MoltenVK presents through a CAMetalLayer
+    // The Vulkan drivers on Apple (KosmicKrisp and MoltenVK) present through a CAMetalLayer
     const auto g_platformKhrSurfaceExtensionName = VK_EXT_METAL_SURFACE_EXTENSION_NAME;
 
 

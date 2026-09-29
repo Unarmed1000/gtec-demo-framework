@@ -5,7 +5,7 @@
     <Platform Name="Android" Supported="true"/>
     <Platform Name="Apple" Supported="true">
       <Flavor Name="Impl" QuickName="WindowSystem">
-        <!-- Native AppKit window with a CAMetalLayer (Vulkan via MoltenVK) -->
+        <!-- Native AppKit window with a CAMetalLayer (Vulkan via KosmicKrisp or MoltenVK) -->
         <Option Name="Cocoa">
           <ExternalDependency Name="Cocoa" Type="Framework"/>
           <ExternalDependency Name="QuartzCore" Type="Framework"/>

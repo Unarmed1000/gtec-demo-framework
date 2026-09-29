@@ -161,12 +161,45 @@ jobs:
         with:
           python-version: '3.14'
 
-      # Same Vulkan packages as Doc/Setup_guide_apple.md: the loader, headers, MoltenVK, validation layers, profiles and tools
-      - name: Install dependencies
+      - name: Install build tools
+        run: brew install ninja
+
+      - name: Cache Vulkan SDK
+        id: cache-vulkan-sdk
+        uses: actions/cache@v6
+        with:
+          path: /Users/runner/VulkanSDK/${{ env.VULKAN_SDK_VERSION }}
+          key: vulkansdk-macos-${{ env.VULKAN_SDK_VERSION }}
+
+      - name: Install Vulkan SDK
+        if: steps.cache-vulkan-sdk.outputs.cache-hit != 'true'
         run: |
-          brew install ninja vulkan-headers vulkan-loader molten-vk vulkan-validationlayers vulkan-profiles vulkan-tools
-          # Let CMake find the Homebrew packages (/opt/homebrew is not a default CMake search path)
-          echo "CMAKE_PREFIX_PATH=$(brew --prefix)" >> "$GITHUB_ENV"
+          zip="$RUNNER_TEMP/vulkansdk.zip"
+          curl -fL --retry 3 -o "$zip" "https://sdk.lunarg.com/sdk/download/$VULKAN_SDK_VERSION/mac/vulkansdk-macos-$VULKAN_SDK_VERSION.zip"
+          sha=$(curl -fsL "https://sdk.lunarg.com/sdk/sha/$VULKAN_SDK_VERSION/mac/vulkansdk-macos-$VULKAN_SDK_VERSION.zip.json" | python3 -c "import json,sys; print(json.load(sys.stdin)['sha'])")
+          echo "$sha  $zip" | shasum -a 256 -c -
+          unzip -q "$zip" -d "$RUNNER_TEMP/vulkansdk"
+          installer="$RUNNER_TEMP/vulkansdk/vulkansdk-macOS-$VULKAN_SDK_VERSION.app/Contents/MacOS/vulkansdk-macOS-$VULKAN_SDK_VERSION"
+          "$installer" --root "$HOME/VulkanSDK/$VULKAN_SDK_VERSION" --accept-licenses --default-answer --confirm-command install
+
+      # The environment of the SDK's setup-env.sh (as in Doc/Setup_guide_apple.md), with KosmicKrisp, the SDK's Vulkan 1.4
+      # conformant driver, as the only Vulkan driver
+      - name: Configure the Vulkan environment
+        run: |
+          env | sort > "$RUNNER_TEMP/env-before.txt"
+          source "$HOME/VulkanSDK/$VULKAN_SDK_VERSION/setup-env.sh"
+          env | sort > "$RUNNER_TEMP/env-after.txt"
+          comm -13 "$RUNNER_TEMP/env-before.txt" "$RUNNER_TEMP/env-after.txt" | grep -v -E '^(PATH|PWD|OLDPWD|SHLVL|_)=' | tee -a "$GITHUB_ENV"
+          echo "$VULKAN_SDK/bin" >> "$GITHUB_PATH"
+          driver="$VULKAN_SDK/share/vulkan/icd.d/libkosmickrisp_icd.json"
+          test -f "$driver"
+          echo "VK_DRIVER_FILES=$driver" | tee -a "$GITHUB_ENV"
+
+      # Informational: shows if KosmicKrisp can use the runner's virtual GPU, the build and the unit tests don't need a GPU
+      - name: Vulkan driver info
+        continue-on-error: true
+        timeout-minutes: 5
+        run: vulkaninfo --summary
 
       - name: Cache third party libraries
         uses: actions/cache@v6
