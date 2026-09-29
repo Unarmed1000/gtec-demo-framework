@@ -43,8 +43,14 @@ brew install vulkan-headers vulkan-loader molten-vk vulkan-validationlayers vulk
 Optional: clang-format and clang-tidy 23 (only needed to format and tidy the code with `FslBuildCheck.py`)
 
 ```bash
+# llvm is currently version 23, once Homebrew moves it to 24 use llvm@23 instead
 brew install llvm
+
+# llvm is keg-only (macOS ships its own clang), so add its tools to the path (in every terminal, or in your ~/.zshrc)
+export PATH="$(brew --prefix llvm)/bin:$PATH"
 ```
+
+Make sure that `clang-format --version` and `clang-tidy --version` report version 23.
 
 ## Configure the environment
 
