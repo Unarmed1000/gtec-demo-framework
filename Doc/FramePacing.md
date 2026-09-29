@@ -102,8 +102,9 @@ The hosts only use the Control interfaces: they get `IFramePacingServiceControl`
 service is only registered (by `FslDemoPlatform`) on the platforms that support the marker library, everywhere else `TryGet` returns
 null and nothing is drawn.
 
-The overlay encodes the marker with `MB::FrameMarker::GenerateModules` and renders the triangles produced by
-`MB::FrameMarker::ModulesToTriangles` on the GPU through the FslGraphics3D `IBasicRenderSystem` (one dynamic vertex buffer, an opaque
-material without depth test or culling and a pixel aligned orthographic projection), so the same code is used for OpenGL ES 2,
-OpenGL ES 3 and Vulkan. The host draws it inside the frame after the app has drawn (`DemoAppManager` for OpenGL ES and
+The overlay draws the library's static grids: `MB::FrameMarker::GridVertices` for the main and the sync marker, only regenerated when
+the window size or the marker options change. Every frame it encodes the marker with `MB::FrameMarker::GenerateModules` and uploads just
+the 16-bit indices from `MB::FrameMarker::ModulesToGridIndices` (about 5 KB). It renders on the GPU through the FslGraphics3D
+`IBasicRenderSystem` (one dynamic vertex buffer, one dynamic index buffer, an opaque material without depth test or culling and a pixel
+aligned orthographic projection), so the same code is used for OpenGL ES 2, OpenGL ES 3 and Vulkan. The host draws it inside the frame after the app has drawn (`DemoAppManager` for OpenGL ES and
 `DemoAppVulkanBasic::AddSystemUI` for Vulkan).
