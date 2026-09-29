@@ -161,10 +161,10 @@ jobs:
         with:
           python-version: '3.14'
 
-      # Same Vulkan packages as Doc/Setup_guide_apple.md: the loader, headers, MoltenVK, validation layers and tools
+      # Same Vulkan packages as Doc/Setup_guide_apple.md: the loader, headers, MoltenVK, validation layers, profiles and tools
       - name: Install dependencies
         run: |
-          brew install ninja vulkan-headers vulkan-loader molten-vk vulkan-validationlayers vulkan-tools
+          brew install ninja vulkan-headers vulkan-loader molten-vk vulkan-validationlayers vulkan-profiles vulkan-tools
           # Let CMake find the Homebrew packages (/opt/homebrew is not a default CMake search path)
           echo "CMAKE_PREFIX_PATH=$(brew --prefix)" >> "$GITHUB_ENV"
 

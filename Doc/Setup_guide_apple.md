@@ -34,10 +34,10 @@ Build tools (CMake, Ninja and Python 3.14+)
 brew install cmake ninja python@3.14
 ```
 
-Vulkan: the loader, headers, MoltenVK (the Vulkan driver that runs on top of Metal), validation layers and tools
+Vulkan: the loader, headers, MoltenVK (the Vulkan driver that runs on top of Metal), validation layers, profiles and tools
 
 ```bash
-brew install vulkan-headers vulkan-loader molten-vk vulkan-validationlayers vulkan-tools
+brew install vulkan-headers vulkan-loader molten-vk vulkan-validationlayers vulkan-profiles vulkan-tools
 ```
 
 Optional: clang-format and clang-tidy 23 (only needed to format and tidy the code with `FslBuildCheck.py`)
