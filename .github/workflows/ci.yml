@@ -123,19 +123,6 @@ jobs:
           key: thirdparty-windows-${{ env.FSL_CI_VS_VERSION }}-${{ hashFiles('ThirdParty/**/Fsl.gen', 'ThirdParty/**/*.patch') }}
           restore-keys: thirdparty-windows-${{ env.FSL_CI_VS_VERSION }}-
 
-      # Temporary: the content build steps show no FslBuildContent output on the runner, check how it runs .py files
-      - name: Diagnose the .py file association
-        shell: cmd
-        continue-on-error: true
-        timeout-minutes: 5
-        run: |
-          call "%GITHUB_WORKSPACE%\prepare.bat"
-          assoc .py
-          ftype Python.File
-          where FslBuildContent.py
-          FslBuildContent.py --help
-          echo exit=%errorlevel%
-
       # The install area is restored from actions/cache together with the claim of the run that saved it, so claim it (like Jenkins)
       - name: Build
         shell: cmd
