@@ -35,6 +35,7 @@ import shutil
 
 from FslBuildGen import IOUtil, ToolSharedValues
 from FslBuildGen.BuildContent.BasicContentProcessor import BasicContentProcessor
+from FslBuildGen.BuildContent.ContentBuildResult import ContentBuildResult
 
 # from FslBuildGen.BuildContent.ContentProcessor import ContentProcessor
 from FslBuildGen.BuildContent.ContentRootRecord import ContentRootRecord
@@ -119,8 +120,10 @@ class Builder:
         contentBuildPath: str,
         contentOutputPath: str,
         contentProcessorManager: ContentProcessorManager,
+        outputRequired: bool,
     ) -> None:
         super().__init__()
+        self.Result = ContentBuildResult()
 
         configPathVariables = PathVariables(toolConfig, packageBuildPath, contentBuildPath, contentOutputPath)
         commandFilename = IOUtil.Join(contentBuildPath, ToolSharedValues.CONTENT_BUILD_FILE_NAME)
@@ -136,6 +139,8 @@ class Builder:
         outputSyncState = BuildState.GenerateOutputSyncState(log, absoluteOutputCacheFileName, contentOutputPath, True)
 
         if sourceContent.IsEmpty:
+            if outputRequired:
+                raise Exception(f"No content files found at '{contentBuildPath}', but the build expects content in '{contentOutputPath}'")
             log.LogPrint("No files found")
             return
 
@@ -155,6 +160,11 @@ class Builder:
         )
         srcsSyncState.Save()
         outputSyncState.Save()
+
+        if not configDisableWrite:
+            missingOutputFiles = self.Result.GetMissingOutputFiles()
+            if len(missingOutputFiles) > 0:
+                raise Exception("The content build did not create: {}".format(", ".join(f"'{entry}'" for entry in missingOutputFiles)))
 
     def __GetSyncStateFileName(self, contentBuildPath: str, contentFile: str) -> str:
         if contentFile.startswith(contentBuildPath):
@@ -204,6 +214,10 @@ class Builder:
                 # Add a entry for the output file
                 outputFileState = outputSyncState.BuildContentState(log, outputFileRecord, True, True)
                 outputSyncState.Add(outputFileState)
+                self.Result.Synced += 1
+            else:
+                self.Result.UpToDate += 1
+            self.Result.OutputFiles.append(outputFileRecord.ResolvedPath)
 
     def __ProcessContentFiles(
         self,
@@ -219,7 +233,11 @@ class Builder:
         dstRoot = ContentRootRecord(log, contentOutputPath)
         for contentFile in srcContent.Files:
             processor = contentProcessorManager.TryFindContentProcessor(contentFile)
-            if processor is not None:
+            if processor is None:
+                # Normal for files that are only built for other features (like GLES shaders in a Vulkan build)
+                log.LogPrintVerbose(1, f"No content processor for '{contentFile.ResolvedPath}' with the active features, skipped")
+                self.Result.NoProcessor += 1
+            else:
                 # Query the processor for the output filename
                 outputFileName = processor.GetOutputFileName(log, contentOutputPath, contentFile)
                 outputFileRecord = PathRecord(log, dstRoot, outputFileName[len(dstRoot.ResolvedPath) + 1 :])
@@ -228,7 +246,7 @@ class Builder:
                 syncStateFileName = self.__GetSyncStateFileName(contentBuildPath, contentFile.RelativePath)
                 contentState = syncState.TryGetFileStateByFileName(syncStateFileName)
                 buildResource = contentState is None or contentState.CacheState != BuildState.CacheState.Unmodified
-                if buildResource is not None:
+                if not buildResource:
                     # It was unmodified, so we need to examine the state of the output file to
                     # determine if its safe to skip the building
                     syncStateOutputFileName = self.__GetSyncStateFileName(contentOutputPath, outputFileName)
@@ -254,6 +272,10 @@ class Builder:
                     if contentState is not None:
                         outputFileState.TagChecksum = contentState.Checksum
                     outputSyncState.Add(outputFileState)
+                    self.Result.Built += 1
+                else:
+                    self.Result.UpToDate += 1
+                self.Result.OutputFiles.append(outputFileRecord.ResolvedPath)
 
 
 def GetContentProcessorManager(log: Log, toolConfig: ToolConfig, featureList: list[str]) -> ContentProcessorManager:
@@ -281,8 +303,12 @@ def Build(
     contentBuildPath = IOUtil.Join(currentPath, contentBuildDir)
 
     contentOutputPath = GetContentOutputPath(packagePath) if outputPath is None else outputPath
+    # A explicit output path means a build system asked for the content (and expects the output files it knows about)
+    outputRequired = outputPath is not None
 
     if not IOUtil.IsDirectory(contentBuildPath):
+        if outputRequired:
+            raise Exception(f"No '{contentBuildDir}' directory present at '{currentPath}', but the build expects content in '{contentOutputPath}'")
         log.LogPrintVerbose(1, f"No '{contentBuildDir}' directory present at '{currentPath}' so there is no content to process.")
         return
 
@@ -291,4 +317,6 @@ def Build(
         IOUtil.SafeMakeDirs(packageBuildPath)
 
     contentProcessorManager = GetContentProcessorManager(log, toolConfig, featureList)
-    Builder(log, configDisableWrite, toolConfig, packageBuildPath, contentBuildPath, contentOutputPath, contentProcessorManager)
+    builder = Builder(log, configDisableWrite, toolConfig, packageBuildPath, contentBuildPath, contentOutputPath, contentProcessorManager, outputRequired)
+    # Always report what was done, a build log should show that the content was built
+    log.DoPrint(builder.Result.GetSummary(currentPath, contentOutputPath))

@@ -155,8 +155,11 @@ class ToolFlowBuildContent(AToolAppFlow):
             RecipeBuilder.ValidateInstallationForPackages(self.Log, config.SDKPath, generatorContext, topLevelPackage.ResolvedBuildOrder)
 
         if toolEnabled is not None and not ParseUtil.ParseBool(toolEnabled):
-            if self.Log.Verbosity > 0:
-                print(f"FslBuildContent has been disabled by environment variable {CONFIG_FSLBUILDCONTENT_ENABLED} set to {toolEnabled}")
+            disabledMessage = f"FslBuildContent has been disabled by environment variable {CONFIG_FSLBUILDCONTENT_ENABLED} set to {toolEnabled}"
+            if localToolConfig.Output is not None:
+                # FslBuild only disables it for generators whose build files do not build the content, and those never ask for a output path
+                raise Exception(f"{disabledMessage}, but the build expects content in '{localToolConfig.Output}'")
+            self.Log.DoPrint(disabledMessage)
             return
 
         locations = toolConfig.PackageConfiguration[localToolConfig.PackageConfigurationType].Locations
