@@ -43,7 +43,7 @@ namespace Fsl::IO
 
     //! @brief overload that allows you to create a PathView from pointer and count that is noexcept.
     //!        only use this in cases where you are 100% sure that your input is valid and contains no backslashes
-    explicit constexpr PathView(const StringViewLite str, const OptimizationCheckFlag reserved) noexcept
+    explicit constexpr PathView(const StringViewLite str, const OptimizationCheckFlag /*unused*/) noexcept
       : StringViewLite(str)
     {
       assert(find('\\') == StringViewLite::npos);
@@ -52,7 +52,7 @@ namespace Fsl::IO
 
     //! @brief overload that allows you to create a PathView from pointer and count that is noexcept.
     //!        only use this in cases where you are 100% sure that your input is valid and contains no backslashes
-    explicit constexpr PathView(const const_pointer pStr, size_type count, const OptimizationCheckFlag reserved) noexcept
+    explicit constexpr PathView(const const_pointer pStr, size_type count, const OptimizationCheckFlag /*unused*/) noexcept
       : StringViewLite(StringViewLite::UncheckedCreate(pStr, count))
     {
       assert(find('\\') == StringViewLite::npos);
