@@ -48,11 +48,12 @@ jobs:
           key: thirdparty-ubuntu26.04-build-${{ hashFiles('ThirdParty/**/Fsl.gen', 'ThirdParty/**/*.patch') }}
           restore-keys: thirdparty-ubuntu26.04-build-
 
+      # The install area is restored from actions/cache together with the claim of the run that saved it, so claim it (like Jenkins)
       - name: Build
         shell: bash
         run: |
           source ./prepare.sh
-          FslBuild.py --noGitHash -vvvvvv -t sdk --BuildTime --UseFeatures "$FSL_CI_FEATURES_UBUNTU"
+          FslBuild.py --noGitHash -vvvvvv --ForceClaimInstallArea -t sdk --BuildTime --UseFeatures "$FSL_CI_FEATURES_UBUNTU"
 
       - name: Unit tests
         shell: bash
@@ -122,12 +123,26 @@ jobs:
           key: thirdparty-windows-${{ env.FSL_CI_VS_VERSION }}-${{ hashFiles('ThirdParty/**/Fsl.gen', 'ThirdParty/**/*.patch') }}
           restore-keys: thirdparty-windows-${{ env.FSL_CI_VS_VERSION }}-
 
+      # Temporary: the content build steps show no FslBuildContent output on the runner, check how it runs .py files
+      - name: Diagnose the .py file association
+        shell: cmd
+        continue-on-error: true
+        timeout-minutes: 5
+        run: |
+          call "%GITHUB_WORKSPACE%\prepare.bat"
+          assoc .py
+          ftype Python.File
+          where FslBuildContent.py
+          FslBuildContent.py --help
+          echo exit=%errorlevel%
+
+      # The install area is restored from actions/cache together with the claim of the run that saved it, so claim it (like Jenkins)
       - name: Build
         shell: cmd
         run: |
           call "%FSL_CI_VCVARSALL%" x64 || exit /b 1
           call "%GITHUB_WORKSPACE%\prepare.bat" || exit /b 1
-          python .Config\FslBuild.py --noGitHash -vvvvvv --VSVersion %FSL_CI_VS_VERSION% -t sdk --BuildTime --UseFeatures %FSL_CI_FEATURES_WINDOWS% || exit /b 1
+          python .Config\FslBuild.py --noGitHash -vvvvvv --ForceClaimInstallArea --VSVersion %FSL_CI_VS_VERSION% -t sdk --BuildTime --UseFeatures %FSL_CI_FEATURES_WINDOWS% || exit /b 1
 
       - name: Unit tests
         shell: cmd
@@ -173,12 +188,13 @@ jobs:
           key: thirdparty-macos26-${{ hashFiles('ThirdParty/**/Fsl.gen', 'ThirdParty/**/*.patch') }}
           restore-keys: thirdparty-macos26-
 
+      # The install area is restored from actions/cache together with the claim of the run that saved it, so claim it (like Jenkins)
       # A sdk build contains packages for both window systems, so the WindowSystem flavor has to be selected
       - name: Build
         shell: bash
         run: |
           source ./prepare.sh
-          FslBuild.py --noGitHash -vvvvvv -t sdk --BuildTime --UseFeatures "$FSL_CI_FEATURES_MACOS" --Variants [WindowSystem=Cocoa]
+          FslBuild.py --noGitHash -vvvvvv --ForceClaimInstallArea -t sdk --BuildTime --UseFeatures "$FSL_CI_FEATURES_MACOS" --Variants [WindowSystem=Cocoa]
 
       - name: Unit tests
         shell: bash

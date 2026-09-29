@@ -29,6 +29,9 @@ set +u
 source ./prepare.sh
 set -u
 
+# The install area is restored from actions/cache together with the claim of the run that saved it, so claim it (like Jenkins)
+python3 .Config/FslBuildExternal.py --noGitHash -vvvvvv --ForceClaimInstallArea --VoidBuild
+
 root=$(pwd)
 log=$(mktemp)
 failed=0
