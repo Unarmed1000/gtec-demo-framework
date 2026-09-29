@@ -22,6 +22,9 @@ env:
   FSL_CI_FEATURES_UBUNTU: '[ConsoleHost,WindowHost,Test_RequireUserInputToExit,EarlyAccess,EGL,GoogleBenchmark,GoogleUnitTest,OpenCL1.2,OpenCV5,OpenGLES2,OpenGLES3,OpenGLES3.1,OpenGLES3.2,Vulkan,Lib_NlohmannJson,Lib_pugixml]'
   # The hosted windows runners have no OpenGL ES emulator, OpenCL, OpenCV or OpenVX sdk
   FSL_CI_FEATURES_WINDOWS: '[ConsoleHost,WindowHost,Test_RequireUserInputToExit,EarlyAccess,GoogleBenchmark,GoogleUnitTest,Vulkan,Lib_NlohmannJson,Lib_pugixml]'
+  # The native Cocoa window system has no OpenGL ES (EGL is only available with the X11 + Mesa window system)
+  # and the hosted macOS runners have no OpenCL, OpenCV or OpenVX sdk
+  FSL_CI_FEATURES_MACOS: '[ConsoleHost,WindowHost,Test_RequireUserInputToExit,EarlyAccess,GoogleBenchmark,GoogleUnitTest,Vulkan,Lib_NlohmannJson,Lib_pugixml]'
 
 jobs:
   ubuntu:
@@ -142,6 +145,55 @@ jobs:
         with:
           name: unit-test-reports-windows
           path: C:\fsl-reports
+          if-no-files-found: ignore
+
+  macos:
+    name: macOS 26 build + unit tests
+    runs-on: macos-26
+    timeout-minutes: 350
+    env:
+      FSL_GRAPHICS_SDK_THIRD_PARTY_LIBS_DIR: /Users/runner/fsl-thirdparty
+      FSL_TEST_REPORTS: /Users/runner/fsl-reports
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.14'
+
+      # Same Vulkan packages as Doc/Setup_guide_apple.md: the loader, headers, MoltenVK, validation layers and tools
+      - name: Install dependencies
+        run: |
+          brew install ninja vulkan-headers vulkan-loader molten-vk vulkan-validationlayers vulkan-tools
+          # Let CMake find the Homebrew packages (/opt/homebrew is not a default CMake search path)
+          echo "CMAKE_PREFIX_PATH=$(brew --prefix)" >> "$GITHUB_ENV"
+
+      - name: Cache third party libraries
+        uses: actions/cache@v6
+        with:
+          path: /Users/runner/fsl-thirdparty
+          key: thirdparty-macos26-${{ hashFiles('ThirdParty/**/Fsl.gen', 'ThirdParty/**/*.patch') }}
+          restore-keys: thirdparty-macos26-
+
+      - name: Build
+        shell: bash
+        run: |
+          source ./prepare.sh
+          FslBuild.py --noGitHash -t sdk --BuildTime --UseFeatures "$FSL_CI_FEATURES_MACOS"
+
+      - name: Unit tests
+        shell: bash
+        run: |
+          source ./prepare.sh
+          mkdir -p "$FSL_TEST_REPORTS"
+          FslBuild.py --noGitHash -t sdk --UseFeatures "$FSL_CI_FEATURES_MACOS" --RequireFeature [GoogleUnitTest] --ForAllExe "(EXE) --gtest_output=xml:$FSL_TEST_REPORTS/(PACKAGE_NAME).xml"
+
+      - name: Upload unit test reports
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: unit-test-reports-macos
+          path: /Users/runner/fsl-reports
           if-no-files-found: ignore
 
   clang-format:
