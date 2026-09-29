@@ -79,7 +79,7 @@ namespace Fsl
       }
     }
 
-    static_assert(std::tuple_size_v<decltype(FramePacingFrameRecord::RunSequenceId)> == FM::SequenceIdByteCount);
+    static_assert(FramePacingSequenceId::ByteCount == FM::SequenceIdByteCount);
 
     //! How long the CPU has worked on the frame so far, in 100ns ticks (0 if unknown)
     uint32_t CalcCpuBusyTicks(const int64_t cpuStartTicks, const int64_t nowTicks) noexcept
@@ -209,7 +209,7 @@ namespace Fsl
     const uint32_t cpuBusyTicks = CalcCpuBusyTicks(record.CpuStartTicks, m_timer.GetTimestamp().Ticks());
     const FM::Payload payload{record.FrameIndex,    record.AnimationTicks, record.RunId, ToMarkerKind(record.Kind), 0, 0u,
                               record.CpuStartTicks, cpuBusyTicks};
-    const FM::StartMetadata metadata{record.StartUtcTicks, FM::SequenceId{record.RunSequenceId}};
+    const FM::StartMetadata metadata{FM::ToDateTimeTicks(record.RunStartTime), FM::SequenceId{record.RunSequenceId.Bytes}};
 
     // The main marker (frame, start or end) is drawn at the top left and the sync marker at the bottom left. Both grids are kept up to date
     // so the sync marker can be enabled at any time
@@ -235,6 +235,7 @@ namespace Fsl
     }
     const std::span<uint32_t> markerIndices(m_buffers->MarkerIndices);
     std::size_t indexCount = FM::ModulesToGridIndices(matrix, markerIndices, static_cast<uint32_t>(LocalConfig::MainGridFirstVertex));
+    bool syncMarkerDrawn = false;
     if (record.SyncMarkerEnabled && indexCount > 0)
     {
       // The sync marker carries the same frame index (the analysis detects tearing when the two disagree)
@@ -243,8 +244,10 @@ namespace Fsl
       FM::ModuleMatrix syncMatrix;
       if (FM::GenerateModules(syncPayload, syncMatrix))
       {
-        indexCount +=
+        const std::size_t syncIndexCount =
           FM::ModulesToGridIndices(syncMatrix, markerIndices.subspan(indexCount), static_cast<uint32_t>(LocalConfig::SyncGridFirstVertex));
+        indexCount += syncIndexCount;
+        syncMarkerDrawn = syncIndexCount > 0;
       }
     }
     if (indexCount == 0)
@@ -270,6 +273,28 @@ namespace Fsl
     renderSystem.CmdBindIndexBuffer(m_indexBuffer);
     renderSystem.CmdDrawIndexed(static_cast<uint32_t>(indexCount), 0);
     renderSystem.EndCmds();
+
+    // Report every value the marker carried (the values the framework does not know stay empty)
+    FramePacingMarkerInfo markerInfo;
+    markerInfo.Kind = record.Kind;
+    markerInfo.FrameIndex = record.FrameIndex;
+    markerInfo.AnimationTime = TimeSpan(record.AnimationTicks);
+    markerInfo.RunId = record.RunId;
+    if (record.CpuStartTicks > 0)
+    {
+      markerInfo.CpuStartTime = TickCount(record.CpuStartTicks);
+    }
+    if (cpuBusyTicks > 0u)
+    {
+      markerInfo.CpuBusyTime = TimeSpan(static_cast<int64_t>(cpuBusyTicks));
+    }
+    if (record.Kind == FramePacingMarkerKind::SequenceStart)
+    {
+      markerInfo.RunStartTime = record.RunStartTime;
+      markerInfo.RunSequenceId = record.RunSequenceId;
+    }
+    markerInfo.SyncMarker = syncMarkerDrawn;
+    m_service->SetLastMarker(markerInfo);
   }
 
 

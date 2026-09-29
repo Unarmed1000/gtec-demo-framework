@@ -24,6 +24,7 @@
 
 #include <FslBase/String/StringViewLite.hpp>
 #include <FslBase/Time/TimeSpan.hpp>
+#include <FslDemoService/FramePacing/FramePacingMarkerInfo.hpp>
 #include <FslDemoService/FramePacing/FramePacingRunState.hpp>
 #include <cstdint>
 
@@ -85,6 +86,10 @@ namespace Fsl
 
     //! @brief Get how long the current run has been measuring (zero unless the run state is Measuring).
     [[nodiscard]] virtual TimeSpan GetRunMeasuredTime() const noexcept = 0;
+
+    //! @brief Get every value the last drawn marker carried.
+    //! @return false if the marker is disabled or no marker has been drawn yet.
+    virtual bool TryGetLastMarker(FramePacingMarkerInfo& rInfo) const noexcept = 0;
   };
 }
 

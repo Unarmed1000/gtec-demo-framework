@@ -24,8 +24,8 @@
 
 #include <FslBase/Time/TickCount.hpp>
 #include <FslBase/Time/TimeSpan.hpp>
+#include <FslDemoService/FramePacing/FramePacingMarkerKind.hpp>
 #include <FslDemoService/FramePacing/FramePacingRunState.hpp>
-#include <FslDemoService/FramePacing/Impl/FramePacingMarkerKind.hpp>
 #include <cstdint>
 
 namespace Fsl

@@ -32,8 +32,11 @@
 #include <FslSimpleUI/Base/Control/BackgroundLabelButton.hpp>
 #include <FslSimpleUI/Base/Control/Label.hpp>
 #include <FslSimpleUI/Base/Control/SliderAndFmtValueLabel.hpp>
+#include <fmt/format.h>
+#include <iterator>
 #include <memory>
 #include <string>
+#include <utility>
 
 namespace Fsl
 {
@@ -46,6 +49,22 @@ namespace Fsl
   //! All rendering goes through the API independent INativeBatch2D so the same code is used by the GLES2, GLES3 and Vulkan samples.
   class FramePacingShared final : public UI::EventListener
   {
+    //! One value label per value the frame pacing marker carries
+    struct MarkerStatsUIRecord
+    {
+      std::shared_ptr<UI::Label> Kind;
+      std::shared_ptr<UI::Label> FrameIndex;
+      std::shared_ptr<UI::Label> AnimationTime;
+      std::shared_ptr<UI::Label> RunId;
+      std::shared_ptr<UI::Label> IntendedDisplayTime;
+      std::shared_ptr<UI::Label> TargetFrameTime;
+      std::shared_ptr<UI::Label> CpuStartTime;
+      std::shared_ptr<UI::Label> CpuBusyTime;
+      std::shared_ptr<UI::Label> RunStartTime;
+      std::shared_ptr<UI::Label> RunSequenceId;
+      std::shared_ptr<UI::Label> SyncMarker;
+    };
+
     struct UIRecord
     {
       std::shared_ptr<UI::Label> LabelStatus;
@@ -53,6 +72,7 @@ namespace Fsl
       std::shared_ptr<UI::BackgroundLabelButton> ButtonRun;
       std::shared_ptr<UI::BackgroundLabelButton> ButtonTimedRun;
       std::shared_ptr<UI::SliderAndFmtValueLabel<int32_t>> SliderDuration;
+      MarkerStatsUIRecord MarkerStats;
     };
 
     UI::CallbackEventListenerScope m_uiEventListener;
@@ -67,6 +87,8 @@ namespace Fsl
     uint32_t m_cachedRunId{0};
     //! The measured time shown in the UI in 1/10 seconds
     int64_t m_cachedMeasuredTenths{-1};
+    //! Reused for every per-frame text so updating the marker stats does not allocate
+    fmt::memory_buffer m_formatBuffer;
 
   public:
     //! The color the app should clear the screen with
@@ -95,6 +117,16 @@ namespace Fsl
     void ToggleRun();
     void StartTimedRun();
     void UpdateUI();
+    void UpdateMarkerStats();
+
+    //! Format into the reused buffer and set it as the label content (the label only copies it if the text changed)
+    template <typename... TArgs>
+    void SetFormattedContent(UI::Label& rLabel, fmt::format_string<TArgs...> format, TArgs&&... args)
+    {
+      m_formatBuffer.clear();
+      fmt::format_to(std::back_inserter(m_formatBuffer), format, std::forward<TArgs>(args)...);
+      rLabel.SetContent(StringViewLite(m_formatBuffer.data(), m_formatBuffer.size()));
+    }
     void DrawAnimation(const double animationSeconds);
   };
 }

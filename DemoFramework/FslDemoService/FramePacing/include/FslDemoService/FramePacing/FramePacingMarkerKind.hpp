@@ -1,5 +1,5 @@
-#ifndef FSLDEMOSERVICE_FRAMEPACING_IMPL_FRAMEPACINGMARKERKIND_HPP
-#define FSLDEMOSERVICE_FRAMEPACING_IMPL_FRAMEPACINGMARKERKIND_HPP
+#ifndef FSLDEMOSERVICE_FRAMEPACING_FRAMEPACINGMARKERKIND_HPP
+#define FSLDEMOSERVICE_FRAMEPACING_FRAMEPACINGMARKERKIND_HPP
 //****************************************************************************************************************************************************
 //* BSD 3-Clause License
 //*
@@ -24,7 +24,7 @@
 
 namespace Fsl
 {
-  //! The kind of marker to draw for a frame (mirrors MB::FrameMarker::MarkerKind).
+  //! The kind of the main frame pacing marker (mirrors MB::FrameMarker::MarkerKind).
   enum class FramePacingMarkerKind
   {
     Frame,

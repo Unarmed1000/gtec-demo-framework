@@ -64,9 +64,18 @@ if (framePacing)
 A run is either open ended (zero duration, it lasts until `EndRun`) or timed (it ends by itself once the measured part has lasted
 the given duration). `GetRunDuration()` and `GetRunMeasuredTime()` report the progress of a timed run.
 
-`IFramePacingService` also exposes the sync marker, module size, capture height, run state and run id. See the
-[GLES2.FramePacing](../DemoApps/GLES2/FramePacing), [GLES3.FramePacing](../DemoApps/GLES3/FramePacing) and
-[Vulkan.FramePacing](../DemoApps/Vulkan/FramePacing) samples (they share their code in [Shared/FramePacing](../DemoApps/Shared/FramePacing)).
+`IFramePacingService` also exposes the sync marker, module size, capture height, run state and run id.
+
+`TryGetLastMarker(FramePacingMarkerInfo&)` returns every value the last drawn marker carried: kind, frame index, animation time,
+run id, intended display time, target frame time, CPU start time, CPU busy, and for start markers the run start time and sequence id
+(`FramePacingSequenceId`). Times use `TimeSpan`/`TickCount`, and a value the framework does not know (the intended display time and
+target frame time, as it has no frame pacer) is an empty `std::optional`. The marker is drawn at the end of the frame, so during a frame
+this is the previous frame's marker.
+
+See the [GLES2.FramePacing](../DemoApps/GLES2/FramePacing), [GLES3.FramePacing](../DemoApps/GLES3/FramePacing) and
+[Vulkan.FramePacing](../DemoApps/Vulkan/FramePacing) samples (they share their code in [Shared/FramePacing](../DemoApps/Shared/FramePacing)):
+they show every value of the last marker in a panel, formatted into a reused `fmt::memory_buffer` so updating it every frame does not
+allocate.
 
 ## What the marker reports
 

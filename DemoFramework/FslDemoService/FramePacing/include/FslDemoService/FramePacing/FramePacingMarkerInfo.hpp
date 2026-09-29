@@ -1,5 +1,5 @@
-#ifndef FSLDEMOSERVICE_FRAMEPACING_IMPL_IFRAMEPACINGFRAMESOURCE_HPP
-#define FSLDEMOSERVICE_FRAMEPACING_IMPL_IFRAMEPACINGFRAMESOURCE_HPP
+#ifndef FSLDEMOSERVICE_FRAMEPACING_FRAMEPACINGMARKERINFO_HPP
+#define FSLDEMOSERVICE_FRAMEPACING_FRAMEPACINGMARKERINFO_HPP
 //****************************************************************************************************************************************************
 //* BSD 3-Clause License
 //*
@@ -22,23 +22,42 @@
 //* EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //****************************************************************************************************************************************************
 
-#include <FslDemoService/FramePacing/FramePacingMarkerInfo.hpp>
-#include <FslDemoService/FramePacing/Impl/FramePacingFrameRecord.hpp>
+#include <FslBase/Time/TickCount.hpp>
+#include <FslBase/Time/TimeSpan.hpp>
+#include <FslDemoService/FramePacing/FramePacingMarkerKind.hpp>
+#include <FslDemoService/FramePacing/FramePacingSequenceId.hpp>
+#include <chrono>
+#include <cstdint>
+#include <optional>
 
 namespace Fsl
 {
-  //! Gives the overlay the marker of the current frame (internal to the frame pacing implementation).
-  class IFramePacingFrameSource
+  //! Every value the last drawn frame pacing marker carried (the mb-framepacing marker payload). A value the framework does not know is
+  //! empty, exactly like the marker reports it as unknown.
+  struct FramePacingMarkerInfo
   {
-  public:
-    virtual ~IFramePacingFrameSource() = default;
-
-    //! @brief Get the marker for the current frame.
-    //! @return false if no marker should be drawn.
-    virtual bool TryGetFrameRecord(FramePacingFrameRecord& rRecord) const noexcept = 0;
-
-    //! @brief Called by the overlay with every value the marker it just drew carried.
-    virtual void SetLastMarker(const FramePacingMarkerInfo& markerInfo) noexcept = 0;
+    //! The kind of the main marker
+    FramePacingMarkerKind Kind{FramePacingMarkerKind::Frame};
+    //! The number of frames rendered before this one
+    uint64_t FrameIndex{0};
+    //! The time the frame's animation was evaluated for
+    TimeSpan AnimationTime;
+    //! The id of the current (or last) run
+    uint32_t RunId{0};
+    //! When the frame pacer intends the frame to be shown (always empty: the framework has no frame pacer)
+    std::optional<TickCount> IntendedDisplayTime;
+    //! The frame time the frame pacer aims for (always empty: the framework has no frame pacer)
+    std::optional<TimeSpan> TargetFrameTime;
+    //! When the CPU started working on the frame (a HighResolutionTimer timestamp taken before the app update)
+    std::optional<TickCount> CpuStartTime;
+    //! How long the CPU worked on the frame before the marker was drawn (the last thing before the frame is presented)
+    std::optional<TimeSpan> CpuBusyTime;
+    //! Start markers only: the wall clock start time of the run
+    std::optional<std::chrono::system_clock::time_point> RunStartTime;
+    //! Start markers only: the sequence id of the run
+    std::optional<FramePacingSequenceId> RunSequenceId;
+    //! True if the sync marker (the frame index only) was drawn as well
+    bool SyncMarker{false};
   };
 }
 

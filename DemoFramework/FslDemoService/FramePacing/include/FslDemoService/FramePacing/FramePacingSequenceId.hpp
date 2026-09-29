@@ -1,5 +1,5 @@
-#ifndef FSLDEMOSERVICE_FRAMEPACING_IMPL_IFRAMEPACINGFRAMESOURCE_HPP
-#define FSLDEMOSERVICE_FRAMEPACING_IMPL_IFRAMEPACINGFRAMESOURCE_HPP
+#ifndef FSLDEMOSERVICE_FRAMEPACING_FRAMEPACINGSEQUENCEID_HPP
+#define FSLDEMOSERVICE_FRAMEPACING_FRAMEPACINGSEQUENCEID_HPP
 //****************************************************************************************************************************************************
 //* BSD 3-Clause License
 //*
@@ -22,23 +22,21 @@
 //* EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //****************************************************************************************************************************************************
 
-#include <FslDemoService/FramePacing/FramePacingMarkerInfo.hpp>
-#include <FslDemoService/FramePacing/Impl/FramePacingFrameRecord.hpp>
+#include <array>
+#include <cstddef>
+#include <cstdint>
 
 namespace Fsl
 {
-  //! Gives the overlay the marker of the current frame (internal to the frame pacing implementation).
-  class IFramePacingFrameSource
+  //! The sequence id of a frame pacing run: 16 opaque bytes that identify the run in its start marker (the mb-framepacing tools show it as
+  //! 32 hex digits).
+  struct FramePacingSequenceId
   {
-  public:
-    virtual ~IFramePacingFrameSource() = default;
+    static constexpr std::size_t ByteCount = 16;
 
-    //! @brief Get the marker for the current frame.
-    //! @return false if no marker should be drawn.
-    virtual bool TryGetFrameRecord(FramePacingFrameRecord& rRecord) const noexcept = 0;
+    std::array<uint8_t, ByteCount> Bytes{};
 
-    //! @brief Called by the overlay with every value the marker it just drew carried.
-    virtual void SetLastMarker(const FramePacingMarkerInfo& markerInfo) noexcept = 0;
+    constexpr bool operator==(const FramePacingSequenceId&) const noexcept = default;
   };
 }
 

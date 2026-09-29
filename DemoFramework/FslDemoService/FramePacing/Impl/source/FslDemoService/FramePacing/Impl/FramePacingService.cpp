@@ -44,12 +44,12 @@ namespace Fsl
     }
 
     //! The sequence id as 32 hex digits (the way the mb-framepacing tools show a sequence id that is not printable text)
-    std::string ToHexString(const std::array<uint8_t, 16>& bytes)
+    std::string ToHexString(const FramePacingSequenceId& sequenceId)
     {
       constexpr std::string_view HexDigits("0123456789abcdef");
       std::string result;
-      result.reserve(bytes.size() * 2u);
-      for (const uint8_t value : bytes)
+      result.reserve(sequenceId.Bytes.size() * 2u);
+      for (const uint8_t value : sequenceId.Bytes)
       {
         result.push_back(HexDigits[value >> 4u]);
         result.push_back(HexDigits[value & 0x0Fu]);
@@ -88,6 +88,11 @@ namespace Fsl
   void FramePacingService::SetEnabled(const bool enabled) noexcept
   {
     m_enabled = enabled;
+    if (!enabled)
+    {
+      // The next marker is drawn after it is enabled again
+      m_lastMarker.reset();
+    }
   }
 
 
@@ -140,7 +145,7 @@ namespace Fsl
     m_runName = std::string(std::string_view(name));
     // The start marker identifies the run by the sequence id, the name is only logged
     m_runSequenceId = CreateSequenceId();
-    m_runStartUtcTicks = MB::FrameMarker::ToDateTimeTicks(std::chrono::system_clock::now());
+    m_runStartTime = std::chrono::system_clock::now();
     m_enabled = true;
     // A command line run is superseded by any explicit run
     m_pendingRun.reset();
@@ -210,6 +215,17 @@ namespace Fsl
   }
 
 
+  bool FramePacingService::TryGetLastMarker(FramePacingMarkerInfo& rInfo) const noexcept
+  {
+    if (!m_enabled || !m_lastMarker.has_value())
+    {
+      return false;
+    }
+    rInfo = *m_lastMarker;
+    return true;
+  }
+
+
   bool FramePacingService::TryGetFrameRecord(FramePacingFrameRecord& rRecord) const noexcept
   {
     if (!m_enabled || !m_hasFrame)
@@ -221,12 +237,18 @@ namespace Fsl
     rRecord.AnimationTicks = m_frameAnimationTicks;
     rRecord.CpuStartTicks = m_frameCpuStartTicks;
     rRecord.RunId = m_runId;
-    rRecord.StartUtcTicks = m_runStartUtcTicks;
+    rRecord.RunStartTime = m_runStartTime;
     rRecord.RunSequenceId = m_runSequenceId;
     rRecord.SyncMarkerEnabled = m_syncMarkerEnabled;
     rRecord.ModuleSizePx = m_moduleSizePx;
     rRecord.CaptureHeightPx = m_captureHeightPx;
     return true;
+  }
+
+
+  void FramePacingService::SetLastMarker(const FramePacingMarkerInfo& markerInfo) noexcept
+  {
+    m_lastMarker = markerInfo;
   }
 
 
@@ -237,11 +259,11 @@ namespace Fsl
   }
 
 
-  std::array<uint8_t, 16> FramePacingService::CreateSequenceId()
+  FramePacingSequenceId FramePacingService::CreateSequenceId()
   {
     std::uniform_int_distribution<uint32_t> distribution(0u, std::numeric_limits<uint8_t>::max());
-    std::array<uint8_t, 16> sequenceId{};
-    for (uint8_t& rValue : sequenceId)
+    FramePacingSequenceId sequenceId;
+    for (uint8_t& rValue : sequenceId.Bytes)
     {
       rValue = static_cast<uint8_t>(distribution(m_random));
     }

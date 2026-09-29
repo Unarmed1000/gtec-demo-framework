@@ -28,7 +28,7 @@
 #include <FslDemoService/FramePacing/Impl/FramePacingSequence.hpp>
 #include <FslDemoService/FramePacing/Impl/IFramePacingFrameSource.hpp>
 #include <FslService/Impl/ServiceType/Local/ThreadLocalService.hpp>
-#include <array>
+#include <chrono>
 #include <cstdint>
 #include <memory>
 #include <optional>
@@ -66,8 +66,8 @@ namespace Fsl
 
     uint32_t m_runId{0};
     std::string m_runName;
-    std::array<uint8_t, 16> m_runSequenceId{};
-    int64_t m_runStartUtcTicks{0};
+    FramePacingSequenceId m_runSequenceId;
+    std::chrono::system_clock::time_point m_runStartTime;
 
     //! The number of frames that were started so far
     uint64_t m_frameCount{0};
@@ -76,6 +76,9 @@ namespace Fsl
     uint64_t m_frameIndex{0};
     int64_t m_frameAnimationTicks{0};
     int64_t m_frameCpuStartTicks{0};
+
+    //! Every value the last drawn marker carried (empty until the overlay drew a marker)
+    std::optional<FramePacingMarkerInfo> m_lastMarker;
 
   public:
     FramePacingService(const ServiceProvider& serviceProvider, const std::shared_ptr<FramePacingServiceOptionParser>& optionParser);
@@ -96,6 +99,7 @@ namespace Fsl
     [[nodiscard]] uint32_t GetRunId() const noexcept final;
     [[nodiscard]] TimeSpan GetRunDuration() const noexcept final;
     [[nodiscard]] TimeSpan GetRunMeasuredTime() const noexcept final;
+    bool TryGetLastMarker(FramePacingMarkerInfo& rInfo) const noexcept final;
 
     // From IFramePacingServiceControl
     void BeginFrame(const FrameInfo& frameInfo, const TickCount cpuStartTime) final;
@@ -103,10 +107,11 @@ namespace Fsl
 
     // From IFramePacingFrameSource
     bool TryGetFrameRecord(FramePacingFrameRecord& rRecord) const noexcept final;
+    void SetLastMarker(const FramePacingMarkerInfo& markerInfo) noexcept final;
 
   private:
     uint32_t CreateRunId();
-    std::array<uint8_t, 16> CreateSequenceId();
+    FramePacingSequenceId CreateSequenceId();
   };
 }
 
