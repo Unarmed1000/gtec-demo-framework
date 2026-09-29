@@ -70,7 +70,12 @@ from FslBuildGen.ToolConfigRootDirectory import ToolConfigRootDirectory
 from FslBuildGen.ToolMinimalConfig import ToolMinimalConfig
 from FslBuildGen.Vars.VariableProcessor import VariableProcessor
 from FslBuildGen.Version import Version
-from FslBuildGen.Xml.Exceptions import XmlDuplicatedCompilerConfigurationException, XmlUnsupportedCompilerVersionException
+from FslBuildGen.VisualStudioSolutionFormat import VisualStudioSolutionFormat
+from FslBuildGen.Xml.Exceptions import (
+    XmlDuplicatedCompilerConfigurationException,
+    XmlUnsupportedCompilerVersionException,
+    XmlUnsupportedSolutionFormatException,
+)
 from FslBuildGen.Xml.Project.XmlBuildDocConfiguration import XmlBuildDocConfiguration
 from FslBuildGen.Xml.Project.XmlClangTidyConfiguration import XmlClangTidyConfiguration
 from FslBuildGen.Xml.Project.XmlClangTidyPlatform import XmlClangTidyPlatform
@@ -112,6 +117,14 @@ class ToolConfigCompilerConfiguration:
                 self.BasedOn.XMLElement, self.BasedOn.Name, self.BasedOn.DefaultVersion, ", ".join(str(x) for x in VisualStudioVersion.AllEntries)
             )
         self.DefaultVersion = defaultVersion
+        self.SolutionFormat = VisualStudioSolutionFormat.Sln
+        if self.BasedOn.SolutionFormat is not None:
+            solutionFormat = VisualStudioSolutionFormat.TryFromString(self.BasedOn.SolutionFormat)
+            if solutionFormat is None:
+                raise XmlUnsupportedSolutionFormatException(
+                    self.BasedOn.XMLElement, self.BasedOn.Name, self.BasedOn.SolutionFormat, ", ".join(VisualStudioSolutionFormat.GetAllNames())
+                )
+            self.SolutionFormat = solutionFormat
 
 
 class ToolConfigTemplateFolder:
@@ -589,6 +602,12 @@ class ToolConfig:
         if visualStudioId in self.CompilerConfigurationDict:
             return self.CompilerConfigurationDict[visualStudioId].DefaultVersion
         return VisualStudioVersion.DEFAULT
+
+    def GetVisualStudioSolutionFormat(self) -> VisualStudioSolutionFormat:
+        visualStudioId = CompilerNames.VisualStudio.lower()
+        if visualStudioId in self.CompilerConfigurationDict:
+            return self.CompilerConfigurationDict[visualStudioId].SolutionFormat
+        return VisualStudioSolutionFormat.Sln
 
     def TryToPath(self, path: str | None) -> str | None:
         if path is None:

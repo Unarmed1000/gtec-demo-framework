@@ -588,16 +588,10 @@ class CMakeAndBuildTask(BasicTask):
             if PlatformUtil.DetectBuildPlatformType() == BuildPlatformType.Windows:
                 return CMakeBuilderNinja(generatorContext, buildThreads)
             return CMakeBuilderMake(generatorContext, buildThreads)
-        isMSVC = (
-            generatorName == CMakeGeneratorName.VisualStudio2015_X64
-            or generatorName == CMakeGeneratorName.VisualStudio2017_X64
-            or generatorName == CMakeGeneratorName.VisualStudio2019_X64
-            or generatorName == CMakeGeneratorName.VisualStudio2022_X64
-            or generatorName == CMakeGeneratorName.VisualStudio2022_X64
-        )
-        # The generic handler does not really apply proper threaded builds, so we use the old one for MSVC
-        if generatorContext.CMakeConfig.CMakeVersion < CMakeBuilderGeneric.MINIMUM_VERSION or isMSVC:
-            if isMSVC:
+        # The generic builder uses 'cmake --build' which knows the native build files (like a .sln or .slnx solution),
+        # the native builders are only used when cmake is too old for it
+        if generatorContext.CMakeConfig.CMakeVersion < CMakeBuilderGeneric.MINIMUM_VERSION:
+            if CMakeGeneratorName.IsVisualStudio(generatorName):
                 return CMakeBuilderMSBuild(generatorContext, buildThreads)
             if generatorName == CMakeGeneratorName.Ninja:
                 return CMakeBuilderNinja(generatorContext, buildThreads, False)

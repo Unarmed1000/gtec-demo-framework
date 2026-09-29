@@ -94,7 +94,6 @@ class CodeTemplateVC:
 
         self.BuildOutputLocation = customization.BuildOutput.Location
         self.FilterExtension = "vcxproj.filters"
-        self.SolutionExtension = "sln"
         self.ProjectExtension = template.Template.ProjectExtension
 
         self.TemplateFileRecordManager = TemplateFileRecordManager(strTemplatePath)
@@ -221,7 +220,8 @@ class CodeTemplateVC:
 class CodeTemplateProjectBatFiles:
     def __init__(self, log: Log, sdkConfigTemplatePath: str) -> None:
         super().__init__()
-        self.TemplateBuildBat = IOUtil.TryReadFile(IOUtil.Join(sdkConfigTemplatePath, "Template_WinBuildProject.txt"))
+        self.TemplateBuildBatPath = IOUtil.Join(sdkConfigTemplatePath, "Template_WinBuildProject.txt")
+        self.TemplateBuildBat = IOUtil.TryReadFile(self.TemplateBuildBatPath)
         self.TemplateRunBat = IOUtil.TryReadFile(IOUtil.Join(sdkConfigTemplatePath, "Template_WinRunProject.txt"))
         templateSnippetErrorCheck = IOUtil.TryReadFile(IOUtil.Join(sdkConfigTemplatePath, "TemplateSnippet_WinBatErrorCheck.txt"))
         self.TemplateSnippetErrorCheck = "" if templateSnippetErrorCheck is None else templateSnippetErrorCheck

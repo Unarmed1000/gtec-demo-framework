@@ -64,6 +64,12 @@ class XmlUnsupportedCompilerVersionException(XmlException2):
         super().__init__(msg)
 
 
+class XmlUnsupportedSolutionFormatException(XmlException2):
+    def __init__(self, xmlElement: ET.Element, name: str, solutionFormat: str, validFormats: str) -> None:
+        msg = f"Compiler '{name}' does not support SolutionFormat '{solutionFormat}', expected '{validFormats}'"
+        super().__init__(msg)
+
+
 class XmlUnsupportedPlatformException(XmlException2):
     def __init__(self, xmlElement: ET.Element, name: str) -> None:
         msg = "Platform name: '{}' is not a valid platform name, expected: {}".format(name, ", ".join(PackageConfig.APPROVED_PLATFORM_NAMES))

@@ -112,13 +112,16 @@ class XmlConfigCompilerConfiguration(XmlBase):
     __AttribName = "Name"
     __AttribPlatform = "Platform"
     __AttribDefaultVersion = "DefaultVersion"
+    __AttribSolutionFormat = "SolutionFormat"
 
     def __init__(self, log: Log, xmlElement: ET.Element) -> None:
         super().__init__(log, xmlElement)
-        self._CheckAttributes({self.__AttribName, self.__AttribPlatform, self.__AttribDefaultVersion})
+        self._CheckAttributes({self.__AttribName, self.__AttribPlatform, self.__AttribDefaultVersion, self.__AttribSolutionFormat})
         self.Name = self._ReadAttrib(xmlElement, self.__AttribName)
         self.Platform = self._ReadAttrib(xmlElement, self.__AttribPlatform)
         self.DefaultVersion = self._ReadAttrib(xmlElement, self.__AttribDefaultVersion)
+        # Optional, the format of the solutions the non CMake Visual Studio generator writes
+        self.SolutionFormat = self._TryReadAttrib(xmlElement, self.__AttribSolutionFormat)
         self.Id = self.Name.lower()
 
 

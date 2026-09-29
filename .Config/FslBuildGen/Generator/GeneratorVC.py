@@ -57,6 +57,7 @@ from FslBuildGen.DataTypes import (
 )
 from FslBuildGen.Exceptions import InternalErrorException, UnsupportedException
 from FslBuildGen.ExternalVariantConstraints import ExternalVariantConstraints
+from FslBuildGen.Generator import VSSolutionSlnx, VSSolutionStaleFile
 
 # from FslBuildGen.Location.ResolvedPath import ResolvedPath
 from FslBuildGen.Generator.ExceptionsVC import PackageDuplicatedWindowsVisualStudioProjectIdException
@@ -96,6 +97,7 @@ from FslBuildGen.Packages.PackageRequirement import PackageRequirement
 from FslBuildGen.SharedGeneration import GEN_BUILD_ENV_FEATURE_SETTING, GEN_BUILD_ENV_VARIANT_SETTING, ToolAddedVariant
 from FslBuildGen.Template.TemplateFileProcessor import TemplateFileProcessor
 from FslBuildGen.ToolConfig import ToolConfigTemplateFolder
+from FslBuildGen.VisualStudioSolutionFormat import VisualStudioSolutionFormat
 from FslBuildGen.Xml.Exceptions import XmlFormatException
 
 # class GeneratorVCMode:
@@ -180,12 +182,20 @@ class GeneratorVC(GeneratorBase):
 
         # for now we assume all packages are using the same language
         packageLanguage = config.ToolConfig.DefaultPackageLanguage
+
+        # Checked here as '--VSVersion' can override the default Visual Studio version
+        self.__SolutionFormat = config.ToolConfig.GetVisualStudioSolutionFormat()
+        VSSolutionSlnx.CheckSolutionFormatSupported(self.__SolutionFormat, generatorConfig.VsVersion, packageLanguage)
+
         generatorTemplateInfo = GeneratorVSTemplateInfo(
             config.ToolConfig.ProjectRootConfig.DefaultTemplate, config.ToolConfig.TemplateFolder, config.SDKConfigTemplatePath
         )
 
         template = g_templateCache.GetTemplate(config, generatorConfig, packageLanguage, generatorTemplateInfo)
         self.UsingLinuxTools = template.UsingLinuxTools
+
+        batTemplate = template.GetBatTemplate()
+        VSSolutionSlnx.CheckBuildBatTemplate(self.__SolutionFormat, batTemplate.TemplateBuildBat, batTemplate.TemplateBuildBatPath)
 
         self.__CheckProjectIds(packages)
 
@@ -336,29 +346,32 @@ class GeneratorVC(GeneratorBase):
         strPackageCreationYear = strCurrentYear if package.CreationYear is None else package.CreationYear
         strPackageCompanyName = package.CompanyName.Value
 
-        slnSnippet1 = self.__GenerateSLNPackageVariantConfig(variantHelper, template.SLNSnippet1, package)
-        slnSnippet2 = self.__GenerateSLNPackageVariants(variantHelper, template.SLNSnippet2)
-        libDep1SLN = self.__GenerateSLNDependencies1(package)
-        libDep2SLN = self.__GenerateSLNDependencies2(config, package, template.SLNAddProject, template.ProjectExtension, strVariantList)
-        libDep3SLN = self.__GenerateSLNDependencies3(variantHelper, template.SLNSnippet2, package)
-        solutionFolderDefinitions = self.__GenerateFolderDefinitions(config, package, template.SLNSnippet3)
-        solutionFolderEntries = self.__GenerateFolderEntries(config, package, template.SLNSnippet4, template.SLNSnippet4_1)
+        if self.__SolutionFormat == VisualStudioSolutionFormat.Slnx:
+            buildSLN = self.__GenerateSlnx(config, package, variantHelper, template.ProjectExtension)
+        else:
+            slnSnippet1 = self.__GenerateSLNPackageVariantConfig(variantHelper, template.SLNSnippet1, package)
+            slnSnippet2 = self.__GenerateSLNPackageVariants(variantHelper, template.SLNSnippet2)
+            libDep1SLN = self.__GenerateSLNDependencies1(package)
+            libDep2SLN = self.__GenerateSLNDependencies2(config, package, template.SLNAddProject, template.ProjectExtension, strVariantList)
+            libDep3SLN = self.__GenerateSLNDependencies3(variantHelper, template.SLNSnippet2, package)
+            solutionFolderDefinitions = self.__GenerateFolderDefinitions(config, package, template.SLNSnippet3)
+            solutionFolderEntries = self.__GenerateFolderEntries(config, package, template.SLNSnippet4, template.SLNSnippet4_1)
 
-        build = template.TemplateSLN
-        build = build.replace("##PACKAGE_TARGET_NAME##", targetName)
-        build = build.replace("##PACKAGE_PLATFORM_PROJECT_ID##", package.CustomInfo.VisualStudioProjectGUID)
-        build = build.replace("##PACKAGE_LIBRARY_DEPENDENCIES1##", libDep1SLN)
-        build = build.replace("##PACKAGE_LIBRARY_DEPENDENCIES2##", libDep2SLN)
-        build = build.replace("##PACKAGE_LIBRARY_DEPENDENCIES3##", libDep3SLN)
-        build = build.replace("##PACKAGE_SOLUTION_FOLDER_DEFINITIONS##", solutionFolderDefinitions)
-        build = build.replace("##PACKAGE_SOLUTION_FOLDER_ENTRIES##", solutionFolderEntries)
-        build = build.replace("##SNIPPET1##", slnSnippet1)
-        build = build.replace("##SNIPPET2##", slnSnippet2)
-        build = build.replace("##CURRENT_YEAR##", strCurrentYear)
-        build = build.replace("##PACKAGE_CREATION_YEAR##", strPackageCreationYear)
-        build = build.replace("##PACKAGE_COMPANY_NAME##", strPackageCompanyName)
-        build = build.replace("##VARIANT_LIST##", strVariantList)
-        buildSLN = build
+            build = template.TemplateSLN
+            build = build.replace("##PACKAGE_TARGET_NAME##", targetName)
+            build = build.replace("##PACKAGE_PLATFORM_PROJECT_ID##", package.CustomInfo.VisualStudioProjectGUID)
+            build = build.replace("##PACKAGE_LIBRARY_DEPENDENCIES1##", libDep1SLN)
+            build = build.replace("##PACKAGE_LIBRARY_DEPENDENCIES2##", libDep2SLN)
+            build = build.replace("##PACKAGE_LIBRARY_DEPENDENCIES3##", libDep3SLN)
+            build = build.replace("##PACKAGE_SOLUTION_FOLDER_DEFINITIONS##", solutionFolderDefinitions)
+            build = build.replace("##PACKAGE_SOLUTION_FOLDER_ENTRIES##", solutionFolderEntries)
+            build = build.replace("##SNIPPET1##", slnSnippet1)
+            build = build.replace("##SNIPPET2##", slnSnippet2)
+            build = build.replace("##CURRENT_YEAR##", strCurrentYear)
+            build = build.replace("##PACKAGE_CREATION_YEAR##", strPackageCreationYear)
+            build = build.replace("##PACKAGE_COMPANY_NAME##", strPackageCompanyName)
+            build = build.replace("##VARIANT_LIST##", strVariantList)
+            buildSLN = build
 
         projectionConfigurations = self.__GenerateProjectConfigurations(variantHelper, template.VariantProjectConfiguration, package)
 
@@ -509,7 +522,7 @@ class GeneratorVC(GeneratorBase):
             raise InternalErrorException("Could not find project name")
             # dstName = 'test'
         # dstName = 'test'
-        dstFileSLN = IOUtil.Join(package.AbsolutePath, dstName + f".{template.SolutionExtension}")
+        dstFileSLN = IOUtil.Join(package.AbsolutePath, dstName + f".{VisualStudioSolutionFormat.GetFileExtension(self.__SolutionFormat)}")
         dstFileVC = IOUtil.Join(package.AbsolutePath, dstName + f".{template.ProjectExtension}")
         dstFileFilter = IOUtil.Join(package.AbsolutePath, dstName + f".{template.FilterExtension}")
 
@@ -531,6 +544,12 @@ class GeneratorVC(GeneratorBase):
                 IOUtil.WriteFileIfChanged(dstFileRunProject, runProjectFile)
             if buildNuGetPackageConfigFile is not None:
                 IOUtil.WriteFileIfChanged(dstFileNuGetConfig, buildNuGetPackageConfigFile)
+
+        # A solution in the other format is left over from before the SolutionFormat changed
+        staleFormat = VisualStudioSolutionFormat.Sln if self.__SolutionFormat == VisualStudioSolutionFormat.Slnx else VisualStudioSolutionFormat.Slnx
+        VSSolutionStaleFile.TryRemoveStaleSolution(
+            config, package.AbsolutePath, dstName, f"{dstName}.{template.ProjectExtension}", staleFormat, self.__SolutionFormat, config.DisableWrite
+        )
 
         templateFileProcessor = TemplateFileProcessor(config, platformName)
         templateFileProcessor.Environment.Set("##FEATURE_LIST##", strFeatureList)
@@ -784,6 +803,9 @@ class GeneratorVC(GeneratorBase):
         result = result.replace("##PLATFORM_NAME##", platformName)
         result = result.replace("##VS_VERSION##", strVersion)
         result = result.replace("##PROJECT_NAME##", package.Name)
+        result = result.replace(
+            VSSolutionSlnx.PROJECT_SOLUTION_FILE_TOKEN, f"{package.Name}.{VisualStudioSolutionFormat.GetFileExtension(self.__SolutionFormat)}"
+        )
         result = result.replace("##CONFIG_SCRIPTS##", "\n".join(featureList))
         result = result.replace("##VS_VERSION##", strVersion)
         result = result.replace("##PROJECT_PATH##", projectPath)
@@ -1220,6 +1242,25 @@ class GeneratorVC(GeneratorBase):
                 section = self.__GenerateAndMatchSLNPackageVariants(variantHelper, entryVariantHelper, snippet)
                 res.append(section)
         return "\n".join(res) + "\n" if len(res) > 0 else ""
+
+    def __GenerateSlnx(self, config: Config, package: Package, variantHelper: VariantHelper, projectExtension: str) -> str:
+        """The .slnx holds the same projects as the .sln: the package project and, in the dependency folder, the projects it depends on"""
+        solutionVariantNames = [GeneratorVCUtil.GetVCBuildConfigurationName(entry) for entry in variantHelper.CartesianProduct]
+        projects = [VSSolutionSlnx.SlnxProject(f"{package.Name}.{projectExtension}", None, [])]
+        for entry in package.ResolvedBuildOrder:
+            if self.__IsProject(entry) and entry.ResolvedPlatform is not None and package != entry:
+                projectPath = self.__GenerateProjectPath(config, package, entry, projectExtension).replace("\\", "/")
+                # Map the solution variants to the variants the dependency has (if they are named differently)
+                buildTypeMap: list[tuple[str, str]] = []
+                if len(variantHelper.CartesianProduct) > 0:
+                    entryVariantHelper = VariantHelper(entry)
+                    for configuration in variantHelper.CartesianProduct:
+                        solutionVariantName = GeneratorVCUtil.GetVCBuildConfigurationName(configuration)
+                        projectVariantName = self.__BuildMatchedVariantName(variantHelper, configuration, entryVariantHelper)
+                        if projectVariantName != solutionVariantName:
+                            buildTypeMap.append((solutionVariantName, projectVariantName))
+                projects.append(VSSolutionSlnx.SlnxProject(projectPath, VSSolutionSlnx.DEPENDENCY_FOLDER, buildTypeMap))
+        return VSSolutionSlnx.BuildSlnx(solutionVariantNames, projects)
 
     def __GenerateVCDependencies(self, snippets: ProjectReferenceSnippets, config: Config, package: Package, projectExtension: str) -> str:
         dependencyDict = {x.Name: x for x in package.ResolvedAllDependencies}

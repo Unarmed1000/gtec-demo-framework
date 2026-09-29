@@ -161,6 +161,34 @@ def RemoveFile(filename: str) -> None:
         os.remove(filename)
 
 
+def IsRegularFileDirectlyIn(filename: str, requiredParentDirectory: str) -> bool:
+    """True if 'filename' is a regular file (not a directory, symlink or junction) placed directly in 'requiredParentDirectory'"""
+    try:
+        fileStat = os.lstat(filename)
+    except OSError:
+        return False
+    if stat.S_ISLNK(fileStat.st_mode) or not stat.S_ISREG(fileStat.st_mode):
+        return False
+    # On windows a junction or other reparse point is not reported as a link
+    if sys.platform == "win32" and (fileStat.st_file_attributes & stat.FILE_ATTRIBUTE_REPARSE_POINT) != 0:
+        return False
+    parentDirectory = os.path.normcase(os.path.realpath(os.path.dirname(os.path.abspath(filename))))
+    return parentDirectory == os.path.normcase(os.path.realpath(requiredParentDirectory))
+
+
+def TrySafeRemoveFile(filename: str, requiredParentDirectory: str) -> bool:
+    """Remove 'filename' but only if it is a regular file (not a directory, symlink or junction) placed directly in 'requiredParentDirectory'.
+    Returns true if the file was removed, unlike RemoveFile a failure is not hidden.
+    """
+    if not IsRegularFileDirectlyIn(filename, requiredParentDirectory):
+        return False
+    try:
+        os.remove(filename)
+    except OSError:
+        return False
+    return True
+
+
 def IsAbsolutePath(sourcePath: str) -> bool:
     return os.path.isabs(sourcePath)
 
