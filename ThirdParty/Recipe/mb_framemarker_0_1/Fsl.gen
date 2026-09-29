@@ -8,7 +8,7 @@
     <Platform Name="Apple;RDK_Yocto;Ubuntu;QNX;Emscripten" Supported="true">
       <ExperimentalRecipe Name="mb_framemarker" Version="0.1.0" Find="false">
         <Pipeline>
-          <GitClone URL="https://github.com/Unarmed1000/mb-framepacing" Hash="595e0f4b298797058848da382f8d6e55717cf174"/>
+          <GitClone URL="https://github.com/Unarmed1000/mb-framepacing" Hash="445ce85fe8a663c363e26793e2db211289d301f1"/>
           <CMakeBuild Source="sdk/marker/cpp" Project="mb_framemarker" Target="install" Configuration="release" Options="-DMB_FRAMEMARKER_BUILD_TESTS=OFF -DMB_FRAMEMARKER_BUILD_TOOLS=OFF -DMB_FRAMEMARKER_WARNINGS_AS_ERRORS=OFF" OutputPath="_Install"/>
         </Pipeline>
         <Installation>
@@ -25,7 +25,7 @@
     <Platform Name="Android" Supported="true">
       <ExperimentalRecipe Name="mb_framemarker" Version="0.1.0" Find="false">
         <Pipeline>
-          <GitClone URL="https://github.com/Unarmed1000/mb-framepacing" Hash="595e0f4b298797058848da382f8d6e55717cf174"/>
+          <GitClone URL="https://github.com/Unarmed1000/mb-framepacing" Hash="445ce85fe8a663c363e26793e2db211289d301f1"/>
           <Copy>
             <GitApply From="{RECIPE_PATH}/android-cmake-minimum-version.patch"/>
           </Copy>
@@ -43,7 +43,7 @@
     <Platform Name="Windows" Supported="true">
       <ExperimentalRecipe Name="mb_framemarker" Version="0.1.0" Find="false">
         <Pipeline>
-          <GitClone URL="https://github.com/Unarmed1000/mb-framepacing" Hash="595e0f4b298797058848da382f8d6e55717cf174"/>
+          <GitClone URL="https://github.com/Unarmed1000/mb-framepacing" Hash="445ce85fe8a663c363e26793e2db211289d301f1"/>
           <CMakeBuild Source="sdk/marker/cpp" Project="mb_framemarker" Target="install" Configuration="debug;release" Options="-DMB_FRAMEMARKER_BUILD_TESTS=OFF -DMB_FRAMEMARKER_BUILD_TOOLS=OFF -DMB_FRAMEMARKER_WARNINGS_AS_ERRORS=OFF -DCMAKE_DEBUG_POSTFIX=d" OutputPath="_Install"/>
         </Pipeline>
         <Installation>
