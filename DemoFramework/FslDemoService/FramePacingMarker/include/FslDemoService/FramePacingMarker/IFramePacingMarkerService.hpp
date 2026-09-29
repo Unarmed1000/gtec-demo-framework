@@ -49,8 +49,8 @@ namespace Fsl
 
     //! @brief Check if the small sync marker is drawn at the bottom left (the main marker is always drawn at the top left).
     [[nodiscard]] virtual bool IsSyncMarkerEnabled() const noexcept = 0;
-    //! @brief Enable or disable the sync marker. It carries the frame index so the analysis can detect tearing, camera capture needs it
-    //!        for its timing.
+    //! @brief Enable or disable the sync marker. It carries the run id and the frame index so the analysis can detect tearing, camera
+    //!        capture needs it for its timing.
     virtual void SetSyncMarkerEnabled(const bool enabled) noexcept = 0;
 
     //! @brief The size of one QR module in pixels (only used if the capture height is zero).

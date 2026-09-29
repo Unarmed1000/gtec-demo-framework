@@ -1,8 +1,9 @@
 diff --git a/marker/cpp/CMakeLists.txt b/marker/cpp/CMakeLists.txt
-index fdc5107..42cf71e 100644
+index 23a709e..80009a1 100644
 --- a/marker/cpp/CMakeLists.txt
 +++ b/marker/cpp/CMakeLists.txt
-@@ -1,5 +1,6 @@
+@@ -1,6 +1,7 @@
+ # SPDX-FileCopyrightText: Copyright (C) 2026 Mana Battery ApS
  # SPDX-License-Identifier: BSD-3-Clause
 -cmake_minimum_required(VERSION 4.0)
 +# Patched by the DemoFramework Android recipe (the Android build CMake can be older): with the tests disabled only CMake 3.23 features are used

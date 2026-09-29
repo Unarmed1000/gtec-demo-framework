@@ -52,11 +52,15 @@ namespace Fsl
     std::optional<TickCount> CpuStartTime;
     //! How long the CPU worked on the frame before the marker was drawn (the last thing before the frame is presented)
     std::optional<TimeSpan> CpuBusyTime;
+    //! The frame time the application wants to run at (always empty: the framework has no frame pacer)
+    std::optional<TimeSpan> PreferredFrameTime;
+    //! True if the marker flagged the frame as static: nothing animates in it (the framework never sets it)
+    bool Static{false};
     //! Start markers only: the wall clock start time of the run
     std::optional<std::chrono::system_clock::time_point> RunStartTime;
     //! Start markers only: the sequence id of the run
     std::optional<FramePacingSequenceId> RunSequenceId;
-    //! True if the sync marker (the frame index only) was drawn as well
+    //! True if the sync marker (the run id and the frame index) was drawn as well
     bool SyncMarker{false};
   };
 }

@@ -25,7 +25,7 @@ Argument                          | Description
 `--FramePacing`                   | Draw the frame marker on top of every frame.
 `--FramePacing.ModuleSize <px>`   | The size of one QR module in pixels (default 6).
 `--FramePacing.CaptureHeight <px>`| The height the capture is stored at. The module size is calculated so the marker survives the downscale (overrides the module size).
-`--FramePacing.SyncMarker`        | Also draw the small sync marker (the frame index only) at the bottom left. The analysis detects tearing when the two markers disagree, and camera capture needs it for its timing.
+`--FramePacing.SyncMarker`        | Also draw the small sync marker (the run id and the frame index) at the bottom left. The analysis detects tearing when the two markers disagree, and camera capture needs it for its timing.
 `--FramePacing.Run <name>`        | Start a measured run with this name at the first frame. The name is written to the log next to the run's random sequence id. Implies `--FramePacing`.
 `--FramePacing.Duration <sec>`    | The duration of the measured part of the run (0 = until the app exits).
 `--FramePacing.RunId <id>`        | The id of the run (defaults to a random id).
@@ -67,9 +67,9 @@ the given duration). `GetRunDuration()` and `GetRunMeasuredTime()` report the pr
 `IFramePacingMarkerService` also exposes the sync marker, module size, capture height, run state and run id.
 
 `TryGetLastMarker(FramePacingMarkerInfo&)` returns every value the last drawn marker carried: kind, frame index, animation time,
-run id, intended display time, target frame time, CPU start time, CPU busy, and for start markers the run start time and sequence id
-(`FramePacingSequenceId`). Times use `TimeSpan`/`TickCount`, and a value the framework does not know (the intended display time and
-target frame time, as it has no frame pacer) is an empty `std::optional`. The marker is drawn at the end of the frame, so during a frame
+run id, intended display time, target frame time, CPU start time, CPU busy, preferred frame time, the static flag, and for start
+markers the run start time and sequence id (`FramePacingSequenceId`). Times use `TimeSpan`/`TickCount`, and a value the framework does
+not know (the intended display time, target frame time and preferred frame time, as it has no frame pacer) is an empty `std::optional`. The marker is drawn at the end of the frame, so during a frame
 this is the previous frame's marker.
 
 See the [GLES2.FramePacing](../DemoApps/GLES2/FramePacing), [GLES3.FramePacing](../DemoApps/GLES3/FramePacing) and
@@ -82,11 +82,14 @@ allocate. `--HideMarkerStats` hides the panel.
 - **Frame index**: a 64 bit counter that increments for every frame the app draws.
 - **Animation time**: `FrameInfo::Time.CurrentTickCount`, the time the app's animation was evaluated for (100ns ticks). Fixed time
   step, pause and forced update time modes are reported exactly as the app sees them.
-- **Intended display time and target frame time**: reported as unknown (0) as the framework has no frame pacer, so the analysis measures
-  every frame against the display's refresh rate (or the `--target-fps` given to the analysis).
+- **Intended display time, target frame time and preferred frame time**: reported as unknown (0) as the framework has no frame pacer, so
+  the analysis measures every frame against the display's refresh rate (or the `--target-fps` given to the analysis).
+- **Static flag**: never set, the framework does not know when nothing animates, so the analysis judges the animation error of every
+  frame.
 - **CPU start time and CPU busy**: the CPU start time is taken by the host just before the app update of the frame, and CPU busy is
   the time from then until the marker is drawn (the last thing before the frame is presented). The analysis derives the frametime
   from the step between the CPU start times.
+- **Sync marker**: the run id and the frame index, so the analysis can match it to the main marker of the same run.
 
 ## Notes
 

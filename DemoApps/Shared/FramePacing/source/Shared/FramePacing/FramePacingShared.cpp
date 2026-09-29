@@ -336,6 +336,8 @@ namespace Fsl
     rStats.TargetFrameTime = addStatsRow("Target frame time");
     rStats.CpuStartTime = addStatsRow("CPU start time");
     rStats.CpuBusyTime = addStatsRow("CPU busy");
+    rStats.PreferredFrameTime = addStatsRow("Preferred frame time");
+    rStats.Static = addStatsRow("Static");
     rStats.RunStartTime = addStatsRow("Run start time");
     rStats.RunSequenceId = addStatsRow("Sequence id");
     rStats.SyncMarker = addStatsRow("Sync marker");
@@ -364,9 +366,9 @@ namespace Fsl
     if (!m_framePacing || !m_framePacing->TryGetLastMarker(info))
     {
       rStats.Kind->SetContent("none drawn yet");
-      for (UI::Label* pLabel :
-           {rStats.FrameIndex.get(), rStats.AnimationTime.get(), rStats.RunId.get(), rStats.IntendedDisplayTime.get(), rStats.TargetFrameTime.get(),
-            rStats.CpuStartTime.get(), rStats.CpuBusyTime.get(), rStats.RunStartTime.get(), rStats.RunSequenceId.get(), rStats.SyncMarker.get()})
+      for (UI::Label* pLabel : {rStats.FrameIndex.get(), rStats.AnimationTime.get(), rStats.RunId.get(), rStats.IntendedDisplayTime.get(),
+                                rStats.TargetFrameTime.get(), rStats.CpuStartTime.get(), rStats.CpuBusyTime.get(), rStats.PreferredFrameTime.get(),
+                                rStats.Static.get(), rStats.RunStartTime.get(), rStats.RunSequenceId.get(), rStats.SyncMarker.get()})
       {
         pLabel->SetContent(UnknownValue);
       }
@@ -409,6 +411,15 @@ namespace Fsl
     {
       rStats.CpuBusyTime->SetContent(UnknownValue);
     }
+    if (info.PreferredFrameTime.has_value())
+    {
+      SetFormattedContent(*rStats.PreferredFrameTime, "{:.3f} ms", info.PreferredFrameTime->TotalMilliseconds());
+    }
+    else
+    {
+      rStats.PreferredFrameTime->SetContent(UnknownValue);
+    }
+    rStats.Static->SetContent(info.Static ? "yes" : "no");
     // The run start time and the sequence id are only carried by start markers
     if (info.RunStartTime.has_value())
     {

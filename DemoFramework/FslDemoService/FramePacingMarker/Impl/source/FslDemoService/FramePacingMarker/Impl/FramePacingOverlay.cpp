@@ -204,11 +204,12 @@ namespace Fsl
     const int32_t moduleSizePx = record.CaptureHeightPx > 0 ? FM::RecommendModuleSizePx(windowHeightPx, record.CaptureHeightPx) : record.ModuleSizePx;
     const FM::Options options{moduleSizePx, FM::RecommendedQuietZoneModules};
     const int32_t alignPx = CalcAlignPx(windowHeightPx, record.CaptureHeightPx);
-    // The framework has no frame pacer, so the intended display time and the target frame time are unknown (0).
+    // The framework has no frame pacer, so the intended display time, the target frame time and the preferred frame time are unknown (0),
+    // and it does not know when nothing animates, so no frame is flagged as static.
     // The marker is the last thing drawn before the frame is presented, so the CPU busy time is measured now.
     const uint32_t cpuBusyTicks = CalcCpuBusyTicks(record.CpuStartTicks, m_timer.GetTimestamp().Ticks());
     const FM::Payload payload{record.FrameIndex,    record.AnimationTicks, record.RunId, ToMarkerKind(record.Kind), 0, 0u,
-                              record.CpuStartTicks, cpuBusyTicks};
+                              record.CpuStartTicks, cpuBusyTicks,          0u,           FM::MarkerFlags::None};
     const FM::StartMetadata metadata{FM::ToDateTimeTicks(record.RunStartTime), FM::SequenceId{record.RunSequenceId.Bytes}};
 
     // The main marker (frame, start or end) is drawn at the top left and the sync marker at the bottom left. Both grids are kept up to date
@@ -238,7 +239,7 @@ namespace Fsl
     bool syncMarkerDrawn = false;
     if (record.SyncMarkerEnabled && indexCount > 0)
     {
-      // The sync marker carries the same frame index (the analysis detects tearing when the two disagree)
+      // The sync marker carries the same run id and frame index (the analysis detects tearing when the two disagree)
       FM::Payload syncPayload = payload;
       syncPayload.Kind = FM::MarkerKind::Sync;
       FM::ModuleMatrix syncMatrix;

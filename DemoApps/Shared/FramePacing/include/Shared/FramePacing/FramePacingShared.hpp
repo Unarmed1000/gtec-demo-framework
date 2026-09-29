@@ -68,6 +68,8 @@ namespace Fsl
       std::shared_ptr<UI::Label> TargetFrameTime;
       std::shared_ptr<UI::Label> CpuStartTime;
       std::shared_ptr<UI::Label> CpuBusyTime;
+      std::shared_ptr<UI::Label> PreferredFrameTime;
+      std::shared_ptr<UI::Label> Static;
       std::shared_ptr<UI::Label> RunStartTime;
       std::shared_ptr<UI::Label> RunSequenceId;
       std::shared_ptr<UI::Label> SyncMarker;
