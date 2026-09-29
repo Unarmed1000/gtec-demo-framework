@@ -35,7 +35,7 @@ failed=0
 
 for f in "${files[@]}"; do
   echo "::group::clang-tidy $f"
-  if ! python3 .Config/FslBuildCheck.py --noGitHash --UseFeatures "$features" --tidy --file "$root/$f" 2>&1 | tee "$log"; then
+  if ! python3 .Config/FslBuildCheck.py --noGitHash -vvvvvv --UseFeatures "$features" --tidy --file "$root/$f" 2>&1 | tee "$log"; then
     echo "::error file=$f::FslBuildCheck.py --tidy failed"
     failed=1
   fi
