@@ -23,7 +23,7 @@
   * Visual Studio 2026 is now the default on windows.
   * Android NDK r30 (LTS) is now the recommended NDK and is used by the CI builds.
   * Python 3.14 or better is now required.
-  * Upgraded to FslBuild 3.13.0 (fixed the Visual Studio 2026 toolset version used for the external libraries, recipe downloads now use a FslBuild user agent, unused external libraries no longer pull in their recipes, --ForAllExe keeps windows paths intact, experimental Conan recipe support, recipe FindTargetName/FindVersion enable Find again).
+  * Upgraded to FslBuild 3.13.3 (fixed the Visual Studio 2026 toolset version used for the external libraries, recipe downloads now use a FslBuild user agent, unused external libraries no longer pull in their recipes, --ForAllExe keeps windows paths intact, experimental Conan recipe support, recipe FindTargetName/FindVersion enable Find again, Visual Studio builds use the MSBuild MultiToolTask to cap the compiler processes across all projects so --BuildThreads is the maximum number of compile jobs).
   * clang-format and clang-tidy 23 are now required (all files are formatted with clang-format 23).
   * Added GitHub Actions CI: Ubuntu and Windows builds with unit tests, clang-format and clang-tidy (changed files).
   * Fixed --ExitAfterDuration never parsing the duration.

@@ -336,7 +336,7 @@ def __CreateParser(toolCommonArgConfig: ToolCommonArgConfig, allowStandaloneMode
         parser.add_argument(
             "--BuildThreads",
             default=str(DefaultValue.BuildThreads),
-            help='Configures how many threads the builder should use, beware this is a hint that may be ignored by the builder, can be a number or "auto".',
+            help='Configures the maximum number of compile jobs the builder runs in parallel, beware this is a hint that may be ignored by the builder, can be a number or "auto".',
         )
 
     if toolCommonArgConfig.AddGeneratorSelection:

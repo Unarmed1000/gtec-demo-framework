@@ -190,17 +190,21 @@ def DetermineVSToolsetVersion(log: Log, cmakeGeneratorName: str, platformName: s
     return CMakeGeneratorName.GetToolsetVersionString(cmakeGeneratorName)
 
 
+def GetMSBuildMultiToolTaskProperties(numBuildThreads: int) -> dict[str, str]:
+    """
+    MSBuild properties that let MSBuild schedule the compiles of all projects itself (MultiToolTask) and limit the total number
+    of compiler processes across all projects to numBuildThreads, like '-j' does for ninja and make.
+    Without them every project compiles with one process per core (/MP) while '/maxcpucount' projects build at the same time.
+    """
+    return {"UseMultiToolTask": "true", "EnforceProcessCountAcrossBuilds": "true", "MultiProcMaxCount": str(numBuildThreads)}
+
+
 def GetNativeBuildThreadArguments(cmakeGeneratorName: str, numBuildThreads: int) -> list[str]:
     if cmakeGeneratorName == CMakeGeneratorName.UnixMakeFile or cmakeGeneratorName == CMakeGeneratorName.Ninja:
         return ["-j", str(numBuildThreads)]
-    elif (
-        cmakeGeneratorName == CMakeGeneratorName.VisualStudio2015_X64
-        or cmakeGeneratorName == CMakeGeneratorName.VisualStudio2017_X64
-        or cmakeGeneratorName == CMakeGeneratorName.VisualStudio2019_X64
-        or cmakeGeneratorName == CMakeGeneratorName.VisualStudio2022_X64
-        or cmakeGeneratorName == CMakeGeneratorName.VisualStudio2026_X64
-    ):
-        return [f"/maxcpucount:{numBuildThreads}"]
+    elif CMakeGeneratorName.IsVisualStudio(cmakeGeneratorName):
+        properties = GetMSBuildMultiToolTaskProperties(numBuildThreads)
+        return [f"/maxcpucount:{numBuildThreads}"] + [f"/p:{name}={value}" for name, value in properties.items()]
     return []
 
 

@@ -339,9 +339,7 @@ class PackageResolver:
                 if package.AbsolutePath is None or package.AbsoluteSourcePath is None:
                     raise Exception("package in invalid")
                 startIdx = len(package.AbsolutePath) + 1
-                languageSourceExtensions = self.__GetExtensions(
-                    package.PackageLanguage, package.EnableExtendedSourceExtensions, package.ResolvedPlatformName
-                )
+                languageSourceExtensions = self.__GetExtensions(package.PackageLanguage, package.EnableExtendedSourceExtensions, package.ResolvedPlatformName)
                 files = IOUtil.GetFilePaths(package.AbsoluteSourcePath, languageSourceExtensions)
                 files = [Util.UTF8ToAscii(file[startIdx:].replace("\\", "/")) for file in files]
                 files.sort(key=lambda s: s.lower())

@@ -498,6 +498,9 @@ class CMakeAndBuildTask(BasicTask):
 
             buildEnv: dict[str, str] = os.environ.copy()
             self.__ApplyPath(buildEnv, toolFinder.ToolPaths)
+            if CMakeGeneratorName.IsVisualStudio(self.CMakeConfig.CMakeFinalGeneratorName):
+                # MSBuild reads environment variables as properties, this reaches every builder and any nested msbuild a recipe runs
+                buildEnv.update(CMakeHelper.GetMSBuildMultiToolTaskProperties(self.Builder.NumBuildThreads))
 
             self.__DoBuildNow(toolFinder, sourcePath, installPath, tempBuildPath, target, cmakeProjectName, configurationList, cmakeOptionList, buildEnv)
         except Exception:

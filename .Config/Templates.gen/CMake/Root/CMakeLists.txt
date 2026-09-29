@@ -61,6 +61,11 @@ project(
 
 ##PROJECT_PREVENT_IN_SOURCE_BUILDS##
 
+if(CMAKE_GENERATOR MATCHES "Visual Studio" AND NOT "UseMultiToolTask=true" IN_LIST CMAKE_VS_GLOBALS)
+  # Let MSBuild schedule the compiles of all projects and limit the total number of compiler processes
+  list(APPEND CMAKE_VS_GLOBALS "UseMultiToolTask=true" "EnforceProcessCountAcrossBuilds=true")
+endif()
+
 #########################
 # EXTERNAL DEPENDENCIES #
 #########################
