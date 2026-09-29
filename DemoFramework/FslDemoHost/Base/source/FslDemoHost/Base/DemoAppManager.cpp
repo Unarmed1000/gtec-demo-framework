@@ -45,8 +45,8 @@
 #include <FslDemoHost/Base/Service/DemoAppControl/IDemoAppControlEx.hpp>
 #include <FslDemoHost/Base/Service/Profiler/IProfilerServiceControl.hpp>
 #include <FslDemoService/CpuStats/ICpuStatsService.hpp>
-#include <FslDemoService/FramePacing/Control/IFramePacingOverlay.hpp>
-#include <FslDemoService/FramePacing/Control/IFramePacingServiceControl.hpp>
+#include <FslDemoService/FramePacingMarker/Control/IFramePacingMarkerServiceControl.hpp>
+#include <FslDemoService/FramePacingMarker/Control/IFramePacingOverlay.hpp>
 #include <FslDemoService/Graphics/Control/IGraphicsServiceControl.hpp>
 #include <FslDemoService/Profiler/IProfilerService.hpp>
 #include <FslService/Consumer/ServiceProvider.hpp>
@@ -86,10 +86,10 @@ namespace Fsl
       m_demoAppProfilerOverlay = std::make_unique<DemoAppProfilerOverlay>(demoAppConfig.DemoServiceProvider, logStatsFlags);
     }
     // The frame pacing service is only registered on platforms that support the marker
-    m_framePacingServiceControl = m_demoAppConfig.DemoServiceProvider.TryGet<IFramePacingServiceControl>();
-    if (m_framePacingServiceControl && renderSystemOverlay)
+    m_framePacingMarkerServiceControl = m_demoAppConfig.DemoServiceProvider.TryGet<IFramePacingMarkerServiceControl>();
+    if (m_framePacingMarkerServiceControl && renderSystemOverlay)
     {
-      m_framePacingOverlay = m_framePacingServiceControl->CreateOverlay(m_demoAppConfig.DemoServiceProvider);
+      m_framePacingOverlay = m_framePacingMarkerServiceControl->CreateOverlay(m_demoAppConfig.DemoServiceProvider);
     }
     m_demoAppControl = m_demoAppConfig.DemoServiceProvider.Get<IDemoAppControlEx>();
     m_graphicsService = m_demoAppConfig.DemoServiceProvider.TryGet<IGraphicsServiceControl>();
@@ -242,10 +242,10 @@ namespace Fsl
       return result;
     }
 
-    if (m_framePacingServiceControl)
+    if (m_framePacingMarkerServiceControl)
     {
       // The frame's CPU work starts with the app update
-      m_framePacingServiceControl->BeginFrame(frameInfo, m_stats.TimeBeforeUpdate);
+      m_framePacingMarkerServiceControl->BeginFrame(frameInfo, m_stats.TimeBeforeUpdate);
     }
 
     m_record.DemoApp->_BeginDraw(frameInfo);

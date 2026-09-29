@@ -252,7 +252,7 @@ No texture and no overdraw, minimal bandwidth requirements.
 
 <a href="FramePacing/Example.jpg"><img src="FramePacing/Example.jpg" height="108px" title="GLES3.FramePacing"></a>
 
-Shows how to control the [mb-framepacing](https://github.com/Unarmed1000/mb-framepacing) frame marker through the IFramePacingService.
+Shows how to control the [mb-framepacing](https://github.com/Unarmed1000/mb-framepacing) frame marker through the IFramePacingMarkerService.
 
 ### [FurShellRendering](FurShellRendering)
 

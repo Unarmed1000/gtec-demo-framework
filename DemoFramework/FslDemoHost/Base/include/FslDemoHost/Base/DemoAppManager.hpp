@@ -53,7 +53,7 @@ namespace Fsl
   class IDemoAppControlEx;
   class ICpuStatsService;
   class IFramePacingOverlay;
-  class IFramePacingServiceControl;
+  class IFramePacingMarkerServiceControl;
   class IGraphicsServiceControl;
   class IProfilerService;
   class IProfilerServiceControl;
@@ -97,7 +97,7 @@ namespace Fsl
     std::unique_ptr<DemoAppProfilerOverlay> m_demoAppProfilerOverlay;
     //! Null if the frame pacing service is unavailable
     std::shared_ptr<IFramePacingOverlay> m_framePacingOverlay;
-    std::shared_ptr<IFramePacingServiceControl> m_framePacingServiceControl;
+    std::shared_ptr<IFramePacingMarkerServiceControl> m_framePacingMarkerServiceControl;
     std::shared_ptr<IDemoAppControlEx> m_demoAppControl;
     std::shared_ptr<IGraphicsServiceControl> m_graphicsService;
     std::shared_ptr<IProfilerServiceControl> m_profilerServiceControl;

@@ -26,8 +26,8 @@
 #include <FslBase/Math/Pixel/PxSize2D.hpp>
 #include <FslBase/Span/SpanUtil_Array.hpp>
 #include <FslDemoApp/Shared/Host/DemoWindowMetrics.hpp>
-#include <FslDemoService/FramePacing/FramePacingMarkerInfo.hpp>
-#include <FslDemoService/FramePacing/IFramePacingService.hpp>
+#include <FslDemoService/FramePacingMarker/FramePacingMarkerInfo.hpp>
+#include <FslDemoService/FramePacingMarker/IFramePacingMarkerService.hpp>
 #include <FslDemoService/Graphics/IGraphicsService.hpp>
 #include <FslGraphics/Bitmap/ReadOnlyRawBitmap.hpp>
 #include <FslGraphics/Colors.hpp>
@@ -42,6 +42,7 @@
 #include <FslSimpleUI/Theme/Base/IThemeControlFactory.hpp>
 #include <FslSimpleUI/Theme/Base/WindowType.hpp>
 #include <Shared/FramePacing/FramePacingShared.hpp>
+#include <Shared/FramePacing/OptionParser.hpp>
 #include <fmt/chrono.h>
 #include <fmt/format.h>
 #include <array>
@@ -105,7 +106,7 @@ namespace Fsl
   FramePacingShared::FramePacingShared(const DemoAppConfig& config, std::string runName)
     : m_uiEventListener(this)
     , m_uiExtension(std::make_shared<UIDemoAppExtension>(config, m_uiEventListener.GetListener(), LocalConfig::MenuAtlas))
-    , m_framePacing(config.DemoServiceProvider.TryGet<IFramePacingService>())
+    , m_framePacing(config.DemoServiceProvider.TryGet<IFramePacingMarkerService>())
     , m_runName(std::move(runName))
     , m_windowSizePx(config.WindowMetrics.GetSizePx())
   {
@@ -155,50 +156,16 @@ namespace Fsl
     stackLayout->AddChild(lblHint);
     stackLayout->AddChild(lblHintTimed);
 
-    // A panel with every value the last drawn marker carried (top center, away from the markers on the left side)
-    const auto statsGrid = std::make_shared<UI::GridLayout>(uiFactory->GetContext());
-    statsGrid->AddColumnDefinition(UI::GridColumnDefinition(UI::GridUnitType::Auto));
-    statsGrid->AddColumnDefinition(UI::GridColumnDefinition(UI::GridUnitType::Fixed, 360.0f));
-    uint32_t statsRow = 0;
-    const auto addStatsRow = [&uiFactory, &statsGrid, &statsRow](const char* const pszName)
-    {
-      statsGrid->AddRowDefinition(UI::GridRowDefinition(UI::GridUnitType::Auto));
-      const auto nameLabel = uiFactory->CreateLabel(pszName);
-      nameLabel->SetMargin(DpThicknessF::Create(0, 0, 16, 0));
-      auto valueLabel = uiFactory->CreateLabel(UnknownValue);
-      statsGrid->AddChild(nameLabel, 0, statsRow);
-      statsGrid->AddChild(valueLabel, 1, statsRow);
-      ++statsRow;
-      return valueLabel;
-    };
-    MarkerStatsUIRecord& rStats = m_ui.MarkerStats;
-    rStats.Kind = addStatsRow("Marker");
-    rStats.FrameIndex = addStatsRow("Frame index");
-    rStats.AnimationTime = addStatsRow("Animation time");
-    rStats.RunId = addStatsRow("Run id");
-    rStats.IntendedDisplayTime = addStatsRow("Intended display time");
-    rStats.TargetFrameTime = addStatsRow("Target frame time");
-    rStats.CpuStartTime = addStatsRow("CPU start time");
-    rStats.CpuBusyTime = addStatsRow("CPU busy");
-    rStats.RunStartTime = addStatsRow("Run start time");
-    rStats.RunSequenceId = addStatsRow("Sequence id");
-    rStats.SyncMarker = addStatsRow("Sync marker");
-
-    const auto statsStack = std::make_shared<UI::StackLayout>(uiFactory->GetContext());
-    statsStack->SetOrientation(UI::LayoutOrientation::Vertical);
-    statsStack->AddChild(uiFactory->CreateLabel("Last marker"));
-    statsStack->AddChild(uiFactory->CreateDivider(UI::LayoutOrientation::Horizontal));
-    statsStack->AddChild(statsGrid);
-    const auto statsWindow = uiFactory->CreateBackgroundWindow(UI::Theme::WindowType::Transparent, statsStack);
-    statsWindow->SetAlignmentX(UI::ItemAlignment::Center);
-    statsWindow->SetAlignmentY(UI::ItemAlignment::Near);
-
     const auto mainLayout = std::make_shared<UI::GridLayout>(uiFactory->GetContext());
     mainLayout->AddColumnDefinition(UI::GridColumnDefinition(UI::GridUnitType::Star, 1.0f));
     mainLayout->AddColumnDefinition(UI::GridColumnDefinition(UI::GridUnitType::Auto));
     mainLayout->AddRowDefinition(UI::GridRowDefinition(UI::GridUnitType::Star, 1.0f));
+    // The panel with every value of the last marker can be hidden with --HideMarkerStats
+    if (!config.GetOptions<OptionParser>()->IsMarkerStatsHidden())
+    {
+      mainLayout->AddChild(CreateMarkerStatsWindow(*uiFactory), 0, 0);
+    }
     const auto rightBar = uiFactory->CreateRightBar(stackLayout);
-    mainLayout->AddChild(statsWindow, 0, 0);
     mainLayout->AddChild(rightBar, 1, 0);
     mainLayout->SetLimitToAvailableSpace(true);
     m_uiExtension->SetMainWindow(mainLayout);
@@ -342,9 +309,57 @@ namespace Fsl
   }
 
 
+  std::shared_ptr<UI::BaseWindow> FramePacingShared::CreateMarkerStatsWindow(UI::Theme::IThemeControlFactory& rUIFactory)
+  {
+    // A panel with every value the last drawn marker carried (top center, away from the markers on the left side)
+    const auto statsGrid = std::make_shared<UI::GridLayout>(rUIFactory.GetContext());
+    statsGrid->AddColumnDefinition(UI::GridColumnDefinition(UI::GridUnitType::Auto));
+    statsGrid->AddColumnDefinition(UI::GridColumnDefinition(UI::GridUnitType::Fixed, 360.0f));
+    uint32_t statsRow = 0;
+    const auto addStatsRow = [&rUIFactory, &statsGrid, &statsRow](const char* const pszName)
+    {
+      statsGrid->AddRowDefinition(UI::GridRowDefinition(UI::GridUnitType::Auto));
+      const auto nameLabel = rUIFactory.CreateLabel(pszName);
+      nameLabel->SetMargin(DpThicknessF::Create(0, 0, 16, 0));
+      auto valueLabel = rUIFactory.CreateLabel(UnknownValue);
+      statsGrid->AddChild(nameLabel, 0, statsRow);
+      statsGrid->AddChild(valueLabel, 1, statsRow);
+      ++statsRow;
+      return valueLabel;
+    };
+    MarkerStatsUIRecord& rStats = m_ui.MarkerStats;
+    rStats.Kind = addStatsRow("Marker");
+    rStats.FrameIndex = addStatsRow("Frame index");
+    rStats.AnimationTime = addStatsRow("Animation time");
+    rStats.RunId = addStatsRow("Run id");
+    rStats.IntendedDisplayTime = addStatsRow("Intended display time");
+    rStats.TargetFrameTime = addStatsRow("Target frame time");
+    rStats.CpuStartTime = addStatsRow("CPU start time");
+    rStats.CpuBusyTime = addStatsRow("CPU busy");
+    rStats.RunStartTime = addStatsRow("Run start time");
+    rStats.RunSequenceId = addStatsRow("Sequence id");
+    rStats.SyncMarker = addStatsRow("Sync marker");
+
+    const auto statsStack = std::make_shared<UI::StackLayout>(rUIFactory.GetContext());
+    statsStack->SetOrientation(UI::LayoutOrientation::Vertical);
+    statsStack->AddChild(rUIFactory.CreateLabel("Last marker"));
+    statsStack->AddChild(rUIFactory.CreateDivider(UI::LayoutOrientation::Horizontal));
+    statsStack->AddChild(statsGrid);
+    auto statsWindow = rUIFactory.CreateBackgroundWindow(UI::Theme::WindowType::Transparent, statsStack);
+    statsWindow->SetAlignmentX(UI::ItemAlignment::Center);
+    statsWindow->SetAlignmentY(UI::ItemAlignment::Near);
+    return statsWindow;
+  }
+
+
   void FramePacingShared::UpdateMarkerStats()
   {
     const MarkerStatsUIRecord& rStats = m_ui.MarkerStats;
+    if (!rStats.Kind)
+    {
+      // The panel is hidden (--HideMarkerStats)
+      return;
+    }
     FramePacingMarkerInfo info;
     if (!m_framePacing || !m_framePacing->TryGetLastMarker(info))
     {

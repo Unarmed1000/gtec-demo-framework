@@ -1,0 +1,116 @@
+#ifndef FSLDEMOSERVICE_FRAMEPACINGMARKER_IMPL_FRAMEPACINGOVERLAY_HPP
+#define FSLDEMOSERVICE_FRAMEPACINGMARKER_IMPL_FRAMEPACINGOVERLAY_HPP
+//****************************************************************************************************************************************************
+//* BSD 3-Clause License
+//*
+//* Copyright (c) 2026, Mana Battery
+//* All rights reserved.
+//*
+//* Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
+//*
+//* 1. Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
+//* 2. Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the
+//*    documentation and/or other materials provided with the distribution.
+//* 3. Neither the name of the copyright holder nor the names of its contributors may be used to endorse or promote products derived from this
+//*    software without specific prior written permission.
+//*
+//* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+//* THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR
+//* CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+//* PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+//* LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
+//* EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+//****************************************************************************************************************************************************
+
+#include <FslBase/Math/Matrix.hpp>
+#include <FslBase/Math/Pixel/PxSize2D.hpp>
+#include <FslBase/System/HighResolutionTimer.hpp>
+#include <FslDemoService/FramePacingMarker/Control/IFramePacingOverlay.hpp>
+#include <FslGraphics/Render/Basic/BasicMaterial.hpp>
+#include <cstdint>
+#include <memory>
+
+namespace MB::FrameMarker
+{
+  struct Options;
+  struct Point;
+}
+
+namespace Fsl
+{
+  struct DemoWindowMetrics;
+  class IBasicDynamicBuffer;
+  class IBasicRenderSystem;
+  class IFramePacingFrameSource;
+  class IGraphicsService;
+  class INativeTexture2D;
+  class ServiceProvider;
+
+  //! Draws the frame pacing marker of the current frame. The host calls Draw as the very last thing before the frame is presented, inside
+  //! the frame (and on Vulkan inside the main render pass).
+  //! The marker is drawn from the library's static grids (MB::FrameMarker::GridVertices, only regenerated when the window size or the
+  //! marker options change) with per-frame 16-bit indices (MB::FrameMarker::GenerateModules and ModulesToGridIndices). It is rendered on
+  //! the GPU through the IBasicRenderSystem (opaque, no depth, no culling, pixel aligned), so it works the same way on all backends.
+  class FramePacingOverlay final : public IFramePacingOverlay
+  {
+    struct Buffers;
+
+    //! Everything the static grids depend on (the module size, the quiet zone and the origin of both markers)
+    struct GridKey
+    {
+      int32_t ModuleSizePx{0};
+      int32_t QuietZoneModules{0};
+      int32_t MainOriginX{0};
+      int32_t MainOriginY{0};
+      int32_t SyncOriginX{0};
+      int32_t SyncOriginY{0};
+
+      bool operator==(const GridKey&) const noexcept = default;
+    };
+
+    std::shared_ptr<IFramePacingFrameSource> m_service;
+    std::shared_ptr<IGraphicsService> m_graphicsService;
+    std::unique_ptr<Buffers> m_buffers;
+    //! Measures the CPU busy time of the frame (the host takes the CPU start time with a HighResolutionTimer too)
+    HighResolutionTimer m_timer;
+
+    std::shared_ptr<IBasicRenderSystem> m_renderSystem;
+    std::shared_ptr<INativeTexture2D> m_fillTexture;
+    BasicMaterial m_material;
+    //! The static grids of both markers
+    std::shared_ptr<IBasicDynamicBuffer> m_vertexBuffer;
+    //! The per-frame indices of the markers
+    std::shared_ptr<IBasicDynamicBuffer> m_indexBuffer;
+    //! What the grids in m_vertexBuffer were generated for (all zero until the first update, which never matches a valid key)
+    GridKey m_gridKey;
+    //! Set if the render system is unavailable (the marker is then never drawn)
+    bool m_disabled{false};
+
+    PxSize2D m_cachedSizePx;
+    Matrix m_projection;
+
+  public:
+    FramePacingOverlay(const FramePacingOverlay&) = delete;
+    FramePacingOverlay& operator=(const FramePacingOverlay&) = delete;
+
+    //! @brief Create a overlay, returns null if the frame pacing service is unavailable.
+    static std::unique_ptr<FramePacingOverlay> TryCreate(const ServiceProvider& serviceProvider);
+
+    //! @param createResources create the render resources right away. This should be done if the marker is enabled when the overlay is created,
+    //!                        as render resources created during a frame can first be used the following frame.
+    FramePacingOverlay(std::shared_ptr<IFramePacingFrameSource> service, std::shared_ptr<IGraphicsService> graphicsService,
+                       const bool createResources);
+    ~FramePacingOverlay() final;
+
+    //! @brief Draw the marker (does nothing if the marker is disabled).
+    void Draw(const DemoWindowMetrics& windowMetrics) final;
+
+  private:
+    //! @param disableOnFailure if true a failure permanently disables the marker (otherwise it is retried on demand)
+    bool TryCreateResources(const bool disableOnFailure);
+    //! Regenerate the static grids of both markers and upload them
+    bool TryUpdateGrids(const MB::FrameMarker::Options& options, const MB::FrameMarker::Point mainOrigin, const MB::FrameMarker::Point syncOrigin);
+  };
+}
+
+#endif

@@ -25,7 +25,7 @@
 #include <FslBase/Math/Pixel/PxSize2D.hpp>
 #include <FslDemoApp/Base/DemoAppConfig.hpp>
 #include <FslDemoApp/Base/DemoTime.hpp>
-#include <FslDemoService/FramePacing/FramePacingRunState.hpp>
+#include <FslDemoService/FramePacingMarker/FramePacingRunState.hpp>
 #include <FslGraphics/Color.hpp>
 #include <FslGraphics/Render/Texture2D.hpp>
 #include <FslSimpleUI/App/UIDemoAppExtension.hpp>
@@ -40,11 +40,19 @@
 
 namespace Fsl
 {
-  class IFramePacingService;
+  class IFramePacingMarkerService;
+  namespace UI
+  {
+    class BaseWindow;
+    namespace Theme
+    {
+      class IThemeControlFactory;
+    }
+  }
   class INativeBatch2D;
   class KeyEvent;
 
-  //! Shows how an app can control the mb-framepacing frame marker through the IFramePacingService.
+  //! Shows how an app can control the mb-framepacing frame marker through the IFramePacingMarkerService.
   //! The marker itself is drawn by the host on top of every frame, so apps only need to enable it (or use --FramePacing).
   //! All rendering goes through the API independent INativeBatch2D so the same code is used by the GLES2, GLES3 and Vulkan samples.
   class FramePacingShared final : public UI::EventListener
@@ -77,7 +85,7 @@ namespace Fsl
 
     UI::CallbackEventListenerScope m_uiEventListener;
     std::shared_ptr<UIDemoAppExtension> m_uiExtension;
-    std::shared_ptr<IFramePacingService> m_framePacing;
+    std::shared_ptr<IFramePacingMarkerService> m_framePacing;
     std::shared_ptr<INativeBatch2D> m_nativeBatch;
     Texture2D m_fillTexture;
     std::string m_runName;
@@ -117,6 +125,8 @@ namespace Fsl
     void ToggleRun();
     void StartTimedRun();
     void UpdateUI();
+    //! Create the panel with every value of the last marker (fills in m_ui.MarkerStats)
+    std::shared_ptr<UI::BaseWindow> CreateMarkerStatsWindow(UI::Theme::IThemeControlFactory& rUIFactory);
     void UpdateMarkerStats();
 
     //! Format into the reused buffer and set it as the label content (the label only copies it if the text changed)

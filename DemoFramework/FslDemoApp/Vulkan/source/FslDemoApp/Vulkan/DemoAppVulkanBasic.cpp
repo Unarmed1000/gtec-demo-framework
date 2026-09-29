@@ -38,8 +38,8 @@
 #include <FslDemoApp/Vulkan/Basic/DemoAppVulkanBasic.hpp>
 #include <FslDemoHost/Vulkan/Config/DemoAppHostConfigVulkan.hpp>
 #include <FslDemoHost/Vulkan/Config/SwapchainMaintenance1Util.hpp>
-#include <FslDemoService/FramePacing/Control/IFramePacingOverlay.hpp>
-#include <FslDemoService/FramePacing/Control/IFramePacingServiceControl.hpp>
+#include <FslDemoService/FramePacingMarker/Control/IFramePacingMarkerServiceControl.hpp>
+#include <FslDemoService/FramePacingMarker/Control/IFramePacingOverlay.hpp>
 #include <FslDemoService/Graphics/Control/GraphicsBeginFrameInfo.hpp>
 #include <FslDemoService/Graphics/Control/GraphicsDependentCreateInfo.hpp>
 #include <FslDemoService/Graphics/Control/IGraphicsServiceHost.hpp>
@@ -193,7 +193,7 @@ namespace Fsl::VulkanBasic
       m_demoAppProfilerOverlay = std::make_unique<DemoAppProfilerOverlay>(demoAppConfig.DemoServiceProvider, hostConfig.LogStatsFlags);
     }
     // The frame pacing service is only registered on platforms that support the marker
-    if (const auto framePacingServiceControl = demoAppConfig.DemoServiceProvider.TryGet<IFramePacingServiceControl>())
+    if (const auto framePacingServiceControl = demoAppConfig.DemoServiceProvider.TryGet<IFramePacingMarkerServiceControl>())
     {
       m_framePacingOverlay = framePacingServiceControl->CreateOverlay(demoAppConfig.DemoServiceProvider);
     }

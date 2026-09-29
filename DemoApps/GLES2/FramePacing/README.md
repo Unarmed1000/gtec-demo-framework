@@ -4,7 +4,7 @@
 
 <!-- #AG_DEMOAPP_HEADER_END# -->
 <!-- #AG_BRIEF_BEGIN# -->
-Shows how to control the [mb-framepacing](https://github.com/Unarmed1000/mb-framepacing) frame marker through the IFramePacingService.
+Shows how to control the [mb-framepacing](https://github.com/Unarmed1000/mb-framepacing) frame marker through the IFramePacingMarkerService.
 <!-- #AG_BRIEF_END# -->
 
 The host draws a QR frame marker (frame index + animation time) on top of every frame so a capture of the display output can be analysed
@@ -27,6 +27,7 @@ Command line arguments':
 
 Argument                          |Description                                                                                                                                                         |Source
 ----------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------
+--HideMarkerStats                 |Hide the panel with the values of the last frame pacing marker.                                                                                                     |Demo
 --ActualDpi \<arg>                |ActualDpi [x,y] Override the actual dpi reported by the native window                                                                                               |DemoHost
 --DensityDpi \<arg>               |DensityDpi \<number> Override the density dpi reported by the native window                                                                                         |DemoHost
 --DisplayId \<arg>                |DisplayId \<number>                                                                                                                                                 |DemoHost
@@ -55,13 +56,13 @@ Argument                          |Description                                  
 --Stats                           |Display basic frame profiling stats                                                                                                                                 |DemoHostManager
 --StatsFlags \<arg>               |Select the stats to be displayed/logged. Defaults to frame\|cpu. Can be 'frame', 'cpu' or any combination                                                           |DemoHostManager
 --Version                         |Print version information                                                                                                                                           |DemoHostManager
---FramePacing                     |Draw the mb-framepacing frame marker (frame index + animation time as a QR code) on top of every frame.                                                             |FramePacingService
---FramePacing.CaptureHeight \<arg>|The height in pixels the capture is stored at, when set the module size is calculated so the marker survives the downscale (overrides FramePacing.ModuleSize).      |FramePacingService
---FramePacing.Duration \<arg>     |The duration in seconds of the measured part of the run started by FramePacing.Run (0 = until the app exits).                                                       |FramePacingService
---FramePacing.ModuleSize \<arg>   |The size of one frame pacing marker QR module in pixels. Defaults to: 6                                                                                             |FramePacingService
---FramePacing.Run \<arg>          |Start a measured run with the given name at the first frame, the name is written to the log next to the run's random sequence id. Implies --FramePacing.            |FramePacingService
---FramePacing.RunId \<arg>        |The id of the run started by FramePacing.Run (defaults to a random id).                                                                                             |FramePacingService
---FramePacing.SyncMarker          |Also draw the small frame pacing sync marker at the bottom left: it detects tearing, and camera capture needs it for its timing.                                    |FramePacingService
+--FramePacing                     |Draw the mb-framepacing frame marker (frame index + animation time as a QR code) on top of every frame.                                                             |FramePacingMarkerService
+--FramePacing.CaptureHeight \<arg>|The height in pixels the capture is stored at, when set the module size is calculated so the marker survives the downscale (overrides FramePacing.ModuleSize).      |FramePacingMarkerService
+--FramePacing.Duration \<arg>     |The duration in seconds of the measured part of the run started by FramePacing.Run (0 = until the app exits).                                                       |FramePacingMarkerService
+--FramePacing.ModuleSize \<arg>   |The size of one frame pacing marker QR module in pixels. Defaults to: 6                                                                                             |FramePacingMarkerService
+--FramePacing.Run \<arg>          |Start a measured run with the given name at the first frame, the name is written to the log next to the run's random sequence id. Implies --FramePacing.            |FramePacingMarkerService
+--FramePacing.RunId \<arg>        |The id of the run started by FramePacing.Run (defaults to a random id).                                                                                             |FramePacingMarkerService
+--FramePacing.SyncMarker          |Also draw the small frame pacing sync marker at the bottom left: it detects tearing, and camera capture needs it for its timing.                                    |FramePacingMarkerService
 --Graphics.Profile                |Enable graphics service stats                                                                                                                                       |GraphicsService
 --Profiler.AverageEntries \<arg>  |The number of frames used to calculate the average frame-time. Defaults to: 60                                                                                      |ProfilerService
 --ghelp \<arg>                    |Display option groups: all, demo or host                                                                                                                            |base

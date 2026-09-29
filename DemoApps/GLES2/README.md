@@ -124,7 +124,7 @@ Use the commandline arguments to select the scene and quality.
 
 <a href="FramePacing/Example.jpg"><img src="FramePacing/Example.jpg" height="108px" title="GLES2.FramePacing"></a>
 
-Shows how to control the [mb-framepacing](https://github.com/Unarmed1000/mb-framepacing) frame marker through the IFramePacingService.
+Shows how to control the [mb-framepacing](https://github.com/Unarmed1000/mb-framepacing) frame marker through the IFramePacingMarkerService.
 
 ### [LineBuilder101](LineBuilder101)
 

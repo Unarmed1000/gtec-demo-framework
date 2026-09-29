@@ -6,7 +6,7 @@
     <Dependency Name="FslGraphics"/>
     <Dependency Name="FslDemoApp.Base"/>
     <Dependency Name="FslDemoService.CpuStats" Access="Private"/>
-    <Dependency Name="FslDemoService.FramePacing.Control" Access="Private"/>
+    <Dependency Name="FslDemoService.FramePacingMarker.Control" Access="Private"/>
     <Dependency Name="FslDemoService.Graphics.Control"/>
     <Dependency Name="FslDemoService.Profiler"/>
     <Dependency Name="FslService.Impl"/>

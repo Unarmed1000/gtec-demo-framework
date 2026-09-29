@@ -13,7 +13,7 @@ supports it without code changes. It works with OpenGL ES and Vulkan apps.
 Windows, Ubuntu, macOS, Android, QNX, Emscripten and RDK Yocto. The marker library (`ThirdParty/Recipe/mb_framemarker_0_1`) is
 built automatically the first time an app is built. It requires CMake 4.0+, except on Android where the recipe applies
 `android-cmake-minimum-version.patch` which lowers the minimum to CMake 3.23 (the tests are disabled, so the library only uses CMake 3.23
-features). On other platforms the feature is compiled out and `IFramePacingService` is not available.
+features). On other platforms the feature is compiled out and `IFramePacingMarkerService` is not available.
 
 The marker needs the basic render system, so it is drawn by OpenGL ES 2, OpenGL ES 3 and Vulkan apps. Hosts without it (OpenVG, G2D,
 console and window apps) log a warning and do not draw the marker.
@@ -47,13 +47,13 @@ mb-framepacing capture -d "<capture card>" --scale 960x540 --wait-for-start --st
 
 ## Controlling it from an app
 
-Add a dependency on `FslDemoService.FramePacing` and use the service:
+Add a dependency on `FslDemoService.FramePacingMarker` and use the service:
 
 ```cpp
-#include <FslDemoService/FramePacing/IFramePacingService.hpp>
+#include <FslDemoService/FramePacingMarker/IFramePacingMarkerService.hpp>
 
 // The service is null on platforms that do not support the marker
-auto framePacing = config.DemoServiceProvider.TryGet<IFramePacingService>();
+auto framePacing = config.DemoServiceProvider.TryGet<IFramePacingMarkerService>();
 if (framePacing)
 {
   framePacing->SetEnabled(true);
@@ -64,7 +64,7 @@ if (framePacing)
 A run is either open ended (zero duration, it lasts until `EndRun`) or timed (it ends by itself once the measured part has lasted
 the given duration). `GetRunDuration()` and `GetRunMeasuredTime()` report the progress of a timed run.
 
-`IFramePacingService` also exposes the sync marker, module size, capture height, run state and run id.
+`IFramePacingMarkerService` also exposes the sync marker, module size, capture height, run state and run id.
 
 `TryGetLastMarker(FramePacingMarkerInfo&)` returns every value the last drawn marker carried: kind, frame index, animation time,
 run id, intended display time, target frame time, CPU start time, CPU busy, and for start markers the run start time and sequence id
@@ -75,7 +75,7 @@ this is the previous frame's marker.
 See the [GLES2.FramePacing](../DemoApps/GLES2/FramePacing), [GLES3.FramePacing](../DemoApps/GLES3/FramePacing) and
 [Vulkan.FramePacing](../DemoApps/Vulkan/FramePacing) samples (they share their code in [Shared/FramePacing](../DemoApps/Shared/FramePacing)):
 they show every value of the last marker in a panel, formatted into a reused `fmt::memory_buffer` so updating it every frame does not
-allocate.
+allocate. `--HideMarkerStats` hides the panel.
 
 ## What the marker reports
 
@@ -100,14 +100,14 @@ allocate.
 
 ## Implementation
 
-Package                             | Content
-------------------------------------|---------------------------------------------------------------------------------------------------
-`ThirdParty/mb_framemarker`         | The mb-framepacing C++ marker library (via `Recipe.mb_framemarker_0_1`).
-`FslDemoService.FramePacing`        | The public `IFramePacingService` interface (header only, available on all platforms).
-`FslDemoService.FramePacing.Control`| The host side `IFramePacingServiceControl` and `IFramePacingOverlay` interfaces (header only, available on all platforms).
-`FslDemoService.FramePacing.Impl`   | The service, its command line options, the run state machine and the overlay that draws the marker.
+Package                                    | Content
+-------------------------------------------|--------------------------------------------------------------------------------------------
+`ThirdParty/mb_framemarker`                | The mb-framepacing C++ marker library (via `Recipe.mb_framemarker_0_1`).
+`FslDemoService.FramePacingMarker`         | The public `IFramePacingMarkerService` interface (header only, available on all platforms).
+`FslDemoService.FramePacingMarker.Control` | The host side `IFramePacingMarkerServiceControl` and `IFramePacingOverlay` interfaces (header only, available on all platforms).
+`FslDemoService.FramePacingMarker.Impl`    | The service, its command line options, the run state machine and the overlay that draws the marker.
 
-The hosts only use the Control interfaces: they get `IFramePacingServiceControl` with `TryGet` and create the overlay through it. The
+The hosts only use the Control interfaces: they get `IFramePacingMarkerServiceControl` with `TryGet` and create the overlay through it. The
 service is only registered (by `FslDemoPlatform`) on the platforms that support the marker library, everywhere else `TryGet` returns
 null and nothing is drawn.
 

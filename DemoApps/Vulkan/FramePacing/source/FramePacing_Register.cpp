@@ -21,6 +21,7 @@
 //****************************************************************************************************************************************************
 
 #include <FslDemoApp/Vulkan/Setup/RegisterDemoApp.hpp>
+#include <Shared/FramePacing/OptionParser.hpp>
 #include "FramePacing.hpp"
 
 namespace Fsl
@@ -33,6 +34,6 @@ namespace Fsl
 
     const DemoAppHostConfigVulkan config;
 
-    DemoAppRegister::Vulkan::Register<FramePacing>(rSetup, "Vulkan.FramePacing", config, customDemoAppConfig);
+    DemoAppRegister::Vulkan::Register<FramePacing, OptionParser>(rSetup, "Vulkan.FramePacing", config, customDemoAppConfig);
   }
 }
