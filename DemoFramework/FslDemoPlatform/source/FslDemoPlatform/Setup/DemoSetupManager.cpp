@@ -59,7 +59,7 @@
 #include "../Configuration/PlatformConfig.hpp"
 
 #ifdef FSL_FEATURE_FRAMEPACING
-#include <FslDemoService/FramePacing/Impl/FramePacingServiceFactory.hpp>
+#include <FslDemoService/FramePacingMarker/Impl/FramePacingMarkerServiceFactory.hpp>
 #endif
 
 namespace Fsl
@@ -119,7 +119,7 @@ namespace Fsl
     serviceRegistry.Register<AppInfoServiceFactory>(ServicePriorityList::AppInfoService());
     serviceRegistry.Register<OptionsServiceFactory>(ServicePriorityList::Options());
 #ifdef FSL_FEATURE_FRAMEPACING
-    serviceRegistry.Register<FramePacingServiceFactory>();
+    serviceRegistry.Register<FramePacingMarkerServiceFactory>();
 #endif
 
     // Prepare the hosts

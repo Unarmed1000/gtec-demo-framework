@@ -2,7 +2,7 @@
 <FslBuildGen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../FslBuildGen.xsd">
   <Library Name="Shared.FramePacing" CreationYear="2026">
     <Dependency Name="FslDemoApp.Base"/>
-    <Dependency Name="FslDemoService.FramePacing"/>
+    <Dependency Name="FslDemoService.FramePacingMarker"/>
     <Dependency Name="FslSimpleUI.App"/>
     <Dependency Name="FslSimpleUI.App.Theme" Access="Private"/>
   </Library>

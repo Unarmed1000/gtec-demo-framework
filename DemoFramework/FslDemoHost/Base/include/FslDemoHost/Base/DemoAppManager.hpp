@@ -50,10 +50,10 @@ namespace Fsl
 {
   class DemoAppManagerEventListener;
   class DemoAppProfilerOverlay;
-  class FramePacingOverlay;
   class IDemoAppControlEx;
   class ICpuStatsService;
-  class IFramePacingServiceControl;
+  class IFramePacingOverlay;
+  class IFramePacingMarkerServiceControl;
   class IGraphicsServiceControl;
   class IProfilerService;
   class IProfilerServiceControl;
@@ -95,9 +95,9 @@ namespace Fsl
     };
 
     std::unique_ptr<DemoAppProfilerOverlay> m_demoAppProfilerOverlay;
-    //! Only used if FSL_FEATURE_FRAMEPACING is defined
-    std::shared_ptr<FramePacingOverlay> m_framePacingOverlay;
-    std::shared_ptr<IFramePacingServiceControl> m_framePacingServiceControl;
+    //! Null if the frame pacing service is unavailable
+    std::shared_ptr<IFramePacingOverlay> m_framePacingOverlay;
+    std::shared_ptr<IFramePacingMarkerServiceControl> m_framePacingMarkerServiceControl;
     std::shared_ptr<IDemoAppControlEx> m_demoAppControl;
     std::shared_ptr<IGraphicsServiceControl> m_graphicsService;
     std::shared_ptr<IProfilerServiceControl> m_profilerServiceControl;

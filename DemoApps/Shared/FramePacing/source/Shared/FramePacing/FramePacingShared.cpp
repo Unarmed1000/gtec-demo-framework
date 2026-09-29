@@ -26,7 +26,8 @@
 #include <FslBase/Math/Pixel/PxSize2D.hpp>
 #include <FslBase/Span/SpanUtil_Array.hpp>
 #include <FslDemoApp/Shared/Host/DemoWindowMetrics.hpp>
-#include <FslDemoService/FramePacing/IFramePacingService.hpp>
+#include <FslDemoService/FramePacingMarker/FramePacingMarkerInfo.hpp>
+#include <FslDemoService/FramePacingMarker/IFramePacingMarkerService.hpp>
 #include <FslDemoService/Graphics/IGraphicsService.hpp>
 #include <FslGraphics/Bitmap/ReadOnlyRawBitmap.hpp>
 #include <FslGraphics/Colors.hpp>
@@ -39,9 +40,13 @@
 #include <FslSimpleUI/Base/Layout/GridLayout.hpp>
 #include <FslSimpleUI/Base/Layout/StackLayout.hpp>
 #include <FslSimpleUI/Theme/Base/IThemeControlFactory.hpp>
+#include <FslSimpleUI/Theme/Base/WindowType.hpp>
 #include <Shared/FramePacing/FramePacingShared.hpp>
+#include <Shared/FramePacing/OptionParser.hpp>
+#include <fmt/chrono.h>
 #include <fmt/format.h>
 #include <array>
+#include <chrono>
 #include <cmath>
 #include <string>
 #include <utility>
@@ -77,13 +82,31 @@ namespace Fsl
         return "unknown";
       }
     }
+
+    const char* ToString(const FramePacingMarkerKind kind) noexcept
+    {
+      switch (kind)
+      {
+      case FramePacingMarkerKind::Frame:
+        return "frame";
+      case FramePacingMarkerKind::SequenceStart:
+        return "start";
+      case FramePacingMarkerKind::SequenceEnd:
+        return "end";
+      default:
+        return "unknown";
+      }
+    }
+
+    //! Shown for a value the marker reports as unknown
+    constexpr const char* UnknownValue = "unknown";
   }
 
 
   FramePacingShared::FramePacingShared(const DemoAppConfig& config, std::string runName)
     : m_uiEventListener(this)
     , m_uiExtension(std::make_shared<UIDemoAppExtension>(config, m_uiEventListener.GetListener(), LocalConfig::MenuAtlas))
-    , m_framePacing(config.DemoServiceProvider.TryGet<IFramePacingService>())
+    , m_framePacing(config.DemoServiceProvider.TryGet<IFramePacingMarkerService>())
     , m_runName(std::move(runName))
     , m_windowSizePx(config.WindowMetrics.GetSizePx())
   {
@@ -137,12 +160,18 @@ namespace Fsl
     mainLayout->AddColumnDefinition(UI::GridColumnDefinition(UI::GridUnitType::Star, 1.0f));
     mainLayout->AddColumnDefinition(UI::GridColumnDefinition(UI::GridUnitType::Auto));
     mainLayout->AddRowDefinition(UI::GridRowDefinition(UI::GridUnitType::Star, 1.0f));
+    // The panel with every value of the last marker can be hidden with --HideMarkerStats
+    if (!config.GetOptions<OptionParser>()->IsMarkerStatsHidden())
+    {
+      mainLayout->AddChild(CreateMarkerStatsWindow(*uiFactory), 0, 0);
+    }
     const auto rightBar = uiFactory->CreateRightBar(stackLayout);
     mainLayout->AddChild(rightBar, 1, 0);
     mainLayout->SetLimitToAvailableSpace(true);
     m_uiExtension->SetMainWindow(mainLayout);
 
     UpdateUI();
+    UpdateMarkerStats();
   }
 
 
@@ -198,6 +227,7 @@ namespace Fsl
 
   void FramePacingShared::Update()
   {
+    UpdateMarkerStats();
     if (m_framePacing)
     {
       const int64_t measuredTenths = m_framePacing->GetRunMeasuredTime().Ticks() / (TimeSpan::TicksPerMillisecond * 100);
@@ -276,6 +306,143 @@ namespace Fsl
     m_ui.ButtonRun->SetContent(isIdle ? "Start run" : "End run");
     m_ui.ButtonTimedRun->SetEnabled(isIdle);
     m_ui.SliderDuration->SetEnabled(isIdle);
+  }
+
+
+  std::shared_ptr<UI::BaseWindow> FramePacingShared::CreateMarkerStatsWindow(UI::Theme::IThemeControlFactory& rUIFactory)
+  {
+    // A panel with every value the last drawn marker carried (top center, away from the markers on the left side)
+    const auto statsGrid = std::make_shared<UI::GridLayout>(rUIFactory.GetContext());
+    statsGrid->AddColumnDefinition(UI::GridColumnDefinition(UI::GridUnitType::Auto));
+    statsGrid->AddColumnDefinition(UI::GridColumnDefinition(UI::GridUnitType::Fixed, 360.0f));
+    uint32_t statsRow = 0;
+    const auto addStatsRow = [&rUIFactory, &statsGrid, &statsRow](const char* const pszName)
+    {
+      statsGrid->AddRowDefinition(UI::GridRowDefinition(UI::GridUnitType::Auto));
+      const auto nameLabel = rUIFactory.CreateLabel(pszName);
+      nameLabel->SetMargin(DpThicknessF::Create(0, 0, 16, 0));
+      auto valueLabel = rUIFactory.CreateLabel(UnknownValue);
+      statsGrid->AddChild(nameLabel, 0, statsRow);
+      statsGrid->AddChild(valueLabel, 1, statsRow);
+      ++statsRow;
+      return valueLabel;
+    };
+    MarkerStatsUIRecord& rStats = m_ui.MarkerStats;
+    rStats.Kind = addStatsRow("Marker");
+    rStats.FrameIndex = addStatsRow("Frame index");
+    rStats.AnimationTime = addStatsRow("Animation time");
+    rStats.RunId = addStatsRow("Run id");
+    rStats.IntendedDisplayTime = addStatsRow("Intended display time");
+    rStats.TargetFrameTime = addStatsRow("Target frame time");
+    rStats.CpuStartTime = addStatsRow("CPU start time");
+    rStats.CpuBusyTime = addStatsRow("CPU busy");
+    rStats.PreferredFrameTime = addStatsRow("Preferred frame time");
+    rStats.Static = addStatsRow("Static");
+    rStats.RunStartTime = addStatsRow("Run start time");
+    rStats.RunSequenceId = addStatsRow("Sequence id");
+    rStats.SyncMarker = addStatsRow("Sync marker");
+
+    const auto statsStack = std::make_shared<UI::StackLayout>(rUIFactory.GetContext());
+    statsStack->SetOrientation(UI::LayoutOrientation::Vertical);
+    statsStack->AddChild(rUIFactory.CreateLabel("Last marker"));
+    statsStack->AddChild(rUIFactory.CreateDivider(UI::LayoutOrientation::Horizontal));
+    statsStack->AddChild(statsGrid);
+    auto statsWindow = rUIFactory.CreateBackgroundWindow(UI::Theme::WindowType::Transparent, statsStack);
+    statsWindow->SetAlignmentX(UI::ItemAlignment::Center);
+    statsWindow->SetAlignmentY(UI::ItemAlignment::Near);
+    return statsWindow;
+  }
+
+
+  void FramePacingShared::UpdateMarkerStats()
+  {
+    const MarkerStatsUIRecord& rStats = m_ui.MarkerStats;
+    if (!rStats.Kind)
+    {
+      // The panel is hidden (--HideMarkerStats)
+      return;
+    }
+    FramePacingMarkerInfo info;
+    if (!m_framePacing || !m_framePacing->TryGetLastMarker(info))
+    {
+      rStats.Kind->SetContent("none drawn yet");
+      for (UI::Label* pLabel : {rStats.FrameIndex.get(), rStats.AnimationTime.get(), rStats.RunId.get(), rStats.IntendedDisplayTime.get(),
+                                rStats.TargetFrameTime.get(), rStats.CpuStartTime.get(), rStats.CpuBusyTime.get(), rStats.PreferredFrameTime.get(),
+                                rStats.Static.get(), rStats.RunStartTime.get(), rStats.RunSequenceId.get(), rStats.SyncMarker.get()})
+      {
+        pLabel->SetContent(UnknownValue);
+      }
+      return;
+    }
+
+    rStats.Kind->SetContent(ToString(info.Kind));
+    SetFormattedContent(*rStats.FrameIndex, "{}", info.FrameIndex);
+    SetFormattedContent(*rStats.AnimationTime, "{:.3f} ms", info.AnimationTime.TotalMilliseconds());
+    SetFormattedContent(*rStats.RunId, "{}", info.RunId);
+    if (info.IntendedDisplayTime.has_value())
+    {
+      SetFormattedContent(*rStats.IntendedDisplayTime, "{:.3f} ms", info.IntendedDisplayTime->TotalMilliseconds());
+    }
+    else
+    {
+      rStats.IntendedDisplayTime->SetContent(UnknownValue);
+    }
+    if (info.TargetFrameTime.has_value())
+    {
+      SetFormattedContent(*rStats.TargetFrameTime, "{:.3f} ms", info.TargetFrameTime->TotalMilliseconds());
+    }
+    else
+    {
+      rStats.TargetFrameTime->SetContent(UnknownValue);
+    }
+    if (info.CpuStartTime.has_value())
+    {
+      SetFormattedContent(*rStats.CpuStartTime, "{:.3f} ms", info.CpuStartTime->TotalMilliseconds());
+    }
+    else
+    {
+      rStats.CpuStartTime->SetContent(UnknownValue);
+    }
+    if (info.CpuBusyTime.has_value())
+    {
+      SetFormattedContent(*rStats.CpuBusyTime, "{:.3f} ms", info.CpuBusyTime->TotalMilliseconds());
+    }
+    else
+    {
+      rStats.CpuBusyTime->SetContent(UnknownValue);
+    }
+    if (info.PreferredFrameTime.has_value())
+    {
+      SetFormattedContent(*rStats.PreferredFrameTime, "{:.3f} ms", info.PreferredFrameTime->TotalMilliseconds());
+    }
+    else
+    {
+      rStats.PreferredFrameTime->SetContent(UnknownValue);
+    }
+    rStats.Static->SetContent(info.Static ? "yes" : "no");
+    // The run start time and the sequence id are only carried by start markers
+    if (info.RunStartTime.has_value())
+    {
+      SetFormattedContent(*rStats.RunStartTime, "{:%Y-%m-%d %H:%M:%S} UTC", std::chrono::floor<std::chrono::seconds>(info.RunStartTime.value()));
+    }
+    else
+    {
+      rStats.RunStartTime->SetContent(UnknownValue);
+    }
+    if (info.RunSequenceId.has_value())
+    {
+      m_formatBuffer.clear();
+      for (const uint8_t value : info.RunSequenceId->Bytes)
+      {
+        fmt::format_to(std::back_inserter(m_formatBuffer), "{:02x}", value);
+      }
+      rStats.RunSequenceId->SetContent(StringViewLite(m_formatBuffer.data(), m_formatBuffer.size()));
+    }
+    else
+    {
+      rStats.RunSequenceId->SetContent(UnknownValue);
+    }
+    rStats.SyncMarker->SetContent(info.SyncMarker ? "drawn" : "off");
   }
 
 

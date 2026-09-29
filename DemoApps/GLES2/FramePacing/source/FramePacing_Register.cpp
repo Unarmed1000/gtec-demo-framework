@@ -21,6 +21,7 @@
 //****************************************************************************************************************************************************
 
 #include <FslDemoApp/OpenGLES2/Setup/RegisterDemoApp.hpp>
+#include <Shared/FramePacing/OptionParser.hpp>
 #include <EGL/egl.h>
 #include <array>
 #include "FramePacing.hpp"
@@ -41,6 +42,6 @@ namespace Fsl
 
     const DemoAppHostConfigEGL config(g_eglConfigAttribs.data());
 
-    DemoAppRegister::GLES2::Register<FramePacing>(rSetup, "GLES2.FramePacing", config, customDemoAppConfig);
+    DemoAppRegister::GLES2::Register<FramePacing, OptionParser>(rSetup, "GLES2.FramePacing", config, customDemoAppConfig);
   }
 }

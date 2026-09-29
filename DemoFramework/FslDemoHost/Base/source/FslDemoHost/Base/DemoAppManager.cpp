@@ -45,16 +45,14 @@
 #include <FslDemoHost/Base/Service/DemoAppControl/IDemoAppControlEx.hpp>
 #include <FslDemoHost/Base/Service/Profiler/IProfilerServiceControl.hpp>
 #include <FslDemoService/CpuStats/ICpuStatsService.hpp>
+#include <FslDemoService/FramePacingMarker/Control/IFramePacingMarkerServiceControl.hpp>
+#include <FslDemoService/FramePacingMarker/Control/IFramePacingOverlay.hpp>
 #include <FslDemoService/Graphics/Control/IGraphicsServiceControl.hpp>
 #include <FslDemoService/Profiler/IProfilerService.hpp>
 #include <FslService/Consumer/ServiceProvider.hpp>
 #include <cassert>
 #include <memory>
 #include <utility>
-#ifdef FSL_FEATURE_FRAMEPACING
-#include <FslDemoService/FramePacing/Impl/FramePacingOverlay.hpp>
-#include <FslDemoService/FramePacing/Impl/IFramePacingServiceControl.hpp>
-#endif
 
 namespace Fsl
 {
@@ -87,13 +85,12 @@ namespace Fsl
     {
       m_demoAppProfilerOverlay = std::make_unique<DemoAppProfilerOverlay>(demoAppConfig.DemoServiceProvider, logStatsFlags);
     }
-#ifdef FSL_FEATURE_FRAMEPACING
-    m_framePacingServiceControl = m_demoAppConfig.DemoServiceProvider.TryGet<IFramePacingServiceControl>();
-    if (renderSystemOverlay)
+    // The frame pacing service is only registered on platforms that support the marker
+    m_framePacingMarkerServiceControl = m_demoAppConfig.DemoServiceProvider.TryGet<IFramePacingMarkerServiceControl>();
+    if (m_framePacingMarkerServiceControl && renderSystemOverlay)
     {
-      m_framePacingOverlay = FramePacingOverlay::TryCreate(m_demoAppConfig.DemoServiceProvider);
+      m_framePacingOverlay = m_framePacingMarkerServiceControl->CreateOverlay(m_demoAppConfig.DemoServiceProvider);
     }
-#endif
     m_demoAppControl = m_demoAppConfig.DemoServiceProvider.Get<IDemoAppControlEx>();
     m_graphicsService = m_demoAppConfig.DemoServiceProvider.TryGet<IGraphicsServiceControl>();
     m_profilerServiceControl = m_demoAppConfig.DemoServiceProvider.Get<IProfilerServiceControl>();
@@ -245,25 +242,22 @@ namespace Fsl
       return result;
     }
 
-#ifdef FSL_FEATURE_FRAMEPACING
-    if (m_framePacingServiceControl)
+    if (m_framePacingMarkerServiceControl)
     {
-      m_framePacingServiceControl->BeginFrame(frameInfo);
+      // The frame's CPU work starts with the app update
+      m_framePacingMarkerServiceControl->BeginFrame(frameInfo, m_stats.TimeBeforeUpdate);
     }
-#endif
 
     m_record.DemoApp->_BeginDraw(frameInfo);
     try
     {
       m_record.DemoApp->_Draw(frameInfo);
-#ifdef FSL_FEATURE_FRAMEPACING
       // The frame pacing marker must be the last thing the app frame draws (it is rendered with the basic render system, so it has to be
       // drawn inside the frame)
       if (m_framePacingOverlay && m_state == DemoState::Running)
       {
         m_framePacingOverlay->Draw(m_demoAppConfig.WindowMetrics);
       }
-#endif
       m_record.DemoApp->_EndDraw(frameInfo);
     }
     catch (std::exception& ex)

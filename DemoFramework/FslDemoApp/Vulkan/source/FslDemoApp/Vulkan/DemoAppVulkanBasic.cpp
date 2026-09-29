@@ -38,6 +38,8 @@
 #include <FslDemoApp/Vulkan/Basic/DemoAppVulkanBasic.hpp>
 #include <FslDemoHost/Vulkan/Config/DemoAppHostConfigVulkan.hpp>
 #include <FslDemoHost/Vulkan/Config/SwapchainMaintenance1Util.hpp>
+#include <FslDemoService/FramePacingMarker/Control/IFramePacingMarkerServiceControl.hpp>
+#include <FslDemoService/FramePacingMarker/Control/IFramePacingOverlay.hpp>
 #include <FslDemoService/Graphics/Control/GraphicsBeginFrameInfo.hpp>
 #include <FslDemoService/Graphics/Control/GraphicsDependentCreateInfo.hpp>
 #include <FslDemoService/Graphics/Control/IGraphicsServiceHost.hpp>
@@ -60,9 +62,6 @@
 #include <cassert>
 #include <iostream>
 #include <memory>
-#ifdef FSL_FEATURE_FRAMEPACING
-#include <FslDemoService/FramePacing/Impl/FramePacingOverlay.hpp>
-#endif
 
 namespace Fsl::VulkanBasic
 {
@@ -193,9 +192,11 @@ namespace Fsl::VulkanBasic
     {
       m_demoAppProfilerOverlay = std::make_unique<DemoAppProfilerOverlay>(demoAppConfig.DemoServiceProvider, hostConfig.LogStatsFlags);
     }
-#ifdef FSL_FEATURE_FRAMEPACING
-    m_framePacingOverlay = FramePacingOverlay::TryCreate(demoAppConfig.DemoServiceProvider);
-#endif
+    // The frame pacing service is only registered on platforms that support the marker
+    if (const auto framePacingServiceControl = demoAppConfig.DemoServiceProvider.TryGet<IFramePacingMarkerServiceControl>())
+    {
+      m_framePacingOverlay = framePacingServiceControl->CreateOverlay(demoAppConfig.DemoServiceProvider);
+    }
     const auto demoHostConfig = hostInfo->TryGetAppHostConfig();
     if (!demoHostConfig)
     {
@@ -394,13 +395,11 @@ namespace Fsl::VulkanBasic
     {
       m_demoAppProfilerOverlay->Draw(GetWindowMetrics());
     }
-#ifdef FSL_FEATURE_FRAMEPACING
     // The frame pacing marker must be the very last thing drawn
     if (m_framePacingOverlay)
     {
       m_framePacingOverlay->Draw(GetWindowMetrics());
     }
-#endif
   }
 
 

@@ -166,7 +166,7 @@ class PipelineCommandGitClone(PipelineCommandFetch):
             remoteTag = self.__SourceCommand.Tag
             self.Task.RunGitClone(self.__SourceCommand.URL, remoteTag, dstPath)
             if len(remoteTag) <= 0 and self.__SourceCommand.Hash is not None:
-                self.Task.RunGitCheckout(dstPath, self.__SourceCommand.Hash)
+                self.Task.RunGitCheckout(dstPath, self.__SourceCommand.Hash, self.Info.AllowDownloads)
 
             # get the repo hash
             hashStr = self.Task.GetCurrentHash(dstPath)
