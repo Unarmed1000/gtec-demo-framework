@@ -56,6 +56,20 @@ namespace Fsl
 
   Profiles::Profiles()
   {
+// Vulkan 1.4.363 replaced the VpCapabilities API with the VpFunctions API
+#if VK_HEADER_VERSION >= 363
+    // An empty create info keeps the statically linked vulkan functions
+    const VpFunctionsCreateInfo createInfo{};
+
+    const auto res = vpCreateFunctions(&createInfo, nullptr, &m_capabilities);
+    if (res != VK_SUCCESS)
+    {
+      FSLLOG3_VERBOSE(RapidVulkan::ErrorFormatter::Format("vpCreateFunctions failed with:", res));
+      // vpCreateFunctions returns the object even when it fails
+      vpDestroyFunctions(m_capabilities, nullptr);
+      m_capabilities = VK_NULL_HANDLE;
+    }
+#else
     VpCapabilitiesCreateInfo createInfo;
     createInfo.apiVersion = VK_API_VERSION_1_1;
     createInfo.flags = VP_PROFILE_CREATE_STATIC_BIT;
@@ -67,6 +81,7 @@ namespace Fsl
       FSLLOG3_VERBOSE(RapidVulkan::ErrorFormatter::Format("vpCreateCapabilities failed with:", res));
       m_capabilities = VK_NULL_HANDLE;
     }
+#endif
   }
 
 
@@ -74,7 +89,11 @@ namespace Fsl
   {
     if (m_capabilities != VK_NULL_HANDLE)
     {
+#if VK_HEADER_VERSION >= 363
+      vpDestroyFunctions(m_capabilities, nullptr);
+#else
       vpDestroyCapabilities(m_capabilities, nullptr);
+#endif
       m_capabilities = VK_NULL_HANDLE;
     }
   }
