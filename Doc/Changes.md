@@ -35,7 +35,7 @@
   * Updated Google benchmark to 1.9.5
   * Updated OpenCV to 5.0.0. **Breaking change**: the OpenCV4 feature, package and DemoAppOpenCV4 template were replaced by OpenCV5 (on all platforms, Yocto builds need a BSP with OpenCV 5).
   * Updated pugixml to 1.16
-  * Updated RapidVulkan to 1.4.357.0
+  * Updated RapidVulkan to 1.4.363.0
   * Updated stb to the latest version
   * Updated zlib to 1.3.2
 
