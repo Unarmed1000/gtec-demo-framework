@@ -1,7 +1,7 @@
-diff --git a/marker/cpp/CMakeLists.txt b/marker/cpp/CMakeLists.txt
-index 23a709e..80009a1 100644
---- a/marker/cpp/CMakeLists.txt
-+++ b/marker/cpp/CMakeLists.txt
+diff --git a/sdk/marker/cpp/CMakeLists.txt b/sdk/marker/cpp/CMakeLists.txt
+index 7f60fd6..a0e78b3 100644
+--- a/sdk/marker/cpp/CMakeLists.txt
++++ b/sdk/marker/cpp/CMakeLists.txt
 @@ -1,6 +1,7 @@
  # SPDX-FileCopyrightText: Copyright (C) 2026 Mana Battery ApS
  # SPDX-License-Identifier: BSD-3-Clause
@@ -9,5 +9,5 @@ index 23a709e..80009a1 100644
 +# Patched by the DemoFramework Android recipe (the Android build CMake can be older): with the tests disabled only CMake 3.23 features are used
 +cmake_minimum_required(VERSION 3.23...4.0)
  
- # Inside the repository the version and LICENSE live in marker/ (shared with the C# marker library) and the third-party license
+ # Inside the repository the version and LICENSE live in sdk/marker/ (shared with the C# marker library) and the third-party license
  # texts in the repository root's licenses/. A standalone release archive carries them all next to this file instead.
