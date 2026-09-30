@@ -28,6 +28,11 @@ Git decides when it can: all the rules git sees in the work tree apply (the pack
 directories up to the root, .git/info/exclude and the work tree's core.ignorecase), but not the developer's personal global ignore file.
 A sub directory is ignored when git ignores the directory itself, so 'name/**' (the content only) keeps the directory.
 The .gitignore emulation (GitIgnoreFile) that uses the same directory rule is the fallback.
+
+One git process answers for all packages below a top-level work tree, also for the packages in its submodules and other nested
+repositories: with --no-index git applies every .gitignore on the path, including the ones of a nested repository. That answer is git's
+answer for a nested repository when the pattern that decided is in a .gitignore of that repository (or nothing matched), the repository
+has no info/exclude patterns and uses the same core.ignorecase. Otherwise the package is asked in its own work tree.
 """
 
 import os
@@ -39,6 +44,7 @@ from typing import NamedTuple
 from FslBuildGen import IOUtil
 from FslBuildGen.Generator.GitCheckIgnore import GitCheckIgnoreError, GitCheckIgnoreRecord, RunCheckIgnore, TryFindWorkTreeRoot
 from FslBuildGen.Generator.GitIgnoreFile import GitDirResult, GitIgnoreFile
+from FslBuildGen.Generator.GitRepositorySettings import ReadRepositorySettings, RepositorySettings, TryFindTopWorkTreeRoot
 from FslBuildGen.GitRunner import GitRunError, GitRunner
 from FslBuildGen.Log import Log
 
@@ -67,26 +73,40 @@ class PackageIgnoredDirectoriesResult(NamedTuple):
 class _PackageQuery:
     """The paths of one package that are sent to git"""
 
-    def __init__(self, packagePath: str, root: str, relativePath: str, subDirectories: list[str]) -> None:
+    def __init__(self, packagePath: str, root: str, topRoot: str, subDirectories: list[str]) -> None:
         super().__init__()
         self.PackagePath = packagePath
+        # The work tree that contains the package, and the outermost work tree that contains that one (the same when it is not nested)
         self.Root = root
-        # The package directory relative to the root, empty when the package is the root
-        self.RelativePath = relativePath
+        self.TopRoot = topRoot
         self.SubDirectories = subDirectories
 
-    def GetRelativePathOf(self, subDirectory: str) -> str:
-        return f"{self.RelativePath}/{subDirectory}" if len(self.RelativePath) > 0 else subDirectory
+    def GetRelativePath(self, fromTop: bool) -> str:
+        """The package directory relative to the work tree (or the top-level work tree), empty when the package is that root"""
+        return _GetRelativePath(self.TopRoot if fromTop else self.Root, self.PackagePath)
 
-    def GetAllRelativePaths(self) -> list[str]:
+    def GetRelativePathOf(self, subDirectory: str, fromTop: bool) -> str:
+        relativePath = self.GetRelativePath(fromTop)
+        return f"{relativePath}/{subDirectory}" if len(relativePath) > 0 else subDirectory
+
+    def GetAllRelativePaths(self, fromTop: bool) -> list[str]:
         # The root itself is never ignored and git can not check an empty path
-        paths = [self.RelativePath] if len(self.RelativePath) > 0 else []
-        paths += [self.GetRelativePathOf(subDirectory) for subDirectory in self.SubDirectories]
+        relativePath = self.GetRelativePath(fromTop)
+        paths = [relativePath] if len(relativePath) > 0 else []
+        paths += [self.GetRelativePathOf(subDirectory, fromTop) for subDirectory in self.SubDirectories]
         return paths
+
+    def GetRecords(self, answer: dict[str, GitCheckIgnoreRecord], fromTop: bool) -> tuple[GitCheckIgnoreRecord | None, dict[str, GitCheckIgnoreRecord]]:
+        """The record of the package directory (None when the package is the root that was asked) and the record of each sub directory"""
+        relativePath = self.GetRelativePath(fromTop)
+        packageRecord = answer[relativePath] if len(relativePath) > 0 else None
+        return packageRecord, {subDirectory: answer[self.GetRelativePathOf(subDirectory, fromTop)] for subDirectory in self.SubDirectories}
 
 
 class _QueryFailure(NamedTuple):
     Message: str
+    # git is not installed, asking another work tree can not help
+    ExecutableNotFound: bool
 
 
 def _GetRelativePath(root: str, path: str) -> str:
@@ -117,12 +137,25 @@ def _GetSubDirectories(path: str) -> list[str]:
         return sorted(entry.name for entry in entries if entry.is_dir())
 
 
+def _IsDecidedInside(record: GitCheckIgnoreRecord, topRoot: str, root: str) -> bool:
+    """
+    True if nothing matched the path, or the pattern that decided is in a .gitignore inside the work tree 'root' (for an answer of the
+    top-level work tree 'topRoot'). git searches the deepest .gitignore first and info/exclude last, so asking 'root' finds the same pattern.
+    """
+    if len(record.Pattern) <= 0:
+        return True
+    if os.path.basename(record.Source) != _GITIGNORE_FILENAME:
+        return False
+    sourcePath = IOUtil.NormalizePath(record.Source if os.path.isabs(record.Source) else IOUtil.Join(topRoot, record.Source))
+    return sourcePath.startswith(root if root.endswith("/") else root + "/")
+
+
 class PackageIgnoredDirectories:
     def __init__(self, log: Log, runner: GitRunner | None, packagePaths: Iterable[str], maxParallelQueries: int = 8) -> None:
         """
         log: receives the verbose output and the warning when git fails.
         runner: runs git, None never runs git so the emulation decides (used by the tests).
-        packagePaths: the packages git is asked about together on the first Resolve, one git process per work tree.
+        packagePaths: the packages git is asked about together on the first Resolve, one git process per top-level work tree.
         """
         super().__init__()
         self.__Log = log
@@ -133,6 +166,7 @@ class PackageIgnoredDirectories:
         self.__Results: dict[str, PackageIgnoredDirectoriesResult] = {}
         self.__Logged: set[str] = set()
         self.__WorkTreeRootCache: dict[str, str | None] = {}
+        self.__RepositorySettings: dict[str, RepositorySettings] = {}
         self.__WarningShown = False
         # The number of git processes that were started
         self.GitQueryCount = 0
@@ -169,10 +203,19 @@ class PackageIgnoredDirectories:
         pending = self.__Pending
         self.__Pending = []
         self.__PendingSet = set()
+        gitQueryCountBefore = self.GitQueryCount
 
         # The reason git does not decide for a package that has a .gitignore
         fallbackReasons: dict[str, str] = {}
-        queriesByRoot: dict[str, list[_PackageQuery]] = {}
+        topQueries: dict[str, list[_PackageQuery]] = {}
+        # The packages that are asked in their own (nested) work tree, and why that work tree is asked
+        ownQueries: dict[str, list[_PackageQuery]] = {}
+        ownQueryReasons: dict[str, str] = {}
+
+        def AddOwnQuery(query: _PackageQuery, reason: str) -> None:
+            ownQueries.setdefault(query.Root, []).append(query)
+            ownQueryReasons.setdefault(query.Root, reason)
+
         for packagePath in pending:
             if not os.path.isfile(IOUtil.Join(packagePath, _GITIGNORE_FILENAME)):
                 self.__Results[packagePath] = PackageIgnoredDirectoriesResult(None, ExcludeDirectorySource.Legacy, "the package has no .gitignore", {})
@@ -180,22 +223,53 @@ class PackageIgnoredDirectories:
             queryOrReason = self.__TryCreateQuery(packagePath)
             if isinstance(queryOrReason, str):
                 fallbackReasons[packagePath] = queryOrReason
+                continue
+            ownQueryReason = self.__TryGetOwnQueryReason(queryOrReason)
+            if ownQueryReason is not None:
+                AddOwnQuery(queryOrReason, ownQueryReason)
             else:
-                queriesByRoot.setdefault(queryOrReason.Root, []).append(queryOrReason)
+                topQueries.setdefault(queryOrReason.TopRoot, []).append(queryOrReason)
 
-        answers = self.__RunQueries(queriesByRoot)
         failures: list[str] = []
-        for root, queries in queriesByRoot.items():
-            answer = answers[root]
+        topAnswers = self.__RunQueries(
+            {topRoot: [path for query in queries for path in query.GetAllRelativePaths(True)] for topRoot, queries in topQueries.items()}
+        )
+        for topRoot, queries in topQueries.items():
+            answer = topAnswers[topRoot]
+            if isinstance(answer, _QueryFailure):
+                # The packages of a nested repository can still be answered by their own work tree (unless git is not installed)
+                for query in queries:
+                    if query.Root == topRoot or answer.ExecutableNotFound:
+                        fallbackReasons[query.PackagePath] = f"git failed: {answer.Message}"
+                    else:
+                        AddOwnQuery(query, f"the query in the top-level work tree failed: {answer.Message}")
+                if answer.ExecutableNotFound or any(query.Root == topRoot for query in queries):
+                    failures.append(answer.Message)
+                continue
+            for query in queries:
+                packageRecord, subRecords = query.GetRecords(answer, True)
+                if query.Root != topRoot:
+                    records = [*([packageRecord] if packageRecord is not None else []), *subRecords.values()]
+                    outsideRecord = next((record for record in records if not _IsDecidedInside(record, topRoot, query.Root)), None)
+                    if outsideRecord is not None:
+                        # A rule of the top-level work tree does not apply inside the nested repository
+                        AddOwnQuery(query, f"a rule outside it matched ({outsideRecord.Describe()})")
+                        continue
+                self.__StoreGitResult(query, packageRecord, subRecords, fallbackReasons)
+
+        for root, reason in ownQueryReasons.items():
+            self.__Log.LogPrintVerbose(2, f"git is asked in '{root}' on its own: {reason}")
+        ownAnswers = self.__RunQueries({root: [path for query in queries for path in query.GetAllRelativePaths(False)] for root, queries in ownQueries.items()})
+        for root, queries in ownQueries.items():
+            answer = ownAnswers[root]
             if isinstance(answer, _QueryFailure):
                 failures.append(answer.Message)
                 for query in queries:
                     fallbackReasons[query.PackagePath] = f"git failed: {answer.Message}"
                 continue
             for query in queries:
-                reason = self.__TryStoreGitResult(query, answer)
-                if reason is not None:
-                    fallbackReasons[query.PackagePath] = reason
+                packageRecord, subRecords = query.GetRecords(answer, False)
+                self.__StoreGitResult(query, packageRecord, subRecords, fallbackReasons)
 
         for packagePath, reason in fallbackReasons.items():
             emulated = GitIgnoreFile.TryGetDirectories(IOUtil.Join(packagePath, _GITIGNORE_FILENAME))
@@ -207,7 +281,7 @@ class PackageIgnoredDirectories:
                 )
 
         self.__ReportFailures(failures)
-        self.__LogSummary(pending, len(queriesByRoot))
+        self.__LogSummary(pending, self.GitQueryCount - gitQueryCountBefore, len(ownQueries))
 
     def __TryCreateQuery(self, packagePath: str) -> _PackageQuery | str:
         """Return the query for the package, or the reason why git is not asked"""
@@ -216,50 +290,79 @@ class PackageIgnoredDirectories:
         root = TryFindWorkTreeRoot(packagePath, self.__WorkTreeRootCache)
         if root is None:
             return "the package is not in a git work tree"
-        relativePath = _GetRelativePath(root, packagePath)
+        topRoot = TryFindTopWorkTreeRoot(root, self.__WorkTreeRootCache)
         # git stops with a fatal error for a path beyond a symbolic link, and the package would not be where the path says
-        if _ContainsLink(root, relativePath):
-            return f"the path from the work tree root '{root}' to the package contains a symbolic link or junction"
-        return _PackageQuery(packagePath, root, relativePath, _GetSubDirectories(packagePath))
+        if topRoot != root and _ContainsLink(topRoot, _GetRelativePath(topRoot, packagePath)):
+            # The link can be on the way to the nested repository, then that repository is asked like a top-level one
+            topRoot = root
+        if _ContainsLink(topRoot, _GetRelativePath(topRoot, packagePath)):
+            return f"the path from the work tree root '{topRoot}' to the package contains a symbolic link or junction"
+        return _PackageQuery(packagePath, root, topRoot, _GetSubDirectories(packagePath))
 
-    def __RunQueries(self, queriesByRoot: dict[str, list[_PackageQuery]]) -> dict[str, dict[str, GitCheckIgnoreRecord] | _QueryFailure]:
+    def __GetRepositorySettings(self, root: str) -> RepositorySettings:
+        settings = self.__RepositorySettings.get(root)
+        if settings is None:
+            settings = ReadRepositorySettings(root)
+            self.__RepositorySettings[root] = settings
+        return settings
+
+    def __TryGetOwnQueryReason(self, query: _PackageQuery) -> str | None:
+        """Return why the query of the top-level work tree can not answer for the nested repository of the package, None when it can"""
+        if query.Root == query.TopRoot:
+            return None
+        settings = self.__GetRepositorySettings(query.Root)
+        if settings.GitDir is None:
+            return "its git directory was not found"
+        if settings.HasActiveExclude:
+            return "its info/exclude has patterns"
+        topSettings = self.__GetRepositorySettings(query.TopRoot)
+        if not (settings.Certain and topSettings.Certain and settings.IgnoreCase == topSettings.IgnoreCase):
+            return "its core.ignorecase can differ from the one of the top-level work tree"
+        return None
+
+    def __RunQueries(self, pathsByRoot: dict[str, list[str]]) -> dict[str, dict[str, GitCheckIgnoreRecord] | _QueryFailure]:
+        """Run one git check-ignore per root, in parallel"""
         runner = self.__Runner
-        if runner is None or len(queriesByRoot) <= 0:
+        if runner is None or len(pathsByRoot) <= 0:
             return {}
 
-        def RunQuery(root: str, queries: list[_PackageQuery]) -> dict[str, GitCheckIgnoreRecord] | _QueryFailure:
-            # A sub package directory is also a sub directory of its parent package, it is only sent once
-            paths = list(dict.fromkeys(path for query in queries for path in query.GetAllRelativePaths()))
+        def RunQuery(root: str, paths: list[str]) -> dict[str, GitCheckIgnoreRecord] | _QueryFailure:
             try:
-                return RunCheckIgnore(runner, root, paths)
-            except (GitRunError, GitCheckIgnoreError) as ex:
-                return _QueryFailure(str(ex))
+                # A sub package directory is also a sub directory of its parent package, it is only sent once
+                return RunCheckIgnore(runner, root, list(dict.fromkeys(paths)))
+            except GitRunError as ex:
+                return _QueryFailure(str(ex), ex.ExecutableNotFound)
+            except GitCheckIgnoreError as ex:
+                return _QueryFailure(str(ex), False)
 
-        self.GitQueryCount += len(queriesByRoot)
-        maxWorkers = min(self.__MaxParallelQueries, len(queriesByRoot))
+        self.GitQueryCount += len(pathsByRoot)
+        maxWorkers = min(self.__MaxParallelQueries, len(pathsByRoot))
         with ThreadPoolExecutor(max_workers=maxWorkers) as executor:
-            futures = {root: executor.submit(RunQuery, root, queries) for root, queries in queriesByRoot.items()}
+            futures = {root: executor.submit(RunQuery, root, paths) for root, paths in pathsByRoot.items()}
             return {root: future.result() for root, future in futures.items()}
 
-    def __TryStoreGitResult(self, query: _PackageQuery, answer: dict[str, GitCheckIgnoreRecord]) -> str | None:
-        """Store the git answer for the package, or return the reason why it can not be used"""
-        if len(query.RelativePath) > 0:
-            packageRecord = answer[query.RelativePath]
-            # Everything below an ignored directory is ignored, git would exclude every sub directory
-            if packageRecord.IsIgnored:
-                return f"the package directory is ignored by git ({packageRecord.Describe()})"
+    def __StoreGitResult(
+        self,
+        query: _PackageQuery,
+        packageRecord: GitCheckIgnoreRecord | None,
+        subRecords: dict[str, GitCheckIgnoreRecord],
+        fallbackReasons: dict[str, str],
+    ) -> None:
+        """Store the git answer for the package, or the reason why it can not be used in 'fallbackReasons'"""
+        # Everything below an ignored directory is ignored, git would exclude every sub directory
+        if packageRecord is not None and packageRecord.IsIgnored:
+            fallbackReasons[query.PackagePath] = f"the package directory is ignored by git ({packageRecord.Describe()})"
+            return
         ignored: set[str] = set()
         kept: set[str] = set()
         details: dict[str, GitCheckIgnoreRecord] = {}
-        for subDirectory in query.SubDirectories:
-            record = answer[query.GetRelativePathOf(subDirectory)]
+        for subDirectory, record in subRecords.items():
             if record.IsIgnored:
                 ignored.add(subDirectory)
                 details[subDirectory] = record
             else:
                 kept.add(subDirectory)
         self.__Results[query.PackagePath] = PackageIgnoredDirectoriesResult(GitDirResult(ignored, kept), ExcludeDirectorySource.Git, None, details)
-        return None
 
     def __ReportFailures(self, failures: list[str]) -> None:
         if len(failures) <= 0:
@@ -274,11 +377,12 @@ class PackageIgnoredDirectories:
                 + f"the package .gitignore files are matched by the built-in emulation instead: {failures[0]}{moreText}"
             )
 
-    def __LogSummary(self, packagePaths: list[str], queryCount: int) -> None:
+    def __LogSummary(self, packagePaths: list[str], queryCount: int, ownQueryCount: int) -> None:
         if len(packagePaths) <= 0:
             return
         counts = dict.fromkeys(ExcludeDirectorySource, 0)
         for packagePath in packagePaths:
             counts[self.__Results[packagePath].Source] += 1
         countText = ", ".join(f"{source.value}: {count}" for source, count in counts.items())
-        self.__Log.LogPrintVerbose(1, f"Ignored package directories of {len(packagePaths)} packages ({countText}) using {queryCount} git queries")
+        ownText = f" ({ownQueryCount} for nested repositories asked on their own)" if ownQueryCount > 0 else ""
+        self.__Log.LogPrintVerbose(1, f"Ignored package directories of {len(packagePaths)} packages ({countText}) using {queryCount} git queries{ownText}")
