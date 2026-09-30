@@ -5,7 +5,14 @@ on:
     branches:
       - master
       - 'unofficial/**'
+    # A push or pull request that only changes documentation doesn't need a build
+    paths-ignore:
+      - 'Doc/**'
+      - '**/*.md'
   pull_request:
+    paths-ignore:
+      - 'Doc/**'
+      - '**/*.md'
 
 permissions:
   contents: read
