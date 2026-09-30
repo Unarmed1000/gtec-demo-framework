@@ -10,10 +10,10 @@ supports it without code changes. It works with OpenGL ES and Vulkan apps.
 
 ## Supported platforms
 
-Windows, Ubuntu, macOS, Android, QNX, Emscripten and RDK Yocto. The marker library (`ThirdParty/Recipe/mb_framemarker_0_1`) is
-built automatically the first time an app is built. It requires CMake 4.0+, except on Android where the recipe applies
-`android-cmake-minimum-version.patch` which lowers the minimum to CMake 3.23 (the tests are disabled, so the library only uses CMake 3.23
-features). On other platforms the feature is compiled out and `IFramePacingMarkerService` is not available.
+Windows, Ubuntu, macOS, Android, QNX, Emscripten and RDK Yocto. The mb-framepacing C++ SDK (`ThirdParty/Recipe/mb_framepacing_0_1`, only its
+marker module and the core it links) is built automatically the first time an app is built. It requires CMake 4.0+, except on Android where
+the recipe applies `android-cmake-minimum-version.patch` which lowers the minimum to CMake 3.23 (the tests are disabled, so the library only
+uses CMake 3.23 features). On other platforms the feature is compiled out and `IFramePacingMarkerService` is not available.
 
 The marker needs the basic render system, so it is drawn by OpenGL ES 2, OpenGL ES 3 and Vulkan apps. Hosts without it (OpenVG, G2D,
 console and window apps) log a warning and do not draw the marker.
@@ -99,13 +99,13 @@ allocate. `--HideMarkerStats` hides the panel.
 - On OpenGL ES the `--Stats` overlay is drawn after the marker, avoid combining the two if the stats overlap the markers.
 - If the marker is enabled at runtime (instead of on the command line) it is first shown the frame after it was enabled, as the render
   resources it needs are created on demand.
-- The marker library is pinned to a commit of mb-framepacing until the first `marker-v0.1.0` release is published.
+- The SDK is pinned to a commit of mb-framepacing until the first `sdk-v0.1.0` release is published.
 
 ## Implementation
 
 Package                                    | Content
 -------------------------------------------|--------------------------------------------------------------------------------------------
-`ThirdParty/mb_framemarker`                | The mb-framepacing C++ marker library (via `Recipe.mb_framemarker_0_1`).
+`ThirdParty/mb_framepacing`                | The mb-framepacing C++ SDK, its marker module (via `Recipe.mb_framepacing_0_1`).
 `FslDemoService.FramePacingMarker`         | The public `IFramePacingMarkerService` interface (header only, available on all platforms).
 `FslDemoService.FramePacingMarker.Control` | The host side `IFramePacingMarkerServiceControl` and `IFramePacingOverlay` interfaces (header only, available on all platforms).
 `FslDemoService.FramePacingMarker.Impl`    | The service, its command line options, the run state machine and the overlay that draws the marker.
@@ -114,9 +114,9 @@ The hosts only use the Control interfaces: they get `IFramePacingMarkerServiceCo
 service is only registered (by `FslDemoPlatform`) on the platforms that support the marker library, everywhere else `TryGet` returns
 null and nothing is drawn.
 
-The overlay draws the library's static grids: `MB::FrameMarker::GridVertices` for the main and the sync marker, only regenerated when
-the window size or the marker options change. Every frame it encodes the marker with `MB::FrameMarker::GenerateModules` and uploads just
-the 16-bit indices from `MB::FrameMarker::ModulesToGridIndices` (about 5 KB). It renders on the GPU through the FslGraphics3D
+The overlay draws the library's static grids: `MB::FramePacing::Marker::GridVertices` for the main and the sync marker, only regenerated
+when the window size or the marker options change. Every frame it encodes the marker with `MB::FramePacing::Marker::GenerateModules` and
+uploads just the 16-bit indices from `MB::FramePacing::Marker::ModulesToGridIndices` (about 5 KB). It renders on the GPU through the FslGraphics3D
 `IBasicRenderSystem` (one dynamic vertex buffer, one dynamic index buffer, an opaque material without depth test or culling and a pixel
 aligned orthographic projection), so the same code is used for OpenGL ES 2, OpenGL ES 3 and Vulkan. The host draws it inside the frame after the app has drawn (`DemoAppManager` for OpenGL ES and
 `DemoAppVulkanBasic::AddSystemUI` for Vulkan).

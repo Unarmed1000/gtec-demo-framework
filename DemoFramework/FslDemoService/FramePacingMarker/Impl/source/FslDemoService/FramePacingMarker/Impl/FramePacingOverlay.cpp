@@ -37,7 +37,10 @@
 #include <FslGraphics/Vertices/ReadOnlyFlexVertexSpanUtil.hpp>
 #include <FslGraphics/Vertices/VertexPositionColorTexture.hpp>
 #include <FslService/Consumer/ServiceProvider.hpp>
-#include <mb/framemarker/FrameMarker.hpp>
+#include <mb/framepacing/core/time/ChronoConversion.hpp>
+#include <mb/framepacing/marker/FrameMarker.hpp>
+#include <mb/framepacing/marker/MarkerFlags.hpp>
+#include <mb/framepacing/marker/SequenceId.hpp>
 #include <array>
 #include <cstdint>
 #include <exception>
@@ -51,7 +54,7 @@ namespace Fsl
 {
   namespace
   {
-    namespace FM = MB::FrameMarker;
+    namespace FM = MB::FramePacing::Marker;
 
     namespace LocalConfig
     {
@@ -201,22 +204,22 @@ namespace Fsl
       m_projection = CreatePixelProjection(sizePx);
     }
 
-    const int32_t moduleSizePx = record.CaptureHeightPx > 0 ? FM::RecommendModuleSizePx(windowHeightPx, record.CaptureHeightPx) : record.ModuleSizePx;
-    const FM::Options options{moduleSizePx, FM::RecommendedQuietZoneModules};
+    const FM::Options options =
+      record.CaptureHeightPx > 0 ? FM::Options::Recommended(windowHeightPx, record.CaptureHeightPx) : FM::Options(record.ModuleSizePx);
     const int32_t alignPx = CalcAlignPx(windowHeightPx, record.CaptureHeightPx);
     // The framework has no frame pacer, so the intended display time, the target frame time and the preferred frame time are unknown (0),
     // and it does not know when nothing animates, so no frame is flagged as static.
     // The marker is the last thing drawn before the frame is presented, so the CPU busy time is measured now.
     const uint32_t cpuBusyTicks = CalcCpuBusyTicks(record.CpuStartTicks, m_timer.GetTimestamp().Ticks());
-    const FM::Payload payload{record.FrameIndex,    record.AnimationTicks, record.RunId, ToMarkerKind(record.Kind), 0, 0u,
-                              record.CpuStartTicks, cpuBusyTicks,          0u,           FM::MarkerFlags::None};
-    const FM::StartMetadata metadata{FM::ToDateTimeTicks(record.RunStartTime), FM::SequenceId{record.RunSequenceId.Bytes}};
+    const FM::Payload payload{ToMarkerKind(record.Kind), record.RunId, record.FrameIndex, FM::MarkerFlags::None, record.AnimationTicks, 0u, 0u, 0,
+                              record.CpuStartTicks,      cpuBusyTicks};
+    const FM::StartMetadata metadata{MB::FramePacing::ToDateTimeTicks(record.RunStartTime), FM::SequenceId{record.RunSequenceId.Bytes}};
 
     // The main marker (frame, start or end) is drawn at the top left and the sync marker at the bottom left. Both grids are kept up to date
     // so the sync marker can be enabled at any time
-    const FM::Point mainOrigin = FM::RecommendedOrigin(payload.Kind, windowWidthPx, windowHeightPx, options, alignPx);
-    const FM::Point syncOrigin = FM::RecommendedOrigin(FM::MarkerKind::Sync, windowWidthPx, windowHeightPx, options, alignPx);
-    const GridKey gridKey{options.ModuleSizePx, options.QuietZoneModules, mainOrigin.X, mainOrigin.Y, syncOrigin.X, syncOrigin.Y};
+    const MB::FramePacing::Point mainOrigin = options.RecommendedOrigin(payload.Kind, windowWidthPx, windowHeightPx, alignPx);
+    const MB::FramePacing::Point syncOrigin = options.RecommendedOrigin(FM::MarkerKind::Sync, windowWidthPx, windowHeightPx, alignPx);
+    const GridKey gridKey{options.ModuleSizePx(), options.QuietZoneModules(), mainOrigin.X, mainOrigin.Y, syncOrigin.X, syncOrigin.Y};
     if (gridKey != m_gridKey)
     {
       // The grids only change when the window size or the marker options change
@@ -299,8 +302,8 @@ namespace Fsl
   }
 
 
-  bool FramePacingOverlay::TryUpdateGrids(const MB::FrameMarker::Options& options, const MB::FrameMarker::Point mainOrigin,
-                                          const MB::FrameMarker::Point syncOrigin)
+  bool FramePacingOverlay::TryUpdateGrids(const MB::FramePacing::Marker::Options& options, const MB::FramePacing::Point mainOrigin,
+                                          const MB::FramePacing::Point syncOrigin)
   {
     // The static grids: vertices 0..3 are the light background, then every module corner (dark), each vertex on a pixel corner
     const std::span<FM::Vertex> gridVertices(m_buffers->GridVertices);

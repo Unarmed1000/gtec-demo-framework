@@ -25,7 +25,7 @@
 #include <FslDemoService/FramePacingMarker/Impl/FramePacingMarkerService.hpp>
 #include <FslDemoService/FramePacingMarker/Impl/FramePacingMarkerServiceOptionParser.hpp>
 #include <FslDemoService/FramePacingMarker/Impl/FramePacingOverlay.hpp>
-#include <mb/framemarker/FrameMarker.hpp>
+#include <mb/framepacing/marker/Constants.hpp>
 #include <algorithm>
 #include <array>
 #include <chrono>
@@ -40,7 +40,7 @@ namespace Fsl
   {
     int32_t ClampModuleSize(const int32_t moduleSizePx) noexcept
     {
-      return std::clamp(moduleSizePx, MB::FrameMarker::MinModuleSizePx, MB::FrameMarker::MaxModuleSizePx);
+      return std::clamp(moduleSizePx, MB::FramePacing::Marker::MinModuleSizePx, MB::FramePacing::Marker::MaxModuleSizePx);
     }
 
     //! The sequence id as 32 hex digits (the way the mb-framepacing tools show a sequence id that is not printable text)

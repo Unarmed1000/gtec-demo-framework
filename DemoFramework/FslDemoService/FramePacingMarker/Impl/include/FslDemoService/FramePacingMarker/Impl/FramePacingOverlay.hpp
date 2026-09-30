@@ -30,10 +30,14 @@
 #include <cstdint>
 #include <memory>
 
-namespace MB::FrameMarker
+namespace MB::FramePacing
 {
-  struct Options;
   struct Point;
+}
+
+namespace MB::FramePacing::Marker
+{
+  class Options;
 }
 
 namespace Fsl
@@ -48,9 +52,10 @@ namespace Fsl
 
   //! Draws the frame pacing marker of the current frame. The host calls Draw as the very last thing before the frame is presented, inside
   //! the frame (and on Vulkan inside the main render pass).
-  //! The marker is drawn from the library's static grids (MB::FrameMarker::GridVertices, only regenerated when the window size or the
-  //! marker options change) with per-frame 16-bit indices (MB::FrameMarker::GenerateModules and ModulesToGridIndices). It is rendered on
-  //! the GPU through the IBasicRenderSystem (opaque, no depth, no culling, pixel aligned), so it works the same way on all backends.
+  //! The marker is drawn from the library's static grids (MB::FramePacing::Marker::GridVertices, only regenerated when the window size or
+  //! the marker options change) with per-frame 16-bit indices (MB::FramePacing::Marker::GenerateModules and ModulesToGridIndices). It is
+  //! rendered on the GPU through the IBasicRenderSystem (opaque, no depth, no culling, pixel aligned), so it works the same way on all
+  //! backends.
   class FramePacingOverlay final : public IFramePacingOverlay
   {
     struct Buffers;
@@ -109,7 +114,8 @@ namespace Fsl
     //! @param disableOnFailure if true a failure permanently disables the marker (otherwise it is retried on demand)
     bool TryCreateResources(const bool disableOnFailure);
     //! Regenerate the static grids of both markers and upload them
-    bool TryUpdateGrids(const MB::FrameMarker::Options& options, const MB::FrameMarker::Point mainOrigin, const MB::FrameMarker::Point syncOrigin);
+    bool TryUpdateGrids(const MB::FramePacing::Marker::Options& options, const MB::FramePacing::Point mainOrigin,
+                        const MB::FramePacing::Point syncOrigin);
   };
 }
 

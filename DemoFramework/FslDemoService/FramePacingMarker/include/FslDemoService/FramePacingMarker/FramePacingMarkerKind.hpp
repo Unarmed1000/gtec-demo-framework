@@ -24,7 +24,7 @@
 
 namespace Fsl
 {
-  //! The kind of the main frame pacing marker (mirrors MB::FrameMarker::MarkerKind).
+  //! The kind of the main frame pacing marker (mirrors MB::FramePacing::Marker::MarkerKind).
   enum class FramePacingMarkerKind
   {
     Frame,
