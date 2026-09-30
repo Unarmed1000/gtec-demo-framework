@@ -42,12 +42,7 @@ class ExternalVariantConstraints:
         self.__LookupDict = ExternalVariantConstraints.__ToLookupDict(constraintsDict)
 
     def AsString(self) -> str:
-        res = ""
-        for key, value in self.Dict.items():
-            if len(res) > 0:
-                res = res + ","
-            res = f"{key}={value}"
-        return res
+        return ",".join(f"{key}={value}" for key, value in self.Dict.items())
 
     def TryGetByNameString(self, name: str) -> PackageFlavorOptionName | None:
         return self.__LookupDict.get(name, None)

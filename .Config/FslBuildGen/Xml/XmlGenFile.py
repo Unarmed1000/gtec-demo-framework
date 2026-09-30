@@ -58,7 +58,7 @@ from FslBuildGen.PackageIncludePath import PackageIncludePath
 from FslBuildGen.PackagePath import PackagePath
 from FslBuildGen.PackageTemplateLoader import PackageTemplateLoader
 from FslBuildGen.ToolConfig import ToolConfig, ToolConfigPackageLocation
-from FslBuildGen.Xml import FakeXmlElementFactory
+from FslBuildGen.Xml import FakeXmlElementFactory, XmlGenFileReader
 from FslBuildGen.Xml.Exceptions import (
     BuildCustomizationAlreadyDefinedException,
     DefaultValueAlreadyDefinedException,
@@ -183,7 +183,7 @@ class XmlGenFile(XmlCommonFslBuild):
         self.PackageFile = packageFile
         self.PackageLocation = packageFile.PackageRootLocation
 
-        fileContent = IOUtil.ReadFile(filename)
+        fileContent = XmlGenFileReader.ReadGenFileContent(log, filename)
         self.SourceFileHash = self.__CalcContentHash(fileContent)
         elem = ET.fromstring(fileContent)
         if elem.tag != "FslBuildGen":
@@ -384,7 +384,8 @@ class XmlGenFile(XmlCommonFslBuild):
         # The generated output directory used to be hidden with a <Ignore Path="..."/>, that is now described by the OutputPath attribute
         if result.OutputPath is not None:
             for ignoreEntry in self.DirectIgnores:
-                if ignoreEntry.Path == result.OutputPath:
+                # Compare the normalized path so 'Generated/' and './Generated' are caught as well
+                if IOUtil.NormalizePath(ignoreEntry.Path.replace("\\", "/")) == result.OutputPath:
                     raise XmlException2(
                         f"Package '{packageName}' contains a <Ignore Path=\"{ignoreEntry.Path}\"/> that is already described by "
                         f'<SourceGeneration OutputPath="{result.OutputPath}"/>, please remove the Ignore element'

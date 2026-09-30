@@ -31,6 +31,7 @@
 #
 # ****************************************************************************************************************************************************
 
+from collections.abc import Callable
 from typing import Any
 
 # from FslBuildGen.DataTypes import ExternalDependencyType
@@ -346,60 +347,34 @@ def ExtractNamesAsVariables(entries: Any) -> list[str]:
     return resList
 
 
+def __ChangeEnvironmentVariableSyntax(path: str, formatName: Callable[[str], str]) -> str:
+    """Replace every '$(NAME)' with formatName(NAME). The ')' is searched for after the '$(' it closes, so a ')' earlier in the
+    path (like 'C:/Program Files (x86)/$(VAR)') is left alone. A '$(' without a closing ')' ends the conversion.
+    """
+    while True:
+        index = path.find("$(")
+        if index < 0:
+            return path
+        endIndex = path.find(")", index + 2)
+        if endIndex < 0:
+            return path
+        path = f"{path[:index]}{formatName(path[index + 2 : endIndex])}{path[endIndex + 1 :]}"
+
+
 def ChangeToBashEnvVariables(path: str) -> str:
-    index = path.find("$(")
-    if index < 0:
-        return path
-    endIndex = path.find(")")
-    if endIndex < 0:
-        return path
-    start = path[:index]
-    envName = path[index + 2 : endIndex]
-    end = path[endIndex + 1 :]
-    path = f"{start}${envName}{end}"
-    return ChangeToBashEnvVariables(path)
+    return __ChangeEnvironmentVariableSyntax(path, lambda envName: f"${envName}")
 
 
 def ChangeToCMakeVariables(path: str) -> str:
-    index = path.find("$(")
-    if index < 0:
-        return path
-    endIndex = path.find(")")
-    if endIndex < 0:
-        return path
-    start = path[:index]
-    envName = path[index + 2 : endIndex]
-    end = path[endIndex + 1 :]
-    path = f"{start}${{{envName}}}{end}"
-    return ChangeToCMakeVariables(path)
+    return __ChangeEnvironmentVariableSyntax(path, lambda envName: f"${{{envName}}}")
 
 
 def ChangeToCMakeEnvVariables(path: str) -> str:
-    index = path.find("$(")
-    if index < 0:
-        return path
-    endIndex = path.find(")")
-    if endIndex < 0:
-        return path
-    start = path[:index]
-    envName = path[index + 2 : endIndex]
-    end = path[endIndex + 1 :]
-    path = f"{start}$ENV{{{envName}}}{end}"
-    return ChangeToCMakeEnvVariables(path)
+    return __ChangeEnvironmentVariableSyntax(path, lambda envName: f"$ENV{{{envName}}}")
 
 
 def ChangeToDosEnvironmentVariables(path: str) -> str:
-    index = path.find("$(")
-    if index < 0:
-        return path
-    endIndex = path.find(")")
-    if endIndex < 0:
-        return path
-    start = path[:index]
-    envName = path[index + 2 : endIndex]
-    end = path[endIndex + 1 :]
-    path = f"{start}%{envName}%{end}"
-    return ChangeToDosEnvironmentVariables(path)
+    return __ChangeEnvironmentVariableSyntax(path, lambda envName: f"%{envName}%")
 
 
 def ParseVersionString(version: str, splitChar: str = ".", maxValues: int = 4) -> list[int]:

@@ -32,6 +32,9 @@ SEMVER_VERSION_PATTERN = re.compile(
 # A regular expression to parse a wildcard version pattern like "4.*" or "4.1.*"
 WILDCARD_VERSION_PATTERN = re.compile(r"^(?P<prefix>\d+(\.\d+){0,3})\.\*$")
 
+# The prerelease that sorts before every other prerelease of a version
+_g_lowestPrerelease = "-0"
+
 
 class SemanticVersion:
     """
@@ -63,56 +66,44 @@ class SemanticVersion:
         except ValueError, TypeError:
             return None
 
-    def __lt__(self, other: SemanticVersion) -> bool:
-        """Less than comparison for two versions."""
+    def _SortKey(self) -> tuple[int, int, int, int, int, tuple[tuple[int, int, str], ...]]:
+        """The key every comparison uses, so the order is total and agrees with equality.
+        Like SemVer a release sorts after its prereleases, prerelease identifiers are separated by '.' only (a '-' is part of an
+        identifier), numeric identifiers compare numerically and sort before alphanumeric ones and a shorter prerelease sorts first.
+        The identifier text breaks the tie between numbers that only differ by leading zeros.
+        """
+        if not self.Prerelease:
+            return (self.Major, self.Minor, self.Patch, self.Revision, 1, ())
+        identifiers = tuple((0, int(part), part) if part.isdigit() else (1, 0, part) for part in self.Prerelease[1:].split("."))
+        return (self.Major, self.Minor, self.Patch, self.Revision, 0, identifiers)
+
+    def __lt__(self, other: object) -> bool:
         if not isinstance(other, SemanticVersion):
             return NotImplemented
+        return self._SortKey() < other._SortKey()
 
-        # Compare numeric parts
-        for v1, v2 in zip(self.get_numeric_parts(), other.get_numeric_parts(), strict=False):
-            if v1 != v2:
-                return v1 < v2
-
-        # Compare prerelease parts if numeric parts are equal
-        if self.Prerelease and not other.Prerelease:
-            return True
-        if not self.Prerelease and other.Prerelease:
-            return False
-        if self.Prerelease and other.Prerelease:
-            # Prerelease parts are compared lexically, with numbers having lower precedence
-            selfParts = re.split(r"[-.]", self.Prerelease)[1:]
-            otherParts = re.split(r"[-.]", other.Prerelease)[1:]
-            for sPart, oPart in zip(selfParts, otherParts, strict=False):
-                isSNumeric = sPart.isdigit()
-                isONumeric = oPart.isdigit()
-
-                if isSNumeric and not isONumeric:
-                    return True
-                if not isSNumeric and isONumeric:
-                    return False
-                if isSNumeric and isONumeric:
-                    if int(sPart) != int(oPart):
-                        return int(sPart) < int(oPart)
-                else:
-                    if sPart != oPart:
-                        return sPart < oPart
-            return len(selfParts) < len(otherParts)
-
-        return False  # Versions are equal
-
-    def __le__(self, other: SemanticVersion) -> bool:
-        return self.__lt__(other) or self.__eq__(other)
+    def __le__(self, other: object) -> bool:
+        if not isinstance(other, SemanticVersion):
+            return NotImplemented
+        return self._SortKey() <= other._SortKey()
 
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, SemanticVersion):
             return NotImplemented
-        return (self.Major, self.Minor, self.Patch, self.Revision, self.Prerelease) == (other.Major, other.Minor, other.Patch, other.Revision, other.Prerelease)
+        return self._SortKey() == other._SortKey()
 
-    def __gt__(self, other: SemanticVersion) -> bool:
-        return not self.__le__(other)
+    def __gt__(self, other: object) -> bool:
+        if not isinstance(other, SemanticVersion):
+            return NotImplemented
+        return self._SortKey() > other._SortKey()
 
-    def __ge__(self, other: SemanticVersion) -> bool:
-        return not self.__lt__(other)
+    def __ge__(self, other: object) -> bool:
+        if not isinstance(other, SemanticVersion):
+            return NotImplemented
+        return self._SortKey() >= other._SortKey()
+
+    def __hash__(self) -> int:
+        return hash(self._SortKey())
 
     def get_numeric_parts(self) -> tuple[int, int, int, int]:
         """Returns the numeric parts of the version as a tuple."""
@@ -136,7 +127,7 @@ class SemanticVersion:
 class SemanticVersionPattern:
     """
     A class to represent and validate NuGet semantic version dependency patterns.
-    Supports a variety of formats including ranges and exact matches.
+    Supports a plain minimum version ("1.0"), an exact version ("[1.0]"), ranges ("[1.0,2.0)", "(,2.0]") and wildcards ("4.*").
     """
 
     def __init__(self, lowerBound: SemanticVersion | None, lowerInclusive: bool, upperBound: SemanticVersion | None, upperInclusive: bool, originalString: str):
@@ -166,30 +157,32 @@ class SemanticVersionPattern:
             )
 
             upperBound: SemanticVersion | None = None
-            # The upper bound is the next major/minor/patch version
-            if len(parts) == 1:  # "4.*" -> upper is 5.0.0.0
-                upperBound = SemanticVersion(parts[0] + 1)
-            elif len(parts) == 2:  # "4.1.*" -> upper is 4.2.0.0
-                upperBound = SemanticVersion(parts[0], parts[1] + 1)
-            elif len(parts) == 3:  # "4.1.2.*" -> upper is 4.1.3.0
-                upperBound = SemanticVersion(parts[0], parts[1], parts[2] + 1)
-            else:  # "4.1.2.3.*" -> upper is 4.1.2.4
-                upperBound = SemanticVersion(parts[0], parts[1], parts[2], parts[3] + 1)
+            # The exclusive upper bound is the lowest prerelease ('-0') of the next major/minor/patch version,
+            # so a prerelease of the next version like "5.0.0-beta" is not matched by "4.*"
+            if len(parts) == 1:  # "4.*" -> upper is 5.0.0.0-0
+                upperBound = SemanticVersion(parts[0] + 1, prerelease=_g_lowestPrerelease)
+            elif len(parts) == 2:  # "4.1.*" -> upper is 4.2.0.0-0
+                upperBound = SemanticVersion(parts[0], parts[1] + 1, prerelease=_g_lowestPrerelease)
+            elif len(parts) == 3:  # "4.1.2.*" -> upper is 4.1.3.0-0
+                upperBound = SemanticVersion(parts[0], parts[1], parts[2] + 1, prerelease=_g_lowestPrerelease)
+            else:  # "4.1.2.3.*" -> upper is 4.1.2.4-0
+                upperBound = SemanticVersion(parts[0], parts[1], parts[2], parts[3] + 1, prerelease=_g_lowestPrerelease)
 
             # This is an inclusive lower bound and exclusive upper bound
             return SemanticVersionPattern(lowerBound, True, upperBound, False, versionString)
 
-        # Exact version match: "1.0" or "[1.0]"
-        if (versionString.startswith("[") and versionString.endswith("]")) or (
-            not versionString.startswith(("(", "[", "[", "(", ",")) and not versionString.endswith((")", "]"))
-        ):
-            if versionString.startswith("["):
-                versionString = versionString[1:-1].strip()
-
-            version = SemanticVersion.try_parse(versionString)
+        # Exact version "[1.0]" or a plain minimum version "1.0".
+        # A bracketed string that is not a single version (like "[1,2]") is left untouched for the range parsing below.
+        isBracketed = versionString.startswith("[") and versionString.endswith("]")
+        if isBracketed or (not versionString.startswith(("(", "[", ",")) and not versionString.endswith((")", "]"))):
+            exactString = versionString[1:-1].strip() if isBracketed else versionString
+            version = SemanticVersion.try_parse(exactString)
             if version:
-                # Exact match is an inclusive range with identical lower and upper bounds
-                return SemanticVersionPattern(version, True, version, True, versionString)
+                if isBracketed:
+                    # An exact match is an inclusive range with identical lower and upper bounds
+                    return SemanticVersionPattern(version, True, version, True, exactString)
+                # A plain version is a minimum version, which is how NuGet and CMake find_package read it
+                return SemanticVersionPattern(version, True, None, False, exactString)
 
         # Range patterns: "(1.0, 2.0]", "[1.0,)", etc.
         if versionString.startswith(("(", "[")) and versionString.endswith((")", "]")):

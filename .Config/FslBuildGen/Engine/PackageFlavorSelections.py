@@ -52,10 +52,10 @@ class PackageFlavorSelections:
         return self.IndexOf(name) >= 0
 
     def IndexOf(self, name: PackageFlavorName) -> int:
+        # The selections are sorted without case while names compare with case, so the whole (small) list is searched
         for i, selection in enumerate(self.Selections):
-            res = selection.Name.CompareTo(name)
-            if res >= 0:
-                return i if res == 0 else -1
+            if selection.Name == name:
+                return i
         return -1
 
     def __SanityCheck(self, selections: list[PackageFlavorSelection]) -> None:

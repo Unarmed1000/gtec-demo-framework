@@ -1,9 +1,8 @@
 #!/usr/bin/env python3
-
 # ****************************************************************************************************************************************************
 # * BSD 3-Clause License
 # *
-# * Copyright (c) 2025, Mana Battery
+# * Copyright (c) 2026, Mana Battery ApS
 # * All rights reserved.
 # *
 # * Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
@@ -22,32 +21,49 @@
 # * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 # ****************************************************************************************************************************************************
 
-import xml.etree.ElementTree as ET
+"""
+Read and write a .gitignore file the way git reads it: as UTF-8, and a BOM at the start is not part of the first line.
+Bytes that are not valid UTF-8 (a file saved as ANSI) are kept undecoded ('surrogateescape'), so a line the tool does not change
+is written back with exactly the bytes it had.
+"""
 
-from FslBuildGen import IOUtil
-from FslBuildGen.Log import Log
-from FslBuildGen.Xml.Exceptions import XmlFormatException
-from FslBuildGen.Xml.XmlBase import XmlBase
+from typing import NamedTuple
+
+_BOM = "\ufeff"
 
 
-class XmlGenFileIgnore(XmlBase):
-    """A directory of the package that is not part of the build.
-    The path names a directory inside the package relative to it, it can be nested ('source/Generated') and use either directory separator.
-    The path is kept as written, the generators normalize it.
+class GitIgnoreText(NamedTuple):
+    # The content with '\n' line endings, without the BOM
+    Content: str
+    # True when the file starts with a UTF-8 BOM, it is kept when the file is written
+    HasBom: bool
+
+
+def TryReadGitIgnoreText(filename: str) -> GitIgnoreText | None:
+    """Returns None if the file does not exist or can not be read"""
+    try:
+        with open(filename, encoding="utf-8", errors="surrogateescape") as file:
+            content = file.read()
+    except OSError:
+        return None
+    if content.startswith(_BOM):
+        return GitIgnoreText(content[len(_BOM) :], True)
+    return GitIgnoreText(content, False)
+
+
+def TryReadGitIgnoreContent(filename: str) -> str | None:
+    """The content of the file without a BOM, or None if the file does not exist or can not be read"""
+    text = TryReadGitIgnoreText(filename)
+    return text.Content if text is not None else None
+
+
+def WriteGitIgnoreTextIfChanged(filename: str, text: GitIgnoreText) -> bool:
     """
-
-    __AttribPath = "Path"
-
-    def __init__(self, log: Log, xmlElement: ET.Element) -> None:
-        super().__init__(log, xmlElement)
-        self._CheckAttributes({self.__AttribPath})
-        self.Path: str = self._ReadAttrib(xmlElement, self.__AttribPath)
-        if len(self.Path) <= 0:
-            raise XmlFormatException("Ignore Path can not be empty, it must name a directory inside the package")
-        # '\' is a directory separator on every platform, this also makes a rooted path like '/x' absolute on Windows (os.path.isabs disagrees)
-        unixStylePath = self.Path.replace("\\", "/")
-        if IOUtil.IsAbsolutePath(self.Path) or unixStylePath.startswith("/"):
-            raise XmlFormatException(f"Path '{self.Path}' can not be absolute")
-        normalizedPath = IOUtil.NormalizePath(unixStylePath)
-        if normalizedPath in (".", "..") or normalizedPath.startswith("../"):
-            raise XmlFormatException(f"Ignore Path '{self.Path}' must name a directory inside the package")
+    Write the text with the line endings of the platform, unless the file already has this content (line endings are not compared).
+    Returns True if the file was written.
+    """
+    if TryReadGitIgnoreText(filename) == text:
+        return False
+    with open(filename, "w", encoding="utf-8", errors="surrogateescape") as file:
+        _ = file.write((_BOM if text.HasBom else "") + text.Content)
+    return True

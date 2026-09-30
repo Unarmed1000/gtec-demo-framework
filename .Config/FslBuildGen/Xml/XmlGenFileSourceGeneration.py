@@ -57,6 +57,9 @@ class XmlGenFileSourceGeneration(XmlBase):
             # The generated output directory is both a build property and a compile exclude, both of which expect a single directory name
             if "/" in self.OutputPath or "\\" in self.OutputPath:
                 raise XmlFormatException(f"OutputPath '{self.OutputPath}' must be a single directory name")
+            # '.' would exclude every source file of the package and '..' is outside it
+            if self.OutputPath in (".", ".."):
+                raise XmlFormatException(f"OutputPath '{self.OutputPath}' must name a directory inside the package")
 
         self.Generators: list[XmlGenFileSourceGenerationGenerator] = []
         self.InputFiles: list[XmlGenFileSourceGenerationInputFile] = []

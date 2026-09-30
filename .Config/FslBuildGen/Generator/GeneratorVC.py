@@ -72,7 +72,8 @@ from FslBuildGen.Generator.GeneratorVCTemplate import (
 )
 from FslBuildGen.Generator.GeneratorVCTemplateManager import GeneratorVCTemplateManager
 from FslBuildGen.Generator.GeneratorVSTemplateInfo import GeneratorVSTemplateInfo
-from FslBuildGen.Generator.GitIgnoreFile import GitDirResult, GitIgnoreFile
+from FslBuildGen.Generator.GitIgnoreFile import GitDirResult
+from FslBuildGen.Generator.PackageIgnoredDirectories import PackageIgnoredDirectories
 from FslBuildGen.Generator.Report.Datatypes import FormatStringEnvironmentVariableResolveMethod
 from FslBuildGen.Generator.Report.GeneratorBuildReport import GeneratorBuildReport
 from FslBuildGen.Generator.Report.GeneratorCommandReport import GeneratorCommandReport
@@ -83,6 +84,7 @@ from FslBuildGen.Generator.Report.ParsedFormatString import ParsedFormatString
 from FslBuildGen.Generator.Report.StringVariableDict import StringVariableDict
 from FslBuildGen.Generator.VariantHelper import VariantHelper
 from FslBuildGen.Generator.WindowsRegistryHelper import WindowsRegistryHelper
+from FslBuildGen.GitRunner import GitRunner
 
 # from FslBuildGen.Location.ResolvedPath import ResolvedPath
 from FslBuildGen.Log import Log
@@ -201,6 +203,12 @@ class GeneratorVC(GeneratorBase):
 
         self.PackageDirectorySet = GeneratorVC.__GeneratePackageDirectorySet(packages)
         self.AllPackageTouchedDirectoriesSet = GeneratorVC.__GeneratePackageTouchDirectorySet(self.PackageDirectorySet)
+        # Decides which directories of the C# packages are ignored, git is only run when the first package asks
+        self.PackageIgnoredDirectories = PackageIgnoredDirectories(
+            config,
+            GitRunner.CreateForHost(),
+            [package.AbsolutePath for package in packages if package.AbsolutePath is not None and package.PackageLanguage == PackageLanguage.CSharp],
+        )
 
         for package in packages:
             # if package.Type == PackageType.TopLevel:
@@ -1382,14 +1390,18 @@ class GeneratorVC(GeneratorBase):
         return snippetGroup.replace("##SNIPPET##", "\n".join(snippetEntry.replace("##PROPERTY_NAME##", name) for name in names))
 
     @staticmethod
+    def __ToExcludeDirPath(packageRelativeDirPath: str) -> str:
+        # The snippets append '\**' to the directory, so MSBuild's '\' is used as directory separator for a nested directory
+        return IOUtil.NormalizePath(packageRelativeDirPath.replace("\\", "/")).replace("/", "\\")
+
+    @staticmethod
     def __GenerateExcludeDirSection(snippetList: list[str], dirListSet: set[str]) -> list[str]:
-        dirList = list(dirListSet)
-        dirList.sort()
+        # Every entry is a directory relative to the package, an Ignore can name a nested directory so the whole relative path is excluded
+        dirList = sorted({GeneratorVC.__ToExcludeDirPath(subDir) for subDir in dirListSet})
         res: list[str] = []
         for snippet in snippetList:
             for subDir in dirList:
-                subDirName = IOUtil.GetFileName(subDir)
-                strContent = snippet.replace("##DIR_NAME##", subDirName)
+                strContent = snippet.replace("##DIR_NAME##", subDir)
                 res.append(strContent)
         return res
 
@@ -1400,10 +1412,10 @@ class GeneratorVC(GeneratorBase):
         res: list[str] = []
         if len(snippetList) > 0:
             if package.AbsolutePath is not None and package.PackageLanguage == PackageLanguage.CSharp:
-                gitignore = GitIgnoreFile.TryGetDirectories(IOUtil.Join(package.AbsolutePath, ".gitignore"))
+                ignoredDirectories = self.PackageIgnoredDirectories.Resolve(package.AbsolutePath).Result
                 excludeDirs = (
-                    GeneratorVC.__GenerateExcludeDirList(gitignore, package, allPackageTouchedDirectoriesSet, genFileName)
-                    if gitignore is not None
+                    GeneratorVC.__GenerateExcludeDirList(ignoredDirectories, package, allPackageTouchedDirectoriesSet, genFileName)
+                    if ignoredDirectories is not None
                     else GeneratorVC.__LegacyGenerateExcludeDirList(package)
                 )
                 for ignoreItem in package.DirectIgnores:

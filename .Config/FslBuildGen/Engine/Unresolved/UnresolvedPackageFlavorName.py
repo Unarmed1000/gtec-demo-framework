@@ -72,7 +72,7 @@ class UnresolvedPackageFlavorName:
     def __ge__(self, other: object) -> bool:
         if not isinstance(other, UnresolvedPackageFlavorName):
             return NotImplemented
-        return self.Value > other.Value
+        return self.Value >= other.Value
 
     def __str__(self) -> str:
         return self.Value

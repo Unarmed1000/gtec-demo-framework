@@ -54,6 +54,7 @@ from FslBuildGen.Generator.GeneratorBase import GeneratorBase
 from FslBuildGen.Generator.GeneratorCMake import CMakeGeneratorMode, GeneratorCMake
 from FslBuildGen.Generator.GeneratorCMakeConfig import GeneratorCMakeConfig
 from FslBuildGen.Generator.GeneratorConfig import GeneratorConfig
+from FslBuildGen.Generator.GeneratorGitIgnore import GeneratorGitIgnore
 from FslBuildGen.Generator.GeneratorGNUmakefile import GeneratorGNUmakefile, GeneratorGNUmakefileUtil
 from FslBuildGen.Generator.GeneratorPlugin import GenerateContext, GeneratorPlugin
 from FslBuildGen.Generator.GeneratorPluginBase2 import GeneratorVariant
@@ -200,9 +201,20 @@ class GeneratorPluginWindowsLegacy(GeneratorPlugin):
 
         installRootLocation = generateContext.PlatformContext.RecipePathBuilder.InstallRootLocation
         activeThirdPartyLibsDir = installRootLocation.ResolvedPath if installRootLocation is not None else None
+        self.__GenerateCSharpGitIgnore(generateContext)
         generatorConfig = GeneratorVSConfig(self.PlatformName, self.ToolVersion)
         generator = GeneratorVC(generateContext.Config, generateContext.Packages, generatorConfig, generateContext.VariantConstraints, activeThirdPartyLibsDir)
         return self.GenerateDone(generateContext.Config, generateContext.Packages, self.PlatformName, generator)
+
+    def __GenerateCSharpGitIgnore(self, generateContext: GenerateContext) -> None:
+        """The C# projects exclude the directories the package .gitignore ignores, so the .gitignore files are written before the projects.
+        Otherwise the first generation of a package would not see the entries the tool adds and could produce a different project than the
+        next one. GeneratorVC adds no .gitignore entries of its own, so the write in GenerateDone afterwards has nothing left to change.
+        """
+        csharpPackages = [package for package in generateContext.Packages if package.PackageLanguage == PackageLanguage.CSharp]
+        if len(csharpPackages) > 0:
+            config = generateContext.Config
+            GeneratorGitIgnore(config.SDKConfigTemplatePath, config.DisableWrite, csharpPackages, self.PlatformName, GeneratorBase())
 
     def _DoGenerateReport(self, log: Log, generatorConfig: GeneratorConfig, packageList: list[Package]) -> TheGeneratorBuildReport:
         resultDict: dict[Package, PackageGeneratorReport] = {}

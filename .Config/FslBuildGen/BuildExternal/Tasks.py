@@ -172,7 +172,7 @@ class GitCloneTask(GitBaseTask):
         self.DoPrint(f"Running git checkout {branch} at {sourcePath}")
         self.__RunGitCheckout(sourcePath, branch)
 
-    def GetCurrentHash(self, path: str) -> str:
+    def GetCurrentHash(self, path: str) -> str | None:
         return GitUtil.GetCurrentHash(self.GitCommand, path)
 
     def __RunGitClone(self, sourcePath: str, targetPath: str, branch: str) -> None:

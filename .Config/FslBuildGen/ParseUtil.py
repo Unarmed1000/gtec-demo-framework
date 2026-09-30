@@ -46,58 +46,43 @@ from FslBuildGen.RecipeFilterName import RecipeFilterName
 from FslBuildGen.SharedGeneration import ToolAddedVariant, ToolAddedVariantConfigOption
 
 
-def ParseList(strSrcList: str, message: str, allowWildcard: bool) -> list[str]:
+def __ParseBracketList(strSrcList: str, message: str, allowWildcard: bool) -> list[str]:
+    """Parse a '[entry,entry]' list. An empty string is an empty list and a bare '*' is the wildcard when it is allowed.
+    A list that is not enclosed in '[' and ']' is rejected, and so is a '*' entry when the wildcard is not allowed.
+    """
     if not strSrcList:
         return []
     if allowWildcard and strSrcList == "*":
         return ["*"]
-    if not strSrcList.startswith("[") and not strSrcList.endswith("["):
+    if len(strSrcList) < 2 or not strSrcList.startswith("[") or not strSrcList.endswith("]"):
         raise Exception(f"Expected a {message} list in the format '[{message},{message}]' not '{strSrcList}'")
 
-    strSrcList = strSrcList[1:-1]
-    if len(strSrcList) == 0:
+    content = strSrcList[1:-1]
+    if len(content) == 0:
         return []
-    parsedList = strSrcList.split(",")
+    parsedList = content.split(",")
+    if not allowWildcard and "*" in parsedList:
+        raise Exception(f"The {message} list '{strSrcList}' can not contain the wildcard '*'")
+    return parsedList
+
+
+def ParseList(strSrcList: str, message: str, allowWildcard: bool) -> list[str]:
+    parsedList = __ParseBracketList(strSrcList, message, allowWildcard)
     return parsedList if "*" not in parsedList else ["*"]
 
 
 def ParseComplexList(strSrcList: str, message: str, allowWildcard: bool) -> list[str]:
-    if not strSrcList:
-        return []
-    if allowWildcard and strSrcList == "*":
-        return ["*"]
-    if not strSrcList.startswith("[") and not strSrcList.endswith("["):
-        raise Exception(f"Expected a {message} list in the format '[{message},{message}]' not '{strSrcList}'")
-
-    strSrcList = strSrcList[1:-1]
-    if len(strSrcList) == 0:
-        return []
-    parsedList = strSrcList.split(",")
-    return parsedList
+    return __ParseBracketList(strSrcList, message, allowWildcard)
 
 
 def ParseFilterList(strSrcList: str, message: str, allowWildcard: bool) -> list[str]:
-    if not strSrcList:
-        return []
-    if allowWildcard and strSrcList == "*":
-        return ["*"]
-    if not strSrcList.startswith("[") and not strSrcList.endswith("["):
-        raise Exception(f"Expected a {message} list in the format '[{message},{message}]' not '{strSrcList}'")
-
-    strSrcList = strSrcList[1:-1]
-    if len(strSrcList) == 0:
-        return []
-    parsedList = strSrcList.split(",")
-    return parsedList
+    return __ParseBracketList(strSrcList, message, allowWildcard)
 
 
-# Do some minimal basic validation of the requirement name input
+# Do some minimal basic validation of the requirement name input, every entry except the wildcard is validated
 def __ValidateRequirementList(requirementNameList: list[str], strHelpListName: str, strHelpEntryName: str) -> None:
-    if len(requirementNameList) <= 0 or requirementNameList[0] == "*":
-        return
-
     for entry in requirementNameList:
-        if not Util.IsValidRequirementName(entry):
+        if entry != "*" and not Util.IsValidRequirementName(entry):
             raise Exception(
                 f"The {strHelpListName} must be valid, the {strHelpEntryName} name '{entry}' is not a valid {strHelpEntryName} name in list {requirementNameList}"
             )
@@ -152,19 +137,20 @@ def ParseRecipeList(strRecipeFilterList: str) -> RecipeFilterManager:
 
 
 def ParsePackageTypeList(strPackageTypeList: str) -> list[str]:
-    parsedList = ParseList(strPackageTypeList, "packageType", True)
-    if "*" not in parsedList:
-        validPackageTypes = PackageType.AllStrings()
-        for entry in parsedList:
-            if entry not in validPackageTypes:
-                raise Exception(f"The package type list must be valid, the package type '{entry}' is not, valid types {validPackageTypes}")
-    return parsedList
+    # Every entry is validated before a wildcard collapses the list
+    parsedList = ParseComplexList(strPackageTypeList, "packageType", True)
+    validPackageTypes = PackageType.AllStrings()
+    for entry in parsedList:
+        if entry != "*" and entry not in validPackageTypes:
+            raise Exception(f"The package type list must be valid, the package type '{entry}' is not, valid types {validPackageTypes}")
+    return parsedList if "*" not in parsedList else ["*"]
 
 
 def ParseFeatureList(features: str) -> list[str]:
-    parsedList = ParseList(features, "feature", True)
+    # Every entry is validated before a wildcard collapses the list
+    parsedList = ParseComplexList(features, "feature", True)
     __ValidateRequirementList(parsedList, "feature list", "feature")
-    return parsedList
+    return parsedList if "*" not in parsedList else ["*"]
 
 
 def ParseBool(value: str) -> bool:
@@ -214,7 +200,7 @@ def SplitCommandLine(value: str) -> list[str]:
 def __ParseExternalVariantConstraints(variants: str | None) -> dict[str, str]:
     if not variants:
         return {}
-    if not variants.startswith("[") and not variants.endswith("["):
+    if len(variants) < 2 or not variants.startswith("[") or not variants.endswith("]"):
         raise Exception(f"Expected a variant list in the format '[variant=value,variant=value]' not '{variants}'")
 
     variants = variants[1:-1]

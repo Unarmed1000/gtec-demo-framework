@@ -147,6 +147,9 @@ class ParsedFormatString:
                     startSplitIndex = index - 1
                     blockStartIndex = index + 1
                     # stringEndSplitIndex = blockStartIndex-2
+                elif ch != "$":
+                    # A '$' not directly followed by '{' or '(' is plain text, another '$' could still start a command
+                    state = ParseState.Scanning
             elif state == ParseState.VariableBlock:
                 if ch == "}":
                     state = ParseState.Scanning

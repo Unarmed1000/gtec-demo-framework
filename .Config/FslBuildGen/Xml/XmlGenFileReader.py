@@ -1,9 +1,8 @@
 #!/usr/bin/env python3
-
 # ****************************************************************************************************************************************************
 # * BSD 3-Clause License
 # *
-# * Copyright (c) 2025, Mana Battery
+# * Copyright (c) 2026, Mana Battery ApS
 # * All rights reserved.
 # *
 # * Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
@@ -22,32 +21,34 @@
 # * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 # ****************************************************************************************************************************************************
 
-import xml.etree.ElementTree as ET
+import locale
 
 from FslBuildGen import IOUtil
+from FslBuildGen.Exceptions import UsageErrorException
 from FslBuildGen.Log import Log
-from FslBuildGen.Xml.Exceptions import XmlFormatException
-from FslBuildGen.Xml.XmlBase import XmlBase
 
 
-class XmlGenFileIgnore(XmlBase):
-    """A directory of the package that is not part of the build.
-    The path names a directory inside the package relative to it, it can be nested ('source/Generated') and use either directory separator.
-    The path is kept as written, the generators normalize it.
+def ReadGenFileContent(log: Log, filename: str) -> str:
+    """Read a gen file as text.
+    Gen files declare UTF-8, so that is how they are read. A file that is not valid UTF-8 (for example one saved as ANSI) is read with the
+    locale encoding, like older versions of the tool did on Windows, and a warning names the file.
+    Both reads use universal newlines, so the content (and the recipe cache hash computed from it) of a pure ASCII file does not change.
     """
-
-    __AttribPath = "Path"
-
-    def __init__(self, log: Log, xmlElement: ET.Element) -> None:
-        super().__init__(log, xmlElement)
-        self._CheckAttributes({self.__AttribPath})
-        self.Path: str = self._ReadAttrib(xmlElement, self.__AttribPath)
-        if len(self.Path) <= 0:
-            raise XmlFormatException("Ignore Path can not be empty, it must name a directory inside the package")
-        # '\' is a directory separator on every platform, this also makes a rooted path like '/x' absolute on Windows (os.path.isabs disagrees)
-        unixStylePath = self.Path.replace("\\", "/")
-        if IOUtil.IsAbsolutePath(self.Path) or unixStylePath.startswith("/"):
-            raise XmlFormatException(f"Path '{self.Path}' can not be absolute")
-        normalizedPath = IOUtil.NormalizePath(unixStylePath)
-        if normalizedPath in (".", "..") or normalizedPath.startswith("../"):
-            raise XmlFormatException(f"Ignore Path '{self.Path}' must name a directory inside the package")
+    try:
+        return IOUtil.ReadFileUTF8(filename)
+    except UnicodeDecodeError as utf8Error:
+        # locale.getencoding ignores the Python UTF-8 mode, so this stays the locale encoding once UTF-8 mode is the default
+        localeEncoding = locale.getencoding()
+        try:
+            with open(filename, encoding=localeEncoding) as file:
+                content = file.read()
+        except UnicodeDecodeError as localeError:
+            raise UsageErrorException(
+                f"The gen file '{filename}' is not valid UTF-8 (byte offset {utf8Error.start}) and it can not be read with the locale encoding "
+                f"'{localeEncoding}' either. Gen files must be saved as UTF-8"
+            ) from localeError
+        log.DoPrintWarning(
+            f"The gen file '{filename}' is not valid UTF-8 (byte offset {utf8Error.start}), it was read with the locale encoding '{localeEncoding}'. "
+            "Please save it as UTF-8"
+        )
+        return content

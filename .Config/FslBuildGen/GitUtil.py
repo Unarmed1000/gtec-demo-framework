@@ -46,20 +46,23 @@ class GitUtil:
         return PlatformUtil.GetPlatformDependentExecuteableName("git", buildPlatformType)
 
     @staticmethod
-    def GetCurrentHash(gitExecutableName: str, path: str) -> str:
+    def GetCurrentHash(gitExecutableName: str, path: str) -> str | None:
+        """The hash of HEAD, or None when path is not in a git work tree (or HEAD has no commit).
+        Raises when git can not be started.
+        """
         command = [gitExecutableName, "rev-parse", "HEAD"]
-        strVersion = None
         proc = subprocess.Popen(command, stderr=subprocess.STDOUT, stdout=subprocess.PIPE, universal_newlines=True, cwd=path)
         try:
-            (strVersion, err) = proc.communicate()
-            proc.wait()
-            strVersion = strVersion.strip()
-            if len(strVersion) != 40 or "\n" in strVersion or "\r" in strVersion or "\t" in strVersion:
-                strVersion = None
+            (output, _) = proc.communicate()
+            returnCode = proc.wait()
         finally:
             if proc.stdout is not None:
                 proc.stdout.close()
-        return str(strVersion)
+        strVersion = output.strip()
+        # Outside a work tree git prints an error instead of a hash
+        if returnCode != 0 or len(strVersion) != 40 or "\n" in strVersion or "\r" in strVersion or "\t" in strVersion:
+            return None
+        return strVersion
 
     @staticmethod
     def TryGetCurrentHash(gitExecutableName: str, path: str) -> str | None:

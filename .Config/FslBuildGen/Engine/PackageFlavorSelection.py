@@ -53,7 +53,7 @@ class PackageFlavorSelection:
     def __le__(self, other: object) -> bool:
         if not isinstance(other, PackageFlavorSelection):
             return NotImplemented
-        return self.Name <= other.Name or (self.Name == other.Name and self.Option <= other.Option)
+        return self.Name < other.Name or (self.Name == other.Name and self.Option <= other.Option)
 
     def __gt__(self, other: object) -> bool:
         if not isinstance(other, PackageFlavorSelection):
@@ -63,7 +63,7 @@ class PackageFlavorSelection:
     def __ge__(self, other: object) -> bool:
         if not isinstance(other, PackageFlavorSelection):
             return NotImplemented
-        return self.Name >= other.Name or (self.Name == other.Name and self.Option >= other.Option)
+        return self.Name > other.Name or (self.Name == other.Name and self.Option >= other.Option)
 
     def __str__(self) -> str:
         return f"{self.Name}={self.Option}"

@@ -30,6 +30,10 @@
 #
 # ****************************************************************************************************************************************************
 
+import re
+
+_g_decimalPattern = re.compile("[0-9]+")
+
 
 class SemanticVersion2:
     def __init__(self, major: int, minor: int = -1, patch: int = -1, revision: int = -1, suffix: str | None = None) -> None:
@@ -48,15 +52,8 @@ class SemanticVersion2:
         self.__Set |= 1 if revision >= 0 else 0
 
     def IsCompatible(self, other: SemanticVersion2) -> bool:
-        if self.Major != other.Major:
-            return False
-        if self.Minor > other.Minor:
-            return False or ((self.__Set & 4) == 0)
-        if self.Patch > other.Patch:
-            return False or ((self.__Set & 2) == 0)
-        if self.Revision > other.Revision:
-            return False or ((self.__Set & 1) == 0)
-        return True
+        # Unset parts read as 0, so the other version is compatible when it is at least this version within the same major
+        return self.Major == other.Major and (other.Minor, other.Patch, other.Revision) >= (self.Minor, self.Patch, self.Revision)
 
     def __str__(self) -> str:
         if self.Suffix is None:
@@ -108,6 +105,9 @@ class SemanticVersion2:
         values = [-1, -1, -1, -1]
         try:
             for index, entry in enumerate(entries):
+                # int() also accepts whitespace, signs, '_' and non ASCII digits, so each part must be plain decimal digits
+                if _g_decimalPattern.fullmatch(entry) is None:
+                    return None
                 values[index] = int(entry)
             if not SemanticVersion2.IsValid(values):
                 return None
@@ -119,5 +119,5 @@ class SemanticVersion2:
     def FromString(strValue: str) -> SemanticVersion2:
         result = SemanticVersion2.TryFromString(strValue)
         if result is None:
-            raise Exception(f"Version string '{strValue} was not of the expected '1.2.3.4' or '1.2.3.4-suffix' format")
+            raise Exception(f"Version string '{strValue}' was not of the expected '1.2.3.4' or '1.2.3.4-suffix' format")
         return result

@@ -109,7 +109,7 @@ class VariableProcessor:
             elif not allowCombinedPath and endIndex != (len(entry) - 1):
                 raise CombinedVariableAndPathException(entry, tag)
             return entry[2:endIndex]
-        elif entry.find("$(") >= 0:
+        elif entry.find("${") >= 0:
             raise VariableInMiddleOfStringException(entry, tag)
         return None
 
@@ -148,7 +148,7 @@ class VariableProcessor:
             resultPath = self.__DoBasicPathResolve(absPath, absPath, tag)
 
         if not os.path.isabs(resultPath):
-            raise OSError(f"'{pathName}' could not be made absolute '{resultPath}")
+            raise OSError(f"'{pathName}' could not be made absolute '{resultPath}'")
         return resultPath
 
     def ResolveFilenameWithVariables(self, pathName: str) -> str:
@@ -159,6 +159,14 @@ class VariableProcessor:
             parsedStr.SplitList[var2.SplitIndex] = var2.Value
         return "".join(parsedStr.SplitList)
 
+    def __CheckNoFurtherReference(self, pathName: str, startIndex: int, tag: object | None) -> None:
+        """A path may only start with a variable, a reference after the leading one would be left unresolved"""
+        rest = pathName[startIndex:]
+        if rest.find("$(") >= 0:
+            raise EnvironmentVariableInMiddleOfStringException(pathName, tag)
+        if rest.find("${") >= 0:
+            raise VariableInMiddleOfStringException(pathName, tag)
+
     def __DoBasicPathResolve(self, pathName: str, defaultResult: str, tag: object | None = None) -> str:
         """Resolve a path
         It can start with a environment variable $() or
@@ -167,11 +175,13 @@ class VariableProcessor:
         result = None
         environmentName = self.TryExtractLeadingEnvironmentVariableName(pathName, True, tag)
         if environmentName is not None:
+            self.__CheckNoFurtherReference(pathName, len(environmentName) + 3, tag)
             path = IOUtil.GetEnvironmentVariableForDirectory(environmentName)
             result = pathName.replace(f"$({environmentName})", path)
         else:
             variableName = self.__TryExtractLeadingVariableName(pathName, True, tag)
             if variableName is not None:
+                self.__CheckNoFurtherReference(pathName, len(variableName) + 3, tag)
                 if variableName not in self.__Variables.Dict:
                     raise VariableNotDefinedException(variableName, cast(dict[str, object | None], self.__Variables.Dict))
                 strReplace = f"${{{variableName}}}"

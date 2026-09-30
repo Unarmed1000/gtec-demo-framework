@@ -81,7 +81,7 @@ class PackageName:
     def __ge__(self, other: object) -> bool:
         if not isinstance(other, PackageName):
             return NotImplemented
-        return self.Value > other.Value
+        return self.Value >= other.Value
 
     def __str__(self) -> str:
         return self.Value

@@ -34,7 +34,9 @@
 
 from FslBuildGen import IOUtil
 from FslBuildGen.DataTypes import PackageType
+from FslBuildGen.Generator import GitIgnoreMerge
 from FslBuildGen.Generator.GeneratorBase import GeneratorBase
+from FslBuildGen.Generator.GitIgnoreText import GitIgnoreText, TryReadGitIgnoreContent, TryReadGitIgnoreText, WriteGitIgnoreTextIfChanged
 from FslBuildGen.Packages.Package import Package
 
 
@@ -44,10 +46,10 @@ class GeneratorGitIgnore(GeneratorBase):
     ) -> None:
         super().__init__()
 
-        virtualTemplate = IOUtil.TryReadFile(IOUtil.Join(configSDKConfigTemplatePath, "Template_gitignore_virtual.txt"))
-        headerLibTemplate = IOUtil.TryReadFile(IOUtil.Join(configSDKConfigTemplatePath, "Template_gitignore_headerlib.txt"))
-        libTemplate = IOUtil.TryReadFile(IOUtil.Join(configSDKConfigTemplatePath, "Template_gitignore_lib.txt"))
-        exeTemplate = IOUtil.TryReadFile(IOUtil.Join(configSDKConfigTemplatePath, "Template_gitignore_exe.txt"))
+        virtualTemplate = TryReadGitIgnoreContent(IOUtil.Join(configSDKConfigTemplatePath, "Template_gitignore_virtual.txt"))
+        headerLibTemplate = TryReadGitIgnoreContent(IOUtil.Join(configSDKConfigTemplatePath, "Template_gitignore_headerlib.txt"))
+        libTemplate = TryReadGitIgnoreContent(IOUtil.Join(configSDKConfigTemplatePath, "Template_gitignore_lib.txt"))
+        exeTemplate = TryReadGitIgnoreContent(IOUtil.Join(configSDKConfigTemplatePath, "Template_gitignore_exe.txt"))
 
         generatorIgnoreDict = activeGenerator.GetPackageGitIgnoreDict()
 
@@ -69,64 +71,16 @@ class GeneratorGitIgnore(GeneratorBase):
         template = template.replace("##PROJECT_NAME##", package.Name)
         targetFilePath = IOUtil.Join(package.AbsolutePath, ".gitignore")
 
-        targetContent = IOUtil.TryReadFile(targetFilePath)
-
-        targetArray = self.__ToArray(targetContent)
-        templateArray = self.__ToArray(template)
-
-        templateArray = [("/" + entry if not entry.startswith("/") else entry) for entry in templateArray if len(entry) > 0]
-
-        targetArray = [_f for _f in targetArray if _f]
-        templateArray = [_f for _f in templateArray if _f]
-
-        # Add the missing dependencies
-        for entry in templateArray:
-            if entry not in targetArray:
-                targetArray.append(entry)
-
+        # Read like git reads it, a BOM and bytes that are not valid UTF-8 are written back as they were
+        existingText = TryReadGitIgnoreText(targetFilePath)
+        existingLines = GitIgnoreMerge.SplitLines(existingText.Content if existingText is not None else None)
+        templateLines = GitIgnoreMerge.SplitLines(template) or []
         # Allow each generator to add things that should be ignored
-        if package.Name in generatorIgnoreDict:
-            ignoreList = generatorIgnoreDict[package.Name]
-            for entry in ignoreList:
-                # Remove the old legacy entries
-                if entry in targetArray:
-                    targetArray.remove(entry)
-                entry = "/" + entry if not entry.startswith("/") and len(entry) > 0 else entry
-                if entry not in targetArray:
-                    targetArray.append(entry)
+        generatorEntries = generatorIgnoreDict.get(package.Name, set())
 
-        # Remove stuff
-        # remove = []
-        # legacyName = package.ShortName + '.'
-        # for entry in targetArray:
-        #    if entry.startswith(legacyName) or entry == package.ShortName:
-        #        remove.append(entry)
-        # for entry in remove:
-        #    targetArray.remove(entry)
-
-        # if 'GNUmakefile_yocto' in targetArray:
-        #    targetArray.remove('GNUmakefile_yocto')
-
-        # sort the content to ensure that there are minimal changes
-
-        targetArraySet: set[str] = set()
-
-        # ensure no duplicates exist
-        finalTargetArray = []
-        for entry in targetArray:
-            if len(entry) > 0 and entry != "/" and entry not in targetArraySet:
-                targetArraySet.add(entry)
-                finalTargetArray.append(entry)
-
-        finalTargetArray.sort()
-
-        finalContent = "\n".join(finalTargetArray) + "\n"
-
-        if not configDisableWrite:
-            IOUtil.WriteFileIfChanged(targetFilePath, finalContent)
-
-    def __ToArray(self, content: str | None) -> list[str]:
-        if content is None:
-            return []
-        content = content.replace("\r", "")
-        return content.split("\n")
+        # A hand arranged file keeps its lines and their order (git reads them top to bottom), a sorted file stays sorted
+        mergedLines = GitIgnoreMerge.MergeGitIgnoreLines(existingLines, templateLines, generatorEntries)
+        if mergedLines is None or configDisableWrite:
+            return
+        hasBom = existingText is not None and existingText.HasBom
+        WriteGitIgnoreTextIfChanged(targetFilePath, GitIgnoreText(GitIgnoreMerge.JoinLines(mergedLines), hasBom))

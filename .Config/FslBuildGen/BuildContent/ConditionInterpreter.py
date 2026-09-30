@@ -109,6 +109,8 @@ class EvaluateLocalNodeVisitor(ast.NodeVisitor):
         self.Indent = 0
 
     def CheckNodeType(self, node: Any) -> None:
+        # The variables are substituted before parsing (strings are quoted, bools are True/False), so a name that is left is either an
+        # unquoted string value or a misspelled variable reference. Names are rejected instead of being looked up in the python globals.
         if not (
             isinstance(
                 node,
@@ -122,12 +124,16 @@ class EvaluateLocalNodeVisitor(ast.NodeVisitor):
                     ast.Eq,
                     ast.Or,
                     ast.And,
-                    ast.Name,
                     ast.Compare,
                     ast.Load,
                 ),
             )
         ):
+            if isinstance(node, ast.Name):
+                raise Exception(
+                    f"Evaluate contain unsupported node type 'Name' at '{node.id} (x:{node.col_offset})' in Evaluate '{self.SourceName}' condition: "
+                    f"'{self.Source}', string values must be quoted and variables written as ${{Name}}"
+                )
             if hasattr(node, "col_offset"):
                 if hasattr(node, "id"):
                     raise Exception(
@@ -194,7 +200,7 @@ class ConditionInterpreter:
         ast.fix_missing_locations(astRootNode)
         codeobj = compile(astRootNode, "<string>", mode="eval")
         # this should be safe as the root ast tree object has been verified to only contain things we expect
-        return bool(eval(codeobj) == 1)
+        return bool(eval(codeobj, {"__builtins__": {}}, {}) == 1)
 
 
 class EvaluateConditionInterpreter:
@@ -230,4 +236,4 @@ class EvaluateConditionInterpreter:
         ast.fix_missing_locations(astRootNode)
         codeobj = compile(astRootNode, "<string>", mode="eval")
         # this should be safe as the root ast tree object has been verified to only contain things we expect
-        return bool(eval(codeobj) == 1)
+        return bool(eval(codeobj, {"__builtins__": {}}, {}) == 1)

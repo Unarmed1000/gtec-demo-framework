@@ -31,92 +31,98 @@
 #
 # ****************************************************************************************************************************************************
 
-# from typing import Callable
 import itertools
 import os
+from collections.abc import Callable, Sequence
 
-# from FslBuildGen import IOUtil
-# from FslBuildGen import Util
-# from FslBuildGen.Log import Log
 from FslBuildGen.ExternalVariantConstraints import ExternalVariantConstraints
 from FslBuildGen.Generator.Report.Datatypes import FormatStringEnvironmentVariableResolveMethod
 from FslBuildGen.Generator.Report.GeneratorVariableReport import GeneratorVariableReport, InvalidVariableOptionNameException
 from FslBuildGen.Generator.Report.ParsedFormatString import (
     FormatStringEnvironmentVariableResolver,
     FormatStringUndefinedVariableNameException,
-    LookupEnvironmentVariableCommand,
     LookupVariableCommand,
     ParsedFormatString,
 )
+from FslBuildGen.Generator.Report.VariableDict import VariableDict
+from FslBuildGen.Generator.Report.VariableReport import VariableReport
+
+# Returns the option name the user selected for a variable or None if the user did not select one
+_UserOptionLookup = Callable[[str], str | None]
 
 
-def GetLinkedCommandList(
-    linkedVariables: list[LookupVariableCommand], sourceDict: dict[str, LookupVariableCommand]
-) -> dict[LookupVariableCommand, list[LookupVariableCommand]]:
-    linkedCommandDict: dict[LookupVariableCommand, list[LookupVariableCommand]] = {}
-    for entry in linkedVariables:
-        if entry.Report.LinkTargetName is None:
-            raise Exception("entry.Report.LinkTargetName can not be None")
-        # we assume the master is present in the sourceDict!
-        master = sourceDict[entry.Report.LinkTargetName]
-        if master in linkedCommandDict:
-            linkedCommandDict[master].append(entry)
-        else:
-            linkedCommandDict[master] = [entry]
-    return linkedCommandDict
-
-
-def CreateLookupDict(
-    varCommandList: list[LookupVariableCommand], generatorVariableReport: GeneratorVariableReport
-) -> tuple[dict[str, LookupVariableCommand], list[LookupVariableCommand]]:
-    """Returns
-    - Dict -> which is a lookup dict that maps variable names to their lookup command
-    - List -> a list of all LookupVariableCommand that are linked to something
+def _FindMaster(variable: VariableReport, variableDict: VariableDict, rChainVariables: dict[str, VariableReport]) -> VariableReport:
+    """Follow the link chain of the variable to its master (the first variable in the chain that is not linked).
+    Every variable on the chain (the variable, the linked variables passed on the way and the master) is recorded in rChainVariables.
     """
-    resultDict: dict[str, LookupVariableCommand] = {}
-    linkedCommands: list[LookupVariableCommand] = []
-    for varCommand in varCommandList:
-        resultDict[varCommand.Name] = varCommand
-        if varCommand.Report.LinkTargetName is not None:
-            linkedCommands.append(varCommand)
-
-    # Check if all linked commands have a 'command' to chain to, if not create a virtual one
-    for varCommand in linkedCommands:
-        linkedName = varCommand.Report.LinkTargetName
-        if linkedName is None:
-            raise Exception("entry.Report.LinkTargetName can not be None")
-        if linkedName not in resultDict:
-            variableValue = generatorVariableReport.TryGetVariableReport(linkedName)
-            if variableValue is None:
-                raise FormatStringUndefinedVariableNameException(linkedName)
-            resultDict[linkedName] = LookupVariableCommand(linkedName, variableValue, -1)
-    return (resultDict, linkedCommands)
+    visitedNames: set[str] = set()
+    current = variable
+    while current.LinkTargetName is not None:
+        # GeneratorVariableReport.Add prevents link cycles, this is just a guard against a endless loop
+        if current.Name in visitedNames:
+            raise Exception(f"The variable '{variable.Name}' has a circular link chain")
+        visitedNames.add(current.Name)
+        rChainVariables.setdefault(current.Name, current)
+        linkTarget = variableDict.TryGetVariableReport(current.LinkTargetName)
+        if linkTarget is None:
+            raise FormatStringUndefinedVariableNameException(current.LinkTargetName)
+        current = linkTarget
+    rChainVariables.setdefault(current.Name, current)
+    return current
 
 
-def RecursiveReplace(
-    rFormatList: list[str], command: LookupVariableCommand, commandOptionIndex: int, linkedCommandDict: dict[LookupVariableCommand, list[LookupVariableCommand]]
-) -> None:
-    if command.SplitIndex >= 0:
-        rFormatList[command.SplitIndex] = command.Report.Options[commandOptionIndex]
-    if command in linkedCommandDict:
-        for linkedCommand in linkedCommandDict[command]:
-            RecursiveReplace(rFormatList, linkedCommand, commandOptionIndex, linkedCommandDict)
+class _FormatPlan:
+    """The variable references of a parsed format string resolved to the masters that select their option.
+    A linked variable has a option list that is paired by index with the option list of its master,
+    so every reference uses the option of its own variable at the index selected for its master.
+    """
 
+    def __init__(self, parsedFormatString: ParsedFormatString, variableDict: VariableDict) -> None:
+        self.__SplitList = parsedFormatString.SplitList
+        self.__EnvCommandList = parsedFormatString.EnvCommandList
+        self.__MasterIndexByName: dict[str, int] = {}
+        self.Masters: list[VariableReport] = []
+        self.References: list[tuple[LookupVariableCommand, int]] = []
 
-def GetFormattedString(
-    rFormatList: list[str],
-    variableList: list[LookupVariableCommand],
-    variableOptionIndices: list[int] | tuple[int, ...],
-    envCommandList: list[LookupEnvironmentVariableCommand],
-    linkedCommandDict: dict[LookupVariableCommand, list[LookupVariableCommand]],
-) -> str:
-    for envCommand in envCommandList:
-        rFormatList[envCommand.SplitIndex] = envCommand.Value
+        # The referenced variables in first reference order
+        referencedVariables: dict[str, VariableReport] = {}
+        for command in parsedFormatString.VarCommandList:
+            referencedVariables.setdefault(command.Name, command.Report)
 
-    for index, command in enumerate(variableList):
-        RecursiveReplace(rFormatList, command, variableOptionIndices[index], linkedCommandDict)
+        # The master order decides the order of GetAllKnownCombinations
+        chainVariables: dict[str, VariableReport] = {}
+        # Pass 1: the referenced variables that are not linked
+        for variable in referencedVariables.values():
+            if variable.LinkTargetName is None:
+                self.__AddMaster(variable)
+        # Pass 2: the masters of the linked variables whose link target is not referenced
+        for variable in referencedVariables.values():
+            if variable.LinkTargetName is not None and variable.LinkTargetName not in referencedVariables:
+                self.__AddMaster(_FindMaster(variable, variableDict, chainVariables))
+        for command in parsedFormatString.VarCommandList:
+            masterIndex = self.__AddMaster(_FindMaster(command.Report, variableDict, chainVariables))
+            self.References.append((command, masterIndex))
 
-    return "".join(rFormatList)
+        # Every variable involved: the referenced ones in first reference order followed by the ones only reached through a link
+        self.Variables: list[VariableReport] = list(referencedVariables.values())
+        self.Variables += [entry for entry in chainVariables.values() if entry.Name not in referencedVariables]
+
+    def __AddMaster(self, master: VariableReport) -> int:
+        masterIndex = self.__MasterIndexByName.get(master.Name)
+        if masterIndex is None:
+            masterIndex = len(self.Masters)
+            self.__MasterIndexByName[master.Name] = masterIndex
+            self.Masters.append(master)
+        return masterIndex
+
+    def Substitute(self, masterOptionIndices: Sequence[int]) -> str:
+        """Substitute the (env) variables with their values, masterOptionIndices contains the selected option index for each entry in Masters"""
+        formatList = list(self.__SplitList)
+        for envCommand in self.__EnvCommandList:
+            formatList[envCommand.SplitIndex] = envCommand.Value
+        for command, masterIndex in self.References:
+            formatList[command.SplitIndex] = command.Report.Options[masterOptionIndices[masterIndex]]
+        return "".join(formatList)
 
 
 def TryGetEnvironmentVariableResolveMethod(
@@ -135,6 +141,33 @@ def TryGetEnvironmentVariableResolveMethod(
         raise Exception(f"Unknown environment variable resolve method: {environmentVariableResolveMethod}")
 
 
+def _Format(
+    strFormat: str,
+    generatorVariableReport: GeneratorVariableReport,
+    tryGetUserOption: _UserOptionLookup,
+    environmentVariableResolveMethod: FormatStringEnvironmentVariableResolveMethod,
+) -> str:
+    environmentVariableResolver = TryGetEnvironmentVariableResolveMethod(environmentVariableResolveMethod)
+    parsedFormatString = ParsedFormatString(strFormat, generatorVariableReport, environmentVariableResolver)
+    plan = _FormatPlan(parsedFormatString, generatorVariableReport)
+
+    # The variables are checked in first reference order, so the first problem in the string is the one reported
+    optionIndexByName: dict[str, int] = {}
+    for variable in plan.Variables:
+        userDefinedOptionName = tryGetUserOption(variable.Name)
+        if variable.LinkTargetName is not None:
+            if userDefinedOptionName is not None:
+                raise Exception(f"A linked variable '{variable.Name}' was found in the user feature list, this indicates a internal error")
+        elif userDefinedOptionName is not None:
+            if userDefinedOptionName not in variable.Options:
+                raise InvalidVariableOptionNameException(variable.Name, userDefinedOptionName, str(variable.Options))
+            optionIndexByName[variable.Name] = variable.Options.index(userDefinedOptionName)
+        else:
+            defaultOptionIndex = generatorVariableReport.TryGetDefaultOptionIndex(variable.Name)
+            optionIndexByName[variable.Name] = 0 if defaultOptionIndex is None else defaultOptionIndex
+    return plan.Substitute([optionIndexByName[master.Name] for master in plan.Masters])
+
+
 class ReportVariableFormatter:
     @staticmethod
     def Format2(
@@ -143,32 +176,7 @@ class ReportVariableFormatter:
         userVariantSettingDict: dict[str, str],
         environmentVariableResolveMethod: FormatStringEnvironmentVariableResolveMethod = FormatStringEnvironmentVariableResolveMethod.Lookup,
     ) -> str:
-        environmentVariableResolver = TryGetEnvironmentVariableResolveMethod(environmentVariableResolveMethod)
-        parsedFormatString = ParsedFormatString(strFormat, generatorVariableReport, environmentVariableResolver)
-        sourceVariableDict, linkedVariables = CreateLookupDict(parsedFormatString.VarCommandList, generatorVariableReport)
-        linkedCommandDict = GetLinkedCommandList(linkedVariables, sourceVariableDict)
-
-        variableList: list[LookupVariableCommand] = []
-        variableOptionIndices: list[int] = []
-        # the ordering of the sourceVariableDict.values is pretty random, but it doesnt matter
-        for command in sourceVariableDict.values():
-            if command.Report.LinkTargetName is None:
-                variableList.append(command)
-                if command.Name in userVariantSettingDict:
-                    userDefinedOptionName = userVariantSettingDict[command.Name]
-                    if userDefinedOptionName not in command.Report.Options:
-                        raise InvalidVariableOptionNameException(command.Name, userDefinedOptionName, str(command.Report.Options))
-                    variableOptionIndex = command.Report.Options.index(userDefinedOptionName)
-                else:
-                    defaultOptionIndex = generatorVariableReport.TryGetDefaultOptionIndex(command.Name)
-                    variableOptionIndex = 0 if defaultOptionIndex is None else defaultOptionIndex
-                variableOptionIndices.append(variableOptionIndex)
-            elif command.Name in userVariantSettingDict:
-                raise Exception(f"A linked variable '{command.Name}' was found in the user feature list, this indicates a internal error")
-
-        # Substitute the (env) variables with their values
-        scratchpadFormatList: list[str] = parsedFormatString.SplitList
-        return GetFormattedString(scratchpadFormatList, variableList, variableOptionIndices, parsedFormatString.EnvCommandList, linkedCommandDict)
+        return _Format(strFormat, generatorVariableReport, userVariantSettingDict.get, environmentVariableResolveMethod)
 
     @staticmethod
     def Format(
@@ -177,54 +185,11 @@ class ReportVariableFormatter:
         externalVariantConstraints: ExternalVariantConstraints,
         environmentVariableResolveMethod: FormatStringEnvironmentVariableResolveMethod = FormatStringEnvironmentVariableResolveMethod.Lookup,
     ) -> str:
-        environmentVariableResolver = TryGetEnvironmentVariableResolveMethod(environmentVariableResolveMethod)
-        parsedFormatString = ParsedFormatString(strFormat, generatorVariableReport, environmentVariableResolver)
-        sourceVariableDict, linkedVariables = CreateLookupDict(parsedFormatString.VarCommandList, generatorVariableReport)
-        linkedCommandDict = GetLinkedCommandList(linkedVariables, sourceVariableDict)
-
-        variableList: list[LookupVariableCommand] = []
-        variableOptionIndices: list[int] = []
-        # the ordering of the sourceVariableDict.values is pretty random, but it doesnt matter
-        for command in sourceVariableDict.values():
-            if command.Report.LinkTargetName is None:
-                variableList.append(command)
-                userDefinedOptionName = externalVariantConstraints.TryGetOptionStringByNameString(command.Name)
-                if userDefinedOptionName is not None:
-                    if userDefinedOptionName not in command.Report.Options:
-                        raise InvalidVariableOptionNameException(command.Name, userDefinedOptionName, str(command.Report.Options))
-                    variableOptionIndex = command.Report.Options.index(userDefinedOptionName)
-                else:
-                    defaultOptionIndex = generatorVariableReport.TryGetDefaultOptionIndex(command.Name)
-                    variableOptionIndex = 0 if defaultOptionIndex is None else defaultOptionIndex
-                variableOptionIndices.append(variableOptionIndex)
-            elif externalVariantConstraints.TryGetOptionStringByNameString(command.Name) is not None:
-                raise Exception(f"A linked variable '{command.Name}' was found in the user feature list, this indicates a internal error")
-
-        # Substitute the (env) variables with their values
-        scratchpadFormatList: list[str] = parsedFormatString.SplitList
-        return GetFormattedString(scratchpadFormatList, variableList, variableOptionIndices, parsedFormatString.EnvCommandList, linkedCommandDict)
+        return _Format(strFormat, generatorVariableReport, externalVariantConstraints.TryGetOptionStringByNameString, environmentVariableResolveMethod)
 
     @staticmethod
     def GetAllKnownCombinations(strFormat: str, generatorVariableReport: GeneratorVariableReport) -> list[str]:
         parsedFormatString = ParsedFormatString(strFormat, generatorVariableReport)
-
-        sourceVariableDict, linkedVariables = CreateLookupDict(parsedFormatString.VarCommandList, generatorVariableReport)
-        linkedCommandDict = GetLinkedCommandList(linkedVariables, sourceVariableDict)
-
-        variableList: list[LookupVariableCommand] = []
-        optionList: list[list[int]] = []
-        # the ordering of the sourceVariableDict.values is pretty random, but it doesnt matter
-        for command in sourceVariableDict.values():
-            if command.Report.LinkTargetName is None:
-                variableList.append(command)
-                optionList.append(list(range(0, len(command.Report.Options))))
-
-        # since we dont need the parsed format string object after this we can just reuse its list
-        resultList: list[str] = []
-        scratchpadFormatList: list[str] = parsedFormatString.SplitList
-        cartesianProduct: list[tuple[int, ...]] = list(itertools.product(*optionList))
-        # newStr = strFormat
-        for entry in cartesianProduct:
-            result = GetFormattedString(scratchpadFormatList, variableList, entry, parsedFormatString.EnvCommandList, linkedCommandDict)
-            resultList.append(result)
-        return resultList
+        plan = _FormatPlan(parsedFormatString, generatorVariableReport)
+        optionIndexRanges = [range(len(master.Options)) for master in plan.Masters]
+        return [plan.Substitute(masterOptionIndices) for masterOptionIndices in itertools.product(*optionIndexRanges)]

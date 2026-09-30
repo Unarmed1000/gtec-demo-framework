@@ -30,6 +30,10 @@
 #
 # ****************************************************************************************************************************************************
 
+import re
+
+_g_decimalPattern = re.compile("[0-9]+")
+
 
 class Version:
     def __init__(self, major: int, minor: int = -1, patch: int = -1, tweak: int = -1) -> None:
@@ -47,15 +51,8 @@ class Version:
         self.__Set |= 1 if tweak >= 0 else 0
 
     def IsCompatible(self, other: Version) -> bool:
-        if self.Major != other.Major:
-            return False
-        if self.Minor > other.Minor:
-            return False or ((self.__Set & 4) == 0)
-        if self.Patch > other.Patch:
-            return False or ((self.__Set & 2) == 0)
-        if self.Tweak > other.Tweak:
-            return False or ((self.__Set & 1) == 0)
-        return True
+        # Unset parts read as 0, so the other version is compatible when it is at least this version within the same major
+        return self.Major == other.Major and (other.Minor, other.Patch, other.Tweak) >= (self.Minor, self.Patch, self.Tweak)
 
     def __str__(self) -> str:
         if self.__Set == (8 | 4 | 2 | 1):
@@ -93,6 +90,9 @@ class Version:
         values = [-1, -1, -1, -1]
         try:
             for index, entry in enumerate(entries):
+                # int() also accepts whitespace, signs, '_' and non ASCII digits, so each part must be plain decimal digits
+                if _g_decimalPattern.fullmatch(entry) is None:
+                    return None
                 values[index] = int(entry)
             if not Version.IsValid(values):
                 return None
@@ -104,5 +104,5 @@ class Version:
     def FromString(strValue: str) -> Version:
         result = Version.TryFromString(strValue)
         if result is None:
-            raise Exception(f"Version string '{strValue} was not of the expected '1.2.3.4' format")
+            raise Exception(f"Version string '{strValue}' was not of the expected '1.2.3.4' format")
         return result
