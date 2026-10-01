@@ -6,5 +6,5 @@ analysed for animation error (the gap between the animation timer and when each 
 
 The framework integration lives in `FslDemoService.FramePacingMarker` (see [Doc/FramePacing.md](../../Doc/FramePacing.md)).
 
-License: BSD 3-Clause (the library also compiles in qrcodegen, MIT). For more information see the
+License: BSD 3-Clause (the QR encoder of the library is ported from qrcodegen, MIT). For more information see the
 [official repository](https://github.com/Unarmed1000/mb-framepacing).

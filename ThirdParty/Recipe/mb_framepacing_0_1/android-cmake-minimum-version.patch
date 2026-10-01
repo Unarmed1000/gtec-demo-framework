@@ -1,13 +1,13 @@
 diff --git a/sdk/cpp/CMakeLists.txt b/sdk/cpp/CMakeLists.txt
-index b1ceda1..c8cdccf 100644
+index 63ea1a5..388d7bf 100644
 --- a/sdk/cpp/CMakeLists.txt
 +++ b/sdk/cpp/CMakeLists.txt
 @@ -1,6 +1,7 @@
  # SPDX-FileCopyrightText: Copyright (C) 2026 Mana Battery ApS
  # SPDX-License-Identifier: BSD-3-Clause
 -cmake_minimum_required(VERSION 4.0)
-+# Patched by the DemoFramework Android recipe (the Android build CMake can be older): with the tests disabled only CMake 3.23 features are used
-+cmake_minimum_required(VERSION 3.23...4.0)
++# Patched by the DemoFramework Android recipe (the Android build CMake can be older): with the tests disabled only CMake 3.30 features are used
++cmake_minimum_required(VERSION 3.30...4.0)
  
  # mb_framepacing: one library of modules, each its own static library target, like Boost's and Poco's
  #   core    mb_framepacing::core    shared types: the library version, tick units, Rectangle

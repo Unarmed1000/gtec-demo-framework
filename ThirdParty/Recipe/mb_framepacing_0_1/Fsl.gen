@@ -8,7 +8,7 @@
     <Platform Name="Apple;RDK_Yocto;Ubuntu;QNX;Emscripten" Supported="true">
       <ExperimentalRecipe Name="mb_framepacing" Version="0.1.0" Find="false">
         <Pipeline>
-          <GitClone URL="https://github.com/Unarmed1000/mb-framepacing" Hash="b3a17da7156352f56765fa1e823b410faf5522f7"/>
+          <GitClone URL="https://github.com/Unarmed1000/mb-framepacing" Hash="0672b0e56898a02fd6d15ce7a2a8d407294f7cfb"/>
           <CMakeBuild Source="sdk/cpp" Project="mb_framepacing" Target="install" Configuration="release" Options="-DMB_FRAMEPACING_BUILD_DATA=OFF -DMB_FRAMEPACING_BUILD_PACER=OFF -DMB_FRAMEPACING_BUILD_TESTS=OFF -DMB_FRAMEPACING_BUILD_TOOLS=OFF -DMB_FRAMEPACING_WARNINGS_AS_ERRORS=OFF" OutputPath="_Install"/>
         </Pipeline>
         <Installation>
@@ -21,12 +21,12 @@
       </ExperimentalRecipe>
     </Platform>
 
-    <!-- The CMake used for Android builds can be older than 4.0, with the tests disabled the library only uses CMake 3.23 features
+    <!-- The CMake used for Android builds can be older than 4.0, with the tests disabled the library only uses CMake 3.30 features
          so the minimum version is lowered for Android only -->
     <Platform Name="Android" Supported="true">
       <ExperimentalRecipe Name="mb_framepacing" Version="0.1.0" Find="false">
         <Pipeline>
-          <GitClone URL="https://github.com/Unarmed1000/mb-framepacing" Hash="b3a17da7156352f56765fa1e823b410faf5522f7"/>
+          <GitClone URL="https://github.com/Unarmed1000/mb-framepacing" Hash="0672b0e56898a02fd6d15ce7a2a8d407294f7cfb"/>
           <Copy>
             <GitApply From="{RECIPE_PATH}/android-cmake-minimum-version.patch"/>
           </Copy>
@@ -45,7 +45,7 @@
     <Platform Name="Windows" Supported="true">
       <ExperimentalRecipe Name="mb_framepacing" Version="0.1.0" Find="false">
         <Pipeline>
-          <GitClone URL="https://github.com/Unarmed1000/mb-framepacing" Hash="b3a17da7156352f56765fa1e823b410faf5522f7"/>
+          <GitClone URL="https://github.com/Unarmed1000/mb-framepacing" Hash="0672b0e56898a02fd6d15ce7a2a8d407294f7cfb"/>
           <CMakeBuild Source="sdk/cpp" Project="mb_framepacing" Target="install" Configuration="debug;release" Options="-DMB_FRAMEPACING_BUILD_DATA=OFF -DMB_FRAMEPACING_BUILD_PACER=OFF -DMB_FRAMEPACING_BUILD_TESTS=OFF -DMB_FRAMEPACING_BUILD_TOOLS=OFF -DMB_FRAMEPACING_WARNINGS_AS_ERRORS=OFF -DCMAKE_DEBUG_POSTFIX=d" OutputPath="_Install"/>
         </Pipeline>
         <Installation>
