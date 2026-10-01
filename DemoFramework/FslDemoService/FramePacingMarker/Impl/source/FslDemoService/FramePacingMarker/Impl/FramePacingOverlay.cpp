@@ -38,9 +38,12 @@
 #include <FslGraphics/Vertices/VertexPositionColorTexture.hpp>
 #include <FslService/Consumer/ServiceProvider.hpp>
 #include <mb/framepacing/core/time/ChronoConversion.hpp>
+#include <mb/framepacing/core/time/TickCount64.hpp>
+#include <mb/framepacing/core/time/TimeSpan.hpp>
+#include <mb/framepacing/core/time/TimeSpan32.hpp>
 #include <mb/framepacing/marker/FrameMarker.hpp>
-#include <mb/framepacing/marker/MarkerFlags.hpp>
-#include <mb/framepacing/marker/SequenceId.hpp>
+#include <mb/framepacing/marker/payload/MarkerFlags.hpp>
+#include <mb/framepacing/marker/payload/SequenceId.hpp>
 #include <array>
 #include <cstdint>
 #include <exception>
@@ -54,6 +57,7 @@ namespace Fsl
 {
   namespace
   {
+    namespace FP = MB::FramePacing;
     namespace FM = MB::FramePacing::Marker;
 
     namespace LocalConfig
@@ -82,7 +86,7 @@ namespace Fsl
       }
     }
 
-    static_assert(FramePacingSequenceId::ByteCount == FM::SequenceIdByteCount);
+    static_assert(FramePacingSequenceId::ByteCount == FM::SequenceId::ByteCount);
 
     //! How long the CPU has worked on the frame so far, in 100ns ticks (0 if unknown)
     uint32_t CalcCpuBusyTicks(const int64_t cpuStartTicks, const int64_t nowTicks) noexcept
@@ -211,14 +215,22 @@ namespace Fsl
     // and it does not know when nothing animates, so no frame is flagged as static.
     // The marker is the last thing drawn before the frame is presented, so the CPU busy time is measured now.
     const uint32_t cpuBusyTicks = CalcCpuBusyTicks(record.CpuStartTicks, m_timer.GetTimestamp().Ticks());
-    const FM::Payload payload{ToMarkerKind(record.Kind), record.RunId, record.FrameIndex, FM::MarkerFlags::None, record.AnimationTicks, 0u, 0u, 0,
-                              record.CpuStartTicks,      cpuBusyTicks};
-    const FM::StartMetadata metadata{MB::FramePacing::ToDateTimeTicks(record.RunStartTime), FM::SequenceId{record.RunSequenceId.Bytes}};
+    const FM::Payload payload{ToMarkerKind(record.Kind),
+                              record.RunId,
+                              record.FrameIndex,
+                              FM::MarkerFlags::None,
+                              FP::TimeSpan(record.AnimationTicks),
+                              FP::TimeSpan32(),
+                              FP::TimeSpan32(),
+                              FP::TickCount64(),
+                              FP::TickCount64(record.CpuStartTicks),
+                              FP::TimeSpan32(cpuBusyTicks)};
+    const FM::StartMetadata metadata{FP::ToDateTimeTicks(record.RunStartTime), FM::SequenceId{record.RunSequenceId.Bytes}};
 
     // The main marker (frame, start or end) is drawn at the top left and the sync marker at the bottom left. Both grids are kept up to date
     // so the sync marker can be enabled at any time
-    const MB::FramePacing::Point mainOrigin = options.RecommendedOrigin(payload.Kind, windowWidthPx, windowHeightPx, alignPx);
-    const MB::FramePacing::Point syncOrigin = options.RecommendedOrigin(FM::MarkerKind::Sync, windowWidthPx, windowHeightPx, alignPx);
+    const FP::Point mainOrigin = options.RecommendedOrigin(payload.Kind(), windowHeightPx, alignPx);
+    const FP::Point syncOrigin = options.RecommendedOrigin(FM::MarkerKind::Sync, windowHeightPx, alignPx);
     const GridKey gridKey{options.ModuleSizePx(), options.QuietZoneModules(), mainOrigin.X, mainOrigin.Y, syncOrigin.X, syncOrigin.Y};
     if (gridKey != m_gridKey)
     {
@@ -243,8 +255,7 @@ namespace Fsl
     if (record.SyncMarkerEnabled && indexCount > 0)
     {
       // The sync marker carries the same run id and frame index (the analysis detects tearing when the two disagree)
-      FM::Payload syncPayload = payload;
-      syncPayload.Kind = FM::MarkerKind::Sync;
+      const FM::Payload syncPayload = payload.WithKind(FM::MarkerKind::Sync);
       FM::ModuleMatrix syncMatrix;
       if (FM::GenerateModules(syncPayload, syncMatrix))
       {
