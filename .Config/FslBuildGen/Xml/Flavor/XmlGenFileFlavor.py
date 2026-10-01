@@ -35,7 +35,12 @@ import xml.etree.ElementTree as ET
 
 from FslBuildGen import Util
 from FslBuildGen.Log import Log
-from FslBuildGen.Xml.Exceptions import XmlFlavorOptionNameCollisionException, XmlUnsupportedFlavorNameException, XmlUnsupportedFlavorOptionNameException
+from FslBuildGen.Xml.Exceptions import (
+    XmlFlavorHasNoOptionsException,
+    XmlFlavorOptionNameCollisionException,
+    XmlUnsupportedFlavorNameException,
+    XmlUnsupportedFlavorOptionNameException,
+)
 from FslBuildGen.Xml.Flavor.XmlGenFileFlavorOption import XmlGenFileFlavorOption
 from FslBuildGen.Xml.XmlBase import XmlBase
 
@@ -55,10 +60,16 @@ class XmlGenFileFlavor(XmlBase):
         self.OptionDict: dict[str, XmlGenFileFlavorOption] = self.__BuildOptionDict()
         self.__ValidateFlavorName()
         self.__ValidateOptionNames()
+        self.__ValidateHasOptions()
 
     def __ValidateFlavorName(self) -> None:
         if not Util.IsValidName(self.Name):
             raise XmlUnsupportedFlavorNameException(self.XMLElement, self.Name)
+
+    def __ValidateHasOptions(self) -> None:
+        # Every instance of the package selects one option of each of its flavors, so a flavor without options leaves the package without instances
+        if len(self.Options) <= 0:
+            raise XmlFlavorHasNoOptionsException(self.XMLElement, self.IntroducedByPackageName, self.Name)
 
     def __ValidateOptionNames(self) -> None:
         for option in self.Options:

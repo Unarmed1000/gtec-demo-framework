@@ -36,10 +36,9 @@ from FslBuildGen.Engine.Resolver.PreResolvePackageResult import PreResolvePackag
 from FslBuildGen.Engine.Resolver.ProcessedPackage import ProcessedPackage
 from FslBuildGen.Exceptions import GroupedException, PackageRequirementExtendsUnusedFeatureException
 from FslBuildGen.Log import Log
-from FslBuildGen.Packages.ExceptionsXml import RequirementNameCollisionException
-from FslBuildGen.Packages.PackageInstanceName import PackageInstanceName
 from FslBuildGen.Packages.PackageNameInfo import PackageNameInfo
 from FslBuildGen.Packages.PackageRequirement import PackageRequirement
+from FslBuildGen.Packages.PackageRequirementMerger import PackageRequirementMerger
 from FslBuildGen.Packages.Unresolved.Exceptions import RequirementUseDuplicatedException
 from FslBuildGen.Packages.Unresolved.UnresolvedPackageRequirement import UnresolvedPackageRequirement
 
@@ -183,48 +182,14 @@ class PreResolver:
     def __ResolvePackageAllRequirements(
         log: Log, packageLookupDict: dict[str, PreResolvePackageResult], package: ProcessedPackage, packageResolvedDirectRequirements: list[PackageRequirement]
     ) -> list[PackageRequirement]:
-        # Resolve all used requirements
-        resResolvedAllRequirements: list[PackageRequirement] = []
-        uniqueRequirementFullIds: dict[str, PackageRequirement] = {}
-        fullIdDict: dict[str, tuple[PackageInstanceName, str]] = {}
+        # Resolve all used requirements: the requirements of the dependencies followed by the package's own requirements, merged into copies
+        # so every package keeps its own IntroducedByPackages. A requirement name spelled with different case is rejected.
+        merger = PackageRequirementMerger()
         for directDependency in package.DirectDependencies:
-            depPackage = packageLookupDict[directDependency.Name.Value]
-            for requirement2 in depPackage.ResolvedAllRequirements:
-                if requirement2.FullId not in uniqueRequirementFullIds:
-                    # ensure that we dont have two requirement names with different casing
-                    if requirement2.FullId in fullIdDict:
-                        raise RequirementNameCollisionException(
-                            depPackage.SourcePackage.NameInfo.FullName,
-                            requirement2.Name,
-                            fullIdDict[requirement2.FullId][0],
-                            fullIdDict[requirement2.FullId][1],
-                        )
-                    fullIdDict[requirement2.FullId] = (depPackage.SourcePackage.NameInfo.FullName, requirement2.FullId)
-                    resResolvedAllRequirements.append(requirement2)
-                    uniqueRequirementFullIds[requirement2.FullId] = requirement2
-                else:
-                    for introPackageName in requirement2.IntroducedByPackages:
-                        uniqueIntroPackage = uniqueRequirementFullIds[requirement2.FullId]
-                        if introPackageName not in uniqueIntroPackage.IntroducedByPackages:
-                            uniqueIntroPackage.IntroducedByPackages.add(introPackageName)
+            merger.Add(packageLookupDict[directDependency.Name.Value].ResolvedAllRequirements)
+        merger.Add(packageResolvedDirectRequirements)
 
-        # Add this package's direct used requirements to
-        for requirement3 in packageResolvedDirectRequirements:
-            if requirement3.FullId not in uniqueRequirementFullIds:
-                # ensure that we dont have two requirement names with different casing
-                if requirement3.FullId in fullIdDict:
-                    raise RequirementNameCollisionException(
-                        package.NameInfo.FullName, requirement3.Name, fullIdDict[requirement3.FullId][0], fullIdDict[requirement3.FullId][1]
-                    )
-                fullIdDict[requirement3.FullId] = (package.NameInfo.FullName, requirement3.FullId)
-                resResolvedAllRequirements.append(requirement3)
-                uniqueRequirementFullIds[requirement3.FullId] = requirement3
-            else:
-                for introPackageName in requirement3.IntroducedByPackages:
-                    uniqueIntroPackage = uniqueRequirementFullIds[requirement3.FullId]
-                    if introPackageName not in uniqueIntroPackage.IntroducedByPackages:
-                        uniqueIntroPackage.IntroducedByPackages.add(introPackageName)
-
+        resResolvedAllRequirements = merger.GetRequirements()
         resResolvedAllRequirements.sort(key=lambda s: s.Id)
         return resResolvedAllRequirements
 
@@ -240,8 +205,12 @@ class PreResolver:
         if len(errors) > 0:
             exceptionList: list[Exception] = []
             for error in errors:
+                # Extends has to use the exact spelling, a feature whose name only differs by case is offered as a hint
+                caseMismatch = PreResolver.__TryLocateRequiredFeatureIgnoreCase(error[0].ResolvedAllRequirements, error[1].Extends)
                 exceptionList.append(
-                    PackageRequirementExtendsUnusedFeatureException(error[1].Name, error[1].Extends, error[0].SourcePackage.NameInfo.FullName.Value)
+                    PackageRequirementExtendsUnusedFeatureException(
+                        error[1].Name, error[1].Extends, error[0].SourcePackage.NameInfo.FullName.Value, None if caseMismatch is None else caseMismatch.Name
+                    )
                 )
             raise GroupedException(exceptionList)
 
@@ -249,5 +218,13 @@ class PreResolver:
     def __TryLocateRequiredFeature(allUsedRequirements: list[PackageRequirement], name: str) -> PackageRequirement | None:
         for requirement in allUsedRequirements:
             if requirement.Type == PackageRequirementTypeString.Feature and requirement.Name == name:
+                return requirement
+        return None
+
+    @staticmethod
+    def __TryLocateRequiredFeatureIgnoreCase(allUsedRequirements: list[PackageRequirement], name: str) -> PackageRequirement | None:
+        nameId = name.lower()
+        for requirement in allUsedRequirements:
+            if requirement.Type == PackageRequirementTypeString.Feature and requirement.Id == nameId:
                 return requirement
         return None

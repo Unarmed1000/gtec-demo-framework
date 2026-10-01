@@ -65,6 +65,7 @@ from FslBuildGen.Xml.Exceptions import (
     PlatformAlreadyDefinedException,
     UnknownBuildCustomizationException,
     UnknownDefaultValueException,
+    VariantAlreadyDefinedException,
     XmlException2,
     XmlInvalidRootElement,
     XmlUnsupportedPackageType,
@@ -274,8 +275,6 @@ class XmlGenFile(XmlCommonFslBuild):
         self.__ValidateDefines()
 
         self.__ResolvePaths(configDisableIncludeDirCheck, configDisableSourceDirCheck, packageFile, allowNoInclude, includePriority)
-        # FIX: check for clashes with platform addition
-        #      check for platform variant name clashes
 
     def __CalcContentHash(self, content: str) -> str:
         encodedContent = content.encode()
@@ -452,6 +451,8 @@ class XmlGenFile(XmlCommonFslBuild):
                         self._AddPlatform(platforms, clonePlatform, resED)
                 else:
                     self._AddPlatform(platforms, xmlPlatform, resED)
+                # Once per element, the clones of a platform list share its variants
+                self.__ValidateUniqueVariantNames(ownerPackageName, xmlPlatform)
 
         # Handle wildcard platforms
         for platformName in APPROVED_PLATFORM_NAMES:
@@ -579,6 +580,16 @@ class XmlGenFile(XmlCommonFslBuild):
             if child.tag == "Variant":
                 elements.append(XmlGenFileVariant(self.Log, child, ownerPackageName))
         return elements
+
+    def __ValidateUniqueVariantNames(self, ownerPackageName: str, xmlPlatform: XmlGenFilePlatform) -> None:
+        """A platform element declares each variant once, the names are compared ignoring case like the variants of different packages"""
+        variantNames: dict[str, str] = {}
+        for variant in xmlPlatform.Variants:
+            key = variant.Name.lower()
+            existingName = variantNames.get(key)
+            if existingName is not None:
+                raise VariantAlreadyDefinedException(variant.XMLElement, ownerPackageName, xmlPlatform.Name, variant.Name, existingName)
+            variantNames[key] = variant.Name
 
     def __ImportTemplates(
         self,

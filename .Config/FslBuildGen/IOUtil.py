@@ -315,7 +315,7 @@ def CopySmallFile(srcFilename: str, dstFilename: str) -> None:
 
 def ToUnixStylePath(path: str) -> str:
     # Workaround the fact that paths on windows sometimes come with a uppercase drive letter and sometimes a lowercase
-    if len(path) > 2 and (path[1] == ":" and (path[0] >= "a" and path[0] <= "z")):
+    if len(path) >= 2 and (path[1] == ":" and (path[0] >= "a" and path[0] <= "z")):
         path = path[0].upper() + path[1:]
     return path.replace("\\", "/")
 
@@ -323,7 +323,7 @@ def ToUnixStylePath(path: str) -> str:
 def TryToUnixStylePath(path: str | None) -> str | None:
     if path is None:
         return None
-    return path.replace("\\", "/")
+    return ToUnixStylePath(path)
 
 
 def NormalizePath(path: str) -> str:
@@ -563,11 +563,11 @@ def IsDriveRootPath(path: str) -> bool:
     """
     Do some basic checks to prevent a path that points to the drive root
     - This also detects some valid names like "test../" or "/..test"
+    - The current directory ("." and the empty path, which normalizes to ".") is treated like a root too. This is intended: the callers use this as
+      a safety guard before they delete a directory or use it as a working directory, and a path that does not name a directory must not pass it.
     """
     normPath = NormalizePath(path)
-    drive, tail = os.path.splitdrive(normPath)
-    driveId = NormalizePath(drive).lower()
-    normPathId = normPath.lower()
+    drive, _ = os.path.splitdrive(normPath)
     # some basic checks to detect root paths
     return (
         "../" in normPath
@@ -575,7 +575,9 @@ def IsDriveRootPath(path: str) -> bool:
         or normPath == "/"
         or normPath == ".."
         or normPath == "/."
-        or len(normPath) <= 0
-        or normPathId == driveId
+        # The current directory (NormalizePath never returns an empty path)
+        or normPath == "."
+        # Only a drive ("C:") or a UNC share ("//server/share")
+        or (len(drive) > 0 and normPath.lower() == NormalizePath(drive).lower())
         or normPath.endswith("/")
     )

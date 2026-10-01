@@ -102,13 +102,13 @@ class XmlGenFileExternalDependency(XmlBase):
 
         access = None
         if strIncludeDir is not None or strAccess is not None:
-            strAccess = self._ReadAttrib(xmlElement, self.__AttribAccess) if access is None else access
+            strAccess = self._ReadAttrib(xmlElement, self.__AttribAccess)
             if strAccess == "Public":
                 access = AccessType.Public
             elif strAccess == "Private":
                 access = AccessType.Private
             else:
-                raise XmlFormatException(f"Unknown access type '{access}' on external dependency: '{self.Name}'")
+                raise XmlFormatException(f"Unknown access type '{strAccess}' on external dependency: '{self.Name}'")
         self.IncludeDir = PackageIncludeDir(strIncludeDir, includePriority) if strIncludeDir is not None else None
 
         strElementType = self._ReadAttrib(xmlElement, self.__AttribType)
@@ -159,7 +159,7 @@ class FakeXmlGenFileExternalDependency(XmlGenFileExternalDependency):
         if debugName is not None:
             fakeXmlElementAttribs["DebugName"] = debugName
         if includeLocation is not None:
-            fakeXmlElementAttribs["Include"] = location
+            fakeXmlElementAttribs["Include"] = includeLocation
 
         fakeXmlElement = FakeXmlElementFactory.Create("FakeExternalDep", fakeXmlElementAttribs)
         super().__init__(log, fakeXmlElement)

@@ -52,10 +52,6 @@ class DependencyGraphNode:
         for node in self.To:
             node.From.remove(self)
 
-    def RemoveFromEdges(self) -> None:
-        for node in self.From:
-            node.To.remove(self)
-
 
 class DependencyGraph:
     def __init__(self, package: Package | None) -> None:  # , exploreVariants):
@@ -73,18 +69,6 @@ class DependencyGraph:
             if node.Package == package:
                 return node
         return None
-
-    def RemoveNodesWithNoDependencies(self) -> list[DependencyGraphNode]:
-        """This is useful for finding the build order"""
-        removeList: list[DependencyGraphNode] = []
-        for node in self.Nodes:
-            if len(node.To) <= 0:
-                removeList.append(node)
-
-        for node in removeList:
-            node.RemoveFromEdges()
-            self.Nodes.remove(node)
-        return removeList
 
     def GetNodesWithNoIncomingDependencies(self) -> list[DependencyGraphNode]:
         resultList: list[DependencyGraphNode] = []

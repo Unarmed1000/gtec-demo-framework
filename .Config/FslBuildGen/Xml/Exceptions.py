@@ -190,6 +190,12 @@ class XmlFlavorOptionNameCollisionException(XmlException2):
         super().__init__(msg)
 
 
+class XmlFlavorHasNoOptionsException(XmlException2):
+    def __init__(self, xmlElement: ET.Element, packageName: str, flavorName: str) -> None:
+        msg = f"The flavor '{flavorName}' in package '{packageName}' has no options, a flavor needs at least one option"
+        super().__init__(msg)
+
+
 class UnknownBuildCustomizationException(XmlException2):
     def __init__(self, xmlElement: ET.Element) -> None:
         msg = f"The build customization name: '{xmlElement.tag}' is not valid."
@@ -229,6 +235,17 @@ class XmlUnsupportedPackageType(Exception):
 class PlatformAlreadyDefinedException(XmlException2):
     def __init__(self, xmlElement: ET.Element, name: str) -> None:
         msg = f"The platform name: '{name}' has already been defined."
+        super().__init__(msg)
+
+
+class VariantAlreadyDefinedException(XmlException2):
+    def __init__(self, xmlElement: ET.Element, packageName: str, platformName: str, name: str, existingName: str) -> None:
+        """name is the variant that is declared again, existingName the earlier declaration in the same platform element (the same name or one
+        that differs only by case)
+        """
+        strAs = "" if name == existingName else f" as '{existingName}'"
+        strHint = "" if name == existingName else ", variant names are compared ignoring case"
+        msg = f"The variant '{name}' has already been defined{strAs} in platform '{platformName}' of package '{packageName}'{strHint}"
         super().__init__(msg)
 
 

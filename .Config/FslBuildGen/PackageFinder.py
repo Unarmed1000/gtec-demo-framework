@@ -32,12 +32,12 @@
 
 from typing import cast
 
-# from FslBuildGen import IOUtil
+from FslBuildGen import IOUtil
 from FslBuildGen.Exceptions import DependencyNotFoundException, PackageHasMultipleDefinitionsException, PackageLoaderFailedToLocatePackageException
 from FslBuildGen.Generator.GeneratorPluginBase import GeneratorPluginBase
 from FslBuildGen.Log import Log
 from FslBuildGen.PackageFile import PackageFile
-from FslBuildGen.PackageLocationCache import PackageLocationCache, PackageLocationCachePath
+from FslBuildGen.PackageLocationCache import PackageLocationCache, PackageLocationCachePath, g_duplicatePackageHint
 from FslBuildGen.ToolConfig import ToolConfigPackageConfiguration, ToolConfigPackageLocation
 from FslBuildGen.Xml.XmlGenFile import XmlGenFile
 
@@ -51,13 +51,14 @@ class PackageFinder:
         packageConfigDict: dict[str, ToolConfigPackageConfiguration],
         genFilename: str,
         testModeEnabled: bool,
+        detectDuplicatePackages: bool = False,
     ) -> None:
         self.Log = log
         self.ConfigTypeName = configTypeName
         # The locations available in this configuration
         self.PackageLocations: list[ToolConfigPackageLocation] = [] if configTypeName not in packageConfigDict else packageConfigDict[configTypeName].Locations
         self.GenFilename = genFilename
-        self.PackageLocationCache = PackageLocationCache(log, self.PackageLocations, self.GenFilename)
+        self.PackageLocationCache = PackageLocationCache(log, self.PackageLocations, self.GenFilename, detectDuplicatePackages)
         self.__TestModeEnabled = testModeEnabled
         self.__InitialSearchLocations: list[ToolConfigPackageLocation] = self.__BuildInitialSearchLocations(self.PackageLocations)
 
@@ -131,6 +132,18 @@ class PackageFinder:
                 self.Log.LogPrintWarning("Optimized package locator failed to locate package, but we have reason to assume that it might exist so trying again")
                 return self.__LocateMissingPackage(packageName, missingDict, False)
             raise PackageLoaderFailedToLocatePackageException(missingDict[packageName].Name, packageName)
+
+    def CheckForOtherDefinitions(self, packageFiles: list[PackageFile]) -> None:
+        """Locate the name of every package file and fail if another file defines the same package name.
+        A requested file is loaded without being located by name, so this is how a second definition of its name is found.
+        """
+        for packageFile in packageFiles:
+            foundLocation = self.PackageLocationCache.TryLocatePackage(packageFile.PackageName)
+            foundFilePath = foundLocation.FoundPackageFilePath if foundLocation is not None else None
+            if foundFilePath is not None and IOUtil.NormalizePath(foundFilePath) != packageFile.AbsoluteFilePath:
+                raise PackageHasMultipleDefinitionsException(
+                    f"Two files tried to define the package name '{packageFile.PackageName}', file1: '{packageFile.AbsoluteFilePath}' file2: '{foundFilePath}'. {g_duplicatePackageHint}"
+                )
 
     def GetKnownPackageFiles(self, theFiles: list[PackageFile]) -> list[PackageFile]:
         """Get all the files associated with the typeId then merge it with the supplied file list."""

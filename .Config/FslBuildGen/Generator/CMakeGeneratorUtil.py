@@ -744,7 +744,11 @@ def GetContentBuilder(
     contentInBinaryDirectory: bool,
     externalVariantConstraints: ExternalVariantConstraints,
 ) -> str:
-    if package.ResolvedContentBuilderAllInputFiles is None or len(package.ResolvedContentBuilderAllInputFiles) <= 0:
+    # The content builder reads its command file too, so a change to it has to trigger a new content build
+    dependencyFiles = list(package.ResolvedContentBuilderAllInputFiles) if package.ResolvedContentBuilderAllInputFiles is not None else []
+    if package.ResolvedContentBuilderCommandFile is not None:
+        dependencyFiles.append(package.ResolvedContentBuilderCommandFile)
+    if len(dependencyFiles) <= 0:
         return ""
     if package.ResolvedPath is None:
         raise Exception(f"Package '{package.Name}' is invalid as it is missing a path")
@@ -753,7 +757,7 @@ def GetContentBuilder(
     packagePath = package.ResolvedPath.ResolvedPath
     featureList = ",".join([entry.Name for entry in package.ResolvedAllUsedFeatures])
 
-    inputContentFiles = _ExtractRelativePaths(toolConfig, package.ResolvedPath.ResolvedPathEx, package.ResolvedContentBuilderAllInputFiles, True)
+    inputContentFiles = _ExtractRelativePaths(toolConfig, package.ResolvedPath.ResolvedPathEx, dependencyFiles, True)
     outputContentFiles = _ExtractRelativePaths(toolConfig, package.ResolvedPath.ResolvedPathEx, package.ResolvedContentBuilderAllOutputFiles)
 
     inputContentFiles.sort()

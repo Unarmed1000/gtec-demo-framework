@@ -205,6 +205,8 @@ class Package:
         # All input files to the content builder system (this includes both build files and synced files)
         # but it does not include the files in "Content" as they are not send through the ContentBuilder
         self.ResolvedContentBuilderAllInputFiles: list[PathRecord] | None = None
+        # The content builder command file, it is read by the content builder but it is not one of its input files
+        self.ResolvedContentBuilderCommandFile: PathRecord | None = None
 
         # ContentBuilder output files
 
@@ -427,19 +429,30 @@ class PackageDefine(PackageElement):
 
 
 class VariantExtensionCanNotOverwriteExistingExternalDependencyException(XmlException2):
-    def __init__(
-        self, previous: PackagePlatformExternalDependency, introducedByPackageName: str, extending: PackagePlatformExternalDependency, extensionInfo: str
-    ) -> None:
+    def __init__(self, optionName: str, extendingPackageName: str, existing: PackagePlatformExternalDependency, extensionInfo: str) -> None:
+        """extendingPackageName declares the extension, extensionInfo names the packages the extended option came from"""
         msg = (
-            f"The variant option '{extending.Name}' in package '{introducedByPackageName}' can overwrite a existing external dependency from '{extensionInfo}'"
+            f"The variant option '{optionName}' in package '{extendingPackageName}' can not overwrite the existing external dependency '{existing.Name}' "
+            f"from '{extensionInfo}'"
         )
         super().__init__(msg)
 
 
 class VariantExtensionCanNotOverwriteExistingDefineException(XmlException2):
-    def __init__(self, previous: PackageDefine, introducedByPackageName: str, extending: PackageDefine, extensionInfo: str) -> None:
-        msg = f"The variant option '{extending.Name}' in package '{introducedByPackageName}' can overwrite a existing Define from '{extensionInfo}'"
+    def __init__(self, optionName: str, extendingPackageName: str, existing: PackageDefine, extensionInfo: str) -> None:
+        """extendingPackageName declares the extension, extensionInfo names the packages the extended option came from"""
+        msg = (
+            f"The variant option '{optionName}' in package '{extendingPackageName}' can not overwrite the existing define '{existing.Name}' "
+            f"from '{extensionInfo}'"
+        )
         super().__init__(msg)
+
+
+def _FormatExtensionInfo(introducedByPackageName: str, extendedBy: list[str]) -> str:
+    """'Owner' or 'Owner<-Left, Right'. The extenders are sorted by name (ignoring case), so the text does not depend on the build order"""
+    if len(extendedBy) <= 0:
+        return introducedByPackageName
+    return f"{introducedByPackageName}<-{', '.join(sorted(extendedBy, key=lambda s: (s.lower(), s)))}"
 
 
 class PackagePlatformVariantOption(PackageElement):
@@ -455,7 +468,8 @@ class PackagePlatformVariantOption(PackageElement):
         self.__Log = log
         self.__GeneratorInfo = generatorInfo
         self.IntroducedByPackageName: str = base.IntroducedByPackageName
-        self.ExtensionInfo: str = base.IntroducedByPackageName
+        # The packages that extended this option, in the order the extensions were merged
+        self.ExtendedBy: list[str] = list(base.ExtendedBy) if isinstance(base, PackagePlatformVariantOption) else []
         self.ExternalDependencies: list[PackagePlatformExternalDependency] = self.__CloneExtDeps(base.ExternalDependencies, allowPrivate)
 
         if isinstance(base, UnresolvedPackageVariantOption):
@@ -479,9 +493,14 @@ class PackagePlatformVariantOption(PackageElement):
             res.append(PackagePlatformExternalDependency(entry, allowPrivate))
         return res
 
+    @property
+    def ExtensionInfo(self) -> str:
+        """The package that declared the option and the packages that extended it: 'Owner' or 'Owner<-Left, Right'"""
+        return _FormatExtensionInfo(self.IntroducedByPackageName, self.ExtendedBy)
+
     def Extend(self, srcOption: PackagePlatformVariantOption, extendingPackageName: str) -> PackagePlatformVariantOption:
         extendedOption = PackagePlatformVariantOption(self.__Log, self.__GeneratorInfo, extendingPackageName, self, False)
-        extendedOption.ExtensionInfo = f"{self.IntroducedByPackageName}<-{extendingPackageName}"
+        extendedOption.ExtendedBy.append(extendingPackageName)
 
         dstExternals = extendedOption.ExternalDependencies
         srcExternals = srcOption.ExternalDependencies
@@ -490,7 +509,7 @@ class PackagePlatformVariantOption(PackageElement):
             index = self.__IndexOf(dstExternals, srcExternalEntry.Name)
             if index >= 0:
                 raise VariantExtensionCanNotOverwriteExistingExternalDependencyException(
-                    dstExternals[index], self.IntroducedByPackageName, srcExternalEntry, self.ExtensionInfo
+                    self.Name, extendingPackageName, dstExternals[index], self.ExtensionInfo
                 )
             else:
                 dstExternals.append(srcExternalEntry)
@@ -503,9 +522,7 @@ class PackagePlatformVariantOption(PackageElement):
             ):
                 index = self.__IndexOf(dstDefines, srcDefineEntry.Name)
                 if index >= 0:
-                    raise VariantExtensionCanNotOverwriteExistingDefineException(
-                        dstDefines[index], self.IntroducedByPackageName, srcDefineEntry, self.ExtensionInfo
-                    )
+                    raise VariantExtensionCanNotOverwriteExistingDefineException(self.Name, extendingPackageName, dstDefines[index], self.ExtensionInfo)
                 else:
                     dstDefines.append(srcDefineEntry)
 
@@ -534,7 +551,8 @@ class PackagePlatformVariant(PackageElement):
         self.__Log = log
         self.__GeneratorInfo = generatorInfo
         self.IntroducedByPackageName: str = base.IntroducedByPackageName
-        self.ExtensionInfo: str = base.IntroducedByPackageName
+        # The packages that extended this variant, in the order the extensions were merged
+        self.ExtendedBy: list[str] = list(base.ExtendedBy) if isinstance(base, PackagePlatformVariant) else []
         self.Options: list[PackagePlatformVariantOption] = self.__ProcessOptions(ownerPackageName, base.Options, allowPrivate)
         self.Type: VariantType = base.Type
         self._BuildOptionDict(self.Options)
@@ -560,12 +578,17 @@ class PackagePlatformVariant(PackageElement):
             optionDict[option.Name] = option
         self.OptionDict = optionDict
 
+    @property
+    def ExtensionInfo(self) -> str:
+        """The package that declared the variant and the packages that extended it: 'Owner' or 'Owner<-Left, Right'"""
+        return _FormatExtensionInfo(self.IntroducedByPackageName, self.ExtendedBy)
+
     def Extend(self, variant: PackagePlatformVariant, extendingPackageName: str) -> PackagePlatformVariant:
         if not variant.AllowExtend:
             raise VariantNotMarkedAsExtendingException(self, variant)
 
         extendedVariant = PackagePlatformVariant(self.__Log, self.__GeneratorInfo, extendingPackageName, self, False)
-        extendedVariant.ExtensionInfo = f"{self.IntroducedByPackageName}<-{extendingPackageName}"
+        extendedVariant.ExtendedBy.append(extendingPackageName)
 
         dstOptions = extendedVariant.Options
         srcOptions = variant.Options

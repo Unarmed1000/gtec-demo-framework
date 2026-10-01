@@ -92,7 +92,7 @@ class PackageGraphBuilder:
             graph.HasExternalContraints = flavorConstraints.HasConstraints()
             if engineResolveConfig.FlavorResolveConstraints == FlavorResolveConstraints.OnlyAllowOneFlavorPerRoot:
                 generatedFlavorConstraints = PackageGraphBuilder.__EnsureOnlyOneFlavorPerRootNode(
-                    graph, flavorConstraints.HasConstraints(), engineResolveConfig.ExternalFlavorConstraintHelp
+                    graph, PackageGraphBuilder.__GetRootPackageNames(buildOrder), engineResolveConfig.ExternalFlavorConstraintHelp
                 )
                 if generatedFlavorConstraints is not None:
                     mergedConstraints = ComplexExternalFlavorConstraints.Merge(flavorConstraints, generatedFlavorConstraints)
@@ -154,6 +154,12 @@ class PackageGraphBuilder:
                     desc = f"{flavor.Name.Value}={option.Name}"
                     graph.AddEdge(node, dep.Template, EdgeType.TemplateFlavor, dep.FlavorConstraints, desc)
 
+        for flavorExtension in resolvedPackageTemplate.PackageFlavorExtensions:
+            for option in flavorExtension.Options:
+                for dep in option.DirectDependencies:
+                    desc = f"{flavorExtension.Name.Value}={option.Name}"
+                    graph.AddEdge(node, dep.Template, EdgeType.TemplateFlavor, dep.FlavorConstraints, desc)
+
         return node
 
     @staticmethod
@@ -189,10 +195,20 @@ class PackageGraphBuilder:
         return instance
 
     @staticmethod
+    def __GetRootPackageNames(buildOrder: list[UnresolvedBasicPackage]) -> set[str]:
+        """The names of the packages the top level package depends on: the packages no other package depends on, or, when external flavor
+        constraints are used, the constraint packages placed in front of each of them
+        """
+        topLevelPackage = buildOrder[-1]
+        if topLevelPackage.Type != PackageType.TopLevel:
+            raise Exception(f"Internal error, the build order ends with '{topLevelPackage.Name}' instead of the top level package")
+        return {dep.Name.Value for dep in topLevelPackage.DirectDependencies}
+
+    @staticmethod
     def __EnsureOnlyOneFlavorPerRootNode(
-        graph: ResolvedPackageGraph, hasFlavorConstraints: bool, externalFlavorConstraintHelp: ExternalFlavorConstraintHelp
+        graph: ResolvedPackageGraph, rootPackageNames: set[str], externalFlavorConstraintHelp: ExternalFlavorConstraintHelp
     ) -> dict[str, ExternalFlavorConstraints] | None:
-        flavorTemplateDict = PackageGraphBuilder.__BuildFlavorTemplateDict(graph, hasFlavorConstraints)
+        flavorTemplateDict = PackageGraphBuilder.__BuildFlavorTemplateDict(graph, rootPackageNames)
 
         if externalFlavorConstraintHelp == ExternalFlavorConstraintHelp.Disabled:
             PackageGraphBuilder.__VerifyOnlyOneFlavorPerRootNode(flavorTemplateDict)
@@ -204,30 +220,25 @@ class PackageGraphBuilder:
         return None
 
     @staticmethod
-    def __BuildFlavorTemplateDict(graph: ResolvedPackageGraph, hasFlavorConstraints: bool) -> dict[ResolvedPackageTemplate, list[ResolvedPackageInstance]]:
+    def __BuildFlavorTemplateDict(graph: ResolvedPackageGraph, rootPackageNames: set[str]) -> dict[ResolvedPackageTemplate, list[ResolvedPackageInstance]]:
         # Run through all root nodes and determine if there are multiple flavors of each
         # if there are we determine which flavors need to be constrained and notify the user.
+        # Only the instances of the root packages count. An instance of a dependency that no dependent uses (for example because a dependency flavor
+        # constraint selected another one) has no incoming edges either, but it is not a root. With external flavor constraints the root packages
+        # are the constraint packages, so only their instances count.
 
         flavorTemplateDict: dict[ResolvedPackageTemplate, list[ResolvedPackageInstance]] = {}
         rootNodes = graph.FindNodesWithNoIncomingDependencies()
-        if hasFlavorConstraints:
-            for rootNode in rootNodes:
-                if (
-                    rootNode.Source.Type == PackageType.ExternalFlavorConstraint
-                    and isinstance(rootNode.Source, ResolvedPackageInstance)
-                    and rootNode.Source.InstanceType == PackageInstanceType.Flavor
-                ):
-                    if rootNode.Source.FlavorTemplate not in flavorTemplateDict:
-                        flavorTemplateDict[rootNode.Source.FlavorTemplate] = [rootNode.Source]
-                    else:
-                        flavorTemplateDict[rootNode.Source.FlavorTemplate].append(rootNode.Source)
-        else:
-            for rootNode in rootNodes:
-                if isinstance(rootNode.Source, ResolvedPackageInstance) and rootNode.Source.InstanceType == PackageInstanceType.Flavor:
-                    if rootNode.Source.FlavorTemplate not in flavorTemplateDict:
-                        flavorTemplateDict[rootNode.Source.FlavorTemplate] = [rootNode.Source]
-                    else:
-                        flavorTemplateDict[rootNode.Source.FlavorTemplate].append(rootNode.Source)
+        for rootNode in rootNodes:
+            if (
+                isinstance(rootNode.Source, ResolvedPackageInstance)
+                and rootNode.Source.InstanceType == PackageInstanceType.Flavor
+                and rootNode.Source.FlavorTemplate.Name.Value in rootPackageNames
+            ):
+                if rootNode.Source.FlavorTemplate not in flavorTemplateDict:
+                    flavorTemplateDict[rootNode.Source.FlavorTemplate] = [rootNode.Source]
+                else:
+                    flavorTemplateDict[rootNode.Source.FlavorTemplate].append(rootNode.Source)
         return flavorTemplateDict
 
     @staticmethod

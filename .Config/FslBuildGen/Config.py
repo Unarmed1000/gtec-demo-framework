@@ -82,7 +82,6 @@ class Config(BaseConfig):
         self.TestPath = toolConfig.UnitTestPath
         self.DisableWrite = self.IsQuery
         self.DisableQueryWrite: bool = False
-        self.GroupException: bool = True
         # Variant extension is getting closer to working, so lets enable it
         self.AllowVariantExtension: bool = True
         self.AllowExeDependency: bool = toolConfig.ProjectRootConfig.AllowExeDependency
@@ -93,6 +92,8 @@ class Config(BaseConfig):
         self.DisableIncludeDirCheck: bool = False
         self.DisableSourceDirCheck: bool = False
         self.IgnoreNotSupported: bool = False
+        # Search every package location and directory layout for each package name that is used, so a name defined twice is reported
+        self.DetectDuplicatePackages: bool = False
         self.IsDryRun: bool = False
         self.VariantConstraints = variantsDict if variantsDict else ExternalVariantConstraints({})
 

@@ -35,10 +35,10 @@
 # from FslBuildGen.Config import Config
 
 from FslBuildGen.DataTypes import AccessType, FilterMode, PackageType
-from FslBuildGen.DependencyGraph import DependencyGraph, DependencyGraphNode
+from FslBuildGen.DependencyGraph import DependencyGraph
 from FslBuildGen.Engine.BasicBuildConfig import BasicBuildConfig
 from FslBuildGen.Engine.EngineResolveConfig import EngineResolveConfig
-from FslBuildGen.Exceptions import CircularDependencyException, CircularDependencyInDependentModuleException, GroupedException, UsageErrorException
+from FslBuildGen.Exceptions import InternalErrorException
 from FslBuildGen.ExternalVariantConstraints import ExternalVariantConstraints
 from FslBuildGen.Generator.GeneratorInfo import GeneratorInfo
 from FslBuildGen.Log import Log
@@ -56,7 +56,6 @@ class PackageBuilder:
         log: Log,
         configBuildDir: str,
         configIgnoreNotSupported: bool,
-        configGroupException: bool,
         toolConfig: ToolConfig,
         platformName: str,
         hostPlatformName: str,
@@ -101,32 +100,22 @@ class PackageBuilder:
             graph.AddNode(package)
         graph.Finalize()
 
-        # Extract the top level nodes
+        # Extract the top level nodes, the dependencies were validated to be acyclic when the packages were resolved,
+        # so there is always at least one top level node unless there are no packages at all
         nodes = graph.GetNodesWithNoIncomingDependencies()
-        # useFallback = True
-        if len(nodes) > 0:
-            topLevelGenFile = XmlGenFile(log, toolConfig, toolConfig.DefaultPackageLanguage)
-            topLevelGenFile.Name = PackageNameMagicString.TopLevelName
-            topLevelGenFile.SetType(PackageType.TopLevel)
-            for entry in nodes:
-                topLevelGenFile.DirectDependencies.append(FakeXmlGenFileDependency(log, entry.Name, AccessType.Public))
-
-            topLevelGenFile.DirectDependencies.sort(key=lambda s: s.Name.lower())
-        else:
-            # We have circular dependencies and couldnt find any starting nodes
-            # so generate a empty top level node and expect a circular dependency
-            # error to be caught
-            topLevelGenFile = XmlGenFile(log, toolConfig, toolConfig.DefaultPackageLanguage)
-            topLevelGenFile.Name = PackageNameMagicString.TopLevelName
-            topLevelGenFile.SetType(PackageType.TopLevel)
+        topLevelGenFile = XmlGenFile(log, toolConfig, toolConfig.DefaultPackageLanguage)
+        topLevelGenFile.Name = PackageNameMagicString.TopLevelName
+        topLevelGenFile.SetType(PackageType.TopLevel)
+        for entry in nodes:
+            topLevelGenFile.DirectDependencies.append(FakeXmlGenFileDependency(log, entry.Name, AccessType.Public))
+        topLevelGenFile.DirectDependencies.sort(key=lambda s: s.Name.lower())
 
         topLevelPackage = packageManager.CreatePackage(
             log, configBuildDir, configIgnoreNotSupported, toolConfig, platformName, hostPlatformName, topLevelGenFile, True
         )
         graph.AddNodeAndEdges(topLevelPackage)
 
-        # Since we need to resolve the build order we might as well verify dependencies at the same time
-        self.__ValidateDependencies(configGroupException, packages)
+        self.__ResolveBuildOrders(packages)
         self.AllPackages: list[Package] = packages
         self.TopLevelPackage = topLevelPackage
         self.__ResolveAllPackageDependencies(log, topLevelPackage)
@@ -134,40 +123,17 @@ class PackageBuilder:
     #        self.TopLevelPackage = PackageListUtil.GetTopLevelPackage(packages)
     #        self.__ResolveAllPackageDependencies(config, self.TopLevelPackage)
 
-    def __ValidateDependencies(self, configGroupException: bool, packages: list[Package]) -> None:
-        exceptionList: list[Exception] = []
-        exceptionList2: list[Exception] = []
+    def __ResolveBuildOrders(self, packages: list[Package]) -> None:
         for package in packages:
-            try:
-                # allDependenciesDict = {}
-                # stack = [package]
-                graph = DependencyGraph(package)
-                orderedDependencyList: list[Package] = []
-                self.__ValidateDependenciesFor(orderedDependencyList, package, graph)
-                orderedDependencyList.reverse()
-                package.ResolvedBuildOrder = orderedDependencyList
-                # NOTE: we can not filter the dependency list based on 'ExperimentalRecipes' here since we need to resolve it first
-                # package.ResolvedExperimentalRecipeBuildOrder = [entry for entry in orderedDependencyList if not entry.DirectExperimentalRecipe is None]
-            except CircularDependencyException as ex:
-                if configGroupException:
-                    exceptionList.append(ex)
-                else:
-                    raise
-            except CircularDependencyInDependentModuleException as ex:
-                if configGroupException:
-                    exceptionList2.append(ex)
-                else:
-                    raise
+            graph = DependencyGraph(package)
+            orderedDependencyList: list[Package] = []
+            self.__ResolveBuildOrderFor(orderedDependencyList, package, graph)
+            orderedDependencyList.reverse()
+            package.ResolvedBuildOrder = orderedDependencyList
+            # NOTE: we can not filter the dependency list based on 'ExperimentalRecipes' here since we need to resolve it first
+            # package.ResolvedExperimentalRecipeBuildOrder = [entry for entry in orderedDependencyList if not entry.DirectExperimentalRecipe is None]
 
-        if len(exceptionList) > 0:
-            raise GroupedException(exceptionList)
-        # If the below exception is fired we have a internal error
-        # as any entry in exceptionList2 should result in entries in
-        # exceptionList
-        if len(exceptionList2) > 0:
-            raise GroupedException(exceptionList2)
-
-    def __ValidateDependenciesFor(self, rOrderedDependencyList: list[Package], package: Package, graph: DependencyGraph) -> None:
+    def __ResolveBuildOrderFor(self, rOrderedDependencyList: list[Package], package: Package, graph: DependencyGraph) -> None:
         packageNode = graph.Get(package)
         # TODO: make the get method never return none
         if packageNode is None:
@@ -175,79 +141,12 @@ class PackageBuilder:
         while len(graph.Nodes) > 0:
             nodes = graph.RemoveNodesWithNoIncomingDependencies()
             if len(nodes) <= 0:
-                self.HandleCircularDependencies(graph, packageNode)
+                # Circular dependencies are rejected when the packages are resolved (Engine.Order), so this can not happen
+                raise InternalErrorException(f"Package '{package.Name}' has a circular dependency that was not detected when the packages were resolved")
             nodes.sort(key=lambda node: node.Name.lower())
             for node in nodes:
                 # if node != packageNode:
                 rOrderedDependencyList.append(node.Package)
-
-    def HandleCircularDependencies(self, graph: DependencyGraph, packageNode: DependencyGraphNode) -> None:
-        keepRemoving = True
-        while keepRemoving:
-            keepRemoving = len(graph.RemoveNodesWithNoDependencies()) > 0
-
-        # check if this package is actually part of the circular dependency or not
-        if packageNode not in graph.Nodes:
-            # raise CircularDependencyInDependentModuleException("'{0}' uses a package that has a circular dependency".format(packageNode.Name))
-            raise CircularDependencyException(f"'{packageNode.Name}' uses a package that has a circular dependency")
-
-        # We are only interested in the dependencies that start at packageNode
-        circularDependencies: list[list[DependencyGraphNode]] = []
-        dependencies: list[DependencyGraphNode] = [packageNode]
-        self.BuildDependencyList(circularDependencies, dependencies, packageNode)
-
-        circularDepStringsSet = set()  # Set[str]
-        for circularDep in circularDependencies:
-            circularDepStringsSet.add(self.GetCircularDependencyString(circularDep))
-
-        circularDepStrings = list(circularDepStringsSet)
-        circularDepStrings.sort(key=lambda str: (self.__CountArrows(str), str.lower()))
-
-        raise CircularDependencyException("Circular dependency detected while validating " + packageNode.Name + ":\n  " + "\n  ".join(circularDepStrings))
-
-    def BuildDependencyList(
-        self, rCircularDependencies: list[list[DependencyGraphNode]], dependencies: list[DependencyGraphNode], node: DependencyGraphNode
-    ) -> None:
-        for depNode in node.To:
-            if depNode not in dependencies:
-                dependencies.append(depNode)
-                self.BuildDependencyList(rCircularDependencies, dependencies, depNode)
-                dependencies.pop()
-            else:
-                circularDependencyList = list(dependencies)
-                circularDependencyList.append(depNode)
-                rCircularDependencies.append(circularDependencyList)
-
-    def GetCircularDependencyString(self, srcList: list[DependencyGraphNode]) -> str:
-        if srcList is None or len(srcList) < 1:
-            raise UsageErrorException("No circular dependency exist in the supplied list")
-        try:
-            # Since the last element is where the circular dependency is detected
-            # we need to find the first occurrance of the last element
-            index = srcList.index(srcList[-1])
-            return self.GetNameListString(srcList[index:], "->")
-        except ValueError as ex:
-            raise UsageErrorException("No circular dependency exist in the supplied list") from ex
-
-    def GetNameListString(self, srcList: list[DependencyGraphNode], seperator: str) -> str:
-        strContent = ""
-        isFirst = True
-        for entry in srcList:
-            if isFirst:
-                strContent = entry.Name
-                isFirst = False
-            else:
-                strContent += seperator + entry.Name
-        return strContent
-
-    def __CountArrows(self, strContent: str) -> int:
-        count = 0
-        index = strContent.find("->")
-        lenStr = len(strContent)
-        while index >= 0 and (index + 2) < lenStr:
-            count = count + 1
-            index = strContent.find("->", index + 2)
-        return count
 
     def __ResolveAllPackageDependencies(self, log: Log, topLevel: Package) -> None:
         for package in topLevel.ResolvedBuildOrder:
@@ -272,10 +171,11 @@ class PackageBuilder:
         resolvedDirectDependencies = list(package.ResolvedDirectDependencies)
         for directDep in resolvedDirectDependencies:
             for dep in directDep.Package.ResolvedAllDependencies:
-                # ensure that anything we get via a non public access type keeps gets a access type that is >= directDep.Access
-                if dep.Access.value < directDep.Access.value or dep.Access == AccessType.Private:
-                    # dep = PackageDependency(dep.Package, directDep.Access)
-                    dep = PackageDependency(dep.Package, AccessType.Link, dep.OutputType, dep.ReferenceOutputAssembly)
+                # What the direct dependency reaches through Public edges only is reached with the access of the edge to the direct dependency,
+                # what it reaches through a Private or Link edge can only be linked
+                access = directDep.Access if dep.Access == AccessType.Public else AccessType.Link
+                if access != dep.Access:
+                    dep = PackageDependency(dep.Package, access, dep.OutputType, dep.ReferenceOutputAssembly)
                 if dep.Name not in addedDict:
                     package.ResolvedAllDependencies.append(dep)
                     addedDict[dep.Name] = dep

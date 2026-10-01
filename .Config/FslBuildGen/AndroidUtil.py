@@ -72,7 +72,7 @@ class AndroidUtil:
         searchString = "Pkg.Revision"
         index = content.find(searchString)
         if index < 0:
-            raise Exception(f"source.properties at '{filePath} did not contain the expected '{searchString}' entry")
+            raise Exception(f"source.properties at '{filePath}' did not contain the expected '{searchString}' entry")
         index += len(searchString)
         endIndex = content.find("\n", index)
         endIndex = endIndex if endIndex >= index else len(content)
@@ -81,7 +81,7 @@ class AndroidUtil:
         if len(content) <= 0:
             raise Exception(f"Failed to retrieve version from '{filePath}' entry")
         if content[0] != "=":
-            raise Exception(f"source.properties at '{filePath} did not contain the expected '{searchString}=' entry")
+            raise Exception(f"source.properties at '{filePath}' did not contain the expected '{searchString}=' entry")
         content = content[1 : len(content)].strip()
         if not AndroidUtil.IsValidVersionString(content):
             raise Exception(f"Failed to retrieve version from '{filePath}' entry as was in a unexpected format")

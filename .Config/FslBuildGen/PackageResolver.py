@@ -88,11 +88,11 @@ from FslBuildGen.PackageManager import PackageManagerFilter
 # from FslBuildGen.Packages.ExceptionsXml import RequirementNameCollisionException
 from FslBuildGen.Packages.ExceptionsXml import (
     ExtendingVariantCanNotIntroduceNewOptionsException,
+    VariantDeclaredByUnrelatedPackagesException,
     VariantExtensionNotSupportedException,
     VariantNameCollisionException,
 )
 from FslBuildGen.Packages.Package import Package, PackageDefine, PackageExternalDependency, PackagePlatformVariant, PackagePlatformVariantOption
-from FslBuildGen.Packages.PackageInstanceName import PackageInstanceName
 from FslBuildGen.Packages.Unresolved.Exceptions import ExternalDependencyDuplicatedException
 
 # from FslBuildGen.Packages.Unresolved.Exceptions import RequirementUseDuplicatedException
@@ -125,7 +125,6 @@ class PackageResolver:
         configIsDryRun: bool,
         configIgnoreNotSupported: bool,
         configAllowVariantExtension: bool,
-        configGroupException: bool,
         toolConfig: ToolConfig,
         platformContext: PlatformContext,
         genFiles: list[XmlGenFile],
@@ -165,7 +164,6 @@ class PackageResolver:
                 log,
                 configBuildDir,
                 configIgnoreNotSupported,
-                configGroupException,
                 toolConfig,
                 platformContext.PlatformName,
                 platformContext.HostPlatformName,
@@ -412,11 +410,15 @@ class PackageResolver:
     def __ResolveBuildContentFiles(self, log: Log, toolConfig: ToolConfig, packages: list[Package]) -> None:
         for package in packages:
             if not package.IsVirtual:
-                sourceContent = self.__ProcessContentCommandFile(log, toolConfig, package)
+                sourceContent, commandFilename = self.__ProcessContentCommandFile(log, toolConfig, package)
 
-                package.ResolvedContentBuilderBuildInputFiles = list(sourceContent.ContentBuildSource.Files)
-                package.ResolvedContentBuilderSyncInputFiles = list(sourceContent.ContentSource.Files)
-                package.ResolvedContentBuilderAllInputFiles = list(sourceContent.AllContentSource.Files)
+                # The command file describes the content build, it is not built or synced by it (FslBuildContent skips it too).
+                # A file can be found by more than one route, for example a synced source inside the content build directory is also found by the
+                # scan of that directory, each input file is listed once.
+                package.ResolvedContentBuilderCommandFile = sourceContent.ContentBuildSource.TryFindByResolvedSourcePath(commandFilename)
+                package.ResolvedContentBuilderBuildInputFiles = PackageResolver.__GetContentInputFiles(sourceContent.ContentBuildSource.Files, commandFilename)
+                package.ResolvedContentBuilderSyncInputFiles = PackageResolver.__GetContentInputFiles(sourceContent.ContentSource.Files, None)
+                package.ResolvedContentBuilderAllInputFiles = PackageResolver.__GetContentInputFiles(sourceContent.AllContentSource.Files, commandFilename)
 
                 package.ResolvedContentBuilderBuildOutputFiles = []
                 if len(package.ResolvedContentBuilderBuildInputFiles) > 0 and package.Path is not None:
@@ -450,6 +452,7 @@ class PackageResolver:
                 # Resolve all known special files
                 package.ResolvedSpecialFiles = self.__ProcessSpecialFiles(log, package)
             else:
+                package.ResolvedContentBuilderCommandFile = None
                 package.ResolvedContentBuilderBuildInputFiles = []
                 package.ResolvedContentBuilderSyncInputFiles = []
                 package.ResolvedContentBuilderAllInputFiles = []
@@ -484,13 +487,24 @@ class PackageResolver:
         res = [entry for entry in content.Files if entry.ResolvedPath not in generatedContentSet]
         return res
 
-    def __ProcessContentCommandFile(self, log: Log, toolConfig: ToolConfig, package: Package) -> SourceContent:
+    def __ProcessContentCommandFile(self, log: Log, toolConfig: ToolConfig, package: Package) -> tuple[SourceContent, str]:
         if package.AbsoluteBuildPath is None or package.ContentSourcePath is None or package.ContentPath is None:
             raise Exception("Invalid package")
         pathVariables = PathVariables(toolConfig, package.AbsoluteBuildPath, package.ContentSourcePath.AbsoluteDirPath, package.ContentPath.AbsoluteDirPath)
         commandFilename = IOUtil.Join(package.ContentSourcePath.AbsoluteDirPath, ToolSharedValues.CONTENT_BUILD_FILE_NAME)
         commands = ContentBuildCommandFile(log, commandFilename, pathVariables)
-        return SourceContent(log, package.ContentPath.AbsoluteDirPath, package.ContentSourcePath.AbsoluteDirPath, commands, False)
+        return (SourceContent(log, package.ContentPath.AbsoluteDirPath, package.ContentSourcePath.AbsoluteDirPath, commands, False), commandFilename)
+
+    @staticmethod
+    def __GetContentInputFiles(records: list[PathRecord], commandFilename: str | None) -> list[PathRecord]:
+        """The records in their current order, without the command file and with each file only once"""
+        res: list[PathRecord] = []
+        addedPaths: set[str] = set()
+        for record in records:
+            if record.ResolvedPath != commandFilename and record.ResolvedPath not in addedPaths:
+                res.append(record)
+                addedPaths.add(record.ResolvedPath)
+        return res
 
     def __AddBuildIncludeDir(
         self,
@@ -632,21 +646,20 @@ class PackageResolver:
             package.ResolvedBuildDirectDefines = list(allDefines.values())
 
             directDefines = dict(allDefines)
-            # Add the cpp defines from all direct dependencies
+            # Add the cpp defines from all direct dependencies.
+            # A define can arrive through several dependencies, so first choose the copy to keep for each name, then add the chosen copies.
+            chosenDefines: dict[str, PackageDefine] = {}
             for depPackage in package.ResolvedDirectDependencies:
                 if depPackage.Access != AccessType.Link:
                     if depPackage.Package.ResolvedBuildAllPublicDefines is None:
                         raise Exception("Invalid package")
                     for entry in depPackage.Package.ResolvedBuildAllPublicDefines:
                         processedDefine = PackageDefine(entry, entry.IntroducedByPackageName, depPackage.Access)
-                        if processedDefine.Name not in allDefines:
-                            self.__ResolveAdd(package, processedDefine, allDefines, publicDefines, privateDefines)
-                        elif processedDefine.Name in directDefines:
+                        if processedDefine.Name in directDefines:
                             raise UsageErrorException(f"Define: {processedDefine.Name} was already defined by {processedDefine.IntroducedByPackageName}")
-                        elif processedDefine.FromPackageAccess.value < allDefines[processedDefine.Name].FromPackageAccess.value:
-                            # We have access to the define but at more open access level, so adopt that instead
-                            self.__ResolveRemove(allDefines[processedDefine.Name], allDefines, publicDefines, privateDefines)
-                            self.__ResolveAdd(package, processedDefine, allDefines, publicDefines, privateDefines)
+                        PackageResolver.__ChooseCopy(chosenDefines, processedDefine)
+            for processedDefine in chosenDefines.values():
+                self.__ResolveAdd(package, processedDefine, allDefines, publicDefines, privateDefines)
 
             allDefinesList = list(allDefines.values())
             allDefinesList.sort(key=lambda s: s.Name.lower())
@@ -680,28 +693,36 @@ class PackageResolver:
             raise Exception(f"Usage error {processedEntry.Name} already exist in the list. Entries can not be duplicated, please remove it first.")
 
         rAllDict[processedEntry.Name] = processedEntry
-        if processedEntry.FromPackageAccess == AccessType.Private:
-            rPrivateList.append(processedEntry)
-        else:
+        # Only what arrives through a Public edge (or the package adds itself) is published. What arrives through a Private edge, or a DLL that
+        # arrives through a Link edge, stays with this package.
+        if processedEntry.FromPackageAccess == AccessType.Public:
             rPublicList.append(processedEntry)
+        else:
+            rPrivateList.append(processedEntry)
         # If the entry has'nt been marked as consumed yet and this package isn't virtual then consume it
         if processedEntry.ConsumedBy is None and not package.IsVirtual:
             processedEntry.ConsumedBy = package
             processedEntry.IsFirstActualUse = True
 
-    def __ResolveRemove(self, processedEntry: Any, rAllDict: dict[str, Any], rPublicList: list[Any], rPrivateList: list[Any]) -> None:
-        if processedEntry in rPrivateList:
-            rPrivateList.remove(processedEntry)
-        if processedEntry in rPublicList:
-            rPublicList.remove(processedEntry)
-        rAllDict.pop(processedEntry.Name, None)
+    @staticmethod
+    def __ChooseCopy[T: (PackageDefine, PackageExternalDependency)](rChosenDict: dict[str, T], candidate: T) -> None:
+        """Keep the copy with the most open access. On a tie keep a copy a dependency already consumed, so the first actual use does not
+        depend on the order the dependencies are processed in.
+        """
+        current = rChosenDict.get(candidate.Name)
+        if (
+            current is None
+            or candidate.FromPackageAccess.value < current.FromPackageAccess.value
+            or (candidate.FromPackageAccess == current.FromPackageAccess and candidate.ConsumedBy is not None and current.ConsumedBy is None)
+        ):
+            rChosenDict[candidate.Name] = candidate
 
     def __CreateExternalHeadersDependency(
         self, log: Log, pathBuilder: PathBuilder, package: Package, sourceRecipe: PackageExperimentalRecipe, command: PackageRecipeValidateCommandAddHeaders
     ) -> PackageExternalDependency:
         """Automatically generate a external dependency to header files just as if it had been in the original source."""
         if IOUtil.IsAbsolutePath(command.Name):
-            raise Exception(f"Path can not be absolute '{command.Name}")
+            raise Exception(f"Path can not be absolute '{command.Name}'")
 
         if sourceRecipe.ResolvedInstallLocation is None:
             raise Exception("sourceRecipe is missing the expected ResolvedInstallLocation")
@@ -730,9 +751,9 @@ class PackageResolver:
             )
 
         if IOUtil.IsAbsolutePath(srcLocation):
-            raise Exception(f"Path can not be absolute '{srcLocation}")
+            raise Exception(f"Path can not be absolute '{srcLocation}'")
         if IOUtil.IsAbsolutePath(srcDebugLocation):
-            raise Exception(f"Path can not be absolute '{srcDebugLocation}")
+            raise Exception(f"Path can not be absolute '{srcDebugLocation}'")
 
         srcName = IOUtil.GetFileName(command.Name)
         srcDebugName = IOUtil.GetFileName(command.DebugName)
@@ -762,9 +783,9 @@ class PackageResolver:
             )
 
         if IOUtil.IsAbsolutePath(srcLocation):
-            raise Exception(f"Path can not be absolute '{srcLocation}")
+            raise Exception(f"Path can not be absolute '{srcLocation}'")
         if IOUtil.IsAbsolutePath(srcDebugLocation):
-            raise Exception(f"Path can not be absolute '{srcDebugLocation}")
+            raise Exception(f"Path can not be absolute '{srcDebugLocation}'")
 
         srcName = IOUtil.GetFileName(command.Name)
         srcDebugName = IOUtil.GetFileName(command.DebugName)
@@ -898,39 +919,33 @@ class PackageResolver:
                 # print("Deps: " + ", ".join(Util.ExtractNames(package.ResolvedDirectExternalDependencies)))
 
                 directDict = dict(allDict)
-                # Add the external dependencies from all direct dependencies
+                # Add the external dependencies from all direct dependencies.
+                # An entry can arrive through several dependencies, so first choose the copy to keep for each name, then add the chosen copies.
+                chosenDict: dict[str, PackageExternalDependency] = {}
                 for depPackage in package.ResolvedDirectDependencies:
                     if depPackage.Access != AccessType.Link:
                         if depPackage.Package.ResolvedBuildAllPublicExternalDependencies is None:
                             raise Exception("Invalid package")
                         for entry in depPackage.Package.ResolvedBuildAllPublicExternalDependencies:
                             processedEntry = PackageExternalDependency(None, entry, entry.IntroducedByPackageName, depPackage.Access)
-                            if processedEntry.Name not in allDict:
-                                self.__ResolveAdd(package, processedEntry, allDict, publicList, privateList)
-                            elif processedEntry.Name in directDict:
+                            if processedEntry.Name in directDict:
                                 raise UsageErrorException(
                                     f"ExternalDependency: {processedEntry.Name} was already defined by {processedEntry.IntroducedByPackageName}"
                                 )
-                            elif processedEntry.FromPackageAccess.value < allDict[processedEntry.Name].FromPackageAccess.value:
-                                # We have access to the entry but at more open access level, so adopt that instead
-                                self.__ResolveRemove(allDict[processedEntry.Name], allDict, publicList, privateList)
-                                self.__ResolveAdd(package, processedEntry, allDict, publicList, privateList)
+                            PackageResolver.__ChooseCopy(chosenDict, processedEntry)
                     else:
                         if depPackage.Package.ResolvedBuildAllExternalDependencies is None:
                             raise Exception("Invalid package")
                         for entry in depPackage.Package.ResolvedBuildAllExternalDependencies:
                             if entry.Type == ExternalDependencyType.DLL:
                                 processedEntry = PackageExternalDependency(None, entry, entry.IntroducedByPackageName, depPackage.Access)
-                                if processedEntry.Name not in allDict:
-                                    self.__ResolveAdd(package, processedEntry, allDict, publicList, privateList)
-                                elif processedEntry.Name in directDict:
+                                if processedEntry.Name in directDict:
                                     raise UsageErrorException(
                                         f"ExternalDependency: {processedEntry.Name} was already defined by {processedEntry.IntroducedByPackageName}"
                                     )
-                                elif processedEntry.FromPackageAccess.value < allDict[processedEntry.Name].FromPackageAccess.value:
-                                    # We have access to the entry but at more open access level, so adopt that instead
-                                    self.__ResolveRemove(allDict[processedEntry.Name], allDict, publicList, privateList)
-                                    self.__ResolveAdd(package, processedEntry, allDict, publicList, privateList)
+                                PackageResolver.__ChooseCopy(chosenDict, processedEntry)
+                for processedEntry in chosenDict.values():
+                    self.__ResolveAdd(package, processedEntry, allDict, publicList, privateList)
 
                 allList = list(allDict.values())
                 allList.sort(key=lambda s: s.Name.lower())
@@ -958,30 +973,41 @@ class PackageResolver:
 
     # This is a fast way to validate various variant rules
     def __CheckVariants(self, configAllowVariantExtension: bool, finalResolveOrder: list[Package]) -> None:
-        variantDict: dict[str, tuple[PackageInstanceName, PackagePlatformVariant]] = {}
+        variantDict: dict[str, tuple[Package, PackagePlatformVariant]] = {}
         for package in finalResolveOrder:
             # collect the variants the we encounter and check if any
             # later encounter of it tries to extend it with new options
+            # (a package declares a variant once per platform, that is checked when the package is loaded)
             for variant in package.ResolvedDirectVariants:
                 if variant.Name not in variantDict:
-                    variantDict[variant.Name] = (package.NameInfo.FullName, variant)
+                    variantDict[variant.Name] = (package, variant)
                 else:
                     record = variantDict[variant.Name]
+                    declaredByName = record[0].NameInfo.FullName
+                    # A variant is a global build variable, so a second declaration is only valid as an extension by a package that depends
+                    # on the declaring package (the resolve order places the declaring package first). Flavor instances are compared by their
+                    # source package: the instances of one package share its declaration, and each instance of a dependent depends on one
+                    # instance of the declaring package. The build order includes the package itself.
+                    declaredBySourceName = record[0].NameInfo.SourceName
+                    if not any(entry.NameInfo.SourceName == declaredBySourceName for entry in package.ResolvedBuildOrder):
+                        raise VariantDeclaredByUnrelatedPackagesException(package.NameInfo.FullName, variant, declaredByName)
                     if not configAllowVariantExtension:
-                        raise VariantExtensionNotSupportedException(package.NameInfo.FullName, variant, record[0])
+                        raise VariantExtensionNotSupportedException(package.NameInfo.FullName, variant, declaredByName)
                     undefinedOptions = self.__GetVariantUndefinedOptions(record[1], variant)
                     if len(undefinedOptions) > 0:
-                        raise ExtendingVariantCanNotIntroduceNewOptionsException(package.NameInfo.FullName, variant, record[0], record[1], undefinedOptions)
+                        raise ExtendingVariantCanNotIntroduceNewOptionsException(
+                            package.NameInfo.FullName, variant, declaredByName, record[1], undefinedOptions
+                        )
 
         # Ensure that the variant names are unique when casing is ignored
-        uniqueNames: dict[str, tuple[PackageInstanceName, PackagePlatformVariant]] = {}
+        uniqueNames: dict[str, tuple[Package, PackagePlatformVariant]] = {}
         for key, value in list(variantDict.items()):
             variantName = key.lower()
             if variantName not in uniqueNames:
                 uniqueNames[variantName] = value
             else:
                 record = uniqueNames[variantName]
-                raise VariantNameCollisionException(value[0], value[1], record[0], record[1])
+                raise VariantNameCollisionException(value[0].NameInfo.FullName, value[1], record[0].NameInfo.FullName, record[1])
 
     def __ResolveAllVariants(self, finalResolveOrder: list[Package]) -> None:
         # For each package resolve all variants that it depends upon

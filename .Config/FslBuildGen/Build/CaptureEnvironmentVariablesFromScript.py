@@ -135,7 +135,7 @@ class CaptureEnvironmentVariablesFromScript:
                 raise Exception("captured json decode failed")
             if key not in jsonDict:
                 LocalUtil.DumpCapture(log, 4, content)
-                raise Exception(f"Capture contained wrong key: '{key}")
+                raise Exception(f"Capture contained wrong key: '{key}'")
             finalDict[key] = value
 
         # Ensure that all the requested entries are present

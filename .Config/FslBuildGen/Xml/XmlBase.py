@@ -109,8 +109,8 @@ class XmlBase(XmlBaseInfo):
 
         res = BoolStringHelper.TryFromString(value)
         if res is None:
-            self.Log.DoPrintWarning(f"Failed to parse as bool attribute: '{value}, using default settings")
-        return res
+            self.Log.DoPrintWarning(f"Failed to parse as bool attribute: '{value}', using default settings")
+        return res if res is not None else defaultValue
 
     def _ReadBoolAttrib(self, xmlElement: ET.Element, attribName: str, defaultValue: bool | None = None) -> bool:
         """If the attrib is there we return it
@@ -122,7 +122,7 @@ class XmlBase(XmlBaseInfo):
             return BoolStringHelper.FromString(strValue)
         elif defaultValue is not None:
             return defaultValue
-        raise XmlFormatException(f"{attribName} expects a value of either 'true' or 'false' not '{strValue}'")
+        raise XmlFormatException(f"{attribName} is required and expects a value of either 'true' or 'false'")
 
     def _ReadIncludePriorityAttrib(self, xmlElement: ET.Element, attribName: str, defaultValue: IncludePriority | None = None) -> IncludePriority:
         """If the attrib is there we return it
@@ -137,7 +137,7 @@ class XmlBase(XmlBaseInfo):
             raise XmlFormatException(f"{attribName} expects a value of either 'Before' or 'After' not '{strValue}'")
         elif defaultValue is not None:
             return defaultValue
-        raise XmlFormatException(f"{attribName} expects a value of either 'true' or 'false' not '{strValue}'")
+        raise XmlFormatException(f"{attribName} is required and expects a value of either 'Before' or 'After'")
 
     def _TryReadAttribAsVersion(self, xmlElement: ET.Element, attribName: str, defaultValue: Version | None = None) -> Version | None:
         """Read the attrib if its available, else return defaultValue"""

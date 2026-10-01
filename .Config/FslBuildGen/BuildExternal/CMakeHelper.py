@@ -101,7 +101,7 @@ def GetPlatformDefaultCMakeGenerator(platformName: str, compilerVersion: int) ->
     result = TryGetPlatformDefaultCMakeGenerator(platformName, compilerVersion)
     if result is not None:
         return result
-    raise Exception(f"CMake generator name could not be determined for this platform '{platformName}")
+    raise Exception(f"CMake generator name could not be determined for this platform '{platformName}'")
 
 
 def GetCompilerShortIdFromGeneratorName(generatorName: str) -> str:

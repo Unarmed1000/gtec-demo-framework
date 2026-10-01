@@ -59,7 +59,8 @@ class PackageIncludeDir:
         return NotImplemented
 
     def __hash__(self) -> int:
-        return hash((self.Name, self.Priority))
+        # An include dir is equal to its name string, so it has to hash like it for set and dict lookups by name
+        return hash(self.Name)
 
     def __lt__(self, other: Any) -> NoReturn:
         raise TypeError(f"{self.__class__.__name__} objects cannot be ordered")

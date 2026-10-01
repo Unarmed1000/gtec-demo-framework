@@ -42,6 +42,11 @@ from FslBuildGen.Log import Log
 from FslBuildGen.ToolConfig import ToolConfigPackageLocation, ToolConfigPackageLocationBlacklistEntry
 
 g_verbosityMaxLevel = 4
+# How to resolve a package name that is defined twice
+g_duplicatePackageHint = (
+    "A package name can only be defined once across all package locations and directory layouts "
+    "(for example 'A/B/C', 'A.B/C', 'A/B.C' and 'A.B.C' all define 'A.B.C'), so rename or remove one of them"
+)
 
 
 class PackageLocationCachePath:
@@ -117,10 +122,16 @@ class PackageLocationCandidates:
 
 
 class PackageLocationCache:
-    def __init__(self, log: Log, packageLocations: list[ToolConfigPackageLocation], genFilename: str) -> None:
+    def __init__(self, log: Log, packageLocations: list[ToolConfigPackageLocation], genFilename: str, detectDuplicatePackages: bool = False) -> None:
+        """detectDuplicatePackages: the first lookup of a package name searches every candidate location instead of stopping at the first match,
+        so a second definition of the name in another directory layout or package location is reported
+        """
         self.Log = log
         self.__PackageLocations = packageLocations
         self.__GenFilename = genFilename
+        self.__DetectDuplicatePackages = detectDuplicatePackages
+        # The package names that were searched in every candidate location (only used when detecting duplicate packages)
+        self.__FullySearchedNames: set[str] = set()
         # Package name to location matching, this contains all entries also the ones that dont have a package
         self.__LocationDict: dict[str, PackageLocationCacheRecord] = {}
         self.__ScannedPathsCacheSet: set[str] = set()
@@ -215,6 +226,9 @@ class PackageLocationCache:
 
     def TryLocatePackage(self, packageName: str) -> PackageLocationCachePath | None:
         """Locate the package"""
+        if self.__DetectDuplicatePackages:
+            return self.__TryLocatePackageInEveryLocation(packageName)
+
         found = self.TryGet(packageName)
         if found is not None:
             return found
@@ -231,6 +245,41 @@ class PackageLocationCache:
             return self.__TryLocatePackage(locationCandidates, packageName)
         finally:
             locationCandidates.Clear()
+
+    def __TryLocatePackageInEveryLocation(self, packageName: str) -> PackageLocationCachePath | None:
+        """Locate the package, the first lookup of a name scans every candidate location even when the package is already known.
+        That is every root and directory layout that can define the name (A/B/C, A.B/C, A/B.C and A.B.C all define A.B.C),
+        so a second definition is reported by PackageLocationCacheRecord.Append.
+        """
+        if packageName not in self.__FullySearchedNames:
+            locationCandidates = self.__TryLocatePackageScratchpad
+            locationCandidates.Clear()
+            try:
+                self.__AddInitialCandidates(locationCandidates, packageName)
+                self.__ScanEveryCandidateLocation(locationCandidates, packageName)
+            except PackageHasMultipleDefinitionsException as ex:
+                raise PackageHasMultipleDefinitionsException(f"{ex}. {g_duplicatePackageHint}") from ex
+            finally:
+                locationCandidates.Clear()
+            self.__FullySearchedNames.add(packageName)
+        return self.TryGet(packageName)
+
+    def __ScanEveryCandidateLocation(self, rLocationCandidates: PackageLocationCandidates, packageName: str) -> None:
+        """Scan the queued candidate locations and every candidate location those scans find, until the queue is empty"""
+        packageLocationCachePath = rLocationCandidates.TryPopFront()
+        while packageLocationCachePath is not None:
+            rLocationCandidates.NewLocations.clear()
+            self.__CacheLocation(
+                self.__ScannedPathsCacheSet,
+                self.__LocationDict,
+                packageLocationCachePath.PackageName + ".",
+                packageLocationCachePath.AbsolutePath,
+                ScanMethod.Directory,
+                packageLocationCachePath.SourceLocation,
+                rLocationCandidates.NewLocations,
+            )
+            self.__AddCandidateLocations(rLocationCandidates, packageName)
+            packageLocationCachePath = rLocationCandidates.TryPopFront()
 
     def __AddInitialCandidates(self, rLocationCandidates: PackageLocationCandidates, sourcePackageName: str) -> None:
         """Fill the location candidate queue with candidate locations"""

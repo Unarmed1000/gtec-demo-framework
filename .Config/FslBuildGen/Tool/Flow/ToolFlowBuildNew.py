@@ -443,6 +443,7 @@ class ToolFlowBuildNew(AToolAppFlow):
         performSanityCheck: bool = False,
     ) -> None:
         config = Config(self.Log, toolConfig, "sdk", localToolConfig.BuildVariantConstraints, localToolConfig.AllowDevelopmentPlugins)
+        config.DetectDuplicatePackages = localToolConfig.DetectDuplicatePackages
         # config.ForceDisableAllWrite()
 
         config.PrintTitle()
@@ -503,6 +504,7 @@ class ToolFlowBuildNew(AToolAppFlow):
             projectConfig = Config(
                 self.Log, toolConfig, PluginSharedValues.TYPE_DEFAULT, localToolConfig.BuildVariantConstraints, localToolConfig.AllowDevelopmentPlugins
             )
+            projectConfig.DetectDuplicatePackages = localToolConfig.DetectDuplicatePackages
 
             theFiles = MainFlow.DoGetFiles(projectConfig, toolConfig.GetMinimalConfig(generator.CMakeConfig), configVariant.ProjectPath)
             buildVariantConfig = BuildVariantConfigUtil.GetBuildVariantConfig(localToolConfig.BuildVariantConstraints)
@@ -660,6 +662,7 @@ class ToolAppFlowFactory(AToolAppFlowFactory):
         argConfig.AddBuildFiltering = True
         argConfig.AddBuildThreads = True
         argConfig.AddBuildVariants = True
+        argConfig.AllowDetectDuplicatePackages = True
         return argConfig
 
     def CreateUserTag(self, baseConfig: BaseConfig) -> object | None:

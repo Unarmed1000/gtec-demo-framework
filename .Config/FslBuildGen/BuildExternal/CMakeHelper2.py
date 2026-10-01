@@ -43,4 +43,4 @@ def DetermineCMakeGenerator(generator: GeneratorPluginBase) -> str:
     result = TryDetermineCMakeGenerator(generator)
     if result is not None:
         return result
-    raise Exception(f"CMake generator name could not be determined for this platform '{generator.PlatformName}")
+    raise Exception(f"CMake generator name could not be determined for this platform '{generator.PlatformName}'")

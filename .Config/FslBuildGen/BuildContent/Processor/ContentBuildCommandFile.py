@@ -73,7 +73,7 @@ class ContentBuildCommandFile:
         if self.__VersionElement not in childElements:
             raise Exception(f"The file '{sourceFilename}' did not contain a version element")
         if childElements[self.__VersionElement] != self.__CurrentVersion:
-            raise Exception(f"The file '{sourceFilename} is version {self.__VersionElement} and we expected {self.__CurrentVersion}")
+            raise Exception(f"The file '{sourceFilename}' is version {childElements[self.__VersionElement]!r} and we expected {self.__CurrentVersion!r}")
 
     def __ParseContent(self, log: Log, jsonContent: Any, sourceFilename: str, pathVariables: PathVariables) -> list[Command]:
         commands: list[Command] = []
@@ -182,7 +182,7 @@ class ContentBuildCommandFile:
         sourceRoot = ContentRootRecord(log, sourcePath, pathVariables)
         contentKey = ToolSharedValues.CONTENT_FOLDER_NAME
         if contentKey not in jsonContent:
-            raise Exception(f"The key '{contentKey}' was not found under '{parentElementName}' in file '{sourceFilename}")
+            raise Exception(f"The key '{contentKey}' was not found under '{parentElementName}' in file '{sourceFilename}'")
         content = jsonContent[contentKey]
         uniqueFiles: dict[str, ContentFileRecord] = {}
         files: list[ContentFileRecord] = []

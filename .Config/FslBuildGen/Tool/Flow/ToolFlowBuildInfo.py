@@ -172,6 +172,7 @@ class ToolFlowBuildInfo(AToolAppFlow):
         #    config.ForceDisableAllWrite()
         if localToolConfig.IgnoreNotSupported:
             config.IgnoreNotSupported = True
+        config.DetectDuplicatePackages = localToolConfig.DetectDuplicatePackages
 
         # When emitting machine readable json for the graph queries we keep stdout to a single json document
         # (no title banner) so a consumer like a MCP server can parse it directly.
@@ -370,6 +371,7 @@ class ToolAppFlowFactory(AToolAppFlowFactory):
         argConfig.AddBuildThreads = True
         argConfig.AddBuildVariants = True
         argConfig.AllowRecursive = True
+        argConfig.AllowDetectDuplicatePackages = True
         return argConfig
 
     def AddCustomArguments(self, parser: argparse.ArgumentParser, toolConfig: ToolConfig, userTag: object | None) -> None:

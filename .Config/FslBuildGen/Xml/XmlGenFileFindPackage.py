@@ -59,7 +59,7 @@ class XmlGenFileFindPackage(XmlBase):
         self.IfCondition: str | None = self._TryReadAttrib(xmlElement, self.__AttribIf, DependencyCondition.FindPackageAllowed)
         if self.IfCondition != DependencyCondition.FindPackageAllowed:
             raise XmlFormatException(
-                f"Unsupported IfCondition '{self.Version}' on FindPackage: '{self.Name}'. Expected {DependencyCondition.FindPackageAllowed}"
+                f"Unsupported IfCondition '{self.IfCondition}' on FindPackage: '{self.Name}'. Expected '{DependencyCondition.FindPackageAllowed}'"
             )
         if self.Path is not None and IOUtil.IsAbsolutePath(self.Path):
             raise XmlFormatException(f"Path '{self.Path}' can not be absolute")

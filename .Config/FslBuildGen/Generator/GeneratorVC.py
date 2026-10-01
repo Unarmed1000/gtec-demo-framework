@@ -423,7 +423,7 @@ class GeneratorVC(GeneratorBase):
         resolvedBuildAllIncludeFiles = self.__GetPackageResolvedBuildAllIncludeFiles(config.GenFileName, package)
         includeFiles = self.__CreateVisualStudioStyleFileList(template.AddHeaderFile, resolvedBuildAllIncludeFiles)
         sourceFiles = self.__CreateVisualStudioStyleFileList(template.AddSourceFile, package.ResolvedBuildSourceFiles)
-        contentSourceFiles = self.__CreateContentSourceFilesList(template.Snippet9, template.Snippet9_1, package.ResolvedContentBuilderBuildInputFiles)
+        contentSourceFiles = self.__CreateContentSourceFilesList(template.Snippet9, template.Snippet9_1, GeneratorVC.__GetContentBuilderProjectFiles(package))
         natvisFile = self.__CreateNatvis(template.AddNatvisFile, package)
 
         variantConfigurations = self.__VariantSimpleReplace(variantHelper, template.VariantConfiguration, package)
@@ -603,9 +603,7 @@ class GeneratorVC(GeneratorBase):
 
         headerFiles = package.ResolvedBuildAllIncludeFiles
         sourceFiles = package.ResolvedBuildSourceFiles
-        shaderFiles = (
-            [entry.ResolvedPath for entry in package.ResolvedContentBuilderBuildInputFiles] if package.ResolvedContentBuilderBuildInputFiles is not None else []
-        )
+        shaderFiles = [entry.ResolvedPath for entry in GeneratorVC.__GetContentBuilderProjectFiles(package)]
         itemGroupHeader = self.__GenerateItemGroup(template.FilterItemGroup, template.FilterItemHeader, headerFiles)
         itemGroupSource = self.__GenerateItemGroup(template.FilterItemGroup, template.FilterItemSource, sourceFiles)
         itemGroupShader = self.__GenerateItemGroup(template.FilterItemGroup, template.FilterItemShader, shaderFiles)
@@ -900,6 +898,15 @@ class GeneratorVC(GeneratorBase):
             strContent = snippet.replace("##FILE_PATH##", entry.replace("/", "\\"))
             res.append(strContent)
         return "\n".join(res)
+
+    @staticmethod
+    def __GetContentBuilderProjectFiles(package: Package) -> list[PathRecord]:
+        """The content build input files plus the content builder command file (so it can be edited from the project), sorted like the input files"""
+        files = list(package.ResolvedContentBuilderBuildInputFiles) if package.ResolvedContentBuilderBuildInputFiles is not None else []
+        if package.ResolvedContentBuilderCommandFile is not None:
+            files.append(package.ResolvedContentBuilderCommandFile)
+            files.sort(key=lambda s: s.Id)
+        return files
 
     def __CreateContentSourceFilesList(self, snippet: str, snippetEntry: str, entries: list[PathRecord]) -> str:
         if len(entries) <= 0:

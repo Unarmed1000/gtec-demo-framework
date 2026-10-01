@@ -168,7 +168,6 @@ class PackageLoadAndResolveProcess:
         configIgnoreNotSupported = self.Config.IgnoreNotSupported
         configAllowVariantExtension = self.Config.AllowVariantExtension
         configAllowExeDependency = self.Config.AllowExeDependency
-        configGroupException = self.Config.GroupException
         toolConfig = self.Config.ToolConfig
 
         packageResolver = PackageResolver(
@@ -177,7 +176,6 @@ class PackageLoadAndResolveProcess:
             configIsDryRun,
             configIgnoreNotSupported,
             configAllowVariantExtension,
-            configGroupException,
             toolConfig,
             platformContext,
             sourceGenFiles,

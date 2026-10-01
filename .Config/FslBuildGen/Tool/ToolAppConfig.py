@@ -47,6 +47,7 @@ class DefaultValue:
     Recipes = "*"
 
     AllowDevelopmentPlugins = False
+    DetectDuplicatePackages = False
     ForceClaimInstallArea = False
     PlatformName = PlatformNameString.INVALID
     Generator = GeneratorType.Default
@@ -67,6 +68,7 @@ class ToolAppConfig:
         self.AllowDevelopmentPlugins = DefaultValue.AllowDevelopmentPlugins
         self.BuildThreads = DefaultValue.BuildThreads
         self.DefaultPlatformName = DefaultValue.PlatformName
+        self.DetectDuplicatePackages = DefaultValue.DetectDuplicatePackages
         self.ForceClaimInstallArea = DefaultValue.ForceClaimInstallArea
         self.PlatformName = DefaultValue.PlatformName
         self.Generator = DefaultValue.Generator
@@ -94,6 +96,7 @@ class ToolAppConfig:
         self.AllowDevelopmentPlugins = toolAppConfig.AllowDevelopmentPlugins
         self.BuildThreads = toolAppConfig.BuildThreads
         self.DefaultPlatformName = toolAppConfig.DefaultPlatformName
+        self.DetectDuplicatePackages = toolAppConfig.DetectDuplicatePackages
         self.ForceClaimInstallArea = toolAppConfig.ForceClaimInstallArea
         self.PlatformName = toolAppConfig.PlatformName
         self.Generator = toolAppConfig.Generator

@@ -89,13 +89,11 @@ class EvaluationPackage:
 
         exceptionList: list[Exception] | None = None
         for pairKey, pairValue in uniquePackageDict.items():
-            if EvaluationPackage.__IsDuplicatedDependency(pairValue):
+            exception = EvaluationPackage.__TryCreateDuplicatedDependencyException(name, pairKey, pairValue)
+            if exception is not None:
                 if exceptionList is None:
                     exceptionList = []
-
-                helpStr = EvaluationPackage.__ToDuplicatedDependencyHelp(name, pairKey, pairValue)
-
-                exceptionList.append(Exception(f"Package '{name}' has duplicate dependency to '{pairKey}': [{helpStr}]'"))
+                exceptionList.append(exception)
 
         if exceptionList is not None and len(exceptionList) > 0:
             if len(exceptionList) > 1:
@@ -104,16 +102,37 @@ class EvaluationPackage:
                 raise exceptionList[0]
 
     @staticmethod
-    def __IsDuplicatedDependency(entries: list[EvaluationPackage.DependencyRecord]) -> bool:
+    def __TryCreateDuplicatedDependencyException(
+        fromPackageName: UnresolvedPackageName, toPackageName: UnresolvedPackageName, entries: list[EvaluationPackage.DependencyRecord]
+    ) -> Exception | None:
         if len(entries) <= 1:
-            return False
+            return None
 
-        # Check if all the collisions occur from a flavor (which is allowed)
-        flavorHitCount: int = 0
+        # The only allowed collisions are dependencies from different options of the same flavor, as an instance selects exactly one option per flavor.
+        # Two flavors (or a flavor and a flavor extension) that depend on the same package would give the instances that select both a duplicate.
+        flavorNames: set[PackageFlavorName] = set()
+        flavorOptionNames: set[PackageFlavorOptionName] = set()
         for entry in entries:
-            if entry.FlavorInfo is not None:
-                flavorHitCount = flavorHitCount + 1
-        return flavorHitCount != len(entries)
+            if entry.FlavorInfo is None:
+                return EvaluationPackage.__CreateDuplicatedDependencyException(fromPackageName, toPackageName, entries)
+            flavorNames.add(entry.FlavorInfo.FlavorName)
+            flavorOptionNames.add(entry.FlavorInfo.FlavorOption)
+
+        if len(flavorNames) > 1:
+            helpStr = EvaluationPackage.__ToDuplicatedDependencyHelp(fromPackageName, toPackageName, entries)
+            return Exception(
+                f"Package '{fromPackageName}' has duplicate dependency to '{toPackageName}' from different flavors: [{helpStr}], only the options of one flavor can depend on the same package"
+            )
+        if len(flavorOptionNames) != len(entries):
+            return EvaluationPackage.__CreateDuplicatedDependencyException(fromPackageName, toPackageName, entries)
+        return None
+
+    @staticmethod
+    def __CreateDuplicatedDependencyException(
+        fromPackageName: UnresolvedPackageName, toPackageName: UnresolvedPackageName, entries: list[EvaluationPackage.DependencyRecord]
+    ) -> Exception:
+        helpStr = EvaluationPackage.__ToDuplicatedDependencyHelp(fromPackageName, toPackageName, entries)
+        return Exception(f"Package '{fromPackageName}' has duplicate dependency to '{toPackageName}': [{helpStr}]")
 
     @staticmethod
     def __ToDuplicatedDependencyHelp(

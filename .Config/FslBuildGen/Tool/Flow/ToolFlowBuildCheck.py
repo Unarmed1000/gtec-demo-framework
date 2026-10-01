@@ -266,6 +266,8 @@ class ToolFlowBuildCheck(AToolAppFlow):
         if localToolConfig.DryRun:
             config.ForceDisableAllWrite()
             configToolCheck.ForceDisableAllWrite()
+        config.DetectDuplicatePackages = localToolConfig.DetectDuplicatePackages
+        configToolCheck.DetectDuplicatePackages = localToolConfig.DetectDuplicatePackages
 
         self.__CheckUserArgs(localToolConfig.FormatArgs, "formatArgs")
         self.__CheckUserArgs(localToolConfig.ClangTidyArgs, "tidyArgs")
@@ -718,6 +720,7 @@ class ToolAppFlowFactory(AToolAppFlowFactory):
         argConfig.AddBuildThreads = True
         argConfig.AddBuildVariants = True
         argConfig.AllowRecursive = True
+        argConfig.AllowDetectDuplicatePackages = True
         return argConfig
 
     def AddCustomArguments(self, parser: argparse.ArgumentParser, toolConfig: ToolConfig, userTag: object | None) -> None:

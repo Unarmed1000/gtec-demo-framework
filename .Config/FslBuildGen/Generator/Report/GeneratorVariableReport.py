@@ -44,7 +44,7 @@ from FslBuildGen.SharedGeneration import ToolAddedVariant, ToolAddedVariantOptio
 
 class VariableOptionListCanNotBeEmptyException(Exception):
     def __init__(self, name: str) -> None:
-        super().__init__(f"The variable '{name}' can have a empty option list")
+        super().__init__(f"The variable '{name}' can not have an empty option list")
 
 
 class VariableAlreadyDefinedException(Exception):
@@ -93,7 +93,7 @@ class InvalidVariableOptionNameException(InvalidVariableOptionException):
 class InvalidVariableOptionIndexException(InvalidVariableOptionException):
     def __init__(self, variableName: str, variableOptionIndex: int, variableReportOptions: str, lenVariableReportOptions: int) -> None:
         message = "The variable option index '{0}' is not valid for option '{1}' expected a option from {2} in the range 0 to {3}"
-        super().__init__(message.format(variableOptionIndex, variableName, variableReportOptions, lenVariableReportOptions))
+        super().__init__(message.format(variableOptionIndex, variableName, variableReportOptions, lenVariableReportOptions - 1))
 
 
 # class CircularLinkNotAllowedException(Exception):
@@ -106,6 +106,8 @@ class GeneratorVariableReport(VariableDict):
         """
         allowAutoVariablesOverride if true then the automatic defined variables can be overridden with a add call,
         however if the options are different a warning is logged. However it is still not possible to change the 'LinkedTargetName'
+        The same options in another order are different too, as defaults and linked variables select an option by its index. A default that was
+        set before the override follows its option to the new index, and it is removed when the new list does not contain the option.
         """
         super().__init__()
         self.__Log = log
@@ -123,10 +125,16 @@ class GeneratorVariableReport(VariableDict):
     def SYS_GetDefaultOptions(self) -> dict[str, int]:
         return self.__DefaultOption
 
-    def __HasSameOptions(self, variableOptionList1: list[str], variableOptionList2: list[str]) -> bool:
-        if len(variableOptionList1) != len(variableOptionList2):
-            return False
-        return all(entry in variableOptionList2 for entry in variableOptionList1)
+    def __RemapDefaultOption(self, variableName: str, oldOptionList: list[str], newOptionList: list[str]) -> None:
+        """The default is stored as an index, so when the option list is replaced it is moved to the new index of the option it selected"""
+        oldIndex = self.__DefaultOption.get(variableName)
+        if oldIndex is None:
+            return
+        optionName = oldOptionList[oldIndex]
+        if optionName in newOptionList:
+            self.__DefaultOption[variableName] = newOptionList.index(optionName)
+        else:
+            del self.__DefaultOption[variableName]
 
     def Add(self, variableName: str, variableOptionList: list[str], linkedVariableName: str | None = None) -> None:
         if len(variableOptionList) <= 0:
@@ -136,15 +144,16 @@ class GeneratorVariableReport(VariableDict):
         if variableName in theDict:
             if self.__AllowAutoVariablesOverride and variableName == ToolAddedVariant.CONFIG:
                 currentDef = theDict[variableName]
-                if not self.__HasSameOptions(variableOptionList, currentDef.Options):
+                if variableOptionList != currentDef.Options:
                     if self.__Log is not None:
                         self.__Log.LogPrintVerbose(
                             2,
                             f"Overriding the auto variable '{variableName}' and the option list is different. New: {variableOptionList}, old: {currentDef.Options}",
                         )
                     theDict[variableName] = VariableReport(variableName, variableOptionList, currentDef.LinkTargetName)
+                    self.__RemapDefaultOption(variableName, currentDef.Options, variableOptionList)
                 return
-            raise VariableAlreadyDefinedException(f"The variable '{variableName}' has already been added")
+            raise VariableAlreadyDefinedException(variableName)
 
         if linkedVariableName is not None:
             if linkedVariableName == variableName:

@@ -93,10 +93,11 @@ class ResolvedPackageInstance(ResolvedPackage):
     @staticmethod
     def __SanityCheckDependencies(directDependencies: list[ResolvedPackageInstanceDependency], name: PackageName) -> None:
         if len(directDependencies) <= 0:
-            uniqueNames: set[PackageName] = set()
-            for entry in directDependencies:
-                if entry.Package.Name == name:
-                    raise Exception(f"Can not add dependency to self '{entry.Package.Name}'")
-                if entry.Package.Name in uniqueNames:
-                    raise Exception(f"Duplicate dependency '{entry.Package.Name}'")
-                uniqueNames.add(entry.Package.Name)
+            return
+        uniqueNames: set[PackageName] = set()
+        for entry in directDependencies:
+            if entry.Package.Name == name:
+                raise Exception(f"Can not add dependency to self '{entry.Package.Name}'")
+            if entry.Package.Name in uniqueNames:
+                raise Exception(f"Duplicate dependency '{entry.Package.Name}'")
+            uniqueNames.add(entry.Package.Name)

@@ -87,4 +87,4 @@ class VirtualVariantEnvironmentCache:
                 if key not in self.EnvDict:
                     self.EnvDict[key] = value
                 elif self.EnvDict[key] != value:
-                    raise Exception(f"newly cached value for key '{key} does not match cached value. Cached: {self.EnvDict[key]}, new: {value}")
+                    raise Exception(f"newly cached value for key '{key}' does not match cached value. Cached: {self.EnvDict[key]}, new: {value}")

@@ -41,6 +41,7 @@ class ToolCommonArgConfig:
         self.AddGeneratorSelection = False
         self.AddUseFeatures = False
         self.AddPlatformArg = False
+        self.AllowDetectDuplicatePackages = False  # Set by the tools that load packages
         self.AllowForceClaimInstallArea = False
         self.AllowRecursive = False
         # self.AllowVSVersion = True

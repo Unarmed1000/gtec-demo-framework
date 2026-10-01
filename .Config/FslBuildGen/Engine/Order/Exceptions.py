@@ -96,6 +96,27 @@ class PackageFlavorDependencyConstraintInvalidException(Exception):
         )
 
 
+class PackageFlavorDependencyConstraintNotReachableException(Exception):
+    def __init__(
+        self, packageName: UnresolvedPackageName, dependencyLocation: str, dependencyName: UnresolvedPackageName, depConstraint: PackageFlavorSelection
+    ) -> None:
+        """dependencyLocation is empty for a direct dependency, otherwise it names the flavor option the dependency is declared in followed by a space"""
+        super().__init__(
+            f"Package '{packageName}' {dependencyLocation}dependency '{dependencyName}' has the flavor constraint '{depConstraint.Name}={depConstraint.Option}', "
+            f"but the flavor belongs to '{depConstraint.Name.OwnerPackageName}', which is not '{dependencyName}' or a package that '{dependencyName}' depends on. "
+            "A dependency can only constrain the flavors of the dependency and of the packages it depends on"
+        )
+
+
+class PackageHasNoValidFlavorCombinationException(Exception):
+    def __init__(self, packageName: UnresolvedPackageName, dependencyConstraints: list[str]) -> None:
+        """dependencyConstraints describes the flavor constraints on the package's dependencies, empty when it has none"""
+        strConstraints = "" if len(dependencyConstraints) <= 0 else f" and meets the dependency flavor constraints [{', '.join(dependencyConstraints)}]"
+        super().__init__(
+            f"Package '{packageName}' has no valid flavor combination, no combination of its dependency instances agrees on one option per flavor{strConstraints}"
+        )
+
+
 class FlavorExtensionCanNotBeAddedToFlavorOriginException(Exception):
     def __init__(self, flavor: UnresolvedPackageFlavorExtension) -> None:
         super().__init__(f"Package '{flavor.Name.OwnerPackageName}' flavor: '{flavor.Name}' can not extend its own flavor.")

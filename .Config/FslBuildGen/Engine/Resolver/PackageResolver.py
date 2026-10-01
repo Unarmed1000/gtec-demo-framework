@@ -31,6 +31,9 @@
 # ****************************************************************************************************************************************************
 
 
+from collections.abc import Callable
+
+from FslBuildGen.Engine.Order.Exceptions import PackageHasNoValidFlavorCombinationException
 from FslBuildGen.Engine.PackageFlavorName import PackageFlavorName
 from FslBuildGen.Engine.PackageFlavorOptionName import PackageFlavorOptionName
 from FslBuildGen.Engine.PackageFlavorSelection import PackageFlavorSelection
@@ -48,6 +51,8 @@ from FslBuildGen.Engine.Resolver.ResolvedPackageTemplate import (
 from FslBuildGen.Engine.Unresolved.UnresolvedBasicPackage import UnresolvedBasicPackage
 from FslBuildGen.Engine.Unresolved.UnresolvedPackageDependency import UnresolvedPackageDependency
 from FslBuildGen.Engine.Unresolved.UnresolvedPackageFlavor import UnresolvedPackageFlavor
+from FslBuildGen.Engine.Unresolved.UnresolvedPackageFlavorExtension import UnresolvedPackageFlavorExtension
+from FslBuildGen.Engine.Unresolved.UnresolvedPackageFlavorOption import UnresolvedPackageFlavorOption
 from FslBuildGen.Log import Log
 
 # from FslBuildGen.Resolver.PackageFlavorSelections import PackageFlavorSelections
@@ -107,7 +112,7 @@ class PackageResolver:
                     resolvedDependencies = []  # type List[ResolvedPackageTemplateDependency]
                     for srcDep in flavorOption.DirectDependencies:
                         if srcDep.Name.Value not in packageTemplateDict:
-                            raise Exception(f"Unknown dependency '{srcDep.Name}")
+                            raise Exception(f"Unknown dependency '{srcDep.Name}'")
                         depRecord = packageTemplateDict[srcDep.Name.Value]
                         resolvedDependencies.append(ResolvedPackageTemplateDependency(depRecord.PackageTemplate, srcDep.FlavorConstraints))
                 else:
@@ -127,7 +132,7 @@ class PackageResolver:
                     resolvedDependencies = []  # type List[ResolvedPackageTemplateDependency]
                     for srcDep in flavorOption.DirectDependencies:
                         if srcDep.Name.Value not in packageTemplateDict:
-                            raise Exception(f"Unknown dependency '{srcDep.Name}")
+                            raise Exception(f"Unknown dependency '{srcDep.Name}'")
                         depRecord = packageTemplateDict[srcDep.Name.Value]
                         resolvedDependencies.append(ResolvedPackageTemplateDependency(depRecord.PackageTemplate, srcDep.FlavorConstraints))
                 else:
@@ -148,19 +153,10 @@ class PackageResolver:
         flavorConstraints: PackageFlavorSelections,
     ) -> None:
         if flavorIndex >= len(flavors):
-            flavorSelections = PackageFlavorSelections(list(permutation))
-            if PackageResolver.__IsAllowed(flavorSelections, flavorConstraints):
-                instanceConfig = InstanceConfig(flavorSelections, list(permutationDirectDependencies))
-                strDependencies = ", ".join([str(dep) for dep in instanceConfig.DirectDependencies])
-                if self.__Log.Verbosity >= LocalVerbosityLevel.Trace:
-                    self.__Log.LogPrint(
-                        f"- Package {unresolvedPackage.Name} InstanceConfig: '{instanceConfig.Description}' DirectDependencies: [{strDependencies}]"
-                    )
-                instanceConfigs.append(instanceConfig)
-            elif self.__Log.Verbosity >= LocalVerbosityLevel.Trace:
-                self.__Log.LogPrint(
-                    f"- Package {unresolvedPackage.Name} Permutation: '{flavorSelections.Description}' rejected due to constraints: {flavorConstraints}"
-                )
+            # Every own flavor has an option, the selected flavor extension options add their dependencies last
+            self.__GenerateFlavorExtensionPermutations(
+                instanceConfigs, permutation, permutationDirectDependencies, unresolvedPackage, flavorConstraints, frozenset()
+            )
             return
 
         flavor = flavors[flavorIndex]
@@ -170,48 +166,115 @@ class PackageResolver:
             self.__Log.PushIndent()
             try:
                 permutation.append(PackageFlavorSelection(flavor.Name, flavorOption.Name))
-
-                if len(flavorOption.DirectDependencies) <= 0:
-                    self.__GenerateFlavorPermutations(
-                        instanceConfigs, permutation, permutationDirectDependencies, flavors, flavorIndex + 1, unresolvedPackage, flavorConstraints
-                    )
-                else:
-                    self.__GenerateFlavorPermutations2(
-                        instanceConfigs,
-                        permutation,
-                        permutationDirectDependencies,
-                        flavors,
-                        flavorIndex,
-                        unresolvedPackage,
-                        flavorConstraints,
-                        flavorOption.DirectDependencies,
-                        0,
-                    )
+                self.__CombineDependencies(
+                    permutation,
+                    permutationDirectDependencies,
+                    unresolvedPackage,
+                    flavorConstraints,
+                    flavorOption.DirectDependencies,
+                    0,
+                    lambda currentPermutation, currentConstraints: self.__GenerateFlavorPermutations(
+                        instanceConfigs, currentPermutation, permutationDirectDependencies, flavors, flavorIndex + 1, unresolvedPackage, currentConstraints
+                    ),
+                )
                 permutation.pop()
             finally:
                 self.__Log.PopIndent()
 
-    def __GenerateFlavorPermutations2(
+    def __GenerateFlavorExtensionPermutations(
         self,
         instanceConfigs: list[InstanceConfig],
         permutation: list[PackageFlavorSelection],
         permutationDirectDependencies: list[PackageDependency],
-        flavors: list[UnresolvedPackageFlavor],
-        flavorIndex: int,
+        unresolvedPackage: UnresolvedBasicPackage,
+        flavorConstraints: PackageFlavorSelections,
+        appliedFlavorExtensions: frozenset[PackageFlavorName],
+    ) -> None:
+        """A permutation that selects an option of an extended flavor depends on the dependencies of the extension option. An instance of such a
+        dependency can select another extended flavor, so the extensions are searched again after each one until no selected extension option with
+        dependencies is left. Then the permutation becomes an instance config when it meets the constraints.
+        """
+        nextExtension = PackageResolver.__TryFindNextFlavorExtensionOption(unresolvedPackage, permutation, appliedFlavorExtensions)
+        if nextExtension is None:
+            self.__TryAddInstanceConfig(instanceConfigs, permutation, permutationDirectDependencies, unresolvedPackage, flavorConstraints)
+            return
+
+        flavorExtension, flavorOption = nextExtension
+        if self.__Log.Verbosity >= LocalVerbosityLevel.Trace:
+            self.__Log.LogPrint(f"- Flavor extension {flavorExtension.Name}={flavorOption.Name}")
+        newAppliedFlavorExtensions = appliedFlavorExtensions | {flavorExtension.Name}
+        self.__Log.PushIndent()
+        try:
+            self.__CombineDependencies(
+                permutation,
+                permutationDirectDependencies,
+                unresolvedPackage,
+                flavorConstraints,
+                flavorOption.DirectDependencies,
+                0,
+                lambda currentPermutation, currentConstraints: self.__GenerateFlavorExtensionPermutations(
+                    instanceConfigs, currentPermutation, permutationDirectDependencies, unresolvedPackage, currentConstraints, newAppliedFlavorExtensions
+                ),
+            )
+        finally:
+            self.__Log.PopIndent()
+
+    @staticmethod
+    def __TryFindNextFlavorExtensionOption(
+        unresolvedPackage: UnresolvedBasicPackage, permutation: list[PackageFlavorSelection], appliedFlavorExtensions: frozenset[PackageFlavorName]
+    ) -> tuple[UnresolvedPackageFlavorExtension, UnresolvedPackageFlavorOption] | None:
+        """The first flavor extension (by name) that is not applied yet, whose flavor the permutation selects and whose selected option has dependencies"""
+        for flavorExtension in unresolvedPackage.FlavorExtensions:
+            if flavorExtension.Name not in appliedFlavorExtensions:
+                index = PackageResolver.__IndexOf(permutation, flavorExtension.Name)
+                if index >= 0:
+                    flavorOption = flavorExtension.TryGetOptionByName(permutation[index].Option)
+                    if flavorOption is not None and len(flavorOption.DirectDependencies) > 0:
+                        return (flavorExtension, flavorOption)
+        return None
+
+    def __TryAddInstanceConfig(
+        self,
+        instanceConfigs: list[InstanceConfig],
+        permutation: list[PackageFlavorSelection],
+        permutationDirectDependencies: list[PackageDependency],
+        unresolvedPackage: UnresolvedBasicPackage,
+        flavorConstraints: PackageFlavorSelections,
+    ) -> None:
+        flavorSelections = PackageFlavorSelections(list(permutation))
+        if PackageResolver.__IsAllowed(flavorSelections, flavorConstraints):
+            instanceConfig = InstanceConfig(flavorSelections, list(permutationDirectDependencies))
+            strDependencies = ", ".join([str(dep) for dep in instanceConfig.DirectDependencies])
+            if self.__Log.Verbosity >= LocalVerbosityLevel.Trace:
+                self.__Log.LogPrint(
+                    f"- Package {unresolvedPackage.Name} InstanceConfig: '{instanceConfig.Description}' DirectDependencies: [{strDependencies}]"
+                )
+            instanceConfigs.append(instanceConfig)
+        elif self.__Log.Verbosity >= LocalVerbosityLevel.Trace:
+            self.__Log.LogPrint(
+                f"- Package {unresolvedPackage.Name} Permutation: '{flavorSelections.Description}' rejected due to constraints: {flavorConstraints}"
+            )
+
+    def __CombineDependencies(
+        self,
+        permutation: list[PackageFlavorSelection],
+        permutationDirectDependencies: list[PackageDependency],
         unresolvedPackage: UnresolvedBasicPackage,
         flavorConstraints: PackageFlavorSelections,
         directDependencies: list[UnresolvedPackageDependency],
         depIndex: int,
+        onCombined: Callable[[list[PackageFlavorSelection], PackageFlavorSelections], None],
     ) -> None:
+        """Pick an instance of each dependency in turn that agrees with the permutation and the constraints. For every combination of picked
+        instances onCombined is called with the extended permutation and constraints while the picked instances are on permutationDirectDependencies.
+        """
         if depIndex >= len(directDependencies):
-            self.__GenerateFlavorPermutations(
-                instanceConfigs, permutation, permutationDirectDependencies, flavors, flavorIndex + 1, unresolvedPackage, flavorConstraints
-            )
+            onCombined(permutation, flavorConstraints)
             return
 
         dependency: UnresolvedPackageDependency = directDependencies[depIndex]
         if dependency.Name.Value not in self.__PackageTemplateDict:
-            raise Exception(f"Unknown dependency '{dependency.Name}")
+            raise Exception(f"Unknown dependency '{dependency.Name}'")
         depRecord = self.__PackageTemplateDict[dependency.Name.Value]
 
         # permutationHitCount = 0 # type: int
@@ -229,16 +292,14 @@ class PackageResolver:
                         PackageDependency(PackageName.CreateUnresolvedNameAndSelection(dependency.Name, combination.FlavorSelections), dependency)
                     )
 
-                    self.__GenerateFlavorPermutations2(
-                        instanceConfigs,
+                    self.__CombineDependencies(
                         currentPermutation,
                         permutationDirectDependencies,
-                        flavors,
-                        flavorIndex,
                         unresolvedPackage,
                         variantFlavorConstraints,
                         directDependencies,
                         depIndex + 1,
+                        onCombined,
                     )
                     permutationDirectDependencies.pop()
                 else:
@@ -273,7 +334,7 @@ class PackageResolver:
             resolvedDependencies: list[ResolvedPackageTemplateDependency] = []
             for dependency in unresolvedPackage.DirectDependencies:
                 if dependency.Name.Value not in self.__PackageTemplateDict:
-                    raise Exception(f"Unknown dependency '{dependency.Name}")
+                    raise Exception(f"Unknown dependency '{dependency.Name}'")
                 depRecord = self.__PackageTemplateDict[dependency.Name.Value]
                 # Combine
                 resolvedDependencies.append(ResolvedPackageTemplateDependency(depRecord.PackageTemplate, dependency.FlavorConstraints))
@@ -283,31 +344,52 @@ class PackageResolver:
 
     def __GenerateInstancesConfigurations(self, unresolvedPackage: UnresolvedBasicPackage) -> list[InstanceConfig]:
         instanceConfigs: list[InstanceConfig] = []
-        if len(unresolvedPackage.DirectDependencies) <= 0:
-            self.__GenerateFlavorPermutations(instanceConfigs, [], [], unresolvedPackage.Flavors, 0, unresolvedPackage, PackageFlavorSelectionsEmpty.Empty)
-        else:
-            self.__GenerateFlavorPermutations2(
-                instanceConfigs,
-                [],
-                [],
-                unresolvedPackage.Flavors,
-                -1,
-                unresolvedPackage,
-                PackageFlavorSelectionsEmpty.Empty,
-                unresolvedPackage.DirectDependencies,
-                0,
-            )
+        # The direct dependencies first, then the own flavors and finally the selected flavor extension options
+        permutationDirectDependencies: list[PackageDependency] = []
+        self.__CombineDependencies(
+            [],
+            permutationDirectDependencies,
+            unresolvedPackage,
+            PackageFlavorSelectionsEmpty.Empty,
+            unresolvedPackage.DirectDependencies,
+            0,
+            lambda permutation, flavorConstraints: self.__GenerateFlavorPermutations(
+                instanceConfigs, permutation, permutationDirectDependencies, unresolvedPackage.Flavors, 0, unresolvedPackage, flavorConstraints
+            ),
+        )
 
-        # We started with combinations but ended with none, so we have a impossible to satisfy constraint
+        # We started with combinations but ended with none, so we have a impossible to satisfy constraint. The constraints are validated while ordering
+        # the packages, but a constraint inside a flavor or flavor extension option is not compared to the other constraints (different options may
+        # constrain differently)
         if len(instanceConfigs) <= 0 and (len(unresolvedPackage.DirectDependencies) > 0 or len(unresolvedPackage.Flavors) > 0):
-            raise Exception(
-                f"Package '{unresolvedPackage.Name}' internal error: no valid configurations. This is a constraints violation which should have been caught earlier"
-            )
+            raise PackageHasNoValidFlavorCombinationException(unresolvedPackage.Name, PackageResolver.__DescribeDependencyConstraints(unresolvedPackage))
 
         if len(instanceConfigs) <= 0:
             instanceConfigs.append(InstanceConfig(PackageFlavorSelectionsEmpty.Empty, []))
 
         return instanceConfigs
+
+    @staticmethod
+    def __DescribeDependencyConstraints(unresolvedPackage: UnresolvedBasicPackage) -> list[str]:
+        """The flavor constraints on the direct, the flavor option and the flavor extension option dependencies as
+        '<package>-><dependency>[<constraints>]' and '<package><<flavor>=<option>>-><dependency>[<constraints>]'
+        """
+        res: list[str] = [
+            f"{unresolvedPackage.Name}->{dep.Name}[{dep.FlavorConstraints.Description}]"
+            for dep in unresolvedPackage.DirectDependencies
+            if len(dep.FlavorConstraints.Selections) > 0
+        ]
+        flavorOptions = [(flavor.Name, flavorOption) for flavor in unresolvedPackage.Flavors for flavorOption in flavor.Options]
+        flavorOptions += [
+            (flavorExtension.Name, flavorOption) for flavorExtension in unresolvedPackage.FlavorExtensions for flavorOption in flavorExtension.Options
+        ]
+        for flavorName, flavorOption in flavorOptions:
+            res.extend(
+                f"{unresolvedPackage.Name}<{flavorName}={flavorOption.Name}>->{dep.Name}[{dep.FlavorConstraints.Description}]"
+                for dep in flavorOption.DirectDependencies
+                if len(dep.FlavorConstraints.Selections) > 0
+            )
+        return res
 
     @staticmethod
     def __TryCombineConstraints(flavorConstraints: PackageFlavorSelections, depFlavorConstraints: PackageFlavorSelections) -> PackageFlavorSelections | None:

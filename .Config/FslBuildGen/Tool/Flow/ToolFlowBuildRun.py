@@ -260,6 +260,7 @@ class ToolAppFlowFactory(AToolAppFlowFactory):
         argConfig.AddBuildVariants = True
         argConfig.AllowRecursive = True
         argConfig.ProcessRemainingArgs = True
+        argConfig.AllowDetectDuplicatePackages = True
         return argConfig
 
     def AddCustomArguments(self, parser: argparse.ArgumentParser, toolConfig: ToolConfig, userTag: object | None) -> None:

@@ -133,6 +133,7 @@ class ToolFlowBuildGen(AToolAppFlow):
             config.ForceDisableAllWrite()
         if localToolConfig.IgnoreNotSupported:
             config.IgnoreNotSupported = True
+        config.DetectDuplicatePackages = localToolConfig.DetectDuplicatePackages
 
         if localToolConfig.Graph:
             self.ToolAppContext.PluginConfigContext.EnableGraph()
@@ -281,6 +282,7 @@ class ToolAppFlowFactory(AToolAppFlowFactory):
         argConfig.AddBuildVariants = True
         argConfig.AddBuildFiltering = True
         argConfig.AllowRecursive = True
+        argConfig.AllowDetectDuplicatePackages = True
         return argConfig
 
     def AddCustomArguments(self, parser: argparse.ArgumentParser, toolConfig: ToolConfig, userTag: object | None) -> None:

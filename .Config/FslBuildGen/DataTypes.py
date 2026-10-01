@@ -245,7 +245,7 @@ class ExternalDependencyType(Enum):
         result = ExternalDependencyType.TryFromString(value)
         if result is not None:
             return result
-        raise Exception(f"Unknown external dependency type: '{value}' expected: StaticLib, DLL, Headers, Assembly, CMakeFindLegacy, CMakeFindModern, Framework")
+        raise Exception(f"Unknown external dependency type: '{value}' expected: {', '.join(ExternalDependencyType.AllStrings())}")
 
     @staticmethod
     def AllStrings() -> list[str]:
@@ -767,4 +767,4 @@ class GrpcServices(Enum):
         result = GrpcServices.TryFromString(value)
         if result is not None:
             return result
-        raise Exception(f"Unknown external dependency type: '{value}' expected: Both, Server, Client, None")
+        raise Exception(f"Unknown GrpcServices value: '{value}' expected: {', '.join(GrpcServices.ToString(entry) for entry in GrpcServices)}")

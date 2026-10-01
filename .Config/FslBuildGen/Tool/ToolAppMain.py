@@ -216,6 +216,8 @@ def __CreateToolAppConfig(
         toolAppConfig.RemainingArgs = args.RemainingArgs
     if toolCommonArgConfig.AllowForceClaimInstallArea:
         toolAppConfig.ForceClaimInstallArea = args.ForceClaimInstallArea
+    if toolCommonArgConfig.AllowDetectDuplicatePackages:
+        toolAppConfig.DetectDuplicatePackages = args.DetectDuplicatePackages
 
     toolAppConfig.VSVersion = int(args.VSVersion) if hasattr(args, "VSVersion") else defaultVSVersion
 
@@ -388,6 +390,12 @@ def __CreateParser(toolCommonArgConfig: ToolCommonArgConfig, allowStandaloneMode
     if toolCommonArgConfig.AllowRecursive:
         parser.add_argument(
             "-r", "--recursive", action="store_true", help="From the current package location we scan all sub directories for packages and process them"
+        )
+    if toolCommonArgConfig.AllowDetectDuplicatePackages:
+        parser.add_argument(
+            "--DetectDuplicatePackages",
+            action="store_true",
+            help="Search every package location and directory layout for each package name that is used and fail if the name is defined twice. Slower.",
         )
 
     parser.add_argument("--set", action="append", help=f"Set a variable overriding all auto detection. Variables: {BuildVariables.GetSetableVariables()}")

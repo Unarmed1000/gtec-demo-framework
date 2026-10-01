@@ -38,7 +38,7 @@ class UnresolvedPackageFlavorName:
     def __init__(self, name: str) -> None:
         super().__init__()
         if not Util.IsValidUnresolvedPackageFlavorName(name):
-            raise InvalidUnresolvedPackageFlavorNameException(f"Invalid flavor name {name}")
+            raise InvalidUnresolvedPackageFlavorNameException(name)
         self.Value = name
 
     def CompareTo(self, other: UnresolvedPackageFlavorName) -> int:

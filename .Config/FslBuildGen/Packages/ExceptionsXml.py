@@ -35,6 +35,7 @@
 from FslBuildGen import Util
 from FslBuildGen.Packages.Package import PackagePlatformVariant, PackagePlatformVariantOption
 from FslBuildGen.Packages.PackageInstanceName import PackageInstanceName
+from FslBuildGen.Packages.PackageRequirement import PackageRequirement
 from FslBuildGen.Xml.Exceptions import XmlException2
 
 # from FslBuildGen.Xml.XmlStuff import XmlGenFileVariant
@@ -53,14 +54,34 @@ from FslBuildGen.Xml.Exceptions import XmlException2
 
 
 class RequirementNameCollisionException(XmlException2):
-    def __init__(self, packageName1: PackageInstanceName, name1: str, packageName2: PackageInstanceName, name2: str) -> None:
-        msg = f"Requirement name '{name1}' in package '{packageName1}' collides with requirement name '{name2}' from package '{packageName2}'"
+    def __init__(self, spellings: list[PackageRequirement]) -> None:
+        """spellings holds one requirement per spelling of the same requirement, its IntroducedByPackages are the packages that use that spelling"""
+        descriptions = [RequirementNameCollisionException.__Describe(entry) for entry in sorted(spellings, key=lambda s: (s.Name, s.Extends))]
+        strSpellings = f"{', '.join(descriptions[:-1])} and {descriptions[-1]}"
+        msg = f"The requirement names {strSpellings} differ only by case, every package has to use the same spelling"
         super().__init__(msg)
+
+    @staticmethod
+    def __Describe(requirement: PackageRequirement) -> str:
+        strExtends = f" extending '{requirement.Extends}'" if len(requirement.Extends) > 0 else ""
+        packageNames = sorted(requirement.IntroducedByPackages, key=lambda s: (s.lower(), s))
+        strPackages = "package" if len(packageNames) == 1 else "packages"
+        return f"{requirement.Type} '{requirement.Name}'{strExtends} in {strPackages} {', '.join(f"'{name}'" for name in packageNames)}"
 
 
 class VariantExtensionNotSupportedException(XmlException2):
     def __init__(self, extendingPackageName: PackageInstanceName, extendingVariant: PackagePlatformVariant, basePackageName: PackageInstanceName) -> None:
         msg = f"Package '{extendingPackageName}' variant: '{extendingVariant.Name}' can not extend the variant defined in '{basePackageName}'"
+        super().__init__(msg)
+
+
+class VariantDeclaredByUnrelatedPackagesException(XmlException2):
+    def __init__(self, packageName: PackageInstanceName, variant: PackagePlatformVariant, declaredByPackageName: PackageInstanceName) -> None:
+        """packageName declares the variant again, declaredByPackageName declared it first and packageName does not depend on it"""
+        msg = (
+            f"Package '{packageName}' variant: '{variant.Name}' is already declared by '{declaredByPackageName}', which '{packageName}' does not depend on. "
+            "Only a package that depends on the declaring package can extend a variant"
+        )
         super().__init__(msg)
 
 

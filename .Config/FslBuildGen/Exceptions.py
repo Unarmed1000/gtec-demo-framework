@@ -68,8 +68,12 @@ class PackageMissingRequiredSourceDirectoryException(Exception):
 
 
 class PackageRequirementExtendsUnusedFeatureException(Exception):
-    def __init__(self, requirementName: str, requirementExtends: str, packageName: str) -> None:
-        msg = f"Package requirement '{requirementName}' in package '{packageName}' extends unknown feature '{requirementExtends}'. Is it a feature spelling error or missing package dependency?"
+    def __init__(self, requirementName: str, requirementExtends: str, packageName: str, caseMismatchFeatureName: str | None = None) -> None:
+        msg = f"Package requirement '{requirementName}' in package '{packageName}' extends unknown feature '{requirementExtends}'."
+        if caseMismatchFeatureName is None:
+            msg += " Is it a feature spelling error or missing package dependency?"
+        else:
+            msg += f" Did you mean the feature '{caseMismatchFeatureName}'? Extends has to use the same case as the feature name"
         super().__init__(msg)
 
 
@@ -96,15 +100,11 @@ class PackageIncludeFilePathInvalidException(Exception):
     """Error"""
 
     def __init__(self, packageName: str, filename: str, expectedIncludePathStart: str) -> None:
-        msg = f"Package '{packageName}' include file '{filename}' did not start with '{expectedIncludePathStart} as expected"
+        msg = f"Package '{packageName}' include file '{filename}' did not start with '{expectedIncludePathStart}' as expected"
         super().__init__(msg)
 
 
 class CircularDependencyException(Exception):
-    """E"""
-
-
-class CircularDependencyInDependentModuleException(Exception):
     """E"""
 
 

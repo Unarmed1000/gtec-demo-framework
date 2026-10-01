@@ -48,14 +48,15 @@ class ComplexExternalFlavorConstraints:
 
     @staticmethod
     def Merge(flavorConstraints: ComplexExternalFlavorConstraints, newConstraints: dict[str, ExternalFlavorConstraints]) -> ComplexExternalFlavorConstraints:
-        mergedPackageFlavorDict: dict[str, ExternalFlavorConstraints] = {}
+        # Start from the existing package constraints so the packages that have no new constraints keep theirs
+        mergedPackageFlavorDict: dict[str, ExternalFlavorConstraints] = dict(flavorConstraints.PackageFlavorContraintDict)
         for packageName, packageFlavorConstraints in newConstraints.items():
             if packageName in flavorConstraints.PackageFlavorContraintDict:
                 mergedDict: dict[str, str] = {}
                 for flavorConstraintName, flavorConstraintOptionName in packageFlavorConstraints.Dict.items():
                     mergedDict[flavorConstraintName.Value] = flavorConstraintOptionName.Value
                 for flavorConstraintName, flavorConstraintOptionName in flavorConstraints.PackageFlavorContraintDict[packageName].Dict.items():
-                    if flavorConstraintName.Value in mergedDict and mergedDict[flavorConstraintName.Value] != flavorConstraintOptionName:
+                    if flavorConstraintName.Value in mergedDict and mergedDict[flavorConstraintName.Value] != flavorConstraintOptionName.Value:
                         raise Exception("internal error key exist in both location and the value is not the same")
                     mergedDict[flavorConstraintName.Value] = flavorConstraintOptionName.Value
                 mergedPackageFlavorDict[packageName] = ExternalFlavorConstraints.ToExternalFlavorConstraints(mergedDict)

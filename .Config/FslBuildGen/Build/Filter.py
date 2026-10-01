@@ -53,6 +53,7 @@ from FslBuildGen.Log import Log
 from FslBuildGen.PackageFilters import PackageFilters
 from FslBuildGen.Packages.Package import Package
 from FslBuildGen.Packages.PackageRequirement import PackageRequirement
+from FslBuildGen.Packages.PackageRequirementMerger import PackageRequirementMerger
 from FslBuildGen.QualifiedRequirementExtensionName import QualifiedRequirementExtensionName
 
 
@@ -93,14 +94,12 @@ class RequirementFilter:
 
     @staticmethod
     def GetRequirementListFromPackages(requestedPackages: list[CommonPackage], requirementType: str | None = None) -> list[PackageRequirement]:
-        # extract the package requirements into a unique list while still respecting the filter
-        requirementDict: dict[str, PackageRequirement] = {}
+        # extract the package requirements into a unique list while still respecting the filter,
+        # each entry names the packages that introduce it in any of the requested packages
+        merger = PackageRequirementMerger()
         for package in requestedPackages:
-            requirementList = RequirementFilter.FilterRequirementsByType(package.ResolvedAllRequirements, requirementType)
-            for requirement in requirementList:
-                if requirement.FullId not in requirementDict:
-                    requirementDict[requirement.FullId] = requirement
-        return list(requirementDict.values())
+            merger.Add(RequirementFilter.FilterRequirementsByType(package.ResolvedAllRequirements, requirementType))
+        return merger.GetRequirements()
 
 
 T = TypeVar("T")

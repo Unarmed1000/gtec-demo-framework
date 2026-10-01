@@ -87,7 +87,7 @@ class PackageLoader:
 
         templateLocationCache = self.__CacheTemplateLocations(config)
         self.PackageTemplateLoader = PackageTemplateLoader(config, templateLocationCache)
-        self.PackageFinder = PackageFinder(config, generator, config.Type, packageConfigDict, genFilename, config.IsTestMode)
+        self.PackageFinder = PackageFinder(config, generator, config.Type, packageConfigDict, genFilename, config.IsTestMode, config.DetectDuplicatePackages)
 
         inputFiles: list[PackageFile] = self.PackageFinder.LocateInputFiles(files)
 
@@ -126,6 +126,9 @@ class PackageLoader:
             genFiles: list[XmlGenFile] = []
             # Load the initial package files
             self.__LoadFiles(config, inputFiles, packageDict, genFiles, config.ToolConfig.DefaultPackageLanguage, factoryFunction)
+            if config.DetectDuplicatePackages:
+                # The requested and preloaded files were loaded without locating them by name, so look for other definitions of their names
+                self.PackageFinder.CheckForOtherDefinitions(inputFiles)
 
             searchForPackages = True
             newGenFiles = genFiles
@@ -201,6 +204,16 @@ class PackageLoader:
                                             log.LogPrint(
                                                 f".. Package '{entry.Name}' platform '{platform.Name}' flavor '{flavor.Name}' Option '{flavorOption.Name}' missing '{dep.Name}'"
                                             )
+                    # The instances that select a flavor extension option depend on its dependencies, so they are loaded like the others
+                    for flavorExtension in platform.FlavorExtensions:
+                        for flavorOption in flavorExtension.Options:
+                            for dep in flavorOption.DirectDependencies:
+                                if dep.Name not in packageDict and dep.Name not in missingPackages:
+                                    missingPackages[dep.Name] = entry
+                                    if log.Verbosity >= 2:
+                                        log.LogPrint(
+                                            f".. Package '{entry.Name}' platform '{platform.Name}' flavor extension '{flavorExtension.Name}' Option '{flavorOption.Name}' missing '{dep.Name}'"
+                                        )
 
         return missingPackages
 

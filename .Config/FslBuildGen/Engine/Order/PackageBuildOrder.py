@@ -43,6 +43,7 @@ from FslBuildGen.Engine.Order.Exceptions import (
     FlavorNameCollisionException,
     PackageDependencyNotFoundException,
     PackageFlavorDependencyConstraintInvalidException,
+    PackageFlavorDependencyConstraintNotReachableException,
     PackageFlavorExtensionOptionDependencyNotFoundException,
     PackageFlavorOptionDependencyNotFoundException,
 )
@@ -340,7 +341,7 @@ class PackageBuildOrder:
     ) -> Exception:
         topCandidates: str = PackageBuildOrder.__BuildPackageCandidateString(dep.Name, debugAllPackages)
         return PackageFlavorOptionDependencyNotFoundException(
-            f"Package '{package.Name}' flavor '{flavor.Name}' option '{flavorOption}' dependency to '{dep.Name}' not found, did you mean '{topCandidates}'"
+            f"Package '{package.Name}' flavor '{flavor.Name}' option '{flavorOption.Name}' dependency to '{dep.Name}' not found, did you mean '{topCandidates}'"
         )
 
     @staticmethod
@@ -353,7 +354,7 @@ class PackageBuildOrder:
     ) -> Exception:
         topCandidates: str = PackageBuildOrder.__BuildPackageCandidateString(dep.Name, debugAllPackages)
         return PackageFlavorExtensionOptionDependencyNotFoundException(
-            f"Package '{package.Name}' flavor '{flavorExtension.Name}' option '{flavorOption}' dependency to '{dep.Name}' not found, did you mean '{topCandidates}'"
+            f"Package '{package.Name}' flavor '{flavorExtension.Name}' option '{flavorOption.Name}' dependency to '{dep.Name}' not found, did you mean '{topCandidates}'"
         )
 
     @staticmethod
@@ -433,17 +434,22 @@ class PackageBuildOrder:
         for package in finalBuildOrder:
             lookupDict[package.Name] = package
 
+        reachableDict: dict[UnresolvedPackageName, set[UnresolvedPackageName]] = {}
         depStack: list[UnresolvedPackageName] = []
         for package in finalBuildOrder:
-            PackageBuildOrder.__ValidatePackageConstraints(log, lookupDict, depStack, package)
+            PackageBuildOrder.__ValidatePackageConstraints(log, lookupDict, reachableDict, depStack, package)
 
     @staticmethod
     def __ValidatePackageConstraints(
-        log: Log, lookupDict: dict[UnresolvedPackageName, UnresolvedBasicPackage], depStack: list[UnresolvedPackageName], package: UnresolvedBasicPackage
+        log: Log,
+        lookupDict: dict[UnresolvedPackageName, UnresolvedBasicPackage],
+        reachableDict: dict[UnresolvedPackageName, set[UnresolvedPackageName]],
+        depStack: list[UnresolvedPackageName],
+        package: UnresolvedBasicPackage,
     ) -> None:
         if package.Type == PackageType.TopLevel:
             return
-        PackageBuildOrder.__CheckConstraintExists(lookupDict, package)
+        PackageBuildOrder.__CheckConstraintExists(lookupDict, reachableDict, package)
         constraintDict: dict[PackageFlavorName, ConstraintRecord] = {}
         depStack.clear()
         PackageBuildOrder.__ProcessDependencyConstraints(constraintDict, depStack, package, lookupDict)
@@ -465,17 +471,60 @@ class PackageBuildOrder:
             raise Exception(f"Mutually exclusive constraints encountered while resolving '{package.Name}' constraints=({constraintsLocDesc})")
 
     @staticmethod
-    def __CheckConstraintExists(lookupDict: dict[UnresolvedPackageName, UnresolvedBasicPackage], package: UnresolvedBasicPackage) -> None:
-        for dep in package.DirectDependencies:
+    def __CheckConstraintExists(
+        lookupDict: dict[UnresolvedPackageName, UnresolvedBasicPackage],
+        reachableDict: dict[UnresolvedPackageName, set[UnresolvedPackageName]],
+        package: UnresolvedBasicPackage,
+    ) -> None:
+        # The external flavor constraints are placed on the edge to every root package, so they may name a flavor that only another root reaches
+        checkReachable = package.Type != PackageType.ExternalFlavorConstraint
+        for dependencyLocation, dep in PackageBuildOrder.__GetAllDependencies(package):
             for depConstraint in dep.FlavorConstraints.Selections:
                 if depConstraint.Name.OwnerPackageName not in lookupDict:
-                    raise Exception(f"Dependency to unknown package '{depConstraint.Name.OwnerPackageName}'")
+                    raise PackageBuildOrder.__CreateConstraintPackageUnknownException(package, dependencyLocation, dep, depConstraint)
                 targetPackage = lookupDict[depConstraint.Name.OwnerPackageName]
                 targetFlavor = targetPackage.TryGetFlavor(depConstraint.Name)
                 if targetFlavor is None:
-                    raise Exception(f"Dependency to unknown flavor '{depConstraint.Name}' in package '{depConstraint.Name.OwnerPackageName}'")
+                    raise PackageBuildOrder.__CreateConstraintFlavorUnknownException(package, dependencyLocation, dep, depConstraint)
                 if not targetFlavor.IsValidOptionName(depConstraint.Option):
                     raise PackageFlavorDependencyConstraintInvalidException(package.Name, depConstraint, targetFlavor)
+                # An instance of the dependency only carries the flavors of the dependency and of the packages it depends on, a constraint on any
+                # other flavor would not select a dependency instance (it would silently restrict the whole package instead)
+                if checkReachable and depConstraint.Name.OwnerPackageName not in PackageBuildOrder.__GetReachablePackages(lookupDict, reachableDict, dep.Name):
+                    raise PackageFlavorDependencyConstraintNotReachableException(package.Name, dependencyLocation, dep.Name, depConstraint)
+
+    @staticmethod
+    def __GetAllDependencies(package: UnresolvedBasicPackage) -> list[tuple[str, UnresolvedPackageDependency]]:
+        """The direct dependencies and the dependencies of the flavor and flavor extension options, each with the location prefix used in messages
+        (empty for a direct dependency)
+        """
+        res: list[tuple[str, UnresolvedPackageDependency]] = [("", dep) for dep in package.DirectDependencies]
+        for flavor in package.Flavors:
+            for flavorOption in flavor.Options:
+                res.extend((f"flavor '{flavor.Name}' option '{flavorOption.Name}' ", dep) for dep in flavorOption.DirectDependencies)
+        for flavorExtension in package.FlavorExtensions:
+            for flavorOption in flavorExtension.Options:
+                res.extend((f"flavor '{flavorExtension.Name}' option '{flavorOption.Name}' ", dep) for dep in flavorOption.DirectDependencies)
+        return res
+
+    @staticmethod
+    def __GetReachablePackages(
+        lookupDict: dict[UnresolvedPackageName, UnresolvedBasicPackage],
+        reachableDict: dict[UnresolvedPackageName, set[UnresolvedPackageName]],
+        packageName: UnresolvedPackageName,
+    ) -> set[UnresolvedPackageName]:
+        """The package itself and every package it depends on, directly or through its flavor and flavor extension options (memoized in reachableDict).
+        The dependencies are known to exist and to be acyclic at this point.
+        """
+        res = reachableDict.get(packageName)
+        if res is None:
+            if packageName not in lookupDict:
+                raise Exception(f"Internal error, unknown dependency '{packageName}'")
+            res = {packageName}
+            for _, dep in PackageBuildOrder.__GetAllDependencies(lookupDict[packageName]):
+                res.update(PackageBuildOrder.__GetReachablePackages(lookupDict, reachableDict, dep.Name))
+            reachableDict[packageName] = res
+        return res
 
     @staticmethod
     def __ProcessDependencyConstraints(
@@ -504,7 +553,7 @@ class PackageBuildOrder:
                     optionRecordList.append(ConstraintOptionRecord(constraintOption.Option, depList))
 
             if dep.Name not in packageDict:
-                raise Exception(f"Unknown dependency '{dep.Name}")
+                raise Exception(f"Unknown dependency '{dep.Name}'")
             depPackage = packageDict[dep.Name]
             PackageBuildOrder.__ProcessDependencyConstraints(constraintDict, depStack, depPackage, packageDict)
         depStack.pop()
@@ -516,3 +565,26 @@ class PackageBuildOrder:
                 raise GroupedException(exceptionList)
             else:
                 raise exceptionList[0]
+
+    @staticmethod
+    def __CreateConstraintPackageUnknownException(
+        package: UnresolvedBasicPackage, dependencyLocation: str, dep: UnresolvedPackageDependency, depConstraint: PackageFlavorSelection
+    ) -> Exception:
+        where = PackageBuildOrder.__DescribeConstraint(package, dependencyLocation, dep, depConstraint)
+        return Exception(f"{where}, but the package '{depConstraint.Name.OwnerPackageName}' is unknown")
+
+    @staticmethod
+    def __CreateConstraintFlavorUnknownException(
+        package: UnresolvedBasicPackage, dependencyLocation: str, dep: UnresolvedPackageDependency, depConstraint: PackageFlavorSelection
+    ) -> Exception:
+        where = PackageBuildOrder.__DescribeConstraint(package, dependencyLocation, dep, depConstraint)
+        return Exception(f"{where}, but the package '{depConstraint.Name.OwnerPackageName}' has no flavor '{depConstraint.Name}'")
+
+    @staticmethod
+    def __DescribeConstraint(
+        package: UnresolvedBasicPackage, dependencyLocation: str, dep: UnresolvedPackageDependency, depConstraint: PackageFlavorSelection
+    ) -> str:
+        """Where a dependency flavor constraint is, worded like PackageFlavorDependencyConstraintNotReachableException. dependencyLocation is the
+        location prefix of __GetAllDependencies (empty for a direct dependency)
+        """
+        return f"Package '{package.Name}' {dependencyLocation}dependency '{dep.Name}' has the flavor constraint '{depConstraint.Name}={depConstraint.Option}'"

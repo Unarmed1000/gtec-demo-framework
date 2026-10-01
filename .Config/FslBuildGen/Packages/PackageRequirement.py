@@ -33,6 +33,8 @@
 
 # from FslBuildGen.Config import Config
 
+import copy
+
 from FslBuildGen.Packages.PackageElement import PackageElement
 from FslBuildGen.Packages.Unresolved.UnresolvedPackageRequirement import UnresolvedPackageRequirement
 
@@ -56,3 +58,9 @@ class PackageRequirement(PackageElement):
         # self.ConsumedBy = base.ConsumedBy
         # the access to the package this was received from
         # self.FromPackageAccess = fromPackageAccess
+
+    def CloneForMerge(self) -> PackageRequirement:
+        """A copy with its own IntroducedByPackages set, so the packages merged into the copy are never added to this requirement"""
+        clone = copy.copy(self)
+        clone.IntroducedByPackages = set(self.IntroducedByPackages)
+        return clone

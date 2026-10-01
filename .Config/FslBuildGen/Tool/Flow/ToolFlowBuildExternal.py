@@ -112,6 +112,7 @@ class ToolFlowBuildExternal(AToolAppFlow):
         config = Config(
             self.Log, toolConfig, localToolConfig.PackageConfigurationType, localToolConfig.BuildVariantConstraints, localToolConfig.AllowDevelopmentPlugins
         )
+        config.DetectDuplicatePackages = localToolConfig.DetectDuplicatePackages
 
         packageFilters = localToolConfig.BuildPackageFilters
 
@@ -214,6 +215,7 @@ class ToolAppFlowFactory(AToolAppFlowFactory):
         argConfig.AddBuildThreads = True
         argConfig.AddBuildVariants = True
         argConfig.AllowRecursive = True
+        argConfig.AllowDetectDuplicatePackages = True
         return argConfig
 
     def AddCustomArguments(self, parser: argparse.ArgumentParser, toolConfig: ToolConfig, userTag: object | None) -> None:

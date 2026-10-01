@@ -189,7 +189,7 @@ def __ExtractVariantIncludeDirs(
                     allIncludeDirs.append(externalDep.IncludeDir)
 
     if package not in localVariantInfo.GeneratorReportDict:
-        raise Exception(f"Could not find a report for package '{package.Name}")
+        raise Exception(f"Could not find a report for package '{package.Name}'")
     report = localVariantInfo.GeneratorReportDict[package]
 
     runCommand = []
