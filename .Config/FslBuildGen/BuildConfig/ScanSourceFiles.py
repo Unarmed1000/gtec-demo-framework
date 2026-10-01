@@ -35,7 +35,7 @@ import os
 import os.path
 import subprocess
 
-from FslBuildGen import IOUtil
+from FslBuildGen import IOUtil, SourceFileIO
 from FslBuildGen.BuildConfig.CustomPackageFileFilter import CustomPackageFileFilter
 from FslBuildGen.BuildConfig.PerformClangUtil import PerformClangUtil
 from FslBuildGen.DataTypes import CheckType, PackageType
@@ -53,11 +53,11 @@ _g_copyright = "Copyright "
 
 
 class SourceFile:
-    def __init__(self, package: Package, fileName: str) -> None:
+    def __init__(self, log: Log, package: Package, fileName: str) -> None:
         super().__init__()
         self.Package = package
         self.FileName = fileName
-        self.Content = IOUtil.ReadFile(fileName)
+        self.Content = SourceFileIO.ReadSourceFile(log, fileName)
         lines = self.Content.split("\n")
         self.LinesOriginal = [line.rstrip() for line in lines]
         self.BasePath: str | None = self.__TryDetermineFileBasePath(package, fileName)
@@ -114,19 +114,6 @@ class SourceFile:
 #                shortFile = file[pathLen:].replace('\\','/');
 #                if not ValidateShaderVersionTag(file, shortFile):
 #                    print("Failed: %s", os.path.normpath(file))
-
-
-def __Decode(s: str) -> bytes:
-    try:
-        return s.encode("utf-8-sig")
-    except UnicodeDecodeError:
-        pass
-    return s.encode("latin-1")
-
-
-def __Decoded(s: str) -> str:
-    decodedStr = __Decode(s)
-    return decodedStr.decode("utf-8")
 
 
 def __GenerateIncludeGuardName(package: Package, fileName: str) -> str:
@@ -263,15 +250,12 @@ def __CheckTabs(log: Log, sourceFile: SourceFile, repairEnabled: bool, thirdpart
     return False
 
 
-def __Repair(log: Log, sourceFile: SourceFile, asciiRepair: bool, disableWrite: bool) -> None:
+def __Repair(log: Log, sourceFile: SourceFile, disableWrite: bool) -> None:
     strContent = "\n".join(sourceFile.LinesModded)
-    if asciiRepair:
-        strContent = __Decoded(strContent)
-
     if strContent != sourceFile.Content:
         log.DoPrint(f"Repaired '{os.path.normpath(sourceFile.FileName)}'")
         if not disableWrite:
-            IOUtil.WriteFile(sourceFile.FileName, strContent)
+            SourceFileIO.WriteSourceFile(sourceFile.FileName, strContent)
 
 
 def __IndexOfCopyrightLine(lines: list[str], maxLinesToCheck: int) -> int:
@@ -354,7 +338,8 @@ def __TryCheckForFileModifications(log: Log, gitExeName: str, filename: str, yea
     try:
         if log.Verbosity >= 1:
             log.LogPrint(f"Running run command '{__SafeJoinCommandArguments(runCommands)}' in '{currentWorkingDirectory}'")
-        res = subprocess.check_output(runCommands, cwd=currentWorkingDirectory, universal_newlines=True)
+        # What git prints is decoded as before, a byte the encoding does not define is replaced instead of failing the check
+        res = subprocess.check_output(runCommands, cwd=currentWorkingDirectory, universal_newlines=True, errors="replace")
         searchString = " 1 file changed, "
         index = res.find(searchString)
         if index >= 0:
@@ -366,7 +351,7 @@ def __TryCheckForFileModifications(log: Log, gitExeName: str, filename: str, yea
                 if linesChanged > minimumLinesChanged:
                     # git log -1 --format="%as" -- filename
                     runCommands = [gitExeName, "log", "-1", '--format="%as"', "--", filename]
-                    res = subprocess.check_output(runCommands, cwd=currentWorkingDirectory, universal_newlines=True).strip()
+                    res = subprocess.check_output(runCommands, cwd=currentWorkingDirectory, universal_newlines=True, errors="replace").strip()
                     if res.startswith('"'):
                         res = res[1:]
                     if res.endswith('"'):
@@ -428,21 +413,19 @@ def __ProcessIncludeFile(
 ) -> bool:
     log.LogPrintVerbose(10, f"- Scanning '{fullPath}'")
     noErrors = True
-    asciiRepair = False
-    sourceFile = SourceFile(package, fullPath)
+    sourceFile = SourceFile(log, package, fullPath)
     # if not __g_thirdParty in sourceFile.FileName or (thirdpartyExceptionDir is not None and sourceFile.BasePath is not None and sourceFile.BasePath.startswith(thirdpartyExceptionDir)):
     if not __CheckIncludeGuard(log, sourceFile, repairEnabled):
         noErrors = False
     if not __CheckASCII(log, sourceFile, repairEnabled):
-        # The ASCII repair is not safe, so dont do it
-        # asciiRepair = True
+        # Non ASCII characters are reported, repairing them is not safe
         noErrors = False
     if not __CheckTabs(log, sourceFile, repairEnabled, thirdpartyExceptionDir):
         noErrors = False
     if checkCopyright and not __CheckCopyright(log, sourceFile, gitExeName):
         noErrors = False
     if repairEnabled:
-        __Repair(log, sourceFile, asciiRepair, disableWrite)
+        __Repair(log, sourceFile, disableWrite)
     return noErrors
 
 
@@ -458,18 +441,16 @@ def __ProcessSourceFile(
 ) -> bool:
     log.LogPrintVerbose(10, f"- Scanning '{fullPath}'")
     noErrors = True
-    asciiRepair = False
-    sourceFile = SourceFile(package, fullPath)
+    sourceFile = SourceFile(log, package, fullPath)
     if not __CheckASCII(log, sourceFile, repairEnabled):
-        # The ASCII repair is not safe, so dont do it
-        # asciiRepair = True
+        # Non ASCII characters are reported, repairing them is not safe
         noErrors = False
     if not __CheckTabs(log, sourceFile, repairEnabled, thirdpartyExceptionDir):
         noErrors = False
     if checkCopyright and not __CheckCopyright(log, sourceFile, gitExeName):
         noErrors = False
     if repairEnabled:
-        __Repair(log, sourceFile, asciiRepair, disableWrite)
+        __Repair(log, sourceFile, disableWrite)
     return noErrors
 
 

@@ -608,7 +608,7 @@ class Builder:
                 )
                 raise ExitException(result)
             else:
-                BuildConfigureCache.Save(self.Log, cacheFilename, dirtyBuildConfigureCache)
+                BuildConfigureCache.TrySave(self.Log, cacheFilename, dirtyBuildConfigureCache)
         except FileNotFoundError:
             self.Log.DoPrintWarning(
                 f"The build config command '{self.__SafeJoinCommandArguments(configCommand)}' failed with 'file not found'. It was run with CWD: '{currentWorkingDirectory}'"

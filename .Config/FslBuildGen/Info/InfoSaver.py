@@ -187,4 +187,4 @@ def SavePackageMetaDataToJson(
     jsonRootDict[JsonRootKey.ResolvedPackageList] = {package.Name: ToJsonPackage(package, generatorReportDict) for package in resolvedBuildOrder}
 
     jsonText = str(json.dumps(jsonRootDict, ensure_ascii=False, sort_keys=True, indent=2, cls=ComplexEncoder))
-    IOUtil.WriteFileIfChanged(dstFilePath, jsonText)
+    IOUtil.WriteFileUTF8IfChanged(dstFilePath, jsonText)

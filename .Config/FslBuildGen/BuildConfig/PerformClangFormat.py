@@ -45,6 +45,7 @@ from typing import Any
 
 from FslBuildGen import IOUtil
 from FslBuildGen.Build.BuildUtil import PlatformBuildUtil
+from FslBuildGen.BuildConfig import NinjaBuildFileEncoding
 from FslBuildGen.BuildConfig.BuildUtil import BuildUtil
 from FslBuildGen.BuildConfig.CaptureLog import CaptureLog
 from FslBuildGen.BuildConfig.ClangExeInfo import ClangExeInfo
@@ -359,6 +360,7 @@ class PerformClangFormatHelper2:
             currentWorkingDirectory,
             toolVersionOutputFile,
             clangFormatExeInfo,
+            ninjaExeInfo,
             customPackageFileFilter,
             clangFormatConfiguration,
             sortedPackageList,
@@ -375,7 +377,7 @@ class PerformClangFormatHelper2:
         content = "Tool versions\n"
         content += f"ClangFormat: {clangFormatExeInfo.Version}\n"
         content += f"Ninja: {ninjaExeInfo.Version}\n"
-        IOUtil.WriteFileIfChanged(outputFile, content)
+        IOUtil.WriteFileUTF8IfChanged(outputFile, content)
 
     @staticmethod
     def GenerateNinjaTidyFile(
@@ -385,6 +387,7 @@ class PerformClangFormatHelper2:
         outputFolder: str,
         toolVersionOutputFile: str,
         clangFormatExeInfo: ClangExeInfo,
+        ninjaExeInfo: ClangExeInfo,
         customPackageFileFilter: CustomPackageFileFilter | None,
         clangFormatConfiguration: ClangFormatConfiguration,
         sortedPackageList: list[Package],
@@ -421,7 +424,8 @@ class PerformClangFormatHelper2:
                 totalProcessedCount += 1
 
             # finally we write the ninja file
-            IOUtil.WriteFileIfChanged(ninjaOutputFile, ninjaFile.getvalue())
+            # In the encoding the ninja that runs the file reads it with
+            NinjaBuildFileEncoding.WriteBuildFileIfChanged(log, ninjaExeInfo, ninjaOutputFile, ninjaFile.getvalue())
             writer.close()
         return totalProcessedCount
 
@@ -458,7 +462,7 @@ class PerformClangFormatHelper2:
                 parentDir = IOUtil.GetDirectoryName(outputFile)
                 if not IOUtil.Exists(parentDir):
                     IOUtil.SafeMakeDirs(parentDir)
-                IOUtil.WriteFileIfChanged(outputFile, "")
+                IOUtil.WriteFileUTF8IfChanged(outputFile, "")
 
 
 class PerformClangFormat:

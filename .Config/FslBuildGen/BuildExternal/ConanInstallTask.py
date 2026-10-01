@@ -84,7 +84,7 @@ class ConanInstallTask(BasicTask):
         for config in configurationList:
             profileText = ConanProfileBuilder.BuildFromCMakeConfig(self.CMakeConfig, config)
             profilePath = IOUtil.Join(dstPath, f"fslbuild_conan_host_{BuildVariantConfig.ToString(config)}.profile")
-            IOUtil.WriteFile(profilePath, profileText)
+            IOUtil.WriteFileUTF8(profilePath, profileText)
             profilePaths[config] = profilePath
         return profilePaths
 

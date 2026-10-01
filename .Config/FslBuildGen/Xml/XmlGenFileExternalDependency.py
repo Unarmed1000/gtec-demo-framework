@@ -33,13 +33,15 @@
 
 import xml.etree.ElementTree as ET
 
+from FslBuildGen import SemanticVersionPatternRender
 from FslBuildGen.DataTypes import AccessType, ExternalDependencyType, IncludePriority
 from FslBuildGen.Log import Log
 from FslBuildGen.PackageIncludeDir import PackageIncludeDir
 from FslBuildGen.SemanticVersion2 import SemanticVersion2
 from FslBuildGen.SemanticVersionPattern import SemanticVersionPattern
+from FslBuildGen.SemanticVersionPatternRender import VersionRenderException
 from FslBuildGen.Xml import FakeXmlElementFactory
-from FslBuildGen.Xml.Exceptions import XmlException, XmlFormatException
+from FslBuildGen.Xml.Exceptions import XmlException, XmlExternalDependencyVersionException, XmlFormatException
 from FslBuildGen.Xml.XmlBase import XmlBase
 from FslBuildGen.Xml.XmlGenFileExternalDependencyPackageManager import XmlGenFileExternalDependencyPackageManager
 
@@ -114,7 +116,7 @@ class XmlGenFileExternalDependency(XmlBase):
         strElementType = self._ReadAttrib(xmlElement, self.__AttribType)
         elementType = ExternalDependencyType.TryFromString(strElementType)
         if elementType is None:
-            raise XmlException(xmlElement, f"Unknown external dependency type: '{strElementType}' expected: {ExternalDependencyType.AllStrings()}")
+            raise XmlException(xmlElement, f"Unknown external dependency type: '{strElementType}' expected: {', '.join(ExternalDependencyType.AllStrings())}")
         self.Type: ExternalDependencyType = elementType
 
         # The access type is only relevant for the include file location
@@ -130,6 +132,24 @@ class XmlGenFileExternalDependency(XmlBase):
 
         if not isinstance(self.Access, AccessType):
             raise Exception("Internal error")
+
+        self.__CheckVersion()
+
+    def __CheckVersion(self) -> None:
+        """The gen file holds one version concept, what reads the version of this type of dependency may not be able to express every form of it.
+        That is checked when the element is read, so the error can name the file. What depends on the project (the CMake version) is checked
+        by the generator.
+        """
+        try:
+            if self.Version is not None:
+                if self.Type == ExternalDependencyType.Assembly:
+                    SemanticVersionPatternRender.ToAssemblyVersion(self.Version)
+                elif self.Type == ExternalDependencyType.CMakeFindLegacy or self.Type == ExternalDependencyType.CMakeFindModern:
+                    SemanticVersionPatternRender.CheckCMakeFindPackageVersion(self.Version)
+            if self.PackageManager is not None and self.PackageManager.Version is not None:
+                SemanticVersionPatternRender.ToPackagesConfigVersion(self.PackageManager.Version)
+        except VersionRenderException as ex:
+            raise XmlExternalDependencyVersionException(self.Name, str(ex)) from ex
 
     def __TryGetPackageManager(self, log: Log, xmlElement: ET.Element) -> XmlGenFileExternalDependencyPackageManager | None:
         packageManager = None

@@ -93,6 +93,6 @@ class XmlGenFileFlavor(XmlBase):
         if elem is not None:
             for child in elem:
                 if child.tag == "Option":
-                    options.append(XmlGenFileFlavorOption(self.Log, requirementTypes, child, ownerPackageName))
+                    options.append(XmlGenFileFlavorOption(self.Log, requirementTypes, child, ownerPackageName, self.Name))
         options.sort(key=lambda s: s.Name.lower())
         return options

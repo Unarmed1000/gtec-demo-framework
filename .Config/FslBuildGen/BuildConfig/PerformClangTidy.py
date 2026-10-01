@@ -45,6 +45,7 @@ from FslBuildGen.Build.BuildUtil import PlatformBuildUtil
 from FslBuildGen.Build.BuildVariantUtil import BuildVariantUtil
 from FslBuildGen.Build.DataTypes import CommandType
 from FslBuildGen.Build.VirtualVariantEnvironmentCache import VirtualVariantEnvironmentCache
+from FslBuildGen.BuildConfig import NinjaBuildFileEncoding
 from FslBuildGen.BuildConfig.BuildUtil import BuildUtil
 from FslBuildGen.BuildConfig.ClangExeInfo import ClangExeInfo
 from FslBuildGen.BuildConfig.ClangTidyConfiguration import ClangTidyConfiguration
@@ -806,7 +807,7 @@ class CMakeHelper:
         content.append(f"set(CMAKE_C_COMPILER {clangC})")
         content.append(f"set(CMAKE_CXX_COMPILER {clangCpp})")
         content.append("")
-        return IOUtil.WriteFileIfChanged(filename, "\n".join(content))
+        return IOUtil.WriteFileUTF8IfChanged(filename, "\n".join(content))
 
 
 class PerformClangTidyHelper:
@@ -917,6 +918,7 @@ class PerformClangTidyHelper:
             performClangTidyConfig,
             clangExeInfo,
             clangTidyExeInfo,
+            ninjaExeInfo,
             sortedPackageList,
             customPackageFileFilter,
             localVariantInfo,
@@ -972,7 +974,7 @@ class PerformClangTidyHelper:
         content += f"Clang: {clangExeInfo.Version}\n"
         content += f"ClangTidy: {clangTidyExeInfo.Version}\n"
         content += f"Ninja: {ninjaExeInfo.Version}\n"
-        IOUtil.WriteFileIfChanged(outputFile, content)
+        IOUtil.WriteFileUTF8IfChanged(outputFile, content)
 
     @staticmethod
     def DeleteFixes(log: Log, clangTidyFixOutputFolder: str, fixFiles: list[str]) -> None:
@@ -1009,7 +1011,8 @@ class PerformClangTidyHelper:
         # Dump the current warnings
         if log.Verbosity >= 4:
             for fileEntry in fixFiles:
-                log.DoPrint(IOUtil.ReadFile(fileEntry))
+                # clang-tidy wrote the file and it is only shown, so a byte that is not valid UTF-8 is replaced instead of failing the dump
+                log.DoPrint(IOUtil.ReadFileUTF8(fileEntry, errors="replace"))
 
         # Apply the fixes
         PerformClangTidyHelper.RunApplyFixes(log, clangTidyApplyReplacementsExeInfo, clangTidyFixOutputFolder, currentWorkingDirectory, logOutput)
@@ -1080,6 +1083,7 @@ class PerformClangTidyHelper:
         performClangTidyConfig: PerformClangTidyConfig,
         clangExeInfo: ClangExeInfo,
         clangTidyExeInfo: ClangExeInfo,
+        ninjaExeInfo: ClangExeInfo,
         packageList: list[Package],
         customPackageFileFilter: CustomPackageFileFilter | None,
         localVariantInfo: LocalVariantInfo,
@@ -1172,7 +1176,8 @@ class PerformClangTidyHelper:
                     packageOutputFolders.append(packageOutputFolder)
 
             # finally we write the ninja file
-            IOUtil.WriteFileIfChanged(ninjaOutputFile, ninjaFile.getvalue())
+            # In the encoding the ninja that runs the file reads it with
+            NinjaBuildFileEncoding.WriteBuildFileIfChanged(log, ninjaExeInfo, ninjaOutputFile, ninjaFile.getvalue())
 
             writer.close()
         return (totalProcessedCount, packageOutputFolders)
@@ -1277,7 +1282,7 @@ class PerformClangTidyHelper:
                 parentDir = IOUtil.GetDirectoryName(outputFile)
                 if not IOUtil.Exists(parentDir):
                     IOUtil.SafeMakeDirs(parentDir)
-                IOUtil.WriteFileIfChanged(outputFile, "")
+                IOUtil.WriteFileUTF8IfChanged(outputFile, "")
         return PackageOutputFolder(package, clangTidyFixOutputFolder)
 
     @staticmethod

@@ -33,7 +33,7 @@
 import json
 from typing import cast
 
-from FslBuildGen import IOUtil
+from FslBuildGen import IOUtil, TextFileReader
 from FslBuildGen.BuildExternal.Pipeline import RecipeRecord
 from FslBuildGen.BuildExternal.State.BuildInfoComplexJsonDecoder import BuildInfoComplexJsonDecoder
 from FslBuildGen.BuildExternal.State.BuildInfoComplexJsonEncoder import BuildInfoComplexJsonEncoder
@@ -62,7 +62,8 @@ class BuildInfoFileHelper:
 
             srcFilePath = IOUtil.Join(sourceRecipe.ResolvedInstallLocation.ResolvedPath, path)
 
-            fileContent = IOUtil.TryReadFile(srcFilePath)
+            # The file is written as UTF-8, a file that an older version wrote in the locale encoding still loads
+            fileContent = TextFileReader.TryReadUTF8OrLocale(log, srcFilePath, "build information file", skipBom=True, warn=False)
             if fileContent is None:
                 log.LogPrint(f"Package build information for package {sourcePackage.Name} not found in the expected file '{srcFilePath}'")
                 return None
@@ -212,4 +213,4 @@ class BuildInfoFileUtil:
         jsonText = json.dumps(jsonRootDict, ensure_ascii=False, sort_keys=True, indent=2, cls=BuildInfoComplexJsonEncoder)
 
         dstFilePath = IOUtil.Join(installPath, path)
-        IOUtil.WriteFileIfChanged(dstFilePath, jsonText)
+        IOUtil.WriteFileUTF8IfChanged(dstFilePath, jsonText)

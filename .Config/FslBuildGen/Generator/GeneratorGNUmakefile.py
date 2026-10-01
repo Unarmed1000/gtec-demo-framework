@@ -32,7 +32,7 @@
 # ****************************************************************************************************************************************************
 
 
-from FslBuildGen import IOUtil, MakeFileHelper, Util
+from FslBuildGen import IOUtil, MakeFileHelper, TemplateIO, Util
 from FslBuildGen.Build.DataTypes import CommandType
 from FslBuildGen.Config import Config
 from FslBuildGen.DataTypes import ExternalDependencyType, PackageType
@@ -71,9 +71,9 @@ class GeneratorGNUmakefile(GeneratorBase):
     ) -> None:
         super().__init__()
         self.ConfigVariantOptions = configVariantOptions
-        self.BldTemplate = IOUtil.ReadFile(IOUtil.Join(config.SDKConfigTemplatePath, "build.sh"))
-        self.ExeTemplate = IOUtil.ReadFile(IOUtil.Join(config.SDKConfigTemplatePath, templateExe))
-        self.LibTemplate = IOUtil.ReadFile(IOUtil.Join(config.SDKConfigTemplatePath, templateLib))
+        self.BldTemplate = TemplateIO.ReadTemplate(config, IOUtil.Join(config.SDKConfigTemplatePath, "build.sh"))
+        self.ExeTemplate = TemplateIO.ReadTemplate(config, IOUtil.Join(config.SDKConfigTemplatePath, templateExe))
+        self.LibTemplate = TemplateIO.ReadTemplate(config, IOUtil.Join(config.SDKConfigTemplatePath, templateLib))
         for package in packages:
             if package.ResolvedPlatformSupported:
                 if package.Type == PackageType.Library:
@@ -117,7 +117,7 @@ class GeneratorGNUmakefile(GeneratorBase):
             # dstFile = IOUtil.Join(package.AbsolutePath, "build.sh")
             dstFile = IOUtil.Join(buildPath, "build.sh")
 
-            IOUtil.WriteFileIfChanged(dstFile, build)
+            TemplateIO.WriteGeneratedFileIfChanged(dstFile, build)
             IOUtil.SetFileExecutable(dstFile)
 
     def __GenerateBuildFile(self, config: Config, generatorName: str, package: Package, template: str, dstMakeFilename: str) -> None:
@@ -179,7 +179,7 @@ class GeneratorGNUmakefile(GeneratorBase):
 
         dstFile = IOUtil.Join(package.AbsolutePath, dstMakeFilename)
         if not config.DisableWrite:
-            IOUtil.WriteFileIfChanged(dstFile, build)
+            TemplateIO.WriteGeneratedFileIfChanged(dstFile, build)
             GitIgnoreHelper.AddPathIfInPackageRoot(self.GitIgnoreDict, package, dstFile)
 
     def __GetVariantSection(self, package: Package) -> str:

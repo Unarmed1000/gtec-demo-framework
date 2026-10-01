@@ -22,6 +22,7 @@
 # ****************************************************************************************************************************************************
 
 import re
+from enum import Enum
 
 # A regular expression to parse a single semantic version.
 # Handles Major.Minor.Patch.Revision, pre-release tags, and build metadata.
@@ -124,18 +125,51 @@ class SemanticVersion:
         return version_str
 
 
+class SemanticVersionPatternForm(Enum):
+    """The way a version pattern was written"""
+
+    # "1.0": a minimum version
+    Plain = 1
+    # "[1.0]": exactly that version
+    Exact = 2
+    # "4.*", "4.1.*": every version that starts with the prefix
+    Wildcard = 3
+    # "[1.0,2.0)", "(,2.0]", "[1.0,)": a range, a bound can be left out
+    Range = 4
+
+
 class SemanticVersionPattern:
     """
     A class to represent and validate NuGet semantic version dependency patterns.
     Supports a plain minimum version ("1.0"), an exact version ("[1.0]"), ranges ("[1.0,2.0)", "(,2.0]") and wildcards ("4.*").
+
+    OriginalString is the pattern as it was typed (without surrounding whitespace). Form tells which way it was written, LowerBoundText and
+    UpperBoundText are the versions of the bounds as they were typed ("1.8" stays "1.8", the parsed bound reads "1.8.0"):
+    - Plain: the version is LowerBoundText.
+    - Exact: the version is LowerBoundText and UpperBoundText.
+    - Wildcard: LowerBoundText is the prefix ("4.1" of "4.1.*"), there is no UpperBoundText.
+    - Range: a bound that was left out is None.
     """
 
-    def __init__(self, lowerBound: SemanticVersion | None, lowerInclusive: bool, upperBound: SemanticVersion | None, upperInclusive: bool, originalString: str):
+    def __init__(
+        self,
+        lowerBound: SemanticVersion | None,
+        lowerInclusive: bool,
+        upperBound: SemanticVersion | None,
+        upperInclusive: bool,
+        originalString: str,
+        form: SemanticVersionPatternForm,
+        lowerBoundText: str | None,
+        upperBoundText: str | None,
+    ):
         self.LowerBound = lowerBound
         self.LowerInclusive = lowerInclusive
         self.UpperBound = upperBound
         self.UpperInclusive = upperInclusive
         self.OriginalString = originalString
+        self.Form = form
+        self.LowerBoundText = lowerBoundText
+        self.UpperBoundText = upperBoundText
 
     @staticmethod
     def TryFromString(versionString: str) -> SemanticVersionPattern | None:
@@ -169,7 +203,7 @@ class SemanticVersionPattern:
                 upperBound = SemanticVersion(parts[0], parts[1], parts[2], parts[3] + 1, prerelease=_g_lowestPrerelease)
 
             # This is an inclusive lower bound and exclusive upper bound
-            return SemanticVersionPattern(lowerBound, True, upperBound, False, versionString)
+            return SemanticVersionPattern(lowerBound, True, upperBound, False, versionString, SemanticVersionPatternForm.Wildcard, prefix, None)
 
         # Exact version "[1.0]" or a plain minimum version "1.0".
         # A bracketed string that is not a single version (like "[1,2]") is left untouched for the range parsing below.
@@ -179,10 +213,11 @@ class SemanticVersionPattern:
             version = SemanticVersion.try_parse(exactString)
             if version:
                 if isBracketed:
-                    # An exact match is an inclusive range with identical lower and upper bounds
-                    return SemanticVersionPattern(version, True, version, True, exactString)
+                    # An exact match is an inclusive range with identical lower and upper bounds.
+                    # The brackets are kept in the original string, without them it reads as a minimum version
+                    return SemanticVersionPattern(version, True, version, True, versionString, SemanticVersionPatternForm.Exact, exactString, exactString)
                 # A plain version is a minimum version, which is how NuGet and CMake find_package read it
-                return SemanticVersionPattern(version, True, None, False, exactString)
+                return SemanticVersionPattern(version, True, None, False, exactString, SemanticVersionPatternForm.Plain, exactString, None)
 
         # Range patterns: "(1.0, 2.0]", "[1.0,)", etc.
         if versionString.startswith(("(", "[")) and versionString.endswith((")", "]")):
@@ -212,7 +247,16 @@ class SemanticVersionPattern:
                 if lowerBound and upperBound and lowerBound > upperBound:
                     return None
 
-                return SemanticVersionPattern(lowerBound, lowerInclusive, upperBound, upperInclusive, versionString)
+                return SemanticVersionPattern(
+                    lowerBound,
+                    lowerInclusive,
+                    upperBound,
+                    upperInclusive,
+                    versionString,
+                    SemanticVersionPatternForm.Range,
+                    lowerStr if lowerStr else None,
+                    upperStr if upperStr else None,
+                )
 
         return None
 

@@ -68,7 +68,9 @@ class AndroidUtil:
     @staticmethod
     def GetVersionStringFromSourceProperties(sdkPath: str) -> str:
         filePath = IOUtil.Join(sdkPath, "source.properties")
-        content = IOUtil.ReadFile(filePath)
+        # The Android SDK writes the file. Only the 'Pkg.Revision' entry (ASCII) is used, so a byte that is not valid UTF-8 somewhere else in the
+        # file is replaced instead of failing the read
+        content = IOUtil.ReadFileUTF8(filePath, errors="replace")
         searchString = "Pkg.Revision"
         index = content.find(searchString)
         if index < 0:

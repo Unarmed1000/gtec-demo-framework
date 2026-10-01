@@ -32,10 +32,11 @@
 # ****************************************************************************************************************************************************
 
 import argparse
+import sys
 from typing import Any
 
+from FslBuildGen import ConsoleOutput, PackageListUtil, ParseUtil, PluginSharedValues
 from FslBuildGen import Main as MainFlow
-from FslBuildGen import PackageListUtil, ParseUtil, PluginSharedValues
 from FslBuildGen.Build import Builder
 from FslBuildGen.Build.BuildVariantConfigUtil import BuildVariantConfigUtil
 from FslBuildGen.Build.DataTypes import CommandType
@@ -336,7 +337,8 @@ class ToolFlowBuildInfo(AToolAppFlow):
                 PackageGraphQuery.PrintGraphDump(self.Log, adjacency)
 
         if asJson:
-            self.Log.DoPrint(PackageGraphQuery.ResultsToJsonText(jsonResults))
+            # What reads the output gets valid json whatever the encoding of the output is
+            self.Log.DoPrint(ConsoleOutput.EscapeJsonForStream(PackageGraphQuery.ResultsToJsonText(jsonResults), sys.stdout))
 
     def __ResolveQueryPackage(self, index: PackageGraphIndex, name: str, asJson: bool, jsonResults: list[dict[str, Any]]) -> Package | None:
         package = index.TryResolve(name)

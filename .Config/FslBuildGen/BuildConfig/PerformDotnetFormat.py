@@ -40,6 +40,7 @@ import subprocess
 # import sys
 from FslBuildGen import IOUtil
 from FslBuildGen.Build.BuildUtil import PlatformBuildUtil
+from FslBuildGen.BuildConfig import NinjaBuildFileEncoding
 from FslBuildGen.BuildConfig.BuildUtil import BuildUtil
 from FslBuildGen.BuildConfig.ClangExeInfo import ClangExeInfo
 from FslBuildGen.BuildConfig.CustomPackageFileFilter import CustomPackageFileFilter
@@ -224,6 +225,7 @@ class PerformFormatHelper:
             currentWorkingDirectory,
             toolVersionOutputFile,
             clangFormatExeInfo,
+            ninjaExeInfo,
             customPackageFileFilter,
             dotnetFormatConfiguration,
             sortedPackageList,
@@ -240,7 +242,7 @@ class PerformFormatHelper:
         content = "Tool versions\n"
         content += f"ClangFormat: {clangFormatExeInfo.Version}\n"
         content += f"Ninja: {ninjaExeInfo.Version}\n"
-        IOUtil.WriteFileIfChanged(outputFile, content)
+        IOUtil.WriteFileUTF8IfChanged(outputFile, content)
 
     @staticmethod
     def GenerateNinjaFormatFile(
@@ -250,6 +252,7 @@ class PerformFormatHelper:
         outputFolder: str,
         toolVersionOutputFile: str,
         clangFormatExeInfo: ClangExeInfo,
+        ninjaExeInfo: ClangExeInfo,
         customPackageFileFilter: CustomPackageFileFilter | None,
         dotnetFormatConfiguration: DotnetFormatConfiguration,
         sortedPackageList: list[Package],
@@ -294,7 +297,8 @@ class PerformFormatHelper:
                 totalProcessedCount += 1
 
             # finally we write the ninja file
-            IOUtil.WriteFileIfChanged(ninjaOutputFile, ninjaFile.getvalue())
+            # In the encoding the ninja that runs the file reads it with
+            NinjaBuildFileEncoding.WriteBuildFileIfChanged(log, ninjaExeInfo, ninjaOutputFile, ninjaFile.getvalue())
             writer.close()
         return totalProcessedCount
 
@@ -337,7 +341,7 @@ class PerformFormatHelper:
                 parentDir = IOUtil.GetDirectoryName(outputFile)
                 if not IOUtil.Exists(parentDir):
                     IOUtil.SafeMakeDirs(parentDir)
-                IOUtil.WriteFileIfChanged(outputFile, "")
+                IOUtil.WriteFileUTF8IfChanged(outputFile, "")
 
         if len(packageFormatFileSet) > 1:
             raise Exception(f"only support one editorconfig per package, multiple found in: {package.Name}. Found: {packageFormatFileSet}")

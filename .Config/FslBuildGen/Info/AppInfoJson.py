@@ -35,7 +35,7 @@
 import json
 from typing import cast
 
-from FslBuildGen import IOUtil
+from FslBuildGen import TextFileReader
 from FslBuildGen.DataTypes import PackageType
 from FslBuildGen.Generator.Report.Datatypes import FormatStringEnvironmentVariableResolveMethod
 from FslBuildGen.Info.AppInfo import AppInfo
@@ -321,7 +321,8 @@ def __ParseResolvedPackageList(log: Log, jsonResolvedPackageListDict: dict[str, 
 
 
 def TryLoad(log: Log, path: str) -> AppInfo | None:
-    content = IOUtil.TryReadFile(path)
+    # FslBuildInfo writes the file as UTF-8, a file that an older version wrote in the locale encoding still loads
+    content = TextFileReader.TryReadUTF8OrLocale(log, path, "app info file", skipBom=True, warn=False)
     if content is None:
         return None
 

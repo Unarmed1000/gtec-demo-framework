@@ -89,10 +89,10 @@ class PackageFlavorExtensionOptionDependencyNotFoundException(Exception):
 
 
 class PackageFlavorDependencyConstraintInvalidException(Exception):
-    def __init__(self, packageName: UnresolvedPackageName, depConstraint: PackageFlavorSelection, targetFlavor: UnresolvedPackageFlavor) -> None:
-        # pylint: disable=useless-super-delegation
+    def __init__(self, constraintLocation: str, depConstraint: PackageFlavorSelection, targetFlavor: UnresolvedPackageFlavor) -> None:
+        """constraintLocation names the package, the dependency and the constraint, worded like PackageFlavorDependencyConstraintNotReachableException"""
         super().__init__(
-            f"Package '{packageName}' has dependency to unknown flavor option '{depConstraint.Option}' flavor '{depConstraint.Name}' in package '{depConstraint.Name.OwnerPackageName}', valid options are '{targetFlavor.Description}': "
+            f"{constraintLocation}, but the flavor '{depConstraint.Name}' has no option '{depConstraint.Option}', valid options are '{targetFlavor.Description}'"
         )
 
 

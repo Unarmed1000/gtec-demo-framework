@@ -21,18 +21,28 @@
 # * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 # ****************************************************************************************************************************************************
 
-# 'locale' is not used here, the import keeps 'XmlGenFileReader.locale' available as that is where the unit tests set the locale encoding
-import locale  # noqa: F401
+# The source files (C and C++ headers and sources) FslBuildCheck scans and repairs in place.
+#
+# - A source file is read with the pass-through policy of TextFileReader: as UTF-8, with universal newlines, and with a byte order mark and any bytes
+#   that are not valid UTF-8 kept.
+# - A repaired file is written back as UTF-8 with the newline of the platform. No byte order mark is added, the file keeps the one it had, and bytes
+#   that were kept because they are not valid UTF-8 are written back as they were.
+#
+# So a repair changes the lines it repairs and nothing else, whatever the locale encoding of the machine is.
 
-from FslBuildGen import TextFileReader
+from FslBuildGen import IOUtil, TextFileReader
 from FslBuildGen.Log import Log
 
+# The source files that gave the 'not valid UTF-8' warning. A header can be listed by a package both as an include file and as a source file, this
+# makes it one warning per file for a run of the tool.
+g_warnedFiles: set[str] = set()
 
-def ReadGenFileContent(log: Log, filename: str) -> str:
-    """Read a gen file as text.
-    Gen files declare UTF-8, so that is how they are read. A file that is not valid UTF-8 (for example one saved as ANSI) is read with the
-    locale encoding, like older versions of the tool did on Windows, and a warning names the file.
-    Both reads use universal newlines, so the content (and the recipe cache hash computed from it) of a pure ASCII file does not change.
-    The byte order mark is kept, ElementTree accepts it.
-    """
-    return TextFileReader.ReadUTF8OrLocale(log, filename, "gen file")
+
+def ReadSourceFile(log: Log, filename: str) -> str:
+    """Read a source file with universal newlines. A file that is not valid UTF-8 keeps its bytes and gives one warning per run."""
+    return TextFileReader.ReadUTF8PassThrough(log, filename, "source file", warnedFiles=g_warnedFiles)
+
+
+def WriteSourceFile(filename: str, content: str) -> None:
+    """Write a source file as UTF-8. Bytes the read kept because they are not valid UTF-8 are written back as they were."""
+    IOUtil.WriteFileUTF8(filename, content, errors="surrogateescape")

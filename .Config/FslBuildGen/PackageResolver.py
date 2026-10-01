@@ -34,7 +34,7 @@
 # from FslBuildGen.Xml.Exceptions import XmlMissingWindowsVisualStudioProjectIdException
 from typing import Any
 
-from FslBuildGen import IOUtil, PackageConfig, ToolSharedValues, Util
+from FslBuildGen import IOUtil, PackageConfig, TemplateIO, ToolSharedValues, Util
 from FslBuildGen.AndroidUtil import AndroidUtil
 from FslBuildGen.BuildConfig.BuildUtil import BuildUtil
 
@@ -93,6 +93,7 @@ from FslBuildGen.Packages.ExceptionsXml import (
     VariantNameCollisionException,
 )
 from FslBuildGen.Packages.Package import Package, PackageDefine, PackageExternalDependency, PackagePlatformVariant, PackagePlatformVariantOption
+from FslBuildGen.Packages.PackageVariantMerger import PackageVariantMerger
 from FslBuildGen.Packages.Unresolved.Exceptions import ExternalDependencyDuplicatedException
 
 # from FslBuildGen.Packages.Unresolved.Exceptions import RequirementUseDuplicatedException
@@ -212,7 +213,7 @@ class PackageResolver:
                     self.__MarkExternalLibFirstUse(packageBuilder.TopLevelPackage)
 
                 log.LogPrintVerbose(4, "- generating files")
-                self.__GenerateFiles(log, platformContext, toolConfig, finalResolveOrder)
+                self.__GenerateFiles(log, configIsDryRun, toolConfig, finalResolveOrder)
 
                 # Everything checks out, so we can now start resolving files for the packages
                 log.LogPrintVerbose(4, "- include dirs")
@@ -534,18 +535,18 @@ class PackageResolver:
         if resolvedDir.IncludeDir.Name in rPublicIncludeDirs:
             del rPublicIncludeDirs[resolvedDir.IncludeDir.Name]
 
-    def __GenerateFiles(self, log: Log, platformContext: PlatformContext, toolConfig: ToolConfig, finalResolveOrder: list[Package]) -> None:
+    def __GenerateFiles(self, log: Log, configIsDryRun: bool, toolConfig: ToolConfig, finalResolveOrder: list[Package]) -> None:
         for package in finalResolveOrder:
             for entry in package.ResolvedGenerateList:
                 templateFile = entry.TemplateFile.ResolvedPath
                 targetFile = entry.TargetFile.ResolvedPath
 
-                fileContent = IOUtil.TryReadFile(templateFile)
+                fileContent = TemplateIO.TryReadTemplate(log, templateFile)
                 if fileContent is None:
                     raise Exception(f"Package '{package.Name}' generate template file '{templateFile}' not found")
                 log.LogPrintVerbose(4, f"  - generating '{targetFile}' based on template '{templateFile}'")
-                content = self.__GenerateFile(toolConfig, package, fileContent)
-                IOUtil.WriteFileIfChanged(targetFile, content)
+                if not configIsDryRun:  # a dry run writes nothing, the template is still required
+                    TemplateIO.WriteGeneratedFileIfChanged(targetFile, self.__GenerateFile(toolConfig, package, fileContent))
 
     def __GenerateFile(self, toolConfig: ToolConfig, package: Package, template: str) -> str:
         releaseVersionMajor = str(package.ProjectContext.ProjectVersion.Major)
@@ -984,13 +985,16 @@ class PackageResolver:
                 else:
                     record = variantDict[variant.Name]
                     declaredByName = record[0].NameInfo.FullName
-                    # A variant is a global build variable, so a second declaration is only valid as an extension by a package that depends
-                    # on the declaring package (the resolve order places the declaring package first). Flavor instances are compared by their
-                    # source package: the instances of one package share its declaration, and each instance of a dependent depends on one
-                    # instance of the declaring package. The build order includes the package itself.
+                    # Flavor instances are compared by their source package: the instances of one package share its declaration, so a later
+                    # instance of the declaring package is the same declaration and not a second one.
                     declaredBySourceName = record[0].NameInfo.SourceName
-                    if not any(entry.NameInfo.SourceName == declaredBySourceName for entry in package.ResolvedBuildOrder):
+                    if package.NameInfo.SourceName == declaredBySourceName:
+                        continue
+                    # A variant is a global build variable: only a dependent of the declaring package can extend it, the instance it uses is named
+                    usedInstance = next((entry for entry in package.ResolvedBuildOrder if entry.NameInfo.SourceName == declaredBySourceName), None)
+                    if usedInstance is None:
                         raise VariantDeclaredByUnrelatedPackagesException(package.NameInfo.FullName, variant, declaredByName)
+                    declaredByName = usedInstance.NameInfo.FullName
                     if not configAllowVariantExtension:
                         raise VariantExtensionNotSupportedException(package.NameInfo.FullName, variant, declaredByName)
                     undefinedOptions = self.__GetVariantUndefinedOptions(record[1], variant)
@@ -1014,16 +1018,8 @@ class PackageResolver:
         # NOTE: this resolver can be optimized by utilizing the fact that we resolve things in the correct order
         #       so all dependencies will have been resolved before the current package
         for package in finalResolveOrder:
-            variantDict1: dict[str, PackagePlatformVariant] = {}
-            for depPackage in package.ResolvedBuildOrder:
-                for variant1 in depPackage.ResolvedDirectVariants:
-                    clonedVariant = PackagePlatformVariant(self.Log, self.__GeneratorInfo, package.Name, variant1, depPackage == package)
-                    if variant1.Name not in variantDict1:
-                        variantDict1[variant1.Name] = clonedVariant
-                    else:
-                        variantDict1[variant1.Name] = variantDict1[variant1.Name].Extend(clonedVariant, depPackage.Name)
-
-            package.ResolvedAllVariantDict = variantDict1
+            # the flavor instances of a package contribute its declaration once, also where several of them meet (the top level package)
+            package.ResolvedAllVariantDict = PackageVariantMerger.Merge(self.Log, self.__GeneratorInfo, package)
 
         # Update the directly resolved variants so they match the ones we utilize in the all list
         # we do this after everything has been resolved to prevent problems with modifying the ResolvedDirectVariants

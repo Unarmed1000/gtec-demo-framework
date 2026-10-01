@@ -41,7 +41,26 @@ class ComplexExternalFlavorConstraints:
         self.PackageFlavorContraintDict = packageFlavorDict
 
     def GetFlavorConstraints(self, packageName: str) -> ExternalFlavorConstraints:
-        return self.PackageFlavorContraintDict.get(packageName, self.DefaultFlavorConstraints)
+        """The constraints of one root package: the constraints that apply to every root package (DefaultFlavorConstraints, the ones the user
+        supplied) together with the ones that were added for this package (the default option of each flavor the user left open).
+        """
+        packageFlavorConstraints = self.PackageFlavorContraintDict.get(packageName)
+        if packageFlavorConstraints is None:
+            return self.DefaultFlavorConstraints
+        if not self.DefaultFlavorConstraints.HasConstraints():
+            return packageFlavorConstraints
+
+        combinedDict = dict(self.DefaultFlavorConstraints.Dict)
+        for flavorName, flavorOptionName in packageFlavorConstraints.Dict.items():
+            existingOptionName = combinedDict.get(flavorName)
+            if existingOptionName is not None and existingOptionName.Value != flavorOptionName.Value:
+                # A constraint is only added for a flavor that the constraints for every package left open, so the two never disagree
+                raise Exception(
+                    f"internal error the flavor constraint '{flavorName}={flavorOptionName}' of package '{packageName}' does not match the "
+                    f"constraint '{flavorName}={existingOptionName}' that applies to every package"
+                )
+            combinedDict[flavorName] = flavorOptionName
+        return ExternalFlavorConstraints(combinedDict)
 
     def HasConstraints(self) -> bool:
         return self.DefaultFlavorConstraints.HasConstraints() or len(self.PackageFlavorContraintDict) > 0

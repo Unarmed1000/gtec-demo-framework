@@ -261,9 +261,21 @@ class PackageGraphBuilder:
                 flavorOptionDict: dict[str, set[str]] = {}
                 PackageGraphBuilder.__DetermineFlavorsThatDiffer(flavorOptionDict, instanceList)
                 if len(flavorOptionDict) > 0:
-                    rootNodeDefaultConstraints[packageTemplate.Name.Value] = PackageGraphBuilder.__BuildTemplateDefaultFlavorConstraints(flavorOptionDict)
+                    rootPackageName = PackageGraphBuilder.__GetConstrainedPackageName(packageTemplate)
+                    rootNodeDefaultConstraints[rootPackageName] = PackageGraphBuilder.__BuildTemplateDefaultFlavorConstraints(flavorOptionDict)
 
         return rootNodeDefaultConstraints
+
+    @staticmethod
+    def __GetConstrainedPackageName(rootTemplate: ResolvedPackageTemplate) -> str:
+        """The package name the external flavor constraints of a root are stored and looked up under. With external flavor constraints the root is
+        the constraint package, the constraints belong to the package it was placed in front of (its only dependency).
+        """
+        if rootTemplate.Type != PackageType.ExternalFlavorConstraint:
+            return rootTemplate.Name.Value
+        if len(rootTemplate.DirectDependencies) != 1:
+            raise Exception(f"Internal error, the external flavor constraint package '{rootTemplate.Name}' does not have exactly one dependency")
+        return rootTemplate.DirectDependencies[0].Template.Name.Value
 
     @staticmethod
     def __BuildTemplateDefaultFlavorConstraints(flavorOptionDict: dict[str, set[str]]) -> ExternalFlavorConstraints:

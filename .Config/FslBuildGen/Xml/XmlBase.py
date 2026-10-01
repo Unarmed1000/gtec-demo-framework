@@ -119,7 +119,10 @@ class XmlBase(XmlBaseInfo):
         """
         strValue = self._TryReadAttrib(xmlElement, attribName, None)
         if strValue is not None:
-            return BoolStringHelper.FromString(strValue)
+            res = BoolStringHelper.TryFromString(strValue)
+            if res is None:
+                raise XmlFormatException(f"{attribName} expects a value of either 'true' or 'false' not '{strValue}'")
+            return res
         elif defaultValue is not None:
             return defaultValue
         raise XmlFormatException(f"{attribName} is required and expects a value of either 'true' or 'false'")

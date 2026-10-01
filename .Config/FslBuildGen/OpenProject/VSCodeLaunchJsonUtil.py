@@ -32,8 +32,9 @@
 
 import json
 
-from FslBuildGen import IOUtil
+from FslBuildGen import IOUtil, TextFileReader
 from FslBuildGen.DataTypes import BuildPlatformType
+from FslBuildGen.Log import Log
 
 
 class LocalStrings:
@@ -54,8 +55,12 @@ class LocalStrings:
 # https://github.com/microsoft/vscode-cmake-tools/blob/master/docs/debug-launch.md#debug-using-a-launchjson-file
 class VSCodeLaunchJsonUtil:
     @staticmethod
-    def TryPatch(jsonFilePath: str, buildPlatformType: BuildPlatformType, executable: str, currentWorkingDirectory: str, combinedNatvisFile: str) -> bool:
-        strJson = IOUtil.TryReadFile(jsonFilePath)
+    def TryPatch(
+        log: Log, jsonFilePath: str, buildPlatformType: BuildPlatformType, executable: str, currentWorkingDirectory: str, combinedNatvisFile: str
+    ) -> bool:
+        # Visual Studio Code reads and writes the file as UTF-8. A byte order mark is accepted and a file in the locale encoding (as older
+        # versions of the tool wrote it) is read with a warning
+        strJson = TextFileReader.TryReadUTF8OrLocale(log, jsonFilePath, "Visual Studio Code launch file", skipBom=True)
         if strJson is not None:
             strJson = VSCodeLaunchJsonUtil.__StripComments(strJson)
             jsonDict = json.loads(strJson)
@@ -90,7 +95,7 @@ class VSCodeLaunchJsonUtil:
         jsonDict[LocalStrings.Configurations] = configurationDictList
 
         jsonText = json.dumps(jsonDict, ensure_ascii=False, sort_keys=True, indent=4)
-        IOUtil.WriteFileIfChanged(jsonFilePath, jsonText)
+        IOUtil.WriteFileUTF8IfChanged(jsonFilePath, jsonText)
         return True
 
     @staticmethod

@@ -33,7 +33,7 @@
 
 import json
 
-from FslBuildGen import IOUtil, Util
+from FslBuildGen import IOUtil, TextFileReader, Util
 from FslBuildGen.Exceptions import InvalidPackageNameException
 from FslBuildGen.Log import Log
 
@@ -73,7 +73,8 @@ class JsonProjectIdCache:
     @staticmethod
     def TryLoad(log: Log, cacheFilename: str) -> JsonProjectIdCache | None:
         try:
-            strJson = IOUtil.TryReadFile(cacheFilename)
+            # The cache is written as UTF-8, a cache that an older version wrote in the locale encoding still loads
+            strJson = TextFileReader.TryReadUTF8OrLocale(log, cacheFilename, "project id cache", skipBom=True, warn=False)
             if strJson is None:
                 return None
             jsonDict = json.loads(strJson)
@@ -97,7 +98,7 @@ class JsonProjectIdCache:
     def Save(log: Log, cacheFilename: str, JsonProjectIdCache: JsonProjectIdCache) -> None:
         log.LogPrintVerbose(LocalVerbosityLevel.Trace, f"- Saving cache '{cacheFilename}'")
         jsonText = json.dumps(JsonProjectIdCache.__dict__, ensure_ascii=False, sort_keys=True, indent=2)
-        IOUtil.WriteFileIfChanged(cacheFilename, jsonText)
+        IOUtil.WriteFileUTF8IfChanged(cacheFilename, jsonText)
 
     @staticmethod
     def IsEqual(lhs: JsonProjectIdCache, rhs: JsonProjectIdCache) -> bool:

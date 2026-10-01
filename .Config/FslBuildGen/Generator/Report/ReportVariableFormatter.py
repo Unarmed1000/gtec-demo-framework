@@ -37,7 +37,7 @@ from collections.abc import Callable, Sequence
 
 from FslBuildGen.ExternalVariantConstraints import ExternalVariantConstraints
 from FslBuildGen.Generator.Report.Datatypes import FormatStringEnvironmentVariableResolveMethod
-from FslBuildGen.Generator.Report.GeneratorVariableReport import GeneratorVariableReport, InvalidVariableOptionNameException
+from FslBuildGen.Generator.Report.GeneratorVariableReport import GeneratorVariableReport, InvalidVariableOptionNameException, LinkedVariableHasNoOptionException
 from FslBuildGen.Generator.Report.ParsedFormatString import (
     FormatStringEnvironmentVariableResolver,
     FormatStringUndefinedVariableNameException,
@@ -121,7 +121,13 @@ class _FormatPlan:
         for envCommand in self.__EnvCommandList:
             formatList[envCommand.SplitIndex] = envCommand.Value
         for command, masterIndex in self.References:
-            formatList[command.SplitIndex] = command.Report.Options[masterOptionIndices[masterIndex]]
+            optionIndex = masterOptionIndices[masterIndex]
+            variable = command.Report
+            if optionIndex >= len(variable.Options) and variable.LinkTargetName is not None:
+                # A linked variable can have fewer options than its master after the master got a new option list
+                master = self.Masters[masterIndex]
+                raise LinkedVariableHasNoOptionException(variable.Name, variable.Options, variable.LinkTargetName, master.Name, master.Options[optionIndex])
+            formatList[command.SplitIndex] = variable.Options[optionIndex]
         return "".join(formatList)
 
 

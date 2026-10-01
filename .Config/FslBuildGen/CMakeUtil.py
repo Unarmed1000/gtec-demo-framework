@@ -93,7 +93,8 @@ class CMakeUtil:
     @staticmethod
     def RunCommand(cmd: list[str]) -> str:
         try:
-            with subprocess.Popen(cmd, stderr=subprocess.STDOUT, stdout=subprocess.PIPE, universal_newlines=True) as proc:
+            # The output is decoded as before, a byte the encoding does not define is replaced instead of failing the capture
+            with subprocess.Popen(cmd, stderr=subprocess.STDOUT, stdout=subprocess.PIPE, universal_newlines=True, errors="replace") as proc:
                 verStr = proc.stdout.read().strip() if proc.stdout is not None else ""
                 if proc.stdout is not None:
                     proc.stdout.close()

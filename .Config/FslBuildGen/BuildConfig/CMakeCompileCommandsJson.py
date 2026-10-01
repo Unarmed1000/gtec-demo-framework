@@ -35,7 +35,7 @@ import json
 import shlex
 from enum import Enum
 
-from FslBuildGen import IOUtil
+from FslBuildGen import IOUtil, TextFileReader
 from FslBuildGen.DataTypes import IncludePriority
 from FslBuildGen.Log import Log
 from FslBuildGen.PackageIncludeDir import PackageIncludeDir
@@ -119,7 +119,8 @@ class CMakeCompileCommandsJson:
 
     @staticmethod
     def Load(log: Log, cacheFilename: str) -> list[CMakeCompileCommandsBasicRecord]:
-        strJson = IOUtil.ReadFile(cacheFilename)
+        # CMake writes the file as UTF-8. A byte order mark is accepted and a file in the locale encoding is read with a warning
+        strJson = TextFileReader.ReadUTF8OrLocale(log, cacheFilename, "compile commands file", skipBom=True)
         jsonList = json.loads(strJson)
         if not isinstance(jsonList, list):
             raise Exception("Unsupported format the file did not contain a list")

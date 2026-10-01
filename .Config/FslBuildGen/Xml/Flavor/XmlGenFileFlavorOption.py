@@ -34,6 +34,7 @@
 import xml.etree.ElementTree as ET
 
 from FslBuildGen.Log import Log
+from FslBuildGen.Xml.Exceptions import XmlFlavorOptionUnknownElementException
 from FslBuildGen.Xml.XmlCommonFslBuild import XmlCommonFslBuild
 
 
@@ -41,10 +42,19 @@ class XmlGenFileFlavorOption(XmlCommonFslBuild):
     __AttribName = "Name"
     __AttribSupported = "Supported"
 
-    def __init__(self, log: Log, requirementTypes: list[str], xmlElement: ET.Element, ownerPackageName: str) -> None:
+    # The elements a option reads, 'CPPDefine' is the old name of 'Define'
+    __ValidElements = ["Define", "Dependency", "ExternalDependency", "FindPackage", "Requirement"]
+    __LegacyElements = ["CPPDefine"]
+
+    def __init__(self, log: Log, requirementTypes: list[str], xmlElement: ET.Element, ownerPackageName: str, flavorName: str) -> None:
+        """flavorName is the name the flavor or flavor extension element gives, it is only used in messages"""
         super().__init__(log, requirementTypes, xmlElement)
         self._CheckAttributes({self.__AttribName, self.__AttribSupported})
         self.Name = self._ReadAttrib(xmlElement, self.__AttribName)
         self.Supported = self._ReadBoolAttrib(xmlElement, self.__AttribSupported, True)
         self.IntroducedByPackageName = ownerPackageName
         self.DirectRequirements = self._GetXMLRequirements(xmlElement)
+        # Any other element would be ignored (a '<Variant>' or '<Platform>' for example has no effect here), so it is rejected instead
+        for child in xmlElement:
+            if child.tag not in self.__ValidElements and child.tag not in self.__LegacyElements:
+                raise XmlFlavorOptionUnknownElementException(child, ownerPackageName, flavorName, self.Name, self.__ValidElements)

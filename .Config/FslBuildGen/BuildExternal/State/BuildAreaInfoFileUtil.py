@@ -32,9 +32,10 @@
 
 import json
 
-from FslBuildGen import IOUtil
+from FslBuildGen import IOUtil, TextFileReader
 from FslBuildGen.BuildExternal.State.BuildAreaInfoFile import BuildAreaInfoFile
 from FslBuildGen.BuildExternal.State.JsonDictType import JsonDictType
+from FslBuildGen.Exceptions import UsageErrorException
 from FslBuildGen.Log import Log
 
 
@@ -43,7 +44,7 @@ class BuildAreaInfoFileUtil:
     def SaveInstallAreaInfo(dstFilePath: str, sdkPath: str) -> JsonDictType:
         jsonRootDict = BuildAreaInfoFile.CreateDict(sdkPath)
         jsonText = json.dumps(jsonRootDict, ensure_ascii=False, sort_keys=True, indent=2)
-        IOUtil.WriteFileIfChanged(dstFilePath, jsonText)
+        IOUtil.WriteFileUTF8IfChanged(dstFilePath, jsonText)
         return jsonRootDict
 
     @staticmethod
@@ -72,13 +73,20 @@ class BuildAreaInfoFileUtil:
         # It will basically only be useful after the claim file has been created
         # So we start with a possible race condition, but any future attempts to use the directory
         # will catch that multiple repos are trying to reuse the same install area
-        fileContent = IOUtil.TryReadFile(filePath)
-        if fileContent is None:
-            log.LogPrint(f"Install area '{targetPath}' is unclaimed, claiming it")
-            BuildAreaInfoFileUtil.ClaimInstallDirNow(log, targetPath, filePath, sdkPath, forceClaimInstallArea)
-            return
+        jsonBuildInfoDict: JsonDictType = {}
+        try:
+            # The file is written as UTF-8, a file that an older version wrote in the locale encoding still loads
+            fileContent = TextFileReader.TryReadUTF8OrLocale(log, filePath, "install area claim file", skipBom=True, warn=False)
+        except UsageErrorException as ex:
+            # A claim file that can not be decoded does not make the area unclaimed, it is an invalid claim file (the empty dict)
+            log.LogPrint(str(ex))
+        else:
+            if fileContent is None:
+                log.LogPrint(f"Install area '{targetPath}' is unclaimed, claiming it")
+                BuildAreaInfoFileUtil.ClaimInstallDirNow(log, targetPath, filePath, sdkPath, forceClaimInstallArea)
+                return
+            jsonBuildInfoDict = json.loads(fileContent)
 
-        jsonBuildInfoDict = json.loads(fileContent)
         if not BuildAreaInfoFile.IsDictValid(jsonBuildInfoDict):
             if not forceClaimInstallArea:
                 raise Exception(

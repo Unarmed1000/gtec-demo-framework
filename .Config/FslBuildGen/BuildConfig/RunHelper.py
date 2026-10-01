@@ -67,7 +67,10 @@ class RunHelper:
         # this has to exist before the try, else a failure inside it makes the finally raise NameError and hide the real error
         output = ""
         try:
-            with subprocess.Popen(buildCommand, cwd=currentWorkingDirectory, stderr=subprocess.STDOUT, stdout=subprocess.PIPE, universal_newlines=True) as proc:
+            # The output is decoded as before, a byte the encoding does not define is replaced instead of failing the capture
+            with subprocess.Popen(
+                buildCommand, cwd=currentWorkingDirectory, stderr=subprocess.STDOUT, stdout=subprocess.PIPE, universal_newlines=True, errors="replace"
+            ) as proc:
                 output = proc.stdout.read().strip() if proc.stdout is not None else ""
                 if proc.stdout is not None:
                     proc.stdout.close()

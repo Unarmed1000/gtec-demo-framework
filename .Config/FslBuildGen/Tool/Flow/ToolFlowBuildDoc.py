@@ -36,7 +36,7 @@ import json
 # from typing import Callable
 from typing import Any, cast
 
-from FslBuildGen import IOUtil
+from FslBuildGen import IOUtil, MarkdownIO, TextFileReader
 from FslBuildGen import Main as MainFlow
 from FslBuildGen.BasicConfig import BasicConfig
 from FslBuildGen.Build.BuildVariantConfigUtil import BuildVariantConfigUtil
@@ -176,16 +176,16 @@ def BuildDemoAppHeader(package: Package) -> list[str]:
     return result
 
 
-def TryLoadTextFileAsLines(path: str) -> list[str] | None:
-    result = IOUtil.TryReadFile(path)
+def TryLoadTextFileAsLines(log: Log, path: str) -> list[str] | None:
+    result = MarkdownIO.TryReadMarkdownFile(log, path)
     if result is None:
         return None
     lines = result.split("\n")
     return lines
 
 
-def TryLoadReadMe(path: str) -> list[str] | None:
-    lines = TryLoadTextFileAsLines(path)
+def TryLoadReadMe(log: Log, path: str) -> list[str] | None:
+    lines = TryLoadTextFileAsLines(log, path)
     if lines is None:
         return None
 
@@ -370,7 +370,7 @@ def UpdatePackageReadMe(
 def SaveReadMe(config: Config, path: str, lines: list[str]) -> None:
     text = "\n".join(lines)
     if not config.DisableWrite:
-        IOUtil.WriteFileIfChanged(path, text)
+        MarkdownIO.WriteMarkdownFileIfChanged(path, text)
 
 
 def TryExtractBrief(basicConfig: BasicConfig, lines: list[str], path: str) -> list[str] | None:
@@ -397,8 +397,9 @@ def TryExtractBrief(basicConfig: BasicConfig, lines: list[str], path: str) -> li
     return result
 
 
-def ReadJsonFile(filename: str) -> JsonDictType:
-    content = IOUtil.ReadFile(filename)
+def ReadJsonFile(log: Log, filename: str) -> JsonDictType:
+    # The demo app writes the file. It is read as UTF-8, a byte order mark is accepted and a file in the locale encoding is read with a warning
+    content = TextFileReader.ReadUTF8OrLocale(log, filename, "command line argument file", skipBom=True)
     return cast(JsonDictType, json.loads(content))
 
 
@@ -418,7 +419,7 @@ def TryBuildAndRun(toolAppContext: ToolAppContext, config: Config, package: Pack
         buildFlow = ToolFlowBuild.ToolFlowBuild(toolAppContext)
         buildFlow.Process(workDir, config.ToolConfig, toolFlowConfig)
 
-        return ReadJsonFile(tmpOutputFilename)
+        return ReadJsonFile(config, tmpOutputFilename)
     except Exception as ex:
         if toolAppContext.LowLevelToolConfig.DebugEnabled:
             raise
@@ -490,21 +491,26 @@ class NamespaceRecord:
         self.NamespaceName = namespaceName
         self.PackageList: list[Package] = []
 
-    def AddPackage(self, packageDirToReadme: dict[str, NamespaceReadmeRecord | None], package: Package) -> None:
+    def AddPackage(self, log: Log, packageDirToReadme: dict[str, NamespaceReadmeRecord | None], package: Package) -> None:
         self.PackageList.append(package)
-        self.__PopulatePackageDirToReadme(packageDirToReadme, package)
+        self.__PopulatePackageDirToReadme(log, packageDirToReadme, package)
 
-    def __PopulatePackageDirToReadme(self, packageDirToReadme: dict[str, NamespaceReadmeRecord | None], package: Package) -> None:
+    def __PopulatePackageDirToReadme(self, log: Log, packageDirToReadme: dict[str, NamespaceReadmeRecord | None], package: Package) -> None:
         if package.Path is None:
             raise Exception("internal error")
         packageAbsoluteDirPath = package.Path.AbsoluteDirPath
         packageRootPath = package.Path.PackageRootLocation.ResolvedPathEx
 
         # If the package is not located at the package root then skip the package dir and start at the parent
-        self.__AddClosestNamespaceGroupReadme(packageDirToReadme, packageRootPath, packageAbsoluteDirPath, True)
+        self.__AddClosestNamespaceGroupReadme(log, packageDirToReadme, packageRootPath, packageAbsoluteDirPath, True)
 
     def __AddClosestNamespaceGroupReadme(
-        self, packageDirToReadme: dict[str, NamespaceReadmeRecord | None], packageLocationRootDirEx: str, currentPackageDir: str, skipDirReadmeCheck: bool
+        self,
+        log: Log,
+        packageDirToReadme: dict[str, NamespaceReadmeRecord | None],
+        packageLocationRootDirEx: str,
+        currentPackageDir: str,
+        skipDirReadmeCheck: bool,
     ) -> NamespaceReadmeRecord | None:
         isRoot = False
         if not currentPackageDir.startswith(packageLocationRootDirEx):
@@ -522,7 +528,7 @@ class NamespaceRecord:
         # Since it will likely always be present and its not a target for this.
         if not skipDirReadmeCheck:
             readmeFile = IOUtil.Join(currentPackageDir, "README.md")
-            fileContent = TryLoadReadMe(readmeFile)
+            fileContent = TryLoadReadMe(log, readmeFile)
             if fileContent is not None and IsNamespaceRootMDFile(fileContent):
                 caption = IOUtil.GetFileName(IOUtil.GetDirectoryName(readmeFile))
                 readmeRecord = NamespaceReadmeRecord(packageLocationRootDirEx, readmeFile, fileContent, caption)
@@ -531,7 +537,9 @@ class NamespaceRecord:
 
         # Not found yet
         if not isRoot:
-            foundFile = self.__AddClosestNamespaceGroupReadme(packageDirToReadme, packageLocationRootDirEx, IOUtil.GetDirectoryName(currentPackageDir), False)
+            foundFile = self.__AddClosestNamespaceGroupReadme(
+                log, packageDirToReadme, packageLocationRootDirEx, IOUtil.GetDirectoryName(currentPackageDir), False
+            )
             packageDirToReadme[currentPackageDir] = foundFile
             return foundFile
         return None
@@ -573,7 +581,7 @@ def ProcessPackages(
     for package in exePackages:
         if package.NameInfo.Namespace.Value not in namespaceDict:
             namespaceDict[package.NameInfo.Namespace.Value] = NamespaceRecord(package.NameInfo.Namespace.Value)
-        namespaceDict[package.NameInfo.Namespace.Value].AddPackage(packageDirToReadme, package)
+        namespaceDict[package.NameInfo.Namespace.Value].AddPackage(log, packageDirToReadme, package)
 
     # Take all found packages for each namespace and sort them based on their package name
     for record in list(namespaceDict.values()):
@@ -633,7 +641,7 @@ def ProcessPackages(
                     namespaceReadmeRecord.NewContent.append("")
 
                 readmePath = IOUtil.Join(package.AbsolutePath, "README.md")
-                packageReadMeLines = TryLoadReadMe(readmePath)
+                packageReadMeLines = TryLoadReadMe(log, readmePath)
                 if packageReadMeLines is not None:
                     packageReadMeLines = UpdatePackageReadMe(config, package, packageReadMeLines, packageArgumentsDict, readmePath)
                     SaveReadMe(config, readmePath, packageReadMeLines)
@@ -703,7 +711,8 @@ class ToolFlowBuildDoc(AToolAppFlow):
         templatePath = IOUtil.Join(config.SDKConfigTemplatePath, "Scr")
         filename = IOUtil.GetFileName(scrFilePath)
         fileTemplatePath = IOUtil.Join(templatePath, filename)
-        templateFileContent = IOUtil.TryReadFile(fileTemplatePath)
+        # The template is copied: it is read and written as UTF-8, and bytes that are not valid UTF-8 are kept as they are
+        templateFileContent = TextFileReader.TryReadUTF8PassThrough(config, fileTemplatePath, "SCR template")
         if templateFileContent is not None:
             projectVersion = f"{projectContext.ProjectVersion.Major}.{projectContext.ProjectVersion.Minor}.{projectContext.ProjectVersion.Patch}"
             finalContent = templateFileContent
@@ -711,7 +720,7 @@ class ToolFlowBuildDoc(AToolAppFlow):
             finalContent = finalContent.replace("##PROJECT_VERSION##", projectVersion)
 
             if not config.IsDryRun:
-                IOUtil.WriteFileUTF8(scrFilePath, finalContent)
+                IOUtil.WriteFileUTF8(scrFilePath, finalContent, errors="surrogateescape")
 
     def Process(self, currentDirPath: str, toolConfig: ToolConfig, localToolConfig: LocalToolConfig) -> None:
         config = Config(self.Log, toolConfig, "sdk", localToolConfig.BuildVariantConstraints, localToolConfig.AllowDevelopmentPlugins)
@@ -762,7 +771,7 @@ class ToolFlowBuildDoc(AToolAppFlow):
                 raise Exception(f"Root directory not found for location {projectContext.Location}")
 
             readmePath = IOUtil.Join(rootDir.ResolvedPath, "README.md")
-            packageReadMeLines = TryLoadReadMe(readmePath)
+            packageReadMeLines = TryLoadReadMe(config, readmePath)
             packageReadMeLines = packageReadMeLines if packageReadMeLines is not None else []
             projectRootNamepaceRecord = NamespaceReadmeRecord(rootDir.ResolvedPath, readmePath, packageReadMeLines, "")
             namespaceRecords = ProcessPackages(
@@ -822,7 +831,7 @@ class ToolFlowBuildDoc(AToolAppFlow):
                     self.ProcessSCRFile(config, projectContext, scrFilePath)
 
     def ProcessMDFile(self, config: Config, filename: str, localToolConfig: LocalToolConfig) -> None:
-        packageReadMeLines = TryLoadReadMe(filename)
+        packageReadMeLines = TryLoadReadMe(config, filename)
         if packageReadMeLines is not None and self.HasLineThatContain(packageReadMeLines, "#AG_TOC_BEGIN#") and not IsNamespaceRootMDFile(packageReadMeLines):
             packageReadMeLinesNew = TryInsertTableOfContents(config, packageReadMeLines, localToolConfig.ToCDepth, filename)
             if packageReadMeLinesNew is not None:

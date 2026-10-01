@@ -34,7 +34,7 @@
 
 from FslBuildGen.BasicConfig import BasicConfig
 from FslBuildGen.Config import Config
-from FslBuildGen.Xml.Exceptions import ImportTemplateNotFoundException
+from FslBuildGen.Xml.Exceptions import ImportTemplateNotFoundException, XmlExternalDependencyVersionException
 from FslBuildGen.Xml.XmlGenFslBuildTemplate import XmlGenFslBuildTemplate
 from FslBuildGen.Xml.XmlStuff import XmlGenFileImportTemplate
 
@@ -54,6 +54,11 @@ class PackageTemplateLoader:
         if name not in self.TemplateLocationCache:
             raise ImportTemplateNotFoundException(cmd.XMLElement, name)
 
-        template = XmlGenFslBuildTemplate(self.__Config, self.__Config.ToolConfig.RequirementTypes, self.TemplateLocationCache[name])
+        filename = self.TemplateLocationCache[name]
+        try:
+            template = XmlGenFslBuildTemplate(self.__Config, self.__Config.ToolConfig.RequirementTypes, filename)
+        except XmlExternalDependencyVersionException as ex:
+            # The element that found the error does not know which file it is in
+            raise XmlExternalDependencyVersionException(ex.DependencyName, ex.Reason, filename) from ex
         self.TemplateDict[name] = template
         return template

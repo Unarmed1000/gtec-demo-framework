@@ -762,7 +762,7 @@ class ToolAppFlowFactory(AToolAppFlowFactory):
             parser.add_argument(
                 "--tidyArgs",
                 default=" ".join(DefaultValue.ClangTidyArgs),
-                help="The command line arguments to pass to clang-tidy before any '--' (to supply a command that starts with - use '=' like --tidyArgs=-cmd').",
+                help="The command line arguments to pass to clang-tidy before any '--' (to supply a command that starts with - use '=' like --tidyArgs=-cmd).",
             )
             parser.add_argument(
                 "--tidyPostfixArgs",

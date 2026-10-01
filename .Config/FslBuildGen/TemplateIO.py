@@ -21,18 +21,34 @@
 # * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 # ****************************************************************************************************************************************************
 
-# 'locale' is not used here, the import keeps 'XmlGenFileReader.locale' available as that is where the unit tests set the locale encoding
-import locale  # noqa: F401
+# The text files the generators work with: the templates they fill in and the project and build files they generate from them.
+#
+# - A template is read with the pass-through policy of TextFileReader: as UTF-8, with a byte order mark and any bytes that are not valid UTF-8 kept.
+# - A generated file is written as UTF-8. No byte order mark is added, the file has one when its template starts with one.
+#
+# So what a template holds reaches the generated file byte for byte, and what the generator fills in (text from the gen files and the configuration) is
+# written as UTF-8, whatever the locale encoding of the machine is.
 
-from FslBuildGen import TextFileReader
+from FslBuildGen import IOUtil, TextFileReader
 from FslBuildGen.Log import Log
 
+# The templates that gave the 'not valid UTF-8' warning. The generators read the same template for every package and every platform they generate, this
+# makes it one warning per template for a run of the tool.
+g_warnedTemplates: set[str] = set()
 
-def ReadGenFileContent(log: Log, filename: str) -> str:
-    """Read a gen file as text.
-    Gen files declare UTF-8, so that is how they are read. A file that is not valid UTF-8 (for example one saved as ANSI) is read with the
-    locale encoding, like older versions of the tool did on Windows, and a warning names the file.
-    Both reads use universal newlines, so the content (and the recipe cache hash computed from it) of a pure ASCII file does not change.
-    The byte order mark is kept, ElementTree accepts it.
+
+def ReadTemplate(log: Log, filename: str) -> str:
+    """Read a template with universal newlines. A template that is not valid UTF-8 keeps its bytes and gives one warning per run."""
+    return TextFileReader.ReadUTF8PassThrough(log, filename, "template", warnedFiles=g_warnedTemplates)
+
+
+def TryReadTemplate(log: Log, filename: str) -> str | None:
+    """Like ReadTemplate, but a template that can not be opened or read (an optional template that is not there) gives None"""
+    return TextFileReader.TryReadUTF8PassThrough(log, filename, "template", warnedFiles=g_warnedTemplates)
+
+
+def WriteGeneratedFileIfChanged(filename: str, content: str) -> bool:
+    """Write a file generated from templates as UTF-8 unless the file already holds the content, returns true if the file was written.
+    Bytes a template kept because they are not valid UTF-8 are written back as they were.
     """
-    return TextFileReader.ReadUTF8OrLocale(log, filename, "gen file")
+    return IOUtil.WriteFileUTF8IfChanged(filename, content, errors="surrogateescape")

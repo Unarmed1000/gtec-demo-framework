@@ -34,6 +34,7 @@
 import contextlib
 import errno
 import hashlib
+import io
 import os
 import os.path
 import shutil
@@ -45,62 +46,61 @@ from typing import Any
 # from FslBuildGen import Util
 
 
-def ReadFile(filename: str, newline: str | None = None) -> str:
+def ReadFileUTF8(filename: str, newline: str | None = None, errors: str = "strict") -> str:
+    """Read a UTF-8 file as text, a byte order mark is kept as the first character.
+    'errors' is the codec error handler: "strict" raises UnicodeDecodeError for a file that is not valid UTF-8, "surrogateescape" keeps the invalid bytes
+    so WriteFileUTF8 with the same handler writes them back unchanged.
+    """
     content = None
-    with open(filename, newline=newline) as theFile:
+    with open(filename, newline=newline, encoding="utf-8", errors=errors) as theFile:
         content = str(theFile.read())
     return content
 
 
-def TryReadFile(filename: str) -> str | None:
+def TryReadFileUTF8(filename: str, newline: str | None = None, errors: str = "strict") -> str | None:
+    """Like ReadFileUTF8, but a file that can not be opened or read gives None. A file that is not valid UTF-8 is not hidden, it still raises."""
     try:
-        return ReadFile(filename)
+        return ReadFileUTF8(filename, newline, errors)
     except OSError:
         return None
 
 
-def ReadFileUTF8(filename: str, newline: str | None = None) -> str:
-    content = None
-    with open(filename, newline=newline, encoding="utf-8") as theFile:
-        content = str(theFile.read())
-    return content
+def _EncodeUTF8(content: str, newline: str | None, errors: str) -> bytes:
+    """Encode the content to the bytes a text mode open(filename, "w", newline=newline, encoding="utf-8", errors=errors) writes: no byte order mark is
+    added and the newlines are translated the same way, as it is the same io.TextIOWrapper doing it.
+    """
+    buffer = io.BytesIO()
+    with io.TextIOWrapper(buffer, encoding="utf-8", errors=errors, newline=newline) as writer:
+        writer.write(content)
+        writer.flush()
+        return buffer.getvalue()
 
 
-def WriteFileUTF8(filename: str, content: str, newline: str | None = None) -> None:
-    with open(filename, "w", newline=newline, encoding="utf-8") as theFile:
-        theFile.write(content)
+def WriteFileUTF8(filename: str, content: str, newline: str | None = None, errors: str = "strict") -> None:
+    """Write the content as UTF-8, no byte order mark is added.
+    The content is encoded before the file is opened, so content that can not be encoded raises UnicodeEncodeError and leaves an existing file as it was
+    instead of truncated.
+    """
+    encodedContent = _EncodeUTF8(content, newline, errors)
+    with open(filename, "wb") as theFile:
+        theFile.write(encodedContent)
 
 
-def WriteFileUTF8IfChanged(filename: str, content: str, newline: str | None = None) -> bool:
+def WriteFileUTF8IfChanged(filename: str, content: str, newline: str | None = None, errors: str = "strict") -> bool:
+    """Write the content as UTF-8 unless the file already holds it, returns true if the file was written.
+    An existing file that is not valid UTF-8 does not raise: its invalid bytes only compare equal to content read from them with "surrogateescape",
+    so it counts as changed and is rewritten.
+    """
     existingContent = None
     if os.path.exists(filename):
         if os.path.isfile(filename):
-            existingContent = ReadFileUTF8(filename)
+            existingContent = ReadFileUTF8(filename, errors="surrogateescape")
         else:
             raise OSError(f"'{filename}' exist but it's not a file")
 
     if content == existingContent:
         return False
-    WriteFileUTF8(filename, content, newline=newline)
-    return True
-
-
-def WriteFile(filename: str, content: str, newline: str | None = None) -> None:
-    with open(filename, "w", newline=newline) as theFile:
-        theFile.write(content)
-
-
-def WriteFileIfChanged(filename: str, content: str, newline: str | None = None) -> bool:
-    existingContent = None
-    if os.path.exists(filename):
-        if os.path.isfile(filename):
-            existingContent = ReadFile(filename)
-        else:
-            raise OSError(f"'{filename}' exist but it's not a file")
-
-    if content == existingContent:
-        return False
-    WriteFile(filename, content, newline=newline)
+    WriteFileUTF8(filename, content, newline=newline, errors=errors)
     return True
 
 
@@ -567,13 +567,14 @@ def IsDriveRootPath(path: str) -> bool:
       a safety guard before they delete a directory or use it as a working directory, and a path that does not name a directory must not pass it.
     """
     normPath = NormalizePath(path)
-    drive, _ = os.path.splitdrive(normPath)
+    drive, pathOnDrive = os.path.splitdrive(normPath)
     # some basic checks to detect root paths
     return (
         "../" in normPath
         or "/.." in normPath
         or normPath == "/"
-        or normPath == ".."
+        # The parent of the current directory, also of the current directory of a drive ("C:..")
+        or pathOnDrive == ".."
         or normPath == "/."
         # The current directory (NormalizePath never returns an empty path)
         or normPath == "."

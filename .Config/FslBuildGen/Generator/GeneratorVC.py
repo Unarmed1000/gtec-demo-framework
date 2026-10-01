@@ -35,7 +35,7 @@
 import os
 from collections.abc import Iterable
 
-from FslBuildGen import IOUtil, Util
+from FslBuildGen import IOUtil, SemanticVersionPatternRender, TemplateIO, Util
 
 # from FslBuildGen.BasicConfig import BasicConfig
 from FslBuildGen.Build.DataTypes import CommandType
@@ -94,6 +94,7 @@ from FslBuildGen.PackageListUtil import GetTopLevelPackage
 from FslBuildGen.Packages.Package import Package, PackageDefine, PackageExternalDependency, PackagePlatformVariant, PackagePlatformVariantOption
 from FslBuildGen.Packages.PackagePlatformExternalDependency import PackagePlatformExternalDependency
 from FslBuildGen.Packages.PackageRequirement import PackageRequirement
+from FslBuildGen.SemanticVersionPatternRender import VersionRenderException
 
 # from FslBuildGen.PackageIncludeDir import PackageIncludeDir
 from FslBuildGen.SharedGeneration import GEN_BUILD_ENV_FEATURE_SETTING, GEN_BUILD_ENV_VARIANT_SETTING, ToolAddedVariant
@@ -541,17 +542,17 @@ class GeneratorVC(GeneratorBase):
         dstFileRunProject = IOUtil.Join(buildBasePath, LocalMagicFilenames.RunProject)
         if not config.DisableWrite:
             IOUtil.SafeMakeDirs(buildBasePath)
-            IOUtil.WriteFileIfChanged(dstFileSLN, buildSLN)
-            IOUtil.WriteFileIfChanged(dstFileVC, buildVC)
+            TemplateIO.WriteGeneratedFileIfChanged(dstFileSLN, buildSLN)
+            TemplateIO.WriteGeneratedFileIfChanged(dstFileVC, buildVC)
             if filterFile is not None:
-                IOUtil.WriteFileIfChanged(dstFileFilter, filterFile)
+                TemplateIO.WriteGeneratedFileIfChanged(dstFileFilter, filterFile)
 
             if buildProjectFile is not None:
-                IOUtil.WriteFileIfChanged(dstFileBuildProject, buildProjectFile)
+                TemplateIO.WriteGeneratedFileIfChanged(dstFileBuildProject, buildProjectFile)
             if runProjectFile is not None:
-                IOUtil.WriteFileIfChanged(dstFileRunProject, runProjectFile)
+                TemplateIO.WriteGeneratedFileIfChanged(dstFileRunProject, runProjectFile)
             if buildNuGetPackageConfigFile is not None:
-                IOUtil.WriteFileIfChanged(dstFileNuGetConfig, buildNuGetPackageConfigFile)
+                TemplateIO.WriteGeneratedFileIfChanged(dstFileNuGetConfig, buildNuGetPackageConfigFile)
 
         # A solution in the other format is left over from before the SolutionFormat changed
         staleFormat = VisualStudioSolutionFormat.Sln if self.__SolutionFormat == VisualStudioSolutionFormat.Slnx else VisualStudioSolutionFormat.Slnx
@@ -595,7 +596,7 @@ class GeneratorVC(GeneratorBase):
         if not config.DisableWrite:
             IOUtil.SafeMakeDirs(buildBasePath)
             if runProjectFile is not None:
-                IOUtil.WriteFileIfChanged(dstFileRunProject, runProjectFile)
+                TemplateIO.WriteGeneratedFileIfChanged(dstFileRunProject, runProjectFile)
 
     def __TryGenerateFilterFile(self, log: Log, package: Package, template: CodeTemplateVC, packageTargetName: str) -> str | None:
         if template.FilterMaster is None:
@@ -1516,7 +1517,7 @@ class GeneratorVC(GeneratorBase):
                 strContent = strContent.replace("##INCLUDE_ASSETS##", strIncludeAssets)
             else:
                 strContent = snippet.replace("##PACKAGE_NAME##", entry.Name)
-            strContent = strContent.replace("##PACKAGE_VERSION##", str(entry.Version))
+            strContent = strContent.replace("##PACKAGE_VERSION##", SemanticVersionPatternRender.ToPackageReferenceVersion(entry.Version))
             res.append(strContent)
         return "\n".join(res)
 
@@ -1622,10 +1623,13 @@ class GeneratorVC(GeneratorBase):
 
         return list(uniqueEntries.values())
 
-    def __GetAssemblyName(self, entry: PackageExternalDependency) -> str:
+    def __GetAssemblyName(self, package: Package, entry: PackageExternalDependency) -> str:
         name = entry.Name
         if entry.Version is not None:
-            name += f", Version={entry.Version}"
+            try:
+                name += f", Version={SemanticVersionPatternRender.ToAssemblyVersion(entry.Version)}"
+            except VersionRenderException as ex:
+                raise SemanticVersionPatternRender.CreatePackageError(package.Name, entry.Name, ex) from ex
         if entry.Culture is not None:
             name += f", Culture={entry.Culture}"
         if entry.PublicKeyToken is not None:
@@ -1658,7 +1662,7 @@ class GeneratorVC(GeneratorBase):
                 content = content.replace("##PACKAGE_DEPENDENCY_HINT_PATH##", entry.HintPath)
             else:
                 content += snippetSimple
-            content = content.replace("##PACKAGE_DEPENDENCY_INCLUDE##", self.__GetAssemblyName(entry))
+            content = content.replace("##PACKAGE_DEPENDENCY_INCLUDE##", self.__GetAssemblyName(package, entry))
             content = content.replace("##PACKAGE_DEPENDENCY_PRIVATE##", strPrivate)
             result += content
         return result
@@ -1684,7 +1688,10 @@ class GeneratorVC(GeneratorBase):
             content = content.replace("##PACKAGE_NAME##", entry.Name)
             if entry.PackageManager.Version is None or entry.PackageManager.PackageTargetFramework is None:
                 raise Exception("Not supported")
-            content = content.replace("##PACKAGE_VERSION##", entry.PackageManager.Version)
+            try:
+                content = content.replace("##PACKAGE_VERSION##", SemanticVersionPatternRender.ToPackagesConfigVersion(entry.PackageManager.Version))
+            except VersionRenderException as ex:
+                raise SemanticVersionPatternRender.CreatePackageError(package.Name, entry.Name, ex) from ex
             content = content.replace("##PACKAGE_TARGET_FRAMEWORK##", entry.PackageManager.PackageTargetFramework)
             contentPackageList += content
 

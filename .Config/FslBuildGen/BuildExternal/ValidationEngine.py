@@ -327,7 +327,8 @@ class ValidationEngine:
         # built before the try so the error handler below can always report it
         runCmd = [cmd, versionCommand]
         try:
-            with subprocess.Popen(runCmd, stderr=subprocess.STDOUT, stdout=subprocess.PIPE, universal_newlines=True) as proc:
+            # The output is decoded as before, a byte the encoding does not define is replaced instead of failing the capture
+            with subprocess.Popen(runCmd, stderr=subprocess.STDOUT, stdout=subprocess.PIPE, universal_newlines=True, errors="replace") as proc:
                 output = proc.stdout.read().strip() if proc.stdout is not None else ""
                 if proc.stdout is not None:
                     proc.stdout.close()

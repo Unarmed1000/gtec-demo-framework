@@ -58,7 +58,7 @@ from FslBuildGen.ToolConfig import ToolConfig, ToolConfigPackageConfiguration
 
 # from FslBuildGen.ToolConfig import ToolConfigPackageLocation
 from FslBuildGen.ToolConfigProjectContext import ToolConfigProjectContext
-from FslBuildGen.Xml.Exceptions import XmlInvalidPackageNameException, XmlInvalidSubPackageNameException
+from FslBuildGen.Xml.Exceptions import XmlExternalDependencyVersionException, XmlInvalidPackageNameException, XmlInvalidSubPackageNameException
 from FslBuildGen.Xml.XmlGenFile import XmlGenFile
 from FslBuildGen.Xml.XmlGenFileDependency import XmlGenFileDependency
 
@@ -246,7 +246,13 @@ class PackageLoader:
         for file in files:
             log.LogPrint(f"'{file.AbsoluteFilePath}'")
             xml = factoryFunction(log, toolConfig, defaultPackageLanguage)
-            xml.Load(config, self.PackageTemplateLoader, file)
+            try:
+                xml.Load(config, self.PackageTemplateLoader, file)
+            except XmlExternalDependencyVersionException as ex:
+                # The element that found the error does not know which file it is in. A template the file imports is named already.
+                if ex.Filename is not None:
+                    raise
+                raise XmlExternalDependencyVersionException(ex.DependencyName, ex.Reason, file.AbsoluteFilePath) from ex
             self.__ValidatePackage(config, file, xml)
             rGenFiles.insert(0, xml)
             if xml.Name not in rPackageDict:

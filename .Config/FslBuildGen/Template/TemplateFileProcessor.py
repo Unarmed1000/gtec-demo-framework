@@ -33,7 +33,7 @@
 
 from collections.abc import Callable
 
-from FslBuildGen import IOUtil
+from FslBuildGen import IOUtil, TemplateIO
 from FslBuildGen.Config import Config
 from FslBuildGen.ExternalVariantConstraints import ExternalVariantConstraints
 from FslBuildGen.Packages.Package import Package
@@ -74,7 +74,7 @@ class TemplateFileProcessor:
         for file in filesToModify:
             if not self.GenFileOnly or file.FileName == config.ToolConfig.GenFileName:
                 dstFilename = IOUtil.Join(dstPath, file.RelativeDestPath)
-                content = IOUtil.ReadFile(file.AbsoluteSourcePath)
+                content = TemplateIO.ReadTemplate(config, file.AbsoluteSourcePath)
 
                 # Replace various strings using the 'template environment'
                 for key, value in self.Environment.Dict.items():
@@ -88,7 +88,7 @@ class TemplateFileProcessor:
                 dirName = IOUtil.GetDirectoryName(dstFilename)
                 if not config.DisableWrite:
                     IOUtil.SafeMakeDirs(dirName)
-                    IOUtil.WriteFileIfChanged(dstFilename, content)
+                    TemplateIO.WriteGeneratedFileIfChanged(dstFilename, content)
 
     def __CopyFiles(self, config: Config, dstPath: str, filesToCopy: list[TemplateFileRecord]) -> None:
         for file in filesToCopy:

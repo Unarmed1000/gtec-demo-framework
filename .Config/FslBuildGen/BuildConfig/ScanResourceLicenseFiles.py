@@ -36,7 +36,7 @@ import os
 import os.path
 from typing import Any
 
-from FslBuildGen import IOUtil
+from FslBuildGen import IOUtil, TextFileReader
 from FslBuildGen.BuildConfig.LicenseConfig import LicenseConfig
 from FslBuildGen.DataTypes import PackageType
 from FslBuildGen.Log import Log
@@ -144,8 +144,9 @@ def _GetExtensionList(extensions: list[tuple[str, str]]) -> list[str]:
     return [extension[0] for extension in extensions]
 
 
-def _ReadJsonFile(filename: str) -> Any:  # nasty any return
-    content = IOUtil.ReadFile(filename)
+def _ReadJsonFile(log: Log, filename: str) -> Any:  # nasty any return
+    # License files are UTF-8 like any json file: a byte order mark is accepted, and a file saved as ANSI is read with the locale encoding
+    content = TextFileReader.ReadUTF8OrLocale(log, filename, "license file", skipBom=True)
     return json.loads(content)
 
 
@@ -345,7 +346,7 @@ class LicenseManager:
 
         content = None
         try:
-            content = _ReadJsonFile(filename)
+            content = _ReadJsonFile(log, filename)
         except Exception:
             print(f"ERROR: Exception while parsing {filename}")
             raise
@@ -530,7 +531,7 @@ def _WriteCSV(dstFilename: str, extensions: list[tuple[str, str]], uniqueEntries
                 strOrigin, strLicense, strComment, strUrl = _Flatten(entry.License)
                 lines.append(f";{entry.RelativePath};{strOrigin};{strLicense};{contentType};{strComment};{strUrl}")
 
-    IOUtil.WriteFile(dstFilename, "\n".join(lines))
+    IOUtil.WriteFileUTF8(dstFilename, "\n".join(lines))
 
 
 def _PrintIssueDirectories(fileList: list[Resource], dict: dict[str, list[Resource]]) -> None:

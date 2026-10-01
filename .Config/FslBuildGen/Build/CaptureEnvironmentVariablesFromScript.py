@@ -52,7 +52,9 @@ class LocalUtil:
             if cmdList[0].endswith(".py") and PlatformUtil.DetectBuildPlatformType() == BuildPlatformType.Windows:
                 cmdList[0] = cmdList[0][:-3] + ".bat"
 
-            with subprocess.Popen(cmdList, stderr=subprocess.STDOUT, stdout=subprocess.PIPE, universal_newlines=True) as proc:
+            # The dump is pure ASCII. What the run script prints around it is in a encoding we do not know, so what can not be decoded is
+            # replaced instead of failing the capture (text mode, universal newlines as before)
+            with subprocess.Popen(cmdList, stderr=subprocess.STDOUT, stdout=subprocess.PIPE, encoding="utf-8", errors="replace") as proc:
                 output = proc.stdout.read().strip() if proc.stdout is not None else ""
                 if proc.stdout is not None:
                     proc.stdout.close()
@@ -73,7 +75,7 @@ class LocalUtil:
         startPos = content.find(CaptureEnvironmentBlock.Begin)
         endPos = content.find(CaptureEnvironmentBlock.End)
         if startPos < 0 or endPos < 0 or endPos < startPos:
-            raise Exception("Captured content is not of the expecte format")
+            raise Exception("Captured content is not of the expected format")
 
         return content[(startPos + len(CaptureEnvironmentBlock.Begin)) : endPos].strip()
 
@@ -128,22 +130,21 @@ class CaptureEnvironmentVariablesFromScript:
         # Decode json
         jsonDict = json.loads(strJson)
 
+        # The script dumps the variables by their name (without the '$()'), a name that was not requested is not a capture of this request
+        requestedNames = set(entryDict.values())
         finalDict: dict[str, str] = {}
         for key, value in jsonDict.items():
             if not isinstance(key, str) or not isinstance(value, str):
                 LocalUtil.DumpCapture(log, 4, content)
                 raise Exception("captured json decode failed")
-            if key not in jsonDict:
+            if key not in requestedNames:
                 LocalUtil.DumpCapture(log, 4, content)
                 raise Exception(f"Capture contained wrong key: '{key}'")
             finalDict[key] = value
 
         # Ensure that all the requested entries are present
         if len(finalDict) != len(entryDict):
-            missingKeys = []
-            for key in entryDict:
-                if key not in finalDict:
-                    missingKeys.append(key)
+            missingKeys = [envEntry for envEntry, name in entryDict.items() if name not in finalDict]
             LocalUtil.DumpCapture(log, 4, content)
             raise Exception(f"The Captured environment variable output is missing for: {missingKeys}")
 

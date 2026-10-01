@@ -51,7 +51,8 @@ class GitUtil:
         Raises when git can not be started.
         """
         command = [gitExecutableName, "rev-parse", "HEAD"]
-        proc = subprocess.Popen(command, stderr=subprocess.STDOUT, stdout=subprocess.PIPE, universal_newlines=True, cwd=path)
+        # The output is decoded as before, a byte the encoding does not define is replaced instead of failing the capture
+        proc = subprocess.Popen(command, stderr=subprocess.STDOUT, stdout=subprocess.PIPE, universal_newlines=True, errors="replace", cwd=path)
         try:
             (output, _) = proc.communicate()
             returnCode = proc.wait()

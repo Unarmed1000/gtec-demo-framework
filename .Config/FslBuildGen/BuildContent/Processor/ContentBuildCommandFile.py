@@ -35,7 +35,7 @@ import fnmatch
 import json
 from typing import Any
 
-from FslBuildGen import IOUtil, ToolSharedValues
+from FslBuildGen import IOUtil, TextFileReader, ToolSharedValues
 from FslBuildGen.BuildContent.ContentRootRecord import ContentRootRecord
 from FslBuildGen.BuildContent.PathVariables import PathVariables
 from FslBuildGen.BuildContent.Processor.Commands import Command, CommandContentBuildSync, CommandContentSync
@@ -52,7 +52,8 @@ class ContentBuildCommandFile:
         self.__CurrentVersion = "1"
         self.Commands: list[Command] = []
 
-        fileContent = IOUtil.TryReadFile(sourceFilename)
+        # The command file is UTF-8 like any json file. A byte order mark is accepted and a file in the locale encoding is read with a warning
+        fileContent = TextFileReader.TryReadUTF8OrLocale(log, sourceFilename, "content command file", skipBom=True)
         if fileContent is not None:
             log.LogPrintVerbose(3, f"Parsing command file '{sourceFilename}'")
             jsonContent = self.__ParseJsonFile(fileContent)

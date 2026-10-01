@@ -34,7 +34,7 @@
 import json
 from enum import Enum
 
-from FslBuildGen import IOUtil
+from FslBuildGen import IOUtil, TemplateIO, TextFileReader
 from FslBuildGen.Build.DataTypes import CommandType
 from FslBuildGen.BuildConfig.CMakeCompileCommandsJson import CompileCommandDefine
 from FslBuildGen.BuildExternal import CMakeHelper
@@ -172,11 +172,11 @@ class GeneratorCMake(GeneratorBase):
         toolProjectContextsDict = {projectContext.ProjectId: projectContext for projectContext in toolConfig.ProjectInfo.Contexts}
 
         strTemplatePath = templateName
-        extTemplate = CMakeGeneratorUtil.CodeTemplateCMake(sdkConfigTemplatePath, strTemplatePath, "Ext", False, overrideTemplateName)
-        libTemplate = CMakeGeneratorUtil.CodeTemplateCMake(sdkConfigTemplatePath, strTemplatePath, "Lib", False, overrideTemplateName)
-        exeTemplate = CMakeGeneratorUtil.CodeTemplateCMake(sdkConfigTemplatePath, strTemplatePath, "Exe", False, overrideTemplateName)
-        rootTemplate = CMakeGeneratorUtil.CodeTemplateCMake(sdkConfigTemplatePath, strTemplatePath, "Root", False, overrideTemplateName)
-        notSupportedTemplate = CMakeGeneratorUtil.CodeTemplateCMake(sdkConfigTemplatePath, strTemplatePath, "NotSupported", False, overrideTemplateName)
+        extTemplate = CMakeGeneratorUtil.CodeTemplateCMake(log, sdkConfigTemplatePath, strTemplatePath, "Ext", False, overrideTemplateName)
+        libTemplate = CMakeGeneratorUtil.CodeTemplateCMake(log, sdkConfigTemplatePath, strTemplatePath, "Lib", False, overrideTemplateName)
+        exeTemplate = CMakeGeneratorUtil.CodeTemplateCMake(log, sdkConfigTemplatePath, strTemplatePath, "Exe", False, overrideTemplateName)
+        rootTemplate = CMakeGeneratorUtil.CodeTemplateCMake(log, sdkConfigTemplatePath, strTemplatePath, "Root", False, overrideTemplateName)
+        notSupportedTemplate = CMakeGeneratorUtil.CodeTemplateCMake(log, sdkConfigTemplatePath, strTemplatePath, "NotSupported", False, overrideTemplateName)
 
         useExtendedProjectHack = True
         for package in packages:
@@ -285,7 +285,9 @@ class GeneratorCMake(GeneratorBase):
 
         directDefinitions = CMakeGeneratorUtil.BuildDirectDefinitions(log, package, template.PackageDependencyTargetCompileDefinitions, extraDefines)
 
-        findDirectExternalDependencies = CMakeGeneratorUtil.BuildFindDirectExternalDependencies(log, package, template.PackageDependencyFindPackage)
+        findDirectExternalDependencies = CMakeGeneratorUtil.BuildFindDirectExternalDependencies(
+            log, package, template.PackageDependencyFindPackage, toolConfig.CMakeConfiguration.MinimumVersion
+        )
         installInstructions = CMakeGeneratorUtil.BuildInstallInstructions(
             log,
             package,
@@ -488,7 +490,9 @@ class GeneratorCMake(GeneratorBase):
 
             aliasPackageName = CMakeGeneratorUtil.GetAliasName(packageName, projectContext.ProjectName)
 
-            findDirectExternalDependencies = CMakeGeneratorUtil.BuildFindDirectExternalDependencies(log, package, template.PackageDependencyFindPackage)
+            findDirectExternalDependencies = CMakeGeneratorUtil.BuildFindDirectExternalDependencies(
+                log, package, template.PackageDependencyFindPackage, toolConfig.CMakeConfiguration.MinimumVersion
+            )
 
             allPackageNames = CMakeGeneratorUtil.GetAllPackageNames(package, projectContext if not useExtendedProjectHack else None)
 
@@ -554,7 +558,7 @@ class GeneratorCMake(GeneratorBase):
     def __SaveFile(self, dstFileCMakeFile: str, buildCMakeFile: str) -> None:
         if self.__DisableWrite:
             return
-        IOUtil.WriteFileIfChanged(dstFileCMakeFile, buildCMakeFile)
+        TemplateIO.WriteGeneratedFileIfChanged(dstFileCMakeFile, buildCMakeFile)
 
     @staticmethod
     def _GetBuildFileName(saveBasePath: str) -> str:
@@ -985,14 +989,15 @@ class GeneratorCMake(GeneratorBase):
             packageBuildPathFormatRoot, variableReport, externalVariantConstraints, executableReport.EnvironmentVariableResolveMethod
         )
 
-        configurationFileDict = GeneratorCMake._TryLoadConfigJson(configurationFilePath)
+        configurationFileDict = GeneratorCMake._TryLoadConfigJson(log, configurationFilePath)
         buildExePath = IOUtil.NormalizePath(configurationFileDict["EXE_PATH"])
         buildExeCwdPath = fileRunPath
         return PackageGeneratorBuildExecutableInfo(buildExePath, buildExeCwdPath)
 
     @staticmethod
-    def _TryLoadConfigJson(configFile: str) -> dict[str, str]:
-        strConfigJson = IOUtil.ReadFile(configFile)
+    def _TryLoadConfigJson(log: Log, configFile: str) -> dict[str, str]:
+        # CMake writes the file as UTF-8. A byte order mark is accepted and a file in the locale encoding is read with a warning
+        strConfigJson = TextFileReader.ReadUTF8OrLocale(log, configFile, "build configuration file", skipBom=True)
         jsonDict = json.loads(strConfigJson)
         if not isinstance(jsonDict, dict):
             raise Exception(f"Incorrect configuration json file: '{configFile}'")

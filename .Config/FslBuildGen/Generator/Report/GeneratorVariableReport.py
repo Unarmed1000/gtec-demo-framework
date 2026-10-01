@@ -33,6 +33,7 @@
 # from typing import Iterable
 
 
+from FslBuildGen.Generator.Report.LinkedVariableOptionRemapper import LinkedVariableOptionRemapper
 from FslBuildGen.Generator.Report.VariableDict import VariableDict
 from FslBuildGen.Generator.Report.VariableReport import VariableReport
 
@@ -108,6 +109,8 @@ class GeneratorVariableReport(VariableDict):
         however if the options are different a warning is logged. However it is still not possible to change the 'LinkedTargetName'
         The same options in another order are different too, as defaults and linked variables select an option by its index. A default that was
         set before the override follows its option to the new index, and it is removed when the new list does not contain the option.
+        The variables that are linked to the overridden variable follow it too, so each of their options stays with the option it was paired
+        with (see LinkedVariableOptionRemapper).
         """
         super().__init__()
         self.__Log = log
@@ -145,6 +148,8 @@ class GeneratorVariableReport(VariableDict):
             if self.__AllowAutoVariablesOverride and variableName == ToolAddedVariant.CONFIG:
                 currentDef = theDict[variableName]
                 if variableOptionList != currentDef.Options:
+                    # Done first as it can fail, a rejected add leaves the report untouched
+                    linkedVariables = LinkedVariableOptionRemapper.RemapLinkedVariables(self.GetVariableReportList(), currentDef, variableOptionList)
                     if self.__Log is not None:
                         self.__Log.LogPrintVerbose(
                             2,
@@ -152,6 +157,10 @@ class GeneratorVariableReport(VariableDict):
                         )
                     theDict[variableName] = VariableReport(variableName, variableOptionList, currentDef.LinkTargetName)
                     self.__RemapDefaultOption(variableName, currentDef.Options, variableOptionList)
+                    for linkedVariable in linkedVariables:
+                        if self.__Log is not None:
+                            self.__Log.LogPrintVerbose(2, f"The options of the linked variable '{linkedVariable.Name}' follow: {linkedVariable.Options}")
+                        theDict[linkedVariable.Name] = linkedVariable
                 return
             raise VariableAlreadyDefinedException(variableName)
 
@@ -199,3 +208,12 @@ class GeneratorVariableReport(VariableDict):
             raise InvalidVariableOptionIndexException(variableName, variableOptionIndex, str(variableReport.Options), len(variableReport.Options))
 
         self.__DefaultOption[variableName] = variableOptionIndex
+
+
+class LinkedVariableHasNoOptionException(Exception):
+    """A option is needed from a linked variable that has fewer options than its master, which it can have after a override of the master's options"""
+
+    def __init__(self, name: str, options: list[str], linkTargetName: str | None, masterName: str, masterOption: str) -> None:
+        super().__init__(
+            f"The variable '{name}' is linked to '{linkTargetName}' and has no option for the '{masterName}' option '{masterOption}', its options are {options}"
+        )

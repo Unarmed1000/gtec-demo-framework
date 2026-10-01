@@ -253,3 +253,26 @@ class BuildCustomizationAlreadyDefinedException(XmlException2):
     def __init__(self, xmlElement: ET.Element, name: str) -> None:
         msg = f"The build customization name: '{name}' has already been defined."
         super().__init__(msg)
+
+
+class XmlFlavorOptionUnknownElementException(XmlException2):
+    def __init__(self, xmlElement: ET.Element, packageName: str, flavorName: str, optionName: str, validElements: list[str]) -> None:
+        """xmlElement is the unknown child element of the option of a flavor or flavor extension"""
+        msg = (
+            f"Unknown element '{xmlElement.tag}' found in option '{optionName}' of flavor '{flavorName}' in package '{packageName}'. "
+            f"Valid elements: {', '.join(validElements)}"
+        )
+        super().__init__(msg)
+
+
+class XmlExternalDependencyVersionException(XmlException2):
+    """The version of an external dependency is not one the consumer of the dependency can be given.
+    The element does not know which file it is read from, so the loader of the file raises the error again with the file name.
+    """
+
+    def __init__(self, dependencyName: str, reason: str, filename: str | None = None) -> None:
+        location = "" if filename is None else f" in '{filename}'"
+        super().__init__(f"External dependency '{dependencyName}'{location}: {reason}")
+        self.DependencyName = dependencyName
+        self.Reason = reason
+        self.Filename = filename

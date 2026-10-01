@@ -33,9 +33,10 @@
 
 import argparse
 import json
+import sys
 from typing import Any
 
-from FslBuildGen import IOUtil
+from FslBuildGen import ConsoleOutput, IOUtil
 
 # from FslBuildGen import Main as MainFlow
 # from FslBuildGen.Log import Log
@@ -93,9 +94,10 @@ class ToolFlowDumpEnv(AToolAppFlow):
         jsonText = json.dumps(envDict, ensure_ascii=False, sort_keys=True, indent=2)
 
         if localToolConfig.Save:
-            IOUtil.WriteFileIfChanged(localToolConfig.Save, jsonText)
+            IOUtil.WriteFileUTF8IfChanged(localToolConfig.Save, jsonText)
         else:
-            print(jsonText)
+            # What reads the output gets valid json whatever the encoding of the output is, a file is UTF-8 and holds everything
+            print(ConsoleOutput.EscapeJsonForStream(jsonText, sys.stdout))
 
 
 class ToolAppFlowFactory(AToolAppFlowFactory):

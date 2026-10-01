@@ -34,9 +34,10 @@
 import datetime
 import os
 
-from FslBuildGen import IOUtil
+from FslBuildGen import IOUtil, TextFileReader
 from FslBuildGen.BuildContent.PathRecord import PathRecord
 from FslBuildGen.BuildContent.Sync.Content import Content
+from FslBuildGen.Exceptions import UsageErrorException
 from FslBuildGen.Log import Log
 
 g_isVerbose = False
@@ -175,7 +176,14 @@ class SyncState:
     def __Load(self, log: Log, path: str) -> None:
         if not os.path.exists(path):
             return
-        content = IOUtil.ReadFile(path)
+        try:
+            # The cache is written as UTF-8, a cache that an older version wrote in the locale encoding still loads
+            content = TextFileReader.ReadUTF8OrLocale(log, path, "content cache", skipBom=True, warn=False)
+        except UsageErrorException as ex:
+            # A cache that can not be decoded is like no cache: the content is examined again
+            self.__Clear()
+            log.LogPrintWarning(f"Cache at '{path}' is invalid, ignoring it. {ex}")
+            return
 
         self.Dirs = {}
         self.Entries = {}
@@ -276,7 +284,7 @@ class SyncState:
             entry = self.Entries[name]
             strContent = f"{entry.Name}{GLOBAL_SEP}{entry.Length}{GLOBAL_SEP}{entry.ModifiedDate}{GLOBAL_SEP}{entry.Checksum}{GLOBAL_SEP}{entry.TagChecksum}\n"
             result.append(strContent)
-        IOUtil.WriteFileIfChanged(path, "".join(result))
+        IOUtil.WriteFileUTF8IfChanged(path, "".join(result))
 
     def BuildContentState(
         self, log: Log, pathFileRecord: PathRecord, allowCaching: bool, allowNew: bool, cachedSyncState: SyncState | None = None

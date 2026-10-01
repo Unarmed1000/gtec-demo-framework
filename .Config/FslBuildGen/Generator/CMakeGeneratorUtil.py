@@ -33,8 +33,9 @@
 
 from enum import Enum
 
-from FslBuildGen import IOUtil, ToolScriptCommand, ToolSharedValues, Util
+from FslBuildGen import IOUtil, SemanticVersionPatternRender, TemplateIO, ToolScriptCommand, ToolSharedValues, Util
 from FslBuildGen.BuildContent.PathRecord import PathRecord
+from FslBuildGen.CMakeUtil import CMakeVersion
 from FslBuildGen.DataTypes import AccessType, ExternalDependencyType, IncludePriority, PackageType, SpecialFiles, VariantType
 from FslBuildGen.ExternalVariantConstraints import ExternalVariantConstraints
 from FslBuildGen.LibUtil import LibUtil
@@ -42,6 +43,7 @@ from FslBuildGen.Log import Log
 from FslBuildGen.Packages.Package import Package, PackageDefine, PackageExternalDependency
 from FslBuildGen.Packages.PackagePlatformExternalDependency import PackagePlatformExternalDependency
 from FslBuildGen.Packages.PackageProjectContext import PackageProjectContext
+from FslBuildGen.SemanticVersionPatternRender import VersionRenderException
 from FslBuildGen.ToolConfig import ToolConfig
 from FslBuildGen.ToolConfigProjectContext import ToolConfigProjectContext
 
@@ -80,8 +82,11 @@ _CONTENT_DEP_FILENAME = "${CMAKE_CURRENT_BINARY_DIR}/content_deps.txt"
 
 
 class CodeTemplateCMake:
-    def __init__(self, sdkConfigTemplatePath: str, strTemplatePath: str, overrideDirName: str, hasManifest: bool, overrideTemplateName: str | None) -> None:
+    def __init__(
+        self, log: Log, sdkConfigTemplatePath: str, strTemplatePath: str, overrideDirName: str, hasManifest: bool, overrideTemplateName: str | None
+    ) -> None:
         super().__init__()
+        self.__Log = log
         self.TemplatePath = strTemplatePath
         self.AbsoluteTemplatePath = IOUtil.Join(sdkConfigTemplatePath, strTemplatePath)
         self.__OverrideDirName = overrideDirName
@@ -159,10 +164,10 @@ class CodeTemplateCMake:
 
     def __DoReadFile(self, absoluteTemplatePath: str, overrideDirName: str, filename: str) -> str:
         templateFilename = IOUtil.Join(absoluteTemplatePath, f"{overrideDirName}/{filename}")
-        res = IOUtil.TryReadFile(templateFilename)
+        res = TemplateIO.TryReadTemplate(self.__Log, templateFilename)
         if res is None:
             templateFilename = IOUtil.Join(absoluteTemplatePath, filename)
-            res = IOUtil.ReadFile(templateFilename)
+            res = TemplateIO.ReadTemplate(self.__Log, templateFilename)
         return res
 
     def __TryDoReadFile(self, absoluteTemplatePath: str, overrideDirName: str, filename: str) -> str | None:
@@ -171,10 +176,10 @@ class CodeTemplateCMake:
         return None if not found
         """
         templateFilename = IOUtil.Join(absoluteTemplatePath, f"{overrideDirName}/{filename}")
-        res = IOUtil.TryReadFile(templateFilename)
+        res = TemplateIO.TryReadTemplate(self.__Log, templateFilename)
         if res is None:
             templateFilename = IOUtil.Join(absoluteTemplatePath, filename)
-            res = IOUtil.TryReadFile(templateFilename)
+            res = TemplateIO.TryReadTemplate(self.__Log, templateFilename)
         return res
 
     def __BuildCompilerFileDict(self, basePath: str) -> dict[str, list[str]]:
@@ -252,7 +257,10 @@ def GetFullyQualifiedPackageName(package: Package) -> str:
     return GetAliasPackageName(package)
 
 
-def BuildFindDirectExternalDependencies(log: Log, package: Package, templatePackageDependencyFindPackage: str) -> str:
+def BuildFindDirectExternalDependencies(log: Log, package: Package, templatePackageDependencyFindPackage: str, cmakeMinimumVersion: CMakeVersion) -> str:
+    """The find_package calls of the package. cmakeMinimumVersion is the CMake version the generated file asks for, it decides if a version
+    range can be written.
+    """
     externalDeps: list[PackageExternalDependency] = []
     for externalDep in package.ResolvedDirectExternalDependencies:
         if externalDep.Type == ExternalDependencyType.CMakeFindLegacy or externalDep.Type == ExternalDependencyType.CMakeFindModern:
@@ -264,7 +272,12 @@ def BuildFindDirectExternalDependencies(log: Log, package: Package, templatePack
     snippet = templatePackageDependencyFindPackage
     content = ""
     for externalDep in externalDeps:
-        strVersion = f" {externalDep.Version}" if externalDep.Version is not None else ""
+        strVersion = ""
+        if externalDep.Version is not None:
+            try:
+                strVersion = f" {SemanticVersionPatternRender.ToCMakeFindPackageVersion(externalDep.Version, cmakeMinimumVersion)}"
+            except VersionRenderException as ex:
+                raise SemanticVersionPatternRender.CreatePackageError(package.Name, externalDep.Name, ex) from ex
         findParams = f"{externalDep.Name}{strVersion} REQUIRED"
         contentEntry = snippet
         contentEntry = contentEntry.replace("##FIND_PARAMS##", findParams)

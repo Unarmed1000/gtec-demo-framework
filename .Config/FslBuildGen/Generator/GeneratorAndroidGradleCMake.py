@@ -35,7 +35,7 @@ import os
 from collections.abc import Callable
 from typing import cast
 
-from FslBuildGen import IOUtil
+from FslBuildGen import IOUtil, TemplateIO
 from FslBuildGen.AndroidUtil import AndroidUtil
 from FslBuildGen.BuildExternal.PackageExperimentalRecipe import PackageExperimentalRecipe
 from FslBuildGen.BuildExternal.State.PackageRecipeUtil import PackageRecipeUtil
@@ -82,10 +82,10 @@ def GetVCBuildConfigurationName(entry: list[str]) -> str:
 
 
 class AndroidGradleCMakeSnippets:
-    def __init__(self, templatePath: str) -> None:
+    def __init__(self, log: Log, templatePath: str) -> None:
         super().__init__()
         fileEnvironmentBasedRootVariable = IOUtil.Join(templatePath, "CMakeAndroid/DefineEnvironmentBasedRootVariable.txt")
-        self.DefineEnvironmentBasedRootVariable = IOUtil.ReadFile(fileEnvironmentBasedRootVariable)
+        self.DefineEnvironmentBasedRootVariable = TemplateIO.ReadTemplate(log, fileEnvironmentBasedRootVariable)
 
 
 class AndroidCMakeLibRecord:
@@ -122,14 +122,14 @@ class GeneratorAndroidGradleCMake(GeneratorBase):
         sdkConfigTemplatePath = config.SDKConfigTemplatePath
 
         strTemplatePath = IOUtil.Join(strAppTemplatePath, "CMake")
-        extTemplate = CMakeGeneratorUtil.CodeTemplateCMake(sdkConfigTemplatePath, strTemplatePath, "Ext", False, None)
-        libTemplate = CMakeGeneratorUtil.CodeTemplateCMake(sdkConfigTemplatePath, strTemplatePath, "Lib", False, None)
-        exeTemplate = CMakeGeneratorUtil.CodeTemplateCMake(sdkConfigTemplatePath, strTemplatePath, "Exe", False, None)
+        extTemplate = CMakeGeneratorUtil.CodeTemplateCMake(config, sdkConfigTemplatePath, strTemplatePath, "Ext", False, None)
+        libTemplate = CMakeGeneratorUtil.CodeTemplateCMake(config, sdkConfigTemplatePath, strTemplatePath, "Lib", False, None)
+        exeTemplate = CMakeGeneratorUtil.CodeTemplateCMake(config, sdkConfigTemplatePath, strTemplatePath, "Exe", False, None)
 
         templatePath = IOUtil.Join(config.SDKConfigTemplatePath, strAppTemplatePath)
-        exeFileList = self.__ParseExeFileList(IOUtil.Join(templatePath, "ExeFiles.txt"))
+        exeFileList = self.__ParseExeFileList(config, IOUtil.Join(templatePath, "ExeFiles.txt"))
 
-        localSnippets = AndroidGradleCMakeSnippets(templatePath)
+        localSnippets = AndroidGradleCMakeSnippets(config, templatePath)
 
         cmakePackageRootVariables = self.__GenerateCmakePackageRootVariables(config, localSnippets)
 
@@ -229,7 +229,9 @@ class GeneratorAndroidGradleCMake(GeneratorBase):
         )
         linkLibrariesDirectDependencies = linkLibrariesDirectDependencies.replace(Variable.RecipeVariant, "${ANDROID_ABI}")
         directDefinitions = CMakeGeneratorUtil.BuildDirectDefinitions(config, package, template.PackageDependencyTargetCompileDefinitions)
-        findDirectExternalDependencies = CMakeGeneratorUtil.BuildFindDirectExternalDependencies(config, package, template.PackageDependencyFindPackage)
+        findDirectExternalDependencies = CMakeGeneratorUtil.BuildFindDirectExternalDependencies(
+            config, package, template.PackageDependencyFindPackage, cmakeMinimumVersion
+        )
         installInstructions = CMakeGeneratorUtil.BuildInstallInstructions(
             config,
             package,
@@ -279,7 +281,7 @@ class GeneratorAndroidGradleCMake(GeneratorBase):
             packageCMakeDir = self.__GetPackageCMakeDir(androidProjectCMakeDir, package)
             IOUtil.SafeMakeDirs(packageCMakeDir)
             dstFileCMakeFile = self.__GetPackageCMakeFileName(androidProjectCMakeDir, package)
-            IOUtil.WriteFileIfChanged(dstFileCMakeFile, buildCMakeFile)
+            TemplateIO.WriteGeneratedFileIfChanged(dstFileCMakeFile, buildCMakeFile)
 
     def __GetPackageCMakeDir(self, androidProjectCMakeDir: str, package: Package) -> str:
         """Get the directory that the CMake CMakeLists.txt file reside in for this package"""
@@ -359,7 +361,7 @@ class GeneratorAndroidGradleCMake(GeneratorBase):
         packageName = CMakeGeneratorUtil.GetPackageName(package)
         cmakePackageExeLib = CMakeGeneratorUtil.GetAliasName(packageName, package.ProjectContext.ProjectName)
         cmakePackageFindDirectExternalDependencies = CMakeGeneratorUtil.BuildFindDirectExternalDependencies(
-            config, package, template.PackageDependencyFindPackage
+            config, package, template.PackageDependencyFindPackage, cmakeMinimumVersion
         )
         cmakePackageDirectDependenciesAndSubDirectories = self.__BuildCMakeAddSubDirectoriesForDirectDependencies(
             config, package, template, androidProjectCMakeDir
@@ -427,8 +429,8 @@ class GeneratorAndroidGradleCMake(GeneratorBase):
     def __ToPropPath(self, path: str) -> str:
         return path
 
-    def __ParseExeFileList(self, path: str) -> list[str]:
-        lines = IOUtil.ReadFile(path).split("\n")
+    def __ParseExeFileList(self, log: Log, path: str) -> list[str]:
+        lines = TemplateIO.ReadTemplate(log, path).split("\n")
         result = []
         for line in lines:
             line = line.strip()

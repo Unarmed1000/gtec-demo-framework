@@ -32,7 +32,7 @@
 # ****************************************************************************************************************************************************
 
 
-from FslBuildGen import IOUtil, PackageConfig
+from FslBuildGen import IOUtil, PackageConfig, TemplateIO
 from FslBuildGen.DataTypes import MagicStrings, OptimizationType, PackageLanguage
 from FslBuildGen.Exceptions import UnsupportedException
 from FslBuildGen.Generator.VSVersionLanguageTemplates import VSVersionLanguageTemplates
@@ -60,7 +60,7 @@ class NuGetPackageConfigSnippets:
     def __init__(self, log: Log, path: str, master: str) -> None:
         super().__init__()
         self.Master = master
-        self.PackageEntry = IOUtil.ReadFile(IOUtil.Join(path, "PackageEntry.txt"))
+        self.PackageEntry = TemplateIO.ReadTemplate(log, IOUtil.Join(path, "PackageEntry.txt"))
 
 
 class ProjectReferenceSnippets:
@@ -98,106 +98,108 @@ class CodeTemplateVC:
 
         self.TemplateFileRecordManager = TemplateFileRecordManager(strTemplatePath)
 
-        nuGetPackageConfig = IOUtil.TryReadFile(IOUtil.Join(strTemplateNuGetPackageConfigPath, "Master.txt"))
+        nuGetPackageConfig = TemplateIO.TryReadTemplate(log, IOUtil.Join(strTemplateNuGetPackageConfigPath, "Master.txt"))
         self.NuGetPackageConfig = (
             NuGetPackageConfigSnippets(log, strTemplateNuGetPackageConfigPath, nuGetPackageConfig) if nuGetPackageConfig is not None else None
         )
 
-        self.TemplateSLN = IOUtil.ReadFile(IOUtil.Join(strTemplateSolutionPath, "Master.txt"))
-        self.SLNAddProject = IOUtil.ReadFile(IOUtil.Join(strTemplateSolutionPath, "AddProject.txt"))
-        self.SLNSnippet1 = IOUtil.ReadFile(IOUtil.Join(strTemplateSolutionPath, "Snippet1.txt"))
-        self.SLNSnippet2 = IOUtil.ReadFile(IOUtil.Join(strTemplateSolutionPath, "Snippet2.txt"))
-        self.Master = IOUtil.ReadFile(IOUtil.Join(strTemplateProjectPath, "Master.txt"))
-        self.VariantProjectConfiguration = IOUtil.ReadFile(IOUtil.Join(strTemplateProjectPath, "VariantProjectConfiguration.txt"))
+        self.TemplateSLN = TemplateIO.ReadTemplate(log, IOUtil.Join(strTemplateSolutionPath, "Master.txt"))
+        self.SLNAddProject = TemplateIO.ReadTemplate(log, IOUtil.Join(strTemplateSolutionPath, "AddProject.txt"))
+        self.SLNSnippet1 = TemplateIO.ReadTemplate(log, IOUtil.Join(strTemplateSolutionPath, "Snippet1.txt"))
+        self.SLNSnippet2 = TemplateIO.ReadTemplate(log, IOUtil.Join(strTemplateSolutionPath, "Snippet2.txt"))
+        self.Master = TemplateIO.ReadTemplate(log, IOUtil.Join(strTemplateProjectPath, "Master.txt"))
+        self.VariantProjectConfiguration = TemplateIO.ReadTemplate(log, IOUtil.Join(strTemplateProjectPath, "VariantProjectConfiguration.txt"))
 
-        projectReferencesMaster = IOUtil.ReadFile(IOUtil.Join(strTemplateProjectPath, "ProjectReferences.txt"))
-        projectReferencesReference = IOUtil.ReadFile(IOUtil.Join(strTemplateProjectPath, "ProjectReferences_1.txt"))
-        projectReferencesAnalyzer = IOUtil.TryReadFile(IOUtil.Join(strTemplateProjectPath, "ProjectReferences_Analyzer.txt"))
-        projectReferencesAttribReferenceOutputAssembly = IOUtil.TryReadFile(
-            IOUtil.Join(strTemplateProjectPath, "ProjectReferences_AttrReferenceOutputAssembly.txt")
+        projectReferencesMaster = TemplateIO.ReadTemplate(log, IOUtil.Join(strTemplateProjectPath, "ProjectReferences.txt"))
+        projectReferencesReference = TemplateIO.ReadTemplate(log, IOUtil.Join(strTemplateProjectPath, "ProjectReferences_1.txt"))
+        projectReferencesAnalyzer = TemplateIO.TryReadTemplate(log, IOUtil.Join(strTemplateProjectPath, "ProjectReferences_Analyzer.txt"))
+        projectReferencesAttribReferenceOutputAssembly = TemplateIO.TryReadTemplate(
+            log, IOUtil.Join(strTemplateProjectPath, "ProjectReferences_AttrReferenceOutputAssembly.txt")
         )
 
         self.ProjectReferences = ProjectReferenceSnippets(
             projectReferencesMaster, projectReferencesReference, projectReferencesAnalyzer, projectReferencesAttribReferenceOutputAssembly
         )
 
-        self.PackageReferences = IOUtil.TryReadFile(IOUtil.Join(strTemplateProjectPath, "PackageReferences.txt"))
-        self.PackageReferences_1 = IOUtil.TryReadFile(IOUtil.Join(strTemplateProjectPath, "PackageReferences_1.txt"))
-        self.PackageReferences_2 = self.SafeReadFile(IOUtil.Join(strTemplateProjectPath, "PackageReferences_2.txt"), "")
-        self.PackageReferencesPrivateAssets = self.SafeReadFile(IOUtil.Join(strTemplateProjectPath, "PackageReferences_PrivateAssets.txt"), "")
-        self.PackageReferencesIncludeAssets = self.SafeReadFile(IOUtil.Join(strTemplateProjectPath, "PackageReferences_IncludeAssets.txt"), "")
-        self.FileReferences = IOUtil.TryReadFile(IOUtil.Join(strTemplateProjectPath, "FileReferences.txt"))
-        self.FileReferences_1 = IOUtil.TryReadFile(IOUtil.Join(strTemplateProjectPath, "FileReferences_1.txt"))
+        self.PackageReferences = TemplateIO.TryReadTemplate(log, IOUtil.Join(strTemplateProjectPath, "PackageReferences.txt"))
+        self.PackageReferences_1 = TemplateIO.TryReadTemplate(log, IOUtil.Join(strTemplateProjectPath, "PackageReferences_1.txt"))
+        self.PackageReferences_2 = self.SafeReadFile(log, IOUtil.Join(strTemplateProjectPath, "PackageReferences_2.txt"), "")
+        self.PackageReferencesPrivateAssets = self.SafeReadFile(log, IOUtil.Join(strTemplateProjectPath, "PackageReferences_PrivateAssets.txt"), "")
+        self.PackageReferencesIncludeAssets = self.SafeReadFile(log, IOUtil.Join(strTemplateProjectPath, "PackageReferences_IncludeAssets.txt"), "")
+        self.FileReferences = TemplateIO.TryReadTemplate(log, IOUtil.Join(strTemplateProjectPath, "FileReferences.txt"))
+        self.FileReferences_1 = TemplateIO.TryReadTemplate(log, IOUtil.Join(strTemplateProjectPath, "FileReferences_1.txt"))
 
-        self.GrpcProtoFilesGroup = self.SafeReadFile(IOUtil.Join(strTemplateProjectPath, "GrpcProtoFilesGroup.txt"), "")
-        self.GrpcProtoFilesGroupEntry = self.SafeReadFile(IOUtil.Join(strTemplateProjectPath, "GrpcProtoFilesGroupFile.txt"), "")
-        self.GrpcProtoFilesGroupEntryGrpcService = self.SafeReadFile(IOUtil.Join(strTemplateProjectPath, "GrpcProtoFilesGroupFile_GrpcServices.txt"), "")
+        self.GrpcProtoFilesGroup = self.SafeReadFile(log, IOUtil.Join(strTemplateProjectPath, "GrpcProtoFilesGroup.txt"), "")
+        self.GrpcProtoFilesGroupEntry = self.SafeReadFile(log, IOUtil.Join(strTemplateProjectPath, "GrpcProtoFilesGroupFile.txt"), "")
+        self.GrpcProtoFilesGroupEntryGrpcService = self.SafeReadFile(log, IOUtil.Join(strTemplateProjectPath, "GrpcProtoFilesGroupFile_GrpcServices.txt"), "")
 
-        self.SourceGenerationProperties = IOUtil.TryReadFile(IOUtil.Join(strTemplateProjectPath, "SourceGenerationProperties.txt"))
-        self.AdditionalFiles = IOUtil.TryReadFile(IOUtil.Join(strTemplateProjectPath, "AdditionalFiles.txt"))
-        self.AdditionalFiles_1 = IOUtil.TryReadFile(IOUtil.Join(strTemplateProjectPath, "AdditionalFiles_1.txt"))
-        self.CompilerVisibleProperties = IOUtil.TryReadFile(IOUtil.Join(strTemplateProjectPath, "CompilerVisibleProperties.txt"))
-        self.CompilerVisibleProperties_1 = IOUtil.TryReadFile(IOUtil.Join(strTemplateProjectPath, "CompilerVisibleProperties_1.txt"))
+        self.SourceGenerationProperties = TemplateIO.TryReadTemplate(log, IOUtil.Join(strTemplateProjectPath, "SourceGenerationProperties.txt"))
+        self.AdditionalFiles = TemplateIO.TryReadTemplate(log, IOUtil.Join(strTemplateProjectPath, "AdditionalFiles.txt"))
+        self.AdditionalFiles_1 = TemplateIO.TryReadTemplate(log, IOUtil.Join(strTemplateProjectPath, "AdditionalFiles_1.txt"))
+        self.CompilerVisibleProperties = TemplateIO.TryReadTemplate(log, IOUtil.Join(strTemplateProjectPath, "CompilerVisibleProperties.txt"))
+        self.CompilerVisibleProperties_1 = TemplateIO.TryReadTemplate(log, IOUtil.Join(strTemplateProjectPath, "CompilerVisibleProperties_1.txt"))
 
-        self.ExcludePackageDirs = IOUtil.TryReadFile(IOUtil.Join(strTemplateProjectPath, "ExcludePackageDirs.txt"))
-        self.ExcludePackageDirsComplexEntry = self.__GenerateExcludePackageDirsCoplexEntry(strTemplateProjectPath)
-        self.AssemblyReferenceSimple = IOUtil.TryReadFile(IOUtil.Join(strTemplateProjectPath, "AssemblyReferenceSimple.txt"))
-        self.AssemblyReferenceComplex = IOUtil.TryReadFile(IOUtil.Join(strTemplateProjectPath, "AssemblyReferenceComplex.txt"))
-        self.AssemblyReferenceComplex_Private = IOUtil.TryReadFile(IOUtil.Join(strTemplateProjectPath, "AssemblyReferenceComplex_Private.txt"))
-        self.AddHeaderFile = IOUtil.ReadFile(IOUtil.Join(strTemplateProjectPath, "AddHeaderFile.txt"))
-        self.AddSourceFile = IOUtil.ReadFile(IOUtil.Join(strTemplateProjectPath, "AddSourceFile.txt"))
-        self.AddNatvisFile = self.SafeReadFile(IOUtil.Join(strTemplateProjectPath, "AddNatvisFile.txt"), "")
-        self.VariantConfiguration = IOUtil.ReadFile(IOUtil.Join(strTemplateProjectPath, "VariantConfiguration.txt"))
-        self.VariantPropertySheets = IOUtil.ReadFile(IOUtil.Join(strTemplateProjectPath, "VariantPropertySheets.txt"))
-        self.VariantPropertyGroups = IOUtil.ReadFile(IOUtil.Join(strTemplateProjectPath, "VariantPropertyGroups.txt"))
-        self.VariantCompilerSettings = IOUtil.ReadFile(IOUtil.Join(strTemplateProjectPath, "VariantCompilerSettings.txt"))
-        self.VariantCompilerSettings_1 = IOUtil.ReadFile(IOUtil.Join(strTemplateProjectPath, "VariantCompilerSettings_1.txt"))
-        self.VariantCompilerSettings_2 = IOUtil.ReadFile(IOUtil.Join(strTemplateProjectPath, "VariantCompilerSettings_2.txt"))
-        self.WindowsTargetPlatformVersion = self.SafeReadFile(IOUtil.Join(strTemplateProjectPath, "WindowsTargetPlatformVersion.txt"), "")
-        externalFileToOutput = IOUtil.TryReadFile(IOUtil.Join(strTemplateProjectPath, "ExternalFileToOutput.txt"))
+        self.ExcludePackageDirs = TemplateIO.TryReadTemplate(log, IOUtil.Join(strTemplateProjectPath, "ExcludePackageDirs.txt"))
+        self.ExcludePackageDirsComplexEntry = self.__GenerateExcludePackageDirsCoplexEntry(log, strTemplateProjectPath)
+        self.AssemblyReferenceSimple = TemplateIO.TryReadTemplate(log, IOUtil.Join(strTemplateProjectPath, "AssemblyReferenceSimple.txt"))
+        self.AssemblyReferenceComplex = TemplateIO.TryReadTemplate(log, IOUtil.Join(strTemplateProjectPath, "AssemblyReferenceComplex.txt"))
+        self.AssemblyReferenceComplex_Private = TemplateIO.TryReadTemplate(log, IOUtil.Join(strTemplateProjectPath, "AssemblyReferenceComplex_Private.txt"))
+        self.AddHeaderFile = TemplateIO.ReadTemplate(log, IOUtil.Join(strTemplateProjectPath, "AddHeaderFile.txt"))
+        self.AddSourceFile = TemplateIO.ReadTemplate(log, IOUtil.Join(strTemplateProjectPath, "AddSourceFile.txt"))
+        self.AddNatvisFile = self.SafeReadFile(log, IOUtil.Join(strTemplateProjectPath, "AddNatvisFile.txt"), "")
+        self.VariantConfiguration = TemplateIO.ReadTemplate(log, IOUtil.Join(strTemplateProjectPath, "VariantConfiguration.txt"))
+        self.VariantPropertySheets = TemplateIO.ReadTemplate(log, IOUtil.Join(strTemplateProjectPath, "VariantPropertySheets.txt"))
+        self.VariantPropertyGroups = TemplateIO.ReadTemplate(log, IOUtil.Join(strTemplateProjectPath, "VariantPropertyGroups.txt"))
+        self.VariantCompilerSettings = TemplateIO.ReadTemplate(log, IOUtil.Join(strTemplateProjectPath, "VariantCompilerSettings.txt"))
+        self.VariantCompilerSettings_1 = TemplateIO.ReadTemplate(log, IOUtil.Join(strTemplateProjectPath, "VariantCompilerSettings_1.txt"))
+        self.VariantCompilerSettings_2 = TemplateIO.ReadTemplate(log, IOUtil.Join(strTemplateProjectPath, "VariantCompilerSettings_2.txt"))
+        self.WindowsTargetPlatformVersion = self.SafeReadFile(log, IOUtil.Join(strTemplateProjectPath, "WindowsTargetPlatformVersion.txt"), "")
+        externalFileToOutput = TemplateIO.TryReadTemplate(log, IOUtil.Join(strTemplateProjectPath, "ExternalFileToOutput.txt"))
         self.ExternalFileToOutput = "" if externalFileToOutput is None else externalFileToOutput
-        copyFileToFolders = IOUtil.TryReadFile(IOUtil.Join(strTemplateProjectPath, "CopyFileToFolders.txt"))
+        copyFileToFolders = TemplateIO.TryReadTemplate(log, IOUtil.Join(strTemplateProjectPath, "CopyFileToFolders.txt"))
         self.CopyFileToFolders = ""
         self.CopyFileToFoldersCopyConditions = ""
         if copyFileToFolders is not None:
             self.CopyFileToFolders = copyFileToFolders
-            self.CopyFileToFoldersCopyConditions = IOUtil.ReadFile(IOUtil.Join(strTemplateProjectPath, "CopyFileToFolders_CopyConditions.txt"))
-        self.Snippet9 = IOUtil.ReadFile(IOUtil.Join(strTemplateProjectPath, "CustomBuildFiles.txt"))
-        self.Snippet9_1 = IOUtil.ReadFile(IOUtil.Join(strTemplateProjectPath, "CustomBuildFiles_1.txt"))
+            self.CopyFileToFoldersCopyConditions = TemplateIO.ReadTemplate(log, IOUtil.Join(strTemplateProjectPath, "CopyFileToFolders_CopyConditions.txt"))
+        self.Snippet9 = TemplateIO.ReadTemplate(log, IOUtil.Join(strTemplateProjectPath, "CustomBuildFiles.txt"))
+        self.Snippet9_1 = TemplateIO.ReadTemplate(log, IOUtil.Join(strTemplateProjectPath, "CustomBuildFiles_1.txt"))
 
         # Filter master file
-        self.FilterMaster = IOUtil.TryReadFile(IOUtil.Join(strTemplateFilterPath, "master.txt"))
-        self.FilterItemGroup = self.SafeReadFile(IOUtil.Join(strTemplateFilterPath, "itemgroup.txt"), "")
-        self.FilterItemGroupNatvis = self.SafeReadFile(IOUtil.Join(strTemplateFilterPath, "itemgroup_natvis.txt"), "")
-        self.FilterItemHeader = self.SafeReadFile(IOUtil.Join(strTemplateFilterPath, "item_header.txt"), "")
-        self.FilterItemShader = self.SafeReadFile(IOUtil.Join(strTemplateFilterPath, "item_shader.txt"), "")
-        self.FilterItemSource = self.SafeReadFile(IOUtil.Join(strTemplateFilterPath, "item_source.txt"), "")
+        self.FilterMaster = TemplateIO.TryReadTemplate(log, IOUtil.Join(strTemplateFilterPath, "master.txt"))
+        self.FilterItemGroup = self.SafeReadFile(log, IOUtil.Join(strTemplateFilterPath, "itemgroup.txt"), "")
+        self.FilterItemGroupNatvis = self.SafeReadFile(log, IOUtil.Join(strTemplateFilterPath, "itemgroup_natvis.txt"), "")
+        self.FilterItemHeader = self.SafeReadFile(log, IOUtil.Join(strTemplateFilterPath, "item_header.txt"), "")
+        self.FilterItemShader = self.SafeReadFile(log, IOUtil.Join(strTemplateFilterPath, "item_shader.txt"), "")
+        self.FilterItemSource = self.SafeReadFile(log, IOUtil.Join(strTemplateFilterPath, "item_source.txt"), "")
 
         self.DebugOptimizations: dict[int, TemplateOptimizationSetting] = {}
-        self.__LoadOptimization(self.DebugOptimizations, OptimizationType.Disabled, strVSPath, "DEBUG", "disabled")
-        self.__LoadOptimization(self.DebugOptimizations, OptimizationType.Default, strVSPath, "DEBUG", "disabled")
-        self.__LoadOptimization(self.DebugOptimizations, OptimizationType.Full, strVSPath, "DEBUG", "full")
+        self.__LoadOptimization(log, self.DebugOptimizations, OptimizationType.Disabled, strVSPath, "DEBUG", "disabled")
+        self.__LoadOptimization(log, self.DebugOptimizations, OptimizationType.Default, strVSPath, "DEBUG", "disabled")
+        self.__LoadOptimization(log, self.DebugOptimizations, OptimizationType.Full, strVSPath, "DEBUG", "full")
 
         snippet3FileName = IOUtil.Join(strTemplateSolutionPath, "Snippet3.txt")
         if IOUtil.IsFile(snippet3FileName):
-            self.SLNSnippet3 = IOUtil.ReadFile(snippet3FileName)
-            self.SLNSnippet4 = IOUtil.ReadFile(IOUtil.Join(strTemplateSolutionPath, "Snippet4.txt"))
-            self.SLNSnippet4_1 = IOUtil.ReadFile(IOUtil.Join(strTemplateSolutionPath, "Snippet4_1.txt"))
+            self.SLNSnippet3 = TemplateIO.ReadTemplate(log, snippet3FileName)
+            self.SLNSnippet4 = TemplateIO.ReadTemplate(log, IOUtil.Join(strTemplateSolutionPath, "Snippet4.txt"))
+            self.SLNSnippet4_1 = TemplateIO.ReadTemplate(log, IOUtil.Join(strTemplateSolutionPath, "Snippet4_1.txt"))
         else:
             self.SLNSnippet3 = ""
             self.SLNSnippet4 = ""
             self.SLNSnippet4_1 = ""
 
-    def __LoadOptimization(self, rDict: dict[int, TemplateOptimizationSetting], optimizationType: int, strVSPath: str, prefix: str, postfix: str) -> None:
-        snippetOptimizationType = self.SafeReadFile(IOUtil.Join(strVSPath, f"{prefix}_OPTIMIZATION_TYPE_{postfix}.txt"), "")
-        snippetOptimizationOptions = self.SafeReadFile2(IOUtil.Join(strVSPath, f"{prefix}_OPTIMIZATION_OPTIONS_{postfix}.txt"), "")
+    def __LoadOptimization(
+        self, log: Log, rDict: dict[int, TemplateOptimizationSetting], optimizationType: int, strVSPath: str, prefix: str, postfix: str
+    ) -> None:
+        snippetOptimizationType = self.SafeReadFile(log, IOUtil.Join(strVSPath, f"{prefix}_OPTIMIZATION_TYPE_{postfix}.txt"), "")
+        snippetOptimizationOptions = self.SafeReadFile2(log, IOUtil.Join(strVSPath, f"{prefix}_OPTIMIZATION_OPTIONS_{postfix}.txt"), "")
         rDict[optimizationType] = TemplateOptimizationSetting(optimizationType, snippetOptimizationType, snippetOptimizationOptions)
 
-    def __GenerateExcludePackageDirsCoplexEntry(self, strTemplateProjectPath: str) -> list[str]:
+    def __GenerateExcludePackageDirsCoplexEntry(self, log: Log, strTemplateProjectPath: str) -> list[str]:
         result: list[str] = []
-        res0 = IOUtil.TryReadFile(IOUtil.Join(strTemplateProjectPath, "ExcludePackageDirs_1.txt"))
-        res1 = IOUtil.TryReadFile(IOUtil.Join(strTemplateProjectPath, "ExcludePackageDirs_2.txt"))
-        res2 = IOUtil.TryReadFile(IOUtil.Join(strTemplateProjectPath, "ExcludePackageDirs_3.txt"))
+        res0 = TemplateIO.TryReadTemplate(log, IOUtil.Join(strTemplateProjectPath, "ExcludePackageDirs_1.txt"))
+        res1 = TemplateIO.TryReadTemplate(log, IOUtil.Join(strTemplateProjectPath, "ExcludePackageDirs_2.txt"))
+        res2 = TemplateIO.TryReadTemplate(log, IOUtil.Join(strTemplateProjectPath, "ExcludePackageDirs_3.txt"))
         if res0 is not None:
             result.append(res0)
         if res1 is not None:
@@ -206,12 +208,12 @@ class CodeTemplateVC:
             result.append(res2)
         return result
 
-    def SafeReadFile(self, filename: str, defaultContent: str) -> str:
-        content = IOUtil.TryReadFile(filename)
+    def SafeReadFile(self, log: Log, filename: str, defaultContent: str) -> str:
+        content = TemplateIO.TryReadTemplate(log, filename)
         return content if content is not None else defaultContent
 
-    def SafeReadFile2(self, filename: str, defaultContent: str) -> str:
-        content = self.SafeReadFile(filename, defaultContent)
+    def SafeReadFile2(self, log: Log, filename: str, defaultContent: str) -> str:
+        content = self.SafeReadFile(log, filename, defaultContent)
         if len(content) > 0:
             content = "\n" + content
         return content
@@ -221,9 +223,9 @@ class CodeTemplateProjectBatFiles:
     def __init__(self, log: Log, sdkConfigTemplatePath: str) -> None:
         super().__init__()
         self.TemplateBuildBatPath = IOUtil.Join(sdkConfigTemplatePath, "Template_WinBuildProject.txt")
-        self.TemplateBuildBat = IOUtil.TryReadFile(self.TemplateBuildBatPath)
-        self.TemplateRunBat = IOUtil.TryReadFile(IOUtil.Join(sdkConfigTemplatePath, "Template_WinRunProject.txt"))
-        templateSnippetErrorCheck = IOUtil.TryReadFile(IOUtil.Join(sdkConfigTemplatePath, "TemplateSnippet_WinBatErrorCheck.txt"))
+        self.TemplateBuildBat = TemplateIO.TryReadTemplate(log, self.TemplateBuildBatPath)
+        self.TemplateRunBat = TemplateIO.TryReadTemplate(log, IOUtil.Join(sdkConfigTemplatePath, "Template_WinRunProject.txt"))
+        templateSnippetErrorCheck = TemplateIO.TryReadTemplate(log, IOUtil.Join(sdkConfigTemplatePath, "TemplateSnippet_WinBatErrorCheck.txt"))
         self.TemplateSnippetErrorCheck = "" if templateSnippetErrorCheck is None else templateSnippetErrorCheck
 
 

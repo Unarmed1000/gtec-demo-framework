@@ -32,7 +32,7 @@
 
 import json
 
-from FslBuildGen import IOUtil
+from FslBuildGen import IOUtil, TextFileReader
 from FslBuildGen.Log import Log
 from FslBuildGen.OpenProject.OpenProjectCMakeInfo import OpenProjectCMakeInfo
 
@@ -42,7 +42,9 @@ from FslBuildGen.OpenProject.OpenProjectCMakeInfo import OpenProjectCMakeInfo
 class VSCodeSettingsJsonUtil:
     @staticmethod
     def Patch(log: Log, jsonFilePath: str, cmakeInfo: OpenProjectCMakeInfo) -> None:
-        strJson = IOUtil.TryReadFile(jsonFilePath)
+        # Visual Studio Code reads and writes the file as UTF-8. A byte order mark is accepted and a file in the locale encoding (as older
+        # versions of the tool wrote it) is read with a warning
+        strJson = TextFileReader.TryReadUTF8OrLocale(log, jsonFilePath, "Visual Studio Code settings file", skipBom=True)
         jsonDict = json.loads(strJson) if strJson is not None else {}
 
         if log.Verbosity >= 1:
@@ -96,4 +98,4 @@ class VSCodeSettingsJsonUtil:
         # An array of additional arguments to pass to the underlying build tool.
 
         jsonText = json.dumps(jsonDict, ensure_ascii=False, sort_keys=True, indent=4)
-        IOUtil.WriteFileIfChanged(jsonFilePath, jsonText)
+        IOUtil.WriteFileUTF8IfChanged(jsonFilePath, jsonText)

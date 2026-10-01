@@ -487,7 +487,7 @@ class PackageBuildOrder:
                 if targetFlavor is None:
                     raise PackageBuildOrder.__CreateConstraintFlavorUnknownException(package, dependencyLocation, dep, depConstraint)
                 if not targetFlavor.IsValidOptionName(depConstraint.Option):
-                    raise PackageFlavorDependencyConstraintInvalidException(package.Name, depConstraint, targetFlavor)
+                    raise PackageBuildOrder.__CreateConstraintOptionUnknownException(package, dependencyLocation, dep, depConstraint, targetFlavor)
                 # An instance of the dependency only carries the flavors of the dependency and of the packages it depends on, a constraint on any
                 # other flavor would not select a dependency instance (it would silently restrict the whole package instead)
                 if checkReachable and depConstraint.Name.OwnerPackageName not in PackageBuildOrder.__GetReachablePackages(lookupDict, reachableDict, dep.Name):
@@ -588,3 +588,14 @@ class PackageBuildOrder:
         location prefix of __GetAllDependencies (empty for a direct dependency)
         """
         return f"Package '{package.Name}' {dependencyLocation}dependency '{dep.Name}' has the flavor constraint '{depConstraint.Name}={depConstraint.Option}'"
+
+    @staticmethod
+    def __CreateConstraintOptionUnknownException(
+        package: UnresolvedBasicPackage,
+        dependencyLocation: str,
+        dep: UnresolvedPackageDependency,
+        depConstraint: PackageFlavorSelection,
+        targetFlavor: UnresolvedPackageFlavor,
+    ) -> Exception:
+        where = PackageBuildOrder.__DescribeConstraint(package, dependencyLocation, dep, depConstraint)
+        return PackageFlavorDependencyConstraintInvalidException(where, depConstraint, targetFlavor)

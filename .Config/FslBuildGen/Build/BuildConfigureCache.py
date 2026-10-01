@@ -33,7 +33,7 @@
 
 import json
 
-from FslBuildGen import IOUtil
+from FslBuildGen import IOUtil, TextFileReader
 from FslBuildGen.Log import Log
 
 
@@ -63,7 +63,8 @@ class BuildConfigureCache:
     @staticmethod
     def TryLoad(log: Log, cacheFilename: str) -> BuildConfigureCache | None:
         try:
-            strJson = IOUtil.TryReadFile(cacheFilename)
+            # The cache is written as UTF-8, a cache that an older version wrote in the locale encoding still loads
+            strJson = TextFileReader.TryReadUTF8OrLocale(log, cacheFilename, "configure cache", skipBom=True, warn=False)
             if strJson is None:
                 return None
             jsonDict = json.loads(strJson)
@@ -112,7 +113,20 @@ class BuildConfigureCache:
     def Save(log: Log, cacheFilename: str, buildConfigureCache: BuildConfigureCache) -> None:
         log.LogPrintVerbose(4, f"- Saving generated file hash cache '{cacheFilename}'")
         jsonText = json.dumps(buildConfigureCache.__dict__, ensure_ascii=False, sort_keys=True, indent=2)
-        IOUtil.WriteFileIfChanged(cacheFilename, jsonText)
+        IOUtil.WriteFileUTF8IfChanged(cacheFilename, jsonText)
+
+    @staticmethod
+    def TrySave(log: Log, cacheFilename: str, buildConfigureCache: BuildConfigureCache) -> bool:
+        """Save the cache, returns false if that failed.
+        The cache only saves work: one that can not be saved is a warning, the previous cache is left as it was and configure runs again
+        the next time.
+        """
+        try:
+            BuildConfigureCache.Save(log, cacheFilename, buildConfigureCache)
+            return True
+        except (OSError, UnicodeError) as ex:
+            log.DoPrintWarning(f"Failed to save the configure cache '{cacheFilename}', the next build runs configure again: {ex}")
+            return False
 
     @staticmethod
     def IsEqual(lhs: BuildConfigureCache, rhs: BuildConfigureCache) -> bool:

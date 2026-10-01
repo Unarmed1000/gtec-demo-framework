@@ -104,7 +104,9 @@ class ToolFlowDumpEnv(AToolAppFlow):
                 else:
                     envDict[entry] = os.environ[entry]
 
-        jsonText = json.dumps(envDict, ensure_ascii=False, sort_keys=True, indent=2)
+        # Only ASCII is printed (other characters as json escapes), so the dump can be printed and captured whatever the encoding of the
+        # output is and the values are decoded to exactly what they were
+        jsonText = json.dumps(envDict, ensure_ascii=True, sort_keys=True, indent=2)
 
         if localToolConfig.Enclose:
             print(CaptureEnvironmentBlock.Begin)

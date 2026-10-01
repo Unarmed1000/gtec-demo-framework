@@ -41,7 +41,7 @@ from datetime import timedelta
 # from typing import Callable
 from typing import Any
 
-from FslBuildGen import IOUtil, ParseUtil, __version__
+from FslBuildGen import ConsoleOutput, IOUtil, ParseUtil, __version__
 
 # from FslBuildGen import PluginSharedValues
 # from FslBuildGen import Util
@@ -615,6 +615,9 @@ def __Run(
 
 
 def Run(appFlowFactory: AToolAppFlowFactory, allowStandaloneMode: bool = False) -> None:
+    # Before anything is printed: text the encoding of the output does not have is written as an escape instead of stopping the tool
+    ConsoleOutput.UseEscapesOnStandardStreams()
+
     strToolAppTitle = f"{appFlowFactory.GetTitle()} V{CurrentVersion}"
     appShortDesc = appFlowFactory.GetShortDesc()
     if appShortDesc is not None:

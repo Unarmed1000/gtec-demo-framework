@@ -76,7 +76,7 @@ class GeneratorDot(GeneratorBase):
         tmpFile = f"TmpDependencies_{platformName}.dot"
         outputFile = f"Dependencies_{platformName}.png"
 
-        IOUtil.WriteFile(tmpFile, content)
+        IOUtil.WriteFileUTF8(tmpFile, content)
 
         # "dot -Tpng -o test.png Dependencies_Yocto.dot"
         try:

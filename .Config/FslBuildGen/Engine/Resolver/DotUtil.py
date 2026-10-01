@@ -427,7 +427,7 @@ class DotUtil:
         dotFilename = f"{filename}.dot"
 
         log.LogPrintVerbose(LocalVerbosityLevel.Debug, f"Writing dot file to '{dotFilename}'")
-        IOUtil.WriteFileIfChanged(dotFilename, content)
+        IOUtil.WriteFileUTF8IfChanged(dotFilename, content)
 
         outputFile = f"{filename}.png"
 
