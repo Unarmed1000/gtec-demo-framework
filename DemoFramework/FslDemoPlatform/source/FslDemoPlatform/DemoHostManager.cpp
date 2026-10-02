@@ -219,6 +219,8 @@ namespace Fsl
       if (result == AppDrawResult::Completed)
       {
         assert(m_demoHost);
+        // The frame was drawn and is about to be swapped: the last point where a screenshot of it can be captured on every API
+        m_testService->OnFrameDrawCompleted();
         const auto swapBuffersResult = m_demoHost->TrySwapBuffers();
         if (swapBuffersResult != SwapBuffersResult::AppControlled)
         {

@@ -4,6 +4,7 @@
 
 * Vulkan
   * Fixed the swapchain present semaphore reuse (VUID-vkQueueSubmit-pSignalSemaphores-00067). The render complete semaphores are now per swapchain image.
+  * Fixed the screenshot capture using the swapchain image after it was presented (UNASSIGNED-non-acquired-swapchain-image-used). The screenshot of a frame is now captured before the frame is swapped on all APIs.
   * The demo host uses VK_KHR/EXT_swapchain_maintenance1 present fences when available (can be disabled with --VkSwapchainMaintenance1 false).
   * New --VkApiVersion option to override the instance api version (GPU assisted validation requires 1.1).
   * Fixed validation and synchronization issues reported by the latest validation layers

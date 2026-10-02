@@ -102,15 +102,37 @@ namespace Fsl
   }
 
 
+  void TestService::OnFrameDrawCompleted()
+  {
+    // The frame counter is incremented once the swap of the frame completes, so this is the number the frame gets
+    const uint32_t frameCounter = m_frameCounter + 1;
+    m_captureSaveNow = (m_config.Frequency > 0 && (frameCounter % m_config.Frequency) == 0);
+    m_captureHasRequest = m_demoAppControlService->HasScreenshotRequest();
+    m_hasCapture = false;
+
+    if ((m_captureSaveNow || m_captureHasRequest) && m_graphicsService)
+    {
+      const auto colorSpaceType = m_graphicsService->GetColorSpaceType();
+      const auto capturePixelFormat = DetermineSaveFormat(m_config.Format, colorSpaceType);
+
+      // Capture the frame in the requested format while it is still ours, it is saved once the swap completed.
+      // If the frame is drawn again (the swap failed) it is captured again.
+      m_graphicsService->Capture(m_screenshot, capturePixelFormat, m_config.ToneMapper);
+      m_hasCapture = true;
+    }
+  }
+
+
   void TestService::OnFrameSwapCompleted()
   {
     ++m_frameCounter;
 
-    const bool saveNow = (m_config.Frequency > 0 && (m_frameCounter % m_config.Frequency) == 0);
-    const bool hasRequest = m_demoAppControlService->HasScreenshotRequest();
+    const bool saveNow = m_captureSaveNow;
+    const bool hasRequest = m_captureHasRequest;
 
-    if ((saveNow || hasRequest) && m_graphicsService)
+    if (m_hasCapture)
     {
+      m_hasCapture = false;
       if (hasRequest)
       {
         m_demoAppControlService->ClearScreenshotRequestRequest();
@@ -119,12 +141,6 @@ namespace Fsl
       // Reset the update timer since the screenshot functionality is slow
       // We do this to allow a perfect timed capture of the frames
       m_demoAppControlService->RequestUpdateTimerReset();
-
-      const auto colorSpaceType = m_graphicsService->GetColorSpaceType();
-      const auto capturePixelFormat = DetermineSaveFormat(m_config.Format, colorSpaceType);
-
-      // Capture a screenshot and save it in the request format
-      m_graphicsService->Capture(m_screenshot, capturePixelFormat, m_config.ToneMapper);
 
       if (m_screenshot.IsValid())
       {

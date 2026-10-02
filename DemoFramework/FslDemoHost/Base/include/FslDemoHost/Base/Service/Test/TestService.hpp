@@ -55,6 +55,12 @@ namespace Fsl
     uint32_t m_screenshotNameCounter;
     int32_t m_userScreenshotCount;
     Bitmap m_screenshot;
+    //! True if the frame that is about to be swapped was captured
+    bool m_hasCapture{false};
+    //! The captured frame is a screenshot the frequency asked for
+    bool m_captureSaveNow{false};
+    //! The captured frame is a screenshot that was requested (IDemoAppControl::RequestScreenshot)
+    bool m_captureHasRequest{false};
 
   public:
     explicit TestService(const ServiceProvider& serviceProvider);
@@ -66,6 +72,7 @@ namespace Fsl
     TestScreenshotNameScheme GetScreenshotNameScheme() const final;
     void SetScreenshotNameScheme(const TestScreenshotNameScheme scheme) final;
     void SetScreenshotConfig(const TestScreenshotConfig& config) final;
+    void OnFrameDrawCompleted() final;
     void OnFrameSwapCompleted() final;
 
   private:

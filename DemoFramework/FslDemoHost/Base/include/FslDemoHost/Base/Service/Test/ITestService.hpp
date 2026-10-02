@@ -58,6 +58,11 @@ namespace Fsl
     //! @brief Set configuration
     virtual void SetScreenshotConfig(const TestScreenshotConfig& config) = 0;
 
+    //! @brief Called once a frame has been drawn, before it is swapped. A screenshot of the frame is captured here, as this is the
+    //!        last point where the frame is still ours on every API (a Vulkan swapchain image must not be used after it was presented
+    //!        and the content of a OpenGL ES back buffer is undefined after the swap).
+    virtual void OnFrameDrawCompleted() = 0;
+
     //! @brief Called once a frame swap has been completed
     virtual void OnFrameSwapCompleted() = 0;
   };
