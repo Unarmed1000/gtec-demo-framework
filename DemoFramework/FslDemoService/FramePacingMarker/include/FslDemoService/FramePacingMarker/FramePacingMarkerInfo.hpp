@@ -54,9 +54,12 @@ namespace Fsl
     std::optional<TimeSpan> CpuBusyTime;
     //! The frame time the application wants to run at (empty unless the app supplied it with SetFrameSchedule)
     std::optional<TimeSpan> PreferredFrameTime;
-    //! True if the marker flagged the frame as static: nothing animates while it is on screen (only set if the app supplied it with
+    //! True if the marker flagged the frame as static after: nothing animates while it is on screen (only set if the app supplied it with
     //! SetFrameSchedule)
     bool Static{false};
+    //! True if the marker flagged the frame as static before: nothing animated while the frame before it was on screen. The service sets
+    //! it by itself for a frame that has the animation time of the frame before it (a paused app, or one that only animates on demand)
+    bool StaticBefore{false};
     //! Start markers only: the wall clock start time of the run
     std::optional<std::chrono::system_clock::time_point> RunStartTime;
     //! Start markers only: the sequence id of the run

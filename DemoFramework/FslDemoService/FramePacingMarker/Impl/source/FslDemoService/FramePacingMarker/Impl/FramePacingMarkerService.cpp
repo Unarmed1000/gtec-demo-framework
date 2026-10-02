@@ -256,6 +256,9 @@ namespace Fsl
       FramePacingFrameRecordUtil::ApplySchedule(rRecord, *m_frameSchedule);
     }
     rRecord.RunId = m_runId;
+    // A frame with the animation time of the frame before it: nothing animated while that frame was on screen (the app is paused or
+    // only animates on demand). The analysis then does not judge that step. The service only knows this in hindsight.
+    rRecord.StaticBefore = m_lastMarker.has_value() && FramePacingFrameRecordUtil::IsStaticBefore(rRecord, *m_lastMarker);
     rRecord.RunStartTime = m_runStartTime;
     rRecord.RunSequenceId = m_runSequenceId;
     rRecord.SyncMarkerEnabled = m_syncMarkerEnabled;

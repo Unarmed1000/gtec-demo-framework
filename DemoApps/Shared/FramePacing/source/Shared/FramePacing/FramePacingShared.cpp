@@ -799,7 +799,9 @@ namespace Fsl
     {
       rStats.PreferredFrameTime->SetContent(UnknownValue);
     }
-    rStats.Static->SetContent(info.Static ? "yes" : "no");
+    // Static after: the app said nothing animates while the frame is on screen. Static before: the service found that the frame has the
+    // animation time of the frame before it (the app is paused).
+    rStats.Static->SetContent(info.Static ? (info.StaticBefore ? "after, before" : "after") : (info.StaticBefore ? "before" : "no"));
     // The run start time and the sequence id are only carried by start markers
     if (info.RunStartTime.has_value())
     {

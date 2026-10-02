@@ -45,8 +45,10 @@ namespace Fsl
     int64_t TargetFrameTicks{0};
     //! The frame time the application wants to run at in 100ns ticks, 0 if unknown.
     int64_t PreferredFrameTicks{0};
-    //! True if nothing animates while the frame is on screen.
+    //! True if nothing animates while the frame is on screen (the app said so).
     bool Static{false};
+    //! True if nothing animated while the frame before this one was on screen (the service found it has the same animation time).
+    bool StaticBefore{false};
     uint32_t RunId{0};
     //! Start markers only: the wall clock start time of the run.
     std::chrono::system_clock::time_point RunStartTime;

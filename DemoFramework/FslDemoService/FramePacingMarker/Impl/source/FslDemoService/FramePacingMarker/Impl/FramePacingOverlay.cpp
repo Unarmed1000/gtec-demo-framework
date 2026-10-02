@@ -218,17 +218,19 @@ namespace Fsl
     const FM::Options options =
       record.CaptureHeightPx > 0 ? FM::Options::Recommended(windowHeightPx, record.CaptureHeightPx) : FM::Options(record.ModuleSizePx);
     const int32_t alignPx = CalcAlignPx(windowHeightPx, record.CaptureHeightPx);
-    // The framework has no frame pacer and does not know when nothing animates, so the intended display time, the target frame time and
-    // the preferred frame time are unknown (0) and no frame is flagged as static, unless the app supplied the values of the frame
-    // (IFramePacingMarkerService::SetFrameSchedule).
+    // The framework has no frame pacer, so the intended display time, the target frame time and the preferred frame time are unknown (0)
+    // unless the app supplied the values of the frame (IFramePacingMarkerService::SetFrameSchedule). A frame is flagged as static after
+    // if the app said so, and as static before if the service found that it has the animation time of the frame before it.
     // The marker is the last thing drawn before the frame is presented, so the CPU busy time is measured now.
     const uint32_t preferredFrameTicks = ToFrameTicks32(record.PreferredFrameTicks);
     const uint32_t targetFrameTicks = ToFrameTicks32(record.TargetFrameTicks);
     const uint32_t cpuBusyTicks = CalcCpuBusyTicks(record.CpuStartTicks, m_timer.GetTimestamp().Ticks());
+    const FM::MarkerFlags flags = (record.Static ? FM::MarkerFlags::StaticAfter : FM::MarkerFlags::None) |
+                                  (record.StaticBefore ? FM::MarkerFlags::StaticBefore : FM::MarkerFlags::None);
     const FM::Payload payload{ToMarkerKind(record.Kind),
                               record.RunId,
                               record.FrameIndex,
-                              record.Static ? FM::MarkerFlags::StaticAfter : FM::MarkerFlags::None,
+                              flags,
                               FP::TimeSpan(record.AnimationTicks),
                               FP::TimeSpan32(preferredFrameTicks),
                               FP::TimeSpan32(targetFrameTicks),
@@ -318,6 +320,7 @@ namespace Fsl
       markerInfo.PreferredFrameTime = TimeSpan(static_cast<int64_t>(preferredFrameTicks));
     }
     markerInfo.Static = record.Static;
+    markerInfo.StaticBefore = record.StaticBefore;
     if (record.CpuStartTicks > 0)
     {
       markerInfo.CpuStartTime = TickCount(record.CpuStartTicks);

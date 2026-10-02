@@ -23,6 +23,7 @@
 //****************************************************************************************************************************************************
 
 #include <FslDemoService/FramePacingMarker/FramePacingFrameSchedule.hpp>
+#include <FslDemoService/FramePacingMarker/FramePacingMarkerInfo.hpp>
 #include <FslDemoService/FramePacingMarker/Impl/FramePacingFrameRecord.hpp>
 #include <cstdint>
 #include <optional>
@@ -49,6 +50,15 @@ namespace Fsl::FramePacingFrameRecordUtil
     rRecord.TargetFrameTicks = ToKnownTicks(schedule.TargetFrameTime);
     rRecord.PreferredFrameTicks = ToKnownTicks(schedule.PreferredFrameTime);
     rRecord.Static = schedule.Static;
+  }
+
+  //! True if nothing animated while the frame before the record's frame was on screen: the last marker that was drawn is the one of the
+  //! frame right before it in the same run, and it has the same animation time (a paused app, or one that only animates on demand).
+  //! The record must hold the animation time the frame is drawn with (so a schedule has to be applied first).
+  constexpr bool IsStaticBefore(const FramePacingFrameRecord& record, const FramePacingMarkerInfo& lastMarker) noexcept
+  {
+    return lastMarker.RunId == record.RunId && (lastMarker.FrameIndex + 1u) == record.FrameIndex &&
+           lastMarker.AnimationTime.Ticks() == record.AnimationTicks;
   }
 }
 

@@ -43,7 +43,9 @@ namespace Fsl
     std::optional<TimeSpan> TargetFrameTime;
     //! The frame time the application wants to run at
     std::optional<TimeSpan> PreferredFrameTime;
-    //! True if nothing animates while this frame is on screen
+    //! True if nothing animates while this frame is on screen, for an app that knows it while it draws the frame (the marker's static
+    //! after flag). A app that does not know needs to do nothing: the service flags a frame that has the animation time of the frame
+    //! before it by itself (static before).
     bool Static{false};
   };
 }

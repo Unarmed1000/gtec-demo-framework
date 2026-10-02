@@ -39,6 +39,16 @@ namespace
     record.RunId = 7;
     return record;
   }
+
+  //! The marker that was drawn for the frame before the one of CreateHostRecord, with the same animation time
+  FramePacingMarkerInfo CreatePreviousMarker() noexcept
+  {
+    FramePacingMarkerInfo marker;
+    marker.FrameIndex = 41;
+    marker.AnimationTime = TimeSpan(1000);
+    marker.RunId = 7;
+    return marker;
+  }
 }
 
 
@@ -130,4 +140,63 @@ TEST(Test_FramePacingFrameRecordUtil, ToKnownTicks)
   EXPECT_EQ(0, FramePacingFrameRecordUtil::ToKnownTicks(std::optional<TimeSpan>(TimeSpan(-5))));
   EXPECT_EQ(5, FramePacingFrameRecordUtil::ToKnownTicks(std::optional<TimeSpan>(TimeSpan(5))));
   EXPECT_EQ(9, FramePacingFrameRecordUtil::ToKnownTicks(std::optional<TickCount>(TickCount(9))));
+}
+
+
+TEST(Test_FramePacingFrameRecordUtil, IsStaticBefore_SameAnimationTime)
+{
+  const FramePacingFrameRecord record = CreateHostRecord();
+
+  EXPECT_TRUE(FramePacingFrameRecordUtil::IsStaticBefore(record, CreatePreviousMarker()));
+}
+
+
+TEST(Test_FramePacingFrameRecordUtil, IsStaticBefore_AnimationTimeMoved)
+{
+  const FramePacingFrameRecord record = CreateHostRecord();
+  FramePacingMarkerInfo marker = CreatePreviousMarker();
+  marker.AnimationTime = TimeSpan(999);
+
+  EXPECT_FALSE(FramePacingFrameRecordUtil::IsStaticBefore(record, marker));
+}
+
+
+TEST(Test_FramePacingFrameRecordUtil, IsStaticBefore_ScheduleDecidesTheAnimationTime)
+{
+  // The host's animation time stands still, but the app animates the frame by its own time
+  FramePacingFrameRecord record = CreateHostRecord();
+  FramePacingFrameSchedule schedule;
+  schedule.AnimationTime = TimeSpan(5000);
+  FramePacingFrameRecordUtil::ApplySchedule(record, schedule);
+
+  EXPECT_FALSE(FramePacingFrameRecordUtil::IsStaticBefore(record, CreatePreviousMarker()));
+
+  // And the other way around: the app's animation time stands still
+  FramePacingMarkerInfo marker = CreatePreviousMarker();
+  marker.AnimationTime = TimeSpan(5000);
+  EXPECT_TRUE(FramePacingFrameRecordUtil::IsStaticBefore(record, marker));
+}
+
+
+TEST(Test_FramePacingFrameRecordUtil, IsStaticBefore_NotTheFrameRightBefore)
+{
+  const FramePacingFrameRecord record = CreateHostRecord();
+  FramePacingMarkerInfo marker = CreatePreviousMarker();
+
+  // A frame was started in between that never drew a marker
+  marker.FrameIndex = 40;
+  EXPECT_FALSE(FramePacingFrameRecordUtil::IsStaticBefore(record, marker));
+  // The marker of the frame itself (it is asked again after its marker was drawn)
+  marker.FrameIndex = 42;
+  EXPECT_FALSE(FramePacingFrameRecordUtil::IsStaticBefore(record, marker));
+}
+
+
+TEST(Test_FramePacingFrameRecordUtil, IsStaticBefore_AnotherRun)
+{
+  const FramePacingFrameRecord record = CreateHostRecord();
+  FramePacingMarkerInfo marker = CreatePreviousMarker();
+  marker.RunId = 6;
+
+  EXPECT_FALSE(FramePacingFrameRecordUtil::IsStaticBefore(record, marker));
 }

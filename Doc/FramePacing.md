@@ -68,14 +68,14 @@ the given duration). `GetRunDuration()` and `GetRunMeasuredTime()` report the pr
 `IFramePacingMarkerService` also exposes the sync marker, module size, capture height, run state and run id.
 
 `TryGetLastMarker(FramePacingMarkerInfo&)` returns every value the last drawn marker carried: kind, frame index, animation time,
-run id, intended display time, target frame time, CPU start time, CPU busy, preferred frame time, the static flag, and for start
+run id, intended display time, target frame time, CPU start time, CPU busy, preferred frame time, the static flags, and for start
 markers the run start time and sequence id (`FramePacingSequenceId`). Times use `TimeSpan`/`TickCount`, and a value that is unknown
 (the intended display time, target frame time and preferred frame time, unless the app supplies them) is an empty `std::optional`. The
 marker is drawn at the end of the frame, so during a frame this is the previous frame's marker.
 
 The framework has no frame pacer. An app with its own frame pacer calls `SetFrameSchedule(FramePacingFrameSchedule)` during its draw,
 before the marker is drawn (on Vulkan before `AddSystemUI`), to supply the values it paced the frame by: the animation time, and
-optionally the CPU start time, intended display time, target frame time, preferred frame time and the static flag. It applies to that
+optionally the CPU start time, intended display time, target frame time, preferred frame time and the static after flag. It applies to that
 frame only, a frame without the call reports the framework's values.
 
 See the [GLES2.FramePacing](../DemoApps/GLES2/FramePacing), [GLES3.FramePacing](../DemoApps/GLES3/FramePacing) and
@@ -92,8 +92,11 @@ allocate. `--HideMarkerStats` hides the panel.
 - **Intended display time, target frame time and preferred frame time**: reported as unknown (0) as the framework has no frame pacer, so
   the analysis measures every frame against the display's refresh rate (or the `--target-fps` given to the analysis). An app with its
   own frame pacer supplies them with `SetFrameSchedule`.
-- **Static flag**: not set unless the app supplies it, the framework does not know when nothing animates, so the analysis judges the
-  animation error of every frame.
+- **Static flags**: a frame that has the animation time of the frame before it (the app is paused, or it only animates on demand) is flagged
+  as *static before*: nothing animated while the frame before it was on screen. The analysis then does not judge that step as a animation
+  error, and leaves it out of the average fps, the 1 % and 0.1 % lows and the display time step statistics. The service does this by itself
+  for every app. *Static after* (nothing animates while this frame is on screen) is only set if the app supplies it with `SetFrameSchedule`,
+  as the framework does not know what a app will do next.
 - **CPU start time and CPU busy**: the CPU start time is taken by the host just before the app update of the frame, and CPU busy is
   the time from then until the marker is drawn (the last thing before the frame is presented). The analysis derives the frametime
   from the step between the CPU start times.
