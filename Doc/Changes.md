@@ -25,6 +25,11 @@
   * FslBuild: Objective-C++ (.mm) source files are compiled on Apple, added the 'Framework' external dependency type and .dylib support.
   * FslConfigure.sh now auto detects macOS.
 * Experimental Conan recipe support: recipes can acquire their package from Conan 2 with the ConanInstall pipeline command, only supported by the CMake generator with find package enabled (see Doc/BuildingExternals.md).
+* Frame pacing measurements (see Doc/FramePacing.md).
+  * The host can draw the mb-framepacing frame marker on top of every frame of a OpenGL ES 2, OpenGL ES 3 or Vulkan app (--FramePacing), so a capture of the display output can be analysed with the mb-framepacing tools. No app changes are needed.
+  * New FramePacingMarker service (IFramePacingMarkerService): measured runs, every value of the last marker, and SetFrameSchedule for an app with its own frame pacer.
+  * A frame with the animation time of the frame before it (a paused app) is flagged as static, so the analysis does not report it as a animation error.
+  * New GLES2, GLES3 and Vulkan FramePacing samples. They can pace their frames with the experimental mb-framepacing frame pacer (--Pacer) and have a adjustable CPU and GPU load.
 * Misc
   * The recommended platforms are now Ubuntu 26.04 and Windows 11+ (the Ubuntu CI builds use the u26_04 image).
   * Visual Studio 2026 is now the default on windows.

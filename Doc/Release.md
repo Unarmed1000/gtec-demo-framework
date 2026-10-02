@@ -19,6 +19,7 @@
 * Experimental RDK Yocto platform support.
 * Experimental Apple platform support (see Doc/Setup_guide_apple.md).
 * Experimental Conan recipe support: recipes can acquire their package from Conan 2 with the ConanInstall pipeline command, only supported by the CMake generator with find package enabled (see Doc/BuildingExternals.md).
+* Frame pacing measurements: the host can draw the mb-framepacing frame marker on top of every frame (--FramePacing), and the new GLES2, GLES3 and Vulkan FramePacing samples can pace their frames with the experimental mb-framepacing frame pacer (see Doc/FramePacing.md).
 * Misc
   * The recommended platforms are now Ubuntu 26.04 and Windows 11+ (the Ubuntu CI builds use the u26_04 image).
   * Visual Studio 2026 is now the default on windows.
