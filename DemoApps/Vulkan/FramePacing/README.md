@@ -16,8 +16,31 @@ and lets you control measured runs:
 
 The moving bar and box are animated from the same animation time the marker reports, so any hitch is visible and measurable.
 
-The sample code lives in [Shared/FramePacing](../../Shared/FramePacing) and only uses the API independent INativeBatch2D, so the
-GLES2, GLES3 and Vulkan versions are identical.
+## Frame pacer (experimental)
+
+The sample can also pace its frames with the experimental frame pacer of mb-framepacing (the framework itself has no frame pacer). The
+pacer gives every frame the swap interval to hold it for and the time step to animate it by, and the sample tells the marker what the
+frame was paced by, so the marker also reports the intended display time, the target frame time and the preferred frame time.
+
+Control                       |Argument                        |Description
+------------------------------|--------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+Frame pacer (or the **P** key)|`--Pacer`                       |Switch the frame pacer on and off.
+Refresh rate                  |`--Pacer.RefreshRate <hz>`      |The refresh rate of the display. It is read from the window system, the slider only sets it when the window system does not know it. The argument overrides both and allows decimals (59.94).
+Target fps                    |`--Pacer.TargetFps <fps>`       |The frame rate the pacer aims for, 0 is the refresh rate of the display. 30 on a 60 Hz display holds every frame for two refreshes.
+Adaptive swap interval        |`--Pacer.Adaptive <true\|false>`|On: the pacer slows down when frames are late and speeds up again when they fit. Off: a fixed frame rate.
+CPU load                      |`--CpuLoad <ms>`                |The time in milliseconds the app spends busy every frame.
+GPU load                      |`--GpuLoad <steps>`             |Draws the raymarched background with the given number of steps for every ray (0 is no background). The load grows linearly with the steps and the picture stays the same.
+
+The two status lines below the switches show the swap interval the pacer runs at, the frame time that was measured and how many of the
+frames the pacer looks at were late.
+
+The GLES2 and GLES3 versions hold a frame with `eglSwapInterval`. The Vulkan version can not present with a swap interval, so it delays
+the present of a frame that is held for more than one refresh.
+
+The GPU load is a raymarched background: a flight through a tunnel of neon rings and glowing wires.
+
+The sample code lives in [Shared/FramePacing](../../Shared/FramePacing). It only uses the API independent INativeBatch2D, except for
+the background and the swap interval, which each of the GLES2, GLES3 and Vulkan versions does with its own API.
 
 See [Doc/FramePacing.md](../../../Doc/FramePacing.md) for details.
 
@@ -27,7 +50,13 @@ Command line arguments':
 
 Argument                          |Description                                                                                                                                                                                                                                                                                                                |Source
 ----------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------
+--CpuLoad \<arg>                  |Simulate a CPU load: the time in milliseconds the app spends busy every frame (0 = none, the default).                                                                                                                                                                                                                     |Demo
+--GpuLoad \<arg>                  |A GPU load: the number of steps the raymarched background takes for every pixel (0 = no background, the default).                                                                                                                                                                                                          |Demo
 --HideMarkerStats                 |Hide the panel with the values of the last frame pacing marker.                                                                                                                                                                                                                                                            |Demo
+--Pacer                           |Start with the frame pacer of the sample on (the experimental mb-framepacing pacer).                                                                                                                                                                                                                                       |Demo
+--Pacer.Adaptive \<arg>           |true (default): the frame pacer adapts its swap interval to how the frames do. false: a fixed frame rate.                                                                                                                                                                                                                  |Demo
+--Pacer.RefreshRate \<arg>        |The refresh rate of the display in Hz the frame pacer uses, decimals are allowed (59.94). Defaults to the rate the window system reports, and to the UI slider if it does not know it.                                                                                                                                     |Demo
+--Pacer.TargetFps \<arg>          |The frame rate the frame pacer aims for (0 = the refresh rate of the display, the default).                                                                                                                                                                                                                                |Demo
 --ActualDpi \<arg>                |ActualDpi [x,y] Override the actual dpi reported by the native window                                                                                                                                                                                                                                                      |DemoHost
 --DensityDpi \<arg>               |DensityDpi \<number> Override the density dpi reported by the native window                                                                                                                                                                                                                                                |DemoHost
 --DisplayId \<arg>                |DisplayId \<number>                                                                                                                                                                                                                                                                                                        |DemoHost

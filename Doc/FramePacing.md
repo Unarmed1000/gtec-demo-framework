@@ -99,6 +99,54 @@ allocate. `--HideMarkerStats` hides the panel.
   from the step between the CPU start times.
 - **Sync marker**: the run id and the frame index, so the analysis can match it to the main marker of the same run.
 
+## The frame pacer of the FramePacing samples (experimental)
+
+The framework has no frame pacer, but the FramePacing samples can pace their frames with the experimental frame pacer of the mb-framepacing
+SDK (`MB::FramePacing::Pacer::FramePacer`). It is only part of the samples (`SamplePacer` in
+[Shared/FramePacing](../DemoApps/Shared/FramePacing)), as mb-framepacing has only checked the pacer against its own simulation, never
+against a real swap chain, and its API may change in any release.
+
+The pacer needs nothing but a steady clock and a present that waits for vsync. Every frame the sample gives it the time the frame starts
+and gets back the swap interval to hold the frame for (the number of display refreshes), the time step to animate the frame by and the
+pacing values of the marker. The sample hands those to the marker with `SetFrameSchedule`, so with the pacer on the marker reports the
+intended display time, the target frame time and the preferred frame time.
+
+Control                       |Argument                        |Description
+------------------------------|--------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+Frame pacer (or the **P** key)|`--Pacer`                       |Switch the frame pacer on and off.
+Refresh rate                  |`--Pacer.RefreshRate <hz>`      |The refresh rate of the display. It is read from the window system, the slider only sets it when the window system does not know it. The argument overrides both and allows decimals (59.94).
+Target fps                    |`--Pacer.TargetFps <fps>`       |The frame rate the pacer aims for, 0 is the refresh rate of the display. 30 on a 60 Hz display holds every frame for two refreshes.
+Adaptive swap interval        |`--Pacer.Adaptive <true\|false>`|On: the pacer slows down when frames are late and speeds up again when they fit. Off: a fixed frame rate.
+CPU load                      |`--CpuLoad <ms>`                |The time in milliseconds the app spends busy every frame.
+GPU load                      |`--GpuLoad <steps>`             |Draws the raymarched background with the given number of steps for every ray (0 is no background). The load grows linearly with the steps and the picture stays the same.
+
+The two status lines below the switches show the swap interval the pacer runs at, the frame time that was measured and how many of the
+frames the pacer looks at were late.
+
+```bash
+# 30 fps on any display, with a GPU load
+Vulkan.FramePacing --Pacer --Pacer.TargetFps 30 --GpuLoad 96
+# The display rate until 20 ms of CPU load make the pacer slow down
+GLES3.FramePacing --Pacer --CpuLoad 20
+```
+
+How a frame is held for its swap interval depends on the API:
+
+- **OpenGL ES 2 and 3**: `eglSwapInterval`, so the swap of the host waits for the display. A EGL config only supports a range of swap
+  intervals (it can be as short as one refresh), the sample holds the frame for the rest by delaying the swap. While the pacer is on the
+  sample calls `glFinish` before the swap, so the time the pacer is told the frame needed includes the GPU work.
+- **Vulkan**: a FIFO present holds a frame for one refresh and there is no swap interval, so the sample delays the present of a frame
+  that is held longer: it waits until one refresh before the time the pacer aims the frame at, then lets the host present it. The pacer
+  has no vsync times, so this is a guess and less even than a real swap interval. The GPU time of a frame is measured with timestamp
+  queries and given to the pacer.
+
+The GPU load is a raymarched background: a flight through a tunnel of neon rings and glowing wires. Every ray is marched in a fixed
+number of equal steps, so every pixel costs the same. Each app has its own copy of the shader (`Raymarch.frag`), as the shared code only
+knows the API independent render interfaces.
+
+While the pacer is on the sample animates by the time steps of the pacer (the refreshes the display moved on), so the time step keys of
+the framework (slow and fast motion) have no effect. Pause still stops the animation.
+
 ## Notes
 
 - The marker must reach the capture unmodified: it is drawn opaque, pure black/white and pixel aligned at the swapchain resolution.
@@ -113,7 +161,7 @@ allocate. `--HideMarkerStats` hides the panel.
 
 Package                                    | Content
 -------------------------------------------|--------------------------------------------------------------------------------------------
-`ThirdParty/mb_framepacing`                | The mb-framepacing C++ SDK, its marker module (via `Recipe.mb_framepacing_0_1`).
+`ThirdParty/mb_framepacing`                | The mb-framepacing C++ SDK: its marker module and, for the samples, its experimental pacer module (via `Recipe.mb_framepacing_0_1`).
 `FslDemoService.FramePacingMarker`         | The public `IFramePacingMarkerService` interface (header only, available on all platforms).
 `FslDemoService.FramePacingMarker.Control` | The host side `IFramePacingMarkerServiceControl` and `IFramePacingOverlay` interfaces (header only, available on all platforms).
 `FslDemoService.FramePacingMarker.Impl`    | The service, its command line options, the run state machine and the overlay that draws the marker.
