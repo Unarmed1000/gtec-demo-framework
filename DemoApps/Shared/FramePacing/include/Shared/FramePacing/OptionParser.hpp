@@ -33,6 +33,7 @@ namespace Fsl
   class OptionParser : public ADemoOptionParser
   {
     bool m_hideMarkerStats{false};
+    bool m_hidePacingStats{false};
     bool m_pacerEnabled{false};
     std::optional<double> m_pacerRefreshRateHz;
     int32_t m_pacerTargetFps{SampleConfig::TargetFps.Get()};
@@ -44,10 +45,16 @@ namespace Fsl
     OptionParser();
     ~OptionParser() override;
 
-    //! @brief Check if the panel with the values of the last frame pacing marker is hidden.
+    //! @brief Check if the sample starts with the overlay with the values of the last frame pacing marker hidden.
     [[nodiscard]] bool IsMarkerStatsHidden() const noexcept
     {
       return m_hideMarkerStats;
+    }
+
+    //! @brief Check if the sample starts with the overlay with the frame pacing stats hidden.
+    [[nodiscard]] bool IsPacingStatsHidden() const noexcept
+    {
+      return m_hidePacingStats;
     }
 
     //! @brief Check if the sample starts with its frame pacer on.

@@ -100,6 +100,30 @@ namespace Fsl
       std::shared_ptr<UI::Label> SyncMarker;
     };
 
+    //! One value label per value of the frame pacing section of the stats panel
+    struct PacerStatsUIRecord
+    {
+      std::shared_ptr<UI::Label> SwapInterval;
+      std::shared_ptr<UI::Label> FrameTime;
+      std::shared_ptr<UI::Label> LateFrames;
+      std::shared_ptr<UI::Label> Work;
+      std::shared_ptr<UI::Label> AverageWork;
+      std::shared_ptr<UI::Label> PresentWait;
+      std::shared_ptr<UI::Label> IntervalChanges;
+      std::shared_ptr<UI::Label> LastChange;
+      std::shared_ptr<UI::Label> FrameWindow;
+    };
+
+    //! What the swap interval rule of the frame pacer changed since the pacer was set up
+    struct PacerChangeRecord
+    {
+      uint32_t SlowerCount{0};
+      uint32_t FasterCount{0};
+      SamplePacerChange LastChange{SamplePacerChange::Unchanged};
+      //! When the frame of the last change started (a HighResolutionTimer timestamp)
+      TickCount LastChangeTime;
+    };
+
     //! The marker the stats panel showed last, so the panel can show how far the times of a marker are from the ones of the marker
     //! before it
     struct MarkerStepRecord
@@ -130,7 +154,14 @@ namespace Fsl
       std::shared_ptr<UI::Label> LabelPacerFrames;
       std::shared_ptr<UI::SliderAndFmtValueLabel<int32_t>> SliderCpuLoad;
       std::shared_ptr<UI::SliderAndFmtValueLabel<int32_t>> SliderGpuLoad;
+      //! The two overlays: the values of the last marker and the frame pacing stats, each can be hidden with its switch
+      std::shared_ptr<UI::Switch> SwitchMarkerStats;
+      std::shared_ptr<UI::Switch> SwitchPacerStats;
+      std::shared_ptr<UI::BaseWindow> StatsWindow;
+      std::shared_ptr<UI::BaseWindow> MarkerStatsSection;
+      std::shared_ptr<UI::BaseWindow> PacerStatsSection;
       MarkerStatsUIRecord MarkerStats;
+      PacerStatsUIRecord PacerStats;
     };
 
     UI::CallbackEventListenerScope m_uiEventListener;
@@ -170,8 +201,15 @@ namespace Fsl
     TickCount m_frameStartTime;
     //! The time from the start of the previous frame to the start of the current frame
     TimeSpan m_frameInterval;
-    //! The late frames while the frame pacer is off (the pacer counts its own)
+    //! The frames of the last two seconds: their frame times, and the late frames while the frame pacer is off (the pacer counts its
+    //! own)
     SampleFrameStats m_frameStats;
+    PacerChangeRecord m_pacerChanges;
+    //! How long the CPU and the GPU worked on the last frame that ended (the GPU time is zero if the app does not measure it)
+    TimeSpan m_lastCpuTime;
+    TimeSpan m_lastGpuTime;
+    //! How long the present of the last frame that ended was delayed by WaitForPresent
+    TimeSpan m_lastPresentWait;
     //! After a delayed present (WaitForPresent) the next frame does not start before this (zero = no wait)
     TickCount m_nextFrameStartTime;
     //! The time the current frame is animated for
@@ -204,8 +242,8 @@ namespace Fsl
     void Update(const DemoTime& demoTime);
     //! Draw the frame for its animation time (this is exactly what the marker reports)
     void Draw();
-    //! Call it once the app has drawn the frame (on Vulkan: once the frame was submitted). It tells the frame pacer how long the
-    //! frame needed.
+    //! Call it once the app has drawn the frame (on Vulkan: once the frame was submitted), with the frame pacer on or off. It tells
+    //! the frame pacer how long the frame needed.
     //! @param gpuTime the time the GPU needs for a frame if the app measures it apart from the CPU time (it is added to the CPU time)
     void EndFrame(const TimeSpan gpuTime = {});
     //! Wait until the frame can be presented so it is shown at the refresh the frame pacer aims for: for an app whose present can not
@@ -245,10 +283,15 @@ namespace Fsl
     [[nodiscard]] double GetRefreshRateHz() const;
     void UpdateRefreshRateUI();
     void UpdatePacerStatus();
+    //! Update the frame pacing section of the stats panel
+    void UpdatePacerStats();
     //! Keep the CPU busy for the given time (the simulated CPU load)
     void BurnCpu(const TimeSpan duration) const;
-    //! Create the panel with every value of the last marker (fills in m_ui.MarkerStats)
-    std::shared_ptr<UI::BaseWindow> CreateMarkerStatsWindow(UI::Theme::IThemeControlFactory& rUIFactory);
+    //! Create the panel with the two overlays: every value of the last marker and the frame pacing stats (fills in the overlay
+    //! members of m_ui)
+    std::shared_ptr<UI::BaseWindow> CreateStatsWindow(UI::Theme::IThemeControlFactory& rUIFactory);
+    //! Show the overlays their switches are on for
+    void UpdateStatsVisibility();
     void UpdateMarkerStats();
 
     //! Format into the reused buffer and set it as the label content (the label only copies it if the text changed)

@@ -27,10 +27,20 @@
 #include <array>
 #include <cstddef>
 #include <cstdint>
+#include <utility>
 
 namespace Fsl
 {
-  //! Counts the late frames of the last two seconds, for the sample while its frame pacer is off (the pacer counts its own).
+  //! The frame times of a number of frames
+  struct SampleFrameTimes
+  {
+    TimeSpan Average;
+    TimeSpan Min;
+    TimeSpan Max;
+  };
+
+  //! The frames of the last two seconds as the sample measures them: their frame times and how many of them were late (the frame pacer
+  //! counts its own late frames, these are for the sample while the pacer is off).
   //! A frame is late the way the pacer counts it: the time from the start of the previous frame to its start, in whole display refreshes,
   //! is longer than the refreshes the previous frame was held for.
   class SampleFrameStats final
@@ -38,6 +48,8 @@ namespace Fsl
     struct FrameRecord
     {
       TickCount StartTime;
+      //! The time from the start of the previous frame to the start of this frame
+      TimeSpan Interval;
       bool Late{false};
     };
 
@@ -77,9 +89,9 @@ namespace Fsl
       const int64_t periodTicks = refreshPeriod.Ticks();
       // The interval in whole refreshes, rounded to the nearest one
       const int64_t refreshes = periodTicks > 0 ? ((frameInterval.Ticks() + (periodTicks / 2)) / periodTicks) : 0;
-      const bool late = refreshes > static_cast<int64_t>(swapInterval);
+      const bool late = std::cmp_greater(refreshes, swapInterval);
 
-      m_frames[(m_firstIndex + m_count) % Capacity] = FrameRecord{startTime, late};
+      m_frames[(m_firstIndex + m_count) % Capacity] = FrameRecord{startTime, frameInterval, late};
       ++m_count;
       if (late)
       {
@@ -95,6 +107,32 @@ namespace Fsl
     [[nodiscard]] constexpr uint32_t LateFrameCount() const noexcept
     {
       return m_lateCount;
+    }
+
+    //! The average, the shortest and the longest frame time of the frames (all zero without frames)
+    [[nodiscard]] constexpr SampleFrameTimes FrameTimes() const noexcept
+    {
+      if (m_count == 0)
+      {
+        return {};
+      }
+      int64_t sumTicks = 0;
+      TimeSpan minInterval = m_frames[m_firstIndex].Interval;
+      TimeSpan maxInterval = minInterval;
+      for (std::size_t i = 0; i < m_count; ++i)
+      {
+        const TimeSpan interval = m_frames[(m_firstIndex + i) % Capacity].Interval;
+        sumTicks += interval.Ticks();
+        if (interval < minInterval)
+        {
+          minInterval = interval;
+        }
+        if (interval > maxInterval)
+        {
+          maxInterval = interval;
+        }
+      }
+      return SampleFrameTimes{TimeSpan(sumTicks / static_cast<int64_t>(m_count)), minInterval, maxInterval};
     }
 
   private:

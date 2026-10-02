@@ -81,7 +81,7 @@ frame only, a frame without the call reports the framework's values.
 See the [GLES2.FramePacing](../DemoApps/GLES2/FramePacing), [GLES3.FramePacing](../DemoApps/GLES3/FramePacing) and
 [Vulkan.FramePacing](../DemoApps/Vulkan/FramePacing) samples (they share their code in [Shared/FramePacing](../DemoApps/Shared/FramePacing)):
 they show every value of the last marker in a panel, formatted into a reused `fmt::memory_buffer` so updating it every frame does not
-allocate. `--HideMarkerStats` hides the panel.
+allocate. `--HideMarkerStats` starts with the panel hidden.
 
 ## What the marker reports
 
@@ -127,6 +127,14 @@ The target fps slider and the adaptive switch can only be changed while the fram
 rate the frames are paced at: the refresh rate divided by the swap interval. The two status lines below the switches show the swap interval
 and the frame time that was measured, with how many of the last frames were late. They are shown with the pacer off as well: every frame is
 then held for one refresh, and the late frames are the ones of the last two seconds that took more than one refresh.
+
+Two overlays at the top right can be switched on and off (`Show the last marker` and `Show the frame pacing`, or start without them with
+`--HideMarkerStats` and `--HidePacingStats`). The first shows every value of the last marker. The second shows what the frame pacing does:
+the swap interval (and the one of the target frame rate), the average frame time of the last two seconds with the shortest and the longest
+one, the late frames, the work of the last frame (the CPU time, and the GPU time if the app measures it), the average work the pacer decides
+on as a share of the frame time, how long the present was delayed, how often the pacer made the swap interval longer (slower) or shorter
+(faster) and when it last did, and the time its frame window spans. The values only the pacer has show `pacer off` while it is off. The
+controls at the right can be scrolled if the window is too low for them.
 
 ```bash
 # 30 fps on any display, with a GPU load

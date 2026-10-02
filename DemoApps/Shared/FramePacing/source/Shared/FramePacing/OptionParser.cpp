@@ -35,6 +35,7 @@ namespace Fsl
       enum Enum
       {
         HideMarkerStats = DEMO_APP_OPTION_BASE,
+        HidePacingStats,
         Pacer,
         PacerRefreshRate,
         PacerTargetFps,
@@ -69,7 +70,9 @@ namespace Fsl
   void OptionParser::OnArgumentSetup(std::deque<Option>& rOptions)
   {
     rOptions.emplace_back("HideMarkerStats", OptionArgument::OptionNone, CommandId::HideMarkerStats,
-                          "Hide the panel with the values of the last frame pacing marker.");
+                          "Start with the overlay with the values of the last frame pacing marker hidden (the UI has a switch for it).");
+    rOptions.emplace_back("HidePacingStats", OptionArgument::OptionNone, CommandId::HidePacingStats,
+                          "Start with the overlay with the frame pacing stats hidden (the UI has a switch for it).");
     rOptions.emplace_back("Pacer", OptionArgument::OptionNone, CommandId::Pacer,
                           "Start with the frame pacer of the sample on (the experimental mb-framepacing pacer).");
     rOptions.emplace_back("Pacer.RefreshRate", OptionArgument::OptionRequired, CommandId::PacerRefreshRate,
@@ -93,6 +96,9 @@ namespace Fsl
     {
     case CommandId::HideMarkerStats:
       m_hideMarkerStats = true;
+      return OptionParseResult::Parsed;
+    case CommandId::HidePacingStats:
+      m_hidePacingStats = true;
       return OptionParseResult::Parsed;
     case CommandId::Pacer:
       m_pacerEnabled = true;

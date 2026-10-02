@@ -73,10 +73,16 @@ namespace Fsl
   struct SamplePacerStatus
   {
     uint32_t SwapInterval{1};
+    //! The swap interval of the target frame rate: the rule never runs faster than this
+    uint32_t PreferredSwapInterval{1};
     uint32_t Frames{0};
     uint32_t LateFrames{0};
     //! The average time the frames needed
     TimeSpan AverageWork;
+    //! The time the frames span: from when the oldest was shown to when the newest was
+    TimeSpan WindowSpan;
+    //! True if the rule has the frames it needs to decide on
+    bool WindowFull{false};
   };
 
   //! The mb-framepacing frame pacer (experimental) behind the types of the framework, so the rest of the sample does not depend on the

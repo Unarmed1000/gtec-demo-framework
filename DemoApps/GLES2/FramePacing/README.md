@@ -36,6 +36,14 @@ rate the frames are paced at: the refresh rate divided by the swap interval. The
 and the frame time that was measured, with how many of the last frames were late. They are shown with the pacer off as well: every frame is
 then held for one refresh, and the late frames are the ones of the last two seconds that took more than one refresh.
 
+Two overlays at the top right can be switched on and off (`Show the last marker` and `Show the frame pacing`, or start without them with
+`--HideMarkerStats` and `--HidePacingStats`). The first shows every value of the last marker. The second shows what the frame pacing does:
+the swap interval (and the one of the target frame rate), the average frame time of the last two seconds with the shortest and the longest
+one, the late frames, the work of the last frame (the CPU time, and the GPU time if the app measures it), the average work the pacer decides
+on as a share of the frame time, how long the present was delayed, how often the pacer made the swap interval longer (slower) or shorter
+(faster) and when it last did, and the time its frame window spans. The values only the pacer has show `pacer off` while it is off. The
+controls at the right can be scrolled if the window is too low for them.
+
 The GLES2 and GLES3 versions hold a frame with `eglSwapInterval`. The Vulkan version can not present with a swap interval, so it delays
 the present of a frame that is held for more than one refresh.
 
@@ -54,7 +62,8 @@ Argument                          |Description                                  
 ----------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------
 --CpuLoad \<arg>                  |Simulate a CPU load: the time in milliseconds the app spends busy every frame (0 = none, the default).                                                                                |Demo
 --GpuLoad \<arg>                  |A GPU load: the number of steps the raymarched background takes for every pixel (0 = no background, the default).                                                                     |Demo
---HideMarkerStats                 |Hide the panel with the values of the last frame pacing marker.                                                                                                                       |Demo
+--HideMarkerStats                 |Start with the overlay with the values of the last frame pacing marker hidden (the UI has a switch for it).                                                                           |Demo
+--HidePacingStats                 |Start with the overlay with the frame pacing stats hidden (the UI has a switch for it).                                                                                               |Demo
 --Pacer                           |Start with the frame pacer of the sample on (the experimental mb-framepacing pacer).                                                                                                  |Demo
 --Pacer.Adaptive \<arg>           |true (default): the frame pacer adapts its swap interval to how the frames do. false: a fixed frame rate.                                                                             |Demo
 --Pacer.RefreshRate \<arg>        |The refresh rate of the display in Hz the frame pacer uses, decimals are allowed (59.94). Defaults to the rate the window system reports, and to the UI slider if it does not know it.|Demo

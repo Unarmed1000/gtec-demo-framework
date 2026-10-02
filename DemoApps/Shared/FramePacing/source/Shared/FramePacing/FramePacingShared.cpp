@@ -40,6 +40,7 @@
 #include <FslSimpleUI/App/Theme/ThemeSelector.hpp>
 #include <FslSimpleUI/Base/Control/Background.hpp>
 #include <FslSimpleUI/Base/Control/Image.hpp>
+#include <FslSimpleUI/Base/Control/ScrollViewer.hpp>
 #include <FslSimpleUI/Base/Event/WindowSelectEvent.hpp>
 #include <FslSimpleUI/Base/Layout/GridLayout.hpp>
 #include <FslSimpleUI/Base/Layout/StackLayout.hpp>
@@ -118,6 +119,11 @@ namespace Fsl
 
     //! Shown for a value the marker reports as unknown
     constexpr const char* UnknownValue = "unknown";
+    //! Shown for a value only the frame pacer has while it is off
+    constexpr const char* PacerOffValue = "pacer off";
+    //! The width of the name column of the stats panel, so the values of its sections line up
+    constexpr float StatsNameColumnWidthDp = 216.0f;
+    constexpr float StatsValueColumnWidthDp = 360.0f;
 
     //! Where the time is in a cycle of the given length, in [0,1)
     float ToPhase(const double seconds, const double cycleSeconds) noexcept
@@ -191,6 +197,10 @@ namespace Fsl
     const auto lblHintTimed = uiFactory->CreateLabel("T: start a timed run");
     const auto lblHintPacer = uiFactory->CreateLabel("P: frame pacer on/off");
 
+    // The two overlays
+    m_ui.SwitchMarkerStats = uiFactory->CreateSwitch("Show the last marker", !options->IsMarkerStatsHidden());
+    m_ui.SwitchPacerStats = uiFactory->CreateSwitch("Show the frame pacing", !options->IsPacingStatsHidden());
+
     // The frame pacer of the sample (the library is not available on every platform)
     const bool pacerSupported = SamplePacer::IsSupported();
     m_ui.SwitchPacer = uiFactory->CreateSwitch("Frame pacer (experimental)", pacerSupported && options->IsPacerEnabled());
@@ -241,6 +251,9 @@ namespace Fsl
     stackLayout->AddChild(lblGpuLoad);
     stackLayout->AddChild(m_ui.SliderGpuLoad);
     stackLayout->AddChild(uiFactory->CreateDivider(UI::LayoutOrientation::Horizontal));
+    stackLayout->AddChild(m_ui.SwitchMarkerStats);
+    stackLayout->AddChild(m_ui.SwitchPacerStats);
+    stackLayout->AddChild(uiFactory->CreateDivider(UI::LayoutOrientation::Horizontal));
     stackLayout->AddChild(lblHint);
     stackLayout->AddChild(lblHintTimed);
     stackLayout->AddChild(lblHintPacer);
@@ -249,20 +262,22 @@ namespace Fsl
     mainLayout->AddColumnDefinition(UI::GridColumnDefinition(UI::GridUnitType::Star, 1.0f));
     mainLayout->AddColumnDefinition(UI::GridColumnDefinition(UI::GridUnitType::Auto));
     mainLayout->AddRowDefinition(UI::GridRowDefinition(UI::GridUnitType::Star, 1.0f));
-    // The panel with every value of the last marker can be hidden with --HideMarkerStats
-    if (!options->IsMarkerStatsHidden())
-    {
-      mainLayout->AddChild(CreateMarkerStatsWindow(*uiFactory), 0, 0);
-    }
-    const auto rightBar = uiFactory->CreateRightBar(stackLayout);
+    // The overlays with every value of the last marker and the frame pacing stats, each is shown while its switch is on
+    mainLayout->AddChild(CreateStatsWindow(*uiFactory), 0, 0);
+    // The controls can be scrolled, as a low window does not have room for all of them
+    stackLayout->SetMargin(DpThicknessF::Create(0, 0, 8, 0));
+    const auto scrollViewer = uiFactory->CreateScrollViewer(stackLayout, UI::ScrollModeFlags::TranslateY, false);
+    const auto rightBar = uiFactory->CreateRightBar(scrollViewer);
     mainLayout->AddChild(rightBar, 1, 0);
     mainLayout->SetLimitToAvailableSpace(true);
     m_uiExtension->SetMainWindow(mainLayout);
 
     UpdateUI();
+    UpdateStatsVisibility();
     UpdateMarkerStats();
     UpdateRefreshRateUI();
     UpdatePacerStatus();
+    UpdatePacerStats();
   }
 
 
@@ -335,6 +350,8 @@ namespace Fsl
     }
 
     UpdatePacerStatus();
+    UpdateStatsVisibility();
+    UpdatePacerStats();
     UpdateMarkerStats();
     if (m_framePacing)
     {
@@ -392,13 +409,14 @@ namespace Fsl
 
   void FramePacingShared::EndFrame(const TimeSpan gpuTime)
   {
-    if (!m_pacer)
-    {
-      return;
-    }
     const TickCount now = m_timer.GetTimestamp();
-    const TimeSpan cpuTime = now - m_frameStartTime;
-    m_pacer->EndFrame(now, cpuTime + TimeSpan(std::max(gpuTime.Ticks(), int64_t{0})));
+    m_lastCpuTime = now - m_frameStartTime;
+    m_lastGpuTime = TimeSpan(std::max(gpuTime.Ticks(), int64_t{0}));
+    m_lastPresentWait = {};
+    if (m_pacer)
+    {
+      m_pacer->EndFrame(now, m_lastCpuTime + m_lastGpuTime);
+    }
   }
 
 
@@ -414,7 +432,9 @@ namespace Fsl
     const TimeSpan refreshPeriod(std::llround(static_cast<double>(TimeSpan::TicksPerSecond) / m_pacerConfig.RefreshRateHz));
     const TimeSpan presentHoldTime(refreshPeriod.Ticks() * static_cast<int64_t>(std::max(presentSwapInterval, 1u)));
     const TimeSpan presentMargin = std::min(LocalConfig::MaxPresentMargin, TimeSpan(refreshPeriod.Ticks() / 8));
+    const TickCount waitStartTime = m_timer.GetTimestamp();
     WaitUntil((m_schedule.IntendedDisplayTime - presentHoldTime) + presentMargin);
+    m_lastPresentWait = m_timer.GetTimestamp() - waitStartTime;
     m_nextFrameStartTime = m_schedule.IntendedDisplayTime;
   }
 
@@ -530,18 +550,22 @@ namespace Fsl
     {
       m_pacer.reset();
       m_nextFrameStartTime = {};
+      m_pacerChanges = {};
     }
     else if (!m_pacer)
     {
       m_pacer = std::make_unique<SamplePacer>(pacerConfig);
       m_nextFrameStartTime = {};
       m_frameStats.Clear();
+      m_pacerChanges = {};
     }
     else if (pacerConfig != m_pacerConfig)
     {
       // The pacer starts again with the new settings (a empty frame window, the swap interval of the target frame rate)
       m_pacer->SetConfig(pacerConfig);
       m_nextFrameStartTime = {};
+      m_frameStats.Clear();
+      m_pacerChanges = {};
     }
     m_pacerConfig = pacerConfig;
   }
@@ -567,10 +591,30 @@ namespace Fsl
     m_frameInterval = m_frameStartTime.Ticks() != 0 ? (frameStartTime - m_frameStartTime) : TimeSpan();
     m_frameStartTime = frameStartTime;
 
+    // The frame that just ended was held for the swap interval of its schedule (one refresh without the pacer)
+    if (m_frameInterval.Ticks() > 0 && m_pacerConfig.RefreshRateHz > 0.0)
+    {
+      const TimeSpan refreshPeriod(std::llround(static_cast<double>(TimeSpan::TicksPerSecond) / m_pacerConfig.RefreshRateHz));
+      m_frameStats.AddFrame(frameStartTime, m_frameInterval, refreshPeriod, std::max(m_schedule.SwapInterval, 1u));
+    }
+
     const TimeSpan frameworkTime(m_updateTime.CurrentTickCount.Ticks());
     if (m_pacer)
     {
       m_schedule = m_pacer->BeginFrame(frameStartTime);
+      if (m_schedule.Change != SamplePacerChange::Unchanged)
+      {
+        if (m_schedule.Change == SamplePacerChange::Slower)
+        {
+          ++m_pacerChanges.SlowerCount;
+        }
+        else
+        {
+          ++m_pacerChanges.FasterCount;
+        }
+        m_pacerChanges.LastChange = m_schedule.Change;
+        m_pacerChanges.LastChangeTime = frameStartTime;
+      }
       // The frame is animated by the step of the pacer: the refreshes the display moves on. A paused app still stands still.
       if (m_updateTime.ElapsedTime.Ticks() != 0)
       {
@@ -582,12 +626,6 @@ namespace Fsl
     {
       m_schedule = {};
       m_animationTime = frameworkTime + m_animationOffset;
-      // Without the pacer every frame is held for one refresh, and the sample counts the late frames
-      if (m_frameInterval.Ticks() > 0 && m_pacerConfig.RefreshRateHz > 0.0)
-      {
-        const TimeSpan refreshPeriod(std::llround(static_cast<double>(TimeSpan::TicksPerSecond) / m_pacerConfig.RefreshRateHz));
-        m_frameStats.AddFrame(frameStartTime, m_frameInterval, refreshPeriod, 1);
-      }
     }
 
     BurnCpu(TimeSpan::FromMilliseconds(static_cast<int64_t>(m_ui.SliderCpuLoad->GetValue())));
@@ -658,6 +696,85 @@ namespace Fsl
   }
 
 
+  void FramePacingShared::UpdatePacerStats()
+  {
+    if (!m_ui.SwitchPacerStats->IsChecked())
+    {
+      // The overlay is hidden
+      return;
+    }
+    const PacerStatsUIRecord& rStats = m_ui.PacerStats;
+
+    // What the sample measures, with the frame pacer on or off
+    const SampleFrameTimes frameTimes = m_frameStats.FrameTimes();
+    if (m_frameStats.FrameCount() > 0)
+    {
+      SetFormattedContent(*rStats.FrameTime, "{:.2f} ms ({:.2f} to {:.2f})", frameTimes.Average.TotalMilliseconds(),
+                          frameTimes.Min.TotalMilliseconds(), frameTimes.Max.TotalMilliseconds());
+    }
+    else
+    {
+      rStats.FrameTime->SetContent(UnknownValue);
+    }
+    if (m_lastGpuTime.Ticks() > 0)
+    {
+      SetFormattedContent(*rStats.Work, "CPU {:.2f} ms, GPU {:.2f} ms", m_lastCpuTime.TotalMilliseconds(), m_lastGpuTime.TotalMilliseconds());
+    }
+    else
+    {
+      SetFormattedContent(*rStats.Work, "CPU {:.2f} ms", m_lastCpuTime.TotalMilliseconds());
+    }
+    if (m_lastPresentWait.Ticks() > 0)
+    {
+      SetFormattedContent(*rStats.PresentWait, "{:.2f} ms", m_lastPresentWait.TotalMilliseconds());
+    }
+    else
+    {
+      rStats.PresentWait->SetContent("none");
+    }
+
+    if (!m_pacer)
+    {
+      // Without the pacer every frame is held for one refresh and the sample counts the late frames
+      const uint32_t frames = m_frameStats.FrameCount();
+      const uint32_t lateFrames = m_frameStats.LateFrameCount();
+      SetFormattedContent(*rStats.SwapInterval, "1 ({})", SamplePacer::IsSupported() ? PacerOffValue : "pacer not supported");
+      SetFormattedContent(*rStats.LateFrames, "{} of {} ({:.1f} %)", lateFrames, frames, frames > 0u ? ((100.0 * lateFrames) / frames) : 0.0);
+      for (UI::Label* pLabel : {rStats.AverageWork.get(), rStats.IntervalChanges.get(), rStats.LastChange.get(), rStats.FrameWindow.get()})
+      {
+        pLabel->SetContent(PacerOffValue);
+      }
+      return;
+    }
+
+    // What the frame pacer decides on
+    const SamplePacerStatus status = m_pacer->GetStatus();
+    SetFormattedContent(*rStats.SwapInterval, "{} (preferred {})", status.SwapInterval, status.PreferredSwapInterval);
+    SetFormattedContent(*rStats.LateFrames, "{} of {} ({:.1f} %)", status.LateFrames, status.Frames,
+                        status.Frames > 0u ? ((100.0 * status.LateFrames) / status.Frames) : 0.0);
+    if (status.Frames > 0u && m_schedule.TargetFrameTime.Ticks() > 0)
+    {
+      SetFormattedContent(*rStats.AverageWork, "{:.2f} ms, {:.0f} % of the frame time", status.AverageWork.TotalMilliseconds(),
+                          (100.0 * static_cast<double>(status.AverageWork.Ticks())) / static_cast<double>(m_schedule.TargetFrameTime.Ticks()));
+    }
+    else
+    {
+      rStats.AverageWork->SetContent(UnknownValue);
+    }
+    SetFormattedContent(*rStats.IntervalChanges, "{} slower, {} faster", m_pacerChanges.SlowerCount, m_pacerChanges.FasterCount);
+    if (m_pacerChanges.LastChange != SamplePacerChange::Unchanged)
+    {
+      SetFormattedContent(*rStats.LastChange, "{}, {:.1f} s ago", m_pacerChanges.LastChange == SamplePacerChange::Slower ? "slower" : "faster",
+                          (m_timer.GetTimestamp() - m_pacerChanges.LastChangeTime).TotalSeconds());
+    }
+    else
+    {
+      rStats.LastChange->SetContent("none");
+    }
+    SetFormattedContent(*rStats.FrameWindow, "{:.2f} s{}", status.WindowSpan.TotalSeconds(), status.WindowFull ? ", full" : "");
+  }
+
+
   void FramePacingShared::BurnCpu(const TimeSpan duration) const
   {
     if (duration.Ticks() <= 0)
@@ -672,59 +789,115 @@ namespace Fsl
   }
 
 
-  std::shared_ptr<UI::BaseWindow> FramePacingShared::CreateMarkerStatsWindow(UI::Theme::IThemeControlFactory& rUIFactory)
+  std::shared_ptr<UI::BaseWindow> FramePacingShared::CreateStatsWindow(UI::Theme::IThemeControlFactory& rUIFactory)
   {
-    // A panel with every value the last drawn marker carried (top right, next to the right bar and away from the markers on the left side)
-    const auto statsGrid = std::make_shared<UI::GridLayout>(rUIFactory.GetContext());
-    statsGrid->AddColumnDefinition(UI::GridColumnDefinition(UI::GridUnitType::Auto));
-    statsGrid->AddColumnDefinition(UI::GridColumnDefinition(UI::GridUnitType::Fixed, 360.0f));
-    uint32_t statsRow = 0;
-    const auto addStatsRow = [&rUIFactory, &statsGrid, &statsRow](const char* const pszName)
+    // A panel with every value the last drawn marker carried and the frame pacing stats (top right, next to the right bar and away from
+    // the markers on the left side). Each section is a grid of names and values, the columns have the same widths so they line up.
+    const auto createGrid = [&rUIFactory]()
     {
-      statsGrid->AddRowDefinition(UI::GridRowDefinition(UI::GridUnitType::Auto));
+      auto grid = std::make_shared<UI::GridLayout>(rUIFactory.GetContext());
+      grid->AddColumnDefinition(UI::GridColumnDefinition(UI::GridUnitType::Fixed, StatsNameColumnWidthDp));
+      grid->AddColumnDefinition(UI::GridColumnDefinition(UI::GridUnitType::Fixed, StatsValueColumnWidthDp));
+      return grid;
+    };
+    const auto addStatsRow = [&rUIFactory](UI::GridLayout& rGrid, uint32_t& rRow, const char* const pszName)
+    {
+      rGrid.AddRowDefinition(UI::GridRowDefinition(UI::GridUnitType::Auto));
       const auto nameLabel = rUIFactory.CreateLabel(pszName);
-      nameLabel->SetMargin(DpThicknessF::Create(0, 0, 16, 0));
       auto valueLabel = rUIFactory.CreateLabel(UnknownValue);
-      statsGrid->AddChild(nameLabel, 0, statsRow);
-      statsGrid->AddChild(valueLabel, 1, statsRow);
-      ++statsRow;
+      rGrid.AddChild(nameLabel, 0, rRow);
+      rGrid.AddChild(valueLabel, 1, rRow);
+      ++rRow;
       return valueLabel;
     };
+
+    const auto markerGrid = createGrid();
+    uint32_t markerRow = 0;
     MarkerStatsUIRecord& rStats = m_ui.MarkerStats;
-    rStats.Kind = addStatsRow("Marker");
-    rStats.FrameIndex = addStatsRow("Frame index");
-    rStats.AnimationTime = addStatsRow("Animation time");
-    rStats.RunId = addStatsRow("Run id");
-    rStats.IntendedDisplayTime = addStatsRow("Intended display time");
-    rStats.TargetFrameTime = addStatsRow("Target frame time");
-    rStats.CpuStartTime = addStatsRow("CPU start time");
-    rStats.CpuBusyTime = addStatsRow("CPU busy");
-    rStats.PreferredFrameTime = addStatsRow("Preferred frame time");
-    rStats.Static = addStatsRow("Static");
-    rStats.RunStartTime = addStatsRow("Run start time");
-    rStats.RunSequenceId = addStatsRow("Sequence id");
-    rStats.SyncMarker = addStatsRow("Sync marker");
+    rStats.Kind = addStatsRow(*markerGrid, markerRow, "Marker");
+    rStats.FrameIndex = addStatsRow(*markerGrid, markerRow, "Frame index");
+    rStats.AnimationTime = addStatsRow(*markerGrid, markerRow, "Animation time");
+    rStats.RunId = addStatsRow(*markerGrid, markerRow, "Run id");
+    rStats.IntendedDisplayTime = addStatsRow(*markerGrid, markerRow, "Intended display time");
+    rStats.TargetFrameTime = addStatsRow(*markerGrid, markerRow, "Target frame time");
+    rStats.CpuStartTime = addStatsRow(*markerGrid, markerRow, "CPU start time");
+    rStats.CpuBusyTime = addStatsRow(*markerGrid, markerRow, "CPU busy");
+    rStats.PreferredFrameTime = addStatsRow(*markerGrid, markerRow, "Preferred frame time");
+    rStats.Static = addStatsRow(*markerGrid, markerRow, "Static");
+    rStats.RunStartTime = addStatsRow(*markerGrid, markerRow, "Run start time");
+    rStats.RunSequenceId = addStatsRow(*markerGrid, markerRow, "Sequence id");
+    rStats.SyncMarker = addStatsRow(*markerGrid, markerRow, "Sync marker");
+
+    // The frame times and the late frames are the ones of the last two seconds, the work and the present wait the ones of the last frame
+    const auto pacerGrid = createGrid();
+    uint32_t pacerRow = 0;
+    PacerStatsUIRecord& rPacerStats = m_ui.PacerStats;
+    rPacerStats.SwapInterval = addStatsRow(*pacerGrid, pacerRow, "Swap interval");
+    rPacerStats.FrameTime = addStatsRow(*pacerGrid, pacerRow, "Frame time");
+    rPacerStats.LateFrames = addStatsRow(*pacerGrid, pacerRow, "Late frames");
+    rPacerStats.Work = addStatsRow(*pacerGrid, pacerRow, "Work");
+    rPacerStats.AverageWork = addStatsRow(*pacerGrid, pacerRow, "Average work");
+    rPacerStats.PresentWait = addStatsRow(*pacerGrid, pacerRow, "Present wait");
+    rPacerStats.IntervalChanges = addStatsRow(*pacerGrid, pacerRow, "Interval changes");
+    rPacerStats.LastChange = addStatsRow(*pacerGrid, pacerRow, "Last change");
+    rPacerStats.FrameWindow = addStatsRow(*pacerGrid, pacerRow, "Frame window");
+
+    const auto createSection = [&rUIFactory](const char* const pszCaption, const std::shared_ptr<UI::GridLayout>& grid)
+    {
+      auto section = std::make_shared<UI::StackLayout>(rUIFactory.GetContext());
+      section->SetOrientation(UI::LayoutOrientation::Vertical);
+      section->AddChild(rUIFactory.CreateLabel(pszCaption));
+      section->AddChild(rUIFactory.CreateDivider(UI::LayoutOrientation::Horizontal));
+      section->AddChild(grid);
+      return section;
+    };
+    const auto markerSection = createSection("Last marker", markerGrid);
+    // Some air between the two sections
+    markerSection->SetMargin(DpThicknessF::Create(0, 0, 0, 12));
+    const auto pacerSection = createSection("Frame pacing", pacerGrid);
 
     const auto statsStack = std::make_shared<UI::StackLayout>(rUIFactory.GetContext());
     statsStack->SetOrientation(UI::LayoutOrientation::Vertical);
-    statsStack->AddChild(rUIFactory.CreateLabel("Last marker"));
-    statsStack->AddChild(rUIFactory.CreateDivider(UI::LayoutOrientation::Horizontal));
-    statsStack->AddChild(statsGrid);
+    statsStack->AddChild(markerSection);
+    statsStack->AddChild(pacerSection);
     auto statsWindow = rUIFactory.CreateBackgroundWindow(UI::Theme::WindowType::Transparent, statsStack);
     statsWindow->SetAlignmentX(UI::ItemAlignment::Far);
     statsWindow->SetAlignmentY(UI::ItemAlignment::Near);
+    m_ui.MarkerStatsSection = markerSection;
+    m_ui.PacerStatsSection = pacerSection;
+    m_ui.StatsWindow = statsWindow;
     return statsWindow;
+  }
+
+
+  void FramePacingShared::UpdateStatsVisibility()
+  {
+    const auto setVisible = [](UI::BaseWindow& rWindow, const bool visible)
+    {
+      const UI::ItemVisibility visibility = visible ? UI::ItemVisibility::Visible : UI::ItemVisibility::Collapsed;
+      if (rWindow.GetVisibility() != visibility)
+      {
+        rWindow.SetVisibility(visibility);
+      }
+    };
+    const bool showMarker = m_ui.SwitchMarkerStats->IsChecked();
+    const bool showPacer = m_ui.SwitchPacerStats->IsChecked();
+    setVisible(*m_ui.MarkerStatsSection, showMarker);
+    setVisible(*m_ui.PacerStatsSection, showPacer);
+    // The background of the overlays is only there while one of them is shown
+    setVisible(*m_ui.StatsWindow, showMarker || showPacer);
   }
 
 
   void FramePacingShared::UpdateMarkerStats()
   {
-    const MarkerStatsUIRecord& rStats = m_ui.MarkerStats;
-    if (!rStats.Kind)
+    if (!m_ui.SwitchMarkerStats->IsChecked())
     {
-      // The panel is hidden (--HideMarkerStats)
+      // The overlay is hidden. The steps from the marker before start again when it is shown.
+      m_markerStep = {};
       return;
     }
+    const MarkerStatsUIRecord& rStats = m_ui.MarkerStats;
     FramePacingMarkerInfo info;
     if (!m_framePacing || !m_framePacing->TryGetLastMarker(info))
     {

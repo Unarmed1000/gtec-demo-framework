@@ -144,9 +144,12 @@ namespace Fsl
 
     SamplePacerStatus status;
     status.SwapInterval = m_impl->Pacer.SwapInterval();
+    status.PreferredSwapInterval = m_impl->Pacer.Settings().PreferredSwapIntervalAt(m_impl->Pacer.Refresh());
     status.Frames = window.Frames;
     status.LateFrames = window.LateFrames;
     status.AverageWork = TimeSpan(window.AverageWork.Ticks());
+    status.WindowSpan = TimeSpan(window.Span.Ticks());
+    status.WindowFull = window.Full;
     return status;
   }
 
