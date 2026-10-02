@@ -78,7 +78,7 @@ namespace Fsl
         return SamplePacerChange::Faster;
       case PC::SwapIntervalChange::None:
       default:
-        return SamplePacerChange::None;
+        return SamplePacerChange::Unchanged;
       }
     }
   }

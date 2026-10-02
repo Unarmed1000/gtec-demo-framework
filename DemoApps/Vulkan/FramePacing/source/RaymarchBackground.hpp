@@ -44,6 +44,7 @@ namespace Fsl
       RapidVulkan::PipelineLayout PipelineLayout;
 
       Resources() = default;
+      ~Resources() = default;
       Resources(const Resources&) = delete;
       Resources& operator=(const Resources&) = delete;
       Resources(Resources&& other) noexcept = delete;
@@ -56,6 +57,7 @@ namespace Fsl
       VkExtent2D Extent{};
 
       DependentResources() = default;
+      ~DependentResources() = default;
       DependentResources(const DependentResources&) = delete;
       DependentResources& operator=(const DependentResources&) = delete;
       DependentResources(DependentResources&& other) noexcept = delete;

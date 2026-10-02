@@ -45,7 +45,8 @@ namespace Fsl
   //! What the swap interval rule of the pacer decided for a frame
   enum class SamplePacerChange
   {
-    None,
+    //! The swap interval is the one of the frame before (not called None, that is a macro of the X11 headers)
+    Unchanged,
     //! A longer swap interval: a lower frame rate
     Slower,
     //! A shorter swap interval: a higher frame rate
@@ -65,7 +66,7 @@ namespace Fsl
     TimeSpan TargetFrameTime;
     //! The frame time the app wants: the swap interval of the target frame rate as a time
     TimeSpan PreferredFrameTime;
-    SamplePacerChange Change{SamplePacerChange::None};
+    SamplePacerChange Change{SamplePacerChange::Unchanged};
   };
 
   //! The frames the swap interval rule of the pacer decides on

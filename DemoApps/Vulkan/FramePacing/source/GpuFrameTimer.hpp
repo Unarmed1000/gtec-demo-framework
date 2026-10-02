@@ -50,6 +50,7 @@ namespace Fsl
 
     //! @param queueFamilyIndex the queue family the command buffers are submitted to
     GpuFrameTimer(const Vulkan::VUDevice& device, const uint32_t queueFamilyIndex);
+    ~GpuFrameTimer() = default;
 
     //! @return true if the queue supports timestamps (if not the GPU time stays zero)
     [[nodiscard]] bool IsSupported() const noexcept

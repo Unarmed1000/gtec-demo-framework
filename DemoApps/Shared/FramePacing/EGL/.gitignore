@@ -1,4 +1,15 @@
 /.vs/
+/Shared.FramePacing.EGL.VC.VC.opendb
+/Shared.FramePacing.EGL.VC.db
+/Shared.FramePacing.EGL.manifest
+/Shared.FramePacing.EGL.opensdf
+/Shared.FramePacing.EGL.sdf
+/Shared.FramePacing.EGL.sln
+/Shared.FramePacing.EGL.v12.sdf
+/Shared.FramePacing.EGL.v12.suo
+/Shared.FramePacing.EGL.vcxproj
+/Shared.FramePacing.EGL.vcxproj.filters
+/Shared.FramePacing.EGL.vcxproj.user
 /Shared.FramePacing.EGL___OpenGLES.VC.VC.opendb
 /Shared.FramePacing.EGL___OpenGLES.VC.db
 /Shared.FramePacing.EGL___OpenGLES.manifest
