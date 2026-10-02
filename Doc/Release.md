@@ -29,6 +29,7 @@
   * clang-format and clang-tidy 23 are now required (all files are formatted with clang-format 23).
   * Added GitHub Actions CI: Ubuntu, Windows and macOS builds with unit tests, clang-format and clang-tidy (changed files).
   * Fixed --ExitAfterDuration never parsing the duration.
+  * Fixed the basic UI theme drawing a WindowType::DialogTransparent background window with the opaque window color.
   * Updated assimp to 6.0.5
   * Updated fmt to 12.2.0
   * Updated gli to the latest version

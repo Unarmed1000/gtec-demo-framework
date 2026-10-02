@@ -542,8 +542,10 @@ namespace Fsl::UI::Theme
       switch (type)
       {
       case WindowType::Transparent:
+      case WindowType::DialogTransparent:
         return Window.BackgroundTransparent;
       case WindowType::Normal:
+      case WindowType::DialogNormal:
       default:
         return Window.Background;
       }
