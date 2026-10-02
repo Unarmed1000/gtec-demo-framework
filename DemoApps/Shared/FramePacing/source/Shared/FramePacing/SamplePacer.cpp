@@ -110,6 +110,13 @@ namespace Fsl
   SamplePacer::~SamplePacer() = default;
 
 
+  void SamplePacer::SetConfig(const SamplePacerConfig& config)
+  {
+    // The settings the pacer has change nothing
+    m_impl->Pacer.SetSettings(ToPacerSettings(config));
+  }
+
+
   SamplePacerSchedule SamplePacer::BeginFrame(const TickCount cpuStartTime) noexcept
   {
     const PC::FrameSchedule src = m_impl->Pacer.BeginFrame(FP::TickCount64(cpuStartTime.Ticks()));
@@ -163,6 +170,12 @@ namespace Fsl
 
 
   SamplePacer::~SamplePacer() = default;
+
+
+  void SamplePacer::SetConfig(const SamplePacerConfig& config)
+  {
+    FSL_PARAM_NOT_USED(config);
+  }
 
 
   SamplePacerSchedule SamplePacer::BeginFrame(const TickCount cpuStartTime) noexcept

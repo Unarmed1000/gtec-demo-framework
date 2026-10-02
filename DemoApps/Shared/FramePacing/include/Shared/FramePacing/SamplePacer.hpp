@@ -96,6 +96,10 @@ namespace Fsl
     explicit SamplePacer(const SamplePacerConfig& config);
     ~SamplePacer();
 
+    //! @brief Change how the pacer is set up. With another config the pacer starts again: its frame window is empty and it is back at
+    //!        the swap interval of the target frame rate, the animation goes on. The config it has changes nothing.
+    void SetConfig(const SamplePacerConfig& config);
+
     //! @brief Start a frame.
     //! @param cpuStartTime the time the frame starts (a HighResolutionTimer timestamp)
     SamplePacerSchedule BeginFrame(const TickCount cpuStartTime) noexcept;

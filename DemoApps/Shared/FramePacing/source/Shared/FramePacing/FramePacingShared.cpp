@@ -519,12 +519,17 @@ namespace Fsl
       m_pacer.reset();
       m_nextFrameStartTime = {};
     }
-    else if (!m_pacer || pacerConfig != m_pacerConfig)
+    else if (!m_pacer)
     {
-      // The settings of a pacer are fixed, so new settings need a new pacer (it starts with the first frame again)
       m_pacer = std::make_unique<SamplePacer>(pacerConfig);
       m_nextFrameStartTime = {};
       m_frameStats.Clear();
+    }
+    else if (pacerConfig != m_pacerConfig)
+    {
+      // The pacer starts again with the new settings (a empty frame window, the swap interval of the target frame rate)
+      m_pacer->SetConfig(pacerConfig);
+      m_nextFrameStartTime = {};
     }
     m_pacerConfig = pacerConfig;
   }
