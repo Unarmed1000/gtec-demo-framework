@@ -92,7 +92,7 @@ TEST(TestControlLogic_SliderClickLogic, PressOnCursor_BeginsADragThatIsClaimed)
   // The cursor is at x=60, the press is two pixels to the right of its center
   const auto result = clickLogic.Process(logic, Press(logic, 62));
 
-  EXPECT_EQ(UI::EventHandlingStatus::Claimed, result.Status);
+  EXPECT_EQ(UI::EventHandlingStatus::Claimed, result.HandlingStatus);
   EXPECT_EQ(UI::SliderClickAction::DragBegin, result.Action);
   EXPECT_TRUE(clickLogic.IsClicked());
   EXPECT_TRUE(logic.IsDragging());
@@ -109,17 +109,17 @@ TEST(TestControlLogic_SliderClickLogic, Drag_IsClaimedOnEveryEvent)
 
   // The pointer moves, also far below the bar: a ScrollViewer must not get the gesture
   auto result = clickLogic.Process(logic, Move(logic, 80, 200));
-  EXPECT_EQ(UI::EventHandlingStatus::Claimed, result.Status);
+  EXPECT_EQ(UI::EventHandlingStatus::Claimed, result.HandlingStatus);
   EXPECT_EQ(UI::SliderClickAction::Drag, result.Action);
   EXPECT_EQ(70, logic.GetValue());
 
   // A move that does not change the value is still claimed
   result = clickLogic.Process(logic, Move(logic, 80, 300));
-  EXPECT_EQ(UI::EventHandlingStatus::Claimed, result.Status);
+  EXPECT_EQ(UI::EventHandlingStatus::Claimed, result.HandlingStatus);
   EXPECT_EQ(UI::SliderClickAction::NoAction, result.Action);
 
   result = clickLogic.Process(logic, Release(logic, 90, 300));
-  EXPECT_EQ(UI::EventHandlingStatus::Claimed, result.Status);
+  EXPECT_EQ(UI::EventHandlingStatus::Claimed, result.HandlingStatus);
   EXPECT_EQ(UI::SliderClickAction::DragEnd, result.Action);
   EXPECT_EQ(80, logic.GetValue());
   EXPECT_FALSE(logic.IsDragging());
@@ -137,7 +137,7 @@ TEST(TestControlLogic_SliderClickLogic, Drag_Canceled_RestoresTheValue)
 
   const auto result = clickLogic.Process(logic, Cancel(logic, 100));
 
-  EXPECT_EQ(UI::EventHandlingStatus::Claimed, result.Status);
+  EXPECT_EQ(UI::EventHandlingStatus::Claimed, result.HandlingStatus);
   EXPECT_EQ(UI::SliderClickAction::DragCanceled, result.Action);
   EXPECT_EQ(50, logic.GetValue());
   EXPECT_FALSE(logic.IsDragging());
@@ -154,7 +154,7 @@ TEST(TestControlLogic_SliderClickLogic, PressOnBar_IsOnlyHandled_AndChangesNothi
   const auto result = clickLogic.Process(logic, Press(logic, 100));
 
   // Handled and not claimed: a ScrollViewer can still turn the gesture into a scroll
-  EXPECT_EQ(UI::EventHandlingStatus::Handled, result.Status);
+  EXPECT_EQ(UI::EventHandlingStatus::Handled, result.HandlingStatus);
   EXPECT_EQ(UI::SliderClickAction::NoAction, result.Action);
   EXPECT_TRUE(clickLogic.IsClicked());
   EXPECT_FALSE(logic.IsDragging());
@@ -170,7 +170,7 @@ TEST(TestControlLogic_SliderClickLogic, BarClick_Move_StaysHandled_AndChangesNot
 
   const auto result = clickLogic.Process(logic, Move(logic, 90, 14));
 
-  EXPECT_EQ(UI::EventHandlingStatus::Handled, result.Status);
+  EXPECT_EQ(UI::EventHandlingStatus::Handled, result.HandlingStatus);
   EXPECT_EQ(UI::SliderClickAction::NoAction, result.Action);
   EXPECT_FALSE(logic.IsDragging());
   EXPECT_EQ(50, logic.GetValue());
@@ -185,7 +185,7 @@ TEST(TestControlLogic_SliderClickLogic, BarClick_ReleasedOnBar_SetsTheValueOfThe
 
   const auto result = clickLogic.Process(logic, Release(logic, 95));
 
-  EXPECT_EQ(UI::EventHandlingStatus::Handled, result.Status);
+  EXPECT_EQ(UI::EventHandlingStatus::Handled, result.HandlingStatus);
   EXPECT_EQ(UI::SliderClickAction::SetValue, result.Action);
   EXPECT_EQ(85, result.Value);
   // The value is set by the control (it owns the property), the logic is untouched
@@ -202,7 +202,7 @@ TEST(TestControlLogic_SliderClickLogic, BarClick_ReleasedOutsideBar_SetsNothing)
 
   const auto result = clickLogic.Process(logic, Release(logic, 95, 40));
 
-  EXPECT_EQ(UI::EventHandlingStatus::Handled, result.Status);
+  EXPECT_EQ(UI::EventHandlingStatus::Handled, result.HandlingStatus);
   EXPECT_EQ(UI::SliderClickAction::NoAction, result.Action);
   EXPECT_EQ(50, logic.GetValue());
   EXPECT_FALSE(clickLogic.IsClicked());
@@ -224,7 +224,7 @@ TEST(TestControlLogic_SliderClickLogic, BarClick_Canceled_SetsNothing)
 
   // The release that follows is not for the slider
   const auto releaseResult = clickLogic.Process(logic, Release(logic, 100));
-  EXPECT_EQ(UI::EventHandlingStatus::Unhandled, releaseResult.Status);
+  EXPECT_EQ(UI::EventHandlingStatus::Unhandled, releaseResult.HandlingStatus);
   EXPECT_EQ(UI::SliderClickAction::NoAction, releaseResult.Action);
 }
 
@@ -236,7 +236,7 @@ TEST(TestControlLogic_SliderClickLogic, PressOutsideBar_IsLeftUnhandled)
 
   const auto result = clickLogic.Process(logic, Press(logic, 100, 40));
 
-  EXPECT_EQ(UI::EventHandlingStatus::Unhandled, result.Status);
+  EXPECT_EQ(UI::EventHandlingStatus::Unhandled, result.HandlingStatus);
   EXPECT_EQ(UI::SliderClickAction::NoAction, result.Action);
   EXPECT_FALSE(clickLogic.IsClicked());
 }
@@ -248,11 +248,11 @@ TEST(TestControlLogic_SliderClickLogic, ReleaseWithoutPress_IsLeftUnhandled)
   UI::SliderClickLogic<int32_t> clickLogic;
 
   auto result = clickLogic.Process(logic, Release(logic, 60));
-  EXPECT_EQ(UI::EventHandlingStatus::Unhandled, result.Status);
+  EXPECT_EQ(UI::EventHandlingStatus::Unhandled, result.HandlingStatus);
   EXPECT_EQ(UI::SliderClickAction::NoAction, result.Action);
 
   result = clickLogic.Process(logic, Move(logic, 60));
-  EXPECT_EQ(UI::EventHandlingStatus::Unhandled, result.Status);
+  EXPECT_EQ(UI::EventHandlingStatus::Unhandled, result.HandlingStatus);
   EXPECT_EQ(UI::SliderClickAction::NoAction, result.Action);
   EXPECT_EQ(50, logic.GetValue());
 }
@@ -266,13 +266,13 @@ TEST(TestControlLogic_SliderClickLogic, ReadOnly_TakesNoPress)
   auto input = Press(logic, 60);
   input.IsReadOnly = true;
   auto result = clickLogic.Process(logic, input);
-  EXPECT_EQ(UI::EventHandlingStatus::Unhandled, result.Status);
+  EXPECT_EQ(UI::EventHandlingStatus::Unhandled, result.HandlingStatus);
   EXPECT_FALSE(logic.IsDragging());
 
   input = Press(logic, 100);
   input.IsReadOnly = true;
   result = clickLogic.Process(logic, input);
-  EXPECT_EQ(UI::EventHandlingStatus::Unhandled, result.Status);
+  EXPECT_EQ(UI::EventHandlingStatus::Unhandled, result.HandlingStatus);
   EXPECT_FALSE(clickLogic.IsClicked());
   EXPECT_EQ(50, logic.GetValue());
 }
@@ -289,12 +289,12 @@ TEST(TestControlLogic_SliderClickLogic, Disabled_TakesNoPress_AndGivesUpAHeldOne
 
   // The release of the bar click sets nothing and is left to the parents
   auto result = clickLogic.Process(logic, Release(logic, 100));
-  EXPECT_EQ(UI::EventHandlingStatus::Unhandled, result.Status);
+  EXPECT_EQ(UI::EventHandlingStatus::Unhandled, result.HandlingStatus);
   EXPECT_EQ(UI::SliderClickAction::NoAction, result.Action);
   EXPECT_FALSE(clickLogic.IsClicked());
 
   result = clickLogic.Process(logic, Press(logic, 60));
-  EXPECT_EQ(UI::EventHandlingStatus::Unhandled, result.Status);
+  EXPECT_EQ(UI::EventHandlingStatus::Unhandled, result.HandlingStatus);
   EXPECT_FALSE(logic.IsDragging());
   EXPECT_EQ(50, logic.GetValue());
 }
@@ -319,7 +319,7 @@ TEST(TestControlLogic_SliderClickLogic, Vertical_UsesTheYPosition)
   input.PositionPx = PxPoint2::Create(300, 30);
   result = clickLogic.Process(logic, input);
 
-  EXPECT_EQ(UI::EventHandlingStatus::Claimed, result.Status);
+  EXPECT_EQ(UI::EventHandlingStatus::Claimed, result.HandlingStatus);
   EXPECT_EQ(UI::SliderClickAction::Drag, result.Action);
   EXPECT_EQ(20, logic.GetValue());
 }
@@ -339,7 +339,7 @@ TEST(TestControlLogic_SliderClickLogic, NewPress_ReplacesAHeldDrag)
   input.CursorGrabRectanglePx = PxRectangle(PxValue(52), PxValue(0), PxValue(16), PxValue(20));
   const auto result = clickLogic.Process(logic, input);
 
-  EXPECT_EQ(UI::EventHandlingStatus::Handled, result.Status);
+  EXPECT_EQ(UI::EventHandlingStatus::Handled, result.HandlingStatus);
   EXPECT_EQ(UI::SliderClickAction::DragCanceled, result.Action);
   EXPECT_FALSE(logic.IsDragging());
   EXPECT_EQ(50, logic.GetValue());

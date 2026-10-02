@@ -60,7 +60,7 @@ namespace Fsl::UI
   struct ButtonPressResult
   {
     //! The status to mark the event with
-    EventHandlingStatus Status{EventHandlingStatus::Unhandled};
+    EventHandlingStatus HandlingStatus{EventHandlingStatus::Unhandled};
     ButtonPressAction Action{ButtonPressAction::NoAction};
   };
 
@@ -127,7 +127,7 @@ namespace Fsl::UI
           // The pointer moves, but no press is held
           return result;
         }
-        result.Status = m_state == PressState::DownClaimed ? EventHandlingStatus::Claimed : EventHandlingStatus::Handled;
+        result.HandlingStatus = m_state == PressState::DownClaimed ? EventHandlingStatus::Claimed : EventHandlingStatus::Handled;
         return result;
       }
 
@@ -138,7 +138,7 @@ namespace Fsl::UI
       }
       const bool isAccepted = input.State == EventTransactionState::End && PxRectangle(PxPoint2(), input.RenderSizePx).Contains(input.PositionPx);
       m_state = PressState::Up;
-      result.Status = EventHandlingStatus::Handled;
+      result.HandlingStatus = EventHandlingStatus::Handled;
       result.Action = isAccepted ? ButtonPressAction::Released : ButtonPressAction::ReleasedCanceled;
       return result;
     }

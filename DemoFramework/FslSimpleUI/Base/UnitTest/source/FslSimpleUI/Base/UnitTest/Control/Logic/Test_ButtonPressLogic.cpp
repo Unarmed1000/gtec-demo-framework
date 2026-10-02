@@ -80,14 +80,14 @@ TEST(TestControlLogic_ButtonPressLogic, PressOutsideClaim_IsHandled_OnEveryEvent
   UI::ButtonPressLogic logic;
 
   auto result = logic.Process(Press(40));
-  EXPECT_EQ(UI::EventHandlingStatus::Handled, result.Status);
+  EXPECT_EQ(UI::EventHandlingStatus::Handled, result.HandlingStatus);
   EXPECT_EQ(UI::ButtonPressAction::Pressed, result.Action);
   EXPECT_TRUE(logic.IsDown());
   EXPECT_FALSE(logic.IsClaimed());
 
   // Handled on every repeat as well, so a ScrollViewer can still take the gesture
   result = logic.Process(Move(42, 25));
-  EXPECT_EQ(UI::EventHandlingStatus::Handled, result.Status);
+  EXPECT_EQ(UI::EventHandlingStatus::Handled, result.HandlingStatus);
   EXPECT_EQ(UI::ButtonPressAction::NoAction, result.Action);
 }
 
@@ -97,15 +97,15 @@ TEST(TestControlLogic_ButtonPressLogic, PressInsideClaim_IsClaimed_OnEveryEvent)
   UI::ButtonPressLogic logic;
 
   auto result = logic.Process(Press(170));
-  EXPECT_EQ(UI::EventHandlingStatus::Claimed, result.Status);
+  EXPECT_EQ(UI::EventHandlingStatus::Claimed, result.HandlingStatus);
   EXPECT_EQ(UI::ButtonPressAction::Pressed, result.Action);
   EXPECT_TRUE(logic.IsClaimed());
 
   // The claim is kept when the pointer leaves the claim rectangle, and even the control
   result = logic.Process(Move(40));
-  EXPECT_EQ(UI::EventHandlingStatus::Claimed, result.Status);
+  EXPECT_EQ(UI::EventHandlingStatus::Claimed, result.HandlingStatus);
   result = logic.Process(Move(40, 300));
-  EXPECT_EQ(UI::EventHandlingStatus::Claimed, result.Status);
+  EXPECT_EQ(UI::EventHandlingStatus::Claimed, result.HandlingStatus);
   EXPECT_TRUE(logic.IsClaimed());
 }
 
@@ -117,7 +117,7 @@ TEST(TestControlLogic_ButtonPressLogic, PressOutsideClaim_MovingIntoIt_DoesNotCl
 
   const auto result = logic.Process(Move(170));
 
-  EXPECT_EQ(UI::EventHandlingStatus::Handled, result.Status);
+  EXPECT_EQ(UI::EventHandlingStatus::Handled, result.HandlingStatus);
   EXPECT_FALSE(logic.IsClaimed());
 }
 
@@ -131,7 +131,7 @@ TEST(TestControlLogic_ButtonPressLogic, ReleaseOnTheButton_IsAClick)
 
     const auto result = logic.Process(Release(100));
 
-    EXPECT_EQ(UI::EventHandlingStatus::Handled, result.Status);
+    EXPECT_EQ(UI::EventHandlingStatus::Handled, result.HandlingStatus);
     EXPECT_EQ(UI::ButtonPressAction::Released, result.Action);
     EXPECT_FALSE(logic.IsDown());
     EXPECT_FALSE(logic.IsClaimed());
@@ -148,7 +148,7 @@ TEST(TestControlLogic_ButtonPressLogic, ReleaseOutsideTheButton_IsNoClick_Claime
 
     const auto result = logic.Process(Release(100, 60));
 
-    EXPECT_EQ(UI::EventHandlingStatus::Handled, result.Status);
+    EXPECT_EQ(UI::EventHandlingStatus::Handled, result.HandlingStatus);
     EXPECT_EQ(UI::ButtonPressAction::ReleasedCanceled, result.Action);
     EXPECT_FALSE(logic.IsDown());
   }
@@ -177,7 +177,7 @@ TEST(TestControlLogic_ButtonPressLogic, Cancel_IsNoClick)
 
   const auto result = logic.Process(Cancel(40));
 
-  EXPECT_EQ(UI::EventHandlingStatus::Handled, result.Status);
+  EXPECT_EQ(UI::EventHandlingStatus::Handled, result.HandlingStatus);
   EXPECT_EQ(UI::ButtonPressAction::ReleasedCanceled, result.Action);
   EXPECT_FALSE(logic.IsDown());
 }
@@ -190,7 +190,7 @@ TEST(TestControlLogic_ButtonPressLogic, EventsWithoutAPress_AreLeftUnhandled)
   for (const UI::ButtonPressInput& input : {Move(40), Release(40), Cancel(40)})
   {
     const auto result = logic.Process(input);
-    EXPECT_EQ(UI::EventHandlingStatus::Unhandled, result.Status);
+    EXPECT_EQ(UI::EventHandlingStatus::Unhandled, result.HandlingStatus);
     EXPECT_EQ(UI::ButtonPressAction::NoAction, result.Action);
   }
   EXPECT_FALSE(logic.IsDown());
@@ -205,7 +205,7 @@ TEST(TestControlLogic_ButtonPressLogic, EmptyClaimRectangle_NeverClaims)
 
   const auto result = logic.Process(input);
 
-  EXPECT_EQ(UI::EventHandlingStatus::Handled, result.Status);
+  EXPECT_EQ(UI::EventHandlingStatus::Handled, result.HandlingStatus);
   EXPECT_FALSE(logic.IsClaimed());
 }
 
@@ -221,7 +221,7 @@ TEST(TestControlLogic_ButtonPressLogic, ReleaseAnyHeldPress)
 
   // The release that follows is not for the button any more: no click
   const auto result = logic.Process(Release(170));
-  EXPECT_EQ(UI::EventHandlingStatus::Unhandled, result.Status);
+  EXPECT_EQ(UI::EventHandlingStatus::Unhandled, result.HandlingStatus);
   EXPECT_EQ(UI::ButtonPressAction::NoAction, result.Action);
 }
 
@@ -234,7 +234,7 @@ TEST(TestControlLogic_ButtonPressLogic, NewPress_ReplacesAHeldPress)
 
   const auto result = logic.Process(Press(40));
 
-  EXPECT_EQ(UI::EventHandlingStatus::Handled, result.Status);
+  EXPECT_EQ(UI::EventHandlingStatus::Handled, result.HandlingStatus);
   EXPECT_EQ(UI::ButtonPressAction::Pressed, result.Action);
   EXPECT_TRUE(logic.IsDown());
   EXPECT_FALSE(logic.IsClaimed());

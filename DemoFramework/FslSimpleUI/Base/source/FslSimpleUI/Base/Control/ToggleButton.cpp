@@ -553,7 +553,7 @@ namespace Fsl::UI
 
     // The status tells a ScrollViewer the button is in if it may take the gesture: a press on the graphic is claimed, a press on the
     // label is only handled (the ScrollViewer can turn it into a scroll, the button then gets a canceled click)
-    switch (result.Status)
+    switch (result.HandlingStatus)
     {
     case EventHandlingStatus::Claimed:
       theEvent->Claimed();

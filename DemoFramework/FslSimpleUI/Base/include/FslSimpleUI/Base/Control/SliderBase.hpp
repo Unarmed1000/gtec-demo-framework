@@ -268,7 +268,7 @@ namespace Fsl::UI
 
       // The status tells a ScrollViewer the slider is in if it may take the gesture: a drag of the cursor is claimed, a click on the
       // bar is only handled (the ScrollViewer can turn it into a scroll)
-      switch (result.Status)
+      switch (result.HandlingStatus)
       {
       case EventHandlingStatus::Claimed:
         theEvent->Claimed();

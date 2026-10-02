@@ -70,7 +70,7 @@ namespace Fsl::UI
   struct SliderClickResult
   {
     //! The status to mark the event with
-    EventHandlingStatus Status{EventHandlingStatus::Unhandled};
+    EventHandlingStatus HandlingStatus{EventHandlingStatus::Unhandled};
     SliderClickAction Action{SliderClickAction::NoAction};
     //! SliderClickAction::SetValue: the value to set
     T Value{};
@@ -151,13 +151,13 @@ namespace Fsl::UI
         if (input.CursorGrabRectanglePx.Contains(input.PositionPx) && rLogic.TryBeginDrag(offsetPx))
         {
           m_state = ClickState::Dragging;
-          result.Status = EventHandlingStatus::Claimed;
+          result.HandlingStatus = EventHandlingStatus::Claimed;
           result.Action = SliderClickAction::DragBegin;
         }
         else if (input.BarRectanglePx.Contains(input.PositionPx))
         {
           m_state = ClickState::BarClick;
-          result.Status = EventHandlingStatus::Handled;
+          result.HandlingStatus = EventHandlingStatus::Handled;
         }
         return result;
       }
@@ -166,7 +166,7 @@ namespace Fsl::UI
       {
       case ClickState::Dragging:
         // The drag is claimed on every event of it
-        result.Status = EventHandlingStatus::Claimed;
+        result.HandlingStatus = EventHandlingStatus::Claimed;
         if (input.State == EventTransactionState::Begin)
         {
           const value_type oldValue = rLogic.GetValue();
@@ -193,7 +193,7 @@ namespace Fsl::UI
         break;
       case ClickState::BarClick:
         // The bar click is only handled, so a ScrollViewer can still take the gesture
-        result.Status = EventHandlingStatus::Handled;
+        result.HandlingStatus = EventHandlingStatus::Handled;
         if (input.State != EventTransactionState::Begin)
         {
           m_state = ClickState::NotClicked;

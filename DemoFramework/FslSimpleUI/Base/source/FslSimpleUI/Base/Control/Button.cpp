@@ -85,7 +85,7 @@ namespace Fsl::UI
     input.PositionPx = PointFromScreen(theEvent->GetScreenPosition());
     input.RenderSizePx = RenderSizePx();
     const ButtonPressResult result = m_pressLogic.Process(input);
-    if (result.Status != EventHandlingStatus::Unhandled)
+    if (result.HandlingStatus != EventHandlingStatus::Unhandled)
     {
       theEvent->Handled();
     }
