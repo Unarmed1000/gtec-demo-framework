@@ -68,6 +68,8 @@ that mirrors it. `Scrolling hall` is a hall of columns on a mirroring floor at d
 so every column, shadow and tile crosses the screen at a constant speed and a frame that is shown too long or too short is easy to see.
 Follow a column with the eyes to judge the pacing.
 
+<img src="ExampleHall.jpg" height="270px" title="The scrolling hall">
+
 The sample code lives in [Shared/FramePacing](../../Shared/FramePacing). It only uses the API independent INativeBatch2D, except for
 the background and the swap interval, which each of the GLES2, GLES3 and Vulkan versions does with its own API.
 
