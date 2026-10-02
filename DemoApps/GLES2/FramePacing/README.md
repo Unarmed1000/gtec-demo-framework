@@ -46,13 +46,21 @@ on as a share of the frame time, how long the present was delayed, how often the
 controls at the right can be scrolled if the window is too low for them.
 
 The chart at the bottom shows the work of every frame: the CPU time and on top of it the GPU time, which together are the work the pacer is
-told the frame needed (`Show the work chart`, or start without it with `--HideWorkChart`). The Vulkan sample measures the GPU time with
-timestamp queries. The OpenGL ES samples have no such measurement: their GPU time is the time they wait in `glFinish`, which they only do
-while the pacer is on, so with the pacer off their chart only shows the CPU time. The moving bar and box (the test pattern) can be switched
-off as well (`Show the test pattern`, `--HideTestPattern`).
+told the frame needed (`Show the work chart`, or start without it with `--HideWorkChart`). What the GPU time is depends on the API, see the
+next section. The moving bar and box (the test pattern) can be switched off as well (`Show the test pattern`, `--HideTestPattern`).
 
-The GLES2 and GLES3 versions hold a frame with `eglSwapInterval`. The Vulkan version can not present with a swap interval, so it delays
-the present of a frame that is held for more than one refresh.
+## What the OpenGL ES 2 version measures
+
+The three versions of the sample differ in what they can measure and in how they hold a frame. This one:
+
+- **The GPU time is a wait, and it is only there while the frame pacer is on.** OpenGL ES gives this sample no measurement of the time the
+  GPU works on a frame. So the sample calls `glFinish` once it has drawn the frame and reports the time it waited there as the GPU time.
+  That is the GPU work that was left when the CPU was done, which is less than all of the GPU work of the frame. The sample only calls
+  `glFinish` while the frame pacer is on, as the call costs throughput and would change what the sample does with the pacer off. **With the
+  pacer off the chart and the `Work` row of the frame pacing overlay show the CPU time only.**
+- **A frame is held with `eglSwapInterval`.** A EGL config only supports a range of swap intervals (it can be as short as one refresh). The
+  sample holds the frame for the rest by delaying the swap, which is less even than a real swap interval.
+- **A GPU load of 0 draws no background at all.** The screen is then only cleared, so what is left of the GPU time is the UI and the marker.
 
 The GPU load is a raymarched background: a flight through a fractal lattice of golden spheres over water that mirrors it.
 

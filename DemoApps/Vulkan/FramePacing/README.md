@@ -46,13 +46,22 @@ on as a share of the frame time, how long the present was delayed, how often the
 controls at the right can be scrolled if the window is too low for them.
 
 The chart at the bottom shows the work of every frame: the CPU time and on top of it the GPU time, which together are the work the pacer is
-told the frame needed (`Show the work chart`, or start without it with `--HideWorkChart`). The Vulkan sample measures the GPU time with
-timestamp queries. The OpenGL ES samples have no such measurement: their GPU time is the time they wait in `glFinish`, which they only do
-while the pacer is on, so with the pacer off their chart only shows the CPU time. The moving bar and box (the test pattern) can be switched
-off as well (`Show the test pattern`, `--HideTestPattern`).
+told the frame needed (`Show the work chart`, or start without it with `--HideWorkChart`). What the GPU time is depends on the API, see the
+next section. The moving bar and box (the test pattern) can be switched off as well (`Show the test pattern`, `--HideTestPattern`).
 
-The GLES2 and GLES3 versions hold a frame with `eglSwapInterval`. The Vulkan version can not present with a swap interval, so it delays
-the present of a frame that is held for more than one refresh.
+## What the Vulkan version measures
+
+The three versions of the sample differ in what they can measure and in how they hold a frame. This one:
+
+- **The GPU time is measured, with the frame pacer on or off.** The sample puts two timestamp queries around the commands of the frame and
+  reads them when it records the next frame. So the chart and the `Work` row of the frame pacing overlay show the GPU time of the frame
+  before, and the pacer is told the CPU time of a frame plus the GPU time of the last frame that was measured. On a queue without timestamps
+  the GPU time stays zero.
+- **A frame is held by delaying its present.** A FIFO present holds a frame for one refresh and there is no swap interval, so the sample
+  waits until one refresh before the time the pacer aims the frame at and then lets the host present it. The pacer has no vsync times, so
+  this is a guess and less even than a real swap interval: a frame can be held a refresh more or less. The `Present wait` row shows
+  how long the present was delayed.
+- **A GPU load of 0 draws no background at all.** The screen is then only cleared, so what is left of the GPU time is the UI and the marker.
 
 The GPU load is a raymarched background: a flight through a fractal lattice of golden spheres over water that mirrors it.
 
