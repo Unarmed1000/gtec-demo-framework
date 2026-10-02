@@ -3,6 +3,8 @@
   <Project Name="DemoFramework" ShortName="DF" Version="6.7.0" DefaultTemplate="DF" DefaultPackageLanguage="C++" DefaultCompany="NXP" RequirePackageCreationYear="true" ToolConfigFile=".Config/FslBuildGen.xml">
     <!-- Add a base package that all other packages dependent on -->
     <AddBasePackage Name="Platform"/>
+    <!-- The gen files refer to the schema in this checkout with a relative path, so it also works offline -->
+    <GenFileSchema Location=".Config/Schema"/>
     <AddRootDirectory Name="$(FSL_GRAPHICS_SDK)"/>
     <AddRootDirectory Name="$(FSL_GRAPHICS_SDK_THIRD_PARTY_LIBS_DIR)" Create="true"/>
     <PackageConfiguration Name="default">

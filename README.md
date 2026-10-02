@@ -171,7 +171,7 @@ Here is an example ‘Fsl.gen’ build-meta-data file for the GLES2.Blur sample 
 
 ```XML
 <?xml version="1.0" encoding="UTF-8"?>
-<FslBuildGen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../FslBuildGen.xsd">
+<FslBuildGen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../.Config/Schema/1/FslBuildGen.xsd">
   <Executable Name="GLES2.Blur" NoInclude="true">
     <ImportTemplate Name="DemoAppGLES2"/>
     <Dependency Name="EnvironmentMappingShared"/>
@@ -181,13 +181,16 @@ Here is an example ‘Fsl.gen’ build-meta-data file for the GLES2.Blur sample 
 
 It basically specifies that this directory contains an executable package with no include directory,
 that it uses the ‘DemoAppGLES2’ template and has a dependency on a package called ‘EnvironmentMappingShared’.
+The `FslBuildGen` element refers to the schema of the gen files, which is in `.Config/Schema` (the `GenFileSchema` element of `Project.gen` says
+where). `FslBuildNew.py` writes the reference of a new package, and `FslBuildCheck.py --scanGenFiles --repair` corrects the one of a
+existing gen file, for example after a package was moved.
 
 Another example is the ‘Fsl.gen’ file for the FslGraphics package which has had lots of files added over the years,
 but its build file has been untouched.
 
 ```XML
 <?xml version="1.0" encoding="UTF-8"?>
-<FslBuildGen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../FslBuildGen.xsd">
+<FslBuildGen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../.Config/Schema/1/FslBuildGen.xsd">
   <Library Name="FslGraphics">
     <Dependency Name="FslBase"/>
   </Library>
