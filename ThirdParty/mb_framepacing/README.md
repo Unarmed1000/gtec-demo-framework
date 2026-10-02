@@ -2,7 +2,8 @@
 
 The C++ SDK of [mb-framepacing](https://github.com/Unarmed1000/mb-framepacing). The framework uses its marker module, which generates a
 pixel aligned QR frame marker (frame index + animation time) that is drawn into every frame, so a capture of the display output can be
-analysed for animation error (the gap between the animation timer and when each frame actually appears on screen).
+analysed for animation error (the gap between the animation timer and when each frame actually appears on screen). The FramePacing sample
+also uses its experimental pacer module.
 
 The framework integration lives in `FslDemoService.FramePacingMarker` (see [Doc/FramePacing.md](../../Doc/FramePacing.md)).
 

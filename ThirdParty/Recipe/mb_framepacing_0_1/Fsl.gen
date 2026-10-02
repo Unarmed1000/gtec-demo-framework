@@ -4,18 +4,21 @@
     <Default.Platform.Supported Value="false"/>
 
     <!-- There is no sdk-v0.1.0 release yet, so we pin a commit. Switch to the release archive (URL + SHA256) once it is published -->
-    <!-- mb_framepacing requires CMake 4.0+. Only the marker module (and the core it links) is built, the data and pacer modules are not used -->
+    <!-- mb_framepacing requires CMake 4.0+. The marker module, the experimental pacer module (only used by the
+         FramePacing sample) and the core they link are built, the data module is not used -->
     <Platform Name="Apple;RDK_Yocto;Ubuntu;QNX;Emscripten" Supported="true">
       <ExperimentalRecipe Name="mb_framepacing" Version="0.1.0" Find="false">
         <Pipeline>
-          <GitClone URL="https://github.com/Unarmed1000/mb-framepacing" Hash="0672b0e56898a02fd6d15ce7a2a8d407294f7cfb"/>
-          <CMakeBuild Source="sdk/cpp" Project="mb_framepacing" Target="install" Configuration="release" Options="-DMB_FRAMEPACING_BUILD_DATA=OFF -DMB_FRAMEPACING_BUILD_PACER=OFF -DMB_FRAMEPACING_BUILD_TESTS=OFF -DMB_FRAMEPACING_BUILD_TOOLS=OFF -DMB_FRAMEPACING_WARNINGS_AS_ERRORS=OFF" OutputPath="_Install"/>
+          <GitClone URL="https://github.com/Unarmed1000/mb-framepacing" Hash="f1006554833462022f68dd991dbe91df26cbeab6"/>
+          <CMakeBuild Source="sdk/cpp" Project="mb_framepacing" Target="install" Configuration="release" Options="-DMB_FRAMEPACING_BUILD_DATA=OFF -DMB_FRAMEPACING_BUILD_PACER=ON -DMB_FRAMEPACING_BUILD_TESTS=OFF -DMB_FRAMEPACING_BUILD_TOOLS=OFF -DMB_FRAMEPACING_WARNINGS_AS_ERRORS=OFF" OutputPath="_Install"/>
         </Pipeline>
         <Installation>
           <AddHeaders Name="include"/>
+          <AddLib Name="lib/libmb_framepacing_pacer.a"/>
           <AddLib Name="lib/libmb_framepacing_marker.a"/>
           <AddLib Name="lib/libmb_framepacing_core.a"/>
           <Path Name="include/mb/framepacing/marker/FrameMarker.hpp" Method="IsFile"/>
+          <Path Name="include/mb/framepacing/pacer/FramePacer.hpp" Method="IsFile"/>
           <Path Name="include/mb/framepacing/core/Version.hpp" Method="IsFile"/>
         </Installation>
       </ExperimentalRecipe>
@@ -26,17 +29,19 @@
     <Platform Name="Android" Supported="true">
       <ExperimentalRecipe Name="mb_framepacing" Version="0.1.0" Find="false">
         <Pipeline>
-          <GitClone URL="https://github.com/Unarmed1000/mb-framepacing" Hash="0672b0e56898a02fd6d15ce7a2a8d407294f7cfb"/>
+          <GitClone URL="https://github.com/Unarmed1000/mb-framepacing" Hash="f1006554833462022f68dd991dbe91df26cbeab6"/>
           <Copy>
             <GitApply From="{RECIPE_PATH}/android-cmake-minimum-version.patch"/>
           </Copy>
-          <CMakeBuild Source="sdk/cpp" Project="mb_framepacing" Target="install" Configuration="release" Options="-DMB_FRAMEPACING_BUILD_DATA=OFF -DMB_FRAMEPACING_BUILD_PACER=OFF -DMB_FRAMEPACING_BUILD_TESTS=OFF -DMB_FRAMEPACING_BUILD_TOOLS=OFF -DMB_FRAMEPACING_WARNINGS_AS_ERRORS=OFF" OutputPath="_Install"/>
+          <CMakeBuild Source="sdk/cpp" Project="mb_framepacing" Target="install" Configuration="release" Options="-DMB_FRAMEPACING_BUILD_DATA=OFF -DMB_FRAMEPACING_BUILD_PACER=ON -DMB_FRAMEPACING_BUILD_TESTS=OFF -DMB_FRAMEPACING_BUILD_TOOLS=OFF -DMB_FRAMEPACING_WARNINGS_AS_ERRORS=OFF" OutputPath="_Install"/>
         </Pipeline>
         <Installation>
           <AddHeaders Name="include"/>
+          <AddLib Name="lib/libmb_framepacing_pacer.a"/>
           <AddLib Name="lib/libmb_framepacing_marker.a"/>
           <AddLib Name="lib/libmb_framepacing_core.a"/>
           <Path Name="include/mb/framepacing/marker/FrameMarker.hpp" Method="IsFile"/>
+          <Path Name="include/mb/framepacing/pacer/FramePacer.hpp" Method="IsFile"/>
           <Path Name="include/mb/framepacing/core/Version.hpp" Method="IsFile"/>
         </Installation>
       </ExperimentalRecipe>
@@ -45,14 +50,16 @@
     <Platform Name="Windows" Supported="true">
       <ExperimentalRecipe Name="mb_framepacing" Version="0.1.0" Find="false">
         <Pipeline>
-          <GitClone URL="https://github.com/Unarmed1000/mb-framepacing" Hash="0672b0e56898a02fd6d15ce7a2a8d407294f7cfb"/>
-          <CMakeBuild Source="sdk/cpp" Project="mb_framepacing" Target="install" Configuration="debug;release" Options="-DMB_FRAMEPACING_BUILD_DATA=OFF -DMB_FRAMEPACING_BUILD_PACER=OFF -DMB_FRAMEPACING_BUILD_TESTS=OFF -DMB_FRAMEPACING_BUILD_TOOLS=OFF -DMB_FRAMEPACING_WARNINGS_AS_ERRORS=OFF -DCMAKE_DEBUG_POSTFIX=d" OutputPath="_Install"/>
+          <GitClone URL="https://github.com/Unarmed1000/mb-framepacing" Hash="f1006554833462022f68dd991dbe91df26cbeab6"/>
+          <CMakeBuild Source="sdk/cpp" Project="mb_framepacing" Target="install" Configuration="debug;release" Options="-DMB_FRAMEPACING_BUILD_DATA=OFF -DMB_FRAMEPACING_BUILD_PACER=ON -DMB_FRAMEPACING_BUILD_TESTS=OFF -DMB_FRAMEPACING_BUILD_TOOLS=OFF -DMB_FRAMEPACING_WARNINGS_AS_ERRORS=OFF -DCMAKE_DEBUG_POSTFIX=d" OutputPath="_Install"/>
         </Pipeline>
         <Installation>
           <AddHeaders Name="include"/>
+          <AddLib Name="lib/mb_framepacing_pacer.lib" DebugName="lib/mb_framepacing_pacerd.lib"/>
           <AddLib Name="lib/mb_framepacing_marker.lib" DebugName="lib/mb_framepacing_markerd.lib"/>
           <AddLib Name="lib/mb_framepacing_core.lib" DebugName="lib/mb_framepacing_cored.lib"/>
           <Path Name="include/mb/framepacing/marker/FrameMarker.hpp" Method="IsFile"/>
+          <Path Name="include/mb/framepacing/pacer/FramePacer.hpp" Method="IsFile"/>
           <Path Name="include/mb/framepacing/core/Version.hpp" Method="IsFile"/>
         </Installation>
       </ExperimentalRecipe>

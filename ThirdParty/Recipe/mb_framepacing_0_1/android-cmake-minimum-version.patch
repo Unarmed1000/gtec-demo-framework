@@ -1,5 +1,5 @@
 diff --git a/sdk/cpp/CMakeLists.txt b/sdk/cpp/CMakeLists.txt
-index 63ea1a5..388d7bf 100644
+index 3a1fd69..c940d09 100644
 --- a/sdk/cpp/CMakeLists.txt
 +++ b/sdk/cpp/CMakeLists.txt
 @@ -1,6 +1,7 @@
@@ -10,4 +10,4 @@ index 63ea1a5..388d7bf 100644
 +cmake_minimum_required(VERSION 3.30...4.0)
  
  # mb_framepacing: one library of modules, each its own static library target, like Boost's and Poco's
- #   core    mb_framepacing::core    shared types: the library version, tick units, Rectangle
+ #   core    mb_framepacing::core    shared types: the library version, the time types, Point, Rectangle

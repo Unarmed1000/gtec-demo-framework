@@ -10,10 +10,11 @@ supports it without code changes. It works with OpenGL ES and Vulkan apps.
 
 ## Supported platforms
 
-Windows, Ubuntu, macOS, Android, QNX, Emscripten and RDK Yocto. The mb-framepacing C++ SDK (`ThirdParty/Recipe/mb_framepacing_0_1`, only its
-marker module and the core it links) is built automatically the first time an app is built. It requires CMake 4.0+, except on Android where
-the recipe applies `android-cmake-minimum-version.patch` which lowers the minimum to CMake 3.30 (the tests are disabled, so the library only
-uses CMake 3.30 features). On other platforms the feature is compiled out and `IFramePacingMarkerService` is not available.
+Windows, Ubuntu, macOS, Android, QNX, Emscripten and RDK Yocto. The mb-framepacing C++ SDK (`ThirdParty/Recipe/mb_framepacing_0_1`: its
+marker module, its experimental pacer module and the core they link) is built automatically the first time an app is built. It requires
+CMake 4.0+, except on Android where the recipe applies `android-cmake-minimum-version.patch` which lowers the minimum to CMake 3.30 (the
+tests are disabled, so the library only uses CMake 3.30 features). On other platforms the feature is compiled out and
+`IFramePacingMarkerService` is not available.
 
 The marker needs the basic render system, so it is drawn by OpenGL ES 2, OpenGL ES 3 and Vulkan apps. Hosts without it (OpenVG, G2D,
 console and window apps) log a warning and do not draw the marker.
