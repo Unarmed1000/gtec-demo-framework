@@ -28,7 +28,7 @@ namespace Fsl
 {
   FramePacing::FramePacing(const DemoAppConfig& config)
     : VulkanBasic::DemoAppVulkanBasic(config)
-    , m_shared(config, "Vulkan.FramePacing")
+    , m_shared(config, "Vulkan.FramePacing", SamplePresentMethod::WaitThenPresent)
   {
     // Give the UI a chance to intercept the various DemoApp events.
     RegisterExtension(m_shared.GetUIDemoAppExtension());
@@ -49,13 +49,25 @@ namespace Fsl
   }
 
 
-  void FramePacing::Update(const DemoTime& /*demoTime*/)
+  void FramePacing::Update(const DemoTime& demoTime)
   {
-    m_shared.Update();
+    m_shared.Update(demoTime);
   }
 
 
-  void FramePacing::VulkanDraw(const DemoTime& demoTime, RapidVulkan::CommandBuffers& rCmdBuffers, const VulkanBasic::DrawContext& drawContext)
+  void FramePacing::EndDraw(const FrameInfo& frameInfo)
+  {
+    base_type::EndDraw(frameInfo);
+
+    // The frame was submitted to the GPU and is presented after this
+    m_shared.EndFrame();
+    // A FIFO present holds a frame for one refresh and there is no swap interval, so the present of a frame the frame pacer holds for
+    // more than one refresh is delayed instead
+    m_shared.WaitForPresent();
+  }
+
+
+  void FramePacing::VulkanDraw(const DemoTime& /*demoTime*/, RapidVulkan::CommandBuffers& rCmdBuffers, const VulkanBasic::DrawContext& drawContext)
   {
     const uint32_t currentFrameIndex = drawContext.CurrentFrameIndex;
 
@@ -78,7 +90,7 @@ namespace Fsl
 
       rCmdBuffers.CmdBeginRenderPass(currentFrameIndex, &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
       {
-        m_shared.Draw(demoTime);
+        m_shared.Draw();
 
         // Remember to call this as the last operation in your renderPass (this is also where the frame pacing marker is drawn)
         AddSystemUI(hCmdBuffer, currentFrameIndex);

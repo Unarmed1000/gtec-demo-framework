@@ -2,8 +2,13 @@
 <FslBuildGen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../FslBuildGen.xsd">
   <Library Name="Shared.FramePacing" CreationYear="2026">
     <Dependency Name="FslDemoApp.Base"/>
+    <Dependency Name="FslDemoHost.Base" Access="Private"/>
     <Dependency Name="FslDemoService.FramePacingMarker"/>
     <Dependency Name="FslSimpleUI.App"/>
     <Dependency Name="FslSimpleUI.App.Theme" Access="Private"/>
+    <!-- The experimental frame pacer of the mb-framepacing SDK, the sample runs without it where the SDK is not available -->
+    <Platform Name="Android;Apple;RDK_Yocto;Ubuntu;Windows;QNX;Emscripten">
+      <Dependency Name="mb_framepacing" Access="Private"/>
+    </Platform>
   </Library>
 </FslBuildGen>

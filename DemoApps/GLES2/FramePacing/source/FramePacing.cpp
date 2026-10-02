@@ -22,13 +22,15 @@
 
 #include "FramePacing.hpp"
 #include <FslDemoApp/Base/FrameInfo.hpp>
+#include <FslDemoHost/EGL/Config/Service/IEGLHostInfo.hpp>
 #include <GLES2/gl2.h>
 
 namespace Fsl
 {
   FramePacing::FramePacing(const DemoAppConfig& config)
     : DemoAppGLES2(config)
-    , m_shared(config, "GLES2.FramePacing")
+    , m_shared(config, "GLES2.FramePacing", SamplePresentMethod::SwapInterval)
+    , m_swapInterval(config.DemoServiceProvider.Get<IEGLHostInfo>())
   {
     // Give the UI a chance to intercept the various DemoApp events.
     RegisterExtension(m_shared.GetUIDemoAppExtension());
@@ -49,18 +51,40 @@ namespace Fsl
   }
 
 
-  void FramePacing::Update(const DemoTime& /*demoTime*/)
+  void FramePacing::Update(const DemoTime& demoTime)
   {
-    m_shared.Update();
+    m_shared.Update(demoTime);
   }
 
 
-  void FramePacing::Draw(const FrameInfo& frameInfo)
+  void FramePacing::Draw(const FrameInfo& /*frameInfo*/)
   {
     const auto clearColor = FramePacingShared::ClearColor.ToVector4();
     glClearColor(clearColor.X, clearColor.Y, clearColor.Z, clearColor.W);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
-    m_shared.Draw(frameInfo.Time);
+    m_shared.Draw();
+  }
+
+
+  void FramePacing::EndDraw(const FrameInfo& frameInfo)
+  {
+    base_type::EndDraw(frameInfo);
+
+    // The frame and the frame pacing marker were drawn and the host swaps the buffers after this
+    if (m_shared.IsPacerEnabled())
+    {
+      // Wait for the GPU, so the time the frame pacer is told the frame needed includes the GPU work
+      glFinish();
+    }
+    m_shared.EndFrame();
+    // The swap holds the frame for the refreshes the frame pacer decided on
+    const uint32_t swapInterval = m_shared.GetSwapInterval();
+    const uint32_t presentSwapInterval = m_swapInterval.Set(swapInterval);
+    if (presentSwapInterval < swapInterval)
+    {
+      // The EGL config can not hold a frame that long, so the swap is delayed for the rest
+      m_shared.WaitForPresent(presentSwapInterval);
+    }
   }
 }

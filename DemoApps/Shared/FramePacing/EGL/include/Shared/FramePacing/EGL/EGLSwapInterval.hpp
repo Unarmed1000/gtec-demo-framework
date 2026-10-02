@@ -1,5 +1,5 @@
-#ifndef GLES3_FRAMEPACING_FRAMEPACING_HPP
-#define GLES3_FRAMEPACING_FRAMEPACING_HPP
+#ifndef SHARED_FRAMEPACING_EGL_EGLSWAPINTERVAL_HPP
+#define SHARED_FRAMEPACING_EGL_EGLSWAPINTERVAL_HPP
 //****************************************************************************************************************************************************
 //* BSD 3-Clause License
 //*
@@ -22,31 +22,40 @@
 //* EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //****************************************************************************************************************************************************
 
-#include <FslDemoApp/OpenGLES3/DemoAppGLES3.hpp>
-#include <Shared/FramePacing/EGL/EGLSwapInterval.hpp>
-#include <Shared/FramePacing/FramePacingShared.hpp>
+#include <cstdint>
+#include <memory>
 
 namespace Fsl
 {
-  class FramePacing final : public DemoAppGLES3
+  class IEGLHostInfo;
+
+  //! Sets the EGL swap interval: the number of display refreshes eglSwapBuffers holds a frame for.
+  //! A EGL config only supports a range of swap intervals and it can be as small as one refresh, so Set returns the interval that was
+  //! set and the app has to hold the frame for the rest itself.
+  class EGLSwapInterval final
   {
-    using base_type = DemoAppGLES3;
-
-    //! All the actual sample code can be found in the shared class since its reused for all FramePacing samples.
-    FramePacingShared m_shared;
-
-    //! The number of display refreshes the swap of the host holds a frame for
-    EGLSwapInterval m_swapInterval;
+    std::shared_ptr<IEGLHostInfo> m_hostInfo;
+    //! The longest swap interval the EGL config supports
+    uint32_t m_maxSwapInterval{1};
+    //! The swap interval that is set (the EGL default is 1)
+    uint32_t m_swapInterval{1};
 
   public:
-    explicit FramePacing(const DemoAppConfig& config);
+    explicit EGLSwapInterval(std::shared_ptr<IEGLHostInfo> hostInfo);
 
-  protected:
-    void OnKeyEvent(const KeyEvent& event) final;
-    void ConfigurationChanged(const DemoWindowMetrics& windowMetrics) final;
-    void Update(const DemoTime& demoTime) final;
-    void Draw(const FrameInfo& frameInfo) final;
-    void EndDraw(const FrameInfo& frameInfo) final;
+    //! @brief Set the swap interval of the following eglSwapBuffers calls (call it with the context of the host current).
+    //! @return the swap interval that is set: the requested one limited to what the EGL config supports.
+    uint32_t Set(const uint32_t swapInterval);
+
+    [[nodiscard]] uint32_t Get() const noexcept
+    {
+      return m_swapInterval;
+    }
+
+    [[nodiscard]] uint32_t Max() const noexcept
+    {
+      return m_maxSwapInterval;
+    }
   };
 }
 

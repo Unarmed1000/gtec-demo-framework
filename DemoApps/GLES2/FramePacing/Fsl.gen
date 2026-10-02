@@ -3,5 +3,6 @@
   <Executable Name="GLES2.FramePacing" NoInclude="true" CreationYear="2026">
     <ImportTemplate Name="DemoAppGLES2"/>
     <Dependency Name="Shared.FramePacing"/>
+    <Dependency Name="Shared.FramePacing.EGL"/>
   </Executable>
 </FslBuildGen>

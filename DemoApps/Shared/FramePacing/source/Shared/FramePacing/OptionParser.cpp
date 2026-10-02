@@ -21,7 +21,10 @@
 //****************************************************************************************************************************************************
 
 #include <FslBase/Getopt/OptionBaseValues.hpp>
+#include <FslBase/Log/Log3Fmt.hpp>
+#include <FslBase/String/StringParseUtil.hpp>
 #include <Shared/FramePacing/OptionParser.hpp>
+#include <cmath>
 
 namespace Fsl
 {
@@ -31,9 +34,29 @@ namespace Fsl
     {
       enum Enum
       {
-        HideMarkerStats = DEMO_APP_OPTION_BASE
+        HideMarkerStats = DEMO_APP_OPTION_BASE,
+        Pacer,
+        PacerRefreshRate,
+        PacerTargetFps,
+        PacerAdaptive,
+        CpuLoad,
+        GpuLoad
       };
     };
+
+    //! Parse a integer option that has to be inside the range of the constrained value
+    bool TryParseInRange(int32_t& rValue, const StringViewLite strOptArg, const ConstrainedValue<int32_t> range, const char* const pszName)
+    {
+      int32_t value = 0;
+      StringParseUtil::Parse(value, strOptArg);
+      if (value < range.Min() || value > range.Max())
+      {
+        FSLLOG3_ERROR("{} must be in the range [{},{}]", pszName, range.Min(), range.Max());
+        return false;
+      }
+      rValue = value;
+      return true;
+    }
   }
 
 
@@ -47,16 +70,56 @@ namespace Fsl
   {
     rOptions.emplace_back("HideMarkerStats", OptionArgument::OptionNone, CommandId::HideMarkerStats,
                           "Hide the panel with the values of the last frame pacing marker.");
+    rOptions.emplace_back("Pacer", OptionArgument::OptionNone, CommandId::Pacer,
+                          "Start with the frame pacer of the sample on (the experimental mb-framepacing pacer).");
+    rOptions.emplace_back("Pacer.RefreshRate", OptionArgument::OptionRequired, CommandId::PacerRefreshRate,
+                          "The refresh rate of the display in Hz the frame pacer uses, decimals are allowed (59.94). Defaults to the "
+                          "rate the window system reports, and to the UI slider if it does not know it.");
+    rOptions.emplace_back("Pacer.TargetFps", OptionArgument::OptionRequired, CommandId::PacerTargetFps,
+                          "The frame rate the frame pacer aims for (0 = the refresh rate of the display, the default).");
+    rOptions.emplace_back("Pacer.Adaptive", OptionArgument::OptionRequired, CommandId::PacerAdaptive,
+                          "true (default): the frame pacer adapts its swap interval to how the frames do. false: a fixed frame rate.");
+    rOptions.emplace_back("CpuLoad", OptionArgument::OptionRequired, CommandId::CpuLoad,
+                          "Simulate a CPU load: the time in milliseconds the app spends busy every frame (0 = none, the default).");
+    rOptions.emplace_back("GpuLoad", OptionArgument::OptionRequired, CommandId::GpuLoad,
+                          "A GPU load: the number of steps the raymarched background takes for every pixel (0 = no background, the "
+                          "default).");
   }
 
 
-  OptionParseResult OptionParser::OnParse(const int32_t cmdId, const StringViewLite& /*strOptArg*/)
+  OptionParseResult OptionParser::OnParse(const int32_t cmdId, const StringViewLite& strOptArg)
   {
     switch (cmdId)
     {
     case CommandId::HideMarkerStats:
       m_hideMarkerStats = true;
       return OptionParseResult::Parsed;
+    case CommandId::Pacer:
+      m_pacerEnabled = true;
+      return OptionParseResult::Parsed;
+    case CommandId::PacerRefreshRate:
+      {
+        double value = 0.0;
+        StringParseUtil::Parse(value, strOptArg);
+        if (!std::isfinite(value) || value < SampleConfig::MinRefreshRateHz || value > SampleConfig::MaxRefreshRateHz)
+        {
+          FSLLOG3_ERROR("Pacer.RefreshRate must be in the range [{},{}]", SampleConfig::MinRefreshRateHz, SampleConfig::MaxRefreshRateHz);
+          return OptionParseResult::Failed;
+        }
+        m_pacerRefreshRateHz = value;
+        return OptionParseResult::Parsed;
+      }
+    case CommandId::PacerTargetFps:
+      return TryParseInRange(m_pacerTargetFps, strOptArg, SampleConfig::TargetFps, "Pacer.TargetFps") ? OptionParseResult::Parsed
+                                                                                                      : OptionParseResult::Failed;
+    case CommandId::PacerAdaptive:
+      StringParseUtil::Parse(m_pacerAdaptive, strOptArg);
+      return OptionParseResult::Parsed;
+    case CommandId::CpuLoad:
+      return TryParseInRange(m_cpuLoadMs, strOptArg, SampleConfig::CpuLoadMs, "CpuLoad") ? OptionParseResult::Parsed : OptionParseResult::Failed;
+    case CommandId::GpuLoad:
+      return TryParseInRange(m_gpuLoadSteps, strOptArg, SampleConfig::GpuLoadSteps, "GpuLoad") ? OptionParseResult::Parsed
+                                                                                               : OptionParseResult::Failed;
     default:
       return OptionParseResult::NotHandled;
     }

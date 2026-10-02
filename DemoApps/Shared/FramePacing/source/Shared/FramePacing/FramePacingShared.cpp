@@ -26,12 +26,16 @@
 #include <FslBase/Math/Pixel/PxSize2D.hpp>
 #include <FslBase/Span/SpanUtil_Array.hpp>
 #include <FslDemoApp/Shared/Host/DemoWindowMetrics.hpp>
+#include <FslDemoHost/Base/Service/WindowHost/IWindowHostInfo.hpp>
+#include <FslDemoService/FramePacingMarker/FramePacingFrameSchedule.hpp>
 #include <FslDemoService/FramePacingMarker/FramePacingMarkerInfo.hpp>
 #include <FslDemoService/FramePacingMarker/IFramePacingMarkerService.hpp>
 #include <FslDemoService/Graphics/IGraphicsService.hpp>
 #include <FslGraphics/Bitmap/ReadOnlyRawBitmap.hpp>
 #include <FslGraphics/Colors.hpp>
 #include <FslGraphics/Render/Adapter/INativeBatch2D.hpp>
+#include <FslNativeWindow/Base/INativeWindow.hpp>
+#include <FslNativeWindow/Base/NativeWindowDisplayInfo.hpp>
 #include <FslNativeWindow/Base/VirtualKey.hpp>
 #include <FslSimpleUI/App/Theme/ThemeSelector.hpp>
 #include <FslSimpleUI/Base/Control/Background.hpp>
@@ -43,12 +47,15 @@
 #include <FslSimpleUI/Theme/Base/WindowType.hpp>
 #include <Shared/FramePacing/FramePacingShared.hpp>
 #include <Shared/FramePacing/OptionParser.hpp>
+#include <Shared/FramePacing/SampleConfig.hpp>
 #include <fmt/chrono.h>
 #include <fmt/format.h>
+#include <algorithm>
 #include <array>
 #include <chrono>
 #include <cmath>
 #include <string>
+#include <thread>
 #include <utility>
 
 namespace Fsl
@@ -64,6 +71,11 @@ namespace Fsl
       constexpr int32_t BoxSizePx = 96;
       //! The duration of a timed run in seconds
       constexpr ConstrainedValue<int32_t> TimedRunSeconds(10, 1, 120);
+      //! WaitForPresent presents this long after the last refresh before the one the frame pacer aims for (at most an eighth of a refresh)
+      constexpr TimeSpan MaxPresentMargin(TimeSpan::TicksPerMillisecond);
+      //! WaitUntil only sleeps when the wait is longer than this (a sleeping thread can wake this late), a shorter wait yields
+      constexpr TimeSpan CoarseSleepThreshold(20 * TimeSpan::TicksPerMillisecond);
+      constexpr TimeSpan CoarseSleepMargin(16 * TimeSpan::TicksPerMillisecond);
     }
 
     const char* ToString(const FramePacingRunState state) noexcept
@@ -100,16 +112,39 @@ namespace Fsl
 
     //! Shown for a value the marker reports as unknown
     constexpr const char* UnknownValue = "unknown";
+
+    //! A slider that starts at the value of a command line option
+    ConstrainedValue<int32_t> WithValue(const ConstrainedValue<int32_t> range, const int32_t value) noexcept
+    {
+      return ConstrainedValue<int32_t>(value, range.Min(), range.Max());
+    }
   }
 
 
-  FramePacingShared::FramePacingShared(const DemoAppConfig& config, std::string runName)
+  FramePacingShared::FramePacingShared(const DemoAppConfig& config, std::string runName, const SamplePresentMethod presentMethod)
     : m_uiEventListener(this)
     , m_uiExtension(std::make_shared<UIDemoAppExtension>(config, m_uiEventListener.GetListener(), LocalConfig::MenuAtlas))
     , m_framePacing(config.DemoServiceProvider.TryGet<IFramePacingMarkerService>())
     , m_runName(std::move(runName))
     , m_windowSizePx(config.WindowMetrics.GetSizePx())
+    , m_presentMethod(presentMethod)
   {
+    const auto options = config.GetOptions<OptionParser>();
+    m_refreshRateOverrideHz = options->GetPacerRefreshRateHz();
+    {
+      // The refresh rate of the display is read from the window every frame, as the window can be moved to another display
+      const auto windowHostInfo = config.DemoServiceProvider.TryGet<IWindowHostInfo>();
+      if (windowHostInfo)
+      {
+        const auto windows = windowHostInfo->GetWindows();
+        if (!windows.empty())
+        {
+          m_window = windows.front();
+        }
+      }
+    }
+    m_detectedRefreshRateHz = ReadDisplayRefreshRateHz();
+
     // The service is only available on platforms that support the marker library
     if (m_framePacing)
     {
@@ -141,6 +176,26 @@ namespace Fsl
     m_ui.ButtonTimedRun->SetEnabled(m_framePacing != nullptr);
     const auto lblHint = uiFactory->CreateLabel("Space: start/end a run");
     const auto lblHintTimed = uiFactory->CreateLabel("T: start a timed run");
+    const auto lblHintPacer = uiFactory->CreateLabel("P: frame pacer on/off");
+
+    // The frame pacer of the sample (the library is not available on every platform)
+    const bool pacerSupported = SamplePacer::IsSupported();
+    m_ui.SwitchPacer = uiFactory->CreateSwitch("Frame pacer (experimental)", pacerSupported && options->IsPacerEnabled());
+    m_ui.SwitchPacer->SetEnabled(pacerSupported);
+    m_ui.LabelRefreshRate = uiFactory->CreateLabel("");
+    m_ui.SliderRefreshRate = uiFactory->CreateSliderFmtValue(UI::LayoutOrientation::Horizontal, SampleConfig::RefreshRateHz);
+    m_ui.SliderRefreshRate->SetAlignmentX(UI::ItemAlignment::Stretch);
+    const auto lblTargetFps = uiFactory->CreateLabel("Target fps (0 = display rate)");
+    m_ui.SliderTargetFps =
+      uiFactory->CreateSliderFmtValue(UI::LayoutOrientation::Horizontal, WithValue(SampleConfig::TargetFps, options->GetPacerTargetFps()));
+    m_ui.SliderTargetFps->SetAlignmentX(UI::ItemAlignment::Stretch);
+    m_ui.SwitchAdaptive = uiFactory->CreateSwitch("Adaptive swap interval", options->IsPacerAdaptive());
+    m_ui.LabelPacerStatus = uiFactory->CreateLabel("");
+    m_ui.LabelPacerFrames = uiFactory->CreateLabel("");
+    const auto lblCpuLoad = uiFactory->CreateLabel("CPU load (ms per frame)");
+    m_ui.SliderCpuLoad =
+      uiFactory->CreateSliderFmtValue(UI::LayoutOrientation::Horizontal, WithValue(SampleConfig::CpuLoadMs, options->GetCpuLoadMs()));
+    m_ui.SliderCpuLoad->SetAlignmentX(UI::ItemAlignment::Stretch);
 
     const auto stackLayout = std::make_shared<UI::StackLayout>(uiFactory->GetContext());
     stackLayout->SetOrientation(UI::LayoutOrientation::Vertical);
@@ -153,15 +208,28 @@ namespace Fsl
     stackLayout->AddChild(m_ui.SliderDuration);
     stackLayout->AddChild(m_ui.ButtonTimedRun);
     stackLayout->AddChild(uiFactory->CreateDivider(UI::LayoutOrientation::Horizontal));
+    stackLayout->AddChild(m_ui.SwitchPacer);
+    stackLayout->AddChild(m_ui.LabelRefreshRate);
+    stackLayout->AddChild(m_ui.SliderRefreshRate);
+    stackLayout->AddChild(lblTargetFps);
+    stackLayout->AddChild(m_ui.SliderTargetFps);
+    stackLayout->AddChild(m_ui.SwitchAdaptive);
+    stackLayout->AddChild(m_ui.LabelPacerStatus);
+    stackLayout->AddChild(m_ui.LabelPacerFrames);
+    stackLayout->AddChild(uiFactory->CreateDivider(UI::LayoutOrientation::Horizontal));
+    stackLayout->AddChild(lblCpuLoad);
+    stackLayout->AddChild(m_ui.SliderCpuLoad);
+    stackLayout->AddChild(uiFactory->CreateDivider(UI::LayoutOrientation::Horizontal));
     stackLayout->AddChild(lblHint);
     stackLayout->AddChild(lblHintTimed);
+    stackLayout->AddChild(lblHintPacer);
 
     const auto mainLayout = std::make_shared<UI::GridLayout>(uiFactory->GetContext());
     mainLayout->AddColumnDefinition(UI::GridColumnDefinition(UI::GridUnitType::Star, 1.0f));
     mainLayout->AddColumnDefinition(UI::GridColumnDefinition(UI::GridUnitType::Auto));
     mainLayout->AddRowDefinition(UI::GridRowDefinition(UI::GridUnitType::Star, 1.0f));
     // The panel with every value of the last marker can be hidden with --HideMarkerStats
-    if (!config.GetOptions<OptionParser>()->IsMarkerStatsHidden())
+    if (!options->IsMarkerStatsHidden())
     {
       mainLayout->AddChild(CreateMarkerStatsWindow(*uiFactory), 0, 0);
     }
@@ -172,6 +240,8 @@ namespace Fsl
 
     UpdateUI();
     UpdateMarkerStats();
+    UpdateRefreshRateUI();
+    UpdatePacerStatus();
   }
 
 
@@ -213,6 +283,13 @@ namespace Fsl
       event.Handled();
       StartTimedRun();
       break;
+    case VirtualKey::P:
+      event.Handled();
+      if (m_ui.SwitchPacer->IsEnabled())
+      {
+        m_ui.SwitchPacer->Toggle();
+      }
+      break;
     default:
       break;
     }
@@ -225,8 +302,18 @@ namespace Fsl
   }
 
 
-  void FramePacingShared::Update()
+  void FramePacingShared::Update(const DemoTime& demoTime)
   {
+    m_updateTime = demoTime;
+    m_frameStarted = false;
+    UpdatePacer();
+    if (m_presentMethod == SamplePresentMethod::SwapInterval)
+    {
+      // The frame starts here: the host updates the app right after the swap of the previous frame, which waited for the display
+      StartFrame();
+    }
+
+    UpdatePacerStatus();
     UpdateMarkerStats();
     if (m_framePacing)
     {
@@ -239,12 +326,81 @@ namespace Fsl
   }
 
 
-  void FramePacingShared::Draw(const DemoTime& drawTime)
+  void FramePacingShared::Draw()
   {
+    // SamplePresentMethod::WaitThenPresent: the frame starts here, after the host waited for a free buffer
+    StartFrame();
+
+    // Tell the marker what the frame was paced by. Until the frame pacer was used the animation time is the time of the framework,
+    // which the marker reports by itself.
+    if (m_framePacing && (m_pacer || m_animationOffset.Ticks() != 0))
+    {
+      FramePacingFrameSchedule frameSchedule;
+      frameSchedule.AnimationTime = m_animationTime;
+      if (m_pacer)
+      {
+        frameSchedule.CpuStartTime = m_frameStartTime;
+        frameSchedule.IntendedDisplayTime = m_schedule.IntendedDisplayTime;
+        frameSchedule.TargetFrameTime = m_schedule.TargetFrameTime;
+        frameSchedule.PreferredFrameTime = m_schedule.PreferredFrameTime;
+      }
+      m_framePacing->SetFrameSchedule(frameSchedule);
+    }
+
     // Use the exact time the frame is animated for, this is what the marker reports
-    DrawAnimation(drawTime.CurrentTickCount.TotalSeconds());
+    DrawAnimation(m_animationTime.TotalSeconds());
 
     m_uiExtension->Draw();
+  }
+
+
+  void FramePacingShared::EndFrame(const TimeSpan gpuTime)
+  {
+    if (!m_pacer)
+    {
+      return;
+    }
+    const TickCount now = m_timer.GetTimestamp();
+    const TimeSpan cpuTime = now - m_frameStartTime;
+    m_pacer->EndFrame(now, cpuTime + TimeSpan(std::max(gpuTime.Ticks(), int64_t{0})));
+  }
+
+
+  void FramePacingShared::WaitForPresent(const uint32_t presentSwapInterval)
+  {
+    if (!m_pacer || m_schedule.SwapInterval <= presentSwapInterval)
+    {
+      return;
+    }
+    // A present that waits for vsync shows the frame at the first refresh the present allows. So a frame that is held for more
+    // refreshes than the present can hold it for is presented as late as it can and still be shown at the refresh the frame pacer
+    // aims for (sleep, then present). This is a guess: the pacer has no vsync times, the frame is taken to have started at a refresh.
+    const TimeSpan refreshPeriod(std::llround(static_cast<double>(TimeSpan::TicksPerSecond) / m_pacerConfig.RefreshRateHz));
+    const TimeSpan presentHoldTime(refreshPeriod.Ticks() * static_cast<int64_t>(std::max(presentSwapInterval, 1u)));
+    const TimeSpan presentMargin = std::min(LocalConfig::MaxPresentMargin, TimeSpan(refreshPeriod.Ticks() / 8));
+    WaitUntil((m_schedule.IntendedDisplayTime - presentHoldTime) + presentMargin);
+    m_nextFrameStartTime = m_schedule.IntendedDisplayTime;
+  }
+
+
+  void FramePacingShared::WaitUntil(const TickCount time) const
+  {
+    for (;;)
+    {
+      const TimeSpan remaining = time - m_timer.GetTimestamp();
+      if (remaining.Ticks() <= 0)
+      {
+        return;
+      }
+      if (remaining > LocalConfig::CoarseSleepThreshold)
+      {
+        std::this_thread::sleep_for(std::chrono::microseconds((remaining - LocalConfig::CoarseSleepMargin).Ticks() / TimeSpan::TicksPerMicrosecond));
+      }
+      else
+      {
+        std::this_thread::yield();
+      }
+    }
   }
 
 
@@ -309,9 +465,149 @@ namespace Fsl
   }
 
 
+  void FramePacingShared::UpdatePacer()
+  {
+    const double detectedRefreshRateHz = ReadDisplayRefreshRateHz();
+    if (detectedRefreshRateHz != m_detectedRefreshRateHz)
+    {
+      m_detectedRefreshRateHz = detectedRefreshRateHz;
+      UpdateRefreshRateUI();
+    }
+
+    SamplePacerConfig pacerConfig;
+    pacerConfig.RefreshRateHz = GetRefreshRateHz();
+    pacerConfig.TargetFps = static_cast<uint32_t>(std::max(m_ui.SliderTargetFps->GetValue(), 0));
+    pacerConfig.Adaptive = m_ui.SwitchAdaptive->IsChecked();
+    if (!SamplePacer::IsSupported() || !m_ui.SwitchPacer->IsChecked())
+    {
+      m_pacer.reset();
+      m_nextFrameStartTime = {};
+    }
+    else if (!m_pacer || pacerConfig != m_pacerConfig)
+    {
+      // The settings of a pacer are fixed, so new settings need a new pacer (it starts with the first frame again)
+      m_pacer = std::make_unique<SamplePacer>(pacerConfig);
+      m_nextFrameStartTime = {};
+    }
+    m_pacerConfig = pacerConfig;
+  }
+
+
+  void FramePacingShared::StartFrame()
+  {
+    if (m_frameStarted)
+    {
+      return;
+    }
+    m_frameStarted = true;
+
+    if (m_pacer)
+    {
+      // A frame starts when the previous one is shown. A present that was delayed (WaitForPresent) need not wait for the display
+      // (a Vulkan swapchain can have a buffer to spare), so wait for the time the frame pacer aimed the previous frame at.
+      WaitUntil(m_nextFrameStartTime);
+    }
+    m_nextFrameStartTime = {};
+
+    const TickCount frameStartTime = m_timer.GetTimestamp();
+    m_frameInterval = m_frameStartTime.Ticks() != 0 ? (frameStartTime - m_frameStartTime) : TimeSpan();
+    m_frameStartTime = frameStartTime;
+
+    const TimeSpan frameworkTime(m_updateTime.CurrentTickCount.Ticks());
+    if (m_pacer)
+    {
+      m_schedule = m_pacer->BeginFrame(frameStartTime);
+      // The frame is animated by the step of the pacer: the refreshes the display moves on. A paused app still stands still.
+      if (m_updateTime.ElapsedTime.Ticks() != 0)
+      {
+        m_animationTime += m_schedule.AnimationStep;
+      }
+      m_animationOffset = m_animationTime - frameworkTime;
+    }
+    else
+    {
+      m_schedule = {};
+      m_animationTime = frameworkTime + m_animationOffset;
+    }
+
+    BurnCpu(TimeSpan::FromMilliseconds(static_cast<int64_t>(m_ui.SliderCpuLoad->GetValue())));
+  }
+
+
+  double FramePacingShared::ReadDisplayRefreshRateHz() const
+  {
+    const auto window = m_window.lock();
+    // This is cheap as the window caches it
+    return window ? window->TryGetDisplayInfo().RefreshRateHz() : 0.0;
+  }
+
+
+  double FramePacingShared::GetRefreshRateHz() const
+  {
+    if (m_refreshRateOverrideHz.has_value())
+    {
+      return m_refreshRateOverrideHz.value();
+    }
+    return m_detectedRefreshRateHz > 0.0 ? m_detectedRefreshRateHz : static_cast<double>(m_ui.SliderRefreshRate->GetValue());
+  }
+
+
+  void FramePacingShared::UpdateRefreshRateUI()
+  {
+    // The slider is only used when nothing else knows the refresh rate, otherwise it shows the rate that is used
+    const bool isKnown = m_refreshRateOverrideHz.has_value() || m_detectedRefreshRateHz > 0.0;
+    m_ui.SliderRefreshRate->SetEnabled(!isKnown);
+    if (!isKnown)
+    {
+      m_ui.LabelRefreshRate->SetContent("Refresh rate: unknown, set it (Hz)");
+      return;
+    }
+    const double refreshRateHz = GetRefreshRateHz();
+    m_ui.SliderRefreshRate->SetValue(static_cast<int32_t>(std::lround(refreshRateHz)));
+    SetFormattedContent(*m_ui.LabelRefreshRate, "Refresh rate: {:.2f} Hz ({})", refreshRateHz,
+                        m_refreshRateOverrideHz.has_value() ? "command line" : "display");
+  }
+
+
+  void FramePacingShared::UpdatePacerStatus()
+  {
+    if (!SamplePacer::IsSupported())
+    {
+      m_ui.LabelPacerStatus->SetContent("Not supported on this platform");
+      m_ui.LabelPacerFrames->SetContent("");
+      return;
+    }
+    if (!m_pacer)
+    {
+      m_ui.LabelPacerStatus->SetContent("Frame pacer: off");
+      m_ui.LabelPacerFrames->SetContent("");
+      return;
+    }
+    const SamplePacerStatus status = m_pacer->GetStatus();
+    SetFormattedContent(*m_ui.LabelPacerStatus, "Swap interval {} ({:.1f} fps)", status.SwapInterval,
+                        m_pacerConfig.RefreshRateHz / static_cast<double>(std::max(status.SwapInterval, 1u)));
+    SetFormattedContent(*m_ui.LabelPacerFrames, "Frame {:.2f} ms, {} of {} late", m_frameInterval.TotalMilliseconds(), status.LateFrames,
+                        status.Frames);
+  }
+
+
+  void FramePacingShared::BurnCpu(const TimeSpan duration) const
+  {
+    if (duration.Ticks() <= 0)
+    {
+      return;
+    }
+    // Busy on purpose: a sleeping thread would not be a CPU load
+    const TickCount endTime = m_timer.GetTimestamp() + duration;
+    while (m_timer.GetTimestamp() < endTime)
+    {
+    }
+  }
+
+
   std::shared_ptr<UI::BaseWindow> FramePacingShared::CreateMarkerStatsWindow(UI::Theme::IThemeControlFactory& rUIFactory)
   {
-    // A panel with every value the last drawn marker carried (top center, away from the markers on the left side)
+    // A panel with every value the last drawn marker carried (top right, next to the right bar and away from the markers on the left side)
     const auto statsGrid = std::make_shared<UI::GridLayout>(rUIFactory.GetContext());
     statsGrid->AddColumnDefinition(UI::GridColumnDefinition(UI::GridUnitType::Auto));
     statsGrid->AddColumnDefinition(UI::GridColumnDefinition(UI::GridUnitType::Fixed, 360.0f));
@@ -348,7 +644,7 @@ namespace Fsl
     statsStack->AddChild(rUIFactory.CreateDivider(UI::LayoutOrientation::Horizontal));
     statsStack->AddChild(statsGrid);
     auto statsWindow = rUIFactory.CreateBackgroundWindow(UI::Theme::WindowType::Transparent, statsStack);
-    statsWindow->SetAlignmentX(UI::ItemAlignment::Center);
+    statsWindow->SetAlignmentX(UI::ItemAlignment::Far);
     statsWindow->SetAlignmentY(UI::ItemAlignment::Near);
     return statsWindow;
   }

@@ -23,6 +23,9 @@
 //****************************************************************************************************************************************************
 
 #include <FslDemoApp/Base/ADemoOptionParser.hpp>
+#include <Shared/FramePacing/SampleConfig.hpp>
+#include <cstdint>
+#include <optional>
 
 namespace Fsl
 {
@@ -30,6 +33,12 @@ namespace Fsl
   class OptionParser : public ADemoOptionParser
   {
     bool m_hideMarkerStats{false};
+    bool m_pacerEnabled{false};
+    std::optional<double> m_pacerRefreshRateHz;
+    int32_t m_pacerTargetFps{SampleConfig::TargetFps.Get()};
+    bool m_pacerAdaptive{true};
+    int32_t m_cpuLoadMs{SampleConfig::CpuLoadMs.Get()};
+    int32_t m_gpuLoadSteps{SampleConfig::GpuLoadSteps.Get()};
 
   public:
     OptionParser();
@@ -39,6 +48,42 @@ namespace Fsl
     [[nodiscard]] bool IsMarkerStatsHidden() const noexcept
     {
       return m_hideMarkerStats;
+    }
+
+    //! @brief Check if the sample starts with its frame pacer on.
+    [[nodiscard]] bool IsPacerEnabled() const noexcept
+    {
+      return m_pacerEnabled;
+    }
+
+    //! @brief The refresh rate of the display in Hz the frame pacer should use (empty: ask the window system, else the UI slider).
+    [[nodiscard]] std::optional<double> GetPacerRefreshRateHz() const noexcept
+    {
+      return m_pacerRefreshRateHz;
+    }
+
+    //! @brief The frame rate the app wants to run at (0 = the refresh rate of the display).
+    [[nodiscard]] int32_t GetPacerTargetFps() const noexcept
+    {
+      return m_pacerTargetFps;
+    }
+
+    //! @brief Check if the frame pacer adapts its swap interval to how the frames do.
+    [[nodiscard]] bool IsPacerAdaptive() const noexcept
+    {
+      return m_pacerAdaptive;
+    }
+
+    //! @brief The time the app spends busy every frame in milliseconds.
+    [[nodiscard]] int32_t GetCpuLoadMs() const noexcept
+    {
+      return m_cpuLoadMs;
+    }
+
+    //! @brief The number of steps the raymarched background takes for every pixel (0 = no background).
+    [[nodiscard]] int32_t GetGpuLoadSteps() const noexcept
+    {
+      return m_gpuLoadSteps;
     }
 
   protected:

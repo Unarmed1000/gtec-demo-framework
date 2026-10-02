@@ -23,6 +23,7 @@
 //****************************************************************************************************************************************************
 
 #include <FslDemoApp/OpenGLES2/DemoAppGLES2.hpp>
+#include <Shared/FramePacing/EGL/EGLSwapInterval.hpp>
 #include <Shared/FramePacing/FramePacingShared.hpp>
 
 namespace Fsl
@@ -34,6 +35,9 @@ namespace Fsl
     //! All the actual sample code can be found in the shared class since its reused for all FramePacing samples.
     FramePacingShared m_shared;
 
+    //! The number of display refreshes the swap of the host holds a frame for
+    EGLSwapInterval m_swapInterval;
+
   public:
     explicit FramePacing(const DemoAppConfig& config);
 
@@ -42,6 +46,7 @@ namespace Fsl
     void ConfigurationChanged(const DemoWindowMetrics& windowMetrics) final;
     void Update(const DemoTime& demoTime) final;
     void Draw(const FrameInfo& frameInfo) final;
+    void EndDraw(const FrameInfo& frameInfo) final;
   };
 }
 
