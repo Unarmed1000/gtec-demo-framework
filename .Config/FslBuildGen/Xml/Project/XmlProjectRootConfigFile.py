@@ -40,6 +40,7 @@ from typing import Any
 from FslBuildGen import IOUtil
 from FslBuildGen.DataTypes import MagicStrings, PackageLanguage
 from FslBuildGen.Exceptions import FileNotFoundException
+from FslBuildGen.GenFileSchema import GenFileSchemaLocation
 from FslBuildGen.Log import Log
 from FslBuildGen.ProjectId import ProjectId
 from FslBuildGen.Vars.VariableEnvironment import VariableEnvironment
@@ -50,6 +51,7 @@ from FslBuildGen.Xml.Project.XmlBuildDocConfiguration import XmlBuildDocConfigur
 from FslBuildGen.Xml.Project.XmlClangTidyConfiguration import XmlClangTidyConfiguration
 from FslBuildGen.Xml.Project.XmlCMakeConfiguration import XmlCMakeConfiguration
 from FslBuildGen.Xml.Project.XmlExperimentalPlatform import XmlExperimentalPlatform
+from FslBuildGen.Xml.Project.XmlGenFileSchema import LoadGenFileSchemaLocation
 from FslBuildGen.Xml.ToolConfig import LoadUtil
 from FslBuildGen.Xml.ToolConfig.XmlConfigFileAddNewProjectTemplatesRootDirectory import XmlConfigFileAddNewProjectTemplatesRootDirectory
 from FslBuildGen.Xml.ToolConfig.XmlConfigPackageConfiguration import XmlConfigPackageConfiguration
@@ -324,6 +326,8 @@ class XmlExtendedProject(XmlBase):
         self.XmlCMakeConfiguration: list[XmlCMakeConfiguration] = _LoadCMakeConfiguration(log, xmlElement, filename)
         self.XmlCompilerConfiguration: list[XmlConfigCompilerConfiguration] = _LoadCompilerConfiguration(log, xmlElement, filename)
         self.XmlExperimental: XmlExperimental | None = _TryLoadExperimental(log, xmlElement, filename)
+        # Where the schema versions of the gen files of this project are. It is not taken from the parent project
+        self.GenFileSchemaLocation: GenFileSchemaLocation = LoadGenFileSchemaLocation(log, xmlElement, filename, self.RootDirectory)
 
 
 class XmlProjectRootConfigFile(XmlBase):
@@ -402,6 +406,8 @@ class XmlProjectRootConfigFile(XmlBase):
                 self.XmlCMakeConfiguration = _LoadCMakeConfiguration(log, projectElem, filename)
                 self.XmlCompilerConfiguration = _LoadCompilerConfiguration(log, projectElem, filename)
                 self.XmlExperimental = _TryLoadExperimental(log, projectElem, filename)
+                # Where the schema versions of the gen files of the root project are, an extended project has its own
+                self.GenFileSchemaLocation: GenFileSchemaLocation = LoadGenFileSchemaLocation(log, projectElem, filename, rootDirectory)
                 self.SourceFileName = filename
                 self.DefaultTemplate = self._ReadAttrib(projectElem, "DefaultTemplate", MagicStrings.VSDefaultCPPTemplate)
             else:

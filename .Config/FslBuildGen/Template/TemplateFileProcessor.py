@@ -56,7 +56,11 @@ class TemplateFileProcessor:
         package: Package | None,
         externalVariantConstraints: ExternalVariantConstraints | None,
         dstFilenameModifier: Callable[[str], str] | None = None,
+        contentModifier: Callable[[str, str], str] | None = None,
     ) -> None:
+        """contentModifier is called for every file that is modified, with the name of the file that is written and its content after the
+        template values were filled in. What it returns is written.
+        """
         if package is not None:
             if externalVariantConstraints is None:
                 raise Exception("Internal error")
@@ -66,10 +70,15 @@ class TemplateFileProcessor:
         IOUtil.SafeMakeDirs(dstPath)
         # do the actual copy
         self.__CopyFiles(config, dstPath, templateFileRecordManager.FilesToCopy)
-        self.__CopyAndModifyFiles(config, dstPath, templateFileRecordManager.FilesToModify, dstFilenameModifier)
+        self.__CopyAndModifyFiles(config, dstPath, templateFileRecordManager.FilesToModify, dstFilenameModifier, contentModifier)
 
     def __CopyAndModifyFiles(
-        self, config: Config, dstPath: str, filesToModify: list[TemplateFileRecord], dstFilenameModifier: Callable[[str], str] | None
+        self,
+        config: Config,
+        dstPath: str,
+        filesToModify: list[TemplateFileRecord],
+        dstFilenameModifier: Callable[[str], str] | None,
+        contentModifier: Callable[[str, str], str] | None,
     ) -> None:
         for file in filesToModify:
             if not self.GenFileOnly or file.FileName == config.ToolConfig.GenFileName:
@@ -84,6 +93,9 @@ class TemplateFileProcessor:
 
                 if dstFilenameModifier is not None:
                     dstFilename = dstFilenameModifier(dstFilename)
+
+                if contentModifier is not None:
+                    content = contentModifier(dstFilename, content)
 
                 dirName = IOUtil.GetDirectoryName(dstFilename)
                 if not config.DisableWrite:

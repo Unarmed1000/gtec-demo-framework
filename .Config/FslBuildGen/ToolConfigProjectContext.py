@@ -32,6 +32,7 @@
 # ****************************************************************************************************************************************************
 
 
+from FslBuildGen.GenFileSchema import GenFileSchemaLocation
 from FslBuildGen.Location.ResolvedPath import ResolvedPath
 from FslBuildGen.ProjectId import ProjectId
 from FslBuildGen.ToolConfigBasePackage import ToolConfigBasePackage
@@ -48,6 +49,7 @@ class ToolConfigProjectContext:
         gitHash: str | None,
         basePackages: list[ToolConfigBasePackage],
         parentContext: ToolConfigProjectContext | None,
+        genFileSchemaLocation: GenFileSchemaLocation,
     ) -> None:
         super().__init__()
         self.ProjectId = projectId
@@ -57,3 +59,5 @@ class ToolConfigProjectContext:
         self.GitHash = gitHash
         self.BasePackages = basePackages
         self.ParentContext = parentContext
+        # Where the schema versions of the gen files of this project are. It is this project's own, not the one of the parent context
+        self.GenFileSchemaLocation = genFileSchemaLocation

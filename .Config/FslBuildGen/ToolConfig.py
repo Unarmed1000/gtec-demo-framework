@@ -563,7 +563,14 @@ class ToolConfig:
         result: list[ToolConfigProjectContext] = []
         projectVersion = Version.FromString(projectRootConfig.ProjectVersion)
         rootProjectContext = ToolConfigProjectContext(
-            projectRootConfig.ProjectId, projectRootConfig.ProjectName, projectVersion, projectRootConfig.RootDirectory, gitHash, rootProjectBasePackages, None
+            projectRootConfig.ProjectId,
+            projectRootConfig.ProjectName,
+            projectVersion,
+            projectRootConfig.RootDirectory,
+            gitHash,
+            rootProjectBasePackages,
+            None,
+            projectRootConfig.GenFileSchemaLocation,
         )
         result.append(rootProjectContext)
         topProjectContext = rootProjectContext
@@ -578,7 +585,14 @@ class ToolConfig:
             extendedProjectVersion = Version.FromString(entry.ProjectVersion)
             entryGitHash = GitUtil.TryGetCurrentHash(gitExeName, entry.RootDirectory) if not noGitHash else None
             extendedProjectContext = ToolConfigProjectContext(
-                entry.ProjectId, entry.ProjectName, extendedProjectVersion, entry.RootDirectory, entryGitHash, contextBasePackages, rootProjectContext
+                entry.ProjectId,
+                entry.ProjectName,
+                extendedProjectVersion,
+                entry.RootDirectory,
+                entryGitHash,
+                contextBasePackages,
+                rootProjectContext,
+                entry.GenFileSchemaLocation,
             )
             result.append(extendedProjectContext)
             topProjectContext = extendedProjectContext

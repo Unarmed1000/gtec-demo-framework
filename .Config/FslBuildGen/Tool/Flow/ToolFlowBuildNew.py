@@ -48,7 +48,7 @@ from typing import Any, cast
 # from FslBuildGen import Util
 # from FslBuildGen.Build import Builder
 # from FslBuildGen.BasicConfig import BasicConfig
-from FslBuildGen import IOUtil, PluginSharedValues, Util
+from FslBuildGen import GenFileSchemaProject, IOUtil, PluginSharedValues, Util
 from FslBuildGen import Main as MainFlow
 from FslBuildGen.Build.BuildVariantConfigUtil import BuildVariantConfigUtil
 from FslBuildGen.Config import BaseConfig, Config
@@ -306,7 +306,14 @@ def GenerateProject(config: Config, localConfig: LocalConfig, configVariant: Con
         packageCompany,
     )
     # templateFileProcessor.Environment.Set("##FEATURE_LIST##", featureList)
-    templateFileProcessor.Process(config, templateFileRecordManager, configVariant.ProjectPath, None, None)
+
+    def SetGenFileSchemaReference(dstFilename: str, content: str) -> str:
+        # A template has the schema reference of the place it was written for, the gen file of the new package gets the one of its project
+        if IOUtil.GetFileName(dstFilename) != config.ToolConfig.GenFileName:
+            return content
+        return GenFileSchemaProject.SetReferenceInGeneratedText(config, config.ToolConfig.ProjectInfo.Contexts, dstFilename, content)
+
+    templateFileProcessor.Process(config, templateFileRecordManager, configVariant.ProjectPath, None, None, contentModifier=SetGenFileSchemaReference)
 
     # IOUtil.SafeMakeDirs(configVariant.ProjectPath)
     # IOUtil.SafeMakeDirs(configVariant.ProjectPathSource)

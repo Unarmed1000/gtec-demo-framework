@@ -39,7 +39,7 @@ from typing import Any
 from FslBuildGen import IOUtil, PackageListUtil, PluginSharedValues
 from FslBuildGen import Main as MainFlow
 from FslBuildGen.Build.BuildVariantConfigUtil import BuildVariantConfigUtil
-from FslBuildGen.BuildConfig import ScanResourceLicenseFiles, ScanSourceFiles, Validate
+from FslBuildGen.BuildConfig import ScanGenFiles, ScanResourceLicenseFiles, ScanSourceFiles, Validate
 from FslBuildGen.BuildConfig.CustomPackageFileFilter import CustomPackageFileFilter
 from FslBuildGen.BuildConfig.FileFinder import FileFinder
 from FslBuildGen.BuildConfig.LicenseConfig import LicenseConfig
@@ -91,6 +91,7 @@ class DefaultValue:
     LicenseSaveCSVs = False
     ScanLicense = False
     ScanSource = False
+    ScanGenFiles = False
     ScanDependencies = False
     ScanCopyright = False
     Format = False
@@ -117,6 +118,7 @@ class LocalToolConfig(ToolAppConfig):
         self.LicenseSaveCSVs = DefaultValue.LicenseSaveCSVs
         self.ScanLicense = DefaultValue.ScanLicense
         self.ScanSource = DefaultValue.ScanSource
+        self.ScanGenFiles = DefaultValue.ScanGenFiles
         self.ScanDependencies = DefaultValue.ScanDependencies
         self.ScanCopyright = DefaultValue.ScanCopyright
         self.Format = DefaultValue.Format
@@ -195,6 +197,7 @@ class ToolFlowBuildCheck(AToolAppFlow):
         if localToolConfig.ScanCopyright and not localToolConfig.ScanSource:
             localToolConfig.ScanSource = True
         localToolConfig.ScanDependencies = args.scanDeps
+        localToolConfig.ScanGenFiles = args.scanGenFiles
         localToolConfig.Repair = args.repair
         localToolConfig.IgnoreNotSupported = args.ignoreNotSupported
         if hasattr(args, "format"):
@@ -272,6 +275,15 @@ class ToolFlowBuildCheck(AToolAppFlow):
         self.__CheckUserArgs(localToolConfig.FormatArgs, "formatArgs")
         self.__CheckUserArgs(localToolConfig.ClangTidyArgs, "tidyArgs")
         self.__CheckUserArgs(localToolConfig.ClangTidyPostfixArgs, "tidyPostfixArgs")
+
+        if localToolConfig.ScanGenFiles:
+            # The gen files are found without loading a package, so this comes first: it does not depend on the platform, the features or
+            # '--file', and it works for a gen file that can not be loaded
+            self.__ApplyScanGenFiles(config, toolConfig, currentDirPath, localToolConfig)
+            if not (
+                localToolConfig.ScanLicense or localToolConfig.LicenseList or localToolConfig.ScanSource or localToolConfig.Format or localToolConfig.ClangTidy
+            ):
+                return
 
         formatTool = self.__DetermineFormatType(localToolConfig.Format, toolConfig.DefaultPackageLanguage, toolConfig)
         applyFormat = formatTool != FormatTool.Disabled
@@ -683,6 +695,14 @@ class ToolFlowBuildCheck(AToolAppFlow):
             localToolConfig.ScanCopyright,
         )
 
+    def __ApplyScanGenFiles(self, config: Config, toolConfig: ToolConfig, currentDirPath: str, localToolConfig: LocalToolConfig) -> None:
+        # The directory the other checks start in: the one of the closest package
+        startDirectory = FileFinder.TryFindClosestFileInRoot(config, toolConfig, currentDirPath, config.GenFileName)
+        if startDirectory is None:
+            startDirectory = currentDirPath
+        genFiles = ScanGenFiles.FindGenFiles(config, startDirectory, localToolConfig.Recursive, self.ToolAppContext.LowLevelToolConfig.AdditionalInputDirs)
+        ScanGenFiles.Scan(self.Log, genFiles, toolConfig.ProjectInfo.Contexts, localToolConfig.Repair, config.DisableWrite)
+
     def __ScanResourceLicenses(
         self,
         log: Log,
@@ -792,6 +812,13 @@ class ToolAppFlowFactory(AToolAppFlowFactory):
             "--scan", action="store_true", help="Scan source and check for common issues. (Disabled the normal build environment configuration check)"
         )
         parser.add_argument("--scanDeps", action="store_true", help="Scan all package dependencies of the specified package)")
+        parser.add_argument(
+            "--scanGenFiles",
+            action="store_true",
+            help="Check the schema reference of the gen files: the one of the current package, with -r every one below it and with '-t sdk' "
+            "every one in the package locations of the project. A wrong reference is listed, --repair writes the expected one and changes "
+            "nothing else in the file. No package is loaded for this check, and it is done before the other checks.",
+        )
         parser.add_argument(
             "--scanCopyright",
             action="store_true",
