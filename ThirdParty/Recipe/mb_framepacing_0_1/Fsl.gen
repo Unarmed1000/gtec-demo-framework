@@ -9,7 +9,7 @@
     <Platform Name="Apple;RDK_Yocto;Ubuntu;QNX;Emscripten" Supported="true">
       <ExperimentalRecipe Name="mb_framepacing" Version="0.1.0" Find="false">
         <Pipeline>
-          <GitClone URL="https://github.com/Unarmed1000/mb-framepacing" Hash="f1006554833462022f68dd991dbe91df26cbeab6"/>
+          <GitClone URL="https://github.com/Unarmed1000/mb-framepacing" Hash="17456999806200058c4c5e35ffdcb556df65fcfd"/>
           <CMakeBuild Source="sdk/cpp" Project="mb_framepacing" Target="install" Configuration="release" Options="-DMB_FRAMEPACING_BUILD_DATA=OFF -DMB_FRAMEPACING_BUILD_PACER=ON -DMB_FRAMEPACING_BUILD_TESTS=OFF -DMB_FRAMEPACING_BUILD_TOOLS=OFF -DMB_FRAMEPACING_WARNINGS_AS_ERRORS=OFF" OutputPath="_Install"/>
         </Pipeline>
         <Installation>
@@ -29,7 +29,7 @@
     <Platform Name="Android" Supported="true">
       <ExperimentalRecipe Name="mb_framepacing" Version="0.1.0" Find="false">
         <Pipeline>
-          <GitClone URL="https://github.com/Unarmed1000/mb-framepacing" Hash="f1006554833462022f68dd991dbe91df26cbeab6"/>
+          <GitClone URL="https://github.com/Unarmed1000/mb-framepacing" Hash="17456999806200058c4c5e35ffdcb556df65fcfd"/>
           <Copy>
             <GitApply From="{RECIPE_PATH}/android-cmake-minimum-version.patch"/>
           </Copy>
@@ -50,7 +50,7 @@
     <Platform Name="Windows" Supported="true">
       <ExperimentalRecipe Name="mb_framepacing" Version="0.1.0" Find="false">
         <Pipeline>
-          <GitClone URL="https://github.com/Unarmed1000/mb-framepacing" Hash="f1006554833462022f68dd991dbe91df26cbeab6"/>
+          <GitClone URL="https://github.com/Unarmed1000/mb-framepacing" Hash="17456999806200058c4c5e35ffdcb556df65fcfd"/>
           <CMakeBuild Source="sdk/cpp" Project="mb_framepacing" Target="install" Configuration="debug;release" Options="-DMB_FRAMEPACING_BUILD_DATA=OFF -DMB_FRAMEPACING_BUILD_PACER=ON -DMB_FRAMEPACING_BUILD_TESTS=OFF -DMB_FRAMEPACING_BUILD_TOOLS=OFF -DMB_FRAMEPACING_WARNINGS_AS_ERRORS=OFF -DCMAKE_DEBUG_POSTFIX=d" OutputPath="_Install"/>
         </Pipeline>
         <Installation>
