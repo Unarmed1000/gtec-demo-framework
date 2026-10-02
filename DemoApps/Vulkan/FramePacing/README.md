@@ -31,10 +31,10 @@ Adaptive swap interval        |`--Pacer.Adaptive <true\|false>`|On: the pacer sl
 CPU load                      |`--CpuLoad <ms>`                |The time in milliseconds the app spends busy every frame.
 GPU load                      |`--GpuLoad <steps>`             |Draws the raymarched background with the given number of steps for every ray (0 is no background). The load grows linearly with the steps, more steps reach further and show finer detail.
 
-The line below the refresh rate shows the rate the frames are paced at: the refresh rate divided by the swap interval. The two status lines
-below the switches show the swap interval and the frame time that was measured, with how many of the last frames were late. They are shown
-with the pacer off as well: every frame is then held for one refresh, and the late frames are the ones of the last two seconds that took
-more than one refresh.
+The target fps slider and the adaptive switch can only be changed while the frame pacer is on. The line below the refresh rate shows the
+rate the frames are paced at: the refresh rate divided by the swap interval. The two status lines below the switches show the swap interval
+and the frame time that was measured, with how many of the last frames were late. They are shown with the pacer off as well: every frame is
+then held for one refresh, and the late frames are the ones of the last two seconds that took more than one refresh.
 
 The GLES2 and GLES3 versions hold a frame with `eglSwapInterval`. The Vulkan version can not present with a swap interval, so it delays
 the present of a frame that is held for more than one refresh.

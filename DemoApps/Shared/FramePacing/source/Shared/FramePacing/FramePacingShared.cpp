@@ -514,7 +514,19 @@ namespace Fsl
     pacerConfig.RefreshRateHz = GetRefreshRateHz();
     pacerConfig.TargetFps = static_cast<uint32_t>(std::max(m_ui.SliderTargetFps->GetValue(), 0));
     pacerConfig.Adaptive = m_ui.SwitchAdaptive->IsChecked();
-    if (!SamplePacer::IsSupported() || !m_ui.SwitchPacer->IsChecked())
+
+    const bool pacerOn = SamplePacer::IsSupported() && m_ui.SwitchPacer->IsChecked();
+    // The settings of the pacer do nothing while it is off, so they can only be changed while it is on
+    if (m_ui.SliderTargetFps->IsEnabled() != pacerOn)
+    {
+      m_ui.SliderTargetFps->SetEnabled(pacerOn);
+    }
+    if (m_ui.SwitchAdaptive->IsEnabled() != pacerOn)
+    {
+      m_ui.SwitchAdaptive->SetEnabled(pacerOn);
+    }
+
+    if (!pacerOn)
     {
       m_pacer.reset();
       m_nextFrameStartTime = {};
