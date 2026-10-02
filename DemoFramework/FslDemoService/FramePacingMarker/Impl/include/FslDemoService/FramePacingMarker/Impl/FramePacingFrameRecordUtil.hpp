@@ -1,5 +1,5 @@
-#ifndef FSLDEMOSERVICE_FRAMEPACINGMARKER_IMPL_FRAMEPACINGFRAMERECORD_HPP
-#define FSLDEMOSERVICE_FRAMEPACINGMARKER_IMPL_FRAMEPACINGFRAMERECORD_HPP
+#ifndef FSLDEMOSERVICE_FRAMEPACINGMARKER_IMPL_FRAMEPACINGFRAMERECORDUTIL_HPP
+#define FSLDEMOSERVICE_FRAMEPACINGMARKER_IMPL_FRAMEPACINGFRAMERECORDUTIL_HPP
 //****************************************************************************************************************************************************
 //* BSD 3-Clause License
 //*
@@ -22,42 +22,34 @@
 //* EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //****************************************************************************************************************************************************
 
-#include <FslDemoService/FramePacingMarker/FramePacingMarkerKind.hpp>
-#include <FslDemoService/FramePacingMarker/FramePacingSequenceId.hpp>
-#include <chrono>
+#include <FslDemoService/FramePacingMarker/FramePacingFrameSchedule.hpp>
+#include <FslDemoService/FramePacingMarker/Impl/FramePacingFrameRecord.hpp>
 #include <cstdint>
+#include <optional>
 
-namespace Fsl
+namespace Fsl::FramePacingFrameRecordUtil
 {
-  //! Everything needed to draw the marker of the current frame.
-  struct FramePacingFrameRecord
+  //! A optional time as the ticks the marker carries: 0 (unknown) if it is empty or not a positive time
+  template <typename T>
+  constexpr int64_t ToKnownTicks(const std::optional<T>& value) noexcept
   {
-    FramePacingMarkerKind Kind{FramePacingMarkerKind::Frame};
-    //! The number of frames rendered before this one.
-    uint64_t FrameIndex{0};
-    //! The animation time of the frame in 100ns ticks.
-    int64_t AnimationTicks{0};
-    //! When the CPU started working on the frame in 100ns ticks (a HighResolutionTimer timestamp), 0 if unknown.
-    int64_t CpuStartTicks{0};
-    //! When the frame pacer intends the frame to be shown in 100ns ticks (a HighResolutionTimer timestamp), 0 if unknown.
-    int64_t IntendedDisplayTicks{0};
-    //! The frame time the frame pacer aims for in 100ns ticks, 0 if unknown.
-    int64_t TargetFrameTicks{0};
-    //! The frame time the application wants to run at in 100ns ticks, 0 if unknown.
-    int64_t PreferredFrameTicks{0};
-    //! True if nothing animates while the frame is on screen.
-    bool Static{false};
-    uint32_t RunId{0};
-    //! Start markers only: the wall clock start time of the run.
-    std::chrono::system_clock::time_point RunStartTime;
-    //! Start markers only: the sequence id of the run (16 random bytes).
-    FramePacingSequenceId RunSequenceId;
-    //! Draw the sync marker at the bottom left as well
-    bool SyncMarkerEnabled{false};
-    int32_t ModuleSizePx{0};
-    //! 0 if unknown
-    int32_t CaptureHeightPx{0};
-  };
+    return (value.has_value() && value->Ticks() > 0) ? value->Ticks() : 0;
+  }
+
+  //! Replace the pacing values of the record with the ones the app supplied for the frame.
+  //! The animation time is always taken from the schedule. The CPU start time of the record (the host's) is kept if the schedule has none.
+  constexpr void ApplySchedule(FramePacingFrameRecord& rRecord, const FramePacingFrameSchedule& schedule) noexcept
+  {
+    rRecord.AnimationTicks = schedule.AnimationTime.Ticks();
+    if (schedule.CpuStartTime.has_value())
+    {
+      rRecord.CpuStartTicks = ToKnownTicks(schedule.CpuStartTime);
+    }
+    rRecord.IntendedDisplayTicks = ToKnownTicks(schedule.IntendedDisplayTime);
+    rRecord.TargetFrameTicks = ToKnownTicks(schedule.TargetFrameTime);
+    rRecord.PreferredFrameTicks = ToKnownTicks(schedule.PreferredFrameTime);
+    rRecord.Static = schedule.Static;
+  }
 }
 
 #endif

@@ -1,5 +1,5 @@
-#ifndef FSLDEMOSERVICE_FRAMEPACINGMARKER_FRAMEPACINGMARKERINFO_HPP
-#define FSLDEMOSERVICE_FRAMEPACINGMARKER_FRAMEPACINGMARKERINFO_HPP
+#ifndef FSLDEMOSERVICE_FRAMEPACINGMARKER_FRAMEPACINGFRAMESCHEDULE_HPP
+#define FSLDEMOSERVICE_FRAMEPACINGMARKER_FRAMEPACINGFRAMESCHEDULE_HPP
 //****************************************************************************************************************************************************
 //* BSD 3-Clause License
 //*
@@ -24,45 +24,27 @@
 
 #include <FslBase/Time/TickCount.hpp>
 #include <FslBase/Time/TimeSpan.hpp>
-#include <FslDemoService/FramePacingMarker/FramePacingMarkerKind.hpp>
-#include <FslDemoService/FramePacingMarker/FramePacingSequenceId.hpp>
-#include <chrono>
-#include <cstdint>
 #include <optional>
 
 namespace Fsl
 {
-  //! Every value the last drawn frame pacing marker carried (the mb-framepacing marker payload). A value the framework does not know is
-  //! empty, exactly like the marker reports it as unknown.
-  struct FramePacingMarkerInfo
+  //! The pacing values of the frame being drawn, as an app with its own frame pacer knows them (the framework has no frame pacer).
+  //! An app supplies them with IFramePacingMarkerService::SetFrameSchedule so the marker reports what the app actually paced the frame by.
+  //! A value the app does not know is left empty, the marker then reports it as unknown.
+  struct FramePacingFrameSchedule
   {
-    //! The kind of the main marker
-    FramePacingMarkerKind Kind{FramePacingMarkerKind::Frame};
-    //! The number of frames rendered before this one
-    uint64_t FrameIndex{0};
-    //! The time the frame's animation was evaluated for
+    //! The time the frame's animation is evaluated for
     TimeSpan AnimationTime;
-    //! The id of the current (or last) run
-    uint32_t RunId{0};
-    //! When the frame pacer intends the frame to be shown (empty unless the app supplied it with SetFrameSchedule)
-    std::optional<TickCount> IntendedDisplayTime;
-    //! The frame time the frame pacer aims for (empty unless the app supplied it with SetFrameSchedule)
-    std::optional<TimeSpan> TargetFrameTime;
-    //! When the CPU started working on the frame (a HighResolutionTimer timestamp taken before the app update)
+    //! When the CPU started working on the frame (a HighResolutionTimer timestamp). Empty: the timestamp the host took before the app update.
     std::optional<TickCount> CpuStartTime;
-    //! How long the CPU worked on the frame before the marker was drawn (the last thing before the frame is presented)
-    std::optional<TimeSpan> CpuBusyTime;
-    //! The frame time the application wants to run at (empty unless the app supplied it with SetFrameSchedule)
+    //! When the frame pacer intends the frame to be shown (a HighResolutionTimer timestamp)
+    std::optional<TickCount> IntendedDisplayTime;
+    //! The frame time the frame pacer aims for
+    std::optional<TimeSpan> TargetFrameTime;
+    //! The frame time the application wants to run at
     std::optional<TimeSpan> PreferredFrameTime;
-    //! True if the marker flagged the frame as static: nothing animates while it is on screen (only set if the app supplied it with
-    //! SetFrameSchedule)
+    //! True if nothing animates while this frame is on screen
     bool Static{false};
-    //! Start markers only: the wall clock start time of the run
-    std::optional<std::chrono::system_clock::time_point> RunStartTime;
-    //! Start markers only: the sequence id of the run
-    std::optional<FramePacingSequenceId> RunSequenceId;
-    //! True if the sync marker (the run id and the frame index) was drawn as well
-    bool SyncMarker{false};
   };
 }
 

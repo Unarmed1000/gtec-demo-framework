@@ -24,6 +24,7 @@
 
 #include <FslBase/String/StringViewLite.hpp>
 #include <FslBase/Time/TimeSpan.hpp>
+#include <FslDemoService/FramePacingMarker/FramePacingFrameSchedule.hpp>
 #include <FslDemoService/FramePacingMarker/FramePacingMarkerInfo.hpp>
 #include <FslDemoService/FramePacingMarker/FramePacingRunState.hpp>
 #include <cstdint>
@@ -90,6 +91,11 @@ namespace Fsl
     //! @brief Get every value the last drawn marker carried.
     //! @return false if the marker is disabled or no marker has been drawn yet.
     virtual bool TryGetLastMarker(FramePacingMarkerInfo& rInfo) const noexcept = 0;
+
+    //! @brief Supply the pacing values of the frame being drawn (for an app with its own frame pacer, the framework has none).
+    //! @note Call it during the app's Draw, before the marker is drawn (on Vulkan before AddSystemUI). It applies to that frame only: a
+    //!       frame without the call reports the animation time of the framework and no pacing values.
+    virtual void SetFrameSchedule(const FramePacingFrameSchedule& schedule) noexcept = 0;
   };
 }
 

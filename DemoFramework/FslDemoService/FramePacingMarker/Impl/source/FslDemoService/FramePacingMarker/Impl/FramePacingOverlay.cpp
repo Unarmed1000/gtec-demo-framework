@@ -100,6 +100,13 @@ namespace Fsl
                                                                                   : std::numeric_limits<uint32_t>::max();
     }
 
+    //! A frame time in 100ns ticks as the marker carries it: 32 bit, 0 if it is unknown or does not fit
+    uint32_t ToFrameTicks32(const int64_t ticks) noexcept
+    {
+      // The max value is reserved (frames only when something changes)
+      return (ticks > 0 && std::cmp_less(ticks, std::numeric_limits<uint32_t>::max())) ? static_cast<uint32_t>(ticks) : 0u;
+    }
+
     int32_t ToInt32(const uint32_t value) noexcept
     {
       return value <= static_cast<uint32_t>(std::numeric_limits<int32_t>::max()) ? static_cast<int32_t>(value) : std::numeric_limits<int32_t>::max();
@@ -211,18 +218,21 @@ namespace Fsl
     const FM::Options options =
       record.CaptureHeightPx > 0 ? FM::Options::Recommended(windowHeightPx, record.CaptureHeightPx) : FM::Options(record.ModuleSizePx);
     const int32_t alignPx = CalcAlignPx(windowHeightPx, record.CaptureHeightPx);
-    // The framework has no frame pacer, so the intended display time, the target frame time and the preferred frame time are unknown (0),
-    // and it does not know when nothing animates, so no frame is flagged as static.
+    // The framework has no frame pacer and does not know when nothing animates, so the intended display time, the target frame time and
+    // the preferred frame time are unknown (0) and no frame is flagged as static, unless the app supplied the values of the frame
+    // (IFramePacingMarkerService::SetFrameSchedule).
     // The marker is the last thing drawn before the frame is presented, so the CPU busy time is measured now.
+    const uint32_t preferredFrameTicks = ToFrameTicks32(record.PreferredFrameTicks);
+    const uint32_t targetFrameTicks = ToFrameTicks32(record.TargetFrameTicks);
     const uint32_t cpuBusyTicks = CalcCpuBusyTicks(record.CpuStartTicks, m_timer.GetTimestamp().Ticks());
     const FM::Payload payload{ToMarkerKind(record.Kind),
                               record.RunId,
                               record.FrameIndex,
-                              FM::MarkerFlags::None,
+                              record.Static ? FM::MarkerFlags::StaticAfter : FM::MarkerFlags::None,
                               FP::TimeSpan(record.AnimationTicks),
-                              FP::TimeSpan32(),
-                              FP::TimeSpan32(),
-                              FP::TickCount64(),
+                              FP::TimeSpan32(preferredFrameTicks),
+                              FP::TimeSpan32(targetFrameTicks),
+                              FP::TickCount64(record.IntendedDisplayTicks),
                               FP::TickCount64(record.CpuStartTicks),
                               FP::TimeSpan32(cpuBusyTicks)};
     const FM::StartMetadata metadata{FP::ToDateTimeTicks(record.RunStartTime), FM::SequenceId{record.RunSequenceId.Bytes}};
@@ -289,12 +299,25 @@ namespace Fsl
     renderSystem.CmdDrawIndexed(static_cast<uint32_t>(indexCount), 0);
     renderSystem.EndCmds();
 
-    // Report every value the marker carried (the values the framework does not know stay empty)
+    // Report every value the marker carried (the values that are unknown stay empty)
     FramePacingMarkerInfo markerInfo;
     markerInfo.Kind = record.Kind;
     markerInfo.FrameIndex = record.FrameIndex;
     markerInfo.AnimationTime = TimeSpan(record.AnimationTicks);
     markerInfo.RunId = record.RunId;
+    if (record.IntendedDisplayTicks > 0)
+    {
+      markerInfo.IntendedDisplayTime = TickCount(record.IntendedDisplayTicks);
+    }
+    if (targetFrameTicks > 0u)
+    {
+      markerInfo.TargetFrameTime = TimeSpan(static_cast<int64_t>(targetFrameTicks));
+    }
+    if (preferredFrameTicks > 0u)
+    {
+      markerInfo.PreferredFrameTime = TimeSpan(static_cast<int64_t>(preferredFrameTicks));
+    }
+    markerInfo.Static = record.Static;
     if (record.CpuStartTicks > 0)
     {
       markerInfo.CpuStartTime = TickCount(record.CpuStartTicks);

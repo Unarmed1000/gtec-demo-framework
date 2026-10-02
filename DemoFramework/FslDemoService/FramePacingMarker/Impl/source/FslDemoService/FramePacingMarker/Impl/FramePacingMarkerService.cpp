@@ -22,6 +22,7 @@
 
 #include <FslBase/Log/Log3Fmt.hpp>
 #include <FslDemoApp/Base/FrameInfo.hpp>
+#include <FslDemoService/FramePacingMarker/Impl/FramePacingFrameRecordUtil.hpp>
 #include <FslDemoService/FramePacingMarker/Impl/FramePacingMarkerService.hpp>
 #include <FslDemoService/FramePacingMarker/Impl/FramePacingMarkerServiceOptionParser.hpp>
 #include <FslDemoService/FramePacingMarker/Impl/FramePacingOverlay.hpp>
@@ -206,6 +207,8 @@ namespace Fsl
     m_frameAnimationTicks = frameInfo.Time.CurrentTickCount.Ticks();
     // A HighResolutionTimer timestamp, also in 100ns ticks
     m_frameCpuStartTicks = cpuStartTime.Ticks();
+    // An app with its own frame pacer supplies the values of the frame during its draw
+    m_frameSchedule.reset();
     m_hasFrame = true;
   }
 
@@ -227,6 +230,12 @@ namespace Fsl
   }
 
 
+  void FramePacingMarkerService::SetFrameSchedule(const FramePacingFrameSchedule& schedule) noexcept
+  {
+    m_frameSchedule = schedule;
+  }
+
+
   bool FramePacingMarkerService::TryGetFrameRecord(FramePacingFrameRecord& rRecord) const noexcept
   {
     if (!m_enabled || !m_hasFrame)
@@ -237,6 +246,15 @@ namespace Fsl
     rRecord.FrameIndex = m_frameIndex;
     rRecord.AnimationTicks = m_frameAnimationTicks;
     rRecord.CpuStartTicks = m_frameCpuStartTicks;
+    // The framework has no frame pacer, so the pacing values are unknown unless the app supplied them
+    rRecord.IntendedDisplayTicks = 0;
+    rRecord.TargetFrameTicks = 0;
+    rRecord.PreferredFrameTicks = 0;
+    rRecord.Static = false;
+    if (m_frameSchedule.has_value())
+    {
+      FramePacingFrameRecordUtil::ApplySchedule(rRecord, *m_frameSchedule);
+    }
     rRecord.RunId = m_runId;
     rRecord.RunStartTime = m_runStartTime;
     rRecord.RunSequenceId = m_runSequenceId;
