@@ -44,7 +44,8 @@ namespace Fsl
         PacerTargetFps,
         PacerAdaptive,
         CpuLoad,
-        GpuLoad
+        GpuLoad,
+        Background
       };
     };
 
@@ -96,6 +97,9 @@ namespace Fsl
     rOptions.emplace_back("GpuLoad", OptionArgument::OptionRequired, CommandId::GpuLoad,
                           "A GPU load: the number of steps the raymarched background takes for every pixel (0 = no background, the "
                           "default).");
+    rOptions.emplace_back("Background", OptionArgument::OptionRequired, CommandId::Background,
+                          "The scene of the raymarched background: flight (a flight through a fractal lattice, the default) or hall (a "
+                          "hall of columns that scrolls sideways at a constant speed, which makes a stutter easy to see).");
   }
 
 
@@ -144,6 +148,19 @@ namespace Fsl
     case CommandId::GpuLoad:
       return TryParseInRange(m_gpuLoadSteps, strOptArg, SampleConfig::GpuLoadSteps, "GpuLoad") ? OptionParseResult::Parsed
                                                                                                : OptionParseResult::Failed;
+    case CommandId::Background:
+      if (strOptArg == "flight")
+      {
+        m_background = RaymarchScene::Flight;
+        return OptionParseResult::Parsed;
+      }
+      if (strOptArg == "hall")
+      {
+        m_background = RaymarchScene::Hall;
+        return OptionParseResult::Parsed;
+      }
+      FSLLOG3_ERROR("Background must be 'flight' or 'hall'");
+      return OptionParseResult::Failed;
     default:
       return OptionParseResult::NotHandled;
     }

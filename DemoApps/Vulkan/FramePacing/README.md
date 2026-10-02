@@ -24,13 +24,14 @@ pacer gives every frame the swap interval to hold it for and the time step to an
 frame was paced by, so the marker also reports the intended display time, the target frame time and the preferred frame time.
 
 Control                       |Argument                        |Description
-------------------------------|--------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+------------------------------|--------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 Frame pacer (or the **P** key)|`--Pacer`                       |Switch the frame pacer on and off.
 Refresh rate                  |`--Pacer.RefreshRate <hz>`      |The refresh rate of the display. It is read from the window system, the slider only sets it when the window system does not know it. The argument overrides both and allows decimals (59.94).
 Target fps                    |`--Pacer.TargetFps <fps>`       |The frame rate the pacer aims for, 0 is the refresh rate of the display. 30 on a 60 Hz display holds every frame for two refreshes.
 Adaptive swap interval        |`--Pacer.Adaptive <true\|false>`|On: the pacer slows down when frames are late and speeds up again when they fit. Off: a fixed frame rate.
 CPU load                      |`--CpuLoad <ms>`                |The time in milliseconds the app spends busy every frame.
 GPU load                      |`--GpuLoad <steps>`             |Draws the raymarched background with the given number of steps for every ray (0 is no background). The load grows linearly with the steps, more steps reach further and show finer detail.
+Background                    |`--Background <flight\|hall>`   |The scene of the raymarched background (the radio buttons below the GPU load). `flight` is a flight through a fractal lattice. `hall` is a hall of columns that scrolls sideways at a constant speed, which makes a stutter easy to see.
 
 The target fps slider and the adaptive switch can only be changed while the frame pacer is on. The line below the refresh rate shows the
 rate the frames are paced at: the refresh rate divided by the swap interval. The two status lines below the switches show the swap interval
@@ -63,7 +64,10 @@ The three versions of the sample differ in what they can measure and in how they
   how long the present was delayed.
 - **A GPU load of 0 draws no background at all.** The screen is then only cleared, so what is left of the GPU time is the UI and the marker.
 
-The GPU load is a raymarched background: a flight through a fractal lattice of golden spheres over water that mirrors it.
+The GPU load is a raymarched background with two scenes. `Fractal flight` is a flight through a fractal lattice of golden spheres over water
+that mirrors it. `Scrolling hall` is a hall of columns on a mirroring floor at dusk: the camera only travels sideways, at a constant speed,
+so every column, shadow and tile crosses the screen at a constant speed and a frame that is shown too long or too short is easy to see.
+Follow a column with the eyes to judge the pacing.
 
 The sample code lives in [Shared/FramePacing](../../Shared/FramePacing). It only uses the API independent INativeBatch2D, except for
 the background and the swap interval, which each of the GLES2, GLES3 and Vulkan versions does with its own API.
@@ -76,6 +80,7 @@ Command line arguments':
 
 Argument                          |Description                                                                                                                                                                                                                                                                                                                |Source
 ----------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------
+--Background \<arg>               |The scene of the raymarched background: flight (a flight through a fractal lattice, the default) or hall (a hall of columns that scrolls sideways at a constant speed, which makes a stutter easy to see).                                                                                                                 |Demo
 --CpuLoad \<arg>                  |Simulate a CPU load: the time in milliseconds the app spends busy every frame (0 = none, the default).                                                                                                                                                                                                                     |Demo
 --GpuLoad \<arg>                  |A GPU load: the number of steps the raymarched background takes for every pixel (0 = no background, the default).                                                                                                                                                                                                          |Demo
 --HideMarkerStats                 |Start with the overlay with the values of the last frame pacing marker hidden (the UI has a switch for it).                                                                                                                                                                                                                |Demo

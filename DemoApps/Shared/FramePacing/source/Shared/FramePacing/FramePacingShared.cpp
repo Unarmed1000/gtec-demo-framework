@@ -251,6 +251,11 @@ namespace Fsl
     m_ui.SliderGpuLoad =
       uiFactory->CreateSliderFmtValue(UI::LayoutOrientation::Horizontal, WithValue(SampleConfig::GpuLoadSteps, options->GetGpuLoadSteps()));
     m_ui.SliderGpuLoad->SetAlignmentX(UI::ItemAlignment::Stretch);
+    // The scene the raymarched background shows
+    const RaymarchScene background = options->GetBackground();
+    const auto backgroundGroup = uiFactory->CreateRadioGroup("background");
+    m_ui.RadioBackgroundFlight = uiFactory->CreateRadioButton(backgroundGroup, "Fractal flight", background == RaymarchScene::Flight);
+    m_ui.RadioBackgroundHall = uiFactory->CreateRadioButton(backgroundGroup, "Scrolling hall", background == RaymarchScene::Hall);
 
     const auto stackLayout = std::make_shared<UI::StackLayout>(uiFactory->GetContext());
     stackLayout->SetOrientation(UI::LayoutOrientation::Vertical);
@@ -277,6 +282,8 @@ namespace Fsl
     stackLayout->AddChild(m_ui.SliderCpuLoad);
     stackLayout->AddChild(lblGpuLoad);
     stackLayout->AddChild(m_ui.SliderGpuLoad);
+    stackLayout->AddChild(m_ui.RadioBackgroundFlight);
+    stackLayout->AddChild(m_ui.RadioBackgroundHall);
     stackLayout->AddChild(uiFactory->CreateDivider(UI::LayoutOrientation::Horizontal));
     stackLayout->AddChild(m_ui.SwitchMarkerStats);
     stackLayout->AddChild(m_ui.SwitchPacerStats);
@@ -454,6 +461,7 @@ namespace Fsl
     const double animationSeconds = m_animationTime.TotalSeconds();
     RaymarchParams params;
     params.Steps = m_ui.SliderGpuLoad->GetValue();
+    params.Scene = m_ui.RadioBackgroundHall->IsChecked() ? RaymarchScene::Hall : RaymarchScene::Flight;
     params.TravelPhase = ToPhase(animationSeconds, LocalConfig::TravelSeconds);
     params.SwayPhase = ToPhase(animationSeconds, LocalConfig::SwaySeconds);
     params.MorphPhase = ToPhase(animationSeconds, LocalConfig::MorphSeconds);

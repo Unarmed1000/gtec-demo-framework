@@ -115,13 +115,14 @@ pacing values of the marker. The sample hands those to the marker with `SetFrame
 intended display time, the target frame time and the preferred frame time.
 
 Control                       |Argument                        |Description
-------------------------------|--------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+------------------------------|--------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 Frame pacer (or the **P** key)|`--Pacer`                       |Switch the frame pacer on and off.
 Refresh rate                  |`--Pacer.RefreshRate <hz>`      |The refresh rate of the display. It is read from the window system, the slider only sets it when the window system does not know it. The argument overrides both and allows decimals (59.94).
 Target fps                    |`--Pacer.TargetFps <fps>`       |The frame rate the pacer aims for, 0 is the refresh rate of the display. 30 on a 60 Hz display holds every frame for two refreshes.
 Adaptive swap interval        |`--Pacer.Adaptive <true\|false>`|On: the pacer slows down when frames are late and speeds up again when they fit. Off: a fixed frame rate.
 CPU load                      |`--CpuLoad <ms>`                |The time in milliseconds the app spends busy every frame.
 GPU load                      |`--GpuLoad <steps>`             |Draws the raymarched background with the given number of steps for every ray (0 is no background). The load grows linearly with the steps, more steps reach further and show finer detail.
+Background                    |`--Background <flight\|hall>`   |The scene of the raymarched background (the radio buttons below the GPU load). `flight` is a flight through a fractal lattice. `hall` is a hall of columns that scrolls sideways at a constant speed, which makes a stutter easy to see.
 
 The target fps slider and the adaptive switch can only be changed while the frame pacer is on. The line below the refresh rate shows the
 rate the frames are paced at: the refresh rate divided by the swap interval. The two status lines below the switches show the swap interval
@@ -159,10 +160,12 @@ How a frame is held for its swap interval depends on the API:
   has no vsync times, so this is a guess and less even than a real swap interval. The GPU time of a frame is measured with timestamp
   queries and given to the pacer.
 
-The GPU load is a raymarched background: a flight through a fractal lattice of golden spheres over water that mirrors it (a sphere inversion
-fractal). Every ray is sphere traced in a fixed number of steps without a early exit, so every pixel costs the same and the cost grows
-linearly with the steps. Each app has its own copy of the shader (`Raymarch.frag`), as the shared code only knows the API independent render
-interfaces.
+The GPU load is a raymarched background with two scenes, selected with the radio buttons below the GPU load or with `--Background`. `Fractal
+flight` is a flight through a fractal lattice of golden spheres over water that mirrors it (a sphere inversion fractal). `Scrolling hall` is
+a hall of fluted columns on a mirroring floor at dusk: the camera only travels sideways, at a constant speed, so every column, shadow and
+tile crosses the screen at a constant speed and a frame that is shown too long or too short is easy to see. In both scenes every ray is
+sphere traced in a fixed number of steps without a early exit, so every pixel costs the same and the cost grows linearly with the steps.
+Each app has its own copy of the shader (`Raymarch.frag`), as the shared code only knows the API independent render interfaces.
 
 While the pacer is on the sample animates by the time steps of the pacer (the refreshes the display moved on), so the time step keys of
 the framework (slow and fast motion) have no effect. Pause still stops the animation.

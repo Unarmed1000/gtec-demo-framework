@@ -26,6 +26,15 @@
 
 namespace Fsl
 {
+  //! The scenes the raymarched background of the FramePacing samples can show
+  enum class RaymarchScene
+  {
+    //! A flight through a fractal lattice over water
+    Flight,
+    //! A hall of columns that scrolls sideways at a constant speed, which makes a stutter easy to see
+    Hall
+  };
+
   //! What the raymarched background of the FramePacing samples is drawn with (the GPU load of the sample).
   //! The shader is drawn by each app as the shared code only knows the API independent render interfaces. The animation is given as
   //! phases, so the shader gets small exact values no matter how long the app has been running.
@@ -33,12 +42,21 @@ namespace Fsl
   {
     //! The number of steps the shader marches every ray in: the GPU load (0 = the background is not drawn)
     int32_t Steps{0};
-    //! The flight through the lattice in [0,1), the flight repeats when it wraps
+    //! The scene that is drawn
+    RaymarchScene Scene{RaymarchScene::Flight};
+    //! The travel of the camera in [0,1), it repeats when it wraps: the flight through the lattice, or the way along the hall
     float TravelPhase{0.0f};
-    //! The sway of the camera, the waves on the water and the pulses of light in [0,1)
+    //! Flight: the sway of the camera, the waves on the water and the pulses of light in [0,1). The hall does not use it, its camera
+    //! only moves sideways.
     float SwayPhase{0.0f};
-    //! The slow change of the shape and the colors of the lattice in [0,1)
+    //! Flight: the slow change of the shape and the colors of the lattice in [0,1). The hall does not use it.
     float MorphPhase{0.0f};
+
+    //! The scene as the shader gets it (0 = Flight, 1 = Hall)
+    [[nodiscard]] constexpr float SceneAsFloat() const noexcept
+    {
+      return Scene == RaymarchScene::Hall ? 1.0f : 0.0f;
+    }
   };
 }
 

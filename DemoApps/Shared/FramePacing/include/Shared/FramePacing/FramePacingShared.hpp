@@ -34,6 +34,7 @@
 #include <FslSimpleUI/App/UIDemoAppExtension.hpp>
 #include <FslSimpleUI/Base/Control/BackgroundLabelButton.hpp>
 #include <FslSimpleUI/Base/Control/Label.hpp>
+#include <FslSimpleUI/Base/Control/RadioButton.hpp>
 #include <FslSimpleUI/Base/Control/SliderAndFmtValueLabel.hpp>
 #include <FslSimpleUI/Base/Control/Switch.hpp>
 #include <Shared/FramePacing/RaymarchParams.hpp>
@@ -155,6 +156,9 @@ namespace Fsl
       std::shared_ptr<UI::Label> LabelPacerFrames;
       std::shared_ptr<UI::SliderAndFmtValueLabel<int32_t>> SliderCpuLoad;
       std::shared_ptr<UI::SliderAndFmtValueLabel<int32_t>> SliderGpuLoad;
+      //! The scene of the raymarched background
+      std::shared_ptr<UI::RadioButton> RadioBackgroundFlight;
+      std::shared_ptr<UI::RadioButton> RadioBackgroundHall;
       //! The two overlays: the values of the last marker and the frame pacing stats, each can be hidden with its switch
       std::shared_ptr<UI::Switch> SwitchMarkerStats;
       std::shared_ptr<UI::Switch> SwitchPacerStats;

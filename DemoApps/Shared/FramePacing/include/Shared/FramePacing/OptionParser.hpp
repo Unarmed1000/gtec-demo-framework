@@ -23,6 +23,7 @@
 //****************************************************************************************************************************************************
 
 #include <FslDemoApp/Base/ADemoOptionParser.hpp>
+#include <Shared/FramePacing/RaymarchParams.hpp>
 #include <Shared/FramePacing/SampleConfig.hpp>
 #include <cstdint>
 #include <optional>
@@ -43,6 +44,7 @@ namespace Fsl
     bool m_pacerAdaptive{true};
     int32_t m_cpuLoadMs{SampleConfig::CpuLoadMs.Get()};
     int32_t m_gpuLoadSteps{SampleConfig::GpuLoadSteps.Get()};
+    RaymarchScene m_background{RaymarchScene::Flight};
 
   public:
     OptionParser();
@@ -112,6 +114,12 @@ namespace Fsl
     [[nodiscard]] int32_t GetGpuLoadSteps() const noexcept
     {
       return m_gpuLoadSteps;
+    }
+
+    //! @brief The scene of the raymarched background.
+    [[nodiscard]] RaymarchScene GetBackground() const noexcept
+    {
+      return m_background;
     }
 
   protected:
