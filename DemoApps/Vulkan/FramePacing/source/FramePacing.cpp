@@ -29,6 +29,8 @@ namespace Fsl
   FramePacing::FramePacing(const DemoAppConfig& config)
     : VulkanBasic::DemoAppVulkanBasic(config)
     , m_shared(config, "Vulkan.FramePacing", SamplePresentMethod::WaitThenPresent)
+    , m_background(m_device, *GetContentManager())
+    , m_gpuTimer(m_device, m_deviceQueue.QueueFamilyIndex)
   {
     // Give the UI a chance to intercept the various DemoApp events.
     RegisterExtension(m_shared.GetUIDemoAppExtension());
@@ -59,8 +61,9 @@ namespace Fsl
   {
     base_type::EndDraw(frameInfo);
 
-    // The frame was submitted to the GPU and is presented after this
-    m_shared.EndFrame();
+    // The frame was submitted to the GPU and is presented after this. The GPU works on it from now on, so the frame pacer is given the
+    // GPU time of the last frame that was measured.
+    m_shared.EndFrame(m_gpuTimer.GetGpuTime());
     // A FIFO present holds a frame for one refresh and there is no swap interval, so the present of a frame the frame pacer holds for
     // more than one refresh is delayed instead
     m_shared.WaitForPresent();
@@ -74,6 +77,8 @@ namespace Fsl
     const VkCommandBuffer hCmdBuffer = rCmdBuffers[currentFrameIndex];
     rCmdBuffers.Begin(currentFrameIndex, VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT, VK_NULL_HANDLE, 0, VK_NULL_HANDLE, VK_FALSE, 0, 0);
     {
+      m_gpuTimer.BeginFrame(hCmdBuffer);
+
       const auto clearColor = FramePacingShared::ClearColor.ToVector4();
       std::array<VkClearValue, 1> clearValues{};
       clearValues[0].color = {{clearColor.X, clearColor.Y, clearColor.Z, clearColor.W}};
@@ -90,27 +95,33 @@ namespace Fsl
 
       rCmdBuffers.CmdBeginRenderPass(currentFrameIndex, &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
       {
+        // The background is animated for the same time as the rest of the frame
+        m_background.Draw(hCmdBuffer, m_shared.GetRaymarchParams());
         m_shared.Draw();
 
         // Remember to call this as the last operation in your renderPass (this is also where the frame pacing marker is drawn)
         AddSystemUI(hCmdBuffer, currentFrameIndex);
       }
       rCmdBuffers.CmdEndRenderPass(currentFrameIndex);
+
+      m_gpuTimer.EndFrame(hCmdBuffer);
     }
     rCmdBuffers.End(currentFrameIndex);
   }
 
 
-  VkRenderPass FramePacing::OnBuildResources(const VulkanBasic::BuildResourcesContext& /*context*/)
+  VkRenderPass FramePacing::OnBuildResources(const VulkanBasic::BuildResourcesContext& context)
   {
-    // Since we only draw using the NativeBatch we just create the most basic render pass that is compatible
+    // Since we only draw using the NativeBatch and the background we just create the most basic render pass that is compatible
     m_dependentResources.MainRenderPass = CreateBasicRenderPass();
+    m_background.OnBuildResources(context, m_dependentResources.MainRenderPass.Get());
     return m_dependentResources.MainRenderPass.Get();
   }
 
 
   void FramePacing::OnFreeResources()
   {
+    m_background.OnFreeResources();
     m_dependentResources.Reset();
   }
 }

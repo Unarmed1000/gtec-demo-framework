@@ -1,5 +1,5 @@
-#ifndef SHARED_FRAMEPACING_SAMPLECONFIG_HPP
-#define SHARED_FRAMEPACING_SAMPLECONFIG_HPP
+#ifndef GLES2_FRAMEPACING_RAYMARCHBACKGROUND_HPP
+#define GLES2_FRAMEPACING_RAYMARCHBACKGROUND_HPP
 //****************************************************************************************************************************************************
 //* BSD 3-Clause License
 //*
@@ -22,23 +22,36 @@
 //* EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //****************************************************************************************************************************************************
 
-#include <FslBase/Math/ConstrainedValue.hpp>
-#include <cstdint>
+#include <FslBase/Math/Pixel/PxSize2D.hpp>
+#include <FslUtil/OpenGLES2/GLProgram.hpp>
+#include <FslUtil/OpenGLES2/GLVertexAttribLink.hpp>
+#include <FslUtil/OpenGLES2/GLVertexBuffer.hpp>
+#include <Shared/FramePacing/RaymarchParams.hpp>
+#include <GLES2/gl2.h>
+#include <array>
 
-//! The default value and the range of the settings of the FramePacing samples, shared by the command line options and the UI
-namespace Fsl::SampleConfig
+namespace Fsl
 {
-  //! The refresh rate the slider offers when the window system does not know the refresh rate of the display
-  constexpr ConstrainedValue<int32_t> RefreshRateHz(60, 24, 240);
-  //! The refresh rates the command line accepts (decimals allowed)
-  constexpr double MinRefreshRateHz = 1.0;
-  constexpr double MaxRefreshRateHz = 1000.0;
-  //! The frame rate the app wants to run at (0 = the refresh rate of the display)
-  constexpr ConstrainedValue<int32_t> TargetFps(0, 0, 240);
-  //! The simulated CPU load: the time the app spends busy every frame in milliseconds
-  constexpr ConstrainedValue<int32_t> CpuLoadMs(0, 0, 50);
-  //! The GPU load: the number of steps the raymarched background takes for every pixel (0 = no background)
-  constexpr ConstrainedValue<int32_t> GpuLoadSteps(0, 0, 1024);
+  class IContentManager;
+
+  //! Draws the raymarched background of the sample (its GPU load): a quad that covers the screen, the fragment shader does the work.
+  class RaymarchBackground final
+  {
+    GLES2::GLProgram m_program;
+    GLES2::GLVertexBuffer m_vertexBuffer;
+    std::array<GLES2::GLVertexAttribLink, 1> m_attribLinks;
+    GLint m_locPhase{-1};
+    GLint m_locResolution{-1};
+    GLint m_locSteps{-1};
+
+  public:
+    //! If the shader can not be compiled the background is not drawn (a warning is logged)
+    explicit RaymarchBackground(const IContentManager& contentManager);
+
+    //! Draw the background (it is not drawn if params.Steps is zero)
+    //! @param sizePx the size of the window in pixels
+    void Draw(const RaymarchParams& params, const PxSize2D sizePx);
+  };
 }
 
 #endif

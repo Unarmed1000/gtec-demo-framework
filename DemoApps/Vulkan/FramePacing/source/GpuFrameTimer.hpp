@@ -1,5 +1,5 @@
-#ifndef SHARED_FRAMEPACING_SAMPLECONFIG_HPP
-#define SHARED_FRAMEPACING_SAMPLECONFIG_HPP
+#ifndef VULKAN_FRAMEPACING_GPUFRAMETIMER_HPP
+#define VULKAN_FRAMEPACING_GPUFRAMETIMER_HPP
 //****************************************************************************************************************************************************
 //* BSD 3-Clause License
 //*
@@ -22,23 +22,53 @@
 //* EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //****************************************************************************************************************************************************
 
-#include <FslBase/Math/ConstrainedValue.hpp>
+#include <FslBase/Time/TimeSpan.hpp>
+#include <FslUtil/Vulkan1_0/VUDevice.hpp>
+#include <RapidVulkan/QueryPool.hpp>
+#include <vulkan/vulkan.h>
 #include <cstdint>
 
-//! The default value and the range of the settings of the FramePacing samples, shared by the command line options and the UI
-namespace Fsl::SampleConfig
+namespace Fsl
 {
-  //! The refresh rate the slider offers when the window system does not know the refresh rate of the display
-  constexpr ConstrainedValue<int32_t> RefreshRateHz(60, 24, 240);
-  //! The refresh rates the command line accepts (decimals allowed)
-  constexpr double MinRefreshRateHz = 1.0;
-  constexpr double MaxRefreshRateHz = 1000.0;
-  //! The frame rate the app wants to run at (0 = the refresh rate of the display)
-  constexpr ConstrainedValue<int32_t> TargetFps(0, 0, 240);
-  //! The simulated CPU load: the time the app spends busy every frame in milliseconds
-  constexpr ConstrainedValue<int32_t> CpuLoadMs(0, 0, 50);
-  //! The GPU load: the number of steps the raymarched background takes for every pixel (0 = no background)
-  constexpr ConstrainedValue<int32_t> GpuLoadSteps(0, 0, 1024);
+  //! Measures the time the GPU needs for a frame with two timestamp queries around the commands of the frame.
+  //! The result of a frame is read when the next frame is recorded, which is after the host waited for the GPU to finish the frame (the
+  //! host keeps one frame in flight), so reading it never waits.
+  class GpuFrameTimer final
+  {
+    VkDevice m_device{VK_NULL_HANDLE};
+    RapidVulkan::QueryPool m_queryPool;
+    //! The number of nanoseconds a timestamp counts in
+    double m_timestampPeriod{0.0};
+    //! The bits of a timestamp that are valid
+    uint64_t m_timestampMask{0};
+    bool m_hasPendingQuery{false};
+    TimeSpan m_gpuTime;
+
+  public:
+    GpuFrameTimer(const GpuFrameTimer&) = delete;
+    GpuFrameTimer& operator=(const GpuFrameTimer&) = delete;
+
+    //! @param queueFamilyIndex the queue family the command buffers are submitted to
+    GpuFrameTimer(const Vulkan::VUDevice& device, const uint32_t queueFamilyIndex);
+
+    //! @return true if the queue supports timestamps (if not the GPU time stays zero)
+    [[nodiscard]] bool IsSupported() const noexcept
+    {
+      return m_queryPool.IsValid();
+    }
+
+    //! @brief Call it first in the command buffer of a frame, outside a render pass.
+    void BeginFrame(const VkCommandBuffer hCmdBuffer);
+
+    //! @brief Call it last in the command buffer of a frame, outside a render pass.
+    void EndFrame(const VkCommandBuffer hCmdBuffer);
+
+    //! @return the GPU time of the last frame that was measured (zero if no frame was measured yet)
+    [[nodiscard]] TimeSpan GetGpuTime() const noexcept
+    {
+      return m_gpuTime;
+    }
+  };
 }
 
 #endif

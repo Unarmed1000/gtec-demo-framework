@@ -69,6 +69,12 @@ namespace Fsl
       constexpr double SweepSeconds = 2.0;
       constexpr int32_t BarWidthPx = 16;
       constexpr int32_t BoxSizePx = 96;
+      //! The raymarched background: the tunnel is flown through in this time, then it repeats
+      constexpr double TravelSeconds = 40.0;
+      //! The raymarched background: the time of one roll of the camera to both sides
+      constexpr double RollSeconds = 23.0;
+      //! The raymarched background: the time the colors cycle in
+      constexpr double ColorSeconds = 31.0;
       //! The duration of a timed run in seconds
       constexpr ConstrainedValue<int32_t> TimedRunSeconds(10, 1, 120);
       //! WaitForPresent presents this long after the last refresh before the one the frame pacer aims for (at most an eighth of a refresh)
@@ -112,6 +118,13 @@ namespace Fsl
 
     //! Shown for a value the marker reports as unknown
     constexpr const char* UnknownValue = "unknown";
+
+    //! Where the time is in a cycle of the given length, in [0,1)
+    float ToPhase(const double seconds, const double cycleSeconds) noexcept
+    {
+      const double phase = std::fmod(seconds / cycleSeconds, 1.0);
+      return static_cast<float>(phase >= 0.0 ? phase : (phase + 1.0));
+    }
 
     //! A slider that starts at the value of a command line option
     ConstrainedValue<int32_t> WithValue(const ConstrainedValue<int32_t> range, const int32_t value) noexcept
@@ -196,6 +209,10 @@ namespace Fsl
     m_ui.SliderCpuLoad =
       uiFactory->CreateSliderFmtValue(UI::LayoutOrientation::Horizontal, WithValue(SampleConfig::CpuLoadMs, options->GetCpuLoadMs()));
     m_ui.SliderCpuLoad->SetAlignmentX(UI::ItemAlignment::Stretch);
+    const auto lblGpuLoad = uiFactory->CreateLabel("GPU load (ray steps, 0 = off)");
+    m_ui.SliderGpuLoad =
+      uiFactory->CreateSliderFmtValue(UI::LayoutOrientation::Horizontal, WithValue(SampleConfig::GpuLoadSteps, options->GetGpuLoadSteps()));
+    m_ui.SliderGpuLoad->SetAlignmentX(UI::ItemAlignment::Stretch);
 
     const auto stackLayout = std::make_shared<UI::StackLayout>(uiFactory->GetContext());
     stackLayout->SetOrientation(UI::LayoutOrientation::Vertical);
@@ -219,6 +236,8 @@ namespace Fsl
     stackLayout->AddChild(uiFactory->CreateDivider(UI::LayoutOrientation::Horizontal));
     stackLayout->AddChild(lblCpuLoad);
     stackLayout->AddChild(m_ui.SliderCpuLoad);
+    stackLayout->AddChild(lblGpuLoad);
+    stackLayout->AddChild(m_ui.SliderGpuLoad);
     stackLayout->AddChild(uiFactory->CreateDivider(UI::LayoutOrientation::Horizontal));
     stackLayout->AddChild(lblHint);
     stackLayout->AddChild(lblHintTimed);
@@ -351,6 +370,21 @@ namespace Fsl
     DrawAnimation(m_animationTime.TotalSeconds());
 
     m_uiExtension->Draw();
+  }
+
+
+  RaymarchParams FramePacingShared::GetRaymarchParams()
+  {
+    // The background is animated for the animation time of the frame, so the frame has to be started
+    StartFrame();
+
+    const double animationSeconds = m_animationTime.TotalSeconds();
+    RaymarchParams params;
+    params.Steps = m_ui.SliderGpuLoad->GetValue();
+    params.TravelPhase = ToPhase(animationSeconds, LocalConfig::TravelSeconds);
+    params.RollPhase = ToPhase(animationSeconds, LocalConfig::RollSeconds);
+    params.ColorPhase = ToPhase(animationSeconds, LocalConfig::ColorSeconds);
+    return params;
   }
 
 

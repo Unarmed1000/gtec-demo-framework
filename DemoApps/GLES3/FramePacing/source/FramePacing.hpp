@@ -25,6 +25,7 @@
 #include <FslDemoApp/OpenGLES3/DemoAppGLES3.hpp>
 #include <Shared/FramePacing/EGL/EGLSwapInterval.hpp>
 #include <Shared/FramePacing/FramePacingShared.hpp>
+#include "RaymarchBackground.hpp"
 
 namespace Fsl
 {
@@ -35,6 +36,8 @@ namespace Fsl
     //! All the actual sample code can be found in the shared class since its reused for all FramePacing samples.
     FramePacingShared m_shared;
 
+    //! The raymarched background (the GPU load of the sample)
+    RaymarchBackground m_background;
     //! The number of display refreshes the swap of the host holds a frame for
     EGLSwapInterval m_swapInterval;
 

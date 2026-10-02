@@ -1,5 +1,5 @@
-#ifndef VULKAN_FRAMEPACING_FRAMEPACING_HPP
-#define VULKAN_FRAMEPACING_FRAMEPACING_HPP
+#ifndef VULKAN_FRAMEPACING_RAYMARCHBACKGROUND_HPP
+#define VULKAN_FRAMEPACING_RAYMARCHBACKGROUND_HPP
 //****************************************************************************************************************************************************
 //* BSD 3-Clause License
 //*
@@ -22,57 +22,64 @@
 //* EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //****************************************************************************************************************************************************
 
-#include <FslDemoApp/Vulkan/Basic/DemoAppVulkanBasic.hpp>
-#include <Shared/FramePacing/FramePacingShared.hpp>
-#include "GpuFrameTimer.hpp"
-#include "RaymarchBackground.hpp"
+#include <FslDemoApp/Vulkan/Basic/BuildResourcesContext.hpp>
+#include <FslUtil/Vulkan1_0/VUDevice.hpp>
+#include <RapidVulkan/GraphicsPipeline.hpp>
+#include <RapidVulkan/PipelineLayout.hpp>
+#include <RapidVulkan/ShaderModule.hpp>
+#include <Shared/FramePacing/RaymarchParams.hpp>
+#include <vulkan/vulkan.h>
 
 namespace Fsl
 {
-  class FramePacing final : public VulkanBasic::DemoAppVulkanBasic
+  class IContentManager;
+
+  //! Draws the raymarched background of the sample (its GPU load): one triangle that covers the screen, the fragment shader does the work.
+  class RaymarchBackground final
   {
-    using base_type = VulkanBasic::DemoAppVulkanBasic;
+    struct Resources
+    {
+      RapidVulkan::ShaderModule VertShader;
+      RapidVulkan::ShaderModule FragShader;
+      RapidVulkan::PipelineLayout PipelineLayout;
+
+      Resources() = default;
+      Resources(const Resources&) = delete;
+      Resources& operator=(const Resources&) = delete;
+      Resources(Resources&& other) noexcept = delete;
+      Resources& operator=(Resources&& other) noexcept = delete;
+    };
 
     struct DependentResources
     {
-      RapidVulkan::RenderPass MainRenderPass;
+      RapidVulkan::GraphicsPipeline Pipeline;
+      VkExtent2D Extent{};
 
       DependentResources() = default;
       DependentResources(const DependentResources&) = delete;
       DependentResources& operator=(const DependentResources&) = delete;
       DependentResources(DependentResources&& other) noexcept = delete;
       DependentResources& operator=(DependentResources&& other) noexcept = delete;
-      ~DependentResources() = default;
 
       void Reset() noexcept
       {
         // Reset in destruction order
-        MainRenderPass.Reset();
+        Extent = {};
+        Pipeline.Reset();
       }
     };
 
+    Resources m_resources;
     DependentResources m_dependentResources;
 
-    //! All the actual sample code can be found in the shared class since its reused for all FramePacing samples.
-    FramePacingShared m_shared;
-
-    //! The raymarched background (the GPU load of the sample)
-    RaymarchBackground m_background;
-    //! The frame pacer is told how long the GPU needs for a frame
-    GpuFrameTimer m_gpuTimer;
-
   public:
-    explicit FramePacing(const DemoAppConfig& config);
+    RaymarchBackground(const Vulkan::VUDevice& device, const IContentManager& contentManager);
 
-  protected:
-    void OnKeyEvent(const KeyEvent& event) final;
-    void ConfigurationChanged(const DemoWindowMetrics& windowMetrics) final;
-    void Update(const DemoTime& demoTime) final;
-    void EndDraw(const FrameInfo& frameInfo) final;
-    void VulkanDraw(const DemoTime& demoTime, RapidVulkan::CommandBuffers& rCmdBuffers, const VulkanBasic::DrawContext& drawContext) final;
+    void OnBuildResources(const VulkanBasic::BuildResourcesContext& context, const VkRenderPass hRenderPass);
+    void OnFreeResources() noexcept;
 
-    VkRenderPass OnBuildResources(const VulkanBasic::BuildResourcesContext& context) final;
-    void OnFreeResources() final;
+    //! Draw the background inside the render pass it was built for (it is not drawn if params.Steps is zero)
+    void Draw(const VkCommandBuffer hCmdBuffer, const RaymarchParams& params);
   };
 }
 

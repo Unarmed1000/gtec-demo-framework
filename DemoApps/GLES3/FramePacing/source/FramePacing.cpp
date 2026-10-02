@@ -30,6 +30,7 @@ namespace Fsl
   FramePacing::FramePacing(const DemoAppConfig& config)
     : DemoAppGLES3(config)
     , m_shared(config, "GLES3.FramePacing", SamplePresentMethod::SwapInterval)
+    , m_background(*GetContentManager())
     , m_swapInterval(config.DemoServiceProvider.Get<IEGLHostInfo>())
   {
     // Give the UI a chance to intercept the various DemoApp events.
@@ -63,6 +64,8 @@ namespace Fsl
     glClearColor(clearColor.X, clearColor.Y, clearColor.Z, clearColor.W);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
+    // The background is animated for the same time as the rest of the frame
+    m_background.Draw(m_shared.GetRaymarchParams(), GetWindowSizePx());
     m_shared.Draw();
   }
 

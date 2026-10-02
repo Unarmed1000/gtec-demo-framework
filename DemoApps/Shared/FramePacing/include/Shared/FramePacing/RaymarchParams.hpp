@@ -1,5 +1,5 @@
-#ifndef SHARED_FRAMEPACING_SAMPLECONFIG_HPP
-#define SHARED_FRAMEPACING_SAMPLECONFIG_HPP
+#ifndef SHARED_FRAMEPACING_RAYMARCHPARAMS_HPP
+#define SHARED_FRAMEPACING_RAYMARCHPARAMS_HPP
 //****************************************************************************************************************************************************
 //* BSD 3-Clause License
 //*
@@ -22,23 +22,24 @@
 //* EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //****************************************************************************************************************************************************
 
-#include <FslBase/Math/ConstrainedValue.hpp>
 #include <cstdint>
 
-//! The default value and the range of the settings of the FramePacing samples, shared by the command line options and the UI
-namespace Fsl::SampleConfig
+namespace Fsl
 {
-  //! The refresh rate the slider offers when the window system does not know the refresh rate of the display
-  constexpr ConstrainedValue<int32_t> RefreshRateHz(60, 24, 240);
-  //! The refresh rates the command line accepts (decimals allowed)
-  constexpr double MinRefreshRateHz = 1.0;
-  constexpr double MaxRefreshRateHz = 1000.0;
-  //! The frame rate the app wants to run at (0 = the refresh rate of the display)
-  constexpr ConstrainedValue<int32_t> TargetFps(0, 0, 240);
-  //! The simulated CPU load: the time the app spends busy every frame in milliseconds
-  constexpr ConstrainedValue<int32_t> CpuLoadMs(0, 0, 50);
-  //! The GPU load: the number of steps the raymarched background takes for every pixel (0 = no background)
-  constexpr ConstrainedValue<int32_t> GpuLoadSteps(0, 0, 1024);
+  //! What the raymarched background of the FramePacing samples is drawn with (the GPU load of the sample).
+  //! The shader is drawn by each app as the shared code only knows the API independent render interfaces. The animation is given as
+  //! phases, so the shader gets small exact values no matter how long the app has been running.
+  struct RaymarchParams
+  {
+    //! The number of steps the shader marches every ray in: the GPU load (0 = the background is not drawn)
+    int32_t Steps{0};
+    //! The flight through the tunnel in [0,1), the tunnel repeats when it wraps
+    float TravelPhase{0.0f};
+    //! The roll of the camera in [0,1)
+    float RollPhase{0.0f};
+    //! The cycle of the colors in [0,1)
+    float ColorPhase{0.0f};
+  };
 }
 
 #endif

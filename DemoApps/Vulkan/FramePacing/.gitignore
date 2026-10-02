@@ -1,4 +1,6 @@
 /.vs/
+/Content/Raymarch.frag.spv
+/Content/Raymarch.vert.spv
 /Content/_ContentSyncCache.fsl
 /FslSDKIcon.ico
 /Vulkan.FramePacing.VC.VC.opendb

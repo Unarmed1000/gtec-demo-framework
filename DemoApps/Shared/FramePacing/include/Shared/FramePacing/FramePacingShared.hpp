@@ -36,6 +36,7 @@
 #include <FslSimpleUI/Base/Control/Label.hpp>
 #include <FslSimpleUI/Base/Control/SliderAndFmtValueLabel.hpp>
 #include <FslSimpleUI/Base/Control/Switch.hpp>
+#include <Shared/FramePacing/RaymarchParams.hpp>
 #include <Shared/FramePacing/SamplePacer.hpp>
 #include <fmt/format.h>
 #include <iterator>
@@ -113,6 +114,7 @@ namespace Fsl
       std::shared_ptr<UI::Label> LabelPacerStatus;
       std::shared_ptr<UI::Label> LabelPacerFrames;
       std::shared_ptr<UI::SliderAndFmtValueLabel<int32_t>> SliderCpuLoad;
+      std::shared_ptr<UI::SliderAndFmtValueLabel<int32_t>> SliderGpuLoad;
       MarkerStatsUIRecord MarkerStats;
     };
 
@@ -193,6 +195,10 @@ namespace Fsl
     //! Returns at once if the frame pacer is off or the present holds the frame long enough.
     //! @param presentSwapInterval the number of display refreshes the present itself holds the frame for
     void WaitForPresent(const uint32_t presentSwapInterval = 1);
+
+    //! What the app draws the raymarched background of the current frame with, before it calls Draw (the GPU load of the sample).
+    //! Call it during the app's draw, as the frame can start there.
+    [[nodiscard]] RaymarchParams GetRaymarchParams();
 
     [[nodiscard]] bool IsPacerEnabled() const noexcept
     {
