@@ -118,7 +118,7 @@ Refresh rate                  |`--Pacer.RefreshRate <hz>`      |The refresh rate
 Target fps                    |`--Pacer.TargetFps <fps>`       |The frame rate the pacer aims for, 0 is the refresh rate of the display. 30 on a 60 Hz display holds every frame for two refreshes.
 Adaptive swap interval        |`--Pacer.Adaptive <true\|false>`|On: the pacer slows down when frames are late and speeds up again when they fit. Off: a fixed frame rate.
 CPU load                      |`--CpuLoad <ms>`                |The time in milliseconds the app spends busy every frame.
-GPU load                      |`--GpuLoad <steps>`             |Draws the raymarched background with the given number of steps for every ray (0 is no background). The load grows linearly with the steps and the picture stays the same.
+GPU load                      |`--GpuLoad <steps>`             |Draws the raymarched background with the given number of steps for every ray (0 is no background). The load grows linearly with the steps, more steps reach further and show finer detail.
 
 The two status lines below the switches show the swap interval the pacer runs at, the frame time that was measured and how many of the
 frames the pacer looks at were late.
@@ -140,9 +140,10 @@ How a frame is held for its swap interval depends on the API:
   has no vsync times, so this is a guess and less even than a real swap interval. The GPU time of a frame is measured with timestamp
   queries and given to the pacer.
 
-The GPU load is a raymarched background: a flight through a tunnel of neon rings and glowing wires. Every ray is marched in a fixed
-number of equal steps, so every pixel costs the same. Each app has its own copy of the shader (`Raymarch.frag`), as the shared code only
-knows the API independent render interfaces.
+The GPU load is a raymarched background: a flight through a fractal lattice of golden spheres over water that mirrors it (a sphere inversion
+fractal). Every ray is sphere traced in a fixed number of steps without a early exit, so every pixel costs the same and the cost grows
+linearly with the steps. Each app has its own copy of the shader (`Raymarch.frag`), as the shared code only knows the API independent render
+interfaces.
 
 While the pacer is on the sample animates by the time steps of the pacer (the refreshes the display moved on), so the time step keys of
 the framework (slow and fast motion) have no effect. Pause still stops the animation.

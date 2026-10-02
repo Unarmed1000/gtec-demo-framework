@@ -69,12 +69,12 @@ namespace Fsl
       constexpr double SweepSeconds = 2.0;
       constexpr int32_t BarWidthPx = 16;
       constexpr int32_t BoxSizePx = 96;
-      //! The raymarched background: the tunnel is flown through in this time, then it repeats
+      //! The raymarched background: the flight through the lattice repeats after this time
       constexpr double TravelSeconds = 40.0;
-      //! The raymarched background: the time of one roll of the camera to both sides
-      constexpr double RollSeconds = 23.0;
-      //! The raymarched background: the time the colors cycle in
-      constexpr double ColorSeconds = 31.0;
+      //! The raymarched background: the time of one sway of the camera (the waves and the pulses of light run with it)
+      constexpr double SwaySeconds = 29.0;
+      //! The raymarched background: the time the shape and the colors of the lattice change in
+      constexpr double MorphSeconds = 61.0;
       //! The duration of a timed run in seconds
       constexpr ConstrainedValue<int32_t> TimedRunSeconds(10, 1, 120);
       //! WaitForPresent presents this long after the last refresh before the one the frame pacer aims for (at most an eighth of a refresh)
@@ -382,8 +382,8 @@ namespace Fsl
     RaymarchParams params;
     params.Steps = m_ui.SliderGpuLoad->GetValue();
     params.TravelPhase = ToPhase(animationSeconds, LocalConfig::TravelSeconds);
-    params.RollPhase = ToPhase(animationSeconds, LocalConfig::RollSeconds);
-    params.ColorPhase = ToPhase(animationSeconds, LocalConfig::ColorSeconds);
+    params.SwayPhase = ToPhase(animationSeconds, LocalConfig::SwaySeconds);
+    params.MorphPhase = ToPhase(animationSeconds, LocalConfig::MorphSeconds);
     return params;
   }
 

@@ -76,7 +76,7 @@ namespace Fsl
     glViewport(0, 0, sizePx.RawWidth(), sizePx.RawHeight());
 
     glUseProgram(m_program.Get());
-    glUniform4f(m_locPhase, params.TravelPhase, params.RollPhase, params.ColorPhase, 0.0f);
+    glUniform4f(m_locPhase, params.TravelPhase, params.SwayPhase, params.MorphPhase, 0.0f);
     glUniform2f(m_locResolution, static_cast<float>(sizePx.RawWidth()), static_cast<float>(sizePx.RawHeight()));
     glUniform1f(m_locSteps, static_cast<float>(params.Steps));
 

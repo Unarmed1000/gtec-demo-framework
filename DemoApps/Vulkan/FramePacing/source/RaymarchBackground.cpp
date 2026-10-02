@@ -33,7 +33,7 @@ namespace Fsl
     //! The push constants of Raymarch.frag
     struct PushConstants
     {
-      //! x = the flight through the tunnel, y = the roll of the camera, z = the colors
+      //! x = the flight through the lattice, y = the sway of the camera, z = the colors and the shape of the lattice
       std::array<float, 4> Phase{};
       //! The size of the screen in pixels
       std::array<float, 2> Resolution{};
@@ -187,7 +187,7 @@ namespace Fsl
     }
 
     PushConstants pushConstants;
-    pushConstants.Phase = {params.TravelPhase, params.RollPhase, params.ColorPhase, 0.0f};
+    pushConstants.Phase = {params.TravelPhase, params.SwayPhase, params.MorphPhase, 0.0f};
     pushConstants.Resolution = {static_cast<float>(m_dependentResources.Extent.width), static_cast<float>(m_dependentResources.Extent.height)};
     pushConstants.Steps = static_cast<float>(params.Steps);
 

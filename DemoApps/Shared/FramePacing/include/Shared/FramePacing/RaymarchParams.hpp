@@ -33,12 +33,12 @@ namespace Fsl
   {
     //! The number of steps the shader marches every ray in: the GPU load (0 = the background is not drawn)
     int32_t Steps{0};
-    //! The flight through the tunnel in [0,1), the tunnel repeats when it wraps
+    //! The flight through the lattice in [0,1), the flight repeats when it wraps
     float TravelPhase{0.0f};
-    //! The roll of the camera in [0,1)
-    float RollPhase{0.0f};
-    //! The cycle of the colors in [0,1)
-    float ColorPhase{0.0f};
+    //! The sway of the camera, the waves on the water and the pulses of light in [0,1)
+    float SwayPhase{0.0f};
+    //! The slow change of the shape and the colors of the lattice in [0,1)
+    float MorphPhase{0.0f};
   };
 }
 

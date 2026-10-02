@@ -29,7 +29,7 @@ Refresh rate                  |`--Pacer.RefreshRate <hz>`      |The refresh rate
 Target fps                    |`--Pacer.TargetFps <fps>`       |The frame rate the pacer aims for, 0 is the refresh rate of the display. 30 on a 60 Hz display holds every frame for two refreshes.
 Adaptive swap interval        |`--Pacer.Adaptive <true\|false>`|On: the pacer slows down when frames are late and speeds up again when they fit. Off: a fixed frame rate.
 CPU load                      |`--CpuLoad <ms>`                |The time in milliseconds the app spends busy every frame.
-GPU load                      |`--GpuLoad <steps>`             |Draws the raymarched background with the given number of steps for every ray (0 is no background). The load grows linearly with the steps and the picture stays the same.
+GPU load                      |`--GpuLoad <steps>`             |Draws the raymarched background with the given number of steps for every ray (0 is no background). The load grows linearly with the steps, more steps reach further and show finer detail.
 
 The two status lines below the switches show the swap interval the pacer runs at, the frame time that was measured and how many of the
 frames the pacer looks at were late.
@@ -37,7 +37,7 @@ frames the pacer looks at were late.
 The GLES2 and GLES3 versions hold a frame with `eglSwapInterval`. The Vulkan version can not present with a swap interval, so it delays
 the present of a frame that is held for more than one refresh.
 
-The GPU load is a raymarched background: a flight through a tunnel of neon rings and glowing wires.
+The GPU load is a raymarched background: a flight through a fractal lattice of golden spheres over water that mirrors it.
 
 The sample code lives in [Shared/FramePacing](../../Shared/FramePacing). It only uses the API independent INativeBatch2D, except for
 the background and the swap interval, which each of the GLES2, GLES3 and Vulkan versions does with its own API.
