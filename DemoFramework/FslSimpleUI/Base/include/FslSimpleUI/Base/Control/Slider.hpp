@@ -215,6 +215,11 @@ namespace Fsl::UI
     }
 
   protected:
+    [[nodiscard]] PxRectangle CalcCursorGrabRectanglePx() const final
+    {
+      return m_impl.CalcCursorGrabRectanglePx(this->GetCursorPositionPx(), this->GetOrientation(), this->m_windowContext->UnitConverter);
+    }
+
     void OnMouseOver(const std::shared_ptr<WindowMouseOverEvent>& theEvent) final
     {
       m_impl.OnMouseOver(theEvent, this->IsEnabled());

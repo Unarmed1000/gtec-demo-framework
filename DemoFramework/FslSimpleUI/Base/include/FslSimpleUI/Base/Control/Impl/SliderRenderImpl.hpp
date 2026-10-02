@@ -34,6 +34,7 @@
 #include <FslBase/Math/Dp/DpPoint2.hpp>
 #include <FslBase/Math/Dp/DpSize2D.hpp>
 #include <FslBase/Math/Dp/DpThickness.hpp>
+#include <FslBase/Math/Pixel/PxRectangle.hpp>
 #include <FslBase/Math/Pixel/PxSize2D.hpp>
 #include <FslBase/Math/Pixel/PxVector2.hpp>
 #include <FslSimpleUI/Base/Control/Logic/SliderPixelSpanInfo.hpp>
@@ -308,6 +309,11 @@ namespace Fsl
 
       void Draw(DrawCommandBuffer& commandBuffer, const PxVector2 dstPositionPxf, const UIRenderColor finalColor, const PxValue cursorPositionPx,
                 const bool isDragging, const DrawClipContext& clipContext, const SpriteUnitConverter& spriteUnitConverter);
+
+      //! @brief The area the cursor (the handle) is drawn in, relative to the slider: where a press grabs the cursor.
+      //!        Calculated from the current state (not stored by Draw or Arrange), as a drag moves the cursor without a new layout.
+      [[nodiscard]] PxRectangle CalcCursorGrabRectanglePx(const PxValue cursorPositionPx, const LayoutOrientation orientation,
+                                                          const SpriteUnitConverter& spriteUnitConverter) const;
 
       void OnMouseOver(const std::shared_ptr<WindowMouseOverEvent>& theEvent, const bool isEnabled);
 

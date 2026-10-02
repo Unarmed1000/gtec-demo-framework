@@ -40,6 +40,7 @@
   * Added GitHub Actions CI: Ubuntu, Windows and macOS builds with unit tests, clang-format and clang-tidy (changed files).
   * Fixed --ExitAfterDuration never parsing the duration.
   * Fixed the basic UI theme drawing a WindowType::DialogTransparent background window with the opaque window color.
+  * UI: a Slider works inside a ScrollViewer. A press on its cursor begins a drag that the ScrollViewer can not take, a press elsewhere on its bar sets the value when it is released (it no longer begins a drag) and can be turned into a scroll. A canceled drag restores the value.
   * Updated assimp to 6.0.5
   * Updated fmt to 12.2.0
   * Updated gli to the latest version

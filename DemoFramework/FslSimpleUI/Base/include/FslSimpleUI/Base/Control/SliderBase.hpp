@@ -31,7 +31,7 @@
  *
  ****************************************************************************************************************************************************/
 
-#include <FslBase/Math/Pixel/PxRectangle2D.hpp>
+#include <FslBase/Math/Pixel/PxRectangle.hpp>
 #include <FslBase/Math/ThicknessF.hpp>
 #include <FslDataBinding/Base/Object/DependencyObjectHelper.hpp>
 #include <FslDataBinding/Base/Object/DependencyPropertyDefinitionVector.hpp>
@@ -39,6 +39,7 @@
 #include <FslDataBinding/Base/Property/DependencyPropertyDefinitionFactory.hpp>
 #include <FslDataBinding/Base/Property/TypedDependencyProperty.hpp>
 #include <FslSimpleUI/Base/BaseWindow.hpp>
+#include <FslSimpleUI/Base/Control/Logic/SliderClickLogic.hpp>
 #include <FslSimpleUI/Base/Control/Logic/SliderLogic.hpp>
 #include <FslSimpleUI/Base/Control/SliderContentChangedReason.hpp>
 #include <FslSimpleUI/Base/Event/WindowContentChangedEvent.hpp>
@@ -66,6 +67,8 @@ namespace Fsl::UI
 
   private:
     SliderLogic<value_type> m_logic;
+    //! What the slider holds of a click, and who owns the gesture (see SliderClickLogic)
+    SliderClickLogic<value_type> m_clickLogic;
     typename DataBinding::TypedDependencyProperty<LayoutOrientation> m_propertyOrientation{LayoutOrientation::Horizontal};
     typename DataBinding::TypedDependencyProperty<LayoutDirection> m_propertyDirection{LayoutDirection::NearToFar};
     typename DataBinding::TypedDependencyProperty<value_type> m_propertyValue;
@@ -139,6 +142,11 @@ namespace Fsl::UI
     bool SetEnabled(const bool enabled)
     {
       auto flags = m_logic.SetEnabled(enabled);
+      if (!enabled)
+      {
+        // The logic gave up a drag, a click on the bar that is held is given up as well
+        m_clickLogic.Reset();
+      }
       SyncLogicAndProperty();
       if (SliderResultFlagsUtil::IsFlagged(flags, SliderResultFlags::Completed))
       {
@@ -214,53 +222,63 @@ namespace Fsl::UI
     }
 
   protected:
+    //! @brief The area of the cursor (the handle) relative to the slider. A press inside it begins a drag, a press elsewhere on the
+    //!        bar sets the value when it is released.
+    //! @note  It answers a input question, so it must be calculated from the current state of the slider and not be a value that
+    //!        was stored while drawing or arranging: a drag moves the cursor without a new layout.
+    [[nodiscard]] virtual PxRectangle CalcCursorGrabRectanglePx() const = 0;
+
     void OnClickInput(const std::shared_ptr<WindowInputClickEvent>& theEvent) override
     {
-      if (!m_logic.IsEnabled())
+      SliderClickInput input;
+      input.State = theEvent->GetState();
+      input.IsRepeat = theEvent->IsRepeat();
+      input.PositionPx = PointFromScreen(theEvent->GetScreenPosition());
+      input.BarRectanglePx = PxRectangle(PxPoint2(), RenderSizePx());
+      input.CursorGrabRectanglePx = CalcCursorGrabRectanglePx();
+      input.IsHorizontal = (m_propertyOrientation.Get() == LayoutOrientation::Horizontal);
+      input.IsReadOnly = IsReadOnly();
+
+      const SliderClickResult<value_type> result = m_clickLogic.Process(m_logic, input);
+      switch (result.Action)
       {
-        return;
+      case SliderClickAction::DragBegin:
+        SyncLogicAndProperty();
+        DoSendWindowContentChangedEvent(SliderContentChangedReason::DragBegin);
+        break;
+      case SliderClickAction::Drag:
+        SyncLogicAndProperty();
+        DoSendWindowContentChangedEvent(SliderContentChangedReason::Drag);
+        break;
+      case SliderClickAction::DragEnd:
+        SyncLogicAndProperty();
+        DoSendWindowContentChangedEvent(SliderContentChangedReason::DragEnd);
+        break;
+      case SliderClickAction::DragCanceled:
+        SyncLogicAndProperty();
+        DoSendWindowContentChangedEvent(SliderContentChangedReason::DragCanceled);
+        break;
+      case SliderClickAction::SetValue:
+        SetValue(result.Value);
+        break;
+      case SliderClickAction::NoAction:
+      default:
+        break;
       }
 
-      auto pos = PointFromScreen(theEvent->GetScreenPosition());
-      auto offsetPx = (m_propertyOrientation.Get() == LayoutOrientation::Horizontal ? pos.X : pos.Y);
-      if (!m_logic.IsDragging())
-      {    // Not currently dragging, so check if we should begin
-        if (!IsReadOnly() && theEvent->IsBegin() && !theEvent->IsRepeat())
-        {
-          const auto renderExtent = RenderExtentPx();
-          PxRectangle2D barClickRect(PxValue(0), PxValue(0), renderExtent.Width, renderExtent.Height);
-
-          if (barClickRect.Contains(pos))
-          {
-            if (m_logic.TryBeginDrag(offsetPx))
-            {
-              SyncLogicAndProperty();
-              DoSendWindowContentChangedEvent(SliderContentChangedReason::DragBegin);
-              theEvent->Handled();
-            }
-          }
-        }
-      }
-      else
+      // The status tells a ScrollViewer the slider is in if it may take the gesture: a drag of the cursor is claimed, a click on the
+      // bar is only handled (the ScrollViewer can turn it into a scroll)
+      switch (result.Status)
       {
-        if (theEvent->IsBegin() && theEvent->IsRepeat())
-        {
-          auto initialValue = m_logic.GetValue();
-          if (m_logic.TryDrag(offsetPx) && m_logic.GetValue() != initialValue)
-          {
-            SyncLogicAndProperty();
-            DoSendWindowContentChangedEvent(SliderContentChangedReason::Drag);
-          }
-        }
-        else
-        {
-          if (m_logic.EndDrag(offsetPx))
-          {
-            SyncLogicAndProperty();
-            DoSendWindowContentChangedEvent(SliderContentChangedReason::DragEnd);
-          }
-        }
+      case EventHandlingStatus::Claimed:
+        theEvent->Claimed();
+        break;
+      case EventHandlingStatus::Handled:
         theEvent->Handled();
+        break;
+      case EventHandlingStatus::Unhandled:
+      default:
+        break;
       }
     }
 

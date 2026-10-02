@@ -130,6 +130,22 @@ namespace Fsl::UI
     }
   }
 
+  PxRectangle SliderRenderImpl::CalcCursorGrabRectanglePx(const PxValue cursorPositionPx, const LayoutOrientation orientation,
+                                                          const SpriteUnitConverter& spriteUnitConverter) const
+  {
+    if (!m_cursor.Sprite.IsValid())
+    {
+      // Nothing is drawn, so there is nothing to grab
+      return {};
+    }
+    // The same rectangle Draw renders the cursor into
+    const PxSize2D cursorRenderSizePx = m_cursor.Sprite.FastGetRenderSizePx();
+    const PxPoint2 cursorOriginPx(spriteUnitConverter.ToPxPoint2(m_cursor.OriginDp));
+    return orientation == LayoutOrientation::Horizontal ? PxRectangle(PxPoint2(cursorPositionPx - cursorOriginPx.X, PxValue(0)), cursorRenderSizePx)
+                                                        : PxRectangle(PxPoint2(PxValue(0), cursorPositionPx - cursorOriginPx.Y), cursorRenderSizePx);
+  }
+
+
   void SliderRenderImpl::OnMouseOver(const std::shared_ptr<WindowMouseOverEvent>& theEvent, const bool isEnabled)
   {
     // We allow the m_isHovering state to be modified even when disabled as that will allow us to render the "hover overlay"

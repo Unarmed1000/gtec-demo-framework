@@ -2208,3 +2208,33 @@ TEST(TestControlLogic_SliderLogic, CancelDrag_InRange_FullCoverage_DragStartTick
   EXPECT_EQ(startPx + PxValue(10), logic.GetPositionPx());
   EXPECT_EQ(2000u, logic.GetValue());
 }
+
+
+TEST(TestControlLogic_SliderLogic, GetValueForPositionPx)
+{
+  const PxValue startPx(100);
+  const UI::SliderConstrainedValue<uint32_t> constrainedValue(1000, 2000);
+  const UI::SliderLogic<uint32_t> logic(constrainedValue, UI::SliderPixelSpanInfo(startPx, PxSize1D::Create(201)));
+
+  EXPECT_EQ(1000u, logic.GetValueForPositionPx(startPx));
+  EXPECT_EQ(1500u, logic.GetValueForPositionPx(startPx + PxValue(100)));
+  EXPECT_EQ(2000u, logic.GetValueForPositionPx(startPx + PxValue(200)));
+  // Outside the span the value is the one of the nearest end
+  EXPECT_EQ(1000u, logic.GetValueForPositionPx(startPx - PxValue(50)));
+  EXPECT_EQ(2000u, logic.GetValueForPositionPx(startPx + PxValue(500)));
+  // Nothing was changed
+  EXPECT_EQ(1000u, logic.GetValue());
+  EXPECT_FALSE(logic.IsDragging());
+}
+
+
+TEST(TestControlLogic_SliderLogic, GetValueForPositionPx_TickFrequency)
+{
+  const PxValue startPx(100);
+  const UI::SliderConstrainedValue<uint32_t> constrainedValue(1000, 1000, 2000, 250);
+  const UI::SliderLogic<uint32_t> logic(constrainedValue, UI::SliderPixelSpanInfo(startPx, PxSize1D::Create(201)));
+
+  // The value snaps to the ticks like a drag does
+  EXPECT_EQ(1250u, logic.GetValueForPositionPx(startPx + PxValue(55)));
+  EXPECT_EQ(1500u, logic.GetValueForPositionPx(startPx + PxValue(95)));
+}

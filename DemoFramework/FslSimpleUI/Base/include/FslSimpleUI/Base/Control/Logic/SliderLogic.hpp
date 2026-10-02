@@ -105,6 +105,14 @@ namespace Fsl::UI
       return m_drag.GetPositionPx(m_value.GetPercentage());
     }
 
+    //! @brief The value the given pixel position inside the 'span' stands for (the tick frequency is applied, nothing is changed)
+    [[nodiscard]] value_type GetValueForPositionPx(const PxValue positionPx) const
+    {
+      SliderConstrainedValue<value_type> value(m_value);
+      value.SetPercentage(m_drag.GetSpanInfo().CalculatePercentage(positionPx));
+      return value.Get();
+    }
+
     //! @brief Get information about the currently configured span
     [[nodiscard]] const SliderPixelSpanInfo& GetSpanInfo() const
     {
