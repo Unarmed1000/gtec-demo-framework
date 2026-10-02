@@ -702,12 +702,41 @@ namespace Fsl
       {
         pLabel->SetContent(UnknownValue);
       }
+      m_markerStep = {};
       return;
+    }
+
+    // The panel is updated every frame, so a new marker is the one that follows the marker it showed last
+    if (!m_markerStep.HasMarker || info.FrameIndex != m_markerStep.FrameIndex)
+    {
+      m_markerStep.AnimationStep.reset();
+      m_markerStep.CpuStartStep.reset();
+      if (m_markerStep.HasMarker)
+      {
+        m_markerStep.AnimationStep = info.AnimationTime - m_markerStep.AnimationTime;
+        if (info.CpuStartTime.has_value() && m_markerStep.CpuStartTime.has_value())
+        {
+          m_markerStep.CpuStartStep = info.CpuStartTime.value() - m_markerStep.CpuStartTime.value();
+        }
+      }
+      m_markerStep.HasMarker = true;
+      m_markerStep.FrameIndex = info.FrameIndex;
+      m_markerStep.AnimationTime = info.AnimationTime;
+      m_markerStep.CpuStartTime = info.CpuStartTime;
     }
 
     rStats.Kind->SetContent(ToString(info.Kind));
     SetFormattedContent(*rStats.FrameIndex, "{}", info.FrameIndex);
-    SetFormattedContent(*rStats.AnimationTime, "{:.3f} ms", info.AnimationTime.TotalMilliseconds());
+    // The times are followed by their step from the marker before
+    if (m_markerStep.AnimationStep.has_value())
+    {
+      SetFormattedContent(*rStats.AnimationTime, "{:.3f} ms ({:+.3f})", info.AnimationTime.TotalMilliseconds(),
+                          m_markerStep.AnimationStep->TotalMilliseconds());
+    }
+    else
+    {
+      SetFormattedContent(*rStats.AnimationTime, "{:.3f} ms", info.AnimationTime.TotalMilliseconds());
+    }
     SetFormattedContent(*rStats.RunId, "{}", info.RunId);
     if (info.IntendedDisplayTime.has_value())
     {
@@ -725,7 +754,12 @@ namespace Fsl
     {
       rStats.TargetFrameTime->SetContent(UnknownValue);
     }
-    if (info.CpuStartTime.has_value())
+    if (info.CpuStartTime.has_value() && m_markerStep.CpuStartStep.has_value())
+    {
+      SetFormattedContent(*rStats.CpuStartTime, "{:.3f} ms ({:+.3f})", info.CpuStartTime->TotalMilliseconds(),
+                          m_markerStep.CpuStartStep->TotalMilliseconds());
+    }
+    else if (info.CpuStartTime.has_value())
     {
       SetFormattedContent(*rStats.CpuStartTime, "{:.3f} ms", info.CpuStartTime->TotalMilliseconds());
     }

@@ -99,6 +99,19 @@ namespace Fsl
       std::shared_ptr<UI::Label> SyncMarker;
     };
 
+    //! The marker the stats panel showed last, so the panel can show how far the times of a marker are from the ones of the marker
+    //! before it
+    struct MarkerStepRecord
+    {
+      bool HasMarker{false};
+      uint64_t FrameIndex{0};
+      TimeSpan AnimationTime;
+      std::optional<TickCount> CpuStartTime;
+      //! The step from the marker before to this marker (empty if there is no marker before or a time is unknown)
+      std::optional<TimeSpan> AnimationStep;
+      std::optional<TimeSpan> CpuStartStep;
+    };
+
     struct UIRecord
     {
       std::shared_ptr<UI::Label> LabelStatus;
@@ -132,6 +145,7 @@ namespace Fsl
     int64_t m_cachedMeasuredTenths{-1};
     //! Reused for every per-frame text so updating the marker stats does not allocate
     fmt::memory_buffer m_formatBuffer;
+    MarkerStepRecord m_markerStep;
 
     HighResolutionTimer m_timer;
     SamplePresentMethod m_presentMethod;
