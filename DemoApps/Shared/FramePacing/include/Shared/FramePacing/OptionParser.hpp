@@ -36,6 +36,7 @@ namespace Fsl
     bool m_hidePacingStats{false};
     bool m_hideWorkChart{false};
     bool m_hideTestPattern{false};
+    int32_t m_timedRunSeconds{SampleConfig::TimedRunSeconds.Get()};
     bool m_pacerEnabled{false};
     std::optional<double> m_pacerRefreshRateHz;
     int32_t m_pacerTargetFps{SampleConfig::TargetFps.Get()};
@@ -69,6 +70,12 @@ namespace Fsl
     [[nodiscard]] bool IsTestPatternHidden() const noexcept
     {
       return m_hideTestPattern;
+    }
+
+    //! @brief The duration of a timed run in seconds.
+    [[nodiscard]] int32_t GetTimedRunSeconds() const noexcept
+    {
+      return m_timedRunSeconds;
     }
 
     //! @brief Check if the sample starts with its frame pacer on.

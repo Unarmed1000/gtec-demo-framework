@@ -38,6 +38,7 @@ namespace Fsl
         HidePacingStats,
         HideWorkChart,
         HideTestPattern,
+        TimedRunDuration,
         Pacer,
         PacerRefreshRate,
         PacerTargetFps,
@@ -79,6 +80,8 @@ namespace Fsl
                           "Start with the chart of the work per frame hidden (the UI has a switch for it).");
     rOptions.emplace_back("HideTestPattern", OptionArgument::OptionNone, CommandId::HideTestPattern,
                           "Start with the test pattern (the moving bar and box) hidden (the UI has a switch for it).");
+    rOptions.emplace_back("TimedRunDuration", OptionArgument::OptionRequired, CommandId::TimedRunDuration,
+                          "The duration in seconds of a timed run that is started in the UI (1 to 120, the default is 10).");
     rOptions.emplace_back("Pacer", OptionArgument::OptionNone, CommandId::Pacer,
                           "Start with the frame pacer of the sample on (the experimental mb-framepacing pacer).");
     rOptions.emplace_back("Pacer.RefreshRate", OptionArgument::OptionRequired, CommandId::PacerRefreshRate,
@@ -112,6 +115,9 @@ namespace Fsl
     case CommandId::HideTestPattern:
       m_hideTestPattern = true;
       return OptionParseResult::Parsed;
+    case CommandId::TimedRunDuration:
+      return TryParseInRange(m_timedRunSeconds, strOptArg, SampleConfig::TimedRunSeconds, "TimedRunDuration") ? OptionParseResult::Parsed
+                                                                                                              : OptionParseResult::Failed;
     case CommandId::Pacer:
       m_pacerEnabled = true;
       return OptionParseResult::Parsed;

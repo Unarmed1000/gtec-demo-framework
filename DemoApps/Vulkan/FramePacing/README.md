@@ -12,7 +12,8 @@ for animation error. Every app supports it through the `--FramePacing` command l
 and lets you control measured runs:
 
 - **Space** or **Start run**: start an open ended run, press again to end it.
-- **T** or **Start timed run**: start a run that ends by itself after the duration selected with the slider (1-120 seconds).
+- **T** or **Start timed run**: start a run that ends by itself after the duration selected with the slider (1-120 seconds,
+  `--TimedRunDuration <seconds>` sets it).
 
 The moving bar and box are animated from the same animation time the marker reports, so any hitch is visible and measurable.
 
@@ -76,6 +77,7 @@ Argument                          |Description                                  
 --Pacer.Adaptive \<arg>           |true (default): the frame pacer adapts its swap interval to how the frames do. false: a fixed frame rate.                                                                                                                                                                                                                  |Demo
 --Pacer.RefreshRate \<arg>        |The refresh rate of the display in Hz the frame pacer uses, decimals are allowed (59.94). Defaults to the rate the window system reports, and to the UI slider if it does not know it.                                                                                                                                     |Demo
 --Pacer.TargetFps \<arg>          |The frame rate the frame pacer aims for (0 = the refresh rate of the display, the default).                                                                                                                                                                                                                                |Demo
+--TimedRunDuration \<arg>         |The duration in seconds of a timed run that is started in the UI (1 to 120, the default is 10).                                                                                                                                                                                                                            |Demo
 --ActualDpi \<arg>                |ActualDpi [x,y] Override the actual dpi reported by the native window                                                                                                                                                                                                                                                      |DemoHost
 --DensityDpi \<arg>               |DensityDpi \<number> Override the density dpi reported by the native window                                                                                                                                                                                                                                                |DemoHost
 --DisplayId \<arg>                |DisplayId \<number>                                                                                                                                                                                                                                                                                                        |DemoHost

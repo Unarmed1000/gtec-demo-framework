@@ -28,6 +28,8 @@
 //! The default value and the range of the settings of the FramePacing samples, shared by the command line options and the UI
 namespace Fsl::SampleConfig
 {
+  //! The duration of a timed run in seconds
+  constexpr ConstrainedValue<int32_t> TimedRunSeconds(10, 1, 120);
   //! The refresh rate the slider offers when the window system does not know the refresh rate of the display
   constexpr ConstrainedValue<int32_t> RefreshRateHz(60, 24, 240);
   //! The refresh rates the command line accepts (decimals allowed)

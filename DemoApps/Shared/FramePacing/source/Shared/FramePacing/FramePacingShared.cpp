@@ -81,8 +81,6 @@ namespace Fsl
       constexpr double SwaySeconds = 29.0;
       //! The raymarched background: the time the shape and the colors of the lattice change in
       constexpr double MorphSeconds = 61.0;
-      //! The duration of a timed run in seconds
-      constexpr ConstrainedValue<int32_t> TimedRunSeconds(10, 1, 120);
       //! WaitForPresent presents this long after the last refresh before the one the frame pacer aims for (at most an eighth of a refresh)
       constexpr TimeSpan MaxPresentMargin(TimeSpan::TicksPerMillisecond);
       //! WaitUntil only sleeps when the wait is longer than this (a sleeping thread can wake this late), a shorter wait yields
@@ -213,7 +211,8 @@ namespace Fsl
     m_ui.ButtonRun->SetAlignmentX(UI::ItemAlignment::Stretch);
     m_ui.ButtonRun->SetEnabled(m_framePacing != nullptr);
     const auto lblDuration = uiFactory->CreateLabel("Timed run duration (seconds)");
-    m_ui.SliderDuration = uiFactory->CreateSliderFmtValue(UI::LayoutOrientation::Horizontal, LocalConfig::TimedRunSeconds);
+    m_ui.SliderDuration =
+      uiFactory->CreateSliderFmtValue(UI::LayoutOrientation::Horizontal, WithValue(SampleConfig::TimedRunSeconds, options->GetTimedRunSeconds()));
     m_ui.SliderDuration->SetAlignmentX(UI::ItemAlignment::Stretch);
     m_ui.ButtonTimedRun = uiFactory->CreateTextButton(UI::Theme::ButtonType::Contained, "Start timed run");
     m_ui.ButtonTimedRun->SetAlignmentX(UI::ItemAlignment::Stretch);
