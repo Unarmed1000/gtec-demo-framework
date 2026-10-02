@@ -227,6 +227,9 @@ namespace Fsl
     // The chart of the work per frame and the test pattern
     m_ui.SwitchWorkChart = uiFactory->CreateSwitch("Show the work chart", !options->IsWorkChartHidden());
     m_ui.SwitchTestPattern = uiFactory->CreateSwitch("Show the test pattern", !options->IsTestPatternHidden());
+    // The sync marker of the service (--FramePacing.SyncMarker draws it from the start)
+    m_ui.SwitchSyncMarker = uiFactory->CreateSwitch("Draw the sync marker", m_framePacing && m_framePacing->IsSyncMarkerEnabled());
+    m_ui.SwitchSyncMarker->SetEnabled(m_framePacing != nullptr);
 
     // The frame pacer of the sample (the library is not available on every platform)
     const bool pacerSupported = SamplePacer::IsSupported();
@@ -289,6 +292,7 @@ namespace Fsl
     stackLayout->AddChild(m_ui.SwitchPacerStats);
     stackLayout->AddChild(m_ui.SwitchWorkChart);
     stackLayout->AddChild(m_ui.SwitchTestPattern);
+    stackLayout->AddChild(m_ui.SwitchSyncMarker);
     stackLayout->AddChild(uiFactory->CreateDivider(UI::LayoutOrientation::Horizontal));
     stackLayout->AddChild(lblHint);
     stackLayout->AddChild(lblHintTimed);
@@ -397,6 +401,7 @@ namespace Fsl
 
     UpdatePacerStatus();
     UpdateStatsVisibility();
+    UpdateSyncMarker();
     UpdatePacerStats();
     UpdateMarkerStats();
     if (m_workSamplePending)
@@ -1001,6 +1006,15 @@ namespace Fsl
     setVisible(*m_ui.MarkerStatsOverlay, m_ui.SwitchMarkerStats->IsChecked());
     setVisible(*m_ui.PacerStatsOverlay, m_ui.SwitchPacerStats->IsChecked());
     setVisible(*m_ui.WorkChartBar, m_ui.SwitchWorkChart->IsChecked());
+  }
+
+
+  void FramePacingShared::UpdateSyncMarker()
+  {
+    if (m_framePacing && m_ui.SwitchSyncMarker->IsChecked() != m_framePacing->IsSyncMarkerEnabled())
+    {
+      m_framePacing->SetSyncMarkerEnabled(m_ui.SwitchSyncMarker->IsChecked());
+    }
   }
 
 

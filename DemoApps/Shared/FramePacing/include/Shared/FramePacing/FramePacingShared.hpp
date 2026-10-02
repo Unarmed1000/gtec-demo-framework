@@ -167,6 +167,8 @@ namespace Fsl
       //! The chart of the work per frame at the bottom, and the test pattern (the moving bar and box): each has a switch too
       std::shared_ptr<UI::Switch> SwitchWorkChart;
       std::shared_ptr<UI::Switch> SwitchTestPattern;
+      //! Draws the sync marker of the service at the bottom left
+      std::shared_ptr<UI::Switch> SwitchSyncMarker;
       std::shared_ptr<UI::BaseWindow> WorkChartBar;
       MarkerStatsUIRecord MarkerStats;
       PacerStatsUIRecord PacerStats;
@@ -310,6 +312,8 @@ namespace Fsl
     std::shared_ptr<UI::BaseWindow> CreateWorkChartBar(UI::Theme::IThemeControlFactory& rUIFactory);
     //! Show the overlays and the chart their switches are on for
     void UpdateStatsVisibility();
+    //! Let the service draw the sync marker while its switch is on
+    void UpdateSyncMarker();
     void UpdateMarkerStats();
 
     //! Format into the reused buffer and set it as the label content (the label only copies it if the text changed)

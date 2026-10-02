@@ -48,7 +48,10 @@ controls at the right can be scrolled if the window is too low for them.
 
 The chart at the bottom shows the work of every frame: the CPU time and on top of it the GPU time, which together are the work the pacer is
 told the frame needed (`Show the work chart`, or start without it with `--HideWorkChart`). What the GPU time is depends on the API, see the
-next section. The moving bar and box (the test pattern) can be switched off as well (`Show the test pattern`, `--HideTestPattern`).
+next section. The moving bar and box (the test pattern) can be switched off as well (`Show the test pattern`, `--HideTestPattern`). The
+small sync marker of the frame pacing marker at the bottom left can be switched on (`Draw the sync marker`, or start with it with
+`--FramePacing.SyncMarker`): it carries the run id and the frame index as well, the analysis detects tearing when the two markers disagree,
+and camera capture needs it for its timing.
 
 ## What the OpenGL ES 2 version measures
 
