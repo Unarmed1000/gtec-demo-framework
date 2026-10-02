@@ -52,6 +52,7 @@ namespace Fsl
   namespace UI
   {
     class BaseWindow;
+    class ChartData;
     namespace Theme
     {
       class IThemeControlFactory;
@@ -159,6 +160,10 @@ namespace Fsl
       std::shared_ptr<UI::Switch> SwitchPacerStats;
       std::shared_ptr<UI::BaseWindow> MarkerStatsOverlay;
       std::shared_ptr<UI::BaseWindow> PacerStatsOverlay;
+      //! The chart of the work per frame at the bottom, and the test pattern (the moving bar and box): each has a switch too
+      std::shared_ptr<UI::Switch> SwitchWorkChart;
+      std::shared_ptr<UI::Switch> SwitchTestPattern;
+      std::shared_ptr<UI::BaseWindow> WorkChartBar;
       MarkerStatsUIRecord MarkerStats;
       PacerStatsUIRecord PacerStats;
     };
@@ -209,6 +214,12 @@ namespace Fsl
     TimeSpan m_lastGpuTime;
     //! How long the present of the last frame that ended was delayed by WaitForPresent
     TimeSpan m_lastPresentWait;
+    //! When the app started to wait for the GPU in the current frame (BeginGpuWait), zero if it did not
+    TickCount m_gpuWaitStartTime;
+    //! The work per frame of the chart: the CPU time and the GPU time in microseconds
+    std::shared_ptr<UI::ChartData> m_workChartData;
+    //! True if a frame ended since the chart was updated
+    bool m_workSamplePending{false};
     //! After a delayed present (WaitForPresent) the next frame does not start before this (zero = no wait)
     TickCount m_nextFrameStartTime;
     //! The time the current frame is animated for
@@ -241,6 +252,9 @@ namespace Fsl
     void Update(const DemoTime& demoTime);
     //! Draw the frame for its animation time (this is exactly what the marker reports)
     void Draw();
+    //! Call it when the CPU is done with the frame and the app starts to wait for the GPU (glFinish), before EndFrame. The wait is
+    //! then the GPU time of the frame, for an app that can not measure the time the GPU works on a frame.
+    void BeginGpuWait();
     //! Call it once the app has drawn the frame (on Vulkan: once the frame was submitted), with the frame pacer on or off. It tells
     //! the frame pacer how long the frame needed.
     //! @param gpuTime the time the GPU needs for a frame if the app measures it apart from the CPU time (it is added to the CPU time)
@@ -288,7 +302,9 @@ namespace Fsl
     void BurnCpu(const TimeSpan duration) const;
     //! Create the two overlays: every value of the last marker and the frame pacing stats (fills in the overlay members of m_ui)
     std::shared_ptr<UI::BaseWindow> CreateStatsWindow(UI::Theme::IThemeControlFactory& rUIFactory);
-    //! Show the overlays their switches are on for
+    //! Create the bar at the bottom with the chart of the work per frame
+    std::shared_ptr<UI::BaseWindow> CreateWorkChartBar(UI::Theme::IThemeControlFactory& rUIFactory);
+    //! Show the overlays and the chart their switches are on for
     void UpdateStatsVisibility();
     void UpdateMarkerStats();
 

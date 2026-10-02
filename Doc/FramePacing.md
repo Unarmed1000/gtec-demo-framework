@@ -136,6 +136,12 @@ on as a share of the frame time, how long the present was delayed, how often the
 (faster) and when it last did, and the time its frame window spans. The values only the pacer has show `pacer off` while it is off. The
 controls at the right can be scrolled if the window is too low for them.
 
+The chart at the bottom shows the work of every frame: the CPU time and on top of it the GPU time, which together are the work the pacer is
+told the frame needed (`Show the work chart`, or start without it with `--HideWorkChart`). The Vulkan sample measures the GPU time with
+timestamp queries. The OpenGL ES samples have no such measurement: their GPU time is the time they wait in `glFinish`, which they only do
+while the pacer is on, so with the pacer off their chart only shows the CPU time. The moving bar and box (the test pattern) can be switched
+off as well (`Show the test pattern`, `--HideTestPattern`).
+
 ```bash
 # 30 fps on any display, with a GPU load
 Vulkan.FramePacing --Pacer --Pacer.TargetFps 30 --GpuLoad 96

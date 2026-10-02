@@ -44,6 +44,12 @@ on as a share of the frame time, how long the present was delayed, how often the
 (faster) and when it last did, and the time its frame window spans. The values only the pacer has show `pacer off` while it is off. The
 controls at the right can be scrolled if the window is too low for them.
 
+The chart at the bottom shows the work of every frame: the CPU time and on top of it the GPU time, which together are the work the pacer is
+told the frame needed (`Show the work chart`, or start without it with `--HideWorkChart`). The Vulkan sample measures the GPU time with
+timestamp queries. The OpenGL ES samples have no such measurement: their GPU time is the time they wait in `glFinish`, which they only do
+while the pacer is on, so with the pacer off their chart only shows the CPU time. The moving bar and box (the test pattern) can be switched
+off as well (`Show the test pattern`, `--HideTestPattern`).
+
 The GLES2 and GLES3 versions hold a frame with `eglSwapInterval`. The Vulkan version can not present with a swap interval, so it delays
 the present of a frame that is held for more than one refresh.
 
@@ -64,6 +70,8 @@ Argument                          |Description                                  
 --GpuLoad \<arg>                  |A GPU load: the number of steps the raymarched background takes for every pixel (0 = no background, the default).                                                                     |Demo
 --HideMarkerStats                 |Start with the overlay with the values of the last frame pacing marker hidden (the UI has a switch for it).                                                                           |Demo
 --HidePacingStats                 |Start with the overlay with the frame pacing stats hidden (the UI has a switch for it).                                                                                               |Demo
+--HideTestPattern                 |Start with the test pattern (the moving bar and box) hidden (the UI has a switch for it).                                                                                             |Demo
+--HideWorkChart                   |Start with the chart of the work per frame hidden (the UI has a switch for it).                                                                                                       |Demo
 --Pacer                           |Start with the frame pacer of the sample on (the experimental mb-framepacing pacer).                                                                                                  |Demo
 --Pacer.Adaptive \<arg>           |true (default): the frame pacer adapts its swap interval to how the frames do. false: a fixed frame rate.                                                                             |Demo
 --Pacer.RefreshRate \<arg>        |The refresh rate of the display in Hz the frame pacer uses, decimals are allowed (59.94). Defaults to the rate the window system reports, and to the UI slider if it does not know it.|Demo

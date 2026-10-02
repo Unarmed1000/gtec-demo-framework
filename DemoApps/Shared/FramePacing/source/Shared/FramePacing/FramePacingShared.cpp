@@ -44,7 +44,11 @@
 #include <FslSimpleUI/Base/Event/WindowSelectEvent.hpp>
 #include <FslSimpleUI/Base/Layout/GridLayout.hpp>
 #include <FslSimpleUI/Base/Layout/StackLayout.hpp>
+#include <FslSimpleUI/Controls/Charts/AreaChart.hpp>
+#include <FslSimpleUI/Controls/Charts/Common/ChartGridLinesFps.hpp>
+#include <FslSimpleUI/Controls/Charts/Data/ChartData.hpp>
 #include <FslSimpleUI/Theme/Base/IThemeControlFactory.hpp>
+#include <FslSimpleUI/Theme/Base/IThemeResources.hpp>
 #include <FslSimpleUI/Theme/Base/WindowType.hpp>
 #include <Shared/FramePacing/FramePacingShared.hpp>
 #include <Shared/FramePacing/OptionParser.hpp>
@@ -55,6 +59,7 @@
 #include <array>
 #include <chrono>
 #include <cmath>
+#include <limits>
 #include <string>
 #include <thread>
 #include <utility>
@@ -125,6 +130,21 @@ namespace Fsl
     constexpr float StatsNameColumnWidthDp = 216.0f;
     constexpr float StatsValueColumnWidthDp = 360.0f;
 
+    //! The chart of the work per frame: the two channels and their colors
+    constexpr uint32_t WorkChartChannelCount = 2;
+    constexpr uint32_t WorkChartCpuChannel = 0;
+    constexpr uint32_t WorkChartGpuChannel = 1;
+    constexpr UI::UIColor WorkChartCpuColor(PackedColor32(0xFF3488A7));    // light blue
+    constexpr UI::UIColor WorkChartGpuColor(PackedColor32(0xFFE0902A));    // orange
+    constexpr float WorkChartHeightDp = 100.0f;
+
+    //! A time as the microseconds a chart entry holds
+    constexpr uint32_t ToChartMicroseconds(const TimeSpan time) noexcept
+    {
+      const int64_t microseconds = time.Ticks() / TimeSpan::TicksPerMicrosecond;
+      return static_cast<uint32_t>(std::clamp(microseconds, int64_t{0}, int64_t{std::numeric_limits<uint32_t>::max()}));
+    }
+
     //! Where the time is in a cycle of the given length, in [0,1)
     float ToPhase(const double seconds, const double cycleSeconds) noexcept
     {
@@ -147,7 +167,12 @@ namespace Fsl
     , m_runName(std::move(runName))
     , m_windowSizePx(config.WindowMetrics.GetSizePx())
     , m_presentMethod(presentMethod)
+    , m_workChartData(std::make_shared<UI::ChartData>(m_uiExtension->GetDataBinding(), config.WindowMetrics.ExtentPx.Width.Value,
+                                                      WorkChartChannelCount, UI::ChartData::Constraints(0, {})))
   {
+    m_workChartData->SetChannelMetaData(WorkChartCpuChannel, WorkChartCpuColor);
+    m_workChartData->SetChannelMetaData(WorkChartGpuChannel, WorkChartGpuColor);
+
     const auto options = config.GetOptions<OptionParser>();
     m_refreshRateOverrideHz = options->GetPacerRefreshRateHz();
     {
@@ -200,6 +225,9 @@ namespace Fsl
     // The two overlays
     m_ui.SwitchMarkerStats = uiFactory->CreateSwitch("Show the last marker", !options->IsMarkerStatsHidden());
     m_ui.SwitchPacerStats = uiFactory->CreateSwitch("Show the frame pacing", !options->IsPacingStatsHidden());
+    // The chart of the work per frame and the test pattern
+    m_ui.SwitchWorkChart = uiFactory->CreateSwitch("Show the work chart", !options->IsWorkChartHidden());
+    m_ui.SwitchTestPattern = uiFactory->CreateSwitch("Show the test pattern", !options->IsTestPatternHidden());
 
     // The frame pacer of the sample (the library is not available on every platform)
     const bool pacerSupported = SamplePacer::IsSupported();
@@ -253,6 +281,8 @@ namespace Fsl
     stackLayout->AddChild(uiFactory->CreateDivider(UI::LayoutOrientation::Horizontal));
     stackLayout->AddChild(m_ui.SwitchMarkerStats);
     stackLayout->AddChild(m_ui.SwitchPacerStats);
+    stackLayout->AddChild(m_ui.SwitchWorkChart);
+    stackLayout->AddChild(m_ui.SwitchTestPattern);
     stackLayout->AddChild(uiFactory->CreateDivider(UI::LayoutOrientation::Horizontal));
     stackLayout->AddChild(lblHint);
     stackLayout->AddChild(lblHintTimed);
@@ -262,8 +292,18 @@ namespace Fsl
     mainLayout->AddColumnDefinition(UI::GridColumnDefinition(UI::GridUnitType::Star, 1.0f));
     mainLayout->AddColumnDefinition(UI::GridColumnDefinition(UI::GridUnitType::Auto));
     mainLayout->AddRowDefinition(UI::GridRowDefinition(UI::GridUnitType::Star, 1.0f));
-    // The overlays with every value of the last marker and the frame pacing stats, each is shown while its switch is on
-    mainLayout->AddChild(CreateStatsWindow(*uiFactory), 0, 0);
+    // Left of the right bar: the overlays with every value of the last marker and the frame pacing stats, above the chart of the work
+    // per frame. Each is shown while its switch is on.
+    const auto contentLayout = std::make_shared<UI::GridLayout>(uiFactory->GetContext());
+    contentLayout->SetAlignmentX(UI::ItemAlignment::Stretch);
+    contentLayout->SetAlignmentY(UI::ItemAlignment::Stretch);
+    contentLayout->AddColumnDefinition(UI::GridColumnDefinition(UI::GridUnitType::Star, 1.0f));
+    contentLayout->AddRowDefinition(UI::GridRowDefinition(UI::GridUnitType::Star, 1.0f));
+    contentLayout->AddRowDefinition(UI::GridRowDefinition(UI::GridUnitType::Auto));
+    contentLayout->AddChild(CreateStatsWindow(*uiFactory), 0, 0);
+    m_ui.WorkChartBar = CreateWorkChartBar(*uiFactory);
+    contentLayout->AddChild(m_ui.WorkChartBar, 0, 1);
+    mainLayout->AddChild(contentLayout, 0, 0);
     // The controls can be scrolled, as a low window does not have room for all of them
     stackLayout->SetMargin(DpThicknessF::Create(0, 0, 8, 0));
     const auto scrollViewer = uiFactory->CreateScrollViewer(stackLayout, UI::ScrollModeFlags::TranslateY, false);
@@ -353,6 +393,18 @@ namespace Fsl
     UpdateStatsVisibility();
     UpdatePacerStats();
     UpdateMarkerStats();
+    if (m_workSamplePending)
+    {
+      // The work of the frame that ended since the last update
+      m_workSamplePending = false;
+      if (m_ui.SwitchWorkChart->IsChecked())
+      {
+        UI::ChartDataEntry entry;
+        entry.Values[WorkChartCpuChannel] = ToChartMicroseconds(m_lastCpuTime);
+        entry.Values[WorkChartGpuChannel] = ToChartMicroseconds(m_lastGpuTime);
+        m_workChartData->Append(entry);
+      }
+    }
     if (m_framePacing)
     {
       const int64_t measuredTenths = m_framePacing->GetRunMeasuredTime().Ticks() / (TimeSpan::TicksPerMillisecond * 100);
@@ -385,8 +437,11 @@ namespace Fsl
       m_framePacing->SetFrameSchedule(frameSchedule);
     }
 
-    // Use the exact time the frame is animated for, this is what the marker reports
-    DrawAnimation(m_animationTime.TotalSeconds());
+    if (m_ui.SwitchTestPattern->IsChecked())
+    {
+      // Use the exact time the frame is animated for, this is what the marker reports
+      DrawAnimation(m_animationTime.TotalSeconds());
+    }
 
     m_uiExtension->Draw();
   }
@@ -407,12 +462,29 @@ namespace Fsl
   }
 
 
+  void FramePacingShared::BeginGpuWait()
+  {
+    m_gpuWaitStartTime = m_timer.GetTimestamp();
+  }
+
+
   void FramePacingShared::EndFrame(const TimeSpan gpuTime)
   {
     const TickCount now = m_timer.GetTimestamp();
-    m_lastCpuTime = now - m_frameStartTime;
-    m_lastGpuTime = TimeSpan(std::max(gpuTime.Ticks(), int64_t{0}));
+    if (m_gpuWaitStartTime.Ticks() != 0)
+    {
+      // The app waited for the GPU: the CPU was done with the frame when the wait started
+      m_lastCpuTime = m_gpuWaitStartTime - m_frameStartTime;
+      m_lastGpuTime = now - m_gpuWaitStartTime;
+      m_gpuWaitStartTime = {};
+    }
+    else
+    {
+      m_lastCpuTime = now - m_frameStartTime;
+      m_lastGpuTime = TimeSpan(std::max(gpuTime.Ticks(), int64_t{0}));
+    }
     m_lastPresentWait = {};
+    m_workSamplePending = true;
     if (m_pacer)
     {
       m_pacer->EndFrame(now, m_lastCpuTime + m_lastGpuTime);
@@ -868,6 +940,47 @@ namespace Fsl
   }
 
 
+  std::shared_ptr<UI::BaseWindow> FramePacingShared::CreateWorkChartBar(UI::Theme::IThemeControlFactory& rUIFactory)
+  {
+    const auto context = rUIFactory.GetContext();
+
+    // The CPU time and the GPU time of every frame, stacked: together they are the work the frame pacer is told the frame needed
+    const auto chart = std::make_shared<UI::AreaChart>(context);
+    chart->SetAlignmentX(UI::ItemAlignment::Stretch);
+    chart->SetAlignmentY(UI::ItemAlignment::Stretch);
+    chart->SetOpaqueFillSprite(rUIFactory.GetResources().GetBasicFillSprite(true));
+    chart->SetTransparentFillSprite(rUIFactory.GetResources().GetBasicFillSprite(false));
+    chart->SetGridLines(std::make_unique<UI::ChartGridLinesFps>());
+    chart->SetDataView(m_workChartData);
+    chart->SetFont(rUIFactory.GetResources().GetDefaultSpriteFont());
+    chart->SetLabelBackground(rUIFactory.GetResources().GetToolTipNineSliceSprite());
+    chart->SetRenderPolicy(UI::ChartRenderPolicy::FillAvailable);
+
+    // The legend
+    const auto labelCpu = rUIFactory.CreateLabel("CPU");
+    labelCpu->SetFontColor(WorkChartCpuColor);
+    const auto labelGpu = rUIFactory.CreateLabel("GPU");
+    labelGpu->SetFontColor(WorkChartGpuColor);
+    const auto legend = std::make_shared<UI::StackLayout>(context);
+    legend->SetOrientation(UI::LayoutOrientation::Vertical);
+    legend->SetAlignmentY(UI::ItemAlignment::Center);
+    legend->AddChild(rUIFactory.CreateLabel("Work per frame"));
+    legend->AddChild(labelCpu);
+    legend->AddChild(labelGpu);
+
+    const auto grid = std::make_shared<UI::GridLayout>(context);
+    grid->SetAlignmentX(UI::ItemAlignment::Stretch);
+    grid->SetMargin(DpThicknessF::Create(8, 0, 8, 0));
+    grid->AddColumnDefinition(UI::GridColumnDefinition(UI::GridUnitType::Auto));
+    grid->AddColumnDefinition(UI::GridColumnDefinition(UI::GridUnitType::Fixed, 8));
+    grid->AddColumnDefinition(UI::GridColumnDefinition(UI::GridUnitType::Star, 1.0f));
+    grid->AddRowDefinition(UI::GridRowDefinition(UI::GridUnitType::Fixed, WorkChartHeightDp));
+    grid->AddChild(legend, 0, 0);
+    grid->AddChild(chart, 2, 0);
+    return rUIFactory.CreateBottomBar(grid, UI::Theme::BarType::Transparent);
+  }
+
+
   void FramePacingShared::UpdateStatsVisibility()
   {
     const auto setVisible = [](UI::BaseWindow& rWindow, const bool visible)
@@ -880,6 +993,7 @@ namespace Fsl
     };
     setVisible(*m_ui.MarkerStatsOverlay, m_ui.SwitchMarkerStats->IsChecked());
     setVisible(*m_ui.PacerStatsOverlay, m_ui.SwitchPacerStats->IsChecked());
+    setVisible(*m_ui.WorkChartBar, m_ui.SwitchWorkChart->IsChecked());
   }
 
 

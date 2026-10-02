@@ -77,7 +77,9 @@ namespace Fsl
     // The frame and the frame pacing marker were drawn and the host swaps the buffers after this
     if (m_shared.IsPacerEnabled())
     {
-      // Wait for the GPU, so the time the frame pacer is told the frame needed includes the GPU work
+      // Wait for the GPU, so the time the frame pacer is told the frame needed includes the GPU work. The wait is the GPU time of
+      // the frame the sample shows.
+      m_shared.BeginGpuWait();
       glFinish();
     }
     m_shared.EndFrame();

@@ -34,6 +34,8 @@ namespace Fsl
   {
     bool m_hideMarkerStats{false};
     bool m_hidePacingStats{false};
+    bool m_hideWorkChart{false};
+    bool m_hideTestPattern{false};
     bool m_pacerEnabled{false};
     std::optional<double> m_pacerRefreshRateHz;
     int32_t m_pacerTargetFps{SampleConfig::TargetFps.Get()};
@@ -55,6 +57,18 @@ namespace Fsl
     [[nodiscard]] bool IsPacingStatsHidden() const noexcept
     {
       return m_hidePacingStats;
+    }
+
+    //! @brief Check if the sample starts with the chart of the work per frame hidden.
+    [[nodiscard]] bool IsWorkChartHidden() const noexcept
+    {
+      return m_hideWorkChart;
+    }
+
+    //! @brief Check if the sample starts with the test pattern (the moving bar and box) hidden.
+    [[nodiscard]] bool IsTestPatternHidden() const noexcept
+    {
+      return m_hideTestPattern;
     }
 
     //! @brief Check if the sample starts with its frame pacer on.
