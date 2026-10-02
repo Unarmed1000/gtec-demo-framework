@@ -198,6 +198,7 @@ namespace Fsl
     m_ui.LabelRefreshRate = uiFactory->CreateLabel("");
     m_ui.SliderRefreshRate = uiFactory->CreateSliderFmtValue(UI::LayoutOrientation::Horizontal, SampleConfig::RefreshRateHz);
     m_ui.SliderRefreshRate->SetAlignmentX(UI::ItemAlignment::Stretch);
+    m_ui.LabelPacedRate = uiFactory->CreateLabel("");
     const auto lblTargetFps = uiFactory->CreateLabel("Target fps (0 = display rate)");
     m_ui.SliderTargetFps =
       uiFactory->CreateSliderFmtValue(UI::LayoutOrientation::Horizontal, WithValue(SampleConfig::TargetFps, options->GetPacerTargetFps()));
@@ -227,6 +228,7 @@ namespace Fsl
     stackLayout->AddChild(uiFactory->CreateDivider(UI::LayoutOrientation::Horizontal));
     stackLayout->AddChild(m_ui.SwitchPacer);
     stackLayout->AddChild(m_ui.LabelRefreshRate);
+    stackLayout->AddChild(m_ui.LabelPacedRate);
     stackLayout->AddChild(m_ui.SliderRefreshRate);
     stackLayout->AddChild(lblTargetFps);
     stackLayout->AddChild(m_ui.SliderTargetFps);
@@ -522,6 +524,7 @@ namespace Fsl
       // The settings of a pacer are fixed, so new settings need a new pacer (it starts with the first frame again)
       m_pacer = std::make_unique<SamplePacer>(pacerConfig);
       m_nextFrameStartTime = {};
+      m_frameStats.Clear();
     }
     m_pacerConfig = pacerConfig;
   }
@@ -562,6 +565,12 @@ namespace Fsl
     {
       m_schedule = {};
       m_animationTime = frameworkTime + m_animationOffset;
+      // Without the pacer every frame is held for one refresh, and the sample counts the late frames
+      if (m_frameInterval.Ticks() > 0 && m_pacerConfig.RefreshRateHz > 0.0)
+      {
+        const TimeSpan refreshPeriod(std::llround(static_cast<double>(TimeSpan::TicksPerSecond) / m_pacerConfig.RefreshRateHz));
+        m_frameStats.AddFrame(frameStartTime, m_frameInterval, refreshPeriod, 1);
+      }
     }
 
     BurnCpu(TimeSpan::FromMilliseconds(static_cast<int64_t>(m_ui.SliderCpuLoad->GetValue())));
@@ -605,23 +614,30 @@ namespace Fsl
 
   void FramePacingShared::UpdatePacerStatus()
   {
-    if (!SamplePacer::IsSupported())
+    // The swap interval, the rate it gives and the frames are shown with the frame pacer off as well: every frame is then held for
+    // one refresh and the sample counts the late frames itself
+    uint32_t swapInterval = 1;
+    uint32_t frames = m_frameStats.FrameCount();
+    uint32_t lateFrames = m_frameStats.LateFrameCount();
+    if (m_pacer)
     {
-      m_ui.LabelPacerStatus->SetContent("Not supported on this platform");
-      m_ui.LabelPacerFrames->SetContent("");
-      return;
+      const SamplePacerStatus status = m_pacer->GetStatus();
+      swapInterval = std::max(status.SwapInterval, 1u);
+      frames = status.Frames;
+      lateFrames = status.LateFrames;
     }
-    if (!m_pacer)
+
+    SetFormattedContent(*m_ui.LabelPacedRate, "Paced rate: {:.2f} Hz", m_pacerConfig.RefreshRateHz / static_cast<double>(swapInterval));
+    if (m_pacer)
     {
-      m_ui.LabelPacerStatus->SetContent("Frame pacer: off");
-      m_ui.LabelPacerFrames->SetContent("");
-      return;
+      SetFormattedContent(*m_ui.LabelPacerStatus, "Swap interval {}", swapInterval);
     }
-    const SamplePacerStatus status = m_pacer->GetStatus();
-    SetFormattedContent(*m_ui.LabelPacerStatus, "Swap interval {} ({:.1f} fps)", status.SwapInterval,
-                        m_pacerConfig.RefreshRateHz / static_cast<double>(std::max(status.SwapInterval, 1u)));
-    SetFormattedContent(*m_ui.LabelPacerFrames, "Frame {:.2f} ms, {} of {} late", m_frameInterval.TotalMilliseconds(), status.LateFrames,
-                        status.Frames);
+    else
+    {
+      SetFormattedContent(*m_ui.LabelPacerStatus, "Swap interval {} ({})", swapInterval,
+                          SamplePacer::IsSupported() ? "pacer off" : "pacer not supported");
+    }
+    SetFormattedContent(*m_ui.LabelPacerFrames, "Frame {:.2f} ms, {} of {} late", m_frameInterval.TotalMilliseconds(), lateFrames, frames);
   }
 
 

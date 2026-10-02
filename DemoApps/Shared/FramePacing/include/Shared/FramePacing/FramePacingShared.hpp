@@ -37,6 +37,7 @@
 #include <FslSimpleUI/Base/Control/SliderAndFmtValueLabel.hpp>
 #include <FslSimpleUI/Base/Control/Switch.hpp>
 #include <Shared/FramePacing/RaymarchParams.hpp>
+#include <Shared/FramePacing/SampleFrameStats.hpp>
 #include <Shared/FramePacing/SamplePacer.hpp>
 #include <fmt/format.h>
 #include <iterator>
@@ -122,6 +123,7 @@ namespace Fsl
       std::shared_ptr<UI::Switch> SwitchPacer;
       std::shared_ptr<UI::Label> LabelRefreshRate;
       std::shared_ptr<UI::SliderAndFmtValueLabel<int32_t>> SliderRefreshRate;
+      std::shared_ptr<UI::Label> LabelPacedRate;
       std::shared_ptr<UI::SliderAndFmtValueLabel<int32_t>> SliderTargetFps;
       std::shared_ptr<UI::Switch> SwitchAdaptive;
       std::shared_ptr<UI::Label> LabelPacerStatus;
@@ -168,6 +170,8 @@ namespace Fsl
     TickCount m_frameStartTime;
     //! The time from the start of the previous frame to the start of the current frame
     TimeSpan m_frameInterval;
+    //! The late frames while the frame pacer is off (the pacer counts its own)
+    SampleFrameStats m_frameStats;
     //! After a delayed present (WaitForPresent) the next frame does not start before this (zero = no wait)
     TickCount m_nextFrameStartTime;
     //! The time the current frame is animated for

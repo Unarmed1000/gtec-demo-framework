@@ -120,8 +120,10 @@ Adaptive swap interval        |`--Pacer.Adaptive <true\|false>`|On: the pacer sl
 CPU load                      |`--CpuLoad <ms>`                |The time in milliseconds the app spends busy every frame.
 GPU load                      |`--GpuLoad <steps>`             |Draws the raymarched background with the given number of steps for every ray (0 is no background). The load grows linearly with the steps, more steps reach further and show finer detail.
 
-The two status lines below the switches show the swap interval the pacer runs at, the frame time that was measured and how many of the
-frames the pacer looks at were late.
+The line below the refresh rate shows the rate the frames are paced at: the refresh rate divided by the swap interval. The two status lines
+below the switches show the swap interval and the frame time that was measured, with how many of the last frames were late. They are shown
+with the pacer off as well: every frame is then held for one refresh, and the late frames are the ones of the last two seconds that took
+more than one refresh.
 
 ```bash
 # 30 fps on any display, with a GPU load
