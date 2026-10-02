@@ -32,6 +32,7 @@
  ****************************************************************************************************************************************************/
 
 #include <FslSimpleUI/Base/Control/ContentControl.hpp>
+#include <FslSimpleUI/Base/Control/Logic/ButtonPressLogic.hpp>
 
 namespace Fsl::UI
 {
@@ -42,7 +43,8 @@ namespace Fsl::UI
     using base_type = ContentControl;
 
     bool m_isEnabled{true};
-    bool m_isDown{false};
+    //! The press: only a release on the button is a click (see ButtonPressLogic)
+    ButtonPressLogic m_pressLogic;
 
   public:
     explicit Button(const std::shared_ptr<BaseWindowContext>& context);
@@ -55,11 +57,12 @@ namespace Fsl::UI
 
   protected:
     void OnClickInput(const std::shared_ptr<WindowInputClickEvent>& theEvent) override;
+    void OnPropertiesUpdated(const PropertyTypeFlags& flags) override;
 
     //! @brief Check if the button is down at the moment
     bool IsDown() const
     {
-      return m_isDown;
+      return m_pressLogic.IsDown();
     }
 
     //! @brief Called when the button is pressed
@@ -73,6 +76,10 @@ namespace Fsl::UI
     {
       FSL_PARAM_NOT_USED(wasCanceled);
     }
+
+  private:
+    //! @brief End a held press without a click
+    void CancelButtonDown();
   };
 }
 

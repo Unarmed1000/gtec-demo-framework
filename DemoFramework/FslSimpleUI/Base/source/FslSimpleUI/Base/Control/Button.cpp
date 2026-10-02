@@ -31,7 +31,6 @@
 
 #include <FslBase/Exceptions.hpp>
 #include <FslBase/Log/Log3Fmt.hpp>
-#include <FslBase/Math/Pixel/PxRectangle2D.hpp>
 #include <FslGraphics/Color.hpp>
 #include <FslSimpleUI/Base/Control/Button.hpp>
 #include <FslSimpleUI/Base/Event/WindowEventPool.hpp>
@@ -55,6 +54,11 @@ namespace Fsl::UI
     if (enable != m_isEnabled)
     {
       m_isEnabled = enable;
+      if (!enable)
+      {
+        // A disabled button takes no clicks, so a held press ends without a click (the release would be ignored)
+        CancelButtonDown();
+      }
       PropertyUpdated(PropertyType::Other);
     }
   }
@@ -62,47 +66,65 @@ namespace Fsl::UI
 
   void Button::OnClickInput(const std::shared_ptr<WindowInputClickEvent>& theEvent)
   {
-    if (!theEvent->IsSource(this))
+    if (!theEvent->IsSource(this) || !m_isEnabled || theEvent->IsHandled())
     {
       return;
     }
 
-    if (m_isEnabled && theEvent->IsBegin())
+    if (theEvent->GetState() == EventTransactionState::Begin && !theEvent->IsRepeat() && m_pressLogic.IsDown())
     {
-      if (!theEvent->IsRepeat())
-      {
-        // Just for safety
-        if (m_isDown)
-        {
-          m_isDown = false;
-          Up(true);
-        }
-        m_isDown = true;
-        theEvent->Handled();
-
-        Down();
-      }
+      // A new press while a press is held (its release was lost): the old press ends without a click
+      CancelButtonDown();
     }
-    else if (m_isDown)
+
+    // The press is only handled (on the press and on every repeat), so a ScrollViewer the button is in can still turn it into a scroll.
+    // The button then gets a canceled click, which is no click. Only a release on the button is a click.
+    ButtonPressInput input;
+    input.State = theEvent->GetState();
+    input.IsRepeat = theEvent->IsRepeat();
+    input.PositionPx = PointFromScreen(theEvent->GetScreenPosition());
+    input.RenderSizePx = RenderSizePx();
+    const ButtonPressResult result = m_pressLogic.Process(input);
+    if (result.Status != EventHandlingStatus::Unhandled)
     {
-      m_isDown = false;
       theEvent->Handled();
+    }
 
-      bool wasCanceled = true;
-      if (m_isEnabled)
-      {
-        // Only accept the press if the mouse/finger is still on top of the button
-        const auto pos = PointFromScreen(theEvent->GetScreenPosition());
-        const auto renderExtent = RenderExtentPx();
-        const PxRectangle2D hitRect(PxValue(0), PxValue(0), renderExtent.Width, renderExtent.Height);
-        if (hitRect.Contains(pos))
-        {
-          wasCanceled = false;
-          SendEvent(GetEventPool()->AcquireWindowSelectEvent(0));
-        }
-      }
+    switch (result.Action)
+    {
+    case ButtonPressAction::Pressed:
+      Down();
+      break;
+    case ButtonPressAction::Released:
+      SendEvent(GetEventPool()->AcquireWindowSelectEvent(0));
+      Up(false);
+      break;
+    case ButtonPressAction::ReleasedCanceled:
+      Up(true);
+      break;
+    case ButtonPressAction::NoAction:
+    default:
+      break;
+    }
+  }
 
-      Up(wasCanceled);
+
+  void Button::OnPropertiesUpdated(const PropertyTypeFlags& flags)
+  {
+    base_type::OnPropertiesUpdated(flags);
+    // A hidden button takes no clicks, so a held press ends without a click
+    if (flags.IsFlagged(PropertyType::Layout) && GetVisibility() != ItemVisibility::Visible)
+    {
+      CancelButtonDown();
+    }
+  }
+
+
+  void Button::CancelButtonDown()
+  {
+    if (m_pressLogic.ReleaseAnyHeldPress())
+    {
+      Up(true);
     }
   }
 }
