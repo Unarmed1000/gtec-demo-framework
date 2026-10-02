@@ -225,8 +225,8 @@ namespace Fsl
     const uint32_t preferredFrameTicks = ToFrameTicks32(record.PreferredFrameTicks);
     const uint32_t targetFrameTicks = ToFrameTicks32(record.TargetFrameTicks);
     const uint32_t cpuBusyTicks = CalcCpuBusyTicks(record.CpuStartTicks, m_timer.GetTimestamp().Ticks());
-    const FM::MarkerFlags flags = (record.Static ? FM::MarkerFlags::StaticAfter : FM::MarkerFlags::None) |
-                                  (record.StaticBefore ? FM::MarkerFlags::StaticBefore : FM::MarkerFlags::None);
+    const FM::MarkerFlags flags = (record.Static ? FM::MarkerFlags::StaticAfter : FM::MarkerFlags::NoFlags) |
+                                  (record.StaticBefore ? FM::MarkerFlags::StaticBefore : FM::MarkerFlags::NoFlags);
     const FM::Payload payload{ToMarkerKind(record.Kind),
                               record.RunId,
                               record.FrameIndex,
