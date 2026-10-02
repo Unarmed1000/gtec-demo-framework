@@ -791,8 +791,8 @@ namespace Fsl
 
   std::shared_ptr<UI::BaseWindow> FramePacingShared::CreateStatsWindow(UI::Theme::IThemeControlFactory& rUIFactory)
   {
-    // A panel with every value the last drawn marker carried and the frame pacing stats (top right, next to the right bar and away from
-    // the markers on the left side). Each section is a grid of names and values, the columns have the same widths so they line up.
+    // Two overlays: every value the last drawn marker carried and the frame pacing stats (top right, next to the right bar and away from
+    // the markers on the left side). Each is a grid of names and values, the columns have the same widths so the overlays line up.
     const auto createGrid = [&rUIFactory]()
     {
       auto grid = std::make_shared<UI::GridLayout>(rUIFactory.GetContext());
@@ -842,31 +842,29 @@ namespace Fsl
     rPacerStats.LastChange = addStatsRow(*pacerGrid, pacerRow, "Last change");
     rPacerStats.FrameWindow = addStatsRow(*pacerGrid, pacerRow, "Frame window");
 
-    const auto createSection = [&rUIFactory](const char* const pszCaption, const std::shared_ptr<UI::GridLayout>& grid)
+    // Each overlay is a dialog window of the theme: a caption, a divider and the grid
+    const auto createOverlay = [&rUIFactory](const char* const pszCaption, const std::shared_ptr<UI::GridLayout>& grid)
     {
-      auto section = std::make_shared<UI::StackLayout>(rUIFactory.GetContext());
-      section->SetOrientation(UI::LayoutOrientation::Vertical);
-      section->AddChild(rUIFactory.CreateLabel(pszCaption));
-      section->AddChild(rUIFactory.CreateDivider(UI::LayoutOrientation::Horizontal));
-      section->AddChild(grid);
-      return section;
+      const auto content = std::make_shared<UI::StackLayout>(rUIFactory.GetContext());
+      content->SetOrientation(UI::LayoutOrientation::Vertical);
+      content->AddChild(rUIFactory.CreateLabel(pszCaption));
+      content->AddChild(rUIFactory.CreateDivider(UI::LayoutOrientation::Horizontal));
+      content->AddChild(grid);
+      auto overlay = rUIFactory.CreateBackgroundWindow(UI::Theme::WindowType::DialogTransparent, content);
+      overlay->SetAlignmentX(UI::ItemAlignment::Far);
+      return overlay;
     };
-    const auto markerSection = createSection("Last marker", markerGrid);
-    // Some air between the two sections
-    markerSection->SetMargin(DpThicknessF::Create(0, 0, 0, 12));
-    const auto pacerSection = createSection("Frame pacing", pacerGrid);
+    m_ui.MarkerStatsOverlay = createOverlay("Last marker", markerGrid);
+    m_ui.PacerStatsOverlay = createOverlay("Frame pacing", pacerGrid);
 
-    const auto statsStack = std::make_shared<UI::StackLayout>(rUIFactory.GetContext());
-    statsStack->SetOrientation(UI::LayoutOrientation::Vertical);
-    statsStack->AddChild(markerSection);
-    statsStack->AddChild(pacerSection);
-    auto statsWindow = rUIFactory.CreateBackgroundWindow(UI::Theme::WindowType::Transparent, statsStack);
-    statsWindow->SetAlignmentX(UI::ItemAlignment::Far);
-    statsWindow->SetAlignmentY(UI::ItemAlignment::Near);
-    m_ui.MarkerStatsSection = markerSection;
-    m_ui.PacerStatsSection = pacerSection;
-    m_ui.StatsWindow = statsWindow;
-    return statsWindow;
+    // The overlays are stacked at the top right, next to the right bar
+    auto overlayStack = std::make_shared<UI::StackLayout>(rUIFactory.GetContext());
+    overlayStack->SetOrientation(UI::LayoutOrientation::Vertical);
+    overlayStack->SetAlignmentX(UI::ItemAlignment::Far);
+    overlayStack->SetAlignmentY(UI::ItemAlignment::Near);
+    overlayStack->AddChild(m_ui.MarkerStatsOverlay);
+    overlayStack->AddChild(m_ui.PacerStatsOverlay);
+    return overlayStack;
   }
 
 
@@ -880,12 +878,8 @@ namespace Fsl
         rWindow.SetVisibility(visibility);
       }
     };
-    const bool showMarker = m_ui.SwitchMarkerStats->IsChecked();
-    const bool showPacer = m_ui.SwitchPacerStats->IsChecked();
-    setVisible(*m_ui.MarkerStatsSection, showMarker);
-    setVisible(*m_ui.PacerStatsSection, showPacer);
-    // The background of the overlays is only there while one of them is shown
-    setVisible(*m_ui.StatsWindow, showMarker || showPacer);
+    setVisible(*m_ui.MarkerStatsOverlay, m_ui.SwitchMarkerStats->IsChecked());
+    setVisible(*m_ui.PacerStatsOverlay, m_ui.SwitchPacerStats->IsChecked());
   }
 
 

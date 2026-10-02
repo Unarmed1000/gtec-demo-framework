@@ -157,9 +157,8 @@ namespace Fsl
       //! The two overlays: the values of the last marker and the frame pacing stats, each can be hidden with its switch
       std::shared_ptr<UI::Switch> SwitchMarkerStats;
       std::shared_ptr<UI::Switch> SwitchPacerStats;
-      std::shared_ptr<UI::BaseWindow> StatsWindow;
-      std::shared_ptr<UI::BaseWindow> MarkerStatsSection;
-      std::shared_ptr<UI::BaseWindow> PacerStatsSection;
+      std::shared_ptr<UI::BaseWindow> MarkerStatsOverlay;
+      std::shared_ptr<UI::BaseWindow> PacerStatsOverlay;
       MarkerStatsUIRecord MarkerStats;
       PacerStatsUIRecord PacerStats;
     };
@@ -287,8 +286,7 @@ namespace Fsl
     void UpdatePacerStats();
     //! Keep the CPU busy for the given time (the simulated CPU load)
     void BurnCpu(const TimeSpan duration) const;
-    //! Create the panel with the two overlays: every value of the last marker and the frame pacing stats (fills in the overlay
-    //! members of m_ui)
+    //! Create the two overlays: every value of the last marker and the frame pacing stats (fills in the overlay members of m_ui)
     std::shared_ptr<UI::BaseWindow> CreateStatsWindow(UI::Theme::IThemeControlFactory& rUIFactory);
     //! Show the overlays their switches are on for
     void UpdateStatsVisibility();
