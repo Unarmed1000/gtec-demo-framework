@@ -45,6 +45,7 @@
 #include <FslSimpleUI/Base/Event/WindowEventPool.hpp>
 #include <FslSimpleUI/Base/Event/WindowInputClickEvent.hpp>
 #include <FslSimpleUI/Base/Event/WindowMouseOverEvent.hpp>
+#include <FslSimpleUI/Base/Event/WindowSelectEvent.hpp>
 #include <FslSimpleUI/Base/ItemAlignmentUtil.hpp>
 #include <FslSimpleUI/Base/PropertyTypeFlags.hpp>
 #include <FslSimpleUI/Base/UIDrawContext.hpp>
@@ -102,6 +103,27 @@ namespace Fsl::UI
 
 namespace Fsl::UI
 {
+  namespace
+  {
+    namespace LocalConfig
+    {
+      //! The claim rectangle is at least this wide, a claim the size of a small check box graphic would be a too small target
+      constexpr int32_t MinimumClaimWidthDp = 48;
+      //! While the button is held its colors are faded by this, to tell the state is not changed yet
+      constexpr float PreviewAlpha = 0.7f;
+      //! While the button is held its cursor is scaled by this
+      constexpr float PressedCursorScale = 1.12f;
+    }
+
+    UIRenderColor PreviewColor(const UIRenderColor color, const bool isPreviewing) noexcept
+    {
+      return isPreviewing ? UIRenderColor::MultiplyA(color, LocalConfig::PreviewAlpha) : color;
+    }
+  }
+}
+
+namespace Fsl::UI
+{
   ToggleButton::ToggleButton(const std::shared_ptr<WindowContext>& context)
     : BaseWindow(context)
     , m_windowContext(context)
@@ -113,7 +135,9 @@ namespace Fsl::UI
                    context->ColorConverter)
     , m_hoverOverlay(context->TheUIContext.Get()->MeshManager, DefaultAnim::HoverOverlayTime, DefaultAnim::HoverOverlayTransitionType,
                      DefaultAnim::HoverOverlayTime, DefaultAnim::HoverOverlayTransitionType, context->ColorConverter)
+    , m_cursorScale(DefaultAnim::HoverOverlayTime, DefaultAnim::HoverOverlayTransitionType)
   {
+    m_cursorScale.SetActualValue(1.0f);
     assert(m_font.Mesh.GetSprite());
     Enable(WindowFlags(WindowFlags::DrawEnabled | WindowFlags::ClickInput | WindowFlags::MouseOver));
     ToggleButton::UpdateAnimationState(true);
@@ -125,6 +149,11 @@ namespace Fsl::UI
     const bool changed = m_propertyIsEnabled.Set(ThisDependencyObject(), value);
     if (changed)
     {
+      if (!value)
+      {
+        // A disabled button takes no clicks, so a held press is given up (the release would be ignored and the press latched)
+        ReleaseAnyHeldPress();
+      }
       PropertyUpdated(PropertyType::Content);
     }
     return changed;
@@ -460,14 +489,21 @@ namespace Fsl::UI
         const PxValue centeredYPx;
         const PxSize2D cursorSpriteRenderSizePx = m_cursor.Mesh.FastGetRenderSizePx();
         {
-          const PxSize2DF cursorOriginPxf(TypeConverter::To<PxSize2DF>(cursorSpriteRenderSizePx) / PxSize1DF::Create(2));
+          // The cursor grows a little around its center while the button is held
+          const float cursorScale = m_cursorScale.GetValue();
+          const PxSize2D cursorDrawSizePx =
+            cursorScale == 1.0f
+              ? cursorSpriteRenderSizePx
+              : PxSize2D::Create(static_cast<int32_t>(std::lround(static_cast<float>(cursorSpriteRenderSizePx.RawWidth()) * cursorScale)),
+                                 static_cast<int32_t>(std::lround(static_cast<float>(cursorSpriteRenderSizePx.RawHeight()) * cursorScale)));
+          const PxSize2DF cursorOriginPxf(TypeConverter::To<PxSize2DF>(cursorDrawSizePx) / PxSize1DF::Create(2));
           const PxPoint2 adjustedCursorPositionPx =
             PxPoint2(m_cachedImageOffsetPx, PxValue()) + TypeConverter::UncheckedChangeTo<PxPoint2>(cursorPositionPxf - cursorOriginPxf);
 
           const PxVector2 dstPositionPxf(positionPxf.X + PxValueF(adjustedCursorPositionPx.X), positionPxf.Y + PxValueF(adjustedCursorPositionPx.Y));
 
           // Draw the cursor mesh
-          context.CommandBuffer.Draw(m_cursor.Mesh.Get(), dstPositionPxf, cursorSpriteRenderSizePx, finalColor * m_cursor.CurrentColor.GetValue(),
+          context.CommandBuffer.Draw(m_cursor.Mesh.Get(), dstPositionPxf, cursorDrawSizePx, finalColor * m_cursor.CurrentColor.GetValue(),
                                      context.ClipContext);
         }
 
@@ -502,70 +538,83 @@ namespace Fsl::UI
 
   void ToggleButton::OnClickInput(const std::shared_ptr<WindowInputClickEvent>& theEvent)
   {
-    if (m_propertyIsEnabled.Get() && !theEvent->IsHandled())
+    if (!m_propertyIsEnabled.Get() || theEvent->IsHandled())
     {
+      return;
+    }
+
+    ButtonPressInput input;
+    input.State = theEvent->GetState();
+    input.IsRepeat = theEvent->IsRepeat();
+    input.PositionPx = PointFromScreen(theEvent->GetScreenPosition());
+    input.RenderSizePx = RenderSizePx();
+    input.ClaimRectanglePx = TryGetButtonClaimRectangle();
+    const ButtonPressResult result = m_pressLogic.Process(input);
+
+    // The status tells a ScrollViewer the button is in if it may take the gesture: a press on the graphic is claimed, a press on the
+    // label is only handled (the ScrollViewer can turn it into a scroll, the button then gets a canceled click)
+    switch (result.Status)
+    {
+    case EventHandlingStatus::Claimed:
+      theEvent->Claimed();
+      break;
+    case EventHandlingStatus::Handled:
       theEvent->Handled();
-      if (theEvent->IsBegin())
+      break;
+    case EventHandlingStatus::Unhandled:
+    default:
+      break;
+    }
+
+    switch (result.Action)
+    {
+    case ButtonPressAction::Pressed:
+    case ButtonPressAction::ReleasedCanceled:
+      // Show the state a release would commit while the button is held, and drop it again when the press ends without a click
+      PropertyUpdated(PropertyType::ContentDraw);
+      break;
+    case ButtonPressAction::Released:
+      // The click: like a button it is selected, then the checked state is committed
+      PropertyUpdated(PropertyType::ContentDraw);
+      if (IsReadyToSendEvents())
       {
-        if (!theEvent->IsRepeat())
-        {
-          // Begin
-          const auto claimRectanglePx = TryGetButtonClaimRectangle();
-          if (!claimRectanglePx.IsEmpty())
-          {
-            const auto localPositionPx = PointFromScreen(theEvent->GetScreenPosition());
-            if (claimRectanglePx.Contains(localPositionPx))
-            {
-              Toggle();
-              theEvent->Claimed();
-              m_eventButtonState = EventButtonState::DownClaimed;
-            }
-          }
-          if (m_eventButtonState == EventButtonState::Up)
-          {
-            theEvent->Handled();
-            m_eventButtonState = EventButtonState::Down;
-          }
-        }
-        else
-        {
-          // Continue
-          if (m_eventButtonState == EventButtonState::Down)
-          {
-            theEvent->Handled();
-          }
-          else
-          {
-            theEvent->Claimed();
-          }
-        }
+        SendEvent(GetEventPool()->AcquireWindowSelectEvent(0));
       }
-      else if (theEvent->IsCanceled())
-      {
-        if (m_eventButtonState == EventButtonState::DownClaimed)
-        {
-          Toggle();
-        }
-        m_eventButtonState = EventButtonState::Up;
-        theEvent->Handled();
-      }
-      else if (theEvent->IsEnd())
-      {
-        if (m_eventButtonState == EventButtonState::Down)
-        {
-          // Only accept the press if the mouse/finger is still on top of the button
-          const auto localPositionPx = PointFromScreen(theEvent->GetScreenPosition());
-          const PxRectangle hitRect(PxPoint2(), RenderSizePx());
-          if (hitRect.Contains(localPositionPx.X, localPositionPx.Y))
-          {
-            Toggle();
-          }
-        }
-        m_eventButtonState = EventButtonState::Up;
-        theEvent->Handled();
-      }
+      Toggle();
+      break;
+    case ButtonPressAction::NoAction:
+    default:
+      break;
     }
   }
+
+
+  void ToggleButton::OnPropertiesUpdated(const PropertyTypeFlags& flags)
+  {
+    base_type::OnPropertiesUpdated(flags);
+    // A hidden button takes no clicks, so a held press is given up
+    if (flags.IsFlagged(PropertyType::Layout) && GetVisibility() != ItemVisibility::Visible)
+    {
+      ReleaseAnyHeldPress();
+    }
+  }
+
+
+  bool ToggleButton::GetPendingChecked() const noexcept
+  {
+    const bool isChecked = IsChecked();
+    return (m_pressLogic.IsDown() && CanSetChecked(!isChecked)) ? !isChecked : isChecked;
+  }
+
+
+  void ToggleButton::ReleaseAnyHeldPress()
+  {
+    if (m_pressLogic.ReleaseAnyHeldPress())
+    {
+      PropertyUpdated(PropertyType::ContentDraw);
+    }
+  }
+
 
   void ToggleButton::OnMouseOver(const std::shared_ptr<WindowMouseOverEvent>& theEvent)
   {
@@ -584,7 +633,7 @@ namespace Fsl::UI
 
   PxRectangle ToggleButton::TryGetButtonClaimRectangle() const noexcept
   {
-    return {m_cachedImageOffsetPx, PxValue(0), m_cachedImageSizePx.Value(), RenderSizePx().Height()};
+    return {m_cachedClaimOffsetPx, PxValue(0), m_cachedClaimSizePx.Value(), RenderSizePx().Height()};
   }
 
 
@@ -647,7 +696,14 @@ namespace Fsl::UI
     }
     m_cachedTextOffsetPx = labelPositionPx;
     m_cachedImageOffsetPx += PxValue(ItemAlignmentUtil::CalcAlignmentPx(GetImageAlignment(), imageAvailableWidthPx - spriteWidthPx));
-    m_cachedImageSizePx = PxSize1D::Create(imageAvailableWidthPx);
+
+    // The claim rectangle: the graphic widened to a comfortable touch target, centered on it and kept inside the control. Not all of the
+    // space the label does not take, on a stretched row that is most of the row and a ScrollViewer could hardly be scrolled on it.
+    const PxSize1D minimumClaimWidthPx = m_windowContext->UnitConverter.DpToPxSize1D(LocalConfig::MinimumClaimWidthDp);
+    const PxSize1D claimWidthPx = PxSize1D::Min(PxSize1D::Max(spriteWidthPx, minimumClaimWidthPx), finalWidthPx);
+    const PxValue claimOffsetPx = m_cachedImageOffsetPx - PxValue((claimWidthPx.RawValue() - spriteWidthPx.RawValue()) / 2);
+    m_cachedClaimOffsetPx = PxValue::Max(PxValue::Min(claimOffsetPx, finalWidthPx.Value() - claimWidthPx.Value()), PxValue(0));
+    m_cachedClaimSizePx = claimWidthPx;
     return finalSizePx;
   }
 
@@ -755,30 +811,39 @@ namespace Fsl::UI
     m_background.CurrentColor.Update(timeSpan);
     m_hoverOverlay.CurrentColor.Update(timeSpan);
     m_hoverOverlay.CurrentPositionDp.Update(timeSpan);
+    m_cursorScale.Update(timeSpan);
   }
 
 
   bool ToggleButton::UpdateAnimationState(const bool forceCompleteAnimation)
   {
     const bool isEnabled = IsEnabled();
-    // Determine if the hover overlay should be shown or not
     const bool isChecked = m_propertyIsChecked.Get();
+    // While the button is held it shows the state a release would commit, faded (the cursor slides there and comes back if the press
+    // ends without a click)
+    const bool isPending = GetPendingChecked();
+    const bool isPreviewing = isPending != isChecked;
+
+    // Determine if the hover overlay should be shown or not
     const UIRenderColor hoverOverlayColor =
-      isChecked ? m_hoverOverlay.Checked.PrimaryColor.InternalColor : m_hoverOverlay.Unchecked.PrimaryColor.InternalColor;
+      isPending ? m_hoverOverlay.Checked.PrimaryColor.InternalColor : m_hoverOverlay.Unchecked.PrimaryColor.InternalColor;
     const bool showHoverOverlay = m_hoverOverlay.IsHovering && isEnabled;
     m_hoverOverlay.CurrentColor.SetValue(showHoverOverlay ? hoverOverlayColor : UIRenderColor::ClearA(hoverOverlayColor));
-    m_hoverOverlay.CurrentPositionDp.SetValue(isChecked ? TypeConverter::To<Vector2>(m_hoverOverlay.Checked.PositionDp)
+    m_hoverOverlay.CurrentPositionDp.SetValue(isPending ? TypeConverter::To<Vector2>(m_hoverOverlay.Checked.PositionDp)
                                                         : TypeConverter::To<Vector2>(m_hoverOverlay.Unchecked.PositionDp));
+    m_cursorScale.SetValue(m_pressLogic.IsDown() ? LocalConfig::PressedCursorScale : 1.0f);
 
-    m_font.CurrentColor.SetValue(isEnabled ? (isChecked ? m_font.PropertyColorChecked.InternalColor : m_font.PropertyColorUnchecked.InternalColor)
-                                           : m_font.PropertyColorDisabled.InternalColor);
+    m_font.CurrentColor.SetValue(
+      isEnabled ? PreviewColor(isPending ? m_font.PropertyColorChecked.InternalColor : m_font.PropertyColorUnchecked.InternalColor, isPreviewing)
+                : m_font.PropertyColorDisabled.InternalColor);
 
     m_cursor.CurrentColor.SetValue(
-      isEnabled ? (isChecked ? m_cursor.PropertyColorChecked.InternalColor : m_cursor.PropertyColorUnchecked.InternalColor)
+      isEnabled ? PreviewColor(isPending ? m_cursor.PropertyColorChecked.InternalColor : m_cursor.PropertyColorUnchecked.InternalColor, isPreviewing)
                 : (isChecked ? m_cursor.PropertyColorCheckedDisabled.InternalColor : m_cursor.PropertyColorUncheckedDisabled.InternalColor));
     m_background.CurrentColor.SetValue(
-      isEnabled ? (isChecked ? m_background.PropertyColorChecked.InternalColor : m_background.PropertyColorUnchecked.InternalColor)
-                : (isChecked ? m_background.PropertyColorCheckedDisabled.InternalColor : m_background.PropertyColorUncheckedDisabled.InternalColor));
+      isEnabled
+        ? PreviewColor(isPending ? m_background.PropertyColorChecked.InternalColor : m_background.PropertyColorUnchecked.InternalColor, isPreviewing)
+        : (isChecked ? m_background.PropertyColorCheckedDisabled.InternalColor : m_background.PropertyColorUncheckedDisabled.InternalColor));
 
     if (forceCompleteAnimation)
     {
@@ -787,10 +852,12 @@ namespace Fsl::UI
       m_background.CurrentColor.ForceComplete();
       m_hoverOverlay.CurrentColor.ForceComplete();
       m_hoverOverlay.CurrentPositionDp.ForceComplete();
+      m_cursorScale.ForceComplete();
     }
 
     const bool isAnimating = !m_font.CurrentColor.IsCompleted() || !m_cursor.CurrentColor.IsCompleted() || !m_background.CurrentColor.IsCompleted() ||
-                             !m_hoverOverlay.CurrentColor.IsCompleted() || !m_hoverOverlay.CurrentPositionDp.IsCompleted();
+                             !m_hoverOverlay.CurrentColor.IsCompleted() || !m_hoverOverlay.CurrentPositionDp.IsCompleted() ||
+                             !m_cursorScale.IsCompleted();
     return isAnimating;
   }
 }

@@ -41,6 +41,7 @@
   * Fixed --ExitAfterDuration never parsing the duration.
   * Fixed the basic UI theme drawing a WindowType::DialogTransparent background window with the opaque window color.
   * UI: a Slider works inside a ScrollViewer. A press on its cursor begins a drag that the ScrollViewer can not take, a press elsewhere on its bar sets the value when it is released (it no longer begins a drag) and can be turned into a scroll. A canceled drag restores the value.
+  * UI: a ToggleButton (Switch, CheckBox, RadioButton) commits on the accepted release, like MB.UI3, and shows the state a release would commit while it is held (faded colors, a slightly larger cursor). A press on its graphic (at least 48dp wide, not the whole space next to the label) can not be taken by a ScrollViewer, a press on its label can. A release outside it or a canceled press changes nothing (this fixes a canceled press leaving a radio button checked), disabling or hiding it gives up a held press, and a click sends a WindowSelectEvent.
   * Updated assimp to 6.0.5
   * Updated fmt to 12.2.0
   * Updated gli to the latest version

@@ -49,6 +49,8 @@ namespace Fsl::UI
     explicit RadioButton(const std::shared_ptr<WindowContext>& context)
       : ToggleButton(context)
     {
+      // A radio button can only be checked by a click, it is unchecked when another button of its group is checked
+      SetUncheckByClickAllowed(false);
     }
 
     const std::shared_ptr<RadioGroup>& GetRadioGroup() const

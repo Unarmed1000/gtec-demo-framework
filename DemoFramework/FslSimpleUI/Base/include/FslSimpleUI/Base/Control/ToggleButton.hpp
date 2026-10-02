@@ -32,8 +32,10 @@
  ****************************************************************************************************************************************************/
 
 #include <FslBase/Math/Dp/DpPoint2.hpp>
+#include <FslBase/Transition/TransitionValue.hpp>
 #include <FslBase/Transition/TransitionVector2.hpp>
 #include <FslSimpleUI/Base/BaseWindow.hpp>
+#include <FslSimpleUI/Base/Control/Logic/ButtonPressLogic.hpp>
 #include <FslSimpleUI/Base/ItemTextLocation.hpp>
 #include <FslSimpleUI/Base/Mesh/SimpleSpriteFontMesh.hpp>
 #include <FslSimpleUI/Base/Mesh/SizedSpriteMesh.hpp>
@@ -55,13 +57,6 @@ namespace Fsl
     class ToggleButton : public BaseWindow
     {
       using base_type = BaseWindow;
-
-      enum class EventButtonState
-      {
-        Up,
-        Down,
-        DownClaimed
-      };
 
       struct FontRecord
       {
@@ -150,8 +145,14 @@ namespace Fsl
       SpriteFontMeasureInfo m_cachedFontMeasureInfo;
       PxValue m_cachedTextOffsetPx;
       PxValue m_cachedImageOffsetPx;
-      PxSize1D m_cachedImageSizePx;
-      EventButtonState m_eventButtonState{EventButtonState::Up};
+      //! The claim rectangle: where a press claims the gesture (see TryGetButtonClaimRectangle)
+      PxValue m_cachedClaimOffsetPx;
+      PxSize1D m_cachedClaimSizePx;
+      //! The press: the toggle commits when it is released on the button (see ButtonPressLogic)
+      ButtonPressLogic m_pressLogic;
+      bool m_uncheckByClickAllowed{true};
+      //! The cursor grows a little while the button is held, together with the faded colors that tells the state is not changed yet
+      TransitionValue m_cursorScale;
 
       DataBinding::TypedDependencyProperty<ItemAlignment> m_propertyImageAlignment{ItemAlignment::Near};
       DataBinding::TypedDependencyProperty<bool> m_propertyIsChecked{false};
@@ -396,10 +397,30 @@ namespace Fsl
       void OnClickInput(const std::shared_ptr<WindowInputClickEvent>& theEvent) final;
       void OnMouseOver(const std::shared_ptr<WindowMouseOverEvent>& theEvent) final;
 
-      //! Returns the rectangle of the button that is considered a 'claim' area if pressed
+      void OnPropertiesUpdated(const PropertyTypeFlags& flags) override;
+
+      //! Returns the rectangle of the button that is considered a 'claim' area if pressed: a gesture that begins inside it belongs to
+      //! the button, so no ScrollViewer it is in can turn it into a scroll. It is the graphic, widened to a comfortable touch target, at
+      //! the full height, and not the label: a press on the label can still be a scroll.
       //! If this returns PxRectangle.Empty then nothing will be considered a claim area
       //! The rectangle is in window space (so the point 0,0 is at the top left of the window)
       PxRectangle TryGetButtonClaimRectangle() const noexcept;
+
+      //! @brief Allow (the default) or forbid the user to uncheck the button with a click (a radio button is only unchecked by its group)
+      void SetUncheckByClickAllowed(const bool allowed) noexcept
+      {
+        m_uncheckByClickAllowed = allowed;
+      }
+
+      //! @brief Check if a click can change the checked state to the given value
+      [[nodiscard]] bool CanSetChecked(const bool value) const noexcept
+      {
+        return value || m_uncheckByClickAllowed;
+      }
+
+      //! @brief The checked state a release would commit right now: the opposite of the checked state while the button is held (unless
+      //!        the change is not allowed), else the checked state. The button shows it while it is held.
+      [[nodiscard]] bool GetPendingChecked() const noexcept;
 
       PxSize2D ArrangeOverride(const PxSize2D& finalSizePx) final;
       PxSize2D MeasureOverride(const PxAvailableSize& availableSizePx) final;
@@ -414,6 +435,8 @@ namespace Fsl
 
     private:
       PxSize2D GetMaxSpriteSize() const;
+      //! @brief Give up a held press without changing the checked state (the button stopped taking clicks while it was held)
+      void ReleaseAnyHeldPress();
     };
   }
 }
