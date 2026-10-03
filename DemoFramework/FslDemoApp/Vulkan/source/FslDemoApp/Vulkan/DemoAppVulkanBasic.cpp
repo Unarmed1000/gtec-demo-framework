@@ -59,6 +59,7 @@
 #include <RapidVulkan/CommandBuffer.hpp>
 #include <RapidVulkan/Debug/Strings/VkImageUsageFlagBits.hpp>
 #include <RapidVulkan/Debug/Strings/VkResult.hpp>
+#include <RapidVulkan/Exceptions.hpp>
 #include <algorithm>
 #include <array>
 #include <cassert>
@@ -145,11 +146,13 @@ namespace Fsl::VulkanBasic
                                                              SpanUtil::AsReadOnlySpan(finalPreferredFormats), VK_COLOR_SPACE_SRGB_NONLINEAR_KHR);
     }
 
-    AppDrawResult WaitForFenceAndResetIt(const VkDevice device, const VkFence fence)
+    //! @param rResult the result of the Vulkan call that failed (VK_SUCCESS if nothing failed)
+    AppDrawResult WaitForFenceAndResetIt(const VkDevice device, const VkFence fence, VkResult& rResult)
     {
       {    // Wait for the current frames fence and reset it
            // time to synchronize by waiting for the fence before we modify command queues etc.
         const auto waitResult = vkWaitForFences(device, 1, &fence, VK_TRUE, LocalConfig::DefaultTimeout);
+        rResult = waitResult;
         if (waitResult != VK_SUCCESS)
         {
           FSLLOG3_WARNING("vkWaitForFences failed with: {}", RapidVulkan::Debug::ToString(waitResult));
@@ -157,6 +160,7 @@ namespace Fsl::VulkanBasic
         }
 
         const auto resetResult = vkResetFences(device, 1, &fence);
+        rResult = resetResult;
         if (resetResult != VK_SUCCESS)
         {
           FSLLOG3_WARNING("vkResetFences failed with: {}", RapidVulkan::Debug::ToString(resetResult));
@@ -355,8 +359,22 @@ namespace Fsl::VulkanBasic
     // The context would be non copyable and contain the above mentioned things
 
     const DrawContext drawContext(m_swapchain.GetImageExtent(), framebuffer, currentFrameIndex);
-    VulkanDraw(frameInfo.Time, m_dependentResources.CmdBuffers, drawContext);
+    try
+    {
+      VulkanDraw(frameInfo.Time, m_dependentResources.CmdBuffers, drawContext);
+      SubmitFrame(frameRecord, swapchainRecord, currentFrameIndex);
+    }
+    catch (const RapidVulkan::VulkanErrorException& ex)
+    {
+      // This is the only place that sees the result of a failed draw or submit, so its the place to ask why a device was lost
+      ReportDeviceLost(ex.GetResult());
+      throw;
+    }
+  }
 
+
+  void DemoAppVulkanBasic::SubmitFrame(const FrameDrawRecord& frameRecord, const SwapchainRecord& swapchainRecord, const uint32_t currentFrameIndex)
+  {
     assert(frameRecord.ImageAcquiredSemaphore.IsValid());
     const VkSemaphore waitSemaphore = frameRecord.ImageAcquiredSemaphore.Get();
     const VkSemaphore signalSemaphore = swapchainRecord.ImageReleasedSemaphore.Get();
@@ -893,9 +911,12 @@ namespace Fsl::VulkanBasic
     case VK_SUCCESS:
       {
         {    // Wait for the frame to be ready, so we know the frame resources can be reused
-          AppDrawResult waitResult = WaitForFenceAndResetIt(m_device.Get(), m_resources.Frames[currentFrameIndex].QueueSubmitFence.Get());
+          VkResult waitVkResult = VK_SUCCESS;
+          AppDrawResult waitResult =
+            WaitForFenceAndResetIt(m_device.Get(), m_resources.Frames[currentFrameIndex].QueueSubmitFence.Get(), waitVkResult);
           if (waitResult != AppDrawResult::Completed)
           {
+            ReportDeviceLost(waitVkResult);
             return waitResult;
           }
           // Ensure the present fence can be reused
@@ -923,6 +944,7 @@ namespace Fsl::VulkanBasic
             if (waitResult != VK_SUCCESS)
             {
               FSLLOG3_WARNING("vkWaitForFences failed with: {}", RapidVulkan::Debug::ToString(waitResult));
+              ReportDeviceLost(waitResult);
               return AppDrawResult::Failed;
             }
             rSwapchainRecord.HasAssignedFrame = false;
@@ -955,6 +977,7 @@ namespace Fsl::VulkanBasic
     default:
       // This restarts the app and demo host, so make sure the reason can be found in the log
       FSLLOG3_ERROR("vkAcquireNextImageKHR failed with: {}", RapidVulkan::Debug::ToString(result));
+      ReportDeviceLost(result);
       return AppDrawResult::Failed;
     }
   }
@@ -1004,6 +1027,7 @@ namespace Fsl::VulkanBasic
     default:
       // This case should restart the app and demo host, so make sure the reason can be found in the log
       FSLLOG3_ERROR("vkQueuePresentKHR failed with: {}", RapidVulkan::Debug::ToString(result));
+      ReportDeviceLost(result);
       return AppDrawResult::Failed;
     }
   }
@@ -1016,7 +1040,10 @@ namespace Fsl::VulkanBasic
       return AppDrawResult::Completed;
     }
     rFrame.PresentFencePending = false;
-    return WaitForFenceAndResetIt(m_device.Get(), rFrame.PresentFence.Get());
+    VkResult waitVkResult = VK_SUCCESS;
+    const AppDrawResult waitResult = WaitForFenceAndResetIt(m_device.Get(), rFrame.PresentFence.Get(), waitVkResult);
+    ReportDeviceLost(waitVkResult);
+    return waitResult;
   }
 
 

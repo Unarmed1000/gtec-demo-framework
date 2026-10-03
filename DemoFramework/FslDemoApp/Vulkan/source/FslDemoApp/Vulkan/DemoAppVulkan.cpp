@@ -35,6 +35,7 @@
 #include <FslDemoApp/Base/Service/Host/IHostInfo.hpp>
 #include <FslDemoApp/Vulkan/DemoAppVulkan.hpp>
 #include <FslDemoHost/Vulkan/Config/DemoAppHostConfigVulkan.hpp>
+#include <FslDemoHost/Vulkan/Config/HostDeviceExtensions.hpp>
 #include <FslDemoHost/Vulkan/Config/PhysicalDeviceConfigUtil.hpp>
 #include <FslDemoHost/Vulkan/Config/PhysicalDeviceFeatureRequest.hpp>
 #include <FslDemoHost/Vulkan/Config/PhysicalDeviceFeatureRequestUtil.hpp>
@@ -170,6 +171,11 @@ namespace Fsl
       }
 #endif
 
+      // The other optional device extensions the host uses. Their feature structs go in front of the chain and are owned by hostDeviceExtensions,
+      // which therefore has to live until the device has been created.
+      Vulkan::HostDeviceExtensions hostDeviceExtensions(m_physicalDevice.Device, hostExtensions);
+      pExtraDeviceCreateInfoNext = hostDeviceExtensions.LinkDeviceCreateInfoChain(pExtraDeviceCreateInfoNext);
+
       const auto deviceConfig =
         PhysicalDeviceConfigUtil::BuildConfig(m_physicalDevice.Device, appHostConfig, SpanUtil::AsReadOnlySpan(hostExtensions));
       const PhysicalDeviceConfigUtil::DeviceConfigAsCharArrays deviceConfigEx(deviceConfig);
@@ -185,6 +191,8 @@ namespace Fsl
       m_device = std::move(vulkanDeviceSetup.Device);
       m_deviceCreateInfo = vulkanDeviceSetup.DeviceCreateInfo;
       m_deviceQueue = vulkanDeviceSetup.DeviceQueueRecord;
+      m_hostDeviceFeatures = hostDeviceExtensions.GetFeatures();
+      m_deviceFault = Vulkan::VUDeviceFault(m_device.Get(), m_hostDeviceFeatures.DeviceFault);
 
       Vulkan::VUDebugUtils::SetObjectName(m_device.Get(), VK_OBJECT_TYPE_DEVICE, m_device.Get(), "MainDevice");
       Vulkan::VUDebugUtils::SetObjectName(m_device.Get(), VK_OBJECT_TYPE_QUEUE, m_deviceQueue.Queue, "MainQueue");
@@ -232,6 +240,24 @@ namespace Fsl
       // We log and swallow it since destructor's are not allowed to throw
       FSLLOG3_ERROR("DeviceWaitIdle, threw exception: {}", ex.what());
     }
+  }
+
+
+  void DemoAppVulkan::ReportDeviceLost(const VkResult result) noexcept
+  {
+    if (result != VK_ERROR_DEVICE_LOST || m_deviceLostReported)
+    {
+      return;
+    }
+    // One lost device makes many calls fail, so the faults are only reported for the first of them
+    m_deviceLostReported = true;
+    if (!m_deviceFault.IsSupported())
+    {
+      FSLLOG3_ERROR("The Vulkan device was lost (no device fault extension is available, so the driver can not be asked why)");
+      return;
+    }
+    FSLLOG3_ERROR("The Vulkan device was lost, asking the driver why");
+    m_deviceFault.LogFaults();
   }
 
   void DemoAppVulkan::SafeShutdown()

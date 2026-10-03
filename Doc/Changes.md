@@ -25,6 +25,8 @@
   * A failed vkAcquireNextImageKHR or vkQueuePresentKHR (for example a lost device) is now logged before the app is restarted.
   * The tools attached to the physical device (validation layer, API dump, RenderDoc, ...) are logged with -v and its memory heaps with -vv. With VK_EXT_memory_budget the heaps are logged with the budget and usage of the app.
   * New FslUtil.Vulkan1_0 MemoryBudgetUtil (VK_EXT_memory_budget, how much GPU memory the app uses) and PhysicalDeviceUtil::GetToolProperties.
+  * Device fault support: VK_KHR_device_fault (or VK_EXT_device_fault) is enabled when the device supports it, and when a Vulkan call reports a lost device the faults the driver reports are written to the log (DemoAppVulkan::ReportDeviceLost, FslUtil.Vulkan1_0 VUDeviceFault). This also covers a failed draw or queue submit, which used to end the app with just the exception text.
+  * VulkanDeviceSetupUtil::CreateSetup accepts a chain of extra device create info structures. The optional device extensions of the host are selected by the new HostDeviceExtensions and what was enabled is available to a app in DemoAppVulkan::m_hostDeviceFeatures.
   * Fixed validation and synchronization issues reported by the latest validation layers
     * VulkanWillemsDemoAppExperimental: depth attachment clear hazard and text overlay image barrier.
     * Window.VulkanTriangle: swapchain acquire write-after-read hazard.

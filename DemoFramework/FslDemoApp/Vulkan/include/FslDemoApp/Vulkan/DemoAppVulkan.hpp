@@ -32,7 +32,9 @@
  ****************************************************************************************************************************************************/
 
 #include <FslDemoApp/Base/ADemoApp.hpp>
+#include <FslDemoHost/Vulkan/Config/VulkanHostDeviceFeatures.hpp>
 #include <FslDemoHost/Vulkan/Config/VulkanLaunchOptions.hpp>
+#include <FslUtil/Vulkan1_0/Debug/VUDeviceFault.hpp>
 #include <FslUtil/Vulkan1_0/SafeType/DeviceCreateInfoCopy.hpp>
 #include <FslUtil/Vulkan1_0/SafeType/InstanceCreateInfoCopy.hpp>
 #include <FslUtil/Vulkan1_0/VUDevice.hpp>
@@ -64,6 +66,8 @@ namespace Fsl
     VkPhysicalDeviceVulkan13Features m_deviceActiveFeatures13{VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES, nullptr};
     //! True if VK_KHR/EXT_swapchain_maintenance1 was enabled (which means VkSwapchainPresentFenceInfoKHR can be used)
     bool m_swapchainMaintenance1Enabled{false};
+    //! The optional device extensions the host enabled on m_device
+    Vulkan::VulkanHostDeviceFeatures m_hostDeviceFeatures;
     Vulkan::VUDevice m_device;
     std::shared_ptr<Vulkan::DeviceCreateInfoCopy> m_deviceCreateInfo;
 
@@ -88,7 +92,15 @@ namespace Fsl
     // Call this during destruction to ensure the device is idle before you destroy resources
     void SafeWaitForDeviceIdle() noexcept;
 
+    //! @brief Call this with the result of a failed Vulkan call. If it is VK_ERROR_DEVICE_LOST the faults the driver reports are written to
+    //!        the log (when a device fault extension is enabled, see m_hostDeviceFeatures). They are only logged once.
+    void ReportDeviceLost(const VkResult result) noexcept;
+
   private:
+    //! Queries the driver for why the device was lost
+    Vulkan::VUDeviceFault m_deviceFault;
+    bool m_deviceLostReported{false};
+
     void SafeShutdown();
   };
 }

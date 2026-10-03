@@ -98,8 +98,14 @@ namespace Fsl::Vulkan
 
       if (pExtraDeviceCreateInfoNext != nullptr)
       {
-        assert(pExtraDeviceCreateInfoNext->pNext == nullptr);
-        pExtraDeviceCreateInfoNext->pNext = static_cast<const VkBaseInStructure*>(deviceCreateInfo.pNext);
+        // The extra structures can be a chain, so the existing chain continues after its last structure
+        // (VkBaseOutStructure is the same layout with a pNext that can be followed to a structure that can be modified)
+        auto* pTail = reinterpret_cast<VkBaseOutStructure*>(pExtraDeviceCreateInfoNext);
+        while (pTail->pNext != nullptr)
+        {
+          pTail = pTail->pNext;
+        }
+        reinterpret_cast<VkBaseInStructure*>(pTail)->pNext = static_cast<const VkBaseInStructure*>(deviceCreateInfo.pNext);
         deviceCreateInfo.pNext = pExtraDeviceCreateInfoNext;
       }
 

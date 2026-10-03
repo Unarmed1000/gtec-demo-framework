@@ -396,6 +396,8 @@ namespace Fsl
                                                                  const bool createPresentFence);
       //! Wait for the frames present fence (if pending) and reset it
       AppDrawResult TryWaitForPresentFence(FrameDrawRecord& rFrame);
+      //! Submit the command buffer of the frame
+      void SubmitFrame(const FrameDrawRecord& frameRecord, const SwapchainRecord& swapchainRecord, const uint32_t currentFrameIndex);
       void BuildSwapchainImageView(SwapchainRecord& rSwapchainRecord, const uint32_t swapBufferIndex);
 
       RecreateSwapchainResult TryRecreateSwapchain();
