@@ -30,6 +30,7 @@
 #include <FslBase/Log/Log3Fmt.hpp>
 #include <FslBase/UncheckedNumericCast.hpp>
 #include <FslGraphics/Bitmap/Bitmap.hpp>
+#include <FslUtil/Vulkan1_0/Util/ApiVersionUtil.hpp>
 #include <FslUtil/Vulkan1_0/Util/DeviceUtil.hpp>
 #include <FslUtil/Vulkan1_0/Util/InstanceUtil.hpp>
 #include <FslUtil/Vulkan1_0/Util/PhysicalDeviceUtil.hpp>
@@ -63,11 +64,13 @@ namespace Fsl
       {    // this was basically the setup done in main.cpp in the original example
         const auto options = config.GetOptions<OptionParser>();
 
-        m_instance = Vulkan::InstanceUtil::CreateInstance("VulkanComputeMandelbrot", VK_MAKE_VERSION(1, 0, 0), VK_MAKE_VERSION(1, 0, 0), 0, 0,
-                                                          nullptr, 0, nullptr);
+        Vulkan::ApiVersionUtil::CheckLoader();
+        m_instance = Vulkan::InstanceUtil::CreateInstance("VulkanComputeMandelbrot", VK_MAKE_VERSION(1, 0, 0),
+                                                          Vulkan::ApiVersionUtil::MinimumApiVersion, 0, 0, nullptr, 0, nullptr);
 
         const uint32_t physicalDeviceIndex = options->GetPhysicalDeviceIndex();
         m_physicalDevice = Vulkan::VUPhysicalDeviceRecord(Vulkan::InstanceUtil::GetPhysicalDevice(m_instance.Get(), physicalDeviceIndex));
+        Vulkan::ApiVersionUtil::CheckPhysicalDevice(m_physicalDevice.Properties);
 
         const auto deviceQueueFamilyProperties = Vulkan::PhysicalDeviceUtil::GetPhysicalDeviceQueueFamilyProperties(m_physicalDevice.Device);
         const uint32_t queueFamilyIndex = Vulkan::QueueUtil::GetQueueFamilyIndex(deviceQueueFamilyProperties, VK_QUEUE_COMPUTE_BIT, 0, nullptr);

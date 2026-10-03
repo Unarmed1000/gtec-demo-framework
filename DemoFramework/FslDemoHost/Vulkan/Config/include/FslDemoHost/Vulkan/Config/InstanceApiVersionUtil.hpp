@@ -39,7 +39,7 @@ namespace Fsl::Vulkan::InstanceApiVersionUtil
   //! The description of the command line option
   extern const char* const g_optionDescription;
 
-  //! Parse a 'major.minor' string (1.0 to 1.4) into a Vulkan api version.
+  //! Parse a 'major.minor' string (1.3 to 1.4) into a Vulkan api version.
   //! @return true if parsed, false if the string was invalid (an error is logged).
   bool TryParse(const StringViewLite& strVersion, uint32_t& rApiVersion);
 

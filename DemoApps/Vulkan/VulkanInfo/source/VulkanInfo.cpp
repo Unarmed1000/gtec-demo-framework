@@ -33,6 +33,7 @@
 #include <FslBase/Exceptions.hpp>
 #include <FslBase/Log/Log3Fmt.hpp>
 #include <FslUtil/Vulkan1_0/Log/FmtAll.hpp>
+#include <FslUtil/Vulkan1_0/Util/ApiVersionUtil.hpp>
 #include <FslUtil/Vulkan1_0/Util/InstanceUtil.hpp>
 #include <FslUtil/Vulkan1_0/Util/PhysicalDeviceUtil.hpp>
 #include <FslUtil/Vulkan1_0/VUDevice.hpp>
@@ -43,6 +44,7 @@
 #include <RapidVulkan/Debug/Strings/VkPhysicalDeviceType.hpp>
 #include <RapidVulkan/Debug/Strings/VkQueueFlagBits.hpp>
 #include <fmt/format.h>
+#include <algorithm>
 #include "CustomWriter.hpp"
 #include "Profiles.hpp"
 // Included last as a workaround
@@ -97,6 +99,12 @@ namespace Fsl
 
   namespace
   {
+    namespace LocalConfig
+    {
+      //! The highest instance api version VulkanInfo requests (the loader version is used if it is lower)
+      constexpr uint32_t MaxInstanceApiVersion = VK_API_VERSION_1_4;
+    }
+
     std::array<VkFormat, 184> g_allFormats = {
       VK_FORMAT_R4G4_UNORM_PACK8,              // = 1,
       VK_FORMAT_R4G4B4A4_UNORM_PACK16,         // = 2,
@@ -435,7 +443,9 @@ namespace Fsl
     void LogPhysicalProperties(CustomWriter& rWriter, const VkPhysicalDeviceProperties& properties)
     {
       rWriter.Print("Physical device properties:");
-      rWriter.Print("- apiVersion: {}", EncodedVulkanVersion(properties.apiVersion));
+      rWriter.Print("- apiVersion: {} (framework baseline {}.{}: {})", EncodedVulkanVersion(properties.apiVersion),
+                    VK_API_VERSION_MAJOR(ApiVersionUtil::MinimumApiVersion), VK_API_VERSION_MINOR(ApiVersionUtil::MinimumApiVersion),
+                    ApiVersionUtil::IsSupported(properties) ? "supported" : "NOT supported");
       rWriter.Print("- driverVersion: {}", EncodedVulkanVersion(properties.driverVersion));
       rWriter.Print("- vendorID: {}", properties.vendorID);
       rWriter.Print("- deviceID: {}", properties.deviceID);
@@ -617,7 +627,15 @@ namespace Fsl
   {
     CustomWriter writer;
 
-    const auto instance = InstanceUtil::CreateInstance("VulkanInfo", VK_MAKE_VERSION(1, 0, 0), VK_API_VERSION_1_0, 0, 0, nullptr, 0, nullptr);
+    // This is a diagnostic tool, so it runs on any loader and reports if the framework baseline is supported instead of requiring it
+    const uint32_t loaderApiVersion = ApiVersionUtil::GetLoaderApiVersion();
+    writer.Print("Loader api version: {}.{} (framework baseline {}.{}: {})", VK_API_VERSION_MAJOR(loaderApiVersion),
+                 VK_API_VERSION_MINOR(loaderApiVersion), VK_API_VERSION_MAJOR(ApiVersionUtil::MinimumApiVersion),
+                 VK_API_VERSION_MINOR(ApiVersionUtil::MinimumApiVersion),
+                 loaderApiVersion >= ApiVersionUtil::MinimumApiVersion ? "supported" : "NOT supported");
+
+    const uint32_t instanceApiVersion = std::min(loaderApiVersion, LocalConfig::MaxInstanceApiVersion);
+    const auto instance = InstanceUtil::CreateInstance("VulkanInfo", VK_MAKE_VERSION(1, 0, 0), instanceApiVersion, 0, 0, nullptr, 0, nullptr);
 
     const auto instanceLayerProperties = InstanceUtil::EnumerateInstanceLayerProperties();
     LogInstanceLayerProperties(writer, instanceLayerProperties);

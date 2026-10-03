@@ -33,6 +33,7 @@
 
 #include <FslBase/Exceptions.hpp>
 #include <FslUtil/Vulkan1_0/UnitTest/Helper/Common.hpp>
+#include <FslUtil/Vulkan1_0/Util/ApiVersionUtil.hpp>
 #include <FslUtil/Vulkan1_0/Util/InstanceUtil.hpp>
 #include <FslUtil/Vulkan1_0/Util/PhysicalDeviceUtil.hpp>
 #include <FslUtil/Vulkan1_0/Util/QueueUtil.hpp>
@@ -92,13 +93,15 @@ private:
   {
     try
     {
+      Fsl::Vulkan::ApiVersionUtil::CheckLoader();
+
       VkApplicationInfo appInfo{};
       appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
       appInfo.pApplicationName = "TestFixtureFslUtil_Vulkan1_0_TestInstance";
       appInfo.applicationVersion = VK_MAKE_VERSION(1, 0, 0);
       appInfo.pEngineName = "No Engine";
       appInfo.engineVersion = VK_MAKE_VERSION(1, 0, 0);
-      appInfo.apiVersion = VK_API_VERSION_1_0;
+      appInfo.apiVersion = Fsl::Vulkan::ApiVersionUtil::MinimumApiVersion;
 
       VkInstanceCreateInfo instanceCreateInfo{};
       instanceCreateInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
@@ -142,14 +145,17 @@ private:
       throw Fsl::NotSupportedException("No physical devices found");
     }
 
-    // Locate a device that support compute
+    // Locate a device that supports the api version baseline and compute
     for (const auto& physicalDevice : physicalDevices)
     {
       VkPhysicalDeviceProperties deviceProperties{};
       vkGetPhysicalDeviceProperties(physicalDevice, &deviceProperties);
+      if (!Fsl::Vulkan::ApiVersionUtil::IsSupported(deviceProperties))
+      {
+        continue;
+      }
 
       const auto queueProperties = Fsl::Vulkan::PhysicalDeviceUtil::GetPhysicalDeviceQueueFamilyProperties(physicalDevice);
-      vkGetPhysicalDeviceProperties(physicalDevice, &deviceProperties);
 
       for (const auto& queue : queueProperties)
       {
@@ -159,7 +165,7 @@ private:
         }
       }
     }
-    throw Fsl::NotSupportedException("No physical devices that supports compute found");
+    throw Fsl::NotSupportedException("No physical devices that supports the api version baseline and compute found");
   }
 };
 

@@ -32,6 +32,7 @@
 #include <FslBase/Log/Log3Fmt.hpp>
 #include <FslBase/Log/String/FmtStringViewLite.hpp>
 #include <FslDemoHost/Vulkan/Config/InstanceApiVersionUtil.hpp>
+#include <FslUtil/Vulkan1_0/Util/ApiVersionUtil.hpp>
 #include <vulkan/vulkan.h>
 
 namespace Fsl::Vulkan::InstanceApiVersionUtil
@@ -40,6 +41,7 @@ namespace Fsl::Vulkan::InstanceApiVersionUtil
   {
     namespace LocalConfig
     {
+      constexpr uint32_t MinMinorVersion = VK_API_VERSION_MINOR(ApiVersionUtil::MinimumApiVersion);
       constexpr uint32_t MaxMinorVersion = 4;
     }
 
@@ -49,9 +51,7 @@ namespace Fsl::Vulkan::InstanceApiVersionUtil
     }
   }
 
-  const char* const g_optionDescription =
-    "Override the Vulkan instance api version (1.0 to 1.4). It never lowers the version requested by the app. GPU assisted validation needs "
-    "1.1 or newer.";
+  const char* const g_optionDescription = "Override the Vulkan instance api version (1.3 to 1.4). It never lowers the version requested by the app.";
 
 
   bool TryParse(const StringViewLite& strVersion, uint32_t& rApiVersion)
@@ -59,17 +59,18 @@ namespace Fsl::Vulkan::InstanceApiVersionUtil
     // Expected format: 'major.minor'
     if (strVersion.size() != 3 || !IsDigit(strVersion[0]) || strVersion[1] != '.' || !IsDigit(strVersion[2]))
     {
-      FSLLOG3_ERROR("Invalid Vulkan api version '{}', expected a value like 1.1", strVersion);
+      FSLLOG3_ERROR("Invalid Vulkan api version '{}', expected a value like 1.3", strVersion);
       return false;
     }
     const auto major = static_cast<uint32_t>(strVersion[0] - '0');
     const auto minor = static_cast<uint32_t>(strVersion[2] - '0');
-    if (major != 1 || minor > LocalConfig::MaxMinorVersion)
+    if (major != 1 || minor < LocalConfig::MinMinorVersion || minor > LocalConfig::MaxMinorVersion)
     {
-      FSLLOG3_ERROR("Unsupported Vulkan api version '{}', expected a value between 1.0 and 1.{}", strVersion, LocalConfig::MaxMinorVersion);
+      FSLLOG3_ERROR("Unsupported Vulkan api version '{}', expected a value between 1.{} and 1.{}", strVersion, LocalConfig::MinMinorVersion,
+                    LocalConfig::MaxMinorVersion);
       return false;
     }
-    rApiVersion = VK_MAKE_VERSION(major, minor, 0);
+    rApiVersion = VK_MAKE_API_VERSION(0, major, minor, 0);
     return true;
   }
 
@@ -86,11 +87,11 @@ namespace Fsl::Vulkan::InstanceApiVersionUtil
       else
       {
         FSLLOG3_WARNING("The requested Vulkan api version {}.{} is lower than the version {}.{} required by the app, so it was ignored",
-                        VK_VERSION_MAJOR(overrideApiVersion), VK_VERSION_MINOR(overrideApiVersion), VK_VERSION_MAJOR(appApiVersion),
-                        VK_VERSION_MINOR(appApiVersion));
+                        VK_API_VERSION_MAJOR(overrideApiVersion), VK_API_VERSION_MINOR(overrideApiVersion), VK_API_VERSION_MAJOR(appApiVersion),
+                        VK_API_VERSION_MINOR(appApiVersion));
       }
     }
-    FSLLOG3_VERBOSE("Vulkan instance api version: {}.{}", VK_VERSION_MAJOR(apiVersion), VK_VERSION_MINOR(apiVersion));
+    FSLLOG3_VERBOSE("Vulkan instance api version: {}.{}", VK_API_VERSION_MAJOR(apiVersion), VK_API_VERSION_MINOR(apiVersion));
     return apiVersion;
   }
 }

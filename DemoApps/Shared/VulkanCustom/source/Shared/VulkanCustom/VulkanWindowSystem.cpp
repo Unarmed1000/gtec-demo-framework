@@ -42,6 +42,7 @@
 #include <FslNativeWindow/Vulkan/NativeVulkanSetup.hpp>
 #include <FslNativeWindow/Vulkan/VulkanNativeWindowSystemFactory.hpp>
 #include <FslUtil/Vulkan1_0/SafeType/InstanceCreateInfoCopy.hpp>
+#include <FslUtil/Vulkan1_0/Util/ApiVersionUtil.hpp>
 #include <FslUtil/Vulkan1_0/Util/InstanceUtil.hpp>
 #include <Shared/VulkanCustom/OptionParser.hpp>
 #include <Shared/VulkanCustom/VulkanWindowSystem.hpp>
@@ -63,8 +64,8 @@ namespace Fsl
     const auto physicialDeviceIndex = appOptionParser->GetPhysicalDeviceIndex();
     const auto userChoiceValidationLayer = appOptionParser->GetValidationLayer();
     const auto demoAppHostConfig = std::dynamic_pointer_cast<DemoAppHostConfigVulkan>(setup.CustomDemoAppHostConfig);
-    const uint32_t apiVersion = Vulkan::InstanceApiVersionUtil::Select(
-      demoAppHostConfig ? demoAppHostConfig->GetInstanceApiVersion() : VK_API_VERSION_1_0, appOptionParser->GetInstanceApiVersionOverride());
+    const uint32_t appApiVersion = demoAppHostConfig ? demoAppHostConfig->GetInstanceApiVersion() : Vulkan::ApiVersionUtil::MinimumApiVersion;
+    const uint32_t apiVersion = Vulkan::InstanceApiVersionUtil::Select(appApiVersion, appOptionParser->GetInstanceApiVersionOverride());
 
     const auto vulkanWindowSystem = std::dynamic_pointer_cast<IVulkanNativeWindowSystem>(m_windowSystem);
     if (!vulkanWindowSystem)
@@ -74,6 +75,7 @@ namespace Fsl
 
     const std::string khrSurfaceExtensionName = vulkanWindowSystem->GetKHRSurfaceExtensionName();
 
+    Vulkan::ApiVersionUtil::CheckLoader();
     {
       const auto instanceConfig = InstanceConfigUtil::InstanceConfigAsCharArrays(InstanceConfigUtil::BuildInstanceConfig(
         khrSurfaceExtensionName, InstanceConfigUtil::InstanceUserChoice(userChoiceValidationLayer), demoAppHostConfig));
@@ -82,6 +84,7 @@ namespace Fsl
                                                 instanceConfig.Extensions, m_instanceCreateInfo.get());
     }
     m_physicalDevice = VUPhysicalDeviceRecord(InstanceUtil::GetPhysicalDevice(m_instance.Get(), physicialDeviceIndex));
+    Vulkan::ApiVersionUtil::CheckPhysicalDevice(m_physicalDevice.Properties);
 
     FSLLOG3_INFO("VulkanWindowSystem created");
   }

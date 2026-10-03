@@ -48,6 +48,7 @@
 #include <FslNativeWindow/Vulkan/VulkanNativeWindowSystemFactory.hpp>
 // #include <FslUtil/Vulkan1_0/Log/All.hpp>
 #include <FslUtil/Vulkan1_0/Log/FmtAll.hpp>
+#include <FslUtil/Vulkan1_0/Util/ApiVersionUtil.hpp>
 #include <FslUtil/Vulkan1_0/Util/InstanceUtil.hpp>
 #include <FslUtil/Vulkan1_0/Util/PhysicalDeviceKHRUtil.hpp>
 #include <FslUtil/Vulkan1_0/Util/PhysicalDeviceUtil.hpp>
@@ -369,6 +370,8 @@ namespace Fsl
         InstanceConfigUtil::BuildInstanceConfig(khrSurfaceExtensionName, instanceUserChoice, demoHostConfig));
 
 
+      ApiVersionUtil::CheckLoader();
+
       const uint32_t appVersion = demoHostConfig->GetInstanceAppVersion();
       const uint32_t apiVersion =
         Vulkan::InstanceApiVersionUtil::Select(demoHostConfig->GetInstanceApiVersion(), m_options->GetInstanceApiVersionOverride());
@@ -380,6 +383,7 @@ namespace Fsl
     // Select the physical device
     const auto physicialDeviceIndex = m_options->GetPhysicalDeviceIndex();
     m_physicalDevice = VUPhysicalDeviceRecord(InstanceUtil::GetPhysicalDevice(m_instance.Get(), physicialDeviceIndex));
+    ApiVersionUtil::CheckPhysicalDevice(m_physicalDevice.Properties);
 
     if (Fsl::LogConfig::GetLogLevel() >= LogType::Verbose2)
     {

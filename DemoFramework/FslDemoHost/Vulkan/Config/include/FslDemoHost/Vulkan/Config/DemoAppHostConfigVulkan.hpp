@@ -38,6 +38,7 @@
 #include <FslDemoHost/Vulkan/Config/FeatureRequest.hpp>
 #include <FslDemoHost/Vulkan/Config/PhysicalDeviceFeatureRequest.hpp>
 #include <FslUtil/Vulkan1_0/SurfaceFormatInfo.hpp>
+#include <FslUtil/Vulkan1_0/Util/ApiVersionUtil.hpp>
 #include <vulkan/vulkan.h>
 #include <algorithm>
 #include <deque>
@@ -66,7 +67,7 @@ namespace Fsl
     std::deque<Vulkan::FeatureRequest> m_deviceExtensionRequest;
 
     uint32_t m_appVersion{VK_MAKE_VERSION(1, 0, 0)};
-    uint32_t m_apiVersion{VK_API_VERSION_1_0};
+    uint32_t m_apiVersion{Vulkan::ApiVersionUtil::MinimumApiVersion};
     ConfigControl m_layerConfigControl{ConfigControl::Default};
     ConfigControl m_extensionConfigControl{ConfigControl::Default};
     ConfigControl m_deviceExtensionConfigControl{ConfigControl::Default};
@@ -236,10 +237,9 @@ namespace Fsl
       return m_apiVersion;
     }
 
-    void SetInstanceApiVersion(const uint32_t version)
-    {
-      m_apiVersion = version;
-    }
+    //! @brief Set the instance api version the app requires.
+    //! @note A version below the framework baseline (Vulkan::ApiVersionUtil::MinimumApiVersion) is raised to the baseline.
+    void SetInstanceApiVersion(const uint32_t version);
 
     void SetDeviceCreationCustomizer(std::shared_ptr<Vulkan::IVulkanDeviceCreationCustomizer> customizer);
 

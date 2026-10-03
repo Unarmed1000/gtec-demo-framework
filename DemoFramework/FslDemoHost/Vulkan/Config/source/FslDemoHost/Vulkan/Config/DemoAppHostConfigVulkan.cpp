@@ -50,6 +50,20 @@ namespace Fsl
   //}
 
 
+  void DemoAppHostConfigVulkan::SetInstanceApiVersion(const uint32_t version)
+  {
+    if (version < Vulkan::ApiVersionUtil::MinimumApiVersion)
+    {
+      FSLLOG3_WARNING("The requested Vulkan api version {}.{} is below the required baseline {}.{}, so the baseline is used",
+                      VK_API_VERSION_MAJOR(version), VK_API_VERSION_MINOR(version), VK_API_VERSION_MAJOR(Vulkan::ApiVersionUtil::MinimumApiVersion),
+                      VK_API_VERSION_MINOR(Vulkan::ApiVersionUtil::MinimumApiVersion));
+      m_apiVersion = Vulkan::ApiVersionUtil::MinimumApiVersion;
+      return;
+    }
+    m_apiVersion = version;
+  }
+
+
   void DemoAppHostConfigVulkan::SetDeviceCreationCustomizer(std::shared_ptr<Vulkan::IVulkanDeviceCreationCustomizer> customizer)
   {
     m_customizer = std::move(customizer);
