@@ -252,6 +252,15 @@ namespace Fsl
       subpassDependency[0].dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
       subpassDependency[0].dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
       subpassDependency[0].dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
+      if (enableDepth)
+      {
+        // The depth attachment is transitioned and cleared when the render pass begins, so the dependency has to cover the depth stages too.
+        // The depth image is shared with the main render pass, which wrote to it at the end of the previous frame.
+        subpassDependency[0].srcStageMask |= VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT | VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT;
+        subpassDependency[0].srcAccessMask |= VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+        subpassDependency[0].dstStageMask |= VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT | VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT;
+        subpassDependency[0].dstAccessMask |= VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+      }
 
       // output
       subpassDependency[1].srcSubpass = 0;
@@ -261,6 +270,14 @@ namespace Fsl
       subpassDependency[1].dstStageMask = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
       subpassDependency[1].dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
       subpassDependency[1].dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
+      if (enableDepth)
+      {
+        // The main render pass transitions and clears the same depth image later in the frame, so it has to wait for the depth writes done here
+        subpassDependency[1].srcStageMask |= VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT | VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT;
+        subpassDependency[1].srcAccessMask |= VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+        subpassDependency[1].dstStageMask |= VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT | VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT;
+        subpassDependency[1].dstAccessMask |= VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+      }
 
       std::array<VkAttachmentDescription, 2> attachments{};
       // color
@@ -938,11 +955,11 @@ namespace Fsl
 
     if (m_sceneRender)
     {
-      m_sceneRender->OnBuildResources(context, offscreenRP);
+      m_sceneRender->OnBuildResources(context, offscreenRP, m_dependentResources.MainRenderPass.Get());
     }
     if (m_sceneWhiteRect)
     {
-      m_sceneWhiteRect->OnBuildResources(context, offscreenRP);
+      m_sceneWhiteRect->OnBuildResources(context, offscreenRP, m_dependentResources.MainRenderPass.Get());
     }
     return m_dependentResources.MainRenderPass.Get();
   }
@@ -1002,7 +1019,7 @@ namespace Fsl
 
         if (m_scene)
         {
-          m_scene->Draw(frameIndex, hCmdBuffer);
+          m_scene->Draw(frameIndex, hCmdBuffer, SceneRenderTarget::Offscreen);
         }
       }
       rCmdBuffers.CmdEndRenderPass(frameIndex);
@@ -1093,7 +1110,7 @@ namespace Fsl
 
     if (m_menuUI.IsFinalSceneEnabled())
     {
-      m_scene->Draw(frameIndex, hCmdBuffer);
+      m_scene->Draw(frameIndex, hCmdBuffer, SceneRenderTarget::Main);
     }
 
     // Draw bloom with a fullscreen additive pass

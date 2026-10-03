@@ -30,6 +30,7 @@
     * ComputeParticles: vertex attribute barrier stages.
     * DynamicTerrainTessellation: invalid pipeline statistics query flag.
     * DynamicTerrainTessellation, TessellationPNTriangles: vertex/tessellation shader interface mismatch.
+    * Bloom: the scene was drawn to the swapchain with a pipeline created for the offscreen render pass, and the offscreen render pass did not synchronize its use of the shared depth buffer.
   * The vk_layer_settings.txt files now use the VK_LAYER_KHRONOS_validation settings.
   * IVulkanDeviceCreationCustomizer::Configure now also receives the VkInstance.
 * Experimental RDK Yocto platform support.

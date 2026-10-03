@@ -40,6 +40,7 @@
 #include <FslDemoApp/Base/Service/Content/IContentManager.hpp>
 #include <FslDemoApp/Vulkan/Basic/BuildResourcesContext.hpp>
 #include <vulkan/vulkan.h>
+#include "SceneRenderTarget.hpp"
 
 namespace Fsl
 {
@@ -48,13 +49,16 @@ namespace Fsl
   public:
     virtual ~IVulkanScene() = default;
 
-    virtual void OnBuildResources(const VulkanBasic::BuildResourcesContext& /*context*/, const VkRenderPass /*hRenderPass*/) {};
+    //! @param hOffscreenRenderPass the render pass used when the scene is drawn to SceneRenderTarget::Offscreen
+    //! @param hMainRenderPass the render pass used when the scene is drawn to SceneRenderTarget::Main
+    virtual void OnBuildResources(const VulkanBasic::BuildResourcesContext& /*context*/, const VkRenderPass /*hOffscreenRenderPass*/,
+                                  const VkRenderPass /*hMainRenderPass*/) {};
     virtual void OnFreeResources() {};
 
     virtual void Update(const DemoTime& demoTime, const Matrix& cameraViewMatrix, const Matrix& cameraRotation, const Vector3& rotation,
                         const PxSize2D& windowSizePx) = 0;
     virtual void PreDraw(const uint32_t frameIndex, const VkCommandBuffer hCmdBuffer) = 0;
-    virtual void Draw(const uint32_t frameIndex, const VkCommandBuffer hCmdBuffer) = 0;
+    virtual void Draw(const uint32_t frameIndex, const VkCommandBuffer hCmdBuffer, const SceneRenderTarget renderTarget) = 0;
   };
 }
 

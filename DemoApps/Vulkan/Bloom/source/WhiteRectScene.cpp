@@ -320,10 +320,15 @@ namespace Fsl
   WhiteRectScene::~WhiteRectScene() = default;
 
 
-  void WhiteRectScene::OnBuildResources(const VulkanBasic::BuildResourcesContext& context, const VkRenderPass hRenderPass)
+  void WhiteRectScene::OnBuildResources(const VulkanBasic::BuildResourcesContext& context, const VkRenderPass hOffscreenRenderPass,
+                                        const VkRenderPass hMainRenderPass)
   {
-    m_dependentResources.Pipeline = CreatePipeline(m_resources.ScenePipelineLayout, context.SwapchainImageExtent, m_resources.VertShader.Get(),
-                                                   m_resources.FragShader.Get(), m_resources.Mesh, hRenderPass, 0, false);
+    // The render passes are not compatible, so the scene needs a pipeline for each of them
+    m_dependentResources.PipelineOffscreen =
+      CreatePipeline(m_resources.ScenePipelineLayout, context.SwapchainImageExtent, m_resources.VertShader.Get(), m_resources.FragShader.Get(),
+                     m_resources.Mesh, hOffscreenRenderPass, 0, false);
+    m_dependentResources.PipelineMain = CreatePipeline(m_resources.ScenePipelineLayout, context.SwapchainImageExtent, m_resources.VertShader.Get(),
+                                                       m_resources.FragShader.Get(), m_resources.Mesh, hMainRenderPass, 0, false);
   }
 
   void WhiteRectScene::OnFreeResources()
@@ -342,13 +347,14 @@ namespace Fsl
   }
 
 
-  void WhiteRectScene::Draw(const uint32_t frameIndex, const VkCommandBuffer hCmdBuffer)
+  void WhiteRectScene::Draw(const uint32_t frameIndex, const VkCommandBuffer hCmdBuffer, const SceneRenderTarget renderTarget)
   {
     const auto& frame = m_resources.SceneFrameResources[frameIndex];
+    const auto& pipeline = renderTarget == SceneRenderTarget::Offscreen ? m_dependentResources.PipelineOffscreen : m_dependentResources.PipelineMain;
 
     vkCmdBindDescriptorSets(hCmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_resources.ScenePipelineLayout.Get(), 0, 1, &frame.DescriptorSet, 0,
                             nullptr);
-    vkCmdBindPipeline(hCmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_dependentResources.Pipeline.Get());
+    vkCmdBindPipeline(hCmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.Get());
 
     const VkDeviceSize offsets = 0;
     vkCmdBindVertexBuffers(hCmdBuffer, VertexBufferBindId, 1, m_resources.Mesh.VertexBuffer.GetBufferPointer(), &offsets);

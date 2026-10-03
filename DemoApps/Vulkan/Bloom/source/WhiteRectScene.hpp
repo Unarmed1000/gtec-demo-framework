@@ -79,7 +79,9 @@ namespace Fsl
 
     struct DependentResources
     {
-      RapidVulkan::GraphicsPipeline Pipeline;
+      //! A pipeline for each SceneRenderTarget
+      RapidVulkan::GraphicsPipeline PipelineOffscreen;
+      RapidVulkan::GraphicsPipeline PipelineMain;
 
       DependentResources() = default;
       DependentResources(const DependentResources&) = delete;
@@ -91,7 +93,8 @@ namespace Fsl
       void Reset() noexcept
       {
         // Reset in destruction order
-        Pipeline.Reset();
+        PipelineMain.Reset();
+        PipelineOffscreen.Reset();
       }
     };
 
@@ -104,13 +107,14 @@ namespace Fsl
                    const uint32_t maxFrames);
     ~WhiteRectScene() final;
 
-    void OnBuildResources(const VulkanBasic::BuildResourcesContext& context, const VkRenderPass hRenderPass) final;
+    void OnBuildResources(const VulkanBasic::BuildResourcesContext& context, const VkRenderPass hOffscreenRenderPass,
+                          const VkRenderPass hMainRenderPass) final;
     void OnFreeResources() final;
 
     void Update(const DemoTime& demoTime, const Matrix& cameraViewMatrix, const Matrix& cameraRotation, const Vector3& rotation,
                 const PxSize2D& windowSizePx) final;
     void PreDraw(const uint32_t /*frameIndex*/, const VkCommandBuffer /*hCmdBuffer*/) final {};
-    void Draw(const uint32_t frameIndex, const VkCommandBuffer hCmdBuffer) final;
+    void Draw(const uint32_t frameIndex, const VkCommandBuffer hCmdBuffer, const SceneRenderTarget renderTarget) final;
   };
 }
 
