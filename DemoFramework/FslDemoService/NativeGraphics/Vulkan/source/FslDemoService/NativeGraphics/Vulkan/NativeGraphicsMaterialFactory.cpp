@@ -41,6 +41,7 @@
 #include <FslGraphics/Log/Render/Basic/FmtBasicPrimitiveTopology.hpp>
 #include <FslGraphics/Vertices/VertexDeclarationSpan.hpp>
 #include <FslUtil/Vulkan1_0/Batch/ConfigHelper.hpp>
+#include <FslUtil/Vulkan1_0/Debug/VUDebugUtils.hpp>
 #include <FslUtil/Vulkan1_0/TypeConverter.hpp>
 #include <utility>
 
@@ -318,6 +319,7 @@ namespace Fsl::Vulkan
     FSLLOG3_VERBOSE3("NativeGraphicsPipelineFactory::Construct");
     assert(mainDescriptorSetLayout != VK_NULL_HANDLE);
     m_resources.MainPipelineLayout = CreatePipelineLayout(device.Get(), mainDescriptorSetLayout);
+    VUDebugUtils::SetObjectName(device.Get(), VK_OBJECT_TYPE_PIPELINE_LAYOUT, m_resources.MainPipelineLayout.Get(), "BasicRender.PipelineLayout");
   }
 
 
@@ -380,10 +382,12 @@ namespace Fsl::Vulkan
       throw std::invalid_argument("createInfo must be valid");
     }
 
-    const int32_t handleValue = m_resources.Shaders.Add(ShaderRecord(
-      createInfo.Flag,
-      RapidVulkan::ShaderModule(m_resources.Device, 0, createInfo.Shader.size_bytes(), reinterpret_cast<const uint32_t*>(createInfo.Shader.data())),
-      VertexAttributeDescriptions(createInfo.VertexAttributeDescSpan)));
+    RapidVulkan::ShaderModule shaderModule(m_resources.Device, 0, createInfo.Shader.size_bytes(),
+                                           reinterpret_cast<const uint32_t*>(createInfo.Shader.data()));
+    VUDebugUtils::SetObjectName(m_resources.Device, VK_OBJECT_TYPE_SHADER_MODULE, shaderModule.Get(), "BasicRender.Shader");
+
+    const int32_t handleValue = m_resources.Shaders.Add(
+      ShaderRecord(createInfo.Flag, std::move(shaderModule), VertexAttributeDescriptions(createInfo.VertexAttributeDescSpan)));
 
     return BasicNativeShaderHandle(handleValue);
   }
@@ -496,11 +500,13 @@ namespace Fsl::Vulkan
     const VkShaderModule hVert = vertRecord.Shader.Get();
     const VkShaderModule hFrag = fragRecord.Shader.Get();
 
-    return PipelineRecord(CreateGraphicsPipeline(m_resources.Device, hVert, hFrag, m_resources.MainPipelineLayout.Get(),
-                                                 m_dependentResources.PipelineCache, m_dependentResources.RenderPass, m_dependentResources.Subpass,
-                                                 m_dependentResources.ScreenExtentPx, createInfo.MaterialInfo, createInfo.VertexDeclaration),
-                          m_resources.MainPipelineLayout.Get(), createInfo.MaterialInfo, createInfo.VertexDeclaration, createInfo.VertexShaderHandle,
-                          createInfo.FragmentShaderHandle);
+    RapidVulkan::GraphicsPipeline pipeline = CreateGraphicsPipeline(
+      m_resources.Device, hVert, hFrag, m_resources.MainPipelineLayout.Get(), m_dependentResources.PipelineCache, m_dependentResources.RenderPass,
+      m_dependentResources.Subpass, m_dependentResources.ScreenExtentPx, createInfo.MaterialInfo, createInfo.VertexDeclaration);
+    VUDebugUtils::SetObjectName(m_resources.Device, VK_OBJECT_TYPE_PIPELINE, pipeline.Get(), "BasicRender.Pipeline");
+
+    return PipelineRecord(std::move(pipeline), m_resources.MainPipelineLayout.Get(), createInfo.MaterialInfo, createInfo.VertexDeclaration,
+                          createInfo.VertexShaderHandle, createInfo.FragmentShaderHandle);
   }
 
 

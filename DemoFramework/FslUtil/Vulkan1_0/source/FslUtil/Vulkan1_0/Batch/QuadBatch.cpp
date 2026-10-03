@@ -39,6 +39,8 @@
 #include <FslGraphics/Vertices/VertexElementFormat.hpp>
 #include <FslUtil/Vulkan1_0/Batch/ConfigHelper.hpp>
 #include <FslUtil/Vulkan1_0/Batch/QuadBatch.hpp>
+#include <FslUtil/Vulkan1_0/Debug/VUDebugUtils.hpp>
+#include <FslUtil/Vulkan1_0/Debug/VUScopedCmdDebugLabel.hpp>
 #include <FslUtil/Vulkan1_0/TypeConverter.hpp>
 #include <FslUtil/Vulkan1_0/Util/MemoryTypeUtil.hpp>
 #include <FslUtil/Vulkan1_0/Util/VUBufferMemoryUtil.hpp>
@@ -311,6 +313,9 @@ namespace Fsl::Vulkan
 
     auto& rRender = m_deviceResource.Render[m_activeFrame.FrameIndex];
 
+    // The label is opened and closed here instead of in Begin/End as this is the only place that records commands
+    const VUScopedCmdDebugLabel scopedLabel(m_activeFrame.CommandBuffer, "QuadBatch");
+
     const VertexPositionColorTexture* pSrcVertices = pVertices;
     const VertexPositionColorTexture* const pSrcVerticesEnd = pVertices + (static_cast<std::size_t>(length) * 4);
 
@@ -439,6 +444,23 @@ namespace Fsl::Vulkan
 
       m_deviceResource.PipelineCache = CreatePipelineCache(device);
 
+      if (VUDebugUtils::IsEnabled())
+      {
+        VUDebugUtils::SetObjectName(device, VK_OBJECT_TYPE_BUFFER, m_deviceResource.UniformBuffer.GetBuffer(), "QuadBatch.UniformBuffer");
+        VUDebugUtils::SetObjectName(device, VK_OBJECT_TYPE_DESCRIPTOR_SET_LAYOUT, m_deviceResource.DescriptorSetLayoutUniform.Get(),
+                                    "QuadBatch.DescriptorSetLayout.Uniform");
+        VUDebugUtils::SetObjectName(device, VK_OBJECT_TYPE_DESCRIPTOR_SET_LAYOUT, m_deviceResource.DescriptorSetTexture.Get(),
+                                    "QuadBatch.DescriptorSetLayout.Texture");
+        VUDebugUtils::SetObjectName(device, VK_OBJECT_TYPE_DESCRIPTOR_POOL, m_deviceResource.DescriptorPool.Get(), "QuadBatch.DescriptorPool");
+        VUDebugUtils::SetObjectName(device, VK_OBJECT_TYPE_DESCRIPTOR_SET, m_deviceResource.DescriptorSetUniform, "QuadBatch.DescriptorSet.Uniform");
+        VUDebugUtils::SetObjectName(device, VK_OBJECT_TYPE_SHADER_MODULE, m_deviceResource.VertexShader.Get(), "QuadBatch.VertexShader");
+        VUDebugUtils::SetObjectName(device, VK_OBJECT_TYPE_SHADER_MODULE, m_deviceResource.FragmentShader.Get(), "QuadBatch.FragmentShader");
+        VUDebugUtils::SetObjectName(device, VK_OBJECT_TYPE_SHADER_MODULE, m_deviceResource.SdfFragmentShader.Get(), "QuadBatch.FragmentShader.Sdf");
+        VUDebugUtils::SetObjectName(device, VK_OBJECT_TYPE_PIPELINE_LAYOUT, m_deviceResource.PipelineLayout.Get(), "QuadBatch.PipelineLayout");
+        VUDebugUtils::SetObjectName(device, VK_OBJECT_TYPE_PIPELINE_LAYOUT, m_deviceResource.PipelineLayoutSdf.Get(), "QuadBatch.PipelineLayout.Sdf");
+        VUDebugUtils::SetObjectName(device, VK_OBJECT_TYPE_PIPELINE_CACHE, m_deviceResource.PipelineCache.Get(), "QuadBatch.PipelineCache");
+      }
+
       m_deviceResource.Render.clear();
     }
     catch (const std::exception& ex)
@@ -546,6 +568,16 @@ namespace Fsl::Vulkan
       m_dependentResource.PipelineSdf =
         ConfigHelper::CreateGraphicsPipeline(device, hVertexShader, hFragShaderSdf, pipelineLayoutSdf, hPipelineCache, renderPass, subpass,
                                              screenExtentPx, BlendState::Sdf, CullMode, FrontFace, vertexDecl);
+
+      if (VUDebugUtils::IsEnabled())
+      {
+        VUDebugUtils::SetObjectName(device, VK_OBJECT_TYPE_PIPELINE, m_dependentResource.PipelineAdditive.Get(), "QuadBatch.Pipeline.Additive");
+        VUDebugUtils::SetObjectName(device, VK_OBJECT_TYPE_PIPELINE, m_dependentResource.PipelineAlphaBlend.Get(), "QuadBatch.Pipeline.AlphaBlend");
+        VUDebugUtils::SetObjectName(device, VK_OBJECT_TYPE_PIPELINE, m_dependentResource.PipelineNonPremultiplied.Get(),
+                                    "QuadBatch.Pipeline.NonPremultiplied");
+        VUDebugUtils::SetObjectName(device, VK_OBJECT_TYPE_PIPELINE, m_dependentResource.PipelineOpaque.Get(), "QuadBatch.Pipeline.Opaque");
+        VUDebugUtils::SetObjectName(device, VK_OBJECT_TYPE_PIPELINE, m_dependentResource.PipelineSdf.Get(), "QuadBatch.Pipeline.Sdf");
+      }
     }
     catch (const std::exception& ex)
     {

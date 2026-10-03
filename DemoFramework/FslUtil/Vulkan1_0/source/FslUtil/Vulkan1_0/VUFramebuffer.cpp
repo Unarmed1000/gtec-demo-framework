@@ -29,6 +29,7 @@
  *
  ****************************************************************************************************************************************************/
 
+#include <FslUtil/Vulkan1_0/Debug/VUDebugUtils.hpp>
 #include <FslUtil/Vulkan1_0/VUFramebuffer.hpp>
 #include <array>
 #include <utility>
@@ -191,6 +192,13 @@ namespace Fsl::Vulkan
       std::array<VkImageView, 2> imageViews = {m_texture.ImageView().Get(), depthImageView};
       const uint32_t attachmentCount = depthImageView != VK_NULL_HANDLE ? 2 : 1;
       m_framebuffer.Reset(device.Get(), 0, renderPass, attachmentCount, imageViews.data(), extent.width, extent.height, 1);
+
+      // The image, its memory and its view were named by the VUImageMemoryView
+      if (!name.empty() && VUDebugUtils::IsEnabled())
+      {
+        VUDebugUtils::SetObjectName(device.Get(), VK_OBJECT_TYPE_SAMPLER, m_texture.Sampler().Get(), name + ".Sampler");
+        VUDebugUtils::SetObjectName(device.Get(), VK_OBJECT_TYPE_FRAMEBUFFER, m_framebuffer.Get(), name + ".Framebuffer");
+      }
     }
     catch (const std::exception&)
     {

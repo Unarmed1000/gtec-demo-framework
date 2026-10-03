@@ -47,6 +47,7 @@
 #include <FslDemoService/Graphics/Control/IGraphicsServiceHost.hpp>
 #include <FslDemoService/NativeGraphics/Vulkan/NativeGraphicsCustomVulkanDeviceCreateInfo.hpp>
 #include <FslDemoService/NativeGraphics/Vulkan/NativeGraphicsService.hpp>
+#include <FslUtil/Vulkan1_0/Debug/VUDebugUtils.hpp>
 #include <FslUtil/Vulkan1_0/Util/DeviceUtil.hpp>
 #include <FslUtil/Vulkan1_0/Util/PhysicalDeviceKHRUtil.hpp>
 #include <FslUtil/Vulkan1_0/Util/PhysicalDeviceUtil.hpp>
@@ -150,6 +151,9 @@ namespace Fsl
       m_device = std::move(vulkanDeviceSetup.Device);
       m_deviceCreateInfo = vulkanDeviceSetup.DeviceCreateInfo;
       m_deviceQueue = vulkanDeviceSetup.DeviceQueueRecord;
+
+      Vulkan::VUDebugUtils::SetObjectName(m_device.Get(), VK_OBJECT_TYPE_DEVICE, m_device.Get(), "MainDevice");
+      Vulkan::VUDebugUtils::SetObjectName(m_device.Get(), VK_OBJECT_TYPE_QUEUE, m_deviceQueue.Queue, "MainQueue");
     }
 
     Vulkan::VulkanValidationUtil::CheckWindowAndSurfaceExtent(m_physicalDevice.Device, m_surface, GetScreenExtent());

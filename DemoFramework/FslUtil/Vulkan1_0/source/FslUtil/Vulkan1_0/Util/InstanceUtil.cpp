@@ -92,10 +92,31 @@ namespace Fsl::Vulkan::InstanceUtil
   }
 
 
+  bool IsInstanceExtensionsAvailable(const uint32_t extensionCount, const char* const* enabledExtensionNames, const uint32_t layerCount,
+                                     const char* const* enabledLayerNames)
+  {
+    if (extensionCount == 0 || enabledExtensionNames == nullptr)
+    {
+      return false;
+    }
+
+    const std::vector<VkExtensionProperties> extensionProperties = InstanceUtil::EnumerateInstanceExtensionProperties(layerCount, enabledLayerNames);
+    const auto extensionPropertiesSpan = SpanUtil::AsReadOnlySpan(extensionProperties);
+    for (uint32_t extensionIndex = 0; extensionIndex < extensionCount; ++extensionIndex)
+    {
+      if (!PropertyUtil::IsExtensionAvailable(extensionPropertiesSpan, enabledExtensionNames[extensionIndex]))
+      {
+        return false;
+      }
+    }
+    return true;
+  }
+
+
   RapidVulkan::Instance CreateInstance(const std::string& applicationName, const uint32_t applicationVersion, const uint32_t apiVersion,
                                        const VkInstanceCreateFlags flags, const uint32_t enabledLayerCount, const char* const* ppszEnabledLayerNames,
                                        const uint32_t enabledExtensionCount, const char* const* ppszEnabledExtensionNames,
-                                       InstanceCreateInfoCopy* pInstanceCreateInfoCopy)
+                                       InstanceCreateInfoCopy* pInstanceCreateInfoCopy, const void* const pNext)
   {
     if (ppszEnabledLayerNames == nullptr && enabledLayerCount > 0)
     {
@@ -117,7 +138,8 @@ namespace Fsl::Vulkan::InstanceUtil
 
     if (enabledExtensionCount > 0)
     {
-      if (!IsInstanceExtensionsAvailable(enabledExtensionCount, ppszEnabledExtensionNames))
+      // A extension can be provided by one of the enabled layers instead of the Vulkan implementation
+      if (!IsInstanceExtensionsAvailable(enabledExtensionCount, ppszEnabledExtensionNames, enabledLayerCount, ppszEnabledLayerNames))
       {
         throw NotSupportedException("Extension not available");
       }
@@ -133,6 +155,7 @@ namespace Fsl::Vulkan::InstanceUtil
 
     VkInstanceCreateInfo instanceCreateInfo{};
     instanceCreateInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
+    instanceCreateInfo.pNext = pNext;
     instanceCreateInfo.flags = flags;
     instanceCreateInfo.pApplicationInfo = &applicationInfo;
     instanceCreateInfo.enabledLayerCount = enabledLayerCount;
@@ -183,6 +206,23 @@ namespace Fsl::Vulkan::InstanceUtil
 
     std::vector<VkExtensionProperties> result(count);
     RAPIDVULKAN_CHECK2(vkEnumerateInstanceExtensionProperties(pszLayerName, &count, result.data()), "failed to enumerate layer properties");
+    return result;
+  }
+
+
+  std::vector<VkExtensionProperties> EnumerateInstanceExtensionProperties(const uint32_t layerCount, const char* const* ppszLayerNames)
+  {
+    if (ppszLayerNames == nullptr && layerCount > 0)
+    {
+      throw std::invalid_argument("layerCount can not be non-zero when no layers are supplied");
+    }
+
+    std::vector<VkExtensionProperties> result = EnumerateInstanceExtensionProperties(nullptr);
+    for (uint32_t layerIndex = 0; layerIndex < layerCount; ++layerIndex)
+    {
+      const std::vector<VkExtensionProperties> layerExtensions = EnumerateInstanceExtensionProperties(ppszLayerNames[layerIndex]);
+      result.insert(result.end(), layerExtensions.begin(), layerExtensions.end());
+    }
     return result;
   }
 

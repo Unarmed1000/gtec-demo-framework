@@ -331,7 +331,7 @@ namespace Fsl
 
     DemoAppHostConfigVulkan config;
     // This is just a example (VK_LAYER_LUNARG_api_dump can actually be enabled/disabled from the command line)
-    config.AddInstanceLayerRequest("VK_LAYER_LUNARG_api_dump"), FeatureRequirement::Required);
+    config.AddInstanceLayerRequest("VK_LAYER_LUNARG_api_dump", FeatureRequirement::Mandatory);
 
     DemoAppRegister::Vulkan::Register<CustomDemoApp>(rSetup, "Vulkan.CustomDemoApp", config);
   }
@@ -349,12 +349,14 @@ namespace Fsl
     using namespace Vulkan;
 
     DemoAppHostConfigVulkan config;
-    config.AddInstanceExtensionRequest("VK_EXT_debug_utils"), FeatureRequirement::Optional);
+    config.AddInstanceExtensionRequest("VK_EXT_swapchain_colorspace", FeatureRequirement::Optional);
 
     DemoAppRegister::Vulkan::Register<CustomDemoApp>(rSetup, "Vulkan.CustomDemoApp", config);
   }
 }
 ```
+
+A extension that is provided by one of the enabled layers can be requested as well. ```VK_EXT_debug_utils``` does not need to be requested by the app, the demo host takes care of it (see [Debugging](#debugging)).
 
 ## Hints
 
@@ -377,6 +379,45 @@ namespace Fsl
 - Its highly recommended to enable the VK_LAYER_KHRONOS_validation while developing a Vulkan app. If you dont use it your app will most likely contain errors. So save time and just use it!
 - Debug builds enable VK_LAYER_KHRONOS_validation by default.
 - The ```--VkValidate``` argument can be used to enable or disable it from the command line.
+- The ```--VkValidateFeatures``` argument enables the optional checks of the layer. It takes a comma separated list of ```sync``` (synchronization validation), ```gpu``` (GPU assisted validation), ```bestpractices``` and ```printf``` (the debugPrintfEXT shader function). For example ```--VkValidateFeatures sync,bestpractices```. It also enables the layer unless ```--VkValidate false``` is used.
+- The messages of the layer are written to the log, see [Debugging](#debugging).
+
+## Debugging
+
+The demo host enables ```VK_EXT_debug_utils``` in debug builds and when the validation layer is enabled. Use ```--VkDebugUtils true``` to enable it in a release build (for example to get named objects in a RenderDoc capture) or ```--VkDebugUtils false``` to disable it.
+
+When it is enabled
+
+- The Vulkan debug messages are written to the log. Errors and warnings are always written, the info messages need ```-vvv``` and the verbose messages need ```-vvvvv``` (the loader is very talkative at those levels). A validation message lists the names of the objects it is about and the command buffer labels that were active.
+- The Vulkan objects created by the framework have names (```Swapchain.Image0```, ```Frame0.CmdBuffer```, ```DepthBuffer```, ```QuadBatch.Pipeline.AlphaBlend```, ...) and the commands it records are labeled (```SystemUI```, ```QuadBatch```, ```BasicRender```).
+
+If the working directory contains a ```vk_layer_settings.txt``` that sets ```khronos_validation.debug_action = VK_DBG_LAYER_ACTION_LOG_MSG``` (the ones in this repository do) the validation layer also prints its messages itself, so they are shown twice.
+
+### Naming objects and labeling commands
+
+A app can name its own objects and label the commands it records with ```VUDebugUtils``` and ```VUScopedCmdDebugLabel``` from ```FslUtil.Vulkan1_0```. They do nothing when ```VK_EXT_debug_utils``` is not enabled, so there is no need to check for it. Use ```VUDebugUtils::IsEnabled()``` to skip the work of building a name.
+
+```C++
+#include <FslUtil/Vulkan1_0/Debug/VUDebugUtils.hpp>
+#include <FslUtil/Vulkan1_0/Debug/VUScopedCmdDebugLabel.hpp>
+
+// Name a object, the type is supplied as the handle types are identical on a 32bit target
+Vulkan::VUDebugUtils::SetObjectName(m_device.Get(), VK_OBJECT_TYPE_PIPELINE, m_pipeline.Get(), "Scene.Pipeline");
+
+// Label everything recorded to the command buffer until the end of the scope
+{
+  const Vulkan::VUScopedCmdDebugLabel scopedLabel(hCmdBuffer, "Scene");
+  vkCmdDraw(hCmdBuffer, vertexCount, 1, 0, 0);
+}
+```
+
+```VUImageMemoryView```, ```VUFramebuffer``` and the ```VulkanImageCreator``` methods take a name that is given to the objects they create. ```Vulkan.Bloom``` and ```Vulkan.PixelArt``` label their render passes.
+
+### Debugging tips
+
+- [RenderDoc](https://renderdoc.org/) shows the object names and uses the labels to group the draw calls of a capture.
+- ```--VkApiDump``` logs every Vulkan call, including the names and labels that are set.
+- A failed ```vkAcquireNextImageKHR``` or ```vkQueuePresentKHR``` (for example ```VK_ERROR_DEVICE_LOST```) is logged before the app is restarted.
 
 ## Known issues
 

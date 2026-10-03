@@ -14,6 +14,15 @@
   * Fixed the screenshot capture using the swapchain image after it was presented (UNASSIGNED-non-acquired-swapchain-image-used). The screenshot of a frame is now captured before the frame is swapped on all APIs.
   * The demo host uses VK_KHR/EXT_swapchain_maintenance1 present fences when available (can be disabled with --VkSwapchainMaintenance1 false).
   * New --VkApiVersion option to request a newer instance api version (1.3 or 1.4).
+  * VK_EXT_debug_utils support (see Doc/Vulkan/README.md). It is enabled in debug builds and when the validation layer is enabled, --VkDebugUtils overrides that.
+    * The Vulkan debug messages (validation layer, loader and driver) are written to the log, including the names of the objects and the active command buffer labels.
+    * The Vulkan objects created by the framework are named and the commands it records are labeled, so they can be recognized in validation messages and tools like RenderDoc.
+    * New FslUtil.Vulkan1_0 VUDebugUtils (SetObjectName, CmdBeginLabel, ...), VUScopedCmdDebugLabel, VUDebugUtilsMessenger and VUDebugUtilsLog. They do nothing when the extension is not enabled, so apps can use them unconditionally. Vulkan.Bloom and Vulkan.PixelArt label their passes.
+    * The debug name that could be given to VUImageMemoryView, VUFramebuffer and VulkanImageCreator is now used.
+  * New --VkValidateFeatures option to enable the optional checks of the validation layer: sync, gpu, bestpractices, printf.
+  * Instance extensions that are provided by a enabled layer can now be enabled (they used to be rejected as unavailable).
+  * InstanceUtil::CreateInstance can be given a pNext chain.
+  * A failed vkAcquireNextImageKHR or vkQueuePresentKHR (for example a lost device) is now logged before the app is restarted.
   * Fixed validation and synchronization issues reported by the latest validation layers
     * VulkanWillemsDemoAppExperimental: depth attachment clear hazard and text overlay image barrier.
     * Window.VulkanTriangle: swapchain acquire write-after-read hazard.

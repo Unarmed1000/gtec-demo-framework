@@ -26,6 +26,7 @@
 #include <FslDemoApp/Base/Service/Content/IContentManager.hpp>
 #include <FslGraphics/Bitmap/ReadOnlyRawBitmap.hpp>
 #include <FslGraphics/Texture/Texture.hpp>
+#include <FslUtil/Vulkan1_0/Debug/VUScopedCmdDebugLabel.hpp>
 #include <FslUtil/Vulkan1_0/Draft/VulkanImageCreator.hpp>
 #include <RapidVulkan/Check.hpp>
 #include <Shared/PixelArt/API/Vulkan/PixelArtRendererVulkan.hpp>
@@ -504,6 +505,7 @@ namespace Fsl
     if (m_clearPending)
     {
       // Both images of every buffer start black (a buffer can read the image it did not draw this frame)
+      const Vulkan::VUScopedCmdDebugLabel scopedLabel(hCmdBuffer, "PixelArt.ClearBuffers");
       const VkClearValue clearValue{};
       for (const auto& targets : m_targets)
       {
@@ -531,6 +533,8 @@ namespace Fsl
       {
         continue;
       }
+      // Label the pass with the name of its tab ('Buffer A' etc), so it can be found in tools like RenderDoc
+      const Vulkan::VUScopedCmdDebugLabel scopedLabel(hCmdBuffer, PixelArtPassUtil::GetTabName(PixelArtPassUtil::FromIndex(bufferIndex)));
       // Draw to the image that does not have the last output, so the pass can read that
       const Vulkan::VUFramebuffer& target = m_targets[bufferIndex][1u - parity];
       VkRenderPassBeginInfo beginInfo{};
@@ -560,9 +564,12 @@ namespace Fsl
     {
       return;
     }
-    SetViewport(hCmdBuffer, sceneExtent);
-    DrawPass(hCmdBuffer, frameIndex, PixelArtPass::Image, frameState,
-             PxSize2D::Create(static_cast<int32_t>(sceneExtent.width), static_cast<int32_t>(sceneExtent.height)));
+    {
+      const Vulkan::VUScopedCmdDebugLabel scopedLabel(hCmdBuffer, PixelArtPassUtil::GetTabName(PixelArtPass::Image));
+      SetViewport(hCmdBuffer, sceneExtent);
+      DrawPass(hCmdBuffer, frameIndex, PixelArtPass::Image, frameState,
+               PxSize2D::Create(static_cast<int32_t>(sceneExtent.width), static_cast<int32_t>(sceneExtent.height)));
+    }
     // The buffers swapped their images
     ++m_bufferFrame;
   }

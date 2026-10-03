@@ -35,6 +35,8 @@
 #include <FslBase/UncheckedNumericCast.hpp>
 #include <FslDemoService/Graphics/IGraphicsService.hpp>
 #include <FslGraphics/Colors.hpp>
+#include <FslUtil/Vulkan1_0/Debug/VUDebugUtils.hpp>
+#include <FslUtil/Vulkan1_0/Debug/VUScopedCmdDebugLabel.hpp>
 #include <FslUtil/Vulkan1_0/Exceptions.hpp>
 #include <RapidVulkan/Check.hpp>
 #include <vulkan/vulkan.h>
@@ -834,7 +836,10 @@ namespace Fsl
 
       rCmdBuffers.CmdBeginRenderPass(frameIndex, &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
       {
-        DrawFinalComposite(frameIndex, hCmdBuffer);
+        {
+          const Vulkan::VUScopedCmdDebugLabel scopedLabel(hCmdBuffer, "FinalComposite");
+          DrawFinalComposite(frameIndex, hCmdBuffer);
+        }
 
         // Remember to call this as the last operation in your renderPass
         AddSystemUI(hCmdBuffer, frameIndex);
@@ -961,8 +966,11 @@ namespace Fsl
     const auto frameIndex = drawContext.CurrentFrameIndex;
     const VkCommandBuffer hCmdBuffer = rCmdBuffers[frameIndex];
 
+    // The labels make the passes easy to find in tools like RenderDoc (they do nothing unless VK_EXT_debug_utils is enabled)
+
     // 1. Render the scene to a low res frame buffer
     {
+      const Vulkan::VUScopedCmdDebugLabel scopedLabel(hCmdBuffer, "Scene");
       const VkExtent2D fbExtent{Size256, Size256};
       std::array<VkClearValue, 2> clearValues{};
       clearValues[0].color = {{0.0f, 0.0f, 0.0f, 1.0f}};
@@ -1003,6 +1011,7 @@ namespace Fsl
     // 2. Apply bright pass
     const VkPipelineLayout hPipelineLayout = m_resources.OffscreenPipelineLayout.Get();
     const VkRenderPass renderPass = m_dependentResources.OffscreenRPNoDepth.Get();
+    Vulkan::VUDebugUtils::CmdBeginLabel(hCmdBuffer, "BrightPass");
     if (m_menuUI.IsBrightPassEnabled())
     {
       PostProcess(rCmdBuffers, frameIndex, renderPass, m_dependentResources.OffscreenFB256A, hPipelineLayout, m_resources.OffscreenDescriptorSetFB256,
@@ -1015,8 +1024,10 @@ namespace Fsl
       PostProcess(rCmdBuffers, frameIndex, renderPass, m_dependentResources.OffscreenFB256A, hPipelineLayout, m_resources.OffscreenDescriptorSetFB256,
                   m_dependentResources.PipelineCopy);
     }
+    Vulkan::VUDebugUtils::CmdEndLabel(hCmdBuffer);
 
     // 3. copy to the smaller blur render targets
+    Vulkan::VUDebugUtils::CmdBeginLabel(hCmdBuffer, "Downscale");
     if (m_menuUI.IsScaleInputSequentiallyEnabled())
     {
       PostProcess(rCmdBuffers, frameIndex, renderPass, m_dependentResources.OffscreenFB128A, hPipelineLayout,
@@ -1039,9 +1050,11 @@ namespace Fsl
       PostProcess(rCmdBuffers, frameIndex, renderPass, m_dependentResources.OffscreenFB16A, hPipelineLayout, m_resources.OffscreenDescriptorSetFB256A,
                   m_dependentResources.PipelineCopy);
     }
+    Vulkan::VUDebugUtils::CmdEndLabel(hCmdBuffer);
 
     if (m_menuUI.IsBlurEnabled())
     {
+      const Vulkan::VUScopedCmdDebugLabel scopedLabel(hCmdBuffer, "Blur");
       // 4. Blur the content using two passes for 256, 128, 64, 32 and 16
       PostProcessBlurH(rCmdBuffers, frameIndex, renderPass, m_dependentResources.OffscreenFB256B, m_resources.OffscreenDescriptorSetFB256A);
       PostProcessBlurV(rCmdBuffers, frameIndex, renderPass, m_dependentResources.OffscreenFB256A, m_resources.OffscreenDescriptorSetFB256B);

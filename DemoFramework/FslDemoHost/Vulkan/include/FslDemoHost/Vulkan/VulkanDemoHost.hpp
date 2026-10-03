@@ -34,6 +34,7 @@
 #include <FslDemoApp/Shared/Host/ConfigControl.hpp>
 #include <FslDemoHost/Base/ADemoHost.hpp>
 #include <FslNativeWindow/Base/NativeWindowSetup.hpp>
+#include <FslUtil/Vulkan1_0/Debug/VUDebugUtilsMessenger.hpp>
 #include <FslUtil/Vulkan1_0/SafeType/InstanceCreateInfoCopy.hpp>
 #include <FslUtil/Vulkan1_0/VUPhysicalDeviceRecord.hpp>
 #include <RapidVulkan/Instance.hpp>
@@ -66,6 +67,8 @@ namespace Fsl
     DemoHostFeature m_activeApi;
     std::shared_ptr<Vulkan::InstanceCreateInfoCopy> m_instanceCreateInfo;
     RapidVulkan::Instance m_instance;
+    //! Sends the Vulkan debug messages to the log, only valid when VK_EXT_debug_utils is enabled
+    Vulkan::VUDebugUtilsMessenger m_debugMessenger;
     Vulkan::VUPhysicalDeviceRecord m_physicalDevice;
 
   public:

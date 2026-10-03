@@ -47,22 +47,29 @@ namespace Fsl::Vulkan
     bool IsInstanceExtensionsAvailable(const uint32_t extensionCount, const char* const* enabledExtensionNames,
                                        const char* const pszLayerName = nullptr);
 
+    //! @brief Check if the extensions are available from the Vulkan implementation or from one of the supplied layers.
+    bool IsInstanceExtensionsAvailable(const uint32_t extensionCount, const char* const* enabledExtensionNames, const uint32_t layerCount,
+                                       const char* const* enabledLayerNames);
+
     //! @param pInstanceCreateInfoCopy if not null then this will be filled with a copy of the instance create info.
+    //! @param pNext the pNext chain of the VkInstanceCreateInfo (it is not stored in the pInstanceCreateInfoCopy).
     RapidVulkan::Instance CreateInstance(const std::string& applicationName, const uint32_t applicationVersion, const uint32_t apiVersion,
                                          const VkInstanceCreateFlags flags, const uint32_t enabledLayerCount,
                                          const char* const* ppszEnabledLayerNames, const uint32_t enabledExtensionCount,
-                                         const char* const* ppszEnabledExtensionNames, InstanceCreateInfoCopy* pInstanceCreateInfoCopy = nullptr);
+                                         const char* const* ppszEnabledExtensionNames, InstanceCreateInfoCopy* pInstanceCreateInfoCopy = nullptr,
+                                         const void* const pNext = nullptr);
 
 
     //! @param pInstanceCreateInfoCopy if not null then this will be filled with a copy of the instance create info.
+    //! @param pNext the pNext chain of the VkInstanceCreateInfo (it is not stored in the pInstanceCreateInfoCopy).
     inline RapidVulkan::Instance CreateInstance(const std::string& applicationName, const uint32_t applicationVersion, const uint32_t apiVersion,
                                                 const VkInstanceCreateFlags flags, const std::vector<const char*>& enabledLayerNames,
                                                 const std::vector<const char*>& enabledExtensionNames,
-                                                InstanceCreateInfoCopy* pInstanceCreateInfoCopy = nullptr)
+                                                InstanceCreateInfoCopy* pInstanceCreateInfoCopy = nullptr, const void* const pNext = nullptr)
     {
       return CreateInstance(applicationName, applicationVersion, apiVersion, flags, static_cast<uint32_t>(enabledLayerNames.size()),
                             enabledLayerNames.data(), static_cast<uint32_t>(enabledExtensionNames.size()), enabledExtensionNames.data(),
-                            pInstanceCreateInfoCopy);
+                            pInstanceCreateInfoCopy, pNext);
     }
 
 
@@ -73,6 +80,10 @@ namespace Fsl::Vulkan
 
     //! @brief Enumerate
     std::vector<VkExtensionProperties> EnumerateInstanceExtensionProperties(const char* const pszLayerName = nullptr);
+
+    //! @brief Enumerate the extensions provided by the Vulkan implementation followed by the ones provided by the supplied layers.
+    //! @note  A extension that is provided by more than one of them is listed more than once.
+    std::vector<VkExtensionProperties> EnumerateInstanceExtensionProperties(const uint32_t layerCount, const char* const* ppszLayerNames);
 
     //! @brief Enumerate the physical devices
     std::vector<VkPhysicalDevice> EnumeratePhysicalDevices(const VkInstance instance);

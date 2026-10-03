@@ -35,6 +35,7 @@
 #include <FslDemoHost/Base/Service/WindowHost/IWindowHostInfoControl.hpp>
 #include <FslDemoHost/Vulkan/Config/InstanceApiVersionUtil.hpp>
 #include <FslDemoHost/Vulkan/Config/InstanceConfigUtil.hpp>
+#include <FslDemoHost/Vulkan/Config/ValidationFeatureUtil.hpp>
 #include <FslDemoHost/Vulkan/VulkanDemoHost.hpp>
 #include <FslDemoHost/Vulkan/VulkanDemoHostOptionParser.hpp>
 #include <FslDemoService/NativeGraphics/Vulkan/NativeGraphicsService.hpp>
@@ -46,6 +47,8 @@
 #include <FslNativeWindow/Vulkan/IVulkanNativeWindowSystem.hpp>
 #include <FslNativeWindow/Vulkan/NativeVulkanSetup.hpp>
 #include <FslNativeWindow/Vulkan/VulkanNativeWindowSystemFactory.hpp>
+#include <FslUtil/Vulkan1_0/Debug/VUDebugUtils.hpp>
+#include <FslUtil/Vulkan1_0/Debug/VUDebugUtilsLog.hpp>
 // #include <FslUtil/Vulkan1_0/Log/All.hpp>
 #include <FslUtil/Vulkan1_0/Log/FmtAll.hpp>
 #include <FslUtil/Vulkan1_0/Util/ApiVersionUtil.hpp>
@@ -63,6 +66,7 @@
 #endif
 #include <RapidVulkan/Semaphore.hpp>
 #include <fmt/ostream.h>
+#include <algorithm>
 #include <array>
 #include <cassert>
 #include <cstdlib>
@@ -162,6 +166,43 @@ namespace Fsl
       FSL_PARAM_NOT_USED(enabledExtensions);
 #endif
       return 0;
+    }
+
+    bool IsExtensionEnabled(const std::vector<const char*>& enabledExtensions, const char* const pszExtensionName)
+    {
+      return std::any_of(enabledExtensions.begin(), enabledExtensions.end(),
+                         [pszExtensionName](const char* const pszExtension) { return std::strcmp(pszExtension, pszExtensionName) == 0; });
+    }
+
+    constexpr auto ValidationLayerName = "VK_LAYER_KHRONOS_validation";
+
+    //! The validation features are enabled with VK_EXT_layer_settings, which is a extension provided by the validation layer itself.
+    //! @return true if the extension was added to the enabled extensions.
+    bool TryEnableValidationLayerSettings(std::vector<const char*>& rEnabledExtensions, const std::vector<const char*>& enabledLayers)
+    {
+      const char* const pszExtensionName = Vulkan::ValidationLayerSettings::GetExtensionName();
+      if (pszExtensionName == nullptr)
+      {
+        FSLLOG3_WARNING("The validation features were ignored, the Vulkan headers this was built with are too old (no VK_EXT_layer_settings)");
+        return false;
+      }
+      const bool isLayerEnabled = std::any_of(enabledLayers.begin(), enabledLayers.end(),
+                                              [](const char* const pszLayer) { return std::strcmp(pszLayer, ValidationLayerName) == 0; });
+      if (!isLayerEnabled)
+      {
+        FSLLOG3_WARNING("The validation features were ignored, {} is not enabled", ValidationLayerName);
+        return false;
+      }
+      if (!InstanceUtil::IsInstanceExtensionsAvailable(1, &pszExtensionName, ValidationLayerName))
+      {
+        FSLLOG3_WARNING("The validation features were ignored, {} does not provide {}", ValidationLayerName, pszExtensionName);
+        return false;
+      }
+      if (!IsExtensionEnabled(rEnabledExtensions, pszExtensionName))
+      {
+        rEnabledExtensions.push_back(pszExtensionName);
+      }
+      return true;
     }
   }
 
@@ -356,18 +397,27 @@ namespace Fsl
   void VulkanDemoHost::InitVulkan()
   {
     {    // Init the Vulkan instance
-      const auto userChoiceValidationLayer = m_options->GetValidationLayerChoice();
+      const Vulkan::ValidationFeatures validationFeatures = m_options->GetValidationFeatures();
+      auto userChoiceValidationLayer = m_options->GetValidationLayerChoice();
+      if (validationFeatures.IsAnyEnabled() && userChoiceValidationLayer == OptionUserChoice::Default)
+      {
+        // The validation features are part of the validation layer, so asking for them is asking for the layer
+        userChoiceValidationLayer = OptionUserChoice::On;
+      }
       const auto userChoiceApiDump = m_options->GetApiDumpChoice();
       const auto khrSurfaceExtensionName = m_windowSystem->GetKHRSurfaceExtensionName();
       const auto& applicationName = m_demoHostConfig.GetDemoHostAppSetup().AppSetup.ApplicationName;
 
       const auto demoHostConfig = m_demoHostConfig.GetDemoHostAppSetup().GetDemoAppHostConfig<DemoAppHostConfigVulkan>();
 
-      const InstanceConfigUtil::InstanceUserChoice instanceUserChoice(userChoiceValidationLayer, userChoiceApiDump,
-                                                                      m_options->GetLaunchOptions().SwapchainMaintenance1);
+      const InstanceConfigUtil::InstanceUserChoice instanceUserChoice(
+        userChoiceValidationLayer, userChoiceApiDump, m_options->GetLaunchOptions().SwapchainMaintenance1, m_options->GetDebugUtilsChoice());
 
-      const auto instanceConfig = InstanceConfigUtil::InstanceConfigAsCharArrays(
+      auto instanceConfig = InstanceConfigUtil::InstanceConfigAsCharArrays(
         InstanceConfigUtil::BuildInstanceConfig(khrSurfaceExtensionName, instanceUserChoice, demoHostConfig));
+
+      const bool validationFeaturesEnabled =
+        validationFeatures.IsAnyEnabled() && TryEnableValidationLayerSettings(instanceConfig.Extensions, instanceConfig.Layers);
 
 
       ApiVersionUtil::CheckLoader();
@@ -376,8 +426,30 @@ namespace Fsl
       const uint32_t apiVersion =
         Vulkan::InstanceApiVersionUtil::Select(demoHostConfig->GetInstanceApiVersion(), m_options->GetInstanceApiVersionOverride());
       const VkInstanceCreateFlags instanceCreateFlags = DetermineInstanceCreateFlags(instanceConfig.Extensions);
+
+      // When debug utils are enabled the Vulkan debug messages are sent to the log. Supplying the messenger create info to the instance create
+      // info as well covers the messages from the creation and destruction of the instance.
+      const bool debugUtilsEnabled = IsExtensionEnabled(instanceConfig.Extensions, VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
+      // The output of debugPrintf is sent as info messages, so they are requested when it is enabled
+      const VkDebugUtilsMessengerCreateInfoEXT debugMessengerCreateInfo =
+        VUDebugUtilsLog::BuildCreateInfo(Fsl::LogConfig::GetLogLevel(), validationFeaturesEnabled && validationFeatures.DebugPrintf);
+
+      // Build the pNext chain of the instance create info: the validation layer settings followed by the debug messenger
+      const Vulkan::ValidationLayerSettings validationLayerSettings(validationFeaturesEnabled ? validationFeatures : Vulkan::ValidationFeatures(),
+                                                                    debugUtilsEnabled ? &debugMessengerCreateInfo : nullptr);
+      const void* pInstanceCreateInfoNext = validationLayerSettings.GetCreateInfo();
+      if (pInstanceCreateInfoNext == nullptr && debugUtilsEnabled)
+      {
+        pInstanceCreateInfoNext = &debugMessengerCreateInfo;
+      }
+
       m_instance = InstanceUtil::CreateInstance(applicationName, appVersion, apiVersion, instanceCreateFlags, instanceConfig.Layers,
-                                                instanceConfig.Extensions, m_instanceCreateInfo.get());
+                                                instanceConfig.Extensions, m_instanceCreateInfo.get(), pInstanceCreateInfoNext);
+
+      if (debugUtilsEnabled && VUDebugUtils::Init(m_instance.Get()))
+      {
+        m_debugMessenger.Reset(m_instance.Get(), debugMessengerCreateInfo);
+      }
     }
 
     // Select the physical device
@@ -401,6 +473,9 @@ namespace Fsl
   void VulkanDemoHost::ShutdownVulkan()
   {
     m_physicalDevice.Reset();
+    // The debug utils entry points belong to the instance, so they go before it
+    m_debugMessenger.Reset();
+    VUDebugUtils::Shutdown();
     m_instance.Reset();
   }
 }

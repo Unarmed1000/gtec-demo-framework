@@ -47,6 +47,8 @@
 #include <FslDemoService/NativeGraphics/Vulkan/BasicNativeDependentCustomVulkanCreateInfo.hpp>
 #include <FslDemoService/NativeGraphics/Vulkan/NativeGraphicsService.hpp>
 #include <FslDemoService/NativeGraphics/Vulkan/NativeGraphicsSwapchainInfo.hpp>
+#include <FslUtil/Vulkan1_0/Debug/VUDebugUtils.hpp>
+#include <FslUtil/Vulkan1_0/Debug/VUScopedCmdDebugLabel.hpp>
 #include <FslUtil/Vulkan1_0/Log/All.hpp>
 #include <FslUtil/Vulkan1_0/Log/FmtAll.hpp>
 #include <FslUtil/Vulkan1_0/TypeConverter.hpp>
@@ -211,6 +213,7 @@ namespace Fsl::VulkanBasic
     m_surfaceFormatInfo = FindPreferredSurfaceInfo(m_physicalDevice.Device, m_surface, m_demoHostConfig->GetPreferredSurfaceFormats());
 
     m_resources.MainCommandPool.Reset(m_device.Get(), VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT, m_deviceQueue.QueueFamilyIndex);
+    Vulkan::VUDebugUtils::SetObjectName(m_device.Get(), VK_OBJECT_TYPE_COMMAND_POOL, m_resources.MainCommandPool.Get(), "MainCommandPool");
     m_resources.Frames = CreateFrameSyncObjects(m_device.Get(), GetRenderConfig().MaxFramesInFlight, m_swapchainMaintenance1Enabled);
   }
 
@@ -384,13 +387,19 @@ namespace Fsl::VulkanBasic
   }
 
 
-  void DemoAppVulkanBasic::AddSystemUI([[maybe_unused]] VkCommandBuffer hCmdBuffer, [[maybe_unused]] const uint32_t frameIndex)
+  void DemoAppVulkanBasic::AddSystemUI(VkCommandBuffer hCmdBuffer, [[maybe_unused]] const uint32_t frameIndex)
   {
     // We assume that we get called with the 'active' command buffer
     assert(m_dependentResources.Valid);
     // assert(cmdBufferIndex == m_resources.CurrentFrame);
     assert(hCmdBuffer == m_dependentResources.CmdBuffers[frameIndex]);
 
+    if (!m_demoAppProfilerOverlay && !m_framePacingOverlay)
+    {
+      return;
+    }
+
+    const Vulkan::VUScopedCmdDebugLabel scopedLabel(hCmdBuffer, "SystemUI");
     if (m_demoAppProfilerOverlay)
     {
       m_demoAppProfilerOverlay->Draw(GetWindowMetrics());
@@ -487,6 +496,29 @@ namespace Fsl::VulkanBasic
         const FrameBufferCreateContext frameBufferCreateContext(swapchainImageView, m_swapchain.GetImageExtent(), mainRenderPass, depthImageView);
         m_dependentResources.SwapchainRecords[i].Framebuffer = CreateFramebuffer(frameBufferCreateContext);
         m_dependentResources.SwapchainRecords[i].ImageReleasedSemaphore.Reset(m_device.Get(), 0);
+      }
+
+      if (Vulkan::VUDebugUtils::IsEnabled())
+      {
+        // Name the objects so they can be recognized in validation messages and tools like RenderDoc
+        const VkDevice device = m_device.Get();
+        Vulkan::VUDebugUtils::SetObjectName(device, VK_OBJECT_TYPE_SWAPCHAIN_KHR, m_swapchain.Get(), "Swapchain");
+        for (uint32_t i = 0; i < m_dependentResources.FramesInFlightCount; ++i)
+        {
+          Vulkan::VUDebugUtils::SetObjectName(device, VK_OBJECT_TYPE_COMMAND_BUFFER, m_dependentResources.CmdBuffers[i],
+                                              fmt::format("Frame{}.CmdBuffer", i));
+        }
+        for (uint32_t i = 0; i < swapchainImageCount; ++i)
+        {
+          const SwapchainRecord& record = m_dependentResources.SwapchainRecords[i];
+          Vulkan::VUDebugUtils::SetObjectName(device, VK_OBJECT_TYPE_IMAGE, m_swapchain[i], fmt::format("Swapchain.Image{}", i));
+          Vulkan::VUDebugUtils::SetObjectName(device, VK_OBJECT_TYPE_IMAGE_VIEW, record.SwapchainImageView.Get(),
+                                              fmt::format("Swapchain.Image{}.View", i));
+          Vulkan::VUDebugUtils::SetObjectName(device, VK_OBJECT_TYPE_FRAMEBUFFER, record.Framebuffer.Get(),
+                                              fmt::format("Swapchain.Framebuffer{}", i));
+          Vulkan::VUDebugUtils::SetObjectName(device, VK_OBJECT_TYPE_SEMAPHORE, record.ImageReleasedSemaphore.Get(),
+                                              fmt::format("Swapchain.ImageReleased{}", i));
+        }
       }
 
       // Create a struct containing all relevant information to be able to capture a screenshot on demand
@@ -678,6 +710,16 @@ namespace Fsl::VulkanBasic
       {
         // Must be unsignaled when given to vkQueuePresentKHR
         rFrame.PresentFence.Reset(device, 0);
+      }
+    }
+
+    if (Vulkan::VUDebugUtils::IsEnabled())
+    {
+      for (std::size_t i = 0; i < framesDrawRecords.size(); ++i)
+      {
+        const FrameDrawRecord& frame = framesDrawRecords[i];
+        Vulkan::VUDebugUtils::SetObjectName(device, VK_OBJECT_TYPE_FENCE, frame.QueueSubmitFence.Get(), fmt::format("Frame{}.QueueSubmitFence", i));
+        Vulkan::VUDebugUtils::SetObjectName(device, VK_OBJECT_TYPE_FENCE, frame.PresentFence.Get(), fmt::format("Frame{}.PresentFence", i));
       }
     }
     return framesDrawRecords;
@@ -911,6 +953,8 @@ namespace Fsl::VulkanBasic
     case VK_ERROR_SURFACE_LOST_KHR:
       return AppDrawResult::Retry;
     default:
+      // This restarts the app and demo host, so make sure the reason can be found in the log
+      FSLLOG3_ERROR("vkAcquireNextImageKHR failed with: {}", RapidVulkan::Debug::ToString(result));
       return AppDrawResult::Failed;
     }
   }
@@ -958,7 +1002,8 @@ namespace Fsl::VulkanBasic
     case VK_ERROR_OUT_OF_DEVICE_MEMORY:
     case VK_ERROR_DEVICE_LOST:
     default:
-      // This case should restart the app and demo host
+      // This case should restart the app and demo host, so make sure the reason can be found in the log
+      FSLLOG3_ERROR("vkQueuePresentKHR failed with: {}", RapidVulkan::Debug::ToString(result));
       return AppDrawResult::Failed;
     }
   }

@@ -30,6 +30,7 @@
  ****************************************************************************************************************************************************/
 
 #include <FslBase/Log/Log3Fmt.hpp>
+#include <FslUtil/Vulkan1_0/Debug/VUDebugUtils.hpp>
 #include <FslUtil/Vulkan1_0/VUBuffer.hpp>
 #include <FslUtil/Vulkan1_0/VUDevice.hpp>
 #include <FslUtil/Vulkan1_0/VUImageMemoryView.hpp>
@@ -43,6 +44,23 @@
 
 namespace Fsl::Vulkan
 {
+  namespace
+  {
+    //! Give the objects a debug name (does nothing when debug utils are not enabled)
+    void SetDebugNames(const VUImage& image, const RapidVulkan::Memory& memory, const RapidVulkan::ImageView& imageView, const std::string& name)
+    {
+      if (name.empty() || !VUDebugUtils::IsEnabled())
+      {
+        return;
+      }
+      const VkDevice device = image.GetDevice();
+      VUDebugUtils::SetObjectName(device, VK_OBJECT_TYPE_IMAGE, image.Get(), name);
+      VUDebugUtils::SetObjectName(device, VK_OBJECT_TYPE_DEVICE_MEMORY, memory.Get(), name + ".Memory");
+      VUDebugUtils::SetObjectName(device, VK_OBJECT_TYPE_IMAGE_VIEW, imageView.Get(), name + ".View");
+    }
+  }
+
+
   VUImageMemoryView& VUImageMemoryView::operator=(VUImageMemoryView&& other) noexcept
   {
     if (this != &other)
@@ -110,7 +128,6 @@ namespace Fsl::Vulkan
   void VUImageMemoryView::Reset(const VUDevice& device, const VkImageCreateInfo& imageCreateInfo, const VkImageSubresourceRange& subresourceRange,
                                 const VkMemoryPropertyFlags memoryPropertyFlags, const std::string& name)
   {
-    FSL_PARAM_NOT_USED(name);
     if (IsValid())
     {
       Reset();
@@ -143,6 +160,8 @@ namespace Fsl::Vulkan
       imageViewCreateInfo.subresourceRange = subresourceRange;
 
       m_imageView.Reset(device.Get(), imageViewCreateInfo);
+
+      SetDebugNames(m_image, m_memory, m_imageView, name);
     }
     catch (const std::exception&)
     {
@@ -154,8 +173,6 @@ namespace Fsl::Vulkan
 
   void VUImageMemoryView::Reset(VUImage&& image, RapidVulkan::Memory&& memory, RapidVulkan::ImageView&& imageView, const std::string& name)
   {
-    FSL_PARAM_NOT_USED(name);
-
     if (IsValid())
     {
       Reset();
@@ -166,6 +183,8 @@ namespace Fsl::Vulkan
       m_image = std::move(image);
       m_memory = std::move(memory);
       m_imageView = std::move(imageView);
+
+      SetDebugNames(m_image, m_memory, m_imageView, name);
     }
     catch (const std::exception&)
     {

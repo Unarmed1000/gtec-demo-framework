@@ -122,6 +122,10 @@ namespace Fsl::InstanceConfigUtil
       {
         Vulkan::SwapchainMaintenance1Util::AppendInstanceExtensionRequests(instanceConfig.ExtensionRequests);
       }
+      {    // Debug utils follows the validation layer unless the user decided otherwise
+        const bool debugUtilsEnabled = LocalConfig::LocalValidationLayerEnabled || instanceUserChoice.ValidationLayer == OptionUserChoice::On;
+        AppendUserChoice(instanceConfig.ExtensionRequests, instanceUserChoice.DebugUtils, debugUtilsEnabled, VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
+      }
 
       // if (instanceLayerConfigControl == ConfigControl::Overwrite)
       //{
@@ -140,8 +144,16 @@ namespace Fsl::InstanceConfigUtil
       InstanceConfig config;
       ConfigUtil::PrepareConfig(config.Layers, instanceConfigRequest.LayerRequests, Vulkan::InstanceUtil::EnumerateInstanceLayerProperties(),
                                 "layer");
-      ConfigUtil::PrepareConfig(config.Extensions, instanceConfigRequest.ExtensionRequests,
-                                Vulkan::InstanceUtil::EnumerateInstanceExtensionProperties(), "extension");
+
+      // A extension can be provided by one of the layers that will be enabled instead of the Vulkan implementation
+      std::vector<const char*> layerNames(config.Layers.size());
+      for (std::size_t i = 0; i < config.Layers.size(); ++i)
+      {
+        layerNames[i] = config.Layers[i].c_str();
+      }
+      ConfigUtil::PrepareConfig(
+        config.Extensions, instanceConfigRequest.ExtensionRequests,
+        Vulkan::InstanceUtil::EnumerateInstanceExtensionProperties(static_cast<uint32_t>(layerNames.size()), layerNames.data()), "extension");
       return config;
     }
 
@@ -174,6 +186,10 @@ namespace Fsl::InstanceConfigUtil
     if (instanceUserChoice.UserChoiceApiDump == OptionUserChoice::Off)
     {
       ConfigUtil::FilterFeatureByName(instanceConfig.LayerRequests, LocalConfig::ApiDumpLayerName);
+    }
+    if (instanceUserChoice.DebugUtils == OptionUserChoice::Off)
+    {
+      ConfigUtil::FilterFeatureByName(instanceConfig.ExtensionRequests, VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
     }
     return PrepareConfig(instanceConfig);
   }

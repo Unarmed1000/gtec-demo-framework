@@ -75,6 +75,8 @@ namespace Fsl::InstanceConfigUtil
     OptionUserChoice UserChoiceApiDump = OptionUserChoice::Default;
     //! If Off the instance extensions needed by swapchain maintenance1 are not requested
     OptionUserChoice SwapchainMaintenance1 = OptionUserChoice::Default;
+    //! VK_EXT_debug_utils. Default requests it when the validation layer is requested by default or by the user
+    OptionUserChoice DebugUtils = OptionUserChoice::Default;
 
     InstanceUserChoice() = default;
 
@@ -93,6 +95,15 @@ namespace Fsl::InstanceConfigUtil
       : ValidationLayer(validationLayer)
       , UserChoiceApiDump(userChoiceApiDump)
       , SwapchainMaintenance1(swapchainMaintenance1)
+    {
+    }
+
+    InstanceUserChoice(const OptionUserChoice validationLayer, const OptionUserChoice userChoiceApiDump, const OptionUserChoice swapchainMaintenance1,
+                       const OptionUserChoice debugUtils)
+      : ValidationLayer(validationLayer)
+      , UserChoiceApiDump(userChoiceApiDump)
+      , SwapchainMaintenance1(swapchainMaintenance1)
+      , DebugUtils(debugUtils)
     {
     }
   };

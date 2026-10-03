@@ -60,6 +60,8 @@ namespace Fsl
         VkScreenshot,
         VkSwapchainMaintenance1,
         VkApiVersion,
+        VkDebugUtils,
+        VkValidateFeatures,
       };
     };
 
@@ -168,7 +170,7 @@ namespace Fsl
     rOptions.emplace_back("VkPhysicalDevice", OptionArgument::OptionRequired, CommandId::VkPhysicalDevice, "Set the physical device index.",
                           OptionGroup::Host);
     rOptions.emplace_back("VkValidate", OptionArgument::OptionRequired, CommandId::VkValidate,
-                          "Enable/disable the VK_LAYER_LUNARG_standard_validation layer.", OptionGroup::Host);
+                          "Enable/disable the VK_LAYER_KHRONOS_validation layer (defaults to enabled in debug builds)", OptionGroup::Host);
     rOptions.emplace_back("VkApiDump", OptionArgument::OptionNone, CommandId::VkApiDump, "Enable the VK_LAYER_LUNARG_api_dump layer.",
                           OptionGroup::Host);
     rOptions.emplace_back("VkPresentMode", OptionArgument::OptionRequired, CommandId::VkPresentMode, presentModeDesc, OptionGroup::Host);
@@ -184,6 +186,12 @@ namespace Fsl
                           OptionGroup::Host);
     rOptions.emplace_back("VkApiVersion", OptionArgument::OptionRequired, CommandId::VkApiVersion,
                           Vulkan::InstanceApiVersionUtil::g_optionDescription, OptionGroup::Host);
+    rOptions.emplace_back("VkDebugUtils", OptionArgument::OptionRequired, CommandId::VkDebugUtils,
+                          "Enable/disable VK_EXT_debug_utils: Vulkan messages in the log, object names and command buffer labels (defaults to "
+                          "enabled in debug builds and when the validation layer is enabled)",
+                          OptionGroup::Host);
+    rOptions.emplace_back("VkValidateFeatures", OptionArgument::OptionRequired, CommandId::VkValidateFeatures,
+                          Vulkan::ValidationFeatureUtil::g_optionDescription, OptionGroup::Host);
   }
 
 
@@ -236,6 +244,12 @@ namespace Fsl
     case CommandId::VkApiVersion:
       return Vulkan::InstanceApiVersionUtil::TryParse(strOptArg, m_instanceApiVersionOverride) ? OptionParseResult::Parsed
                                                                                                : OptionParseResult::Failed;
+    case CommandId::VkDebugUtils:
+      StringParseUtil::Parse(boolValue, strOptArg);
+      m_debugUtils = boolValue ? OptionUserChoice::On : OptionUserChoice::Off;
+      return OptionParseResult::Parsed;
+    case CommandId::VkValidateFeatures:
+      return Vulkan::ValidationFeatureUtil::TryParse(strOptArg, m_validationFeatures) ? OptionParseResult::Parsed : OptionParseResult::Failed;
     default:
       return ADemoHostOptionParser::Parse(cmdId, strOptArg);
     }

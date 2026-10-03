@@ -32,6 +32,7 @@
 #include <FslBase/Log/Log3Fmt.hpp>
 #include <FslBase/UncheckedNumericCast.hpp>
 #include <FslDemoService/NativeGraphics/Vulkan/NativeGraphicsDescriptorSetManager.hpp>
+#include <FslUtil/Vulkan1_0/Debug/VUDebugUtils.hpp>
 
 namespace Fsl::Vulkan
 {
@@ -125,10 +126,12 @@ namespace Fsl::Vulkan
     , m_mainDescriptorSetLayout(CreateDescriptorSetLayout(device.Get(), VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT))
   {
     FSLLOG3(LocalConfig::LogType, "NativeGraphicsDescriptorSetManager::Construct");
+    VUDebugUtils::SetObjectName(m_device, VK_OBJECT_TYPE_DESCRIPTOR_POOL, m_mainDescriptorPool.Get(), "BasicRender.DescriptorPool");
+    VUDebugUtils::SetObjectName(m_device, VK_OBJECT_TYPE_DESCRIPTOR_SET_LAYOUT, m_mainDescriptorSetLayout.Get(), "BasicRender.DescriptorSetLayout");
   }
 
 
-  NativeGraphicsDescriptorSetManager ::~NativeGraphicsDescriptorSetManager()
+  NativeGraphicsDescriptorSetManager::~NativeGraphicsDescriptorSetManager()
   {
     FSLLOG3(LocalConfig::LogType, "NativeGraphicsDescriptorSetManager::Destruct");
   }

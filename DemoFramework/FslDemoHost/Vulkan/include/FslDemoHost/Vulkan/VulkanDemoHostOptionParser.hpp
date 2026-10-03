@@ -33,6 +33,7 @@
 
 #include <FslDemoHost/Base/ADemoHostOptionParser.hpp>
 #include <FslDemoHost/Vulkan/Config/OptionUserChoice.hpp>
+#include <FslDemoHost/Vulkan/Config/ValidationFeatureUtil.hpp>
 #include <FslDemoHost/Vulkan/Config/VulkanLaunchOptions.hpp>
 
 namespace Fsl
@@ -42,6 +43,8 @@ namespace Fsl
     uint32_t m_physicalDeviceIndex = 0;
     OptionUserChoice m_validationLayer = OptionUserChoice::Default;
     OptionUserChoice m_apiDump = OptionUserChoice::Off;
+    OptionUserChoice m_debugUtils = OptionUserChoice::Default;
+    Vulkan::ValidationFeatures m_validationFeatures;
     VulkanLaunchOptions m_launchOptions;
     bool m_logExtensions = false;
     bool m_logLayers = false;
@@ -65,6 +68,17 @@ namespace Fsl
     [[nodiscard]] OptionUserChoice GetApiDumpChoice() const
     {
       return m_apiDump;
+    }
+
+    [[nodiscard]] OptionUserChoice GetDebugUtilsChoice() const
+    {
+      return m_debugUtils;
+    }
+
+    //! @return the optional validation layer checks requested by the user
+    [[nodiscard]] Vulkan::ValidationFeatures GetValidationFeatures() const
+    {
+      return m_validationFeatures;
     }
 
     [[nodiscard]] VulkanLaunchOptions GetLaunchOptions() const

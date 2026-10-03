@@ -39,6 +39,7 @@
 #include <FslGraphics/Render/Basic/Adapter/BasicNativeDependentCreateInfo.hpp>
 #include <FslGraphics/Render/Basic/Material/BasicMaterialVariable.hpp>
 #include <FslGraphics/Render/Basic/Material/BasicMaterialVariables.hpp>
+#include <FslUtil/Vulkan1_0/Debug/VUDebugUtils.hpp>
 #include <cassert>
 
 namespace Fsl::Vulkan
@@ -269,6 +270,8 @@ namespace Fsl::Vulkan
       assert(!m_frame.Commands.IsActive);
       m_frame.Commands = CommandSection(true);
       m_materialFactory.ClearCachedCameraChangeIds();
+      // Closed by EndCmds
+      VUDebugUtils::CmdBeginLabel(m_frame.CommandBuffer, "BasicRender");
     }
   }
 
@@ -279,6 +282,7 @@ namespace Fsl::Vulkan
     assert(m_frame.IsValid());
     if (m_frame.Commands.IsActive)
     {
+      VUDebugUtils::CmdEndLabel(m_frame.CommandBuffer);
       m_frame.Commands = {};
     }
   }
