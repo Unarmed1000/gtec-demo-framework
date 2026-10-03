@@ -62,6 +62,7 @@ namespace Fsl
         VkApiVersion,
         VkDebugUtils,
         VkValidateFeatures,
+        VkPresentTiming,
       };
     };
 
@@ -192,6 +193,10 @@ namespace Fsl
                           OptionGroup::Host);
     rOptions.emplace_back("VkValidateFeatures", OptionArgument::OptionRequired, CommandId::VkValidateFeatures,
                           Vulkan::ValidationFeatureUtil::g_optionDescription, OptionGroup::Host);
+    rOptions.emplace_back("VkPresentTiming", OptionArgument::OptionRequired, CommandId::VkPresentTiming,
+                          "Enable/disable the use of VK_EXT_present_timing to measure when a frame was presented (defaults to enabled if supported "
+                          "for the apps that use it, true enables it for all apps)",
+                          OptionGroup::Host);
   }
 
 
@@ -247,6 +252,10 @@ namespace Fsl
     case CommandId::VkDebugUtils:
       StringParseUtil::Parse(boolValue, strOptArg);
       m_debugUtils = boolValue ? OptionUserChoice::On : OptionUserChoice::Off;
+      return OptionParseResult::Parsed;
+    case CommandId::VkPresentTiming:
+      StringParseUtil::Parse(boolValue, strOptArg);
+      m_launchOptions.PresentTiming = boolValue ? OptionUserChoice::On : OptionUserChoice::Off;
       return OptionParseResult::Parsed;
     case CommandId::VkValidateFeatures:
       return Vulkan::ValidationFeatureUtil::TryParse(strOptArg, m_validationFeatures) ? OptionParseResult::Parsed : OptionParseResult::Failed;

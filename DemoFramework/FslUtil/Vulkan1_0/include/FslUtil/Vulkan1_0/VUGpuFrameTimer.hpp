@@ -26,6 +26,7 @@
 #include <FslBase/Time/TimeSpan.hpp>
 #include <FslUtil/Vulkan1_0/Common.hpp>
 #include <FslUtil/Vulkan1_0/VUDevice.hpp>
+#include <FslUtil/Vulkan1_0/VUDeviceTimestamp.hpp>
 #include <RapidVulkan/QueryPool.hpp>
 #include <vulkan/vulkan.h>
 #include <cstdint>
@@ -52,6 +53,9 @@ namespace Fsl::Vulkan
     //! The bits of a timestamp that are valid
     uint64_t m_timestampMask{0};
     TimeSpan m_gpuTime;
+    //! The timestamps of the last frame that was measured
+    VUDeviceTimestamp m_beginTimestamp;
+    VUDeviceTimestamp m_endTimestamp;
     uint64_t m_measurementId{0};
 
   public:
@@ -80,6 +84,30 @@ namespace Fsl::Vulkan
     [[nodiscard]] TimeSpan GetGpuTime() const noexcept
     {
       return m_gpuTime;
+    }
+
+    //! @return when the GPU began and ended the last frame that was measured, on the clock of the device. VUGpuTimeCalibration converts them
+    //!         to the clock of the framework.
+    [[nodiscard]] VUDeviceTimestamp GetBeginTimestamp() const noexcept
+    {
+      return m_beginTimestamp;
+    }
+
+    [[nodiscard]] VUDeviceTimestamp GetEndTimestamp() const noexcept
+    {
+      return m_endTimestamp;
+    }
+
+    //! @return the number of nanoseconds a device timestamp counts in (zero if not supported)
+    [[nodiscard]] double GetTimestampPeriod() const noexcept
+    {
+      return m_timestampPeriod;
+    }
+
+    //! @return the bits of a device timestamp that are valid (zero if not supported)
+    [[nodiscard]] uint64_t GetTimestampMask() const noexcept
+    {
+      return m_timestampMask;
     }
 
     //! @return a number that grows by one for every measured frame, so a caller can tell if GetGpuTime has a new value

@@ -22,6 +22,7 @@
 //* EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //****************************************************************************************************************************************************
 
+#include <FslBase/IO/Path.hpp>
 #include <FslDemoApp/Base/ADemoOptionParser.hpp>
 #include <Shared/FramePacing/RaymarchParams.hpp>
 #include <Shared/FramePacing/SampleConfig.hpp>
@@ -45,6 +46,7 @@ namespace Fsl
     int32_t m_cpuLoadMs{SampleConfig::CpuLoadMs.Get()};
     int32_t m_gpuLoadSteps{SampleConfig::GpuLoadSteps.Get()};
     RaymarchScene m_background{RaymarchScene::Flight};
+    IO::Path m_presentLogPath;
 
   public:
     OptionParser();
@@ -120,6 +122,12 @@ namespace Fsl
     [[nodiscard]] RaymarchScene GetBackground() const noexcept
     {
       return m_background;
+    }
+
+    //! @brief The file the sample writes its per frame present log to (empty: no log).
+    [[nodiscard]] const IO::Path& GetPresentLogPath() const noexcept
+    {
+      return m_presentLogPath;
     }
 
   protected:

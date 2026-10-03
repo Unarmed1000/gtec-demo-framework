@@ -60,6 +60,9 @@ namespace Fsl::VulkanBasic
     //! Additional image usage flags will be merged with VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT
     //! The flags will only be set if the surface supports it (if it don't a warning will be logged and the unsupported flag will be ignored)
     VkImageUsageFlags DesiredSwapchainImageUsageFlags{0};
+    //! If true the app wants to know when its frames were presented (see DemoAppVulkanBasic::GetPresentTimings).
+    //! It needs VK_EXT_present_timing, so check DemoAppVulkanBasic::IsPresentTimingEnabled to see if the measurements are available.
+    bool PresentTiming{false};
   };
 }
 

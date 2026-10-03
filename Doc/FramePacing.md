@@ -123,6 +123,9 @@ Adaptive swap interval        |`--Pacer.Adaptive <true\|false>`|On: the pacer sl
 CPU load                      |`--CpuLoad <ms>`                |The time in milliseconds the app spends busy every frame.
 GPU load                      |`--GpuLoad <steps>`             |Draws the raymarched background with the given number of steps for every ray (0 is no background). The load grows linearly with the steps, more steps reach further and show finer detail.
 Background                    |`--Background <flight\|hall>`   |The scene of the raymarched background (the radio buttons below the GPU load). `flight` is a flight through a fractal lattice. `hall` is a hall of columns that scrolls sideways at a constant speed, which makes a stutter easy to see.
+Measure the presents          |                                |Vulkan only. Measure when the frames reach the display (`VK_EXT_present_timing`), see [below](#what-the-vulkan-sample-measures-about-its-presents). Start with `--VkPresentTiming false` to run without the extension.
+Place the GPU work in time    |                                |Vulkan only. Show when the GPU worked on a frame, counted from the start of the frame (`VK_KHR_calibrated_timestamps`).
+                              |`--PresentLog <file>`           |Vulkan only. Write a CSV file with one row per presented frame when the sample exits, see [below](#what-the-vulkan-sample-measures-about-its-presents).
 
 The target fps slider and the adaptive switch can only be changed while the frame pacer is on. The line below the refresh rate shows the
 rate the frames are paced at: the refresh rate divided by the swap interval. The two status lines below the switches show the swap interval
@@ -159,7 +162,62 @@ How a frame is held for its swap interval depends on the API:
 - **Vulkan**: a FIFO present holds a frame for one refresh and there is no swap interval, so the sample delays the present of a frame
   that is held longer: it waits until one refresh before the time the pacer aims the frame at, then lets the host present it. The pacer
   has no vsync times, so this is a guess and less even than a real swap interval. The GPU time of a frame is measured with timestamp
-  queries and given to the pacer.
+  queries and given to the pacer. The sample can measure when its frames reach the display (see the next section), but the pacer has no
+  input for that, so the measurements are only shown.
+
+### What the Vulkan sample measures about its presents
+
+The Vulkan sample can show what happened to a frame after it was presented. Both measurements are optional: they use extensions the device
+may not have, each has a switch so what it adds can be seen, and their rows of the frame pacing overlay show `not supported` without the
+extension and `switched off` while the switch is off. Nothing else in the sample depends on them.
+
+- **`Measure the presents`** (`VK_EXT_present_timing`, which needs `VK_KHR_present_id2` and `VK_KHR_calibrated_timestamps`): the swapchain
+  reports for every present when it was handed to the presentation engine and when its first pixel left for the display. A report arrives
+  a few frames after its present. Present timing is a property of the swapchain, so the switch recreates the swapchain. The rows:
+  - `Display error`: the time from the display time the pacer aimed for to the measured one, the average and the worst of the last frames.
+  - `Display interval`: the time between two frames in a row reaching the display, the average with the shortest and the longest one. This
+    is how even the frames really are.
+  - `Latency`: the time from the start of a frame to it reaching the display, and how long after the start it was handed over.
+  - `Timed frames`: how many of the measured frames have a display time. The presentation engine does not have one for every frame, which
+    does not mean that the frame was not shown.
+  - `Display refresh`: the duration of a refresh according to the swapchain. It is only shown: the pacer keeps the refresh rate of the
+    window system, as the one of the swapchain was seen to change between runs on a display that did not change.
+- **`Place the GPU work in time`** (`VK_KHR_calibrated_timestamps`): the `GPU work` row shows when the GPU started and when it finished
+  the frame, counted from when the CPU started on it. The timestamp queries of the GPU time are converted to the clock of the CPU for it.
+
+Read the display times as what the driver reports, not as a measurement of the display, and switch variable refresh (G-SYNC, FreeSync)
+off before trusting them. On the one system this was checked on (a NVIDIA desktop GPU with driver 617.14 and a window on the Windows 11
+desktop) the display times were one refresh apart and after their present with G-SYNC off. With G-SYNC on the swapchain still reported a
+fixed refresh mode, but the display times of frames whose present the sample delays were on no refresh grid and often before the present
+call. The frame pacer needs a fixed refresh rate as well. A capture of the marker is the measurement, these rows are a quick look.
+
+The `Display error` also shows how far the model of the pacer is from a Vulkan swapchain. The pacer takes a frame to be shown one swap
+interval after it started, while a FIFO swapchain has a number of presents queued between the app and the display.
+
+`--PresentLog <file>` writes one row per presented frame to a CSV file when the sample exits, so the frame loop can be looked at
+afterwards. Every time is a time of the steady clock of the framework (HighResolutionTimer) in whole 100ns ticks, and a field is empty
+when the value is not available.
+
+Column                                  |Description
+----------------------------------------|----------------------------------------------------------------------------------------------
+`frameIndex`                            |The frame index the frame pacing marker of the frame carried, so a row can be matched to a frame of a capture.
+`presentId`                             |The number of the present (from one).
+`cpuStartTicks`                         |When the sample started on the frame (after the swapchain image was acquired).
+`endFrameTicks`                         |When the work of the frame was done, which is what the pacer is told.
+`acquireCallTicks`, `acquireReturnTicks`|When `vkAcquireNextImageKHR` was called and when it returned.
+`presentCallTicks`, `presentReturnTicks`|When `vkQueuePresentKHR` was called and when it returned.
+`queueOperationsEndTicks`               |When the present was handed to the presentation engine (`VK_EXT_present_timing`).
+`firstPixelOutTicks`                    |When the frame reached the display (`VK_EXT_present_timing`).
+`refreshDurationNs`                     |The duration of a refresh in nanoseconds according to the swapchain.
+`swapInterval`, `intendedDisplayTicks`  |What the pacer planned for the frame (empty while it is off).
+`animationTimeTicks`                    |The time the frame was animated for.
+`change`                                |What the pacer did to the swap interval at this frame: `unchanged`, `slower` or `faster` (empty while it is off).
+`imageIndex`                            |The swapchain image that was presented.
+`resultReadAtPresentId`                 |The present of the frame in which the measurement of this present was read: how late it arrived.
+
+```bash
+Vulkan.FramePacing --Pacer --PresentLog frames.csv --ExitAfterFrame 2000
+```
 
 The GPU load is a raymarched background with two scenes, selected with the radio buttons below the GPU load or with `--Background`. `Fractal
 flight` is a flight through a fractal lattice of golden spheres over water that mirrors it (a sphere inversion fractal). `Scrolling hall` is

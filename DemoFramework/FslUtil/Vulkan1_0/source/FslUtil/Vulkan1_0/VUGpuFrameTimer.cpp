@@ -97,6 +97,8 @@ namespace Fsl::Vulkan
       {
         const uint64_t elapsed = (timestamps[LocalConfig::QueryEnd] - timestamps[LocalConfig::QueryBegin]) & m_timestampMask;
         m_gpuTime = TimeSpan(std::llround((static_cast<double>(elapsed) * m_timestampPeriod) / LocalConfig::NanosecondsPerTick));
+        m_beginTimestamp = VUDeviceTimestamp(timestamps[LocalConfig::QueryBegin] & m_timestampMask);
+        m_endTimestamp = VUDeviceTimestamp(timestamps[LocalConfig::QueryEnd] & m_timestampMask);
         ++m_measurementId;
       }
       rSlot.HasPendingQuery = false;

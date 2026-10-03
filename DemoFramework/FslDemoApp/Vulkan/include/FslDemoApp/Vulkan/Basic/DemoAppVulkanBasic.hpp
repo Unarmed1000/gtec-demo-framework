@@ -31,15 +31,19 @@
  *
  ****************************************************************************************************************************************************/
 
+#include <FslBase/Span/ReadOnlySpan.hpp>
+#include <FslBase/System/HighResolutionTimer.hpp>
 #include <FslDemoApp/Vulkan/Basic/BuildResourcesContext.hpp>
 #include <FslDemoApp/Vulkan/Basic/DemoAppVulkanSetup.hpp>
 #include <FslDemoApp/Vulkan/Basic/DrawContext.hpp>
 #include <FslDemoApp/Vulkan/Basic/FrameBufferCreateContext.hpp>
+#include <FslDemoApp/Vulkan/Basic/PresentCallRecord.hpp>
 #include <FslDemoApp/Vulkan/Basic/SwapchainInfo.hpp>
 #include <FslDemoApp/Vulkan/DemoAppVulkan.hpp>
 #include <FslUtil/Vulkan1_0/SurfaceFormatInfo.hpp>
 #include <FslUtil/Vulkan1_0/VUImageMemoryView.hpp>
 #include <FslUtil/Vulkan1_0/VUSwapchainKHR.hpp>
+#include <FslUtil/Vulkan1_0/VUSwapchainPresentTiming.hpp>
 #include <RapidVulkan/CommandBuffers.hpp>
 #include <RapidVulkan/CommandPool.hpp>
 #include <RapidVulkan/Fence.hpp>
@@ -311,6 +315,20 @@ namespace Fsl
       //! Null if the frame pacing service is unavailable
       std::shared_ptr<IFramePacingOverlay> m_framePacingOverlay;
       PxExtent2D m_cachedExtentPx;
+      //! Measures when the swapchain images were presented (only enabled if requested and supported)
+      Vulkan::VUSwapchainPresentTiming m_presentTiming;
+      //! The measurements that became available since the previous frame
+      std::vector<Vulkan::VUPresentTimingRecord> m_presentTimingRecords;
+      //! The id of the last present (the presents are numbered from one)
+      uint64_t m_presentCounter{0};
+      //! True if the app wants its presents measured (it starts as DemoAppVulkanSetup::PresentTiming)
+      bool m_presentTimingRequested{false};
+      //! True if m_presentTimingRequested changed since the swapchain was created
+      bool m_presentTimingChangePending{false};
+      HighResolutionTimer m_presentCallTimer;
+      //! The swapchain calls of the frame being drawn and of the last frame that was presented
+      PresentCallRecord m_currentPresentCalls;
+      PresentCallRecord m_lastPresentCalls;
 
     protected:
       explicit DemoAppVulkanBasic(const DemoAppConfig& demoAppConfig, const DemoAppVulkanSetup& demoAppVulkanSetup = {});
@@ -389,6 +407,56 @@ namespace Fsl
       [[nodiscard]] const Vulkan::SurfaceFormatInfo& GetSurfaceFormatInfo() const
       {
         return m_surfaceFormatInfo;
+      }
+
+      //! @brief Check if the presents can be measured: the device supports VK_EXT_present_timing and the user did not disable it.
+      //!        The surface has a say as well, so use IsPresentTimingEnabled to see if they are being measured.
+      [[nodiscard]] bool IsPresentTimingSupported() const noexcept
+      {
+        return m_hostDeviceFeatures.PresentTiming && m_launchOptions.PresentTiming != OptionUserChoice::Off;
+      }
+
+      [[nodiscard]] bool IsPresentTimingRequested() const noexcept
+      {
+        return m_presentTimingRequested;
+      }
+
+      //! @brief Ask for the presents to be measured or not (it starts as DemoAppVulkanSetup::PresentTiming).
+      //!        Present timing is a property of the swapchain, so a change recreates the swapchain before the next frame is drawn.
+      //! @note  Call it from Update. With '--VkPresentTiming true' the presents are measured no matter what is requested.
+      void SetPresentTimingRequested(const bool requested) noexcept;
+
+      //! @brief Check if the presents are being measured. It is requested with DemoAppVulkanSetup::PresentTiming (or '--VkPresentTiming true')
+      //!        and needs a device and a surface that support VK_EXT_present_timing, so it can change when the swapchain is recreated.
+      [[nodiscard]] bool IsPresentTimingEnabled() const noexcept
+      {
+        return m_presentTiming.IsEnabled();
+      }
+
+      //! @brief Get the id the present of the frame being drawn will get. The presents are numbered from one, whether they are measured or not.
+      [[nodiscard]] uint64_t GetNextPresentId() const noexcept
+      {
+        return m_presentCounter + 1;
+      }
+
+      //! @brief Get when the swapchain was called for the last frame that was presented (its PresentId is zero if there is none).
+      //!        It is always available, as it needs no extension.
+      [[nodiscard]] const PresentCallRecord& GetLastPresentCalls() const noexcept
+      {
+        return m_lastPresentCalls;
+      }
+
+      //! @brief Get the present measurements that became available since the previous frame (empty if IsPresentTimingEnabled is false).
+      //!        A measurement arrives a few frames after its present, match it to a frame with its PresentId.
+      [[nodiscard]] ReadOnlySpan<Vulkan::VUPresentTimingRecord> GetPresentTimings() const noexcept
+      {
+        return ReadOnlySpan<Vulkan::VUPresentTimingRecord>(m_presentTimingRecords.data(), m_presentTimingRecords.size());
+      }
+
+      //! @brief Get the duration of a refresh cycle of the display as measured by the swapchain (zero if not known or not enabled).
+      [[nodiscard]] TimeSpan GetPresentRefreshDuration() const noexcept
+      {
+        return m_presentTiming.GetRefreshDuration();
       }
 
     private:

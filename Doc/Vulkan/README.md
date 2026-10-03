@@ -422,6 +422,67 @@ Vulkan::VUDebugUtils::SetObjectName(m_device.Get(), VK_OBJECT_TYPE_PIPELINE, m_p
 - A failed ```vkAcquireNextImageKHR``` or ```vkQueuePresentKHR``` (for example ```VK_ERROR_DEVICE_LOST```) is logged before the app is restarted.
 - When a device is lost the driver is asked why, and its fault report (a description, the faulting memory and instruction addresses and vendor information) is written to the log. This needs ```VK_KHR_device_fault``` or ```VK_EXT_device_fault```, which the host enables when the device supports it (```-v``` logs which one). A app that makes its own Vulkan calls can pass a failed ```VkResult``` to ```ReportDeviceLost``` to get the same report.
 
+## Timing
+
+The host enables a number of optional device extensions that tell a app when things happened. All of them are optional: when the Vulkan
+headers, the device or the surface do not have a extension the app runs as before and the objects below report that they are not
+supported, so check before relying on a value. ```-v``` logs what was enabled (```Calibrated timestamps```, ```Present timing```).
+
+### When a frame reached the display
+
+With ```VK_EXT_present_timing``` (and ```VK_KHR_present_id2```, ```VK_KHR_calibrated_timestamps```) the swapchain reports when a present was handed to the presentation engine and when its first pixel left for the display. It changes how the swapchain is created, so a ```DemoAppVulkanBasic``` app has to ask for it:
+
+```C++
+// In the app, when calling the DemoAppVulkanBasic constructor
+VulkanBasic::DemoAppVulkanSetup setup;
+setup.PresentTiming = true;
+
+// In VulkanDraw
+if (IsPresentTimingEnabled())
+{
+  // The id the present of the frame being drawn will get
+  const uint64_t presentId = GetNextPresentId();
+  // The measurements that arrived since the previous frame, a few frames after their present
+  for (const Vulkan::VUPresentTimingRecord& record : GetPresentTimings())
+  {
+    // record.PresentId, record.QueueOperationsEnd, record.GetDisplayTime(): HighResolutionTimer timestamps, empty if not available
+  }
+}
+```
+
+- ```--VkPresentTiming true``` measures the presents of any app (use ```-vvvv``` to log them), ```--VkPresentTiming false``` never uses the extension.
+- ```IsPresentTimingSupported()``` says if the device has it, ```IsPresentTimingEnabled()``` if the presents are being measured. The surface has a say as well, so it can change when the swapchain is recreated.
+- ```SetPresentTimingRequested``` switches it on or off at runtime. This recreates the swapchain before the next frame.
+- The times of a record are converted to the clock of the framework (```HighResolutionTimer```), so they can be compared with the times a app takes itself. A stage is empty when the presentation engine had no time for it, which does not mean that the frame was not shown.
+- ```GetPresentRefreshDuration()``` is the duration of a refresh according to the swapchain.
+- The values are what the driver reports. Check them against something else before a decision depends on them: see the notes in [FramePacing.md](../FramePacing.md#what-the-vulkan-sample-measures-about-its-presents).
+
+The mechanics are in ```VUSwapchainPresentTiming``` (```FslUtil.Vulkan1_0```) for a app that manages its own swapchain.
+
+### When the GPU worked on a frame
+
+A timestamp query is a time on the clock of the device. With ```VK_KHR_calibrated_timestamps``` (or the EXT version) it can be converted to the clock of the framework, so the work of the GPU can be placed on the same timeline as the work of the CPU:
+
+```C++
+// m_calibratedTimestamps is a member of DemoAppVulkan, it reports 'not supported' without the extension
+Vulkan::VUGpuTimeCalibration m_gpuTimeCalibration(m_calibratedTimestamps, m_gpuTimer.GetTimestampPeriod(), m_gpuTimer.GetTimestampMask());
+
+// Read both clocks now and then (once a second is plenty), so they do not drift apart
+m_gpuTimeCalibration.Calibrate();
+
+TickCount gpuStartTime;
+if (m_gpuTimeCalibration.TryToHostTime(m_gpuTimer.GetBeginTimestamp(), gpuStartTime))
+{
+  // gpuStartTime can be compared with HighResolutionTimer::GetTimestamp()
+}
+```
+
+```VUGpuFrameTimer``` returns the timestamps of the last frame it measured as a ```VUDeviceTimestamp```, a type of its own as a device timestamp is not a time in ticks or nanoseconds.
+
+### Where the frame loop waits
+
+```GetLastPresentCalls()``` of ```DemoAppVulkanBasic``` returns when ```vkAcquireNextImageKHR``` and ```vkQueuePresentKHR``` were called and when they returned for the last frame that was presented. It needs no extension. ```Vulkan.FramePacing``` uses all of the above, see ```--PresentLog``` in [FramePacing.md](../FramePacing.md).
+
 ## Known issues
 
 - As most of these samples are simple they currently perform many small Vulkan allocations. This is not something that should be done for a real production workload!

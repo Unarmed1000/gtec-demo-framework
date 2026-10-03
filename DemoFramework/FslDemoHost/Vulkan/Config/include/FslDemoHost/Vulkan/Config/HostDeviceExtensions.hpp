@@ -23,9 +23,17 @@
 //****************************************************************************************************************************************************
 
 #include <FslDemoHost/Vulkan/Config/FeatureRequest.hpp>
+#include <FslDemoHost/Vulkan/Config/OptionUserChoice.hpp>
 #include <FslDemoHost/Vulkan/Config/VulkanHostDeviceFeatures.hpp>
 #include <vulkan/vulkan.h>
 #include <vector>
+
+#if defined(VK_EXT_present_timing) && defined(VK_KHR_present_id2) && defined(VK_KHR_calibrated_timestamps) && \
+  defined(VK_KHR_get_surface_capabilities2)
+//! Defined when the Vulkan headers the framework is built with know the extensions needed for present timing
+// NOLINTNEXTLINE(cppcoreguidelines-macro-usage)
+#define FSL_VULKAN_HOST_PRESENT_TIMING_SUPPORTED 1
+#endif
 
 namespace Fsl::Vulkan
 {
@@ -42,6 +50,10 @@ namespace Fsl::Vulkan
 #ifdef VK_EXT_device_fault
     VkPhysicalDeviceFaultFeaturesEXT m_faultFeaturesEXT{};
 #endif
+#ifdef FSL_VULKAN_HOST_PRESENT_TIMING_SUPPORTED
+    VkPhysicalDevicePresentId2FeaturesKHR m_presentId2Features{};
+    VkPhysicalDevicePresentTimingFeaturesEXT m_presentTimingFeatures{};
+#endif
     //! The first and last of the feature structs that are in use (null if none)
     VkBaseInStructure* m_pChain{nullptr};
     VkBaseInStructure* m_pChainTail{nullptr};
@@ -53,7 +65,9 @@ namespace Fsl::Vulkan
 
     //! @brief Examine what the physical device supports.
     //! @param rExtensionRequests the device extensions to enable are appended to this.
-    HostDeviceExtensions(const VkPhysicalDevice physicalDevice, std::vector<FeatureRequest>& rExtensionRequests);
+    //! @param presentTiming Off leaves the present timing extensions disabled.
+    HostDeviceExtensions(const VkPhysicalDevice physicalDevice, std::vector<FeatureRequest>& rExtensionRequests,
+                         const OptionUserChoice presentTiming = OptionUserChoice::Default);
 
     //! @brief Get the feature structs to add to the pNext chain of the device create info.
     //! @param pNext the chain to continue with after the feature structs (it becomes the tail of the returned chain).
@@ -67,6 +81,10 @@ namespace Fsl::Vulkan
     }
 
   private:
+    void SelectDeviceFault(const VkPhysicalDevice physicalDevice, std::vector<FeatureRequest>& rExtensionRequests);
+    void SelectCalibratedTimestamps(const VkPhysicalDevice physicalDevice, std::vector<FeatureRequest>& rExtensionRequests);
+    void SelectPresentTiming(const VkPhysicalDevice physicalDevice, std::vector<FeatureRequest>& rExtensionRequests);
+
     template <typename TFeatureStruct>
     void PushFront(TFeatureStruct& rFeatures) noexcept
     {

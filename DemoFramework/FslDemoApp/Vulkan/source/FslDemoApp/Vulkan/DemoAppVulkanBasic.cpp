@@ -215,6 +215,7 @@ namespace Fsl::VulkanBasic
     }
 
     m_surfaceFormatInfo = FindPreferredSurfaceInfo(m_physicalDevice.Device, m_surface, m_demoHostConfig->GetPreferredSurfaceFormats());
+    m_presentTimingRequested = AppSetup.PresentTiming;
 
     m_resources.MainCommandPool.Reset(m_device.Get(), VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT, m_deviceQueue.QueueFamilyIndex);
     Vulkan::VUDebugUtils::SetObjectName(m_device.Get(), VK_OBJECT_TYPE_COMMAND_POOL, m_resources.MainCommandPool.Get(), "MainCommandPool");
@@ -234,6 +235,7 @@ namespace Fsl::VulkanBasic
         FreeResources();
 
         // Release the swapchain (we dont do this in FreeResources because BuildResources might reuse it).
+        m_presentTiming.Reset();
         m_swapchain.Reset();
       }
       catch (const std::exception& ex)
@@ -273,6 +275,7 @@ namespace Fsl::VulkanBasic
     FreeResources();
 
     // Release the swapchain (we dont do this in FreeResources because BuildResources might reuse it).
+    m_presentTiming.Reset();
     m_swapchain.Reset();
 
     // Finally call the OnDestroy of our inherited object
@@ -303,6 +306,10 @@ namespace Fsl::VulkanBasic
 
     // _Endframe was not called properly
     assert(!m_frameRecord.IsValid);
+
+    // Collect the present measurements that arrived, so the app can use them while it draws this frame
+    m_presentTimingRecords.clear();
+    m_presentTiming.Poll(m_presentTimingRecords);
     if (m_graphicsServiceHost)
     {
       Vulkan::BasicNativeBeginCustomVulkanFrameInfo vulkanBeginInfo(m_dependentResources.CmdBuffers[frameInfo.FrameIndex]);
@@ -458,10 +465,25 @@ namespace Fsl::VulkanBasic
       const auto supportedImageUsageFlags = FilterUnsupportedImageUsageFlags(m_physicalDevice.Device, m_surface, desiredSwapchainImageUsageFlags);
       const VkImageUsageFlags desiredImageUsageFlags = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | supportedImageUsageFlags;
 
-      m_swapchain =
-        Vulkan::SwapchainKHRUtil::CreateSwapchain(m_physicalDevice.Device, m_device.Get(), 0, m_surface, LocalConfig::DesiredMinSwapBufferCount, 1,
-                                                  desiredImageUsageFlags, VK_SHARING_MODE_EXCLUSIVE, 0, nullptr, VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR,
-                                                  presentMode, VK_TRUE, m_swapchain.Get(), fallbackExtent, m_surfaceFormatInfo);
+      // Measuring when the frames are presented is something the app (or the user) asks for and both the device and the surface must support it
+      const bool usePresentTiming = m_hostDeviceFeatures.PresentTiming && m_launchOptions.PresentTiming != OptionUserChoice::Off &&
+                                    (m_presentTimingRequested || m_launchOptions.PresentTiming == OptionUserChoice::On);
+      m_presentTimingChangePending = false;
+      const VkSwapchainCreateFlagsKHR swapchainCreateFlags =
+        usePresentTiming ? Vulkan::VUSwapchainPresentTiming::GetSwapchainCreateFlags(m_physicalDevice.Device, m_surface) : 0u;
+      // The old swapchain is retired when the new one is created
+      m_presentTiming.Reset();
+      m_presentTimingRecords.clear();
+
+      m_swapchain = Vulkan::SwapchainKHRUtil::CreateSwapchain(m_physicalDevice.Device, m_device.Get(), swapchainCreateFlags, m_surface,
+                                                              LocalConfig::DesiredMinSwapBufferCount, 1, desiredImageUsageFlags,
+                                                              VK_SHARING_MODE_EXCLUSIVE, 0, nullptr, VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR, presentMode,
+                                                              VK_TRUE, m_swapchain.Get(), fallbackExtent, m_surfaceFormatInfo);
+      if (swapchainCreateFlags != 0u)
+      {
+        m_presentTiming.Reset(m_physicalDevice.Device, m_device.Get(), m_surface, m_swapchain.Get(), m_calibratedTimestamps);
+      }
+      FSLLOG3_VERBOSE_IF(usePresentTiming, "Present timing: {}", m_presentTiming.IsEnabled() ? "enabled" : "not supported by the surface");
 
       const uint32_t swapchainImageCount = m_swapchain.GetImageCount();
       if (swapchainImageCount == 0)
@@ -603,6 +625,17 @@ namespace Fsl::VulkanBasic
     m_dependentResources.FramesInFlightCount = 0;
     m_dependentResources.Valid = false;
     FSLLOG3_VERBOSE2("DemoAppVulkanBasic::FreeResources(): Completed");
+  }
+
+
+  void DemoAppVulkanBasic::SetPresentTimingRequested(const bool requested) noexcept
+  {
+    if (requested != m_presentTimingRequested)
+    {
+      m_presentTimingRequested = requested;
+      // The swapchain is recreated by TryDoPrepareDraw, as it can not be done while a frame is being drawn
+      m_presentTimingChangePending = m_dependentResources.Valid;
+    }
   }
 
 
@@ -876,6 +909,14 @@ namespace Fsl::VulkanBasic
   {
     FSL_PARAM_NOT_USED(frameInfo);
 
+    if (m_presentTimingChangePending && m_currentAppState == AppState::Ready)
+    {
+      // Measuring the presents is a property of the swapchain, so the app turning it on or off means a new swapchain
+      FSLLOG3_VERBOSE("Present timing: {} by the app, recreating the swapchain", m_presentTimingRequested ? "requested" : "switched off");
+      m_presentTimingChangePending = false;
+      SetAppState(AppDrawResult::Retry);
+    }
+
     if (m_currentAppState == AppState::WaitForSwapchainRecreation)
     {
       switch (TryRecreateSwapchain())
@@ -901,8 +942,10 @@ namespace Fsl::VulkanBasic
     VkResult result = VK_SUCCESS;
     RapidVulkan::Semaphore imageAcquiredSemaphore = m_resources.AcquireSemaphore(m_device.Get());
     {
+      m_currentPresentCalls.AcquireCallTime = m_presentCallTimer.GetTimestamp();
       result = vkAcquireNextImageKHR(m_device.Get(), m_swapchain.Get(), LocalConfig::DefaultTimeout, imageAcquiredSemaphore.Get(), VK_NULL_HANDLE,
                                      &acquiredSwapImageIndex);
+      m_currentPresentCalls.AcquireReturnTime = m_presentCallTimer.GetTimestamp();
     }
 
     switch (result)
@@ -1008,9 +1051,22 @@ namespace Fsl::VulkanBasic
     }
 #endif
 
+    const bool hasPresentFence = pPresentInfoNext != nullptr;
+
+    // Number the present and, if enabled, ask for it to be measured
+    ++m_presentCounter;
+    Vulkan::VUPresentTimingPresentInfo presentTimingInfo;
+    pPresentInfoNext = m_presentTiming.PreparePresent(presentTimingInfo, m_presentCounter, pPresentInfoNext);
+
+    m_currentPresentCalls.PresentId = m_presentCounter;
+    m_currentPresentCalls.ImageIndex = rFrame.AssignedSwapImageIndex;
+    m_currentPresentCalls.PresentCallTime = m_presentCallTimer.GetTimestamp();
     const auto result =
       m_swapchain.TryQueuePresent(m_deviceQueue.Queue, 1, &signalSemaphore, &rFrame.AssignedSwapImageIndex, nullptr, pPresentInfoNext);
-    rFrame.PresentFencePending = pPresentInfoNext != nullptr && IsPresentFenceSignalExpected(result);
+    m_currentPresentCalls.PresentReturnTime = m_presentCallTimer.GetTimestamp();
+    m_lastPresentCalls = m_currentPresentCalls;
+    rFrame.PresentFencePending = hasPresentFence && IsPresentFenceSignalExpected(result);
+    m_presentTiming.OnPresent(presentTimingInfo, result);
 
     switch (result)
     {

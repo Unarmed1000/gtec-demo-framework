@@ -37,6 +37,7 @@
 #include <FslUtil/Vulkan1_0/Debug/VUDeviceFault.hpp>
 #include <FslUtil/Vulkan1_0/SafeType/DeviceCreateInfoCopy.hpp>
 #include <FslUtil/Vulkan1_0/SafeType/InstanceCreateInfoCopy.hpp>
+#include <FslUtil/Vulkan1_0/VUCalibratedTimestamps.hpp>
 #include <FslUtil/Vulkan1_0/VUDevice.hpp>
 #include <FslUtil/Vulkan1_0/VUDeviceQueueRecord.hpp>
 #include <FslUtil/Vulkan1_0/VUPhysicalDeviceRecord.hpp>
@@ -69,6 +70,8 @@ namespace Fsl
     //! The optional device extensions the host enabled on m_device
     Vulkan::VulkanHostDeviceFeatures m_hostDeviceFeatures;
     Vulkan::VUDevice m_device;
+    //! Relates the clock of the device to the clock of the framework (check IsSupported before use, it needs VK_KHR_calibrated_timestamps)
+    Vulkan::VUCalibratedTimestamps m_calibratedTimestamps;
     std::shared_ptr<Vulkan::DeviceCreateInfoCopy> m_deviceCreateInfo;
 
     Vulkan::VUDeviceQueueRecord m_deviceQueue;

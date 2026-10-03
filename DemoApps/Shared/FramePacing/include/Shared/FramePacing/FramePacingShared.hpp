@@ -40,6 +40,8 @@
 #include <Shared/FramePacing/RaymarchParams.hpp>
 #include <Shared/FramePacing/SampleFrameStats.hpp>
 #include <Shared/FramePacing/SamplePacer.hpp>
+#include <Shared/FramePacing/SamplePresentFeedback.hpp>
+#include <Shared/FramePacing/SamplePresentLog.hpp>
 #include <fmt/format.h>
 #include <iterator>
 #include <memory>
@@ -114,6 +116,13 @@ namespace Fsl
       std::shared_ptr<UI::Label> IntervalChanges;
       std::shared_ptr<UI::Label> LastChange;
       std::shared_ptr<UI::Label> FrameWindow;
+      //! What the measured presents say (only an app that measures them has values for these)
+      std::shared_ptr<UI::Label> DisplayError;
+      std::shared_ptr<UI::Label> DisplayInterval;
+      std::shared_ptr<UI::Label> Latency;
+      std::shared_ptr<UI::Label> TimedFrames;
+      std::shared_ptr<UI::Label> GpuWork;
+      std::shared_ptr<UI::Label> DisplayRefresh;
     };
 
     //! What the swap interval rule of the frame pacer changed since the pacer was set up
@@ -169,6 +178,9 @@ namespace Fsl
       std::shared_ptr<UI::Switch> SwitchTestPattern;
       //! Draws the sync marker of the service at the bottom left
       std::shared_ptr<UI::Switch> SwitchSyncMarker;
+      //! The optional measurements of the app: when its frames reach the display, and when the GPU worked on them
+      std::shared_ptr<UI::Switch> SwitchPresentTiming;
+      std::shared_ptr<UI::Switch> SwitchGpuTimeline;
       std::shared_ptr<UI::BaseWindow> WorkChartBar;
       MarkerStatsUIRecord MarkerStats;
       PacerStatsUIRecord PacerStats;
@@ -233,6 +245,19 @@ namespace Fsl
     //! The animation time minus the time of the framework (zero until the frame pacer was used), so the animation does not jump when the
     //! frame pacer is switched off
     TimeSpan m_animationOffset;
+    //! Relates the presents the app measured to the frames of the sample
+    SamplePresentFeedback m_presentFeedback;
+    //! True if the app measures when its frames are presented
+    bool m_presentFeedbackEnabled{false};
+    //! What the app said it can measure (SetMeasurementSupport)
+    bool m_presentTimingSupported{false};
+    bool m_gpuTimelineSupported{false};
+    //! The duration of a refresh of the display according to the swapchain (zero if unknown)
+    TimeSpan m_measuredRefreshDuration;
+    //! One row per present for a file (switched off unless asked for on the command line)
+    SamplePresentLog m_presentLog;
+    //! The id of the present of the current frame (zero if the app does not number its presents)
+    uint64_t m_framePresentId{0};
 
   public:
     //! The color the app should clear the screen with
@@ -271,6 +296,31 @@ namespace Fsl
     //! @param presentSwapInterval the number of display refreshes the present itself holds the frame for
     void WaitForPresent(const uint32_t presentSwapInterval = 1);
 
+    //! Tell the sample which optional measurements the app can make. Each has a switch, so what it adds can be seen by switching it off.
+    //! @param presentTimingSupported the app can measure when its frames reach the display (VK_EXT_present_timing)
+    //! @param gpuTimelineSupported the app can tell when the GPU worked on a frame on the clock of the CPU (VK_KHR_calibrated_timestamps)
+    void SetMeasurementSupport(const bool presentTimingSupported, const bool gpuTimelineSupported);
+    //! True if the app should measure when its frames reach the display (supported and its switch is on)
+    [[nodiscard]] bool IsPresentTimingWanted() const;
+    //! True if the app should report when the GPU worked on its frames (supported and its switch is on)
+    [[nodiscard]] bool IsGpuTimelineWanted() const;
+    //! Tell the sample if the app measures when its frames reach the display (VK_EXT_present_timing). Call it every frame, as it can change
+    //! when the swapchain is recreated.
+    //! @param refreshDuration the duration of a refresh of the display according to the swapchain (zero if unknown)
+    void SetPresentFeedback(const bool enabled, const TimeSpan refreshDuration = {});
+    //! The id of the present of the frame being drawn. Call it during the app's draw after GetRaymarchParams, which starts the frame.
+    void SetFramePresentId(const uint64_t presentId);
+    //! A present was measured.
+    //! @param displayTime when the frame reached the display as a HighResolutionTimer timestamp (empty if it was not reported)
+    //! @param queueOperationsEndTime when the present was handed to the presentation engine (empty if not reported)
+    void AddPresentTiming(const uint64_t presentId, const std::optional<TickCount> displayTime,
+                          const std::optional<TickCount> queueOperationsEndTime);
+    //! When the swapchain was called for a frame that was presented (HighResolutionTimer timestamps): where the frame loop waited.
+    void AddPresentCalls(const uint64_t presentId, const uint32_t imageIndex, const TickCount acquireCallTime, const TickCount acquireReturnTime,
+                         const TickCount presentCallTime, const TickCount presentReturnTime);
+    //! The GPU work of a frame was measured (HighResolutionTimer timestamps).
+    void AddGpuInterval(const uint64_t presentId, const TickCount gpuStartTime, const TickCount gpuEndTime);
+
     //! What the app draws the raymarched background of the current frame with, before it calls Draw (the GPU load of the sample).
     //! Call it during the app's draw, as the frame can start there.
     [[nodiscard]] RaymarchParams GetRaymarchParams();
@@ -304,6 +354,8 @@ namespace Fsl
     void UpdatePacerStatus();
     //! Update the frame pacing section of the stats panel
     void UpdatePacerStats();
+    //! Update the rows of the frame pacing section that show what the measured presents say
+    void UpdatePresentFeedbackStats();
     //! Keep the CPU busy for the given time (the simulated CPU load)
     void BurnCpu(const TimeSpan duration) const;
     //! Create the two overlays: every value of the last marker and the frame pacing stats (fills in the overlay members of m_ui)

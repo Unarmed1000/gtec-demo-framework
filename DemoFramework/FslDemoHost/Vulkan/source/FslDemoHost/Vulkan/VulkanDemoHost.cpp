@@ -192,7 +192,17 @@ namespace Fsl
         PurposeName{VK_TOOL_PURPOSE_DEBUG_MARKERS_BIT_EXT, "debug markers"},
       };
 
-      const auto tools = PhysicalDeviceUtil::GetToolProperties(physicalDevice);
+      std::vector<VkPhysicalDeviceToolProperties> tools;
+      try
+      {
+        tools = PhysicalDeviceUtil::GetToolProperties(physicalDevice);
+      }
+      catch (const std::exception& ex)
+      {
+        // This is just information, so a failed query must not stop the app from starting
+        FSLLOG3_WARNING("Failed to query the Vulkan tools: {}", ex.what());
+        return;
+      }
       FSLLOG3_INFO("Vulkan tools: {}", tools.size());
       for (const auto& tool : tools)
       {

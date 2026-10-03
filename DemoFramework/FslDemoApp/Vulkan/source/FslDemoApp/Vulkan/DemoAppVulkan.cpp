@@ -173,7 +173,7 @@ namespace Fsl
 
       // The other optional device extensions the host uses. Their feature structs go in front of the chain and are owned by hostDeviceExtensions,
       // which therefore has to live until the device has been created.
-      Vulkan::HostDeviceExtensions hostDeviceExtensions(m_physicalDevice.Device, hostExtensions);
+      Vulkan::HostDeviceExtensions hostDeviceExtensions(m_physicalDevice.Device, hostExtensions, m_launchOptions.PresentTiming);
       pExtraDeviceCreateInfoNext = hostDeviceExtensions.LinkDeviceCreateInfoChain(pExtraDeviceCreateInfoNext);
 
       const auto deviceConfig =
@@ -193,6 +193,10 @@ namespace Fsl
       m_deviceQueue = vulkanDeviceSetup.DeviceQueueRecord;
       m_hostDeviceFeatures = hostDeviceExtensions.GetFeatures();
       m_deviceFault = Vulkan::VUDeviceFault(m_device.Get(), m_hostDeviceFeatures.DeviceFault);
+      if (m_hostDeviceFeatures.CalibratedTimestamps)
+      {
+        m_calibratedTimestamps = Vulkan::VUCalibratedTimestamps(vulkanHostInfo->GetInstance(), m_physicalDevice.Device, m_device.Get());
+      }
 
       Vulkan::VUDebugUtils::SetObjectName(m_device.Get(), VK_OBJECT_TYPE_DEVICE, m_device.Get(), "MainDevice");
       Vulkan::VUDebugUtils::SetObjectName(m_device.Get(), VK_OBJECT_TYPE_QUEUE, m_deviceQueue.Queue, "MainQueue");

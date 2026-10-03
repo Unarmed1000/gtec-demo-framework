@@ -54,6 +54,11 @@ namespace Fsl
     // Controls whether VK_KHR/EXT_swapchain_maintenance1 (present fences) is used.
     // Default and On use it if supported, Off disables it (useful for testing the fallback path).
     OptionUserChoice SwapchainMaintenance1{OptionUserChoice::Default};
+
+    // Controls whether VK_EXT_present_timing (when a frame was presented) is used.
+    // Default enables it on the device if supported and leaves it to the app to use it, On also uses it for apps that did not ask for it and
+    // Off disables it.
+    OptionUserChoice PresentTiming{OptionUserChoice::Default};
   };
 }
 

@@ -27,6 +27,9 @@
   * New FslUtil.Vulkan1_0 MemoryBudgetUtil (VK_EXT_memory_budget, how much GPU memory the app uses) and PhysicalDeviceUtil::GetToolProperties.
   * Device fault support: VK_KHR_device_fault (or VK_EXT_device_fault) is enabled when the device supports it, and when a Vulkan call reports a lost device the faults the driver reports are written to the log (DemoAppVulkan::ReportDeviceLost, FslUtil.Vulkan1_0 VUDeviceFault). This also covers a failed draw or queue submit, which used to end the app with just the exception text.
   * VulkanDeviceSetupUtil::CreateSetup accepts a chain of extra device create info structures. The optional device extensions of the host are selected by the new HostDeviceExtensions and what was enabled is available to a app in DemoAppVulkan::m_hostDeviceFeatures.
+  * Present timing support (see Doc/Vulkan/README.md): with VK_EXT_present_timing a DemoAppVulkanBasic app can ask when its frames reached the display (DemoAppVulkanSetup::PresentTiming, GetPresentTimings, SetPresentTimingRequested). New --VkPresentTiming option to measure the presents of any app or to never use the extension. New FslUtil.Vulkan1_0 VUSwapchainPresentTiming.
+  * Calibrated timestamps support: with VK_KHR_calibrated_timestamps (or the EXT version) a device timestamp can be converted to the clock of the framework. New FslUtil.Vulkan1_0 VUCalibratedTimestamps (available to a app as DemoAppVulkan::m_calibratedTimestamps), VUGpuTimeCalibration, VUDeviceTimestamp and TimeDomainUtil. VUGpuFrameTimer returns the begin and end timestamp of the frame it measured.
+  * DemoAppVulkanBasic::GetLastPresentCalls returns when vkAcquireNextImageKHR and vkQueuePresentKHR were called and returned for the last frame.
   * Fixed validation and synchronization issues reported by the latest validation layers
     * VulkanWillemsDemoAppExperimental: depth attachment clear hazard and text overlay image barrier.
     * Window.VulkanTriangle: swapchain acquire write-after-read hazard.
@@ -51,6 +54,7 @@
   * New FramePacingMarker service (IFramePacingMarkerService): measured runs, every value of the last marker, and SetFrameSchedule for an app with its own frame pacer.
   * A frame with the animation time of the frame before it (a paused app) is flagged as static, so the analysis does not report it as a animation error.
   * New GLES2, GLES3 and Vulkan FramePacing samples. They can pace their frames with the experimental mb-framepacing frame pacer (--Pacer) and have a adjustable CPU and GPU load.
+  * Vulkan.FramePacing can measure when its frames reached the display and when the GPU worked on them (optional, VK_EXT_present_timing and VK_KHR_calibrated_timestamps), shows it in the frame pacing overlay, and can write a per frame log (--PresentLog).
 * Misc
   * The recommended platforms are now Ubuntu 26.04 and Windows 11+ (the Ubuntu CI builds use the u26_04 image).
   * Visual Studio 2026 is now the default on windows.

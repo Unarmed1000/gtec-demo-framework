@@ -24,7 +24,9 @@
 
 #include <FslDemoApp/Vulkan/Basic/DemoAppVulkanBasic.hpp>
 #include <FslUtil/Vulkan1_0/VUGpuFrameTimer.hpp>
+#include <FslUtil/Vulkan1_0/VUGpuTimeCalibration.hpp>
 #include <Shared/FramePacing/FramePacingShared.hpp>
+#include <vector>
 #include "RaymarchBackground.hpp"
 
 namespace Fsl
@@ -60,6 +62,12 @@ namespace Fsl
     RaymarchBackground m_background;
     //! The frame pacer is told how long the GPU needs for a frame
     Vulkan::VUGpuFrameTimer m_gpuTimer;
+    //! Converts the timestamps of the GPU timer to the clock of the CPU (if VK_KHR_calibrated_timestamps is available)
+    Vulkan::VUGpuTimeCalibration m_gpuTimeCalibration;
+    //! The id of the present of the frame that was drawn last in each frame slot: the GPU time of a slot is read when the slot is used again
+    std::vector<uint64_t> m_slotPresentIds;
+    uint64_t m_gpuMeasurementId{0};
+    uint32_t m_framesSinceCalibration{0};
 
   public:
     explicit FramePacing(const DemoAppConfig& config);
@@ -73,6 +81,10 @@ namespace Fsl
 
     VkRenderPass OnBuildResources(const VulkanBasic::BuildResourcesContext& context) final;
     void OnFreeResources() final;
+
+  private:
+    //! Give the sample the optional measurements that arrived: the GPU work of the last frame of the frame slot and the measured presents
+    void UpdateMeasurements(const uint32_t currentFrameIndex);
   };
 }
 

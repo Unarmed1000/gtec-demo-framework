@@ -26,12 +26,35 @@
 
 namespace Fsl
 {
+  namespace
+  {
+    namespace LocalConfig
+    {
+      constexpr uint32_t FramesPerCalibration = 240;
+    }
+
+    VulkanBasic::DemoAppVulkanSetup CreateSetup()
+    {
+      VulkanBasic::DemoAppVulkanSetup setup;
+      // Measure when the frames reach the display (if VK_EXT_present_timing is available)
+      setup.PresentTiming = true;
+      return setup;
+    }
+  }
+
+
   FramePacing::FramePacing(const DemoAppConfig& config)
-    : VulkanBasic::DemoAppVulkanBasic(config)
+    : VulkanBasic::DemoAppVulkanBasic(config, CreateSetup())
     , m_shared(config, "Vulkan.FramePacing", SamplePresentMethod::WaitThenPresent)
     , m_background(m_device, *GetContentManager())
     , m_gpuTimer(m_device, m_deviceQueue.QueueFamilyIndex, GetRenderConfig().MaxFramesInFlight)
+    , m_gpuTimeCalibration(m_calibratedTimestamps, m_gpuTimer.GetTimestampPeriod(), m_gpuTimer.GetTimestampMask())
+    , m_slotPresentIds(GetRenderConfig().MaxFramesInFlight)
   {
+    // Optional: with VK_KHR_calibrated_timestamps the GPU work of a frame can be placed on the timeline of the CPU
+    m_gpuTimeCalibration.Calibrate();
+    // Both measurements are optional and have a switch in the UI, so what they add can be seen
+    m_shared.SetMeasurementSupport(IsPresentTimingSupported(), m_gpuTimeCalibration.IsSupported());
     // Give the UI a chance to intercept the various DemoApp events.
     RegisterExtension(m_shared.GetUIDemoAppExtension());
   }
@@ -54,6 +77,8 @@ namespace Fsl
   void FramePacing::Update(const DemoTime& demoTime)
   {
     m_shared.Update(demoTime);
+    // Follow the switch of the UI (a change recreates the swapchain before the next frame)
+    SetPresentTimingRequested(m_shared.IsPresentTimingWanted());
   }
 
 
@@ -78,6 +103,7 @@ namespace Fsl
     rCmdBuffers.Begin(currentFrameIndex, VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT, VK_NULL_HANDLE, 0, VK_NULL_HANDLE, VK_FALSE, 0, 0);
     {
       m_gpuTimer.BeginFrame(hCmdBuffer, currentFrameIndex);
+      UpdateMeasurements(currentFrameIndex);
 
       const auto clearColor = FramePacingShared::ClearColor.ToVector4();
       std::array<VkClearValue, 1> clearValues{};
@@ -97,6 +123,11 @@ namespace Fsl
       {
         // The background is animated for the same time as the rest of the frame
         m_background.Draw(hCmdBuffer, m_shared.GetRaymarchParams());
+        {    // The frame has started, so it can be given the id its present will get. The measurements of the frame refer to it.
+          const uint64_t presentId = GetNextPresentId();
+          m_shared.SetFramePresentId(presentId);
+          m_slotPresentIds[currentFrameIndex] = presentId;
+        }
         m_shared.Draw();
 
         // Remember to call this as the last operation in your renderPass (this is also where the frame pacing marker is drawn)
@@ -107,6 +138,43 @@ namespace Fsl
       m_gpuTimer.EndFrame(hCmdBuffer, currentFrameIndex);
     }
     rCmdBuffers.End(currentFrameIndex);
+  }
+
+
+  void FramePacing::UpdateMeasurements(const uint32_t currentFrameIndex)
+  {
+    // The GPU time that was just read is the one of the frame that used the frame slot before this one
+    if (m_gpuTimer.GetMeasurementId() != m_gpuMeasurementId)
+    {
+      m_gpuMeasurementId = m_gpuTimer.GetMeasurementId();
+      TickCount gpuStartTime;
+      TickCount gpuEndTime;
+      if (m_shared.IsGpuTimelineWanted() && m_gpuTimeCalibration.TryToHostTime(m_gpuTimer.GetBeginTimestamp(), gpuStartTime) &&
+          m_gpuTimeCalibration.TryToHostTime(m_gpuTimer.GetEndTimestamp(), gpuEndTime))
+      {
+        m_shared.AddGpuInterval(m_slotPresentIds[currentFrameIndex], gpuStartTime, gpuEndTime);
+      }
+    }
+    // Read the device clock and the clock of the framework again now and then, so they do not drift apart
+    if (++m_framesSinceCalibration >= LocalConfig::FramesPerCalibration)
+    {
+      m_framesSinceCalibration = 0;
+      m_gpuTimeCalibration.Calibrate();
+    }
+
+    {    // Where the frame loop waited for the frame that was presented last
+      const VulkanBasic::PresentCallRecord& calls = GetLastPresentCalls();
+      m_shared.AddPresentCalls(calls.PresentId, calls.ImageIndex, calls.AcquireCallTime, calls.AcquireReturnTime, calls.PresentCallTime,
+                               calls.PresentReturnTime);
+    }
+
+    // When the frames reached the display, if the swapchain measures it (VK_EXT_present_timing). The measurements arrive a few frames
+    // after the present.
+    m_shared.SetPresentFeedback(IsPresentTimingEnabled(), GetPresentRefreshDuration());
+    for (const Vulkan::VUPresentTimingRecord& record : GetPresentTimings())
+    {
+      m_shared.AddPresentTiming(record.PresentId, record.GetDisplayTime(), record.QueueOperationsEnd);
+    }
   }
 
 

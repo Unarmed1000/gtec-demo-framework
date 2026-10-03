@@ -1,5 +1,5 @@
-#ifndef FSLDEMOHOST_VULKAN_CONFIG_VULKANHOSTDEVICEFEATURES_HPP
-#define FSLDEMOHOST_VULKAN_CONFIG_VULKANHOSTDEVICEFEATURES_HPP
+#ifndef FSLDEMOAPP_VULKAN_BASIC_PRESENTCALLRECORD_HPP
+#define FSLDEMOAPP_VULKAN_BASIC_PRESENTCALLRECORD_HPP
 //****************************************************************************************************************************************************
 //* BSD 3-Clause License
 //*
@@ -22,21 +22,25 @@
 //* EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //****************************************************************************************************************************************************
 
-#include <FslUtil/Vulkan1_0/Debug/VUDeviceFault.hpp>
+#include <FslBase/Time/TickCount.hpp>
+#include <cstdint>
 
-namespace Fsl::Vulkan
+namespace Fsl::VulkanBasic
 {
-  //! The optional device extensions the host enabled on the device (see HostDeviceExtensions).
-  //! They are all optional, so check before using what they provide.
-  struct VulkanHostDeviceFeatures
+  //! When the swapchain was called for a frame, as HighResolutionTimer timestamps. These two calls are where a frame loop waits for the
+  //! display, so a app that looks at its frame pacing can see where the time of a frame went.
+  struct PresentCallRecord
   {
-    //! The device fault extension that was enabled with its deviceFault feature (Disabled if none)
-    VUDeviceFaultApi DeviceFault{VUDeviceFaultApi::Disabled};
-    //! True if VK_KHR_calibrated_timestamps (or the EXT version) was enabled, see VUCalibratedTimestamps
-    bool CalibratedTimestamps{false};
-    //! True if VK_EXT_present_timing and VK_KHR_present_id2 were enabled with their features. A swapchain can then report when its images were
-    //! presented if its surface supports that too, see VUSwapchainPresentTiming.
-    bool PresentTiming{false};
+    //! The id of the present (zero = nothing was presented yet)
+    uint64_t PresentId{0};
+    //! The index of the swapchain image that was presented
+    uint32_t ImageIndex{0};
+    //! When vkAcquireNextImageKHR was called and when it returned
+    TickCount AcquireCallTime;
+    TickCount AcquireReturnTime;
+    //! When vkQueuePresentKHR was called and when it returned
+    TickCount PresentCallTime;
+    TickCount PresentReturnTime;
   };
 }
 

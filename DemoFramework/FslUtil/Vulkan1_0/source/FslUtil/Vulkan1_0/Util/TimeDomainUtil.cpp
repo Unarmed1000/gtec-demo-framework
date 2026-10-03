@@ -1,5 +1,3 @@
-#ifndef FSLDEMOHOST_VULKAN_CONFIG_VULKANHOSTDEVICEFEATURES_HPP
-#define FSLDEMOHOST_VULKAN_CONFIG_VULKANHOSTDEVICEFEATURES_HPP
 //****************************************************************************************************************************************************
 //* BSD 3-Clause License
 //*
@@ -22,22 +20,34 @@
 //* EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //****************************************************************************************************************************************************
 
-#include <FslUtil/Vulkan1_0/Debug/VUDeviceFault.hpp>
+#include <FslUtil/Vulkan1_0/Util/TimeDomainUtil.hpp>
 
-namespace Fsl::Vulkan
+#ifdef FSL_VULKAN_CALIBRATED_TIMESTAMPS_SUPPORTED
+
+namespace Fsl::Vulkan::TimeDomainUtil
 {
-  //! The optional device extensions the host enabled on the device (see HostDeviceExtensions).
-  //! They are all optional, so check before using what they provide.
-  struct VulkanHostDeviceFeatures
+  TickCount ToTickCount(const VkTimeDomainKHR timeDomain, const uint64_t value, const uint64_t performanceCounterFrequency) noexcept
   {
-    //! The device fault extension that was enabled with its deviceFault feature (Disabled if none)
-    VUDeviceFaultApi DeviceFault{VUDeviceFaultApi::Disabled};
-    //! True if VK_KHR_calibrated_timestamps (or the EXT version) was enabled, see VUCalibratedTimestamps
-    bool CalibratedTimestamps{false};
-    //! True if VK_EXT_present_timing and VK_KHR_present_id2 were enabled with their features. A swapchain can then report when its images were
-    //! presented if its surface supports that too, see VUSwapchainPresentTiming.
-    bool PresentTiming{false};
-  };
+    switch (timeDomain)
+    {
+    case VK_TIME_DOMAIN_QUERY_PERFORMANCE_COUNTER_KHR:
+      {
+        if (performanceCounterFrequency == 0u)
+        {
+          return {};
+        }
+        // The same conversion HighResolutionTimer::GetTimestamp does, so the results can be compared
+        const double countsPerTick = static_cast<double>(performanceCounterFrequency) / static_cast<double>(TickCount::TicksPerSecond);
+        return TickCount(static_cast<int64_t>(static_cast<double>(value) / countsPerTick));
+      }
+    case VK_TIME_DOMAIN_CLOCK_MONOTONIC_KHR:
+    case VK_TIME_DOMAIN_CLOCK_MONOTONIC_RAW_KHR:
+      // Nanoseconds
+      return TickCount(static_cast<int64_t>(value / TickCount::NanoSecondsPerTick));
+    default:
+      return {};
+    }
+  }
 }
 
 #endif

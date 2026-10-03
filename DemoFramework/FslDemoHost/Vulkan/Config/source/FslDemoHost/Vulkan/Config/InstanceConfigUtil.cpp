@@ -122,6 +122,11 @@ namespace Fsl::InstanceConfigUtil
       {
         Vulkan::SwapchainMaintenance1Util::AppendInstanceExtensionRequests(instanceConfig.ExtensionRequests);
       }
+      else
+      {
+        // Present timing needs to query the capabilities of the surface as well (the request above includes this extension)
+        instanceConfig.ExtensionRequests.emplace_back("VK_KHR_get_surface_capabilities2", Vulkan::FeatureRequirement::Optional);
+      }
       {    // Debug utils follows the validation layer unless the user decided otherwise
         const bool debugUtilsEnabled = LocalConfig::LocalValidationLayerEnabled || instanceUserChoice.ValidationLayer == OptionUserChoice::On;
         AppendUserChoice(instanceConfig.ExtensionRequests, instanceUserChoice.DebugUtils, debugUtilsEnabled, VK_EXT_DEBUG_UTILS_EXTENSION_NAME);

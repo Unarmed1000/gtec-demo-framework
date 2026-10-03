@@ -1,5 +1,5 @@
-#ifndef FSLDEMOHOST_VULKAN_CONFIG_VULKANHOSTDEVICEFEATURES_HPP
-#define FSLDEMOHOST_VULKAN_CONFIG_VULKANHOSTDEVICEFEATURES_HPP
+#ifndef FSLUTIL_VULKAN1_0_VUDEVICETIMESTAMP_HPP
+#define FSLUTIL_VULKAN1_0_VUDEVICETIMESTAMP_HPP
 //****************************************************************************************************************************************************
 //* BSD 3-Clause License
 //*
@@ -22,21 +22,27 @@
 //* EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //****************************************************************************************************************************************************
 
-#include <FslUtil/Vulkan1_0/Debug/VUDeviceFault.hpp>
+#include <cstdint>
 
 namespace Fsl::Vulkan
 {
-  //! The optional device extensions the host enabled on the device (see HostDeviceExtensions).
-  //! They are all optional, so check before using what they provide.
-  struct VulkanHostDeviceFeatures
+  //! A time on the clock of a Vulkan device: what a timestamp query writes and what VK_TIME_DOMAIN_DEVICE returns.
+  //!
+  //! Its unit is VkPhysicalDeviceLimits::timestampPeriod nanoseconds and it wraps around at the timestampValidBits of the queue family, so it
+  //! is not a TickCount, not nanoseconds and not a performance counter value. It can only be related to another timestamp of the same device,
+  //! which is why this type has no arithmetic: use VUGpuTimeCalibration to convert it to the clock of the framework.
+  struct VUDeviceTimestamp
   {
-    //! The device fault extension that was enabled with its deviceFault feature (Disabled if none)
-    VUDeviceFaultApi DeviceFault{VUDeviceFaultApi::Disabled};
-    //! True if VK_KHR_calibrated_timestamps (or the EXT version) was enabled, see VUCalibratedTimestamps
-    bool CalibratedTimestamps{false};
-    //! True if VK_EXT_present_timing and VK_KHR_present_id2 were enabled with their features. A swapchain can then report when its images were
-    //! presented if its surface supports that too, see VUSwapchainPresentTiming.
-    bool PresentTiming{false};
+    uint64_t Value{0};
+
+    constexpr VUDeviceTimestamp() noexcept = default;
+
+    constexpr explicit VUDeviceTimestamp(const uint64_t value) noexcept
+      : Value(value)
+    {
+    }
+
+    constexpr bool operator==(const VUDeviceTimestamp& rhs) const noexcept = default;
   };
 }
 

@@ -124,6 +124,10 @@ namespace Fsl
     constexpr const char* UnknownValue = "unknown";
     //! Shown for a value only the frame pacer has while it is off
     constexpr const char* PacerOffValue = "pacer off";
+    //! Shown for the values that need the app to measure when its frames are presented
+    constexpr const char* NotMeasuredValue = "not measured";
+    constexpr const char* NotSupportedValue = "not supported";
+    constexpr const char* SwitchedOffValue = "switched off";
     //! The width of the name column of the stats panel, so the values of its sections line up
     constexpr float StatsNameColumnWidthDp = 216.0f;
     constexpr float StatsValueColumnWidthDp = 360.0f;
@@ -173,6 +177,7 @@ namespace Fsl
 
     const auto options = config.GetOptions<OptionParser>();
     m_refreshRateOverrideHz = options->GetPacerRefreshRateHz();
+    m_presentLog = SamplePresentLog(options->GetPresentLogPath());
     {
       // The refresh rate of the display is read from the window every frame, as the window can be moved to another display
       const auto windowHostInfo = config.DemoServiceProvider.TryGet<IWindowHostInfo>();
@@ -230,6 +235,12 @@ namespace Fsl
     // The sync marker of the service (--FramePacing.SyncMarker draws it from the start)
     m_ui.SwitchSyncMarker = uiFactory->CreateSwitch("Draw the sync marker", m_framePacing && m_framePacing->IsSyncMarkerEnabled());
     m_ui.SwitchSyncMarker->SetEnabled(m_framePacing != nullptr);
+    // The optional measurements of the app, so what they add can be seen by switching them off. They stay disabled until the app says it
+    // can make them (SetMeasurementSupport).
+    m_ui.SwitchPresentTiming = uiFactory->CreateSwitch("Measure the presents", true);
+    m_ui.SwitchPresentTiming->SetEnabled(false);
+    m_ui.SwitchGpuTimeline = uiFactory->CreateSwitch("Place the GPU work in time", true);
+    m_ui.SwitchGpuTimeline->SetEnabled(false);
 
     // The frame pacer of the sample (the library is not available on every platform)
     const bool pacerSupported = SamplePacer::IsSupported();
@@ -294,6 +305,9 @@ namespace Fsl
     stackLayout->AddChild(m_ui.SwitchTestPattern);
     stackLayout->AddChild(m_ui.SwitchSyncMarker);
     stackLayout->AddChild(uiFactory->CreateDivider(UI::LayoutOrientation::Horizontal));
+    stackLayout->AddChild(m_ui.SwitchPresentTiming);
+    stackLayout->AddChild(m_ui.SwitchGpuTimeline);
+    stackLayout->AddChild(uiFactory->CreateDivider(UI::LayoutOrientation::Horizontal));
     stackLayout->AddChild(lblHint);
     stackLayout->AddChild(lblHintTimed);
     stackLayout->AddChild(lblHintPacer);
@@ -331,7 +345,11 @@ namespace Fsl
   }
 
 
-  FramePacingShared::~FramePacingShared() = default;
+  FramePacingShared::~FramePacingShared()
+  {
+    m_presentFeedback.LogSummary();
+    m_presentLog.TrySave();
+  }
 
 
   void FramePacingShared::OnSelect(const std::shared_ptr<UI::WindowSelectEvent>& theEvent)
@@ -458,6 +476,89 @@ namespace Fsl
   }
 
 
+  void FramePacingShared::SetMeasurementSupport(const bool presentTimingSupported, const bool gpuTimelineSupported)
+  {
+    m_presentTimingSupported = presentTimingSupported;
+    m_gpuTimelineSupported = gpuTimelineSupported;
+    m_ui.SwitchPresentTiming->SetEnabled(presentTimingSupported);
+    m_ui.SwitchGpuTimeline->SetEnabled(gpuTimelineSupported);
+  }
+
+
+  bool FramePacingShared::IsPresentTimingWanted() const
+  {
+    return m_presentTimingSupported && m_ui.SwitchPresentTiming->IsChecked();
+  }
+
+
+  bool FramePacingShared::IsGpuTimelineWanted() const
+  {
+    return m_gpuTimelineSupported && m_ui.SwitchGpuTimeline->IsChecked();
+  }
+
+
+  void FramePacingShared::SetPresentFeedback(const bool enabled, const TimeSpan refreshDuration)
+  {
+    if (!enabled && m_presentFeedbackEnabled)
+    {
+      // The frames that are remembered will not be measured anymore
+      m_presentFeedback.ClearFrames();
+    }
+    m_presentFeedbackEnabled = enabled;
+    m_measuredRefreshDuration = enabled ? refreshDuration : TimeSpan();
+  }
+
+
+  void FramePacingShared::SetFramePresentId(const uint64_t presentId)
+  {
+    // The display time is only something the frame pacer aims for
+    m_presentFeedback.AddFrame(presentId, m_frameStartTime, m_pacer ? std::optional<TickCount>(m_schedule.IntendedDisplayTime) : std::nullopt);
+
+    m_framePresentId = presentId;
+    if (m_presentLog.IsEnabled())
+    {
+      // The marker of the frame before this one was drawn by now, so the frame index it carried is known
+      FramePacingMarkerInfo lastMarker;
+      if (m_framePacing && presentId > 1u && m_framePacing->TryGetLastMarker(lastMarker))
+      {
+        m_presentLog.SetFrameIndex(presentId - 1u, lastMarker.FrameIndex);
+      }
+      SamplePresentLogFrame frame;
+      frame.PresentId = presentId;
+      frame.CpuStartTime = m_frameStartTime;
+      frame.AnimationTime = m_animationTime;
+      frame.RefreshDuration = m_measuredRefreshDuration;
+      if (m_pacer)
+      {
+        frame.Schedule = m_schedule;
+      }
+      m_presentLog.AddFrame(frame);
+    }
+  }
+
+
+  void FramePacingShared::AddPresentTiming(const uint64_t presentId, const std::optional<TickCount> displayTime,
+                                           const std::optional<TickCount> queueOperationsEndTime)
+  {
+    m_presentFeedback.AddPresentTiming(presentId, displayTime, queueOperationsEndTime);
+    // The measurements are read before the frame being drawn gets its present id, which is the one after the last frame's
+    m_presentLog.SetPresentTiming(presentId, queueOperationsEndTime, displayTime, m_framePresentId + 1u);
+  }
+
+
+  void FramePacingShared::AddPresentCalls(const uint64_t presentId, const uint32_t imageIndex, const TickCount acquireCallTime,
+                                          const TickCount acquireReturnTime, const TickCount presentCallTime, const TickCount presentReturnTime)
+  {
+    m_presentLog.SetPresentCalls(presentId, imageIndex, acquireCallTime, acquireReturnTime, presentCallTime, presentReturnTime);
+  }
+
+
+  void FramePacingShared::AddGpuInterval(const uint64_t presentId, const TickCount gpuStartTime, const TickCount gpuEndTime)
+  {
+    m_presentFeedback.AddGpuInterval(presentId, gpuStartTime, gpuEndTime);
+  }
+
+
   RaymarchParams FramePacingShared::GetRaymarchParams()
   {
     // The background is animated for the animation time of the frame, so the frame has to be started
@@ -501,6 +602,7 @@ namespace Fsl
     {
       m_pacer->EndFrame(now, m_lastCpuTime + m_lastGpuTime);
     }
+    m_presentLog.SetEndFrameTime(m_framePresentId, now);
   }
 
 
@@ -816,6 +918,7 @@ namespace Fsl
     {
       rStats.PresentWait->SetContent("none");
     }
+    UpdatePresentFeedbackStats();
 
     if (!m_pacer)
     {
@@ -856,6 +959,91 @@ namespace Fsl
       rStats.LastChange->SetContent("none");
     }
     SetFormattedContent(*rStats.FrameWindow, "{:.2f} s{}", status.WindowSpan.TotalSeconds(), status.WindowFull ? ", full" : "");
+  }
+
+
+  void FramePacingShared::UpdatePresentFeedbackStats()
+  {
+    const PacerStatsUIRecord& rStats = m_ui.PacerStats;
+
+    // The GPU work can be placed on the timeline without measured presents
+    if (!IsGpuTimelineWanted())
+    {
+      m_presentFeedback.ClearGpuInterval();
+      rStats.GpuWork->SetContent(m_gpuTimelineSupported ? SwitchedOffValue : NotSupportedValue);
+    }
+    else
+    {
+      const std::optional<TimeSpan> gpuStart = m_presentFeedback.GetLastGpuStart();
+      const std::optional<TimeSpan> gpuEnd = m_presentFeedback.GetLastGpuEnd();
+      if (gpuStart.has_value() && gpuEnd.has_value())
+      {
+        // When the GPU started and finished the frame, counted from when the CPU started on it
+        SetFormattedContent(*rStats.GpuWork, "{:+.2f} to {:+.2f} ms", gpuStart.value().TotalMilliseconds(), gpuEnd.value().TotalMilliseconds());
+      }
+      else
+      {
+        rStats.GpuWork->SetContent(NotMeasuredValue);
+      }
+    }
+
+    if (!m_presentFeedbackEnabled)
+    {
+      // Supported and switched on but not measured: the surface does not support it
+      const char* const pszReason =
+        !m_presentTimingSupported ? NotSupportedValue : (m_ui.SwitchPresentTiming->IsChecked() ? NotMeasuredValue : SwitchedOffValue);
+      for (UI::Label* pLabel :
+           {rStats.DisplayError.get(), rStats.DisplayInterval.get(), rStats.Latency.get(), rStats.TimedFrames.get(), rStats.DisplayRefresh.get()})
+      {
+        pLabel->SetContent(pszReason);
+      }
+      return;
+    }
+
+    const SamplePresentFeedbackStats stats = m_presentFeedback.CalcStats();
+    if (stats.AverageDisplayError.has_value() && stats.WorstDisplayError.has_value())
+    {
+      // How far the frames were shown from the time the frame pacer aimed for
+      SetFormattedContent(*rStats.DisplayError, "{:+.2f} ms (worst {:+.2f})", stats.AverageDisplayError.value().TotalMilliseconds(),
+                          stats.WorstDisplayError.value().TotalMilliseconds());
+    }
+    else
+    {
+      rStats.DisplayError->SetContent(m_pacer ? UnknownValue : PacerOffValue);
+    }
+    if (stats.AverageDisplayInterval.has_value() && stats.MinDisplayInterval.has_value() && stats.MaxDisplayInterval.has_value())
+    {
+      // How evenly the frames reach the display, which is what the frame pacer is for
+      SetFormattedContent(*rStats.DisplayInterval, "{:.2f} ms ({:.2f} to {:.2f})", stats.AverageDisplayInterval.value().TotalMilliseconds(),
+                          stats.MinDisplayInterval.value().TotalMilliseconds(), stats.MaxDisplayInterval.value().TotalMilliseconds());
+    }
+    else
+    {
+      rStats.DisplayInterval->SetContent(UnknownValue);
+    }
+    if (stats.AverageLatency.has_value() && stats.AverageQueueTime.has_value())
+    {
+      SetFormattedContent(*rStats.Latency, "{:.2f} ms (handed over after {:.2f})", stats.AverageLatency.value().TotalMilliseconds(),
+                          stats.AverageQueueTime.value().TotalMilliseconds());
+    }
+    else if (stats.AverageLatency.has_value())
+    {
+      SetFormattedContent(*rStats.Latency, "{:.2f} ms", stats.AverageLatency.value().TotalMilliseconds());
+    }
+    else
+    {
+      rStats.Latency->SetContent(UnknownValue);
+    }
+    SetFormattedContent(*rStats.TimedFrames, "{} of {}", stats.TimedFrames, stats.MeasuredFrames);
+    if (m_measuredRefreshDuration.Ticks() > 0)
+    {
+      SetFormattedContent(*rStats.DisplayRefresh, "{:.3f} ms ({:.2f} Hz)", m_measuredRefreshDuration.TotalMilliseconds(),
+                          static_cast<double>(TimeSpan::TicksPerSecond) / static_cast<double>(m_measuredRefreshDuration.Ticks()));
+    }
+    else
+    {
+      rStats.DisplayRefresh->SetContent(UnknownValue);
+    }
   }
 
 
@@ -925,6 +1113,13 @@ namespace Fsl
     rPacerStats.IntervalChanges = addStatsRow(*pacerGrid, pacerRow, "Interval changes");
     rPacerStats.LastChange = addStatsRow(*pacerGrid, pacerRow, "Last change");
     rPacerStats.FrameWindow = addStatsRow(*pacerGrid, pacerRow, "Frame window");
+    // What the measured presents say: when the frames really reached the display
+    rPacerStats.DisplayError = addStatsRow(*pacerGrid, pacerRow, "Display error");
+    rPacerStats.DisplayInterval = addStatsRow(*pacerGrid, pacerRow, "Display interval");
+    rPacerStats.Latency = addStatsRow(*pacerGrid, pacerRow, "Latency");
+    rPacerStats.TimedFrames = addStatsRow(*pacerGrid, pacerRow, "Timed frames");
+    rPacerStats.GpuWork = addStatsRow(*pacerGrid, pacerRow, "GPU work");
+    rPacerStats.DisplayRefresh = addStatsRow(*pacerGrid, pacerRow, "Display refresh");
 
     // Each overlay is a dialog window of the theme: a caption, a divider and the grid
     const auto createOverlay = [&rUIFactory](const char* const pszCaption, const std::shared_ptr<UI::GridLayout>& grid)
