@@ -3,10 +3,14 @@
 ## Release 6.7.0 (September 23, 2026)
 
 * Vulkan
+  * Vulkan 1.3 is now the baseline, the Vulkan loader and the physical device must support Vulkan 1.3.
+  * Vulkan is no longer early access.
+  * The Vulkan 1.1, 1.2 and 1.3 core features can be requested with DemoAppHostConfigVulkan::AddPhysicalDeviceFeatureRequest.
+  * The shaders are compiled for Vulkan 1.3 (SPIR-V 1.6).
   * Fixed the swapchain present semaphore reuse (VUID-vkQueueSubmit-pSignalSemaphores-00067). The render complete semaphores are now per swapchain image.
   * Fixed the screenshot capture using the swapchain image after it was presented (UNASSIGNED-non-acquired-swapchain-image-used). The screenshot of a frame is now captured before the frame is swapped on all APIs.
   * The demo host uses VK_KHR/EXT_swapchain_maintenance1 present fences when available (can be disabled with --VkSwapchainMaintenance1 false).
-  * New --VkApiVersion option to override the instance api version (GPU assisted validation requires 1.1).
+  * New --VkApiVersion option to request a newer instance api version (1.3 or 1.4).
   * Fixed validation and synchronization issues reported by the latest validation layers
     * VulkanWillemsDemoAppExperimental: depth attachment clear hazard and text overlay image barrier.
     * Window.VulkanTriangle: swapchain acquire write-after-read hazard.

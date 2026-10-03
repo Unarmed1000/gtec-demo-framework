@@ -522,14 +522,14 @@ The easiest way to get it is to install the Vulkan SDK, See the [official SDK gu
 
     ```bash
     mkdir ~/vulkan
-    mv vulkansdk-linux-x86_64-1.1.92.1.tar.gz ~/vulkan
+    mv vulkansdk-linux-x86_64-1.4.363.0.tar.xz ~/vulkan
     ```
 
 3. Unpack it it
 
     ```bash
     cd ~/vulkan
-    tar zxf vulkansdk-linux-x86_64-1.1.92.1.tar.gz
+    tar xf vulkansdk-linux-x86_64-1.4.363.0.tar.xz
     ```
 
 4. Install the necessary packages
@@ -541,7 +541,7 @@ The easiest way to get it is to install the Vulkan SDK, See the [official SDK gu
 5. Setup the vulkan environment
 
     ```bash
-    pushd ~/vulkan/1.1.92.1
+    pushd ~/vulkan/1.4.363.0
     source setup-env.sh
     popd
     ```

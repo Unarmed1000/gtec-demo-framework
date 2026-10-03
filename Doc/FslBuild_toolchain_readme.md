@@ -102,7 +102,7 @@ Would currently produce this list
 
 ```
 Requirements:
-- 'EarlyAccess' (introduced by package: OpenVX, OpenCL, OpenCV, G2D, FslGraphics3D.Procedural, Vulkan, Vulkan.DevBatch)
+- 'EarlyAccess' (introduced by package: OpenVX, OpenCL, OpenCV, G2D, FslGraphics3D.Procedural)
 - 'EGL' (introduced by package: EGL)
 - 'G2D' (introduced by package: G2D)
 - 'OpenCL' V1 (introduced by package: OpenCL)
@@ -120,7 +120,7 @@ Requirements:
 - 'OpenVG' (introduced by package: OpenVG)
 - 'OpenVX' (introduced by package: OpenVX)
   - 'OpenVX1.1' V1.1 (introduced by package: OpenVX1_1)
-- 'Vulkan' V1 (introduced by package: Vulkan)
+- 'Vulkan' V1.3 (introduced by package: VulkanBase)
 ```
 
 Argument            | Description

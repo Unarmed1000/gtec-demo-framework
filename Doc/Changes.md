@@ -3,10 +3,17 @@
 ## Release 6.7.0
 
 * Vulkan
+  * Vulkan 1.3 is now the baseline. The Vulkan loader and the physical device must support Vulkan 1.3 and the instance is created with api version 1.3, the app fails at startup with a error that names the found version if they do not (VulkanInfo reports it instead).
+  * Vulkan is no longer early access (the Vulkan packages no longer require the EarlyAccess feature).
+  * The Vulkan 1.1, 1.2 and 1.3 core features can be requested with DemoAppHostConfigVulkan::AddPhysicalDeviceFeatureRequest (for example PhysicalDeviceFeature::Synchronization2), the enabled features are available in the DemoAppVulkan m_deviceActiveFeatures11, m_deviceActiveFeatures12 and m_deviceActiveFeatures13 members.
+  * The shaders are compiled for Vulkan 1.3 (glslangValidator --target-env vulkan1.3, SPIR-V 1.6) and the prebuilt SPIR-V files were rebuilt.
+  * The 'Vulkan1.2' feature and the Vulkan1_2 package were removed, use 'Vulkan' instead.
+  * Android Vulkan apps require android.hardware.vulkan.version 1.3.
+  * VK_KHR_get_physical_device_properties2 is no longer requested as vkGetPhysicalDeviceFeatures2 is core.
   * Fixed the swapchain present semaphore reuse (VUID-vkQueueSubmit-pSignalSemaphores-00067). The render complete semaphores are now per swapchain image.
   * Fixed the screenshot capture using the swapchain image after it was presented (UNASSIGNED-non-acquired-swapchain-image-used). The screenshot of a frame is now captured before the frame is swapped on all APIs.
   * The demo host uses VK_KHR/EXT_swapchain_maintenance1 present fences when available (can be disabled with --VkSwapchainMaintenance1 false).
-  * New --VkApiVersion option to override the instance api version (GPU assisted validation requires 1.1).
+  * New --VkApiVersion option to request a newer instance api version (1.3 or 1.4).
   * Fixed validation and synchronization issues reported by the latest validation layers
     * VulkanWillemsDemoAppExperimental: depth attachment clear hazard and text overlay image barrier.
     * Window.VulkanTriangle: swapchain acquire write-after-read hazard.

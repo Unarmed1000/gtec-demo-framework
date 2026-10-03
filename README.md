@@ -36,7 +36,7 @@ with the goal of keeping the framework up to date with the latest compilers, SDK
 * OpenGL ES 2, 3, 3.1
 * OpenVG
 * OpenVX (early access)
-* Vulkan (early access)
+* Vulkan 1.3
 * Window. A freestyle project that runs in a window based environment.
 
 <img src="Doc/Images/EGL/EGL_100px_June16.png" height="50px"> <img src="Doc/Images/OpenGL_ES/OpenGL-ES_100px_May16.png" height="50px"> <img src="Doc/Images/OpenVG/OpenVG_100px_June16.png" height="50px"> <img src="Doc/Images/OpenVX/OpenVX_100px_June16.png" height="50px"> <img src="Doc/Images/Vulkan/Vulkan_100px_Dec16.png" height="50px">

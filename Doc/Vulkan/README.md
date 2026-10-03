@@ -1,10 +1,12 @@
 # Vulkan
 
-The support in the demo framework is still **in development** so this release is marked as **early access**.
-Early access means everything is subject to changes and still in development.
+## Requirements
 
-**The Vulkan demo host has not been finalized, so some changes might occur in future releases.**
-  
+The framework requires Vulkan 1.3. Both the Vulkan loader and the physical device must support it, otherwise the app fails at startup with an error that names the version that was found. The ```VulkanInfo``` sample reports if the loader and each physical device meet this requirement.
+
+- The instance is created with api version 1.3, use ```--VkApiVersion 1.4``` to request a newer version.
+- The shaders are compiled to SPIR-V for Vulkan 1.3 (```glslangValidator --target-env vulkan1.3```).
+
 The ```Vulkan``` project template is the recommended way to create a new Vulkan samples.
 
 Vulkan is a low level "no secrets" type of API that might seem intimidating at first glance and its not really recommended for beginners. It requires a lot of attention to detail, knowledge of how to write properly threaded code and issues related to that. It also requires a lot of setup work just to get something on the screen and even more to make sure you handle all the possible error cases that can occur both during setup and while the app is running. Vulkan's 'front heavy' design basically makes it hard/time-consuming to create small demos but fits well with a well thought through rendering engine. However once you get all the setup and error handling done you will find that rendering something becomes *fairly* simple.
@@ -303,6 +305,16 @@ namespace Fsl
 
 Since all of them are set to Optional in this example that means that the application needs to handle that all of them might be unavailable.
 
+The Vulkan 1.1, 1.2 and 1.3 core features are requested the same way, for example:
+
+```C++
+config.AddPhysicalDeviceFeatureRequest(PhysicalDeviceFeature::TimelineSemaphore, FeatureRequirement::Mandatory);
+config.AddPhysicalDeviceFeatureRequest(PhysicalDeviceFeature::Synchronization2, FeatureRequirement::Optional);
+```
+
+The enabled features are available to the app in ```m_deviceActiveFeatures``` (Vulkan 1.0) and ```m_deviceActiveFeatures11```, ```m_deviceActiveFeatures12``` and ```m_deviceActiveFeatures13```.
+A ```IVulkanDeviceCreationCustomizer``` must not add the core feature structs (or the feature structs of the extensions that were promoted to core) to the device create info pNext chain, request the features like this instead.
+
 ## Extensions and layers
 
 Extensions and layers can be requested in the same way as physical device features. This can be done in the apps ```CustomDemoApp_Register.cpp``` file.
@@ -362,8 +374,8 @@ namespace Fsl
 
 ### Validation
 
-- Its highly recommended to enable the VK_LAYER_LUNARG_standard_validation while developing a Vulkan app. If you dont use it your app will most likely contain errors. So save time and just use it!
-- Debug builds enable VK_LAYER_LUNARG_standard_validation by default.
+- Its highly recommended to enable the VK_LAYER_KHRONOS_validation while developing a Vulkan app. If you dont use it your app will most likely contain errors. So save time and just use it!
+- Debug builds enable VK_LAYER_KHRONOS_validation by default.
 - The ```--VkValidate``` argument can be used to enable or disable it from the command line.
 
 ## Known issues

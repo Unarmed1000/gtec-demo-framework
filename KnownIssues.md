@@ -170,9 +170,8 @@ Unfortunately you will have to specific this override to all build tools every t
 ## Vulkan
 
 * Please see the Known Issues section of the Vulkan [README](Doc/Vulkan/README.md).
-* Early access. Everything is subject to changes.
 * Qnx support is disabled.
-* Requires 1.0.42.2 or newer or windows
+* Requires a Vulkan 1.3 capable loader and driver.
 
 # Apps
 
