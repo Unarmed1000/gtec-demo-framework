@@ -2,9 +2,43 @@
 # Content builder #
 ###################
 
+# FslBuildContent lists the files the content depends on beyond Content.bld (like shader includes) in a depfile, so the build runs it again
+# when one of them changes. A depfile needs CMake 3.20 for Makefiles and 3.21 for Visual Studio and Xcode, and Ninja 1.10 as the command has
+# several outputs (older versions fail the build).
+get_property(FSL_CONTENT_DEPFILE_CHECKED GLOBAL PROPERTY FSL_CONTENT_DEPFILE_SUPPORTED SET)
+if(NOT FSL_CONTENT_DEPFILE_CHECKED)
+  set(FSL_CONTENT_DEPFILE_SUPPORTED OFF)
+  if(CMAKE_GENERATOR MATCHES "Ninja")
+    execute_process(COMMAND "${CMAKE_MAKE_PROGRAM}" --version OUTPUT_VARIABLE FSL_NINJA_VERSION OUTPUT_STRIP_TRAILING_WHITESPACE ERROR_QUIET)
+    if(FSL_NINJA_VERSION VERSION_GREATER_EQUAL "1.10")
+      set(FSL_CONTENT_DEPFILE_SUPPORTED ON)
+    endif()
+  elseif(CMAKE_GENERATOR MATCHES "Visual Studio|Xcode")
+    if(CMAKE_VERSION VERSION_GREATER_EQUAL "3.21")
+      set(FSL_CONTENT_DEPFILE_SUPPORTED ON)
+    endif()
+  elseif(CMAKE_GENERATOR MATCHES "Makefiles")
+    if(CMAKE_VERSION VERSION_GREATER_EQUAL "3.20")
+      set(FSL_CONTENT_DEPFILE_SUPPORTED ON)
+    endif()
+  endif()
+  set_property(GLOBAL PROPERTY FSL_CONTENT_DEPFILE_SUPPORTED ${FSL_CONTENT_DEPFILE_SUPPORTED})
+endif()
+get_property(FSL_CONTENT_DEPFILE_SUPPORTED GLOBAL PROPERTY FSL_CONTENT_DEPFILE_SUPPORTED)
+set(FSL_CONTENT_DEPFILE "${CMAKE_CURRENT_BINARY_DIR}/ContentBuilder.d")
+set(FSL_CONTENT_DEPFILE_ARGS)
+if(FSL_CONTENT_DEPFILE_SUPPORTED)
+  if(POLICY CMP0116)
+    # The depfile paths are absolute, CMake converts them for Ninja
+    cmake_policy(SET CMP0116 NEW)
+  endif()
+  set(FSL_CONTENT_DEPFILE_ARGS DEPFILE "${FSL_CONTENT_DEPFILE}")
+endif()
+
 add_custom_command(
   OUTPUT ##PACKAGE_CONTENTBUILDER_OUTPUT_FILES##
-  COMMAND ##FSLBUILDCONTENT_COMMAND## -p ##PLATFORM_NAME## --project ##PACKAGE_TARGET_NAME## --UseFeatures [##FEATURE_LIST##] --Variants [##VARIANT_LIST##] --Validate --input "##PACKAGE_PATH##"##EXTRA_ARGS####CUSTOM_ARGS##
+  COMMAND ##FSLBUILDCONTENT_COMMAND## -p ##PLATFORM_NAME## --project ##PACKAGE_TARGET_NAME## --UseFeatures [##FEATURE_LIST##] --Variants [##VARIANT_LIST##] --Validate --input "##PACKAGE_PATH##"##EXTRA_ARGS####CUSTOM_ARGS## --DependencyFile "${FSL_CONTENT_DEPFILE}"
   DEPENDS ##PACKAGE_CONTENTBUILDER_INPUT_FILES##
+  ${FSL_CONTENT_DEPFILE_ARGS}
   COMMENT "Building content"
 )
