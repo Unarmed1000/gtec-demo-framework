@@ -2,7 +2,6 @@
 <FslBuildGen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../.Config/Schema/1/FslBuildGen.xsd">
   <Executable Name="Vulkan.GpuTimestamp" NoInclude="true" CreationYear="2021">
     <ImportTemplate Name="DemoAppVulkan"/>
-    <Dependency Name="Vulkan1_2"/>
     <Dependency Name="Shared.GpuTimestamp"/>
   </Executable>
 </FslBuildGen>
