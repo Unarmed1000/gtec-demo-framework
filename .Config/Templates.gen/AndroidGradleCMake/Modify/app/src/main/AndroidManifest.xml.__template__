@@ -1,6 +1,6 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <uses-feature android:glEsVersion="##FSL_PACKAGE_GLES_VERSION##" android:required="true"/>
+    <uses-feature android:glEsVersion="##FSL_PACKAGE_GLES_VERSION##" android:required="true"/>##FSL_PACKAGE_VULKAN_USES_FEATURE##
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
     <application
         android:allowBackup="true"

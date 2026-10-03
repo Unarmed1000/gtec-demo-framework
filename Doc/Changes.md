@@ -8,6 +8,7 @@
   * The Vulkan 1.1, 1.2 and 1.3 core features can be requested with DemoAppHostConfigVulkan::AddPhysicalDeviceFeatureRequest (for example PhysicalDeviceFeature::Synchronization2), the enabled features are available in the DemoAppVulkan m_deviceActiveFeatures11, m_deviceActiveFeatures12 and m_deviceActiveFeatures13 members.
   * The shaders are compiled for Vulkan 1.3 (glslangValidator --target-env vulkan1.3, SPIR-V 1.6) and the prebuilt SPIR-V files were rebuilt.
   * The 'Vulkan1.2' feature and the Vulkan1_2 package were removed, use 'Vulkan' instead.
+  * Android Vulkan apps require Vulkan 1.3 (android.hardware.vulkan.version in the manifest).
   * VK_KHR_get_physical_device_properties2 is no longer requested as vkGetPhysicalDeviceFeatures2 is core.
   * Fixed the swapchain present semaphore reuse (VUID-vkQueueSubmit-pSignalSemaphores-00067). The render complete semaphores are now per swapchain image.
   * Fixed the screenshot capture using the swapchain image after it was presented (UNASSIGNED-non-acquired-swapchain-image-used). The screenshot of a frame is now captured before the frame is swapped on all APIs.
