@@ -30,7 +30,7 @@ namespace Fsl
     : VulkanBasic::DemoAppVulkanBasic(config)
     , m_shared(config, "Vulkan.FramePacing", SamplePresentMethod::WaitThenPresent)
     , m_background(m_device, *GetContentManager())
-    , m_gpuTimer(m_device, m_deviceQueue.QueueFamilyIndex)
+    , m_gpuTimer(m_device, m_deviceQueue.QueueFamilyIndex, GetRenderConfig().MaxFramesInFlight)
   {
     // Give the UI a chance to intercept the various DemoApp events.
     RegisterExtension(m_shared.GetUIDemoAppExtension());
@@ -77,7 +77,7 @@ namespace Fsl
     const VkCommandBuffer hCmdBuffer = rCmdBuffers[currentFrameIndex];
     rCmdBuffers.Begin(currentFrameIndex, VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT, VK_NULL_HANDLE, 0, VK_NULL_HANDLE, VK_FALSE, 0, 0);
     {
-      m_gpuTimer.BeginFrame(hCmdBuffer);
+      m_gpuTimer.BeginFrame(hCmdBuffer, currentFrameIndex);
 
       const auto clearColor = FramePacingShared::ClearColor.ToVector4();
       std::array<VkClearValue, 1> clearValues{};
@@ -104,7 +104,7 @@ namespace Fsl
       }
       rCmdBuffers.CmdEndRenderPass(currentFrameIndex);
 
-      m_gpuTimer.EndFrame(hCmdBuffer);
+      m_gpuTimer.EndFrame(hCmdBuffer, currentFrameIndex);
     }
     rCmdBuffers.End(currentFrameIndex);
   }

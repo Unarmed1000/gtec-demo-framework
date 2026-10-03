@@ -39,6 +39,7 @@ To [main document](../../README.md)
     * [OpenCVMatToNativeBatch](#opencvmattonativebatch)
     * [OpenCVMatToUI](#opencvmattoui)
     * [OpenVX101](#openvx101)
+    * [PixelArt](#pixelart)
     * [Scissor101](#scissor101)
     * [Screenshot](#screenshot)
     * [SdfFonts](#sdffonts)
@@ -354,6 +355,12 @@ The cv::Mat -> Bitmap routines used here are a very basic proof of concept.
 <a href="OpenVX101/Thumbnail.jpg"><img src="OpenVX101/Thumbnail.jpg" height="108px" title="Vulkan.OpenVX101"></a>
 
 Demonstrate how process a image with OpenVX then use it to render as a texture on the GPU.
+
+### [PixelArt](PixelArt)
+
+<a href="PixelArt/Example.jpg"><img src="PixelArt/Example.jpg" height="108px" title="Vulkan.PixelArt"></a>
+
+A player for shadertoy style scenes: the tabs, channels and uniforms of shadertoy, with every constant a scene exposes adjustable in the UI.
 
 ### [Scissor101](Scissor101)
 

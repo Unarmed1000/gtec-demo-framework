@@ -29,7 +29,7 @@ khronos_validation.log_filename = stdout
 # khronos_validation.validate_sync = true
 # khronos_validation.validate_best_practices = true
 # khronos_validation.thread_safety = true
-# GPU assisted validation requires a Vulkan 1.1 instance, so also run the app with '--VkApiVersion 1.1'
+# GPU assisted validation (it needs Vulkan 1.1, the framework always creates a Vulkan 1.3 or newer instance)
 # khronos_validation.gpuav_enable = true
 
 

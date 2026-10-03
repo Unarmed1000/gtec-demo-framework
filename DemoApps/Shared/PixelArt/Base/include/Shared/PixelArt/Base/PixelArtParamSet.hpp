@@ -1,5 +1,5 @@
-#ifndef VULKAN_FRAMEPACING_GPUFRAMETIMER_HPP
-#define VULKAN_FRAMEPACING_GPUFRAMETIMER_HPP
+#ifndef SHARED_PIXELART_BASE_PIXELARTPARAMSET_HPP
+#define SHARED_PIXELART_BASE_PIXELARTPARAMSET_HPP
 //****************************************************************************************************************************************************
 //* BSD 3-Clause License
 //*
@@ -22,52 +22,57 @@
 //* EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //****************************************************************************************************************************************************
 
-#include <FslBase/Time/TimeSpan.hpp>
-#include <FslUtil/Vulkan1_0/VUDevice.hpp>
-#include <RapidVulkan/QueryPool.hpp>
-#include <vulkan/vulkan.h>
+#include <FslBase/Span/ReadOnlySpan.hpp>
+#include <Shared/PixelArt/Base/PixelArtSceneDesc.hpp>
+#include <array>
 #include <cstdint>
+#include <string>
+#include <vector>
 
 namespace Fsl
 {
-  //! Measures the time the GPU needs for a frame with two timestamp queries around the commands of the frame.
-  //! The result of a frame is read when the next frame is recorded, which is after the host waited for the GPU to finish the frame (the
-  //! host keeps one frame in flight), so reading it never waits.
-  class GpuFrameTimer final
+  //! The values of the adjustable constants of a scene, packed the way the shaders read them (slot i is Params[i / 4][i % 4])
+  class PixelArtParamSet
   {
-    VkDevice m_device{VK_NULL_HANDLE};
-    RapidVulkan::QueryPool m_queryPool;
-    //! The number of nanoseconds a timestamp counts in
-    double m_timestampPeriod{0.0};
-    //! The bits of a timestamp that are valid
-    uint64_t m_timestampMask{0};
-    bool m_hasPendingQuery{false};
-    TimeSpan m_gpuTime;
+    std::vector<PixelArtParamDesc> m_params;
+    std::array<float, PixelArtConfig::MaxParams> m_values{};
 
   public:
-    GpuFrameTimer(const GpuFrameTimer&) = delete;
-    GpuFrameTimer& operator=(const GpuFrameTimer&) = delete;
+    PixelArtParamSet() = default;
+    explicit PixelArtParamSet(std::vector<PixelArtParamDesc> params);
 
-    //! @param queueFamilyIndex the queue family the command buffers are submitted to
-    GpuFrameTimer(const Vulkan::VUDevice& device, const uint32_t queueFamilyIndex);
-    ~GpuFrameTimer() = default;
-
-    //! @return true if the queue supports timestamps (if not the GPU time stays zero)
-    [[nodiscard]] bool IsSupported() const noexcept
+    [[nodiscard]] uint32_t GetCount() const noexcept
     {
-      return m_queryPool.IsValid();
+      return static_cast<uint32_t>(m_params.size());
     }
 
-    //! @brief Call it first in the command buffer of a frame, outside a render pass.
-    void BeginFrame(const VkCommandBuffer hCmdBuffer);
-
-    //! @brief Call it last in the command buffer of a frame, outside a render pass.
-    void EndFrame(const VkCommandBuffer hCmdBuffer);
-
-    //! @return the GPU time of the last frame that was measured (zero if no frame was measured yet)
-    [[nodiscard]] TimeSpan GetGpuTime() const noexcept
+    [[nodiscard]] const PixelArtParamDesc& GetDesc(const uint32_t index) const
     {
-      return m_gpuTime;
+      return m_params.at(index);
+    }
+
+    [[nodiscard]] float GetValue(const uint32_t index) const
+    {
+      return m_values.at(index);
+    }
+
+    //! Set a value, it is clamped to the range of the param and snapped to its step
+    //! @return true if the value changed
+    bool SetValue(const uint32_t index, const float value);
+
+    //! Set the value of the param with the given name
+    //! @return false if the scene has no param with that name
+    bool TrySetValue(const std::string& name, const float value);
+
+    //! Copy the values of the params the other set has a param with the same name for
+    void CopyValuesByName(const PixelArtParamSet& other);
+
+    void ResetToDefaults();
+
+    //! All the values, as many as the shaders have room for (the unused ones are zero)
+    [[nodiscard]] ReadOnlySpan<float> GetPackedValues() const noexcept
+    {
+      return ReadOnlySpan<float>(m_values.data(), m_values.size());
     }
   };
 }

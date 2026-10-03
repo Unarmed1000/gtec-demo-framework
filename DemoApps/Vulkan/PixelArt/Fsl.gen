@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<FslBuildGen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../.Config/Schema/1/FslBuildGen.xsd">
+  <Executable Name="Vulkan.PixelArt" NoInclude="true" CreationYear="2026">
+    <ImportTemplate Name="DemoAppVulkan"/>
+    <Dependency Name="Shared.PixelArt.API.Vulkan"/>
+  </Executable>
+</FslBuildGen>

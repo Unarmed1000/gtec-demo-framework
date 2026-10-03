@@ -1,0 +1,51 @@
+{
+  "Name": "Magic Sphere",
+  "Description": "A solid glass orb full of golden plasma and stars, wrapped in a gold band with engraved, light-filled glyphs. Drag to orbit.",
+  "Output": "Linear",
+  "Passes": {
+    "BufferA": {
+      "iChannel0": { "Cubemap": "Textures/Cubemap/Yokohama3/Yokohama3_512.dds", "Filter": "Mipmap", "sRGB": true }
+    },
+    "BufferB": {
+      "iChannel0": { "Buffer": "A" }
+    },
+    "BufferC": {
+      "iChannel0": { "Buffer": "B" }
+    },
+    "BufferD": {
+      "iChannel0": { "Buffer": "C" }
+    },
+    "Image": {
+      "iChannel0": { "Buffer": "A" },
+      "iChannel1": { "Buffer": "C" },
+      "iChannel2": { "Buffer": "D" }
+    }
+  },
+  "Params": [
+    { "Name": "BAND_STEPS", "Label": "Band ray steps", "Group": "Quality", "Type": "int", "Default": 110, "Min": 16, "Max": 256 },
+    { "Name": "VOLUME_STEPS", "Label": "Plasma steps (lower on slow GPUs)", "Group": "Quality", "Type": "int", "Default": 64, "Min": 8, "Max": 128 },
+    { "Name": "OUTSIDE_STEPS", "Label": "Refracted ray steps", "Group": "Quality", "Type": "int", "Default": 48, "Min": 8, "Max": 96 },
+    { "Name": "RUNES", "Label": "Glyphs around the band", "Group": "Band", "Type": "int", "Default": 18, "Min": 4, "Max": 36 },
+    { "Name": "BAND_R", "Label": "Band radius", "Group": "Band", "Type": "float", "Default": 1.035, "Min": 1.0, "Max": 1.25, "Step": 0.005, "Format": "{:.3f}" },
+    { "Name": "BAND_H", "Label": "Band half width", "Group": "Band", "Type": "float", "Default": 0.17, "Min": 0.05, "Max": 0.35, "Step": 0.005, "Format": "{:.3f}" },
+    { "Name": "FLOOR_Y", "Label": "Floor height", "Group": "Room", "Type": "float", "Default": -1.11, "Min": -2.0, "Max": -1.0, "Step": 0.01 },
+    { "Name": "IOR", "Label": "Refractive index", "Group": "Glass", "Type": "float", "Default": 1.46, "Min": 1.0, "Max": 2.4, "Step": 0.01 },
+    { "Name": "DISP", "Label": "Dispersion", "Group": "Glass", "Type": "float", "Default": 0.010, "Min": 0.0, "Max": 0.08, "Step": 0.001, "Format": "{:.3f}" },
+    { "Name": "MILK", "Label": "Milkiness", "Group": "Glass", "Type": "float", "Default": 0.008, "Min": 0.0, "Max": 0.1, "Step": 0.001, "Format": "{:.3f}" },
+    { "Name": "ENV_GAIN", "Label": "Reflections", "Group": "Light", "Type": "float", "Default": 0.4, "Min": 0.0, "Max": 2.0, "Step": 0.01 },
+    { "Name": "PLASMA", "Label": "Plasma", "Group": "Light", "Type": "float", "Default": 3.5, "Min": 0.0, "Max": 10.0, "Step": 0.1, "Format": "{:.1f}" },
+    { "Name": "SMOKE", "Label": "Smoke (try 4)", "Group": "Light", "Type": "float", "Default": 0.0, "Min": 0.0, "Max": 8.0, "Step": 0.1, "Format": "{:.1f}" },
+    { "Name": "GLYPH_GLOW", "Label": "Glyph glow", "Group": "Light", "Type": "float", "Default": 6.0, "Min": 0.0, "Max": 20.0, "Step": 0.1, "Format": "{:.1f}" },
+    { "Name": "THRESHOLD", "Label": "Brightness that glows", "Group": "Glow", "Type": "float", "Default": 1.0, "Min": 0.0, "Max": 4.0, "Step": 0.05 },
+    { "Name": "HALO_TAPS", "Label": "Halo blur taps", "Group": "Glow", "Type": "int", "Default": 14, "Min": 1, "Max": 32 },
+    { "Name": "HALO_SIGMA", "Label": "Halo blur sigma", "Group": "Glow", "Type": "float", "Default": 5.0, "Min": 0.5, "Max": 16.0, "Step": 0.1, "Format": "{:.1f}" },
+    { "Name": "HALO_STRIDE", "Label": "Halo blur stride", "Group": "Glow", "Type": "float", "Default": 1.0, "Min": 0.25, "Max": 4.0, "Step": 0.05 },
+    { "Name": "AURA_TAPS", "Label": "Aura blur taps", "Group": "Glow", "Type": "int", "Default": 22, "Min": 1, "Max": 48 },
+    { "Name": "AURA_SIGMA", "Label": "Aura blur sigma", "Group": "Glow", "Type": "float", "Default": 9.0, "Min": 0.5, "Max": 24.0, "Step": 0.1, "Format": "{:.1f}" },
+    { "Name": "AURA_STRIDE", "Label": "Aura blur stride", "Group": "Glow", "Type": "float", "Default": 3.5, "Min": 0.5, "Max": 8.0, "Step": 0.05 },
+    { "Name": "HALO", "Label": "Halo strength", "Group": "Image", "Type": "float", "Default": 0.9, "Min": 0.0, "Max": 4.0, "Step": 0.05 },
+    { "Name": "AURA", "Label": "Aura strength", "Group": "Image", "Type": "float", "Default": 1.5, "Min": 0.0, "Max": 4.0, "Step": 0.05 },
+    { "Name": "EXPOSURE", "Label": "Exposure", "Group": "Image", "Type": "float", "Default": 1.0, "Min": 0.0, "Max": 4.0, "Step": 0.05 },
+    { "Name": "VIGNETTE", "Label": "Vignette", "Group": "Image", "Type": "float", "Default": 0.3, "Min": 0.0, "Max": 1.0, "Step": 0.01 }
+  ]
+}

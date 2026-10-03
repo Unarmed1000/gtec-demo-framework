@@ -241,7 +241,7 @@ namespace Fsl
           const KeyEvent keyEvent(*pBasicEvent);
 
           // Call all registered extensions
-          CallExtensions(m_extensions, [keyEvent](IDemoAppExtension& rExt) { rExt.OnKeyEvent(keyEvent); });
+          CallExtensions(m_extensions, [&keyEvent](IDemoAppExtension& rExt) { rExt.OnKeyEvent(keyEvent); });
 
           OnKeyEvent(keyEvent);
           if (!keyEvent.IsHandled())
@@ -254,7 +254,7 @@ namespace Fsl
         {
           const MouseButtonEvent mouseEvent(*pBasicEvent);
           // Call all registered extensions
-          CallExtensions(m_extensions, [mouseEvent](IDemoAppExtension& rExt) { rExt.OnMouseButtonEvent(mouseEvent); });
+          CallExtensions(m_extensions, [&mouseEvent](IDemoAppExtension& rExt) { rExt.OnMouseButtonEvent(mouseEvent); });
 
           OnMouseButtonEvent(mouseEvent);
           break;
@@ -263,7 +263,7 @@ namespace Fsl
         {
           const MouseMoveEvent mouseEvent(*pBasicEvent);
           // Call all registered extensions
-          CallExtensions(m_extensions, [mouseEvent](IDemoAppExtension& rExt) { rExt.OnMouseMoveEvent(mouseEvent); });
+          CallExtensions(m_extensions, [&mouseEvent](IDemoAppExtension& rExt) { rExt.OnMouseMoveEvent(mouseEvent); });
           OnMouseMoveEvent(mouseEvent);
           break;
         }
@@ -271,7 +271,7 @@ namespace Fsl
         {
           const MouseWheelEvent mouseEvent(*pBasicEvent);
           // Call all registered extensions
-          CallExtensions(m_extensions, [mouseEvent](IDemoAppExtension& rExt) { rExt.OnMouseWheelEvent(mouseEvent); });
+          CallExtensions(m_extensions, [&mouseEvent](IDemoAppExtension& rExt) { rExt.OnMouseWheelEvent(mouseEvent); });
           OnMouseWheelEvent(mouseEvent);
           break;
         }
@@ -279,7 +279,7 @@ namespace Fsl
         {
           const RawMouseMoveEvent mouseEvent(*pBasicEvent);
           // Call all registered extensions
-          CallExtensions(m_extensions, [mouseEvent](IDemoAppExtension& rExt) { rExt.OnRawMouseMoveEvent(mouseEvent); });
+          CallExtensions(m_extensions, [&mouseEvent](IDemoAppExtension& rExt) { rExt.OnRawMouseMoveEvent(mouseEvent); });
           OnRawMouseMoveEvent(mouseEvent);
           break;
         }
@@ -287,7 +287,7 @@ namespace Fsl
         {
           const TimeStateEvent timeStateEvent(*pBasicEvent);
           // Call all registered extensions
-          CallExtensions(m_extensions, [timeStateEvent](IDemoAppExtension& rExt) { rExt.OnTimeStateEvent(timeStateEvent); });
+          CallExtensions(m_extensions, [&timeStateEvent](IDemoAppExtension& rExt) { rExt.OnTimeStateEvent(timeStateEvent); });
           OnTimeStateEvent(timeStateEvent);
           break;
         }

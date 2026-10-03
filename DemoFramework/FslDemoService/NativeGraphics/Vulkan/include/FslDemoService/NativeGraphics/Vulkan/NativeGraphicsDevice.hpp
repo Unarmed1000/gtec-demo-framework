@@ -72,6 +72,8 @@ namespace Fsl::Vulkan
       VkPipelineLayout BoundPipelineLayout{VK_NULL_HANDLE};
       VkDescriptorSet BoundDescriptorSet{VK_NULL_HANDLE};
       uint32_t CameraChangeId{0};
+      //! True once the SDF smoothing push constant was given a value in this command section
+      bool SdfSmoothingPushed{false};
 
       CommandSection() = default;
       explicit CommandSection(const bool isActive)

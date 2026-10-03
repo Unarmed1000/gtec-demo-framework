@@ -23,8 +23,8 @@
 //****************************************************************************************************************************************************
 
 #include <FslDemoApp/Vulkan/Basic/DemoAppVulkanBasic.hpp>
+#include <FslUtil/Vulkan1_0/VUGpuFrameTimer.hpp>
 #include <Shared/FramePacing/FramePacingShared.hpp>
-#include "GpuFrameTimer.hpp"
 #include "RaymarchBackground.hpp"
 
 namespace Fsl
@@ -59,7 +59,7 @@ namespace Fsl
     //! The raymarched background (the GPU load of the sample)
     RaymarchBackground m_background;
     //! The frame pacer is told how long the GPU needs for a frame
-    GpuFrameTimer m_gpuTimer;
+    Vulkan::VUGpuFrameTimer m_gpuTimer;
 
   public:
     explicit FramePacing(const DemoAppConfig& config);

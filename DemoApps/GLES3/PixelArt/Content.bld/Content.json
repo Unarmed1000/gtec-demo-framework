@@ -1,0 +1,33 @@
+{
+  "ContentBuilder" : {
+    "Version": "1",
+    "Content.SyncList": [
+      {
+        "SourcePath" : "${ProjectRoot}/Resources/Source/BasicUI/Gen",
+        "Content": [
+          "NonLinear/UIAtlas/License.json",
+          "NonLinear/UIAtlas/UIAtlas_*dpi.bta",
+          "NonLinear/UIAtlas/UIAtlas_*dpi.png",
+          "NonLinear/UIAtlas/UIAtlas_*dpi_Font.nbf",
+          "Linear/UIAtlas/License.json",
+          "Linear/UIAtlas/UIAtlas_*dpi.bta",
+          "Linear/UIAtlas/UIAtlas_*dpi.png",
+          "Linear/UIAtlas/UIAtlas_*dpi_Font.nbf"
+        ]
+      },
+      {
+        "SourcePath" : "${ProjectRoot}/DemoApps/Shared",
+        "Content": [
+          "PixelArt/Shaders"
+        ]
+      },
+      {
+        "SourcePath" : "${ProjectRoot}/Resources",
+        "Content": [
+          "Textures/Cubemap/Yokohama3/Yokohama3_512.dds",
+          "Textures/Cubemap/Yokohama3/License.json"
+        ]
+      }
+    ]
+  }
+}

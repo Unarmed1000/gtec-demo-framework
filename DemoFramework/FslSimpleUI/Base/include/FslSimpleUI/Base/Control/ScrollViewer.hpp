@@ -65,6 +65,9 @@ namespace Fsl::UI
   private:
     ScrollGestureHandler m_gestureHandler;
     PxPoint2 m_scrollPositionOffsetPx;
+    //! The arrange found that the scroll position has to animate, the animation is started after the layout (WinPostLayout) as the
+    //! window flags must not be changed during the layout
+    bool m_animationCheckPending{false};
 
     ContentSpriteMesh m_cursorX;
     ContentSpriteMesh m_cursorY;
@@ -102,6 +105,7 @@ namespace Fsl::UI
     explicit ScrollViewer(const std::shared_ptr<BaseWindowContext>& context);
 
     void WinResolutionChanged(const ResolutionChangedInfo& info) final;
+    void WinPostLayout() final;
 
     ScrollModeFlags GetScrollMode() const noexcept;
     bool SetScrollMode(const ScrollModeFlags value) noexcept;

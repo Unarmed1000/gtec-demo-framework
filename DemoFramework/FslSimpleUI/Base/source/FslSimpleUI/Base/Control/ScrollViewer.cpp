@@ -179,7 +179,7 @@ namespace Fsl::UI
     SetAlignmentY(ItemAlignment::Stretch);
     SetScrollMode(ScrollModeFlags::Translate);
 
-    Enable(WindowFlags(WindowFlags::ClickInput | WindowFlags::DrawEnabled));
+    Enable(WindowFlags(WindowFlags::ClickInput | WindowFlags::DrawEnabled | WindowFlags::PostLayoutEnabled));
   }
 
 
@@ -530,12 +530,24 @@ namespace Fsl::UI
     m_scrollPositionOffsetPx = positionOffsetPx;
     base_type::CustomArrange(desiredlayoutSizePx, positionOffsetPx);
 
-    // After the arrange we need to check if we need to animate
+    // After the arrange we need to check if we need to animate. Starting the animation enables the update calls of the window, which
+    // must not be done during the layout, so it is done in WinPostLayout.
     if (m_gestureHandler.UpdateAnimationState(false))
     {
-      CheckAnimationState();
+      m_animationCheckPending = true;
     }
     return finalSizePx;
+  }
+
+
+  void ScrollViewer::WinPostLayout()
+  {
+    base_type::WinPostLayout();
+    if (m_animationCheckPending)
+    {
+      m_animationCheckPending = false;
+      CheckAnimationState();
+    }
   }
 
 

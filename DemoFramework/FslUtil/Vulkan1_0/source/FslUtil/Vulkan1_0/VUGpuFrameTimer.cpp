@@ -20,21 +20,21 @@
 //* EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //****************************************************************************************************************************************************
 
-#include "GpuFrameTimer.hpp"
 #include <FslBase/Log/Log3Fmt.hpp>
+#include <FslUtil/Vulkan1_0/VUGpuFrameTimer.hpp>
 #include <array>
 #include <cmath>
-#include <vector>
+#include <stdexcept>
 
-namespace Fsl
+namespace Fsl::Vulkan
 {
   namespace
   {
     namespace LocalConfig
     {
+      constexpr uint32_t QueriesPerSlot = 2;
       constexpr uint32_t QueryBegin = 0;
       constexpr uint32_t QueryEnd = 1;
-      constexpr uint32_t QueryCount = 2;
       constexpr double NanosecondsPerTick = 100.0;
     }
 
@@ -50,15 +50,20 @@ namespace Fsl
   }
 
 
-  GpuFrameTimer::GpuFrameTimer(const Vulkan::VUDevice& device, const uint32_t queueFamilyIndex)
+  VUGpuFrameTimer::VUGpuFrameTimer(const VUDevice& device, const uint32_t queueFamilyIndex, const uint32_t maxFramesInFlight)
     : m_device(device.Get())
+    , m_slots(maxFramesInFlight)
   {
+    if (maxFramesInFlight == 0)
+    {
+      throw std::invalid_argument("maxFramesInFlight must be at least one");
+    }
     const auto& physicalDevice = device.GetPhysicalDevice();
     const uint32_t validBits = GetTimestampValidBits(physicalDevice.Device, queueFamilyIndex);
     m_timestampPeriod = static_cast<double>(physicalDevice.Properties.limits.timestampPeriod);
     if (validBits == 0u || m_timestampPeriod <= 0.0)
     {
-      FSLLOG3_INFO("GPU timestamps are not supported, the frame pacer is only told the CPU time of a frame");
+      FSLLOG3_INFO("GPU timestamps are not supported by the queue family, the GPU time of a frame is not measured");
       return;
     }
     m_timestampMask = validBits >= 64u ? ~uint64_t{0} : ((uint64_t{1} << validBits) - 1u);
@@ -66,45 +71,50 @@ namespace Fsl
     VkQueryPoolCreateInfo queryPoolInfo{};
     queryPoolInfo.sType = VK_STRUCTURE_TYPE_QUERY_POOL_CREATE_INFO;
     queryPoolInfo.queryType = VK_QUERY_TYPE_TIMESTAMP;
-    queryPoolInfo.queryCount = LocalConfig::QueryCount;
+    queryPoolInfo.queryCount = maxFramesInFlight * LocalConfig::QueriesPerSlot;
     m_queryPool.Reset(m_device, queryPoolInfo);
   }
 
 
-  void GpuFrameTimer::BeginFrame(const VkCommandBuffer hCmdBuffer)
+  void VUGpuFrameTimer::BeginFrame(const VkCommandBuffer hCmdBuffer, const uint32_t frameIndex)
   {
     if (!m_queryPool.IsValid())
     {
       return;
     }
+    SlotRecord& rSlot = m_slots.at(frameIndex);
+    const uint32_t firstQuery = frameIndex * LocalConfig::QueriesPerSlot;
 
-    if (m_hasPendingQuery)
+    if (rSlot.HasPendingQuery)
     {
-      // The previous frame: the GPU finished it before the host let this frame draw, so its timestamps are there. If they are not
-      // (the frame was dropped) the old time is kept.
-      std::array<uint64_t, LocalConfig::QueryCount> timestamps{};
-      const VkResult result = vkGetQueryPoolResults(m_device, m_queryPool.Get(), 0, LocalConfig::QueryCount, sizeof(uint64_t) * timestamps.size(),
-                                                    timestamps.data(), sizeof(uint64_t), VK_QUERY_RESULT_64_BIT);
+      // The GPU finished the last frame of this slot before the host let the slot record again, so its timestamps are there. If they are
+      // not (the frame was dropped) the old time is kept.
+      std::array<uint64_t, LocalConfig::QueriesPerSlot> timestamps{};
+      const VkResult result =
+        vkGetQueryPoolResults(m_device, m_queryPool.Get(), firstQuery, LocalConfig::QueriesPerSlot, sizeof(uint64_t) * timestamps.size(),
+                              timestamps.data(), sizeof(uint64_t), VK_QUERY_RESULT_64_BIT);
       if (result == VK_SUCCESS)
       {
         const uint64_t elapsed = (timestamps[LocalConfig::QueryEnd] - timestamps[LocalConfig::QueryBegin]) & m_timestampMask;
         m_gpuTime = TimeSpan(std::llround((static_cast<double>(elapsed) * m_timestampPeriod) / LocalConfig::NanosecondsPerTick));
+        ++m_measurementId;
       }
-      m_hasPendingQuery = false;
+      rSlot.HasPendingQuery = false;
     }
 
-    vkCmdResetQueryPool(hCmdBuffer, m_queryPool.Get(), 0, LocalConfig::QueryCount);
-    vkCmdWriteTimestamp(hCmdBuffer, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, m_queryPool.Get(), LocalConfig::QueryBegin);
+    vkCmdResetQueryPool(hCmdBuffer, m_queryPool.Get(), firstQuery, LocalConfig::QueriesPerSlot);
+    vkCmdWriteTimestamp(hCmdBuffer, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, m_queryPool.Get(), firstQuery + LocalConfig::QueryBegin);
   }
 
 
-  void GpuFrameTimer::EndFrame(const VkCommandBuffer hCmdBuffer)
+  void VUGpuFrameTimer::EndFrame(const VkCommandBuffer hCmdBuffer, const uint32_t frameIndex)
   {
     if (!m_queryPool.IsValid())
     {
       return;
     }
-    vkCmdWriteTimestamp(hCmdBuffer, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, m_queryPool.Get(), LocalConfig::QueryEnd);
-    m_hasPendingQuery = true;
+    const uint32_t firstQuery = frameIndex * LocalConfig::QueriesPerSlot;
+    vkCmdWriteTimestamp(hCmdBuffer, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, m_queryPool.Get(), firstQuery + LocalConfig::QueryEnd);
+    m_slots.at(frameIndex).HasPendingQuery = true;
   }
 }

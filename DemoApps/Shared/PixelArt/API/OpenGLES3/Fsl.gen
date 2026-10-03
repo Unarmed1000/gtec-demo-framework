@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<FslBuildGen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../../../.Config/Schema/1/FslBuildGen.xsd">
+  <Library Name="Shared.PixelArt.API.OpenGLES3" CreationYear="2026">
+    <Dependency Name="FslUtil.OpenGLES3"/>
+    <Dependency Name="Shared.PixelArt.Base"/>
+  </Library>
+</FslBuildGen>

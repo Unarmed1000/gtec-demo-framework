@@ -1,0 +1,12 @@
+{
+  "Name": "Raymarching Primitives",
+  "Description": "Inigo Quilez's distance functions to simple primitives (https://www.shadertoy.com/view/Xds3zN, MIT License). Drag to orbit.",
+  "Output": "Gamma",
+  "Passes": {
+    "Image": {}
+  },
+  "Params": [
+    { "Name": "AA", "Label": "Anti-aliasing (samples per axis)", "Group": "Quality", "Type": "int", "Default": 2, "Min": 1, "Max": 3 },
+    { "Name": "MARCH_STEPS", "Label": "Ray march steps", "Group": "Quality", "Type": "int", "Default": 70, "Min": 16, "Max": 200 }
+  ]
+}

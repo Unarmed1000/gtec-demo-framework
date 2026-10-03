@@ -1,0 +1,19 @@
+{
+  "Name": "Let's Self Reflect",
+  "Description": "A Platonic solid with inner mirrors and a glass sphere inside (https://www.shadertoy.com/view/XfyXRV, CC0). The parameters the author lists for tinkering are adjustable.",
+  "Output": "Gamma",
+  "Passes": {
+    "Image": {}
+  },
+  "Params": [
+    { "Name": "rotation_speed", "Label": "Rotation speed", "Group": "Animation", "Type": "float", "Default": 0.25, "Min": 0.0, "Max": 2.0, "Step": 0.01 },
+    { "Name": "poly_U", "Label": "Solid U", "Group": "Solid", "Type": "float", "Default": 1.0, "Min": 0.0, "Max": 4.0, "Step": 0.05 },
+    { "Name": "poly_V", "Label": "Solid V", "Group": "Solid", "Type": "float", "Default": 0.5, "Min": 0.0, "Max": 4.0, "Step": 0.05 },
+    { "Name": "poly_W", "Label": "Solid W", "Group": "Solid", "Type": "float", "Default": 1.0, "Min": 0.0, "Max": 4.0, "Step": 0.05 },
+    { "Name": "poly_type", "Label": "Solid type (symmetry)", "Group": "Solid", "Type": "int", "Default": 3, "Min": 2, "Max": 5 },
+    { "Name": "poly_zoom", "Label": "Solid size", "Group": "Solid", "Type": "float", "Default": 2.0, "Min": 0.5, "Max": 3.0, "Step": 0.05 },
+    { "Name": "inner_sphere", "Label": "Inner sphere radius", "Group": "Inside", "Type": "float", "Default": 1.0, "Min": 0.0, "Max": 2.0, "Step": 0.01 },
+    { "Name": "refr_index", "Label": "Refractive index", "Group": "Inside", "Type": "float", "Default": 0.9, "Min": 0.5, "Max": 1.5, "Step": 0.01 },
+    { "Name": "MAX_BOUNCES2", "Label": "Inner bounces", "Group": "Quality", "Type": "int", "Default": 6, "Min": 1, "Max": 12 }
+  ]
+}

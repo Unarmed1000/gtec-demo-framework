@@ -1,0 +1,41 @@
+{
+  "ComplexLicense": {
+    "Licenses": [
+      {
+        "Origin": "Google",
+        "License": "Apache2.0",
+        "Comment": "https://material.io/resources/icons/?style=round",
+        "URL": "https://github.com/google/material-design-icons"
+      },
+      {
+        "Origin": "NXP",
+        "License": "CC0-1.0"
+      },
+      {
+        "Origin": "Emil Persson",
+        "License": "CC-BY-3.0",
+        "Comment": "The Yokohama3 cubemap (Magic Sphere)",
+        "URL": "http://www.humus.name"
+      },
+      {
+        "Origin": "Mana Battery",
+        "License": "BSD-3-Clause",
+        "Comment": "The Magic Sphere scene",
+        "URL": "https://www.shadertoy.com/view/fXV3WK"
+      },
+      {
+        "Origin": "Inigo Quilez",
+        "License": "MIT",
+        "Comment": "The Raymarching Primitives scene",
+        "URL": "https://www.shadertoy.com/view/Xds3zN"
+      },
+      {
+        "Origin": "mrange",
+        "License": "CC0-1.0",
+        "Comment": "The Let's Self Reflect scene",
+        "URL": "https://www.shadertoy.com/view/XfyXRV"
+      }
+    ],
+    "Comment": "Merged complex license for everything that could be used in a screenshot"
+  }
+}

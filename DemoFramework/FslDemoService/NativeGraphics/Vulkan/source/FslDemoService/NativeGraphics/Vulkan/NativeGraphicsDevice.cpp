@@ -364,6 +364,18 @@ namespace Fsl::Vulkan
     if (rRecord.IsSdfBased)
     {
       CmdPushConstants(m_frame.CommandBuffer, m_frame.Commands.BoundPipelineLayout, materialVariables, rRecord.VarSdfSmoothing);
+      m_frame.Commands.SdfSmoothingPushed = true;
+    }
+    else if (!m_frame.Commands.SdfSmoothingPushed)
+    {
+      // All materials share one pipeline layout, so its SDF smoothing range is part of every pipeline. It is given a value once, as the
+      // validation layer reports a range that is used without being set (the shaders of the other materials do not read it).
+      constexpr float UnusedSdfSmoothing = 0.0f;
+      const NativeGraphicsMaterialFactory::VariableInfo& varInfo = rRecord.VarSdfSmoothing;
+      assert(varInfo.ByteSize == sizeof(UnusedSdfSmoothing));
+      vkCmdPushConstants(m_frame.CommandBuffer, m_frame.Commands.BoundPipelineLayout, varInfo.ShaderStageFlags, varInfo.VariableElement.Offset,
+                         varInfo.ByteSize, &UnusedSdfSmoothing);
+      m_frame.Commands.SdfSmoothingPushed = true;
     }
   }
 

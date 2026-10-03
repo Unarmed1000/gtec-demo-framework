@@ -46,6 +46,7 @@ To [main document](../../README.md)
     * [OpenCVMatToUI](#opencvmattoui)
     * [OpenVX101](#openvx101)
     * [ParticleSystem](#particlesystem)
+    * [PixelArt](#pixelart)
     * [RenderToTexture](#rendertotexture)
     * [S01_SimpleTriangle](#s01_simpletriangle)
     * [S02_ColoredTriangle](#s02_coloredtriangle)
@@ -423,6 +424,12 @@ Creates a configurable particle system where you can select the type of primitiv
 .
 
 .
+
+### [PixelArt](PixelArt)
+
+<a href="PixelArt/Example.jpg"><img src="PixelArt/Example.jpg" height="108px" title="GLES3.PixelArt"></a>
+
+A player for shadertoy style scenes: the tabs, channels and uniforms of shadertoy, with every constant a scene exposes adjustable in the UI.
 
 ### [RenderToTexture](RenderToTexture)
 
