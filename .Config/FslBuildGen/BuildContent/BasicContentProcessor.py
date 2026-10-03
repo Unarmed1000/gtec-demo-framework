@@ -31,11 +31,14 @@
 #
 # ****************************************************************************************************************************************************
 
+import os
 import shlex
 import subprocess
 
-from FslBuildGen import IOUtil
+from FslBuildGen import IOUtil, TextFileReader
+from FslBuildGen.BuildContent import MakeDependencyFile
 from FslBuildGen.BuildContent.ContentProcessor import ContentProcessor
+from FslBuildGen.BuildContent.ContentToolDependencyFile import g_contentToolDependencyFile
 from FslBuildGen.BuildContent.PathRecord import PathRecord
 from FslBuildGen.BuildContent.ToolFinder import ToolFinder
 from FslBuildGen.Log import Log
@@ -87,7 +90,7 @@ class BasicContentProcessor(ContentProcessor):
                 res.append(argument)
         return res
 
-    def Process(self, log: Log, configDisableWrite: bool, contentBuildPath: str, contentOutputPath: str, contentFileRecord: PathRecord) -> None:
+    def Process(self, log: Log, configDisableWrite: bool, contentBuildPath: str, contentOutputPath: str, contentFileRecord: PathRecord) -> list[str] | None:
         # we ask the tool to write to a temporary file so that we can ensure that the output file is only modified
         # if the content was changed
         tmpOutputFileName = self.GetTempFileName(contentBuildPath, contentFileRecord)
@@ -98,10 +101,16 @@ class BasicContentProcessor(ContentProcessor):
             # if write is disabled we do a "tool-command" check directly since the subprocess call can't fail
             # which would normally trigger the check
             self.__ToolFinder.CheckToolCommand(self.ToolCommand, self.ToolDescription)
-            return
+            return None
 
         outputFileName = self.GetOutputFileName(log, contentOutputPath, contentFileRecord)
         self.EnsureDirectoryExist(configDisableWrite, outputFileName)
+
+        # Tools that can list the files the content file includes write them to a dependency file
+        tmpDependencyFileName = self.GetTempFileName(contentBuildPath, contentFileRecord, ".d.tmp")
+        dependencyArguments = g_contentToolDependencyFile.TryGetArguments(log, self.ToolCommand, tmpDependencyFileName)
+        if dependencyArguments is not None:
+            buildCommand += dependencyArguments
 
         try:
             result = subprocess.call(buildCommand, cwd=contentBuildPath)
@@ -109,8 +118,22 @@ class BasicContentProcessor(ContentProcessor):
                 self.__ToolFinder.CheckToolCommand(self.ToolCommand, self.ToolDescription)
                 raise Exception(f"{self.ToolCommand}: Failed to process file '{contentFileRecord.ResolvedPath}' ({self.ToolDescription})")
             IOUtil.CopySmallFile(tmpOutputFileName, outputFileName)
+            if dependencyArguments is None:
+                return None
+            return self.__ReadDependencyFile(log, tmpDependencyFileName, contentBuildPath, contentFileRecord)
         except:
             self.__ToolFinder.CheckToolCommand(self.ToolCommand, self.ToolDescription)
             raise
         finally:
             IOUtil.RemoveFile(tmpOutputFileName)
+            if dependencyArguments is not None:
+                IOUtil.RemoveFile(tmpDependencyFileName)
+
+    def __ReadDependencyFile(self, log: Log, dependencyFileName: str, contentBuildPath: str, contentFileRecord: PathRecord) -> list[str] | None:
+        """The files the tool listed in its dependency file (relative paths are relative to the directory the tool ran in)"""
+        content = TextFileReader.TryReadUTF8OrLocale(log, dependencyFileName, "dependency file", skipBom=True, warn=False)
+        if content is None:
+            log.DoPrintWarning(f"{self.ToolCommand} did not write the dependency file for '{contentFileRecord.ResolvedPath}', so its includes are not tracked")
+            return None
+        dependencies = MakeDependencyFile.ParseMakeDependencyFile(content).Prerequisites
+        return [IOUtil.NormalizePath(os.path.join(contentBuildPath, entry)) for entry in dependencies]

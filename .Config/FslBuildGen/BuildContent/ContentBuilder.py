@@ -36,9 +36,11 @@ import shutil
 from FslBuildGen import IOUtil, ToolSharedValues
 from FslBuildGen.BuildContent.BasicContentProcessor import BasicContentProcessor
 from FslBuildGen.BuildContent.ContentBuildResult import ContentBuildResult
+from FslBuildGen.BuildContent.ContentDependencyCache import ContentDependencyCache, CreateOutputDependencies
 
 # from FslBuildGen.BuildContent.ContentProcessor import ContentProcessor
 from FslBuildGen.BuildContent.ContentRootRecord import ContentRootRecord
+from FslBuildGen.BuildContent.MakeDependencyFile import BuildMakeDependencyFile
 from FslBuildGen.BuildContent.PathRecord import PathRecord
 from FslBuildGen.BuildContent.PathVariables import PathVariables
 from FslBuildGen.BuildContent.Processor.ContentBuildCommandFile import ContentBuildCommandFile
@@ -121,7 +123,9 @@ class Builder:
         contentOutputPath: str,
         contentProcessorManager: ContentProcessorManager,
         outputRequired: bool,
+        dependencyFile: str | None = None,
     ) -> None:
+        """dependencyFile: a make style dependency file to write for the build system, listing the files the outputs depend on beyond Content.bld"""
         super().__init__()
         self.Result = ContentBuildResult()
 
@@ -134,6 +138,7 @@ class Builder:
 
         absoluteCacheFileName = IOUtil.Join(packageBuildPath, "_ContentBuildCache.fsl")
         absoluteOutputCacheFileName = IOUtil.Join(packageBuildPath, "_ContentBuildCacheOutput.fsl")
+        absoluteDependencyCacheFileName = IOUtil.Join(packageBuildPath, "_ContentBuildCacheDependencies.fsl")
 
         srcsSyncState = BuildState.GenerateSyncState(log, absoluteCacheFileName, sourceContent.AllContentSource, True)
         outputSyncState = BuildState.GenerateOutputSyncState(log, absoluteOutputCacheFileName, contentOutputPath, True)
@@ -147,24 +152,35 @@ class Builder:
         if not configDisableWrite:
             IOUtil.SafeMakeDirs(contentOutputPath)
 
+        dependencyCache = ContentDependencyCache(log, absoluteDependencyCacheFileName)
+
         self.__ProcessSyncFiles(log, contentBuildPath, contentOutputPath, sourceContent.ContentSource, srcsSyncState, outputSyncState)
-        self.__ProcessContentFiles(
-            log,
-            configDisableWrite,
-            contentBuildPath,
-            contentOutputPath,
-            contentProcessorManager,
-            sourceContent.ContentBuildSource,
-            srcsSyncState,
-            outputSyncState,
-        )
+        try:
+            self.__ProcessContentFiles(
+                log,
+                configDisableWrite,
+                contentBuildPath,
+                contentOutputPath,
+                contentProcessorManager,
+                sourceContent.ContentBuildSource,
+                srcsSyncState,
+                outputSyncState,
+                dependencyCache,
+            )
+        except:
+            if not configDisableWrite:
+                dependencyCache.Save(False)
+            raise
         srcsSyncState.Save()
         outputSyncState.Save()
 
         if not configDisableWrite:
+            dependencyCache.Save(True)
             missingOutputFiles = self.Result.GetMissingOutputFiles()
             if len(missingOutputFiles) > 0:
                 raise Exception("The content build did not create: {}".format(", ".join(f"'{entry}'" for entry in missingOutputFiles)))
+            if dependencyFile is not None:
+                IOUtil.WriteFileUTF8IfChanged(dependencyFile, BuildMakeDependencyFile(sorted(self.Result.OutputFiles), dependencyCache.GetAllDependencies()))
 
     def __GetSyncStateFileName(self, contentBuildPath: str, contentFile: str) -> str:
         if contentFile.startswith(contentBuildPath):
@@ -229,6 +245,7 @@ class Builder:
         srcContent: Content,
         syncState: BuildState.SyncState,
         outputSyncState: BuildState.SyncState,
+        dependencyCache: ContentDependencyCache,
     ) -> None:
         dstRoot = ContentRootRecord(log, contentOutputPath)
         for contentFile in srcContent.Files:
@@ -256,10 +273,19 @@ class Builder:
                         or outputContentState.CacheState != BuildState.CacheState.Unmodified
                         or (contentState is None or contentState.Checksum != outputContentState.TagChecksum)
                     )
+                    if not buildResource:
+                        # The files the content file includes can change while the content file does not
+                        buildReason = dependencyCache.TryGetBuildReason(syncStateOutputFileName)
+                        if buildReason is not None:
+                            log.LogPrintVerbose(1, f"Building '{contentFile.ResolvedPath}' as {buildReason}")
+                            buildResource = True
 
                 if buildResource:
                     try:
-                        processor.Process(log, configDisableWrite, contentBuildPath, contentOutputPath, contentFile)
+                        dependencies = processor.Process(log, configDisableWrite, contentBuildPath, contentOutputPath, contentFile)
+                        if not configDisableWrite:
+                            outputName = self.__GetSyncStateFileName(contentOutputPath, outputFileName)
+                            dependencyCache.Set(outputName, CreateOutputDependencies(contentFile.ResolvedPath, dependencies))
                     except:
                         # Save if a exception occured to prevent reprocessing the working files, but we invalidate
                         outputSyncState.Save()
@@ -297,6 +323,7 @@ def Build(
     packagePath: PackagePath,
     featureList: list[str],
     outputPath: str | None = None,
+    dependencyFile: str | None = None,
 ) -> None:
     currentPath = packagePath.AbsoluteDirPath
     contentBuildDir = ToolSharedValues.CONTENT_BUILD_FOLDER_NAME
@@ -317,6 +344,8 @@ def Build(
         IOUtil.SafeMakeDirs(packageBuildPath)
 
     contentProcessorManager = GetContentProcessorManager(log, toolConfig, featureList)
-    builder = Builder(log, configDisableWrite, toolConfig, packageBuildPath, contentBuildPath, contentOutputPath, contentProcessorManager, outputRequired)
+    builder = Builder(
+        log, configDisableWrite, toolConfig, packageBuildPath, contentBuildPath, contentOutputPath, contentProcessorManager, outputRequired, dependencyFile
+    )
     # Always report what was done, a build log should show that the content was built
     log.DoPrint(builder.Result.GetSummary(currentPath, contentOutputPath))

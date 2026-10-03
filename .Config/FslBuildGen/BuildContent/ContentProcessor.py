@@ -46,8 +46,8 @@ class ContentProcessor:
         self.FileExtensionSet = fileExtensionSet
         self.__FeatureConditionInterpreter = ConditionInterpreter(name, featureRequirements)
 
-    def GetTempFileName(self, contentPath: str, contentFileRecord: PathRecord) -> str:
-        fileName = IOUtil.GetFileName(contentFileRecord.RelativePath) + ".tmp"
+    def GetTempFileName(self, contentPath: str, contentFileRecord: PathRecord, extension: str = ".tmp") -> str:
+        fileName = IOUtil.GetFileName(contentFileRecord.RelativePath) + extension
         tempFileName = IOUtil.Join(contentPath, fileName)
         while IOUtil.IsFile(tempFileName):
             fileName = "_" + fileName

@@ -63,6 +63,7 @@ from FslBuildGen.VariableContextHelper import VariableContextHelper
 
 
 class DefaultValue:
+    DependencyFile: str | None = None
     Output: str | None = None
     PackageConfigurationType = PluginSharedValues.TYPE_DEFAULT
     Project: str | None = None
@@ -72,6 +73,7 @@ class DefaultValue:
 class LocalToolConfig(ToolAppConfig):
     def __init__(self) -> None:
         super().__init__()
+        self.DependencyFile = DefaultValue.DependencyFile
         self.Output = DefaultValue.Output
         self.PackageConfigurationType = DefaultValue.PackageConfigurationType
         self.Project = DefaultValue.Project
@@ -94,6 +96,7 @@ class ToolFlowBuildContent(AToolAppFlow):
         localToolConfig.SetToolAppConfigValues(self.ToolAppContext.ToolAppConfig)
 
         # Configure the local part
+        localToolConfig.DependencyFile = IOUtil.NormalizePath(args.DependencyFile) if args.DependencyFile is not None else None
         localToolConfig.Output = IOUtil.NormalizePath(args.output) if args.output is not None else None
         localToolConfig.PackageConfigurationType = args.type
         localToolConfig.Project = args.project
@@ -169,8 +172,19 @@ class ToolFlowBuildContent(AToolAppFlow):
             if location is None:
                 raise Exception(f"Could not locate location for {currentDirPath}")
             packagePath = PackagePath(currentDirPath, location)
-            ContentBuilder.Build(self.Log, config.GetBuildDir(), config.DisableWrite, toolConfig, packagePath, featureList, localToolConfig.Output)
+            ContentBuilder.Build(
+                self.Log,
+                config.GetBuildDir(),
+                config.DisableWrite,
+                toolConfig,
+                packagePath,
+                featureList,
+                localToolConfig.Output,
+                localToolConfig.DependencyFile,
+            )
         else:
+            if localToolConfig.DependencyFile is not None:
+                raise Exception("--DependencyFile is only allowed for single package builds")
             # Location not found, but its ok since '-r' was specified and we have a top level package
             for foundPackage in topLevelPackage.ResolvedBuildOrder:
                 if foundPackage.Type == PackageType.Executable:
@@ -226,6 +240,11 @@ class ToolAppFlowFactory(AToolAppFlowFactory):
             "--output",
             default=DefaultValue.Output,
             help='Set the build output directory, overriding the default "<package path>/Content" directory (experimental). Only allowed for single package builds',
+        )
+        parser.add_argument(
+            "--DependencyFile",
+            default=DefaultValue.DependencyFile,
+            help="Write a make style dependency file that lists the content outputs and the files they depend on beyond Content.bld (like shader includes), for the build system. Only allowed for single package builds",
         )
 
     def Create(self, toolAppContext: ToolAppContext) -> AToolAppFlow:
