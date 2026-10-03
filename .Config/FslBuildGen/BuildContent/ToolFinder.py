@@ -42,14 +42,9 @@ class ToolFinder:
     def __init__(self, log: Log) -> None:
         super().__init__()
         self.BuildPlatform = PlatformUtil.DetectBuildPlatformType()
-        self.VulkanShaderCompiler = self.GetPlatformDependentExecuteableName("glslangValidator")
 
     def GetPlatformDependentExecuteableName(self, exeName: str) -> str:
         return PlatformUtil.GetPlatformDependentExecuteableName(exeName, self.BuildPlatform)
-
-    def CheckVulkanShaderCompiler(self) -> None:
-        if IOUtil.TryFindExecutable(self.VulkanShaderCompiler) is None:
-            raise OSError(f"Could not locate the Vulkan shader compiler: '{self.VulkanShaderCompiler}'")
 
     def CheckToolCommand(self, toolCommand: str, toolDescription: str) -> None:
         if IOUtil.TryFindExecutable(toolCommand) is None:

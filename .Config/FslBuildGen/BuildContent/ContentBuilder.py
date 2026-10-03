@@ -55,8 +55,6 @@ from FslBuildGen.Log import Log
 from FslBuildGen.PackagePath import PackagePath
 from FslBuildGen.ToolConfig import ToolConfig, ToolConfigContentBuilderConfiguration
 
-# from FslBuildGen.BuildContent.VulkanContentProcessor import VulkanContentProcessor
-
 
 def GetContentOutputContentRootRecord(log: Log, contentOutputPath: str) -> ContentRootRecord:
     return ContentRootRecord(log, contentOutputPath)
@@ -81,7 +79,6 @@ class ContentProcessorManager:
         super().__init__()
 
         contentProcessors: list[BasicContentProcessor] = []
-        #        contentProcessors = [VulkanContentProcessor()]
         if toolConfig.ContentBuilderConfiguration is not None:
             contentProcessors += self.__AddBasicContentProcessors(log, toolFinder, toolConfig.ContentBuilderConfiguration)
         self.__ContentProcessors = self.__FilterProcessorsBasedOnFeatures(contentProcessors, features)

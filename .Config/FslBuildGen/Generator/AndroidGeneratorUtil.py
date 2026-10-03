@@ -33,6 +33,7 @@
 
 
 from FslBuildGen.AndroidUtil import AndroidUtil
+from FslBuildGen.Generator import AndroidVulkanVersion
 from FslBuildGen.Packages.Package import Package
 from FslBuildGen.ToolConfig import ToolConfigPackageLocation
 
@@ -84,6 +85,8 @@ class AppPackageTemplateInfo:
         self.TargetSDKVersion = GetTargetSDKVersion(package)
         self.MinSDKVersion = DetermineMinSDKVersion(package)
         self.MinGLESVersion = DetermineMinGLESVersion(package)
+        # The manifest element that requires the Vulkan version the packages require, empty if there is none
+        self.VulkanUsesFeature = AndroidVulkanVersion.GetVulkanUsesFeature(package)
 
     def UpdateFileName(self, fileName: str) -> str:
         fileName = fileName.replace("##PREFIXED_PROJECT_NAME##", self.PrefixedProjectName)

@@ -50,6 +50,7 @@ from FslBuildGen.Exceptions import (
 from FslBuildGen.Generator.Report.ParsedFormatString import ParsedFormatString
 from FslBuildGen.Generator.Report.StringVariableDict import StringVariableDict
 from FslBuildGen.Log import Log
+from FslBuildGen.Vars.Variable import Variable
 from FslBuildGen.Vars.VariableEnvironment import VariableEnvironment
 
 
@@ -160,8 +161,11 @@ class VariableProcessor:
         return "".join(parsedStr.SplitList)
 
     def __CheckNoFurtherReference(self, pathName: str, startIndex: int, tag: object | None) -> None:
-        """A path may only start with a variable, a reference after the leading one would be left unresolved"""
-        rest = pathName[startIndex:]
+        """A path may only start with a variable, a reference after the leading one would be left unresolved.
+        The exception is ${RECIPE_VARIANT}: it stays in the path on purpose, the generator replaces it with the variant directory (like the
+        ${ANDROID_ABI} of an Android recipe that is built for each ABI).
+        """
+        rest = pathName[startIndex:].replace(Variable.RecipeVariant, "")
         if rest.find("$(") >= 0:
             raise EnvironmentVariableInMiddleOfStringException(pathName, tag)
         if rest.find("${") >= 0:
