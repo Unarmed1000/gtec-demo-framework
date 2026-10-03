@@ -42,7 +42,6 @@
 #include <FslSimpleUI/Base/Layout/StackLayout.hpp>
 #include <FslSimpleUI/Theme/Base/IThemeControlFactory.hpp>
 #include <FslUtil/Vulkan1_0/Exceptions.hpp>
-#include <FslUtil/Vulkan1_0/Util/InstanceUtil.hpp>
 #include <FslUtil/Vulkan1_0/Util/PhysicalDeviceUtil.hpp>
 #include <RapidVulkan/Check.hpp>
 #include <vulkan/vulkan.h>
@@ -100,15 +99,6 @@ namespace Fsl
       {
         FSLLOG3_INFO("- VkPhysicalDeviceFeatures 'shaderInt64' not supported");
         isSupported = false;
-      }
-
-      {    // Instance extension
-        std::array<const char*, 1> extensions = {"VK_KHR_get_physical_device_properties2"};
-        if (!Vulkan::InstanceUtil::IsInstanceExtensionsAvailable(NumericCast<uint32_t>(extensions.size()), extensions.data()))
-        {
-          FSLLOG3_INFO("- Device extension 'VK_KHR_get_physical_device_properties2' not supported");
-          isSupported = false;
-        }
       }
 
       {    // Device extension

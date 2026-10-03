@@ -42,7 +42,6 @@ namespace Fsl::Vulkan::SwapchainMaintenance1Util
     namespace LocalConfig
     {
       // We use the plain names so we can select between the KHR and EXT versions no matter which one the header defines.
-      constexpr const char* const GetPhysicalDeviceProperties2 = "VK_KHR_get_physical_device_properties2";
       constexpr const char* const GetSurfaceCapabilities2 = "VK_KHR_get_surface_capabilities2";
       constexpr const char* const SurfaceMaintenance1KHR = "VK_KHR_surface_maintenance1";
       constexpr const char* const SurfaceMaintenance1EXT = "VK_EXT_surface_maintenance1";
@@ -80,7 +79,6 @@ namespace Fsl::Vulkan::SwapchainMaintenance1Util
 
   void AppendInstanceExtensionRequests(std::deque<FeatureRequest>& rExtensionRequests)
   {
-    rExtensionRequests.emplace_back(LocalConfig::GetPhysicalDeviceProperties2, FeatureRequirement::Optional);
     rExtensionRequests.emplace_back(LocalConfig::GetSurfaceCapabilities2, FeatureRequirement::Optional);
     rExtensionRequests.emplace_back(LocalConfig::SurfaceMaintenance1KHR, FeatureRequirement::Optional);
     rExtensionRequests.emplace_back(LocalConfig::SurfaceMaintenance1EXT, FeatureRequirement::Optional);
@@ -90,8 +88,7 @@ namespace Fsl::Vulkan::SwapchainMaintenance1Util
   const char* TryGetDeviceExtensionName(const VkInstance instance, const VkPhysicalDevice physicalDevice)
   {
     // The instance extensions are requested as optional by AppendInstanceExtensionRequests, so if they are available they are enabled.
-    if (instance == VK_NULL_HANDLE || physicalDevice == VK_NULL_HANDLE || !IsInstanceExtensionAvailable(LocalConfig::GetPhysicalDeviceProperties2) ||
-        !IsInstanceExtensionAvailable(LocalConfig::GetSurfaceCapabilities2))
+    if (instance == VK_NULL_HANDLE || physicalDevice == VK_NULL_HANDLE || !IsInstanceExtensionAvailable(LocalConfig::GetSurfaceCapabilities2))
     {
       return nullptr;
     }
@@ -103,20 +100,13 @@ namespace Fsl::Vulkan::SwapchainMaintenance1Util
     }
 
     // The extension being available does not guarantee that the feature is, so query it
-    auto* const pfnGetPhysicalDeviceFeatures2 =
-      reinterpret_cast<PFN_vkGetPhysicalDeviceFeatures2KHR>(vkGetInstanceProcAddr(instance, "vkGetPhysicalDeviceFeatures2KHR"));
-    if (pfnGetPhysicalDeviceFeatures2 == nullptr)
-    {
-      return nullptr;
-    }
-
     PhysicalDeviceSwapchainMaintenance1Features swapchainMaintenance1Features{};
     swapchainMaintenance1Features.sType = PhysicalDeviceSwapchainMaintenance1FeaturesSType;
 
     VkPhysicalDeviceFeatures2 features2{};
     features2.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2;
     features2.pNext = &swapchainMaintenance1Features;
-    pfnGetPhysicalDeviceFeatures2(physicalDevice, &features2);
+    vkGetPhysicalDeviceFeatures2(physicalDevice, &features2);
 
     return swapchainMaintenance1Features.swapchainMaintenance1 == VK_TRUE ? pszExtensionName : nullptr;
   }

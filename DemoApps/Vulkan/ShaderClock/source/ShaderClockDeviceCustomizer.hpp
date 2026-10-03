@@ -32,7 +32,6 @@
  ****************************************************************************************************************************************************/
 
 #include <FslDemoHost/Vulkan/Config/IVulkanDeviceCreationCustomizer.hpp>
-#include <FslUtil/Vulkan1_0/Util/InstanceUtil.hpp>
 #include <FslUtil/Vulkan1_0/Util/PhysicalDeviceUtil.hpp>
 #include <vulkan/vulkan.h>
 
@@ -45,24 +44,15 @@ namespace Fsl
     bool m_enabled{false};
 
   public:
-    void Configure(const VkInstance instance, const VkPhysicalDevice physicalDevice) final
+    void Configure(const VkInstance /*instance*/, const VkPhysicalDevice physicalDevice) final
     {
       m_features = {};
       m_features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_CLOCK_FEATURES_KHR;
       m_enabled = false;
 
-      // Both extensions are requested as optional, so if they are available they are enabled
-      const char* const pszInstanceExtension = "VK_KHR_get_physical_device_properties2";
+      // The extension is requested as optional, so if it is available it is enabled
       const char* const pszDeviceExtension = "VK_KHR_shader_clock";
-      if (!Vulkan::InstanceUtil::IsInstanceExtensionsAvailable(1, &pszInstanceExtension) ||
-          !Vulkan::PhysicalDeviceUtil::IsDeviceExtensionsAvailable(physicalDevice, 1, &pszDeviceExtension))
-      {
-        return;
-      }
-
-      auto* const pfnGetPhysicalDeviceFeatures2 =
-        reinterpret_cast<PFN_vkGetPhysicalDeviceFeatures2KHR>(vkGetInstanceProcAddr(instance, "vkGetPhysicalDeviceFeatures2KHR"));
-      if (pfnGetPhysicalDeviceFeatures2 == nullptr)
+      if (!Vulkan::PhysicalDeviceUtil::IsDeviceExtensionsAvailable(physicalDevice, 1, &pszDeviceExtension))
       {
         return;
       }
@@ -70,7 +60,7 @@ namespace Fsl
       VkPhysicalDeviceFeatures2 features2{};
       features2.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2;
       features2.pNext = &m_features;
-      pfnGetPhysicalDeviceFeatures2(physicalDevice, &features2);
+      vkGetPhysicalDeviceFeatures2(physicalDevice, &features2);
       m_features.pNext = nullptr;
 
       // Enable exactly the supported features

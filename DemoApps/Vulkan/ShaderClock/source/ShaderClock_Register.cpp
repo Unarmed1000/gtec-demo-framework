@@ -48,9 +48,6 @@ namespace Fsl
 
     config.AddPhysicalDeviceFeatureRequest(Vulkan::PhysicalDeviceFeature::ShaderInt64, Vulkan::FeatureRequirement::Optional);
 
-    // https://www.khronos.org/registry/vulkan/specs/1.2-extensions/man/html/VK_KHR_get_physical_device_properties2.html
-    config.AddInstanceExtensionRequest("VK_KHR_get_physical_device_properties2", Vulkan::FeatureRequirement::Optional);
-
     // https://www.khronos.org/registry/vulkan/specs/1.2-extensions/man/html/VK_KHR_shader_clock.html
     config.AddDeviceExtensionRequest("VK_KHR_shader_clock", Vulkan::FeatureRequirement::Optional);
     // Enables the supported shader clock features
