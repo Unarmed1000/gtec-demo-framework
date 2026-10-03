@@ -43,6 +43,7 @@
 namespace Fsl::Vulkan
 {
   // Create a deep copy of a VkDeviceCreateInfo making sure that all data pointed to by 'pointers' are copied and stored in this object
+  // The pNext chain is not copied (the copy has a pNext of nullptr).
   class DeviceCreateInfoCopy
   {
     VkDeviceCreateInfo m_value;

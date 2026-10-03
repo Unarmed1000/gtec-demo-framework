@@ -56,6 +56,12 @@ namespace Fsl
     VkSurfaceKHR m_surface = VK_NULL_HANDLE;
     Vulkan::VUPhysicalDeviceRecord m_physicalDevice;
     VkPhysicalDeviceFeatures m_deviceActiveFeatures{};
+    //! The enabled Vulkan 1.1 core features (request them with DemoAppHostConfigVulkan::AddPhysicalDeviceFeatureRequest)
+    VkPhysicalDeviceVulkan11Features m_deviceActiveFeatures11{VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_1_FEATURES, nullptr};
+    //! The enabled Vulkan 1.2 core features (request them with DemoAppHostConfigVulkan::AddPhysicalDeviceFeatureRequest)
+    VkPhysicalDeviceVulkan12Features m_deviceActiveFeatures12{VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_FEATURES, nullptr};
+    //! The enabled Vulkan 1.3 core features (request them with DemoAppHostConfigVulkan::AddPhysicalDeviceFeatureRequest)
+    VkPhysicalDeviceVulkan13Features m_deviceActiveFeatures13{VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES, nullptr};
     //! True if VK_KHR/EXT_swapchain_maintenance1 was enabled (which means VkSwapchainPresentFenceInfoKHR can be used)
     bool m_swapchainMaintenance1Enabled{false};
     Vulkan::VUDevice m_device;

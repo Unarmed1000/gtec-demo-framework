@@ -143,7 +143,10 @@ namespace Fsl
       auto vulkanDeviceSetup =
         Vulkan::VulkanDeviceSetupUtil::CreateSetup(vulkanHostInfo->GetInstance(), m_physicalDevice, m_surface, requiredFeatures, extensions,
                                                    appHostConfig->TryGetDeviceCreationCustomizer().get(), pExtraDeviceCreateInfoNext);
-      m_deviceActiveFeatures = vulkanDeviceSetup.DeviceFeatures;
+      m_deviceActiveFeatures = vulkanDeviceSetup.DeviceFeatures.Features;
+      m_deviceActiveFeatures11 = vulkanDeviceSetup.DeviceFeatures.Features11;
+      m_deviceActiveFeatures12 = vulkanDeviceSetup.DeviceFeatures.Features12;
+      m_deviceActiveFeatures13 = vulkanDeviceSetup.DeviceFeatures.Features13;
       m_device = std::move(vulkanDeviceSetup.Device);
       m_deviceCreateInfo = vulkanDeviceSetup.DeviceCreateInfo;
       m_deviceQueue = vulkanDeviceSetup.DeviceQueueRecord;

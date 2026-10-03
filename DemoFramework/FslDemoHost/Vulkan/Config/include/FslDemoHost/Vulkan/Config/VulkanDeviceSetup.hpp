@@ -31,6 +31,7 @@
  *
  ****************************************************************************************************************************************************/
 
+#include <FslDemoHost/Vulkan/Config/PhysicalDeviceFeatureSet.hpp>
 #include <FslUtil/Vulkan1_0/SafeType/DeviceCreateInfoCopy.hpp>
 #include <FslUtil/Vulkan1_0/VUDevice.hpp>
 #include <FslUtil/Vulkan1_0/VUDeviceQueueRecord.hpp>
@@ -42,7 +43,8 @@ namespace Fsl::Vulkan
 {
   struct VulkanDeviceSetup
   {
-    VkPhysicalDeviceFeatures DeviceFeatures;
+    //! The enabled features (the Vulkan 1.0 features and the 1.1, 1.2 and 1.3 core features)
+    PhysicalDeviceFeatureSet DeviceFeatures;
     Vulkan::VUDevice Device;
     std::shared_ptr<Vulkan::DeviceCreateInfoCopy> DeviceCreateInfo;
     VUDeviceQueueRecord DeviceQueueRecord;

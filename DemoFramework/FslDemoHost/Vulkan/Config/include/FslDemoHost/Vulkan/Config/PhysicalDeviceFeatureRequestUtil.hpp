@@ -33,6 +33,7 @@
 
 // Make sure Common.hpp is the first include file (to make the error message as helpful as possible when disabled)
 #include <FslDemoHost/Vulkan/Config/PhysicalDeviceFeatureRequest.hpp>
+#include <FslDemoHost/Vulkan/Config/PhysicalDeviceFeatureSet.hpp>
 #include <FslUtil/Vulkan1_0/Common.hpp>
 #include <vulkan/vulkan.h>
 #include <deque>
@@ -43,9 +44,20 @@ namespace Fsl::Vulkan
   class PhysicalDeviceFeatureRequestUtil
   {
   public:
+    static void ApplyFeatures(PhysicalDeviceFeatureSet& rPhysicalDeviceFeatures,
+                              const std::deque<Vulkan::PhysicalDeviceFeatureRequest>& requiredFeatures);
+
+    //! @brief Enable the requested features that the physical device supports.
+    //! @throws NotSupportedException if a mandatory feature is unsupported.
+    static void ApplyFeatureRequirements(PhysicalDeviceFeatureSet& rPhysicalDeviceFeatures,
+                                         const std::deque<Vulkan::PhysicalDeviceFeatureRequest>& requiredFeatures,
+                                         const VkPhysicalDevice physicalDevice);
+
+    //! @note Only supports the VkPhysicalDeviceFeatures features, use the PhysicalDeviceFeatureSet overload for the 1.1+ core features
     static void ApplyFeatures(VkPhysicalDeviceFeatures& rPhysicalDeviceFeatures,
                               const std::deque<Vulkan::PhysicalDeviceFeatureRequest>& requiredFeatures);
 
+    //! @note Only supports the VkPhysicalDeviceFeatures features, use the PhysicalDeviceFeatureSet overload for the 1.1+ core features
     static void ApplyFeatureRequirements(VkPhysicalDeviceFeatures& rPhysicalDeviceFeatures,
                                          const std::deque<Vulkan::PhysicalDeviceFeatureRequest>& requiredFeatures,
                                          const VkPhysicalDevice physicalDevice);

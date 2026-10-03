@@ -40,10 +40,14 @@ namespace Fsl::Vulkan
   public:
     virtual ~IVulkanDeviceCreationCustomizer() = default;
 
-    //! @param instance the instance (can be used to query extension functions like vkGetPhysicalDeviceFeatures2KHR)
+    //! @param instance the instance (can be used to query instance extension functions)
     virtual void Configure(const VkInstance instance, const VkPhysicalDevice physicalDevice) = 0;
 
     //! @brief the returned pointer must be valid as long as this object is alive!
+    //! @note The chain must not contain a VkPhysicalDeviceFeatures2 or a feature struct of a extension that was promoted to Vulkan 1.1 or 1.2
+    //!       (like VkPhysicalDeviceTimelineSemaphoreFeatures) as the core features are enabled with VkPhysicalDeviceVulkan11Features,
+    //!       VkPhysicalDeviceVulkan12Features and VkPhysicalDeviceVulkan13Features, request them with
+    //!       DemoAppHostConfigVulkan::AddPhysicalDeviceFeatureRequest instead (VUID-VkDeviceCreateInfo-pNext-02829 and 02830).
     [[nodiscard]] virtual const void* GetVkDeviceCreateInfoNextPointer() const = 0;
   };
 }

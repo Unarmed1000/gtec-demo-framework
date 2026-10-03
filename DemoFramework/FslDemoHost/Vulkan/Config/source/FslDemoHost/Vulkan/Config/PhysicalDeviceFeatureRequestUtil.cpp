@@ -40,7 +40,7 @@ namespace Fsl::Vulkan
   {
     void FilterFeatures(std::deque<Vulkan::PhysicalDeviceFeatureRequest>& rFilteredFeatures,
                         const std::deque<Vulkan::PhysicalDeviceFeatureRequest>& requiredFeatures,
-                        const VkPhysicalDeviceFeatures& physicalDeviceFeatures)
+                        const PhysicalDeviceFeatureSet& physicalDeviceFeatures)
     {
       rFilteredFeatures.clear();
       for (const auto entry : requiredFeatures)
@@ -70,6 +70,31 @@ namespace Fsl::Vulkan
     }
   }
 
+  void PhysicalDeviceFeatureRequestUtil::ApplyFeatures(PhysicalDeviceFeatureSet& rPhysicalDeviceFeatures,
+                                                       const std::deque<Vulkan::PhysicalDeviceFeatureRequest>& requiredFeatures)
+  {
+    for (const auto entry : requiredFeatures)
+    {
+      PhysicalDeviceFeatureUtil::Set(rPhysicalDeviceFeatures, entry.Feature, VK_TRUE);
+    }
+  }
+
+
+  void PhysicalDeviceFeatureRequestUtil::ApplyFeatureRequirements(PhysicalDeviceFeatureSet& rPhysicalDeviceFeatures,
+                                                                  const std::deque<Vulkan::PhysicalDeviceFeatureRequest>& requiredFeatures,
+                                                                  const VkPhysicalDevice physicalDevice)
+  {
+    // Query the device
+    const PhysicalDeviceFeatureSet physicalDeviceFeatures = PhysicalDeviceFeatureSet::Query(physicalDevice);
+
+    // Then filter out all unavailable optional features
+    std::deque<Vulkan::PhysicalDeviceFeatureRequest> filteredFeatures;
+    FilterFeatures(filteredFeatures, requiredFeatures, physicalDeviceFeatures);
+
+    ApplyFeatures(rPhysicalDeviceFeatures, filteredFeatures);
+  }
+
+
   void PhysicalDeviceFeatureRequestUtil::ApplyFeatures(VkPhysicalDeviceFeatures& rPhysicalDeviceFeatures,
                                                        const std::deque<Vulkan::PhysicalDeviceFeatureRequest>& requiredFeatures)
   {
@@ -84,14 +109,13 @@ namespace Fsl::Vulkan
                                                                   const std::deque<Vulkan::PhysicalDeviceFeatureRequest>& requiredFeatures,
                                                                   const VkPhysicalDevice physicalDevice)
   {
-    // Query the device
-    VkPhysicalDeviceFeatures physicalDeviceFeatures{};
-    vkGetPhysicalDeviceFeatures(physicalDevice, &physicalDeviceFeatures);
-
-    // Then filter out all unavailable optional features
-    std::deque<Vulkan::PhysicalDeviceFeatureRequest> filteredFeatures;
-    FilterFeatures(filteredFeatures, requiredFeatures, physicalDeviceFeatures);
-
-    ApplyFeatures(rPhysicalDeviceFeatures, filteredFeatures);
+    PhysicalDeviceFeatureSet featureSet;
+    featureSet.Features = rPhysicalDeviceFeatures;
+    ApplyFeatureRequirements(featureSet, requiredFeatures, physicalDevice);
+    if (featureSet.HasEnabledFeatures11() || featureSet.HasEnabledFeatures12() || featureSet.HasEnabledFeatures13())
+    {
+      throw UsageErrorException("A Vulkan 1.1+ core feature was requested, but the device creation only supports VkPhysicalDeviceFeatures");
+    }
+    rPhysicalDeviceFeatures = featureSet.Features;
   }
 }

@@ -31,9 +31,11 @@
 
 // Make sure Common.hpp is the first include file (to make the error message as helpful as possible when disabled)
 #include <FslBase/Exceptions.hpp>
+#include <FslDemoHost/Vulkan/Config/PhysicalDeviceFeatureSet.hpp>
 #include <FslDemoHost/Vulkan/Config/PhysicalDeviceFeatureUtil.hpp>
 #include <FslUtil/Vulkan1_0/Common.hpp>
 #include <cstddef>
+#include <cstdint>
 #include <type_traits>
 
 namespace Fsl::Vulkan
@@ -216,6 +218,288 @@ namespace Fsl::Vulkan
         return false;
       }
     }
+
+    //! @brief Based on VkPhysicalDeviceVulkan11Features
+    bool TryGetOffset11(const PhysicalDeviceFeature featureName, std::size_t& rOffset)
+    {
+      switch (featureName)
+      {
+      case PhysicalDeviceFeature::StorageBuffer16BitAccess:
+        rOffset = offsetof(VkPhysicalDeviceVulkan11Features, storageBuffer16BitAccess);
+        return true;
+      case PhysicalDeviceFeature::UniformAndStorageBuffer16BitAccess:
+        rOffset = offsetof(VkPhysicalDeviceVulkan11Features, uniformAndStorageBuffer16BitAccess);
+        return true;
+      case PhysicalDeviceFeature::StoragePushConstant16:
+        rOffset = offsetof(VkPhysicalDeviceVulkan11Features, storagePushConstant16);
+        return true;
+      case PhysicalDeviceFeature::StorageInputOutput16:
+        rOffset = offsetof(VkPhysicalDeviceVulkan11Features, storageInputOutput16);
+        return true;
+      case PhysicalDeviceFeature::Multiview:
+        rOffset = offsetof(VkPhysicalDeviceVulkan11Features, multiview);
+        return true;
+      case PhysicalDeviceFeature::MultiviewGeometryShader:
+        rOffset = offsetof(VkPhysicalDeviceVulkan11Features, multiviewGeometryShader);
+        return true;
+      case PhysicalDeviceFeature::MultiviewTessellationShader:
+        rOffset = offsetof(VkPhysicalDeviceVulkan11Features, multiviewTessellationShader);
+        return true;
+      case PhysicalDeviceFeature::VariablePointersStorageBuffer:
+        rOffset = offsetof(VkPhysicalDeviceVulkan11Features, variablePointersStorageBuffer);
+        return true;
+      case PhysicalDeviceFeature::VariablePointers:
+        rOffset = offsetof(VkPhysicalDeviceVulkan11Features, variablePointers);
+        return true;
+      case PhysicalDeviceFeature::ProtectedMemory:
+        rOffset = offsetof(VkPhysicalDeviceVulkan11Features, protectedMemory);
+        return true;
+      case PhysicalDeviceFeature::SamplerYcbcrConversion:
+        rOffset = offsetof(VkPhysicalDeviceVulkan11Features, samplerYcbcrConversion);
+        return true;
+      case PhysicalDeviceFeature::ShaderDrawParameters:
+        rOffset = offsetof(VkPhysicalDeviceVulkan11Features, shaderDrawParameters);
+        return true;
+      default:
+        rOffset = 0;
+        return false;
+      }
+    }
+
+
+    //! @brief Based on VkPhysicalDeviceVulkan12Features
+    bool TryGetOffset12(const PhysicalDeviceFeature featureName, std::size_t& rOffset)
+    {
+      switch (featureName)
+      {
+      case PhysicalDeviceFeature::SamplerMirrorClampToEdge:
+        rOffset = offsetof(VkPhysicalDeviceVulkan12Features, samplerMirrorClampToEdge);
+        return true;
+      case PhysicalDeviceFeature::DrawIndirectCount:
+        rOffset = offsetof(VkPhysicalDeviceVulkan12Features, drawIndirectCount);
+        return true;
+      case PhysicalDeviceFeature::StorageBuffer8BitAccess:
+        rOffset = offsetof(VkPhysicalDeviceVulkan12Features, storageBuffer8BitAccess);
+        return true;
+      case PhysicalDeviceFeature::UniformAndStorageBuffer8BitAccess:
+        rOffset = offsetof(VkPhysicalDeviceVulkan12Features, uniformAndStorageBuffer8BitAccess);
+        return true;
+      case PhysicalDeviceFeature::StoragePushConstant8:
+        rOffset = offsetof(VkPhysicalDeviceVulkan12Features, storagePushConstant8);
+        return true;
+      case PhysicalDeviceFeature::ShaderBufferInt64Atomics:
+        rOffset = offsetof(VkPhysicalDeviceVulkan12Features, shaderBufferInt64Atomics);
+        return true;
+      case PhysicalDeviceFeature::ShaderSharedInt64Atomics:
+        rOffset = offsetof(VkPhysicalDeviceVulkan12Features, shaderSharedInt64Atomics);
+        return true;
+      case PhysicalDeviceFeature::ShaderFloat16:
+        rOffset = offsetof(VkPhysicalDeviceVulkan12Features, shaderFloat16);
+        return true;
+      case PhysicalDeviceFeature::ShaderInt8:
+        rOffset = offsetof(VkPhysicalDeviceVulkan12Features, shaderInt8);
+        return true;
+      case PhysicalDeviceFeature::DescriptorIndexing:
+        rOffset = offsetof(VkPhysicalDeviceVulkan12Features, descriptorIndexing);
+        return true;
+      case PhysicalDeviceFeature::ShaderInputAttachmentArrayDynamicIndexing:
+        rOffset = offsetof(VkPhysicalDeviceVulkan12Features, shaderInputAttachmentArrayDynamicIndexing);
+        return true;
+      case PhysicalDeviceFeature::ShaderUniformTexelBufferArrayDynamicIndexing:
+        rOffset = offsetof(VkPhysicalDeviceVulkan12Features, shaderUniformTexelBufferArrayDynamicIndexing);
+        return true;
+      case PhysicalDeviceFeature::ShaderStorageTexelBufferArrayDynamicIndexing:
+        rOffset = offsetof(VkPhysicalDeviceVulkan12Features, shaderStorageTexelBufferArrayDynamicIndexing);
+        return true;
+      case PhysicalDeviceFeature::ShaderUniformBufferArrayNonUniformIndexing:
+        rOffset = offsetof(VkPhysicalDeviceVulkan12Features, shaderUniformBufferArrayNonUniformIndexing);
+        return true;
+      case PhysicalDeviceFeature::ShaderSampledImageArrayNonUniformIndexing:
+        rOffset = offsetof(VkPhysicalDeviceVulkan12Features, shaderSampledImageArrayNonUniformIndexing);
+        return true;
+      case PhysicalDeviceFeature::ShaderStorageBufferArrayNonUniformIndexing:
+        rOffset = offsetof(VkPhysicalDeviceVulkan12Features, shaderStorageBufferArrayNonUniformIndexing);
+        return true;
+      case PhysicalDeviceFeature::ShaderStorageImageArrayNonUniformIndexing:
+        rOffset = offsetof(VkPhysicalDeviceVulkan12Features, shaderStorageImageArrayNonUniformIndexing);
+        return true;
+      case PhysicalDeviceFeature::ShaderInputAttachmentArrayNonUniformIndexing:
+        rOffset = offsetof(VkPhysicalDeviceVulkan12Features, shaderInputAttachmentArrayNonUniformIndexing);
+        return true;
+      case PhysicalDeviceFeature::ShaderUniformTexelBufferArrayNonUniformIndexing:
+        rOffset = offsetof(VkPhysicalDeviceVulkan12Features, shaderUniformTexelBufferArrayNonUniformIndexing);
+        return true;
+      case PhysicalDeviceFeature::ShaderStorageTexelBufferArrayNonUniformIndexing:
+        rOffset = offsetof(VkPhysicalDeviceVulkan12Features, shaderStorageTexelBufferArrayNonUniformIndexing);
+        return true;
+      case PhysicalDeviceFeature::DescriptorBindingUniformBufferUpdateAfterBind:
+        rOffset = offsetof(VkPhysicalDeviceVulkan12Features, descriptorBindingUniformBufferUpdateAfterBind);
+        return true;
+      case PhysicalDeviceFeature::DescriptorBindingSampledImageUpdateAfterBind:
+        rOffset = offsetof(VkPhysicalDeviceVulkan12Features, descriptorBindingSampledImageUpdateAfterBind);
+        return true;
+      case PhysicalDeviceFeature::DescriptorBindingStorageImageUpdateAfterBind:
+        rOffset = offsetof(VkPhysicalDeviceVulkan12Features, descriptorBindingStorageImageUpdateAfterBind);
+        return true;
+      case PhysicalDeviceFeature::DescriptorBindingStorageBufferUpdateAfterBind:
+        rOffset = offsetof(VkPhysicalDeviceVulkan12Features, descriptorBindingStorageBufferUpdateAfterBind);
+        return true;
+      case PhysicalDeviceFeature::DescriptorBindingUniformTexelBufferUpdateAfterBind:
+        rOffset = offsetof(VkPhysicalDeviceVulkan12Features, descriptorBindingUniformTexelBufferUpdateAfterBind);
+        return true;
+      case PhysicalDeviceFeature::DescriptorBindingStorageTexelBufferUpdateAfterBind:
+        rOffset = offsetof(VkPhysicalDeviceVulkan12Features, descriptorBindingStorageTexelBufferUpdateAfterBind);
+        return true;
+      case PhysicalDeviceFeature::DescriptorBindingUpdateUnusedWhilePending:
+        rOffset = offsetof(VkPhysicalDeviceVulkan12Features, descriptorBindingUpdateUnusedWhilePending);
+        return true;
+      case PhysicalDeviceFeature::DescriptorBindingPartiallyBound:
+        rOffset = offsetof(VkPhysicalDeviceVulkan12Features, descriptorBindingPartiallyBound);
+        return true;
+      case PhysicalDeviceFeature::DescriptorBindingVariableDescriptorCount:
+        rOffset = offsetof(VkPhysicalDeviceVulkan12Features, descriptorBindingVariableDescriptorCount);
+        return true;
+      case PhysicalDeviceFeature::RuntimeDescriptorArray:
+        rOffset = offsetof(VkPhysicalDeviceVulkan12Features, runtimeDescriptorArray);
+        return true;
+      case PhysicalDeviceFeature::SamplerFilterMinmax:
+        rOffset = offsetof(VkPhysicalDeviceVulkan12Features, samplerFilterMinmax);
+        return true;
+      case PhysicalDeviceFeature::ScalarBlockLayout:
+        rOffset = offsetof(VkPhysicalDeviceVulkan12Features, scalarBlockLayout);
+        return true;
+      case PhysicalDeviceFeature::ImagelessFramebuffer:
+        rOffset = offsetof(VkPhysicalDeviceVulkan12Features, imagelessFramebuffer);
+        return true;
+      case PhysicalDeviceFeature::UniformBufferStandardLayout:
+        rOffset = offsetof(VkPhysicalDeviceVulkan12Features, uniformBufferStandardLayout);
+        return true;
+      case PhysicalDeviceFeature::ShaderSubgroupExtendedTypes:
+        rOffset = offsetof(VkPhysicalDeviceVulkan12Features, shaderSubgroupExtendedTypes);
+        return true;
+      case PhysicalDeviceFeature::SeparateDepthStencilLayouts:
+        rOffset = offsetof(VkPhysicalDeviceVulkan12Features, separateDepthStencilLayouts);
+        return true;
+      case PhysicalDeviceFeature::HostQueryReset:
+        rOffset = offsetof(VkPhysicalDeviceVulkan12Features, hostQueryReset);
+        return true;
+      case PhysicalDeviceFeature::TimelineSemaphore:
+        rOffset = offsetof(VkPhysicalDeviceVulkan12Features, timelineSemaphore);
+        return true;
+      case PhysicalDeviceFeature::BufferDeviceAddress:
+        rOffset = offsetof(VkPhysicalDeviceVulkan12Features, bufferDeviceAddress);
+        return true;
+      case PhysicalDeviceFeature::BufferDeviceAddressCaptureReplay:
+        rOffset = offsetof(VkPhysicalDeviceVulkan12Features, bufferDeviceAddressCaptureReplay);
+        return true;
+      case PhysicalDeviceFeature::BufferDeviceAddressMultiDevice:
+        rOffset = offsetof(VkPhysicalDeviceVulkan12Features, bufferDeviceAddressMultiDevice);
+        return true;
+      case PhysicalDeviceFeature::VulkanMemoryModel:
+        rOffset = offsetof(VkPhysicalDeviceVulkan12Features, vulkanMemoryModel);
+        return true;
+      case PhysicalDeviceFeature::VulkanMemoryModelDeviceScope:
+        rOffset = offsetof(VkPhysicalDeviceVulkan12Features, vulkanMemoryModelDeviceScope);
+        return true;
+      case PhysicalDeviceFeature::VulkanMemoryModelAvailabilityVisibilityChains:
+        rOffset = offsetof(VkPhysicalDeviceVulkan12Features, vulkanMemoryModelAvailabilityVisibilityChains);
+        return true;
+      case PhysicalDeviceFeature::ShaderOutputViewportIndex:
+        rOffset = offsetof(VkPhysicalDeviceVulkan12Features, shaderOutputViewportIndex);
+        return true;
+      case PhysicalDeviceFeature::ShaderOutputLayer:
+        rOffset = offsetof(VkPhysicalDeviceVulkan12Features, shaderOutputLayer);
+        return true;
+      case PhysicalDeviceFeature::SubgroupBroadcastDynamicId:
+        rOffset = offsetof(VkPhysicalDeviceVulkan12Features, subgroupBroadcastDynamicId);
+        return true;
+      default:
+        rOffset = 0;
+        return false;
+      }
+    }
+
+
+    //! @brief Based on VkPhysicalDeviceVulkan13Features
+    bool TryGetOffset13(const PhysicalDeviceFeature featureName, std::size_t& rOffset)
+    {
+      switch (featureName)
+      {
+      case PhysicalDeviceFeature::RobustImageAccess:
+        rOffset = offsetof(VkPhysicalDeviceVulkan13Features, robustImageAccess);
+        return true;
+      case PhysicalDeviceFeature::InlineUniformBlock:
+        rOffset = offsetof(VkPhysicalDeviceVulkan13Features, inlineUniformBlock);
+        return true;
+      case PhysicalDeviceFeature::DescriptorBindingInlineUniformBlockUpdateAfterBind:
+        rOffset = offsetof(VkPhysicalDeviceVulkan13Features, descriptorBindingInlineUniformBlockUpdateAfterBind);
+        return true;
+      case PhysicalDeviceFeature::PipelineCreationCacheControl:
+        rOffset = offsetof(VkPhysicalDeviceVulkan13Features, pipelineCreationCacheControl);
+        return true;
+      case PhysicalDeviceFeature::PrivateData:
+        rOffset = offsetof(VkPhysicalDeviceVulkan13Features, privateData);
+        return true;
+      case PhysicalDeviceFeature::ShaderDemoteToHelperInvocation:
+        rOffset = offsetof(VkPhysicalDeviceVulkan13Features, shaderDemoteToHelperInvocation);
+        return true;
+      case PhysicalDeviceFeature::ShaderTerminateInvocation:
+        rOffset = offsetof(VkPhysicalDeviceVulkan13Features, shaderTerminateInvocation);
+        return true;
+      case PhysicalDeviceFeature::SubgroupSizeControl:
+        rOffset = offsetof(VkPhysicalDeviceVulkan13Features, subgroupSizeControl);
+        return true;
+      case PhysicalDeviceFeature::ComputeFullSubgroups:
+        rOffset = offsetof(VkPhysicalDeviceVulkan13Features, computeFullSubgroups);
+        return true;
+      case PhysicalDeviceFeature::Synchronization2:
+        rOffset = offsetof(VkPhysicalDeviceVulkan13Features, synchronization2);
+        return true;
+      case PhysicalDeviceFeature::TextureCompressionASTC_HDR:
+        rOffset = offsetof(VkPhysicalDeviceVulkan13Features, textureCompressionASTC_HDR);
+        return true;
+      case PhysicalDeviceFeature::ShaderZeroInitializeWorkgroupMemory:
+        rOffset = offsetof(VkPhysicalDeviceVulkan13Features, shaderZeroInitializeWorkgroupMemory);
+        return true;
+      case PhysicalDeviceFeature::DynamicRendering:
+        rOffset = offsetof(VkPhysicalDeviceVulkan13Features, dynamicRendering);
+        return true;
+      case PhysicalDeviceFeature::ShaderIntegerDotProduct:
+        rOffset = offsetof(VkPhysicalDeviceVulkan13Features, shaderIntegerDotProduct);
+        return true;
+      case PhysicalDeviceFeature::Maintenance4:
+        rOffset = offsetof(VkPhysicalDeviceVulkan13Features, maintenance4);
+        return true;
+      default:
+        rOffset = 0;
+        return false;
+      }
+    }
+
+    //! @brief Locate the feature member in the feature set
+    //! @return the member or nullptr if the feature is unknown
+    template <typename TByte, typename TFeatureSet>
+    TByte* TryGetMember(TFeatureSet& rFeatures, const PhysicalDeviceFeature featureName)
+    {
+      std::size_t offset = 0;
+      if (TryGetOffset(featureName, offset))
+      {
+        return reinterpret_cast<TByte*>(&rFeatures.Features) + offset;
+      }
+      if (TryGetOffset11(featureName, offset))
+      {
+        return reinterpret_cast<TByte*>(&rFeatures.Features11) + offset;
+      }
+      if (TryGetOffset12(featureName, offset))
+      {
+        return reinterpret_cast<TByte*>(&rFeatures.Features12) + offset;
+      }
+      if (TryGetOffset13(featureName, offset))
+      {
+        return reinterpret_cast<TByte*>(&rFeatures.Features13) + offset;
+      }
+      return nullptr;
+    }
   }
 
 
@@ -246,6 +530,32 @@ namespace Fsl::Vulkan
     // asserts at the bottom of this file)
     auto* pMember = reinterpret_cast<VkBool32*>((reinterpret_cast<uint8_t*>(&rFeatures) + offset));
     *pMember = value;
+  }
+
+
+  VkBool32 PhysicalDeviceFeatureUtil::Get(const PhysicalDeviceFeatureSet& features, const PhysicalDeviceFeature featureName)
+  {
+    const auto* const pMember = TryGetMember<const uint8_t>(features, featureName);
+    if (pMember == nullptr)
+    {
+      throw std::invalid_argument("Unknown Vulkan PhysicalDeviceFeature");
+    }
+    // Nasty lookup that breaks without warning if the member type changes from VkBool32 (this is the reason we have the static asserts at the
+    // bottom of this file)
+    return *reinterpret_cast<const VkBool32*>(pMember);
+  }
+
+
+  void PhysicalDeviceFeatureUtil::Set(PhysicalDeviceFeatureSet& rFeatures, const PhysicalDeviceFeature featureName, const VkBool32 value)
+  {
+    auto* const pMember = TryGetMember<uint8_t>(rFeatures, featureName);
+    if (pMember == nullptr)
+    {
+      throw std::invalid_argument("Unknown Vulkan PhysicalDeviceFeature");
+    }
+    // Nasty lookup that breaks without warning if the member type changes from VkBool32 (this is the reason we have the static asserts at the
+    // bottom of this file)
+    *reinterpret_cast<VkBool32*>(pMember) = value;
   }
 
 
@@ -363,6 +673,154 @@ namespace Fsl::Vulkan
       return "VariableMultisampleRate";
     case PhysicalDeviceFeature::InheritedQueries:
       return "InheritedQueries";
+    case PhysicalDeviceFeature::StorageBuffer16BitAccess:
+      return "StorageBuffer16BitAccess";
+    case PhysicalDeviceFeature::UniformAndStorageBuffer16BitAccess:
+      return "UniformAndStorageBuffer16BitAccess";
+    case PhysicalDeviceFeature::StoragePushConstant16:
+      return "StoragePushConstant16";
+    case PhysicalDeviceFeature::StorageInputOutput16:
+      return "StorageInputOutput16";
+    case PhysicalDeviceFeature::Multiview:
+      return "Multiview";
+    case PhysicalDeviceFeature::MultiviewGeometryShader:
+      return "MultiviewGeometryShader";
+    case PhysicalDeviceFeature::MultiviewTessellationShader:
+      return "MultiviewTessellationShader";
+    case PhysicalDeviceFeature::VariablePointersStorageBuffer:
+      return "VariablePointersStorageBuffer";
+    case PhysicalDeviceFeature::VariablePointers:
+      return "VariablePointers";
+    case PhysicalDeviceFeature::ProtectedMemory:
+      return "ProtectedMemory";
+    case PhysicalDeviceFeature::SamplerYcbcrConversion:
+      return "SamplerYcbcrConversion";
+    case PhysicalDeviceFeature::ShaderDrawParameters:
+      return "ShaderDrawParameters";
+    case PhysicalDeviceFeature::SamplerMirrorClampToEdge:
+      return "SamplerMirrorClampToEdge";
+    case PhysicalDeviceFeature::DrawIndirectCount:
+      return "DrawIndirectCount";
+    case PhysicalDeviceFeature::StorageBuffer8BitAccess:
+      return "StorageBuffer8BitAccess";
+    case PhysicalDeviceFeature::UniformAndStorageBuffer8BitAccess:
+      return "UniformAndStorageBuffer8BitAccess";
+    case PhysicalDeviceFeature::StoragePushConstant8:
+      return "StoragePushConstant8";
+    case PhysicalDeviceFeature::ShaderBufferInt64Atomics:
+      return "ShaderBufferInt64Atomics";
+    case PhysicalDeviceFeature::ShaderSharedInt64Atomics:
+      return "ShaderSharedInt64Atomics";
+    case PhysicalDeviceFeature::ShaderFloat16:
+      return "ShaderFloat16";
+    case PhysicalDeviceFeature::ShaderInt8:
+      return "ShaderInt8";
+    case PhysicalDeviceFeature::DescriptorIndexing:
+      return "DescriptorIndexing";
+    case PhysicalDeviceFeature::ShaderInputAttachmentArrayDynamicIndexing:
+      return "ShaderInputAttachmentArrayDynamicIndexing";
+    case PhysicalDeviceFeature::ShaderUniformTexelBufferArrayDynamicIndexing:
+      return "ShaderUniformTexelBufferArrayDynamicIndexing";
+    case PhysicalDeviceFeature::ShaderStorageTexelBufferArrayDynamicIndexing:
+      return "ShaderStorageTexelBufferArrayDynamicIndexing";
+    case PhysicalDeviceFeature::ShaderUniformBufferArrayNonUniformIndexing:
+      return "ShaderUniformBufferArrayNonUniformIndexing";
+    case PhysicalDeviceFeature::ShaderSampledImageArrayNonUniformIndexing:
+      return "ShaderSampledImageArrayNonUniformIndexing";
+    case PhysicalDeviceFeature::ShaderStorageBufferArrayNonUniformIndexing:
+      return "ShaderStorageBufferArrayNonUniformIndexing";
+    case PhysicalDeviceFeature::ShaderStorageImageArrayNonUniformIndexing:
+      return "ShaderStorageImageArrayNonUniformIndexing";
+    case PhysicalDeviceFeature::ShaderInputAttachmentArrayNonUniformIndexing:
+      return "ShaderInputAttachmentArrayNonUniformIndexing";
+    case PhysicalDeviceFeature::ShaderUniformTexelBufferArrayNonUniformIndexing:
+      return "ShaderUniformTexelBufferArrayNonUniformIndexing";
+    case PhysicalDeviceFeature::ShaderStorageTexelBufferArrayNonUniformIndexing:
+      return "ShaderStorageTexelBufferArrayNonUniformIndexing";
+    case PhysicalDeviceFeature::DescriptorBindingUniformBufferUpdateAfterBind:
+      return "DescriptorBindingUniformBufferUpdateAfterBind";
+    case PhysicalDeviceFeature::DescriptorBindingSampledImageUpdateAfterBind:
+      return "DescriptorBindingSampledImageUpdateAfterBind";
+    case PhysicalDeviceFeature::DescriptorBindingStorageImageUpdateAfterBind:
+      return "DescriptorBindingStorageImageUpdateAfterBind";
+    case PhysicalDeviceFeature::DescriptorBindingStorageBufferUpdateAfterBind:
+      return "DescriptorBindingStorageBufferUpdateAfterBind";
+    case PhysicalDeviceFeature::DescriptorBindingUniformTexelBufferUpdateAfterBind:
+      return "DescriptorBindingUniformTexelBufferUpdateAfterBind";
+    case PhysicalDeviceFeature::DescriptorBindingStorageTexelBufferUpdateAfterBind:
+      return "DescriptorBindingStorageTexelBufferUpdateAfterBind";
+    case PhysicalDeviceFeature::DescriptorBindingUpdateUnusedWhilePending:
+      return "DescriptorBindingUpdateUnusedWhilePending";
+    case PhysicalDeviceFeature::DescriptorBindingPartiallyBound:
+      return "DescriptorBindingPartiallyBound";
+    case PhysicalDeviceFeature::DescriptorBindingVariableDescriptorCount:
+      return "DescriptorBindingVariableDescriptorCount";
+    case PhysicalDeviceFeature::RuntimeDescriptorArray:
+      return "RuntimeDescriptorArray";
+    case PhysicalDeviceFeature::SamplerFilterMinmax:
+      return "SamplerFilterMinmax";
+    case PhysicalDeviceFeature::ScalarBlockLayout:
+      return "ScalarBlockLayout";
+    case PhysicalDeviceFeature::ImagelessFramebuffer:
+      return "ImagelessFramebuffer";
+    case PhysicalDeviceFeature::UniformBufferStandardLayout:
+      return "UniformBufferStandardLayout";
+    case PhysicalDeviceFeature::ShaderSubgroupExtendedTypes:
+      return "ShaderSubgroupExtendedTypes";
+    case PhysicalDeviceFeature::SeparateDepthStencilLayouts:
+      return "SeparateDepthStencilLayouts";
+    case PhysicalDeviceFeature::HostQueryReset:
+      return "HostQueryReset";
+    case PhysicalDeviceFeature::TimelineSemaphore:
+      return "TimelineSemaphore";
+    case PhysicalDeviceFeature::BufferDeviceAddress:
+      return "BufferDeviceAddress";
+    case PhysicalDeviceFeature::BufferDeviceAddressCaptureReplay:
+      return "BufferDeviceAddressCaptureReplay";
+    case PhysicalDeviceFeature::BufferDeviceAddressMultiDevice:
+      return "BufferDeviceAddressMultiDevice";
+    case PhysicalDeviceFeature::VulkanMemoryModel:
+      return "VulkanMemoryModel";
+    case PhysicalDeviceFeature::VulkanMemoryModelDeviceScope:
+      return "VulkanMemoryModelDeviceScope";
+    case PhysicalDeviceFeature::VulkanMemoryModelAvailabilityVisibilityChains:
+      return "VulkanMemoryModelAvailabilityVisibilityChains";
+    case PhysicalDeviceFeature::ShaderOutputViewportIndex:
+      return "ShaderOutputViewportIndex";
+    case PhysicalDeviceFeature::ShaderOutputLayer:
+      return "ShaderOutputLayer";
+    case PhysicalDeviceFeature::SubgroupBroadcastDynamicId:
+      return "SubgroupBroadcastDynamicId";
+    case PhysicalDeviceFeature::RobustImageAccess:
+      return "RobustImageAccess";
+    case PhysicalDeviceFeature::InlineUniformBlock:
+      return "InlineUniformBlock";
+    case PhysicalDeviceFeature::DescriptorBindingInlineUniformBlockUpdateAfterBind:
+      return "DescriptorBindingInlineUniformBlockUpdateAfterBind";
+    case PhysicalDeviceFeature::PipelineCreationCacheControl:
+      return "PipelineCreationCacheControl";
+    case PhysicalDeviceFeature::PrivateData:
+      return "PrivateData";
+    case PhysicalDeviceFeature::ShaderDemoteToHelperInvocation:
+      return "ShaderDemoteToHelperInvocation";
+    case PhysicalDeviceFeature::ShaderTerminateInvocation:
+      return "ShaderTerminateInvocation";
+    case PhysicalDeviceFeature::SubgroupSizeControl:
+      return "SubgroupSizeControl";
+    case PhysicalDeviceFeature::ComputeFullSubgroups:
+      return "ComputeFullSubgroups";
+    case PhysicalDeviceFeature::Synchronization2:
+      return "Synchronization2";
+    case PhysicalDeviceFeature::TextureCompressionASTC_HDR:
+      return "TextureCompressionASTC_HDR";
+    case PhysicalDeviceFeature::ShaderZeroInitializeWorkgroupMemory:
+      return "ShaderZeroInitializeWorkgroupMemory";
+    case PhysicalDeviceFeature::DynamicRendering:
+      return "DynamicRendering";
+    case PhysicalDeviceFeature::ShaderIntegerDotProduct:
+      return "ShaderIntegerDotProduct";
+    case PhysicalDeviceFeature::Maintenance4:
+      return "Maintenance4";
     case PhysicalDeviceFeature::Invalid:
     default:
       return "Unknown";
@@ -434,4 +892,126 @@ namespace Fsl::Vulkan
   static_assert(std::is_same_v<VkBool32, decltype(VkPhysicalDeviceFeatures::sparseResidencyAliased)>, "struct member not of the expected type");
   static_assert(std::is_same_v<VkBool32, decltype(VkPhysicalDeviceFeatures::variableMultisampleRate)>, "struct member not of the expected type");
   static_assert(std::is_same_v<VkBool32, decltype(VkPhysicalDeviceFeatures::inheritedQueries)>, "struct member not of the expected type");
+  static_assert(std::is_same_v<VkBool32, decltype(VkPhysicalDeviceVulkan11Features::storageBuffer16BitAccess)>,
+                "struct member not of the expected type");
+  static_assert(std::is_same_v<VkBool32, decltype(VkPhysicalDeviceVulkan11Features::uniformAndStorageBuffer16BitAccess)>,
+                "struct member not of the expected type");
+  static_assert(std::is_same_v<VkBool32, decltype(VkPhysicalDeviceVulkan11Features::storagePushConstant16)>,
+                "struct member not of the expected type");
+  static_assert(std::is_same_v<VkBool32, decltype(VkPhysicalDeviceVulkan11Features::storageInputOutput16)>, "struct member not of the expected type");
+  static_assert(std::is_same_v<VkBool32, decltype(VkPhysicalDeviceVulkan11Features::multiview)>, "struct member not of the expected type");
+  static_assert(std::is_same_v<VkBool32, decltype(VkPhysicalDeviceVulkan11Features::multiviewGeometryShader)>,
+                "struct member not of the expected type");
+  static_assert(std::is_same_v<VkBool32, decltype(VkPhysicalDeviceVulkan11Features::multiviewTessellationShader)>,
+                "struct member not of the expected type");
+  static_assert(std::is_same_v<VkBool32, decltype(VkPhysicalDeviceVulkan11Features::variablePointersStorageBuffer)>,
+                "struct member not of the expected type");
+  static_assert(std::is_same_v<VkBool32, decltype(VkPhysicalDeviceVulkan11Features::variablePointers)>, "struct member not of the expected type");
+  static_assert(std::is_same_v<VkBool32, decltype(VkPhysicalDeviceVulkan11Features::protectedMemory)>, "struct member not of the expected type");
+  static_assert(std::is_same_v<VkBool32, decltype(VkPhysicalDeviceVulkan11Features::samplerYcbcrConversion)>,
+                "struct member not of the expected type");
+  static_assert(std::is_same_v<VkBool32, decltype(VkPhysicalDeviceVulkan11Features::shaderDrawParameters)>, "struct member not of the expected type");
+  static_assert(std::is_same_v<VkBool32, decltype(VkPhysicalDeviceVulkan12Features::samplerMirrorClampToEdge)>,
+                "struct member not of the expected type");
+  static_assert(std::is_same_v<VkBool32, decltype(VkPhysicalDeviceVulkan12Features::drawIndirectCount)>, "struct member not of the expected type");
+  static_assert(std::is_same_v<VkBool32, decltype(VkPhysicalDeviceVulkan12Features::storageBuffer8BitAccess)>,
+                "struct member not of the expected type");
+  static_assert(std::is_same_v<VkBool32, decltype(VkPhysicalDeviceVulkan12Features::uniformAndStorageBuffer8BitAccess)>,
+                "struct member not of the expected type");
+  static_assert(std::is_same_v<VkBool32, decltype(VkPhysicalDeviceVulkan12Features::storagePushConstant8)>, "struct member not of the expected type");
+  static_assert(std::is_same_v<VkBool32, decltype(VkPhysicalDeviceVulkan12Features::shaderBufferInt64Atomics)>,
+                "struct member not of the expected type");
+  static_assert(std::is_same_v<VkBool32, decltype(VkPhysicalDeviceVulkan12Features::shaderSharedInt64Atomics)>,
+                "struct member not of the expected type");
+  static_assert(std::is_same_v<VkBool32, decltype(VkPhysicalDeviceVulkan12Features::shaderFloat16)>, "struct member not of the expected type");
+  static_assert(std::is_same_v<VkBool32, decltype(VkPhysicalDeviceVulkan12Features::shaderInt8)>, "struct member not of the expected type");
+  static_assert(std::is_same_v<VkBool32, decltype(VkPhysicalDeviceVulkan12Features::descriptorIndexing)>, "struct member not of the expected type");
+  static_assert(std::is_same_v<VkBool32, decltype(VkPhysicalDeviceVulkan12Features::shaderInputAttachmentArrayDynamicIndexing)>,
+                "struct member not of the expected type");
+  static_assert(std::is_same_v<VkBool32, decltype(VkPhysicalDeviceVulkan12Features::shaderUniformTexelBufferArrayDynamicIndexing)>,
+                "struct member not of the expected type");
+  static_assert(std::is_same_v<VkBool32, decltype(VkPhysicalDeviceVulkan12Features::shaderStorageTexelBufferArrayDynamicIndexing)>,
+                "struct member not of the expected type");
+  static_assert(std::is_same_v<VkBool32, decltype(VkPhysicalDeviceVulkan12Features::shaderUniformBufferArrayNonUniformIndexing)>,
+                "struct member not of the expected type");
+  static_assert(std::is_same_v<VkBool32, decltype(VkPhysicalDeviceVulkan12Features::shaderSampledImageArrayNonUniformIndexing)>,
+                "struct member not of the expected type");
+  static_assert(std::is_same_v<VkBool32, decltype(VkPhysicalDeviceVulkan12Features::shaderStorageBufferArrayNonUniformIndexing)>,
+                "struct member not of the expected type");
+  static_assert(std::is_same_v<VkBool32, decltype(VkPhysicalDeviceVulkan12Features::shaderStorageImageArrayNonUniformIndexing)>,
+                "struct member not of the expected type");
+  static_assert(std::is_same_v<VkBool32, decltype(VkPhysicalDeviceVulkan12Features::shaderInputAttachmentArrayNonUniformIndexing)>,
+                "struct member not of the expected type");
+  static_assert(std::is_same_v<VkBool32, decltype(VkPhysicalDeviceVulkan12Features::shaderUniformTexelBufferArrayNonUniformIndexing)>,
+                "struct member not of the expected type");
+  static_assert(std::is_same_v<VkBool32, decltype(VkPhysicalDeviceVulkan12Features::shaderStorageTexelBufferArrayNonUniformIndexing)>,
+                "struct member not of the expected type");
+  static_assert(std::is_same_v<VkBool32, decltype(VkPhysicalDeviceVulkan12Features::descriptorBindingUniformBufferUpdateAfterBind)>,
+                "struct member not of the expected type");
+  static_assert(std::is_same_v<VkBool32, decltype(VkPhysicalDeviceVulkan12Features::descriptorBindingSampledImageUpdateAfterBind)>,
+                "struct member not of the expected type");
+  static_assert(std::is_same_v<VkBool32, decltype(VkPhysicalDeviceVulkan12Features::descriptorBindingStorageImageUpdateAfterBind)>,
+                "struct member not of the expected type");
+  static_assert(std::is_same_v<VkBool32, decltype(VkPhysicalDeviceVulkan12Features::descriptorBindingStorageBufferUpdateAfterBind)>,
+                "struct member not of the expected type");
+  static_assert(std::is_same_v<VkBool32, decltype(VkPhysicalDeviceVulkan12Features::descriptorBindingUniformTexelBufferUpdateAfterBind)>,
+                "struct member not of the expected type");
+  static_assert(std::is_same_v<VkBool32, decltype(VkPhysicalDeviceVulkan12Features::descriptorBindingStorageTexelBufferUpdateAfterBind)>,
+                "struct member not of the expected type");
+  static_assert(std::is_same_v<VkBool32, decltype(VkPhysicalDeviceVulkan12Features::descriptorBindingUpdateUnusedWhilePending)>,
+                "struct member not of the expected type");
+  static_assert(std::is_same_v<VkBool32, decltype(VkPhysicalDeviceVulkan12Features::descriptorBindingPartiallyBound)>,
+                "struct member not of the expected type");
+  static_assert(std::is_same_v<VkBool32, decltype(VkPhysicalDeviceVulkan12Features::descriptorBindingVariableDescriptorCount)>,
+                "struct member not of the expected type");
+  static_assert(std::is_same_v<VkBool32, decltype(VkPhysicalDeviceVulkan12Features::runtimeDescriptorArray)>,
+                "struct member not of the expected type");
+  static_assert(std::is_same_v<VkBool32, decltype(VkPhysicalDeviceVulkan12Features::samplerFilterMinmax)>, "struct member not of the expected type");
+  static_assert(std::is_same_v<VkBool32, decltype(VkPhysicalDeviceVulkan12Features::scalarBlockLayout)>, "struct member not of the expected type");
+  static_assert(std::is_same_v<VkBool32, decltype(VkPhysicalDeviceVulkan12Features::imagelessFramebuffer)>, "struct member not of the expected type");
+  static_assert(std::is_same_v<VkBool32, decltype(VkPhysicalDeviceVulkan12Features::uniformBufferStandardLayout)>,
+                "struct member not of the expected type");
+  static_assert(std::is_same_v<VkBool32, decltype(VkPhysicalDeviceVulkan12Features::shaderSubgroupExtendedTypes)>,
+                "struct member not of the expected type");
+  static_assert(std::is_same_v<VkBool32, decltype(VkPhysicalDeviceVulkan12Features::separateDepthStencilLayouts)>,
+                "struct member not of the expected type");
+  static_assert(std::is_same_v<VkBool32, decltype(VkPhysicalDeviceVulkan12Features::hostQueryReset)>, "struct member not of the expected type");
+  static_assert(std::is_same_v<VkBool32, decltype(VkPhysicalDeviceVulkan12Features::timelineSemaphore)>, "struct member not of the expected type");
+  static_assert(std::is_same_v<VkBool32, decltype(VkPhysicalDeviceVulkan12Features::bufferDeviceAddress)>, "struct member not of the expected type");
+  static_assert(std::is_same_v<VkBool32, decltype(VkPhysicalDeviceVulkan12Features::bufferDeviceAddressCaptureReplay)>,
+                "struct member not of the expected type");
+  static_assert(std::is_same_v<VkBool32, decltype(VkPhysicalDeviceVulkan12Features::bufferDeviceAddressMultiDevice)>,
+                "struct member not of the expected type");
+  static_assert(std::is_same_v<VkBool32, decltype(VkPhysicalDeviceVulkan12Features::vulkanMemoryModel)>, "struct member not of the expected type");
+  static_assert(std::is_same_v<VkBool32, decltype(VkPhysicalDeviceVulkan12Features::vulkanMemoryModelDeviceScope)>,
+                "struct member not of the expected type");
+  static_assert(std::is_same_v<VkBool32, decltype(VkPhysicalDeviceVulkan12Features::vulkanMemoryModelAvailabilityVisibilityChains)>,
+                "struct member not of the expected type");
+  static_assert(std::is_same_v<VkBool32, decltype(VkPhysicalDeviceVulkan12Features::shaderOutputViewportIndex)>,
+                "struct member not of the expected type");
+  static_assert(std::is_same_v<VkBool32, decltype(VkPhysicalDeviceVulkan12Features::shaderOutputLayer)>, "struct member not of the expected type");
+  static_assert(std::is_same_v<VkBool32, decltype(VkPhysicalDeviceVulkan12Features::subgroupBroadcastDynamicId)>,
+                "struct member not of the expected type");
+  static_assert(std::is_same_v<VkBool32, decltype(VkPhysicalDeviceVulkan13Features::robustImageAccess)>, "struct member not of the expected type");
+  static_assert(std::is_same_v<VkBool32, decltype(VkPhysicalDeviceVulkan13Features::inlineUniformBlock)>, "struct member not of the expected type");
+  static_assert(std::is_same_v<VkBool32, decltype(VkPhysicalDeviceVulkan13Features::descriptorBindingInlineUniformBlockUpdateAfterBind)>,
+                "struct member not of the expected type");
+  static_assert(std::is_same_v<VkBool32, decltype(VkPhysicalDeviceVulkan13Features::pipelineCreationCacheControl)>,
+                "struct member not of the expected type");
+  static_assert(std::is_same_v<VkBool32, decltype(VkPhysicalDeviceVulkan13Features::privateData)>, "struct member not of the expected type");
+  static_assert(std::is_same_v<VkBool32, decltype(VkPhysicalDeviceVulkan13Features::shaderDemoteToHelperInvocation)>,
+                "struct member not of the expected type");
+  static_assert(std::is_same_v<VkBool32, decltype(VkPhysicalDeviceVulkan13Features::shaderTerminateInvocation)>,
+                "struct member not of the expected type");
+  static_assert(std::is_same_v<VkBool32, decltype(VkPhysicalDeviceVulkan13Features::subgroupSizeControl)>, "struct member not of the expected type");
+  static_assert(std::is_same_v<VkBool32, decltype(VkPhysicalDeviceVulkan13Features::computeFullSubgroups)>, "struct member not of the expected type");
+  static_assert(std::is_same_v<VkBool32, decltype(VkPhysicalDeviceVulkan13Features::synchronization2)>, "struct member not of the expected type");
+  static_assert(std::is_same_v<VkBool32, decltype(VkPhysicalDeviceVulkan13Features::textureCompressionASTC_HDR)>,
+                "struct member not of the expected type");
+  static_assert(std::is_same_v<VkBool32, decltype(VkPhysicalDeviceVulkan13Features::shaderZeroInitializeWorkgroupMemory)>,
+                "struct member not of the expected type");
+  static_assert(std::is_same_v<VkBool32, decltype(VkPhysicalDeviceVulkan13Features::dynamicRendering)>, "struct member not of the expected type");
+  static_assert(std::is_same_v<VkBool32, decltype(VkPhysicalDeviceVulkan13Features::shaderIntegerDotProduct)>,
+                "struct member not of the expected type");
+  static_assert(std::is_same_v<VkBool32, decltype(VkPhysicalDeviceVulkan13Features::maintenance4)>, "struct member not of the expected type");
 }

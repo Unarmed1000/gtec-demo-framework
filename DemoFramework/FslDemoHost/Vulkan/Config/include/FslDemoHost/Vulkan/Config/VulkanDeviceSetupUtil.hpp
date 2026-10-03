@@ -46,6 +46,9 @@ namespace Fsl::Vulkan
   public:
     //! @param pExtraDeviceCreateInfoNext if not null this structure (which must have a null pNext) is inserted at the front of the
     //!                                   VkDeviceCreateInfo pNext chain.
+    //! @note The requested Vulkan 1.1, 1.2 and 1.3 core features are enabled by inserting the VkPhysicalDeviceVulkan11Features,
+    //!       VkPhysicalDeviceVulkan12Features and VkPhysicalDeviceVulkan13Features structs that have a enabled feature at the front of the
+    //!       pNext chain.
     static VulkanDeviceSetup CreateSetup(const VkInstance instance, const VUPhysicalDeviceRecord& physicalDevice, const VkSurfaceKHR surface,
                                          const std::deque<PhysicalDeviceFeatureRequest>& featureRequestDeque,
                                          const ReadOnlySpan<const char*>& extensions,

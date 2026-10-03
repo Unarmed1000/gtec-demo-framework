@@ -44,6 +44,22 @@
 
 namespace Fsl::Vulkan
 {
+  namespace
+  {
+    //! @brief Insert the feature struct at the front of the pNext chain
+    template <typename TFeatureStruct>
+    void PushFrontIfEnabled(VkDeviceCreateInfo& rDeviceCreateInfo, TFeatureStruct& rFeatures, const bool enabled)
+    {
+      if (enabled)
+      {
+        auto* const pFeatures = reinterpret_cast<VkBaseInStructure*>(&rFeatures);
+        pFeatures->pNext = static_cast<const VkBaseInStructure*>(rDeviceCreateInfo.pNext);
+        rDeviceCreateInfo.pNext = pFeatures;
+      }
+    }
+  }
+
+
   VulkanDeviceSetup VulkanDeviceSetupUtil::CreateSetup(const VkInstance instance, const VUPhysicalDeviceRecord& physicalDevice,
                                                        const VkSurfaceKHR surface,
                                                        const std::deque<PhysicalDeviceFeatureRequest>& featureRequestDeque,
@@ -88,16 +104,24 @@ namespace Fsl::Vulkan
       }
 
       // Lookup the user defines feature requirements and set them
-      VkPhysicalDeviceFeatures deviceFeatures{};
+      PhysicalDeviceFeatureSet deviceFeatures;
       if (!featureRequestDeque.empty())
       {
         PhysicalDeviceFeatureRequestUtil::ApplyFeatureRequirements(deviceFeatures, featureRequestDeque, physicalDevice.Device);
-        deviceCreateInfo.pEnabledFeatures = &deviceFeatures;
+        deviceCreateInfo.pEnabledFeatures = &deviceFeatures.Features;
       }
+
+      // The Vulkan 1.1+ core features are enabled by chaining the structs that have a enabled feature.
+      // This is valid together with pEnabledFeatures as no VkPhysicalDeviceFeatures2 is chained.
+      PhysicalDeviceFeatureSet chainedFeatures = deviceFeatures;
+      PushFrontIfEnabled(deviceCreateInfo, chainedFeatures.Features13, chainedFeatures.HasEnabledFeatures13());
+      PushFrontIfEnabled(deviceCreateInfo, chainedFeatures.Features12, chainedFeatures.HasEnabledFeatures12());
+      PushFrontIfEnabled(deviceCreateInfo, chainedFeatures.Features11, chainedFeatures.HasEnabledFeatures11());
 
       VulkanDeviceSetup setup;
       setup.Device.Reset(physicalDevice.Device, deviceCreateInfo);
       setup.DeviceFeatures = deviceFeatures;
+      // The copy does not include the pNext chain, so the enabled 1.1+ core features are only available from setup.DeviceFeatures
       setup.DeviceCreateInfo = std::make_shared<Vulkan::DeviceCreateInfoCopy>(deviceCreateInfo);
       setup.DeviceQueueRecord = DeviceUtil::GetDeviceQueue(setup.Device.Get(), queueFamilyIndex, 0);
       return setup;
