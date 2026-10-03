@@ -41,8 +41,8 @@
 #include <FslDemoHost/EGL/EGLDemoHost.hpp>
 #include <FslUtil/OpenGLES3/GLUtil.hpp>
 #include <GLES3/gl3.h>
-#include <algorithm>
 #include <fmt/format.h>
+#include <algorithm>
 
 namespace Fsl
 {
@@ -52,6 +52,11 @@ namespace Fsl
     explicit DemoHostGLES3(const DemoHostConfig& demoHostConfig)
       : EGLDemoHost(demoHostConfig)
     {
+    }
+
+    ~DemoHostGLES3() override
+    {
+      ShutdownFromDestructor();
     }
 
   protected:

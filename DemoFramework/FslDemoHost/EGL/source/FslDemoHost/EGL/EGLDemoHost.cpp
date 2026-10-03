@@ -868,7 +868,14 @@ namespace Fsl
     try
     {
       LOCAL_LOG("Destroying");
-      Shutdown();
+      // The extending class is gone at this point so its OnAPIShutdown can not be reached from here.
+      // A class that overrides it calls ShutdownFromDestructor from its destructor, which makes this a no-op.
+      if (TryShutdownGraphicsDevice())
+      {
+        EGLDemoHost::OnAPIShutdown();
+      }
+      ShutdownSurfaceAndContext();
+      ShutdownEGL();
       LOCAL_LOG("Destroyed");
 
       // Clear the information stored in m_windowHostInfoControl
@@ -1002,20 +1009,45 @@ namespace Fsl
   {
     LOCAL_LOG("Shutdown");
 
-    // Give extending classes a chance to react
-    if (m_apiInit)
+    if (TryShutdownGraphicsDevice())
     {
-      //! Let the graphics service know that the device is ready
-      m_graphicsService->DestroyDevice();
-
-      m_graphicsService->ClearActiveApi();
-
-      m_apiInit = false;
-      EGLDemoHost::OnAPIShutdown();
+      // Give extending classes a chance to react
+      OnAPIShutdown();
     }
 
     ShutdownSurfaceAndContext();
     ShutdownEGL();
+  }
+
+
+  void EGLDemoHost::ShutdownFromDestructor() noexcept
+  {
+    try
+    {
+      Shutdown();
+    }
+    catch (const std::exception& ex)
+    {
+      FSLLOG3_ERROR("EGLDemoHost destructor can not throw so aborting. {}", ex.what())
+      std::abort();
+    }
+  }
+
+
+  bool EGLDemoHost::TryShutdownGraphicsDevice()
+  {
+    if (!m_apiInit)
+    {
+      return false;
+    }
+
+    //! Let the graphics service know that the device is being destroyed
+    m_graphicsService->DestroyDevice();
+
+    m_graphicsService->ClearActiveApi();
+
+    m_apiInit = false;
+    return true;
   }
 
 

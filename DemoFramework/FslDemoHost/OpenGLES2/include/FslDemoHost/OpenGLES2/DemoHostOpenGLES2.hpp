@@ -53,6 +53,11 @@ namespace Fsl
     {
     }
 
+    ~DemoHostGLES2() override
+    {
+      ShutdownFromDestructor();
+    }
+
   protected:
     //! @brief Called when the DemoHost API initialization has been completed
     void OnAPIInitialized() override

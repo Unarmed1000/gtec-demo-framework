@@ -128,13 +128,20 @@ namespace Fsl
     {
     }
     //! @brief Called just before the API is being shutdown
+    //! @note  This can be called after a OnAPIInitialized that threw, so it must be able to handle a partial initialization.
+    //!        A class that overrides this must call ShutdownFromDestructor from its destructor to have it called when the host is destroyed.
     virtual void OnAPIShutdown()
     {
     }
 
+    //! @brief Shutdown the API while the extending class is still alive, which allows its OnAPIShutdown to be called.
+    void ShutdownFromDestructor() noexcept;
+
   private:
     void Init();
     void Shutdown();
+    //! @return true if the graphics device was shutdown, false if the API was not initialized.
+    bool TryShutdownGraphicsDevice();
     void InitEGL();
     bool TryInitEGLHDRConfig(const std::deque<EGLint>& appAglConfigAttribs);
     bool TryInitEGLTryConfigFallback(const ConfigControl configControl, const std::deque<EGLint>& appEglConfigAttribs,
