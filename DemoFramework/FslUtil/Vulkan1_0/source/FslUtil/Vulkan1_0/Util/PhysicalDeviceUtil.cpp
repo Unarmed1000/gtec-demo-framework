@@ -69,6 +69,22 @@ namespace Fsl::Vulkan::PhysicalDeviceUtil
     return result;
   }
 
+  std::vector<VkPhysicalDeviceToolProperties> GetToolProperties(const VkPhysicalDevice device)
+  {
+    uint32_t count = 0;
+    RAPIDVULKAN_CHECK2(vkGetPhysicalDeviceToolProperties(device, &count, nullptr), "failed to acquire the count");
+
+    VkPhysicalDeviceToolProperties emptyEntry{};
+    emptyEntry.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_TOOL_PROPERTIES;
+    std::vector<VkPhysicalDeviceToolProperties> result(count, emptyEntry);
+    if (count > 0)
+    {
+      RAPIDVULKAN_CHECK2(vkGetPhysicalDeviceToolProperties(device, &count, result.data()), "failed to get the tool properties");
+      result.resize(count);
+    }
+    return result;
+  }
+
   std::vector<VkQueueFamilyProperties> GetPhysicalDeviceQueueFamilyProperties(const VkPhysicalDevice device)
   {
     uint32_t count = 0;

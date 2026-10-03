@@ -417,6 +417,8 @@ Vulkan::VUDebugUtils::SetObjectName(m_device.Get(), VK_OBJECT_TYPE_PIPELINE, m_p
 
 - [RenderDoc](https://renderdoc.org/) shows the object names and uses the labels to group the draw calls of a capture.
 - ```--VkApiDump``` logs every Vulkan call, including the names and labels that are set.
+- ```-v``` logs the tools that are attached to the physical device (the validation layer, a API dump layer, RenderDoc, ...). A tool can be the reason a app behaves differently.
+- ```-vv``` logs the properties of the physical device and its memory heaps. If the device supports ```VK_EXT_memory_budget``` each heap is logged with its budget and how much the app uses of it. A app can query the same values with ```MemoryBudgetUtil``` from ```FslUtil.Vulkan1_0```.
 - A failed ```vkAcquireNextImageKHR``` or ```vkQueuePresentKHR``` (for example ```VK_ERROR_DEVICE_LOST```) is logged before the app is restarted.
 
 ## Known issues

@@ -110,7 +110,7 @@ namespace Fsl
     void LogExtensions()
     {
       const auto extensionProperties = InstanceUtil::EnumerateInstanceExtensionProperties(nullptr);
-      FSLLOG3_INFO("Core extensions: ", extensionProperties.size());
+      FSLLOG3_INFO("Core extensions: {}", extensionProperties.size());
       for (const auto& extension : extensionProperties)
       {
         FSLLOG3_INFO("- Extension: '{}' specVersion: {}", extension.extensionName, extension.specVersion);
@@ -172,6 +172,41 @@ namespace Fsl
     {
       return std::any_of(enabledExtensions.begin(), enabledExtensions.end(),
                          [pszExtensionName](const char* const pszExtension) { return std::strcmp(pszExtension, pszExtensionName) == 0; });
+    }
+
+    //! Log the tools that are attached to the physical device (the validation layer, a API dump layer, RenderDoc, ...)
+    void LogTools(const VkPhysicalDevice physicalDevice)
+    {
+      struct PurposeName
+      {
+        VkToolPurposeFlags Flag;
+        const char* Name;
+      };
+      constexpr std::array<PurposeName, 7> PurposeNames = {
+        PurposeName{VK_TOOL_PURPOSE_VALIDATION_BIT, "validation"},
+        PurposeName{VK_TOOL_PURPOSE_PROFILING_BIT, "profiling"},
+        PurposeName{VK_TOOL_PURPOSE_TRACING_BIT, "tracing"},
+        PurposeName{VK_TOOL_PURPOSE_ADDITIONAL_FEATURES_BIT, "additional features"},
+        PurposeName{VK_TOOL_PURPOSE_MODIFYING_FEATURES_BIT, "modifying features"},
+        PurposeName{VK_TOOL_PURPOSE_DEBUG_REPORTING_BIT_EXT, "debug reporting"},
+        PurposeName{VK_TOOL_PURPOSE_DEBUG_MARKERS_BIT_EXT, "debug markers"},
+      };
+
+      const auto tools = PhysicalDeviceUtil::GetToolProperties(physicalDevice);
+      FSLLOG3_INFO("Vulkan tools: {}", tools.size());
+      for (const auto& tool : tools)
+      {
+        std::string purposes;
+        for (const auto& entry : PurposeNames)
+        {
+          if ((tool.purposes & entry.Flag) != 0u)
+          {
+            purposes += purposes.empty() ? "" : ", ";
+            purposes += entry.Name;
+          }
+        }
+        FSLLOG3_INFO("- '{}' version: '{}' purposes: {}", tool.name, tool.version, purposes);
+      }
     }
 
     constexpr auto ValidationLayerName = "VK_LAYER_KHRONOS_validation";
@@ -466,6 +501,11 @@ namespace Fsl
       FSLLOG3_INFO("- deviceID: {}", m_physicalDevice.Properties.deviceID);
       FSLLOG3_INFO("- deviceType: {}", Debug::GetBitflagsString(m_physicalDevice.Properties.deviceType));    // VkPhysicalDeviceType
       FSLLOG3_INFO("- deviceName: {}", m_physicalDevice.Properties.deviceName);
+    }
+    if (Fsl::LogConfig::GetLogLevel() >= LogType::Verbose)
+    {
+      // Knowing which tools are attached explains a lot when something behaves differently (a layer that modifies features, a capture tool)
+      LogTools(m_physicalDevice.Device);
     }
   }
 

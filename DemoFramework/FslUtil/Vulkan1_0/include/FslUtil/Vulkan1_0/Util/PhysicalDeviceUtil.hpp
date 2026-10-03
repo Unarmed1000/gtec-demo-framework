@@ -45,6 +45,11 @@ namespace Fsl::Vulkan::PhysicalDeviceUtil
 
   std::vector<VkExtensionProperties> EnumerateDeviceExtensionProperties(const VkPhysicalDevice device, const char* const pszLayerName = nullptr);
 
+  //! @brief Get the tools that are attached to the physical device (the validation layer, a API dump layer, RenderDoc, ...).
+  //!        vkGetPhysicalDeviceToolProperties
+  //! @note  This is a core Vulkan 1.3 function, so the physical device must support Vulkan 1.3.
+  std::vector<VkPhysicalDeviceToolProperties> GetToolProperties(const VkPhysicalDevice device);
+
   //! vkGetPhysicalDeviceFormatProperties
   inline VkFormatProperties GetPhysicalDeviceFormatProperties(const VkPhysicalDevice physicalDevice, const VkFormat format)
   {

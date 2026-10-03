@@ -49,6 +49,7 @@
 #include <FslDemoService/NativeGraphics/Vulkan/NativeGraphicsService.hpp>
 #include <FslUtil/Vulkan1_0/Debug/VUDebugUtils.hpp>
 #include <FslUtil/Vulkan1_0/Util/DeviceUtil.hpp>
+#include <FslUtil/Vulkan1_0/Util/MemoryBudgetUtil.hpp>
 #include <FslUtil/Vulkan1_0/Util/PhysicalDeviceKHRUtil.hpp>
 #include <FslUtil/Vulkan1_0/Util/PhysicalDeviceUtil.hpp>
 #include <FslUtil/Vulkan1_0/Util/QueueUtil.hpp>
@@ -62,10 +63,39 @@ namespace Fsl
     void LogDeviceExtensions(const VkPhysicalDevice device)
     {
       const auto extensionProperties = Vulkan::PhysicalDeviceUtil::EnumerateDeviceExtensionProperties(device);
-      FSLLOG3_INFO("Device extensions: ", extensionProperties.size());
+      FSLLOG3_INFO("Device extensions: {}", extensionProperties.size());
       for (const auto& extension : extensionProperties)
       {
         FSLLOG3_INFO("- Extension: '{}' specVersion: {}", extension.extensionName, extension.specVersion);
+      }
+    }
+
+    constexpr double ToMiB(const VkDeviceSize bytes) noexcept
+    {
+      return static_cast<double>(bytes) / (1024.0 * 1024.0);
+    }
+
+    //! Log the memory heaps of the physical device, with what this process can use and does use of them when VK_EXT_memory_budget is supported.
+    void LogMemoryHeaps(const Vulkan::VUPhysicalDeviceRecord& physicalDevice)
+    {
+      Vulkan::VUMemoryBudget budget;
+      const bool hasBudget = Vulkan::MemoryBudgetUtil::TryGetMemoryBudget(physicalDevice.Device, budget);
+
+      const uint32_t heapCount = physicalDevice.MemoryProperties.memoryHeapCount;
+      FSLLOG3_INFO("Vulkan memory heaps: {}", heapCount);
+      for (uint32_t i = 0; i < heapCount; ++i)
+      {
+        const VkMemoryHeap& heap = physicalDevice.MemoryProperties.memoryHeaps[i];
+        const char* const pszType = (heap.flags & VK_MEMORY_HEAP_DEVICE_LOCAL_BIT) != 0u ? "device local" : "host";
+        if (hasBudget && i < budget.HeapCount)
+        {
+          FSLLOG3_INFO("- heap #{} ({}): size: {:.0f} MiB budget: {:.0f} MiB usage: {:.1f} MiB", i, pszType, ToMiB(heap.size),
+                       ToMiB(budget.HeapBudget[i]), ToMiB(budget.HeapUsage[i]));
+        }
+        else
+        {
+          FSLLOG3_INFO("- heap #{} ({}): size: {:.0f} MiB", i, pszType, ToMiB(heap.size));
+        }
       }
     }
   }
@@ -109,6 +139,10 @@ namespace Fsl
     {
       std::vector<Vulkan::FeatureRequest> hostExtensions = {
         Vulkan::FeatureRequest(VK_KHR_SWAPCHAIN_EXTENSION_NAME, Vulkan::FeatureRequirement::Mandatory)};
+#ifdef VK_EXT_memory_budget
+      // Used to report how much GPU memory the app uses (see MemoryBudgetUtil)
+      hostExtensions.emplace_back(VK_EXT_MEMORY_BUDGET_EXTENSION_NAME, Vulkan::FeatureRequirement::Optional);
+#endif
 
       // Enable swapchain present fences if supported
       VkBaseInStructure* pExtraDeviceCreateInfoNext = nullptr;
@@ -154,6 +188,11 @@ namespace Fsl
 
       Vulkan::VUDebugUtils::SetObjectName(m_device.Get(), VK_OBJECT_TYPE_DEVICE, m_device.Get(), "MainDevice");
       Vulkan::VUDebugUtils::SetObjectName(m_device.Get(), VK_OBJECT_TYPE_QUEUE, m_deviceQueue.Queue, "MainQueue");
+    }
+
+    if (Fsl::LogConfig::GetLogLevel() >= LogType::Verbose2)
+    {
+      LogMemoryHeaps(m_physicalDevice);
     }
 
     Vulkan::VulkanValidationUtil::CheckWindowAndSurfaceExtent(m_physicalDevice.Device, m_surface, GetScreenExtent());

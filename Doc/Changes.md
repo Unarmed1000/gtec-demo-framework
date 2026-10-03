@@ -23,6 +23,8 @@
   * Instance extensions that are provided by a enabled layer can now be enabled (they used to be rejected as unavailable).
   * InstanceUtil::CreateInstance can be given a pNext chain.
   * A failed vkAcquireNextImageKHR or vkQueuePresentKHR (for example a lost device) is now logged before the app is restarted.
+  * The tools attached to the physical device (validation layer, API dump, RenderDoc, ...) are logged with -v and its memory heaps with -vv. With VK_EXT_memory_budget the heaps are logged with the budget and usage of the app.
+  * New FslUtil.Vulkan1_0 MemoryBudgetUtil (VK_EXT_memory_budget, how much GPU memory the app uses) and PhysicalDeviceUtil::GetToolProperties.
   * Fixed validation and synchronization issues reported by the latest validation layers
     * VulkanWillemsDemoAppExperimental: depth attachment clear hazard and text overlay image barrier.
     * Window.VulkanTriangle: swapchain acquire write-after-read hazard.
