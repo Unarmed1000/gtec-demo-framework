@@ -62,6 +62,7 @@ namespace Fsl
   class DemoAppHostConfigVulkan;
   class DemoAppProfilerOverlay;
   class IFramePacingOverlay;
+  class ISystemStatsServiceControl;
 
   namespace Vulkan
   {
@@ -329,6 +330,10 @@ namespace Fsl
       //! The swapchain calls of the frame being drawn and of the last frame that was presented
       PresentCallRecord m_currentPresentCalls;
       PresentCallRecord m_lastPresentCalls;
+      //! Null if the system stats service is unavailable
+      std::shared_ptr<ISystemStatsServiceControl> m_systemStatsServiceControl;
+      //! When the system stats service was last told the GPU memory usage of the app
+      TickCount m_lastGpuMemoryStatsTime;
 
     protected:
       explicit DemoAppVulkanBasic(const DemoAppConfig& demoAppConfig, const DemoAppVulkanSetup& demoAppVulkanSetup = {});
@@ -469,6 +474,8 @@ namespace Fsl
       void BuildSwapchainImageView(SwapchainRecord& rSwapchainRecord, const uint32_t swapBufferIndex);
 
       RecreateSwapchainResult TryRecreateSwapchain();
+      //! Tell the system stats service how much GPU memory the app uses, if it asks for it (VK_EXT_memory_budget)
+      void UpdateGpuMemoryStats() noexcept;
 
       AppDrawResult TryDoPrepareDraw(const FrameInfo& frameInfo);
       AppDrawResult TryDoSwapBuffers(const FrameInfo& frameInfo);

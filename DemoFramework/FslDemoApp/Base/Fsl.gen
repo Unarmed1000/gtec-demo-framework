@@ -5,6 +5,7 @@
     <Dependency Name="FslDemoApp.Shared"/>
     <Dependency Name="FslDemoService.BitmapConverter"/>
     <Dependency Name="FslDemoService.CpuStats" Access="Private"/>
+    <Dependency Name="FslDemoService.SystemStats" Access="Private"/>
     <Dependency Name="FslDemoService.Graphics"/>
     <Dependency Name="FslDemoService.ImageConverter"/>
     <Dependency Name="FslDemoService.Profiler"/>

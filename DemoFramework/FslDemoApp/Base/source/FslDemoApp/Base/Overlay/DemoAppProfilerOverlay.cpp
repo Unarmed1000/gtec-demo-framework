@@ -40,6 +40,7 @@
 #include <FslDemoService/Graphics/IGraphicsService.hpp>
 #include <FslDemoService/Profiler/DefaultProfilerColors.hpp>
 #include <FslDemoService/Profiler/IProfilerService.hpp>
+#include <FslDemoService/SystemStats/ISystemStatsService.hpp>
 #include <FslService/Consumer/ServiceProvider.hpp>
 #include <cassert>
 #include <cmath>
@@ -90,12 +91,14 @@ namespace Fsl
     , m_graphUpdate(0, 2000, Point2(LocalConfig::DefaultGraphWidth, LocalConfig::DefaultGraphHeight))
     , m_graphDraw(0, 2000, Point2(LocalConfig::DefaultGraphWidth, LocalConfig::DefaultGraphHeight))
     , m_graphCPU(0, 1000, Point2(LocalConfig::DefaultGraphWidth, LocalConfig::DefaultGraphHeight))
+    , m_graphGPU(0, 1000, Point2(LocalConfig::DefaultGraphWidth, LocalConfig::DefaultGraphHeight))
     , m_customConfigurationRevision(0)    // the profiler service never returns zero for its revision
 
   {
     m_profilerService = serviceProvider.Get<IProfilerService>();
     m_graphicsService = serviceProvider.TryGet<IGraphicsService>();
     m_cpuStatsService = serviceProvider.TryGet<ICpuStatsService>();
+    m_systemStatsService = serviceProvider.TryGet<ISystemStatsService>();
   }
 
 
@@ -153,6 +156,22 @@ namespace Fsl
             fmt::format_to(std::back_inserter(m_scracthpad), "{}{:5.1f}cpu", m_scracthpad.size() > 0 ? " " : "", cpuUsage);
           }
         }
+        if (m_logStatsFlags.IsFlagged(DemoAppStatsFlags::GPU) && m_systemStatsService)
+        {
+          // The GPU stats take a few seconds to arrive and not every platform has them, so they are shown when there is a value
+          GpuUsageRecord gpuUsage;
+          if (m_systemStatsService->TryGetApplicationGpuUsage(gpuUsage))
+          {
+            m_graphGPU.Add(static_cast<int32_t>(std::round(gpuUsage.UsagePercentage * 10.0f)));
+            fmt::format_to(std::back_inserter(m_scracthpad), "{}{:5.1f}gpu", m_scracthpad.size() > 0 ? " " : "", gpuUsage.UsagePercentage);
+          }
+          GpuMemoryUsageRecord gpuMemoryUsage;
+          if (m_systemStatsService->TryGetApplicationGpuMemoryUsage(gpuMemoryUsage))
+          {
+            fmt::format_to(std::back_inserter(m_scracthpad), "{}{:5}MB", m_scracthpad.size() > 0 ? " " : "",
+                           gpuMemoryUsage.TotalBytes() / (uint64_t{1024} * 1024u));
+          }
+        }
 
         const PxSize2D fontSize = basic2D->FontSize();
         Vector2 dstPos(0.0f, static_cast<float>(windowMetrics.ExtentPx.Height.Value - fontSize.RawHeight()));
@@ -191,6 +210,10 @@ namespace Fsl
       if (m_logStatsFlags.IsFlagged(DemoAppStatsFlags::CPU))
       {
         m_graphCPU.Draw(basic2D, dstPosGraph, DefaultProfilerColors::CpuLoad);
+      }
+      if (m_logStatsFlags.IsFlagged(DemoAppStatsFlags::GPU))
+      {
+        m_graphGPU.Draw(basic2D, dstPosGraph, DefaultProfilerColors::GpuLoad);
       }
 
       if (m_logStatsFlags.IsFlagged(DemoAppStatsFlags::Frame))

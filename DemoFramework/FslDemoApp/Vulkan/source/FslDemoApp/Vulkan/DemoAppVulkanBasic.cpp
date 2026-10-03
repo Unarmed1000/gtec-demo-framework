@@ -32,6 +32,7 @@
 #include <FslBase/Bits/BitsUtil.hpp>
 #include <FslBase/Log/Log3Fmt.hpp>
 #include <FslBase/Span/SpanUtil_Vector.hpp>
+#include <FslBase/Time/TimeSpan.hpp>
 #include <FslDemoApp/Base/FrameInfo.hpp>
 #include <FslDemoApp/Base/Overlay/DemoAppProfilerOverlay.hpp>
 #include <FslDemoApp/Base/Service/Host/IHostInfo.hpp>
@@ -47,12 +48,14 @@
 #include <FslDemoService/NativeGraphics/Vulkan/BasicNativeDependentCustomVulkanCreateInfo.hpp>
 #include <FslDemoService/NativeGraphics/Vulkan/NativeGraphicsService.hpp>
 #include <FslDemoService/NativeGraphics/Vulkan/NativeGraphicsSwapchainInfo.hpp>
+#include <FslDemoService/SystemStats/Control/ISystemStatsServiceControl.hpp>
 #include <FslUtil/Vulkan1_0/Debug/VUDebugUtils.hpp>
 #include <FslUtil/Vulkan1_0/Debug/VUScopedCmdDebugLabel.hpp>
 #include <FslUtil/Vulkan1_0/Log/All.hpp>
 #include <FslUtil/Vulkan1_0/Log/FmtAll.hpp>
 #include <FslUtil/Vulkan1_0/TypeConverter.hpp>
 #include <FslUtil/Vulkan1_0/Util/CommandBufferUtil.hpp>
+#include <FslUtil/Vulkan1_0/Util/MemoryBudgetUtil.hpp>
 #include <FslUtil/Vulkan1_0/Util/PhysicalDeviceKHRUtil.hpp>
 #include <FslUtil/Vulkan1_0/Util/SurfaceFormatUtil.hpp>
 #include <FslUtil/Vulkan1_0/Util/SwapchainKHRUtil.hpp>
@@ -63,6 +66,7 @@
 #include <algorithm>
 #include <array>
 #include <cassert>
+#include <exception>
 #include <iostream>
 #include <memory>
 
@@ -76,6 +80,9 @@ namespace Fsl::VulkanBasic
       constexpr const uint32_t DesiredMinSwapBufferCount = 2;
 
       constexpr const auto DefaultTimeout = std::numeric_limits<uint64_t>::max();
+
+      //! How often the system stats service is told the GPU memory usage of the app while it wants it
+      constexpr TimeSpan GpuMemoryStatsInterval = TimeSpan::FromSeconds(1);
     }
 
 
@@ -203,6 +210,7 @@ namespace Fsl::VulkanBasic
     {
       m_framePacingOverlay = framePacingServiceControl->CreateOverlay(demoAppConfig.DemoServiceProvider);
     }
+    m_systemStatsServiceControl = demoAppConfig.DemoServiceProvider.TryGet<ISystemStatsServiceControl>();
     const auto demoHostConfig = hostInfo->TryGetAppHostConfig();
     if (!demoHostConfig)
     {
@@ -310,6 +318,7 @@ namespace Fsl::VulkanBasic
     // Collect the present measurements that arrived, so the app can use them while it draws this frame
     m_presentTimingRecords.clear();
     m_presentTiming.Poll(m_presentTimingRecords);
+    UpdateGpuMemoryStats();
     if (m_graphicsServiceHost)
     {
       Vulkan::BasicNativeBeginCustomVulkanFrameInfo vulkanBeginInfo(m_dependentResources.CmdBuffers[frameInfo.FrameIndex]);
@@ -625,6 +634,41 @@ namespace Fsl::VulkanBasic
     m_dependentResources.FramesInFlightCount = 0;
     m_dependentResources.Valid = false;
     FSLLOG3_VERBOSE2("DemoAppVulkanBasic::FreeResources(): Completed");
+  }
+
+
+  void DemoAppVulkanBasic::UpdateGpuMemoryStats() noexcept
+  {
+    // The service only wants it while somebody asks for the GPU memory usage and the operating system has no number of its own
+    if (!m_systemStatsServiceControl || !m_systemStatsServiceControl->IsApplicationGpuMemoryUsageWanted())
+    {
+      return;
+    }
+    const TickCount currentTime = m_presentCallTimer.GetTimestamp();
+    if (m_lastGpuMemoryStatsTime.Ticks() != 0 && (currentTime - m_lastGpuMemoryStatsTime) < LocalConfig::GpuMemoryStatsInterval)
+    {
+      return;
+    }
+    m_lastGpuMemoryStatsTime = currentTime;
+    try
+    {
+      Vulkan::VUMemoryBudget budget;
+      if (Vulkan::MemoryBudgetUtil::TryGetMemoryBudget(m_physicalDevice.Device, budget))
+      {
+        // The heaps of the device are the memory of the GPU, what the app uses of the other heaps is system memory the GPU uses for it
+        const VkDeviceSize deviceLocalUsage = budget.GetDeviceLocalUsage();
+        VkDeviceSize totalUsage = 0;
+        for (uint32_t i = 0; i < budget.HeapCount; ++i)
+        {
+          totalUsage += budget.HeapUsage[i];
+        }
+        m_systemStatsServiceControl->SetApplicationGpuMemoryUsage(deviceLocalUsage, totalUsage - std::min(deviceLocalUsage, totalUsage));
+      }
+    }
+    catch (const std::exception& ex)
+    {
+      FSLLOG3_VERBOSE3("The GPU memory usage could not be read: {}", ex.what());
+    }
   }
 
 

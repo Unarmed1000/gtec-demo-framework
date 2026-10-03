@@ -42,7 +42,9 @@ namespace Fsl
       //! Cant be called none because the X11 header in its wisdom decided to define that :(
       Nothing = 0x00,
       Frame = 0x01,
-      CPU = 0x02
+      CPU = 0x02,
+      //! The GPU load and the GPU memory of the app (ISystemStatsService)
+      GPU = 0x04
     };
 
     uint32_t Value{0};

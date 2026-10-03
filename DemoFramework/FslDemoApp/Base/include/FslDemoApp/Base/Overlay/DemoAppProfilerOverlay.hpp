@@ -48,6 +48,7 @@ namespace Fsl
   class ICpuStatsService;
   class IGraphicsService;
   class IProfilerService;
+  class ISystemStatsService;
   struct Point2;
   struct ProfilerCustomCounterDesc;
   class ServiceProvider;
@@ -76,6 +77,8 @@ namespace Fsl
     std::shared_ptr<IProfilerService> m_profilerService;
     std::shared_ptr<IGraphicsService> m_graphicsService;
     std::shared_ptr<ICpuStatsService> m_cpuStatsService;
+    //! For the GPU stats (null if the platform has no system stats service)
+    std::shared_ptr<ISystemStatsService> m_systemStatsService;
 
     std::weak_ptr<IBasic2D> m_basic2D;
 
@@ -85,6 +88,7 @@ namespace Fsl
     DemoAppProfilerGraph m_graphUpdate;
     DemoAppProfilerGraph m_graphDraw;
     DemoAppProfilerGraph m_graphCPU;
+    DemoAppProfilerGraph m_graphGPU;
 
     uint32_t m_customConfigurationRevision;
     std::list<CustomRecord> m_customCounters;

@@ -522,6 +522,7 @@ Argument             | Description
 -h                   | Show the command line argument help.
 --Stats              | Show a performance graph.
 --LogStats           | Log various stats to the console.
+--StatsFlags         | Select what `--Stats` and `--LogStats` show: `frame`, `cpu`, `gpu` or a combination like `"frame\|cpu\|gpu"` (the default is frame and cpu). `gpu` is the GPU load and the GPU memory usage of the app where the platform can tell.
 --Window             | Run inside a window instead of using the fullscreen. Used like this `--Window [0,0,640,480]` the parameters specify (x,y,width,height).
 --ScreenshotFrequency| Create a screenshot at the given frame frequency.
 --ExitAfterFrame     | Exit after the given number of frames has been rendered

@@ -39,6 +39,7 @@ namespace Fsl::DefaultProfilerColors
   constexpr Color Update = Colors::Cyan();
   constexpr Color Draw = Colors::Yellow();
   constexpr Color CpuLoad = Colors::Orange();
+  constexpr Color GpuLoad = Colors::Red();
 
   constexpr Color BatchDrawCalls = Colors::Blue();
   constexpr Color BatchVertices = Colors::Olive();

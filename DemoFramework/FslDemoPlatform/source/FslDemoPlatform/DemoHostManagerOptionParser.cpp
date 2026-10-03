@@ -104,8 +104,9 @@ namespace Fsl
     };
 
 
-    constexpr std::array<OptionArg<DemoAppStatsFlags::Enum>, 2> StatsFlagsArgs = {
-      OptionArg<DemoAppStatsFlags::Enum>("frame", DemoAppStatsFlags::Frame), OptionArg<DemoAppStatsFlags::Enum>("cpu", DemoAppStatsFlags::CPU)};
+    constexpr std::array<OptionArg<DemoAppStatsFlags::Enum>, 3> StatsFlagsArgs = {
+      OptionArg<DemoAppStatsFlags::Enum>("frame", DemoAppStatsFlags::Frame), OptionArg<DemoAppStatsFlags::Enum>("cpu", DemoAppStatsFlags::CPU),
+      OptionArg<DemoAppStatsFlags::Enum>("gpu", DemoAppStatsFlags::GPU)};
 
     //  bmp, jpg, png or tga
     constexpr std::array<OptionArg<ImageFormat>, 4> ScreenshotFormat = {
@@ -176,7 +177,7 @@ namespace Fsl
                           "Set the log stats mode, more advanced version of LogStats. Can be disabled, latest, average");
     rOptions.emplace_back(ArgName::Stats, OptionArgument::OptionNone, CommandId::Stats, "Display basic frame profiling stats");
     rOptions.emplace_back(ArgName::StatsFlags, OptionArgument::OptionRequired, CommandId::StatsFlags,
-                          "Select the stats to be displayed/logged. Defaults to frame|cpu. Can be 'frame', 'cpu' or any combination");
+                          "Select the stats to be displayed/logged. Defaults to frame|cpu. Can be 'frame', 'cpu', 'gpu' or any combination");
     rOptions.emplace_back(ArgName::AppFirewall, OptionArgument::OptionNone, CommandId::AppFirewall,
                           "Enable the app firewall, reporting crashes on-screen instead of exiting");
     rOptions.emplace_back(ArgName::EnableBasic2DPrealloc, OptionArgument::OptionRequired, CommandId::EnableBasic2DPrealloc,

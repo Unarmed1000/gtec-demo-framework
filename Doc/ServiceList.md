@@ -10,7 +10,7 @@ IAsyncImageService            | AsyncImageServiceProxy                          
 IBitmapConverter              | BitmapConverterService                                                       | Highlevel bitmap and texture format converter.
 IContentManager               | ContentManagerService                                                        | Read the readonly app content: bitmaps, fonts, textures, text and files.
 IContentMonitor               | ContentMonitorService                                                        | Manage content monitoring
-ICpuStatsService              | CpuStatsService                                                              | CPU count, CPU usage, RAM usage.
+ICpuStatsService              | SystemStatsService                                                           | CPU count, CPU usage, RAM usage.
 IDemoAppControl               | DemoAppControlService                                                        | Screenshot, App restart, Exit, time-step mode, Mouse capture, render loop control
 IDemoAppControlEx             | DemoAppControlService                                                        | Clear various flags
 IDemoPlatformControl          | DemoPlatformControl                                                          | flag clearing, misc
@@ -36,6 +36,8 @@ IOptionsServiceControl        | OptionsService                                  
 IPersistentDataManager        | PersistentDataManagerService                                                 | Persistent data IO: bitmap, texture, text, binary.
 IProfilerService              | ProfilerService                                                              | Frame time, Custom counters.
 IProfilerServiceControl       | ProfilerService                                                              | Add frame times.
+ISystemStatsService           | SystemStatsService                                                           | ICpuStatsService plus the GPU load and the GPU memory usage of the app.
+ISystemStatsServiceControl    | SystemStatsService                                                           | Lets the graphics API supply the GPU memory usage where the OS has no number.
 ITestService                  | TestService                                                                  | Screenshot frequency, name scheme.
 ITextureService               | TextureService                                                               | Mipmap generation
 IEGLHostInfo                  | EGLHostService                                                               | GetDisplay, GetSurface, GetContext

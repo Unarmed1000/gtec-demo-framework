@@ -419,6 +419,7 @@ Vulkan::VUDebugUtils::SetObjectName(m_device.Get(), VK_OBJECT_TYPE_PIPELINE, m_p
 - ```--VkApiDump``` logs every Vulkan call, including the names and labels that are set.
 - ```-v``` logs the tools that are attached to the physical device (the validation layer, a API dump layer, RenderDoc, ...). A tool can be the reason a app behaves differently.
 - ```-vv``` logs the properties of the physical device and its memory heaps. If the device supports ```VK_EXT_memory_budget``` each heap is logged with its budget and how much the app uses of it. A app can query the same values with ```MemoryBudgetUtil``` from ```FslUtil.Vulkan1_0```.
+- ```--Stats --StatsFlags "frame|cpu|gpu"``` shows the GPU load and the GPU memory usage of the app while it runs (```ISystemStatsService```). They come from the operating system. A Vulkan app supplies the memory usage from ```VK_EXT_memory_budget``` where the operating system has no number.
 - A failed ```vkAcquireNextImageKHR``` or ```vkQueuePresentKHR``` (for example ```VK_ERROR_DEVICE_LOST```) is logged before the app is restarted.
 - When a device is lost the driver is asked why, and its fault report (a description, the faulting memory and instruction addresses and vendor information) is written to the log. This needs ```VK_KHR_device_fault``` or ```VK_EXT_device_fault```, which the host enables when the device supports it (```-v``` logs which one). A app that makes its own Vulkan calls can pass a failed ```VkResult``` to ```ReportDeviceLost``` to get the same report.
 

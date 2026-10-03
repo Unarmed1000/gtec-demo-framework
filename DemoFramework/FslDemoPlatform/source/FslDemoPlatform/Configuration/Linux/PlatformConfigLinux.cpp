@@ -34,7 +34,8 @@
 #include <FslDemoHost/Base/Service/ServiceGroupName.hpp>
 #include <FslDemoHost/Base/Service/ServicePriorityList.hpp>
 #include <FslDemoService/CpuStats/Impl/Adapter/Linux/CpuStatsAdapterLinux.hpp>
-#include <FslDemoService/CpuStats/Impl/CpuStatsServiceFactory.hpp>
+#include <FslDemoService/SystemStats/Impl/Adapter/Linux/GpuStatsAdapterLinux.hpp>
+#include <FslDemoService/SystemStats/Impl/SystemStatsServiceFactory.hpp>
 #include <FslService/Impl/ServiceType/Local/ThreadLocalSingletonServiceFactoryTemplate.hpp>
 // #include <FslNativeGraphicsGLES2/NativeGraphicsServiceGLES2.hpp>
 // #include <FslNativeGraphicsGLES3/NativeGraphicsServiceGLES3.hpp>
@@ -65,8 +66,10 @@ namespace Fsl
     //     >(ServicePriorityList::NativeGraphicsService());
     // #endif
 
-    auto cpuStatsServiceFactory = std::make_shared<CpuStatsServiceFactory>([]() { return std::make_unique<CpuStatsAdapterLinux>(); });
-    serviceRegistry.Register(cpuStatsServiceFactory);
+    // The CPU, RAM and GPU stats (it is the ICpuStatsService as well)
+    auto systemStatsServiceFactory = std::make_shared<SystemStatsServiceFactory>([]() { return std::make_unique<CpuStatsAdapterLinux>(); },
+                                                                                 []() { return std::make_unique<GpuStatsAdapterLinux>(); });
+    serviceRegistry.Register(systemStatsServiceFactory);
   }
 }
 #endif

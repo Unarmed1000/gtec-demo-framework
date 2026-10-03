@@ -55,6 +55,11 @@
   * A frame with the animation time of the frame before it (a paused app) is flagged as static, so the analysis does not report it as a animation error.
   * New GLES2, GLES3 and Vulkan FramePacing samples. They can pace their frames with the experimental mb-framepacing frame pacer (--Pacer) and have a adjustable CPU and GPU load.
   * Vulkan.FramePacing can measure when its frames reached the display and when the GPU worked on them (optional, VK_EXT_present_timing and VK_KHR_calibrated_timestamps), shows it in the frame pacing overlay, and can write a per frame log (--PresentLog).
+* GPU stats: the GPU load and the GPU memory usage of the app.
+  * New ISystemStatsService (FslDemoService.SystemStats). It is the ICpuStatsService (CPU, RAM) with TryGetApplicationGpuUsage and TryGetApplicationGpuMemoryUsage added, and the same service object is still registered as ICpuStatsService, so existing apps are not affected.
+  * The numbers come from the operating system, so they are the same for OpenGL ES and Vulkan apps: the GPU performance counters on Windows (the load of the busiest GPU engine of the process, as the Task Manager shows it) and the DRM client stats of /proc/self/fdinfo on Linux (only some drivers report them). Where they are not available the methods return false. Measuring starts with the first request, on Windows on a thread of its own.
+  * New 'gpu' stats flag: --Stats --StatsFlags "frame|cpu|gpu" shows the GPU load, the GPU memory in MB and a graph, --LogStats logs 'GPU: <percent> GPUMem: <bytes>' on a line of its own. It is not part of the default flags.
+  * Vulkan apps supply the GPU memory usage from VK_EXT_memory_budget where the operating system has no number (ISystemStatsServiceControl).
 * Misc
   * The recommended platforms are now Ubuntu 26.04 and Windows 11+ (the Ubuntu CI builds use the u26_04 image).
   * Visual Studio 2026 is now the default on windows.

@@ -52,6 +52,7 @@ namespace Fsl
   class DemoAppProfilerOverlay;
   class IDemoAppControlEx;
   class ICpuStatsService;
+  class ISystemStatsService;
   class IFramePacingOverlay;
   class IFramePacingMarkerServiceControl;
   class IGraphicsServiceControl;
@@ -103,6 +104,8 @@ namespace Fsl
     std::shared_ptr<IProfilerServiceControl> m_profilerServiceControl;
     std::shared_ptr<IProfilerService> m_profilerService;
     std::shared_ptr<ICpuStatsService> m_cpuStatsService;
+    //! For the GPU stats (null if the platform has no system stats service)
+    std::shared_ptr<ISystemStatsService> m_systemStatsService;
     std::shared_ptr<DemoAppManagerEventListener> m_eventListener;
     DemoAppSetup m_demoAppSetup;
     DemoAppConfig m_demoAppConfig;

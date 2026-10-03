@@ -49,6 +49,7 @@
 #include <FslDemoService/FramePacingMarker/Control/IFramePacingOverlay.hpp>
 #include <FslDemoService/Graphics/Control/IGraphicsServiceControl.hpp>
 #include <FslDemoService/Profiler/IProfilerService.hpp>
+#include <FslDemoService/SystemStats/ISystemStatsService.hpp>
 #include <FslService/Consumer/ServiceProvider.hpp>
 #include <cassert>
 #include <memory>
@@ -96,6 +97,7 @@ namespace Fsl
     m_profilerServiceControl = m_demoAppConfig.DemoServiceProvider.Get<IProfilerServiceControl>();
     m_profilerService = m_demoAppConfig.DemoServiceProvider.Get<IProfilerService>();
     m_cpuStatsService = m_demoAppConfig.DemoServiceProvider.TryGet<ICpuStatsService>();
+    m_systemStatsService = m_demoAppConfig.DemoServiceProvider.TryGet<ISystemStatsService>();
     const auto appInfo = m_demoAppConfig.DemoServiceProvider.Get<IAppInfoControlService>();
     appInfo->SetAppName(StringViewLite(m_demoAppSetup.ApplicationName));
 
@@ -378,6 +380,17 @@ namespace Fsl
                         TimeSpanUtil::ToClampedMicrosecondsUInt64(deltaTimeUpdate), TimeSpanUtil::ToClampedMicrosecondsUInt64(deltaTimeDraw));
         FSLLOG3_INFO_IF(m_logStatsMode == LogStatsMode::Average, "Average All: {} FPS: {} Updates: {} Draw: {}", averageTime.TotalTime, averageFps,
                         averageTime.UpdateTime, averageTime.DrawTime);
+      }
+
+      if (m_logStatsMode != LogStatsMode::Disabled && m_logStatsFlags.IsFlagged(DemoAppStatsFlags::GPU) && m_systemStatsService)
+      {
+        // Flags: GPU. It has a line of its own, so the lines above stay what they were. It is only asked for when it is logged, as the
+        // first request starts the measuring. The load is in percent and the memory in bytes (zero while not available).
+        GpuUsageRecord gpuUsage;
+        m_systemStatsService->TryGetApplicationGpuUsage(gpuUsage);
+        GpuMemoryUsageRecord gpuMemoryUsage;
+        m_systemStatsService->TryGetApplicationGpuMemoryUsage(gpuMemoryUsage);
+        FSLLOG3_INFO("GPU: {} GPUMem: {}", gpuUsage.UsagePercentage, gpuMemoryUsage.TotalBytes());
       }
     }
   }
