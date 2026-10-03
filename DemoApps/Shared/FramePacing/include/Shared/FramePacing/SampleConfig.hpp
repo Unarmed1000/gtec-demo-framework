@@ -39,8 +39,9 @@ namespace Fsl::SampleConfig
   constexpr ConstrainedValue<int32_t> TargetFps(0, 0, 240);
   //! The simulated CPU load: the time the app spends busy every frame in milliseconds
   constexpr ConstrainedValue<int32_t> CpuLoadMs(0, 0, 50);
-  //! The GPU load: the number of steps the raymarched background takes for every pixel (0 = no background)
-  constexpr ConstrainedValue<int32_t> GpuLoadSteps(0, 0, 1024);
+  //! The GPU load: the number of steps the raymarched background takes for every pixel (0 = no background).
+  //! The default is a low load, so the sample starts with a background and a GPU that has something to do.
+  constexpr ConstrainedValue<int32_t> GpuLoadSteps(16, 0, 1024);
 }
 
 #endif

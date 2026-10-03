@@ -97,7 +97,7 @@ namespace Fsl
                           "Simulate a CPU load: the time in milliseconds the app spends busy every frame (0 = none, the default).");
     rOptions.emplace_back("GpuLoad", OptionArgument::OptionRequired, CommandId::GpuLoad,
                           "A GPU load: the number of steps the raymarched background takes for every pixel (0 = no background, the "
-                          "default).");
+                          "default is a low load of 16).");
     rOptions.emplace_back("Background", OptionArgument::OptionRequired, CommandId::Background,
                           "The scene of the raymarched background: flight (a flight through a fractal lattice, the default) or hall (a "
                           "hall of columns that scrolls sideways at a constant speed, which makes a stutter easy to see).");
