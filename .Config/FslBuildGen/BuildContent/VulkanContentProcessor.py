@@ -63,7 +63,7 @@ class VulkanContentProcessor(ContentProcessor):
         # we ask the tool to write to a temporary file so that we can ensure that the output file is only modified
         # if the content was changed
         tmpOutputFileName = self.GetTempFileName(contentBuildPath, contentFileRecord)
-        buildCommand = [toolFinder.VulkanShaderCompiler, "-t", "-o", tmpOutputFileName, "-V", contentFileRecord.ResolvedPath]
+        buildCommand = [toolFinder.VulkanShaderCompiler, "-t", "--target-env", "vulkan1.3", "-o", tmpOutputFileName, "-V", contentFileRecord.ResolvedPath]
         # if config.Verbosity == 0:
         #    buildCommand += ['-s']
 

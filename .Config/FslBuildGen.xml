@@ -9,7 +9,7 @@
         FeatureRequirements can contain a 'python' like condition statement where the 
         feature names will evaluate to true or false depending on if they are present or not.
     -->
-    <ContentBuilder Name="VulkanShaderCompiler" Executable="glslangValidator" Parameters="-t -o $(OutputFileName) -V $(InputFileName)" FeatureRequirements="Vulkan" Description="Vulkan shader compiler used to convert GLSL/HLSL shaders to binary SPIR-V files">
+    <ContentBuilder Name="VulkanShaderCompiler" Executable="glslangValidator" Parameters="-t --target-env vulkan1.3 -o $(OutputFileName) -V $(InputFileName)" FeatureRequirements="Vulkan" Description="Vulkan shader compiler used to convert GLSL/HLSL shaders to binary SPIR-V files">
       <AddExtension Name="vert" Description="vertex shader" PostfixedOutputExtension=".spv"/>
       <AddExtension Name="tesc" Description="tessellation control shader" PostfixedOutputExtension=".spv"/>
       <AddExtension Name="tese" Description="tessellation evaluation shader" PostfixedOutputExtension=".spv"/>
