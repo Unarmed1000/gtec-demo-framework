@@ -398,7 +398,6 @@ class GeneratorAndroidGradleCMake(GeneratorBase):
         templateFileProcessor.Environment.Set("##ENV_ANDROID_HOME_FOR_PROP##", androidHomeForProp)
         templateFileProcessor.Environment.Set("##ENV_ANDROID_NDK_FOR_PROP##", androidNDKForProp)
         templateFileProcessor.Environment.Set("##FSL_PACKAGE_GLES_VERSION##", appPackageTemplateInfo.MinGLESVersion)
-        templateFileProcessor.Environment.Set("##FSL_PACKAGE_VULKAN_USES_FEATURE##", appPackageTemplateInfo.VulkanUsesFeature)
         templateFileProcessor.Environment.Set("##FSL_PACKAGE_MIN_ANDROID_SDK_VERSION##", appPackageTemplateInfo.MinSDKVersion.VersionString)
         templateFileProcessor.Environment.Set("##FSL_PACKAGE_TARGET_ANDROID_SDK_VERSION##", appPackageTemplateInfo.TargetSDKVersion.VersionString)
         templateFileProcessor.Environment.Set("##FSL_NDK_VERSION##", ndkVersion)

@@ -76,14 +76,6 @@ def DetermineMinGLESVersion(package: Package) -> str:
     return "0x00020000"
 
 
-def DetermineVulkanUsesFeature(package: Package) -> str:
-    """The manifest uses-feature that requires the Vulkan 1.3 baseline (0x403000 = VK_API_VERSION_1_3), empty for non Vulkan apps"""
-    namesOnly = [entry.Name for entry in package.ResolvedAllUsedFeatures]
-    if "Vulkan" in namesOnly:
-        return '\n    <uses-feature android:name="android.hardware.vulkan.version" android:version="0x403000" android:required="true"/>'
-    return ""
-
-
 class AppPackageTemplateInfo:
     def __init__(self, package: Package) -> None:
         super().__init__()
@@ -92,7 +84,6 @@ class AppPackageTemplateInfo:
         self.TargetSDKVersion = GetTargetSDKVersion(package)
         self.MinSDKVersion = DetermineMinSDKVersion(package)
         self.MinGLESVersion = DetermineMinGLESVersion(package)
-        self.VulkanUsesFeature = DetermineVulkanUsesFeature(package)
 
     def UpdateFileName(self, fileName: str) -> str:
         fileName = fileName.replace("##PREFIXED_PROJECT_NAME##", self.PrefixedProjectName)
