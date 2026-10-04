@@ -56,12 +56,6 @@ jobs:
           key: thirdparty-ubuntu26.04-build-${{ hashFiles('ThirdParty/**/Fsl.gen', 'ThirdParty/**/*.patch', '.Config/FslBuildGen/__init__.py') }}
           restore-keys: thirdparty-ubuntu26.04-build-
 
-      # The X11 window system uses the Present extension for the vsync time of a window, which the image does not have yet
-      - name: Install libXpresent
-        run: |
-          apt-get update
-          apt-get install -y libxpresent-dev
-
       # The install area is restored from actions/cache together with the claim of the run that saved it, so claim it (like Jenkins)
       - name: Build
         shell: bash
@@ -296,7 +290,7 @@ jobs:
       - name: Install clang ${{ env.LLVM_VERSION }}
         run: |
           apt-get update
-          apt-get install -y clang-${LLVM_VERSION} clang-tidy-${LLVM_VERSION} clang-tools-${LLVM_VERSION} libxpresent-dev
+          apt-get install -y clang-${LLVM_VERSION} clang-tidy-${LLVM_VERSION} clang-tools-${LLVM_VERSION}
 
       - name: Cache third party libraries
         uses: actions/cache@v6
