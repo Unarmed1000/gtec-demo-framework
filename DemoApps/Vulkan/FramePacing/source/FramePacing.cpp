@@ -177,7 +177,7 @@ namespace Fsl
     }
     for (const Vulkan::VUPresentTimingRecord& record : GetPresentTimings())
     {
-      m_shared.AddPresentTiming(record.PresentId, record.GetDisplayTime(), record.QueueOperationsEnd);
+      m_shared.AddPresentTiming(record.PresentId, record.GetDisplayTime(), record.QueueOperationsEnd, record.IsComplete);
     }
   }
 

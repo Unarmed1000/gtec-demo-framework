@@ -146,6 +146,11 @@ namespace Fsl
     //! @param presentTime when the frame was presented (a HighResolutionTimer timestamp), empty = the time EndFrame was given
     void AddPresentFeedback(const uint64_t frameId, const TickCount displayTime, const std::optional<TickCount> presentTime) noexcept;
 
+    //! @brief A frame that was presented earlier was never shown, or the presentation engine has no display time for it. Call it
+    //!        like AddPresentFeedback. It does nothing unless the config asks for present feedback.
+    //! @param frameId the SamplePacerSchedule::FrameId of the frame
+    void AddPresentNotShown(const uint64_t frameId) noexcept;
+
     [[nodiscard]] SamplePacerStatus GetStatus() const noexcept;
     [[nodiscard]] SamplePacerFeedbackState GetFeedbackState() const noexcept;
   };

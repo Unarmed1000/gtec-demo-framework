@@ -309,6 +309,7 @@ namespace Fsl
       FramePacingLogColumn FeedbackOn;
       FramePacingLogColumn FeedbackDisplay;
       FramePacingLogColumn FeedbackPresent;
+      FramePacingLogColumn FeedbackReportedNotShown;
       FramePacingLogColumn FeedbackUsed;
       FramePacingLogColumn FeedbackRefused;
       FramePacingLogColumn FeedbackNotShown;
@@ -418,8 +419,10 @@ namespace Fsl
     //! A present was measured.
     //! @param displayTime when the frame reached the display as a HighResolutionTimer timestamp (empty if it was not reported)
     //! @param queueOperationsEndTime when the present was handed to the presentation engine (empty if not reported)
-    void AddPresentTiming(const uint64_t presentId, const std::optional<TickCount> displayTime,
-                          const std::optional<TickCount> queueOperationsEndTime);
+    //! @param isComplete true if the presentation engine is done with the present. A complete present without a display time is
+    //!        reported to the frame pacer as not shown.
+    void AddPresentTiming(const uint64_t presentId, const std::optional<TickCount> displayTime, const std::optional<TickCount> queueOperationsEndTime,
+                          const bool isComplete);
     //! The GPU work of a frame was measured (HighResolutionTimer timestamps).
     void AddGpuInterval(const uint64_t presentId, const TickCount gpuStartTime, const TickCount gpuEndTime);
 

@@ -48,6 +48,9 @@ namespace Fsl::Vulkan
   {
     //! The id that was given to the present (VUSwapchainPresentTiming::PreparePresent)
     uint64_t PresentId{0};
+    //! The presentation engine is done with the present: no more stage times will come for it (reportComplete). A complete record
+    //! without a display time is a present the engine has no display time for.
+    bool IsComplete{false};
     // A stage is empty if the swapchain does not report it, or if the presentation engine had no time for it for this present. The last
     // one happens (seen for FirstPixelOut on a desktop that composes the window) and does not mean the image was not shown.
 

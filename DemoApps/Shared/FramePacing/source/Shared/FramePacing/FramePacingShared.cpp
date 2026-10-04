@@ -641,11 +641,24 @@ namespace Fsl
 
 
   void FramePacingShared::AddPresentTiming(const uint64_t presentId, const std::optional<TickCount> displayTime,
-                                           const std::optional<TickCount> queueOperationsEndTime)
+                                           const std::optional<TickCount> queueOperationsEndTime, const bool isComplete)
   {
     m_presentFeedback.AddPresentTiming(presentId, displayTime, queueOperationsEndTime);
 
-    // The frame pacer is told when the frame was shown, if it measures the frames by that. A present without a display time gets none.
+    // The frame pacer is told when the frame was shown, if it measures the frames by that. A present the presentation engine is done
+    // with and has no display time for is reported as not shown, so the frame pacer does not take the frame to be on time.
+    if (m_pacer && m_pacerConfig.PresentFeedback && !displayTime.has_value() && isComplete)
+    {
+      const PacerPresentFrame& presentFrame = m_pacerPresentFrames[presentId % m_pacerPresentFrames.size()];
+      if (presentFrame.PresentId == presentId && presentFrame.PacerFrameId != 0u)
+      {
+        m_pacer->AddPresentNotShown(presentFrame.PacerFrameId);
+        if (m_frameLog && presentFrame.HasLogFrame)
+        {
+          m_frameLog->SetLogInt64At(presentFrame.LogFrameIndex, m_logColumns.FeedbackReportedNotShown, 1);
+        }
+      }
+    }
     if (m_pacer && m_pacerConfig.PresentFeedback && displayTime.has_value())
     {
       const PacerPresentFrame& presentFrame = m_pacerPresentFrames[presentId % m_pacerPresentFrames.size()];
@@ -1108,6 +1121,10 @@ namespace Fsl
                                                    "The display time of the frame the frame pacer was given as present feedback");
     rColumns.FeedbackPresent = rLog.RegisterColumn("feedbackPresentTicks", FramePacingLogUnit::Ticks,
                                                    "The present time of the frame the frame pacer was given with its display time");
+    rColumns.FeedbackReportedNotShown =
+      rLog.RegisterColumn("feedbackNotShown", FramePacingLogUnit::Flag,
+                          "1 if the frame was reported to the frame pacer as not shown: the presentation engine was done with its present "
+                          "and had no display time for it");
     rColumns.FeedbackUsed = rLog.RegisterColumn("pacerFeedbackUsed", FramePacingLogUnit::Count,
                                                 "The display times the frame pacer measured frames by, counted since the pacer was made");
     rColumns.FeedbackRefused =

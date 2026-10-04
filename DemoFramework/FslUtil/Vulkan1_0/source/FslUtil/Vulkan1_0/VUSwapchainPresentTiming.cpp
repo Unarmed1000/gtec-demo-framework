@@ -340,6 +340,7 @@ namespace Fsl::Vulkan
         const VkPastPresentationTimingEXT& timing = timings[i];
         VUPresentTimingRecord record;
         record.PresentId = timing.presentId;
+        record.IsComplete = timing.reportComplete == VK_TRUE;
         record.TimeDomain = static_cast<int32_t>(timing.timeDomain);
         record.TimeDomainId = timing.timeDomainId;
         const uint32_t stageCount = std::min(timing.presentStageCount, LocalConfig::MaxStages);

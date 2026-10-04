@@ -151,6 +151,12 @@ namespace Fsl
   }
 
 
+  void SamplePacer::AddPresentNotShown(const uint64_t frameId) noexcept
+  {
+    m_impl->Pacer.AddPresentFeedback(PC::PresentFeedback::NotShown(frameId));
+  }
+
+
   SamplePacerFeedbackState SamplePacer::GetFeedbackState() const noexcept
   {
     const PC::PresentFeedbackState src = m_impl->Pacer.FeedbackState();
@@ -226,6 +232,12 @@ namespace Fsl
     FSL_PARAM_NOT_USED(frameId);
     FSL_PARAM_NOT_USED(displayTime);
     FSL_PARAM_NOT_USED(presentTime);
+  }
+
+
+  void SamplePacer::AddPresentNotShown(const uint64_t frameId) noexcept
+  {
+    FSL_PARAM_NOT_USED(frameId);
   }
 
 

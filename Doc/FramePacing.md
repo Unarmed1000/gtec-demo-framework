@@ -224,13 +224,15 @@ What the sample does with it:
 
 - Every frame it remembers the id the pacer gave the frame next to the id of the present of the frame. When the display time of a
   present arrives, a few frames later, it gives the pacer the display time and the time `vkQueuePresentKHR` was called for that frame.
-  A present that was reported without a display time, or that was not asked to be timed, gets no feedback.
+  A present the presentation engine is done with and has no display time for is reported to the pacer as not shown, so the pacer
+  does not take the frame to be on time. A present that was not asked to be timed gets no feedback.
 - The intended display time of the marker is then the refresh the frame reaches through the queue of the swapchain (`Display error`
   drops to about zero), and unknown for the first frames.
 - The waits of the sample hold to the start of the frame plus its swap interval, with and without feedback.
 - The `Present feedback` row of the frame pacing overlay shows how many display times the pacer used and refused and for how many
   frames it had none. The frame log has it per frame (`pacerFeedbackOn`, `pacerFrameId`, `feedbackDisplayTicks`,
-  `feedbackPresentTicks`, `pacerFeedbackUsed`, `pacerFeedbackRefused`, `pacerFeedbackNotShown`, `pacerFeedbackMissing`).
+  `feedbackPresentTicks`, `feedbackNotShown`, `pacerFeedbackUsed`, `pacerFeedbackRefused`, `pacerFeedbackNotShown`,
+  `pacerFeedbackMissing`).
 
 ### What the Vulkan sample measures about its presents
 
@@ -415,6 +417,7 @@ Column | Unit | Description
 `pacerFeedbackOn` | flag | 1 if the frame pacer measures the frames by their display times
 `feedbackDisplayTicks` | ticks | The display time of the frame the frame pacer was given as present feedback
 `feedbackPresentTicks` | ticks | The present time of the frame the frame pacer was given with its display time
+`feedbackNotShown` | flag | 1 if the frame was reported to the frame pacer as not shown: the presentation engine was done with its present and had no display time for it
 `pacerFeedbackUsed` | count | The display times the frame pacer measured frames by, counted since the pacer was made
 `pacerFeedbackRefused` | count | The display times the frame pacer refused, counted since the pacer was made: too old, before the present of their frame or not a whole number of refreshes after the one before
 `pacerFeedbackNotShown` | count | The frames that were reported to the frame pacer as never shown, counted since the pacer was made

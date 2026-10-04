@@ -168,6 +168,11 @@ File                   | Content
 
 Keep the directory together, the notes are what makes a log usable later.
 
+A capture does not name the hardware it was made on. The log of an app and what it prints name the model of the graphics device, and
+the tool replaces it in the files of every run with the vendor (`NVIDIA GPU`), sets the device id to zero and leaves the model of the
+CPU out of the notes. The vendor and the driver version stay, they are what a reader of a log needs. `--hardware-names` keeps the
+models. A log that an app wrote without the tool (`--FramePacing.Log`) names the device as the driver reports it.
+
 ### Reading the summary
 
 One line per run, for example:
@@ -239,12 +244,19 @@ On a NVIDIA desktop GPU (driver 617.14) with a 240 Hz display on Windows 11, a w
   pacer goes to two refreshes depends on how many do. In one run it switched after five seconds in which 9 % of the frames were shown
   too long, in others it held one refresh to the end with 2 % shown too long. At 120 Hz (84 %) it held one refresh with next to no
   frames shown too long.
-- **Present feedback has not helped yet** (mb-framepacing `1764848`, the present feedback plans at 120 and 240 Hz, idle, under the CPU
+- **With mb-framepacing `19acdf7` present feedback no longer delays the slow down**, and a present without a display time is
+  reported to the pacer as not shown. The same plans again, idle and under the CPU load: with work of 130 % the pacer goes to two
+  refreshes at frame 52 at 240 Hz and at frame 27 at 120 Hz, two or three frames after the run without feedback (49 and 25), and it
+  stays at two. With work of 90 % at 240 Hz on a idle machine the pacer with feedback went to two refreshes after 466 frames, where the
+  one without stayed at one refresh and showed 115 of 2400 frames for two or three refreshes; under the CPU load both stayed at one
+  refresh. With light work the runs with and without it are the same. These are the summaries of the runs, the logs have not been
+  read frame by frame. It stays off by default.
+- **Present feedback had not helped before that** (mb-framepacing `1764848`, the present feedback plans at 120 and 240 Hz, idle, under the CPU
   load and under builds that used up to 83 % of the CPUs). With light work the runs with and without it are the same: the frame starts
   stayed within 0.2 ms of the refresh interval under every load, so there was nothing to correct. With work of 90 % at 240 Hz the
   frames that miss their refresh are reported without a display time, so the pacer gets no feedback for them and counts them as on
   time. With work of 130 % the pacer takes about three times as long to go to two refreshes, and in two runs it went on to three and
-  four. It stays off by default.
+  four.
 - **A CPU load on every logical CPU did not disturb the frames of the sample**, the runs under load were as even as their idle twins.
   A build loads the disk and the memory as well, which this load does not.
 - **The time from the start of a frame to the display depends on the work**: 3.7 refreshes at 20 % work and about 2 refreshes at 90
