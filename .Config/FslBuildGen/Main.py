@@ -257,7 +257,6 @@ def DoGenerateBuildFiles(
 
     isSDKBuild = len(files) <= 0
     packageLoader = PackageLoader(config, files, platformGeneratorPlugin)
-    engineResolveConfig = EngineResolveConfig.CreateDefault()
     engineResolveConfig = EngineResolveConfig.CreateDefaultFlavor()
     return __ResolveAndGenerate(
         config,
@@ -284,7 +283,8 @@ def DoGenerateBuildFilesNoAll(
     config.LogPrint("- Generating build files")
     isSDKBuild = len(files) <= 0
     packageLoader = PackageLoader(config, files, platformGeneratorPlugin)
-    engineResolveConfig = EngineResolveConfig.CreateDefault()
+    # FslBuild builds what FslBuildGen generates: a flavor the user left open gets its default option (FslBuildClean resolves the same way)
+    engineResolveConfig = EngineResolveConfig.CreateDefaultFlavor()
     return __ResolveAndGenerate(
         config,
         variableContext,

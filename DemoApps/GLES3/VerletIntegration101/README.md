@@ -13,7 +13,7 @@ It's inspired by: [Coding Math: Episode 36 - Verlet Integration Part I+IV](https
 
 <!-- #AG_DEMOAPP_COMMANDLINE_ARGUMENTS_BEGIN# -->
 
-Command line arguments':
+Command line arguments:
 
 Argument                        |Description                                                                                                                                                         |Source
 --------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------|---------------

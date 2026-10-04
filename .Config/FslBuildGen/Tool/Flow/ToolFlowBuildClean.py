@@ -47,6 +47,7 @@ from FslBuildGen.Build.BuildVariantConfigUtil import BuildVariantConfigUtil
 # from FslBuildGen.BuildExternal.RecipeInfo import RecipeInfo
 from FslBuildGen.Config import Config
 from FslBuildGen.Context.GeneratorContext import GeneratorContext
+from FslBuildGen.Engine.EngineResolveConfig import EngineResolveConfig
 
 # from FslBuildGen.DataTypes import PackageType
 # from FslBuildGen.Generator.GeneratorConfig import GeneratorConfig
@@ -142,7 +143,16 @@ class ToolFlowBuildInfo(AToolAppFlow):
         generatorContext = GeneratorContext(
             config, self.ErrorHelpManager, packageFilters.RecipeFilterManager, config.ToolConfig.Experimental, generator, variableContext
         )
-        packages = MainFlow.DoGetPackages(generatorContext, config, theFiles, packageFilters, autoAddRecipeExternals=False)
+        # Resolve the way FslBuild does (Main.DoGenerateBuildFilesNoAll), so the packages that are cleaned are the ones FslBuild built:
+        # a flavor the user left open gets its default option
+        packages = MainFlow.DoGetPackages(
+            generatorContext,
+            config,
+            theFiles,
+            packageFilters,
+            autoAddRecipeExternals=False,
+            engineResolveConfig=EngineResolveConfig.CreateDefaultFlavor(),
+        )
 
         topLevelPackage = PackageListUtil.GetTopLevelPackage(packages)
         # requestedFiles = None if config.IsSDKBuild else theFiles

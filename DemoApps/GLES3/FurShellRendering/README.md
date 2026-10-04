@@ -13,7 +13,7 @@ The fur is rendered on a layered approach using a seamless texture as a base and
 
 <!-- #AG_DEMOAPP_COMMANDLINE_ARGUMENTS_BEGIN# -->
 
-Command line arguments':
+Command line arguments:
 
 Argument                        |Description                                                                                                                                                         |Source
 --------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------|---------------

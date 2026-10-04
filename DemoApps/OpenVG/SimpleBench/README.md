@@ -15,7 +15,7 @@ Small benchmarking application for benchmarking various ways to render points in
 
 <!-- #AG_DEMOAPP_COMMANDLINE_ARGUMENTS_BEGIN# -->
 
-Command line arguments':
+Command line arguments:
 
 Argument                        |Description                                                                                                                                                         |Source
 --------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------|---------------

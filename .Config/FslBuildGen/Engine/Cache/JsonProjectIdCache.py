@@ -34,7 +34,7 @@
 import json
 
 from FslBuildGen import IOUtil, TextFileReader, Util
-from FslBuildGen.Exceptions import InvalidPackageNameException
+from FslBuildGen.Exceptions import InvalidPackageNameException, UsageErrorException
 from FslBuildGen.Log import Log
 
 
@@ -53,12 +53,12 @@ class JsonProjectIdCache:
         self.ProjectIdDict = projectIdDict
 
         projectIdToNameDict: dict[str, str] = {}
-        for packageName, packageProjectId in projectIdToNameDict.items():
+        for packageName, packageProjectId in projectIdDict.items():
             if not Util.IsValidPackageName(packageName):
                 raise InvalidPackageNameException(packageName)
-            if packageProjectId in projectIdDict:
+            if packageProjectId in projectIdToNameDict:
                 raise Exception(
-                    f"The package project id '{packageProjectId}' is registered for multiple package names. First '{projectIdToNameDict[packageName]}' Second '{packageName}'"
+                    f"The package project id '{packageProjectId}' is registered for multiple package names. First '{projectIdToNameDict[packageProjectId]}' Second '{packageName}'"
                 )
             projectIdToNameDict[packageProjectId] = packageName
 
@@ -88,11 +88,18 @@ class JsonProjectIdCache:
                 if not isinstance(key, str) or not isinstance(value, str):
                     raise Exception("json decode failed")
                 finalDict[key] = value
-
-            return JsonProjectIdCache(finalDict)
         except Exception:
             log.DoPrintWarning(f"Failed to decode cache file '{cacheFilename}'")
             return None
+
+        # A cache that decodes but holds an entry the tool would not write is not thrown away: the project ids are random, a new cache
+        # would give every package another one. It stops the tool, as it did before the cache was checked here
+        try:
+            return JsonProjectIdCache(finalDict)
+        except Exception as ex:
+            raise UsageErrorException(
+                f"The project id cache '{cacheFilename}' is not valid: {ex}. Remove the entry, or delete the file to give every package a new project id"
+            ) from ex
 
     @staticmethod
     def Save(log: Log, cacheFilename: str, JsonProjectIdCache: JsonProjectIdCache) -> None:

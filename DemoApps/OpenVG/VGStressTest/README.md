@@ -13,7 +13,7 @@ This will often showcase the worst case power consumption.
 
 <!-- #AG_DEMOAPP_COMMANDLINE_ARGUMENTS_BEGIN# -->
 
-Command line arguments':
+Command line arguments:
 
 Argument                                      |Description                                                                                                                                                         |Source
 ----------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------|---------------

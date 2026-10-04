@@ -143,7 +143,8 @@ class SyncState:
 
     def __FileModificationDate(self, filename: str) -> str:
         t = os.path.getmtime(filename)
-        currentTime = datetime.datetime.utcfromtimestamp(t)
+        # The time in UTC without a time zone, as utcfromtimestamp gave it: the text is compared to the one of the saved state
+        currentTime = datetime.datetime.fromtimestamp(t, datetime.UTC).replace(tzinfo=None)
         return currentTime.isoformat()
 
     def Add(self, syncState: ContentState) -> None:

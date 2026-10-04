@@ -41,11 +41,13 @@ from FslBuildGen import Main as MainFlow
 # from FslBuildGen.Generator import PluginConfig
 from FslBuildGen import PackageListUtil, ParseUtil, PluginSharedValues
 from FslBuildGen.Build import Builder
+from FslBuildGen.Build.BuildOutcome import BuildOutcome, FailureExitCode
 from FslBuildGen.Build.BuildVariantConfigUtil import BuildVariantConfigUtil
 from FslBuildGen.Build.DataTypes import CommandType
 from FslBuildGen.Build.ForAllConfig import ForAllConfig
 from FslBuildGen.Config import Config
 from FslBuildGen.Context.GeneratorContext import GeneratorContext
+from FslBuildGen.Exceptions import ExitException, UsageErrorException
 from FslBuildGen.Generator import GeneratorPlugin
 
 # from FslBuildGen.PackageFilters import PackageFilters
@@ -68,6 +70,7 @@ class DefaultValue:
     FilterForFeatures = None
     GenType = "default"
     IgnoreNotSupported = False
+    KeepGoing = False
     ListExtensions = False
     ListFeatures = False
     ListRequirements = False
@@ -99,6 +102,7 @@ class LocalToolConfig(ToolAppConfig):
         self.ForAllConfig = LocalToolConfig.CreateForAllConfig(DefaultValue.ForAllExe, DefaultValue.ForAll)
         self.GenType = DefaultValue.GenType
         self.IgnoreNotSupported = DefaultValue.IgnoreNotSupported
+        self.KeepGoing = DefaultValue.KeepGoing
         self.ListExtensions = DefaultValue.ListExtensions
         self.ListFeatures = DefaultValue.ListFeatures
         self.ListRequirements = DefaultValue.ListRequirements
@@ -132,6 +136,7 @@ class ToolFlowBuild(AToolAppFlow):
         localToolConfig.ForAllConfig = LocalToolConfig.CreateForAllConfig(args.ForAllExe, args.ForAll, filterForFeatures)
         localToolConfig.GenType = args.GenType
         localToolConfig.IgnoreNotSupported = args.IgnoreNotSupported
+        localToolConfig.KeepGoing = args.KeepGoing
         localToolConfig.ListExtensions = args.ListExtensions
         localToolConfig.ListFeatures = args.ListFeatures
         localToolConfig.ListRequirements = args.ListRequirements
@@ -144,6 +149,23 @@ class ToolFlowBuild(AToolAppFlow):
         self.Process(currentDirPath, toolConfig, localToolConfig)
 
     def Process(self, currentDirPath: str, toolConfig: ToolConfig, localToolConfig: LocalToolConfig) -> None:
+        outcome = self.Build(currentDirPath, toolConfig, localToolConfig)
+        if localToolConfig.KeepGoing and outcome is not None:
+            # A build that kept going says what failed and reports it to the caller of the tool
+            for line in outcome.FormatSummary():
+                self.Log.DoPrint(line)
+            if outcome.HasFailures:
+                raise ExitException(FailureExitCode)
+
+    def Build(self, currentDirPath: str, toolConfig: ToolConfig, localToolConfig: LocalToolConfig, genFiles: list[str] | None = None) -> BuildOutcome | None:
+        """Do what FslBuild does and return the outcome of the build, None when nothing was built (the '--List...' arguments).
+        genFiles: build the packages of these gen files (and what they depend on) instead of the ones found from currentDirPath.
+        With localToolConfig.KeepGoing a package that could not be built and a ForAll command that failed are in the outcome, nothing is
+        printed about them and no exception is raised for them: that is up to the caller (see Process).
+        """
+        if localToolConfig.KeepGoing and localToolConfig.Command != CommandType.Build:
+            # The outcome is about what was built: after a clean, an install or a configure it would say nothing true
+            raise UsageErrorException(f"--KeepGoing is only for the command 'build', not '{CommandType.ToString(localToolConfig.Command)}'")
         config = Config(
             self.Log, toolConfig, localToolConfig.PackageConfigurationType, localToolConfig.BuildVariantConstraints, localToolConfig.AllowDevelopmentPlugins
         )
@@ -171,13 +193,16 @@ class ToolFlowBuild(AToolAppFlow):
 
         self.Log.LogPrint(f"Active platform: {platformGeneratorPlugin.PlatformName}")
 
-        theFiles = MainFlow.DoGetFiles(
-            config,
-            toolConfig.GetMinimalConfig(platformGeneratorPlugin.CMakeConfig),
-            currentDirPath,
-            localToolConfig.Recursive,
-            additionalDirs=self.ToolAppContext.LowLevelToolConfig.AdditionalInputDirs,
-        )
+        if genFiles is None:
+            theFiles = MainFlow.DoGetFiles(
+                config,
+                toolConfig.GetMinimalConfig(platformGeneratorPlugin.CMakeConfig),
+                currentDirPath,
+                localToolConfig.Recursive,
+                additionalDirs=self.ToolAppContext.LowLevelToolConfig.AdditionalInputDirs,
+            )
+        else:
+            theFiles = list(genFiles)
 
         generatorContext = GeneratorContext(
             self.Log,
@@ -208,11 +233,12 @@ class ToolFlowBuild(AToolAppFlow):
                 Builder.ShowExtensionList(self.Log, topLevelPackage, requestedFiles, packageNameDetails)
             if localToolConfig.ListRequirements:
                 Builder.ShowRequirementList(self.Log, topLevelPackage, requestedFiles, packageNameDetails)
+            return None
         else:
             if localToolConfig.BuildPackageFilters is None or localToolConfig.BuildPackageFilters.ExtensionNameList is None:
                 raise Exception("localToolConfig.BuildPackageFilters.ExtensionNameList not set")
             requestedPackages = BuildHelper.FindRequestedPackages(self.Log, packages, requestedFiles)
-            Builder.BuildPackages(
+            return Builder.BuildPackages(
                 self.Log,
                 config.GetBuildDir(),
                 config.SDKPath,
@@ -233,6 +259,8 @@ class ToolFlowBuild(AToolAppFlow):
                 localToolConfig.Command,
                 localToolConfig.CommandArgs,
                 True,
+                False,
+                localToolConfig.KeepGoing,
             )
 
 
@@ -276,6 +304,11 @@ class ToolAppFlowFactory(AToolAppFlowFactory):
         parser.add_argument("--ListVariants", action="store_true", help="List all variants supported by build and exit")
         parser.add_argument("--DryRun", action="store_true", help="Nothing will be build")
         parser.add_argument("--IgnoreNotSupported", action="store_true", help="try to build things that are marked as not supported")
+        parser.add_argument(
+            "--KeepGoing",
+            action="store_true",
+            help="Carry on past a package that fails to build and past a --ForAllExe/--ForAll command that fails. A summary at the end says what failed and the exit code is non-zero. A configure that fails still stops the build.",
+        )
         parser.add_argument("--ContentBuilder", default=defaultContentBuilder, help="Enable/disable the content builder")
         parser.add_argument(
             "--ForAllExe",

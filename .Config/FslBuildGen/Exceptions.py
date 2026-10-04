@@ -316,3 +316,7 @@ class InvalidPackageNamespaceNameException(Exception):
 class InvalidDefineValueException(Exception):
     def __init__(self, defineName: str, defineValue: str | None) -> None:
         super().__init__(f"'{defineValue}' is not a valid define value for {defineName}")
+
+
+class BuildConfigureFailedException(ExitException):
+    """The configure step of a build failed, ExitCode is the exit code of the configure command"""

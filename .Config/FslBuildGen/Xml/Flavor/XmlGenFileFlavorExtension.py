@@ -35,13 +35,21 @@ import xml.etree.ElementTree as ET
 
 from FslBuildGen import Util
 from FslBuildGen.Log import Log
-from FslBuildGen.Xml.Exceptions import XmlFlavorOptionNameCollisionException, XmlUnsupportedFlavorNameException, XmlUnsupportedFlavorOptionNameException
+from FslBuildGen.Xml.Exceptions import (
+    XmlFlavorOptionNameCollisionException,
+    XmlFlavorUnknownElementException,
+    XmlUnsupportedFlavorNameException,
+    XmlUnsupportedFlavorOptionNameException,
+)
 from FslBuildGen.Xml.Flavor.XmlGenFileFlavorOption import XmlGenFileFlavorOption
 from FslBuildGen.Xml.XmlBase import XmlBase
 
 
 class XmlGenFileFlavorExtension(XmlBase):
     __AttribName = "Name"
+
+    # The elements a flavor extension reads
+    __ValidElements = ["Option"]
 
     def __init__(self, log: Log, requirementTypes: list[str], xmlElement: ET.Element, ownerPackageName: str) -> None:
         super().__init__(log, xmlElement)
@@ -79,7 +87,9 @@ class XmlGenFileFlavorExtension(XmlBase):
         options = []
         if elem is not None:
             for child in elem:
-                if child.tag == "Option":
-                    options.append(XmlGenFileFlavorOption(self.Log, requirementTypes, child, ownerPackageName, self.Name))
+                # Any other element would be ignored (a '<Define>' that was meant to be inside an option for example), so it is rejected instead
+                if child.tag not in self.__ValidElements:
+                    raise XmlFlavorUnknownElementException(child, ownerPackageName, self.Name, self.__ValidElements)
+                options.append(XmlGenFileFlavorOption(self.Log, requirementTypes, child, ownerPackageName, self.Name))
         options.sort(key=lambda s: s.Name.lower())
         return options

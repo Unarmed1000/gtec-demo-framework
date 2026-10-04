@@ -116,7 +116,7 @@ class XmlGenFileExternalDependency(XmlBase):
         strElementType = self._ReadAttrib(xmlElement, self.__AttribType)
         elementType = ExternalDependencyType.TryFromString(strElementType)
         if elementType is None:
-            raise XmlException(xmlElement, f"Unknown external dependency type: '{strElementType}' expected: {', '.join(ExternalDependencyType.AllStrings())}")
+            raise XmlException(f"Unknown external dependency type: '{strElementType}' expected: {', '.join(ExternalDependencyType.AllStrings())}")
         self.Type: ExternalDependencyType = elementType
 
         # The access type is only relevant for the include file location
@@ -126,9 +126,9 @@ class XmlGenFileExternalDependency(XmlBase):
 
         if self.Type == ExternalDependencyType.DLL:
             if self.IncludeDir is not None:
-                raise XmlException(xmlElement, f"DLL dependency: '{self.Name}' can not contain include paths")
+                raise XmlException(f"DLL dependency: '{self.Name}' can not contain include paths")
             if self.Access != AccessType.Public:
-                raise XmlException(xmlElement, f"DLL dependency: '{self.Name}' can only have a access type of Public")
+                raise XmlException(f"DLL dependency: '{self.Name}' can only have a access type of Public")
 
         if not isinstance(self.Access, AccessType):
             raise Exception("Internal error")

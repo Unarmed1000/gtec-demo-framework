@@ -36,6 +36,7 @@ from FslBuildGen.ExternalVariantConstraints import ExternalVariantConstraints
 from FslBuildGen.Generator.GeneratorBase import GeneratorBase
 from FslBuildGen.Generator.GeneratorConfig import GeneratorConfig
 from FslBuildGen.Generator.GeneratorPluginBase import GeneratorPluginBase
+from FslBuildGen.Generator.Report.GeneratorBuildReport import GeneratorBuildReport
 from FslBuildGen.Generator.Report.PackageGeneratorBuildExecutableInfo import PackageGeneratorBuildExecutableInfo
 from FslBuildGen.Generator.Report.PackageGeneratorConfigReport import PackageGeneratorConfigReport
 from FslBuildGen.Generator.Report.PackageGeneratorReport import PackageGeneratorReport
@@ -84,6 +85,16 @@ class GeneratorPluginBase2(GeneratorPluginBase):
     ) -> PackageGeneratorBuildExecutableInfo | None:
         """Get information about the executable build during 'development' (and not the final installed one)"""
         return self._DoTryGetBuildExecutableInfo(log, generatorConfig, package, generatorReport, externalVariantConstraints)
+
+    def TryGenerateTargetBuildReport(self, log: Log, generatorConfig: GeneratorConfig, package: Package) -> GeneratorBuildReport | None:
+        """For a generator that builds all packages with one build: the command that builds only this package (and what it depends on) in
+        that build, None when the generator has no such command. 'FslBuild --KeepGoing' uses it to find out if a package can be built after
+        the build of all packages failed, so it does not carry the arguments that make a build keep going.
+        """
+        return self._DoTryGenerateTargetBuildReport(log, generatorConfig, package)
+
+    def _DoTryGenerateTargetBuildReport(self, log: Log, generatorConfig: GeneratorConfig, package: Package) -> GeneratorBuildReport | None:
+        return None
 
     def _DoGenerateReport(self, log: Log, generatorConfig: GeneratorConfig, packageList: list[Package]) -> TheGeneratorBuildReport:
         log.LogPrintWarning(f"Generator {self.PlatformName} does not support build reports")

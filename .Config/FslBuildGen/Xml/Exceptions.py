@@ -265,6 +265,13 @@ class XmlFlavorOptionUnknownElementException(XmlException2):
         super().__init__(msg)
 
 
+class XmlFlavorUnknownElementException(XmlException2):
+    def __init__(self, xmlElement: ET.Element, packageName: str, flavorName: str, validElements: list[str]) -> None:
+        """xmlElement is the unknown child element of a flavor or flavor extension"""
+        msg = f"Unknown element '{xmlElement.tag}' found in flavor '{flavorName}' in package '{packageName}'. Valid elements: {', '.join(validElements)}"
+        super().__init__(msg)
+
+
 class XmlExternalDependencyVersionException(XmlException2):
     """The version of an external dependency is not one the consumer of the dependency can be given.
     The element does not know which file it is read from, so the loader of the file raises the error again with the file name.

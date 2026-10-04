@@ -35,6 +35,7 @@ import json
 from enum import Enum
 
 from FslBuildGen import IOUtil, TemplateIO, TextFileReader
+from FslBuildGen.Build import BuildKeepGoing
 from FslBuildGen.Build.DataTypes import CommandType
 from FslBuildGen.BuildConfig.CMakeCompileCommandsJson import CompileCommandDefine
 from FslBuildGen.BuildExternal import CMakeHelper
@@ -651,9 +652,27 @@ class GeneratorCMake(GeneratorBase):
         return content
 
     @staticmethod
-    def _TryGenerateBuildReport(
-        log: Log, generatorConfig: GeneratorConfig, cmakeConfig: GeneratorCMakeConfig, package: Package, isMasterBuild: bool
+    def TryGenerateTargetBuildReport(
+        log: Log, generatorConfig: GeneratorConfig, cmakeConfig: GeneratorCMakeConfig, package: Package
     ) -> GeneratorBuildReport | None:
+        """The build of one package in the build of all packages: 'cmake --build . --target <the target of the package>' with the
+        configuration and the native arguments of that build, but without the arguments that make it keep going.
+        The target of a package is the name its CMakeLists.txt gives to add_executable / add_library (CMakeGeneratorUtil.GetPackageName).
+        """
+        if package.IsVirtual or generatorConfig.BuildCommand != CommandType.Build:
+            return None
+        return GeneratorCMake._TryGenerateBuildReport(log, generatorConfig, cmakeConfig, package, True, CMakeGeneratorUtil.GetPackageName(package))
+
+    @staticmethod
+    def _TryGenerateBuildReport(
+        log: Log,
+        generatorConfig: GeneratorConfig,
+        cmakeConfig: GeneratorCMakeConfig,
+        package: Package,
+        isMasterBuild: bool,
+        targetName: str | None = None,
+    ) -> GeneratorBuildReport | None:
+        """targetName: build only that target in the build of all packages (isMasterBuild), see TryGenerateTargetBuildReport"""
         if package.IsVirtual and not isMasterBuild:
             return None
 
@@ -678,8 +697,13 @@ class GeneratorCMake(GeneratorBase):
                 # doesn't always provide any benefits :(
                 buildCommandArguments.append("--parallel")
                 buildCommandArguments.append(f"{generatorConfig.NumBuildThreads}")
-            elif isMasterBuild:
+            elif isMasterBuild and targetName is None:
                 log.LogPrintWarning(f"BuildThreads not supported for generator '{cmakeConfig.GeneratorName}' please upgrade to CMake 3.12+")
+            if targetName is not None:
+                buildCommandArguments.append("--target")
+                buildCommandArguments.append(targetName)
+            elif generatorConfig.KeepGoing:
+                buildCommandNativeArguments += BuildKeepGoing.GetCMakeNativeArguments(cmakeConfig.GeneratorName)
 
             # Add extra commands based on the build type
             if generatorConfig.BuildCommand == CommandType.Clean:

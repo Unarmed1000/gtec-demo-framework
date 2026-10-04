@@ -85,7 +85,15 @@ class BuildAreaInfoFileUtil:
                 log.LogPrint(f"Install area '{targetPath}' is unclaimed, claiming it")
                 BuildAreaInfoFileUtil.ClaimInstallDirNow(log, targetPath, filePath, sdkPath, forceClaimInstallArea)
                 return
-            jsonBuildInfoDict = json.loads(fileContent)
+            try:
+                jsonContent = json.loads(fileContent)
+            except ValueError as ex:
+                # Text that is no JSON does not make the area unclaimed either
+                log.LogPrint(f"The install area claim file '{filePath}' is not valid JSON: {ex}")
+            else:
+                # A claim is a JSON object, anything else is an invalid claim file too
+                if isinstance(jsonContent, dict):
+                    jsonBuildInfoDict = jsonContent
 
         if not BuildAreaInfoFile.IsDictValid(jsonBuildInfoDict):
             if not forceClaimInstallArea:

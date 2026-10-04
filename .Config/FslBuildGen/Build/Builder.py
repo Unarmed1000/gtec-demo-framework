@@ -47,6 +47,7 @@ from FslBuildGen import IOUtil, PackageListUtil, PackageUtil, ParseUtil, ToolSha
 from FslBuildGen.Build.BuildConfigRecord import BuildConfigRecord
 from FslBuildGen.Build.BuildConfigureCache import BuildConfigureCache
 from FslBuildGen.Build.BuildFlavorUtil import BuildFlavorUtil
+from FslBuildGen.Build.BuildOutcome import BuildOutcome, ExecutableStamps
 from FslBuildGen.Build.BuildUtil import PlatformBuildTypeInfo, PlatformBuildUtil
 from FslBuildGen.Build.BuildVariantUtil import BuildVariantUtil
 from FslBuildGen.Build.DataTypes import CommandType
@@ -69,7 +70,7 @@ from FslBuildGen.Context.GeneratorContext import GeneratorContext
 # from FslBuildGen.DataTypes import BuildVariantConfig
 # from FslBuildGen.DataTypes import PackageCreationYearString
 from FslBuildGen.DataTypes import BuildVariantType, PackageRequirementTypeString, PackageType, SpecialFiles, VariantType
-from FslBuildGen.Exceptions import ExitException
+from FslBuildGen.Exceptions import BuildConfigureFailedException, ExitException
 from FslBuildGen.ExternalVariantConstraints import ExternalVariantConstraints
 
 # from FslBuildGen.Generator import PluginConfig
@@ -140,10 +141,12 @@ class PrettyPrintHelper:
 
 
 class RunCmdInfo:
-    def __init__(self, runCommands: list[str], runPath: str) -> None:
+    def __init__(self, runCommands: list[str], runPath: str, executablePath: str | None = None) -> None:
         super().__init__()
         self.RunCommands = runCommands
         self.RunPath = runPath
+        # The executable of the package the commands are for, None when they are not for an executable
+        self.ExecutablePath = executablePath
 
 
 class LocalPlatformBuildContext:
@@ -203,6 +206,12 @@ class Builder:
         self.Log = log
         self.UsedGeneratorConfig: GeneratorConfig | None = None
         self.UsedBuildContext: LocalBuildContext | None = None
+        # What is known about each package after the build, see Build/BuildOutcome.py
+        self.Outcome = BuildOutcome([])
+        # With keep-going: the executables as they were before the build of all packages, and what that build was run with
+        self.__executableStamps = ExecutableStamps()
+        self.__masterBuildEnv: dict[str, str] = {}
+        self.__masterBuildVariableReport: GeneratorVariableReport | None = None
 
         localPlatformBuildContext = LocalPlatformBuildContext(
             self.Log, generatorContext.Generator.OriginalPlatformName, generatorContext.Generator.IsCMake, buildConfig.BuildThreads
@@ -226,9 +235,15 @@ class Builder:
         if len(resolvedBuildOrderBuildable) == 0:
             self.Log.DoPrint("Nothing to build!")
             return
+        self.Outcome = BuildOutcome(resolvedBuildOrderBuildable)
 
         generatorConfig = GeneratorConfig(
-            generatorContext.PlatformName, configSDKConfigTemplatePath, toolConfig, localPlatformBuildContext.NumBuildThreads, buildConfig.BuildCommand
+            generatorContext.PlatformName,
+            configSDKConfigTemplatePath,
+            toolConfig,
+            localPlatformBuildContext.NumBuildThreads,
+            buildConfig.BuildCommand,
+            buildConfig.KeepGoing,
         )
         generatorConfigReport = generatorContext.Generator.TryGenerateConfigReport(self.Log, generatorConfig, topLevelPackage)
 
@@ -295,6 +310,7 @@ class Builder:
                     builderCanBuildContent,
                     runValidationChecks,
                     configIsDryRun,
+                    generatorConfig,
                 )
 
             # Build and run all the packages in the resolvedBuildOrderBuildable
@@ -445,6 +461,7 @@ class Builder:
         builderCanBuildContent: bool,
         runValidationChecks: bool,
         isDryRun: bool,
+        generatorConfig: GeneratorConfig,
     ) -> None:
         self.Log.LogPrintVerbose(2, "Using master-build for better performance")
         buildEnv = self.__CreateBuildEnv(self.Log, buildConfig, buildContext, topLevelPackage, builderCanBuildContent)
@@ -453,7 +470,15 @@ class Builder:
         if runValidationChecks:
             self.__RunValidationChecks(buildConfig, topLevelPackage)
 
-        self.__Build(buildContext, buildConfig, buildEnv, masterBuildReport, masterBuildVariableReport, None, "build-master")
+        if buildConfig.KeepGoing:
+            # If the build fails an executable it wrote has to be told from one an earlier build left
+            self.__masterBuildEnv = buildEnv
+            self.__masterBuildVariableReport = masterBuildVariableReport
+            for entry in self.Outcome.Packages:
+                if entry.Package.Type == PackageType.Executable:
+                    self.__executableStamps.Record(entry.Package, self.__TryGetExecutablePath(buildContext, entry.Package, buildConfig, generatorConfig))
+
+        self.Outcome.SetMasterBuildResult(self.__Build(buildContext, buildConfig, buildEnv, masterBuildReport, masterBuildVariableReport, None, "build-master"))
 
     def __BuildAndRunPackages(
         self,
@@ -484,20 +509,66 @@ class Builder:
 
                 # Do the actual package build and then run the package if so desired
                 if allowBuild:
-                    self.__BuildPackage(buildContext, buildConfig, buildEnv, package)
+                    self.Outcome.SetPackageBuildResult(package, self.__BuildPackage(buildContext, buildConfig, buildEnv, package))
 
                 # Run commands
                 forAllConfig = buildConfig.ForAllConfig
+                if forAllConfig is not None and forAllConfig.RunPackageNames is not None and package.Name not in forAllConfig.RunPackageNames:
+                    # The command is not for this package, so nothing has to be known about its executable either
+                    continue
+                if buildConfig.KeepGoing and self.__RecordIfNotBuilt(buildContext, package, buildConfig, generatorConfig):
+                    continue
                 if forAllConfig is not None and Builder.HasRequiredFeatures(package, forAllConfig):
-                    userRunCommands = ParseUtil.SplitCommandLine(forAllConfig.RunCommand)
+                    userRunCommands = ParseUtil.SplitCommandLine(forAllConfig.RunCommand) if forAllConfig.RunArguments is None else forAllConfig.RunArguments
                     if forAllConfig.Mode == ForAllMode.RunExe:
                         runCmdInfo = self.TryGenerateRunCommandForExecutable(buildContext, package, buildConfig, userRunCommands, generatorConfig)
-                        self.__RunPackage(buildContext, package, buildEnv, runCmdInfo)
+                        self.__RunPackage(buildContext, package, buildEnv, runCmdInfo, buildConfig.KeepGoing, forAllConfig.TimeoutSeconds)
                     elif forAllConfig.Mode == ForAllMode.RunCustom:
                         runCmdInfo = self.TryGenerateRunCommandForCustom(buildContext, package, buildConfig, userRunCommands, generatorConfig)
-                        self.__RunPackage(buildContext, package, buildEnv, runCmdInfo)
+                        self.__RunPackage(buildContext, package, buildEnv, runCmdInfo, buildConfig.KeepGoing, forAllConfig.TimeoutSeconds)
                     else:
                         raise Exception(f"unsupported mode: {forAllConfig.Mode}")
+
+    def __RecordIfNotBuilt(self, buildContext: LocalBuildContext, package: Package, buildConfig: BuildConfigRecord, generatorConfig: GeneratorConfig) -> bool:
+        """With keep-going: True when the package was not built or it is not known if it was, so no command is run for it.
+        Its own build command says so, and for a package with an executable the executable does when a '--ForAllExe' command is about to run it
+        or when the build of all packages failed. After such a build an executable is only proof when that build wrote it: one an earlier
+        build left is verified by building the package on its own.
+        """
+        outcome = self.Outcome.Get(package)
+        forAllConfig = buildConfig.ForAllConfig
+        runsExecutable = forAllConfig is not None and forAllConfig.Mode == ForAllMode.RunExe and Builder.HasRequiredFeatures(package, forAllConfig)
+        if not outcome.HasBuildFailed and package.Type == PackageType.Executable and (runsExecutable or self.Outcome.HasMasterBuildFailed):
+            executablePath = self.__TryGetExecutablePath(buildContext, package, buildConfig, generatorConfig)
+            if executablePath is None or not IOUtil.IsFile(executablePath):
+                self.Outcome.SetExecutableExists(package, False)
+            elif not self.Outcome.HasMasterBuildFailed or self.__executableStamps.IsNewOrChanged(package, executablePath):
+                self.Outcome.SetExecutableExists(package, True)
+            else:
+                self.__VerifyPackageBuild(buildContext, package, buildConfig, generatorConfig)
+        return outcome.HasBuildFailed
+
+    def __TryGetExecutablePath(
+        self, buildContext: LocalBuildContext, package: Package, buildConfig: BuildConfigRecord, generatorConfig: GeneratorConfig
+    ) -> str | None:
+        try:
+            runCmdInfo = self.TryGenerateRunCommandForExecutable(buildContext, package, buildConfig, ["(EXE)"], generatorConfig)
+            return None if runCmdInfo is None else runCmdInfo.ExecutablePath
+        except FileNotFoundError:
+            # The file the build system writes the path of the executable to is missing
+            return None
+
+    def __VerifyPackageBuild(self, buildContext: LocalBuildContext, package: Package, buildConfig: BuildConfigRecord, generatorConfig: GeneratorConfig) -> None:
+        """Build one package of a build of all packages that failed: when that works the package was up to date, else it is not built"""
+        targetBuildReport = None if buildConfig.Generator is None else buildConfig.Generator.TryGenerateTargetBuildReport(self.Log, generatorConfig, package)
+        if targetBuildReport is None or self.__masterBuildVariableReport is None:
+            self.Outcome.SetNotVerified(package)
+            return
+        self.Log.LogPrint(f"Verifying package: {package.Name}")
+        exitCode = self.__Build(
+            buildContext, buildConfig, self.__masterBuildEnv, targetBuildReport, self.__masterBuildVariableReport, None, f"package: '{package.Name}'"
+        )
+        self.Outcome.SetPackageBuildResult(package, exitCode)
 
     def __RunValidationChecks(self, buildConfig: BuildConfigRecord, package: Package) -> None:
         featureList = [entry.Name for entry in package.ResolvedAllUsedFeatures]
@@ -606,7 +677,7 @@ class Builder:
                 self.Log.LogPrintWarning(
                     f"The build config command '{self.__SafeJoinCommandArguments(configCommand)}' failed with '{result}'. It was run with CWD: '{currentWorkingDirectory}'"
                 )
-                raise ExitException(result)
+                raise BuildConfigureFailedException(result)
             else:
                 BuildConfigureCache.TrySave(self.Log, cacheFilename, dirtyBuildConfigureCache)
         except FileNotFoundError:
@@ -640,7 +711,7 @@ class Builder:
 
         return result
 
-    def __BuildPackage(self, buildContext: LocalBuildContext, buildConfig: BuildConfigRecord, buildEnv: dict[str, str], package: Package) -> None:
+    def __BuildPackage(self, buildContext: LocalBuildContext, buildConfig: BuildConfigRecord, buildEnv: dict[str, str], package: Package) -> int:
         if package.AbsolutePath is None or package.ResolvedBuildPath is None:
             raise Exception("Invalid package")
         if buildContext.GeneratorReportDict is None:
@@ -656,7 +727,7 @@ class Builder:
 
         currentWorkingDirectory = package.AbsolutePath
         strHelpContext = f"package: '{package.Name}'"
-        self.__Build(buildContext, buildConfig, buildEnv, buildReport, variableReport, currentWorkingDirectory, strHelpContext)
+        return self.__Build(buildContext, buildConfig, buildEnv, buildReport, variableReport, currentWorkingDirectory, strHelpContext)
 
     def __Build(
         self,
@@ -667,12 +738,15 @@ class Builder:
         variableReport: GeneratorVariableReport,
         currentWorkingDirectory: str | None,
         strHelpContext: str,
-    ) -> None:
+    ) -> int:
+        """Returns the exit code of the build command (0 when there is nothing to run). It is only something else than 0 with keep-going,
+        without it a build command that fails stops the build.
+        """
         buildCommandReport = buildReport.BuildCommandReport
         if buildCommandReport is None:
             if self.Log.Verbosity >= 5:
                 self.Log.LogPrint(f"Skipping {strHelpContext} as its build command was None")
-            return
+            return 0
 
         if buildCommandReport.CurrentWorkingDirectoryFormatString is not None:
             currentWorkingDirectory = ReportVariableFormatter.Format(
@@ -714,7 +788,9 @@ class Builder:
                 self.Log.LogPrintWarning(
                     f"The build command '{self.__SafeJoinCommandArguments(buildCommand)}' failed with '{result}'. It was run with CWD: '{currentWorkingDirectory}'"
                 )
-                raise ExitException(result)
+                if not buildConfig.KeepGoing:
+                    raise ExitException(result)
+            return result
         except FileNotFoundError:
             self.Log.DoPrintWarning(
                 f"The build command '{self.__SafeJoinCommandArguments(buildCommand)}' failed with 'file not found'. It was run with CWD: '{currentWorkingDirectory}'"
@@ -740,7 +816,18 @@ class Builder:
             else:
                 nativeBuildArgumentList.append(customArg)
 
-    def __RunPackage(self, buildContext: LocalBuildContext, package: Package, buildEnv: dict[str, str], runCmdInfo: RunCmdInfo | None) -> None:
+    def __RunPackage(
+        self,
+        buildContext: LocalBuildContext,
+        package: Package,
+        buildEnv: dict[str, str],
+        runCmdInfo: RunCmdInfo | None,
+        keepGoing: bool,
+        timeoutSeconds: float | None,
+    ) -> None:
+        """With keepGoing a command that fails, can not be started or does not return in time is recorded in the outcome instead of stopping
+        the build. timeoutSeconds is the time the command gets, None is as long as it takes.
+        """
         if runCmdInfo is None:
             return
         if package.AbsolutePath is None:
@@ -749,17 +836,39 @@ class Builder:
         try:
             if self.Log.Verbosity >= 1:
                 self.Log.LogPrint(f"Running run command '{self.__SafeJoinCommandArguments(runCmdInfo.RunCommands)}' in '{currentWorkingDirectory}'")
-            result = subprocess.call(runCmdInfo.RunCommands, cwd=currentWorkingDirectory, env=buildEnv)
+            if timeoutSeconds is None:
+                result = subprocess.call(runCmdInfo.RunCommands, cwd=currentWorkingDirectory, env=buildEnv)
+            else:
+                # The process is stopped when the time is up
+                result = subprocess.call(runCmdInfo.RunCommands, cwd=currentWorkingDirectory, env=buildEnv, timeout=timeoutSeconds)
             if result != 0:
                 self.Log.LogPrintWarning(
                     f"The run command '{self.__SafeJoinCommandArguments(runCmdInfo.RunCommands)}' failed with '{result}'. It was run with CWD: '{currentWorkingDirectory}'"
                 )
-                raise ExitException(result)
+                if not keepGoing:
+                    raise ExitException(result)
+            self.Outcome.SetCommandResult(package, runCmdInfo.RunCommands, result)
         except FileNotFoundError:
             self.Log.LogPrintWarning(
                 f"The run command '{self.__SafeJoinCommandArguments(runCmdInfo.RunCommands)}' failed with 'file not found'. It was run with CWD: '{currentWorkingDirectory}'"
             )
-            raise
+            if not keepGoing:
+                raise
+            self.Outcome.SetCommandResult(package, runCmdInfo.RunCommands, None)
+        except subprocess.TimeoutExpired:
+            self.Log.LogPrintWarning(
+                f"The run command '{self.__SafeJoinCommandArguments(runCmdInfo.RunCommands)}' did not return within {timeoutSeconds} seconds and was stopped. It was run with CWD: '{currentWorkingDirectory}'"
+            )
+            if not keepGoing:
+                raise
+            self.Outcome.SetCommandTimedOut(package, runCmdInfo.RunCommands)
+        except OSError as ex:
+            if not keepGoing:
+                raise
+            self.Log.LogPrintWarning(
+                f"The run command '{self.__SafeJoinCommandArguments(runCmdInfo.RunCommands)}' could not be started: {ex}. It was run with CWD: '{currentWorkingDirectory}'"
+            )
+            self.Outcome.SetCommandResult(package, runCmdInfo.RunCommands, None)
 
     def TryGenerateRunCommandForExecutable(
         self, buildContext: LocalBuildContext, package: Package, buildConfig: BuildConfigRecord, runCommands: list[str] | None, generatorConfig: GeneratorConfig
@@ -830,7 +939,7 @@ class Builder:
         if buildConfig.Generator.IsCMake and buildConfig.Generator.CMakeConfig is not None and buildConfig.Generator.CMakeConfig.EmscriptenEnabled:
             commands.insert(0, buildConfig.Generator.CMakeConfig.EmscriptenRunCommand)
 
-        return RunCmdInfo(commands, runPath)
+        return RunCmdInfo(commands, runPath, fullPathExe)
 
     @staticmethod
     def HasRequiredFeatures(package: Package, forAllConfig: ForAllConfig) -> bool:
@@ -911,7 +1020,11 @@ def BuildPackages(
     buildCommandArgs: list[str],
     printPathIfCMake: bool = False,
     forceConfigure: bool = False,
-) -> None:
+    keepGoing: bool = False,
+) -> BuildOutcome:
+    """keepGoing: a build or a ForAll command that fails does not stop the build, it is recorded in the outcome that is returned.
+    A configure that fails stops the build as it does without it.
+    """
     PlatformUtil.CheckBuildPlatform(generatorContext.PlatformName)
     topLevelPackage = PackageListUtil.GetTopLevelPackage(packages)
 
@@ -930,6 +1043,7 @@ def BuildPackages(
         forAllConfig,
         generator,
         buildThreads,
+        keepGoing,
     )
 
     builder = Builder(
@@ -955,9 +1069,20 @@ def BuildPackages(
             package = depPackage.Package
             if package.Type == PackageType.Executable and builder.UsedBuildContext is not None and builder.UsedGeneratorConfig is not None:
                 if package.ResolvedPlatformSupported:
-                    runCmdInfo = builder.TryGenerateRunCommandForExecutable(
-                        builder.UsedBuildContext, package, buildConfig, ["(EXE)"], builder.UsedGeneratorConfig
-                    )
+                    packageOutcome = builder.Outcome.TryGet(package.Name)
+                    if keepGoing and packageOutcome is not None and packageOutcome.HasBuildFailed:
+                        continue
+                    try:
+                        runCmdInfo = builder.TryGenerateRunCommandForExecutable(
+                            builder.UsedBuildContext, package, buildConfig, ["(EXE)"], builder.UsedGeneratorConfig
+                        )
+                    except FileNotFoundError:
+                        # The file the build system writes the path of the executable to is missing: with keep-going that is a package that was not built
+                        if not keepGoing:
+                            raise
+                        if packageOutcome is not None:
+                            builder.Outcome.SetExecutableExists(package, False)
+                        runCmdInfo = None
                     if runCmdInfo is not None:
                         if IOUtil.GetCurrentWorkingDirectory() != depPackage.Package.AbsolutePath:
                             log.DoPrint(f"Run command: cd to '{depPackage.Package.AbsolutePath}' then run 'FslBuildRun.py'")
@@ -967,6 +1092,7 @@ def BuildPackages(
                         log.DoPrint(f"- Exe CWD at:    '{runCmdInfo.RunPath}'")
                 else:
                     log.LogPrint(f"Package '{package.Name}' was not supported on this platform")
+    return builder.Outcome
 
 
 # requestedFiles is None for SDK builds else its the list of specifically requested files by the user

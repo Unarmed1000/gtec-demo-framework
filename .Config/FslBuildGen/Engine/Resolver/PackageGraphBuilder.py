@@ -39,6 +39,7 @@ from FslBuildGen.Engine.Order.Exceptions import PackageExternalFlavorConstraintM
 from FslBuildGen.Engine.Order.PackageBuildOrder import PackageBuildOrder
 from FslBuildGen.Engine.PackageFlavorName import PackageFlavorName
 from FslBuildGen.Engine.PackageFlavorOptionName import PackageFlavorOptionName
+from FslBuildGen.Engine.Resolver import DefaultFlavorSelector
 from FslBuildGen.Engine.Resolver.InstanceConfig import InstanceConfig
 from FslBuildGen.Engine.Resolver.PackageName import PackageName
 from FslBuildGen.Engine.Resolver.PackageResolveQueue import PackageResolveQueue
@@ -73,6 +74,7 @@ class PackageGraphBuilder:
             return result.Graph
         if result.GeneratedFlavorConstraints is not None:
             log.LogPrintVerbose(LocalVerbosityLevel.Info, "** Instance graph requires flavor constraints, trying default constraints **")
+            PackageGraphBuilder.__PrintFlavorDefaults(log, result.GeneratedFlavorConstraints)
             newEngineResolveConfig = EngineResolveConfig.ModifyExternalFlavorConstraintHelp(engineResolveConfig, ExternalFlavorConstraintHelp.Disabled)
             result = PackageGraphBuilder.__BuildNow(log, allPackages, result.GeneratedFlavorConstraints, newEngineResolveConfig)
             if result.Graph is not None:
@@ -262,7 +264,7 @@ class PackageGraphBuilder:
                 PackageGraphBuilder.__DetermineFlavorsThatDiffer(flavorOptionDict, instanceList)
                 if len(flavorOptionDict) > 0:
                     rootPackageName = PackageGraphBuilder.__GetConstrainedPackageName(packageTemplate)
-                    rootNodeDefaultConstraints[rootPackageName] = PackageGraphBuilder.__BuildTemplateDefaultFlavorConstraints(flavorOptionDict)
+                    rootNodeDefaultConstraints[rootPackageName] = PackageGraphBuilder.__BuildTemplateDefaultFlavorConstraints(instanceList)
 
         return rootNodeDefaultConstraints
 
@@ -278,13 +280,14 @@ class PackageGraphBuilder:
         return rootTemplate.DirectDependencies[0].Template.Name.Value
 
     @staticmethod
-    def __BuildTemplateDefaultFlavorConstraints(flavorOptionDict: dict[str, set[str]]) -> ExternalFlavorConstraints:
+    def __BuildTemplateDefaultFlavorConstraints(instances: list[ResolvedPackageInstance]) -> ExternalFlavorConstraints:
+        """The default of a root with several instances: the flavor options of its first instance, see DefaultFlavorSelector"""
+        instanceFlavorSelections = [
+            {flavorSelection.Name.Value: flavorSelection.Option.Value for flavorSelection in instance.FlavorSelections.Selections} for instance in instances
+        ]
         typedDict: dict[PackageFlavorName, PackageFlavorOptionName] = {}
-        for strFlavorName, flavorOptionNameSet in flavorOptionDict.items():
-            if len(flavorOptionNameSet) > 1:
-                flavorOptionNames = list(flavorOptionNameSet)
-                flavorOptionNames.sort()
-                typedDict[PackageFlavorName.FromString(strFlavorName)] = PackageFlavorOptionName(flavorOptionNames[0])
+        for strFlavorName, strOptionName in DefaultFlavorSelector.SelectDefaultFlavorOptions(instanceFlavorSelections).items():
+            typedDict[PackageFlavorName.FromString(strFlavorName)] = PackageFlavorOptionName(strOptionName)
         return ExternalFlavorConstraints(typedDict)
 
     @staticmethod
@@ -308,3 +311,18 @@ class PackageGraphBuilder:
                 sortedFlavorOptionList.sort()
                 res.append("{}=[{}]".format(flavorName, ", ".join(sortedFlavorOptionList)))
         return res
+
+    @staticmethod
+    def __PrintFlavorDefaults(log: Log, generatedFlavorConstraints: ComplexExternalFlavorConstraints) -> None:
+        """Tell the user which options were picked for the flavors that were left open: always printed, the root packages that got the same
+        defaults share a line and are named from verbosity 2.
+        The constraints of a package hold what was generated for it, the constraints the user supplied apply to every package and are not listed.
+        """
+        rootFlavorDefaults = {
+            rootPackageName: {flavorName.Value: optionName.Value for flavorName, optionName in constraints.Dict.items()}
+            for rootPackageName, constraints in generatedFlavorConstraints.PackageFlavorContraintDict.items()
+        }
+        for line, rootPackageNamesLine in DefaultFlavorSelector.FormatFlavorDefaults(rootFlavorDefaults):
+            log.DoPrint(line)
+            if rootPackageNamesLine is not None:
+                log.LogPrintVerbose(2, rootPackageNamesLine)

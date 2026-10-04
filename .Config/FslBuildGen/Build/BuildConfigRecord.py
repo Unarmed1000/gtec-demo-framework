@@ -61,6 +61,7 @@ class BuildConfigRecord:
         forAllConfig: ForAllConfig | None,
         generator: GeneratorPluginBase2 | None,
         buildThreads: int,
+        keepGoing: bool = False,
     ) -> None:
         super().__init__()
         self.ToolVersion = toolVersion
@@ -73,4 +74,6 @@ class BuildConfigRecord:
         self.ForAllConfig = forAllConfig
         self.Generator = generator
         self.BuildThreads = buildThreads
+        # True: a build or a ForAll command that fails is recorded in the outcome of the build instead of stopping it ('FslBuild --KeepGoing')
+        self.KeepGoing = keepGoing
         self.ActiveBuildVariantConfig = BuildVariantConfigUtil.GetBuildVariantConfig(externalVariantConstraints)

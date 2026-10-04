@@ -10,7 +10,7 @@ This is a easy way to quickly query the hardware capabilities as reported by vul
 <!-- #AG_BRIEF_END# -->
 <!-- #AG_DEMOAPP_COMMANDLINE_ARGUMENTS_BEGIN# -->
 
-Command line arguments':
+Command line arguments:
 
 Argument                        |Description                                                                                                                                                         |Source
 --------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------|---------------

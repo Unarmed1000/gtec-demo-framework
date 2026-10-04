@@ -33,6 +33,7 @@
 
 
 from FslBuildGen import IOUtil, MakeFileHelper, TemplateIO, Util
+from FslBuildGen.Build import BuildKeepGoing
 from FslBuildGen.Build.DataTypes import CommandType
 from FslBuildGen.Config import Config
 from FslBuildGen.DataTypes import ExternalDependencyType, PackageType
@@ -324,7 +325,9 @@ class GeneratorGNUmakefileUtil:
         return variableReport
 
     @staticmethod
-    def _TryGenerateBuildReport(log: Log, generatorName: str, package: Package, buildCommand: CommandType) -> GeneratorBuildReport | None:
+    def _TryGenerateBuildReport(
+        log: Log, generatorName: str, package: Package, buildCommand: CommandType, keepGoing: bool = False
+    ) -> GeneratorBuildReport | None:
         if package.IsVirtual:
             return None
 
@@ -354,6 +357,9 @@ class GeneratorGNUmakefileUtil:
             buildCommandArguments.append("clean")
         elif buildCommand == CommandType.Install:
             buildCommandArguments.append("install")
+
+        if keepGoing:
+            buildCommandArguments += BuildKeepGoing.GetMakeArguments()
 
         strBuildCommand = "make"
         buildCommandReport = GeneratorCommandReport(True, strBuildCommand, buildCommandArguments, [])
@@ -386,7 +392,7 @@ class GeneratorGNUmakefileUtil:
         if package.IsVirtual and package.Type != PackageType.HeaderLibrary:
             return None
 
-        buildReport = GeneratorGNUmakefileUtil._TryGenerateBuildReport(log, generatorName, package, generatorConfig.BuildCommand)
+        buildReport = GeneratorGNUmakefileUtil._TryGenerateBuildReport(log, generatorName, package, generatorConfig.BuildCommand, generatorConfig.KeepGoing)
         executableReport = GeneratorGNUmakefileUtil.TryGenerateExecutableReport(log, generatorName, package)
         variableReport = GeneratorGNUmakefileUtil.GenerateVariableReport(log, generatorName, package, configVariantOptions)
         return PackageGeneratorReport(buildReport, executableReport, variableReport, None)

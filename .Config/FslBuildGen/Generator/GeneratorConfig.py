@@ -35,7 +35,15 @@ from FslBuildGen.ToolConfig import ToolConfig
 
 
 class GeneratorConfig:
-    def __init__(self, platformName: str, sdkConfigTemplatePath: str, toolConfig: ToolConfig, numBuildThreads: int, buildCommand: CommandType) -> None:
+    def __init__(
+        self,
+        platformName: str,
+        sdkConfigTemplatePath: str,
+        toolConfig: ToolConfig,
+        numBuildThreads: int,
+        buildCommand: CommandType,
+        keepGoing: bool = False,
+    ) -> None:
         super().__init__()
         if numBuildThreads < 1:
             raise Exception("numBuildThreads must be > 0")
@@ -47,3 +55,5 @@ class GeneratorConfig:
         self.NumBuildThreads = numBuildThreads
         # the build command (build, clean, install, etc)
         self.BuildCommand = buildCommand
+        # True when the build command should carry on past a target that fails ('FslBuild --KeepGoing', see Build/BuildKeepGoing.py)
+        self.KeepGoing = keepGoing

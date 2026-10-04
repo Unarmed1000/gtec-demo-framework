@@ -48,7 +48,7 @@ class ProjectIdCache:
                 raise InvalidPackageNameException(packageName)
             if packageProjectId in projectIdToNameDict:
                 raise Exception(
-                    f"The package project id '{packageProjectId}' is registered for multiple package names. First '{projectIdToNameDict[packageName]}' Second '{packageName}'"
+                    f"The package project id '{packageProjectId}' is registered for multiple package names. First '{projectIdToNameDict[packageProjectId]}' Second '{packageName}'"
                 )
             projectIdToNameDict[packageProjectId] = packageName
 

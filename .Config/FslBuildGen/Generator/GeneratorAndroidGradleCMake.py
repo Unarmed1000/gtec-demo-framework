@@ -37,6 +37,7 @@ from typing import cast
 
 from FslBuildGen import IOUtil, TemplateIO
 from FslBuildGen.AndroidUtil import AndroidUtil
+from FslBuildGen.Build import BuildKeepGoing
 from FslBuildGen.BuildExternal.PackageExperimentalRecipe import PackageExperimentalRecipe
 from FslBuildGen.BuildExternal.State.PackageRecipeUtil import PackageRecipeUtil
 from FslBuildGen.CMakeUtil import CMakeVersion
@@ -581,7 +582,7 @@ class GeneratorAndroidGradleCMakeUtil:
         return variableReport
 
     @staticmethod
-    def TryGenerateBuildReport(log: Log, generatorName: str, package: Package) -> GeneratorBuildReport | None:
+    def TryGenerateBuildReport(log: Log, generatorName: str, package: Package, keepGoing: bool = False) -> GeneratorBuildReport | None:
         if package.IsVirtual:
             return None
         if package.Type != PackageType.Executable:
@@ -591,17 +592,19 @@ class GeneratorAndroidGradleCMakeUtil:
 
         gradleBuildConfigVariable = f"${{{LocalMagicBuildVariants.GradleBuildConfig}}}"
         buildCommandArguments = [gradleBuildConfigVariable]
+        if keepGoing:
+            buildCommandArguments += BuildKeepGoing.GetGradleArguments()
         buildCommand = GeneratorAndroidGradleCMakeUtil.GetPlatformGradleCommand()
         buildCommand = IOUtil.Join(commandCWD, buildCommand)
         buildCommandReport = GeneratorCommandReport(False, buildCommand, buildCommandArguments, [], commandCWD)
         return GeneratorBuildReport(buildCommandReport)
 
     @staticmethod
-    def TryGenerateGeneratorPackageReport(log: Log, generatorName: str, package: Package) -> PackageGeneratorReport | None:
+    def TryGenerateGeneratorPackageReport(log: Log, generatorName: str, package: Package, keepGoing: bool = False) -> PackageGeneratorReport | None:
         if package.IsVirtual and package.Type != PackageType.HeaderLibrary:
             return None
         #
-        buildReport = GeneratorAndroidGradleCMakeUtil.TryGenerateBuildReport(log, generatorName, package)
+        buildReport = GeneratorAndroidGradleCMakeUtil.TryGenerateBuildReport(log, generatorName, package, keepGoing)
         executableReport = None  # We dont currently support running android apps
         variableReport = GeneratorAndroidGradleCMakeUtil.GenerateVariableReport(log, generatorName, package)
         return PackageGeneratorReport(buildReport, executableReport, variableReport, None)

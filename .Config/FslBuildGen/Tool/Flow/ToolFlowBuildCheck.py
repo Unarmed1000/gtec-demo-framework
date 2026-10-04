@@ -240,7 +240,7 @@ class ToolFlowBuildCheck(AToolAppFlow):
     def __CheckUserArgs(self, clangArgs: list[str], argDesc: str) -> None:
         for entry in clangArgs:
             if entry.strip() == "--":
-                raise Exception("{0} args can not contain '--'")
+                raise Exception(f"{argDesc} args can not contain '--'")
 
     def __DetermineFormatType(self, applyFormat: bool, defaultPackageLanguage: PackageLanguage, toolConfig: ToolConfig) -> FormatTool:
         if applyFormat:

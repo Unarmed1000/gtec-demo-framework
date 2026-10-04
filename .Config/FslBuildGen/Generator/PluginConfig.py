@@ -63,6 +63,7 @@ from FslBuildGen.Generator.GeneratorVSTemplateInfo import GeneratorVSTemplateInf
 from FslBuildGen.Generator.PluginConfigContext import PluginConfigContext
 
 # from FslBuildGen.Generator.Report.GeneratorConfigReport import GeneratorConfigReport
+from FslBuildGen.Generator.Report.GeneratorBuildReport import GeneratorBuildReport
 from FslBuildGen.Generator.Report.PackageGeneratorBuildExecutableInfo import PackageGeneratorBuildExecutableInfo
 from FslBuildGen.Generator.Report.PackageGeneratorConfigReport import PackageGeneratorConfigReport
 from FslBuildGen.Generator.Report.PackageGeneratorReport import PackageGeneratorReport
@@ -120,7 +121,7 @@ class GeneratorPluginAndroid(GeneratorPlugin):
     def _DoGenerateReport(self, log: Log, generatorConfig: GeneratorConfig, packageList: list[Package]) -> TheGeneratorBuildReport:
         resultDict: dict[Package, PackageGeneratorReport] = {}
         for package in packageList:
-            buildReport = GeneratorAndroidGradleCMakeUtil.TryGenerateGeneratorPackageReport(log, self.PlatformName, package)
+            buildReport = GeneratorAndroidGradleCMakeUtil.TryGenerateGeneratorPackageReport(log, self.PlatformName, package, generatorConfig.KeepGoing)
             if buildReport is not None:
                 resultDict[package] = buildReport
         return TheGeneratorBuildReport(resultDict)
@@ -313,6 +314,11 @@ class GeneratorPluginCMakeBase(GeneratorPlugin):
         return GeneratorCMake.GenerateGeneratorBuildConfigReport(
             log, generatorConfig, self.CMakeConfig, cmakeBuildPackageDir, topLevelPackage, configVariant.Options
         )
+
+    def _DoTryGenerateTargetBuildReport(self, log: Log, generatorConfig: GeneratorConfig, package: Package) -> GeneratorBuildReport | None:
+        if self.CMakeConfig is None:
+            raise Exception("internal error generator not configured")
+        return GeneratorCMake.TryGenerateTargetBuildReport(log, generatorConfig, self.CMakeConfig, package)
 
     def _DoTryGetBuildExecutableInfo(
         self,

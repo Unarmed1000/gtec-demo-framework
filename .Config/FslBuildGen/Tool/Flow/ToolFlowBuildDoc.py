@@ -31,21 +31,25 @@
 # ****************************************************************************************************************************************************
 
 import argparse
-import json
 
 # from typing import Callable
 from typing import Any, cast
 
-from FslBuildGen import IOUtil, MarkdownIO, TextFileReader
+from FslBuildGen import IOUtil, MarkdownIO, PluginSharedValues, TextFileReader
 from FslBuildGen import Main as MainFlow
 from FslBuildGen.BasicConfig import BasicConfig
+from FslBuildGen.Build.BuildOutcome import BuildOutcome
 from FslBuildGen.Build.BuildVariantConfigUtil import BuildVariantConfigUtil
 from FslBuildGen.Build.ForAllConfig import ForAllConfig
 from FslBuildGen.BuildConfig.BuildDocConfiguration import BuildDocConfiguration
+from FslBuildGen.BuildConfig.BuildUtil import BuildUtil
+from FslBuildGen.BuildDoc import ArgumentExtraction, ArgumentExtractionState
 from FslBuildGen.Config import Config
 from FslBuildGen.Context.GeneratorContext import GeneratorContext
 from FslBuildGen.DataTypes import PackageType
 from FslBuildGen.Engine.EngineResolveConfig import EngineResolveConfig
+from FslBuildGen.Exceptions import BuildConfigureFailedException, ExitException, UsageErrorException
+from FslBuildGen.Generator.GeneratorPlugin import GeneratorPlugin
 from FslBuildGen.Location.ResolvedPath import ResolvedPath
 from FslBuildGen.Log import Log
 from FslBuildGen.Packages.Package import Package
@@ -339,7 +343,7 @@ def TryBuildArgumentTableLines(basicConfig: BasicConfig, argumentDict: JsonDictT
 
     #    for key, argumentList in groupedArgumentDict.items():
     result.append("")
-    result.append("Command line arguments':")
+    result.append(g_argumentHeading)
     result.append("")
     result.append(formatString.format("Argument", "Description", "Source"))
     result.append("{}|{}|{}".format("-" * maxNameLength, "-" * maxDescLength, "-" * maxSourceNameLength))
@@ -349,6 +353,52 @@ def TryBuildArgumentTableLines(basicConfig: BasicConfig, argumentDict: JsonDictT
                 formatString.format(SafeMarkdownString(entry.Help_FormattedName), SafeMarkdownString(entry.Description), SafeMarkdownString(entry.SourceName))
             )
     return result
+
+
+# A one-time correction. The versions of the tool before 3.14.53 wrote the heading of the argument section with a stray quote. The section
+# is only written again when the arguments of the app are extracted (the app is built and run), so a README.md would keep the old
+# heading for years. A run that does not extract the arguments corrects that one line. It is done on the bytes of the file: nothing
+# else in it changes, not the newlines, not the whitespace at the end of a line and not a byte order mark.
+g_argumentSectionName = "AG_DEMOAPP_COMMANDLINE_ARGUMENTS"
+g_argumentHeading = "Command line arguments:"
+g_argumentHeadingOfOlderVersions = "Command line arguments':"
+
+
+def TryCorrectArgumentHeadingOfOlderVersions(content: bytes) -> bytes | None:
+    """The bytes of a README.md with the heading of its argument section corrected, None when there is nothing to correct: the file has
+    no argument section (the two marker comments, found like TryReplaceSection finds them) or the section does not hold the old heading
+    on a line of its own.
+    """
+    oldHeading = g_argumentHeadingOfOlderVersions.encode("ascii")
+    if oldHeading not in content:
+        return None
+    # The lines with their newlines, so the file is put together again as it was
+    lines = content.splitlines(keepends=True)
+    strippedLines = [line.strip() for line in lines]
+    sectionBegin = f"<!-- #{g_argumentSectionName}_BEGIN# -->".encode("ascii")
+    sectionEnd = f"<!-- #{g_argumentSectionName}_END# -->".encode("ascii")
+    if sectionBegin not in strippedLines or sectionEnd not in strippedLines:
+        return None
+    corrected = False
+    for index in range(strippedLines.index(sectionBegin) + 1, strippedLines.index(sectionEnd)):
+        if strippedLines[index] == oldHeading:
+            lines[index] = lines[index].replace(oldHeading, g_argumentHeading.encode("ascii"))
+            corrected = True
+    return b"".join(lines) if corrected else None
+
+
+def CorrectArgumentHeadingOfOlderVersions(config: Config, path: str) -> bool:
+    """Correct the heading in the README.md at the path, returns true if the file has the old heading (a dry run does not write it)"""
+    content = IOUtil.TryReadBinaryFile(path)
+    correctedContent = TryCorrectArgumentHeadingOfOlderVersions(content) if content is not None else None
+    if correctedContent is None:
+        return False
+    if config.DisableWrite:
+        config.LogPrintVerbose(1, f"Would correct the heading of the command line arguments in '{path}'")
+    else:
+        config.LogPrintVerbose(1, f"Corrected the heading of the command line arguments in '{path}'")
+        IOUtil.WriteBinaryFile(path, correctedContent)
+    return True
 
 
 def UpdatePackageReadMe(
@@ -361,7 +411,7 @@ def UpdatePackageReadMe(
     if package in packageArgumentsDict:
         argumentsLines = TryBuildArgumentTableLines(basicConfig, packageArgumentsDict[package])
         if argumentsLines is not None:
-            newLines = TryReplaceSection(basicConfig, lines, "AG_DEMOAPP_COMMANDLINE_ARGUMENTS", argumentsLines, path)
+            newLines = TryReplaceSection(basicConfig, lines, g_argumentSectionName, argumentsLines, path)
             if newLines is not None:
                 lines = newLines
     return lines
@@ -398,55 +448,219 @@ def TryExtractBrief(basicConfig: BasicConfig, lines: list[str], path: str) -> li
 
 
 def ReadJsonFile(log: Log, filename: str) -> JsonDictType:
-    # The demo app writes the file. It is read as UTF-8, a byte order mark is accepted and a file in the locale encoding is read with a warning
-    content = TextFileReader.ReadUTF8OrLocale(log, filename, "command line argument file", skipBom=True)
-    return cast(JsonDictType, json.loads(content))
+    """Read the file a demo app wrote its command line arguments to"""
+    return cast(JsonDictType, ArgumentExtraction.ReadJsonFile(log, filename))
 
 
-def TryBuildAndRun(toolAppContext: ToolAppContext, config: Config, package: Package) -> JsonDictType | None:
-    if not package.ResolvedPlatformSupported:
-        return None
+def GetGenFilePath(config: Config, package: Package) -> str:
     if package.AbsolutePath is None:
         raise Exception("Invalid package")
-    workDir = package.AbsolutePath
-    tmpOutputFilename = IOUtil.Join(workDir, "FslBuildDoc_AppArguments.json")
+    return IOUtil.Join(package.AbsolutePath, config.GenFileName)
+
+
+def __BuildAndRunApps(
+    toolAppContext: ToolAppContext,
+    config: Config,
+    apps: list[Package],
+    argumentFileDirectory: str,
+    packageConfigurationType: str,
+    runApps: list[Package] | None = None,
+) -> BuildOutcome:
+    """One FslBuild run for the apps: 'FslBuild --KeepGoing --ForAllExe "(EXE) --System.Arguments.Save <file of the app> -h"'.
+    A build or a run that fails is in the outcome that is returned, a configure that fails raises BuildConfigureFailedException.
+    runApps: only these apps are run, the other ones are only built. None runs all of them.
+    """
+    toolFlowConfig = ToolFlowBuild.GetDefaultLocalConfig()
+    toolFlowConfig.SetToolAppConfigValues(toolAppContext.ToolAppConfig)
+    toolFlowConfig.PackageConfigurationType = packageConfigurationType
+    toolFlowConfig.KeepGoing = True
+    toolFlowConfig.ForAllConfig = ForAllConfig.CreateForAllExeArgumentsConfig(
+        ArgumentExtraction.GetRunArguments(argumentFileDirectory),
+        ArgumentExtraction.RunTimeoutSeconds,
+        None if runApps is None else [app.Name for app in runApps],
+    )
+    buildFlow = ToolFlowBuild.ToolFlowBuild(toolAppContext)
+    genFiles = [GetGenFilePath(config, app) for app in apps]
+    outcome = buildFlow.Build(IOUtil.GetDirectoryName(genFiles[0]), config.ToolConfig, toolFlowConfig, genFiles)
+    if outcome is None:
+        raise Exception("Internal error, the build of the apps returned no outcome")
+    return outcome
+
+
+def __ExtractWithOneBuild(
+    toolAppContext: ToolAppContext, config: Config, apps: list[Package], runApps: list[Package], argumentFileDirectory: str, packageConfigurationType: str
+) -> list[ArgumentExtraction.AppExtraction]:
+    """apps are built with one build, which is the build of an earlier run of the same apps: nothing is configured again and what is built
+    already costs nothing. runApps are the ones among them that are run, the result is their state.
+    """
+    runsAll = len(runApps) == len(apps)
+    if runsAll:
+        config.LogPrint(f"Building and running {ArgumentExtraction.FormatAppCount(len(apps))} with one build to extract the command line arguments")
+    else:
+        config.LogPrint(
+            f"Building {ArgumentExtraction.FormatAppCount(len(apps))} with one build and running {len(runApps)} of them to extract the command line arguments"
+        )
     try:
-        # FslBuild.py --ForAllExe "(EXE) --System.Arguments.Save <filename>"
+        outcome = __BuildAndRunApps(toolAppContext, config, apps, argumentFileDirectory, packageConfigurationType, None if runsAll else runApps)
+    except BuildConfigureFailedException as ex:
+        raise ArgumentExtraction.ConfigureFailedException(len(apps), ex.ExitCode) from ex
+    return [ArgumentExtraction.CreateAppExtraction(config, app, outcome, argumentFileDirectory, ArgumentExtraction.RunTimeoutSeconds) for app in runApps]
 
-        toolFlowConfig = ToolFlowBuild.GetDefaultLocalConfig()
-        toolFlowConfig.SetToolAppConfigValues(toolAppContext.ToolAppConfig)
-        toolFlowConfig.ForAllConfig = ForAllConfig.CreateForAllExeConfig(f"(EXE) --System.Arguments.Save {tmpOutputFilename} -h")
-        buildFlow = ToolFlowBuild.ToolFlowBuild(toolAppContext)
-        buildFlow.Process(workDir, config.ToolConfig, toolFlowConfig)
 
-        return ReadJsonFile(config, tmpOutputFilename)
-    except Exception as ex:
-        if toolAppContext.LowLevelToolConfig.DebugEnabled:
-            raise
-        config.LogPrint(f"Failed to build and run '{package.Name}' due to exception {ex}")
+def __ExtractWithOneBuildPerApp(
+    toolAppContext: ToolAppContext, config: Config, runApps: list[Package], argumentFileDirectory: str, packageConfigurationType: str
+) -> list[ArgumentExtraction.AppExtraction]:
+    config.LogPrint(f"Building and running {ArgumentExtraction.FormatAppCount(len(runApps))} one at a time to extract the command line arguments")
+    result: list[ArgumentExtraction.AppExtraction] = []
+    for app in runApps:
+        config.LogPrint(f"- Building and running {app.Name}")
+        try:
+            outcome = __BuildAndRunApps(toolAppContext, config, [app], argumentFileDirectory, packageConfigurationType)
+        except BuildConfigureFailedException as ex:
+            # Only this app is lost: the other ones have a build of their own
+            reason = f"not built (the configure failed with exit code {ex.ExitCode})"
+            result.append(ArgumentExtraction.AppExtraction(app, ArgumentExtraction.ExtractionState.NotBuilt, reason))
+            continue
+        result.append(ArgumentExtraction.CreateAppExtraction(config, app, outcome, argumentFileDirectory, ArgumentExtraction.RunTimeoutSeconds))
+    return result
+
+
+def GetArgumentFileDirectory(config: Config, generator: GeneratorPlugin) -> str:
+    """Where the apps write their arguments: a directory in the cache directory of the build, which every generator has"""
+    if generator.CMakeConfig is None:
+        raise Exception("Internal error, the generator is not configured")
+    return ArgumentExtraction.GetArgumentFileDirectory(BuildUtil.GetBuildDir(config.ToolConfig.ProjectInfo, generator.CMakeConfig.CacheDir))
+
+
+def RunArgumentExtraction(
+    toolAppContext: ToolAppContext,
+    config: Config,
+    apps: list[Package],
+    skippedApps: dict[Package, str],
+    extractArguments: str,
+    currentDir: str,
+    recursive: bool,
+    perAppBuild: bool,
+    argumentFileDirectory: str,
+    packageConfigurationType: str = PluginSharedValues.TYPE_DEFAULT,
+    resume: bool = False,
+    identity: ArgumentExtractionState.RunIdentity | None = None,
+) -> ArgumentExtraction.ArgumentExtractionReport | None:
+    """Build and run the apps '--ExtractArguments' selects and say what happened to each of them.
+    - apps are the apps of the READMEs, skippedApps the apps a skipped requirement of the project leaves out (with the name of the requirement).
+    - perAppBuild: one build per app instead of one build for all of them.
+    - packageConfigurationType is the package configuration the build resolves the gen files of the apps with.
+    - identity says which run this is. It is stored with the argument files, so a run that is stopped can be resumed. Without it the run
+      leaves nothing a resume can use.
+    - resume ('--Resume'): an app that has a valid argument file from an earlier run with the same identity is not run again. Without such
+      a run every app is built and run.
+    Returns None for a dry run: nothing is built, run or changed, the apps that would be are printed.
+    Raises ArgumentExtraction.ConfigureFailedException when the configure of the one build of all apps fails, and
+    ArgumentExtractionState.ResumeRefusedException before anything is built when the earlier run has another identity.
+    """
+    candidates = sorted([*apps, *skippedApps.keys()], key=lambda s: "" if s.AbsolutePath is None else s.AbsolutePath.lower())
+    selected = ArgumentExtraction.SelectApps(candidates, extractArguments, currentDir, recursive)
+
+    excluded: dict[Package, ArgumentExtraction.AppExtraction] = {}
+    for app in selected:
+        if app in skippedApps:
+            reason = f"the requirement '{skippedApps[app]}' is skipped"
+            excluded[app] = ArgumentExtraction.AppExtraction(app, ArgumentExtraction.ExtractionState.Excluded, reason)
+        elif not app.ResolvedPlatformSupported:
+            excluded[app] = ArgumentExtraction.AppExtraction(app, ArgumentExtraction.ExtractionState.Excluded, "not supported on this platform")
+    appsToBuild = [app for app in selected if app not in excluded]
+
+    # The apps an earlier run extracted the arguments of
+    state = ArgumentExtractionState.ArgumentExtractionState(config, argumentFileDirectory)
+    extracted: dict[Package, ArgumentExtraction.AppExtraction] = {}
+    if resume:
+        if identity is None:
+            raise Exception("Internal error, a resume needs the identity of the run")
+        earlierIdentity = state.TryReadIdentity()
+        if earlierIdentity is None:
+            config.DoPrint(f"--Resume: no earlier argument extraction to resume was found in '{argumentFileDirectory}', every selected app is built and run")
+            resume = False
+        else:
+            differences = identity.GetDifferences(earlierIdentity)
+            if len(differences) > 0:
+                raise ArgumentExtractionState.ResumeRefusedException(differences)
+            for app in appsToBuild:
+                arguments = state.TryReadArguments(app.Name)
+                if arguments is not None:
+                    extracted[app] = ArgumentExtraction.AppExtraction(app, ArgumentExtraction.ExtractionState.Extracted, "", arguments, True)
+    appsToRun = [app for app in appsToBuild if app not in extracted]
+
+    if config.IsDryRun:
+        config.DoPrint(f"Would build and run {ArgumentExtraction.FormatAppCount(len(appsToRun))} to extract the command line arguments:")
+        for app in appsToRun:
+            config.DoPrint(f"- {app.Name}")
+        if resume:
+            config.DoPrint(f"Would take the arguments of {ArgumentExtraction.FormatAppCount(len(extracted))} from the earlier run:")
+            for app in extracted:
+                config.DoPrint(f"- {app.Name}")
         return None
-    finally:
-        IOUtil.RemoveFile(tmpOutputFilename)
+
+    if len(appsToRun) > 0:
+        # The file of an app is the proof that its arguments were extracted: an app that is run starts without one
+        if resume:
+            state.RemoveArguments(app.Name for app in appsToRun)
+        else:
+            state.Begin(identity)
+        if perAppBuild:
+            entries = __ExtractWithOneBuildPerApp(toolAppContext, config, appsToRun, argumentFileDirectory, packageConfigurationType)
+        else:
+            entries = __ExtractWithOneBuild(toolAppContext, config, appsToBuild, appsToRun, argumentFileDirectory, packageConfigurationType)
+        for entry in entries:
+            extracted[entry.Package] = entry
+        # What an app that failed left is not its arguments: a resume runs it again
+        state.RemoveArguments(entry.Name for entry in entries if entry.State != ArgumentExtraction.ExtractionState.Extracted)
+    return ArgumentExtraction.ArgumentExtractionReport([excluded[app] if app in excluded else extracted[app] for app in selected])
+
+
+def FinishArgumentExtraction(
+    log: Log, report: ArgumentExtraction.ArgumentExtractionReport, state: ArgumentExtractionState.ArgumentExtractionState | None = None
+) -> None:
+    """The end of a run that extracted arguments, after the READMEs were written: print the summary and fail the run when the arguments of
+    an app that was not excluded could not be extracted.
+    state: what the run left on disk for a resume. It is removed when there is nothing to resume: no app failed. A run with an app that
+    failed keeps it, so a '--Resume' only runs that app again.
+    """
+    for line in report.FormatSummary(log.Verbosity >= 2):
+        log.DoPrint(line)
+    if report.HasFailures:
+        raise ExitException(ArgumentExtraction.FailureExitCode)
+    if state is not None:
+        names = [entry.Name for entry in report.Apps if entry.State != ArgumentExtraction.ExtractionState.Excluded]
+        if len(names) > 0:
+            state.Remove(names)
+
+
+def GetGenerator(toolAppContext: ToolAppContext, config: Config, toolAppConfig: ToolAppConfig) -> GeneratorPlugin:
+    """The generator of the platform the command line asks for"""
+    buildVariantConfig = BuildVariantConfigUtil.GetBuildVariantConfig(toolAppConfig.BuildVariantConstraints)
+    variableContext = VariableContextHelper.Create(config.ToolConfig, toolAppConfig.UserSetVariables)
+    return toolAppContext.PluginConfigContext.GetGeneratorPluginById(
+        toolAppConfig.PlatformName,
+        toolAppConfig.Generator,
+        buildVariantConfig,
+        variableContext.UserSetVariables,
+        config.ToolConfig.DefaultPackageLanguage,
+        config.ToolConfig.CMakeConfiguration,
+        toolAppConfig.GetUserCMakeConfig(),
+        False,
+    )
 
 
 def ExtractArguments(
     toolAppContext: ToolAppContext, config: Config, exePackages: list[Package], extractArguments: str, currentDir: str
 ) -> dict[Package, JsonDictType]:
-    config.LogPrint("Building all executable packages to extract their command line arguments")
-
-    filterDir = None if extractArguments == "*" else currentDir
-
-    res: dict[Package, JsonDictType] = {}
-    for package in exePackages:
-        if filterDir is None or package.AbsolutePath == filterDir:
-            config.LogPrint(f"- Building and running {package.Name}")
-            arguments = TryBuildAndRun(toolAppContext, config, package)
-            if arguments is not None:
-                res[package] = arguments
-
-        # quick exit
-        # return res
-    return res
+    """The arguments of the apps among exePackages that '--ExtractArguments' selects, of the ones it worked for. All apps are built with
+    one build, see RunArgumentExtraction for the report of every app.
+    """
+    appConfig = toolAppContext.ToolAppConfig
+    argumentFileDirectory = GetArgumentFileDirectory(config, GetGenerator(toolAppContext, config, appConfig))
+    report = RunArgumentExtraction(toolAppContext, config, exePackages, {}, extractArguments, currentDir, appConfig.Recursive, False, argumentFileDirectory)
+    return {} if report is None else report.GetArguments()
 
 
 def IsNamespaceRootMDFile(lines: list[str]) -> bool:
@@ -471,6 +685,27 @@ def __RemoveIgnored(log: Log, packages: list[Package], ignoreRequirementSet: set
         else:
             log.LogPrint(f"Skipping '{package.Name}' because requirement '{skipRequirement.Name}' was set to skip")
     return filteredPackages
+
+
+def __GetIgnoreRequirementSet(buildDocConfiguration: BuildDocConfiguration) -> set[str]:
+    return {requirement.Name for requirement in buildDocConfiguration.Requirements if requirement.Skip}
+
+
+def GetReadmeApps(packages: list[Package], buildDocConfiguration: BuildDocConfiguration) -> tuple[list[Package], dict[Package, str]]:
+    """The apps of the READMEs (the executables that are shown in the main README.md), and the ones among them that a skipped requirement of
+    the project leaves out, with the name of that requirement
+    """
+    ignoreRequirementSet = __GetIgnoreRequirementSet(buildDocConfiguration)
+    apps: list[Package] = []
+    skippedApps: dict[Package, str] = {}
+    for package in ExtractPackages(packages, PackageType.Executable):
+        if package.ShowInMainReadme:
+            skipRequirement = __TryFindRequirementInSet(package.ResolvedAllUsedFeatures, ignoreRequirementSet)
+            if skipRequirement is None:
+                apps.append(package)
+            else:
+                skippedApps[package] = skipRequirement.Name
+    return (apps, skippedApps)
 
 
 class NamespaceReadmeRecord:
@@ -558,21 +793,23 @@ def ProcessPackages(
     buildDocConfiguration: BuildDocConfiguration,
     currentDir: str,
     projectRootNamespaceReadmeRecord: NamespaceReadmeRecord,
+    packageArgumentsDict: dict[Package, JsonDictType] | None = None,
 ) -> list[NamespaceReadmeRecord]:
+    """packageArgumentsDict: the arguments that were extracted already (FslBuildDoc extracts them once for all projects). Without it the
+    arguments are extracted here when extractArguments asks for it.
+    """
     log: Log = config
-    ignoreRequirementSet: set[str] = set()
-    for requirement in buildDocConfiguration.Requirements:
-        if requirement.Skip:
-            ignoreRequirementSet.add(requirement.Name)
+    ignoreRequirementSet = __GetIgnoreRequirementSet(buildDocConfiguration)
 
     exePackages = ExtractPackages(packages, PackageType.Executable)
     exePackages = __RemoveIgnored(log, exePackages, ignoreRequirementSet)
     exePackages = [package for package in exePackages if package.ShowInMainReadme]
     exePackages.sort(key=lambda s: "" if s.AbsolutePath is None else s.AbsolutePath.lower())
 
-    packageArgumentsDict: dict[Package, JsonDictType] = {}
-    if extractArguments is not None:
-        packageArgumentsDict = ExtractArguments(toolAppContext, config, exePackages, extractArguments, currentDir)
+    if packageArgumentsDict is None:
+        packageArgumentsDict = {}
+        if extractArguments is not None:
+            packageArgumentsDict = ExtractArguments(toolAppContext, config, exePackages, extractArguments, currentDir)
 
     # Run through the exe files and group the exe package into 'namespaces'
     # The dictionary uses the 'namespace' as the key and a list of packages belonging to the namespace as the value
@@ -641,6 +878,9 @@ def ProcessPackages(
                     namespaceReadmeRecord.NewContent.append("")
 
                 readmePath = IOUtil.Join(package.AbsolutePath, "README.md")
+                if package not in packageArgumentsDict:
+                    # The argument section is not written by this run
+                    CorrectArgumentHeadingOfOlderVersions(config, readmePath)
                 packageReadMeLines = TryLoadReadMe(log, readmePath)
                 if packageReadMeLines is not None:
                     packageReadMeLines = UpdatePackageReadMe(config, package, packageReadMeLines, packageArgumentsDict, readmePath)
@@ -665,6 +905,8 @@ class DefaultValue:
     ToCDepth = 2
     ExtractArguments: str | None = None
     NoMdScan = False
+    PerAppBuild = False
+    Resume = False
 
 
 class LocalToolConfig(ToolAppConfig):
@@ -675,6 +917,8 @@ class LocalToolConfig(ToolAppConfig):
         self.ToCDepth = DefaultValue.ToCDepth
         self.ExtractArguments = DefaultValue.ExtractArguments
         self.NoMdScan = DefaultValue.NoMdScan
+        self.PerAppBuild = DefaultValue.PerAppBuild
+        self.Resume = DefaultValue.Resume
 
 
 def GetDefaultLocalConfig() -> LocalToolConfig:
@@ -698,6 +942,8 @@ class ToolFlowBuildDoc(AToolAppFlow):
         localToolConfig.ToCDepth = int(args.ToCDepth)
         localToolConfig.ExtractArguments = args.ExtractArguments
         localToolConfig.NoMdScan = args.NoMdScan
+        localToolConfig.PerAppBuild = args.PerAppBuild
+        localToolConfig.Resume = args.Resume
 
         self.Process(currentDirPath, toolConfig, localToolConfig)
 
@@ -723,6 +969,9 @@ class ToolFlowBuildDoc(AToolAppFlow):
                 IOUtil.WriteFileUTF8(scrFilePath, finalContent, errors="surrogateescape")
 
     def Process(self, currentDirPath: str, toolConfig: ToolConfig, localToolConfig: LocalToolConfig) -> None:
+        if localToolConfig.Resume and localToolConfig.ExtractArguments is None:
+            raise UsageErrorException("--Resume can only be used together with --ExtractArguments")
+
         config = Config(self.Log, toolConfig, "sdk", localToolConfig.BuildVariantConstraints, localToolConfig.AllowDevelopmentPlugins)
         if localToolConfig.DryRun:
             config.ForceDisableAllWrite()
@@ -736,18 +985,8 @@ class ToolFlowBuildDoc(AToolAppFlow):
         config.PrintTitle()
 
         # Get the generator and see if its supported
-        buildVariantConfig = BuildVariantConfigUtil.GetBuildVariantConfig(localToolConfig.BuildVariantConstraints)
         variableContext = VariableContextHelper.Create(toolConfig, localToolConfig.UserSetVariables)
-        generator = self.ToolAppContext.PluginConfigContext.GetGeneratorPluginById(
-            localToolConfig.PlatformName,
-            localToolConfig.Generator,
-            buildVariantConfig,
-            variableContext.UserSetVariables,
-            config.ToolConfig.DefaultPackageLanguage,
-            config.ToolConfig.CMakeConfiguration,
-            localToolConfig.GetUserCMakeConfig(),
-            False,
-        )
+        generator = GetGenerator(self.ToolAppContext, config, localToolConfig)
         PlatformUtil.CheckBuildPlatform(generator.PlatformName)
 
         config.LogPrint(f"Active platform: {generator.PlatformName}")
@@ -755,8 +994,11 @@ class ToolFlowBuildDoc(AToolAppFlow):
         packageFilters = localToolConfig.BuildPackageFilters
 
         minimalConfig = toolConfig.GetMinimalConfig(generator.CMakeConfig)
+        # Every package of the project is loaded, so '-r' has no meaning for the scan (it says so). With '--ExtractArguments .' it selects
+        # the apps below the current directory instead.
+        scanRecursive = localToolConfig.Recursive and localToolConfig.ExtractArguments is None
         theFiles = MainFlow.DoGetFiles(
-            config, minimalConfig, currentDirPath, localToolConfig.Recursive, additionalDirs=self.ToolAppContext.LowLevelToolConfig.AdditionalInputDirs
+            config, minimalConfig, currentDirPath, scanRecursive, additionalDirs=self.ToolAppContext.LowLevelToolConfig.AdditionalInputDirs
         )
         generatorContext = GeneratorContext(
             config, self.ErrorHelpManager, packageFilters.RecipeFilterManager, config.ToolConfig.Experimental, generator, variableContext
@@ -764,6 +1006,38 @@ class ToolFlowBuildDoc(AToolAppFlow):
         packages = MainFlow.DoGetPackages(generatorContext, config, theFiles, packageFilters, engineResolveConfig=EngineResolveConfig.CreateDefaultFlavor())
         # topLevelPackage = PackageListUtil.GetTopLevelPackage(packages)
         # featureList = [entry.Name for entry in topLevelPackage.ResolvedAllUsedFeatures]
+
+        # The arguments are extracted once, for the apps of every project
+        extractionReport: ArgumentExtraction.ArgumentExtractionReport | None = None
+        extractionState: ArgumentExtractionState.ArgumentExtractionState | None = None
+        packageArgumentsDict: dict[Package, JsonDictType] | None = None
+        if localToolConfig.ExtractArguments is not None:
+            apps, skippedApps = GetReadmeApps(packages, toolConfig.BuildDocConfiguration)
+            argumentFileDirectory = GetArgumentFileDirectory(config, generator)
+            extractionState = ArgumentExtractionState.ArgumentExtractionState(config, argumentFileDirectory)
+            identity = ArgumentExtractionState.CreateRunIdentity(
+                toolConfig,
+                generator,
+                localToolConfig,
+                self.ToolAppContext.LowLevelToolConfig.AdditionalInputDirs,
+                localToolConfig.ExtractArguments,
+                currentDirPath,
+                localToolConfig.Recursive,
+            )
+            extractionReport = RunArgumentExtraction(
+                self.ToolAppContext,
+                config,
+                apps,
+                skippedApps,
+                localToolConfig.ExtractArguments,
+                currentDirPath,
+                localToolConfig.Recursive,
+                localToolConfig.PerAppBuild,
+                argumentFileDirectory,
+                resume=localToolConfig.Resume,
+                identity=identity,
+            )
+            packageArgumentsDict = {} if extractionReport is None else extractionReport.GetArguments()
 
         for projectContext in config.ToolConfig.ProjectInfo.Contexts:
             rootDir = self.__TryLocateRootDirectory(config.ToolConfig.RootDirectories, projectContext.Location)
@@ -783,6 +1057,7 @@ class ToolFlowBuildDoc(AToolAppFlow):
                 toolConfig.BuildDocConfiguration,
                 currentDirPath,
                 projectRootNamepaceRecord,
+                packageArgumentsDict,
             )
 
             if projectRootNamepaceRecord not in namespaceRecords:
@@ -830,7 +1105,12 @@ class ToolFlowBuildDoc(AToolAppFlow):
                 if scrFilePath.endswith(".txt") and IOUtil.GetFileName(scrFilePath).startswith("SCR-"):
                     self.ProcessSCRFile(config, projectContext, scrFilePath)
 
+        if extractionReport is not None:
+            FinishArgumentExtraction(config, extractionReport, extractionState)
+
     def ProcessMDFile(self, config: Config, filename: str, localToolConfig: LocalToolConfig) -> None:
+        # Also a README.md that is not the one of a package can have an argument section an older version wrote
+        CorrectArgumentHeadingOfOlderVersions(config, filename)
         packageReadMeLines = TryLoadReadMe(config, filename)
         if packageReadMeLines is not None and self.HasLineThatContain(packageReadMeLines, "#AG_TOC_BEGIN#") and not IsNamespaceRootMDFile(packageReadMeLines):
             packageReadMeLinesNew = TryInsertTableOfContents(config, packageReadMeLines, localToolConfig.ToCDepth, filename)
@@ -870,7 +1150,17 @@ class ToolAppFlowFactory(AToolAppFlowFactory):
         parser.add_argument(
             "--ExtractArguments",
             default=DefaultValue.ExtractArguments,
-            help='Build the app and execute it to extract the command line arguments ("*" for all or "." for current dirs package)',
+            help='Build the apps and execute them to extract the command line arguments ("*" for all, "." for the package of the current directory and with -r every package below it). All apps are built with one build. A summary says which apps it did not work for and the exit code is non-zero then. An app the feature filters (--UseFeatures) remove is not built and not in the summary.',
+        )
+        parser.add_argument(
+            "--PerAppBuild",
+            action="store_true",
+            help="With --ExtractArguments: one build per app instead of one build for all of them, so an app that can not be configured only costs itself.",
+        )
+        parser.add_argument(
+            "--Resume",
+            action="store_true",
+            help="With --ExtractArguments: carry on with an extraction that was stopped, or that ended with apps that failed. An app the earlier run extracted the arguments of is not run again, the other ones are built and run. It is the same run a little later: the platform, the generator, the variants, the feature filters, the selected apps and the tool version have to be the ones of the earlier run, otherwise it is refused and says what differs. A gen file or a source file that changed since is not noticed. A run without --Resume starts fresh.",
         )
         parser.add_argument("--NoMdScan", action="store_true", help='Dont scan for all "md" files and generate a table of content')
 

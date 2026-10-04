@@ -138,7 +138,7 @@ class XmlGenFileVariant(XmlBase):
             if not Util.IsValidVirtualVariantName(self.Name):
                 raise XmlUnsupportedVirtualVariantNameException(self.XMLElement, self.Name)
         else:
-            raise XmlException(self.XMLElement, "Unknown variant type")
+            raise XmlException("Unknown variant type")
 
     def __ValidateOptionNames(self) -> None:
         if self.Type == VariantType.Normal:
@@ -151,7 +151,7 @@ class XmlGenFileVariant(XmlBase):
             if not self.Options[0].Name == self.Name:
                 raise XmlUnsupportedVirtualVariantOptionNameException(self.Options[0].XMLElement, self.Options[0].Name, self.Name)
         else:
-            raise XmlException(self.XMLElement, "Unknown variant type")
+            raise XmlException("Unknown variant type")
 
     def __ExtractType(self, variantType: str) -> VariantType:
         if variantType == "Normal":
@@ -159,7 +159,7 @@ class XmlGenFileVariant(XmlBase):
         elif variantType == "Virtual":
             return VariantType.Virtual
         else:
-            raise XmlException(self.XMLElement, f"Unknown variant type: '{variantType}' expected: Normal, Virtual")
+            raise XmlException(f"Unknown variant type: '{variantType}' expected: Normal, Virtual")
 
     def __BuildOptionDict(self) -> dict[str, XmlGenFileVariantOption]:
         optionDict: dict[str, XmlGenFileVariantOption] = {}

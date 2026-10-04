@@ -37,6 +37,19 @@ from FslBuildGen import IOUtil, TextFileReader
 from FslBuildGen.Log import Log
 
 
+def _EscapeLoneSurrogates(jsonText: str) -> str:
+    """The JSON text with every lone surrogate written as its JSON escape (as json.dumps writes it with ensure_ascii), so the text can be
+    encoded as UTF-8 and loads back as the same strings. A lone surrogate is what python makes of an environment value that is not valid
+    text: a byte that is not UTF-8 on Linux, half a surrogate pair on Windows.
+    Text that can be encoded is returned as it is, so a cache without such a value has the bytes it always had.
+    """
+    try:
+        jsonText.encode("utf-8")
+        return jsonText
+    except UnicodeEncodeError:
+        return "".join(f"\\u{ord(ch):04x}" if 0xD800 <= ord(ch) <= 0xDFFF else ch for ch in jsonText)
+
+
 class BuildConfigureCache:
     CURRENT_VERSION = 5
 
@@ -113,7 +126,7 @@ class BuildConfigureCache:
     def Save(log: Log, cacheFilename: str, buildConfigureCache: BuildConfigureCache) -> None:
         log.LogPrintVerbose(4, f"- Saving generated file hash cache '{cacheFilename}'")
         jsonText = json.dumps(buildConfigureCache.__dict__, ensure_ascii=False, sort_keys=True, indent=2)
-        IOUtil.WriteFileUTF8IfChanged(cacheFilename, jsonText)
+        IOUtil.WriteFileUTF8IfChanged(cacheFilename, _EscapeLoneSurrogates(jsonText))
 
     @staticmethod
     def TrySave(log: Log, cacheFilename: str, buildConfigureCache: BuildConfigureCache) -> bool:

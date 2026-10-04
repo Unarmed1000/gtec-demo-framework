@@ -268,6 +268,10 @@ def __ParsePackageGeneratorReport(log: Log, packageName: str, jsonDict: dict[str
     if not isinstance(jsonDict, dict):
         raise Exception("Invalid file format")
 
+    # A package that can not be run (a library) is saved with an empty report
+    if len(jsonDict) <= 0:
+        return None
+
     executableReport: PackageGeneratorExecutableReportInfo | None = None
     if JsonPackageGeneratorReport.ExecutableReport in jsonDict:
         jsonExecutableReportDict = jsonDict[JsonPackageGeneratorReport.ExecutableReport]
@@ -294,7 +298,8 @@ def __ParsePackage(log: Log, packageName: str, jsonPackageDict: dict[str, object
     allRequirements = __ParseRequirementsInfo(log, jsonAllRequirements)
 
     strSourcePackageName = __ReadDictStrAttrib(jsonPackageDict, JsonPackageKey.SourcePackageName)
-    __ReadDictStrAttrib(jsonPackageDict, JsonPackageKey.CreationYear)
+    # The creation year is not used. A package that has none is saved without it
+    __TryReadDictStrAttrib(jsonPackageDict, JsonPackageKey.CreationYear)
     strPackageType = __ReadDictStrAttrib(jsonPackageDict, JsonPackageKey.Type)
     packageType = PackageType.FromString(strPackageType)
     supported = __ReadDictBoolAttrib(jsonPackageDict, JsonPackageKey.Supported, True)
