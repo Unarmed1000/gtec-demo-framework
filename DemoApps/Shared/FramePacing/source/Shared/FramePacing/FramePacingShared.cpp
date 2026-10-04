@@ -959,19 +959,30 @@ namespace Fsl
       m_ui.SwitchPacerFeedback->SetEnabled(feedbackAvailable);
     }
     pacerConfig.PresentFeedback = feedbackAvailable && m_presentFeedbackEnabled && m_ui.SwitchPacerFeedback->IsChecked();
-    // How a frame is held only matters while the pacer is on
-    for (UI::RadioButton* pRadio : {m_ui.RadioHoldAuto.get(), m_ui.RadioHoldVSync.get(), m_ui.RadioHoldWait.get(), m_ui.RadioHoldSchedule.get()})
-    {
-      if (pRadio->IsEnabled() != pacerOn)
-      {
-        pRadio->SetEnabled(pacerOn);
-      }
-    }
     {    // When the display refreshes according to the window system, read once per frame
       const auto window = m_window.lock();
       const NativeWindowVSyncInfo vsyncInfo = window ? window->TryGetVSyncInfo() : NativeWindowVSyncInfo();
       m_vsyncTime = vsyncInfo.IsValid() ? vsyncInfo.VSyncTime : TickCount();
       m_vsyncPeriod = vsyncInfo.IsValid() ? vsyncInfo.RefreshPeriod : TimeSpan();
+    }
+    {
+      // How a frame is held only matters while the pacer is on and the sample is the one that holds it (with eglSwapInterval the driver
+      // does). A method the system can not do is shown as disabled, like every other control that can not be used. One that is selected
+      // and stops being possible stays selected: the sample falls back (GetHoldMethod) and the overlay says what is used.
+      const bool holdApplies = pacerOn && m_presentMethod == SamplePresentMethod::WaitThenPresent;
+      const bool hasVSyncTime = m_vsyncTime.Ticks() > 0 && m_vsyncPeriod.Ticks() > 0;
+      const std::array<std::pair<UI::RadioButton*, bool>, 4> radios = {
+        std::pair<UI::RadioButton*, bool>(m_ui.RadioHoldAuto.get(), holdApplies),
+        std::pair<UI::RadioButton*, bool>(m_ui.RadioHoldVSync.get(), holdApplies && hasVSyncTime),
+        std::pair<UI::RadioButton*, bool>(m_ui.RadioHoldWait.get(), holdApplies),
+        std::pair<UI::RadioButton*, bool>(m_ui.RadioHoldSchedule.get(), holdApplies && m_presentSchedulingSupported)};
+      for (const auto& entry : radios)
+      {
+        if (entry.first->IsEnabled() != entry.second)
+        {
+          entry.first->SetEnabled(entry.second);
+        }
+      }
     }
 
     if (!pacerOn)

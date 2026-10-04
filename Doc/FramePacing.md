@@ -184,7 +184,9 @@ How a frame is held for its swap interval depends on the API:
 Core Vulkan has no swap interval: a FIFO present shows a frame at the next refresh, and nothing in Vulkan says when a refresh
 happens. So a frame the pacer holds for more than one refresh has to be held by something else, and the sample has three ways
 (`--Pacer.Hold`, the `Hold` radio buttons). [FramePacingPlatformSupport.md](FramePacingPlatformSupport.md) lists what each platform
-offers for them.
+offers for them. A radio button of a way the system can not do is disabled, as every control of the sample that can not be used is
+(none is hidden): `schedule` without a swapchain that takes a target time, `vsync` while the window system gives no vsync time. All of
+them are disabled while the pacer is off and in the OpenGL ES samples, where `eglSwapInterval` holds the frame.
 
 - **`wait`: the sample sleeps on a timer, then presents** (the default, it needs nothing). It sleeps until one refresh before the time
   the frame is aimed at. The timer does not know where the refreshes are, so it is a guess: when a present lands near a vertical
