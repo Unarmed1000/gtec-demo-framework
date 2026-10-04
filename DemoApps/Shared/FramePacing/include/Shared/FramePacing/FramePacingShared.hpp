@@ -165,6 +165,7 @@ namespace Fsl
       std::shared_ptr<UI::SliderAndFmtValueLabel<int32_t>> SliderTargetFps;
       std::shared_ptr<UI::Switch> SwitchAdaptive;
       std::shared_ptr<UI::Switch> SwitchPacerFeedback;
+      std::shared_ptr<UI::Switch> SwitchSchedulePresent;
       std::shared_ptr<UI::Label> LabelPacerStatus;
       std::shared_ptr<UI::Label> LabelPacerFrames;
       std::shared_ptr<UI::SliderAndFmtValueLabel<int32_t>> SliderCpuLoad;
@@ -253,6 +254,12 @@ namespace Fsl
     SamplePresentFeedback m_presentFeedback;
     //! True if the app measures when its frames are presented
     bool m_presentFeedbackEnabled{false};
+    //! True if the app can give a present a target time (SetPresentSchedulingSupport)
+    bool m_presentSchedulingSupported{false};
+    //! The target time of the present of the current frame, counted from when the frame before it was shown (zero = not scheduled)
+    TimeSpan m_presentRelativeTarget;
+    //! What was last written to the log about how the presents are held
+    bool m_loggedSchedulePresent{false};
     //! What the app said it can measure (SetMeasurementSupport)
     bool m_presentTimingSupported{false};
     bool m_gpuTimelineSupported{false};
@@ -291,6 +298,8 @@ namespace Fsl
       FramePacingLogColumn FeedbackRefused;
       FramePacingLogColumn FeedbackNotShown;
       FramePacingLogColumn FeedbackMissing;
+      FramePacingLogColumn PresentScheduled;
+      FramePacingLogColumn PresentTarget;
     };
 
     //! What the frame pacer has to be told about a present when its display time arrives
@@ -366,6 +375,17 @@ namespace Fsl
     //! @param presentTimingSupported the app can measure when its frames reach the display (VK_EXT_present_timing)
     //! @param gpuTimelineSupported the app can tell when the GPU worked on a frame on the clock of the CPU (VK_KHR_calibrated_timestamps)
     void SetMeasurementSupport(const bool presentTimingSupported, const bool gpuTimelineSupported);
+    //! Tell the sample if the app can give a present a target time, so the presentation engine holds a frame for its swap interval and
+    //! the sample does not have to wait before it presents. Call it every frame, as it can change when the swapchain is recreated.
+    void SetPresentSchedulingSupport(const bool supported);
+    //! True if the presents are scheduled: supported, the pacer is on and the switch is on
+    [[nodiscard]] bool IsPresentScheduled() const;
+    //! The target time of the present of the current frame after WaitForPresent: the frame is not to be shown before this long after the
+    //! frame before it was shown. Zero if the present is not scheduled.
+    [[nodiscard]] TimeSpan GetPresentRelativeTarget() const noexcept
+    {
+      return m_presentRelativeTarget;
+    }
     //! True if the app should measure when its frames reach the display (supported and its switch is on)
     [[nodiscard]] bool IsPresentTimingWanted() const;
     //! True if the app should report when the GPU worked on its frames (supported and its switch is on)

@@ -125,6 +125,7 @@ Refresh rate                  |`--Pacer.RefreshRate <hz>`      |The refresh rate
 Target fps                    |`--Pacer.TargetFps <fps>`       |The frame rate the pacer aims for, 0 is the refresh rate of the display. 30 on a 60 Hz display holds every frame for two refreshes.
 Adaptive swap interval        |`--Pacer.Adaptive <true\|false>`|On: the pacer slows down when frames are late and speeds up again when they fit. Off: a fixed frame rate.
 Present feedback to the pacer |`--Pacer.PresentFeedback <true\|false>`|Vulkan only. On: the pacer measures the frames by when the display showed them, see [below](#present-feedback-vulkan-optional). Off (the default): by when they start.
+Schedule the present          |`--Pacer.SchedulePresent <true\|false>`|Vulkan only. On: the presentation engine holds a frame for its swap interval, see [below](#scheduling-the-present-vulkan-optional). Off (the default): the sample waits before it presents.
 CPU load                      |`--CpuLoad <ms>`                |The time in milliseconds the app spends busy every frame.
 GPU load                      |`--GpuLoad <steps>`             |Draws the raymarched background with the given number of steps for every ray (0 is no background, the default is a low load of 16). The load grows linearly with the steps, more steps reach further and show finer detail.
 Background                    |`--Background <flight\|hall>`   |The scene of the raymarched background (the radio buttons below the GPU load). `flight` is a flight through a fractal lattice. `hall` is a hall of columns that scrolls sideways at a constant speed, which makes a stutter easy to see.
@@ -168,6 +169,27 @@ How a frame is held for its swap interval depends on the API:
   has no vsync times, so this is a guess and less even than a real swap interval. The GPU time of a frame is measured with timestamp
   queries and given to the pacer. The sample can measure when its frames reach the display (see the next section) and, when asked to,
   gives those display times to the pacer as present feedback.
+
+#### Scheduling the present (Vulkan, optional)
+
+A frame the pacer holds for more than one refresh can be held in two ways, and both are kept:
+
+- **The sample waits, then presents** (the default, and the only way without `VK_EXT_present_timing`): it sleeps until one refresh
+  before the time the frame is aimed at and then presents. The sleep has no vsync times to go by, so now and then a present lands on
+  the wrong side of a refresh and a frame is shown a refresh too early and its neighbour a refresh too long.
+- **The presentation engine holds the frame** (`--Pacer.SchedulePresent true`, the `Schedule the present` switch): the present is
+  given a target time and is done right away. `VK_EXT_present_timing` can schedule a present where the device and the surface have
+  `presentAtRelativeTime`: the image is not shown before the target time has passed since the image of the present before it was
+  shown, and then at the first refresh. The sample asks for the swap interval minus half a refresh, which is the refresh the pacer
+  aims for with room on both sides. The next frame still starts no earlier than the time the frame is aimed at.
+
+The switch is only enabled where the swapchain can do it (the `presentTiming` event of the frame log has `canSchedule=1`). The frame
+log has `presentScheduled` and `presentTargetTicks` per frame from the sample and `presentTargetRelativeNs` from the app base, which is
+what the present was given.
+
+Any Vulkan app can do the same: `DemoAppVulkanBasic::IsPresentSchedulingSupported()` and
+`SetPresentRelativeTargetTime(time)` before the frame is presented. The absolute form of the extension (`presentAtAbsoluteTime`) is not
+used.
 
 #### Present feedback (Vulkan, optional)
 
@@ -336,6 +358,8 @@ Column | Unit | Description
 `firstPixelVisibleRawNs` | nanoseconds | When the first pixel of the image became visible on the display, as the presentation engine reported it on the clock of its time domain
 `presentTimeDomainId` | id | The id of the time domain the stages were reported in
 `resultReadAtFrame` | id | The frame in which the stages of this frame were read: how late they arrived
+`presentTimingRequested` | flag | 1 if the present was asked to be timed, 0 if not: present timing is off, or too many results were outstanding
+`presentTargetRelativeNs` | nanoseconds | The target time the present was given: its image is not shown before this long after the image of the present before it was shown (empty: the present was not scheduled)
 
 **The FramePacing samples**
 
@@ -361,6 +385,8 @@ Column | Unit | Description
 `presentWaitTicks` | durationTicks | How long the sample delayed the present of the frame, to hold it for its swap interval
 `cpuLoadMs` | count | The CPU load setting: the milliseconds the sample is busy per frame
 `gpuLoadSteps` | count | The GPU load setting: the steps of the raymarched background
+`presentScheduled` | flag | 1 if the presentation engine holds the frame for its swap interval (the present has a target time), 0 if the sample waits before it presents
+`presentTargetTicks` | durationTicks | The target time the sample asked for: the frame is not to be shown before this long after the frame before it was shown
 `pacerFrameId` | id | The id the frame pacer gave the frame, present feedback is given with it
 `nextFrameStartTicks` | ticks | The start of the frame plus its swap interval according to the frame pacer: what the waits of the sample hold to
 `pacerFeedbackOn` | flag | 1 if the frame pacer measures the frames by their display times

@@ -267,6 +267,9 @@ namespace Fsl
     // Only for an app that measures its presents, so it stays disabled until the pacer is on and the presents are measured
     m_ui.SwitchPacerFeedback = uiFactory->CreateSwitch("Present feedback to the pacer", options->IsPacerPresentFeedback());
     m_ui.SwitchPacerFeedback->SetEnabled(false);
+    // Only for an app that can give a present a target time, so it stays disabled until the pacer is on and the app says it can
+    m_ui.SwitchSchedulePresent = uiFactory->CreateSwitch("Schedule the present", options->IsPacerSchedulePresent());
+    m_ui.SwitchSchedulePresent->SetEnabled(false);
     m_ui.LabelPacerStatus = uiFactory->CreateLabel("");
     m_ui.LabelPacerFrames = uiFactory->CreateLabel("");
     const auto lblCpuLoad = uiFactory->CreateLabel("CPU load (ms per frame)");
@@ -302,6 +305,7 @@ namespace Fsl
     stackLayout->AddChild(m_ui.SliderTargetFps);
     stackLayout->AddChild(m_ui.SwitchAdaptive);
     stackLayout->AddChild(m_ui.SwitchPacerFeedback);
+    stackLayout->AddChild(m_ui.SwitchSchedulePresent);
     stackLayout->AddChild(m_ui.LabelPacerStatus);
     stackLayout->AddChild(m_ui.LabelPacerFrames);
     stackLayout->AddChild(uiFactory->CreateDivider(UI::LayoutOrientation::Horizontal));
@@ -497,6 +501,18 @@ namespace Fsl
   }
 
 
+  void FramePacingShared::SetPresentSchedulingSupport(const bool supported)
+  {
+    m_presentSchedulingSupported = supported;
+  }
+
+
+  bool FramePacingShared::IsPresentScheduled() const
+  {
+    return m_pacer && m_presentSchedulingSupported && m_ui.SwitchSchedulePresent->IsChecked();
+  }
+
+
   bool FramePacingShared::IsPresentTimingWanted() const
   {
     return m_presentTimingSupported && m_ui.SwitchPresentTiming->IsChecked();
@@ -657,6 +673,26 @@ namespace Fsl
 
   void FramePacingShared::WaitForPresent(const uint32_t presentSwapInterval)
   {
+    m_presentRelativeTarget = {};
+    if (IsPresentScheduled() && m_pacerConfig.RefreshRateHz > 0.0)
+    {
+      // The presentation engine holds the frame: the present is given a target time and is done right away. The frame is not shown
+      // before the target time has passed since the frame before it was shown, and then at the first refresh. Half a refresh less than
+      // the swap interval makes that the refresh the frame pacer aims for, with room on both sides for a clock that is a little off.
+      const int64_t refreshPeriodTicks = std::llround(static_cast<double>(TimeSpan::TicksPerSecond) / m_pacerConfig.RefreshRateHz);
+      const int64_t swapInterval = std::max(m_schedule.SwapInterval, 1u);
+      m_presentRelativeTarget = TimeSpan((refreshPeriodTicks * swapInterval) - (refreshPeriodTicks / 2));
+      if (m_schedule.SwapInterval > presentSwapInterval)
+      {
+        // The present does not hold the loop for the swap interval, so the next frame starts when this one is aimed to be shown
+        m_nextFrameStartTime = m_schedule.NextFrameStartTime;
+      }
+      if (m_frameLog)
+      {
+        m_frameLog->SetLogValue(m_logColumns.PresentTarget, m_presentRelativeTarget);
+      }
+      return;
+    }
     if (!m_pacer || m_schedule.SwapInterval <= presentSwapInterval)
     {
       return;
@@ -794,6 +830,12 @@ namespace Fsl
       m_ui.SwitchPacerFeedback->SetEnabled(feedbackAvailable);
     }
     pacerConfig.PresentFeedback = feedbackAvailable && m_presentFeedbackEnabled && m_ui.SwitchPacerFeedback->IsChecked();
+    // Scheduling the present is only offered while the app can do it
+    const bool schedulingAvailable = pacerOn && m_presentSchedulingSupported;
+    if (m_ui.SwitchSchedulePresent->IsEnabled() != schedulingAvailable)
+    {
+      m_ui.SwitchSchedulePresent->SetEnabled(schedulingAvailable);
+    }
 
     if (!pacerOn)
     {
@@ -951,6 +993,12 @@ namespace Fsl
     rColumns.FeedbackNotShown =
       rLog.RegisterColumn("pacerFeedbackNotShown", FramePacingLogUnit::Count,
                           "The frames that were reported to the frame pacer as never shown, counted since the pacer was made");
+    rColumns.PresentScheduled = rLog.RegisterColumn("presentScheduled", FramePacingLogUnit::Flag,
+                                                    "1 if the presentation engine holds the frame for its swap interval (the present "
+                                                    "has a target time), 0 if the sample waits before it presents");
+    rColumns.PresentTarget = rLog.RegisterColumn("presentTargetTicks", FramePacingLogUnit::DurationTicks,
+                                                 "The target time the sample asked for: the frame is not to be shown before this long after "
+                                                 "the frame before it was shown");
     rColumns.FeedbackMissing =
       rLog.RegisterColumn("pacerFeedbackMissing", FramePacingLogUnit::Count,
                           "The frames the frame pacer counted as on time as it was given nothing about them, counted since the pacer was made");
@@ -968,15 +1016,17 @@ namespace Fsl
     IFramePacingFrameLog& rLog = *m_frameLog;
     const LogColumns& columns = m_logColumns;
     const bool pacerOn = m_pacer != nullptr;
-    if (!m_hasLoggedPacerConfig || pacerOn != m_loggedPacerOn || m_pacerConfig != m_loggedPacerConfig)
+    const bool presentScheduled = IsPresentScheduled();
+    if (!m_hasLoggedPacerConfig || pacerOn != m_loggedPacerOn || m_pacerConfig != m_loggedPacerConfig || presentScheduled != m_loggedSchedulePresent)
     {
       // The settings the frames from here on are paced with
       m_hasLoggedPacerConfig = true;
       m_loggedPacerOn = pacerOn;
       m_loggedPacerConfig = m_pacerConfig;
-      rLog.AddLogEvent("pacerConfig",
-                       fmt::format("on={};refreshRateHz={};targetFps={};adaptive={};presentFeedback={}", pacerOn ? 1 : 0, m_pacerConfig.RefreshRateHz,
-                                   m_pacerConfig.TargetFps, m_pacerConfig.Adaptive ? 1 : 0, m_pacerConfig.PresentFeedback ? 1 : 0));
+      m_loggedSchedulePresent = presentScheduled;
+      rLog.AddLogEvent("pacerConfig", fmt::format("on={};refreshRateHz={};targetFps={};adaptive={};presentFeedback={};schedulePresent={}",
+                                                  pacerOn ? 1 : 0, m_pacerConfig.RefreshRateHz, m_pacerConfig.TargetFps,
+                                                  m_pacerConfig.Adaptive ? 1 : 0, m_pacerConfig.PresentFeedback ? 1 : 0, presentScheduled ? 1 : 0));
     }
 
     rLog.SetLogValue(columns.PacerOn, pacerOn);
@@ -1000,6 +1050,7 @@ namespace Fsl
       rLog.SetLogUInt64(columns.PacerFrameId, m_schedule.FrameId);
       rLog.SetLogValue(columns.NextFrameStart, m_schedule.NextFrameStartTime);
       rLog.SetLogValue(columns.FeedbackOn, m_pacerConfig.PresentFeedback);
+      rLog.SetLogValue(columns.PresentScheduled, presentScheduled);
       if (m_pacerConfig.PresentFeedback)
       {
         // What became of the feedback the frame pacer had when it planned this frame

@@ -188,9 +188,16 @@ namespace Fsl::Vulkan
     m_presentId2Features.presentId2 = VK_TRUE;
     PushFront(m_presentId2Features);
 
-    // The scheduling of presents (presentAtAbsoluteTime, presentAtRelativeTime) is not used, so only the feedback is enabled
+    // The feedback is always enabled. Of the scheduling of presents the relative form is enabled where the device has it (a present a
+    // time after the one before it), the absolute form (presentAtAbsoluteTime) is not used.
     m_presentTimingFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PRESENT_TIMING_FEATURES_EXT;
     m_presentTimingFeatures.presentTiming = VK_TRUE;
+    if (QueryFeatures<VkPhysicalDevicePresentTimingFeaturesEXT>(physicalDevice, VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PRESENT_TIMING_FEATURES_EXT)
+          .presentAtRelativeTime == VK_TRUE)
+    {
+      m_presentTimingFeatures.presentAtRelativeTime = VK_TRUE;
+      m_features.PresentAtRelativeTime = true;
+    }
     PushFront(m_presentTimingFeatures);
 
     m_features.PresentTiming = true;

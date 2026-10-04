@@ -133,6 +133,9 @@ namespace Fsl::Vulkan
     m_refreshDuration = {};
     m_outstanding = 0;
     m_queueSize = 0;
+    m_canPresentAtRelativeTime = false;
+    m_nextRelativeTargetTime = 0;
+    m_targetStage = 0;
     m_hasTimeDomain = false;
     m_hasStageOffset = {};
     m_presentsSinceCalibration = 0;
@@ -212,10 +215,35 @@ namespace Fsl::Vulkan
   }
 
 
+  bool VUSwapchainPresentTiming::TryEnablePresentAtRelativeTime() noexcept
+  {
+    m_canPresentAtRelativeTime = false;
+    m_targetStage = 0;
+    if (IsEnabled() && m_state.PresentAtRelativeTime)
+    {
+      // A target time is a time for a stage. The stage the image becomes visible in is the one the presentation engine aligns, the one
+      // the first pixel leaves in is the next best where the surface does not report that.
+      if ((m_stageQueries & VK_PRESENT_STAGE_IMAGE_FIRST_PIXEL_VISIBLE_BIT_EXT) != 0u)
+      {
+        m_targetStage = VK_PRESENT_STAGE_IMAGE_FIRST_PIXEL_VISIBLE_BIT_EXT;
+      }
+      else if ((m_stageQueries & VK_PRESENT_STAGE_IMAGE_FIRST_PIXEL_OUT_BIT_EXT) != 0u)
+      {
+        m_targetStage = VK_PRESENT_STAGE_IMAGE_FIRST_PIXEL_OUT_BIT_EXT;
+      }
+      m_canPresentAtRelativeTime = m_targetStage != 0u;
+    }
+    return m_canPresentAtRelativeTime;
+  }
+
+
   const void* VUSwapchainPresentTiming::PreparePresent(VUPresentTimingPresentInfo& rPresentInfo, const uint64_t presentId,
                                                        const void* const pNext) noexcept
   {
     rPresentInfo = {};
+    // A target time is for one present
+    const uint64_t relativeTargetTime = m_canPresentAtRelativeTime ? m_nextRelativeTargetTime : 0u;
+    m_nextRelativeTargetTime = 0;
     if (!IsEnabled())
     {
       return pNext;
@@ -228,17 +256,26 @@ namespace Fsl::Vulkan
     rPresentInfo.PresentId.pPresentIds = &rPresentInfo.Id;
 
     // The measurements are held in a queue of the swapchain until they are collected and a present fails when the queue is full, so the
-    // timing is only requested when there is room.
-    if (m_outstanding >= LocalConfig::MaxOutstanding)
+    // timing is only requested when there is room. A target time does not need room, it is given without asking for the stages.
+    const bool requestTiming = m_outstanding < LocalConfig::MaxOutstanding;
+    if (!requestTiming && relativeTargetTime == 0u)
     {
       return &rPresentInfo.PresentId;
     }
 
     rPresentInfo.TimingInfo.sType = VK_STRUCTURE_TYPE_PRESENT_TIMING_INFO_EXT;
-    // No target time: the present is not scheduled, only measured
-    rPresentInfo.TimingInfo.targetTime = 0;
     rPresentInfo.TimingInfo.timeDomainId = m_timeDomainId;
-    rPresentInfo.TimingInfo.presentStageQueries = m_stageQueries;
+    rPresentInfo.TimingInfo.presentStageQueries = requestTiming ? m_stageQueries : 0u;
+    // Without a target time the present is only measured. With one the image is not shown before the time has passed since the image of
+    // the present before it was shown.
+    rPresentInfo.TimingInfo.targetTime = relativeTargetTime;
+    if (relativeTargetTime != 0u)
+    {
+      rPresentInfo.TimingInfo.flags = VK_PRESENT_TIMING_INFO_PRESENT_AT_RELATIVE_TIME_BIT_EXT;
+      rPresentInfo.TimingInfo.targetTimeDomainPresentStage = m_targetStage;
+    }
+    rPresentInfo.IsTimingRequested = requestTiming;
+    rPresentInfo.RelativeTargetTimeNanoseconds = relativeTargetTime;
 
     rPresentInfo.TimingsInfo.sType = VK_STRUCTURE_TYPE_PRESENT_TIMINGS_INFO_EXT;
     rPresentInfo.TimingsInfo.pNext = &rPresentInfo.PresentId;
@@ -250,8 +287,7 @@ namespace Fsl::Vulkan
 
   void VUSwapchainPresentTiming::OnPresent(const VUPresentTimingPresentInfo& presentInfo, const VkResult presentResult) noexcept
   {
-    const bool timingRequested = presentInfo.TimingsInfo.sType == VK_STRUCTURE_TYPE_PRESENT_TIMINGS_INFO_EXT;
-    if (timingRequested && (presentResult == VK_SUCCESS || presentResult == VK_SUBOPTIMAL_KHR))
+    if (presentInfo.IsTimingRequested && (presentResult == VK_SUCCESS || presentResult == VK_SUBOPTIMAL_KHR))
     {
       ++m_outstanding;
     }
@@ -508,6 +544,12 @@ namespace Fsl::Vulkan
     m_swapchain = VK_NULL_HANDLE;
     m_device = VK_NULL_HANDLE;
     m_state = {};
+  }
+
+
+  bool VUSwapchainPresentTiming::TryEnablePresentAtRelativeTime() noexcept
+  {
+    return false;
   }
 
 

@@ -37,6 +37,9 @@ namespace Fsl::Vulkan
     //! True if VK_EXT_present_timing and VK_KHR_present_id2 were enabled with their features. A swapchain can then report when its images were
     //! presented if its surface supports that too, see VUSwapchainPresentTiming.
     bool PresentTiming{false};
+    //! True if the presentAtRelativeTime feature of VK_EXT_present_timing was enabled as well. A present can then be given a target time
+    //! relative to the present before it if its surface supports that too, see VUSwapchainPresentTiming::TryEnablePresentAtRelativeTime.
+    bool PresentAtRelativeTime{false};
   };
 }
 

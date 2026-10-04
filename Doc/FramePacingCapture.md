@@ -87,6 +87,7 @@ Plan                 | Display                         | Runs
 `work-matrix-60hz`   | 60 Hz, variable refresh off     | The same with CPU work of 3, 15 and 22 ms.
 `present-feedback-240hz` | 240 Hz, variable refresh off | The pacer without and with present feedback (`--Pacer.PresentFeedback`), GPU work of 20, 90 and 130 %, each idle and under CPU load (12 runs).
 `present-feedback-120hz` | 120 Hz, variable refresh off | The same with CPU work of 2, 7 and 11 ms.
+`present-scheduling-240hz` | 240 Hz, variable refresh off | A frame held for more than one refresh by a wait before the present and by a scheduled present (`--Pacer.SchedulePresent`): a fixed 60 and 120 fps and work of 130 %, each idle and under CPU load (12 runs).
 `fixed-rates`        | Any fixed rate, one at a time   | Trivial work: pacer off, pacer on, pacer at half the refresh rate. Give `--refresh-hz` and `--set half_fps=`.
 `variable-refresh`   | Highest rate, variable refresh on | Fixed frame rates of 120, 80, 60 and 30 fps, pacer off, GPU and CPU load, windowed and fullscreen.
 

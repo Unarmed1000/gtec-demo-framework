@@ -107,6 +107,10 @@ namespace Fsl::Vulkan
   //! It must stay alive until vkQueuePresentKHR returns.
   struct VUPresentTimingPresentInfo
   {
+    //! True if the present asks for its stages to be timed (a measurement will arrive for it)
+    bool IsTimingRequested{false};
+    //! The target time the present was given, in nanoseconds after the present before it was shown (zero = none)
+    uint64_t RelativeTargetTimeNanoseconds{0};
 #ifdef FSL_VULKAN_PRESENT_TIMING_SUPPORTED
     uint64_t Id{0};
     VkPresentId2KHR PresentId{};
@@ -136,6 +140,10 @@ namespace Fsl::Vulkan
     uint32_t m_queueSize{0};
     //! The number of presents that requested timing and have not been collected yet
     uint32_t m_outstanding{0};
+    //! True if a present of the swapchain can be given a target time relative to the present before it
+    bool m_canPresentAtRelativeTime{false};
+    //! The target time of the next present in nanoseconds after the present before it was shown (zero = none)
+    uint64_t m_nextRelativeTargetTime{0};
 #ifdef FSL_VULKAN_PRESENT_TIMING_SUPPORTED
     PFN_vkSetSwapchainPresentTimingQueueSizeEXT m_pfnSetQueueSize{nullptr};
     PFN_vkGetSwapchainTimingPropertiesEXT m_pfnGetTimingProperties{nullptr};
@@ -143,6 +151,8 @@ namespace Fsl::Vulkan
     PFN_vkGetPastPresentationTimingEXT m_pfnGetPastPresentationTiming{nullptr};
     //! The stages the surface can report
     VkPresentStageFlagsEXT m_stageQueries{0};
+    //! The stage a target time is given for
+    VkPresentStageFlagsEXT m_targetStage{0};
     VkTimeDomainKHR m_timeDomain{VK_TIME_DOMAIN_DEVICE_KHR};
     uint64_t m_timeDomainId{0};
     uint64_t m_timeDomainsCounter{0};
@@ -176,6 +186,25 @@ namespace Fsl::Vulkan
     [[nodiscard]] bool IsEnabled() const noexcept
     {
       return m_swapchain != VK_NULL_HANDLE;
+    }
+
+    //! @brief Allow the presents of the swapchain to be scheduled (SetNextRelativeTargetTime). Call it after a Reset that returned true if
+    //!        the device was created with the presentAtRelativeTime feature of VK_EXT_present_timing enabled.
+    //! @return true if the surface supports it too, so the presents can be scheduled.
+    bool TryEnablePresentAtRelativeTime() noexcept;
+
+    //! @return true if a present of the swapchain can be given a target time relative to the present before it.
+    [[nodiscard]] bool CanPresentAtRelativeTime() const noexcept
+    {
+      return m_canPresentAtRelativeTime;
+    }
+
+    //! @brief Give the next present a target time: its image is not shown before that many nanoseconds have passed since the image of the
+    //!        present before it was shown, and then at the first refresh. It applies to one present. Zero is no target time: the image
+    //!        is shown as soon as the present mode allows. Ignored if CanPresentAtRelativeTime is false.
+    void SetNextRelativeTargetTime(const uint64_t nanoseconds) noexcept
+    {
+      m_nextRelativeTargetTime = m_canPresentAtRelativeTime ? nanoseconds : 0u;
     }
 
     //! @brief Prepare the structs of a present.

@@ -216,6 +216,7 @@ namespace Fsl::VulkanBasic
     FramePacingLogColumn PresentReturn;
     FramePacingLogColumn PresentResult;
     FramePacingLogColumn PresentTimingRequested;
+    FramePacingLogColumn PresentTargetRelative;
     FramePacingLogColumn RefreshDuration;
     FramePacingLogColumn RefreshInterval;
     FramePacingLogColumn TimeDomainId;
@@ -258,6 +259,10 @@ namespace Fsl::VulkanBasic
       state->PresentTimingRequested =
         rLog.RegisterColumn("presentTimingRequested", FramePacingLogUnit::Flag,
                             "1 if the present was asked to be timed, 0 if not: present timing is off, or too many results were outstanding");
+      state->PresentTargetRelative =
+        rLog.RegisterColumn("presentTargetRelativeNs", FramePacingLogUnit::Nanoseconds,
+                            "The target time the present was given: its image is not shown before this long after the image of the present "
+                            "before it was shown (empty: the present was not scheduled)");
       state->RefreshDuration = rLog.RegisterColumn("refreshDurationNs", FramePacingLogUnit::Nanoseconds,
                                                    "VkSwapchainTimingPropertiesEXT::refreshDuration as the swapchain last reported it");
       state->RefreshInterval = rLog.RegisterColumn("refreshIntervalNs", FramePacingLogUnit::Nanoseconds,
@@ -292,6 +297,7 @@ namespace Fsl::VulkanBasic
                                                        VK_API_VERSION_MINOR(properties.apiVersion), VK_API_VERSION_PATCH(properties.apiVersion)));
       rLog.SetLogFact("vulkan.calibratedTimestamps", hostDeviceFeatures.CalibratedTimestamps ? "1" : "0");
       rLog.SetLogFact("vulkan.presentTimingDevice", hostDeviceFeatures.PresentTiming ? "1" : "0");
+      rLog.SetLogFact("vulkan.presentAtRelativeTimeDevice", hostDeviceFeatures.PresentAtRelativeTime ? "1" : "0");
       rLog.SetLogFact("vulkan.presentTimingOption", fmt::format("{}", static_cast<int32_t>(launchOptions.PresentTiming)));
       state->Log = std::move(log);
       return state;
@@ -598,7 +604,12 @@ namespace Fsl::VulkanBasic
                                                               VK_TRUE, m_swapchain.Get(), fallbackExtent, m_surfaceFormatInfo);
       if (swapchainCreateFlags != 0u)
       {
-        m_presentTiming.Reset(m_physicalDevice.Device, m_device.Get(), m_surface, m_swapchain.Get(), m_calibratedTimestamps);
+        if (m_presentTiming.Reset(m_physicalDevice.Device, m_device.Get(), m_surface, m_swapchain.Get(), m_calibratedTimestamps) &&
+            m_hostDeviceFeatures.PresentAtRelativeTime)
+        {
+          // The presents of this swapchain can be given a target time, if its surface supports that as well
+          m_presentTiming.TryEnablePresentAtRelativeTime();
+        }
       }
       FSLLOG3_VERBOSE_IF(usePresentTiming, "Present timing: {}", m_presentTiming.IsEnabled() ? "enabled" : "not supported by the surface");
       LogSwapchainCreated(presentMode, swapchainCreateFlags);
@@ -768,10 +779,11 @@ namespace Fsl::VulkanBasic
 
     const Vulkan::VUPresentTimingState timingState = m_presentTiming.GetState();
     rState.Log->AddLogEvent("presentTiming", fmt::format("generation={};enabled={};requested={};stages={:#x};timeDomain={};timeDomainId={};"
-                                                         "presentAtAbsoluteTime={};presentAtRelativeTime={}",
+                                                         "presentAtAbsoluteTime={};presentAtRelativeTime={};canSchedule={}",
                                                          rState.Generation, m_presentTiming.IsEnabled() ? 1 : 0, m_presentTimingRequested ? 1 : 0,
                                                          timingState.StageQueries, timingState.TimeDomain, timingState.TimeDomainId,
-                                                         timingState.PresentAtAbsoluteTime ? 1 : 0, timingState.PresentAtRelativeTime ? 1 : 0));
+                                                         timingState.PresentAtAbsoluteTime ? 1 : 0, timingState.PresentAtRelativeTime ? 1 : 0,
+                                                         m_presentTiming.CanPresentAtRelativeTime() ? 1 : 0));
   }
 
 
@@ -848,7 +860,13 @@ namespace Fsl::VulkanBasic
   }
 
 
-  void DemoAppVulkanBasic::LogPresent(const VkResult result, const bool timingRequested) noexcept
+  void DemoAppVulkanBasic::SetPresentRelativeTargetTime(const TimeSpan time) noexcept
+  {
+    m_presentTiming.SetNextRelativeTargetTime(static_cast<uint64_t>(std::max(time.Ticks(), int64_t{0})) * TickCount::NanoSecondsPerTick);
+  }
+
+
+  void DemoAppVulkanBasic::LogPresent(const VkResult result, const bool timingRequested, const uint64_t relativeTargetTimeNanoseconds) noexcept
   {
     if (!m_framePacingLogState || !m_framePacingLogState->HasFrame)
     {
@@ -863,6 +881,10 @@ namespace Fsl::VulkanBasic
     rLog.SetLogValueAt(frameIndex, rState.PresentReturn, m_currentPresentCalls.PresentReturnTime);
     rLog.SetLogInt64At(frameIndex, rState.PresentResult, static_cast<int64_t>(result));
     rLog.SetLogInt64At(frameIndex, rState.PresentTimingRequested, timingRequested ? 1 : 0);
+    if (relativeTargetTimeNanoseconds != 0u)
+    {
+      rLog.SetLogUInt64At(frameIndex, rState.PresentTargetRelative, relativeTargetTimeNanoseconds);
+    }
     // So a measurement that arrives later finds the frame of its present
     rState.PresentFrames[m_currentPresentCalls.PresentId % rState.PresentFrames.size()] = {m_currentPresentCalls.PresentId, frameIndex};
     rState.HasFrame = false;
@@ -1343,7 +1365,7 @@ namespace Fsl::VulkanBasic
       m_swapchain.TryQueuePresent(m_deviceQueue.Queue, 1, &signalSemaphore, &rFrame.AssignedSwapImageIndex, nullptr, pPresentInfoNext);
     m_currentPresentCalls.PresentReturnTime = m_presentCallTimer.GetTimestamp();
     m_lastPresentCalls = m_currentPresentCalls;
-    LogPresent(result, presentTimingInfo.TimingsInfo.sType == VK_STRUCTURE_TYPE_PRESENT_TIMINGS_INFO_EXT);
+    LogPresent(result, presentTimingInfo.IsTimingRequested, presentTimingInfo.RelativeTargetTimeNanoseconds);
     rFrame.PresentFencePending = hasPresentFence && IsPresentFenceSignalExpected(result);
     m_presentTiming.OnPresent(presentTimingInfo, result);
 

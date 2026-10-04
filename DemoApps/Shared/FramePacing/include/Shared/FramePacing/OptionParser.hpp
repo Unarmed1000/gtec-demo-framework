@@ -43,6 +43,7 @@ namespace Fsl
     int32_t m_pacerTargetFps{SampleConfig::TargetFps.Get()};
     bool m_pacerAdaptive{true};
     bool m_pacerPresentFeedback{false};
+    bool m_pacerSchedulePresent{false};
     int32_t m_cpuLoadMs{SampleConfig::CpuLoadMs.Get()};
     int32_t m_gpuLoadSteps{SampleConfig::GpuLoadSteps.Get()};
     RaymarchScene m_background{RaymarchScene::Flight};
@@ -109,6 +110,13 @@ namespace Fsl
     [[nodiscard]] bool IsPacerPresentFeedback() const noexcept
     {
       return m_pacerPresentFeedback;
+    }
+
+    //! @brief Check if the presents are scheduled (the presentation engine holds a frame for its swap interval) where the app can do that,
+    //!        instead of the sample waiting before it presents.
+    [[nodiscard]] bool IsPacerSchedulePresent() const noexcept
+    {
+      return m_pacerSchedulePresent;
     }
 
     //! @brief The time the app spends busy every frame in milliseconds.

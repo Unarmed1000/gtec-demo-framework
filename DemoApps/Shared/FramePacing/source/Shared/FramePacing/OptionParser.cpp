@@ -44,6 +44,7 @@ namespace Fsl
         PacerTargetFps,
         PacerAdaptive,
         PacerPresentFeedback,
+        PacerSchedulePresent,
         CpuLoad,
         GpuLoad,
         Background
@@ -97,6 +98,9 @@ namespace Fsl
                           "true: the frame pacer measures the frames by when the display showed them, where the app measures its presents "
                           "(Vulkan with VK_EXT_present_timing). Only for a display with a fixed refresh rate. false (default): by when the "
                           "frames start.");
+    rOptions.emplace_back("Pacer.SchedulePresent", OptionArgument::OptionRequired, CommandId::PacerSchedulePresent,
+                          "true: the presentation engine holds a frame for its swap interval, the present is given a target time (Vulkan "
+                          "with VK_EXT_present_timing and presentAtRelativeTime). false (default): the sample waits before it presents.");
     rOptions.emplace_back("CpuLoad", OptionArgument::OptionRequired, CommandId::CpuLoad,
                           "Simulate a CPU load: the time in milliseconds the app spends busy every frame (0 = none, the default).");
     rOptions.emplace_back("GpuLoad", OptionArgument::OptionRequired, CommandId::GpuLoad,
@@ -150,6 +154,9 @@ namespace Fsl
       return OptionParseResult::Parsed;
     case CommandId::PacerPresentFeedback:
       StringParseUtil::Parse(m_pacerPresentFeedback, strOptArg);
+      return OptionParseResult::Parsed;
+    case CommandId::PacerSchedulePresent:
+      StringParseUtil::Parse(m_pacerSchedulePresent, strOptArg);
       return OptionParseResult::Parsed;
     case CommandId::CpuLoad:
       return TryParseInRange(m_cpuLoadMs, strOptArg, SampleConfig::CpuLoadMs, "CpuLoad") ? OptionParseResult::Parsed : OptionParseResult::Failed;

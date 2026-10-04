@@ -441,6 +441,20 @@ namespace Fsl
         return m_presentTiming.IsEnabled();
       }
 
+      //! @brief Check if a present can be given a target time (SetPresentRelativeTargetTime). It needs the presents to be measured
+      //!        (IsPresentTimingEnabled) and a device and a surface with presentAtRelativeTime of VK_EXT_present_timing, so it can change
+      //!        when the swapchain is recreated.
+      [[nodiscard]] bool IsPresentSchedulingSupported() const noexcept
+      {
+        return m_presentTiming.CanPresentAtRelativeTime();
+      }
+
+      //! @brief Give the present of the frame being drawn a target time: its image is not shown before the time has passed since the image
+      //!        of the present before it was shown, and then at the first refresh. So a frame is held for N refreshes with a time of a
+      //!        bit less than N refreshes, without the app waiting before it presents. It applies to one present, call it before the
+      //!        frame is presented (EndDraw at the latest). Zero is no target time. Ignored if IsPresentSchedulingSupported is false.
+      void SetPresentRelativeTargetTime(const TimeSpan time) noexcept;
+
       //! @brief Get the id the present of the frame being drawn will get. The presents are numbered from one, whether they are measured or not.
       [[nodiscard]] uint64_t GetNextPresentId() const noexcept
       {
@@ -482,7 +496,7 @@ namespace Fsl
       //! The frame pacing log: what the swapchain is, the values of the frame that begins and the present that was just made
       void LogSwapchainCreated(const VkPresentModeKHR presentMode, const VkSwapchainCreateFlagsKHR createFlags);
       void LogFrameBegin();
-      void LogPresent(const VkResult result, const bool timingRequested) noexcept;
+      void LogPresent(const VkResult result, const bool timingRequested, const uint64_t relativeTargetTimeNanoseconds) noexcept;
 
       AppDrawResult TryDoPrepareDraw(const FrameInfo& frameInfo);
       AppDrawResult TryDoSwapBuffers(const FrameInfo& frameInfo);

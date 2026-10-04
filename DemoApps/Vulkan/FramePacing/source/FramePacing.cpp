@@ -90,8 +90,10 @@ namespace Fsl
     // GPU time of the last frame that was measured.
     m_shared.EndFrame(m_gpuTimer.GetGpuTime());
     // A FIFO present holds a frame for one refresh and there is no swap interval, so the present of a frame the frame pacer holds for
-    // more than one refresh is delayed instead
+    // more than one refresh is delayed instead. Or, where the swapchain can do it and the sample is asked to, the present is given a
+    // target time and the presentation engine holds the frame (zero is no target time).
     m_shared.WaitForPresent();
+    SetPresentRelativeTargetTime(m_shared.GetPresentRelativeTarget());
   }
 
 
@@ -165,6 +167,7 @@ namespace Fsl
     // When the frames reached the display, if the swapchain measures it (VK_EXT_present_timing). The measurements arrive a few frames
     // after the present.
     m_shared.SetPresentFeedback(IsPresentTimingEnabled(), GetPresentRefreshDuration());
+    m_shared.SetPresentSchedulingSupport(IsPresentSchedulingSupported());
     {    // When the frame before this one was presented: the frame pacer is told with the display time of that frame
       const VulkanBasic::PresentCallRecord& presentCalls = GetLastPresentCalls();
       if (presentCalls.PresentId != 0u)
