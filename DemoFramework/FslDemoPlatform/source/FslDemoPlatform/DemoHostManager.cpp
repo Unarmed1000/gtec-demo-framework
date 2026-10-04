@@ -221,14 +221,17 @@ namespace Fsl
         assert(m_demoHost);
         // The frame was drawn and is about to be swapped: the last point where a screenshot of it can be captured on every API
         m_testService->OnFrameDrawCompleted();
+        const TickCount swapCallTime = m_timer.GetTimestamp();
         const auto swapBuffersResult = m_demoHost->TrySwapBuffers();
         if (swapBuffersResult != SwapBuffersResult::AppControlled)
         {
+          m_demoAppManager->OnSwapBuffers(swapCallTime, m_timer.GetTimestamp());
           //  The swap buffer operation is not app controlled, so use a quick exit.
           return swapBuffersResult;
         }
         // the swap is app controlled so delegate it to the app
         result = m_demoAppManager->TryAppSwapBuffers();
+        m_demoAppManager->OnSwapBuffers(swapCallTime, m_timer.GetTimestamp());
       }
       ++retryCount;
     }

@@ -16,6 +16,8 @@ IDemoAppControlEx             | DemoAppControlService                           
 IDemoPlatformControl          | DemoPlatformControl                                                          | flag clearing, misc
 IEventService                 | EventsService                                                                | Register/unregister event listeners
 IEventPoster                  | EventsService                                                                | Post events
+IFramePacingFrameLog          | FramePacingMarkerService                                                     | The frame log (--FramePacing.Log): columns, values of a frame, events and facts.
+IFramePacingMarkerService     | FramePacingMarkerService                                                     | The frame marker: enable, measured runs, the values of the last marker, SetFrameSchedule.
 IGamepads                     | GamepadsService                                                              | Gamepad state
 IGraphicsService              | GraphicsService                                                              | Capture screen to bitmap, Basic2D, NativeBatch2D, NativeGraphics, BasicRenderSystem
 IGraphicsServiceControl       | GraphicsService                                                              | SetActiveAPI, SetWindowMetrics

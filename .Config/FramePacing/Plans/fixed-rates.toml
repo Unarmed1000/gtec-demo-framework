@@ -1,0 +1,30 @@
+# Three runs with trivial work at one fixed refresh rate: pacer off, pacer on, and the pacer held at half the refresh rate. Run it once for
+# every refresh rate of the display that is of interest, with variable refresh off.
+#
+# Set the display to the rate first, then give the rate and half of it:
+#   FramePacingCapture run fixed-rates -o <dir>/60Hz --refresh-hz 60 --set half_fps=30
+# The target frame rate of the pacer is a whole number, for 23.98 Hz the 'half rate' run uses 12 and for 25 Hz a third of the rate (8) is the
+# closer fit.
+
+description = "One fixed refresh rate: pacer off, pacer on, pacer at half the refresh rate, trivial work"
+app = "Vulkan.FramePacing"
+frames = 2000
+args = ["--Window", "[0,0,1600,900]", "--GpuLoad", "0"]
+
+[variables]
+# Half the refresh rate of the display in frames per second
+half_fps = "120"
+
+[[run]]
+name = "B_pacer_off"
+what = "pacer off"
+
+[[run]]
+name = "A_pacer_on"
+what = "pacer on, adaptive, target fps 0 (the display rate)"
+args = ["--Pacer"]
+
+[[run]]
+name = "H_half_rate"
+what = "pacer on, adaptive off, target {half_fps} fps (half the refresh rate)"
+args = ["--Pacer", "--Pacer.Adaptive", "false", "--Pacer.TargetFps", "{half_fps}"]

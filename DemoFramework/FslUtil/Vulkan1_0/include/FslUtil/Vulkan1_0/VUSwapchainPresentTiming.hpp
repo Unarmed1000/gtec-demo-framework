@@ -60,11 +60,46 @@ namespace Fsl::Vulkan
     //! The first pixel of the image became visible on the display
     std::optional<TickCount> FirstPixelVisible;
 
+    //! The times as the presentation engine reported them: nanoseconds on the clock of the time domain, one entry per stage in the order
+    //! of the stages above (zero if not available)
+    std::array<uint64_t, 4> RawStageTimes{};
+    //! The time domain the times were reported in (a VkTimeDomainKHR value) and its id
+    int32_t TimeDomain{0};
+    uint64_t TimeDomainId{0};
+
     //! @return the best available time for 'the image reached the display': FirstPixelVisible if reported, else FirstPixelOut.
     [[nodiscard]] std::optional<TickCount> GetDisplayTime() const noexcept
     {
       return FirstPixelVisible.has_value() ? FirstPixelVisible : FirstPixelOut;
     }
+  };
+
+
+  //! What a swapchain reported about its timing, as it reported it. For a log: nothing here is converted or rounded.
+  struct VUPresentTimingState
+  {
+    //! VkSwapchainTimingPropertiesEXT::refreshDuration and refreshInterval in nanoseconds. By the specification the two are equal in a
+    //! fixed refresh mode, and the interval is UINT64_MAX in a variable refresh mode.
+    uint64_t RefreshDurationNanoseconds{0};
+    uint64_t RefreshIntervalNanoseconds{0};
+    //! The counter the swapchain gave with the timing properties, and how often they were read
+    uint64_t TimingPropertiesCounter{0};
+    uint32_t TimingPropertiesReadCount{0};
+    //! The time domain the times are reported in (a VkTimeDomainKHR value) and its id
+    int32_t TimeDomain{0};
+    uint64_t TimeDomainId{0};
+    //! The stages the surface reports (VkPresentStageFlagsEXT)
+    uint32_t StageQueries{0};
+    //! If the surface can present at a absolute or a relative target time
+    bool PresentAtAbsoluteTime{false};
+    bool PresentAtRelativeTime{false};
+    //! How often the clocks of the stages were related to the clock of the framework
+    uint32_t CalibrationCount{0};
+    //! Per stage: what is added to a time of the stage in 100ns ticks to get the time of the framework, and how far the two clocks could
+    //! be apart when they were read
+    std::array<int64_t, 4> StageOffsetTicks{};
+    std::array<uint64_t, 4> StageMaxDeviationNanoseconds{};
+    std::array<bool, 4> HasStageOffset{};
   };
 
 
@@ -93,6 +128,7 @@ namespace Fsl::Vulkan
   //! features enabled.
   class VUSwapchainPresentTiming final
   {
+    VUPresentTimingState m_state;
     VkDevice m_device{VK_NULL_HANDLE};
     VkSwapchainKHR m_swapchain{VK_NULL_HANDLE};
     VUCalibratedTimestamps m_calibratedTimestamps;
@@ -161,6 +197,9 @@ namespace Fsl::Vulkan
     {
       return m_refreshDuration;
     }
+
+    //! @return what the swapchain reported about itself, as it reported it (everything zero if not enabled).
+    [[nodiscard]] VUPresentTimingState GetState() const noexcept;
 
   private:
     void UpdateTimeDomain();

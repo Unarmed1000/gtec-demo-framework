@@ -45,6 +45,7 @@ namespace Fsl
     static Priority ContentMonitor();
     static Priority EGLHostService();
     static Priority EventsService();
+    static Priority FramePacingMarkerService();
     static Priority HostInfo();
     static Priority ImageBasicService();
     static Priority ImageConverterLibraryService();

@@ -71,6 +71,8 @@ namespace Fsl::Vulkan
     {
       bool IsSupported{false};
       VkPresentStageFlagsEXT StageQueries{0};
+      bool PresentAtAbsoluteTime{false};
+      bool PresentAtRelativeTime{false};
     };
 
     SurfaceSupport GetSurfaceSupport(const VkPhysicalDevice physicalDevice, const VkSurfaceKHR surface)
@@ -106,6 +108,8 @@ namespace Fsl::Vulkan
 
       SurfaceSupport support;
       support.StageQueries = timingCapabilities.presentStageQueries;
+      support.PresentAtAbsoluteTime = timingCapabilities.presentAtAbsoluteTimeSupported == VK_TRUE;
+      support.PresentAtRelativeTime = timingCapabilities.presentAtRelativeTimeSupported == VK_TRUE;
       support.IsSupported = timingCapabilities.presentTimingSupported == VK_TRUE && presentId2Capabilities.presentId2Supported == VK_TRUE &&
                             timingCapabilities.presentStageQueries != 0u;
       return support;
@@ -132,6 +136,22 @@ namespace Fsl::Vulkan
     m_hasTimeDomain = false;
     m_hasStageOffset = {};
     m_presentsSinceCalibration = 0;
+    m_state = {};
+  }
+
+
+  VUPresentTimingState VUSwapchainPresentTiming::GetState() const noexcept
+  {
+    VUPresentTimingState state = m_state;
+    if (IsEnabled())
+    {
+      state.TimeDomain = static_cast<int32_t>(m_timeDomain);
+      state.TimeDomainId = m_timeDomainId;
+      state.StageQueries = m_stageQueries;
+      state.StageOffsetTicks = m_stageOffsetTicks;
+      state.HasStageOffset = m_hasStageOffset;
+    }
+    return state;
   }
 
 
@@ -174,6 +194,8 @@ namespace Fsl::Vulkan
     m_calibratedTimestamps = calibratedTimestamps;
     m_stageQueries = support.StageQueries;
     m_queueSize = LocalConfig::QueueSize;
+    m_state.PresentAtAbsoluteTime = support.PresentAtAbsoluteTime;
+    m_state.PresentAtRelativeTime = support.PresentAtRelativeTime;
 
     UpdateTimeDomain();
     if (!m_hasTimeDomain)
@@ -282,6 +304,8 @@ namespace Fsl::Vulkan
         const VkPastPresentationTimingEXT& timing = timings[i];
         VUPresentTimingRecord record;
         record.PresentId = timing.presentId;
+        record.TimeDomain = static_cast<int32_t>(timing.timeDomain);
+        record.TimeDomainId = timing.timeDomainId;
         const uint32_t stageCount = std::min(timing.presentStageCount, LocalConfig::MaxStages);
         for (uint32_t stageIndex = 0; stageIndex < stageCount; ++stageIndex)
         {
@@ -294,6 +318,7 @@ namespace Fsl::Vulkan
           {
             continue;
           }
+          record.RawStageTimes[stageBitIndex] = stageTime.time;
           TickCount time;
           if (timing.timeDomain == TimeDomainUtil::GetHostTimeDomain())
           {
@@ -402,6 +427,7 @@ namespace Fsl::Vulkan
     // Read the clock of the swapchain and the clock of the framework at the same moment. With VK_TIME_DOMAIN_PRESENT_STAGE_LOCAL_EXT every
     // stage can have its own clock, so each of them is related to the clock of the framework.
     const bool isStageLocal = m_timeDomain == VK_TIME_DOMAIN_PRESENT_STAGE_LOCAL_EXT;
+    bool hasCalibrated = false;
     for (uint32_t stageIndex = 0; stageIndex < LocalConfig::MaxStages; ++stageIndex)
     {
       const VkPresentStageFlagsEXT stage = VkPresentStageFlagsEXT{1} << stageIndex;
@@ -435,8 +461,14 @@ namespace Fsl::Vulkan
       const TickCount hostTime = m_calibratedTimestamps.HostTimeToTickCount(timestamps[1]);
       m_stageOffsetTicks[stageIndex] = hostTime.Ticks() - static_cast<int64_t>(timestamps[0] / TickCount::NanoSecondsPerTick);
       m_hasStageOffset[stageIndex] = true;
+      m_state.StageMaxDeviationNanoseconds[stageIndex] = maxDeviation;
+      hasCalibrated = true;
       FSLLOG3_VERBOSE3("Present timing: stage {:#x} clock {} ns is host time {} (max deviation {} ns)", stage, timestamps[0], hostTime.Ticks(),
                        maxDeviation);
+    }
+    if (hasCalibrated)
+    {
+      ++m_state.CalibrationCount;
     }
   }
 
@@ -456,6 +488,10 @@ namespace Fsl::Vulkan
     }
     m_timingPropertiesCounter = counter;
     m_refreshDuration = TimeSpan(static_cast<int64_t>(properties.refreshDuration / TickCount::NanoSecondsPerTick));
+    m_state.RefreshDurationNanoseconds = properties.refreshDuration;
+    m_state.RefreshIntervalNanoseconds = properties.refreshInterval;
+    m_state.TimingPropertiesCounter = counter;
+    ++m_state.TimingPropertiesReadCount;
   }
 
 #else
@@ -471,6 +507,13 @@ namespace Fsl::Vulkan
   {
     m_swapchain = VK_NULL_HANDLE;
     m_device = VK_NULL_HANDLE;
+    m_state = {};
+  }
+
+
+  VUPresentTimingState VUSwapchainPresentTiming::GetState() const noexcept
+  {
+    return m_state;
   }
 
 

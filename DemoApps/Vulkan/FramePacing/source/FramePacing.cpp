@@ -162,12 +162,6 @@ namespace Fsl
       m_gpuTimeCalibration.Calibrate();
     }
 
-    {    // Where the frame loop waited for the frame that was presented last
-      const VulkanBasic::PresentCallRecord& calls = GetLastPresentCalls();
-      m_shared.AddPresentCalls(calls.PresentId, calls.ImageIndex, calls.AcquireCallTime, calls.AcquireReturnTime, calls.PresentCallTime,
-                               calls.PresentReturnTime);
-    }
-
     // When the frames reached the display, if the swapchain measures it (VK_EXT_present_timing). The measurements arrive a few frames
     // after the present.
     m_shared.SetPresentFeedback(IsPresentTimingEnabled(), GetPresentRefreshDuration());

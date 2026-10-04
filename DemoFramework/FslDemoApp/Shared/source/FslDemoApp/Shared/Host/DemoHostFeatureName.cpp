@@ -43,6 +43,22 @@ namespace Fsl
       return "OpenGLES";
     case DemoHostFeatureName::OpenVG:
       return "OpenVG";
+    case DemoHostFeatureName::OpenCL:
+      return "OpenCL";
+    case DemoHostFeatureName::OpenCV:
+      return "OpenCV";
+    case DemoHostFeatureName::OpenVX:
+      return "OpenVX";
+    case DemoHostFeatureName::G2D:
+      return "G2D";
+    case DemoHostFeatureName::Console:
+      return "Console";
+    case DemoHostFeatureName::Window:
+      return "Window";
+    case DemoHostFeatureName::Vulkan:
+      return "Vulkan";
+    case DemoHostFeatureName::Stub:
+      return "Stub";
     default:
       return "Unknown";
     }

@@ -45,8 +45,7 @@ namespace Fsl
         PacerAdaptive,
         CpuLoad,
         GpuLoad,
-        Background,
-        PresentLog
+        Background
       };
     };
 
@@ -101,10 +100,6 @@ namespace Fsl
     rOptions.emplace_back("Background", OptionArgument::OptionRequired, CommandId::Background,
                           "The scene of the raymarched background: flight (a flight through a fractal lattice, the default) or hall (a "
                           "hall of columns that scrolls sideways at a constant speed, which makes a stutter easy to see).");
-    rOptions.emplace_back("PresentLog", OptionArgument::OptionRequired, CommandId::PresentLog,
-                          "Write a CSV file with one row per presented frame when the sample exits: when the frame started, where the "
-                          "frame loop waited, what the frame pacer planned and when the frame reached the display. All times are in "
-                          "100ns ticks. Vulkan only, as it needs the id of the present.");
   }
 
 
@@ -166,9 +161,6 @@ namespace Fsl
       }
       FSLLOG3_ERROR("Background must be 'flight' or 'hall'");
       return OptionParseResult::Failed;
-    case CommandId::PresentLog:
-      m_presentLogPath = IO::Path(strOptArg);
-      return OptionParseResult::Parsed;
     default:
       return OptionParseResult::NotHandled;
     }

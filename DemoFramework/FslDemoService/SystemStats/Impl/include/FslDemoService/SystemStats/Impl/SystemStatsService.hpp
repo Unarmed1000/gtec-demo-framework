@@ -78,6 +78,7 @@ namespace Fsl
     // From ISystemStatsService
     bool TryGetApplicationGpuUsage(GpuUsageRecord& rUsageRecord) const final;
     bool TryGetApplicationGpuMemoryUsage(GpuMemoryUsageRecord& rUsageRecord) const final;
+    bool TryGetCpuTimes(SystemCpuTimes& rTimes) const final;
 
     // From ISystemStatsServiceControl
     [[nodiscard]] bool IsApplicationGpuMemoryUsageWanted() const noexcept final;

@@ -44,13 +44,18 @@
 #include <FslDemoHost/Base/Service/AppInfo/IAppInfoControlService.hpp>
 #include <FslDemoHost/Base/Service/DemoAppControl/IDemoAppControlEx.hpp>
 #include <FslDemoHost/Base/Service/Profiler/IProfilerServiceControl.hpp>
+#include <FslDemoHost/Base/Service/WindowHost/IWindowHostInfo.hpp>
 #include <FslDemoService/CpuStats/ICpuStatsService.hpp>
 #include <FslDemoService/FramePacingMarker/Control/IFramePacingMarkerServiceControl.hpp>
 #include <FslDemoService/FramePacingMarker/Control/IFramePacingOverlay.hpp>
+#include <FslDemoService/FramePacingMarker/IFramePacingFrameLog.hpp>
 #include <FslDemoService/Graphics/Control/IGraphicsServiceControl.hpp>
 #include <FslDemoService/Profiler/IProfilerService.hpp>
 #include <FslDemoService/SystemStats/ISystemStatsService.hpp>
+#include <FslNativeWindow/Base/INativeWindow.hpp>
+#include <FslNativeWindow/Base/NativeWindowDisplayInfo.hpp>
 #include <FslService/Consumer/ServiceProvider.hpp>
+#include <fmt/format.h>
 #include <cassert>
 #include <memory>
 #include <utility>
@@ -91,6 +96,29 @@ namespace Fsl
     if (m_framePacingMarkerServiceControl && renderSystemOverlay)
     {
       m_framePacingOverlay = m_framePacingMarkerServiceControl->CreateOverlay(m_demoAppConfig.DemoServiceProvider);
+    }
+    m_framePacingLog = m_demoAppConfig.DemoServiceProvider.TryGet<IFramePacingFrameLog>();
+    if (m_framePacingLog && m_framePacingLog->IsLogEnabled())
+    {
+      // What the host knows about a frame, for the frame pacing log
+      IFramePacingFrameLog& rLog = *m_framePacingLog;
+      m_framePacingLogColumns.UpdateEnd = rLog.RegisterColumn("hostUpdateEndTicks", FramePacingLogUnit::Ticks, "When the update of the app was done");
+      m_framePacingLogColumns.DrawEnd = rLog.RegisterColumn("hostDrawEndTicks", FramePacingLogUnit::Ticks, "When the draw of the app was done");
+      m_framePacingLogColumns.SwapCall = rLog.RegisterColumn("hostSwapCallTicks", FramePacingLogUnit::Ticks,
+                                                             "When the host started to swap the frame (or asked the app to present it)");
+      m_framePacingLogColumns.SwapReturn = rLog.RegisterColumn("hostSwapReturnTicks", FramePacingLogUnit::Ticks, "When the swap returned");
+      m_framePacingLogColumns.SwapCompleted =
+        rLog.RegisterColumn("hostSwapCompletedTicks", FramePacingLogUnit::Ticks, "When the host was done with the frame, after the swap");
+      m_framePacingLogColumns.FrameSlot =
+        rLog.RegisterColumn("hostFrameSlot", FramePacingLogUnit::Id, "The frame slot of the render loop the frame used (the frames in flight)");
+      m_framePacingLogColumns.FrameworkTime =
+        rLog.RegisterColumn("frameworkTimeTicks", FramePacingLogUnit::DurationTicks, "The time of the framework the frame was updated and drawn for");
+      m_framePacingLogColumns.FrameworkStep =
+        rLog.RegisterColumn("frameworkStepTicks", FramePacingLogUnit::DurationTicks, "The time step of the framework from the frame before");
+    }
+    else
+    {
+      m_framePacingLog.reset();
     }
     m_demoAppControl = m_demoAppConfig.DemoServiceProvider.Get<IDemoAppControlEx>();
     m_graphicsService = m_demoAppConfig.DemoServiceProvider.TryGet<IGraphicsServiceControl>();
@@ -249,6 +277,48 @@ namespace Fsl
       // The frame's CPU work starts with the app update
       m_framePacingMarkerServiceControl->BeginFrame(frameInfo, m_stats.TimeBeforeUpdate);
     }
+    if (m_framePacingLog)
+    {
+      IFramePacingFrameLog& rLog = *m_framePacingLog;
+      m_framePacingLogFrameIndex = rLog.GetLogFrameIndex();
+      m_framePacingLogHasFrame = true;
+      rLog.SetLogValue(m_framePacingLogColumns.UpdateEnd, m_stats.TimeAfterUpdate);
+      rLog.SetLogUInt64(m_framePacingLogColumns.FrameSlot, frameInfo.FrameIndex);
+      rLog.SetLogInt64(m_framePacingLogColumns.FrameworkTime, frameInfo.Time.CurrentTickCount.Ticks());
+      rLog.SetLogValue(m_framePacingLogColumns.FrameworkStep, frameInfo.Time.ElapsedTime);
+      if (m_demoAppConfig.WindowMetrics.ExtentPx != m_framePacingLogExtentPx)
+      {
+        // The window the frames are drawn to, written when it changes
+        m_framePacingLogExtentPx = m_demoAppConfig.WindowMetrics.ExtentPx;
+        const DemoWindowMetrics& metrics = m_demoAppConfig.WindowMetrics;
+        rLog.AddLogEvent("window", fmt::format("widthPx={};heightPx={};exactDpiX={};exactDpiY={};densityDpi={}", metrics.ExtentPx.Width.Value,
+                                               metrics.ExtentPx.Height.Value, metrics.ExactDpi.X, metrics.ExactDpi.Y, metrics.DensityDpi));
+      }
+      if (m_framePacingLogRefreshIntervalTicks < 0)
+      {
+        // The window does not exist when the manager is created, so it is found at the first frame
+        const auto windowHostInfo = m_demoAppConfig.DemoServiceProvider.TryGet<IWindowHostInfo>();
+        if (windowHostInfo)
+        {
+          const auto windows = windowHostInfo->GetWindows();
+          if (!windows.empty())
+          {
+            m_framePacingLogWindow = windows.front();
+          }
+        }
+      }
+      {
+        // The refresh interval of the display as the window system reports it (zero: not known), written when it changes.
+        // Reading it is cheap as the window caches it.
+        const auto window = m_framePacingLogWindow.lock();
+        const int64_t refreshIntervalTicks = window ? window->TryGetDisplayInfo().RefreshInterval.Ticks() : 0;
+        if (refreshIntervalTicks != m_framePacingLogRefreshIntervalTicks)
+        {
+          m_framePacingLogRefreshIntervalTicks = refreshIntervalTicks;
+          rLog.AddLogEvent("display", fmt::format("refreshIntervalTicks={}", refreshIntervalTicks));
+        }
+      }
+    }
 
     m_record.DemoApp->_BeginDraw(frameInfo);
     try
@@ -270,6 +340,10 @@ namespace Fsl
     }
 
     m_stats.TimeAfterDraw = m_timer.GetTimestamp();
+    if (m_framePacingLog)
+    {
+      m_framePacingLog->SetLogValueAt(m_framePacingLogFrameIndex, m_framePacingLogColumns.DrawEnd, m_stats.TimeAfterDraw);
+    }
 
     if (m_enableStats && m_state == DemoState::Running && m_demoAppProfilerOverlay)
     {
@@ -324,6 +398,16 @@ namespace Fsl
   }
 
 
+  void DemoAppManager::OnSwapBuffers(const TickCount callTime, const TickCount returnTime) noexcept
+  {
+    if (m_framePacingLog && m_framePacingLogHasFrame)
+    {
+      m_framePacingLog->SetLogValueAt(m_framePacingLogFrameIndex, m_framePacingLogColumns.SwapCall, callTime);
+      m_framePacingLog->SetLogValueAt(m_framePacingLogFrameIndex, m_framePacingLogColumns.SwapReturn, returnTime);
+    }
+  }
+
+
   void DemoAppManager::OnFrameSwapCompleted()
   {
     if (m_state == DemoState::Running)
@@ -336,6 +420,10 @@ namespace Fsl
       const auto timeNow = m_timer.GetTimestamp();
       const auto deltaFrameSwapCompletedTime = timeNow - m_stats.LastFrameSwapCompletedTime;
       m_stats.LastFrameSwapCompletedTime = timeNow;
+      if (m_framePacingLog && m_framePacingLogHasFrame)
+      {
+        m_framePacingLog->SetLogValueAt(m_framePacingLogFrameIndex, m_framePacingLogColumns.SwapCompleted, timeNow);
+      }
 
       m_profilerServiceControl->AddFrameTimes(TimeSpanUtil::ToClampedMicrosecondsUInt64(deltaTimeUpdate),
                                               TimeSpanUtil::ToClampedMicrosecondsUInt64(deltaTimeDraw),

@@ -22,6 +22,7 @@
 //* EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //****************************************************************************************************************************************************
 
+#include <FslBase/IO/Path.hpp>
 #include <FslBase/Time/TimeSpan.hpp>
 #include <FslService/Impl/AServiceOptionParser.hpp>
 #include <cstdint>
@@ -39,6 +40,7 @@ namespace Fsl
     std::optional<std::string> m_runName;
     TimeSpan m_runDuration;
     std::optional<uint32_t> m_runId;
+    IO::Path m_logPath;
 
   public:
     FramePacingMarkerServiceOptionParser();
@@ -89,6 +91,12 @@ namespace Fsl
     [[nodiscard]] std::optional<uint32_t> GetRunId() const noexcept
     {
       return m_runId;
+    }
+
+    //! @brief The file the frames are logged to (empty: no log)
+    [[nodiscard]] const IO::Path& GetLogPath() const noexcept
+    {
+      return m_logPath;
     }
   };
 }

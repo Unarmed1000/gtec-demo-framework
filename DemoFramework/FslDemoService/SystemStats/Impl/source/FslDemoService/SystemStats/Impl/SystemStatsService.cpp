@@ -25,6 +25,7 @@
 #include <FslBase/Time/TimeSpan.hpp>
 #include <FslDemoService/CpuStats/Impl/Adapter/ICpuStatsAdapter.hpp>
 #include <FslDemoService/SystemStats/Impl/Adapter/IGpuStatsAdapter.hpp>
+#include <FslDemoService/SystemStats/Impl/Adapter/SystemCpuTimesReader.hpp>
 #include <FslDemoService/SystemStats/Impl/SystemStatsService.hpp>
 #include <exception>
 #include <stdexcept>
@@ -175,6 +176,18 @@ namespace Fsl
     }
     rUsageRecord = {};
     return false;
+  }
+
+
+  bool SystemStatsService::TryGetCpuTimes(SystemCpuTimes& rTimes) const
+  {
+    if (!SystemCpuTimesReader::TryRead(rTimes))
+    {
+      rTimes = {};
+      return false;
+    }
+    rTimes.Timer = m_timer.GetTimestamp();
+    return true;
   }
 
 

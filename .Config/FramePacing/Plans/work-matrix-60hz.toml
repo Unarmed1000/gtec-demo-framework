@@ -1,0 +1,77 @@
+# The work of a frame against the refresh of a 60 Hz display, where the work is done by the CPU: 3, 15 and 22 ms of a refresh of 16.67 ms.
+#
+# Set the display to 60 Hz with variable refresh off before the plan is run.
+
+description = "60 Hz: CPU work of 20, 90 and 130 % of a refresh, pacer on and off, basic Vulkan, each idle and under CPU load"
+app = "Vulkan.FramePacing"
+frames = 900
+expected_refresh_hz = 60.0
+args = ["--Window", "[0,0,1600,900]", "--GpuLoad", "0"]
+
+[variables]
+# The --CpuLoad in milliseconds that is 20, 90 and 130 % of a refresh
+cpu20 = "3"
+cpu90 = "15"
+cpu130 = "22"
+
+[load]
+# One busy process for every logical CPU, like a build that uses the whole machine
+processes = 0
+duty = 1.0
+
+[[run]]
+name = "w20_pacer_on"
+what = "CPU work of 20 % of a refresh, pacer on (adaptive, the display rate)"
+args = ["--Pacer", "--CpuLoad", "{cpu20}"]
+loaded = true
+
+[[run]]
+name = "w90_pacer_on"
+what = "CPU work of 90 % of a refresh, pacer on (adaptive, the display rate)"
+args = ["--Pacer", "--CpuLoad", "{cpu90}"]
+loaded = true
+
+[[run]]
+name = "w130_pacer_on"
+what = "CPU work of 130 % of a refresh, pacer on (adaptive, the display rate)"
+args = ["--Pacer", "--CpuLoad", "{cpu130}"]
+loaded = true
+
+[[run]]
+name = "w20_pacer_off"
+what = "CPU work of 20 % of a refresh, pacer off"
+args = ["--CpuLoad", "{cpu20}"]
+loaded = true
+
+[[run]]
+name = "w90_pacer_off"
+what = "CPU work of 90 % of a refresh, pacer off"
+args = ["--CpuLoad", "{cpu90}"]
+loaded = true
+
+[[run]]
+name = "w130_pacer_off"
+what = "CPU work of 130 % of a refresh, pacer off"
+args = ["--CpuLoad", "{cpu130}"]
+loaded = true
+
+# Basic Vulkan: no present timing and no present fences, so the app has no display times and the back pressure of the swapchain only comes
+# through vkAcquireNextImageKHR
+
+[[run]]
+name = "w20_basic_vulkan"
+what = "CPU work of 20 % of a refresh, pacer on, Vulkan without present timing and swapchain maintenance"
+args = ["--Pacer", "--CpuLoad", "{cpu20}", "--VkPresentTiming", "false", "--VkSwapchainMaintenance1", "false"]
+loaded = true
+
+[[run]]
+name = "w90_basic_vulkan"
+what = "CPU work of 90 % of a refresh, pacer on, Vulkan without present timing and swapchain maintenance"
+args = ["--Pacer", "--CpuLoad", "{cpu90}", "--VkPresentTiming", "false", "--VkSwapchainMaintenance1", "false"]
+loaded = true
+
+[[run]]
+name = "w130_basic_vulkan"
+what = "CPU work of 130 % of a refresh, pacer on, Vulkan without present timing and swapchain maintenance"
+args = ["--Pacer", "--CpuLoad", "{cpu130}", "--VkPresentTiming", "false", "--VkSwapchainMaintenance1", "false"]
+loaded = true

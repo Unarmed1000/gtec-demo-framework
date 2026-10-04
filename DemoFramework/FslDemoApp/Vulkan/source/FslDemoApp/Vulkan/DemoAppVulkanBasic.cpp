@@ -41,6 +41,7 @@
 #include <FslDemoHost/Vulkan/Config/SwapchainMaintenance1Util.hpp>
 #include <FslDemoService/FramePacingMarker/Control/IFramePacingMarkerServiceControl.hpp>
 #include <FslDemoService/FramePacingMarker/Control/IFramePacingOverlay.hpp>
+#include <FslDemoService/FramePacingMarker/IFramePacingFrameLog.hpp>
 #include <FslDemoService/Graphics/Control/GraphicsBeginFrameInfo.hpp>
 #include <FslDemoService/Graphics/Control/GraphicsDependentCreateInfo.hpp>
 #include <FslDemoService/Graphics/Control/IGraphicsServiceHost.hpp>
@@ -63,12 +64,14 @@
 #include <RapidVulkan/Debug/Strings/VkImageUsageFlagBits.hpp>
 #include <RapidVulkan/Debug/Strings/VkResult.hpp>
 #include <RapidVulkan/Exceptions.hpp>
+#include <fmt/format.h>
 #include <algorithm>
 #include <array>
 #include <cassert>
 #include <exception>
 #include <iostream>
 #include <memory>
+#include <optional>
 
 namespace Fsl::VulkanBasic
 {
@@ -194,6 +197,108 @@ namespace Fsl::VulkanBasic
     }
   }
 
+  //! What the Vulkan app base adds to the frame pacing log: when the swapchain was called and what the presentation engine measured
+  struct DemoAppVulkanBasic::FramePacingLogState
+  {
+    struct PresentFrame
+    {
+      uint64_t PresentId{0};
+      uint64_t FrameIndex{0};
+    };
+
+    std::shared_ptr<IFramePacingFrameLog> Log;
+    FramePacingLogColumn PresentId;
+    FramePacingLogColumn ImageIndex;
+    FramePacingLogColumn SwapchainGeneration;
+    FramePacingLogColumn AcquireCall;
+    FramePacingLogColumn AcquireReturn;
+    FramePacingLogColumn PresentCall;
+    FramePacingLogColumn PresentReturn;
+    FramePacingLogColumn PresentResult;
+    FramePacingLogColumn PresentTimingRequested;
+    FramePacingLogColumn RefreshDuration;
+    FramePacingLogColumn RefreshInterval;
+    FramePacingLogColumn TimeDomainId;
+    FramePacingLogColumn ResultReadAtFrame;
+    //! One for each present stage: the time on the clock of the framework and the time as the presentation engine reported it
+    std::array<FramePacingLogColumn, 4> StageTicks;
+    std::array<FramePacingLogColumn, 4> StageRaw;
+
+    //! The frame of the log that is being drawn (valid if HasFrame)
+    uint64_t FrameIndex{0};
+    bool HasFrame{false};
+    //! The frame each of the last presents belongs to
+    std::array<PresentFrame, 64> PresentFrames{};
+    //! How many swapchains were created
+    uint32_t Generation{0};
+    uint32_t LoggedTimingPropertiesReadCount{0};
+    uint32_t LoggedCalibrationCount{0};
+
+    //! @return the state, null if the frames are not logged
+    static std::unique_ptr<FramePacingLogState> TryCreate(std::shared_ptr<IFramePacingFrameLog> log,
+                                                          const Vulkan::VUPhysicalDeviceRecord& physicalDevice,
+                                                          const Vulkan::VulkanHostDeviceFeatures& hostDeviceFeatures,
+                                                          const VulkanLaunchOptions& launchOptions)
+    {
+      if (!log || !log->IsLogEnabled())
+      {
+        return nullptr;
+      }
+      auto state = std::make_unique<FramePacingLogState>();
+      IFramePacingFrameLog& rLog = *log;
+      state->PresentId = rLog.RegisterColumn("presentId", FramePacingLogUnit::Id, "The number of the present of the frame, counted from one");
+      state->ImageIndex = rLog.RegisterColumn("imageIndex", FramePacingLogUnit::Id, "The index of the swapchain image that was presented");
+      state->SwapchainGeneration =
+        rLog.RegisterColumn("swapchainGeneration", FramePacingLogUnit::Count, "How many swapchains were created up to this frame");
+      state->AcquireCall = rLog.RegisterColumn("acquireCallTicks", FramePacingLogUnit::Ticks, "When vkAcquireNextImageKHR was called");
+      state->AcquireReturn = rLog.RegisterColumn("acquireReturnTicks", FramePacingLogUnit::Ticks, "When vkAcquireNextImageKHR returned");
+      state->PresentCall = rLog.RegisterColumn("presentCallTicks", FramePacingLogUnit::Ticks, "When vkQueuePresentKHR was called");
+      state->PresentReturn = rLog.RegisterColumn("presentReturnTicks", FramePacingLogUnit::Ticks, "When vkQueuePresentKHR returned");
+      state->PresentResult = rLog.RegisterColumn("presentResult", FramePacingLogUnit::Code, "The VkResult of vkQueuePresentKHR");
+      state->PresentTimingRequested =
+        rLog.RegisterColumn("presentTimingRequested", FramePacingLogUnit::Flag,
+                            "1 if the present was asked to be timed, 0 if not: present timing is off, or too many results were outstanding");
+      state->RefreshDuration = rLog.RegisterColumn("refreshDurationNs", FramePacingLogUnit::Nanoseconds,
+                                                   "VkSwapchainTimingPropertiesEXT::refreshDuration as the swapchain last reported it");
+      state->RefreshInterval = rLog.RegisterColumn("refreshIntervalNs", FramePacingLogUnit::Nanoseconds,
+                                                   "VkSwapchainTimingPropertiesEXT::refreshInterval as the swapchain last reported it");
+
+      // VK_EXT_present_timing: the stages of a present, known a few frames after the present
+      constexpr std::array<const char*, 4> StageNames = {"queueOperationsEnd", "requestDequeued", "firstPixelOut", "firstPixelVisible"};
+      constexpr std::array<const char*, 4> StageDescriptions = {
+        "the queue operations of the present ended (the image was handed to the presentation engine)",
+        "the presentation engine took the present from its queue", "the first pixel of the image left for the display",
+        "the first pixel of the image became visible on the display"};
+      for (std::size_t i = 0; i < StageNames.size(); ++i)
+      {
+        state->StageTicks[i] = rLog.RegisterColumn(fmt::format("{}Ticks", StageNames[i]), FramePacingLogUnit::Ticks,
+                                                   fmt::format("When {}, on the clock of the framework", StageDescriptions[i]));
+        state->StageRaw[i] =
+          rLog.RegisterColumn(fmt::format("{}RawNs", StageNames[i]), FramePacingLogUnit::Nanoseconds,
+                              fmt::format("When {}, as the presentation engine reported it on the clock of its time domain", StageDescriptions[i]));
+      }
+      state->TimeDomainId =
+        rLog.RegisterColumn("presentTimeDomainId", FramePacingLogUnit::Id, "The id of the time domain the stages were reported in");
+      state->ResultReadAtFrame = rLog.RegisterColumn("resultReadAtFrame", FramePacingLogUnit::Id,
+                                                     "The frame in which the stages of this frame were read: how late they arrived");
+
+      // The facts of the device the frames are drawn with
+      const VkPhysicalDeviceProperties& properties = physicalDevice.Properties;
+      rLog.SetLogFact("vulkan.deviceName", static_cast<const char*>(properties.deviceName));
+      rLog.SetLogFact("vulkan.vendorId", fmt::format("{:#x}", properties.vendorID));
+      rLog.SetLogFact("vulkan.deviceId", fmt::format("{:#x}", properties.deviceID));
+      rLog.SetLogFact("vulkan.driverVersion", fmt::format("{}", properties.driverVersion));
+      rLog.SetLogFact("vulkan.apiVersion", fmt::format("{}.{}.{}", VK_API_VERSION_MAJOR(properties.apiVersion),
+                                                       VK_API_VERSION_MINOR(properties.apiVersion), VK_API_VERSION_PATCH(properties.apiVersion)));
+      rLog.SetLogFact("vulkan.calibratedTimestamps", hostDeviceFeatures.CalibratedTimestamps ? "1" : "0");
+      rLog.SetLogFact("vulkan.presentTimingDevice", hostDeviceFeatures.PresentTiming ? "1" : "0");
+      rLog.SetLogFact("vulkan.presentTimingOption", fmt::format("{}", static_cast<int32_t>(launchOptions.PresentTiming)));
+      state->Log = std::move(log);
+      return state;
+    }
+  };
+
+
   DemoAppVulkanBasic::DemoAppVulkanBasic(const DemoAppConfig& demoAppConfig, const DemoAppVulkanSetup& demoAppVulkanSetup)
     : DemoAppVulkan(demoAppConfig)
     , AppSetup(ProcessDemoAppSetup(demoAppVulkanSetup))
@@ -211,6 +316,8 @@ namespace Fsl::VulkanBasic
       m_framePacingOverlay = framePacingServiceControl->CreateOverlay(demoAppConfig.DemoServiceProvider);
     }
     m_systemStatsServiceControl = demoAppConfig.DemoServiceProvider.TryGet<ISystemStatsServiceControl>();
+    m_framePacingLogState = FramePacingLogState::TryCreate(demoAppConfig.DemoServiceProvider.TryGet<IFramePacingFrameLog>(), m_physicalDevice,
+                                                           m_hostDeviceFeatures, m_launchOptions);
     const auto demoHostConfig = hostInfo->TryGetAppHostConfig();
     if (!demoHostConfig)
     {
@@ -319,6 +426,7 @@ namespace Fsl::VulkanBasic
     m_presentTimingRecords.clear();
     m_presentTiming.Poll(m_presentTimingRecords);
     UpdateGpuMemoryStats();
+    LogFrameBegin();
     if (m_graphicsServiceHost)
     {
       Vulkan::BasicNativeBeginCustomVulkanFrameInfo vulkanBeginInfo(m_dependentResources.CmdBuffers[frameInfo.FrameIndex]);
@@ -493,6 +601,7 @@ namespace Fsl::VulkanBasic
         m_presentTiming.Reset(m_physicalDevice.Device, m_device.Get(), m_surface, m_swapchain.Get(), m_calibratedTimestamps);
       }
       FSLLOG3_VERBOSE_IF(usePresentTiming, "Present timing: {}", m_presentTiming.IsEnabled() ? "enabled" : "not supported by the surface");
+      LogSwapchainCreated(presentMode, swapchainCreateFlags);
 
       const uint32_t swapchainImageCount = m_swapchain.GetImageCount();
       if (swapchainImageCount == 0)
@@ -637,6 +746,129 @@ namespace Fsl::VulkanBasic
   }
 
 
+  void DemoAppVulkanBasic::LogSwapchainCreated(const VkPresentModeKHR presentMode, const VkSwapchainCreateFlagsKHR createFlags)
+  {
+    if (!m_framePacingLogState)
+    {
+      return;
+    }
+    FramePacingLogState& rState = *m_framePacingLogState;
+    ++rState.Generation;
+    rState.LoggedTimingPropertiesReadCount = 0;
+    rState.LoggedCalibrationCount = 0;
+
+    const VkExtent2D extent = m_swapchain.GetImageExtent();
+    const bool hasPresentFence = !m_resources.Frames.empty() && m_resources.Frames.front().PresentFence.IsValid();
+    rState.Log->AddLogEvent("swapchainCreated",
+                            fmt::format("generation={};widthPx={};heightPx={};format={};presentMode={};desiredMinImageCount={};imageCount={};"
+                                        "createFlags={:#x};imageUsage={:#x};presentFence={}",
+                                        rState.Generation, extent.width, extent.height, static_cast<int32_t>(m_swapchain.GetImageFormat()),
+                                        static_cast<int32_t>(presentMode), LocalConfig::DesiredMinSwapBufferCount, m_swapchain.GetImageCount(),
+                                        createFlags, m_swapchain.GetImageUsageFlags(), hasPresentFence ? 1 : 0));
+
+    const Vulkan::VUPresentTimingState timingState = m_presentTiming.GetState();
+    rState.Log->AddLogEvent("presentTiming", fmt::format("generation={};enabled={};requested={};stages={:#x};timeDomain={};timeDomainId={};"
+                                                         "presentAtAbsoluteTime={};presentAtRelativeTime={}",
+                                                         rState.Generation, m_presentTiming.IsEnabled() ? 1 : 0, m_presentTimingRequested ? 1 : 0,
+                                                         timingState.StageQueries, timingState.TimeDomain, timingState.TimeDomainId,
+                                                         timingState.PresentAtAbsoluteTime ? 1 : 0, timingState.PresentAtRelativeTime ? 1 : 0));
+  }
+
+
+  void DemoAppVulkanBasic::LogFrameBegin()
+  {
+    if (!m_framePacingLogState)
+    {
+      return;
+    }
+    FramePacingLogState& rState = *m_framePacingLogState;
+    IFramePacingFrameLog& rLog = *rState.Log;
+
+    // The frame the service started for this draw. The image was acquired before it was started, so that is written now.
+    rState.FrameIndex = rLog.GetLogFrameIndex();
+    rState.HasFrame = true;
+    rLog.SetLogValue(rState.AcquireCall, m_currentPresentCalls.AcquireCallTime);
+    rLog.SetLogValue(rState.AcquireReturn, m_currentPresentCalls.AcquireReturnTime);
+    rLog.SetLogUInt64(rState.SwapchainGeneration, rState.Generation);
+
+    const Vulkan::VUPresentTimingState timingState = m_presentTiming.GetState();
+    if (timingState.TimingPropertiesReadCount > 0u)
+    {
+      // As the swapchain reported them, the two are written apart: by the specification they tell a fixed from a variable refresh mode
+      rLog.SetLogUInt64(rState.RefreshDuration, timingState.RefreshDurationNanoseconds);
+      rLog.SetLogUInt64(rState.RefreshInterval, timingState.RefreshIntervalNanoseconds);
+    }
+    if (timingState.TimingPropertiesReadCount != rState.LoggedTimingPropertiesReadCount)
+    {
+      rState.LoggedTimingPropertiesReadCount = timingState.TimingPropertiesReadCount;
+      rLog.AddLogEvent("refreshProperties",
+                       fmt::format("generation={};refreshDurationNs={};refreshIntervalNs={};counter={};readCount={}", rState.Generation,
+                                   timingState.RefreshDurationNanoseconds, timingState.RefreshIntervalNanoseconds,
+                                   timingState.TimingPropertiesCounter, timingState.TimingPropertiesReadCount));
+    }
+    if (timingState.CalibrationCount != rState.LoggedCalibrationCount)
+    {
+      rState.LoggedCalibrationCount = timingState.CalibrationCount;
+      for (std::size_t stageIndex = 0; stageIndex < timingState.HasStageOffset.size(); ++stageIndex)
+      {
+        if (timingState.HasStageOffset[stageIndex])
+        {
+          rLog.AddLogEvent("presentClockCalibration",
+                           fmt::format("generation={};stage={:#x};offsetTicks={};maxDeviationNs={};calibrationCount={}", rState.Generation,
+                                       1u << stageIndex, timingState.StageOffsetTicks[stageIndex],
+                                       timingState.StageMaxDeviationNanoseconds[stageIndex], timingState.CalibrationCount));
+        }
+      }
+    }
+
+    // The measurements that arrived belong to earlier frames
+    for (const Vulkan::VUPresentTimingRecord& record : m_presentTimingRecords)
+    {
+      const FramePacingLogState::PresentFrame& presentFrame = rState.PresentFrames[record.PresentId % rState.PresentFrames.size()];
+      if (presentFrame.PresentId != record.PresentId)
+      {
+        continue;
+      }
+      const std::array<std::optional<TickCount>, 4> stageTimes = {record.QueueOperationsEnd, record.RequestDequeued, record.FirstPixelOut,
+                                                                  record.FirstPixelVisible};
+      for (std::size_t stageIndex = 0; stageIndex < stageTimes.size(); ++stageIndex)
+      {
+        if (stageTimes[stageIndex].has_value())
+        {
+          rLog.SetLogValueAt(presentFrame.FrameIndex, rState.StageTicks[stageIndex], stageTimes[stageIndex].value());
+        }
+        if (record.RawStageTimes[stageIndex] != 0u)
+        {
+          rLog.SetLogUInt64At(presentFrame.FrameIndex, rState.StageRaw[stageIndex], record.RawStageTimes[stageIndex]);
+        }
+      }
+      rLog.SetLogUInt64At(presentFrame.FrameIndex, rState.TimeDomainId, record.TimeDomainId);
+      rLog.SetLogUInt64At(presentFrame.FrameIndex, rState.ResultReadAtFrame, rState.FrameIndex);
+    }
+  }
+
+
+  void DemoAppVulkanBasic::LogPresent(const VkResult result, const bool timingRequested) noexcept
+  {
+    if (!m_framePacingLogState || !m_framePacingLogState->HasFrame)
+    {
+      return;
+    }
+    FramePacingLogState& rState = *m_framePacingLogState;
+    IFramePacingFrameLog& rLog = *rState.Log;
+    const uint64_t frameIndex = rState.FrameIndex;
+    rLog.SetLogUInt64At(frameIndex, rState.PresentId, m_currentPresentCalls.PresentId);
+    rLog.SetLogUInt64At(frameIndex, rState.ImageIndex, m_currentPresentCalls.ImageIndex);
+    rLog.SetLogValueAt(frameIndex, rState.PresentCall, m_currentPresentCalls.PresentCallTime);
+    rLog.SetLogValueAt(frameIndex, rState.PresentReturn, m_currentPresentCalls.PresentReturnTime);
+    rLog.SetLogInt64At(frameIndex, rState.PresentResult, static_cast<int64_t>(result));
+    rLog.SetLogInt64At(frameIndex, rState.PresentTimingRequested, timingRequested ? 1 : 0);
+    // So a measurement that arrives later finds the frame of its present
+    rState.PresentFrames[m_currentPresentCalls.PresentId % rState.PresentFrames.size()] = {m_currentPresentCalls.PresentId, frameIndex};
+    rState.HasFrame = false;
+  }
+
+
   void DemoAppVulkanBasic::UpdateGpuMemoryStats() noexcept
   {
     // The service only wants it while somebody asks for the GPU memory usage and the operating system has no number of its own
@@ -677,8 +909,10 @@ namespace Fsl::VulkanBasic
     if (requested != m_presentTimingRequested)
     {
       m_presentTimingRequested = requested;
-      // The swapchain is recreated by TryDoPrepareDraw, as it can not be done while a frame is being drawn
-      m_presentTimingChangePending = m_dependentResources.Valid;
+      // The swapchain is recreated by TryDoPrepareDraw, as it can not be done while a frame is being drawn.
+      // The request only decides something if the presents can be measured and the user did not force them on.
+      m_presentTimingChangePending =
+        m_dependentResources.Valid && IsPresentTimingSupported() && m_launchOptions.PresentTiming != OptionUserChoice::On;
     }
   }
 
@@ -1109,6 +1343,7 @@ namespace Fsl::VulkanBasic
       m_swapchain.TryQueuePresent(m_deviceQueue.Queue, 1, &signalSemaphore, &rFrame.AssignedSwapImageIndex, nullptr, pPresentInfoNext);
     m_currentPresentCalls.PresentReturnTime = m_presentCallTimer.GetTimestamp();
     m_lastPresentCalls = m_currentPresentCalls;
+    LogPresent(result, presentTimingInfo.TimingsInfo.sType == VK_STRUCTURE_TYPE_PRESENT_TIMINGS_INFO_EXT);
     rFrame.PresentFencePending = hasPresentFence && IsPresentFenceSignalExpected(result);
     m_presentTiming.OnPresent(presentTimingInfo, result);
 

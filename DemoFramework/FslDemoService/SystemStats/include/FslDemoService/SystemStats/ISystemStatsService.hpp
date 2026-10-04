@@ -26,6 +26,7 @@
 #include <FslDemoService/CpuStats/ICpuStatsService.hpp>
 #include <FslDemoService/SystemStats/GpuMemoryUsageRecord.hpp>
 #include <FslDemoService/SystemStats/GpuUsageRecord.hpp>
+#include <FslDemoService/SystemStats/SystemCpuTimes.hpp>
 
 namespace Fsl
 {
@@ -44,6 +45,11 @@ namespace Fsl
     //! @brief Get how much GPU memory the application uses.
     //! @return false if not available (the record is then cleared).
     virtual bool TryGetApplicationGpuMemoryUsage(GpuMemoryUsageRecord& rUsageRecord) const = 0;
+
+    //! @brief Read the CPU time counters of the system and of this process as they are (they are not cached, so do not call it every
+    //!        frame). The load between two reads is the difference, which a log can keep without rounding anything.
+    //! @return false if not available (the record is then cleared).
+    virtual bool TryGetCpuTimes(SystemCpuTimes& rTimes) const = 0;
   };
 }
 

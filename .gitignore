@@ -3,6 +3,8 @@
 /.Config/__pycache__
 /.Config/.mypy_cache/
 /.Config/*.pyc
+/.Config/FramePacing/*.pyc
+/.Config/FramePacing/__pycache__
 /.Config/FslBuild/*.pyc
 /.Config/FslBuildGen/*.pyc
 /.Config/FslBuildGen/__pycache__

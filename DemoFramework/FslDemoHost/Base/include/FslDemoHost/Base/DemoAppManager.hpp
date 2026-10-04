@@ -43,6 +43,7 @@
 #include <FslDemoHost/Base/DemoAppTiming.hpp>
 #include <FslDemoHost/Base/DemoState.hpp>
 #include <FslDemoHost/Base/LogStatsMode.hpp>
+#include <FslDemoService/FramePacingMarker/FramePacingLogColumn.hpp>
 #include <memory>
 #include <utility>
 
@@ -53,9 +54,11 @@ namespace Fsl
   class IDemoAppControlEx;
   class ICpuStatsService;
   class ISystemStatsService;
+  class IFramePacingFrameLog;
   class IFramePacingOverlay;
   class IFramePacingMarkerServiceControl;
   class IGraphicsServiceControl;
+  class INativeWindow;
   class IProfilerService;
   class IProfilerServiceControl;
   struct TimeSpan;
@@ -99,6 +102,31 @@ namespace Fsl
     //! Null if the frame pacing service is unavailable
     std::shared_ptr<IFramePacingOverlay> m_framePacingOverlay;
     std::shared_ptr<IFramePacingMarkerServiceControl> m_framePacingMarkerServiceControl;
+
+    //! The columns the host adds to the frame pacing log
+    struct FramePacingLogColumns
+    {
+      FramePacingLogColumn UpdateEnd;
+      FramePacingLogColumn DrawEnd;
+      FramePacingLogColumn SwapCall;
+      FramePacingLogColumn SwapReturn;
+      FramePacingLogColumn SwapCompleted;
+      FramePacingLogColumn FrameSlot;
+      FramePacingLogColumn FrameworkTime;
+      FramePacingLogColumn FrameworkStep;
+    };
+
+    //! Null if the frame pacing service is unavailable
+    std::shared_ptr<IFramePacingFrameLog> m_framePacingLog;
+    FramePacingLogColumns m_framePacingLogColumns;
+    //! The frame of the log the host is working on (valid if m_framePacingLogHasFrame)
+    uint64_t m_framePacingLogFrameIndex{0};
+    bool m_framePacingLogHasFrame{false};
+    PxExtent2D m_framePacingLogExtentPx;
+    //! The window the display of the log is read from
+    std::weak_ptr<INativeWindow> m_framePacingLogWindow;
+    //! The refresh interval of the display that was last written to the log (negative: none was written)
+    int64_t m_framePacingLogRefreshIntervalTicks{-1};
     std::shared_ptr<IDemoAppControlEx> m_demoAppControl;
     std::shared_ptr<IGraphicsServiceControl> m_graphicsService;
     std::shared_ptr<IProfilerServiceControl> m_profilerServiceControl;
@@ -150,6 +178,9 @@ namespace Fsl
     void OnDeactivate();
     //! @brief Should be called after a buffer swap has been completed
     void OnFrameSwapCompleted();
+
+    //! @brief The host swapped the frame (or asked the app to do it): when the call was made and when it returned.
+    void OnSwapBuffers(const TickCount callTime, const TickCount returnTime) noexcept;
     void OnDemandDrawSkipped();
     void ProcessDone();
 

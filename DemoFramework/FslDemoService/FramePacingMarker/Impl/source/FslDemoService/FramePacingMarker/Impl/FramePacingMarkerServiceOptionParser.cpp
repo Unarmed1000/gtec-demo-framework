@@ -50,6 +50,7 @@ namespace Fsl
         Run,
         Duration,
         RunId,
+        Log,
       };
     };
   }
@@ -81,6 +82,10 @@ namespace Fsl
                           "The duration in seconds of the measured part of the run started by FramePacing.Run (0 = until the app exits).");
     rOptions.emplace_back("FramePacing.RunId", OptionArgument::OptionRequired, CommandId::RunId,
                           "The id of the run started by FramePacing.Run (defaults to a random id).");
+    rOptions.emplace_back("FramePacing.Log", OptionArgument::OptionRequired, CommandId::Log,
+                          "Log every frame to the given CSV file: what the frame marker carries, the times of the frame loop and what the "
+                          "host and the app add, all as whole numbers. The events and the facts of the run are written to a '.events.csv' "
+                          "file next to it. It works with or without the marker being drawn.");
   }
 
 
@@ -141,6 +146,14 @@ namespace Fsl
         m_runId = value;
         return OptionParseResult::Parsed;
       }
+    case CommandId::Log:
+      if (strOptArg.empty())
+      {
+        FSLLOG3_ERROR("FramePacing.Log requires a file name");
+        return OptionParseResult::Failed;
+      }
+      m_logPath = IO::Path(strOptArg);
+      return OptionParseResult::Parsed;
     default:
       return OptionParseResult::NotHandled;
     }

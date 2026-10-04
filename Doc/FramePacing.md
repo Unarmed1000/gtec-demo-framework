@@ -30,6 +30,7 @@ Argument                          | Description
 `--FramePacing.Run <name>`        | Start a measured run with this name at the first frame. The name is written to the log next to the run's random sequence id. Implies `--FramePacing`.
 `--FramePacing.Duration <sec>`    | The duration of the measured part of the run (0 = until the app exits).
 `--FramePacing.RunId <id>`        | The id of the run (defaults to a random id).
+`--FramePacing.Log <file>`        | Write what every frame did to a log, see [the frame log](#the-frame-log). It does not need the marker to be drawn.
 
 A run is bracketed by a start marker (shown for at least 100ms, it carries the run's sequence id and the wall clock start time) and an
 end marker, so the analysis can cut the capture to exactly the measured window. The sequence id is 16 random bytes, which the
@@ -125,7 +126,6 @@ GPU load                      |`--GpuLoad <steps>`             |Draws the raymar
 Background                    |`--Background <flight\|hall>`   |The scene of the raymarched background (the radio buttons below the GPU load). `flight` is a flight through a fractal lattice. `hall` is a hall of columns that scrolls sideways at a constant speed, which makes a stutter easy to see.
 Measure the presents          |                                |Vulkan only. Measure when the frames reach the display (`VK_EXT_present_timing`), see [below](#what-the-vulkan-sample-measures-about-its-presents). Start with `--VkPresentTiming false` to run without the extension.
 Place the GPU work in time    |                                |Vulkan only. Show when the GPU worked on a frame, counted from the start of the frame (`VK_KHR_calibrated_timestamps`).
-                              |`--PresentLog <file>`           |Vulkan only. Write a CSV file with one row per presented frame when the sample exits, see [below](#what-the-vulkan-sample-measures-about-its-presents).
 
 The target fps slider and the adaptive switch can only be changed while the frame pacer is on. The line below the refresh rate shows the
 rate the frames are paced at: the refresh rate divided by the swap interval. The two status lines below the switches show the swap interval
@@ -194,31 +194,6 @@ call. The frame pacer needs a fixed refresh rate as well. A capture of the marke
 The `Display error` also shows how far the model of the pacer is from a Vulkan swapchain. The pacer takes a frame to be shown one swap
 interval after it started, while a FIFO swapchain has a number of presents queued between the app and the display.
 
-`--PresentLog <file>` writes one row per presented frame to a CSV file when the sample exits, so the frame loop can be looked at
-afterwards. Every time is a time of the steady clock of the framework (HighResolutionTimer) in whole 100ns ticks, and a field is empty
-when the value is not available.
-
-Column                                  |Description
-----------------------------------------|----------------------------------------------------------------------------------------------
-`frameIndex`                            |The frame index the frame pacing marker of the frame carried, so a row can be matched to a frame of a capture.
-`presentId`                             |The number of the present (from one).
-`cpuStartTicks`                         |When the sample started on the frame (after the swapchain image was acquired).
-`endFrameTicks`                         |When the work of the frame was done, which is what the pacer is told.
-`acquireCallTicks`, `acquireReturnTicks`|When `vkAcquireNextImageKHR` was called and when it returned.
-`presentCallTicks`, `presentReturnTicks`|When `vkQueuePresentKHR` was called and when it returned.
-`queueOperationsEndTicks`               |When the present was handed to the presentation engine (`VK_EXT_present_timing`).
-`firstPixelOutTicks`                    |When the frame reached the display (`VK_EXT_present_timing`).
-`refreshDurationNs`                     |The duration of a refresh in nanoseconds according to the swapchain.
-`swapInterval`, `intendedDisplayTicks`  |What the pacer planned for the frame (empty while it is off).
-`animationTimeTicks`                    |The time the frame was animated for.
-`change`                                |What the pacer did to the swap interval at this frame: `unchanged`, `slower` or `faster` (empty while it is off).
-`imageIndex`                            |The swapchain image that was presented.
-`resultReadAtPresentId`                 |The present of the frame in which the measurement of this present was read: how late it arrived.
-
-```bash
-Vulkan.FramePacing --Pacer --PresentLog frames.csv --ExitAfterFrame 2000
-```
-
 The GPU load is a raymarched background with two scenes, selected with the radio buttons below the GPU load or with `--Background`. `Fractal
 flight` is a flight through a fractal lattice of golden spheres over water that mirrors it (a sphere inversion fractal). `Scrolling hall` is
 a hall of fluted columns on a mirroring floor at dusk: the camera only travels sideways, at a constant speed, so every column, shadow and
@@ -228,6 +203,183 @@ Each app has its own copy of the shader (`Raymarch.frag`), as the shared code on
 
 While the pacer is on the sample animates by the time steps of the pacer (the refreshes the display moved on), so the time step keys of
 the framework (slow and fast motion) have no effect. Pause still stops the animation.
+
+## The frame log
+
+`--FramePacing.Log <file>` makes the service write what every frame of the app did to a log, so the frame loop can be looked at
+afterwards and compared with a capture of the marker. It works with every OpenGL ES and Vulkan app and does not need the marker to be
+drawn. How to capture runs that can be compared, with a plan, a known load on the machine and notes, is described in
+[FramePacingCapture.md](FramePacingCapture.md).
+
+```bash
+Vulkan.FramePacing --Pacer --FramePacing.Log frames.csv --ExitAfterFrame 2000
+```
+
+Two files are written:
+
+- **`<file>`**: one row per frame, the first line holds the names of the columns. A row is a frame the host began, in order, and
+  `frameIndex` is the frame index the marker of the frame carries.
+- **`<stem>.events.csv`** (`frames.events.csv`): `frameIndex,timeTicks,event,details` for everything that is not a value of a frame:
+  the facts of the run, the description of every column and what happened during the run.
+
+Every value of a frame is a whole number and nothing is rounded or converted to a unit with decimals. A time (`ticks`) is a time of the
+steady clock of the framework (`HighResolutionTimer`) in 100 ns ticks and a duration (`durationTicks`) is in the same ticks. A value of
+the driver is written as the driver gave it, with its unit in the name of the column (`refreshDurationNs`). A field is empty when the
+frame has no such value: the app does not supply it, the extension is missing, or the value did not arrive.
+
+The log is written by a thread of its own, the render thread only hands over rows. The files are flushed every 250 ms, so a app that
+crashes or is killed loses less than a second. A row stays open for 64 frames, as the values of a frame arrive over time (the display
+time of a present is reported a few frames later), and is written when it closes.
+
+### The columns
+
+Which columns a log has depends on the app: every app has the ones of the service and the host, a Vulkan app adds its presents and the
+FramePacing samples add their pacer. The events file describes every column of the log it belongs to.
+
+**The service, for every app**
+
+Column | Unit | Description
+---|---|---
+`markerKind` | code | The kind of marker of the frame: 0 frame, 1 the start of a run, 2 the end of a run
+`runId` | id | The id of the current (or last) run, as the marker carries it
+`runState` | code | The state of the run: 0 idle, 1 starting, 2 measuring, 3 ending
+`animationTimeTicks` | durationTicks | The time the frame is animated for, as the marker carries it (the one of the app if it gave a schedule)
+`cpuStartTicks` | ticks | When the CPU started on the frame, as the marker carries it (the one of the app if it gave a schedule)
+`hostCpuStartTicks` | ticks | When the host started the update of the frame
+`beginFrameTicks` | ticks | When the host told the service the frame begins: after the update and after the frame was prepared for drawing
+`hasSchedule` | flag | 1 if the app gave the pacing values of the frame
+`intendedDisplayTicks` | ticks | When the frame pacer of the app intends the frame to be shown
+`targetFrameTimeTicks` | durationTicks | The frame time the frame pacer of the app aims for
+`preferredFrameTimeTicks` | durationTicks | The frame time the app wants to run at
+`markerDrawn` | flag | 1 if the marker was drawn on the frame
+`markerDrawTicks` | ticks | When the marker was drawn, the last thing of the frame
+`markerCpuBusyTicks` | durationTicks | How long the CPU worked on the frame before the marker was drawn, as the marker carries it
+`markerStatic` | flag | The static after flag of the marker
+`markerStaticBefore` | flag | The static before flag of the marker
+`markerSyncMarker` | flag | 1 if the sync marker was drawn as well
+`markerModuleSizePx` | pixels | The size of a module of the marker that was asked for
+
+**The load of the machine, written once a second and empty in between**
+
+Column | Unit | Description
+---|---|---
+`systemIdleTicks` | durationTicks | How long the CPUs of the system were idle since it started, summed over the CPUs
+`systemKernelTicks` | durationTicks | How long the CPUs of the system ran kernel code since it started, idle time not included
+`systemUserTicks` | durationTicks | How long the CPUs of the system ran user code since it started
+`processKernelTicks` | durationTicks | How long this process ran kernel code since it started
+`processUserTicks` | durationTicks | How long this process ran user code since it started
+`processGpuUsageMilliPercent` | count | The load of the busiest GPU engine this process uses in thousandths of a percent
+`processGpuDedicatedBytes` | count | The memory of the GPU this process uses in bytes
+`processGpuSharedBytes` | count | The system memory the GPU uses for this process in bytes
+
+**The host, for every app**
+
+Column | Unit | Description
+---|---|---
+`hostUpdateEndTicks` | ticks | When the update of the app was done
+`hostDrawEndTicks` | ticks | When the draw of the app was done
+`hostSwapCallTicks` | ticks | When the host started to swap the frame (or asked the app to present it)
+`hostSwapReturnTicks` | ticks | When the swap returned
+`hostSwapCompletedTicks` | ticks | When the host was done with the frame, after the swap
+`hostFrameSlot` | id | The frame slot of the render loop the frame used (the frames in flight)
+`frameworkTimeTicks` | durationTicks | The time of the framework the frame was updated and drawn for
+`frameworkStepTicks` | durationTicks | The time step of the framework from the frame before
+
+**Vulkan apps (`DemoAppVulkanBasic`)**
+
+Column | Unit | Description
+---|---|---
+`presentId` | id | The number of the present of the frame, counted from one
+`imageIndex` | id | The index of the swapchain image that was presented
+`swapchainGeneration` | count | How many swapchains were created up to this frame
+`acquireCallTicks` | ticks | When vkAcquireNextImageKHR was called
+`acquireReturnTicks` | ticks | When vkAcquireNextImageKHR returned
+`presentCallTicks` | ticks | When vkQueuePresentKHR was called
+`presentReturnTicks` | ticks | When vkQueuePresentKHR returned
+`presentResult` | code | The VkResult of vkQueuePresentKHR
+`presentTimingRequested` | flag | 1 if the present was asked to be timed, 0 if not: present timing is off, or too many results were outstanding
+`refreshDurationNs` | nanoseconds | VkSwapchainTimingPropertiesEXT::refreshDuration as the swapchain last reported it
+`refreshIntervalNs` | nanoseconds | VkSwapchainTimingPropertiesEXT::refreshInterval as the swapchain last reported it
+`queueOperationsEndTicks` | ticks | When the queue operations of the present ended (the image was handed to the presentation engine), on the clock of the framework
+`queueOperationsEndRawNs` | nanoseconds | When the queue operations of the present ended (the image was handed to the presentation engine), as the presentation engine reported it on the clock of its time domain
+`requestDequeuedTicks` | ticks | When the presentation engine took the present from its queue, on the clock of the framework
+`requestDequeuedRawNs` | nanoseconds | When the presentation engine took the present from its queue, as the presentation engine reported it on the clock of its time domain
+`firstPixelOutTicks` | ticks | When the first pixel of the image left for the display, on the clock of the framework
+`firstPixelOutRawNs` | nanoseconds | When the first pixel of the image left for the display, as the presentation engine reported it on the clock of its time domain
+`firstPixelVisibleTicks` | ticks | When the first pixel of the image became visible on the display, on the clock of the framework
+`firstPixelVisibleRawNs` | nanoseconds | When the first pixel of the image became visible on the display, as the presentation engine reported it on the clock of its time domain
+`presentTimeDomainId` | id | The id of the time domain the stages were reported in
+`resultReadAtFrame` | id | The frame in which the stages of this frame were read: how late they arrived
+
+**The FramePacing samples**
+
+Column | Unit | Description
+---|---|---
+`pacerOn` | flag | 1 if the frame pacer of the sample paced the frame
+`swapInterval` | count | The number of display refreshes the frame pacer holds the frame for
+`preferredSwapInterval` | count | The swap interval of the target frame rate, the pacer never runs faster
+`pacerChange` | code | What the frame pacer did to the swap interval at this frame: 0 unchanged, 1 slower, 2 faster
+`animationStepTicks` | durationTicks | The step of the frame pacer from the animation time of the frame before
+`pacerWindowFrames` | count | The frames in the frame window of the frame pacer
+`pacerWindowLateFrames` | count | The frames in the frame window the frame pacer counts as late
+`pacerWindowAverageWorkTicks` | durationTicks | The average work of the frames in the frame window of the frame pacer
+`pacerWindowSpanTicks` | durationTicks | The time the frame window of the frame pacer spans
+`pacerWindowFull` | flag | 1 if the frame window of the frame pacer is full
+`frameWaitStartTicks` | ticks | When the sample began to wait for the start of the frame (it holds the start to the time the frame before was aimed at)
+`frameStartTicks` | ticks | When the sample started the frame, which is the start the frame pacer is given
+`endFrameTicks` | ticks | When the work of the frame was done, which is what the frame pacer is told
+`workCpuTicks` | durationTicks | How long the CPU worked on the frame
+`workGpuTicks` | durationTicks | The GPU time the frame pacer was told with the frame: the one of the last frame that was measured
+`gpuWorkBeginTicks` | ticks | When the GPU started on the frame, on the clock of the framework
+`gpuWorkEndTicks` | ticks | When the GPU finished the frame, on the clock of the framework
+`presentWaitTicks` | durationTicks | How long the sample delayed the present of the frame, to hold it for its swap interval
+`cpuLoadMs` | count | The CPU load setting: the milliseconds the sample is busy per frame
+`gpuLoadSteps` | count | The GPU load setting: the steps of the raymarched background
+
+`presentTimingRequested`, `resultReadAtFrame` and the stage times tell three cases apart: a present that was not asked to be timed
+(the results of too many presents were outstanding), a present that was reported without a display time (the image did not reach the
+display) and a present whose report did not arrive before its row closed. Only the stages the surface supports have values.
+
+### The events
+
+Event | Details
+---|---
+`fact` | `key=value`, something that holds for the whole run: `formatVersion`, `clock`, `clockNativeFrequency`, `utcNanoseconds` with the `utcClockTicks` it was read at (so a tick can be placed in wall clock time), `app`, `debugBuild`, `api`, `apiVersion`, the settings of the marker (`marker.*`), of the log (`log.openFrames`), the Vulkan device (`vulkan.deviceName`, `vendorId`, `deviceId`, `driverVersion`, `apiVersion`, `calibratedTimestamps`, `presentTimingDevice`, `presentTimingOption`) and the sample (`sample.presentMethod`, `sample.pacerSupported`).
+`column` | The name, the unit and the description of a column.
+`window` | The size and the DPI of the window, written when it changes.
+`display` | `refreshIntervalTicks`: the refresh interval of the display as the window system reports it (0 if it does not know), written when it changes.
+`runStarted`, `runCompleted` | A measured run of the marker: the run id, the sequence id, the name and the duration.
+`swapchainCreated` | Vulkan: the extent, the format, the present mode, the image counts and the flags of a swapchain. More than one means the window was resized or the swapchain was lost.
+`presentTiming` | Vulkan: if the presents of the swapchain are timed, the stages and the time domain of the surface and what it can schedule.
+`refreshProperties` | Vulkan: `refreshDuration` and `refreshInterval` of the swapchain, written when they change.
+`presentClockCalibration` | Vulkan: the offset between the clock of a present stage and the clock of the framework and how far off it can be, every time it is measured.
+`pacerConfig` | The samples: the pacer was switched or its settings changed (the refresh rate it uses, the target fps, adaptive).
+
+### Adding values from an app
+
+An app or a host adds its own columns through `IFramePacingFrameLog`. Every call does nothing while the log is off, so the only check
+that is needed is the one for the service.
+
+```C++
+#include <FslDemoService/FramePacingMarker/IFramePacingFrameLog.hpp>
+
+// In the constructor, columns can be added until the first frame is written
+m_frameLog = config.DemoServiceProvider.TryGet<IFramePacingFrameLog>();
+if (m_frameLog)
+{
+  m_columnPhysics = m_frameLog->RegisterColumn("physicsTicks", FramePacingLogUnit::DurationTicks, "How long the physics of the frame took");
+  m_frameLog->SetLogFact("scene", "city");
+}
+
+// During the update or the draw of a frame: a value of the frame that is being drawn
+if (m_frameLog)
+{
+  m_frameLog->SetLogValue(m_columnPhysics, physicsTime);
+  // A value that is known later is written to the frame it belongs to
+  m_frameLog->SetLogInt64At(frameIndex, m_columnResult, result);
+  m_frameLog->AddLogEvent("levelLoaded", "name=city");
+}
+```
 
 ## Notes
 
@@ -244,9 +396,9 @@ the framework (slow and fast motion) have no effect. Pause still stops the anima
 Package                                    | Content
 -------------------------------------------|--------------------------------------------------------------------------------------------
 `ThirdParty/mb_framepacing`                | The mb-framepacing C++ SDK: its marker module and, for the samples, its experimental pacer module (via `Recipe.mb_framepacing_0_1`).
-`FslDemoService.FramePacingMarker`         | The public `IFramePacingMarkerService` interface (header only, available on all platforms).
+`FslDemoService.FramePacingMarker`         | The public `IFramePacingMarkerService` and `IFramePacingFrameLog` interfaces (header only, available on all platforms).
 `FslDemoService.FramePacingMarker.Control` | The host side `IFramePacingMarkerServiceControl` and `IFramePacingOverlay` interfaces (header only, available on all platforms).
-`FslDemoService.FramePacingMarker.Impl`    | The service, its command line options, the run state machine and the overlay that draws the marker.
+`FslDemoService.FramePacingMarker.Impl`    | The service, its command line options, the run state machine, the overlay that draws the marker and the frame log (the table of open rows, the CSV formatter and the writer thread).
 
 The hosts only use the Control interfaces: they get `IFramePacingMarkerServiceControl` with `TryGet` and create the overlay through it. The
 service is only registered (by `FslDemoPlatform`) on the platforms that support the marker library, everywhere else `TryGet` returns

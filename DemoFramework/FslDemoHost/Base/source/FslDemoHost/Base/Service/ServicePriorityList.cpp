@@ -63,6 +63,12 @@ namespace Fsl
     return Priority::Max() - 20;
   }
 
+  Priority ServicePriorityList::FramePacingMarkerService()
+  {
+    // Below the default priority, its log reads the services that are registered with the default priority (the system stats)
+    return Priority() - 10;
+  }
+
   Priority ServicePriorityList::HostInfo()
   {
     return Priority::Max();

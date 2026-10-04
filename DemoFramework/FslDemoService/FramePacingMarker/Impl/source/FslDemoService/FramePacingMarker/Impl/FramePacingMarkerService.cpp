@@ -22,14 +22,21 @@
 
 #include <FslBase/Log/Log3Fmt.hpp>
 #include <FslDemoApp/Base/FrameInfo.hpp>
+#include <FslDemoApp/Base/Service/AppInfo/IAppInfoService.hpp>
+#include <FslDemoApp/Base/Service/Host/IHostInfo.hpp>
+#include <FslDemoApp/Shared/Host/DemoHostFeature.hpp>
 #include <FslDemoService/FramePacingMarker/Impl/FramePacingFrameRecordUtil.hpp>
 #include <FslDemoService/FramePacingMarker/Impl/FramePacingMarkerService.hpp>
 #include <FslDemoService/FramePacingMarker/Impl/FramePacingMarkerServiceOptionParser.hpp>
 #include <FslDemoService/FramePacingMarker/Impl/FramePacingOverlay.hpp>
+#include <FslDemoService/FramePacingMarker/Impl/Log/FramePacingFrameLog.hpp>
+#include <FslDemoService/SystemStats/ISystemStatsService.hpp>
 #include <mb/framepacing/marker/Options.hpp>
+#include <fmt/format.h>
 #include <algorithm>
 #include <array>
 #include <chrono>
+#include <cmath>
 #include <cstdint>
 #include <limits>
 #include <string>
@@ -39,6 +46,12 @@ namespace Fsl
 {
   namespace
   {
+    namespace LocalConfig
+    {
+      //! How often the load of the machine is written to the log
+      constexpr TimeSpan LogSystemLoadInterval = TimeSpan::FromSeconds(1);
+    }
+
     int32_t ClampModuleSize(const int32_t moduleSizePx) noexcept
     {
       return std::clamp(moduleSizePx, MB::FramePacing::Marker::Options::MinModuleSizePx, MB::FramePacing::Marker::Options::MaxModuleSizePx);
@@ -75,10 +88,36 @@ namespace Fsl
       m_pendingRun = PendingRun{optionParser->GetRunName().value(), optionParser->GetRunDuration()};
     }
     m_runId = m_nextRunId.has_value() ? m_nextRunId.value() : CreateRunId();
+
+    if (!optionParser->GetLogPath().IsEmpty())
+    {
+      m_log = FramePacingFrameLog::TryCreate(optionParser->GetLogPath());
+      RegisterLogColumns();
+    }
   }
 
 
-  FramePacingMarkerService::~FramePacingMarkerService() = default;
+  FramePacingMarkerService::~FramePacingMarkerService()
+  {
+    if (m_log)
+    {
+      // The rows that are still open are written and the writer is stopped
+      m_log->Close();
+    }
+  }
+
+
+  void FramePacingMarkerService::Link(const ServiceProvider& serviceProvider)
+  {
+    ThreadLocalService::Link(serviceProvider);
+    if (m_log)
+    {
+      // Only used by the log. A service can only reach the services of a higher priority, so this one is registered below the default priority
+      m_appInfo = serviceProvider.TryGet<IAppInfoService>();
+      m_hostInfo = serviceProvider.TryGet<IHostInfo>();
+      m_systemStats = serviceProvider.TryGet<ISystemStatsService>();
+    }
+  }
 
 
   bool FramePacingMarkerService::IsEnabled() const noexcept
@@ -152,6 +191,12 @@ namespace Fsl
     // A command line run is superseded by any explicit run
     m_pendingRun.reset();
     FSLLOG3_INFO("FramePacing: run '{}' (id {}, sequence id {}) started", m_runName, m_runId, ToHexString(m_runSequenceId));
+    if (m_log)
+    {
+      m_log->AddEvent("runStarted", fmt::format("runId={};sequenceId={};name={};durationTicks={};utcNanoseconds={}", m_runId,
+                                                ToHexString(m_runSequenceId), m_runName, duration.Ticks(),
+                                                std::chrono::duration_cast<std::chrono::nanoseconds>(m_runStartTime.time_since_epoch()).count()));
+    }
     return true;
   }
 
@@ -199,6 +244,10 @@ namespace Fsl
     if (oldState != FramePacingRunState::Idle && m_sequence.GetState() == FramePacingRunState::Idle)
     {
       FSLLOG3_INFO("FramePacing: run '{}' (id {}) completed", m_runName, m_runId);
+      if (m_log)
+      {
+        m_log->AddEvent("runCompleted", fmt::format("runId={}", m_runId));
+      }
     }
 
     m_frameIndex = m_frameCount;
@@ -210,6 +259,27 @@ namespace Fsl
     // An app with its own frame pacer supplies the values of the frame during its draw
     m_frameSchedule.reset();
     m_hasFrame = true;
+
+    if (m_log)
+    {
+      m_log->BeginFrame(m_frameIndex);
+      if (!m_logFactsWritten)
+      {
+        // Not done before the first frame, as the name of the app is not known when the service is created
+        m_logFactsWritten = true;
+        WriteLogFacts();
+      }
+      m_log->SetInt64(m_logColumns.MarkerKind, static_cast<int64_t>(m_frameKind));
+      m_log->SetUInt64(m_logColumns.RunId, m_runId);
+      m_log->SetInt64(m_logColumns.RunState, static_cast<int64_t>(m_sequence.GetState()));
+      m_log->SetInt64(m_logColumns.AnimationTime, m_frameAnimationTicks);
+      m_log->SetInt64(m_logColumns.CpuStart, m_frameCpuStartTicks);
+      m_log->SetInt64(m_logColumns.HostCpuStart, m_frameCpuStartTicks);
+      m_log->SetInt64(m_logColumns.BeginFrame, m_timer.GetTimestamp().Ticks());
+      m_log->SetInt64(m_logColumns.HasSchedule, 0);
+      m_log->SetInt64(m_logColumns.MarkerDrawn, 0);
+      WriteLogSystemLoad(m_timer.GetTimestamp());
+    }
   }
 
 
@@ -233,6 +303,28 @@ namespace Fsl
   void FramePacingMarkerService::SetFrameSchedule(const FramePacingFrameSchedule& schedule) noexcept
   {
     m_frameSchedule = schedule;
+    if (m_log)
+    {
+      // The values of the app replace the ones of the framework, as they do in the marker
+      m_log->SetInt64(m_logColumns.HasSchedule, 1);
+      m_log->SetInt64(m_logColumns.AnimationTime, schedule.AnimationTime.Ticks());
+      if (schedule.CpuStartTime.has_value())
+      {
+        m_log->SetInt64(m_logColumns.CpuStart, schedule.CpuStartTime->Ticks());
+      }
+      if (schedule.IntendedDisplayTime.has_value())
+      {
+        m_log->SetInt64(m_logColumns.IntendedDisplay, schedule.IntendedDisplayTime->Ticks());
+      }
+      if (schedule.TargetFrameTime.has_value())
+      {
+        m_log->SetInt64(m_logColumns.TargetFrameTime, schedule.TargetFrameTime->Ticks());
+      }
+      if (schedule.PreferredFrameTime.has_value())
+      {
+        m_log->SetInt64(m_logColumns.PreferredFrameTime, schedule.PreferredFrameTime->Ticks());
+      }
+    }
   }
 
 
@@ -271,6 +363,224 @@ namespace Fsl
   void FramePacingMarkerService::SetLastMarker(const FramePacingMarkerInfo& markerInfo) noexcept
   {
     m_lastMarker = markerInfo;
+    if (m_log)
+    {
+      // What the marker that was just drawn carries, where it differs from what was known when the frame began
+      m_log->SetInt64At(markerInfo.FrameIndex, m_logColumns.MarkerDrawn, 1);
+      m_log->SetInt64At(markerInfo.FrameIndex, m_logColumns.MarkerDraw, m_timer.GetTimestamp().Ticks());
+      m_log->SetInt64At(markerInfo.FrameIndex, m_logColumns.MarkerKind, static_cast<int64_t>(markerInfo.Kind));
+      if (markerInfo.CpuBusyTime.has_value())
+      {
+        m_log->SetInt64At(markerInfo.FrameIndex, m_logColumns.MarkerCpuBusy, markerInfo.CpuBusyTime->Ticks());
+      }
+      m_log->SetInt64At(markerInfo.FrameIndex, m_logColumns.MarkerStatic, markerInfo.Static ? 1 : 0);
+      m_log->SetInt64At(markerInfo.FrameIndex, m_logColumns.MarkerStaticBefore, markerInfo.StaticBefore ? 1 : 0);
+      m_log->SetInt64At(markerInfo.FrameIndex, m_logColumns.MarkerSync, markerInfo.SyncMarker ? 1 : 0);
+      m_log->SetInt64At(markerInfo.FrameIndex, m_logColumns.MarkerModuleSize, m_moduleSizePx);
+    }
+  }
+
+
+  bool FramePacingMarkerService::IsLogEnabled() const noexcept
+  {
+    return m_log != nullptr;
+  }
+
+
+  FramePacingLogColumn FramePacingMarkerService::RegisterColumn(const std::string_view name, const FramePacingLogUnit unit,
+                                                                const std::string_view description)
+  {
+    return m_log ? m_log->RegisterColumn(name, unit, description) : FramePacingLogColumn();
+  }
+
+
+  uint64_t FramePacingMarkerService::GetLogFrameIndex() const noexcept
+  {
+    return m_frameIndex;
+  }
+
+
+  void FramePacingMarkerService::SetLogInt64(const FramePacingLogColumn column, const int64_t value) noexcept
+  {
+    if (m_log)
+    {
+      m_log->SetInt64(column, value);
+    }
+  }
+
+
+  void FramePacingMarkerService::SetLogUInt64(const FramePacingLogColumn column, const uint64_t value) noexcept
+  {
+    if (m_log)
+    {
+      m_log->SetUInt64(column, value);
+    }
+  }
+
+
+  void FramePacingMarkerService::SetLogInt64At(const uint64_t frameIndex, const FramePacingLogColumn column, const int64_t value) noexcept
+  {
+    if (m_log)
+    {
+      m_log->SetInt64At(frameIndex, column, value);
+    }
+  }
+
+
+  void FramePacingMarkerService::SetLogUInt64At(const uint64_t frameIndex, const FramePacingLogColumn column, const uint64_t value) noexcept
+  {
+    if (m_log)
+    {
+      m_log->SetUInt64At(frameIndex, column, value);
+    }
+  }
+
+
+  void FramePacingMarkerService::AddLogEvent(const std::string_view name, const std::string_view details)
+  {
+    if (m_log)
+    {
+      m_log->AddEvent(name, details);
+    }
+  }
+
+
+  void FramePacingMarkerService::AddLogFact(const std::string_view key, const std::string_view value)
+  {
+    if (m_log)
+    {
+      m_log->AddFact(key, value);
+    }
+  }
+
+
+  void FramePacingMarkerService::RegisterLogColumns()
+  {
+    if (!m_log)
+    {
+      return;
+    }
+    FramePacingFrameLog& rLog = *m_log;
+    m_logColumns.MarkerKind = rLog.RegisterColumn("markerKind", FramePacingLogUnit::Code,
+                                                  "The kind of marker of the frame: 0 frame, 1 the start of a run, 2 the end of a run");
+    m_logColumns.RunId = rLog.RegisterColumn("runId", FramePacingLogUnit::Id, "The id of the current (or last) run, as the marker carries it");
+    m_logColumns.RunState =
+      rLog.RegisterColumn("runState", FramePacingLogUnit::Code, "The state of the run: 0 idle, 1 starting, 2 measuring, 3 ending");
+    m_logColumns.AnimationTime =
+      rLog.RegisterColumn("animationTimeTicks", FramePacingLogUnit::DurationTicks,
+                          "The time the frame is animated for, as the marker carries it (the one of the app if it gave a schedule)");
+    m_logColumns.CpuStart =
+      rLog.RegisterColumn("cpuStartTicks", FramePacingLogUnit::Ticks,
+                          "When the CPU started on the frame, as the marker carries it (the one of the app if it gave a schedule)");
+    m_logColumns.HostCpuStart = rLog.RegisterColumn("hostCpuStartTicks", FramePacingLogUnit::Ticks, "When the host started the update of the frame");
+    m_logColumns.BeginFrame =
+      rLog.RegisterColumn("beginFrameTicks", FramePacingLogUnit::Ticks,
+                          "When the host told the service the frame begins: after the update and after the frame was prepared for drawing");
+    m_logColumns.HasSchedule = rLog.RegisterColumn("hasSchedule", FramePacingLogUnit::Flag, "1 if the app gave the pacing values of the frame");
+    m_logColumns.IntendedDisplay =
+      rLog.RegisterColumn("intendedDisplayTicks", FramePacingLogUnit::Ticks, "When the frame pacer of the app intends the frame to be shown");
+    m_logColumns.TargetFrameTime =
+      rLog.RegisterColumn("targetFrameTimeTicks", FramePacingLogUnit::DurationTicks, "The frame time the frame pacer of the app aims for");
+    m_logColumns.PreferredFrameTime =
+      rLog.RegisterColumn("preferredFrameTimeTicks", FramePacingLogUnit::DurationTicks, "The frame time the app wants to run at");
+    m_logColumns.MarkerDrawn = rLog.RegisterColumn("markerDrawn", FramePacingLogUnit::Flag, "1 if the marker was drawn on the frame");
+    m_logColumns.MarkerDraw =
+      rLog.RegisterColumn("markerDrawTicks", FramePacingLogUnit::Ticks, "When the marker was drawn, the last thing of the frame");
+    m_logColumns.MarkerCpuBusy = rLog.RegisterColumn("markerCpuBusyTicks", FramePacingLogUnit::DurationTicks,
+                                                     "How long the CPU worked on the frame before the marker was drawn, as the marker carries it");
+    m_logColumns.MarkerStatic = rLog.RegisterColumn("markerStatic", FramePacingLogUnit::Flag, "The static after flag of the marker");
+    m_logColumns.MarkerStaticBefore = rLog.RegisterColumn("markerStaticBefore", FramePacingLogUnit::Flag, "The static before flag of the marker");
+    m_logColumns.MarkerSync = rLog.RegisterColumn("markerSyncMarker", FramePacingLogUnit::Flag, "1 if the sync marker was drawn as well");
+    m_logColumns.MarkerModuleSize =
+      rLog.RegisterColumn("markerModuleSizePx", FramePacingLogUnit::Pixels, "The size of a module of the marker that was asked for");
+
+    // The load of the machine, written about once a second and empty in between. The CPU times are the counters of the operating system:
+    // the load between two rows that have them is the difference.
+    m_logColumns.SystemIdle = rLog.RegisterColumn("systemIdleTicks", FramePacingLogUnit::DurationTicks,
+                                                  "How long the CPUs of the system were idle since it started, summed over the CPUs");
+    m_logColumns.SystemKernel = rLog.RegisterColumn("systemKernelTicks", FramePacingLogUnit::DurationTicks,
+                                                    "How long the CPUs of the system ran kernel code since it started, idle time not included");
+    m_logColumns.SystemUser =
+      rLog.RegisterColumn("systemUserTicks", FramePacingLogUnit::DurationTicks, "How long the CPUs of the system ran user code since it started");
+    m_logColumns.ProcessKernel =
+      rLog.RegisterColumn("processKernelTicks", FramePacingLogUnit::DurationTicks, "How long this process ran kernel code since it started");
+    m_logColumns.ProcessUser =
+      rLog.RegisterColumn("processUserTicks", FramePacingLogUnit::DurationTicks, "How long this process ran user code since it started");
+    m_logColumns.ProcessGpuUsage = rLog.RegisterColumn("processGpuUsageMilliPercent", FramePacingLogUnit::Count,
+                                                       "The load of the busiest GPU engine this process uses in thousandths of a percent");
+    m_logColumns.ProcessGpuDedicated =
+      rLog.RegisterColumn("processGpuDedicatedBytes", FramePacingLogUnit::Count, "The memory of the GPU this process uses in bytes");
+    m_logColumns.ProcessGpuShared =
+      rLog.RegisterColumn("processGpuSharedBytes", FramePacingLogUnit::Count, "The system memory the GPU uses for this process in bytes");
+  }
+
+
+  void FramePacingMarkerService::WriteLogSystemLoad(const TickCount currentTime)
+  {
+    if (!m_log || !m_systemStats ||
+        (m_logSystemSampleTime.Ticks() != 0 && (currentTime - m_logSystemSampleTime) < LocalConfig::LogSystemLoadInterval))
+    {
+      return;
+    }
+    m_logSystemSampleTime = currentTime;
+
+    // How busy the machine is decides what a frame loop can do, so the log carries it. The counters are written as they are.
+    SystemCpuTimes cpuTimes;
+    if (m_systemStats->TryGetCpuTimes(cpuTimes))
+    {
+      m_log->SetUInt64(m_logColumns.SystemIdle, cpuTimes.SystemIdleTicks);
+      m_log->SetUInt64(m_logColumns.SystemKernel, cpuTimes.SystemKernelTicks);
+      m_log->SetUInt64(m_logColumns.SystemUser, cpuTimes.SystemUserTicks);
+      m_log->SetUInt64(m_logColumns.ProcessKernel, cpuTimes.ProcessKernelTicks);
+      m_log->SetUInt64(m_logColumns.ProcessUser, cpuTimes.ProcessUserTicks);
+    }
+    GpuUsageRecord gpuUsage;
+    if (m_systemStats->TryGetApplicationGpuUsage(gpuUsage))
+    {
+      // The system reports a percentage, it is written in thousandths of a percent
+      m_log->SetInt64(m_logColumns.ProcessGpuUsage, std::llround(static_cast<double>(gpuUsage.UsagePercentage) * 1000.0));
+    }
+    GpuMemoryUsageRecord gpuMemoryUsage;
+    if (m_systemStats->TryGetApplicationGpuMemoryUsage(gpuMemoryUsage))
+    {
+      m_log->SetUInt64(m_logColumns.ProcessGpuDedicated, gpuMemoryUsage.DedicatedBytes);
+      m_log->SetUInt64(m_logColumns.ProcessGpuShared, gpuMemoryUsage.SharedBytes);
+    }
+  }
+
+
+  void FramePacingMarkerService::WriteLogFacts()
+  {
+    if (!m_log)
+    {
+      return;
+    }
+    FramePacingFrameLog& rLog = *m_log;
+    // The clock every time of the log is on, and the same moment as a wall clock time so a log can be related to other recordings
+    rLog.AddFact("clock", "HighResolutionTimer, 100 nanosecond ticks");
+    rLog.AddFact("clockNativeFrequency", fmt::format("{}", m_timer.GetNativeTickFrequency()));
+    {
+      const auto utcNow = std::chrono::system_clock::now();
+      const TickCount clockNow = m_timer.GetTimestamp();
+      rLog.AddFact("utcNanoseconds", fmt::format("{}", std::chrono::duration_cast<std::chrono::nanoseconds>(utcNow.time_since_epoch()).count()));
+      rLog.AddFact("utcClockTicks", fmt::format("{}", clockNow.Ticks()));
+    }
+    if (m_appInfo)
+    {
+      rLog.AddFact("app", std::string_view(m_appInfo->GetAppName()));
+      rLog.AddFact("debugBuild", m_appInfo->IsDebugBuild() ? "1" : "0");
+    }
+    if (m_hostInfo)
+    {
+      const DemoHostFeature api = m_hostInfo->GetActiveAPI();
+      rLog.AddFact("api", DemoHostFeatureName::ToString(api.Name));
+      rLog.AddFact("apiVersion", fmt::format("{:#x}", api.Version));
+    }
+    rLog.AddFact("marker.enabled", m_enabled ? "1" : "0");
+    rLog.AddFact("marker.syncMarker", m_syncMarkerEnabled ? "1" : "0");
+    rLog.AddFact("marker.moduleSizePx", fmt::format("{}", m_moduleSizePx));
+    rLog.AddFact("marker.captureHeightPx", fmt::format("{}", m_captureHeightPx));
+    rLog.AddFact("log.openFrames", fmt::format("{}", FramePacingFrameLogTable::OpenRowCount));
   }
 
 

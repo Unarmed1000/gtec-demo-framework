@@ -119,7 +119,7 @@ namespace Fsl
     serviceRegistry.Register<AppInfoServiceFactory>(ServicePriorityList::AppInfoService());
     serviceRegistry.Register<OptionsServiceFactory>(ServicePriorityList::Options());
 #ifdef FSL_FEATURE_FRAMEPACING
-    serviceRegistry.Register<FramePacingMarkerServiceFactory>();
+    serviceRegistry.Register<FramePacingMarkerServiceFactory>(ServicePriorityList::FramePacingMarkerService());
 #endif
 
     // Prepare the hosts

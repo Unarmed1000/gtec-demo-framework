@@ -28,6 +28,7 @@
 #include <FslBase/Time/TimeSpan.hpp>
 #include <FslDemoApp/Base/DemoAppConfig.hpp>
 #include <FslDemoApp/Base/DemoTime.hpp>
+#include <FslDemoService/FramePacingMarker/FramePacingLogColumn.hpp>
 #include <FslDemoService/FramePacingMarker/FramePacingRunState.hpp>
 #include <FslGraphics/Color.hpp>
 #include <FslGraphics/Render/Texture2D.hpp>
@@ -41,8 +42,8 @@
 #include <Shared/FramePacing/SampleFrameStats.hpp>
 #include <Shared/FramePacing/SamplePacer.hpp>
 #include <Shared/FramePacing/SamplePresentFeedback.hpp>
-#include <Shared/FramePacing/SamplePresentLog.hpp>
 #include <fmt/format.h>
+#include <array>
 #include <iterator>
 #include <memory>
 #include <optional>
@@ -51,6 +52,7 @@
 
 namespace Fsl
 {
+  class IFramePacingFrameLog;
   class IFramePacingMarkerService;
   namespace UI
   {
@@ -254,10 +256,47 @@ namespace Fsl
     bool m_gpuTimelineSupported{false};
     //! The duration of a refresh of the display according to the swapchain (zero if unknown)
     TimeSpan m_measuredRefreshDuration;
-    //! One row per present for a file (switched off unless asked for on the command line)
-    SamplePresentLog m_presentLog;
-    //! The id of the present of the current frame (zero if the app does not number its presents)
-    uint64_t m_framePresentId{0};
+
+    //! The columns the sample adds to the frame pacing log (--FramePacing.Log): what its frame pacer planned and what the frame cost
+    struct LogColumns
+    {
+      FramePacingLogColumn PacerOn;
+      FramePacingLogColumn SwapInterval;
+      FramePacingLogColumn PreferredSwapInterval;
+      FramePacingLogColumn Change;
+      FramePacingLogColumn AnimationStep;
+      FramePacingLogColumn WindowFrames;
+      FramePacingLogColumn WindowLateFrames;
+      FramePacingLogColumn WindowAverageWork;
+      FramePacingLogColumn WindowSpan;
+      FramePacingLogColumn WindowFull;
+      FramePacingLogColumn FrameWaitStart;
+      FramePacingLogColumn FrameStart;
+      FramePacingLogColumn EndFrame;
+      FramePacingLogColumn WorkCpu;
+      FramePacingLogColumn WorkGpu;
+      FramePacingLogColumn GpuWorkBegin;
+      FramePacingLogColumn GpuWorkEnd;
+      FramePacingLogColumn PresentWait;
+      FramePacingLogColumn CpuLoad;
+      FramePacingLogColumn GpuLoad;
+    };
+
+    //! The frame of the log a present belongs to
+    struct LogPresentFrame
+    {
+      uint64_t PresentId{0};
+      uint64_t FrameIndex{0};
+    };
+
+    //! The frame pacing log (null if the frames are not logged)
+    std::shared_ptr<IFramePacingFrameLog> m_frameLog;
+    LogColumns m_logColumns;
+    std::array<LogPresentFrame, 64> m_logPresentFrames{};
+    //! What was last written to the log about the settings of the frame pacer, so a change is written as a event
+    SamplePacerConfig m_loggedPacerConfig;
+    bool m_loggedPacerOn{false};
+    bool m_hasLoggedPacerConfig{false};
 
   public:
     //! The color the app should clear the screen with
@@ -315,9 +354,6 @@ namespace Fsl
     //! @param queueOperationsEndTime when the present was handed to the presentation engine (empty if not reported)
     void AddPresentTiming(const uint64_t presentId, const std::optional<TickCount> displayTime,
                           const std::optional<TickCount> queueOperationsEndTime);
-    //! When the swapchain was called for a frame that was presented (HighResolutionTimer timestamps): where the frame loop waited.
-    void AddPresentCalls(const uint64_t presentId, const uint32_t imageIndex, const TickCount acquireCallTime, const TickCount acquireReturnTime,
-                         const TickCount presentCallTime, const TickCount presentReturnTime);
     //! The GPU work of a frame was measured (HighResolutionTimer timestamps).
     void AddGpuInterval(const uint64_t presentId, const TickCount gpuStartTime, const TickCount gpuEndTime);
 
@@ -356,6 +392,10 @@ namespace Fsl
     void UpdatePacerStats();
     //! Update the rows of the frame pacing section that show what the measured presents say
     void UpdatePresentFeedbackStats();
+    //! Add the columns of the sample to the frame pacing log
+    void RegisterLogColumns();
+    //! Write what the frame that just started is to the frame pacing log
+    void LogFrameStart(const TickCount waitStartTime);
     //! Keep the CPU busy for the given time (the simulated CPU load)
     void BurnCpu(const TimeSpan duration) const;
     //! Create the two overlays: every value of the last marker and the frame pacing stats (fills in the overlay members of m_ui)

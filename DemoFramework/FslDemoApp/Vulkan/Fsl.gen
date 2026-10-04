@@ -7,6 +7,7 @@
     <Dependency Name="FslDemoHost.Vulkan.Config"/>
     <Dependency Name="FslDemoHost.Vulkan" Access="Private"/>
     <Dependency Name="FslDemoPlatform.Link" Access="Private"/>
+    <Dependency Name="FslDemoService.FramePacingMarker" Access="Private"/>
     <Dependency Name="FslDemoService.FramePacingMarker.Control" Access="Private"/>
     <Dependency Name="FslDemoService.SystemStats.Control" Access="Private"/>
     <Dependency Name="FslDemoService.Graphics.Impl" Access="Private"/>

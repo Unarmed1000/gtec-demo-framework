@@ -1,0 +1,81 @@
+# The work of a frame against the refresh of a 240 Hz display, where the work is done by the GPU (the CPU load of the sample is set in whole
+# milliseconds, which is too coarse for a refresh of 4.17 ms).
+#
+# Set the display to 240 Hz with variable refresh off before the plan is run. The GPU load settings depend on the GPU and on the size of the
+# window, find the ones of the machine with
+#   FramePacingCapture calibrate --window [0,0,1600,900]
+# and give them with --set gpu20=<n> --set gpu90=<n> --set gpu130=<n>.
+
+description = "240 Hz: GPU work of 20, 90 and 130 % of a refresh, pacer on and off, basic Vulkan, each idle and under CPU load"
+app = "Vulkan.FramePacing"
+frames = 2400
+expected_refresh_hz = 240.0
+args = ["--Window", "[0,0,1600,900]", "--CpuLoad", "0"]
+
+[variables]
+# The --GpuLoad that makes the GPU work 20, 90 and 130 % of a refresh on a frame (the defaults were measured on a NVIDIA desktop GPU)
+gpu20 = "98"
+gpu90 = "455"
+gpu130 = "648"
+
+[load]
+# One busy process for every logical CPU, like a build that uses the whole machine
+processes = 0
+duty = 1.0
+
+[[run]]
+name = "w20_pacer_on"
+what = "GPU work of 20 % of a refresh, pacer on (adaptive, the display rate)"
+args = ["--Pacer", "--GpuLoad", "{gpu20}"]
+loaded = true
+
+[[run]]
+name = "w90_pacer_on"
+what = "GPU work of 90 % of a refresh, pacer on (adaptive, the display rate)"
+args = ["--Pacer", "--GpuLoad", "{gpu90}"]
+loaded = true
+
+[[run]]
+name = "w130_pacer_on"
+what = "GPU work of 130 % of a refresh, pacer on (adaptive, the display rate)"
+args = ["--Pacer", "--GpuLoad", "{gpu130}"]
+loaded = true
+
+[[run]]
+name = "w20_pacer_off"
+what = "GPU work of 20 % of a refresh, pacer off"
+args = ["--GpuLoad", "{gpu20}"]
+loaded = true
+
+[[run]]
+name = "w90_pacer_off"
+what = "GPU work of 90 % of a refresh, pacer off"
+args = ["--GpuLoad", "{gpu90}"]
+loaded = true
+
+[[run]]
+name = "w130_pacer_off"
+what = "GPU work of 130 % of a refresh, pacer off"
+args = ["--GpuLoad", "{gpu130}"]
+loaded = true
+
+# Basic Vulkan: no present timing and no present fences, so the app has no display times and the back pressure of the swapchain only comes
+# through vkAcquireNextImageKHR
+
+[[run]]
+name = "w20_basic_vulkan"
+what = "GPU work of 20 % of a refresh, pacer on, Vulkan without present timing and swapchain maintenance"
+args = ["--Pacer", "--GpuLoad", "{gpu20}", "--VkPresentTiming", "false", "--VkSwapchainMaintenance1", "false"]
+loaded = true
+
+[[run]]
+name = "w90_basic_vulkan"
+what = "GPU work of 90 % of a refresh, pacer on, Vulkan without present timing and swapchain maintenance"
+args = ["--Pacer", "--GpuLoad", "{gpu90}", "--VkPresentTiming", "false", "--VkSwapchainMaintenance1", "false"]
+loaded = true
+
+[[run]]
+name = "w130_basic_vulkan"
+what = "GPU work of 130 % of a refresh, pacer on, Vulkan without present timing and swapchain maintenance"
+args = ["--Pacer", "--GpuLoad", "{gpu130}", "--VkPresentTiming", "false", "--VkSwapchainMaintenance1", "false"]
+loaded = true
