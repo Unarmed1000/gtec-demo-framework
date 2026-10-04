@@ -45,7 +45,6 @@
 #include <FslNativeWindow/Platform/Adapter/Win32/PlatformNativeWindowSystemAdapterWin32.hpp>
 #include <Winuser.h>
 #include <Xinput.h>
-#include <dwmapi.h>
 #include <windowsx.h>
 #include <algorithm>
 #include <array>
@@ -973,6 +972,8 @@ namespace Fsl
     , m_mouseIsCursorHidden(false)
   {
     const NativeWindowConfig nativeWindowConfig = nativeWindowSetup.GetConfig();
+    // First, as it throws for a name that is not a vsync source and nothing has been created yet
+    m_vsyncSources = std::make_unique<Win32VSyncSources>(nativeWindowConfig.GetVSyncSource());
     WNDCLASS wc;
     RECT rect;
     HINSTANCE hInstance = nullptr;
@@ -1080,8 +1081,6 @@ namespace Fsl
       rid[0].hwndTarget = m_platformWindow;
       RegisterRawInputDevices(rid.data(), static_cast<UINT>(rid.size()), sizeof(RAWINPUTDEVICE));
     }
-
-    m_vsyncSources = std::make_unique<Win32VSyncSources>(nativeWindowSetup.GetConfig().GetVSyncSource());
   }
 
 

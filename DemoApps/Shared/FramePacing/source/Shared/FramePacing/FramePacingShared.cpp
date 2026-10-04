@@ -77,6 +77,8 @@ namespace Fsl
       constexpr double SweepSeconds = 2.0;
       constexpr int32_t BarWidthPx = 16;
       constexpr int32_t BoxSizePx = 96;
+      //! Two refresh rates are the same if they differ by less than this share
+      constexpr double SameRefreshRateTolerance = 0.02;
       //! The raymarched background: the flight through the lattice repeats after this time
       constexpr double TravelSeconds = 40.0;
       //! The raymarched background: the time of one sway of the camera (the waves and the pulses of light run with it)
@@ -1459,8 +1461,20 @@ namespace Fsl
     SetFormattedContent(*rStats.TimedFrames, "{} of {}", stats.TimedFrames, stats.MeasuredFrames);
     if (m_measuredRefreshDuration.Ticks() > 0)
     {
-      SetFormattedContent(*rStats.DisplayRefresh, "{:.3f} ms ({:.2f} Hz)", m_measuredRefreshDuration.TotalMilliseconds(),
-                          static_cast<double>(TimeSpan::TicksPerSecond) / static_cast<double>(m_measuredRefreshDuration.Ticks()));
+      // What the swapchain reports is not always the refresh of the display the window is on: with displays at different rates it was
+      // seen to be the one of the fastest display. So the row says when the two differ.
+      const double swapchainHz = static_cast<double>(TimeSpan::TicksPerSecond) / static_cast<double>(m_measuredRefreshDuration.Ticks());
+      const bool isDisplayRate = m_detectedRefreshRateHz <= 0.0 ||
+                                 std::abs(swapchainHz - m_detectedRefreshRateHz) <= (m_detectedRefreshRateHz * LocalConfig::SameRefreshRateTolerance);
+      if (isDisplayRate)
+      {
+        SetFormattedContent(*rStats.DisplayRefresh, "{:.3f} ms ({:.2f} Hz)", m_measuredRefreshDuration.TotalMilliseconds(), swapchainHz);
+      }
+      else
+      {
+        SetFormattedContent(*rStats.DisplayRefresh, "{:.3f} ms ({:.2f} Hz), display {:.2f} Hz", m_measuredRefreshDuration.TotalMilliseconds(),
+                            swapchainHz, m_detectedRefreshRateHz);
+      }
     }
     else
     {
@@ -1543,7 +1557,7 @@ namespace Fsl
     rPacerStats.Latency = addStatsRow(*pacerGrid, pacerRow, "Latency");
     rPacerStats.TimedFrames = addStatsRow(*pacerGrid, pacerRow, "Timed frames");
     rPacerStats.GpuWork = addStatsRow(*pacerGrid, pacerRow, "GPU work");
-    rPacerStats.DisplayRefresh = addStatsRow(*pacerGrid, pacerRow, "Display refresh");
+    rPacerStats.DisplayRefresh = addStatsRow(*pacerGrid, pacerRow, "Swapchain refresh");
 
     // Each overlay is a dialog window of the theme: a caption, a divider and the grid
     const auto createOverlay = [&rUIFactory](const char* const pszCaption, const std::shared_ptr<UI::GridLayout>& grid)

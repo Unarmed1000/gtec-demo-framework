@@ -35,6 +35,8 @@ _g_skippedStartFrames = 60
 # The measurements of the last presents were not read when the app exited
 _g_unreadEndFrames = 16
 _g_refreshRateToleranceHz = 0.5
+# How far the refresh the swapchain reports may be from the one of the window system, as a share of it
+_g_swapchainRefreshTolerance = 0.02
 _g_minTimedPresentShare = 0.9
 # The share of the CPUs other programs may use during a run that is meant to be idle
 _g_idleOtherBusyLimit = 0.10
@@ -103,6 +105,8 @@ class RunCheck:
     ProcessGpuPercent: float | None = None
     ProcessGpuDedicatedBytes: int | None = None
     LoadSamples: int = 0
+    # The refresh the swapchain reported first (VK_EXT_present_timing), in nanoseconds
+    SwapchainRefreshNs: float | None = None
     Warnings: list[str] = field(default_factory=list)
 
     def GetRefreshRateHz(self) -> float | None:
@@ -212,6 +216,18 @@ def _AddWarnings(log: FramePacingLogFile, check: RunCheck, expectation: RunExpec
             warnings.append(f"the display runs at {rateHz:.3f} Hz, the plan is for {expectation.RefreshRateHz:g} Hz")
     if len(log.GetEvents("display")) > 1:
         warnings.append("the refresh rate of the display changed during the run")
+    for event in log.GetEvents("refreshProperties"):
+        swapchainNs = float(event.GetValues().get("refreshDurationNs", "0"))
+        if swapchainNs > 0.0:
+            check.SwapchainRefreshNs = swapchainNs
+            break
+    if check.SwapchainRefreshNs and check.RefreshIntervalTicks and check.RefreshIntervalSource == _g_sourceWindowSystem:
+        # The swapchain reports a refresh of its own (VK_EXT_present_timing). A shorter one than the window system's is what a window
+        # gets on a desktop with a faster display next to its own, a longer one means the display is not in the state the run is for
+        windowSystemNs = check.RefreshIntervalTicks * 100.0
+        if check.SwapchainRefreshNs > windowSystemNs * (1.0 + _g_swapchainRefreshTolerance):
+            warnings.append(f"the swapchain reports a refresh of {check.SwapchainRefreshNs / 1000000.0:.3f} ms, the window system one of "
+                            f"{windowSystemNs / 1000000.0:.3f} ms: variable refresh is on, or something else has the display")
     presentTiming = log.GetEvents("presentTiming")
     if len(presentTiming) > 0 and presentTiming[-1].GetValues().get("enabled") == "1" and check.TimedPresents is not None:
         expected = max(check.Rows - _g_unreadEndFrames, 1)
@@ -254,17 +270,10 @@ def CheckRun(log: FramePacingLogFile, expectation: RunExpectation) -> RunCheck:
     if log.HasColumn("holdMethod"):
         counts = Counter(log.GetValues("holdMethod"))
         check.HoldMethods = {_g_holdMethodNames.get(code, f"method {code}"): count for code, count in sorted(counts.items())}
-    elif log.HasColumn("presentScheduled"):
-        # A log from before the hold methods got one column
-        counts = Counter(log.GetValues("presentScheduled"))
-        check.HoldMethods = {_g_holdMethodNames[3 if code != 0 else 0]: count for code, count in sorted(counts.items())}
     if log.HasColumn("pacerFeedbackOn"):
         check.FeedbackOnRows = sum(1 for value in log.GetValues("pacerFeedbackOn") if value != 0)
         for key, column in (("used", "pacerFeedbackUsed"), ("refused", "pacerFeedbackRefused"), ("notShown", "pacerFeedbackNotShown"),
                             ("missing", "pacerFeedbackMissing"), ("lateRefreshes", "pacerFeedbackLateRefreshes")):
-            if not log.HasColumn(column):
-                # A log from before the pacer counted it
-                continue
             values = log.GetValues(column)
             if len(values) > 0:
                 # The counters only grow while a pacer lives, a new pacer starts them again
@@ -336,6 +345,9 @@ def FormatReport(check: RunCheck) -> list[str]:
         lines.append(f"display refresh: {rateHz:.4f} Hz ({check.RefreshIntervalTicks} ticks of 100 ns), from {check.RefreshIntervalSource}")
     else:
         lines.append("display refresh: not known")
+    if check.SwapchainRefreshNs:
+        lines.append(f"refresh the swapchain reports: {check.SwapchainRefreshNs / 1000000.0:.3f} ms (with displays at different rates it is "
+                     "the one of the fastest display)")
     if check.SwapchainCount is not None:
         lines.append(f"swapchains created: {check.SwapchainCount}")
     if check.PacerOnRows is not None:

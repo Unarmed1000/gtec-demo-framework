@@ -31,32 +31,27 @@
 
 namespace Fsl
 {
-  //! The ways Windows can tell when the display of a window refreshes, and the one that is used.
+  //! How Windows tells when the display of a window refreshes.
   //!
-  //! Compared on the primary 240 Hz monitor of a two monitor system with the vertical blank time of the desktop compositor, which was
-  //! measured there to be within a few microseconds of when a frame is shown:
+  //! There is one source, "dxgi": IDXGIOutput::WaitForVBlank on a thread, for the output of the monitor the window is on. The time the
+  //! wait returns is the time of the vertical blank. It is the documented way to follow the vertical blank of one display. Compared
+  //! on a 240 Hz monitor with the vertical blank time of the desktop compositor it was 0.06 ms late, up to 0.19 ms.
   //!
-  //! | Name     | What it is                                                                 | Compared with the compositor       |
-  //! |----------|----------------------------------------------------------------------------|------------------------------------|
-  //! | dxgi     | IDXGIOutput::WaitForVBlank on a thread, for the output of the monitor the | 0.06 ms late, up to 0.19 ms        |
-  //! |          | window is on: the time the wait returns. The default: it is the documented|                                    |
-  //! |          | way to follow the vertical blank of one display.                           |                                    |
-  //! | dwm      | DwmGetCompositionTimingInfo: the last vertical blank and the refresh period| it is the reference                |
-  //! |          | the compositor measured. No thread and exact, but one clock for the       |                                    |
-  //! |          | desktop, not one per monitor.                                              |                                    |
+  //! With more than one monitor the time has to be the one of the monitor the window is on, which is looked up from the window every
+  //! time: the source is per monitor and follows the window.
   //!
-  //! Tried and not kept, as DXGI is enough: D3DKMTWaitForVerticalBlankEvent (it is what the DXGI wait calls, and it measured the
-  //! same) and the scan line of the monitor (D3DKMTGetScanLine with the lines of the mode: 0.04 ms early, within 0.08 ms, no
-  //! thread, but a call of the kernel thunk layer that is not meant for applications). The compositor time is kept until holding a
-  //! frame with the DXGI wait has been measured against display times as it has.
+  //! Tried and not kept, as DXGI is enough:
+  //! - The vertical blank time of the desktop compositor (DwmGetCompositionTimingInfo). Exact and without a thread, but one clock for
+  //!   the desktop: on current Windows 11 it follows the monitor with the highest refresh rate. On a 120 Hz monitor next to a 240 Hz
+  //!   one a frame held with it ran at twice the frame rate that was asked for, where the DXGI wait held it right, and on the 240 Hz
+  //!   monitor both held a frame equally well.
+  //! - D3DKMTWaitForVerticalBlankEvent (it is what the DXGI wait calls, and it measured the same).
+  //! - The scan line of the monitor (D3DKMTGetScanLine with the lines of the mode: 0.04 ms early, within 0.08 ms, no thread, but a
+  //!   call of the kernel thunk layer that is not meant for applications).
   //! Not built: the compositor clock of Windows 11 (DCompositionWaitForCompositorClock and its frame statistics), which Microsoft
   //! documents as the replacement of the DXGI wait for apps that follow the compositor and not one display.
   //!
-  //! With more than one monitor the time has to be the one of the monitor the window is on, which is looked up from the window every
-  //! time: dxgi is per monitor and follows the window. The compositor has one clock for the desktop, and which monitor
-  //! it follows can not be relied on (the primary one, and on current Windows 11 the one with the highest refresh rate; seen: 240 Hz
-  //! reported for a window on a 120 Hz monitor). So "auto" takes dxgi, and dwm is for a system with one monitor or when asked for. All times are
-  //! QueryPerformanceCounter times, the clock of the HighResolutionTimer.
+  //! All times are QueryPerformanceCounter times, the clock of the HighResolutionTimer.
   class Win32VSyncSources
   {
     struct State;
@@ -66,7 +61,8 @@ namespace Fsl
     Win32VSyncSources(const Win32VSyncSources&) = delete;
     Win32VSyncSources& operator=(const Win32VSyncSources&) = delete;
 
-    //! @param requestedSource the name of the source to use, empty or "auto" for the best that works
+    //! @param requestedSource the name of the source to use: empty, "auto" or "dxgi".
+    //! @throws NotSupportedException for any other name
     explicit Win32VSyncSources(const std::string& requestedSource);
     ~Win32VSyncSources();
 
@@ -74,7 +70,7 @@ namespace Fsl
     //! @note  Called once per frame. It follows the window when it moves to another monitor.
     [[nodiscard]] NativeWindowVSyncInfo TryGetVSyncInfo(const HWND hWnd);
 
-    //! @brief Add the sources, which of them work for the monitor of the window and which one is used
+    //! @brief Add the source and if it works for the monitor of the window
     void FillTimingSupport(const HWND hWnd, NativeWindowTimingSupport& rSupport);
 
     //! @brief The display settings changed (a mode, a refresh rate, a monitor): what is known about the monitor is read again

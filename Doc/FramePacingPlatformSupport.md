@@ -32,10 +32,10 @@ the lists below. At one refresh per frame every tier is the same: a FIFO present
 |---|---|---|---|---|
 | 1 | Vulkan with `VK_EXT_present_timing` and a relative target time on the device and the surface | The present carries a target time (`--Pacer.Hold schedule`) | The presentation engine | measured (Windows, NVIDIA): every frame shown for exactly its swap interval |
 | 1 | OpenGL ES | `eglSwapInterval` | The driver, it counts the refreshes | built, the display times were not measured (OpenGL ES has nothing to measure them with) |
-| 2 | Vulkan FIFO on Windows | A wait on the vsync time of the monitor the window is on (`--Pacer.Hold vsync`) | The app, which knows where the refreshes are | measured with the time of the desktop compositor (`--VSyncSource dwm`): every frame shown for exactly its swap interval. Not measured with the default source (`dxgi`), whose times are within 0.2 ms of it |
+| 2 | Vulkan FIFO on Windows | A wait on the vsync time of the monitor the window is on (`--Pacer.Hold vsync`) | The app, which knows where the refreshes are | measured at 50, 60, 120 and 240 Hz and on a 120 Hz second monitor: at least 99.6 % of the frames shown for exactly their swap interval, idle and under CPU load |
 | 2 | Vulkan FIFO on a Wayland compositor with presentation-time (`wp_presentation`) | A wait on the vsync time of the compositor (`--Pacer.Hold vsync`) | The app, which knows where the refreshes are | built, run on a virtual machine only. How good it is depends on the times the compositor reports (`displayVSyncFlags`) and on where in a refresh the present has to be made, which has to be measured per compositor |
 | 2 | Vulkan FIFO on a X server with the Present extension | A wait on the vsync time of the X server (`--Pacer.Hold vsync`) | The app, which knows where the refreshes are | built. Run through Xwayland on a virtual machine whose desktop was locked: the events arrive, the times were not checked |
-| 3 | Vulkan FIFO and no vsync time: a X server without Present, a Wayland compositor without presentation-time, Android, Apple, QNX | A timer (`--Pacer.Hold wait`) | A guess: the app does not know where the refreshes are | measured (Windows): from 1 % to 35 % of the frames a refresh early or late, depending on where the timer happens to start |
+| 3 | Vulkan FIFO and no vsync time: a X server without Present, a Wayland compositor without presentation-time, Android, Apple, QNX | A timer (`--Pacer.Hold wait`) | A guess: the app does not know where the refreshes are | measured (Windows): next to no frame a refresh early or late at 50, 60 and 120 Hz. At 240 Hz from 1 % to 35 %, depending on where the timer happens to start |
 
 `--Pacer.Hold auto` picks the best tier the system has. A log says which tier a run was in: `vulkan.uses.presentAtRelativeTime=1` is the
 timed present of tier 1, a `window.vsyncSource` that is not empty is tier 2, and neither is tier 3. The `holdMethod` column says what
@@ -112,40 +112,49 @@ Windows the calls its vsync sources are built on. The vsync sources have facts o
 ## Windows: the vsync sources
 
 A window system can have more than one way to tell when the display refreshes. The window uses one of them, `--VSyncSource <name>`
-selects which (`auto`, the default, takes the first that works), and the log lists them all with what each can do on the machine
+selects which (`auto`, the default, takes the first that works; a name that is not a source of the window system is an error and the
+app does not start), and the log lists them all with what each can do on the machine
 (`window.vsyncSource.<name>` is `used`, `available` or `notAvailable`, `window.vsyncSourceRequested` is what was asked for).
 
-Windows has two, in the order `auto` tries them:
+Windows has one:
 
-| Source | What it is | One per monitor | Compared with the compositor time | Status |
-|---|---|---|---|---|
-| `dxgi` | `IDXGIOutput::WaitForVBlank` on a thread, for the output of the monitor the window is on: the time the wait returns. | yes | 0.06 ms late (median), up to 0.19 ms | built. The times were compared with the compositor time; holding a frame with them was not measured against display times |
-| `dwm` | `DwmGetCompositionTimingInfo`: a vertical blank time and the refresh period the desktop compositor measured. No thread. | no, one clock for the desktop | it is the reference | measured on the primary monitor: within 0.006 ms of when a frame is shown, and every frame held for exactly its swap interval |
+| Source | What it is | One per monitor | Status |
+|---|---|---|---|
+| `dxgi` | `IDXGIOutput::WaitForVBlank` on a thread, for the output of the monitor the window is on: the time the wait returns. | yes | measured: frames held with it are shown for exactly their swap interval, on a 240 Hz monitor and on a 120 Hz second monitor next to it |
 
-`dxgi` is the default because it is the documented way to follow the vertical blank of one display, and it is the display the window
-is on that is followed: the monitor is looked up from the window every time, so a window that is moved to another monitor is followed,
-and a change of the display mode is picked up.
+It is the documented way to follow the vertical blank of one display, and it is the display the window is on that is followed: the
+monitor is looked up from the window every time, so a window that is moved to another monitor is followed, and a change of the
+display mode is picked up.
 
-The compositor time is the more exact of the two and needs no thread, but it is one clock for the whole desktop. Which monitor it
-follows is not something an app can rely on: it used to be the primary monitor, and on current Windows 11 it is the monitor with the
-highest refresh rate. On the machine these were tried on (a 240 Hz primary monitor and a 120 Hz second one) it reported 240 Hz for a
-window on the 120 Hz monitor. So it is right on a system with one monitor, and a warning is logged when it is asked for with more than
-one.
+Tried and not kept, as DXGI is enough:
 
-The compositor time is kept because it is the source the hold was measured with. Once holding a frame with `dxgi` has been measured
-against display times as well, it is meant to go and leave Windows with one source.
+- The vertical blank time of the desktop compositor (`DwmGetCompositionTimingInfo`). It needs no thread and its times were within
+  0.006 ms of when a frame is shown (the DXGI wait returns 0.06 ms after it at the median, up to 0.19 ms), but it is one clock for
+  the whole desktop. Which monitor it follows is not something an app can rely on: it used to be the primary monitor, and on current
+  Windows 11 it is the monitor with the highest refresh rate. It was a source (`dwm`) until both were captured side by side. On the
+  240 Hz primary monitor the two held a frame equally well: at least 99.6 % of the frames shown for exactly their swap interval in
+  every run of both, at 120, 60 and 30 fps and with work of 130 %, idle and under CPU load. On the 120 Hz second monitor the DXGI
+  wait held 60 and 30 fps right, and with the compositor time the sample ran at 120 and 60 fps: a frame that is to be held for two
+  refreshes was held for two refreshes of the 240 Hz monitor.
+- `D3DKMTWaitForVerticalBlankEvent`, which is what the DXGI wait calls and measured the same.
+- The scan line of the monitor (`D3DKMTGetScanLine` with the lines of its mode), which was 0.04 ms early and within 0.08 ms of the
+  compositor time without a thread, but is a call of the kernel thunk layer that is not meant for applications.
 
-Tried and not kept, as DXGI is enough: `D3DKMTWaitForVerticalBlankEvent`, which is what the DXGI wait calls and measured the same, and
-the scan line of the monitor (`D3DKMTGetScanLine` with the lines of its mode), which was 0.04 ms early and within 0.08 ms of the
-compositor time without a thread, but is a call of the kernel thunk layer that is not meant for applications. Not built: the
-compositor clock of Windows 11 (`DCompositionWaitForCompositorClock` and its frame statistics), which Microsoft documents as the
-replacement of the DXGI wait for apps that follow the compositor and not one display.
+Not built: the compositor clock of Windows 11 (`DCompositionWaitForCompositorClock` and its frame statistics), which Microsoft
+documents as the replacement of the DXGI wait for apps that follow the compositor and not one display.
+
+With two monitors at different rates the swapchain of a window on the slower one reports the refresh of the faster one
+(`refreshDurationNs` of `VK_EXT_present_timing`, NVIDIA): 4.17 ms on a 120 Hz monitor next to a 240 Hz one, 8.33 ms on a 50 Hz and on
+a 60 Hz monitor next to a 120 Hz one, 20.0 ms on a 24 Hz monitor next to a 50 Hz one, windowed and borderless full screen. The frames
+go out on the refresh of the monitor the window is on. The window system reports the rate of that monitor, and that is the rate the
+pacer is given. The overlay of the sample shows what the swapchain reports as `Swapchain refresh` and names the rate of the display
+next to it when the two differ.
 
 ## Other window systems
 
 | Platform | Vsync signal | What the framework does | Status |
 |---|---|---|---|
-| Windows | `IDXGIOutput::WaitForVBlank`, `DwmGetCompositionTimingInfo`: see the section above | `INativeWindow::TryGetVSyncInfo` from the selected source, logged per frame, used by the vsync wait | built, the compositor time measured |
+| Windows | `IDXGIOutput::WaitForVBlank`: see the section above | `INativeWindow::TryGetVSyncInfo`, logged per frame, used by the vsync wait | measured |
 | X11 | The Present extension: a refresh counter with a time stamp, for the output the window is on | The vsync source `present`: the events the X server sends for every image a graphics API presents to the window give the time of a vertical blank; a vertical blank is only asked for (`PresentNotifyMSC`) when no such events arrive (`INativeWindow::TryGetVSyncInfo`). The refresh period is measured from two of them. Needs `libxpresent-dev`. | built. Run through Xwayland on a virtual machine whose desktop was locked: the events arrive, the times were not checked |
 | Android | Choreographer: a callback per refresh with the expected presentation time | Nothing. | not built |
 | Apple | `CADisplayLink`: a callback per refresh with the time the next frame displays | Nothing. | not built |
@@ -166,16 +175,21 @@ lets the driver count the refreshes.
 | Hold | Needs | How it works | Status |
 |---|---|---|---|
 | `schedule` | Vulkan level 4 with a relative target time | The present is given a target time and the presentation engine holds the frame. | measured: every frame held for exactly its swap interval |
-| `vsync` | a vsync time from the window system | The sample waits and presents inside the refresh before the one the frame is aimed at. | measured on Windows: every frame held for exactly its swap interval. Built on Wayland (presentation-time), not measured |
-| `wait` | nothing | The sample sleeps on a timer and presents. It does not know where the refreshes are, so it is a guess. | measured: from 1 % to 35 % of the frames a refresh early or late, depending on where the timer happens to start |
+| `vsync` | a vsync time from the window system | The sample waits and presents inside the refresh before the one the frame is aimed at. | measured on Windows at 50, 60, 120 and 240 Hz: at least 99.6 % of the frames held for exactly their swap interval. Built on Wayland (presentation-time) and X11 (Present), not measured |
+| `wait` | nothing | The sample sleeps on a timer and presents. It does not know where the refreshes are, so it is a guess. | measured on Windows: as good as the vsync wait at 50, 60 and 120 Hz. At 240 Hz from none to 35 % of the frames a refresh early or late, depending on where the timer happens to start |
 | `auto` | - | `schedule` if the swapchain can, else `vsync` if the window system says when the display refreshes, else `wait`. | - |
 
-The default is `wait` until the methods have been captured at the refresh rates that matter.
+The default is `wait`. On Windows the two ways that need no extension have been captured at 50, 60, 120 and 240 Hz
+([FramePacingCapture.md](FramePacingCapture.md)); the scheduled present has only been captured at 240 Hz. With variable refresh on
+(G-SYNC) the vsync wait does not hold a frame and the sleep does, and an app can not tell from the swapchain or the window system that
+it is on, which is a reason for `wait` to stay the default.
 
 Where inside a refresh the vsync wait presents is not something to derive, it has to be measured per platform
-(`--Pacer.VSyncPhase`, in percent of the refresh before the target). On the Windows compositor at 240 Hz a present from 45 to 85 % was
-shown at the vertical blank it was aimed at, an earlier one two refreshes late and a later one a refresh late. Whether those edges are
-times or shares of a refresh is not known yet.
+(`--Pacer.VSyncPhase`, in percent of the refresh before the target). On Windows at 240 Hz a present from 55 to 75 % of the refresh was
+shown at the vertical blank it was aimed at in every run, idle and under CPU load; earlier most runs had one frame shown a refresh too
+long, and at 95 % the frame starts got uneven. At 120, 60 and 50 Hz every place from 5 to 85 % was clean. The late presents that
+went wrong were within about a millisecond of the vertical blank at every rate, which reads as a time and not as a share of a refresh;
+the early end only showed at 240 Hz, so what it is has not been settled. The default is 65 %.
 
 Not built, and still open: presenting a frame once per refresh (each extra present a copy of the frame). It needs nothing but FIFO, so
 it would work at level 0 of both lists, at the cost of a copy and a present per held refresh and less time for the next frame.

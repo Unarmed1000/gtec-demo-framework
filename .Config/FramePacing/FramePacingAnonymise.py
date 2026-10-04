@@ -28,6 +28,7 @@ capture tool replaces it in every file of a run with the vendor ("NVIDIA GPU"), 
 of the log needs, unless it is told to keep the names.
 """
 
+import os
 import re
 from pathlib import Path
 
@@ -44,6 +45,7 @@ _g_vendorNames = {
     0x10005: "Mesa",
 }
 
+_g_sdkEnvironmentVariable = "FSL_GRAPHICS_SDK"
 _g_deviceNameFact = "vulkan.deviceName"
 _g_vendorIdFact = "vulkan.vendorId"
 _g_anonymousDeviceId = "0x0"
@@ -61,8 +63,31 @@ def GetAnonymousDeviceName(vendorIdText: str | None) -> str:
     return f"{vendorName} GPU" if vendorName is not None else "GPU"
 
 
-def AnonymiseFiles(paths: list[Path], facts: dict[str, str]) -> int:
-    """Replace the model of the graphics device in the files, given the facts of the log of the run.
+def GetLocalPaths(outputPath: Path) -> list[tuple[Path, str]]:
+    """The directories of this machine the files of a run can name, each with what it is replaced by. The longest come first, so a
+    directory inside another one is replaced as itself."""
+    localPaths = [(outputPath.resolve(), "<output>"), (Path.home().resolve(), "<home>")]
+    sdkPath = os.environ.get(_g_sdkEnvironmentVariable)
+    if sdkPath:
+        localPaths.append((Path(sdkPath).resolve(), "<sdk>"))
+    return sorted(localPaths, key=lambda entry: len(str(entry[0])), reverse=True)
+
+
+def AnonymisePaths(content: bytes, localPaths: list[tuple[Path, str]]) -> bytes:
+    """Replace the directories in the content, however their separators and their case are written"""
+    for localPath, replacement in localPaths:
+        parts = [part for part in re.split(r"[\\/]+", str(localPath)) if len(part) > 0]
+        if len(parts) < 2:
+            # A drive or the root alone is not a directory worth hiding, and it would match far too much
+            continue
+        pattern = re.compile(rb"[\\/]+".join(re.escape(part.encode("utf-8")) for part in parts), re.IGNORECASE)
+        content = pattern.sub(replacement.encode("ascii"), content)
+    return content
+
+
+def AnonymiseFiles(paths: list[Path], facts: dict[str, str], localPaths: list[tuple[Path, str]] | None = None) -> int:
+    """Replace the model of the graphics device in the files, given the facts of the log of the run, and the directories of this
+    machine (see GetLocalPaths).
 
     Returns the number of files that were changed.
     """
@@ -78,6 +103,8 @@ def AnonymiseFiles(paths: list[Path], facts: dict[str, str]) -> int:
         if replaceName:
             newContent = newContent.replace(deviceName.encode("utf-8"), anonymousName.encode("utf-8"))
         newContent = _g_deviceIdPattern.sub(lambda match: match.group(1) + _g_anonymousDeviceId.encode("ascii"), newContent)
+        if localPaths:
+            newContent = AnonymisePaths(newContent, localPaths)
         if newContent != content:
             path.write_bytes(newContent)
             changedCount += 1

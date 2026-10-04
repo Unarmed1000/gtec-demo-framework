@@ -8,7 +8,6 @@
 description = "Variable refresh on: fixed frame rates of 120, 80, 60 and 30 fps, pacer off, GPU and CPU load, windowed and fullscreen"
 app = "Vulkan.FramePacing"
 frames = 1000
-args = ["--GpuLoad", "0"]
 
 [variables]
 # A GPU load that makes a frame take longer than a refresh of the display (the default is the one of a NVIDIA desktop GPU at 240 Hz)
@@ -19,22 +18,22 @@ cpu_over_refresh_ms = "6"
 [[run]]
 name = "V1_120fps"
 what = "pacer on, adaptive off, target 120 fps, windowed"
-args = ["--Pacer", "--Pacer.Adaptive", "false", "--Pacer.TargetFps", "120", "--Window", "[0,0,1600,900]"]
+args = ["--GpuLoad", "0", "--Pacer", "--Pacer.Adaptive", "false", "--Pacer.TargetFps", "120", "--Window", "[0,0,1600,900]"]
 
 [[run]]
 name = "V2_80fps"
 what = "pacer on, adaptive off, target 80 fps, windowed"
-args = ["--Pacer", "--Pacer.Adaptive", "false", "--Pacer.TargetFps", "80", "--Window", "[0,0,1600,900]"]
+args = ["--GpuLoad", "0", "--Pacer", "--Pacer.Adaptive", "false", "--Pacer.TargetFps", "80", "--Window", "[0,0,1600,900]"]
 
 [[run]]
 name = "V3_60fps"
 what = "pacer on, adaptive off, target 60 fps, windowed"
-args = ["--Pacer", "--Pacer.Adaptive", "false", "--Pacer.TargetFps", "60", "--Window", "[0,0,1600,900]"]
+args = ["--GpuLoad", "0", "--Pacer", "--Pacer.Adaptive", "false", "--Pacer.TargetFps", "60", "--Window", "[0,0,1600,900]"]
 
 [[run]]
 name = "V4_30fps"
 what = "pacer on, adaptive off, target 30 fps, windowed"
-args = ["--Pacer", "--Pacer.Adaptive", "false", "--Pacer.TargetFps", "30", "--Window", "[0,0,1600,900]"]
+args = ["--GpuLoad", "0", "--Pacer", "--Pacer.Adaptive", "false", "--Pacer.TargetFps", "30", "--Window", "[0,0,1600,900]"]
 
 # '--Window []' is fullscreen. It has to be given: without it the size of the window comes from FSLDEMOAPP_PREFERRED_WINDOW_RESOLUTION if that
 # environment variable is set, and the run is a window that only looks like fullscreen.
@@ -42,12 +41,12 @@ args = ["--Pacer", "--Pacer.Adaptive", "false", "--Pacer.TargetFps", "30", "--Wi
 [[run]]
 name = "V5_fullscreen_pacer_off"
 what = "pacer off, borderless fullscreen"
-args = ["--Window", "[]"]
+args = ["--GpuLoad", "0", "--Window", "[]"]
 
 [[run]]
 name = "V6_fullscreen_120fps"
 what = "pacer on, adaptive off, target 120 fps, borderless fullscreen"
-args = ["--Pacer", "--Pacer.Adaptive", "false", "--Pacer.TargetFps", "120", "--Window", "[]"]
+args = ["--GpuLoad", "0", "--Pacer", "--Pacer.Adaptive", "false", "--Pacer.TargetFps", "120", "--Window", "[]"]
 
 [[run]]
 name = "L1_pacer_off_gpu_load"
@@ -57,4 +56,4 @@ args = ["--GpuLoad", "{gpu_over_refresh}", "--Window", "[0,0,1600,900]"]
 [[run]]
 name = "L2_pacer_off_cpu_load"
 what = "pacer off, a CPU load that makes a frame take longer than a refresh, windowed"
-args = ["--CpuLoad", "{cpu_over_refresh_ms}", "--Window", "[0,0,1600,900]"]
+args = ["--GpuLoad", "0", "--CpuLoad", "{cpu_over_refresh_ms}", "--Window", "[0,0,1600,900]"]

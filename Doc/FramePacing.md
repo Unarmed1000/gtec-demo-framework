@@ -192,13 +192,16 @@ them are disabled while the pacer is off and in the OpenGL ES samples, where `eg
 - **`wait`: the sample sleeps on a timer, then presents** (the default, it needs nothing). It sleeps until one refresh before the time
   the frame is aimed at. The timer does not know where the refreshes are, so it is a guess: when a present lands near a vertical
   blank, a frame is shown a refresh too early and its neighbour a refresh too long. How often depends on where the timer happens to
-  start: from 1 % to 35 % of the frames in the runs that were measured.
+  start and on the refresh rate: next to never at 50, 60 and 120 Hz, and from none to 35 % of the frames at 240 Hz in the runs that
+  were measured.
 - **`vsync`: the sample waits on the vsync of the window system, then presents.** It needs no Vulkan extension, only a window system
   that says when the display refreshes (`INativeWindow::TryGetVSyncInfo`: Windows, and Wayland with presentation-time; `--VSyncSource`
   selects where the window takes the time from, see [FramePacingPlatformSupport.md](FramePacingPlatformSupport.md)). The frame is aimed at the vertical blank
   nearest to its start plus its swap interval and presented inside the refresh before that one, and the next frame starts at the
   target. `--Pacer.VSyncPhase` is where in that refresh the present is done, in percent: only a part of a refresh is safe, and where
-  that part is has to be measured for a platform (45 to 85 % on the Windows compositor at 240 Hz, the default is 65).
+  that part is has to be measured for a platform (55 to 75 % on Windows at 240 Hz, nearly all of the refresh at 120 Hz and below, the
+  default is 65). It is not for a display with a variable refresh rate (G-SYNC, FreeSync): the vertical blank follows the frames
+  there, and a frame held by it was shown for anything from one to seven refreshes.
 - **`schedule`: the presentation engine holds the frame.** The present is given a target time and is done right away
   (`VK_EXT_present_timing` where the device and the surface have `presentAtRelativeTime`): the image is not shown before the target
   time has passed since the image of the present before it was shown, and then at the first refresh. The sample asks for the swap
@@ -258,8 +261,10 @@ extension and `switched off` while the switch is off. Nothing else in the sample
   - `Latency`: the time from the start of a frame to it reaching the display, and how long after the start it was handed over.
   - `Timed frames`: how many of the measured frames have a display time. The presentation engine does not have one for every frame, which
     does not mean that the frame was not shown.
-  - `Display refresh`: the duration of a refresh according to the swapchain. It is only shown: the pacer keeps the refresh rate of the
-    window system, as the one of the swapchain was seen to change between runs on a display that did not change.
+  - `Swapchain refresh`: the duration of a refresh according to the swapchain. It is only shown: the pacer keeps the refresh rate of the
+    window system. The one of the swapchain is not always the one of the display the window is on: with two displays at different rates
+    it was the one of the fastest display (120 Hz for a window on a display at 50 Hz), and the row then names the rate of the display
+    as well.
 - **`Place the GPU work in time`** (`VK_KHR_calibrated_timestamps`): the `GPU work` row shows when the GPU started and when it finished
   the frame, counted from when the CPU started on it. The timestamp queries of the GPU time are converted to the clock of the CPU for it.
 

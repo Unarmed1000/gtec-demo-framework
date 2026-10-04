@@ -42,7 +42,7 @@ namespace Fsl
   //! and --VSyncSource selects which.
   struct NativeWindowVSyncSourceInfo
   {
-    //! The name the source is selected with ("dwm", "scanline", "presentation-time", ...)
+    //! The name the source is selected with ("dxgi", "present", "presentation-time", ...)
     std::string Name;
     NativeWindowVSyncSourceState State{NativeWindowVSyncSourceState::NotAvailable};
     //! What the source is, and why it is not available if it is not

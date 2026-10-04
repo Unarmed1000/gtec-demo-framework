@@ -88,6 +88,7 @@ Plan                 | Display                         | Runs
 `present-feedback-240hz` | 240 Hz, variable refresh off | The pacer without and with present feedback (`--Pacer.PresentFeedback`), GPU work of 20, 90 and 130 %, each idle and under CPU load (12 runs).
 `present-feedback-120hz` | 120 Hz, variable refresh off | The same with CPU work of 2, 7 and 11 ms.
 `plain-vulkan-240hz`, `-120hz`, `-60hz`, `-50hz` | that rate, variable refresh off | Does the pacer work on plain Vulkan: a frame held by a timer sleep and by a wait on the vsync (`--Pacer.Hold`) at fixed frame rates and under work of 130 %, one and two frames in flight, and the key rows with present timing off as well (22 to 30 runs).
+`vsync-phase-sweep` | any fixed rate, given with `--refresh-hz` and `--set half_fps` | Where in a refresh a present has to be made: frames held for two refreshes by a wait on the vsync, with the present placed from 5 to 95 % of the refresh (`--Pacer.VSyncPhase`), each idle and under CPU load (20 runs).
 `present-scheduling-240hz` | 240 Hz, variable refresh off | A frame held for more than one refresh by a wait before the present and by a scheduled present (`--Pacer.Hold schedule`): a fixed 60 and 120 fps and work of 130 %, each idle and under CPU load (12 runs).
 `present-options-240hz` | 240 Hz, variable refresh off | The swapchain setup at work of 90 %: one against two frames in flight (`--VkFramesInFlight`) and FIFO against FIFO latest ready (`--VkPresentMode`), pacer off and on (8 runs).
 `fixed-rates`        | Any fixed rate, one at a time   | Trivial work: pacer off, pacer on, pacer at half the refresh rate. Give `--refresh-hz` and `--set half_fps=`.
@@ -170,8 +171,10 @@ Keep the directory together, the notes are what makes a log usable later.
 
 A capture does not name the hardware it was made on. The log of an app and what it prints name the model of the graphics device, and
 the tool replaces it in the files of every run with the vendor (`NVIDIA GPU`), sets the device id to zero and leaves the model of the
-CPU out of the notes. The vendor and the driver version stay, they are what a reader of a log needs. `--hardware-names` keeps the
-models. A log that an app wrote without the tool (`--FramePacing.Log`) names the device as the driver reports it.
+CPU out of the notes. The vendor and the driver version stay, they are what a reader of a log needs. The directories of the machine
+are replaced as well, in the logs and in the command line of the notes: the output directory by `<output>`, the SDK by `<sdk>` and
+the home directory of the user by `<home>`. `--hardware-names` keeps the models and the directories. A log that an app wrote without
+the tool (`--FramePacing.Log`) names the device as the driver reports it.
 
 ### Reading the summary
 
@@ -213,6 +216,7 @@ The pacer was switched during the run                | A key reached the window.
 The display runs at another rate than the plan is for| Set the display mode, or give the rate with `--refresh-hz`.
 The refresh rate changed during the run              | The window was moved to another display, or the mode was changed. Run it again.
 Only some presents have a display time               | The presents that were reported without one did not reach the display. Compare with the idle twin: under load it is a finding, not a fault of the run.
+The swapchain reports a longer refresh than the window system | Variable refresh is on, or something else has the display (a game, for example). Set it right and run it again. A shorter one is no warning: it is what a desktop with a faster display next to the one of the window gives.
 Other programs used the CPUs during an idle run      | Find what was running and run the pair again.
 Other programs did not use the CPUs during a loaded run | The load did not start, or the machine has more CPUs than the load uses.
 
@@ -224,7 +228,12 @@ On a NVIDIA desktop GPU (driver 617.14) with a 240 Hz display on Windows 11, a w
   frame rate of the run) and the swapchain still reported a fixed refresh mode. The display time of a frame whose present the sample
   delays was reported before the present call. With G-SYNC off the display times were one refresh apart and after their present.
 - **The driver's refresh duration is not the refresh rate of the mode.** The swapchain reported 8.33 ms for every mode from 23.98 to
-  120 Hz and 4.17 ms at 240 Hz. The rate of the window system was right at every mode, which is why the log holds both.
+  120 Hz and 4.17 ms at 240 Hz. The rate of the window system was right at every mode, which is why the log holds both. The machine
+  has a second display at 120 Hz, and that turned out to be the reason: the swapchain reports the refresh of the fastest display of
+  the desktop, whichever display the window is on (NVIDIA, `VK_EXT_present_timing`). With the displays at 240 and 120 Hz it is
+  4.17 ms on both, at 60 and 120 Hz and at 50 and 120 Hz it is 8.33 ms, at 50 and 24 Hz it is 20.0 ms for a window on the 24 Hz
+  display. A borderless full screen window gets the same. The frames go out on the refresh of the display the window is on: with it
+  at 50 Hz all 745 display times of a run were 20.0 ms apart. Why the driver reports it this way is not known.
 - **A machine that is busy with something else looks like a pacing problem.** Uneven frame starts and a swap interval that cycled
   between one and two at 240 Hz went away when the builds in the background were stopped. That is why every run records the load of
   the machine and why a loaded run has an idle twin.
@@ -261,6 +270,28 @@ On a NVIDIA desktop GPU (driver 617.14) with a 240 Hz display on Windows 11, a w
   frames that miss their refresh are reported without a display time, so the pacer gets no feedback for them and counts them as on
   time. With work of 130 % the pacer takes about three times as long to go to two refreshes, and in two runs it went on to three and
   four.
+- **On plain Vulkan a frame is held right by the timer sleep and by the wait on the vsync at 50, 60 and 120 Hz** (the plain Vulkan
+  plans with mb-framepacing `b5b6ab3`, idle and under the CPU load). Every run at a fixed frame rate (25 fps at 50 Hz, 30 and 20 fps
+  at 60 Hz, 60, 30 and 15 fps at 120 Hz) shows every frame for exactly its swap interval with both, two frames off in a run at the
+  most. Work of 130 % goes to two refreshes after 11, 13 and 25 frames and stays there with both. At 240 Hz the sleep had 7 of 537
+  frames off at 60 fps under load and the wait on the vsync 4 of 1137 at the most. The sleep has been far worse in earlier captures
+  at 240 Hz (up to 35 % of the frames, depending on where the timer happens to start), which these runs did not reproduce. The frame
+  starts of the sleep are flat, the ones of the wait on the vsync follow the measured vertical blank and spread by 0.1 to 0.15 ms to
+  each side. These are the summaries of the runs, the logs have not been read frame by frame.
+- **Where in a refresh the present is made matters at 240 Hz and next to not at all below** (the plan `vsync-phase-sweep` at 240, 120,
+  60 and 50 Hz, frames held for two refreshes). At 240 Hz a present from 55 to 75 % of the refresh is clean idle and under load, from
+  5 to 45 % most runs have one frame that is shown a refresh too long, at 85 % one run had four frames off and at 95 % the frame
+  starts get uneven. At 120, 60 and 50 Hz every place from 5 to 85 % is clean but for two frames in one run at 120 Hz, and 95 % has
+  two to four frames off in a run. The default of the sample, 65 %, is in the middle of what is clean at 240 Hz.
+- **With variable refresh on the wait on the vsync does not hold a frame, the timer sleep does** (G-SYNC on at 240 Hz, the plan
+  `variable-refresh` and four runs of 120 and 60 fps with both ways, once with G-SYNC on for full screen apps only and once for
+  windowed and full screen apps: the two rounds were the same run for run, so the first setting had it in effect for the window of
+  the sample as well). The vertical blank the window system reports follows the
+  frames then: its times were 1 to 7 refreshes apart at 60 fps and off the grid of the mode. A frame held by it started 14.6 to
+  18.7 ms after the one before and was shown for 1 to 7 refreshes. The sleep kept its frame starts flat at 120, 80, 60 and 30 fps.
+  The swapchain reports the same fixed refresh as with variable refresh off, so it does not tell. Present feedback does: the pacer
+  refused 588 to 1190 of the 597 to 1195 display times of a run, which the tool reports as a warning. Nobody read the frame rate
+  counter of the display during these runs.
 - **A CPU load on every logical CPU did not disturb the frames of the sample**, the runs under load were as even as their idle twins.
   A build loads the disk and the memory as well, which this load does not.
 - **The time from the start of a frame to the display depends on the work**: 3.7 refreshes at 20 % work and about 2 refreshes at 90

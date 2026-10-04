@@ -46,6 +46,7 @@ from typing import Any
 
 import CpuLoad
 from FramePacingAnonymise import AnonymiseFiles
+from FramePacingAnonymise import GetLocalPaths
 from FramePacingLogFile import FramePacingLogFile, ToEventsPath, g_ticksPerMillisecond, g_ticksPerSecond
 from FramePacingRunCheck import CheckRun, FormatReport, FormatSummary, RunCheck, RunExpectation
 
@@ -496,11 +497,16 @@ def _CommandRun(args: argparse.Namespace) -> int:
         else:
             log = FramePacingLogFile(logPath)
             if not args.hardware_names:
-                # The model of the GPU is taken out of what the app wrote, and the log is read again so the notes do not name it either
-                AnonymiseFiles([logPath, ToEventsPath(logPath), outputPath / f"{run.Name}.app.log"], log.Facts)
+                # The model of the GPU and the directories of this machine are taken out of what the app wrote, and the log is read
+                # again so the notes do not name the model either
+                AnonymiseFiles([logPath, ToEventsPath(logPath), outputPath / f"{run.Name}.app.log"], log.Facts, GetLocalPaths(outputPath))
                 log = FramePacingLogFile(logPath)
             check = CheckRun(log, RunExpectation(run.Frames, run.RefreshRateHz, run.Loaded, result.ExitCode))
-            _WriteNotes(outputPath / f"{run.Name}.run.txt", plan, run, result, userFacts, log, check, args.hardware_names)
+            notesPath = outputPath / f"{run.Name}.run.txt"
+            _WriteNotes(notesPath, plan, run, result, userFacts, log, check, args.hardware_names)
+            if not args.hardware_names:
+                # The notes have the command line of the run
+                AnonymiseFiles([notesPath], {}, GetLocalPaths(outputPath))
             summary = FormatSummary(run.Name, check)
             warningCount += len(check.Warnings)
             for warning in check.Warnings:
@@ -527,7 +533,10 @@ def _CommandCheck(args: argparse.Namespace) -> int:
         warningCount += len(check.Warnings)
         print(FormatSummary(logPath.stem, check))
         if args.write_notes:
-            _WriteNotes(logPath.with_name(logPath.stem + ".run.txt"), None, None, None, userFacts, log, check, args.hardware_names)
+            notesPath = logPath.with_name(logPath.stem + ".run.txt")
+            _WriteNotes(notesPath, None, None, None, userFacts, log, check, args.hardware_names)
+            if not args.hardware_names:
+                AnonymiseFiles([notesPath], {}, GetLocalPaths(logPath.parent))
         else:
             for line in _DescribeGraphics(log) + FormatReport(check):
                 print(f"  {line}")
@@ -580,7 +589,8 @@ def _CommandCalibrate(args: argparse.Namespace) -> int:
         if result.ExitCode != 0 or not logPath.is_file():
             raise CaptureError(f"The run with a GPU load of {steps} failed (exit code {result.ExitCode}): see {run.Name}.app.log in {outputPath}")
         if not args.hardware_names:
-            AnonymiseFiles([logPath, ToEventsPath(logPath), outputPath / f"{run.Name}.app.log"], FramePacingLogFile(logPath).Facts)
+            AnonymiseFiles([logPath, ToEventsPath(logPath), outputPath / f"{run.Name}.app.log"], FramePacingLogFile(logPath).Facts,
+                           GetLocalPaths(outputPath))
         check = CheckRun(FramePacingLogFile(logPath), RunExpectation(RefreshRateHz=args.refresh_hz))
         if check.WorkGpuMs is None:
             raise CaptureError("The log has no GPU time of the frames (the app has to be a FramePacing sample that can time the GPU)")
@@ -625,9 +635,10 @@ def _CreateParser() -> argparse.ArgumentParser:
                           "without an idle twin and without the CPU load of the tool. Say what the load is with --fact.")
     run.add_argument("--overwrite", action="store_true", help="Replace the logs of runs the output directory holds already.")
     run.add_argument("--hardware-names", action="store_true",
-                     help="Keep the model of the GPU and of the CPU in the logs and the notes. Without it the tool replaces the model of the GPU by its "
-                          "vendor in every file of a run and leaves the model of the CPU out of the notes, so a capture can be handed on "
-                          "without naming the hardware it was made on.")
+                     help="Keep the model of the GPU and of the CPU and the directories of this machine in the logs and the notes. Without it "
+                          "the tool replaces the model of the GPU by its vendor and the directories by <output>, <sdk> and <home> in every "
+                          "file of a run and leaves the model of the CPU out of the notes, so a capture can be handed on without naming "
+                          "the machine it was made on.")
     run.add_argument("--dry-run", action="store_true", help="Show the runs and stop.")
     run.add_argument("-y", "--yes", action="store_true", help="Start without asking.")
     run.set_defaults(function=_CommandRun)
@@ -638,8 +649,8 @@ def _CreateParser() -> argparse.ArgumentParser:
     check.add_argument("--write-notes", action="store_true", help="Write <log>.run.txt next to every log instead of printing the checks.")
     check.add_argument("--fact", action="append", metavar="KEY=VALUE", help="Something only you know, for the notes (can be given more than once).")
     check.add_argument("--hardware-names", action="store_true",
-                       help="Name the model of the CPU in the notes. The logs are checked as they are: a log that was captured with "
-                            "--hardware-names still names its GPU.")
+                       help="Name the model of the CPU and the directories of this machine in the notes. The logs are checked as they "
+                            "are: a log that was captured with --hardware-names still names its GPU.")
     check.set_defaults(function=_CommandCheck)
 
     listCommand = commands.add_parser("list", help="List the plans that come with the tool, or the runs of a plan.")
@@ -659,7 +670,7 @@ def _CreateParser() -> argparse.ArgumentParser:
     calibrate.add_argument("--refresh-hz", type=float, help="The refresh rate of the display, if the window system does not report it.")
     calibrate.add_argument("--pause", type=float, default=1.0, help="The seconds to wait before every run (default 1).")
     calibrate.add_argument("-o", "--output", help="The directory for the logs of the runs.")
-    calibrate.add_argument("--hardware-names", action="store_true", help="Keep the model of the GPU in the logs of the runs.")
+    calibrate.add_argument("--hardware-names", action="store_true", help="Keep the model of the GPU and the directories of this machine in the logs of the runs.")
     calibrate.set_defaults(function=_CommandCalibrate)
     return parser
 

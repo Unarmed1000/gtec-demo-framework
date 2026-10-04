@@ -752,6 +752,13 @@ namespace Fsl
     FSLLOG3_VERBOSE3("PlatformNativeWindowAdapterX11| Constructing");
 
     const NativeWindowConfig nativeWindowConfig = nativeWindowSetup.GetConfig();
+    // The vsync source of the window. X11 has one: the Present extension. Checked first, as nothing has been created yet
+    m_requestedVSyncSource = nativeWindowConfig.GetVSyncSource();
+    if (!m_requestedVSyncSource.empty() && m_requestedVSyncSource != "auto" && m_requestedVSyncSource != LocalConfig::VSyncSourcePresent)
+    {
+      throw NotSupportedException(fmt::format("VSyncSource '{}' is not a vsync source of this window system (auto, {})", m_requestedVSyncSource,
+                                              LocalConfig::VSyncSourcePresent));
+    }
     int windowWidth = 0;
     int windowHeight = 0;
     int windowX = 0;
@@ -845,14 +852,7 @@ namespace Fsl
     TryUpdateDPI(m_platformDisplay, m_platformWindow, m_cachedScreenDPI);
     UpdateDisplayInfo({});
 
-    // The vsync source of the window. X11 has one: the Present extension.
-    m_requestedVSyncSource = nativeWindowSetup.GetConfig().GetVSyncSource();
     m_presentVSync = std::make_unique<X11PresentVSync>(m_platformDisplay, m_platformWindow);
-    if (!m_requestedVSyncSource.empty() && m_requestedVSyncSource != "auto" && m_requestedVSyncSource != LocalConfig::VSyncSourcePresent)
-    {
-      FSLLOG3_WARNING("VSyncSource '{}' is not a vsync source of this window system, the best source that works is used instead (present)",
-                      m_requestedVSyncSource);
-    }
 
     {    // Post the activation message to let the framework know we are ready
       std::shared_ptr<INativeWindowEventQueue> eventQueue = g_eventQueue.lock();

@@ -1069,6 +1069,13 @@ namespace Fsl
     , m_windowSystemContext(platformWindowParams.WindowSystemWaylandContext)
   {
     const NativeWindowConfig nativeWindowConfig = nativeWindowSetup.GetConfig();
+    // The vsync source of the window. Wayland has one: the presentation-time protocol. Checked first, as nothing has been created yet
+    m_requestedVSyncSource = nativeWindowConfig.GetVSyncSource();
+    if (!m_requestedVSyncSource.empty() && m_requestedVSyncSource != "auto" && m_requestedVSyncSource != "presentation-time")
+    {
+      throw NotSupportedException(
+        fmt::format("VSyncSource '{}' is not a vsync source of this window system (auto, presentation-time)", m_requestedVSyncSource));
+    }
     auto windowSystemContext = platformWindowParams.WindowSystemWaylandContext.lock();
     if (!windowSystemContext)
     {
@@ -1148,14 +1155,6 @@ namespace Fsl
 
     // The registry has listed every global by now
     LogFrameTimingGlobals(*windowSystemContext);
-
-    // The vsync source of the window. Wayland has one: the presentation-time protocol.
-    m_requestedVSyncSource = nativeWindowSetup.GetConfig().GetVSyncSource();
-    if (!m_requestedVSyncSource.empty() && m_requestedVSyncSource != "auto" && m_requestedVSyncSource != "presentation-time")
-    {
-      FSLLOG3_WARNING("VSyncSource '{}' is not a vsync source of this window system, the best source that works is used instead (presentation-time)",
-                      m_requestedVSyncSource);
-    }
 
     ExtractOutputs(m_displayOutput, windowSystemContext->Outputs);
 

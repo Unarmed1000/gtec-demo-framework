@@ -22,16 +22,15 @@
 //****************************************************************************************************************************************************
 
 #include "Win32VSyncSources.hpp"
+#include <FslBase/Exceptions.hpp>
 #include <FslBase/Log/Log3Fmt.hpp>
 #include <FslBase/Time/TickCount.hpp>
 #include <FslBase/Time/TimeSpan.hpp>
 #include <FslNativeWindow/Base/NativeWindowVSyncSourceInfo.hpp>
-#include <dwmapi.h>
 #include <dxgi.h>
 #include <algorithm>
 #include <array>
 #include <atomic>
-#include <cmath>
 #include <cwchar>
 #include <thread>
 #include <vector>
@@ -43,63 +42,17 @@ namespace Fsl
     namespace LocalConfig
     {
       constexpr auto NameAuto = "auto";
-      constexpr auto NameDwm = "dwm";
+      //! The one source: IDXGIOutput::WaitForVBlank is the documented way to follow the vertical blank of one display, and it is the
+      //! output of the monitor the window is on that is waited for
       constexpr auto NameDxgi = "dxgi";
+      //! The call of the platform the source is built on
+      constexpr auto ApiNameDxgi = "IDXGIOutput::WaitForVBlank";
+      constexpr auto DescriptionDxgi = "IDXGIOutput::WaitForVBlank on a thread";
 
       //! A wait for a vertical blank that returns sooner than this after the one before did not wait (the display is off): the thread
       //! sleeps then, so it does not spin
       constexpr double MinWaitSeconds = 0.0002;
       constexpr DWORD NoWaitSleepMilliseconds = 2;
-      //! The compositor runs at the rate of a monitor if the two rates differ by less than this share of the rate
-      constexpr double SameRateTolerance = 0.005;
-    }
-
-    enum class SourceId
-    {
-      Dxgi,
-      Dwm
-    };
-
-    //! Every source, in the order auto tries them. DXGI is first: IDXGIOutput::WaitForVBlank is the documented way to follow the
-    //! vertical blank of one display, and it is the output of the monitor the window is on that is waited for. The compositor is
-    //! for when it is asked for, or when there is no DXGI output for the monitor.
-    constexpr std::array<SourceId, 2> AutoOrder = {SourceId::Dxgi, SourceId::Dwm};
-
-    constexpr const char* ToName(const SourceId id) noexcept
-    {
-      switch (id)
-      {
-      case SourceId::Dwm:
-        return LocalConfig::NameDwm;
-      case SourceId::Dxgi:
-        return LocalConfig::NameDxgi;
-      }
-      return "";
-    }
-
-    //! The call of the platform a source is built on
-    constexpr const char* ToApiName(const SourceId id) noexcept
-    {
-      switch (id)
-      {
-      case SourceId::Dwm:
-        return "DwmGetCompositionTimingInfo";
-      case SourceId::Dxgi:
-        return "IDXGIOutput::WaitForVBlank";
-      }
-      return "";
-    }
-
-    constexpr const char* ToDescription(const SourceId id) noexcept
-    {
-      switch (id)
-      {
-      case SourceId::Dwm:
-        return "DwmGetCompositionTimingInfo: the vertical blank time of the desktop compositor";
-      case SourceId::Dxgi:
-        return "IDXGIOutput::WaitForVBlank on a thread";
-      }
-      return "";
     }
 
     int64_t ReadQpc() noexcept
@@ -256,20 +209,14 @@ namespace Fsl
   struct Win32VSyncSources::State
   {
     std::string Requested;
-    bool RequestWarned{false};
     int64_t QpcFrequency{0};
 
     // What is known about the monitor the window is on
     HMONITOR Monitor{nullptr};
     std::array<wchar_t, CCHDEVICENAME> DeviceName{};
     ModeInfo Mode;
+    //! True if the monitor has a DXGI output, which is what the vertical blank is waited for on
     bool HasDxgiOutput{false};
-    bool HasDwm{false};
-    //! The clock of the compositor is known to be the clock of this monitor: it is the only monitor and the two refresh rates agree
-    bool IsDwmOfMonitor{false};
-
-    bool HasUsed{false};
-    SourceId Used{SourceId::Dwm};
     std::unique_ptr<VBlankWaitThread> WaitThread;
 
     State() = default;
@@ -288,19 +235,6 @@ namespace Fsl
       Monitor = nullptr;
       Mode = {};
       HasDxgiOutput = false;
-      HasUsed = false;
-    }
-
-    [[nodiscard]] bool IsAvailable(const SourceId id) const noexcept
-    {
-      switch (id)
-      {
-      case SourceId::Dwm:
-        return HasDwm;
-      case SourceId::Dxgi:
-        return HasDxgiOutput;
-      }
-      return false;
     }
 
     //! What the monitor of the window can do, read again when the window is on another monitor
@@ -314,82 +248,22 @@ namespace Fsl
       ReleaseMonitor();
       Monitor = monitor;
 
-      DWM_TIMING_INFO timingInfo{};
-      timingInfo.cbSize = sizeof(timingInfo);
-      HasDwm = SUCCEEDED(DwmGetCompositionTimingInfo(nullptr, &timingInfo)) && timingInfo.qpcRefreshPeriod != 0u;
-      IsDwmOfMonitor = false;
-
       MONITORINFOEXW monitorInfo{};
       monitorInfo.cbSize = sizeof(monitorInfo);
       if (monitor != nullptr && GetMonitorInfoW(monitor, &monitorInfo) != 0)
       {
         std::copy(std::begin(monitorInfo.szDevice), std::end(monitorInfo.szDevice), DeviceName.begin());
         Mode = TryQueryMode(DeviceName.data());
-        {
-          // The compositor has one clock for the desktop. Which monitor it follows is not something a app can rely on: it was the
-          // primary monitor, and on current Windows 11 it is the monitor with the highest refresh rate. So it is only known to be the
-          // clock of this monitor when this is the only monitor and the compositor runs at the refresh rate of its mode.
-          const bool isOnlyMonitor = GetSystemMetrics(SM_CMONITORS) == 1;
-          const double dwmHz = HasDwm ? static_cast<double>(QpcFrequency) / static_cast<double>(timingInfo.qpcRefreshPeriod) : 0.0;
-          const bool sameRate = !Mode.Valid || (std::abs(dwmHz - Mode.RefreshHz) <= (Mode.RefreshHz * LocalConfig::SameRateTolerance));
-          IsDwmOfMonitor = HasDwm && isOnlyMonitor && sameRate;
-        }
 
-        {
-          IDXGIOutput* const pOutput = TryFindDxgiOutput(monitor);
-          HasDxgiOutput = pOutput != nullptr;
-          if (pOutput != nullptr)
-          {
-            pOutput->Release();
-          }
-        }
-      }
-      SelectSource();
-    }
-
-    void SelectSource()
-    {
-      HasUsed = false;
-      if (!Requested.empty() && Requested != LocalConfig::NameAuto)
-      {
-        const auto itrFind = std::find_if(AutoOrder.begin(), AutoOrder.end(), [this](const SourceId id) { return Requested == ToName(id); });
-        if (itrFind != AutoOrder.end() && IsAvailable(*itrFind))
-        {
-          HasUsed = true;
-          Used = *itrFind;
-        }
-        else if (!RequestWarned)
-        {
-          RequestWarned = true;
-          FSLLOG3_WARNING("VSyncSource '{}' is {}, the best source that works is used instead (dxgi, dwm)", Requested,
-                          itrFind != AutoOrder.end() ? "not available for this monitor" : "not a vsync source of this window system");
-        }
-      }
-      if (!HasUsed)
-      {
-        // The first that works for this monitor, which is DXGI wherever the monitor has a DXGI output
-        const auto itrFind = std::find_if(AutoOrder.begin(), AutoOrder.end(), [this](const SourceId id) { return IsAvailable(id); });
-        if (itrFind != AutoOrder.end())
-        {
-          HasUsed = true;
-          Used = *itrFind;
-        }
-      }
-      if (HasUsed && Used == SourceId::Dwm && !IsDwmOfMonitor)
-      {
-        FSLLOG3_WARNING(
-          "The vsync source 'dwm' is one clock for the desktop and there is more than one monitor (or the compositor does not run "
-          "at the refresh rate of the monitor of the window), so its times can be those of another monitor");
-      }
-      if (HasUsed && Used == SourceId::Dxgi)
-      {
-        IDXGIOutput* const pOutput = TryFindDxgiOutput(Monitor);
+        // The thread releases the output when it ends
+        IDXGIOutput* const pOutput = TryFindDxgiOutput(monitor);
+        HasDxgiOutput = pOutput != nullptr;
         if (pOutput != nullptr)
         {
           WaitThread = std::make_unique<VBlankWaitThread>(pOutput, QpcFrequency);
         }
       }
-      FSLLOG3_VERBOSE("Win32: vsync source '{}'", HasUsed ? ToName(Used) : "none");
+      FSLLOG3_VERBOSE("Win32: vsync source '{}'", HasDxgiOutput ? LocalConfig::NameDxgi : "none");
     }
 
     [[nodiscard]] TickCount ToTickCount(const int64_t qpc) const noexcept
@@ -403,29 +277,10 @@ namespace Fsl
       return TimeSpan(static_cast<int64_t>(qpcDuration * (static_cast<double>(TickCount::TicksPerSecond) / static_cast<double>(QpcFrequency))));
     }
 
-    //! The refresh period of the monitor in QueryPerformanceCounter counts: the one of its mode, else the one of the compositor
+    //! The refresh period of the mode of the monitor in QueryPerformanceCounter counts (zero if the mode is not known)
     [[nodiscard]] double GetMonitorPeriodQpc() const noexcept
     {
-      if (Mode.Valid)
-      {
-        return static_cast<double>(QpcFrequency) / Mode.RefreshHz;
-      }
-      DWM_TIMING_INFO timingInfo{};
-      timingInfo.cbSize = sizeof(timingInfo);
-      return SUCCEEDED(DwmGetCompositionTimingInfo(nullptr, &timingInfo)) ? static_cast<double>(timingInfo.qpcRefreshPeriod) : 0.0;
-    }
-
-    [[nodiscard]] NativeWindowVSyncInfo TryGetDwm() const noexcept
-    {
-      // The desktop compositor reports the last vertical blank and the refresh period it measured, both in QueryPerformanceCounter time.
-      // It is the timing of the compositor: one clock for the desktop, not one per monitor.
-      DWM_TIMING_INFO timingInfo{};
-      timingInfo.cbSize = sizeof(timingInfo);
-      if (FAILED(DwmGetCompositionTimingInfo(nullptr, &timingInfo)))
-      {
-        return {};
-      }
-      return {ToTickCount(static_cast<int64_t>(timingInfo.qpcVBlank)), ToTimeSpan(static_cast<double>(timingInfo.qpcRefreshPeriod))};
+      return Mode.Valid ? (static_cast<double>(QpcFrequency) / Mode.RefreshHz) : 0.0;
     }
 
     [[nodiscard]] NativeWindowVSyncInfo TryGetWaited() const noexcept
@@ -445,6 +300,11 @@ namespace Fsl
   Win32VSyncSources::Win32VSyncSources(const std::string& requestedSource)
     : m_state(std::make_unique<State>())
   {
+    if (!requestedSource.empty() && requestedSource != LocalConfig::NameAuto && requestedSource != LocalConfig::NameDxgi)
+    {
+      throw NotSupportedException(
+        fmt::format("VSyncSource '{}' is not a vsync source of this window system (auto, {})", requestedSource, LocalConfig::NameDxgi));
+    }
     m_state->Requested = requestedSource;
     LARGE_INTEGER frequency{};
     QueryPerformanceFrequency(&frequency);
@@ -462,18 +322,7 @@ namespace Fsl
       return {};
     }
     m_state->UpdateMonitor(hWnd);
-    if (!m_state->HasUsed)
-    {
-      return {};
-    }
-    switch (m_state->Used)
-    {
-    case SourceId::Dwm:
-      return m_state->TryGetDwm();
-    case SourceId::Dxgi:
-      return m_state->TryGetWaited();
-    }
-    return {};
+    return m_state->TryGetWaited();
   }
 
 
@@ -491,35 +340,20 @@ namespace Fsl
       m_state->UpdateMonitor(hWnd);
     }
     rSupport.RequestedVSyncSource = m_state->Requested.empty() ? LocalConfig::NameAuto : m_state->Requested;
-    for (const SourceId id : AutoOrder)
+    // The one source is used wherever the monitor of the window has a DXGI output
+    const bool isUsed = m_state->HasDxgiOutput;
+    rSupport.VSyncSources.emplace_back(LocalConfig::NameDxgi, isUsed ? NativeWindowVSyncSourceState::Used : NativeWindowVSyncSourceState::NotAvailable,
+                                       LocalConfig::DescriptionDxgi);
+    // And as what the window system has and what is used of it
+    if (isUsed)
     {
-      const bool isUsed = m_state->HasUsed && m_state->Used == id;
-      const NativeWindowVSyncSourceState state =
-        isUsed ? NativeWindowVSyncSourceState::Used
-               : (m_state->IsAvailable(id) ? NativeWindowVSyncSourceState::Available : NativeWindowVSyncSourceState::NotAvailable);
-      std::string description(ToDescription(id));
-      if (id == SourceId::Dwm && m_state->HasDwm && !m_state->IsDwmOfMonitor)
-      {
-        description += " (one clock for the desktop: with more than one monitor it can be the clock of another monitor)";
-      }
-      rSupport.VSyncSources.emplace_back(ToName(id), state, description);
-      // And as what the window system has and what is used of it
-      if (state == NativeWindowVSyncSourceState::NotAvailable)
-      {
-        rSupport.NotAvailable.emplace_back(ToApiName(id));
-      }
-      else
-      {
-        rSupport.Available.emplace_back(ToApiName(id));
-      }
-      if (isUsed)
-      {
-        rSupport.Used.emplace_back(ToApiName(id));
-      }
-      if (isUsed)
-      {
-        rSupport.VSyncSource = ToName(id);
-      }
+      rSupport.Available.emplace_back(LocalConfig::ApiNameDxgi);
+      rSupport.Used.emplace_back(LocalConfig::ApiNameDxgi);
+      rSupport.VSyncSource = LocalConfig::NameDxgi;
+    }
+    else
+    {
+      rSupport.NotAvailable.emplace_back(LocalConfig::ApiNameDxgi);
     }
   }
 }
