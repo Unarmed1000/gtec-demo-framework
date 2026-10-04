@@ -37,6 +37,7 @@
 #include <FslNativeWindow/Base/WindowMode.hpp>
 #include <memory>
 #include <optional>
+#include <string>
 
 namespace Fsl
 {
@@ -48,6 +49,7 @@ namespace Fsl
     int32_t m_displayId;
     std::optional<uint32_t> m_forcedDensityDpi;
     std::optional<Point2U> m_forcedActualDpi;
+    std::string m_vsyncSource;
 
   public:
     NativeWindowConfig();
@@ -71,6 +73,18 @@ namespace Fsl
     [[nodiscard]] std::optional<Point2U> GetForcedActualDpi() const;
 
     void SetForcedActualDpi(const std::optional<Point2U>& actualDpi);
+
+    //! The vsync source the window is to use (INativeWindow::TryGetVSyncInfo). Empty or "auto": the best one the window system has.
+    //! The names belong to the window system, INativeWindow::GetTimingSupport lists them.
+    [[nodiscard]] const std::string& GetVSyncSource() const noexcept
+    {
+      return m_vsyncSource;
+    }
+
+    void SetVSyncSource(const std::string& vsyncSource)
+    {
+      m_vsyncSource = vsyncSource;
+    }
   };
 }
 

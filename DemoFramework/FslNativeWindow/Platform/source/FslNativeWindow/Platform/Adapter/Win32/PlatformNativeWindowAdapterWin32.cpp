@@ -57,6 +57,7 @@
 #include <utility>
 #include <vector>
 #include "DPIHelperWin32.hpp"
+#include "Win32VSyncSources.hpp"
 
 #if 0
 // NOLINTNEXTLINE(cppcoreguidelines-macro-usage)
@@ -1079,11 +1080,15 @@ namespace Fsl
       rid[0].hwndTarget = m_platformWindow;
       RegisterRawInputDevices(rid.data(), static_cast<UINT>(rid.size()), sizeof(RAWINPUTDEVICE));
     }
+
+    m_vsyncSources = std::make_unique<Win32VSyncSources>(nativeWindowSetup.GetConfig().GetVSyncSource());
   }
 
 
   PlatformNativeWindowAdapterWin32::~PlatformNativeWindowAdapterWin32()
   {
+    // A source can have a thread that waits on the display, it ends before the window goes
+    m_vsyncSources.reset();
     if (m_platformWindow != nullptr)
     {
       DestroyWindow(m_platformWindow);
@@ -1379,27 +1384,18 @@ namespace Fsl
   {
     NativeWindowTimingSupport support;
     support.WindowSystem = "Win32";
-    support.VSyncSource = "DwmGetCompositionTimingInfo";
-    support.Available = {"DwmGetCompositionTimingInfo", "IDXGIOutput::WaitForVBlank"};
-    support.Used = {"DwmGetCompositionTimingInfo"};
+    if (m_vsyncSources)
+    {
+      m_vsyncSources->FillTimingSupport(m_platformWindow, support);
+    }
     return support;
   }
 
 
   NativeWindowVSyncInfo PlatformNativeWindowAdapterWin32::TryGetNativeVSyncInfo() const
   {
-    // The desktop compositor reports the last vertical blank and the refresh period it measured, both in QueryPerformanceCounter time,
-    // which is the clock of the HighResolutionTimer. It is the timing of the compositor: one clock for the desktop, not one per monitor.
-    DWM_TIMING_INFO timingInfo{};
-    timingInfo.cbSize = sizeof(timingInfo);
-    LARGE_INTEGER frequency{};
-    if (FAILED(DwmGetCompositionTimingInfo(nullptr, &timingInfo)) || QueryPerformanceFrequency(&frequency) == 0 || frequency.QuadPart <= 0)
-    {
-      return {};
-    }
-    const double ticksPerCount = static_cast<double>(TickCount::TicksPerSecond) / static_cast<double>(frequency.QuadPart);
-    return {TickCount(static_cast<int64_t>(static_cast<double>(timingInfo.qpcVBlank) * ticksPerCount)),
-            TimeSpan(static_cast<int64_t>(static_cast<double>(timingInfo.qpcRefreshPeriod) * ticksPerCount))};
+    // The selected vsync source (Win32VSyncSources): the desktop compositor unless another one is asked for with --VSyncSource
+    return m_vsyncSources ? m_vsyncSources->TryGetVSyncInfo(m_platformWindow) : NativeWindowVSyncInfo();
   }
 
 
@@ -1414,6 +1410,10 @@ namespace Fsl
   {
     // The display settings changed, so we always need to refresh
     UpdateDisplayInfo(true);
+    if (m_vsyncSources)
+    {
+      m_vsyncSources->OnDisplayChanged();
+    }
   }
 
 

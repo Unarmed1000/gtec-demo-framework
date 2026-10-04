@@ -191,7 +191,8 @@ offers for them.
   blank, a frame is shown a refresh too early and its neighbour a refresh too long. How often depends on where the timer happens to
   start: from 1 % to 35 % of the frames in the runs that were measured.
 - **`vsync`: the sample waits on the vsync of the window system, then presents.** It needs no Vulkan extension, only a window system
-  that says when the display refreshes (`INativeWindow::TryGetVSyncInfo`, Windows so far). The frame is aimed at the vertical blank
+  that says when the display refreshes (`INativeWindow::TryGetVSyncInfo`: Windows, and Wayland with presentation-time; `--VSyncSource`
+  selects where the window takes the time from, see [FramePacingPlatformSupport.md](FramePacingPlatformSupport.md)). The frame is aimed at the vertical blank
   nearest to its start plus its swap interval and presented inside the refresh before that one, and the next frame starts at the
   target. `--Pacer.VSyncPhase` is where in that refresh the present is done, in percent: only a part of a refresh is safe, and where
   that part is has to be measured for a platform (45 to 85 % on the Windows compositor at 240 Hz, the default is 65).

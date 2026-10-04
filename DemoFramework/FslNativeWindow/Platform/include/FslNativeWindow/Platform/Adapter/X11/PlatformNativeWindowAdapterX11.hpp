@@ -39,11 +39,13 @@
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 #include <memory>
+#include <string>
 
 namespace Fsl
 {
   class NativeWindowSetup;
   class INativeWindowEventQueue;
+  class X11PresentVSync;
 
   class PlatformNativeWindowAdapterX11 : public PlatformNativeWindowAdapter
   {
@@ -55,6 +57,10 @@ namespace Fsl
     PxPoint2 m_cachedWindowPosition;
     NativeWindowDisplayInfo m_cachedDisplayInfo;
     uint32_t m_cachedActiveCrtcCount{0};
+    //! The vsync time of the window from the Present extension of the X server
+    std::unique_ptr<X11PresentVSync> m_presentVSync;
+    //! What was asked for with the VSyncSource option
+    std::string m_requestedVSyncSource;
 
   public:
     Atom WmDeleteWindow;
@@ -69,10 +75,17 @@ namespace Fsl
 
     NativeWindowTimingSupport GetTimingSupport() const override;
 
+    //! @brief Take a generic event if it belongs to the vsync source of the window
+    //! @return true if the event was consumed
+    bool TryHandleGenericEvent(XEvent& rEvent);
+    //! @brief Called once per frame by the message loop: the vsync source asks for the next vertical blank time
+    void RequestVSyncTime();
+
   protected:
     bool TryGetNativeSize(PxPoint2& rSize) const override;
     bool TryGetNativeDpi(Vector2& rDPI) const override;
     NativeWindowDisplayInfo TryGetNativeDisplayInfo() const override;
+    NativeWindowVSyncInfo TryGetNativeVSyncInfo() const override;
 
   private:
     //! @param eventQueue if not null a WindowConfigChanged event is posted when the display info changed.

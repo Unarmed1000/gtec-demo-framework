@@ -341,6 +341,19 @@ namespace Fsl
               {
                 rLog.SetLogFact(fmt::format("window.uses.{}", entry), "1");
               }
+              // The vsync sources the window system has code for and what each can do here
+              rLog.SetLogFact("window.vsyncSourceRequested", support.RequestedVSyncSource);
+              std::string strSources;
+              for (const auto& entry : support.VSyncSources)
+              {
+                const char* const pszState = entry.State == NativeWindowVSyncSourceState::Used
+                                               ? "used"
+                                               : (entry.State == NativeWindowVSyncSourceState::Available ? "available" : "notAvailable");
+                rLog.SetLogFact(fmt::format("window.vsyncSource.{}", entry.Name), pszState);
+                fmt::format_to(std::back_inserter(strSources), "{}{}: {}", strSources.empty() ? "" : ", ", entry.Name, pszState);
+              }
+              FSLLOG3_INFO("FramePacing: vsync sources of the window system [{}], asked for '{}'", strSources,
+                           support.RequestedVSyncSource.empty() ? "auto" : support.RequestedVSyncSource);
               FSLLOG3_INFO("FramePacing: window system '{}', vsync source '{}', has [{}], does not have [{}], uses [{}]", support.WindowSystem,
                            support.VSyncSource.empty() ? "none" : support.VSyncSource, fmt::join(support.Available, ", "),
                            fmt::join(support.NotAvailable, ", "), fmt::join(support.Used, ", "));

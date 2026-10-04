@@ -35,6 +35,7 @@
 #include <FslBase/Math/Point2.hpp>
 #include <FslNativeWindow/Platform/Adapter/PlatformNativeWindowAdapter.hpp>
 #include <memory>
+#include <string>
 #include <vector>
 
 namespace Fsl
@@ -60,6 +61,8 @@ namespace Fsl
     wl_surface* m_platformSurface;
     std::vector<WaylandDisplayGeometry> m_displayOutput;
     Point2 m_cachedScreenDPI;
+    //! What was asked for with the VSyncSource option
+    std::string m_requestedVSyncSource;
 
   public:
     PlatformNativeWindowAdapterWayland(const NativeWindowSetup& nativeWindowSetup, const PlatformNativeWindowParams& platformWindowParams,

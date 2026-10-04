@@ -1,5 +1,5 @@
-#ifndef FSLNATIVEWINDOW_BASE_NATIVEWINDOWTIMINGSUPPORT_HPP
-#define FSLNATIVEWINDOW_BASE_NATIVEWINDOWTIMINGSUPPORT_HPP
+#ifndef FSLNATIVEWINDOW_BASE_NATIVEWINDOWVSYNCSOURCEINFO_HPP
+#define FSLNATIVEWINDOW_BASE_NATIVEWINDOWVSYNCSOURCEINFO_HPP
 //****************************************************************************************************************************************************
 //* BSD 3-Clause License
 //*
@@ -22,35 +22,40 @@
 //* EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //****************************************************************************************************************************************************
 
-#include <FslNativeWindow/Base/NativeWindowVSyncSourceInfo.hpp>
-#include <cstdint>
 #include <string>
 #include <utility>
-#include <vector>
 
 namespace Fsl
 {
-  //! What the window system has that tells when a frame is shown, and what of it the framework uses. It is for logs: a log that has
-  //! it says by itself what the platform offered for frame pacing (Doc/FramePacingPlatformSupport.md).
-  struct NativeWindowTimingSupport
+  //! What a vsync source of a window system can do on the machine the app runs on
+  enum class NativeWindowVSyncSourceState
   {
-    //! The window system: "Win32", "Wayland", "X11", ... (empty if the platform does not say)
-    std::string WindowSystem;
-    //! Where INativeWindow::TryGetVSyncInfo gets its times from (empty: it has no source and reports them as unknown)
-    std::string VSyncSource;
-    //! The source that was asked for with --VSyncSource ("auto" for none), which is not the one in use if it is not available
-    std::string RequestedVSyncSource;
-    //! Every vsync source the window system has code for, in the order auto tries them, with what it can do here
-    std::vector<NativeWindowVSyncSourceInfo> VSyncSources;
-    //! What the window system has that has to do with when a frame is shown, used or not. On Wayland the globals of the compositor
-    //! ("wp_presentation"), elsewhere the calls or the extensions of the platform.
-    std::vector<std::string> Available;
-    //! What the framework looked for and the window system does not have
-    std::vector<std::string> NotAvailable;
-    //! The entries of Available the framework uses
-    std::vector<std::string> Used;
-    //! The version the window system offers of a entry of Available, for the entries that have one (Wayland: the version of the global)
-    std::vector<std::pair<std::string, uint32_t>> Versions;
+    //! The window system or the machine does not have what the source needs
+    NotAvailable,
+    //! The source works here and is not the one in use
+    Available,
+    //! The source INativeWindow::TryGetVSyncInfo takes its times from
+    Used
+  };
+
+  //! One of the ways a window system can tell when the display refreshes. A window system has code for a number of them, uses one,
+  //! and --VSyncSource selects which.
+  struct NativeWindowVSyncSourceInfo
+  {
+    //! The name the source is selected with ("dwm", "scanline", "presentation-time", ...)
+    std::string Name;
+    NativeWindowVSyncSourceState State{NativeWindowVSyncSourceState::NotAvailable};
+    //! What the source is, and why it is not available if it is not
+    std::string Description;
+
+    NativeWindowVSyncSourceInfo() = default;
+
+    NativeWindowVSyncSourceInfo(std::string name, const NativeWindowVSyncSourceState state, std::string description)
+      : Name(std::move(name))
+      , State(state)
+      , Description(std::move(description))
+    {
+    }
   };
 }
 

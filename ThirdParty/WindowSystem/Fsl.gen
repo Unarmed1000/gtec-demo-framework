@@ -34,8 +34,11 @@
         <Option Name="X11">
           <!--ExternalDependency Name="Xi" Type="StaticLib"/-->
           <ExternalDependency Name="Xrandr" Type="StaticLib"/>
+          <!-- The Present extension: when the display of a window refreshes (libxpresent-dev) -->
+          <ExternalDependency Name="Xpresent" Type="StaticLib"/>
           <ExternalDependency Name="X11" Type="StaticLib"/>
           <Define Name="FSL_WINDOWSYSTEM_X11" Access="Public"/>
+          <Define Name="FSL_WINDOWSYSTEM_X11_PRESENT" Access="Public"/>
         </Option>
         <!-- A native Wayland window (xdg-shell), select it with: Variants [WindowSystem=Wayland] -->
         <Option Name="Wayland">

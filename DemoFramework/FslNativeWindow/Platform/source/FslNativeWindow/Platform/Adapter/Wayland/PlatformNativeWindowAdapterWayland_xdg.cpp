@@ -1149,6 +1149,14 @@ namespace Fsl
     // The registry has listed every global by now
     LogFrameTimingGlobals(*windowSystemContext);
 
+    // The vsync source of the window. Wayland has one: the presentation-time protocol.
+    m_requestedVSyncSource = nativeWindowSetup.GetConfig().GetVSyncSource();
+    if (!m_requestedVSyncSource.empty() && m_requestedVSyncSource != "auto" && m_requestedVSyncSource != "presentation-time")
+    {
+      FSLLOG3_WARNING("VSyncSource '{}' is not a vsync source of this window system, the best source that works is used instead (presentation-time)",
+                      m_requestedVSyncSource);
+    }
+
     ExtractOutputs(m_displayOutput, windowSystemContext->Outputs);
 
     TryUpdateDPI(m_displayOutput[0].Width, m_displayOutput[0].Height, m_displayOutput[0].PhysicalWidth, m_displayOutput[0].PhysicalHeight,
@@ -1220,7 +1228,14 @@ namespace Fsl
     // What the compositor offers, and what is used of it: presentation-time gives the vsync time, the refresh rate comes from wl_output
     NativeWindowTimingSupport support;
     support.WindowSystem = "Wayland";
+    support.RequestedVSyncSource = m_requestedVSyncSource.empty() ? "auto" : m_requestedVSyncSource;
     const auto windowSystemContext = m_windowSystemContext.lock();
+    {
+      const bool isUsed = windowSystemContext && windowSystemContext->PresentationTime.IsBound();
+      support.VSyncSources.emplace_back("presentation-time", isUsed ? NativeWindowVSyncSourceState::Used : NativeWindowVSyncSourceState::NotAvailable,
+                                        isUsed ? "The presentation-time protocol (wp_presentation): when the compositor showed a frame of the window"
+                                               : "The presentation-time protocol (wp_presentation): the compositor does not have it");
+    }
     if (windowSystemContext)
     {
       for (const char* const pszInterface : g_frameTimingGlobals)

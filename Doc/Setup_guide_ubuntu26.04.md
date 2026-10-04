@@ -29,7 +29,7 @@
 * Build tools and xrand
 
     ```bash
-    sudo apt-get install build-essential libxrandr-dev ninja-build
+    sudo apt-get install build-essential libxrandr-dev libxpresent-dev ninja-build
     ```
 
   **Beware we now use ninja-build as the default build system instead of make!**

@@ -41,8 +41,12 @@
 
 namespace Fsl
 {
+  class Win32VSyncSources;
+
   class PlatformNativeWindowAdapterWin32 : public PlatformNativeWindowAdapter
   {
+    //! The ways the window can tell when its display refreshes, and the one that is used
+    std::unique_ptr<Win32VSyncSources> m_vsyncSources;
     std::shared_ptr<DPIHelperWin32> m_dpiHelper;
     std::vector<uint8_t> m_rawInputScratchpad;
     VirtualMouseButtonFlags m_rawMouseButtonFlags;

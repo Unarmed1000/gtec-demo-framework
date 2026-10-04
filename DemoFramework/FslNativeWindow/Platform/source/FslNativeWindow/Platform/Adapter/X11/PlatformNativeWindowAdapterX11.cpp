@@ -54,6 +54,7 @@
 #include <cassert>
 #include <cmath>
 #include <iostream>
+#include "X11PresentVSync.hpp"
 
 
 // This file is a good reference for how X11 works https://cgit.freedesktop.org/xorg/app/xev/tree/xev.c
@@ -65,6 +66,12 @@ namespace Fsl
   namespace
   {
     constexpr int32_t MagicDefaultDpi = 96;
+
+    namespace LocalConfig
+    {
+      //! The name of the vsync source of this window system (the VSyncSource option)
+      constexpr auto VSyncSourcePresent = "present";
+    }
 
     //! The X11 'Time' is a wrapping 32bit millisecond counter (stored in a unsigned long), so only the low 32 bits are relevant.
     inline MillisecondTickCount32 ToMillisecondTickCount32(const Time time) noexcept
@@ -596,6 +603,12 @@ namespace Fsl
     {
       XNextEvent(m_platformDisplay, &event);
 
+      if (event.type == GenericEvent && window && window->TryHandleGenericEvent(event))
+      {
+        // A event of the vsync source of the window (the Present extension)
+        continue;
+      }
+
       switch (event.type)
       {
       case ConfigureNotify:
@@ -704,6 +717,11 @@ namespace Fsl
         break;
       }
     }
+    if (window)
+    {
+      // Ask when the display of the window refreshes, the answer is a event of a later call
+      window->RequestVSyncTime();
+    }
     return !bQuit;
   }
 
@@ -725,7 +743,8 @@ namespace Fsl
     const NativeWindowSetup& nativeWindowSetup, const PlatformNativeWindowParams& platformWindowParams,
     const PlatformNativeWindowAllocationParams* const pPlatformCustomWindowAllocationParams)
     : PlatformNativeWindowAdapter(nativeWindowSetup, platformWindowParams, pPlatformCustomWindowAllocationParams,
-                                  NativeWindowCapabilityFlags::GetDpi | NativeWindowCapabilityFlags::GetDisplayInfo)
+                                  NativeWindowCapabilityFlags::GetDpi | NativeWindowCapabilityFlags::GetDisplayInfo |
+                                    NativeWindowCapabilityFlags::GetVSyncInfo)
     , m_pVisual(nullptr)
     , m_cachedScreenDPI(MagicDefaultDpi, MagicDefaultDpi)
     , m_extensionRREnabled(platformWindowParams.ExtensionRREnabled)
@@ -826,6 +845,15 @@ namespace Fsl
     TryUpdateDPI(m_platformDisplay, m_platformWindow, m_cachedScreenDPI);
     UpdateDisplayInfo({});
 
+    // The vsync source of the window. X11 has one: the Present extension.
+    m_requestedVSyncSource = nativeWindowSetup.GetConfig().GetVSyncSource();
+    m_presentVSync = std::make_unique<X11PresentVSync>(m_platformDisplay, m_platformWindow);
+    if (!m_requestedVSyncSource.empty() && m_requestedVSyncSource != "auto" && m_requestedVSyncSource != LocalConfig::VSyncSourcePresent)
+    {
+      FSLLOG3_WARNING("VSyncSource '{}' is not a vsync source of this window system, the best source that works is used instead (present)",
+                      m_requestedVSyncSource);
+    }
+
     {    // Post the activation message to let the framework know we are ready
       std::shared_ptr<INativeWindowEventQueue> eventQueue = g_eventQueue.lock();
       if (eventQueue)
@@ -839,6 +867,8 @@ namespace Fsl
 
   PlatformNativeWindowAdapterX11::~PlatformNativeWindowAdapterX11()
   {
+    // The vsync source has selected events of the window, so it goes before the window does
+    m_presentVSync.reset();
     // X windows clean up
     XDestroyWindow(m_platformDisplay, m_platformWindow);
     XFreeColormap(m_platformDisplay, m_colormap);
@@ -921,14 +951,17 @@ namespace Fsl
 
   NativeWindowTimingSupport PlatformNativeWindowAdapterX11::GetTimingSupport() const
   {
-    // What the X server offers. Nothing of it is used: the refresh rate comes from RandR and there is no vsync time yet.
+    // What the X server offers and what is used of it: the Present extension gives the vsync time, the refresh rate comes from RandR
     NativeWindowTimingSupport support;
     support.WindowSystem = "X11";
+    support.RequestedVSyncSource = m_requestedVSyncSource.empty() ? "auto" : m_requestedVSyncSource;
     int majorOpcode = 0;
     int firstEvent = 0;
     int firstError = 0;
     // The Present extension: a refresh counter with a time stamp
-    if (m_platformDisplay != nullptr && XQueryExtension(m_platformDisplay, "Present", &majorOpcode, &firstEvent, &firstError) != 0)
+    const bool hasExtension =
+      m_platformDisplay != nullptr && XQueryExtension(m_platformDisplay, "Present", &majorOpcode, &firstEvent, &firstError) != 0;
+    if (hasExtension)
     {
       support.Available.emplace_back("Present");
     }
@@ -936,7 +969,43 @@ namespace Fsl
     {
       support.NotAvailable.emplace_back("Present");
     }
+    const bool isUsed = m_presentVSync && m_presentVSync->IsAvailable();
+    std::string description("The Present extension of the X server: the refresh counter of the output the window is on and its time");
+    if (!isUsed && m_presentVSync)
+    {
+      description += " (" + m_presentVSync->GetUnavailableReason() + ")";
+    }
+    support.VSyncSources.emplace_back(LocalConfig::VSyncSourcePresent,
+                                      isUsed ? NativeWindowVSyncSourceState::Used : NativeWindowVSyncSourceState::NotAvailable, description);
+    if (isUsed)
+    {
+      support.VSyncSource = LocalConfig::VSyncSourcePresent;
+      support.Used.emplace_back("Present");
+    }
     return support;
+  }
+
+
+  bool PlatformNativeWindowAdapterX11::TryHandleGenericEvent(XEvent& rEvent)
+  {
+    return m_presentVSync && m_presentVSync->TryHandleEvent(rEvent);
+  }
+
+
+  void PlatformNativeWindowAdapterX11::RequestVSyncTime()
+  {
+    if (m_presentVSync)
+    {
+      m_presentVSync->RequestVBlankTime();
+    }
+  }
+
+
+  NativeWindowVSyncInfo PlatformNativeWindowAdapterX11::TryGetNativeVSyncInfo() const
+  {
+    // The last vertical blank the X server reported for the output the window is on. The period is the one measured from the
+    // vertical blanks, and the one of the mode until two of them were seen.
+    return m_presentVSync ? m_presentVSync->GetVSyncInfo(m_cachedDisplayInfo.RefreshInterval) : NativeWindowVSyncInfo();
   }
 
 

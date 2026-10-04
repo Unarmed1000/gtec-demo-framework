@@ -51,6 +51,7 @@ namespace Fsl
         DisplayId,
         ActualDpi,
         DensityDpi,
+        VSyncSource,
       };
     };
   }
@@ -74,6 +75,8 @@ namespace Fsl
                             "ActualDpi [x,y] Override the actual dpi reported by the native window", OptionGroup::Host);
       rOptions.emplace_back("DensityDpi", OptionArgument::OptionRequired, CommandId::DensityDpi,
                             "DensityDpi <number> Override the density dpi reported by the native window", OptionGroup::Host);
+      rOptions.emplace_back("VSyncSource", OptionArgument::OptionRequired, CommandId::VSyncSource,
+                            "VSyncSource <name> Select the vsync source of the window (default: auto)", OptionGroup::Host);
     }
   }
 
@@ -108,6 +111,9 @@ namespace Fsl
       case CommandId::DensityDpi:
         StringParseUtil::Parse(uintValue, strOptArg);
         m_nativeWindowConfig.SetForcedDensityDpi(std::optional<uint32_t>(uintValue));
+        return OptionParseResult::Parsed;
+      case CommandId::VSyncSource:
+        m_nativeWindowConfig.SetVSyncSource(strOptArg != nullptr ? std::string(strOptArg) : std::string());
         return OptionParseResult::Parsed;
       case CommandId::ActualDpi:
         {
