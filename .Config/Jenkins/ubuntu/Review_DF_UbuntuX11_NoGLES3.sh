@@ -11,5 +11,5 @@ if [ ! -n "${FSL_CI_FEATURES+1}" ]; then
 export FSL_CI_FEATURES=[ConsoleHost,WindowHost,Test_RequireUserInputToExit,EarlyAccess,EGL,GoogleBenchmark,GoogleUnitTest,OpenCL1.2,OpenCV5,OpenGLES2,OpenVX,OpenVX1.2,Vulkan,Lib_NlohmannJson,Lib_pugixml]
 fi
 
-FslBuild.py --noGitHash -t sdk -vv --BuildTime --UseFeatures $FSL_CI_FEATURES $FSL_CI_BUILD_PARAM
-FslBuild.py --noGitHash -t sdk --BuildTime --UseFeatures $FSL_CI_FEATURES --RequireFeature [GoogleUnitTest] --ForAllExe "(EXE) --gtest_output=xml:""$FSL_TEST_REPORTS/(PACKAGE_NAME).xml"""
+FslBuild.py --Variants [WindowSystem=X11] --noGitHash -t sdk -vv --BuildTime --UseFeatures $FSL_CI_FEATURES $FSL_CI_BUILD_PARAM
+FslBuild.py --Variants [WindowSystem=X11] --noGitHash -t sdk --BuildTime --UseFeatures $FSL_CI_FEATURES --RequireFeature [GoogleUnitTest] --ForAllExe "(EXE) --gtest_output=xml:""$FSL_TEST_REPORTS/(PACKAGE_NAME).xml"""

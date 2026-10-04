@@ -30,7 +30,7 @@ source ./prepare.sh
 set -u
 
 # The install area is restored from actions/cache together with the claim of the run that saved it, so claim it (like Jenkins)
-python3 .Config/FslBuildExternal.py --noGitHash -vvvvvv --ForceClaimInstallArea --VoidBuild
+python3 .Config/FslBuildExternal.py --Variants [WindowSystem=X11] --noGitHash -vvvvvv --ForceClaimInstallArea --VoidBuild
 
 root=$(pwd)
 log=$(mktemp)
@@ -38,7 +38,7 @@ failed=0
 
 for f in "${files[@]}"; do
   echo "::group::clang-tidy $f"
-  if ! python3 .Config/FslBuildCheck.py --noGitHash -vvvvvv --UseFeatures "$features" --tidy --file "$root/$f" 2>&1 | tee "$log"; then
+  if ! python3 .Config/FslBuildCheck.py --Variants [WindowSystem=X11] --noGitHash -vvvvvv --UseFeatures "$features" --tidy --file "$root/$f" 2>&1 | tee "$log"; then
     echo "::error file=$f::FslBuildCheck.py --tidy failed"
     failed=1
   fi

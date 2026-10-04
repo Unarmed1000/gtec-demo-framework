@@ -29,7 +29,7 @@ echo *** Build clean ***
 echo *******************
 echo Cleaning up build to ensure coverity gets executed on all files.
 
-FslBuild.py --noGitHash -t sdk -vv --BuildTime --UseFeatures $FSL_CI_FEATURES -c clean
+FslBuild.py --Variants [WindowSystem=X11] --noGitHash -t sdk -vv --BuildTime --UseFeatures $FSL_CI_FEATURES -c clean
 
 echo ******************************************
 echo *** Coverity: Removing previous builds ***
@@ -66,7 +66,7 @@ echo ************************
 echo *** Coverity: Build  ***
 echo ************************
 
-cov-build --dir $FSL_COVERITY_DIR FslBuild.py --noGitHash -t sdk -vv --BuildTime --UseFeatures $FSL_CI_FEATURES $FSL_CI_BUILD_PARAM --CMakeConfigArgs="-DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++"
+cov-build --dir $FSL_COVERITY_DIR FslBuild.py --Variants [WindowSystem=X11] --noGitHash -t sdk -vv --BuildTime --UseFeatures $FSL_CI_FEATURES $FSL_CI_BUILD_PARAM --CMakeConfigArgs="-DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++"
 # cov-build --dir $FSL_COVERITY_DIR FslBuild.py --noGitHash -t sdk -vv --BuildTime --UseFeatures $FSL_CI_FEATURES $FSL_CI_BUILD_PARAM --CMakeConfigGlobalArgs="-DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++"
 
 echo **************************
