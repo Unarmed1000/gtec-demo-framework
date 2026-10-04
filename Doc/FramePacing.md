@@ -352,6 +352,7 @@ Column | Unit | Description
 `frameworkStepTicks` | durationTicks | The time step of the framework from the frame before
 `displayVSyncTicks` | ticks | The time of a recent vertical blank of the display as the window system reported it when the frame began (empty if the platform does not report it)
 `displayRefreshPeriodTicks` | durationTicks | The time between two refreshes of the display as the window system measured it, read with displayVSyncTicks
+`displayVSyncFlags` | code | What the window system says about how displayVSyncTicks was obtained, zero where it says nothing. Wayland: the kind flags of presentation-time (1 in sync with the display, 2 a time of the display hardware, 4 the hardware signalled the frame was shown, 8 zero copy)
 
 **Vulkan apps (`DemoAppVulkanBasic`)**
 

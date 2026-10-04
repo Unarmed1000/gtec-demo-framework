@@ -51,7 +51,22 @@ set(XDG_DECORATION_OUTPUTS
     ${XDG_DECORATION_PRI_SOURCE}
     )
 
+# presentation-time: when the compositor showed a frame (stable, in every wayland-protocols release)
+set(PRESENTATION_TIME_PROTOCOL ${WAYLAND_PROTOCOLS_DIR}/stable/presentation-time/presentation-time.xml)
+
+set(PRESENTATION_TIME_PUB_HEADERFILE include/df-presentation-time-client-protocol.h)
+set(PRESENTATION_TIME_PRI_SOURCEFILE source/df-presentation-time-protocol.c)
+
+set(PRESENTATION_TIME_PUB_HEADER ${XDG_GEN_OUTPUTS_DIR}/${PRESENTATION_TIME_PUB_HEADERFILE})
+set(PRESENTATION_TIME_PRI_SOURCE ${XDG_GEN_OUTPUTS_DIR}/${PRESENTATION_TIME_PRI_SOURCEFILE})
+
+set(PRESENTATION_TIME_OUTPUTS
+    ${PRESENTATION_TIME_PUB_HEADER}
+    ${PRESENTATION_TIME_PRI_SOURCE}
+    )
+
 set(XDG_INSTALL_HEADERS
+    ${PRESENTATION_TIME_PUB_HEADER}
     ${XDG_SHELL_PUB_HEADER} 
     ${XDG_DECORATION_PUB_HEADER}    
     )
@@ -81,13 +96,19 @@ add_custom_command(
     DEPENDS ${XDG_DECORATION_PROTOCOL}
     OUTPUT ${XDG_DECORATION_OUTPUTS})
         
+add_custom_command(
+    COMMAND ${DF_WAYLAND_SCANNER} ARGS client-header ${PRESENTATION_TIME_PROTOCOL} ${PRESENTATION_TIME_PUB_HEADERFILE}
+    COMMAND ${DF_WAYLAND_SCANNER} ARGS public-code ${PRESENTATION_TIME_PROTOCOL} ${PRESENTATION_TIME_PRI_SOURCEFILE}
+    DEPENDS ${PRESENTATION_TIME_PROTOCOL}
+    OUTPUT ${PRESENTATION_TIME_OUTPUTS})
+
 add_custom_target(
     xdg-shell ALL
-    DEPENDS ${XDG_SHELL_OUTPUTS} ${XDG_DECORATION_OUTPUTS})
+    DEPENDS ${XDG_SHELL_OUTPUTS} ${XDG_DECORATION_OUTPUTS} ${PRESENTATION_TIME_OUTPUTS})
 
 include_directories(${XDG_GEN_OUTPUTS_DIR})
 
-add_library(df-wayland-xdg-application-stable-latest STATIC ${XDG_SHELL_OUTPUTS} ${XDG_DECORATION_OUTPUTS})
+add_library(df-wayland-xdg-application-stable-latest STATIC ${XDG_SHELL_OUTPUTS} ${XDG_DECORATION_OUTPUTS} ${PRESENTATION_TIME_OUTPUTS})
 set_target_properties(df-wayland-xdg-application-stable-latest PROPERTIES PUBLIC_HEADER "${XDG_INSTALL_HEADERS}")
 target_include_directories(df-wayland-xdg-application-stable-latest PUBLIC ${XDG_GEN_OUTPUTS_DIR}/include)
 

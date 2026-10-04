@@ -124,6 +124,11 @@ namespace Fsl
       m_framePacingLogColumns.DisplayRefreshPeriod =
         rLog.RegisterColumn("displayRefreshPeriodTicks", FramePacingLogUnit::DurationTicks,
                             "The time between two refreshes of the display as the window system measured it, read with displayVSyncTicks");
+      m_framePacingLogColumns.DisplayVSyncFlags =
+        rLog.RegisterColumn("displayVSyncFlags", FramePacingLogUnit::Code,
+                            "What the window system says about how displayVSyncTicks was obtained, zero where it says nothing. Wayland: the "
+                            "kind flags of presentation-time (1 in sync with the display, 2 a time of the display hardware, 4 the hardware "
+                            "signalled the frame was shown, 8 zero copy)");
     }
     else
     {
@@ -324,13 +329,21 @@ namespace Fsl
               {
                 rLog.SetLogFact(fmt::format("window.has.{}", entry), "1");
               }
+              for (const auto& entry : support.NotAvailable)
+              {
+                rLog.SetLogFact(fmt::format("window.has.{}", entry), "0");
+              }
+              for (const auto& entry : support.Versions)
+              {
+                rLog.SetLogFact(fmt::format("window.version.{}", entry.first), fmt::format("{}", entry.second));
+              }
               for (const auto& entry : support.Used)
               {
                 rLog.SetLogFact(fmt::format("window.uses.{}", entry), "1");
               }
-              FSLLOG3_INFO("FramePacing: window system '{}', vsync source '{}', has [{}], uses [{}]", support.WindowSystem,
+              FSLLOG3_INFO("FramePacing: window system '{}', vsync source '{}', has [{}], does not have [{}], uses [{}]", support.WindowSystem,
                            support.VSyncSource.empty() ? "none" : support.VSyncSource, fmt::join(support.Available, ", "),
-                           fmt::join(support.Used, ", "));
+                           fmt::join(support.NotAvailable, ", "), fmt::join(support.Used, ", "));
             }
           }
         }
@@ -348,6 +361,7 @@ namespace Fsl
           {
             rLog.SetLogValue(m_framePacingLogColumns.DisplayVSync, vsyncInfo.VSyncTime);
             rLog.SetLogValue(m_framePacingLogColumns.DisplayRefreshPeriod, vsyncInfo.RefreshPeriod);
+            rLog.SetLogUInt64(m_framePacingLogColumns.DisplayVSyncFlags, vsyncInfo.SourceFlags);
           }
         }
         if (refreshIntervalTicks != m_framePacingLogRefreshIntervalTicks)

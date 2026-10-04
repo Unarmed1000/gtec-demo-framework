@@ -116,6 +116,7 @@ namespace Fsl
       FramePacingLogColumn FrameworkStep;
       FramePacingLogColumn DisplayVSync;
       FramePacingLogColumn DisplayRefreshPeriod;
+      FramePacingLogColumn DisplayVSyncFlags;
     };
 
     //! Null if the frame pacing service is unavailable

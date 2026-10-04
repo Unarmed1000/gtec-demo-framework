@@ -3,7 +3,8 @@
   <ExternalLibrary Name="Recipe.Wayland_XDG" CreationYear="2023">
     <Default.Platform.Supported Value="false"/>
     <Platform Name="Ubuntu" Supported="true">
-      <ExperimentalRecipe Name="Wayland_XDG" Version="1.0" Find="true">
+      <!-- The recipe installs no CMake package configuration, so it can not be found with find_package -->
+      <ExperimentalRecipe Name="Wayland_XDG" Version="1.0" Find="false">
         <Pipeline>
           <Source OutputPath="Ubuntu"/>
           <CMakeBuild Project="Wayland_XDG_DF" Target="install" Configuration="release" OutputPath="_Install"/>
@@ -13,6 +14,7 @@
           <AddLib Name="lib/libdf-wayland-xdg-application-stable-latest.a"/>
           <Path Name="include/df-xdg-shell-client-protocol.h" Method="IsFile"/>
           <Path Name="include/df-xdg-decoration-client-protocol.h" Method="IsFile"/>
+          <Path Name="include/df-presentation-time-client-protocol.h" Method="IsFile"/>
         </Installation>
       </ExperimentalRecipe>
     </Platform>
@@ -27,6 +29,7 @@
           <AddLib Name="lib/libdf-wayland-xdg-application-stable-latest.a"/>
           <Path Name="include/df-xdg-shell-client-protocol.h" Method="IsFile"/>
           <Path Name="include/df-xdg-decoration-client-protocol.h" Method="IsFile"/>
+          <Path Name="include/df-presentation-time-client-protocol.h" Method="IsFile"/>
         </Installation>
       </ExperimentalRecipe>
     </Platform>

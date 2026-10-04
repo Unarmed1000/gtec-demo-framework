@@ -53,7 +53,8 @@ namespace Fsl::PlatformPerformanceCounter
     QueryPerformanceFrequency(&value);
     return value.QuadPart;
 #elif defined(__linux__) || defined(__QNXNTO__) || defined(FSL_PLATFORM_APPLE)
-    return 1000000u;
+    // Nanoseconds, the resolution of clock_gettime
+    return 1000000000u;
 #elif defined(FSL_PLATFORM_EMSCRIPTEN)
     return 1000000u;
 #else
@@ -71,12 +72,15 @@ namespace Fsl::PlatformPerformanceCounter
     }
 #elif defined(__linux__) || defined(__QNXNTO__) || defined(FSL_PLATFORM_APPLE)
     {
+      // CLOCK_MONOTONIC is the clock the window systems and the graphics APIs report their times on (the Wayland presentation-time
+      // protocol, the Vulkan time domains, the DRM vertical blank times), and it is kept at the full resolution of the kernel: on a
+      // PC that is the time stamp counter with steps of about ten nanoseconds. A microsecond is a hundred of those.
       using SafeTimespec = struct timespec;
       SafeTimespec currentTime{};
       clock_gettime(CLOCK_MONOTONIC, &currentTime);
       uint64_t time = currentTime.tv_sec;
-      time *= 1000000;
-      time += (currentTime.tv_nsec / 1000);
+      time *= 1000000000;
+      time += currentTime.tv_nsec;
       return time;
     }
 #elif defined(FSL_PLATFORM_EMSCRIPTEN)

@@ -139,12 +139,20 @@ namespace Fsl
     // {
     // }
 
-    const wl_surface_listener g_surfaceListener = {
-      OnWaylandWindowContext_HandleSurfaceEnter,
-      OnWaylandWindowContext_HandleSurfaceLeave,
-      // OnWaylandWindowContext_HandlePreferredBufferScale,
-      // OnWaylandWindowContext_HandlePreferredBufferTransform
-    };
+    //! The listener is filled member by member and names only the callbacks every version of libwayland has. Newer versions add
+    //! callbacks to it (preferred_buffer_scale and preferred_buffer_transform came with version 6 of wl_surface), so a initializer list
+    //! is either incomplete for a new libwayland, which GCC warns about, or does not compile against a old one.
+    //! The callbacks that are not named are null. That is safe: the compositor only sends their events to a surface of a wl_compositor
+    //! that was bound at the version that introduced them, and it is bound at version 1 here.
+    wl_surface_listener CreateSurfaceListener() noexcept
+    {
+      wl_surface_listener listener{};
+      listener.enter = OnWaylandWindowContext_HandleSurfaceEnter;
+      listener.leave = OnWaylandWindowContext_HandleSurfaceLeave;
+      return listener;
+    }
+
+    const wl_surface_listener g_surfaceListener = CreateSurfaceListener();
 
 
     void OnWaylandWindowContext_ConfigureCallback(void* data, wl_callback* callback, uint32_t time)
@@ -795,14 +803,43 @@ namespace Fsl
 #pragma GCC diagnostic pop
 #endif
 
-    //! The globals a compositor can have that are about when a frame is shown (Doc/FramePacingPlatformSupport.md). None of them is bound
-    //! here: they are noted so the frame pacing log can say what the compositor offers.
+    //! The globals a compositor can have that are about when a frame is shown (Doc/FramePacingPlatformSupport.md). These are looked
+    //! for, and the log says for each of them if the compositor has it. Only wp_presentation is bound (WaylandPresentationTime).
+    constexpr std::array<const char*, 6> g_frameTimingGlobals = {
+      "wp_presentation",    "wp_fifo_manager_v1", "wp_commit_timing_manager_v1", "wp_tearing_control_manager_v1", "wp_linux_drm_syncobj_manager_v1",
+      "zwp_linux_dmabuf_v1"};
+
     bool IsFrameTimingGlobal(const char* const pszInterface) noexcept
     {
-      constexpr std::array<const char*, 6> Globals = {
-        "wp_presentation",    "wp_fifo_manager_v1", "wp_commit_timing_manager_v1", "wp_tearing_control_manager_v1", "wp_linux_drm_syncobj_manager_v1",
-        "zwp_linux_dmabuf_v1"};
-      return std::any_of(Globals.begin(), Globals.end(), [pszInterface](const char* const pszEntry) { return strcmp(pszInterface, pszEntry) == 0; });
+      return std::any_of(g_frameTimingGlobals.begin(), g_frameTimingGlobals.end(),
+                         [pszInterface](const char* const pszEntry) { return strcmp(pszInterface, pszEntry) == 0; });
+    }
+
+    const GlobalInfo* TryFindFrameTimingGlobal(const PlatformNativeWindowSystemContextWayland& context, const char* const pszInterface) noexcept
+    {
+      const auto itrFind = std::find_if(context.FrameTimingGlobals.begin(), context.FrameTimingGlobals.end(),
+                                        [pszInterface](const GlobalInfo& entry) { return entry.Interface == pszInterface; });
+      return itrFind != context.FrameTimingGlobals.end() ? &(*itrFind) : nullptr;
+    }
+
+    //! What was looked for and what the compositor has of it, for the verbose log of any app
+    void LogFrameTimingGlobals(const PlatformNativeWindowSystemContextWayland& context)
+    {
+      FSLLOG3_VERBOSE("Wayland: the globals of the compositor that are about when a frame is shown (looked for: {})", g_frameTimingGlobals.size());
+      for (const char* const pszInterface : g_frameTimingGlobals)
+      {
+        const GlobalInfo* const pGlobal = TryFindFrameTimingGlobal(context, pszInterface);
+        if (pGlobal == nullptr)
+        {
+          FSLLOG3_VERBOSE("- {}: not available", pszInterface);
+        }
+        else
+        {
+          const bool isUsed = context.PresentationTime.IsBound() && pGlobal->Interface == "wp_presentation";
+          FSLLOG3_VERBOSE("- {}: available (version {}), {}", pszInterface, pGlobal->Version,
+                          isUsed ? "used for the vsync time of the window" : "not used by the framework");
+        }
+      }
     }
 
     void OnWaylandSystemContext_RegistryHandleGlobal(void* data, wl_registry* registry, uint32_t name, const char* interface, uint32_t version)
@@ -814,8 +851,10 @@ namespace Fsl
 
       if (IsFrameTimingGlobal(interface))
       {
-        pContext->FrameTimingGlobals.emplace_back(interface);
+        pContext->FrameTimingGlobals.emplace_back(name, version, interface);
       }
+      // The one of them that is used: it says when the frames of the window were shown
+      pContext->PresentationTime.TryRegistryHandleGlobal(registry, name, interface, version);
 
       if (strcmp(interface, wl_compositor_interface.name) == 0)
       {
@@ -968,6 +1007,7 @@ namespace Fsl
 
   PlatformNativeWindowSystemAdapterWayland::~PlatformNativeWindowSystemAdapterWayland()
   {
+    m_windowSystemContext->PresentationTime.Reset();
     m_windowSystemContext->Outputs.clear();
 
     m_windowSystemContext->Handles.CursorSurface.reset();
@@ -1013,6 +1053,9 @@ namespace Fsl
     // This will dispatch messages that occurred
     wl_display_dispatch_pending(m_windowSystemContext->Handles.Display.get());
 
+    // Ask when the frame that is drawn next is shown (it rides on the commit the graphics API makes for it)
+    m_windowSystemContext->PresentationTime.RequestFeedback();
+
     return bContinue;
   }
 
@@ -1021,7 +1064,8 @@ namespace Fsl
     const NativeWindowSetup& nativeWindowSetup, const PlatformNativeWindowParams& platformWindowParams,
     const PlatformNativeWindowAllocationParams* const pPlatformCustomWindowAllocationParams)
     : PlatformNativeWindowAdapter(nativeWindowSetup, platformWindowParams, pPlatformCustomWindowAllocationParams,
-                                  NativeWindowCapabilityFlags::GetDpi | NativeWindowCapabilityFlags::GetDisplayInfo)
+                                  NativeWindowCapabilityFlags::GetDpi | NativeWindowCapabilityFlags::GetDisplayInfo |
+                                    NativeWindowCapabilityFlags::GetVSyncInfo)
     , m_windowSystemContext(platformWindowParams.WindowSystemWaylandContext)
   {
     const NativeWindowConfig nativeWindowConfig = nativeWindowSetup.GetConfig();
@@ -1074,6 +1118,8 @@ namespace Fsl
 
     CreateWlSurface(*windowSystemContext, *m_windowContext);
     m_platformSurface = m_windowContext->Handles.Surface.get();
+    // The display times of the frames of this surface are asked for from now on
+    windowSystemContext->PresentationTime.SetSurface(m_platformSurface);
 
     void* nativeWindowHolder = nullptr;
     if (platformWindowParams.CreateWaylandWindow)
@@ -1100,6 +1146,9 @@ namespace Fsl
       wl_display_roundtrip(windowSystemContext->Handles.Display.get());
     } while (windowSystemContext->RoundtripNeeded);
 
+    // The registry has listed every global by now
+    LogFrameTimingGlobals(*windowSystemContext);
+
     ExtractOutputs(m_displayOutput, windowSystemContext->Outputs);
 
     TryUpdateDPI(m_displayOutput[0].Width, m_displayOutput[0].Height, m_displayOutput[0].PhysicalWidth, m_displayOutput[0].PhysicalHeight,
@@ -1124,6 +1173,13 @@ namespace Fsl
 
   PlatformNativeWindowAdapterWayland::~PlatformNativeWindowAdapterWayland()
   {
+    {    // The display times were asked for the surface of this window
+      const auto windowSystemContext = m_windowSystemContext.lock();
+      if (windowSystemContext)
+      {
+        windowSystemContext->PresentationTime.SetSurface(nullptr);
+      }
+    }
     if (m_windowContext->Native != nullptr)
     {
       if (m_destroyWindowCallback)
@@ -1161,15 +1217,50 @@ namespace Fsl
 
   NativeWindowTimingSupport PlatformNativeWindowAdapterWayland::GetTimingSupport() const
   {
-    // What the compositor offers. Nothing of it is used: the refresh rate comes from wl_output and there is no vsync time yet.
+    // What the compositor offers, and what is used of it: presentation-time gives the vsync time, the refresh rate comes from wl_output
     NativeWindowTimingSupport support;
     support.WindowSystem = "Wayland";
     const auto windowSystemContext = m_windowSystemContext.lock();
     if (windowSystemContext)
     {
-      support.Available = windowSystemContext->FrameTimingGlobals;
+      for (const char* const pszInterface : g_frameTimingGlobals)
+      {
+        const GlobalInfo* const pGlobal = TryFindFrameTimingGlobal(*windowSystemContext, pszInterface);
+        if (pGlobal != nullptr)
+        {
+          support.Available.emplace_back(pszInterface);
+          support.Versions.emplace_back(pszInterface, pGlobal->Version);
+        }
+        else
+        {
+          support.NotAvailable.emplace_back(pszInterface);
+        }
+      }
+      if (windowSystemContext->PresentationTime.IsBound())
+      {
+        support.VSyncSource = "wp_presentation";
+        support.Used.emplace_back("wp_presentation");
+      }
     }
     return support;
+  }
+
+
+  NativeWindowVSyncInfo PlatformNativeWindowAdapterWayland::TryGetNativeVSyncInfo() const
+  {
+    // When the compositor last showed a frame of this window: a vertical blank of the output, on the clock of the HighResolutionTimer
+    const auto windowSystemContext = m_windowSystemContext.lock();
+    if (!windowSystemContext || !windowSystemContext->PresentationTime.IsBound())
+    {
+      return {};
+    }
+    NativeWindowVSyncInfo info = windowSystemContext->PresentationTime.GetVSyncInfo();
+    if (info.VSyncTime.Ticks() > 0 && info.RefreshPeriod.Ticks() <= 0)
+    {
+      // The compositor gave no refresh period with the time, so the one of the mode of the output is used
+      info.RefreshPeriod = TryGetNativeDisplayInfo().RefreshInterval;
+    }
+    return info;
   }
 
 

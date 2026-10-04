@@ -39,12 +39,18 @@ namespace Fsl
     //! The time between two refreshes as the window system measured it (TimeSpan() if unknown). The time of any other vertical blank
     //! is VSyncTime plus or minus a whole number of these.
     TimeSpan RefreshPeriod;
+    //! What the window system says about how the time was obtained, zero where it says nothing. The meaning belongs to the window
+    //! system. Wayland: the kind flags of wp_presentation_feedback.presented (0x1 the frame was shown in sync with the display,
+    //! 0x2 the time is from the display hardware, 0x4 the display hardware signalled that the frame was shown, 0x8 zero copy).
+    //! A time without 0x2 is a time the compositor took itself and can be off the vertical blank.
+    uint32_t SourceFlags{0};
 
     constexpr NativeWindowVSyncInfo() noexcept = default;
 
-    constexpr NativeWindowVSyncInfo(const TickCount vsyncTime, const TimeSpan refreshPeriod) noexcept
+    constexpr NativeWindowVSyncInfo(const TickCount vsyncTime, const TimeSpan refreshPeriod, const uint32_t sourceFlags = 0) noexcept
       : VSyncTime(vsyncTime)
       , RefreshPeriod(refreshPeriod)
+      , SourceFlags(sourceFlags)
     {
     }
 

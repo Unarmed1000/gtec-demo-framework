@@ -6,6 +6,7 @@
 <!-- #AG_TOC_BEGIN# -->
 * [Prerequisites](#prerequisites)
 * [Simple setup](#simple-setup)
+  * [Select the window system](#select-the-window-system)
   * [Add OpenGL ES support](#add-opengl-es-support)
   * [Add Vulkan support](#add-vulkan-support)
   * [Add OpenCL support](#add-opencl-support)
@@ -84,6 +85,26 @@ It's also a good idea to read the introduction to the [FslBuild toolchain](./Fsl
     ```bash
     source prepare.sh
     ```
+
+## Select the window system
+
+The samples can be built for X11 or for Wayland. It is a build variant:
+
+Variant                                | Window system
+---------------------------------------|----------------------------------------------------------------------------
+`--Variants [WindowSystem=X11]`        | X11. On a Wayland desktop the app runs through Xwayland.
+`--Variants [WindowSystem=Wayland]`    | A native Wayland window (xdg-shell).
+
+A build without `--Variants` picks Wayland, as the build tool takes the first option by name when none is selected. The executable
+and its build directory carry the option in their name (`Vulkan.FramePacing___X11`, `Vulkan.FramePacing___Wayland`).
+
+The Wayland variant needs the Wayland development files:
+
+```bash
+sudo apt-get install libwayland-dev wayland-protocols
+```
+
+`wayland-utils` is useful as well: its `wayland-info` lists what the compositor offers.
 
 ## Add OpenGL ES support
 

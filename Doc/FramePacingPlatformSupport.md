@@ -19,7 +19,30 @@ Status used below:
 | built | in the framework, not checked against a display |
 | not built | the framework does nothing with it yet |
 
-Only the Windows rows are measured. Nothing on this page was run on a Wayland device.
+Only the Windows rows are measured. The Wayland code was run on a Ubuntu 26.04 virtual machine (GNOME, a software rasterizer, a virtual
+display that does not show its frames on a fixed refresh): that shows the code works and says nothing about timing. Nothing on this
+page was run on a Wayland device with a real display.
+
+## The configurations, best first
+
+What a device and its window system have decides how well a frame can be held for more than one refresh. This is the short version of
+the lists below. At one refresh per frame every tier is the same: a FIFO present holds the frame and nothing else is needed.
+
+| Tier | What the configuration has | How a frame is held | Who decides when it is shown | Status |
+|---|---|---|---|---|
+| 1 | Vulkan with `VK_EXT_present_timing` and a relative target time on the device and the surface | The present carries a target time (`--Pacer.Hold schedule`) | The presentation engine | measured (Windows, NVIDIA): every frame shown for exactly its swap interval |
+| 1 | OpenGL ES | `eglSwapInterval` | The driver, it counts the refreshes | built, the display times were not measured (OpenGL ES has nothing to measure them with) |
+| 2 | Vulkan FIFO on Windows | A wait on the vsync time of the desktop compositor (`--Pacer.Hold vsync`) | The app, which knows where the refreshes are | measured: every frame shown for exactly its swap interval |
+| 2 | Vulkan FIFO on a Wayland compositor with presentation-time (`wp_presentation`) | A wait on the vsync time of the compositor (`--Pacer.Hold vsync`) | The app, which knows where the refreshes are | built, run on a virtual machine only. How good it is depends on the times the compositor reports (`displayVSyncFlags`) and on where in a refresh the present has to be made, which has to be measured per compositor |
+| 3 | Vulkan FIFO and no vsync time: X11, a Wayland compositor without presentation-time, Android, Apple, QNX | A timer (`--Pacer.Hold wait`) | A guess: the app does not know where the refreshes are | measured (Windows): from 1 % to 35 % of the frames a refresh early or late, depending on where the timer happens to start |
+
+`--Pacer.Hold auto` picks the best tier the system has. A log says which tier a run was in: `vulkan.uses.presentAtRelativeTime=1` is the
+timed present of tier 1, a `window.vsyncSource` that is not empty is tier 2, and neither is tier 3. The `holdMethod` column says what
+every frame really used.
+
+What would move a configuration up and is not built: a present wait as the vsync signal (Vulkan level 2), the absolute target time and
+`VK_GOOGLE_display_timing` (Vulkan level 3), the vsync signals of X11, Android and Apple, and presenting a frame once per refresh, which
+needs nothing but FIFO.
 
 ## Vulkan: what the swapchain can do about time
 
@@ -49,7 +72,7 @@ driver, which is what turns them into the Vulkan levels above.
 | Level | Protocol | What it gives | What the framework does | Status |
 |---|---|---|---|---|
 | 0 | Core protocol: `wl_surface.frame`, `wl_output.mode` | A callback once per repaint, with a time in milliseconds of undefined base: a hint that can come late, bunched or not at all. The refresh rate of the mode in mHz. | The refresh rate is read. The frame callback is not used. | the refresh rate: built; the callback: not built |
-| 1 | presentation-time (`wp_presentation`, `wp_presentation_feedback`), stable | For every commit: when it was presented (`presented`) and on which clock (`clock_id`), the time to the next refresh, a refresh counter and flags that say how good the time is, or `discarded` for a frame that was never shown. | Nothing. This is the protocol the vsync wait and present feedback would use. | not built |
+| 1 | presentation-time (`wp_presentation`, `wp_presentation_feedback`), stable | For every commit: when it was presented (`presented`) and on which clock (`clock_id`), the time to the next refresh, a refresh counter and flags that say how good the time is, or `discarded` for a frame that was never shown. | The display time of a frame of the window is asked for once per frame, one request at a time, and is the vsync time of `INativeWindow::TryGetVSyncInfo` together with the refresh period the compositor reports. The flags are logged (`displayVSyncFlags`). Not used: a display time for every frame, which present feedback to the pacer would need. | built |
 | 2 | fifo-v1 (`wp_fifo_manager_v1`, `wp_fifo_v1`), staging | The compositor holds a commit until the one before it was shown (`set_barrier`, `wait_barrier`): FIFO done by the compositor. | Nothing, it is for the Vulkan window system layer. | not built |
 | 3 | commit-timing-v1 (`wp_commit_timing_manager_v1`, `wp_commit_timer_v1`), staging | A target time on a commit (`set_timestamp`): a timed present at the Wayland level. | Nothing, it is for the Vulkan window system layer. | not built |
 
@@ -89,12 +112,12 @@ Windows the two vsync signals of the table below. The same is written to the log
 |---|---|---|---|
 | Windows | `DwmGetCompositionTimingInfo`: the last vertical blank and the measured refresh period on the clock the framework uses | `INativeWindow::TryGetVSyncInfo`, logged per frame, used by the vsync wait | measured |
 | Windows | `IDXGIOutput::WaitForVBlank`: blocks until the next vertical blank of one monitor | Nothing. It is the fallback if the compositor's timing is not good enough (a second monitor at another rate). | not built |
-| X11 | The Present extension: a refresh counter with a time stamp | Nothing. | not built |
+| X11 | The Present extension: a refresh counter with a time stamp | The log says if the server has it. Nothing else. | not built |
 | Android | Choreographer: a callback per refresh with the expected presentation time | Nothing. | not built |
 | Apple | `CADisplayLink`: a callback per refresh with the time the next frame displays | Nothing. | not built |
 
-`INativeWindow::TryGetVSyncInfo` returns "not known" on every platform but Windows. That is a valid answer, and what a platform without
-a usable signal keeps returning.
+`INativeWindow::TryGetVSyncInfo` returns "not known" on every platform but Windows and a Wayland compositor with presentation-time.
+That is a valid answer, and what a platform without a usable signal keeps returning.
 
 ## Holding a frame for more than one refresh
 
@@ -104,7 +127,7 @@ lets the driver count the refreshes.
 | Hold | Needs | How it works | Status |
 |---|---|---|---|
 | `schedule` | Vulkan level 4 with a relative target time | The present is given a target time and the presentation engine holds the frame. | measured: every frame held for exactly its swap interval |
-| `vsync` | a vsync time from the window system | The sample waits and presents inside the refresh before the one the frame is aimed at. | measured on Windows: every frame held for exactly its swap interval |
+| `vsync` | a vsync time from the window system | The sample waits and presents inside the refresh before the one the frame is aimed at. | measured on Windows: every frame held for exactly its swap interval. Built on Wayland (presentation-time), not measured |
 | `wait` | nothing | The sample sleeps on a timer and presents. It does not know where the refreshes are, so it is a guess. | measured: from 1 % to 35 % of the frames a refresh early or late, depending on where the timer happens to start |
 | `auto` | - | `schedule` if the swapchain can, else `vsync` if the window system says when the display refreshes, else `wait`. | - |
 
@@ -127,9 +150,9 @@ The chart shows what the Vulkan FramePacing sample does today, for every frame t
 at start-up: what the device and the surface can do is probed when the swapchain is created, the vsync time of the window system is
 read once per frame, and the questions are asked again for every frame.
 
-A solid green border is an end that was measured, a dashed red one is not built. Dotted lines are things the framework does not ask or
-do yet. Nothing in the chart is in the state "built but not measured": the ends that exist were all measured on Windows, and none of
-them on another platform.
+A solid green border is something that was measured, a solid blue one is built and not measured, a dashed red one is not built.
+Dotted lines are things the framework does not ask or do yet. The ends were all measured on Windows, and none of them on another
+platform.
 
 ```mermaid
 flowchart TD
@@ -151,7 +174,7 @@ flowchart TD
 
     subgraph sources ["Where a vsync time comes from"]
         win["Windows compositor<br/>DwmGetCompositionTimingInfo"]:::measured
-        wlpresentation["Wayland presentation-time<br/>wp_presentation"]:::notbuilt
+        wlpresentation["Wayland presentation-time<br/>wp_presentation"]:::built
         wlframe["Wayland frame callback<br/>wl_surface.frame"]:::notbuilt
         other["X11 Present, Android Choreographer,<br/>Apple CADisplayLink"]:::notbuilt
     end
@@ -170,7 +193,7 @@ flowchart TD
     nothing -. "open, not decided" .-> again
 
     win --> q4
-    wlpresentation -.-> q4
+    wlpresentation --> q4
     wlframe -.-> q4
     other -.-> q4
     q3 -. "not asked" .-> absolute
@@ -180,6 +203,7 @@ flowchart TD
     vsync -. "no valid vsync time: the next frame" .-> nothing
 
     classDef measured stroke:#2da44e,stroke-width:3px
+    classDef built stroke:#0969da,stroke-width:3px
     classDef notbuilt stroke:#cf222e,stroke-width:2px,stroke-dasharray:6 4
 ```
 
@@ -195,8 +219,8 @@ The questions, in the order they are asked:
    and a surface that says it supports it. The log has the answers (`vulkan.presentAtRelativeTimeDevice`, `canSchedule=` in the
    `presentTiming` event). The absolute target time of the same extension and `VK_GOOGLE_display_timing` are not asked for.
 4. **Does the window system give a vsync time?** A time of a vertical blank and a refresh period, both more than zero, from
-   `INativeWindow::TryGetVSyncInfo`. Only Windows answers. `VK_KHR_present_wait` could answer where the window system does not, it is
-   not asked.
+   `INativeWindow::TryGetVSyncInfo`. Windows answers, and a Wayland compositor with presentation-time once a frame of the window was
+   shown. `VK_KHR_present_wait` could answer where the window system does not, it is not asked.
 
 What the pacer is given is the same on every path, which is why the chart has no box for it:
 
@@ -216,7 +240,7 @@ When a signal goes away while the sample runs:
 |---|---|---|
 | The relative target time (a new swapchain without it, after a move to another display for example) | The sample reads it every frame, so the next frame continues at question 4. | built, never seen to happen |
 | The vsync time (the window system answers "not known") | The next frame is held by the timer. | built, never seen to happen |
-| The vsync time is old (the compositor stopped updating it) | Not noticed. The sample goes on from the last vertical blank in whole refresh periods, for any age. On Windows a time 58 refreshes old was still within 0.006 ms of the display, so this was right every time it was measured, but nothing limits the age. | a known gap |
+| The vsync time is old (the compositor stopped updating it) | Not noticed. The sample goes on from the last vertical blank in whole refresh periods, for any age. On Windows a time 58 refreshes old was still within 0.006 ms of the display, so this was right every time it was measured, but nothing limits the age. On Wayland the time is that of the last frame of the window that was shown, so it gets old as soon as the window is not shown. | a known gap |
 | The display changes its refresh rate | The pacer is given the new rate when the window system reports it. The vsync wait follows the period of the vsync time. | built, not measured |
 
 The log says per frame which way was used (`holdMethod`: 0 the timer, 1 the vsync wait, 3 the timed present), so a run that changed

@@ -45,6 +45,7 @@
 #include <utility>
 #include <vector>
 #include "IVI/PlatformNativeWindowWaylandHandlesIVI.hpp"
+#include "WaylandPresentationTime.hpp"
 #include "WaylandRAII.hpp"
 #include "WaylandUtil.hpp"
 
@@ -228,8 +229,10 @@ namespace Fsl
 
     PlatformNativeWindowContextWayland* Window{nullptr};
     std::vector<std::unique_ptr<OutputInfo>> Outputs;
-    //! The globals of the compositor that are about when a frame is shown (their interface names), as the registry listed them
-    std::vector<std::string> FrameTimingGlobals;
+    //! The globals of the compositor that are about when a frame is shown, as the registry listed them
+    std::vector<GlobalInfo> FrameTimingGlobals;
+    //! When the compositor showed the frames of the window (presentation-time), if the compositor has the protocol
+    WaylandPresentationTime PresentationTime;
 
     explicit PlatformNativeWindowSystemContextWayland(std::weak_ptr<INativeWindowEventQueue> eventQueue)
       : EventQueue(std::move(eventQueue))

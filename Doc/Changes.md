@@ -49,6 +49,9 @@
   * FslBuild: Objective-C++ (.mm) source files are compiled on Apple, added the 'Framework' external dependency type and .dylib support.
   * FslConfigure.sh now auto detects macOS.
 * Experimental Conan recipe support: recipes can acquire their package from Conan 2 with the ConanInstall pipeline command, only supported by the CMake generator with find package enabled (see Doc/BuildingExternals.md).
+* Ubuntu: the window system is a build variant, --Variants [WindowSystem=X11] or --Variants [WindowSystem=Wayland] (see Doc/Setup_guide_ubuntu26.04.md). A build without --Variants picks Wayland, and the executables carry the option in their name.
+* Linux, QNX and Apple: the HighResolutionTimer keeps the nanoseconds of CLOCK_MONOTONIC. It was cut down to microseconds, a hundred times coarser than the clock and ten times coarser than a TickCount.
+* Wayland: the window gives a vsync time (INativeWindow::TryGetVSyncInfo) from the presentation-time protocol when the compositor has it, so Vulkan.FramePacing can hold a frame by waiting on it (--Pacer.Hold vsync). The verbose log says for each compositor global that is about frame timing if it is there, its version and if it is used.
 * Frame pacing measurements (see Doc/FramePacing.md).
   * The host can draw the mb-framepacing frame marker on top of every frame of a OpenGL ES 2, OpenGL ES 3 or Vulkan app (--FramePacing), so a capture of the display output can be analysed with the mb-framepacing tools. No app changes are needed.
   * New FramePacingMarker service (IFramePacingMarkerService): measured runs, every value of the last marker, and SetFrameSchedule for an app with its own frame pacer.

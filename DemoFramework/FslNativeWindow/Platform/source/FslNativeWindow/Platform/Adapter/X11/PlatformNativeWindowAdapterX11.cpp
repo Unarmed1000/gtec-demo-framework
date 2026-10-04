@@ -932,6 +932,10 @@ namespace Fsl
     {
       support.Available.emplace_back("Present");
     }
+    else
+    {
+      support.NotAvailable.emplace_back("Present");
+    }
     return support;
   }
 

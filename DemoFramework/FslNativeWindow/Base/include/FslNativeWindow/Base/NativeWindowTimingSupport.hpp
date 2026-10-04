@@ -22,7 +22,9 @@
 //* EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //****************************************************************************************************************************************************
 
+#include <cstdint>
 #include <string>
+#include <utility>
 #include <vector>
 
 namespace Fsl
@@ -36,10 +38,14 @@ namespace Fsl
     //! Where INativeWindow::TryGetVSyncInfo gets its times from (empty: it has no source and reports them as unknown)
     std::string VSyncSource;
     //! What the window system has that has to do with when a frame is shown, used or not. On Wayland the globals of the compositor
-    //! with their version ("wp_presentation 2"), elsewhere the calls of the platform.
+    //! ("wp_presentation"), elsewhere the calls or the extensions of the platform.
     std::vector<std::string> Available;
+    //! What the framework looked for and the window system does not have
+    std::vector<std::string> NotAvailable;
     //! The entries of Available the framework uses
     std::vector<std::string> Used;
+    //! The version the window system offers of a entry of Available, for the entries that have one (Wayland: the version of the global)
+    std::vector<std::pair<std::string, uint32_t>> Versions;
   };
 }
 

@@ -50,6 +50,13 @@ set(XDG_DECORATION_OUTPUTS
     ${XDG_GEN_OUTPUTS_DIR}/df-xdg-decoration-client-protocol.h
     ${XDG_GEN_OUTPUTS_DIR}/df-xdg-decoration-protocol.c
     )
+
+# presentation-time: when the compositor showed a frame (stable, in every wayland-protocols release)
+set(PRESENTATION_TIME_PROTOCOL ${WAYLAND_PROTOCOLS_DIR}/stable/presentation-time/presentation-time.xml)
+set(PRESENTATION_TIME_OUTPUTS
+    ${XDG_GEN_OUTPUTS_DIR}/df-presentation-time-client-protocol.h
+    ${XDG_GEN_OUTPUTS_DIR}/df-presentation-time-protocol.c
+    )
    
 add_custom_command(
     COMMAND ${DF_WAYLAND_SCANNER} ARGS client-header ${XDG_SHELL_PROTOCOL} df-xdg-shell-client-protocol.h
@@ -63,9 +70,15 @@ add_custom_command(
     DEPENDS ${XDG_DECORATION_PROTOCOL}
     OUTPUT ${XDG_DECORATION_OUTPUTS})
     
+add_custom_command(
+    COMMAND ${DF_WAYLAND_SCANNER} ARGS client-header ${PRESENTATION_TIME_PROTOCOL} df-presentation-time-client-protocol.h
+    COMMAND ${DF_WAYLAND_SCANNER} ARGS public-code ${PRESENTATION_TIME_PROTOCOL} df-presentation-time-protocol.c
+    DEPENDS ${PRESENTATION_TIME_PROTOCOL}
+    OUTPUT ${PRESENTATION_TIME_OUTPUTS})
+
 add_custom_target(
     xdg-shell ALL
-    DEPENDS ${XDG_SHELL_OUTPUTS} ${XDG_DECORATION_OUTPUTS})
+    DEPENDS ${XDG_SHELL_OUTPUTS} ${XDG_DECORATION_OUTPUTS} ${PRESENTATION_TIME_OUTPUTS})
 
 set(XDG_SHELL_SRCS
     ${XDG_GEN_OUTPUTS_DIR}/df-xdg-shell-client-protocol.h
@@ -79,8 +92,8 @@ set(XDG_DECORATION_SRCS
 
 include_directories(${XDG_GEN_OUTPUTS_DIR})
 
-add_library(df-wayland-xdg-application-stable-latest STATIC ${XDG_SHELL_SRCS} ${XDG_DECORATION_OUTPUTS})
+add_library(df-wayland-xdg-application-stable-latest STATIC ${XDG_SHELL_SRCS} ${XDG_DECORATION_OUTPUTS} ${PRESENTATION_TIME_OUTPUTS})
 target_include_directories(df-wayland-xdg-application-stable-latest PUBLIC ${XDG_GEN_OUTPUTS_DIR})
-target_sources(df-wayland-xdg-application-stable-latest PUBLIC FILE_SET HEADERS BASE_DIRS ${XDG_GEN_OUTPUTS_DIR} FILES ${XDG_GEN_OUTPUTS_DIR}/df-xdg-shell-client-protocol.h ${XDG_GEN_OUTPUTS_DIR}/df-xdg-decoration-client-protocol.h)
+target_sources(df-wayland-xdg-application-stable-latest PUBLIC FILE_SET HEADERS BASE_DIRS ${XDG_GEN_OUTPUTS_DIR} FILES ${XDG_GEN_OUTPUTS_DIR}/df-xdg-shell-client-protocol.h ${XDG_GEN_OUTPUTS_DIR}/df-xdg-decoration-client-protocol.h ${XDG_GEN_OUTPUTS_DIR}/df-presentation-time-client-protocol.h)
 
 install(TARGETS df-wayland-xdg-application-stable-latest FILE_SET HEADERS)
