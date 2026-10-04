@@ -195,7 +195,7 @@ them are disabled while the pacer is off and in the OpenGL ES samples, where `eg
   start and on the refresh rate: next to never at 50, 60 and 120 Hz, and from none to 35 % of the frames at 240 Hz in the runs that
   were measured.
 - **`vsync`: the sample waits on the vsync of the window system, then presents.** It needs no Vulkan extension, only a window system
-  that says when the display refreshes (`INativeWindow::TryGetVSyncInfo`: Windows, and Wayland with presentation-time; `--VSyncSource`
+  that says when the display refreshes (`INativeWindow::TryGetVSyncInfo`: Windows, Wayland with presentation-time, X11 with Present and Android from API level 33; `--VSyncSource`
   selects where the window takes the time from, see [FramePacingPlatformSupport.md](FramePacingPlatformSupport.md)). The frame is aimed at the vertical blank
   nearest to its start plus its swap interval and presented inside the refresh before that one, and the next frame starts at the
   target. `--Pacer.VSyncPhase` is where in that refresh the present is done, in percent: only a part of a refresh is safe, and where

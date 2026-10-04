@@ -35,14 +35,15 @@ the lists below. At one refresh per frame every tier is the same: a FIFO present
 | 2 | Vulkan FIFO on Windows | A wait on the vsync time of the monitor the window is on (`--Pacer.Hold vsync`) | The app, which knows where the refreshes are | measured at 50, 60, 120 and 240 Hz and on a 120 Hz second monitor: at least 99.6 % of the frames shown for exactly their swap interval, idle and under CPU load |
 | 2 | Vulkan FIFO on a Wayland compositor with presentation-time (`wp_presentation`) | A wait on the vsync time of the compositor (`--Pacer.Hold vsync`) | The app, which knows where the refreshes are | built, run on a virtual machine only. How good it is depends on the times the compositor reports (`displayVSyncFlags`) and on where in a refresh the present has to be made, which has to be measured per compositor |
 | 2 | Vulkan FIFO on a X server with the Present extension | A wait on the vsync time of the X server (`--Pacer.Hold vsync`) | The app, which knows where the refreshes are | built. Run through Xwayland on a virtual machine whose desktop was locked: the events arrive, the times were not checked |
-| 3 | Vulkan FIFO and no vsync time: a X server without Present, a Wayland compositor without presentation-time, Android, Apple, QNX | A timer (`--Pacer.Hold wait`) | A guess: the app does not know where the refreshes are | measured (Windows): next to no frame a refresh early or late at 50, 60 and 120 Hz. At 240 Hz from 1 % to 35 %, depending on where the timer happens to start |
+| 2 | Vulkan FIFO on Android from API level 33 | A wait on the vsync time of the choreographer (`--Pacer.Hold vsync`) | The app, which knows where the refreshes are | built, compiled with the NDK only. Not run on a device |
+| 3 | Vulkan FIFO and no vsync time: a X server without Present, a Wayland compositor without presentation-time, Android below API level 33, Apple, QNX | A timer (`--Pacer.Hold wait`) | A guess: the app does not know where the refreshes are | measured (Windows): next to no frame a refresh early or late at 50, 60 and 120 Hz. At 240 Hz from 1 % to 35 %, depending on where the timer happens to start |
 
 `--Pacer.Hold auto` picks the best tier the system has. A log says which tier a run was in: `vulkan.uses.presentAtRelativeTime=1` is the
 timed present of tier 1, a `window.vsyncSource` that is not empty is tier 2, and neither is tier 3. The `holdMethod` column says what
 every frame really used.
 
 What would move a configuration up and is not built: a present wait as the vsync signal (Vulkan level 2), the absolute target time and
-`VK_GOOGLE_display_timing` (Vulkan level 3), the vsync signals of X11, Android and Apple, and presenting a frame once per refresh, which
+`VK_GOOGLE_display_timing` (Vulkan level 3), the vsync signal of Apple, and presenting a frame once per refresh, which
 needs nothing but FIFO.
 
 ## Vulkan: what the swapchain can do about time
@@ -156,7 +157,7 @@ next to it when the two differ.
 |---|---|---|---|
 | Windows | `IDXGIOutput::WaitForVBlank`: see the section above | `INativeWindow::TryGetVSyncInfo`, logged per frame, used by the vsync wait | measured |
 | X11 | The Present extension: a refresh counter with a time stamp, for the output the window is on | The vsync source `present`: the events the X server sends for every image a graphics API presents to the window give the time of a vertical blank; a vertical blank is only asked for (`PresentNotifyMSC`) when no such events arrive (`INativeWindow::TryGetVSyncInfo`). The refresh period is measured from two of them. Needs `libxpresent-dev`. | built. Run through Xwayland on a virtual machine whose desktop was locked: the events arrive, the times were not checked |
-| Android | Choreographer: a callback per refresh with the expected presentation time | Nothing. | not built |
+| Android | Choreographer: a callback per refresh with the frame timelines of the next frame (for each the expected presentation time and the deadline it has to be ready by), and a callback with the vsync period | The vsync source `choreographer` (API level 33): a vsync callback is posted per frame (`AChoreographer_postVsyncCallback`), the expected presentation time of the timeline the platform prefers is the time of a vertical blank and the vsync period of the refresh rate callback is the refresh period (`INativeWindow::TryGetVSyncInfo`). The functions are looked up at run time, so an app still builds and starts for a lower API level and reports the source as not available there. The deadline of a timeline is not used. | built, compiled with the NDK only. Not run on a device |
 | Apple | `CADisplayLink`: a callback per refresh with the time the next frame displays | Nothing. | not built |
 
 `INativeWindow::TryGetVSyncInfo` returns "not known" on every platform but Windows, a Wayland compositor with presentation-time and
@@ -226,11 +227,12 @@ flowchart TD
     again["Present the frame once per refresh<br/>each extra present a copy of the frame"]:::notbuilt
 
     subgraph sources ["Where a vsync time comes from"]
-        win["Windows<br/>the vertical blank wait of DXGI,<br/>the compositor"]:::measured
+        win["Windows<br/>the vertical blank wait of DXGI"]:::measured
         wlpresentation["Wayland presentation-time<br/>wp_presentation"]:::built
         wlframe["Wayland frame callback<br/>wl_surface.frame"]:::notbuilt
         x11present["X11<br/>the Present extension"]:::built
-        other["Android Choreographer,<br/>Apple CADisplayLink"]:::notbuilt
+        android["Android<br/>the vsync callback of the choreographer"]:::built
+        other["Apple CADisplayLink"]:::notbuilt
     end
 
     frame --> q1
@@ -250,6 +252,7 @@ flowchart TD
     wlpresentation --> q4
     wlframe -.-> q4
     x11present --> q4
+    android --> q4
     other -.-> q4
     q3 -. "not asked" .-> absolute
     q4 -. "not asked" .-> presentwait
@@ -275,7 +278,7 @@ The questions, in the order they are asked:
    `presentTiming` event). The absolute target time of the same extension and `VK_GOOGLE_display_timing` are not asked for.
 4. **Does the window system give a vsync time?** A time of a vertical blank and a refresh period, both more than zero, from
    `INativeWindow::TryGetVSyncInfo`. Windows answers, a Wayland compositor with presentation-time once a frame of the window was
-   shown, and a X server with the Present extension. `VK_KHR_present_wait` could answer where the window system does not, it is not asked.
+   shown, a X server with the Present extension, and Android from API level 33. `VK_KHR_present_wait` could answer where the window system does not, it is not asked.
 
 What the pacer is given is the same on every path, which is why the chart has no box for it:
 

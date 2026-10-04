@@ -34,15 +34,22 @@
 
 #include <FslNativeWindow/Platform/Adapter/PlatformNativeWindowAdapter.hpp>
 #include <functional>
+#include <memory>
+#include <string>
 
 namespace Fsl
 {
+  class AndroidChoreographerVSync;
   class INativeWindowEventQueue;
   class NativeWindowSetup;
 
   class PlatformNativeWindowAdapterAndroid : public PlatformNativeWindowAdapter
   {
     std::weak_ptr<INativeWindowEventQueue> m_eventQueue;
+    //! The source of the vsync time of the window: the choreographer (see AndroidChoreographerVSync)
+    std::unique_ptr<AndroidChoreographerVSync> m_choreographerVSync;
+    //! The vsync source that was asked for (empty or "auto": the one the window system has)
+    std::string m_requestedVSyncSource;
 
   protected:
     android_app* m_pAppState;
@@ -56,9 +63,15 @@ namespace Fsl
 
     void SYS_OnConfigChanged();
 
+    //! @brief Called once per frame by the window system: asks the choreographer for the vsync time of the next frame
+    void SYS_RequestVSyncTime();
+
+    NativeWindowTimingSupport GetTimingSupport() const override;
+
   protected:
     bool TryGetNativeSize(PxPoint2& rSize) const override;
     bool TryGetNativeDensityDpi(uint32_t& rDensityDpi) const override;
+    NativeWindowVSyncInfo TryGetNativeVSyncInfo() const override;
 
   private:
     void WaitForWindowReady();

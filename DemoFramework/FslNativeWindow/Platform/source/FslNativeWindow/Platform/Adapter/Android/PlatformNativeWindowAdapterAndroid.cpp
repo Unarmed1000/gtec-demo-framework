@@ -49,6 +49,7 @@
 #include <game-activity/native_app_glue/android_native_app_glue.h>
 #include <algorithm>
 #include <thread>
+#include "AndroidChoreographerVSync.hpp"
 
 // #define LOCAL_DEBUG_THREADS 1
 // #define LOCAL_DEBUG_INPUT 1
@@ -75,6 +76,14 @@ namespace Fsl
 {
   namespace
   {
+    namespace LocalConfig
+    {
+      constexpr auto VSyncSourceAuto = "auto";
+      constexpr auto VSyncSourceChoreographer = "choreographer";
+      //! The call of the platform the vsync source is built on
+      constexpr auto VSyncSourceApiName = "AChoreographer_postVsyncCallback";
+    }
+
     std::weak_ptr<INativeWindowEventQueue> g_eventQueue;
 
     ANativeWindow* g_hWindow = nullptr;
@@ -718,17 +727,19 @@ namespace Fsl
       // Read all pending events.
       int id;
       int events;
-      android_poll_source* source;
+      android_poll_source* source = nullptr;
 
       // We loop until all events are read, then continue to draw the next frame of animation.
       // while ((id = ALooper_pollAll(0, nullptr, &events, (void**)&source)) >= 0)
       while ((id = ALooper_pollOnce(0, nullptr, &events, (void**)&source)) > ALOOPER_POLL_TIMEOUT)
       {
-        // Process this event.
-        if (source != nullptr)
+        // Process this event. Only a poll that returns a identifier has a source: a callback of the looper (the choreographer) was run
+        // by the poll itself, and it and a wake leave the source as it was.
+        if (id >= 0 && source != nullptr)
         {
           source->process(pAppState, source);
         }
+        source = nullptr;
 
         // Check if we are exiting.
         if (pAppState->destroyRequested != 0)
@@ -807,7 +818,13 @@ namespace Fsl
 
   bool PlatformNativeWindowSystemAdapterAndroid::ProcessMessages(const NativeWindowProcessMessagesArgs& args)
   {
-    return LocalProcessMessages(m_pAppState);
+    const bool result = LocalProcessMessages(m_pAppState);
+    if (result && m_pAppState->userData != nullptr)
+    {
+      // Ask when the display refreshes for the next frame, the answer is a callback of a later poll
+      static_cast<PlatformNativeWindowAdapterAndroid*>(m_pAppState->userData)->SYS_RequestVSyncTime();
+    }
+    return result;
   }
 
 
@@ -831,13 +848,24 @@ namespace Fsl
   PlatformNativeWindowAdapterAndroid::PlatformNativeWindowAdapterAndroid(
     const NativeWindowSetup& nativeWindowSetup, const PlatformNativeWindowParams& windowParams,
     const PlatformNativeWindowAllocationParams* const pPlatformCustomWindowAllocationParams)
-    : PlatformNativeWindowAdapter(nativeWindowSetup, windowParams, pPlatformCustomWindowAllocationParams, NativeWindowCapabilityFlags::GetDensityDpi)
+    : PlatformNativeWindowAdapter(nativeWindowSetup, windowParams, pPlatformCustomWindowAllocationParams,
+                                  NativeWindowCapabilityFlags::GetDensityDpi | NativeWindowCapabilityFlags::GetVSyncInfo)
     , m_eventQueue(nativeWindowSetup.GetEventQueue())
     , m_pAppState(windowParams.AppState)
   {
     LOCAL_THREAD_PRINT("PlatformNativeWindowAdapterAndroid");
+    // The vsync source of the window. Android has one: the choreographer. Checked first, as nothing has been set up yet
+    m_requestedVSyncSource = nativeWindowSetup.GetConfig().GetVSyncSource();
+    if (!m_requestedVSyncSource.empty() && m_requestedVSyncSource != LocalConfig::VSyncSourceAuto &&
+        m_requestedVSyncSource != LocalConfig::VSyncSourceChoreographer)
+    {
+      throw NotSupportedException(fmt::format("VSyncSource '{}' is not a vsync source of this window system ({}, {})", m_requestedVSyncSource,
+                                              LocalConfig::VSyncSourceAuto, LocalConfig::VSyncSourceChoreographer));
+    }
     try
     {
+      // Made on this thread, as its looper is the one the events of the app are polled from
+      m_choreographerVSync = std::make_unique<AndroidChoreographerVSync>();
       m_pAppState->userData = this;
 
       // Wait for a window to be ready
@@ -880,6 +908,51 @@ namespace Fsl
   void PlatformNativeWindowAdapterAndroid::SYS_OnConfigChanged()
   {
   }
+
+
+  void PlatformNativeWindowAdapterAndroid::SYS_RequestVSyncTime()
+  {
+    if (m_choreographerVSync)
+    {
+      m_choreographerVSync->RequestVSyncTime();
+    }
+  }
+
+
+  NativeWindowTimingSupport PlatformNativeWindowAdapterAndroid::GetTimingSupport() const
+  {
+    // What Android offers and what is used of it: the vsync callback of the choreographer gives the vsync time
+    NativeWindowTimingSupport support;
+    support.WindowSystem = "Android";
+    support.RequestedVSyncSource = m_requestedVSyncSource.empty() ? LocalConfig::VSyncSourceAuto : m_requestedVSyncSource;
+    support.Versions.emplace_back("android.apiLevel", AndroidChoreographerVSync::GetDeviceApiLevel());
+    const bool isUsed = m_choreographerVSync && m_choreographerVSync->IsAvailable();
+    std::string description("The vsync callback of the choreographer: when the next frame is expected to be presented, and the vsync period");
+    if (!isUsed && m_choreographerVSync)
+    {
+      description += " (" + m_choreographerVSync->GetUnavailableReason() + ")";
+    }
+    support.VSyncSources.emplace_back(LocalConfig::VSyncSourceChoreographer,
+                                      isUsed ? NativeWindowVSyncSourceState::Used : NativeWindowVSyncSourceState::NotAvailable, description);
+    if (isUsed)
+    {
+      support.VSyncSource = LocalConfig::VSyncSourceChoreographer;
+      support.Available.emplace_back(LocalConfig::VSyncSourceApiName);
+      support.Used.emplace_back(LocalConfig::VSyncSourceApiName);
+    }
+    else
+    {
+      support.NotAvailable.emplace_back(LocalConfig::VSyncSourceApiName);
+    }
+    return support;
+  }
+
+
+  NativeWindowVSyncInfo PlatformNativeWindowAdapterAndroid::TryGetNativeVSyncInfo() const
+  {
+    return m_choreographerVSync ? m_choreographerVSync->GetVSyncInfo() : NativeWindowVSyncInfo();
+  }
+
 
   bool PlatformNativeWindowAdapterAndroid::TryGetNativeSize(PxPoint2& rSize) const
   {
