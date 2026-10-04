@@ -214,14 +214,20 @@ On a NVIDIA desktop GPU (driver 617.14) with a 240 Hz display on Windows 11, a w
   the machine and why a loaded run has an idle twin.
 - **On an idle machine the pacer held one refresh** at 23.98, 24, 25, 29.97, 60, 100, 120 and 240 Hz with trivial work, with frame starts
   within about 0.15 ms of the refresh interval, and a frame reached the display about four refreshes after it started.
-- **Work over a refresh did not make the pacer slow down** (mb-framepacing `11aeb1ae`, the work matrix at 240 Hz with GPU work and at
-  120 Hz with CPU work). With work of 130 % of a refresh it held swap interval 1 for the whole run, idle and loaded, with and without
-  present timing: the frames started 1.37 refreshes apart, were shown for one or two refreshes in turn and the animation ran at about
-  73 % of real time, the same picture as with the pacer off. Its frame window held the right average work and next to no late frames.
-  The frame loop is not blocked at a vsync while the swapchain has room, so a frame that is too long does not start two refreshes
-  after the one before it.
-- **Work of 90 % of a refresh**: at 240 Hz the pacer went to two refreshes and stayed there after about five seconds in which 9 % of
-  the frames were shown too long. At 120 Hz (84 %) it held one refresh with next to no frames shown too long.
+- **Work over a refresh did not make the pacer slow down** with mb-framepacing `11aeb1ae` (the work matrix at 240 Hz with GPU work and
+  at 120 Hz with CPU work). With work of 130 % of a refresh it held swap interval 1 for the whole run, idle and loaded, with and
+  without present timing: the frames started 1.37 refreshes apart, were shown for one or two refreshes in turn and the animation ran at
+  about 73 % of real time, the same picture as with the pacer off. Its frame window held the right average work and next to no late
+  frames. The frame loop is not blocked at a vsync while the swapchain has room, so a frame that is too long does not start two
+  refreshes after the one before it, and the pacer only counted a frame as late from the time between two frame starts.
+- **With mb-framepacing `1764848` it does**: a frame whose work is longer than its frame time counts as late. The same runs go to two
+  refreshes after 25 frames at 120 Hz and after 49 frames at 240 Hz and stay there, with frame starts exactly two refreshes apart and
+  every frame shown for two refreshes. Nothing but the pinned commit changed, which is what the plans are for: the same runs before
+  and after a change.
+- **Work of 90 % of a refresh at 240 Hz is decided by chance**: the work fits, some frames miss their refresh anyway, and whether the
+  pacer goes to two refreshes depends on how many do. In one run it switched after five seconds in which 9 % of the frames were shown
+  too long, in others it held one refresh to the end with 2 % shown too long. At 120 Hz (84 %) it held one refresh with next to no
+  frames shown too long.
 - **A CPU load on every logical CPU did not disturb the frames of the sample**, the runs under load were as even as their idle twins.
   A build loads the disk and the memory as well, which this load does not.
 - **The time from the start of a frame to the display depends on the work**: 3.7 refreshes at 20 % work and about 2 refreshes at 90
