@@ -20,6 +20,9 @@
 //* EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //****************************************************************************************************************************************************
 
+// Include gtest before anything that includes the polluted standard X11 header that cause all kind of issues withs its bad defines.
+#include <gtest/gtest.h>
+// Then include the rest
 #include <FslBase/System/HighResolutionTimer.hpp>
 #include <FslBase/Time/TickCount.hpp>
 #include <FslBase/Time/TimeSpan.hpp>

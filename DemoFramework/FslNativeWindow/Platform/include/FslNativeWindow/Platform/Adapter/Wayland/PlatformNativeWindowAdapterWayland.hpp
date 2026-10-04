@@ -71,6 +71,8 @@ namespace Fsl
       return m_platformSurface;
     }
 
+    NativeWindowTimingSupport GetTimingSupport() const override;
+
   protected:
     bool TryGetNativeSize(PxPoint2& rSize) const override;
     bool TryGetNativeDpi(Vector2& rDPI) const override;

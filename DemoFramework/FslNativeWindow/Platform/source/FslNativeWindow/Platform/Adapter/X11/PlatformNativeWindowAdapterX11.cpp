@@ -919,6 +919,23 @@ namespace Fsl
   }
 
 
+  NativeWindowTimingSupport PlatformNativeWindowAdapterX11::GetTimingSupport() const
+  {
+    // What the X server offers. Nothing of it is used: the refresh rate comes from RandR and there is no vsync time yet.
+    NativeWindowTimingSupport support;
+    support.WindowSystem = "X11";
+    int majorOpcode = 0;
+    int firstEvent = 0;
+    int firstError = 0;
+    // The Present extension: a refresh counter with a time stamp
+    if (m_platformDisplay != nullptr && XQueryExtension(m_platformDisplay, "Present", &majorOpcode, &firstEvent, &firstError) != 0)
+    {
+      support.Available.emplace_back("Present");
+    }
+    return support;
+  }
+
+
   NativeWindowDisplayInfo PlatformNativeWindowAdapterX11::TryGetNativeDisplayInfo() const
   {
     return m_cachedDisplayInfo;

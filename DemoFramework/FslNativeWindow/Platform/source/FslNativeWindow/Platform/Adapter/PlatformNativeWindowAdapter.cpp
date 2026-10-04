@@ -178,6 +178,16 @@ namespace Fsl
   }
 
 
+  NativeWindowVSyncInfo PlatformNativeWindowAdapter::TryGetVSyncInfo() const
+  {
+    if (!NativeWindowCapabilityFlagsUtil::IsFlagged(m_capabilityFlags, NativeWindowCapabilityFlags::GetVSyncInfo))
+    {
+      return {};
+    }
+    return TryGetNativeVSyncInfo();
+  }
+
+
   bool PlatformNativeWindowAdapter::TryGetExtent(PxExtent2D& rExtent) const
   {
     PxPoint2 size;

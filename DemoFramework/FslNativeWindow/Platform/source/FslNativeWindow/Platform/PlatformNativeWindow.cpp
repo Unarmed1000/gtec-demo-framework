@@ -82,6 +82,28 @@ namespace Fsl
   }
 
 
+  NativeWindowVSyncInfo PlatformNativeWindow::TryGetVSyncInfo() const
+  {
+    if (!m_adapter)
+    {
+      FSLLOG3_WARNING("TryGetVSyncInfo: Object shutdown");
+      return {};
+    }
+    return m_adapter->TryGetVSyncInfo();
+  }
+
+
+  NativeWindowTimingSupport PlatformNativeWindow::GetTimingSupport() const
+  {
+    if (!m_adapter)
+    {
+      FSLLOG3_WARNING("GetTimingSupport: Object shutdown");
+      return {};
+    }
+    return m_adapter->GetTimingSupport();
+  }
+
+
   bool PlatformNativeWindow::TryGetDpi(Vector2& rDPI) const
   {
     if (!m_adapter)

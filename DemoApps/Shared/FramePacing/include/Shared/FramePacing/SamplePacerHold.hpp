@@ -1,5 +1,5 @@
-#ifndef SHARED_FRAMEPACING_SAMPLECONFIG_HPP
-#define SHARED_FRAMEPACING_SAMPLECONFIG_HPP
+#ifndef SHARED_FRAMEPACING_SAMPLEPACERHOLD_HPP
+#define SHARED_FRAMEPACING_SAMPLEPACERHOLD_HPP
 //****************************************************************************************************************************************************
 //* BSD 3-Clause License
 //*
@@ -22,30 +22,24 @@
 //* EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //****************************************************************************************************************************************************
 
-#include <FslBase/Math/ConstrainedValue.hpp>
-#include <cstdint>
-
-//! The default value and the range of the settings of the FramePacing samples, shared by the command line options and the UI
-namespace Fsl::SampleConfig
+namespace Fsl
 {
-  //! The duration of a timed run in seconds
-  constexpr ConstrainedValue<int32_t> TimedRunSeconds(10, 1, 120);
-  //! The refresh rate the slider offers when the window system does not know the refresh rate of the display
-  constexpr ConstrainedValue<int32_t> RefreshRateHz(60, 24, 240);
-  //! The refresh rates the command line accepts (decimals allowed)
-  constexpr double MinRefreshRateHz = 1.0;
-  constexpr double MaxRefreshRateHz = 1000.0;
-  //! The frame rate the app wants to run at (0 = the refresh rate of the display)
-  constexpr ConstrainedValue<int32_t> TargetFps(0, 0, 240);
-  //! The simulated CPU load: the time the app spends busy every frame in milliseconds
-  constexpr ConstrainedValue<int32_t> CpuLoadMs(0, 0, 50);
-  //! Where in the refresh before the one a frame is aimed at the vsync wait presents, in percent of the refresh.
-  //! The default is the middle of what was measured to work on the Windows compositor at 240 Hz: a present from 45 to 85 % of the
-  //! refresh was shown at the vertical blank it was aimed at, a earlier one two refreshes late and a later one a refresh late.
-  constexpr ConstrainedValue<int32_t> VSyncPhasePercent(65, 1, 99);
-  //! The GPU load: the number of steps the raymarched background takes for every pixel (0 = no background).
-  //! The default is a low load, so the sample starts with a background and a GPU that has something to do.
-  constexpr ConstrainedValue<int32_t> GpuLoadSteps(16, 0, 1024);
+  //! How a frame is held for more than one refresh where the present only holds it for one (a Vulkan FIFO present has no swap interval).
+  //! A method the system can not do falls back: the vsync wait, then the sleep.
+  //! What a platform can offer for each of them is listed in Doc/FramePacingPlatformSupport.md.
+  enum class SamplePacerHold
+  {
+    //! The best method the system can do: the present with a target time, else the vsync wait, else the sleep
+    Auto,
+    //! The sample waits on the vsync of the window system: it presents during the refresh before the one the frame is aimed at, in the
+    //! middle of the time the window system leaves for it. It needs the window system to say when the display refreshes
+    //! (INativeWindow::TryGetVSyncInfo), nothing of the graphics API.
+    VSync,
+    //! The sample sleeps on a timer and presents then. It needs nothing, and does not know where the refreshes are: a guess.
+    Wait,
+    //! The present is given a target time and the presentation engine holds the frame (VK_EXT_present_timing with presentAtRelativeTime).
+    Schedule
+  };
 }
 
 #endif

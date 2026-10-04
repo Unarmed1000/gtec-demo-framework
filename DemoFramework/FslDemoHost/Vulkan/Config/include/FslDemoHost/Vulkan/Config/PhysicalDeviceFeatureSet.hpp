@@ -24,6 +24,7 @@
 
 // Make sure Common.hpp is the first include file (to make the error message as helpful as possible when disabled)
 #include <FslUtil/Vulkan1_0/Common.hpp>
+#include <FslUtil/Vulkan1_0/Util/StructUtil.hpp>
 #include <vulkan/vulkan.h>
 
 namespace Fsl::Vulkan
@@ -34,9 +35,12 @@ namespace Fsl::Vulkan
   struct PhysicalDeviceFeatureSet
   {
     VkPhysicalDeviceFeatures Features{};
-    VkPhysicalDeviceVulkan11Features Features11{VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_1_FEATURES, nullptr};
-    VkPhysicalDeviceVulkan12Features Features12{VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_FEATURES, nullptr};
-    VkPhysicalDeviceVulkan13Features Features13{VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES, nullptr};
+    VkPhysicalDeviceVulkan11Features Features11 =
+      StructUtil::Create<VkPhysicalDeviceVulkan11Features>(VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_1_FEATURES);
+    VkPhysicalDeviceVulkan12Features Features12 =
+      StructUtil::Create<VkPhysicalDeviceVulkan12Features>(VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_FEATURES);
+    VkPhysicalDeviceVulkan13Features Features13 =
+      StructUtil::Create<VkPhysicalDeviceVulkan13Features>(VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES);
 
     //! @brief Check if any VkPhysicalDeviceVulkan11Features feature is enabled
     [[nodiscard]] bool HasEnabledFeatures11() const noexcept;

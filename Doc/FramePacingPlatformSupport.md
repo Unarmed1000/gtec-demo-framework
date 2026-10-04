@@ -1,0 +1,223 @@
+# What a platform offers for frame pacing
+
+A frame pacer needs two things from a platform that plain rendering does not: a way to hold a frame for more than one refresh, and
+some knowledge of when the display refreshes. How much of that a platform gives differs a lot, and it comes from two places: the
+Vulkan device (its swapchain extensions) and the window system (the compositor).
+
+This page lists what each can offer, from the least to the most, and what the framework does with it. See
+[FramePacing.md](FramePacing.md) for the marker, the frame log and the samples, and [FramePacingCapture.md](FramePacingCapture.md) for
+how the measurements were made.
+
+**The level that must work** is the first row of both lists: core Vulkan 1.3 with a FIFO swapchain and nothing else, on a window system
+that only says what its core protocol says. Everything above it is used when it is there and never required.
+
+Status used below:
+
+| Status | Meaning |
+|---|---|
+| measured | built, and checked against measured display times (Windows 11, a NVIDIA desktop GPU, 240 Hz and 120 Hz) |
+| built | in the framework, not checked against a display |
+| not built | the framework does nothing with it yet |
+
+Only the Windows rows are measured. Nothing on this page was run on a Wayland device.
+
+## Vulkan: what the swapchain can do about time
+
+From the least to the most.
+
+| Level | Extensions | What it gives | What the framework does | Status |
+|---|---|---|---|---|
+| 0 | Core 1.3 and `VK_KHR_swapchain`, FIFO | No time goes in and none comes out. Every present is shown for one refresh. | One refresh per frame is held by the present. A frame held longer needs one of the methods [below](#holding-a-frame-for-more-than-one-refresh). | measured |
+| 1 | `VK_KHR_present_id` or `VK_KHR_present_id2`; `VK_EXT_swapchain_maintenance1` or `VK_KHR_swapchain_maintenance1` | A number per present, and a fence per present that signals when the presentation engine is done with it. No display time, no timed present. | Present fences are used when available (`--VkSwapchainMaintenance1`). `VK_KHR_present_id2` numbers the presents for level 4. `VK_KHR_present_id` is not used. | measured (no effect on the pacing) |
+| 2 | `VK_KHR_present_wait` or `VK_KHR_present_wait2` (with a present id) | The app can block until a given present was shown: a wait that follows the display without the window system, and a coarse display time. | Nothing. | not built |
+| 3 | `VK_GOOGLE_display_timing` (Android) | The refresh duration, a desired present time per present (absolute) and past presentation times. | Nothing. | not built |
+| 4 | `VK_EXT_present_timing` (with `VK_KHR_present_id2` and `VK_KHR_calibrated_timestamps`) | A target time per present, the time of each present stage afterwards (queue operations end, request dequeued, first pixel out, first pixel visible) and the refresh duration. | The stages are measured and logged. A relative target time holds a frame (`--Pacer.Hold schedule`). The display times can be given to the pacer (`--Pacer.PresentFeedback`). The absolute target time is not used. | measured |
+
+Within level 4 a device and a surface can have a relative target time (`presentAtRelativeTime`), an absolute one
+(`presentAtAbsoluteTime`) or both, and a surface reports only some of the stages. The NVIDIA driver that was measured has the relative
+form only and reports queue operations end and first pixel out.
+
+Not on this list: the present modes (`MAILBOX`, `IMMEDIATE`, `FIFO_RELAXED`, `FIFO_LATEST_READY` of
+`VK_KHR_present_mode_fifo_latest_ready`). They change which image is shown when the app is early or late, not how long a frame is
+held. `--VkPresentMode` selects one.
+
+## Wayland: what the compositor says about time
+
+From the least to the most. The first two are what an app can use itself. The last two are for the Vulkan window system layer of the
+driver, which is what turns them into the Vulkan levels above.
+
+| Level | Protocol | What it gives | What the framework does | Status |
+|---|---|---|---|---|
+| 0 | Core protocol: `wl_surface.frame`, `wl_output.mode` | A callback once per repaint, with a time in milliseconds of undefined base: a hint that can come late, bunched or not at all. The refresh rate of the mode in mHz. | The refresh rate is read. The frame callback is not used. | the refresh rate: built; the callback: not built |
+| 1 | presentation-time (`wp_presentation`, `wp_presentation_feedback`), stable | For every commit: when it was presented (`presented`) and on which clock (`clock_id`), the time to the next refresh, a refresh counter and flags that say how good the time is, or `discarded` for a frame that was never shown. | Nothing. This is the protocol the vsync wait and present feedback would use. | not built |
+| 2 | fifo-v1 (`wp_fifo_manager_v1`, `wp_fifo_v1`), staging | The compositor holds a commit until the one before it was shown (`set_barrier`, `wait_barrier`): FIFO done by the compositor. | Nothing, it is for the Vulkan window system layer. | not built |
+| 3 | commit-timing-v1 (`wp_commit_timing_manager_v1`, `wp_commit_timer_v1`), staging | A target time on a commit (`set_timestamp`): a timed present at the Wayland level. | Nothing, it is for the Vulkan window system layer. | not built |
+
+Needed, but not about time: linux-dmabuf, which the Vulkan window system layer uses for its buffers.
+
+Which protocols an older or an embedded compositor has can only be read from the device. Weston is reported to have had
+presentation-time since version 1.10, which was not checked here. Nothing is known here about other compositors.
+
+## How the two lists meet
+
+On a Wayland device the Vulkan extensions of the first list do not come from the Vulkan version of the driver. They come from the
+window system layer of the driver and from what the compositor offers that layer: a layer can only give a present a target time if
+the compositor takes one, and can only report display times if the compositor reports them. A device with Vulkan 1.3 can be at level
+0 of the Vulkan list, and the same driver on a newer compositor at level 4.
+
+So both have to be looked at:
+
+```bash
+# The device extensions (Vulkan list)
+vulkaninfo | grep -E "VK_KHR_present_id|VK_KHR_present_wait|swapchain_maintenance1|VK_GOOGLE_display_timing|VK_EXT_present_timing|VK_KHR_calibrated_timestamps"
+
+# The globals of the compositor (Wayland list): wp_presentation, wp_fifo_manager_v1, wp_commit_timing_manager_v1
+wayland-info      # weston-info on older images
+```
+
+A frame pacing log (`--FramePacing.Log`) says it by itself. For the Vulkan list its events file has a `vulkan.has.<extension>` fact
+for each extension of the list, a `vulkan.uses.<what>` fact for what the framework enabled, and a `presentTiming` event with what the
+surface supports. For the window system it has `window.system`, `window.vsyncSource` (empty when there is no vsync time), a
+`window.has.<name>` fact for what the window system offers and a `window.uses.<name>` fact for what is used. On Wayland the names are the
+globals of the compositor that are about time (`wp_presentation`, `wp_fifo_manager_v1`, `wp_commit_timing_manager_v1`,
+`wp_tearing_control_manager_v1`, `wp_linux_drm_syncobj_manager_v1`, `zwp_linux_dmabuf_v1`), on X11 it is the `Present` extension, on
+Windows the two vsync signals of the table below. The same is written to the log of the app as two `FramePacing:` lines.
+
+## Other window systems
+
+| Platform | Vsync signal | What the framework does | Status |
+|---|---|---|---|
+| Windows | `DwmGetCompositionTimingInfo`: the last vertical blank and the measured refresh period on the clock the framework uses | `INativeWindow::TryGetVSyncInfo`, logged per frame, used by the vsync wait | measured |
+| Windows | `IDXGIOutput::WaitForVBlank`: blocks until the next vertical blank of one monitor | Nothing. It is the fallback if the compositor's timing is not good enough (a second monitor at another rate). | not built |
+| X11 | The Present extension: a refresh counter with a time stamp | Nothing. | not built |
+| Android | Choreographer: a callback per refresh with the expected presentation time | Nothing. | not built |
+| Apple | `CADisplayLink`: a callback per refresh with the time the next frame displays | Nothing. | not built |
+
+`INativeWindow::TryGetVSyncInfo` returns "not known" on every platform but Windows. That is a valid answer, and what a platform without
+a usable signal keeps returning.
+
+## Holding a frame for more than one refresh
+
+What the FramePacing sample does with what it finds (`--Pacer.Hold`). The OpenGL ES samples are not part of this: `eglSwapInterval`
+lets the driver count the refreshes.
+
+| Hold | Needs | How it works | Status |
+|---|---|---|---|
+| `schedule` | Vulkan level 4 with a relative target time | The present is given a target time and the presentation engine holds the frame. | measured: every frame held for exactly its swap interval |
+| `vsync` | a vsync time from the window system | The sample waits and presents inside the refresh before the one the frame is aimed at. | measured on Windows: every frame held for exactly its swap interval |
+| `wait` | nothing | The sample sleeps on a timer and presents. It does not know where the refreshes are, so it is a guess. | measured: from 1 % to 35 % of the frames a refresh early or late, depending on where the timer happens to start |
+| `auto` | - | `schedule` if the swapchain can, else `vsync` if the window system says when the display refreshes, else `wait`. | - |
+
+The default is `wait` until the methods have been captured at the refresh rates that matter.
+
+Where inside a refresh the vsync wait presents is not something to derive, it has to be measured per platform
+(`--Pacer.VSyncPhase`, in percent of the refresh before the target). On the Windows compositor at 240 Hz a present from 45 to 85 % was
+shown at the vertical blank it was aimed at, an earlier one two refreshes late and a later one a refresh late. Whether those edges are
+times or shares of a refresh is not known yet.
+
+Not built, and still open: presenting a frame once per refresh (each extra present a copy of the frame). It needs nothing but FIFO, so
+it would work at level 0 of both lists, at the cost of a copy and a present per held refresh and less time for the next frame.
+
+Level 2 of the Vulkan list (`VK_KHR_present_wait`) could serve as the vsync signal where the window system has none. It has not been
+tried.
+
+## How the way to hold a frame is resolved
+
+The chart shows what the Vulkan FramePacing sample does today, for every frame the pacer gave a swap interval. Nothing is decided once
+at start-up: what the device and the surface can do is probed when the swapchain is created, the vsync time of the window system is
+read once per frame, and the questions are asked again for every frame.
+
+A solid green border is an end that was measured, a dashed red one is not built. Dotted lines are things the framework does not ask or
+do yet. Nothing in the chart is in the state "built but not measured": the ends that exist were all measured on Windows, and none of
+them on another platform.
+
+```mermaid
+flowchart TD
+    frame(["A frame, the pacer gave it a swap interval of N refreshes"])
+    q1{"Is N more than the present holds?<br/>(the present is taken to hold one refresh)"}
+    q2{"What was asked for?<br/>--Pacer.Hold"}
+    q3{"Does the swapchain take a relative target time?<br/>VK_EXT_present_timing with presentAtRelativeTime,<br/>on the device and on the surface"}
+    q4{"Does the window system give a vsync time?<br/>INativeWindow::TryGetVSyncInfo"}
+    nothing{{"Nothing is known about when the display refreshes"}}
+
+    fifo["Present right away<br/>FIFO shows the frame for one refresh"]:::measured
+    schedule["Timed present<br/>a target time of N - 0.5 refreshes on the present,<br/>the presentation engine holds the frame"]:::measured
+    vsync["Wait by the vsync time<br/>present inside the refresh before the one the frame is aimed at"]:::measured
+    timer["Timer<br/>sleep, then present: a guess"]:::measured
+
+    absolute["Absolute target time<br/>presentAtAbsoluteTime, VK_GOOGLE_display_timing"]:::notbuilt
+    presentwait["Present wait as the vsync signal<br/>VK_KHR_present_wait, VK_KHR_present_wait2"]:::notbuilt
+    again["Present the frame once per refresh<br/>each extra present a copy of the frame"]:::notbuilt
+
+    subgraph sources ["Where a vsync time comes from"]
+        win["Windows compositor<br/>DwmGetCompositionTimingInfo"]:::measured
+        wlpresentation["Wayland presentation-time<br/>wp_presentation"]:::notbuilt
+        wlframe["Wayland frame callback<br/>wl_surface.frame"]:::notbuilt
+        other["X11 Present, Android Choreographer,<br/>Apple CADisplayLink"]:::notbuilt
+    end
+
+    frame --> q1
+    q1 -- "no" --> fifo
+    q1 -- "yes" --> q2
+    q2 -- "schedule or auto" --> q3
+    q2 -- "vsync" --> q4
+    q2 -- "wait (the default)" --> timer
+    q3 -- "yes" --> schedule
+    q3 -- "no" --> q4
+    q4 -- "yes" --> vsync
+    q4 -- "no" --> nothing
+    nothing -- "today" --> timer
+    nothing -. "open, not decided" .-> again
+
+    win --> q4
+    wlpresentation -.-> q4
+    wlframe -.-> q4
+    other -.-> q4
+    q3 -. "not asked" .-> absolute
+    q4 -. "not asked" .-> presentwait
+
+    schedule -. "a new swapchain without it: the next frame" .-> q4
+    vsync -. "no valid vsync time: the next frame" .-> nothing
+
+    classDef measured stroke:#2da44e,stroke-width:3px
+    classDef notbuilt stroke:#cf222e,stroke-width:2px,stroke-dasharray:6 4
+```
+
+The questions, in the order they are asked:
+
+1. **Is the swap interval more than the present holds?** The sample takes a present to hold a frame for one refresh, which is what
+   FIFO does. This is not probed: with a present mode that does not wait for the display (`--VkPresentMode`) the answer is wrong and
+   nothing in the chart corrects it. A frame with a swap interval of one is presented right away on every path.
+2. **What was asked for?** `--Pacer.Hold`, or the radio buttons. `wait` is the default until the methods have been captured at the
+   refresh rates that matter, so today the timer is what runs unless something else is asked for. `auto` is the path through every
+   question. A method that was asked for and that the system can not do continues at the next question, it is not an error.
+3. **Does the swapchain take a relative target time?** `VK_EXT_present_timing` on the device, the `presentAtRelativeTime` feature,
+   and a surface that says it supports it. The log has the answers (`vulkan.presentAtRelativeTimeDevice`, `canSchedule=` in the
+   `presentTiming` event). The absolute target time of the same extension and `VK_GOOGLE_display_timing` are not asked for.
+4. **Does the window system give a vsync time?** A time of a vertical blank and a refresh period, both more than zero, from
+   `INativeWindow::TryGetVSyncInfo`. Only Windows answers. `VK_KHR_present_wait` could answer where the window system does not, it is
+   not asked.
+
+What the pacer is given is the same on every path, which is why the chart has no box for it:
+
+| | What it is | Where it comes from |
+|---|---|---|
+| The refresh period | One value, given to the pacer again when it changes | The refresh rate of the display from the window system (`INativeWindow::TryGetDisplayInfo`). `--Pacer.RefreshRate` replaces it, and a slider in the sample sets it when the window system does not know it. |
+| Present feedback | Off, unless `--Pacer.PresentFeedback true` and the swapchain measures display times (`VK_EXT_present_timing`) | The display time of each present (first pixel out on the driver that was measured). It does not depend on how the frame is held. |
+
+Two periods are known and not given to the pacer: the measured refresh period of the window system, which the vsync wait uses for
+its own grid of vertical blanks, and the refresh duration `VK_EXT_present_timing` reports, which is only shown. The pacer is not told
+which way a frame was held either. What differs per path is where the next frame starts: at the vertical blank the frame was aimed at
+after a vsync wait, and at the time the pacer gave (`NextFrameStartTime`) after a timed present and after the timer.
+
+When a signal goes away while the sample runs:
+
+| What goes away | What happens | Status |
+|---|---|---|
+| The relative target time (a new swapchain without it, after a move to another display for example) | The sample reads it every frame, so the next frame continues at question 4. | built, never seen to happen |
+| The vsync time (the window system answers "not known") | The next frame is held by the timer. | built, never seen to happen |
+| The vsync time is old (the compositor stopped updating it) | Not noticed. The sample goes on from the last vertical blank in whole refresh periods, for any age. On Windows a time 58 refreshes old was still within 0.006 ms of the display, so this was right every time it was measured, but nothing limits the age. | a known gap |
+| The display changes its refresh rate | The pacer is given the new rate when the window system reports it. The vsync wait follows the period of the vsync time. | built, not measured |
+
+The log says per frame which way was used (`holdMethod`: 0 the timer, 1 the vsync wait, 3 the timed present), so a run that changed
+its way of holding a frame shows it.

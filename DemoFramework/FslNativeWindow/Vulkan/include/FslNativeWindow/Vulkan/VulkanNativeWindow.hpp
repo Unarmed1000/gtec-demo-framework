@@ -72,6 +72,18 @@ namespace Fsl
     }
 
     // Done this way because of a "inherit via dominance warning on visual studio'
+    [[nodiscard]] NativeWindowVSyncInfo TryGetVSyncInfo() const final
+    {
+      return PlatformNativeWindow::TryGetVSyncInfo();
+    }
+
+    // Done this way because of a "inherit via dominance warning on visual studio'
+    [[nodiscard]] NativeWindowTimingSupport GetTimingSupport() const final
+    {
+      return PlatformNativeWindow::GetTimingSupport();
+    }
+
+    // Done this way because of a "inherit via dominance warning on visual studio'
     // using PlatformNativeWindowSystem::TryGetDpi;
     bool TryGetDpi(Vector2& rDPI) const final
     {

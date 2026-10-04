@@ -74,6 +74,11 @@ namespace Fsl
 
     NativeWindowMetrics GetWindowMetrics() const final;
     NativeWindowDisplayInfo TryGetDisplayInfo() const final;
+    NativeWindowVSyncInfo TryGetVSyncInfo() const final;
+    NativeWindowTimingSupport GetTimingSupport() const override
+    {
+      return {};
+    }
     bool TryGetExtent(PxExtent2D& rExtent) const final;
     bool TryGetDpi(Vector2& rDPI) const final;
     bool TryGetDensityDpi(uint32_t& rDensityDpi) const final;
@@ -116,6 +121,12 @@ namespace Fsl
     //! @brief Only called if the NativeWindowCapabilityFlags::GetDisplayInfo capability is set.
     //! @note  This is expected to be cheap, so implementations should return cached information.
     virtual NativeWindowDisplayInfo TryGetNativeDisplayInfo() const
+    {
+      return {};
+    }
+
+    //! @brief Only called if the NativeWindowCapabilityFlags::GetVSyncInfo capability is set.
+    virtual NativeWindowVSyncInfo TryGetNativeVSyncInfo() const
     {
       return {};
     }

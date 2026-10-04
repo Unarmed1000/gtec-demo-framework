@@ -125,7 +125,8 @@ Refresh rate                  |`--Pacer.RefreshRate <hz>`      |The refresh rate
 Target fps                    |`--Pacer.TargetFps <fps>`       |The frame rate the pacer aims for, 0 is the refresh rate of the display. 30 on a 60 Hz display holds every frame for two refreshes.
 Adaptive swap interval        |`--Pacer.Adaptive <true\|false>`|On: the pacer slows down when frames are late and speeds up again when they fit. Off: a fixed frame rate.
 Present feedback to the pacer |`--Pacer.PresentFeedback <true\|false>`|Vulkan only. On: the pacer measures the frames by when the display showed them, see [below](#present-feedback-vulkan-optional). Off (the default): by when they start.
-Schedule the present          |`--Pacer.SchedulePresent <true\|false>`|Vulkan only. On: the presentation engine holds a frame for its swap interval, see [below](#scheduling-the-present-vulkan-optional). Off (the default): the sample waits before it presents.
+Hold (radio buttons)          |`--Pacer.Hold <auto\|vsync\|wait\|schedule>`|Vulkan only. How a frame is held for more than one refresh, see [below](#holding-a-frame-for-more-than-one-refresh-vulkan). The default is `wait`.
+                              |`--Pacer.VSyncPhase <percent>`  |Vulkan only. For the `vsync` hold: where in the refresh before the target the present is done (1 to 99, the default is 65).
 CPU load                      |`--CpuLoad <ms>`                |The time in milliseconds the app spends busy every frame.
 GPU load                      |`--GpuLoad <steps>`             |Draws the raymarched background with the given number of steps for every ray (0 is no background, the default is a low load of 16). The load grows linearly with the steps, more steps reach further and show finer detail.
 Background                    |`--Background <flight\|hall>`   |The scene of the raymarched background (the radio buttons below the GPU load). `flight` is a flight through a fractal lattice. `hall` is a hall of columns that scrolls sideways at a constant speed, which makes a stutter easy to see.
@@ -152,6 +153,14 @@ while the pacer is on, so with the pacer off their chart only shows the CPU time
 off as well (`Show the test pattern`, `--HideTestPattern`), and the sync marker at the bottom left can be switched on (`Draw the sync
 marker`, or start with it with `--FramePacing.SyncMarker`).
 
+The box animation of the mb-framepacing-explained videos can be shown as well (`Show the box animation`, `Fast box animation`, or start with
+it with `--BoxAnimation normal` or `--BoxAnimation fast`; it is off by default). It is a white box that eases from side to side with a
+short rest at both ends, in the part of the window that is left of the controls: a round trip takes four seconds, two when fast. The box is
+drawn where the animation time of the frame puts it, exactly as the test pattern is, so the motion on the display can be compared by eye
+with what those videos show for a steady frame rate, a wrong animation step or a frame that is shown late. Only the box is drawn, on top of
+the background and of the test pattern: for a clear view of it switch the test pattern and the two overlays off (`--HideTestPattern
+--HideMarkerStats --HidePacingStats`).
+
 ```bash
 # 30 fps on any display, with a GPU load
 Vulkan.FramePacing --Pacer --Pacer.TargetFps 30 --GpuLoad 96
@@ -170,24 +179,33 @@ How a frame is held for its swap interval depends on the API:
   queries and given to the pacer. The sample can measure when its frames reach the display (see the next section) and, when asked to,
   gives those display times to the pacer as present feedback.
 
-#### Scheduling the present (Vulkan, optional)
+#### Holding a frame for more than one refresh (Vulkan)
 
-A frame the pacer holds for more than one refresh can be held in two ways, and both are kept:
+Core Vulkan has no swap interval: a FIFO present shows a frame at the next refresh, and nothing in Vulkan says when a refresh
+happens. So a frame the pacer holds for more than one refresh has to be held by something else, and the sample has three ways
+(`--Pacer.Hold`, the `Hold` radio buttons). [FramePacingPlatformSupport.md](FramePacingPlatformSupport.md) lists what each platform
+offers for them.
 
-- **The sample waits, then presents** (the default, and the only way without `VK_EXT_present_timing`): it sleeps until one refresh
-  before the time the frame is aimed at and then presents. The sleep has no vsync times to go by, so now and then a present lands on
-  the wrong side of a refresh and a frame is shown a refresh too early and its neighbour a refresh too long.
-- **The presentation engine holds the frame** (`--Pacer.SchedulePresent true`, the `Schedule the present` switch): the present is
-  given a target time and is done right away. `VK_EXT_present_timing` can schedule a present where the device and the surface have
-  `presentAtRelativeTime`: the image is not shown before the target time has passed since the image of the present before it was
-  shown, and then at the first refresh. The sample asks for the swap interval minus half a refresh, which is the refresh the pacer
-  aims for with room on both sides. The next frame still starts no earlier than the time the frame is aimed at.
+- **`wait`: the sample sleeps on a timer, then presents** (the default, it needs nothing). It sleeps until one refresh before the time
+  the frame is aimed at. The timer does not know where the refreshes are, so it is a guess: when a present lands near a vertical
+  blank, a frame is shown a refresh too early and its neighbour a refresh too long. How often depends on where the timer happens to
+  start: from 1 % to 35 % of the frames in the runs that were measured.
+- **`vsync`: the sample waits on the vsync of the window system, then presents.** It needs no Vulkan extension, only a window system
+  that says when the display refreshes (`INativeWindow::TryGetVSyncInfo`, Windows so far). The frame is aimed at the vertical blank
+  nearest to its start plus its swap interval and presented inside the refresh before that one, and the next frame starts at the
+  target. `--Pacer.VSyncPhase` is where in that refresh the present is done, in percent: only a part of a refresh is safe, and where
+  that part is has to be measured for a platform (45 to 85 % on the Windows compositor at 240 Hz, the default is 65).
+- **`schedule`: the presentation engine holds the frame.** The present is given a target time and is done right away
+  (`VK_EXT_present_timing` where the device and the surface have `presentAtRelativeTime`): the image is not shown before the target
+  time has passed since the image of the present before it was shown, and then at the first refresh. The sample asks for the swap
+  interval minus half a refresh.
+- **`auto`**: `schedule` if the swapchain can do it, else `vsync` if the window system reports its vsync, else `wait`.
 
-The switch is only enabled where the swapchain can do it (the `presentTiming` event of the frame log has `canSchedule=1`). The frame
-log has `presentScheduled` and `presentTargetTicks` per frame from the sample and `presentTargetRelativeNs` from the app base, which is
-what the present was given.
+A method the system can not do falls back to `vsync`, else `wait`. The frame log says what every frame used (`holdMethod`), where the
+vsync wait aimed (`holdTargetTicks`), what the sample asked a scheduled present for (`presentTargetTicks`) and what the present was
+given (`presentTargetRelativeNs`). The `presentTiming` event has `canSchedule=1` where a present can take a target time.
 
-Any Vulkan app can do the same: `DemoAppVulkanBasic::IsPresentSchedulingSupported()` and
+Any Vulkan app can schedule a present: `DemoAppVulkanBasic::IsPresentSchedulingSupported()` and
 `SetPresentRelativeTargetTime(time)` before the frame is presented. The absolute form of the extension (`presentAtAbsoluteTime`) is not
 used.
 
@@ -332,6 +350,8 @@ Column | Unit | Description
 `hostFrameSlot` | id | The frame slot of the render loop the frame used (the frames in flight)
 `frameworkTimeTicks` | durationTicks | The time of the framework the frame was updated and drawn for
 `frameworkStepTicks` | durationTicks | The time step of the framework from the frame before
+`displayVSyncTicks` | ticks | The time of a recent vertical blank of the display as the window system reported it when the frame began (empty if the platform does not report it)
+`displayRefreshPeriodTicks` | durationTicks | The time between two refreshes of the display as the window system measured it, read with displayVSyncTicks
 
 **Vulkan apps (`DemoAppVulkanBasic`)**
 
@@ -385,7 +405,8 @@ Column | Unit | Description
 `presentWaitTicks` | durationTicks | How long the sample delayed the present of the frame, to hold it for its swap interval
 `cpuLoadMs` | count | The CPU load setting: the milliseconds the sample is busy per frame
 `gpuLoadSteps` | count | The GPU load setting: the steps of the raymarched background
-`presentScheduled` | flag | 1 if the presentation engine holds the frame for its swap interval (the present has a target time), 0 if the sample waits before it presents
+`holdMethod` | code | How the frame is held for more than one refresh: 0 the sample sleeps on a timer, 1 it waits on the vsync of the window system, 3 the present has a target time
+`holdTargetTicks` | ticks | The vertical blank the frame was aimed at when it was held by waiting on the vsync
 `presentTargetTicks` | durationTicks | The target time the sample asked for: the frame is not to be shown before this long after the frame before it was shown
 `pacerFrameId` | id | The id the frame pacer gave the frame, present feedback is given with it
 `nextFrameStartTicks` | ticks | The start of the frame plus its swap interval according to the frame pacer: what the waits of the sample hold to
@@ -414,7 +435,7 @@ Event | Details
 `presentTiming` | Vulkan: if the presents of the swapchain are timed, the stages and the time domain of the surface and what it can schedule.
 `refreshProperties` | Vulkan: `refreshDuration` and `refreshInterval` of the swapchain, written when they change.
 `presentClockCalibration` | Vulkan: the offset between the clock of a present stage and the clock of the framework and how far off it can be, every time it is measured.
-`pacerConfig` | The samples: the pacer was switched or its settings changed (the refresh rate it uses, the target fps, adaptive, present feedback).
+`pacerConfig` | The samples: the pacer was switched or its settings changed (the refresh rate it uses, the target fps, adaptive, present feedback, how a frame is held and the phase of the vsync wait).
 
 ### Adding values from an app
 

@@ -45,6 +45,7 @@
 #include <FslNativeWindow/Platform/Adapter/Win32/PlatformNativeWindowSystemAdapterWin32.hpp>
 #include <Winuser.h>
 #include <Xinput.h>
+#include <dwmapi.h>
 #include <windowsx.h>
 #include <algorithm>
 #include <array>
@@ -961,7 +962,7 @@ namespace Fsl
     const PlatformNativeWindowAllocationParams* const pPlatformCustomWindowAllocationParams)
     : PlatformNativeWindowAdapter(nativeWindowSetup, platformWindowParams, pPlatformCustomWindowAllocationParams,
                                   NativeWindowCapabilityFlags::CaptureMouse | NativeWindowCapabilityFlags::GetDpi |
-                                    NativeWindowCapabilityFlags::GetDisplayInfo)
+                                    NativeWindowCapabilityFlags::GetDisplayInfo | NativeWindowCapabilityFlags::GetVSyncInfo)
     , m_dpiHelper(platformWindowParams.DpiHelper)
     , m_mouseCaptureEnabled(false)
     , m_mouseInternalCaptureEnabled(false)
@@ -1371,6 +1372,34 @@ namespace Fsl
   NativeWindowDisplayInfo PlatformNativeWindowAdapterWin32::TryGetNativeDisplayInfo() const
   {
     return m_cachedDisplayInfo;
+  }
+
+
+  NativeWindowTimingSupport PlatformNativeWindowAdapterWin32::GetTimingSupport() const
+  {
+    NativeWindowTimingSupport support;
+    support.WindowSystem = "Win32";
+    support.VSyncSource = "DwmGetCompositionTimingInfo";
+    support.Available = {"DwmGetCompositionTimingInfo", "IDXGIOutput::WaitForVBlank"};
+    support.Used = {"DwmGetCompositionTimingInfo"};
+    return support;
+  }
+
+
+  NativeWindowVSyncInfo PlatformNativeWindowAdapterWin32::TryGetNativeVSyncInfo() const
+  {
+    // The desktop compositor reports the last vertical blank and the refresh period it measured, both in QueryPerformanceCounter time,
+    // which is the clock of the HighResolutionTimer. It is the timing of the compositor: one clock for the desktop, not one per monitor.
+    DWM_TIMING_INFO timingInfo{};
+    timingInfo.cbSize = sizeof(timingInfo);
+    LARGE_INTEGER frequency{};
+    if (FAILED(DwmGetCompositionTimingInfo(nullptr, &timingInfo)) || QueryPerformanceFrequency(&frequency) == 0 || frequency.QuadPart <= 0)
+    {
+      return {};
+    }
+    const double ticksPerCount = static_cast<double>(TickCount::TicksPerSecond) / static_cast<double>(frequency.QuadPart);
+    return {TickCount(static_cast<int64_t>(static_cast<double>(timingInfo.qpcVBlank) * ticksPerCount)),
+            TimeSpan(static_cast<int64_t>(static_cast<double>(timingInfo.qpcRefreshPeriod) * ticksPerCount))};
   }
 
 

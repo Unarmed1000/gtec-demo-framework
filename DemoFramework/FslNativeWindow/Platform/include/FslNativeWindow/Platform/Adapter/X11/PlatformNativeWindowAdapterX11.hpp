@@ -67,6 +67,8 @@ namespace Fsl
     void OnRRScreenChangeNotify(XEvent* pEvent, const std::shared_ptr<INativeWindowEventQueue>& eventQueue);
     void OnRRNotify(XEvent* pEvent, const std::shared_ptr<INativeWindowEventQueue>& eventQueue);
 
+    NativeWindowTimingSupport GetTimingSupport() const override;
+
   protected:
     bool TryGetNativeSize(PxPoint2& rSize) const override;
     bool TryGetNativeDpi(Vector2& rDPI) const override;

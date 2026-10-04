@@ -43,6 +43,7 @@
 #include <df-xdg-shell-client-protocol.h>         // XDG wayland-scanner created header
 #include <linux/input.h>
 #include <algorithm>
+#include <array>
 #include <cassert>
 #include <cstring>
 #include <memory>
@@ -794,12 +795,27 @@ namespace Fsl
 #pragma GCC diagnostic pop
 #endif
 
+    //! The globals a compositor can have that are about when a frame is shown (Doc/FramePacingPlatformSupport.md). None of them is bound
+    //! here: they are noted so the frame pacing log can say what the compositor offers.
+    bool IsFrameTimingGlobal(const char* const pszInterface) noexcept
+    {
+      constexpr std::array<const char*, 6> Globals = {
+        "wp_presentation",    "wp_fifo_manager_v1", "wp_commit_timing_manager_v1", "wp_tearing_control_manager_v1", "wp_linux_drm_syncobj_manager_v1",
+        "zwp_linux_dmabuf_v1"};
+      return std::any_of(Globals.begin(), Globals.end(), [pszInterface](const char* const pszEntry) { return strcmp(pszInterface, pszEntry) == 0; });
+    }
+
     void OnWaylandSystemContext_RegistryHandleGlobal(void* data, wl_registry* registry, uint32_t name, const char* interface, uint32_t version)
     {
       FSLLOG3_VERBOSE5("Wayland registry handle global '{}'", interface)
 
       auto* pContext = static_cast<PlatformNativeWindowSystemContextWayland*>(data);
       assert(pContext != nullptr);
+
+      if (IsFrameTimingGlobal(interface))
+      {
+        pContext->FrameTimingGlobals.emplace_back(interface);
+      }
 
       if (strcmp(interface, wl_compositor_interface.name) == 0)
       {
@@ -1140,6 +1156,20 @@ namespace Fsl
   {
     rDPI = Vector2(m_cachedScreenDPI.X, m_cachedScreenDPI.Y);
     return true;
+  }
+
+
+  NativeWindowTimingSupport PlatformNativeWindowAdapterWayland::GetTimingSupport() const
+  {
+    // What the compositor offers. Nothing of it is used: the refresh rate comes from wl_output and there is no vsync time yet.
+    NativeWindowTimingSupport support;
+    support.WindowSystem = "Wayland";
+    const auto windowSystemContext = m_windowSystemContext.lock();
+    if (windowSystemContext)
+    {
+      support.Available = windowSystemContext->FrameTimingGlobals;
+    }
+    return support;
   }
 
 

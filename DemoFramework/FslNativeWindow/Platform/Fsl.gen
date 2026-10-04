@@ -5,6 +5,7 @@
     <Dependency Name="FslNativeWindow.Base"/>
     <Platform Name="Windows" ProjectId="8DF3A916-1DCB-4A88-B394-1BF37FC452A1">
       <Dependency Name="Platform.Windows.XInput"/>
+      <Dependency Name="Platform.Windows.Dwm"/>
     </Platform>
     <Platform Name="Android">
       <Dependency Name="Platform.Android.GameActivity" Access="Public"/>

@@ -37,6 +37,7 @@
 #include <FslUtil/Vulkan1_0/Debug/VUDeviceFault.hpp>
 #include <FslUtil/Vulkan1_0/SafeType/DeviceCreateInfoCopy.hpp>
 #include <FslUtil/Vulkan1_0/SafeType/InstanceCreateInfoCopy.hpp>
+#include <FslUtil/Vulkan1_0/Util/StructUtil.hpp>
 #include <FslUtil/Vulkan1_0/VUCalibratedTimestamps.hpp>
 #include <FslUtil/Vulkan1_0/VUDevice.hpp>
 #include <FslUtil/Vulkan1_0/VUDeviceQueueRecord.hpp>
@@ -60,11 +61,14 @@ namespace Fsl
     Vulkan::VUPhysicalDeviceRecord m_physicalDevice;
     VkPhysicalDeviceFeatures m_deviceActiveFeatures{};
     //! The enabled Vulkan 1.1 core features (request them with DemoAppHostConfigVulkan::AddPhysicalDeviceFeatureRequest)
-    VkPhysicalDeviceVulkan11Features m_deviceActiveFeatures11{VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_1_FEATURES, nullptr};
+    VkPhysicalDeviceVulkan11Features m_deviceActiveFeatures11 =
+      Vulkan::StructUtil::Create<VkPhysicalDeviceVulkan11Features>(VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_1_FEATURES);
     //! The enabled Vulkan 1.2 core features (request them with DemoAppHostConfigVulkan::AddPhysicalDeviceFeatureRequest)
-    VkPhysicalDeviceVulkan12Features m_deviceActiveFeatures12{VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_FEATURES, nullptr};
+    VkPhysicalDeviceVulkan12Features m_deviceActiveFeatures12 =
+      Vulkan::StructUtil::Create<VkPhysicalDeviceVulkan12Features>(VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_FEATURES);
     //! The enabled Vulkan 1.3 core features (request them with DemoAppHostConfigVulkan::AddPhysicalDeviceFeatureRequest)
-    VkPhysicalDeviceVulkan13Features m_deviceActiveFeatures13{VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES, nullptr};
+    VkPhysicalDeviceVulkan13Features m_deviceActiveFeatures13 =
+      Vulkan::StructUtil::Create<VkPhysicalDeviceVulkan13Features>(VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES);
     //! True if VK_KHR/EXT_swapchain_maintenance1 was enabled (which means VkSwapchainPresentFenceInfoKHR can be used)
     bool m_swapchainMaintenance1Enabled{false};
     //! The optional device extensions the host enabled on m_device

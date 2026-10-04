@@ -37,6 +37,7 @@
 #include <FslGraphics/Render/Adapter/INativeBatch2D.hpp>
 #include <FslNativeWindow/Base/INativeWindow.hpp>
 #include <FslNativeWindow/Base/NativeWindowDisplayInfo.hpp>
+#include <FslNativeWindow/Base/NativeWindowVSyncInfo.hpp>
 #include <FslNativeWindow/Base/VirtualKey.hpp>
 #include <FslSimpleUI/App/Theme/ThemeSelector.hpp>
 #include <FslSimpleUI/Base/Control/Background.hpp>
@@ -118,6 +119,38 @@ namespace Fsl
         return "end";
       default:
         return "unknown";
+      }
+    }
+
+    const char* ToString(const SamplePacerHold hold) noexcept
+    {
+      switch (hold)
+      {
+      case SamplePacerHold::Auto:
+        return "auto";
+      case SamplePacerHold::VSync:
+        return "vsync";
+      case SamplePacerHold::Schedule:
+        return "schedule";
+      case SamplePacerHold::Wait:
+      default:
+        return "wait";
+      }
+    }
+
+    //! The value of the holdMethod column of the frame log
+    int64_t ToLogCode(const SamplePacerHold hold) noexcept
+    {
+      switch (hold)
+      {
+      case SamplePacerHold::VSync:
+        return 1;
+      case SamplePacerHold::Schedule:
+        return 3;
+      case SamplePacerHold::Auto:
+      case SamplePacerHold::Wait:
+      default:
+        return 0;
       }
     }
 
@@ -241,6 +274,9 @@ namespace Fsl
     // The chart of the work per frame and the test pattern
     m_ui.SwitchWorkChart = uiFactory->CreateSwitch("Show the work chart", !options->IsWorkChartHidden());
     m_ui.SwitchTestPattern = uiFactory->CreateSwitch("Show the test pattern", !options->IsTestPatternHidden());
+    // The box animation of the mb-framepacing-explained videos, to compare the motion of the sample with them by eye
+    m_ui.SwitchBoxAnimation = uiFactory->CreateSwitch("Show the box animation", options->GetBoxAnimation() != SampleBoxAnimationSpeed::Off);
+    m_ui.SwitchBoxAnimationFast = uiFactory->CreateSwitch("Fast box animation", options->GetBoxAnimation() == SampleBoxAnimationSpeed::Fast);
     // The sync marker of the service (--FramePacing.SyncMarker draws it from the start)
     m_ui.SwitchSyncMarker = uiFactory->CreateSwitch("Draw the sync marker", m_framePacing && m_framePacing->IsSyncMarkerEnabled());
     m_ui.SwitchSyncMarker->SetEnabled(m_framePacing != nullptr);
@@ -267,9 +303,14 @@ namespace Fsl
     // Only for an app that measures its presents, so it stays disabled until the pacer is on and the presents are measured
     m_ui.SwitchPacerFeedback = uiFactory->CreateSwitch("Present feedback to the pacer", options->IsPacerPresentFeedback());
     m_ui.SwitchPacerFeedback->SetEnabled(false);
-    // Only for an app that can give a present a target time, so it stays disabled until the pacer is on and the app says it can
-    m_ui.SwitchSchedulePresent = uiFactory->CreateSwitch("Schedule the present", options->IsPacerSchedulePresent());
-    m_ui.SwitchSchedulePresent->SetEnabled(false);
+    // How a frame is held for more than one refresh. A method the system can not do falls back to one it can (GetHoldMethod).
+    const SamplePacerHold hold = options->GetPacerHold();
+    const auto holdGroup = uiFactory->CreateRadioGroup("hold");
+    m_ui.RadioHoldAuto = uiFactory->CreateRadioButton(holdGroup, "Hold: auto", hold == SamplePacerHold::Auto);
+    m_ui.RadioHoldVSync = uiFactory->CreateRadioButton(holdGroup, "Hold: wait on the vsync", hold == SamplePacerHold::VSync);
+    m_ui.RadioHoldWait = uiFactory->CreateRadioButton(holdGroup, "Hold: sleep", hold == SamplePacerHold::Wait);
+    m_ui.RadioHoldSchedule = uiFactory->CreateRadioButton(holdGroup, "Hold: scheduled present", hold == SamplePacerHold::Schedule);
+    m_vsyncPhasePercent = options->GetPacerVSyncPhasePercent();
     m_ui.LabelPacerStatus = uiFactory->CreateLabel("");
     m_ui.LabelPacerFrames = uiFactory->CreateLabel("");
     const auto lblCpuLoad = uiFactory->CreateLabel("CPU load (ms per frame)");
@@ -305,7 +346,10 @@ namespace Fsl
     stackLayout->AddChild(m_ui.SliderTargetFps);
     stackLayout->AddChild(m_ui.SwitchAdaptive);
     stackLayout->AddChild(m_ui.SwitchPacerFeedback);
-    stackLayout->AddChild(m_ui.SwitchSchedulePresent);
+    stackLayout->AddChild(m_ui.RadioHoldAuto);
+    stackLayout->AddChild(m_ui.RadioHoldVSync);
+    stackLayout->AddChild(m_ui.RadioHoldWait);
+    stackLayout->AddChild(m_ui.RadioHoldSchedule);
     stackLayout->AddChild(m_ui.LabelPacerStatus);
     stackLayout->AddChild(m_ui.LabelPacerFrames);
     stackLayout->AddChild(uiFactory->CreateDivider(UI::LayoutOrientation::Horizontal));
@@ -320,6 +364,8 @@ namespace Fsl
     stackLayout->AddChild(m_ui.SwitchPacerStats);
     stackLayout->AddChild(m_ui.SwitchWorkChart);
     stackLayout->AddChild(m_ui.SwitchTestPattern);
+    stackLayout->AddChild(m_ui.SwitchBoxAnimation);
+    stackLayout->AddChild(m_ui.SwitchBoxAnimationFast);
     stackLayout->AddChild(m_ui.SwitchSyncMarker);
     stackLayout->AddChild(uiFactory->CreateDivider(UI::LayoutOrientation::Horizontal));
     stackLayout->AddChild(m_ui.SwitchPresentTiming);
@@ -350,6 +396,7 @@ namespace Fsl
     const auto scrollViewer = uiFactory->CreateScrollViewer(stackLayout, UI::ScrollModeFlags::TranslateY, false);
     const auto rightBar = uiFactory->CreateRightBar(scrollViewer);
     mainLayout->AddChild(rightBar, 1, 0);
+    m_ui.RightBar = rightBar;
     mainLayout->SetLimitToAvailableSpace(true);
     m_uiExtension->SetMainWindow(mainLayout);
 
@@ -487,6 +534,11 @@ namespace Fsl
       // Use the exact time the frame is animated for, this is what the marker reports
       DrawAnimation(m_animationTime.TotalSeconds());
     }
+    if (m_ui.SwitchBoxAnimation->IsChecked())
+    {
+      // The same time as the test pattern, drawn on top of it
+      DrawBoxAnimation(m_animationTime.TotalSeconds());
+    }
 
     m_uiExtension->Draw();
   }
@@ -507,9 +559,33 @@ namespace Fsl
   }
 
 
-  bool FramePacingShared::IsPresentScheduled() const
+  SamplePacerHold FramePacingShared::GetRequestedHold() const
   {
-    return m_pacer && m_presentSchedulingSupported && m_ui.SwitchSchedulePresent->IsChecked();
+    if (m_ui.RadioHoldAuto->IsChecked())
+    {
+      return SamplePacerHold::Auto;
+    }
+    if (m_ui.RadioHoldVSync->IsChecked())
+    {
+      return SamplePacerHold::VSync;
+    }
+    return m_ui.RadioHoldSchedule->IsChecked() ? SamplePacerHold::Schedule : SamplePacerHold::Wait;
+  }
+
+
+  SamplePacerHold FramePacingShared::GetHoldMethod() const
+  {
+    const SamplePacerHold requested = GetRequestedHold();
+    if (!m_pacer || requested == SamplePacerHold::Wait)
+    {
+      return SamplePacerHold::Wait;
+    }
+    if ((requested == SamplePacerHold::Schedule || requested == SamplePacerHold::Auto) && m_presentSchedulingSupported)
+    {
+      return SamplePacerHold::Schedule;
+    }
+    // Auto without a present that takes a target time, and what is left of a method the system can not do: the vsync wait, else the sleep
+    return (m_vsyncTime.Ticks() > 0 && m_vsyncPeriod.Ticks() > 0) ? SamplePacerHold::VSync : SamplePacerHold::Wait;
   }
 
 
@@ -671,10 +747,50 @@ namespace Fsl
   }
 
 
+  void FramePacingShared::WaitForPresentOnVSync(const uint32_t presentSwapInterval)
+  {
+    // The window system says when the display refreshes, so the present does not have to be a guess. The frame is aimed at the vertical
+    // blank nearest to its start plus its swap interval, and presented during the refresh before the present holds it from. Where in
+    // that refresh is a setting, as only a part of it is safe: on the Windows compositor at 240 Hz a present from 45 to 85 % of the
+    // refresh was shown at the target, a earlier one two refreshes late and a later one a refresh late.
+    const int64_t period = m_vsyncPeriod.Ticks();
+    const int64_t aimedTicks = m_frameStartTime.Ticks() + (period * static_cast<int64_t>(m_schedule.SwapInterval));
+    const int64_t fromVSync = aimedTicks - m_vsyncTime.Ticks();
+    const int64_t refreshes = (fromVSync >= 0 ? (fromVSync + (period / 2)) : (fromVSync - (period / 2))) / period;
+    const TickCount target(m_vsyncTime.Ticks() + (refreshes * period));
+    const TickCount presentTime(target.Ticks() - (period * static_cast<int64_t>(std::max(presentSwapInterval, 1u))) +
+                                ((period * static_cast<int64_t>(m_vsyncPhasePercent)) / 100));
+
+    const TickCount waitStartTime = m_timer.GetTimestamp();
+    WaitUntil(presentTime);
+    m_lastPresentWait = m_timer.GetTimestamp() - waitStartTime;
+    // The next frame starts at the vertical blank this one is aimed at, so the frame starts are on the refreshes
+    m_nextFrameStartTime = target;
+    if (m_frameLog)
+    {
+      m_frameLog->SetLogValue(m_logColumns.PresentWait, m_lastPresentWait);
+      m_frameLog->SetLogValue(m_logColumns.HoldTarget, target);
+    }
+  }
+
+
   void FramePacingShared::WaitForPresent(const uint32_t presentSwapInterval)
   {
     m_presentRelativeTarget = {};
-    if (IsPresentScheduled() && m_pacerConfig.RefreshRateHz > 0.0)
+    const SamplePacerHold holdMethod = GetHoldMethod();
+    if (m_frameLog && m_pacer)
+    {
+      m_frameLog->SetLogInt64(m_logColumns.HoldMethod, ToLogCode(holdMethod));
+    }
+    if (m_pacer && holdMethod == SamplePacerHold::VSync)
+    {
+      if (m_schedule.SwapInterval > presentSwapInterval)
+      {
+        WaitForPresentOnVSync(presentSwapInterval);
+      }
+      return;
+    }
+    if (m_pacer && holdMethod == SamplePacerHold::Schedule && m_pacerConfig.RefreshRateHz > 0.0)
     {
       // The presentation engine holds the frame: the present is given a target time and is done right away. The frame is not shown
       // before the target time has passed since the frame before it was shown, and then at the first refresh. Half a refresh less than
@@ -830,11 +946,19 @@ namespace Fsl
       m_ui.SwitchPacerFeedback->SetEnabled(feedbackAvailable);
     }
     pacerConfig.PresentFeedback = feedbackAvailable && m_presentFeedbackEnabled && m_ui.SwitchPacerFeedback->IsChecked();
-    // Scheduling the present is only offered while the app can do it
-    const bool schedulingAvailable = pacerOn && m_presentSchedulingSupported;
-    if (m_ui.SwitchSchedulePresent->IsEnabled() != schedulingAvailable)
+    // How a frame is held only matters while the pacer is on
+    for (UI::RadioButton* pRadio : {m_ui.RadioHoldAuto.get(), m_ui.RadioHoldVSync.get(), m_ui.RadioHoldWait.get(), m_ui.RadioHoldSchedule.get()})
     {
-      m_ui.SwitchSchedulePresent->SetEnabled(schedulingAvailable);
+      if (pRadio->IsEnabled() != pacerOn)
+      {
+        pRadio->SetEnabled(pacerOn);
+      }
+    }
+    {    // When the display refreshes according to the window system, read once per frame
+      const auto window = m_window.lock();
+      const NativeWindowVSyncInfo vsyncInfo = window ? window->TryGetVSyncInfo() : NativeWindowVSyncInfo();
+      m_vsyncTime = vsyncInfo.IsValid() ? vsyncInfo.VSyncTime : TickCount();
+      m_vsyncPeriod = vsyncInfo.IsValid() ? vsyncInfo.RefreshPeriod : TimeSpan();
     }
 
     if (!pacerOn)
@@ -993,9 +1117,11 @@ namespace Fsl
     rColumns.FeedbackNotShown =
       rLog.RegisterColumn("pacerFeedbackNotShown", FramePacingLogUnit::Count,
                           "The frames that were reported to the frame pacer as never shown, counted since the pacer was made");
-    rColumns.PresentScheduled = rLog.RegisterColumn("presentScheduled", FramePacingLogUnit::Flag,
-                                                    "1 if the presentation engine holds the frame for its swap interval (the present "
-                                                    "has a target time), 0 if the sample waits before it presents");
+    rColumns.HoldMethod = rLog.RegisterColumn("holdMethod", FramePacingLogUnit::Code,
+                                              "How the frame is held for more than one refresh: 0 the sample sleeps on a timer, 1 it waits on "
+                                              "the vsync of the window system, 3 the present has a target time");
+    rColumns.HoldTarget = rLog.RegisterColumn("holdTargetTicks", FramePacingLogUnit::Ticks,
+                                              "The vertical blank the frame was aimed at when it was held by waiting on the vsync");
     rColumns.PresentTarget = rLog.RegisterColumn("presentTargetTicks", FramePacingLogUnit::DurationTicks,
                                                  "The target time the sample asked for: the frame is not to be shown before this long after "
                                                  "the frame before it was shown");
@@ -1016,17 +1142,18 @@ namespace Fsl
     IFramePacingFrameLog& rLog = *m_frameLog;
     const LogColumns& columns = m_logColumns;
     const bool pacerOn = m_pacer != nullptr;
-    const bool presentScheduled = IsPresentScheduled();
-    if (!m_hasLoggedPacerConfig || pacerOn != m_loggedPacerOn || m_pacerConfig != m_loggedPacerConfig || presentScheduled != m_loggedSchedulePresent)
+    const SamplePacerHold requestedHold = GetRequestedHold();
+    if (!m_hasLoggedPacerConfig || pacerOn != m_loggedPacerOn || m_pacerConfig != m_loggedPacerConfig || requestedHold != m_loggedHold)
     {
       // The settings the frames from here on are paced with
       m_hasLoggedPacerConfig = true;
       m_loggedPacerOn = pacerOn;
       m_loggedPacerConfig = m_pacerConfig;
-      m_loggedSchedulePresent = presentScheduled;
-      rLog.AddLogEvent("pacerConfig", fmt::format("on={};refreshRateHz={};targetFps={};adaptive={};presentFeedback={};schedulePresent={}",
-                                                  pacerOn ? 1 : 0, m_pacerConfig.RefreshRateHz, m_pacerConfig.TargetFps,
-                                                  m_pacerConfig.Adaptive ? 1 : 0, m_pacerConfig.PresentFeedback ? 1 : 0, presentScheduled ? 1 : 0));
+      m_loggedHold = requestedHold;
+      rLog.AddLogEvent("pacerConfig",
+                       fmt::format("on={};refreshRateHz={};targetFps={};adaptive={};presentFeedback={};hold={};vsyncPhasePercent={}", pacerOn ? 1 : 0,
+                                   m_pacerConfig.RefreshRateHz, m_pacerConfig.TargetFps, m_pacerConfig.Adaptive ? 1 : 0,
+                                   m_pacerConfig.PresentFeedback ? 1 : 0, ToString(requestedHold), m_vsyncPhasePercent));
     }
 
     rLog.SetLogValue(columns.PacerOn, pacerOn);
@@ -1050,7 +1177,6 @@ namespace Fsl
       rLog.SetLogUInt64(columns.PacerFrameId, m_schedule.FrameId);
       rLog.SetLogValue(columns.NextFrameStart, m_schedule.NextFrameStartTime);
       rLog.SetLogValue(columns.FeedbackOn, m_pacerConfig.PresentFeedback);
-      rLog.SetLogValue(columns.PresentScheduled, presentScheduled);
       if (m_pacerConfig.PresentFeedback)
       {
         // What became of the feedback the frame pacer had when it planned this frame
@@ -1597,6 +1723,29 @@ namespace Fsl
       rStats.RunSequenceId->SetContent(UnknownValue);
     }
     rStats.SyncMarker->SetContent(info.SyncMarker ? "drawn" : "off");
+  }
+
+
+  void FramePacingShared::DrawBoxAnimation(const double animationSeconds)
+  {
+    if (!m_nativeBatch)
+    {
+      return;
+    }
+    const SampleBoxAnimationSpeed speed = m_ui.SwitchBoxAnimationFast->IsChecked() ? SampleBoxAnimationSpeed::Fast : SampleBoxAnimationSpeed::Normal;
+    // The box moves in the part of the window that is left of the controls, so it is not hidden by them at the end of its path
+    const int32_t controlsWidthPx = m_ui.RightBar ? m_ui.RightBar->RenderSizePx().RawWidth() : 0;
+    const int32_t areaWidthPx = std::max(m_windowSizePx.RawWidth() - controlsWidthPx, 0);
+    const PxRectangle boxRectanglePx =
+      SampleBoxAnimation::CalcBoxRectangle(PxSize2D::Create(areaWidthPx, m_windowSizePx.RawHeight()), animationSeconds, speed);
+    if (boxRectanglePx.RawWidth() <= 0)
+    {
+      return;
+    }
+    // Just the box, with nothing behind it but what the sample shows
+    m_nativeBatch->Begin(BlendState::Opaque);
+    m_nativeBatch->Draw(m_fillTexture, boxRectanglePx, Colors::White());
+    m_nativeBatch->End();
   }
 
 

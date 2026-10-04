@@ -34,6 +34,8 @@
 #include <FslNativeWindow/Base/NativeWindowCapabilityFlags.hpp>
 #include <FslNativeWindow/Base/NativeWindowDisplayInfo.hpp>
 #include <FslNativeWindow/Base/NativeWindowMetrics.hpp>
+#include <FslNativeWindow/Base/NativeWindowTimingSupport.hpp>
+#include <FslNativeWindow/Base/NativeWindowVSyncInfo.hpp>
 
 namespace Fsl
 {
@@ -57,6 +59,13 @@ namespace Fsl
     //! @brief Get information about the display the window is presented on.
     //! @return the display info, members that are unknown are left at their default value (IsDefault() is true if nothing is known).
     [[nodiscard]] virtual NativeWindowDisplayInfo TryGetDisplayInfo() const = 0;
+
+    //! @brief Get when the display the window is on refreshes, as the window system reports it right now.
+    //! @return the vsync info, IsValid() is false if it is not known.
+    [[nodiscard]] virtual NativeWindowVSyncInfo TryGetVSyncInfo() const = 0;
+
+    //! @brief Get what the window system has that tells when a frame is shown and what of it is used, for logs.
+    [[nodiscard]] virtual NativeWindowTimingSupport GetTimingSupport() const = 0;
 
     //! @brief Get the windows native DPI.
     //! @return true if the DPI could be retrieved, else false

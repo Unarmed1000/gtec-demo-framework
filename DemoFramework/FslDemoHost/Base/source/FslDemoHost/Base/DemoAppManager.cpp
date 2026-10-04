@@ -54,8 +54,10 @@
 #include <FslDemoService/SystemStats/ISystemStatsService.hpp>
 #include <FslNativeWindow/Base/INativeWindow.hpp>
 #include <FslNativeWindow/Base/NativeWindowDisplayInfo.hpp>
+#include <FslNativeWindow/Base/NativeWindowTimingSupport.hpp>
 #include <FslService/Consumer/ServiceProvider.hpp>
 #include <fmt/format.h>
+#include <fmt/ranges.h>
 #include <cassert>
 #include <memory>
 #include <utility>
@@ -115,6 +117,13 @@ namespace Fsl
         rLog.RegisterColumn("frameworkTimeTicks", FramePacingLogUnit::DurationTicks, "The time of the framework the frame was updated and drawn for");
       m_framePacingLogColumns.FrameworkStep =
         rLog.RegisterColumn("frameworkStepTicks", FramePacingLogUnit::DurationTicks, "The time step of the framework from the frame before");
+      m_framePacingLogColumns.DisplayVSync =
+        rLog.RegisterColumn("displayVSyncTicks", FramePacingLogUnit::Ticks,
+                            "The time of a recent vertical blank of the display as the window system reported it when the frame began "
+                            "(empty if the platform does not report it)");
+      m_framePacingLogColumns.DisplayRefreshPeriod =
+        rLog.RegisterColumn("displayRefreshPeriodTicks", FramePacingLogUnit::DurationTicks,
+                            "The time between two refreshes of the display as the window system measured it, read with displayVSyncTicks");
     }
     else
     {
@@ -304,6 +313,25 @@ namespace Fsl
           if (!windows.empty())
           {
             m_framePacingLogWindow = windows.front();
+            const auto firstWindow = m_framePacingLogWindow.lock();
+            if (firstWindow)
+            {
+              // What the window system has that tells when a frame is shown and what of it is used, so the log says what the platform offers
+              const NativeWindowTimingSupport support = firstWindow->GetTimingSupport();
+              rLog.SetLogFact("window.system", support.WindowSystem);
+              rLog.SetLogFact("window.vsyncSource", support.VSyncSource);
+              for (const auto& entry : support.Available)
+              {
+                rLog.SetLogFact(fmt::format("window.has.{}", entry), "1");
+              }
+              for (const auto& entry : support.Used)
+              {
+                rLog.SetLogFact(fmt::format("window.uses.{}", entry), "1");
+              }
+              FSLLOG3_INFO("FramePacing: window system '{}', vsync source '{}', has [{}], uses [{}]", support.WindowSystem,
+                           support.VSyncSource.empty() ? "none" : support.VSyncSource, fmt::join(support.Available, ", "),
+                           fmt::join(support.Used, ", "));
+            }
           }
         }
       }
@@ -312,6 +340,16 @@ namespace Fsl
         // Reading it is cheap as the window caches it.
         const auto window = m_framePacingLogWindow.lock();
         const int64_t refreshIntervalTicks = window ? window->TryGetDisplayInfo().RefreshInterval.Ticks() : 0;
+        if (window)
+        {
+          // When the display refreshes according to the window system, so it can be compared with when the frames were shown
+          const NativeWindowVSyncInfo vsyncInfo = window->TryGetVSyncInfo();
+          if (vsyncInfo.IsValid())
+          {
+            rLog.SetLogValue(m_framePacingLogColumns.DisplayVSync, vsyncInfo.VSyncTime);
+            rLog.SetLogValue(m_framePacingLogColumns.DisplayRefreshPeriod, vsyncInfo.RefreshPeriod);
+          }
+        }
         if (refreshIntervalTicks != m_framePacingLogRefreshIntervalTicks)
         {
           m_framePacingLogRefreshIntervalTicks = refreshIntervalTicks;

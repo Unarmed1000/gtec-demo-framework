@@ -24,7 +24,9 @@
 
 #include <FslDemoApp/Base/ADemoOptionParser.hpp>
 #include <Shared/FramePacing/RaymarchParams.hpp>
+#include <Shared/FramePacing/SampleBoxAnimation.hpp>
 #include <Shared/FramePacing/SampleConfig.hpp>
+#include <Shared/FramePacing/SamplePacerHold.hpp>
 #include <cstdint>
 #include <optional>
 
@@ -37,13 +39,15 @@ namespace Fsl
     bool m_hidePacingStats{false};
     bool m_hideWorkChart{false};
     bool m_hideTestPattern{false};
+    SampleBoxAnimationSpeed m_boxAnimation{SampleBoxAnimationSpeed::Off};
     int32_t m_timedRunSeconds{SampleConfig::TimedRunSeconds.Get()};
     bool m_pacerEnabled{false};
     std::optional<double> m_pacerRefreshRateHz;
     int32_t m_pacerTargetFps{SampleConfig::TargetFps.Get()};
     bool m_pacerAdaptive{true};
     bool m_pacerPresentFeedback{false};
-    bool m_pacerSchedulePresent{false};
+    SamplePacerHold m_pacerHold{SamplePacerHold::Wait};
+    int32_t m_pacerVSyncPhasePercent{SampleConfig::VSyncPhasePercent.Get()};
     int32_t m_cpuLoadMs{SampleConfig::CpuLoadMs.Get()};
     int32_t m_gpuLoadSteps{SampleConfig::GpuLoadSteps.Get()};
     RaymarchScene m_background{RaymarchScene::Flight};
@@ -74,6 +78,12 @@ namespace Fsl
     [[nodiscard]] bool IsTestPatternHidden() const noexcept
     {
       return m_hideTestPattern;
+    }
+
+    //! @brief Get the speed of the box animation of the mb-framepacing-explained videos (Off: it is not shown).
+    [[nodiscard]] SampleBoxAnimationSpeed GetBoxAnimation() const noexcept
+    {
+      return m_boxAnimation;
     }
 
     //! @brief The duration of a timed run in seconds.
@@ -112,11 +122,16 @@ namespace Fsl
       return m_pacerPresentFeedback;
     }
 
-    //! @brief Check if the presents are scheduled (the presentation engine holds a frame for its swap interval) where the app can do that,
-    //!        instead of the sample waiting before it presents.
-    [[nodiscard]] bool IsPacerSchedulePresent() const noexcept
+    //! @brief Get how a frame is held for more than one refresh where the present only holds it for one.
+    [[nodiscard]] SamplePacerHold GetPacerHold() const noexcept
     {
-      return m_pacerSchedulePresent;
+      return m_pacerHold;
+    }
+
+    //! @brief Get where in the refresh before the one a frame is aimed at the vsync wait presents, in percent of the refresh.
+    [[nodiscard]] int32_t GetPacerVSyncPhasePercent() const noexcept
+    {
+      return m_pacerVSyncPhasePercent;
     }
 
     //! @brief The time the app spends busy every frame in milliseconds.

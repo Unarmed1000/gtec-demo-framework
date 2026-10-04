@@ -1,5 +1,5 @@
-#ifndef SHARED_FRAMEPACING_SAMPLECONFIG_HPP
-#define SHARED_FRAMEPACING_SAMPLECONFIG_HPP
+#ifndef FSLNATIVEWINDOW_BASE_NATIVEWINDOWVSYNCINFO_HPP
+#define FSLNATIVEWINDOW_BASE_NATIVEWINDOWVSYNCINFO_HPP
 //****************************************************************************************************************************************************
 //* BSD 3-Clause License
 //*
@@ -22,30 +22,38 @@
 //* EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //****************************************************************************************************************************************************
 
-#include <FslBase/Math/ConstrainedValue.hpp>
-#include <cstdint>
+#include <FslBase/Time/TickCount.hpp>
+#include <FslBase/Time/TimeSpan.hpp>
 
-//! The default value and the range of the settings of the FramePacing samples, shared by the command line options and the UI
-namespace Fsl::SampleConfig
+namespace Fsl
 {
-  //! The duration of a timed run in seconds
-  constexpr ConstrainedValue<int32_t> TimedRunSeconds(10, 1, 120);
-  //! The refresh rate the slider offers when the window system does not know the refresh rate of the display
-  constexpr ConstrainedValue<int32_t> RefreshRateHz(60, 24, 240);
-  //! The refresh rates the command line accepts (decimals allowed)
-  constexpr double MinRefreshRateHz = 1.0;
-  constexpr double MaxRefreshRateHz = 1000.0;
-  //! The frame rate the app wants to run at (0 = the refresh rate of the display)
-  constexpr ConstrainedValue<int32_t> TargetFps(0, 0, 240);
-  //! The simulated CPU load: the time the app spends busy every frame in milliseconds
-  constexpr ConstrainedValue<int32_t> CpuLoadMs(0, 0, 50);
-  //! Where in the refresh before the one a frame is aimed at the vsync wait presents, in percent of the refresh.
-  //! The default is the middle of what was measured to work on the Windows compositor at 240 Hz: a present from 45 to 85 % of the
-  //! refresh was shown at the vertical blank it was aimed at, a earlier one two refreshes late and a later one a refresh late.
-  constexpr ConstrainedValue<int32_t> VSyncPhasePercent(65, 1, 99);
-  //! The GPU load: the number of steps the raymarched background takes for every pixel (0 = no background).
-  //! The default is a low load, so the sample starts with a background and a GPU that has something to do.
-  constexpr ConstrainedValue<int32_t> GpuLoadSteps(16, 0, 1024);
+  //! When the display the window is on refreshes, as the window system reports it. A graphics API that only has a present that waits for
+  //! the next refresh does not tell a app when the refreshes happen, the window system of the platform often can.
+  //!
+  //! It is a hint: what the time of a vertical blank means and how exact it is differs between the platforms, and a platform can report it
+  //! for another display than the one the window is on. Both members are zero when the platform does not report them.
+  struct NativeWindowVSyncInfo
+  {
+    //! The time of a recent vertical blank of the display as a HighResolutionTimer timestamp (zero if unknown)
+    TickCount VSyncTime;
+    //! The time between two refreshes as the window system measured it (TimeSpan() if unknown). The time of any other vertical blank
+    //! is VSyncTime plus or minus a whole number of these.
+    TimeSpan RefreshPeriod;
+
+    constexpr NativeWindowVSyncInfo() noexcept = default;
+
+    constexpr NativeWindowVSyncInfo(const TickCount vsyncTime, const TimeSpan refreshPeriod) noexcept
+      : VSyncTime(vsyncTime)
+      , RefreshPeriod(refreshPeriod)
+    {
+    }
+
+    //! @return true if both the time of a vertical blank and the refresh period are known
+    [[nodiscard]] constexpr bool IsValid() const noexcept
+    {
+      return VSyncTime.Ticks() > 0 && RefreshPeriod.Ticks() > 0;
+    }
+  };
 }
 
 #endif

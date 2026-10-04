@@ -1,5 +1,5 @@
-#ifndef SHARED_FRAMEPACING_SAMPLECONFIG_HPP
-#define SHARED_FRAMEPACING_SAMPLECONFIG_HPP
+#ifndef FSLUTIL_VULKAN1_0_UTIL_STRUCTUTIL_HPP
+#define FSLUTIL_VULKAN1_0_UTIL_STRUCTUTIL_HPP
 //****************************************************************************************************************************************************
 //* BSD 3-Clause License
 //*
@@ -22,30 +22,21 @@
 //* EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //****************************************************************************************************************************************************
 
-#include <FslBase/Math/ConstrainedValue.hpp>
-#include <cstdint>
+#include <vulkan/vulkan.h>
 
-//! The default value and the range of the settings of the FramePacing samples, shared by the command line options and the UI
-namespace Fsl::SampleConfig
+namespace Fsl::Vulkan::StructUtil
 {
-  //! The duration of a timed run in seconds
-  constexpr ConstrainedValue<int32_t> TimedRunSeconds(10, 1, 120);
-  //! The refresh rate the slider offers when the window system does not know the refresh rate of the display
-  constexpr ConstrainedValue<int32_t> RefreshRateHz(60, 24, 240);
-  //! The refresh rates the command line accepts (decimals allowed)
-  constexpr double MinRefreshRateHz = 1.0;
-  constexpr double MaxRefreshRateHz = 1000.0;
-  //! The frame rate the app wants to run at (0 = the refresh rate of the display)
-  constexpr ConstrainedValue<int32_t> TargetFps(0, 0, 240);
-  //! The simulated CPU load: the time the app spends busy every frame in milliseconds
-  constexpr ConstrainedValue<int32_t> CpuLoadMs(0, 0, 50);
-  //! Where in the refresh before the one a frame is aimed at the vsync wait presents, in percent of the refresh.
-  //! The default is the middle of what was measured to work on the Windows compositor at 240 Hz: a present from 45 to 85 % of the
-  //! refresh was shown at the vertical blank it was aimed at, a earlier one two refreshes late and a later one a refresh late.
-  constexpr ConstrainedValue<int32_t> VSyncPhasePercent(65, 1, 99);
-  //! The GPU load: the number of steps the raymarched background takes for every pixel (0 = no background).
-  //! The default is a low load, so the sample starts with a background and a GPU that has something to do.
-  constexpr ConstrainedValue<int32_t> GpuLoadSteps(16, 0, 1024);
+  //! @brief Create a Vulkan struct with its sType set and every other member zero (pNext is nullptr).
+  //! @note  Use it where a struct is initialized with nothing but its sType, a member initializer for example. A initializer list with
+  //!        just the sType (and pNext) makes GCC warn about every member that is left out (-Wmissing-field-initializers), once for
+  //!        every file that includes the header, and a designated initializer does the same.
+  template <typename TStruct>
+  [[nodiscard]] constexpr TStruct Create(const VkStructureType sType) noexcept
+  {
+    TStruct value{};
+    value.sType = sType;
+    return value;
+  }
 }
 
 #endif

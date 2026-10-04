@@ -39,8 +39,10 @@
 #include <FslSimpleUI/Base/Control/SliderAndFmtValueLabel.hpp>
 #include <FslSimpleUI/Base/Control/Switch.hpp>
 #include <Shared/FramePacing/RaymarchParams.hpp>
+#include <Shared/FramePacing/SampleConfig.hpp>
 #include <Shared/FramePacing/SampleFrameStats.hpp>
 #include <Shared/FramePacing/SamplePacer.hpp>
+#include <Shared/FramePacing/SamplePacerHold.hpp>
 #include <Shared/FramePacing/SamplePresentFeedback.hpp>
 #include <fmt/format.h>
 #include <array>
@@ -165,7 +167,10 @@ namespace Fsl
       std::shared_ptr<UI::SliderAndFmtValueLabel<int32_t>> SliderTargetFps;
       std::shared_ptr<UI::Switch> SwitchAdaptive;
       std::shared_ptr<UI::Switch> SwitchPacerFeedback;
-      std::shared_ptr<UI::Switch> SwitchSchedulePresent;
+      std::shared_ptr<UI::RadioButton> RadioHoldAuto;
+      std::shared_ptr<UI::RadioButton> RadioHoldVSync;
+      std::shared_ptr<UI::RadioButton> RadioHoldWait;
+      std::shared_ptr<UI::RadioButton> RadioHoldSchedule;
       std::shared_ptr<UI::Label> LabelPacerStatus;
       std::shared_ptr<UI::Label> LabelPacerFrames;
       std::shared_ptr<UI::SliderAndFmtValueLabel<int32_t>> SliderCpuLoad;
@@ -181,6 +186,10 @@ namespace Fsl
       //! The chart of the work per frame at the bottom, and the test pattern (the moving bar and box): each has a switch too
       std::shared_ptr<UI::Switch> SwitchWorkChart;
       std::shared_ptr<UI::Switch> SwitchTestPattern;
+      //! The bar with the controls at the right of the window
+      std::shared_ptr<UI::BaseWindow> RightBar;
+      std::shared_ptr<UI::Switch> SwitchBoxAnimation;
+      std::shared_ptr<UI::Switch> SwitchBoxAnimationFast;
       //! Draws the sync marker of the service at the bottom left
       std::shared_ptr<UI::Switch> SwitchSyncMarker;
       //! The optional measurements of the app: when its frames reach the display, and when the GPU worked on them
@@ -258,8 +267,14 @@ namespace Fsl
     bool m_presentSchedulingSupported{false};
     //! The target time of the present of the current frame, counted from when the frame before it was shown (zero = not scheduled)
     TimeSpan m_presentRelativeTarget;
-    //! What was last written to the log about how the presents are held
-    bool m_loggedSchedulePresent{false};
+    //! When the display refreshes according to the window system, read once per frame: the time of a vertical blank and the time
+    //! between two refreshes (both zero if the platform does not say)
+    TickCount m_vsyncTime;
+    TimeSpan m_vsyncPeriod;
+    //! Where in the refresh before the one a frame is aimed at the vsync wait presents, in percent of the refresh
+    int32_t m_vsyncPhasePercent{SampleConfig::VSyncPhasePercent.Get()};
+    //! What was last written to the log about how the frames are held
+    SamplePacerHold m_loggedHold{SamplePacerHold::Wait};
     //! What the app said it can measure (SetMeasurementSupport)
     bool m_presentTimingSupported{false};
     bool m_gpuTimelineSupported{false};
@@ -298,7 +313,8 @@ namespace Fsl
       FramePacingLogColumn FeedbackRefused;
       FramePacingLogColumn FeedbackNotShown;
       FramePacingLogColumn FeedbackMissing;
-      FramePacingLogColumn PresentScheduled;
+      FramePacingLogColumn HoldMethod;
+      FramePacingLogColumn HoldTarget;
       FramePacingLogColumn PresentTarget;
     };
 
@@ -378,8 +394,8 @@ namespace Fsl
     //! Tell the sample if the app can give a present a target time, so the presentation engine holds a frame for its swap interval and
     //! the sample does not have to wait before it presents. Call it every frame, as it can change when the swapchain is recreated.
     void SetPresentSchedulingSupport(const bool supported);
-    //! True if the presents are scheduled: supported, the pacer is on and the switch is on
-    [[nodiscard]] bool IsPresentScheduled() const;
+    //! How the frames are held right now: the method that was asked for, or the one the system falls back to (never Auto).
+    [[nodiscard]] SamplePacerHold GetHoldMethod() const;
     //! The target time of the present of the current frame after WaitForPresent: the frame is not to be shown before this long after the
     //! frame before it was shown. Zero if the present is not scheduled.
     [[nodiscard]] TimeSpan GetPresentRelativeTarget() const noexcept
@@ -432,6 +448,8 @@ namespace Fsl
     void StartFrame();
     //! Sleep (a long wait) or yield (a short wait) until the given HighResolutionTimer timestamp
     void WaitUntil(const TickCount time) const;
+    [[nodiscard]] SamplePacerHold GetRequestedHold() const;
+    void WaitForPresentOnVSync(const uint32_t presentSwapInterval);
     //! @return the refresh rate of the display the window is on in Hz (0 if the window system does not know it)
     [[nodiscard]] double ReadDisplayRefreshRateHz() const;
     //! @return the refresh rate the frame pacer uses in Hz: the command line, else the window system, else the slider
@@ -467,6 +485,7 @@ namespace Fsl
       rLabel.SetContent(StringViewLite(m_formatBuffer.data(), m_formatBuffer.size()));
     }
     void DrawAnimation(const double animationSeconds);
+    void DrawBoxAnimation(const double animationSeconds);
   };
 }
 

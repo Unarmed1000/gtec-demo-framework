@@ -38,13 +38,15 @@ namespace Fsl
         HidePacingStats,
         HideWorkChart,
         HideTestPattern,
+        BoxAnimation,
         TimedRunDuration,
         Pacer,
         PacerRefreshRate,
         PacerTargetFps,
         PacerAdaptive,
         PacerPresentFeedback,
-        PacerSchedulePresent,
+        PacerHold,
+        PacerVSyncPhase,
         CpuLoad,
         GpuLoad,
         Background
@@ -83,6 +85,10 @@ namespace Fsl
                           "Start with the chart of the work per frame hidden (the UI has a switch for it).");
     rOptions.emplace_back("HideTestPattern", OptionArgument::OptionNone, CommandId::HideTestPattern,
                           "Start with the test pattern (the moving bar and box) hidden (the UI has a switch for it).");
+    rOptions.emplace_back("BoxAnimation", OptionArgument::OptionRequired, CommandId::BoxAnimation,
+                          "Show the box animation of the mb-framepacing-explained videos: a white box that eases from side to side, "
+                          "drawn for the animation time of the frame. off (the default), normal (a round trip in four seconds) "
+                          "or fast (in two).");
     rOptions.emplace_back("TimedRunDuration", OptionArgument::OptionRequired, CommandId::TimedRunDuration,
                           "The duration in seconds of a timed run that is started in the UI (1 to 120, the default is 10).");
     rOptions.emplace_back("Pacer", OptionArgument::OptionNone, CommandId::Pacer,
@@ -98,9 +104,15 @@ namespace Fsl
                           "true: the frame pacer measures the frames by when the display showed them, where the app measures its presents "
                           "(Vulkan with VK_EXT_present_timing). Only for a display with a fixed refresh rate. false (default): by when the "
                           "frames start.");
-    rOptions.emplace_back("Pacer.SchedulePresent", OptionArgument::OptionRequired, CommandId::PacerSchedulePresent,
-                          "true: the presentation engine holds a frame for its swap interval, the present is given a target time (Vulkan "
-                          "with VK_EXT_present_timing and presentAtRelativeTime). false (default): the sample waits before it presents.");
+    rOptions.emplace_back("Pacer.Hold", OptionArgument::OptionRequired, CommandId::PacerHold,
+                          "How a frame is held for more than one refresh where the present has no swap interval (Vulkan): wait (the "
+                          "default, sleep on a timer and present: a guess), vsync (wait on the vsync of the window system and present "
+                          "in the middle of the time it leaves, needs the window system to say when the display refreshes), schedule (a "
+                          "target time on the present, needs VK_EXT_present_timing) or auto (schedule, else vsync, else wait). A method the "
+                          "system can not do falls back to vsync, else wait.");
+    rOptions.emplace_back("Pacer.VSyncPhase", OptionArgument::OptionRequired, CommandId::PacerVSyncPhase,
+                          "For the vsync hold: where in the refresh before the one a frame is aimed at the present is done, in percent "
+                          "of the refresh (1 to 99, the default is 65: the middle of what was measured to be shown at the target).");
     rOptions.emplace_back("CpuLoad", OptionArgument::OptionRequired, CommandId::CpuLoad,
                           "Simulate a CPU load: the time in milliseconds the app spends busy every frame (0 = none, the default).");
     rOptions.emplace_back("GpuLoad", OptionArgument::OptionRequired, CommandId::GpuLoad,
@@ -128,6 +140,24 @@ namespace Fsl
     case CommandId::HideTestPattern:
       m_hideTestPattern = true;
       return OptionParseResult::Parsed;
+    case CommandId::BoxAnimation:
+      if (strOptArg == "off")
+      {
+        m_boxAnimation = SampleBoxAnimationSpeed::Off;
+        return OptionParseResult::Parsed;
+      }
+      if (strOptArg == "normal")
+      {
+        m_boxAnimation = SampleBoxAnimationSpeed::Normal;
+        return OptionParseResult::Parsed;
+      }
+      if (strOptArg == "fast")
+      {
+        m_boxAnimation = SampleBoxAnimationSpeed::Fast;
+        return OptionParseResult::Parsed;
+      }
+      FSLLOG3_ERROR("BoxAnimation must be 'off', 'normal' or 'fast'");
+      return OptionParseResult::Failed;
     case CommandId::TimedRunDuration:
       return TryParseInRange(m_timedRunSeconds, strOptArg, SampleConfig::TimedRunSeconds, "TimedRunDuration") ? OptionParseResult::Parsed
                                                                                                               : OptionParseResult::Failed;
@@ -155,9 +185,32 @@ namespace Fsl
     case CommandId::PacerPresentFeedback:
       StringParseUtil::Parse(m_pacerPresentFeedback, strOptArg);
       return OptionParseResult::Parsed;
-    case CommandId::PacerSchedulePresent:
-      StringParseUtil::Parse(m_pacerSchedulePresent, strOptArg);
-      return OptionParseResult::Parsed;
+    case CommandId::PacerHold:
+      if (strOptArg == "auto")
+      {
+        m_pacerHold = SamplePacerHold::Auto;
+        return OptionParseResult::Parsed;
+      }
+      if (strOptArg == "vsync")
+      {
+        m_pacerHold = SamplePacerHold::VSync;
+        return OptionParseResult::Parsed;
+      }
+      if (strOptArg == "wait")
+      {
+        m_pacerHold = SamplePacerHold::Wait;
+        return OptionParseResult::Parsed;
+      }
+      if (strOptArg == "schedule")
+      {
+        m_pacerHold = SamplePacerHold::Schedule;
+        return OptionParseResult::Parsed;
+      }
+      FSLLOG3_ERROR("Pacer.Hold must be 'auto', 'vsync', 'wait' or 'schedule'");
+      return OptionParseResult::Failed;
+    case CommandId::PacerVSyncPhase:
+      return TryParseInRange(m_pacerVSyncPhasePercent, strOptArg, SampleConfig::VSyncPhasePercent, "Pacer.VSyncPhase") ? OptionParseResult::Parsed
+                                                                                                                       : OptionParseResult::Failed;
     case CommandId::CpuLoad:
       return TryParseInRange(m_cpuLoadMs, strOptArg, SampleConfig::CpuLoadMs, "CpuLoad") ? OptionParseResult::Parsed : OptionParseResult::Failed;
     case CommandId::GpuLoad:

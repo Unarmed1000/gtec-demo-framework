@@ -43,6 +43,8 @@ _g_loadedOtherBusyMinimum = 0.10
 # The share of the display times the pacer may refuse before its present feedback counts as of no use
 _g_feedbackRefusedLimit = 0.10
 _g_sourceWindowSystem = "the window system"
+# The names of the values of the holdMethod column
+_g_holdMethodNames = {0: "sleep", 1: "vsync wait", 2: "present again", 3: "scheduled present"}
 _g_sourcePacer = "the settings of the pacer"
 _g_sourcePlan = "the plan"
 
@@ -86,8 +88,8 @@ class RunCheck:
     LatencyMs: Distribution | None = None
     # The display time of a frame minus the display time its pacer intended
     DisplayErrorMs: Distribution | None = None
-    # The frames whose present was given a target time by the sample, None if the log does not tell
-    ScheduledRows: int | None = None
+    # The frames by how they were held for their swap interval (the names of _g_holdMethodNames), empty if the log does not tell
+    HoldMethods: dict[str, int] = field(default_factory=dict)
     # The frames the pacer measured by their display times, None if the log does not tell
     FeedbackOnRows: int | None = None
     # What became of the present feedback the pacer was given: used, refused, notShown, missing
@@ -249,8 +251,13 @@ def CheckRun(log: FramePacingLogFile, expectation: RunExpectation) -> RunCheck:
         changes = Counter(log.GetValues("pacerChange"))
         check.PacerChanges = {"slower": changes.get(1, 0), "faster": changes.get(2, 0)}
 
-    if log.HasColumn("presentScheduled"):
-        check.ScheduledRows = sum(1 for value in log.GetValues("presentScheduled") if value != 0)
+    if log.HasColumn("holdMethod"):
+        counts = Counter(log.GetValues("holdMethod"))
+        check.HoldMethods = {_g_holdMethodNames.get(code, f"method {code}"): count for code, count in sorted(counts.items())}
+    elif log.HasColumn("presentScheduled"):
+        # A log from before the hold methods got one column
+        counts = Counter(log.GetValues("presentScheduled"))
+        check.HoldMethods = {_g_holdMethodNames[3 if code != 0 else 0]: count for code, count in sorted(counts.items())}
     if log.HasColumn("pacerFeedbackOn"):
         check.FeedbackOnRows = sum(1 for value in log.GetValues("pacerFeedbackOn") if value != 0)
         for key, column in (("used", "pacerFeedbackUsed"), ("refused", "pacerFeedbackRefused"), ("notShown", "pacerFeedbackNotShown"),
@@ -332,9 +339,8 @@ def FormatReport(check: RunCheck) -> list[str]:
         lines.append(f"pacer: on for {check.PacerOnRows} frames, off for {check.PacerOffRows}")
         lines.append(f"swap interval of the paced frames (interval: frames): {_FormatCounts(check.SwapIntervals)}")
         lines.append(f"swap interval changes of the pacer: {_FormatCounts(check.PacerChanges)}")
-        if check.ScheduledRows is not None:
-            lines.append(f"frames held by the presentation engine (the present has a target time): {check.ScheduledRows}, "
-                         f"by a wait before the present: {check.PacerOnRows - check.ScheduledRows}")
+        if len(check.HoldMethods) > 0:
+            lines.append(f"how the frames were held for their swap interval (method: frames): {_FormatCounts(check.HoldMethods)}")
         if check.FeedbackOnRows is not None:
             state = f", the display times at the end of the run: {_FormatCounts(check.FeedbackState)}" if check.FeedbackOnRows > 0 else ""
             lines.append(f"present feedback to the pacer: on for {check.FeedbackOnRows} frames{state}")
@@ -385,8 +391,10 @@ def FormatSummary(name: str, check: RunCheck) -> str:
             parts.append("pacer off")
         else:
             parts.append("pacer SWITCHED")
-        if check.ScheduledRows:
-            parts.append("present scheduled" if check.ScheduledRows == check.PacerOnRows else f"present scheduled for {check.ScheduledRows} frames")
+        if len(check.HoldMethods) == 1:
+            parts.append(f"hold: {next(iter(check.HoldMethods))}")
+        elif len(check.HoldMethods) > 1:
+            parts.append(f"hold: {_FormatCounts(check.HoldMethods)}")
         if check.FeedbackOnRows:
             parts.append(f"feedback {_FormatCounts(check.FeedbackState)}")
     if check.FrameStartIntervalMs is not None:

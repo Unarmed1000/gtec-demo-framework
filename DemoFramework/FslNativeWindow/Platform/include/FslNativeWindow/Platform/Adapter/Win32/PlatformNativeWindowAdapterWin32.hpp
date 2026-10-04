@@ -83,6 +83,12 @@ namespace Fsl
     bool TryGetNativeSize(PxPoint2& rSize) const override;
     bool TryGetNativeDpi(Vector2& rDPI) const override;
     NativeWindowDisplayInfo TryGetNativeDisplayInfo() const override;
+    NativeWindowVSyncInfo TryGetNativeVSyncInfo() const override;
+
+  public:
+    NativeWindowTimingSupport GetTimingSupport() const override;
+
+  protected:
 
   private:
     void UpdateDisplayInfo(const bool forceRefresh);

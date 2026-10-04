@@ -1,0 +1,110 @@
+# Does the frame pacer work on plain Vulkan at 50 Hz? The pacer runs with the basic settings: no present feedback, no scheduled
+# present and no present fences (--VkSwapchainMaintenance1 false), so nothing of an extension takes part in the pacing. Present timing is
+# on in most runs, but only to measure when the frames were shown. The runs that end in _plain switch that off as well: they prove
+# that nothing depends on it, and only have the frame starts to judge by.
+#
+# The part that differs between the runs is how a frame is held for more than one refresh, which core Vulkan has no call for:
+#   wait   the sample sleeps on a timer and presents (it does not know where the refreshes are)
+#   vsync  the sample waits on the vsync of the window system and presents in the middle of a refresh
+#
+# Set the display to 50 Hz with variable refresh off before the plan is run.
+#
+# Pass: at least 99 % of the frames are shown for exactly their swap interval, and the frame starts are whole refreshes apart.
+
+description = "50 Hz, plain Vulkan: a frame held by a timer sleep and by a wait on the vsync, fixed frame rates and CPU work of 20, 90 and 130 %, each idle and under CPU load"
+app = "Vulkan.FramePacing"
+frames = 750
+expected_refresh_hz = 50.0
+args = ["--Window", "[0,0,1600,900]", "--GpuLoad", "0", "--Pacer", "--VkSwapchainMaintenance1", "false"]
+
+[variables]
+# The --CpuLoad in milliseconds that is 20, 90 and 130 % of a refresh
+work20 = "4"
+work90 = "18"
+work130 = "26"
+
+[load]
+# One busy process for every logical CPU
+processes = 0
+duty = 1.0
+
+# A fixed frame rate with light work: every frame is held for the same number of refreshes, so these runs show how well a frame is held
+# and nothing else
+
+[[run]]
+name = "fps25_wait"
+what = "25 fps (2 refreshes per frame), light work, held by a timer sleep"
+args = ["--CpuLoad", "{work20}", "--Pacer.Adaptive", "false", "--Pacer.TargetFps", "25", "--Pacer.Hold", "wait"]
+frames = 400
+loaded = true
+
+[[run]]
+name = "fps25_vsync"
+what = "25 fps (2 refreshes per frame), light work, held by a wait on the vsync"
+args = ["--CpuLoad", "{work20}", "--Pacer.Adaptive", "false", "--Pacer.TargetFps", "25", "--Pacer.Hold", "vsync"]
+frames = 400
+loaded = true
+
+# Work over a refresh: the adaptive pacer goes to two refreshes by itself and the frames are held under real work
+
+[[run]]
+name = "w130_wait"
+what = "CPU work of 130 % of a refresh, adaptive pacer, held by a timer sleep"
+args = ["--CpuLoad", "{work130}", "--Pacer.Hold", "wait"]
+loaded = true
+
+[[run]]
+name = "w130_vsync"
+what = "CPU work of 130 % of a refresh, adaptive pacer, held by a wait on the vsync"
+args = ["--CpuLoad", "{work130}", "--Pacer.Hold", "vsync"]
+loaded = true
+
+# Work that fits a refresh: one refresh per frame, where the present itself holds the frame and the hold method does nothing
+
+[[run]]
+name = "w20"
+what = "CPU work of 20 % of a refresh, adaptive pacer"
+args = ["--CpuLoad", "{work20}", "--Pacer.Hold", "vsync"]
+loaded = true
+
+[[run]]
+name = "w90"
+what = "CPU work of 90 % of a refresh, adaptive pacer"
+args = ["--CpuLoad", "{work90}", "--Pacer.Hold", "vsync"]
+loaded = true
+
+# One and two frames in flight at work that nearly fills a refresh: with one the CPU waits for the GPU before it starts the next frame
+
+[[run]]
+name = "w90_flight1"
+what = "CPU work of 90 % of a refresh, one frame in flight"
+args = ["--CpuLoad", "{work90}", "--Pacer.Hold", "vsync", "--VkFramesInFlight", "1"]
+loaded = true
+
+[[run]]
+name = "w90_flight2"
+what = "CPU work of 90 % of a refresh, two frames in flight"
+args = ["--CpuLoad", "{work90}", "--Pacer.Hold", "vsync", "--VkFramesInFlight", "2"]
+loaded = true
+
+# Fully plain: present timing is off too, so there are no display times and the frame starts are what is left to judge by
+
+[[run]]
+name = "fps25_wait_plain"
+what = "25 fps (2 refreshes per frame), light work, held by a timer sleep, no present timing"
+args = ["--CpuLoad", "{work20}", "--Pacer.Adaptive", "false", "--Pacer.TargetFps", "25", "--Pacer.Hold", "wait", "--VkPresentTiming", "false"]
+frames = 400
+loaded = true
+
+[[run]]
+name = "fps25_vsync_plain"
+what = "25 fps (2 refreshes per frame), light work, held by a wait on the vsync, no present timing"
+args = ["--CpuLoad", "{work20}", "--Pacer.Adaptive", "false", "--Pacer.TargetFps", "25", "--Pacer.Hold", "vsync", "--VkPresentTiming", "false"]
+frames = 400
+loaded = true
+
+[[run]]
+name = "w130_vsync_plain"
+what = "CPU work of 130 % of a refresh, adaptive pacer, held by a wait on the vsync, no present timing"
+args = ["--CpuLoad", "{work130}", "--Pacer.Hold", "vsync", "--VkPresentTiming", "false"]
+loaded = true

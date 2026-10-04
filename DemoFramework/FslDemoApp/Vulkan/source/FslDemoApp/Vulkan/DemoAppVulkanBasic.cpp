@@ -58,6 +58,7 @@
 #include <FslUtil/Vulkan1_0/Util/CommandBufferUtil.hpp>
 #include <FslUtil/Vulkan1_0/Util/MemoryBudgetUtil.hpp>
 #include <FslUtil/Vulkan1_0/Util/PhysicalDeviceKHRUtil.hpp>
+#include <FslUtil/Vulkan1_0/Util/PhysicalDeviceUtil.hpp>
 #include <FslUtil/Vulkan1_0/Util/SurfaceFormatUtil.hpp>
 #include <FslUtil/Vulkan1_0/Util/SwapchainKHRUtil.hpp>
 #include <RapidVulkan/CommandBuffer.hpp>
@@ -68,10 +69,13 @@
 #include <algorithm>
 #include <array>
 #include <cassert>
+#include <cstring>
 #include <exception>
 #include <iostream>
+#include <iterator>
 #include <memory>
 #include <optional>
+#include <string>
 
 namespace Fsl::VulkanBasic
 {
@@ -86,6 +90,19 @@ namespace Fsl::VulkanBasic
 
       //! How often the system stats service is told the GPU memory usage of the app while it wants it
       constexpr TimeSpan GpuMemoryStatsInterval = TimeSpan::FromSeconds(1);
+
+      //! The device extensions that have to do with when a frame is shown, from the least to the most a swapchain can do about time
+      //! (Doc/FramePacingPlatformSupport.md). The frame pacing log says which of them the device has.
+      constexpr std::array<const char*, 10> FramePacingExtensions = {"VK_KHR_present_id",
+                                                                     "VK_KHR_present_id2",
+                                                                     "VK_EXT_swapchain_maintenance1",
+                                                                     "VK_KHR_swapchain_maintenance1",
+                                                                     "VK_KHR_present_wait",
+                                                                     "VK_KHR_present_wait2",
+                                                                     "VK_GOOGLE_display_timing",
+                                                                     "VK_EXT_calibrated_timestamps",
+                                                                     "VK_KHR_calibrated_timestamps",
+                                                                     "VK_EXT_present_timing"};
     }
 
 
@@ -239,7 +256,7 @@ namespace Fsl::VulkanBasic
     static std::unique_ptr<FramePacingLogState> TryCreate(std::shared_ptr<IFramePacingFrameLog> log,
                                                           const Vulkan::VUPhysicalDeviceRecord& physicalDevice,
                                                           const Vulkan::VulkanHostDeviceFeatures& hostDeviceFeatures,
-                                                          const VulkanLaunchOptions& launchOptions)
+                                                          const VulkanLaunchOptions& launchOptions, const bool swapchainMaintenance1Enabled)
     {
       if (!log || !log->IsLogEnabled())
       {
@@ -299,6 +316,34 @@ namespace Fsl::VulkanBasic
       rLog.SetLogFact("vulkan.presentTimingDevice", hostDeviceFeatures.PresentTiming ? "1" : "0");
       rLog.SetLogFact("vulkan.presentAtRelativeTimeDevice", hostDeviceFeatures.PresentAtRelativeTime ? "1" : "0");
       rLog.SetLogFact("vulkan.presentTimingOption", fmt::format("{}", static_cast<int32_t>(launchOptions.PresentTiming)));
+      {    // What the device has for frame pacing, used or not, so a log says by itself what the platform offers
+        const auto deviceExtensions = Vulkan::PhysicalDeviceUtil::EnumerateDeviceExtensionProperties(physicalDevice.Device);
+        std::string available;
+        for (const char* const pszExtensionName : LocalConfig::FramePacingExtensions)
+        {
+          const bool isAvailable =
+            std::any_of(deviceExtensions.begin(), deviceExtensions.end(), [pszExtensionName](const VkExtensionProperties& entry)
+                        { return std::strcmp(static_cast<const char*>(entry.extensionName), pszExtensionName) == 0; });
+          rLog.SetLogFact(fmt::format("vulkan.has.{}", pszExtensionName), isAvailable ? "1" : "0");
+          if (isAvailable)
+          {
+            fmt::format_to(std::back_inserter(available), "{}{}", available.empty() ? "" : ", ", pszExtensionName);
+          }
+        }
+        // And what the framework uses of it for this device
+        const bool usesPresentTiming = hostDeviceFeatures.PresentTiming;
+        rLog.SetLogFact("vulkan.uses.VK_EXT_present_timing", usesPresentTiming ? "1" : "0");
+        rLog.SetLogFact("vulkan.uses.VK_KHR_present_id2", usesPresentTiming ? "1" : "0");
+        // The KHR or the EXT version of the extension, whichever the device has
+        rLog.SetLogFact("vulkan.uses.calibrated_timestamps", hostDeviceFeatures.CalibratedTimestamps ? "1" : "0");
+        rLog.SetLogFact("vulkan.uses.swapchain_maintenance1", swapchainMaintenance1Enabled ? "1" : "0");
+        rLog.SetLogFact("vulkan.uses.presentAtRelativeTime", hostDeviceFeatures.PresentAtRelativeTime ? "1" : "0");
+        FSLLOG3_INFO(
+          "FramePacing: Vulkan device has [{}], uses present timing: {}, a relative target time: {}, calibrated timestamps: {}, "
+          "present fences: {}",
+          available, usesPresentTiming, hostDeviceFeatures.PresentAtRelativeTime, hostDeviceFeatures.CalibratedTimestamps,
+          swapchainMaintenance1Enabled);
+      }
       state->Log = std::move(log);
       return state;
     }
@@ -323,7 +368,7 @@ namespace Fsl::VulkanBasic
     }
     m_systemStatsServiceControl = demoAppConfig.DemoServiceProvider.TryGet<ISystemStatsServiceControl>();
     m_framePacingLogState = FramePacingLogState::TryCreate(demoAppConfig.DemoServiceProvider.TryGet<IFramePacingFrameLog>(), m_physicalDevice,
-                                                           m_hostDeviceFeatures, m_launchOptions);
+                                                           m_hostDeviceFeatures, m_launchOptions, m_swapchainMaintenance1Enabled);
     const auto demoHostConfig = hostInfo->TryGetAppHostConfig();
     if (!demoHostConfig)
     {

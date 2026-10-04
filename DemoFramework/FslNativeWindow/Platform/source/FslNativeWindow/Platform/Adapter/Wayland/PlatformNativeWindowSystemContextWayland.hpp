@@ -228,6 +228,8 @@ namespace Fsl
 
     PlatformNativeWindowContextWayland* Window{nullptr};
     std::vector<std::unique_ptr<OutputInfo>> Outputs;
+    //! The globals of the compositor that are about when a frame is shown (their interface names), as the registry listed them
+    std::vector<std::string> FrameTimingGlobals;
 
     explicit PlatformNativeWindowSystemContextWayland(std::weak_ptr<INativeWindowEventQueue> eventQueue)
       : EventQueue(std::move(eventQueue))
