@@ -188,7 +188,7 @@ Part                           | Meaning
 `start step`                   | The time from the start of a frame to the start of the next: the median, and the values 1 % of the frames are under and over.
 `shown for refreshes`          | The frames by the number of refreshes from their display time to the next display time. `1: 2330, 2: 3` is three frames that stayed on the display for two refreshes. Needs `VK_EXT_present_timing`.
 `presents not shown or not timed` | Presents the presentation engine reported on without a display time: their image did not reach the display.
-`feedback used: n, refused: n` | With present feedback: what became of the display times the pacer was given. Many refused is a warning: variable refresh, or a wrong refresh rate.
+`feedback used: n, refused: n` | With present feedback: what became of the display times the pacer was given, and `lateRefreshes`, the refreshes the display fell behind the swap intervals by them. Many refused is a warning: variable refresh, or a wrong refresh rate.
 `work`                         | The median CPU and GPU time of a frame.
 `other programs`               | The share of the CPUs that was busy with something other than the app during the run.
 `ok` or `n WARNINGS`           | The warnings are listed below the line and in the notes.
@@ -244,13 +244,17 @@ On a NVIDIA desktop GPU (driver 617.14) with a 240 Hz display on Windows 11, a w
   pacer goes to two refreshes depends on how many do. In one run it switched after five seconds in which 9 % of the frames were shown
   too long, in others it held one refresh to the end with 2 % shown too long. At 120 Hz (84 %) it held one refresh with next to no
   frames shown too long.
+- **Since mb-framepacing `b5b6ab3` present feedback is statistics only**: the pacer paces the same with it and counts what the
+  display did (`pacerFeedbackLateRefreshes`). The findings below about a pacer that slows down sooner or later with feedback are
+  from the pins before it and do not apply anymore. No capture has been made at `b5b6ab3`. The capture at `19acdf7` held its frames
+  by the timer sleep, so it says nothing about feedback with a scheduled present or a wait on the vsync.
 - **With mb-framepacing `19acdf7` present feedback no longer delays the slow down**, and a present without a display time is
   reported to the pacer as not shown. The same plans again, idle and under the CPU load: with work of 130 % the pacer goes to two
   refreshes at frame 52 at 240 Hz and at frame 27 at 120 Hz, two or three frames after the run without feedback (49 and 25), and it
   stays at two. With work of 90 % at 240 Hz on a idle machine the pacer with feedback went to two refreshes after 466 frames, where the
   one without stayed at one refresh and showed 115 of 2400 frames for two or three refreshes; under the CPU load both stayed at one
   refresh. With light work the runs with and without it are the same. These are the summaries of the runs, the logs have not been
-  read frame by frame. It stays off by default.
+  read frame by frame.
 - **Present feedback had not helped before that** (mb-framepacing `1764848`, the present feedback plans at 120 and 240 Hz, idle, under the CPU
   load and under builds that used up to 83 % of the CPUs). With light work the runs with and without it are the same: the frame starts
   stayed within 0.2 ms of the refresh interval under every load, so there was nothing to correct. With work of 90 % at 240 Hz the

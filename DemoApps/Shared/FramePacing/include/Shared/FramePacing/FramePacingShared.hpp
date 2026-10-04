@@ -121,6 +121,7 @@ namespace Fsl
       std::shared_ptr<UI::Label> LastChange;
       std::shared_ptr<UI::Label> FrameWindow;
       std::shared_ptr<UI::Label> Feedback;
+      std::shared_ptr<UI::Label> FeedbackLate;
       //! What the measured presents say (only an app that measures them has values for these)
       std::shared_ptr<UI::Label> DisplayError;
       std::shared_ptr<UI::Label> DisplayInterval;
@@ -314,6 +315,7 @@ namespace Fsl
       FramePacingLogColumn FeedbackRefused;
       FramePacingLogColumn FeedbackNotShown;
       FramePacingLogColumn FeedbackMissing;
+      FramePacingLogColumn FeedbackLateRefreshes;
       FramePacingLogColumn HoldMethod;
       FramePacingLogColumn HoldTarget;
       FramePacingLogColumn PresentTarget;

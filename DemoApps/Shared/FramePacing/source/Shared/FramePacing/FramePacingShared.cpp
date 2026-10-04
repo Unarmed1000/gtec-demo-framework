@@ -1127,7 +1127,8 @@ namespace Fsl
                                                   "The start of the frame plus its swap interval according to the frame pacer: what the "
                                                   "waits of the sample hold to");
     rColumns.FeedbackOn =
-      rLog.RegisterColumn("pacerFeedbackOn", FramePacingLogUnit::Flag, "1 if the frame pacer measures the frames by their display times");
+      rLog.RegisterColumn("pacerFeedbackOn", FramePacingLogUnit::Flag,
+                          "1 if the frame pacer is given the display times of the frames: it counts what the display did, it paces the same");
     rColumns.FeedbackDisplay = rLog.RegisterColumn("feedbackDisplayTicks", FramePacingLogUnit::Ticks,
                                                    "The display time of the frame the frame pacer was given as present feedback");
     rColumns.FeedbackPresent = rLog.RegisterColumn("feedbackPresentTicks", FramePacingLogUnit::Ticks,
@@ -1137,7 +1138,7 @@ namespace Fsl
                           "1 if the frame was reported to the frame pacer as not shown: the presentation engine was done with its present "
                           "and had no display time for it");
     rColumns.FeedbackUsed = rLog.RegisterColumn("pacerFeedbackUsed", FramePacingLogUnit::Count,
-                                                "The display times the frame pacer measured frames by, counted since the pacer was made");
+                                                "The display times the frame pacer counted from, counted since the pacer was made");
     rColumns.FeedbackRefused =
       rLog.RegisterColumn("pacerFeedbackRefused", FramePacingLogUnit::Count,
                           "The display times the frame pacer refused, counted since the pacer was made: too old, before the present of "
@@ -1155,7 +1156,12 @@ namespace Fsl
                                                  "the frame before it was shown");
     rColumns.FeedbackMissing =
       rLog.RegisterColumn("pacerFeedbackMissing", FramePacingLogUnit::Count,
-                          "The frames the frame pacer counted as on time as it was given nothing about them, counted since the pacer was made");
+                          "The frames the frame pacer was given nothing about, counted since the pacer was made: feedback for a newer "
+                          "frame came first, or the frame got too old");
+    rColumns.FeedbackLateRefreshes =
+      rLog.RegisterColumn("pacerFeedbackLateRefreshes", FramePacingLogUnit::Count,
+                          "The refreshes the display fell behind the swap intervals of the frames by its display times, counted since the "
+                          "pacer was made: the count of the display to hold against the late frames of the frame pacer");
     rLog.SetLogFact("sample.presentMethod", m_presentMethod == SamplePresentMethod::WaitThenPresent ? "WaitThenPresent" : "SwapInterval");
     rLog.SetLogFact("sample.pacerSupported", SamplePacer::IsSupported() ? "1" : "0");
   }
@@ -1213,6 +1219,7 @@ namespace Fsl
         rLog.SetLogUInt64(columns.FeedbackRefused, feedbackState.Refused);
         rLog.SetLogUInt64(columns.FeedbackNotShown, feedbackState.NotShown);
         rLog.SetLogUInt64(columns.FeedbackMissing, feedbackState.Missing);
+        rLog.SetLogUInt64(columns.FeedbackLateRefreshes, feedbackState.LateRefreshes);
       }
     }
   }
@@ -1328,7 +1335,8 @@ namespace Fsl
       SetFormattedContent(*rStats.SwapInterval, "1 ({})", SamplePacer::IsSupported() ? PacerOffValue : "pacer not supported");
       SetFormattedContent(*rStats.LateFrames, "{} of {} ({:.1f} %)", lateFrames, frames, frames > 0u ? ((100.0 * lateFrames) / frames) : 0.0);
       for (UI::Label* pLabel :
-           {rStats.AverageWork.get(), rStats.IntervalChanges.get(), rStats.LastChange.get(), rStats.FrameWindow.get(), rStats.Feedback.get()})
+           {rStats.AverageWork.get(), rStats.IntervalChanges.get(), rStats.LastChange.get(), rStats.FrameWindow.get(), rStats.Feedback.get(),
+            rStats.FeedbackLate.get()})
       {
         pLabel->SetContent(PacerOffValue);
       }
@@ -1365,10 +1373,13 @@ namespace Fsl
       // Nearly everything refused means a display with a variable refresh rate, or a wrong refresh rate
       const SamplePacerFeedbackState feedbackState = m_pacer->GetFeedbackState();
       SetFormattedContent(*rStats.Feedback, "{} used, {} refused, {} missing", feedbackState.Used, feedbackState.Refused, feedbackState.Missing);
+      // The count of the display, to hold against the late frames the pacer counts from the frame starts
+      SetFormattedContent(*rStats.FeedbackLate, "{} refreshes", feedbackState.LateRefreshes);
     }
     else
     {
       rStats.Feedback->SetContent(SwitchedOffValue);
+      rStats.FeedbackLate->SetContent(SwitchedOffValue);
     }
   }
 
@@ -1525,6 +1536,7 @@ namespace Fsl
     rPacerStats.LastChange = addStatsRow(*pacerGrid, pacerRow, "Last change");
     rPacerStats.FrameWindow = addStatsRow(*pacerGrid, pacerRow, "Frame window");
     rPacerStats.Feedback = addStatsRow(*pacerGrid, pacerRow, "Present feedback");
+    rPacerStats.FeedbackLate = addStatsRow(*pacerGrid, pacerRow, "Display late");
     // What the measured presents say: when the frames really reached the display
     rPacerStats.DisplayError = addStatsRow(*pacerGrid, pacerRow, "Display error");
     rPacerStats.DisplayInterval = addStatsRow(*pacerGrid, pacerRow, "Display interval");

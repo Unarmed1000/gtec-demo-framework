@@ -92,7 +92,7 @@ class RunCheck:
     HoldMethods: dict[str, int] = field(default_factory=dict)
     # The frames the pacer measured by their display times, None if the log does not tell
     FeedbackOnRows: int | None = None
-    # What became of the present feedback the pacer was given: used, refused, notShown, missing
+    # What became of the present feedback the pacer was given: used, refused, notShown, missing, lateRefreshes
     FeedbackState: dict[str, int] = field(default_factory=dict)
     ResultFramesLate: dict[int, int] = field(default_factory=dict)
     WorkCpuMs: Distribution | None = None
@@ -261,7 +261,10 @@ def CheckRun(log: FramePacingLogFile, expectation: RunExpectation) -> RunCheck:
     if log.HasColumn("pacerFeedbackOn"):
         check.FeedbackOnRows = sum(1 for value in log.GetValues("pacerFeedbackOn") if value != 0)
         for key, column in (("used", "pacerFeedbackUsed"), ("refused", "pacerFeedbackRefused"), ("notShown", "pacerFeedbackNotShown"),
-                            ("missing", "pacerFeedbackMissing")):
+                            ("missing", "pacerFeedbackMissing"), ("lateRefreshes", "pacerFeedbackLateRefreshes")):
+            if not log.HasColumn(column):
+                # A log from before the pacer counted it
+                continue
             values = log.GetValues(column)
             if len(values) > 0:
                 # The counters only grow while a pacer lives, a new pacer starts them again

@@ -101,9 +101,9 @@ namespace Fsl
     rOptions.emplace_back("Pacer.Adaptive", OptionArgument::OptionRequired, CommandId::PacerAdaptive,
                           "true (default): the frame pacer adapts its swap interval to how the frames do. false: a fixed frame rate.");
     rOptions.emplace_back("Pacer.PresentFeedback", OptionArgument::OptionRequired, CommandId::PacerPresentFeedback,
-                          "true: the frame pacer measures the frames by when the display showed them, where the app measures its presents "
-                          "(Vulkan with VK_EXT_present_timing). Only for a display with a fixed refresh rate. false (default): by when the "
-                          "frames start.");
+                          "true: the frame pacer is given when the display showed the frames, where the app measures its presents (Vulkan "
+                          "with VK_EXT_present_timing). It paces the same with it and counts what the display did. Only for a display with "
+                          "a fixed refresh rate. false (default).");
     rOptions.emplace_back("Pacer.Hold", OptionArgument::OptionRequired, CommandId::PacerHold,
                           "How a frame is held for more than one refresh where the present has no swap interval (Vulkan): wait (the "
                           "default, sleep on a timer and present: a guess), vsync (wait on the vsync of the window system and present "

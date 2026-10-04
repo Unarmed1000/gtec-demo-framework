@@ -111,7 +111,8 @@ SDK (`MB::FramePacing::Pacer::FramePacer`). It is only part of the samples (`Sam
 against a real swap chain, and its API may change in any release.
 
 The recipe pins a commit of mb-framepacing. The pacer of that commit counts a frame whose work is longer than its frame time as late,
-whenever the next frame starts, and can measure the frames by when the display showed them (present feedback, see below).
+whenever the next frame starts. It can be given when the display showed the frames (present feedback, see below), which it counts
+and does not pace by.
 
 The pacer needs nothing but a steady clock and a present that waits for vsync. Every frame the sample gives it the time the frame starts
 and gets back the swap interval to hold the frame for (the number of display refreshes), the time step to animate the frame by and the
@@ -124,7 +125,7 @@ Frame pacer (or the **P** key)|`--Pacer`                       |Switch the frame
 Refresh rate                  |`--Pacer.RefreshRate <hz>`      |The refresh rate of the display. It is read from the window system, the slider only sets it when the window system does not know it. The argument overrides both and allows decimals (59.94).
 Target fps                    |`--Pacer.TargetFps <fps>`       |The frame rate the pacer aims for, 0 is the refresh rate of the display. 30 on a 60 Hz display holds every frame for two refreshes.
 Adaptive swap interval        |`--Pacer.Adaptive <true\|false>`|On: the pacer slows down when frames are late and speeds up again when they fit. Off: a fixed frame rate.
-Present feedback to the pacer |`--Pacer.PresentFeedback <true\|false>`|Vulkan only. On: the pacer measures the frames by when the display showed them, see [below](#present-feedback-vulkan-optional). Off (the default): by when they start.
+Present feedback to the pacer |`--Pacer.PresentFeedback <true\|false>`|Vulkan only. On: the pacer is given when the display showed the frames and counts what the display did, see [below](#present-feedback-vulkan-optional). It paces the same on and off. Off is the default.
 Hold (radio buttons)          |`--Pacer.Hold <auto\|vsync\|wait\|schedule>`|Vulkan only. How a frame is held for more than one refresh, see [below](#holding-a-frame-for-more-than-one-refresh-vulkan). The default is `wait`.
                               |`--Pacer.VSyncPhase <percent>`  |Vulkan only. For the `vsync` hold: where in the refresh before the target the present is done (1 to 99, the default is 65).
 CPU load                      |`--CpuLoad <ms>`                |The time in milliseconds the app spends busy every frame.
@@ -214,27 +215,33 @@ used.
 
 #### Present feedback (Vulkan, optional)
 
-`--Pacer.PresentFeedback true` (the `Present feedback to the pacer` switch) makes the pacer measure the frames by when the display
-showed them and not by when they start. It needs the presents to be measured (`VK_EXT_present_timing`, the `Measure the presents`
-switch), so it does nothing for the OpenGL ES samples, and it is off by default.
+`--Pacer.PresentFeedback true` (the `Present feedback to the pacer` switch) gives the pacer the time the display showed each frame.
+It is statistics only: the pacer paces exactly as without it (the swap interval, the animation step, the start of the next frame and
+the late frames of its frame window all come from the frame starts and the work of the frames). What feedback adds is the counters
+of the pacer about the display and an intended display time that is counted from the display times. It needs the presents to be
+measured (`VK_EXT_present_timing`, the `Measure the presents` switch), so it does nothing for the OpenGL ES samples, and it is off by
+default.
 
-It is for a machine that is busy with other work at a high refresh rate, where the frames start more than half a refresh off the
-refreshes of the display while the display itself is even. Leave it off on a display with a variable refresh rate (G-SYNC, FreeSync):
-the display times are on no grid of refreshes there, the pacer refuses them and no frame counts as late anymore.
+Until mb-framepacing `19acdf7` the pacer decided on late frames by the display times. That was taken out with `b5b6ab3`.
+
+On a display with a variable refresh rate (G-SYNC, FreeSync) the display times are on no grid of refreshes, the pacer refuses them
+and the counters say nothing.
 
 What the sample does with it:
 
 - Every frame it remembers the id the pacer gave the frame next to the id of the present of the frame. When the display time of a
   present arrives, a few frames later, it gives the pacer the display time and the time `vkQueuePresentKHR` was called for that frame.
-  A present the presentation engine is done with and has no display time for is reported to the pacer as not shown, so the pacer
-  does not take the frame to be on time. A present that was not asked to be timed gets no feedback.
+  A present the presentation engine is done with and has no display time for is reported to the pacer as not shown, which the
+  pacer counts. A present that was not asked to be timed gets no feedback.
 - The intended display time of the marker is then the refresh the frame reaches through the queue of the swapchain (`Display error`
   drops to about zero), and unknown for the first frames.
 - The waits of the sample hold to the start of the frame plus its swap interval, with and without feedback.
 - The `Present feedback` row of the frame pacing overlay shows how many display times the pacer used and refused and for how many
-  frames it had none. The frame log has it per frame (`pacerFeedbackOn`, `pacerFrameId`, `feedbackDisplayTicks`,
-  `feedbackPresentTicks`, `feedbackNotShown`, `pacerFeedbackUsed`, `pacerFeedbackRefused`, `pacerFeedbackNotShown`,
-  `pacerFeedbackMissing`).
+  frames it had none. The `Display late` row is how many refreshes the display fell behind the swap intervals of the frames, next to
+  the `Late frames` the pacer counts from the frame starts. The frame log has it per frame
+  (`pacerFeedbackOn`, `pacerFrameId`, `feedbackDisplayTicks`, `feedbackPresentTicks`, `feedbackNotShown`, `pacerFeedbackUsed`,
+  `pacerFeedbackRefused`, `pacerFeedbackNotShown`, `pacerFeedbackMissing`, `pacerFeedbackLateRefreshes`).
+  `pacerFeedbackLateRefreshes` is the count of the display to hold against `pacerWindowLateFrames`, the count the pacer paces by.
 
 ### What the Vulkan sample measures about its presents
 
@@ -416,14 +423,15 @@ Column | Unit | Description
 `presentTargetTicks` | durationTicks | The target time the sample asked for: the frame is not to be shown before this long after the frame before it was shown
 `pacerFrameId` | id | The id the frame pacer gave the frame, present feedback is given with it
 `nextFrameStartTicks` | ticks | The start of the frame plus its swap interval according to the frame pacer: what the waits of the sample hold to
-`pacerFeedbackOn` | flag | 1 if the frame pacer measures the frames by their display times
+`pacerFeedbackOn` | flag | 1 if the frame pacer is given the display times of the frames: it counts what the display did, it paces the same
 `feedbackDisplayTicks` | ticks | The display time of the frame the frame pacer was given as present feedback
 `feedbackPresentTicks` | ticks | The present time of the frame the frame pacer was given with its display time
 `feedbackNotShown` | flag | 1 if the frame was reported to the frame pacer as not shown: the presentation engine was done with its present and had no display time for it
-`pacerFeedbackUsed` | count | The display times the frame pacer measured frames by, counted since the pacer was made
+`pacerFeedbackUsed` | count | The display times the frame pacer counted from, counted since the pacer was made
 `pacerFeedbackRefused` | count | The display times the frame pacer refused, counted since the pacer was made: too old, before the present of their frame or not a whole number of refreshes after the one before
 `pacerFeedbackNotShown` | count | The frames that were reported to the frame pacer as never shown, counted since the pacer was made
-`pacerFeedbackMissing` | count | The frames the frame pacer counted as on time as it was given nothing about them, counted since the pacer was made
+`pacerFeedbackMissing` | count | The frames the frame pacer was given nothing about, counted since the pacer was made: feedback for a newer frame came first, or the frame got too old
+`pacerFeedbackLateRefreshes` | count | The refreshes the display fell behind the swap intervals of the frames by its display times, counted since the pacer was made: the count of the display to hold against the late frames of the frame pacer
 
 `presentTimingRequested`, `resultReadAtFrame` and the stage times tell three cases apart: a present that was not asked to be timed
 (the results of too many presents were outstanding), a present that was reported without a display time (the image did not reach the

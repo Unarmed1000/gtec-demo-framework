@@ -39,7 +39,8 @@ namespace Fsl
     uint32_t TargetFps{0};
     //! Adapt the swap interval to how the frames do (false = always the swap interval of the target frame rate)
     bool Adaptive{true};
-    //! Measure the frames by when the display showed them (AddPresentFeedback) and not by when they start. Only for an app that
+    //! Give the pacer when the display showed the frames (AddPresentFeedback). The pacer paces the same with it: it counts what the
+    //! display did (GetFeedbackState) and counts the intended display time of a frame from the display times. Only for an app that
     //! measures its presents, on a display with a fixed refresh rate.
     bool PresentFeedback{false};
 
@@ -97,15 +98,18 @@ namespace Fsl
   //! What became of the present feedback the pacer was given, counted since the pacer was made
   struct SamplePacerFeedbackState
   {
-    //! The display times the frames were measured by
+    //! The display times that were counted from
     uint64_t Used{0};
     //! The display times that were not used: too old, before the present of their frame or not a whole number of refreshes after the
     //! one before (nearly all refused means a display with a variable refresh rate, or a wrong refresh rate)
     uint64_t Refused{0};
     //! The frames that were reported as never shown
     uint64_t NotShown{0};
-    //! The frames that counted as on time as nothing was reported for them
+    //! The frames nothing was reported for: feedback for a newer frame came first, or the frame got too old for the pacer to keep
     uint64_t Missing{0};
+    //! The refreshes the display fell behind the swap intervals of the frames, by its display times: what late frames cost on the
+    //! display. A frame held a refresh longer right after one that was shown a refresh sooner lost none.
+    uint64_t LateRefreshes{0};
   };
 
   //! The mb-framepacing frame pacer (experimental) behind the types of the framework, so the rest of the sample does not depend on the

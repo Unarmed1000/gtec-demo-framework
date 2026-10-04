@@ -1,12 +1,14 @@
-# The frame pacer with and without present feedback at 240 Hz: the same run twice, first with the frames measured by when they start and
-# then by when the display showed them (--Pacer.PresentFeedback true, which needs VK_EXT_present_timing).
+# The frame pacer with and without present feedback at 240 Hz: the same run twice, first without and then with the display times of the
+# frames given to the pacer (--Pacer.PresentFeedback true, which needs VK_EXT_present_timing). Since mb-framepacing b5b6ab3 the pacer
+# paces the same with it and only counts what the display did, so the twins are to pace alike and the run with feedback has the
+# counters of the pacer (pacerFeedbackLateRefreshes against pacerWindowLateFrames).
 #
 # Set the display to 240 Hz with variable refresh off before the plan is run: with variable refresh on the pacer refuses the display times.
 # The GPU load settings depend on the GPU and on the size of the window, see work-matrix-240hz.
 #
-# Present feedback is for a machine that is busy with other work, where the frames start more than half a refresh off the refreshes of
-# the display. A CPU load alone did not do that on the machine these plans were made on, a build did (it loads the disk and the memory
-# as well). So besides the loaded twins of this plan, run the plan again while something builds and say so with --fact.
+# The counters say the most on a machine that is busy with other work, where the frames start more than half a refresh off the
+# refreshes of the display. A CPU load alone did not do that on the machine these plans were made on, a build did (it loads the disk
+# and the memory as well). So besides the loaded twins of this plan, run the plan again while something builds and say so with --fact.
 
 description = "240 Hz: the pacer without and with present feedback, GPU work of 20, 90 and 130 % of a refresh, each idle and under CPU load"
 app = "Vulkan.FramePacing"

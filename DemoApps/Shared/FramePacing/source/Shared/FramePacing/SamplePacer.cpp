@@ -166,6 +166,7 @@ namespace Fsl
     state.Refused = src.Refused;
     state.NotShown = src.NotShown;
     state.Missing = src.Missing;
+    state.LateRefreshes = src.LateRefreshes;
     return state;
   }
 
