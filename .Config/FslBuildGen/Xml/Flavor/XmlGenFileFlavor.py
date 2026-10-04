@@ -36,6 +36,8 @@ import xml.etree.ElementTree as ET
 from FslBuildGen import Util
 from FslBuildGen.Log import Log
 from FslBuildGen.Xml.Exceptions import (
+    XmlFlavorDefaultOptionNotSupportedException,
+    XmlFlavorDefaultOptionUnknownException,
     XmlFlavorHasNoOptionsException,
     XmlFlavorOptionNameCollisionException,
     XmlFlavorUnknownElementException,
@@ -49,15 +51,18 @@ from FslBuildGen.Xml.XmlBase import XmlBase
 class XmlGenFileFlavor(XmlBase):
     __AttribName = "Name"
     __AttribQuickName = "QuickName"
+    __AttribDefault = "Default"
 
     # The elements a flavor reads
     __ValidElements = ["Option"]
 
     def __init__(self, log: Log, requirementTypes: list[str], xmlElement: ET.Element, ownerPackageName: str) -> None:
         super().__init__(log, xmlElement)
-        self._CheckAttributes({self.__AttribName, self.__AttribQuickName})
+        self._CheckAttributes({self.__AttribName, self.__AttribQuickName, self.__AttribDefault})
         self.Name = self._ReadAttrib(xmlElement, self.__AttribName)
         self.QuickName = self._TryReadAttrib(xmlElement, self.__AttribQuickName)
+        # The name of the option that is used when nothing selects one, None: the flavor does not say
+        self.Default = self._TryReadAttrib(xmlElement, self.__AttribDefault)
         self.IntroducedByPackageName = ownerPackageName
         # elementType = self._ReadAttrib(xmlElement, 'Type', 'Normal')
         self.Options = self.__GetXMLFlavorOptions(requirementTypes, xmlElement, ownerPackageName)
@@ -65,6 +70,7 @@ class XmlGenFileFlavor(XmlBase):
         self.__ValidateFlavorName()
         self.__ValidateOptionNames()
         self.__ValidateHasOptions()
+        self.__ValidateDefault()
 
     def __ValidateFlavorName(self) -> None:
         if not Util.IsValidName(self.Name):
@@ -74,6 +80,17 @@ class XmlGenFileFlavor(XmlBase):
         # Every instance of the package selects one option of each of its flavors, so a flavor without options leaves the package without instances
         if len(self.Options) <= 0:
             raise XmlFlavorHasNoOptionsException(self.XMLElement, self.IntroducedByPackageName, self.Name)
+
+    def __ValidateDefault(self) -> None:
+        # The default names an option exactly as the option is written, and one the flavor itself does not mark as not supported
+        if self.Default is None:
+            return
+        if self.Default not in self.OptionDict:
+            raise XmlFlavorDefaultOptionUnknownException(
+                self.XMLElement, self.IntroducedByPackageName, self.Name, self.Default, [option.Name for option in self.Options]
+            )
+        if not self.OptionDict[self.Default].Supported:
+            raise XmlFlavorDefaultOptionNotSupportedException(self.XMLElement, self.IntroducedByPackageName, self.Name, self.Default)
 
     def __ValidateOptionNames(self) -> None:
         for option in self.Options:

@@ -38,10 +38,18 @@ from FslBuildGen.Engine.Unresolved.UnresolvedPackageFlavorOption import Unresolv
 
 
 class UnresolvedPackageFlavor:
-    def __init__(self, name: PackageFlavorName, quickName: PackageFlavorQuickName | None, options: list[UnresolvedPackageFlavorOption]) -> None:
+    def __init__(
+        self,
+        name: PackageFlavorName,
+        quickName: PackageFlavorQuickName | None,
+        options: list[UnresolvedPackageFlavorOption],
+        defaultOptionName: PackageFlavorOptionName | None = None,
+    ) -> None:
+        """defaultOptionName: the option the flavor declares as its default, None when it declares none"""
         super().__init__()
         self.Name = name
         self.QuickName = quickName
+        self.DefaultOptionName = defaultOptionName
         self.IntroducedByPackageName = name.OwnerPackageName
         self.Options = options
         self.Description = UnresolvedPackageFlavor.__OptionString(self.Options)

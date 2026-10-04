@@ -283,3 +283,23 @@ class XmlExternalDependencyVersionException(XmlException2):
         self.DependencyName = dependencyName
         self.Reason = reason
         self.Filename = filename
+
+
+class XmlFlavorDefaultOptionUnknownException(XmlException2):
+    def __init__(self, xmlElement: ET.Element, packageName: str, flavorName: str, defaultOptionName: str, optionNames: list[str]) -> None:
+        """xmlElement is the flavor, defaultOptionName the value of its 'Default' attribute and optionNames the options the flavor has"""
+        msg = (
+            f"The default option '{defaultOptionName}' of flavor '{flavorName}' in package '{packageName}' is not an option of the flavor. "
+            f"Valid options: {', '.join(optionNames)}"
+        )
+        super().__init__(msg)
+
+
+class XmlFlavorDefaultOptionNotSupportedException(XmlException2):
+    def __init__(self, xmlElement: ET.Element, packageName: str, flavorName: str, defaultOptionName: str) -> None:
+        """xmlElement is the flavor, defaultOptionName the value of its 'Default' attribute"""
+        msg = (
+            f"The default option '{defaultOptionName}' of flavor '{flavorName}' in package '{packageName}' is marked as not supported, "
+            "the default of a flavor has to be an option the flavor supports"
+        )
+        super().__init__(msg)

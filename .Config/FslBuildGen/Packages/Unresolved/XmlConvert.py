@@ -355,7 +355,8 @@ class XmlConvert:
             introducedByPackageName = UnresolvedPackageName(xmlFlavor.IntroducedByPackageName)
             flavorName = PackageFlavorName(introducedByPackageName, UnresolvedPackageFlavorUnqualifiedName(xmlFlavor.Name))
             flavorQuickName = PackageFlavorQuickName(UnresolvedPackageFlavorUnqualifiedName(xmlFlavor.QuickName)) if xmlFlavor.QuickName is not None else None
-            flavor = UnresolvedPackageFlavor(flavorName, flavorQuickName, options)
+            defaultOptionName = PackageFlavorOptionName(xmlFlavor.Default) if xmlFlavor.Default is not None else None
+            flavor = UnresolvedPackageFlavor(flavorName, flavorQuickName, options, defaultOptionName)
             res.append(flavor)
         return res
 

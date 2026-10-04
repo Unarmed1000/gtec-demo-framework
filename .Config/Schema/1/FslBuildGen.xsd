@@ -306,6 +306,7 @@
     <xs:group ref="_G_FlavorCommandList"/>
     <xs:attribute name="Name" type="xs:string" use="required"/>
     <xs:attribute name="QuickName" type="xs:string" use="optional"/>
+    <xs:attribute name="Default" type="xs:string" use="optional"/>
   </xs:complexType>
 
   <xs:complexType name="_T_FlavorExtension">

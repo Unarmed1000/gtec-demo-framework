@@ -29,8 +29,8 @@
       <ExternalDependency Name="screen" Type="StaticLib"/>
     </Platform>
     <Platform Name="Ubuntu" Supported="true">
-      <Flavor Name="Impl" QuickName="WindowSystem">
-        <!-- The default -->
+      <!-- X11 is what a build without a variant selection gets -->
+      <Flavor Name="Impl" QuickName="WindowSystem" Default="X11">
         <Option Name="X11">
           <!--ExternalDependency Name="Xi" Type="StaticLib"/-->
           <ExternalDependency Name="Xrandr" Type="StaticLib"/>

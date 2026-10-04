@@ -27,11 +27,16 @@
 # A root package has an instance for every flavor combination that is possible. The default is the first of those instances, so it is a
 # combination that exists:
 # - Only the flavors that differ between the instances take part: the ones with more than one option among the instances.
-# - The instances are ordered by their options for these flavors, flavor by flavor in the order of the flavor names. Names and options are
-#   compared as text.
+# - The instances are ordered by their options for these flavors, flavor by flavor in the order of the flavor names. Names are compared as
+#   text. The options of a flavor are ordered as text, but for a flavor that declares a default option (Default="X11" on the flavor) that
+#   option comes first when an instance has it.
 # - An instance that does not have a flavor (the flavor belongs to a dependency only another option pulls in) counts as having the first
 #   option of that flavor: a constraint on a flavor an instance does not have never rules it out.
 # The default constraints are the options of the first instance in that order, with the first option for the flavors it does not have.
+#
+# So the declared default of a flavor is used whenever an instance with it exists. When two flavors are tied so that both declared defaults
+# can not hold at once, the flavor whose name comes first decides. A flavor without a declared default is ordered as text, which is what every
+# flavor was before 3.14.61.
 #
 # Before 3.14.56 the default was the first option of each flavor, each picked on its own. That is the same when an instance has all of them,
 # and it is the combination above in every case the old pick could be resolved. When the options of two flavors are tied (option C of one
@@ -53,18 +58,35 @@ def FindFlavorsThatDiffer(instanceFlavorSelections: Sequence[Mapping[str, str]])
     return {flavorName: sorted(flavorOptions[flavorName]) for flavorName in sorted(flavorOptions) if len(flavorOptions[flavorName]) > 1}
 
 
-def SelectDefaultFlavorOptions(instanceFlavorSelections: Sequence[Mapping[str, str]]) -> dict[str, str]:
+def OrderFlavorOptions(options: Sequence[str], declaredDefault: str | None) -> list[str]:
+    """The options of a flavor in the order they are preferred in: as text, with the declared default of the flavor in front when it is one
+    of them. options are the options the instances have.
+    """
+    orderedOptions = sorted(options)
+    if declaredDefault is None or declaredDefault not in orderedOptions:
+        return orderedOptions
+    return [declaredDefault, *[option for option in orderedOptions if option != declaredDefault]]
+
+
+def SelectDefaultFlavorOptions(instanceFlavorSelections: Sequence[Mapping[str, str]], declaredDefaults: Mapping[str, str] | None = None) -> dict[str, str]:
     """The default option of every flavor that differs between the instances of a root (flavor name -> option name, in the order of the flavor
     names): the options of the first instance. Empty when no flavor differs.
+    declaredDefaults: the default option of the flavors that declare one (flavor name -> option name), a flavor that is not in it is ordered
+    as text.
     """
     flavorsThatDiffer = FindFlavorsThatDiffer(instanceFlavorSelections)
     if len(flavorsThatDiffer) <= 0:
         return {}
-    # An instance as its option of each flavor that differs, the first option of the flavor where the instance does not have the flavor
+    preferredOptions = {
+        flavorName: OrderFlavorOptions(options, None if declaredDefaults is None else declaredDefaults.get(flavorName))
+        for flavorName, options in flavorsThatDiffer.items()
+    }
+    # An instance as the place of its option of each flavor that differs, the first place where the instance does not have the flavor
     candidates = [
-        [flavorSelections.get(flavorName, options[0]) for flavorName, options in flavorsThatDiffer.items()] for flavorSelections in instanceFlavorSelections
+        [options.index(flavorSelections[flavorName]) if flavorName in flavorSelections else 0 for flavorName, options in preferredOptions.items()]
+        for flavorSelections in instanceFlavorSelections
     ]
-    return dict(zip(flavorsThatDiffer.keys(), min(candidates), strict=True))
+    return {flavorName: options[place] for (flavorName, options), place in zip(preferredOptions.items(), min(candidates), strict=True)}
 
 
 def FormatFlavorDefaults(rootFlavorDefaults: Mapping[str, Mapping[str, str]]) -> list[tuple[str, str | None]]:

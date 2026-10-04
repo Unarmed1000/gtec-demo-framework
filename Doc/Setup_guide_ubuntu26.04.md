@@ -92,11 +92,12 @@ The samples can be built for X11 or for Wayland. It is a build variant:
 
 Variant                                | Window system
 ---------------------------------------|----------------------------------------------------------------------------
-`--Variants [WindowSystem=X11]`        | X11. On a Wayland desktop the app runs through Xwayland.
+`--Variants [WindowSystem=X11]`        | X11, the default. On a Wayland desktop the app runs through Xwayland.
 `--Variants [WindowSystem=Wayland]`    | A native Wayland window (xdg-shell).
 
-A build without `--Variants` picks Wayland, as the build tool takes the first option by name when none is selected. The executable
-and its build directory carry the option in their name (`Vulkan.FramePacing___X11`, `Vulkan.FramePacing___Wayland`).
+A build without `--Variants` is a X11 build: the window system package declares X11 as its default, and the build says so
+(`Flavor defaults for 'Vulkan.FramePacing': WindowSystem.Impl=X11`). The executable and its build directory carry the option in their
+name (`Vulkan.FramePacing___X11`, `Vulkan.FramePacing___Wayland`).
 
 The Wayland variant needs the Wayland development files:
 

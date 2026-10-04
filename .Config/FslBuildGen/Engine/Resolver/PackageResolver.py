@@ -119,7 +119,7 @@ class PackageResolver:
                     resolvedDependencies = []
 
                 options.append(ResolvedPackageFlavorOption(flavorOption.Name, resolvedDependencies, flavorOption.Supported))
-            packageFlavors.append(ResolvedPackageFlavor(flavor.Name, flavor.QuickName, options))
+            packageFlavors.append(ResolvedPackageFlavor(flavor.Name, flavor.QuickName, options, flavor.DefaultOptionName))
         return packageFlavors
 
     @staticmethod

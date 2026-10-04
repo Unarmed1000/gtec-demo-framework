@@ -63,10 +63,18 @@ class ResolvedPackageFlavorOption:
 
 
 class ResolvedPackageFlavor:
-    def __init__(self, name: PackageFlavorName, quickName: PackageFlavorQuickName | None, options: list[ResolvedPackageFlavorOption]) -> None:
+    def __init__(
+        self,
+        name: PackageFlavorName,
+        quickName: PackageFlavorQuickName | None,
+        options: list[ResolvedPackageFlavorOption],
+        defaultOptionName: PackageFlavorOptionName | None = None,
+    ) -> None:
+        """defaultOptionName: the option the flavor declares as its default, None when it declares none"""
         super().__init__()
         self.Name = name
         self.QuickName = quickName
+        self.DefaultOptionName = defaultOptionName
         self.Options = options
         self.Description = ResolvedPackageFlavor.__OptionString(self.Options)
 

@@ -94,7 +94,7 @@ class PackageGraphBuilder:
             graph.HasExternalContraints = flavorConstraints.HasConstraints()
             if engineResolveConfig.FlavorResolveConstraints == FlavorResolveConstraints.OnlyAllowOneFlavorPerRoot:
                 generatedFlavorConstraints = PackageGraphBuilder.__EnsureOnlyOneFlavorPerRootNode(
-                    graph, PackageGraphBuilder.__GetRootPackageNames(buildOrder), engineResolveConfig.ExternalFlavorConstraintHelp
+                    graph, PackageGraphBuilder.__GetRootPackageNames(buildOrder), engineResolveConfig.ExternalFlavorConstraintHelp, allPackages
                 )
                 if generatedFlavorConstraints is not None:
                     mergedConstraints = ComplexExternalFlavorConstraints.Merge(flavorConstraints, generatedFlavorConstraints)
@@ -208,18 +208,31 @@ class PackageGraphBuilder:
 
     @staticmethod
     def __EnsureOnlyOneFlavorPerRootNode(
-        graph: ResolvedPackageGraph, rootPackageNames: set[str], externalFlavorConstraintHelp: ExternalFlavorConstraintHelp
+        graph: ResolvedPackageGraph,
+        rootPackageNames: set[str],
+        externalFlavorConstraintHelp: ExternalFlavorConstraintHelp,
+        allPackages: list[UnresolvedBasicPackage],
     ) -> dict[str, ExternalFlavorConstraints] | None:
         flavorTemplateDict = PackageGraphBuilder.__BuildFlavorTemplateDict(graph, rootPackageNames)
 
         if externalFlavorConstraintHelp == ExternalFlavorConstraintHelp.Disabled:
             PackageGraphBuilder.__VerifyOnlyOneFlavorPerRootNode(flavorTemplateDict)
         elif externalFlavorConstraintHelp == ExternalFlavorConstraintHelp.SelectDefaultFlavor:
-            rootNodeConstraintDict = PackageGraphBuilder.__TryBuildRootNodeDefaultConstraints(flavorTemplateDict)
+            declaredFlavorDefaults = PackageGraphBuilder.__GetDeclaredFlavorDefaults(allPackages)
+            rootNodeConstraintDict = PackageGraphBuilder.__TryBuildRootNodeDefaultConstraints(flavorTemplateDict, declaredFlavorDefaults)
             return None if len(rootNodeConstraintDict) <= 0 else rootNodeConstraintDict
         else:
             raise Exception(f"Unsupported ExternalFlavorConstraintHelp: {externalFlavorConstraintHelp}")
         return None
+
+    @staticmethod
+    def __GetDeclaredFlavorDefaults(allPackages: list[UnresolvedBasicPackage]) -> dict[str, str]:
+        """The default option of every flavor that declares one (flavor name -> option name). A flavor is declared by one package, the
+        instances of the packages that depend on it name the flavor by the same name.
+        """
+        return {
+            flavor.Name.Value: flavor.DefaultOptionName.Value for package in allPackages for flavor in package.Flavors if flavor.DefaultOptionName is not None
+        }
 
     @staticmethod
     def __BuildFlavorTemplateDict(graph: ResolvedPackageGraph, rootPackageNames: set[str]) -> dict[ResolvedPackageTemplate, list[ResolvedPackageInstance]]:
@@ -255,7 +268,7 @@ class PackageGraphBuilder:
 
     @staticmethod
     def __TryBuildRootNodeDefaultConstraints(
-        flavorTemplateDict: dict[ResolvedPackageTemplate, list[ResolvedPackageInstance]],
+        flavorTemplateDict: dict[ResolvedPackageTemplate, list[ResolvedPackageInstance]], declaredFlavorDefaults: dict[str, str]
     ) -> dict[str, ExternalFlavorConstraints]:
         rootNodeDefaultConstraints: dict[str, ExternalFlavorConstraints] = {}
         for packageTemplate, instanceList in flavorTemplateDict.items():
@@ -264,7 +277,9 @@ class PackageGraphBuilder:
                 PackageGraphBuilder.__DetermineFlavorsThatDiffer(flavorOptionDict, instanceList)
                 if len(flavorOptionDict) > 0:
                     rootPackageName = PackageGraphBuilder.__GetConstrainedPackageName(packageTemplate)
-                    rootNodeDefaultConstraints[rootPackageName] = PackageGraphBuilder.__BuildTemplateDefaultFlavorConstraints(instanceList)
+                    rootNodeDefaultConstraints[rootPackageName] = PackageGraphBuilder.__BuildTemplateDefaultFlavorConstraints(
+                        instanceList, declaredFlavorDefaults
+                    )
 
         return rootNodeDefaultConstraints
 
@@ -280,13 +295,15 @@ class PackageGraphBuilder:
         return rootTemplate.DirectDependencies[0].Template.Name.Value
 
     @staticmethod
-    def __BuildTemplateDefaultFlavorConstraints(instances: list[ResolvedPackageInstance]) -> ExternalFlavorConstraints:
-        """The default of a root with several instances: the flavor options of its first instance, see DefaultFlavorSelector"""
+    def __BuildTemplateDefaultFlavorConstraints(instances: list[ResolvedPackageInstance], declaredFlavorDefaults: dict[str, str]) -> ExternalFlavorConstraints:
+        """The default of a root with several instances: the flavor options of its first instance, see DefaultFlavorSelector.
+        declaredFlavorDefaults holds the default option of the flavors that declare one.
+        """
         instanceFlavorSelections = [
             {flavorSelection.Name.Value: flavorSelection.Option.Value for flavorSelection in instance.FlavorSelections.Selections} for instance in instances
         ]
         typedDict: dict[PackageFlavorName, PackageFlavorOptionName] = {}
-        for strFlavorName, strOptionName in DefaultFlavorSelector.SelectDefaultFlavorOptions(instanceFlavorSelections).items():
+        for strFlavorName, strOptionName in DefaultFlavorSelector.SelectDefaultFlavorOptions(instanceFlavorSelections, declaredFlavorDefaults).items():
             typedDict[PackageFlavorName.FromString(strFlavorName)] = PackageFlavorOptionName(strOptionName)
         return ExternalFlavorConstraints(typedDict)
 

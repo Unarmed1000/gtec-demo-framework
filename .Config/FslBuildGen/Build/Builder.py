@@ -1141,14 +1141,16 @@ def ShowVariantList(log: Log, topLevelPackage: Package, requestedFiles: list[str
         flavor = flavorDict[flavorName]
         optionNames = [option.Name.Value for option in flavor.Options]
         optionNames.sort()
+        # A flavor that declares its default option says so first, the line of a flavor that declares none is as it always was
+        defaultText = "" if flavor.DefaultOptionName is None else f"Default: {flavor.DefaultOptionName.Value}. "
         if flavor.QuickName is not None:
             log.DoPrint(
-                "  {}={} (Introduced by package: {}. Fully qualified flavor name: '{}')".format(
-                    flavorName, ", ".join(optionNames), flavor.Name.OwnerPackageName, flavor.Name.Value
+                "  {}={} ({}Introduced by package: {}. Fully qualified flavor name: '{}')".format(
+                    flavorName, ", ".join(optionNames), defaultText, flavor.Name.OwnerPackageName, flavor.Name.Value
                 )
             )
         else:
-            log.DoPrint("  {}={} (Introduced by package: {})".format(flavorName, ", ".join(optionNames), flavor.Name.OwnerPackageName))
+            log.DoPrint("  {}={} ({}Introduced by package: {})".format(flavorName, ", ".join(optionNames), defaultText, flavor.Name.OwnerPackageName))
 
 
 def ShowBuildVariantList(log: Log, generator: GeneratorPluginBase2) -> None:
