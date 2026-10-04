@@ -25,7 +25,15 @@
     </Platform>
     <Platform Name="Ubuntu" Supported="true">
       <ExternalDependency Name="EGL" Type="StaticLib"/>
-      <Define Name="MESA_EGL_NO_X11_HEADERS" Access="Public"/>
+      <FlavorExtension Name="WindowSystem.Impl">
+        <Option Name="X11">
+          <Define Name="MESA_EGL_NO_X11_HEADERS" Access="Public"/>
+        </Option>
+        <Option Name="Wayland">
+          <ExternalDependency Name="wayland-egl" Type="StaticLib"/>
+          <Define Name="EGL_API_WL" Access="Public"/>
+        </Option>
+      </FlavorExtension>
     </Platform>
     <Platform Name="QNX" Supported="true">
       <ExternalDependency Name="EGL" Type="StaticLib"/>

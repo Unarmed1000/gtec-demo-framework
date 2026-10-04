@@ -15,6 +15,16 @@
     <Platform Name="RDK_Yocto">
       <Define Name="VK_USE_PLATFORM_WAYLAND_KHR" Access="Public"/>
     </Platform>
+    <Platform Name="Ubuntu">
+      <FlavorExtension Name="WindowSystem.Impl">
+        <Option Name="X11">
+          <Define Name="VK_USE_PLATFORM_XLIB_KHR" Access="Public"/>
+        </Option>
+        <Option Name="Wayland">
+          <Define Name="VK_USE_PLATFORM_WAYLAND_KHR" Access="Public"/>
+        </Option>
+      </FlavorExtension>
+    </Platform>
     <Platform Name="Yocto">
       <FlavorExtension Name="WindowSystem.Impl">
         <Option Name="FB" />
