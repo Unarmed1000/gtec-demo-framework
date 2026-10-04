@@ -145,6 +145,8 @@ class PlanOverrides:
     RefreshRateHz: float | None = None
     LoadProcesses: int | None = None
     LoadDuty: float | None = None
+    # The machine is under a load the person started: a loaded run is run once, without its idle twin and without CpuLoad.py
+    ExternalLoad: bool = False
 
 
 def LoadPlan(path: Path, overrides: PlanOverrides) -> Plan:
@@ -188,7 +190,9 @@ def LoadPlan(path: Path, overrides: PlanOverrides) -> Plan:
         refreshRateHz = planRefreshRateHz if overrides.RefreshRateHz is not None else runTable.get("expected_refresh_hz", planRefreshRateHz)
         refreshRateHz = float(refreshRateHz) if refreshRateHz is not None else None
         what = _ApplyVariables([str(runTable.get("what", ""))], variables, where)[0]
-        if bool(runTable.get("loaded", False)):
+        if bool(runTable.get("loaded", False)) and overrides.ExternalLoad:
+            plan.Runs.append(RunConfig(name, what + " (machine under an external load)", arguments, frames, None, True, refreshRateHz))
+        elif bool(runTable.get("loaded", False)):
             # The idle twin is always taken right before the loaded run, so the two differ in the load only
             plan.Runs.append(RunConfig(name + _g_idleSuffix, what + " (idle machine)", arguments, frames, None, False, refreshRateHz))
             plan.Runs.append(RunConfig(name + _g_loadedSuffix, what + " (machine under load)", arguments, frames, load, True, refreshRateHz))
@@ -445,7 +449,8 @@ def _SelectRuns(plan: Plan, only: str | None) -> list[RunConfig]:
 
 def _CommandRun(args: argparse.Namespace) -> int:
     plan = LoadPlan(ResolvePlanPath(args.plan),
-                    PlanOverrides(_ParseKeyValues(args.set, "--set"), args.frames, args.refresh_hz, args.load_processes, args.load_duty))
+                    PlanOverrides(_ParseKeyValues(args.set, "--set"), args.frames, args.refresh_hz, args.load_processes, args.load_duty,
+                                  args.external_load))
     userFacts = _ParseKeyValues(args.fact, "--fact")
     runs = _SelectRuns(plan, args.only)
     exePath = FindExecutable(plan.App, args.exe)
@@ -606,6 +611,9 @@ def _CreateParser() -> argparse.ArgumentParser:
     run.add_argument("--refresh-hz", type=float, help="The refresh rate the display is set to, the runs are checked against it.")
     run.add_argument("--load-processes", type=int, help="The busy processes of the CPU load, instead of the ones of the plan (0 = all CPUs).")
     run.add_argument("--load-duty", type=float, help="The share of the time the CPU load is busy, instead of the one of the plan (0.05 to 1.0).")
+    run.add_argument("--external-load", action="store_true",
+                     help="The machine is under a load you started yourself (a build, for example): every loaded run is run once, "
+                          "without an idle twin and without the CPU load of the tool. Say what the load is with --fact.")
     run.add_argument("--overwrite", action="store_true", help="Replace the logs of runs the output directory holds already.")
     run.add_argument("--dry-run", action="store_true", help="Show the runs and stop.")
     run.add_argument("-y", "--yes", action="store_true", help="Start without asking.")

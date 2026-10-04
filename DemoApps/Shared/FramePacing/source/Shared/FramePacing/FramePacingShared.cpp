@@ -264,6 +264,9 @@ namespace Fsl
       uiFactory->CreateSliderFmtValue(UI::LayoutOrientation::Horizontal, WithValue(SampleConfig::TargetFps, options->GetPacerTargetFps()));
     m_ui.SliderTargetFps->SetAlignmentX(UI::ItemAlignment::Stretch);
     m_ui.SwitchAdaptive = uiFactory->CreateSwitch("Adaptive swap interval", options->IsPacerAdaptive());
+    // Only for an app that measures its presents, so it stays disabled until the pacer is on and the presents are measured
+    m_ui.SwitchPacerFeedback = uiFactory->CreateSwitch("Present feedback to the pacer", options->IsPacerPresentFeedback());
+    m_ui.SwitchPacerFeedback->SetEnabled(false);
     m_ui.LabelPacerStatus = uiFactory->CreateLabel("");
     m_ui.LabelPacerFrames = uiFactory->CreateLabel("");
     const auto lblCpuLoad = uiFactory->CreateLabel("CPU load (ms per frame)");
@@ -298,6 +301,7 @@ namespace Fsl
     stackLayout->AddChild(lblTargetFps);
     stackLayout->AddChild(m_ui.SliderTargetFps);
     stackLayout->AddChild(m_ui.SwitchAdaptive);
+    stackLayout->AddChild(m_ui.SwitchPacerFeedback);
     stackLayout->AddChild(m_ui.LabelPacerStatus);
     stackLayout->AddChild(m_ui.LabelPacerFrames);
     stackLayout->AddChild(uiFactory->CreateDivider(UI::LayoutOrientation::Horizontal));
@@ -519,8 +523,22 @@ namespace Fsl
 
   void FramePacingShared::SetFramePresentId(const uint64_t presentId)
   {
-    // The display time is only something the frame pacer aims for
-    m_presentFeedback.AddFrame(presentId, m_frameStartTime, m_pacer ? std::optional<TickCount>(m_schedule.IntendedDisplayTime) : std::nullopt);
+    // The display time is only something the frame pacer aims for, and with present feedback it is not known before a display time arrived
+    const bool hasIntendedDisplayTime = m_pacer && m_schedule.IntendedDisplayTime.Ticks() != 0;
+    m_presentFeedback.AddFrame(presentId, m_frameStartTime,
+                               hasIntendedDisplayTime ? std::optional<TickCount>(m_schedule.IntendedDisplayTime) : std::nullopt);
+
+    {    // So the frame pacer can be told about the frame when its display time arrives, a few frames from now
+      PacerPresentFrame& rPresentFrame = m_pacerPresentFrames[presentId % m_pacerPresentFrames.size()];
+      rPresentFrame = {};
+      rPresentFrame.PresentId = presentId;
+      rPresentFrame.PacerFrameId = m_pacer ? m_schedule.FrameId : 0u;
+      if (m_frameLog)
+      {
+        rPresentFrame.LogFrameIndex = m_frameLog->GetLogFrameIndex();
+        rPresentFrame.HasLogFrame = true;
+      }
+    }
 
     if (m_frameLog)
     {
@@ -534,6 +552,38 @@ namespace Fsl
                                            const std::optional<TickCount> queueOperationsEndTime)
   {
     m_presentFeedback.AddPresentTiming(presentId, displayTime, queueOperationsEndTime);
+
+    // The frame pacer is told when the frame was shown, if it measures the frames by that. A present without a display time gets none.
+    if (m_pacer && m_pacerConfig.PresentFeedback && displayTime.has_value())
+    {
+      const PacerPresentFrame& presentFrame = m_pacerPresentFrames[presentId % m_pacerPresentFrames.size()];
+      if (presentFrame.PresentId == presentId && presentFrame.PacerFrameId != 0u)
+      {
+        const std::optional<TickCount> presentCallTime =
+          presentFrame.HasPresentCallTime ? std::optional<TickCount>(presentFrame.PresentCallTime) : std::nullopt;
+        m_pacer->AddPresentFeedback(presentFrame.PacerFrameId, displayTime.value(), presentCallTime);
+        if (m_frameLog && presentFrame.HasLogFrame)
+        {
+          // What the frame pacer was given about the frame
+          m_frameLog->SetLogValueAt(presentFrame.LogFrameIndex, m_logColumns.FeedbackDisplay, displayTime.value());
+          if (presentCallTime.has_value())
+          {
+            m_frameLog->SetLogValueAt(presentFrame.LogFrameIndex, m_logColumns.FeedbackPresent, presentCallTime.value());
+          }
+        }
+      }
+    }
+  }
+
+
+  void FramePacingShared::SetPresentCallTime(const uint64_t presentId, const TickCount presentCallTime)
+  {
+    PacerPresentFrame& rPresentFrame = m_pacerPresentFrames[presentId % m_pacerPresentFrames.size()];
+    if (rPresentFrame.PresentId == presentId)
+    {
+      rPresentFrame.PresentCallTime = presentCallTime;
+      rPresentFrame.HasPresentCallTime = true;
+    }
   }
 
 
@@ -614,13 +664,15 @@ namespace Fsl
     // A present that waits for vsync shows the frame at the first refresh the present allows. So a frame that is held for more
     // refreshes than the present can hold it for is presented as late as it can and still be shown at the refresh the frame pacer
     // aims for (sleep, then present). This is a guess: the pacer has no vsync times, the frame is taken to have started at a refresh.
+    // The time to hold to is the start of the frame plus its swap interval. Without present feedback that is the intended display time,
+    // with it the intended display time is the refresh the frame reaches through the queue of the swapchain, and unknown at first.
     const TimeSpan refreshPeriod(std::llround(static_cast<double>(TimeSpan::TicksPerSecond) / m_pacerConfig.RefreshRateHz));
     const TimeSpan presentHoldTime(refreshPeriod.Ticks() * static_cast<int64_t>(std::max(presentSwapInterval, 1u)));
     const TimeSpan presentMargin = std::min(LocalConfig::MaxPresentMargin, TimeSpan(refreshPeriod.Ticks() / 8));
     const TickCount waitStartTime = m_timer.GetTimestamp();
-    WaitUntil((m_schedule.IntendedDisplayTime - presentHoldTime) + presentMargin);
+    WaitUntil((m_schedule.NextFrameStartTime - presentHoldTime) + presentMargin);
     m_lastPresentWait = m_timer.GetTimestamp() - waitStartTime;
-    m_nextFrameStartTime = m_schedule.IntendedDisplayTime;
+    m_nextFrameStartTime = m_schedule.NextFrameStartTime;
     if (m_frameLog)
     {
       m_frameLog->SetLogValue(m_logColumns.PresentWait, m_lastPresentWait);
@@ -734,16 +786,27 @@ namespace Fsl
     {
       m_ui.SwitchAdaptive->SetEnabled(pacerOn);
     }
+    // Present feedback needs the display times of the presents, so it is only offered while the app is asked to measure them and only
+    // used while the swapchain does
+    const bool feedbackAvailable = pacerOn && IsPresentTimingWanted();
+    if (m_ui.SwitchPacerFeedback->IsEnabled() != feedbackAvailable)
+    {
+      m_ui.SwitchPacerFeedback->SetEnabled(feedbackAvailable);
+    }
+    pacerConfig.PresentFeedback = feedbackAvailable && m_presentFeedbackEnabled && m_ui.SwitchPacerFeedback->IsChecked();
 
     if (!pacerOn)
     {
       m_pacer.reset();
       m_nextFrameStartTime = {};
       m_pacerChanges = {};
+      m_pacerPresentFrames = {};
     }
     else if (!m_pacer)
     {
       m_pacer = std::make_unique<SamplePacer>(pacerConfig);
+      // A new pacer counts its frames from one again, so what is remembered about the frames of the one before must not reach it
+      m_pacerPresentFrames = {};
       m_nextFrameStartTime = {};
       m_frameStats.Clear();
       m_pacerChanges = {};
@@ -868,6 +931,29 @@ namespace Fsl
     rColumns.CpuLoad =
       rLog.RegisterColumn("cpuLoadMs", FramePacingLogUnit::Count, "The CPU load setting: the milliseconds the sample is busy per frame");
     rColumns.GpuLoad = rLog.RegisterColumn("gpuLoadSteps", FramePacingLogUnit::Count, "The GPU load setting: the steps of the raymarched background");
+    rColumns.PacerFrameId =
+      rLog.RegisterColumn("pacerFrameId", FramePacingLogUnit::Id, "The id the frame pacer gave the frame, present feedback is given with it");
+    rColumns.NextFrameStart = rLog.RegisterColumn("nextFrameStartTicks", FramePacingLogUnit::Ticks,
+                                                  "The start of the frame plus its swap interval according to the frame pacer: what the "
+                                                  "waits of the sample hold to");
+    rColumns.FeedbackOn =
+      rLog.RegisterColumn("pacerFeedbackOn", FramePacingLogUnit::Flag, "1 if the frame pacer measures the frames by their display times");
+    rColumns.FeedbackDisplay = rLog.RegisterColumn("feedbackDisplayTicks", FramePacingLogUnit::Ticks,
+                                                   "The display time of the frame the frame pacer was given as present feedback");
+    rColumns.FeedbackPresent = rLog.RegisterColumn("feedbackPresentTicks", FramePacingLogUnit::Ticks,
+                                                   "The present time of the frame the frame pacer was given with its display time");
+    rColumns.FeedbackUsed = rLog.RegisterColumn("pacerFeedbackUsed", FramePacingLogUnit::Count,
+                                                "The display times the frame pacer measured frames by, counted since the pacer was made");
+    rColumns.FeedbackRefused =
+      rLog.RegisterColumn("pacerFeedbackRefused", FramePacingLogUnit::Count,
+                          "The display times the frame pacer refused, counted since the pacer was made: too old, before the present of "
+                          "their frame or not a whole number of refreshes after the one before");
+    rColumns.FeedbackNotShown =
+      rLog.RegisterColumn("pacerFeedbackNotShown", FramePacingLogUnit::Count,
+                          "The frames that were reported to the frame pacer as never shown, counted since the pacer was made");
+    rColumns.FeedbackMissing =
+      rLog.RegisterColumn("pacerFeedbackMissing", FramePacingLogUnit::Count,
+                          "The frames the frame pacer counted as on time as it was given nothing about them, counted since the pacer was made");
     rLog.SetLogFact("sample.presentMethod", m_presentMethod == SamplePresentMethod::WaitThenPresent ? "WaitThenPresent" : "SwapInterval");
     rLog.SetLogFact("sample.pacerSupported", SamplePacer::IsSupported() ? "1" : "0");
   }
@@ -888,8 +974,9 @@ namespace Fsl
       m_hasLoggedPacerConfig = true;
       m_loggedPacerOn = pacerOn;
       m_loggedPacerConfig = m_pacerConfig;
-      rLog.AddLogEvent("pacerConfig", fmt::format("on={};refreshRateHz={};targetFps={};adaptive={}", pacerOn ? 1 : 0, m_pacerConfig.RefreshRateHz,
-                                                  m_pacerConfig.TargetFps, m_pacerConfig.Adaptive ? 1 : 0));
+      rLog.AddLogEvent("pacerConfig",
+                       fmt::format("on={};refreshRateHz={};targetFps={};adaptive={};presentFeedback={}", pacerOn ? 1 : 0, m_pacerConfig.RefreshRateHz,
+                                   m_pacerConfig.TargetFps, m_pacerConfig.Adaptive ? 1 : 0, m_pacerConfig.PresentFeedback ? 1 : 0));
     }
 
     rLog.SetLogValue(columns.PacerOn, pacerOn);
@@ -910,6 +997,18 @@ namespace Fsl
       rLog.SetLogValue(columns.WindowAverageWork, status.AverageWork);
       rLog.SetLogValue(columns.WindowSpan, status.WindowSpan);
       rLog.SetLogValue(columns.WindowFull, status.WindowFull);
+      rLog.SetLogUInt64(columns.PacerFrameId, m_schedule.FrameId);
+      rLog.SetLogValue(columns.NextFrameStart, m_schedule.NextFrameStartTime);
+      rLog.SetLogValue(columns.FeedbackOn, m_pacerConfig.PresentFeedback);
+      if (m_pacerConfig.PresentFeedback)
+      {
+        // What became of the feedback the frame pacer had when it planned this frame
+        const SamplePacerFeedbackState feedbackState = m_pacer->GetFeedbackState();
+        rLog.SetLogUInt64(columns.FeedbackUsed, feedbackState.Used);
+        rLog.SetLogUInt64(columns.FeedbackRefused, feedbackState.Refused);
+        rLog.SetLogUInt64(columns.FeedbackNotShown, feedbackState.NotShown);
+        rLog.SetLogUInt64(columns.FeedbackMissing, feedbackState.Missing);
+      }
     }
   }
 
@@ -1023,7 +1122,8 @@ namespace Fsl
       const uint32_t lateFrames = m_frameStats.LateFrameCount();
       SetFormattedContent(*rStats.SwapInterval, "1 ({})", SamplePacer::IsSupported() ? PacerOffValue : "pacer not supported");
       SetFormattedContent(*rStats.LateFrames, "{} of {} ({:.1f} %)", lateFrames, frames, frames > 0u ? ((100.0 * lateFrames) / frames) : 0.0);
-      for (UI::Label* pLabel : {rStats.AverageWork.get(), rStats.IntervalChanges.get(), rStats.LastChange.get(), rStats.FrameWindow.get()})
+      for (UI::Label* pLabel :
+           {rStats.AverageWork.get(), rStats.IntervalChanges.get(), rStats.LastChange.get(), rStats.FrameWindow.get(), rStats.Feedback.get()})
       {
         pLabel->SetContent(PacerOffValue);
       }
@@ -1055,6 +1155,16 @@ namespace Fsl
       rStats.LastChange->SetContent("none");
     }
     SetFormattedContent(*rStats.FrameWindow, "{:.2f} s{}", status.WindowSpan.TotalSeconds(), status.WindowFull ? ", full" : "");
+    if (m_pacerConfig.PresentFeedback)
+    {
+      // Nearly everything refused means a display with a variable refresh rate, or a wrong refresh rate
+      const SamplePacerFeedbackState feedbackState = m_pacer->GetFeedbackState();
+      SetFormattedContent(*rStats.Feedback, "{} used, {} refused, {} missing", feedbackState.Used, feedbackState.Refused, feedbackState.Missing);
+    }
+    else
+    {
+      rStats.Feedback->SetContent(SwitchedOffValue);
+    }
   }
 
 
@@ -1209,6 +1319,7 @@ namespace Fsl
     rPacerStats.IntervalChanges = addStatsRow(*pacerGrid, pacerRow, "Interval changes");
     rPacerStats.LastChange = addStatsRow(*pacerGrid, pacerRow, "Last change");
     rPacerStats.FrameWindow = addStatsRow(*pacerGrid, pacerRow, "Frame window");
+    rPacerStats.Feedback = addStatsRow(*pacerGrid, pacerRow, "Present feedback");
     // What the measured presents say: when the frames really reached the display
     rPacerStats.DisplayError = addStatsRow(*pacerGrid, pacerRow, "Display error");
     rPacerStats.DisplayInterval = addStatsRow(*pacerGrid, pacerRow, "Display interval");

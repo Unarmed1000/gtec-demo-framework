@@ -118,6 +118,7 @@ namespace Fsl
       std::shared_ptr<UI::Label> IntervalChanges;
       std::shared_ptr<UI::Label> LastChange;
       std::shared_ptr<UI::Label> FrameWindow;
+      std::shared_ptr<UI::Label> Feedback;
       //! What the measured presents say (only an app that measures them has values for these)
       std::shared_ptr<UI::Label> DisplayError;
       std::shared_ptr<UI::Label> DisplayInterval;
@@ -163,6 +164,7 @@ namespace Fsl
       std::shared_ptr<UI::Label> LabelPacedRate;
       std::shared_ptr<UI::SliderAndFmtValueLabel<int32_t>> SliderTargetFps;
       std::shared_ptr<UI::Switch> SwitchAdaptive;
+      std::shared_ptr<UI::Switch> SwitchPacerFeedback;
       std::shared_ptr<UI::Label> LabelPacerStatus;
       std::shared_ptr<UI::Label> LabelPacerFrames;
       std::shared_ptr<UI::SliderAndFmtValueLabel<int32_t>> SliderCpuLoad;
@@ -280,7 +282,32 @@ namespace Fsl
       FramePacingLogColumn PresentWait;
       FramePacingLogColumn CpuLoad;
       FramePacingLogColumn GpuLoad;
+      FramePacingLogColumn PacerFrameId;
+      FramePacingLogColumn NextFrameStart;
+      FramePacingLogColumn FeedbackOn;
+      FramePacingLogColumn FeedbackDisplay;
+      FramePacingLogColumn FeedbackPresent;
+      FramePacingLogColumn FeedbackUsed;
+      FramePacingLogColumn FeedbackRefused;
+      FramePacingLogColumn FeedbackNotShown;
+      FramePacingLogColumn FeedbackMissing;
     };
+
+    //! What the frame pacer has to be told about a present when its display time arrives
+    struct PacerPresentFrame
+    {
+      uint64_t PresentId{0};
+      //! The id the frame pacer gave the frame (zero = the frame was not paced)
+      uint64_t PacerFrameId{0};
+      //! When the present was called (valid if HasPresentCallTime)
+      TickCount PresentCallTime;
+      bool HasPresentCallTime{false};
+      //! The frame of the log (valid if HasLogFrame)
+      uint64_t LogFrameIndex{0};
+      bool HasLogFrame{false};
+    };
+
+    std::array<PacerPresentFrame, 64> m_pacerPresentFrames{};
 
     //! The frame of the log a present belongs to
     struct LogPresentFrame
@@ -349,6 +376,9 @@ namespace Fsl
     void SetPresentFeedback(const bool enabled, const TimeSpan refreshDuration = {});
     //! The id of the present of the frame being drawn. Call it during the app's draw after GetRaymarchParams, which starts the frame.
     void SetFramePresentId(const uint64_t presentId);
+    //! When the present with the given id was called (a HighResolutionTimer timestamp). The frame pacer is told with the display time of
+    //! the frame, as the sample can wait between the end of a frame and its present.
+    void SetPresentCallTime(const uint64_t presentId, const TickCount presentCallTime);
     //! A present was measured.
     //! @param displayTime when the frame reached the display as a HighResolutionTimer timestamp (empty if it was not reported)
     //! @param queueOperationsEndTime when the present was handed to the presentation engine (empty if not reported)

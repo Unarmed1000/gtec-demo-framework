@@ -33,6 +33,8 @@
 #include <mb/framepacing/pacer/PacerSettings.hpp>
 #include <mb/framepacing/pacer/RefreshPeriod.hpp>
 #include <mb/framepacing/pacer/frame/FrameSchedule.hpp>
+#include <mb/framepacing/pacer/frame/PresentFeedback.hpp>
+#include <mb/framepacing/pacer/frame/PresentFeedbackState.hpp>
 #include <mb/framepacing/pacer/rule/FrameWindowState.hpp>
 #include <mb/framepacing/pacer/rule/SwapIntervalChange.hpp>
 #endif
@@ -65,6 +67,7 @@ namespace Fsl
         settings.SetPreferredFrameRate(config.TargetFps);
       }
       settings.SetAutoSwapInterval(config.Adaptive);
+      settings.SetUsePresentFeedback(config.PresentFeedback);
       return settings;
     }
 
@@ -122,6 +125,8 @@ namespace Fsl
     const PC::FrameSchedule src = m_impl->Pacer.BeginFrame(FP::TickCount64(cpuStartTime.Ticks()));
 
     SamplePacerSchedule schedule;
+    schedule.FrameId = src.FrameId;
+    schedule.NextFrameStartTime = TickCount(src.NextFrameStartTime.Ticks());
     schedule.SwapInterval = src.SwapInterval;
     schedule.AnimationStep = TimeSpan(src.AnimationStep.Ticks());
     schedule.IntendedDisplayTime = TickCount(src.IntendedDisplayTime.Ticks());
@@ -135,6 +140,27 @@ namespace Fsl
   void SamplePacer::EndFrame(const TickCount presentTime, const TimeSpan work) noexcept
   {
     m_impl->Pacer.EndFrame(FP::TickCount64(presentTime.Ticks()), FP::TimeSpan(std::max(work.Ticks(), int64_t{0})));
+  }
+
+
+  void SamplePacer::AddPresentFeedback(const uint64_t frameId, const TickCount displayTime, const std::optional<TickCount> presentTime) noexcept
+  {
+    const FP::TickCount64 shownTime(displayTime.Ticks());
+    m_impl->Pacer.AddPresentFeedback(presentTime.has_value() ? PC::PresentFeedback::Shown(frameId, shownTime, FP::TickCount64(presentTime->Ticks()))
+                                                             : PC::PresentFeedback::Shown(frameId, shownTime));
+  }
+
+
+  SamplePacerFeedbackState SamplePacer::GetFeedbackState() const noexcept
+  {
+    const PC::PresentFeedbackState src = m_impl->Pacer.FeedbackState();
+
+    SamplePacerFeedbackState state;
+    state.Used = src.Used;
+    state.Refused = src.Refused;
+    state.NotShown = src.NotShown;
+    state.Missing = src.Missing;
+    return state;
   }
 
 
@@ -192,6 +218,20 @@ namespace Fsl
   {
     FSL_PARAM_NOT_USED(presentTime);
     FSL_PARAM_NOT_USED(work);
+  }
+
+
+  void SamplePacer::AddPresentFeedback(const uint64_t frameId, const TickCount displayTime, const std::optional<TickCount> presentTime) noexcept
+  {
+    FSL_PARAM_NOT_USED(frameId);
+    FSL_PARAM_NOT_USED(displayTime);
+    FSL_PARAM_NOT_USED(presentTime);
+  }
+
+
+  SamplePacerFeedbackState SamplePacer::GetFeedbackState() const noexcept
+  {
+    return {};
   }
 
 

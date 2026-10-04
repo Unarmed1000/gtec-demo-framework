@@ -26,6 +26,7 @@
 #include <FslBase/Time/TimeSpan.hpp>
 #include <cstdint>
 #include <memory>
+#include <optional>
 
 namespace Fsl
 {
@@ -38,6 +39,9 @@ namespace Fsl
     uint32_t TargetFps{0};
     //! Adapt the swap interval to how the frames do (false = always the swap interval of the target frame rate)
     bool Adaptive{true};
+    //! Measure the frames by when the display showed them (AddPresentFeedback) and not by when they start. Only for an app that
+    //! measures its presents, on a display with a fixed refresh rate.
+    bool PresentFeedback{false};
 
     constexpr bool operator==(const SamplePacerConfig&) const noexcept = default;
   };
@@ -56,12 +60,17 @@ namespace Fsl
   //! What the pacer plans for a frame
   struct SamplePacerSchedule
   {
+    //! The id the pacer gave the frame, which present feedback about the frame is given with (zero = no frame)
+    uint64_t FrameId{0};
     //! The number of display refreshes the frame is held for
     uint32_t SwapInterval{1};
     //! The time from the animation time of the previous frame to the one of this frame
     TimeSpan AnimationStep;
-    //! When the pacer aims for the frame to be shown (a HighResolutionTimer timestamp)
+    //! When the pacer aims for the frame to be shown (a HighResolutionTimer timestamp). With present feedback it is the refresh the frame
+    //! reaches with the presents that are queued, and zero (unknown) until a display time arrived.
     TickCount IntendedDisplayTime;
+    //! The start of the frame plus its swap interval (a HighResolutionTimer timestamp): what a loop that paces by waiting holds to
+    TickCount NextFrameStartTime;
     //! The frame time the pacer aims for: the swap interval as a time
     TimeSpan TargetFrameTime;
     //! The frame time the app wants: the swap interval of the target frame rate as a time
@@ -83,6 +92,20 @@ namespace Fsl
     TimeSpan WindowSpan;
     //! True if the rule has the frames it needs to decide on
     bool WindowFull{false};
+  };
+
+  //! What became of the present feedback the pacer was given, counted since the pacer was made
+  struct SamplePacerFeedbackState
+  {
+    //! The display times the frames were measured by
+    uint64_t Used{0};
+    //! The display times that were not used: too old, before the present of their frame or not a whole number of refreshes after the
+    //! one before (nearly all refused means a display with a variable refresh rate, or a wrong refresh rate)
+    uint64_t Refused{0};
+    //! The frames that were reported as never shown
+    uint64_t NotShown{0};
+    //! The frames that counted as on time as nothing was reported for them
+    uint64_t Missing{0};
   };
 
   //! The mb-framepacing frame pacer (experimental) behind the types of the framework, so the rest of the sample does not depend on the
@@ -116,7 +139,15 @@ namespace Fsl
     //! @param work how long the frame needed (the CPU time and the GPU time), zero = the time from the frame start to presentTime
     void EndFrame(const TickCount presentTime, const TimeSpan work) noexcept;
 
+    //! @brief A frame that was presented earlier was shown. Call it before the BeginFrame of the next frame, oldest frame first. It does
+    //!        nothing unless the config asks for present feedback.
+    //! @param frameId the SamplePacerSchedule::FrameId of the frame
+    //! @param displayTime when the display started to show the frame (a HighResolutionTimer timestamp)
+    //! @param presentTime when the frame was presented (a HighResolutionTimer timestamp), empty = the time EndFrame was given
+    void AddPresentFeedback(const uint64_t frameId, const TickCount displayTime, const std::optional<TickCount> presentTime) noexcept;
+
     [[nodiscard]] SamplePacerStatus GetStatus() const noexcept;
+    [[nodiscard]] SamplePacerFeedbackState GetFeedbackState() const noexcept;
   };
 }
 

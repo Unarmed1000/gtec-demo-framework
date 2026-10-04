@@ -70,6 +70,7 @@ Argument                        | Description
 `--pause <seconds>`             | The time to wait before every run, instead of the one of the plan.
 `--load-processes <count>`      | The busy processes of the CPU load, instead of the ones of the plan (0 is one for every logical CPU).
 `--load-duty <share>`           | The share of the time the CPU load is busy, instead of the one of the plan (0.05 to 1.0).
+`--external-load`               | The machine is under a load you started yourself (a build, for example): every loaded run is run once, without its idle twin and without the CPU load of the tool. Say what the load is with `--fact`.
 `--exe <file>`, `--cwd <dir>`   | The app to run and the directory to run it in (the one that holds its `Content`).
 `--overwrite`                   | Replace the logs of runs the output directory holds already. Without it the tool stops.
 `--dry-run`                     | Show the runs and stop.
@@ -84,6 +85,8 @@ Plan                 | Display                         | Runs
 `work-matrix-240hz`  | 240 Hz, variable refresh off    | GPU work of 20, 90 and 130 % of a refresh; pacer on, pacer off and basic Vulkan; each idle and under CPU load (18 runs).
 `work-matrix-120hz`  | 120 Hz, variable refresh off    | The same with CPU work of 2, 7 and 11 ms.
 `work-matrix-60hz`   | 60 Hz, variable refresh off     | The same with CPU work of 3, 15 and 22 ms.
+`present-feedback-240hz` | 240 Hz, variable refresh off | The pacer without and with present feedback (`--Pacer.PresentFeedback`), GPU work of 20, 90 and 130 %, each idle and under CPU load (12 runs).
+`present-feedback-120hz` | 120 Hz, variable refresh off | The same with CPU work of 2, 7 and 11 ms.
 `fixed-rates`        | Any fixed rate, one at a time   | Trivial work: pacer off, pacer on, pacer at half the refresh rate. Give `--refresh-hz` and `--set half_fps=`.
 `variable-refresh`   | Highest rate, variable refresh on | Fixed frame rates of 120, 80, 60 and 30 fps, pacer off, GPU and CPU load, windowed and fullscreen.
 
@@ -111,6 +114,10 @@ A run a plan marks with `loaded = true` is run twice: `<name>_idle` on the machi
 `CpuLoad.py` running. The two differ in the load only, so what the load changed can be read from the pair. The load is a number of
 processes that are busy a share of the time (the `[load]` table of the plan, by default one for every logical CPU and always busy, like
 a build that uses the whole machine). It is started two seconds before the app and stopped when the app exits.
+
+A CPU load is not every load. A build also loads the disk and the memory, and it was a build that moved the frame starts of the
+sample. For a load like that start it yourself and run the plan with `--external-load`: the loaded runs are then run once, as they
+are, and are checked as loaded.
 
 ```bash
 # The load on its own: four processes that are busy half the time, for a minute
@@ -173,6 +180,7 @@ Part                           | Meaning
 `start step`                   | The time from the start of a frame to the start of the next: the median, and the values 1 % of the frames are under and over.
 `shown for refreshes`          | The frames by the number of refreshes from their display time to the next display time. `1: 2330, 2: 3` is three frames that stayed on the display for two refreshes. Needs `VK_EXT_present_timing`.
 `presents not shown or not timed` | Presents the presentation engine reported on without a display time: their image did not reach the display.
+`feedback used: n, refused: n` | With present feedback: what became of the display times the pacer was given. Many refused is a warning: variable refresh, or a wrong refresh rate.
 `work`                         | The median CPU and GPU time of a frame.
 `other programs`               | The share of the CPUs that was busy with something other than the app during the run.
 `ok` or `n WARNINGS`           | The warnings are listed below the line and in the notes.
@@ -228,6 +236,12 @@ On a NVIDIA desktop GPU (driver 617.14) with a 240 Hz display on Windows 11, a w
   pacer goes to two refreshes depends on how many do. In one run it switched after five seconds in which 9 % of the frames were shown
   too long, in others it held one refresh to the end with 2 % shown too long. At 120 Hz (84 %) it held one refresh with next to no
   frames shown too long.
+- **Present feedback has not helped yet** (mb-framepacing `1764848`, the present feedback plans at 120 and 240 Hz, idle, under the CPU
+  load and under builds that used up to 83 % of the CPUs). With light work the runs with and without it are the same: the frame starts
+  stayed within 0.2 ms of the refresh interval under every load, so there was nothing to correct. With work of 90 % at 240 Hz the
+  frames that miss their refresh are reported without a display time, so the pacer gets no feedback for them and counts them as on
+  time. With work of 130 % the pacer takes about three times as long to go to two refreshes, and in two runs it went on to three and
+  four. It stays off by default.
 - **A CPU load on every logical CPU did not disturb the frames of the sample**, the runs under load were as even as their idle twins.
   A build loads the disk and the memory as well, which this load does not.
 - **The time from the start of a frame to the display depends on the work**: 3.7 refreshes at 20 % work and about 2 refreshes at 90

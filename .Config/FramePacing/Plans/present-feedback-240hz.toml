@@ -1,0 +1,62 @@
+# The frame pacer with and without present feedback at 240 Hz: the same run twice, first with the frames measured by when they start and
+# then by when the display showed them (--Pacer.PresentFeedback true, which needs VK_EXT_present_timing).
+#
+# Set the display to 240 Hz with variable refresh off before the plan is run: with variable refresh on the pacer refuses the display times.
+# The GPU load settings depend on the GPU and on the size of the window, see work-matrix-240hz.
+#
+# Present feedback is for a machine that is busy with other work, where the frames start more than half a refresh off the refreshes of
+# the display. A CPU load alone did not do that on the machine these plans were made on, a build did (it loads the disk and the memory
+# as well). So besides the loaded twins of this plan, run the plan again while something builds and say so with --fact.
+
+description = "240 Hz: the pacer without and with present feedback, GPU work of 20, 90 and 130 % of a refresh, each idle and under CPU load"
+app = "Vulkan.FramePacing"
+frames = 2400
+expected_refresh_hz = 240.0
+args = ["--Window", "[0,0,1600,900]", "--CpuLoad", "0", "--Pacer"]
+
+[variables]
+# The --GpuLoad that makes the GPU work 20, 90 and 130 % of a refresh on a frame (the defaults were measured on a NVIDIA desktop GPU)
+gpu20 = "98"
+gpu90 = "455"
+gpu130 = "648"
+
+[load]
+# One busy process for every logical CPU
+processes = 0
+duty = 1.0
+
+[[run]]
+name = "w20_feedback_off"
+what = "GPU work of 20 % of a refresh, pacer on, no present feedback"
+args = ["--GpuLoad", "{gpu20}", "--Pacer.PresentFeedback", "false"]
+loaded = true
+
+[[run]]
+name = "w20_feedback_on"
+what = "GPU work of 20 % of a refresh, pacer on with present feedback"
+args = ["--GpuLoad", "{gpu20}", "--Pacer.PresentFeedback", "true"]
+loaded = true
+
+[[run]]
+name = "w90_feedback_off"
+what = "GPU work of 90 % of a refresh, pacer on, no present feedback"
+args = ["--GpuLoad", "{gpu90}", "--Pacer.PresentFeedback", "false"]
+loaded = true
+
+[[run]]
+name = "w90_feedback_on"
+what = "GPU work of 90 % of a refresh, pacer on with present feedback"
+args = ["--GpuLoad", "{gpu90}", "--Pacer.PresentFeedback", "true"]
+loaded = true
+
+[[run]]
+name = "w130_feedback_off"
+what = "GPU work of 130 % of a refresh, pacer on, no present feedback"
+args = ["--GpuLoad", "{gpu130}", "--Pacer.PresentFeedback", "false"]
+loaded = true
+
+[[run]]
+name = "w130_feedback_on"
+what = "GPU work of 130 % of a refresh, pacer on with present feedback"
+args = ["--GpuLoad", "{gpu130}", "--Pacer.PresentFeedback", "true"]
+loaded = true

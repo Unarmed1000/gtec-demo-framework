@@ -165,6 +165,13 @@ namespace Fsl
     // When the frames reached the display, if the swapchain measures it (VK_EXT_present_timing). The measurements arrive a few frames
     // after the present.
     m_shared.SetPresentFeedback(IsPresentTimingEnabled(), GetPresentRefreshDuration());
+    {    // When the frame before this one was presented: the frame pacer is told with the display time of that frame
+      const VulkanBasic::PresentCallRecord& presentCalls = GetLastPresentCalls();
+      if (presentCalls.PresentId != 0u)
+      {
+        m_shared.SetPresentCallTime(presentCalls.PresentId, presentCalls.PresentCallTime);
+      }
+    }
     for (const Vulkan::VUPresentTimingRecord& record : GetPresentTimings())
     {
       m_shared.AddPresentTiming(record.PresentId, record.GetDisplayTime(), record.QueueOperationsEnd);

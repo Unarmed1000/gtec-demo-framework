@@ -42,6 +42,7 @@ namespace Fsl
     std::optional<double> m_pacerRefreshRateHz;
     int32_t m_pacerTargetFps{SampleConfig::TargetFps.Get()};
     bool m_pacerAdaptive{true};
+    bool m_pacerPresentFeedback{false};
     int32_t m_cpuLoadMs{SampleConfig::CpuLoadMs.Get()};
     int32_t m_gpuLoadSteps{SampleConfig::GpuLoadSteps.Get()};
     RaymarchScene m_background{RaymarchScene::Flight};
@@ -102,6 +103,12 @@ namespace Fsl
     [[nodiscard]] bool IsPacerAdaptive() const noexcept
     {
       return m_pacerAdaptive;
+    }
+
+    //! @brief Check if the frame pacer is given when the frames were shown, where the app measures that.
+    [[nodiscard]] bool IsPacerPresentFeedback() const noexcept
+    {
+      return m_pacerPresentFeedback;
     }
 
     //! @brief The time the app spends busy every frame in milliseconds.
