@@ -410,7 +410,7 @@ Event | Details
 `window` | The size and the DPI of the window, written when it changes.
 `display` | `refreshIntervalTicks`: the refresh interval of the display as the window system reports it (0 if it does not know), written when it changes.
 `runStarted`, `runCompleted` | A measured run of the marker: the run id, the sequence id, the name and the duration.
-`swapchainCreated` | Vulkan: the extent, the format, the present mode, the image counts and the flags of a swapchain. More than one means the window was resized or the swapchain was lost.
+`swapchainCreated` | Vulkan: the extent, the format, the present mode, the image counts, the flags and the frames in flight of a swapchain. More than one means the window was resized or the swapchain was lost.
 `presentTiming` | Vulkan: if the presents of the swapchain are timed, the stages and the time domain of the surface and what it can schedule.
 `refreshProperties` | Vulkan: `refreshDuration` and `refreshInterval` of the swapchain, written when they change.
 `presentClockCalibration` | Vulkan: the offset between the clock of a present stage and the clock of the framework and how far off it can be, every time it is measured.

@@ -63,6 +63,7 @@ namespace Fsl
         VkDebugUtils,
         VkValidateFeatures,
         VkPresentTiming,
+        VkFramesInFlight,
       };
     };
 
@@ -88,6 +89,9 @@ namespace Fsl
 #if VK_HEADER_VERSION >= 51
       PresentMode(VK_PRESENT_MODE_SHARED_DEMAND_REFRESH_KHR, "VK_PRESENT_MODE_SHARED_DEMAND_REFRESH_KHR"),
       PresentMode(VK_PRESENT_MODE_SHARED_CONTINUOUS_REFRESH_KHR, "VK_PRESENT_MODE_SHARED_CONTINUOUS_REFRESH_KHR"),
+#endif
+#ifdef VK_KHR_present_mode_fifo_latest_ready
+      PresentMode(VK_PRESENT_MODE_FIFO_LATEST_READY_KHR, "VK_PRESENT_MODE_FIFO_LATEST_READY_KHR"),
 #endif
     };
     constexpr auto PresentModeCount = sizeof(PresentModes) / sizeof(PresentMode);
@@ -197,6 +201,11 @@ namespace Fsl
                           "Enable/disable the use of VK_EXT_present_timing to measure when a frame was presented (defaults to enabled if supported "
                           "for the apps that use it, true enables it for all apps)",
                           OptionGroup::Host);
+    rOptions.emplace_back("VkFramesInFlight", OptionArgument::OptionRequired, CommandId::VkFramesInFlight,
+                          "The number of frames that may be in flight: 1 (the default) waits for the GPU to finish a frame before the next "
+                          "one starts, more lets the CPU start the next frames while the GPU works. Limited to what the app is configured "
+                          "for and to the images of the swapchain. A app that is not written for it can render wrong with more than one.",
+                          OptionGroup::Host);
   }
 
 
@@ -257,6 +266,18 @@ namespace Fsl
       StringParseUtil::Parse(boolValue, strOptArg);
       m_launchOptions.PresentTiming = boolValue ? OptionUserChoice::On : OptionUserChoice::Off;
       return OptionParseResult::Parsed;
+    case CommandId::VkFramesInFlight:
+      {
+        uint32_t framesInFlight = 0;
+        StringParseUtil::Parse(framesInFlight, strOptArg);
+        if (framesInFlight < 1u)
+        {
+          FSLLOG3_ERROR("VkFramesInFlight must be one or more");
+          return OptionParseResult::Failed;
+        }
+        m_launchOptions.FramesInFlight = framesInFlight;
+        return OptionParseResult::Parsed;
+      }
     case CommandId::VkValidateFeatures:
       return Vulkan::ValidationFeatureUtil::TryParse(strOptArg, m_validationFeatures) ? OptionParseResult::Parsed : OptionParseResult::Failed;
     default:

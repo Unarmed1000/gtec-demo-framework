@@ -53,7 +53,7 @@ Taking a screenshot is also a lot more involved and complex under Vulkan so we e
 
 This is the recommended template for new Vulkan projects. It defines a strategy for creating resources, the swapchain (including recreation) and how a frame is rendered. It also includes all the code that provides support for rendering the '--Stats' overlay. Furthermore it supports various resize strategies and has quite a few helper methods that makes creating up a basic Vulkan sample easier.
 
-The sample defaults to a double buffered setup, no depth buffer and allows for two frames to be 'in flight' at once.
+The sample defaults to a double buffered setup, no depth buffer and one frame 'in flight': the next frame is not started before the GPU is done with the previous one. `--VkFramesInFlight <n>` allows more (limited to `CustomDemoAppConfig::MaxFramesInFlight` of the app, which defaults to two, and to the images of the swapchain).
 Having two frames in flight ensures that we dont spend time waiting for the GPU to finish one frame before we start rendering the next one which should utilize the GPU resources better. Beware that most examples on the net wait for the GPU to be done between frames which ensures they dont have to deal with some synchronization issues but at the cost of lower performance. But its not a ideal way to do things for a production application. Which is why we prefer to showcase and deal with this like most real production applications would. The main thing to remember when allowing in-flight frames is that each frame being rendered should only change resources that it owns and things not being used by any other in-flight frame.
 
 The template also defines a init, shutdown, resize, frame and recovery strategy.

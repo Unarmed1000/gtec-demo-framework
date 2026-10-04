@@ -40,6 +40,9 @@ namespace Fsl::Vulkan
     //! True if the presentAtRelativeTime feature of VK_EXT_present_timing was enabled as well. A present can then be given a target time
     //! relative to the present before it if its surface supports that too, see VUSwapchainPresentTiming::TryEnablePresentAtRelativeTime.
     bool PresentAtRelativeTime{false};
+    //! True if VK_KHR_present_mode_fifo_latest_ready (or the EXT version) was enabled with its feature, so a swapchain can use that present
+    //! mode if its surface has it
+    bool PresentModeFifoLatestReady{false};
   };
 }
 

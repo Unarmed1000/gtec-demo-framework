@@ -80,6 +80,7 @@ namespace Fsl::Vulkan
 
     SelectDeviceFault(physicalDevice, rExtensionRequests);
     SelectCalibratedTimestamps(physicalDevice, rExtensionRequests);
+    SelectPresentModeFifoLatestReady(physicalDevice, rExtensionRequests);
     if (presentTiming != OptionUserChoice::Off)
     {
       SelectPresentTiming(physicalDevice, rExtensionRequests);
@@ -95,6 +96,7 @@ namespace Fsl::Vulkan
                                           : (m_features.DeviceFault == VUDeviceFaultApi::Ext ? "VK_EXT_device_fault" : "unsupported"));
     FSLLOG3_VERBOSE("Calibrated timestamps: {}", m_features.CalibratedTimestamps ? "supported" : "unsupported");
     FSLLOG3_VERBOSE("Present timing: {}", m_features.PresentTiming ? "supported by the device" : "unsupported");
+    FSLLOG3_VERBOSE("Present mode FIFO latest ready: {}", m_features.PresentModeFifoLatestReady ? "supported by the device" : "unsupported");
   }
 
 
@@ -152,6 +154,40 @@ namespace Fsl::Vulkan
       rExtensionRequests.emplace_back(pszExtensionName, FeatureRequirement::Mandatory);
       m_features.CalibratedTimestamps = true;
     }
+  }
+
+
+  // The FIFO latest ready present mode: at a refresh the newest image that is ready is shown and the ones before it are dropped.
+  // It is only enabled, a swapchain uses it when the app or the user asks for the present mode.
+  void HostDeviceExtensions::SelectPresentModeFifoLatestReady([[maybe_unused]] const VkPhysicalDevice physicalDevice,
+                                                              [[maybe_unused]] std::vector<FeatureRequest>& rExtensionRequests)
+  {
+#ifdef VK_KHR_present_mode_fifo_latest_ready
+    // The EXT version was promoted to KHR without changes, so its name is the only difference
+    const char* pszExtensionName = nullptr;
+    if (IsDeviceExtensionAvailable(physicalDevice, VK_KHR_PRESENT_MODE_FIFO_LATEST_READY_EXTENSION_NAME))
+    {
+      pszExtensionName = VK_KHR_PRESENT_MODE_FIFO_LATEST_READY_EXTENSION_NAME;
+    }
+#ifdef VK_EXT_present_mode_fifo_latest_ready
+    else if (IsDeviceExtensionAvailable(physicalDevice, VK_EXT_PRESENT_MODE_FIFO_LATEST_READY_EXTENSION_NAME))
+    {
+      pszExtensionName = VK_EXT_PRESENT_MODE_FIFO_LATEST_READY_EXTENSION_NAME;
+    }
+#endif
+    if (pszExtensionName == nullptr || QueryFeatures<VkPhysicalDevicePresentModeFifoLatestReadyFeaturesKHR>(
+                                         physicalDevice, VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PRESENT_MODE_FIFO_LATEST_READY_FEATURES_KHR)
+                                           .presentModeFifoLatestReady != VK_TRUE)
+    {
+      return;
+    }
+
+    rExtensionRequests.emplace_back(pszExtensionName, FeatureRequirement::Mandatory);
+    m_fifoLatestReadyFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PRESENT_MODE_FIFO_LATEST_READY_FEATURES_KHR;
+    m_fifoLatestReadyFeatures.presentModeFifoLatestReady = VK_TRUE;
+    PushFront(m_fifoLatestReadyFeatures);
+    m_features.PresentModeFifoLatestReady = true;
+#endif
   }
 
 

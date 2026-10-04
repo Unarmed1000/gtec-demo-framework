@@ -584,7 +584,15 @@ namespace Fsl::VulkanBasic
       }
 
       const auto fallbackExtent = TypeConverter::UncheckedTo<VkExtent2D>(GetScreenExtent());
-      const VkPresentModeKHR presentMode = !m_launchOptions.OverridePresentMode ? AppSetup.DesiredSwapchainPresentMode : m_launchOptions.PresentMode;
+      VkPresentModeKHR presentMode = !m_launchOptions.OverridePresentMode ? AppSetup.DesiredSwapchainPresentMode : m_launchOptions.PresentMode;
+#ifdef VK_KHR_present_mode_fifo_latest_ready
+      if (presentMode == VK_PRESENT_MODE_FIFO_LATEST_READY_KHR && !m_hostDeviceFeatures.PresentModeFifoLatestReady)
+      {
+        // The surface can list the mode without the device having the extension enabled, which is needed to use it
+        FSLLOG3_WARNING("PresentMode: VK_PRESENT_MODE_FIFO_LATEST_READY_KHR is not supported by the device, using VK_PRESENT_MODE_FIFO_KHR");
+        presentMode = VK_PRESENT_MODE_FIFO_KHR;
+      }
+#endif
       const auto supportedImageUsageFlags = FilterUnsupportedImageUsageFlags(m_physicalDevice.Device, m_surface, desiredSwapchainImageUsageFlags);
       const VkImageUsageFlags desiredImageUsageFlags = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | supportedImageUsageFlags;
 
@@ -612,7 +620,6 @@ namespace Fsl::VulkanBasic
         }
       }
       FSLLOG3_VERBOSE_IF(usePresentTiming, "Present timing: {}", m_presentTiming.IsEnabled() ? "enabled" : "not supported by the surface");
-      LogSwapchainCreated(presentMode, swapchainCreateFlags);
 
       const uint32_t swapchainImageCount = m_swapchain.GetImageCount();
       if (swapchainImageCount == 0)
@@ -620,11 +627,16 @@ namespace Fsl::VulkanBasic
         throw std::runtime_error("We need at least one image in the swapchain");
       }
 
-      m_dependentResources.FramesInFlightCount = 1;
-      // std::min(GetRenderConfig().MaxFramesInFlight, swapchainImageCount);
+      // One frame in flight unless the user asks for more (--VkFramesInFlight), which is limited to what the app is configured for and to
+      // the images of the swapchain
+      m_dependentResources.FramesInFlightCount =
+        std::clamp(m_launchOptions.FramesInFlight, 1u, std::max(std::min(GetRenderConfig().MaxFramesInFlight, swapchainImageCount), 1u));
+      FSLLOG3_VERBOSE_IF(m_launchOptions.FramesInFlight != 0u, "DemoAppVulkanBasic::BuildResources(): Frames in flight: {}",
+                         m_dependentResources.FramesInFlightCount);
       FSLLOG3_VERBOSE2("DemoAppVulkanBasic::BuildResources(): Swapchain image count: {}", swapchainImageCount);
       // Ensure that the render loop frame counter never goes above this value
       GetDemoAppControl()->SetRenderLoopFrameCounter(m_dependentResources.FramesInFlightCount);
+      LogSwapchainCreated(presentMode, swapchainCreateFlags);
 
       if (AppSetup.DepthBuffer == DepthBufferMode::Enabled)
       {
@@ -772,10 +784,11 @@ namespace Fsl::VulkanBasic
     const bool hasPresentFence = !m_resources.Frames.empty() && m_resources.Frames.front().PresentFence.IsValid();
     rState.Log->AddLogEvent("swapchainCreated",
                             fmt::format("generation={};widthPx={};heightPx={};format={};presentMode={};desiredMinImageCount={};imageCount={};"
-                                        "createFlags={:#x};imageUsage={:#x};presentFence={}",
+                                        "createFlags={:#x};imageUsage={:#x};presentFence={};framesInFlight={}",
                                         rState.Generation, extent.width, extent.height, static_cast<int32_t>(m_swapchain.GetImageFormat()),
                                         static_cast<int32_t>(presentMode), LocalConfig::DesiredMinSwapBufferCount, m_swapchain.GetImageCount(),
-                                        createFlags, m_swapchain.GetImageUsageFlags(), hasPresentFence ? 1 : 0));
+                                        createFlags, m_swapchain.GetImageUsageFlags(), hasPresentFence ? 1 : 0,
+                                        m_dependentResources.FramesInFlightCount));
 
     const Vulkan::VUPresentTimingState timingState = m_presentTiming.GetState();
     rState.Log->AddLogEvent("presentTiming", fmt::format("generation={};enabled={};requested={};stages={:#x};timeDomain={};timeDomainId={};"

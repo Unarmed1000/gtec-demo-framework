@@ -59,6 +59,10 @@ namespace Fsl
     // Default enables it on the device if supported and leaves it to the app to use it, On also uses it for apps that did not ask for it and
     // Off disables it.
     OptionUserChoice PresentTiming{OptionUserChoice::Default};
+
+    // The number of frames the app may have in flight (zero = the default of the app base, which is one). It is limited to what the app is
+    // configured for (CustomDemoAppConfig::MaxFramesInFlight) and to the images of the swapchain.
+    uint32_t FramesInFlight{0};
   };
 }
 

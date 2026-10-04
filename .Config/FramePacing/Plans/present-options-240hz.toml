@@ -1,0 +1,64 @@
+# What the swapchain setup does to the frames at 240 Hz: one against two frames in flight (--VkFramesInFlight) and the FIFO present mode
+# against FIFO latest ready (--VkPresentMode), with GPU work that nearly fills a refresh, where a little margin decides if a frame makes
+# its refresh.
+#
+# Set the display to 240 Hz with variable refresh off before the plan is run. The GPU load settings depend on the GPU and on the size of
+# the window, see work-matrix-240hz.
+
+description = "240 Hz: one and two frames in flight, FIFO and FIFO latest ready, GPU work of 90 % of a refresh, pacer off and on"
+app = "Vulkan.FramePacing"
+frames = 2400
+expected_refresh_hz = 240.0
+args = ["--Window", "[0,0,1600,900]", "--CpuLoad", "0"]
+
+[variables]
+# The --GpuLoad that makes the GPU work 20 and 90 % of a refresh on a frame (the defaults were measured on a NVIDIA desktop GPU)
+gpu20 = "98"
+gpu90 = "455"
+
+# With one frame in flight the CPU waits for the GPU to finish a frame before it starts the next one, so a frame costs the CPU time plus
+# the GPU time. With two the CPU work of a frame overlaps the GPU work of the frame before it, and the loop can be a frame further ahead
+# of the display.
+
+[[run]]
+name = "w90_flight1_pacer_off"
+what = "GPU work of 90 % of a refresh, one frame in flight, pacer off"
+args = ["--GpuLoad", "{gpu90}", "--VkFramesInFlight", "1"]
+
+[[run]]
+name = "w90_flight2_pacer_off"
+what = "GPU work of 90 % of a refresh, two frames in flight, pacer off"
+args = ["--GpuLoad", "{gpu90}", "--VkFramesInFlight", "2"]
+
+[[run]]
+name = "w90_flight1_pacer_on"
+what = "GPU work of 90 % of a refresh, one frame in flight, pacer on"
+args = ["--GpuLoad", "{gpu90}", "--VkFramesInFlight", "1", "--Pacer"]
+
+[[run]]
+name = "w90_flight2_pacer_on"
+what = "GPU work of 90 % of a refresh, two frames in flight, pacer on"
+args = ["--GpuLoad", "{gpu90}", "--VkFramesInFlight", "2", "--Pacer"]
+
+[[run]]
+name = "w20_flight1_pacer_off"
+what = "GPU work of 20 % of a refresh, one frame in flight, pacer off: the queue of presents and the time to the display"
+args = ["--GpuLoad", "{gpu20}", "--VkFramesInFlight", "1"]
+
+[[run]]
+name = "w20_flight2_pacer_off"
+what = "GPU work of 20 % of a refresh, two frames in flight, pacer off: the queue of presents and the time to the display"
+args = ["--GpuLoad", "{gpu20}", "--VkFramesInFlight", "2"]
+
+# FIFO latest ready shows the newest image that is ready at a refresh and drops the ones before it, so a present does not hold the loop
+# to the display
+
+[[run]]
+name = "w90_latest_ready_pacer_off"
+what = "GPU work of 90 % of a refresh, FIFO latest ready, pacer off"
+args = ["--GpuLoad", "{gpu90}", "--VkPresentMode", "VK_PRESENT_MODE_FIFO_LATEST_READY_KHR"]
+
+[[run]]
+name = "w90_latest_ready_pacer_on"
+what = "GPU work of 90 % of a refresh, FIFO latest ready, pacer on"
+args = ["--GpuLoad", "{gpu90}", "--VkPresentMode", "VK_PRESENT_MODE_FIFO_LATEST_READY_KHR", "--Pacer"]

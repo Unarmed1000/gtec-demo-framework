@@ -54,6 +54,9 @@ namespace Fsl::Vulkan
     VkPhysicalDevicePresentId2FeaturesKHR m_presentId2Features{};
     VkPhysicalDevicePresentTimingFeaturesEXT m_presentTimingFeatures{};
 #endif
+#ifdef VK_KHR_present_mode_fifo_latest_ready
+    VkPhysicalDevicePresentModeFifoLatestReadyFeaturesKHR m_fifoLatestReadyFeatures{};
+#endif
     //! The first and last of the feature structs that are in use (null if none)
     VkBaseInStructure* m_pChain{nullptr};
     VkBaseInStructure* m_pChainTail{nullptr};
@@ -84,6 +87,7 @@ namespace Fsl::Vulkan
     void SelectDeviceFault(const VkPhysicalDevice physicalDevice, std::vector<FeatureRequest>& rExtensionRequests);
     void SelectCalibratedTimestamps(const VkPhysicalDevice physicalDevice, std::vector<FeatureRequest>& rExtensionRequests);
     void SelectPresentTiming(const VkPhysicalDevice physicalDevice, std::vector<FeatureRequest>& rExtensionRequests);
+    void SelectPresentModeFifoLatestReady(const VkPhysicalDevice physicalDevice, std::vector<FeatureRequest>& rExtensionRequests);
 
     template <typename TFeatureStruct>
     void PushFront(TFeatureStruct& rFeatures) noexcept
