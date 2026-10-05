@@ -1540,8 +1540,6 @@ namespace Fsl::VulkanBasic
           {
             // FSLLOG3_INFO("Remapping frameIndex {} to image previously used in frameIndex{}", currentFrameIndex,
             // rSwapchainRecord.AssignedFrameIndex);
-            const FrameDrawRecord& rOldFrame = m_resources.Frames[rSwapchainRecord.AssignedFrameIndex];
-
             // We only wait for the other frames fence (and it will be up to the frame to reset it once we get to it)
             const VkResult waitResult = WaitForFrameSlot(rSwapchainRecord.AssignedFrameIndex);
             if (waitResult != VK_SUCCESS)
