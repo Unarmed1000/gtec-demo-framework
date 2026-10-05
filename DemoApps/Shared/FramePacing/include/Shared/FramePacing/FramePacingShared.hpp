@@ -179,7 +179,11 @@ namespace Fsl
       std::shared_ptr<UI::Label> LabelPacerFrames;
       std::shared_ptr<UI::SliderAndFmtValueLabel<int32_t>> SliderCpuLoad;
       std::shared_ptr<UI::SliderAndFmtValueLabel<int32_t>> SliderGpuLoad;
+      //! The resolution the background is drawn at, in percent
+      std::shared_ptr<UI::SliderAndFmtValueLabel<int32_t>> SliderBackgroundScale;
       //! The scene of the raymarched background
+      std::shared_ptr<UI::RadioButton> RadioBackgroundBlobs;
+      std::shared_ptr<UI::RadioButton> RadioBackgroundLace;
       std::shared_ptr<UI::RadioButton> RadioBackgroundFlight;
       std::shared_ptr<UI::RadioButton> RadioBackgroundHall;
       //! The two overlays: the values of the last marker and the frame pacing stats, each can be hidden with its switch

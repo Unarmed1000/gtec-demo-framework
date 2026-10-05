@@ -53,7 +53,8 @@ namespace Fsl
     int32_t m_pacerDrainRefreshes{SampleConfig::DrainRefreshes.Get()};
     int32_t m_cpuLoadMs{SampleConfig::CpuLoadMs.Get()};
     int32_t m_gpuLoadSteps{SampleConfig::GpuLoadSteps.Get()};
-    RaymarchScene m_background{RaymarchScene::Flight};
+    int32_t m_backgroundScalePercent{SampleConfig::BackgroundScalePercent.Get()};
+    RaymarchScene m_background{RaymarchScene::Blobs};
 
   public:
     OptionParser();
@@ -157,6 +158,12 @@ namespace Fsl
     [[nodiscard]] int32_t GetGpuLoadSteps() const noexcept
     {
       return m_gpuLoadSteps;
+    }
+
+    //! @brief The resolution the background is drawn at, in percent of the resolution of the window.
+    [[nodiscard]] int32_t GetBackgroundScalePercent() const noexcept
+    {
+      return m_backgroundScalePercent;
     }
 
     //! @brief The scene of the raymarched background.

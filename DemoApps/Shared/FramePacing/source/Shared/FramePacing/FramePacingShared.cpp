@@ -327,13 +327,19 @@ namespace Fsl
     m_ui.SliderCpuLoad =
       uiFactory->CreateSliderFmtValue(UI::LayoutOrientation::Horizontal, WithValue(SampleConfig::CpuLoadMs, options->GetCpuLoadMs()));
     m_ui.SliderCpuLoad->SetAlignmentX(UI::ItemAlignment::Stretch);
-    const auto lblGpuLoad = uiFactory->CreateLabel("GPU load (ray steps, 0 = off)");
+    const auto lblGpuLoad = uiFactory->CreateLabel("GPU load (steps, 0 = off)");
     m_ui.SliderGpuLoad =
       uiFactory->CreateSliderFmtValue(UI::LayoutOrientation::Horizontal, WithValue(SampleConfig::GpuLoadSteps, options->GetGpuLoadSteps()));
     m_ui.SliderGpuLoad->SetAlignmentX(UI::ItemAlignment::Stretch);
+    const auto lblBackgroundScale = uiFactory->CreateLabel("Background resolution (%)");
+    m_ui.SliderBackgroundScale = uiFactory->CreateSliderFmtValue(
+      UI::LayoutOrientation::Horizontal, WithValue(SampleConfig::BackgroundScalePercent, options->GetBackgroundScalePercent()));
+    m_ui.SliderBackgroundScale->SetAlignmentX(UI::ItemAlignment::Stretch);
     // The scene the raymarched background shows
     const RaymarchScene background = options->GetBackground();
     const auto backgroundGroup = uiFactory->CreateRadioGroup("background");
+    m_ui.RadioBackgroundBlobs = uiFactory->CreateRadioButton(backgroundGroup, "Blobs", background == RaymarchScene::Blobs);
+    m_ui.RadioBackgroundLace = uiFactory->CreateRadioButton(backgroundGroup, "Lace", background == RaymarchScene::Lace);
     m_ui.RadioBackgroundFlight = uiFactory->CreateRadioButton(backgroundGroup, "Fractal flight", background == RaymarchScene::Flight);
     m_ui.RadioBackgroundHall = uiFactory->CreateRadioButton(backgroundGroup, "Scrolling hall", background == RaymarchScene::Hall);
 
@@ -367,6 +373,10 @@ namespace Fsl
     stackLayout->AddChild(m_ui.SliderCpuLoad);
     stackLayout->AddChild(lblGpuLoad);
     stackLayout->AddChild(m_ui.SliderGpuLoad);
+    stackLayout->AddChild(lblBackgroundScale);
+    stackLayout->AddChild(m_ui.SliderBackgroundScale);
+    stackLayout->AddChild(m_ui.RadioBackgroundBlobs);
+    stackLayout->AddChild(m_ui.RadioBackgroundLace);
     stackLayout->AddChild(m_ui.RadioBackgroundFlight);
     stackLayout->AddChild(m_ui.RadioBackgroundHall);
     stackLayout->AddChild(uiFactory->CreateDivider(UI::LayoutOrientation::Horizontal));
@@ -726,7 +736,20 @@ namespace Fsl
     const double animationSeconds = m_animationTime.TotalSeconds();
     RaymarchParams params;
     params.Steps = m_ui.SliderGpuLoad->GetValue();
-    params.Scene = m_ui.RadioBackgroundHall->IsChecked() ? RaymarchScene::Hall : RaymarchScene::Flight;
+    params.RenderScale = static_cast<float>(m_ui.SliderBackgroundScale->GetValue()) / 100.0f;
+    params.Scene = RaymarchScene::Flight;
+    if (m_ui.RadioBackgroundBlobs->IsChecked())
+    {
+      params.Scene = RaymarchScene::Blobs;
+    }
+    else if (m_ui.RadioBackgroundLace->IsChecked())
+    {
+      params.Scene = RaymarchScene::Lace;
+    }
+    else if (m_ui.RadioBackgroundHall->IsChecked())
+    {
+      params.Scene = RaymarchScene::Hall;
+    }
     params.TravelPhase = ToPhase(animationSeconds, LocalConfig::TravelSeconds);
     params.SwayPhase = ToPhase(animationSeconds, LocalConfig::SwaySeconds);
     params.MorphPhase = ToPhase(animationSeconds, LocalConfig::MorphSeconds);
@@ -1272,7 +1295,8 @@ namespace Fsl
                                                "How long the sample delayed the present of the frame, to hold it for its swap interval");
     rColumns.CpuLoad =
       rLog.RegisterColumn("cpuLoadMs", FramePacingLogUnit::Count, "The CPU load setting: the milliseconds the sample is busy per frame");
-    rColumns.GpuLoad = rLog.RegisterColumn("gpuLoadSteps", FramePacingLogUnit::Count, "The GPU load setting: the steps of the raymarched background");
+    rColumns.GpuLoad = rLog.RegisterColumn("gpuLoadSteps", FramePacingLogUnit::Count,
+                                           "The GPU load setting: the steps of the background (for the lace the samples per pixel)");
     rColumns.PacerFrameId =
       rLog.RegisterColumn("pacerFrameId", FramePacingLogUnit::Id, "The id the frame pacer gave the frame, present feedback is given with it");
     rColumns.NextFrameStart = rLog.RegisterColumn("nextFrameStartTicks", FramePacingLogUnit::Ticks,

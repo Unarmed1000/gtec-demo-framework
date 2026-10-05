@@ -23,6 +23,7 @@
 //****************************************************************************************************************************************************
 
 #include <FslBase/Math/Pixel/PxSize2D.hpp>
+#include <FslUtil/OpenGLES2/GLFrameBuffer.hpp>
 #include <FslUtil/OpenGLES2/GLProgram.hpp>
 #include <FslUtil/OpenGLES2/GLVertexAttribLink.hpp>
 #include <FslUtil/OpenGLES2/GLVertexBuffer.hpp>
@@ -34,21 +35,39 @@ namespace Fsl
 {
   class IContentManager;
 
-  //! Draws the raymarched background of the sample (its GPU load): a quad that covers the screen, the fragment shader does the work.
+  //! Draws the background of the sample (its GPU load): a quad that covers the screen, the fragment shader of the scene does the work.
   class RaymarchBackground final
   {
-    GLES2::GLProgram m_program;
+    //! The shader of a scene and where its uniforms and its vertex attribute are
+    struct SceneProgram
+    {
+      GLES2::GLProgram Program;
+      std::array<GLES2::GLVertexAttribLink, 1> AttribLinks;
+      GLint LocPhase{-1};
+      GLint LocResolution{-1};
+      GLint LocSteps{-1};
+    };
+
+    //! The raymarched scenes (the flight and the hall)
+    SceneProgram m_raymarch;
+    SceneProgram m_blobs;
+    SceneProgram m_lace;
+    //! Enlarges the background that was drawn at a lower resolution to the screen (LocSteps is where its texture is set)
+    SceneProgram m_upscale;
+    //! What the background is drawn into when it is drawn at a lower resolution. It has the size of the window, and the background
+    //! is drawn into the lower left part of it, so a change of the resolution needs no new texture.
+    GLES2::GLFrameBuffer m_offscreen;
     GLES2::GLVertexBuffer m_vertexBuffer;
-    std::array<GLES2::GLVertexAttribLink, 1> m_attribLinks;
-    GLint m_locPhase{-1};
-    GLint m_locResolution{-1};
-    GLint m_locSteps{-1};
+
+    //! If the shader can not be compiled the scene is not drawn (a warning is logged)
+    static void Load(SceneProgram& rScene, const IContentManager& contentManager, const char* const pszFragmentShader);
 
   public:
-    //! If the shader can not be compiled the background is not drawn (a warning is logged)
+    //! If the shader of a scene can not be compiled that scene is not drawn (a warning is logged)
     explicit RaymarchBackground(const IContentManager& contentManager);
 
-    //! Draw the background (it is not drawn if params.Steps is zero)
+    //! Draw the background (it is not drawn if params.Steps is zero). With a params.RenderScale below one it is drawn at that part
+    //! of the resolution and enlarged.
     //! @param sizePx the size of the window in pixels
     void Draw(const RaymarchParams& params, const PxSize2D sizePx);
   };

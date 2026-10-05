@@ -131,8 +131,9 @@ Hold (radio buttons)          |`--Pacer.Hold <auto\|vsync\|wait\|schedule>`|Vulk
                               |`--Pacer.Profile <late\|early\|off>`|Vulkan only. Where a frame waits for the time the pacer gives for the next frame, see [below](#waiting-for-the-time-of-the-pacer-vulkan). The default is `early`.
                               |`--Pacer.Drain <refreshes>`     |Vulkan only. A wait of that many refreshes, once, half a second after the sample began to wait for the time of the pacer (0 to 32, the default is 4, 0 is none).
 CPU load                      |`--CpuLoad <ms>`                |The time in milliseconds the app spends busy every frame.
-GPU load                      |`--GpuLoad <steps>`             |Draws the raymarched background with the given number of steps for every ray (0 is no background, the default is a low load of 16). The load grows linearly with the steps, more steps reach further and show finer detail.
-Background                    |`--Background <flight\|hall>`   |The scene of the raymarched background (the radio buttons below the GPU load). `flight` is a flight through a fractal lattice. `hall` is a hall of columns that scrolls sideways at a constant speed, which makes a stutter easy to see.
+GPU load                      |`--GpuLoad <steps>`             |Draws the background with the given load (0 is no background, the default is a low load of 16). The cost grows linearly with it. It is the number of steps of every ray, more steps reach further; for the lace it is the number of samples of every pixel.
+Background                    |`--Background <name>`           |The scene of the background (the radio buttons below the GPU load). `blobs` (the default) is a flight through blobs that melt into each other and `lace` is circles packed into circles: both are cheap at a low load. `flight` is a raymarched flight through a fractal lattice and `hall` a raymarched hall of columns that scrolls sideways at a constant speed, which makes a stutter easy to see: both cost a lot from the first step on.
+Background resolution         |`--BackgroundScale <percent>`   |The resolution the background is drawn at, in percent of the resolution of the window (10-100, the default is 100). Below 100 it is drawn into a smaller picture that is enlarged to the window, so its cost falls with the number of pixels: for a GPU that is limited by the pixels. The UI, the marker and the test pattern stay sharp.
 Measure the presents          |                                |Vulkan only. Measure when the frames reach the display (`VK_EXT_present_timing`), see [below](#what-the-vulkan-sample-measures-about-its-presents). Start with `--VkPresentTiming false` to run without the extension.
 Place the GPU work in time    |                                |Vulkan only. Show when the GPU worked on a frame, counted from the start of the frame (`VK_KHR_calibrated_timestamps`).
 
@@ -357,10 +358,16 @@ call. The frame pacer needs a fixed refresh rate as well. A capture of the marke
 The `Display error` also shows how far the model of the pacer is from a Vulkan swapchain. The pacer takes a frame to be shown one swap
 interval after it started, while a FIFO swapchain has a number of presents queued between the app and the display.
 
-The GPU load is a raymarched background with two scenes, selected with the radio buttons below the GPU load or with `--Background`. `Fractal
+The GPU load is the background. It has four scenes, selected with the radio buttons below the GPU load or with `--Background`. `Blobs` (the
+default) and `Lace` are cheap at a low load, so a slow GPU has a load that fits in a frame. `Blobs` is a flight through a field of blobs
+that melt into each other: every ray is sphere traced in a fixed number of cheap steps, and more steps reach further. `Lace` is a lace of
+circles packed into circles drawn with gold threads; its picture does not change with the load, the load is the number of samples every
+pixel is drawn with, so more of it only smooths the edges.
+
+The other two are raymarched and cost a lot from the first step on. `Fractal
 flight` is a flight through a fractal lattice of golden spheres over water that mirrors it (a sphere inversion fractal). `Scrolling hall` is
 a hall of fluted columns on a mirroring floor at dusk: the camera only travels sideways, at a constant speed, so every column, shadow and
-tile crosses the screen at a constant speed and a frame that is shown too long or too short is easy to see. In both scenes every ray is
+tile crosses the screen at a constant speed and a frame that is shown too long or too short is easy to see. In these two scenes every ray is
 sphere traced in a fixed number of steps without a early exit, so every pixel costs the same and the cost grows linearly with the steps.
 Each app has its own copy of the shader (`Raymarch.frag`), as the shared code only knows the API independent render interfaces.
 
@@ -506,7 +513,7 @@ Column | Unit | Description
 `gpuWorkEndTicks` | ticks | When the GPU finished the frame, on the clock of the framework
 `presentWaitTicks` | durationTicks | How long the sample delayed the present of the frame, to hold it for its swap interval
 `cpuLoadMs` | count | The CPU load setting: the milliseconds the sample is busy per frame
-`gpuLoadSteps` | count | The GPU load setting: the steps of the raymarched background
+`gpuLoadSteps` | count | The GPU load setting: the steps of the background (for the lace the samples per pixel)
 `holdMethod` | code | How the frame is held for more than one refresh: 0 the sample sleeps on a timer, 1 it waits on the vsync of the window system, 3 the present has a target time
 `holdTargetTicks` | ticks | The vertical blank the frame was aimed at when it was held by waiting on the vsync
 `presentTargetTicks` | durationTicks | The target time the sample asked for: the frame is not to be shown before this long after the frame before it was shown

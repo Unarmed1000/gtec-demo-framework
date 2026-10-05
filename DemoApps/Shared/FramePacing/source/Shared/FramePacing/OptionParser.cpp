@@ -51,6 +51,7 @@ namespace Fsl
         PacerDrain,
         CpuLoad,
         GpuLoad,
+        BackgroundScale,
         Background
       };
     };
@@ -127,11 +128,17 @@ namespace Fsl
     rOptions.emplace_back("CpuLoad", OptionArgument::OptionRequired, CommandId::CpuLoad,
                           "Simulate a CPU load: the time in milliseconds the app spends busy every frame (0 = none, the default).");
     rOptions.emplace_back("GpuLoad", OptionArgument::OptionRequired, CommandId::GpuLoad,
-                          "A GPU load: the number of steps the raymarched background takes for every pixel (0 = no background, the "
-                          "default is a low load of 16).");
+                          "A GPU load: the number of steps the background takes for every pixel, for the lace the number of samples "
+                          "(0 = no background, the default is a low load of 16).");
+    rOptions.emplace_back("BackgroundScale", OptionArgument::OptionRequired, CommandId::BackgroundScale,
+                          "The resolution the background is drawn at, in percent of the resolution of the window (10-100, the default "
+                          "is 100). Below 100 it is drawn into a smaller picture that is enlarged, for a GPU that is limited by the "
+                          "number of pixels.");
     rOptions.emplace_back("Background", OptionArgument::OptionRequired, CommandId::Background,
-                          "The scene of the raymarched background: flight (a flight through a fractal lattice, the default) or hall (a "
-                          "hall of columns that scrolls sideways at a constant speed, which makes a stutter easy to see).");
+                          "The scene of the background: blobs (a flight through blobs that melt into each other, cheap at a low load, "
+                          "the default), lace (circles packed into circles, cheap at a low load, the load is the samples per pixel), "
+                          "flight (a raymarched flight through a fractal lattice) or hall (a raymarched hall of columns that scrolls "
+                          "sideways at a constant speed, which makes a stutter easy to see).");
   }
 
 
@@ -248,6 +255,10 @@ namespace Fsl
     case CommandId::GpuLoad:
       return TryParseInRange(m_gpuLoadSteps, strOptArg, SampleConfig::GpuLoadSteps, "GpuLoad") ? OptionParseResult::Parsed
                                                                                                : OptionParseResult::Failed;
+    case CommandId::BackgroundScale:
+      return TryParseInRange(m_backgroundScalePercent, strOptArg, SampleConfig::BackgroundScalePercent, "BackgroundScale")
+               ? OptionParseResult::Parsed
+               : OptionParseResult::Failed;
     case CommandId::Background:
       if (strOptArg == "flight")
       {
@@ -259,7 +270,17 @@ namespace Fsl
         m_background = RaymarchScene::Hall;
         return OptionParseResult::Parsed;
       }
-      FSLLOG3_ERROR("Background must be 'flight' or 'hall'");
+      if (strOptArg == "blobs")
+      {
+        m_background = RaymarchScene::Blobs;
+        return OptionParseResult::Parsed;
+      }
+      if (strOptArg == "lace")
+      {
+        m_background = RaymarchScene::Lace;
+        return OptionParseResult::Parsed;
+      }
+      FSLLOG3_ERROR("Background must be 'blobs', 'lace', 'flight' or 'hall'");
       return OptionParseResult::Failed;
     default:
       return OptionParseResult::NotHandled;

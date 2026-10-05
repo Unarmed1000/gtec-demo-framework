@@ -24,8 +24,13 @@
 
 #include <FslDemoApp/Vulkan/Basic/BuildResourcesContext.hpp>
 #include <FslUtil/Vulkan1_0/VUDevice.hpp>
+#include <FslUtil/Vulkan1_0/VUTexture.hpp>
+#include <RapidVulkan/DescriptorPool.hpp>
+#include <RapidVulkan/DescriptorSetLayout.hpp>
+#include <RapidVulkan/Framebuffer.hpp>
 #include <RapidVulkan/GraphicsPipeline.hpp>
 #include <RapidVulkan/PipelineLayout.hpp>
+#include <RapidVulkan/RenderPass.hpp>
 #include <RapidVulkan/ShaderModule.hpp>
 #include <Shared/FramePacing/RaymarchParams.hpp>
 #include <vulkan/vulkan.h>
@@ -40,7 +45,17 @@ namespace Fsl
     struct Resources
     {
       RapidVulkan::ShaderModule VertShader;
+      //! The raymarched scenes (the flight and the hall)
       RapidVulkan::ShaderModule FragShader;
+      RapidVulkan::ShaderModule BlobsFragShader;
+      RapidVulkan::ShaderModule LaceFragShader;
+      //! Enlarges the background that was drawn at a lower resolution to the screen
+      RapidVulkan::ShaderModule UpscaleFragShader;
+      RapidVulkan::DescriptorSetLayout UpscaleSetLayout;
+      RapidVulkan::DescriptorPool UpscalePool;
+      //! The one descriptor set of the pool: the picture the background was drawn into (it goes with the pool)
+      VkDescriptorSet UpscaleSet{VK_NULL_HANDLE};
+      RapidVulkan::PipelineLayout UpscalePipelineLayout;
       RapidVulkan::PipelineLayout PipelineLayout;
 
       Resources() = default;
@@ -53,7 +68,21 @@ namespace Fsl
 
     struct DependentResources
     {
+      //! The raymarched scenes (the flight and the hall)
       RapidVulkan::GraphicsPipeline Pipeline;
+      RapidVulkan::GraphicsPipeline BlobsPipeline;
+      RapidVulkan::GraphicsPipeline LacePipeline;
+      //! What the background is drawn into when it is drawn at a lower resolution. The picture has the size of the window and the
+      //! background is drawn into the upper left part of it, so a change of the resolution needs no new picture.
+      RapidVulkan::RenderPass OffscreenRenderPass;
+      Vulkan::VUTexture OffscreenTexture;
+      RapidVulkan::Framebuffer OffscreenFramebuffer;
+      //! The pipelines of the scenes for that render pass (a pipeline belongs to the render pass it was made for)
+      RapidVulkan::GraphicsPipeline OffscreenPipeline;
+      RapidVulkan::GraphicsPipeline OffscreenBlobsPipeline;
+      RapidVulkan::GraphicsPipeline OffscreenLacePipeline;
+      //! Enlarges the part of the picture that was drawn into to the screen, in the main render pass
+      RapidVulkan::GraphicsPipeline UpscalePipeline;
       VkExtent2D Extent{};
 
       DependentResources() = default;
@@ -67,6 +96,15 @@ namespace Fsl
       {
         // Reset in destruction order
         Extent = {};
+        UpscalePipeline.Reset();
+        OffscreenLacePipeline.Reset();
+        OffscreenBlobsPipeline.Reset();
+        OffscreenPipeline.Reset();
+        OffscreenFramebuffer.Reset();
+        OffscreenTexture.Reset();
+        OffscreenRenderPass.Reset();
+        LacePipeline.Reset();
+        BlobsPipeline.Reset();
         Pipeline.Reset();
       }
     };
@@ -77,11 +115,20 @@ namespace Fsl
   public:
     RaymarchBackground(const Vulkan::VUDevice& device, const IContentManager& contentManager);
 
-    void OnBuildResources(const VulkanBasic::BuildResourcesContext& context, const VkRenderPass hRenderPass);
+    void OnBuildResources(const Vulkan::VUDevice& device, const VulkanBasic::BuildResourcesContext& context, const VkRenderPass hRenderPass);
     void OnFreeResources() noexcept;
 
     //! Draw the background inside the render pass it was built for (it is not drawn if params.Steps is zero)
+    //! Draws the background at a lower resolution into its own picture, when params.RenderScale asks for that (it does nothing
+    //! otherwise). Call it before the main render pass begins: it is a render pass of its own.
+    void DrawOffscreen(const VkCommandBuffer hCmdBuffer, const RaymarchParams& params);
+
+    //! Draws the background in the main render pass: the scene itself, or the picture DrawOffscreen drew enlarged to the screen
     void Draw(const VkCommandBuffer hCmdBuffer, const RaymarchParams& params);
+
+  private:
+    [[nodiscard]] bool IsDrawnOffscreen(const RaymarchParams& params) const noexcept;
+    [[nodiscard]] VkExtent2D OffscreenExtent(const RaymarchParams& params) const noexcept;
   };
 }
 
