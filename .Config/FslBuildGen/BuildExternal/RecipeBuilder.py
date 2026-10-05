@@ -38,7 +38,8 @@
 # import json
 # from FslBuildGen import PackageUtil
 
-from FslBuildGen import IOUtil, PackageListUtil
+from FslBuildGen import IOUtil, PackageListUtil, Util
+from FslBuildGen.Build import BuildDryRun
 from FslBuildGen.Build.BuildConfigRecord import BuildConfigRecord
 from FslBuildGen.Build.DataTypes import CommandType
 
@@ -253,14 +254,15 @@ def __DoBuildPackagesInOrder(
         raise Exception("Invalid path builder")
 
     # Claim the 'package' install directory to prevent multiple builds from using the same
-    # as it would give concurrency issues
-    BuildAreaInfoFileUtil.ProcessInstallDirClaim(
-        log,
-        generatorContext.RecipePathBuilder.TargetLocation.ResolvedPath,
-        configSDKPath,
-        builderSettings.ForceClaimInstallArea,
-        __g_installAreaInformationFilename,
-    )
+    # as it would give concurrency issues. A dry run installs nothing, so it claims nothing: the claim is a file in the install area
+    if not configIsDryRun:
+        BuildAreaInfoFileUtil.ProcessInstallDirClaim(
+            log,
+            generatorContext.RecipePathBuilder.TargetLocation.ResolvedPath,
+            configSDKPath,
+            builderSettings.ForceClaimInstallArea,
+            __g_installAreaInformationFilename,
+        )
 
     if resolvedBuildOrder is None:
         log.LogPrintVerbose(2, "No recipes to build")
@@ -285,6 +287,10 @@ def __DoBuildPackagesInOrder(
             log.PushIndent()
             if not recipeRecord.SourcePackage.ResolvedPlatformDirectSupported:
                 raise Exception(f"The package '{recipeRecord.SourcePackage.Name}' is not supported on this platform")
+            if recipeRecord.Pipeline is not None and configIsDryRun:
+                # Nothing is removed, run or recorded, and nothing was installed that could be validated
+                log.DoPrint(BuildDryRun.FormatRecipeBuild(recipeRecord.SourcePackage.Name))
+                continue
             if recipeRecord.Pipeline is not None:
                 log.DoPrint(f"Building package: {recipeRecord.SourcePackage.Name}")
                 if builderSettings.PreDeleteBuild:
@@ -292,8 +298,7 @@ def __DoBuildPackagesInOrder(
                     IOUtil.SafeRemoveDirectoryTree(recipeRecord.Pipeline.BuildPath)
 
                 for command in recipeRecord.Pipeline.CommandList:
-                    if not configIsDryRun:
-                        command.Execute()
+                    command.Execute()
 
                 # We finished building, so lets save some information about what we did
                 BuildInfoFileUtil.SaveBuildInformation(
@@ -324,7 +329,7 @@ def __DoBuildPackagesInOrder(
 
     packageCount = len(recipeRecords)
     if packageCount > 0:
-        log.LogPrint(f"Build {packageCount} packages")
+        log.LogPrint(f"Build {Util.FormatCount(packageCount, 'package')}")
     else:
         log.LogPrintVerbose(2, "No recipe was build!")
 

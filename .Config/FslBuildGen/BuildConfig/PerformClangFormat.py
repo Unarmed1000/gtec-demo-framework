@@ -45,7 +45,7 @@ from typing import Any
 
 from FslBuildGen import IOUtil
 from FslBuildGen.Build.BuildUtil import PlatformBuildUtil
-from FslBuildGen.BuildConfig import NinjaBuildFileEncoding
+from FslBuildGen.BuildConfig import NinjaBuildFileEncoding, NinjaCommandLine
 from FslBuildGen.BuildConfig.BuildUtil import BuildUtil
 from FslBuildGen.BuildConfig.CaptureLog import CaptureLog
 from FslBuildGen.BuildConfig.ClangExeInfo import ClangExeInfo
@@ -308,9 +308,9 @@ class PerformClangFormatHelper:
                                 mainLog.DoPrint(capturedLog)
                         except Exception:
                             pass
-        except Exception:
+        except Exception as ex:
             cancellationToken.Cancel()
-            mainLog.DoPrintError("Cancelling tasks due to exception: {0}")
+            mainLog.DoPrintError(f"Cancelling tasks due to exception: {ex}")
             raise
         finally:
             mainLog.LogPrintVerbose(4, f"Ending thread {threadId}")
@@ -400,7 +400,8 @@ class PerformClangFormatHelper2:
 
             writer = Writer(ninjaFile, 149)
 
-            formatCommand = f"{clangFormatExeInfo.Command} $in --style=file"
+            # The path of the tool can hold a space, it is quoted for the system that runs the command
+            formatCommand = f"{NinjaCommandLine.QuoteArgument(clangFormatExeInfo.Command)} $in --style=file"
             if repairEnabled:
                 formatCommand += " -i"
             if len(clangFormatConfiguration.AdditionalUserArguments) > 0:

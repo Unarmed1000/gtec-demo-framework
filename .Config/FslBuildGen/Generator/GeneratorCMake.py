@@ -31,6 +31,7 @@
 #
 # ****************************************************************************************************************************************************
 
+import errno
 import json
 from enum import Enum
 
@@ -1014,14 +1015,25 @@ class GeneratorCMake(GeneratorBase):
         )
 
         configurationFileDict = GeneratorCMake._TryLoadConfigJson(log, configurationFilePath)
+        if configurationFileDict is None:
+            # The callers tell a build that was not configured from other errors by this exception
+            raise FileNotFoundError(
+                errno.ENOENT,
+                f"The build configuration file of package '{package.Name}' does not exist, it is written when the build is configured",
+                configurationFilePath,
+            )
         buildExePath = IOUtil.NormalizePath(configurationFileDict["EXE_PATH"])
         buildExeCwdPath = fileRunPath
         return PackageGeneratorBuildExecutableInfo(buildExePath, buildExeCwdPath)
 
     @staticmethod
-    def _TryLoadConfigJson(log: Log, configFile: str) -> dict[str, str]:
+    def _TryLoadConfigJson(log: Log, configFile: str) -> dict[str, str] | None:
+        """The content of the file CMake writes for an executable when it configures the build, None when the file does not exist"""
         # CMake writes the file as UTF-8. A byte order mark is accepted and a file in the locale encoding is read with a warning
-        strConfigJson = TextFileReader.ReadUTF8OrLocale(log, configFile, "build configuration file", skipBom=True)
+        try:
+            strConfigJson = TextFileReader.ReadUTF8OrLocale(log, configFile, "build configuration file", skipBom=True)
+        except FileNotFoundError:
+            return None
         jsonDict = json.loads(strConfigJson)
         if not isinstance(jsonDict, dict):
             raise Exception(f"Incorrect configuration json file: '{configFile}'")

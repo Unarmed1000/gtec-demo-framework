@@ -83,7 +83,7 @@ def GetDefaultLocalConfig() -> LocalToolConfig:
     return LocalToolConfig()
 
 
-class ToolFlowBuildInfo(AToolAppFlow):
+class ToolFlowBuildClean(AToolAppFlow):
     # def __init__(self, toolAppContext: ToolAppContext) -> None:
     #    super().__init__(toolAppContext)
 
@@ -217,4 +217,4 @@ class ToolAppFlowFactory(AToolAppFlowFactory):
         parser.add_argument("-y", action="store_true", help="answer yes to all prompts")
 
     def Create(self, toolAppContext: ToolAppContext) -> AToolAppFlow:
-        return ToolFlowBuildInfo(toolAppContext)
+        return ToolFlowBuildClean(toolAppContext)

@@ -908,9 +908,13 @@ def CompilerSpecificFileDependencies(
     return finalContent
 
 
-def CreateDefineRootDirectoryEnvironmentAsVariables(
-    toolConfig: ToolConfig, projectContext: ToolConfigProjectContext, includeParents: bool, snippet: str, uniqueEnvironmentVariables: set[str]
-) -> str:
+def GetRootDirectoryEnvironmentVariableNames(
+    toolConfig: ToolConfig, projectContext: ToolConfigProjectContext, includeParents: bool, uniqueEnvironmentVariables: set[str]
+) -> set[str]:
+    """The environment variables a CMakeLists.txt of the project reads when it is configured: the ones of the root directories of the
+    project (and of its parents) and the ones the packages use in a path (CreateDefineRootDirectoryEnvironmentAsVariables writes the lines
+    that read them).
+    """
     allProjectContextRootDirs = []  # List[ToolConfigRootDirectory]
     context: ToolConfigProjectContext | None = projectContext
     while context is not None:
@@ -931,7 +935,13 @@ def CreateDefineRootDirectoryEnvironmentAsVariables(
                 envVarName = rootDir.GetEnvironmentVariableName()
                 if envVarName not in allUniqueEnv:
                     allUniqueEnv.add(envVarName)
+    return allUniqueEnv
 
+
+def CreateDefineRootDirectoryEnvironmentAsVariables(
+    toolConfig: ToolConfig, projectContext: ToolConfigProjectContext, includeParents: bool, snippet: str, uniqueEnvironmentVariables: set[str]
+) -> str:
+    allUniqueEnv = GetRootDirectoryEnvironmentVariableNames(toolConfig, projectContext, includeParents, uniqueEnvironmentVariables)
     allRootDirs = list(allUniqueEnv)  # List[set]
     allRootDirs.sort(key=lambda s: s.lower())
     result = []  # List[str]

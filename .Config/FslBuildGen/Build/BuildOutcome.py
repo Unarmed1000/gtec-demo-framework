@@ -41,6 +41,7 @@ import os
 from collections.abc import Sequence
 from enum import Enum
 
+from FslBuildGen.Build import BuildDryRun
 from FslBuildGen.DataTypes import PackageType
 from FslBuildGen.Packages.Package import Package
 
@@ -114,9 +115,10 @@ class PackageOutcome:
 
 
 class BuildOutcome:
-    def __init__(self, packages: Sequence[Package]) -> None:
-        """packages are the packages of the build, in build order"""
+    def __init__(self, packages: Sequence[Package], isDryRun: bool = False) -> None:
+        """packages are the packages of the build, in build order. isDryRun: nothing was built or run, so nothing is known about any of them"""
         super().__init__()
+        self.IsDryRun = isDryRun
         self.Packages = [PackageOutcome(package) for package in packages]
         # The exit code of the build of all packages, None when the generator builds one package at a time or nothing was built
         self.MasterBuildExitCode: int | None = None
@@ -200,7 +202,11 @@ class BuildOutcome:
           Build summary: the build failed with exit code 1, 4 of 6 executables built, failed:
           - Demo.App5: not built (exit code 1)
           - Demo.App6: not known
+        A dry run built nothing and says so:
+          Build summary: dry run, nothing was built
         """
+        if self.IsDryRun:
+            return [BuildDryRun.KeepGoingSummary]
         if self.HasMasterBuildFailed:
             executables = [entry for entry in self.Packages if entry.Package.Type == PackageType.Executable]
             builtCount = BuildOutcome.__CountBuilt(executables)

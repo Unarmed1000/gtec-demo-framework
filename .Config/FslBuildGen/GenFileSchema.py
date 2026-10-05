@@ -90,12 +90,22 @@ def IsUrl(value: str) -> bool:
     return value[: len(_g_urlPrefixes[1])].lower().startswith(_g_urlPrefixes)
 
 
+def HasHost(url: str) -> bool:
+    """True if the url names a host: 'https://' and 'http:///x' do not, and neither does 'https://:8080/x'"""
+    authority = url.partition("://")[2]
+    for separator in "/?#":
+        authority = authority.partition(separator)[0]
+    return len(authority.rpartition("@")[2].partition(":")[0]) > 0
+
+
 class GenFileSchemaLocation:
     """Where the schema versions of a project are: a url base or an absolute directory. Both hold one directory per version."""
 
     def __init__(self, value: str) -> None:
         super().__init__()
         self.IsUrl = IsUrl(value)
+        if self.IsUrl and not HasHost(value):
+            raise UsageErrorException(f"The gen file schema location '{value}' is a url without a host")
         if self.IsUrl:
             # The reference is made with one slash, whatever the base ends with
             value = value.rstrip("/")

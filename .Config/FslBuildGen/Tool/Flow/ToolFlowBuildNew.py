@@ -48,7 +48,7 @@ from typing import Any, cast
 # from FslBuildGen import Util
 # from FslBuildGen.Build import Builder
 # from FslBuildGen.BasicConfig import BasicConfig
-from FslBuildGen import GenFileSchemaProject, IOUtil, PluginSharedValues, Util
+from FslBuildGen import GenFileSchemaProject, IOUtil, NewProjectNames, PluginSharedValues, Util
 from FslBuildGen import Main as MainFlow
 from FslBuildGen.Build.BuildVariantConfigUtil import BuildVariantConfigUtil
 from FslBuildGen.Config import BaseConfig, Config
@@ -481,12 +481,13 @@ class ToolFlowBuildNew(AToolAppFlow):
             )
             packages = ParsePackages(generatorContext, config, toolConfig.GetMinimalConfig(generator.CMakeConfig), currentDir, packageFilters)
 
-        # Reserve the name of all packages
-        if packages is not None:
-            for package in packages:
-                reservedProjectNames.add(package.Name)
-
         currentDir, projectName = DetermineDirAndProjectName(currentDir, localToolConfig.ProjectName)
+
+        # Reserve the name of all packages. The package in the directory of the new one is the package that is written again: its name is
+        # the name of the new package (a directory that exists is refused below unless it may be overwritten)
+        if packages is not None:
+            reservedProjectNames = NewProjectNames.GetReservedPackageNames(packages, IOUtil.Join(currentDir, projectName))
+
         localConfig = LocalConfig(
             config, currentDir, projectName, localToolConfig.Template, localToolConfig.Force, templateDict, reservedProjectNames, localToolConfig.Language
         )
@@ -552,6 +553,9 @@ class ToolFlowBuildNew(AToolAppFlow):
         if not IOUtil.IsDirectory(currentDir):
             raise Exception(f"could not create work directory: '{currentDir}'")
 
+        # The name of a template is the name of a directory ('GLES2-UI'), each template gets a package with a valid name of its own
+        projectNames = NewProjectNames.CreateSanityCheckProjectNames(GlobalStrings.SanityCheckProjectName, templateList)
+
         isBuilding = False
         try:
             for currentTemplateName in templateList:
@@ -560,7 +564,7 @@ class ToolFlowBuildNew(AToolAppFlow):
 
                 localToolConfig.Template = currentTemplateName
 
-                localToolConfig.ProjectName = f"{GlobalStrings.SanityCheckProjectName}_{localToolConfig.Template}"
+                localToolConfig.ProjectName = projectNames[currentTemplateName]
                 localToolConfig.Force = True
 
                 if debugMode:
@@ -588,9 +592,7 @@ class ToolFlowBuildNew(AToolAppFlow):
                 for currentTemplateName in templateList:
                     if currentTemplateName == "*" or currentTemplateName.startswith("/") or ".." in currentTemplateName:
                         raise Exception("Usage error")
-                    projectName = f"{GlobalStrings.SanityCheckProjectName}_{currentTemplateName}"
-
-                    projectDir = IOUtil.Join(currentDir, projectName)
+                    projectDir = IOUtil.Join(currentDir, projectNames[currentTemplateName])
                     if IOUtil.IsDirectory(projectDir):
                         shutil.rmtree(projectDir)
 

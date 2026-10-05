@@ -83,7 +83,7 @@ class CMakeCompileCommandsRecord:
         directory: str,
         sourceCommand: str,
         file: str,
-        defines: set[str],
+        defines: list[str],
         includes: list[PackageIncludeDir],
         systemIncludes: list[PackageIncludeDir],
         compilerFlags: list[str],
@@ -155,7 +155,8 @@ class CMakeCompileCommandsJson:
 
         for entry in source:
             commands = shlex.split(entry.Command)
-            defines = set()
+            # In the order of the command, each define once: the order of what is built from them must not change from run to run
+            defines: list[str] = []
             includes = []
             systemIncludes = []
             compilerFlags = []
@@ -178,8 +179,8 @@ class CMakeCompileCommandsJson:
                             if packageName is not None:
                                 raise Exception(f"Package name was already defined as: {packageName}")
                             packageName = defineName[len(CompileCommandDefine.PackageName) :]
-                        else:
-                            defines.add(defineName)
+                        elif defineName not in defines:
+                            defines.append(defineName)
                     elif command.startswith("-I"):
                         # Extract include paths
                         includes.append(PackageIncludeDir(IOUtil.NormalizePath(command[2:]), IncludePriority.After))

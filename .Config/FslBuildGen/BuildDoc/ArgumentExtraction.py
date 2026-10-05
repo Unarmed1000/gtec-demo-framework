@@ -35,7 +35,7 @@ from collections.abc import Sequence
 from enum import Enum
 from typing import Any
 
-from FslBuildGen import IOUtil, TextFileReader
+from FslBuildGen import IOUtil, PathCompare, TextFileReader
 from FslBuildGen.Build.BuildOutcome import BuildOutcome, CommandState
 from FslBuildGen.Exceptions import UsageErrorException
 from FslBuildGen.Log import Log
@@ -187,9 +187,14 @@ def SelectApps(apps: Sequence[Package], extractArguments: str, currentDir: str, 
     """
     if extractArguments == "*":
         return list(apps)
-    currentDir = IOUtil.NormalizePath(currentDir)
-    below = currentDir if currentDir.endswith("/") else currentDir + "/"
-    return [app for app in apps if app.AbsolutePath == currentDir or (recursive and app.AbsolutePath is not None and app.AbsolutePath.startswith(below))]
+    # The current directory is what the user (or the shell) typed, the path of a package is what the tool made of the package location:
+    # they are compared the way the file system does ('e:\work' is 'E:/Work' on Windows)
+    return [
+        app
+        for app in apps
+        if app.AbsolutePath is not None
+        and (PathCompare.IsSamePath(app.AbsolutePath, currentDir) or (recursive and PathCompare.IsBelow(app.AbsolutePath, currentDir)))
+    ]
 
 
 def ReadJsonFile(log: Log, filename: str) -> Any:

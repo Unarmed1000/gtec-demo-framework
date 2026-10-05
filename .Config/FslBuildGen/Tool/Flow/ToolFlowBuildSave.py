@@ -65,7 +65,7 @@ def GetDefaultLocalConfig() -> LocalToolConfig:
     return LocalToolConfig()
 
 
-class ToolFlowDumpEnv(AToolAppFlow):
+class ToolFlowBuildSave(AToolAppFlow):
     # def __init__(self, toolAppContext: ToolAppContext) -> None:
     #    super().__init__(toolAppContext)
 
@@ -79,7 +79,9 @@ class ToolFlowDumpEnv(AToolAppFlow):
         self.Process(currentDirPath, toolConfig, localToolConfig)
 
     def Process(self, currentDirPath: str, toolConfig: ToolConfig, localToolConfig: LocalToolConfig) -> None:
-        self.Log.PrintTitle()
+        # Without a file the json goes to stdout: stdout then holds the json and nothing else, so what reads it can parse it
+        if localToolConfig.Save:
+            self.Log.PrintTitle()
 
         envDict: dict[str, str] = {}
         if localToolConfig.Append is None:
@@ -122,4 +124,4 @@ class ToolAppFlowFactory(AToolAppFlowFactory):
         parser.add_argument("--save", default=DefaultValue.Save, help="The json filename to save the dictionary to")
 
     def Create(self, toolAppContext: ToolAppContext) -> AToolAppFlow:
-        return ToolFlowDumpEnv(toolAppContext)
+        return ToolFlowBuildSave(toolAppContext)

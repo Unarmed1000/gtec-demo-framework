@@ -30,27 +30,32 @@
 #
 # ****************************************************************************************************************************************************
 
-import json
-
-from FslBuildGen import IOUtil, TextFileReader
 from FslBuildGen.Log import Log
 from FslBuildGen.OpenProject.OpenProjectCMakeInfo import OpenProjectCMakeInfo
+from FslBuildGen.OpenProject.VSCodeJsonFile import VSCodeJsonFile
 
 # See https://vector-of-bool.github.io/docs/vscode-cmake-tools/settings.html
+
+# The value of 'cmake.useCMakePresets' ('always', 'never' or 'auto'): the project is configured with the settings of this file
+_g_useCMakePresets = "never"
 
 
 class VSCodeSettingsJsonUtil:
     @staticmethod
-    def Patch(log: Log, jsonFilePath: str, cmakeInfo: OpenProjectCMakeInfo) -> None:
-        # Visual Studio Code reads and writes the file as UTF-8. A byte order mark is accepted and a file in the locale encoding (as older
-        # versions of the tool wrote it) is read with a warning
-        strJson = TextFileReader.TryReadUTF8OrLocale(log, jsonFilePath, "Visual Studio Code settings file", skipBom=True)
-        jsonDict = json.loads(strJson) if strJson is not None else {}
+    def Patch(log: Log, jsonFilePath: str, cmakeInfo: OpenProjectCMakeInfo) -> bool:
+        """Set the cmake settings in the settings file. Returns False for a file the tool can not update (see VSCodeJsonFile): it is left
+        as it is and a warning says why.
+        """
+        jsonFile = VSCodeJsonFile.TryLoad(log, jsonFilePath, "Visual Studio Code settings file")
+        if jsonFile is None:
+            return False
+        jsonDict = jsonFile.Content
 
         if log.Verbosity >= 1:
             log.LogPrint(f"- cmake.buildDirectory: '{cmakeInfo.BuildDirectory}' ")
             log.LogPrint(f"- cmake.configureArgs: '{cmakeInfo.ConfigureArgs}' ")
             log.LogPrint(f"- cmake.sourceDirectory: '{cmakeInfo.SourceDirectory}' ")
+            log.LogPrint(f"- cmake.useCMakePresets: '{_g_useCMakePresets}' ")
             log.LogPrint(f"- cmake.generator: '{cmakeInfo.Generator}' ")
             log.LogPrint(f"- cmake.installPrefix: '{cmakeInfo.InstallPrefix}' ")
             if cmakeInfo.BuildThreads is not None:
@@ -69,6 +74,11 @@ class VSCodeSettingsJsonUtil:
 
         # Directory where the root CMakeLists.txt will be found.
         jsonDict["cmake.sourceDirectory"] = cmakeInfo.SourceDirectory
+
+        # The source directory of a generated project holds a CMakePresets.json (Generator/CMakePresetsFile.py). CMake Tools switches to
+        # its presets mode by itself when it finds one there, and then it ignores the generator, the build directory and the configure
+        # settings that are set here.
+        jsonDict["cmake.useCMakePresets"] = _g_useCMakePresets
 
         # Set to a string to override CMake Tools preferred generator logic. If this is set, CMake will unconditionally use it as the -G CMake generator command line argument.
         jsonDict["cmake.generator"] = cmakeInfo.Generator
@@ -97,5 +107,5 @@ class VSCodeSettingsJsonUtil:
         # cmake.buildToolArg
         # An array of additional arguments to pass to the underlying build tool.
 
-        jsonText = json.dumps(jsonDict, ensure_ascii=False, sort_keys=True, indent=4)
-        IOUtil.WriteFileUTF8IfChanged(jsonFilePath, jsonText)
+        jsonFile.Save()
+        return True

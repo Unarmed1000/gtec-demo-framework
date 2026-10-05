@@ -30,10 +30,14 @@
 #
 # ****************************************************************************************************************************************************
 
+import re
 import subprocess
 
 from FslBuildGen.DataTypes import BuildPlatformType
 from FslBuildGen.PlatformUtil import PlatformUtil
+
+# The hash of a commit as 'git rev-parse' prints it
+_g_hashPattern = re.compile(r"[0-9a-fA-F]{40}")
 
 
 class GitUtil:
@@ -60,8 +64,8 @@ class GitUtil:
             if proc.stdout is not None:
                 proc.stdout.close()
         strVersion = output.strip()
-        # Outside a work tree git prints an error instead of a hash
-        if returnCode != 0 or len(strVersion) != 40 or "\n" in strVersion or "\r" in strVersion or "\t" in strVersion:
+        # Outside a work tree git prints an error instead of a hash. Any other text that is not a hash (a warning for example) is none either
+        if returnCode != 0 or _g_hashPattern.fullmatch(strVersion) is None:
             return None
         return strVersion
 

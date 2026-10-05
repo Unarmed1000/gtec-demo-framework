@@ -39,7 +39,7 @@ import json
 import os
 from collections.abc import Iterable, Sequence
 
-from FslBuildGen import IOUtil
+from FslBuildGen import IOUtil, PathCompare
 from FslBuildGen.BuildDoc import ArgumentExtraction
 from FslBuildGen.BuildDoc.ArgumentExtraction import JsonDictType
 from FslBuildGen.DataTypes import FilterMethod
@@ -55,6 +55,17 @@ _g_keyFormatVersion = "FormatVersion"
 _g_keyIdentity = "Identity"
 _g_argumentFileExtension = ".json"
 
+# The value of the identity that names the directory the apps are selected in
+_g_nameApps = "Apps"
+# The values that hold a path: two runs in the same directory have the same value, however the directory was typed
+_g_pathValueNames = frozenset([_g_nameApps])
+
+
+def _IsSameValue(name: str, earlier: str | None, current: str | None) -> bool:
+    if earlier is None or current is None or name not in _g_pathValueNames:
+        return earlier == current
+    return PathCompare.IsSameName(earlier, current)
+
 
 class RunIdentity:
     def __init__(self, values: dict[str, str]) -> None:
@@ -67,7 +78,9 @@ class RunIdentity:
         the run does not have it.
         """
         names = list(self.Values) + [name for name in earlier.Values if name not in self.Values]
-        return [(name, earlier.Values.get(name), self.Values.get(name)) for name in names if earlier.Values.get(name) != self.Values.get(name)]
+        return [
+            (name, earlier.Values.get(name), self.Values.get(name)) for name in names if not _IsSameValue(name, earlier.Values.get(name), self.Values.get(name))
+        ]
 
 
 class ResumeRefusedException(Exception):
@@ -136,7 +149,7 @@ def CreateRunIdentity(
             "Extensions": extensions,
             "Recipes": recipes,
             "Input directories": ",".join(additionalInputDirs),
-            "Apps": _GetSelectionText(extractArguments, currentDir, recursive),
+            _g_nameApps: _GetSelectionText(extractArguments, currentDir, recursive),
         }
     )
 

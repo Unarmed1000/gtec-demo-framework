@@ -35,7 +35,7 @@ import argparse
 # from typing import Callable
 from typing import Any, cast
 
-from FslBuildGen import IOUtil, MarkdownIO, PluginSharedValues, TextFileReader
+from FslBuildGen import IOUtil, MarkdownAnchor, MarkdownIO, PluginSharedValues, TextFileReader
 from FslBuildGen import Main as MainFlow
 from FslBuildGen.BasicConfig import BasicConfig
 from FslBuildGen.Build.BuildOutcome import BuildOutcome
@@ -80,7 +80,8 @@ def ExtractPackages(packages: list[Package], packageType: PackageType) -> list[P
 def IndexOf(lines: list[str], magicCommentContent: str) -> int:
     actualSearchString = f"<!-- #{magicCommentContent}# -->"
     for idx, val in enumerate(lines):
-        if val.strip() == actualSearchString:
+        # The first line of a file that starts with a byte order mark holds it
+        if (val if idx > 0 else MarkdownIO.WithoutByteOrderMark(val)).strip() == actualSearchString:
             return idx
     return -1
 
@@ -115,12 +116,8 @@ def TocEntryName(line: str) -> str:
 
 
 def TocEntryLink(line: str) -> str:
-    line = line.strip()
-    line = line.replace(" ", "-")
-    line = line.replace(".", "")
-    line = line.replace(":", "")
-    line = line.lower()
-    return line
+    """The anchor the sites that show the file give a heading with this text, see MarkdownAnchor"""
+    return MarkdownAnchor.CreateAnchor(line)
 
 
 def TryTocPrepareLine(line: str) -> str | None:
@@ -133,35 +130,37 @@ def TryTocPrepareLine(line: str) -> str | None:
     return line
 
 
+def TryGetHeading(line: str) -> tuple[int, str] | None:
+    """The level (1 to 6) and the text of a line that is a heading: one to six '#' and a space start it"""
+    level = len(line) - len(line.lstrip("#"))
+    if level < 1 or level > 6 or not line.startswith(" ", level):
+        return None
+    return (level, line[level + 1 :])
+
+
 def BuildTableOfContents(lines: list[str], depth: int) -> list[str]:
+    """The entries of the table of contents: the headings after the table (AG_TOC_END) down to the level depth, which is at most 4.
+    The link of an entry is the anchor of its heading. A heading that is named like an earlier heading of the file has an anchor of its
+    own, so every heading of the file is looked at, also the ones the table does not list.
+    """
     # Dumb but simple TOC genration
     startIndex = IndexOf(lines, "AG_TOC_END")
     if startIndex < 0:
         startIndex = 0
 
+    anchorNames = MarkdownAnchor.AnchorNames()
     tocLines = []
-    for index in range(startIndex, len(lines)):
-        line = lines[index]
-        if line.startswith("# "):
-            line = line[2:]
-            resLine = TryTocPrepareLine(line)
-            if resLine is not None:
-                tocLines.append(f"* [{TocEntryName(resLine)}](#{TocEntryLink(resLine)})")
-        elif line.startswith("## ") and depth >= 2:
-            line = line[3:]
-            resLine = TryTocPrepareLine(line)
-            if resLine is not None:
-                tocLines.append(f"  * [{TocEntryName(resLine)}](#{TocEntryLink(resLine)})")
-        elif line.startswith("### ") and depth >= 3:
-            line = line[4:]
-            resLine = TryTocPrepareLine(line)
-            if resLine is not None:
-                tocLines.append(f"    * [{TocEntryName(resLine)}](#{TocEntryLink(resLine)})")
-        elif line.startswith("#### ") and depth >= 4:
-            line = line[5:]
-            resLine = TryTocPrepareLine(line)
-            if resLine is not None:
-                tocLines.append(f"      * [{TocEntryName(resLine)}](#{TocEntryLink(resLine)})")
+    for index, line in enumerate(lines):
+        heading = TryGetHeading(line if index > 0 else MarkdownIO.WithoutByteOrderMark(line))
+        if heading is None:
+            continue
+        level, text = heading
+        resLine = TryTocPrepareLine(text)
+        if resLine is None:
+            continue
+        anchor = anchorNames.Add(resLine)
+        if index >= startIndex and level <= min(depth, 4):
+            tocLines.append(f"{'  ' * (level - 1)}* [{TocEntryName(resLine)}](#{anchor})")
     return tocLines
 
 
@@ -273,28 +272,19 @@ def DecodeJsonArgumentList(basicConfig: BasicConfig, arguments: list[dict[str, A
     return res
 
 
+# The width of a column of the argument table: the longest text of the column as it is written (SafeMarkdownString), 0 without entries
+
+
 def GetMaxFormattedNameLength(entries: list[ProgramArgument]) -> int:
-    count = 0
-    for entry in entries:
-        if len(entry.Help_FormattedName) > count:
-            count = len(SafeMarkdownString(entry.Help_FormattedName))
-    return count
+    return max((len(SafeMarkdownString(entry.Help_FormattedName)) for entry in entries), default=0)
 
 
 def GetMaxDescriptionLength(entries: list[ProgramArgument]) -> int:
-    count = 0
-    for entry in entries:
-        if len(entry.Description) > count:
-            count = len(SafeMarkdownString(entry.Description))
-    return count
+    return max((len(SafeMarkdownString(entry.Description)) for entry in entries), default=0)
 
 
 def GetMaxSourceNameLength(entries: list[ProgramArgument]) -> int:
-    count = 0
-    for entry in entries:
-        if len(entry.SourceName) > count:
-            count = len(SafeMarkdownString(entry.Description))
-    return count
+    return max((len(SafeMarkdownString(entry.SourceName)) for entry in entries), default=0)
 
 
 def SafeMarkdownString(strSrc: str) -> str:
@@ -664,7 +654,7 @@ def ExtractArguments(
 
 
 def IsNamespaceRootMDFile(lines: list[str]) -> bool:
-    return len(lines) > 0 and lines[0].startswith("<!-- #AG_PROJECT_NAMESPACE_ROOT# -->")
+    return len(lines) > 0 and MarkdownIO.WithoutByteOrderMark(lines[0]).startswith("<!-- #AG_PROJECT_NAMESPACE_ROOT# -->")
 
 
 def __TryFindRequirementInSet(requirements: list[PackageRequirement], ignoreRequirementSet: set[str]) -> PackageRequirement | None:

@@ -25,6 +25,7 @@
 import json
 import os
 import re
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from typing import Any, final
 
@@ -35,6 +36,23 @@ _FORMAT_VERSION = 1
 
 # A preprocessor include like '#include "Common.glsl"' or '#  include <Common.glsl>'
 _INCLUDE_PATTERN = re.compile(rb"^[ \t]*#[ \t]*include\b", re.MULTILINE)
+
+
+# A file that is written again within the resolution of its modification time keeps the time: FAT stores it in steps of 2 seconds, and
+# whatever a file system stores, the clock it stamps with moves in steps of up to 16 ms. So a state that is recorded this soon after (or
+# before, the clock of a file server is not the clock of this machine) the modification time of the file can not show that the file was
+# written again with the same size. Such a state is marked, and the content is compared the next time.
+#
+# The time a state is recorded at is given by the caller: the content builder gives the clock of the machine, a caller that gives none
+# gets the comparison by length and time only. Nothing here reads a clock, so what a test sees does not depend on when or how fast it runs.
+TIME_RESOLUTION_NS = 2_000_000_000
+
+
+def IsRecordedRecently(modifiedTimeNs: int, currentTimeNs: int | None) -> bool:
+    """True if a file with this modification time can still be written again without a change of the time when its state is recorded at
+    currentTimeNs (the time in nanoseconds since the epoch, as time.time_ns gives it). Without a current time it never is.
+    """
+    return currentTimeNs is not None and abs(currentTimeNs - modifiedTimeNs) < TIME_RESOLUTION_NS
 
 
 def ContainsInclude(filename: str) -> bool:
@@ -52,6 +70,8 @@ class DependencyState:
     Length: int
     ModifiedTime: int
     Checksum: str
+    # The state was recorded so soon after the file was written that the length and the time can not show a change: the content is compared
+    CompareContent: bool = False
 
 
 @final
@@ -72,10 +92,11 @@ def _TryGetFileState(path: str) -> tuple[int, int] | None:
     return (stat.st_size, stat.st_mtime_ns)
 
 
-def CreateOutputDependencies(contentFileName: str, dependencies: list[str] | None) -> OutputDependencies:
+def CreateOutputDependencies(contentFileName: str, dependencies: list[str] | None, currentTimeNs: int | None = None) -> OutputDependencies:
     """The record of a content file that was just built.
     contentFileName: the content file the output was built from, it is tracked by the content cache so it is left out.
     dependencies: the files the tool says the output depends on, None if the tool can not list them.
+    currentTimeNs: the time the record is made at (time.time_ns), see IsRecordedRecently. None: no dependency is taken to be written recently.
     """
     if dependencies is None:
         return OutputDependencies(AlwaysBuild=ContainsInclude(contentFileName))
@@ -91,17 +112,21 @@ def CreateOutputDependencies(contentFileName: str, dependencies: list[str] | Non
         if fileState is None:
             # The tool listed a file that is not there, so there is no state to compare against next time
             return OutputDependencies(AlwaysBuild=True)
-        states[pathId] = DependencyState(path, fileState[0], fileState[1], IOUtil.HashFile(path))
+        checksum = IOUtil.HashFile(path)
+        states[pathId] = DependencyState(path, fileState[0], fileState[1], checksum, IsRecordedRecently(fileState[1], currentTimeNs))
     return OutputDependencies(sorted(states.values(), key=lambda entry: entry.Path))
 
 
+def _DependencyToJson(entry: DependencyState) -> dict[str, Any]:
+    result: dict[str, Any] = {"Path": entry.Path, "Length": entry.Length, "ModifiedTime": entry.ModifiedTime, "Checksum": entry.Checksum}
+    if entry.CompareContent:
+        # Only written when it is set: every other entry is as it always was
+        result["CompareContent"] = True
+    return result
+
+
 def _ToJson(record: OutputDependencies) -> dict[str, Any]:
-    return {
-        "AlwaysBuild": record.AlwaysBuild,
-        "Dependencies": [
-            {"Path": entry.Path, "Length": entry.Length, "ModifiedTime": entry.ModifiedTime, "Checksum": entry.Checksum} for entry in record.Dependencies
-        ],
-    }
+    return {"AlwaysBuild": record.AlwaysBuild, "Dependencies": [_DependencyToJson(entry) for entry in record.Dependencies]}
 
 
 def _FromJson(value: Any) -> OutputDependencies:
@@ -112,9 +137,12 @@ def _FromJson(value: Any) -> OutputDependencies:
         if not isinstance(entry, dict):
             raise ValueError("invalid dependency entry")
         path, length, modifiedTime, checksum = entry.get("Path"), entry.get("Length"), entry.get("ModifiedTime"), entry.get("Checksum")
+        compareContent = entry.get("CompareContent", False)
         if not isinstance(path, str) or not isinstance(length, int) or not isinstance(modifiedTime, int) or not isinstance(checksum, str):
             raise ValueError("invalid dependency entry")
-        dependencies.append(DependencyState(path, length, modifiedTime, checksum))
+        if not isinstance(compareContent, bool):
+            raise ValueError("invalid dependency entry")
+        dependencies.append(DependencyState(path, length, modifiedTime, checksum, compareContent))
     return OutputDependencies(dependencies, value["AlwaysBuild"])
 
 
@@ -124,9 +152,13 @@ class ContentDependencyCache:
     builds the output again. Every output a content processor built is recorded, an output without a record has unknown dependencies and is built.
     """
 
-    def __init__(self, log: Log, cacheFileName: str) -> None:
+    def __init__(self, log: Log, cacheFileName: str, getCurrentTimeNs: Callable[[], int] | None = None) -> None:
+        """getCurrentTimeNs: the clock a state that is recorded again is compared with (time.time_ns), see IsRecordedRecently.
+        None: no dependency is taken to be written recently.
+        """
         super().__init__()
         self.CacheFileName = cacheFileName
+        self.__GetCurrentTimeNs = getCurrentTimeNs
         self.__Previous = self.__Load(log, cacheFileName)
         self.__Current: dict[str, OutputDependencies] = {}
 
@@ -157,11 +189,12 @@ class ContentDependencyCache:
             fileState = _TryGetFileState(entry.Path)
             if fileState is None:
                 return f"'{entry.Path}' is missing"
-            if fileState != (entry.Length, entry.ModifiedTime):
+            if fileState != (entry.Length, entry.ModifiedTime) or entry.CompareContent:
                 checksum = IOUtil.HashFile(entry.Path)
                 if checksum != entry.Checksum:
                     return f"'{entry.Path}' changed"
-                entry = DependencyState(entry.Path, fileState[0], fileState[1], checksum)
+                currentTimeNs = None if self.__GetCurrentTimeNs is None else self.__GetCurrentTimeNs()
+                entry = DependencyState(entry.Path, fileState[0], fileState[1], checksum, IsRecordedRecently(fileState[1], currentTimeNs))
             dependencies.append(entry)
         self.__Current[outputName] = OutputDependencies(dependencies)
         return None

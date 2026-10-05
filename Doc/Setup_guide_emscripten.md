@@ -10,7 +10,7 @@ Please beware that emscripten support is highly experimental and incomplete. Man
 * [Simple setup](#simple-setup)
 * [To Compile and run an existing sample application](#to-compile-and-run-an-existing-sample-application)
   * [To Compile and run an existing GLES2 sample application](#to-compile-and-run-an-existing-gles2-sample-application)
-* [To create a new demo project named 'CoolNewDemo'](#to-create-a-new-demo-project-named-'coolnewdemo')
+* [To create a new demo project named 'CoolNewDemo'](#to-create-a-new-demo-project-named-coolnewdemo)
 <!-- #AG_TOC_END# -->
 
 # Prerequisites

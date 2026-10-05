@@ -74,6 +74,17 @@ class BuildFlavorUtil:
         return flavorDict
 
     @staticmethod
+    def GetFlavorNames(topLevelPackage: Package) -> set[str]:
+        """Every name a flavor of the build can be selected by: its fully qualified name ('Lib.Mode') and its quick name ('WindowSystem')"""
+        names: set[str] = set()
+        for srcPackage in topLevelPackage.ResolvedBuildOrder:
+            for flavor in srcPackage.ResolvedFlavorTemplate.PackageFlavors:
+                names.add(flavor.Name.Value)
+                if flavor.QuickName is not None:
+                    names.add(flavor.QuickName.Value)
+        return names
+
+    @staticmethod
     def ValidateUserFlavorSettings(log: Log, topLevelPackage: Package, externalVariantConstraints: ExternalVariantConstraints) -> None:
         #    flavorDict = BuildFlavorUtil.BuildCompleteFlavorDict(topLevelPackage)
         #    for key, value in list(userFlavorSettingDict.items()):
@@ -85,7 +96,9 @@ class BuildFlavorUtil:
         #                raise Exception("Flavor '{0}' expects one of the following values: '{1}' not '{2}'".format(key, ','.join(validValues), value))
         #        elif key != ToolAddedFlavor.CONFIG:
         #            log.LogPrintWarning("WARNING: Unused flavor setting '{0}'".format(key))
-        BuildVariantUtil.ValidateUserVariantSettings(log, topLevelPackage, externalVariantConstraints)
+        # A flavor that is selected was used by the package resolve, the variant check must not report it as an unused variant setting
+        flavorNames = BuildFlavorUtil.GetFlavorNames(topLevelPackage)
+        BuildVariantUtil.ValidateUserVariantSettings(log, topLevelPackage, externalVariantConstraints, flavorNames)
 
     @staticmethod
     def LogFlavorSettings(log: Log, externalVariantConstraints: ExternalVariantConstraints) -> None:

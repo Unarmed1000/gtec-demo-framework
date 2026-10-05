@@ -34,7 +34,7 @@
 
 from FslBuildGen import IOUtil
 from FslBuildGen.DataTypes import PackageType
-from FslBuildGen.Generator import GitIgnoreMerge
+from FslBuildGen.Generator import GitIgnoreMerge, GitIgnorePackageEntries
 from FslBuildGen.Generator.GeneratorBase import GeneratorBase
 from FslBuildGen.Generator.GitIgnoreText import GitIgnoreText, TryReadGitIgnoreContent, TryReadGitIgnoreText, WriteGitIgnoreTextIfChanged
 from FslBuildGen.Packages.Package import Package
@@ -53,33 +53,52 @@ class GeneratorGitIgnore(GeneratorBase):
 
         generatorIgnoreDict = activeGenerator.GetPackageGitIgnoreDict()
 
+        # A package with flavors can be several packages here, one per flavor instance: they share the directory and so the file, which
+        # is written once for all of them
+        instancesByPath: dict[str, list[Package]] = {}
         for package in packages:
+            if package.AbsolutePath is not None:
+                instancesByPath.setdefault(package.AbsolutePath, []).append(package)
+
+        for instances in instancesByPath.values():
+            package = instances[0]
             if package.Type == PackageType.Library:
-                self.__GenerateLibraryBuildFile(configDisableWrite, package, platformName, libTemplate, generatorIgnoreDict)
+                self.__GenerateLibraryBuildFile(configDisableWrite, instances, platformName, libTemplate, generatorIgnoreDict)
             elif package.Type == PackageType.Executable:
-                self.__GenerateLibraryBuildFile(configDisableWrite, package, platformName, exeTemplate, generatorIgnoreDict)
+                self.__GenerateLibraryBuildFile(configDisableWrite, instances, platformName, exeTemplate, generatorIgnoreDict)
             elif package.Type == PackageType.HeaderLibrary:
-                self.__GenerateLibraryBuildFile(configDisableWrite, package, platformName, headerLibTemplate, generatorIgnoreDict)
+                self.__GenerateLibraryBuildFile(configDisableWrite, instances, platformName, headerLibTemplate, generatorIgnoreDict)
             else:
-                self.__GenerateLibraryBuildFile(configDisableWrite, package, platformName, virtualTemplate, generatorIgnoreDict)
+                self.__GenerateLibraryBuildFile(configDisableWrite, instances, platformName, virtualTemplate, generatorIgnoreDict)
 
     def __GenerateLibraryBuildFile(
-        self, configDisableWrite: bool, package: Package, platformName: str, template: str | None, generatorIgnoreDict: dict[str, set[str]]
+        self, configDisableWrite: bool, instances: list[Package], platformName: str, template: str | None, generatorIgnoreDict: dict[str, set[str]]
     ) -> None:
+        """instances: the package, or the flavor instances of the package that are part of this run"""
+        package = instances[0]
         if template is None or package.AbsolutePath is None:
             return
-        template = template.replace("##PROJECT_NAME##", package.Name)
         targetFilePath = IOUtil.Join(package.AbsolutePath, ".gitignore")
 
         # Read like git reads it, a BOM and bytes that are not valid UTF-8 are written back as they were
         existingText = TryReadGitIgnoreText(targetFilePath)
         existingLines = GitIgnoreMerge.SplitLines(existingText.Content if existingText is not None else None)
-        templateLines = GitIgnoreMerge.SplitLines(template) or []
+        # The entries do not name the flavor instance that is built: the file is the same whichever flavor is built
+        templateLines = GitIgnorePackageEntries.GetTemplateLines(template, package.Name)
         # Allow each generator to add things that should be ignored
-        generatorEntries = generatorIgnoreDict.get(package.Name, set())
+        generatorEntries: set[str] = set()
+        for instance in instances:
+            generatorEntries |= GitIgnorePackageEntries.GetGeneratorEntries(instance.Name, generatorIgnoreDict)
 
         # A hand arranged file keeps its lines and their order (git reads them top to bottom), a sorted file stays sorted
         mergedLines = GitIgnoreMerge.MergeGitIgnoreLines(existingLines, templateLines, generatorEntries)
+        # The lines an earlier version wrote for the flavor instance it built are dropped when a pattern of this run covers them
+        resultLines = mergedLines if mergedLines is not None else existingLines
+        if resultLines is not None:
+            requiredEntries = GitIgnoreMerge.GetRequiredEntries(templateLines, generatorEntries)
+            cleanedLines = GitIgnorePackageEntries.TryRemoveCoveredInstanceLines(resultLines, requiredEntries)
+            if cleanedLines is not None:
+                mergedLines = cleanedLines
         if mergedLines is None or configDisableWrite:
             return
         hasBom = existingText is not None and existingText.HasBom

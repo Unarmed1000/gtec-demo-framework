@@ -32,6 +32,7 @@
 # ****************************************************************************************************************************************************
 
 import shutil
+import time
 
 from FslBuildGen import IOUtil, ToolSharedValues
 from FslBuildGen.BuildContent.BasicContentProcessor import BasicContentProcessor
@@ -149,7 +150,8 @@ class Builder:
         if not configDisableWrite:
             IOUtil.SafeMakeDirs(contentOutputPath)
 
-        dependencyCache = ContentDependencyCache(log, absoluteDependencyCacheFileName)
+        # The clock tells the cache which dependencies were written just before their state is recorded
+        dependencyCache = ContentDependencyCache(log, absoluteDependencyCacheFileName, time.time_ns)
 
         self.__ProcessSyncFiles(log, contentBuildPath, contentOutputPath, sourceContent.ContentSource, srcsSyncState, outputSyncState)
         try:
@@ -282,7 +284,7 @@ class Builder:
                         dependencies = processor.Process(log, configDisableWrite, contentBuildPath, contentOutputPath, contentFile)
                         if not configDisableWrite:
                             outputName = self.__GetSyncStateFileName(contentOutputPath, outputFileName)
-                            dependencyCache.Set(outputName, CreateOutputDependencies(contentFile.ResolvedPath, dependencies))
+                            dependencyCache.Set(outputName, CreateOutputDependencies(contentFile.ResolvedPath, dependencies, time.time_ns()))
                     except:
                         # Save if a exception occured to prevent reprocessing the working files, but we invalidate
                         outputSyncState.Save()

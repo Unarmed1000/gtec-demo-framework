@@ -8,7 +8,7 @@
 * [Simple setup](#simple-setup)
 * [To compile and run an existing sample application](#to-compile-and-run-an-existing-sample-application)
 * [To compile and run an existing GLES2 sample application](#to-compile-and-run-an-existing-gles2-sample-application)
-* [To create a new GLES2 demo project named 'CoolNewDemo'](#to-create-a-new-gles2-demo-project-named-'coolnewdemo')
+* [To create a new GLES2 demo project named 'CoolNewDemo'](#to-create-a-new-gles2-demo-project-named-coolnewdemo)
 * [Using android studio](#using-android-studio)
 * [Command line arguments](#command-line-arguments)
   * [Android studio](#android-studio)

@@ -45,7 +45,7 @@ from FslBuildGen.Build.BuildUtil import PlatformBuildUtil
 from FslBuildGen.Build.BuildVariantUtil import BuildVariantUtil
 from FslBuildGen.Build.DataTypes import CommandType
 from FslBuildGen.Build.VirtualVariantEnvironmentCache import VirtualVariantEnvironmentCache
-from FslBuildGen.BuildConfig import NinjaBuildFileEncoding
+from FslBuildGen.BuildConfig import NinjaBuildFileEncoding, NinjaCommandLine
 from FslBuildGen.BuildConfig.BuildUtil import BuildUtil
 from FslBuildGen.BuildConfig.ClangExeInfo import ClangExeInfo
 from FslBuildGen.BuildConfig.ClangTidyConfiguration import ClangTidyConfiguration
@@ -656,7 +656,9 @@ class CMakeHelper:
                                 if newIncludeDir.Name not in uniquePackageIncludes:
                                     uniquePackageIncludes[newIncludeDir.Name] = UniqueIncludeRecord(newIncludeDir, MagicValues.SystemIncludeBaseIndex + index)
 
-                newPackageDefines = [defineName for defineName, isNew in uniquePackagesDefines.items() if isNew]
+                # Sorted like the defines of the package: the build file must be the same from run to run, a changed command line makes
+                # ninja run the command again
+                newPackageDefines = sorted(defineName for defineName, isNew in uniquePackagesDefines.items() if isNew)
                 newIncludes = []
                 newSystemIncludes = []
                 for _newInclude, includeRecord in uniquePackageIncludes.items():
@@ -1126,18 +1128,22 @@ class PerformClangTidyHelper:
             compilerUserArgumentsTidy = f"${PerformClangTidyHelper.VAR_USERARGS_TIDY}"
             compilerArgumentsTidy = f"${PerformClangTidyHelper.VAR_FLAGS} ${PerformClangTidyHelper.VAR_PLATFORM_DEFINES} ${PerformClangTidyHelper.VAR_INCLUDES} ${PerformClangTidyHelper.VAR_SYSTEM_INCLUDES} ${PerformClangTidyHelper.VAR_PACKAGE_DEFINES} ${PerformClangTidyHelper.VAR_POSTFIX_ARGS_TIDY}"
 
+            # The path of a tool can hold a space ('C:/Program Files/LLVM'), it is quoted for the system that runs the command
+            clangCommand = NinjaCommandLine.QuoteArgument(clangExeInfo.Command)
+            clangTidyCommand = NinjaCommandLine.QuoteArgument(clangTidyExeInfo.Command)
+
             writer.rule(
                 name=PerformClangTidyHelper.RULE_COMPILE,
                 depfile="$out.d",
-                command=f"{clangExeInfo.Command} -c -x c++ $in -o $out -MD -MF $out.d {compilerArgumentsClang}",
+                command=f"{clangCommand} -c -x c++ $in -o $out -MD -MF $out.d {compilerArgumentsClang}",
             )
 
             tidyChecks = "" if customChecks is None else f"--checks ${PerformClangTidyHelper.VAR_CUSTOM_CHECKS} "
             tidyCommand = ""
             if performClangTidyConfig.Repair:
-                tidyCommand = f"{clangTidyExeInfo.Command} $in --export-fixes=${PerformClangTidyHelper.VAR_YAML_FILE} {tidyChecks} {compilerUserArgumentsTidy} -- {compilerArgumentsTidy}"
+                tidyCommand = f"{clangTidyCommand} $in --export-fixes=${PerformClangTidyHelper.VAR_YAML_FILE} {tidyChecks} {compilerUserArgumentsTidy} -- {compilerArgumentsTidy}"
             else:
-                tidyCommand = f"{clangTidyExeInfo.Command} $in {tidyChecks} {compilerUserArgumentsTidy} -- {compilerArgumentsTidy}"
+                tidyCommand = f"{clangTidyCommand} $in {tidyChecks} {compilerUserArgumentsTidy} -- {compilerArgumentsTidy}"
 
             writer.rule(
                 name=PerformClangTidyHelper.RULE_TIDY,
@@ -1258,7 +1264,9 @@ class PerformClangTidyHelper:
                 order_only=phonyCompileTargetPackageName,
             )
 
-            variables[PerformClangTidyHelper.VAR_YAML_FILE] = [f"{dstUniqueFileOutputPath}.yaml"]
+            # The fix file belongs to the tidy statement of this file only. It is a word of the tidy command ('--export-fixes=<file>')
+            tidyVariables = dict(variables)
+            tidyVariables[PerformClangTidyHelper.VAR_YAML_FILE] = [NinjaCommandLine.QuoteArgument(f"{dstUniqueFileOutputPath}.yaml")]
 
             outputFile = f"{dstUniqueFileOutputPath}.dmy"
             # Locate the closest clang tidy configuration file so we can add it as a implicit package dependency
@@ -1273,7 +1281,7 @@ class PerformClangTidyHelper:
                 rule=PerformClangTidyHelper.RULE_TIDY,
                 inputs=fileEntry.ResolvedPath,
                 implicit=implicitDeps,
-                variables=variables,
+                variables=tidyVariables,
                 order_only=phonyTargetPackageName,
             )
 

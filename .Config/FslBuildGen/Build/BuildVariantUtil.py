@@ -35,6 +35,8 @@
 
 # from FslBuildGen.Build.CaptureEnvironmentVariablesFromScript import CaptureEnvironmentVariablesFromScript
 
+from collections.abc import Collection
+
 from FslBuildGen.DataTypes import VariantType
 from FslBuildGen.ExternalVariantConstraints import ExternalVariantConstraints
 from FslBuildGen.Log import Log
@@ -49,7 +51,12 @@ class BuildVariantUtil:
         return variantDict
 
     @staticmethod
-    def ValidateUserVariantSettings(log: Log, topLevelPackage: Package, externalVariantConstraints: ExternalVariantConstraints) -> None:
+    def ValidateUserVariantSettings(
+        log: Log, topLevelPackage: Package, externalVariantConstraints: ExternalVariantConstraints, flavorNames: Collection[str] = ()
+    ) -> None:
+        """flavorNames: the names of the flavors of the build. A setting for one of them is a flavor selection, the package resolve used and
+        validated it: it is no variant setting and it is not unused.
+        """
         variantDict = BuildVariantUtil.BuildCompleteVariantDict(topLevelPackage)
         for flavorName, flavorOption in externalVariantConstraints.Dict.items():
             if flavorName.Value in variantDict:
@@ -60,8 +67,9 @@ class BuildVariantUtil:
                     raise Exception(
                         "Variant '{}' expects one of the following values: '{}' not '{}'".format(flavorName.Value, ",".join(validValues), flavorOption.Value)
                     )
-            elif flavorName.Value != ToolAddedVariant.CONFIG:
-                log.LogPrintWarning(f"WARNING: Unused variant setting '{flavorName.Value}'")
+            elif flavorName.Value != ToolAddedVariant.CONFIG and flavorName.Value not in flavorNames:
+                # The log adds the 'WARNING: ' in front
+                log.LogPrintWarning(f"Unused variant setting '{flavorName.Value}'")
 
     # @staticmethod
     # def LogVariantSettings(log: Log, variantSettingsDict: Dict[str, str]) -> None:

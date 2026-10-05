@@ -33,6 +33,7 @@
 
 from collections.abc import Callable
 
+from FslBuildGen.DataTypes import PackageType
 from FslBuildGen.Engine.Order.Exceptions import PackageHasNoValidFlavorCombinationException
 from FslBuildGen.Engine.PackageFlavorName import PackageFlavorName
 from FslBuildGen.Engine.PackageFlavorOptionName import PackageFlavorOptionName
@@ -362,6 +363,11 @@ class PackageResolver:
         # the packages, but a constraint inside a flavor or flavor extension option is not compared to the other constraints (different options may
         # constrain differently)
         if len(instanceConfigs) <= 0 and (len(unresolvedPackage.DirectDependencies) > 0 or len(unresolvedPackage.Flavors) > 0):
+            if unresolvedPackage.Type == PackageType.ExternalFlavorConstraint and len(unresolvedPackage.DirectDependencies) == 1:
+                # The package the tool placed in front of a root to hold the flavors the user asked for: the user knows the root and what he
+                # asked for, not this package
+                requested = unresolvedPackage.DirectDependencies[0]
+                raise PackageHasNoValidFlavorCombinationException(requested.Name, [], requested.FlavorConstraints.Description)
             raise PackageHasNoValidFlavorCombinationException(unresolvedPackage.Name, PackageResolver.__DescribeDependencyConstraints(unresolvedPackage))
 
         if len(instanceConfigs) <= 0:

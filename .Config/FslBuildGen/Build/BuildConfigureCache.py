@@ -62,6 +62,7 @@ class BuildConfigureCache:
         platformName: str,
         fslBuildVersion: str,
         allowFindPackage: str,
+        configuredValues: dict[str, str] | None = None,
     ) -> None:
         super().__init__()
         self.Version = BuildConfigureCache.CURRENT_VERSION
@@ -72,6 +73,9 @@ class BuildConfigureCache:
         self.PlatformName = platformName
         self.FslBuildVersion = fslBuildVersion
         self.AllowFindPackage = allowFindPackage
+        # What the cache of cmake held for the variables of the command right after the configure this record is of
+        # (Build/CMakeCacheValues.py). Empty in the record of a build that is about to be configured and in a file an older version wrote.
+        self.ConfiguredValues: dict[str, str] = {} if configuredValues is None else configuredValues
 
     @staticmethod
     def TryLoad(log: Log, cacheFilename: str) -> BuildConfigureCache | None:
@@ -115,8 +119,22 @@ class BuildConfigureCache:
             platformName: str = jsonDict["PlatformName"]
             fslBuildVersion: str = jsonDict["FslBuildVersion"]
             allowFindPackage: str = jsonDict["AllowFindPackage"]
+
+            # A file of a version that did not keep these values has no such entry: that file is as good as it was
+            finalConfiguredValues: dict[str, str] = {}
+            for key, value in jsonDict.get("ConfiguredValues", {}).items():
+                if not isinstance(key, str) or not isinstance(value, str):
+                    raise Exception("json decode failed")
+                finalConfiguredValues[key] = value
             return BuildConfigureCache(
-                finalEnvironmentDict, finalUserSetVariablesDict, finalDict, finalCommandList, platformName, fslBuildVersion, allowFindPackage
+                finalEnvironmentDict,
+                finalUserSetVariablesDict,
+                finalDict,
+                finalCommandList,
+                platformName,
+                fslBuildVersion,
+                allowFindPackage,
+                finalConfiguredValues,
             )
         except Exception:
             log.DoPrintWarning(f"Failed to decode cache file '{cacheFilename}'")
@@ -143,28 +161,21 @@ class BuildConfigureCache:
 
     @staticmethod
     def IsEqual(lhs: BuildConfigureCache, rhs: BuildConfigureCache) -> bool:
-        if (
-            lhs.Version != rhs.Version
-            or len(lhs.EnvironmentDict) != len(rhs.EnvironmentDict)
-            or len(lhs.FileHashDict) != len(rhs.FileHashDict)
-            or len(lhs.CommandList) != len(rhs.CommandList)
-        ):
-            return False
-
-        for key, value in lhs.UserSetVariablesDict.items():
-            if key not in rhs.UserSetVariablesDict or value != rhs.UserSetVariablesDict[key]:
-                return False
-
-        for key, value in lhs.EnvironmentDict.items():
-            if key not in rhs.EnvironmentDict or value != rhs.EnvironmentDict[key]:
-                return False
-
-        for key, value in lhs.FileHashDict.items():
-            if key not in rhs.FileHashDict or value != rhs.FileHashDict[key]:
-                return False
-
-        for index, value in enumerate(lhs.CommandList):
-            if value != rhs.CommandList[index]:
-                return False
-
-        return lhs.PlatformName == rhs.PlatformName
+        """True if what decides the configure is the same: anything of it that differs means the build has to be configured again. That
+        includes a user variable or an environment variable that is no longer set, and the find package setting.
+        """
+        # FslBuildVersion is not compared. It is stored to tell which tool wrote the cache. Whatever a new version of the tool generates
+        # differently is seen through FileHashDict (the hashes of the generated files) and CommandList, and a build directory that had to
+        # be configured again after every update of the tool would cost the user a configure of each of them on every deploy for nothing.
+        #
+        # ConfiguredValues is not compared either: it is what a configure left behind, not what decides one. The builder compares it with
+        # the cache of cmake (Build/CMakeCacheValues.py).
+        return (
+            lhs.Version == rhs.Version
+            and lhs.EnvironmentDict == rhs.EnvironmentDict
+            and lhs.UserSetVariablesDict == rhs.UserSetVariablesDict
+            and lhs.FileHashDict == rhs.FileHashDict
+            and lhs.CommandList == rhs.CommandList
+            and lhs.PlatformName == rhs.PlatformName
+            and lhs.AllowFindPackage == rhs.AllowFindPackage
+        )

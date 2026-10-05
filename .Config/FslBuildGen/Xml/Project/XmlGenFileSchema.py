@@ -70,14 +70,6 @@ def _TryFindControlCharacter(value: str) -> str | None:
     return None
 
 
-def _HasHost(url: str) -> bool:
-    """True if the url names a host: 'https://' and 'http:///x' do not, and neither does 'https://:8080/x'"""
-    authority = url.partition("://")[2]
-    for separator in "/?#":
-        authority = authority.partition(separator)[0]
-    return len(authority.rpartition("@")[2].partition(":")[0]) > 0
-
-
 def _ResolveDirectory(log: Log, value: str, projectRootDirectory: str, tag: object) -> str:
     variableEnvironment = VariableEnvironment(log)
     variableEnvironment.Set(_g_projectRootVariableName, projectRootDirectory)
@@ -108,7 +100,7 @@ class XmlGenFileSchema(XmlBase):
                 raise XmlException(
                     f"The file '{filename}' has a GenFileSchema Location '{value}' that is a url with the control character U+{ord(controlCharacter):04X} in it"
                 )
-            if not _HasHost(value):
+            if not GenFileSchema.HasHost(value):
                 raise XmlException(f"The file '{filename}' has a GenFileSchema Location '{value}' that is a url without a host")
         elif _HasScheme(strippedValue):
             raise XmlException(f"The file '{filename}' has a GenFileSchema Location '{value}' that is not a url (http:// or https://) and not a directory")

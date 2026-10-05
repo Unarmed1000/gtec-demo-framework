@@ -327,7 +327,16 @@ def __SafeJoinCommandArguments(strings: list[str]) -> str:
     return " ".join(res)
 
 
+def _TryParseNumber(text: str) -> int | None:
+    """The number a text of digits holds, None for any other text"""
+    text = text.strip()
+    return int(text) if text.isascii() and text.isdecimal() else None
+
+
 def __TryCheckForFileModifications(log: Log, gitExeName: str, filename: str, yearsSet: set[int], minimumLinesChanged: int) -> int | None:
+    """The year of the last change of a file that changed by more than minimumLinesChanged lines, None for any other file.
+    Output of git that can not be read (a number or a date that is none) is no answer: None.
+    """
     # diff  --stat release/5.6.0 master VertexMatrix.hpp
     # latestBranch = 'release/5.6.0'
     oldestBranch = "master"
@@ -347,8 +356,10 @@ def __TryCheckForFileModifications(log: Log, gitExeName: str, filename: str, yea
             endIndex = res.find("insertions")
             if endIndex >= 0:
                 res = res[:endIndex].strip()
-                linesChanged = int(res)
-                if linesChanged > minimumLinesChanged:
+                linesChanged = _TryParseNumber(res)
+                if linesChanged is None:
+                    log.LogPrintVerbose(2, f"Could not read the number of changed lines of '{filename}' from the output of git: '{res}'")
+                elif linesChanged > minimumLinesChanged:
                     # git log -1 --format="%as" -- filename
                     runCommands = [gitExeName, "log", "-1", '--format="%as"', "--", filename]
                     res = subprocess.check_output(runCommands, cwd=currentWorkingDirectory, universal_newlines=True, errors="replace").strip()
@@ -358,7 +369,9 @@ def __TryCheckForFileModifications(log: Log, gitExeName: str, filename: str, yea
                         res = res[:-1]
                     dateInfo = res.split("-")
                     if len(dateInfo) == 3:
-                        lastModificationYear = int(dateInfo[0].strip())
+                        lastModificationYear = _TryParseNumber(dateInfo[0])
+                        if lastModificationYear is None:
+                            log.LogPrintVerbose(2, f"Could not read the date of the last change of '{filename}' from the output of git: '{res}'")
                         return lastModificationYear
         return None
     except FileNotFoundError:
@@ -366,9 +379,9 @@ def __TryCheckForFileModifications(log: Log, gitExeName: str, filename: str, yea
             f"The run command '{__SafeJoinCommandArguments(runCommands)}' failed with 'file not found'. It was run with CWD: '{currentWorkingDirectory}'"
         )
         raise
-    except subprocess.CalledProcessError:
+    except subprocess.CalledProcessError as ex:
         log.LogPrintWarning(
-            f"The run command '{__SafeJoinCommandArguments(runCommands)}' failed with 'file not found'. It was run with CWD: '{currentWorkingDirectory}'"
+            f"The run command '{__SafeJoinCommandArguments(runCommands)}' failed with '{ex.returncode}'. It was run with CWD: '{currentWorkingDirectory}'"
         )
         raise
 

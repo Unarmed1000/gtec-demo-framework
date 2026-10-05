@@ -27,7 +27,8 @@ from typing import Any, TextIO
 
 
 def escape_path(word: str) -> str:
-    return word.replace("$ ", "$$ ").replace(" ", "$ ").replace(":", "$:")
+    # The word is a path, not ninja text: every '$' of it is escaped, then the characters that end a path in a build statement
+    return word.replace("$", "$$").replace(" ", "$ ").replace(":", "$:")
 
 
 class Writer:

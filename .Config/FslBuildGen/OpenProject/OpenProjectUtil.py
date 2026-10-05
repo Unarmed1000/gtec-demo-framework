@@ -74,10 +74,8 @@ class OpenProjectUtil:
                 log.LogPrint(f"- Patching launch settings at '{launchFilePath}'")
                 log.LogPrint(f"  - Exe: '{exeInfo.Executable}'")
                 log.LogPrint(f"  - Cwd: '{exeInfo.CurrentWorkingDirectory}'")
-            if not VSCodeLaunchJsonUtil.TryPatch(
-                log, launchFilePath, buildPlatformType, exeInfo.Executable, exeInfo.CurrentWorkingDirectory, combinedNatvisFile
-            ):
-                log.LogPrintVerbose(1, f"WARNING Failed to patch launch file '{launchFilePath}'")
+            # A file that can not be updated is left as it is, the warning that says why was printed
+            VSCodeLaunchJsonUtil.TryPatch(log, launchFilePath, buildPlatformType, exeInfo.CurrentWorkingDirectory, combinedNatvisFile)
         else:
             log.LogPrintVerbose(1, "- Launch: No executable information found")
 

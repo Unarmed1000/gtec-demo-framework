@@ -70,6 +70,8 @@ class LocalVerbosityLevel:
 
 class LocalStrings:
     FlavorConstraintPackageName = "SYS_EXTERNAL_FLAVOR_CONSTRAINT_ON"
+    # What a message shows in the place of the name of a flavor constraint package: the flavors the user asked for
+    RequestedFlavors = "(requested)"
 
 
 class ResolveDepRecord:
@@ -454,13 +456,23 @@ class PackageBuildOrder:
         depStack.clear()
         PackageBuildOrder.__ProcessDependencyConstraints(constraintDict, depStack, package, lookupDict)
 
+        # The package the tool placed in front of a root to hold the flavors the user asked for is not shown by its name: the user knows the
+        # root and what he asked for
+        isRequest = package.Type == PackageType.ExternalFlavorConstraint and len(package.DirectDependencies) == 1
+        resolvedName = f"'{package.DirectDependencies[0].Name}' with the requested flavors" if isRequest else f"'{package.Name}'"
+
         errors: list[tuple[str, list[str]]] = []
         for entry in constraintDict.items():
             if len(entry[1].LookupDict) > 1:
                 locationStrings: list[str] = []
                 for dep in entry[1].LookupDict.items():
                     for option in dep[1]:
-                        depOrderStr = "->".join([depStackEntry.Value for depStackEntry in option.DependencyStack])
+                        depOrderStr = "->".join(
+                            [
+                                LocalStrings.RequestedFlavors if isRequest and depStackEntry == package.Name else depStackEntry.Value
+                                for depStackEntry in option.DependencyStack
+                            ]
+                        )
                         locationStrings.append(f"'{entry[0]}'='{dep[0]}' at {depOrderStr}")
                 optionStr = " && ".join([keyName.Value for keyName in entry[1].LookupDict])
                 errors.append((f"{entry[0]}={optionStr}", locationStrings))
@@ -468,7 +480,7 @@ class PackageBuildOrder:
         if len(errors) > 0:
             ", ".join([error[0] for error in errors])
             constraintsLocDesc: str = ", ".join([", ".join(error[1]) for error in errors])
-            raise Exception(f"Mutually exclusive constraints encountered while resolving '{package.Name}' constraints=({constraintsLocDesc})")
+            raise Exception(f"Mutually exclusive constraints encountered while resolving {resolvedName} constraints=({constraintsLocDesc})")
 
     @staticmethod
     def __CheckConstraintExists(

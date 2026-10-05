@@ -42,6 +42,8 @@ import stat
 import sys
 from typing import Any
 
+from FslBuildGen import PathCompare
+
 # from FslBuildGen.Exceptions import *
 # from FslBuildGen import Util
 
@@ -354,6 +356,13 @@ def __IgnoreFile(ignoreDirectories: list[str], filename: str) -> bool:
     return any(filename.startswith(dirpath) for dirpath in ignoreDirectories)
 
 
+def __IsFileNamed(filename: str, findFilename: str, comparableFindFilename: str) -> bool:
+    """The name is compared the way the file system does: on Windows 'fsl.gen' is the file 'Fsl.gen', as it is for IsFile.
+    Nearly every name of a scan is another name of another length, so the platform comparison is only made for a name of the same length.
+    """
+    return filename == findFilename or (len(filename) == len(findFilename) and PathCompare.ToComparable(filename) == comparableFindFilename)
+
+
 def FindFileByName(directory: str, findFilename: str, ignoreDirectories: list[str] | None = None) -> list[str]:
     """
     This function will find all instances of a findFilename in the directory and its subdirectories
@@ -361,6 +370,7 @@ def FindFileByName(directory: str, findFilename: str, ignoreDirectories: list[st
     """
     filePaths: list[str] = []  # List which will store all of the full filepaths.
 
+    comparableFindFilename = PathCompare.ToComparable(findFilename)
     try:
         if ignoreDirectories is None or directory not in ignoreDirectories:
             # Walk the tree.
@@ -368,9 +378,10 @@ def FindFileByName(directory: str, findFilename: str, ignoreDirectories: list[st
                 if ignoreDirectories is not None:
                     directories[:] = [dir for dir in directories if ToUnixStylePath(os.path.join(root, dir)) not in ignoreDirectories]
                 for filename in files:
-                    if filename == findFilename:
+                    # The path that is returned has the name that was asked for, like a path that is made of the directory and the name
+                    if __IsFileNamed(filename, findFilename, comparableFindFilename):
                         # Join the two strings in order to form the full filepath.
-                        filepath = ToUnixStylePath(os.path.join(root, filename))
+                        filepath = ToUnixStylePath(os.path.join(root, findFilename))
                         filePaths.append(filepath)  # Add it to the list.
     except StopIteration:  # Python >2.5
         pass
@@ -383,6 +394,7 @@ def ContainsFileByName(directory: str, findFilename: str, ignoreDirectories: lis
     :param ignoreDirectories: Will not scan any of the ignored directories.
     """
 
+    comparableFindFilename = PathCompare.ToComparable(findFilename)
     try:
         if ignoreDirectories is None or directory not in ignoreDirectories:
             # Walk the tree.
@@ -390,9 +402,9 @@ def ContainsFileByName(directory: str, findFilename: str, ignoreDirectories: lis
                 if ignoreDirectories is not None:
                     directories[:] = [dir for dir in directories if ToUnixStylePath(os.path.join(root, dir)) not in ignoreDirectories]
                 for filename in files:
-                    if filename == findFilename:
+                    if __IsFileNamed(filename, findFilename, comparableFindFilename):
                         # Join the two strings in order to form the full filepath.
-                        filepath = ToUnixStylePath(os.path.join(root, filename))
+                        filepath = ToUnixStylePath(os.path.join(root, findFilename))
                         return filepath  # Add it to the list.
     except StopIteration:  # Python >2.5
         pass

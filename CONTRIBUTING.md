@@ -7,7 +7,7 @@
 * [How Can I Contribute](#how-can-i-contribute)
   * [Pull Requests](#pull-requests)
 * [Styleguides](#styleguides)
-  * [C++ Styleguide](#c++-styleguide)
+  * [C++ Styleguide](#c-styleguide)
 * [Tools](#tools)
 <!-- #AG_TOC_END# -->
 

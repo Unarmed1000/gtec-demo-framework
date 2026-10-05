@@ -241,7 +241,9 @@ def __IsValidPackageName(name: str) -> bool:
                 if not IsValidNameStartCharacter(ch):
                     return False
                 isFirstCharInName = False
-        elif previousChar == ".":
+        elif previousChar == "." or not IsValidNameEndCharacter(previousChar):
+            # Every part of the name ends like the name does: with a letter or a digit. The part is a namespace (and a directory), 'Demo_.App'
+            # has the namespace 'Demo_' which is no valid namespace name
             return False
         else:
             isFirstCharInName = True
@@ -264,7 +266,8 @@ def __IsValidUnresolvedPackageName(name: str) -> bool:
                 if not IsValidNameStartCharacter(ch):
                     return False
                 isFirstCharInName = False
-        elif previousChar == ".":
+        elif previousChar == "." or not IsValidNameEndCharacter(previousChar):
+            # As for the resolved name: every part of the name ends with a letter or a digit
             return False
         else:
             isFirstCharInName = True
@@ -409,3 +412,8 @@ def GetPackageSourceAndFlavorNames(name: str) -> tuple[str, str]:
     if index < 0:
         return name, ""
     return name[:index], name[index + 3 :]
+
+
+def FormatCount(count: int, noun: str) -> str:
+    """A number of things for a text: '1 package', '4 packages', '0 packages' (the plural of the noun is the noun with an 's')"""
+    return f"{count} {noun}" if count == 1 else f"{count} {noun}s"

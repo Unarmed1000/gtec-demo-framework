@@ -30,6 +30,9 @@
 #
 # So the parts of a file the tool does not generate keep their bytes, and what it generates is written as UTF-8, whatever the locale encoding of the
 # machine is.
+#
+# The byte order mark of a file is the first character of its first line. It is no part of what that line says: a heading or a marker on the
+# first line is read without it (WithoutByteOrderMark), the line itself keeps it so it is written back.
 
 from FslBuildGen import IOUtil, TextFileReader
 from FslBuildGen.Log import Log
@@ -37,6 +40,14 @@ from FslBuildGen.Log import Log
 # The markdown files that gave the 'not valid UTF-8' warning. FslBuildDoc reads a package README.md more than once, this makes it one warning per file
 # for a run of the tool.
 g_warnedFiles: set[str] = set()
+
+# What a byte order mark is read as
+ByteOrderMark = "\ufeff"
+
+
+def WithoutByteOrderMark(firstLine: str) -> str:
+    """The first line of a file as it is to be understood: without the byte order mark the file starts with"""
+    return firstLine[len(ByteOrderMark) :] if firstLine.startswith(ByteOrderMark) else firstLine
 
 
 def TryReadMarkdownFile(log: Log, filename: str) -> str | None:

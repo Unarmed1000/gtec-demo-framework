@@ -13,6 +13,17 @@
 /FslUtil.OpenGLES2.vcxproj
 /FslUtil.OpenGLES2.vcxproj.filters
 /FslUtil.OpenGLES2.vcxproj.user
+/FslUtil.OpenGLES2___*.VC.VC.opendb
+/FslUtil.OpenGLES2___*.VC.db
+/FslUtil.OpenGLES2___*.manifest
+/FslUtil.OpenGLES2___*.opensdf
+/FslUtil.OpenGLES2___*.sdf
+/FslUtil.OpenGLES2___*.sln
+/FslUtil.OpenGLES2___*.v12.sdf
+/FslUtil.OpenGLES2___*.v12.suo
+/FslUtil.OpenGLES2___*.vcxproj
+/FslUtil.OpenGLES2___*.vcxproj.filters
+/FslUtil.OpenGLES2___*.vcxproj.user
 /GNUmakefile
 /GNUmakefile_Yocto
 /build/

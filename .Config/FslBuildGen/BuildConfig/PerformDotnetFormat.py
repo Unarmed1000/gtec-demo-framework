@@ -40,7 +40,7 @@ import subprocess
 # import sys
 from FslBuildGen import IOUtil
 from FslBuildGen.Build.BuildUtil import PlatformBuildUtil
-from FslBuildGen.BuildConfig import NinjaBuildFileEncoding
+from FslBuildGen.BuildConfig import NinjaBuildFileEncoding, NinjaCommandLine
 from FslBuildGen.BuildConfig.BuildUtil import BuildUtil
 from FslBuildGen.BuildConfig.ClangExeInfo import ClangExeInfo
 from FslBuildGen.BuildConfig.CustomPackageFileFilter import CustomPackageFileFilter
@@ -273,7 +273,8 @@ class PerformFormatHelper:
             # elif log.Verbosity >= 1:
             #    strVerbosity = " -v minimal"
 
-            formatCommand = f"{clangFormatExeInfo.Command} format{strVerbosity} whitespace $in"
+            # The path of the tool can hold a space, it is quoted for the system that runs the command
+            formatCommand = f"{NinjaCommandLine.QuoteArgument(clangFormatExeInfo.Command)} format{strVerbosity} whitespace $in"
             if not repairEnabled:
                 formatCommand += " --verify-no-changes"
             if len(dotnetFormatConfiguration.AdditionalUserArguments) > 0:

@@ -49,6 +49,7 @@ from FslBuildGen.DataTypes import BuildVariantConfig, BuildVariantType, Generato
 # from FslBuildGen.Exceptions import UnsupportedException
 from FslBuildGen.Exceptions import UsageErrorException
 from FslBuildGen.ExternalVariantConstraints import ExternalVariantConstraints
+from FslBuildGen.Generator import CMakePresetsFile
 from FslBuildGen.Generator.GeneratorAndroidGradleCMake import GeneratorAndroidGradleCMake, GeneratorAndroidGradleCMakeUtil
 from FslBuildGen.Generator.GeneratorBase import GeneratorBase
 from FslBuildGen.Generator.GeneratorCMake import CMakeGeneratorMode, GeneratorCMake
@@ -286,6 +287,20 @@ class GeneratorPluginCMakeBase(GeneratorPlugin):
             self.__CMakeGeneratorMode,
             generateContext.VariantConstraints,
         )
+        if self.__CMakeGeneratorMode == CMakeGeneratorMode.Normal:
+            # The presets of the project that was just written, so it can be configured and built without the tool the way the
+            # tool does it. The project of the tidy mode is an internal one of FslBuildCheck and gets none.
+            CMakePresetsFile.Update(
+                log,
+                toolConfig,
+                self.PlatformName,
+                self.CMakeConfig,
+                cmakeBuildPackageDir,
+                generateContext.Packages,
+                self.GeneratorVariants[ToolAddedVariant.CONFIG].Options,
+                generateContext.VariantConstraints,
+                generateContext.Config.DisableWrite,
+            )
         return self.GenerateDone(generateContext.Config, generateContext.Packages, self.PlatformName, generator)
 
     def _DoGenerateReport(self, log: Log, generatorConfig: GeneratorConfig, packageList: list[Package]) -> TheGeneratorBuildReport:

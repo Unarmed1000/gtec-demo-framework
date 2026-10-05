@@ -109,8 +109,17 @@ class PackageFlavorDependencyConstraintNotReachableException(Exception):
 
 
 class PackageHasNoValidFlavorCombinationException(Exception):
-    def __init__(self, packageName: UnresolvedPackageName, dependencyConstraints: list[str]) -> None:
-        """dependencyConstraints describes the flavor constraints on the package's dependencies, empty when it has none"""
+    def __init__(self, packageName: UnresolvedPackageName, dependencyConstraints: list[str], requestedFlavors: str | None = None) -> None:
+        """dependencyConstraints describes the flavor constraints on the package's dependencies, empty when it has none.
+        requestedFlavors: the package has flavor combinations, but none with the flavor options the user asked for ('Lib.Mode=A, Top.Own=C'). The
+        message then names the package and what was asked for, dependencyConstraints is not used.
+        """
+        if requestedFlavors is not None:
+            super().__init__(
+                f"Package '{packageName}' can not be built with the requested flavors [{requestedFlavors}]: "
+                "the package has no valid flavor combination with these options"
+            )
+            return
         strConstraints = "" if len(dependencyConstraints) <= 0 else f" and meets the dependency flavor constraints [{', '.join(dependencyConstraints)}]"
         super().__init__(
             f"Package '{packageName}' has no valid flavor combination, no combination of its dependency instances agrees on one option per flavor{strConstraints}"

@@ -43,7 +43,8 @@ from collections.abc import Callable
 from enum import Enum
 
 # from typing import cast
-from FslBuildGen import IOUtil, PackageListUtil, PackageUtil, ParseUtil, ToolSharedValues
+from FslBuildGen import IOUtil, PackageListUtil, PackageUtil, ParseUtil, ToolSharedValues, Util
+from FslBuildGen.Build import BuildDryRun, CMakeCacheValues
 from FslBuildGen.Build.BuildConfigRecord import BuildConfigRecord
 from FslBuildGen.Build.BuildConfigureCache import BuildConfigureCache
 from FslBuildGen.Build.BuildFlavorUtil import BuildFlavorUtil
@@ -76,6 +77,7 @@ from FslBuildGen.ExternalVariantConstraints import ExternalVariantConstraints
 # from FslBuildGen.Generator import PluginConfig
 from FslBuildGen.Generator.GeneratorConfig import GeneratorConfig
 from FslBuildGen.Generator.GeneratorPluginBase2 import GeneratorPluginBase2
+from FslBuildGen.Generator.Report import ResolvedConfigCommand
 
 # from FslBuildGen.Generator.GeneratorVC import GeneratorVCUtil
 from FslBuildGen.Generator.Report.GeneratorBuildReport import GeneratorBuildReport
@@ -183,6 +185,9 @@ BuildMethodType = Callable[[LocalBuildContext, Package, BuildConfigRecord, dict[
 
 
 class Builder:
+    # True for a dry run, the constructor sets it
+    __isDryRun = False
+
     # requestedPackages is the packages specifically requested by the user or None for SDK builds.
     def __init__(
         self,
@@ -204,6 +209,8 @@ class Builder:
         super().__init__()
 
         self.Log = log
+        # A dry run starts no process and writes, creates and deletes nothing: it says what it would run (Build/BuildDryRun.py)
+        self.__isDryRun = configIsDryRun
         self.UsedGeneratorConfig: GeneratorConfig | None = None
         self.UsedBuildContext: LocalBuildContext | None = None
         # What is known about each package after the build, see Build/BuildOutcome.py
@@ -235,7 +242,7 @@ class Builder:
         if len(resolvedBuildOrderBuildable) == 0:
             self.Log.DoPrint("Nothing to build!")
             return
-        self.Outcome = BuildOutcome(resolvedBuildOrderBuildable)
+        self.Outcome = BuildOutcome(resolvedBuildOrderBuildable, configIsDryRun)
 
         generatorConfig = GeneratorConfig(
             generatorContext.PlatformName,
@@ -327,8 +334,11 @@ class Builder:
                 generatorConfig,
             )
 
-            if packageCount > 0:
-                log.LogPrint(f"Build {packageCount} packages")
+            if configIsDryRun:
+                # Nothing was built, the commands that would be run were printed
+                pass
+            elif packageCount > 0:
+                log.LogPrint(f"Build {Util.FormatCount(packageCount, 'package')}")
             else:
                 log.DoPrint("Nothing build!")
 
@@ -344,7 +354,9 @@ class Builder:
             if len(generatorContext.Generator.SupportCommandOpenHintMessage) > 0:
                 errorMessage = f"{errorMessage} {generatorContext.Generator.SupportCommandOpenHintMessage}"
             raise Exception(errorMessage)
-        if buildConfig.BuildCommand == CommandType.Open2:
+        if buildConfig.BuildCommand == CommandType.Open2 and configIsDryRun:
+            self.Log.DoPrint(BuildDryRun.OpenProject)
+        elif buildConfig.BuildCommand == CommandType.Open2:
             allNatvisFiles = self.__ExtractNatvisFiles(topLevelPackage)
             self.__PerformOpen2(
                 buildConfig,
@@ -470,6 +482,11 @@ class Builder:
         if runValidationChecks:
             self.__RunValidationChecks(buildConfig, topLevelPackage)
 
+        if isDryRun:
+            # Nothing is built, so nothing is known about any package afterwards
+            self.__Build(buildContext, buildConfig, buildEnv, masterBuildReport, masterBuildVariableReport, None, "build-master")
+            return
+
         if buildConfig.KeepGoing:
             # If the build fails an executable it wrote has to be told from one an earlier build left
             self.__masterBuildEnv = buildEnv
@@ -528,6 +545,35 @@ class Builder:
                         self.__RunPackage(buildContext, package, buildEnv, runCmdInfo, buildConfig.KeepGoing, forAllConfig.TimeoutSeconds)
                     else:
                         raise Exception(f"unsupported mode: {forAllConfig.Mode}")
+            else:
+                self.__DryRunPackage(buildConfig, buildContext, package, allowBuild, generatorConfig)
+
+    def __DryRunPackage(
+        self, buildConfig: BuildConfigRecord, buildContext: LocalBuildContext, package: Package, allowBuild: bool, generatorConfig: GeneratorConfig
+    ) -> None:
+        """Say what would be run for a package: its build command when it has one of its own, and the ForAll command"""
+        if allowBuild:
+            self.__BuildPackage(buildContext, buildConfig, {}, package)
+
+        forAllConfig = buildConfig.ForAllConfig
+        if forAllConfig is None or not Builder.HasRequiredFeatures(package, forAllConfig):
+            return
+        if forAllConfig.RunPackageNames is not None and package.Name not in forAllConfig.RunPackageNames:
+            return
+        userRunCommands = ParseUtil.SplitCommandLine(forAllConfig.RunCommand) if forAllConfig.RunArguments is None else forAllConfig.RunArguments
+        try:
+            if forAllConfig.Mode == ForAllMode.RunExe:
+                runCmdInfo = self.TryGenerateRunCommandForExecutable(buildContext, package, buildConfig, userRunCommands, generatorConfig)
+            elif forAllConfig.Mode == ForAllMode.RunCustom:
+                runCmdInfo = self.TryGenerateRunCommandForCustom(buildContext, package, buildConfig, userRunCommands, generatorConfig)
+            else:
+                raise Exception(f"unsupported mode: {forAllConfig.Mode}")
+        except FileNotFoundError:
+            # The file the configure step of the build writes the path of the executable to is missing: nothing was configured yet
+            self.Log.DoPrint(BuildDryRun.FormatUnknownRunCommand(package.Name))
+            return
+        if runCmdInfo is not None:
+            self.Log.DoPrint(BuildDryRun.FormatRunCommand(self.__SafeJoinCommandArguments(runCmdInfo.RunCommands), runCmdInfo.RunPath))
 
     def __RecordIfNotBuilt(self, buildContext: LocalBuildContext, package: Package, buildConfig: BuildConfigRecord, generatorConfig: GeneratorConfig) -> bool:
         """With keep-going: True when the package was not built or it is not known if it was, so no command is run for it.
@@ -594,10 +640,12 @@ class Builder:
         toolVersionStr: str,
         allowFindPackage: bool,
         forceDirty: bool,
+        cmakeCacheFilename: str,
     ) -> BuildConfigureCache | None:
         """
         Generate hashes for all files in the set and compare them to the previously saved hashes
         Returns the new cache if its dirty else None if nothing was changed.
+        A build directory that was configured for something else without the tool is dirty too (Build/CMakeCacheValues.py).
         """
         # Generate a hash for all generated files and compare them to the previous "hash"
 
@@ -618,32 +666,43 @@ class Builder:
         previousConfigureCache = BuildConfigureCache.TryLoad(self.Log, cacheFilename)
         self.Log.LogPrintVerbose(5, "- Comparing cache entries")
         isDirty = previousConfigureCache is None or not BuildConfigureCache.IsEqual(configureCache, previousConfigureCache)
+        if not isDirty and previousConfigureCache is not None:
+            # Nothing the tool knows of changed. A configure that was run without the tool (a preset of the generated project, an IDE)
+            # is not in its record, so the cache of cmake is asked if it still holds what the last configure of the tool set
+            if len(previousConfigureCache.ConfiguredValues) > 0:
+                change = CMakeCacheValues.TryDescribeChange(previousConfigureCache.ConfiguredValues, cmakeCacheFilename)
+                if change is not None:
+                    self.Log.LogPrint(f"The build directory was configured without the tool: {change}")
+                    isDirty = True
+            else:
+                # The record of a version that kept no values: a configure for that alone would cost every build directory one on the
+                # update of the tool. What the cache holds now is kept instead, so the check starts with the next build.
+                currentValues = CMakeCacheValues.TryReadValues(cmakeCacheFilename, CMakeCacheValues.GetDefinedNames(command))
+                if currentValues is not None and len(currentValues) > 0:
+                    previousConfigureCache.ConfiguredValues = currentValues
+                    BuildConfigureCache.TrySave(self.Log, cacheFilename, previousConfigureCache)
 
         return configureCache if isDirty or forceDirty else None
 
     def __ConfigureBuild(self, report: PackageGeneratorConfigReport, buildConfig: BuildConfigRecord, allowFindPackage: bool, forceConfigure: bool) -> None:
-        configReport = report.ConfigReport.ConfigCommandReport
-        variableReport = report.VariableReport
+        # The CMake presets of the generated project are made from the same resolved command (Generator/CMakePresetsFile.py)
+        resolvedCommand = ResolvedConfigCommand.Resolve(report.ConfigReport.ConfigCommandReport, report.VariableReport, buildConfig.VariantConstraints)
+        currentWorkingDirectory = resolvedCommand.CurrentWorkingDirectory
 
-        buildArgumentList = []
-        for buildArgument in configReport.Arguments:
-            buildArgument = ReportVariableFormatter.Format(buildArgument, variableReport, buildConfig.VariantConstraints)
-            buildArgumentList.append(buildArgument)
-
-        configCommandStr = ReportVariableFormatter.Format(configReport.CommandFormatString, variableReport, buildConfig.VariantConstraints)
-
-        currentWorkingDirectory = ReportVariableFormatter.Format(
-            configReport.CurrentWorkingDirectoryFormatString, variableReport, buildConfig.VariantConstraints
-        )
-
-        configCommand = [configCommandStr] + buildArgumentList  # + buildConfig.BuildConfigArgs
+        configCommand = resolvedCommand.Command  # + buildConfig.BuildConfigArgs
         # if len(buildContext.Platform.AdditionalBuildConfigArguments) > 0:
         #    buildCommand += buildContext.Platform.AdditionalBuildConfigArguments
+
+        if self.__isDryRun:
+            # No build directory, no configure cache and no process
+            self.Log.DoPrint(BuildDryRun.FormatConfigCommand(self.__SafeJoinCommandArguments(configCommand), currentWorkingDirectory, forceConfigure))
+            return
 
         try:
             IOUtil.SafeMakeDirs(currentWorkingDirectory)
 
             cacheFilename = IOUtil.Join(currentWorkingDirectory, ".FslConfigureCache.json")
+            cmakeCacheFilename = IOUtil.Join(currentWorkingDirectory, CMakeCacheValues.FileName)
 
             dirtyBuildConfigureCache = self.__CheckBuildConfigureModifications(
                 cacheFilename,
@@ -654,6 +713,7 @@ class Builder:
                 buildConfig.ToolVersion.ToMajorMinorPatchString(),
                 allowFindPackage,
                 forceConfigure,
+                cmakeCacheFilename,
             )
             if dirtyBuildConfigureCache is None:
                 self.Log.LogPrint("Build configuration not modified, skipping configure")
@@ -664,7 +724,6 @@ class Builder:
                 self.Log.LogPrint("Forced configure")
 
             # Delete the CMakeCache file if it exist to ensure we find everything again
-            cmakeCacheFilename = IOUtil.Join(currentWorkingDirectory, "CMakeCache.txt")
             if IOUtil.Exists(cmakeCacheFilename) and IOUtil.IsFile(cmakeCacheFilename):
                 self.Log.LogPrint(f"Deleting {cmakeCacheFilename}")
                 IOUtil.RemoveFile(cmakeCacheFilename)
@@ -679,6 +738,9 @@ class Builder:
                 )
                 raise BuildConfigureFailedException(result)
             else:
+                # What cmake stored for the variables of the command: the next build checks that they are still there
+                configuredValues = CMakeCacheValues.TryReadValues(cmakeCacheFilename, CMakeCacheValues.GetDefinedNames(configCommand))
+                dirtyBuildConfigureCache.ConfiguredValues = {} if configuredValues is None else configuredValues
                 BuildConfigureCache.TrySave(self.Log, cacheFilename, dirtyBuildConfigureCache)
         except FileNotFoundError:
             self.Log.DoPrintWarning(
@@ -779,6 +841,10 @@ class Builder:
         if buildCommandReport.NativeArgumentSeparator is not None and len(nativeBuildArgumentList) > 0:
             buildCommand.append(buildCommandReport.NativeArgumentSeparator)
             buildCommand += nativeBuildArgumentList
+
+        if self.__isDryRun:
+            self.Log.DoPrint(BuildDryRun.FormatBuildCommand(self.__SafeJoinCommandArguments(buildCommand), currentWorkingDirectory))
+            return 0
 
         try:
             if self.Log.Verbosity >= 1:
@@ -1063,8 +1129,8 @@ def BuildPackages(
         forceConfigure,
     )
 
-    # Print executable paths if enabled and its a cmake type build
-    if printPathIfCMake and generatorContext.Generator.IsCMake and buildCommand == CommandType.Build and topLevelPackage is not None:
+    # Print executable paths if enabled and its a cmake type build. A dry run built nothing, so it has no executable to point at
+    if printPathIfCMake and generatorContext.Generator.IsCMake and buildCommand == CommandType.Build and topLevelPackage is not None and not configIsDryRun:
         for depPackage in topLevelPackage.ResolvedAllDependencies:
             package = depPackage.Package
             if package.Type == PackageType.Executable and builder.UsedBuildContext is not None and builder.UsedGeneratorConfig is not None:
@@ -1102,7 +1168,8 @@ def ShowVariantList(log: Log, topLevelPackage: Package, requestedFiles: list[str
 
     # This is kind of a hack to list this here (its also not a real variant inside our model)
     generatorVariants = generator.GetVariants()
-    if len(variantDict) <= 0 and len(generatorVariants) <= 0:
+    # The flavors of the packages are listed too: a build that only has flavors has variants
+    if len(variantDict) <= 0 and len(generatorVariants) <= 0 and len(flavorDict) <= 0:
         log.DoPrint("Variants: None")
         return
 

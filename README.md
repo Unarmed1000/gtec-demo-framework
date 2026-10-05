@@ -67,7 +67,7 @@ with the goal of keeping the framework up to date with the latest compilers, SDK
 * [Demo playback](#demo-playback)
   * [Command line arguments](#command-line-arguments)
   * [Default keyboard mappings.](#default-keyboard-mappings)
-  * [Demo single stepping / pause](#demo-single-stepping-/-pause)
+  * [Demo single stepping / pause](#demo-single-stepping--pause)
 * [Demo applications](#demo-applications)
   * [Console](#console)
   * [Console.System](#consolesystem)

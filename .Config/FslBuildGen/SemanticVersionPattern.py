@@ -247,6 +247,11 @@ class SemanticVersionPattern:
                 if lowerBound and upperBound and lowerBound > upperBound:
                     return None
 
+                # A range between a version and itself holds that version when both ends are inclusive ("[1.0,1.0]", the exact version).
+                # With an exclusive end ("[1.0,1.0)", "(1.0,1.0]", "(1.0,1.0)") it holds no version at all
+                if lowerBound and upperBound and lowerBound == upperBound and not (lowerInclusive and upperInclusive):
+                    return None
+
                 return SemanticVersionPattern(
                     lowerBound,
                     lowerInclusive,
