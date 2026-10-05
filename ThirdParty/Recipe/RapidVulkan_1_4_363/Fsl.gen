@@ -3,10 +3,10 @@
   <ExternalLibrary Name="Recipe.RapidVulkan_1_4_363" CreationYear="2017">
     <Dependency Name="VulkanBase"/>
     <Platform Name="Android">
-      <ExperimentalRecipe Name="RapidVulkan" Version="1.4.363.0" Find="false">
+      <ExperimentalRecipe Name="RapidVulkan" Version="1.4.363.1" Find="false">
         <Pipeline>
-          <Download URL="https://github.com/Unarmed1000/RapidVulkan/archive/1.4.363.0.tar.gz" To="RapidVulkan-1.4.363.0.tar.gz" Hash="a16863849f8695feb34c317c28fb4b60821f33f0d11c6ac26df7f61aac56a654"/>
-          <Unpack File="RapidVulkan-1.4.363.0.tar.gz" OutputPath="RapidVulkan-1.4.363.0"/>
+          <Download URL="https://github.com/Unarmed1000/RapidVulkan/archive/1.4.363.1.tar.gz" To="RapidVulkan-1.4.363.1.tar.gz" Hash="0642a4a38dd87131e60758b4fa31962560da8af128e25b81ca5a99897dbcdc3a"/>
+          <Unpack File="RapidVulkan-1.4.363.1.tar.gz" OutputPath="RapidVulkan-1.4.363.1"/>
           <CMakeBuild Project="RapidVulkan" Target="install" Configuration="release" OutputPath="_Install"/>
         </Pipeline>
         <Installation>
@@ -18,10 +18,10 @@
       </ExperimentalRecipe>
     </Platform>
     <Platform Name="*">
-      <ExperimentalRecipe Name="RapidVulkan" Version="1.4.363.0" Find="true">
+      <ExperimentalRecipe Name="RapidVulkan" Version="1.4.363.1" Find="true">
         <Pipeline>
-          <Download URL="https://github.com/Unarmed1000/RapidVulkan/archive/1.4.363.0.tar.gz" To="RapidVulkan-1.4.363.0.tar.gz" Hash="a16863849f8695feb34c317c28fb4b60821f33f0d11c6ac26df7f61aac56a654"/>
-          <Unpack File="RapidVulkan-1.4.363.0.tar.gz" OutputPath="RapidVulkan-1.4.363.0"/>
+          <Download URL="https://github.com/Unarmed1000/RapidVulkan/archive/1.4.363.1.tar.gz" To="RapidVulkan-1.4.363.1.tar.gz" Hash="0642a4a38dd87131e60758b4fa31962560da8af128e25b81ca5a99897dbcdc3a"/>
+          <Unpack File="RapidVulkan-1.4.363.1.tar.gz" OutputPath="RapidVulkan-1.4.363.1"/>
           <CMakeBuild Project="RapidVulkan" Target="install" Configuration="release" OutputPath="_Install"/>
         </Pipeline>
         <Installation>
