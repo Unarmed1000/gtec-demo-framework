@@ -62,6 +62,9 @@ class XmlGenFileExternalDependency(XmlBase):
     __AttribAccess = "Access"
     __AttribType = "Type"
 
+    # The elements an external dependency reads
+    __ValidElements = ["PackageManager"]
+
     def __init__(self, log: Log, xmlElement: ET.Element) -> None:
         super().__init__(log, xmlElement)
         self._CheckAttributes(
@@ -80,7 +83,8 @@ class XmlGenFileExternalDependency(XmlBase):
                 self.__AttribIf,
                 self.__AttribAccess,
                 self.__AttribType,
-            }
+            },
+            self.__ValidElements,
         )
         self.Name = self._ReadAttrib(xmlElement, self.__AttribName)
         self.DebugName: str = self._ReadAttrib(xmlElement, self.__AttribDebugName, self.Name)

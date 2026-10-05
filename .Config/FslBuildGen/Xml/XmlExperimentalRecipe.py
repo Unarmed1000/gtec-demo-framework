@@ -38,6 +38,7 @@ from FslBuildGen.BannedCommands import BannedCommands
 from FslBuildGen.DataTypes import BuildRecipePipelineCommand, BuildRecipeValidateCommand, BuildRecipeValidateMethod, BuildVariantConfig, CMakeTargetType
 from FslBuildGen.Log import Log
 from FslBuildGen.Version import Version
+from FslBuildGen.Xml import XmlNameCheck
 
 # from FslBuildGen.Xml.Exceptions import XmlUnsupportedPlatformException
 from FslBuildGen.Xml.XmlBase import XmlBase
@@ -50,6 +51,10 @@ g_validFetchCommands = ["GitClone", "Download", "Source", "ConanInstall"]
 g_validCommands = ["Unpack", "CMakeBuild", "Combine", "Copy"]
 g_validValidateCommands = ["EnvironmentVariable", "Path", "FindFileInPath", "FindExecutableFileInPath", "AddHeaders", "AddLib", "AddDLL", "AddTool"]
 g_validValidCombineCommands = ["CMakeBuild"]
+# The elements of a pipeline: it starts with a fetch command, the other ones follow
+g_validPipelineCommands = g_validFetchCommands + g_validCommands
+g_validFindExecutableFileInPathElements = ["AddOnErrorWarning"]
+g_validRecipeElements = ["Pipeline", "Installation"]
 
 g_CMAKE_PACKAGE_NAME = "Recipe.BuildTool.CMake"
 g_GIT_PACKAGE_NAME = "Recipe.BuildTool.Git"
@@ -162,7 +167,7 @@ class XmlRecipeValidateCommandFindExecutableFileInPath(XmlRecipeValidateCommand)
     __AttribVersionSplitChar = "VersionSplitChar"
 
     def __init__(self, log: Log, xmlElement: ET.Element) -> None:
-        super().__init__(log, xmlElement, "FindFileInPath", BuildRecipeValidateCommand.FindExecutableFileInPath)
+        super().__init__(log, xmlElement, "FindExecutableFileInPath", BuildRecipeValidateCommand.FindExecutableFileInPath)
         self._CheckAttributes(
             {
                 self.__AttribName,
@@ -173,7 +178,8 @@ class XmlRecipeValidateCommandFindExecutableFileInPath(XmlRecipeValidateCommand)
                 self.__AttribVersionRegEx,
                 self._AttribHelp,
                 self.__AttribVersionSplitChar,
-            }
+            },
+            g_validFindExecutableFileInPathElements,
         )
         self.Name = self._ReadAttrib(xmlElement, self.__AttribName)
         alternatives = self._TryReadAttrib(xmlElement, self.__AttribAlternatives)
@@ -203,7 +209,7 @@ class XmlRecipeValidateCommandFindExecutableFileInPath(XmlRecipeValidateCommand)
         self.__ValidateVersionCheck()
 
     def __ParseAddOnErrorWarning(self, log: Log, xmlElement: ET.Element) -> list[XmlRecipeValidateCommandFindExecutableFileInPathAddOnErrorWarning]:
-        entries = xmlElement.findall("AddOnErrorWarning")
+        entries = xmlElement.findall(g_validFindExecutableFileInPathElements[0])
         return [XmlRecipeValidateCommandFindExecutableFileInPathAddOnErrorWarning(log, entry) for entry in entries]
 
     def __ParseAlternatives(self, alternatives: str | None) -> list[str]:
@@ -359,7 +365,7 @@ class XmlRecipeValidateCommandAddTool(XmlRecipeValidateCommand):
 class XmlRecipeInstallation(XmlBase):
     def __init__(self, log: Log, xmlElement: ET.Element) -> None:
         super().__init__(log, xmlElement)
-        self._CheckAttributes(set())
+        self._CheckAttributes(set(), g_validValidateCommands)
         self.CommandList = self.__GetCommandList(log, xmlElement)
 
     def __GetCommandList(self, log: Log, xmlElement: ET.Element) -> list[XmlRecipeValidateCommand]:
@@ -543,7 +549,7 @@ class XmlRecipePipelineCommandUnpack(XmlRecipePipelineBuildCommand):
 
     def __init__(self, log: Log, xmlElement: ET.Element) -> None:
         super().__init__(log, xmlElement, "Unpack", BuildRecipePipelineCommand.Unpack)
-        self._CheckAttributes({self._AttribOutputPath, self.__AttribFile})
+        self._CheckAttributes({self._AttribOutputPath, self.__AttribFile}, g_validJoinCommands)
         self.File = self._ReadAttrib(xmlElement, self.__AttribFile)
 
 
@@ -566,7 +572,8 @@ class XmlRecipePipelineCommandCMakeBuild(XmlRecipePipelineBuildCommand):
                 self.__AttribConfiguration,
                 self.__AttribOptions,
                 self.__AttribOutputPath,
-            }
+            },
+            g_validJoinCommands,
         )
         self.Source = self._TryReadAttrib(xmlElement, self.__AttribSource)
         self.Project = self._ReadAttrib(xmlElement, self.__AttribProject)
@@ -592,7 +599,7 @@ class XmlRecipePipelineCommandCombine(XmlRecipePipelineBuildCommand):
 
     def __init__(self, log: Log, xmlElement: ET.Element) -> None:
         super().__init__(log, xmlElement, "Combine", BuildRecipePipelineCommand.Combine, False, allowJoinCommandList=False)
-        self._CheckAttributes({self._AttribOutputPath, self.__AttribOutputPath})
+        self._CheckAttributes({self._AttribOutputPath, self.__AttribOutputPath}, g_validValidCombineCommands)
         self.OutputPath = self._TryReadAttrib(xmlElement, self.__AttribOutputPath)
         self.CommandList = self.__GetCombineCommandList(log, xmlElement)
         if len(self.CommandList) <= 0:
@@ -622,7 +629,7 @@ class XmlRecipePipelineCommandCombine(XmlRecipePipelineBuildCommand):
 class XmlRecipePipelineCommandCopy(XmlRecipePipelineBuildCommand):
     def __init__(self, log: Log, xmlElement: ET.Element) -> None:
         super().__init__(log, xmlElement, "Copy", BuildRecipePipelineCommand.Copy)
-        self._CheckAttributes({self._AttribOutputPath})
+        self._CheckAttributes({self._AttribOutputPath}, g_validJoinCommands)
 
 
 def _TryAllocatePipelineFetchCommand(log: Log, xmlElement: ET.Element) -> XmlRecipePipelineFetchCommand | None:
@@ -661,6 +668,8 @@ def _TryAllocatePipelineCombineCommand(log: Log, xmlElement: ET.Element) -> XmlR
 class XmlRecipePipeline(XmlBase):
     def __init__(self, log: Log, xmlElement: ET.Element) -> None:
         super().__init__(log, xmlElement)
+        # A pipeline has no attributes. This reader never stopped at one itself, so one is found like an unknown child element.
+        XmlNameCheck.CheckNames(xmlElement, XmlNameCheck.NoNames, g_validPipelineCommands)
         # self.Name = self._ReadAttrib(xmlElement, 'Name')
         self.CommandList = self.__GetCommandList(log, xmlElement)
 
@@ -707,7 +716,8 @@ class XmlExperimentalRecipe(XmlBase):
                 self.__AttribFindVersion,
                 self.__AttribFindTargetName,
                 self.__AttribFind,
-            }
+            },
+            g_validRecipeElements,
         )
         self.ShortName = self._ReadAttrib(xmlElement, self.__AttribName, defaultName)
         self.Version: Version | None = self._TryReadAttribAsVersion(xmlElement, self.__AttribVersion)
@@ -749,13 +759,13 @@ class XmlExperimentalRecipe(XmlBase):
         return name if version is None else f"{name}-{version}"
 
     def __TryGetPipeline(self, xmlElement: ET.Element) -> XmlRecipePipeline | None:
-        child = self._TryGetElement(xmlElement, "Pipeline")
+        child = self._TryGetElement(xmlElement, g_validRecipeElements[0])
         if child is None:
             return None
         return XmlRecipePipeline(self.Log, child)
 
     def __TryGetValidateInstallation(self, log: Log, xmlElement: ET.Element) -> XmlRecipeInstallation | None:
-        child = self._TryGetElement(xmlElement, "Installation")
+        child = self._TryGetElement(xmlElement, g_validRecipeElements[1])
         if child is None:
             if log.Verbosity >= 2:
                 log.LogPrint(f"The Installation element is missing for recipe {self.ShortName}")

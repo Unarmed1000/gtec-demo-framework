@@ -149,9 +149,9 @@ class XmlUnsupportedVirtualVariantNameException(XmlException2):
 
 
 class XmlUnsupportedTag(XmlException2):
-    def __init__(self, xmlElement: ET.Element, message: str) -> None:
-        # pylint: disable=useless-super-delegation
-        super().__init__(message)
+    def __init__(self, xmlElement: ET.Element, message: str, filename: str | None = None) -> None:
+        self.Reason, self.Filename = message, filename  # The reader of the file raises it again with the name of the file
+        super().__init__(message if filename is None else f"{message} (in '{filename}')")
 
 
 class XmlUnsupportedFlavorOptionNameException(XmlException2):

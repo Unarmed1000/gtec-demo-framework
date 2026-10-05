@@ -111,6 +111,10 @@ class LocalToolConfig(ToolAppConfig):
         self.Command = CommandType.FromString(DefaultValue.Command)
         self.CommandArgs: list[str] = []
         self.Details = DefaultValue.Details
+        # Directories the search for the packages to build does not enter (with 'Recursive'), next to the ones the tool never
+        # enters. Full paths as the search makes them: the directory of the run, '/' and the names below it. Not a command line
+        # argument: the template sanity check of FslBuildNew leaves a package out with it.
+        self.IgnoreDirectories: list[str] = []
 
 
 def GetDefaultLocalConfig() -> LocalToolConfig:
@@ -194,9 +198,12 @@ class ToolFlowBuild(AToolAppFlow):
         self.Log.LogPrint(f"Active platform: {platformGeneratorPlugin.PlatformName}")
 
         if genFiles is None:
+            toolMinimalConfig = toolConfig.GetMinimalConfig(platformGeneratorPlugin.CMakeConfig)
+            if len(localToolConfig.IgnoreDirectories) > 0:
+                toolMinimalConfig.IgnoreDirectories = [*toolMinimalConfig.IgnoreDirectories, *localToolConfig.IgnoreDirectories]
             theFiles = MainFlow.DoGetFiles(
                 config,
-                toolConfig.GetMinimalConfig(platformGeneratorPlugin.CMakeConfig),
+                toolMinimalConfig,
                 currentDirPath,
                 localToolConfig.Recursive,
                 additionalDirs=self.ToolAppContext.LowLevelToolConfig.AdditionalInputDirs,

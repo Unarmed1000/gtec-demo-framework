@@ -47,7 +47,7 @@ class XmlGenFileSourceGeneration(XmlBase):
 
     def __init__(self, log: Log, xmlElement: ET.Element) -> None:
         super().__init__(log, xmlElement)
-        self._CheckAttributes({self.__AttribOutputPath})
+        self._CheckAttributes({self.__AttribOutputPath}, self.__ValidTags)
         self.OutputPath: str | None = self._TryReadAttrib(xmlElement, self.__AttribOutputPath)
         if self.OutputPath is not None:
             if len(self.OutputPath) <= 0:

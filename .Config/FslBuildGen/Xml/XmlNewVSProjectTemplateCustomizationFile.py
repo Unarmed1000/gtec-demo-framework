@@ -40,6 +40,7 @@ from FslBuildGen import IOUtil
 # from FslBuildGen.DataTypes import PackageLanguage
 from FslBuildGen.Exceptions import FileNotFoundException
 from FslBuildGen.Log import Log
+from FslBuildGen.Xml import XmlNameCheck
 from FslBuildGen.Xml.Exceptions import XmlException, XmlInvalidRootElement
 from FslBuildGen.Xml.XmlBase import XmlBase
 
@@ -57,24 +58,32 @@ class XmlNewVSProjectTemplateCustomizationBuildOutput(XmlBase):
 
 
 class XmlNewVSProjectTemplateCustomizationFile(XmlBase):
+    """The 'Customization.xml' of a Visual Studio project template. An attribute or an element in it that is not read stops the load
+    when the file is read: one error that lists every such name of the file (XmlNameCheck.XmlUnknownNamesException).
+    """
+
     __AttribVersion = "Version"
+    __ElementBuildOutput = "BuildOutput"
 
     def __init__(self, log: Log, filename: str) -> None:
         if not os.path.isfile(filename):
             raise FileNotFoundException("Could not locate config file %s", filename)
 
-        tree = ET.parse(filename)
-        elem = tree.getroot()
-        if elem.tag != "FslBuildGeneratorVSProjectTemplateCustomization":
-            raise XmlInvalidRootElement("The file did not contain the expected root tag 'FslBuildGeneratorVSProjectTemplateCustomization'")
+        with XmlNameCheck.ReadFile(filename):
+            tree = ET.parse(filename)
+            elem = tree.getroot()
+            if elem.tag != "FslBuildGeneratorVSProjectTemplateCustomization":
+                raise XmlInvalidRootElement("The file did not contain the expected root tag 'FslBuildGeneratorVSProjectTemplateCustomization'")
 
-        super().__init__(log, elem)
-        # self._CheckAttributes({self.__AttribVersion})
-        strVersion = self._ReadAttrib(elem, self.__AttribVersion)
-        if strVersion != "1":
-            raise Exception("Unsupported version")
+            super().__init__(log, elem)
+            XmlNameCheck.CheckRoot(elem, {self.__AttribVersion}, {self.__ElementBuildOutput})
+            strVersion = self._ReadAttrib(elem, self.__AttribVersion)
+            if strVersion != "1":
+                raise Exception("Unsupported version")
 
-        xmlConfiguration = self.__LoadTemplateConfiguration(log, elem)
+            xmlConfiguration = self.__LoadTemplateConfiguration(log, elem)
+
+        # After the names: a 'BuildOutput' element with a typing error is reported as the unknown name it is
         if len(xmlConfiguration) != 1:
             raise XmlException("The file did not contain exactly one BuildOutput element")
 
@@ -84,7 +93,7 @@ class XmlNewVSProjectTemplateCustomizationFile(XmlBase):
 
     def __LoadTemplateConfiguration(self, log: Log, element: ET.Element) -> list[XmlNewVSProjectTemplateCustomizationBuildOutput]:
         res = []
-        foundElements = element.findall("BuildOutput")
+        foundElements = element.findall(self.__ElementBuildOutput)
         for foundElement in foundElements:
             res.append(XmlNewVSProjectTemplateCustomizationBuildOutput(log, foundElement))
         return res

@@ -47,7 +47,7 @@ from typing import Any, cast
 # from FslBuildGen import Util
 # from FslBuildGen.Build import Builder
 # from FslBuildGen.BasicConfig import BasicConfig
-from FslBuildGen import GenFileSchemaProject, IOUtil, NewProjectNames, PluginSharedValues, Util
+from FslBuildGen import GenFileSchemaProject, IOUtil, NewProjectNames, NewProjectSanityCheck, PluginSharedValues, Util
 from FslBuildGen import Main as MainFlow
 from FslBuildGen.Build.BuildVariantConfigUtil import BuildVariantConfigUtil
 from FslBuildGen.Config import BaseConfig, Config
@@ -414,10 +414,13 @@ class ToolFlowBuildNew(AToolAppFlow):
         else:
             self.__ToolMainSanityCheck(currentDirPath, toolConfig, localToolConfig, templateDict)
 
-    def __BuildNow(self, config: Config, workDir: str, recursive: bool = False) -> None:
+    def __BuildNow(self, config: Config, workDir: str, recursive: bool = False, ignoreDirectories: list[str] | None = None) -> None:
+        """ignoreDirectories: directories below workDir whose packages are not built (with recursive)"""
         toolFlowConfig = ToolFlowBuild.GetDefaultLocalConfig()
         toolFlowConfig.SetToolAppConfigValues(self.ToolAppContext.ToolAppConfig)
         toolFlowConfig.Recursive = recursive
+        if ignoreDirectories is not None:
+            toolFlowConfig.IgnoreDirectories = list(ignoreDirectories)
         buildFlow = ToolFlowBuild.ToolFlowBuild(self.ToolAppContext)
         buildFlow.Process(workDir, config.ToolConfig, toolFlowConfig)
 
@@ -586,11 +589,19 @@ class ToolFlowBuildNew(AToolAppFlow):
                 self.__ToolMainEx(currentDir, toolConfig, localToolConfig, templateDict, False)
                 print(f"Generating sanity project for template '{localToolConfig.Template}' ended successfully")
 
+            # A template can say that its package can not be built alone: the package was created (that checks the template and
+            # the generation), the build leaves it out
+            notBuilt = NewProjectSanityCheck.GetTemplatesThatAreNotStandalone(templateDict.get(localToolConfig.Language, []), templateList)
+            for templateName in notBuilt:
+                print(NewProjectSanityCheck.FormatNotBuiltLine(templateName))
+
             isBuilding = True
             config = Config(self.Log, toolConfig, "sdk", localToolConfig.BuildVariantConstraints, localToolConfig.AllowDevelopmentPlugins)
             print(f"Building sanity projects for all template begin {localToolConfig.Template}")
-            self.__BuildNow(config, currentDir, True)
+            self.__BuildNow(config, currentDir, True, [IOUtil.Join(currentDir, projectNames[templateName]) for templateName in notBuilt])
             print(f"Building sanity project for template end {localToolConfig.Template}")
+            if len(notBuilt) > 0:
+                print(NewProjectSanityCheck.FormatNotBuiltSummary(notBuilt))
         except:
             if not isBuilding:
                 print(f"Sanity check of template '{localToolConfig.Template}' failed")

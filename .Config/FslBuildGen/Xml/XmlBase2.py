@@ -72,6 +72,11 @@ class FakeXmlGenFileDependency(XmlGenFileDependency):
 
 
 class XmlBase2(XmlBase):
+    # The child elements the constructor reads and the ones BaseLoad reads, for the name check of the classes that are made of this one
+    # (XmlBase._CheckAttributes). The old name 'CPPDefine' is not one of them: it is only looked for to stop with what replaced it.
+    _InitElements = frozenset({"ExternalDependency", "FindPackage", "Define", "Dependency"})
+    _LoadElements = _InitElements | {"Ignore"}
+
     def __init__(self, log: Log, xmlElement: ET.Element) -> None:
         super().__init__(log, xmlElement)
         self.ExternalDependencies = self.__GetXMLExternalDependencies(xmlElement)

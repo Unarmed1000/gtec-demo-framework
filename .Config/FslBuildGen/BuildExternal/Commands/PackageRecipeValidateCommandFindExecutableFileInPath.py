@@ -53,7 +53,7 @@ class PackageRecipeValidateCommandFindExecutableFileInPath(PackageRecipeValidate
         addOnErrorWarning: list[PackageRecipeValidateCommandFindExecutableFileInPathAddOnErrorWarning],
         help: str | None,
     ) -> None:
-        super().__init__("FindFileInPath", BuildRecipeValidateCommand.FindExecutableFileInPath, help)
+        super().__init__("FindExecutableFileInPath", BuildRecipeValidateCommand.FindExecutableFileInPath, help)
 
         self.__ValidateName(name)
 

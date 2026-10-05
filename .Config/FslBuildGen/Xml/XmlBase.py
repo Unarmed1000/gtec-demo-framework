@@ -32,6 +32,7 @@
 # ****************************************************************************************************************************************************
 
 import xml.etree.ElementTree as ET
+from collections.abc import Collection
 
 from FslBuildGen.DataTypes import BoolStringHelper, IncludePriority
 from FslBuildGen.Log import Log
@@ -39,6 +40,7 @@ from FslBuildGen.MatchUtil import MatchUtil
 from FslBuildGen.SemanticVersion2 import SemanticVersion2
 from FslBuildGen.SemanticVersionPattern import SemanticVersionPattern
 from FslBuildGen.Version import Version
+from FslBuildGen.Xml import XmlNameCheck
 from FslBuildGen.Xml.Exceptions import XmlException2, XmlFormatException, XmlRequiredAttributeMissingException
 from FslBuildGen.Xml.XmlBaseInfo import XmlBaseInfo
 
@@ -51,7 +53,11 @@ class XmlBase(XmlBaseInfo):
     def BaseLoad(self, xmlElement: ET.Element) -> None:
         super().BaseLoad(xmlElement)
 
-    def _CheckAttributes(self, validAttributesSet: set[str]) -> None:
+    def _CheckAttributes(self, validAttributesSet: set[str], validElements: Collection[str] = XmlNameCheck.NoNames) -> None:
+        """The names of the element: an attribute that is not one of validAttributesSet is an error. validElements are the child
+        elements the reader of the element reads (none unless it says so), a child with another name is collected for the file that
+        is being read (XmlNameCheck).
+        """
         for attributeName in self.XMLElement.attrib:
             if attributeName not in validAttributesSet:
                 if len(validAttributesSet) > 0:
@@ -65,6 +71,7 @@ class XmlBase(XmlBaseInfo):
                     )
                 else:
                     raise XmlException2(f"Element '{self.XMLElement.tag}', found invalid attribute '{attributeName}', this element can not contain attributes")
+        XmlNameCheck.CheckElements(self.XMLElement, validElements)
 
     def _GetElement(self, xmlElement: ET.Element, elementName: str) -> ET.Element:
         foundElement = xmlElement.find(elementName)

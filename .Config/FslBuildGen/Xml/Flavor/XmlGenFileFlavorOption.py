@@ -49,7 +49,7 @@ class XmlGenFileFlavorOption(XmlCommonFslBuild):
     def __init__(self, log: Log, requirementTypes: list[str], xmlElement: ET.Element, ownerPackageName: str, flavorName: str) -> None:
         """flavorName is the name the flavor or flavor extension element gives, it is only used in messages"""
         super().__init__(log, requirementTypes, xmlElement)
-        self._CheckAttributes({self.__AttribName, self.__AttribSupported})
+        self._CheckAttributes({self.__AttribName, self.__AttribSupported}, self.__ValidElements)
         self.Name = self._ReadAttrib(xmlElement, self.__AttribName)
         self.Supported = self._ReadBoolAttrib(xmlElement, self.__AttribSupported, True)
         self.IntroducedByPackageName = ownerPackageName

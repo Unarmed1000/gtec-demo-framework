@@ -107,7 +107,7 @@ class XmlGenFileVariantOption(XmlBase2):
 
     def __init__(self, log: Log, xmlElement: ET.Element, ownerPackageName: str) -> None:
         super().__init__(log, xmlElement)
-        self._CheckAttributes({self.__AttribName})
+        self._CheckAttributes({self.__AttribName}, self._InitElements)
         self.Name = self._ReadAttrib(xmlElement, self.__AttribName)
         self.IntroducedByPackageName = ownerPackageName
 
@@ -117,9 +117,12 @@ class XmlGenFileVariant(XmlBase):
     __AttribExtend = "Extend"
     __AttribType = "Type"
 
+    # The elements a variant reads
+    __ValidElements = ["Option"]
+
     def __init__(self, log: Log, xmlElement: ET.Element, ownerPackageName: str) -> None:
         super().__init__(log, xmlElement)
-        self._CheckAttributes({self.__AttribName, self.__AttribExtend, self.__AttribType})
+        self._CheckAttributes({self.__AttribName, self.__AttribExtend, self.__AttribType}, self.__ValidElements)
         self.Name = self._ReadAttrib(xmlElement, self.__AttribName)
         self.IntroducedByPackageName = ownerPackageName
         self.AllowExtend = self._ReadBoolAttrib(xmlElement, self.__AttribExtend, False)
@@ -188,6 +191,9 @@ class XmlGenFilePlatform(XmlBase2):
     __AttribProjectId = "ProjectId"
     __AttribSupported = "Supported"
 
+    # The elements of a platform: the ones the base class reads and the ones the reader of the gen file reads from it (XmlGenFile)
+    __ValidElements = XmlBase2._InitElements | {"Requirement", "Flavor", "FlavorExtension", "Variant", "ExperimentalRecipe"}
+
     def __init__(
         self,
         log: Log,
@@ -201,7 +207,7 @@ class XmlGenFilePlatform(XmlBase2):
         experimentalRecipe: XmlExperimentalRecipe | None,
     ) -> None:
         super().__init__(log, xmlElement)
-        self._CheckAttributes({self.__AttribName, self.__AttribProjectId, self.__AttribSupported})
+        self._CheckAttributes({self.__AttribName, self.__AttribProjectId, self.__AttribSupported}, self.__ValidElements)
         self.Name = self._ReadAttrib(xmlElement, self.__AttribName)
         self.DirectRequirements = requirements
         self.DirectDependencies = dependencies
@@ -246,13 +252,13 @@ class FakeXmlGenFilePlatform(XmlGenFilePlatform):
 
 
 class XmlGenFileBuildCustomization(XmlBase):
-    __AttribName = "Name"
+    __AttribValue = "Value"
 
     def __init__(self, log: Log, xmlElement: ET.Element) -> None:
         super().__init__(log, xmlElement)
-        self._CheckAttributes({self.__AttribName})
+        self._CheckAttributes({self.__AttribValue})
         self.Name = xmlElement.tag
-        self.ValueString = self._ReadAttrib(xmlElement, "Value")
+        self.ValueString = self._ReadAttrib(xmlElement, self.__AttribValue)
 
     def GetValueAsInt(self) -> int:
         raise Exception("XmlGenFileBuildCustomization is not a int")

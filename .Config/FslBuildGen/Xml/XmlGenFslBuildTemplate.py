@@ -37,7 +37,8 @@ import xml.etree.ElementTree as ET
 from FslBuildGen import IOUtil
 from FslBuildGen.Exceptions import FileNotFoundException
 from FslBuildGen.Log import Log
-from FslBuildGen.Xml.Exceptions import XmlInvalidRootElement
+from FslBuildGen.Xml import XmlNameCheck
+from FslBuildGen.Xml.Exceptions import XmlInvalidRootElement, XmlUnsupportedTag
 from FslBuildGen.Xml.XmlCommonFslBuild import XmlCommonFslBuild
 
 
@@ -51,8 +52,16 @@ class XmlGenFslBuildTemplate(XmlCommonFslBuild):
         if xmlElement.tag != "FslBuildTemplate":
             raise XmlInvalidRootElement("The file did not contain the expected root tag 'FslBuildTemplate'")
 
-        super().__init__(log, requirementTypes, xmlElement)
-        # self._CheckAttributes(set())
+        # An attribute or an element of the template that no reader reads stops the load when the template is read (XmlNameCheck).
+        # The template is read while the gen file that imports it is: its names are the ones of the template.
+        with XmlNameCheck.ReadFile(filename):
+            try:
+                XmlNameCheck.CheckRoot(xmlElement, XmlNameCheck.NoNames, self._InitElements | self._RequirementElements)
+                super().__init__(log, requirementTypes, xmlElement)
+                # self._CheckAttributes(set())
 
-        self.Name = IOUtil.GetFileNameWithoutExtension(filename)
-        self.DirectRequirements = self._GetXMLRequirements(xmlElement)
+                self.Name = IOUtil.GetFileNameWithoutExtension(filename)
+                self.DirectRequirements = self._GetXMLRequirements(xmlElement)
+            except XmlUnsupportedTag as ex:
+                # The element that found the old name does not know which file it is in
+                raise XmlUnsupportedTag(xmlElement, ex.Reason, filename) from ex

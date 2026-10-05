@@ -58,7 +58,7 @@ from FslBuildGen.PackageIncludePath import PackageIncludePath
 from FslBuildGen.PackagePath import PackagePath
 from FslBuildGen.PackageTemplateLoader import PackageTemplateLoader
 from FslBuildGen.ToolConfig import ToolConfig, ToolConfigPackageLocation
-from FslBuildGen.Xml import FakeXmlElementFactory, XmlGenFileReader
+from FslBuildGen.Xml import FakeXmlElementFactory, XmlGenFileReader, XmlNameCheck
 from FslBuildGen.Xml.Exceptions import (
     BuildCustomizationAlreadyDefinedException,
     DefaultValueAlreadyDefinedException,
@@ -70,6 +70,7 @@ from FslBuildGen.Xml.Exceptions import (
     XmlInvalidRootElement,
     XmlUnsupportedPackageType,
     XmlUnsupportedPlatformException,
+    XmlUnsupportedTag,
 )
 from FslBuildGen.Xml.Flavor.XmlGenFileFlavor import XmlGenFileFlavor
 from FslBuildGen.Xml.Flavor.XmlGenFileFlavorExtension import XmlGenFileFlavorExtension
@@ -129,6 +130,34 @@ class XmlGenFile(XmlCommonFslBuild):
         __AttribUnitTest,
     }
 
+    # The element of a package, by the type of the package. In the order they are looked for.
+    __PackageElements = {
+        "Library": PackageType.Library,
+        "Executable": PackageType.Executable,
+        "ExternalLibrary": PackageType.ExternalLibrary,
+        "HeaderLibrary": PackageType.HeaderLibrary,
+        "ToolRecipe": PackageType.ToolRecipe,
+    }
+
+    # The child elements of a package element: the ones the base classes read and the ones that are read here
+    __ValidElements = (
+        XmlCommonFslBuild._LoadElements
+        | XmlCommonFslBuild._RequirementElements
+        | {
+            DefaultValueName.DEFAULT_PLATFORM_Supported,
+            "BuildCustomization.Debug.Optimization",
+            "ImportTemplate",
+            "Generate",
+            "GenerateGrpcProtoFile",
+            "CopyFile",
+            "SourceGeneration",
+            "Platform",
+            "ExperimentalRecipe",
+        }
+    )
+    # The attributes of a 'Default.' element
+    __DefaultValueAttribs = frozenset({"Value"})
+
     def __init__(self, log: Log, toolConfig: ToolConfig, defaultPackageLanguage: PackageLanguage) -> None:
         super().__init__(log, toolConfig.RequirementTypes, FakeXmlElementFactory.CreateWithName("FakeGenFile", "FSLBUILD_INVALID_INITIAL_VALUE"))
         self.SourceFilename: str | None = None
@@ -171,6 +200,19 @@ class XmlGenFile(XmlCommonFslBuild):
         self.ShowInMainReadme = True
 
     def Load(self, config: Config, packageTemplateLoader: PackageTemplateLoader, packageFile: PackageFile) -> None:
+        """Read the gen file. An attribute or an element in it that no reader reads stops the load when the file is read: one error
+        that lists every such name of the file (XmlNameCheck.XmlUnknownNamesException).
+        """
+        with XmlNameCheck.ReadFile(packageFile.AbsoluteFilePath):
+            try:
+                self.__Load(config, packageTemplateLoader, packageFile)
+            except XmlUnsupportedTag as ex:
+                # The element that found the old name does not know which file it is in. A template the file imports is named already.
+                if ex.Filename is not None:
+                    raise
+                raise XmlUnsupportedTag(self.XMLElement, ex.Reason, packageFile.AbsoluteFilePath) from ex
+
+    def __Load(self, config: Config, packageTemplateLoader: PackageTemplateLoader, packageFile: PackageFile) -> None:
         log: Log = config
         filename = packageFile.AbsoluteFilePath
         if not os.path.isfile(filename):
@@ -189,6 +231,7 @@ class XmlGenFile(XmlCommonFslBuild):
         elem = ET.fromstring(fileContent)
         if elem.tag != "FslBuildGen":
             raise XmlInvalidRootElement("The file did not contain the expected root tag 'FslBuildGen'")
+        XmlNameCheck.CheckRoot(elem, XmlNameCheck.NoNames, self.__PackageElements)
 
         elem, theType = self.__FindPackageElementAndType(elem)
 
@@ -221,7 +264,7 @@ class XmlGenFile(XmlCommonFslBuild):
         self.PackageNameBasedIncludePath = self._ReadBoolAttrib(elem, self.__AttribPackageNameBasedIncludePath, True)
 
         self.BaseLoad(elem)
-        self._CheckAttributes(self.__ValidAttribs)
+        self._CheckAttributes(self.__ValidAttribs, self.__ValidElements)
 
         self.GenerateList = self.__GetGenerateList(log, elem)
         self.GenerateGrpcProtoFileList = self.__GetGenerateGrpcProtoFileList(log, elem)
@@ -285,25 +328,10 @@ class XmlGenFile(XmlCommonFslBuild):
         return packageType == PackageType.ExternalLibrary or packageType == PackageType.ToolRecipe
 
     def __FindPackageElementAndType(self, elem: ET.Element) -> tuple[ET.Element, PackageType]:
-        currentElem = elem.find("Library")
-        if currentElem is not None:
-            return (currentElem, PackageType.Library)
-
-        currentElem = elem.find("Executable")
-        if currentElem is not None:
-            return (currentElem, PackageType.Executable)
-
-        currentElem = elem.find("ExternalLibrary")
-        if currentElem is not None:
-            return (currentElem, PackageType.ExternalLibrary)
-
-        currentElem = elem.find("HeaderLibrary")
-        if currentElem is not None:
-            return (currentElem, PackageType.HeaderLibrary)
-
-        currentElem = elem.find("ToolRecipe")
-        if currentElem is not None:
-            return (currentElem, PackageType.ToolRecipe)
+        for elementName, packageType in self.__PackageElements.items():
+            currentElem = elem.find(elementName)
+            if currentElem is not None:
+                return (currentElem, packageType)
 
         raise XmlUnsupportedPackageType("Could not locate a Executable, Library, ExternalLibrary or HeaderLibrary element")
 
@@ -529,6 +557,7 @@ class XmlGenFile(XmlCommonFslBuild):
         for child in elem:
             key = DefaultValueName.DEFAULT_PLATFORM_Supported
             if child.tag == key:
+                XmlNameCheck.CheckNames(child, self.__DefaultValueAttribs, XmlNameCheck.NoNames)
                 defaultValues.Platform_Supported = self._ReadBoolAttrib(child, "Value")
                 if key in customizations:
                     raise DefaultValueAlreadyDefinedException(child, key)

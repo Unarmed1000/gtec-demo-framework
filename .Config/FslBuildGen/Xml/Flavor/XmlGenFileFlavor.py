@@ -58,7 +58,7 @@ class XmlGenFileFlavor(XmlBase):
 
     def __init__(self, log: Log, requirementTypes: list[str], xmlElement: ET.Element, ownerPackageName: str) -> None:
         super().__init__(log, xmlElement)
-        self._CheckAttributes({self.__AttribName, self.__AttribQuickName, self.__AttribDefault})
+        self._CheckAttributes({self.__AttribName, self.__AttribQuickName, self.__AttribDefault}, self.__ValidElements)
         self.Name = self._ReadAttrib(xmlElement, self.__AttribName)
         self.QuickName = self._TryReadAttrib(xmlElement, self.__AttribQuickName)
         # The name of the option that is used when nothing selects one, None: the flavor does not say

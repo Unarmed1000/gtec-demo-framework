@@ -216,6 +216,7 @@
     <xs:attribute name="If" type="xs:string" use="optional"/>
     <xs:attribute name="Include" type="xs:string" use="optional"/>
     <xs:attribute name="Name" type="xs:string" use="required"/>
+    <xs:attribute name="OverrideIncludePriority" type="_TP_IncludePriority" use="optional"/>
     <xs:attribute name="ProcessorArchitecture" type="xs:string" use="optional"/>
     <xs:attribute name="PublicKeyToken" type="xs:string" use="optional"/>
     <xs:attribute name="Location" type="xs:string" use="optional"/>
@@ -307,7 +308,6 @@
   <xs:complexType name="_T_VariantOption">
     <xs:group ref="_G_VariantOptionCommandList"/>
     <xs:attribute name="Name" type="xs:string" use="required"/>
-    <xs:attribute name="Supported" type="_TP_Bool" use="optional"/>
   </xs:complexType>
 
 
@@ -494,6 +494,7 @@
 
   <xs:group name="_G_VariantOptionCommandList">
     <xs:sequence>
+      <xs:group ref="_G_DependencyElement" minOccurs="0" maxOccurs="unbounded"/>
       <xs:group ref="_G_FindPackageElement" minOccurs="0" maxOccurs="unbounded"/>
       <xs:group ref="_G_ExternalDependencyElement" minOccurs="0" maxOccurs="unbounded"/>
       <xs:group ref="_G_DefineElement" minOccurs="0" maxOccurs="unbounded"/>
@@ -595,8 +596,8 @@
 
 
   <xs:complexType name="_T_PipelineJoinCommandUnpack">
-    <xs:group ref="_G_PipelineJoinCommandList"/>
-    <xs:attribute name="File" type="xs:string" use="required"/>
+    <xs:attribute name="From" type="xs:string" use="required"/>
+    <xs:attribute name="To" type="xs:string" use="optional"/>
   </xs:complexType>
 
 
@@ -611,6 +612,7 @@
   </xs:complexType>
 
   <xs:complexType name="_T_PipelineCommandUnpack">
+    <xs:group ref="_G_PipelineJoinCommandList"/>
     <xs:attribute name="File" type="xs:string" use="required"/>
     <xs:attribute name="OutputPath" type="xs:string" use="optional"/>
   </xs:complexType>
@@ -630,6 +632,23 @@
     <xs:attribute name="URL" type="xs:string" use="required"/>
     <xs:attribute name="Tag" type="xs:string" use="optional"/>
     <xs:attribute name="Hash" type="xs:string" use="optional"/>
+    <xs:attribute name="OutputPath" type="xs:string" use="optional"/>
+  </xs:complexType>
+
+  <xs:complexType name="_T_PipelineFetchCommandSource">
+    <xs:annotation>
+      <xs:documentation>The source is in the package itself, nothing is fetched</xs:documentation>
+    </xs:annotation>
+    <xs:attribute name="OutputPath" type="xs:string" use="optional"/>
+  </xs:complexType>
+
+  <xs:complexType name="_T_PipelineFetchCommandConanInstall">
+    <xs:annotation>
+      <xs:documentation>Gets a package and what it depends on from Conan. Reference is a Conan reference 'name/version', Configuration a ';' separated list of 'debug' and 'release' (both by default)</xs:documentation>
+    </xs:annotation>
+    <xs:attribute name="Reference" type="xs:string" use="required"/>
+    <xs:attribute name="Configuration" type="xs:string" use="optional"/>
+    <xs:attribute name="Options" type="xs:string" use="optional"/>
   </xs:complexType>
 
 
@@ -688,6 +707,8 @@
     <xs:choice>
       <xs:element name="Download" type="_T_PipelineFetchCommandDownload"/>
       <xs:element name="GitClone" type="_T_PipelineFetchCommandGitClone"/>
+      <xs:element name="Source" type="_T_PipelineFetchCommandSource"/>
+      <xs:element name="ConanInstall" type="_T_PipelineFetchCommandConanInstall"/>
     </xs:choice>
   </xs:group>
 
@@ -764,15 +785,28 @@
     <xs:attribute name="Help" type="xs:string" use="optional"/>
   </xs:complexType>
 
+  <xs:complexType name="_T_ValidateCommandFindExecutableFileInPathAddOnErrorWarning">
+    <xs:annotation>
+      <xs:documentation>A warning that is added to the error when the version that was found is StartVersion or later, and before EndVersion when one is given</xs:documentation>
+    </xs:annotation>
+    <xs:attribute name="StartVersion" type="xs:string" use="required"/>
+    <xs:attribute name="EndVersion" type="xs:string" use="optional"/>
+    <xs:attribute name="Help" type="xs:string" use="required"/>
+  </xs:complexType>
+
   <xs:complexType name="_T_ValidateCommandFindExecutableFileInPath">
     <xs:annotation>
       <xs:documentation>Check if a executable file can be found in the path. The executable name will be stripped of any extension and the platform default executable extension will be added</xs:documentation>
     </xs:annotation>
+    <xs:sequence>
+      <xs:element name="AddOnErrorWarning" type="_T_ValidateCommandFindExecutableFileInPathAddOnErrorWarning" minOccurs="0" maxOccurs="unbounded"/>
+    </xs:sequence>
     <xs:attribute name="Name" type="xs:string" use="required"/>
     <xs:attribute name="Alternatives" type="xs:string" use="optional"/>
 	<xs:attribute name="MinVersion" type="xs:string" use="optional"/>
 	<xs:attribute name="VersionCommand" type="xs:string" use="optional"/>
 	<xs:attribute name="VersionRegEx" type="xs:string" use="optional"/>
+    <xs:attribute name="VersionSplitChar" type="xs:string" use="optional"/>
     <xs:attribute name="ExpectedPath" type="xs:string" use="optional"/>
     <xs:attribute name="Help" type="xs:string" use="optional"/>
   </xs:complexType>
@@ -883,6 +917,7 @@
     <xs:sequence>
       <xs:group ref="_G_RequirementElement" minOccurs="0" maxOccurs="unbounded"/>
       <xs:group ref="_G_DependencyElement" minOccurs="0" maxOccurs="unbounded"/>
+      <xs:group ref="_G_FindPackageElement" minOccurs="0" maxOccurs="unbounded"/>
       <xs:group ref="_G_ExternalDependencyElement" minOccurs="0" maxOccurs="unbounded"/>
       <xs:group ref="_G_DefineElement" minOccurs="0" maxOccurs="unbounded"/>
       <xs:group ref="_G_FlavorElement" minOccurs="0" maxOccurs="unbounded"/>

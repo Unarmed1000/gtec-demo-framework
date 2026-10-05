@@ -38,6 +38,7 @@ import xml.etree.ElementTree as ET
 from FslBuildGen import IOUtil
 from FslBuildGen.Exceptions import FileNotFoundException
 from FslBuildGen.Log import Log
+from FslBuildGen.Xml import XmlNameCheck
 from FslBuildGen.Xml.Exceptions import XmlException, XmlInvalidRootElement
 from FslBuildGen.Xml.XmlBase import XmlBase
 
@@ -51,34 +52,47 @@ class XmlNewTemplate(XmlBase):
     __AttribNoInclude = "NoInclude"
     __AttribForce = "Force"
     __AttribWarning = "Warning"
+    __AttribStandalone = "Standalone"
 
     def __init__(self, log: Log, xmlElement: ET.Element) -> None:
         super().__init__(log, xmlElement)
-        self._CheckAttributes({self.__AttribNoInclude, self.__AttribForce, self.__AttribWarning})
+        self._CheckAttributes({self.__AttribNoInclude, self.__AttribForce, self.__AttribWarning, self.__AttribStandalone})
         self.NoInclude = self._ReadBoolAttrib(xmlElement, self.__AttribNoInclude, False)
         self.Force = self._ReadBoolAttrib(xmlElement, self.__AttribForce, False)
         self.Warning = self._ReadAttrib(xmlElement, self.__AttribWarning, "")
+        # False for a template that is one half of a pair: a package made from it uses a package the user makes from another
+        # template, so it can not be built alone. FslBuildNew creates the package as from any template, the template sanity check
+        # leaves it out of its build (NewProjectSanityCheck.py).
+        self.Standalone = self._ReadBoolAttrib(xmlElement, self.__AttribStandalone, True)
 
 
 class XmlNewTemplateFile(XmlBase):
+    """The 'Template.xml' of a FslBuildNew template. An attribute or an element in it that is not read stops the load when the file
+    is read: one error that lists every such name of the file (XmlNameCheck.XmlUnknownNamesException).
+    """
+
     __AttribVersion = "Version"
+    __ElementTemplate = "Template"
 
     def __init__(self, log: Log, filename: str) -> None:
         if not os.path.isfile(filename):
             raise FileNotFoundException("Could not locate config file %s", filename)
 
-        tree = ET.parse(filename)
-        elem = tree.getroot()
-        if elem.tag != "FslBuildNewTemplate":
-            raise XmlInvalidRootElement("The file did not contain the expected root tag 'FslBuildGenConfig'")
+        with XmlNameCheck.ReadFile(filename):
+            tree = ET.parse(filename)
+            elem = tree.getroot()
+            if elem.tag != "FslBuildNewTemplate":
+                raise XmlInvalidRootElement("The file did not contain the expected root tag 'FslBuildGenConfig'")
 
-        super().__init__(log, elem)
-        # self._CheckAttributes({self.__AttribVersion})
-        fileVersion = self._ReadAttrib(elem, self.__AttribVersion)
-        if fileVersion != "1":
-            raise Exception("The template file version was not correct")
+            super().__init__(log, elem)
+            XmlNameCheck.CheckRoot(elem, {self.__AttribVersion}, {self.__ElementTemplate})
+            fileVersion = self._ReadAttrib(elem, self.__AttribVersion)
+            if fileVersion != "1":
+                raise Exception("The template file version was not correct")
 
-        xmlTemplate = self.__LoadTemplateConfiguration(log, elem)
+            xmlTemplate = self.__LoadTemplateConfiguration(log, elem)
+
+        # After the names: a 'Template' element with a typing error is reported as the unknown name it is
         if len(xmlTemplate) != 1:
             raise XmlException("The file did not contain exactly one Template element")
 
@@ -91,7 +105,7 @@ class XmlNewTemplateFile(XmlBase):
 
     def __LoadTemplateConfiguration(self, log: Log, element: ET.Element) -> list[XmlNewTemplate]:
         res = []
-        foundElements = element.findall("Template")
+        foundElements = element.findall(self.__ElementTemplate)
         for foundElement in foundElements:
             res.append(XmlNewTemplate(log, foundElement))
         return res

@@ -53,7 +53,7 @@ class XmlGenFileFlavorExtension(XmlBase):
 
     def __init__(self, log: Log, requirementTypes: list[str], xmlElement: ET.Element, ownerPackageName: str) -> None:
         super().__init__(log, xmlElement)
-        self._CheckAttributes({self.__AttribName})
+        self._CheckAttributes({self.__AttribName}, self.__ValidElements)
         self.Name = self._ReadAttrib(xmlElement, self.__AttribName)
         self.IntroducedByPackageName = ownerPackageName
         # elementType = self._ReadAttrib(xmlElement, 'Type', 'Normal')

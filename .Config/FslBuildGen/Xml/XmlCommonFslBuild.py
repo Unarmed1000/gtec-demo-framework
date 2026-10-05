@@ -47,6 +47,10 @@ class XmlGenFileUsesFeature(XmlBase):
 
 
 class XmlCommonFslBuild(XmlBase2):
+    # The child elements _GetXMLRequirements reads. The old name 'UsesFeature' is not one of them: it is only looked for to stop with
+    # what replaced it.
+    _RequirementElements = frozenset({"Requirement"})
+
     def __init__(self, log: Log, requirementTypes: list[str], xmlElement: ET.Element) -> None:
         super().__init__(log, xmlElement)
         self.__RequirementTypes = requirementTypes
