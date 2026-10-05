@@ -66,6 +66,20 @@ namespace Fsl::Vulkan
                                    const VkPresentModeKHR presentMode, const VkBool32 clipped, const VkSwapchainKHR oldSwapchain,
                                    const VkExtent2D& fallbackExtent, const SurfaceFormatInfo& surfaceFormatInfo);
 
+    //! @param declarePresentMode true if the present mode the swapchain is created with is to be declared to the implementation
+    //!                           (VkSwapchainPresentModesCreateInfoKHR with that one mode). Pass true when the device has
+    //!                           VK_KHR_swapchain_maintenance1 or VK_EXT_swapchain_maintenance1 enabled: it is how an app says that it
+    //!                           knows the extension, and what the features of the extension are tied to (a present fence, for one).
+    //!                           It must be false when the extension is not enabled on the device.
+    //! @param fallbackExtent The desired extent to use for the cases where the surface size will be determined by the extent of the swapchain
+    //!                       targeting it (see above).
+    VUSwapchainKHR CreateSwapchain(const VkPhysicalDevice physicalDevice, const VkDevice device, const VkSwapchainCreateFlagsKHR flags,
+                                   const VkSurfaceKHR surface, const uint32_t desiredMinImageCount, const uint32_t imageArrayLayers,
+                                   const VkImageUsageFlags imageUsage, const VkSharingMode imageSharingMode, const uint32_t queueFamilyIndexCount,
+                                   const uint32_t* queueFamilyIndices, const VkCompositeAlphaFlagBitsKHR compositeAlpha,
+                                   const VkPresentModeKHR presentMode, const VkBool32 clipped, const VkSwapchainKHR oldSwapchain,
+                                   const VkExtent2D& fallbackExtent, const SurfaceFormatInfo& surfaceFormatInfo, const bool declarePresentMode);
+
     //! @brief Get the swap chain images
     std::vector<VkImage> GetSwapchainImagesKHR(const VkDevice device, const VkSwapchainKHR swapchain);
   }

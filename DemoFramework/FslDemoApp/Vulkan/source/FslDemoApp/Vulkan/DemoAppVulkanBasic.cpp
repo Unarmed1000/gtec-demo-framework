@@ -651,10 +651,10 @@ namespace Fsl::VulkanBasic
       m_presentTiming.Reset();
       m_presentTimingRecords.clear();
 
-      m_swapchain = Vulkan::SwapchainKHRUtil::CreateSwapchain(m_physicalDevice.Device, m_device.Get(), swapchainCreateFlags, m_surface,
-                                                              LocalConfig::DesiredMinSwapBufferCount, 1, desiredImageUsageFlags,
-                                                              VK_SHARING_MODE_EXCLUSIVE, 0, nullptr, VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR, presentMode,
-                                                              VK_TRUE, m_swapchain.Get(), fallbackExtent, m_surfaceFormatInfo);
+      m_swapchain = Vulkan::SwapchainKHRUtil::CreateSwapchain(
+        m_physicalDevice.Device, m_device.Get(), swapchainCreateFlags, m_surface, LocalConfig::DesiredMinSwapBufferCount, 1, desiredImageUsageFlags,
+        VK_SHARING_MODE_EXCLUSIVE, 0, nullptr, VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR, presentMode, VK_TRUE, m_swapchain.Get(), fallbackExtent,
+        m_surfaceFormatInfo, m_swapchainMaintenance1Enabled);
       if (swapchainCreateFlags != 0u)
       {
         if (m_presentTiming.Reset(m_physicalDevice.Device, m_device.Get(), m_surface, m_swapchain.Get(), m_calibratedTimestamps) &&

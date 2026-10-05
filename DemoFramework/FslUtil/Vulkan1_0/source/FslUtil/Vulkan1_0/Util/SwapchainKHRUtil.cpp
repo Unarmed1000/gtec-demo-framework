@@ -51,6 +51,7 @@
 #include <fmt/ostream.h>
 #include <algorithm>
 #include <cassert>
+#include <limits>
 // Included last as a workaround to ensure all types are found
 #include <FslUtil/Vulkan1_0/Debug/BitFlags.hpp>
 
@@ -110,6 +111,19 @@ namespace Fsl::Vulkan::SwapchainKHRUtil
                                  const VkPresentModeKHR presentMode, const VkBool32 clipped, const VkSwapchainKHR oldSwapchain,
                                  const VkExtent2D& fallbackExtent, const SurfaceFormatInfo& surfaceFormatInfo)
   {
+    return CreateSwapchain(physicalDevice, device, flags, surface, desiredMinImageCount, imageArrayLayers, imageUsage, imageSharingMode,
+                           queueFamilyIndexCount, queueFamilyIndices, compositeAlpha, presentMode, clipped, oldSwapchain, fallbackExtent,
+                           surfaceFormatInfo, false);
+  }
+
+
+  VUSwapchainKHR CreateSwapchain(const VkPhysicalDevice physicalDevice, const VkDevice device, const VkSwapchainCreateFlagsKHR flags,
+                                 const VkSurfaceKHR surface, const uint32_t desiredMinImageCount, const uint32_t imageArrayLayers,
+                                 const VkImageUsageFlags imageUsage, const VkSharingMode imageSharingMode, const uint32_t queueFamilyIndexCount,
+                                 const uint32_t* queueFamilyIndices, const VkCompositeAlphaFlagBitsKHR compositeAlpha,
+                                 const VkPresentModeKHR presentMode, const VkBool32 clipped, const VkSwapchainKHR oldSwapchain,
+                                 const VkExtent2D& fallbackExtent, const SurfaceFormatInfo& surfaceFormatInfo, const bool declarePresentMode)
+  {
     if (physicalDevice == VK_NULL_HANDLE || device == VK_NULL_HANDLE)
     {
       throw std::invalid_argument("physicalDevice and device can not be VK_NULL_HANDLE");
@@ -151,8 +165,9 @@ namespace Fsl::Vulkan::SwapchainKHRUtil
     swapchainCreateInfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
     swapchainCreateInfo.flags = flags;
     swapchainCreateInfo.surface = surface;
-    swapchainCreateInfo.minImageCount =
-      std::max(std::min(desiredMinImageCount, surfaceCapabilities.maxImageCount), surfaceCapabilities.minImageCount);
+    // A maxImageCount of zero means that there is no limit on the number of images, it is not a limit of zero
+    const uint32_t maxImageCount = surfaceCapabilities.maxImageCount != 0u ? surfaceCapabilities.maxImageCount : std::numeric_limits<uint32_t>::max();
+    swapchainCreateInfo.minImageCount = std::max(std::min(desiredMinImageCount, maxImageCount), surfaceCapabilities.minImageCount);
     swapchainCreateInfo.imageFormat = imageFormat;
     swapchainCreateInfo.imageColorSpace = imageColorSpace;
     swapchainCreateInfo.imageExtent = surfaceCapabilities.currentExtent;
@@ -193,6 +208,30 @@ namespace Fsl::Vulkan::SwapchainKHRUtil
     FSLLOG3_VERBOSE_IF(desiredMinImageCount < swapchainCreateInfo.minImageCount,
                        "CreateSwapchain minImageCount was upgraded to {} instead of {} due to device limits", swapchainCreateInfo.minImageCount,
                        desiredMinImageCount);
+
+#if defined(VK_KHR_swapchain_maintenance1) || defined(VK_EXT_swapchain_maintenance1)
+    // The one present mode the swapchain is created with, declared the way the swapchain maintenance1 extension asks for. The mode is
+    // the one that was settled on above, and a present mode is always compatible with itself.
+#if defined(VK_KHR_swapchain_maintenance1)
+    VkSwapchainPresentModesCreateInfoKHR presentModesCreateInfo{};
+    presentModesCreateInfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_PRESENT_MODES_CREATE_INFO_KHR;
+#else
+    VkSwapchainPresentModesCreateInfoEXT presentModesCreateInfo{};
+    presentModesCreateInfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_PRESENT_MODES_CREATE_INFO_EXT;
+#endif
+    if (declarePresentMode)
+    {
+      presentModesCreateInfo.pNext = swapchainCreateInfo.pNext;
+      presentModesCreateInfo.presentModeCount = 1;
+      presentModesCreateInfo.pPresentModes = &swapchainCreateInfo.presentMode;
+      swapchainCreateInfo.pNext = &presentModesCreateInfo;
+    }
+#else
+    if (declarePresentMode)
+    {
+      throw NotSupportedException("The Vulkan headers do not have the swapchain maintenance1 extension");
+    }
+#endif
 
     LogCreate(swapchainCreateInfo);
     return {device, swapchainCreateInfo};
