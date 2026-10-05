@@ -23,6 +23,7 @@
 
 #include <FslBase/UnitTest/Helper/TestFixtureFslBase.hpp>
 #include <FslDemoService/SystemStats/Impl/Adapter/SystemCpuTimesReader.hpp>
+#include <chrono>
 
 using namespace Fsl;
 
@@ -83,15 +84,19 @@ TEST_F(Test_SystemCpuTimesReader, TryRead_TheCountersOnlyGrow)
   SystemCpuTimes first;
   ASSERT_TRUE(SystemCpuTimesReader::TryRead(first));
 
-  // Use some CPU time, so this process has something to count
-  volatile uint64_t sum = 0;
-  for (uint64_t i = 0; i < 20000000u; ++i)
-  {
-    sum = sum + i;
-  }
-
+  // Use CPU time until this process has some to count. The counters of a process move in steps of the timer of the system (about 16
+  // milliseconds on Windows), so a fixed amount of work can be over before the first step and the counters still read zero.
   SystemCpuTimes second;
-  ASSERT_TRUE(SystemCpuTimesReader::TryRead(second));
+  const auto deadline = std::chrono::steady_clock::now() + std::chrono::seconds(10);
+  volatile uint64_t sum = 0;
+  do
+  {
+    for (uint64_t i = 0; i < 20000000u; ++i)
+    {
+      sum = sum + i;
+    }
+    ASSERT_TRUE(SystemCpuTimesReader::TryRead(second));
+  } while ((second.ProcessKernelTicks + second.ProcessUserTicks) == 0u && std::chrono::steady_clock::now() < deadline);
 
   // A system that is up has been idle and busy
   EXPECT_GT(first.SystemIdleTicks, 0u);
