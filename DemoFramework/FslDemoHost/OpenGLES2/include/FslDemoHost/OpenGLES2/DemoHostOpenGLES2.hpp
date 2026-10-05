@@ -48,6 +48,11 @@ namespace Fsl
   class DemoHostGLES2 : public EGLDemoHost
   {
   public:
+    DemoHostGLES2(const DemoHostGLES2&) = delete;
+    DemoHostGLES2& operator=(const DemoHostGLES2&) = delete;
+    DemoHostGLES2(DemoHostGLES2&&) = delete;
+    DemoHostGLES2& operator=(DemoHostGLES2&&) = delete;
+
     explicit DemoHostGLES2(const DemoHostConfig& demoHostConfig)
       : EGLDemoHost(demoHostConfig)
     {

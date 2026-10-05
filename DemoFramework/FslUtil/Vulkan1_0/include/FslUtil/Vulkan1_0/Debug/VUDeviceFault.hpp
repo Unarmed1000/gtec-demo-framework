@@ -91,7 +91,7 @@ namespace Fsl::Vulkan
 
     //! @brief Write the faults of the device to the log, call it when a Vulkan function returned VK_ERROR_DEVICE_LOST.
     //! @return the number of faults that were logged.
-    uint32_t LogFaults() const noexcept;
+    [[nodiscard]] uint32_t LogFaults() const noexcept;
   };
 }
 

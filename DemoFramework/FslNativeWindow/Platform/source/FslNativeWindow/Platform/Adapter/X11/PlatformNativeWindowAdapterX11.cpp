@@ -54,6 +54,7 @@
 #include <cassert>
 #include <cmath>
 #include <iostream>
+#include <utility>
 #include "X11PresentVSync.hpp"
 
 
@@ -103,7 +104,7 @@ namespace Fsl
 
     VirtualKey::Enum KeyToVirtualKey(XKeyEvent* kEvent)
     {
-      KeySym keyId = XLookupKeysym(kEvent, 0);
+      const KeySym keyId = XLookupKeysym(kEvent, 0);
 
       switch (keyId)
       {
@@ -262,7 +263,6 @@ namespace Fsl
       case XK_Print:
         return VirtualKey::PrintScreen;
       case XK_Pause:
-        return VirtualKey::ScrollLock;
       case XK_Scroll_Lock:
         return VirtualKey::ScrollLock;
       default:
@@ -281,7 +281,7 @@ namespace Fsl
         const auto currentSize = XRRConfigCurrentConfiguration(pScreenInfo, &currentRotation);
         int sizeCount = 0;
         XRRScreenSize* pSizes = XRRConfigSizes(pScreenInfo, &sizeCount);
-        if (currentSize <= sizeCount)
+        if (std::cmp_less_equal(currentSize, sizeCount))
         {
           found = true;
           rScreenSize = pSizes[currentSize];
@@ -550,7 +550,7 @@ namespace Fsl
     // FSLLOG3_VERBOSE3(_IF(xinput2Info.Available,
     //            "PlatformNativeWindowSystemAdapterX11| xinput2 version: " << xinput2Info.MajorVersion << "." << xinput2Info.MinorVersion);
 
-    auto eventQueue = setup.GetEventQueue().lock();
+    const auto eventQueue = setup.GetEventQueue().lock();
     if (eventQueue)
     {
       const NativeWindowEvent event = NativeWindowEventHelper::EncodeGamepadConfiguration(0);
@@ -577,7 +577,7 @@ namespace Fsl
     auto window = m_allocationFunction(nativeWindowSetup, PlatformNativeWindowParams(m_platformDisplay, m_visualId, m_extensionRREnabled),
                                        pPlatformCustomWindowAllocationParams);
 
-    auto ptr = std::dynamic_pointer_cast<PlatformNativeWindowAdapterX11>(window);
+    const auto ptr = std::dynamic_pointer_cast<PlatformNativeWindowAdapterX11>(window);
     if (!ptr)
     {
       throw NotSupportedException("Allocation function did not allocate a PlatformNativeWindowAdapterX11 as required");
@@ -592,7 +592,7 @@ namespace Fsl
   {
     const std::shared_ptr<PlatformNativeWindowAdapterX11> window = m_window.lock();
     VirtualKey::Enum keyCode = VirtualKey::Undefined;
-    std::shared_ptr<INativeWindowEventQueue> eventQueue = g_eventQueue.lock();
+    const std::shared_ptr<INativeWindowEventQueue> eventQueue = g_eventQueue.lock();
     PxPoint2 mousePosition;
     VirtualMouseButton mouseButton = VirtualMouseButton::Undefined;
     bool bQuit = false;
@@ -624,7 +624,7 @@ namespace Fsl
       case ClientMessage:
         if (window)
         {
-          if (static_cast<Atom>(event.xclient.data.l[0]) == window->WmDeleteWindow)
+          if (std::cmp_equal(event.xclient.data.l[0], window->WmDeleteWindow))
           {
             bQuit = true;
           }
@@ -729,7 +729,7 @@ namespace Fsl
   void PlatformNativeWindowSystemAdapterX11::SetCreatedWindow(const std::weak_ptr<PlatformNativeWindowAdapterX11>& window)
   {
     FSLLOG3_VERBOSE3("PlatformNativeWindowSystemAdapterX11| SetCreatedWindow");
-    auto currentWindow = m_window.lock();
+    const auto currentWindow = m_window.lock();
     if (currentWindow)
     {
       throw NotSupportedException("We only support one active window");
@@ -855,7 +855,7 @@ namespace Fsl
     m_presentVSync = std::make_unique<X11PresentVSync>(m_platformDisplay, m_platformWindow);
 
     {    // Post the activation message to let the framework know we are ready
-      std::shared_ptr<INativeWindowEventQueue> eventQueue = g_eventQueue.lock();
+      const std::shared_ptr<INativeWindowEventQueue> eventQueue = g_eventQueue.lock();
       if (eventQueue)
       {
         eventQueue->PostEvent(NativeWindowEventHelper::EncodeWindowActivationEvent(true));
@@ -892,7 +892,7 @@ namespace Fsl
       }
     }
 
-    PxPoint2 newSize(PxPoint2::Create(event.width, event.height));
+    const PxPoint2 newSize(PxPoint2::Create(event.width, event.height));
     if (newSize == m_cachedWindowSize)
     {
       return;
@@ -915,7 +915,7 @@ namespace Fsl
 
     auto* pSpecificEvent = reinterpret_cast<XRRScreenChangeNotifyEvent*>(pEvent);
 
-    Point2 newDPI(CalcDPI(pSpecificEvent->width, pSpecificEvent->mwidth), CalcDPI(pSpecificEvent->height, pSpecificEvent->mheight));
+    const Point2 newDPI(CalcDPI(pSpecificEvent->width, pSpecificEvent->mwidth), CalcDPI(pSpecificEvent->height, pSpecificEvent->mheight));
     if (newDPI == m_cachedScreenDPI)
     {
       return;

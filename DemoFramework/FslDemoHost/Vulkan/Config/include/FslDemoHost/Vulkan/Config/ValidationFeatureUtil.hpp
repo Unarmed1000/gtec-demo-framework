@@ -65,6 +65,7 @@ namespace Fsl::Vulkan
   public:
     ValidationLayerSettings(const ValidationLayerSettings&) = delete;
     ValidationLayerSettings& operator=(const ValidationLayerSettings&) = delete;
+    ~ValidationLayerSettings() = default;
 
     //! @param pNext the pNext chain to continue with after the layer settings
     ValidationLayerSettings(const ValidationFeatures& features, const void* const pNext) noexcept;

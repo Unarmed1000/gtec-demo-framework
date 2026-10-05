@@ -261,7 +261,8 @@ namespace Fsl
       return;
     }
     FSLLOG3_ERROR("The Vulkan device was lost, asking the driver why");
-    m_deviceFault.LogFaults();
+    // The number of faults is for a caller that wants it, the faults are in the log
+    static_cast<void>(m_deviceFault.LogFaults());
   }
 
   void DemoAppVulkan::SafeShutdown()

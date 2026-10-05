@@ -65,6 +65,7 @@ namespace Fsl::Vulkan
   public:
     HostDeviceExtensions(const HostDeviceExtensions&) = delete;
     HostDeviceExtensions& operator=(const HostDeviceExtensions&) = delete;
+    ~HostDeviceExtensions() = default;
 
     //! @brief Examine what the physical device supports.
     //! @param rExtensionRequests the device extensions to enable are appended to this.
