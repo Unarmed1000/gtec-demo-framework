@@ -42,10 +42,11 @@ class XmlClangTidyConfiguration(XmlBase):
     __AttribFileExtensions = "FileExtensions"
     __AttribClangRecipe = "ClangRecipe"
     __AttribClangTidyRecipe = "ClangTidyRecipe"
+    __ElementPlatform = "Platform"
 
     def __init__(self, log: Log, xmlElement: ET.Element) -> None:
         super().__init__(log, xmlElement)
-        self._CheckAttributes({self.__AttribFileExtensions, self.__AttribClangRecipe, self.__AttribClangTidyRecipe})
+        self._CheckAttributes({self.__AttribFileExtensions, self.__AttribClangRecipe, self.__AttribClangTidyRecipe}, {self.__ElementPlatform})
         fileExtensions = self._ReadAttrib(xmlElement, self.__AttribFileExtensions)
         self.FileExtensions = fileExtensions.split(";")
         self.ClangRecipe = self._ReadAttrib(xmlElement, self.__AttribClangRecipe)
@@ -54,7 +55,7 @@ class XmlClangTidyConfiguration(XmlBase):
 
     def __ReadPlatforms(self, log: Log, xmlElement: ET.Element) -> list[XmlClangTidyPlatform]:
         res: list[XmlClangTidyPlatform] = []
-        foundElements = xmlElement.findall("Platform")
+        foundElements = xmlElement.findall(self.__ElementPlatform)
         for element in foundElements:
             res.append(XmlClangTidyPlatform(log, element))
         return res

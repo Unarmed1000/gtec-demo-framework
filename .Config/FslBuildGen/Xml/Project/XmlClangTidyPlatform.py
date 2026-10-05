@@ -44,17 +44,20 @@ from FslBuildGen.Xml.XmlBase import XmlBase
 
 class XmlClangTidyPlatform(XmlBase):
     __AttribName = "Name"
+    __ElementCompiler = "Compiler"
+    __ElementDefines = "Defines"
+    __ElementStrictChecks = "StrictChecks"
 
     def __init__(self, log: Log, xmlElement: ET.Element) -> None:
         super().__init__(log, xmlElement)
-        self._CheckAttributes({self.__AttribName})
+        self._CheckAttributes({self.__AttribName}, {self.__ElementCompiler, self.__ElementDefines, self.__ElementStrictChecks})
         self.Name = self._ReadAttrib(xmlElement, self.__AttribName)
         self.Compiler = self.__TryReadCompiler(log, xmlElement)  # Optional[type: XmlClangTidyPlatformCompiler]
         self.Defines = self.__TryReadDefines(log, xmlElement)  # Optional[type: XmlClangTidyPlatformDefines]
         self.StrictChecks = self.__TryReadStrictChecks(log, xmlElement)  # Optional[type: XmlClangTidyPlatformStrictChecks]
 
     def __TryReadCompiler(self, log: Log, xmlElement: ET.Element) -> XmlClangTidyPlatformCompiler | None:
-        foundElements = xmlElement.findall("Compiler")
+        foundElements = xmlElement.findall(self.__ElementCompiler)
         if len(foundElements) > 1:
             raise XmlException2("There can only be one 'Compiler' element in a ClangTidyConfiguration.Platform")
         if len(foundElements) <= 0:
@@ -62,7 +65,7 @@ class XmlClangTidyPlatform(XmlBase):
         return XmlClangTidyPlatformCompiler(log, foundElements[0])
 
     def __TryReadDefines(self, log: Log, xmlElement: ET.Element) -> XmlClangTidyPlatformDefines | None:
-        foundElements = xmlElement.findall("Defines")
+        foundElements = xmlElement.findall(self.__ElementDefines)
         if len(foundElements) > 1:
             raise XmlException2("There can only be one 'Defines' element in a ClangTidyConfiguration.Platform")
         if len(foundElements) <= 0:
@@ -70,7 +73,7 @@ class XmlClangTidyPlatform(XmlBase):
         return XmlClangTidyPlatformDefines(log, foundElements[0])
 
     def __TryReadStrictChecks(self, log: Log, xmlElement: ET.Element) -> XmlClangTidyPlatformStrictChecks | None:
-        foundElements = xmlElement.findall("StrictChecks")
+        foundElements = xmlElement.findall(self.__ElementStrictChecks)
         if len(foundElements) > 1:
             raise XmlException2("There can only be one 'StrictChecks' element in a ClangTidyConfiguration.Platform")
         if len(foundElements) <= 0:

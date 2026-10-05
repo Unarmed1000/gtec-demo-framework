@@ -45,18 +45,81 @@ from FslBuildGen.Log import Log
 from FslBuildGen.ProjectId import ProjectId
 from FslBuildGen.Vars.VariableEnvironment import VariableEnvironment
 from FslBuildGen.Vars.VariableProcessor import VariableProcessor
-from FslBuildGen.Xml import FakeXmlElementFactory
+from FslBuildGen.Xml import FakeXmlElementFactory, XmlNameCheck
 from FslBuildGen.Xml.Exceptions import XmlException, XmlException2, XmlInvalidRootElement
 from FslBuildGen.Xml.Project.XmlBuildDocConfiguration import XmlBuildDocConfiguration
 from FslBuildGen.Xml.Project.XmlClangTidyConfiguration import XmlClangTidyConfiguration
 from FslBuildGen.Xml.Project.XmlCMakeConfiguration import XmlCMakeConfiguration
 from FslBuildGen.Xml.Project.XmlExperimentalPlatform import XmlExperimentalPlatform
-from FslBuildGen.Xml.Project.XmlGenFileSchema import LoadGenFileSchemaLocation
+from FslBuildGen.Xml.Project.XmlGenFileSchema import ElementGenFileSchema, LoadGenFileSchemaLocation
 from FslBuildGen.Xml.ToolConfig import LoadUtil
 from FslBuildGen.Xml.ToolConfig.XmlConfigFileAddNewProjectTemplatesRootDirectory import XmlConfigFileAddNewProjectTemplatesRootDirectory
 from FslBuildGen.Xml.ToolConfig.XmlConfigPackageConfiguration import XmlConfigPackageConfiguration
 from FslBuildGen.Xml.ToolConfig.XmlConfigPackageLocation import XmlConfigPackageLocation
 from FslBuildGen.Xml.XmlBase import XmlBase
+
+# A project file ('Project.gen'): the file of a project itself holds a 'Project' element, the file of a project that extends another
+# one an 'ExtendedProject' element, which names the directory of the project file it extends.
+#
+# An attribute or an element in a project file that is not read stops the load when the file is read: one error that lists every such
+# name of the file (XmlNameCheck.XmlUnknownNamesException). The file a project extends is a file of its own, with its own names.
+
+_g_elementProject = "Project"
+_g_elementExtendedProject = "ExtendedProject"
+_g_elementAddBasePackage = "AddBasePackage"
+_g_elementAddRootDirectory = "AddRootDirectory"
+_g_elementBuildDocConfiguration = "BuildDocConfiguration"
+_g_elementCMakeConfiguration = "CMakeConfiguration"
+_g_elementClangFormatConfiguration = "ClangFormatConfiguration"
+_g_elementDotnetFormatConfiguration = "DotnetFormatConfiguration"
+_g_elementClangTidyConfiguration = "ClangTidyConfiguration"
+_g_elementCompilerConfiguration = "CompilerConfiguration"
+_g_elementExperimental = "Experimental"
+
+_g_attribVersion = "Version"
+_g_attribName = "Name"
+_g_attribShortName = "ShortName"
+_g_attribToolConfigFile = "ToolConfigFile"
+_g_attribDefaultPackageLanguage = "DefaultPackageLanguage"
+_g_attribDefaultCompany = "DefaultCompany"
+_g_attribRequirePackageCreationYear = "RequirePackageCreationYear"
+_g_attribAllowExeDependency = "AllowExeDependency"
+_g_attribDefaultTemplate = "DefaultTemplate"
+
+# What the root element of a project file holds
+_g_rootElements = frozenset({_g_elementProject, _g_elementExtendedProject})
+# The elements that are read in an 'ExtendedProject'
+_g_extendedProjectElements = frozenset(
+    {
+        LoadUtil.ElementPackageConfiguration,
+        _g_elementAddBasePackage,
+        _g_elementAddRootDirectory,
+        LoadUtil.ElementAddNewProjectTemplatesRootDirectory,
+        _g_elementBuildDocConfiguration,
+        _g_elementClangFormatConfiguration,
+        _g_elementClangTidyConfiguration,
+        _g_elementCMakeConfiguration,
+        _g_elementCompilerConfiguration,
+        _g_elementExperimental,
+        ElementGenFileSchema,
+    }
+)
+# The elements that are read in a 'Project': the same and one more
+_g_projectElements = _g_extendedProjectElements | {_g_elementDotnetFormatConfiguration}
+# The 'Project' element has no reader of its own, so its attributes are named here
+_g_projectAttributes = frozenset(
+    {
+        _g_attribName,
+        _g_attribShortName,
+        _g_attribVersion,
+        _g_attribToolConfigFile,
+        _g_attribDefaultPackageLanguage,
+        _g_attribDefaultCompany,
+        _g_attribRequirePackageCreationYear,
+        _g_attribAllowExeDependency,
+        _g_attribDefaultTemplate,
+    }
+)
 
 
 class LocalInvalidValues:
@@ -149,9 +212,16 @@ class XmlExperimental(XmlBase):
     __AttribAllowDownloads = "AllowDownloads"
     __AttribDisableDownloadEnv = "DisableDownloadEnv"
 
+    __ElementDefaultThirdPartyInstallDirectory = "DefaultThirdPartyInstallDirectory"
+    __ElementDefaultThirdPartyInstallReadonlyCacheDirectory = "DefaultThirdPartyInstallReadonlyCacheDirectory"
+    __ElementPlatform = "Platform"
+
     def __init__(self, log: Log, xmlElement: ET.Element) -> None:
         super().__init__(log, xmlElement)
-        self._CheckAttributes({self.__AttribAllowDownloads, self.__AttribDisableDownloadEnv})
+        self._CheckAttributes(
+            {self.__AttribAllowDownloads, self.__AttribDisableDownloadEnv},
+            {self.__ElementDefaultThirdPartyInstallDirectory, self.__ElementDefaultThirdPartyInstallReadonlyCacheDirectory, self.__ElementPlatform},
+        )
         self.DefaultThirdPartyInstallDirectory = self.__TryLoadInstallDirectory(log, xmlElement)
         self.DefaultThirdPartyInstallReadonlyCacheDirectory: XmlExperimentalDefaultThirdPartyInstallReadonlyCacheDirectory | None = (
             self.__TryLoadReadonlyCacheDirectory(log, xmlElement)
@@ -169,20 +239,20 @@ class XmlExperimental(XmlBase):
         return None
 
     def __TryLoadInstallDirectory(self, log: Log, xmlElement: ET.Element) -> XmlExperimentalDefaultThirdPartyInstallDirectory | None:
-        extendedElement = xmlElement.find("DefaultThirdPartyInstallDirectory")
+        extendedElement = xmlElement.find(self.__ElementDefaultThirdPartyInstallDirectory)
         if extendedElement is None:
             return None
         return XmlExperimentalDefaultThirdPartyInstallDirectory(log, extendedElement)
 
     def __TryLoadReadonlyCacheDirectory(self, log: Log, xmlElement: ET.Element) -> XmlExperimentalDefaultThirdPartyInstallReadonlyCacheDirectory | None:
-        extendedElement = xmlElement.find("DefaultThirdPartyInstallReadonlyCacheDirectory")
+        extendedElement = xmlElement.find(self.__ElementDefaultThirdPartyInstallReadonlyCacheDirectory)
         if extendedElement is None:
             return None
         return XmlExperimentalDefaultThirdPartyInstallReadonlyCacheDirectory(log, extendedElement)
 
     def __TryLoadPlatforms(self, log: Log, xmlElement: ET.Element) -> dict[str, XmlExperimentalPlatform]:
         platformDict: dict[str, XmlExperimentalPlatform] = {}
-        platformElements = xmlElement.findall("Platform")
+        platformElements = xmlElement.findall(self.__ElementPlatform)
         if platformElements is not None and len(platformElements) > 0:
             for element in platformElements:
                 platform = XmlExperimentalPlatform(log, element)
@@ -214,7 +284,7 @@ def _LoadPackageConfigurations(log: Log, projectElem: ET.Element, filename: str)
 
 def _LoadAddBasePackage(log: Log, xmlElement: ET.Element, filename: str) -> list[XmlConfigFileAddBasePackage]:
     res = []
-    foundElements = xmlElement.findall("AddBasePackage")
+    foundElements = xmlElement.findall(_g_elementAddBasePackage)
     for foundElement in foundElements:
         res.append(XmlConfigFileAddBasePackage(log, foundElement))
     return res
@@ -222,19 +292,24 @@ def _LoadAddBasePackage(log: Log, xmlElement: ET.Element, filename: str) -> list
 
 def _LoadAddRootDirectory(log: Log, xmlElement: ET.Element, filename: str, projectId: ProjectId) -> list[XmlConfigFileAddRootDirectory]:
     res = []
-    foundElements = xmlElement.findall("AddRootDirectory")
+    foundElements = xmlElement.findall(_g_elementAddRootDirectory)
     for foundElement in foundElements:
         res.append(XmlConfigFileAddRootDirectory(log, foundElement, projectId))
-
-    if len(res) < 1:
-        raise XmlException(f"The file '{filename}' did not contain at least one AddRootDirectory element")
-
     return res
+
+
+def _CheckHasRootDirectory(rootDirectories: list[XmlConfigFileAddRootDirectory], filename: str) -> None:
+    """A project and an extended project have at least one root directory. This is looked at when every element of the project is
+    read, and after its unknown names: an 'AddRootDirectory' with a typing error is reported as the unknown name it is.
+    """
+    if len(rootDirectories) < 1:
+        XmlNameCheck.StopAtUnknownNames()
+        raise XmlException(f"The file '{filename}' did not contain at least one AddRootDirectory element")
 
 
 def _LoadBuildDocConfiguration(log: Log, xmlElement: ET.Element, filename: str) -> list[XmlBuildDocConfiguration]:
     res = []
-    foundElements = xmlElement.findall("BuildDocConfiguration")
+    foundElements = xmlElement.findall(_g_elementBuildDocConfiguration)
     for foundElement in foundElements:
         res.append(XmlBuildDocConfiguration(log, foundElement))
 
@@ -246,7 +321,7 @@ def _LoadBuildDocConfiguration(log: Log, xmlElement: ET.Element, filename: str) 
 
 def _LoadCMakeConfiguration(log: Log, xmlElement: ET.Element, filename: str) -> list[XmlCMakeConfiguration]:
     res = []
-    foundElements = xmlElement.findall("CMakeConfiguration")
+    foundElements = xmlElement.findall(_g_elementCMakeConfiguration)
     for foundElement in foundElements:
         res.append(XmlCMakeConfiguration(log, foundElement))
     return res
@@ -254,7 +329,7 @@ def _LoadCMakeConfiguration(log: Log, xmlElement: ET.Element, filename: str) -> 
 
 def _LoadClangFormatConfiguration(log: Log, xmlElement: ET.Element, filename: str) -> list[XmlClangFormatConfiguration]:
     res = []
-    foundElements = xmlElement.findall("ClangFormatConfiguration")
+    foundElements = xmlElement.findall(_g_elementClangFormatConfiguration)
     for foundElement in foundElements:
         res.append(XmlClangFormatConfiguration(log, foundElement))
     return res
@@ -262,7 +337,7 @@ def _LoadClangFormatConfiguration(log: Log, xmlElement: ET.Element, filename: st
 
 def _LoadDotnetFormatConfiguration(log: Log, xmlElement: ET.Element, filename: str) -> list[XmlDotnetFormatConfiguration]:
     res = []
-    foundElements = xmlElement.findall("DotnetFormatConfiguration")
+    foundElements = xmlElement.findall(_g_elementDotnetFormatConfiguration)
     for foundElement in foundElements:
         res.append(XmlDotnetFormatConfiguration(log, foundElement))
     return res
@@ -270,7 +345,7 @@ def _LoadDotnetFormatConfiguration(log: Log, xmlElement: ET.Element, filename: s
 
 def _LoadClangTidyConfiguration(log: Log, xmlElement: ET.Element, filename: str) -> list[XmlClangTidyConfiguration]:
     res = []
-    foundElements = xmlElement.findall("ClangTidyConfiguration")
+    foundElements = xmlElement.findall(_g_elementClangTidyConfiguration)
     for foundElement in foundElements:
         res.append(XmlClangTidyConfiguration(log, foundElement))
     return res
@@ -278,14 +353,14 @@ def _LoadClangTidyConfiguration(log: Log, xmlElement: ET.Element, filename: str)
 
 def _LoadCompilerConfiguration(log: Log, xmlElement: ET.Element, filename: str) -> list[XmlConfigCompilerConfiguration]:
     res = []
-    foundElements = xmlElement.findall("CompilerConfiguration")
+    foundElements = xmlElement.findall(_g_elementCompilerConfiguration)
     for foundElement in foundElements:
         res.append(XmlConfigCompilerConfiguration(log, foundElement))
     return res
 
 
 def _TryLoadExperimental(log: Log, xmlElement: ET.Element, filename: str) -> XmlExperimental | None:
-    extendedElement = xmlElement.find("Experimental")
+    extendedElement = xmlElement.find(_g_elementExperimental)
     if extendedElement is None:
         return None
     return XmlExperimental(log, extendedElement)
@@ -300,7 +375,9 @@ class XmlExtendedProject(XmlBase):
 
     def __init__(self, log: Log, xmlElement: ET.Element, filename: str) -> None:
         super().__init__(log, xmlElement)
-        self._CheckAttributes({self.__AttribName, self.__AttribShortName, self.__AttribVersion, self.__AttribParent, self.__AttribParentRoot})
+        self._CheckAttributes(
+            {self.__AttribName, self.__AttribShortName, self.__AttribVersion, self.__AttribParent, self.__AttribParentRoot}, _g_extendedProjectElements
+        )
         # raise Exception("ExtendedProject not implemented");
         self.ProjectName: str = self._ReadAttrib(xmlElement, self.__AttribName)
         self.ShortProjectName: str | None = self._TryReadAttrib(xmlElement, self.__AttribShortName)
@@ -314,8 +391,6 @@ class XmlExtendedProject(XmlBase):
 
         self.ProjectId = ProjectId(self.ProjectName, self.ShortProjectName)
 
-        variableProcessor = VariableProcessor(log)
-        self.AbsoluteParentConfigFilename = variableProcessor.ResolveAbsolutePathWithLeadingEnvironmentVariablePath(self.ParentConfigFilename)
         self.XmlPackageConfiguration: list[XmlConfigPackageConfiguration] = _LoadPackageConfigurations(log, xmlElement, filename)
         self.XmlBasePackages: list[XmlConfigFileAddBasePackage] = _LoadAddBasePackage(log, xmlElement, filename)
         self.XmlRootDirectories: list[XmlConfigFileAddRootDirectory] = _LoadAddRootDirectory(log, xmlElement, filename, self.ProjectId)
@@ -328,17 +403,21 @@ class XmlExtendedProject(XmlBase):
         self.XmlExperimental: XmlExperimental | None = _TryLoadExperimental(log, xmlElement, filename)
         # Where the schema versions of the gen files of this project are. It is not taken from the parent project
         self.GenFileSchemaLocation: GenFileSchemaLocation = LoadGenFileSchemaLocation(log, xmlElement, filename, self.RootDirectory)
+        _CheckHasRootDirectory(self.XmlRootDirectories, filename)
+        # The file of the project this one extends is looked for when the elements of this file are read: what this file holds does
+        # not depend on where the other one is.
+        variableProcessor = VariableProcessor(log)
+        self.AbsoluteParentConfigFilename = variableProcessor.ResolveAbsolutePathWithLeadingEnvironmentVariablePath(self.ParentConfigFilename)
 
 
 class XmlProjectRootConfigFile(XmlBase):
-    __AttribVersion = "Version"
-
     def __init__(self, log: Log, filename: str) -> None:
-        xmlElement = self.__LoadXml(log, filename)
-        super().__init__(log, xmlElement)
-        self._CheckAttributes({self.__AttribVersion})
+        with XmlNameCheck.ReadFile(filename):
+            xmlElement = self.__LoadXml(log, filename)
+            super().__init__(log, xmlElement)
+            self.__LoadFromXml(log, xmlElement, filename)
 
-        self.__LoadFromXml(log, xmlElement, filename)
+        # After the names: a 'DefaultThirdPartyInstallDirectory' element with a typing error is reported as the unknown name it is
         if self.XmlExperimental is not None and self.XmlExperimental.DefaultThirdPartyInstallDirectory is None:
             raise Exception("DefaultThirdPartyInstallDirectory was not defined")
 
@@ -375,26 +454,32 @@ class XmlProjectRootConfigFile(XmlBase):
         self.DefaultTemplate: str = MagicStrings.VSDefaultCPPTemplate
         self.ExtendedProject: list[XmlExtendedProject] = []
         if xmlElement is not None:
-            extendedElement = xmlElement.find("ExtendedProject") if canExtend else None
+            # The root of the file that is being read: this file or the file of a project it extends
+            XmlNameCheck.CheckRoot(xmlElement, {_g_attribVersion}, _g_rootElements)
+            extendedElement = xmlElement.find(_g_elementExtendedProject) if canExtend else None
             if extendedElement is None:
                 rootDirectory = IOUtil.GetDirectoryName(filename)
                 variableEnvironment = VariableEnvironment(self.Log)
                 variableEnvironment.Set("PROJECT_ROOT", rootDirectory)
                 variableProcessor = VariableProcessor(self.Log, variableEnvironment)
-                self.Version = self._ReadAttrib(xmlElement, "Version")
+                self.Version = self._ReadAttrib(xmlElement, _g_attribVersion)
                 self.RootDirectory = rootDirectory
-                projectElem: ET.Element = XmlBase._GetElement(self, xmlElement, "Project")
-                self.ProjectName = self._ReadAttrib(projectElem, "Name")
-                self.ShortProjectName = self._TryReadAttrib(projectElem, "ShortName")
+                if xmlElement.find(_g_elementProject) is None:
+                    # A 'Project' element with a typing error is reported as the unknown name it is
+                    XmlNameCheck.StopAtUnknownNames()
+                projectElem: ET.Element = XmlBase._GetElement(self, xmlElement, _g_elementProject)
+                XmlNameCheck.CheckNames(projectElem, _g_projectAttributes, _g_projectElements)
+                self.ProjectName = self._ReadAttrib(projectElem, _g_attribName)
+                self.ShortProjectName = self._TryReadAttrib(projectElem, _g_attribShortName)
                 self.ProjectId = ProjectId(self.ProjectName, self.ShortProjectName)
-                self.ProjectVersion = self._ReadAttrib(projectElem, "Version", "1.0.0.0")
-                toolConfigFilePath: str = self._ReadAttrib(projectElem, "ToolConfigFile")
+                self.ProjectVersion = self._ReadAttrib(projectElem, _g_attribVersion, "1.0.0.0")
+                toolConfigFilePath: str = self._ReadAttrib(projectElem, _g_attribToolConfigFile)
                 self.DefaultPackageLanguage = self.__GetDefaultPackageLanguage(projectElem)
-                self.DefaultCompany = self._ReadAttrib(projectElem, "DefaultCompany")
+                self.DefaultCompany = self._ReadAttrib(projectElem, _g_attribDefaultCompany)
                 # if this is set to true each package is required to contain a 'CreationYear=""' attribute
-                self.RequirePackageCreationYear = self._ReadBoolAttrib(projectElem, "RequirePackageCreationYear", False)
-                self.AllowExeDependency = self._ReadBoolAttrib(projectElem, "AllowExeDependency", False)
-                self.ToolConfigFile = variableProcessor.ResolvePathToAbsolute(toolConfigFilePath, self.XMLElement)
+                self.RequirePackageCreationYear = self._ReadBoolAttrib(projectElem, _g_attribRequirePackageCreationYear, False)
+                self.AllowExeDependency = self._ReadBoolAttrib(projectElem, _g_attribAllowExeDependency, False)
+                self.DefaultTemplate = self._ReadAttrib(projectElem, _g_attribDefaultTemplate, MagicStrings.VSDefaultCPPTemplate)
                 self.XmlPackageConfiguration = _LoadPackageConfigurations(log, projectElem, filename)
                 self.XmlBasePackages = _LoadAddBasePackage(log, projectElem, filename)
                 self.XmlRootDirectories = _LoadAddRootDirectory(log, projectElem, filename, self.ProjectId)
@@ -408,14 +493,19 @@ class XmlProjectRootConfigFile(XmlBase):
                 self.XmlExperimental = _TryLoadExperimental(log, projectElem, filename)
                 # Where the schema versions of the gen files of the root project are, an extended project has its own
                 self.GenFileSchemaLocation: GenFileSchemaLocation = LoadGenFileSchemaLocation(log, projectElem, filename, rootDirectory)
+                _CheckHasRootDirectory(self.XmlRootDirectories, filename)
+                # The tool config file is looked for when the elements of the file are read: what the file holds does not depend on
+                # where the tool config file is.
+                self.ToolConfigFile = variableProcessor.ResolvePathToAbsolute(toolConfigFilePath, self.XMLElement)
                 self.SourceFileName = filename
-                self.DefaultTemplate = self._ReadAttrib(projectElem, "DefaultTemplate", MagicStrings.VSDefaultCPPTemplate)
             else:
                 # Do something with the extended element
                 extendedProject = XmlExtendedProject(log, extendedElement, filename)
                 parentFileName = extendedProject.AbsoluteParentConfigFilename
-                parentElem = self.__LoadXml(log, parentFileName)
-                self.__LoadFromXml(log, parentElem, parentFileName, True)  # True to allow multiple extensions
+                # The file of the project that is extended is a file of its own: its unknown names are the ones of that file
+                with XmlNameCheck.ReadFile(parentFileName):
+                    parentElem = self.__LoadXml(log, parentFileName)
+                    self.__LoadFromXml(log, parentElem, parentFileName, True)  # True to allow multiple extensions
                 self.ExtendedProject.append(extendedProject)
                 self.__ApplyExtended(self.XmlPackageConfiguration, extendedProject.XmlPackageConfiguration, True)
                 self.__ApplyExtended(self.XmlRootDirectories, extendedProject.XmlRootDirectories, False)
@@ -447,7 +537,7 @@ class XmlProjectRootConfigFile(XmlBase):
             dst.Merge(src)
 
     def __GetDefaultPackageLanguage(self, xmlElement: ET.Element) -> PackageLanguage:
-        defaultPackageLanguage = self._ReadAttrib(xmlElement, "DefaultPackageLanguage", "C++")
+        defaultPackageLanguage = self._ReadAttrib(xmlElement, _g_attribDefaultPackageLanguage, "C++")
         return PackageLanguage.FromString(defaultPackageLanguage)
 
     # TODO: deal with the dynamic types

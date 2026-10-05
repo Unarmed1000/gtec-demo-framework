@@ -41,10 +41,11 @@ from FslBuildGen.Xml.XmlBase import XmlBase
 class XmlConfigPackageConfiguration(XmlBase):
     __AttribName = "Name"
     __AttribPreload = "Preload"
+    __ElementPackageLocation = "PackageLocation"
 
     def __init__(self, log: Log, xmlElement: ET.Element, sourceFile: str) -> None:
         super().__init__(log, xmlElement)
-        self._CheckAttributes({self.__AttribName, self.__AttribPreload})
+        self._CheckAttributes({self.__AttribName, self.__AttribPreload}, {self.__ElementPackageLocation})
         self.Name = self._ReadAttrib(xmlElement, self.__AttribName)
         self.Preload = self._ReadBoolAttrib(xmlElement, self.__AttribPreload, False)
         self.Locations: list[XmlConfigPackageLocation] = self.__LoadLocations(log, xmlElement)
@@ -53,7 +54,7 @@ class XmlConfigPackageConfiguration(XmlBase):
 
     def __LoadLocations(self, log: Log, xmlElement: ET.Element) -> list[XmlConfigPackageLocation]:
         res = []
-        foundElements = xmlElement.findall("PackageLocation")
+        foundElements = xmlElement.findall(self.__ElementPackageLocation)
         for foundElement in foundElements:
             res.append(XmlConfigPackageLocation(log, foundElement))
         return res

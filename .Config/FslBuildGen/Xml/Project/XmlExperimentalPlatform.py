@@ -42,16 +42,17 @@ from FslBuildGen.Xml.XmlBase import XmlBase
 
 class XmlExperimentalPlatform(XmlBase):
     __AttribName = "Name"
+    __ElementRecipesDefaultValue = "Recipes.DefaultValue"
 
     def __init__(self, log: Log, xmlElement: ET.Element) -> None:
         super().__init__(log, xmlElement)
-        self._CheckAttributes({self.__AttribName})
+        self._CheckAttributes({self.__AttribName}, {self.__ElementRecipesDefaultValue})
         self.Name = self._ReadAttrib(xmlElement, self.__AttribName)
         self.Id = self.Name.lower()
         self.Recipes = self.__ReadRecipes(log, xmlElement)
 
     def __ReadRecipes(self, log: Log, xmlElement: ET.Element) -> XmlExperimentalPlatformRecipes_DefaultValue | None:
-        foundElements = xmlElement.findall("Recipes.DefaultValue")
+        foundElements = xmlElement.findall(self.__ElementRecipesDefaultValue)
         if foundElements is None or len(foundElements) <= 0:
             return None
         if len(foundElements) > 1:

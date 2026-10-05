@@ -36,10 +36,14 @@ from FslBuildGen.Log import Log
 from FslBuildGen.Xml.ToolConfig.XmlConfigFileAddNewProjectTemplatesRootDirectory import XmlConfigFileAddNewProjectTemplatesRootDirectory
 from FslBuildGen.Xml.ToolConfig.XmlConfigPackageConfiguration import XmlConfigPackageConfiguration
 
+# The elements that are read here, for the element lists of the readers that call this
+ElementAddNewProjectTemplatesRootDirectory = "AddNewProjectTemplatesRootDirectory"
+ElementPackageConfiguration = "PackageConfiguration"
+
 
 def LoadAddNewProjectTemplatesRootDirectory(log: Log, xmlElement: ET.Element, filename: str) -> list[XmlConfigFileAddNewProjectTemplatesRootDirectory]:
     res = []
-    foundElements = xmlElement.findall("AddNewProjectTemplatesRootDirectory")
+    foundElements = xmlElement.findall(ElementAddNewProjectTemplatesRootDirectory)
     for foundElement in foundElements:
         res.append(XmlConfigFileAddNewProjectTemplatesRootDirectory(log, foundElement, filename))
     return res
@@ -47,7 +51,7 @@ def LoadAddNewProjectTemplatesRootDirectory(log: Log, xmlElement: ET.Element, fi
 
 def XMLLoadPackageConfiguration(log: Log, xmlElement: ET.Element, sourceFile: str) -> list[XmlConfigPackageConfiguration]:
     res = []
-    foundElements = xmlElement.findall("PackageConfiguration")
+    foundElements = xmlElement.findall(ElementPackageConfiguration)
     for foundElement in foundElements:
         res.append(XmlConfigPackageConfiguration(log, foundElement, sourceFile))
     return res

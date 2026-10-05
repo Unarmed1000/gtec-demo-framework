@@ -49,7 +49,9 @@ from FslBuildGen.Vars.VariableProcessor import VariableProcessor
 from FslBuildGen.Xml.Exceptions import XmlException
 from FslBuildGen.Xml.XmlBase import XmlBase
 
-_g_elementName = "GenFileSchema"
+# The element, for the element lists of the readers of a project
+ElementGenFileSchema = "GenFileSchema"
+_g_elementName = ElementGenFileSchema
 _g_projectRootVariableName = "PROJECT_ROOT"
 
 # The characters of a URI scheme after its first letter

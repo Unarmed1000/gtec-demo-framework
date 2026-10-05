@@ -23,7 +23,7 @@
   </xs:complexType>
 
 
-  <xs:complexType name="_T_AddRootDirectory">
+  <xs:complexType name="_T_AddTemplateImportDirectory">
     <xs:annotation>
       <xs:documentation>Add a root directory</xs:documentation>
     </xs:annotation>
@@ -31,9 +31,9 @@
   </xs:complexType>
 
 
-  <xs:complexType name="_T_AddTemplateImportDirectory">
+  <xs:complexType name="_T_AddNewProjectTemplatesRootDirectory">
     <xs:annotation>
-      <xs:documentation>Add a root directory</xs:documentation>
+      <xs:documentation>Add a directory that contains the templates FslBuildNew creates new projects from</xs:documentation>
     </xs:annotation>
     <xs:attribute name="Name" type="xs:string" use="required"/>
   </xs:complexType>
@@ -69,32 +69,6 @@
     <xs:group ref="_G_ContentBuilderConfigurationCommandList"/>
   </xs:complexType>
   
-
-  <xs:complexType name="_T_PackageConfiguration">
-    <xs:annotation>
-      <xs:documentation>Add a configuration</xs:documentation>
-    </xs:annotation>
-    <xs:group ref="_G_PackageConfigurationCommandList"/>
-    <xs:attribute name="Name" type="xs:string" use="required"/>
-  </xs:complexType>
-
-
-  <xs:complexType name="_T_PackageLocation">
-    <xs:annotation>
-      <xs:documentation>Add package location</xs:documentation>
-    </xs:annotation>
-    <xs:group ref="_G_PackageLocationCommandList"/>
-    <xs:attribute name="Name" type="xs:string" use="required"/>
-  </xs:complexType>
-
-
-  <xs:complexType name="_T_BlackList">
-    <xs:annotation>
-      <xs:documentation>Blacklist the given package</xs:documentation>
-    </xs:annotation>
-    <xs:attribute name="Name" type="xs:string" use="required"/>
-  </xs:complexType>
-
 
   <xs:group name="_G_ContentBuilder_AddExtension">
     <xs:choice>
@@ -145,13 +119,6 @@
   </xs:group>
 
 
-  <xs:group name="_G_AddRootDirectory">
-    <xs:choice>
-      <xs:element name="AddRootDirectory" type="_T_AddRootDirectory"/>
-    </xs:choice>
-  </xs:group>
-
-
   <xs:group name="_G_AddTemplateImportDirectory">
     <xs:choice>
       <xs:element name="AddTemplateImportDirectory" type="_T_AddTemplateImportDirectory"/>
@@ -159,48 +126,19 @@
   </xs:group>
   
 
-  <xs:group name="_G_PackageConfiguration">
+  <xs:group name="_G_AddNewProjectTemplatesRootDirectory">
     <xs:choice>
-      <xs:element name="PackageConfiguration" type="_T_PackageConfiguration"/>
+      <xs:element name="AddNewProjectTemplatesRootDirectory" type="_T_AddNewProjectTemplatesRootDirectory"/>
     </xs:choice>
   </xs:group>
 
-
-  <xs:group name="_G_PackageLocation">
-    <xs:choice>
-      <xs:element name="PackageLocation" type="_T_PackageLocation"/>
-    </xs:choice>
-  </xs:group>
-
-
-  <xs:group name="_G_BlackList">
-    <xs:choice>
-      <xs:element name="BlackList" type="_T_BlackList"/>
-    </xs:choice>
-  </xs:group>
- 
-
-  <xs:group name="_G_PackageLocationCommandList">
-    <xs:sequence>
-      <xs:group ref="_G_BlackList" minOccurs="0" maxOccurs="unbounded"/>
-    </xs:sequence>
-  </xs:group>
-
-
-  <xs:group name="_G_PackageConfigurationCommandList">
-    <xs:sequence>
-      <xs:group ref="_G_PackageLocation" minOccurs="0" maxOccurs="unbounded"/>
-    </xs:sequence>
-  </xs:group>
-  
 
   <xs:group name="_G_CommandList">
     <xs:sequence>
       <xs:group ref="_G_GenFile" minOccurs="0" maxOccurs="1"/>
       <xs:group ref="_G_TemplateFolder" minOccurs="0" maxOccurs="1"/>
-      <xs:group ref="_G_AddRootDirectory" minOccurs="0" maxOccurs="unbounded"/>
       <xs:group ref="_G_AddTemplateImportDirectory" minOccurs="0" maxOccurs="unbounded"/>
-      <xs:group ref="_G_PackageConfiguration" minOccurs="0" maxOccurs="unbounded"/>
+      <xs:group ref="_G_AddNewProjectTemplatesRootDirectory" minOccurs="0" maxOccurs="unbounded"/>
       <xs:group ref="_G_ContentBuilderConfiguration" minOccurs="0" maxOccurs="1"/>
     </xs:sequence>
   </xs:group>

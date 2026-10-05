@@ -39,14 +39,16 @@ from FslBuildGen.Xml.XmlBase import XmlBase
 
 
 class XmlBuildDocConfiguration(XmlBase):
+    __ElementRequirement = "Requirement"
+
     def __init__(self, log: Log, xmlElement: ET.Element) -> None:
         super().__init__(log, xmlElement)
-        self._CheckAttributes(set())
+        self._CheckAttributes(set(), {self.__ElementRequirement})
         self.Requirements = self.__ReadRequirements(log, xmlElement)
 
     def __ReadRequirements(self, log: Log, xmlElement: ET.Element) -> list[XmlBuildDocRequirement]:
         res: list[XmlBuildDocRequirement] = []
-        foundElements = xmlElement.findall("Requirement")
+        foundElements = xmlElement.findall(self.__ElementRequirement)
         for element in foundElements:
             res.append(XmlBuildDocRequirement(log, element))
         return res

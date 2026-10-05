@@ -43,10 +43,13 @@ class XmlCMakeConfiguration(XmlBase):
     __AttribNinjaRecipe = "NinjaRecipe"
     __AttribDefaultInstallPrefix = "DefaultInstallPrefix"
     __AttribMinVersion = "MinVersion"
+    __ElementPlatform = "Platform"
 
     def __init__(self, log: Log, xmlElement: ET.Element) -> None:
         super().__init__(log, xmlElement)
-        self._CheckAttributes({self.__AttribDefaultBuildDir, self.__AttribNinjaRecipe, self.__AttribDefaultInstallPrefix, self.__AttribMinVersion})
+        self._CheckAttributes(
+            {self.__AttribDefaultBuildDir, self.__AttribNinjaRecipe, self.__AttribDefaultInstallPrefix, self.__AttribMinVersion}, {self.__ElementPlatform}
+        )
         self.DefaultBuildDir = self._ReadAttrib(xmlElement, self.__AttribDefaultBuildDir)
         self.NinjaRecipePackageName = self._ReadAttrib(xmlElement, self.__AttribNinjaRecipe)
         self.DefaultInstallPrefix = self._TryReadAttrib(xmlElement, self.__AttribDefaultInstallPrefix)
@@ -55,7 +58,7 @@ class XmlCMakeConfiguration(XmlBase):
 
     def __ReadPlatforms(self, log: Log, xmlElement: ET.Element) -> list[XmlCMakePlatform]:
         res: list[XmlCMakePlatform] = []
-        foundElements = xmlElement.findall("Platform")
+        foundElements = xmlElement.findall(self.__ElementPlatform)
         for element in foundElements:
             res.append(XmlCMakePlatform(log, element))
         return res

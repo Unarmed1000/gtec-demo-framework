@@ -37,7 +37,7 @@ import xml.etree.ElementTree as ET
 
 from FslBuildGen.Exceptions import FileNotFoundException
 from FslBuildGen.Log import Log
-from FslBuildGen.Xml import FakeXmlElementFactory
+from FslBuildGen.Xml import FakeXmlElementFactory, XmlNameCheck
 from FslBuildGen.Xml.Exceptions import XmlException, XmlException2, XmlInvalidRootElement
 from FslBuildGen.Xml.Project.XmlBuildDocConfiguration import XmlBuildDocConfiguration
 from FslBuildGen.Xml.Project.XmlClangTidyConfiguration import XmlClangTidyConfiguration
@@ -102,10 +102,14 @@ class XmlConfigContentBuilder(XmlBase):
     __AttribParameters = "Parameters"
     __AttribFeatureRequirements = "FeatureRequirements"
     __AttribDescription = "Description"
+    __ElementAddExtension = "AddExtension"
 
     def __init__(self, log: Log, xmlElement: ET.Element) -> None:
         super().__init__(log, xmlElement)
-        self._CheckAttributes({self.__AttribName, self.__AttribExecutable, self.__AttribParameters, self.__AttribFeatureRequirements, self.__AttribDescription})
+        self._CheckAttributes(
+            {self.__AttribName, self.__AttribExecutable, self.__AttribParameters, self.__AttribFeatureRequirements, self.__AttribDescription},
+            {self.__ElementAddExtension},
+        )
         self.Name: str = self._ReadAttrib(xmlElement, self.__AttribName)
         self.Executable: str = self._ReadAttrib(xmlElement, self.__AttribExecutable)
         self.Parameters: str = self._ReadAttrib(xmlElement, self.__AttribParameters)
@@ -115,21 +119,23 @@ class XmlConfigContentBuilder(XmlBase):
 
     def __LoadDefaultExtensions(self, log: Log, xmlElement: ET.Element) -> list[XmlConfigContentBuilderAddExtension]:
         res = []
-        foundElements = xmlElement.findall("AddExtension")
+        foundElements = xmlElement.findall(self.__ElementAddExtension)
         for foundElement in foundElements:
             res.append(XmlConfigContentBuilderAddExtension(log, foundElement))
         return res
 
 
 class XmlConfigContentBuilderConfiguration(XmlBase):
+    __ElementContentBuilder = "ContentBuilder"
+
     def __init__(self, log: Log, xmlElement: ET.Element) -> None:
         super().__init__(log, xmlElement)
-        self._CheckAttributes(set())
+        self._CheckAttributes(set(), {self.__ElementContentBuilder})
         self.ContentBuilders: list[XmlConfigContentBuilder] = self.__LoadContentBuilders(log, xmlElement)
 
     def __LoadContentBuilders(self, log: Log, xmlElement: ET.Element) -> list[XmlConfigContentBuilder]:
         res = []
-        foundElements = xmlElement.findall("ContentBuilder")
+        foundElements = xmlElement.findall(self.__ElementContentBuilder)
         for foundElement in foundElements:
             res.append(XmlConfigContentBuilder(log, foundElement))
         return res
@@ -142,7 +148,26 @@ class FakeXmlConfigContentBuilderConfiguration(XmlConfigContentBuilderConfigurat
 
 
 class XmlToolConfigFile(XmlBase):
+    """The tool config file of a project ('FslBuildGen.xml'). An attribute or an element in it that is not read stops the load when
+    the file is read: one error that lists every such name of the file (XmlNameCheck.XmlUnknownNamesException).
+    """
+
     __AttribVersion = "Version"
+    __ElementGenFile = "GenFile"
+    __ElementTemplateFolder = "TemplateFolder"
+    __ElementAddTemplateImportDirectory = "AddTemplateImportDirectory"
+    __ElementContentBuilderConfiguration = "ContentBuilderConfiguration"
+    # The elements of the root element. The two a project file took over (PackageConfiguration, AddRootDirectory) are none of them: the
+    # reader stops at them with what it says about them.
+    __ValidElements = frozenset(
+        {
+            __ElementGenFile,
+            __ElementTemplateFolder,
+            __ElementAddTemplateImportDirectory,
+            LoadUtil.ElementAddNewProjectTemplatesRootDirectory,
+            __ElementContentBuilderConfiguration,
+        }
+    )
 
     def __init__(self, log: Log, filename: str, projectRootConfig: XmlProjectRootConfigFile) -> None:
         if projectRootConfig is None:
@@ -150,43 +175,51 @@ class XmlToolConfigFile(XmlBase):
         if not os.path.isfile(filename):
             raise FileNotFoundException("Could not locate config file %s", filename)
 
-        tree = ET.parse(filename)
-        elem = tree.getroot()
-        if elem.tag != "FslBuildGenConfig":
-            raise XmlInvalidRootElement("The file did not contain the expected root tag 'FslBuildGenConfig'")
+        with XmlNameCheck.ReadFile(filename):
+            tree = ET.parse(filename)
+            elem = tree.getroot()
+            if elem.tag != "FslBuildGenConfig":
+                raise XmlInvalidRootElement("The file did not contain the expected root tag 'FslBuildGenConfig'")
 
-        super().__init__(log, elem)
-        # self._CheckAttributes({self.__AttribVersion})
-        currentVersion = "2"
-        fileVersion = self._ReadAttrib(elem, self.__AttribVersion)
-        if fileVersion != currentVersion:
-            raise XmlException(f"The file was not of the expected version {currentVersion}")
+            super().__init__(log, elem)
+            XmlNameCheck.CheckRoot(elem, {self.__AttribVersion}, self.__ValidElements)
+            currentVersion = "2"
+            fileVersion = self._ReadAttrib(elem, self.__AttribVersion)
+            if fileVersion != currentVersion:
+                raise XmlException(f"The file was not of the expected version {currentVersion}")
 
-        # In V2 we do not support local AddRootDirectory elements, we use the ones in ProjectRootConfig
-        rootDirs = projectRootConfig.XmlRootDirectories
-        if len(rootDirs) < 1:
-            raise XmlException("The file did not contain at least one AddRootDirectory element")
+            # In V2 we do not support local AddRootDirectory elements, we use the ones in ProjectRootConfig
+            rootDirs = projectRootConfig.XmlRootDirectories
+            if len(rootDirs) < 1:
+                raise XmlException("The file did not contain at least one AddRootDirectory element")
 
-        templateImportDirectory = self.__LoadAddTemplateImportDirectory(elem)
+            templateImportDirectory = self.__LoadAddTemplateImportDirectory(elem)
 
-        self.__CheckForLegacyElements(elem, filename)
+            self.__CheckForLegacyElements(elem, filename)
 
-        # In V2 we do not support local PackageConfiguration elements, we use the ones in ProjectRootConfig
-        xmlPackageConfigurations: list[XmlConfigPackageConfiguration] = projectRootConfig.XmlPackageConfiguration
-        if len(xmlPackageConfigurations) < 1:
-            if projectRootConfig.SourceFileName is None:
-                raise XmlException(f"The file '{filename}' did not contain at least one PackageConfiguration element")
-            else:
-                raise XmlException(f"The file '{filename}' and {projectRootConfig.SourceFileName} did not contain at least one PackageConfiguration element")
+            # In V2 we do not support local PackageConfiguration elements, we use the ones in ProjectRootConfig
+            xmlPackageConfigurations: list[XmlConfigPackageConfiguration] = projectRootConfig.XmlPackageConfiguration
+            if len(xmlPackageConfigurations) < 1:
+                if projectRootConfig.SourceFileName is None:
+                    raise XmlException(f"The file '{filename}' did not contain at least one PackageConfiguration element")
+                else:
+                    raise XmlException(
+                        f"The file '{filename}' and {projectRootConfig.SourceFileName} did not contain at least one PackageConfiguration element"
+                    )
 
-        newProjectTemplatesRootDirectories = LoadUtil.LoadAddNewProjectTemplatesRootDirectory(log, elem, filename)
-        newProjectTemplatesRootDirectories = self.__MergeNewProjectTemplatesRootDirectories(
-            newProjectTemplatesRootDirectories, projectRootConfig.XmlNewProjectTemplatesRootDirectories
-        )
+            newProjectTemplatesRootDirectories = LoadUtil.LoadAddNewProjectTemplatesRootDirectory(log, elem, filename)
+            newProjectTemplatesRootDirectories = self.__MergeNewProjectTemplatesRootDirectories(
+                newProjectTemplatesRootDirectories, projectRootConfig.XmlNewProjectTemplatesRootDirectories
+            )
 
-        xmlContentBuilderConfiguration = self.__LoadContentBuilderConfiguration(elem)
+            xmlContentBuilderConfiguration = self.__LoadContentBuilderConfiguration(elem)
 
-        xmlConfigFileTemplateFolder = self.__LoadTemplateFolder(elem)
+            xmlConfigFileTemplateFolder = self.__TryLoadTemplateFolder(elem)
+            xmlConfigFileGenFile = self.__TryLoadGenFileName(elem)
+
+        # After the names: a 'TemplateFolder' or 'GenFile' element with a typing error is reported as the unknown name it is
+        if xmlConfigFileTemplateFolder is None:
+            raise XmlException2("Could not locate the TemplateFolder element")
 
         self.Version: int = int(fileVersion)
         self.RootDirectories: list[XmlConfigFileAddRootDirectory] = rootDirs
@@ -194,7 +227,9 @@ class XmlToolConfigFile(XmlBase):
         self.PackageConfiguration: dict[str, XmlConfigPackageConfiguration] = self.__ResolvePackageConfiguration(xmlPackageConfigurations)
         self.NewProjectTemplateRootDirectories: list[XmlConfigFileAddNewProjectTemplatesRootDirectory] = newProjectTemplatesRootDirectories
         self.TemplateFolder: XmlConfigFileTemplateFolder = xmlConfigFileTemplateFolder
-        self.GenFileName: XmlConfigFileGenFile = self.__LoadGenFileName(elem)
+        if xmlConfigFileGenFile is None:
+            raise XmlException2("Could not locate the GenFile element")
+        self.GenFileName: XmlConfigFileGenFile = xmlConfigFileGenFile
         self.ContentBuilderConfiguration: XmlConfigContentBuilderConfiguration = xmlContentBuilderConfiguration
         self.BuildDocConfiguration: list[XmlBuildDocConfiguration] = projectRootConfig.XmlBuildDocConfiguration
         self.ClangFormatConfiguration: list[XmlClangFormatConfiguration] = projectRootConfig.XmlClangFormatConfiguration
@@ -253,27 +288,23 @@ class XmlToolConfigFile(XmlBase):
     def __ResolveExperimental(self, xmlExperimental: XmlExperimental | None) -> XmlExperimental | None:
         return xmlExperimental
 
-    def __LoadTemplateFolder(self, xmlElement: ET.Element) -> XmlConfigFileTemplateFolder:
-        foundElement = xmlElement.find("TemplateFolder")
-        if foundElement is None:
-            raise XmlException2("Could not locate the TemplateFolder element")
-        return XmlConfigFileTemplateFolder(self.Log, foundElement)
+    def __TryLoadTemplateFolder(self, xmlElement: ET.Element) -> XmlConfigFileTemplateFolder | None:
+        foundElement = xmlElement.find(self.__ElementTemplateFolder)
+        return None if foundElement is None else XmlConfigFileTemplateFolder(self.Log, foundElement)
 
-    def __LoadGenFileName(self, xmlElement: ET.Element) -> XmlConfigFileGenFile:
-        foundElement = xmlElement.find("GenFile")
-        if foundElement is None:
-            raise XmlException2("Could not locate the GenFile element")
-        return XmlConfigFileGenFile(self.Log, foundElement)
+    def __TryLoadGenFileName(self, xmlElement: ET.Element) -> XmlConfigFileGenFile | None:
+        foundElement = xmlElement.find(self.__ElementGenFile)
+        return None if foundElement is None else XmlConfigFileGenFile(self.Log, foundElement)
 
     def __LoadAddTemplateImportDirectory(self, xmlElement: ET.Element) -> list[XmlConfigFileAddTemplateImportDirectory]:
         res = []
-        foundElements = xmlElement.findall("AddTemplateImportDirectory")
+        foundElements = xmlElement.findall(self.__ElementAddTemplateImportDirectory)
         for foundElement in foundElements:
             res.append(XmlConfigFileAddTemplateImportDirectory(self.Log, foundElement))
         return res
 
     def __LoadContentBuilderConfiguration(self, xmlElement: ET.Element) -> XmlConfigContentBuilderConfiguration:
-        foundElements = xmlElement.findall("ContentBuilderConfiguration")
+        foundElements = xmlElement.findall(self.__ElementContentBuilderConfiguration)
         if len(foundElements) > 1:
             raise XmlException("The file contained more than one ContentBuilderConfiguration")
         elif len(foundElements) == 1:

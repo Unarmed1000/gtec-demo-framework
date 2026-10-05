@@ -51,10 +51,11 @@ class XmlConfigPackageLocationBlacklist(XmlBase):
 class XmlConfigPackageLocation(XmlBase):
     __AttribName = "Name"
     __AttribScanMethod = "ScanMethod"
+    __ElementBlacklist = "Blacklist"
 
     def __init__(self, log: Log, xmlElement: ET.Element) -> None:
         super().__init__(log, xmlElement)
-        self._CheckAttributes({self.__AttribName, self.__AttribScanMethod})
+        self._CheckAttributes({self.__AttribName, self.__AttribScanMethod}, {self.__ElementBlacklist})
         defaultScanMethod = ScanMethod.Directory
         self.Name: str = self._ReadAttrib(xmlElement, self.__AttribName)
         self.Blacklist = self.__LoadBlacklist(xmlElement)
@@ -64,7 +65,7 @@ class XmlConfigPackageLocation(XmlBase):
 
     def __LoadBlacklist(self, xmlElement: ET.Element) -> list[XmlConfigPackageLocationBlacklist]:
         res = []
-        foundElements = xmlElement.findall("Blacklist")
+        foundElements = xmlElement.findall(self.__ElementBlacklist)
         for foundElement in foundElements:
             res.append(XmlConfigPackageLocationBlacklist(self.Log, foundElement))
         return res

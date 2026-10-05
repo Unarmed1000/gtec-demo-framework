@@ -1,0 +1,573 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!--
+****************************************************************************************************************************************************
+* BSD 3-Clause License
+*
+* Copyright (c) 2026, Mana Battery ApS
+* All rights reserved.
+*
+* Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
+*
+* 1. Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
+* 2. Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the
+*    documentation and/or other materials provided with the distribution.
+* 3. Neither the name of the copyright holder nor the names of its contributors may be used to endorse or promote products derived from this
+*    software without specific prior written permission.
+*
+* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+* THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR
+* CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+* PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+* LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
+* EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+****************************************************************************************************************************************************
+-->
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:annotation>
+    <xs:documentation>
+      Describes the Project.gen format: the file of a project. It is in the root directory of the project and every tool reads it
+      at its start. The file of a project itself holds a 'Project' element, the file of a project that extends another one holds an
+      'ExtendedProject' element.
+      The elements of a project can be in any order.
+    </xs:documentation>
+  </xs:annotation>
+
+
+  <xs:simpleType name="_TP_Bool">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="true" />
+      <xs:enumeration value="false" />
+    </xs:restriction>
+  </xs:simpleType>
+
+
+  <xs:simpleType name="_TP_PackageLanguage">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="C++" />
+      <xs:enumeration value="C#" />
+    </xs:restriction>
+  </xs:simpleType>
+
+
+  <xs:simpleType name="_TP_ScanMethod">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="Directory" />
+      <xs:enumeration value="OneSubDirectory" />
+      <xs:enumeration value="AllSubDirectories" />
+    </xs:restriction>
+  </xs:simpleType>
+
+
+  <xs:simpleType name="_TP_SolutionFormat">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="sln" />
+      <xs:enumeration value="slnx" />
+    </xs:restriction>
+  </xs:simpleType>
+
+
+  <xs:complexType name="_T_AddBasePackage">
+    <xs:annotation>
+      <xs:documentation>Add a base package that all other packages depend on</xs:documentation>
+    </xs:annotation>
+    <xs:attribute name="Name" type="xs:string" use="required"/>
+  </xs:complexType>
+
+
+  <xs:complexType name="_T_AddRootDirectory">
+    <xs:annotation>
+      <xs:documentation>Add a root directory of the project, usually named by an environment variable: $(NAME). Create: the directory is created when it is not there</xs:documentation>
+    </xs:annotation>
+    <xs:attribute name="Name" type="xs:string" use="required"/>
+    <xs:attribute name="Create" type="_TP_Bool" use="optional"/>
+  </xs:complexType>
+
+
+  <xs:complexType name="_T_AddNewProjectTemplatesRootDirectory">
+    <xs:annotation>
+      <xs:documentation>Add a directory that contains the templates FslBuildNew creates new projects from</xs:documentation>
+    </xs:annotation>
+    <xs:attribute name="Name" type="xs:string" use="required"/>
+  </xs:complexType>
+
+
+  <xs:complexType name="_T_Blacklist">
+    <xs:annotation>
+      <xs:documentation>Leave out the named directory of the package location</xs:documentation>
+    </xs:annotation>
+    <xs:attribute name="Name" type="xs:string" use="required"/>
+  </xs:complexType>
+
+
+  <xs:complexType name="_T_PackageLocation">
+    <xs:annotation>
+      <xs:documentation>Add a directory that packages are found in. ScanMethod: how deep the directory is searched for packages, the default is 'Directory'</xs:documentation>
+    </xs:annotation>
+    <xs:group ref="_G_PackageLocationCommandList"/>
+    <xs:attribute name="Name" type="xs:string" use="required"/>
+    <xs:attribute name="ScanMethod" type="_TP_ScanMethod" use="optional"/>
+  </xs:complexType>
+
+
+  <xs:complexType name="_T_PackageConfiguration">
+    <xs:annotation>
+      <xs:documentation>Add a package configuration: a named set of package locations. The one called 'default' is used unless another is asked for. A configuration without a location uses the root directory of the project. Preload: every known package of the configuration is loaded, not only the ones that are asked for</xs:documentation>
+    </xs:annotation>
+    <xs:group ref="_G_PackageConfigurationCommandList"/>
+    <xs:attribute name="Name" type="xs:string" use="required"/>
+    <xs:attribute name="Preload" type="_TP_Bool" use="optional"/>
+  </xs:complexType>
+
+
+  <xs:complexType name="_T_BuildDocRequirement">
+    <xs:annotation>
+      <xs:documentation>Skip: the requirement is left out of the documentation FslBuildDoc writes</xs:documentation>
+    </xs:annotation>
+    <xs:attribute name="Name" type="xs:string" use="required"/>
+    <xs:attribute name="Skip" type="_TP_Bool" use="optional"/>
+  </xs:complexType>
+
+
+  <xs:complexType name="_T_BuildDocConfiguration">
+    <xs:annotation>
+      <xs:documentation>The configuration of FslBuildDoc</xs:documentation>
+    </xs:annotation>
+    <xs:group ref="_G_BuildDocConfigurationCommandList"/>
+  </xs:complexType>
+
+
+  <xs:complexType name="_T_ClangFormatConfiguration">
+    <xs:annotation>
+      <xs:documentation>The configuration of the clang-format run: the file extensions it formats, separated by ';', and the recipe of the tool</xs:documentation>
+    </xs:annotation>
+    <xs:attribute name="FileExtensions" type="xs:string" use="required"/>
+    <xs:attribute name="Recipe" type="xs:string" use="required"/>
+  </xs:complexType>
+
+
+  <xs:complexType name="_T_DotnetFormatConfiguration">
+    <xs:annotation>
+      <xs:documentation>The configuration of the dotnet format run: the file extensions it formats, separated by ';', and the recipe of the tool</xs:documentation>
+    </xs:annotation>
+    <xs:attribute name="FileExtensions" type="xs:string" use="required"/>
+    <xs:attribute name="Recipe" type="xs:string" use="required"/>
+  </xs:complexType>
+
+
+  <xs:complexType name="_T_ClangTidyPlatformCompiler">
+    <xs:annotation>
+      <xs:documentation>The compiler flags clang-tidy is run with on the platform, separated by ';'</xs:documentation>
+    </xs:annotation>
+    <xs:attribute name="Flags" type="xs:string" use="required"/>
+  </xs:complexType>
+
+
+  <xs:complexType name="_T_ClangTidyPlatformDefines">
+    <xs:annotation>
+      <xs:documentation>The defines clang-tidy is run with on the platform, separated by ';': for every build, for a debug build and for a release build</xs:documentation>
+    </xs:annotation>
+    <xs:attribute name="All" type="xs:string" use="optional"/>
+    <xs:attribute name="Debug" type="xs:string" use="optional"/>
+    <xs:attribute name="Release" type="xs:string" use="optional"/>
+  </xs:complexType>
+
+
+  <xs:complexType name="_T_ClangTidyPlatformStrictChecks">
+    <xs:annotation>
+      <xs:documentation>The checks that only run with the strict profile, one on each line</xs:documentation>
+    </xs:annotation>
+    <xs:simpleContent>
+      <xs:extension base="xs:string"/>
+    </xs:simpleContent>
+  </xs:complexType>
+
+
+  <xs:complexType name="_T_ClangTidyPlatform">
+    <xs:annotation>
+      <xs:documentation>What clang-tidy is run with on the named platform. The platform 'All' is for every platform</xs:documentation>
+    </xs:annotation>
+    <xs:group ref="_G_ClangTidyPlatformCommandList"/>
+    <xs:attribute name="Name" type="xs:string" use="required"/>
+  </xs:complexType>
+
+
+  <xs:complexType name="_T_ClangTidyConfiguration">
+    <xs:annotation>
+      <xs:documentation>The configuration of the clang-tidy run: the file extensions it checks, separated by ';', and the recipes of the tools</xs:documentation>
+    </xs:annotation>
+    <xs:group ref="_G_ClangTidyConfigurationCommandList"/>
+    <xs:attribute name="FileExtensions" type="xs:string" use="required"/>
+    <xs:attribute name="ClangRecipe" type="xs:string" use="required"/>
+    <xs:attribute name="ClangTidyRecipe" type="xs:string" use="required"/>
+  </xs:complexType>
+
+
+  <xs:complexType name="_T_CMakePlatform">
+    <xs:annotation>
+      <xs:documentation>The CMake defaults of the named platform. AllowFindPackage: 'false' when the platform can not use find_package</xs:documentation>
+    </xs:annotation>
+    <xs:attribute name="Name" type="xs:string" use="required"/>
+    <xs:attribute name="DefaultGeneratorName" type="xs:string" use="optional"/>
+    <xs:attribute name="DefaultInstallPrefix" type="xs:string" use="optional"/>
+    <xs:attribute name="AllowFindPackage" type="_TP_Bool" use="optional"/>
+  </xs:complexType>
+
+
+  <xs:complexType name="_T_CMakeConfiguration">
+    <xs:annotation>
+      <xs:documentation>The configuration of the CMake generator: the default build directory, the recipe of ninja, the default install prefix and the lowest CMake version</xs:documentation>
+    </xs:annotation>
+    <xs:group ref="_G_CMakeConfigurationCommandList"/>
+    <xs:attribute name="DefaultBuildDir" type="xs:string" use="required"/>
+    <xs:attribute name="NinjaRecipe" type="xs:string" use="required"/>
+    <xs:attribute name="DefaultInstallPrefix" type="xs:string" use="optional"/>
+    <xs:attribute name="MinVersion" type="xs:string" use="optional"/>
+  </xs:complexType>
+
+
+  <xs:complexType name="_T_CompilerConfiguration">
+    <xs:annotation>
+      <xs:documentation>The default version of a compiler on a platform. SolutionFormat: the format of the solutions the Visual Studio generator writes, the default is 'sln'</xs:documentation>
+    </xs:annotation>
+    <xs:attribute name="Name" type="xs:string" use="required"/>
+    <xs:attribute name="Platform" type="xs:string" use="required"/>
+    <xs:attribute name="DefaultVersion" type="xs:string" use="required"/>
+    <xs:attribute name="SolutionFormat" type="_TP_SolutionFormat" use="optional"/>
+  </xs:complexType>
+
+
+  <xs:complexType name="_T_DefaultThirdPartyInstallDirectory">
+    <xs:annotation>
+      <xs:documentation>The directory third party source is built in and installed to. Only the project itself sets it, not a project that extends it</xs:documentation>
+    </xs:annotation>
+    <xs:attribute name="Name" type="xs:string" use="required"/>
+  </xs:complexType>
+
+
+  <xs:complexType name="_T_DefaultThirdPartyInstallReadonlyCacheDirectory">
+    <xs:annotation>
+      <xs:documentation>A directory of earlier downloads and installs that is only read. Only the project itself sets it, not a project that extends it</xs:documentation>
+    </xs:annotation>
+    <xs:attribute name="Name" type="xs:string" use="required"/>
+  </xs:complexType>
+
+
+  <xs:complexType name="_T_Recipes.DefaultValue">
+    <xs:annotation>
+      <xs:documentation>The recipes that are built on the platform when the command line does not say which: what '--Recipes' is without it</xs:documentation>
+    </xs:annotation>
+    <xs:attribute name="Value" type="xs:string" use="required"/>
+  </xs:complexType>
+
+
+  <xs:complexType name="_T_ExperimentalPlatform">
+    <xs:annotation>
+      <xs:documentation>The recipe settings of the named platform</xs:documentation>
+    </xs:annotation>
+    <xs:group ref="_G_ExperimentalPlatformCommandList"/>
+    <xs:attribute name="Name" type="xs:string" use="required"/>
+  </xs:complexType>
+
+
+  <xs:complexType name="_T_Experimental">
+    <xs:annotation>
+      <xs:documentation>The recipe support. AllowDownloads: recipes can download source. DisableDownloadEnv: the name of the environment variable that turns the downloads off</xs:documentation>
+    </xs:annotation>
+    <xs:group ref="_G_ExperimentalCommandList"/>
+    <xs:attribute name="AllowDownloads" type="_TP_Bool" use="required"/>
+    <xs:attribute name="DisableDownloadEnv" type="xs:string" use="required"/>
+  </xs:complexType>
+
+
+  <xs:complexType name="_T_GenFileSchema">
+    <xs:annotation>
+      <xs:documentation>Where the schema versions of the gen files of this project are: a url (http:// or https://) or a directory. Without it the gen files refer to the default url. It is not taken from a project this one extends</xs:documentation>
+    </xs:annotation>
+    <xs:attribute name="Location" type="xs:string" use="required"/>
+  </xs:complexType>
+
+
+  <xs:group name="_G_AddBasePackage">
+    <xs:choice>
+      <xs:element name="AddBasePackage" type="_T_AddBasePackage"/>
+    </xs:choice>
+  </xs:group>
+
+
+  <xs:group name="_G_AddRootDirectory">
+    <xs:choice>
+      <xs:element name="AddRootDirectory" type="_T_AddRootDirectory"/>
+    </xs:choice>
+  </xs:group>
+
+
+  <xs:group name="_G_AddNewProjectTemplatesRootDirectory">
+    <xs:choice>
+      <xs:element name="AddNewProjectTemplatesRootDirectory" type="_T_AddNewProjectTemplatesRootDirectory"/>
+    </xs:choice>
+  </xs:group>
+
+
+  <xs:group name="_G_Blacklist">
+    <xs:choice>
+      <xs:element name="Blacklist" type="_T_Blacklist"/>
+    </xs:choice>
+  </xs:group>
+
+
+  <xs:group name="_G_PackageLocation">
+    <xs:choice>
+      <xs:element name="PackageLocation" type="_T_PackageLocation"/>
+    </xs:choice>
+  </xs:group>
+
+
+  <xs:group name="_G_PackageConfiguration">
+    <xs:choice>
+      <xs:element name="PackageConfiguration" type="_T_PackageConfiguration"/>
+    </xs:choice>
+  </xs:group>
+
+
+  <xs:group name="_G_BuildDocRequirement">
+    <xs:choice>
+      <xs:element name="Requirement" type="_T_BuildDocRequirement"/>
+    </xs:choice>
+  </xs:group>
+
+
+  <xs:group name="_G_BuildDocConfiguration">
+    <xs:choice>
+      <xs:element name="BuildDocConfiguration" type="_T_BuildDocConfiguration"/>
+    </xs:choice>
+  </xs:group>
+
+
+  <xs:group name="_G_ClangFormatConfiguration">
+    <xs:choice>
+      <xs:element name="ClangFormatConfiguration" type="_T_ClangFormatConfiguration"/>
+    </xs:choice>
+  </xs:group>
+
+
+  <xs:group name="_G_DotnetFormatConfiguration">
+    <xs:choice>
+      <xs:element name="DotnetFormatConfiguration" type="_T_DotnetFormatConfiguration"/>
+    </xs:choice>
+  </xs:group>
+
+
+  <xs:group name="_G_ClangTidyPlatform">
+    <xs:choice>
+      <xs:element name="Platform" type="_T_ClangTidyPlatform"/>
+    </xs:choice>
+  </xs:group>
+
+
+  <xs:group name="_G_ClangTidyConfiguration">
+    <xs:choice>
+      <xs:element name="ClangTidyConfiguration" type="_T_ClangTidyConfiguration"/>
+    </xs:choice>
+  </xs:group>
+
+
+  <xs:group name="_G_CMakePlatform">
+    <xs:choice>
+      <xs:element name="Platform" type="_T_CMakePlatform"/>
+    </xs:choice>
+  </xs:group>
+
+
+  <xs:group name="_G_CMakeConfiguration">
+    <xs:choice>
+      <xs:element name="CMakeConfiguration" type="_T_CMakeConfiguration"/>
+    </xs:choice>
+  </xs:group>
+
+
+  <xs:group name="_G_CompilerConfiguration">
+    <xs:choice>
+      <xs:element name="CompilerConfiguration" type="_T_CompilerConfiguration"/>
+    </xs:choice>
+  </xs:group>
+
+
+  <xs:group name="_G_ExperimentalPlatform">
+    <xs:choice>
+      <xs:element name="Platform" type="_T_ExperimentalPlatform"/>
+    </xs:choice>
+  </xs:group>
+
+
+  <xs:group name="_G_Experimental">
+    <xs:choice>
+      <xs:element name="Experimental" type="_T_Experimental"/>
+    </xs:choice>
+  </xs:group>
+
+
+  <xs:group name="_G_GenFileSchema">
+    <xs:choice>
+      <xs:element name="GenFileSchema" type="_T_GenFileSchema"/>
+    </xs:choice>
+  </xs:group>
+
+
+  <xs:group name="_G_PackageLocationCommandList">
+    <xs:sequence>
+      <xs:group ref="_G_Blacklist" minOccurs="0" maxOccurs="unbounded"/>
+    </xs:sequence>
+  </xs:group>
+
+
+  <xs:group name="_G_PackageConfigurationCommandList">
+    <xs:sequence>
+      <xs:group ref="_G_PackageLocation" minOccurs="0" maxOccurs="unbounded"/>
+    </xs:sequence>
+  </xs:group>
+
+
+  <xs:group name="_G_BuildDocConfigurationCommandList">
+    <xs:sequence>
+      <xs:group ref="_G_BuildDocRequirement" minOccurs="0" maxOccurs="unbounded"/>
+    </xs:sequence>
+  </xs:group>
+
+
+  <xs:group name="_G_ClangTidyPlatformCommandList">
+    <xs:annotation>
+      <xs:documentation>One of each at most, in any order</xs:documentation>
+    </xs:annotation>
+    <xs:all>
+      <xs:element name="Compiler" type="_T_ClangTidyPlatformCompiler" minOccurs="0"/>
+      <xs:element name="Defines" type="_T_ClangTidyPlatformDefines" minOccurs="0"/>
+      <xs:element name="StrictChecks" type="_T_ClangTidyPlatformStrictChecks" minOccurs="0"/>
+    </xs:all>
+  </xs:group>
+
+
+  <xs:group name="_G_ClangTidyConfigurationCommandList">
+    <xs:sequence>
+      <xs:group ref="_G_ClangTidyPlatform" minOccurs="0" maxOccurs="unbounded"/>
+    </xs:sequence>
+  </xs:group>
+
+
+  <xs:group name="_G_CMakeConfigurationCommandList">
+    <xs:sequence>
+      <xs:group ref="_G_CMakePlatform" minOccurs="0" maxOccurs="unbounded"/>
+    </xs:sequence>
+  </xs:group>
+
+
+  <xs:group name="_G_ExperimentalPlatformCommandList">
+    <xs:sequence>
+      <xs:element name="Recipes.DefaultValue" type="_T_Recipes.DefaultValue" minOccurs="0" maxOccurs="1"/>
+    </xs:sequence>
+  </xs:group>
+
+
+  <xs:group name="_G_ExperimentalCommandList">
+    <xs:annotation>
+      <xs:documentation>In any order</xs:documentation>
+    </xs:annotation>
+    <xs:sequence>
+      <xs:choice minOccurs="0" maxOccurs="unbounded">
+        <xs:element name="DefaultThirdPartyInstallDirectory" type="_T_DefaultThirdPartyInstallDirectory"/>
+        <xs:element name="DefaultThirdPartyInstallReadonlyCacheDirectory" type="_T_DefaultThirdPartyInstallReadonlyCacheDirectory"/>
+        <xs:group ref="_G_ExperimentalPlatform"/>
+      </xs:choice>
+    </xs:sequence>
+  </xs:group>
+
+
+  <xs:group name="_G_ExtendedProjectCommandList">
+    <xs:annotation>
+      <xs:documentation>The elements of a project that extends another one, in any order</xs:documentation>
+    </xs:annotation>
+    <xs:sequence>
+      <xs:choice minOccurs="0" maxOccurs="unbounded">
+        <xs:group ref="_G_AddBasePackage"/>
+        <xs:group ref="_G_AddRootDirectory"/>
+        <xs:group ref="_G_AddNewProjectTemplatesRootDirectory"/>
+        <xs:group ref="_G_PackageConfiguration"/>
+        <xs:group ref="_G_BuildDocConfiguration"/>
+        <xs:group ref="_G_ClangFormatConfiguration"/>
+        <xs:group ref="_G_ClangTidyConfiguration"/>
+        <xs:group ref="_G_CMakeConfiguration"/>
+        <xs:group ref="_G_CompilerConfiguration"/>
+        <xs:group ref="_G_Experimental"/>
+        <xs:group ref="_G_GenFileSchema"/>
+      </xs:choice>
+    </xs:sequence>
+  </xs:group>
+
+
+  <xs:group name="_G_ProjectCommandList">
+    <xs:annotation>
+      <xs:documentation>The elements of a project, in any order</xs:documentation>
+    </xs:annotation>
+    <xs:sequence>
+      <xs:choice minOccurs="0" maxOccurs="unbounded">
+        <xs:group ref="_G_AddBasePackage"/>
+        <xs:group ref="_G_AddRootDirectory"/>
+        <xs:group ref="_G_AddNewProjectTemplatesRootDirectory"/>
+        <xs:group ref="_G_PackageConfiguration"/>
+        <xs:group ref="_G_BuildDocConfiguration"/>
+        <xs:group ref="_G_ClangFormatConfiguration"/>
+        <xs:group ref="_G_DotnetFormatConfiguration"/>
+        <xs:group ref="_G_ClangTidyConfiguration"/>
+        <xs:group ref="_G_CMakeConfiguration"/>
+        <xs:group ref="_G_CompilerConfiguration"/>
+        <xs:group ref="_G_Experimental"/>
+        <xs:group ref="_G_GenFileSchema"/>
+      </xs:choice>
+    </xs:sequence>
+  </xs:group>
+
+
+  <xs:complexType name="_T_Project">
+    <xs:annotation>
+      <xs:documentation>A project. It needs at least one AddRootDirectory. ToolConfigFile: the tool config file of the project (FslBuildGen.xml), relative to this file or starting with an environment variable. DefaultCompany and DefaultPackageLanguage: what a package of the project has unless its gen file says so. RequirePackageCreationYear: every package has to give its 'CreationYear'. DefaultTemplate: the name of the Visual Studio project template</xs:documentation>
+    </xs:annotation>
+    <xs:group ref="_G_ProjectCommandList"/>
+    <xs:attribute name="Name" type="xs:string" use="required"/>
+    <xs:attribute name="ShortName" type="xs:string" use="optional"/>
+    <xs:attribute name="Version" type="xs:string" use="optional"/>
+    <xs:attribute name="ToolConfigFile" type="xs:string" use="required"/>
+    <xs:attribute name="DefaultPackageLanguage" type="_TP_PackageLanguage" use="optional"/>
+    <xs:attribute name="DefaultCompany" type="xs:string" use="required"/>
+    <xs:attribute name="RequirePackageCreationYear" type="_TP_Bool" use="optional"/>
+    <xs:attribute name="AllowExeDependency" type="_TP_Bool" use="optional"/>
+    <xs:attribute name="DefaultTemplate" type="xs:string" use="optional"/>
+  </xs:complexType>
+
+
+  <xs:complexType name="_T_ExtendedProject">
+    <xs:annotation>
+      <xs:documentation>A project that extends another one: it adds its root directories and package locations to that project. It needs at least one AddRootDirectory. Parent: the name of the project it extends. ParentRoot: the absolute directory the Project.gen of that project is in, usually named by an environment variable: $(NAME)</xs:documentation>
+    </xs:annotation>
+    <xs:group ref="_G_ExtendedProjectCommandList"/>
+    <xs:attribute name="Name" type="xs:string" use="required"/>
+    <xs:attribute name="ShortName" type="xs:string" use="optional"/>
+    <xs:attribute name="Version" type="xs:string" use="optional"/>
+    <xs:attribute name="Parent" type="xs:string" use="required"/>
+    <xs:attribute name="ParentRoot" type="xs:string" use="required"/>
+  </xs:complexType>
+
+
+  <xs:group name="_G_ProjectElement">
+    <xs:choice>
+      <xs:element name="Project" type="_T_Project"/>
+      <xs:element name="ExtendedProject" type="_T_ExtendedProject"/>
+    </xs:choice>
+  </xs:group>
+
+
+  <xs:complexType name="_T_FslBuildGenProjectRoot">
+    <xs:group ref="_G_ProjectElement"/>
+    <xs:attribute name="Version" type="xs:string" use="required"/>
+  </xs:complexType>
+
+  <xs:element name="FslBuildGenProjectRoot" type="_T_FslBuildGenProjectRoot"/>
+</xs:schema>

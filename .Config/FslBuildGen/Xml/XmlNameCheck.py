@@ -242,6 +242,17 @@ class ReadFile:
             raise XmlUnknownNamesException(self.__File.FileName, unknownNames)
 
 
+def StopAtUnknownNames() -> None:
+    """For a reader that is about to stop because the file lacks an element it needs: when the file that is being read holds unknown
+    names, they are the error that is reported (the element may be there with a typing error). Nothing happens when the names are
+    collected, or when the file holds none: the reader then stops with what it has to say.
+    """
+    if len(_g_files) > 0 and len(_g_collectors) <= 0:
+        unknownNames = _g_files[-1].GetUnknownNames()
+        if len(unknownNames) > 0:
+            raise XmlUnknownNamesException(_g_files[-1].FileName, unknownNames)
+
+
 def CheckElements(element: ET.Element, validElements: Collection[str]) -> None:
     """Collect the child elements of the element whose name is not one of validElements"""
     if len(_g_files) > 0 and len(element) > 0:
