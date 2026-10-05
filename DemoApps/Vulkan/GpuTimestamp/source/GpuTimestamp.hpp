@@ -39,6 +39,7 @@
 #include <RapidVulkan/QueryPool.hpp>
 #include <Shared/GpuTimestamp/Shared.hpp>
 #include <utility>
+#include <vector>
 #include "FractalShaderMandelbrot.hpp"
 
 namespace Fsl
@@ -69,8 +70,6 @@ namespace Fsl
     struct DependentResources
     {
       RapidVulkan::RenderPass MainRenderPass;
-      bool QueueContainsTimestamp{false};
-      bool HasPendingQuery{false};
 
       DependentResources() = default;
       DependentResources(const DependentResources&) = delete;
@@ -81,10 +80,15 @@ namespace Fsl
       void Reset() noexcept
       {
         // Reset in destruction order
-        HasPendingQuery = false;
-        QueueContainsTimestamp = false;
         MainRenderPass.Reset();
       }
+    };
+
+    //! The timestamp queries of a frame in flight
+    struct QuerySlotRecord
+    {
+      //! True if the timestamps of the slot were written and not read yet
+      bool HasPendingQuery{false};
     };
 
     bool m_isTimestampSupported{false};
@@ -92,13 +96,14 @@ namespace Fsl
 
     Resources m_resources;
     DependentResources m_dependentResources;
+    //! One record per frame in flight. Every frame in flight has its own two timestamp queries, so a result can be read without waiting
+    //! for the device.
+    std::vector<QuerySlotRecord> m_querySlots;
 
     FractalShaderMandelbrot m_scene;
 
   public:
     explicit GpuTimestamp(const DemoAppConfig& config);
-
-    void EndDraw(const FrameInfo& frameInfo) override;
 
   protected:
     void ConfigurationChanged(const DemoWindowMetrics& windowMetrics) final;
@@ -110,6 +115,9 @@ namespace Fsl
     void OnFreeResources() final;
 
   private:
+    //! Read the timestamps of the last frame that used the frame slot, if it wrote any
+    void ReadProfileTime(const uint32_t frameIndex);
+
     static Resources CreateResources(const Vulkan::VUDevice& device, const Vulkan::VUDeviceQueueRecord& deviceQueue,
                                      const RenderConfig& renderConfig);
   };

@@ -254,8 +254,6 @@ namespace Fsl
     TimeSpan m_lastGpuTime;
     //! How long the present of the last frame that ended was delayed by WaitForPresent
     TimeSpan m_lastPresentWait;
-    //! When the app started to wait for the GPU in the current frame (BeginGpuWait), zero if it did not
-    TickCount m_gpuWaitStartTime;
     //! The work per frame of the chart: the CPU time and the GPU time in microseconds
     std::shared_ptr<UI::ChartData> m_workChartData;
     //! True if a frame ended since the chart was updated
@@ -411,12 +409,10 @@ namespace Fsl
     void Update(const DemoTime& demoTime);
     //! Draw the frame for its animation time (this is exactly what the marker reports)
     void Draw();
-    //! Call it when the CPU is done with the frame and the app starts to wait for the GPU (glFinish), before EndFrame. The wait is
-    //! then the GPU time of the frame, for an app that can not measure the time the GPU works on a frame.
-    void BeginGpuWait();
     //! Call it once the app has drawn the frame (on Vulkan: once the frame was submitted), with the frame pacer on or off. It tells
-    //! the frame pacer how long the frame needed.
-    //! @param gpuTime the time the GPU needs for a frame if the app measures it apart from the CPU time (it is added to the CPU time)
+    //! the frame pacer how long the frame needed. The app does not wait for the GPU before it.
+    //! @param gpuTime the time the GPU needs for a frame, measured by the app without waiting for the GPU (a timer or timestamp query
+    //!        of an earlier frame). It is added to the CPU time, zero if the app can not measure it.
     void EndFrame(const TimeSpan gpuTime = {});
     //! Wait until the frame can be presented so it is shown at the refresh the frame pacer aims for: for an app whose present can not
     //! hold a frame for the whole swap interval (SamplePresentMethod::WaitThenPresent, or a EGL config with a short max swap interval).

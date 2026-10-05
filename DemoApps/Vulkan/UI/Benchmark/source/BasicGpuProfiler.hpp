@@ -33,9 +33,12 @@
 
 #include <RapidVulkan/QueryPool.hpp>
 #include <Shared/UI/Benchmark/IBasicGpuProfiler.hpp>
+#include <vector>
 
 namespace Fsl
 {
+  //! @note Every frame in flight has its own two timestamp queries. A frame reads the result of the last frame that used its slot, which
+  //!       the GPU has finished when the host lets the slot record again, so reading a result never waits for the device.
   class BasicGpuProfiler final : public IBasicGpuProfiler
   {
     enum class TimestampState
@@ -45,14 +48,24 @@ namespace Fsl
       BothSet
     };
 
+    struct SlotRecord
+    {
+      bool HasPendingQuery{false};
+    };
+
     struct DrawResources
     {
       VkCommandBuffer CommandBuffer{VK_NULL_HANDLE};
+      //! The frame slot that is being recorded and the first of its queries
+      uint32_t FrameIndex{0};
+      uint32_t FirstQuery{0};
 
       DrawResources() = default;
 
-      explicit DrawResources(const VkCommandBuffer commandBuffer)
+      DrawResources(const VkCommandBuffer commandBuffer, const uint32_t frameIndex, const uint32_t firstQuery)
         : CommandBuffer(commandBuffer)
+        , FrameIndex(frameIndex)
+        , FirstQuery(firstQuery)
       {
       }
     };
@@ -75,10 +88,13 @@ namespace Fsl
     VkDevice m_device{VK_NULL_HANDLE};
     RapidVulkan::QueryPool m_queryPool;
     float m_timestampPeriod{0};
+    //! One record per frame in flight
+    std::vector<SlotRecord> m_slots;
     Resources m_resources;
 
   public:
-    BasicGpuProfiler(const VkPhysicalDeviceProperties& physicalDeviceProperties, const VkDevice device);
+    //! @param maxFramesInFlight the frames the host can have in flight (the frame index given to BeginDraw is below it)
+    BasicGpuProfiler(const VkPhysicalDeviceProperties& physicalDeviceProperties, const VkDevice device, const uint32_t maxFramesInFlight);
 
     [[nodiscard]] bool IsEnabled() const noexcept final;
     void SetEnabled(const bool enabled) final;
@@ -86,9 +102,12 @@ namespace Fsl
     void EndTimestamp() final;
     [[nodiscard]] uint64_t GetResult() const noexcept final;
 
-    void BeginDraw(const VkCommandBuffer commandBuffer);
+    //! @brief Call it at the start of a frame, before anything is drawn. The frame has no result until BeginDraw reads one.
+    void BeginFrame();
+    //! @brief Call it first in the command buffer of a frame, outside a render pass. It reads the result of the last frame that used the
+    //!        slot of the frame index.
+    void BeginDraw(const VkCommandBuffer commandBuffer, const uint32_t frameIndex);
     void EndDraw();
-    void ExtractResult();
 
     static bool IsTimestampSupported(const VkPhysicalDeviceProperties& physicalDeviceProperties);
 

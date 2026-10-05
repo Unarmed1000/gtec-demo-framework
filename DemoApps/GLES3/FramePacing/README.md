@@ -66,11 +66,13 @@ the background and of the test pattern: for a clear view of it switch the test p
 
 The three versions of the sample differ in what they can measure and in how they hold a frame. This one:
 
-- **The GPU time is a wait, and it is only there while the frame pacer is on.** OpenGL ES gives this sample no measurement of the time the
-  GPU works on a frame. So the sample calls `glFinish` once it has drawn the frame and reports the time it waited there as the GPU time.
-  That is the GPU work that was left when the CPU was done, which is less than all of the GPU work of the frame. The sample only calls
-  `glFinish` while the frame pacer is on, as the call costs throughput and would change what the sample does with the pacer off. **With the
-  pacer off the chart and the `Work` row of the frame pacing overlay show the CPU time only.**
+- **The GPU time is measured with a timer query, and the sample never waits for the GPU.** A time elapsed query of
+  `GL_EXT_disjoint_timer_query` is put around all the commands of a frame, with the frame pacer on or off. Its result is read once the GPU
+  has it, a few frames later, so the GPU time the pacer is told with a frame is the one of an earlier frame (the sample has four queries,
+  a frame is not measured while all of them are in use). A result the driver flags as disjoint is thrown away. The sample does not call
+  `glFinish`: a wait for the GPU costs throughput, only measures the work that was left when the CPU was done and changes the loop that
+  is measured. **Without the extension there is no GPU time: the chart and the `Work` row of the frame pacing overlay show the CPU time
+  only, and that is all the pacer is told.**
 - **A frame is held with `eglSwapInterval`.** A EGL config only supports a range of swap intervals (it can be as short as one refresh). The
   sample holds the frame for the rest by delaying the swap, which is less even than a real swap interval.
 - **A GPU load of 0 draws no background at all.** The screen is then only cleared, so what is left of the GPU time is the UI and the marker.

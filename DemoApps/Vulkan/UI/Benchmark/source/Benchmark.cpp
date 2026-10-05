@@ -48,11 +48,11 @@ namespace Fsl
       return setup;
     }
 
-    std::shared_ptr<BasicGpuProfiler> TryCreateGpuProfiler(const Vulkan::VUDevice& device)
+    std::shared_ptr<BasicGpuProfiler> TryCreateGpuProfiler(const Vulkan::VUDevice& device, const uint32_t maxFramesInFlight)
     {
       if (BasicGpuProfiler::IsTimestampSupported(device.GetPhysicalDevice().Properties))
       {
-        return std::make_shared<BasicGpuProfiler>(device.GetPhysicalDevice().Properties, device.Get());
+        return std::make_shared<BasicGpuProfiler>(device.GetPhysicalDevice().Properties, device.Get(), maxFramesInFlight);
       }
       return {};
     }
@@ -61,7 +61,7 @@ namespace Fsl
 
   Benchmark::Benchmark(const DemoAppConfig& config)
     : VulkanBasic::DemoAppVulkanBasic(config, GetVulkanSetup())
-    , m_gpuProfiler(TryCreateGpuProfiler(m_device))
+    , m_gpuProfiler(TryCreateGpuProfiler(m_device, GetRenderConfig().MaxFramesInFlight))
     , m_shared(config, m_gpuProfiler)
   {
     // Give the UI a chance to intercept the various DemoApp events.
@@ -73,7 +73,7 @@ namespace Fsl
   {
     if (m_gpuProfiler)
     {
-      m_gpuProfiler->ExtractResult();
+      m_gpuProfiler->BeginFrame();
     }
     m_shared.OnFrameSequenceBegin();
   }
@@ -112,7 +112,7 @@ namespace Fsl
     {
       if (m_gpuProfiler)
       {
-        m_gpuProfiler->BeginDraw(hCmdBuffer);
+        m_gpuProfiler->BeginDraw(hCmdBuffer, currentFrameIndex);
       }
 
       std::array<VkClearValue, 2> clearValues{};

@@ -60,6 +60,9 @@ namespace Fsl
 
   void FramePacing::Draw(const FrameInfo& /*frameInfo*/)
   {
+    // The GPU time is measured around all the commands of the frame (this also reads the times the GPU has for the earlier frames)
+    m_gpuTimer.BeginFrame();
+
     const auto clearColor = FramePacingShared::ClearColor.ToVector4();
     glClearColor(clearColor.X, clearColor.Y, clearColor.Z, clearColor.W);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
@@ -74,15 +77,10 @@ namespace Fsl
   {
     base_type::EndDraw(frameInfo);
 
-    // The frame and the frame pacing marker were drawn and the host swaps the buffers after this
-    if (m_shared.IsPacerEnabled())
-    {
-      // Wait for the GPU, so the time the frame pacer is told the frame needed includes the GPU work. The wait is the GPU time of
-      // the frame the sample shows.
-      m_shared.BeginGpuWait();
-      glFinish();
-    }
-    m_shared.EndFrame();
+    // The frame and the frame pacing marker were drawn and the host swaps the buffers after this. The GPU works on the frame from now
+    // on and the app does not wait for it, so the frame pacer is given the GPU time of the last frame that was measured.
+    m_gpuTimer.EndFrame();
+    m_shared.EndFrame(m_gpuTimer.GetGpuTime());
     // The swap holds the frame for the refreshes the frame pacer decided on
     const uint32_t swapInterval = m_shared.GetSwapInterval();
     const uint32_t presentSwapInterval = m_swapInterval.Set(swapInterval);

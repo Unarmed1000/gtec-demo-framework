@@ -23,6 +23,7 @@
 //****************************************************************************************************************************************************
 
 #include <FslDemoApp/OpenGLES2/DemoAppGLES2.hpp>
+#include <FslUtil/OpenGLES2/GLGpuFrameTimer.hpp>
 #include <Shared/FramePacing/EGL/EGLSwapInterval.hpp>
 #include <Shared/FramePacing/FramePacingShared.hpp>
 #include "RaymarchBackground.hpp"
@@ -40,6 +41,8 @@ namespace Fsl
     RaymarchBackground m_background;
     //! The number of display refreshes the swap of the host holds a frame for
     EGLSwapInterval m_swapInterval;
+    //! The time the GPU works on a frame (GL_EXT_disjoint_timer_query), read without waiting for the GPU
+    GLES2::GLGpuFrameTimer m_gpuTimer;
 
   public:
     explicit FramePacing(const DemoAppConfig& config);

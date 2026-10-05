@@ -36,9 +36,10 @@
 #include <FslUtil/Vulkan1_0/Exceptions.hpp>
 #include <FslUtil/Vulkan1_0/Util/InstanceUtil.hpp>
 #include <FslUtil/Vulkan1_0/Util/PhysicalDeviceUtil.hpp>
-#include <RapidVulkan/Check.hpp>
 #include <vulkan/vulkan.h>
 #include <array>
+#include <cassert>
+#include <cmath>
 
 namespace Fsl
 {
@@ -48,6 +49,7 @@ namespace Fsl
     {
       constexpr const uint32_t Query0 = 0;
       constexpr const uint32_t Query1 = 1;
+      // The queries of one frame slot
       constexpr const uint32_t QueryCount = 2;
     }
 
@@ -69,13 +71,13 @@ namespace Fsl
       return {device.Get(), descriptorPoolInfo};
     }
 
-    RapidVulkan::QueryPool CreateQueryPool(const Vulkan::VUDevice& device)
+    RapidVulkan::QueryPool CreateQueryPool(const Vulkan::VUDevice& device, const uint32_t maxFramesInFlight)
     {
-      // Create query pool
+      // Create query pool: two queries for every frame in flight
       VkQueryPoolCreateInfo queryPoolInfo{};
       queryPoolInfo.sType = VK_STRUCTURE_TYPE_QUERY_POOL_CREATE_INFO;
       queryPoolInfo.queryType = VK_QUERY_TYPE_TIMESTAMP;
-      queryPoolInfo.queryCount = LocalConfig::QueryCount;
+      queryPoolInfo.queryCount = maxFramesInFlight * LocalConfig::QueryCount;
 
       return {device.Get(), queryPoolInfo};
     }
@@ -103,6 +105,7 @@ namespace Fsl
     , m_isTimestampSupported(IsTimestampSupported(m_device))
     , m_shared(config, m_isTimestampSupported)
     , m_resources(CreateResources(m_device, m_deviceQueue, GetRenderConfig()))
+    , m_querySlots(GetRenderConfig().MaxFramesInFlight)
     , m_scene(config, m_device, m_deviceQueue, m_resources.BufferManager, m_resources.DescriptorPool, GetRenderConfig().MaxFramesInFlight)
   {
     // Give the UI a chance to intercept the various DemoApp events.
@@ -110,17 +113,7 @@ namespace Fsl
 
     if (m_isTimestampSupported)
     {
-      m_resources.QueryPool = CreateQueryPool(m_device);
-    }
-  }
-
-
-  void GpuTimestamp::EndDraw(const FrameInfo& frameInfo)
-  {
-    VulkanBasic::DemoAppVulkanBasic::EndDraw(frameInfo);
-    if (m_dependentResources.QueueContainsTimestamp)
-    {
-      m_dependentResources.HasPendingQuery = true;
+      m_resources.QueryPool = CreateQueryPool(m_device, GetRenderConfig().MaxFramesInFlight);
     }
   }
 
@@ -144,20 +137,6 @@ namespace Fsl
 
     m_scene.SetMaxIterations(m_shared.GetIterations());
     m_scene.Update(demoTime, m_shared.IsPaused());
-
-    if (m_resources.QueryPool.IsValid() && m_dependentResources.HasPendingQuery)
-    {
-      RAPIDVULKAN_CHECK(vkDeviceWaitIdle(m_device.Get()));
-      std::array<uint64_t, LocalConfig::QueryCount> resultBuffer{};
-      RAPIDVULKAN_CHECK(vkGetQueryPoolResults(m_device.Get(), m_resources.QueryPool.Get(), 0, LocalConfig::QueryCount,
-                                              sizeof(uint64_t) * resultBuffer.size(), resultBuffer.data(), sizeof(uint64_t),
-                                              VK_QUERY_RESULT_64_BIT | VK_QUERY_RESULT_WAIT_BIT));
-
-      // timestampPeriod is the number of nanoseconds required for a timestamp query to be incremented by 1.
-      const double timestampPeriod = m_device.GetPhysicalDevice().Properties.limits.timestampPeriod;
-      const auto time = static_cast<uint64_t>(std::round((static_cast<double>(resultBuffer[1] - resultBuffer[0]) * timestampPeriod) / 1000.0));
-      m_shared.SetProfileTime(time);
-    }
   }
 
 
@@ -168,12 +147,16 @@ namespace Fsl
     const uint32_t currentFrameIndex = drawContext.CurrentFrameIndex;
 
     const VkCommandBuffer hCmdBuffer = rCmdBuffers[currentFrameIndex];
+    // The two timestamp queries of this frame slot
+    const uint32_t firstQuery = currentFrameIndex * LocalConfig::QueryCount;
     rCmdBuffers.Begin(currentFrameIndex, VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT, VK_NULL_HANDLE, 0, VK_NULL_HANDLE, VK_FALSE, 0, 0);
     {
       if (m_resources.QueryPool.IsValid())
       {
         assert(m_isTimestampSupported);
-        vkCmdResetQueryPool(hCmdBuffer, m_resources.QueryPool.Get(), 0, LocalConfig::QueryCount);
+        // Read what the last frame of this slot measured before the queries are used again
+        ReadProfileTime(currentFrameIndex);
+        vkCmdResetQueryPool(hCmdBuffer, m_resources.QueryPool.Get(), firstQuery, LocalConfig::QueryCount);
       }
 
       std::array<VkClearValue, 1> clearValues{};
@@ -194,14 +177,14 @@ namespace Fsl
         if (m_resources.QueryPool.IsValid())
         {
           assert(m_isTimestampSupported);
-          vkCmdWriteTimestamp(hCmdBuffer, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, m_resources.QueryPool.Get(), LocalConfig::Query0);
-          m_dependentResources.QueueContainsTimestamp = true;
+          vkCmdWriteTimestamp(hCmdBuffer, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, m_resources.QueryPool.Get(), firstQuery + LocalConfig::Query0);
         }
         m_scene.Draw(drawContext.CurrentFrameIndex, hCmdBuffer);
         if (m_resources.QueryPool.IsValid())
         {
           assert(m_isTimestampSupported);
-          vkCmdWriteTimestamp(hCmdBuffer, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, m_resources.QueryPool.Get(), LocalConfig::Query1);
+          vkCmdWriteTimestamp(hCmdBuffer, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, m_resources.QueryPool.Get(), firstQuery + LocalConfig::Query1);
+          m_querySlots[currentFrameIndex].HasPendingQuery = true;
         }
 
         m_shared.Draw(demoTime);
@@ -228,6 +211,34 @@ namespace Fsl
     m_scene.OnFreeResources();
     m_dependentResources.Reset();
   }
+
+  void GpuTimestamp::ReadProfileTime(const uint32_t frameIndex)
+  {
+    QuerySlotRecord& rSlot = m_querySlots.at(frameIndex);
+    if (!rSlot.HasPendingQuery)
+    {
+      return;
+    }
+    rSlot.HasPendingQuery = false;
+
+    // Never wait for the GPU to read a timestamp (no vkDeviceWaitIdle and no VK_QUERY_RESULT_WAIT_BIT): that stalls the CPU and changes
+    // the timing that is measured. Every frame in flight has its own queries instead. The host only lets a frame slot record again once
+    // the GPU has finished the last frame that used it, so the timestamps of that frame are there. If they are not (VK_NOT_READY, the
+    // frame was not submitted) the time that is shown is kept.
+    std::array<uint64_t, LocalConfig::QueryCount> resultBuffer{};
+    const VkResult result =
+      vkGetQueryPoolResults(m_device.Get(), m_resources.QueryPool.Get(), frameIndex * LocalConfig::QueryCount, LocalConfig::QueryCount,
+                            sizeof(uint64_t) * resultBuffer.size(), resultBuffer.data(), sizeof(uint64_t), VK_QUERY_RESULT_64_BIT);
+    if (result == VK_SUCCESS)
+    {
+      // timestampPeriod is the number of nanoseconds required for a timestamp query to be incremented by 1.
+      const double timestampPeriod = m_device.GetPhysicalDevice().Properties.limits.timestampPeriod;
+      const auto time = static_cast<uint64_t>(
+        std::round((static_cast<double>(resultBuffer[LocalConfig::Query1] - resultBuffer[LocalConfig::Query0]) * timestampPeriod) / 1000.0));
+      m_shared.SetProfileTime(time);
+    }
+  }
+
 
   GpuTimestamp::Resources GpuTimestamp::CreateResources(const Vulkan::VUDevice& device, const Vulkan::VUDeviceQueueRecord& deviceQueue,
                                                         const RenderConfig& renderConfig)

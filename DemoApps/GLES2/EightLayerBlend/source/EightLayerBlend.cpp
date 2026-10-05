@@ -188,7 +188,6 @@ namespace Fsl
     m_vertexBuffer.DisableAttribArrays();
 
     glBindBuffer(m_vertexBuffer.GetTarget(), 0);
-    glFinish();
     // GL_CHECK_FOR_ERROR();
   }
 }

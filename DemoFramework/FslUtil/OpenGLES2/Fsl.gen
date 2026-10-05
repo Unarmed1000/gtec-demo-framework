@@ -2,6 +2,7 @@
 <FslBuildGen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../.Config/Schema/1/FslBuildGen.xsd">
   <Library Name="FslUtil.OpenGLES2" CreationYear="2017">
     <Dependency Name="GLES2"/>
+    <Dependency Name="EGL"/>
     <Dependency Name="FslBase"/>
     <Dependency Name="FslGraphics"/>
     <Define Name="FSL_ENABLE_GRAPHICS_ES2" Access="Public"/>

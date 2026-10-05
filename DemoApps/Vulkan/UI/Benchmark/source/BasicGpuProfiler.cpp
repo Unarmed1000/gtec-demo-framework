@@ -32,8 +32,11 @@
 #include "BasicGpuProfiler.hpp"
 #include <FslBase/Log/Log3Fmt.hpp>
 #include <FslUtil/Vulkan1_0/VUDevice.hpp>
-#include <RapidVulkan/Check.hpp>
 #include <algorithm>
+#include <array>
+#include <cassert>
+#include <cmath>
+#include <stdexcept>
 
 namespace Fsl
 {
@@ -43,26 +46,29 @@ namespace Fsl
     {
       constexpr const uint32_t Query0 = 0;
       constexpr const uint32_t Query1 = 1;
+      // The queries of one frame slot
       constexpr const uint32_t QueryCount = 2;
     }
 
-    RapidVulkan::QueryPool CreateQueryPool(const VkDevice device)
+    RapidVulkan::QueryPool CreateQueryPool(const VkDevice device, const uint32_t maxFramesInFlight)
     {
-      // Create query pool
+      // Create query pool: every frame in flight has its own queries, so a result can be read without waiting for the device
       VkQueryPoolCreateInfo queryPoolInfo{};
       queryPoolInfo.sType = VK_STRUCTURE_TYPE_QUERY_POOL_CREATE_INFO;
       queryPoolInfo.queryType = VK_QUERY_TYPE_TIMESTAMP;
-      queryPoolInfo.queryCount = LocalConfig::QueryCount;
+      queryPoolInfo.queryCount = maxFramesInFlight * LocalConfig::QueryCount;
 
       return {device, queryPoolInfo};
     }
   }
 
 
-  BasicGpuProfiler::BasicGpuProfiler(const VkPhysicalDeviceProperties& physicalDeviceProperties, const VkDevice device)
+  BasicGpuProfiler::BasicGpuProfiler(const VkPhysicalDeviceProperties& physicalDeviceProperties, const VkDevice device,
+                                     const uint32_t maxFramesInFlight)
     : m_device(device)
-    , m_queryPool(CreateQueryPool(m_device))
+    , m_queryPool(CreateQueryPool(m_device, maxFramesInFlight))
     , m_timestampPeriod(physicalDeviceProperties.limits.timestampPeriod)
+    , m_slots(maxFramesInFlight)
   {
     if (!IsTimestampSupported(physicalDeviceProperties))
     {
@@ -93,6 +99,8 @@ namespace Fsl
       {
         m_resources = {};
       }
+      // What the slots hold was measured with the old setting
+      std::fill(m_slots.begin(), m_slots.end(), SlotRecord());
     }
   }
 
@@ -102,7 +110,8 @@ namespace Fsl
     if (m_resources.Draw.CommandBuffer != VK_NULL_HANDLE && m_resources.QueueTimestampState == TimestampState::NotSet)
     {
       assert(m_queryPool.IsValid());
-      vkCmdWriteTimestamp(m_resources.Draw.CommandBuffer, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, m_queryPool.Get(), LocalConfig::Query0);
+      vkCmdWriteTimestamp(m_resources.Draw.CommandBuffer, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, m_queryPool.Get(),
+                          m_resources.Draw.FirstQuery + LocalConfig::Query0);
       m_resources.QueueTimestampState = TimestampState::BeginSet;
     }
     else
@@ -117,8 +126,10 @@ namespace Fsl
     if (m_resources.Draw.CommandBuffer != VK_NULL_HANDLE && m_resources.QueueTimestampState == TimestampState::BeginSet)
     {
       assert(m_queryPool.IsValid());
-      vkCmdWriteTimestamp(m_resources.Draw.CommandBuffer, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, m_queryPool.Get(), LocalConfig::Query1);
+      vkCmdWriteTimestamp(m_resources.Draw.CommandBuffer, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, m_queryPool.Get(),
+                          m_resources.Draw.FirstQuery + LocalConfig::Query1);
       m_resources.QueueTimestampState = TimestampState::BothSet;
+      m_slots[m_resources.Draw.FrameIndex].HasPendingQuery = true;
     }
     else
     {
@@ -133,7 +144,7 @@ namespace Fsl
   }
 
 
-  void BasicGpuProfiler::BeginDraw(const VkCommandBuffer commandBuffer)
+  void BasicGpuProfiler::BeginDraw(const VkCommandBuffer commandBuffer, const uint32_t frameIndex)
   {
     if (commandBuffer == VK_NULL_HANDLE)
     {
@@ -142,8 +153,27 @@ namespace Fsl
     if (m_resources.IsEnabled)
     {
       assert(m_queryPool.IsValid());
-      m_resources.Draw = DrawResources(commandBuffer);
-      vkCmdResetQueryPool(m_resources.Draw.CommandBuffer, m_queryPool.Get(), 0, LocalConfig::QueryCount);
+      SlotRecord& rSlot = m_slots.at(frameIndex);
+      m_resources.Draw = DrawResources(commandBuffer, frameIndex, frameIndex * LocalConfig::QueryCount);
+
+      if (rSlot.HasPendingQuery)
+      {
+        // The GPU finished the last frame of this slot before the host let the slot record again, so its timestamps are there and the
+        // read does not wait for the device. If they are not (the frame was dropped) no result is reported for this frame.
+        std::array<uint64_t, LocalConfig::QueryCount> resultBuffer{};
+        const VkResult result =
+          vkGetQueryPoolResults(m_device, m_queryPool.Get(), m_resources.Draw.FirstQuery, LocalConfig::QueryCount,
+                                sizeof(uint64_t) * resultBuffer.size(), resultBuffer.data(), sizeof(uint64_t), VK_QUERY_RESULT_64_BIT);
+        if (result == VK_SUCCESS)
+        {
+          // timestampPeriod is the number of nanoseconds required for a timestamp query to be incremented by 1.
+          m_resources.LastResult = static_cast<uint64_t>(
+            std::round((static_cast<double>(resultBuffer[LocalConfig::Query1] - resultBuffer[LocalConfig::Query0]) * m_timestampPeriod) / 1000.0));
+        }
+        rSlot.HasPendingQuery = false;
+      }
+
+      vkCmdResetQueryPool(m_resources.Draw.CommandBuffer, m_queryPool.Get(), m_resources.Draw.FirstQuery, LocalConfig::QueryCount);
     }
   }
 
@@ -153,30 +183,20 @@ namespace Fsl
   }
 
 
-  void BasicGpuProfiler::ExtractResult()
+  void BasicGpuProfiler::BeginFrame()
   {
+    // A frame only reports a result if one is read while it is drawn (BeginDraw)
     m_resources.LastResult = 0;
     if (m_resources.IsEnabled)
     {
       switch (m_resources.QueueTimestampState)
       {
       case TimestampState::NotSet:
+      case TimestampState::BothSet:
         break;
       case TimestampState::BeginSet:
         FSLLOG3_WARNING("Begin was set, but end was not");
         break;
-      case TimestampState::BothSet:
-        {
-          // To make this simple we just do a wait for idle
-          RAPIDVULKAN_CHECK(vkDeviceWaitIdle(m_device));
-          std::array<uint64_t, LocalConfig::QueryCount> resultBuffer{};
-          RAPIDVULKAN_CHECK(vkGetQueryPoolResults(m_device, m_queryPool.Get(), 0, LocalConfig::QueryCount, sizeof(uint64_t) * resultBuffer.size(),
-                                                  resultBuffer.data(), sizeof(uint64_t), VK_QUERY_RESULT_64_BIT | VK_QUERY_RESULT_WAIT_BIT));
-          // timestampPeriod is the number of nanoseconds required for a timestamp query to be incremented by 1.
-          m_resources.LastResult =
-            static_cast<uint64_t>(std::round((static_cast<double>(resultBuffer[1] - resultBuffer[0]) * m_timestampPeriod) / 1000.0));
-          break;
-        }
       default:
         FSLLOG3_WARNING("Unsupported state");
         break;

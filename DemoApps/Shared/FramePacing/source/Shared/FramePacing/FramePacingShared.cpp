@@ -757,27 +757,11 @@ namespace Fsl
   }
 
 
-  void FramePacingShared::BeginGpuWait()
-  {
-    m_gpuWaitStartTime = m_timer.GetTimestamp();
-  }
-
-
   void FramePacingShared::EndFrame(const TimeSpan gpuTime)
   {
     const TickCount now = m_timer.GetTimestamp();
-    if (m_gpuWaitStartTime.Ticks() != 0)
-    {
-      // The app waited for the GPU: the CPU was done with the frame when the wait started
-      m_lastCpuTime = m_gpuWaitStartTime - m_frameStartTime;
-      m_lastGpuTime = now - m_gpuWaitStartTime;
-      m_gpuWaitStartTime = {};
-    }
-    else
-    {
-      m_lastCpuTime = now - m_frameStartTime;
-      m_lastGpuTime = TimeSpan(std::max(gpuTime.Ticks(), int64_t{0}));
-    }
+    m_lastCpuTime = now - m_frameStartTime;
+    m_lastGpuTime = TimeSpan(std::max(gpuTime.Ticks(), int64_t{0}));
     m_lastPresentWait = {};
     m_workSamplePending = true;
     if (m_pacer)
@@ -1830,7 +1814,7 @@ namespace Fsl
     chart->SetLabelBackground(rUIFactory.GetResources().GetToolTipNineSliceSprite());
     chart->SetRenderPolicy(UI::ChartRenderPolicy::FillAvailable);
 
-    // The legend
+    // The legend, in the order the chart stacks the data: the GPU time is on top of the CPU time
     const auto labelCpu = rUIFactory.CreateLabel("CPU");
     labelCpu->SetFontColor(WorkChartCpuColor);
     const auto labelGpu = rUIFactory.CreateLabel("GPU");
@@ -1839,8 +1823,8 @@ namespace Fsl
     legend->SetOrientation(UI::LayoutOrientation::Vertical);
     legend->SetAlignmentY(UI::ItemAlignment::Center);
     legend->AddChild(rUIFactory.CreateLabel("Work per frame"));
-    legend->AddChild(labelCpu);
     legend->AddChild(labelGpu);
+    legend->AddChild(labelCpu);
 
     const auto grid = std::make_shared<UI::GridLayout>(context);
     grid->SetAlignmentX(UI::ItemAlignment::Stretch);

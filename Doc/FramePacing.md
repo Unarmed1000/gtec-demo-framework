@@ -152,8 +152,9 @@ controls at the right can be scrolled if the window is too low for them.
 
 The chart at the bottom shows the work of every frame: the CPU time and on top of it the GPU time, which together are the work the pacer is
 told the frame needed (`Show the work chart`, or start without it with `--HideWorkChart`). The Vulkan sample measures the GPU time with
-timestamp queries. The OpenGL ES samples have no such measurement: their GPU time is the time they wait in `glFinish`, which they only do
-while the pacer is on, so with the pacer off their chart only shows the CPU time. The moving bar and box (the test pattern) can be switched
+timestamp queries. The OpenGL ES samples measure it with a time elapsed query (`GL_EXT_disjoint_timer_query`), with the pacer on or off.
+None of the samples waits for the GPU to measure it, so the GPU time is the one of an earlier frame. Without the extension the OpenGL ES
+samples have no GPU time and their chart only shows the CPU time. The moving bar and box (the test pattern) can be switched
 off as well (`Show the test pattern`, `--HideTestPattern`), and the sync marker at the bottom left can be switched on (`Draw the sync
 marker`, or start with it with `--FramePacing.SyncMarker`).
 
@@ -175,8 +176,9 @@ GLES3.FramePacing --Pacer --CpuLoad 20
 How a frame is held for its swap interval depends on the API:
 
 - **OpenGL ES 2 and 3**: `eglSwapInterval`, so the swap of the host waits for the display. A EGL config only supports a range of swap
-  intervals (it can be as short as one refresh), the sample holds the frame for the rest by delaying the swap. While the pacer is on the
-  sample calls `glFinish` before the swap, so the time the pacer is told the frame needed includes the GPU work.
+  intervals (it can be as short as one refresh), the sample holds the frame for the rest by delaying the swap. The GPU time of a frame
+  is measured with a time elapsed query (`GL_EXT_disjoint_timer_query`) and given to the pacer, the sample does not call `glFinish`.
+  Without the extension the pacer is told the CPU time only.
 - **Vulkan**: a FIFO present holds a frame for one refresh and there is no swap interval, so the sample delays the present of a frame
   that is held longer: it waits until one refresh before the time the pacer aims the frame at, then lets the host present it. The pacer
   has no vsync times, so this is a guess and less even than a real swap interval. The GPU time of a frame is measured with timestamp
