@@ -91,6 +91,9 @@ namespace Fsl::VulkanBasic
 
       constexpr const auto DefaultTimeout = std::numeric_limits<uint64_t>::max();
 
+      //! How many times the recreation of a swapchain waits for the resize event of the window before it goes ahead without it
+      constexpr const uint32_t MaxResizeEventWaits = 4;
+
       //! How often the system stats service is told the GPU memory usage of the app while it wants it
       constexpr TimeSpan GpuMemoryStatsInterval = TimeSpan::FromSeconds(1);
 
@@ -1375,6 +1378,24 @@ namespace Fsl::VulkanBasic
       // Don't even try to recreate things at the moment
       return RecreateSwapchainResult::NotReady;
     }
+
+    // A present or a acquire can say that the swapchain is out of date before the resize event of the window has been processed:
+    // the surface has its new size and the app still has the old window metrics. Recreating here built the resources with those
+    // old metrics, and the event that followed built them again. So the event is waited for (it leaves the state as it is and
+    // updates the metrics), and the resources are built once. Nothing promises that the event comes or that the window and the
+    // surface agree on the size, so the wait is short.
+    const bool surfaceHasExtent = surfaceCapabilities.currentExtent.width != 0xFFFFFFFF || surfaceCapabilities.currentExtent.height != 0xFFFFFFFF;
+    const VkExtent2D windowExtent = TypeConverter::UncheckedTo<VkExtent2D>(m_cachedExtentPx);
+    if (surfaceHasExtent && m_swapchainResizeEventWaitCount < LocalConfig::MaxResizeEventWaits &&
+        (surfaceCapabilities.currentExtent.width != windowExtent.width || surfaceCapabilities.currentExtent.height != windowExtent.height))
+    {
+      ++m_swapchainResizeEventWaitCount;
+      FSLLOG3_VERBOSE("DemoAppVulkanBasic::TryRecreateSwapchain() The surface is {}x{} and the window {}x{}, waiting for the resize event ({})",
+                      surfaceCapabilities.currentExtent.width, surfaceCapabilities.currentExtent.height, windowExtent.width, windowExtent.height,
+                      m_swapchainResizeEventWaitCount);
+      return RecreateSwapchainResult::NotReady;
+    }
+    m_swapchainResizeEventWaitCount = 0;
 
     FSLLOG3_VERBOSE("DemoAppVulkanBasic::TryRecreateSwapchain() Recreating vulkan swapchain");
 

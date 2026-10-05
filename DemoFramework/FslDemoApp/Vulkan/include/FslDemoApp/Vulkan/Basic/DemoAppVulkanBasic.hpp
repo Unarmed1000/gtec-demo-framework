@@ -341,6 +341,8 @@ namespace Fsl
       //! since the swapchain was created
       bool m_swapchainSuboptimalPending{false};
       uint32_t m_swapchainSuboptimalCount{0};
+      //! How often the recreation of the swapchain has waited for the resize event of the window (TryRecreateSwapchain)
+      uint32_t m_swapchainResizeEventWaitCount{0};
       HighResolutionTimer m_presentCallTimer;
       //! The swapchain calls of the frame being drawn and of the last frame that was presented
       PresentCallRecord m_currentPresentCalls;
