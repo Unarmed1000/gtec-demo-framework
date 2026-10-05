@@ -1255,9 +1255,9 @@ namespace Fsl
     // Composite everything
     const auto dstExtent = dst.GetExtent2D();
 
-    std::array<VkClearValue, 2> clearValues{};
+    // The post process render pass has a color attachment and no depth
+    std::array<VkClearValue, 1> clearValues{};
     clearValues[0].color = {{0.0f, 0.0f, 0.0f, 1.0f}};
-    clearValues[1].depthStencil = {1.0f, 0};
 
     VkRenderPassBeginInfo renderPassBeginInfo{};
     renderPassBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
