@@ -117,6 +117,8 @@ namespace Fsl
       FramePacingLogColumn DisplayVSync;
       FramePacingLogColumn DisplayRefreshPeriod;
       FramePacingLogColumn DisplayVSyncFlags;
+      FramePacingLogColumn DisplayVBlankInterval;
+      FramePacingLogColumn DisplayVBlankOffPeriod;
     };
 
     //! Null if the frame pacing service is unavailable
@@ -130,6 +132,8 @@ namespace Fsl
     std::weak_ptr<INativeWindow> m_framePacingLogWindow;
     //! The refresh interval of the display that was last written to the log (negative: none was written)
     int64_t m_framePacingLogRefreshIntervalTicks{-1};
+    //! The answers about variable refresh that were written to the log last (packed, -1: nothing was written yet)
+    int32_t m_framePacingLogVariableRefresh{-1};
     std::shared_ptr<IDemoAppControlEx> m_demoAppControl;
     std::shared_ptr<IGraphicsServiceControl> m_graphicsService;
     std::shared_ptr<IProfilerServiceControl> m_profilerServiceControl;

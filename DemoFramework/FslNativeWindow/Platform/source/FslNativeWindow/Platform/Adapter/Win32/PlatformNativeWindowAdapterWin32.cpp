@@ -962,7 +962,8 @@ namespace Fsl
     const PlatformNativeWindowAllocationParams* const pPlatformCustomWindowAllocationParams)
     : PlatformNativeWindowAdapter(nativeWindowSetup, platformWindowParams, pPlatformCustomWindowAllocationParams,
                                   NativeWindowCapabilityFlags::CaptureMouse | NativeWindowCapabilityFlags::GetDpi |
-                                    NativeWindowCapabilityFlags::GetDisplayInfo | NativeWindowCapabilityFlags::GetVSyncInfo)
+                                    NativeWindowCapabilityFlags::GetDisplayInfo | NativeWindowCapabilityFlags::GetVSyncInfo |
+                                    NativeWindowCapabilityFlags::GetVariableRefreshInfo)
     , m_dpiHelper(platformWindowParams.DpiHelper)
     , m_mouseCaptureEnabled(false)
     , m_mouseInternalCaptureEnabled(false)
@@ -1393,8 +1394,14 @@ namespace Fsl
 
   NativeWindowVSyncInfo PlatformNativeWindowAdapterWin32::TryGetNativeVSyncInfo() const
   {
-    // The selected vsync source (Win32VSyncSources): the desktop compositor unless another one is asked for with --VSyncSource
+    // The vsync source (Win32VSyncSources): the vertical blank wait of DXGI for the monitor the window is on
     return m_vsyncSources ? m_vsyncSources->TryGetVSyncInfo(m_platformWindow) : NativeWindowVSyncInfo();
+  }
+
+
+  NativeWindowVariableRefreshInfo PlatformNativeWindowAdapterWin32::TryGetNativeVariableRefreshInfo() const
+  {
+    return m_vsyncSources ? m_vsyncSources->GetVariableRefreshInfo(m_platformWindow) : NativeWindowVariableRefreshInfo();
   }
 
 

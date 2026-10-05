@@ -36,6 +36,7 @@
 #include <FslNativeWindow/Base/NativeWindowMetrics.hpp>
 #include <FslNativeWindow/Base/NativeWindowTimingSupport.hpp>
 #include <FslNativeWindow/Base/NativeWindowVSyncInfo.hpp>
+#include <FslNativeWindow/Base/NativeWindowVariableRefreshInfo.hpp>
 
 namespace Fsl
 {
@@ -63,6 +64,9 @@ namespace Fsl
     //! @brief Get when the display the window is on refreshes, as the window system reports it right now.
     //! @return the vsync info, IsValid() is false if it is not known.
     [[nodiscard]] virtual NativeWindowVSyncInfo TryGetVSyncInfo() const = 0;
+
+    //! @brief Get what is known about variable refresh on the display the window is on, right now.
+    [[nodiscard]] virtual NativeWindowVariableRefreshInfo TryGetVariableRefreshInfo() const = 0;
 
     //! @brief Get what the window system has that tells when a frame is shown and what of it is used, for logs.
     [[nodiscard]] virtual NativeWindowTimingSupport GetTimingSupport() const = 0;

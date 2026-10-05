@@ -55,6 +55,7 @@
 #include <FslNativeWindow/Base/INativeWindow.hpp>
 #include <FslNativeWindow/Base/NativeWindowDisplayInfo.hpp>
 #include <FslNativeWindow/Base/NativeWindowTimingSupport.hpp>
+#include <FslNativeWindow/Base/NativeWindowVariableRefreshInfo.hpp>
 #include <FslService/Consumer/ServiceProvider.hpp>
 #include <fmt/format.h>
 #include <fmt/ranges.h>
@@ -129,6 +130,15 @@ namespace Fsl
                             "What the window system says about how displayVSyncTicks was obtained, zero where it says nothing. Wayland: the "
                             "kind flags of presentation-time (1 in sync with the display, 2 a time of the display hardware, 4 the hardware "
                             "signalled the frame was shown, 8 zero copy)");
+      m_framePacingLogColumns.DisplayVBlankInterval =
+        rLog.RegisterColumn("displayVBlankIntervalMilliPeriods", FramePacingLogUnit::Count,
+                            "The median time between two refreshes of the display as the window system measured it, in thousandths of the "
+                            "refresh period of its mode: 1000 is a display that refreshes at the rate of its mode, more is a display that "
+                            "refreshes slower (variable refresh that follows the frames). Empty if the platform does not measure it");
+      m_framePacingLogColumns.DisplayVBlankOffPeriod =
+        rLog.RegisterColumn("displayVBlankOffPeriodPerMille", FramePacingLogUnit::Count,
+                            "The share of the last refreshes of the display that did not come one refresh period of its mode after the "
+                            "one before, in thousandths, read with displayVBlankIntervalMilliPeriods");
     }
     else
     {
@@ -375,6 +385,37 @@ namespace Fsl
             rLog.SetLogValue(m_framePacingLogColumns.DisplayVSync, vsyncInfo.VSyncTime);
             rLog.SetLogValue(m_framePacingLogColumns.DisplayRefreshPeriod, vsyncInfo.RefreshPeriod);
             rLog.SetLogUInt64(m_framePacingLogColumns.DisplayVSyncFlags, vsyncInfo.SourceFlags);
+          }
+          // What is known about variable refresh: the measurement per frame, the answers as a event when one of them changes
+          const NativeWindowVariableRefreshInfo variableRefresh = window->TryGetVariableRefreshInfo();
+          if (variableRefresh.ObservedIntervalCount != 0u)
+          {
+            rLog.SetLogUInt64(m_framePacingLogColumns.DisplayVBlankInterval, variableRefresh.ObservedIntervalMilliPeriods);
+            rLog.SetLogUInt64(m_framePacingLogColumns.DisplayVBlankOffPeriod, variableRefresh.ObservedOffPeriodPerMille);
+          }
+          const int32_t packedAnswers =
+            (static_cast<int32_t>(variableRefresh.Supported) << 12) | (static_cast<int32_t>(variableRefresh.Enabled) << 8) |
+            (static_cast<int32_t>(variableRefresh.Active) << 4) | static_cast<int32_t>(variableRefresh.Observed);
+          if (packedAnswers != m_framePacingLogVariableRefresh)
+          {
+            m_framePacingLogVariableRefresh = packedAnswers;
+            const auto toText = [](const NativeWindowVariableRefreshAnswer answer)
+            {
+              switch (answer)
+              {
+              case NativeWindowVariableRefreshAnswer::No:
+                return "no";
+              case NativeWindowVariableRefreshAnswer::Yes:
+                return "yes";
+              case NativeWindowVariableRefreshAnswer::Unknown:
+              default:
+                return "unknown";
+              }
+            };
+            rLog.AddLogEvent("variableRefresh", fmt::format("supported={};enabled={};active={};observed={};source={};observedSource={}",
+                                                            toText(variableRefresh.Supported), toText(variableRefresh.Enabled),
+                                                            toText(variableRefresh.Active), toText(variableRefresh.Observed),
+                                                            variableRefresh.Source, variableRefresh.ObservedSource));
           }
         }
         if (refreshIntervalTicks != m_framePacingLogRefreshIntervalTicks)

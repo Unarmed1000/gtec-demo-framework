@@ -26,9 +26,12 @@ read, the rest is up to the person at the machine.
   (`Vulkan.FramePacing` for the plans that come with the tool), or the one given with `--exe`.
 - **Set the refresh rate of the display** to the one the plan is for. The window system's rate is written to the log and a run is checked
   against the rate of the plan (or `--refresh-hz`).
-- **Decide on variable refresh (G-SYNC, FreeSync)** and say so with `--fact`. No API tells an app if it is on: with it on the display
-  follows the frames, the swapchain still reports a fixed refresh mode, and the display times of a run look nothing like the ones with
-  it off. The frame pacer needs it off.
+- **Decide on variable refresh (G-SYNC, FreeSync)** and say so with `--fact`. With it on the display follows the frames, the
+  swapchain still reports a fixed refresh mode, and the display times of a run look nothing like the ones with it off. The frame
+  pacer needs it off. On Windows the window measures it and the tool reports it (`vrr: seen for n frames` in the summary, a line in
+  the notes, and a warning in a plan for a fixed refresh rate), but only while the frames come slower than the rate of the display:
+  a run at the display rate looks the same with it on and off. The setting of the driver does not settle it either, with G-SYNC on
+  for "full screen only" a window was shown with variable refresh in some runs and not in others. So read the state, do not assume it.
 - **Turn on the frame rate counter of the display** if it has one (the OSD of the monitor, not an overlay of the GPU driver). It is the
   only independent view of what the display did. Note what it showed with `--fact` or in the notes afterwards.
 - **Stop everything else that works on the machine**: builds, other tools, video calls, a browser with a video, and the services
@@ -195,6 +198,7 @@ Part                           | Meaning
 `pacer on, swap interval 1: n` | The frames by the swap interval the pacer held them for. `pacer SWITCHED` is a run to throw away.
 `start step`                   | The time from the start of a frame to the start of the next: the median, and the values 1 % of the frames are under and over.
 `shown for refreshes`          | The frames by the number of refreshes from their display time to the next display time. `1: 2330, 2: 3` is three frames that stayed on the display for two refreshes. Needs `VK_EXT_present_timing`.
+`vrr: seen for n frames`       | The frames during which the window said the display refreshed at a variable rate (Windows measures it). Not there when it was not seen, which is no proof that variable refresh was off.
 `presents not shown or not timed` | Presents the presentation engine reported on without a display time: their image did not reach the display.
 `feedback used: n, refused: n` | With present feedback: what became of the display times the pacer was given, and `lateRefreshes`, the refreshes the display fell behind the swap intervals by them. Many refused is a warning: variable refresh, or a wrong refresh rate.
 `work`                         | The median CPU and GPU time of a frame.

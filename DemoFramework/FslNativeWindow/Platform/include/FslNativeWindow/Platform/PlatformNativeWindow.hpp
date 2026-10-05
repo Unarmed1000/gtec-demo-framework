@@ -51,6 +51,7 @@ namespace Fsl
     [[nodiscard]] NativeWindowMetrics GetWindowMetrics() const override;
     [[nodiscard]] NativeWindowDisplayInfo TryGetDisplayInfo() const override;
     [[nodiscard]] NativeWindowVSyncInfo TryGetVSyncInfo() const override;
+    [[nodiscard]] NativeWindowVariableRefreshInfo TryGetVariableRefreshInfo() const override;
     [[nodiscard]] NativeWindowTimingSupport GetTimingSupport() const override;
     bool TryGetDpi(Vector2& rDPI) const override;
     bool TryGetDensityDpi(uint32_t& rDensityDpi) const override;

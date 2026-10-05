@@ -25,6 +25,7 @@
 
 #include <FslNativeWindow/Base/NativeWindowTimingSupport.hpp>
 #include <FslNativeWindow/Base/NativeWindowVSyncInfo.hpp>
+#include <FslNativeWindow/Base/NativeWindowVariableRefreshInfo.hpp>
 #include <FslNativeWindow/Platform/PlatformNativeWindowSystemTypes.hpp>
 #include <memory>
 #include <string>
@@ -69,6 +70,11 @@ namespace Fsl
     //! @brief The time of a recent vertical blank of the monitor the window is on and its refresh period (invalid if not known)
     //! @note  Called once per frame. It follows the window when it moves to another monitor.
     [[nodiscard]] NativeWindowVSyncInfo TryGetVSyncInfo(const HWND hWnd);
+
+    //! @brief What is known about variable refresh on the monitor the window is on. Windows has no call for it, so it is what the
+    //!        vertical blank waits show: how far apart the vertical blanks are, in refresh periods of the mode.
+    //! @note  Cheap, it reads what the wait thread measured.
+    [[nodiscard]] NativeWindowVariableRefreshInfo GetVariableRefreshInfo(const HWND hWnd);
 
     //! @brief Add the source and if it works for the monitor of the window
     void FillTimingSupport(const HWND hWnd, NativeWindowTimingSupport& rSupport);

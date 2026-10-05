@@ -201,7 +201,8 @@ them are disabled while the pacer is off and in the OpenGL ES samples, where `eg
   target. `--Pacer.VSyncPhase` is where in that refresh the present is done, in percent: only a part of a refresh is safe, and where
   that part is has to be measured for a platform (55 to 75 % on Windows at 240 Hz, nearly all of the refresh at 120 Hz and below, the
   default is 65). It is not for a display with a variable refresh rate (G-SYNC, FreeSync): the vertical blank follows the frames
-  there, and a frame held by it was shown for anything from one to seven refreshes.
+  there, and a frame held by it was shown for anything from one to seven refreshes. The sample stops using it when it sees that
+  (see below).
 - **`schedule`: the presentation engine holds the frame.** The present is given a target time and is done right away
   (`VK_EXT_present_timing` where the device and the surface have `presentAtRelativeTime`): the image is not shown before the target
   time has passed since the image of the present before it was shown, and then at the first refresh. The sample asks for the swap
@@ -211,6 +212,16 @@ them are disabled while the pacer is off and in the OpenGL ES samples, where `eg
 A method the system can not do falls back to `vsync`, else `wait`. The frame log says what every frame used (`holdMethod`), where the
 vsync wait aimed (`holdTargetTicks`), what the sample asked a scheduled present for (`presentTargetTicks`) and what the present was
 given (`presentTargetRelativeNs`). The `presentTiming` event has `canSchedule=1` where a present can take a target time.
+
+The vsync wait is also left when the display was seen to refresh at a variable rate: the window says so
+(`INativeWindow::TryGetVariableRefreshInfo`, on Windows a measurement of the vertical blanks) or the swapchain does. From then on the
+frames are held with the sleep and `Hold: wait on the vsync` is shown as disabled, until another hold is selected or the refresh rate
+of the display changes, so the method does not go back and forth. The `Variable refresh` row of the frame pacing overlay shows what is
+known: `not seen`, `seen` with the refreshes of the mode between two refreshes of the display, `seen before`, or `unknown`, and in
+the Vulkan sample what the swapchain says (`swapchain: fixed`). `not seen` is no proof that variable refresh is off: a display with
+it on refreshes like a fixed one while the frames come at the rate of its mode. The frame log has the event `holdVariableRefresh`
+where the sample left the vsync wait. What a platform can tell is in
+[FramePacingPlatformSupport.md](FramePacingPlatformSupport.md#variable-refresh-what-a-platform-tells-an-app).
 
 Any Vulkan app can schedule a present: `DemoAppVulkanBasic::IsPresentSchedulingSupported()` and
 `SetPresentRelativeTargetTime(time)` before the frame is presented. The absolute form of the extension (`presentAtAbsoluteTime`) is not
@@ -370,6 +381,8 @@ Column | Unit | Description
 `displayVSyncTicks` | ticks | The time of a recent vertical blank of the display as the window system reported it when the frame began (empty if the platform does not report it)
 `displayRefreshPeriodTicks` | durationTicks | The time between two refreshes of the display as the window system measured it, read with displayVSyncTicks
 `displayVSyncFlags` | code | What the window system says about how displayVSyncTicks was obtained, zero where it says nothing. Wayland: the kind flags of presentation-time (1 in sync with the display, 2 a time of the display hardware, 4 the hardware signalled the frame was shown, 8 zero copy)
+`displayVBlankIntervalMilliPeriods` | count | The median time between the last vertical blanks of the display in thousandths of the refresh period of its mode: 1000 is a display that refreshes at the rate of its mode, 2000 one that refreshes every second period (variable refresh at half the rate). Empty if the platform does not measure it (Windows does)
+`displayVBlankOffPeriodPerMille` | count | The share of those vertical blanks that did not come one refresh period after the one before, in thousandths, read with displayVBlankIntervalMilliPeriods
 
 **Vulkan apps (`DemoAppVulkanBasic`)**
 
@@ -453,7 +466,9 @@ Event | Details
 `runStarted`, `runCompleted` | A measured run of the marker: the run id, the sequence id, the name and the duration.
 `swapchainCreated` | Vulkan: the extent, the format, the present mode, the image counts, the flags and the frames in flight of a swapchain. More than one means the window was resized or the swapchain was lost.
 `presentTiming` | Vulkan: if the presents of the swapchain are timed, the stages and the time domain of the surface and what it can schedule.
-`refreshProperties` | Vulkan: `refreshDuration` and `refreshInterval` of the swapchain, written when they change.
+`refreshProperties` | Vulkan: `refreshDuration` and `refreshInterval` of the swapchain and the refresh mode they stand for (`refreshMode` is `fixed`, `variable` or `unknown`), written when they change.
+`variableRefresh` | What the window knows about variable refresh on its display, written when an answer changes: `supported`, `enabled` and `active` are what the window system declares, `observed` is what was measured (each `yes`, `no` or `unknown`), `source` and `observedSource` are where they came from.
+`holdVariableRefresh` | The samples: `seen=1` from the frame on where the display was seen to refresh at a variable rate and the vsync wait is not used anymore.
 `presentClockCalibration` | Vulkan: the offset between the clock of a present stage and the clock of the framework and how far off it can be, every time it is measured.
 `pacerConfig` | The samples: the pacer was switched or its settings changed (the refresh rate it uses, the target fps, adaptive, present feedback, how a frame is held and the phase of the vsync wait).
 

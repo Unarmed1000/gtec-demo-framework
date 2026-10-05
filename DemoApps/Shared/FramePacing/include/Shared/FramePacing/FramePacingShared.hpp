@@ -44,6 +44,7 @@
 #include <Shared/FramePacing/SamplePacer.hpp>
 #include <Shared/FramePacing/SamplePacerHold.hpp>
 #include <Shared/FramePacing/SamplePresentFeedback.hpp>
+#include <Shared/FramePacing/SampleSwapchainRefresh.hpp>
 #include <fmt/format.h>
 #include <array>
 #include <iterator>
@@ -122,6 +123,7 @@ namespace Fsl
       std::shared_ptr<UI::Label> FrameWindow;
       std::shared_ptr<UI::Label> Feedback;
       std::shared_ptr<UI::Label> FeedbackLate;
+      std::shared_ptr<UI::Label> VariableRefresh;
       //! What the measured presents say (only an app that measures them has values for these)
       std::shared_ptr<UI::Label> DisplayError;
       std::shared_ptr<UI::Label> DisplayInterval;
@@ -272,6 +274,17 @@ namespace Fsl
     //! between two refreshes (both zero if the platform does not say)
     TickCount m_vsyncTime;
     TimeSpan m_vsyncPeriod;
+    //! True once the display was seen to refresh at a variable rate: the window says so, it was measured, or the swapchain says so.
+    //! The vertical blanks of such a display follow the frames, so the vsync wait can not hold a frame and the sample does not use it.
+    //! It stays set until the hold selection or the refresh rate of the display changes, so the method does not flip back and forth.
+    bool m_variableRefreshSeen{false};
+    //! The hold selection and the refresh rate of the display that m_variableRefreshSeen belongs to
+    SamplePacerHold m_variableRefreshSeenHold{SamplePacerHold::Auto};
+    double m_variableRefreshSeenRateHz{0.0};
+    //! What was last written to the log about it
+    bool m_loggedVariableRefreshSeen{false};
+    //! What the swapchain of the app says about the refresh of the display (SetSwapchainRefresh)
+    SampleSwapchainRefresh m_swapchainRefresh{SampleSwapchainRefresh::Unknown};
     //! Where in the refresh before the one a frame is aimed at the vsync wait presents, in percent of the refresh
     int32_t m_vsyncPhasePercent{SampleConfig::VSyncPhasePercent.Get()};
     //! What was last written to the log about how the frames are held
@@ -398,6 +411,7 @@ namespace Fsl
     //! the sample does not have to wait before it presents. Call it every frame, as it can change when the swapchain is recreated.
     void SetPresentSchedulingSupport(const bool supported);
     //! How the frames are held right now: the method that was asked for, or the one the system falls back to (never Auto).
+    //! The vsync wait falls back to the sleep once the display was seen to refresh at a variable rate.
     [[nodiscard]] SamplePacerHold GetHoldMethod() const;
     //! The target time of the present of the current frame after WaitForPresent: the frame is not to be shown before this long after the
     //! frame before it was shown. Zero if the present is not scheduled.
@@ -413,6 +427,17 @@ namespace Fsl
     //! when the swapchain is recreated.
     //! @param refreshDuration the duration of a refresh of the display according to the swapchain (zero if unknown)
     void SetPresentFeedback(const bool enabled, const TimeSpan refreshDuration = {});
+    //! Tell the sample what the swapchain says about how the display refreshes. Call it every frame, an app without a swapchain that
+    //! says does not call it.
+    void SetSwapchainRefresh(const SampleSwapchainRefresh swapchainRefresh) noexcept
+    {
+      m_swapchainRefresh = swapchainRefresh;
+    }
+    //! True once the display was seen to refresh at a variable rate (see GetHoldMethod: the vsync wait is not used then)
+    [[nodiscard]] bool IsVariableRefreshSeen() const noexcept
+    {
+      return m_variableRefreshSeen;
+    }
     //! The id of the present of the frame being drawn. Call it during the app's draw after GetRaymarchParams, which starts the frame.
     void SetFramePresentId(const uint64_t presentId);
     //! When the present with the given id was called (a HighResolutionTimer timestamp). The frame pacer is told with the display time of
@@ -465,6 +490,7 @@ namespace Fsl
     void UpdatePacerStats();
     //! Update the rows of the frame pacing section that show what the measured presents say
     void UpdatePresentFeedbackStats();
+    void UpdateVariableRefreshStats();
     //! Add the columns of the sample to the frame pacing log
     void RegisterLogColumns();
     //! Write what the frame that just started is to the frame pacing log

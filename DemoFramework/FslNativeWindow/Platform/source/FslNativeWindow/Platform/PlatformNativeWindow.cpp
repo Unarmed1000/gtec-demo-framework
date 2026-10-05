@@ -93,6 +93,17 @@ namespace Fsl
   }
 
 
+  NativeWindowVariableRefreshInfo PlatformNativeWindow::TryGetVariableRefreshInfo() const
+  {
+    if (!m_adapter)
+    {
+      FSLLOG3_WARNING("TryGetVariableRefreshInfo: Object shutdown");
+      return {};
+    }
+    return m_adapter->TryGetVariableRefreshInfo();
+  }
+
+
   NativeWindowTimingSupport PlatformNativeWindow::GetTimingSupport() const
   {
     if (!m_adapter)

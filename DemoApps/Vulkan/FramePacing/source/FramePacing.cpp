@@ -33,6 +33,20 @@ namespace Fsl
       constexpr uint32_t FramesPerCalibration = 240;
     }
 
+    constexpr SampleSwapchainRefresh ToSampleSwapchainRefresh(const Vulkan::VUPresentRefreshMode mode) noexcept
+    {
+      switch (mode)
+      {
+      case Vulkan::VUPresentRefreshMode::Fixed:
+        return SampleSwapchainRefresh::Fixed;
+      case Vulkan::VUPresentRefreshMode::Variable:
+        return SampleSwapchainRefresh::Variable;
+      case Vulkan::VUPresentRefreshMode::Unknown:
+      default:
+        return SampleSwapchainRefresh::Unknown;
+      }
+    }
+
     VulkanBasic::DemoAppVulkanSetup CreateSetup()
     {
       VulkanBasic::DemoAppVulkanSetup setup;
@@ -168,6 +182,7 @@ namespace Fsl
     // after the present.
     m_shared.SetPresentFeedback(IsPresentTimingEnabled(), GetPresentRefreshDuration());
     m_shared.SetPresentSchedulingSupport(IsPresentSchedulingSupported());
+    m_shared.SetSwapchainRefresh(ToSampleSwapchainRefresh(GetPresentRefreshMode()));
     {    // When the frame before this one was presented: the frame pacer is told with the display time of that frame
       const VulkanBasic::PresentCallRecord& presentCalls = GetLastPresentCalls();
       if (presentCalls.PresentId != 0u)

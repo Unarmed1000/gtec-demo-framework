@@ -107,6 +107,11 @@ class RunCheck:
     LoadSamples: int = 0
     # The refresh the swapchain reported first (VK_EXT_present_timing), in nanoseconds
     SwapchainRefreshNs: float | None = None
+    # The frames during which the window said the display refreshes at a variable rate (it declares it, or it was measured),
+    # None if the window never had an answer
+    VariableRefreshRows: int | None = None
+    # What the answer of the window came from
+    VariableRefreshSource: str = ""
     Warnings: list[str] = field(default_factory=list)
 
     def GetRefreshRateHz(self) -> float | None:
@@ -235,6 +240,9 @@ def _AddWarnings(log: FramePacingLogFile, check: RunCheck, expectation: RunExpec
             unrequested = f", {check.UnrequestedPresents} were not asked to be timed" if check.UnrequestedPresents is not None else ""
             warnings.append(f"only {check.TimedPresents} of {check.Rows} presents have a display time, {check.UntimedReports} were reported "
                             f"without one (their image did not reach the display, or it was not timed){unrequested}")
+    if check.VariableRefreshRows and expectation.RefreshRateHz is not None:
+        warnings.append(f"variable refresh was seen for {check.VariableRefreshRows} of {check.Rows} frames ({check.VariableRefreshSource}): "
+                        "the display followed the frames, the run is for a display with a fixed refresh rate")
     used = check.FeedbackState.get("used", 0)
     refused = check.FeedbackState.get("refused", 0)
     if check.FeedbackOnRows and (used + refused) > 0 and refused > (used + refused) * _g_feedbackRefusedLimit:
@@ -248,6 +256,25 @@ def _AddWarnings(log: FramePacingLogFile, check: RunCheck, expectation: RunExpec
             warnings.append(f"other programs used {otherBusy * 100.0:.0f} % of the CPUs during a run that was meant to be idle")
         elif expectation.Loaded and otherBusy < _g_loadedOtherBusyMinimum:
             warnings.append(f"other programs used {otherBusy * 100.0:.0f} % of the CPUs during a run that was meant to be loaded")
+
+
+def _CheckVariableRefresh(log: FramePacingLogFile, check: RunCheck) -> None:
+    """The variableRefresh event is written when a answer of the window changes, so a answer holds until the next event"""
+    events = log.GetEvents("variableRefresh")
+    for index, event in enumerate(events):
+        values = event.GetValues()
+        active = values.get("active", "unknown")
+        observed = values.get("observed", "unknown")
+        if active == "unknown" and observed == "unknown":
+            continue
+        if check.VariableRefreshRows is None:
+            check.VariableRefreshRows = 0
+        source = values.get("source", "") if active != "unknown" else values.get("observedSource", "")
+        if len(source) > 0:
+            check.VariableRefreshSource = source
+        if active == "yes" or observed == "yes":
+            endFrame = events[index + 1].FrameIndex if (index + 1) < len(events) else check.Rows
+            check.VariableRefreshRows += max(endFrame - event.FrameIndex, 0)
 
 
 def CheckRun(log: FramePacingLogFile, expectation: RunExpectation) -> RunCheck:
@@ -315,6 +342,7 @@ def CheckRun(log: FramePacingLogFile, expectation: RunExpectation) -> RunCheck:
     else:
         check.WorkGpuMs = _ToDistributionMs([value for value in log.GetColumn("workGpuTicks")[firstRow:] if value is not None])
 
+    _CheckVariableRefresh(log, check)
     _CheckLoad(log, check)
     _AddWarnings(log, check, expectation)
     return check
@@ -348,6 +376,10 @@ def FormatReport(check: RunCheck) -> list[str]:
     if check.SwapchainRefreshNs:
         lines.append(f"refresh the swapchain reports: {check.SwapchainRefreshNs / 1000000.0:.3f} ms (with displays at different rates it is "
                      "the one of the fastest display)")
+    if check.VariableRefreshRows is not None:
+        seen = f"seen for {check.VariableRefreshRows} of {check.Rows} frames" if check.VariableRefreshRows > 0 else "not seen"
+        lines.append(f"variable refresh: {seen} ({check.VariableRefreshSource}). Not seen is no proof that it is off: a display with "
+                     "variable refresh on refreshes like a fixed one while the frames come at the rate of its mode")
     if check.SwapchainCount is not None:
         lines.append(f"swapchains created: {check.SwapchainCount}")
     if check.PacerOnRows is not None:
@@ -412,6 +444,8 @@ def FormatSummary(name: str, check: RunCheck) -> str:
             parts.append(f"hold: {_FormatCounts(check.HoldMethods)}")
         if check.FeedbackOnRows:
             parts.append(f"feedback {_FormatCounts(check.FeedbackState)}")
+    if check.VariableRefreshRows:
+        parts.append(f"vrr: seen for {check.VariableRefreshRows} frames")
     if check.FrameStartIntervalMs is not None:
         parts.append(f"start step {check.FrameStartIntervalMs.Median:.3f} ms ({check.FrameStartIntervalMs.P1:.3f} to {check.FrameStartIntervalMs.P99:.3f})")
     if len(check.ShownForRefreshes) > 0:

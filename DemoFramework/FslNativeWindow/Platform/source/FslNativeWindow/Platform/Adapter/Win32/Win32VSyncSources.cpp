@@ -31,6 +31,8 @@
 #include <algorithm>
 #include <array>
 #include <atomic>
+#include <cmath>
+#include <cstddef>
 #include <cwchar>
 #include <thread>
 #include <vector>
@@ -53,6 +55,15 @@ namespace Fsl
       //! sleeps then, so it does not spin
       constexpr double MinWaitSeconds = 0.0002;
       constexpr DWORD NoWaitSleepMilliseconds = 2;
+
+      //! What the variable refresh measurement is made from
+      constexpr auto ObservedSourceName = "dxgi vertical blank intervals";
+      //! The vertical blank intervals that are kept to measure from
+      constexpr std::size_t MeasuredIntervalCount = 64;
+      //! A interval counts as "not one refresh period" when it differs from the period of the mode by more than this share of it
+      constexpr double OffPeriodTolerance = 0.10;
+
+      static_assert(MeasuredIntervalCount >= NativeWindowVariableRefreshRule::MinIntervalCount, "the rule would never give a answer");
     }
 
     int64_t ReadQpc() noexcept
@@ -149,17 +160,23 @@ namespace Fsl
       std::thread m_thread;
       std::atomic<bool> m_stop{false};
       std::atomic<int64_t> m_lastQpc{0};
+      //! Measured from the last vertical blanks: the median time between two of them, how many of them were not one refresh period
+      //! of the mode apart (in thousandths) and how many intervals that was measured from
+      std::atomic<int64_t> m_medianIntervalQpc{0};
+      std::atomic<uint32_t> m_offPeriodPerMille{0};
+      std::atomic<uint32_t> m_intervalCount{0};
 
     public:
       VBlankWaitThread(const VBlankWaitThread&) = delete;
       VBlankWaitThread& operator=(const VBlankWaitThread&) = delete;
 
       //! Wait on a output (DXGI). The thread releases it when it ends.
-      VBlankWaitThread(IDXGIOutput* const pOutput, const int64_t qpcFrequency)
+      //! @param periodQpc the refresh period of the mode of the monitor (zero if it is not known)
+      VBlankWaitThread(IDXGIOutput* const pOutput, const int64_t qpcFrequency, const double periodQpc)
         : m_thread(
-            [this, pOutput, qpcFrequency]()
+            [this, pOutput, qpcFrequency, periodQpc]()
             {
-              Run(qpcFrequency, [pOutput]() { return SUCCEEDED(pOutput->WaitForVBlank()); });
+              Run(qpcFrequency, periodQpc, [pOutput]() { return SUCCEEDED(pOutput->WaitForVBlank()); });
               pOutput->Release();
             })
       {
@@ -180,11 +197,32 @@ namespace Fsl
         return m_lastQpc.load();
       }
 
+      [[nodiscard]] int64_t GetMedianIntervalQpc() const noexcept
+      {
+        return m_medianIntervalQpc.load();
+      }
+
+      [[nodiscard]] uint32_t GetOffPeriodPerMille() const noexcept
+      {
+        return m_offPeriodPerMille.load();
+      }
+
+      [[nodiscard]] uint32_t GetIntervalCount() const noexcept
+      {
+        return m_intervalCount.load();
+      }
+
     private:
       template <typename TWait>
-      void Run(const int64_t qpcFrequency, TWait wait)
+      void Run(const int64_t qpcFrequency, const double periodQpc, TWait wait)
       {
         const auto minWaitQpc = static_cast<int64_t>(static_cast<double>(qpcFrequency) * LocalConfig::MinWaitSeconds);
+        // The time between a vertical blank and the one before it, for the last of them
+        std::array<int64_t, LocalConfig::MeasuredIntervalCount> intervals{};
+        std::array<int64_t, LocalConfig::MeasuredIntervalCount> sorted{};
+        std::size_t intervalIndex = 0;
+        std::size_t intervalCount = 0;
+        int64_t lastVBlank = 0;
         int64_t lastReturn = ReadQpc();
         while (!m_stop.load())
         {
@@ -193,14 +231,48 @@ namespace Fsl
           if (waited && (now - lastReturn) >= minWaitQpc)
           {
             m_lastQpc.store(now);
+            if (lastVBlank != 0)
+            {
+              intervals[intervalIndex] = now - lastVBlank;
+              intervalIndex = (intervalIndex + 1u) % intervals.size();
+              intervalCount = std::min(intervalCount + 1u, intervals.size());
+              PublishIntervals(intervals, sorted, intervalCount, periodQpc);
+            }
+            lastVBlank = now;
           }
           else
           {
-            // The wait failed or did not wait: the display is off or the output is gone
+            // The wait failed or did not wait: the display is off or the output is gone. The next vertical blank has none before it.
+            lastVBlank = 0;
             Sleep(LocalConfig::NoWaitSleepMilliseconds);
           }
           lastReturn = now;
         }
+      }
+
+      void PublishIntervals(const std::array<int64_t, LocalConfig::MeasuredIntervalCount>& intervals,
+                            std::array<int64_t, LocalConfig::MeasuredIntervalCount>& rSorted, const std::size_t count,
+                            const double periodQpc) noexcept
+      {
+        std::copy_n(intervals.begin(), count, rSorted.begin());
+        const auto itrMedian = rSorted.begin() + static_cast<std::ptrdiff_t>(count / 2u);
+        std::nth_element(rSorted.begin(), itrMedian, rSorted.begin() + static_cast<std::ptrdiff_t>(count));
+        uint32_t offCount = 0;
+        if (periodQpc > 0.0)
+        {
+          const double allowed = periodQpc * LocalConfig::OffPeriodTolerance;
+          for (std::size_t i = 0; i < count; ++i)
+          {
+            const double difference = static_cast<double>(intervals[i]) - periodQpc;
+            if (difference > allowed || difference < -allowed)
+            {
+              ++offCount;
+            }
+          }
+        }
+        m_medianIntervalQpc.store(*itrMedian);
+        m_offPeriodPerMille.store(static_cast<uint32_t>((static_cast<std::size_t>(offCount) * 1000u) / count));
+        m_intervalCount.store(static_cast<uint32_t>(count));
       }
     };
   }
@@ -260,7 +332,7 @@ namespace Fsl
         HasDxgiOutput = pOutput != nullptr;
         if (pOutput != nullptr)
         {
-          WaitThread = std::make_unique<VBlankWaitThread>(pOutput, QpcFrequency);
+          WaitThread = std::make_unique<VBlankWaitThread>(pOutput, QpcFrequency, GetMonitorPeriodQpc());
         }
       }
       FSLLOG3_VERBOSE("Win32: vsync source '{}'", HasDxgiOutput ? LocalConfig::NameDxgi : "none");
@@ -281,6 +353,28 @@ namespace Fsl
     [[nodiscard]] double GetMonitorPeriodQpc() const noexcept
     {
       return Mode.Valid ? (static_cast<double>(QpcFrequency) / Mode.RefreshHz) : 0.0;
+    }
+
+    //! Windows has no call that says if variable refresh is on, so nothing is declared. What is measured: the vertical blanks of a
+    //! display that refreshes at the rate of its mode are one refresh period apart, the ones of a display that follows the frames
+    //! are as far apart as the frames.
+    [[nodiscard]] NativeWindowVariableRefreshInfo GetVariableRefreshInfo() const noexcept
+    {
+      NativeWindowVariableRefreshInfo info;
+      const double periodQpc = GetMonitorPeriodQpc();
+      const uint32_t intervalCount = WaitThread ? WaitThread->GetIntervalCount() : 0u;
+      if (intervalCount == 0u || periodQpc <= 0.0)
+      {
+        return info;
+      }
+      info.ObservedIntervalMilliPeriods =
+        static_cast<uint32_t>(std::llround((static_cast<double>(WaitThread->GetMedianIntervalQpc()) * 1000.0) / periodQpc));
+      info.ObservedOffPeriodPerMille = WaitThread->GetOffPeriodPerMille();
+      info.ObservedIntervalCount = intervalCount;
+      info.ObservedSource = LocalConfig::ObservedSourceName;
+      info.Observed =
+        NativeWindowVariableRefreshRule::ToObserved(info.ObservedIntervalMilliPeriods, info.ObservedOffPeriodPerMille, info.ObservedIntervalCount);
+      return info;
     }
 
     [[nodiscard]] NativeWindowVSyncInfo TryGetWaited() const noexcept
@@ -326,6 +420,17 @@ namespace Fsl
   }
 
 
+  NativeWindowVariableRefreshInfo Win32VSyncSources::GetVariableRefreshInfo(const HWND hWnd)
+  {
+    if (hWnd == nullptr || m_state->QpcFrequency <= 0)
+    {
+      return {};
+    }
+    m_state->UpdateMonitor(hWnd);
+    return m_state->GetVariableRefreshInfo();
+  }
+
+
   void Win32VSyncSources::OnDisplayChanged() noexcept
   {
     // Forget the monitor: the next call looks it up again with its mode, and selects a source for it
@@ -342,8 +447,8 @@ namespace Fsl
     rSupport.RequestedVSyncSource = m_state->Requested.empty() ? LocalConfig::NameAuto : m_state->Requested;
     // The one source is used wherever the monitor of the window has a DXGI output
     const bool isUsed = m_state->HasDxgiOutput;
-    rSupport.VSyncSources.emplace_back(LocalConfig::NameDxgi, isUsed ? NativeWindowVSyncSourceState::Used : NativeWindowVSyncSourceState::NotAvailable,
-                                       LocalConfig::DescriptionDxgi);
+    rSupport.VSyncSources.emplace_back(
+      LocalConfig::NameDxgi, isUsed ? NativeWindowVSyncSourceState::Used : NativeWindowVSyncSourceState::NotAvailable, LocalConfig::DescriptionDxgi);
     // And as what the window system has and what is used of it
     if (isUsed)
     {

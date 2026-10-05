@@ -36,6 +36,7 @@
 #include <FslNativeWindow/Base/NativeWindowMetrics.hpp>
 #include <FslNativeWindow/Base/NativeWindowTimingSupport.hpp>
 #include <FslNativeWindow/Base/NativeWindowVSyncInfo.hpp>
+#include <FslNativeWindow/Base/NativeWindowVariableRefreshInfo.hpp>
 
 namespace Fsl
 {
@@ -65,6 +66,12 @@ namespace Fsl
     //! @note  It is a hint of the platform, see NativeWindowVSyncInfo. It asks the window system, so call it once per frame at most.
     //! @return the vsync info, IsValid() is false if the platform does not report it (NativeWindowCapabilityFlags::GetVSyncInfo).
     [[nodiscard]] virtual NativeWindowVSyncInfo TryGetVSyncInfo() const = 0;
+
+    //! @brief Get what is known about variable refresh (G-SYNC, FreeSync, ...) on the display the window is on, right now.
+    //! @note  It is cheap, so it can be called once per frame. No platform answers every question, see
+    //!        NativeWindowVariableRefreshInfo.
+    //! @return the info, HasInfo() is false if the platform says nothing (NativeWindowCapabilityFlags::GetVariableRefreshInfo).
+    [[nodiscard]] virtual NativeWindowVariableRefreshInfo TryGetVariableRefreshInfo() const = 0;
 
     //! @brief Get what the window system has that tells when a frame is shown and what of it is used, for logs.
     //! @note  It allocates, so it is for the start of a app and not for every frame.

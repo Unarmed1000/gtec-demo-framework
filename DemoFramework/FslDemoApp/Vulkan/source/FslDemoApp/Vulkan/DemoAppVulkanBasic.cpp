@@ -197,6 +197,21 @@ namespace Fsl::VulkanBasic
       return AppDrawResult::Completed;
     }
 
+    //! The refresh mode a swapchain says it is in, as the log writes it
+    constexpr const char* ToLogText(const Vulkan::VUPresentRefreshMode mode) noexcept
+    {
+      switch (mode)
+      {
+      case Vulkan::VUPresentRefreshMode::Fixed:
+        return "fixed";
+      case Vulkan::VUPresentRefreshMode::Variable:
+        return "variable";
+      case Vulkan::VUPresentRefreshMode::Unknown:
+      default:
+        return "unknown";
+      }
+    }
+
     //! Check if the present operation was enqueued, which means the present fence will be signaled.
     //! Even when the presentation engine rejects the request with some errors the queue operations are still considered to be enqueued.
     constexpr bool IsPresentFenceSignalExpected(const VkResult result) noexcept
@@ -872,9 +887,10 @@ namespace Fsl::VulkanBasic
     {
       rState.LoggedTimingPropertiesReadCount = timingState.TimingPropertiesReadCount;
       rLog.AddLogEvent("refreshProperties",
-                       fmt::format("generation={};refreshDurationNs={};refreshIntervalNs={};counter={};readCount={}", rState.Generation,
-                                   timingState.RefreshDurationNanoseconds, timingState.RefreshIntervalNanoseconds,
-                                   timingState.TimingPropertiesCounter, timingState.TimingPropertiesReadCount));
+                       fmt::format("generation={};refreshDurationNs={};refreshIntervalNs={};counter={};readCount={};refreshMode={}",
+                                   rState.Generation, timingState.RefreshDurationNanoseconds, timingState.RefreshIntervalNanoseconds,
+                                   timingState.TimingPropertiesCounter, timingState.TimingPropertiesReadCount,
+                                   ToLogText(timingState.GetRefreshMode())));
     }
     if (timingState.CalibrationCount != rState.LoggedCalibrationCount)
     {

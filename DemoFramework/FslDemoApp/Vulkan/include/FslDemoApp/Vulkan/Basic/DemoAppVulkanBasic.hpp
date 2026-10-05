@@ -481,6 +481,13 @@ namespace Fsl
         return m_presentTiming.GetRefreshDuration();
       }
 
+      //! @brief Get the refresh mode the swapchain says it is operating in: fixed or variable refresh (unknown if it does not say
+      //!        or present timing is not enabled). It is what the presentation engine reports, see Vulkan::VUPresentRefreshMode.
+      [[nodiscard]] Vulkan::VUPresentRefreshMode GetPresentRefreshMode() const noexcept
+      {
+        return m_presentTiming.GetState().GetRefreshMode();
+      }
+
     private:
       static std::vector<FrameDrawRecord> CreateFrameSyncObjects(const VkDevice device, const uint32_t maxFramesInFlight,
                                                                  const bool createPresentFence);

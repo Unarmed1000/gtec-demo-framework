@@ -188,6 +188,16 @@ namespace Fsl
   }
 
 
+  NativeWindowVariableRefreshInfo PlatformNativeWindowAdapter::TryGetVariableRefreshInfo() const
+  {
+    if (!NativeWindowCapabilityFlagsUtil::IsFlagged(m_capabilityFlags, NativeWindowCapabilityFlags::GetVariableRefreshInfo))
+    {
+      return {};
+    }
+    return TryGetNativeVariableRefreshInfo();
+  }
+
+
   bool PlatformNativeWindowAdapter::TryGetExtent(PxExtent2D& rExtent) const
   {
     PxPoint2 size;

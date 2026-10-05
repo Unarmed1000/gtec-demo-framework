@@ -45,7 +45,9 @@ namespace Fsl
     //! The native window can supply NativeWindowDisplayInfo (the individual members might still be unknown)
     GetDisplayInfo = 0x08,
     //! The native window can supply NativeWindowVSyncInfo: when the display refreshes (it might still be unknown at times)
-    GetVSyncInfo = 0x10
+    GetVSyncInfo = 0x10,
+    //! The native window can supply NativeWindowVariableRefreshInfo: what is known about variable refresh on its display
+    GetVariableRefreshInfo = 0x20
   };
 
   inline constexpr NativeWindowCapabilityFlags operator|(const NativeWindowCapabilityFlags lhs, const NativeWindowCapabilityFlags rhs) noexcept

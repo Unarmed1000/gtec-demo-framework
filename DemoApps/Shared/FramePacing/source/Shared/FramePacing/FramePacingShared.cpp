@@ -38,6 +38,7 @@
 #include <FslNativeWindow/Base/INativeWindow.hpp>
 #include <FslNativeWindow/Base/NativeWindowDisplayInfo.hpp>
 #include <FslNativeWindow/Base/NativeWindowVSyncInfo.hpp>
+#include <FslNativeWindow/Base/NativeWindowVariableRefreshInfo.hpp>
 #include <FslNativeWindow/Base/VirtualKey.hpp>
 #include <FslSimpleUI/App/Theme/ThemeSelector.hpp>
 #include <FslSimpleUI/Base/Control/Background.hpp>
@@ -586,8 +587,9 @@ namespace Fsl
     {
       return SamplePacerHold::Schedule;
     }
-    // Auto without a present that takes a target time, and what is left of a method the system can not do: the vsync wait, else the sleep
-    return (m_vsyncTime.Ticks() > 0 && m_vsyncPeriod.Ticks() > 0) ? SamplePacerHold::VSync : SamplePacerHold::Wait;
+    // Auto without a present that takes a target time, and what is left of a method the system can not do: the vsync wait, else the sleep.
+    // The vertical blanks of a display that refreshes at a variable rate follow the frames, so there the vsync wait can not hold one.
+    return (m_vsyncTime.Ticks() > 0 && m_vsyncPeriod.Ticks() > 0 && !m_variableRefreshSeen) ? SamplePacerHold::VSync : SamplePacerHold::Wait;
   }
 
 
@@ -966,13 +968,26 @@ namespace Fsl
       const NativeWindowVSyncInfo vsyncInfo = window ? window->TryGetVSyncInfo() : NativeWindowVSyncInfo();
       m_vsyncTime = vsyncInfo.IsValid() ? vsyncInfo.VSyncTime : TickCount();
       m_vsyncPeriod = vsyncInfo.IsValid() ? vsyncInfo.RefreshPeriod : TimeSpan();
+
+      // Variable refresh: once it was seen it stays seen for this hold selection and this refresh rate
+      const SamplePacerHold requestedHold = GetRequestedHold();
+      if (requestedHold != m_variableRefreshSeenHold || m_detectedRefreshRateHz != m_variableRefreshSeenRateHz)
+      {
+        m_variableRefreshSeenHold = requestedHold;
+        m_variableRefreshSeenRateHz = m_detectedRefreshRateHz;
+        m_variableRefreshSeen = false;
+      }
+      if (m_swapchainRefresh == SampleSwapchainRefresh::Variable || (window && window->TryGetVariableRefreshInfo().IsSeen()))
+      {
+        m_variableRefreshSeen = true;
+      }
     }
     {
       // How a frame is held only matters while the pacer is on and the sample is the one that holds it (with eglSwapInterval the driver
       // does). A method the system can not do is shown as disabled, like every other control that can not be used. One that is selected
       // and stops being possible stays selected: the sample falls back (GetHoldMethod) and the overlay says what is used.
       const bool holdApplies = pacerOn && m_presentMethod == SamplePresentMethod::WaitThenPresent;
-      const bool hasVSyncTime = m_vsyncTime.Ticks() > 0 && m_vsyncPeriod.Ticks() > 0;
+      const bool hasVSyncTime = m_vsyncTime.Ticks() > 0 && m_vsyncPeriod.Ticks() > 0 && !m_variableRefreshSeen;
       const std::array<std::pair<UI::RadioButton*, bool>, 4> radios = {
         std::pair<UI::RadioButton*, bool>(m_ui.RadioHoldAuto.get(), holdApplies),
         std::pair<UI::RadioButton*, bool>(m_ui.RadioHoldVSync.get(), holdApplies && hasVSyncTime),
@@ -1192,6 +1207,13 @@ namespace Fsl
                                    m_pacerConfig.PresentFeedback ? 1 : 0, ToString(requestedHold), m_vsyncPhasePercent));
     }
 
+    if (m_variableRefreshSeen != m_loggedVariableRefreshSeen)
+    {
+      // From here on the vsync wait is not used (or can be used again), see the holdMethod column for what the frames were held with
+      m_loggedVariableRefreshSeen = m_variableRefreshSeen;
+      rLog.AddLogEvent("holdVariableRefresh", fmt::format("seen={}", m_variableRefreshSeen ? 1 : 0));
+    }
+
     rLog.SetLogValue(columns.PacerOn, pacerOn);
     rLog.SetLogValue(columns.FrameWaitStart, waitStartTime);
     rLog.SetLogValue(columns.FrameStart, m_frameStartTime);
@@ -1328,6 +1350,7 @@ namespace Fsl
       rStats.PresentWait->SetContent("none");
     }
     UpdatePresentFeedbackStats();
+    UpdateVariableRefreshStats();
 
     if (!m_pacer)
     {
@@ -1336,9 +1359,8 @@ namespace Fsl
       const uint32_t lateFrames = m_frameStats.LateFrameCount();
       SetFormattedContent(*rStats.SwapInterval, "1 ({})", SamplePacer::IsSupported() ? PacerOffValue : "pacer not supported");
       SetFormattedContent(*rStats.LateFrames, "{} of {} ({:.1f} %)", lateFrames, frames, frames > 0u ? ((100.0 * lateFrames) / frames) : 0.0);
-      for (UI::Label* pLabel :
-           {rStats.AverageWork.get(), rStats.IntervalChanges.get(), rStats.LastChange.get(), rStats.FrameWindow.get(), rStats.Feedback.get(),
-            rStats.FeedbackLate.get()})
+      for (UI::Label* pLabel : {rStats.AverageWork.get(), rStats.IntervalChanges.get(), rStats.LastChange.get(), rStats.FrameWindow.get(),
+                                rStats.Feedback.get(), rStats.FeedbackLate.get()})
       {
         pLabel->SetContent(PacerOffValue);
       }
@@ -1382,6 +1404,49 @@ namespace Fsl
     {
       rStats.Feedback->SetContent(SwitchedOffValue);
       rStats.FeedbackLate->SetContent(SwitchedOffValue);
+    }
+  }
+
+
+  void FramePacingShared::UpdateVariableRefreshStats()
+  {
+    // What the window knows, what was measured and what the swapchain says are three sources, so the row names the one it has
+    const auto window = m_window.lock();
+    const NativeWindowVariableRefreshInfo info = window ? window->TryGetVariableRefreshInfo() : NativeWindowVariableRefreshInfo();
+    const char* pszSwapchain = "";
+    switch (m_swapchainRefresh)
+    {
+    case SampleSwapchainRefresh::Fixed:
+      pszSwapchain = ", swapchain: fixed";
+      break;
+    case SampleSwapchainRefresh::Variable:
+      pszSwapchain = ", swapchain: variable";
+      break;
+    case SampleSwapchainRefresh::Unknown:
+    default:
+      break;
+    }
+    UI::Label& rLabel = *m_ui.PacerStats.VariableRefresh;
+    if (info.Active == NativeWindowVariableRefreshAnswer::Yes)
+    {
+      SetFormattedContent(rLabel, "active ({}){}", info.Source, pszSwapchain);
+    }
+    else if (info.Observed == NativeWindowVariableRefreshAnswer::Yes)
+    {
+      SetFormattedContent(rLabel, "seen, {:.1f} refreshes per frame{}", static_cast<double>(info.ObservedIntervalMilliPeriods) / 1000.0,
+                          pszSwapchain);
+    }
+    else if (m_variableRefreshSeen)
+    {
+      SetFormattedContent(rLabel, "seen before{}", pszSwapchain);
+    }
+    else if (info.Observed == NativeWindowVariableRefreshAnswer::No)
+    {
+      SetFormattedContent(rLabel, "not seen{}", pszSwapchain);
+    }
+    else
+    {
+      SetFormattedContent(rLabel, "{}{}", UnknownValue, pszSwapchain);
     }
   }
 
@@ -1551,6 +1616,7 @@ namespace Fsl
     rPacerStats.FrameWindow = addStatsRow(*pacerGrid, pacerRow, "Frame window");
     rPacerStats.Feedback = addStatsRow(*pacerGrid, pacerRow, "Present feedback");
     rPacerStats.FeedbackLate = addStatsRow(*pacerGrid, pacerRow, "Display late");
+    rPacerStats.VariableRefresh = addStatsRow(*pacerGrid, pacerRow, "Variable refresh");
     // What the measured presents say: when the frames really reached the display
     rPacerStats.DisplayError = addStatsRow(*pacerGrid, pacerRow, "Display error");
     rPacerStats.DisplayInterval = addStatsRow(*pacerGrid, pacerRow, "Display interval");

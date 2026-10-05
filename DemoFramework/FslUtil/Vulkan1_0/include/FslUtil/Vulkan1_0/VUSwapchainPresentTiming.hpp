@@ -78,6 +78,19 @@ namespace Fsl::Vulkan
   };
 
 
+  //! The refresh mode a swapchain says it is operating in (VK_EXT_present_timing). It is what the presentation engine reports for
+  //! the swapchain, which was seen to be Fixed on a display that had variable refresh on: it is a answer, not a proof.
+  enum class VUPresentRefreshMode
+  {
+    //! The swapchain did not say: present timing is off, nothing was reported yet, or refreshInterval is zero
+    Unknown,
+    //! refreshInterval is the same as refreshDuration
+    Fixed,
+    //! refreshInterval is UINT64_MAX
+    Variable
+  };
+
+
   //! What a swapchain reported about its timing, as it reported it. For a log: nothing here is converted or rounded.
   struct VUPresentTimingState
   {
@@ -85,6 +98,21 @@ namespace Fsl::Vulkan
     //! fixed refresh mode, and the interval is UINT64_MAX in a variable refresh mode.
     uint64_t RefreshDurationNanoseconds{0};
     uint64_t RefreshIntervalNanoseconds{0};
+
+    //! @return the refresh mode the two values above stand for by the specification
+    [[nodiscard]] constexpr VUPresentRefreshMode GetRefreshMode() const noexcept
+    {
+      if (TimingPropertiesReadCount == 0u || RefreshIntervalNanoseconds == 0u)
+      {
+        return VUPresentRefreshMode::Unknown;
+      }
+      if (RefreshIntervalNanoseconds == UINT64_MAX)
+      {
+        return VUPresentRefreshMode::Variable;
+      }
+      return RefreshIntervalNanoseconds == RefreshDurationNanoseconds ? VUPresentRefreshMode::Fixed : VUPresentRefreshMode::Unknown;
+    }
+
     //! The counter the swapchain gave with the timing properties, and how often they were read
     uint64_t TimingPropertiesCounter{0};
     uint32_t TimingPropertiesReadCount{0};

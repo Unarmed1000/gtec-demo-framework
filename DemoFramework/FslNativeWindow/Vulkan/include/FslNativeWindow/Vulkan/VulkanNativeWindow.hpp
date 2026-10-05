@@ -78,6 +78,12 @@ namespace Fsl
     }
 
     // Done this way because of a "inherit via dominance warning on visual studio'
+    [[nodiscard]] NativeWindowVariableRefreshInfo TryGetVariableRefreshInfo() const final
+    {
+      return PlatformNativeWindow::TryGetVariableRefreshInfo();
+    }
+
+    // Done this way because of a "inherit via dominance warning on visual studio'
     [[nodiscard]] NativeWindowTimingSupport GetTimingSupport() const final
     {
       return PlatformNativeWindow::GetTimingSupport();

@@ -75,6 +75,7 @@ namespace Fsl
     NativeWindowMetrics GetWindowMetrics() const final;
     NativeWindowDisplayInfo TryGetDisplayInfo() const final;
     NativeWindowVSyncInfo TryGetVSyncInfo() const final;
+    NativeWindowVariableRefreshInfo TryGetVariableRefreshInfo() const final;
     NativeWindowTimingSupport GetTimingSupport() const override
     {
       return {};
@@ -127,6 +128,13 @@ namespace Fsl
 
     //! @brief Only called if the NativeWindowCapabilityFlags::GetVSyncInfo capability is set.
     virtual NativeWindowVSyncInfo TryGetNativeVSyncInfo() const
+    {
+      return {};
+    }
+
+    //! @brief Only called if the NativeWindowCapabilityFlags::GetVariableRefreshInfo capability is set.
+    //! @note  This is expected to be cheap.
+    virtual NativeWindowVariableRefreshInfo TryGetNativeVariableRefreshInfo() const
     {
       return {};
     }

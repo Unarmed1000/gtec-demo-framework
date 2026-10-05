@@ -168,6 +168,57 @@ they would only duplicate it or are not meant for apps: the frame callback of Wa
 time of undefined base, for a compositor without presentation-time) and the vertical blank counter of the kernel (DRM), which a app
 under a display server is not meant to open.
 
+## Variable refresh: what a platform tells an app
+
+With variable refresh on (G-SYNC, FreeSync, Adaptive-Sync, HDMI VRR) the display follows the frames: a vertical blank comes when a
+frame arrives, and a wait on the vertical blank can not hold a frame. So an app that paces its frames wants to know. No platform has
+one call for it, and "the display can do it", "it is switched on" and "the display is doing it now" are three questions:
+
+| Platform | What answers | Can do it | Switched on | Doing it now | Status |
+|---|---|---|---|---|---|
+| Windows, the system | Nothing. DXGI, the display configuration and WinRT have no call for it; their "virtual refresh rate" names are the dynamic refresh rate of Windows 11. | - | - | - | - |
+| Windows, the SDK of a GPU vendor | NVAPI answers all three, the SDKs of the other vendors the first two. | yes | yes | NVAPI | not used: the framework takes no vendor SDK |
+| Windows, measured | The time between the vertical blanks of the display the window is on (the DXGI wait), against the refresh period of its mode. | - | - | when the frames come slower than the mode | built, measured |
+| Vulkan, any platform | `VK_EXT_present_timing`: a `refreshInterval` of `UINT64_MAX` is a variable refresh mode, one equal to `refreshDuration` a fixed one, zero is not known. | - | - | per swapchain | built, and seen to say fixed for a display that was refreshing at a variable rate (NVIDIA, driver 617.14) |
+| Linux (Wayland and X11) | The kernel: the properties `vrr_capable` of the connector and `VRR_ENABLED` of the CRTC. | yes | per CRTC | roughly | not built |
+| Wayland | No protocol for an ordinary client. A `refresh` of zero in presentation-time is a hint. | - | hint | hint | not built |
+| Android | `Display.hasArrSupport()` (Java, API level 36). | combined | combined | - | not built |
+| macOS | The minimum and the maximum refresh interval of `NSScreen` differ (macOS 12). | combined | combined | - | not built |
+| QNX, web | Nothing. | - | - | - | - |
+
+`INativeWindow::TryGetVariableRefreshInfo` keeps the answers apart and names where each came from: `Supported`, `Enabled` and
+`Active` are what the window system declares (nothing does yet), `Observed` is what was measured, and the Vulkan apps have what the
+swapchain says separately (`DemoAppVulkanBasic::GetPresentRefreshMode`). Every one of them can be "unknown".
+
+The measurement on Windows: the thread that waits for the vertical blanks keeps the time between the last 64 of them. The median, in
+refresh periods of the mode, and the share of them that is more than 10 % off the period are reported and logged per frame
+(`displayVBlankIntervalMilliPeriods`, `displayVBlankOffPeriodPerMille`). `Observed` is "yes" when the median is at least 1.1 periods
+and more than half of the intervals are off the period, "no" otherwise, and "unknown" until 60 intervals were measured. Measured on
+a 240 Hz mode (NVIDIA, driver 617.14, the state of the driver read with NVAPI once per second during the runs):
+
+| The display | Frames | Median, periods | Off the period |
+|---|---|---|---|
+| Fixed refresh (10 runs with variable refresh off, 7 with it switched on that the driver did not use it in) | 30 to 240 per second, idle and under CPU load | 0.994 to 1.009 | none at the median, 23 % at the most for a moment |
+| Variable refresh active | 120 per second | 1.98 to 2.01 | 73 to 100 % |
+| Variable refresh active (an earlier run, the state as told by the person at the machine) | 60 per second | 4.0 | 100 % |
+| Variable refresh active | at the rate of the mode | 1.000 (0.997 to 1.016) | none at the median |
+
+What it can and can not tell:
+
+- A "yes" is evidence: the display was seen to refresh off the rate of its mode. The two limits were applied to the logged numbers
+  of 344 runs with variable refresh off (50, 60, 120 and 240 Hz, idle and under CPU load): they are passed in two frames, the second
+  and third of one run under CPU load, where the measurement had just started and the rule gives no answer yet. In the probe with
+  variable refresh switched on the rule agreed with the state of the driver in every run.
+- A "no" is no proof that variable refresh is off. A display with variable refresh on refreshes like a fixed one while the frames
+  come at the rate of its mode, and no measurement can tell the two apart there.
+- It takes 60 vertical blanks before there is an answer, and about 40 frames at 120 frames per second before a "yes".
+- The setting of the driver does not answer the question either: with G-SYNC set to "full screen only" the driver used variable
+  refresh for a window in some runs and not in others, with nothing changed in between.
+
+The FramePacing samples show the answer in the `Variable refresh` row of the overlay, and the Vulkan sample stops using the vsync
+wait once variable refresh was seen (see below). The capture tool reports it per run
+([FramePacingCapture.md](FramePacingCapture.md)).
+
 ## Holding a frame for more than one refresh
 
 What the FramePacing sample does with what it finds (`--Pacer.Hold`). The OpenGL ES samples are not part of this: `eglSwapInterval`
@@ -176,14 +227,15 @@ lets the driver count the refreshes.
 | Hold | Needs | How it works | Status |
 |---|---|---|---|
 | `schedule` | Vulkan level 4 with a relative target time | The present is given a target time and the presentation engine holds the frame. | measured: every frame held for exactly its swap interval |
-| `vsync` | a vsync time from the window system | The sample waits and presents inside the refresh before the one the frame is aimed at. | measured on Windows at 50, 60, 120 and 240 Hz: at least 99.6 % of the frames held for exactly their swap interval. Built on Wayland (presentation-time) and X11 (Present), not measured |
+| `vsync` | a vsync time from the window system, and a display that was not seen to refresh at a variable rate | The sample waits and presents inside the refresh before the one the frame is aimed at. | measured on Windows at 50, 60, 120 and 240 Hz: at least 99.6 % of the frames held for exactly their swap interval. Built on Wayland (presentation-time) and X11 (Present), not measured |
 | `wait` | nothing | The sample sleeps on a timer and presents. It does not know where the refreshes are, so it is a guess. | measured on Windows: as good as the vsync wait at 50, 60 and 120 Hz. At 240 Hz from none to 35 % of the frames a refresh early or late, depending on where the timer happens to start |
 | `auto` | - | `schedule` if the swapchain can, else `vsync` if the window system says when the display refreshes, else `wait`. | - |
 
 The default is `wait`. On Windows the two ways that need no extension have been captured at 50, 60, 120 and 240 Hz
 ([FramePacingCapture.md](FramePacingCapture.md)); the scheduled present has only been captured at 240 Hz. With variable refresh on
-(G-SYNC) the vsync wait does not hold a frame and the sleep does, and an app can not tell from the swapchain or the window system that
-it is on, which is a reason for `wait` to stay the default.
+(G-SYNC) the vsync wait does not hold a frame and the sleep does. The sample falls back from the vsync wait to the sleep once it has
+seen the display refresh at a variable rate (on Windows, see the section above), which it only can while the frames come slower
+than the rate of the mode. That is a reason for `wait` to stay the default.
 
 Where inside a refresh the vsync wait presents is not something to derive, it has to be measured per platform
 (`--Pacer.VSyncPhase`, in percent of the refresh before the target). On Windows at 240 Hz a present from 55 to 75 % of the refresh was
