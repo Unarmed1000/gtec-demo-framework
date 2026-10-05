@@ -41,30 +41,26 @@
 #include <FslNativeWindow/Platform/Adapter/Wayland/PlatformNativeWindowSystemAdapterWayland.hpp>
 #include <df-xdg-decoration-client-protocol.h>    // XDG wayland-scanner created header
 #include <df-xdg-shell-client-protocol.h>         // XDG wayland-scanner created header
+#include <fmt/format.h>
 #include <linux/input.h>
+#include <unistd.h>
 #include <algorithm>
 #include <array>
 #include <cassert>
 #include <cstring>
 #include <memory>
+#include <span>
 #include <string>
 #include <utility>
 #include <vector>
 #include "IVI/WaylandIVIHandler.hpp"
 #include "PlatformNativeWindowSystemContextWayland.hpp"
+#include "WaylandEventPump.hpp"
 
 // XDG shell decided to break C/C++ library support conventions and require us to
 // run their wayland-scanner tool to generate non-app dependent headers and code.
 // If they had gone for the normal semantic versioned headers the build process would
 // be much simpler for all end users and much less error prone.
-
-// TODO: remove globals
-
-// https://gitlab.freedesktop.org/wayland/wayland/-/issues/34
-// Workaround for "wl_array_for_each" not being C++ safe (or safe in general) and wayland failing to fix it for 3+ years
-// at this point
-#define LOCAL_WL_ARRAY_FOR_EACH(pos, array, type) \
-  for (pos = (type)(array)->data; (const char*)pos < ((const char*)(array)->data + (array)->size); (pos)++)
 
 namespace Fsl
 {
@@ -77,9 +73,17 @@ namespace Fsl
       constexpr int MinWindowHeight = 64;
       //! The DPI of a window on a output that has no physical size (the X11 and the Win32 adapter default to the same)
       constexpr int32_t MagicDefaultDpi = 96;
+      //! The size of the cursor in the logical units of the compositor
+      constexpr int32_t CursorSize = 32;
+      //! A step of a mouse wheel is ten units of wl_pointer.axis, which is a 24.8 fixed point value
+      constexpr int32_t WheelStepFixed = 10 * 256;
     }
 
-    bool g_requestClose = false;
+    //! The time of a input event. The compositor counts milliseconds from a start of its own in 32 bits, the bits are kept.
+    MillisecondTickCount32 ToMillisecondTickCount32(const uint32_t time) noexcept
+    {
+      return MillisecondTickCount32::FromMilliseconds(static_cast<int32_t>(time));
+    }
 
 
     // void ConfigureWindowGeometry(PlatformNativeWindowContextWayland& rWindow)
@@ -100,7 +104,7 @@ namespace Fsl
 
     void PostWindowConfigChanged(const PlatformNativeWindowContextWayland& window)
     {
-      auto eventQueue = window.EventQueue.lock();
+      const auto eventQueue = window.EventQueue.lock();
       if (eventQueue)
       {
         eventQueue->PostEvent(NativeWindowEventHelper::EncodeWindowConfigChanged());
@@ -191,9 +195,9 @@ namespace Fsl
       }
     }
 
-    void OnWaylandWindowContext_HandleSurfaceEnter(void* data, wl_surface* pSurface, wl_output* pOutput)
+    void OnSurfaceEnter(void* data, wl_surface* pSurface, wl_output* pOutput)
     {
-      FSLLOG3_VERBOSE5("OnWaylandWindowContext_HandleSurfaceEnter");
+      FSLLOG3_VERBOSE5("OnSurfaceEnter");
       auto* pWindow = static_cast<PlatformNativeWindowContextWayland*>(data);
       if (pWindow == nullptr || pOutput == nullptr)
       {
@@ -205,9 +209,9 @@ namespace Fsl
       PostWindowConfigChanged(*pWindow);
     }
 
-    void OnWaylandWindowContext_HandleSurfaceLeave(void* data, wl_surface* pSurface, wl_output* pOutput)
+    void OnSurfaceLeave(void* data, wl_surface* pSurface, wl_output* pOutput)
     {
-      FSLLOG3_VERBOSE5("OnWaylandWindowContext_HandleSurfaceLeave");
+      FSLLOG3_VERBOSE5("OnSurfaceLeave");
       auto* pWindow = static_cast<PlatformNativeWindowContextWayland*>(data);
       if (pWindow == nullptr)
       {
@@ -236,34 +240,21 @@ namespace Fsl
     wl_surface_listener CreateSurfaceListener() noexcept
     {
       wl_surface_listener listener{};
-      listener.enter = OnWaylandWindowContext_HandleSurfaceEnter;
-      listener.leave = OnWaylandWindowContext_HandleSurfaceLeave;
+      listener.enter = OnSurfaceEnter;
+      listener.leave = OnSurfaceLeave;
       return listener;
     }
 
     const wl_surface_listener g_surfaceListener = CreateSurfaceListener();
 
 
-    void OnWaylandWindowContext_ConfigureCallback(void* data, wl_callback* callback, uint32_t time)
-    {
-      auto* window = static_cast<PlatformNativeWindowContextWayland*>(data);
-      wl_callback_destroy(callback);
-      window->Configured = true;
-    }
-
-
-    const wl_callback_listener g_configureCallBackListener = {
-      OnWaylandWindowContext_ConfigureCallback,
-    };
-
-
-    void OnWaylandSystemContext_XdgWmBaseHandlePing(void* data, xdg_wm_base* shell, uint32_t serial)
+    void OnXdgWmBasePing(void* data, xdg_wm_base* shell, uint32_t serial)
     {
       xdg_wm_base_pong(shell, serial);
     }
 
 
-    void OnWaylandWindowContext_XdgHandleToplevelConfigure(void* data, xdg_toplevel* toplevel, int32_t width, int32_t height, wl_array* states)
+    void OnXdgToplevelConfigure(void* data, xdg_toplevel* toplevel, int32_t width, int32_t height, wl_array* states)
     {
       auto* pWindow = static_cast<PlatformNativeWindowContextWayland*>(data);
       if (pWindow == nullptr)
@@ -274,38 +265,59 @@ namespace Fsl
       pWindow->Fullscreen = false;
       pWindow->Maximized = false;
 
-      const uint32_t* p = nullptr;
-      LOCAL_WL_ARRAY_FOR_EACH(p, states, uint32_t*)
+      // The states are a array of uint32_t (wl_array_for_each of the library is C only)
+      if (states != nullptr && states->data != nullptr)
       {
-        uint32_t state = *p;
-        switch (state)
+        const std::span<const uint32_t> stateSpan(static_cast<const uint32_t*>(states->data), states->size / sizeof(uint32_t));
+        for (const uint32_t state : stateSpan)
         {
-        case XDG_TOPLEVEL_STATE_FULLSCREEN:
-          pWindow->Fullscreen = true;
-          break;
-        case XDG_TOPLEVEL_STATE_MAXIMIZED:
-          pWindow->Maximized = true;
-          break;
-        // case XDG_TOPLEVEL_STATE_ACTIVATED:
-        // case XDG_TOPLEVEL_STATE_SUSPENDED
-        default:
-          break;
+          switch (state)
+          {
+          case XDG_TOPLEVEL_STATE_FULLSCREEN:
+            pWindow->Fullscreen = true;
+            break;
+          case XDG_TOPLEVEL_STATE_MAXIMIZED:
+            pWindow->Maximized = true;
+            break;
+          // case XDG_TOPLEVEL_STATE_ACTIVATED:
+          // case XDG_TOPLEVEL_STATE_SUSPENDED
+          default:
+            break;
+          }
         }
       }
 
-      FSLLOG3_VERBOSE5(
-        "OnWaylandWindowContext_XdgHandleToplevelConfigure width {} height {} Fullscreen {} Maximized {}, current active config geometry: {}", width,
-        height, pWindow->Fullscreen, pWindow->Maximized, pWindow->Geometry);
+      FSLLOG3_VERBOSE5("OnXdgToplevelConfigure width {} height {} Fullscreen {} Maximized {}, current active config geometry: {}", width, height,
+                       pWindow->Fullscreen, pWindow->Maximized, pWindow->Geometry);
 
-      // The size is in the logical units of the compositor, and zero where it leaves a side to the window
-      pWindow->ConfiguredLogicalWidth = std::max(width, 0);
-      pWindow->ConfiguredLogicalHeight = std::max(height, 0);
+      // The size is in the logical units of the compositor, and zero where it leaves a side to the window. The window then takes the
+      // size it last had while it was neither maximized nor fullscreen, so a configure that only changes a state (the window got the
+      // focus) does not undo a resize by the user. Without such a size it is the size the window was created with (UpdateGeometry).
+      const bool isFloating = !pWindow->Fullscreen && !pWindow->Maximized;
+      if (width > 0)
+      {
+        pWindow->ConfiguredLogicalWidth = width;
+        pWindow->FloatingLogicalWidth = isFloating ? width : pWindow->FloatingLogicalWidth;
+      }
+      else
+      {
+        pWindow->ConfiguredLogicalWidth = pWindow->FloatingLogicalWidth;
+      }
+      if (height > 0)
+      {
+        pWindow->ConfiguredLogicalHeight = height;
+        pWindow->FloatingLogicalHeight = isFloating ? height : pWindow->FloatingLogicalHeight;
+      }
+      else
+      {
+        pWindow->ConfiguredLogicalHeight = pWindow->FloatingLogicalHeight;
+      }
       UpdateGeometry(*pWindow);
     }
 
-    void OnWaylandWindowContext_XdgSurfaceHandleSurfaceConfigure(void* data, xdg_surface* surface, uint32_t serial)
+    void OnXdgSurfaceConfigure(void* data, xdg_surface* surface, uint32_t serial)
     {
-      FSLLOG3_VERBOSE5("OnWaylandWindowContext_XdgSurfaceHandleSurfaceConfigure");
+      FSLLOG3_VERBOSE5("OnXdgSurfaceConfigure");
       auto* pWindow = static_cast<PlatformNativeWindowContextWayland*>(data);
       if (pWindow != nullptr)
       {
@@ -315,40 +327,111 @@ namespace Fsl
       xdg_surface_ack_configure(surface, serial);
     }
 
-    void OnWaylandWindowContext_XdgHandleToplevelClose(void* data, xdg_toplevel* xdgToplevel)
+    void OnXdgToplevelClose(void* data, xdg_toplevel* xdgToplevel)
     {
-      FSLLOG3_VERBOSE5("OnWaylandWindowContext_XdgHandleToplevelClose");
-      // auto* pWindow = static_cast<PlatformNativeWindowContextWayland*>(data);
-      // if(pWindow != nullptr)
-      // {
-      //   pWindow->RequestClose = true;
-      // }
-      g_requestClose = true;
+      FSLLOG3_VERBOSE5("OnXdgToplevelClose");
+      auto* pWindow = static_cast<PlatformNativeWindowContextWayland*>(data);
+      if (pWindow != nullptr && pWindow->SystemContext != nullptr)
+      {
+        pWindow->SystemContext->RequestClose = true;
+      }
     }
 
     const xdg_wm_base_listener g_wmBaseListener = {
-      OnWaylandSystemContext_XdgWmBaseHandlePing,
+      OnXdgWmBasePing,
     };
 
-    const xdg_surface_listener g_xdgSurfaceListener = {OnWaylandWindowContext_XdgSurfaceHandleSurfaceConfigure};
+    const xdg_surface_listener g_xdgSurfaceListener = {OnXdgSurfaceConfigure};
 
     //! Filled member by member with the callbacks of the version the interface is bound at (see CreateSurfaceListener)
     xdg_toplevel_listener CreateXdgToplevelListener() noexcept
     {
       xdg_toplevel_listener listener{};
-      listener.configure = OnWaylandWindowContext_XdgHandleToplevelConfigure;
-      listener.close = OnWaylandWindowContext_XdgHandleToplevelClose;
+      listener.configure = OnXdgToplevelConfigure;
+      listener.close = OnXdgToplevelClose;
       return listener;
     }
 
-    const xdg_toplevel_listener g_XdgToplevelListener = CreateXdgToplevelListener();
+    const xdg_toplevel_listener g_xdgToplevelListener = CreateXdgToplevelListener();
+
+    void OnShellSurfacePing(void* /*data*/, wl_shell_surface* shellSurface, uint32_t serial)
+    {
+      wl_shell_surface_pong(shellSurface, serial);
+    }
+
+    void OnShellSurfaceConfigure(void* data, wl_shell_surface* /*shellSurface*/, uint32_t /*edges*/, int32_t width, int32_t height)
+    {
+      auto* pWindow = static_cast<PlatformNativeWindowContextWayland*>(data);
+      if (pWindow == nullptr || width <= 0 || height <= 0)
+      {
+        return;
+      }
+      // The size is in the logical units of the compositor, as that of a xdg toplevel
+      pWindow->ConfiguredLogicalWidth = width;
+      pWindow->ConfiguredLogicalHeight = height;
+      UpdateGeometry(*pWindow);
+    }
+
+    void OnShellSurfacePopupDone(void* /*data*/, wl_shell_surface* /*shellSurface*/)
+    {
+    }
+
+    const wl_shell_surface_listener g_shellSurfaceListener = {OnShellSurfacePing, OnShellSurfaceConfigure, OnShellSurfacePopupDone};
+
+    //! The window of a compositor that has no xdg_wm_base. With the shell of the core protocol (wl_shell, which xdg-shell replaced and
+    //! which a old or a small compositor can still be all there is) the surface becomes a toplevel or a fullscreen surface of it.
+    //! Without any shell the surface has no role: it is created and drawn to, and if it is shown is up to the compositor.
+    //! Nothing waits for a configure here, the window has the size it was asked to have until the compositor gives it one.
+    void CreateSurfaceRoleWithoutXdg(const PlatformNativeWindowSystemContextWayland& context, PlatformNativeWindowContextWayland& rWindow)
+    {
+      rWindow.WaitForConfigure = false;
+      if (context.Handles.Shell)
+      {
+        FSLLOG3_INFO("Wayland: the compositor has no xdg_wm_base, the window uses wl_shell (no window decorations, no close request)");
+        rWindow.Handles.ShellSurface.reset(wl_shell_get_shell_surface(context.Handles.Shell.get(), rWindow.Handles.Surface.get()));
+        if (!rWindow.Handles.ShellSurface)
+        {
+          throw GraphicsException("wl_shell_get_shell_surface Failure");
+        }
+        if (wl_shell_surface_add_listener(rWindow.Handles.ShellSurface.get(), &g_shellSurfaceListener, &rWindow) != 0)
+        {
+          throw GraphicsException("wl_shell_surface_add_listener Failure");
+        }
+        wl_shell_surface_set_title(rWindow.Handles.ShellSurface.get(), LocalConfig::Title);
+        if (rWindow.Fullscreen)
+        {
+          wl_shell_surface_set_fullscreen(rWindow.Handles.ShellSurface.get(), WL_SHELL_SURFACE_FULLSCREEN_METHOD_DEFAULT, 0, nullptr);
+        }
+        else
+        {
+          wl_shell_surface_set_toplevel(rWindow.Handles.ShellSurface.get());
+        }
+      }
+      else
+      {
+        FSLLOG3_WARNING(
+          "Wayland: the compositor has neither xdg_wm_base nor wl_shell. The window has a surface without a role, which "
+          "most compositors do not show.");
+        rWindow.Fullscreen = false;
+      }
+      UpdateGeometry(rWindow);
+      if (rWindow.Handles.ShellSurface)
+      {
+        // The size of a fullscreen surface comes with a configure, which has arrived when the compositor has answered
+        if (wl_display_roundtrip(context.Handles.Display.get()) < 0)
+        {
+          throw GraphicsException(fmt::format("The connection to the compositor was lost while the window was created: {}",
+                                              WaylandEventPump::DescribeError(context.Handles.Display.get())));
+        }
+      }
+    }
 
     void CreateWlSurface(const PlatformNativeWindowSystemContextWayland& context, PlatformNativeWindowContextWayland& rWindow)
     {
       try
       {
         // Ensure no pre-existing handles are valid
-        rWindow.Handles.reset();
+        rWindow.Handles.Reset();
         rWindow.EnteredOutputs.clear();
 
         rWindow.Handles.Surface.reset(wl_compositor_create_surface(context.Handles.Compositor.get()));
@@ -370,6 +453,11 @@ namespace Fsl
 
         if (!context.Handles.Ivi.Enabled)
         {
+          if (!context.Handles.WmBase)
+          {
+            // No configure of a xdg surface ever arrives then, so the wait below is not made
+            CreateSurfaceRoleWithoutXdg(context, rWindow);
+          }
           if (context.Handles.WmBase)
           {
             rWindow.Handles.XdgSurface.reset(xdg_wm_base_get_xdg_surface(context.Handles.WmBase.get(), rWindow.Handles.Surface.get()));
@@ -389,7 +477,7 @@ namespace Fsl
               throw GraphicsException("xdg_surface_get_toplevel Failure");
             }
 
-            if (xdg_toplevel_add_listener(rWindow.Handles.XdgToplevel.get(), &g_XdgToplevelListener, &rWindow) != 0)
+            if (xdg_toplevel_add_listener(rWindow.Handles.XdgToplevel.get(), &g_xdgToplevelListener, &rWindow) != 0)
             {
               throw GraphicsException("xdg_toplevel_add_listener Failure");
             };
@@ -400,11 +488,11 @@ namespace Fsl
             {
               FSLLOG3_VERBOSE5("Nice 'Wayland XDG Decorations' support found, requesting server side window decorations.");
               // Let the compositor do all the complicated window management
-              zxdg_toplevel_decoration_v1* decoration =
-                zxdg_decoration_manager_v1_get_toplevel_decoration(context.Handles.DecorationManager.get(), rWindow.Handles.XdgToplevel.get());
-              if (decoration != nullptr)
+              rWindow.Handles.XdgToplevelDecoration.reset(
+                zxdg_decoration_manager_v1_get_toplevel_decoration(context.Handles.DecorationManager.get(), rWindow.Handles.XdgToplevel.get()));
+              if (rWindow.Handles.XdgToplevelDecoration)
               {
-                zxdg_toplevel_decoration_v1_set_mode(decoration, ZXDG_TOPLEVEL_DECORATION_V1_MODE_SERVER_SIDE);
+                zxdg_toplevel_decoration_v1_set_mode(rWindow.Handles.XdgToplevelDecoration.get(), ZXDG_TOPLEVEL_DECORATION_V1_MODE_SERVER_SIDE);
               }
             }
             else
@@ -421,28 +509,22 @@ namespace Fsl
             // xdg_surface_set_window_geometry(rWindow.Handles.XdgSurface.get(), 0, 0, rWindow.DesiredWindowSize.RawWidth(),
             // rWindow.DesiredWindowSize.RawHeight());
 
-            rWindow.WaitForConfigure = true;
-            wl_surface_commit(rWindow.Handles.Surface.get());
+            // What the window is to be from the start is asked for before the first commit, so the first configure is for it
             if (rWindow.Fullscreen)
             {
               xdg_toplevel_set_fullscreen(rWindow.Handles.XdgToplevel.get(), nullptr);
             }
-          }
-
-          wl_callback* callback = wl_display_sync(context.Handles.Display.get());
-          if (callback == nullptr)
-          {
-            throw GraphicsException("wl_display_sync Failure");
-          }
-
-          if (wl_callback_add_listener(callback, &g_configureCallBackListener, &rWindow) == -1)
-          {
-            throw GraphicsException("wl_display_sync Failure");
+            rWindow.WaitForConfigure = true;
+            wl_surface_commit(rWindow.Handles.Surface.get());
           }
 
           while (rWindow.WaitForConfigure)
           {
-            wl_display_dispatch(context.Handles.Display.get());
+            if (wl_display_dispatch(context.Handles.Display.get()) < 0)
+            {
+              throw GraphicsException(fmt::format("The connection to the compositor was lost while the window waited for its first configure: {}",
+                                                  WaylandEventPump::DescribeError(context.Handles.Display.get())));
+            }
           }
         }
         else
@@ -452,7 +534,7 @@ namespace Fsl
       }
       catch (const std::exception&)
       {
-        rWindow.Handles.reset();
+        rWindow.Handles.Reset();
         throw;
       }
     }
@@ -469,22 +551,37 @@ namespace Fsl
     //   }
     //   if (rWindow.Fullscreen && context.Handles.WmBase)
     //   {
-    //     rWindow.Handles.reset();
+    //     rWindow.Handles.Reset();
     //     rWindow.Fullscreen = false;
     //     wl_display_dispatch(context.Handles.Display.get());
     //   }
     // }
 
 
-    void OnWaylandSystemContext_PointerHandleEnter(void* data, wl_pointer* pointer, uint32_t serial, wl_surface* surface, wl_fixed_t sx,
-                                                   wl_fixed_t sy)
+    //! Loads the cursor theme at the scale of the window, so the cursor is sharp on a scaled output. It is loaded once per scale, and
+    //! when no theme can be loaded there is no default cursor and the compositor keeps the cursor it shows.
+    void UpdateCursorTheme(PlatformNativeWindowSystemContextWayland& rContext)
+    {
+      const int32_t scale = std::max(rContext.PointerScale, 1);
+      if (!rContext.Handles.Shm || rContext.CursorScale == scale)
+      {
+        return;
+      }
+      rContext.CursorScale = scale;
+      rContext.Handles.DefaultCursor = nullptr;
+      rContext.Handles.CursorTheme.reset(wl_cursor_theme_load(nullptr, LocalConfig::CursorSize * scale, rContext.Handles.Shm.get()));
+      if (!rContext.Handles.CursorTheme)
+      {
+        FSLLOG3_VERBOSE("Wayland: no cursor theme could be loaded, the cursor is left to the compositor");
+        return;
+      }
+      rContext.Handles.DefaultCursor = wl_cursor_theme_get_cursor(rContext.Handles.CursorTheme.get(), "left_ptr");
+    }
+
+    void OnPointerEnter(void* data, wl_pointer* pointer, uint32_t serial, wl_surface* surface, wl_fixed_t sx, wl_fixed_t sy)
     {
       auto* pContext = static_cast<PlatformNativeWindowSystemContextWayland*>(data);
       assert(pContext != nullptr);
-      wl_buffer* buffer = nullptr;
-      wl_cursor* cursor = pContext->Handles.DefaultCursor;
-      wl_cursor_image* image = nullptr;
-
 
       // Disabled the cursor hiding as this should really be requested by the app if it needs it.
       // if (pContext->Window->Fullscreen)
@@ -492,16 +589,35 @@ namespace Fsl
       // // Hide the cursor
       // // wl_pointer_set_cursor(pointer, serial, nullptr, 0, 0);
       // } else
-      if (cursor != nullptr)
+      UpdateCursorTheme(*pContext);
+      const wl_cursor* const pCursor = pContext->Handles.DefaultCursor;
+      wl_surface* const pCursorSurface = pContext->Handles.CursorSurface.get();
+      if (pCursor != nullptr && pCursor->image_count > 0u && pCursorSurface != nullptr)
       {
-        image = pContext->Handles.DefaultCursor->images[0];
-        buffer = wl_cursor_image_get_buffer(image);
-        wl_pointer_set_cursor(pointer, serial, pContext->Handles.CursorSurface.get(), UncheckedNumericCast<int32_t>(image->hotspot_x),
-                              UncheckedNumericCast<int32_t>(image->hotspot_y));
-        wl_surface_attach(pContext->Handles.CursorSurface.get(), buffer, 0, 0);
-        wl_surface_damage(pContext->Handles.CursorSurface.get(), 0, 0, UncheckedNumericCast<int32_t>(image->width),
-                          UncheckedNumericCast<int32_t>(image->height));
-        wl_surface_commit(pContext->Handles.CursorSurface.get());
+        wl_cursor_image* const pImage = pCursor->images[0];
+        wl_buffer* const pBuffer = wl_cursor_image_get_buffer(pImage);
+        if (pBuffer != nullptr)
+        {
+          const auto imageWidth = UncheckedNumericCast<int32_t>(pImage->width);
+          const auto imageHeight = UncheckedNumericCast<int32_t>(pImage->height);
+          // The theme gives the size it has that is nearest to the one asked for. A buffer has to be a multiple of its scale in size,
+          // so a image that is not gets a scale of one and the compositor enlarges it.
+          int32_t cursorScale = pContext->CompositorVersion >= 3u ? std::max(pContext->CursorScale, 1) : 1;
+          if ((imageWidth % cursorScale) != 0 || (imageHeight % cursorScale) != 0)
+          {
+            cursorScale = 1;
+          }
+          // The hotspot and the damage are in the logical units of the compositor
+          wl_pointer_set_cursor(pointer, serial, pCursorSurface, UncheckedNumericCast<int32_t>(pImage->hotspot_x) / cursorScale,
+                                UncheckedNumericCast<int32_t>(pImage->hotspot_y) / cursorScale);
+          if (pContext->CompositorVersion >= 3u)
+          {
+            wl_surface_set_buffer_scale(pCursorSurface, cursorScale);
+          }
+          wl_surface_attach(pCursorSurface, pBuffer, 0, 0);
+          wl_surface_damage(pCursorSurface, 0, 0, imageWidth / cursorScale, imageHeight / cursorScale);
+          wl_surface_commit(pCursorSurface);
+        }
       }
 
       // The position is in the logical units of the compositor (a 24.8 fixed point value)
@@ -509,74 +625,90 @@ namespace Fsl
     }
 
 
-    void OnWaylandSystemContext_PointerHandleLeave(void* data, wl_pointer* pointer, uint32_t serial, wl_surface* surface)
+    void OnPointerLeave(void* data, wl_pointer* pointer, uint32_t serial, wl_surface* surface)
     {
     }
 
 
-    void OnWaylandSystemContext_PointerHandleMotion(void* data, wl_pointer* pointer, uint32_t time, wl_fixed_t sx, wl_fixed_t sy)
+    void OnPointerMotion(void* data, wl_pointer* pointer, uint32_t time, wl_fixed_t sx, wl_fixed_t sy)
     {
       auto* pContext = static_cast<PlatformNativeWindowSystemContextWayland*>(data);
       assert(pContext != nullptr);
 
-      std::shared_ptr<INativeWindowEventQueue> eventQueue = pContext->EventQueue.lock();
+      const std::shared_ptr<INativeWindowEventQueue> eventQueue = pContext->EventQueue.lock();
 
       // The position is in the logical units of the compositor (a 24.8 fixed point value)
       pContext->MousePosition = PxPoint2::Create((sx * pContext->PointerScale) / 256, (sy * pContext->PointerScale) / 256);
+      if (eventQueue)
+      {
+        eventQueue->PostEvent(NativeWindowEventHelper::EncodeInputMouseMoveEvent(ToMillisecondTickCount32(time), pContext->MousePosition));
+      }
+    }
+
+
+    VirtualMouseButton ToVirtualMouseButton(const uint32_t button) noexcept
+    {
+      switch (button)
+      {
+      case BTN_LEFT:
+        return VirtualMouseButton::Left;
+      case BTN_RIGHT:
+        return VirtualMouseButton::Right;
+      case BTN_MIDDLE:
+        return VirtualMouseButton::Middle;
+      default:
+        return VirtualMouseButton::Undefined;
+      }
+    }
+
+    void OnPointerButton(void* data, wl_pointer* wlPointer, uint32_t serial, uint32_t time, uint32_t button, uint32_t state)
+    {
+      auto* pContext = static_cast<PlatformNativeWindowSystemContextWayland*>(data);
+      assert(pContext != nullptr);
+      const std::shared_ptr<INativeWindowEventQueue> eventQueue = pContext->EventQueue.lock();
+
+      // The event names the button for a press and for a release
+      const VirtualMouseButton mouseButton = ToVirtualMouseButton(button);
+      if (mouseButton == VirtualMouseButton::Undefined)
+      {
+        // A button the framework has no name for
+        return;
+      }
+      pContext->MouseButton = mouseButton;
+      pContext->MouseIsPressed = (state == WL_POINTER_BUTTON_STATE_PRESSED);
+      if (eventQueue)
+      {
+        eventQueue->PostEvent(NativeWindowEventHelper::EncodeInputMouseButtonEvent(ToMillisecondTickCount32(time), pContext->MouseButton,
+                                                                                   pContext->MouseIsPressed, pContext->MousePosition));
+      }
+    }
+
+
+    void OnPointerAxis(void* data, wl_pointer* wlPointer, uint32_t time, uint32_t axis, wl_fixed_t value)
+    {
+      auto* pContext = static_cast<PlatformNativeWindowSystemContextWayland*>(data);
+      assert(pContext != nullptr);
+      if (axis != WL_POINTER_AXIS_VERTICAL_SCROLL)
+      {
+        // The wheel event of the framework is the vertical one
+        return;
+      }
+      const std::shared_ptr<INativeWindowEventQueue> eventQueue = pContext->EventQueue.lock();
+
+      // The compositor counts a scroll down as positive, the framework a step of the wheel away from the user (what the other window
+      // systems report). A touchpad and a wheel with fine steps send parts of a step, they are kept until they add up to one.
+      pContext->WheelRemainder -= static_cast<int32_t>(value);
+      const int32_t steps = pContext->WheelRemainder / LocalConfig::WheelStepFixed;
+      if (steps == 0)
+      {
+        return;
+      }
+      pContext->WheelRemainder -= steps * LocalConfig::WheelStepFixed;
+      pContext->ZDelta = steps;
       if (eventQueue)
       {
         eventQueue->PostEvent(
-          NativeWindowEventHelper::EncodeInputMouseMoveEvent(MillisecondTickCount32::FromMilliseconds(time), pContext->MousePosition));
-      }
-    }
-
-
-    void OnWaylandSystemContext_PointerHandleButton(void* data, wl_pointer* wl_pointer, uint32_t serial, uint32_t time, uint32_t button,
-                                                    uint32_t state)
-    {
-      auto* pContext = static_cast<PlatformNativeWindowSystemContextWayland*>(data);
-      assert(pContext != nullptr);
-      std::shared_ptr<INativeWindowEventQueue> eventQueue = pContext->EventQueue.lock();
-
-      if (WL_POINTER_BUTTON_STATE_PRESSED == state)
-      {
-        pContext->MouseIsPressed = true;
-        if (button == BTN_LEFT)
-        {
-          pContext->MouseButton = VirtualMouseButton::Left;
-        }
-        else if (button == BTN_RIGHT)
-        {
-          pContext->MouseButton = VirtualMouseButton::Right;
-        }
-        else if (button == BTN_MIDDLE)
-        {
-          pContext->MouseButton = VirtualMouseButton::Middle;
-        }
-      }
-      else
-      {
-        pContext->MouseIsPressed = false;
-      }
-      if (eventQueue)
-      {
-        eventQueue->PostEvent(NativeWindowEventHelper::EncodeInputMouseButtonEvent(
-          MillisecondTickCount32::FromMilliseconds(time), pContext->MouseButton, pContext->MouseIsPressed, pContext->MousePosition));
-      }
-    }
-
-
-    void OnWaylandSystemContext_PointerHandleAxis(void* data, wl_pointer* wl_pointer, uint32_t time, uint32_t axis, wl_fixed_t value)
-    {
-      auto* pContext = static_cast<PlatformNativeWindowSystemContextWayland*>(data);
-      assert(pContext != nullptr);
-      std::shared_ptr<INativeWindowEventQueue> eventQueue = pContext->EventQueue.lock();
-
-      pContext->ZDelta = static_cast<int>(value) / 2560;
-      if (eventQueue)
-      {
-        eventQueue->PostEvent(NativeWindowEventHelper::EncodeInputMouseWheelEvent(MillisecondTickCount32::FromMilliseconds(time), pContext->ZDelta,
-                                                                                  pContext->MousePosition));
+          NativeWindowEventHelper::EncodeInputMouseWheelEvent(ToMillisecondTickCount32(time), pContext->ZDelta, pContext->MousePosition));
       }
     }
 
@@ -584,37 +716,42 @@ namespace Fsl
     wl_pointer_listener CreatePointerListener() noexcept
     {
       wl_pointer_listener listener{};
-      listener.enter = OnWaylandSystemContext_PointerHandleEnter;
-      listener.leave = OnWaylandSystemContext_PointerHandleLeave;
-      listener.motion = OnWaylandSystemContext_PointerHandleMotion;
-      listener.button = OnWaylandSystemContext_PointerHandleButton;
-      listener.axis = OnWaylandSystemContext_PointerHandleAxis;
+      listener.enter = OnPointerEnter;
+      listener.leave = OnPointerLeave;
+      listener.motion = OnPointerMotion;
+      listener.button = OnPointerButton;
+      listener.axis = OnPointerAxis;
       return listener;
     }
 
     const wl_pointer_listener g_pointerListener = CreatePointerListener();
 
 
-    void OnWaylandSystemContext_KeyboardHandleKeymap(void* data, wl_keyboard* keyboard, uint32_t format, int fd, uint32_t size)
+    void OnKeyboardKeymap(void* data, wl_keyboard* keyboard, uint32_t format, int fd, uint32_t size)
+    {
+      // The keys are reported by their position (WaylandUtil::TryToVirtualKey), so the keymap is not read. The file is ours to close.
+      if (fd >= 0)
+      {
+        close(fd);
+      }
+    }
+
+
+    void OnKeyboardEnter(void* data, wl_keyboard* keyboard, uint32_t serial, wl_surface* surface, wl_array* keys)
     {
     }
 
 
-    void OnWaylandSystemContext_KeyboardHandleEnter(void* data, wl_keyboard* keyboard, uint32_t serial, wl_surface* surface, wl_array* keys)
+    void OnKeyboardLeave(void* data, wl_keyboard* keyboard, uint32_t serial, wl_surface* surface)
     {
     }
 
 
-    void OnWaylandSystemContext_KeyboardHandleLeave(void* data, wl_keyboard* keyboard, uint32_t serial, wl_surface* surface)
-    {
-    }
-
-
-    void OnWaylandSystemContext_KeyboardHandleKey(void* data, wl_keyboard* keyboard, uint32_t serial, uint32_t time, uint32_t key, uint32_t state)
+    void OnKeyboardKey(void* data, wl_keyboard* keyboard, uint32_t serial, uint32_t time, uint32_t key, uint32_t state)
     {
       auto* pContext = static_cast<PlatformNativeWindowSystemContextWayland*>(data);
       assert(pContext != nullptr);
-      std::shared_ptr<INativeWindowEventQueue> eventQueue = pContext->EventQueue.lock();
+      const std::shared_ptr<INativeWindowEventQueue> eventQueue = pContext->EventQueue.lock();
       if (eventQueue)
       {
         // Try to translate the keykode and post it if successfull
@@ -629,8 +766,8 @@ namespace Fsl
     }
 
 
-    void OnWaylandSystemContext_KeyboardHandleModifiers(void* data, wl_keyboard* keyboard, uint32_t serial, uint32_t mods_depressed,
-                                                        uint32_t mods_latched, uint32_t mods_locked, uint32_t group)
+    void OnKeyboardModifiers(void* data, wl_keyboard* keyboard, uint32_t serial, uint32_t modsDepressed, uint32_t modsLatched, uint32_t modsLocked,
+                             uint32_t group)
     {
     }
 
@@ -638,11 +775,11 @@ namespace Fsl
     wl_keyboard_listener CreateKeyboardListener() noexcept
     {
       wl_keyboard_listener listener{};
-      listener.keymap = OnWaylandSystemContext_KeyboardHandleKeymap;
-      listener.enter = OnWaylandSystemContext_KeyboardHandleEnter;
-      listener.leave = OnWaylandSystemContext_KeyboardHandleLeave;
-      listener.key = OnWaylandSystemContext_KeyboardHandleKey;
-      listener.modifiers = OnWaylandSystemContext_KeyboardHandleModifiers;
+      listener.keymap = OnKeyboardKeymap;
+      listener.enter = OnKeyboardEnter;
+      listener.leave = OnKeyboardLeave;
+      listener.key = OnKeyboardKey;
+      listener.modifiers = OnKeyboardModifiers;
       return listener;
     }
 
@@ -743,56 +880,96 @@ namespace Fsl
     }
 #endif
 
-    void OnWaylandOutputContext_HandleGeometry(void* data, wl_output* wl_output, int32_t x, int32_t y, int32_t physicalWidth, int32_t physicalHeight,
-                                               int32_t subpixel, const char* make, const char* model, int32_t output_transform)
+    //! A output changed (its mode, its scale or its size): the window gets the scale of its output, and the framework is told to read
+    //! the DPI and the display info again. Nothing happens before there is a window.
+    void OnOutputChanged(const OutputInfo& output)
+    {
+      const PlatformNativeWindowSystemContextWayland* const pContext = output.SystemContext;
+      if (pContext == nullptr || pContext->Window == nullptr)
+      {
+        return;
+      }
+      UpdateBufferScale(*pContext->Window);
+      PostWindowConfigChanged(*pContext->Window);
+    }
+
+    void OnOutputGeometry(void* data, wl_output* wlOutput, int32_t x, int32_t y, int32_t physicalWidth, int32_t physicalHeight, int32_t subpixel,
+                          const char* make, const char* model, int32_t outputTransform)
     {
       auto* output = static_cast<OutputInfo*>(data);
       assert(output != nullptr);
 
-      FSLLOG3_VERBOSE5("OnWaylandOutputContext_HandleGeometry: x:{} y:{} physicalWidth:{} physicalHeight:{} subpixel:{} output_transform:{}", x, y,
-                       physicalWidth, physicalHeight, subpixel, output_transform);
+      FSLLOG3_VERBOSE5("OnOutputGeometry: x:{} y:{} physicalWidth:{} physicalHeight:{} subpixel:{} output_transform:{}", x, y, physicalWidth,
+                       physicalHeight, subpixel, outputTransform);
 
       output->Geometry.X = x;
       output->Geometry.Y = y;
       output->Geometry.PhysicalWidth = physicalWidth;
       output->Geometry.PhysicalHeight = physicalHeight;
       output->Geometry.Subpixel = static_cast<wl_output_subpixel>(subpixel);
-      output->Geometry.Make = make;
-      output->Geometry.Model = model;
-      output->Geometry.OutputTransform = static_cast<wl_output_transform>(output_transform);
+      output->Geometry.Make = make != nullptr ? make : "";
+      output->Geometry.Model = model != nullptr ? model : "";
+      output->Geometry.OutputTransform = static_cast<wl_output_transform>(outputTransform);
+      if (output->Version < 2u)
+      {
+        // A output of version one has no done event that ends a set of changes
+        OnOutputChanged(*output);
+      }
     }
 
-    void OnWaylandOutputContext_HandleMode(void* data, wl_output* wl_output, uint32_t flags, int32_t width, int32_t height, int32_t refresh)
+    void OnOutputMode(void* data, wl_output* wlOutput, uint32_t flags, int32_t width, int32_t height, int32_t refresh)
     {
       auto* output = static_cast<OutputInfo*>(data);
       assert(output != nullptr);
 
-      FSLLOG3_VERBOSE5("OnWaylandOutputContext_HandleMode");
-
-      OutputModeRecord mode;
-      mode.Flags = flags;
-      mode.Width = width;
-      mode.Height = height;
-      mode.Refresh = refresh;
+      FSLLOG3_VERBOSE5("OnOutputMode");
 
       if ((flags & WL_OUTPUT_MODE_CURRENT) != 0u)
       {
         output->CurrentRefreshMilliHz = refresh;
+        // A output has one current mode, and the event is sent again when it changes
+        for (OutputModeRecord& rMode : output->Modes)
+        {
+          rMode.Flags &= ~static_cast<uint32_t>(WL_OUTPUT_MODE_CURRENT);
+        }
       }
 
-      output->Modes.push_back(mode);
+      // A mode that was listed before is updated, so the list does not grow with every change of the mode
+      const auto itrFind = std::find_if(output->Modes.begin(), output->Modes.end(), [width, height, refresh](const OutputModeRecord& entry)
+                                        { return entry.Width == width && entry.Height == height && entry.Refresh == refresh; });
+      if (itrFind != output->Modes.end())
+      {
+        itrFind->Flags = flags;
+      }
+      else
+      {
+        OutputModeRecord mode;
+        mode.Flags = flags;
+        mode.Width = width;
+        mode.Height = height;
+        mode.Refresh = refresh;
+        output->Modes.push_back(mode);
+      }
+      if (output->Version < 2u)
+      {
+        OnOutputChanged(*output);
+      }
     }
 
-    void OnWaylandOutputContext_HandleDone(void* data, wl_output* wl_output)
+    void OnOutputDone(void* data, wl_output* wlOutput)
     {
-      // don't bother waiting for this; there's no good reason a
-      // compositor will wait more than one roundtrip before sending
-      // these initial events.
+      // The end of a set of changes of the output. Nothing waits for the first one: the events of a new output arrive within a
+      // roundtrip.
+      const auto* const pOutput = static_cast<const OutputInfo*>(data);
+      if (pOutput != nullptr)
+      {
+        OnOutputChanged(*pOutput);
+      }
     }
 
-    void OnWaylandOutputContext_HandleScale(void* data, wl_output* wl_output, int32_t scale)
+    void OnOutputScale(void* data, wl_output* wlOutput, int32_t scale)
     {
-      FSLLOG3_VERBOSE5("OnWaylandOutputContext_HandleScale: {}", scale);
+      FSLLOG3_VERBOSE5("OnOutputScale: {}", scale);
 
       auto* output = static_cast<OutputInfo*>(data);
       if (output != nullptr)
@@ -805,10 +982,10 @@ namespace Fsl
     wl_output_listener CreateOutputListener() noexcept
     {
       wl_output_listener listener{};
-      listener.geometry = OnWaylandOutputContext_HandleGeometry;
-      listener.mode = OnWaylandOutputContext_HandleMode;
-      listener.done = OnWaylandOutputContext_HandleDone;
-      listener.scale = OnWaylandOutputContext_HandleScale;
+      listener.geometry = OnOutputGeometry;
+      listener.mode = OnOutputMode;
+      listener.done = OnOutputDone;
+      listener.scale = OnOutputScale;
       return listener;
     }
 
@@ -820,7 +997,12 @@ namespace Fsl
       auto output = std::make_unique<OutputInfo>(GlobalInfo(id, version, wl_output_interface.name), version);
       FSLLOG3_VERBOSE5("Allocated Space for OutputInfo");
 
-      output->Output.reset(static_cast<wl_output*>(wl_registry_bind(rContext.Handles.Registry, id, &wl_output_interface, output->Version)));
+      output->SystemContext = &rContext;
+      output->Output.reset(static_cast<wl_output*>(wl_registry_bind(rContext.Handles.Registry.get(), id, &wl_output_interface, output->Version)));
+      if (!output->Output)
+      {
+        return;
+      }
       wl_output_add_listener(output->Output.get(), &g_outputListener, output.get());
 
       rContext.RoundtripNeeded = true;
@@ -828,7 +1010,7 @@ namespace Fsl
     }
 
 
-    void OnWaylandSystemContext_SeatHandleCapabilities(void* data, wl_seat* seat, uint32_t caps)
+    void OnSeatCapabilities(void* data, wl_seat* seat, uint32_t caps)
     {
       auto* pContext = static_cast<PlatformNativeWindowSystemContextWayland*>(data);
 
@@ -847,7 +1029,7 @@ namespace Fsl
         pContext->Handles.Keyboard.reset(wl_seat_get_keyboard(seat));
         wl_keyboard_add_listener(pContext->Handles.Keyboard.get(), &g_keyboardListener, pContext);
       }
-      else if (((caps & WL_SEAT_CAPABILITY_KEYBOARD) == 0u) && !pContext->Handles.Keyboard)
+      else if (((caps & WL_SEAT_CAPABILITY_KEYBOARD) == 0u) && pContext->Handles.Keyboard)
       {
         pContext->Handles.Keyboard.reset();
       }
@@ -857,7 +1039,7 @@ namespace Fsl
     wl_seat_listener CreateSeatListener() noexcept
     {
       wl_seat_listener listener{};
-      listener.capabilities = OnWaylandSystemContext_SeatHandleCapabilities;
+      listener.capabilities = OnSeatCapabilities;
       return listener;
     }
 
@@ -865,13 +1047,16 @@ namespace Fsl
 
     //! The globals a compositor can have that are about when a frame is shown (Doc/FramePacingPlatformSupport.md). These are looked
     //! for, and the log says for each of them if the compositor has it. Only wp_presentation is bound (WaylandPresentationTime).
-    constexpr std::array<const char*, 6> g_frameTimingGlobals = {
-      "wp_presentation",    "wp_fifo_manager_v1", "wp_commit_timing_manager_v1", "wp_tearing_control_manager_v1", "wp_linux_drm_syncobj_manager_v1",
-      "zwp_linux_dmabuf_v1"};
+    namespace LocalConfig
+    {
+      constexpr std::array<const char*, 6> FrameTimingGlobals = {
+        "wp_presentation",    "wp_fifo_manager_v1", "wp_commit_timing_manager_v1", "wp_tearing_control_manager_v1", "wp_linux_drm_syncobj_manager_v1",
+        "zwp_linux_dmabuf_v1"};
+    }
 
     bool IsFrameTimingGlobal(const char* const pszInterface) noexcept
     {
-      return std::any_of(g_frameTimingGlobals.begin(), g_frameTimingGlobals.end(),
+      return std::any_of(LocalConfig::FrameTimingGlobals.begin(), LocalConfig::FrameTimingGlobals.end(),
                          [pszInterface](const char* const pszEntry) { return strcmp(pszInterface, pszEntry) == 0; });
     }
 
@@ -885,8 +1070,9 @@ namespace Fsl
     //! What was looked for and what the compositor has of it, for the verbose log of any app
     void LogFrameTimingGlobals(const PlatformNativeWindowSystemContextWayland& context)
     {
-      FSLLOG3_VERBOSE("Wayland: the globals of the compositor that are about when a frame is shown (looked for: {})", g_frameTimingGlobals.size());
-      for (const char* const pszInterface : g_frameTimingGlobals)
+      FSLLOG3_VERBOSE("Wayland: the globals of the compositor that are about when a frame is shown (looked for: {})",
+                      LocalConfig::FrameTimingGlobals.size());
+      for (const char* const pszInterface : LocalConfig::FrameTimingGlobals)
       {
         const GlobalInfo* const pGlobal = TryFindFrameTimingGlobal(context, pszInterface);
         if (pGlobal == nullptr)
@@ -902,7 +1088,7 @@ namespace Fsl
       }
     }
 
-    void OnWaylandSystemContext_RegistryHandleGlobal(void* data, wl_registry* registry, uint32_t name, const char* interface, uint32_t version)
+    void OnRegistryGlobal(void* data, wl_registry* registry, uint32_t name, const char* interface, uint32_t version)
     {
       FSLLOG3_VERBOSE5("Wayland registry handle global '{}'", interface)
 
@@ -929,16 +1115,30 @@ namespace Fsl
         pContext->Handles.WmBase.reset(static_cast<xdg_wm_base*>(wl_registry_bind(registry, name, &xdg_wm_base_interface, 1)));
         xdg_wm_base_add_listener(pContext->Handles.WmBase.get(), &g_wmBaseListener, pContext);
       }
+      else if (strcmp(interface, wl_shell_interface.name) == 0)
+      {
+        pContext->Handles.Shell.reset(static_cast<wl_shell*>(wl_registry_bind(registry, name, &wl_shell_interface, 1)));
+      }
       else if (strcmp(interface, wl_seat_interface.name) == 0)
       {
-        pContext->Handles.Seat.reset(static_cast<wl_seat*>(wl_registry_bind(registry, name, &wl_seat_interface, 1)));
-        wl_seat_add_listener(pContext->Handles.Seat.get(), &g_seatListener, pContext);
+        if (!pContext->Handles.Seat)
+        {
+          pContext->Handles.Seat.reset(static_cast<wl_seat*>(wl_registry_bind(registry, name, &wl_seat_interface, 1)));
+          if (pContext->Handles.Seat)
+          {
+            wl_seat_add_listener(pContext->Handles.Seat.get(), &g_seatListener, pContext);
+          }
+        }
+        else
+        {
+          // The pointer and the keyboard of the framework are those of one seat
+          FSLLOG3_VERBOSE("Wayland: the compositor has more than one seat, the first one is used");
+        }
       }
       else if (strcmp(interface, wl_shm_interface.name) == 0)
       {
+        // The cursor theme needs it, the theme is loaded when the pointer enters the window (UpdateCursorTheme)
         pContext->Handles.Shm.reset(static_cast<wl_shm*>(wl_registry_bind(registry, name, &wl_shm_interface, 1)));
-        pContext->Handles.CursorTheme.reset(wl_cursor_theme_load(nullptr, 32, pContext->Handles.Shm.get()));
-        pContext->Handles.DefaultCursor = wl_cursor_theme_get_cursor(pContext->Handles.CursorTheme.get(), "left_ptr");
       }
       else if (strcmp(interface, wl_output_interface.name) == 0)
       {
@@ -954,11 +1154,38 @@ namespace Fsl
       }
     }
 
-    void OnWaylandSystemContext_RegistryHandleRemove(void* data, wl_registry* registry, uint32_t name)
+    void OnRegistryGlobalRemove(void* data, wl_registry* registry, uint32_t name)
     {
+      auto* pContext = static_cast<PlatformNativeWindowSystemContextWayland*>(data);
+      if (pContext == nullptr)
+      {
+        return;
+      }
+      // A output that was unplugged or switched off: its record goes, and the window is no longer on it
+      auto& rOutputs = pContext->Outputs;
+      const auto itrFind =
+        std::find_if(rOutputs.begin(), rOutputs.end(), [name](const std::unique_ptr<OutputInfo>& info) { return info && info->Global.Id == name; });
+      if (itrFind == rOutputs.end())
+      {
+        return;
+      }
+      FSLLOG3_VERBOSE("Wayland: a output was removed");
+      PlatformNativeWindowContextWayland* const pWindow = pContext->Window;
+      if (pWindow != nullptr)
+      {
+        const wl_output* const pRemovedOutput = (*itrFind)->Output.get();
+        auto& rEnteredOutputs = pWindow->EnteredOutputs;
+        rEnteredOutputs.erase(std::remove(rEnteredOutputs.begin(), rEnteredOutputs.end(), pRemovedOutput), rEnteredOutputs.end());
+      }
+      rOutputs.erase(itrFind);
+      if (pWindow != nullptr)
+      {
+        UpdateBufferScale(*pWindow);
+        PostWindowConfigChanged(*pWindow);
+      }
     }
 
-    const wl_registry_listener g_registryListener = {OnWaylandSystemContext_RegistryHandleGlobal, OnWaylandSystemContext_RegistryHandleRemove};
+    const wl_registry_listener g_registryListener = {OnRegistryGlobal, OnRegistryGlobalRemove};
 
     uint32_t CalcDPI(const uint32_t width, const uint32_t millimeterWidth)
     {
@@ -1025,6 +1252,38 @@ namespace Fsl
       return std::make_shared<PlatformNativeWindowAdapterWayland>(nativeWindowSetup, windowParams, pPlatformCustomWindowAllocationParams);
     }
 
+    //! Registers a window at the window system and takes it out again unless its creation completed, so the window system never keeps
+    //! a window or a surface that is gone.
+    class ScopedWindowRegistration final
+    {
+      PlatformNativeWindowSystemContextWayland& m_rContext;
+      bool m_keep{false};
+
+    public:
+      ScopedWindowRegistration(const ScopedWindowRegistration&) = delete;
+      ScopedWindowRegistration& operator=(const ScopedWindowRegistration&) = delete;
+
+      ScopedWindowRegistration(PlatformNativeWindowSystemContextWayland& rContext, PlatformNativeWindowContextWayland* const pWindow) noexcept
+        : m_rContext(rContext)
+      {
+        m_rContext.Window = pWindow;
+      }
+
+      ~ScopedWindowRegistration() noexcept
+      {
+        if (!m_keep)
+        {
+          m_rContext.PresentationTime.SetSurface(nullptr);
+          m_rContext.Window = nullptr;
+        }
+      }
+
+      void Keep() noexcept
+      {
+        m_keep = true;
+      }
+    };
+
     void ExtractOutputs(std::vector<PlatformNativeWindowAdapterWayland::WaylandDisplayGeometry>& rDst,
                         const std::vector<std::unique_ptr<OutputInfo>>& outputs)
     {
@@ -1054,8 +1313,6 @@ namespace Fsl
     , m_allocationFunction(allocateWindowFunction ? allocateWindowFunction : AllocateWindow)
     , m_windowSystemContext(std::make_shared<PlatformNativeWindowSystemContextWayland>(setup.GetEventQueue()))
   {
-    g_requestClose = false;
-
     // TODO: handle proper shutdown in case of exception here
     m_windowSystemContext->Handles.Display.reset(wl_display_connect(nullptr));
     if (!m_windowSystemContext->Handles.Display)
@@ -1067,23 +1324,30 @@ namespace Fsl
     {
       m_platformDisplay = m_windowSystemContext->Handles.Display.get();
 
-      m_windowSystemContext->Handles.Registry = wl_display_get_registry(m_windowSystemContext->Handles.Display.get());
-      if (m_windowSystemContext->Handles.Registry == nullptr)
+      m_windowSystemContext->Handles.Registry.reset(wl_display_get_registry(m_windowSystemContext->Handles.Display.get()));
+      if (!m_windowSystemContext->Handles.Registry)
       {
         throw GraphicsException("wl_display_get_registry Failure");
       }
 
-      if (wl_registry_add_listener(m_windowSystemContext->Handles.Registry, &g_registryListener, m_windowSystemContext.get()) == -1)
+      if (wl_registry_add_listener(m_windowSystemContext->Handles.Registry.get(), &g_registryListener, m_windowSystemContext.get()) == -1)
       {
         throw GraphicsException("wl_registry_add_listener Failure");
       }
 
-      if (wl_display_dispatch(m_windowSystemContext->Handles.Display.get()) == -1)
+      // A roundtrip: the compositor has answered every request made so far when it returns, so every global is listed. One
+      // dispatch only handles what happens to have arrived.
+      if (wl_display_roundtrip(m_windowSystemContext->Handles.Display.get()) == -1)
       {
-        throw GraphicsException("wl_display_dispatch Failure");
+        throw GraphicsException(
+          fmt::format("wl_display_roundtrip Failure: {}", WaylandEventPump::DescribeError(m_windowSystemContext->Handles.Display.get())));
+      }
+      if (!m_windowSystemContext->Handles.Compositor)
+      {
+        throw GraphicsException("The compositor has no wl_compositor, a window can not be created");
       }
 
-      auto eventQueue = m_windowSystemContext->EventQueue.lock();
+      const auto eventQueue = m_windowSystemContext->EventQueue.lock();
       if (eventQueue)
       {
         const NativeWindowEvent event = NativeWindowEventHelper::EncodeGamepadConfiguration(0);
@@ -1104,7 +1368,7 @@ namespace Fsl
 
     m_windowSystemContext->Handles.CursorSurface.reset();
 
-    m_windowSystemContext->Handles.Ivi.reset();
+    m_windowSystemContext->Handles.Ivi.Reset();
     m_windowSystemContext->Handles.DecorationManager.reset();
     m_windowSystemContext->Handles.Keyboard.reset();
     m_windowSystemContext->Handles.Pointer.reset();
@@ -1115,7 +1379,9 @@ namespace Fsl
 
     m_windowSystemContext->Handles.Seat.reset();
     m_windowSystemContext->Handles.WmBase.reset();
+    m_windowSystemContext->Handles.Shell.reset();
     m_windowSystemContext->Handles.Compositor.reset();
+    m_windowSystemContext->Handles.Registry.reset();
 
     if (wl_display_flush(m_windowSystemContext->Handles.Display.get()) == -1)
     {
@@ -1140,15 +1406,22 @@ namespace Fsl
 
   bool PlatformNativeWindowSystemAdapterWayland::ProcessMessages(const NativeWindowProcessMessagesArgs& args)
   {
-    bool bContinue = !g_requestClose;
-
-    // This will dispatch messages that occurred
-    wl_display_dispatch_pending(m_windowSystemContext->Handles.Display.get());
+    // Send what waits, read what the compositor sent and dispatch it. The graphics API reads the socket too when it presents, but only
+    // while it presents, and it does not report a lost connection to the app.
+    wl_display* const pDisplay = m_windowSystemContext->Handles.Display.get();
+    if (!m_windowSystemContext->RequestClose && !WaylandEventPump::TryProcessEvents(pDisplay))
+    {
+      FSLLOG3_ERROR("Wayland: the connection to the compositor was lost ({}), the app is closed", WaylandEventPump::DescribeError(pDisplay));
+      m_windowSystemContext->RequestClose = true;
+    }
+    if (m_windowSystemContext->RequestClose)
+    {
+      return false;
+    }
 
     // Ask when the frame that is drawn next is shown (it rides on the commit the graphics API makes for it)
     m_windowSystemContext->PresentationTime.RequestFeedback();
-
-    return bContinue;
+    return true;
   }
 
 
@@ -1168,7 +1441,7 @@ namespace Fsl
       throw NotSupportedException(
         fmt::format("VSyncSource '{}' is not a vsync source of this window system (auto, presentation-time)", m_requestedVSyncSource));
     }
-    auto windowSystemContext = platformWindowParams.WindowSystemWaylandContext.lock();
+    const auto windowSystemContext = platformWindowParams.WindowSystemWaylandContext.lock();
     if (!windowSystemContext)
     {
       throw std::invalid_argument("Can not be null");
@@ -1206,7 +1479,8 @@ namespace Fsl
     FSLLOG3_VERBOSE("Creating window of size:{} and fullscreen:{}", m_windowContext->DesiredWindowSize, m_windowContext->Fullscreen);
 
     assert(windowSystemContext->Window == nullptr);
-    windowSystemContext->Window = m_windowContext.get();
+    // The window system knows the window from here on, and forgets it again if the rest of this fails
+    ScopedWindowRegistration windowRegistration(*windowSystemContext, m_windowContext.get());
     windowSystemContext->MousePosition = PxPoint2::Create(0, 0);
 
     // if (m_windowContext->Fullscreen && windowSystemContext->Handles.WmBase)
@@ -1222,6 +1496,14 @@ namespace Fsl
 
     CreateWlSurface(*windowSystemContext, *m_windowContext);
     m_platformSurface = m_windowContext->Handles.Surface.get();
+
+    // Created before the native window, so nothing that can fail comes after that
+    windowSystemContext->Handles.CursorSurface.reset(wl_compositor_create_surface(windowSystemContext->Handles.Compositor.get()));
+    if (!windowSystemContext->Handles.CursorSurface)
+    {
+      throw GraphicsException("wl_compositor_create_surface CursorSurface failure");
+    }
+
     // The display times of the frames of this surface are asked for from now on
     windowSystemContext->PresentationTime.SetSurface(m_platformSurface);
 
@@ -1270,20 +1552,14 @@ namespace Fsl
       }
     }
 
-    windowSystemContext->Handles.CursorSurface.reset(wl_compositor_create_surface(windowSystemContext->Handles.Compositor.get()));
-    if (!windowSystemContext->Handles.CursorSurface)
-    {
-      throw GraphicsException("wl_compositor_create_surface CursorSurface failure");
-    }
-
-
     {    // Post the activation message to let the framework know we are ready
-      std::shared_ptr<INativeWindowEventQueue> eventQueue = m_windowContext->EventQueue.lock();
+      const std::shared_ptr<INativeWindowEventQueue> eventQueue = m_windowContext->EventQueue.lock();
       if (eventQueue)
       {
         eventQueue->PostEvent(NativeWindowEventHelper::EncodeWindowActivationEvent(true));
       }
     }
+    windowRegistration.Keep();
   }
 
 
@@ -1294,6 +1570,11 @@ namespace Fsl
       if (windowSystemContext)
       {
         windowSystemContext->PresentationTime.SetSurface(nullptr);
+        // The window system must not keep a window that is gone
+        if (windowSystemContext->Window == m_windowContext.get())
+        {
+          windowSystemContext->Window = nullptr;
+        }
       }
     }
     if (m_windowContext->Native != nullptr)
@@ -1304,15 +1585,15 @@ namespace Fsl
       }
     }
 
-    m_windowContext->Handles.reset();
+    m_windowContext->Handles.Reset();
     // m_windowContext->Callback.reset();
   }
 
 
   bool PlatformNativeWindowAdapterWayland::TryGetNativeSize(PxPoint2& rSize) const
   {
-    auto width = m_windowContext->Geometry.RawWidth();
-    auto height = m_windowContext->Geometry.RawHeight();
+    const auto width = m_windowContext->Geometry.RawWidth();
+    const auto height = m_windowContext->Geometry.RawHeight();
     if (width <= 0 || height <= 0)
     {
       return false;
@@ -1361,7 +1642,7 @@ namespace Fsl
     }
     if (windowSystemContext)
     {
-      for (const char* const pszInterface : g_frameTimingGlobals)
+      for (const char* const pszInterface : LocalConfig::FrameTimingGlobals)
       {
         const GlobalInfo* const pGlobal = TryFindFrameTimingGlobal(*windowSystemContext, pszInterface);
         if (pGlobal != nullptr)

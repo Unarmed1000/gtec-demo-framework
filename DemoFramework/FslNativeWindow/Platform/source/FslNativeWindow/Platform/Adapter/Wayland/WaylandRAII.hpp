@@ -42,7 +42,7 @@
 
 namespace Fsl
 {
-  struct CustomDeleter_wl_callback
+  struct CustomDeleterWlCallback
   {
     void operator()(wl_callback* pVal)
     {
@@ -54,7 +54,7 @@ namespace Fsl
   };
 
 
-  struct CustomDeleter_wl_compositor
+  struct CustomDeleterWlCompositor
   {
     void operator()(wl_compositor* pVal)
     {
@@ -65,7 +65,7 @@ namespace Fsl
     }
   };
 
-  // struct CustomDeleter_wl_cursor
+  // struct CustomDeleterWlCursor
   // {
   //   void operator()(wl_cursor* pVal)
   //   {
@@ -78,7 +78,7 @@ namespace Fsl
   //   }
   // };
 
-  struct CustomDeleter_wl_cursor_theme
+  struct CustomDeleterWlCursorTheme
   {
     void operator()(wl_cursor_theme* pVal)
     {
@@ -89,7 +89,7 @@ namespace Fsl
     }
   };
 
-  struct CustomDeleter_wl_display
+  struct CustomDeleterWlDisplay
   {
     void operator()(wl_display* pVal)
     {
@@ -100,7 +100,7 @@ namespace Fsl
     }
   };
 
-  struct CustomDeleter_wl_keyboard
+  struct CustomDeleterWlKeyboard
   {
     void operator()(wl_keyboard* pVal)
     {
@@ -113,7 +113,7 @@ namespace Fsl
   };
 
 
-  struct CustomDeleter_wl_output
+  struct CustomDeleterWlOutput
   {
     void operator()(wl_output* pVal)
     {
@@ -125,7 +125,7 @@ namespace Fsl
   };
 
 
-  struct CustomDeleter_wl_pointer
+  struct CustomDeleterWlPointer
   {
     void operator()(wl_pointer* pVal)
     {
@@ -137,19 +137,60 @@ namespace Fsl
     }
   };
 
-  struct CustomDeleter_wl_seat
+  struct CustomDeleterWlSeat
   {
     void operator()(wl_seat* pVal)
     {
       if (pVal != nullptr)
       {
-        wl_seat_release(pVal);
+        // wl_seat.release came with version 5 of the interface. A request the bound version does not have is a protocol error.
+        if (wl_seat_get_version(pVal) >= WL_SEAT_RELEASE_SINCE_VERSION)
+        {
+          wl_seat_release(pVal);
+        }
+        else
+        {
+          wl_seat_destroy(pVal);
+        }
+      }
+    }
+  };
+
+  struct CustomDeleterWlRegistry
+  {
+    void operator()(wl_registry* pVal)
+    {
+      if (pVal != nullptr)
+      {
+        wl_registry_destroy(pVal);
       }
     }
   };
 
 
-  struct CustomDeleter_wl_shm
+  struct CustomDeleterWlShell
+  {
+    void operator()(wl_shell* pVal)
+    {
+      if (pVal != nullptr)
+      {
+        wl_shell_destroy(pVal);
+      }
+    }
+  };
+
+  struct CustomDeleterWlShellSurface
+  {
+    void operator()(wl_shell_surface* pVal)
+    {
+      if (pVal != nullptr)
+      {
+        wl_shell_surface_destroy(pVal);
+      }
+    }
+  };
+
+  struct CustomDeleterWlShm
   {
     void operator()(wl_shm* pVal)
     {
@@ -160,7 +201,7 @@ namespace Fsl
     }
   };
 
-  struct CustomDeleter_wl_surface
+  struct CustomDeleterWlSurface
   {
     void operator()(wl_surface* pVal)
     {
@@ -171,7 +212,7 @@ namespace Fsl
     }
   };
 
-  struct CustomDeleter_xdg_wm_base
+  struct CustomDeleterXdgWmBase
   {
     void operator()(xdg_wm_base* pVal)
     {
@@ -183,7 +224,7 @@ namespace Fsl
   };
 
 
-  struct CustomDeleter_xdg_surface
+  struct CustomDeleterXdgSurface
   {
     void operator()(xdg_surface* pVal)
     {
@@ -195,7 +236,7 @@ namespace Fsl
   };
 
 
-  struct CustomDeleter_xdg_toplevel
+  struct CustomDeleterXdgToplevel
   {
     void operator()(xdg_toplevel* pVal)
     {
@@ -207,7 +248,7 @@ namespace Fsl
   };
 
 
-  struct CustomDeleter_zxdg_decoration_manager_v1
+  struct CustomDeleterZxdgDecorationManagerV1
   {
     void operator()(zxdg_decoration_manager_v1* pVal)
     {
@@ -218,22 +259,37 @@ namespace Fsl
     }
   };
 
-  using ScopedWaylandCallback = std::unique_ptr<wl_callback, CustomDeleter_wl_callback>;
-  using ScopedWaylandCompositor = std::unique_ptr<wl_compositor, CustomDeleter_wl_compositor>;
-  // using ScopedWaylandCursor = std::unique_ptr<wl_cursor, CustomDeleter_wl_cursor>;
-  using ScopedWaylandCursorTheme = std::unique_ptr<wl_cursor_theme, CustomDeleter_wl_cursor_theme>;
-  using ScopedWaylandDisplay = std::unique_ptr<wl_display, CustomDeleter_wl_display>;
-  using ScopedWaylandKeyboard = std::unique_ptr<wl_keyboard, CustomDeleter_wl_keyboard>;
-  using ScopedWaylandOutput = std::unique_ptr<wl_output, CustomDeleter_wl_output>;
-  using ScopedWaylandPointer = std::unique_ptr<wl_pointer, CustomDeleter_wl_pointer>;
-  using ScopedWaylandSeat = std::unique_ptr<wl_seat, CustomDeleter_wl_seat>;
-  using ScopedWaylandShm = std::unique_ptr<wl_shm, CustomDeleter_wl_shm>;
-  using ScopedWaylandSurface = std::unique_ptr<wl_surface, CustomDeleter_wl_surface>;
+  struct CustomDeleterZxdgToplevelDecorationV1
+  {
+    void operator()(zxdg_toplevel_decoration_v1* pVal)
+    {
+      if (pVal != nullptr)
+      {
+        zxdg_toplevel_decoration_v1_destroy(pVal);
+      }
+    }
+  };
 
-  using ScopedWaylandXdgWmBase = std::unique_ptr<xdg_wm_base, CustomDeleter_xdg_wm_base>;
-  using ScopedWaylandXdgSurface = std::unique_ptr<xdg_surface, CustomDeleter_xdg_surface>;
-  using ScopedWaylandXdgToplevel = std::unique_ptr<xdg_toplevel, CustomDeleter_xdg_toplevel>;
-  using ScopedWaylandXdgDecorationManagerV1 = std::unique_ptr<zxdg_decoration_manager_v1, CustomDeleter_zxdg_decoration_manager_v1>;
+  using ScopedWaylandCallback = std::unique_ptr<wl_callback, CustomDeleterWlCallback>;
+  using ScopedWaylandCompositor = std::unique_ptr<wl_compositor, CustomDeleterWlCompositor>;
+  // using ScopedWaylandCursor = std::unique_ptr<wl_cursor, CustomDeleterWlCursor>;
+  using ScopedWaylandCursorTheme = std::unique_ptr<wl_cursor_theme, CustomDeleterWlCursorTheme>;
+  using ScopedWaylandDisplay = std::unique_ptr<wl_display, CustomDeleterWlDisplay>;
+  using ScopedWaylandKeyboard = std::unique_ptr<wl_keyboard, CustomDeleterWlKeyboard>;
+  using ScopedWaylandOutput = std::unique_ptr<wl_output, CustomDeleterWlOutput>;
+  using ScopedWaylandPointer = std::unique_ptr<wl_pointer, CustomDeleterWlPointer>;
+  using ScopedWaylandRegistry = std::unique_ptr<wl_registry, CustomDeleterWlRegistry>;
+  using ScopedWaylandSeat = std::unique_ptr<wl_seat, CustomDeleterWlSeat>;
+  using ScopedWaylandShell = std::unique_ptr<wl_shell, CustomDeleterWlShell>;
+  using ScopedWaylandShellSurface = std::unique_ptr<wl_shell_surface, CustomDeleterWlShellSurface>;
+  using ScopedWaylandShm = std::unique_ptr<wl_shm, CustomDeleterWlShm>;
+  using ScopedWaylandSurface = std::unique_ptr<wl_surface, CustomDeleterWlSurface>;
+
+  using ScopedWaylandXdgWmBase = std::unique_ptr<xdg_wm_base, CustomDeleterXdgWmBase>;
+  using ScopedWaylandXdgSurface = std::unique_ptr<xdg_surface, CustomDeleterXdgSurface>;
+  using ScopedWaylandXdgToplevel = std::unique_ptr<xdg_toplevel, CustomDeleterXdgToplevel>;
+  using ScopedWaylandXdgDecorationManagerV1 = std::unique_ptr<zxdg_decoration_manager_v1, CustomDeleterZxdgDecorationManagerV1>;
+  using ScopedWaylandXdgToplevelDecorationV1 = std::unique_ptr<zxdg_toplevel_decoration_v1, CustomDeleterZxdgToplevelDecorationV1>;
 
 }
 

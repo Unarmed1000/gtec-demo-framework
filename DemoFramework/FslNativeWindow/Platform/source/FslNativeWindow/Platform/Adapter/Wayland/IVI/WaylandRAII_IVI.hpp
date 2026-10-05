@@ -39,7 +39,7 @@
 
 namespace Fsl
 {
-  struct CustomDeleter_ivi_application
+  struct CustomDeleterIviApplication
   {
     void operator()(ivi_application* pVal)
     {
@@ -50,7 +50,7 @@ namespace Fsl
     }
   };
 
-  struct CustomDeleter_ivi_surface
+  struct CustomDeleterIviSurface
   {
     void operator()(ivi_surface* pVal)
     {
@@ -62,8 +62,8 @@ namespace Fsl
   };
 
 
-  using ScopedWaylandIviApplication = std::unique_ptr<ivi_application, CustomDeleter_ivi_applicatio>;
-  using ScopedWaylandIviSurface = std::unique_ptr<ivi_surface, CustomDeleter_ivi_surface>;
+  using ScopedWaylandIviApplication = std::unique_ptr<ivi_application, CustomDeleterIviApplication>;
+  using ScopedWaylandIviSurface = std::unique_ptr<ivi_surface, CustomDeleterIviSurface>;
 
 }
 

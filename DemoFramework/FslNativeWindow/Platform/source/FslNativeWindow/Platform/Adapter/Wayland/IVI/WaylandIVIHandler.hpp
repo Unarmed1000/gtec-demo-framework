@@ -44,8 +44,8 @@ namespace Fsl
   class WaylandIVIHandler final
   {
   public:
-    static void Create(const PlatformNativeWindowSystemContextWayland& context, const PlatformNativeWindowContextWayland& window);
-    static bool TryRegistryHandleGlobal(const PlatformNativeWindowSystemContextWayland& context, wl_registry* pRegistry, uint32_t name,
+    static void Create(const PlatformNativeWindowSystemContextWayland& context, PlatformNativeWindowContextWayland& rWindow);
+    static bool TryRegistryHandleGlobal(PlatformNativeWindowSystemContextWayland& rContext, wl_registry* pRegistry, uint32_t name,
                                         const char* pszInterface, uint32_t version);
   };
 }

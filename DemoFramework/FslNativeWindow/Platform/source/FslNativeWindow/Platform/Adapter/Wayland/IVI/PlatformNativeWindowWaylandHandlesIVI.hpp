@@ -42,7 +42,7 @@ namespace Fsl
   {
     ScopedWaylandIviSurface Surface;
 
-    void reset() noexcept
+    void Reset() noexcept
     {
       // Destroy the members in destruction order
       Surface.reset();
@@ -54,7 +54,7 @@ namespace Fsl
     const bool Enabled{true};
     ScopedWaylandIviApplication Application;
 
-    void reset() noexcept
+    void Reset() noexcept
     {
       // Destroy the members in destruction order
       Application.reset();
@@ -63,7 +63,7 @@ namespace Fsl
 #else
   struct PlatformNativeWindowWaylandHandlesIVI
   {
-    void reset() noexcept
+    void Reset() noexcept
     {
     }
   };
@@ -72,7 +72,7 @@ namespace Fsl
   {
     const bool Enabled{false};
 
-    void reset() noexcept
+    void Reset() noexcept
     {
     }
   };

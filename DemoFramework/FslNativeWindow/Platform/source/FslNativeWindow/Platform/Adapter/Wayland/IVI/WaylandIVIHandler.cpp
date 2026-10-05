@@ -34,12 +34,13 @@
 #include "WaylandIVIHandler.hpp"
 #include "../PlatformNativeWindowSystemContextWayland.hpp"
 #ifdef FSL_WINDOWSYSTEM_WAYLAND_IVI
+#include <FslBase/Log/Log3Fmt.hpp>
+#include <FslNativeWindow/Base/NativeWindowEventHelper.hpp>
 #include <ilm/ivi-application-client-protocol.h>
 #include <sys/types.h>
 #include <unistd.h>
 #include <cstring>
-
-#define IVI_SURFACE_ID 9000
+#include <memory>
 #endif
 
 
@@ -48,50 +49,77 @@ namespace Fsl
   namespace
   {
 #ifdef FSL_WINDOWSYSTEM_WAYLAND_IVI
-    static void OnWaylandWindowContext_HandleIVISurfaceConfigure(void* data, struct ivi_surface* iviSurface, int32_t width, int32_t height)
+    namespace LocalConfig
     {
-      PlatformNativeWindowContextWayland* window = (PlatformNativeWindowContextWayland*)data;
+      //! The id of the surface of the window is this plus the id of the process
+      constexpr uint32_t IviSurfaceIdBase = 9000;
+    }
 
-      if (window->ResizeWindowCallback)
+    //! The compositor gives the surface a size: the window takes it and the framework is told, as for a xdg toplevel
+    void OnIviSurfaceConfigure(void* data, ivi_surface* /*pIviSurface*/, int32_t width, int32_t height)
+    {
+      auto* pWindow = static_cast<PlatformNativeWindowContextWayland*>(data);
+      if (pWindow == nullptr || width <= 0 || height <= 0)
       {
-        window->ResizeWindowCallback(window->Native, width, height, 0, 0);
+        return;
       }
-      window->Geometry.Width = width;
-      window->Geometry.Height = height;
-      if (!window->Fullscreen)
+      const PxSize2D newSizePx = PxSize2D::Create(width, height);
+      if (newSizePx == pWindow->Geometry)
       {
-        window->WindowSize = window->Geometry;
+        return;
+      }
+      pWindow->Geometry = newSizePx;
+      if (pWindow->Native != nullptr && pWindow->ResizeWindowCallback)
+      {
+        pWindow->ResizeWindowCallback(pWindow->Native, width, height, 0, 0);
+      }
+      const std::shared_ptr<INativeWindowEventQueue> eventQueue = pWindow->EventQueue.lock();
+      if (eventQueue)
+      {
+        eventQueue->PostEvent(NativeWindowEventHelper::EncodeWindowResizedEvent());
       }
     }
 
-    const struct ivi_surface_listener g_iviSurfaceListener = {OnWaylandWindowContext_HandleIVISurfaceConfigure};
+    const ivi_surface_listener g_iviSurfaceListener = {OnIviSurfaceConfigure};
 #endif
   }
 
 
-  void WaylandIVIHandler::Create(const PlatformNativeWindowSystemContextWayland& context, const PlatformNativeWindowContextWayland& window)
+  void WaylandIVIHandler::Create(const PlatformNativeWindowSystemContextWayland& context, PlatformNativeWindowContextWayland& rWindow)
   {
 #ifdef FSL_WINDOWSYSTEM_WAYLAND_IVI
-    if (context.Handles.IviApplication)
+    // Nothing waits for a configure of a IVI surface, so the window has the size it was asked to have until the compositor gives it one
+    if (rWindow.Geometry.RawWidth() <= 0 || rWindow.Geometry.RawHeight() <= 0)
     {
-      uint32_t id_ivisurf = IVI_SURFACE_ID + (uint32_t)getpid();
-      rWindow.Handles.Ivi.Surface.reset(ivi_application_surface_create(context.Handles.IviApplication.get(), id_ivisurf, window.Surface.get()));
-      ivi_surface_add_listener(rWindow.Handles.Ivi.Surface.get(), &g_iviSurfaceListener, &window);
+      rWindow.Geometry = rWindow.DesiredWindowSize;
+    }
+    if (context.Handles.Ivi.Application)
+    {
+      const uint32_t surfaceId = LocalConfig::IviSurfaceIdBase + static_cast<uint32_t>(getpid());
+      rWindow.Handles.Ivi.Surface.reset(
+        ivi_application_surface_create(context.Handles.Ivi.Application.get(), surfaceId, rWindow.Handles.Surface.get()));
+      if (rWindow.Handles.Ivi.Surface)
+      {
+        ivi_surface_add_listener(rWindow.Handles.Ivi.Surface.get(), &g_iviSurfaceListener, &rWindow);
+      }
+    }
+    else
+    {
+      FSLLOG3_WARNING("Wayland IVI: the compositor has no ivi_application, the surface of the window gets no role");
     }
 #endif
   }
 
 
-  bool WaylandIVIHandler::TryRegistryHandleGlobal(const PlatformNativeWindowSystemContextWayland& context, wl_registry* pRegistry, uint32_t name,
+  bool WaylandIVIHandler::TryRegistryHandleGlobal(PlatformNativeWindowSystemContextWayland& rContext, wl_registry* pRegistry, uint32_t name,
                                                   const char* interface, uint32_t version)
   {
 #ifdef FSL_WINDOWSYSTEM_WAYLAND_IVI
     if (strcmp(interface, ivi_application_interface.name) == 0)
     {
-        pContext->Handles.IviApplication.reset(static_cast<ivi_application*>(wl_registry_bind(pRegistry, name, &ivi_application_interface, 1));
-        return true;
+      rContext.Handles.Ivi.Application.reset(static_cast<ivi_application*>(wl_registry_bind(pRegistry, name, &ivi_application_interface, 1)));
+      return true;
     }
-
 #endif
     return false;
   }

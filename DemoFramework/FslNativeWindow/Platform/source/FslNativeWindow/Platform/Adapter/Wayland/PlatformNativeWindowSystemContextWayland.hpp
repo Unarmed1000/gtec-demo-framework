@@ -61,14 +61,21 @@ namespace Fsl
     ScopedWaylandSurface Surface;
     ScopedWaylandXdgSurface XdgSurface;
     ScopedWaylandXdgToplevel XdgToplevel;
+    //! The server side decoration of the toplevel, if the compositor has the protocol. It has to be destroyed before its toplevel.
+    ScopedWaylandXdgToplevelDecorationV1 XdgToplevelDecoration;
+    //! The role of the surface on a compositor that has no xdg_wm_base but the shell of the core protocol
+    ScopedWaylandShellSurface ShellSurface;
     PlatformNativeWindowWaylandHandlesIVI Ivi;
 
     PlatformNativeWindowWaylandHandles() = default;
+    ~PlatformNativeWindowWaylandHandles() = default;
 
-    void reset() noexcept
+    void Reset() noexcept
     {
       // Destroy the members in destruction order
-      Ivi.reset();
+      Ivi.Reset();
+      ShellSurface.reset();
+      XdgToplevelDecoration.reset();
       XdgToplevel.reset();
       XdgSurface.reset();
       Surface.reset();
@@ -82,9 +89,9 @@ namespace Fsl
   public:
     std::weak_ptr<INativeWindowEventQueue> EventQueue;
 
-    PxSize2D Geometry{};
+    PxSize2D Geometry;
     //! This is the originally requested window size
-    PxSize2D DesiredWindowSize{};
+    PxSize2D DesiredWindowSize;
 
     PlatformNativeWindowWaylandHandles Handles;
 
@@ -93,7 +100,6 @@ namespace Fsl
     // ScopedWaylandCallback Callback;
     bool Fullscreen{false};
     bool Maximized{false};
-    bool Configured{false};
     bool WaitForConfigure{true};
     // bool RequestClose{false};
     std::function<void(void*, int, int, int, int)> ResizeWindowCallback;
@@ -112,6 +118,10 @@ namespace Fsl
     //! The size the compositor last asked the window to have, in its logical units (zero: it left that side to the window)
     int32_t ConfiguredLogicalWidth{0};
     int32_t ConfiguredLogicalHeight{0};
+    //! The size the compositor last gave the window while it was neither maximized nor fullscreen, in its logical units (zero: none
+    //! yet). A configure that leaves the size to the window gets this size and not the one the window was created with.
+    int32_t FloatingLogicalWidth{0};
+    int32_t FloatingLogicalHeight{0};
 
 
     explicit PlatformNativeWindowContextWayland(std::weak_ptr<INativeWindowEventQueue> eventQueue)
@@ -162,6 +172,8 @@ namespace Fsl
   {
     GlobalInfo Global;
     uint32_t Version{0};
+    //! The window system the output belongs to (it outlives the output), null until the output is added to it
+    PlatformNativeWindowSystemContextWayland* SystemContext{nullptr};
 
     ScopedWaylandOutput Output;
     OutputGeometryInfo Geometry;
@@ -187,9 +199,11 @@ namespace Fsl
     PlatformNativeWindowSystemWaylandHandles& operator=(PlatformNativeWindowSystemWaylandHandles&& other) noexcept = delete;
 
     ScopedWaylandDisplay Display;
-    wl_registry* Registry{nullptr};    // Does not need to be released
+    ScopedWaylandRegistry Registry;
     ScopedWaylandCompositor Compositor;
     ScopedWaylandXdgWmBase WmBase;
+    //! The shell of the core protocol (wl_shell). Only used when the compositor has no xdg_wm_base.
+    ScopedWaylandShell Shell;
     ScopedWaylandSeat Seat;
     ScopedWaylandShm Shm;
     ScopedWaylandCursorTheme CursorTheme;
@@ -201,6 +215,7 @@ namespace Fsl
     PlatformNativeWindowSystemWaylandHandlesIVI Ivi;
 
     PlatformNativeWindowSystemWaylandHandles() = default;
+    ~PlatformNativeWindowSystemWaylandHandles() = default;
 
     // void reset()
     // {
@@ -240,10 +255,16 @@ namespace Fsl
 
     PxPoint2 MousePosition;
     int ZDelta{0};
+    //! The part of the vertical scroll that did not add up to a wheel step yet (a 24.8 fixed point value)
+    int32_t WheelRemainder{0};
     VirtualMouseButton MouseButton{};
     bool MouseIsPressed{false};
 
     bool RoundtripNeeded{false};
+    //! True when the window was asked to close or the connection to the compositor was lost
+    bool RequestClose{false};
+    //! The scale the cursor theme was loaded for (zero: not loaded)
+    int32_t CursorScale{0};
 
     PlatformNativeWindowContextWayland* Window{nullptr};
     std::vector<std::unique_ptr<OutputInfo>> Outputs;
@@ -257,7 +278,7 @@ namespace Fsl
     {
     }
 
-    bool IsShutdown() const
+    [[nodiscard]] bool IsShutdown() const
     {
       return m_isShutdown;
     }
