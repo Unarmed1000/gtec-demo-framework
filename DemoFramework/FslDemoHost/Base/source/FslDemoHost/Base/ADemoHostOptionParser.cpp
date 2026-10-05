@@ -36,6 +36,8 @@
 #include <array>
 #include <cstdlib>
 #include <cstring>
+#include <stdexcept>
+#include <string>
 
 namespace Fsl
 {
@@ -52,6 +54,7 @@ namespace Fsl
         ActualDpi,
         DensityDpi,
         VSyncSource,
+        BufferScale,
       };
     };
   }
@@ -77,6 +80,10 @@ namespace Fsl
                             "DensityDpi <number> Override the density dpi reported by the native window", OptionGroup::Host);
       rOptions.emplace_back("VSyncSource", OptionArgument::OptionRequired, CommandId::VSyncSource,
                             "VSyncSource <name> Select the vsync source of the window (default: auto)", OptionGroup::Host);
+      rOptions.emplace_back("BufferScale", OptionArgument::OptionRequired, CommandId::BufferScale,
+                            "BufferScale <auto|1> The scale of the window buffer on a window system that scales windows (Wayland). auto: follow "
+                            "the scale of the output, the window is sharp and has more pixels (default). 1: the window system enlarges the window",
+                            OptionGroup::Host);
     }
   }
 
@@ -115,6 +122,23 @@ namespace Fsl
       case CommandId::VSyncSource:
         m_nativeWindowConfig.SetVSyncSource(strOptArg != nullptr ? std::string(strOptArg) : std::string());
         return OptionParseResult::Parsed;
+      case CommandId::BufferScale:
+        {
+          const StringViewLite strBufferScale(strOptArg);
+          if (strBufferScale == "auto")
+          {
+            m_nativeWindowConfig.SetBufferScale(0);
+          }
+          else if (strBufferScale == "1")
+          {
+            m_nativeWindowConfig.SetBufferScale(1);
+          }
+          else
+          {
+            throw std::invalid_argument(fmt::format("BufferScale '{}' is not supported, use auto or 1", std::string(strOptArg)));
+          }
+          return OptionParseResult::Parsed;
+        }
       case CommandId::ActualDpi:
         {
           Point2U value;

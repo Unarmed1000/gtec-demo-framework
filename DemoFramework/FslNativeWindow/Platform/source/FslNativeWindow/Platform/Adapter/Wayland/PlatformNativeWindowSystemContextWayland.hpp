@@ -75,6 +75,8 @@ namespace Fsl
     }
   };
 
+  class PlatformNativeWindowSystemContextWayland;
+
   class PlatformNativeWindowContextWayland
   {
   public:
@@ -99,6 +101,17 @@ namespace Fsl
     //! The outputs the surface is currently shown on (in the order they were entered).
     //! Beware these are not guaranteed to be outputs bound by us (another library could have bound its own wl_output).
     std::vector<wl_output*> EnteredOutputs;
+
+    //! The window system the window belongs to (it outlives the window)
+    PlatformNativeWindowSystemContextWayland* SystemContext{nullptr};
+    //! The scale of the buffers of the surface (wl_surface.set_buffer_scale). Geometry is in buffer pixels, and a logical unit of the
+    //! compositor is this many of them.
+    int32_t BufferScale{1};
+    //! True if BufferScale follows the scale of the output the surface is on, false if it stays one
+    bool FollowOutputScale{false};
+    //! The size the compositor last asked the window to have, in its logical units (zero: it left that side to the window)
+    int32_t ConfiguredLogicalWidth{0};
+    int32_t ConfiguredLogicalHeight{0};
 
 
     explicit PlatformNativeWindowContextWayland(std::weak_ptr<INativeWindowEventQueue> eventQueue)
@@ -219,6 +232,11 @@ namespace Fsl
 
     PlatformNativeWindowSystemWaylandHandles Handles;
 
+
+    //! The version wl_compositor was bound at (wl_surface.set_buffer_scale came with version 3)
+    uint32_t CompositorVersion{0};
+    //! The buffer scale of the window: the compositor gives pointer positions in its logical units, the framework wants pixels
+    int32_t PointerScale{1};
 
     PxPoint2 MousePosition;
     int ZDelta{0};

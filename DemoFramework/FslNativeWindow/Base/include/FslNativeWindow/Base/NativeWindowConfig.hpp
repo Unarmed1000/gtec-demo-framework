@@ -50,6 +50,7 @@ namespace Fsl
     std::optional<uint32_t> m_forcedDensityDpi;
     std::optional<Point2U> m_forcedActualDpi;
     std::string m_vsyncSource;
+    uint32_t m_bufferScale{0};
 
   public:
     NativeWindowConfig();
@@ -84,6 +85,19 @@ namespace Fsl
     void SetVSyncSource(const std::string& vsyncSource)
     {
       m_vsyncSource = vsyncSource;
+    }
+
+    //! The scale of the buffer of the window, on a window system where a window has one (Wayland). Zero: it follows the scale of the
+    //! output the window is on, so the window is sharp on a scaled output and has that many more pixels. One: the buffer is not scaled
+    //! and the window system enlarges the window on a scaled output.
+    [[nodiscard]] uint32_t GetBufferScale() const noexcept
+    {
+      return m_bufferScale;
+    }
+
+    void SetBufferScale(const uint32_t bufferScale) noexcept
+    {
+      m_bufferScale = bufferScale;
     }
   };
 }

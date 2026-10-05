@@ -75,6 +75,8 @@ namespace Fsl
       constexpr const char* const Title = "FSL Framework";
       constexpr int MinWindowWidth = 64;
       constexpr int MinWindowHeight = 64;
+      //! The DPI of a window on a output that has no physical size (the X11 and the Win32 adapter default to the same)
+      constexpr int32_t MagicDefaultDpi = 96;
     }
 
     bool g_requestClose = false;
@@ -105,6 +107,90 @@ namespace Fsl
       }
     }
 
+    //! The scale the buffers of a window are to have: the highest scale of the outputs the surface is on, so it is sharp on each of
+    //! them. A surface that has not entered a output yet gets the scale of the only output, or one.
+    int32_t CalcOutputScale(const std::vector<std::unique_ptr<OutputInfo>>& outputs, const std::vector<wl_output*>& enteredOutputs)
+    {
+      int32_t scale = 0;
+      for (const wl_output* const pEnteredOutput : enteredOutputs)
+      {
+        for (const auto& output : outputs)
+        {
+          if (output && output->Output.get() == pEnteredOutput)
+          {
+            scale = std::max(scale, output->Geometry.Scale);
+          }
+        }
+      }
+      if (scale <= 0 && enteredOutputs.empty() && outputs.size() == 1u && outputs.front())
+      {
+        scale = outputs.front()->Geometry.Scale;
+      }
+      return std::max(scale, 1);
+    }
+
+    //! Sets the size of the window in buffer pixels from what the compositor asked for and the scale of the buffer, and tells the
+    //! framework when it changed.
+    void UpdateGeometry(PlatformNativeWindowContextWayland& rWindow)
+    {
+      const int32_t scale = rWindow.BufferScale;
+      // The compositor gives a size in its logical units. A side it leaves to the window is the size that was asked for, in pixels.
+      int32_t width = rWindow.ConfiguredLogicalWidth > 0 ? rWindow.ConfiguredLogicalWidth * scale : rWindow.DesiredWindowSize.RawWidth();
+      int32_t height = rWindow.ConfiguredLogicalHeight > 0 ? rWindow.ConfiguredLogicalHeight * scale : rWindow.DesiredWindowSize.RawHeight();
+
+      // Apply window size constraints
+      width = std::max(width, LocalConfig::MinWindowWidth);
+      height = std::max(height, LocalConfig::MinWindowHeight);
+      // The size of a buffer has to be a multiple of its scale
+      width -= width % scale;
+      height -= height % scale;
+
+      const PxSize2D originalSizePx = rWindow.Geometry;
+      rWindow.Geometry = PxSize2D::Create(width, height);
+
+      const bool resized = originalSizePx != rWindow.Geometry;
+      FSLLOG3_VERBOSE5("UpdateGeometry result: resized: {} geometry {} buffer scale {}", resized, rWindow.Geometry, scale);
+
+      if (resized && rWindow.Native != nullptr && rWindow.ResizeWindowCallback)
+      {
+        rWindow.ResizeWindowCallback(rWindow.Native, width, height, 0, 0);
+      }
+
+      if (resized)
+      {    // Let the framework know that we might have been resized
+        const std::shared_ptr<INativeWindowEventQueue> eventQueue = rWindow.EventQueue.lock();
+        if (eventQueue)
+        {
+          eventQueue->PostEvent(NativeWindowEventHelper::EncodeWindowResizedEvent());
+        }
+      }
+    }
+
+    //! Makes the buffer scale of a window that follows its output the scale of that output. The window keeps its size in the logical
+    //! units of the compositor, so its size in pixels changes with the scale.
+    void UpdateBufferScale(PlatformNativeWindowContextWayland& rWindow)
+    {
+      if (!rWindow.FollowOutputScale || rWindow.SystemContext == nullptr || !rWindow.Handles.Surface)
+      {
+        return;
+      }
+      const int32_t scale = CalcOutputScale(rWindow.SystemContext->Outputs, rWindow.EnteredOutputs);
+      if (scale == rWindow.BufferScale)
+      {
+        return;
+      }
+      FSLLOG3_VERBOSE("Wayland: the buffer scale of the window is {} (it was {})", scale, rWindow.BufferScale);
+      rWindow.BufferScale = scale;
+      rWindow.SystemContext->PointerScale = scale;
+      // It takes effect with the next buffer that is committed
+      wl_surface_set_buffer_scale(rWindow.Handles.Surface.get(), scale);
+      if (rWindow.Geometry.RawWidth() > 0)
+      {
+        // The window has a size already: it is the same size in logical units and another in pixels
+        UpdateGeometry(rWindow);
+      }
+    }
+
     void OnWaylandWindowContext_HandleSurfaceEnter(void* data, wl_surface* pSurface, wl_output* pOutput)
     {
       FSLLOG3_VERBOSE5("OnWaylandWindowContext_HandleSurfaceEnter");
@@ -114,6 +200,7 @@ namespace Fsl
         return;
       }
       pWindow->EnteredOutputs.push_back(pOutput);
+      UpdateBufferScale(*pWindow);
       // The display info might have changed
       PostWindowConfigChanged(*pWindow);
     }
@@ -128,6 +215,7 @@ namespace Fsl
       }
       auto& rEnteredOutputs = pWindow->EnteredOutputs;
       rEnteredOutputs.erase(std::remove(rEnteredOutputs.begin(), rEnteredOutputs.end(), pOutput), rEnteredOutputs.end());
+      UpdateBufferScale(*pWindow);
       // The display info might have changed
       PostWindowConfigChanged(*pWindow);
     }
@@ -142,8 +230,9 @@ namespace Fsl
     //! The listener is filled member by member and names only the callbacks every version of libwayland has. Newer versions add
     //! callbacks to it (preferred_buffer_scale and preferred_buffer_transform came with version 6 of wl_surface), so a initializer list
     //! is either incomplete for a new libwayland, which GCC warns about, or does not compile against a old one.
-    //! The callbacks that are not named are null. That is safe: the compositor only sends their events to a surface of a wl_compositor
-    //! that was bound at the version that introduced them, and it is bound at version 1 here.
+    //! The callbacks that are not named are null. That is safe: the compositor only sends a event to a object of a version that has
+    //! it, and every interface is bound here at a version whose events are all named (wl_compositor at 3 at most, and wl_surface
+    //! got no event between version 1 and 6).
     wl_surface_listener CreateSurfaceListener() noexcept
     {
       wl_surface_listener listener{};
@@ -208,41 +297,10 @@ namespace Fsl
         "OnWaylandWindowContext_XdgHandleToplevelConfigure width {} height {} Fullscreen {} Maximized {}, current active config geometry: {}", width,
         height, pWindow->Fullscreen, pWindow->Maximized, pWindow->Geometry);
 
-      if (width <= 0)
-      {
-        width = pWindow->DesiredWindowSize.RawWidth();
-        FSLLOG3_VERBOSE5("Setting width to desired width: {}", width)
-      }
-      if (height <= 0)
-      {
-        height = pWindow->DesiredWindowSize.RawHeight();
-        FSLLOG3_VERBOSE5("Setting height to desired height {}", height)
-      }
-
-      const PxSize2D originalSizePx = pWindow->Geometry;
-
-      // Apply window size constraints
-      width = std::max(width, LocalConfig::MinWindowWidth);
-      height = std::max(height, LocalConfig::MinWindowHeight);
-
-      pWindow->Geometry = PxSize2D::Create(width, height);
-
-      const bool resized = originalSizePx != pWindow->Geometry;
-      FSLLOG3_VERBOSE5("OnWaylandWindowContext_XdgHandleToplevelConfigure result: resized: {} geometry {}", resized, pWindow->Geometry);
-
-      if (resized && pWindow->Native != nullptr && pWindow->ResizeWindowCallback)
-      {
-        pWindow->ResizeWindowCallback(pWindow->Native, width, height, 0, 0);
-      }
-
-      if (resized)
-      {    // Let the framework know that we might have been resized
-        std::shared_ptr<INativeWindowEventQueue> eventQueue = pWindow->EventQueue.lock();
-        if (eventQueue)
-        {
-          eventQueue->PostEvent(NativeWindowEventHelper::EncodeWindowResizedEvent());
-        }
-      }
+      // The size is in the logical units of the compositor, and zero where it leaves a side to the window
+      pWindow->ConfiguredLogicalWidth = std::max(width, 0);
+      pWindow->ConfiguredLogicalHeight = std::max(height, 0);
+      UpdateGeometry(*pWindow);
     }
 
     void OnWaylandWindowContext_XdgSurfaceHandleSurfaceConfigure(void* data, xdg_surface* surface, uint32_t serial)
@@ -274,19 +332,16 @@ namespace Fsl
 
     const xdg_surface_listener g_xdgSurfaceListener = {OnWaylandWindowContext_XdgSurfaceHandleSurfaceConfigure};
 
-#ifdef __GNUC__
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wmissing-field-initializers"
-#endif
+    //! Filled member by member with the callbacks of the version the interface is bound at (see CreateSurfaceListener)
+    xdg_toplevel_listener CreateXdgToplevelListener() noexcept
+    {
+      xdg_toplevel_listener listener{};
+      listener.configure = OnWaylandWindowContext_XdgHandleToplevelConfigure;
+      listener.close = OnWaylandWindowContext_XdgHandleToplevelClose;
+      return listener;
+    }
 
-    const xdg_toplevel_listener g_XdgToplevelListener = {
-      OnWaylandWindowContext_XdgHandleToplevelConfigure,
-      OnWaylandWindowContext_XdgHandleToplevelClose,
-    };
-
-#ifdef __GNUC__
-#pragma GCC diagnostic pop
-#endif
+    const xdg_toplevel_listener g_XdgToplevelListener = CreateXdgToplevelListener();
 
     void CreateWlSurface(const PlatformNativeWindowSystemContextWayland& context, PlatformNativeWindowContextWayland& rWindow)
     {
@@ -302,6 +357,15 @@ namespace Fsl
           throw GraphicsException("wl_compositor_create_surface Failure");
         }
         wl_surface_add_listener(rWindow.Handles.Surface.get(), &g_surfaceListener, &rWindow);
+
+        // A new surface has a buffer scale of one. The scale of the output is known when there is one output, else it comes when the
+        // surface enters a output.
+        rWindow.BufferScale = 1;
+        if (rWindow.SystemContext != nullptr)
+        {
+          rWindow.SystemContext->PointerScale = 1;
+        }
+        UpdateBufferScale(rWindow);
 
 
         if (!context.Handles.Ivi.Enabled)
@@ -440,7 +504,8 @@ namespace Fsl
         wl_surface_commit(pContext->Handles.CursorSurface.get());
       }
 
-      pContext->MousePosition = PxPoint2::Create(sx / 256, sy / 256);
+      // The position is in the logical units of the compositor (a 24.8 fixed point value)
+      pContext->MousePosition = PxPoint2::Create((sx * pContext->PointerScale) / 256, (sy * pContext->PointerScale) / 256);
     }
 
 
@@ -456,7 +521,8 @@ namespace Fsl
 
       std::shared_ptr<INativeWindowEventQueue> eventQueue = pContext->EventQueue.lock();
 
-      pContext->MousePosition = PxPoint2::Create(sx / 256, sy / 256);
+      // The position is in the logical units of the compositor (a 24.8 fixed point value)
+      pContext->MousePosition = PxPoint2::Create((sx * pContext->PointerScale) / 256, (sy * pContext->PointerScale) / 256);
       if (eventQueue)
       {
         eventQueue->PostEvent(
@@ -514,19 +580,19 @@ namespace Fsl
       }
     }
 
-#ifdef __GNUC__
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wmissing-field-initializers"
-#endif
+    //! Filled member by member with the callbacks of the version the interface is bound at (see CreateSurfaceListener)
+    wl_pointer_listener CreatePointerListener() noexcept
+    {
+      wl_pointer_listener listener{};
+      listener.enter = OnWaylandSystemContext_PointerHandleEnter;
+      listener.leave = OnWaylandSystemContext_PointerHandleLeave;
+      listener.motion = OnWaylandSystemContext_PointerHandleMotion;
+      listener.button = OnWaylandSystemContext_PointerHandleButton;
+      listener.axis = OnWaylandSystemContext_PointerHandleAxis;
+      return listener;
+    }
 
-    const wl_pointer_listener g_pointerListener = {
-      OnWaylandSystemContext_PointerHandleEnter,  OnWaylandSystemContext_PointerHandleLeave, OnWaylandSystemContext_PointerHandleMotion,
-      OnWaylandSystemContext_PointerHandleButton, OnWaylandSystemContext_PointerHandleAxis,
-    };
-
-#ifdef __GNUC__
-#pragma GCC diagnostic pop
-#endif
+    const wl_pointer_listener g_pointerListener = CreatePointerListener();
 
 
     void OnWaylandSystemContext_KeyboardHandleKeymap(void* data, wl_keyboard* keyboard, uint32_t format, int fd, uint32_t size)
@@ -568,19 +634,19 @@ namespace Fsl
     {
     }
 
-#ifdef __GNUC__
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wmissing-field-initializers"
-#endif
+    //! Filled member by member with the callbacks of the version the interface is bound at (see CreateSurfaceListener)
+    wl_keyboard_listener CreateKeyboardListener() noexcept
+    {
+      wl_keyboard_listener listener{};
+      listener.keymap = OnWaylandSystemContext_KeyboardHandleKeymap;
+      listener.enter = OnWaylandSystemContext_KeyboardHandleEnter;
+      listener.leave = OnWaylandSystemContext_KeyboardHandleLeave;
+      listener.key = OnWaylandSystemContext_KeyboardHandleKey;
+      listener.modifiers = OnWaylandSystemContext_KeyboardHandleModifiers;
+      return listener;
+    }
 
-    const wl_keyboard_listener g_keyboardListener = {
-      OnWaylandSystemContext_KeyboardHandleKeymap, OnWaylandSystemContext_KeyboardHandleEnter,     OnWaylandSystemContext_KeyboardHandleLeave,
-      OnWaylandSystemContext_KeyboardHandleKey,    OnWaylandSystemContext_KeyboardHandleModifiers,
-    };
-
-#ifdef __GNUC__
-#pragma GCC diagnostic pop
-#endif
+    const wl_keyboard_listener g_keyboardListener = CreateKeyboardListener();
 
 #if 0
     void PrintGlobalInfo(const GlobalInfo& global)
@@ -735,21 +801,18 @@ namespace Fsl
       }
     }
 
-#ifdef __GNUC__
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wmissing-field-initializers"
-#endif
+    //! Filled member by member with the callbacks of the version the interface is bound at (see CreateSurfaceListener)
+    wl_output_listener CreateOutputListener() noexcept
+    {
+      wl_output_listener listener{};
+      listener.geometry = OnWaylandOutputContext_HandleGeometry;
+      listener.mode = OnWaylandOutputContext_HandleMode;
+      listener.done = OnWaylandOutputContext_HandleDone;
+      listener.scale = OnWaylandOutputContext_HandleScale;
+      return listener;
+    }
 
-    const wl_output_listener g_outputListener = {
-      OnWaylandOutputContext_HandleGeometry,
-      OnWaylandOutputContext_HandleMode,
-      OnWaylandOutputContext_HandleDone,
-      OnWaylandOutputContext_HandleScale,
-    };
-
-#ifdef __GNUC__
-#pragma GCC diagnostic pop
-#endif
+    const wl_output_listener g_outputListener = CreateOutputListener();
 
 
     void AddOutputInfo(PlatformNativeWindowSystemContextWayland& rContext, const uint32_t id, const uint32_t version)
@@ -790,18 +853,15 @@ namespace Fsl
       }
     }
 
-#ifdef __GNUC__
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wmissing-field-initializers"
-#endif
+    //! Filled member by member with the callbacks of the version the interface is bound at (see CreateSurfaceListener)
+    wl_seat_listener CreateSeatListener() noexcept
+    {
+      wl_seat_listener listener{};
+      listener.capabilities = OnWaylandSystemContext_SeatHandleCapabilities;
+      return listener;
+    }
 
-    const wl_seat_listener g_seatListener = {
-      OnWaylandSystemContext_SeatHandleCapabilities,
-    };
-
-#ifdef __GNUC__
-#pragma GCC diagnostic pop
-#endif
+    const wl_seat_listener g_seatListener = CreateSeatListener();
 
     //! The globals a compositor can have that are about when a frame is shown (Doc/FramePacingPlatformSupport.md). These are looked
     //! for, and the log says for each of them if the compositor has it. Only wp_presentation is bound (WaylandPresentationTime).
@@ -858,7 +918,11 @@ namespace Fsl
 
       if (strcmp(interface, wl_compositor_interface.name) == 0)
       {
-        pContext->Handles.Compositor.reset(static_cast<wl_compositor*>(wl_registry_bind(registry, name, &wl_compositor_interface, 1)));
+        // Version 3 has wl_surface.set_buffer_scale. No version up to it adds a event to wl_surface, so the surface listener of this
+        // file stays complete (see CreateSurfaceListener).
+        pContext->CompositorVersion = std::min(version, uint32_t{3});
+        pContext->Handles.Compositor.reset(
+          static_cast<wl_compositor*>(wl_registry_bind(registry, name, &wl_compositor_interface, pContext->CompositorVersion)));
       }
       else if (strcmp(interface, xdg_wm_base_interface.name) == 0)
       {
@@ -906,24 +970,52 @@ namespace Fsl
       return static_cast<uint32_t>(std::round(w / inchesWidth));
     }
 
-    void TryUpdateDPI(const uint32_t width, const uint32_t height, const uint32_t physicalWidth, const uint32_t physicalHeight, Point2& rScreenDPI)
+    //! True if the output says how large it is. The protocol allows a physical size of zero, and a output without a panel of a known
+    //! size has that: a virtual display, a projector.
+    bool HasPhysicalSize(const OutputInfo& output) noexcept
     {
-      if (width > 0 && height > 0 && physicalWidth > 0 && physicalHeight > 0)
+      return output.Geometry.PhysicalWidth > 0 && output.Geometry.PhysicalHeight > 0;
+    }
+
+    //! The DPI of a output: the pixels of its current mode over its physical size, or the default when it has no physical size (or
+    //! no current mode yet).
+    Point2 CalcOutputDPI(const OutputInfo& output)
+    {
+      int32_t width = 0;
+      int32_t height = 0;
+      for (const auto& mode : output.Modes)
       {
-        FSLLOG3_VERBOSE4("PlatformNativeWindowAdapterWayland| UpdateDPI: ");
-        FSLLOG3_VERBOSE4("- screenSize.width: {}", width);
-        FSLLOG3_VERBOSE4("- screenSize.height: {}", height);
-        FSLLOG3_VERBOSE4("- screenSize.mwidth: {}", physicalWidth);
-        FSLLOG3_VERBOSE4("- screenSize.mheight: {}", physicalHeight);
-        rScreenDPI =
-          Point2(UncheckedNumericCast<int32_t>(CalcDPI(width, physicalWidth)), UncheckedNumericCast<int32_t>(CalcDPI(height, physicalHeight)));
-        FSLLOG3_VERBOSE4("- DPI: {}, {}", rScreenDPI.X, rScreenDPI.Y);
+        if ((mode.Flags & WL_OUTPUT_MODE_CURRENT) != 0u)
+        {
+          width = mode.Width;
+          height = mode.Height;
+        }
       }
-      else
+      if (width <= 0 || height <= 0 || !HasPhysicalSize(output))
       {
-        FSLLOG3_WARNING("Failed to acquire proper DPI information, using defaults");
-        FSLLOG3_DEBUG_VERBOSE4("- Width {}, height {}, physicalWidth {} physicalHeight {}", width, height, physicalWidth, physicalHeight);
+        return {LocalConfig::MagicDefaultDpi, LocalConfig::MagicDefaultDpi};
       }
+      return {
+        UncheckedNumericCast<int32_t>(CalcDPI(UncheckedNumericCast<uint32_t>(width), UncheckedNumericCast<uint32_t>(output.Geometry.PhysicalWidth))),
+        UncheckedNumericCast<int32_t>(
+          CalcDPI(UncheckedNumericCast<uint32_t>(height), UncheckedNumericCast<uint32_t>(output.Geometry.PhysicalHeight)))};
+    }
+
+    //! The output the window is on: the most recently entered output that is known. A surface that has not entered a output yet can
+    //! only be placed when there is one output. Null if it can not be told.
+    const OutputInfo* TryGetWindowOutput(const std::vector<std::unique_ptr<OutputInfo>>& outputs, const std::vector<wl_output*>& enteredOutputs)
+    {
+      for (std::size_t i = enteredOutputs.size(); i > 0; --i)
+      {
+        const wl_output* const pEnteredOutput = enteredOutputs[i - 1];
+        const auto itrFind = std::find_if(outputs.begin(), outputs.end(), [pEnteredOutput](const std::unique_ptr<OutputInfo>& info)
+                                          { return info && info->Output.get() == pEnteredOutput; });
+        if (itrFind != outputs.end())
+        {
+          return itrFind->get();
+        }
+      }
+      return (enteredOutputs.empty() && outputs.size() == 1u) ? outputs.front().get() : nullptr;
     }
 
     std::shared_ptr<IPlatformNativeWindowAdapter>
@@ -1082,6 +1174,11 @@ namespace Fsl
       throw std::invalid_argument("Can not be null");
     }
     m_windowContext = std::make_unique<PlatformNativeWindowContextWayland>(windowSystemContext->EventQueue);
+    m_windowContext->SystemContext = windowSystemContext.get();
+    // The buffers of the window follow the scale of its output unless that was switched off (--BufferScale 1), where the compositor
+    // has wl_surface.set_buffer_scale. A IVI surface is left as it was: its size does not come from a xdg configure.
+    m_windowContext->FollowOutputScale = nativeWindowSetup.GetConfig().GetBufferScale() != 1u && windowSystemContext->CompositorVersion >= 3u &&
+                                         !windowSystemContext->Handles.Ivi.Enabled;
 
     FSLLOG3_WARNING_IF(nativeWindowSetup.GetConfig().GetDisplayId() != 0, "Wayland only supports the main display. Using DisplayId 0 instead of {}",
                        nativeWindowSetup.GetConfig().GetDisplayId());
@@ -1158,8 +1255,20 @@ namespace Fsl
 
     ExtractOutputs(m_displayOutput, windowSystemContext->Outputs);
 
-    TryUpdateDPI(m_displayOutput[0].Width, m_displayOutput[0].Height, m_displayOutput[0].PhysicalWidth, m_displayOutput[0].PhysicalHeight,
-                 m_cachedScreenDPI);
+    // The outputs have said what they are by now, so the scale of the only output is known before the window has its first buffer
+    UpdateBufferScale(*m_windowContext);
+
+    // The DPI is that of the output the window is on and is read when it is asked for (TryGetNativeDpi). This is what it is before
+    // the window is on a output, and a output without a physical size is said once, as a window on it gets the default.
+    m_cachedScreenDPI = Point2(LocalConfig::MagicDefaultDpi, LocalConfig::MagicDefaultDpi);
+    for (const auto& output : windowSystemContext->Outputs)
+    {
+      if (output && !HasPhysicalSize(*output))
+      {
+        FSLLOG3_INFO("Wayland: a output reports no physical size, the DPI of a window on it is the default of {}", LocalConfig::MagicDefaultDpi);
+        break;
+      }
+    }
 
     windowSystemContext->Handles.CursorSurface.reset(wl_compositor_create_surface(windowSystemContext->Handles.Compositor.get()));
     if (!windowSystemContext->Handles.CursorSurface)
@@ -1217,7 +1326,22 @@ namespace Fsl
 
   bool PlatformNativeWindowAdapterWayland::TryGetNativeDpi(Vector2& rDPI) const
   {
-    rDPI = Vector2(m_cachedScreenDPI.X, m_cachedScreenDPI.Y);
+    const auto windowSystemContext = m_windowSystemContext.lock();
+    const OutputInfo* const pOutputInfo =
+      windowSystemContext ? TryGetWindowOutput(windowSystemContext->Outputs, m_windowContext->EnteredOutputs) : nullptr;
+    // The DPI of the output is that of its own pixels. A pixel of the window is one of them when the buffer has the scale of the
+    // output, and several when the compositor enlarges the window. A output without a physical size has the default DPI at a scale
+    // of one, which is the scale times that for a buffer that follows it (what a Win32 window reports for a scaled display).
+    const int32_t bufferScale = m_windowContext->BufferScale;
+    Point2 dpi = m_cachedScreenDPI * bufferScale;
+    if (pOutputInfo != nullptr)
+    {
+      const int32_t outputScale = std::max(pOutputInfo->Geometry.Scale, 1);
+      const Point2 outputDpi = CalcOutputDPI(*pOutputInfo);
+      dpi = HasPhysicalSize(*pOutputInfo) ? Point2((outputDpi.X * bufferScale) / outputScale, (outputDpi.Y * bufferScale) / outputScale)
+                                          : outputDpi * bufferScale;
+    }
+    rDPI = Vector2(dpi.X, dpi.Y);
     return true;
   }
 
@@ -1287,24 +1411,7 @@ namespace Fsl
     }
     const auto& outputs = windowSystemContext->Outputs;
 
-    const OutputInfo* pOutputInfo = nullptr;
-    // Use the most recently entered output that we know about
-    const auto& enteredOutputs = m_windowContext->EnteredOutputs;
-    for (auto itr = enteredOutputs.rbegin(); itr != enteredOutputs.rend() && pOutputInfo == nullptr; ++itr)
-    {
-      const wl_output* const pEnteredOutput = *itr;
-      auto itrFind = std::find_if(outputs.begin(), outputs.end(),
-                                  [pEnteredOutput](const std::unique_ptr<OutputInfo>& info) { return info && info->Output.get() == pEnteredOutput; });
-      if (itrFind != outputs.end())
-      {
-        pOutputInfo = itrFind->get();
-      }
-    }
-    // If the surface has not entered a output yet we can only be sure which output it is on if there is only one
-    if (pOutputInfo == nullptr && enteredOutputs.empty() && outputs.size() == 1u)
-    {
-      pOutputInfo = outputs.front().get();
-    }
+    const OutputInfo* const pOutputInfo = TryGetWindowOutput(outputs, m_windowContext->EnteredOutputs);
 
     if (pOutputInfo == nullptr || pOutputInfo->CurrentRefreshMilliHz <= 0)
     {
