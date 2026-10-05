@@ -283,7 +283,7 @@ namespace Fsl::UI
       m_slider->SetCursorSprite(value);
     }
 
-    const DpPoint2& GetCursorOrigin() const
+    DpPoint2 GetCursorOrigin() const
     {
       return m_slider->GetCursorOrigin();
     }
@@ -378,16 +378,6 @@ namespace Fsl::UI
     void SetBackgroundDisabledColor(const UIColor value)
     {
       m_slider->SetBackgroundDisabledColor(value);
-    }
-
-    const DpThickness& GetBackgroundPadding() const
-    {
-      return m_slider->GetBackgroundPadding();
-    }
-
-    void SetBackgroundPadding(const DpThickness& value)
-    {
-      m_slider->SetBackgroundPadding(value);
     }
 
     // ---
@@ -564,6 +554,14 @@ namespace Fsl::UI
       m_label->SetFontColor(m_slider->IsEnabled() ? m_propertyFontColor.Get() : m_propertyFontDisabledColor.Get());
     }
   };
+
+  // The control is instantiated once for the value types the theme factory creates it for, in SliderAndFmtValueLabel.cpp. A file that
+  // uses one of them does not instantiate the members itself, and all of them are instantiated whichever compiler builds it: when a
+  // virtual member function of a class template is instantiated is otherwise up to the compiler.
+  extern template class SliderAndFmtValueLabel<uint8_t>;
+  extern template class SliderAndFmtValueLabel<int32_t>;
+  extern template class SliderAndFmtValueLabel<uint32_t>;
+  extern template class SliderAndFmtValueLabel<float>;
 }
 
 #endif
