@@ -43,6 +43,7 @@
 #include <Shared/FramePacing/SampleFrameStats.hpp>
 #include <Shared/FramePacing/SamplePacer.hpp>
 #include <Shared/FramePacing/SamplePacerHold.hpp>
+#include <Shared/FramePacing/SamplePacerProfile.hpp>
 #include <Shared/FramePacing/SamplePresentFeedback.hpp>
 #include <Shared/FramePacing/SampleSwapchainRefresh.hpp>
 #include <fmt/format.h>
@@ -287,6 +288,19 @@ namespace Fsl
     SampleSwapchainRefresh m_swapchainRefresh{SampleSwapchainRefresh::Unknown};
     //! Where in the refresh before the one a frame is aimed at the vsync wait presents, in percent of the refresh
     int32_t m_vsyncPhasePercent{SampleConfig::VSyncPhasePercent.Get()};
+    //! Where a frame waits for the time the frame pacer gives for the start of the next frame
+    SamplePacerProfile m_pacerProfile{SamplePacerProfile::RenderEarly};
+    //! SamplePacerProfile::RenderEarly: when the present of the frame before was due and when it was let go (zero: there was none)
+    TickCount m_presentDueTime;
+    TickCount m_presentTime;
+    //! SamplePacerProfile::RenderLate: the time the start of the current frame was held to (zero: it was not held)
+    TickCount m_frameStartDueTime;
+    //! The refreshes of the wait that is made once when the waiting for the time of the pacer begins (SampleConfig::DrainRefreshes),
+    //! and if that wait is still to be made
+    int32_t m_drainRefreshes{SampleConfig::DrainRefreshes.Get()};
+    bool m_drainPending{true};
+    //! When the first frame waited for the time of the pacer (zero: none has yet), the wait above is made a while after it
+    TickCount m_drainCountStartTime;
     //! What was last written to the log about how the frames are held
     SamplePacerHold m_loggedHold{SamplePacerHold::Wait};
     //! What the app said it can measure (SetMeasurementSupport)
@@ -480,6 +494,10 @@ namespace Fsl
     void WaitUntil(const TickCount time) const;
     [[nodiscard]] SamplePacerHold GetRequestedHold() const;
     void WaitForPresentOnVSync(const uint32_t presentSwapInterval);
+    //! The wait of a frame the present holds for its whole swap interval, see SamplePacerProfile
+    void WaitForPacerTime(const uint32_t presentSwapInterval, const SamplePacerHold holdMethod);
+    //! The vertical blank of the window system nearest to the given time (only with a vsync time and a refresh period)
+    [[nodiscard]] TickCount ToNearestVBlank(const TickCount time) const noexcept;
     //! @return the refresh rate of the display the window is on in Hz (0 if the window system does not know it)
     [[nodiscard]] double ReadDisplayRefreshRateHz() const;
     //! @return the refresh rate the frame pacer uses in Hz: the command line, else the window system, else the slider

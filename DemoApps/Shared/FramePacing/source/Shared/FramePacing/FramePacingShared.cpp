@@ -88,6 +88,10 @@ namespace Fsl
       constexpr double MorphSeconds = 61.0;
       //! WaitForPresent presents this long after the last refresh before the one the frame pacer aims for (at most an eighth of a refresh)
       constexpr TimeSpan MaxPresentMargin(TimeSpan::TicksPerMillisecond);
+      //! How long after the first frame that waited for the time of the pacer the one-time wait of SampleConfig::DrainRefreshes is
+      //! made. The presents that queue up do so in the first frames of a swapchain, while its images take longer to reach the display
+      //! (on Windows the first presents of a window go through the compositor), so the wait comes after those.
+      constexpr TimeSpan DrainDelay(TimeSpan::TicksPerSecond / 2);
       //! WaitUntil only sleeps when the wait is longer than this (a sleeping thread can wake this late), a shorter wait yields
       constexpr TimeSpan CoarseSleepThreshold(20 * TimeSpan::TicksPerMillisecond);
       constexpr TimeSpan CoarseSleepMargin(16 * TimeSpan::TicksPerMillisecond);
@@ -213,6 +217,8 @@ namespace Fsl
     m_workChartData->SetChannelMetaData(WorkChartGpuChannel, WorkChartGpuColor);
 
     const auto options = config.GetOptions<OptionParser>();
+    // Read before the log is set up, which writes it as a fact
+    m_pacerProfile = options->GetPacerProfile();
     m_refreshRateOverrideHz = options->GetPacerRefreshRateHz();
     m_frameLog = config.DemoServiceProvider.TryGet<IFramePacingFrameLog>();
     if (m_frameLog && m_frameLog->IsLogEnabled())
@@ -314,6 +320,7 @@ namespace Fsl
     m_ui.RadioHoldWait = uiFactory->CreateRadioButton(holdGroup, "Hold: sleep", hold == SamplePacerHold::Wait);
     m_ui.RadioHoldSchedule = uiFactory->CreateRadioButton(holdGroup, "Hold: scheduled present", hold == SamplePacerHold::Schedule);
     m_vsyncPhasePercent = options->GetPacerVSyncPhasePercent();
+    m_drainRefreshes = options->GetPacerDrainRefreshes();
     m_ui.LabelPacerStatus = uiFactory->CreateLabel("");
     m_ui.LabelPacerFrames = uiFactory->CreateLabel("");
     const auto lblCpuLoad = uiFactory->CreateLabel("CPU load (ms per frame)");
@@ -791,6 +798,101 @@ namespace Fsl
   }
 
 
+  TickCount FramePacingShared::ToNearestVBlank(const TickCount time) const noexcept
+  {
+    const int64_t period = m_vsyncPeriod.Ticks();
+    const int64_t fromVSync = time.Ticks() - m_vsyncTime.Ticks();
+    const int64_t refreshes = (fromVSync >= 0 ? (fromVSync + (period / 2)) : (fromVSync - (period / 2))) / period;
+    return TickCount(m_vsyncTime.Ticks() + (refreshes * period));
+  }
+
+
+  void FramePacingShared::WaitForPacerTime(const uint32_t presentSwapInterval, const SamplePacerHold holdMethod)
+  {
+    // The present holds the frame for its swap interval, but a present of a swapchain need not make the loop wait for the display. So
+    // the app waits for the time the frame pacer gives for the start of the next frame, on the side of the present the profile says.
+    //
+    // The times are kept one frame time apart, counted from the time the frame before was held to and not from where the loop is
+    // now: the loop takes time to get from a present to the start of the next frame, and that would be added to every frame. A frame
+    // that was more than half a frame time late is where the count starts again, as is the first one.
+    //
+    // With the vsync of the window system the time is put on its refreshes: the start of a frame on a vertical blank, a present at
+    // the place in the refresh the vsync wait presents at. Counted from a time that was on the refreshes the next one is a whole
+    // number of them later, so it does not go back and forth between two refreshes.
+    const TickCount lastPresentDueTime = m_presentDueTime;
+    const TickCount lastFrameStartDueTime = m_frameStartDueTime;
+    m_presentDueTime = {};
+    m_frameStartDueTime = {};
+    const TimeSpan frameTime = m_schedule.NextFrameStartTime - m_frameStartTime;
+    if (m_pacerProfile == SamplePacerProfile::Off || frameTime.Ticks() <= 0)
+    {
+      return;
+    }
+    const bool onVSync = holdMethod == SamplePacerHold::VSync && m_vsyncTime.Ticks() > 0 && m_vsyncPeriod.Ticks() > 0;
+    const int64_t halfFrameTime = frameTime.Ticks() / 2;
+
+    // Once, a while after the first frame that waited: a few refreshes more (SampleConfig::DrainRefreshes). With nothing presented
+    // for these refreshes the display shows the presents that queued up while the swapchain was new, and the frames after it are
+    // not behind them.
+    TimeSpan drainTime;
+    if (m_drainPending && m_drainCountStartTime.Ticks() == 0)
+    {
+      m_drainCountStartTime = m_frameStartTime;
+    }
+    if (m_drainPending && (m_frameStartTime - m_drainCountStartTime) >= LocalConfig::DrainDelay &&
+        (lastPresentDueTime.Ticks() != 0 || lastFrameStartDueTime.Ticks() != 0))
+    {
+      m_drainPending = false;
+      drainTime = TimeSpan((frameTime.Ticks() / static_cast<int64_t>(std::max(m_schedule.SwapInterval, 1u))) * m_drainRefreshes);
+      if (m_frameLog && m_drainRefreshes > 0)
+      {
+        m_frameLog->AddLogEvent("pacerDrain", fmt::format("refreshes={}", m_drainRefreshes));
+      }
+    }
+
+    if (m_pacerProfile == SamplePacerProfile::RenderLate)
+    {
+      const bool isOnCount = lastFrameStartDueTime.Ticks() != 0 && (m_frameStartTime - lastFrameStartDueTime).Ticks() <= halfFrameTime;
+      TickCount dueTime = (isOnCount ? lastFrameStartDueTime : m_frameStartTime) + frameTime + drainTime;
+      if (onVSync)
+      {
+        dueTime = ToNearestVBlank(dueTime);
+      }
+      m_nextFrameStartTime = dueTime;
+      m_frameStartDueTime = dueTime;
+      if (onVSync && m_frameLog)
+      {
+        m_frameLog->SetLogValue(m_logColumns.HoldTarget, dueTime);
+      }
+      return;
+    }
+
+    const bool isOnCount = lastPresentDueTime.Ticks() != 0 && (m_presentTime - lastPresentDueTime).Ticks() <= halfFrameTime;
+    TickCount dueTime = (isOnCount ? lastPresentDueTime : m_frameStartTime) + frameTime + drainTime;
+    if (onVSync)
+    {
+      // The present is made in the refresh before the vertical blank it is aimed at, at the place in it the vsync wait uses
+      const TimeSpan fromVBlank((m_vsyncPeriod.Ticks() * static_cast<int64_t>(m_vsyncPhasePercent)) / 100);
+      const TickCount refreshStart = ToNearestVBlank(dueTime - fromVBlank);
+      dueTime = refreshStart + fromVBlank;
+      if (m_frameLog)
+      {
+        m_frameLog->SetLogValue(m_logColumns.HoldTarget,
+                                refreshStart + TimeSpan(m_vsyncPeriod.Ticks() * static_cast<int64_t>(std::max(presentSwapInterval, 1u))));
+      }
+    }
+    const TickCount waitStartTime = m_timer.GetTimestamp();
+    WaitUntil(dueTime);
+    m_presentTime = m_timer.GetTimestamp();
+    m_presentDueTime = dueTime;
+    m_lastPresentWait = m_presentTime - waitStartTime;
+    if (m_frameLog)
+    {
+      m_frameLog->SetLogValue(m_logColumns.PresentWait, m_lastPresentWait);
+    }
+  }
+
+
   void FramePacingShared::WaitForPresent(const uint32_t presentSwapInterval)
   {
     m_presentRelativeTarget = {};
@@ -798,6 +900,16 @@ namespace Fsl
     if (m_frameLog && m_pacer)
     {
       m_frameLog->SetLogInt64(m_logColumns.HoldMethod, ToLogCode(holdMethod));
+    }
+    if (m_pacer && m_schedule.SwapInterval <= presentSwapInterval)
+    {
+      // A frame that is held for more refreshes than the present holds it for is handled by the hold methods below
+      WaitForPacerTime(presentSwapInterval, holdMethod);
+    }
+    else
+    {
+      m_presentDueTime = {};
+      m_frameStartDueTime = {};
     }
     if (m_pacer && holdMethod == SamplePacerHold::VSync)
     {
@@ -1012,6 +1124,9 @@ namespace Fsl
     else if (!m_pacer)
     {
       m_pacer = std::make_unique<SamplePacer>(pacerConfig);
+      // The frames before this one were not paced, so what is queued below the swapchain is to be shown first
+      m_drainPending = true;
+      m_drainCountStartTime = {};
       // A new pacer counts its frames from one again, so what is remembered about the frames of the one before must not reach it
       m_pacerPresentFrames = {};
       m_nextFrameStartTime = {};
@@ -1180,6 +1295,9 @@ namespace Fsl
                           "The refreshes the display fell behind the swap intervals of the frames by its display times, counted since the "
                           "pacer was made: the count of the display to hold against the late frames of the frame pacer");
     rLog.SetLogFact("sample.presentMethod", m_presentMethod == SamplePresentMethod::WaitThenPresent ? "WaitThenPresent" : "SwapInterval");
+    rLog.SetLogFact("sample.pacerProfile", m_pacerProfile == SamplePacerProfile::RenderLate
+                                             ? "late"
+                                             : (m_pacerProfile == SamplePacerProfile::RenderEarly ? "early" : "off"));
     rLog.SetLogFact("sample.pacerSupported", SamplePacer::IsSupported() ? "1" : "0");
   }
 

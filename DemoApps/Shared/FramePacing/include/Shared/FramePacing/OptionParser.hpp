@@ -27,6 +27,7 @@
 #include <Shared/FramePacing/SampleBoxAnimation.hpp>
 #include <Shared/FramePacing/SampleConfig.hpp>
 #include <Shared/FramePacing/SamplePacerHold.hpp>
+#include <Shared/FramePacing/SamplePacerProfile.hpp>
 #include <cstdint>
 #include <optional>
 
@@ -47,7 +48,9 @@ namespace Fsl
     bool m_pacerAdaptive{true};
     bool m_pacerPresentFeedback{false};
     SamplePacerHold m_pacerHold{SamplePacerHold::Wait};
+    SamplePacerProfile m_pacerProfile{SamplePacerProfile::RenderEarly};
     int32_t m_pacerVSyncPhasePercent{SampleConfig::VSyncPhasePercent.Get()};
+    int32_t m_pacerDrainRefreshes{SampleConfig::DrainRefreshes.Get()};
     int32_t m_cpuLoadMs{SampleConfig::CpuLoadMs.Get()};
     int32_t m_gpuLoadSteps{SampleConfig::GpuLoadSteps.Get()};
     RaymarchScene m_background{RaymarchScene::Flight};
@@ -128,7 +131,17 @@ namespace Fsl
       return m_pacerHold;
     }
 
+    [[nodiscard]] SamplePacerProfile GetPacerProfile() const noexcept
+    {
+      return m_pacerProfile;
+    }
+
     //! @brief Get where in the refresh before the one a frame is aimed at the vsync wait presents, in percent of the refresh.
+    [[nodiscard]] int32_t GetPacerDrainRefreshes() const noexcept
+    {
+      return m_pacerDrainRefreshes;
+    }
+
     [[nodiscard]] int32_t GetPacerVSyncPhasePercent() const noexcept
     {
       return m_pacerVSyncPhasePercent;

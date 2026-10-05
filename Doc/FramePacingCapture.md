@@ -329,9 +329,10 @@ On a NVIDIA desktop GPU (driver 617.14) with a 240 Hz display on Windows 11, a w
   while 135 frames were shown for two or three refreshes. In borderless full screen it is the same (88 and 105 presents without a
   display time at GPU work of 76 and 80 %). Two things were tried in a build made for it and both help: waiting for a fence on the
   acquire before the frame goes on (5 presents without a display time in place of 97), and holding the start of every frame to the
-  time the pacer gives for it, also at swap interval one (7, and with light work a present reaches the display after 3.1 ms in place
-  of 15.3 ms, the queue stays empty). Two frames in flight and a third swapchain image did not help. One run each, and the GPU work
-  moved between the runs (3.66 to 3.93 ms), so the counts are not at equal work.
+  time the pacer gives for it, also at swap interval one (7). Two frames in flight and a third swapchain image did not help. One
+  run each, and the GPU work moved between the runs (3.66 to 3.93 ms), so the counts are not at equal work. The sample waits for the
+  time of the pacer on every frame since then, see [FramePacing.md](FramePacing.md#waiting-for-the-time-of-the-pacer-vulkan), which
+  also has what was found about the time from a present to the display.
 - **Where in a refresh the present is made matters at 240 Hz and next to not at all below** (the plan `vsync-phase-sweep` at 240, 120,
   60 and 50 Hz, frames held for two refreshes). At 240 Hz a present from 55 to 75 % of the refresh is clean idle and under load, from
   5 to 45 % most runs have one frame that is shown a refresh too long, at 85 % one run had four frames off and at 95 % the frame

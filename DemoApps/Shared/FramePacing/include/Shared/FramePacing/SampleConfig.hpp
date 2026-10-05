@@ -43,6 +43,14 @@ namespace Fsl::SampleConfig
   //! The default is the middle of what was measured to work on the Windows compositor at 240 Hz: a present from 45 to 85 % of the
   //! refresh was shown at the vertical blank it was aimed at, a earlier one two refreshes late and a later one a refresh late.
   constexpr ConstrainedValue<int32_t> VSyncPhasePercent(65, 1, 99);
+  //! The refreshes the sample waits once, half a second after it began to wait for the time of the pacer, so the presents that are
+  //! queued between the app and the display are shown before the next one is added (0 = no such wait).
+  //! Measured on Windows at 240 Hz with a trace of the presents: the first presents of a window go through the compositor and take
+  //! three refreshes to reach the display, the ones the app makes meanwhile queue up in the driver, and when the window is flipped
+  //! directly a moment later they are still queued: a loop that makes one frame per refresh does not work them off. Without the wait
+  //! a present reached the display after 9.7 to 11.1 ms for the whole run, with a wait of four refreshes after 2.8 ms from the wait
+  //! on. The same wait on the second frame, before the queue has formed, took one refresh off or nothing.
+  constexpr ConstrainedValue<int32_t> DrainRefreshes(4, 0, 32);
   //! The GPU load: the number of steps the raymarched background takes for every pixel (0 = no background).
   //! The default is a low load, so the sample starts with a background and a GPU that has something to do.
   constexpr ConstrainedValue<int32_t> GpuLoadSteps(16, 0, 1024);

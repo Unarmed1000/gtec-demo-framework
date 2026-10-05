@@ -128,6 +128,8 @@ Adaptive swap interval        |`--Pacer.Adaptive <true\|false>`|On: the pacer sl
 Present feedback to the pacer |`--Pacer.PresentFeedback <true\|false>`|Vulkan only. On: the pacer is given when the display showed the frames and counts what the display did, see [below](#present-feedback-vulkan-optional). It paces the same on and off. Off is the default.
 Hold (radio buttons)          |`--Pacer.Hold <auto\|vsync\|wait\|schedule>`|Vulkan only. How a frame is held for more than one refresh, see [below](#holding-a-frame-for-more-than-one-refresh-vulkan). The default is `wait`.
                               |`--Pacer.VSyncPhase <percent>`  |Vulkan only. For the `vsync` hold: where in the refresh before the target the present is done (1 to 99, the default is 65).
+                              |`--Pacer.Profile <late\|early\|off>`|Vulkan only. Where a frame waits for the time the pacer gives for the next frame, see [below](#waiting-for-the-time-of-the-pacer-vulkan). The default is `early`.
+                              |`--Pacer.Drain <refreshes>`     |Vulkan only. A wait of that many refreshes, once, half a second after the sample began to wait for the time of the pacer (0 to 32, the default is 4, 0 is none).
 CPU load                      |`--CpuLoad <ms>`                |The time in milliseconds the app spends busy every frame.
 GPU load                      |`--GpuLoad <steps>`             |Draws the raymarched background with the given number of steps for every ray (0 is no background, the default is a low load of 16). The load grows linearly with the steps, more steps reach further and show finer detail.
 Background                    |`--Background <flight\|hall>`   |The scene of the raymarched background (the radio buttons below the GPU load). `flight` is a flight through a fractal lattice. `hall` is a hall of columns that scrolls sideways at a constant speed, which makes a stutter easy to see.
@@ -179,6 +181,67 @@ How a frame is held for its swap interval depends on the API:
   has no vsync times, so this is a guess and less even than a real swap interval. The GPU time of a frame is measured with timestamp
   queries and given to the pacer. The sample can measure when its frames reach the display (see the next section) and, when asked to,
   gives those display times to the pacer as present feedback.
+
+#### Waiting for the time of the pacer (Vulkan)
+
+The pacer gives every frame the time the next frame may start (`NextFrameStartTime`: the start of the frame plus its swap interval),
+and the app is the one that has to wait for it. That holds for every frame, also one that is shown for a single refresh: a FIFO
+present was expected to make the loop wait for the display there and does not. `vkAcquireNextImageKHR` and `vkQueuePresentKHR`
+were measured to return at once, the loop then only waits for the GPU to finish the frame before, and with work close to a refresh
+it makes more frames than the display shows. Until this was found the sample only waited for a frame that is held for two or more
+refreshes, so every capture of a frame at a swap interval of one before it is of a loop that did not apply the time of the pacer.
+
+`--Pacer.Profile` is which side of the present the wait is on. A frame is started once per swap interval with both:
+
+- **`early`** (the default): the frame is rendered right away and its present waits, so a present can not come before the display
+  has taken the one before it. The next frame starts when the present was made. A frame that is done early waits finished, so it is
+  older when it is shown, and when its present is made does not depend on the work.
+- **`late`**: the start of the frame waits and the frame is presented when it is done. The frame is as fresh as it can be when it
+  is shown. When its present is made moves with how long the work took.
+- **`off`**: no wait. It is not frame pacing, it is there so a capture can show the loop without it.
+
+The times are kept one frame time apart, counted from the time the frame before was held to and not from where the loop is now: the
+loop takes time to get from a present to the start of the next frame, and that would be added to every frame.
+
+What the wait is for follows `--Pacer.Hold`: a time on the clock of the app (`wait`, the default), or the vsync of the window system
+(`vsync`: a present is placed at `--Pacer.VSyncPhase` of the refresh, the start of a `late` frame on a vertical blank).
+
+First runs on Windows at 240 Hz (variable refresh off and read during every run, one run of 2400 frames each, a window):
+
+| | Light work: presents never shown, frames shown too long | GPU work of 82 to 87 % of a refresh |
+|---|---|---|
+| `off` | 3, 0 | 116, 146 |
+| `early`, clock | 1, 1 | 2, 2 |
+| `late`, clock | 3, 3 | 7, 12 |
+| `early`, vsync | 1, 2 | 9, 12 |
+| `late`, vsync | 3, 2 | 34, 67 |
+
+So waiting for the time of the pacer is what stops the loop from making frames the display never shows, with either profile. The
+wait on the vsync was not better than the clock in these runs. `late` on the vsync is not a good pair: the GPU starts a frame at a
+fixed place in the refresh (when the swapchain image is released) and the loop waits for it to finish, so a start that is asked for
+at the vertical blank comes late and the next one early (frame starts 2.8 to 5.5 ms apart). `early` with two frames in flight had 5
+presents never shown on the clock and 144 on the vsync. One run each: the order among the good ones says nothing yet.
+
+Waiting alone does not shorten the way from a present to the display. A present reached the display 10 to 15 ms after its call in
+the runs with light work (about three refreshes), with every profile; in a loop that does not wait it is 15.3 ms. A trace of the
+presents (PresentMon) shows where that time is on Windows with a NVIDIA driver, which runs the Vulkan swapchain on a DXGI swapchain:
+the first dozen presents of a window go through the compositor and take three refreshes from the present of the driver to the
+display, and the presents the app makes meanwhile queue up in the driver. Then the window is flipped directly, the present of the
+driver reaches the display in one refresh (4.0 ms), and the app's presents still wait 5.6 to 7.2 ms in front of it: a loop that
+makes one frame per refresh does not work a queue off.
+
+`--Pacer.Drain <refreshes>` is for that: half a second after the sample began to wait for the time of the pacer it waits that
+many refreshes more, once, so what is queued is shown. With the default of four a present reached the display after 2.8 ms from
+that wait to the end of the run, where it was 11.1 ms before it and 9.7 ms for a whole run without it (light work, one run each).
+With GPU work of 86 % of a refresh it went from 8.0 to 3.9 ms and was back at 8.1 ms nine frames later, one refresh behind again,
+and stayed there: a frame that is late once adds to the queue and nothing takes it off. An app that knows when its frames are shown
+(`VK_EXT_present_timing`) could wait again when that happens; the sample does not yet.
+
+`late` on the clock is not safe either: in one run its frame starts were 4.166 to 4.167 ms apart, in another 2.9 to 5.5 ms with 20
+presents never shown. Where its start lands in the refresh is chance, and the place before the GPU is done with the frame before
+is a bad one. `early` does not have this, its frame starts follow its presents.
+
+A frame that is held for more refreshes than the present holds it for is the next section.
 
 #### Holding a frame for more than one refresh (Vulkan)
 

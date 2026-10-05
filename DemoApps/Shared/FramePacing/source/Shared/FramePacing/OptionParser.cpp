@@ -46,7 +46,9 @@ namespace Fsl
         PacerAdaptive,
         PacerPresentFeedback,
         PacerHold,
+        PacerProfile,
         PacerVSyncPhase,
+        PacerDrain,
         CpuLoad,
         GpuLoad,
         Background
@@ -110,9 +112,18 @@ namespace Fsl
                           "in the middle of the time it leaves, needs the window system to say when the display refreshes), schedule (a "
                           "target time on the present, needs VK_EXT_present_timing) or auto (schedule, else vsync, else wait). A method the "
                           "system can not do falls back to vsync, else wait.");
+    rOptions.emplace_back("Pacer.Profile", OptionArgument::OptionRequired, CommandId::PacerProfile,
+                          "Where a frame waits for the time the pacer gives for the next frame, where the app has to do the waiting "
+                          "(Vulkan): early (the default, the frame is rendered right away and its present waits), late (the start of the "
+                          "frame waits and the frame is presented when it is done) or off (no wait, to capture the loop without it). With "
+                          "--Pacer.Hold vsync the wait is for the vsync of the window system, else for a time on the clock of the app.");
     rOptions.emplace_back("Pacer.VSyncPhase", OptionArgument::OptionRequired, CommandId::PacerVSyncPhase,
                           "For the vsync hold: where in the refresh before the one a frame is aimed at the present is done, in percent "
                           "of the refresh (1 to 99, the default is 65: the middle of what was measured to be shown at the target).");
+    rOptions.emplace_back("Pacer.Drain", OptionArgument::OptionRequired, CommandId::PacerDrain,
+                          "The refreshes the app waits once, half a second after it began to wait for the time of the pacer, so the "
+                          "presents that are queued between the app and the display are shown before the next one is added (Vulkan, 0 to "
+                          "32, the default is 4, 0 is no such wait).");
     rOptions.emplace_back("CpuLoad", OptionArgument::OptionRequired, CommandId::CpuLoad,
                           "Simulate a CPU load: the time in milliseconds the app spends busy every frame (0 = none, the default).");
     rOptions.emplace_back("GpuLoad", OptionArgument::OptionRequired, CommandId::GpuLoad,
@@ -208,6 +219,27 @@ namespace Fsl
       }
       FSLLOG3_ERROR("Pacer.Hold must be 'auto', 'vsync', 'wait' or 'schedule'");
       return OptionParseResult::Failed;
+    case CommandId::PacerProfile:
+      if (strOptArg == "late")
+      {
+        m_pacerProfile = SamplePacerProfile::RenderLate;
+        return OptionParseResult::Parsed;
+      }
+      if (strOptArg == "early")
+      {
+        m_pacerProfile = SamplePacerProfile::RenderEarly;
+        return OptionParseResult::Parsed;
+      }
+      if (strOptArg == "off")
+      {
+        m_pacerProfile = SamplePacerProfile::Off;
+        return OptionParseResult::Parsed;
+      }
+      FSLLOG3_ERROR("Pacer.Profile must be 'late', 'early' or 'off'");
+      return OptionParseResult::Failed;
+    case CommandId::PacerDrain:
+      return TryParseInRange(m_pacerDrainRefreshes, strOptArg, SampleConfig::DrainRefreshes, "Pacer.Drain") ? OptionParseResult::Parsed
+                                                                                                            : OptionParseResult::Failed;
     case CommandId::PacerVSyncPhase:
       return TryParseInRange(m_pacerVSyncPhasePercent, strOptArg, SampleConfig::VSyncPhasePercent, "Pacer.VSyncPhase") ? OptionParseResult::Parsed
                                                                                                                        : OptionParseResult::Failed;
