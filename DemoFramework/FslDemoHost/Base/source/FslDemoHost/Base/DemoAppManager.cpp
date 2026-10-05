@@ -393,9 +393,9 @@ namespace Fsl
             rLog.SetLogUInt64(m_framePacingLogColumns.DisplayVBlankInterval, variableRefresh.ObservedIntervalMilliPeriods);
             rLog.SetLogUInt64(m_framePacingLogColumns.DisplayVBlankOffPeriod, variableRefresh.ObservedOffPeriodPerMille);
           }
-          const int32_t packedAnswers =
-            (static_cast<int32_t>(variableRefresh.Supported) << 12) | (static_cast<int32_t>(variableRefresh.Enabled) << 8) |
-            (static_cast<int32_t>(variableRefresh.Active) << 4) | static_cast<int32_t>(variableRefresh.Observed);
+          const int32_t packedAnswers = (static_cast<int32_t>(variableRefresh.Supported) << 12) |
+                                        (static_cast<int32_t>(variableRefresh.Enabled) << 8) | (static_cast<int32_t>(variableRefresh.Active) << 4) |
+                                        static_cast<int32_t>(variableRefresh.Observed);
           if (packedAnswers != m_framePacingLogVariableRefresh)
           {
             m_framePacingLogVariableRefresh = packedAnswers;
@@ -412,10 +412,10 @@ namespace Fsl
                 return "unknown";
               }
             };
-            rLog.AddLogEvent("variableRefresh", fmt::format("supported={};enabled={};active={};observed={};source={};observedSource={}",
-                                                            toText(variableRefresh.Supported), toText(variableRefresh.Enabled),
-                                                            toText(variableRefresh.Active), toText(variableRefresh.Observed),
-                                                            variableRefresh.Source, variableRefresh.ObservedSource));
+            rLog.AddLogEvent("variableRefresh",
+                             fmt::format("supported={};enabled={};active={};observed={};source={};observedSource={}",
+                                         toText(variableRefresh.Supported), toText(variableRefresh.Enabled), toText(variableRefresh.Active),
+                                         toText(variableRefresh.Observed), variableRefresh.Source, variableRefresh.ObservedSource));
           }
         }
         if (refreshIntervalTicks != m_framePacingLogRefreshIntervalTicks)
