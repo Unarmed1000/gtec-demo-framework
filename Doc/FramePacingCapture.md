@@ -10,6 +10,7 @@ File                        | What it is
 ----------------------------|----------------------------------------------------------------------------------------------------------
 `FramePacingCapture.py`     | The capture tool. After `prepare` it is `FramePacingCapture` on Windows and `FramePacingCapture.sh` elsewhere.
 `CpuLoad.py`                | The external CPU load of a loaded run. It can be used on its own.
+`WindowOnTop.py`            | Keeps the window of the app above the other windows during a run (Windows).
 `FramePacingRunCheck.py`    | The checks of a log.
 `FramePacingLogFile.py`     | Reads the two files of a log, for scripts of your own.
 `Plans/*.toml`              | The plans that come with the tool.
@@ -41,6 +42,10 @@ read, the rest is up to the person at the machine.
 - **Leave the keyboard and the mouse alone during the runs.** The window of the app takes the keyboard focus when it opens and the
   sample reacts to keys: **P** toggles the pacer. A run where the pacer was switched gets a warning. Do not move or resize the window, a
   run with more than one swapchain gets a warning as well.
+- **The window has to be seen.** A window behind another one is not shown, and its presents say nothing about frame pacing. Windows
+  does not let an app that a tool started take the foreground while somebody works in another window, so on Windows the tool makes the
+  window of the app topmost when it opens (above the other windows, without giving it the keyboard focus). The notes of the run say
+  `window: kept on top of the other windows by the tool`, or that the tool found no window. Elsewhere, look at the first run.
 - **Fullscreen is `--Window []`.** Without a `--Window` argument the window comes from the environment variable
   `FSLDEMOAPP_PREFERRED_WINDOW_RESOLUTION` if it is set, and the run is a window that only looks like fullscreen. The plans always give
   the window.

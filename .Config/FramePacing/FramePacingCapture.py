@@ -49,6 +49,7 @@ from FramePacingAnonymise import AnonymiseFiles
 from FramePacingAnonymise import GetLocalPaths
 from FramePacingLogFile import FramePacingLogFile, ToEventsPath, g_ticksPerMillisecond, g_ticksPerSecond
 from FramePacingRunCheck import CheckRun, FormatReport, FormatSummary, RunCheck, RunExpectation
+from WindowOnTop import WindowOnTop
 
 _g_toolDirectory = Path(__file__).resolve().parent
 _g_planDirectory = _g_toolDirectory / "Plans"
@@ -371,6 +372,8 @@ class RunResult:
     CommandLine: list[str]
     StartTime: datetime.datetime
     EndTime: datetime.datetime
+    # True if the tool made the window of the app topmost, False if it found no window to do that with, None where it can not do it
+    WindowOnTop: bool | None = None
 
 
 def RunApp(exePath: Path, workingDirectory: Path, logPath: Path, appOutputPath: Path, run: RunConfig, timeoutSeconds: float) -> RunResult:
@@ -379,6 +382,8 @@ def RunApp(exePath: Path, workingDirectory: Path, logPath: Path, appOutputPath: 
     timedOut = False
     with LoadProcess(run.Load), open(appOutputPath, "wb") as appOutput:
         process = subprocess.Popen(commandLine, cwd=workingDirectory, stdin=subprocess.DEVNULL, stdout=appOutput, stderr=subprocess.STDOUT)
+        # A window that opens behind another one is not shown, and then the run measures nothing
+        windowOnTop = WindowOnTop(process.pid)
         try:
             exitCode = process.wait(timeoutSeconds)
         except subprocess.TimeoutExpired:
@@ -389,7 +394,10 @@ def RunApp(exePath: Path, workingDirectory: Path, logPath: Path, appOutputPath: 
             process.kill()
             process.wait()
             raise
-    return RunResult(exitCode, timedOut, commandLine, startTime, datetime.datetime.now(datetime.timezone.utc))
+        finally:
+            windowOnTop.Stop()
+    return RunResult(exitCode, timedOut, commandLine, startTime, datetime.datetime.now(datetime.timezone.utc),
+                     windowOnTop.Done if WindowOnTop.IsSupported() else None)
 
 
 def _WriteNotes(notesPath: Path, plan: Plan | None, run: RunConfig | None, result: RunResult | None, userFacts: dict[str, str],
@@ -407,6 +415,9 @@ def _WriteNotes(notesPath: Path, plan: Plan | None, run: RunConfig | None, resul
         lines.append(f"started (UTC): {result.StartTime.isoformat(timespec='milliseconds')}")
         lines.append(f"ended (UTC): {result.EndTime.isoformat(timespec='milliseconds')}")
         lines.append(f"exit code: {result.ExitCode}" + (" (stopped by the tool, the run took too long)" if result.TimedOut else ""))
+        if result.WindowOnTop is not None:
+            lines.append("window: kept on top of the other windows by the tool" if result.WindowOnTop else
+                         "window: THE TOOL FOUND NO WINDOW OF THE APP TO KEEP ON TOP, it can have been covered")
     if run is not None:
         lines.append(f"external load: {run.Load.Describe() if run.Load is not None else 'none'}")
     lines.append(f"log: {log.FramesPath.name} and {log.EventsPath.name}")
