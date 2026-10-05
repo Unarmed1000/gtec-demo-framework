@@ -42,8 +42,8 @@ from FslBuildGen import IOUtil, __version__
 
 # from FslBuildGen import PackageConfig
 from FslBuildGen.Build.BuildUtil import PlatformBuildTypeInfo, PlatformBuildUtil
-from FslBuildGen.BuildExternal import CMakeHelper
-from FslBuildGen.BuildExternal.CMakeTypes import CMakeBuildType, CMakeGeneratorMultiConfigCapability, CMakeGeneratorName
+from FslBuildGen.BuildExternal import CMakeGeneratorKind, CMakeHelper
+from FslBuildGen.BuildExternal.CMakeTypes import CMakeBuildType, CMakeGeneratorName
 from FslBuildGen.BuildExternal.FileUnpacker import FileUnpack
 from FslBuildGen.CMakeUtil import CMakeVersion
 from FslBuildGen.Context.GeneratorContext import GeneratorContext
@@ -299,10 +299,10 @@ class CMakeBuilderGeneric(CMakeBuilder):
                 f"The chosen CMake generator '{cmakeConfig.CMakeFinalGeneratorName}' requires cmake version {CMakeBuilderGeneric.MINIMUM_VERSION} or newer"
             )
 
-        # The cmake make files only support one configuration
-        self.IsSingleConfiguration = (
-            CMakeHelper.GetGeneratorMultiConfigCapabilities(cmakeConfig.CMakeFinalGeneratorName) != CMakeGeneratorMultiConfigCapability.Yes
-        )
+        # A generator with one configuration is configured for each configuration that is built. So is a generator the tool does
+        # not know: Execute names the configuration at build for every generator ('--config'), which gives it the configuration
+        # both ways.
+        self.IsSingleConfiguration = CMakeGeneratorKind.IsConfigurationGivenAtConfigure(cmakeConfig.CMakeFinalGeneratorName)
         self.CMakeConfig = cmakeConfig
 
     def Execute(

@@ -414,7 +414,9 @@ class ToolFlowBuildCheck(AToolAppFlow):
                 )
 
             topLevelPackage = PackageListUtil.GetTopLevelPackage(packages)
-            RecipeBuilder.ValidateInstallationForPackages(config, config.SDKPath, generatorContext, topLevelPackage.ResolvedBuildOrder)
+            RecipeBuilder.ValidateInstallationForPackages(
+                config, config.SDKPath, generatorContext, topLevelPackage.ResolvedBuildOrder, isDryRun=config.IsDryRun
+            )
         else:
             if localToolConfig.File is not None:
                 # Delay extension validation

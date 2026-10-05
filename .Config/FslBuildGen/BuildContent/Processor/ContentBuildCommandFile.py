@@ -52,8 +52,10 @@ class ContentBuildCommandFile:
         self.__CurrentVersion = "1"
         self.Commands: list[Command] = []
 
-        # The command file is UTF-8 like any json file. A byte order mark is accepted and a file in the locale encoding is read with a warning
-        fileContent = TextFileReader.TryReadUTF8OrLocale(log, sourceFilename, "content command file", skipBom=True)
+        # The command file is UTF-8 like any json file. A byte order mark is accepted and a file in the locale encoding is read with a warning.
+        # A package without the file has no commands. A file that is there and can not be read is an error: its commands would be left
+        # out without a word.
+        fileContent = TextFileReader.TryReadUTF8OrLocaleIfExists(log, sourceFilename, "content command file", skipBom=True)
         if fileContent is not None:
             log.LogPrintVerbose(3, f"Parsing command file '{sourceFilename}'")
             jsonContent = self.__ParseJsonFile(fileContent)

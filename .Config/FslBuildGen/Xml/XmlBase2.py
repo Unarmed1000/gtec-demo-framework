@@ -40,7 +40,7 @@ from FslBuildGen.DataTypes import AccessType, DependencyOutputType
 from FslBuildGen.Log import Log
 from FslBuildGen.VersionConverter import VersionConverter
 from FslBuildGen.Xml import FakeXmlElementFactory
-from FslBuildGen.Xml.Exceptions import XmlUnsupportedPackageNameException, XmlUnsupportedSubPackageNameException
+from FslBuildGen.Xml.Exceptions import XmlUnsupportedPackageNameException, XmlUnsupportedSubPackageNameException, XmlUnsupportedTag
 from FslBuildGen.Xml.XmlBase import XmlBase
 from FslBuildGen.Xml.XmlGenFileDefine import XmlGenFileDefine
 from FslBuildGen.Xml.XmlGenFileDependency import XmlGenFileDependency
@@ -118,8 +118,14 @@ class XmlBase2(XmlBase):
                 if child.tag == "Define":
                     dependencies.append(XmlGenFileDefine(self.Log, child))
                 elif child.tag == "CPPDefine":
-                    # todo log warning here
-                    dependencies.append(XmlGenFileDefine(self.Log, child))
+                    # The old name of 'Define' is not read anymore. The message holds the element as it is to be written now.
+                    oldName = f" Name='{child.attrib['Name']}'" if "Name" in child.attrib else ""
+                    # Imported here, where the load stops: the module brings urllib.request with it, some forty modules that every
+                    # start of the tool would load for a message that is nearly never written
+                    from xml.sax.saxutils import quoteattr  # noqa: PLC0415
+
+                    attributes = "".join(f" {name}={quoteattr(value)}" for name, value in child.attrib.items())
+                    raise XmlUnsupportedTag(child, f"The tag <CPPDefine{oldName}> has been replaced by <Define{attributes}> please update")
         return dependencies
 
     def __GetXMLIgnores(self, xmlElement: ET.Element) -> list[XmlGenFileIgnore]:

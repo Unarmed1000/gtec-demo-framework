@@ -29,7 +29,8 @@
 #
 # - A multi-config generator (Visual Studio) has one build directory for every configuration, so the project gets a preset for every
 #   option of the config variant. Any other generator has the configuration in its configure command, so the project gets the presets
-#   of the configuration it was generated for.
+#   of the configuration it was generated for. A generator the tool does not know is one of those: its configure command names the
+#   configuration and so does its build (see BuildExternal/CMakeGeneratorKind.py), so its build preset names it too.
 # - No file is written when the presets can not say what the command does, or when the cmake of the machine is too old for the format.
 #   A file the tool wrote in an earlier generation is removed then, as it describes another configure.
 # - A file the tool did not write (it has no vendor entry of the tool) is never written to and never removed.
@@ -40,8 +41,7 @@ from collections.abc import Sequence
 
 from FslBuildGen import IOUtil, TemplateIO
 from FslBuildGen.BuildConfig.BuildUtil import BuildUtil
-from FslBuildGen.BuildExternal import CMakeHelper
-from FslBuildGen.BuildExternal.CMakeTypes import CMakeGeneratorMultiConfigCapability
+from FslBuildGen.BuildExternal import CMakeGeneratorKind
 from FslBuildGen.DataTypes import BuildVariantConfig, PackageType
 from FslBuildGen.Engine.PackageFlavorOptionName import PackageFlavorOptionName
 from FslBuildGen.Engine.Unresolved.UnresolvedPackageFlavorName import UnresolvedPackageFlavorName
@@ -85,8 +85,8 @@ def _WithConfigOption(variantConstraints: ExternalVariantConstraints, configOpti
     return ExternalVariantConstraints(constraintsDict)
 
 
-def _GetPresetConfigOptions(cmakeConfig: GeneratorCMakeConfig, configVariantOptions: Sequence[str], isMultiConfig: bool) -> list[str]:
-    if isMultiConfig:
+def _GetPresetConfigOptions(cmakeConfig: GeneratorCMakeConfig, configVariantOptions: Sequence[str], hasEveryConfiguration: bool) -> list[str]:
+    if hasEveryConfiguration:
         return list(configVariantOptions)
     # The configuration is part of the configure command: the project is the one of the configuration it was generated for
     activeName = BuildVariantConfig.ToString(cmakeConfig.BuildVariantConfig)
@@ -109,14 +109,17 @@ def _CollectConfigurations(
     variableReport = GeneratorCMake._GenerateConfigVariableReport(log, topLevelPackage, allConfigOptions)
     BuildUtil.AddCustomVariables(variableReport, toolConfig.ProjectInfo)
 
-    # The same question the build command asks to decide if it names the configuration ('--config')
-    isMultiConfig = CMakeHelper.GetGeneratorMultiConfigCapabilities(cmakeConfig.GeneratorName) == CMakeGeneratorMultiConfigCapability.Yes
+    # The same questions the configure command and the build command ask (GeneratorCMake): without the configuration in the
+    # configure command the build directory holds every configuration, and the build names it ('--config') unless the generator is
+    # known not to listen
+    hasEveryConfiguration = not CMakeGeneratorKind.IsConfigurationGivenAtConfigure(cmakeConfig.GeneratorName)
+    isConfigurationGivenAtBuild = CMakeGeneratorKind.IsConfigurationGivenAtBuild(cmakeConfig.GeneratorName)
     configurations: list[CMakePresets.PresetConfiguration] = []
-    for configOption in _GetPresetConfigOptions(cmakeConfig, allConfigOptions, isMultiConfig):
+    for configOption in _GetPresetConfigOptions(cmakeConfig, allConfigOptions, hasEveryConfiguration):
         constraints = _WithConfigOption(variantConstraints, configOption)
         resolved = ResolvedConfigCommand.Resolve(configReport.ConfigCommandReport, variableReport, constraints)
         buildConfiguration = None
-        if isMultiConfig:
+        if isConfigurationGivenAtBuild:
             buildConfiguration = ReportVariableFormatter.Format(f"${{{LocalMagicBuildVariants.CMakeBuildConfig}}}", variableReport, constraints)
         configurations.append(CMakePresets.PresetConfiguration(configOption, buildConfiguration, resolved.Command, resolved.CurrentWorkingDirectory))
     return configurations

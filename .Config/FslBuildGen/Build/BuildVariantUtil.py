@@ -86,9 +86,10 @@ class BuildVariantUtil:
     def __TryLocateVariant(package: Package, key: str) -> PackagePlatformVariant | None:
         if key in package.ResolvedAllVariantDict:
             return package.ResolvedAllVariantDict[key]
-        # try a manual search for 'virtual keys'
+        # A virtual variant is named after an environment variable ('$(FSL_GLES_NAME)') and the user gives the name of the variable
+        # ('FSL_GLES_NAME', the PurifiedName). The whole name: a setting is not for every variant whose name holds its name.
         for entry in list(package.ResolvedAllVariantDict.values()):
-            if key in entry.PurifiedName:
+            if key == entry.PurifiedName:
                 return entry
         return None
 

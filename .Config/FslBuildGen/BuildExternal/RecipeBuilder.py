@@ -182,6 +182,7 @@ def ValidateInstallationForPackages(
     resolvedBuildOrder: list[Package],
     builderSettings: BuilderSettings | None = None,
     packageRecipeResultManager: PackageRecipeResultManager | None = None,
+    isDryRun: bool = False,
 ) -> None:
     if builderSettings is None:
         builderSettings = BuilderSettings()
@@ -196,14 +197,16 @@ def ValidateInstallationForPackages(
         raise Exception("Invalid path builder")
 
     # Claim the 'package' install directory to prevent multiple builds from using the same
-    # as it would give concurrency issues
-    BuildAreaInfoFileUtil.ProcessInstallDirClaim(
-        log,
-        generatorContext.RecipePathBuilder.TargetLocation.ResolvedPath,
-        configSDKPath,
-        builderSettings.ForceClaimInstallArea,
-        __g_installAreaInformationFilename,
-    )
+    # as it would give concurrency issues. A dry run writes nothing, so it claims nothing (as in __DoBuildPackagesInOrder): the claim
+    # is a file in the install area
+    if not isDryRun:
+        BuildAreaInfoFileUtil.ProcessInstallDirClaim(
+            log,
+            generatorContext.RecipePathBuilder.TargetLocation.ResolvedPath,
+            configSDKPath,
+            builderSettings.ForceClaimInstallArea,
+            __g_installAreaInformationFilename,
+        )
 
     if resolvedBuildOrder is None:
         return

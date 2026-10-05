@@ -39,8 +39,7 @@ from FslBuildGen import IOUtil, TemplateIO, TextFileReader
 from FslBuildGen.Build import BuildKeepGoing
 from FslBuildGen.Build.DataTypes import CommandType
 from FslBuildGen.BuildConfig.CMakeCompileCommandsJson import CompileCommandDefine
-from FslBuildGen.BuildExternal import CMakeHelper
-from FslBuildGen.BuildExternal.CMakeTypes import CMakeGeneratorMultiConfigCapability
+from FslBuildGen.BuildExternal import CMakeGeneratorKind, CMakeHelper
 from FslBuildGen.CMakeUtil import CMakeVersion
 
 # from FslBuildGen.Config import Config
@@ -683,8 +682,9 @@ class GeneratorCMake(GeneratorBase):
         buildCommandArguments: list[str] = ["--build", "."]
         buildCommandNativeArguments: list[str] = []
         if generatorConfig.BuildCommand != CommandType.Open:
-            # Configuration (Debug, Release) for the configurations that support build time configuration switching
-            if CMakeHelper.GetGeneratorMultiConfigCapabilities(cmakeConfig.GeneratorName) == CMakeGeneratorMultiConfigCapability.Yes:
+            # Configuration (Debug, Release) for the generators that choose it at build time. A generator the tool does not know is
+            # told here and at configure: one of the two is the place it listens to.
+            if CMakeGeneratorKind.IsConfigurationGivenAtBuild(cmakeConfig.GeneratorName):
                 buildCommandArguments.append("--config")
                 buildCommandArguments.append(f"${{{LocalMagicBuildVariants.CMakeBuildConfig}}}")
 
@@ -855,8 +855,9 @@ class GeneratorCMake(GeneratorBase):
         if cmakeConfig.InstallPrefix is not None:
             cmakeConfigureSettingsDict["CMAKE_INSTALL_PREFIX"] = cmakeConfig.InstallPrefix
 
-        # Configuration (Debug, Release) for the configurations that support configure time configuration
-        if CMakeHelper.GetGeneratorMultiConfigCapabilities(cmakeConfig.GeneratorName) != CMakeGeneratorMultiConfigCapability.Yes:
+        # Configuration (Debug, Release) for the generators that choose it at configure time, and for the ones the tool does not
+        # know (see _TryGenerateBuildReport)
+        if CMakeGeneratorKind.IsConfigurationGivenAtConfigure(cmakeConfig.GeneratorName):
             cmakeConfigureSettingsDict["CMAKE_BUILD_TYPE"] = f"${{{LocalMagicBuildVariants.CMakeBuildConfig}}}"
 
         cmakeConfigureSettingsDict["CODE_COVERAGE"] = f"${{{LocalMagicBuildVariants.OptionCodeCoverage}}}"

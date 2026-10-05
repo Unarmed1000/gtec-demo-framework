@@ -42,9 +42,9 @@ class XmlGenFileFlavorOption(XmlCommonFslBuild):
     __AttribName = "Name"
     __AttribSupported = "Supported"
 
-    # The elements a option reads, 'CPPDefine' is the old name of 'Define'
+    # The elements a option reads. The old names 'CPPDefine' and 'UsesFeature' are not among them, but they are not reported as
+    # unknown: both are rejected with the name of the element that replaced them before the elements are checked here
     __ValidElements = ["Define", "Dependency", "ExternalDependency", "FindPackage", "Requirement"]
-    __LegacyElements = ["CPPDefine"]
 
     def __init__(self, log: Log, requirementTypes: list[str], xmlElement: ET.Element, ownerPackageName: str, flavorName: str) -> None:
         """flavorName is the name the flavor or flavor extension element gives, it is only used in messages"""
@@ -56,5 +56,5 @@ class XmlGenFileFlavorOption(XmlCommonFslBuild):
         self.DirectRequirements = self._GetXMLRequirements(xmlElement)
         # Any other element would be ignored (a '<Variant>' or '<Platform>' for example has no effect here), so it is rejected instead
         for child in xmlElement:
-            if child.tag not in self.__ValidElements and child.tag not in self.__LegacyElements:
+            if child.tag not in self.__ValidElements:
                 raise XmlFlavorOptionUnknownElementException(child, ownerPackageName, flavorName, self.Name, self.__ValidElements)

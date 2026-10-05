@@ -403,7 +403,17 @@ class Builder:
 
         variableReport = packageEntry.VariableReport
 
-        runCmdInfo = self.TryGenerateRunCommandForExecutable(buildContext, primaryPackage, buildConfig, ["(EXE)"], generatorConfig)
+        try:
+            runCmdInfo = self.TryGenerateRunCommandForExecutable(buildContext, primaryPackage, buildConfig, ["(EXE)"], generatorConfig)
+        except FileNotFoundError as ex:
+            # The file with the path of the executable is written when cmake configures the build. Without it the project is opened
+            # like the one of a package that has no executable: the editor gets the cmake settings, which is all it needs to
+            # configure and build, and the launch settings stay as they are.
+            self.Log.DoPrintWarning(
+                f"The launch settings of Visual Studio Code are not updated: {ex.strerror} ('{ex.filename}'). "
+                "Run the command again when the build is configured"
+            )
+            runCmdInfo = None
         exeInfo: OpenProjectExecutableInfo | None = None
         if runCmdInfo is not None:
             exeInfo = OpenProjectExecutableInfo(runCmdInfo.RunCommands[0], runCmdInfo.RunPath)

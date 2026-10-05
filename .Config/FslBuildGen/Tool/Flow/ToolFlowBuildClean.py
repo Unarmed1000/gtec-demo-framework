@@ -181,7 +181,12 @@ class ToolFlowBuildClean(AToolAppFlow):
 
         while True:
             print(question + prompt)
-            choice = input().lower().strip()
+            try:
+                choice = input().lower().strip()
+            except EOFError:
+                # No terminal and nothing piped in: nobody said yes
+                print("The question could not be asked as there is no input to read the answer from: nothing is removed. Use '-y' to remove without it.")
+                return False
             if default is not None and choice == "":
                 return valid[default]
             elif choice in valid:

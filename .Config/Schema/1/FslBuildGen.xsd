@@ -6,28 +6,6 @@
     </xs:documentation>
   </xs:annotation>
 
-  <xs:simpleType name="_TP_FeatureName">
-    <xs:restriction base="xs:string">
-      <xs:enumeration value="EarlyAccess" />
-      <xs:enumeration value="EGL" />
-      <xs:enumeration value="G2D" />
-      <xs:enumeration value="OpenCL" />
-      <xs:enumeration value="OpenCL1.1" />
-      <xs:enumeration value="OpenCL1.2" />
-      <xs:enumeration value="OpenCV" />
-      <xs:enumeration value="OpenCV3" />
-      <xs:enumeration value="OpenGLES2" />
-      <xs:enumeration value="OpenGLES3" />
-      <xs:enumeration value="OpenGLES3.1" />
-      <xs:enumeration value="OpenGLES3.2" />
-      <xs:enumeration value="OpenVG" />
-      <xs:enumeration value="OpenVX" />
-      <xs:enumeration value="OpenVX1.0.1" />
-      <xs:enumeration value="OpenVX1.1" />
-      <xs:enumeration value="Vulkan" />
-    </xs:restriction>
-  </xs:simpleType>
-
 
   <xs:simpleType name="_TP_DependencyAccess">
     <xs:restriction base="xs:string">
@@ -91,14 +69,6 @@
       <xs:enumeration value="Full" />
     </xs:restriction>
   </xs:simpleType>
-
-
-  <xs:complexType name="_T_UsesFeature">
-    <xs:annotation>
-      <xs:documentation>Specifies a requirement for the given feature name to exist</xs:documentation>
-    </xs:annotation>
-    <xs:attribute name="Name" type="_TP_FeatureName" use="required"/>
-  </xs:complexType>
 
 
   <xs:complexType name="_T_Requirement">
@@ -347,9 +317,8 @@
     </xs:choice>
   </xs:group>
 
-  <xs:group name="_G_UsesFeatureElement">
+  <xs:group name="_G_RequirementElement">
     <xs:choice>
-      <xs:element name="UsesFeature" type="_T_UsesFeature"/>
       <xs:element name="Requirement" type="_T_Requirement"/>
     </xs:choice>
   </xs:group>
@@ -413,7 +382,6 @@
   <xs:group name="_G_DefineElement">
     <xs:choice>
       <xs:element name="Define" type="_T_Define"/>
-      <xs:element name="CPPDefine" type="_T_Define"/>
     </xs:choice>
   </xs:group>
 
@@ -473,7 +441,7 @@
     <xs:sequence>
       <xs:group ref="_G_DefaultElements" minOccurs="0" maxOccurs="1"/>
       <xs:group ref="_G_BuildCustomizationElements" minOccurs="0" maxOccurs="1"/>
-      <xs:group ref="_G_UsesFeatureElement" minOccurs="0" maxOccurs="unbounded"/>
+      <xs:group ref="_G_RequirementElement" minOccurs="0" maxOccurs="unbounded"/>
       <xs:group ref="_G_ImportTemplate" minOccurs="0" maxOccurs="unbounded"/>
 	  <xs:group ref="_G_GenerateElement" minOccurs="0" maxOccurs="unbounded"/>
       <xs:group ref="_G_GenerateGrpcProtoFileElement" minOccurs="0" maxOccurs="unbounded"/>
@@ -491,7 +459,7 @@
 
   <xs:group name="_G_PlatformCommandList">
     <xs:sequence>
-      <xs:group ref="_G_UsesFeatureElement" minOccurs="0" maxOccurs="unbounded"/>
+      <xs:group ref="_G_RequirementElement" minOccurs="0" maxOccurs="unbounded"/>
       <xs:group ref="_G_DependencyElement" minOccurs="0" maxOccurs="unbounded"/>
       <xs:group ref="_G_FindPackageElement" minOccurs="0" maxOccurs="unbounded"/>
       <xs:group ref="_G_ExternalDependencyElement" minOccurs="0" maxOccurs="unbounded"/>
@@ -516,7 +484,7 @@
 
   <xs:group name="_G_FlavorOptionCommandList">
     <xs:sequence>
-      <xs:group ref="_G_UsesFeatureElement" minOccurs="0" maxOccurs="unbounded"/>
+      <xs:group ref="_G_RequirementElement" minOccurs="0" maxOccurs="unbounded"/>
       <xs:group ref="_G_DependencyElement" minOccurs="0" maxOccurs="unbounded"/>
       <xs:group ref="_G_FindPackageElement" minOccurs="0" maxOccurs="unbounded"/>
       <xs:group ref="_G_ExternalDependencyElement" minOccurs="0" maxOccurs="unbounded"/>
@@ -913,7 +881,7 @@
 
   <xs:group name="_G_PlatformExternalCommandList">
     <xs:sequence>
-      <xs:group ref="_G_UsesFeatureElement" minOccurs="0" maxOccurs="unbounded"/>
+      <xs:group ref="_G_RequirementElement" minOccurs="0" maxOccurs="unbounded"/>
       <xs:group ref="_G_DependencyElement" minOccurs="0" maxOccurs="unbounded"/>
       <xs:group ref="_G_ExternalDependencyElement" minOccurs="0" maxOccurs="unbounded"/>
       <xs:group ref="_G_DefineElement" minOccurs="0" maxOccurs="unbounded"/>
@@ -946,7 +914,7 @@
   <xs:group name="_G_ToolRecipeCommandList">
     <xs:sequence>
       <xs:group ref="_G_DefaultElements" minOccurs="0" maxOccurs="1"/>
-      <xs:group ref="_G_UsesFeatureElement" minOccurs="0" maxOccurs="unbounded"/>
+      <xs:group ref="_G_RequirementElement" minOccurs="0" maxOccurs="unbounded"/>
       <xs:group ref="_G_DependencyElement" minOccurs="0" maxOccurs="unbounded"/>
       <xs:group ref="_G_DefineElement" minOccurs="0" maxOccurs="unbounded"/>
       <xs:group ref="_G_ExperimentalRecipeElement" minOccurs="0" maxOccurs="1"/>
@@ -958,7 +926,7 @@
   <xs:group name="_G_ExternalCommandList">
     <xs:sequence>
       <xs:group ref="_G_DefaultElements" minOccurs="0" maxOccurs="1"/>
-      <xs:group ref="_G_UsesFeatureElement" minOccurs="0" maxOccurs="unbounded"/>
+      <xs:group ref="_G_RequirementElement" minOccurs="0" maxOccurs="unbounded"/>
       <xs:group ref="_G_ImportTemplate" minOccurs="0" maxOccurs="unbounded"/>
       <xs:group ref="_G_DependencyElement" minOccurs="0" maxOccurs="unbounded"/>
       <xs:group ref="_G_ExternalDependencyElement" minOccurs="0" maxOccurs="unbounded"/>

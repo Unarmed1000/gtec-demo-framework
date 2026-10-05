@@ -121,11 +121,16 @@ class VSCodeJsonFile:
     @staticmethod
     def TryLoad(log: Log, filename: str, what: str) -> VSCodeJsonFile | None:
         """Read the file. what says what the file is in the messages ('Visual Studio Code settings file').
-        Returns None for a file that can not be updated: it is not plain JSON or it does not hold an object. A warning says so.
+        Returns None for a file that can not be updated: it is not plain JSON, it does not hold an object, or it is there and can not be
+        read (a file that is locked for a moment would be written again with the values of the tool only). A warning says so.
         The comment lines directly after the opening brace are not part of the JSON, they are kept (see SplitLeadingComments).
         A file that does not exist gives an empty object.
         """
-        text = TextFileReader.TryReadUTF8OrLocale(log, filename, what, skipBom=True)
+        try:
+            text = TextFileReader.TryReadUTF8OrLocaleIfExists(log, filename, what, skipBom=True)
+        except OSError as ex:
+            WarnNotUpdated(log, filename, what, f"it can not be read ({ex})")
+            return None
         if text is None:
             return VSCodeJsonFile(filename, None, {})
         _commentLines, plainText = SplitLeadingComments(text)

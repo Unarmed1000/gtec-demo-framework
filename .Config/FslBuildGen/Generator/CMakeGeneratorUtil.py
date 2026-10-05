@@ -943,7 +943,9 @@ def CreateDefineRootDirectoryEnvironmentAsVariables(
 ) -> str:
     allUniqueEnv = GetRootDirectoryEnvironmentVariableNames(toolConfig, projectContext, includeParents, uniqueEnvironmentVariables)
     allRootDirs = list(allUniqueEnv)  # List[set]
-    allRootDirs.sort(key=lambda s: s.lower())
+    # The names come from a set: two that differ by case only are put in order by the name itself, so the file is the same from run
+    # to run
+    allRootDirs.sort(key=lambda s: (s.lower(), s))
     result = []  # List[str]
     for envEntry in allRootDirs:
         content = snippet

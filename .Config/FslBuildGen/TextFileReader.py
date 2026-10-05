@@ -94,6 +94,17 @@ def TryReadUTF8OrLocale(log: Log, filename: str, what: str, skipBom: bool = Fals
         return None
 
 
+def TryReadUTF8OrLocaleIfExists(log: Log, filename: str, what: str, skipBom: bool = False, warn: bool = True) -> str | None:
+    """Like ReadUTF8OrLocale, but a file that is not there gives None. A file that is there and can not be opened or read (it is locked,
+    the user may not read it, it is a directory) raises the OSError. For a file the tool goes on to write or to decide by: there 'can not
+    be read' must not be taken for 'is not there'.
+    """
+    try:
+        return ReadUTF8OrLocale(log, filename, what, skipBom, warn)
+    except FileNotFoundError:
+        return None
+
+
 def ReadUTF8PassThrough(log: Log, filename: str, what: str, newline: str | None = None, warnedFiles: set[str] | None = None) -> str:
     """Read a text file the tool copies or edits in place as UTF-8. A byte order mark is kept as the first character.
     Bytes that are not valid UTF-8 never fail the read: they are kept as lone surrogates ('surrogateescape'), so writing the text with

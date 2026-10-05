@@ -33,8 +33,7 @@
 
 from FslBuildGen import IOUtil, PackageConfig, PathUtil
 from FslBuildGen.BuildConfig.UserSetVariables import UserSetVariables
-from FslBuildGen.BuildExternal import CMakeHelper
-from FslBuildGen.BuildExternal.CMakeTypes import CMakeGeneratorMultiConfigCapability
+from FslBuildGen.BuildExternal import CMakeGeneratorKind, CMakeHelper
 from FslBuildGen.CMakeUtil import CMakeVersion
 from FslBuildGen.DataTypes import BuildVariantConfig
 from FslBuildGen.Log import Log
@@ -77,7 +76,8 @@ class GeneratorCMakeConfig:
         # Check if we should use a 'build variant temp dir'
         if not buildDirSetByUser:
             buildDir = IOUtil.Join(buildDir, generatorShortName)
-            if CMakeHelper.GetGeneratorMultiConfigCapabilities(finalGeneratorName) == CMakeGeneratorMultiConfigCapability.No:
+            # Not every single-config generator: only the ones that always had it, so no build directory that exists moves
+            if CMakeGeneratorKind.HasBuildDirectoryPerConfiguration(finalGeneratorName):
                 buildDir = IOUtil.Join(buildDir, BuildVariantConfig.ToString(buildVariantConfig))
             if buildDirId is not None:
                 buildDir += f"_{buildDirId}"

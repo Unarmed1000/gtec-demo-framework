@@ -35,7 +35,7 @@ import argparse
 # from typing import Callable
 from typing import Any, cast
 
-from FslBuildGen import IOUtil, MarkdownAnchor, MarkdownIO, PluginSharedValues, TextFileReader
+from FslBuildGen import IOUtil, MarkdownAnchor, MarkdownHeadings, MarkdownIO, PluginSharedValues, TextFileReader
 from FslBuildGen import Main as MainFlow
 from FslBuildGen.BasicConfig import BasicConfig
 from FslBuildGen.Build.BuildOutcome import BuildOutcome
@@ -130,18 +130,11 @@ def TryTocPrepareLine(line: str) -> str | None:
     return line
 
 
-def TryGetHeading(line: str) -> tuple[int, str] | None:
-    """The level (1 to 6) and the text of a line that is a heading: one to six '#' and a space start it"""
-    level = len(line) - len(line.lstrip("#"))
-    if level < 1 or level > 6 or not line.startswith(" ", level):
-        return None
-    return (level, line[level + 1 :])
-
-
 def BuildTableOfContents(lines: list[str], depth: int) -> list[str]:
     """The entries of the table of contents: the headings after the table (AG_TOC_END) down to the level depth, which is at most 4.
     The link of an entry is the anchor of its heading. A heading that is named like an earlier heading of the file has an anchor of its
     own, so every heading of the file is looked at, also the ones the table does not list.
+    What a heading is: see MarkdownHeadings (a line in a code block is none, an underlined paragraph is one).
     """
     # Dumb but simple TOC genration
     startIndex = IndexOf(lines, "AG_TOC_END")
@@ -150,17 +143,15 @@ def BuildTableOfContents(lines: list[str], depth: int) -> list[str]:
 
     anchorNames = MarkdownAnchor.AnchorNames()
     tocLines = []
-    for index, line in enumerate(lines):
-        heading = TryGetHeading(line if index > 0 else MarkdownIO.WithoutByteOrderMark(line))
-        if heading is None:
-            continue
-        level, text = heading
-        resLine = TryTocPrepareLine(text)
+    # The first line of a file that starts with a byte order mark holds it
+    headingLines = [MarkdownIO.WithoutByteOrderMark(line) if index == 0 else line for index, line in enumerate(lines)]
+    for heading in MarkdownHeadings.FindHeadings(headingLines):
+        resLine = TryTocPrepareLine(heading.Text)
         if resLine is None:
             continue
         anchor = anchorNames.Add(resLine)
-        if index >= startIndex and level <= min(depth, 4):
-            tocLines.append(f"{'  ' * (level - 1)}* [{TocEntryName(resLine)}](#{anchor})")
+        if heading.LineIndex >= startIndex and heading.Level <= min(depth, 4):
+            tocLines.append(f"{'  ' * (heading.Level - 1)}* [{TocEntryName(resLine)}](#{anchor})")
     return tocLines
 
 
@@ -309,7 +300,8 @@ def TryBuildArgumentTableLines(basicConfig: BasicConfig, argumentDict: JsonDictT
         return None
 
     srcArguments: list[dict[str, Any]] = argumentDict[mainKey]
-    arguments: list[ProgramArgument] = DecodeJsonArgumentList(basicConfig, srcArguments)
+    # A hidden argument is not listed, so it does not count for the width of a column either
+    arguments: list[ProgramArgument] = [entry for entry in DecodeJsonArgumentList(basicConfig, srcArguments) if entry.Group != OptionGroup.Hidden]
 
     maxNameLength = GetMaxFormattedNameLength(arguments)
     maxDescLength = GetMaxDescriptionLength(arguments)
@@ -336,12 +328,13 @@ def TryBuildArgumentTableLines(basicConfig: BasicConfig, argumentDict: JsonDictT
     result.append(g_argumentHeading)
     result.append("")
     result.append(formatString.format("Argument", "Description", "Source"))
-    result.append("{}|{}|{}".format("-" * maxNameLength, "-" * maxDescLength, "-" * maxSourceNameLength))
+    # The line under the names of the columns is what makes this a table: each of its cells needs dashes, also in a table without
+    # an argument to give a column its width
+    result.append("|".join("-" * max(length, g_minimumTableDashes) for length in [maxNameLength, maxDescLength, maxSourceNameLength]))
     for entry in arguments:
-        if entry.Group != OptionGroup.Hidden:
-            result.append(
-                formatString.format(SafeMarkdownString(entry.Help_FormattedName), SafeMarkdownString(entry.Description), SafeMarkdownString(entry.SourceName))
-            )
+        result.append(
+            formatString.format(SafeMarkdownString(entry.Help_FormattedName), SafeMarkdownString(entry.Description), SafeMarkdownString(entry.SourceName))
+        )
     return result
 
 
@@ -351,6 +344,8 @@ def TryBuildArgumentTableLines(basicConfig: BasicConfig, argumentDict: JsonDictT
 # else in it changes, not the newlines, not the whitespace at the end of a line and not a byte order mark.
 g_argumentSectionName = "AG_DEMOAPP_COMMANDLINE_ARGUMENTS"
 g_argumentHeading = "Command line arguments:"
+# The dashes a cell of the line under the names of the columns has at least
+g_minimumTableDashes = 3
 g_argumentHeadingOfOlderVersions = "Command line arguments':"
 
 

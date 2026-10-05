@@ -45,7 +45,7 @@ from FslBuildGen.Build.BuildUtil import PlatformBuildUtil
 from FslBuildGen.Build.BuildVariantUtil import BuildVariantUtil
 from FslBuildGen.Build.DataTypes import CommandType
 from FslBuildGen.Build.VirtualVariantEnvironmentCache import VirtualVariantEnvironmentCache
-from FslBuildGen.BuildConfig import NinjaBuildFileEncoding, NinjaCommandLine
+from FslBuildGen.BuildConfig import NinjaBuildFileEncoding, NinjaCommandLine, TidyIncludePaths
 from FslBuildGen.BuildConfig.BuildUtil import BuildUtil
 from FslBuildGen.BuildConfig.ClangExeInfo import ClangExeInfo
 from FslBuildGen.BuildConfig.ClangTidyConfiguration import ClangTidyConfiguration
@@ -62,7 +62,7 @@ from FslBuildGen.BuildConfig.UserSetVariables import UserSetVariables
 from FslBuildGen.BuildExternal.PackageRecipeResultManager import PackageRecipeResultManager
 from FslBuildGen.Config import Config
 from FslBuildGen.Context.GeneratorContext import GeneratorContext
-from FslBuildGen.DataTypes import ClangTidyProfile, IncludePriority, VariantType
+from FslBuildGen.DataTypes import ClangTidyProfile, VariantType
 
 # from FslBuildGen.Exceptions import AggregateException
 from FslBuildGen.Exceptions import ExitException
@@ -72,10 +72,8 @@ from FslBuildGen.Generator.GeneratorCMakeConfig import GeneratorCMakeConfig
 from FslBuildGen.Generator.GeneratorConfig import GeneratorConfig
 from FslBuildGen.Generator.GeneratorPlugin import GenerateContext
 from FslBuildGen.Generator.PluginConfig import GeneratorPluginTidy
-from FslBuildGen.Generator.Report.GeneratorVariableReport import GeneratorVariableReport
 from FslBuildGen.Generator.Report.PackageGeneratorReport import PackageGeneratorReport
 from FslBuildGen.Generator.Report.ParsedFormatString import ParsedFormatString
-from FslBuildGen.Generator.Report.ReportVariableFormatter import ReportVariableFormatter
 from FslBuildGen.Generator.Report.StringVariableDict import StringVariableDict
 from FslBuildGen.Location.ResolvedPath import ResolvedPath
 from FslBuildGen.Log import Log
@@ -95,8 +93,6 @@ class MagicValues:
     ClangTidyApplyReplacements = "clang-apply-replacements"
     NinjaCommand = "ninja"
 
-    SystemIncludeBaseIndex = 50000000
-
 
 class LocalVariantInfo:
     def __init__(self, resolvedVariantSettingsDict: dict[str, str], generatorReportDict: dict[Package, PackageGeneratorReport], pythonScriptRoot: str) -> None:
@@ -104,12 +100,6 @@ class LocalVariantInfo:
         self.ResolvedVariantSettingsDict = resolvedVariantSettingsDict
         self.GeneratorReportDict = generatorReportDict
         self.PythonScriptRoot = pythonScriptRoot
-
-
-class UniqueIncludeRecord:
-    def __init__(self, includeDir: PackageIncludeDir, index: int) -> None:
-        self.IncludeDir = includeDir
-        self.Index = index
 
 
 def __TryGetEnvironmentVariable(virtualVariantEnvironmentCache: VirtualVariantEnvironmentCache, envVariable: str) -> str:
@@ -337,8 +327,11 @@ class TidyPackageConfig:
         self.IncludePaths = _BuildClangTidyPackageIncludePaths(log, localVariantInfo, virtualVariantEnvironmentCache, package)
         self.PackageDefineCommands = _BuildClangTidyPackageDefines(log, localVariantInfo, package)
 
+        # The include paths are not sorted: their order decides which of two headers with the same name is used. They are in the
+        # order the package resolved them in (its own include directory, then the other ones by name), which is the same from run
+        # to run. See TidyIncludePaths for how they are combined with the ones of the compile command and which ones are system
+        # directories.
         self.AllFiles.sort(key=lambda s: s.ResolvedPath.upper())
-        self.IncludePaths.sort(key=lambda s: s.Name.upper())
         self.PackageDefineCommands.sort()
 
 
@@ -456,11 +449,17 @@ class LocalTidyHelper:
 
 
 class ExtractedPackageConfiguration:
-    def __init__(self, defines: list[str], includes: list[PackageIncludeDir], systemIncludes: list[PackageIncludeDir]) -> None:
+    """What the compile commands cmake wrote say about a package"""
+
+    def __init__(self, defines: list[str], includes: list[str], systemIncludes: list[str], knownSystemIncludeKeys: frozenset[str]) -> None:
         super().__init__()
+        # The defines of the commands that the package does not have itself, sorted
         self.Defines = defines
+        # The directories the commands of the package pass as '-I' and as '-isystem', each once, in the order of the commands
         self.Includes = includes
         self.SystemIncludes = systemIncludes
+        # Every directory the command of any package passes as '-isystem' (TidyIncludePaths.ToKey), for a package without commands
+        self.KnownSystemIncludeKeys = knownSystemIncludeKeys
 
 
 class CMakeHelper:
@@ -572,11 +571,11 @@ class CMakeHelper:
         )
 
         log.LogPrint("Determining build configurations for each package")
-        return CMakeHelper.__DeterminePackageBuildConfiguration(log, allPackages, compilerCommands, localVariantInfo)
+        return CMakeHelper.__DeterminePackageBuildConfiguration(log, allPackages, compilerCommands)
 
     @staticmethod
     def __DeterminePackageBuildConfiguration(
-        log: Log, allPackages: list[Package], compilerCommands: list[CMakeCompileCommandsRecord], localVariantInfo: LocalVariantInfo
+        log: Log, allPackages: list[Package], compilerCommands: list[CMakeCompileCommandsRecord]
     ) -> dict[str, ExtractedPackageConfiguration]:
         # During cmake generation in tidy mode we add a define: FSLPACKAGENAME__PACKAGE_NAME which is used to identify the package the compile command belongs to
         # This is used here to group commands based on package names instead
@@ -589,9 +588,12 @@ class CMakeHelper:
                 raise Exception(f"Duplicated configuration for file '{command.File}' in package '{command.PackageName}'")
             fileToCommandDict[command.File] = command
 
+        # A directory that is a system directory for one package is one for every package (the include directory of an external
+        # library): a package without a compile command of its own is told by this
+        knownSystemIncludeKeys = TidyIncludePaths.ToKeys([includeDir.Name for command in compilerCommands for includeDir in command.SystemIncludes])
+
         # foreach package we lookup the compiler flags for all its source files,
         # we then merge this information to generate the package configuration
-        emptyVariableReport = GeneratorVariableReport()
         packageConfigurationDict: dict[str, ExtractedPackageConfiguration] = {}
         for package in allPackages:
             if not package.IsVirtual:
@@ -605,26 +607,8 @@ class CMakeHelper:
                     if defineCommand not in uniquePackagesDefines:
                         uniquePackagesDefines[defineCommand] = False
 
-                # A dict of all the package includes, the value is negative if the define belongs to the package definition, positive to to indicate its from the compiler commands
-                # positive values can also be used to sorting the list so the include order can be restored!
-                uniquePackageIncludes: dict[str, UniqueIncludeRecord] = {}
-                if package.ResolvedBuildAllIncludeDirs is not None:
-                    variableReport = (
-                        localVariantInfo.GeneratorReportDict[package].VariableReport if package in localVariantInfo.GeneratorReportDict else emptyVariableReport
-                    )
-                    if package.AbsoluteSourcePath is not None:
-                        uniquePackageIncludes[package.AbsoluteSourcePath] = UniqueIncludeRecord(
-                            PackageIncludeDir(package.AbsoluteSourcePath, IncludePriority.After), -1
-                        )
-                    for includeDir in package.ResolvedBuildAllIncludeDirs:
-                        # expand and normalize the include paths
-                        includeDirName = IOUtil.NormalizePath(
-                            ReportVariableFormatter.Format2(includeDir.Name, variableReport, localVariantInfo.ResolvedVariantSettingsDict)
-                        )
-                        if not IOUtil.IsAbsolutePath(includeDirName):
-                            includeDirName = IOUtil.Join(package.AbsolutePath, includeDirName)
-                        if includeDirName not in uniquePackageIncludes:
-                            uniquePackageIncludes[includeDirName] = UniqueIncludeRecord(includeDir, -1)
+                # The include directories of the compile commands of the package, in the order of the commands (see TidyIncludePaths)
+                commandIncludeDirs = TidyIncludePaths.CommandIncludeDirs()
 
                 if (
                     package.NameInfo.FullName.Value in packageToCommandsDict
@@ -645,31 +629,18 @@ class CMakeHelper:
                             for newDefine in command.Defines:
                                 if newDefine not in uniquePackagesDefines:
                                     uniquePackagesDefines[newDefine] = True
-                            # merge includes
-                            for index, newIncludeDir in enumerate(command.Includes):
-                                if newIncludeDir.Name not in uniquePackageIncludes:
-                                    if index >= MagicValues.SystemIncludeBaseIndex:
-                                        raise Exception("Unsupported")
-                                    uniquePackageIncludes[newIncludeDir.Name] = UniqueIncludeRecord(newIncludeDir, index)
-                            # merge system includes
-                            for index, newIncludeDir in enumerate(command.SystemIncludes):
-                                if newIncludeDir.Name not in uniquePackageIncludes:
-                                    uniquePackageIncludes[newIncludeDir.Name] = UniqueIncludeRecord(newIncludeDir, MagicValues.SystemIncludeBaseIndex + index)
+                            # merge the include directories
+                            commandIncludeDirs.AddCommand(
+                                [includeDir.Name for includeDir in command.Includes], [includeDir.Name for includeDir in command.SystemIncludes]
+                            )
 
                 # Sorted like the defines of the package: the build file must be the same from run to run, a changed command line makes
-                # ninja run the command again
+                # ninja run the command again. The include directories keep the order of the compile command, which is the same from
+                # run to run as well: the order decides which of two headers with the same name is used.
                 newPackageDefines = sorted(defineName for defineName, isNew in uniquePackagesDefines.items() if isNew)
-                newIncludes = []
-                newSystemIncludes = []
-                for _newInclude, includeRecord in uniquePackageIncludes.items():
-                    if includeRecord.Index >= 0:
-                        if includeRecord.Index <= MagicValues.SystemIncludeBaseIndex:
-                            newIncludes.append(includeRecord.IncludeDir)
-                        else:
-                            newSystemIncludes.append(includeRecord.IncludeDir)
-                newIncludes.sort(key=lambda s: s.Name.lower())
-                newSystemIncludes.sort(key=lambda s: s.Name.lower())
-                packageConfigurationDict[package.NameInfo.FullName.Value] = ExtractedPackageConfiguration(newPackageDefines, newIncludes, newSystemIncludes)
+                packageConfigurationDict[package.NameInfo.FullName.Value] = ExtractedPackageConfiguration(
+                    newPackageDefines, commandIncludeDirs.Includes, commandIncludeDirs.SystemIncludes, knownSystemIncludeKeys
+                )
         return packageConfigurationDict
 
     @staticmethod
@@ -1218,23 +1189,30 @@ class PerformClangTidyHelper:
             log, package, filteredFiles, performClangTidyConfig.ClangTidyConfiguration, localVariantInfo, virtualVariantEnvironmentCache
         )
         packageDefines = tidyPackageConfig.PackageDefineCommands
-        packageIncludePaths = tidyPackageConfig.IncludePaths
+        packageIncludePaths = [includePath.Name for includePath in tidyPackageConfig.IncludePaths]
+        commandIncludes: list[str] = []
+        commandSystemIncludes: list[str] = []
+        knownSystemIncludeKeys: frozenset[str] = frozenset()
 
         # If there is a build configuration for the package we apply it
         if package.NameInfo.FullName.Value in packageBuildConfigDict:
             packageBuildConfig = packageBuildConfigDict[package.NameInfo.FullName.Value]
             if len(packageBuildConfig.Defines) > 0:
                 packageDefines += packageBuildConfig.Defines
-            if len(packageBuildConfig.Includes) > 0:
-                packageIncludePaths += packageBuildConfig.Includes
-            if len(packageBuildConfig.SystemIncludes) > 0:
-                packageIncludePaths += packageBuildConfig.SystemIncludes
+            commandIncludes = packageBuildConfig.Includes
+            commandSystemIncludes = packageBuildConfig.SystemIncludes
+            knownSystemIncludeKeys = packageBuildConfig.KnownSystemIncludeKeys
+
+        # A directory of the project is a '-I', a third-party one a '-isystem' (also when the build passes it as a '-I'), each in the
+        # order of the compile command of the build
+        projectDirectoryKeys = TidyIncludePaths.ToKeys(TidyIncludePaths.GetProjectDirectoriesOf(package))
+        includeDirs = TidyIncludePaths.Arrange(packageIncludePaths, commandIncludes, commandSystemIncludes, knownSystemIncludeKeys, projectDirectoryKeys)
 
         variables = {}
         variables[PerformClangTidyHelper.VAR_PACKAGE_DEFINES] = _AddCmdToEachEntry("-D", packageDefines)
-        variables[PerformClangTidyHelper.VAR_INCLUDES] = _AddCmdToEachEntry("-I", [f'"{includePath.Name}"' for includePath in packageIncludePaths])
+        variables[PerformClangTidyHelper.VAR_INCLUDES] = _AddCmdToEachEntry("-I", [f'"{includePath}"' for includePath in includeDirs.Includes])
         variables[PerformClangTidyHelper.VAR_SYSTEM_INCLUDES] = _AddCmdToEachEntry(
-            "-isystem ", [f'"{includePath.Name}"' for includePath in packageIncludePaths]
+            "-isystem ", [f'"{includePath}"' for includePath in includeDirs.SystemIncludes]
         )
 
         # //build cmake_object_order_depends_target_FslGraphics: phony || cmake_object_order_depends_target_FslBase

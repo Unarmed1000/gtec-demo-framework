@@ -367,7 +367,7 @@ class PackageResolver:
                 # The package the tool placed in front of a root to hold the flavors the user asked for: the user knows the root and what he
                 # asked for, not this package
                 requested = unresolvedPackage.DirectDependencies[0]
-                raise PackageHasNoValidFlavorCombinationException(requested.Name, [], requested.FlavorConstraints.Description)
+                raise PackageHasNoValidFlavorCombinationException(requested.Name, [], self.__DescribeRequestedFlavors(requested))
             raise PackageHasNoValidFlavorCombinationException(unresolvedPackage.Name, PackageResolver.__DescribeDependencyConstraints(unresolvedPackage))
 
         if len(instanceConfigs) <= 0:
@@ -440,3 +440,18 @@ class PackageResolver:
             if entry.Name == entryName:
                 return i
         return -1
+
+    def __DescribeRequestedFlavors(self, requested: UnresolvedPackageDependency) -> str:
+        """The flavor options the user asked for that say something about the requested package: the ones of its own flavors and of
+        the flavors of the packages it depends on. What the user asked for is placed in front of every requested package, so it also
+        holds the flavors only another requested package has. Those decide nothing here and are not listed.
+        """
+        record = self.__PackageTemplateDict.get(requested.Name.Value)
+        if record is None:
+            return requested.FlavorConstraints.Description
+        # Every flavor that takes part in the package is selected by each of its instances
+        flavorNames = {selection.Name for instanceConfig in record.PackageTemplate.InstanceConfigs for selection in instanceConfig.FlavorSelections.Selections}
+        selections = [selection for selection in requested.FlavorConstraints.Selections if selection.Name in flavorNames]
+        if len(selections) <= 0:
+            return requested.FlavorConstraints.Description
+        return PackageFlavorSelections(selections).Description

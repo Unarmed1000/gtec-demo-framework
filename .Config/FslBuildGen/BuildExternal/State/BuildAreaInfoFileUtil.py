@@ -76,7 +76,12 @@ class BuildAreaInfoFileUtil:
         jsonBuildInfoDict: JsonDictType = {}
         try:
             # The file is written as UTF-8, a file that an older version wrote in the locale encoding still loads
-            fileContent = TextFileReader.TryReadUTF8OrLocale(log, filePath, "install area claim file", skipBom=True, warn=False)
+            fileContent = TextFileReader.TryReadUTF8OrLocaleIfExists(log, filePath, "install area claim file", skipBom=True, warn=False)
+        except OSError as ex:
+            # A claim file that is there and can not be read does not make the area unclaimed: who it belongs to is not known
+            raise Exception(
+                f"The install area claim file '{filePath}' can not be read ({ex}), so it is not known which sdk the install area '{targetPath}' belongs to"
+            ) from ex
         except UsageErrorException as ex:
             # A claim file that can not be decoded does not make the area unclaimed, it is an invalid claim file (the empty dict)
             log.LogPrint(str(ex))

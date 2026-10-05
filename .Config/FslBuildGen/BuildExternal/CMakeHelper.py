@@ -35,6 +35,7 @@ from FslBuildGen import IOUtil, PackageConfig
 from FslBuildGen.AndroidUtil import AndroidUtil
 from FslBuildGen.BuildConfig.BuildVariables import BuildVariables
 from FslBuildGen.BuildConfig.UserSetVariables import UserSetVariables
+from FslBuildGen.BuildExternal import CMakeGeneratorKind
 from FslBuildGen.BuildExternal.CMakeTypes import CMakeGeneratorMultiConfigCapability, CMakeGeneratorName
 from FslBuildGen.DataTypes import BuildPlatformType
 from FslBuildGen.Log import Log
@@ -209,18 +210,5 @@ def GetNativeBuildThreadArguments(cmakeGeneratorName: str, numBuildThreads: int)
 
 
 def GetGeneratorMultiConfigCapabilities(cmakeGeneratorName: str) -> CMakeGeneratorMultiConfigCapability:
-    """
-    Hardcode some knowledge about certain generators to avoid cmake warnings
-    """
-    if cmakeGeneratorName == CMakeGeneratorName.UnixMakeFile or cmakeGeneratorName == CMakeGeneratorName.Ninja:
-        return CMakeGeneratorMultiConfigCapability.No
-    elif (
-        cmakeGeneratorName == CMakeGeneratorName.VisualStudio2015_X64
-        or cmakeGeneratorName == CMakeGeneratorName.VisualStudio2017_X64
-        or cmakeGeneratorName == CMakeGeneratorName.VisualStudio2019_X64
-        or cmakeGeneratorName == CMakeGeneratorName.VisualStudio2022_X64
-        or cmakeGeneratorName == CMakeGeneratorName.VisualStudio2026_X64
-    ):
-        return CMakeGeneratorMultiConfigCapability.Yes
-    # Since we dont know, we just return false
-    return CMakeGeneratorMultiConfigCapability.Unknown
+    """What the tool knows about the generator, see CMakeGeneratorKind for the names and for what 'Unknown' means to the commands"""
+    return CMakeGeneratorKind.GetMultiConfigCapability(cmakeGeneratorName)

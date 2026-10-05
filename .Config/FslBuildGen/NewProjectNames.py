@@ -23,6 +23,7 @@
 
 # The names FslBuildNew works with.
 #
+# - What the name of a new package may be: what a gen file can name a package.
 # - The name of the package the template sanity check creates for a template. It comes from the name of the template, which is the name of a
 #   directory and can hold what a package name can not ('GLES2-UI', 'My Template', 'Lib.Old').
 # - The package names a new package can not have: the names of the packages that are there, but not the one of the package in the directory
@@ -32,10 +33,23 @@ import os
 import re
 from collections.abc import Iterable, Sequence
 
+from FslBuildGen import Util
 from FslBuildGen.Packages.Package import Package
 
 # What a package name does not hold between two of its letters and digits, apart from one '_' ('__' is reserved for the tool)
 _g_notLettersOrDigits = re.compile(r"[^A-Za-z0-9]+")
+
+
+# What a package name may be, for the message about a name that is none
+PackageNameRules = (
+    "a name is made of letters (a-z, A-Z), digits and '_', it starts with a letter, ends with a letter or a digit and has no '__'. "
+    "A '.' separates the parts of a name, each part follows these rules"
+)
+
+
+def IsValidPackageName(name: str) -> bool:
+    """True if a gen file can name a package like this: it is what the loader accepts as the name of a package (XmlBase2._ValidateName)"""
+    return Util.IsValidUnresolvedPackageName(name)
 
 
 def ToPackageNamePart(text: str) -> str:

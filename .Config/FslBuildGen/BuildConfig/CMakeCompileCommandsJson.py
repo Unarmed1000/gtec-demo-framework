@@ -169,7 +169,8 @@ class CMakeCompileCommandsJson:
                 if parseState == ParseState.Skip:
                     parseState = ParseState.Normal
                 elif parseState == ParseState.SystemInclude:
-                    systemIncludes.append(PackageIncludeDir(command, IncludePriority.Before))
+                    # Normalized like the '-I' paths, so a directory is the same text whichever way it is passed
+                    systemIncludes.append(PackageIncludeDir(IOUtil.NormalizePath(command), IncludePriority.Before))
                     parseState = ParseState.Normal
                 else:
                     if command.startswith("-D"):

@@ -35,7 +35,6 @@ import difflib
 import os
 
 # import subprocess
-import re
 import shutil
 from collections.abc import Iterable
 
@@ -245,12 +244,18 @@ class LocalConfig:
     def ValidateProjectName(self, projectName: str) -> None:
         if len(projectName) < 1:
             raise ArgumentError("A project name needs to contain atleast one character")
-        if re.match("[a-zA-Z0-9_]", projectName) is None:
-            raise ArgumentError(f"A project name can only contain alpha numeric characters, digits and underscores '{projectName}'")
-        if not projectName[0].isalpha():
-            raise ArgumentError(f"A project name needs to start with a alpha character '{projectName}'")
+        # The whole name is checked, before anything is written: it is the directory of the package and the last part of its name.
+        # A package with a name the tool can not load stops every run in the project until its directory is removed.
+        if not NewProjectNames.IsValidPackageName(projectName):
+            raise ArgumentError(f"The project name '{projectName}' can not be the name of a package: {NewProjectNames.PackageNameRules}")
 
     def ValidatePackageName(self, packageName: str, reservedProjectNames: Iterable[str]) -> None:
+        # The directories between the package root and the new package are part of its name
+        if not NewProjectNames.IsValidPackageName(packageName):
+            raise ArgumentError(
+                f"The package would be named '{packageName}' after the directories it is in, which can not be the name of a package: "
+                f"{NewProjectNames.PackageNameRules}"
+            )
         if packageName in reservedProjectNames:
             raise ArgumentError(f"The given package name '{packageName}' is reserved")
 
@@ -558,6 +563,11 @@ class ToolFlowBuildNew(AToolAppFlow):
 
         isBuilding = False
         try:
+            if not debugMode:
+                # What an earlier run left: a debug run keeps its packages and a run that was stopped could not remove them. The
+                # check creates every package itself and removes it when it is done, so it starts without them.
+                self.__RemoveSanityProjects(currentDir, projectNames, templateList)
+
             for currentTemplateName in templateList:
                 if currentTemplateName == "*" or currentTemplateName.startswith("/") or ".." in currentTemplateName:
                     raise Exception("Usage error")
@@ -589,12 +599,7 @@ class ToolFlowBuildNew(AToolAppFlow):
             raise
         finally:
             if not debugMode:
-                for currentTemplateName in templateList:
-                    if currentTemplateName == "*" or currentTemplateName.startswith("/") or ".." in currentTemplateName:
-                        raise Exception("Usage error")
-                    projectDir = IOUtil.Join(currentDir, projectNames[currentTemplateName])
-                    if IOUtil.IsDirectory(projectDir):
-                        shutil.rmtree(projectDir)
+                self.__RemoveSanityProjects(currentDir, projectNames, templateList)
 
             # try:
             #    if debugMode:
@@ -613,6 +618,15 @@ class ToolFlowBuildNew(AToolAppFlow):
             #        projectDir = IOUtil.Join(currentDir, localToolConfig.ProjectName)
             #        if IOUtil.IsDirectory(projectDir):
             #            shutil.rmtree(projectDir)
+
+    def __RemoveSanityProjects(self, currentDir: str, projectNames: dict[str, str], templateList: list[str]) -> None:
+        """Remove the packages of the sanity check for the templates from its work directory"""
+        for currentTemplateName in templateList:
+            if currentTemplateName == "*" or currentTemplateName.startswith("/") or ".." in currentTemplateName:
+                raise Exception("Usage error")
+            projectDir = IOUtil.Join(currentDir, projectNames[currentTemplateName])
+            if IOUtil.IsDirectory(projectDir):
+                shutil.rmtree(projectDir)
 
     def __ToolMainSanityCheck(
         self,
@@ -636,14 +650,14 @@ class ToolFlowBuildNew(AToolAppFlow):
         if localToolConfig.Template != "*":
             self.__RunToolMainForSanityCheck(currentDir, toolConfig, localToolConfig, templateDict, debugMode, [localToolConfig.Template])
         else:
-            sortedLanguages = list(templateDict.keys())
-            sortedLanguages.sort(key=lambda s: s.lower())
-
-            for language in sortedLanguages:
-                sortedTemplateEntries = list(templateDict[language])
-                sortedTemplateEntries.sort(key=lambda s: s.Id.lower())
-                allTemplates = [templateEntry.Name for templateEntry in sortedTemplateEntries]
-                self.__RunToolMainForSanityCheck(currentDir, toolConfig, localToolConfig, templateDict, debugMode, allTemplates)
+            # Every template of the language of the run ('--Language'). A package is created from a template of that language, so
+            # the templates of another language are not part of this check: a run with that language checks them.
+            if localToolConfig.Language not in templateDict:
+                raise UnknownTemplateException(f"There are no templates for the language '{localToolConfig.Language}'")
+            sortedTemplateEntries = list(templateDict[localToolConfig.Language])
+            sortedTemplateEntries.sort(key=lambda s: s.Id.lower())
+            allTemplates = [templateEntry.Name for templateEntry in sortedTemplateEntries]
+            self.__RunToolMainForSanityCheck(currentDir, toolConfig, localToolConfig, templateDict, debugMode, allTemplates)
 
 
 def TryFind(templates: list[XmlNewTemplateFile], newEntry: XmlNewTemplateFile) -> XmlNewTemplateFile | None:
@@ -743,7 +757,7 @@ class ToolAppFlowFactory(AToolAppFlowFactory):
         parser.add_argument(
             "--SanityCheck",
             default=DefaultValue.SanityCheck,
-            help="off = disabled, on=enabled, debug=enabled, leave files behind. Combine this with a project name of '*' to start a template sanity check. If the template is set to '*' all templates are sanity checked",
+            help="off = disabled, on=enabled, debug=enabled, leave files behind. Combine this with a project name of '*' to start a template sanity check. If the template is set to '*' all templates of the language are sanity checked",
         )
         parser.add_argument("--List", action="store_true", help="List all available templates and exit (this ignores the template and projectName)")
 
