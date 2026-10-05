@@ -640,7 +640,11 @@ namespace Fsl
     pipelineCreateInfo.layout = m_pipelineLayout.Get();
     pipelineCreateInfo.renderPass = m_renderPass.Get();
 
-    pipelineCreateInfo.pVertexInputState = &m_vertices.InputState;
+    // A pipeline declares the vertex attributes its vertex shader reads. The attributes are position, normal and texture coordinate
+    // in that order: the skybox shader reads the position, the reflect shader the position and the normal.
+    VkPipelineVertexInputStateCreateInfo vertexInputState = m_vertices.InputState;
+    vertexInputState.vertexAttributeDescriptionCount = 1;
+    pipelineCreateInfo.pVertexInputState = &vertexInputState;
     pipelineCreateInfo.pInputAssemblyState = &inputAssemblyState;
     pipelineCreateInfo.pRasterizationState = &rasterizationState;
     pipelineCreateInfo.pColorBlendState = &colorBlendState;
@@ -661,6 +665,7 @@ namespace Fsl
     depthStencilState.depthTestEnable = VK_TRUE;
     // Flip cull mode
     rasterizationState.cullMode = VK_CULL_MODE_FRONT_BIT;
+    vertexInputState.vertexAttributeDescriptionCount = 2;
 
     m_pipelines.Reflect.Reset(m_device.Get(), m_pipelineCache.Get(), pipelineCreateInfo);
   }

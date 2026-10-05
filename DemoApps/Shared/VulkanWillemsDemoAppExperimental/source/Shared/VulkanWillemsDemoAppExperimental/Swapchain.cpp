@@ -12,6 +12,7 @@
 // This class simulates the functionality found in VulkanExampleBase to make it easier
 // to port samples.
 
+#include <FslBase/Exceptions.hpp>
 #include <FslBase/Log/Log3Fmt.hpp>
 #include <FslBase/Span/SpanUtil_Vector.hpp>
 #include <FslUtil/Vulkan1_0/DebugStrings.hpp>
@@ -69,10 +70,10 @@ namespace Fsl::Willems
 
 
   Swapchain::Swapchain(const VkPhysicalDevice physicalDevice, const VkDevice device, const VkSurfaceKHR surface, const PxExtent2D& extentPx,
-                       const bool enableVSync)
+                       const bool enableVSync, const bool declarePresentMode)
     : Swapchain()
   {
-    Reset(physicalDevice, device, surface, extentPx, enableVSync);
+    Reset(physicalDevice, device, surface, extentPx, enableVSync, declarePresentMode);
   }
 
 
@@ -97,7 +98,7 @@ namespace Fsl::Willems
 
 
   void Swapchain::Reset(const VkPhysicalDevice physicalDevice, const VkDevice device, const VkSurfaceKHR surface, const PxExtent2D& extentPx,
-                        const bool enableVSync)
+                        const bool enableVSync, const bool declarePresentMode)
   {
     try
     {
@@ -197,7 +198,31 @@ namespace Fsl::Willems
       m_createInfo.clipped = VK_TRUE;
       m_createInfo.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
 
+#if defined(VK_KHR_swapchain_maintenance1) || defined(VK_EXT_swapchain_maintenance1)
+      // The one present mode the swapchain is created with, declared the way the swapchain maintenance1 extension asks for
+#if defined(VK_KHR_swapchain_maintenance1)
+      VkSwapchainPresentModesCreateInfoKHR presentModesCreateInfo{};
+      presentModesCreateInfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_PRESENT_MODES_CREATE_INFO_KHR;
+#else
+      VkSwapchainPresentModesCreateInfoEXT presentModesCreateInfo{};
+      presentModesCreateInfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_PRESENT_MODES_CREATE_INFO_EXT;
+#endif
+      if (declarePresentMode)
+      {
+        presentModesCreateInfo.presentModeCount = 1;
+        presentModesCreateInfo.pPresentModes = &m_createInfo.presentMode;
+        m_createInfo.pNext = &presentModesCreateInfo;
+      }
+#else
+      if (declarePresentMode)
+      {
+        throw NotSupportedException("The Vulkan headers do not have the swapchain maintenance1 extension");
+      }
+#endif
+
       m_swapchain.Reset(device, m_createInfo);
+      // The create info is kept, and what was chained to it is gone when this method returns
+      m_createInfo.pNext = nullptr;
 
       // Clear the handle since it is now invalid
       m_createInfo.oldSwapchain = VK_NULL_HANDLE;

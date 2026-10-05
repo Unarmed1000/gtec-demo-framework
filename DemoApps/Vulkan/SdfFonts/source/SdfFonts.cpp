@@ -136,7 +136,7 @@ namespace Fsl
       // Example uses one image sampler
       std::array<VkDescriptorPoolSize, 1> poolSizes{};
       poolSizes[0].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-      poolSizes[0].descriptorCount = 1;
+      poolSizes[0].descriptorCount = 3 * count;    // each of the sets below has one combined image sampler
 
       VkDescriptorPoolCreateInfo descriptorPoolInfo{};
       descriptorPoolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;

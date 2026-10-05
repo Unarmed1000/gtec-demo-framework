@@ -435,6 +435,12 @@ namespace Fsl
       subpassDependency[0].dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
       subpassDependency[0].dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
       subpassDependency[0].dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
+      // The depth attachment is transitioned and cleared when the render pass begins, so the dependency has to cover the depth stages
+      // too. The depth image is shared with the main render pass, which wrote to it at the end of the previous frame.
+      subpassDependency[0].srcStageMask |= VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT | VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT;
+      subpassDependency[0].srcAccessMask |= VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+      subpassDependency[0].dstStageMask |= VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT | VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT;
+      subpassDependency[0].dstAccessMask |= VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
 
       // output
       subpassDependency[1].srcSubpass = 0;
@@ -657,6 +663,11 @@ namespace Fsl
       m_resources.MainPipelineLayout, offscreenExtent, m_resources.MainProgramInfo.VertexShaderModule.Get(),
       m_resources.MainProgramInfo.FragmentShaderModule.Get(), m_resources.CubeVertexBufferInfo, m_dependentResources.Offscreen.RP.Get(), 0);
 
+    // The scene is also drawn in the main render pass, which takes a pipeline of its own (the viewport and the scissor are dynamic)
+    m_dependentResources.MainScenePipeline = CreateScenePipeline(
+      m_resources.MainPipelineLayout, context.SwapchainImageExtent, m_resources.MainProgramInfo.VertexShaderModule.Get(),
+      m_resources.MainProgramInfo.FragmentShaderModule.Get(), m_resources.CubeVertexBufferInfo, m_dependentResources.MainRenderPass.Get(), 0);
+
     m_dependentResources.PipelineEffectBottom = CreatePipeline(m_resources.EffectBottomPipelineLayout, context.SwapchainImageExtent,
                                                                m_resources.EffectVertexShader.Get(), m_resources.EffectFragmentShaderBottom.Get(),
                                                                m_resources.DoubleQuadVertexBufferInfo, m_dependentResources.MainRenderPass.Get(), 0);
@@ -713,17 +724,17 @@ namespace Fsl
       scissor.extent = m_dependentResources.Offscreen.Extent;
       vkCmdSetScissor(hCmdBuffer, 0, 1, &scissor);
 
-      DrawSceneToCommandBuffer(m_resources.MainFrameResources[currentFrameIndex], hCmdBuffer);
+      DrawSceneToCommandBuffer(m_resources.MainFrameResources[currentFrameIndex], hCmdBuffer, m_dependentResources.ScenePipeline.Get());
     }
     rCmdBuffers.CmdEndRenderPass(currentFrameIndex);
   }
 
 
-  void EffectOffscreen::DrawSceneToCommandBuffer(const FrameResources& frame, const VkCommandBuffer commandBuffer)
+  void EffectOffscreen::DrawSceneToCommandBuffer(const FrameResources& frame, const VkCommandBuffer commandBuffer, const VkPipeline scenePipeline)
   {
     vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_resources.MainPipelineLayout.Get(), 0, 1, &frame.DescriptorSetScene, 0,
                             nullptr);
-    vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_dependentResources.ScenePipeline.Get());
+    vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, scenePipeline);
 
     DrawCube(frame, commandBuffer, m_resources.MainProgramInfo, m_matModel);
   }
@@ -749,7 +760,7 @@ namespace Fsl
       scissor.extent = {extent.width, static_cast<uint32_t>(static_cast<float>(extent.height) * (0.5f + (0.5f * BottomHalfSplitPercentage)))};
       vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
 
-      DrawSceneToCommandBuffer(frame, commandBuffer);
+      DrawSceneToCommandBuffer(frame, commandBuffer, m_dependentResources.MainScenePipeline.Get());
     }
 
     {    // Bottom water part

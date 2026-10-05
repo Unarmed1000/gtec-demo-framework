@@ -678,10 +678,14 @@ namespace Fsl
   {
     m_dependentResources.MainRenderPass = CreateBasicRenderPass();
 
+    // The textured shader reads the position and the texture coordinate, which are the first two attributes of the plane mesh. Its
+    // normal is not declared to the pipeline.
+    const std::array<VkVertexInputAttributeDescription, 2> planeVertexAttributeDescription = {m_resources.MeshPlane.VertexAttributeDescription[0],
+                                                                                              m_resources.MeshPlane.VertexAttributeDescription[1]};
     m_dependentResources.PlanePipeline =
       CreatePipeline(m_resources.PlanePipelineLayout, context.SwapchainImageExtent, m_resources.ProgramTextured.VertShaderModule.Get(),
                      m_resources.ProgramTextured.FragShaderModule.Get(), m_resources.MeshPlane.VertexInputBindingDescription,
-                     m_resources.MeshPlane.VertexAttributeDescription, m_dependentResources.MainRenderPass.Get(), 0);
+                     planeVertexAttributeDescription, m_dependentResources.MainRenderPass.Get(), 0);
 
     // assert(m_resources.Meshes.size() == 3u);
     // assert(m_resources.Meshes[1].VertexInputBindingDescription == m_resources.Meshes[0].VertexInputBindingDescription);

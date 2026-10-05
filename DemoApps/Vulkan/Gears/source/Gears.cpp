@@ -86,7 +86,7 @@ namespace Fsl
     {
       std::array<VkDescriptorPoolSize, 1> poolSizes{};
       poolSizes[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-      poolSizes[0].descriptorCount = count;
+      poolSizes[0].descriptorCount = count * 3;    // each of the sets below has one uniform buffer
 
       VkDescriptorPoolCreateInfo descriptorPoolInfo{};
       descriptorPoolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;

@@ -421,7 +421,7 @@ namespace Fsl
     void VulkanWillemsDemoApp::SetupSwapchain()
     {
       const auto screenExtent = GetScreenExtent();
-      m_swapchain.Reset(m_physicalDevice.Device, m_device.Get(), m_surface, screenExtent, m_enableVSync);
+      m_swapchain.Reset(m_physicalDevice.Device, m_device.Get(), m_surface, screenExtent, m_enableVSync, m_swapchainMaintenance1Enabled);
 
       // Create a semaphore per swapchain image used to synchronize command submission
       // Ensures that the image is not presented until all commands have been submitted and executed

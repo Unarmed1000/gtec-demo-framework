@@ -134,7 +134,11 @@ namespace Fsl
     struct DependentResources
     {
       RapidVulkan::RenderPass MainRenderPass;
+      //! The scene pipeline for the offscreen render pass
       RapidVulkan::GraphicsPipeline ScenePipeline;
+      //! The scene pipeline for the main render pass (a pipeline can only be used with a render pass compatible with the one it was
+      //! created for)
+      RapidVulkan::GraphicsPipeline MainScenePipeline;
       RapidVulkan::GraphicsPipeline PipelineEffectBottom;
       OffscreenResources Offscreen;
 
@@ -150,6 +154,7 @@ namespace Fsl
         // Reset in destruction order
         Offscreen.Reset();
         PipelineEffectBottom.Reset();
+        MainScenePipeline.Reset();
         ScenePipeline.Reset();
         MainRenderPass.Reset();
       }
@@ -193,7 +198,7 @@ namespace Fsl
     RapidVulkan::Framebuffer CreateOffscreenFramebuffer(const VkImageView colorImageView, const VkImageView depthImageView,
                                                         const VkRenderPass renderPass, const VkExtent2D& extent);
     void DrawOffscreenRenderpass(RapidVulkan::CommandBuffers& rCmdBuffers, const VulkanBasic::DrawContext& drawContext);
-    void DrawSceneToCommandBuffer(const FrameResources& frame, const VkCommandBuffer commandBuffer);
+    void DrawSceneToCommandBuffer(const FrameResources& frame, const VkCommandBuffer commandBuffer, const VkPipeline scenePipeline);
     void DrawToCommandBuffer(const FrameResources& frame, const VkCommandBuffer commandBuffer, const VkExtent2D& extent);
     void DrawCube(const FrameResources& frame, const VkCommandBuffer commandBuffer, const ProgramInfo& programInfo, const Matrix& matModel);
 

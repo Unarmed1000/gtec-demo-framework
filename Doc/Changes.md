@@ -38,6 +38,13 @@
     * DynamicTerrainTessellation: invalid pipeline statistics query flag.
     * DynamicTerrainTessellation, TessellationPNTriangles: vertex/tessellation shader interface mismatch.
     * Bloom: the scene was drawn to the swapchain with a pipeline created for the offscreen render pass, and the offscreen render pass did not synchronize its use of the shared depth buffer.
+    * Bloom: the post process passes were begun with a clear value for a depth attachment they do not have. AntiAliasing: the same for the resolve attachment when it is not multisampled.
+    * HDR02_FBBasicToneMapping, HDR03_SkyboxToneMapping, HDR04_HDRFramebuffer: the render pass did not synchronize the clear of the depth buffer, the HDR image between its two subpasses and between frames, and the first use of the swapchain image in the tone-mapping subpass.
+    * EffectOffscreen: the scene was drawn to the swapchain with a pipeline created for the offscreen render pass, and the offscreen render pass did not synchronize its use of the shared depth buffer.
+    * VulkanWillemsDemoAppExperimental: the swapchain declares its present mode when swapchain maintenance1 is enabled (ComputeParticles, DisplacementMapping, DynamicTerrainTessellation, MeshInstancing, TessellationPNTriangles, Texturing, TexturingArrays, TexturingCubeMap).
+    * FractalShader, MultipleViewportsFractalShader, GpuTimestamp: the push constant range was larger than what is pushed.
+    * Gears, SdfFonts: the descriptor pool had fewer descriptors than the sets it allows need.
+    * ObjectSelection, TexturingCubeMap: a pipeline declared vertex attributes its vertex shader does not read.
   * The vk_layer_settings.txt files now use the VK_LAYER_KHRONOS_validation settings.
   * IVulkanDeviceCreationCustomizer::Configure now also receives the VkInstance.
 * Experimental RDK Yocto platform support.

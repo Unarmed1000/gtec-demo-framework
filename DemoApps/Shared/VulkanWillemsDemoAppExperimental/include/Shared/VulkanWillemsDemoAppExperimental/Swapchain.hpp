@@ -52,8 +52,10 @@ namespace Fsl::Willems
     Swapchain();
 
     //! @brief Create the requested resource
+    //! @param declarePresentMode pass true when the device has the swapchain maintenance1 extension enabled, the present mode is then
+    //!                           declared to the swapchain the way the extension asks for
     Swapchain(const VkPhysicalDevice physicalDevice, const VkDevice device, const VkSurfaceKHR surface, const PxExtent2D& extentPx,
-              const bool enableVSync);
+              const bool enableVSync, const bool declarePresentMode);
 
     ~Swapchain();
 
@@ -61,8 +63,9 @@ namespace Fsl::Willems
     void Reset() noexcept;
 
     //! @brief Destroys any owned resources and then creates the requested one
+    //! @param declarePresentMode pass true when the device has the swapchain maintenance1 extension enabled (see the constructor)
     void Reset(const VkPhysicalDevice physicalDevice, const VkDevice device, const VkSurfaceKHR surface, const PxExtent2D& extentPx,
-               const bool enableVSync);
+               const bool enableVSync, const bool declarePresentMode);
 
     //! @brief Get the associated resource handle
     [[nodiscard]] VkSwapchainKHR Get() const

@@ -303,7 +303,7 @@ namespace Fsl
 
     m_resources.SceneDescriptorSetLayout = CreateDescriptorSetLayout(device);
     m_resources.DescriptorSet = CreateDescriptorSet(descriptorPool, m_resources.SceneDescriptorSetLayout);
-    m_resources.ScenePipelineLayout = CreatePipelineLayout(m_resources.SceneDescriptorSetLayout, sizeof(float) * 5);
+    m_resources.ScenePipelineLayout = CreatePipelineLayout(m_resources.SceneDescriptorSetLayout, static_cast<uint32_t>(sizeof(PushConstants)));
   }
 
 
