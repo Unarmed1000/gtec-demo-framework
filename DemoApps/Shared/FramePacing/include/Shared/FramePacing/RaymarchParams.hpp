@@ -36,7 +36,8 @@ namespace Fsl
     Hall,
     //! A flight through a field of blobs that melt into each other (sphere traced, cheap steps)
     Blobs,
-    //! A lace of circles packed into circles. Its picture does not change with the load: the load is the samples per pixel.
+    //! A lace of circles packed into circles that the animation zooms into and out of. The load adds rounds of finer circles, and
+    //! samples per pixel.
     Lace
   };
 
@@ -45,8 +46,8 @@ namespace Fsl
   //! phases, so the shader gets small exact values no matter how long the app has been running.
   struct RaymarchParams
   {
-    //! The GPU load (0 = the background is not drawn): the number of steps the shader marches every ray in, and for the lace the
-    //! number of samples it draws every pixel with
+    //! The GPU load (0 = the background is not drawn): the number of steps the shader marches every ray in. For the lace every
+    //! doubling of it is one more round of detail, and the rest of it is the number of samples it draws every pixel with.
     int32_t Steps{0};
     //! The scene that is drawn
     RaymarchScene Scene{RaymarchScene::Flight};

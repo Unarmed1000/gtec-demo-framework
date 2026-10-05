@@ -131,7 +131,7 @@ Hold (radio buttons)          |`--Pacer.Hold <auto\|vsync\|wait\|schedule>`|Vulk
                               |`--Pacer.Profile <late\|early\|off>`|Vulkan only. Where a frame waits for the time the pacer gives for the next frame, see [below](#waiting-for-the-time-of-the-pacer-vulkan). The default is `early`.
                               |`--Pacer.Drain <refreshes>`     |Vulkan only. A wait of that many refreshes, once, half a second after the sample began to wait for the time of the pacer (0 to 32, the default is 4, 0 is none).
 CPU load                      |`--CpuLoad <ms>`                |The time in milliseconds the app spends busy every frame.
-GPU load                      |`--GpuLoad <steps>`             |Draws the background with the given load (0 is no background, the default is a low load of 16). The cost grows linearly with it. It is the number of steps of every ray, more steps reach further; for the lace it is the number of samples of every pixel.
+GPU load                      |`--GpuLoad <steps>`             |Draws the background with the given load (0 is no background, the default is a low load of 16). The cost grows linearly with it. It is the number of steps of every ray, more steps reach further; for the lace every doubling of it adds a round of finer detail and the rest of it is samples per pixel.
 Background                    |`--Background <name>`           |The scene of the background (the radio buttons below the GPU load). `blobs` (the default) is a flight through blobs that melt into each other and `lace` is circles packed into circles: both are cheap at a low load. `flight` is a raymarched flight through a fractal lattice and `hall` a raymarched hall of columns that scrolls sideways at a constant speed, which makes a stutter easy to see: both cost a lot from the first step on.
 Background resolution         |`--BackgroundScale <percent>`   |The resolution the background is drawn at, in percent of the resolution of the window (10-100, the default is 100). Below 100 it is drawn into a smaller picture that is enlarged to the window, so its cost falls with the number of pixels: for a GPU that is limited by the pixels. The UI, the marker and the test pattern stay sharp.
 Measure the presents          |                                |Vulkan only. Measure when the frames reach the display (`VK_EXT_present_timing`), see [below](#what-the-vulkan-sample-measures-about-its-presents). Start with `--VkPresentTiming false` to run without the extension.
@@ -363,8 +363,10 @@ interval after it started, while a FIFO swapchain has a number of presents queue
 The GPU load is the background. It has four scenes, selected with the radio buttons below the GPU load or with `--Background`. `Blobs` (the
 default) and `Lace` are cheap at a low load, so a slow GPU has a load that fits in a frame. `Blobs` is a flight through a field of blobs
 that melt into each other: every ray is sphere traced in a fixed number of cheap steps, and more steps reach further. `Lace` is a lace of
-circles packed into circles drawn with gold threads; its picture does not change with the load, the load is the number of samples every
-pixel is drawn with, so more of it only smooths the edges.
+circles packed into circles drawn with gold threads, which the animation zooms into and out of. Its load adds detail: every doubling of it
+is one more round of finer circles (four rounds at the default load of 16, ten at 1024), and the rest of the load is the number of samples
+every pixel is drawn with, which smooths the edges. The finest rounds are only drawn where they are large enough on the screen, so they
+show when the animation is zoomed in.
 
 The other two are raymarched and cost a lot from the first step on. `Fractal
 flight` is a flight through a fractal lattice of golden spheres over water that mirrors it (a sphere inversion fractal). `Scrolling hall` is
@@ -515,7 +517,7 @@ Column | Unit | Description
 `gpuWorkEndTicks` | ticks | When the GPU finished the frame, on the clock of the framework
 `presentWaitTicks` | durationTicks | How long the sample delayed the present of the frame, to hold it for its swap interval
 `cpuLoadMs` | count | The CPU load setting: the milliseconds the sample is busy per frame
-`gpuLoadSteps` | count | The GPU load setting: the steps of the background (for the lace the samples per pixel)
+`gpuLoadSteps` | count | The GPU load setting: the steps of the background (for the lace the rounds of detail and the samples per pixel come from it)
 `holdMethod` | code | How the frame is held for more than one refresh: 0 the sample sleeps on a timer, 1 it waits on the vsync of the window system, 3 the present has a target time
 `holdTargetTicks` | ticks | The vertical blank the frame was aimed at when it was held by waiting on the vsync
 `presentTargetTicks` | durationTicks | The target time the sample asked for: the frame is not to be shown before this long after the frame before it was shown

@@ -128,15 +128,16 @@ namespace Fsl
     rOptions.emplace_back("CpuLoad", OptionArgument::OptionRequired, CommandId::CpuLoad,
                           "Simulate a CPU load: the time in milliseconds the app spends busy every frame (0 = none, the default).");
     rOptions.emplace_back("GpuLoad", OptionArgument::OptionRequired, CommandId::GpuLoad,
-                          "A GPU load: the number of steps the background takes for every pixel, for the lace the number of samples "
-                          "(0 = no background, the default is a low load of 16).");
+                          "A GPU load: the number of steps the background takes for every pixel; for the lace every doubling adds a "
+                          "round of finer detail and the rest is samples per pixel (0 = no background, the default is a low load of 16).");
     rOptions.emplace_back("BackgroundScale", OptionArgument::OptionRequired, CommandId::BackgroundScale,
                           "The resolution the background is drawn at, in percent of the resolution of the window (10-100, the default "
                           "is 100). Below 100 it is drawn into a smaller picture that is enlarged, for a GPU that is limited by the "
                           "number of pixels.");
     rOptions.emplace_back("Background", OptionArgument::OptionRequired, CommandId::Background,
                           "The scene of the background: blobs (a flight through blobs that melt into each other, cheap at a low load, "
-                          "the default), lace (circles packed into circles, cheap at a low load, the load is the samples per pixel), "
+                          "the default), lace (circles packed into circles that the animation zooms into, cheap at a low load, more "
+                          "load adds finer detail), "
                           "flight (a raymarched flight through a fractal lattice) or hall (a raymarched hall of columns that scrolls "
                           "sideways at a constant speed, which makes a stutter easy to see).");
   }

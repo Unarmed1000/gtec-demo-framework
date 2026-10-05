@@ -1280,7 +1280,8 @@ namespace Fsl
     rColumns.CpuLoad =
       rLog.RegisterColumn("cpuLoadMs", FramePacingLogUnit::Count, "The CPU load setting: the milliseconds the sample is busy per frame");
     rColumns.GpuLoad = rLog.RegisterColumn("gpuLoadSteps", FramePacingLogUnit::Count,
-                                           "The GPU load setting: the steps of the background (for the lace the samples per pixel)");
+                                           "The GPU load setting: the steps of the background (for the lace the rounds of detail and the "
+                                           "samples per pixel come from it)");
     rColumns.PacerFrameId =
       rLog.RegisterColumn("pacerFrameId", FramePacingLogUnit::Id, "The id the frame pacer gave the frame, present feedback is given with it");
     rColumns.NextFrameStart = rLog.RegisterColumn("nextFrameStartTicks", FramePacingLogUnit::Ticks,
