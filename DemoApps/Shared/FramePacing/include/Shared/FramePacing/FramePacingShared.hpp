@@ -319,6 +319,7 @@ namespace Fsl
       FramePacingLogColumn AnimationStep;
       FramePacingLogColumn WindowFrames;
       FramePacingLogColumn WindowLateFrames;
+      FramePacingLogColumn WindowStartsAhead;
       FramePacingLogColumn WindowAverageWork;
       FramePacingLogColumn WindowSpan;
       FramePacingLogColumn WindowFull;

@@ -92,6 +92,11 @@ class RunCheck:
     DisplayErrorMs: Distribution | None = None
     # The frames by how they were held for their swap interval (the names of _g_holdMethodNames), empty if the log does not tell
     HoldMethods: dict[str, int] = field(default_factory=dict)
+    # How far the frames of the pacer's frame window began before the times the pacer gave for them, in refreshes per second of
+    # the window, over the frames of the run where the window was full: the median, which is where the run sits, and the value
+    # with the largest size. None if the log does not tell
+    StartsAheadMedian: float | None = None
+    StartsAheadMost: float | None = None
     # The frames the pacer measured by their display times, None if the log does not tell
     FeedbackOnRows: int | None = None
     # What became of the present feedback the pacer was given: used, refused, notShown, missing, lateRefreshes
@@ -297,6 +302,16 @@ def CheckRun(log: FramePacingLogFile, expectation: RunExpectation) -> RunCheck:
     if log.HasColumn("holdMethod"):
         counts = Counter(log.GetValues("holdMethod"))
         check.HoldMethods = {_g_holdMethodNames.get(code, f"method {code}"): count for code, count in sorted(counts.items())}
+    if log.HasColumn("pacerWindowStartsAheadTicks") and log.HasColumn("pacerWindowSpanTicks") and check.RefreshIntervalTicks:
+        # Only the frames where the window was full: a window that is still filling is short, and the first frames of a run and a
+        # wait that is made once at its start are large in it. That is a transient and not where the run sits
+        pairs = [(ahead, span) for ahead, span in zip(log.GetColumn("pacerWindowStartsAheadTicks"), log.GetColumn("pacerWindowSpanTicks"))
+                 if ahead is not None and span]
+        fullSpan = max((span for _, span in pairs), default=0) * 0.9
+        rates = sorted((ahead / check.RefreshIntervalTicks) / (span / g_ticksPerSecond) for ahead, span in pairs if span >= fullSpan)
+        if len(rates) > 0:
+            check.StartsAheadMedian = _Percentile(rates, 0.5)
+            check.StartsAheadMost = max(rates, key=abs)
     if log.HasColumn("pacerFeedbackOn"):
         check.FeedbackOnRows = sum(1 for value in log.GetValues("pacerFeedbackOn") if value != 0)
         for key, column in (("used", "pacerFeedbackUsed"), ("refused", "pacerFeedbackRefused"), ("notShown", "pacerFeedbackNotShown"),
@@ -388,6 +403,10 @@ def FormatReport(check: RunCheck) -> list[str]:
         lines.append(f"swap interval changes of the pacer: {_FormatCounts(check.PacerChanges)}")
         if len(check.HoldMethods) > 0:
             lines.append(f"how the frames were held for their swap interval (method: frames): {_FormatCounts(check.HoldMethods)}")
+        if check.StartsAheadMedian is not None and check.StartsAheadMost is not None:
+            lines.append(f"frame starts ahead of the times the pacer gave, in refreshes per second (the frames with a full frame window): "
+                         f"median {check.StartsAheadMedian:+.2f}, {check.StartsAheadMost:+.2f} at the most. About zero: the app waits for "
+                         "those times. Above one: the loop runs ahead of the display. Below minus one: the work does not fit")
         if check.FeedbackOnRows is not None:
             state = f", the display times at the end of the run: {_FormatCounts(check.FeedbackState)}" if check.FeedbackOnRows > 0 else ""
             lines.append(f"present feedback to the pacer: on for {check.FeedbackOnRows} frames{state}")
@@ -444,6 +463,8 @@ def FormatSummary(name: str, check: RunCheck) -> str:
             parts.append(f"hold: {_FormatCounts(check.HoldMethods)}")
         if check.FeedbackOnRows:
             parts.append(f"feedback {_FormatCounts(check.FeedbackState)}")
+        if check.StartsAheadMedian is not None:
+            parts.append(f"starts ahead {check.StartsAheadMedian:+.2f} refreshes/s")
     if check.VariableRefreshRows:
         parts.append(f"vrr: seen for {check.VariableRefreshRows} frames")
     if check.FrameStartIntervalMs is not None:

@@ -1228,6 +1228,10 @@ namespace Fsl
     rColumns.WindowFrames = rLog.RegisterColumn("pacerWindowFrames", FramePacingLogUnit::Count, "The frames in the frame window of the frame pacer");
     rColumns.WindowLateFrames =
       rLog.RegisterColumn("pacerWindowLateFrames", FramePacingLogUnit::Count, "The frames in the frame window the frame pacer counts as late");
+    rColumns.WindowStartsAhead =
+      rLog.RegisterColumn("pacerWindowStartsAheadTicks", FramePacingLogUnit::DurationTicks,
+                          "How far the frames in the frame window began before the times the frame pacer gave for them, added up over the "
+                          "frames that were not late: about zero when the app waits for those times, positive when the loop runs ahead");
     rColumns.WindowAverageWork = rLog.RegisterColumn("pacerWindowAverageWorkTicks", FramePacingLogUnit::DurationTicks,
                                                      "The average work of the frames in the frame window of the frame pacer");
     rColumns.WindowSpan =
@@ -1347,6 +1351,7 @@ namespace Fsl
       rLog.SetLogUInt64(columns.PreferredSwapInterval, status.PreferredSwapInterval);
       rLog.SetLogUInt64(columns.WindowFrames, status.Frames);
       rLog.SetLogUInt64(columns.WindowLateFrames, status.LateFrames);
+      rLog.SetLogValue(columns.WindowStartsAhead, status.StartsAhead);
       rLog.SetLogValue(columns.WindowAverageWork, status.AverageWork);
       rLog.SetLogValue(columns.WindowSpan, status.WindowSpan);
       rLog.SetLogValue(columns.WindowFull, status.WindowFull);

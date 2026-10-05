@@ -87,6 +87,10 @@ namespace Fsl
     uint32_t PreferredSwapInterval{1};
     uint32_t Frames{0};
     uint32_t LateFrames{0};
+    //! How far the frames of the frame window began before the times the pacer gave for them, added up over the frames that were
+    //! not late (for each the time the pacer gave for the start of the next frame minus the time that frame began). About zero: the
+    //! app waits for those times. Positive: the loop runs ahead of them. Negative: it is behind.
+    TimeSpan StartsAhead;
     //! The average time the frames needed
     TimeSpan AverageWork;
     //! The time the frames span: from when the oldest was shown to when the newest was

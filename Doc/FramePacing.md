@@ -492,6 +492,7 @@ Column | Unit | Description
 `animationStepTicks` | durationTicks | The step of the frame pacer from the animation time of the frame before
 `pacerWindowFrames` | count | The frames in the frame window of the frame pacer
 `pacerWindowLateFrames` | count | The frames in the frame window the frame pacer counts as late
+`pacerWindowStartsAheadTicks` | durationTicks | How far the frames in the frame window began before the times the frame pacer gave for them (`NextFrameStartTime`), added up over the frames that were not late. About zero: the app waits for those times. Positive: the loop runs ahead of them (more than a refresh per second of the window: nothing holds it to the display). Negative: it is behind, the work does not fit
 `pacerWindowAverageWorkTicks` | durationTicks | The average work of the frames in the frame window of the frame pacer
 `pacerWindowSpanTicks` | durationTicks | The time the frame window of the frame pacer spans
 `pacerWindowFull` | flag | 1 if the frame window of the frame pacer is full
