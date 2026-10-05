@@ -149,7 +149,8 @@ With two monitors at different rates the swapchain of a window on the slower one
 a 60 Hz monitor next to a 120 Hz one, 20.0 ms on a 24 Hz monitor next to a 50 Hz one, windowed and borderless full screen. The frames
 go out on the refresh of the monitor the window is on. The window system reports the rate of that monitor, and that is the rate the
 pacer is given. The overlay of the sample shows what the swapchain reports as `Swapchain refresh` and names the rate of the display
-next to it when the two differ.
+next to it when the two differ. A scheduled present goes wrong there: on a 60 Hz monitor next to a 120 Hz one it held every frame
+twice as long as asked ([FramePacingCapture.md](FramePacingCapture.md)).
 
 ## Other window systems
 
@@ -226,13 +227,13 @@ lets the driver count the refreshes.
 
 | Hold | Needs | How it works | Status |
 |---|---|---|---|
-| `schedule` | Vulkan level 4 with a relative target time | The present is given a target time and the presentation engine holds the frame. | measured: every frame held for exactly its swap interval |
-| `vsync` | a vsync time from the window system, and a display that was not seen to refresh at a variable rate | The sample waits and presents inside the refresh before the one the frame is aimed at. | measured on Windows at 50, 60, 120 and 240 Hz: at least 99.6 % of the frames held for exactly their swap interval. Built on Wayland (presentation-time) and X11 (Present), not measured |
-| `wait` | nothing | The sample sleeps on a timer and presents. It does not know where the refreshes are, so it is a guess. | measured on Windows: as good as the vsync wait at 50, 60 and 120 Hz. At 240 Hz from none to 35 % of the frames a refresh early or late, depending on where the timer happens to start |
+| `schedule` | Vulkan level 4 with a relative target time | The present is given a target time and the presentation engine holds the frame. | measured on Windows with no faster monitor next to the one of the window: 336 to 337 of 337 frames held for exactly their swap interval at 50, 60 and 120 Hz, at least 98.8 % at 240 Hz. On a monitor next to one at twice its rate every frame was held twice as long |
+| `vsync` | a vsync time from the window system, and a display that was not seen to refresh at a variable rate | The sample waits and presents inside the refresh before the one the frame is aimed at. | measured on Windows at 50, 60, 120 and 240 Hz: at least 99.2 % of the frames held for exactly their swap interval on an idle machine, 96.7 % in the worst run under CPU load (50 Hz). Built on Wayland (presentation-time) and X11 (Present), not measured |
+| `wait` | nothing | The sample sleeps on a timer and presents. It does not know where the refreshes are, so it is a guess. | measured on Windows: close to the vsync wait at 50, 60 and 120 Hz, with a run now and then that has 3 % of its frames off. At 240 Hz from none to 35 % of the frames a refresh early or late, depending on where the timer happens to start |
 | `auto` | - | `schedule` if the swapchain can, else `vsync` if the window system says when the display refreshes, else `wait`. | - |
 
 The default is `wait`. On Windows the two ways that need no extension have been captured at 50, 60, 120 and 240 Hz
-([FramePacingCapture.md](FramePacingCapture.md)); the scheduled present has only been captured at 240 Hz. With variable refresh on
+([FramePacingCapture.md](FramePacingCapture.md)), and so has the scheduled present. With variable refresh on
 (G-SYNC) the vsync wait does not hold a frame and the sleep does. The sample falls back from the vsync wait to the sleep once it has
 seen the display refresh at a variable rate (on Windows, see the section above), which it only can while the frames come slower
 than the rate of the mode. That is a reason for `wait` to stay the default.
@@ -242,7 +243,9 @@ Where inside a refresh the vsync wait presents is not something to derive, it ha
 shown at the vertical blank it was aimed at in every run, idle and under CPU load; earlier most runs had one frame shown a refresh too
 long, and at 95 % the frame starts got uneven. At 120, 60 and 50 Hz every place from 5 to 85 % was clean. The late presents that
 went wrong were within about a millisecond of the vertical blank at every rate, which reads as a time and not as a share of a refresh;
-the early end only showed at 240 Hz, so what it is has not been settled. The default is 65 %.
+the early end only showed at 240 Hz, so what it is has not been settled. The default is 65 %. Those sweeps at 60 and 50 Hz had a
+second monitor at 120 Hz next to the one of the window. With one monitor they were less flat (one or two frames of 337 off at most
+places, 10 to 14 at 95 % at 60 Hz), and at 240 Hz with one monitor 85 % was the place that went wrong (27 and 28 of 337 off).
 
 Not built, and still open: presenting a frame once per refresh (each extra present a copy of the frame). It needs nothing but FIFO, so
 it would work at level 0 of both lists, at the cost of a copy and a present per held refresh and less time for the next frame.

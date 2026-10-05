@@ -42,6 +42,9 @@ read, the rest is up to the person at the machine.
 - **Note the power plan.** It decides how fast a CPU that was idle is running again. The tool writes the active one to the notes
   (`powercfg /getactivescheme` on Windows, the cpufreq governor on Linux), so capture with the plan the app will be used with, and
   repeat a capture with the default plan if the machine runs a high performance one.
+- **Know the rate of every display, not only the one the window is on.** A second display at another rate changes what the swapchain
+  reports and what a scheduled present does (see the findings below), so a capture for one rate is made with one display, or with
+  all displays at that rate. Write the displays into the notes with `--fact`.
 - **Leave the keyboard and the mouse alone during the runs.** The window of the app takes the keyboard focus when it opens and the
   sample reacts to keys: **P** toggles the pacer. A run where the pacer was switched gets a warning. Do not move or resize the window, a
   run with more than one swapchain gets a warning as well.
@@ -96,6 +99,7 @@ Plan                 | Display                         | Runs
 `present-feedback-240hz` | 240 Hz, variable refresh off | The pacer without and with present feedback (`--Pacer.PresentFeedback`), GPU work of 20, 90 and 130 %, each idle and under CPU load (12 runs).
 `present-feedback-120hz` | 120 Hz, variable refresh off | The same with CPU work of 2, 7 and 11 ms.
 `plain-vulkan-240hz`, `-120hz`, `-60hz`, `-50hz` | that rate, variable refresh off | Does the pacer work on plain Vulkan: a frame held by a timer sleep and by a wait on the vsync (`--Pacer.Hold`) at fixed frame rates and under work of 130 %, one and two frames in flight, and the key rows with present timing off as well (22 to 30 runs).
+`present-scheduling` | any fixed rate below 240 Hz, given with `--refresh-hz` and `--set` (see the plan) | A frame held by a scheduled present and by a timer sleep: half the refresh rate, a slower fixed rate and CPU work of 130 %, present feedback on in every run, each idle and under CPU load (12 runs). Not captured yet.
 `vsync-phase-sweep` | any fixed rate, given with `--refresh-hz` and `--set half_fps` | Where in a refresh a present has to be made: frames held for two refreshes by a wait on the vsync, with the present placed from 5 to 95 % of the refresh (`--Pacer.VSyncPhase`), each idle and under CPU load (20 runs).
 `present-scheduling-240hz` | 240 Hz, variable refresh off | A frame held for more than one refresh by a wait before the present and by a scheduled present (`--Pacer.Hold schedule`): a fixed 60 and 120 fps and work of 130 %, each idle and under CPU load (12 runs).
 `present-options-240hz` | 240 Hz, variable refresh off | The swapchain setup at work of 90 %: one against two frames in flight (`--VkFramesInFlight`) and FIFO against FIFO latest ready (`--VkPresentMode`), pacer off and on (8 runs).
@@ -243,6 +247,14 @@ On a NVIDIA desktop GPU (driver 617.14) with a 240 Hz display on Windows 11, a w
   4.17 ms on both, at 60 and 120 Hz and at 50 and 120 Hz it is 8.33 ms, at 50 and 24 Hz it is 20.0 ms for a window on the 24 Hz
   display. A borderless full screen window gets the same. The frames go out on the refresh of the display the window is on: with it
   at 50 Hz all 745 display times of a run were 20.0 ms apart. Why the driver reports it this way is not known.
+- **A scheduled present holds a frame twice as long on a display next to one at twice its rate.** With the window on a display at
+  60 Hz and a second display at 120 Hz, 30 fps asked for gave a frame every 66.7 ms shown for four refreshes, and 20 fps one every
+  100 ms shown for six, in every frame, idle and under the CPU load (the plan `present-scheduling`). With both displays at 60 Hz, and
+  with one display at 60 and at 50 Hz, the same runs are right: 336 to 337 of 337 frames shown for exactly their swap interval. It
+  reads as the target time being counted in the refreshes the swapchain reports and held in the refreshes of the display. The sleep
+  and the wait on the vsync are not touched by it, they use the rate of the window system.
+- **What was captured at 60 and 50 Hz before that was captured next to a display at 120 Hz**: the plain Vulkan plans and the phase
+  sweeps below. They were made again with one display, and the numbers of one display are the ones to go by.
 - **A machine that is busy with something else looks like a pacing problem.** Uneven frame starts and a swap interval that cycled
   between one and two at 240 Hz went away when the builds in the background were stopped. That is why every run records the load of
   the machine and why a loaded run has an idle twin.
@@ -264,8 +276,11 @@ On a NVIDIA desktop GPU (driver 617.14) with a 240 Hz display on Windows 11, a w
   frames shown too long.
 - **Since mb-framepacing `b5b6ab3` present feedback is statistics only**: the pacer paces the same with it and counts what the
   display did (`pacerFeedbackLateRefreshes`). The findings below about a pacer that slows down sooner or later with feedback are
-  from the pins before it and do not apply anymore. No capture has been made at `b5b6ab3`. The capture at `19acdf7` held its frames
-  by the timer sleep, so it says nothing about feedback with a scheduled present or a wait on the vsync.
+  from the pins before it and do not apply anymore. Captured at `b5b6ab3` (the present feedback plans at 240 and 120 Hz): with work
+  of 130 % the runs with and without feedback go to two refreshes one frame apart (49 and 50 at 240 Hz, 25 and 26 at 120 Hz, the one
+  frame is the pacer starting again when feedback is switched on) and stay there, and the pacer refused one display time per run.
+  The capture at `19acdf7` held its frames by the timer sleep, so it says nothing about feedback with a scheduled present or a wait
+  on the vsync.
 - **With mb-framepacing `19acdf7` present feedback no longer delays the slow down**, and a present without a display time is
   reported to the pacer as not shown. The same plans again, idle and under the CPU load: with work of 130 % the pacer goes to two
   refreshes at frame 52 at 240 Hz and at frame 27 at 120 Hz, two or three frames after the run without feedback (49 and 25), and it
@@ -286,12 +301,47 @@ On a NVIDIA desktop GPU (driver 617.14) with a 240 Hz display on Windows 11, a w
   frames off at 60 fps under load and the wait on the vsync 4 of 1137 at the most. The sleep has been far worse in earlier captures
   at 240 Hz (up to 35 % of the frames, depending on where the timer happens to start), which these runs did not reproduce. The frame
   starts of the sleep are flat, the ones of the wait on the vsync follow the measured vertical blank and spread by 0.1 to 0.15 ms to
-  each side. These are the summaries of the runs, the logs have not been read frame by frame.
+  each side. These are the summaries of the runs, the logs have not been read frame by frame. The runs at 60 and 50 Hz had a second
+  display at 120 Hz. With one display the two ways are still close and neither is the better one, but not every run is clean: at
+  60 Hz the runs at a fixed frame rate have three frames of 337 to 387 off at the most, but for one run of the sleep with ten off
+  (20 fps, idle), and at 50 Hz the wait on the vsync had 11 of 337 off at 25 fps under the CPU load where the sleep had none. At
+  240 Hz with one display the sleep slipped in one run of 30 (167 of 2336 frames off at work of 130 %, idle).
+- **The power plan made no difference that the captures can show** (the plain Vulkan plans at 60 and 240 Hz with one display, High
+  performance against Balanced). At 60 Hz 46 of 12902 frames were not shown for their swap interval on High performance and 35 of
+  12903 on Balanced. At 240 Hz, without the runs at work of 90 % where the pacer changes its swap interval, it was 270 of 22046
+  against 62 of 22053, and 167 of the 270 are the one run where the sleep slipped. The frame starts of the sleep are flat on both.
+  Under the CPU load the wait on the vsync differs from run to run, worse on Balanced in one pair and worse on High performance in
+  the next.
+- **A scheduled present holds a frame at least as well as the sleep** (the plans `present-scheduling-240hz` and `present-scheduling`
+  at 120, 60 and 50 Hz, no faster display next to the one of the window). At 240 Hz and 120 fps on a idle machine the sleep had 116 of 2335 frames a refresh
+  early or late and the scheduled present 4 of 2336 not shown for two refreshes; under the CPU load it was 18 and 11 of 2337. At 120,
+  60 and 50 Hz the scheduled present shows 336 to 337 of 337 frames for exactly two refreshes and the sleep 331 to 337.
+- **At 50 Hz and 10 fps many presents get no display time** (a frame held for five refreshes, one display): 55 and 57 of 400 with
+  the sleep, with as many frames shown for ten refreshes, and 224 and 397 of 400 with the scheduled present. At 60 Hz and 20 fps
+  (three refreshes) there is none of it. It has not been looked into.
+- **FIFO does not hold the frame loop to the display** (240 Hz, swap interval one, two swapchain images, one frame in flight).
+  `vkAcquireNextImageKHR` returns in 0.002 ms and `vkQueuePresentKHR` in about 0.05 ms (the medians; 99 % of the presents return within 0.34 ms). The loop waits in one place,
+  for the fence of the queue submit of the frame before, and that wait ends 0.05 ms after the GPU is done with that frame. With light
+  work the display still paces the loop: the GPU starts a frame 3.2 ms after it was submitted, at the same place in every refresh,
+  because the submit waits for the image. A present then reaches the display 15.3 ms later (3.7 refreshes), more than two images in
+  FIFO account for, so there is a queue below the swapchain. With GPU work of 3.83 ms in a refresh of 4.17 ms the image is free when
+  the frame is submitted, the loop runs at the speed of the GPU (a frame every 4.10 ms), and 97 of 2340 presents got no display time
+  while 135 frames were shown for two or three refreshes. In borderless full screen it is the same (88 and 105 presents without a
+  display time at GPU work of 76 and 80 %). Two things were tried in a build made for it and both help: waiting for a fence on the
+  acquire before the frame goes on (5 presents without a display time in place of 97), and holding the start of every frame to the
+  time the pacer gives for it, also at swap interval one (7, and with light work a present reaches the display after 3.1 ms in place
+  of 15.3 ms, the queue stays empty). Two frames in flight and a third swapchain image did not help. One run each, and the GPU work
+  moved between the runs (3.66 to 3.93 ms), so the counts are not at equal work.
 - **Where in a refresh the present is made matters at 240 Hz and next to not at all below** (the plan `vsync-phase-sweep` at 240, 120,
   60 and 50 Hz, frames held for two refreshes). At 240 Hz a present from 55 to 75 % of the refresh is clean idle and under load, from
   5 to 45 % most runs have one frame that is shown a refresh too long, at 85 % one run had four frames off and at 95 % the frame
   starts get uneven. At 120, 60 and 50 Hz every place from 5 to 85 % is clean but for two frames in one run at 120 Hz, and 95 % has
-  two to four frames off in a run. The default of the sample, 65 %, is in the middle of what is clean at 240 Hz.
+  two to four frames off in a run. The default of the sample, 65 %, is in the middle of what is clean at 240 Hz. The sweeps at 60
+  and 50 Hz had a second display at 120 Hz. With one display they are less flat: at 60 Hz most places have none to two frames of
+  337 off (five at the most) and 95 % has 14 and 10, at 50 Hz most have none to two and the worst runs eight (75 and 95 % under the
+  CPU load). At 240 Hz with one display the places from 5 to 75 % have no frame off on a idle machine, 85 % has 28 and 27 off and
+  95 % two at the most; on the Balanced power plan 85 % had 13 off and 75 % had 19 off under the CPU load. So the late end is
+  where it goes wrong at every rate, and 65 % is clear of it.
 - **With variable refresh on the wait on the vsync does not hold a frame, the timer sleep does** (G-SYNC on at 240 Hz, the plan
   `variable-refresh` and four runs of 120 and 60 fps with both ways, once with G-SYNC on for full screen apps only and once for
   windowed and full screen apps: the two rounds were the same run for run, so the first setting had it in effect for the window of

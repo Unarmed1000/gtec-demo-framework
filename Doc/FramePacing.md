@@ -223,6 +223,12 @@ it on refreshes like a fixed one while the frames come at the rate of its mode. 
 where the sample left the vsync wait. What a platform can tell is in
 [FramePacingPlatformSupport.md](FramePacingPlatformSupport.md#variable-refresh-what-a-platform-tells-an-app).
 
+What the frame loop of a Vulkan app waits on, and why the hold is the sample's to do: a FIFO present returns at once, the acquire
+returns at once, and the loop only waits for the GPU to finish the frame before (the fence of its queue submit). With light work the
+display still paces the loop through the swapchain image the submit waits for. With work close to a refresh it does not: the loop
+runs at the speed of the GPU, a little faster than the display, and presents are dropped (97 of 2340 at 240 Hz with GPU work of
+92 % of a refresh). The numbers are in [FramePacingCapture.md](FramePacingCapture.md).
+
 Any Vulkan app can schedule a present: `DemoAppVulkanBasic::IsPresentSchedulingSupported()` and
 `SetPresentRelativeTargetTime(time)` before the frame is presented. The absolute form of the extension (`presentAtAbsoluteTime`) is not
 used.
