@@ -64,6 +64,8 @@ namespace Fsl
         VkValidateFeatures,
         VkPresentTiming,
         VkFramesInFlight,
+        VkSwapchainImages,
+        VkTimelineSemaphore,
       };
     };
 
@@ -201,6 +203,14 @@ namespace Fsl
                           "Enable/disable the use of VK_EXT_present_timing to measure when a frame was presented (defaults to enabled if supported "
                           "for the apps that use it, true enables it for all apps)",
                           OptionGroup::Host);
+    rOptions.emplace_back("VkTimelineSemaphore", OptionArgument::OptionRequired, CommandId::VkTimelineSemaphore,
+                          "true (default): the app base waits for the frames it submitted with one timeline semaphore. false: with a fence "
+                          "per frame slot.",
+                          OptionGroup::Host);
+    rOptions.emplace_back("VkSwapchainImages", OptionArgument::OptionRequired, CommandId::VkSwapchainImages,
+                          "The number of images the swapchain is asked for at least (the default is one more than the surface needs and "
+                          "at least 3). The surface decides what it gives.",
+                          OptionGroup::Host);
     rOptions.emplace_back("VkFramesInFlight", OptionArgument::OptionRequired, CommandId::VkFramesInFlight,
                           "The number of frames that may be in flight: 1 (the default) waits for the GPU to finish a frame before the next "
                           "one starts, more lets the CPU start the next frames while the GPU works. Limited to what the app is configured "
@@ -266,6 +276,22 @@ namespace Fsl
       StringParseUtil::Parse(boolValue, strOptArg);
       m_launchOptions.PresentTiming = boolValue ? OptionUserChoice::On : OptionUserChoice::Off;
       return OptionParseResult::Parsed;
+    case CommandId::VkTimelineSemaphore:
+      StringParseUtil::Parse(boolValue, strOptArg);
+      m_launchOptions.TimelineSemaphore = boolValue ? OptionUserChoice::On : OptionUserChoice::Off;
+      return OptionParseResult::Parsed;
+    case CommandId::VkSwapchainImages:
+      {
+        uint32_t swapchainImages = 0;
+        StringParseUtil::Parse(swapchainImages, strOptArg);
+        if (swapchainImages < 1u)
+        {
+          FSLLOG3_ERROR("VkSwapchainImages must be one or more");
+          return OptionParseResult::Failed;
+        }
+        m_launchOptions.SwapchainImages = swapchainImages;
+        return OptionParseResult::Parsed;
+      }
     case CommandId::VkFramesInFlight:
       {
         uint32_t framesInFlight = 0;

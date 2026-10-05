@@ -54,6 +54,9 @@ namespace Fsl::Vulkan
     VkImageUsageFlags m_imageUsageFlags;
     VkFormat m_imageFormat;
     VkExtent2D m_imageExtent;
+    //! The present mode and the pre-transform the swapchain was created with (the defaults when there is no swapchain)
+    VkPresentModeKHR m_presentMode{VK_PRESENT_MODE_FIFO_KHR};
+    VkSurfaceTransformFlagBitsKHR m_preTransform{VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR};
     std::vector<VkImage> m_images;
     std::vector<ImageInfo> m_info;
 
@@ -133,6 +136,19 @@ namespace Fsl::Vulkan
     [[nodiscard]] VkFormat GetImageFormat() const noexcept;
 
     [[nodiscard]] VkExtent2D GetImageExtent() const noexcept;
+
+    //! @brief The present mode the swapchain was created with. A helper that creates a swapchain can replace the mode that was asked
+    //!        for by one the surface supports, so this is the one to go by.
+    [[nodiscard]] VkPresentModeKHR GetPresentMode() const noexcept
+    {
+      return m_presentMode;
+    }
+
+    //! @brief The pre-transform the swapchain was created with.
+    [[nodiscard]] VkSurfaceTransformFlagBitsKHR GetPreTransform() const noexcept
+    {
+      return m_preTransform;
+    }
 
     void CmdPipelineBarrier(const VkCommandBuffer cmdBuffer, const VkAccessFlags dstAccessMask, const VkImageLayout newLayout,
                             const VkPipelineStageFlags srcStageMask, const VkPipelineStageFlags dstStageMask, const uint32_t imageIndex);

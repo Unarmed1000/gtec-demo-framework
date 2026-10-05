@@ -288,6 +288,8 @@ namespace Fsl
     SampleSwapchainRefresh m_swapchainRefresh{SampleSwapchainRefresh::Unknown};
     //! Where in the refresh before the one a frame is aimed at the vsync wait presents, in percent of the refresh
     int32_t m_vsyncPhasePercent{SampleConfig::VSyncPhasePercent.Get()};
+    //! When WaitForFrameStart began to wait for the frame that is about to start (zero: it was not called for it)
+    TickCount m_frameStartWaitTime;
     //! Where a frame waits for the time the frame pacer gives for the start of the next frame
     SamplePacerProfile m_pacerProfile{SamplePacerProfile::RenderEarly};
     //! SamplePacerProfile::RenderEarly: when the present of the frame before was due and when it was let go (zero: there was none)
@@ -417,6 +419,9 @@ namespace Fsl
     //! Returns at once if the frame pacer is off or the present holds the frame long enough.
     //! @param presentSwapInterval the number of display refreshes the present itself holds the frame for
     void WaitForPresent(const uint32_t presentSwapInterval = 1);
+    //! The wait for the start of a frame, for an app that can make it before the frame takes anything from the display (a Vulkan
+    //! app makes it before it acquires a swapchain image). Without this call the wait is made when the frame starts in the draw.
+    void WaitForFrameStart();
 
     //! Tell the sample which optional measurements the app can make. Each has a switch, so what it adds can be seen by switching it off.
     //! @param presentTimingSupported the app can measure when its frames reach the display (VK_EXT_present_timing)

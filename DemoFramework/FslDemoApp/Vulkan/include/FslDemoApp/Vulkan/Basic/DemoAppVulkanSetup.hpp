@@ -60,6 +60,11 @@ namespace Fsl::VulkanBasic
     //! Additional image usage flags will be merged with VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT
     //! The flags will only be set if the surface supports it (if it don't a warning will be logged and the unsupported flag will be ignored)
     VkImageUsageFlags DesiredSwapchainImageUsageFlags{0};
+    //! If true (the default) a frame that gets a swapchain image that another frame slot used last waits for the GPU work of that
+    //! slot before it goes on. A app needs that when it keeps something per swapchain image, or once for all frames, that it
+    //! writes on the CPU for every frame. A app that keeps everything it writes per frame slot (DrawContext::CurrentFrameIndex) can
+    //! switch it off, and its frames in flight then overlap on the GPU.
+    bool WaitForLastUseOfSwapchainImage{true};
     //! If true the app wants to know when its frames were presented (see DemoAppVulkanBasic::GetPresentTimings).
     //! It needs VK_EXT_present_timing, so check DemoAppVulkanBasic::IsPresentTimingEnabled to see if the measurements are available.
     bool PresentTiming{false};

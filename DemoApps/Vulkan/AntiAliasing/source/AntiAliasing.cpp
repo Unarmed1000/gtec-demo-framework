@@ -160,8 +160,11 @@ namespace Fsl
       // The offscreen buffer
       subpassDependency[0].srcSubpass = VK_SUBPASS_EXTERNAL;
       subpassDependency[0].dstSubpass = 0;
-      subpassDependency[0].srcStageMask = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
-      subpassDependency[0].srcAccessMask = VK_ACCESS_SHADER_READ_BIT;
+      // The frame before read the color image in a fragment shader and wrote the depth image last when its render pass ended (the
+      // store of a depth attachment is done in the late fragment tests). Both images are one for all frames, so with more than one
+      // frame in flight this render pass has to be ordered after both.
+      subpassDependency[0].srcStageMask = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT;
+      subpassDependency[0].srcAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
       subpassDependency[0].dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
       subpassDependency[0].dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
       subpassDependency[0].dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
@@ -231,8 +234,11 @@ namespace Fsl
       // The offscreen buffer
       subpassDependency[0].srcSubpass = VK_SUBPASS_EXTERNAL;
       subpassDependency[0].dstSubpass = 0;
-      subpassDependency[0].srcStageMask = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
-      subpassDependency[0].srcAccessMask = VK_ACCESS_SHADER_READ_BIT;
+      // The frame before read the color image in a fragment shader and wrote the depth image last when its render pass ended (the
+      // store of a depth attachment is done in the late fragment tests). Both images are one for all frames, so with more than one
+      // frame in flight this render pass has to be ordered after both.
+      subpassDependency[0].srcStageMask = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT;
+      subpassDependency[0].srcAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
       subpassDependency[0].dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
       subpassDependency[0].dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
       subpassDependency[0].dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;

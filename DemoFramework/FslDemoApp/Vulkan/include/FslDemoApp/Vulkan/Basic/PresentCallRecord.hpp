@@ -38,6 +38,8 @@ namespace Fsl::VulkanBasic
     //! When vkAcquireNextImageKHR was called and when it returned
     TickCount AcquireCallTime;
     TickCount AcquireReturnTime;
+    //! The VkResult of vkAcquireNextImageKHR (zero is success, 1000001003 is VK_SUBOPTIMAL_KHR)
+    int32_t AcquireResult{0};
     //! When vkQueuePresentKHR was called and when it returned
     TickCount PresentCallTime;
     TickCount PresentReturnTime;

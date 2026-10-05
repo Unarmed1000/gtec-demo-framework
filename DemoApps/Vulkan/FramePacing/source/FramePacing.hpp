@@ -80,6 +80,7 @@ namespace Fsl
     void VulkanDraw(const DemoTime& demoTime, RapidVulkan::CommandBuffers& rCmdBuffers, const VulkanBasic::DrawContext& drawContext) final;
 
     VkRenderPass OnBuildResources(const VulkanBasic::BuildResourcesContext& context) final;
+    void OnVulkanFrameStart() final;
     void OnFreeResources() final;
 
   private:

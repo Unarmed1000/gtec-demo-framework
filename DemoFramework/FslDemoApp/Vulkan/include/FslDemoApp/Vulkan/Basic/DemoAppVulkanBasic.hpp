@@ -222,6 +222,10 @@ namespace Fsl
 
       public:
         std::vector<FrameDrawRecord> Frames;
+        //! With a timeline semaphore: it gets a higher value from every frame that is submitted, and FrameSubmitValues has the value
+        //! the last submit of each frame slot gives it (zero: the slot has not been submitted yet)
+        RapidVulkan::Semaphore FrameTimeline;
+        std::vector<uint64_t> FrameSubmitValues;
 
         Resources() noexcept = default;
         Resources(const Resources&) = delete;
@@ -234,6 +238,8 @@ namespace Fsl
         {
           // Reset in destruction order
           Frames.clear();
+          FrameSubmitValues.clear();
+          FrameTimeline.Reset();
           m_recycledSemaphores.clear();
           MainCommandPool.Reset();
         }
@@ -326,6 +332,15 @@ namespace Fsl
       bool m_presentTimingRequested{false};
       //! True if m_presentTimingRequested changed since the swapchain was created
       bool m_presentTimingChangePending{false};
+      //! True if the frames that were submitted are waited for with a timeline semaphore (Resources::FrameTimeline), false if with a
+      //! fence per frame slot
+      bool m_useFrameTimeline{false};
+      //! The value the last submit gave the timeline semaphore
+      uint64_t m_frameTimelineValue{0};
+      //! True if a acquire or a present said VK_SUBOPTIMAL_KHR since the surface was last looked at, and how often they said it
+      //! since the swapchain was created
+      bool m_swapchainSuboptimalPending{false};
+      uint32_t m_swapchainSuboptimalCount{0};
       HighResolutionTimer m_presentCallTimer;
       //! The swapchain calls of the frame being drawn and of the last frame that was presented
       PresentCallRecord m_currentPresentCalls;
@@ -387,6 +402,13 @@ namespace Fsl
       }
 
       virtual void VulkanDraw(const DemoTime& demoTime, RapidVulkan::CommandBuffers& rCmdBuffers, const DrawContext& drawContext) = 0;
+
+      //! @brief Called at the start of a frame, before the frame waits for its frame slot and before it acquires a swapchain image.
+      //!        It is the place for a wait that holds the start of a frame (frame pacing): no image is held while it waits.
+      //! @note  It can be called more than once for a frame, when the acquire has to be made again.
+      virtual void OnVulkanFrameStart()
+      {
+      }
 
       //! @brief get the swapchain image count
       [[nodiscard]] uint32_t GetSwapchainImageCount() const
@@ -501,7 +523,13 @@ namespace Fsl
       //! Tell the system stats service how much GPU memory the app uses, if it asks for it (VK_EXT_memory_budget)
       void UpdateGpuMemoryStats() noexcept;
       //! The frame pacing log: what the swapchain is, the values of the frame that begins and the present that was just made
-      void LogSwapchainCreated(const VkPresentModeKHR presentMode, const VkSwapchainCreateFlagsKHR createFlags);
+      void LogSwapchainCreated(const VkPresentModeKHR presentMode, const VkSwapchainCreateFlagsKHR createFlags, const uint32_t desiredMinImageCount);
+      //! Wait until the GPU is done with the last frame that was submitted from a frame slot (the fence is not reset)
+      [[nodiscard]] VkResult WaitForFrameSlot(const uint32_t frameIndex);
+      //! The number of images to ask the swapchain for at least
+      [[nodiscard]] uint32_t GetDesiredMinSwapBufferCount() const;
+      //! True if the swapchain no longer matches the surface in a way a new swapchain would cure
+      [[nodiscard]] bool IsSwapchainRecreationWorthIt() const;
       void LogFrameBegin();
       void LogPresent(const VkResult result, const bool timingRequested, const uint64_t relativeTargetTimeNanoseconds) noexcept;
 

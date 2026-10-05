@@ -63,6 +63,14 @@ namespace Fsl
     // The number of frames the app may have in flight (zero = the default of the app base, which is one). It is limited to what the app is
     // configured for (CustomDemoAppConfig::MaxFramesInFlight) and to the images of the swapchain.
     uint32_t FramesInFlight{0};
+
+    // If Off the app base waits for the frames it submitted with a fence per frame slot. Else it uses one timeline semaphore where
+    // the device has them (core since Vulkan 1.2).
+    OptionUserChoice TimelineSemaphore{OptionUserChoice::Default};
+
+    // The number of images the swapchain is asked for at least (zero = the default of the app base: one more than the surface
+    // needs and at least three). The surface decides what it gives.
+    uint32_t SwapchainImages{0};
   };
 }
 

@@ -92,6 +92,32 @@ namespace Fsl::Vulkan::SwapchainKHRUtil
     }
   }
 
+  namespace
+  {
+    //! The composite alpha that was asked for if the surface supports it, else the first it supports of opaque, inherit, pre
+    //! multiplied and post multiplied. A surface need not support opaque, and creating a swapchain with a mode the surface does not
+    //! list is not valid. With a mode other than opaque the alpha an app writes reaches the compositor.
+    VkCompositeAlphaFlagBitsKHR ChooseCompositeAlpha(const VkCompositeAlphaFlagBitsKHR desired, const VkCompositeAlphaFlagsKHR supported)
+    {
+      if ((supported & desired) != 0u || supported == 0u)
+      {
+        return desired;
+      }
+      for (const VkCompositeAlphaFlagBitsKHR candidate : {VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR, VK_COMPOSITE_ALPHA_INHERIT_BIT_KHR,
+                                                          VK_COMPOSITE_ALPHA_PRE_MULTIPLIED_BIT_KHR, VK_COMPOSITE_ALPHA_POST_MULTIPLIED_BIT_KHR})
+      {
+        if ((supported & candidate) != 0u)
+        {
+          FSLLOG3_WARNING("CompositeAlpha: {} is not supported by the surface, using {}", Debug::GetBitflagsString(desired),
+                          Debug::GetBitflagsString(candidate));
+          return candidate;
+        }
+      }
+      return desired;
+    }
+  }
+
+
   VUSwapchainKHR CreateSwapchain(const VkPhysicalDevice physicalDevice, const VkDevice device, const VkSwapchainCreateFlagsKHR flags,
                                  const VkSurfaceKHR surface, const uint32_t desiredMinImageCount, const uint32_t imageArrayLayers,
                                  const VkImageUsageFlags imageUsage, const VkSharingMode imageSharingMode, const uint32_t queueFamilyIndexCount,
@@ -143,8 +169,19 @@ namespace Fsl::Vulkan::SwapchainKHRUtil
     if (surfaceCapabilities.currentExtent.width == 0xFFFFFFFF && surfaceCapabilities.currentExtent.height == 0xFFFFFFFF)
     {
       FSLLOG3_VERBOSE("Using fallback extent as surface will be determined by the extent of a swapchain targeting the surface");
-      surfaceCapabilities.currentExtent = fallbackExtent;
+      // The extent is the app's to choose then, inside the limits of the surface
+      surfaceCapabilities.currentExtent.width =
+        std::clamp(fallbackExtent.width, surfaceCapabilities.minImageExtent.width, surfaceCapabilities.maxImageExtent.width);
+      surfaceCapabilities.currentExtent.height =
+        std::clamp(fallbackExtent.height, surfaceCapabilities.minImageExtent.height, surfaceCapabilities.maxImageExtent.height);
     }
+
+    // Identity where the surface supports it: the app renders as if the display was not rotated and the compositor rotates the
+    // image. That is correct everywhere and costs a composition step per frame on a rotated display. Rendering rotated
+    // (preTransform = currentTransform) takes an app that rotates its projection, viewport and scissor, which no app here does.
+    FSLLOG3_INFO_IF(preTransform != surfaceCapabilities.currentTransform,
+                    "The surface is rotated ({}) and the swapchain is not ({}): the compositor rotates every frame",
+                    RapidVulkan::Debug::ToString(surfaceCapabilities.currentTransform), RapidVulkan::Debug::ToString(preTransform));
 
     VkFormat imageFormat = surfaceFormatInfo.Format;
     VkColorSpaceKHR imageColorSpace = surfaceFormatInfo.ColorSpace;
@@ -177,7 +214,7 @@ namespace Fsl::Vulkan::SwapchainKHRUtil
     swapchainCreateInfo.queueFamilyIndexCount = queueFamilyIndexCount;
     swapchainCreateInfo.pQueueFamilyIndices = queueFamilyIndices;
     swapchainCreateInfo.preTransform = preTransform;
-    swapchainCreateInfo.compositeAlpha = compositeAlpha;
+    swapchainCreateInfo.compositeAlpha = ChooseCompositeAlpha(compositeAlpha, surfaceCapabilities.supportedCompositeAlpha);
     swapchainCreateInfo.presentMode = presentMode;
     swapchainCreateInfo.clipped = clipped;
     swapchainCreateInfo.oldSwapchain = oldSwapchain;

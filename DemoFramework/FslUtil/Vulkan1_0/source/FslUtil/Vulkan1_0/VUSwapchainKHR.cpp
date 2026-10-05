@@ -56,6 +56,8 @@ namespace Fsl::Vulkan
       m_imageUsageFlags = other.m_imageUsageFlags;
       m_imageFormat = other.m_imageFormat;
       m_imageExtent = other.m_imageExtent;
+      m_presentMode = other.m_presentMode;
+      m_preTransform = other.m_preTransform;
       m_images = std::move(other.m_images);
       m_info = std::move(other.m_info);
 
@@ -63,6 +65,8 @@ namespace Fsl::Vulkan
       other.m_imageUsageFlags = 0u;
       other.m_imageFormat = VK_FORMAT_UNDEFINED;
       other.m_imageExtent = {};
+      other.m_presentMode = VK_PRESENT_MODE_FIFO_KHR;
+      other.m_preTransform = VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR;
     }
     return *this;
   }
@@ -74,6 +78,8 @@ namespace Fsl::Vulkan
     , m_imageUsageFlags(other.m_imageUsageFlags)
     , m_imageFormat(other.m_imageFormat)
     , m_imageExtent(other.m_imageExtent)
+    , m_presentMode(other.m_presentMode)
+    , m_preTransform(other.m_preTransform)
     , m_images(std::move(other.m_images))
     , m_info(std::move(other.m_info))
   {
@@ -81,6 +87,8 @@ namespace Fsl::Vulkan
     other.m_imageUsageFlags = 0u;
     other.m_imageFormat = VK_FORMAT_UNDEFINED;
     other.m_imageExtent = {};
+    other.m_presentMode = VK_PRESENT_MODE_FIFO_KHR;
+    other.m_preTransform = VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR;
   }
 
 
@@ -139,6 +147,8 @@ namespace Fsl::Vulkan
     // use destruction order
     m_info.clear();
     m_images.clear();
+    m_presentMode = VK_PRESENT_MODE_FIFO_KHR;
+    m_preTransform = VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR;
     m_imageExtent = {};
     m_imageFormat = VK_FORMAT_UNDEFINED;
     m_imageUsageFlags = 0u;
@@ -163,6 +173,8 @@ namespace Fsl::Vulkan
       m_imageUsageFlags = createInfo.imageUsage;
       m_imageFormat = createInfo.imageFormat;
       m_imageExtent = createInfo.imageExtent;
+      m_presentMode = createInfo.presentMode;
+      m_preTransform = createInfo.preTransform;
       RefreshImages();
     }
     catch (const std::exception&)
@@ -190,6 +202,8 @@ namespace Fsl::Vulkan
       m_imageUsageFlags = createInfo.imageUsage;
       m_imageFormat = createInfo.imageFormat;
       m_imageExtent = createInfo.imageExtent;
+      m_presentMode = createInfo.presentMode;
+      m_preTransform = createInfo.preTransform;
       m_images.clear();
       m_info.clear();
 

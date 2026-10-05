@@ -52,6 +52,9 @@ namespace Fsl
       VulkanBasic::DemoAppVulkanSetup setup;
       // Measure when the frames reach the display (if VK_EXT_present_timing is available)
       setup.PresentTiming = true;
+      // Everything this app writes for a frame is per frame slot (push constants, the GPU timer, the present ids, and the batch
+      // and the UI it draws with), so its frames in flight can overlap on the GPU
+      setup.WaitForLastUseOfSwapchainImage = false;
       return setup;
     }
   }
@@ -194,6 +197,13 @@ namespace Fsl
     {
       m_shared.AddPresentTiming(record.PresentId, record.GetDisplayTime(), record.QueueOperationsEnd, record.IsComplete);
     }
+  }
+
+
+  void FramePacing::OnVulkanFrameStart()
+  {
+    // The frame pacer holds the start of a frame here (the late profile), before a swapchain image is acquired for it
+    m_shared.WaitForFrameStart();
   }
 
 

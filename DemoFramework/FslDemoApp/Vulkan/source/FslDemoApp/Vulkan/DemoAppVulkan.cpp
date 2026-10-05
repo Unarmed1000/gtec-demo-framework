@@ -54,6 +54,7 @@
 #include <FslUtil/Vulkan1_0/Util/PhysicalDeviceKHRUtil.hpp>
 #include <FslUtil/Vulkan1_0/Util/PhysicalDeviceUtil.hpp>
 #include <FslUtil/Vulkan1_0/Util/QueueUtil.hpp>
+#include <algorithm>
 #include <array>
 #include <vector>
 
@@ -128,6 +129,13 @@ namespace Fsl
     if (appHostConfig && appHostConfig->HasDeviceRequiredFeatures())
     {
       appHostConfig->ExtractDeviceRequiredFeatures(requiredFeatures);
+    }
+    if (m_launchOptions.TimelineSemaphore != OptionUserChoice::Off &&
+        std::none_of(requiredFeatures.begin(), requiredFeatures.end(), [](const Vulkan::PhysicalDeviceFeatureRequest& entry)
+                     { return entry.Feature == Vulkan::PhysicalDeviceFeature::TimelineSemaphore; }))
+    {
+      // The frame loop of DemoAppVulkanBasic waits for its frames with a timeline semaphore where the device has them
+      requiredFeatures.emplace_back(Vulkan::PhysicalDeviceFeature::TimelineSemaphore, Vulkan::FeatureRequirement::Optional);
     }
 
     m_physicalDevice = vulkanHostInfo->GetPhysicalDevice();

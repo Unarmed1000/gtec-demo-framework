@@ -465,6 +465,7 @@ Column | Unit | Description
 `presentCallTicks` | ticks | When vkQueuePresentKHR was called
 `presentReturnTicks` | ticks | When vkQueuePresentKHR returned
 `presentResult` | code | The VkResult of vkQueuePresentKHR
+`acquireResult` | code | The VkResult of vkAcquireNextImageKHR (zero is success, 1000001003 is VK_SUBOPTIMAL_KHR: the image was acquired, the swapchain no longer matches the surface exactly)
 `presentTimingRequested` | flag | 1 if the present was asked to be timed, 0 if not: present timing is off, or too many results were outstanding
 `refreshDurationNs` | nanoseconds | VkSwapchainTimingPropertiesEXT::refreshDuration as the swapchain last reported it
 `refreshIntervalNs` | nanoseconds | VkSwapchainTimingPropertiesEXT::refreshInterval as the swapchain last reported it

@@ -1145,6 +1145,20 @@ namespace Fsl
   }
 
 
+  void FramePacingShared::WaitForFrameStart()
+  {
+    if (m_frameStarted || !m_pacer)
+    {
+      return;
+    }
+    if (m_frameStartWaitTime.Ticks() == 0)
+    {
+      m_frameStartWaitTime = m_timer.GetTimestamp();
+    }
+    WaitUntil(m_nextFrameStartTime);
+  }
+
+
   void FramePacingShared::StartFrame()
   {
     if (m_frameStarted)
@@ -1153,7 +1167,9 @@ namespace Fsl
     }
     m_frameStarted = true;
 
-    const TickCount frameWaitStartTime = m_timer.GetTimestamp();
+    // The wait can have been made already (WaitForFrameStart), the frame then waited from there
+    const TickCount frameWaitStartTime = m_frameStartWaitTime.Ticks() != 0 ? m_frameStartWaitTime : m_timer.GetTimestamp();
+    m_frameStartWaitTime = {};
     if (m_pacer)
     {
       // A frame starts when the previous one is shown. A present that was delayed (WaitForPresent) need not wait for the display

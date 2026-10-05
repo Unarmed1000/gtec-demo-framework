@@ -84,7 +84,10 @@ namespace Fsl::VulkanBasic
     namespace LocalConfig
     {
       // The desired minimum image count for the swap buffers
-      constexpr const uint32_t DesiredMinSwapBufferCount = 2;
+      //! The swapchain is asked for one image more than the surface needs and for at least this many. With the fewest images a
+      //! surface allows the app can hold none while it waits, and with two images and a FIFO present the rendering of a frame can
+      //! not begin before the frame before it is on the display.
+      constexpr const uint32_t MinDesiredSwapBufferCount = 3;
 
       constexpr const auto DefaultTimeout = std::numeric_limits<uint64_t>::max();
 
@@ -109,6 +112,23 @@ namespace Fsl::VulkanBasic
     DemoAppVulkanSetup ProcessDemoAppSetup(DemoAppVulkanSetup demoAppVulkanSetup)
     {
       return demoAppVulkanSetup;
+    }
+
+    //! True for the present modes that show one image per refresh in the order they were presented. A present can only be given a
+    //! target time with one of these.
+    constexpr bool IsFifoPresentMode(const VkPresentModeKHR presentMode) noexcept
+    {
+      switch (presentMode)
+      {
+      case VK_PRESENT_MODE_FIFO_KHR:
+      case VK_PRESENT_MODE_FIFO_RELAXED_KHR:
+#ifdef VK_KHR_present_mode_fifo_latest_ready
+      case VK_PRESENT_MODE_FIFO_LATEST_READY_KHR:
+#endif
+        return true;
+      default:
+        return false;
+      }
     }
 
     VkImageUsageFlags FilterUnsupportedImageUsageFlags(const VkPhysicalDevice physicalDevice, const VkSurfaceKHR surface,
@@ -247,6 +267,7 @@ namespace Fsl::VulkanBasic
     FramePacingLogColumn PresentCall;
     FramePacingLogColumn PresentReturn;
     FramePacingLogColumn PresentResult;
+    FramePacingLogColumn AcquireResult;
     FramePacingLogColumn PresentTimingRequested;
     FramePacingLogColumn PresentTargetRelative;
     FramePacingLogColumn RefreshDuration;
@@ -288,6 +309,8 @@ namespace Fsl::VulkanBasic
       state->PresentCall = rLog.RegisterColumn("presentCallTicks", FramePacingLogUnit::Ticks, "When vkQueuePresentKHR was called");
       state->PresentReturn = rLog.RegisterColumn("presentReturnTicks", FramePacingLogUnit::Ticks, "When vkQueuePresentKHR returned");
       state->PresentResult = rLog.RegisterColumn("presentResult", FramePacingLogUnit::Code, "The VkResult of vkQueuePresentKHR");
+      state->AcquireResult =
+        rLog.RegisterColumn("acquireResult", FramePacingLogUnit::Code, "The VkResult of vkAcquireNextImageKHR (1000001003 is VK_SUBOPTIMAL_KHR)");
       state->PresentTimingRequested =
         rLog.RegisterColumn("presentTimingRequested", FramePacingLogUnit::Flag,
                             "1 if the present was asked to be timed, 0 if not: present timing is off, or too many results were outstanding");
@@ -401,6 +424,21 @@ namespace Fsl::VulkanBasic
     m_resources.MainCommandPool.Reset(m_device.Get(), VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT, m_deviceQueue.QueueFamilyIndex);
     Vulkan::VUDebugUtils::SetObjectName(m_device.Get(), VK_OBJECT_TYPE_COMMAND_POOL, m_resources.MainCommandPool.Get(), "MainCommandPool");
     m_resources.Frames = CreateFrameSyncObjects(m_device.Get(), GetRenderConfig().MaxFramesInFlight, m_swapchainMaintenance1Enabled);
+    m_resources.FrameSubmitValues.assign(m_resources.Frames.size(), 0u);
+    m_useFrameTimeline = m_deviceActiveFeatures12.timelineSemaphore != VK_FALSE && m_launchOptions.TimelineSemaphore != OptionUserChoice::Off;
+    if (m_useFrameTimeline)
+    {
+      VkSemaphoreTypeCreateInfo typeCreateInfo{};
+      typeCreateInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_TYPE_CREATE_INFO;
+      typeCreateInfo.semaphoreType = VK_SEMAPHORE_TYPE_TIMELINE;
+      typeCreateInfo.initialValue = 0;
+      VkSemaphoreCreateInfo createInfo{};
+      createInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+      createInfo.pNext = &typeCreateInfo;
+      m_resources.FrameTimeline.Reset(m_device.Get(), createInfo);
+      Vulkan::VUDebugUtils::SetObjectName(m_device.Get(), VK_OBJECT_TYPE_SEMAPHORE, m_resources.FrameTimeline.Get(), "FrameTimeline");
+    }
+    FSLLOG3_VERBOSE("Frame synchronization: {}", m_useFrameTimeline ? "a timeline semaphore" : "a fence per frame slot");
   }
 
 
@@ -568,7 +606,15 @@ namespace Fsl::VulkanBasic
     assert(frameRecord.ImageAcquiredSemaphore.IsValid());
     const VkSemaphore waitSemaphore = frameRecord.ImageAcquiredSemaphore.Get();
     const VkSemaphore signalSemaphore = swapchainRecord.ImageReleasedSemaphore.Get();
-    const VkFence queueSubmitFence = frameRecord.QueueSubmitFence.Get();
+    // The frame is waited for by its fence, or with a timeline semaphore by the value this submit gives it
+    const VkFence queueSubmitFence = m_useFrameTimeline ? VK_NULL_HANDLE : frameRecord.QueueSubmitFence.Get();
+    const std::array<VkSemaphore, 2> signalSemaphores = {signalSemaphore, m_resources.FrameTimeline.Get()};
+    // The value of a binary semaphore is not looked at
+    const std::array<uint64_t, 2> signalValues = {0u, m_frameTimelineValue + 1u};
+    VkTimelineSemaphoreSubmitInfo timelineSubmitInfo{};
+    timelineSubmitInfo.sType = VK_STRUCTURE_TYPE_TIMELINE_SEMAPHORE_SUBMIT_INFO;
+    timelineSubmitInfo.signalSemaphoreValueCount = static_cast<uint32_t>(signalValues.size());
+    timelineSubmitInfo.pSignalSemaphoreValues = signalValues.data();
 
     // Submit the draw operations
     const VkPipelineStageFlags waitDstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
@@ -582,8 +628,19 @@ namespace Fsl::VulkanBasic
     submitInfo.pCommandBuffers = m_dependentResources.CmdBuffers.GetPointer(currentFrameIndex);
     submitInfo.signalSemaphoreCount = 1;
     submitInfo.pSignalSemaphores = &signalSemaphore;
+    if (m_useFrameTimeline)
+    {
+      submitInfo.pNext = &timelineSubmitInfo;
+      submitInfo.signalSemaphoreCount = static_cast<uint32_t>(signalSemaphores.size());
+      submitInfo.pSignalSemaphores = signalSemaphores.data();
+    }
 
     m_deviceQueue.Submit(1, &submitInfo, queueSubmitFence);
+    if (m_useFrameTimeline)
+    {
+      ++m_frameTimelineValue;
+      m_resources.FrameSubmitValues[currentFrameIndex] = m_frameTimelineValue;
+    }
   }
 
 
@@ -660,22 +717,28 @@ namespace Fsl::VulkanBasic
       const bool usePresentTiming = m_hostDeviceFeatures.PresentTiming && m_launchOptions.PresentTiming != OptionUserChoice::Off &&
                                     (m_presentTimingRequested || m_launchOptions.PresentTiming == OptionUserChoice::On);
       m_presentTimingChangePending = false;
+      m_swapchainSuboptimalPending = false;
+      m_swapchainSuboptimalCount = 0;
+      const uint32_t desiredMinImageCount = GetDesiredMinSwapBufferCount();
       const VkSwapchainCreateFlagsKHR swapchainCreateFlags =
         usePresentTiming ? Vulkan::VUSwapchainPresentTiming::GetSwapchainCreateFlags(m_physicalDevice.Device, m_surface) : 0u;
       // The old swapchain is retired when the new one is created
       m_presentTiming.Reset();
       m_presentTimingRecords.clear();
 
-      m_swapchain = Vulkan::SwapchainKHRUtil::CreateSwapchain(
-        m_physicalDevice.Device, m_device.Get(), swapchainCreateFlags, m_surface, LocalConfig::DesiredMinSwapBufferCount, 1, desiredImageUsageFlags,
-        VK_SHARING_MODE_EXCLUSIVE, 0, nullptr, VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR, presentMode, VK_TRUE, m_swapchain.Get(), fallbackExtent,
-        m_surfaceFormatInfo, m_swapchainMaintenance1Enabled);
+      m_swapchain = Vulkan::SwapchainKHRUtil::CreateSwapchain(m_physicalDevice.Device, m_device.Get(), swapchainCreateFlags, m_surface,
+                                                              desiredMinImageCount, 1, desiredImageUsageFlags, VK_SHARING_MODE_EXCLUSIVE, 0, nullptr,
+                                                              VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR, presentMode, VK_TRUE, m_swapchain.Get(),
+                                                              fallbackExtent, m_surfaceFormatInfo, m_swapchainMaintenance1Enabled);
+      // The helper can replace the present mode that was asked for by one the surface supports, so the swapchain is asked
+      presentMode = m_swapchain.GetPresentMode();
       if (swapchainCreateFlags != 0u)
       {
         if (m_presentTiming.Reset(m_physicalDevice.Device, m_device.Get(), m_surface, m_swapchain.Get(), m_calibratedTimestamps) &&
-            m_hostDeviceFeatures.PresentAtRelativeTime)
+            m_hostDeviceFeatures.PresentAtRelativeTime && IsFifoPresentMode(presentMode))
         {
-          // The presents of this swapchain can be given a target time, if its surface supports that as well
+          // The presents of this swapchain can be given a target time, if its surface supports that as well. A target time is only
+          // valid with a present mode of the FIFO family (VUID-VkPresentTimingsInfoEXT-pSwapchains-12235).
           m_presentTiming.TryEnablePresentAtRelativeTime();
         }
       }
@@ -696,7 +759,7 @@ namespace Fsl::VulkanBasic
       FSLLOG3_VERBOSE2("DemoAppVulkanBasic::BuildResources(): Swapchain image count: {}", swapchainImageCount);
       // Ensure that the render loop frame counter never goes above this value
       GetDemoAppControl()->SetRenderLoopFrameCounter(m_dependentResources.FramesInFlightCount);
-      LogSwapchainCreated(presentMode, swapchainCreateFlags);
+      LogSwapchainCreated(presentMode, swapchainCreateFlags, desiredMinImageCount);
 
       if (AppSetup.DepthBuffer == DepthBufferMode::Enabled)
       {
@@ -782,6 +845,9 @@ namespace Fsl::VulkanBasic
     {
       FSLLOG3_ERROR("BuildResources failed with: {}", ex.what());
       FreeResources();
+      // A swapchain that was given to vkCreateSwapchainKHR as oldSwapchain is retired, also when the creation failed, and a retired
+      // swapchain can not be given again. So it goes here, and the next attempt creates one from nothing.
+      m_swapchain.Reset();
       throw;
     }
     FSLLOG3_VERBOSE2("DemoAppVulkanBasic::BuildResources(): Completed");
@@ -829,7 +895,66 @@ namespace Fsl::VulkanBasic
   }
 
 
-  void DemoAppVulkanBasic::LogSwapchainCreated(const VkPresentModeKHR presentMode, const VkSwapchainCreateFlagsKHR createFlags)
+  VkResult DemoAppVulkanBasic::WaitForFrameSlot(const uint32_t frameIndex)
+  {
+    if (!m_useFrameTimeline)
+    {
+      return vkWaitForFences(m_device.Get(), 1, m_resources.Frames[frameIndex].QueueSubmitFence.GetPointer(), VK_TRUE, LocalConfig::DefaultTimeout);
+    }
+    const uint64_t submitValue = m_resources.FrameSubmitValues[frameIndex];
+    if (submitValue == 0u)
+    {
+      // Nothing was submitted from this frame slot yet
+      return VK_SUCCESS;
+    }
+    const VkSemaphore timeline = m_resources.FrameTimeline.Get();
+    VkSemaphoreWaitInfo waitInfo{};
+    waitInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_WAIT_INFO;
+    waitInfo.semaphoreCount = 1;
+    waitInfo.pSemaphores = &timeline;
+    waitInfo.pValues = &submitValue;
+    return vkWaitSemaphores(m_device.Get(), &waitInfo, LocalConfig::DefaultTimeout);
+  }
+
+
+  uint32_t DemoAppVulkanBasic::GetDesiredMinSwapBufferCount() const
+  {
+    if (m_launchOptions.SwapchainImages != 0u)
+    {
+      return m_launchOptions.SwapchainImages;
+    }
+    VkSurfaceCapabilitiesKHR surfaceCapabilities{};
+    if (vkGetPhysicalDeviceSurfaceCapabilitiesKHR(m_physicalDevice.Device, m_surface, &surfaceCapabilities) != VK_SUCCESS)
+    {
+      return LocalConfig::MinDesiredSwapBufferCount;
+    }
+    return std::max(surfaceCapabilities.minImageCount + 1u, LocalConfig::MinDesiredSwapBufferCount);
+  }
+
+
+  bool DemoAppVulkanBasic::IsSwapchainRecreationWorthIt() const
+  {
+    VkSurfaceCapabilitiesKHR surfaceCapabilities{};
+    if (vkGetPhysicalDeviceSurfaceCapabilitiesKHR(m_physicalDevice.Device, m_surface, &surfaceCapabilities) != VK_SUCCESS)
+    {
+      return false;
+    }
+    // A surface that leaves its extent to the swapchain (the special value) can not be out of step with it
+    const VkExtent2D swapchainExtent = m_swapchain.GetImageExtent();
+    const bool hasExtent = surfaceCapabilities.currentExtent.width != 0xFFFFFFFF || surfaceCapabilities.currentExtent.height != 0xFFFFFFFF;
+    const bool extentDiffers = hasExtent && (surfaceCapabilities.currentExtent.width != swapchainExtent.width ||
+                                             surfaceCapabilities.currentExtent.height != swapchainExtent.height);
+    // The pre-transform a new swapchain would get: identity where the surface supports it (see SwapchainKHRUtil::CreateSwapchain).
+    // A rotated surface under a identity swapchain says suboptimal for every frame, and a new swapchain would be the same again.
+    const VkSurfaceTransformFlagBitsKHR newPreTransform = (surfaceCapabilities.supportedTransforms & VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR) != 0u
+                                                            ? VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR
+                                                            : surfaceCapabilities.currentTransform;
+    return extentDiffers || newPreTransform != m_swapchain.GetPreTransform();
+  }
+
+
+  void DemoAppVulkanBasic::LogSwapchainCreated(const VkPresentModeKHR presentMode, const VkSwapchainCreateFlagsKHR createFlags,
+                                               const uint32_t desiredMinImageCount)
   {
     if (!m_framePacingLogState)
     {
@@ -844,11 +969,11 @@ namespace Fsl::VulkanBasic
     const bool hasPresentFence = !m_resources.Frames.empty() && m_resources.Frames.front().PresentFence.IsValid();
     rState.Log->AddLogEvent("swapchainCreated",
                             fmt::format("generation={};widthPx={};heightPx={};format={};presentMode={};desiredMinImageCount={};imageCount={};"
-                                        "createFlags={:#x};imageUsage={:#x};presentFence={};framesInFlight={}",
+                                        "createFlags={:#x};imageUsage={:#x};presentFence={};framesInFlight={};frameSync={}",
                                         rState.Generation, extent.width, extent.height, static_cast<int32_t>(m_swapchain.GetImageFormat()),
-                                        static_cast<int32_t>(presentMode), LocalConfig::DesiredMinSwapBufferCount, m_swapchain.GetImageCount(),
-                                        createFlags, m_swapchain.GetImageUsageFlags(), hasPresentFence ? 1 : 0,
-                                        m_dependentResources.FramesInFlightCount));
+                                        static_cast<int32_t>(presentMode), desiredMinImageCount, m_swapchain.GetImageCount(), createFlags,
+                                        m_swapchain.GetImageUsageFlags(), hasPresentFence ? 1 : 0, m_dependentResources.FramesInFlightCount,
+                                        m_useFrameTimeline ? "timeline" : "fence"));
 
     const Vulkan::VUPresentTimingState timingState = m_presentTiming.GetState();
     rState.Log->AddLogEvent("presentTiming", fmt::format("generation={};enabled={};requested={};stages={:#x};timeDomain={};timeDomainId={};"
@@ -874,6 +999,7 @@ namespace Fsl::VulkanBasic
     rState.HasFrame = true;
     rLog.SetLogValue(rState.AcquireCall, m_currentPresentCalls.AcquireCallTime);
     rLog.SetLogValue(rState.AcquireReturn, m_currentPresentCalls.AcquireReturnTime);
+    rLog.SetLogInt64(rState.AcquireResult, m_currentPresentCalls.AcquireResult);
     rLog.SetLogUInt64(rState.SwapchainGeneration, rState.Generation);
 
     const Vulkan::VUPresentTimingState timingState = m_presentTiming.GetState();
@@ -1090,9 +1216,12 @@ namespace Fsl::VulkanBasic
       return {m_device.Get(), 0, 1, &colorAttachmentDescription, 1, &subpassDescription, 1, &subpassDependency};
     }
 
-    // Ensure that the correct dst masks are set
-    subpassDependency.srcStageMask |= VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
-    subpassDependency.dstStageMask |= VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
+    // Ensure that the correct masks are set. The depth image is one for all frames, so with more than one frame in flight the frame
+    // before can still be writing it when this one begins: the store of a depth attachment is done in the late fragment tests, and
+    // the dependency has to name that stage and that write, or the layout transition of this frame is not ordered after it.
+    subpassDependency.srcStageMask |= VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT | VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT;
+    subpassDependency.srcAccessMask |= VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+    subpassDependency.dstStageMask |= VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT | VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT;
     subpassDependency.dstAccessMask |= VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
 
     VkAttachmentDescription depthAttachmentDescription{};
@@ -1291,6 +1420,19 @@ namespace Fsl::VulkanBasic
       SetAppState(AppDrawResult::Retry);
     }
 
+    if (m_swapchainSuboptimalPending && m_currentAppState == AppState::Ready)
+    {
+      // A acquire or a present said that the swapchain no longer matches the surface exactly. The image was still presented, that
+      // result is a success. A new swapchain is only made when it would differ from this one: a surface can say suboptimal for
+      // every frame for a reason a new swapchain does not cure, and that must not make one per frame.
+      m_swapchainSuboptimalPending = false;
+      if (IsSwapchainRecreationWorthIt())
+      {
+        FSLLOG3_VERBOSE("The swapchain is suboptimal ({} results) and the surface changed, recreating the swapchain", m_swapchainSuboptimalCount);
+        SetAppState(AppDrawResult::Retry);
+      }
+    }
+
     if (m_currentAppState == AppState::WaitForSwapchainRecreation)
     {
       switch (TryRecreateSwapchain())
@@ -1312,6 +1454,26 @@ namespace Fsl::VulkanBasic
     }
 
     const auto currentFrameIndex = frameInfo.FrameIndex;
+
+    // The order of a frame: the app holds its start if it paces its frames, then the frame slot is waited for, then a image is
+    // acquired. So no swapchain image is held while the frame waits, which matters with the few images a swapchain has.
+    OnVulkanFrameStart();
+    {    // Wait for the frame slot to be ready, so we know the frame resources can be reused
+      const VkResult waitVkResult = WaitForFrameSlot(currentFrameIndex);
+      if (waitVkResult != VK_SUCCESS)
+      {
+        FSLLOG3_WARNING("Waiting for the frame slot failed with: {}", RapidVulkan::Debug::ToString(waitVkResult));
+        ReportDeviceLost(waitVkResult);
+        return AppDrawResult::Failed;
+      }
+      // Ensure the present fence can be reused
+      const AppDrawResult waitResult = TryWaitForPresentFence(m_resources.Frames[currentFrameIndex]);
+      if (waitResult != AppDrawResult::Completed)
+      {
+        return waitResult;
+      }
+    }
+
     uint32_t acquiredSwapImageIndex{0};
     VkResult result = VK_SUCCESS;
     RapidVulkan::Semaphore imageAcquiredSemaphore = m_resources.AcquireSemaphore(m_device.Get());
@@ -1320,6 +1482,12 @@ namespace Fsl::VulkanBasic
       result = vkAcquireNextImageKHR(m_device.Get(), m_swapchain.Get(), LocalConfig::DefaultTimeout, imageAcquiredSemaphore.Get(), VK_NULL_HANDLE,
                                      &acquiredSwapImageIndex);
       m_currentPresentCalls.AcquireReturnTime = m_presentCallTimer.GetTimestamp();
+      m_currentPresentCalls.AcquireResult = static_cast<int32_t>(result);
+    }
+    if (result == VK_SUBOPTIMAL_KHR)
+    {
+      m_swapchainSuboptimalPending = true;
+      ++m_swapchainSuboptimalCount;
     }
 
     switch (result)
@@ -1327,20 +1495,16 @@ namespace Fsl::VulkanBasic
     case VK_SUBOPTIMAL_KHR:
     case VK_SUCCESS:
       {
-        {    // Wait for the frame to be ready, so we know the frame resources can be reused
-          VkResult waitVkResult = VK_SUCCESS;
-          AppDrawResult waitResult =
-            WaitForFenceAndResetIt(m_device.Get(), m_resources.Frames[currentFrameIndex].QueueSubmitFence.Get(), waitVkResult);
-          if (waitResult != AppDrawResult::Completed)
+        if (!m_useFrameTimeline)
+        {
+          // The fence of the frame slot was waited for before the acquire. It is reset here, now that the frame will be submitted:
+          // a acquire that fails has to leave it signaled, or the next wait for it would never end.
+          const VkResult resetResult = vkResetFences(m_device.Get(), 1, m_resources.Frames[currentFrameIndex].QueueSubmitFence.GetPointer());
+          if (resetResult != VK_SUCCESS)
           {
-            ReportDeviceLost(waitVkResult);
-            return waitResult;
-          }
-          // Ensure the present fence can be reused
-          waitResult = TryWaitForPresentFence(m_resources.Frames[currentFrameIndex]);
-          if (waitResult != AppDrawResult::Completed)
-          {
-            return waitResult;
+            FSLLOG3_WARNING("vkResetFences failed with: {}", RapidVulkan::Debug::ToString(resetResult));
+            ReportDeviceLost(resetResult);
+            return AppDrawResult::Failed;
           }
         }
 
@@ -1350,17 +1514,18 @@ namespace Fsl::VulkanBasic
 
           // Check if the assigned frame index was assigned to another frame and if it was we wait for that frame to finish before reclaiming the
           // swapchain record.
-          if (rSwapchainRecord.HasAssignedFrame && rSwapchainRecord.AssignedFrameIndex != currentFrameIndex)
+          if (AppSetup.WaitForLastUseOfSwapchainImage && rSwapchainRecord.HasAssignedFrame &&
+              rSwapchainRecord.AssignedFrameIndex != currentFrameIndex)
           {
             // FSLLOG3_INFO("Remapping frameIndex {} to image previously used in frameIndex{}", currentFrameIndex,
             // rSwapchainRecord.AssignedFrameIndex);
             const FrameDrawRecord& rOldFrame = m_resources.Frames[rSwapchainRecord.AssignedFrameIndex];
 
             // We only wait for the other frames fence (and it will be up to the frame to reset it once we get to it)
-            const auto waitResult = vkWaitForFences(m_device.Get(), 1, rOldFrame.QueueSubmitFence.GetPointer(), VK_TRUE, LocalConfig::DefaultTimeout);
+            const VkResult waitResult = WaitForFrameSlot(rSwapchainRecord.AssignedFrameIndex);
             if (waitResult != VK_SUCCESS)
             {
-              FSLLOG3_WARNING("vkWaitForFences failed with: {}", RapidVulkan::Debug::ToString(waitResult));
+              FSLLOG3_WARNING("Waiting for the frame slot that used the image failed with: {}", RapidVulkan::Debug::ToString(waitResult));
               ReportDeviceLost(waitResult);
               return AppDrawResult::Failed;
             }
@@ -1446,6 +1611,10 @@ namespace Fsl::VulkanBasic
     switch (result)
     {
     case VK_SUBOPTIMAL_KHR:
+      // The image was presented. If a new swapchain would do better is looked at before the next acquire.
+      m_swapchainSuboptimalPending = true;
+      ++m_swapchainSuboptimalCount;
+      [[fallthrough]];
     case VK_SUCCESS:
       return AppDrawResult::Completed;
     case VK_ERROR_OUT_OF_DATE_KHR:
