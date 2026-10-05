@@ -589,6 +589,9 @@ if (m_frameLog)
 - If the marker is enabled at runtime (instead of on the command line) it is first shown the frame after it was enabled, as the render
   resources it needs are created on demand.
 - The SDK is pinned to a commit of mb-framepacing until the first `sdk-v0.1.0` release is published.
+- The mb-framepacing tools must be of the marker format the app draws. Since mb-framepacing `5908e9d` every marker ends with a CRC-32
+  of its bytes (the markers keep their size and place): tools built before it do not decode the markers of this build, and tools built
+  from it do not decode a recording of an older build.
 
 ## Implementation
 
