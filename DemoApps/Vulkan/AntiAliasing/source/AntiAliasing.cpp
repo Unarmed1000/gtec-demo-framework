@@ -1273,6 +1273,8 @@ namespace Fsl
     clearValues[0].color = {{0.0f, 0.0f, 0.0f, 1.0f}};
     clearValues[1].depthStencil = {1.0f, 0};
     clearValues[2].color = {{0.0f, 0.0f, 0.0f, 1.0f}};
+    // The third attachment is the resolved color, which the render pass only has when it is multisampled
+    const uint32_t clearValueCount = m_dependentResources.Offscreen.ResolvedColor.IsValid() ? 3u : 2u;
 
     VkRenderPassBeginInfo renderPassBeginInfo{};
     renderPassBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
@@ -1281,7 +1283,7 @@ namespace Fsl
     renderPassBeginInfo.renderArea.offset.x = 0;
     renderPassBeginInfo.renderArea.offset.y = 0;
     renderPassBeginInfo.renderArea.extent = m_dependentResources.Offscreen.GetFrameBufferExtent();
-    renderPassBeginInfo.clearValueCount = UncheckedNumericCast<uint32_t>(clearValues.size());
+    renderPassBeginInfo.clearValueCount = clearValueCount;
     renderPassBeginInfo.pClearValues = clearValues.data();
 
     rCmdBuffers.CmdBeginRenderPass(currentFrameIndex, &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
