@@ -44,6 +44,7 @@
 #include <Shared/FramePacing/SamplePacer.hpp>
 #include <Shared/FramePacing/SamplePacerHold.hpp>
 #include <Shared/FramePacing/SamplePacerProfile.hpp>
+#include <Shared/FramePacing/SamplePacingTier.hpp>
 #include <Shared/FramePacing/SamplePresentFeedback.hpp>
 #include <Shared/FramePacing/SampleSwapchainRefresh.hpp>
 #include <fmt/format.h>
@@ -113,6 +114,8 @@ namespace Fsl
     //! One value label per value of the frame pacing section of the stats panel
     struct PacerStatsUIRecord
     {
+      //! What is certain about explicit sync (Wayland only, null on other window systems)
+      std::shared_ptr<UI::Label> ExplicitSync;
       std::shared_ptr<UI::Label> SwapInterval;
       std::shared_ptr<UI::Label> FrameTime;
       std::shared_ptr<UI::Label> LateFrames;
@@ -175,6 +178,9 @@ namespace Fsl
       std::shared_ptr<UI::RadioButton> RadioHoldVSync;
       std::shared_ptr<UI::RadioButton> RadioHoldWait;
       std::shared_ptr<UI::RadioButton> RadioHoldSchedule;
+      //! The tier the frames are held in now and the best tier this system has (below the switch of the frame pacer)
+      std::shared_ptr<UI::Label> LabelTierInUse;
+      std::shared_ptr<UI::Label> LabelTierBest;
       std::shared_ptr<UI::Label> LabelPacerStatus;
       std::shared_ptr<UI::Label> LabelPacerFrames;
       std::shared_ptr<UI::SliderAndFmtValueLabel<int32_t>> SliderCpuLoad;
@@ -271,6 +277,18 @@ namespace Fsl
     bool m_presentFeedbackEnabled{false};
     //! True if the app can give a present a target time (SetPresentSchedulingSupport)
     bool m_presentSchedulingSupported{false};
+    //! The tier the frames are held in as the side bar shows it. It is worked out every update and shown and logged when it changes.
+    SamplePacingTierInfo m_tierInfo;
+    bool m_tierKnown{false};
+    //! True once a frame has ended: the app has said what its swapchain can do by then (it only knows after its first frame began)
+    bool m_tierFactsReady{false};
+    //! True if the sample held the frame that ended last itself (WaitForPresent) for longer than its present holds a frame
+    bool m_sampleHeldFrame{false};
+    //! The longest swap interval the present of the app can hold a frame for (zero: not known, or the present has none)
+    uint32_t m_presentSwapIntervalMax{0};
+    //! What the window system said when the sample started: what is certain about explicit sync, and the name of its vsync source
+    SampleExplicitSync m_explicitSync{SampleExplicitSync::NotApplicable};
+    std::string m_vsyncSourceName;
     //! The target time of the present of the current frame, counted from when the frame before it was shown (zero = not scheduled)
     TimeSpan m_presentRelativeTarget;
     //! When the display refreshes according to the window system, read once per frame: the time of a vertical blank and the time
@@ -433,6 +451,13 @@ namespace Fsl
     //! How the frames are held right now: the method that was asked for, or the one the system falls back to (never Auto).
     //! The vsync wait falls back to the sleep once the display was seen to refresh at a variable rate.
     [[nodiscard]] SamplePacerHold GetHoldMethod() const;
+
+    //! @brief A app that presents with a swap interval says what the longest one is that it can set (the EGL config decides it, and it
+    //!        can be one). It is what the tier the side bar shows as the best of the system depends on.
+    void SetPresentSwapIntervalMax(const uint32_t maxSwapInterval) noexcept
+    {
+      m_presentSwapIntervalMax = maxSwapInterval;
+    }
     //! The target time of the present of the current frame after WaitForPresent: the frame is not to be shown before this long after the
     //! frame before it was shown. Zero if the present is not scheduled.
     [[nodiscard]] TimeSpan GetPresentRelativeTarget() const noexcept
@@ -510,6 +535,8 @@ namespace Fsl
     [[nodiscard]] double GetRefreshRateHz() const;
     void UpdateRefreshRateUI();
     void UpdatePacerStatus();
+    //! Work out the tier the frames are held in, and show and log it if it changed
+    void UpdateTier();
     //! Update the frame pacing section of the stats panel
     void UpdatePacerStats();
     //! Update the rows of the frame pacing section that show what the measured presents say

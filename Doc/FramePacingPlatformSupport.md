@@ -38,9 +38,19 @@ the lists below. At one refresh per frame every tier is the same: a FIFO present
 | 2 | Vulkan FIFO on Android from API level 33 | A wait on the vsync time of the choreographer (`--Pacer.Hold vsync`) | The app, which knows where the refreshes are | built, compiled with the NDK only. Not run on a device |
 | 3 | Vulkan FIFO and no vsync time: a X server without Present, a Wayland compositor without presentation-time, Android below API level 33, Apple, QNX | A timer (`--Pacer.Hold wait`) | A guess: the app does not know where the refreshes are | measured (Windows): next to no frame a refresh early or late at 50, 60 and 120 Hz. At 240 Hz from 1 % to 35 %, depending on where the timer happens to start |
 
-`--Pacer.Hold auto` picks the best tier the system has. A log says which tier a run was in: `vulkan.uses.presentAtRelativeTime=1` is the
-timed present of tier 1, a `window.vsyncSource` that is not empty is tier 2, and neither is tier 3. The `holdMethod` column says what
-every frame really used.
+A run without the frame pacer is tier 4: nothing holds a frame for more than one refresh. It is what a run uses, not something a
+system is.
+
+`--Pacer.Hold auto` picks the best tier the system has, and the default of the samples is `wait`, the timer of tier 3. The samples say
+two tiers in their side bar, below the switch of the frame pacer: what the run uses for pacing now (`In use: tier 1 of 4, timed present`,
+`tier 1 of 4, swap interval`, `tier 2 of 4, vsync time`, `tier 3 of 4, timer`, or `tier 4 of 4, pacer off`) and the best the system
+can do (`Best here: tier 1 of 4, timed present`), which is the tier `auto` gives. A OpenGL ES sample that has to hold a frame for longer than the swap interval of its EGL config allows
+holds it itself, and shows tier 2 or 3 then; a EGL config that allows a swap interval of one only is not a tier 1 at all, and `Best
+here` says what the sample can do itself. The frame pacing log has a `tier` event for the first frames and every time the tier changes
+(`inUse` and `best`: the number of the tier, with `reason` and `bestReason`), and the app log has a `FramePacing: tier in use ...`
+line for each, with the name of the vsync source of the window. A window system that gives its first vsync time after the first frame was shown starts
+a run one tier lower and changes then. The facts `vulkan.uses.presentAtRelativeTime` and
+`window.vsyncSource` say what the system has, and the `holdMethod` column says what every frame really used.
 
 What would move a configuration up and is not built: a present wait as the vsync signal (Vulkan level 2), the absolute target time and
 `VK_GOOGLE_display_timing` (Vulkan level 3), the vsync signal of Apple, and presenting a frame once per refresh, which
@@ -82,6 +92,43 @@ Needed, but not about time: linux-dmabuf, which the Vulkan window system layer u
 
 Which protocols an older or an embedded compositor has can only be read from the device. Weston is reported to have had
 presentation-time since version 1.10, which was not checked here. Nothing is known here about other compositors.
+
+## Explicit sync on Wayland
+
+Not a way to hold a frame, and not something a app does. It is listed here because it is asked about.
+
+With implicit sync the kernel and the driver work out from the buffers a command uses what it has to wait for. With explicit sync
+(linux-drm-syncobj-v1: `wp_linux_drm_syncobj_manager_v1`, a timeline per client and a sync object per `wl_surface`) the client says
+when a buffer is ready (a acquire point) and the compositor says when it is done with it (a release point). The client here is the
+graphics API of the driver: its Vulkan window system layer or its EGL platform binds the global on the display of the app and sets the
+two points on every commit it makes. The protocol says so itself: a client that uses EGL or Vulkan for a surface should not use the
+protocol on that surface.
+
+What a app can know, and what it can not:
+
+- If the compositor offers it. That is certain: it is the global, which the frame pacing log has as the fact
+  `window.has.wp_linux_drm_syncobj_manager_v1` and the frame pacing overlay of the samples as the `Explicit sync` row.
+- When it is not offered (0, `not offered (not in use)`) it is not in use.
+- When it is offered (1, `offered by the compositor`) the driver decides. There is no extension, no property and no query that says
+  if it does, and a app must not find out by trying: a second sync object on a surface is a protocol error that ends the connection.
+  So the samples do not say that it is in use.
+
+What a app must not do once a driver may use it, and what the framework does:
+
+- Commit on the window surface between the two points and the buffer of the driver, for example from another thread while a present
+  is made. That ends the connection (`no_buffer`). The window adapter commits on the window surface once, before the first configure
+  and before a swapchain or a EGL surface exists, and never again. The cursor has a surface of its own.
+- Attach buffers of its own to the window surface, or take a `wp_fifo_v1` or a `wp_commit_timer_v1` for it: those are one per surface
+  too and belong to the driver.
+- Destroy the `wl_surface` before the swapchain, the Vulkan surface or the EGL surface. The framework destroys them first.
+- Create a second Vulkan surface for the same `wl_surface`. The framework creates one per window.
+
+What it changes for frame pacing: not when a frame is shown. A compositor waits for a buffer to be ready before it uses it with
+both kinds of sync. The client gets its buffers back without waiting for the compositor to tell it. No measurement of a effect on
+frame times is known here, and none was made: the compositor of the machine the Wayland side was run on does not offer it.
+
+To compare with and without it, it is switched off outside the app: drivers and compositors have environment variables for that
+(see their documentation).
 
 ## How the two lists meet
 

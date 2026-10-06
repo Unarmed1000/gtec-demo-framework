@@ -37,6 +37,7 @@
 #include <FslGraphics/Render/Adapter/INativeBatch2D.hpp>
 #include <FslNativeWindow/Base/INativeWindow.hpp>
 #include <FslNativeWindow/Base/NativeWindowDisplayInfo.hpp>
+#include <FslNativeWindow/Base/NativeWindowTimingSupport.hpp>
 #include <FslNativeWindow/Base/NativeWindowVSyncInfo.hpp>
 #include <FslNativeWindow/Base/NativeWindowVariableRefreshInfo.hpp>
 #include <FslNativeWindow/Base/VirtualKey.hpp>
@@ -56,6 +57,7 @@
 #include <Shared/FramePacing/FramePacingShared.hpp>
 #include <Shared/FramePacing/OptionParser.hpp>
 #include <Shared/FramePacing/SampleConfig.hpp>
+#include <Shared/FramePacing/SamplePacingTierClassifier.hpp>
 #include <fmt/chrono.h>
 #include <fmt/format.h>
 #include <algorithm>
@@ -240,6 +242,14 @@ namespace Fsl
           m_window = windows.front();
         }
       }
+      const auto window = m_window.lock();
+      if (window)
+      {
+        // Read once: it does not change while the window lives, and the call allocates
+        const NativeWindowTimingSupport timingSupport = window->GetTimingSupport();
+        m_explicitSync = SamplePacingTierClassifier::ToExplicitSync(timingSupport);
+        m_vsyncSourceName = timingSupport.VSyncSource;
+      }
     }
     m_detectedRefreshRateHz = ReadDisplayRefreshRateHz();
 
@@ -321,6 +331,9 @@ namespace Fsl
     m_ui.RadioHoldSchedule = uiFactory->CreateRadioButton(holdGroup, "Hold: scheduled present", hold == SamplePacerHold::Schedule);
     m_vsyncPhasePercent = options->GetPacerVSyncPhasePercent();
     m_drainRefreshes = options->GetPacerDrainRefreshes();
+    // How well a frame is held for more than one refresh (Doc/FramePacingPlatformSupport.md), see UpdateTier
+    m_ui.LabelTierInUse = uiFactory->CreateLabel("");
+    m_ui.LabelTierBest = uiFactory->CreateLabel("");
     m_ui.LabelPacerStatus = uiFactory->CreateLabel("");
     m_ui.LabelPacerFrames = uiFactory->CreateLabel("");
     const auto lblCpuLoad = uiFactory->CreateLabel("CPU load (ms per frame)");
@@ -355,6 +368,8 @@ namespace Fsl
     stackLayout->AddChild(m_ui.ButtonTimedRun);
     stackLayout->AddChild(uiFactory->CreateDivider(UI::LayoutOrientation::Horizontal));
     stackLayout->AddChild(m_ui.SwitchPacer);
+    stackLayout->AddChild(m_ui.LabelTierInUse);
+    stackLayout->AddChild(m_ui.LabelTierBest);
     stackLayout->AddChild(m_ui.LabelRefreshRate);
     stackLayout->AddChild(m_ui.LabelPacedRate);
     stackLayout->AddChild(m_ui.SliderRefreshRate);
@@ -494,6 +509,7 @@ namespace Fsl
     m_updateTime = demoTime;
     m_frameStarted = false;
     UpdatePacer();
+    UpdateTier();
     if (m_presentMethod == SamplePresentMethod::SwapInterval)
     {
       // The frame starts here: the host updates the app right after the swap of the previous frame, which waited for the display
@@ -764,6 +780,7 @@ namespace Fsl
     m_lastGpuTime = TimeSpan(std::max(gpuTime.Ticks(), int64_t{0}));
     m_lastPresentWait = {};
     m_workSamplePending = true;
+    m_tierFactsReady = true;
     if (m_pacer)
     {
       m_pacer->EndFrame(now, m_lastCpuTime + m_lastGpuTime);
@@ -904,6 +921,7 @@ namespace Fsl
   {
     m_presentRelativeTarget = {};
     const SamplePacerHold holdMethod = GetHoldMethod();
+    m_sampleHeldFrame = m_pacer != nullptr && m_schedule.SwapInterval > presentSwapInterval;
     if (m_frameLog && m_pacer)
     {
       m_frameLog->SetLogInt64(m_logColumns.HoldMethod, ToLogCode(holdMethod));
@@ -1432,6 +1450,59 @@ namespace Fsl
   }
 
 
+  void FramePacingShared::UpdateTier()
+  {
+    if (!m_tierFactsReady)
+    {
+      return;
+    }
+    SamplePacingTierFacts facts;
+    facts.PresentHasSwapInterval = m_presentMethod == SamplePresentMethod::SwapInterval;
+    facts.PresentSwapIntervalMax = m_presentSwapIntervalMax;
+    facts.PacerOn = m_pacer != nullptr;
+    facts.SampleHeldFrame = m_sampleHeldFrame;
+    facts.HoldMethod = GetHoldMethod();
+    facts.PresentSchedulingSupported = m_presentSchedulingSupported;
+    facts.HasVSyncTime = m_vsyncTime.Ticks() > 0 && m_vsyncPeriod.Ticks() > 0 && !m_variableRefreshSeen;
+    facts.ExplicitSync = m_explicitSync;
+    // It is set again by the next frame the sample holds itself
+    m_sampleHeldFrame = false;
+
+    const SamplePacingTierInfo info = SamplePacingTierClassifier::Classify(facts);
+    if (m_tierKnown && info == m_tierInfo)
+    {
+      return;
+    }
+    // From here on: only when the tier changed (the pacer was switched, another hold method, the system lost or got a vsync time)
+    m_tierKnown = true;
+    m_tierInfo = info;
+
+    const int32_t inUse = SamplePacingTierClassifier::ToNumber(info.InUse);
+    const int32_t best = SamplePacingTierClassifier::ToNumber(info.Best);
+    const std::string_view inUseReason = SamplePacingTierClassifier::ToDisplayString(info.InUseReason);
+    const std::string_view bestReason = SamplePacingTierClassifier::ToDisplayString(info.BestReason);
+    // Two numbers: what the run uses for pacing now, and the best this system can do
+    SetFormattedContent(*m_ui.LabelTierInUse, "In use: tier {} of {}, {}", inUse, SamplePacingTierClassifier::TierCount, inUseReason);
+    SetFormattedContent(*m_ui.LabelTierBest, "Best here: tier {} of {}, {}", best, SamplePacingTierClassifier::TierCount, bestReason);
+
+    const std::string_view inUseLogReason = SamplePacingTierClassifier::ToLogString(info.InUseReason);
+    const std::string_view bestLogReason = SamplePacingTierClassifier::ToLogString(info.BestReason);
+    if (m_frameLog)
+    {
+      // A event and not a fact: the tier of a run can change, and its first value can be one from before the window system had a
+      // vsync time
+      m_frameLog->AddLogEvent("tier", fmt::format("inUse={};reason={};best={};bestReason={}", inUse, inUseLogReason, best, bestLogReason));
+      FSLLOG3_INFO("FramePacing: tier in use {} ({}), best here {} ({}), vsync source '{}'", inUse, inUseLogReason, best, bestLogReason,
+                   m_vsyncSourceName);
+    }
+    else
+    {
+      FSLLOG3_VERBOSE("FramePacing: tier in use {} ({}), best here {} ({}), vsync source '{}'", inUse, inUseLogReason, best, bestLogReason,
+                      m_vsyncSourceName);
+    }
+  }
+
+
   void FramePacingShared::UpdatePacerStatus()
   {
     // The swap interval, the rate it gives and the frames are shown with the frame pacer off as well: every frame is then held for
@@ -1753,6 +1824,13 @@ namespace Fsl
     const auto pacerGrid = createGrid();
     uint32_t pacerRow = 0;
     PacerStatsUIRecord& rPacerStats = m_ui.PacerStats;
+    if (m_explicitSync != SampleExplicitSync::NotApplicable)
+    {
+      // Only what is certain: if the compositor offers it. If the driver uses it can not be asked.
+      const std::string_view explicitSyncText = SamplePacingTierClassifier::ToDisplayString(m_explicitSync);
+      rPacerStats.ExplicitSync = addStatsRow(*pacerGrid, pacerRow, "Explicit sync");
+      rPacerStats.ExplicitSync->SetContent(StringViewLite(explicitSyncText.data(), explicitSyncText.size()));
+    }
     rPacerStats.SwapInterval = addStatsRow(*pacerGrid, pacerRow, "Swap interval");
     rPacerStats.FrameTime = addStatsRow(*pacerGrid, pacerRow, "Frame time");
     rPacerStats.LateFrames = addStatsRow(*pacerGrid, pacerRow, "Late frames");

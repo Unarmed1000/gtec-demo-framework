@@ -574,6 +574,10 @@ namespace Fsl
             FSLLOG3_VERBOSE("Wayland: the window is a xdg_toplevel, asked to be {}",
                             rWindow.Fullscreen ? "fullscreen (set_fullscreen)" : "a window of the size that was asked for");
             rWindow.WaitForConfigure = true;
+            // The one commit the adapter makes on the window surface, before a swapchain or a EGL surface exists for it. After that only
+            // the graphics API commits on this surface: with explicit sync (linux-drm-syncobj-v1) the driver sets a acquire and a
+            // release point before each of its commits, and a commit of the app in between is a protocol error that ends the connection
+            // (Doc/FramePacingPlatformSupport.md, "Explicit sync on Wayland").
             wl_surface_commit(rWindow.Handles.Surface.get());
           }
 
