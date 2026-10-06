@@ -550,6 +550,12 @@ namespace Fsl
     //! off a time can be. Call it during the draw of a frame.
     //! @param readTime how long the read of the clock of the GPU took, a time can be off by up to half of it
     void AddGpuClockCalibration(const TimeSpan readTime);
+    //! The same for a app that is told how far off a read can be and that measures the rate of the clock of the GPU (Vulkan).
+    //! @param readTime how long the read of the two clocks took
+    //! @param maxDeviation how far the two clocks can be from having been read at the same moment
+    //! @param clockRateDeviationPpm how much longer (positive) or shorter a count of the clock of the GPU takes than the device
+    //!        states, in parts per million. Empty until it was measured.
+    void AddGpuClockCalibration(const TimeSpan readTime, const TimeSpan maxDeviation, const std::optional<double> clockRateDeviationPpm);
     //! The app flushes its commands now: the frame log gets the time. Call it right before the flush, during the draw of the frame.
     void MarkFlush();
 

@@ -21,8 +21,10 @@
 //****************************************************************************************************************************************************
 
 #include "FramePacing.hpp"
+#include <FslBase/Time/TimeSpan.hpp>
 #include <FslBase/UncheckedNumericCast.hpp>
 #include <array>
+#include <optional>
 
 namespace Fsl
 {
@@ -30,7 +32,9 @@ namespace Fsl
   {
     namespace LocalConfig
     {
-      constexpr uint32_t FramesPerCalibration = 240;
+      //! How old the read of the device clock and the clock of the framework may get before they are read again. The two do not
+      //! run at the same rate, and by time and not by frames a slow frame rate is converted as well as a fast one.
+      constexpr TimeSpan MaxCalibrationAge = TimeSpan::FromMilliseconds(250);
     }
 
     constexpr SampleSwapchainRefresh ToSampleSwapchainRefresh(const Vulkan::VUPresentRefreshMode mode) noexcept
@@ -180,11 +184,13 @@ namespace Fsl
         m_shared.AddGpuInterval(m_slotPresentIds[currentFrameIndex], gpuStartTime, gpuEndTime);
       }
     }
-    // Read the device clock and the clock of the framework again now and then, so they do not drift apart
-    if (++m_framesSinceCalibration >= LocalConfig::FramesPerCalibration)
+    // Read the device clock and the clock of the framework again now and then, so they do not drift apart. The log says how far
+    // off a read can be and what the rate of the device clock was measured to be.
+    if (m_gpuTimeCalibration.CalibrateIfOlderThan(LocalConfig::MaxCalibrationAge))
     {
-      m_framesSinceCalibration = 0;
-      m_gpuTimeCalibration.Calibrate();
+      m_shared.AddGpuClockCalibration(
+        m_gpuTimeCalibration.GetLastReadTime(), m_gpuTimeCalibration.GetCalibration().MaxDeviation,
+        m_gpuTimeCalibration.HasMeasuredClockRate() ? std::optional<double>(m_gpuTimeCalibration.GetClockRateDeviationPpm()) : std::nullopt);
     }
 
     // When the frames reached the display, if the swapchain measures it (VK_EXT_present_timing). The measurements arrive a few frames

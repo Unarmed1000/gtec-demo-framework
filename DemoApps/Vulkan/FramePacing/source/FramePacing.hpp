@@ -69,7 +69,6 @@ namespace Fsl
     //! The same for the id the sample gave that frame, the GPU time is reported with it
     std::vector<uint64_t> m_slotFrameIds;
     uint64_t m_gpuMeasurementId{0};
-    uint32_t m_framesSinceCalibration{0};
 
   public:
     explicit FramePacing(const DemoAppConfig& config);

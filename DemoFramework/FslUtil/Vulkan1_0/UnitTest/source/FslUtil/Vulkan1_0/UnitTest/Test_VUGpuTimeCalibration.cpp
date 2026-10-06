@@ -151,3 +151,130 @@ TEST_F(TestFixtureFslUtil_Vulkan1_0_VUGpuTimeCalibration, ToHostTime_BitsOutside
   EXPECT_EQ(TickCount(5010),
             VUGpuTimeCalibration::ToHostTime(VUDeviceTimestamp(1010u | (uint64_t{0xABC} << 40u)), calibration, PeriodOneTick, Mask36));
 }
+
+
+TEST_F(TestFixtureFslUtil_Vulkan1_0_VUGpuTimeCalibration, ToHostTimeAtRate)
+{
+  const VUCalibratedTimestamp calibration = CreateCalibration(1000, 5000);
+
+  EXPECT_EQ(TickCount(5000), VUGpuTimeCalibration::ToHostTimeAtRate(VUDeviceTimestamp(1000), calibration, 1.0, AllBits));
+  EXPECT_EQ(TickCount(5100), VUGpuTimeCalibration::ToHostTimeAtRate(VUDeviceTimestamp(1100), calibration, 1.0, AllBits));
+  // A device clock whose counts take a little longer than a tick
+  EXPECT_EQ(TickCount(5000 + 1000022), VUGpuTimeCalibration::ToHostTimeAtRate(VUDeviceTimestamp(1000 + 1000000), calibration, 1.000022, AllBits));
+  EXPECT_EQ(TickCount(5000 - 1000022), VUGpuTimeCalibration::ToHostTimeAtRate(VUDeviceTimestamp(1000 - 1000000), calibration, 1.000022, Mask36));
+}
+
+
+TEST_F(TestFixtureFslUtil_Vulkan1_0_VUGpuTimeCalibration, AddCalibration_ConvertsFromTheNewest)
+{
+  VUGpuTimeCalibration calibration(VUCalibratedTimestamps(), PeriodOneTick, AllBits);
+  EXPECT_EQ(0u, calibration.GetCalibrationCount());
+
+  calibration.AddCalibration(CreateCalibration(1000, 5000));
+  EXPECT_EQ(1u, calibration.GetCalibrationCount());
+  TickCount hostTime;
+  ASSERT_TRUE(calibration.TryToHostTime(VUDeviceTimestamp(1010), hostTime));
+  EXPECT_EQ(TickCount(5010), hostTime);
+
+  // The clocks moved three ticks apart: a timestamp is measured from the newest read
+  calibration.AddCalibration(CreateCalibration(2000, 6003));
+  EXPECT_EQ(2u, calibration.GetCalibrationCount());
+  EXPECT_EQ(TickCount(6003), calibration.GetCalibration().HostTime);
+  ASSERT_TRUE(calibration.TryToHostTime(VUDeviceTimestamp(2010), hostTime));
+  EXPECT_EQ(TickCount(6013), hostTime);
+  // And one from before it as well
+  ASSERT_TRUE(calibration.TryToHostTime(VUDeviceTimestamp(1990), hostTime));
+  EXPECT_EQ(TickCount(5993), hostTime);
+}
+
+
+TEST_F(TestFixtureFslUtil_Vulkan1_0_VUGpuTimeCalibration, AddCalibration_NoRateBeforeTheReadsAreFarApart)
+{
+  VUGpuTimeCalibration calibration(VUCalibratedTimestamps(), PeriodOneTick, AllBits);
+
+  // One second apart, the device clock 22 parts per million slow
+  calibration.AddCalibration(CreateCalibration(0, 1000));
+  const auto deviceOneSecond = static_cast<uint64_t>(TimeSpan::TicksPerSecond - 220);
+  calibration.AddCalibration(CreateCalibration(deviceOneSecond, 1000 + TimeSpan::TicksPerSecond));
+
+  EXPECT_FALSE(calibration.HasMeasuredClockRate());
+  EXPECT_DOUBLE_EQ(0.0, calibration.GetClockRateDeviationPpm());
+  // The period the device states is used
+  TickCount hostTime;
+  ASSERT_TRUE(calibration.TryToHostTime(VUDeviceTimestamp(deviceOneSecond + 10000000u), hostTime));
+  EXPECT_EQ(TickCount(1000 + TimeSpan::TicksPerSecond + 10000000), hostTime);
+}
+
+
+TEST_F(TestFixtureFslUtil_Vulkan1_0_VUGpuTimeCalibration, AddCalibration_MeasuresTheRateOfTheDeviceClock)
+{
+  VUGpuTimeCalibration calibration(VUCalibratedTimestamps(), PeriodOneTick, AllBits);
+
+  // Two seconds apart, the device clock 22 parts per million slow: it counts 440 less than the framework clock ticks
+  const int64_t twoSeconds = 2 * TimeSpan::TicksPerSecond;
+  calibration.AddCalibration(CreateCalibration(0, 1000));
+  calibration.AddCalibration(CreateCalibration(static_cast<uint64_t>(twoSeconds - 440), 1000 + twoSeconds));
+
+  EXPECT_TRUE(calibration.HasMeasuredClockRate());
+  EXPECT_NEAR(22.0, calibration.GetClockRateDeviationPpm(), 0.01);
+
+  // One second of device counts after the newest read is 220 ticks more than the stated period gives
+  TickCount hostTime;
+  ASSERT_TRUE(calibration.TryToHostTime(VUDeviceTimestamp(static_cast<uint64_t>(twoSeconds - 440) + 10000000), hostTime));
+  EXPECT_EQ(TickCount(1000 + twoSeconds + 10000220), hostTime);
+  // At the read itself nothing changes
+  ASSERT_TRUE(calibration.TryToHostTime(VUDeviceTimestamp(static_cast<uint64_t>(twoSeconds - 440)), hostTime));
+  EXPECT_EQ(TickCount(1000 + twoSeconds), hostTime);
+}
+
+
+TEST_F(TestFixtureFslUtil_Vulkan1_0_VUGpuTimeCalibration, AddCalibration_RateFromReadsInBetweenIsNotLost)
+{
+  VUGpuTimeCalibration calibration(VUCalibratedTimestamps(), PeriodOneTick, AllBits);
+
+  // Four reads a second, the device clock 22 parts per million slow: 55 counts less per read
+  const int64_t quarterSecond = TimeSpan::TicksPerSecond / 4;
+  for (int64_t i = 0; i < 8; ++i)
+  {
+    calibration.AddCalibration(CreateCalibration(static_cast<uint64_t>(i * (quarterSecond - 55)), 1000 + (i * quarterSecond)));
+    EXPECT_FALSE(calibration.HasMeasuredClockRate()) << "read " << i;
+  }
+  // The ninth read is two seconds after the first
+  calibration.AddCalibration(CreateCalibration(static_cast<uint64_t>(8 * (quarterSecond - 55)), 1000 + (8 * quarterSecond)));
+
+  EXPECT_TRUE(calibration.HasMeasuredClockRate());
+  EXPECT_NEAR(22.0, calibration.GetClockRateDeviationPpm(), 0.01);
+}
+
+
+TEST_F(TestFixtureFslUtil_Vulkan1_0_VUGpuTimeCalibration, AddCalibration_ARateThatCanNotBeRightIsNotUsed)
+{
+  VUGpuTimeCalibration calibration(VUCalibratedTimestamps(), PeriodOneTick, AllBits);
+  const int64_t twoSeconds = 2 * TimeSpan::TicksPerSecond;
+
+  // The device clock counted half of what the framework clock ticked: one of the two reads is wrong
+  calibration.AddCalibration(CreateCalibration(0, 1000));
+  calibration.AddCalibration(CreateCalibration(static_cast<uint64_t>(twoSeconds / 2), 1000 + twoSeconds));
+  EXPECT_FALSE(calibration.HasMeasuredClockRate());
+
+  // The stated period is still used, from the newest read
+  TickCount hostTime;
+  ASSERT_TRUE(calibration.TryToHostTime(VUDeviceTimestamp(static_cast<uint64_t>(twoSeconds / 2) + 500), hostTime));
+  EXPECT_EQ(TickCount(1000 + twoSeconds + 500), hostTime);
+
+  // And the next rate is measured from that read on, not from the first one
+  calibration.AddCalibration(CreateCalibration(static_cast<uint64_t>((twoSeconds / 2) + twoSeconds - 440), 1000 + (2 * twoSeconds)));
+  EXPECT_TRUE(calibration.HasMeasuredClockRate());
+  EXPECT_NEAR(22.0, calibration.GetClockRateDeviationPpm(), 0.01);
+}
+
+
+TEST_F(TestFixtureFslUtil_Vulkan1_0_VUGpuTimeCalibration, CalibrateIfOlderThan_NotSupported)
+{
+  VUGpuTimeCalibration calibration(VUCalibratedTimestamps(), PeriodOneTick, AllBits);
+
+  // Nothing to read the clocks with
+  EXPECT_FALSE(calibration.CalibrateIfOlderThan(TimeSpan()));
+  EXPECT_EQ(0u, calibration.GetCalibrationCount());
+  EXPECT_EQ(TimeSpan(), calibration.GetLastReadTime());
+}

@@ -804,6 +804,20 @@ namespace Fsl
   }
 
 
+  void FramePacingShared::AddGpuClockCalibration(const TimeSpan readTime, const TimeSpan maxDeviation,
+                                                 const std::optional<double> clockRateDeviationPpm)
+  {
+    if (m_frameLog)
+    {
+      // The rate is left out until it was measured: the period the device states is used until then
+      m_frameLog->AddLogEvent("gpuClockCalibration", clockRateDeviationPpm.has_value()
+                                                       ? fmt::format("readTicks={};maxDeviationTicks={};clockRateDeviationPpm={:.2f}",
+                                                                     readTime.Ticks(), maxDeviation.Ticks(), clockRateDeviationPpm.value())
+                                                       : fmt::format("readTicks={};maxDeviationTicks={}", readTime.Ticks(), maxDeviation.Ticks()));
+    }
+  }
+
+
   void FramePacingShared::MarkFlush()
   {
     if (m_frameLog)

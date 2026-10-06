@@ -468,8 +468,9 @@ A timestamp query is a time on the clock of the device. With ```VK_KHR_calibrate
 // m_calibratedTimestamps is a member of DemoAppVulkan, it reports 'not supported' without the extension
 Vulkan::VUGpuTimeCalibration m_gpuTimeCalibration(m_calibratedTimestamps, m_gpuTimer.GetTimestampPeriod(), m_gpuTimer.GetTimestampMask());
 
-// Read both clocks now and then (once a second is plenty), so they do not drift apart
-m_gpuTimeCalibration.Calibrate();
+// Once per frame: reads both clocks again when the last read is older than this. The two clocks do not run at the same rate,
+// so the rate of the device clock is measured from the reads and a timestamp is converted from the newest one.
+m_gpuTimeCalibration.CalibrateIfOlderThan(TimeSpan::FromMilliseconds(250));
 
 TickCount gpuStartTime;
 if (m_gpuTimeCalibration.TryToHostTime(m_gpuTimer.GetBeginTimestamp(), gpuStartTime))
