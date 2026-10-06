@@ -133,13 +133,91 @@
   </xs:group>
 
 
+  <xs:group name="_G_CommandListAnyNumber">
+    <xs:annotation>
+      <xs:documentation>The elements of the tool config that can be there any number of times</xs:documentation>
+    </xs:annotation>
+    <xs:choice>
+      <xs:group ref="_G_AddTemplateImportDirectory"/>
+      <xs:group ref="_G_AddNewProjectTemplatesRootDirectory"/>
+    </xs:choice>
+  </xs:group>
+
+
   <xs:group name="_G_CommandList">
+    <xs:annotation>
+      <xs:documentation>The elements of the tool config, in any order. 'GenFile' and 'TemplateFolder' are there once, 'ContentBuilderConfiguration' once at most, which is why each order of the three is written out</xs:documentation>
+    </xs:annotation>
     <xs:sequence>
-      <xs:group ref="_G_GenFile" minOccurs="0" maxOccurs="1"/>
-      <xs:group ref="_G_TemplateFolder" minOccurs="0" maxOccurs="1"/>
-      <xs:group ref="_G_AddTemplateImportDirectory" minOccurs="0" maxOccurs="unbounded"/>
-      <xs:group ref="_G_AddNewProjectTemplatesRootDirectory" minOccurs="0" maxOccurs="unbounded"/>
-      <xs:group ref="_G_ContentBuilderConfiguration" minOccurs="0" maxOccurs="1"/>
+      <xs:group ref="_G_CommandListAnyNumber" minOccurs="0" maxOccurs="unbounded"/>
+      <xs:choice>
+        <xs:sequence>
+          <xs:group ref="_G_GenFile"/>
+          <xs:group ref="_G_CommandListAnyNumber" minOccurs="0" maxOccurs="unbounded"/>
+          <xs:choice>
+            <xs:sequence>
+              <xs:group ref="_G_TemplateFolder"/>
+              <xs:group ref="_G_CommandListAnyNumber" minOccurs="0" maxOccurs="unbounded"/>
+              <xs:sequence minOccurs="0">
+                <xs:group ref="_G_ContentBuilderConfiguration"/>
+                <xs:group ref="_G_CommandListAnyNumber" minOccurs="0" maxOccurs="unbounded"/>
+              </xs:sequence>
+            </xs:sequence>
+            <xs:sequence>
+              <xs:group ref="_G_ContentBuilderConfiguration"/>
+              <xs:group ref="_G_CommandListAnyNumber" minOccurs="0" maxOccurs="unbounded"/>
+              <xs:sequence>
+                <xs:group ref="_G_TemplateFolder"/>
+                <xs:group ref="_G_CommandListAnyNumber" minOccurs="0" maxOccurs="unbounded"/>
+              </xs:sequence>
+            </xs:sequence>
+          </xs:choice>
+        </xs:sequence>
+        <xs:sequence>
+          <xs:group ref="_G_TemplateFolder"/>
+          <xs:group ref="_G_CommandListAnyNumber" minOccurs="0" maxOccurs="unbounded"/>
+          <xs:choice>
+            <xs:sequence>
+              <xs:group ref="_G_GenFile"/>
+              <xs:group ref="_G_CommandListAnyNumber" minOccurs="0" maxOccurs="unbounded"/>
+              <xs:sequence minOccurs="0">
+                <xs:group ref="_G_ContentBuilderConfiguration"/>
+                <xs:group ref="_G_CommandListAnyNumber" minOccurs="0" maxOccurs="unbounded"/>
+              </xs:sequence>
+            </xs:sequence>
+            <xs:sequence>
+              <xs:group ref="_G_ContentBuilderConfiguration"/>
+              <xs:group ref="_G_CommandListAnyNumber" minOccurs="0" maxOccurs="unbounded"/>
+              <xs:sequence>
+                <xs:group ref="_G_GenFile"/>
+                <xs:group ref="_G_CommandListAnyNumber" minOccurs="0" maxOccurs="unbounded"/>
+              </xs:sequence>
+            </xs:sequence>
+          </xs:choice>
+        </xs:sequence>
+        <xs:sequence>
+          <xs:group ref="_G_ContentBuilderConfiguration"/>
+          <xs:group ref="_G_CommandListAnyNumber" minOccurs="0" maxOccurs="unbounded"/>
+          <xs:choice>
+            <xs:sequence>
+              <xs:group ref="_G_GenFile"/>
+              <xs:group ref="_G_CommandListAnyNumber" minOccurs="0" maxOccurs="unbounded"/>
+              <xs:sequence>
+                <xs:group ref="_G_TemplateFolder"/>
+                <xs:group ref="_G_CommandListAnyNumber" minOccurs="0" maxOccurs="unbounded"/>
+              </xs:sequence>
+            </xs:sequence>
+            <xs:sequence>
+              <xs:group ref="_G_TemplateFolder"/>
+              <xs:group ref="_G_CommandListAnyNumber" minOccurs="0" maxOccurs="unbounded"/>
+              <xs:sequence>
+                <xs:group ref="_G_GenFile"/>
+                <xs:group ref="_G_CommandListAnyNumber" minOccurs="0" maxOccurs="unbounded"/>
+              </xs:sequence>
+            </xs:sequence>
+          </xs:choice>
+        </xs:sequence>
+      </xs:choice>
     </xs:sequence>
   </xs:group>
 

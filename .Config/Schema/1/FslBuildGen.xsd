@@ -133,8 +133,8 @@
       <xs:documentation>Attaches the named package as a source generator</xs:documentation>
     </xs:annotation>
     <xs:attribute name="Name" type="xs:string" use="required"/>
-    <xs:attribute name="Reference" type="xs:boolean" use="optional"/>
-    <xs:attribute name="Access" type="_TP_DependencyAccess" use="optional"/>
+    <xs:attribute name="Reference" type="_TP_Bool" use="optional"/>
+    <xs:attribute name="Access" type="_TP_Access" use="optional"/>
   </xs:complexType>
 
 
@@ -151,7 +151,7 @@
       <xs:documentation>Makes a build property visible to the source generation. Set Raw to use a backend specific name</xs:documentation>
     </xs:annotation>
     <xs:attribute name="Name" type="xs:string" use="required"/>
-    <xs:attribute name="Raw" type="xs:boolean" use="optional"/>
+    <xs:attribute name="Raw" type="_TP_Bool" use="optional"/>
   </xs:complexType>
 
 
@@ -159,11 +159,11 @@
     <xs:annotation>
       <xs:documentation>Describes that this package takes part in source generation</xs:documentation>
     </xs:annotation>
-    <xs:sequence>
-      <xs:element name="Generator" type="_T_SourceGenerationGenerator" minOccurs="0" maxOccurs="unbounded"/>
-      <xs:element name="InputFile" type="_T_SourceGenerationInputFile" minOccurs="0" maxOccurs="unbounded"/>
-      <xs:element name="VisibleProperty" type="_T_SourceGenerationVisibleProperty" minOccurs="0" maxOccurs="unbounded"/>
-    </xs:sequence>
+    <xs:choice minOccurs="0" maxOccurs="unbounded">
+      <xs:element name="Generator" type="_T_SourceGenerationGenerator"/>
+      <xs:element name="InputFile" type="_T_SourceGenerationInputFile"/>
+      <xs:element name="VisibleProperty" type="_T_SourceGenerationVisibleProperty"/>
+    </xs:choice>
     <xs:attribute name="OutputPath" type="xs:string" use="optional"/>
   </xs:complexType>
 
@@ -208,7 +208,7 @@
     <xs:annotation>
       <xs:documentation>Specifies a direct dependency to something external. If this dependency is used a lot consider creating a ExternalLibrary package for it instead.</xs:documentation>
     </xs:annotation>
-    <xs:group ref="_G_ExternalDependencyCommandList" minOccurs="0" maxOccurs="unbounded"/>
+    <xs:group ref="_G_ExternalDependencyCommandList" minOccurs="0" maxOccurs="1"/>
     <xs:attribute name="Access" type="_TP_Access" use="optional"/>
     <xs:attribute name="Culture" type="xs:string" use="optional"/>
     <xs:attribute name="DebugName" type="xs:string" use="optional"/>
@@ -284,7 +284,7 @@
     <xs:annotation>
       <xs:documentation>Adds a extension of a existing inhertited flavor of this package. The flavor influces all users of it, so be careful when using it</xs:documentation>
     </xs:annotation>
-    <xs:group ref="_G_FlavorCommandList"/>
+    <xs:group ref="_G_FlavorExtensionCommandList"/>
     <xs:attribute name="Name" type="xs:string" use="required"/>
   </xs:complexType>
 
@@ -437,40 +437,133 @@
   </xs:group>
 
 
+  <xs:group name="_G_CommandListAnyNumber">
+    <xs:annotation>
+      <xs:documentation>The elements of a package that can be there any number of times</xs:documentation>
+    </xs:annotation>
+    <xs:choice>
+      <xs:group ref="_G_RequirementElement"/>
+      <xs:group ref="_G_ImportTemplate"/>
+      <xs:group ref="_G_GenerateElement"/>
+      <xs:group ref="_G_GenerateGrpcProtoFileElement"/>
+      <xs:group ref="_G_DependencyElement"/>
+      <xs:group ref="_G_FindPackageElement"/>
+      <xs:group ref="_G_ExternalDependencyElement"/>
+      <xs:group ref="_G_DefineElement"/>
+      <xs:group ref="_G_CopyFileElement"/>
+      <xs:group ref="_G_IgnoreElement"/>
+      <xs:group ref="_G_PlatformElement"/>
+    </xs:choice>
+  </xs:group>
+
+
   <xs:group name="_G_CommandList">
+    <xs:annotation>
+      <xs:documentation>The elements of a package, in any order. 'Default.Platform.Supported', 'BuildCustomization.Debug.Optimization' and 'SourceGeneration' can each be there once at most, which is why each order of the three is written out</xs:documentation>
+    </xs:annotation>
     <xs:sequence>
-      <xs:group ref="_G_DefaultElements" minOccurs="0" maxOccurs="1"/>
-      <xs:group ref="_G_BuildCustomizationElements" minOccurs="0" maxOccurs="1"/>
-      <xs:group ref="_G_RequirementElement" minOccurs="0" maxOccurs="unbounded"/>
-      <xs:group ref="_G_ImportTemplate" minOccurs="0" maxOccurs="unbounded"/>
-	  <xs:group ref="_G_GenerateElement" minOccurs="0" maxOccurs="unbounded"/>
-      <xs:group ref="_G_GenerateGrpcProtoFileElement" minOccurs="0" maxOccurs="unbounded"/>
-	  <xs:group ref="_G_DependencyElement" minOccurs="0" maxOccurs="unbounded"/>
-	  <xs:group ref="_G_FindPackageElement" minOccurs="0" maxOccurs="unbounded"/>
-      <xs:group ref="_G_ExternalDependencyElement" minOccurs="0" maxOccurs="unbounded"/>
-      <xs:group ref="_G_DefineElement" minOccurs="0" maxOccurs="unbounded"/>
-      <xs:group ref="_G_CopyFileElement" minOccurs="0" maxOccurs="unbounded"/>
-      <xs:group ref="_G_IgnoreElement" minOccurs="0" maxOccurs="unbounded"/>
-      <xs:group ref="_G_SourceGenerationElement" minOccurs="0" maxOccurs="1"/>
-      <xs:group ref="_G_PlatformElement" minOccurs="0" maxOccurs="unbounded"/>
+      <xs:group ref="_G_CommandListAnyNumber" minOccurs="0" maxOccurs="unbounded"/>
+      <xs:choice minOccurs="0">
+        <xs:sequence>
+          <xs:group ref="_G_DefaultElements"/>
+          <xs:group ref="_G_CommandListAnyNumber" minOccurs="0" maxOccurs="unbounded"/>
+          <xs:choice minOccurs="0">
+            <xs:sequence>
+              <xs:group ref="_G_BuildCustomizationElements"/>
+              <xs:group ref="_G_CommandListAnyNumber" minOccurs="0" maxOccurs="unbounded"/>
+              <xs:sequence minOccurs="0">
+                <xs:group ref="_G_SourceGenerationElement"/>
+                <xs:group ref="_G_CommandListAnyNumber" minOccurs="0" maxOccurs="unbounded"/>
+              </xs:sequence>
+            </xs:sequence>
+            <xs:sequence>
+              <xs:group ref="_G_SourceGenerationElement"/>
+              <xs:group ref="_G_CommandListAnyNumber" minOccurs="0" maxOccurs="unbounded"/>
+              <xs:sequence minOccurs="0">
+                <xs:group ref="_G_BuildCustomizationElements"/>
+                <xs:group ref="_G_CommandListAnyNumber" minOccurs="0" maxOccurs="unbounded"/>
+              </xs:sequence>
+            </xs:sequence>
+          </xs:choice>
+        </xs:sequence>
+        <xs:sequence>
+          <xs:group ref="_G_BuildCustomizationElements"/>
+          <xs:group ref="_G_CommandListAnyNumber" minOccurs="0" maxOccurs="unbounded"/>
+          <xs:choice minOccurs="0">
+            <xs:sequence>
+              <xs:group ref="_G_DefaultElements"/>
+              <xs:group ref="_G_CommandListAnyNumber" minOccurs="0" maxOccurs="unbounded"/>
+              <xs:sequence minOccurs="0">
+                <xs:group ref="_G_SourceGenerationElement"/>
+                <xs:group ref="_G_CommandListAnyNumber" minOccurs="0" maxOccurs="unbounded"/>
+              </xs:sequence>
+            </xs:sequence>
+            <xs:sequence>
+              <xs:group ref="_G_SourceGenerationElement"/>
+              <xs:group ref="_G_CommandListAnyNumber" minOccurs="0" maxOccurs="unbounded"/>
+              <xs:sequence minOccurs="0">
+                <xs:group ref="_G_DefaultElements"/>
+                <xs:group ref="_G_CommandListAnyNumber" minOccurs="0" maxOccurs="unbounded"/>
+              </xs:sequence>
+            </xs:sequence>
+          </xs:choice>
+        </xs:sequence>
+        <xs:sequence>
+          <xs:group ref="_G_SourceGenerationElement"/>
+          <xs:group ref="_G_CommandListAnyNumber" minOccurs="0" maxOccurs="unbounded"/>
+          <xs:choice minOccurs="0">
+            <xs:sequence>
+              <xs:group ref="_G_DefaultElements"/>
+              <xs:group ref="_G_CommandListAnyNumber" minOccurs="0" maxOccurs="unbounded"/>
+              <xs:sequence minOccurs="0">
+                <xs:group ref="_G_BuildCustomizationElements"/>
+                <xs:group ref="_G_CommandListAnyNumber" minOccurs="0" maxOccurs="unbounded"/>
+              </xs:sequence>
+            </xs:sequence>
+            <xs:sequence>
+              <xs:group ref="_G_BuildCustomizationElements"/>
+              <xs:group ref="_G_CommandListAnyNumber" minOccurs="0" maxOccurs="unbounded"/>
+              <xs:sequence minOccurs="0">
+                <xs:group ref="_G_DefaultElements"/>
+                <xs:group ref="_G_CommandListAnyNumber" minOccurs="0" maxOccurs="unbounded"/>
+              </xs:sequence>
+            </xs:sequence>
+          </xs:choice>
+        </xs:sequence>
+      </xs:choice>
     </xs:sequence>
   </xs:group>
 
 
   <xs:group name="_G_PlatformCommandList">
+    <xs:annotation>
+      <xs:documentation>The elements of a platform, in any order</xs:documentation>
+    </xs:annotation>
     <xs:sequence>
-      <xs:group ref="_G_RequirementElement" minOccurs="0" maxOccurs="unbounded"/>
-      <xs:group ref="_G_DependencyElement" minOccurs="0" maxOccurs="unbounded"/>
-      <xs:group ref="_G_FindPackageElement" minOccurs="0" maxOccurs="unbounded"/>
-      <xs:group ref="_G_ExternalDependencyElement" minOccurs="0" maxOccurs="unbounded"/>
-      <xs:group ref="_G_DefineElement" minOccurs="0" maxOccurs="unbounded"/>
-      <xs:group ref="_G_FlavorElement" minOccurs="0" maxOccurs="unbounded"/>
-      <xs:group ref="_G_FlavorExtensionElement" minOccurs="0" maxOccurs="unbounded"/>
-      <xs:group ref="_G_VariantElement" minOccurs="0" maxOccurs="unbounded"/>
+      <xs:choice minOccurs="0" maxOccurs="unbounded">
+        <xs:group ref="_G_RequirementElement"/>
+        <xs:group ref="_G_DependencyElement"/>
+        <xs:group ref="_G_FindPackageElement"/>
+        <xs:group ref="_G_ExternalDependencyElement"/>
+        <xs:group ref="_G_DefineElement"/>
+        <xs:group ref="_G_FlavorElement"/>
+        <xs:group ref="_G_FlavorExtensionElement"/>
+        <xs:group ref="_G_VariantElement"/>
+      </xs:choice>
     </xs:sequence>
   </xs:group>
 
   <xs:group name="_G_FlavorCommandList">
+    <xs:annotation>
+      <xs:documentation>A flavor has at least one option</xs:documentation>
+    </xs:annotation>
+    <xs:sequence>
+      <xs:group ref="_G_FlavorOptionElement" minOccurs="1" maxOccurs="unbounded"/>
+    </xs:sequence>
+  </xs:group>
+
+
+  <xs:group name="_G_FlavorExtensionCommandList">
     <xs:sequence>
       <xs:group ref="_G_FlavorOptionElement" minOccurs="0" maxOccurs="unbounded"/>
     </xs:sequence>
@@ -483,21 +576,31 @@
   </xs:group>
 
   <xs:group name="_G_FlavorOptionCommandList">
+    <xs:annotation>
+      <xs:documentation>The elements of an option of a flavor, in any order</xs:documentation>
+    </xs:annotation>
     <xs:sequence>
-      <xs:group ref="_G_RequirementElement" minOccurs="0" maxOccurs="unbounded"/>
-      <xs:group ref="_G_DependencyElement" minOccurs="0" maxOccurs="unbounded"/>
-      <xs:group ref="_G_FindPackageElement" minOccurs="0" maxOccurs="unbounded"/>
-      <xs:group ref="_G_ExternalDependencyElement" minOccurs="0" maxOccurs="unbounded"/>
-      <xs:group ref="_G_DefineElement" minOccurs="0" maxOccurs="unbounded"/>
+      <xs:choice minOccurs="0" maxOccurs="unbounded">
+        <xs:group ref="_G_RequirementElement"/>
+        <xs:group ref="_G_DependencyElement"/>
+        <xs:group ref="_G_FindPackageElement"/>
+        <xs:group ref="_G_ExternalDependencyElement"/>
+        <xs:group ref="_G_DefineElement"/>
+      </xs:choice>
     </xs:sequence>
   </xs:group>
 
   <xs:group name="_G_VariantOptionCommandList">
+    <xs:annotation>
+      <xs:documentation>The elements of an option of a variant, in any order</xs:documentation>
+    </xs:annotation>
     <xs:sequence>
-      <xs:group ref="_G_DependencyElement" minOccurs="0" maxOccurs="unbounded"/>
-      <xs:group ref="_G_FindPackageElement" minOccurs="0" maxOccurs="unbounded"/>
-      <xs:group ref="_G_ExternalDependencyElement" minOccurs="0" maxOccurs="unbounded"/>
-      <xs:group ref="_G_DefineElement" minOccurs="0" maxOccurs="unbounded"/>
+      <xs:choice minOccurs="0" maxOccurs="unbounded">
+        <xs:group ref="_G_DependencyElement"/>
+        <xs:group ref="_G_FindPackageElement"/>
+        <xs:group ref="_G_ExternalDependencyElement"/>
+        <xs:group ref="_G_DefineElement"/>
+      </xs:choice>
     </xs:sequence>
   </xs:group>
 
@@ -733,9 +836,9 @@
 
   <xs:complexType name="_T_PipelineElement">
     <xs:annotation>
-      <xs:documentation>A pipeline element</xs:documentation>
+      <xs:documentation>A pipeline element. It starts with the command that fetches, or it has no command</xs:documentation>
     </xs:annotation>
-    <xs:group ref="_G_PipelineCommandList"/>
+    <xs:group ref="_G_PipelineCommandList" minOccurs="0"/>
   </xs:complexType>
 
 
@@ -885,9 +988,24 @@
 
 
   <xs:group name="_G_ExperimentalRecipeCommandList">
+    <xs:annotation>
+      <xs:documentation>One pipeline and one installation at most, in any order</xs:documentation>
+    </xs:annotation>
     <xs:sequence>
-      <xs:group ref="_G_PipelineElement" minOccurs="0" maxOccurs="1"/>
-      <xs:group ref="_G_Installation" minOccurs="0" maxOccurs="unbounded"/>
+      <xs:choice minOccurs="0">
+        <xs:sequence>
+          <xs:group ref="_G_PipelineElement"/>
+          <xs:sequence minOccurs="0">
+            <xs:group ref="_G_Installation"/>
+          </xs:sequence>
+        </xs:sequence>
+        <xs:sequence>
+          <xs:group ref="_G_Installation"/>
+          <xs:sequence minOccurs="0">
+            <xs:group ref="_G_PipelineElement"/>
+          </xs:sequence>
+        </xs:sequence>
+      </xs:choice>
     </xs:sequence>
   </xs:group>
 
@@ -913,17 +1031,33 @@
   </xs:group>
 
 
+  <xs:group name="_G_PlatformExternalCommandListAnyNumber">
+    <xs:annotation>
+      <xs:documentation>The elements of a platform that can be there any number of times</xs:documentation>
+    </xs:annotation>
+    <xs:choice>
+      <xs:group ref="_G_RequirementElement"/>
+      <xs:group ref="_G_DependencyElement"/>
+      <xs:group ref="_G_FindPackageElement"/>
+      <xs:group ref="_G_ExternalDependencyElement"/>
+      <xs:group ref="_G_DefineElement"/>
+      <xs:group ref="_G_FlavorElement"/>
+      <xs:group ref="_G_FlavorExtensionElement"/>
+      <xs:group ref="_G_VariantElement"/>
+    </xs:choice>
+  </xs:group>
+
+
   <xs:group name="_G_PlatformExternalCommandList">
+    <xs:annotation>
+      <xs:documentation>The elements of a platform of a package that can have a recipe, in any order. One recipe at most</xs:documentation>
+    </xs:annotation>
     <xs:sequence>
-      <xs:group ref="_G_RequirementElement" minOccurs="0" maxOccurs="unbounded"/>
-      <xs:group ref="_G_DependencyElement" minOccurs="0" maxOccurs="unbounded"/>
-      <xs:group ref="_G_FindPackageElement" minOccurs="0" maxOccurs="unbounded"/>
-      <xs:group ref="_G_ExternalDependencyElement" minOccurs="0" maxOccurs="unbounded"/>
-      <xs:group ref="_G_DefineElement" minOccurs="0" maxOccurs="unbounded"/>
-      <xs:group ref="_G_FlavorElement" minOccurs="0" maxOccurs="unbounded"/>
-      <xs:group ref="_G_FlavorExtensionElement" minOccurs="0" maxOccurs="unbounded"/>
-      <xs:group ref="_G_VariantElement" minOccurs="0" maxOccurs="unbounded"/>
-      <xs:group ref="_G_ExperimentalRecipeElement" minOccurs="0" maxOccurs="1"/>
+      <xs:group ref="_G_PlatformExternalCommandListAnyNumber" minOccurs="0" maxOccurs="unbounded"/>
+      <xs:sequence minOccurs="0">
+        <xs:group ref="_G_ExperimentalRecipeElement"/>
+        <xs:group ref="_G_PlatformExternalCommandListAnyNumber" minOccurs="0" maxOccurs="unbounded"/>
+      </xs:sequence>
     </xs:sequence>
   </xs:group>
 
@@ -946,28 +1080,191 @@
   </xs:group>
 
 
+  <xs:group name="_G_ToolRecipeCommandListAnyNumber">
+    <xs:annotation>
+      <xs:documentation>The elements of a tool recipe that can be there any number of times</xs:documentation>
+    </xs:annotation>
+    <xs:choice>
+      <xs:group ref="_G_RequirementElement"/>
+      <xs:group ref="_G_ImportTemplate"/>
+      <xs:group ref="_G_GenerateElement"/>
+      <xs:group ref="_G_DependencyElement"/>
+      <xs:group ref="_G_ExternalDependencyElement"/>
+      <xs:group ref="_G_DefineElement"/>
+      <xs:group ref="_G_PlatformExternalElement"/>
+    </xs:choice>
+  </xs:group>
+
+
   <xs:group name="_G_ToolRecipeCommandList">
+    <xs:annotation>
+      <xs:documentation>The elements of a tool recipe, in any order. 'Default.Platform.Supported', 'ExperimentalRecipe' and 'SourceGeneration' can each be there once at most, which is why each order of the three is written out</xs:documentation>
+    </xs:annotation>
     <xs:sequence>
-      <xs:group ref="_G_DefaultElements" minOccurs="0" maxOccurs="1"/>
-      <xs:group ref="_G_RequirementElement" minOccurs="0" maxOccurs="unbounded"/>
-      <xs:group ref="_G_DependencyElement" minOccurs="0" maxOccurs="unbounded"/>
-      <xs:group ref="_G_DefineElement" minOccurs="0" maxOccurs="unbounded"/>
-      <xs:group ref="_G_ExperimentalRecipeElement" minOccurs="0" maxOccurs="1"/>
-      <xs:group ref="_G_PlatformExternalElement" minOccurs="0" maxOccurs="unbounded"/>
+      <xs:group ref="_G_ToolRecipeCommandListAnyNumber" minOccurs="0" maxOccurs="unbounded"/>
+      <xs:choice minOccurs="0">
+        <xs:sequence>
+          <xs:group ref="_G_DefaultElements"/>
+          <xs:group ref="_G_ToolRecipeCommandListAnyNumber" minOccurs="0" maxOccurs="unbounded"/>
+          <xs:choice minOccurs="0">
+            <xs:sequence>
+              <xs:group ref="_G_ExperimentalRecipeElement"/>
+              <xs:group ref="_G_ToolRecipeCommandListAnyNumber" minOccurs="0" maxOccurs="unbounded"/>
+              <xs:sequence minOccurs="0">
+                <xs:group ref="_G_SourceGenerationElement"/>
+                <xs:group ref="_G_ToolRecipeCommandListAnyNumber" minOccurs="0" maxOccurs="unbounded"/>
+              </xs:sequence>
+            </xs:sequence>
+            <xs:sequence>
+              <xs:group ref="_G_SourceGenerationElement"/>
+              <xs:group ref="_G_ToolRecipeCommandListAnyNumber" minOccurs="0" maxOccurs="unbounded"/>
+              <xs:sequence minOccurs="0">
+                <xs:group ref="_G_ExperimentalRecipeElement"/>
+                <xs:group ref="_G_ToolRecipeCommandListAnyNumber" minOccurs="0" maxOccurs="unbounded"/>
+              </xs:sequence>
+            </xs:sequence>
+          </xs:choice>
+        </xs:sequence>
+        <xs:sequence>
+          <xs:group ref="_G_ExperimentalRecipeElement"/>
+          <xs:group ref="_G_ToolRecipeCommandListAnyNumber" minOccurs="0" maxOccurs="unbounded"/>
+          <xs:choice minOccurs="0">
+            <xs:sequence>
+              <xs:group ref="_G_DefaultElements"/>
+              <xs:group ref="_G_ToolRecipeCommandListAnyNumber" minOccurs="0" maxOccurs="unbounded"/>
+              <xs:sequence minOccurs="0">
+                <xs:group ref="_G_SourceGenerationElement"/>
+                <xs:group ref="_G_ToolRecipeCommandListAnyNumber" minOccurs="0" maxOccurs="unbounded"/>
+              </xs:sequence>
+            </xs:sequence>
+            <xs:sequence>
+              <xs:group ref="_G_SourceGenerationElement"/>
+              <xs:group ref="_G_ToolRecipeCommandListAnyNumber" minOccurs="0" maxOccurs="unbounded"/>
+              <xs:sequence minOccurs="0">
+                <xs:group ref="_G_DefaultElements"/>
+                <xs:group ref="_G_ToolRecipeCommandListAnyNumber" minOccurs="0" maxOccurs="unbounded"/>
+              </xs:sequence>
+            </xs:sequence>
+          </xs:choice>
+        </xs:sequence>
+        <xs:sequence>
+          <xs:group ref="_G_SourceGenerationElement"/>
+          <xs:group ref="_G_ToolRecipeCommandListAnyNumber" minOccurs="0" maxOccurs="unbounded"/>
+          <xs:choice minOccurs="0">
+            <xs:sequence>
+              <xs:group ref="_G_DefaultElements"/>
+              <xs:group ref="_G_ToolRecipeCommandListAnyNumber" minOccurs="0" maxOccurs="unbounded"/>
+              <xs:sequence minOccurs="0">
+                <xs:group ref="_G_ExperimentalRecipeElement"/>
+                <xs:group ref="_G_ToolRecipeCommandListAnyNumber" minOccurs="0" maxOccurs="unbounded"/>
+              </xs:sequence>
+            </xs:sequence>
+            <xs:sequence>
+              <xs:group ref="_G_ExperimentalRecipeElement"/>
+              <xs:group ref="_G_ToolRecipeCommandListAnyNumber" minOccurs="0" maxOccurs="unbounded"/>
+              <xs:sequence minOccurs="0">
+                <xs:group ref="_G_DefaultElements"/>
+                <xs:group ref="_G_ToolRecipeCommandListAnyNumber" minOccurs="0" maxOccurs="unbounded"/>
+              </xs:sequence>
+            </xs:sequence>
+          </xs:choice>
+        </xs:sequence>
+      </xs:choice>
     </xs:sequence>
   </xs:group>
 
 
+  <xs:group name="_G_ExternalCommandListAnyNumber">
+    <xs:annotation>
+      <xs:documentation>The elements of an external library that can be there any number of times</xs:documentation>
+    </xs:annotation>
+    <xs:choice>
+      <xs:group ref="_G_RequirementElement"/>
+      <xs:group ref="_G_ImportTemplate"/>
+      <xs:group ref="_G_GenerateElement"/>
+      <xs:group ref="_G_DependencyElement"/>
+      <xs:group ref="_G_FindPackageElement"/>
+      <xs:group ref="_G_ExternalDependencyElement"/>
+      <xs:group ref="_G_DefineElement"/>
+      <xs:group ref="_G_PlatformExternalElement"/>
+    </xs:choice>
+  </xs:group>
+
+
   <xs:group name="_G_ExternalCommandList">
+    <xs:annotation>
+      <xs:documentation>The elements of an external library, in any order. 'Default.Platform.Supported', 'ExperimentalRecipe' and 'SourceGeneration' can each be there once at most, which is why each order of the three is written out</xs:documentation>
+    </xs:annotation>
     <xs:sequence>
-      <xs:group ref="_G_DefaultElements" minOccurs="0" maxOccurs="1"/>
-      <xs:group ref="_G_RequirementElement" minOccurs="0" maxOccurs="unbounded"/>
-      <xs:group ref="_G_ImportTemplate" minOccurs="0" maxOccurs="unbounded"/>
-      <xs:group ref="_G_DependencyElement" minOccurs="0" maxOccurs="unbounded"/>
-      <xs:group ref="_G_ExternalDependencyElement" minOccurs="0" maxOccurs="unbounded"/>
-      <xs:group ref="_G_DefineElement" minOccurs="0" maxOccurs="unbounded"/>
-      <xs:group ref="_G_ExperimentalRecipeElement" minOccurs="0" maxOccurs="1"/>
-      <xs:group ref="_G_PlatformExternalElement" minOccurs="0" maxOccurs="unbounded"/>
+      <xs:group ref="_G_ExternalCommandListAnyNumber" minOccurs="0" maxOccurs="unbounded"/>
+      <xs:choice minOccurs="0">
+        <xs:sequence>
+          <xs:group ref="_G_DefaultElements"/>
+          <xs:group ref="_G_ExternalCommandListAnyNumber" minOccurs="0" maxOccurs="unbounded"/>
+          <xs:choice minOccurs="0">
+            <xs:sequence>
+              <xs:group ref="_G_ExperimentalRecipeElement"/>
+              <xs:group ref="_G_ExternalCommandListAnyNumber" minOccurs="0" maxOccurs="unbounded"/>
+              <xs:sequence minOccurs="0">
+                <xs:group ref="_G_SourceGenerationElement"/>
+                <xs:group ref="_G_ExternalCommandListAnyNumber" minOccurs="0" maxOccurs="unbounded"/>
+              </xs:sequence>
+            </xs:sequence>
+            <xs:sequence>
+              <xs:group ref="_G_SourceGenerationElement"/>
+              <xs:group ref="_G_ExternalCommandListAnyNumber" minOccurs="0" maxOccurs="unbounded"/>
+              <xs:sequence minOccurs="0">
+                <xs:group ref="_G_ExperimentalRecipeElement"/>
+                <xs:group ref="_G_ExternalCommandListAnyNumber" minOccurs="0" maxOccurs="unbounded"/>
+              </xs:sequence>
+            </xs:sequence>
+          </xs:choice>
+        </xs:sequence>
+        <xs:sequence>
+          <xs:group ref="_G_ExperimentalRecipeElement"/>
+          <xs:group ref="_G_ExternalCommandListAnyNumber" minOccurs="0" maxOccurs="unbounded"/>
+          <xs:choice minOccurs="0">
+            <xs:sequence>
+              <xs:group ref="_G_DefaultElements"/>
+              <xs:group ref="_G_ExternalCommandListAnyNumber" minOccurs="0" maxOccurs="unbounded"/>
+              <xs:sequence minOccurs="0">
+                <xs:group ref="_G_SourceGenerationElement"/>
+                <xs:group ref="_G_ExternalCommandListAnyNumber" minOccurs="0" maxOccurs="unbounded"/>
+              </xs:sequence>
+            </xs:sequence>
+            <xs:sequence>
+              <xs:group ref="_G_SourceGenerationElement"/>
+              <xs:group ref="_G_ExternalCommandListAnyNumber" minOccurs="0" maxOccurs="unbounded"/>
+              <xs:sequence minOccurs="0">
+                <xs:group ref="_G_DefaultElements"/>
+                <xs:group ref="_G_ExternalCommandListAnyNumber" minOccurs="0" maxOccurs="unbounded"/>
+              </xs:sequence>
+            </xs:sequence>
+          </xs:choice>
+        </xs:sequence>
+        <xs:sequence>
+          <xs:group ref="_G_SourceGenerationElement"/>
+          <xs:group ref="_G_ExternalCommandListAnyNumber" minOccurs="0" maxOccurs="unbounded"/>
+          <xs:choice minOccurs="0">
+            <xs:sequence>
+              <xs:group ref="_G_DefaultElements"/>
+              <xs:group ref="_G_ExternalCommandListAnyNumber" minOccurs="0" maxOccurs="unbounded"/>
+              <xs:sequence minOccurs="0">
+                <xs:group ref="_G_ExperimentalRecipeElement"/>
+                <xs:group ref="_G_ExternalCommandListAnyNumber" minOccurs="0" maxOccurs="unbounded"/>
+              </xs:sequence>
+            </xs:sequence>
+            <xs:sequence>
+              <xs:group ref="_G_ExperimentalRecipeElement"/>
+              <xs:group ref="_G_ExternalCommandListAnyNumber" minOccurs="0" maxOccurs="unbounded"/>
+              <xs:sequence minOccurs="0">
+                <xs:group ref="_G_DefaultElements"/>
+                <xs:group ref="_G_ExternalCommandListAnyNumber" minOccurs="0" maxOccurs="unbounded"/>
+              </xs:sequence>
+            </xs:sequence>
+          </xs:choice>
+        </xs:sequence>
+      </xs:choice>
     </xs:sequence>
   </xs:group>
 

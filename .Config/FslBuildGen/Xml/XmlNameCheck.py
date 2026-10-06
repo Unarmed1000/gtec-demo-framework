@@ -36,6 +36,10 @@
 # A file that is read while another one is being read (a template a gen file imports) has its own list. Without a file that is being
 # read nothing is looked up.
 #
+# An element whose reader reads more names than the place of the element can hold (a package element: what it can hold depends on the
+# type of the package) says so with a XmlNamePlace. A name the reader knows that the place can not hold is one of the names of the file
+# too: it is reported as not valid in that place, not as unknown.
+#
 # A tool that lists the unknown names of a whole project does not want to stop at the first file: inside
 # 'with CollectUnknownNames() as collector' nothing is raised and the collector gets the names of every file that is read.
 #
@@ -59,10 +63,23 @@ _g_nameAttribute = "Name"
 _g_noElements: frozenset[ET.Element] = frozenset()
 
 
+class XmlNamePlace:
+    """What an element is, for an element whose reader reads names its place can not hold: 'an ExternalLibrary', and the attributes
+    and the child elements the reader reads in another place.
+    """
+
+    def __init__(self, name: str, otherAttributes: Collection[str], otherElements: Collection[str]) -> None:
+        super().__init__()
+        # What the element is, with its article: it ends the sentence '... is not valid in'
+        self.Name = name
+        self.OtherAttributes = frozenset(otherAttributes)
+        self.OtherElements = frozenset(otherElements)
+
+
 class XmlUnknownName:
     """An attribute or a child element of an element that the reader of the element does not read"""
 
-    def __init__(self, fileName: str, elementPath: str, isAttribute: bool, name: str, validNames: Collection[str]) -> None:
+    def __init__(self, fileName: str, elementPath: str, isAttribute: bool, name: str, validNames: Collection[str], place: str | None = None) -> None:
         super().__init__()
         self.FileName = fileName
         # Where the element is: the names of the elements from the root to it, see GetElementPath
@@ -74,6 +91,9 @@ class XmlUnknownName:
         self.ValidNames = sorted(validNames)
         # The valid name that is most like the name, empty when there is no valid name
         self.ClosestMatch = MatchUtil.BuildCandidateListString(name, self.ValidNames, 1)
+        # None for a name no reader of the element reads. For a name the reader reads in another place: what the element is, 'an
+        # ExternalLibrary' (XmlNamePlace). The name is right, it is the place that can not hold it.
+        self.Place = place
 
     def __str__(self) -> str:
         return self.Describe(True)
@@ -84,6 +104,9 @@ class XmlUnknownName:
         """
         kind = "attribute" if self.IsAttribute else "element"
         where = f"'{self.ElementPath}' of '{self.FileName}'" if withFile else f"'{self.ElementPath}'"
+        if self.Place is not None:
+            valid = f"Valid {kind}s are: {', '.join(self.ValidNames)}" if len(self.ValidNames) > 0 else f"It can not contain {kind}s"
+            return f"{kind.capitalize()} '{self.Name}' in {where} is not valid in {self.Place}. {valid}"
         if len(self.ValidNames) <= 0:
             return f"Unknown {kind} '{self.Name}' in {where}: this element can not contain {kind}s"
         return f"Unknown {kind} '{self.Name}' in {where}, did you mean '{self.ClosestMatch}'. Valid {kind}s are: {', '.join(self.ValidNames)}"
@@ -144,15 +167,15 @@ class XmlNameCheckFile:
         super().__init__()
         self.FileName = fileName
         self.Root: ET.Element | None = None
-        # (the element, True for an attribute, the name, the names the reader reads)
-        self.__Found: list[tuple[ET.Element, bool, str, Collection[str]]] = []
+        # (the element, True for an attribute, the name, the names the reader reads, the place for a name that is known elsewhere)
+        self.__Found: list[tuple[ET.Element, bool, str, Collection[str], str | None]] = []
 
-    def Add(self, element: ET.Element, isAttribute: bool, name: str, validNames: Collection[str]) -> None:
+    def Add(self, element: ET.Element, isAttribute: bool, name: str, validNames: Collection[str], place: str | None = None) -> None:
         # An element can be read more than once (a platform element that names several platforms)
         for entry in self.__Found:
             if entry[0] is element and entry[1] == isAttribute and entry[2] == name:
                 return
-        self.__Found.append((element, isAttribute, name, validNames))
+        self.__Found.append((element, isAttribute, name, validNames, place))
 
     def GetUnknownNames(self) -> list[XmlUnknownName]:
         """In the order they were found"""
@@ -160,10 +183,12 @@ class XmlNameCheckFile:
             return []
         root = self.Root
         # An element whose 'Name' is one of the unknown attributes is not told by it: the path would hold the name that is not known
-        withoutName = {element for element, isAttribute, name, _ in self.__Found if isAttribute and name == _g_nameAttribute}
+        withoutName = {element for element, isAttribute, name, _, place in self.__Found if isAttribute and name == _g_nameAttribute and place is None}
         return [
-            XmlUnknownName(self.FileName, str(element.tag) if root is None else GetElementPath(root, element, withoutName), isAttribute, name, validNames)
-            for element, isAttribute, name, validNames in self.__Found
+            XmlUnknownName(
+                self.FileName, str(element.tag) if root is None else GetElementPath(root, element, withoutName), isAttribute, name, validNames, place
+            )
+            for element, isAttribute, name, validNames, place in self.__Found
         ]
 
 
@@ -253,12 +278,24 @@ def StopAtUnknownNames() -> None:
             raise XmlUnknownNamesException(_g_files[-1].FileName, unknownNames)
 
 
-def CheckElements(element: ET.Element, validElements: Collection[str]) -> None:
-    """Collect the child elements of the element whose name is not one of validElements"""
+def CheckElements(element: ET.Element, validElements: Collection[str], place: XmlNamePlace | None = None) -> None:
+    """Collect the child elements of the element whose name is not one of validElements. With a place: one of them that the reader of
+    the element reads in another place is collected as not valid in this one.
+    """
     if len(_g_files) > 0 and len(element) > 0:
         for child in element:
             if child.tag not in validElements and isinstance(child.tag, str):
-                _g_files[-1].Add(element, False, child.tag, validElements)
+                _g_files[-1].Add(element, False, child.tag, validElements, place.Name if place is not None and child.tag in place.OtherElements else None)
+
+
+def TryAddAttributeOfAnotherPlace(element: ET.Element, name: str, validAttributes: Collection[str], place: XmlNamePlace) -> bool:
+    """For a reader that found an attribute that is not one of its place: when the reader reads the attribute in another place and a
+    file is being read, the attribute is collected as not valid in this place and True is returned. Otherwise the reader stops at it.
+    """
+    if len(_g_files) <= 0 or name not in place.OtherAttributes:
+        return False
+    _g_files[-1].Add(element, True, name, validAttributes, place.Name)
+    return True
 
 
 def CheckAttributes(element: ET.Element, validAttributes: Collection[str]) -> None:

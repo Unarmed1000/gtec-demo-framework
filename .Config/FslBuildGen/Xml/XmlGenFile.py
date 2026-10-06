@@ -35,6 +35,7 @@ import copy
 import hashlib
 import os
 import xml.etree.ElementTree as ET
+from collections.abc import Collection
 from typing import Any, cast
 
 from FslBuildGen import IOUtil, PackageConfig, ToolSharedValues, Util
@@ -86,6 +87,7 @@ from FslBuildGen.Xml.XmlGenFileGenerateGrpcProtoFile import XmlGenFileGenerateGr
 from FslBuildGen.Xml.XmlGenFileIgnore import XmlGenFileIgnore
 from FslBuildGen.Xml.XmlGenFileRequirement import XmlGenFileRequirement
 from FslBuildGen.Xml.XmlGenFileSourceGeneration import XmlGenFileSourceGeneration
+from FslBuildGen.Xml.XmlNameCheck import XmlNamePlace
 from FslBuildGen.Xml.XmlStuff import (
     DefaultValueName,
     LocalPackageDefaultValues,
@@ -95,6 +97,20 @@ from FslBuildGen.Xml.XmlStuff import (
     XmlGenFilePlatform,
     XmlGenFileVariant,
 )
+
+
+def _CreateNamesOfType(
+    attributes: Collection[str], elements: Collection[str], namesNotInType: dict[PackageType, tuple[str, frozenset[str], frozenset[str]]]
+) -> dict[PackageType, tuple[frozenset[str], frozenset[str], XmlNamePlace]]:
+    """The names of each type of package: every attribute and element of a package element without the ones the type can not have"""
+    return {
+        packageType: (
+            frozenset(attributes) - attribsNotInType,
+            frozenset(elements) - elementsNotInType,
+            XmlNamePlace(name, attribsNotInType, elementsNotInType),
+        )
+        for packageType, (name, attribsNotInType, elementsNotInType) in namesNotInType.items()
+    }
 
 
 class XmlGenFile(XmlCommonFslBuild):
@@ -140,6 +156,7 @@ class XmlGenFile(XmlCommonFslBuild):
     }
 
     # The child elements of a package element: the ones the base classes read and the ones that are read here
+    __ElementRecipe = "ExperimentalRecipe"
     __ValidElements = (
         XmlCommonFslBuild._LoadElements
         | XmlCommonFslBuild._RequirementElements
@@ -152,9 +169,37 @@ class XmlGenFile(XmlCommonFslBuild):
             "CopyFile",
             "SourceGeneration",
             "Platform",
-            "ExperimentalRecipe",
+            __ElementRecipe,
         }
     )
+
+    # What a package element can hold depends on the type of the package. One reader reads every type, so the names that are read are
+    # the ones above; the names of a type are these without the ones the type can not hold (the schema of a gen file has a type for
+    # each, the lists are the same). A name of another type in a package is reported as not valid in a package of its type.
+    #
+    # - A package that is built (Executable, Library, HeaderLibrary) has no recipe.
+    # - An ExternalLibrary and a ToolRecipe have no source: nothing that is about source files, their directories or the project of
+    #   the package. A ToolRecipe has no checks and no project template either.
+    # - The elements that do something in such a package are elements of it, in the tool and in the schema. In both types:
+    #   'Generate' (the file is written) and 'SourceGeneration' (the package depends on the generator). In an
+    #   ExternalLibrary: 'FindPackage' (it is in the CMake file of the package). In a ToolRecipe: 'ExternalDependency' and
+    #   'ImportTemplate' (what they add reaches the packages that depend on it).
+    __ElementsNotInAnExternalLibrary = frozenset({"BuildCustomization.Debug.Optimization", "CopyFile", "GenerateGrpcProtoFile", "Ignore"})
+    __ElementsNotInAToolRecipe = __ElementsNotInAnExternalLibrary | {"FindPackage"}
+    __AttribsNotInAnExternalLibrary = frozenset(
+        {__AttribAllowCombinedDirectory, __AttribOverrideInclude, __AttribOverrideSource, __AttribPackageNameBasedIncludePath}
+    )
+    __AttribsNotInAToolRecipe = __AttribsNotInAnExternalLibrary | {__AttribAllowCheck, __AttribTemplateType}
+    # The type of a package -> (what a package of the type is called, the attributes it can not have, the elements it can not hold)
+    __NamesNotInType: dict[PackageType, tuple[str, frozenset[str], frozenset[str]]] = {
+        PackageType.Executable: ("an Executable", frozenset(), frozenset({__ElementRecipe})),
+        PackageType.Library: ("a Library", frozenset(), frozenset({__ElementRecipe})),
+        PackageType.HeaderLibrary: ("a HeaderLibrary", frozenset(), frozenset({__ElementRecipe})),
+        PackageType.ExternalLibrary: ("an ExternalLibrary", __AttribsNotInAnExternalLibrary, __ElementsNotInAnExternalLibrary),
+        PackageType.ToolRecipe: ("a ToolRecipe", __AttribsNotInAToolRecipe, __ElementsNotInAToolRecipe),
+    }
+    # The type of a package -> (the attributes it can have, the elements it can hold, its place for the names it can not have)
+    __NamesOfType = _CreateNamesOfType(__ValidAttribs, __ValidElements, __NamesNotInType)
     # The attributes of a 'Default.' element
     __DefaultValueAttribs = frozenset({"Value"})
 
@@ -264,7 +309,8 @@ class XmlGenFile(XmlCommonFslBuild):
         self.PackageNameBasedIncludePath = self._ReadBoolAttrib(elem, self.__AttribPackageNameBasedIncludePath, True)
 
         self.BaseLoad(elem)
-        self._CheckAttributes(self.__ValidAttribs, self.__ValidElements)
+        attribsOfType, elementsOfType, placeOfType = self.__NamesOfType[theType]
+        self._CheckAttributes(attribsOfType, elementsOfType, placeOfType)
 
         self.GenerateList = self.__GetGenerateList(log, elem)
         self.GenerateGrpcProtoFileList = self.__GetGenerateGrpcProtoFileList(log, elem)
@@ -368,6 +414,7 @@ class XmlGenFile(XmlCommonFslBuild):
         flavorExtensions: list[XmlGenFileFlavorExtension],
         variants: list[XmlGenFileVariant],
         experimentalRecipe: XmlExperimentalRecipe | None,
+        allowRecipes: bool,
     ) -> list[XmlGenFilePlatform]:
         platformNames: list[str] = platformNamesStr.split(PackageString.PLATFORM_SEPARATOR)
 
@@ -379,7 +426,7 @@ class XmlGenFile(XmlCommonFslBuild):
                 raise XmlUnsupportedPlatformException(child, f"{name}' from '{platformNamesStr}")
 
             xmlPlatform = XmlGenFilePlatform(
-                self.Log, child, defaultValues, requirements, dependencies, flavors, flavorExtensions, variants, experimentalRecipe
+                self.Log, child, defaultValues, requirements, dependencies, flavors, flavorExtensions, variants, experimentalRecipe, allowRecipes
             )
             xmlPlatform.SYS_SetName(name)
             expandedPlatformList.append(xmlPlatform)
@@ -468,12 +515,21 @@ class XmlGenFile(XmlCommonFslBuild):
                 experimentalRecipe = self._TryGetExperimentalRecipe(child, ownerPackageName, allowRecipes)
                 dependencies, resED = self.__ProcessExperimentalRecipeDependencies(directDependencies, dependencies, experimentalRecipe, [])
                 xmlPlatform = XmlGenFilePlatform(
-                    self.Log, child, defaultValues, requirements, dependencies, flavors, flavorExtensions, variants, experimentalRecipe
+                    self.Log, child, defaultValues, requirements, dependencies, flavors, flavorExtensions, variants, experimentalRecipe, allowRecipes
                 )
 
                 if PackageString.PLATFORM_SEPARATOR in xmlPlatform.Name:
                     xmlPlatforms = self.__GenerateClones(
-                        xmlPlatform.Name, child, defaultValues, requirements, dependencies, flavors, flavorExtensions, variants, experimentalRecipe
+                        xmlPlatform.Name,
+                        child,
+                        defaultValues,
+                        requirements,
+                        dependencies,
+                        flavors,
+                        flavorExtensions,
+                        variants,
+                        experimentalRecipe,
+                        allowRecipes,
                     )
                     for clonePlatform in xmlPlatforms:
                         self._AddPlatform(platforms, clonePlatform, resED)
@@ -492,7 +548,7 @@ class XmlGenFile(XmlCommonFslBuild):
         return platforms
 
     def _TryGetExperimentalRecipe(self, xmlElement: ET.Element, defaultName: str, allowRecipe: bool) -> XmlExperimentalRecipe | None:
-        recipeElementName = "ExperimentalRecipe"
+        recipeElementName = self.__ElementRecipe
         child = self._TryGetElement(xmlElement, recipeElementName)
         if child is None:
             return None

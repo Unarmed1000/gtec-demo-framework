@@ -192,7 +192,9 @@ class XmlGenFilePlatform(XmlBase2):
     __AttribSupported = "Supported"
 
     # The elements of a platform: the ones the base class reads and the ones the reader of the gen file reads from it (XmlGenFile)
-    __ValidElements = XmlBase2._InitElements | {"Requirement", "Flavor", "FlavorExtension", "Variant", "ExperimentalRecipe"}
+    __ValidElements = XmlBase2._InitElements | {"Requirement", "Flavor", "FlavorExtension", "Variant"}
+    # The platform of a package that can have a recipe (an ExternalLibrary, a ToolRecipe) can have one too
+    __ValidElementsWithRecipe = __ValidElements | {"ExperimentalRecipe"}
 
     def __init__(
         self,
@@ -205,9 +207,12 @@ class XmlGenFilePlatform(XmlBase2):
         flavorExtensions: list[XmlGenFileFlavorExtension],
         variants: list[XmlGenFileVariant],
         experimentalRecipe: XmlExperimentalRecipe | None,
+        allowRecipe: bool,
     ) -> None:
         super().__init__(log, xmlElement)
-        self._CheckAttributes({self.__AttribName, self.__AttribProjectId, self.__AttribSupported}, self.__ValidElements)
+        self._CheckAttributes(
+            {self.__AttribName, self.__AttribProjectId, self.__AttribSupported}, self.__ValidElementsWithRecipe if allowRecipe else self.__ValidElements
+        )
         self.Name = self._ReadAttrib(xmlElement, self.__AttribName)
         self.DirectRequirements = requirements
         self.DirectDependencies = dependencies
@@ -248,7 +253,7 @@ class XmlGenFilePlatform(XmlBase2):
 class FakeXmlGenFilePlatform(XmlGenFilePlatform):
     def __init__(self, log: Log, platformName: str, defaultValues: LocalPackageDefaultValues) -> None:
         fakeXmlElement = FakeXmlElementFactory.CreateWithName("Platform", platformName)
-        super().__init__(log, fakeXmlElement, defaultValues, [], [], [], [], [], None)
+        super().__init__(log, fakeXmlElement, defaultValues, [], [], [], [], [], None, False)
 
 
 class XmlGenFileBuildCustomization(XmlBase):

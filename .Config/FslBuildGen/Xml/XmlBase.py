@@ -43,6 +43,7 @@ from FslBuildGen.Version import Version
 from FslBuildGen.Xml import XmlNameCheck
 from FslBuildGen.Xml.Exceptions import XmlException2, XmlFormatException, XmlRequiredAttributeMissingException
 from FslBuildGen.Xml.XmlBaseInfo import XmlBaseInfo
+from FslBuildGen.Xml.XmlNameCheck import XmlNamePlace
 
 
 class XmlBase(XmlBaseInfo):
@@ -53,13 +54,19 @@ class XmlBase(XmlBaseInfo):
     def BaseLoad(self, xmlElement: ET.Element) -> None:
         super().BaseLoad(xmlElement)
 
-    def _CheckAttributes(self, validAttributesSet: set[str], validElements: Collection[str] = XmlNameCheck.NoNames) -> None:
+    def _CheckAttributes(
+        self, validAttributesSet: Collection[str], validElements: Collection[str] = XmlNameCheck.NoNames, place: XmlNamePlace | None = None
+    ) -> None:
         """The names of the element: an attribute that is not one of validAttributesSet is an error. validElements are the child
         elements the reader of the element reads (none unless it says so), a child with another name is collected for the file that
         is being read (XmlNameCheck).
+        place: for an element whose reader reads names its place can not hold (the valid names are the ones of the place). Such a
+        name, attribute or element, is collected for the file as not valid in the place.
         """
         for attributeName in self.XMLElement.attrib:
             if attributeName not in validAttributesSet:
+                if place is not None and XmlNameCheck.TryAddAttributeOfAnotherPlace(self.XMLElement, attributeName, validAttributesSet, place):
+                    continue
                 if len(validAttributesSet) > 0:
                     validAttributeList = list(validAttributesSet)
                     validAttributeList.sort()
@@ -71,7 +78,7 @@ class XmlBase(XmlBaseInfo):
                     )
                 else:
                     raise XmlException2(f"Element '{self.XMLElement.tag}', found invalid attribute '{attributeName}', this element can not contain attributes")
-        XmlNameCheck.CheckElements(self.XMLElement, validElements)
+        XmlNameCheck.CheckElements(self.XMLElement, validElements, place)
 
     def _GetElement(self, xmlElement: ET.Element, elementName: str) -> ET.Element:
         foundElement = xmlElement.find(elementName)
