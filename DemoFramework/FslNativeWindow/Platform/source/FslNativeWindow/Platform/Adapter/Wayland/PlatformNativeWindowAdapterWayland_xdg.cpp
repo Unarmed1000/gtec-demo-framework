@@ -56,6 +56,7 @@
 #include "IVI/WaylandIVIHandler.hpp"
 #include "PlatformNativeWindowSystemContextWayland.hpp"
 #include "WaylandEventPump.hpp"
+#include "WaylandOutputSize.hpp"
 
 // XDG shell decided to break C/C++ library support conventions and require us to
 // run their wayland-scanner tool to generate non-app dependent headers and code.
@@ -133,6 +134,16 @@ namespace Fsl
       return std::max(scale, 1);
     }
 
+    //! Where the size of a window comes from, for the log
+    const char* DescribeSizeSource(const PlatformNativeWindowContextWayland& window) noexcept
+    {
+      if (window.ConfiguredLogicalWidth <= 0 && window.ConfiguredLogicalHeight <= 0)
+      {
+        return "the size that was asked for";
+      }
+      return window.SizeFromOutput ? "the size of its output, as the compositor gave it none" : "the size the compositor gave it";
+    }
+
     //! Sets the size of the window in buffer pixels from what the compositor asked for and the scale of the buffer, and tells the
     //! framework when it changed.
     void UpdateGeometry(PlatformNativeWindowContextWayland& rWindow)
@@ -153,6 +164,8 @@ namespace Fsl
       rWindow.Geometry = PxSize2D::Create(width, height);
 
       const bool resized = originalSizePx != rWindow.Geometry;
+      // Said when the size changes (the window is created, the compositor or the output changes it), which is not once a frame
+      FSLLOG3_VERBOSE_IF(resized, "Wayland: the window is {}x{} pixels (buffer scale {}): {}", width, height, scale, DescribeSizeSource(rWindow));
       FSLLOG3_VERBOSE5("UpdateGeometry result: resized: {} geometry {} buffer scale {}", resized, rWindow.Geometry, scale);
 
       if (resized && rWindow.Native != nullptr && rWindow.ResizeWindowCallback)
@@ -195,6 +208,26 @@ namespace Fsl
       }
     }
 
+    //! Gives a window that is fullscreen without a size from the compositor (SizeFromOutput) the size of its output, as the size the
+    //! compositor asked for. UpdateGeometry makes it the size of the window.
+    //! @return false if the window is not such a window, or no output has said what its mode is
+    bool TryApplyOutputSize(PlatformNativeWindowContextWayland& rWindow)
+    {
+      if (!rWindow.SizeFromOutput || rWindow.SystemContext == nullptr)
+      {
+        return false;
+      }
+      const OutputInfo* const pOutput = WaylandOutputSize::TryFindOutput(rWindow.SystemContext->Outputs, rWindow.EnteredOutputs);
+      if (pOutput == nullptr)
+      {
+        return false;
+      }
+      const WaylandOutputSize::LogicalSize size = WaylandOutputSize::CalcLogicalSize(*pOutput);
+      rWindow.ConfiguredLogicalWidth = size.Width;
+      rWindow.ConfiguredLogicalHeight = size.Height;
+      return true;
+    }
+
     void OnSurfaceEnter(void* data, wl_surface* pSurface, wl_output* pOutput)
     {
       FSLLOG3_VERBOSE5("OnSurfaceEnter");
@@ -205,6 +238,11 @@ namespace Fsl
       }
       pWindow->EnteredOutputs.push_back(pOutput);
       UpdateBufferScale(*pWindow);
+      if (TryApplyOutputSize(*pWindow))
+      {
+        // The output the window is on is known now, and it can be another one than the one its size was taken from
+        UpdateGeometry(*pWindow);
+      }
       // The display info might have changed
       PostWindowConfigChanged(*pWindow);
     }
@@ -262,6 +300,8 @@ namespace Fsl
         return;
       }
 
+      const bool wasFullscreen = pWindow->Fullscreen;
+      const bool wasMaximized = pWindow->Maximized;
       pWindow->Fullscreen = false;
       pWindow->Maximized = false;
 
@@ -287,6 +327,9 @@ namespace Fsl
         }
       }
 
+      FSLLOG3_VERBOSE_IF(wasFullscreen != pWindow->Fullscreen || wasMaximized != pWindow->Maximized,
+                         "Wayland: the compositor says the window is {} (configure of {}x{} logical units)",
+                         pWindow->Fullscreen ? "fullscreen" : (pWindow->Maximized ? "maximized" : "neither fullscreen nor maximized"), width, height);
       FSLLOG3_VERBOSE5("OnXdgToplevelConfigure width {} height {} Fullscreen {} Maximized {}, current active config geometry: {}", width, height,
                        pWindow->Fullscreen, pWindow->Maximized, pWindow->Geometry);
 
@@ -366,7 +409,9 @@ namespace Fsl
       {
         return;
       }
-      // The size is in the logical units of the compositor, as that of a xdg toplevel
+      // The size is in the logical units of the compositor, as that of a xdg toplevel. The compositor has said what size the window
+      // is to have, so it is no longer taken from the output.
+      pWindow->SizeFromOutput = false;
       pWindow->ConfiguredLogicalWidth = width;
       pWindow->ConfiguredLogicalHeight = height;
       UpdateGeometry(*pWindow);
@@ -382,9 +427,14 @@ namespace Fsl
     //! which a old or a small compositor can still be all there is) the surface becomes a toplevel or a fullscreen surface of it.
     //! Without any shell the surface has no role: it is created and drawn to, and if it is shown is up to the compositor.
     //! Nothing waits for a configure here, the window has the size it was asked to have until the compositor gives it one.
+    //! A window that is to be fullscreen has no size it was asked to have. A compositor with wl_shell can give it one (a configure in
+    //! answer to set_fullscreen), but it does not have to, and one without a shell has no way to. The window then has the size of
+    //! its output: a buffer of that size is what a fullscreen surface is to have, and it is what such a compositor shows unscaled.
     void CreateSurfaceRoleWithoutXdg(const PlatformNativeWindowSystemContextWayland& context, PlatformNativeWindowContextWayland& rWindow)
     {
       rWindow.WaitForConfigure = false;
+      rWindow.SizeFromOutput = false;
+      const bool fullscreenRequested = rWindow.Fullscreen;
       if (context.Handles.Shell)
       {
         FSLLOG3_INFO("Wayland: the compositor has no xdg_wm_base, the window uses wl_shell (no window decorations, no close request)");
@@ -406,6 +456,8 @@ namespace Fsl
         {
           wl_shell_surface_set_toplevel(rWindow.Handles.ShellSurface.get());
         }
+        FSLLOG3_VERBOSE("Wayland: the window is a wl_shell_surface, asked to be {}",
+                        rWindow.Fullscreen ? "fullscreen (set_fullscreen)" : "a toplevel (set_toplevel)");
       }
       else
       {
@@ -414,16 +466,21 @@ namespace Fsl
           "most compositors do not show.");
         rWindow.Fullscreen = false;
       }
-      UpdateGeometry(rWindow);
-      if (rWindow.Handles.ShellSurface)
+      // When the compositor has answered, the outputs have said what their modes are, and a shell that gives a fullscreen surface a
+      // size has sent the configure with it
+      if (wl_display_roundtrip(context.Handles.Display.get()) < 0)
       {
-        // The size of a fullscreen surface comes with a configure, which has arrived when the compositor has answered
-        if (wl_display_roundtrip(context.Handles.Display.get()) < 0)
-        {
-          throw GraphicsException(fmt::format("The connection to the compositor was lost while the window was created: {}",
-                                              WaylandEventPump::DescribeError(context.Handles.Display.get())));
-        }
+        throw GraphicsException(fmt::format("The connection to the compositor was lost while the window was created: {}",
+                                            WaylandEventPump::DescribeError(context.Handles.Display.get())));
       }
+      // A fullscreen window the compositor has given no size by now takes the size of its output. UpdateGeometry says in the log what
+      // size the window got and where it came from.
+      rWindow.SizeFromOutput = fullscreenRequested && rWindow.ConfiguredLogicalWidth <= 0 && rWindow.ConfiguredLogicalHeight <= 0;
+      const bool hasSize = !rWindow.SizeFromOutput || TryApplyOutputSize(rWindow);
+      FSLLOG3_WARNING_IF(!hasSize,
+                         "Wayland: the compositor gave the fullscreen window no size and no output has said what its mode is, the window is {}x{}",
+                         rWindow.DesiredWindowSize.RawWidth(), rWindow.DesiredWindowSize.RawHeight());
+      UpdateGeometry(rWindow);
     }
 
     void CreateWlSurface(const PlatformNativeWindowSystemContextWayland& context, PlatformNativeWindowContextWayland& rWindow)
@@ -514,6 +571,8 @@ namespace Fsl
             {
               xdg_toplevel_set_fullscreen(rWindow.Handles.XdgToplevel.get(), nullptr);
             }
+            FSLLOG3_VERBOSE("Wayland: the window is a xdg_toplevel, asked to be {}",
+                            rWindow.Fullscreen ? "fullscreen (set_fullscreen)" : "a window of the size that was asked for");
             rWindow.WaitForConfigure = true;
             wl_surface_commit(rWindow.Handles.Surface.get());
           }
@@ -891,6 +950,11 @@ namespace Fsl
         return;
       }
       UpdateBufferScale(*pContext->Window);
+      if (TryApplyOutputSize(*pContext->Window))
+      {
+        // A fullscreen window that has the size of its output follows it (a change of the mode, of the scale, or a turned output)
+        UpdateGeometry(*pContext->Window);
+      }
       PostWindowConfigChanged(*pContext->Window);
     }
 

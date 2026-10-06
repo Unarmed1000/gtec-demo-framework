@@ -122,6 +122,10 @@ namespace Fsl
     //! yet). A configure that leaves the size to the window gets this size and not the one the window was created with.
     int32_t FloatingLogicalWidth{0};
     int32_t FloatingLogicalHeight{0};
+    //! True if the window was asked to be fullscreen and the compositor does not say what size that is: it has no xdg_wm_base, and
+    //! its wl_shell did not configure the surface or it has no shell at all. The window has the size of its output then, and follows
+    //! it. A size from the compositor ends this.
+    bool SizeFromOutput{false};
 
 
     explicit PlatformNativeWindowContextWayland(std::weak_ptr<INativeWindowEventQueue> eventQueue)
