@@ -798,6 +798,13 @@ namespace Fsl::UI
         itrNode->second->EnableFlags(TreeNodeFlags::ScrollWheelInput);
         m_clickInputCacheDirty = true;
       }
+      if (flags.IsEnabled(WindowFlags::ClipEnabled))
+      {
+        // The clip rectangle of a window is part of what is drawn and of where its children take input
+        itrNode->second->EnableFlags(TreeNodeFlags::ClipEnabled);
+        m_drawCacheDirty = true;
+        m_clickInputCacheDirty = true;
+      }
     }
     else
     {
@@ -829,6 +836,12 @@ namespace Fsl::UI
       if (flags.IsEnabled(WindowFlags::ScrollWheelInput))
       {
         itrNode->second->DisableFlags(TreeNodeFlags::ScrollWheelInput);
+        m_clickInputCacheDirty = true;
+      }
+      if (flags.IsEnabled(WindowFlags::ClipEnabled))
+      {
+        itrNode->second->DisableFlags(TreeNodeFlags::ClipEnabled);
+        m_drawCacheDirty = true;
         m_clickInputCacheDirty = true;
       }
     }

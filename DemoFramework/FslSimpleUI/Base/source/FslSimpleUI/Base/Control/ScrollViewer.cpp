@@ -494,7 +494,12 @@ namespace Fsl::UI
 
   bool ScrollViewer::UpdateAnimationState(const bool forceCompleteAnimation)
   {
-    return m_gestureHandler.UpdateAnimationState(forceCompleteAnimation);
+    if (forceCompleteAnimation && m_gestureHandler.TryForceCompleteAnimation())
+    {
+      // The content is at another place now, the arrange has to put it there
+      PropertyUpdated(PropertyType::Layout);
+    }
+    return m_gestureHandler.UpdateAnimationState(false);
   }
 
   PxSize2D ScrollViewer::MeasureOverride(const PxAvailableSize& availableSizePx)
@@ -547,6 +552,8 @@ namespace Fsl::UI
 
     const PxPoint2 positionOffsetPx = m_gestureHandler.Arrange(localFinalSizePx, desiredlayoutSizePx);
     m_scrollPositionOffsetPx = positionOffsetPx;
+    m_scrollViewSizePx = localFinalSizePx;
+    m_scrollExtentPx = desiredlayoutSizePx;
     base_type::CustomArrange(desiredlayoutSizePx, positionOffsetPx);
 
     // After the arrange we need to check if we need to animate. Starting the animation enables the update calls of the window, which
@@ -581,10 +588,10 @@ namespace Fsl::UI
 
     const PxSize2D viewRenderSizePx = RenderSizePx();
     const PxSize2D cursorRenderSizePx = m_cursorX.GetRenderSizePx();
-    const PxSize2D contentRenderSizePx = content->RenderSizePx();
 
+    // The sizes the scroll range comes from: the size the content is shown at can be another one (a margin, the other cursor)
     const PxPoint2 offsetAndSize =
-      CalcCursorOffsetAndSize(cursorRenderSizePx.Width(), viewRenderSizePx.Width(), contentRenderSizePx.Width(), m_scrollPositionOffsetPx.X);
+      CalcCursorOffsetAndSize(cursorRenderSizePx.Width(), m_scrollViewSizePx.Width(), m_scrollExtentPx.Width(), m_scrollPositionOffsetPx.X);
     if (offsetAndSize.Y <= 0)
     {
       return {};
@@ -606,10 +613,10 @@ namespace Fsl::UI
 
     const PxSize2D viewRenderSizePx = RenderSizePx();
     const PxSize2D cursorRenderSizePx = m_cursorY.GetRenderSizePx();
-    const PxSize2D contentRenderSizePx = content->RenderSizePx();
 
+    // The sizes the scroll range comes from: the size the content is shown at can be another one (a margin, the other cursor)
     const PxPoint2 offsetAndSize =
-      CalcCursorOffsetAndSize(cursorRenderSizePx.Height(), viewRenderSizePx.Height(), contentRenderSizePx.Height(), m_scrollPositionOffsetPx.Y);
+      CalcCursorOffsetAndSize(cursorRenderSizePx.Height(), m_scrollViewSizePx.Height(), m_scrollExtentPx.Height(), m_scrollPositionOffsetPx.Y);
     if (offsetAndSize.Y <= 0)
     {
       return {};

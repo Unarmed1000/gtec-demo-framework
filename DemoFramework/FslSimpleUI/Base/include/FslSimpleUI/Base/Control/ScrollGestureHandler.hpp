@@ -36,7 +36,7 @@
 #include <FslBase/Math/Pixel/PxValueF.hpp>
 #include <FslBase/Math/Pixel/PxVector2.hpp>
 #include <FslBase/Math/Vector2.hpp>
-#include <FslBase/Transition/TransitionPxVector2.hpp>
+#include <FslBase/Transition/TransitionDpPoint2F.hpp>
 #include <FslGraphics/Sprite/SpriteUnitConverter.hpp>
 #include <FslSimpleUI/Base/Control/ContentControl.hpp>
 #include <FslSimpleUI/Base/Control/ScrollGestureAnimationConfig.hpp>
@@ -76,7 +76,9 @@ namespace Fsl::UI
     struct AnimRecord
     {
       AnimStatus Status{AnimStatus::Idle};
-      TransitionPxVector2 Anim;
+      //! The distance the animation adds to the scroll offset. It is held in dp, so a flick that is running keeps its distance on the
+      //! screen when the density changes.
+      TransitionDpPoint2F Anim;
 
       AnimRecord()
         : Anim(TimeSpan::FromSeconds(1), TransitionType::EaseOutSine)
@@ -98,6 +100,9 @@ namespace Fsl::UI
     float m_pendingScrollDeltaPxf{0.0f};
     float m_scrollDeltaRemainderPxf{0.0f};
 
+    //! A animation was completed by force, so the next arrange keeps the scroll offset inside the content instead of bouncing it back
+    bool m_clampToRangePending{false};
+
   public:
     explicit ScrollGestureHandler(const uint16_t densityDpi);
 
@@ -113,7 +118,14 @@ namespace Fsl::UI
     //! @brief update the animation
     //! @return true if the layout has been modified, false otherwise
     bool UpdateAnimation(const TimeSpan timeSpan, const ScrollGestureAnimationConfig& config);
+    //! @brief Check if a gesture or a animation is in progress
+    //! @param forceCompleteAnimation if true a flick or bounce that is running is completed first (see TryForceCompleteAnimation)
     bool UpdateAnimationState(const bool forceCompleteAnimation);
+
+    //! @brief Complete a flick or bounce that is running: the content is at the place it was going to, and no further than the ends of
+    //!        the content, without a bounce. A drag that is in progress is left alone.
+    //! @return true if a animation was completed, so the content moved and a arrange is needed
+    bool TryForceCompleteAnimation() noexcept;
 
     //! @brief Scroll by a distance in pixels (the scroll wheel). Positive moves the content down or right, towards its start.
     //! @note  The distance is applied by the next Arrange, which knows the range: on the vertical axis when that scrolls and else on
@@ -126,6 +138,8 @@ namespace Fsl::UI
 
   private:
     void ApplyPendingScrollDelta(const PxSize2D scrollSizePx);
+    void ApplyPendingClampToRange(const PxSize2D scrollSizePx) noexcept;
+    [[nodiscard]] PxPoint2 CurrentAnimOffsetPx() const;
     bool IsScrollingRequired(const PxSize2D finalAreaRenderSizePx, const PxSize2D contentRenderSizePx) noexcept;
 
     void BeginDrag(const PxPoint2 positionPx);

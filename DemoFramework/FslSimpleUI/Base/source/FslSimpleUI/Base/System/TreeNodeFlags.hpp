@@ -48,6 +48,7 @@ namespace Fsl::UI
       ClickInput = WindowFlags::ClickInput,
       MouseOver = WindowFlags::MouseOver,
       ScrollWheelInput = WindowFlags::ScrollWheelInput,
+      ClipEnabled = WindowFlags::ClipEnabled,
       ResolveEnabled = WindowFlags::ResolveEnabled,
       PostLayoutEnabled = WindowFlags::PostLayoutEnabled,
       Disposed = 0x01 << WindowFlags::BitsReserved,

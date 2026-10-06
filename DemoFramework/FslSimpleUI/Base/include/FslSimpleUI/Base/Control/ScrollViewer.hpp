@@ -65,6 +65,10 @@ namespace Fsl::UI
   private:
     ScrollGestureHandler m_gestureHandler;
     PxPoint2 m_scrollPositionOffsetPx;
+    //! The area the content is shown in and the size of what is scrolled, as the last arrange gave them to the gesture handler. The
+    //! scrollbar cursors are worked out from the same two sizes the scroll range comes from.
+    PxSize2D m_scrollViewSizePx;
+    PxSize2D m_scrollExtentPx;
     //! The arrange found that the scroll position has to animate, the animation is started after the layout (WinPostLayout) as the
     //! window flags must not be changed during the layout
     bool m_animationCheckPending{false};

@@ -334,3 +334,59 @@ TEST_F(TestControlScrollViewerWheel, PassiveWindow_DoesNotTakeTheWheel)
 
   EXPECT_FALSE(Wheel(PxPoint2::Create(50, 50), WheelDown));
 }
+
+
+TEST_F(TestControlScrollViewerWheel, ClipContentSetWhileShown_ContentOutsideTheViewerTakesNoInput)
+{
+  // A viewer of 200x100 pixels at the top left, and in it a input catcher that is 2000 pixels high
+  const auto catcher = std::make_shared<UI::InputCatcher>(m_context);
+  catcher->SetContent(CreateContent(200, 2000));
+  const auto viewer = CreateViewer(UI::ScrollModeFlags::TranslateY, catcher);
+  viewer->SetAlignmentX(UI::ItemAlignment::Near);
+  viewer->SetAlignmentY(UI::ItemAlignment::Near);
+  viewer->SetHeight(UI::DpLayoutSize1D::Create(100.0f));
+  AddAndLayout(viewer);
+  const PxPoint2 belowTheViewerPx = PxPoint2::Create(50, 300);
+
+  // Content that is not clipped takes input where it is, also outside its viewer
+  EXPECT_TRUE(Wheel(belowTheViewerPx, WheelUp));
+
+  viewer->SetClipContent(true);
+  Layout();
+  EXPECT_FALSE(Wheel(belowTheViewerPx, WheelUp));
+  EXPECT_TRUE(Wheel(PxPoint2::Create(50, 50), WheelUp));
+
+  viewer->SetClipContent(false);
+  Layout();
+  EXPECT_TRUE(Wheel(belowTheViewerPx, WheelUp));
+}
+
+
+TEST_F(TestControlScrollViewerWheel, FinishAnimation_SettlesABounce)
+{
+  const auto content = CreateContent(200, 2000);
+  const auto viewer = CreateViewer(UI::ScrollModeFlags::TranslateY, content);
+  AddAndLayout(viewer);
+  // A drag past the start of the content that is held still before the release, so it ends without a flick: the content follows the
+  // finger, held back by the spring, and bounces back to the start when it is let go
+  const PxPoint2 draggedToPx = OnViewerPx + PxPoint2::Create(0, 200);
+  m_manager.SendMouseButtonEvent(MillisecondTickCount32(1000), OnViewerPx, true, false);
+  m_manager.SendMouseMoveEvent(MillisecondTickCount32(1200), draggedToPx, false);
+  m_manager.Update(TimeSpan::FromMilliseconds(16));
+  m_manager.SendMouseMoveEvent(MillisecondTickCount32(1700), draggedToPx, false);
+  m_manager.Update(TimeSpan::FromMilliseconds(16));
+  ASSERT_GT(content->ScreenPositionPx().Y.Value, 0);
+  m_manager.SendMouseButtonEvent(MillisecondTickCount32(2200), draggedToPx, false, false);
+  m_manager.Update(TimeSpan::FromMilliseconds(16));
+  m_manager.Update(TimeSpan::FromMilliseconds(16));
+  // The bounce takes a second, so the content is still past the start
+  ASSERT_GT(content->ScreenPositionPx().Y.Value, 0);
+
+  viewer->FinishAnimation();
+  Layout();
+
+  EXPECT_EQ(PxPoint2::Create(0, 0), content->ScreenPositionPx());
+  // And nothing moves it after that
+  m_manager.Update(TimeSpan::FromMilliseconds(16));
+  EXPECT_EQ(PxPoint2::Create(0, 0), content->ScreenPositionPx());
+}

@@ -38,6 +38,7 @@
 #include <FslDataBinding/Base/Object/DependencyPropertyDefinitionVector.hpp>
 #include <FslDataBinding/Base/Property/DependencyPropertyDefinitionFactory.hpp>
 #include <FslSimpleUI/Base/BaseWindowContext.hpp>
+#include <FslSimpleUI/Base/Control/Logic/ScrollFlickMath.hpp>
 #include <FslSimpleUI/Base/Control/ScrollGestureAnimationConfig.hpp>
 #include <FslSimpleUI/Base/Control/ScrollGestureHandler.hpp>
 #include <FslSimpleUI/Base/Event/WindowInputClickEvent.hpp>
@@ -194,6 +195,8 @@ namespace Fsl::UI
     TryCancelDrag();
 
     m_unitConverter.SetDensityDpi(densityDpi);
+    // The gesture detection works in dp: without the new density its drag threshold and flick velocity stay those of the old one
+    m_gestureManager.SetDpi(densityDpi);
   }
 
 
@@ -245,9 +248,52 @@ namespace Fsl::UI
 
   bool ScrollGestureHandler::UpdateAnimationState(const bool forceCompleteAnimation)
   {
-    FSL_PARAM_NOT_USED(forceCompleteAnimation);
-
+    if (forceCompleteAnimation)
+    {
+      TryForceCompleteAnimation();
+    }
     return !m_gestureManager.IsIdle() || m_animRecord.Status != AnimStatus::Idle;
+  }
+
+
+  bool ScrollGestureHandler::TryForceCompleteAnimation() noexcept
+  {
+    if (m_animRecord.Status == AnimStatus::Idle)
+    {
+      return false;
+    }
+    // A bounce goes to the end of the content, which the scroll offset has been at since it began. A flick goes to the place it comes
+    // to rest at, which can be past the end: the next arrange knows the range and keeps the offset inside it.
+    m_animRecord.Anim.ForceComplete();
+    m_scrollOffsetPx += CurrentAnimOffsetPx();
+    m_animRecord.Status = AnimStatus::Idle;
+    m_animRecord.Anim.SetActualValue({});
+    m_clampToRangePending = true;
+    return true;
+  }
+
+
+  PxPoint2 ScrollGestureHandler::CurrentAnimOffsetPx() const
+  {
+    // The one place the distance of the animation becomes pixels, at the density of now
+    return m_unitConverter.ToPxPoint2(m_animRecord.Anim.GetValue());
+  }
+
+
+  void ScrollGestureHandler::ApplyPendingClampToRange(const PxSize2D scrollSizePx) noexcept
+  {
+    if (!m_clampToRangePending)
+    {
+      return;
+    }
+    m_clampToRangePending = false;
+    if (m_dragRecord.Status != DragStatus::Idle || m_animRecord.Status != AnimStatus::Idle)
+    {
+      // Something began after the animation was completed, it has the content now
+      return;
+    }
+    m_scrollOffsetPx = PxPoint2::Create(std::clamp(m_scrollOffsetPx.X.Value, -scrollSizePx.RawWidth(), 0),
+                                        std::clamp(m_scrollOffsetPx.Y.Value, -scrollSizePx.RawHeight(), 0));
   }
 
 
@@ -296,7 +342,7 @@ namespace Fsl::UI
     }
     if (m_animRecord.Status != AnimStatus::Idle)
     {
-      m_scrollOffsetPx += TypeConverter::UncheckedChangeTo<PxPoint2>(m_animRecord.Anim.GetValue());
+      m_scrollOffsetPx += CurrentAnimOffsetPx();
       m_animRecord.Status = AnimStatus::Idle;
       m_animRecord.Anim.SetActualValue({});
     }
@@ -335,6 +381,7 @@ namespace Fsl::UI
       m_scrollOffsetPx = {};
       m_pendingScrollDeltaPxf = 0.0f;
       m_scrollDeltaRemainderPxf = 0.0f;
+      m_clampToRangePending = false;
       // Clear all recorded movement, any pending gestures and all in progress gestures
       m_gestureManager.Clear();
       return {};
@@ -346,6 +393,8 @@ namespace Fsl::UI
 
     // The distance the scroll wheel asked for since the last arrange
     ApplyPendingScrollDelta(scrollSizePx);
+    // A animation that was completed by force can have left the content past a end
+    ApplyPendingClampToRange(scrollSizePx);
 
     bool arranged = false;
 
@@ -431,7 +480,7 @@ namespace Fsl::UI
     if (m_animRecord.Status != AnimStatus::Idle)
     {
       FSLLOG3_VERBOSE3("- Applying animation position");
-      m_scrollOffsetPx += TypeConverter::UncheckedChangeTo<PxPoint2>(m_animRecord.Anim.GetValue());
+      m_scrollOffsetPx += CurrentAnimOffsetPx();
       m_animRecord.Status = AnimStatus::Idle;
       m_animRecord.Anim.SetActualValue({});
     }
@@ -489,14 +538,21 @@ namespace Fsl::UI
 
       if (dragEndFlickVelocityDpf != DpPoint2F())
       {
-        const auto dragFlickAcceleration(DpValueF::Create(-m_config.DragFlickDeceleration));
-        const DpPoint2F dragFlickAccelerationDpf(ApplyScrollMode(m_scrollMode, DpPoint2F(dragFlickAcceleration, dragFlickAcceleration)));
+        // The flick slows down against the direction it moves in (the velocity has the scroll mode applied already)
+        const DpPoint2F dragFlickAccelerationDpf =
+          ScrollFlickMath::CalcDeceleration(dragEndFlickVelocityDpf, DpValueF::Create(m_config.DragFlickDeceleration));
 
         // A completed drag, turns into either a flick, bounce or no-animation
         const float timeToRest = TimeToRest(dragEndFlickVelocityDpf, dragFlickAccelerationDpf);
         if (timeToRest > 0.0f)
         {
           SelectFlickAnimation(timeToRest, dragFlickAccelerationDpf, finalPositionPx, dragEndFlickVelocityDpf);
+          if (m_animRecord.Anim.IsCompleted())
+          {
+            // A flick without time to animate in is at the place it comes to rest at once
+            m_animRecord.Anim.ForceComplete();
+            SelectAnimation(m_scrollOffsetPx + CurrentAnimOffsetPx(), scrollSizePx);
+          }
         }
         else
         {
@@ -513,13 +569,13 @@ namespace Fsl::UI
     else if (m_animRecord.Status == AnimStatus::Flick && m_animRecord.Anim.IsCompleted())
     {
       // Look at the final animation position
-      const PxPoint2 finalPositionPx = m_scrollOffsetPx + TypeConverter::UncheckedChangeTo<PxPoint2>(m_animRecord.Anim.GetValue());
+      const PxPoint2 finalPositionPx = m_scrollOffsetPx + CurrentAnimOffsetPx();
       SelectAnimation(finalPositionPx, scrollSizePx);
     }
     else if (m_animRecord.Status == AnimStatus::Bounce && m_animRecord.Anim.IsCompleted())
     {
       // Apply the final animation position
-      m_scrollOffsetPx += TypeConverter::UncheckedChangeTo<PxPoint2>(m_animRecord.Anim.GetValue());
+      m_scrollOffsetPx += CurrentAnimOffsetPx();
       m_animRecord.Status = AnimStatus::Idle;
       m_animRecord.Anim.SetActualValue({});
     }
@@ -532,13 +588,19 @@ namespace Fsl::UI
     }
     else if (m_animRecord.Status != AnimStatus::Idle)
     {
-      locationPx += TypeConverter::UncheckedChangeTo<PxPoint2>(m_animRecord.Anim.GetValue());
+      locationPx += CurrentAnimOffsetPx();
     }
     else
     {
       // Handle the case where m_scrollOffsetPx has gone out of bounds.
       // Which can occur if a animation is running and new drag is initiated and then canceled
       SelectAnimation(m_scrollOffsetPx, scrollSizePx);
+      // The selection moved the scroll offset to the end of the content, and a bounce holds the distance to the place it was at
+      locationPx = m_scrollOffsetPx;
+      if (m_animRecord.Status != AnimStatus::Idle)
+      {
+        locationPx += CurrentAnimOffsetPx();
+      }
     }
     return ApplySpringCollision(m_unitConverter, locationPx, scrollSizePx, m_config.BounceSpringStiffness);
   }
@@ -581,11 +643,20 @@ namespace Fsl::UI
         clippedFinalPositionPx.Y = minY;
       }
 
-      m_animRecord.Status = AnimStatus::Bounce;
-      m_animRecord.Anim.SetActualValue(TypeConverter::UncheckedTo<PxVector2>(startOffsetPx));
-      m_animRecord.Anim.SetTransitionTime(m_config.BounceAnimationTime, m_config.BounceTransitionType);
-      m_animRecord.Anim.SetValue(PxVector2());
       m_scrollOffsetPx = clippedFinalPositionPx;
+      if (m_config.BounceAnimationTime <= TimeSpan())
+      {
+        // No time to bounce in: the content is at the end at once. (A transition without time is completed at its start value, so the
+        // content stayed past the end.)
+        m_animRecord.Status = AnimStatus::Idle;
+        m_animRecord.Anim.SetActualValue({});
+        return;
+      }
+      m_animRecord.Status = AnimStatus::Bounce;
+      // The distance past the end is measured in the pixels of now, and a bounce is worked out again every time one begins
+      m_animRecord.Anim.SetActualValue(m_unitConverter.ToDpPoint2F(startOffsetPx));
+      m_animRecord.Anim.SetTransitionTime(m_config.BounceAnimationTime, m_config.BounceTransitionType);
+      m_animRecord.Anim.SetValue(DpPoint2F());
     }
     else
     {
@@ -603,8 +674,8 @@ namespace Fsl::UI
                                                   const DpPoint2F dragEndFlickVelocityDpf)
   {
     // Execute a flick animation
+    // The distance stays in dp: all that goes into it is dp, and the density is applied when the animation is read
     const DpPoint2F finalOffsetDpf = FinalPosition(dragEndFlickVelocityDpf, dragFlickAccelerationDpf, timeToRest);
-    const PxVector2 finalOffsetPxf = m_unitConverter.ToPxVector2(finalOffsetDpf);
 
     TimeSpan animationTime(static_cast<int64_t>(std::round(timeToRest * TimeSpan::TicksPerSecond * m_config.DragEndAnimTimeMultiplier)));
 
@@ -614,15 +685,15 @@ namespace Fsl::UI
     }
 
     FSLLOG3_VERBOSE3(
-      "- FlickAnim AnimTime: {} ({:2f}ms) FinalOffsetDp: {} FinalOffsetPx: {}, DragFlickDeceleration: {} "
+      "- FlickAnim AnimTime: {} ({:2f}ms) FinalOffsetDp: {} DragFlickDeceleration: {} "
       "DragEndAnimTimeMultiplier: {} Time to rest: {}s",
-      animationTime, animationTime.TotalMilliseconds(), finalOffsetDpf, finalOffsetPxf, m_config.DragFlickDeceleration,
-      m_config.DragEndAnimTimeMultiplier, timeToRest);
+      animationTime, animationTime.TotalMilliseconds(), finalOffsetDpf, m_config.DragFlickDeceleration, m_config.DragEndAnimTimeMultiplier,
+      timeToRest);
 
     m_animRecord.Status = AnimStatus::Flick;
     m_animRecord.Anim.SetActualValue({});
     m_animRecord.Anim.SetTransitionTime(animationTime, m_config.DragFlickTransitionType);
-    m_animRecord.Anim.SetValue(finalOffsetPxf);
+    m_animRecord.Anim.SetValue(finalOffsetDpf);
     m_scrollOffsetPx = finalPositionPx;
   }
 }

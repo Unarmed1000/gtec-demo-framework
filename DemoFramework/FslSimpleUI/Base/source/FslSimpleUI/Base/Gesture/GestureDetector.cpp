@@ -62,7 +62,9 @@ namespace Fsl::UI
       constexpr DpValueF FlickVelocityThresholdY(50.0f);
       constexpr DpValueF MinFlingVelocityDpf(50.0f);
       constexpr DpValueF MaxFlingVelocityDpf(8000.0f);
-      constexpr DpValueF TapDistThresholdSqr(4);
+      //! How far a touch can move and still be a tap, past it the touch is a drag
+      constexpr DpValueF TapDistThreshold(4.0f);
+      constexpr DpValueF TapDistThresholdSqr = TapDistThreshold * TapDistThreshold;
     }
 
     constexpr DpPoint2F ClampToAxis(const DpPoint2F deltaPosDpf, const GestureAxis axisFlags) noexcept
