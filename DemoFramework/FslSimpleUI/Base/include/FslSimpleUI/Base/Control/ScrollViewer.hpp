@@ -155,6 +155,7 @@ namespace Fsl::UI
 
   protected:
     void OnClickInput(const std::shared_ptr<WindowInputClickEvent>& theEvent) final;
+    void OnScrollWheelInput(const std::shared_ptr<WindowInputScrollWheelEvent>& theEvent) final;
 
     void UpdateAnimation(const TimeSpan& timeSpan) final;
     bool UpdateAnimationState(const bool forceCompleteAnimation) final;

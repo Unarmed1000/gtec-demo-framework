@@ -52,6 +52,8 @@ namespace Fsl
 
     MouseWheelEvent(const MillisecondTickCount32 timestamp, const int32_t delta, const PxPoint2 position) noexcept;
 
+    //! @brief How far the wheel was turned since the last event: 120 for a notch of a mouse wheel, positive when it was turned away
+    //!        from the user. A wheel with fine steps and a touchpad give smaller values. It is the same on every window system.
     constexpr int32_t GetDelta() const noexcept
     {
       return m_arg1;

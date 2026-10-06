@@ -91,10 +91,10 @@ namespace Fsl
 #elif defined(SDL_VIDEO_DRIVER_WAYLAND)
       FSL_PARAM_NOT_USED(window);
       return {systemInfo.info.wl.display, systemInfo.info.wl.surface};
-//#elif defined(SDL_VIDEO_DRIVER_COCOA)
-//      // For macOS, just store the SDL_Window* itself
-//      //return {nullptr, systemInfo.info.cocoa.window};
-//      return {nullptr, window};
+// #elif defined(SDL_VIDEO_DRIVER_COCOA)
+//       // For macOS, just store the SDL_Window* itself
+//       //return {nullptr, systemInfo.info.cocoa.window};
+//       return {nullptr, window};
 #else
 #error Unsupported SDL platform
 #endif
@@ -556,7 +556,9 @@ namespace Fsl
   void PlatformNativeWindowAdapterSDL::OnMouseWheel(INativeWindowEventQueue& eventQueue, const SDL_MouseWheelEvent& theEvent)
   {
     const auto timestamp = MillisecondTickCount32::FromMilliseconds(theEvent.timestamp);
-    const NativeWindowEvent event = NativeWindowEventHelper::EncodeInputMouseWheelEvent(timestamp, theEvent.y, m_cachedMouse.LastPositionPx);
+    // SDL counts notches, positive away from the user
+    const NativeWindowEvent event = NativeWindowEventHelper::EncodeInputMouseWheelEvent(
+      timestamp, theEvent.y * NativeWindowEventHelper::MouseWheelDeltaPerNotch, m_cachedMouse.LastPositionPx);
     eventQueue.PostEvent(event);
   }
 

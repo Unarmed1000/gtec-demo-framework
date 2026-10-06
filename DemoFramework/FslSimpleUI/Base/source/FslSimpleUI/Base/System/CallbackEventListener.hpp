@@ -83,6 +83,23 @@ namespace Fsl::UI
     }
 
 
+    void OnScrollWheelInputPreview(const std::shared_ptr<WindowInputScrollWheelEvent>& theEvent) final
+    {
+      if (m_callback != nullptr)
+      {
+        m_callback->OnScrollWheelInputPreview(theEvent);
+      }
+    }
+
+    void OnScrollWheelInput(const std::shared_ptr<WindowInputScrollWheelEvent>& theEvent) final
+    {
+      if (m_callback != nullptr)
+      {
+        m_callback->OnScrollWheelInput(theEvent);
+      }
+    }
+
+
     void OnSelect(const std::shared_ptr<WindowSelectEvent>& theEvent) final
     {
       if (m_callback != nullptr)

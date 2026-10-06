@@ -75,8 +75,8 @@ namespace Fsl
       constexpr int32_t MagicDefaultDpi = 96;
       //! The size of the cursor in the logical units of the compositor
       constexpr int32_t CursorSize = 32;
-      //! A step of a mouse wheel is ten units of wl_pointer.axis, which is a 24.8 fixed point value
-      constexpr int32_t WheelStepFixed = 10 * 256;
+      //! A notch of a mouse wheel is ten units of wl_pointer.axis, which is a 24.8 fixed point value
+      constexpr int32_t WheelNotchFixed = 10 * 256;
     }
 
     //! The time of a input event. The compositor counts milliseconds from a start of its own in 32 bits, the bits are kept.
@@ -695,16 +695,17 @@ namespace Fsl
       }
       const std::shared_ptr<INativeWindowEventQueue> eventQueue = pContext->EventQueue.lock();
 
-      // The compositor counts a scroll down as positive, the framework a step of the wheel away from the user (what the other window
-      // systems report). A touchpad and a wheel with fine steps send parts of a step, they are kept until they add up to one.
-      pContext->WheelRemainder -= static_cast<int32_t>(value);
-      const int32_t steps = pContext->WheelRemainder / LocalConfig::WheelStepFixed;
-      if (steps == 0)
+      // The compositor counts a scroll down as positive, the framework a turn of the wheel away from the user, and a notch as
+      // MouseWheelDeltaPerNotch (what the other window systems report). A touchpad and a wheel with fine steps send parts of a
+      // notch: they are passed on as they come, and what is less than one unit of the delta is kept until it adds up.
+      pContext->WheelRemainder -= static_cast<int32_t>(value) * NativeWindowEventHelper::MouseWheelDeltaPerNotch;
+      const int32_t wheelDelta = pContext->WheelRemainder / LocalConfig::WheelNotchFixed;
+      if (wheelDelta == 0)
       {
         return;
       }
-      pContext->WheelRemainder -= steps * LocalConfig::WheelStepFixed;
-      pContext->ZDelta = steps;
+      pContext->WheelRemainder -= wheelDelta * LocalConfig::WheelNotchFixed;
+      pContext->ZDelta = wheelDelta;
       if (eventQueue)
       {
         eventQueue->PostEvent(

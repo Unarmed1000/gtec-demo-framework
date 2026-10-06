@@ -119,6 +119,7 @@ namespace Fsl
     void GenerateFakeMouseDownMove(const InputCommandRecord& entry);
     void GenerateFakeMouseMove(const InputCommandRecord& entry);
     void GenerateFakeMouseClear(const InputCommandRecord& entry);
+    void GenerateFakeMouseWheel(const InputCommandRecord& entry);
 
     [[nodiscard]] std::optional<PxPoint2> TryRewriteScreenCoordinate(const InputCommandRecord& entry) const;
   };

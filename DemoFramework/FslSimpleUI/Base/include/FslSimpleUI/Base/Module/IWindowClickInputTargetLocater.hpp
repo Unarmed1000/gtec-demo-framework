@@ -53,6 +53,10 @@ namespace Fsl
       //! @brief Locate the top window at the hit location that is marked for ClickInput
       //! @return a nullptr if none could be found
       [[nodiscard]] virtual std::shared_ptr<IWindowId> TryGetClickInputWindow(const PxPoint2& hitPositionPx) const = 0;
+
+      //! @brief Locate the top window at the hit location that is marked for ScrollWheelInput
+      //! @return a nullptr if none could be found
+      [[nodiscard]] virtual std::shared_ptr<IWindowId> TryGetScrollWheelInputWindow(const PxPoint2& hitPositionPx) const = 0;
     };
   }
 }

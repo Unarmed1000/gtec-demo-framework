@@ -40,7 +40,9 @@ namespace Fsl
     MouseUp = 2,
     MouseDownMove = 3,
     MouseMove = 4,
-    MouseMoveClear = 5
+    MouseMoveClear = 5,
+    //! The scroll wheel was turned over a window (InputCommandRecord::MouseWheelDelta says how far)
+    MouseWheel = 6
   };
 }
 

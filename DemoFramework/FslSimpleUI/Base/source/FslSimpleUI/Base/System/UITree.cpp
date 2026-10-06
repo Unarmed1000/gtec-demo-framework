@@ -319,6 +319,7 @@ namespace Fsl::UI
         m_vectorDraw.clear();
         m_vectorClickInputTarget.clear();
         m_vectorMouseOverTarget.clear();
+        m_vectorScrollWheelInputTarget.clear();
       }
 
       if (m_moduleCallbackRegistry && m_root)
@@ -791,6 +792,12 @@ namespace Fsl::UI
         itrNode->second->EnableFlags(TreeNodeFlags::ClickInput);
         m_clickInputCacheDirty = true;
       }
+      if (flags.IsEnabled(WindowFlags::ScrollWheelInput))
+      {
+        // The windows that take the wheel are listed with the click targets
+        itrNode->second->EnableFlags(TreeNodeFlags::ScrollWheelInput);
+        m_clickInputCacheDirty = true;
+      }
     }
     else
     {
@@ -818,6 +825,11 @@ namespace Fsl::UI
       if (flags.IsEnabled(WindowFlags::ClickInput))
       {
         FSLLOG3_WARNING("ClickInput can not be disabled by request");
+      }
+      if (flags.IsEnabled(WindowFlags::ScrollWheelInput))
+      {
+        itrNode->second->DisableFlags(TreeNodeFlags::ScrollWheelInput);
+        m_clickInputCacheDirty = true;
       }
     }
     return true;
@@ -940,6 +952,26 @@ namespace Fsl::UI
 
     auto itr = m_vectorMouseOverTarget.rbegin();
     const auto itrEnd = m_vectorMouseOverTarget.rend();
+    while (itr != itrEnd)
+    {
+      if (itr->VisibleRectPx.Contains(hitPositionPx.X, hitPositionPx.Y))
+      {
+        return itr->Node;
+      }
+      ++itr;
+    }
+    return {};
+  }
+
+
+  std::shared_ptr<TreeNode> UITree::TryGetScrollWheelInputWindow(const PxPoint2& hitPositionPx) const
+  {
+    if (m_state != State::Ready)
+    {
+      throw UsageErrorException("Internal state must be ready");
+    }
+    auto itr = m_vectorScrollWheelInputTarget.rbegin();
+    const auto itrEnd = m_vectorScrollWheelInputTarget.rend();
     while (itr != itrEnd)
     {
       if (itr->VisibleRectPx.Contains(hitPositionPx.X, hitPositionPx.Y))
@@ -1113,6 +1145,7 @@ namespace Fsl::UI
     m_vectorDraw.clear();
     m_vectorClickInputTarget.clear();
     m_vectorMouseOverTarget.clear();
+    m_vectorScrollWheelInputTarget.clear();
 
     const DrawClipContext clipContext(m_clipEnabled, TypeConverter::UncheckedTo<PxAreaRectangleF>(!m_clipEnabled ? m_rootRectPx : m_rootClipRectPx));
     RebuildDeques(m_root, m_rootRectPx, ItemVisibility::Visible, clipContext);
@@ -1178,6 +1211,10 @@ namespace Fsl::UI
     if (visibility == ItemVisibility::Visible && flags.IsFlagged(TreeNodeFlags::MouseOver))
     {
       m_vectorMouseOverTarget.emplace_back(currentInputRectPx, node);
+    }
+    if (visibility == ItemVisibility::Visible && flags.IsFlagged(TreeNodeFlags::ScrollWheelInput))
+    {
+      m_vectorScrollWheelInputTarget.emplace_back(currentInputRectPx, node);
     }
 
     const auto& nodeChildren = node->m_children;

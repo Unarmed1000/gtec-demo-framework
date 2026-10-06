@@ -44,6 +44,7 @@ namespace Fsl
                                                  {InputCommandId::MouseDownMove, "MouseDownMove"},
                                                  {InputCommandId::MouseMove, "MouseMove"},
                                                  {InputCommandId::MouseMoveClear, "MouseMoveClear"},
+                                                 {InputCommandId::MouseWheel, "MouseWheel"},
                                                })
 }
 

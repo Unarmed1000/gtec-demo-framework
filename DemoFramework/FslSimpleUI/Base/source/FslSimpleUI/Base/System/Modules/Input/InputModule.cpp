@@ -120,4 +120,12 @@ namespace Fsl::UI
     }
     return m_hitBasedInputSender->SendInputClickEvent(timestamp, sourceId, sourceSubId, state, isRepeat, screenPositionPx);
   }
+
+
+  bool InputModule::SendScrollWheelEvent(const MillisecondTickCount32 timestamp, const int32_t sourceId, const PxPoint2& screenPositionPx,
+                                         const PxValueF scrollDeltaPxf)
+  {
+    const auto target = m_targetLocater->TryGetScrollWheelInputWindow(screenPositionPx);
+    return target ? m_hitBasedInputSender->SendScrollWheelEvent(timestamp, sourceId, screenPositionPx, scrollDeltaPxf, target) : false;
+  }
 }

@@ -37,6 +37,7 @@
 #include <FslBase/Math/Pixel/TypeConverter.hpp>
 #include <FslDemoApp/Base/Service/Events/Basic/MouseButtonEvent.hpp>
 #include <FslDemoApp/Base/Service/Events/Basic/MouseMoveEvent.hpp>
+#include <FslDemoApp/Base/Service/Events/Basic/MouseWheelEvent.hpp>
 #include <Shared/UI/Benchmark/UIModule/ICustomWindowInfoModule.hpp>
 #include <utility>
 #include "Input/InputRecorder.hpp"
@@ -337,6 +338,9 @@ namespace Fsl
       case InputCommandId::MouseMoveClear:
         GenerateFakeMouseClear(command);
         break;
+      case InputCommandId::MouseWheel:
+        GenerateFakeMouseWheel(command);
+        break;
       case InputCommandId::Invalid:
         FSLLOG3_ERROR("InputCommandId::Invaid should never be recorded");
         break;
@@ -393,6 +397,16 @@ namespace Fsl
     const auto positionPx = PxPoint2::Create(-25000, -25000);
     assert(m_proxy.IsReady());
     m_proxy.OnMouseMoveEvent(MouseMoveEvent(entry.Timestamp, positionPx, VirtualMouseButtonFlags(), entry.IsTouch));
+  }
+
+  void SceneDemoAppExtensionProxy::GenerateFakeMouseWheel(const InputCommandRecord& entry)
+  {
+    const std::optional<PxPoint2> positionPx = TryRewriteScreenCoordinate(entry);
+    if (positionPx.has_value())
+    {
+      assert(m_proxy.IsReady());
+      m_proxy.OnMouseWheelEvent(MouseWheelEvent(entry.Timestamp, entry.MouseWheelDelta, positionPx.value()));
+    }
   }
 
 

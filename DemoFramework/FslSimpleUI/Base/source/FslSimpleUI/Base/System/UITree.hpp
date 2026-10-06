@@ -164,6 +164,7 @@ namespace Fsl
       UITreeDrawVector m_vectorDraw;
       std::vector<UITreeInputTargetRecord> m_vectorClickInputTarget;
       std::vector<UITreeInputTargetRecord> m_vectorMouseOverTarget;
+      std::vector<UITreeInputTargetRecord> m_vectorScrollWheelInputTarget;
 
       FastTreeNodeVector m_nodeScratchpad;
       FastTreeNodeVector m_nodeScratchpadPostResolve;
@@ -242,6 +243,7 @@ namespace Fsl
       // From ITreeNodeClickInputTargetLocater
       std::shared_ptr<TreeNode> TryGetMouseOverWindow(const PxPoint2& hitPositionPx) const final;
       std::shared_ptr<TreeNode> TryGetClickInputWindow(const PxPoint2& hitPositionPx) const final;
+      std::shared_ptr<TreeNode> TryGetScrollWheelInputWindow(const PxPoint2& hitPositionPx) const final;
 
       // From ITreeNodeBasicInfo
       PxRectangle GetWindowRectanglePx(const IWindowId* const pWindowId) const final;

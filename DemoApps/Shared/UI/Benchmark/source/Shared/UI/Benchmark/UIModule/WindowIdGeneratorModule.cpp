@@ -110,6 +110,24 @@ namespace Fsl
     return CustomWindowId(itrFind->second.WindowId);
   }
 
+  CustomWindowId WindowIdGeneratorModule::TryGetScrollWheelInputWindow(const PxPoint2& hitPositionPx) const
+  {
+    const auto foundWindow = m_targetLocater->TryGetScrollWheelInputWindow(hitPositionPx);
+    const UI::IWindowId* pWindowId = foundWindow.get();
+    if (pWindowId == nullptr)
+    {
+      return {};
+    }
+    const auto itrFind = m_mapWindowToId.find(pWindowId);
+    if (itrFind == m_mapWindowToId.end())
+    {
+      FSLLOG3_DEBUG_WARNING("TryGetScrollWheelInputWindow: Unknown window encountered!");
+      return {};
+    }
+
+    return CustomWindowId(itrFind->second.WindowId);
+  }
+
 
   PxRectangle WindowIdGeneratorModule::GetWindowRectanglePx(const CustomWindowId windowId) const
   {

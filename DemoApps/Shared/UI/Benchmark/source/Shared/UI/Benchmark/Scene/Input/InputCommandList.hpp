@@ -65,6 +65,8 @@ namespace Fsl
     void AddMouseMove(const MillisecondTickCount32 timestamp, const CustomWindowId windowId, const PxRectangle windowRectPx,
                       const PxPoint2 mousePosition, const bool isTouch);
     void AddMouseMoveDone(const MillisecondTickCount32 timestamp);
+    void AddMouseWheel(const MillisecondTickCount32 timestamp, const CustomWindowId windowId, const PxRectangle windowRectPx,
+                       const PxPoint2 mousePosition, const int32_t wheelDelta);
 
   private:
     void Enqueue(const InputCommandRecord record);

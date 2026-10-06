@@ -33,6 +33,7 @@
 
 #include <FslBase/Math/Pixel/PxPoint2.hpp>
 #include <FslBase/Math/Pixel/PxSize2D.hpp>
+#include <FslBase/Math/Pixel/PxValueF.hpp>
 #include <FslBase/Math/Pixel/PxVector2.hpp>
 #include <FslBase/Math/Vector2.hpp>
 #include <FslBase/Transition/TransitionPxVector2.hpp>
@@ -93,6 +94,10 @@ namespace Fsl::UI
 
     PxPoint2 m_scrollOffsetPx;
 
+    //! The distance to scroll by that waits for the next arrange (the scroll wheel), and the part of a pixel that was left over
+    float m_pendingScrollDeltaPxf{0.0f};
+    float m_scrollDeltaRemainderPxf{0.0f};
+
   public:
     explicit ScrollGestureHandler(const uint16_t densityDpi);
 
@@ -110,9 +115,17 @@ namespace Fsl::UI
     bool UpdateAnimation(const TimeSpan timeSpan, const ScrollGestureAnimationConfig& config);
     bool UpdateAnimationState(const bool forceCompleteAnimation);
 
+    //! @brief Scroll by a distance in pixels (the scroll wheel). Positive moves the content down or right, towards its start.
+    //! @note  The distance is applied by the next Arrange, which knows the range: on the vertical axis when that scrolls and else on
+    //!        the horizontal one, and no further than the ends of the content (no overscroll and no bounce). A flick or bounce that is
+    //!        running ends where the content is shown. Calls before the arrange add up, and so do parts of a pixel over time.
+    //! @return true if the distance was taken and a arrange is needed, false if scrolling is not enabled or a drag is in progress
+    bool AddScrollDelta(const PxValueF deltaPxf) noexcept;
+
     PxPoint2 Arrange(const PxSize2D finalAreaRenderSizePx, const PxSize2D contentRenderSizePx);
 
   private:
+    void ApplyPendingScrollDelta(const PxSize2D scrollSizePx);
     bool IsScrollingRequired(const PxSize2D finalAreaRenderSizePx, const PxSize2D contentRenderSizePx) noexcept;
 
     void BeginDrag(const PxPoint2 positionPx);

@@ -39,6 +39,7 @@
 #include <FslSimpleUI/Base/Control/ScrollGestureAnimationConfig.hpp>
 #include <FslSimpleUI/Base/Control/ScrollViewer.hpp>
 #include <FslSimpleUI/Base/Event/WindowInputClickEvent.hpp>
+#include <FslSimpleUI/Base/Event/WindowInputScrollWheelEvent.hpp>
 #include <FslSimpleUI/Base/Log/FmtMovementOwnership.hpp>
 #include <FslSimpleUI/Base/Log/FmtMovementTransactionAction.hpp>
 #include <FslSimpleUI/Base/MovementOwnership.hpp>
@@ -179,7 +180,7 @@ namespace Fsl::UI
     SetAlignmentY(ItemAlignment::Stretch);
     SetScrollMode(ScrollModeFlags::Translate);
 
-    Enable(WindowFlags(WindowFlags::ClickInput | WindowFlags::DrawEnabled | WindowFlags::PostLayoutEnabled));
+    Enable(WindowFlags(WindowFlags::ClickInput | WindowFlags::ScrollWheelInput | WindowFlags::DrawEnabled | WindowFlags::PostLayoutEnabled));
   }
 
 
@@ -455,6 +456,24 @@ namespace Fsl::UI
       theEvent->Claimed();
       FSLLOG3_VERBOSE3("Intercept: {}", movementOwnerShip);
       break;
+    }
+  }
+
+
+  void ScrollViewer::OnScrollWheelInput(const std::shared_ptr<WindowInputScrollWheelEvent>& theEvent)
+  {
+    base_type::OnScrollWheelInput(theEvent);
+
+    // This is the bubble phase, so a scroll viewer inside this one had the event first: the innermost one that can scroll takes the
+    // wheel. A viewer that takes it marks it as handled, also when it does not move (at the end of its content, or during a drag).
+    if (!theEvent->IsHandled() && m_gestureHandler.IsScrollingEnabled())
+    {
+      theEvent->Handled();
+      if (m_gestureHandler.AddScrollDelta(theEvent->GetScrollDeltaPxf()))
+      {
+        // The distance is applied by the next arrange, which knows the range
+        PropertyUpdated(PropertyType::Layout);
+      }
     }
   }
 

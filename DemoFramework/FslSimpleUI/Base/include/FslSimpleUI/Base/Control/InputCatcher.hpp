@@ -41,6 +41,7 @@ namespace Fsl::UI
 
   protected:
     void OnClickInput(const std::shared_ptr<WindowInputClickEvent>& theEvent) override;
+    void OnScrollWheelInput(const std::shared_ptr<WindowInputScrollWheelEvent>& theEvent) override;
   };
 }
 

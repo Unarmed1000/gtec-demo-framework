@@ -49,7 +49,9 @@
 #include <FslSimpleUI/Base/Gesture/Event/GestureTapBasicEvent.hpp>
 #include <FslSimpleUI/Base/Log/Gesture/Event/FmtGestureEventType.hpp>
 #include <FslSimpleUI/Base/PropertyTypeFlags.hpp>
+#include <algorithm>
 #include <array>
+#include <cmath>
 
 namespace Fsl::UI
 {
@@ -249,6 +251,79 @@ namespace Fsl::UI
   }
 
 
+  bool ScrollGestureHandler::AddScrollDelta(const PxValueF deltaPxf) noexcept
+  {
+    if (!m_gestureManager.IsEnabled() || m_dragRecord.Status == DragStatus::Dragging)
+    {
+      // Nothing to scroll, or the content follows a finger at the moment
+      return false;
+    }
+    m_pendingScrollDeltaPxf += deltaPxf.Value;
+    return true;
+  }
+
+
+  void ScrollGestureHandler::ApplyPendingScrollDelta(const PxSize2D scrollSizePx)
+  {
+    if (m_pendingScrollDeltaPxf == 0.0f)
+    {
+      return;
+    }
+    const float deltaPxf = m_pendingScrollDeltaPxf + m_scrollDeltaRemainderPxf;
+    m_pendingScrollDeltaPxf = 0.0f;
+    m_scrollDeltaRemainderPxf = 0.0f;
+    if (m_dragRecord.Status == DragStatus::Dragging)
+    {
+      // A drag began after the distance was taken, the drag has the content now
+      return;
+    }
+
+    // The content moves by whole pixels, the rest is kept for the next distance (a touchpad sends many small ones)
+    const float wholePxf = std::trunc(deltaPxf);
+    m_scrollDeltaRemainderPxf = deltaPxf - wholePxf;
+    const auto deltaPx = static_cast<int32_t>(wholePxf);
+    if (deltaPx == 0)
+    {
+      return;
+    }
+
+    // A drag that just ended would start a flick, and a flick or bounce that is running would go on from the place it began at: both
+    // end here, at the place the content has now, so the content does not jump back.
+    if (m_dragRecord.Status == DragStatus::Completed)
+    {
+      m_scrollOffsetPx = ApplyScrollMode(m_scrollMode, m_scrollOffsetPx + m_dragRecord.OffsetPx);
+      m_dragRecord = {};
+    }
+    if (m_animRecord.Status != AnimStatus::Idle)
+    {
+      m_scrollOffsetPx += TypeConverter::UncheckedChangeTo<PxPoint2>(m_animRecord.Anim.GetValue());
+      m_animRecord.Status = AnimStatus::Idle;
+      m_animRecord.Anim.SetActualValue({});
+    }
+
+    // The wheel scrolls vertically where the content can, and sideways in a viewer that only scrolls sideways
+    int32_t offsetXPx = m_scrollOffsetPx.X.Value;
+    int32_t offsetYPx = m_scrollOffsetPx.Y.Value;
+    if (ScrollModeFlagsUtil::IsEnabled(m_scrollMode, ScrollModeFlags::TranslateY))
+    {
+      offsetYPx += deltaPx;
+    }
+    else if (ScrollModeFlagsUtil::IsEnabled(m_scrollMode, ScrollModeFlags::TranslateX))
+    {
+      offsetXPx += deltaPx;
+    }
+    // The offset is the place of the content: zero at its start, minus the scroll size at its end. The wheel stops at the ends.
+    const int32_t clampedXPx = std::clamp(offsetXPx, -scrollSizePx.RawWidth(), 0);
+    const int32_t clampedYPx = std::clamp(offsetYPx, -scrollSizePx.RawHeight(), 0);
+    if (clampedXPx != offsetXPx || clampedYPx != offsetYPx)
+    {
+      // At a end there is nothing a part of a pixel could add up to
+      m_scrollDeltaRemainderPxf = 0.0f;
+    }
+    m_scrollOffsetPx = PxPoint2::Create(clampedXPx, clampedYPx);
+  }
+
+
   PxPoint2 ScrollGestureHandler::Arrange(const PxSize2D finalAreaRenderSizePx, const PxSize2D contentRenderSizePx)
   {
     if (!IsScrollingRequired(finalAreaRenderSizePx, contentRenderSizePx))
@@ -258,6 +333,8 @@ namespace Fsl::UI
       m_animRecord.Status = AnimStatus::Idle;
       m_animRecord.Anim.SetActualValue({});
       m_scrollOffsetPx = {};
+      m_pendingScrollDeltaPxf = 0.0f;
+      m_scrollDeltaRemainderPxf = 0.0f;
       // Clear all recorded movement, any pending gestures and all in progress gestures
       m_gestureManager.Clear();
       return {};
@@ -266,6 +343,9 @@ namespace Fsl::UI
 
     const PxSize2D scrollSizePx(contentRenderSizePx - finalAreaRenderSizePx);
     PxPoint2 locationPx;
+
+    // The distance the scroll wheel asked for since the last arrange
+    ApplyPendingScrollDelta(scrollSizePx);
 
     bool arranged = false;
 

@@ -103,6 +103,15 @@ TEST_F(TestUIManager, SendMouseMoveEventEmpty)
 }
 
 
+TEST_F(TestUIManager, SendMouseWheelEventEmpty)
+{
+  const auto pos = PxPoint2::Create(0, 0);
+  const auto isHandled = m_manager.SendMouseWheelEvent(MillisecondTickCount32(), pos, UI::UIManager::MouseWheelDeltaPerNotch);
+
+  ASSERT_FALSE(isHandled);
+}
+
+
 TEST_F(TestUIManager, ResizedEmpty)
 {
   m_manager.Resized(BasicWindowMetrics(PxExtent2D::Create(640, 480), Vector2(160, 160), 160));

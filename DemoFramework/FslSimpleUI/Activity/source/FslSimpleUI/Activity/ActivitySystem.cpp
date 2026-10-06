@@ -114,6 +114,12 @@ namespace Fsl::UI
   }
 
 
+  bool ActivitySystem::SendMouseWheelEvent(const MillisecondTickCount32 timestamp, const PxPoint2 positionPx, const int32_t delta)
+  {
+    return m_uiManager.SendMouseWheelEvent(timestamp, positionPx, delta);
+  }
+
+
   bool ActivitySystem::IsIdle() const noexcept
   {
     return m_uiManager.IsIdle();

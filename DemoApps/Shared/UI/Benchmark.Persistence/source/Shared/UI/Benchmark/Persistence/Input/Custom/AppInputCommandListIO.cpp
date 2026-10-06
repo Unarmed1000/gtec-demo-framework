@@ -54,7 +54,9 @@ namespace Fsl::AppInputCommandListIO
     {
       Version1 = 1,
       Version2 = 2,
-      Version3 = 3
+      Version3 = 3,
+      //! Every command has the delta of the scroll wheel
+      Version4 = 4
     };
 
     namespace Header
@@ -62,7 +64,7 @@ namespace Fsl::AppInputCommandListIO
       // LCN, since this is written as little endian it becomes NCL in the file
       constexpr const uint32_t Magic = 0x004C434E;
       constexpr const uint32_t MinVersion = static_cast<uint32_t>(VersionId::Version1);
-      constexpr const uint32_t MaxVersion = static_cast<uint32_t>(VersionId::Version3);
+      constexpr const uint32_t MaxVersion = static_cast<uint32_t>(VersionId::Version4);
 
       constexpr const uint32_t HeaderOffsetMagic = 0;
       constexpr const uint32_t HeaderOffsetVersion = 4;
@@ -101,15 +103,19 @@ namespace Fsl::AppInputCommandListIO
       size += sizeof(uint64_t);                                                             // CustomWindowId WindowId   - uint64_t
       size += static_cast<std::size_t>(ValueCompression::Details::MaxByteSizeInt32) * 4;    // PxRectangle WindowRectPx  - 4x int32_t
       size += static_cast<std::size_t>(ValueCompression::Details::MaxByteSizeInt32) * 4;    // PxPoint2 MousePosition    - 2x int32_t
+      size += ValueCompression::Details::MaxByteSizeUInt32;                                 // bool IsTouch              - uint32_t
+      size += ValueCompression::Details::MaxByteSizeInt32;                                  // Timestamp                 - int32_t
+      size += ValueCompression::Details::MaxByteSizeInt32;                                  // int32_t MouseWheelDelta   - int32_t
       return size;
     }
 
     std::size_t CalcMaxSize(const AppInputCommandList& content)
     {
       std::size_t size = Header::SizeOfHeader;
-      size += ValueCompression::Details::MaxByteSizeUInt32;                 // uint32_t FrameCount - uint32_t
-      size += ValueCompression::Details::MaxByteSizeUInt32;                 // uint32_t CommandCount - uint32_t
-      size += CalcInputCommandRecordMaxSize() * content.GetFrameCount();    // Commands
+      size += ValueCompression::Details::MaxByteSizeUInt32;    // uint32_t FrameCount - uint32_t
+      size += ValueCompression::Details::MaxByteSizeUInt32;    // uint32_t CommandCount - uint32_t
+      // A frame can have more than one command (a move and a wheel event, or a release and a press), so it is the number of commands
+      size += CalcInputCommandRecordMaxSize() * content.AsSpan().size();    // Commands
       return size;
     }
 
@@ -117,7 +123,7 @@ namespace Fsl::AppInputCommandListIO
     {
       assert(span.size() >= Header::SizeOfHeader);
       ByteSpanUtil::WriteUInt32LE(span, Header::HeaderOffsetMagic, Header::Magic);
-      ByteSpanUtil::WriteUInt32LE(span, Header::HeaderOffsetVersion, static_cast<uint32_t>(VersionId::Version3));
+      ByteSpanUtil::WriteUInt32LE(span, Header::HeaderOffsetVersion, static_cast<uint32_t>(VersionId::Version4));
       ByteSpanUtil::WriteUInt32LE(span, Header::HeaderOffsetContentSize, 0);
       return span.subspan(Header::SizeOfHeader);
     }
@@ -180,6 +186,7 @@ namespace Fsl::AppInputCommandListIO
       case InputCommandId::MouseDownMove:
       case InputCommandId::MouseMove:
       case InputCommandId::MouseMoveClear:
+      case InputCommandId::MouseWheel:
         return commandId;
       default:
         throw InvalidFormatException("invalid format, unsupported command id");
@@ -196,6 +203,7 @@ namespace Fsl::AppInputCommandListIO
       dstSpan = Write(dstSpan, record.MousePositionPx);
       dstSpan = ValueCompression::WriteSimpleUInt32(dstSpan, record.IsTouch ? 1u : 0u);
       dstSpan = ValueCompression::WriteSimpleInt32(dstSpan, record.Timestamp.Ticks());
+      dstSpan = ValueCompression::WriteSimpleInt32(dstSpan, record.MouseWheelDelta);
       return dstSpan;
     }
 
@@ -216,7 +224,13 @@ namespace Fsl::AppInputCommandListIO
       {
         timestamp = ValueCompression::ReadSimpleInt32(rSrcSpan);
       }
-      return {frameIndex, commandId, MillisecondTickCount32(timestamp), CustomWindowId(windowId), windowRectPx, mousePositionPx, isTouch};
+      InputCommandRecord record(frameIndex, commandId, MillisecondTickCount32(timestamp), CustomWindowId(windowId), windowRectPx, mousePositionPx,
+                                isTouch);
+      if (currentVersion >= VersionId::Version4)
+      {
+        record.MouseWheelDelta = ValueCompression::ReadSimpleInt32(rSrcSpan);
+      }
+      return record;
     }
 
 

@@ -34,6 +34,7 @@
 #include <FslBase/Log/Log3Fmt.hpp>
 #include <FslSimpleUI/Base/Event/WindowEventPool.hpp>
 #include <FslSimpleUI/Base/Event/WindowInputClickEvent.hpp>
+#include <FslSimpleUI/Base/Event/WindowInputScrollWheelEvent.hpp>
 #include <FslSimpleUI/Base/Event/WindowMouseOverEvent.hpp>
 #include <cassert>
 #include "../../Event/SimpleEventSender.hpp"
@@ -93,6 +94,8 @@ namespace Fsl::UI
   HitBasedInputSender::HitBasedInputSender(const std::shared_ptr<IModuleHost>& moduleHost)
     : m_stateEventSenderClickEvent(moduleHost->CreateStateEventSender(WindowFlags::ClickInput, CreateTargetWindowDeathEvent))
     , m_stateEventSenderMouseOverEvent(moduleHost->CreateStateEventSender(WindowFlags::MouseOver, CreateTargetWindowDeathEventMouseOver))
+    , m_simpleEventSender(moduleHost->GetSimpleEventSender())
+    , m_windowEventPool(moduleHost->GetWindowEventPool())
   {
   }
 
@@ -134,5 +137,18 @@ namespace Fsl::UI
     const auto result = m_stateEventSenderClickEvent->Send(Convert(theEvent), screenPositionPx);
     pool->Release(theEvent);
     return result == SendResult::Handled;
+  }
+
+
+  bool HitBasedInputSender::SendScrollWheelEvent(const MillisecondTickCount32 timestamp, const int32_t sourceId, const PxPoint2& screenPositionPx,
+                                                 const PxValueF scrollDeltaPxf, const std::shared_ptr<TreeNode>& target)
+  {
+    if (!m_simpleEventSender || !m_windowEventPool || !target)
+    {
+      return false;
+    }
+    const auto theEvent = m_windowEventPool->AcquireWindowInputScrollWheelEvent(timestamp, sourceId, screenPositionPx, scrollDeltaPxf);
+    // The sender gives the event back to the pool
+    return m_simpleEventSender->Send(theEvent, target, true) == SendResult::Handled;
   }
 }

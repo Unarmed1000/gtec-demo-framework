@@ -30,6 +30,8 @@
  ****************************************************************************************************************************************************/
 
 #include <FslBase/Log/Log3Fmt.hpp>
+#include <FslBase/Math/Dp/DpValueF.hpp>
+#include <FslBase/Math/Pixel/PxValueF.hpp>
 #include <FslSimpleUI/Base/BaseWindowContext.hpp>
 #include <FslSimpleUI/Base/Event/WindowEventPool.hpp>
 #include <FslSimpleUI/Base/Event/WindowEventSender.hpp>
@@ -213,9 +215,19 @@ namespace Fsl::UI
   }
 
 
-  // bool UIManager::SendMouseWheelEvent(const MouseWheelEvent& event)
-  //{
-  //}
+  bool UIManager::SendMouseWheelEvent(const MillisecondTickCount32 timestamp, const PxPoint2 positionPx, const int32_t delta)
+  {
+    assert(m_inputModule);
+    if (delta == 0 || !m_baseWindowContext)
+    {
+      return false;
+    }
+    // A notch scrolls a fixed distance in dp, so it is the same distance on the screen at every density
+    constexpr float ScrollStepDp = 48.0f;
+    const float notches = static_cast<float>(delta) / static_cast<float>(MouseWheelDeltaPerNotch);
+    const PxValueF scrollDeltaPxf(m_baseWindowContext->UnitConverter.ToPxRawFloat(DpValueF(notches * ScrollStepDp)));
+    return m_inputModule->SendScrollWheelEvent(timestamp, 0, positionPx, scrollDeltaPxf);
+  }
 
   bool UIManager::IsIdle() const noexcept
   {

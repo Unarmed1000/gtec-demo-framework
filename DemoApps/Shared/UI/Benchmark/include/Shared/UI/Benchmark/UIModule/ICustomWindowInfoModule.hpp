@@ -49,6 +49,7 @@ namespace Fsl
 
     //! @brief Try to locate a window that would receive a mouse over event
     [[nodiscard]] virtual CustomWindowId TryGetClickInputWindow(const PxPoint2& hitPositionPx) const = 0;
+    [[nodiscard]] virtual CustomWindowId TryGetScrollWheelInputWindow(const PxPoint2& hitPositionPx) const = 0;
 
     //! @brief Get the current screen-space rectangle of the given window
     [[nodiscard]] virtual PxRectangle GetWindowRectanglePx(const CustomWindowId windowId) const = 0;

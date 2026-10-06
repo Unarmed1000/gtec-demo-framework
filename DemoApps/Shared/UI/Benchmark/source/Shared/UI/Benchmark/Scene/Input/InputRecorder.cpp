@@ -180,6 +180,17 @@ namespace Fsl
 
   void InputRecorder::OnMouseWheelEvent(const MouseWheelEvent& event)
   {
-    FSL_PARAM_NOT_USED(event);
+    // As for a mouse move, the wheel is recorded when the UI took it, with the window that is under the pointer for it, so it can be
+    // played back at the place that window has then.
+    if (m_recording.IsRecording && event.IsHandled() && event.GetDelta() != 0)
+    {
+      const PxPoint2 eventPositionPx = event.GetPosition();
+      const auto customWindowId = m_info->TryGetScrollWheelInputWindow(eventPositionPx);
+      if (customWindowId.IsValid())
+      {
+        const auto windowRectanglePx = m_info->GetWindowRectanglePx(customWindowId);
+        m_commandList.AddMouseWheel(event.GetTimestamp(), customWindowId, windowRectanglePx, eventPositionPx, event.GetDelta());
+      }
+    }
   }
 }

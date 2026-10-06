@@ -255,7 +255,8 @@ namespace Fsl
 
     PxPoint2 MousePosition;
     int ZDelta{0};
-    //! The part of the vertical scroll that did not add up to a wheel step yet (a 24.8 fixed point value)
+    //! The part of the vertical scroll that did not add up to one unit of the wheel delta yet (the axis value times the delta of a
+    //! notch, so a unit of the delta is LocalConfig::WheelNotchFixed of it)
     int32_t WheelRemainder{0};
     VirtualMouseButton MouseButton{};
     bool MouseIsPressed{false};

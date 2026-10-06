@@ -47,6 +47,7 @@ namespace Fsl
       constexpr auto WindowId = "WindowId";
       constexpr auto WindowRectPx = "WindowRectPx";
       constexpr auto MousePosition = "MousePosition";
+      constexpr auto MouseWheelDelta = "MouseWheelDelta";
     }
   }
 
@@ -56,7 +57,8 @@ namespace Fsl
                        {LocalNames::CommandId, src.CommandId},
                        {LocalNames::WindowId, src.WindowId},
                        {LocalNames::WindowRectPx, src.WindowRectPx},
-                       {LocalNames::MousePosition, src.MousePositionPx}};
+                       {LocalNames::MousePosition, src.MousePositionPx},
+                       {LocalNames::MouseWheelDelta, src.MouseWheelDelta}};
   }
 
   void from_json(const nlohmann::json& j, InputCommandRecord& rDst)
@@ -66,6 +68,8 @@ namespace Fsl
     j.at(LocalNames::WindowId).get_to(rDst.WindowId);
     j.at(LocalNames::WindowRectPx).get_to(rDst.WindowRectPx);
     j.at(LocalNames::MousePosition).get_to(rDst.MousePositionPx);
+    // A recording that was written before the wheel was recorded has no delta
+    rDst.MouseWheelDelta = j.value(LocalNames::MouseWheelDelta, 0);
   }
 }
 

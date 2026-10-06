@@ -49,6 +49,8 @@ namespace Fsl
     PxPoint2 MousePositionPx;
     bool IsTouch{false};
     MillisecondTickCount32 Timestamp;
+    //! @brief How far the scroll wheel was turned (InputCommandId::MouseWheel): 120 for a notch, positive away from the user
+    int32_t MouseWheelDelta{0};
 
     InputCommandRecord() noexcept = default;
 

@@ -96,7 +96,13 @@ namespace Fsl
     static void DecodeInputMouseMoveEvent(const NativeWindowEvent& event, PxPoint2& rPosition, VirtualMouseButtonFlags& rFlags,
                                           bool& rIsTouch) noexcept;
 
+    //! The delta of a mouse wheel event for one notch of a mouse wheel
+    static constexpr int32_t MouseWheelDeltaPerNotch = 120;
+
     //! @brief Create a input mouse wheel event
+    //! @param delta how far the wheel was turned since the last event: MouseWheelDeltaPerNotch for a notch, positive when it was turned
+    //!              away from the user. A wheel with fine steps and a touchpad give smaller values. Every window system reports it
+    //!              in this unit.
     static NativeWindowEvent EncodeInputMouseWheelEvent(const MillisecondTickCount32 timestamp, const int32_t delta, const PxPoint2 position);
 
     //! @brief Decode a input mouse wheel event

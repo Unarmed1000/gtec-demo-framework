@@ -33,6 +33,7 @@
 
 #include <FslBase/BasicTypes.hpp>
 #include <FslBase/Log/Log3Core.hpp>
+#include <FslBase/Math/Pixel/PxValueF.hpp>
 #include <FslBase/Math/Pixel/PxVector2.hpp>
 #include <FslBase/Time/MillisecondTickCount32.hpp>
 #include <FslSimpleUI/Base/Event/EventTransactionState.hpp>
@@ -48,6 +49,7 @@ namespace Fsl
   {
     class WindowEvent;
     class WindowInputClickEvent;
+    class WindowInputScrollWheelEvent;
     class WindowMouseOverEvent;
     class WindowSelectEvent;
     class WindowContentChangedEvent;
@@ -58,6 +60,7 @@ namespace Fsl
     {
       std::deque<std::shared_ptr<WindowMouseOverEvent>> m_poolWindowMouseOverEvent;
       std::deque<std::shared_ptr<WindowInputClickEvent>> m_poolWindowInputClickEvent;
+      std::deque<std::shared_ptr<WindowInputScrollWheelEvent>> m_poolWindowInputScrollWheelEvent;
       std::deque<std::shared_ptr<WindowSelectEvent>> m_poolWindowSelectEvent;
       std::deque<std::shared_ptr<WindowContentChangedEvent>> m_poolWindowContentChangedEvent;
 
@@ -74,6 +77,9 @@ namespace Fsl
       std::shared_ptr<WindowInputClickEvent> AcquireWindowInputClickEvent(const MillisecondTickCount32 timestamp, const int32_t sourceId,
                                                                           const int32_t sourceSubId, const EventTransactionState state,
                                                                           const bool isRepeat, const PxPoint2& screenPositionPx);
+      std::shared_ptr<WindowInputScrollWheelEvent> AcquireWindowInputScrollWheelEvent(const MillisecondTickCount32 timestamp, const int32_t sourceId,
+                                                                                      const PxPoint2& screenPositionPx,
+                                                                                      const PxValueF scrollDeltaPxf);
       std::shared_ptr<WindowSelectEvent> AcquireWindowSelectEvent(const uint32_t contentId);
       std::shared_ptr<WindowSelectEvent> AcquireWindowSelectEvent(const uint32_t contentId, const std::shared_ptr<ITag>& payload);
       std::shared_ptr<WindowContentChangedEvent> AcquireWindowContentChangedEvent(const uint32_t contentId);
@@ -84,6 +90,7 @@ namespace Fsl
 
       void Release(const std::shared_ptr<WindowMouseOverEvent>& event) noexcept;
       void Release(const std::shared_ptr<WindowInputClickEvent>& event) noexcept;
+      void Release(const std::shared_ptr<WindowInputScrollWheelEvent>& event) noexcept;
       void Release(const std::shared_ptr<WindowSelectEvent>& event) noexcept;
       void Release(const std::shared_ptr<WindowContentChangedEvent>& event) noexcept;
 

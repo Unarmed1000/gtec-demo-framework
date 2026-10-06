@@ -119,7 +119,14 @@ namespace Fsl
       //! @note Returns true if the event was handled by a UIElement
       bool SendMouseButtonEvent(const MillisecondTickCount32 timestamp, const PxPoint2 positionPx, const bool leftButtonDown, const bool isTouch);
       bool SendMouseMoveEvent(const MillisecondTickCount32 timestamp, const PxPoint2 positionPx, const bool isTouch);
-      // bool SendMouseWheelEvent(const MouseWheelEvent& event);
+      //! @brief Send a mouse wheel event to the window under the position.
+      //! @param delta how far the wheel was turned since the last event, 120 for a notch (UIManager::MouseWheelDeltaPerNotch),
+      //!              positive away from the user. A wheel with fine steps and a touchpad give smaller values.
+      //! @note Returns true if the event was handled by a UIElement
+      bool SendMouseWheelEvent(const MillisecondTickCount32 timestamp, const PxPoint2 positionPx, const int32_t delta);
+
+      //! The wheel delta of one notch of a mouse wheel
+      static constexpr int32_t MouseWheelDeltaPerNotch = 120;
 
       //! Check if the UI system is considered idle
       [[nodiscard]] bool IsIdle() const noexcept;

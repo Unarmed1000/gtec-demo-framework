@@ -63,6 +63,11 @@ namespace Fsl
       return m_impl ? m_impl->TryGetClickInputWindow(hitPositionPx) : CustomWindowId();
     }
 
+    [[nodiscard]] CustomWindowId TryGetScrollWheelInputWindow(const PxPoint2& hitPositionPx) const final
+    {
+      return m_impl ? m_impl->TryGetScrollWheelInputWindow(hitPositionPx) : CustomWindowId();
+    }
+
     [[nodiscard]] PxRectangle GetWindowRectanglePx(const CustomWindowId windowId) const final
     {
       return m_impl ? m_impl->GetWindowRectanglePx(windowId) : PxRectangle();

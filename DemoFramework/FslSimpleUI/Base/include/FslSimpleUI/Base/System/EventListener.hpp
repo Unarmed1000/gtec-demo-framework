@@ -57,6 +57,16 @@ namespace Fsl::UI
       FSL_PARAM_NOT_USED(theEvent);
     }
 
+    void OnScrollWheelInputPreview(const std::shared_ptr<WindowInputScrollWheelEvent>& theEvent) override
+    {
+      FSL_PARAM_NOT_USED(theEvent);
+    }
+
+    void OnScrollWheelInput(const std::shared_ptr<WindowInputScrollWheelEvent>& theEvent) override
+    {
+      FSL_PARAM_NOT_USED(theEvent);
+    }
+
     void OnSelect(const std::shared_ptr<WindowSelectEvent>& theEvent) override
     {
       FSL_PARAM_NOT_USED(theEvent);

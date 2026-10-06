@@ -74,6 +74,16 @@ namespace Fsl::UI
       }
       return {};
     }
+
+    [[nodiscard]] std::shared_ptr<IWindowId> TryGetScrollWheelInputWindow(const PxPoint2& hitPositionPx) const final
+    {
+      if (m_targetLocator)
+      {
+        const auto node = m_targetLocator->TryGetScrollWheelInputWindow(hitPositionPx);
+        return node ? node->GetWindow() : std::shared_ptr<IWindowId>();
+      }
+      return {};
+    }
   };
 }
 

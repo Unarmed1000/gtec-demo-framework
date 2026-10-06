@@ -181,6 +181,18 @@ namespace Fsl
     DataBindingDemoAppExtension::OnMouseMoveEvent(event);
   }
 
+
+  void UIDemoAppExtensionBase::OnMouseWheelEvent(const MouseWheelEvent& event)
+  {
+    // The wheel goes to the window under the pointer. When a window took it the app is told so, as it may use the wheel too.
+    const bool isHandled = m_activitySystem->SendMouseWheelEvent(event.GetTimestamp(), event.GetPosition(), event.GetDelta());
+    if (isHandled && !event.IsHandled())
+    {
+      event.Handled();
+    }
+    DataBindingDemoAppExtension::OnMouseWheelEvent(event);
+  }
+
   void UIDemoAppExtensionBase::ConfigurationChanged(const DemoWindowMetrics& windowMetrics)
   {
     DataBindingDemoAppExtension::ConfigurationChanged(windowMetrics);

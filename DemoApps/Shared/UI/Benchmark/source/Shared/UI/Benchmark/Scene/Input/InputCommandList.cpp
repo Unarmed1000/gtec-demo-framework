@@ -141,6 +141,14 @@ namespace Fsl
     Enqueue(InputCommandRecord(m_frameIndex, InputCommandId::MouseMoveClear, timestamp));
   }
 
+  void InputCommandList::AddMouseWheel(const MillisecondTickCount32 timestamp, const CustomWindowId windowId, const PxRectangle windowRectPx,
+                                       const PxPoint2 mousePosition, const int32_t wheelDelta)
+  {
+    InputCommandRecord record(m_frameIndex, InputCommandId::MouseWheel, timestamp, windowId, windowRectPx, mousePosition, false);
+    record.MouseWheelDelta = wheelDelta;
+    Enqueue(record);
+  }
+
 
   void InputCommandList::Enqueue(const InputCommandRecord record)
   {

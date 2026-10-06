@@ -32,6 +32,7 @@
  ****************************************************************************************************************************************************/
 
 #include <FslBase/BasicTypes.hpp>
+#include <FslBase/Math/Pixel/PxValueF.hpp>
 #include <FslBase/Time/MillisecondTickCount32.hpp>
 #include <FslSimpleUI/Base/Event/EventTransactionState.hpp>
 #include <memory>
@@ -52,6 +53,9 @@ namespace Fsl
     {
       std::shared_ptr<IStateEventSender> m_stateEventSenderClickEvent;
       std::shared_ptr<IStateEventSender> m_stateEventSenderMouseOverEvent;
+      //! The scroll wheel event has no state, so it is sent with the sender for events of their own
+      std::shared_ptr<SimpleEventSender> m_simpleEventSender;
+      std::shared_ptr<WindowEventPool> m_windowEventPool;
 
     public:
       explicit HitBasedInputSender(const std::shared_ptr<IModuleHost>& moduleHost);
@@ -66,6 +70,11 @@ namespace Fsl
 
       bool SendInputClickEvent(const MillisecondTickCount32 timestamp, const int32_t sourceId, const int32_t sourceSubId,
                                const EventTransactionState state, const bool isRepeat, const PxPoint2& screenPositionPx);
+
+      //! @brief Send a scroll wheel event to the given window (and, as a paired event, through its parents that take the wheel)
+      //! @return true if a window handled it
+      bool SendScrollWheelEvent(const MillisecondTickCount32 timestamp, const int32_t sourceId, const PxPoint2& screenPositionPx,
+                                const PxValueF scrollDeltaPxf, const std::shared_ptr<TreeNode>& target);
     };
   }
 }

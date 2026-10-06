@@ -42,6 +42,7 @@
 #include <FslSimpleUI/Base/Event/WindowContentChangedEvent.hpp>
 #include <FslSimpleUI/Base/Event/WindowEventSender.hpp>
 #include <FslSimpleUI/Base/Event/WindowInputClickEvent.hpp>
+#include <FslSimpleUI/Base/Event/WindowInputScrollWheelEvent.hpp>
 #include <FslSimpleUI/Base/Event/WindowMouseOverEvent.hpp>
 #include <FslSimpleUI/Base/Event/WindowSelectEvent.hpp>
 #include <FslSimpleUI/Base/IWindowManager.hpp>
@@ -154,6 +155,19 @@ namespace Fsl::UI
         else
         {
           OnMouseOver(event);
+        }
+        break;
+      }
+    case EventTypeId::InputScrollWheel:
+      {
+        const auto event = SafeDynamicPointerCast<WindowInputScrollWheelEvent>(routedEvent.Content);
+        if (routedEvent.IsTunneling)
+        {
+          OnScrollWheelInputPreview(event);
+        }
+        else
+        {
+          OnScrollWheelInput(event);
         }
         break;
       }

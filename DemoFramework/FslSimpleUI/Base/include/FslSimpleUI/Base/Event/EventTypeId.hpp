@@ -45,6 +45,7 @@ namespace Fsl::UI
     Select,
     ContentChanged,
     MouseOver,
+    InputScrollWheel,
   };
 }
 

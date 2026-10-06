@@ -695,3 +695,5 @@ Transaction | Transaction events will always have at least a begin and end event
 
 Transaction events are for example used for mouse clicks so that a mouse button press will send a WindowInputClickEvent with IsBegin==true when the event starts followed by a WindowInputClickEvent with IsBegin==false when the mouse button is released.
 
+
+The scroll wheel is a basic event: a WindowInputScrollWheelEvent is send, as a paired event, to the top window under the pointer that has the window flag ScrollWheelInput set, and it passes the parents of that window that have the flag too. It carries the distance to scroll in pixels (a notch of a mouse wheel is 48dp, a touchpad sends parts of it), positive when the wheel was turned away from the user. A window that acts on the wheel marks the event as handled, and a window that gets a handled event leaves it alone, so the innermost window that can scroll takes the wheel. The ScrollViewer does that: it scrolls vertically where it can, a ScrollViewer that only scrolls sideways scrolls sideways, and it stops at the ends of its content.

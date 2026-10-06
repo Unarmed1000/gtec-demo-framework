@@ -32,6 +32,7 @@
  ****************************************************************************************************************************************************/
 
 #include <FslBase/BasicTypes.hpp>
+#include <FslBase/Math/Pixel/PxValueF.hpp>
 #include <FslBase/Time/MillisecondTickCount32.hpp>
 #include <FslSimpleUI/Base/Event/EventTransactionState.hpp>
 #include <memory>
@@ -71,6 +72,11 @@ namespace Fsl
       //! @brief Send a click event
       bool SendClickEvent(const MillisecondTickCount32 timestamp, const int32_t sourceId, const int32_t sourceSubId,
                           const EventTransactionState state, const bool isRepeat, const PxPoint2& screenPositionPx, const bool isTouch);
+
+      //! @brief Send a scroll wheel event to the top window under the position that takes the wheel
+      //! @return true if a window handled it
+      bool SendScrollWheelEvent(const MillisecondTickCount32 timestamp, const int32_t sourceId, const PxPoint2& screenPositionPx,
+                                const PxValueF scrollDeltaPxf);
     };
   }
 }

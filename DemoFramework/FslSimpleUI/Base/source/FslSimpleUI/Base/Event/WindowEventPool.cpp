@@ -35,6 +35,7 @@
 #include <FslSimpleUI/Base/Event/WindowContentChangedEvent.hpp>
 #include <FslSimpleUI/Base/Event/WindowEventPool.hpp>
 #include <FslSimpleUI/Base/Event/WindowInputClickEvent.hpp>
+#include <FslSimpleUI/Base/Event/WindowInputScrollWheelEvent.hpp>
 #include <FslSimpleUI/Base/Event/WindowMouseOverEvent.hpp>
 #include <FslSimpleUI/Base/Event/WindowSelectEvent.hpp>
 #include <cassert>
@@ -62,6 +63,7 @@ namespace Fsl::UI
   {
     GrowPool(m_poolWindowMouseOverEvent, NumEntriesToGrow);
     GrowPool(m_poolWindowInputClickEvent, NumEntriesToGrow);
+    GrowPool(m_poolWindowInputScrollWheelEvent, NumEntriesToGrow);
     GrowPool(m_poolWindowSelectEvent, NumEntriesToGrow);
     GrowPool(m_poolWindowContentChangedEvent, NumEntriesToGrow);
   }
@@ -98,6 +100,23 @@ namespace Fsl::UI
     auto obj = m_poolWindowInputClickEvent.front();
     m_poolWindowInputClickEvent.pop_front();
     obj->SYS_Construct(timestamp, sourceId, sourceSubId, state, isRepeat, screenPositionPx);
+    return obj;
+  }
+
+
+  std::shared_ptr<WindowInputScrollWheelEvent> WindowEventPool::AcquireWindowInputScrollWheelEvent(const MillisecondTickCount32 timestamp,
+                                                                                                   const int32_t sourceId,
+                                                                                                   const PxPoint2& screenPositionPx,
+                                                                                                   const PxValueF scrollDeltaPxf)
+  {
+    if (m_poolWindowInputScrollWheelEvent.empty())
+    {
+      GrowPool(m_poolWindowInputScrollWheelEvent, NumEntriesToGrow);
+    }
+
+    auto obj = m_poolWindowInputScrollWheelEvent.front();
+    m_poolWindowInputScrollWheelEvent.pop_front();
+    obj->SYS_Construct(timestamp, sourceId, screenPositionPx, scrollDeltaPxf);
     return obj;
   }
 
@@ -156,6 +175,9 @@ namespace Fsl::UI
     case EventTypeId::InputClick:
       Release(std::dynamic_pointer_cast<WindowInputClickEvent>(event));
       break;
+    case EventTypeId::InputScrollWheel:
+      Release(std::dynamic_pointer_cast<WindowInputScrollWheelEvent>(event));
+      break;
     case EventTypeId::Select:
       Release(std::dynamic_pointer_cast<WindowSelectEvent>(event));
       break;
@@ -177,6 +199,11 @@ namespace Fsl::UI
   void WindowEventPool::Release(const std::shared_ptr<WindowInputClickEvent>& event) noexcept
   {
     ReleaseToPool(m_poolWindowInputClickEvent, event, MaxCapacity);
+  }
+
+  void WindowEventPool::Release(const std::shared_ptr<WindowInputScrollWheelEvent>& event) noexcept
+  {
+    ReleaseToPool(m_poolWindowInputScrollWheelEvent, event, MaxCapacity);
   }
 
   void WindowEventPool::Release(const std::shared_ptr<WindowSelectEvent>& event) noexcept

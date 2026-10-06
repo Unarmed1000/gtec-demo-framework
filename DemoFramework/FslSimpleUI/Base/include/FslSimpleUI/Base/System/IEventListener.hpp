@@ -37,6 +37,7 @@ namespace Fsl::UI
 {
   class WindowContentChangedEvent;
   class WindowInputClickEvent;
+  class WindowInputScrollWheelEvent;
   class WindowMouseOverEvent;
   class WindowSelectEvent;
 
@@ -49,6 +50,8 @@ namespace Fsl::UI
     virtual void OnClickInput(const std::shared_ptr<WindowInputClickEvent>& theEvent) = 0;
     virtual void OnMouseOverPreview(const std::shared_ptr<WindowMouseOverEvent>& theEvent) = 0;
     virtual void OnMouseOver(const std::shared_ptr<WindowMouseOverEvent>& theEvent) = 0;
+    virtual void OnScrollWheelInputPreview(const std::shared_ptr<WindowInputScrollWheelEvent>& theEvent) = 0;
+    virtual void OnScrollWheelInput(const std::shared_ptr<WindowInputScrollWheelEvent>& theEvent) = 0;
     virtual void OnSelect(const std::shared_ptr<WindowSelectEvent>& theEvent) = 0;
     virtual void OnContentChanged(const std::shared_ptr<WindowContentChangedEvent>& theEvent) = 0;
   };

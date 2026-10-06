@@ -46,7 +46,7 @@ namespace Fsl::UI
     uint32_t m_value{0};
 
   public:
-    static constexpr int FlagBitsReserved = 10;
+    static constexpr int FlagBitsReserved = 11;
     static constexpr int VisibilityBitsReserved = 2;
     static constexpr int VisibilityShift = FlagBitsReserved;
     static constexpr const uint32_t VisibilityMask = (0x1 | 0x2) << VisibilityShift;
@@ -71,10 +71,12 @@ namespace Fsl::UI
       ResolveEnabled = 0x100,
       //! enable the WinPostLayout callback (called after layout has been resolved)
       PostLayoutEnabled = 0x200,
+      //! The window takes scroll wheel input (WindowInputScrollWheelEvent) when the pointer is over it
+      ScrollWheelInput = 0x400,
 
       All = WinInit | LayoutDirty | UpdateEnabled | DrawEnabled | ClickInput | MouseOver | ClipEnabled | ResolveEnabled | PostLayoutEnabled |
-        ContentRenderingDirty,
-      InputAll = ClickInput | MouseOver
+        ScrollWheelInput | ContentRenderingDirty,
+      InputAll = ClickInput | MouseOver | ScrollWheelInput
     };
 
 

@@ -20,41 +20,33 @@
 //* EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //****************************************************************************************************************************************************
 
-#include <FslSimpleUI/Base/Control/InputCatcher.hpp>
-#include <FslSimpleUI/Base/Event/WindowInputClickEvent.hpp>
 #include <FslSimpleUI/Base/Event/WindowInputScrollWheelEvent.hpp>
-#include <FslSimpleUI/Base/WindowFlags.hpp>
 
 namespace Fsl::UI
 {
-  InputCatcher::InputCatcher(const std::shared_ptr<BaseWindowContext>& context)
-    : ContentControl(context)
+  WindowInputScrollWheelEvent::WindowInputScrollWheelEvent() noexcept
+    : WindowEvent(EventTypeId::InputScrollWheel, EventDescription(EventRoutingStrategy::Paired, WindowFlags(WindowFlags::ScrollWheelInput)))
   {
-    // Makes it the click target where its content has none, and a ancestor on the route of a click on its content
-    Enable(WindowFlags::ClickInput);
-    // The scroll wheel is caught the same way
-    Enable(WindowFlags::ScrollWheelInput);
   }
 
 
-  void InputCatcher::OnClickInput(const std::shared_ptr<WindowInputClickEvent>& theEvent)
+  void WindowInputScrollWheelEvent::SYS_Construct(const MillisecondTickCount32 timestamp, const int32_t sourceId, const PxPoint2& screenPositionPx,
+                                                  const PxValueF scrollDeltaPxf) noexcept
   {
-    base_type::OnClickInput(theEvent);
-    // The content had the event first (this is the bubble phase), so only a click it left unhandled is taken
-    if (!theEvent->IsHandled())
-    {
-      theEvent->Handled();
-    }
+    WindowEvent::SYS_DoConstruct();
+    m_timestamp = timestamp;
+    m_sourceId = sourceId;
+    m_screenPositionPx = screenPositionPx;
+    m_scrollDeltaPxf = scrollDeltaPxf;
   }
 
 
-  void InputCatcher::OnScrollWheelInput(const std::shared_ptr<WindowInputScrollWheelEvent>& theEvent)
+  void WindowInputScrollWheelEvent::SYS_Destruct() noexcept
   {
-    base_type::OnScrollWheelInput(theEvent);
-    // The content had the event first (this is the bubble phase), so only a scroll it left unhandled is taken
-    if (!theEvent->IsHandled())
-    {
-      theEvent->Handled();
-    }
+    m_timestamp = {};
+    m_sourceId = 0;
+    m_screenPositionPx = {};
+    m_scrollDeltaPxf = {};
+    WindowEvent::SYS_Destruct();
   }
 }

@@ -597,7 +597,6 @@ namespace Fsl
     VirtualMouseButton mouseButton = VirtualMouseButton::Undefined;
     bool bQuit = false;
     XEvent event;
-    static int g_wheelEvents = 0;
 
     while (XPending(m_platformDisplay) > 0)
     {
@@ -643,32 +642,32 @@ namespace Fsl
               eventQueue->PostEvent(NativeWindowEventHelper::EncodeInputMouseButtonEvent(timestamp, mouseButton, true, mousePosition));
             }
           }
-          else
+          else if (event.xbutton.button == Button4 || event.xbutton.button == Button5)
           {
-            // Wheel Event
-            if (Button4 == event.xbutton.button)
-            {
-              g_wheelEvents++;
-            }
-            else if (Button5 == event.xbutton.button)
-            {
-              g_wheelEvents--;
-            }
+            // The wheel: the X server reports a notch as a press of button 4 (away from the user) or 5. The event says how far the
+            // wheel was turned since the last one, as on the other window systems.
+            const int32_t wheelDelta = (event.xbutton.button == Button4) ? NativeWindowEventHelper::MouseWheelDeltaPerNotch
+                                                                         : -NativeWindowEventHelper::MouseWheelDeltaPerNotch;
             if (eventQueue)
             {
-              eventQueue->PostEvent(NativeWindowEventHelper::EncodeInputMouseWheelEvent(timestamp, g_wheelEvents, mousePosition));
+              eventQueue->PostEvent(NativeWindowEventHelper::EncodeInputMouseWheelEvent(timestamp, wheelDelta, mousePosition));
             }
           }
+          // The buttons above them (6 and 7 are the horizontal wheel) have no event in the framework
           break;
         }
       case ButtonRelease:
         {
-          const auto timestamp = ToMillisecondTickCount32(event.xbutton.time);
-          mousePosition = PxPoint2::Create(event.xbutton.x, event.xbutton.y);
-          mouseButton = MouseToVirtualMouse(event.xbutton.button);
-          if (eventQueue)
+          // A notch of the wheel is a press and a release of its button, so only the buttons below the wheel have a release
+          if (event.xbutton.button < Button4)
           {
-            eventQueue->PostEvent(NativeWindowEventHelper::EncodeInputMouseButtonEvent(timestamp, mouseButton, false, mousePosition));
+            const auto timestamp = ToMillisecondTickCount32(event.xbutton.time);
+            mousePosition = PxPoint2::Create(event.xbutton.x, event.xbutton.y);
+            mouseButton = MouseToVirtualMouse(event.xbutton.button);
+            if (eventQueue)
+            {
+              eventQueue->PostEvent(NativeWindowEventHelper::EncodeInputMouseButtonEvent(timestamp, mouseButton, false, mousePosition));
+            }
           }
           break;
         }
