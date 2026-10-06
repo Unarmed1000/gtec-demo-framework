@@ -52,7 +52,8 @@ namespace Fsl
         CpuLoad,
         GpuLoad,
         BackgroundScale,
-        Background
+        Background,
+        GLFlush
       };
     };
 
@@ -140,6 +141,10 @@ namespace Fsl
                           "load adds finer detail), "
                           "flight (a raymarched flight through a fractal lattice) or hall (a raymarched hall of columns that scrolls "
                           "sideways at a constant speed, which makes a stutter easy to see).");
+    rOptions.emplace_back("GLFlush", OptionArgument::OptionNone, CommandId::GLFlush,
+                          "OpenGL ES: call glFlush after the last command of a frame, so the GPU is asked to work on the frame at a known "
+                          "moment and before a swap the sample delays. Without it the driver decides when, the swap at the latest (the "
+                          "default). The frame log says if it is on and when it was called.");
   }
 
 
@@ -260,6 +265,9 @@ namespace Fsl
       return TryParseInRange(m_backgroundScalePercent, strOptArg, SampleConfig::BackgroundScalePercent, "BackgroundScale")
                ? OptionParseResult::Parsed
                : OptionParseResult::Failed;
+    case CommandId::GLFlush:
+      m_glFlush = true;
+      return OptionParseResult::Parsed;
     case CommandId::Background:
       if (strOptArg == "flight")
       {

@@ -103,6 +103,7 @@ Plan                 | Display                         | Runs
 `vsync-phase-sweep` | any fixed rate, given with `--refresh-hz` and `--set half_fps` | Where in a refresh a present has to be made: frames held for two refreshes by a wait on the vsync, with the present placed from 5 to 95 % of the refresh (`--Pacer.VSyncPhase`), each idle and under CPU load (20 runs).
 `present-scheduling-240hz` | 240 Hz, variable refresh off | A frame held for more than one refresh by a wait before the present and by a scheduled present (`--Pacer.Hold schedule`): a fixed 60 and 120 fps and work of 130 %, each idle and under CPU load (12 runs).
 `present-options-240hz` | 240 Hz, variable refresh off | The swapchain setup at work of 90 %: one against two frames in flight (`--VkFramesInFlight`) and FIFO against FIFO latest ready (`--VkPresentMode`), pacer off and on (8 runs).
+`frame-timeline-240hz` | 240 Hz, variable refresh off | Every stage of a frame in the log (the waits, the submit, the GPU begin and end, the display time) for the charts of a frame on a timeline: GPU work near a refresh held by the vsync in full screen, 60 fps held by a timer sleep, half the rate with a scheduled present, work of 90 % with the adaptive pacer and work of 94 % at a fixed swap interval of one, each with the early and the late profile, and two swapchain images and two frames in flight.
 `fixed-rates`        | Any fixed rate, one at a time   | Trivial work: pacer off, pacer on, pacer at half the refresh rate. Give `--refresh-hz` and `--set half_fps=`.
 `variable-refresh`   | Highest rate, variable refresh on | Fixed frame rates of 120, 80, 60 and 30 fps, pacer off, GPU and CPU load, windowed and fullscreen.
 
@@ -116,6 +117,7 @@ load. How long the GPU works for a setting depends on the GPU and on the size of
 
 ```bash
 # The numbers are examples
+# It measures the scene the plans name (flight), --background selects another one
 FramePacingCapture calibrate --window [0,0,1600,900]
 #   --GpuLoad 256: the GPU works 1.412 ms on a frame
 #   ...

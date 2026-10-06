@@ -16,7 +16,8 @@ description = "240 Hz, plain Vulkan: a frame held by a timer sleep and by a wait
 app = "Vulkan.FramePacing"
 frames = 2400
 expected_refresh_hz = 240.0
-args = ["--Window", "[0,0,1600,900]", "--CpuLoad", "0", "--Pacer", "--VkSwapchainMaintenance1", "false"]
+# The scene is named: the GPU load settings below were measured with it, and the default scene of the sample is another one now
+args = ["--Background", "flight", "--Window", "[0,0,1600,900]", "--CpuLoad", "0", "--Pacer", "--VkSwapchainMaintenance1", "false"]
 
 [variables]
 # The --GpuLoad that makes the GPU work 20, 90 and 130 % of a refresh on a frame (the defaults were measured on a NVIDIA desktop GPU)

@@ -60,6 +60,8 @@ namespace Fsl
     [[nodiscard]] virtual uint64_t GetLogFrameIndex() const noexcept = 0;
 
     //! @brief Set a value of the frame that is being drawn.
+    //! @note  A frame is the one that is being drawn from the moment the host begins its draw. During the update of a frame it is
+    //!        still the frame before: keep a value of the update and set it during the draw.
     virtual void SetLogInt64(const FramePacingLogColumn column, const int64_t value) noexcept = 0;
     virtual void SetLogUInt64(const FramePacingLogColumn column, const uint64_t value) noexcept = 0;
 

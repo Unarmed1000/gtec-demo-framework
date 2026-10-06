@@ -267,6 +267,10 @@ namespace Fsl::VulkanBasic
     FramePacingLogColumn SwapchainGeneration;
     FramePacingLogColumn AcquireCall;
     FramePacingLogColumn AcquireReturn;
+    FramePacingLogColumn FrameSlotWaitBegin;
+    FramePacingLogColumn FrameSlotWaitEnd;
+    FramePacingLogColumn SubmitCall;
+    FramePacingLogColumn SubmitReturn;
     FramePacingLogColumn PresentCall;
     FramePacingLogColumn PresentReturn;
     FramePacingLogColumn PresentResult;
@@ -280,6 +284,11 @@ namespace Fsl::VulkanBasic
     //! One for each present stage: the time on the clock of the framework and the time as the presentation engine reported it
     std::array<FramePacingLogColumn, 4> StageTicks;
     std::array<FramePacingLogColumn, 4> StageRaw;
+
+    //! When the wait for the frame slot of the frame that is prepared began and ended. The frame gets its row in the log after it,
+    //! so the times are kept until then.
+    TickCount FrameSlotWaitBeginTime;
+    TickCount FrameSlotWaitEndTime;
 
     //! The frame of the log that is being drawn (valid if HasFrame)
     uint64_t FrameIndex{0};
@@ -309,6 +318,15 @@ namespace Fsl::VulkanBasic
         rLog.RegisterColumn("swapchainGeneration", FramePacingLogUnit::Count, "How many swapchains were created up to this frame");
       state->AcquireCall = rLog.RegisterColumn("acquireCallTicks", FramePacingLogUnit::Ticks, "When vkAcquireNextImageKHR was called");
       state->AcquireReturn = rLog.RegisterColumn("acquireReturnTicks", FramePacingLogUnit::Ticks, "When vkAcquireNextImageKHR returned");
+      state->FrameSlotWaitBegin =
+        rLog.RegisterColumn("frameSlotWaitBeginTicks", FramePacingLogUnit::Ticks,
+                            "When the host began to wait for the frame slot of the frame: for the GPU to finish the frame that used the "
+                            "slot before, and for the present fence of that frame. It is before the acquire");
+      state->FrameSlotWaitEnd =
+        rLog.RegisterColumn("frameSlotWaitEndTicks", FramePacingLogUnit::Ticks, "When the wait for the frame slot of the frame ended");
+      state->SubmitCall = rLog.RegisterColumn("submitCallTicks", FramePacingLogUnit::Ticks,
+                                              "When vkQueueSubmit was called for the frame: the GPU is asked to work on the frame from here");
+      state->SubmitReturn = rLog.RegisterColumn("submitReturnTicks", FramePacingLogUnit::Ticks, "When vkQueueSubmit returned");
       state->PresentCall = rLog.RegisterColumn("presentCallTicks", FramePacingLogUnit::Ticks, "When vkQueuePresentKHR was called");
       state->PresentReturn = rLog.RegisterColumn("presentReturnTicks", FramePacingLogUnit::Ticks, "When vkQueuePresentKHR returned");
       state->PresentResult = rLog.RegisterColumn("presentResult", FramePacingLogUnit::Code, "The VkResult of vkQueuePresentKHR");
@@ -638,7 +656,17 @@ namespace Fsl::VulkanBasic
       submitInfo.pSignalSemaphores = signalSemaphores.data();
     }
 
+    // The frame pacing log says when the GPU was asked to work on the frame (the frame that is being drawn is the current one of the log)
+    const bool logSubmit = m_framePacingLogState && m_framePacingLogState->HasFrame;
+    const TickCount submitCallTime = logSubmit ? m_presentCallTimer.GetTimestamp() : TickCount();
     m_deviceQueue.Submit(1, &submitInfo, queueSubmitFence);
+    if (logSubmit)
+    {
+      const TickCount submitReturnTime = m_presentCallTimer.GetTimestamp();
+      const FramePacingLogState& logState = *m_framePacingLogState;
+      logState.Log->SetLogValueAt(logState.FrameIndex, logState.SubmitCall, submitCallTime);
+      logState.Log->SetLogValueAt(logState.FrameIndex, logState.SubmitReturn, submitReturnTime);
+    }
     if (m_useFrameTimeline)
     {
       ++m_frameTimelineValue;
@@ -1000,6 +1028,8 @@ namespace Fsl::VulkanBasic
     // The frame the service started for this draw. The image was acquired before it was started, so that is written now.
     rState.FrameIndex = rLog.GetLogFrameIndex();
     rState.HasFrame = true;
+    rLog.SetLogValue(rState.FrameSlotWaitBegin, rState.FrameSlotWaitBeginTime);
+    rLog.SetLogValue(rState.FrameSlotWaitEnd, rState.FrameSlotWaitEndTime);
     rLog.SetLogValue(rState.AcquireCall, m_currentPresentCalls.AcquireCallTime);
     rLog.SetLogValue(rState.AcquireReturn, m_currentPresentCalls.AcquireReturnTime);
     rLog.SetLogInt64(rState.AcquireResult, m_currentPresentCalls.AcquireResult);
@@ -1479,6 +1509,10 @@ namespace Fsl::VulkanBasic
     // The order of a frame: the app holds its start if it paces its frames, then the frame slot is waited for, then a image is
     // acquired. So no swapchain image is held while the frame waits, which matters with the few images a swapchain has.
     OnVulkanFrameStart();
+    if (m_framePacingLogState)
+    {
+      m_framePacingLogState->FrameSlotWaitBeginTime = m_presentCallTimer.GetTimestamp();
+    }
     {    // Wait for the frame slot to be ready, so we know the frame resources can be reused
       const VkResult waitVkResult = WaitForFrameSlot(currentFrameIndex);
       if (waitVkResult != VK_SUCCESS)
@@ -1493,6 +1527,10 @@ namespace Fsl::VulkanBasic
       {
         return waitResult;
       }
+    }
+    if (m_framePacingLogState)
+    {
+      m_framePacingLogState->FrameSlotWaitEndTime = m_presentCallTimer.GetTimestamp();
     }
 
     uint32_t acquiredSwapImageIndex{0};

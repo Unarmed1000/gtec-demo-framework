@@ -588,13 +588,15 @@ def _CommandCalibrate(args: argparse.Namespace) -> int:
     percentValues = [float(value) for value in args.percent.split(",")]
     outputPath.mkdir(parents=True, exist_ok=True)
     print(f"App: {exePath}")
-    print(f"Window: {args.window}, {args.frames} frames for each of {len(stepValues)} GPU load settings. The window takes the keyboard focus.")
+    print(f"Window: {args.window}, background: {args.background}, {args.frames} frames for each of {len(stepValues)} GPU load settings. "
+          "The window takes the keyboard focus.")
 
     points: list[tuple[int, float]] = []
     refreshIntervalTicks: int | None = round(g_ticksPerSecond / args.refresh_hz) if args.refresh_hz is not None else None
     for steps in stepValues:
         time.sleep(args.pause)
-        run = RunConfig(f"gpu_{steps}", "", ["--GpuLoad", str(steps), "--Window", args.window], args.frames, None, None, args.refresh_hz)
+        run = RunConfig(f"gpu_{steps}", "", ["--Background", args.background, "--GpuLoad", str(steps), "--Window", args.window], args.frames, None,
+                        None, args.refresh_hz)
         logPath = outputPath / f"{run.Name}.csv"
         result = RunApp(exePath, workingDirectory, logPath, outputPath / f"{run.Name}.app.log", run, _g_defaultTimeoutSeconds)
         if result.ExitCode != 0 or not logPath.is_file():
@@ -674,6 +676,9 @@ def _CreateParser() -> argparse.ArgumentParser:
     calibrate.add_argument("--cwd", help="The directory to run the app in.")
     calibrate.add_argument("--window", default=_g_defaultCalibrateWindow,
                            help=f"The window of the runs, the GPU time depends on its size (default {_g_defaultCalibrateWindow}, [] is fullscreen).")
+    calibrate.add_argument("--background", default="flight",
+                           help="The scene of the background the GPU load is measured with: the same setting is another amount of work with "
+                                "another scene (default flight, which is the scene the plans name).")
     calibrate.add_argument("--steps", default=_g_defaultCalibrateSteps, help=f"The GPU load settings to measure (default {_g_defaultCalibrateSteps}).")
     calibrate.add_argument("--percent", default=_g_defaultCalibratePercent,
                            help=f"The shares of a refresh to find the setting for (default {_g_defaultCalibratePercent}).")

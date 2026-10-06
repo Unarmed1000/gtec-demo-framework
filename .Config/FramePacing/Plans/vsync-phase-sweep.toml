@@ -13,7 +13,7 @@
 description = "One fixed refresh rate: frames held for two refreshes by a wait on the vsync, the present placed from 5 to 95 % of a refresh, each idle and under CPU load"
 app = "Vulkan.FramePacing"
 frames = 400
-args = ["--Window", "{window}", "--CpuLoad", "0", "--GpuLoad", "16", "--Pacer", "--VkSwapchainMaintenance1", "false", "--Pacer.Adaptive", "false", "--Pacer.TargetFps", "{half_fps}", "--Pacer.Hold", "vsync"]
+args = ["--Background", "flight", "--Window", "{window}", "--CpuLoad", "0", "--GpuLoad", "16", "--Pacer", "--VkSwapchainMaintenance1", "false", "--Pacer.Adaptive", "false", "--Pacer.TargetFps", "{half_fps}", "--Pacer.Hold", "vsync"]
 
 [variables]
 # Half the refresh rate of the display in frames per second

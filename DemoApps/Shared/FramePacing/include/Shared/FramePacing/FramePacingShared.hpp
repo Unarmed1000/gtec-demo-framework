@@ -247,6 +247,10 @@ namespace Fsl
     DemoTime m_updateTime;
     //! True once the current frame was started (a frame is only started once, even if the host draws it again)
     bool m_frameStarted{false};
+    //! The number of the frame that was started last, counted from one (GetFrameId)
+    uint64_t m_frameId{0};
+    //! True if the app is to flush its commands after the last one of a frame (IsFlushWanted)
+    bool m_flushWanted{false};
     //! When the current frame started (a HighResolutionTimer timestamp)
     TickCount m_frameStartTime;
     //! The time from the start of the previous frame to the start of the current frame
@@ -325,6 +329,10 @@ namespace Fsl
     TickCount m_drainCountStartTime;
     //! What was last written to the log about how the frames are held
     SamplePacerHold m_loggedHold{SamplePacerHold::Wait};
+    //! What was last written to the log about the background, so a change is written as a event
+    RaymarchScene m_loggedBackgroundScene{RaymarchScene::Flight};
+    int32_t m_loggedBackgroundScalePercent{0};
+    bool m_hasLoggedBackground{false};
     //! What the app said it can measure (SetMeasurementSupport)
     bool m_presentTimingSupported{false};
     bool m_gpuTimelineSupported{false};
@@ -346,13 +354,20 @@ namespace Fsl
       FramePacingLogColumn WindowSpan;
       FramePacingLogColumn WindowFull;
       FramePacingLogColumn FrameWaitStart;
+      FramePacingLogColumn FrameWaitTarget;
       FramePacingLogColumn FrameStart;
       FramePacingLogColumn EndFrame;
       FramePacingLogColumn WorkCpu;
       FramePacingLogColumn WorkGpu;
+      FramePacingLogColumn WorkGpuFrameIndex;
+      FramePacingLogColumn GpuTime;
       FramePacingLogColumn GpuWorkBegin;
       FramePacingLogColumn GpuWorkEnd;
+      FramePacingLogColumn FlushCall;
       FramePacingLogColumn PresentWait;
+      FramePacingLogColumn PresentWaitBegin;
+      FramePacingLogColumn PresentWaitTarget;
+      FramePacingLogColumn PresentWaitEnd;
       FramePacingLogColumn CpuLoad;
       FramePacingLogColumn GpuLoad;
       FramePacingLogColumn PacerFrameId;
@@ -398,6 +413,23 @@ namespace Fsl
     std::shared_ptr<IFramePacingFrameLog> m_frameLog;
     LogColumns m_logColumns;
     std::array<LogPresentFrame, 64> m_logPresentFrames{};
+
+    //! The frame of the log a frame of the sample belongs to
+    struct LogFrame
+    {
+      uint64_t FrameId{0};
+      uint64_t FrameIndex{0};
+    };
+
+    std::array<LogFrame, 64> m_logFrames{};
+    //! True while what the frame that started is has not been written to the log. A frame gets its row in the log when the host begins
+    //! its draw, so a frame that starts in the update is written once it is drawn.
+    bool m_frameStartLogPending{false};
+    //! When the frame that is still to be written began to wait for its start, and the time its start was held to (zero: not held)
+    TickCount m_frameStartLogWaitTime;
+    TickCount m_frameStartLogTargetTime;
+    //! The frame of the log the GPU time that was reported last was measured on (empty: none was, or its frame is not in the log)
+    std::optional<uint64_t> m_gpuTimeLogFrameIndex;
     //! What was last written to the log about the settings of the frame pacer, so a change is written as a event
     SamplePacerConfig m_loggedPacerConfig;
     bool m_loggedPacerOn{false};
@@ -497,6 +529,29 @@ namespace Fsl
                           const bool isComplete);
     //! The GPU work of a frame was measured (HighResolutionTimer timestamps).
     void AddGpuInterval(const uint64_t presentId, const TickCount gpuStartTime, const TickCount gpuEndTime);
+    //! The number of the frame the sample started last, counted from one. The app keeps it for a frame once the frame was started
+    //! (SamplePresentMethod says where) and gives it back with the GPU time of the frame, which is only known a frame or more later.
+    [[nodiscard]] uint64_t GetFrameId() const noexcept
+    {
+      return m_frameId;
+    }
+    //! The GPU time of a frame was measured. Call it for every result, before EndFrame is given the newest one: the log then says
+    //! which frame a GPU time belongs to.
+    //! @param frameId what GetFrameId returned for the frame the time was measured on
+    //! @param gpuEndTime when the GPU finished the frame as a HighResolutionTimer timestamp, for an app that does not report it with
+    //!        AddGpuInterval (empty if it is not known)
+    void AddGpuTime(const uint64_t frameId, const TimeSpan gpuTime, const std::optional<TickCount> gpuEndTime = {});
+    //! True if the app is to flush its commands after the last one of a frame (--GLFlush, only for a app that presents with a swap)
+    [[nodiscard]] bool IsFlushWanted() const noexcept
+    {
+      return m_flushWanted;
+    }
+    //! The app related the clock its GPU times are on to the clock of the framework anew: the frame log gets a event with how far
+    //! off a time can be. Call it during the draw of a frame.
+    //! @param readTime how long the read of the clock of the GPU took, a time can be off by up to half of it
+    void AddGpuClockCalibration(const TimeSpan readTime);
+    //! The app flushes its commands now: the frame log gets the time. Call it right before the flush, during the draw of the frame.
+    void MarkFlush();
 
     //! What the app draws the raymarched background of the current frame with, before it calls Draw (the GPU load of the sample).
     //! Call it during the app's draw, as the frame can start there.
@@ -519,6 +574,8 @@ namespace Fsl
     void UpdateUI();
     //! Apply the pacer settings of the UI
     void UpdatePacer();
+    //! The scene of the background that is selected in the UI
+    [[nodiscard]] RaymarchScene GetBackgroundScene() const;
     //! Start the frame: the frame pacer plans it, its animation time is set and the simulated CPU load runs
     void StartFrame();
     //! Sleep (a long wait) or yield (a short wait) until the given HighResolutionTimer timestamp
@@ -544,6 +601,8 @@ namespace Fsl
     void UpdateVariableRefreshStats();
     //! Add the columns of the sample to the frame pacing log
     void RegisterLogColumns();
+    //! Write a wait before the present to the frame pacing log: when it began, the time it aimed at and when it woke
+    void LogPresentWait(const TickCount beginTime, const TickCount targetTime, const TickCount endTime);
     //! Write what the frame that just started is to the frame pacing log
     void LogFrameStart(const TickCount waitStartTime);
     //! Keep the CPU busy for the given time (the simulated CPU load)

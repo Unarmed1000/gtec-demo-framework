@@ -66,6 +66,8 @@ namespace Fsl
     Vulkan::VUGpuTimeCalibration m_gpuTimeCalibration;
     //! The id of the present of the frame that was drawn last in each frame slot: the GPU time of a slot is read when the slot is used again
     std::vector<uint64_t> m_slotPresentIds;
+    //! The same for the id the sample gave that frame, the GPU time is reported with it
+    std::vector<uint64_t> m_slotFrameIds;
     uint64_t m_gpuMeasurementId{0};
     uint32_t m_framesSinceCalibration{0};
 

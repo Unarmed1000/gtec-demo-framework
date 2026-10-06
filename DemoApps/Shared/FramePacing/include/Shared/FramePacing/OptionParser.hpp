@@ -55,6 +55,7 @@ namespace Fsl
     int32_t m_gpuLoadSteps{SampleConfig::GpuLoadSteps.Get()};
     int32_t m_backgroundScalePercent{SampleConfig::BackgroundScalePercent.Get()};
     RaymarchScene m_background{RaymarchScene::Blobs};
+    bool m_glFlush{false};
 
   public:
     OptionParser();
@@ -146,6 +147,12 @@ namespace Fsl
     [[nodiscard]] int32_t GetPacerVSyncPhasePercent() const noexcept
     {
       return m_pacerVSyncPhasePercent;
+    }
+
+    //! @brief Check if a OpenGL ES sample calls glFlush after the last command of a frame.
+    [[nodiscard]] bool IsGLFlushEnabled() const noexcept
+    {
+      return m_glFlush;
     }
 
     //! @brief The time the app spends busy every frame in milliseconds.

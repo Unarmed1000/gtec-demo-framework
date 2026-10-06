@@ -132,6 +132,7 @@ Hold (radio buttons)          |`--Pacer.Hold <auto\|vsync\|wait\|schedule>`|Vulk
                               |`--Pacer.Drain <refreshes>`     |Vulkan only. A wait of that many refreshes, once, half a second after the sample began to wait for the time of the pacer (0 to 32, the default is 4, 0 is none).
 CPU load                      |`--CpuLoad <ms>`                |The time in milliseconds the app spends busy every frame.
 GPU load                      |`--GpuLoad <steps>`             |Draws the background with the given load (0 is no background, the default is a low load of 16). The cost grows linearly with it. It is the number of steps of every ray, more steps reach further; for the lace every doubling of it adds a round of finer detail and the rest of it is samples per pixel.
+                              |`--GLFlush`                     |OpenGL ES only. Call `glFlush` after the last command of a frame, so the GPU is asked to work on the frame at a known moment (`flushCallTicks` in the frame log) and before a swap the sample delays. Off by default: the driver then decides when, the swap at the latest. It is a flush at the end of a frame; a flush in the middle of one makes a tile based GPU store and load the frame again.
 Background                    |`--Background <name>`           |The scene of the background (the radio buttons below the GPU load). `blobs` (the default) is a flight through blobs that melt into each other and `lace` is circles packed into circles: both are cheap at a low load. `flight` is a raymarched flight through a fractal lattice and `hall` a raymarched hall of columns that scrolls sideways at a constant speed, which makes a stutter easy to see: both cost a lot from the first step on.
 Background resolution         |`--BackgroundScale <percent>`   |The resolution the background is drawn at, in percent of the resolution of the window (10-100, the default is 100). Below 100 it is drawn into a smaller picture that is enlarged to the window, so its cost falls with the number of pixels: for a GPU that is limited by the pixels. The UI, the marker and the test pattern stay sharp.
 Measure the presents          |                                |Vulkan only. Measure when the frames reach the display (`VK_EXT_present_timing`), see [below](#what-the-vulkan-sample-measures-about-its-presents). Start with `--VkPresentTiming false` to run without the extension.
@@ -479,6 +480,10 @@ Column | Unit | Description
 `swapchainGeneration` | count | How many swapchains were created up to this frame
 `acquireCallTicks` | ticks | When vkAcquireNextImageKHR was called
 `acquireReturnTicks` | ticks | When vkAcquireNextImageKHR returned
+`frameSlotWaitBeginTicks` | ticks | When the host began to wait for the frame slot of the frame: for the GPU to finish the frame that used the slot before, and for the present fence of that frame. It is before the acquire
+`frameSlotWaitEndTicks` | ticks | When the wait for the frame slot of the frame ended
+`submitCallTicks` | ticks | When vkQueueSubmit was called for the frame: the GPU is asked to work on the frame from here
+`submitReturnTicks` | ticks | When vkQueueSubmit returned
 `presentCallTicks` | ticks | When vkQueuePresentKHR was called
 `presentReturnTicks` | ticks | When vkQueuePresentKHR returned
 `presentResult` | code | The VkResult of vkQueuePresentKHR
@@ -515,13 +520,20 @@ Column | Unit | Description
 `pacerWindowSpanTicks` | durationTicks | The time the frame window of the frame pacer spans
 `pacerWindowFull` | flag | 1 if the frame window of the frame pacer is full
 `frameWaitStartTicks` | ticks | When the sample began to wait for the start of the frame (it holds the start to the time the frame before was aimed at)
+`frameWaitTargetTicks` | ticks | The time the start of the frame was held to (empty: it was not held). The frame started at `frameStartTicks`, so the difference is how late the wait woke
 `frameStartTicks` | ticks | When the sample started the frame, which is the start the frame pacer is given
 `endFrameTicks` | ticks | When the work of the frame was done, which is what the frame pacer is told
 `workCpuTicks` | durationTicks | How long the CPU worked on the frame
 `workGpuTicks` | durationTicks | The GPU time the frame pacer was told with the frame: the one of the last frame that was measured
+`workGpuFrameIndex` | id | The frame (`frameIndex`) the `workGpuTicks` of the row was measured on: an earlier frame, as the GPU time of a frame is not known when the frame ends
+`gpuTimeTicks` | durationTicks | The GPU time of the frame itself, written when it was measured, a frame or more later (empty: the frame was not measured)
 `gpuWorkBeginTicks` | ticks | When the GPU started on the frame, on the clock of the framework
-`gpuWorkEndTicks` | ticks | When the GPU finished the frame, on the clock of the framework
+`gpuWorkEndTicks` | ticks | When the GPU finished the frame, on the clock of the framework. Vulkan: the timestamp at the end of its commands (`VK_KHR_calibrated_timestamps`). OpenGL ES: a timestamp query after its last command, where the driver has timestamps
+`flushCallTicks` | ticks | OpenGL ES with `--GLFlush`: when `glFlush` was called after the last command of the frame, the GPU is asked to work on the frame from here
 `presentWaitTicks` | durationTicks | How long the sample delayed the present of the frame, to hold it for its swap interval
+`presentWaitBeginTicks` | ticks | When the sample began to wait with the finished frame before its present
+`presentWaitTargetTicks` | ticks | The time the wait before the present aimed at
+`presentWaitEndTicks` | ticks | When the wait before the present woke, the present follows
 `cpuLoadMs` | count | The CPU load setting: the milliseconds the sample is busy per frame
 `gpuLoadSteps` | count | The GPU load setting: the steps of the background (for the lace the rounds of detail and the samples per pixel come from it)
 `holdMethod` | code | How the frame is held for more than one refresh: 0 the sample sleeps on a timer, 1 it waits on the vsync of the window system, 3 the present has a target time
@@ -543,11 +555,54 @@ Column | Unit | Description
 (the results of too many presents were outstanding), a present that was reported without a display time (the image did not reach the
 display) and a present whose report did not arrive before its row closed. Only the stages the surface supports have values.
 
+### Which frame and which moment a value belongs to
+
+Most values of a row are those of its own frame, also the ones that arrive later. These are not, by design:
+
+- `workGpuTicks` is the GPU time of an earlier frame, the one `workGpuFrameIndex` names: the pacer is told about a frame when it
+  ends, and the GPU has not worked on it then. The GPU time of the frame itself is `gpuTimeTicks`. Vulkan: the frame that used the
+  frame slot before, so as many frames back as there are frames in flight. OpenGL ES: the newest query that had finished, one to
+  three frames back, and a frame is not measured while all four queries are in use.
+- `pacerWindow*` is the frame window as it was after the frame before was measured, and `pacerFeedback*` are counters.
+- `displayVSyncTicks` is a recent vertical blank, read when the frame began. `refreshDurationNs` and `refreshIntervalNs` are what the
+  swapchain reported last. The load of the machine is read once a second.
+
+The samples start a frame at a different place per API, so `frameStartTicks`, the CPU start time of the marker and what is counted
+from them do not cover the same:
+
+&nbsp; | OpenGL ES 2 and 3 | Vulkan
+---|---|---
+The frame starts | In the update, right after the swap of the frame before returned | In the draw, after the update, the wait for the frame slot and the acquire
+`workCpuTicks` and the CPU busy of the marker cover | The rest of the update and the draw | The draw. The update of the frame is in no frame's work
+Where they end | Before the swap | CPU busy where the marker is drawn, `workCpuTicks` after the submit. Both end before the wait of the `early` profile and the present: `presentCallTicks` is when the present was called
+The GPU time | The elapsed time of a query: a duration without a start. Where the driver has the timestamps of the extension `gpuWorkEndTicks` is when the GPU finished the frame | The time between two timestamps. `gpuWorkBeginTicks` and `gpuWorkEndTicks` place it on the clock of the framework (`VK_KHR_calibrated_timestamps`)
+When the GPU is asked to work | `flushCallTicks` with `--GLFlush`. Without it not known: the driver sends the commands when it wants and at the swap at the latest (`hostSwapCallTicks`) | `submitCallTicks`
+
+So a log has these on the clock of the framework for every frame: the start and the end of the CPU work (`frameStartTicks`,
+`endFrameTicks`), when the GPU was asked to work (`submitCallTicks`, `flushCallTicks`), how long the GPU worked (`gpuTimeTicks`)
+and when it finished (`gpuWorkEndTicks`). Every wait of the sample is there with when it began, the time it aimed at and when
+it woke: the one before the start of a frame (`frameWaitStartTicks`, `frameWaitTargetTicks`, `frameStartTicks`) and the one
+before the present (`presentWaitBeginTicks`, `presentWaitTargetTicks`, `presentWaitEndTicks`). A Vulkan app also has the wait of
+the host for the frame slot (`frameSlotWaitBeginTicks`, `frameSlotWaitEndTicks`), which is where its loop waits for the GPU. The last one needs `VK_KHR_calibrated_timestamps` on Vulkan and a driver with
+timestamps on OpenGL ES (`GL_EXT_disjoint_timer_query` with bits for its timestamp counter): the app log says when it is
+missing and the column is empty then. The time of the GPU is on its own clock, which is related to the clock of the framework by
+reading both now and then.
+
+On OpenGL ES the driver decides where the loop waits: in the swap, or in a GL command of the frame. A wait in a GL command is
+inside `workCpuTicks` and the CPU busy of the marker, and the pacer takes it for work. `hostSwapReturnTicks - hostSwapCallTicks`
+says if the swap waited.
+
+A log has the fact `sample.frameStartRow=own` when the values the sample logs at the start of a frame are in the row of that frame.
+A log of a OpenGL ES sample without the fact has them in the row of the frame before (`pacerFrameId - frameIndex` is 2 there, and 1
+in a log that is right): `frameWaitStartTicks`, `frameStartTicks`, `pacerOn`, `swapInterval`, `preferredSwapInterval`,
+`pacerChange`, `animationStepTicks`, `pacerWindow*`, `pacerFrameId`, `nextFrameStartTicks`, `pacerFeedbackOn` and its counters,
+`cpuLoadMs` and `gpuLoadSteps`.
+
 ### The events
 
 Event | Details
 ---|---
-`fact` | `key=value`, something that holds for the whole run: `formatVersion`, `clock`, `clockNativeFrequency`, `utcNanoseconds` with the `utcClockTicks` it was read at (so a tick can be placed in wall clock time), `app`, `debugBuild`, `api`, `apiVersion`, the settings of the marker (`marker.*`), of the log (`log.openFrames`), the Vulkan device (`vulkan.deviceName`, `vendorId`, `deviceId`, `driverVersion`, `apiVersion`, `calibratedTimestamps`, `presentTimingDevice`, `presentTimingOption`) and the sample (`sample.presentMethod`, `sample.pacerSupported`).
+`fact` | `key=value`, something that holds for the whole run: `formatVersion`, `clock`, `clockNativeFrequency`, `utcNanoseconds` with the `utcClockTicks` it was read at (so a tick can be placed in wall clock time), `app`, `debugBuild`, `api`, `apiVersion`, the settings of the marker (`marker.*`), of the log (`log.openFrames`), the Vulkan device (`vulkan.deviceName`, `vendorId`, `deviceId`, `driverVersion`, `apiVersion`, `calibratedTimestamps`, `presentTimingDevice`, `presentTimingOption`) and the sample (`sample.presentMethod`, `sample.pacerSupported`, `sample.frameStartRow`, `sample.glFlush`).
 `column` | The name, the unit and the description of a column.
 `window` | The size and the DPI of the window, written when it changes.
 `display` | `refreshIntervalTicks`: the refresh interval of the display as the window system reports it (0 if it does not know), written when it changes.
@@ -558,6 +613,8 @@ Event | Details
 `variableRefresh` | What the window knows about variable refresh on its display, written when an answer changes: `supported`, `enabled` and `active` are what the window system declares, `observed` is what was measured (each `yes`, `no` or `unknown`), `source` and `observedSource` are where they came from.
 `holdVariableRefresh` | The samples: `seen=1` from the frame on where the display was seen to refresh at a variable rate and the vsync wait is not used anymore.
 `presentClockCalibration` | Vulkan: the offset between the clock of a present stage and the clock of the framework and how far off it can be, every time it is measured.
+`gpuClockCalibration` | The OpenGL ES samples: the clock of the GL was related to the clock of the framework anew (`gpuWorkEndTicks` is converted with it). `readTicks` is how long the read of the time of the GL took and `maxDeviationTicks` how far off a time can be, half of it.
+`background` | The samples: the scene of the background and the resolution it is drawn at in percent, at the first frame and when one of them changes. The same `gpuLoadSteps` is another amount of GPU work with another scene, so two logs are only comparable when they name the same one.
 `pacerConfig` | The samples: the pacer was switched or its settings changed (the refresh rate it uses, the target fps, adaptive, present feedback, how a frame is held and the phase of the vsync wait).
 
 ### Adding values from an app
@@ -576,7 +633,7 @@ if (m_frameLog)
   m_frameLog->SetLogFact("scene", "city");
 }
 
-// During the update or the draw of a frame: a value of the frame that is being drawn
+// During the draw of a frame: a value of the frame that is being drawn
 if (m_frameLog)
 {
   m_frameLog->SetLogValue(m_columnPhysics, physicsTime);
@@ -585,6 +642,10 @@ if (m_frameLog)
   m_frameLog->AddLogEvent("levelLoaded", "name=city");
 }
 ```
+
+A frame has its row from the moment the host begins its draw. The update of a frame runs before that, so a value that is set during
+the update is written to the row of the frame before: keep it and set it during the draw. The FramePacing samples do so for what a
+frame started with, as their OpenGL ES frame starts in the update.
 
 ## Notes
 

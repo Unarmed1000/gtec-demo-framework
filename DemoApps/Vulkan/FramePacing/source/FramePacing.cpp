@@ -67,6 +67,7 @@ namespace Fsl
     , m_gpuTimer(m_device, m_deviceQueue.QueueFamilyIndex, GetRenderConfig().MaxFramesInFlight)
     , m_gpuTimeCalibration(m_calibratedTimestamps, m_gpuTimer.GetTimestampPeriod(), m_gpuTimer.GetTimestampMask())
     , m_slotPresentIds(GetRenderConfig().MaxFramesInFlight)
+    , m_slotFrameIds(GetRenderConfig().MaxFramesInFlight)
   {
     // Optional: with VK_KHR_calibrated_timestamps the GPU work of a frame can be placed on the timeline of the CPU
     m_gpuTimeCalibration.Calibrate();
@@ -149,6 +150,7 @@ namespace Fsl
           const uint64_t presentId = GetNextPresentId();
           m_shared.SetFramePresentId(presentId);
           m_slotPresentIds[currentFrameIndex] = presentId;
+          m_slotFrameIds[currentFrameIndex] = m_shared.GetFrameId();
         }
         m_shared.Draw();
 
@@ -169,6 +171,7 @@ namespace Fsl
     if (m_gpuTimer.GetMeasurementId() != m_gpuMeasurementId)
     {
       m_gpuMeasurementId = m_gpuTimer.GetMeasurementId();
+      m_shared.AddGpuTime(m_slotFrameIds[currentFrameIndex], m_gpuTimer.GetGpuTime());
       TickCount gpuStartTime;
       TickCount gpuEndTime;
       if (m_shared.IsGpuTimelineWanted() && m_gpuTimeCalibration.TryToHostTime(m_gpuTimer.GetBeginTimestamp(), gpuStartTime) &&

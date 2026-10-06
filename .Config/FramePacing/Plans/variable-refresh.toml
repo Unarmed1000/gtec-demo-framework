@@ -51,7 +51,7 @@ args = ["--GpuLoad", "0", "--Pacer", "--Pacer.Adaptive", "false", "--Pacer.Targe
 [[run]]
 name = "L1_pacer_off_gpu_load"
 what = "pacer off, a GPU load that makes a frame take longer than a refresh, windowed"
-args = ["--GpuLoad", "{gpu_over_refresh}", "--Window", "[0,0,1600,900]"]
+args = ["--Background", "flight", "--GpuLoad", "{gpu_over_refresh}", "--Window", "[0,0,1600,900]"]
 
 [[run]]
 name = "L2_pacer_off_cpu_load"

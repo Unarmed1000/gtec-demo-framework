@@ -147,6 +147,23 @@ namespace Fsl
       }
     }
 
+    //! The name of a scene of the background as --Background takes it
+    const char* ToLogName(const RaymarchScene scene) noexcept
+    {
+      switch (scene)
+      {
+      case RaymarchScene::Hall:
+        return "hall";
+      case RaymarchScene::Blobs:
+        return "blobs";
+      case RaymarchScene::Lace:
+        return "lace";
+      case RaymarchScene::Flight:
+      default:
+        return "flight";
+      }
+    }
+
     //! The value of the holdMethod column of the frame log
     int64_t ToLogCode(const SamplePacerHold hold) noexcept
     {
@@ -221,6 +238,8 @@ namespace Fsl
     const auto options = config.GetOptions<OptionParser>();
     // Read before the log is set up, which writes it as a fact
     m_pacerProfile = options->GetPacerProfile();
+    // Only a app whose present is a swap has a use for it (SamplePresentMethod::SwapInterval), a Vulkan app submits its frame
+    m_flushWanted = options->IsGLFlushEnabled() && presentMethod == SamplePresentMethod::SwapInterval;
     m_refreshRateOverrideHz = options->GetPacerRefreshRateHz();
     m_frameLog = config.DemoServiceProvider.TryGet<IFramePacingFrameLog>();
     if (m_frameLog && m_frameLog->IsLogEnabled())
@@ -549,6 +568,18 @@ namespace Fsl
     // SamplePresentMethod::WaitThenPresent: the frame starts here, after the host waited for a free buffer
     StartFrame();
 
+    if (m_frameLog)
+    {
+      // A frame has its row in the log from the draw on. A frame that starts in the update (SamplePresentMethod::SwapInterval) starts
+      // before that, and what is written then lands in the row of the frame before. So what the frame started with is written here.
+      m_logFrames[m_frameId % m_logFrames.size()] = {m_frameId, m_frameLog->GetLogFrameIndex()};
+      if (m_frameStartLogPending)
+      {
+        m_frameStartLogPending = false;
+        LogFrameStart(m_frameStartLogWaitTime);
+      }
+    }
+
     // Tell the marker what the frame was paced by. Until the frame pacer was used the animation time is the time of the framework,
     // which the marker reports by itself.
     if (m_framePacing && (m_pacer || m_animationOffset.Ticks() != 0))
@@ -744,6 +775,58 @@ namespace Fsl
   }
 
 
+  void FramePacingShared::AddGpuTime(const uint64_t frameId, const TimeSpan gpuTime, const std::optional<TickCount> gpuEndTime)
+  {
+    m_gpuTimeLogFrameIndex.reset();
+    if (m_frameLog)
+    {
+      const LogFrame& logFrame = m_logFrames[frameId % m_logFrames.size()];
+      if (frameId != 0u && logFrame.FrameId == frameId)
+      {
+        // The time is written to the frame it was measured on, which is a frame or more before the one that is being drawn
+        m_frameLog->SetLogValueAt(logFrame.FrameIndex, m_logColumns.GpuTime, gpuTime);
+        if (gpuEndTime.has_value())
+        {
+          m_frameLog->SetLogValueAt(logFrame.FrameIndex, m_logColumns.GpuWorkEnd, gpuEndTime.value());
+        }
+        m_gpuTimeLogFrameIndex = logFrame.FrameIndex;
+      }
+    }
+  }
+
+
+  void FramePacingShared::AddGpuClockCalibration(const TimeSpan readTime)
+  {
+    if (m_frameLog)
+    {
+      m_frameLog->AddLogEvent("gpuClockCalibration", fmt::format("readTicks={};maxDeviationTicks={}", readTime.Ticks(), (readTime.Ticks() + 1) / 2));
+    }
+  }
+
+
+  void FramePacingShared::MarkFlush()
+  {
+    if (m_frameLog)
+    {
+      m_frameLog->SetLogValue(m_logColumns.FlushCall, m_timer.GetTimestamp());
+    }
+  }
+
+
+  RaymarchScene FramePacingShared::GetBackgroundScene() const
+  {
+    if (m_ui.RadioBackgroundBlobs->IsChecked())
+    {
+      return RaymarchScene::Blobs;
+    }
+    if (m_ui.RadioBackgroundLace->IsChecked())
+    {
+      return RaymarchScene::Lace;
+    }
+    return m_ui.RadioBackgroundHall->IsChecked() ? RaymarchScene::Hall : RaymarchScene::Flight;
+  }
+
+
   RaymarchParams FramePacingShared::GetRaymarchParams()
   {
     // The background is animated for the animation time of the frame, so the frame has to be started
@@ -753,19 +836,7 @@ namespace Fsl
     RaymarchParams params;
     params.Steps = m_ui.SliderGpuLoad->GetValue();
     params.RenderScale = static_cast<float>(m_ui.SliderBackgroundScale->GetValue()) / 100.0f;
-    params.Scene = RaymarchScene::Flight;
-    if (m_ui.RadioBackgroundBlobs->IsChecked())
-    {
-      params.Scene = RaymarchScene::Blobs;
-    }
-    else if (m_ui.RadioBackgroundLace->IsChecked())
-    {
-      params.Scene = RaymarchScene::Lace;
-    }
-    else if (m_ui.RadioBackgroundHall->IsChecked())
-    {
-      params.Scene = RaymarchScene::Hall;
-    }
+    params.Scene = GetBackgroundScene();
     params.TravelPhase = ToPhase(animationSeconds, LocalConfig::TravelSeconds);
     params.SwayPhase = ToPhase(animationSeconds, LocalConfig::SwaySeconds);
     params.MorphPhase = ToPhase(animationSeconds, LocalConfig::MorphSeconds);
@@ -791,6 +862,11 @@ namespace Fsl
       m_frameLog->SetLogValue(m_logColumns.EndFrame, now);
       m_frameLog->SetLogValue(m_logColumns.WorkCpu, m_lastCpuTime);
       m_frameLog->SetLogValue(m_logColumns.WorkGpu, m_lastGpuTime);
+      if (m_lastGpuTime.Ticks() > 0 && m_gpuTimeLogFrameIndex.has_value())
+      {
+        // The GPU time is the one of an earlier frame, so the row says which
+        m_frameLog->SetLogUInt64(m_logColumns.WorkGpuFrameIndex, m_gpuTimeLogFrameIndex.value());
+      }
     }
   }
 
@@ -811,12 +887,13 @@ namespace Fsl
 
     const TickCount waitStartTime = m_timer.GetTimestamp();
     WaitUntil(presentTime);
-    m_lastPresentWait = m_timer.GetTimestamp() - waitStartTime;
+    const TickCount waitEndTime = m_timer.GetTimestamp();
+    m_lastPresentWait = waitEndTime - waitStartTime;
     // The next frame starts at the vertical blank this one is aimed at, so the frame starts are on the refreshes
     m_nextFrameStartTime = target;
+    LogPresentWait(waitStartTime, presentTime, waitEndTime);
     if (m_frameLog)
     {
-      m_frameLog->SetLogValue(m_logColumns.PresentWait, m_lastPresentWait);
       m_frameLog->SetLogValue(m_logColumns.HoldTarget, target);
     }
   }
@@ -910,10 +987,7 @@ namespace Fsl
     m_presentTime = m_timer.GetTimestamp();
     m_presentDueTime = dueTime;
     m_lastPresentWait = m_presentTime - waitStartTime;
-    if (m_frameLog)
-    {
-      m_frameLog->SetLogValue(m_logColumns.PresentWait, m_lastPresentWait);
-    }
+    LogPresentWait(waitStartTime, dueTime, m_presentTime);
   }
 
 
@@ -976,12 +1050,24 @@ namespace Fsl
     const TimeSpan presentHoldTime(refreshPeriod.Ticks() * static_cast<int64_t>(std::max(presentSwapInterval, 1u)));
     const TimeSpan presentMargin = std::min(LocalConfig::MaxPresentMargin, TimeSpan(refreshPeriod.Ticks() / 8));
     const TickCount waitStartTime = m_timer.GetTimestamp();
-    WaitUntil((m_schedule.NextFrameStartTime - presentHoldTime) + presentMargin);
-    m_lastPresentWait = m_timer.GetTimestamp() - waitStartTime;
+    const TickCount waitTargetTime = (m_schedule.NextFrameStartTime - presentHoldTime) + presentMargin;
+    WaitUntil(waitTargetTime);
+    const TickCount waitEndTime = m_timer.GetTimestamp();
+    m_lastPresentWait = waitEndTime - waitStartTime;
     m_nextFrameStartTime = m_schedule.NextFrameStartTime;
+    LogPresentWait(waitStartTime, waitTargetTime, waitEndTime);
+  }
+
+
+  void FramePacingShared::LogPresentWait(const TickCount beginTime, const TickCount targetTime, const TickCount endTime)
+  {
     if (m_frameLog)
     {
-      m_frameLog->SetLogValue(m_logColumns.PresentWait, m_lastPresentWait);
+      // A wait is logged with the time it aimed at and the time it woke, so how far it overslept is a value
+      m_frameLog->SetLogValue(m_logColumns.PresentWait, endTime - beginTime);
+      m_frameLog->SetLogValue(m_logColumns.PresentWaitBegin, beginTime);
+      m_frameLog->SetLogValue(m_logColumns.PresentWaitTarget, targetTime);
+      m_frameLog->SetLogValue(m_logColumns.PresentWaitEnd, endTime);
     }
   }
 
@@ -1191,10 +1277,13 @@ namespace Fsl
       return;
     }
     m_frameStarted = true;
+    ++m_frameId;
 
     // The wait can have been made already (WaitForFrameStart), the frame then waited from there
     const TickCount frameWaitStartTime = m_frameStartWaitTime.Ticks() != 0 ? m_frameStartWaitTime : m_timer.GetTimestamp();
     m_frameStartWaitTime = {};
+    // The time the start of the frame is held to (zero: it is not held)
+    m_frameStartLogTargetTime = m_pacer ? m_nextFrameStartTime : TickCount();
     if (m_pacer)
     {
       // A frame starts when the previous one is shown. A present that was delayed (WaitForPresent) need not wait for the display
@@ -1243,7 +1332,9 @@ namespace Fsl
       m_schedule = {};
       m_animationTime = frameworkTime + m_animationOffset;
     }
-    LogFrameStart(frameWaitStartTime);
+    // Written to the log once the frame has its row there (Draw)
+    m_frameStartLogPending = true;
+    m_frameStartLogWaitTime = frameWaitStartTime;
 
     BurnCpu(TimeSpan::FromMilliseconds(static_cast<int64_t>(m_ui.SliderCpuLoad->GetValue())));
   }
@@ -1282,6 +1373,9 @@ namespace Fsl
       rLog.RegisterColumn("frameWaitStartTicks", FramePacingLogUnit::Ticks,
                           "When the sample began to wait for the start of the frame (it holds the start to the time the frame "
                           "before was aimed at)");
+    rColumns.FrameWaitTarget = rLog.RegisterColumn("frameWaitTargetTicks", FramePacingLogUnit::Ticks,
+                                                   "The time the start of the frame was held to (empty: it was not held). The frame started at "
+                                                   "frameStartTicks, so the difference is how late the wait woke");
     rColumns.FrameStart = rLog.RegisterColumn("frameStartTicks", FramePacingLogUnit::Ticks,
                                               "When the sample started the frame, which is the start the frame pacer is given");
     rColumns.EndFrame =
@@ -1289,12 +1383,28 @@ namespace Fsl
     rColumns.WorkCpu = rLog.RegisterColumn("workCpuTicks", FramePacingLogUnit::DurationTicks, "How long the CPU worked on the frame");
     rColumns.WorkGpu = rLog.RegisterColumn("workGpuTicks", FramePacingLogUnit::DurationTicks,
                                            "The GPU time the frame pacer was told with the frame: the one of the last frame that was measured");
+    rColumns.WorkGpuFrameIndex =
+      rLog.RegisterColumn("workGpuFrameIndex", FramePacingLogUnit::Id,
+                          "The frame (frameIndex) the workGpuTicks of the row was measured on: an earlier frame, as the GPU time of a frame "
+                          "is not known when the frame ends");
+    rColumns.GpuTime = rLog.RegisterColumn("gpuTimeTicks", FramePacingLogUnit::DurationTicks,
+                                           "The GPU time of the frame itself, written when it was measured, a frame or more later (empty: the "
+                                           "frame was not measured)");
     rColumns.GpuWorkBegin =
       rLog.RegisterColumn("gpuWorkBeginTicks", FramePacingLogUnit::Ticks, "When the GPU started on the frame, on the clock of the framework");
     rColumns.GpuWorkEnd =
       rLog.RegisterColumn("gpuWorkEndTicks", FramePacingLogUnit::Ticks, "When the GPU finished the frame, on the clock of the framework");
+    rColumns.FlushCall = rLog.RegisterColumn("flushCallTicks", FramePacingLogUnit::Ticks,
+                                             "When glFlush was called after the last command of the frame: the GPU is asked to work on the "
+                                             "frame from here (only with --GLFlush, without it the driver decides when, the swap at the latest)");
     rColumns.PresentWait = rLog.RegisterColumn("presentWaitTicks", FramePacingLogUnit::DurationTicks,
                                                "How long the sample delayed the present of the frame, to hold it for its swap interval");
+    rColumns.PresentWaitBegin = rLog.RegisterColumn("presentWaitBeginTicks", FramePacingLogUnit::Ticks,
+                                                    "When the sample began to wait with the finished frame before its present");
+    rColumns.PresentWaitTarget =
+      rLog.RegisterColumn("presentWaitTargetTicks", FramePacingLogUnit::Ticks, "The time the wait before the present aimed at");
+    rColumns.PresentWaitEnd =
+      rLog.RegisterColumn("presentWaitEndTicks", FramePacingLogUnit::Ticks, "When the wait before the present woke, the present follows");
     rColumns.CpuLoad =
       rLog.RegisterColumn("cpuLoadMs", FramePacingLogUnit::Count, "The CPU load setting: the milliseconds the sample is busy per frame");
     rColumns.GpuLoad = rLog.RegisterColumn("gpuLoadSteps", FramePacingLogUnit::Count,
@@ -1346,6 +1456,10 @@ namespace Fsl
                                              ? "late"
                                              : (m_pacerProfile == SamplePacerProfile::RenderEarly ? "early" : "off"));
     rLog.SetLogFact("sample.pacerSupported", SamplePacer::IsSupported() ? "1" : "0");
+    // What a frame started with is in the row of that frame. A log without this fact has it in the row of the frame before when the
+    // frame starts in the update (SamplePresentMethod::SwapInterval).
+    rLog.SetLogFact("sample.frameStartRow", "own");
+    rLog.SetLogFact("sample.glFlush", m_flushWanted ? "1" : "0");
   }
 
 
@@ -1372,6 +1486,20 @@ namespace Fsl
                                    m_pacerConfig.PresentFeedback ? 1 : 0, ToString(requestedHold), m_vsyncPhasePercent));
     }
 
+    {
+      // What makes the GPU load: the same --GpuLoad is another amount of work with another scene or another resolution of the
+      // background, so a log that does not say which one it was can not be compared with another
+      const RaymarchScene scene = GetBackgroundScene();
+      const int32_t scalePercent = m_ui.SliderBackgroundScale->GetValue();
+      if (!m_hasLoggedBackground || scene != m_loggedBackgroundScene || scalePercent != m_loggedBackgroundScalePercent)
+      {
+        m_hasLoggedBackground = true;
+        m_loggedBackgroundScene = scene;
+        m_loggedBackgroundScalePercent = scalePercent;
+        rLog.AddLogEvent("background", fmt::format("scene={};scalePercent={}", ToLogName(scene), scalePercent));
+      }
+    }
+
     if (m_variableRefreshSeen != m_loggedVariableRefreshSeen)
     {
       // From here on the vsync wait is not used (or can be used again), see the holdMethod column for what the frames were held with
@@ -1381,6 +1509,10 @@ namespace Fsl
 
     rLog.SetLogValue(columns.PacerOn, pacerOn);
     rLog.SetLogValue(columns.FrameWaitStart, waitStartTime);
+    if (m_frameStartLogTargetTime.Ticks() != 0)
+    {
+      rLog.SetLogValue(columns.FrameWaitTarget, m_frameStartLogTargetTime);
+    }
     rLog.SetLogValue(columns.FrameStart, m_frameStartTime);
     rLog.SetLogInt64(columns.CpuLoad, m_ui.SliderCpuLoad->GetValue());
     rLog.SetLogInt64(columns.GpuLoad, m_ui.SliderGpuLoad->GetValue());

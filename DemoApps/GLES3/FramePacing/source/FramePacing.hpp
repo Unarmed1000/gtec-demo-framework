@@ -43,6 +43,8 @@ namespace Fsl
     EGLSwapInterval m_swapInterval;
     //! The time the GPU works on a frame (GL_EXT_disjoint_timer_query), read without waiting for the GPU
     GLES3::GLGpuFrameTimer m_gpuTimer;
+    //! The frames since the clock of the GL was related to the clock of the framework (the first frame does it)
+    uint32_t m_framesSinceCalibration;
 
   public:
     explicit FramePacing(const DemoAppConfig& config);
