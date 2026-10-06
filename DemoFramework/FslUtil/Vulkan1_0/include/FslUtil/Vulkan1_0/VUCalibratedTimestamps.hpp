@@ -27,6 +27,7 @@
 #include <FslBase/Time/TimeSpan.hpp>
 #include <FslUtil/Vulkan1_0/Common.hpp>
 #include <FslUtil/Vulkan1_0/Util/TimeDomainUtil.hpp>
+#include <FslUtil/Vulkan1_0/VUCalibratedTimestampsApi.hpp>
 #include <FslUtil/Vulkan1_0/VUDeviceTimestamp.hpp>
 #include <vulkan/vulkan.h>
 #include <cstdint>
@@ -62,7 +63,10 @@ namespace Fsl::Vulkan
 
     //! @param instance the instance of the device, used to find out which time domains can be calibrated.
     //! @param device the device (it must outlive this object).
-    VUCalibratedTimestamps(const VkInstance instance, const VkPhysicalDevice physicalDevice, const VkDevice device);
+    //! @param api the calibrated timestamps extension the device was created with. Only its entry points are looked up, the ones of
+    //!        the other name of the extension are not asked for. Disabled gives a object that is not supported.
+    VUCalibratedTimestamps(const VkInstance instance, const VkPhysicalDevice physicalDevice, const VkDevice device,
+                           const VUCalibratedTimestampsApi api);
 
     //! @return true if TryGet works: the entry points were found and both the device and the host clock can be calibrated.
     [[nodiscard]] bool IsSupported() const noexcept

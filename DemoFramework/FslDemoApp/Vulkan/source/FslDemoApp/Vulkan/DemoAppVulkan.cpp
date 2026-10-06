@@ -203,7 +203,8 @@ namespace Fsl
       m_deviceFault = Vulkan::VUDeviceFault(m_device.Get(), m_hostDeviceFeatures.DeviceFault);
       if (m_hostDeviceFeatures.CalibratedTimestamps)
       {
-        m_calibratedTimestamps = Vulkan::VUCalibratedTimestamps(vulkanHostInfo->GetInstance(), m_physicalDevice.Device, m_device.Get());
+        m_calibratedTimestamps = Vulkan::VUCalibratedTimestamps(vulkanHostInfo->GetInstance(), m_physicalDevice.Device, m_device.Get(),
+                                                                m_hostDeviceFeatures.CalibratedTimestampsApi);
       }
 
       Vulkan::VUDebugUtils::SetObjectName(m_device.Get(), VK_OBJECT_TYPE_DEVICE, m_device.Get(), "MainDevice");

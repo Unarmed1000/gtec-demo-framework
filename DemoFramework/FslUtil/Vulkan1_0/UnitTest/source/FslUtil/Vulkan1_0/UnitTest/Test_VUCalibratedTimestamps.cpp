@@ -78,7 +78,7 @@ TEST_F(TestFixtureFslUtil_Vulkan1_0_VUCalibratedTimestamps, Default)
 
 TEST_F(TestFixtureFslUtil_Vulkan1_0_VUCalibratedTimestamps, Construct_NullHandles)
 {
-  EXPECT_THROW(VUCalibratedTimestamps(VK_NULL_HANDLE, VK_NULL_HANDLE, VK_NULL_HANDLE), std::invalid_argument);
+  EXPECT_THROW(VUCalibratedTimestamps(VK_NULL_HANDLE, VK_NULL_HANDLE, VK_NULL_HANDLE, VUCalibratedTimestampsApi::Khr), std::invalid_argument);
 }
 
 
@@ -92,7 +92,7 @@ TEST_F(TestFixtureFslUtil_Vulkan1_0_VUCalibratedTimestamps, Construct_ExtensionN
   }
   const VUDevice device = CreateDevice(m_physicalDevice, 0, nullptr);
 
-  const VUCalibratedTimestamps calibratedTimestamps(m_instance.Get(), m_physicalDevice, device.Get());
+  const VUCalibratedTimestamps calibratedTimestamps(m_instance.Get(), m_physicalDevice, device.Get(), VUCalibratedTimestampsApi::Disabled);
 
   EXPECT_FALSE(calibratedTimestamps.IsSupported());
   EXPECT_FALSE(calibratedTimestamps.HasEntryPoint());
@@ -110,10 +110,12 @@ TEST_F(TestFixtureFslUtil_Vulkan1_0_VUCalibratedTimestamps, TryGet_HostTimeIsThe
     return;
   }
   const char* pszExtensionName = VK_KHR_CALIBRATED_TIMESTAMPS_EXTENSION_NAME;
+  VUCalibratedTimestampsApi api = VUCalibratedTimestampsApi::Khr;
   if (!PhysicalDeviceUtil::IsDeviceExtensionsAvailable(m_physicalDevice, 1, &pszExtensionName))
   {
     // The EXT version has the same entry points under another name
     pszExtensionName = "VK_EXT_calibrated_timestamps";
+    api = VUCalibratedTimestampsApi::Ext;
     if (!PhysicalDeviceUtil::IsDeviceExtensionsAvailable(m_physicalDevice, 1, &pszExtensionName))
     {
       SkipTest("TryGet_HostTimeIsTheFrameworkClock", "calibrated timestamps are not supported");
@@ -122,7 +124,7 @@ TEST_F(TestFixtureFslUtil_Vulkan1_0_VUCalibratedTimestamps, TryGet_HostTimeIsThe
   }
   const VUDevice device = CreateDevice(m_physicalDevice, 1, &pszExtensionName);
 
-  const VUCalibratedTimestamps calibratedTimestamps(m_instance.Get(), m_physicalDevice, device.Get());
+  const VUCalibratedTimestamps calibratedTimestamps(m_instance.Get(), m_physicalDevice, device.Get(), api);
   ASSERT_TRUE(calibratedTimestamps.HasEntryPoint());
   if (!calibratedTimestamps.IsSupported())
   {

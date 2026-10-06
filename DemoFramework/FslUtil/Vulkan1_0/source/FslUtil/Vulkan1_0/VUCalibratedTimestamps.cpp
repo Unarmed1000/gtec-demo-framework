@@ -40,16 +40,12 @@ namespace Fsl::Vulkan
   namespace
   {
     //! The time domains that can be calibrated (empty if the entry point was not found)
-    std::vector<VkTimeDomainKHR> GetCalibrateableTimeDomains(const VkInstance instance, const VkPhysicalDevice physicalDevice)
+    //! @param pszName the name of the entry point of the extension the device was created with
+    std::vector<VkTimeDomainKHR> GetCalibrateableTimeDomains(const VkInstance instance, const VkPhysicalDevice physicalDevice,
+                                                             const char* const pszName)
     {
-      // The loader does not export the entry points of the extension, so they are looked up. The EXT version has the same signature.
-      auto pfnGetTimeDomains = reinterpret_cast<PFN_vkGetPhysicalDeviceCalibrateableTimeDomainsKHR>(
-        vkGetInstanceProcAddr(instance, "vkGetPhysicalDeviceCalibrateableTimeDomainsKHR"));
-      if (pfnGetTimeDomains == nullptr)
-      {
-        pfnGetTimeDomains = reinterpret_cast<PFN_vkGetPhysicalDeviceCalibrateableTimeDomainsKHR>(
-          vkGetInstanceProcAddr(instance, "vkGetPhysicalDeviceCalibrateableTimeDomainsEXT"));
-      }
+      // The loader does not export the entry points of the extension, so it is looked up. The EXT version has the same signature.
+      const auto pfnGetTimeDomains = reinterpret_cast<PFN_vkGetPhysicalDeviceCalibrateableTimeDomainsKHR>(vkGetInstanceProcAddr(instance, pszName));
       if (pfnGetTimeDomains == nullptr)
       {
         return {};
@@ -72,7 +68,8 @@ namespace Fsl::Vulkan
   }
 
 
-  VUCalibratedTimestamps::VUCalibratedTimestamps(const VkInstance instance, const VkPhysicalDevice physicalDevice, const VkDevice device)
+  VUCalibratedTimestamps::VUCalibratedTimestamps(const VkInstance instance, const VkPhysicalDevice physicalDevice, const VkDevice device,
+                                                 const VUCalibratedTimestampsApi api)
     : m_device(device)
     , m_performanceCounterFrequency(HighResolutionTimer().GetNativeTickFrequency())
   {
@@ -80,19 +77,26 @@ namespace Fsl::Vulkan
     {
       throw std::invalid_argument("instance, physicalDevice and device can not be VK_NULL_HANDLE");
     }
-
-    m_pfnGetCalibratedTimestamps = reinterpret_cast<PFN_vkGetCalibratedTimestampsKHR>(vkGetDeviceProcAddr(device, "vkGetCalibratedTimestampsKHR"));
-    if (m_pfnGetCalibratedTimestamps == nullptr)
+    if (api == VUCalibratedTimestampsApi::Disabled)
     {
-      m_pfnGetCalibratedTimestamps = reinterpret_cast<PFN_vkGetCalibratedTimestampsKHR>(vkGetDeviceProcAddr(device, "vkGetCalibratedTimestampsEXT"));
-    }
-    if (m_pfnGetCalibratedTimestamps == nullptr)
-    {
-      FSLLOG3_WARNING("The calibrated timestamps entry point was not found, was the device created with the extension enabled?");
       return;
     }
 
-    const std::vector<VkTimeDomainKHR> timeDomains = GetCalibrateableTimeDomains(instance, physicalDevice);
+    // Only the entry points of the extension the device was created with are asked for. The extension has two names, and a driver
+    // that has it under the old name need not know the entry points of the new one: what it then hands out for such a name can
+    // not be relied on, so the other name is never tried.
+    const bool isKhr = api == VUCalibratedTimestampsApi::Khr;
+    const char* const pszGetTimestamps = isKhr ? "vkGetCalibratedTimestampsKHR" : "vkGetCalibratedTimestampsEXT";
+    const char* const pszGetTimeDomains = isKhr ? "vkGetPhysicalDeviceCalibrateableTimeDomainsKHR" : "vkGetPhysicalDeviceCalibrateableTimeDomainsEXT";
+
+    m_pfnGetCalibratedTimestamps = reinterpret_cast<PFN_vkGetCalibratedTimestampsKHR>(vkGetDeviceProcAddr(device, pszGetTimestamps));
+    if (m_pfnGetCalibratedTimestamps == nullptr)
+    {
+      FSLLOG3_WARNING("The entry point {} was not found, was the device created with the extension enabled?", pszGetTimestamps);
+      return;
+    }
+
+    const std::vector<VkTimeDomainKHR> timeDomains = GetCalibrateableTimeDomains(instance, physicalDevice, pszGetTimeDomains);
     const auto contains = [&timeDomains](const VkTimeDomainKHR timeDomain)
     { return std::find(timeDomains.begin(), timeDomains.end(), timeDomain) != timeDomains.end(); };
     m_isSupported = contains(VK_TIME_DOMAIN_DEVICE_KHR) && contains(TimeDomainUtil::GetHostTimeDomain());
@@ -153,7 +157,8 @@ namespace Fsl::Vulkan
 
 #else
 
-  VUCalibratedTimestamps::VUCalibratedTimestamps(const VkInstance /*instance*/, const VkPhysicalDevice /*physicalDevice*/, const VkDevice device)
+  VUCalibratedTimestamps::VUCalibratedTimestamps(const VkInstance /*instance*/, const VkPhysicalDevice /*physicalDevice*/, const VkDevice device,
+                                                 const VUCalibratedTimestampsApi /*api*/)
     : m_device(device)
     , m_performanceCounterFrequency(HighResolutionTimer().GetNativeTickFrequency())
   {

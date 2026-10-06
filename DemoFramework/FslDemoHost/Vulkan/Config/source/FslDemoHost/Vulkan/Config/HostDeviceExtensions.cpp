@@ -145,14 +145,18 @@ namespace Fsl::Vulkan
   // Calibrated timestamps: relates the clock of the device to the clock of the host. The extension has no feature struct.
   void HostDeviceExtensions::SelectCalibratedTimestamps(const VkPhysicalDevice physicalDevice, std::vector<FeatureRequest>& rExtensionRequests)
   {
-    const char* const pszExtensionName =
-      IsDeviceExtensionAvailable(physicalDevice, LocalConfig::CalibratedTimestampsKHR)
-        ? LocalConfig::CalibratedTimestampsKHR
-        : (IsDeviceExtensionAvailable(physicalDevice, LocalConfig::CalibratedTimestampsEXT) ? LocalConfig::CalibratedTimestampsEXT : nullptr);
-    if (pszExtensionName != nullptr)
+    // The extension has two names. The one that is enabled is remembered, as the entry points of the device are the ones of that name.
+    if (IsDeviceExtensionAvailable(physicalDevice, LocalConfig::CalibratedTimestampsKHR))
     {
-      rExtensionRequests.emplace_back(pszExtensionName, FeatureRequirement::Mandatory);
+      rExtensionRequests.emplace_back(LocalConfig::CalibratedTimestampsKHR, FeatureRequirement::Mandatory);
       m_features.CalibratedTimestamps = true;
+      m_features.CalibratedTimestampsApi = VUCalibratedTimestampsApi::Khr;
+    }
+    else if (IsDeviceExtensionAvailable(physicalDevice, LocalConfig::CalibratedTimestampsEXT))
+    {
+      rExtensionRequests.emplace_back(LocalConfig::CalibratedTimestampsEXT, FeatureRequirement::Mandatory);
+      m_features.CalibratedTimestamps = true;
+      m_features.CalibratedTimestampsApi = VUCalibratedTimestampsApi::Ext;
     }
   }
 

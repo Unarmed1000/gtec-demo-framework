@@ -1,5 +1,5 @@
-#ifndef FSLDEMOHOST_VULKAN_CONFIG_VULKANHOSTDEVICEFEATURES_HPP
-#define FSLDEMOHOST_VULKAN_CONFIG_VULKANHOSTDEVICEFEATURES_HPP
+#ifndef FSLUTIL_VULKAN1_0_VUCALIBRATEDTIMESTAMPSAPI_HPP
+#define FSLUTIL_VULKAN1_0_VUCALIBRATEDTIMESTAMPSAPI_HPP
 //****************************************************************************************************************************************************
 //* BSD 3-Clause License
 //*
@@ -22,30 +22,20 @@
 //* EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //****************************************************************************************************************************************************
 
-#include <FslUtil/Vulkan1_0/Debug/VUDeviceFault.hpp>
-#include <FslUtil/Vulkan1_0/VUCalibratedTimestampsApi.hpp>
-
 namespace Fsl::Vulkan
 {
-  //! The optional device extensions the host enabled on the device (see HostDeviceExtensions).
-  //! They are all optional, so check before using what they provide.
-  struct VulkanHostDeviceFeatures
+  //! The calibrated timestamps extension that is enabled on a device. VK_KHR_calibrated_timestamps is VK_EXT_calibrated_timestamps
+  //! under a new name: the same structures and values, and the same entry points with KHR in place of EXT in their names.
+  //! A device has the entry points of the extension it was created with. The ones of the other name are not asked for: a driver need
+  //! not know them, and what it hands out for a name of a extension that is not enabled can not be relied on.
+  enum class VUCalibratedTimestampsApi
   {
-    //! The device fault extension that was enabled with its deviceFault feature (Disabled if none)
-    VUDeviceFaultApi DeviceFault{VUDeviceFaultApi::Disabled};
-    //! True if VK_KHR_calibrated_timestamps (or the EXT version) was enabled, see VUCalibratedTimestamps
-    bool CalibratedTimestamps{false};
-    //! Which of the two was enabled (Disabled if none): the entry points of a device are the ones of the name it was created with
-    VUCalibratedTimestampsApi CalibratedTimestampsApi{VUCalibratedTimestampsApi::Disabled};
-    //! True if VK_EXT_present_timing and VK_KHR_present_id2 were enabled with their features. A swapchain can then report when its images were
-    //! presented if its surface supports that too, see VUSwapchainPresentTiming.
-    bool PresentTiming{false};
-    //! True if the presentAtRelativeTime feature of VK_EXT_present_timing was enabled as well. A present can then be given a target time
-    //! relative to the present before it if its surface supports that too, see VUSwapchainPresentTiming::TryEnablePresentAtRelativeTime.
-    bool PresentAtRelativeTime{false};
-    //! True if VK_KHR_present_mode_fifo_latest_ready (or the EXT version) was enabled with its feature, so a swapchain can use that present
-    //! mode if its surface has it
-    bool PresentModeFifoLatestReady{false};
+    //! No calibrated timestamps extension is enabled
+    Disabled,
+    //! VK_EXT_calibrated_timestamps: vkGetCalibratedTimestampsEXT and vkGetPhysicalDeviceCalibrateableTimeDomainsEXT
+    Ext,
+    //! VK_KHR_calibrated_timestamps: vkGetCalibratedTimestampsKHR and vkGetPhysicalDeviceCalibrateableTimeDomainsKHR
+    Khr
   };
 }
 
