@@ -71,7 +71,7 @@ namespace Fsl::Vulkan
 
 
   HostDeviceExtensions::HostDeviceExtensions(const VkPhysicalDevice physicalDevice, std::vector<FeatureRequest>& rExtensionRequests,
-                                             const OptionUserChoice presentTiming)
+                                             const OptionUserChoice presentTiming, const bool presentWait)
   {
     if (physicalDevice == VK_NULL_HANDLE)
     {
@@ -90,12 +90,19 @@ namespace Fsl::Vulkan
     {
       FSLLOG3_INFO("Present timing: disabled by user");
     }
+    if (presentWait)
+    {
+      // After present timing, which enables the present ids as well
+      SelectPresentWait(physicalDevice, rExtensionRequests);
+      FSLLOG3_WARNING_IF(!m_features.PresentWait, "Present wait was requested but is unsupported (it needs VK_KHR_present_wait2)");
+    }
 
     FSLLOG3_VERBOSE("Device fault: {}", m_features.DeviceFault == VUDeviceFaultApi::Khr
                                           ? "VK_KHR_device_fault"
                                           : (m_features.DeviceFault == VUDeviceFaultApi::Ext ? "VK_EXT_device_fault" : "unsupported"));
     FSLLOG3_VERBOSE("Calibrated timestamps: {}", m_features.CalibratedTimestamps ? "supported" : "unsupported");
     FSLLOG3_VERBOSE("Present timing: {}", m_features.PresentTiming ? "supported by the device" : "unsupported");
+    FSLLOG3_VERBOSE_IF(presentWait, "Present wait: {}", m_features.PresentWait ? "supported by the device" : "unsupported");
     FSLLOG3_VERBOSE("Present mode FIFO latest ready: {}", m_features.PresentModeFifoLatestReady ? "supported by the device" : "unsupported");
   }
 
@@ -241,6 +248,50 @@ namespace Fsl::Vulkan
     PushFront(m_presentTimingFeatures);
 
     m_features.PresentTiming = true;
+#endif
+  }
+
+
+  // Present wait: lets a app wait until a present of a swapchain was presented.
+  void HostDeviceExtensions::SelectPresentWait([[maybe_unused]] const VkPhysicalDevice physicalDevice,
+                                               [[maybe_unused]] std::vector<FeatureRequest>& rExtensionRequests)
+  {
+#ifdef FSL_VULKAN_HOST_PRESENT_WAIT_SUPPORTED
+    // The instance extension is requested as optional by the host, so if it is available it is enabled.
+    const char* const pszSurfaceCapabilities2 = VK_KHR_GET_SURFACE_CAPABILITIES_2_EXTENSION_NAME;
+    if (!InstanceUtil::IsInstanceExtensionsAvailable(1, &pszSurfaceCapabilities2))
+    {
+      return;
+    }
+    // It depends on present id 2. The older VK_KHR_present_wait (with VK_KHR_present_id) is another extension with entry points and
+    // structs of its own and is not used.
+    if (!IsDeviceExtensionAvailable(physicalDevice, VK_KHR_PRESENT_ID_2_EXTENSION_NAME) ||
+        !IsDeviceExtensionAvailable(physicalDevice, VK_KHR_PRESENT_WAIT_2_EXTENSION_NAME))
+    {
+      return;
+    }
+    if (QueryFeatures<VkPhysicalDevicePresentId2FeaturesKHR>(physicalDevice, VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PRESENT_ID_2_FEATURES_KHR)
+            .presentId2 != VK_TRUE ||
+        QueryFeatures<VkPhysicalDevicePresentWait2FeaturesKHR>(physicalDevice, VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PRESENT_WAIT_2_FEATURES_KHR)
+            .presentWait2 != VK_TRUE)
+    {
+      return;
+    }
+
+    if (!HasRequest(rExtensionRequests, VK_KHR_PRESENT_ID_2_EXTENSION_NAME))
+    {
+      // Present timing did not enable the present ids
+      rExtensionRequests.emplace_back(VK_KHR_PRESENT_ID_2_EXTENSION_NAME, FeatureRequirement::Mandatory);
+      m_presentId2Features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PRESENT_ID_2_FEATURES_KHR;
+      m_presentId2Features.presentId2 = VK_TRUE;
+      PushFront(m_presentId2Features);
+    }
+    rExtensionRequests.emplace_back(VK_KHR_PRESENT_WAIT_2_EXTENSION_NAME, FeatureRequirement::Mandatory);
+    m_presentWait2Features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PRESENT_WAIT_2_FEATURES_KHR;
+    m_presentWait2Features.presentWait2 = VK_TRUE;
+    PushFront(m_presentWait2Features);
+
+    m_features.PresentWait = true;
 #endif
   }
 }

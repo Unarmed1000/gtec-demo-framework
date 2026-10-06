@@ -71,6 +71,15 @@ namespace Fsl
     // The number of images the swapchain is asked for at least (zero = the default of the app base: one more than the surface
     // needs and at least three). The surface decides what it gives.
     uint32_t SwapchainImages{0};
+
+    // The app base can wait until an earlier present was presented before it starts a frame (VK_KHR_present_wait2, where the device and
+    // the surface have it). Zero (the default): it does not wait. One: it waits for the present of the frame before, two: for the
+    // present before that one, so one present may be waiting for the display while the next frame is made.
+    uint32_t PresentWait{0};
+
+    // If true the app base gives the acquire of a swapchain image a fence and waits for it before it goes on with the frame. So the
+    // frame waits on the CPU for the image to be free, where it else is the GPU work of the frame that waits for it.
+    bool AcquireFenceWait{false};
   };
 }
 

@@ -44,6 +44,7 @@
 #include <FslUtil/Vulkan1_0/VUImageMemoryView.hpp>
 #include <FslUtil/Vulkan1_0/VUSwapchainKHR.hpp>
 #include <FslUtil/Vulkan1_0/VUSwapchainPresentTiming.hpp>
+#include <FslUtil/Vulkan1_0/VUSwapchainPresentWait.hpp>
 #include <RapidVulkan/CommandBuffers.hpp>
 #include <RapidVulkan/CommandPool.hpp>
 #include <RapidVulkan/Fence.hpp>
@@ -52,6 +53,7 @@
 #include <RapidVulkan/RenderPass.hpp>
 #include <RapidVulkan/Semaphore.hpp>
 #include <vulkan/vulkan.h>
+#include <array>
 #include <cassert>
 #include <memory>
 #include <utility>
@@ -95,6 +97,8 @@ namespace Fsl
       struct FrameDrawRecord
       {
         RapidVulkan::Semaphore ImageAcquiredSemaphore;
+        //! Given to vkAcquireNextImageKHR and waited for right after it (only valid if the user asked for that wait)
+        RapidVulkan::Fence ImageAcquiredFence;
         RapidVulkan::Fence QueueSubmitFence;
         //! Given to vkQueuePresentKHR (only valid if swapchain maintenance1 is enabled)
         RapidVulkan::Fence PresentFence;
@@ -110,6 +114,7 @@ namespace Fsl
 
         FrameDrawRecord(FrameDrawRecord&& other) noexcept
           : ImageAcquiredSemaphore(std::move(other.ImageAcquiredSemaphore))
+          , ImageAcquiredFence(std::move(other.ImageAcquiredFence))
           , QueueSubmitFence(std::move(other.QueueSubmitFence))
           , PresentFence(std::move(other.PresentFence))
           , AssignedSwapImageIndex(other.AssignedSwapImageIndex)
@@ -128,6 +133,7 @@ namespace Fsl
             Reset();
 
             ImageAcquiredSemaphore = std::move(other.ImageAcquiredSemaphore);
+            ImageAcquiredFence = std::move(other.ImageAcquiredFence);
             QueueSubmitFence = std::move(other.QueueSubmitFence);
             PresentFence = std::move(other.PresentFence);
             AssignedSwapImageIndex = other.AssignedSwapImageIndex;
@@ -150,6 +156,7 @@ namespace Fsl
           AssignedSwapImageIndex = 0;
           PresentFence.Reset();
           QueueSubmitFence.Reset();
+          ImageAcquiredFence.Reset();
           ImageAcquiredSemaphore.Reset();
         }
       };
@@ -326,6 +333,14 @@ namespace Fsl
       Vulkan::VUSwapchainPresentTiming m_presentTiming;
       //! The measurements that became available since the previous frame
       std::vector<Vulkan::VUPresentTimingRecord> m_presentTimingRecords;
+      //! Waits until a present of the swapchain was presented (only enabled if the user asked for it and it is supported)
+      Vulkan::VUSwapchainPresentWait m_presentWait;
+      //! The ids of the last presents the swapchain accepted, the newest first, and how many of them are valid. They are what
+      //! m_presentWait can wait for.
+      std::array<uint64_t, 4> m_presentWaitIds{};
+      uint32_t m_presentWaitIdCount{0};
+      //! What the last wait for a present returned, so a change can be logged
+      VkResult m_lastPresentWaitResult{VK_SUCCESS};
       //! The id of the last present (the presents are numbered from one)
       uint64_t m_presentCounter{0};
       //! True if the app wants its presents measured (it starts as DemoAppVulkanSetup::PresentTiming)
@@ -514,9 +529,11 @@ namespace Fsl
 
     private:
       static std::vector<FrameDrawRecord> CreateFrameSyncObjects(const VkDevice device, const uint32_t maxFramesInFlight,
-                                                                 const bool createPresentFence);
+                                                                 const bool createPresentFence, const bool createImageAcquiredFence);
       //! Wait for the frames present fence (if pending) and reset it
       AppDrawResult TryWaitForPresentFence(FrameDrawRecord& rFrame);
+      //! If the user asked for it: wait until the present a number of frames back was presented. It is done before a frame starts.
+      void WaitForEarlierPresent();
       //! Submit the command buffer of the frame
       void SubmitFrame(const FrameDrawRecord& frameRecord, const SwapchainRecord& swapchainRecord, const uint32_t currentFrameIndex);
       void BuildSwapchainImageView(SwapchainRecord& rSwapchainRecord, const uint32_t swapBufferIndex);

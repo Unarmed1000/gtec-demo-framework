@@ -26,7 +26,9 @@ page was run on a Wayland device with a real display.
 ## The configurations, best first
 
 What a device and its window system have decides how well a frame can be held for more than one refresh. This is the short version of
-the lists below. At one refresh per frame every tier is the same: a FIFO present holds the frame and nothing else is needed.
+the lists below. At one refresh per frame every tier holds a frame the same way: a FIFO present holds it and nothing else is needed
+for that. How many presents wait for the display is a question of its own, also at one refresh per frame, and the tiers do not answer
+it: see [Keeping the frame loop from getting ahead of the display](#keeping-the-frame-loop-from-getting-ahead-of-the-display).
 
 | Tier | What the configuration has | How a frame is held | Who decides when it is shown | Status |
 |---|---|---|---|---|
@@ -62,9 +64,9 @@ From the least to the most.
 
 | Level | Extensions | What it gives | What the framework does | Status |
 |---|---|---|---|---|
-| 0 | Core 1.3 and `VK_KHR_swapchain`, FIFO | No time goes in and none comes out. Every present is shown for one refresh. | One refresh per frame is held by the present. A frame held longer needs one of the methods [below](#holding-a-frame-for-more-than-one-refresh). | measured |
+| 0 | Core 1.3 and `VK_KHR_swapchain`, FIFO | No time goes in and none comes out. Every present is shown for one refresh. | One refresh per frame is held by the present. A frame held longer needs one of the methods [below](#holding-a-frame-for-more-than-one-refresh). `--VkAcquireFenceWait true` makes a frame wait for its swapchain image to be free, see [further down](#keeping-the-frame-loop-from-getting-ahead-of-the-display). | measured |
 | 1 | `VK_KHR_present_id` or `VK_KHR_present_id2`; `VK_EXT_swapchain_maintenance1` or `VK_KHR_swapchain_maintenance1` | A number per present, and a fence per present that signals when the presentation engine is done with it. No display time, no timed present. | Present fences are used when available (`--VkSwapchainMaintenance1`). `VK_KHR_present_id2` numbers the presents for level 4. `VK_KHR_present_id` is not used. | measured (no effect on the pacing) |
-| 2 | `VK_KHR_present_wait` or `VK_KHR_present_wait2` (with a present id) | The app can block until a given present was shown: a wait that follows the display without the window system, and a coarse display time. | Nothing. | not built |
+| 2 | `VK_KHR_present_wait` or `VK_KHR_present_wait2` (with a present id) | The app can block until a given present was presented: a wait that follows the display without the window system, and a coarse display time. | With `VK_KHR_present_wait2` and `--VkPresentWait <n>` a frame of `DemoAppVulkanBasic` does not start before the present `n` frames back was presented, see [below](#keeping-the-frame-loop-from-getting-ahead-of-the-display). Off by default. `VK_KHR_present_wait` is not used, and neither is used as a vsync signal. | measured (one run per case) |
 | 3 | `VK_GOOGLE_display_timing` (Android) | The refresh duration, a desired present time per present (absolute) and past presentation times. | Nothing. | not built |
 | 4 | `VK_EXT_present_timing` (with `VK_KHR_present_id2` and `VK_KHR_calibrated_timestamps`) | A target time per present, the time of each present stage afterwards (queue operations end, request dequeued, first pixel out, first pixel visible) and the refresh duration. | The stages are measured and logged. A relative target time holds a frame (`--Pacer.Hold schedule`). The display times can be given to the pacer (`--Pacer.PresentFeedback`), which counts them and paces the same. The absolute target time is not used. | measured |
 
@@ -299,6 +301,73 @@ it would work at level 0 of both lists, at the cost of a copy and a present per 
 
 Level 2 of the Vulkan list (`VK_KHR_present_wait`) could serve as the vsync signal where the window system has none. It has not been
 tried.
+
+## Keeping the frame loop from getting ahead of the display
+
+Holding a frame is one question, how many presents wait for the display is another, and it is there at one refresh per frame too.
+A loop that presents a frame per refresh keeps every present that is waiting: when the display takes a frame less than the loop
+makes (a frame that was late, the first presents of a new window, a swapchain that was recreated) one more present waits from
+then on, and each is a refresh of latency. A FIFO swapchain need not stop the loop: on the Windows system that was measured
+`vkAcquireNextImageKHR` and `vkQueuePresentKHR` return at once ([FramePacingCapture.md](FramePacingCapture.md)).
+
+Two waits of `DemoAppVulkanBasic` stop the loop there. Both are off by default and are for every Vulkan app. They are a way to do
+it: when to use one and for which present is something a frame pacer decides.
+
+| Option | Needs | What the frame waits for | Where in the frame |
+|---|---|---|---|
+| `--VkAcquireFenceWait true` | nothing, it is core Vulkan with a swapchain | The swapchain image it acquired to be free. `vkAcquireNextImageKHR` can return a image the presentation engine is not done with; without the option only the GPU work of the frame waits for it. | Right after the acquire |
+| `--VkPresentWait <n>` | `VK_KHR_present_wait2` and `VK_KHR_present_id2` on the device and the surface | The present `n` frames back to be presented (`vkWaitForPresent2KHR`). 1: the present of the frame before, so no present waits while a frame is made. 2: one may wait. | First, before the app holds the start of the frame |
+
+What to know about them:
+
+- The fence of the acquire only holds the loop to the display as far as the driver keeps a image until it left the display. How many
+  presents can wait is then bound by the images of the swapchain (`--VkSwapchainImages`). A swapchain that keeps a image until it
+  left the display would have `n - 2` of `n` images waiting behind the one that is shown. On the system that was measured `n`
+  presents wait (three with three images, two with two, the table below): what a image holds is taken over when it is presented, the
+  presents wait below the swapchain, and the image count bounds them there.
+- When `vkWaitForPresent2KHR` returns in relation to the image being on the display is left to the window system by the
+  specification, so it has to be measured against the display times (`firstPixelOutTicks`) before it is relied on. The wait ends
+  after 250 ms at the latest: a present of a window that is not shown may never be presented.
+- Only a present the swapchain accepted is waited for, and a new swapchain starts with nothing to wait for.
+- The log has both: `waitForPresentBeginTicks`, `waitForPresentEndTicks`, `waitForPresentId`, `waitForPresentResult`,
+  `acquireFenceWaitBeginTicks` and `acquireFenceWaitEndTicks`, the facts `vulkan.presentWaitOption`, `vulkan.acquireFenceWaitOption`
+  and `vulkan.uses.VK_KHR_present_wait2`, and `presentWait` and `acquireFenceWait` in the `swapchainCreated` event (what the
+  swapchain really does: `presentWait` is 0 when the surface can not).
+
+First measurements (Windows, NVIDIA, 240 Hz, variable refresh off and watched, a window of 1600x900, one run of 2400 frames each, so
+the order of close ones says nothing). "Waiting" is the earlier presents that were not on the display yet when a frame was
+presented, the latency is from the start of a frame to its first pixel out:
+
+| | Waiting | Latency, refreshes (median, 99 %) | Presents without a display time | Shown for one refresh |
+|---|---|---|---|---|
+| **GPU work of 90 % of a refresh, swap interval one, the late profile held by the vsync** | | | | |
+| no wait | 1 to 3 | 2.98, 4.98 | 7.6 % | 1737 of 2117 |
+| `--VkPresentWait 1` | 0 | 1.75, 1.97 | none | 5 of 2291: every frame is shown for two |
+| `--VkPresentWait 2` | 1 | 1.72, 1.97 | none | 2257 of 2291 |
+| `--VkAcquireFenceWait true` | 3 | 3.91, 3.94 | 0.1 % | 2284 of 2288 |
+| `--VkAcquireFenceWait true --VkSwapchainImages 2` | 2 | 2.92, 2.94 | 0.2 % | 2278 of 2287 |
+| **GPU work of 20 % of a refresh, the pacer off** | | | | |
+| no wait | 2 | 2.68, 2.70 | none | all |
+| `--VkPresentWait 1` | 0 | 0.75, 0.97 | none | 2288 of 2291 |
+| `--VkPresentWait 2` | 1 | 1.76, 1.94 | none | all |
+| `--VkAcquireFenceWait true` | 3 | 3.91, 3.93 | none | all |
+| **GPU work of 20 %, the pacer on (early profile, held by the vsync)** | | | | |
+| no wait, with the one-time wait of the sample (`--Pacer.Drain`, the default) and without it | 1 | 2.30, 2.31 | 1 present | 2287 and 2289 of 2290 |
+| `--Pacer.Drain 0 --VkPresentWait 1` | 0 | 0.84, 0.98 | none | 2284 of 2291 |
+
+What they say, for this system:
+
+- `vkWaitForPresent2KHR` follows the display: in the 11,460 waits of the five runs above it never returned before the first pixel out
+  of the present it waited for, and 1.0 ms after it at the median (0.06 ms at 1 % of the waits, 2.4 ms at 99 %). Every wait
+  succeeded.
+- The present wait keeps the number of presents that wait at what it was asked for, and the latency follows. Waiting for the
+  present of the frame before leaves no time to work ahead: with work that fills a refresh every frame is then shown for two. Waiting
+  for the one before that keeps one refresh per frame.
+- The fence of the acquire steadies the loop (no frame whose GPU work starts late, next to no present without a display time), and the
+  presents that wait then sit at the number of swapchain images: it is the back-pressure of a full queue, with the most latency and
+  not less of it.
+- The frame starts are uneven with the present wait (2.4 to 6.0 ms apart at 240 Hz, the display times are one refresh apart), as the
+  wait returns at a varying time after the image went out.
 
 ## How the way to hold a frame is resolved
 

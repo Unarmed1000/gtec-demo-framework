@@ -35,6 +35,12 @@
 #define FSL_VULKAN_HOST_PRESENT_TIMING_SUPPORTED 1
 #endif
 
+#if defined(VK_KHR_present_wait2) && defined(VK_KHR_present_id2) && defined(VK_KHR_get_surface_capabilities2)
+//! Defined when the Vulkan headers the framework is built with know the extensions needed to wait for a present
+// NOLINTNEXTLINE(cppcoreguidelines-macro-usage)
+#define FSL_VULKAN_HOST_PRESENT_WAIT_SUPPORTED 1
+#endif
+
 namespace Fsl::Vulkan
 {
   //! Selects the optional device extensions the host wants (the ones the physical device supports) and owns the feature structs that enable
@@ -50,9 +56,15 @@ namespace Fsl::Vulkan
 #ifdef VK_EXT_device_fault
     VkPhysicalDeviceFaultFeaturesEXT m_faultFeaturesEXT{};
 #endif
-#ifdef FSL_VULKAN_HOST_PRESENT_TIMING_SUPPORTED
+#ifdef VK_KHR_present_id2
+    //! Present timing and present wait both number the presents with it
     VkPhysicalDevicePresentId2FeaturesKHR m_presentId2Features{};
+#endif
+#ifdef FSL_VULKAN_HOST_PRESENT_TIMING_SUPPORTED
     VkPhysicalDevicePresentTimingFeaturesEXT m_presentTimingFeatures{};
+#endif
+#ifdef FSL_VULKAN_HOST_PRESENT_WAIT_SUPPORTED
+    VkPhysicalDevicePresentWait2FeaturesKHR m_presentWait2Features{};
 #endif
 #ifdef VK_KHR_present_mode_fifo_latest_ready
     VkPhysicalDevicePresentModeFifoLatestReadyFeaturesKHR m_fifoLatestReadyFeatures{};
@@ -70,8 +82,10 @@ namespace Fsl::Vulkan
     //! @brief Examine what the physical device supports.
     //! @param rExtensionRequests the device extensions to enable are appended to this.
     //! @param presentTiming Off leaves the present timing extensions disabled.
+    //! @param presentWait true enables VK_KHR_present_wait2 where the device has it. It is only enabled when asked for, as nothing uses it
+    //!        unless the user asks for the wait.
     HostDeviceExtensions(const VkPhysicalDevice physicalDevice, std::vector<FeatureRequest>& rExtensionRequests,
-                         const OptionUserChoice presentTiming = OptionUserChoice::Default);
+                         const OptionUserChoice presentTiming = OptionUserChoice::Default, const bool presentWait = false);
 
     //! @brief Get the feature structs to add to the pNext chain of the device create info.
     //! @param pNext the chain to continue with after the feature structs (it becomes the tail of the returned chain).
@@ -88,6 +102,7 @@ namespace Fsl::Vulkan
     void SelectDeviceFault(const VkPhysicalDevice physicalDevice, std::vector<FeatureRequest>& rExtensionRequests);
     void SelectCalibratedTimestamps(const VkPhysicalDevice physicalDevice, std::vector<FeatureRequest>& rExtensionRequests);
     void SelectPresentTiming(const VkPhysicalDevice physicalDevice, std::vector<FeatureRequest>& rExtensionRequests);
+    void SelectPresentWait(const VkPhysicalDevice physicalDevice, std::vector<FeatureRequest>& rExtensionRequests);
     void SelectPresentModeFifoLatestReady(const VkPhysicalDevice physicalDevice, std::vector<FeatureRequest>& rExtensionRequests);
 
     template <typename TFeatureStruct>

@@ -66,6 +66,8 @@ namespace Fsl
         VkFramesInFlight,
         VkSwapchainImages,
         VkTimelineSemaphore,
+        VkPresentWait,
+        VkAcquireFenceWait,
       };
     };
 
@@ -216,6 +218,16 @@ namespace Fsl
                           "one starts, more lets the CPU start the next frames while the GPU works. Limited to what the app is configured "
                           "for and to the images of the swapchain. A app that is not written for it can render wrong with more than one.",
                           OptionGroup::Host);
+    rOptions.emplace_back("VkPresentWait", OptionArgument::OptionRequired, CommandId::VkPresentWait,
+                          "Before a frame starts the app base waits until an earlier present was presented (VK_KHR_present_wait2, where the "
+                          "device and the surface have it). 0 (the default): no wait. 1: the present of the frame before. 2: the present "
+                          "before that one, so one present may wait for the display while the next frame is made. At most 4.",
+                          OptionGroup::Host);
+    rOptions.emplace_back("VkAcquireFenceWait", OptionArgument::OptionRequired, CommandId::VkAcquireFenceWait,
+                          "true: the acquire of a swapchain image gets a fence and the app base waits for it before it goes on with the "
+                          "frame, so the frame waits on the CPU for the image to be free. false (the default): only the GPU work of the "
+                          "frame waits for the image.",
+                          OptionGroup::Host);
   }
 
 
@@ -304,6 +316,22 @@ namespace Fsl
         m_launchOptions.FramesInFlight = framesInFlight;
         return OptionParseResult::Parsed;
       }
+    case CommandId::VkPresentWait:
+      {
+        uint32_t presentWait = 0;
+        StringParseUtil::Parse(presentWait, strOptArg);
+        if (presentWait > 4u)
+        {
+          FSLLOG3_ERROR("VkPresentWait must be 0 to 4");
+          return OptionParseResult::Failed;
+        }
+        m_launchOptions.PresentWait = presentWait;
+        return OptionParseResult::Parsed;
+      }
+    case CommandId::VkAcquireFenceWait:
+      StringParseUtil::Parse(boolValue, strOptArg);
+      m_launchOptions.AcquireFenceWait = boolValue;
+      return OptionParseResult::Parsed;
     case CommandId::VkValidateFeatures:
       return Vulkan::ValidationFeatureUtil::TryParse(strOptArg, m_validationFeatures) ? OptionParseResult::Parsed : OptionParseResult::Failed;
     default:

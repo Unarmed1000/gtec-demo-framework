@@ -482,6 +482,12 @@ Column | Unit | Description
 `acquireReturnTicks` | ticks | When vkAcquireNextImageKHR returned
 `frameSlotWaitBeginTicks` | ticks | When the host began to wait for the frame slot of the frame: for the GPU to finish the frame that used the slot before, and for the present fence of that frame. It is before the acquire
 `frameSlotWaitEndTicks` | ticks | When the wait for the frame slot of the frame ended
+`waitForPresentBeginTicks` | ticks | When the host began to wait for an earlier present to be presented (vkWaitForPresent2KHR, `--VkPresentWait`). It is the first thing of a frame, before the app holds its start. Empty: the host did not wait
+`waitForPresentEndTicks` | ticks | When the wait for an earlier present ended
+`waitForPresentId` | id | The presentId of the present the host waited for
+`waitForPresentResult` | code | The VkResult of vkWaitForPresent2KHR (0: the present was presented, 2 is VK_TIMEOUT: it was not within the wait)
+`acquireFenceWaitBeginTicks` | ticks | When the host began to wait for the fence of the acquire: for the swapchain image to be free (`--VkAcquireFenceWait`). It is right after the acquire. Empty: the host did not wait
+`acquireFenceWaitEndTicks` | ticks | When the wait for the fence of the acquire ended
 `submitCallTicks` | ticks | When vkQueueSubmit was called for the frame: the GPU is asked to work on the frame from here
 `submitReturnTicks` | ticks | When vkQueueSubmit returned
 `presentCallTicks` | ticks | When vkQueuePresentKHR was called
@@ -583,7 +589,11 @@ So a log has these on the clock of the framework for every frame: the start and 
 and when it finished (`gpuWorkEndTicks`). Every wait of the sample is there with when it began, the time it aimed at and when
 it woke: the one before the start of a frame (`frameWaitStartTicks`, `frameWaitTargetTicks`, `frameStartTicks`) and the one
 before the present (`presentWaitBeginTicks`, `presentWaitTargetTicks`, `presentWaitEndTicks`). A Vulkan app also has the wait of
-the host for the frame slot (`frameSlotWaitBeginTicks`, `frameSlotWaitEndTicks`), which is where its loop waits for the GPU. The last one needs `VK_KHR_calibrated_timestamps` on Vulkan and a driver with
+the host for the frame slot (`frameSlotWaitBeginTicks`, `frameSlotWaitEndTicks`), which is where its loop waits for the GPU, and
+the two waits that are off unless asked for: for an earlier present to be presented (`waitForPresentBeginTicks`,
+`waitForPresentEndTicks`) and for the swapchain image to be free (`acquireFenceWaitBeginTicks`, `acquireFenceWaitEndTicks`), see
+[FramePacingPlatformSupport.md](FramePacingPlatformSupport.md#keeping-the-frame-loop-from-getting-ahead-of-the-display). Of the
+values at the start of this paragraph, `gpuWorkEndTicks` needs `VK_KHR_calibrated_timestamps` on Vulkan and a driver with
 timestamps on OpenGL ES (`GL_EXT_disjoint_timer_query` with bits for its timestamp counter): the app log says when it is
 missing and the column is empty then. The time of the GPU is on its own clock, which is related to the clock of the framework by
 reading both now and then.
@@ -602,12 +612,12 @@ in a log that is right): `frameWaitStartTicks`, `frameStartTicks`, `pacerOn`, `s
 
 Event | Details
 ---|---
-`fact` | `key=value`, something that holds for the whole run: `formatVersion`, `clock`, `clockNativeFrequency`, `utcNanoseconds` with the `utcClockTicks` it was read at (so a tick can be placed in wall clock time), `app`, `debugBuild`, `api`, `apiVersion`, the settings of the marker (`marker.*`), of the log (`log.openFrames`), the Vulkan device (`vulkan.deviceName`, `vendorId`, `deviceId`, `driverVersion`, `apiVersion`, `calibratedTimestamps`, `presentTimingDevice`, `presentTimingOption`) and the sample (`sample.presentMethod`, `sample.pacerSupported`, `sample.frameStartRow`, `sample.glFlush`).
+`fact` | `key=value`, something that holds for the whole run: `formatVersion`, `clock`, `clockNativeFrequency`, `utcNanoseconds` with the `utcClockTicks` it was read at (so a tick can be placed in wall clock time), `app`, `debugBuild`, `api`, `apiVersion`, the settings of the marker (`marker.*`), of the log (`log.openFrames`), the Vulkan device (`vulkan.deviceName`, `vendorId`, `deviceId`, `driverVersion`, `apiVersion`, `calibratedTimestamps`, `presentTimingDevice`, `presentTimingOption`, `presentWaitOption`, `acquireFenceWaitOption`) and the sample (`sample.presentMethod`, `sample.pacerSupported`, `sample.frameStartRow`, `sample.glFlush`).
 `column` | The name, the unit and the description of a column.
 `window` | The size and the DPI of the window, written when it changes.
 `display` | `refreshIntervalTicks`: the refresh interval of the display as the window system reports it (0 if it does not know), written when it changes.
 `runStarted`, `runCompleted` | A measured run of the marker: the run id, the sequence id, the name and the duration.
-`swapchainCreated` | Vulkan: the extent, the format, the present mode, the image counts, the flags and the frames in flight of a swapchain. More than one means the window was resized or the swapchain was lost.
+`swapchainCreated` | Vulkan: the extent, the format, the present mode, the image counts, the flags and the frames in flight of a swapchain, and the two waits it runs with (`presentWait`: the presents back the host waits for, 0 if it does not; `acquireFenceWait`). More than one means the window was resized or the swapchain was lost.
 `presentTiming` | Vulkan: if the presents of the swapchain are timed, the stages and the time domain of the surface and what it can schedule.
 `refreshProperties` | Vulkan: `refreshDuration` and `refreshInterval` of the swapchain and the refresh mode they stand for (`refreshMode` is `fixed`, `variable` or `unknown`), written when they change.
 `variableRefresh` | What the window knows about variable refresh on its display, written when an answer changes: `supported`, `enabled` and `active` are what the window system declares, `observed` is what was measured (each `yes`, `no` or `unknown`), `source` and `observedSource` are where they came from.

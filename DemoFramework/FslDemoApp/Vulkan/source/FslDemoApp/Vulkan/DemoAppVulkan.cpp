@@ -181,7 +181,8 @@ namespace Fsl
 
       // The other optional device extensions the host uses. Their feature structs go in front of the chain and are owned by hostDeviceExtensions,
       // which therefore has to live until the device has been created.
-      Vulkan::HostDeviceExtensions hostDeviceExtensions(m_physicalDevice.Device, hostExtensions, m_launchOptions.PresentTiming);
+      Vulkan::HostDeviceExtensions hostDeviceExtensions(m_physicalDevice.Device, hostExtensions, m_launchOptions.PresentTiming,
+                                                        m_launchOptions.PresentWait != 0u);
       pExtraDeviceCreateInfoNext = hostDeviceExtensions.LinkDeviceCreateInfoChain(pExtraDeviceCreateInfoNext);
 
       const auto deviceConfig =
