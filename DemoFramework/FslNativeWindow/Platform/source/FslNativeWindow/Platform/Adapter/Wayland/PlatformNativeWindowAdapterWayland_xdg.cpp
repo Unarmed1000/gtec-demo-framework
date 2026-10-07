@@ -32,7 +32,7 @@
 #include <FslBase/Log/Math/Pixel/FmtPxSize2D.hpp>
 #include <FslBase/Math/Pixel/TypeConverter_Math.hpp>
 #include <FslBase/Math/Vector2.hpp>
-#include <FslBase/Time/TimeSpanUtil.hpp>
+#include <FslBase/Time/NanosecondTimeSpanUtil.hpp>
 #include <FslBase/UncheckedNumericCast.hpp>
 #include <FslNativeWindow/Base/NativeWindowEventHelper.hpp>
 #include <FslNativeWindow/Base/NativeWindowSetup.hpp>
@@ -1743,7 +1743,7 @@ namespace Fsl
       return {};
     }
     NativeWindowVSyncInfo info = windowSystemContext->PresentationTime.GetVSyncInfo();
-    if (info.VSyncTime.Ticks() > 0 && info.RefreshPeriod.Ticks() <= 0)
+    if (info.VSyncTime.TotalNanoseconds() > 0 && info.RefreshPeriod.TotalNanoseconds() <= 0)
     {
       // The compositor gave no refresh period with the time, so the one of the mode of the output is used
       info.RefreshPeriod = TryGetNativeDisplayInfo().RefreshInterval;
@@ -1767,7 +1767,8 @@ namespace Fsl
     {
       return {};
     }
-    return NativeWindowDisplayInfo(TimeSpanUtil::FromFrequencyRational(static_cast<uint64_t>(pOutputInfo->CurrentRefreshMilliHz), 1000u));
+    return NativeWindowDisplayInfo(
+      NanosecondTimeSpanUtil::FromFrequencyRational(static_cast<uint64_t>(pOutputInfo->CurrentRefreshMilliHz), 1000u));
   }
 }
 #endif

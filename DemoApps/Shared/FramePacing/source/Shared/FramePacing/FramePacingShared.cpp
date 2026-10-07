@@ -38,6 +38,8 @@
 #include <FslNativeWindow/Base/INativeWindow.hpp>
 #include <FslNativeWindow/Base/NativeWindowDisplayInfo.hpp>
 #include <FslNativeWindow/Base/NativeWindowTimingSupport.hpp>
+#include <FslBase/Time/NanosecondTickCountUtil.hpp>
+#include <FslBase/Time/NanosecondTimeSpanUtil.hpp>
 #include <FslNativeWindow/Base/NativeWindowVSyncInfo.hpp>
 #include <FslNativeWindow/Base/NativeWindowVariableRefreshInfo.hpp>
 #include <FslNativeWindow/Base/VirtualKey.hpp>
@@ -1203,8 +1205,8 @@ namespace Fsl
     {    // When the display refreshes according to the window system, read once per frame
       const auto window = m_window.lock();
       const NativeWindowVSyncInfo vsyncInfo = window ? window->TryGetVSyncInfo() : NativeWindowVSyncInfo();
-      m_vsyncTime = vsyncInfo.IsValid() ? vsyncInfo.VSyncTime : TickCount();
-      m_vsyncPeriod = vsyncInfo.IsValid() ? vsyncInfo.RefreshPeriod : TimeSpan();
+      m_vsyncTime = vsyncInfo.IsValid() ? NanosecondTickCountUtil::ToTickCount(vsyncInfo.VSyncTime) : TickCount();
+      m_vsyncPeriod = vsyncInfo.IsValid() ? NanosecondTimeSpanUtil::ToTimeSpan(vsyncInfo.RefreshPeriod) : TimeSpan();
 
       // Variable refresh: once it was seen it stays seen for this hold selection and this refresh rate
       const SamplePacerHold requestedHold = GetRequestedHold();

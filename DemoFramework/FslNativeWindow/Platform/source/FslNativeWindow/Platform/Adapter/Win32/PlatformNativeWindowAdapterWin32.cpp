@@ -35,7 +35,7 @@
 #include <FslBase/Math/Rectangle.hpp>
 #include <FslBase/Math/Vector2.hpp>
 #include <FslBase/System/Platform/PlatformWin32.hpp>
-#include <FslBase/Time/TimeSpanUtil.hpp>
+#include <FslBase/Time/NanosecondTimeSpanUtil.hpp>
 #include <FslNativeWindow/Base/INativeWindowEventQueue.hpp>
 #include <FslNativeWindow/Base/NativeWindowEventHelper.hpp>
 #include <FslNativeWindow/Base/NativeWindowSetup.hpp>
@@ -95,7 +95,7 @@ namespace Fsl
 
     //! Lookup the exact refresh rate (as a rational) of the display path whose source is the given GDI device.
     //! @note This is not free, so only call it when something changed.
-    TimeSpan TryLookupRefreshIntervalUsingDisplayConfig(const wchar_t* const pszGdiDeviceName)
+    NanosecondTimeSpan TryLookupRefreshIntervalUsingDisplayConfig(const wchar_t* const pszGdiDeviceName)
     {
       std::vector<DISPLAYCONFIG_PATH_INFO> paths;
       std::vector<DISPLAYCONFIG_MODE_INFO> modes;
@@ -130,7 +130,7 @@ namespace Fsl
         if (DisplayConfigGetDeviceInfo(&sourceName.header) == ERROR_SUCCESS && wcscmp(sourceName.viewGdiDeviceName, pszGdiDeviceName) == 0)
         {
           const DISPLAYCONFIG_RATIONAL& refreshRate = path.targetInfo.refreshRate;
-          return TimeSpanUtil::FromFrequencyRational(refreshRate.Numerator, refreshRate.Denominator);
+          return NanosecondTimeSpanUtil::FromFrequencyRational(refreshRate.Numerator, refreshRate.Denominator);
         }
       }
       return {};
@@ -147,8 +147,8 @@ namespace Fsl
       }
 
       {    // Prefer the exact rational refresh rate (59.94Hz is reported as 60000/1001)
-        const TimeSpan refreshInterval = TryLookupRefreshIntervalUsingDisplayConfig(monitorInfo.szDevice);
-        if (refreshInterval.Ticks() > 0)
+        const NanosecondTimeSpan refreshInterval = TryLookupRefreshIntervalUsingDisplayConfig(monitorInfo.szDevice);
+        if (refreshInterval.TotalNanoseconds() > 0)
         {
           return NativeWindowDisplayInfo(refreshInterval);
         }
@@ -159,7 +159,7 @@ namespace Fsl
       devMode.dmSize = sizeof(DEVMODEW);
       if (EnumDisplaySettingsW(monitorInfo.szDevice, ENUM_CURRENT_SETTINGS, &devMode) != 0 && devMode.dmDisplayFrequency > 1u)
       {
-        return NativeWindowDisplayInfo(TimeSpanUtil::FromFrequencyRational(devMode.dmDisplayFrequency, 1u));
+        return NativeWindowDisplayInfo(NanosecondTimeSpanUtil::FromFrequencyRational(devMode.dmDisplayFrequency, 1u));
       }
       return {};
     }

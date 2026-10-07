@@ -41,7 +41,7 @@
 #include <FslBase/Math/Vector2.hpp>
 #include <FslBase/NumericCast.hpp>
 #include <FslBase/Time/MillisecondTickCount32.hpp>
-#include <FslBase/Time/TimeSpanUtil.hpp>
+#include <FslBase/Time/NanosecondTimeSpanUtil.hpp>
 #include <FslNativeWindow/Base/INativeWindowEventQueue.hpp>
 #include <FslNativeWindow/Base/NativeWindowEventHelper.hpp>
 #include <FslNativeWindow/Base/NativeWindowSetup.hpp>
@@ -336,7 +336,7 @@ namespace Fsl
 
 
     //! Calculate the refresh interval of a RandR mode (the same way the xrandr tool calculates the refresh rate)
-    TimeSpan CalcRefreshInterval(const XRRModeInfo& mode)
+    NanosecondTimeSpan CalcRefreshInterval(const XRRModeInfo& mode)
     {
       uint64_t dotClock = mode.dotClock;
       uint64_t vTotal = mode.vTotal;
@@ -348,7 +348,7 @@ namespace Fsl
       {
         dotClock *= 2u;
       }
-      return TimeSpanUtil::FromFrequencyRational(dotClock, static_cast<uint64_t>(mode.hTotal) * vTotal);
+      return NanosecondTimeSpanUtil::FromFrequencyRational(dotClock, static_cast<uint64_t>(mode.hTotal) * vTotal);
     }
 
 
@@ -460,7 +460,8 @@ namespace Fsl
       }
       const short rate = XRRConfigCurrentRate(pScreenInfo);
       XRRFreeScreenConfigInfo(pScreenInfo);
-      return rate > 0 ? NativeWindowDisplayInfo(TimeSpanUtil::FromFrequencyRational(static_cast<uint64_t>(rate), 1u)) : NativeWindowDisplayInfo();
+      return rate > 0 ? NativeWindowDisplayInfo(NanosecondTimeSpanUtil::FromFrequencyRational(static_cast<uint64_t>(rate), 1u))
+                      : NativeWindowDisplayInfo();
     }
 
 

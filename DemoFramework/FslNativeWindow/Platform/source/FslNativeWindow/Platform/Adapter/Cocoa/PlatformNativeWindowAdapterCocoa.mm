@@ -25,7 +25,7 @@
 #include <FslBase/Log/Log3Fmt.hpp>
 #include <FslBase/Math/Rectangle.hpp>
 #include <FslBase/Time/MillisecondTickCount32.hpp>
-#include <FslBase/Time/TimeSpanUtil.hpp>
+#include <FslBase/Time/NanosecondTimeSpanUtil.hpp>
 #include <FslNativeWindow/Base/INativeWindowEventQueue.hpp>
 #include <FslNativeWindow/Base/NativeWindowEventHelper.hpp>
 #include <FslNativeWindow/Base/NativeWindowSetup.hpp>
@@ -875,7 +875,7 @@ namespace Fsl
           const NSInteger maxFps = screen.maximumFramesPerSecond;
           if (maxFps > 0)
           {
-            newDisplayInfo = NativeWindowDisplayInfo(TimeSpanUtil::FromFrequencyRational(static_cast<uint64_t>(maxFps), 1u));
+            newDisplayInfo = NativeWindowDisplayInfo(NanosecondTimeSpanUtil::FromFrequencyRational(static_cast<uint64_t>(maxFps), 1u));
           }
         }
       }

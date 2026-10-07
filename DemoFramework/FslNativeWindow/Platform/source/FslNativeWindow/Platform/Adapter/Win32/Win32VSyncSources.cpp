@@ -24,8 +24,8 @@
 #include "Win32VSyncSources.hpp"
 #include <FslBase/Exceptions.hpp>
 #include <FslBase/Log/Log3Fmt.hpp>
-#include <FslBase/Time/TickCount.hpp>
-#include <FslBase/Time/TimeSpan.hpp>
+#include <FslBase/Time/NanosecondTickCount.hpp>
+#include <FslBase/Time/NanosecondTimeSpan.hpp>
 #include <FslNativeWindow/Base/NativeWindowVSyncSourceInfo.hpp>
 #include <dxgi.h>
 #include <algorithm>
@@ -338,15 +338,19 @@ namespace Fsl
       FSLLOG3_VERBOSE("Win32: vsync source '{}'", HasDxgiOutput ? LocalConfig::NameDxgi : "none");
     }
 
-    [[nodiscard]] TickCount ToTickCount(const int64_t qpc) const noexcept
+    [[nodiscard]] NanosecondTickCount ToNanosecondTickCount(const int64_t qpc) const noexcept
     {
-      return TickCount(
-        static_cast<int64_t>(static_cast<double>(qpc) * (static_cast<double>(TickCount::TicksPerSecond) / static_cast<double>(QpcFrequency))));
+      // The whole seconds and the rest on their own, so nothing is lost and nothing overflows
+      const int64_t seconds = qpc / QpcFrequency;
+      const int64_t rest = qpc % QpcFrequency;
+      return NanosecondTickCount((seconds * NanosecondTickCount::NanosecondsPerSecond) +
+                                 ((rest * NanosecondTickCount::NanosecondsPerSecond) / QpcFrequency));
     }
 
-    [[nodiscard]] TimeSpan ToTimeSpan(const double qpcDuration) const noexcept
+    [[nodiscard]] NanosecondTimeSpan ToNanosecondTimeSpan(const double qpcDuration) const noexcept
     {
-      return TimeSpan(static_cast<int64_t>(qpcDuration * (static_cast<double>(TickCount::TicksPerSecond) / static_cast<double>(QpcFrequency))));
+      return NanosecondTimeSpan(
+        std::llround(qpcDuration * (static_cast<double>(NanosecondTimeSpan::NanosecondsPerSecond) / static_cast<double>(QpcFrequency))));
     }
 
     //! The refresh period of the mode of the monitor in QueryPerformanceCounter counts (zero if the mode is not known)
@@ -386,7 +390,7 @@ namespace Fsl
         // No vertical blank was waited for yet
         return {};
       }
-      return {ToTickCount(lastQpc), ToTimeSpan(periodQpc)};
+      return {ToNanosecondTickCount(lastQpc), ToNanosecondTimeSpan(periodQpc)};
     }
   };
 

@@ -33,7 +33,7 @@
 
 
 #include <FslBase/BasicTypes.hpp>
-#include <FslBase/Time/TimeSpan.hpp>
+#include <FslBase/Time/NanosecondTimeSpan.hpp>
 
 namespace Fsl
 {
@@ -42,13 +42,16 @@ namespace Fsl
   //! If a member is added remember to update operator==.
   struct NativeWindowDisplayInfo
   {
-    //! The time between two display refreshes (TimeSpan() if unknown)
-    TimeSpan RefreshInterval;
+    //! The time between two display refreshes as the mode of the display has it (NanosecondTimeSpan() if unknown).
+    //! It is in nanoseconds as a tick of 100 nanoseconds is too coarse for it: at 240 Hz one tick is 24 parts per million of the
+    //! refresh. It is the nominal value of the mode. A display does not refresh at exactly that rate on the clock of the system, so
+    //! whoever needs the real one has to measure it.
+    NanosecondTimeSpan RefreshInterval;
 
     constexpr NativeWindowDisplayInfo() noexcept = default;
 
-    constexpr explicit NativeWindowDisplayInfo(const TimeSpan refreshInterval) noexcept
-      : RefreshInterval(refreshInterval.Ticks() > 0 ? refreshInterval : TimeSpan())
+    constexpr explicit NativeWindowDisplayInfo(const NanosecondTimeSpan refreshInterval) noexcept
+      : RefreshInterval(refreshInterval.TotalNanoseconds() > 0 ? refreshInterval : NanosecondTimeSpan())
     {
     }
 
@@ -57,13 +60,15 @@ namespace Fsl
 
     [[nodiscard]] constexpr bool HasRefreshInterval() const noexcept
     {
-      return RefreshInterval.Ticks() > 0;
+      return RefreshInterval.TotalNanoseconds() > 0;
     }
 
     //! @return the refresh rate in Hz or 0.0 if unknown
     [[nodiscard]] constexpr double RefreshRateHz() const noexcept
     {
-      return HasRefreshInterval() ? static_cast<double>(TimeSpan::TicksPerSecond) / static_cast<double>(RefreshInterval.Ticks()) : 0.0;
+      return HasRefreshInterval()
+               ? static_cast<double>(NanosecondTimeSpan::NanosecondsPerSecond) / static_cast<double>(RefreshInterval.TotalNanoseconds())
+               : 0.0;
     }
   };
 

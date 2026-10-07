@@ -23,6 +23,7 @@
 
 #include "X11PresentVSync.hpp"
 #include <FslBase/Log/Log3Fmt.hpp>
+#include <FslBase/Time/NanosecondTickCount.hpp>
 #include <FslBase/Time/TickCount.hpp>
 
 #ifdef FSL_WINDOWSYSTEM_X11_PRESENT
@@ -37,6 +38,7 @@ namespace Fsl
     {
       //! The time of the X server is in microseconds
       constexpr int64_t TicksPerMicrosecond = TickCount::TicksPerMicrosecond;
+      constexpr int64_t NanosecondsPerMicrosecond = NanosecondTickCount::NanosecondsPerMicrosecond;
       //! A vertical blank time further than this from the time of the framework is not on the clock of the framework
       constexpr int64_t MaxClockDistanceTicks = TickCount::TicksPerSecond * 10;
       //! The measured period is the refresh period of the output if the two differ by less than a twentieth (5 %) of it
@@ -167,17 +169,17 @@ namespace Fsl
 
 #endif
 
-  NativeWindowVSyncInfo X11PresentVSync::GetVSyncInfo(const TimeSpan fallbackRefreshPeriod) const noexcept
+  NativeWindowVSyncInfo X11PresentVSync::GetVSyncInfo(const NanosecondTimeSpan fallbackRefreshPeriod) const noexcept
   {
     if (!m_isAvailable || !m_hasTime || !m_isClockUsable)
     {
       return {};
     }
-    if (m_measuredPeriod.Ticks() > 0 && fallbackRefreshPeriod.Ticks() > 0)
+    if (m_measuredPeriod.TotalNanoseconds() > 0 && fallbackRefreshPeriod.TotalNanoseconds() > 0)
     {
       // The counter of the X server is only a refresh counter if it counts at the refresh rate of the output
-      const int64_t difference = m_measuredPeriod.Ticks() - fallbackRefreshPeriod.Ticks();
-      const int64_t allowed = fallbackRefreshPeriod.Ticks() / LocalConfig::RefreshToleranceDivisor;
+      const int64_t difference = m_measuredPeriod.TotalNanoseconds() - fallbackRefreshPeriod.TotalNanoseconds();
+      const int64_t allowed = fallbackRefreshPeriod.TotalNanoseconds() / LocalConfig::RefreshToleranceDivisor;
       const bool isOnRefresh = difference >= -allowed && difference <= allowed;
       if (isOnRefresh != m_wasOnRefresh)
       {
@@ -191,8 +193,7 @@ namespace Fsl
           FSLLOG3_WARNING(
             "X11: the times of the Present extension come every {:.2f} ms and the output refreshes every {:.2f} ms, so they are "
             "not vertical blanks and are not used as the vsync time",
-            static_cast<double>(m_measuredPeriod.Ticks()) / static_cast<double>(TickCount::TicksPerMillisecond),
-            static_cast<double>(fallbackRefreshPeriod.Ticks()) / static_cast<double>(TickCount::TicksPerMillisecond));
+            m_measuredPeriod.TotalMilliseconds(), fallbackRefreshPeriod.TotalMilliseconds());
         }
       }
       if (!isOnRefresh)
@@ -200,8 +201,8 @@ namespace Fsl
         return {};
       }
     }
-    return {TickCount(static_cast<int64_t>(m_lastUst) * LocalConfig::TicksPerMicrosecond),
-            m_measuredPeriod.Ticks() > 0 ? m_measuredPeriod : fallbackRefreshPeriod};
+    return {NanosecondTickCount(static_cast<int64_t>(m_lastUst) * LocalConfig::NanosecondsPerMicrosecond),
+            m_measuredPeriod.TotalNanoseconds() > 0 ? m_measuredPeriod : fallbackRefreshPeriod};
   }
 
 
@@ -237,8 +238,8 @@ namespace Fsl
       // Two vertical blanks and the number of refreshes between them. The times are in microseconds, so the further apart the two
       // are the better the period, up to a limit so a change of the refresh rate is followed.
       const uint64_t refreshes = msc - m_referenceMsc;
-      m_measuredPeriod =
-        TimeSpan(static_cast<int64_t>(((ust - m_referenceUst) * static_cast<uint64_t>(LocalConfig::TicksPerMicrosecond)) / refreshes));
+      m_measuredPeriod = NanosecondTimeSpan(
+        static_cast<int64_t>(((ust - m_referenceUst) * static_cast<uint64_t>(LocalConfig::NanosecondsPerMicrosecond)) / refreshes));
       if (refreshes > LocalConfig::MaxMeasureRefreshes)
       {
         m_referenceUst = ust;

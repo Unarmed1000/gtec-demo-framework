@@ -23,8 +23,8 @@
 
 #include "AndroidChoreographerVSync.hpp"
 #include <FslBase/Log/Log3Fmt.hpp>
-#include <FslBase/Time/TickCount.hpp>
-#include <FslBase/Time/TimeSpan.hpp>
+#include <FslBase/Time/NanosecondTickCount.hpp>
+#include <FslBase/Time/NanosecondTimeSpan.hpp>
 #include <android/api-level.h>
 #include <dlfcn.h>
 #include <algorithm>
@@ -43,7 +43,6 @@ namespace Fsl
       constexpr auto LibraryName = "libandroid.so";
       //! The API level that has the vsync callback and its frame timelines
       constexpr int MinApiLevel = 33;
-      constexpr int64_t NanosecondsPerTick = 1000000000 / TickCount::TicksPerSecond;
     }
 
     using VsyncCallback = void (*)(const AChoreographerFrameCallbackData* pCallbackData, void* pData);
@@ -228,7 +227,8 @@ namespace Fsl
       const int64_t periodsAhead = ((vsyncTimeNs - state.FrameTimeNs) + (state.VsyncPeriodNs - 1)) / state.VsyncPeriodNs;
       vsyncTimeNs -= periodsAhead * state.VsyncPeriodNs;
     }
-    return {TickCount(vsyncTimeNs / LocalConfig::NanosecondsPerTick), TimeSpan(state.VsyncPeriodNs / LocalConfig::NanosecondsPerTick)};
+    // The system gives both in nanoseconds, and they are kept as that
+    return {NanosecondTickCount(vsyncTimeNs), NanosecondTimeSpan(state.VsyncPeriodNs)};
   }
 }
 

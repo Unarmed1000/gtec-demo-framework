@@ -32,6 +32,8 @@
 #include <FslBase/Exceptions.hpp>
 #include <FslBase/Log/Log3Core.hpp>
 #include <FslBase/Log/Log3Fmt.hpp>
+#include <FslBase/Time/NanosecondTickCountUtil.hpp>
+#include <FslBase/Time/NanosecondTimeSpanUtil.hpp>
 #include <FslBase/Time/TimeSpanUtil.hpp>
 #include <FslDemoApp/Base/DemoAppFirewall.hpp>
 #include <FslDemoApp/Base/FrameInfo.hpp>
@@ -124,12 +126,17 @@ namespace Fsl
                             "(empty if the platform does not report it)");
       m_framePacingLogColumns.DisplayRefreshPeriod =
         rLog.RegisterColumn("displayRefreshPeriodTicks", FramePacingLogUnit::DurationTicks,
-                            "The time between two refreshes of the display as the window system measured it, read with displayVSyncTicks");
+                            "The time between two refreshes of the display as the window system measured it, read with displayVSyncTicks "
+                            "and rounded to the nearest tick");
+      m_framePacingLogColumns.DisplayRefreshPeriodNs =
+        rLog.RegisterColumn("displayRefreshPeriodNs", FramePacingLogUnit::Nanoseconds,
+                            "The time between two refreshes of the display as the window system measured it or has it for the mode of the "
+                            "display, in nanoseconds");
       m_framePacingLogColumns.DisplayVSyncFlags =
         rLog.RegisterColumn("displayVSyncFlags", FramePacingLogUnit::Code,
-                            "What the window system says about how displayVSyncTicks was obtained, zero where it says nothing. Wayland: the "
-                            "kind flags of presentation-time (1 in sync with the display, 2 a time of the display hardware, 4 the hardware "
-                            "signalled the frame was shown, 8 zero copy)");
+                            "What the window system says about how displayVSyncTicks was obtained (NativeWindowVSyncTimeFlags), zero where "
+                            "it says nothing: 1 the frame was shown in sync with the display, 2 a time of the display hardware, 4 the "
+                            "hardware signalled the frame was shown, 8 zero copy. Wayland sets them from the kind flags of presentation-time");
       m_framePacingLogColumns.DisplayVBlankInterval =
         rLog.RegisterColumn("displayVBlankIntervalMilliPeriods", FramePacingLogUnit::Count,
                             "The median time between two refreshes of the display as the window system measured it, in thousandths of the "
@@ -318,7 +325,7 @@ namespace Fsl
         rLog.AddLogEvent("window", fmt::format("widthPx={};heightPx={};exactDpiX={};exactDpiY={};densityDpi={}", metrics.ExtentPx.Width.Value,
                                                metrics.ExtentPx.Height.Value, metrics.ExactDpi.X, metrics.ExactDpi.Y, metrics.DensityDpi));
       }
-      if (m_framePacingLogRefreshIntervalTicks < 0)
+      if (m_framePacingLogRefreshIntervalNs < 0)
       {
         // The window does not exist when the manager is created, so it is found at the first frame
         const auto windowHostInfo = m_demoAppConfig.DemoServiceProvider.TryGet<IWindowHostInfo>();
@@ -375,16 +382,18 @@ namespace Fsl
         // The refresh interval of the display as the window system reports it (zero: not known), written when it changes.
         // Reading it is cheap as the window caches it.
         const auto window = m_framePacingLogWindow.lock();
-        const int64_t refreshIntervalTicks = window ? window->TryGetDisplayInfo().RefreshInterval.Ticks() : 0;
+        const NanosecondTimeSpan refreshInterval = window ? window->TryGetDisplayInfo().RefreshInterval : NanosecondTimeSpan();
         if (window)
         {
           // When the display refreshes according to the window system, so it can be compared with when the frames were shown
           const NativeWindowVSyncInfo vsyncInfo = window->TryGetVSyncInfo();
           if (vsyncInfo.IsValid())
           {
-            rLog.SetLogValue(m_framePacingLogColumns.DisplayVSync, vsyncInfo.VSyncTime);
-            rLog.SetLogValue(m_framePacingLogColumns.DisplayRefreshPeriod, vsyncInfo.RefreshPeriod);
-            rLog.SetLogUInt64(m_framePacingLogColumns.DisplayVSyncFlags, vsyncInfo.SourceFlags);
+            // The times of the log are in ticks. The period is too coarse in ticks, so it is logged in nanoseconds as well.
+            rLog.SetLogValue(m_framePacingLogColumns.DisplayVSync, NanosecondTickCountUtil::ToTickCount(vsyncInfo.VSyncTime));
+            rLog.SetLogValue(m_framePacingLogColumns.DisplayRefreshPeriod, NanosecondTimeSpanUtil::ToTimeSpan(vsyncInfo.RefreshPeriod));
+            rLog.SetLogInt64(m_framePacingLogColumns.DisplayRefreshPeriodNs, vsyncInfo.RefreshPeriod.TotalNanoseconds());
+            rLog.SetLogUInt64(m_framePacingLogColumns.DisplayVSyncFlags, NativeWindowVSyncTimeFlagsUtil::ToLogCode(vsyncInfo.TimeFlags));
           }
           // What is known about variable refresh: the measurement per frame, the answers as a event when one of them changes
           const NativeWindowVariableRefreshInfo variableRefresh = window->TryGetVariableRefreshInfo();
@@ -418,10 +427,12 @@ namespace Fsl
                                          toText(variableRefresh.Observed), variableRefresh.Source, variableRefresh.ObservedSource));
           }
         }
-        if (refreshIntervalTicks != m_framePacingLogRefreshIntervalTicks)
+        if (refreshInterval.TotalNanoseconds() != m_framePacingLogRefreshIntervalNs)
         {
-          m_framePacingLogRefreshIntervalTicks = refreshIntervalTicks;
-          rLog.AddLogEvent("display", fmt::format("refreshIntervalTicks={}", refreshIntervalTicks));
+          m_framePacingLogRefreshIntervalNs = refreshInterval.TotalNanoseconds();
+          // In nanoseconds, and rounded to the ticks the times of the log are in
+          rLog.AddLogEvent("display", fmt::format("refreshIntervalTicks={};refreshIntervalNs={}",
+                                                  NanosecondTimeSpanUtil::ToTimeSpan(refreshInterval).Ticks(), refreshInterval.TotalNanoseconds()));
         }
       }
     }

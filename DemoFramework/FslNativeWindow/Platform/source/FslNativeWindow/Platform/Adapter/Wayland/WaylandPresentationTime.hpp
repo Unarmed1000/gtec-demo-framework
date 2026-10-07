@@ -24,8 +24,8 @@
 //****************************************************************************************************************************************************
 
 #include <FslBase/System/HighResolutionTimer.hpp>
-#include <FslBase/Time/TickCount.hpp>
-#include <FslBase/Time/TimeSpan.hpp>
+#include <FslBase/Time/NanosecondTickCount.hpp>
+#include <FslBase/Time/NanosecondTimeSpan.hpp>
 #include <FslNativeWindow/Base/NativeWindowVSyncInfo.hpp>
 #include <cstdint>
 
@@ -54,9 +54,11 @@ namespace Fsl
     wl_surface* m_pSurface{nullptr};
     bool m_hasClockId{false};
     uint32_t m_clockId{0};
-    TickCount m_presentedTime;
-    TimeSpan m_refreshPeriod;
+    NanosecondTickCount m_presentedTime;
+    NanosecondTimeSpan m_refreshPeriod;
+    //! The kind flags of the last display time as the compositor sent them, and what they say in the flags of the framework
     uint32_t m_lastFlags{0};
+    NativeWindowVSyncTimeFlags m_timeFlags{NativeWindowVSyncTimeFlags::NoFlags};
     uint64_t m_presentedCount{0};
     uint64_t m_discardedCount{0};
 
@@ -90,11 +92,11 @@ namespace Fsl
     //! @note  The period is zero if the compositor gave none (a output without a constant refresh rate), IsValid() is false then.
     [[nodiscard]] NativeWindowVSyncInfo GetVSyncInfo() const noexcept
     {
-      return {m_presentedTime, m_refreshPeriod, m_lastFlags};
+      return {m_presentedTime, m_refreshPeriod, m_timeFlags};
     }
 
-    //! @brief The last time a frame of the surface was shown (zero ticks if none was reported yet)
-    [[nodiscard]] TickCount GetPresentedTime() const noexcept
+    //! @brief The last time a frame of the surface was shown (zero if none was reported yet)
+    [[nodiscard]] NanosecondTickCount GetPresentedTime() const noexcept
     {
       return m_presentedTime;
     }

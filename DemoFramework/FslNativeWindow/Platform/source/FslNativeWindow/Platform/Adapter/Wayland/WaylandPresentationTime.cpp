@@ -23,6 +23,8 @@
 
 #include "WaylandPresentationTime.hpp"
 #include <FslBase/Log/Log3Fmt.hpp>
+#include <FslBase/Time/NanosecondTickCountUtil.hpp>
+#include <FslBase/Time/TickCount.hpp>
 #include <df-presentation-time-client-protocol.h>    // wayland-scanner created header
 #include <wayland-client.h>
 #include <cassert>
@@ -38,7 +40,30 @@ namespace Fsl
       //! Version one has everything that is used here
       constexpr uint32_t BindVersion = 1;
       constexpr int64_t NanosecondsPerSecond = 1000000000;
-      constexpr int64_t NanosecondsPerTick = NanosecondsPerSecond / TickCount::TicksPerSecond;
+    }
+
+    //! The kind flags of wp_presentation_feedback.presented as the flags of the framework. A flag the framework has no name for is
+    //! left out.
+    NativeWindowVSyncTimeFlags ToTimeFlags(const uint32_t kindFlags) noexcept
+    {
+      NativeWindowVSyncTimeFlags flags = NativeWindowVSyncTimeFlags::NoFlags;
+      if ((kindFlags & WP_PRESENTATION_FEEDBACK_KIND_VSYNC) != 0u)
+      {
+        flags = flags | NativeWindowVSyncTimeFlags::InSyncWithDisplay;
+      }
+      if ((kindFlags & WP_PRESENTATION_FEEDBACK_KIND_HW_CLOCK) != 0u)
+      {
+        flags = flags | NativeWindowVSyncTimeFlags::HardwareClock;
+      }
+      if ((kindFlags & WP_PRESENTATION_FEEDBACK_KIND_HW_COMPLETION) != 0u)
+      {
+        flags = flags | NativeWindowVSyncTimeFlags::HardwareCompletion;
+      }
+      if ((kindFlags & WP_PRESENTATION_FEEDBACK_KIND_ZERO_COPY) != 0u)
+      {
+        flags = flags | NativeWindowVSyncTimeFlags::ZeroCopy;
+      }
+      return flags;
     }
 
     void OnPresentationClockId(void* data, struct wp_presentation* /*pPresentation*/, uint32_t clockId)
@@ -186,6 +211,7 @@ namespace Fsl
         flags, refreshNanoseconds);
     }
     m_lastFlags = flags;
+    m_timeFlags = ToTimeFlags(flags);
     if (!m_hasClockId)
     {
       return;
@@ -200,10 +226,11 @@ namespace Fsl
     const TickCount timerNow = m_timer.GetTimestamp();
     const int64_t nowNanoseconds = (static_cast<int64_t>(now.tv_sec) * LocalConfig::NanosecondsPerSecond) + static_cast<int64_t>(now.tv_nsec);
     const int64_t presentedNanoseconds = (static_cast<int64_t>(seconds) * LocalConfig::NanosecondsPerSecond) + static_cast<int64_t>(nanoseconds);
-    const int64_t ageTicks = (nowNanoseconds - presentedNanoseconds) / LocalConfig::NanosecondsPerTick;
-    m_presentedTime = TickCount(timerNow.Ticks() - ageTicks);
+    // The compositor gives the time and the period in nanoseconds, and they are kept as that
+    m_presentedTime =
+      NanosecondTickCount(NanosecondTickCountUtil::FromTickCount(timerNow).TotalNanoseconds() - (nowNanoseconds - presentedNanoseconds));
     // Zero if the output has no constant refresh rate
-    m_refreshPeriod = TimeSpan(static_cast<int64_t>(refreshNanoseconds) / LocalConfig::NanosecondsPerTick);
+    m_refreshPeriod = NanosecondTimeSpan(static_cast<int64_t>(refreshNanoseconds));
   }
 
 

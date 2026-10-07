@@ -36,7 +36,7 @@
 #include <FslBase/Log/Math/FmtVector2.hpp>
 #include <FslBase/Log/Math/Pixel/FmtPxExtent2D.hpp>
 #include <FslBase/Log/Math/Pixel/FmtPxPoint2.hpp>
-#include <FslBase/Log/Time/FmtTimeSpan.hpp>
+#include <FslBase/Log/Time/FmtNanosecondTimeSpan.hpp>
 #include <FslBase/Math/Point2.hpp>
 #include <FslBase/Math/Vector2.hpp>
 #include <FslDemoHost/Base/Service/WindowHost/IWindowHostInfo.hpp>

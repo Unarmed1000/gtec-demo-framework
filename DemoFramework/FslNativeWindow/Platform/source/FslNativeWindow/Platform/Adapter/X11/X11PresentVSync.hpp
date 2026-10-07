@@ -24,7 +24,7 @@
 //****************************************************************************************************************************************************
 
 #include <FslBase/System/HighResolutionTimer.hpp>
-#include <FslBase/Time/TimeSpan.hpp>
+#include <FslBase/Time/NanosecondTimeSpan.hpp>
 #include <FslNativeWindow/Base/NativeWindowVSyncInfo.hpp>
 #include <FslNativeWindow/Platform/PlatformNativeWindowSystemTypes.hpp>
 #include <cstdint>
@@ -73,7 +73,7 @@ namespace Fsl
     uint64_t m_referenceUst{0};
     uint64_t m_referenceMsc{0};
     //! The refresh period measured from two vertical blanks (zero: not measured yet)
-    TimeSpan m_measuredPeriod;
+    NanosecondTimeSpan m_measuredPeriod;
     uint64_t m_eventCount{0};
     //! The last answer to "are the times on the refresh of the output", so a change is logged once
     mutable bool m_wasOnRefresh{true};
@@ -110,7 +110,7 @@ namespace Fsl
     //!        vertical blanks, and the measured one is checked against it: times that do not come at the refresh rate of the output
     //!        are not vertical blanks (a X server that shows a image as soon as it gets it and counts that as a refresh, as Xwayland
     //!        does for a software renderer), and nothing is reported then.
-    [[nodiscard]] NativeWindowVSyncInfo GetVSyncInfo(const TimeSpan fallbackRefreshPeriod) const noexcept;
+    [[nodiscard]] NativeWindowVSyncInfo GetVSyncInfo(const NanosecondTimeSpan fallbackRefreshPeriod) const noexcept;
 
   private:
     void OnVBlank(const uint64_t ust, const uint64_t msc) noexcept;

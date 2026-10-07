@@ -22,8 +22,9 @@
 //* EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //****************************************************************************************************************************************************
 
-#include <FslBase/Time/TickCount.hpp>
-#include <FslBase/Time/TimeSpan.hpp>
+#include <FslBase/Time/NanosecondTickCount.hpp>
+#include <FslBase/Time/NanosecondTimeSpan.hpp>
+#include <FslNativeWindow/Base/NativeWindowVSyncTimeFlags.hpp>
 
 namespace Fsl
 {
@@ -34,30 +35,32 @@ namespace Fsl
   //! for another display than the one the window is on. Both members are zero when the platform does not report them.
   struct NativeWindowVSyncInfo
   {
-    //! The time of a recent vertical blank of the display as a HighResolutionTimer timestamp (zero if unknown)
-    TickCount VSyncTime;
-    //! The time between two refreshes as the window system measured it (TimeSpan() if unknown). The time of any other vertical blank
-    //! is VSyncTime plus or minus a whole number of these.
-    TimeSpan RefreshPeriod;
-    //! What the window system says about how the time was obtained, zero where it says nothing. The meaning belongs to the window
-    //! system. Wayland: the kind flags of wp_presentation_feedback.presented (0x1 the frame was shown in sync with the display,
-    //! 0x2 the time is from the display hardware, 0x4 the display hardware signalled that the frame was shown, 0x8 zero copy).
-    //! A time without 0x2 is a time the compositor took itself and can be off the vertical blank.
-    uint32_t SourceFlags{0};
+    //! The time of a recent vertical blank of the display on the clock of the HighResolutionTimer, in nanoseconds (zero if unknown).
+    //! NanosecondTickCountUtil::ToTickCount gives the timestamp of the timer it lies in.
+    NanosecondTickCount VSyncTime;
+    //! The time between two refreshes as the window system measured it or has it for the mode of the display (NanosecondTimeSpan()
+    //! if unknown). The time of any other vertical blank is VSyncTime plus or minus a whole number of these. It is in nanoseconds as a
+    //! tick of 100 nanoseconds is too coarse for it: at 240 Hz one tick is 24 parts per million of the refresh.
+    NanosecondTimeSpan RefreshPeriod;
+    //! What the window system says about how the time was obtained, NoFlags where it says nothing.
+    //! A time without NativeWindowVSyncTimeFlags::HardwareClock from a window system that sets flags is a time the window system
+    //! took itself and can be off the vertical blank.
+    NativeWindowVSyncTimeFlags TimeFlags{NativeWindowVSyncTimeFlags::NoFlags};
 
     constexpr NativeWindowVSyncInfo() noexcept = default;
 
-    constexpr NativeWindowVSyncInfo(const TickCount vsyncTime, const TimeSpan refreshPeriod, const uint32_t sourceFlags = 0) noexcept
+    constexpr NativeWindowVSyncInfo(const NanosecondTickCount vsyncTime, const NanosecondTimeSpan refreshPeriod,
+                                    const NativeWindowVSyncTimeFlags timeFlags = NativeWindowVSyncTimeFlags::NoFlags) noexcept
       : VSyncTime(vsyncTime)
       , RefreshPeriod(refreshPeriod)
-      , SourceFlags(sourceFlags)
+      , TimeFlags(timeFlags)
     {
     }
 
     //! @return true if both the time of a vertical blank and the refresh period are known
     [[nodiscard]] constexpr bool IsValid() const noexcept
     {
-      return VSyncTime.Ticks() > 0 && RefreshPeriod.Ticks() > 0;
+      return VSyncTime.TotalNanoseconds() > 0 && RefreshPeriod.TotalNanoseconds() > 0;
     }
   };
 }

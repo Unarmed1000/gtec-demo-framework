@@ -116,6 +116,7 @@ namespace Fsl
       FramePacingLogColumn FrameworkStep;
       FramePacingLogColumn DisplayVSync;
       FramePacingLogColumn DisplayRefreshPeriod;
+      FramePacingLogColumn DisplayRefreshPeriodNs;
       FramePacingLogColumn DisplayVSyncFlags;
       FramePacingLogColumn DisplayVBlankInterval;
       FramePacingLogColumn DisplayVBlankOffPeriod;
@@ -130,8 +131,8 @@ namespace Fsl
     PxExtent2D m_framePacingLogExtentPx;
     //! The window the display of the log is read from
     std::weak_ptr<INativeWindow> m_framePacingLogWindow;
-    //! The refresh interval of the display that was last written to the log (negative: none was written)
-    int64_t m_framePacingLogRefreshIntervalTicks{-1};
+    //! The refresh interval of the display that was last written to the log, in nanoseconds (negative: none was written)
+    int64_t m_framePacingLogRefreshIntervalNs{-1};
     //! The answers about variable refresh that were written to the log last (packed, -1: nothing was written yet)
     int32_t m_framePacingLogVariableRefresh{-1};
     std::shared_ptr<IDemoAppControlEx> m_demoAppControl;

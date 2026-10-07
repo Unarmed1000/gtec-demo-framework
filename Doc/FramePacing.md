@@ -466,8 +466,9 @@ Column | Unit | Description
 `frameworkTimeTicks` | durationTicks | The time of the framework the frame was updated and drawn for
 `frameworkStepTicks` | durationTicks | The time step of the framework from the frame before
 `displayVSyncTicks` | ticks | The time of a recent vertical blank of the display as the window system reported it when the frame began (empty if the platform does not report it)
-`displayRefreshPeriodTicks` | durationTicks | The time between two refreshes of the display as the window system measured it, read with displayVSyncTicks
-`displayVSyncFlags` | code | What the window system says about how displayVSyncTicks was obtained, zero where it says nothing. Wayland: the kind flags of presentation-time (1 in sync with the display, 2 a time of the display hardware, 4 the hardware signalled the frame was shown, 8 zero copy)
+`displayRefreshPeriodTicks` | durationTicks | The time between two refreshes of the display as the window system measured it, read with displayVSyncTicks and rounded to the nearest tick
+`displayRefreshPeriodNs` | nanoseconds | The time between two refreshes of the display as the window system measured it or has it for the mode of the display, in nanoseconds
+`displayVSyncFlags` | code | What the window system says about how displayVSyncTicks was obtained (NativeWindowVSyncTimeFlags), zero where it says nothing: 1 the frame was shown in sync with the display, 2 a time of the display hardware, 4 the hardware signalled the frame was shown, 8 zero copy. Wayland sets them from the kind flags of presentation-time
 `displayVBlankIntervalMilliPeriods` | count | The median time between the last vertical blanks of the display in thousandths of the refresh period of its mode: 1000 is a display that refreshes at the rate of its mode, 2000 one that refreshes every second period (variable refresh at half the rate). Empty if the platform does not measure it (Windows does)
 `displayVBlankOffPeriodPerMille` | count | The share of those vertical blanks that did not come one refresh period after the one before, in thousandths, read with displayVBlankIntervalMilliPeriods
 
@@ -615,7 +616,7 @@ Event | Details
 `fact` | `key=value`, something that holds for the whole run: `formatVersion`, `clock`, `clockNativeFrequency`, `utcNanoseconds` with the `utcClockTicks` it was read at (so a tick can be placed in wall clock time), `app`, `debugBuild`, `api`, `apiVersion`, the settings of the marker (`marker.*`), of the log (`log.openFrames`), the Vulkan device (`vulkan.deviceName`, `vendorId`, `deviceId`, `driverVersion`, `apiVersion`, `calibratedTimestamps`, `presentTimingDevice`, `presentTimingOption`, `presentWaitOption`, `acquireFenceWaitOption`) and the sample (`sample.presentMethod`, `sample.pacerSupported`, `sample.frameStartRow`, `sample.glFlush`).
 `column` | The name, the unit and the description of a column.
 `window` | The size and the DPI of the window, written when it changes.
-`display` | `refreshIntervalTicks`: the refresh interval of the display as the window system reports it (0 if it does not know), written when it changes.
+`display` | The refresh interval of the display as the window system reports it for the mode of the display (0 if it does not know), written when it changes: `refreshIntervalNs` in nanoseconds and `refreshIntervalTicks` rounded to the nearest tick. It is the nominal value of the mode, the display does not refresh at exactly that rate on the clock of the system.
 `runStarted`, `runCompleted` | A measured run of the marker: the run id, the sequence id, the name and the duration.
 `swapchainCreated` | Vulkan: the extent, the format, the present mode, the image counts, the flags and the frames in flight of a swapchain, and the two waits it runs with (`presentWait`: the presents back the host waits for, 0 if it does not; `acquireFenceWait`). More than one means the window was resized or the swapchain was lost.
 `presentTiming` | Vulkan: if the presents of the swapchain are timed, the stages and the time domain of the surface and what it can schedule.
