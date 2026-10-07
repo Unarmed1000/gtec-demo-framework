@@ -39,8 +39,9 @@ namespace Fsl
     //! A lace of circles packed into circles that the animation zooms into and out of. The load adds rounds of finer circles, and
     //! samples per pixel.
     Lace,
-    //! The zoom into the Mandelbrot set of the FractalShader, GpuTimestamp and ShaderClock samples. The load is the number of
-    //! iterations. The cheapest scene.
+    //! A zoom into the Mandelbrot set, as the FractalShader, GpuTimestamp and ShaderClock samples show one, here into Seahorse
+    //! Valley and onto a small copy of the set in its spirals. The load is the number of iterations, and the more of them the more
+    //! of the spirals is drawn. The cheapest scene.
     Mandelbrot
   };
 
@@ -51,7 +52,7 @@ namespace Fsl
   {
     //! The GPU load (0 = the background is not drawn): the number of steps the shader marches every ray in. For the lace every
     //! doubling of it is one more round of detail, and the rest of it is the number of samples it draws every pixel with. For the
-    //! Mandelbrot set a pixel can take twice this many iterations.
+    //! Mandelbrot set a pixel can take eight times this many iterations.
     int32_t Steps{0};
     //! The scene that is drawn
     RaymarchScene Scene{RaymarchScene::Flight};

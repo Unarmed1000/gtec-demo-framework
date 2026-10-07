@@ -131,7 +131,7 @@ namespace Fsl
                           "A GPU load: the number of steps the background takes for every pixel; for the lace every doubling adds a "
                           "round of finer detail and the rest is samples per pixel (0 = no background, the default is a low load of 16).");
     rOptions.emplace_back("Background", OptionArgument::OptionRequired, CommandId::Background,
-                          "The scene of the background: mandelbrot (the zoom into the Mandelbrot set of the FractalShader sample, the "
+                          "The scene of the background: mandelbrot (a zoom into a spiral of the Mandelbrot set, Seahorse Valley, the "
                           "cheapest one and the default, the load is its iterations), blobs (a flight through blobs that melt into each "
                           "other, cheap at a low load), lace (circles packed into circles that the animation zooms into, cheap at a low "
                           "load, more load adds finer detail), "

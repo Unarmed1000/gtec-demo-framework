@@ -32,17 +32,28 @@
 // and the zoom from a phase of the animation (it was a texture coordinate, with a scale and a offset the app worked out), and the
 // number of iterations is given to the shader (it was a constant written into it).
 //
-// It is used as a adjustable GPU load: the zoom into the Mandelbrot set that the FractalShader, GpuTimestamp and ShaderClock
-// samples show. It is the cheapest of the backgrounds, and the one a low end GPU can draw: a iteration is a handful of operations,
-// and a pixel outside the set is done after a few of them. The view is five units wide before the zoom and is centered at the small
-// copy of the set at -1.749 on the real axis, as in the FractalShader sample.
+// It is used as a adjustable GPU load: a zoom into the Mandelbrot set, as the FractalShader, GpuTimestamp and ShaderClock samples
+// show one. It is the cheapest of the backgrounds, and the one a low end GPU can draw: a iteration is a handful of operations.
 //
-// The GPU load is the number of iterations a pixel can take, two for each step of the load: the default load of 16 gives 32, which
-// is about what the FractalShader sample draws with. A pixel inside the set takes all of them, so the cost grows with the load
-// where the set is on screen.
+// The zoom is into Seahorse Valley, the neck between the main body of the set and the disc to the left of it, and it ends on a
+// small copy of the set that sits in the spirals there (the FractalShader sample zooms into the small copy at -1.749 on the real
+// axis, where a few iterations show all there is). The place was picked for what the load does to it:
+// - It can be seen. The edge of the set is on screen all the way, and the closer the view is the more iterations a pixel next to
+//   the edge needs before it leaves. With the default load the small copy is a black blob among black shapes, with four times
+//   that it is a copy of the set among spirals, and more keeps adding detail.
+// - It costs. A pixel inside the set takes every iteration, and something of the set is on screen at both ends of the zoom: the
+//   main body before the zoom (about four tenths of the view) and the small copy at the end of it (about a quarter). In between
+//   next to nothing is inside, and a high load costs less there.
 //
-// The animation zooms in for half a period of the travel and out again (32 times, as the FractalShader sample does), so it is the
-// same picture when the period wraps.
+// The view is 0.1 wide before the zoom and 64 times smaller at the end of it. That is about as far as the 32 bit float of a
+// shader goes: at the end a pixel of a screen that is 1920 wide is fourteen of the steps a float has at this place, and not far
+// beyond it the picture turns into blocks. (A OpenGL ES 2 device without highp in the fragment shader shows blocks long before.)
+//
+// The GPU load is the number of iterations a pixel can take, eight for each step of the load: the default load of 16 gives 128,
+// which draws a third of the view at the end of the zoom (with 32 next to nothing of it is drawn). A pixel inside the set takes
+// all of them, so the cost grows with the load where the set is on screen.
+//
+// The animation zooms in for half a period of the travel and out again, so it is the same picture when the period wraps.
 //
 // The animation is given as three phases in [0,1) and everything repeats when a phase wraps, so the time never loses precision.
 //
@@ -55,7 +66,7 @@ precision highp float;
 uniform vec4 Phase;
 // The size of the screen in pixels
 uniform vec2 Resolution;
-// The GPU load: a pixel can take twice this many iterations
+// The GPU load: a pixel can take eight times this many iterations
 uniform float Steps;
 
 out vec4 o_color;
@@ -67,14 +78,15 @@ out vec4 o_color;
 
 const float TAU = 6.28318530718;
 // As many iterations as the highest GPU load of the sample gives
-const int MAX_ITERATIONS = 2048;
+const int MAX_ITERATIONS = 8192;
 // The iterations a step of the GPU load is
-const float ITERATIONS_PER_STEP = 2.0;
-// How far the animation zooms in, in doublings (5 = 32 times), and the place it zooms in at
-const float ZOOM_DOUBLINGS = 5.0;
-const vec2 ZOOM_CENTER = vec2(-1.749, 0.0);
+const float ITERATIONS_PER_STEP = 8.0;
+// How far the animation zooms in, in doublings (6 = 64 times), and the place it zooms in at: the middle of a small copy of the
+// set (its period is 19 and it is 0.0005 of the size of the set)
+const float ZOOM_DOUBLINGS = 6.0;
+const vec2 ZOOM_CENTER = vec2(-0.73670985, 0.19024034);
 // Half the width of the view before the zoom
-const float VIEW_HALF_WIDTH = 2.5;
+const float VIEW_HALF_WIDTH = 0.0512;
 
 void main()
 {
