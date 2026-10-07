@@ -156,11 +156,17 @@ on as a share of the frame time, how long the present was delayed, how often the
 (faster) and when it last did, and the time its frame window spans. The values only the pacer has show `pacer off` while it is off. The
 controls at the right can be scrolled if the window is too low for them.
 
-The chart at the bottom shows the work of every frame: the CPU time and on top of it the GPU time, which together are the work the pacer is
-told the frame needed (`Show the work chart`, or start without it with `--HideWorkChart`). The Vulkan sample measures the GPU time with
+The chart at the bottom shows what every frame cost, as three values that are each measured from the start of the frame: how long the
+CPU worked on it, how long the GPU did, and how long the frame took, which is to the end of the last work on it. They are not parts of a
+sum: the CPU and the GPU each work for a time, and a frame takes until the later of the two is done, with the time the GPU waited before it
+began in it. So each is drawn from the base line, the smaller in front of the larger (`Show the work chart`, or start without it with
+`--HideWorkChart`). The GPU time of a frame is known a frame or more after the frame ended, so the chart is that far behind, and a frame
+that was not measured has no GPU time. Where a app only knows how long the GPU worked and not when it was done (the Vulkan sample
+without `VK_KHR_calibrated_timestamps`, a OpenGL ES driver without timestamps), the GPU is taken to have started when the CPU's work
+ended. The Vulkan sample measures the GPU time with
 timestamp queries. The OpenGL ES samples measure it with a time elapsed query (`GL_EXT_disjoint_timer_query`), with the pacer on or off.
-None of the samples waits for the GPU to measure it, so the GPU time is the one of an earlier frame. Without the extension the OpenGL ES
-samples have no GPU time and their chart only shows the CPU time. The moving bar and box (the test pattern) can be switched
+None of the samples waits for the GPU to measure it. Without the extension the OpenGL ES samples have no GPU time and their chart
+shows the CPU time only. The moving bar and box (the test pattern) can be switched
 off as well (`Show the test pattern`, `--HideTestPattern`), and the sync marker at the bottom left can be switched on (`Draw the sync
 marker`, or start with it with `--FramePacing.SyncMarker`).
 

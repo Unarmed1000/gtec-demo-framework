@@ -38,6 +38,7 @@
 #include <FslSimpleUI/Base/UIColor.hpp>
 #include <FslSimpleUI/Controls/Charts/Data/AChartData.hpp>
 #include <FslSimpleUI/Controls/Charts/Data/ChartChannelMetaData.hpp>
+#include <FslSimpleUI/Controls/Charts/Data/ChartChannelPolicy.hpp>
 #include <FslSimpleUI/Controls/Charts/Data/ChartDataStats.hpp>
 #include <FslSimpleUI/Controls/Charts/Grid/ChartGridLineInfo.hpp>
 #include <fmt/format.h>
@@ -90,6 +91,7 @@ namespace Fsl::UI
 
     CircularFixedSizeBuffer<ChartDataEntry> m_buffer;
     uint32_t m_dataChannelCount;
+    ChartChannelPolicy m_channelPolicy{ChartChannelPolicy::Stacked};
     uint32_t m_changeId{0};
 
     Constraints m_constraints;
@@ -109,6 +111,18 @@ namespace Fsl::UI
     //! @param dataEntries the number of entries in ChartDataEntry that are valid
     explicit ChartData(const std::shared_ptr<DataBinding::DataBindingService>& dataBinding, const uint32_t entries, const uint32_t dataChannelCount,
                        const Constraints constraints);
+
+    //! @param dataEntries the number of entries in ChartDataEntry that are valid
+    //! @param channelPolicy how the channels of a entry relate to each other: parts of a whole that are stacked (which is what the
+    //!        other constructor gives), or values of their own that are measured from the same zero
+    explicit ChartData(const std::shared_ptr<DataBinding::DataBindingService>& dataBinding, const uint32_t entries, const uint32_t dataChannelCount,
+                       const Constraints constraints, const ChartChannelPolicy channelPolicy);
+
+    //! How the channels of a entry relate to each other
+    ChartChannelPolicy GetChannelPolicy() const noexcept
+    {
+      return m_channelPolicy;
+    }
 
     void Clear();
     void Append(const ChartDataEntry& value);
@@ -162,8 +176,10 @@ namespace Fsl::UI
     MinMax<value_type> CalculateMinMax() const noexcept;
     MinMax<value_type> CalculateMinMax(const uint32_t maxEntries) const noexcept;
     MinMax<value_type> ApplyConstraints(const MinMax<value_type> minMax) const;
-    static MinMax<uint32_t> CalcSpanMinMax(ReadOnlySpan<ChartDataEntry> span, const uint32_t dataEntries, value_type min, value_type max) noexcept;
-    static value_type CalcSum(const ChartDataEntry& entry, const uint32_t dataEntries) noexcept;
+    static MinMax<uint32_t> CalcSpanMinMax(ReadOnlySpan<ChartDataEntry> span, const uint32_t dataEntries, const ChartChannelPolicy channelPolicy,
+                                           value_type min, value_type max) noexcept;
+    //! The value of a entry: the sum of its channels where they are stacked, the largest of them where they are overlaid
+    static value_type CalcValue(const ChartDataEntry& entry, const uint32_t dataEntries, const ChartChannelPolicy channelPolicy) noexcept;
     void MarkAsChanged();
   };
 }

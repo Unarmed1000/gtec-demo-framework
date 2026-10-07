@@ -893,3 +893,99 @@ TEST(Test_Data_ChartData, Append3_Capacity2_ViewEntries2)
     EXPECT_EQ(value2, segmentData[0].Values[0]);
   }
 }
+
+
+TEST(Test_Data_ChartData, ChannelPolicy_DefaultIsStacked)
+{
+  const auto dataBinding = std::make_shared<DataBinding::DataBindingService>();
+  UI::ChartData chartData(dataBinding, 2, 2, {});
+
+  EXPECT_EQ(UI::ChartChannelPolicy::Stacked, chartData.GetChannelPolicy());
+  EXPECT_EQ(UI::ChartChannelPolicy::Stacked, chartData.DataInfo(chartData.CreateViewConfig()).ChannelPolicy);
+}
+
+
+TEST(Test_Data_ChartData, ChannelPolicy_Stacked_TheValueOfAEntryIsTheSumOfItsChannels)
+{
+  const auto dataBinding = std::make_shared<DataBinding::DataBindingService>();
+  UI::ChartData chartData(dataBinding, 4, 3, {}, UI::ChartChannelPolicy::Stacked);
+
+  UI::ChartDataEntry entry;
+  entry.Values[0] = 10;
+  entry.Values[1] = 40;
+  entry.Values[2] = 25;
+  chartData.Append(entry);
+  entry.Values[0] = 5;
+  entry.Values[1] = 1;
+  entry.Values[2] = 2;
+  chartData.Append(entry);
+
+  const auto dataStats = chartData.CalculateDataStats(chartData.CreateViewConfig());
+  EXPECT_EQ(8u, dataStats.ValueMinMax.Min());
+  EXPECT_EQ(75u, dataStats.ValueMinMax.Max());
+}
+
+
+TEST(Test_Data_ChartData, ChannelPolicy_Overlaid_TheValueOfAEntryIsItsLargestChannel)
+{
+  const auto dataBinding = std::make_shared<DataBinding::DataBindingService>();
+  UI::ChartData chartData(dataBinding, 4, 3, {}, UI::ChartChannelPolicy::Overlaid);
+
+  EXPECT_EQ(UI::ChartChannelPolicy::Overlaid, chartData.GetChannelPolicy());
+  EXPECT_EQ(UI::ChartChannelPolicy::Overlaid, chartData.DataInfo(chartData.CreateViewConfig()).ChannelPolicy);
+
+  UI::ChartDataEntry entry;
+  entry.Values[0] = 10;
+  entry.Values[1] = 40;
+  entry.Values[2] = 25;
+  chartData.Append(entry);
+  entry.Values[0] = 5;
+  entry.Values[1] = 1;
+  entry.Values[2] = 2;
+  chartData.Append(entry);
+
+  const auto dataStats = chartData.CalculateDataStats(chartData.CreateViewConfig());
+  EXPECT_EQ(5u, dataStats.ValueMinMax.Min());
+  EXPECT_EQ(40u, dataStats.ValueMinMax.Max());
+}
+
+
+TEST(Test_Data_ChartData, ChannelPolicy_Overlaid_OnlyTheValidChannelsCount)
+{
+  const auto dataBinding = std::make_shared<DataBinding::DataBindingService>();
+  UI::ChartData chartData(dataBinding, 4, 2, {}, UI::ChartChannelPolicy::Overlaid);
+
+  UI::ChartDataEntry entry;
+  entry.Values[0] = 10;
+  entry.Values[1] = 7;
+  // Not a channel of this chart
+  entry.Values[2] = 1000;
+  chartData.Append(entry);
+
+  const auto dataStats = chartData.CalculateDataStats(chartData.CreateViewConfig());
+  EXPECT_EQ(10u, dataStats.ValueMinMax.Min());
+  EXPECT_EQ(10u, dataStats.ValueMinMax.Max());
+}
+
+
+TEST(Test_Data_ChartData, ChannelPolicy_Overlaid_TheRangeFollowsTheEntriesThatAreLeft)
+{
+  const auto dataBinding = std::make_shared<DataBinding::DataBindingService>();
+  UI::ChartData chartData(dataBinding, 2, 2, {}, UI::ChartChannelPolicy::Overlaid);
+
+  UI::ChartDataEntry entry;
+  entry.Values[0] = 90;
+  entry.Values[1] = 100;
+  chartData.Append(entry);
+  entry.Values[0] = 30;
+  entry.Values[1] = 20;
+  chartData.Append(entry);
+  // The first entry, which had the largest value, leaves
+  entry.Values[0] = 4;
+  entry.Values[1] = 50;
+  chartData.Append(entry);
+
+  const auto dataStats = chartData.CalculateDataStats(chartData.CreateViewConfig());
+  EXPECT_EQ(30u, dataStats.ValueMinMax.Min());
+  EXPECT_EQ(50u, dataStats.ValueMinMax.Max());
+}

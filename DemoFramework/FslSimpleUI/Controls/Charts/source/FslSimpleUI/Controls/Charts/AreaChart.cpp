@@ -194,17 +194,52 @@ namespace Fsl::UI
       }
     }
 
+    //! The channels of a entry in the order they are drawn in, from the base line up. Stacked channels are drawn in their own order.
+    //! Overlaid channels are drawn from the smallest value to the largest: each is then drawn from the top of the one before it to
+    //! its own value, which is what is seen of it when the smaller ones are in front of it.
+    std::array<uint32_t, UI::Render::ChartDataWindowDrawDataConfig::MaxStackedEntries>
+      CalcChannelDrawOrder(const ChartDataEntry& entry, const uint32_t channelCount, const ChartChannelPolicy channelPolicy) noexcept
+    {
+      std::array<uint32_t, UI::Render::ChartDataWindowDrawDataConfig::MaxStackedEntries> order{};
+      for (uint32_t i = 0; i < channelCount; ++i)
+      {
+        order[i] = i;
+      }
+      if (channelPolicy == ChartChannelPolicy::Overlaid)
+      {
+        // A insertion sort: there are a few channels at the most, it allocates nothing (this runs for every entry that is drawn) and
+        // equal values keep the order of their channels
+        for (uint32_t i = 1; i < channelCount; ++i)
+        {
+          const uint32_t channel = order[i];
+          uint32_t dst = i;
+          while (dst > 0 && entry.Values[order[dst - 1]] > entry.Values[channel])
+          {
+            order[dst] = order[dst - 1];
+            --dst;
+          }
+          order[dst] = channel;
+        }
+      }
+      return order;
+    }
+
     void DrawGraphSegmentNow(UIRawBasicMeshBuilder2D& rBuilder, const PxVector2 dstPositionPxf, const PxValue dstXPosCurrent, const PxValue maxYPx,
-                             const uint32_t channelCount, const ChartDataEntry& entry, const float dataRenderScalePxf, const PxSize1D entryPixelWidth,
+                             const uint32_t channelCount, const ChartChannelPolicy channelPolicy, const ChartDataEntry& entry,
+                             const float dataRenderScalePxf, const PxSize1D entryPixelWidth,
                              std::array<UIRenderColor, UI::Render::ChartDataWindowDrawDataConfig::MaxStackedEntries> premultipliedColors,
                              const NativeTextureArea& textureArea)
     {
+      const auto drawOrder = CalcChannelDrawOrder(entry, channelCount, channelPolicy);
+      const bool isStacked = channelPolicy == ChartChannelPolicy::Stacked;
       PxValue lastPx = maxYPx + PxValue(1);
       float topPxf = 0;
-      for (uint32_t entryIndex = 0; entryIndex < channelCount; ++entryIndex)
+      for (uint32_t drawIndex = 0; drawIndex < channelCount; ++drawIndex)
       {
+        const uint32_t entryIndex = drawOrder[drawIndex];
         const float renderData = static_cast<float>(entry.Values[entryIndex]) * dataRenderScalePxf;
-        topPxf += renderData;
+        // A stacked channel starts where the one before it ended, a overlaid one at the base line
+        topPxf = isStacked ? (topPxf + renderData) : renderData;
         const auto scaledTopDataSizePx = PxValue(static_cast<int32_t>(MathHelper::Clamp(topPxf, 0.0f, static_cast<float>(0x10000000))));
         const PxValue yModPx = maxYPx - scaledTopDataSizePx;
         assert(lastPx >= yModPx);
@@ -266,8 +301,8 @@ namespace Fsl::UI
           for (uint32_t dataSpanIndex = dataSpanEntries; dataSpanIndex > 0; --dataSpanIndex)
           {
             const auto i = dataSpanIndex - 1;
-            DrawGraphSegmentNow(rBuilder, dstPositionPxf, dstXPosCurrent, maxYPx, dataInfo.ChannelCount, dataSpan[i], chart.DataRenderScale,
-                                entryPixelWidth, pChartWindow->ChartCache.Premultiplied, renderInfo.TextureArea);
+            DrawGraphSegmentNow(rBuilder, dstPositionPxf, dstXPosCurrent, maxYPx, dataInfo.ChannelCount, dataInfo.ChannelPolicy, dataSpan[i],
+                                chart.DataRenderScale, entryPixelWidth, pChartWindow->ChartCache.Premultiplied, renderInfo.TextureArea);
             dstXPosCurrent -= entryPixelWidth.Value();
           }
           entriesLeft -= dataSpanEntries;
@@ -289,8 +324,8 @@ namespace Fsl::UI
           const ReadOnlySpan<ChartDataEntry> dataSpan = pData->SegmentDataAsReadOnlySpan(segmentIndex).subspan(lastSegmentOffset, 1);
           if (!dataSpan.empty())
           {
-            DrawGraphSegmentNow(rBuilder, dstPositionPxf, PxValue(0), maxYPx, dataInfo.ChannelCount, dataSpan[0], chart.DataRenderScale,
-                                leftoverPixels, pChartWindow->ChartCache.Premultiplied, renderInfo.TextureArea);
+            DrawGraphSegmentNow(rBuilder, dstPositionPxf, PxValue(0), maxYPx, dataInfo.ChannelCount, dataInfo.ChannelPolicy, dataSpan[0],
+                                chart.DataRenderScale, leftoverPixels, pChartWindow->ChartCache.Premultiplied, renderInfo.TextureArea);
           }
         }
       }

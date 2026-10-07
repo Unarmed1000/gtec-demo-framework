@@ -32,6 +32,7 @@
  ****************************************************************************************************************************************************/
 
 #include <FslBase/BasicTypes.hpp>
+#include <FslSimpleUI/Controls/Charts/Data/ChartChannelPolicy.hpp>
 
 namespace Fsl::UI
 {
@@ -46,11 +47,22 @@ namespace Fsl::UI
     //! The total number of valid data channels in a ChartDataEntry
     uint32_t ChannelCount{0};
 
+    //! How the channels of a entry relate to each other
+    ChartChannelPolicy ChannelPolicy{ChartChannelPolicy::Stacked};
+
     constexpr ChartDataInfo() noexcept = default;
     constexpr ChartDataInfo(const uint32_t totalElementCount, const uint32_t segmentCount, const uint32_t channelCount) noexcept
       : TotalElementCount(totalElementCount)
       , SegmentCount(segmentCount)
       , ChannelCount(channelCount)
+    {
+    }
+    constexpr ChartDataInfo(const uint32_t totalElementCount, const uint32_t segmentCount, const uint32_t channelCount,
+                            const ChartChannelPolicy channelPolicy) noexcept
+      : TotalElementCount(totalElementCount)
+      , SegmentCount(segmentCount)
+      , ChannelCount(channelCount)
+      , ChannelPolicy(channelPolicy)
     {
     }
   };

@@ -55,9 +55,17 @@ namespace Fsl::UI
 {
   ChartData::ChartData(const std::shared_ptr<DataBinding::DataBindingService>& dataBinding, const uint32_t entries, const uint32_t dataChannelCount,
                        const Constraints constraints)
+    : ChartData(dataBinding, entries, dataChannelCount, constraints, ChartChannelPolicy::Stacked)
+  {
+  }
+
+
+  ChartData::ChartData(const std::shared_ptr<DataBinding::DataBindingService>& dataBinding, const uint32_t entries, const uint32_t dataChannelCount,
+                       const Constraints constraints, const ChartChannelPolicy channelPolicy)
     : AChartData(dataBinding)
     , m_buffer(entries > 0 ? entries : 1u)
     , m_dataChannelCount(dataChannelCount)
+    , m_channelPolicy(channelPolicy)
     , m_constraints(constraints)
   {
     if (dataChannelCount > std::tuple_size<ChartDataEntry::array_type>())
@@ -84,14 +92,14 @@ namespace Fsl::UI
 
   void ChartData::Append(const ChartDataEntry& value)
   {
-    const auto currentValue = CalcSum(value, m_dataChannelCount);
+    const auto currentValue = CalcValue(value, m_dataChannelCount, m_channelPolicy);
     if (!m_buffer.empty() && m_buffer.size() == m_buffer.capacity())
     {
       const bool canAffectMinCache = currentValue > m_viewInfo.CurrentMin;
       const bool canAffectMaxCache = currentValue < m_viewInfo.CurrentMax;
       if (canAffectMinCache || canAffectMaxCache)
       {
-        const auto frontValue = CalcSum(m_buffer.front(), m_dataChannelCount);
+        const auto frontValue = CalcValue(m_buffer.front(), m_dataChannelCount, m_channelPolicy);
         if (frontValue <= m_viewInfo.CurrentMin || frontValue >= m_viewInfo.CurrentMax)
         {
           m_buffer.pop_front();
@@ -242,12 +250,12 @@ namespace Fsl::UI
   {
     if (viewConfig.MaxEntries <= 0u)
     {
-      return {0u, 0u, m_dataChannelCount};
+      return {0u, 0u, m_dataChannelCount, m_channelPolicy};
     }
     if (viewConfig.MaxEntries >= m_buffer.size())
     {
       // There are more or equal amounts of entries in this view so just give access to all data
-      return {UncheckedNumericCast<uint32_t>(m_buffer.size()), m_buffer.segment_count(), m_dataChannelCount};
+      return {UncheckedNumericCast<uint32_t>(m_buffer.size()), m_buffer.segment_count(), m_dataChannelCount, m_channelPolicy};
     }
     // if there are a non zero amount of entries in the buffer there should be at least one segment
     assert(m_buffer.segment_count() != 0);
@@ -256,12 +264,12 @@ namespace Fsl::UI
 
     if (m_buffer.segment_count() == 1u)
     {
-      return {viewConfig.MaxEntries, 1u, m_dataChannelCount};
+      return {viewConfig.MaxEntries, 1u, m_dataChannelCount, m_channelPolicy};
     }
     // There are two segments, so we need to determine if the last segment contains everything
     assert(m_buffer.segment_count() == 2u);
     const auto lastSpan = m_buffer.AsReadOnlySpan(1u);
-    return {viewConfig.MaxEntries, viewConfig.MaxEntries <= lastSpan.size() ? 1u : 2u, m_dataChannelCount};
+    return {viewConfig.MaxEntries, viewConfig.MaxEntries <= lastSpan.size() ? 1u : 2u, m_dataChannelCount, m_channelPolicy};
   }
 
 
@@ -360,7 +368,7 @@ namespace Fsl::UI
     {
       const auto span = m_buffer.AsReadOnlySpan(segmentIndex);
       assert(span.size() > 0);
-      const auto minMax = CalcSpanMinMax(span, m_dataChannelCount, min, max);
+      const auto minMax = CalcSpanMinMax(span, m_dataChannelCount, m_channelPolicy, min, max);
       min = minMax.Min();
       max = minMax.Max();
     }
@@ -396,7 +404,7 @@ namespace Fsl::UI
         span = span.unchecked_subspan(span.size() - entriesLeft, entriesLeft);
       }
       assert(span.size() > 0);
-      const auto minMax = CalcSpanMinMax(span, m_dataChannelCount, min, max);
+      const auto minMax = CalcSpanMinMax(span, m_dataChannelCount, m_channelPolicy, min, max);
       assert(entriesLeft >= span.size());
       entriesLeft -= UncheckedNumericCast<uint32_t>(span.size());
       min = minMax.Min();
@@ -423,12 +431,12 @@ namespace Fsl::UI
   }
 
 
-  MinMax<ChartData::value_type> ChartData::CalcSpanMinMax(ReadOnlySpan<ChartDataEntry> span, const uint32_t dataEntries, value_type min,
-                                                          value_type max) noexcept
+  MinMax<ChartData::value_type> ChartData::CalcSpanMinMax(ReadOnlySpan<ChartDataEntry> span, const uint32_t dataEntries,
+                                                          const ChartChannelPolicy channelPolicy, value_type min, value_type max) noexcept
   {
     for (const auto& entry : span)
     {
-      const value_type val = CalcSum(entry, dataEntries);
+      const value_type val = CalcValue(entry, dataEntries, channelPolicy);
       min = std::min(val, min);
       max = std::max(val, max);
     }
@@ -436,9 +444,19 @@ namespace Fsl::UI
   }
 
 
-  ChartData::value_type ChartData::CalcSum(const ChartDataEntry& entry, const uint32_t dataEntries) noexcept
+  ChartData::value_type ChartData::CalcValue(const ChartDataEntry& entry, const uint32_t dataEntries, const ChartChannelPolicy channelPolicy) noexcept
   {
     static_assert(std::tuple_size<ChartDataEntry::array_type>() <= 0xFFFFFFFF, "array size assumption failed");
+    if (channelPolicy == ChartChannelPolicy::Overlaid)
+    {
+      // Each channel is a value of its own, so the entry reaches as far as the largest of them
+      value_type largest = 0;
+      for (uint32_t i = 0; i < dataEntries; ++i)
+      {
+        largest = std::max(largest, entry.Values[i]);
+      }
+      return largest;
+    }
     value_type sum = 0;
     for (uint32_t i = 0; i < dataEntries; ++i)
     {

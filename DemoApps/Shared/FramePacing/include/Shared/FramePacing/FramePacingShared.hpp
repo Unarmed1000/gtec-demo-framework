@@ -41,6 +41,7 @@
 #include <Shared/FramePacing/RaymarchParams.hpp>
 #include <Shared/FramePacing/SampleConfig.hpp>
 #include <Shared/FramePacing/SampleFrameStats.hpp>
+#include <Shared/FramePacing/SampleFrameWork.hpp>
 #include <Shared/FramePacing/SamplePacer.hpp>
 #include <Shared/FramePacing/SamplePacerHold.hpp>
 #include <Shared/FramePacing/SamplePacerProfile.hpp>
@@ -264,10 +265,11 @@ namespace Fsl
     TimeSpan m_lastGpuTime;
     //! How long the present of the last frame that ended was delayed by WaitForPresent
     TimeSpan m_lastPresentWait;
-    //! The work per frame of the chart: the CPU time and the GPU time in microseconds
+    //! The work per frame of the chart, in microseconds: the CPU time, the GPU time and how long the frame took. Three values of
+    //! their own, not parts of a sum.
     std::shared_ptr<UI::ChartData> m_workChartData;
-    //! True if a frame ended since the chart was updated
-    bool m_workSamplePending{false};
+    //! Puts what is measured about the work on a frame together for the chart: the GPU time of a frame comes frames later
+    SampleFrameWork m_frameWork;
     //! After a delayed present (WaitForPresent) the next frame does not start before this (zero = no wait)
     TickCount m_nextFrameStartTime;
     //! The time the current frame is animated for
@@ -412,6 +414,15 @@ namespace Fsl
     std::shared_ptr<IFramePacingFrameLog> m_frameLog;
     LogColumns m_logColumns;
     std::array<LogPresentFrame, 64> m_logPresentFrames{};
+
+    //! The frame of the sample a present belongs to (a app reports when the GPU worked on a frame with the id of its present)
+    struct PresentFrame
+    {
+      uint64_t PresentId{0};
+      uint64_t FrameId{0};
+    };
+
+    std::array<PresentFrame, 16> m_presentFrames{};
 
     //! The frame of the log a frame of the sample belongs to
     struct LogFrame

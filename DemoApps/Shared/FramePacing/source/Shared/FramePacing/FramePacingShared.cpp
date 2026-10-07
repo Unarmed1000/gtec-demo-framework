@@ -196,12 +196,14 @@ namespace Fsl
     constexpr float StatsNameColumnWidthDp = 216.0f;
     constexpr float StatsValueColumnWidthDp = 360.0f;
 
-    //! The chart of the work per frame: the two channels and their colors
-    constexpr uint32_t WorkChartChannelCount = 2;
+    //! The chart of the work per frame: the three channels and their colors
+    constexpr uint32_t WorkChartChannelCount = 3;
     constexpr uint32_t WorkChartCpuChannel = 0;
     constexpr uint32_t WorkChartGpuChannel = 1;
-    constexpr UI::UIColor WorkChartCpuColor(PackedColor32(0xFF3488A7));    // light blue
-    constexpr UI::UIColor WorkChartGpuColor(PackedColor32(0xFFE0902A));    // orange
+    constexpr uint32_t WorkChartFrameChannel = 2;
+    constexpr UI::UIColor WorkChartCpuColor(PackedColor32(0xFF3488A7));      // light blue
+    constexpr UI::UIColor WorkChartGpuColor(PackedColor32(0xFFE0902A));      // orange
+    constexpr UI::UIColor WorkChartFrameColor(PackedColor32(0xFF8C8C8C));    // grey
     constexpr float WorkChartHeightDp = 100.0f;
 
     //! A time as the microseconds a chart entry holds
@@ -234,10 +236,11 @@ namespace Fsl
     , m_windowSizePx(config.WindowMetrics.GetSizePx())
     , m_presentMethod(presentMethod)
     , m_workChartData(std::make_shared<UI::ChartData>(m_uiExtension->GetDataBinding(), config.WindowMetrics.ExtentPx.Width.Value,
-                                                      WorkChartChannelCount, UI::ChartData::Constraints(0, {})))
+                                                      WorkChartChannelCount, UI::ChartData::Constraints(0, {}), UI::ChartChannelPolicy::Overlaid))
   {
     m_workChartData->SetChannelMetaData(WorkChartCpuChannel, WorkChartCpuColor);
     m_workChartData->SetChannelMetaData(WorkChartGpuChannel, WorkChartGpuColor);
+    m_workChartData->SetChannelMetaData(WorkChartFrameChannel, WorkChartFrameColor);
 
     const auto options = config.GetOptions<OptionParser>();
     // Read before the log is set up, which writes it as a fact
@@ -540,16 +543,20 @@ namespace Fsl
     UpdateSyncMarker();
     UpdatePacerStats();
     UpdateMarkerStats();
-    if (m_workSamplePending)
     {
-      // The work of the frame that ended since the last update
-      m_workSamplePending = false;
-      if (m_ui.SwitchWorkChart->IsChecked())
+      // The frames everything is known about by now: the GPU time of a frame comes a frame or more after the frame ended, so the
+      // chart is that far behind
+      SampleFrameWorkRecord work;
+      while (m_frameWork.TryPop(work))
       {
-        UI::ChartDataEntry entry;
-        entry.Values[WorkChartCpuChannel] = ToChartMicroseconds(m_lastCpuTime);
-        entry.Values[WorkChartGpuChannel] = ToChartMicroseconds(m_lastGpuTime);
-        m_workChartData->Append(entry);
+        if (m_ui.SwitchWorkChart->IsChecked())
+        {
+          UI::ChartDataEntry entry;
+          entry.Values[WorkChartCpuChannel] = ToChartMicroseconds(work.CpuTime);
+          entry.Values[WorkChartGpuChannel] = ToChartMicroseconds(work.GpuTime);
+          entry.Values[WorkChartFrameChannel] = ToChartMicroseconds(work.FrameTime);
+          m_workChartData->Append(entry);
+        }
       }
     }
     if (m_framePacing)
@@ -700,9 +707,11 @@ namespace Fsl
       }
     }
 
+    // So something that is measured later about this present (when the GPU worked on it) finds the frame of the sample
+    m_presentFrames[presentId % m_presentFrames.size()] = {presentId, m_frameId};
     if (m_frameLog)
     {
-      // So something that is measured later about this present (when the GPU worked on it) finds the frame of the log
+      // And the frame of the log
       m_logPresentFrames[presentId % m_logPresentFrames.size()] = {presentId, m_frameLog->GetLogFrameIndex()};
     }
   }
@@ -763,6 +772,13 @@ namespace Fsl
   void FramePacingShared::AddGpuInterval(const uint64_t presentId, const TickCount gpuStartTime, const TickCount gpuEndTime)
   {
     m_presentFeedback.AddGpuInterval(presentId, gpuStartTime, gpuEndTime);
+    {
+      const PresentFrame& presentFrame = m_presentFrames[presentId % m_presentFrames.size()];
+      if (presentFrame.PresentId == presentId && presentFrame.FrameId != 0u)
+      {
+        m_frameWork.AddGpuInterval(presentFrame.FrameId, gpuStartTime, gpuEndTime);
+      }
+    }
     if (m_frameLog)
     {
       const LogPresentFrame& presentFrame = m_logPresentFrames[presentId % m_logPresentFrames.size()];
@@ -777,6 +793,7 @@ namespace Fsl
 
   void FramePacingShared::AddGpuTime(const uint64_t frameId, const TimeSpan gpuTime, const std::optional<TickCount> gpuEndTime)
   {
+    m_frameWork.AddGpuTime(frameId, gpuTime, gpuEndTime);
     m_gpuTimeLogFrameIndex.reset();
     if (m_frameLog)
     {
@@ -867,7 +884,7 @@ namespace Fsl
     m_lastCpuTime = now - m_frameStartTime;
     m_lastGpuTime = TimeSpan(std::max(gpuTime.Ticks(), int64_t{0}));
     m_lastPresentWait = {};
-    m_workSamplePending = true;
+    m_frameWork.EndCpuWork(now);
     m_tierFactsReady = true;
     if (m_pacer)
     {
@@ -1312,6 +1329,7 @@ namespace Fsl
     const TickCount frameStartTime = m_timer.GetTimestamp();
     m_frameInterval = m_frameStartTime.Ticks() != 0 ? (frameStartTime - m_frameStartTime) : TimeSpan();
     m_frameStartTime = frameStartTime;
+    m_frameWork.BeginFrame(m_frameId, frameStartTime);
 
     // The frame that just ended was held for the swap interval of its schedule (one refresh without the pacer)
     if (m_frameInterval.Ticks() > 0 && m_pacerConfig.RefreshRateHz > 0.0)
@@ -2028,7 +2046,9 @@ namespace Fsl
   {
     const auto context = rUIFactory.GetContext();
 
-    // The CPU time and the GPU time of every frame, stacked: together they are the work the frame pacer is told the frame needed
+    // What every frame cost: how long the CPU worked on it, how long the GPU did, and how long the frame took, which is to the end
+    // of the last work on it. They are three values that are measured from the start of the frame, not parts of a sum, so the chart
+    // draws each from its base line (the data says so, ChartChannelPolicy::Overlaid).
     const auto chart = std::make_shared<UI::AreaChart>(context);
     chart->SetAlignmentX(UI::ItemAlignment::Stretch);
     chart->SetAlignmentY(UI::ItemAlignment::Stretch);
@@ -2040,15 +2060,18 @@ namespace Fsl
     chart->SetLabelBackground(rUIFactory.GetResources().GetToolTipNineSliceSprite());
     chart->SetRenderPolicy(UI::ChartRenderPolicy::FillAvailable);
 
-    // The legend, in the order the chart stacks the data: the GPU time is on top of the CPU time
+    // The legend
     const auto labelCpu = rUIFactory.CreateLabel("CPU");
     labelCpu->SetFontColor(WorkChartCpuColor);
     const auto labelGpu = rUIFactory.CreateLabel("GPU");
     labelGpu->SetFontColor(WorkChartGpuColor);
+    const auto labelFrame = rUIFactory.CreateLabel("Frame");
+    labelFrame->SetFontColor(WorkChartFrameColor);
     const auto legend = std::make_shared<UI::StackLayout>(context);
     legend->SetOrientation(UI::LayoutOrientation::Vertical);
     legend->SetAlignmentY(UI::ItemAlignment::Center);
     legend->AddChild(rUIFactory.CreateLabel("Work per frame"));
+    legend->AddChild(labelFrame);
     legend->AddChild(labelGpu);
     legend->AddChild(labelCpu);
 
