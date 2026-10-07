@@ -37,6 +37,7 @@ namespace Fsl
         HideMarkerStats = DEMO_APP_OPTION_BASE,
         HidePacingStats,
         HideWorkChart,
+        HideAnimationErrorChart,
         HideTestPattern,
         BoxAnimation,
         TimedRunDuration,
@@ -86,6 +87,9 @@ namespace Fsl
                           "Start with the overlay with the frame pacing stats hidden (the UI has a switch for it).");
     rOptions.emplace_back("HideWorkChart", OptionArgument::OptionNone, CommandId::HideWorkChart,
                           "Start with the chart of the work per frame hidden (the UI has a switch for it).");
+    rOptions.emplace_back("HideAnimationErrorChart", OptionArgument::OptionNone, CommandId::HideAnimationErrorChart,
+                          "Start with the chart of the animation error hidden (the UI has a switch for it). The chart is only there where "
+                          "the app is told when its frames were shown.");
     rOptions.emplace_back("HideTestPattern", OptionArgument::OptionNone, CommandId::HideTestPattern,
                           "Start with the test pattern (the moving bar and box) hidden (the UI has a switch for it).");
     rOptions.emplace_back("BoxAnimation", OptionArgument::OptionRequired, CommandId::BoxAnimation,
@@ -156,6 +160,9 @@ namespace Fsl
       return OptionParseResult::Parsed;
     case CommandId::HideWorkChart:
       m_hideWorkChart = true;
+      return OptionParseResult::Parsed;
+    case CommandId::HideAnimationErrorChart:
+      m_hideAnimationErrorChart = true;
       return OptionParseResult::Parsed;
     case CommandId::HideTestPattern:
       m_hideTestPattern = true;

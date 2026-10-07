@@ -58,6 +58,7 @@
 #include <FslSimpleUI/Theme/Base/WindowType.hpp>
 #include <Shared/FramePacing/FramePacingShared.hpp>
 #include <Shared/FramePacing/OptionParser.hpp>
+#include <Shared/FramePacing/SampleAnimationErrorChart.hpp>
 #include <Shared/FramePacing/SampleConfig.hpp>
 #include <Shared/FramePacing/SamplePacingTierClassifier.hpp>
 #include <fmt/chrono.h>
@@ -206,6 +207,11 @@ namespace Fsl
     constexpr UI::UIColor WorkChartFrameColor(PackedColor32(0xFF8C8C8C));    // grey
     constexpr float WorkChartHeightDp = 100.0f;
 
+    //! The chart of the animation error, in the colors of the report of the mb-framepacing tools
+    constexpr UI::UIColor AnimationErrorChartBarColor(PackedColor32(0xFFE5534B));        // red
+    constexpr UI::UIColor AnimationErrorChartRefreshColor(PackedColor32(0xFFD29922));    // amber
+    constexpr float AnimationErrorChartHeightDp = 120.0f;
+
     //! A time as the microseconds a chart entry holds
     constexpr uint32_t ToChartMicroseconds(const TimeSpan time) noexcept
     {
@@ -318,6 +324,7 @@ namespace Fsl
     m_ui.SwitchPacerStats = uiFactory->CreateSwitch("Show the frame pacing", !options->IsPacingStatsHidden());
     // The chart of the work per frame and the test pattern
     m_ui.SwitchWorkChart = uiFactory->CreateSwitch("Show the work chart", !options->IsWorkChartHidden());
+    m_ui.SwitchAnimationErrorChart = uiFactory->CreateSwitch("Show the animation error chart", !options->IsAnimationErrorChartHidden());
     m_ui.SwitchTestPattern = uiFactory->CreateSwitch("Show the test pattern", !options->IsTestPatternHidden());
     // The box animation of the mb-framepacing-explained videos, to compare the motion of the sample with them by eye
     m_ui.SwitchBoxAnimation = uiFactory->CreateSwitch("Show the box animation", options->GetBoxAnimation() != SampleBoxAnimationSpeed::Off);
@@ -420,6 +427,7 @@ namespace Fsl
     stackLayout->AddChild(m_ui.SwitchMarkerStats);
     stackLayout->AddChild(m_ui.SwitchPacerStats);
     stackLayout->AddChild(m_ui.SwitchWorkChart);
+    stackLayout->AddChild(m_ui.SwitchAnimationErrorChart);
     stackLayout->AddChild(m_ui.SwitchTestPattern);
     stackLayout->AddChild(m_ui.SwitchBoxAnimation);
     stackLayout->AddChild(m_ui.SwitchBoxAnimationFast);
@@ -446,7 +454,16 @@ namespace Fsl
     contentLayout->AddRowDefinition(UI::GridRowDefinition(UI::GridUnitType::Auto));
     contentLayout->AddChild(CreateStatsWindow(*uiFactory), 0, 0);
     m_ui.WorkChartBar = CreateWorkChartBar(*uiFactory);
-    contentLayout->AddChild(m_ui.WorkChartBar, 0, 1);
+    m_ui.AnimationErrorChartBar = CreateAnimationErrorChartBar(*uiFactory);
+    {
+      // The two charts, each can be hidden
+      const auto chartLayout = std::make_shared<UI::StackLayout>(uiFactory->GetContext());
+      chartLayout->SetOrientation(UI::LayoutOrientation::Vertical);
+      chartLayout->SetAlignmentX(UI::ItemAlignment::Stretch);
+      chartLayout->AddChild(m_ui.AnimationErrorChartBar);
+      chartLayout->AddChild(m_ui.WorkChartBar);
+      contentLayout->AddChild(chartLayout, 0, 1);
+    }
     mainLayout->AddChild(contentLayout, 0, 0);
     // The controls can be scrolled, as a low window does not have room for all of them
     stackLayout->SetMargin(DpThicknessF::Create(0, 0, 8, 0));
@@ -559,6 +576,7 @@ namespace Fsl
         }
       }
     }
+    UpdateAnimationError();
     if (m_framePacing)
     {
       const int64_t measuredTenths = m_framePacing->GetRunMeasuredTime().Ticks() / (TimeSpan::TicksPerMillisecond * 100);
@@ -682,6 +700,7 @@ namespace Fsl
     {
       // The frames that are remembered will not be measured anymore
       m_presentFeedback.ClearFrames();
+      m_animationError.Clear();
     }
     m_presentFeedbackEnabled = enabled;
     m_measuredRefreshDuration = enabled ? refreshDuration : TimeSpan();
@@ -694,6 +713,11 @@ namespace Fsl
     const bool hasIntendedDisplayTime = m_pacer && m_schedule.IntendedDisplayTime.Ticks() != 0;
     m_presentFeedback.AddFrame(presentId, m_frameStartTime,
                                hasIntendedDisplayTime ? std::optional<TickCount>(m_schedule.IntendedDisplayTime) : std::nullopt);
+    if (m_presentFeedbackEnabled)
+    {
+      // The moment the frame is drawn for, to be held against the time it is shown at
+      m_animationError.AddFrame(presentId, m_animationTime);
+    }
 
     {    // So the frame pacer can be told about the frame when its display time arrives, a few frames from now
       PacerPresentFrame& rPresentFrame = m_pacerPresentFrames[presentId % m_pacerPresentFrames.size()];
@@ -721,6 +745,14 @@ namespace Fsl
                                            const std::optional<TickCount> queueOperationsEndTime, const bool isComplete)
   {
     m_presentFeedback.AddPresentTiming(presentId, displayTime, queueOperationsEndTime);
+    if (displayTime.has_value())
+    {
+      m_animationError.AddDisplayTime(presentId, displayTime.value());
+    }
+    else if (isComplete)
+    {
+      m_animationError.AddNotShown(presentId);
+    }
 
     // The frame pacer is told when the frame was shown, if it measures the frames by that. A present the presentation engine is done
     // with and has no display time for is reported as not shown, so the frame pacer does not take the frame to be on time.
@@ -1486,6 +1518,10 @@ namespace Fsl
       rLog.RegisterColumn("pacerFeedbackLateRefreshes", FramePacingLogUnit::Count,
                           "The refreshes the display fell behind the swap intervals of the frames by its display times, counted since the "
                           "pacer was made: the count of the display to hold against the late frames of the frame pacer");
+    rColumns.AnimationError = rLog.RegisterColumn(
+      "animationErrorTicks", FramePacingLogUnit::DurationTicks,
+      "The animation error of the frame by the display times the system reports: how far the animation moved from the frame presented "
+      "before it, less how long after that frame it was shown. Negative: shown too late. Empty unless both frames have a display time");
     rLog.SetLogFact("sample.presentMethod", m_presentMethod == SamplePresentMethod::WaitThenPresent ? "WaitThenPresent" : "SwapInterval");
     rLog.SetLogFact("sample.pacerProfile", m_pacerProfile == SamplePacerProfile::RenderLate
                                              ? "late"
@@ -1866,7 +1902,8 @@ namespace Fsl
       const char* const pszReason =
         !m_presentTimingSupported ? NotSupportedValue : (m_ui.SwitchPresentTiming->IsChecked() ? NotMeasuredValue : SwitchedOffValue);
       for (UI::Label* pLabel :
-           {rStats.DisplayError.get(), rStats.DisplayInterval.get(), rStats.Latency.get(), rStats.TimedFrames.get(), rStats.DisplayRefresh.get()})
+           {rStats.DisplayError.get(), rStats.DisplayInterval.get(), rStats.AnimationError.get(), rStats.Latency.get(), rStats.TimedFrames.get(),
+            rStats.DisplayRefresh.get()})
       {
         pLabel->SetContent(pszReason);
       }
@@ -1893,6 +1930,20 @@ namespace Fsl
     else
     {
       rStats.DisplayInterval->SetContent(UnknownValue);
+    }
+    {
+      // How far the animation was off where the frames were shown, which is what is seen as stutter
+      const SampleAnimationErrorStats animationErrorStats = m_animationError.CalcStats();
+      if (animationErrorStats.Frames > 0u)
+      {
+        SetFormattedContent(*rStats.AnimationError, "{} of {} over {:.0f} ms (worst {:+.2f})", animationErrorStats.ErrorFrames,
+                            animationErrorStats.Frames, SampleAnimationError::ErrorThreshold.TotalMilliseconds(),
+                            animationErrorStats.WorstError.TotalMilliseconds());
+      }
+      else
+      {
+        rStats.AnimationError->SetContent(UnknownValue);
+      }
     }
     if (stats.AverageLatency.has_value() && stats.AverageQueueTime.has_value())
     {
@@ -2011,6 +2062,7 @@ namespace Fsl
     // What the measured presents say: when the frames really reached the display
     rPacerStats.DisplayError = addStatsRow(*pacerGrid, pacerRow, "Display error");
     rPacerStats.DisplayInterval = addStatsRow(*pacerGrid, pacerRow, "Display interval");
+    rPacerStats.AnimationError = addStatsRow(*pacerGrid, pacerRow, "Animation error");
     rPacerStats.Latency = addStatsRow(*pacerGrid, pacerRow, "Latency");
     rPacerStats.TimedFrames = addStatsRow(*pacerGrid, pacerRow, "Timed frames");
     rPacerStats.GpuWork = addStatsRow(*pacerGrid, pacerRow, "GPU work");
@@ -2088,6 +2140,113 @@ namespace Fsl
   }
 
 
+  std::shared_ptr<UI::BaseWindow> FramePacingShared::CreateAnimationErrorChartBar(UI::Theme::IThemeControlFactory& rUIFactory)
+  {
+    const auto context = rUIFactory.GetContext();
+
+    // The animation error of every frame, drawn as the report of the mb-framepacing tools draws it (see SampleAnimationErrorChart)
+    m_ui.AnimationErrorChart = std::make_shared<SampleAnimationErrorChart>(context);
+    m_ui.AnimationErrorChart->SetAlignmentX(UI::ItemAlignment::Stretch);
+    m_ui.AnimationErrorChart->SetAlignmentY(UI::ItemAlignment::Stretch);
+    m_ui.AnimationErrorChart->SetFillSprite(rUIFactory.GetResources().GetBasicFillSprite(false));
+
+    // The labels of the two dashed lines. The scale is two refreshes to each side, so the lines are a quarter of the height from
+    // the top and from the bottom: the label of the upper one is above it, the one of the lower one below it, as in the report
+    m_ui.LabelAnimationErrorEarly = rUIFactory.CreateLabel("+1 refresh");
+    m_ui.LabelAnimationErrorEarly->SetFontColor(AnimationErrorChartRefreshColor);
+    m_ui.LabelAnimationErrorEarly->SetAlignmentX(UI::ItemAlignment::Far);
+    m_ui.LabelAnimationErrorEarly->SetAlignmentY(UI::ItemAlignment::Far);
+    m_ui.LabelAnimationErrorLate = rUIFactory.CreateLabel("-1 refresh");
+    m_ui.LabelAnimationErrorLate->SetFontColor(AnimationErrorChartRefreshColor);
+    m_ui.LabelAnimationErrorLate->SetAlignmentX(UI::ItemAlignment::Far);
+    m_ui.LabelAnimationErrorLate->SetAlignmentY(UI::ItemAlignment::Near);
+    const auto labelGrid = std::make_shared<UI::GridLayout>(context);
+    labelGrid->SetAlignmentX(UI::ItemAlignment::Stretch);
+    labelGrid->SetAlignmentY(UI::ItemAlignment::Stretch);
+    labelGrid->AddColumnDefinition(UI::GridColumnDefinition(UI::GridUnitType::Star, 1.0f));
+    labelGrid->AddRowDefinition(UI::GridRowDefinition(UI::GridUnitType::Star, 1.0f));
+    labelGrid->AddRowDefinition(UI::GridRowDefinition(UI::GridUnitType::Star, 2.0f));
+    labelGrid->AddRowDefinition(UI::GridRowDefinition(UI::GridUnitType::Star, 1.0f));
+    labelGrid->AddChild(m_ui.LabelAnimationErrorEarly, 0, 0);
+    labelGrid->AddChild(m_ui.LabelAnimationErrorLate, 0, 2);
+
+    // The legend says where the display times are from: they are what the system reports and not a measurement of the display
+    const auto labelError = rUIFactory.CreateLabel("Animation error");
+    labelError->SetFontColor(AnimationErrorChartBarColor);
+    const auto legend = std::make_shared<UI::StackLayout>(context);
+    legend->SetOrientation(UI::LayoutOrientation::Vertical);
+    legend->SetAlignmentY(UI::ItemAlignment::Center);
+    legend->AddChild(labelError);
+    legend->AddChild(rUIFactory.CreateLabel("up: shown too soon"));
+    legend->AddChild(rUIFactory.CreateLabel("down: shown too late"));
+    legend->AddChild(rUIFactory.CreateLabel("by the display times"));
+    legend->AddChild(rUIFactory.CreateLabel("the system reports"));
+
+    const auto grid = std::make_shared<UI::GridLayout>(context);
+    grid->SetAlignmentX(UI::ItemAlignment::Stretch);
+    grid->SetMargin(DpThicknessF::Create(8, 0, 8, 0));
+    grid->AddColumnDefinition(UI::GridColumnDefinition(UI::GridUnitType::Auto));
+    grid->AddColumnDefinition(UI::GridColumnDefinition(UI::GridUnitType::Fixed, 8));
+    grid->AddColumnDefinition(UI::GridColumnDefinition(UI::GridUnitType::Star, 1.0f));
+    grid->AddRowDefinition(UI::GridRowDefinition(UI::GridUnitType::Fixed, AnimationErrorChartHeightDp));
+    grid->AddChild(legend, 0, 0);
+    grid->AddChild(m_ui.AnimationErrorChart, 2, 0);
+    // In the same cell as the chart, on top of it
+    grid->AddChild(labelGrid, 2, 0);
+    return rUIFactory.CreateBottomBar(grid, UI::Theme::BarType::Transparent);
+  }
+
+
+  void FramePacingShared::UpdateAnimationError()
+  {
+    const double refreshRateHz = GetRefreshRateHz();
+    const TimeSpan refreshPeriod(refreshRateHz > 0.0 ? std::llround(static_cast<double>(TimeSpan::TicksPerSecond) / refreshRateHz) : 0);
+    if (refreshPeriod != m_animationErrorRefreshPeriod)
+    {
+      // The chart is in refreshes: what a refresh is in time is said by the labels of its lines, and the band of no error is a time
+      m_animationErrorRefreshPeriod = refreshPeriod;
+      m_ui.AnimationErrorChart->SetNoErrorBand(SampleAnimationError::ToRefreshThousandths(SampleAnimationError::ErrorThreshold, refreshPeriod));
+      if (refreshPeriod.Ticks() > 0)
+      {
+        SetFormattedContent(*m_ui.LabelAnimationErrorEarly, "+1 refresh ({:.1f} ms)", refreshPeriod.TotalMilliseconds());
+        SetFormattedContent(*m_ui.LabelAnimationErrorLate, "-1 refresh ({:.1f} ms)", refreshPeriod.TotalMilliseconds());
+      }
+      else
+      {
+        m_ui.LabelAnimationErrorEarly->SetContent("+1 refresh");
+        m_ui.LabelAnimationErrorLate->SetContent("-1 refresh");
+      }
+    }
+
+    // The frames whose display times have come by now: they come a few frames after the frame, so the chart is that far behind
+    const bool isChartShown = m_ui.SwitchAnimationErrorChart->IsChecked();
+    SampleAnimationErrorRecord record;
+    while (m_animationError.TryPop(record))
+    {
+      if (isChartShown)
+      {
+        if (record.IsJudged)
+        {
+          m_ui.AnimationErrorChart->AddError(SampleAnimationError::ToRefreshThousandths(record.Error, refreshPeriod));
+        }
+        else
+        {
+          m_ui.AnimationErrorChart->AddGap();
+        }
+      }
+      if (record.IsJudged && m_frameLog)
+      {
+        // In the row of the frame it is the error of
+        const LogPresentFrame& presentFrame = m_logPresentFrames[record.PresentId % m_logPresentFrames.size()];
+        if (presentFrame.PresentId == record.PresentId)
+        {
+          m_frameLog->SetLogValueAt(presentFrame.FrameIndex, m_logColumns.AnimationError, record.Error);
+        }
+      }
+    }
+  }
+
+
   void FramePacingShared::UpdateStatsVisibility()
   {
     const auto setVisible = [](UI::BaseWindow& rWindow, const bool visible)
@@ -2101,6 +2260,8 @@ namespace Fsl
     setVisible(*m_ui.MarkerStatsOverlay, m_ui.SwitchMarkerStats->IsChecked());
     setVisible(*m_ui.PacerStatsOverlay, m_ui.SwitchPacerStats->IsChecked());
     setVisible(*m_ui.WorkChartBar, m_ui.SwitchWorkChart->IsChecked());
+    // There is only something to draw where the app is told when its frames were shown
+    setVisible(*m_ui.AnimationErrorChartBar, m_ui.SwitchAnimationErrorChart->IsChecked() && m_presentFeedbackEnabled);
   }
 
 

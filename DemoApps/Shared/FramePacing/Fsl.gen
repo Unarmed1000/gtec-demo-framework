@@ -8,6 +8,8 @@
     <Dependency Name="FslSimpleUI.App.Theme" Access="Private"/>
     <Dependency Name="FslSimpleUI.Controls.Charts" Access="Private"/>
     <Dependency Name="FslSimpleUI.Controls.Charts.Common" Access="Private"/>
+    <!-- The chart of the animation error draws its own mesh -->
+    <Dependency Name="FslSimpleUI.Render.Builder" Access="Private"/>
     <!-- The experimental frame pacer of the mb-framepacing SDK, the sample runs without it where the SDK is not available -->
     <Platform Name="Android;Apple;RDK_Yocto;Ubuntu;Windows;QNX;Emscripten">
       <Dependency Name="mb_framepacing" Access="Private"/>

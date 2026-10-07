@@ -41,6 +41,7 @@
 #include <Shared/FramePacing/RaymarchParams.hpp>
 #include <Shared/FramePacing/SampleConfig.hpp>
 #include <Shared/FramePacing/SampleFrameStats.hpp>
+#include <Shared/FramePacing/SampleAnimationError.hpp>
 #include <Shared/FramePacing/SampleFrameWork.hpp>
 #include <Shared/FramePacing/SamplePacer.hpp>
 #include <Shared/FramePacing/SamplePacerHold.hpp>
@@ -60,6 +61,7 @@ namespace Fsl
 {
   class IFramePacingFrameLog;
   class IFramePacingMarkerService;
+  class SampleAnimationErrorChart;
   namespace UI
   {
     class BaseWindow;
@@ -132,6 +134,7 @@ namespace Fsl
       //! What the measured presents say (only an app that measures them has values for these)
       std::shared_ptr<UI::Label> DisplayError;
       std::shared_ptr<UI::Label> DisplayInterval;
+      std::shared_ptr<UI::Label> AnimationError;
       std::shared_ptr<UI::Label> Latency;
       std::shared_ptr<UI::Label> TimedFrames;
       std::shared_ptr<UI::Label> GpuWork;
@@ -200,6 +203,7 @@ namespace Fsl
       std::shared_ptr<UI::BaseWindow> PacerStatsOverlay;
       //! The chart of the work per frame at the bottom, and the test pattern (the moving bar and box): each has a switch too
       std::shared_ptr<UI::Switch> SwitchWorkChart;
+      std::shared_ptr<UI::Switch> SwitchAnimationErrorChart;
       std::shared_ptr<UI::Switch> SwitchTestPattern;
       //! The bar with the controls at the right of the window
       std::shared_ptr<UI::BaseWindow> RightBar;
@@ -211,6 +215,11 @@ namespace Fsl
       std::shared_ptr<UI::Switch> SwitchPresentTiming;
       std::shared_ptr<UI::Switch> SwitchGpuTimeline;
       std::shared_ptr<UI::BaseWindow> WorkChartBar;
+      std::shared_ptr<UI::BaseWindow> AnimationErrorChartBar;
+      std::shared_ptr<SampleAnimationErrorChart> AnimationErrorChart;
+      //! The labels of the lines of the chart where a frame is a refresh too soon and a refresh too late
+      std::shared_ptr<UI::Label> LabelAnimationErrorEarly;
+      std::shared_ptr<UI::Label> LabelAnimationErrorLate;
       MarkerStatsUIRecord MarkerStats;
       PacerStatsUIRecord PacerStats;
     };
@@ -270,6 +279,10 @@ namespace Fsl
     std::shared_ptr<UI::ChartData> m_workChartData;
     //! Puts what is measured about the work on a frame together for the chart: the GPU time of a frame comes frames later
     SampleFrameWork m_frameWork;
+    //! The animation error of the frames, from the display times the system reports: they come frames after the frame
+    SampleAnimationError m_animationError;
+    //! The refresh period the labels and the band of the chart of the animation error were made for
+    TimeSpan m_animationErrorRefreshPeriod;
     //! After a delayed present (WaitForPresent) the next frame does not start before this (zero = no wait)
     TickCount m_nextFrameStartTime;
     //! The time the current frame is animated for
@@ -382,6 +395,7 @@ namespace Fsl
       FramePacingLogColumn FeedbackNotShown;
       FramePacingLogColumn FeedbackMissing;
       FramePacingLogColumn FeedbackLateRefreshes;
+      FramePacingLogColumn AnimationError;
       FramePacingLogColumn HoldMethod;
       FramePacingLogColumn HoldTarget;
       FramePacingLogColumn PresentTarget;
@@ -627,6 +641,9 @@ namespace Fsl
     std::shared_ptr<UI::BaseWindow> CreateStatsWindow(UI::Theme::IThemeControlFactory& rUIFactory);
     //! Create the bar at the bottom with the chart of the work per frame
     std::shared_ptr<UI::BaseWindow> CreateWorkChartBar(UI::Theme::IThemeControlFactory& rUIFactory);
+    std::shared_ptr<UI::BaseWindow> CreateAnimationErrorChartBar(UI::Theme::IThemeControlFactory& rUIFactory);
+    //! Take the frames whose display times have come: their animation error goes to the chart and to the frame log
+    void UpdateAnimationError();
     //! Show the overlays and the chart their switches are on for
     void UpdateStatsVisibility();
     //! Let the service draw the sync marker while its switch is on

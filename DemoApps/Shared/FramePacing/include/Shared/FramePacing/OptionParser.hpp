@@ -39,6 +39,7 @@ namespace Fsl
     bool m_hideMarkerStats{false};
     bool m_hidePacingStats{false};
     bool m_hideWorkChart{false};
+    bool m_hideAnimationErrorChart{false};
     bool m_hideTestPattern{false};
     SampleBoxAnimationSpeed m_boxAnimation{SampleBoxAnimationSpeed::Off};
     int32_t m_timedRunSeconds{SampleConfig::TimedRunSeconds.Get()};
@@ -76,6 +77,12 @@ namespace Fsl
     [[nodiscard]] bool IsWorkChartHidden() const noexcept
     {
       return m_hideWorkChart;
+    }
+
+    //! @brief Check if the sample starts with the chart of the animation error hidden.
+    [[nodiscard]] bool IsAnimationErrorChartHidden() const noexcept
+    {
+      return m_hideAnimationErrorChart;
     }
 
     //! @brief Check if the sample starts with the test pattern (the moving bar and box) hidden.

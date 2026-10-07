@@ -170,6 +170,18 @@ shows the CPU time only. The moving bar and box (the test pattern) can be switch
 off as well (`Show the test pattern`, `--HideTestPattern`), and the sync marker at the bottom left can be switched on (`Draw the sync
 marker`, or start with it with `--FramePacing.SyncMarker`).
 
+Where the app is told when its frames were shown (the Vulkan sample with `VK_EXT_present_timing`, see the rows of the measured presents
+below) a second chart above the work chart shows the animation error of every frame (`Show the animation error chart`, or start without
+it with `--HideAnimationErrorChart`). A frame is drawn for a moment and is seen at another one. Between two frames that are shown one
+after the other the animation should move as far as the time that passes on screen, and the difference is the animation error, which
+is what is seen as stutter: animation error = how far the animation moved from the frame before it, less how long after that frame it
+was shown. It is the measure of the mb-framepacing tools, and the chart draws as the animation error panel of their report does: a bar
+for each frame from the line of no error, up when the frame was shown too soon and down when it was shown too late, a faint band for
+what counts as no error (1 ms to each side) and a dashed line where a frame is a whole refresh off, which is a frame that was shown a
+refresh late or early. The scale is two refreshes to each side, a bar that would be longer ends at the edge with a white mark. A frame
+without a display time is not judged and neither is the frame after it: they are a gap. The display times are the ones the system
+reports, which is not a measurement of the display: a capture of the marker is that.
+
 The box animation of the mb-framepacing-explained videos can be shown as well (`Show the box animation`, `Fast box animation`, or start with
 it with `--BoxAnimation normal` or `--BoxAnimation fast`; it is off by default). It is a white box that eases from side to side with a
 short rest at both ends, in the part of the window that is left of the controls: a round trip takes four seconds, two when fast. The box is
@@ -353,6 +365,8 @@ extension and `switched off` while the switch is off. Nothing else in the sample
   - `Display error`: the time from the display time the pacer aimed for to the measured one, the average and the worst of the last frames.
   - `Display interval`: the time between two frames in a row reaching the display, the average with the shortest and the longest one. This
     is how even the frames really are.
+  - `Animation error`: how many of the last frames that could be judged (240 at the most) had a animation error of more than 1 ms, and
+    the worst one with its sign (negative: shown too late). It is what the animation error chart draws.
   - `Latency`: the time from the start of a frame to it reaching the display, and how long after the start it was handed over.
   - `Timed frames`: how many of the measured frames have a display time. The presentation engine does not have one for every frame, which
     does not mean that the frame was not shown.
@@ -562,6 +576,7 @@ Column | Unit | Description
 `pacerFeedbackNotShown` | count | The frames that were reported to the frame pacer as never shown, counted since the pacer was made
 `pacerFeedbackMissing` | count | The frames the frame pacer was given nothing about, counted since the pacer was made: feedback for a newer frame came first, or the frame got too old
 `pacerFeedbackLateRefreshes` | count | The refreshes the display fell behind the swap intervals of the frames by its display times, counted since the pacer was made: the count of the display to hold against the late frames of the frame pacer
+`animationErrorTicks` | durationTicks | The animation error of the frame by the display times the system reports: how far the animation moved from the frame presented before it, less how long after that frame it was shown. Negative: shown too late. Empty unless both frames have a display time
 
 `presentTimingRequested`, `resultReadAtFrame` and the stage times tell three cases apart: a present that was not asked to be timed
 (the results of too many presents were outstanding), a present that was reported without a display time (the image did not reach the
