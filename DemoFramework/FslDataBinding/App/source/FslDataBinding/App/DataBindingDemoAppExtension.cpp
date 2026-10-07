@@ -87,6 +87,11 @@ namespace Fsl
     FSL_PARAM_NOT_USED(event);
   }
 
+  void DataBindingDemoAppExtension::OnWindowFocusEvent(const WindowFocusEvent& event)
+  {
+    FSL_PARAM_NOT_USED(event);
+  }
+
   void DataBindingDemoAppExtension::ConfigurationChanged(const DemoWindowMetrics& windowMetrics)
   {
     FSL_PARAM_NOT_USED(windowMetrics);

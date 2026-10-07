@@ -194,14 +194,40 @@ namespace Fsl::UI
   {
     assert(m_inputModule);
 
+    m_lastPositionPx = positionPx;
+    m_lastTimestamp = timestamp;
+    if (m_clickCanceled)
+    {
+      m_clickCanceled = false;
+      if (!leftButtonDown)
+      {
+        // The release of a click that was canceled: there is nothing to end
+        m_leftButtonDown = false;
+        return false;
+      }
+    }
+
     m_leftButtonDown = leftButtonDown;
     const auto transactionState = m_leftButtonDown ? EventTransactionState::Begin : EventTransactionState::End;
     return m_inputModule->SendClickEvent(timestamp, 0, 0, transactionState, false, positionPx, isTouch);
   }
 
 
+  bool UIManager::SendInputCancelEvent()
+  {
+    assert(m_inputModule);
+
+    // The button is no longer held for the UI: its release, if it ever comes, ends nothing
+    m_clickCanceled = m_leftButtonDown;
+    m_leftButtonDown = false;
+    return m_inputModule->CancelInput(m_lastTimestamp, 0, 0, m_lastPositionPx);
+  }
+
+
   bool UIManager::SendMouseMoveEvent(const MillisecondTickCount32 timestamp, const PxPoint2 positionPx, const bool isTouch)
   {
+    m_lastPositionPx = positionPx;
+    m_lastTimestamp = timestamp;
     bool isHandled = m_inputModule->MouseMove(timestamp, 0, 0, positionPx, isTouch);
 
     if (m_leftButtonDown)

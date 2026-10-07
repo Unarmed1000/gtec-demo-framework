@@ -291,6 +291,14 @@ namespace Fsl
           OnTimeStateEvent(timeStateEvent);
           break;
         }
+      case EventType::WindowFocus:
+        {
+          const WindowFocusEvent windowFocusEvent(*pBasicEvent);
+          // Call all registered extensions
+          CallExtensions(m_extensions, [&windowFocusEvent](IDemoAppExtension& rExt) { rExt.OnWindowFocusEvent(windowFocusEvent); });
+          OnWindowFocusEvent(windowFocusEvent);
+          break;
+        }
       default:
         FSLLOG3_DEBUG_WARNING("Unhandled event: {}", static_cast<int32_t>(pEvent->GetEventType()));
         break;

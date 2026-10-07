@@ -44,6 +44,7 @@ namespace Fsl
   class MouseWheelEvent;
   class RawMouseMoveEvent;
   class TimeStateEvent;
+  class WindowFocusEvent;
 
   class IDemoAppExtension
   {
@@ -56,6 +57,8 @@ namespace Fsl
     virtual void OnMouseWheelEvent(const MouseWheelEvent& event) = 0;
     virtual void OnRawMouseMoveEvent(const RawMouseMoveEvent& event) = 0;
     virtual void OnTimeStateEvent(const TimeStateEvent& event) = 0;
+    //! The window got or lost the input focus. The app keeps running without it.
+    virtual void OnWindowFocusEvent(const WindowFocusEvent& event) = 0;
     virtual void ConfigurationChanged(const DemoWindowMetrics& windowMetrics) = 0;
     virtual void Begin(const DemoAppExtensionCallOrder callOrder) = 0;
     virtual void PreUpdate(const DemoAppExtensionCallOrder callOrder, const DemoTime& demoTime) = 0;

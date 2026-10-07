@@ -92,6 +92,11 @@ namespace Fsl
       std::shared_ptr<InputModule> m_inputModule;
       std::shared_ptr<ExternalModules> m_externalModules;
       bool m_leftButtonDown;
+      //! Where and when the last mouse event was: a cancel comes without them
+      PxPoint2 m_lastPositionPx;
+      MillisecondTickCount32 m_lastTimestamp;
+      //! The click that was held was canceled (SendInputCancelEvent), so its release has nothing to end
+      bool m_clickCanceled{false};
 
     public:
       UIManager(const UIManager&) = delete;
@@ -119,6 +124,11 @@ namespace Fsl
       //! @note Returns true if the event was handled by a UIElement
       bool SendMouseButtonEvent(const MillisecondTickCount32 timestamp, const PxPoint2 positionPx, const bool leftButtonDown, const bool isTouch);
       bool SendMouseMoveEvent(const MillisecondTickCount32 timestamp, const PxPoint2 positionPx, const bool isTouch);
+      //! @brief Cancel the input that was begun and not ended (a button that is held, a drag, the mouse over), as a app does when
+      //!        its window loses the input focus: the release may never come. The windows get a canceled event, so nothing is
+      //!        clicked. The release of the button that was held is taken without a effect when it comes.
+      //! @note Returns true if a click was canceled
+      bool SendInputCancelEvent();
       //! @brief Send a mouse wheel event to the window under the position.
       //! @param delta how far the wheel was turned since the last event, 120 for a notch (UIManager::MouseWheelDeltaPerNotch),
       //!              positive away from the user. A wheel with fine steps and a touchpad give smaller values.

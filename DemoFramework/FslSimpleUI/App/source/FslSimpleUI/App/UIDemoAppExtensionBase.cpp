@@ -32,6 +32,7 @@
 #include <FslBase/Time/TimeSpan.hpp>
 #include <FslBase/UncheckedNumericCast.hpp>
 #include <FslDemoApp/Base/DemoAppConfig.hpp>
+#include <FslDemoApp/Base/Service/Events/Basic/WindowFocusEvent.hpp>
 #include <FslDemoService/Graphics/IGraphicsService.hpp>
 #include <FslDemoService/Profiler/DefaultProfilerColors.hpp>
 #include <FslDemoService/Profiler/IProfilerService.hpp>
@@ -191,6 +192,18 @@ namespace Fsl
       event.Handled();
     }
     DataBindingDemoAppExtension::OnMouseWheelEvent(event);
+  }
+
+
+  void UIDemoAppExtensionBase::OnWindowFocusEvent(const WindowFocusEvent& event)
+  {
+    if (!event.IsFocused())
+    {
+      // What was begun in the window may never be finished there: a button that is held, a drag, the mouse over. So it is
+      // canceled, and nothing is done when the focus comes back.
+      m_activitySystem->SendInputCancelEvent();
+    }
+    DataBindingDemoAppExtension::OnWindowFocusEvent(event);
   }
 
   void UIDemoAppExtensionBase::ConfigurationChanged(const DemoWindowMetrics& windowMetrics)

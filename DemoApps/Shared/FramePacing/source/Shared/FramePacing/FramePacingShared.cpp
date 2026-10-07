@@ -25,6 +25,9 @@
 #include <FslBase/Math/Pixel/PxRectangle.hpp>
 #include <FslBase/Math/Pixel/PxSize2D.hpp>
 #include <FslBase/Span/SpanUtil_Array.hpp>
+#include <FslBase/Time/NanosecondTickCountUtil.hpp>
+#include <FslBase/Time/NanosecondTimeSpanUtil.hpp>
+#include <FslDemoApp/Base/Service/Events/Basic/WindowFocusEvent.hpp>
 #include <FslDemoApp/Shared/Host/DemoWindowMetrics.hpp>
 #include <FslDemoHost/Base/Service/WindowHost/IWindowHostInfo.hpp>
 #include <FslDemoService/FramePacingMarker/FramePacingFrameSchedule.hpp>
@@ -38,8 +41,6 @@
 #include <FslNativeWindow/Base/INativeWindow.hpp>
 #include <FslNativeWindow/Base/NativeWindowDisplayInfo.hpp>
 #include <FslNativeWindow/Base/NativeWindowTimingSupport.hpp>
-#include <FslBase/Time/NanosecondTickCountUtil.hpp>
-#include <FslBase/Time/NanosecondTimeSpanUtil.hpp>
 #include <FslNativeWindow/Base/NativeWindowVSyncInfo.hpp>
 #include <FslNativeWindow/Base/NativeWindowVariableRefreshInfo.hpp>
 #include <FslNativeWindow/Base/VirtualKey.hpp>
@@ -505,6 +506,17 @@ namespace Fsl
       theEvent->Handled();
       StartTimedRun();
     }
+  }
+
+
+  void FramePacingShared::OnWindowFocusEvent(const WindowFocusEvent& event)
+  {
+    // The app keeps drawing without the input focus, and a window system can treat such a window differently: the log says when
+    if (m_frameLog)
+    {
+      m_frameLog->AddLogEvent("windowFocus", fmt::format("focused={}", event.IsFocused() ? 1 : 0));
+    }
+    FSLLOG3_VERBOSE("FramePacing: the window {} the input focus", event.IsFocused() ? "got" : "lost");
   }
 
 
@@ -1901,9 +1913,8 @@ namespace Fsl
       // Supported and switched on but not measured: the surface does not support it
       const char* const pszReason =
         !m_presentTimingSupported ? NotSupportedValue : (m_ui.SwitchPresentTiming->IsChecked() ? NotMeasuredValue : SwitchedOffValue);
-      for (UI::Label* pLabel :
-           {rStats.DisplayError.get(), rStats.DisplayInterval.get(), rStats.AnimationError.get(), rStats.Latency.get(), rStats.TimedFrames.get(),
-            rStats.DisplayRefresh.get()})
+      for (UI::Label* pLabel : {rStats.DisplayError.get(), rStats.DisplayInterval.get(), rStats.AnimationError.get(), rStats.Latency.get(),
+                                rStats.TimedFrames.get(), rStats.DisplayRefresh.get()})
       {
         pLabel->SetContent(pszReason);
       }

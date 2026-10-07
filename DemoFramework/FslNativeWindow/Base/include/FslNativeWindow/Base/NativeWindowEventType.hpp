@@ -83,6 +83,11 @@ namespace Fsl
     GamepadConfiguration,
     //! The current state of a gamepad
     GamepadState,
+    //! The window got or lost the input focus of the window system (its keyboard focus). Unlike a deactivation it changes nothing
+    //! for the app, which keeps running and drawing.
+    //! Use NativeWindowEventHelper::EncodeWindowFocusEvent to create a NativeWindowEvent.
+    //! Use NativeWindowEventHelper::DecodeWindowFocusEvent to decode a NativeWindowEvent.
+    WindowFocus,
   };
 }
 

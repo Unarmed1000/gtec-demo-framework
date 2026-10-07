@@ -109,6 +109,18 @@ namespace Fsl::UI
   }
 
 
+  bool HitBasedInputSender::HasClickHistory() const
+  {
+    return m_stateEventSenderClickEvent->HasHistory();
+  }
+
+
+  bool HitBasedInputSender::HasMouseOverHistory() const
+  {
+    return m_stateEventSenderMouseOverEvent->HasHistory();
+  }
+
+
   bool HitBasedInputSender::HasActiveClickEventThatIsNot(const std::shared_ptr<TreeNode>& target) const
   {
     return m_stateEventSenderClickEvent->HasActiveClickEventThatIsNot(target);

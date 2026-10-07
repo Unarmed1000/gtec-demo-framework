@@ -842,11 +842,26 @@ namespace Fsl
 
     void OnKeyboardEnter(void* data, wl_keyboard* keyboard, uint32_t serial, wl_surface* surface, wl_array* keys)
     {
+      // The surface of the window has the keyboard focus from here on
+      auto* pContext = static_cast<PlatformNativeWindowSystemContextWayland*>(data);
+      assert(pContext != nullptr);
+      const std::shared_ptr<INativeWindowEventQueue> eventQueue = pContext->EventQueue.lock();
+      if (eventQueue)
+      {
+        eventQueue->PostEvent(NativeWindowEventHelper::EncodeWindowFocusEvent(true));
+      }
     }
 
 
     void OnKeyboardLeave(void* data, wl_keyboard* keyboard, uint32_t serial, wl_surface* surface)
     {
+      auto* pContext = static_cast<PlatformNativeWindowSystemContextWayland*>(data);
+      assert(pContext != nullptr);
+      const std::shared_ptr<INativeWindowEventQueue> eventQueue = pContext->EventQueue.lock();
+      if (eventQueue)
+      {
+        eventQueue->PostEvent(NativeWindowEventHelper::EncodeWindowFocusEvent(false));
+      }
     }
 
 
@@ -1806,8 +1821,7 @@ namespace Fsl
     {
       return {};
     }
-    return NativeWindowDisplayInfo(
-      NanosecondTimeSpanUtil::FromFrequencyRational(static_cast<uint64_t>(pOutputInfo->CurrentRefreshMilliHz), 1000u));
+    return NativeWindowDisplayInfo(NanosecondTimeSpanUtil::FromFrequencyRational(static_cast<uint64_t>(pOutputInfo->CurrentRefreshMilliHz), 1000u));
   }
 }
 #endif

@@ -122,6 +122,27 @@ namespace Fsl::UI
   }
 
 
+  bool InputModule::CancelInput(const MillisecondTickCount32 timestamp, const int32_t sourceId, const int32_t sourceSubId,
+                                const PxPoint2& screenPositionPx)
+  {
+    const auto mouseOverTarget = m_mouseOver.Target.lock();
+    m_mouseOver.Target.reset();
+    if (mouseOverTarget && m_hitBasedInputSender->HasMouseOverHistory())
+    {
+      FSLLOG3_VERBOSE5("SendMouseOver cancel");
+      m_hitBasedInputSender->SendMouseOverEvent(timestamp, sourceId, sourceSubId, EventTransactionState::Canceled, false, screenPositionPx,
+                                                mouseOverTarget);
+    }
+    if (!m_hitBasedInputSender->HasClickHistory())
+    {
+      return false;
+    }
+    FSLLOG3_VERBOSE5("SendClick cancel");
+    m_hitBasedInputSender->SendInputClickEvent(timestamp, sourceId, sourceSubId, EventTransactionState::Canceled, false, screenPositionPx);
+    return true;
+  }
+
+
   bool InputModule::SendScrollWheelEvent(const MillisecondTickCount32 timestamp, const int32_t sourceId, const PxPoint2& screenPositionPx,
                                          const PxValueF scrollDeltaPxf)
   {

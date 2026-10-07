@@ -44,6 +44,7 @@
 #include <FslDemoApp/Base/Service/Events/Basic/MouseWheelEvent.hpp>
 #include <FslDemoApp/Base/Service/Events/Basic/RawMouseMoveEvent.hpp>
 #include <FslDemoApp/Base/Service/Events/Basic/TimeStateEvent.hpp>
+#include <FslDemoApp/Base/Service/Events/Basic/WindowFocusEvent.hpp>
 #include <FslDemoApp/Base/Service/Persistent/IPersistentDataManager.hpp>
 #include <memory>
 
@@ -139,6 +140,12 @@ namespace Fsl
     }
 
     virtual void OnTimeStateEvent(const TimeStateEvent& event)
+    {
+      FSL_PARAM_NOT_USED(event);
+    }
+
+    //! The window got or lost the input focus of the window system. The app keeps running and drawing without it.
+    virtual void OnWindowFocusEvent(const WindowFocusEvent& event)
     {
       FSL_PARAM_NOT_USED(event);
     }

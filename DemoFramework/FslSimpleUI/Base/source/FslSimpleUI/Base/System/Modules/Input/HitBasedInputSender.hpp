@@ -63,6 +63,10 @@ namespace Fsl
 
       [[nodiscard]] bool HasActiveClickEvent() const noexcept;
       [[nodiscard]] bool HasActiveClickEventThatIsNot(const std::shared_ptr<TreeNode>& target) const;
+      //! true from the begin of a click to its end or its cancel, also for a click no window took
+      [[nodiscard]] bool HasClickHistory() const;
+      //! true from the begin of a mouse over to its end or its cancel
+      [[nodiscard]] bool HasMouseOverHistory() const;
 
       bool SendMouseOverEvent(const MillisecondTickCount32 timestamp, const int32_t sourceId, const int32_t sourceSubId,
                               const EventTransactionState state, const bool isRepeat, const PxPoint2& screenPositionPx,

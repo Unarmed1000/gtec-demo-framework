@@ -89,6 +89,13 @@ namespace Fsl
   }
 
 
+  void FramePacing::OnWindowFocusEvent(const WindowFocusEvent& event)
+  {
+    base_type::OnWindowFocusEvent(event);
+    m_shared.OnWindowFocusEvent(event);
+  }
+
+
   void FramePacing::ConfigurationChanged(const DemoWindowMetrics& windowMetrics)
   {
     base_type::ConfigurationChanged(windowMetrics);

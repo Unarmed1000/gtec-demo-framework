@@ -1,5 +1,3 @@
-#ifndef GLES3_FRAMEPACING_FRAMEPACING_HPP
-#define GLES3_FRAMEPACING_FRAMEPACING_HPP
 //****************************************************************************************************************************************************
 //* BSD 3-Clause License
 //*
@@ -22,41 +20,54 @@
 //* EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //****************************************************************************************************************************************************
 
-#include <FslDemoApp/OpenGLES3/DemoAppGLES3.hpp>
-#include <FslUtil/OpenGLES3/GLGpuFrameTimer.hpp>
-#include <Shared/FramePacing/EGL/EGLSwapInterval.hpp>
-#include <Shared/FramePacing/FramePacingShared.hpp>
-#include "RaymarchBackground.hpp"
+#include <FslBase/UnitTest/Helper/Common.hpp>
+#include <FslBase/UnitTest/Helper/TestFixtureFslBase.hpp>
+#include <FslDemoApp/Base/Service/Events/Basic/BasicEvent.hpp>
+#include <FslDemoApp/Base/Service/Events/Basic/TimeStateEvent.hpp>
+#include <FslDemoApp/Base/Service/Events/Basic/WindowFocusEvent.hpp>
+#include <FslDemoApp/Base/Service/Events/EventType.hpp>
+#include <stdexcept>
 
-namespace Fsl
+using namespace Fsl;
+
+namespace
 {
-  class FramePacing final : public DemoAppGLES3
-  {
-    using base_type = DemoAppGLES3;
-
-    //! All the actual sample code can be found in the shared class since its reused for all FramePacing samples.
-    FramePacingShared m_shared;
-
-    //! The raymarched background (the GPU load of the sample)
-    RaymarchBackground m_background;
-    //! The number of display refreshes the swap of the host holds a frame for
-    EGLSwapInterval m_swapInterval;
-    //! The time the GPU works on a frame (GL_EXT_disjoint_timer_query), read without waiting for the GPU
-    GLES3::GLGpuFrameTimer m_gpuTimer;
-    //! The frames since the clock of the GL was related to the clock of the framework (the first frame does it)
-    uint32_t m_framesSinceCalibration;
-
-  public:
-    explicit FramePacing(const DemoAppConfig& config);
-
-  protected:
-    void OnKeyEvent(const KeyEvent& event) final;
-    void OnWindowFocusEvent(const WindowFocusEvent& event) final;
-    void ConfigurationChanged(const DemoWindowMetrics& windowMetrics) final;
-    void Update(const DemoTime& demoTime) final;
-    void Draw(const FrameInfo& frameInfo) final;
-    void EndDraw(const FrameInfo& frameInfo) final;
-  };
+  using TestWindowFocusEvent = TestFixtureFslBase;
 }
 
-#endif
+
+TEST(TestWindowFocusEvent, Construct_Focused)
+{
+  const WindowFocusEvent event(true);
+
+  EXPECT_EQ(EventType::WindowFocus, event.GetEventType());
+  EXPECT_TRUE(event.IsFocused());
+}
+
+
+TEST(TestWindowFocusEvent, Construct_NotFocused)
+{
+  const WindowFocusEvent event(false);
+
+  EXPECT_EQ(EventType::WindowFocus, event.GetEventType());
+  EXPECT_FALSE(event.IsFocused());
+}
+
+
+TEST(TestWindowFocusEvent, FromBasicEvent_KeepsWhatWasEncoded)
+{
+  // The way a event reaches the app: as a basic event that is decoded again
+  const BasicEvent encodedFocused = WindowFocusEvent(true);
+  const BasicEvent encodedNotFocused = WindowFocusEvent(false);
+
+  EXPECT_TRUE(WindowFocusEvent(encodedFocused).IsFocused());
+  EXPECT_FALSE(WindowFocusEvent(encodedNotFocused).IsFocused());
+}
+
+
+TEST(TestWindowFocusEvent, FromBasicEvent_OfAnotherTypeThrows)
+{
+  const BasicEvent other = TimeStateEvent(TimeStateCommand::Realtime);
+
+  EXPECT_THROW(WindowFocusEvent{other}, std::invalid_argument);
+}

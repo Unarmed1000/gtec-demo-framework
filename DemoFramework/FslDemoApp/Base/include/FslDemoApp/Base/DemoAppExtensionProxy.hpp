@@ -132,6 +132,14 @@ namespace Fsl
       }
     }
 
+    void OnWindowFocusEvent(const WindowFocusEvent& event) override
+    {
+      if (m_proxy)
+      {
+        m_proxy->OnWindowFocusEvent(event);
+      }
+    }
+
     void ConfigurationChanged(const DemoWindowMetrics& windowMetrics) override
     {
       if (m_proxy)

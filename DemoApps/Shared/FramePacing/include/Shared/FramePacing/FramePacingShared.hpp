@@ -39,9 +39,9 @@
 #include <FslSimpleUI/Base/Control/SliderAndFmtValueLabel.hpp>
 #include <FslSimpleUI/Base/Control/Switch.hpp>
 #include <Shared/FramePacing/RaymarchParams.hpp>
+#include <Shared/FramePacing/SampleAnimationError.hpp>
 #include <Shared/FramePacing/SampleConfig.hpp>
 #include <Shared/FramePacing/SampleFrameStats.hpp>
-#include <Shared/FramePacing/SampleAnimationError.hpp>
 #include <Shared/FramePacing/SampleFrameWork.hpp>
 #include <Shared/FramePacing/SamplePacer.hpp>
 #include <Shared/FramePacing/SamplePacerHold.hpp>
@@ -74,6 +74,7 @@ namespace Fsl
   class INativeBatch2D;
   class INativeWindow;
   class KeyEvent;
+  class WindowFocusEvent;
 
   //! How the app holds a frame for the display refreshes the frame pacer of the sample decides on
   enum class SamplePresentMethod
@@ -478,6 +479,8 @@ namespace Fsl
 
     // Called from the parent app
     void OnKeyEvent(const KeyEvent& event);
+    //! The window got or lost the input focus: the frame log gets a event for it
+    void OnWindowFocusEvent(const WindowFocusEvent& event);
     void ConfigurationChanged(const DemoWindowMetrics& windowMetrics);
     //! @param demoTime the update time of the frame. The frame is animated for it unless the frame pacer is on.
     void Update(const DemoTime& demoTime);

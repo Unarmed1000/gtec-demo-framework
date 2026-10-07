@@ -51,6 +51,7 @@ namespace Fsl
 
   protected:
     void OnKeyEvent(const KeyEvent& event) final;
+    void OnWindowFocusEvent(const WindowFocusEvent& event) final;
     void ConfigurationChanged(const DemoWindowMetrics& windowMetrics) final;
     void Update(const DemoTime& demoTime) final;
     void Draw(const FrameInfo& frameInfo) final;

@@ -39,6 +39,7 @@
 #include <FslDemoApp/Base/Service/Events/Basic/MouseWheelEvent.hpp>
 #include <FslDemoApp/Base/Service/Events/Basic/RawMouseMoveEvent.hpp>
 #include <FslDemoApp/Base/Service/Events/Basic/TimeStateEvent.hpp>
+#include <FslDemoApp/Base/Service/Events/Basic/WindowFocusEvent.hpp>
 #include <FslDemoApp/Shared/Host/DemoWindowMetrics.hpp>
 
 namespace Fsl
@@ -69,6 +70,11 @@ namespace Fsl
       FSL_PARAM_NOT_USED(event);
     }
     void OnTimeStateEvent(const TimeStateEvent& event) override
+    {
+      FSL_PARAM_NOT_USED(event);
+    }
+
+    void OnWindowFocusEvent(const WindowFocusEvent& event) override
     {
       FSL_PARAM_NOT_USED(event);
     }

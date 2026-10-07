@@ -83,6 +83,7 @@ namespace Fsl
     void OnMouseWheelEvent(const MouseWheelEvent& event) final;
     void OnRawMouseMoveEvent(const RawMouseMoveEvent& event) final;
     void OnTimeStateEvent(const TimeStateEvent& event) final;
+    void OnWindowFocusEvent(const WindowFocusEvent& event) final;
     void ConfigurationChanged(const DemoWindowMetrics& windowMetrics) final;
     void Begin(const DemoAppExtensionCallOrder callOrder) final;
     void PreUpdate(const DemoAppExtensionCallOrder callOrder, const DemoTime& demoTime) final;

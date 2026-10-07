@@ -621,6 +621,15 @@ namespace Fsl
       case DestroyNotify:
         bQuit = true;
         break;
+      case FocusIn:
+      case FocusOut:
+        // A grab of the keyboard (a key chord of the window manager, a window that is dragged) takes the focus and gives it back:
+        // that is no change of the window that has the focus
+        if (eventQueue && event.xfocus.mode != NotifyGrab && event.xfocus.mode != NotifyUngrab)
+        {
+          eventQueue->PostEvent(NativeWindowEventHelper::EncodeWindowFocusEvent(event.type == FocusIn));
+        }
+        break;
       case ClientMessage:
         if (window)
         {
@@ -837,7 +846,7 @@ namespace Fsl
 
     // Listen for various events
     const long evMask = ExposureMask | StructureNotifyMask | VisibilityChangeMask | ButtonPressMask | ButtonReleaseMask | KeyPressMask |
-                        KeyReleaseMask | EnterWindowMask | LeaveWindowMask | PointerMotionMask;
+                        KeyReleaseMask | EnterWindowMask | LeaveWindowMask | PointerMotionMask | FocusChangeMask;
     XSelectInput(m_platformDisplay, m_platformWindow, evMask);
 
     // Enable some XRR events.

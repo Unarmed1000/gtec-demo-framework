@@ -57,6 +57,12 @@ namespace Fsl
     //! @brief Decode a window activation event
     static void DecodeWindowActivationEvent(const NativeWindowEvent& event, bool& rActivated) noexcept;
 
+    //! @brief Create a window focus event (the window got or lost the input focus)
+    static NativeWindowEvent EncodeWindowFocusEvent(const bool focused) noexcept;
+
+    //! @brief Decode a window focus event
+    static void DecodeWindowFocusEvent(const NativeWindowEvent& event, bool& rFocused) noexcept;
+
     //! @brief Create a window suspend event
     static NativeWindowEvent EncodeWindowSuspendEvent(const bool suspend) noexcept;
 

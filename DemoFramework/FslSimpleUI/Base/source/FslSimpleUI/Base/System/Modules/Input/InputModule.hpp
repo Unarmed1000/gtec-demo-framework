@@ -73,6 +73,11 @@ namespace Fsl
       bool SendClickEvent(const MillisecondTickCount32 timestamp, const int32_t sourceId, const int32_t sourceSubId,
                           const EventTransactionState state, const bool isRepeat, const PxPoint2& screenPositionPx, const bool isTouch);
 
+      //! @brief Cancel the input that was begun and not ended: the click that is held and the mouse over. The windows that took
+      //!        them get a event with EventTransactionState::Canceled, and nothing is left for a later end to end.
+      //! @return true if there was a click to cancel
+      bool CancelInput(const MillisecondTickCount32 timestamp, const int32_t sourceId, const int32_t sourceSubId, const PxPoint2& screenPositionPx);
+
       //! @brief Send a scroll wheel event to the top window under the position that takes the wheel
       //! @return true if a window handled it
       bool SendScrollWheelEvent(const MillisecondTickCount32 timestamp, const int32_t sourceId, const PxPoint2& screenPositionPx,

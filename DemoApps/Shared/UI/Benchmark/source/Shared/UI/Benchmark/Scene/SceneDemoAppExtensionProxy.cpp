@@ -126,6 +126,11 @@ namespace Fsl
     m_proxy.OnTimeStateEvent(event);
   }
 
+  void SceneDemoAppExtensionProxy::OnWindowFocusEvent(const WindowFocusEvent& event)
+  {
+    m_proxy.OnWindowFocusEvent(event);
+  }
+
   void SceneDemoAppExtensionProxy::ConfigurationChanged(const DemoWindowMetrics& windowMetrics)
   {
     m_proxy.ConfigurationChanged(windowMetrics);

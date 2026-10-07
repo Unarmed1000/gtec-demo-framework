@@ -31,6 +31,7 @@
 
 #include <FslBase/Log/Log3Fmt.hpp>
 #include <FslDemoApp/Base/Service/Events/Basic/KeyEvent.hpp>
+#include <FslDemoApp/Base/Service/Events/Basic/WindowFocusEvent.hpp>
 #include <FslDemoApp/Base/Service/NativeWindowEvents/INativeWindowEvents.hpp>
 #include <FslDemoHost/Base/Service/Events/IEventPoster.hpp>
 #include <FslDemoHost/Base/Service/Keyboard/KeyboardService.hpp>
@@ -91,6 +92,19 @@ namespace Fsl
 
   void KeyboardService::OnNativeWindowEvent(const NativeWindowEvent& event)
   {
+    if (event.Type == NativeWindowEventType::WindowFocus)
+    {
+      // The input focus of a window is its keyboard focus, so this is the service that tells the app. Only a change is told.
+      bool isFocused = false;
+      NativeWindowEventHelper::DecodeWindowFocusEvent(event, isFocused);
+      if (!m_isFocusKnown || isFocused != m_isFocused)
+      {
+        m_isFocusKnown = true;
+        m_isFocused = isFocused;
+        m_eventPoster->Post(WindowFocusEvent(isFocused));
+      }
+      return;
+    }
     if (event.Type != NativeWindowEventType::InputKey)
     {
       return;

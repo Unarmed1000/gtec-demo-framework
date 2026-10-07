@@ -1,5 +1,5 @@
-#ifndef GLES3_FRAMEPACING_FRAMEPACING_HPP
-#define GLES3_FRAMEPACING_FRAMEPACING_HPP
+#ifndef FSLDEMOAPP_BASE_SERVICE_EVENTS_BASIC_WINDOWFOCUSEVENT_HPP
+#define FSLDEMOAPP_BASE_SERVICE_EVENTS_BASIC_WINDOWFOCUSEVENT_HPP
 //****************************************************************************************************************************************************
 //* BSD 3-Clause License
 //*
@@ -22,40 +22,39 @@
 //* EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //****************************************************************************************************************************************************
 
-#include <FslDemoApp/OpenGLES3/DemoAppGLES3.hpp>
-#include <FslUtil/OpenGLES3/GLGpuFrameTimer.hpp>
-#include <Shared/FramePacing/EGL/EGLSwapInterval.hpp>
-#include <Shared/FramePacing/FramePacingShared.hpp>
-#include "RaymarchBackground.hpp"
+#include <FslBase/Exceptions.hpp>
+#include <FslDemoApp/Base/Service/Events/Basic/BasicEvent.hpp>
 
 namespace Fsl
 {
-  class FramePacing final : public DemoAppGLES3
+  //! The window of the app got or lost the input focus of the window system (its keyboard focus). The app keeps running and drawing
+  //! without the focus: the event is for what should not go on without it, like a input that was begun and will not be finished.
+  //! Only a change is told, and a window system can say nothing about the focus a window has when it starts: a app that was told
+  //! nothing takes it that it has the focus.
+  // Basic events must be exactly the same size as a BasicEvent (so they can have no member variables).
+  class WindowFocusEvent final : public BasicEvent
   {
-    using base_type = DemoAppGLES3;
-
-    //! All the actual sample code can be found in the shared class since its reused for all FramePacing samples.
-    FramePacingShared m_shared;
-
-    //! The raymarched background (the GPU load of the sample)
-    RaymarchBackground m_background;
-    //! The number of display refreshes the swap of the host holds a frame for
-    EGLSwapInterval m_swapInterval;
-    //! The time the GPU works on a frame (GL_EXT_disjoint_timer_query), read without waiting for the GPU
-    GLES3::GLGpuFrameTimer m_gpuTimer;
-    //! The frames since the clock of the GL was related to the clock of the framework (the first frame does it)
-    uint32_t m_framesSinceCalibration;
-
   public:
-    explicit FramePacing(const DemoAppConfig& config);
+    explicit constexpr WindowFocusEvent(const BasicEvent& encodedEvent)
+      : BasicEvent(encodedEvent)
+    {
+      if (m_type != EventType::WindowFocus)
+      {
+        throw std::invalid_argument("The supplied argument is of a wrong type");
+      }
+    }
 
-  protected:
-    void OnKeyEvent(const KeyEvent& event) final;
-    void OnWindowFocusEvent(const WindowFocusEvent& event) final;
-    void ConfigurationChanged(const DemoWindowMetrics& windowMetrics) final;
-    void Update(const DemoTime& demoTime) final;
-    void Draw(const FrameInfo& frameInfo) final;
-    void EndDraw(const FrameInfo& frameInfo) final;
+
+    explicit constexpr WindowFocusEvent(const bool isFocused) noexcept
+      : BasicEvent(EventType::WindowFocus, {}, isFocused ? 1 : 0)
+    {
+    }
+
+    //! true: the window has the input focus from here on, false: it lost it
+    constexpr bool IsFocused() const noexcept
+    {
+      return m_arg1 != 0;
+    }
   };
 }
 

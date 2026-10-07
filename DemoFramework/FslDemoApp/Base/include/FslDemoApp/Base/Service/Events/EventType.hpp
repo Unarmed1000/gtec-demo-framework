@@ -49,6 +49,8 @@ namespace Fsl
     RawMouseMove = 5,
     //! The basic event represents a TimeStateEvent
     TimeState = 6,
+    //! The basic event represents a WindowFocusEvent
+    WindowFocus = 7,
     //! A placeholder for now
     ComplexEvent = 0x8000
   };

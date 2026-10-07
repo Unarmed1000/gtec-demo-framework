@@ -58,6 +58,7 @@ namespace Fsl
     void OnMouseWheelEvent(const MouseWheelEvent& event) override;
     void OnRawMouseMoveEvent(const RawMouseMoveEvent& event) override;
     void OnTimeStateEvent(const TimeStateEvent& event) override;
+    void OnWindowFocusEvent(const WindowFocusEvent& event) override;
     void ConfigurationChanged(const DemoWindowMetrics& windowMetrics) override;
 
     void Begin(const DemoAppExtensionCallOrder callOrder) override;

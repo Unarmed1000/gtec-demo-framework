@@ -64,6 +64,9 @@ namespace Fsl::UI
     //! @note Returns true if the event was handled by a UIElement
     bool SendMouseButtonEvent(const MillisecondTickCount32 timestamp, const PxPoint2 positionPx, const bool leftButtonDown, const bool isTouch);
     bool SendMouseMoveEvent(const MillisecondTickCount32 timestamp, const PxPoint2 positionPx, const bool isTouch);
+    //! @brief Cancel the input that was begun and not ended, see UIManager::SendInputCancelEvent
+    //! @note Returns true if a click was canceled
+    bool SendInputCancelEvent();
     //! @brief Send a mouse wheel event to the window under the position (delta: 120 for a notch, positive away from the user)
     //! @note Returns true if the event was handled by a UIElement
     bool SendMouseWheelEvent(const MillisecondTickCount32 timestamp, const PxPoint2 positionPx, const int32_t delta);

@@ -332,6 +332,14 @@ namespace Fsl
     }
   }
 
+  void TestAppHost::OnWindowFocusEvent(const WindowFocusEvent& event)
+  {
+    if (m_appRecord.DemoExtension)
+    {
+      m_appRecord.DemoExtension->OnWindowFocusEvent(event);
+    }
+  }
+
   void TestAppHost::ConfigurationChanged(const DemoWindowMetrics& windowMetrics)
   {
     m_realWindowMetrics = windowMetrics;

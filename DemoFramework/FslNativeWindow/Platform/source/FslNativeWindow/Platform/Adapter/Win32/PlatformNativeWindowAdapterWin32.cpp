@@ -695,6 +695,13 @@ namespace Fsl
           {
           case WM_ACTIVATE:
             return windowSystemState->OnActivateMessage(hWnd, eventQueue, timestamp, wParam, lParam);
+          case WM_SETFOCUS:
+            // The keyboard focus. The app is told and nothing else: a window without it is still drawn.
+            eventQueue->PostEvent(NativeWindowEventHelper::EncodeWindowFocusEvent(true));
+            break;
+          case WM_KILLFOCUS:
+            eventQueue->PostEvent(NativeWindowEventHelper::EncodeWindowFocusEvent(false));
+            break;
           case WM_KEYDOWN:
             return windowSystemState->OnKeyMessage(hWnd, eventQueue, timestamp, wParam, lParam, true);
           case WM_KEYUP:

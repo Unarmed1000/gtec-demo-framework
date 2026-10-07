@@ -270,6 +270,10 @@ namespace Fsl
         FSLLOG3_VERBOSE("DemoHostManager: WindowSuspend: {}", event.Arg1);
         CmdSuspend(event.Arg1 != 0);
         break;
+      case NativeWindowEventType::WindowFocus:
+        // Nothing changes for the host: the app is told by a event of its own (WindowFocusEvent)
+        FSLLOG3_VERBOSE("DemoHostManager: WindowFocus: {}", event.Arg1);
+        break;
       case NativeWindowEventType::LowMemory:
         FSLLOG3_VERBOSE("DemoHostManager: LowMemory");
         // For now we ignore this

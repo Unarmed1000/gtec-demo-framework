@@ -51,6 +51,19 @@ namespace Fsl
   }
 
 
+  NativeWindowEvent NativeWindowEventHelper::EncodeWindowFocusEvent(const bool focused) noexcept
+  {
+    return {UnknownTimestamp(), NativeWindowEventType::WindowFocus, focused ? 1 : 0};
+  }
+
+
+  void NativeWindowEventHelper::DecodeWindowFocusEvent(const NativeWindowEvent& event, bool& rFocused) noexcept
+  {
+    assert(event.Type == NativeWindowEventType::WindowFocus);
+    rFocused = event.Arg1 != 0;
+  }
+
+
   NativeWindowEvent NativeWindowEventHelper::EncodeWindowSuspendEvent(const bool suspend) noexcept
   {
     return {UnknownTimestamp(), NativeWindowEventType::WindowSuspend, suspend ? 1 : 0};

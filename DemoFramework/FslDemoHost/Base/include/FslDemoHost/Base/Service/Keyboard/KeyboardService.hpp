@@ -48,6 +48,9 @@ namespace Fsl
     , public INativeWindowEventListener
   {
     std::vector<VirtualKey::Enum> m_keys;
+    //! What the app was told about the input focus of the window last (nothing before the window system said anything)
+    bool m_isFocusKnown{false};
+    bool m_isFocused{false};
     std::shared_ptr<IEventPoster> m_eventPoster;
 
   public:

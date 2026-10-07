@@ -89,6 +89,14 @@ namespace Fsl
       }
     }
 
+    inline void InvokeOnWindowFocusEvent(IDemoAppExtension* pExtension, const WindowFocusEvent& event)
+    {
+      if (pExtension != nullptr)
+      {
+        pExtension->OnWindowFocusEvent(event);
+      }
+    }
+
     inline void InvokeConfigurationChanged(IDemoAppExtension* pExtension, const DemoWindowMetrics& windowMetrics)
     {
       if (pExtension != nullptr)
@@ -211,6 +219,12 @@ namespace Fsl
   {
     InvokeOnTimeStateEvent(m_extension0.get(), event);
     InvokeOnTimeStateEvent(m_extension1.get(), event);
+  }
+
+  void DemoAppExtensionForwarder::OnWindowFocusEvent(const WindowFocusEvent& event)
+  {
+    InvokeOnWindowFocusEvent(m_extension0.get(), event);
+    InvokeOnWindowFocusEvent(m_extension1.get(), event);
   }
 
   void DemoAppExtensionForwarder::ConfigurationChanged(const DemoWindowMetrics& windowMetrics)
