@@ -51,7 +51,6 @@ namespace Fsl
         PacerDrain,
         CpuLoad,
         GpuLoad,
-        BackgroundScale,
         Background,
         GLFlush
       };
@@ -131,14 +130,11 @@ namespace Fsl
     rOptions.emplace_back("GpuLoad", OptionArgument::OptionRequired, CommandId::GpuLoad,
                           "A GPU load: the number of steps the background takes for every pixel; for the lace every doubling adds a "
                           "round of finer detail and the rest is samples per pixel (0 = no background, the default is a low load of 16).");
-    rOptions.emplace_back("BackgroundScale", OptionArgument::OptionRequired, CommandId::BackgroundScale,
-                          "The resolution the background is drawn at, in percent of the resolution of the window (10-100, the default "
-                          "is 100). Below 100 it is drawn into a smaller picture that is enlarged, for a GPU that is limited by the "
-                          "number of pixels.");
     rOptions.emplace_back("Background", OptionArgument::OptionRequired, CommandId::Background,
-                          "The scene of the background: blobs (a flight through blobs that melt into each other, cheap at a low load, "
-                          "the default), lace (circles packed into circles that the animation zooms into, cheap at a low load, more "
-                          "load adds finer detail), "
+                          "The scene of the background: mandelbrot (the zoom into the Mandelbrot set of the FractalShader sample, the "
+                          "cheapest one and the default, the load is its iterations), blobs (a flight through blobs that melt into each "
+                          "other, cheap at a low load), lace (circles packed into circles that the animation zooms into, cheap at a low "
+                          "load, more load adds finer detail), "
                           "flight (a raymarched flight through a fractal lattice) or hall (a raymarched hall of columns that scrolls "
                           "sideways at a constant speed, which makes a stutter easy to see).");
     rOptions.emplace_back("GLFlush", OptionArgument::OptionNone, CommandId::GLFlush,
@@ -261,10 +257,6 @@ namespace Fsl
     case CommandId::GpuLoad:
       return TryParseInRange(m_gpuLoadSteps, strOptArg, SampleConfig::GpuLoadSteps, "GpuLoad") ? OptionParseResult::Parsed
                                                                                                : OptionParseResult::Failed;
-    case CommandId::BackgroundScale:
-      return TryParseInRange(m_backgroundScalePercent, strOptArg, SampleConfig::BackgroundScalePercent, "BackgroundScale")
-               ? OptionParseResult::Parsed
-               : OptionParseResult::Failed;
     case CommandId::GLFlush:
       m_glFlush = true;
       return OptionParseResult::Parsed;
@@ -289,7 +281,12 @@ namespace Fsl
         m_background = RaymarchScene::Lace;
         return OptionParseResult::Parsed;
       }
-      FSLLOG3_ERROR("Background must be 'blobs', 'lace', 'flight' or 'hall'");
+      if (strOptArg == "mandelbrot")
+      {
+        m_background = RaymarchScene::Mandelbrot;
+        return OptionParseResult::Parsed;
+      }
+      FSLLOG3_ERROR("Background must be 'mandelbrot', 'blobs', 'lace', 'flight' or 'hall'");
       return OptionParseResult::Failed;
     default:
       return OptionParseResult::NotHandled;

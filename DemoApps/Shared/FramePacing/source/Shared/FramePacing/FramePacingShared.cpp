@@ -160,6 +160,8 @@ namespace Fsl
         return "blobs";
       case RaymarchScene::Lace:
         return "lace";
+      case RaymarchScene::Mandelbrot:
+        return "mandelbrot";
       case RaymarchScene::Flight:
       default:
         return "flight";
@@ -365,13 +367,10 @@ namespace Fsl
     m_ui.SliderGpuLoad =
       uiFactory->CreateSliderFmtValue(UI::LayoutOrientation::Horizontal, WithValue(SampleConfig::GpuLoadSteps, options->GetGpuLoadSteps()));
     m_ui.SliderGpuLoad->SetAlignmentX(UI::ItemAlignment::Stretch);
-    const auto lblBackgroundScale = uiFactory->CreateLabel("Background resolution (%)");
-    m_ui.SliderBackgroundScale = uiFactory->CreateSliderFmtValue(
-      UI::LayoutOrientation::Horizontal, WithValue(SampleConfig::BackgroundScalePercent, options->GetBackgroundScalePercent()));
-    m_ui.SliderBackgroundScale->SetAlignmentX(UI::ItemAlignment::Stretch);
     // The scene the raymarched background shows
     const RaymarchScene background = options->GetBackground();
     const auto backgroundGroup = uiFactory->CreateRadioGroup("background");
+    m_ui.RadioBackgroundMandelbrot = uiFactory->CreateRadioButton(backgroundGroup, "Mandelbrot zoom", background == RaymarchScene::Mandelbrot);
     m_ui.RadioBackgroundBlobs = uiFactory->CreateRadioButton(backgroundGroup, "Blobs", background == RaymarchScene::Blobs);
     m_ui.RadioBackgroundLace = uiFactory->CreateRadioButton(backgroundGroup, "Lace", background == RaymarchScene::Lace);
     m_ui.RadioBackgroundFlight = uiFactory->CreateRadioButton(backgroundGroup, "Fractal flight", background == RaymarchScene::Flight);
@@ -409,8 +408,7 @@ namespace Fsl
     stackLayout->AddChild(m_ui.SliderCpuLoad);
     stackLayout->AddChild(lblGpuLoad);
     stackLayout->AddChild(m_ui.SliderGpuLoad);
-    stackLayout->AddChild(lblBackgroundScale);
-    stackLayout->AddChild(m_ui.SliderBackgroundScale);
+    stackLayout->AddChild(m_ui.RadioBackgroundMandelbrot);
     stackLayout->AddChild(m_ui.RadioBackgroundBlobs);
     stackLayout->AddChild(m_ui.RadioBackgroundLace);
     stackLayout->AddChild(m_ui.RadioBackgroundFlight);
@@ -831,6 +829,10 @@ namespace Fsl
 
   RaymarchScene FramePacingShared::GetBackgroundScene() const
   {
+    if (m_ui.RadioBackgroundMandelbrot->IsChecked())
+    {
+      return RaymarchScene::Mandelbrot;
+    }
     if (m_ui.RadioBackgroundBlobs->IsChecked())
     {
       return RaymarchScene::Blobs;
@@ -851,7 +853,6 @@ namespace Fsl
     const double animationSeconds = m_animationTime.TotalSeconds();
     RaymarchParams params;
     params.Steps = m_ui.SliderGpuLoad->GetValue();
-    params.RenderScale = static_cast<float>(m_ui.SliderBackgroundScale->GetValue()) / 100.0f;
     params.Scene = GetBackgroundScene();
     params.TravelPhase = ToPhase(animationSeconds, LocalConfig::TravelSeconds);
     params.SwayPhase = ToPhase(animationSeconds, LocalConfig::SwaySeconds);
@@ -1503,16 +1504,14 @@ namespace Fsl
     }
 
     {
-      // What makes the GPU load: the same --GpuLoad is another amount of work with another scene or another resolution of the
-      // background, so a log that does not say which one it was can not be compared with another
+      // What makes the GPU load: the same --GpuLoad is another amount of work with another scene, so a log that does not say
+      // which one it was can not be compared with another
       const RaymarchScene scene = GetBackgroundScene();
-      const int32_t scalePercent = m_ui.SliderBackgroundScale->GetValue();
-      if (!m_hasLoggedBackground || scene != m_loggedBackgroundScene || scalePercent != m_loggedBackgroundScalePercent)
+      if (!m_hasLoggedBackground || scene != m_loggedBackgroundScene)
       {
         m_hasLoggedBackground = true;
         m_loggedBackgroundScene = scene;
-        m_loggedBackgroundScalePercent = scalePercent;
-        rLog.AddLogEvent("background", fmt::format("scene={};scalePercent={}", ToLogName(scene), scalePercent));
+        rLog.AddLogEvent("background", fmt::format("scene={}", ToLogName(scene)));
       }
     }
 

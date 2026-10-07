@@ -54,8 +54,6 @@ namespace Fsl::SampleConfig
   //! The GPU load: the number of steps the raymarched background takes for every pixel (0 = no background).
   //! The default is a low load, so the sample starts with a background and a GPU that has something to do.
   constexpr ConstrainedValue<int32_t> GpuLoadSteps(16, 0, 1024);
-  //! The resolution the background is drawn at, in percent of the resolution of the window
-  constexpr ConstrainedValue<int32_t> BackgroundScalePercent(100, 10, 100);
 }
 
 #endif

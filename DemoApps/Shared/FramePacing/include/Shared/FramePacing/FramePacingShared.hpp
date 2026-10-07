@@ -186,8 +186,8 @@ namespace Fsl
       std::shared_ptr<UI::SliderAndFmtValueLabel<int32_t>> SliderCpuLoad;
       std::shared_ptr<UI::SliderAndFmtValueLabel<int32_t>> SliderGpuLoad;
       //! The resolution the background is drawn at, in percent
-      std::shared_ptr<UI::SliderAndFmtValueLabel<int32_t>> SliderBackgroundScale;
       //! The scene of the raymarched background
+      std::shared_ptr<UI::RadioButton> RadioBackgroundMandelbrot;
       std::shared_ptr<UI::RadioButton> RadioBackgroundBlobs;
       std::shared_ptr<UI::RadioButton> RadioBackgroundLace;
       std::shared_ptr<UI::RadioButton> RadioBackgroundFlight;
@@ -331,7 +331,6 @@ namespace Fsl
     SamplePacerHold m_loggedHold{SamplePacerHold::Wait};
     //! What was last written to the log about the background, so a change is written as a event
     RaymarchScene m_loggedBackgroundScene{RaymarchScene::Flight};
-    int32_t m_loggedBackgroundScalePercent{0};
     bool m_hasLoggedBackground{false};
     //! What the app said it can measure (SetMeasurementSupport)
     bool m_presentTimingSupported{false};

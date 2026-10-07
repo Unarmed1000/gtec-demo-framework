@@ -143,13 +143,13 @@ namespace Fsl
       renderPassBeginInfo.clearValueCount = UncheckedNumericCast<uint32_t>(clearValues.size());
       renderPassBeginInfo.pClearValues = clearValues.data();
 
-      // The background at a lower resolution is drawn into its own picture first, which is a render pass of its own
-      m_background.DrawOffscreen(hCmdBuffer, m_shared.GetRaymarchParams());
+      // The frame starts here for the sample, before the render pass: the background is animated for the animation time of the frame
+      const RaymarchParams raymarchParams = m_shared.GetRaymarchParams();
 
       rCmdBuffers.CmdBeginRenderPass(currentFrameIndex, &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
       {
         // The background is animated for the same time as the rest of the frame
-        m_background.Draw(hCmdBuffer, m_shared.GetRaymarchParams());
+        m_background.Draw(hCmdBuffer, raymarchParams);
         {    // The frame has started, so it can be given the id its present will get. The measurements of the frame refer to it.
           const uint64_t presentId = GetNextPresentId();
           m_shared.SetFramePresentId(presentId);
@@ -223,7 +223,7 @@ namespace Fsl
   {
     // Since we only draw using the NativeBatch and the background we just create the most basic render pass that is compatible
     m_dependentResources.MainRenderPass = CreateBasicRenderPass();
-    m_background.OnBuildResources(m_device, context, m_dependentResources.MainRenderPass.Get());
+    m_background.OnBuildResources(context, m_dependentResources.MainRenderPass.Get());
     return m_dependentResources.MainRenderPass.Get();
   }
 

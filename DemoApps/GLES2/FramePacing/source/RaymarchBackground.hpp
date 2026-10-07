@@ -23,7 +23,6 @@
 //****************************************************************************************************************************************************
 
 #include <FslBase/Math/Pixel/PxSize2D.hpp>
-#include <FslUtil/OpenGLES2/GLFrameBuffer.hpp>
 #include <FslUtil/OpenGLES2/GLProgram.hpp>
 #include <FslUtil/OpenGLES2/GLVertexAttribLink.hpp>
 #include <FslUtil/OpenGLES2/GLVertexBuffer.hpp>
@@ -52,22 +51,19 @@ namespace Fsl
     SceneProgram m_raymarch;
     SceneProgram m_blobs;
     SceneProgram m_lace;
-    //! Enlarges the background that was drawn at a lower resolution to the screen (LocSteps is where its texture is set)
-    SceneProgram m_upscale;
-    //! What the background is drawn into when it is drawn at a lower resolution. It has the size of the window, and the background
-    //! is drawn into the lower left part of it, so a change of the resolution needs no new texture.
-    GLES2::GLFrameBuffer m_offscreen;
+    SceneProgram m_mandelbrot;
     GLES2::GLVertexBuffer m_vertexBuffer;
 
     //! If the shader can not be compiled the scene is not drawn (a warning is logged)
     static void Load(SceneProgram& rScene, const IContentManager& contentManager, const char* const pszFragmentShader);
+    //! The shader that draws a scene
+    [[nodiscard]] const SceneProgram& GetScene(const RaymarchScene scene) const noexcept;
 
   public:
     //! If the shader of a scene can not be compiled that scene is not drawn (a warning is logged)
     explicit RaymarchBackground(const IContentManager& contentManager);
 
-    //! Draw the background (it is not drawn if params.Steps is zero). With a params.RenderScale below one it is drawn at that part
-    //! of the resolution and enlarged.
+    //! Draw the background (it is not drawn if params.Steps is zero).
     //! @param sizePx the size of the window in pixels
     void Draw(const RaymarchParams& params, const PxSize2D sizePx);
   };
