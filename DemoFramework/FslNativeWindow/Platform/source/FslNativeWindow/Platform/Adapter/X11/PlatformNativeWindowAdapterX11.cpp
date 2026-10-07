@@ -831,6 +831,22 @@ namespace Fsl
     m_platformWindow = XCreateWindow(m_platformDisplay, rootwindow, windowX, windowY, windowWidth, windowHeight, 0, m_pVisual->depth, InputOutput,
                                      m_pVisual->visual, mask, &windowAttributes);
 
+    {
+      // The window has the name of the app, as on Windows: a window manager shows it and a tool finds the window by it. WM_NAME,
+      // WM_ICON_NAME and WM_CLASS are set the way a client is to set them, and the name once more as UTF-8 for a window manager
+      // that reads that (_NET_WM_NAME).
+      std::string applicationName = nativeWindowSetup.GetApplicationName();
+      XClassHint classHint{};
+      classHint.res_name = applicationName.data();
+      classHint.res_class = applicationName.data();
+      Xutf8SetWMProperties(m_platformDisplay, m_platformWindow, applicationName.c_str(), applicationName.c_str(), nullptr, 0, nullptr, nullptr,
+                           &classHint);
+      const Atom netWmName = XInternAtom(m_platformDisplay, "_NET_WM_NAME", False);
+      const Atom utf8String = XInternAtom(m_platformDisplay, "UTF8_STRING", False);
+      XChangeProperty(m_platformDisplay, m_platformWindow, netWmName, utf8String, 8, PropModeReplace,
+                      reinterpret_cast<const unsigned char*>(applicationName.c_str()), static_cast<int>(applicationName.size()));
+    }
+
     XMapWindow(m_platformDisplay, m_platformWindow);
 
     XEvent event;
