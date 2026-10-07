@@ -52,6 +52,7 @@
 #include <FslSimpleUI/Render/Builder/ScopedCustomUITextMeshBuilder2D.hpp>
 #include <FslSimpleUI/Render/Builder/UIRawBasicMeshBuilder2D.hpp>
 #include <FslSimpleUI/Render/Builder/UIRawMeshBuilder2D.hpp>
+#include <algorithm>
 #include <cmath>
 #include "Render/ChartDataWindowDrawData.hpp"
 
@@ -78,6 +79,8 @@ namespace Fsl::UI
       constexpr TimeSpan ViewChangeTime(TimeSpan::FromMilliseconds(600));
 
       constexpr int32_t ChartBarWidthDp = 1;
+      //! How thick the line of a overlaid channel is, in widths of a chart entry
+      constexpr int32_t ChartLineThicknessInEntryWidths = 2;
       constexpr int32_t ChartLabelSpacingDp = 35;
 
       constexpr uint32_t MaxRenderGridLines = Render::ChartDataWindowDrawDataConfig::MaxGridLines * 2;
@@ -194,52 +197,26 @@ namespace Fsl::UI
       }
     }
 
-    //! The channels of a entry in the order they are drawn in, from the base line up. Stacked channels are drawn in their own order.
-    //! Overlaid channels are drawn from the smallest value to the largest: each is then drawn from the top of the one before it to
-    //! its own value, which is what is seen of it when the smaller ones are in front of it.
-    std::array<uint32_t, UI::Render::ChartDataWindowDrawDataConfig::MaxStackedEntries>
-      CalcChannelDrawOrder(const ChartDataEntry& entry, const uint32_t channelCount, const ChartChannelPolicy channelPolicy) noexcept
+    //! Where the line of each overlaid channel was in the entry that was drawn before the current one. The entries are drawn from the
+    //! newest to the oldest, so it is the entry that follows the current one in time.
+    struct ChannelLineState
     {
-      std::array<uint32_t, UI::Render::ChartDataWindowDrawDataConfig::MaxStackedEntries> order{};
-      for (uint32_t i = 0; i < channelCount; ++i)
-      {
-        order[i] = i;
-      }
-      if (channelPolicy == ChartChannelPolicy::Overlaid)
-      {
-        // A insertion sort: there are a few channels at the most, it allocates nothing (this runs for every entry that is drawn) and
-        // equal values keep the order of their channels
-        for (uint32_t i = 1; i < channelCount; ++i)
-        {
-          const uint32_t channel = order[i];
-          uint32_t dst = i;
-          while (dst > 0 && entry.Values[order[dst - 1]] > entry.Values[channel])
-          {
-            order[dst] = order[dst - 1];
-            --dst;
-          }
-          order[dst] = channel;
-        }
-      }
-      return order;
-    }
+      bool HasLast{false};
+      std::array<PxValue, UI::Render::ChartDataWindowDrawDataConfig::MaxStackedEntries> LastYPx{};
+    };
 
+    //! Stacked channels: each channel of the entry is a bar that starts where the one before it ended
     void DrawGraphSegmentNow(UIRawBasicMeshBuilder2D& rBuilder, const PxVector2 dstPositionPxf, const PxValue dstXPosCurrent, const PxValue maxYPx,
-                             const uint32_t channelCount, const ChartChannelPolicy channelPolicy, const ChartDataEntry& entry,
-                             const float dataRenderScalePxf, const PxSize1D entryPixelWidth,
+                             const uint32_t channelCount, const ChartDataEntry& entry, const float dataRenderScalePxf, const PxSize1D entryPixelWidth,
                              std::array<UIRenderColor, UI::Render::ChartDataWindowDrawDataConfig::MaxStackedEntries> premultipliedColors,
                              const NativeTextureArea& textureArea)
     {
-      const auto drawOrder = CalcChannelDrawOrder(entry, channelCount, channelPolicy);
-      const bool isStacked = channelPolicy == ChartChannelPolicy::Stacked;
       PxValue lastPx = maxYPx + PxValue(1);
       float topPxf = 0;
-      for (uint32_t drawIndex = 0; drawIndex < channelCount; ++drawIndex)
+      for (uint32_t entryIndex = 0; entryIndex < channelCount; ++entryIndex)
       {
-        const uint32_t entryIndex = drawOrder[drawIndex];
         const float renderData = static_cast<float>(entry.Values[entryIndex]) * dataRenderScalePxf;
-        // A stacked channel starts where the one before it ended, a overlaid one at the base line
-        topPxf = isStacked ? (topPxf + renderData) : renderData;
+        topPxf += renderData;
         const auto scaledTopDataSizePx = PxValue(static_cast<int32_t>(MathHelper::Clamp(topPxf, 0.0f, static_cast<float>(0x10000000))));
         const PxValue yModPx = maxYPx - scaledTopDataSizePx;
         assert(lastPx >= yModPx);
@@ -257,6 +234,39 @@ namespace Fsl::UI
         }
         lastPx = yModPx;
       }
+    }
+
+    //! Overlaid channels: each channel is a line of its own. A entry draws the part of the line that is in its column: from its own
+    //! value to the value of the entry that was drawn before it, so the line is unbroken where the value changes. A later channel is
+    //! drawn over a earlier one.
+    void DrawGraphLinesNow(UIRawBasicMeshBuilder2D& rBuilder, const PxVector2 dstPositionPxf, const PxValue dstXPosCurrent, const PxValue maxYPx,
+                           const uint32_t channelCount, const ChartDataEntry& entry, const float dataRenderScalePxf, const PxSize1D entryPixelWidth,
+                           const PxValue lineThicknessPx,
+                           std::array<UIRenderColor, UI::Render::ChartDataWindowDrawDataConfig::MaxStackedEntries> premultipliedColors,
+                           const NativeTextureArea& textureArea, ChannelLineState& rLineState)
+    {
+      const PxValue heightPx = maxYPx + PxValue(1);
+      // The top of a line is at its value, kept so far from the bottom that a value of zero is a line that can be seen
+      const PxValue maxLineYPx = std::max(heightPx - lineThicknessPx, PxValue(0));
+      for (uint32_t entryIndex = 0; entryIndex < channelCount; ++entryIndex)
+      {
+        const float topPxf = static_cast<float>(entry.Values[entryIndex]) * dataRenderScalePxf;
+        const auto scaledTopDataSizePx = PxValue(static_cast<int32_t>(MathHelper::Clamp(topPxf, 0.0f, static_cast<float>(0x10000000))));
+        const PxValue yPx = MathHelper::Clamp(maxYPx - scaledTopDataSizePx, PxValue(0), maxLineYPx);
+        const PxValue lastYPx = rLineState.HasLast ? rLineState.LastYPx[entryIndex] : yPx;
+        const PxValue drawYPx0 = std::min(yPx, lastYPx);
+        const PxValue drawYPx1 = std::min(std::max(yPx, lastYPx) + lineThicknessPx, heightPx);
+        if (drawYPx1 > drawYPx0)
+        {
+          rBuilder.SetColor(premultipliedColors[entryIndex]);
+          rBuilder.AddRect(dstPositionPxf.X.Value + static_cast<float>(dstXPosCurrent.Value),
+                           dstPositionPxf.Y.Value + static_cast<float>(drawYPx0.Value),
+                           dstPositionPxf.X.Value + static_cast<float>(dstXPosCurrent.Value + entryPixelWidth.RawValue()),
+                           dstPositionPxf.Y.Value + static_cast<float>(drawYPx1.Value), textureArea);
+        }
+        rLineState.LastYPx[entryIndex] = yPx;
+      }
+      rLineState.HasLast = true;
     }
 
     void DrawCustomGraph(UIRawBasicMeshBuilder2D& rBuilder, const PxVector2 dstPositionPxf, const PxSize2D dstSizePx,
@@ -282,6 +292,9 @@ namespace Fsl::UI
         assert(pChartWindow->ChartCache.Valid);
         const Render::ChartDataWindowDrawData::ChartRecord& chart = pChartWindow->Chart;
         // const uint32_t chartViewMax = chart.ViewMax;
+        const bool isOverlaid = dataInfo.ChannelPolicy == ChartChannelPolicy::Overlaid;
+        const PxValue lineThicknessPx(chart.EntryWidthPx.RawValue() * LocalConfig::ChartLineThicknessInEntryWidths);
+        ChannelLineState lineState;
 
         PxValue dstXPos = dstSizePx.Width().Value();
         auto entriesLeft = UncheckedNumericCast<uint32_t>(entriesToDraw);
@@ -301,8 +314,16 @@ namespace Fsl::UI
           for (uint32_t dataSpanIndex = dataSpanEntries; dataSpanIndex > 0; --dataSpanIndex)
           {
             const auto i = dataSpanIndex - 1;
-            DrawGraphSegmentNow(rBuilder, dstPositionPxf, dstXPosCurrent, maxYPx, dataInfo.ChannelCount, dataInfo.ChannelPolicy, dataSpan[i],
-                                chart.DataRenderScale, entryPixelWidth, pChartWindow->ChartCache.Premultiplied, renderInfo.TextureArea);
+            if (isOverlaid)
+            {
+              DrawGraphLinesNow(rBuilder, dstPositionPxf, dstXPosCurrent, maxYPx, dataInfo.ChannelCount, dataSpan[i], chart.DataRenderScale,
+                                entryPixelWidth, lineThicknessPx, pChartWindow->ChartCache.Premultiplied, renderInfo.TextureArea, lineState);
+            }
+            else
+            {
+              DrawGraphSegmentNow(rBuilder, dstPositionPxf, dstXPosCurrent, maxYPx, dataInfo.ChannelCount, dataSpan[i], chart.DataRenderScale,
+                                  entryPixelWidth, pChartWindow->ChartCache.Premultiplied, renderInfo.TextureArea);
+            }
             dstXPosCurrent -= entryPixelWidth.Value();
           }
           entriesLeft -= dataSpanEntries;
@@ -324,8 +345,16 @@ namespace Fsl::UI
           const ReadOnlySpan<ChartDataEntry> dataSpan = pData->SegmentDataAsReadOnlySpan(segmentIndex).subspan(lastSegmentOffset, 1);
           if (!dataSpan.empty())
           {
-            DrawGraphSegmentNow(rBuilder, dstPositionPxf, PxValue(0), maxYPx, dataInfo.ChannelCount, dataInfo.ChannelPolicy, dataSpan[0],
-                                chart.DataRenderScale, leftoverPixels, pChartWindow->ChartCache.Premultiplied, renderInfo.TextureArea);
+            if (isOverlaid)
+            {
+              DrawGraphLinesNow(rBuilder, dstPositionPxf, PxValue(0), maxYPx, dataInfo.ChannelCount, dataSpan[0], chart.DataRenderScale,
+                                leftoverPixels, lineThicknessPx, pChartWindow->ChartCache.Premultiplied, renderInfo.TextureArea, lineState);
+            }
+            else
+            {
+              DrawGraphSegmentNow(rBuilder, dstPositionPxf, PxValue(0), maxYPx, dataInfo.ChannelCount, dataSpan[0], chart.DataRenderScale,
+                                  leftoverPixels, pChartWindow->ChartCache.Premultiplied, renderInfo.TextureArea);
+            }
           }
         }
       }

@@ -2048,7 +2048,7 @@ namespace Fsl
 
     // What every frame cost: how long the CPU worked on it, how long the GPU did, and how long the frame took, which is to the end
     // of the last work on it. They are three values that are measured from the start of the frame, not parts of a sum, so the chart
-    // draws each from its base line (the data says so, ChartChannelPolicy::Overlaid).
+    // draws each as a line of its own (the data says so, ChartChannelPolicy::Overlaid).
     const auto chart = std::make_shared<UI::AreaChart>(context);
     chart->SetAlignmentX(UI::ItemAlignment::Stretch);
     chart->SetAlignmentY(UI::ItemAlignment::Stretch);

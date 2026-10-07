@@ -159,7 +159,7 @@ controls at the right can be scrolled if the window is too low for them.
 The chart at the bottom shows what every frame cost, as three values that are each measured from the start of the frame: how long the
 CPU worked on it, how long the GPU did, and how long the frame took, which is to the end of the last work on it. They are not parts of a
 sum: the CPU and the GPU each work for a time, and a frame takes until the later of the two is done, with the time the GPU waited before it
-began in it. So each is drawn from the base line, the smaller in front of the larger (`Show the work chart`, or start without it with
+began in it. So each is drawn as a line of its own (`Show the work chart`, or start without it with
 `--HideWorkChart`). The GPU time of a frame is known a frame or more after the frame ended, so the chart is that far behind, and a frame
 that was not measured has no GPU time. Where a app only knows how long the GPU worked and not when it was done (the Vulkan sample
 without `VK_KHR_calibrated_timestamps`, a OpenGL ES driver without timestamps), the GPU is taken to have started when the CPU's work

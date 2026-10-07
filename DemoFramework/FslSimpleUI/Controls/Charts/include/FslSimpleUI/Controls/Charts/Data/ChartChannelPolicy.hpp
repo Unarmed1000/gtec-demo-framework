@@ -31,8 +31,8 @@ namespace Fsl::UI
   {
     //! The channels are parts of a whole: each is drawn on top of the ones before it, and the value of a entry is their sum
     Stacked,
-    //! The channels are values of their own that are measured from the same zero: each is drawn from the base line to its own value,
-    //! the smaller in front of the larger so all can be seen, and the value of a entry is the largest of them
+    //! The channels are values of their own that are measured from the same zero: each is drawn as a line of its own, a later
+    //! channel over a earlier one, and the value of a entry is the largest of them
     Overlaid
   };
 }
