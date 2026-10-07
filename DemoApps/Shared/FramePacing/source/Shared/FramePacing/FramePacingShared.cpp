@@ -205,7 +205,7 @@ namespace Fsl
     constexpr uint32_t WorkChartFrameChannel = 2;
     constexpr UI::UIColor WorkChartCpuColor(PackedColor32(0xFF3488A7));      // light blue
     constexpr UI::UIColor WorkChartGpuColor(PackedColor32(0xFFE0902A));      // orange
-    constexpr UI::UIColor WorkChartFrameColor(PackedColor32(0xFF8C8C8C));    // grey
+    constexpr UI::UIColor WorkChartFrameColor(PackedColor32(0xFFFFFFFF));    // white: the total, it stands out from the two it is made of
     constexpr float WorkChartHeightDp = 100.0f;
 
     //! The chart of the animation error, in the colors of the report of the mb-framepacing tools
