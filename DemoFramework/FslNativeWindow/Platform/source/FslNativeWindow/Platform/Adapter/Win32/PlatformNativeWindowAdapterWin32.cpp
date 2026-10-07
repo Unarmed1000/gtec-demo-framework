@@ -678,6 +678,13 @@ namespace Fsl
         PostQuitMessage(0);
         return 0;
       }
+      if (uiMsg == WM_SYSCOMMAND && (wParam & 0xFFF0) == SC_KEYMENU && lParam == 0)
+      {
+        // A alt key (or F10) that is pressed and released on its own asks for the menu of the window. The window has none, and the
+        // system then runs a loop of its own until a key or a click ends it, so the app draws no frame in that time. Taking the
+        // message here keeps the loop of the app running. Alt+space, which opens the system menu, comes with its key and is passed on.
+        return 0;
+      }
       if (windowSystemState)
       {
         const auto eventQueue = windowSystemState->GetEventQueue().lock();
