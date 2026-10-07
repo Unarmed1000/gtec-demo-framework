@@ -144,6 +144,40 @@ namespace Fsl
       return window.SizeFromOutput ? "the size of its output, as the compositor gave it none" : "the size the compositor gave it";
     }
 
+    //! Tells the compositor that the whole surface of the window is opaque (wl_surface.set_opaque_region). The framework draws a
+    //! window that covers what is behind it, but a compositor can not know that from a buffer with a alpha channel, which is what
+    //! many EGL configs and swapchain formats give: it then blends the window with what is behind it, and a surface that is blended
+    //! can not be put on the display directly. With the region it does not have to look at the alpha of the buffer. It is a hint
+    //! the compositor may ignore, and it costs nothing where the buffer has no alpha.
+    //!
+    //! The region is in the coordinates of the surface (the pixels of the buffer divided by its scale), so it is set again when
+    //! the size of the window or its buffer scale changes. It takes effect with the next commit of the surface, which is the next
+    //! swap or present.
+    void UpdateOpaqueRegion(PlatformNativeWindowContextWayland& rWindow)
+    {
+      if (!rWindow.Handles.Surface || rWindow.SystemContext == nullptr || !rWindow.SystemContext->Handles.Compositor)
+      {
+        return;
+      }
+      const int32_t scale = std::max(rWindow.BufferScale, 1);
+      const int32_t width = rWindow.Geometry.RawWidth() / scale;
+      const int32_t height = rWindow.Geometry.RawHeight() / scale;
+      if (width <= 0 || height <= 0)
+      {
+        return;
+      }
+      const ScopedWaylandRegion region(wl_compositor_create_region(rWindow.SystemContext->Handles.Compositor.get()));
+      if (!region)
+      {
+        FSLLOG3_WARNING("Wayland: wl_compositor_create_region failed, the window is not marked as opaque");
+        return;
+      }
+      wl_region_add(region.get(), 0, 0, width, height);
+      // The surface keeps a copy of the region, so it can be destroyed right away
+      wl_surface_set_opaque_region(rWindow.Handles.Surface.get(), region.get());
+      FSLLOG3_VERBOSE("Wayland: the surface of the window is marked as opaque: {}x{} in the coordinates of the surface", width, height);
+    }
+
     //! Sets the size of the window in buffer pixels from what the compositor asked for and the scale of the buffer, and tells the
     //! framework when it changed.
     void UpdateGeometry(PlatformNativeWindowContextWayland& rWindow)
@@ -171,6 +205,11 @@ namespace Fsl
       if (resized && rWindow.Native != nullptr && rWindow.ResizeWindowCallback)
       {
         rWindow.ResizeWindowCallback(rWindow.Native, width, height, 0, 0);
+      }
+      if (resized)
+      {
+        // The window covers another part of the coordinates of its surface now
+        UpdateOpaqueRegion(rWindow);
       }
 
       if (resized)

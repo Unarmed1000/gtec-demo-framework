@@ -201,6 +201,17 @@ namespace Fsl
     }
   };
 
+  struct CustomDeleterWlRegion
+  {
+    void operator()(wl_region* pVal)
+    {
+      if (pVal != nullptr)
+      {
+        wl_region_destroy(pVal);
+      }
+    }
+  };
+
   struct CustomDeleterWlSurface
   {
     void operator()(wl_surface* pVal)
@@ -281,6 +292,7 @@ namespace Fsl
   using ScopedWaylandRegistry = std::unique_ptr<wl_registry, CustomDeleterWlRegistry>;
   using ScopedWaylandSeat = std::unique_ptr<wl_seat, CustomDeleterWlSeat>;
   using ScopedWaylandShell = std::unique_ptr<wl_shell, CustomDeleterWlShell>;
+  using ScopedWaylandRegion = std::unique_ptr<wl_region, CustomDeleterWlRegion>;
   using ScopedWaylandShellSurface = std::unique_ptr<wl_shell_surface, CustomDeleterWlShellSurface>;
   using ScopedWaylandShm = std::unique_ptr<wl_shm, CustomDeleterWlShm>;
   using ScopedWaylandSurface = std::unique_ptr<wl_surface, CustomDeleterWlSurface>;
