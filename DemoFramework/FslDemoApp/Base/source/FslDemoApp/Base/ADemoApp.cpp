@@ -40,6 +40,7 @@
 #include <FslDemoApp/Base/Service/Events/IEvent.hpp>
 #include <FslDemoApp/Base/Service/Exceptions.hpp>
 #include <FslDemoApp/Shared/Log/Host/FmtDemoWindowMetrics.hpp>
+#include <FslDemoService/Trace/ScopedTraceZone.hpp>
 #include <algorithm>
 #include <cassert>
 #include <utility>
@@ -139,6 +140,11 @@ namespace Fsl
       }
     }
 
+    //! @return the zone, or none while there is no extension to call: a zone around nothing is not worth a entry in the trace
+    inline TraceZone ZoneIfAny(const std::deque<std::weak_ptr<IDemoAppExtension>>& extensions, const TraceZone zone) noexcept
+    {
+      return !extensions.empty() ? zone : TraceZone();
+    }
 
   }
 
@@ -159,6 +165,19 @@ namespace Fsl
     m_contentManger = demoAppConfig.DemoServiceProvider.Get<IContentManager>();
     m_persistentDataManager = demoAppConfig.DemoServiceProvider.Get<IPersistentDataManager>();
     m_demoAppControl = demoAppConfig.DemoServiceProvider.Get<IDemoAppControl>();
+
+    m_trace = demoAppConfig.DemoServiceProvider.TryGet<ITraceService>();
+    if (m_trace && m_trace->IsEnabled())
+    {
+      // Who runs in a stage of the update: the extensions (the UI is one) before the app, the app, the extensions after it
+      m_traceZoneExtensionsPre = m_trace->RegisterZone("Extensions (before app)");
+      m_traceZoneApp = m_trace->RegisterZone("App");
+      m_traceZoneExtensionsPost = m_trace->RegisterZone("Extensions (after app)");
+    }
+    else
+    {
+      m_trace.reset();
+    }
   }
 
 
@@ -335,12 +354,19 @@ namespace Fsl
 
     // Call all registered extensions
     const auto fn = [demoTime](IDemoAppExtension& rExt, const DemoAppExtensionCallOrder callOrder) { rExt.PreUpdate(callOrder, demoTime); };
-    CallExtensionsPre(m_extensions, fn);
+    {
+      const ScopedTraceZone traceZone(m_trace.get(), ZoneIfAny(m_extensions, m_traceZoneExtensionsPre));
+      CallExtensionsPre(m_extensions, fn);
+    }
 
     // Done this way to prevent common mistakes where people forget to call the base class
-    PreUpdate(demoTime);
+    {
+      const ScopedTraceZone traceZone(m_trace.get(), m_traceZoneApp);
+      PreUpdate(demoTime);
+    }
 
     // Call all registered extensions
+    const ScopedTraceZone traceZone(m_trace.get(), ZoneIfAny(m_extensions, m_traceZoneExtensionsPost));
     CallExtensionsPost(m_extensions, fn);
   }
 
@@ -349,11 +375,18 @@ namespace Fsl
     VERBOSE_LOG("ADemoApp::_FixedUpdate()");
     // Call all registered extensions
     const auto fn = [demoTime](IDemoAppExtension& rExt, const DemoAppExtensionCallOrder callOrder) { rExt.FixedUpdate(callOrder, demoTime); };
-    CallExtensionsPre(m_extensions, fn);
+    {
+      const ScopedTraceZone traceZone(m_trace.get(), ZoneIfAny(m_extensions, m_traceZoneExtensionsPre));
+      CallExtensionsPre(m_extensions, fn);
+    }
 
     // Done this way to prevent common mistakes where people forget to call the base class
-    FixedUpdate(demoTime);
+    {
+      const ScopedTraceZone traceZone(m_trace.get(), m_traceZoneApp);
+      FixedUpdate(demoTime);
+    }
 
+    const ScopedTraceZone traceZone(m_trace.get(), ZoneIfAny(m_extensions, m_traceZoneExtensionsPost));
     CallExtensionsPost(m_extensions, fn);
   }
 
@@ -363,11 +396,18 @@ namespace Fsl
     VERBOSE_LOG("ADemoApp::_Update()");
     // Call all registered extensions
     const auto fn = [demoTime](IDemoAppExtension& rExt, const DemoAppExtensionCallOrder callOrder) { rExt.Update(callOrder, demoTime); };
-    CallExtensionsPre(m_extensions, fn);
+    {
+      const ScopedTraceZone traceZone(m_trace.get(), ZoneIfAny(m_extensions, m_traceZoneExtensionsPre));
+      CallExtensionsPre(m_extensions, fn);
+    }
 
     // Done this way to prevent common mistakes where people forget to call the base class
-    Update(demoTime);
+    {
+      const ScopedTraceZone traceZone(m_trace.get(), m_traceZoneApp);
+      Update(demoTime);
+    }
 
+    const ScopedTraceZone traceZone(m_trace.get(), ZoneIfAny(m_extensions, m_traceZoneExtensionsPost));
     CallExtensionsPost(m_extensions, fn);
   }
 
@@ -377,14 +417,21 @@ namespace Fsl
     VERBOSE_LOG("ADemoApp::_PostUpdate()");
 
     const auto fn = [demoTime](IDemoAppExtension& rExt, const DemoAppExtensionCallOrder callOrder) { rExt.PostUpdate(callOrder, demoTime); };
-    CallExtensionsPre(m_extensions, fn);
+    {
+      const ScopedTraceZone traceZone(m_trace.get(), ZoneIfAny(m_extensions, m_traceZoneExtensionsPre));
+      CallExtensionsPre(m_extensions, fn);
+    }
 
     // Done this way to prevent common mistakes where people forget to call the base class
-    PostUpdate(demoTime);
+    {
+      const ScopedTraceZone traceZone(m_trace.get(), m_traceZoneApp);
+      PostUpdate(demoTime);
+    }
 
     // Here we call the extensions after the app, which allows for example a UI extension to do things after the app has finished
 
     // Call all registered extensions
+    const ScopedTraceZone traceZone(m_trace.get(), ZoneIfAny(m_extensions, m_traceZoneExtensionsPost));
     CallExtensionsPost(m_extensions, fn);
   }
 
@@ -393,14 +440,21 @@ namespace Fsl
     VERBOSE_LOG("ADemoApp::_Resolve()");
 
     const auto fn = [demoTime](IDemoAppExtension& rExt, const DemoAppExtensionCallOrder callOrder) { rExt.Resolve(callOrder, demoTime); };
-    CallExtensionsPre(m_extensions, fn);
+    {
+      const ScopedTraceZone traceZone(m_trace.get(), ZoneIfAny(m_extensions, m_traceZoneExtensionsPre));
+      CallExtensionsPre(m_extensions, fn);
+    }
 
     // Done this way to prevent common mistakes where people forget to call the base class
-    Resolve(demoTime);
+    {
+      const ScopedTraceZone traceZone(m_trace.get(), m_traceZoneApp);
+      Resolve(demoTime);
+    }
 
     // Here we call the extensions after the app, which allows for example a UI extension to do things after the app has finished
 
     // Call all registered extensions
+    const ScopedTraceZone traceZone(m_trace.get(), ZoneIfAny(m_extensions, m_traceZoneExtensionsPost));
     CallExtensionsPost(m_extensions, fn);
   }
 

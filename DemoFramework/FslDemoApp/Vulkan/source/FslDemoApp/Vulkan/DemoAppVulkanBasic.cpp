@@ -330,6 +330,10 @@ namespace Fsl::VulkanBasic
     TraceZone ZoneAcquireFenceWait;
     TraceZone ZoneSubmit;
     TraceZone ZonePresent;
+    TraceZone ZoneRecordCommands;
+    TraceZone ZoneSubmitFrame;
+    TraceZone ZoneProfilerDraw;
+    TraceZone ZoneMarkerDraw;
 
     //! @brief Begin a zone of the trace that lasts as long as what is returned. Nothing happens if there is no state or no trace.
     static ScopedTraceZone BeginZone(const std::unique_ptr<FramePacingLogState>& state, const TraceZone FramePacingLogState::* const pZone) noexcept
@@ -381,6 +385,11 @@ namespace Fsl::VulkanBasic
       ZoneAcquireFenceWait = rTrace.RegisterZone("Wait for acquire fence");
       ZoneSubmit = rTrace.RegisterZone("vkQueueSubmit");
       ZonePresent = rTrace.RegisterZone("vkQueuePresentKHR");
+      ZoneRecordCommands = rTrace.RegisterZone("Record commands");
+      ZoneSubmitFrame = rTrace.RegisterZone("Submit frame");
+      // The same names as the host uses where it draws them
+      ZoneProfilerDraw = rTrace.RegisterZone("Profiler draw");
+      ZoneMarkerDraw = rTrace.RegisterZone("Marker draw");
 
       // The calls of a frame, with the frame they belong to. The submit and the present are steps of the chain of the frame.
       const TraceTrack callTrack = rTrace.RegisterTrack("Vulkan", TraceTrackKind::Sequential);
@@ -748,7 +757,11 @@ namespace Fsl::VulkanBasic
     const DrawContext drawContext(m_swapchain.GetImageExtent(), framebuffer, currentFrameIndex);
     try
     {
-      VulkanDraw(frameInfo.Time, m_dependentResources.CmdBuffers, drawContext);
+      {
+        const ScopedTraceZone traceZone = FramePacingLogState::BeginZone(m_framePacingLogState, &FramePacingLogState::ZoneRecordCommands);
+        VulkanDraw(frameInfo.Time, m_dependentResources.CmdBuffers, drawContext);
+      }
+      const ScopedTraceZone traceZone = FramePacingLogState::BeginZone(m_framePacingLogState, &FramePacingLogState::ZoneSubmitFrame);
       SubmitFrame(frameRecord, swapchainRecord, currentFrameIndex);
     }
     catch (const RapidVulkan::VulkanErrorException& ex)
@@ -839,11 +852,13 @@ namespace Fsl::VulkanBasic
     const Vulkan::VUScopedCmdDebugLabel scopedLabel(hCmdBuffer, "SystemUI");
     if (m_demoAppProfilerOverlay)
     {
+      const ScopedTraceZone traceZone = FramePacingLogState::BeginZone(m_framePacingLogState, &FramePacingLogState::ZoneProfilerDraw);
       m_demoAppProfilerOverlay->Draw(GetWindowMetrics());
     }
     // The frame pacing marker must be the very last thing drawn
     if (m_framePacingOverlay)
     {
+      const ScopedTraceZone traceZone = FramePacingLogState::BeginZone(m_framePacingLogState, &FramePacingLogState::ZoneMarkerDraw);
       m_framePacingOverlay->Draw(GetWindowMetrics());
     }
   }

@@ -36,6 +36,7 @@
 #include <FslDemoService/FramePacingMarker/IFramePacingMarkerService.hpp>
 #include <FslDemoService/Graphics/IGraphicsService.hpp>
 #include <FslDemoService/Trace/ITraceService.hpp>
+#include <FslDemoService/Trace/ScopedTraceZone.hpp>
 #include <FslGraphics/Bitmap/ReadOnlyRawBitmap.hpp>
 #include <FslGraphics/Colors.hpp>
 #include <FslGraphics/Render/Adapter/INativeBatch2D.hpp>
@@ -257,6 +258,36 @@ namespace Fsl
     // Only a app whose present is a swap has a use for it (SamplePresentMethod::SwapInterval), a Vulkan app submits its frame
     m_flushWanted = options->IsGLFlushEnabled() && presentMethod == SamplePresentMethod::SwapInterval;
     m_refreshRateOverrideHz = options->GetPacerRefreshRateHz();
+    m_trace = config.DemoServiceProvider.TryGet<ITraceService>();
+    if (m_trace && m_trace->IsEnabled())
+    {
+      // What the sample does on the thread, inside the update and the draw of the app
+      ITraceService& rTrace = *m_trace;
+      m_traceZones.KeyboardMenu = rTrace.RegisterZone("Keyboard menu");
+      m_traceZones.PacerUpdate = rTrace.RegisterZone("Pacer update");
+      m_traceZones.TierUpdate = rTrace.RegisterZone("Tier update");
+      m_traceZones.StatsUI = rTrace.RegisterZone("Stats UI");
+      m_traceZones.WorkChart = rTrace.RegisterZone("Work chart");
+      m_traceZones.AnimationError = rTrace.RegisterZone("Animation error");
+      m_traceZones.RunUI = rTrace.RegisterZone("Run UI");
+      m_traceZones.StartFrame = rTrace.RegisterZone("Start frame");
+      m_traceZones.WaitForFrameStart = rTrace.RegisterZone("Wait for frame start");
+      m_traceZones.CpuLoad = rTrace.RegisterZone("CPU load");
+      m_traceZones.HoldBeforePresent = rTrace.RegisterZone("Hold before present");
+      m_traceZones.SampleDraw = rTrace.RegisterZone("Sample draw");
+      m_traceZones.DrawAnimation = rTrace.RegisterZone("Draw animation");
+      m_traceZones.DrawBoxAnimation = rTrace.RegisterZone("Draw box animation");
+      m_traceZones.EndFrame = rTrace.RegisterZone("End frame");
+      m_traceZones.WaitForPresent = rTrace.RegisterZone("Wait for present");
+      m_traceZones.BackgroundDraw = rTrace.RegisterZone("Background draw");
+      m_traceZones.GpuTimer = rTrace.RegisterZone("GPU timer");
+      m_traceZones.Measurements = rTrace.RegisterZone("Measurements");
+      m_traceZones.Flush = rTrace.RegisterZone("Flush");
+    }
+    else
+    {
+      m_trace.reset();
+    }
     m_frameLog = config.DemoServiceProvider.TryGet<IFramePacingFrameLog>();
     if (m_frameLog && m_frameLog->IsLogEnabled())
     {
@@ -602,24 +633,37 @@ namespace Fsl
   {
     m_updateTime = demoTime;
     m_frameStarted = false;
-    // Before the controls are read, so what a held key changed is used by this frame
-    m_keyboardMenu.Update(demoTime.ElapsedTime);
-    UpdatePacer();
-    UpdateTier();
+    {
+      // Before the controls are read, so what a held key changed is used by this frame
+      const ScopedTraceZone traceZone(m_trace.get(), m_traceZones.KeyboardMenu);
+      m_keyboardMenu.Update(demoTime.ElapsedTime);
+    }
+    {
+      const ScopedTraceZone traceZone(m_trace.get(), m_traceZones.PacerUpdate);
+      UpdatePacer();
+    }
+    {
+      const ScopedTraceZone traceZone(m_trace.get(), m_traceZones.TierUpdate);
+      UpdateTier();
+    }
     if (m_presentMethod == SamplePresentMethod::SwapInterval)
     {
       // The frame starts here: the host updates the app right after the swap of the previous frame, which waited for the display
       StartFrame();
     }
 
-    UpdatePacerStatus();
-    UpdateStatsVisibility();
-    UpdateSyncMarker();
-    UpdatePacerStats();
-    UpdateMarkerStats();
+    {
+      const ScopedTraceZone traceZone(m_trace.get(), m_traceZones.StatsUI);
+      UpdatePacerStatus();
+      UpdateStatsVisibility();
+      UpdateSyncMarker();
+      UpdatePacerStats();
+      UpdateMarkerStats();
+    }
     {
       // The frames everything is known about by now: the GPU time of a frame comes a frame or more after the frame ended, so the
       // chart is that far behind
+      const ScopedTraceZone traceZone(m_trace.get(), m_traceZones.WorkChart);
       SampleFrameWorkRecord work;
       while (m_frameWork.TryPop(work))
       {
@@ -633,12 +677,16 @@ namespace Fsl
         }
       }
     }
-    UpdateAnimationError();
+    {
+      const ScopedTraceZone traceZone(m_trace.get(), m_traceZones.AnimationError);
+      UpdateAnimationError();
+    }
     if (m_framePacing)
     {
       const int64_t measuredTenths = m_framePacing->GetRunMeasuredTime().Ticks() / (TimeSpan::TicksPerMillisecond * 100);
       if (m_framePacing->GetRunState() != m_cachedRunState || m_framePacing->GetRunId() != m_cachedRunId || measuredTenths != m_cachedMeasuredTenths)
       {
+        const ScopedTraceZone traceZone(m_trace.get(), m_traceZones.RunUI);
         UpdateUI();
       }
     }
@@ -647,6 +695,7 @@ namespace Fsl
 
   void FramePacingShared::Draw()
   {
+    const ScopedTraceZone traceZoneDraw(m_trace.get(), m_traceZones.SampleDraw);
     // SamplePresentMethod::WaitThenPresent: the frame starts here, after the host waited for a free buffer
     StartFrame();
 
@@ -681,11 +730,13 @@ namespace Fsl
     if (m_ui.SwitchTestPattern->IsChecked())
     {
       // Use the exact time the frame is animated for, this is what the marker reports
+      const ScopedTraceZone traceZone(m_trace.get(), m_traceZones.DrawAnimation);
       DrawAnimation(m_animationTime.TotalSeconds());
     }
     if (m_ui.SwitchBoxAnimation->IsChecked())
     {
       // The same time as the test pattern, drawn on top of it
+      const ScopedTraceZone traceZone(m_trace.get(), m_traceZones.DrawBoxAnimation);
       DrawBoxAnimation(m_animationTime.TotalSeconds());
     }
 
@@ -969,6 +1020,7 @@ namespace Fsl
 
   void FramePacingShared::EndFrame(const TimeSpan gpuTime)
   {
+    const ScopedTraceZone traceZone(m_trace.get(), m_traceZones.EndFrame);
     const TickCount now = m_timer.GetTimestamp();
     m_lastCpuTime = now - m_frameStartTime;
     m_lastGpuTime = TimeSpan(std::max(gpuTime.Ticks(), int64_t{0}));
@@ -1009,7 +1061,7 @@ namespace Fsl
                                 ((period * static_cast<int64_t>(m_vsyncPhasePercent)) / 100));
 
     const TickCount waitStartTime = m_timer.GetTimestamp();
-    WaitUntil(presentTime);
+    WaitUntil(presentTime, m_traceZones.HoldBeforePresent);
     const TickCount waitEndTime = m_timer.GetTimestamp();
     m_lastPresentWait = waitEndTime - waitStartTime;
     // The next frame starts at the vertical blank this one is aimed at, so the frame starts are on the refreshes
@@ -1106,7 +1158,7 @@ namespace Fsl
       }
     }
     const TickCount waitStartTime = m_timer.GetTimestamp();
-    WaitUntil(dueTime);
+    WaitUntil(dueTime, m_traceZones.HoldBeforePresent);
     m_presentTime = m_timer.GetTimestamp();
     m_presentDueTime = dueTime;
     m_lastPresentWait = m_presentTime - waitStartTime;
@@ -1116,6 +1168,7 @@ namespace Fsl
 
   void FramePacingShared::WaitForPresent(const uint32_t presentSwapInterval)
   {
+    const ScopedTraceZone traceZone(m_trace.get(), m_traceZones.WaitForPresent);
     m_presentRelativeTarget = {};
     const SamplePacerHold holdMethod = GetHoldMethod();
     m_sampleHeldFrame = m_pacer != nullptr && m_schedule.SwapInterval > presentSwapInterval;
@@ -1174,7 +1227,7 @@ namespace Fsl
     const TimeSpan presentMargin = std::min(LocalConfig::MaxPresentMargin, TimeSpan(refreshPeriod.Ticks() / 8));
     const TickCount waitStartTime = m_timer.GetTimestamp();
     const TickCount waitTargetTime = (m_schedule.NextFrameStartTime - presentHoldTime) + presentMargin;
-    WaitUntil(waitTargetTime);
+    WaitUntil(waitTargetTime, m_traceZones.HoldBeforePresent);
     const TickCount waitEndTime = m_timer.GetTimestamp();
     m_lastPresentWait = waitEndTime - waitStartTime;
     m_nextFrameStartTime = m_schedule.NextFrameStartTime;
@@ -1195,8 +1248,10 @@ namespace Fsl
   }
 
 
-  void FramePacingShared::WaitUntil(const TickCount time) const
+  void FramePacingShared::WaitUntil(const TickCount time, const TraceZone zone) const
   {
+    // A wait for a time that has passed is not a zone
+    const ScopedTraceZone traceZone(m_trace.get(), (time - m_timer.GetTimestamp()).Ticks() > 0 ? zone : TraceZone());
     for (;;)
     {
       const TimeSpan remaining = time - m_timer.GetTimestamp();
@@ -1389,7 +1444,7 @@ namespace Fsl
     {
       m_frameStartWaitTime = m_timer.GetTimestamp();
     }
-    WaitUntil(m_nextFrameStartTime);
+    WaitUntil(m_nextFrameStartTime, m_traceZones.WaitForFrameStart);
   }
 
 
@@ -1401,6 +1456,7 @@ namespace Fsl
     }
     m_frameStarted = true;
     ++m_frameId;
+    const ScopedTraceZone traceZoneStart(m_trace.get(), m_traceZones.StartFrame);
 
     // The wait can have been made already (WaitForFrameStart), the frame then waited from there
     const TickCount frameWaitStartTime = m_frameStartWaitTime.Ticks() != 0 ? m_frameStartWaitTime : m_timer.GetTimestamp();
@@ -1411,7 +1467,7 @@ namespace Fsl
     {
       // A frame starts when the previous one is shown. A present that was delayed (WaitForPresent) need not wait for the display
       // (a Vulkan swapchain can have a buffer to spare), so wait for the time the frame pacer aimed the previous frame at.
-      WaitUntil(m_nextFrameStartTime);
+      WaitUntil(m_nextFrameStartTime, m_traceZones.WaitForFrameStart);
     }
     m_nextFrameStartTime = {};
 
@@ -2045,6 +2101,7 @@ namespace Fsl
     {
       return;
     }
+    const ScopedTraceZone traceZone(m_trace.get(), m_traceZones.CpuLoad);
     // Busy on purpose: a sleeping thread would not be a CPU load
     const TickCount endTime = m_timer.GetTimestamp() + duration;
     while (m_timer.GetTimestamp() < endTime)

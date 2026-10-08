@@ -111,6 +111,16 @@ namespace Fsl
       m_traceZonePrepareDraw = m_trace->RegisterZone("Prepare draw");
       m_traceZoneDraw = m_trace->RegisterZone("Draw");
       m_traceZoneAppSwap = m_trace->RegisterZone("App swap");
+      m_traceZonePreUpdate = m_trace->RegisterZone("PreUpdate");
+      m_traceZoneFixedUpdate = m_trace->RegisterZone("FixedUpdate");
+      m_traceZoneAppUpdate = m_trace->RegisterZone("App update");
+      m_traceZonePostUpdate = m_trace->RegisterZone("PostUpdate");
+      m_traceZoneResolve = m_trace->RegisterZone("Resolve");
+      m_traceZoneBeginDraw = m_trace->RegisterZone("BeginDraw");
+      m_traceZoneAppDraw = m_trace->RegisterZone("App draw");
+      m_traceZoneMarkerDraw = m_trace->RegisterZone("Marker draw");
+      m_traceZoneEndDraw = m_trace->RegisterZone("EndDraw");
+      m_traceZoneProfilerDraw = m_trace->RegisterZone("Profiler draw");
     }
     else
     {
@@ -278,12 +288,16 @@ namespace Fsl
       m_stats.TimeBeforeUpdate = m_timer.GetTimestamp();
       {
         const ScopedTraceZone traceZone(m_trace.get(), m_traceZoneUpdate);
-        m_record.DemoApp->_PreUpdate(currentUpdateTime);
+        {
+          const ScopedTraceZone traceZoneStage(m_trace.get(), m_traceZonePreUpdate);
+          m_record.DemoApp->_PreUpdate(currentUpdateTime);
+        }
 
         {    // Run all missing fixed updates
           std::optional<DemoTime> fixedTime = m_appTiming.TryFixedUpdate();
           while (fixedTime.has_value())
           {
+            const ScopedTraceZone traceZoneStage(m_trace.get(), m_traceZoneFixedUpdate);
             m_record.DemoApp->_FixedUpdate(fixedTime.value());
             fixedTime = m_appTiming.TryFixedUpdate();
           }
@@ -294,9 +308,18 @@ namespace Fsl
           m_graphicsService->PreUpdate();
         }
 
-        m_record.DemoApp->_Update(currentUpdateTime);
-        m_record.DemoApp->_PostUpdate(currentUpdateTime);
-        m_record.DemoApp->_Resolve(currentUpdateTime);
+        {
+          const ScopedTraceZone traceZoneStage(m_trace.get(), m_traceZoneAppUpdate);
+          m_record.DemoApp->_Update(currentUpdateTime);
+        }
+        {
+          const ScopedTraceZone traceZoneStage(m_trace.get(), m_traceZonePostUpdate);
+          m_record.DemoApp->_PostUpdate(currentUpdateTime);
+        }
+        {
+          const ScopedTraceZone traceZoneStage(m_trace.get(), m_traceZoneResolve);
+          m_record.DemoApp->_Resolve(currentUpdateTime);
+        }
       }
       m_stats.TimeAfterUpdate = m_timer.GetTimestamp();
     }
@@ -457,16 +480,24 @@ namespace Fsl
     }
 
     const ScopedTraceZone traceZoneDraw(m_trace.get(), m_traceZoneDraw);
-    m_record.DemoApp->_BeginDraw(frameInfo);
+    {
+      const ScopedTraceZone traceZoneStage(m_trace.get(), m_traceZoneBeginDraw);
+      m_record.DemoApp->_BeginDraw(frameInfo);
+    }
     try
     {
-      m_record.DemoApp->_Draw(frameInfo);
+      {
+        const ScopedTraceZone traceZoneStage(m_trace.get(), m_traceZoneAppDraw);
+        m_record.DemoApp->_Draw(frameInfo);
+      }
       // The frame pacing marker must be the last thing the app frame draws (it is rendered with the basic render system, so it has to be
       // drawn inside the frame)
       if (m_framePacingOverlay && m_state == DemoState::Running)
       {
+        const ScopedTraceZone traceZoneStage(m_trace.get(), m_traceZoneMarkerDraw);
         m_framePacingOverlay->Draw(m_demoAppConfig.WindowMetrics);
       }
+      const ScopedTraceZone traceZoneStage(m_trace.get(), m_traceZoneEndDraw);
       m_record.DemoApp->_EndDraw(frameInfo);
     }
     catch (std::exception& ex)
@@ -484,6 +515,7 @@ namespace Fsl
 
     if (m_enableStats && m_state == DemoState::Running && m_demoAppProfilerOverlay)
     {
+      const ScopedTraceZone traceZoneStage(m_trace.get(), m_traceZoneProfilerDraw);
       m_demoAppProfilerOverlay->Draw(m_demoAppConfig.WindowMetrics);
     }
 

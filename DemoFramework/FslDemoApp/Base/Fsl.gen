@@ -9,6 +9,7 @@
     <Dependency Name="FslDemoService.Graphics"/>
     <Dependency Name="FslDemoService.ImageConverter"/>
     <Dependency Name="FslDemoService.Profiler"/>
+    <Dependency Name="FslDemoService.Trace"/>
     <Dependency Name="FslGraphics"/>
     <Dependency Name="FslNativeWindow.Base"/>
     <Dependency Name="FslService.Consumer"/>

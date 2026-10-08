@@ -23,6 +23,7 @@
 #include "FramePacing.hpp"
 #include <FslDemoApp/Base/FrameInfo.hpp>
 #include <FslDemoHost/EGL/Config/Service/IEGLHostInfo.hpp>
+#include <FslDemoService/Trace/ScopedTraceZone.hpp>
 #include <GLES2/gl2.h>
 
 namespace Fsl
@@ -94,20 +95,28 @@ namespace Fsl
       }
     }
 
-    // The GPU time is measured around all the commands of the frame (this also reads the times the GPU has for the earlier frames)
-    m_gpuTimer.BeginFrame(m_shared.GetFrameId());
-    for (const auto& measurement : m_gpuTimer.GetNewMeasurements())
     {
-      // A time of an earlier frame, the sample is told which
-      m_shared.AddGpuTime(measurement.FrameTag, measurement.GpuTime, measurement.EndTime);
+      // The GPU time is measured around all the commands of the frame (this also reads the times the GPU has for the earlier frames)
+      const ScopedTraceZone traceZone(m_shared.TryGetTrace(), m_shared.GetGpuTimerZone());
+      m_gpuTimer.BeginFrame(m_shared.GetFrameId());
+      for (const auto& measurement : m_gpuTimer.GetNewMeasurements())
+      {
+        // A time of an earlier frame, the sample is told which
+        m_shared.AddGpuTime(measurement.FrameTag, measurement.GpuTime, measurement.EndTime);
+      }
     }
 
     const auto clearColor = FramePacingShared::ClearColor.ToVector4();
     glClearColor(clearColor.X, clearColor.Y, clearColor.Z, clearColor.W);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
-    // The background is animated for the same time as the rest of the frame
-    m_background.Draw(m_shared.GetRaymarchParams(), GetWindowSizePx());
+    {
+      // The background is animated for the same time as the rest of the frame. The frame starts in the update with this present
+      // method, so the parameters are only read here.
+      const RaymarchParams raymarchParams = m_shared.GetRaymarchParams();
+      const ScopedTraceZone traceZone(m_shared.TryGetTrace(), m_shared.GetBackgroundDrawZone());
+      m_background.Draw(raymarchParams, GetWindowSizePx());
+    }
     m_shared.Draw();
   }
 
@@ -124,6 +133,7 @@ namespace Fsl
       // Asked for on the command line: the GPU is asked to work on the frame now. Without it the driver decides when, which is the
       // swap at the latest, so a frame whose swap is delayed below can be one the GPU only starts on after the wait.
       m_shared.MarkFlush();
+      const ScopedTraceZone traceZone(m_shared.TryGetTrace(), m_shared.GetFlushZone());
       glFlush();
     }
     m_shared.EndFrame(m_gpuTimer.GetGpuTime());

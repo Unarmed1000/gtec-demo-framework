@@ -46,11 +46,13 @@
 #include <FslDemoApp/Base/Service/Events/Basic/TimeStateEvent.hpp>
 #include <FslDemoApp/Base/Service/Events/Basic/WindowFocusEvent.hpp>
 #include <FslDemoApp/Base/Service/Persistent/IPersistentDataManager.hpp>
+#include <FslDemoService/Trace/TraceTypes.hpp>
 #include <memory>
 
 namespace Fsl
 {
   class IDemoAppExtension;
+  class ITraceService;
 
   class ADemoApp : public IDemoApp
   {
@@ -69,6 +71,11 @@ namespace Fsl
     std::weak_ptr<IPersistentDataManager> m_persistentDataManager;
     std::weak_ptr<IDemoAppControl> m_demoAppControl;
     std::deque<std::weak_ptr<IDemoAppExtension>> m_extensions;
+    //! The trace service (null: the trace is off)
+    std::shared_ptr<ITraceService> m_trace;
+    TraceZone m_traceZoneExtensionsPre;
+    TraceZone m_traceZoneApp;
+    TraceZone m_traceZoneExtensionsPost;
     ObjectLifeCycle m_currentLifeCycleState = ObjectLifeCycle::Constructing;
 
   public:

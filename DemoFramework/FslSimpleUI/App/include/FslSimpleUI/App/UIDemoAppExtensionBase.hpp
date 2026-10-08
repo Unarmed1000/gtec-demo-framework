@@ -33,6 +33,7 @@
 
 #include <FslDataBinding/App/DataBindingDemoAppExtension.hpp>
 #include <FslDemoService/Profiler/ScopedProfilerCustomCounterHandle.hpp>
+#include <FslDemoService/Trace/TraceTypes.hpp>
 #include <FslGraphics/Sprite/Material/SpriteMaterialInfo.hpp>
 #include <FslSimpleUI/App/UIAppDefaultMaterial.hpp>
 #include <memory>
@@ -41,6 +42,7 @@ namespace Fsl
 {
   class DemoPerformanceCapture;
   class IProfilerService;
+  class ITraceService;
   struct PxRectangle;
   struct PxViewport;
   struct UIDemoAppExtensionCreateInfo;
@@ -68,6 +70,18 @@ namespace Fsl
     ScopedProfilerCustomCounterHandle m_hProfileCounterResolve;
     ScopedProfilerCustomCounterHandle m_hProfileCounterDraw;
     ScopedProfilerCustomCounterHandle m_hProfileCounterWin;
+    //! The trace service (null: the trace is off)
+    std::shared_ptr<ITraceService> m_trace;
+    TraceZone m_traceZoneProcessEvents;
+    TraceZone m_traceZoneUpdate;
+    TraceZone m_traceZoneDraw;
+    TraceZone m_traceZonePreDraw;
+    TraceZone m_traceZoneRender;
+    TraceZone m_traceZonePreprocessDrawCommands;
+    TraceZone m_traceZoneGenerateMeshes;
+    TraceZone m_traceZoneUpdateBuffers;
+    TraceZone m_traceZoneScheduleDraw;
+    TraceZone m_traceZonePostDraw;
     std::shared_ptr<UI::BaseWindow> m_mainWindow;
 
   public:

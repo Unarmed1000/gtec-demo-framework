@@ -81,6 +81,9 @@ namespace Fsl
     if (m_trace && m_trace->IsEnabled())
     {
       m_traceZoneSwap = m_trace->RegisterZone("Swap");
+      m_traceZoneNativeMessages = m_trace->RegisterZone("Native messages");
+      m_traceZoneHostMessages = m_trace->RegisterZone("Host messages");
+      m_traceZoneServiceMessages = m_trace->RegisterZone("Service messages");
     }
     else
     {
@@ -134,12 +137,24 @@ namespace Fsl
     auto windowMetrics = m_demoHost->GetWindowMetrics();
 
     const auto isConsoleBasedHost = m_demoHost->IsConsoleBaseHost();
-    // Event loop
-    while (m_demoHost->ProcessNativeMessages(m_state == State::Suspended) && !m_demoAppManager->HasExitRequest())
+    // The messages of the window system, which is where the events of a frame come from
+    const auto processNativeMessages = [this]()
     {
-      ProcessMessages();
-      // Allow the services to react to the incoming messages before we process the app
-      serviceHostLooper->ProcessMessages();
+      const ScopedTraceZone traceZone(m_trace.get(), m_traceZoneNativeMessages);
+      return m_demoHost->ProcessNativeMessages(m_state == State::Suspended);
+    };
+    // Event loop
+    while (processNativeMessages() && !m_demoAppManager->HasExitRequest())
+    {
+      {
+        const ScopedTraceZone traceZone(m_trace.get(), m_traceZoneHostMessages);
+        ProcessMessages();
+      }
+      {
+        // Allow the services to react to the incoming messages before we process the app
+        const ScopedTraceZone traceZone(m_trace.get(), m_traceZoneServiceMessages);
+        serviceHostLooper->ProcessMessages();
+      }
 
       if (m_state == State::Activated)
       {

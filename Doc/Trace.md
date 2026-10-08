@@ -25,7 +25,7 @@ and can be written in the same run: both get the same values.
 
 Track | What is on it
 ---|---
-`Main` (a thread) | The zones of the main thread: `Update`, `Prepare draw`, `Draw` and `Swap` of the host, with what an app adds inside them. A Vulkan app has `Wait for frame slot`, `vkAcquireNextImageKHR`, `Wait for acquire fence`, `vkQueueSubmit`, `App swap`, `vkQueuePresentKHR` and `vkWaitForPresent2KHR`.
+`Main` (a thread) | The zones of the main thread: what the thread did, as blocks inside blocks. See [the zones of the main thread](#the-zones-of-the-main-thread).
 `Frames` | One span `Frame` for every frame, from where the host started on it to where the host was done with it. It carries **every value of the frame** as an argument, see below.
 `Vulkan` | The calls and waits of a Vulkan app as spans of their frame: `wait for present`, `wait for frame slot`, `acquire`, `wait for acquire fence`, `submit`, `present`.
 `Present to display` | Vulkan with present timing: a span from the present call of a frame to the first pixel out. The presents of the frames in flight overlap, so they are drawn in lanes.
@@ -54,6 +54,73 @@ drawn when the frame has both of its times.
 A frame is written 64 frames after it began, as some of its values arrive late (the display time of a present is reported a few
 frames later). So a trace of a app that is running lacks its last 64 frames until the app exits, and a app that is killed loses them
 and about a second of what came before.
+
+### The zones of the main thread
+
+The zones are layers: a zone is inside the zone of what called it. This is what a frame of a app looks like, from the host down to
+the app. A zone that is indented is inside the one above it.
+
+```
+Native messages                        the messages of the window system, where the events of a frame come from
+Host messages
+Service messages
+Update                                 the update of the frame
+  PreUpdate                            a stage of the update. Every stage has the three zones below
+    Extensions (before app)            the extensions of the app that run before it, the UI is one
+      UI process events
+    App                                the method of the app itself, with the zones the app adds
+    Extensions (after app)
+  FixedUpdate                          once for every fixed step that is due, so not in every frame
+  App update
+  PostUpdate
+    Extensions (after app)
+      UI update                        the layout and the animations of the UI
+  Resolve
+Prepare draw
+  vkWaitForPresent2KHR                 Vulkan, if the swapchain waits for a earlier present
+  Wait for frame slot                  Vulkan
+  vkAcquireNextImageKHR                Vulkan
+  Wait for acquire fence               Vulkan, if the swapchain waits for it
+Draw
+  BeginDraw
+  App draw                             the draw method of the app, with the zones the app adds
+    Record commands                    Vulkan: the app records the commands of the frame
+      UI draw
+        UI pre draw
+        UI render
+          UI preprocess draw commands  the steps of the render system of the UI
+          UI generate meshes
+          UI update buffers
+          UI schedule draw
+        UI post draw
+      Profiler draw                    Vulkan: the overlay of the profiler, if it is shown
+      Marker draw                      Vulkan: the frame pacing marker
+    Submit frame                       Vulkan
+      vkQueueSubmit
+  Marker draw                          the frame pacing marker, where the host draws it (not Vulkan)
+  EndDraw
+  Profiler draw                        the overlay of the profiler, if it is shown (not Vulkan)
+Swap                                   the frame is handed over
+  App swap                             Vulkan: the app presents
+    vkQueuePresentKHR
+```
+
+The FramePacing samples add what they do in a frame:
+
+Where | Zones
+---|---
+In their update | `Keyboard menu`, `Pacer update`, `Tier update`, `Stats UI`, `Work chart`, `Animation error`, `Run UI`
+Where the frame starts (the update of a GLES sample, the draw of the Vulkan sample) | `Start frame`, with `Wait for frame start` and `CPU load` inside it
+In their draw | `GPU timer`, `Measurements` (Vulkan), `Background draw`, `Sample draw` with `Draw animation`, `Draw box animation` and `UI draw` inside it, `Flush` (GLES with `--GLFlush`)
+After their draw | `End frame`, `Wait for present` with `Hold before present` inside it
+
+- A wait is only a zone when there was something to wait for, so `Wait for frame start` and `Hold before present` are not in
+  every frame.
+- The UI library does not know the trace. The steps of its render system are zones because the render system times them itself,
+  and they are added with those times when the draw is done. The walk of the window tree before them is the time of `UI render`
+  that none of its steps cover.
+- The zones are recorded by `ScopedTraceZone` objects in the code, so the list above is what the code has zones for and not what
+  a thread can do. A app adds its own as the example below shows.
 
 ## Recording from an app
 

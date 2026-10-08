@@ -109,6 +109,17 @@ namespace Fsl
     TraceZone m_traceZonePrepareDraw;
     TraceZone m_traceZoneDraw;
     TraceZone m_traceZoneAppSwap;
+    //! The stages of the update and of the draw, which are inside the zones above
+    TraceZone m_traceZonePreUpdate;
+    TraceZone m_traceZoneFixedUpdate;
+    TraceZone m_traceZoneAppUpdate;
+    TraceZone m_traceZonePostUpdate;
+    TraceZone m_traceZoneResolve;
+    TraceZone m_traceZoneBeginDraw;
+    TraceZone m_traceZoneAppDraw;
+    TraceZone m_traceZoneMarkerDraw;
+    TraceZone m_traceZoneEndDraw;
+    TraceZone m_traceZoneProfilerDraw;
     std::shared_ptr<IFramePacingMarkerServiceControl> m_framePacingMarkerServiceControl;
 
     //! The columns the host adds to the frame pacing log

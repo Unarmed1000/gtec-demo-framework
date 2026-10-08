@@ -29,6 +29,7 @@
  *
  ****************************************************************************************************************************************************/
 
+#include <FslBase/Time/TickCount.hpp>
 #include <FslBase/Time/TimeSpan.hpp>
 #include <FslBase/UncheckedNumericCast.hpp>
 #include <FslDemoApp/Base/DemoAppConfig.hpp>
@@ -36,6 +37,7 @@
 #include <FslDemoService/Graphics/IGraphicsService.hpp>
 #include <FslDemoService/Profiler/DefaultProfilerColors.hpp>
 #include <FslDemoService/Profiler/IProfilerService.hpp>
+#include <FslDemoService/Trace/ScopedTraceZone.hpp>
 #include <FslGraphics/Render/Adapter/INativeBatch2D.hpp>
 #include <FslSimpleUI/Activity/ActivitySystem.hpp>
 #include <FslSimpleUI/App/DemoPerformanceCapture.hpp>
@@ -94,6 +96,23 @@ namespace Fsl
         createInfo.RenderCreateInfo.ColorSpace, graphicsService->GetNativeBatch2D()->SYS_IsTextureCoordinateYFlipped(),
         Convert(createInfo.WindowMetrics), createInfo.ExternalModuleFactories);
     }
+
+    //! @brief Add a step the render system timed as a zone of the trace. The render system does not know the trace, so the zone is
+    //!        added when the draw is done, with the times the render system read.
+    void AddRenderZone(ITraceService& rTrace, const TraceZone zone, const UI::RenderPerformanceCapture& capture,
+                       const UI::RenderPerformanceCaptureId id) noexcept
+    {
+      const BasicPerformanceCaptureRecord& record = capture.Get(id);
+      if (record.Begin == 0u || record.End <= record.Begin)
+      {
+        // The step did not run, or it took no time: the draw came from the cache
+        return;
+      }
+      // The same conversion as the timer of the framework, so the times are on the clock of the other zones
+      const double nativeTicksPerTick = static_cast<double>(capture.GetFrequency()) / static_cast<double>(TickCount::TicksPerSecond);
+      rTrace.BeginZoneAt(zone, TickCount(static_cast<int64_t>(static_cast<double>(record.Begin) / nativeTicksPerTick)));
+      rTrace.EndZoneAt(TickCount(static_cast<int64_t>(static_cast<double>(record.End) / nativeTicksPerTick)));
+    }
   }
 
   UIDemoAppExtensionBase::UIDemoAppExtensionBase(const UIDemoAppExtensionCreateInfo& createInfo,
@@ -107,6 +126,25 @@ namespace Fsl
     , m_hProfileCounterWin(m_profilerService, m_profilerService->CreateCustomCounter("win", 0, 200, DefaultProfilerColors::UIWinCount))
   {
     m_activitySystem->RegisterEventListener(eventListener);
+
+    m_trace = createInfo.DemoServiceProvider.TryGet<ITraceService>();
+    if (m_trace && m_trace->IsEnabled())
+    {
+      m_traceZoneProcessEvents = m_trace->RegisterZone("UI process events");
+      m_traceZoneUpdate = m_trace->RegisterZone("UI update");
+      m_traceZoneDraw = m_trace->RegisterZone("UI draw");
+      m_traceZonePreDraw = m_trace->RegisterZone("UI pre draw");
+      m_traceZoneRender = m_trace->RegisterZone("UI render");
+      m_traceZonePreprocessDrawCommands = m_trace->RegisterZone("UI preprocess draw commands");
+      m_traceZoneGenerateMeshes = m_trace->RegisterZone("UI generate meshes");
+      m_traceZoneUpdateBuffers = m_trace->RegisterZone("UI update buffers");
+      m_traceZoneScheduleDraw = m_trace->RegisterZone("UI schedule draw");
+      m_traceZonePostDraw = m_trace->RegisterZone("UI post draw");
+    }
+    else
+    {
+      m_trace.reset();
+    }
   }
 
 
@@ -223,7 +261,10 @@ namespace Fsl
       {
         pDemoPerformanceCapture->BeginProfile(DemoPerformanceCaptureId::UIProcessEvents);
       }
-      m_activitySystem->ProcessEvents();
+      {
+        const ScopedTraceZone traceZone(m_trace.get(), m_traceZoneProcessEvents);
+        m_activitySystem->ProcessEvents();
+      }
       if (pDemoPerformanceCapture != nullptr)
       {
         pDemoPerformanceCapture->EndProfile(DemoPerformanceCaptureId::UIProcessEvents);
@@ -241,7 +282,10 @@ namespace Fsl
       {
         pDemoPerformanceCapture->BeginProfile(DemoPerformanceCaptureId::UIProcessEvents);
       }
-      m_activitySystem->ProcessEvents();
+      {
+        const ScopedTraceZone traceZone(m_trace.get(), m_traceZoneProcessEvents);
+        m_activitySystem->ProcessEvents();
+      }
       if (pDemoPerformanceCapture != nullptr)
       {
         pDemoPerformanceCapture->EndProfile(DemoPerformanceCaptureId::UIProcessEvents);
@@ -260,8 +304,11 @@ namespace Fsl
       {
         pDemoPerformanceCapture->BeginProfile(DemoPerformanceCaptureId::UIUpdate);
       }
-      // We call the UIManager in post update to allow the app to modify the UI in its update method
-      m_activitySystem->Update(Convert(demoTime));
+      {
+        // We call the UIManager in post update to allow the app to modify the UI in its update method
+        const ScopedTraceZone traceZone(m_trace.get(), m_traceZoneUpdate);
+        m_activitySystem->Update(Convert(demoTime));
+      }
       if (pDemoPerformanceCapture != nullptr)
       {
         pDemoPerformanceCapture->EndProfile(DemoPerformanceCaptureId::UIUpdate);
@@ -336,23 +383,46 @@ namespace Fsl
 
   void UIDemoAppExtensionBase::DoDraw()
   {
-    m_activitySystem->PreDraw();
+    const ScopedTraceZone traceZoneDraw(m_trace.get(), m_traceZoneDraw);
+    {
+      const ScopedTraceZone traceZone(m_trace.get(), m_traceZonePreDraw);
+      m_activitySystem->PreDraw();
+    }
     DemoPerformanceCapture* pDemoPerformanceCapture = TryGetDemoPerformanceCapture();
 
-    if (pDemoPerformanceCapture == nullptr)
+    if (pDemoPerformanceCapture == nullptr && !m_trace)
     {
       m_activitySystem->Draw(nullptr);
     }
     else
     {
+      // The render system times its steps for the performance capture and for the trace
+      const ScopedTraceZone traceZone(m_trace.get(), m_traceZoneRender);
       UI::RenderPerformanceCapture performanceCapture;
-      pDemoPerformanceCapture->BeginProfile(DemoPerformanceCaptureId::UIDraw);
+      if (pDemoPerformanceCapture != nullptr)
+      {
+        pDemoPerformanceCapture->BeginProfile(DemoPerformanceCaptureId::UIDraw);
+      }
       m_activitySystem->Draw(&performanceCapture);
-      pDemoPerformanceCapture->EndProfile(DemoPerformanceCaptureId::UIDraw);
-      pDemoPerformanceCapture->SetRenderPerformanceCapture(performanceCapture);
+      if (pDemoPerformanceCapture != nullptr)
+      {
+        pDemoPerformanceCapture->EndProfile(DemoPerformanceCaptureId::UIDraw);
+        pDemoPerformanceCapture->SetRenderPerformanceCapture(performanceCapture);
+      }
+      if (m_trace)
+      {
+        // The steps in the order they ran. Nothing else added a zone while the render system drew.
+        AddRenderZone(*m_trace, m_traceZonePreprocessDrawCommands, performanceCapture, UI::RenderPerformanceCaptureId::PreprocessDrawCommands);
+        AddRenderZone(*m_trace, m_traceZoneGenerateMeshes, performanceCapture, UI::RenderPerformanceCaptureId::GenerateMeshes);
+        AddRenderZone(*m_trace, m_traceZoneUpdateBuffers, performanceCapture, UI::RenderPerformanceCaptureId::UpdateBuffers);
+        AddRenderZone(*m_trace, m_traceZoneScheduleDraw, performanceCapture, UI::RenderPerformanceCaptureId::ScheduleDraw);
+      }
     }
 
-    m_activitySystem->PostDraw();
+    {
+      const ScopedTraceZone traceZone(m_trace.get(), m_traceZonePostDraw);
+      m_activitySystem->PostDraw();
+    }
 
     const auto stats = m_activitySystem->GetStats();
     m_profilerService->Set(m_hProfileCounterUpdate, UncheckedNumericCast<int32_t>(stats.UpdateCalls));

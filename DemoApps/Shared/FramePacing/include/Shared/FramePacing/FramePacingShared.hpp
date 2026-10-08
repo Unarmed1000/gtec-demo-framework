@@ -30,6 +30,7 @@
 #include <FslDemoApp/Base/DemoTime.hpp>
 #include <FslDemoService/FramePacingMarker/FramePacingLogColumn.hpp>
 #include <FslDemoService/FramePacingMarker/FramePacingRunState.hpp>
+#include <FslDemoService/Trace/TraceTypes.hpp>
 #include <FslGraphics/Color.hpp>
 #include <FslGraphics/Render/Texture2D.hpp>
 #include <FslSimpleUI/App/UIDemoAppExtension.hpp>
@@ -62,6 +63,7 @@ namespace Fsl
 {
   class IFramePacingFrameLog;
   class IFramePacingMarkerService;
+  class ITraceService;
   class SampleAnimationErrorChart;
   namespace UI
   {
@@ -428,6 +430,35 @@ namespace Fsl
       uint64_t FrameIndex{0};
     };
 
+    //! The zones of the sample in the trace: what it does in its update and its draw, and where it waits
+    struct TraceZones
+    {
+      TraceZone KeyboardMenu;
+      TraceZone PacerUpdate;
+      TraceZone TierUpdate;
+      TraceZone StatsUI;
+      TraceZone WorkChart;
+      TraceZone AnimationError;
+      TraceZone RunUI;
+      TraceZone StartFrame;
+      TraceZone WaitForFrameStart;
+      TraceZone CpuLoad;
+      TraceZone HoldBeforePresent;
+      TraceZone SampleDraw;
+      TraceZone DrawAnimation;
+      TraceZone DrawBoxAnimation;
+      TraceZone EndFrame;
+      TraceZone WaitForPresent;
+      TraceZone BackgroundDraw;
+      TraceZone GpuTimer;
+      TraceZone Measurements;
+      TraceZone Flush;
+    };
+
+    //! The trace service (null: the trace is off)
+    std::shared_ptr<ITraceService> m_trace;
+    TraceZones m_traceZones;
+
     //! The frame pacing log (null if the frames are not logged)
     std::shared_ptr<IFramePacingFrameLog> m_frameLog;
     LogColumns m_logColumns;
@@ -590,6 +621,32 @@ namespace Fsl
     //! The app flushes its commands now: the frame log gets the time. Call it right before the flush, during the draw of the frame.
     void MarkFlush();
 
+    //! The trace service for the zones of the app, null if the trace is off
+    [[nodiscard]] ITraceService* TryGetTrace() const noexcept
+    {
+      return m_trace.get();
+    }
+    //! The zone of the trace for the app's draw of the background
+    [[nodiscard]] TraceZone GetBackgroundDrawZone() const noexcept
+    {
+      return m_traceZones.BackgroundDraw;
+    }
+    //! The zone of the trace for the app's work with its GPU timer at the start of a frame
+    [[nodiscard]] TraceZone GetGpuTimerZone() const noexcept
+    {
+      return m_traceZones.GpuTimer;
+    }
+    //! The zone of the trace for where the app hands the sample what it measured
+    [[nodiscard]] TraceZone GetMeasurementsZone() const noexcept
+    {
+      return m_traceZones.Measurements;
+    }
+    //! The zone of the trace for the app's flush of its commands
+    [[nodiscard]] TraceZone GetFlushZone() const noexcept
+    {
+      return m_traceZones.Flush;
+    }
+
     //! What the app draws the raymarched background of the current frame with, before it calls Draw (the GPU load of the sample).
     //! Call it during the app's draw, as the frame can start there.
     [[nodiscard]] RaymarchParams GetRaymarchParams();
@@ -616,7 +673,8 @@ namespace Fsl
     //! Start the frame: the frame pacer plans it, its animation time is set and the simulated CPU load runs
     void StartFrame();
     //! Sleep (a long wait) or yield (a short wait) until the given HighResolutionTimer timestamp
-    void WaitUntil(const TickCount time) const;
+    //! @param zone the zone of the trace the wait is, which is only there if there is something to wait for
+    void WaitUntil(const TickCount time, const TraceZone zone) const;
     [[nodiscard]] SamplePacerHold GetRequestedHold() const;
     void WaitForPresentOnVSync(const uint32_t presentSwapInterval);
     //! The wait of a frame the present holds for its whole swap interval, see SamplePacerProfile

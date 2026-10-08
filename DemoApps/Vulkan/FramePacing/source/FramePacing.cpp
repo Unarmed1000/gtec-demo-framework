@@ -23,6 +23,7 @@
 #include "FramePacing.hpp"
 #include <FslBase/Time/TimeSpan.hpp>
 #include <FslBase/UncheckedNumericCast.hpp>
+#include <FslDemoService/Trace/ScopedTraceZone.hpp>
 #include <array>
 #include <optional>
 
@@ -133,8 +134,14 @@ namespace Fsl
     const VkCommandBuffer hCmdBuffer = rCmdBuffers[currentFrameIndex];
     rCmdBuffers.Begin(currentFrameIndex, VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT, VK_NULL_HANDLE, 0, VK_NULL_HANDLE, VK_FALSE, 0, 0);
     {
-      m_gpuTimer.BeginFrame(hCmdBuffer, currentFrameIndex);
-      UpdateMeasurements(currentFrameIndex);
+      {
+        const ScopedTraceZone traceZone(m_shared.TryGetTrace(), m_shared.GetGpuTimerZone());
+        m_gpuTimer.BeginFrame(hCmdBuffer, currentFrameIndex);
+      }
+      {
+        const ScopedTraceZone traceZone(m_shared.TryGetTrace(), m_shared.GetMeasurementsZone());
+        UpdateMeasurements(currentFrameIndex);
+      }
 
       const auto clearColor = FramePacingShared::ClearColor.ToVector4();
       std::array<VkClearValue, 1> clearValues{};
@@ -155,8 +162,11 @@ namespace Fsl
 
       rCmdBuffers.CmdBeginRenderPass(currentFrameIndex, &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
       {
-        // The background is animated for the same time as the rest of the frame
-        m_background.Draw(hCmdBuffer, raymarchParams);
+        {
+          // The background is animated for the same time as the rest of the frame
+          const ScopedTraceZone traceZone(m_shared.TryGetTrace(), m_shared.GetBackgroundDrawZone());
+          m_background.Draw(hCmdBuffer, raymarchParams);
+        }
         {    // The frame has started, so it can be given the id its present will get. The measurements of the frame refer to it.
           const uint64_t presentId = GetNextPresentId();
           m_shared.SetFramePresentId(presentId);

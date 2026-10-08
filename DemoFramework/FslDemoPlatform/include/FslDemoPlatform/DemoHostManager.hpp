@@ -76,6 +76,9 @@ namespace Fsl
     //! The trace service (null: the trace is off)
     std::shared_ptr<ITraceService> m_trace;
     TraceZone m_traceZoneSwap;
+    TraceZone m_traceZoneNativeMessages;
+    TraceZone m_traceZoneHostMessages;
+    TraceZone m_traceZoneServiceMessages;
 
     State m_state;
     bool m_basic2DPreallocEnabled{false};
