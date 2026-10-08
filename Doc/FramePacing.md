@@ -27,10 +27,9 @@ Argument                          | Description
 `--FramePacing.ModuleSize <px>`   | The size of one QR module in pixels (default 6).
 `--FramePacing.CaptureHeight <px>`| The height the capture is stored at. The module size is calculated so the marker survives the downscale (overrides the module size).
 `--FramePacing.SyncMarker`        | Also draw the small sync marker (the run id and the frame index) at the bottom left. The analysis detects tearing when the two markers disagree, and camera capture needs it for its timing.
-`--FramePacing.Run <name>`        | Start a measured run with this name at the first frame. The name is written to the log next to the run's random sequence id. Implies `--FramePacing`.
+`--FramePacing.Run <name>`        | Start a measured run with this name at the first frame. The name is written to the trace next to the run's random sequence id. Implies `--FramePacing`.
 `--FramePacing.Duration <sec>`    | The duration of the measured part of the run (0 = until the app exits).
 `--FramePacing.RunId <id>`        | The id of the run (defaults to a random id).
-`--FramePacing.Log <file>`        | Write what every frame did to a log, see [the frame log](#the-frame-log). It does not need the marker to be drawn.
 
 A run is bracketed by a start marker (shown for at least 100ms, it carries the run's sequence id and the wall clock start time) and an
 end marker, so the analysis can cut the capture to exactly the measured window. The sequence id is 16 random bytes, which the
@@ -406,35 +405,42 @@ the framework (slow and fast motion) have no effect. Pause still stops the anima
 
 ## The frame log
 
-`--FramePacing.Log <file>` makes the service write what every frame of the app did to a log, so the frame loop can be looked at
+The frame log is the trace of the app: `--Trace <file>` makes it write what every frame did, so the frame loop can be looked at
 afterwards and compared with a capture of the marker. It works with every OpenGL ES and Vulkan app and does not need the marker to be
 drawn. How to capture runs that can be compared, with a plan, a known load on the machine and notes, is described in
-[FramePacingCapture.md](FramePacingCapture.md).
+[FramePacingCapture.md](FramePacingCapture.md). What a trace is, how to open it and how to read it with a tool is described in
+[Trace.md](Trace.md).
 
 ```bash
-Vulkan.FramePacing --Pacer --FramePacing.Log frames.csv --ExitAfterFrame 2000
+Vulkan.FramePacing --Pacer --Trace frames.perfetto-trace --ExitAfterFrame 2000
 ```
 
-Two files are written:
+What this document calls the frame log is the part of the trace that is about the frames:
 
-- **`<file>`**: one row per frame, the first line holds the names of the columns. A row is a frame the host began, in order, and
-  `frameIndex` is the frame index the marker of the frame carries.
-- **`<stem>.events.csv`** (`frames.events.csv`): `frameIndex,timeTicks,event,details` for everything that is not a value of a frame:
-  the facts of the run, the description of every column and what happened during the run.
+- **The values of a frame**: every frame the host began has a `Frame` span, and every value of the frame is an argument of it under
+  its name. `frameIndex` is the frame index the marker of the frame carries. The tables below list the values, which are the
+  columns where the frames are read as a table (`.Config/FramePacing/FramePacingTraceFile.py`, or the CSV files
+  `FramePacingTraceToCsv.py` writes).
+- **The events and the facts**: what is not a value of a frame, see [the events](#the-events).
 
 Every value of a frame is a whole number and nothing is rounded or converted to a unit with decimals. A time (`ticks`) is a time of the
 steady clock of the framework (`HighResolutionTimer`) in 100 ns ticks and a duration (`durationTicks`) is in the same ticks. A value of
-the driver is written as the driver gave it, with its unit in the name of the column (`refreshDurationNs`). A field is empty when the
-frame has no such value: the app does not supply it, the extension is missing, or the value did not arrive.
+the driver is written as the driver gave it, with its unit in its name (`refreshDurationNs`). A frame does not have a value when the
+app does not supply it, the extension is missing, or the value did not arrive.
 
-The log is written by a thread of its own, the render thread only hands over rows. The files are flushed every 250 ms, so a app that
-crashes or is killed loses less than a second. A row stays open for 64 frames, as the values of a frame arrive over time (the display
-time of a present is reported a few frames later), and is written when it closes.
+The trace is written by a thread of its own, the render thread only hands over what it recorded. A frame stays open for 64 frames, as
+the values of a frame arrive over time (the display time of a present is reported a few frames later), and is written when it closes.
+A app that is killed loses the frames that were open and about a second of what came before.
+
+The app used to write the frame log itself as two CSV files (`--FramePacing.Log`). That option is gone.
+`.Config/FramePacing/FramePacingTraceToCsv.py` writes those files from a trace for a tool that reads them, see
+[FramePacingCapture.md](FramePacingCapture.md#csv-files-from-a-trace).
 
 ### The columns
 
-Which columns a log has depends on the app: every app has the ones of the service and the host, a Vulkan app adds its presents and the
-FramePacing samples add their pacer. The events file describes every column of the log it belongs to.
+Which values a frame has depends on the app: every app has the ones of the service and the host, a Vulkan app adds its presents and
+the FramePacing samples add their pacer. The `Schema` track of a trace describes every value of the trace it is in: its name, its unit
+and what it is.
 
 **The service, for every app**
 
@@ -633,8 +639,7 @@ in a log that is right): `frameWaitStartTicks`, `frameStartTicks`, `pacerOn`, `s
 
 Event | Details
 ---|---
-`fact` | `key=value`, something that holds for the whole run: `formatVersion`, `clock`, `clockNativeFrequency`, `utcNanoseconds` with the `utcClockTicks` it was read at (so a tick can be placed in wall clock time), `app`, `debugBuild`, `api`, `apiVersion`, the settings of the marker (`marker.*`), of the log (`log.openFrames`), the Vulkan device (`vulkan.deviceName`, `vendorId`, `deviceId`, `driverVersion`, `apiVersion`, `calibratedTimestamps`, `presentTimingDevice`, `presentTimingOption`, `presentWaitOption`, `acquireFenceWaitOption`) and the sample (`sample.presentMethod`, `sample.pacerSupported`, `sample.frameStartRow`, `sample.glFlush`).
-`column` | The name, the unit and the description of a column.
+A fact (on the `Facts` track, not a event) | Something that holds for the whole run, as a key and a value: the trace itself (`trace.formatVersion`, `trace.clock`, `trace.utcNanoseconds` with `trace.utcClockTicks`, `trace.openFrames`, `trace.anonymised`), `clock`, `clockNativeFrequency`, `utcNanoseconds` with the `utcClockTicks` it was read at (so a tick can be placed in wall clock time), `app`, `debugBuild`, `api`, `apiVersion`, the settings of the marker (`marker.*`), the Vulkan device (`vulkan.deviceName`, `vendorId`, `deviceId`, `driverVersion`, `apiVersion`, `calibratedTimestamps`, `presentTimingDevice`, `presentTimingOption`, `presentWaitOption`, `acquireFenceWaitOption`) and the sample (`sample.presentMethod`, `sample.pacerSupported`, `sample.frameStartRow`, `sample.glFlush`).
 `window` | The size and the DPI of the window, written when it changes.
 `display` | The refresh interval of the display as the window system reports it for the mode of the display (0 if it does not know), written when it changes: `refreshIntervalNs` in nanoseconds and `refreshIntervalTicks` rounded to the nearest tick. It is the nominal value of the mode, the display does not refresh at exactly that rate on the clock of the system.
 `runStarted`, `runCompleted` | A measured run of the marker: the run id, the sequence id, the name and the duration.
@@ -651,32 +656,12 @@ Event | Details
 
 ### Adding values from an app
 
-An app or a host adds its own columns through `IFramePacingFrameLog`. Every call does nothing while the log is off, so the only check
-that is needed is the one for the service.
+An app or a host adds its own values, events and facts through `ITraceService`, see
+[recording from an app](Trace.md#recording-from-an-app): `RegisterValue` once, then `SetValue` in every frame, or `SetValueAt` for a
+value of a earlier frame that is only known now.
 
-```C++
-#include <FslDemoService/FramePacingMarker/IFramePacingFrameLog.hpp>
-
-// In the constructor, columns can be added until the first frame is written
-m_frameLog = config.DemoServiceProvider.TryGet<IFramePacingFrameLog>();
-if (m_frameLog)
-{
-  m_columnPhysics = m_frameLog->RegisterColumn("physicsTicks", FramePacingLogUnit::DurationTicks, "How long the physics of the frame took");
-  m_frameLog->SetLogFact("scene", "city");
-}
-
-// During the draw of a frame: a value of the frame that is being drawn
-if (m_frameLog)
-{
-  m_frameLog->SetLogValue(m_columnPhysics, physicsTime);
-  // A value that is known later is written to the frame it belongs to
-  m_frameLog->SetLogInt64At(frameIndex, m_columnResult, result);
-  m_frameLog->AddLogEvent("levelLoaded", "name=city");
-}
-```
-
-A frame has its row from the moment the host begins its draw. The update of a frame runs before that, so a value that is set during
-the update is written to the row of the frame before: keep it and set it during the draw. The FramePacing samples do so for what a
+A frame begins in the trace at the moment the host begins its draw. The update of a frame runs before that, so a value that is set
+during the update is written to the frame before: keep it and set it during the draw. The FramePacing samples do so for what a
 frame started with, as their OpenGL ES frame starts in the update.
 
 ## Notes
@@ -697,9 +682,9 @@ frame started with, as their OpenGL ES frame starts in the update.
 Package                                    | Content
 -------------------------------------------|--------------------------------------------------------------------------------------------
 `ThirdParty/mb_framepacing`                | The mb-framepacing C++ SDK: its marker module and, for the samples, its experimental pacer module (via `Recipe.mb_framepacing_0_1`).
-`FslDemoService.FramePacingMarker`         | The public `IFramePacingMarkerService` and `IFramePacingFrameLog` interfaces (header only, available on all platforms).
+`FslDemoService.FramePacingMarker`         | The public `IFramePacingMarkerService` interface (header only, available on all platforms).
 `FslDemoService.FramePacingMarker.Control` | The host side `IFramePacingMarkerServiceControl` and `IFramePacingOverlay` interfaces (header only, available on all platforms).
-`FslDemoService.FramePacingMarker.Impl`    | The service, its command line options, the run state machine, the overlay that draws the marker and the frame log (the table of open rows, the CSV formatter and the writer thread).
+`FslDemoService.FramePacingMarker.Impl`    | The service, its command line options, the run state machine and the overlay that draws the marker. It begins the frames of the trace and records what the marker of a frame carries.
 
 The hosts only use the Control interfaces: they get `IFramePacingMarkerServiceControl` with `TryGet` and create the overlay through it. The
 service is only registered (by `FslDemoPlatform`) on the platforms that support the marker library, everywhere else `TryGet` returns

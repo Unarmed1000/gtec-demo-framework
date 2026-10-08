@@ -483,7 +483,7 @@ if (m_gpuTimeCalibration.TryToHostTime(m_gpuTimer.GetBeginTimestamp(), gpuStartT
 
 ### Where the frame loop waits
 
-```GetLastPresentCalls()``` of ```DemoAppVulkanBasic``` returns when ```vkAcquireNextImageKHR``` and ```vkQueuePresentKHR``` were called and when they returned for the last frame that was presented. It needs no extension. ```Vulkan.FramePacing``` uses all of the above, and ```--FramePacing.Log``` writes all of it to a log for every frame of any Vulkan app, see [FramePacing.md](../FramePacing.md#the-frame-log).
+```GetLastPresentCalls()``` of ```DemoAppVulkanBasic``` returns when ```vkAcquireNextImageKHR``` and ```vkQueuePresentKHR``` were called and when they returned for the last frame that was presented. It needs no extension. ```Vulkan.FramePacing``` uses all of the above, and ```--Trace``` writes all of it to a trace for every frame of any Vulkan app, see [FramePacing.md](../FramePacing.md#the-frame-log).
 
 ## Known issues
 

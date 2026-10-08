@@ -47,7 +47,7 @@ from typing import Any
 import CpuLoad
 from FramePacingAnonymise import AnonymiseFiles
 from FramePacingAnonymise import GetLocalPaths
-from FramePacingLogFile import FramePacingLog, FramePacingLogFile, OpenLog, ToEventsPath, g_ticksPerMillisecond, g_ticksPerSecond
+from FramePacingLogFile import FramePacingLog, OpenLog, g_ticksPerMillisecond, g_ticksPerSecond
 from FramePacingLogFile import g_traceFileSuffix
 from FramePacingRunCheck import CheckRun, FormatReport, FormatSummary, RunCheck, RunExpectation
 from WindowOnTop import WindowOnTop
@@ -381,17 +381,12 @@ class RunResult:
 class RunFiles:
     """The files of a run in the output directory"""
     TracePath: Path
-    CsvPath: Path
     AppOutputPath: Path
     NotesPath: Path
 
-    def GetLogPaths(self) -> list[Path]:
-        return [self.TracePath, self.CsvPath, ToEventsPath(self.CsvPath)]
-
 
 def GetRunFiles(outputPath: Path, runName: str) -> RunFiles:
-    return RunFiles(outputPath / f"{runName}{g_traceFileSuffix}", outputPath / f"{runName}.csv", outputPath / f"{runName}.app.log",
-                    outputPath / f"{runName}.run.txt")
+    return RunFiles(outputPath / f"{runName}{g_traceFileSuffix}", outputPath / f"{runName}.app.log", outputPath / f"{runName}.run.txt")
 
 
 def RunApp(exePath: Path, workingDirectory: Path, files: RunFiles, run: RunConfig, timeoutSeconds: float, hardwareNames: bool) -> RunResult:
@@ -399,8 +394,7 @@ def RunApp(exePath: Path, workingDirectory: Path, files: RunFiles, run: RunConfi
     commandLine = [str(exePath), "--Trace", str(files.TracePath)]
     if hardwareNames:
         commandLine += ["--Trace.Anonymise", "off"]
-    # The CSV files are still written, for the tools that read them
-    commandLine += ["--FramePacing.Log", str(files.CsvPath), "--ExitAfterFrame", str(run.Frames), "-v"] + run.Arguments
+    commandLine += ["--ExitAfterFrame", str(run.Frames), "-v"] + run.Arguments
     appOutputPath = files.AppOutputPath
     startTime = datetime.datetime.now(datetime.timezone.utc)
     timedOut = False
@@ -460,11 +454,10 @@ def _WriteNotes(notesPath: Path, plan: Plan | None, run: RunConfig | None, resul
     notesPath.write_text("\n".join(lines) + "\n", encoding="utf-8")
 
 
-def _AnonymiseRunFiles(files: RunFiles, outputPath: Path) -> None:
-    """The model of the GPU and the directories of this machine are taken out of what the app wrote next to its trace. The trace is
-    anonymised by the app (--Trace.Anonymise), it is a file a tool can not change that way."""
-    facts = FramePacingLogFile(files.CsvPath).Facts if files.CsvPath.is_file() else {}
-    AnonymiseFiles([files.CsvPath, ToEventsPath(files.CsvPath), files.AppOutputPath], facts, GetLocalPaths(outputPath))
+def _AnonymiseAppOutput(files: RunFiles, log: FramePacingLog, outputPath: Path) -> None:
+    """The model of the GPU and the directories of this machine are taken out of what the app printed. The trace is anonymised by the
+    app (--Trace.Anonymise), it is a file a tool can not change that way. Its facts say whose device it is."""
+    AnonymiseFiles([files.AppOutputPath], log.Facts, GetLocalPaths(outputPath))
 
 
 def _ParseKeyValues(entries: list[str] | None, option: str) -> dict[str, str]:
@@ -513,7 +506,7 @@ def _CommandRun(args: argparse.Namespace) -> int:
     if args.dry_run:
         return 0
 
-    existing = [run.Name for run in runs if any(path.exists() for path in GetRunFiles(outputPath, run.Name).GetLogPaths())]
+    existing = [run.Name for run in runs if GetRunFiles(outputPath, run.Name).TracePath.exists()]
     if len(existing) > 0 and not args.overwrite:
         raise CaptureError(f"'{outputPath}' holds logs of these runs already: {', '.join(existing)} (use another --output, or --overwrite)")
     outputPath.mkdir(parents=True, exist_ok=True)
@@ -530,16 +523,15 @@ def _CommandRun(args: argparse.Namespace) -> int:
         print(f"[{index + 1}/{len(runs)}] {run.Name}: {run.What}", flush=True)
         time.sleep(pauseSeconds)
         files = GetRunFiles(outputPath, run.Name)
-        for stalePath in files.GetLogPaths():
-            stalePath.unlink(missing_ok=True)
+        files.TracePath.unlink(missing_ok=True)
         result = RunApp(exePath, workingDirectory, files, run, plan.TimeoutSeconds, args.hardware_names)
         if not files.TracePath.is_file():
             summary = f"{run.Name} | NO LOG, exit code {result.ExitCode}: see {run.Name}.app.log"
             warningCount += 1
         else:
-            if not args.hardware_names:
-                _AnonymiseRunFiles(files, outputPath)
             log = OpenLog(files.TracePath)
+            if not args.hardware_names:
+                _AnonymiseAppOutput(files, log, outputPath)
             check = CheckRun(log, RunExpectation(run.Frames, run.RefreshRateHz, run.Loaded, result.ExitCode))
             notesPath = files.NotesPath
             _WriteNotes(notesPath, plan, run, result, userFacts, log, check, args.hardware_names)
@@ -627,14 +619,14 @@ def _CommandCalibrate(args: argparse.Namespace) -> int:
         run = RunConfig(f"gpu_{steps}", "", ["--Background", args.background, "--GpuLoad", str(steps), "--Window", args.window], args.frames, None,
                         None, args.refresh_hz)
         files = GetRunFiles(outputPath, run.Name)
-        for stalePath in files.GetLogPaths():
-            stalePath.unlink(missing_ok=True)
+        files.TracePath.unlink(missing_ok=True)
         result = RunApp(exePath, workingDirectory, files, run, _g_defaultTimeoutSeconds, args.hardware_names)
         if result.ExitCode != 0 or not files.TracePath.is_file():
             raise CaptureError(f"The run with a GPU load of {steps} failed (exit code {result.ExitCode}): see {run.Name}.app.log in {outputPath}")
+        log = OpenLog(files.TracePath)
         if not args.hardware_names:
-            _AnonymiseRunFiles(files, outputPath)
-        check = CheckRun(OpenLog(files.TracePath), RunExpectation(RefreshRateHz=args.refresh_hz))
+            _AnonymiseAppOutput(files, log, outputPath)
+        check = CheckRun(log, RunExpectation(RefreshRateHz=args.refresh_hz))
         if check.WorkGpuMs is None:
             raise CaptureError("The log has no GPU time of the frames (the app has to be a FramePacing sample that can time the GPU)")
         if refreshIntervalTicks is None:

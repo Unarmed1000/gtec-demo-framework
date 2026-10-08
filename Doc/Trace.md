@@ -18,8 +18,8 @@ Option | Description
 `--Trace.Anonymise <on\|off>` | `on` (the default): the trace names the vendor of the graphics device in place of its model and placeholders in place of the directories of this machine. See [Anonymising](#anonymising).
 
 The trace is written on Windows and Ubuntu. On the other platforms the service is there and records nothing, so an app does not
-have to check for it. The frame pacing log (`--FramePacing.Log`, the CSV files, see [FramePacing.md](FramePacing.md)) is still there
-and can be written in the same run: both get the same values.
+have to check for it. The trace is the log of the frames: what the frame pacing marker service, the host, the Vulkan app base and
+the FramePacing samples know about a frame is recorded in it and nowhere else (see [FramePacing.md](FramePacing.md#the-frame-log)).
 
 ## What is in a trace
 
@@ -43,8 +43,8 @@ There are three kinds of things in a trace:
 - A **zone** is a scope on the thread: it begins and ends where the code does, as often as it occurs, and zones are inside each other
   as the scopes are. A zone does not name a frame. The frame of a zone is the `Frame` span it is inside of in time.
 - A **frame value** is a number of one frame: a time, a duration, a id, a result code. It is a argument of the `Frame` span of its
-  frame, under its name, as the whole number it was set to. A value that the frame does not have is not there. The values are the
-  columns of the frame pacing log, which [FramePacing.md](FramePacing.md#the-columns) lists and explains.
+  frame, under its name, as the whole number it was set to. A value that the frame does not have is not there.
+  [FramePacing.md](FramePacing.md#the-columns) lists and explains the values the framework and the FramePacing samples record.
 - A **event** or a **fact**.
 
 Some values are drawn as well: two times of a frame as a span, a time as a mark, a count as a graph. That is only for the eye. The
@@ -203,7 +203,7 @@ one of these rules or one of the names does.
 
 `.Config/FramePacing/FramePacingTraceFile.py` reads a trace into rows of values, events and facts for the Python tools of the
 framework, the capture tool checks a run with it (see [FramePacingCapture.md](FramePacingCapture.md)). A tool that reads the CSV
-files of the frame pacing log gets them from a trace with `.Config/FramePacing/FramePacingTraceToCsv.py`.
+files an app used to write as its frame pacing log gets them from a trace with `.Config/FramePacing/FramePacingTraceToCsv.py`.
 
 With the trace processor (the `perfetto` package of Python, the `trace_processor` shell or the query page of the viewer), the frames
 with a few of their values:
@@ -256,8 +256,8 @@ to hand on by accident. With `--Trace.Anonymise on`, which is the default:
 - The command line of the process is not written.
 
 The fact `trace.anonymised` says which it was. A producer that writes what names the hardware tells the service with
-`AddAnonymousText` or `AddAnonymousFact`, as the Vulkan app base does. The frame pacing log is not changed by this option, the capture
-tool anonymises its files as before.
+`AddAnonymousText` or `AddAnonymousFact`, as the Vulkan app base does. What an app prints is not changed by this option, the capture
+tool anonymises that.
 
 ## Implementation
 
@@ -272,6 +272,6 @@ Package | Content
 The service is registered by `FslDemoPlatform` on every platform, with the Perfetto sink where its package is supported. Hosts and apps
 only use the interfaces, which they get with `TryGet`.
 
-What the frame pacing marker service, the host, the Vulkan app base and the FramePacing samples log through `IFramePacingFrameLog`
-reaches the trace without a change to that code: the marker service hands every column, value, event and fact to the frame pacing
-log and to the trace service, whichever is on (`FramePacingLogTee`).
+The frame pacing marker service, the host (`DemoAppManager`), the Vulkan app base and the FramePacing samples record what they know
+about a frame with `ITraceService`. The marker service begins the frames of the trace and sets their bounds through
+`ITraceServiceControl`, so a frame of the trace is the frame its marker carries.

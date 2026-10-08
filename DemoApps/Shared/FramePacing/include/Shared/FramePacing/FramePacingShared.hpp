@@ -28,7 +28,6 @@
 #include <FslBase/Time/TimeSpan.hpp>
 #include <FslDemoApp/Base/DemoAppConfig.hpp>
 #include <FslDemoApp/Base/DemoTime.hpp>
-#include <FslDemoService/FramePacingMarker/FramePacingLogColumn.hpp>
 #include <FslDemoService/FramePacingMarker/FramePacingRunState.hpp>
 #include <FslDemoService/Trace/TraceTypes.hpp>
 #include <FslGraphics/Color.hpp>
@@ -61,7 +60,6 @@
 
 namespace Fsl
 {
-  class IFramePacingFrameLog;
   class IFramePacingMarkerService;
   class ITraceService;
   class SampleAnimationErrorChart;
@@ -359,52 +357,52 @@ namespace Fsl
     //! The duration of a refresh of the display according to the swapchain (zero if unknown)
     TimeSpan m_measuredRefreshDuration;
 
-    //! The columns the sample adds to the frame pacing log (--FramePacing.Log): what its frame pacer planned and what the frame cost
+    //! The values of a frame the sample adds to the trace (--Trace): what its frame pacer planned and what the frame cost
     struct LogColumns
     {
-      FramePacingLogColumn PacerOn;
-      FramePacingLogColumn SwapInterval;
-      FramePacingLogColumn PreferredSwapInterval;
-      FramePacingLogColumn Change;
-      FramePacingLogColumn AnimationStep;
-      FramePacingLogColumn WindowFrames;
-      FramePacingLogColumn WindowLateFrames;
-      FramePacingLogColumn WindowStartsAhead;
-      FramePacingLogColumn WindowAverageWork;
-      FramePacingLogColumn WindowSpan;
-      FramePacingLogColumn WindowFull;
-      FramePacingLogColumn FrameWaitStart;
-      FramePacingLogColumn FrameWaitTarget;
-      FramePacingLogColumn FrameStart;
-      FramePacingLogColumn EndFrame;
-      FramePacingLogColumn WorkCpu;
-      FramePacingLogColumn WorkGpu;
-      FramePacingLogColumn WorkGpuFrameIndex;
-      FramePacingLogColumn GpuTime;
-      FramePacingLogColumn GpuWorkBegin;
-      FramePacingLogColumn GpuWorkEnd;
-      FramePacingLogColumn FlushCall;
-      FramePacingLogColumn PresentWait;
-      FramePacingLogColumn PresentWaitBegin;
-      FramePacingLogColumn PresentWaitTarget;
-      FramePacingLogColumn PresentWaitEnd;
-      FramePacingLogColumn CpuLoad;
-      FramePacingLogColumn GpuLoad;
-      FramePacingLogColumn PacerFrameId;
-      FramePacingLogColumn NextFrameStart;
-      FramePacingLogColumn FeedbackOn;
-      FramePacingLogColumn FeedbackDisplay;
-      FramePacingLogColumn FeedbackPresent;
-      FramePacingLogColumn FeedbackReportedNotShown;
-      FramePacingLogColumn FeedbackUsed;
-      FramePacingLogColumn FeedbackRefused;
-      FramePacingLogColumn FeedbackNotShown;
-      FramePacingLogColumn FeedbackMissing;
-      FramePacingLogColumn FeedbackLateRefreshes;
-      FramePacingLogColumn AnimationError;
-      FramePacingLogColumn HoldMethod;
-      FramePacingLogColumn HoldTarget;
-      FramePacingLogColumn PresentTarget;
+      TraceValue PacerOn;
+      TraceValue SwapInterval;
+      TraceValue PreferredSwapInterval;
+      TraceValue Change;
+      TraceValue AnimationStep;
+      TraceValue WindowFrames;
+      TraceValue WindowLateFrames;
+      TraceValue WindowStartsAhead;
+      TraceValue WindowAverageWork;
+      TraceValue WindowSpan;
+      TraceValue WindowFull;
+      TraceValue FrameWaitStart;
+      TraceValue FrameWaitTarget;
+      TraceValue FrameStart;
+      TraceValue EndFrame;
+      TraceValue WorkCpu;
+      TraceValue WorkGpu;
+      TraceValue WorkGpuFrameIndex;
+      TraceValue GpuTime;
+      TraceValue GpuWorkBegin;
+      TraceValue GpuWorkEnd;
+      TraceValue FlushCall;
+      TraceValue PresentWait;
+      TraceValue PresentWaitBegin;
+      TraceValue PresentWaitTarget;
+      TraceValue PresentWaitEnd;
+      TraceValue CpuLoad;
+      TraceValue GpuLoad;
+      TraceValue PacerFrameId;
+      TraceValue NextFrameStart;
+      TraceValue FeedbackOn;
+      TraceValue FeedbackDisplay;
+      TraceValue FeedbackPresent;
+      TraceValue FeedbackReportedNotShown;
+      TraceValue FeedbackUsed;
+      TraceValue FeedbackRefused;
+      TraceValue FeedbackNotShown;
+      TraceValue FeedbackMissing;
+      TraceValue FeedbackLateRefreshes;
+      TraceValue AnimationError;
+      TraceValue HoldMethod;
+      TraceValue HoldTarget;
+      TraceValue PresentTarget;
     };
 
     //! What the frame pacer has to be told about a present when its display time arrives
@@ -417,7 +415,7 @@ namespace Fsl
       TickCount PresentCallTime;
       bool HasPresentCallTime{false};
       //! The frame of the log (valid if HasLogFrame)
-      uint64_t LogFrameIndex{0};
+      TraceFrameIndex LogFrameIndex;
       bool HasLogFrame{false};
     };
 
@@ -427,7 +425,7 @@ namespace Fsl
     struct LogPresentFrame
     {
       uint64_t PresentId{0};
-      uint64_t FrameIndex{0};
+      TraceFrameIndex FrameIndex;
     };
 
     //! The zones of the sample in the trace: what it does in its update and its draw, and where it waits
@@ -455,12 +453,10 @@ namespace Fsl
       TraceZone Flush;
     };
 
-    //! The trace service (null: the trace is off)
+    //! The trace service, which is the log of the frames (null: the trace is off and nothing is logged)
     std::shared_ptr<ITraceService> m_trace;
     TraceZones m_traceZones;
 
-    //! The frame pacing log (null if the frames are not logged)
-    std::shared_ptr<IFramePacingFrameLog> m_frameLog;
     LogColumns m_logColumns;
     std::array<LogPresentFrame, 64> m_logPresentFrames{};
 
@@ -477,7 +473,7 @@ namespace Fsl
     struct LogFrame
     {
       uint64_t FrameId{0};
-      uint64_t FrameIndex{0};
+      TraceFrameIndex FrameIndex;
     };
 
     std::array<LogFrame, 64> m_logFrames{};
@@ -488,7 +484,7 @@ namespace Fsl
     TickCount m_frameStartLogWaitTime;
     TickCount m_frameStartLogTargetTime;
     //! The frame of the log the GPU time that was reported last was measured on (empty: none was, or its frame is not in the log)
-    std::optional<uint64_t> m_gpuTimeLogFrameIndex;
+    std::optional<TraceFrameIndex> m_gpuTimeLogFrameIndex;
     //! What was last written to the log about the settings of the frame pacer, so a change is written as a event
     SamplePacerConfig m_loggedPacerConfig;
     bool m_loggedPacerOn{false};
@@ -514,7 +510,7 @@ namespace Fsl
 
     // Called from the parent app
     void OnKeyEvent(const KeyEvent& event);
-    //! The window got or lost the input focus: the frame log gets a event for it
+    //! The window got or lost the input focus: the trace gets a event for it
     void OnWindowFocusEvent(const WindowFocusEvent& event);
     void ConfigurationChanged(const DemoWindowMetrics& windowMetrics);
     //! @param demoTime the update time of the frame. The frame is animated for it unless the frame pacer is on.
@@ -608,7 +604,7 @@ namespace Fsl
     {
       return m_flushWanted;
     }
-    //! The app related the clock its GPU times are on to the clock of the framework anew: the frame log gets a event with how far
+    //! The app related the clock its GPU times are on to the clock of the framework anew: the trace gets a event with how far
     //! off a time can be. Call it during the draw of a frame.
     //! @param readTime how long the read of the clock of the GPU took, a time can be off by up to half of it
     void AddGpuClockCalibration(const TimeSpan readTime);
@@ -618,7 +614,7 @@ namespace Fsl
     //! @param clockRateDeviationPpm how much longer (positive) or shorter a count of the clock of the GPU takes than the device
     //!        states, in parts per million. Empty until it was measured.
     void AddGpuClockCalibration(const TimeSpan readTime, const TimeSpan maxDeviation, const std::optional<double> clockRateDeviationPpm);
-    //! The app flushes its commands now: the frame log gets the time. Call it right before the flush, during the draw of the frame.
+    //! The app flushes its commands now: the trace gets the time. Call it right before the flush, during the draw of the frame.
     void MarkFlush();
 
     //! The trace service for the zones of the app, null if the trace is off
@@ -694,11 +690,11 @@ namespace Fsl
     //! Update the rows of the frame pacing section that show what the measured presents say
     void UpdatePresentFeedbackStats();
     void UpdateVariableRefreshStats();
-    //! Add the columns of the sample to the frame pacing log
+    //! Add the values of the sample to the trace
     void RegisterLogColumns();
-    //! Write a wait before the present to the frame pacing log: when it began, the time it aimed at and when it woke
+    //! Write a wait before the present to the trace: when it began, the time it aimed at and when it woke
     void LogPresentWait(const TickCount beginTime, const TickCount targetTime, const TickCount endTime);
-    //! Write what the frame that just started is to the frame pacing log
+    //! Write what the frame that just started is to the trace
     void LogFrameStart(const TickCount waitStartTime);
     //! Keep the CPU busy for the given time (the simulated CPU load)
     void BurnCpu(const TimeSpan duration) const;
@@ -707,7 +703,7 @@ namespace Fsl
     //! Create the bar at the bottom with the chart of the work per frame
     std::shared_ptr<UI::BaseWindow> CreateWorkChartBar(UI::Theme::IThemeControlFactory& rUIFactory);
     std::shared_ptr<UI::BaseWindow> CreateAnimationErrorChartBar(UI::Theme::IThemeControlFactory& rUIFactory);
-    //! Take the frames whose display times have come: their animation error goes to the chart and to the frame log
+    //! Take the frames whose display times have come: their animation error goes to the chart and to the trace
     void UpdateAnimationError();
     //! Show the overlays and the chart their switches are on for
     void UpdateStatsVisibility();

@@ -50,7 +50,6 @@ namespace Fsl
         Run,
         Duration,
         RunId,
-        Log,
       };
     };
   }
@@ -76,16 +75,12 @@ namespace Fsl
                           "Also draw the small frame pacing sync marker at the bottom left: it detects tearing, and camera capture needs it for "
                           "its timing.");
     rOptions.emplace_back("FramePacing.Run", OptionArgument::OptionRequired, CommandId::Run,
-                          "Start a measured run with the given name at the first frame, the name is written to the log next to the run's "
+                          "Start a measured run with the given name at the first frame, the name is written to the trace next to the run's "
                           "random sequence id. Implies --FramePacing.");
     rOptions.emplace_back("FramePacing.Duration", OptionArgument::OptionRequired, CommandId::Duration,
                           "The duration in seconds of the measured part of the run started by FramePacing.Run (0 = until the app exits).");
     rOptions.emplace_back("FramePacing.RunId", OptionArgument::OptionRequired, CommandId::RunId,
                           "The id of the run started by FramePacing.Run (defaults to a random id).");
-    rOptions.emplace_back("FramePacing.Log", OptionArgument::OptionRequired, CommandId::Log,
-                          "Log every frame to the given CSV file: what the frame marker carries, the times of the frame loop and what the "
-                          "host and the app add, all as whole numbers. The events and the facts of the run are written to a '.events.csv' "
-                          "file next to it. It works with or without the marker being drawn.");
   }
 
 
@@ -146,14 +141,6 @@ namespace Fsl
         m_runId = value;
         return OptionParseResult::Parsed;
       }
-    case CommandId::Log:
-      if (strOptArg.empty())
-      {
-        FSLLOG3_ERROR("FramePacing.Log requires a file name");
-        return OptionParseResult::Failed;
-      }
-      m_logPath = IO::Path(strOptArg);
-      return OptionParseResult::Parsed;
     default:
       return OptionParseResult::NotHandled;
     }

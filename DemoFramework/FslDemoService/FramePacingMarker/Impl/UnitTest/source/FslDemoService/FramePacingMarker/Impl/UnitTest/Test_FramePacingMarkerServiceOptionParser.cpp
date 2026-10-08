@@ -73,7 +73,6 @@ TEST(Test_FramePacingMarkerServiceOptionParser, Defaults)
   EXPECT_FALSE(helper.Parser.GetRunName().has_value());
   EXPECT_EQ(TimeSpan(), helper.Parser.GetRunDuration());
   EXPECT_FALSE(helper.Parser.GetRunId().has_value());
-  EXPECT_TRUE(helper.Parser.GetLogPath().IsEmpty());
 }
 
 
@@ -154,23 +153,4 @@ TEST(Test_FramePacingMarkerServiceOptionParser, Duration_WithoutRun)
   ParserHelper helper;
   EXPECT_EQ(OptionParseResult::Parsed, helper.Parse("FramePacing.Duration", "1"));
   EXPECT_FALSE(helper.Parser.OnParsingComplete());
-}
-
-
-TEST(Test_FramePacingMarkerServiceOptionParser, Log)
-{
-  ParserHelper helper;
-  EXPECT_EQ(OptionParseResult::Parsed, helper.Parse("FramePacing.Log", "C:/logs/frames.csv"));
-  EXPECT_EQ(IO::Path("C:/logs/frames.csv"), helper.Parser.GetLogPath());
-  // The log does not need the marker to be drawn
-  EXPECT_FALSE(helper.Parser.IsEnabled());
-  EXPECT_TRUE(helper.Parser.OnParsingComplete());
-}
-
-
-TEST(Test_FramePacingMarkerServiceOptionParser, Log_NoFileName)
-{
-  ParserHelper helper;
-  EXPECT_EQ(OptionParseResult::Failed, helper.Parse("FramePacing.Log", ""));
-  EXPECT_TRUE(helper.Parser.GetLogPath().IsEmpty());
 }

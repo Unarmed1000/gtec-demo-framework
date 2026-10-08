@@ -24,10 +24,10 @@
 
 #include <FslBase/System/HighResolutionTimer.hpp>
 #include <FslDemoService/FramePacingMarker/Control/IFramePacingMarkerServiceControl.hpp>
-#include <FslDemoService/FramePacingMarker/IFramePacingFrameLog.hpp>
 #include <FslDemoService/FramePacingMarker/IFramePacingMarkerService.hpp>
 #include <FslDemoService/FramePacingMarker/Impl/FramePacingSequence.hpp>
 #include <FslDemoService/FramePacingMarker/Impl/IFramePacingFrameSource.hpp>
+#include <FslDemoService/Trace/TraceTypes.hpp>
 #include <FslService/Impl/ServiceType/Local/ThreadLocalService.hpp>
 #include <chrono>
 #include <cstdint>
@@ -38,18 +38,18 @@
 
 namespace Fsl
 {
-  class FramePacingLogTee;
   class FramePacingMarkerServiceOptionParser;
   class IAppInfoService;
   class IHostInfo;
   class ISystemStatsService;
+  class ITraceService;
+  class ITraceServiceControl;
 
   class FramePacingMarkerService final
     : public ThreadLocalService
     , public IFramePacingMarkerService
     , public IFramePacingMarkerServiceControl
     , public IFramePacingFrameSource
-    , public IFramePacingFrameLog
   {
     struct PendingRun
     {
@@ -88,39 +88,41 @@ namespace Fsl
     //! Every value the last drawn marker carried (empty until the overlay drew a marker)
     std::optional<FramePacingMarkerInfo> m_lastMarker;
 
-    //! The columns of the frame pacing log the service fills itself
+    //! The values of a frame the service records itself
     struct LogColumns
     {
-      FramePacingLogColumn MarkerKind;
-      FramePacingLogColumn RunId;
-      FramePacingLogColumn RunState;
-      FramePacingLogColumn AnimationTime;
-      FramePacingLogColumn CpuStart;
-      FramePacingLogColumn HostCpuStart;
-      FramePacingLogColumn BeginFrame;
-      FramePacingLogColumn HasSchedule;
-      FramePacingLogColumn IntendedDisplay;
-      FramePacingLogColumn TargetFrameTime;
-      FramePacingLogColumn PreferredFrameTime;
-      FramePacingLogColumn MarkerDrawn;
-      FramePacingLogColumn MarkerDraw;
-      FramePacingLogColumn MarkerCpuBusy;
-      FramePacingLogColumn MarkerStatic;
-      FramePacingLogColumn MarkerStaticBefore;
-      FramePacingLogColumn MarkerSync;
-      FramePacingLogColumn MarkerModuleSize;
-      FramePacingLogColumn SystemIdle;
-      FramePacingLogColumn SystemKernel;
-      FramePacingLogColumn SystemUser;
-      FramePacingLogColumn ProcessKernel;
-      FramePacingLogColumn ProcessUser;
-      FramePacingLogColumn ProcessGpuUsage;
-      FramePacingLogColumn ProcessGpuDedicated;
-      FramePacingLogColumn ProcessGpuShared;
+      TraceValue MarkerKind;
+      TraceValue RunId;
+      TraceValue RunState;
+      TraceValue AnimationTime;
+      TraceValue CpuStart;
+      TraceValue HostCpuStart;
+      TraceValue BeginFrame;
+      TraceValue HasSchedule;
+      TraceValue IntendedDisplay;
+      TraceValue TargetFrameTime;
+      TraceValue PreferredFrameTime;
+      TraceValue MarkerDrawn;
+      TraceValue MarkerDraw;
+      TraceValue MarkerCpuBusy;
+      TraceValue MarkerStatic;
+      TraceValue MarkerStaticBefore;
+      TraceValue MarkerSync;
+      TraceValue MarkerModuleSize;
+      TraceValue SystemIdle;
+      TraceValue SystemKernel;
+      TraceValue SystemUser;
+      TraceValue ProcessKernel;
+      TraceValue ProcessUser;
+      TraceValue ProcessGpuUsage;
+      TraceValue ProcessGpuDedicated;
+      TraceValue ProcessGpuShared;
     };
 
-    //! Where the frames are logged: the frame pacing log, the trace of the trace service, or both (null: the frames are not logged)
-    std::unique_ptr<FramePacingLogTee> m_log;
+    //! Where the frames are logged: the trace of the trace service (both null: the trace is off and the frames are not logged)
+    std::shared_ptr<ITraceService> m_trace;
+    //! The service begins the frames of the trace, so a frame of the trace is the frame its marker carries
+    std::shared_ptr<ITraceServiceControl> m_traceControl;
     LogColumns m_logColumns;
     bool m_logFactsWritten{false};
     std::shared_ptr<IAppInfoService> m_appInfo;
@@ -161,19 +163,6 @@ namespace Fsl
     // From IFramePacingFrameSource
     bool TryGetFrameRecord(FramePacingFrameRecord& rRecord) const noexcept final;
     void SetLastMarker(const FramePacingMarkerInfo& markerInfo) noexcept final;
-
-    // From IFramePacingFrameLog
-    [[nodiscard]] bool IsLogEnabled() const noexcept final;
-    FramePacingLogColumn RegisterColumn(const std::string_view name, const FramePacingLogUnit unit, const std::string_view description) final;
-    [[nodiscard]] uint64_t GetLogFrameIndex() const noexcept final;
-    void SetLogInt64(const FramePacingLogColumn column, const int64_t value) noexcept final;
-    void SetLogUInt64(const FramePacingLogColumn column, const uint64_t value) noexcept final;
-    void SetLogInt64At(const uint64_t frameIndex, const FramePacingLogColumn column, const int64_t value) noexcept final;
-    void SetLogUInt64At(const uint64_t frameIndex, const FramePacingLogColumn column, const uint64_t value) noexcept final;
-    void AddLogEvent(const std::string_view name, const std::string_view details) final;
-
-  protected:
-    void AddLogFact(const std::string_view key, const std::string_view value) final;
 
   private:
     void RegisterLogColumns();

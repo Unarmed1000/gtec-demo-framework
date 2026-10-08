@@ -48,7 +48,7 @@ two tiers in their side bar, below the switch of the frame pacer: what the run u
 `tier 1 of 4, swap interval`, `tier 2 of 4, vsync time`, `tier 3 of 4, timer`, or `tier 4 of 4, pacer off`) and the best the system
 can do (`Best here: tier 1 of 4, timed present`), which is the tier `auto` gives. A OpenGL ES sample that has to hold a frame for longer than the swap interval of its EGL config allows
 holds it itself, and shows tier 2 or 3 then; a EGL config that allows a swap interval of one only is not a tier 1 at all, and `Best
-here` says what the sample can do itself. The frame pacing log has a `tier` event for the first frames and every time the tier changes
+here` says what the sample can do itself. The trace has a `tier` event for the first frames and every time the tier changes
 (`inUse` and `best`: the number of the tier, with `reason` and `bestReason`), and the app log has a `FramePacing: tier in use ...`
 line for each, with the name of the vsync source of the window. A window system that gives its first vsync time after the first frame was shown starts
 a run one tier lower and changes then. The facts `vulkan.uses.presentAtRelativeTime` and
@@ -108,7 +108,7 @@ protocol on that surface.
 
 What a app can know, and what it can not:
 
-- If the compositor offers it. That is certain: it is the global, which the frame pacing log has as the fact
+- If the compositor offers it. That is certain: it is the global, which the trace has as the fact
   `window.has.wp_linux_drm_syncobj_manager_v1` and the frame pacing overlay of the samples as the `Explicit sync` row.
 - When it is not offered (0, `not offered (not in use)`) it is not in use.
 - When it is offered (1, `offered by the compositor`) the driver decides. There is no extension, no property and no query that says
@@ -149,7 +149,7 @@ vulkaninfo | grep -E "VK_KHR_present_id|VK_KHR_present_wait|swapchain_maintenanc
 wayland-info      # weston-info on older images
 ```
 
-A frame pacing log (`--FramePacing.Log`) says it by itself. For the Vulkan list its events file has a `vulkan.has.<extension>` fact
+A trace (`--Trace`) says it by itself. For the Vulkan list it has a `vulkan.has.<extension>` fact
 for each extension of the list, a `vulkan.uses.<what>` fact for what the framework enabled, and a `presentTiming` event with what the
 surface supports. For the window system it has `window.system`, `window.vsyncSource` (empty when there is no vsync time), a
 `window.has.<name>` fact for what the window system offers and a `window.uses.<name>` fact for what is used. On Wayland the names are the

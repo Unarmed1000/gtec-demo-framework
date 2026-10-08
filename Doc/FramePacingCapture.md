@@ -173,15 +173,13 @@ args = ["--Pacer", "--GpuLoad", "{gpu90}"]
 loaded = true                       # Optional: run it idle, then under load
 ```
 
-The tool adds `--Trace <output>/<name>.perfetto-trace --FramePacing.Log <output>/<name>.csv --ExitAfterFrame <frames> -v` to every run.
+The tool adds `--Trace <output>/<name>.perfetto-trace --ExitAfterFrame <frames> -v` to every run.
 
 ## What a capture leaves behind
 
 File                   | Content
 -----------------------|------------------------------------------------------------------------------------------------------------
 `<run>.perfetto-trace` | The trace of the run: every value of every frame, the events, the facts and what the main thread did in each frame. It is what the tool checks, and it opens in [ui.perfetto.dev](https://ui.perfetto.dev). See [Trace.md](Trace.md).
-`<run>.csv`            | The frames of the run again, one row per frame, for the tools that read CSV. See [the frame log](FramePacing.md#the-frame-log).
-`<run>.events.csv`     | The facts of the run and what happened during it, for the tools that read CSV.
 `<run>.run.txt`        | The notes of the run: what it was, the command line, when it ran, the load, what you told with `--fact`, the machine (OS, CPU, power plan, display mode, GPU and driver, swapchain, pacer settings) and the checks.
 `<run>.app.log`        | What the app printed.
 `summary.txt`          | One line per run, with its warnings.
@@ -189,14 +187,12 @@ File                   | Content
 Keep the directory together, the notes are what makes a log usable later.
 
 A capture does not name the hardware it was made on. The trace is anonymised by the app that writes it (`--Trace.Anonymise`, which
-is on unless it is turned off). The CSV files and what the app prints name the model of the graphics device, and the tool replaces it
-in them with the vendor (`NVIDIA GPU`, or `GPU` where the app does not say whose it is), sets the device id to zero and leaves the
-model of the CPU out of the notes. In what the app printed it finds the model by the lines that report it (`- deviceName:`,
-`Renderer:` and `GL renderer:`). The vendor and the driver version stay, they are what a reader of a log needs. The directories of
-the machine are replaced as well, in the files and in the command line of the notes: the output directory by `<output>`, the SDK by
-`<sdk>` and the home directory of the user by `<home>`. `--hardware-names` keeps the models and the directories, and runs the app
-with `--Trace.Anonymise off`. CSV files that an app wrote without the tool (`--FramePacing.Log`) name the device as the driver
-reports it.
+is on unless it is turned off). What the app prints names the model of the graphics device, and the tool replaces it there with
+the vendor (`NVIDIA GPU`, or `GPU` where the app does not say whose it is), sets the device id to zero and leaves the model of the
+CPU out of the notes. It finds the model by the lines that report it (`- deviceName:`, `Renderer:` and `GL renderer:`). The vendor
+and the driver version stay, they are what a reader of a log needs. The directories of the machine are replaced as well, in what
+the app printed and in the command line of the notes: the output directory by `<output>`, the SDK by `<sdk>` and the home directory
+of the user by `<home>`. `--hardware-names` keeps the models and the directories, and runs the app with `--Trace.Anonymise off`.
 
 ### Reading the summary
 
@@ -241,10 +237,10 @@ python3 .Config/FramePacing/FramePacingTraceToCsv.py D:/captures/240hz/w90_pacer
 python3 .Config/FramePacing/FramePacingTraceToCsv.py run.perfetto-trace -o D:/work/run.csv
 ```
 
-The frames file is what the app would have written, apart from a value above 2^63: the trace holds the 64 bits of a value and not
-if it was unsigned, so such a value is written as a negative number. The events file has the same events, columns and facts. What
-is not the same there: every event has the time the trace has for it (a few ticks from the time the CSV log would have read), and
-the facts of the trace are there as well (`trace.formatVersion` and the other `trace.` facts).
+The files are those an app wrote itself as its frame pacing log (`--FramePacing.Log`) before the trace became its log, format
+version 1. The frames file is what the app wrote, apart from a value above 2^63: the trace holds the 64 bits of a value and not if
+it was unsigned, so such a value is written as a negative number. The events file has the same events, columns and facts, and the
+facts of the trace as well (`trace.formatVersion` and the other `trace.` facts).
 
 ### The warnings
 

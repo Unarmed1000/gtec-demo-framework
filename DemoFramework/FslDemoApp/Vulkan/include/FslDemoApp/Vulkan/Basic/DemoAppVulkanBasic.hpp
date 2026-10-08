@@ -364,7 +364,7 @@ namespace Fsl
       PresentCallRecord m_lastPresentCalls;
       //! Null if the system stats service is unavailable
       std::shared_ptr<ISystemStatsServiceControl> m_systemStatsServiceControl;
-      //! What is added to the frame pacing log (null if the frames are not logged)
+      //! What is added to the trace (null if the frames are not logged)
       struct FramePacingLogState;
       std::unique_ptr<FramePacingLogState> m_framePacingLogState;
       //! When the system stats service was last told the GPU memory usage of the app
@@ -541,7 +541,7 @@ namespace Fsl
       RecreateSwapchainResult TryRecreateSwapchain();
       //! Tell the system stats service how much GPU memory the app uses, if it asks for it (VK_EXT_memory_budget)
       void UpdateGpuMemoryStats() noexcept;
-      //! The frame pacing log: what the swapchain is, the values of the frame that begins and the present that was just made
+      //! The trace: what the swapchain is, the values of the frame that begins and the present that was just made
       void LogSwapchainCreated(const VkPresentModeKHR presentMode, const VkSwapchainCreateFlagsKHR createFlags, const uint32_t desiredMinImageCount);
       //! Wait until the GPU is done with the last frame that was submitted from a frame slot (the fence is not reset)
       [[nodiscard]] VkResult WaitForFrameSlot(const uint32_t frameIndex);

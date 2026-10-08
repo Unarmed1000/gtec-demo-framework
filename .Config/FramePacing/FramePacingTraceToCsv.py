@@ -28,8 +28,8 @@
 #   FramePacingTraceToCsv.py <run>.perfetto-trace                 writes <run>.csv and <run>.events.csv next to the trace
 #   FramePacingTraceToCsv.py <run>.perfetto-trace -o <file.csv>   writes <file.csv> and <file>.events.csv
 #
-# What is not as the app would have written it: a fact and an event from before the first frame have the frame index 0 and every one has
-# the time the trace has for it, a value is written as a signed number, and the facts are those of the trace ('trace.' facts included).
+# The files are those an app wrote itself ('--FramePacing.Log <file>') before the trace was its log. What is not as it was there: a
+# value is written as a signed number, and the facts are those of the trace ('trace.' facts included).
 
 import argparse
 import csv
@@ -41,6 +41,9 @@ from FramePacingTraceFile import FramePacingTraceFile, TraceReadError
 
 # The version of the format of the CSV files that is written here
 _g_csvFormatVersion = 1
+# How many frames a frame stays open for values that are known later: the fact of the CSV log, and the one the trace has for it
+_g_csvOpenFramesFact = "log.openFrames"
+_g_traceOpenFramesFact = "trace.openFrames"
 _g_eventsHeader = ["frameIndex", "timeTicks", "event", "details"]
 
 
@@ -62,6 +65,8 @@ def WriteFrames(trace: FramePacingTraceFile, framesPath: Path) -> None:
 def WriteEvents(trace: FramePacingTraceFile, eventsPath: Path) -> None:
     firstTime = min((event.TimeTicks for event in trace.Events), default=trace.ValuesTimeTicks)
     events: list[LogEvent] = [LogEvent(0, firstTime, "fact", f"formatVersion={_g_csvFormatVersion}")]
+    if _g_csvOpenFramesFact not in trace.Facts and _g_traceOpenFramesFact in trace.Facts:
+        events.append(LogEvent(0, firstTime, "fact", f"{_g_csvOpenFramesFact}={trace.Facts[_g_traceOpenFramesFact]}"))
     events.extend(trace.Events)
     # What the columns are is an event for each of them, as the frames file is a plain table
     events.extend(LogEvent(0, trace.ValuesTimeTicks, "column", f"name={value.Name};unit={value.Unit};description={value.Description}")

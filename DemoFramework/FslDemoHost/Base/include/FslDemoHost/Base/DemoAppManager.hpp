@@ -43,7 +43,6 @@
 #include <FslDemoHost/Base/DemoAppTiming.hpp>
 #include <FslDemoHost/Base/DemoState.hpp>
 #include <FslDemoHost/Base/LogStatsMode.hpp>
-#include <FslDemoService/FramePacingMarker/FramePacingLogColumn.hpp>
 #include <FslDemoService/Trace/TraceTypes.hpp>
 #include <memory>
 #include <utility>
@@ -55,7 +54,6 @@ namespace Fsl
   class IDemoAppControlEx;
   class ICpuStatsService;
   class ISystemStatsService;
-  class IFramePacingFrameLog;
   class IFramePacingOverlay;
   class IFramePacingMarkerServiceControl;
   class IGraphicsServiceControl;
@@ -122,30 +120,29 @@ namespace Fsl
     TraceZone m_traceZoneProfilerDraw;
     std::shared_ptr<IFramePacingMarkerServiceControl> m_framePacingMarkerServiceControl;
 
-    //! The columns the host adds to the frame pacing log
+    //! The values of a frame the host adds to the trace
     struct FramePacingLogColumns
     {
-      FramePacingLogColumn UpdateEnd;
-      FramePacingLogColumn DrawEnd;
-      FramePacingLogColumn SwapCall;
-      FramePacingLogColumn SwapReturn;
-      FramePacingLogColumn SwapCompleted;
-      FramePacingLogColumn FrameSlot;
-      FramePacingLogColumn FrameworkTime;
-      FramePacingLogColumn FrameworkStep;
-      FramePacingLogColumn DisplayVSync;
-      FramePacingLogColumn DisplayRefreshPeriod;
-      FramePacingLogColumn DisplayRefreshPeriodNs;
-      FramePacingLogColumn DisplayVSyncFlags;
-      FramePacingLogColumn DisplayVBlankInterval;
-      FramePacingLogColumn DisplayVBlankOffPeriod;
+      TraceValue UpdateEnd;
+      TraceValue DrawEnd;
+      TraceValue SwapCall;
+      TraceValue SwapReturn;
+      TraceValue SwapCompleted;
+      TraceValue FrameSlot;
+      TraceValue FrameworkTime;
+      TraceValue FrameworkStep;
+      TraceValue DisplayVSync;
+      TraceValue DisplayRefreshPeriod;
+      TraceValue DisplayRefreshPeriodNs;
+      TraceValue DisplayVSyncFlags;
+      TraceValue DisplayVBlankInterval;
+      TraceValue DisplayVBlankOffPeriod;
     };
 
     //! Null if the frame pacing service is unavailable
-    std::shared_ptr<IFramePacingFrameLog> m_framePacingLog;
     FramePacingLogColumns m_framePacingLogColumns;
     //! The frame of the log the host is working on (valid if m_framePacingLogHasFrame)
-    uint64_t m_framePacingLogFrameIndex{0};
+    TraceFrameIndex m_framePacingLogFrameIndex;
     bool m_framePacingLogHasFrame{false};
     PxExtent2D m_framePacingLogExtentPx;
     //! The window the display of the log is read from

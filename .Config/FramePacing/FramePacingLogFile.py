@@ -23,8 +23,9 @@
 
 # What a run of an app logged about its frames: one row for every frame with a whole number for every value the frame has, the facts of
 # the run and what happened during it. FramePacingLog is what the tools work with. It is read from the trace '--Trace <file>' writes
-# (FramePacingTraceFile.py) or from the two files '--FramePacing.Log <file>' writes: '<file>' with one row for every frame and
-# '<stem>.events.csv' with the events, where an empty field is a value that does not exist.
+# (FramePacingTraceFile.py), or from the two CSV files of a older capture or of FramePacingTraceToCsv.py: '<file>' with one row for
+# every frame and '<stem>.events.csv' with the events, where an empty field is a value that does not exist. An app wrote those files
+# itself ('--FramePacing.Log <file>') before the trace was its log.
 
 import csv
 from dataclasses import dataclass

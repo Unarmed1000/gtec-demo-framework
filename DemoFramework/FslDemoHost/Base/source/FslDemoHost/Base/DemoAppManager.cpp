@@ -50,7 +50,6 @@
 #include <FslDemoService/CpuStats/ICpuStatsService.hpp>
 #include <FslDemoService/FramePacingMarker/Control/IFramePacingMarkerServiceControl.hpp>
 #include <FslDemoService/FramePacingMarker/Control/IFramePacingOverlay.hpp>
-#include <FslDemoService/FramePacingMarker/IFramePacingFrameLog.hpp>
 #include <FslDemoService/Graphics/Control/IGraphicsServiceControl.hpp>
 #include <FslDemoService/Profiler/IProfilerService.hpp>
 #include <FslDemoService/SystemStats/ISystemStatsService.hpp>
@@ -126,54 +125,49 @@ namespace Fsl
     {
       m_trace.reset();
     }
-    m_framePacingLog = m_demoAppConfig.DemoServiceProvider.TryGet<IFramePacingFrameLog>();
-    if (m_framePacingLog && m_framePacingLog->IsLogEnabled())
+    if (m_trace)
     {
-      // What the host knows about a frame, for the frame pacing log
-      IFramePacingFrameLog& rLog = *m_framePacingLog;
-      m_framePacingLogColumns.UpdateEnd = rLog.RegisterColumn("hostUpdateEndTicks", FramePacingLogUnit::Ticks, "When the update of the app was done");
-      m_framePacingLogColumns.DrawEnd = rLog.RegisterColumn("hostDrawEndTicks", FramePacingLogUnit::Ticks, "When the draw of the app was done");
-      m_framePacingLogColumns.SwapCall = rLog.RegisterColumn("hostSwapCallTicks", FramePacingLogUnit::Ticks,
-                                                             "When the host started to swap the frame (or asked the app to present it)");
-      m_framePacingLogColumns.SwapReturn = rLog.RegisterColumn("hostSwapReturnTicks", FramePacingLogUnit::Ticks, "When the swap returned");
+      // What the host knows about a frame, for the trace
+      ITraceService& rLog = *m_trace;
+      m_framePacingLogColumns.UpdateEnd = rLog.RegisterValue("hostUpdateEndTicks", TraceUnit::Ticks, "When the update of the app was done");
+      m_framePacingLogColumns.DrawEnd = rLog.RegisterValue("hostDrawEndTicks", TraceUnit::Ticks, "When the draw of the app was done");
+      m_framePacingLogColumns.SwapCall =
+        rLog.RegisterValue("hostSwapCallTicks", TraceUnit::Ticks, "When the host started to swap the frame (or asked the app to present it)");
+      m_framePacingLogColumns.SwapReturn = rLog.RegisterValue("hostSwapReturnTicks", TraceUnit::Ticks, "When the swap returned");
       m_framePacingLogColumns.SwapCompleted =
-        rLog.RegisterColumn("hostSwapCompletedTicks", FramePacingLogUnit::Ticks, "When the host was done with the frame, after the swap");
+        rLog.RegisterValue("hostSwapCompletedTicks", TraceUnit::Ticks, "When the host was done with the frame, after the swap");
       m_framePacingLogColumns.FrameSlot =
-        rLog.RegisterColumn("hostFrameSlot", FramePacingLogUnit::Id, "The frame slot of the render loop the frame used (the frames in flight)");
+        rLog.RegisterValue("hostFrameSlot", TraceUnit::Id, "The frame slot of the render loop the frame used (the frames in flight)");
       m_framePacingLogColumns.FrameworkTime =
-        rLog.RegisterColumn("frameworkTimeTicks", FramePacingLogUnit::DurationTicks, "The time of the framework the frame was updated and drawn for");
+        rLog.RegisterValue("frameworkTimeTicks", TraceUnit::DurationTicks, "The time of the framework the frame was updated and drawn for");
       m_framePacingLogColumns.FrameworkStep =
-        rLog.RegisterColumn("frameworkStepTicks", FramePacingLogUnit::DurationTicks, "The time step of the framework from the frame before");
+        rLog.RegisterValue("frameworkStepTicks", TraceUnit::DurationTicks, "The time step of the framework from the frame before");
       m_framePacingLogColumns.DisplayVSync =
-        rLog.RegisterColumn("displayVSyncTicks", FramePacingLogUnit::Ticks,
-                            "The time of a recent vertical blank of the display as the window system reported it when the frame began "
-                            "(empty if the platform does not report it)");
+        rLog.RegisterValue("displayVSyncTicks", TraceUnit::Ticks,
+                           "The time of a recent vertical blank of the display as the window system reported it when the frame began "
+                           "(empty if the platform does not report it)");
       m_framePacingLogColumns.DisplayRefreshPeriod =
-        rLog.RegisterColumn("displayRefreshPeriodTicks", FramePacingLogUnit::DurationTicks,
-                            "The time between two refreshes of the display as the window system measured it, read with displayVSyncTicks "
-                            "and rounded to the nearest tick");
+        rLog.RegisterValue("displayRefreshPeriodTicks", TraceUnit::DurationTicks,
+                           "The time between two refreshes of the display as the window system measured it, read with displayVSyncTicks "
+                           "and rounded to the nearest tick");
       m_framePacingLogColumns.DisplayRefreshPeriodNs =
-        rLog.RegisterColumn("displayRefreshPeriodNs", FramePacingLogUnit::Nanoseconds,
-                            "The time between two refreshes of the display as the window system measured it or has it for the mode of the "
-                            "display, in nanoseconds");
+        rLog.RegisterValue("displayRefreshPeriodNs", TraceUnit::Nanoseconds,
+                           "The time between two refreshes of the display as the window system measured it or has it for the mode of the "
+                           "display, in nanoseconds");
       m_framePacingLogColumns.DisplayVSyncFlags =
-        rLog.RegisterColumn("displayVSyncFlags", FramePacingLogUnit::Code,
-                            "What the window system says about how displayVSyncTicks was obtained (NativeWindowVSyncTimeFlags), zero where "
-                            "it says nothing: 1 the frame was shown in sync with the display, 2 a time of the display hardware, 4 the "
-                            "hardware signalled the frame was shown, 8 zero copy. Wayland sets them from the kind flags of presentation-time");
+        rLog.RegisterValue("displayVSyncFlags", TraceUnit::Code,
+                           "What the window system says about how displayVSyncTicks was obtained (NativeWindowVSyncTimeFlags), zero where "
+                           "it says nothing: 1 the frame was shown in sync with the display, 2 a time of the display hardware, 4 the "
+                           "hardware signalled the frame was shown, 8 zero copy. Wayland sets them from the kind flags of presentation-time");
       m_framePacingLogColumns.DisplayVBlankInterval =
-        rLog.RegisterColumn("displayVBlankIntervalMilliPeriods", FramePacingLogUnit::Count,
-                            "The median time between two refreshes of the display as the window system measured it, in thousandths of the "
-                            "refresh period of its mode: 1000 is a display that refreshes at the rate of its mode, more is a display that "
-                            "refreshes slower (variable refresh that follows the frames). Empty if the platform does not measure it");
+        rLog.RegisterValue("displayVBlankIntervalMilliPeriods", TraceUnit::Count,
+                           "The median time between two refreshes of the display as the window system measured it, in thousandths of the "
+                           "refresh period of its mode: 1000 is a display that refreshes at the rate of its mode, more is a display that "
+                           "refreshes slower (variable refresh that follows the frames). Empty if the platform does not measure it");
       m_framePacingLogColumns.DisplayVBlankOffPeriod =
-        rLog.RegisterColumn("displayVBlankOffPeriodPerMille", FramePacingLogUnit::Count,
-                            "The share of the last refreshes of the display that did not come one refresh period of its mode after the "
-                            "one before, in thousandths, read with displayVBlankIntervalMilliPeriods");
-    }
-    else
-    {
-      m_framePacingLog.reset();
+        rLog.RegisterValue("displayVBlankOffPeriodPerMille", TraceUnit::Count,
+                           "The share of the last refreshes of the display that did not come one refresh period of its mode after the "
+                           "one before, in thousandths, read with displayVBlankIntervalMilliPeriods");
     }
     m_demoAppControl = m_demoAppConfig.DemoServiceProvider.Get<IDemoAppControlEx>();
     m_graphicsService = m_demoAppConfig.DemoServiceProvider.TryGet<IGraphicsServiceControl>();
@@ -350,22 +344,22 @@ namespace Fsl
       // The frame's CPU work starts with the app update
       m_framePacingMarkerServiceControl->BeginFrame(frameInfo, m_stats.TimeBeforeUpdate);
     }
-    if (m_framePacingLog)
+    if (m_trace)
     {
-      IFramePacingFrameLog& rLog = *m_framePacingLog;
-      m_framePacingLogFrameIndex = rLog.GetLogFrameIndex();
+      ITraceService& rLog = *m_trace;
+      m_framePacingLogFrameIndex = rLog.GetFrameIndex();
       m_framePacingLogHasFrame = true;
-      rLog.SetLogValue(m_framePacingLogColumns.UpdateEnd, m_stats.TimeAfterUpdate);
-      rLog.SetLogUInt64(m_framePacingLogColumns.FrameSlot, frameInfo.FrameIndex);
-      rLog.SetLogInt64(m_framePacingLogColumns.FrameworkTime, frameInfo.Time.CurrentTickCount.Ticks());
-      rLog.SetLogValue(m_framePacingLogColumns.FrameworkStep, frameInfo.Time.ElapsedTime);
+      rLog.SetValue(m_framePacingLogColumns.UpdateEnd, m_stats.TimeAfterUpdate);
+      rLog.SetUInt64(m_framePacingLogColumns.FrameSlot, frameInfo.FrameIndex);
+      rLog.SetInt64(m_framePacingLogColumns.FrameworkTime, frameInfo.Time.CurrentTickCount.Ticks());
+      rLog.SetValue(m_framePacingLogColumns.FrameworkStep, frameInfo.Time.ElapsedTime);
       if (m_demoAppConfig.WindowMetrics.ExtentPx != m_framePacingLogExtentPx)
       {
         // The window the frames are drawn to, written when it changes
         m_framePacingLogExtentPx = m_demoAppConfig.WindowMetrics.ExtentPx;
         const DemoWindowMetrics& metrics = m_demoAppConfig.WindowMetrics;
-        rLog.AddLogEvent("window", fmt::format("widthPx={};heightPx={};exactDpiX={};exactDpiY={};densityDpi={}", metrics.ExtentPx.Width.Value,
-                                               metrics.ExtentPx.Height.Value, metrics.ExactDpi.X, metrics.ExactDpi.Y, metrics.DensityDpi));
+        rLog.AddEvent("window", fmt::format("widthPx={};heightPx={};exactDpiX={};exactDpiY={};densityDpi={}", metrics.ExtentPx.Width.Value,
+                                            metrics.ExtentPx.Height.Value, metrics.ExactDpi.X, metrics.ExactDpi.Y, metrics.DensityDpi));
       }
       if (m_framePacingLogRefreshIntervalNs < 0)
       {
@@ -382,33 +376,33 @@ namespace Fsl
             {
               // What the window system has that tells when a frame is shown and what of it is used, so the log says what the platform offers
               const NativeWindowTimingSupport support = firstWindow->GetTimingSupport();
-              rLog.SetLogFact("window.system", support.WindowSystem);
-              rLog.SetLogFact("window.vsyncSource", support.VSyncSource);
+              rLog.SetFact("window.system", support.WindowSystem);
+              rLog.SetFact("window.vsyncSource", support.VSyncSource);
               for (const auto& entry : support.Available)
               {
-                rLog.SetLogFact(fmt::format("window.has.{}", entry), "1");
+                rLog.SetFact(fmt::format("window.has.{}", entry), "1");
               }
               for (const auto& entry : support.NotAvailable)
               {
-                rLog.SetLogFact(fmt::format("window.has.{}", entry), "0");
+                rLog.SetFact(fmt::format("window.has.{}", entry), "0");
               }
               for (const auto& entry : support.Versions)
               {
-                rLog.SetLogFact(fmt::format("window.version.{}", entry.first), fmt::format("{}", entry.second));
+                rLog.SetFact(fmt::format("window.version.{}", entry.first), fmt::format("{}", entry.second));
               }
               for (const auto& entry : support.Used)
               {
-                rLog.SetLogFact(fmt::format("window.uses.{}", entry), "1");
+                rLog.SetFact(fmt::format("window.uses.{}", entry), "1");
               }
               // The vsync sources the window system has code for and what each can do here
-              rLog.SetLogFact("window.vsyncSourceRequested", support.RequestedVSyncSource);
+              rLog.SetFact("window.vsyncSourceRequested", support.RequestedVSyncSource);
               std::string strSources;
               for (const auto& entry : support.VSyncSources)
               {
                 const char* const pszState = entry.State == NativeWindowVSyncSourceState::Used
                                                ? "used"
                                                : (entry.State == NativeWindowVSyncSourceState::Available ? "available" : "notAvailable");
-                rLog.SetLogFact(fmt::format("window.vsyncSource.{}", entry.Name), pszState);
+                rLog.SetFact(fmt::format("window.vsyncSource.{}", entry.Name), pszState);
                 fmt::format_to(std::back_inserter(strSources), "{}{}: {}", strSources.empty() ? "" : ", ", entry.Name, pszState);
               }
               FSLLOG3_INFO("FramePacing: vsync sources of the window system [{}], asked for '{}'", strSources,
@@ -432,17 +426,17 @@ namespace Fsl
           if (vsyncInfo.IsValid())
           {
             // The times of the log are in ticks. The period is too coarse in ticks, so it is logged in nanoseconds as well.
-            rLog.SetLogValue(m_framePacingLogColumns.DisplayVSync, NanosecondTickCountUtil::ToTickCount(vsyncInfo.VSyncTime));
-            rLog.SetLogValue(m_framePacingLogColumns.DisplayRefreshPeriod, NanosecondTimeSpanUtil::ToTimeSpan(vsyncInfo.RefreshPeriod));
-            rLog.SetLogInt64(m_framePacingLogColumns.DisplayRefreshPeriodNs, vsyncInfo.RefreshPeriod.TotalNanoseconds());
-            rLog.SetLogUInt64(m_framePacingLogColumns.DisplayVSyncFlags, NativeWindowVSyncTimeFlagsUtil::ToLogCode(vsyncInfo.TimeFlags));
+            rLog.SetValue(m_framePacingLogColumns.DisplayVSync, NanosecondTickCountUtil::ToTickCount(vsyncInfo.VSyncTime));
+            rLog.SetValue(m_framePacingLogColumns.DisplayRefreshPeriod, NanosecondTimeSpanUtil::ToTimeSpan(vsyncInfo.RefreshPeriod));
+            rLog.SetInt64(m_framePacingLogColumns.DisplayRefreshPeriodNs, vsyncInfo.RefreshPeriod.TotalNanoseconds());
+            rLog.SetUInt64(m_framePacingLogColumns.DisplayVSyncFlags, NativeWindowVSyncTimeFlagsUtil::ToLogCode(vsyncInfo.TimeFlags));
           }
           // What is known about variable refresh: the measurement per frame, the answers as a event when one of them changes
           const NativeWindowVariableRefreshInfo variableRefresh = window->TryGetVariableRefreshInfo();
           if (variableRefresh.ObservedIntervalCount != 0u)
           {
-            rLog.SetLogUInt64(m_framePacingLogColumns.DisplayVBlankInterval, variableRefresh.ObservedIntervalMilliPeriods);
-            rLog.SetLogUInt64(m_framePacingLogColumns.DisplayVBlankOffPeriod, variableRefresh.ObservedOffPeriodPerMille);
+            rLog.SetUInt64(m_framePacingLogColumns.DisplayVBlankInterval, variableRefresh.ObservedIntervalMilliPeriods);
+            rLog.SetUInt64(m_framePacingLogColumns.DisplayVBlankOffPeriod, variableRefresh.ObservedOffPeriodPerMille);
           }
           const int32_t packedAnswers = (static_cast<int32_t>(variableRefresh.Supported) << 12) |
                                         (static_cast<int32_t>(variableRefresh.Enabled) << 8) | (static_cast<int32_t>(variableRefresh.Active) << 4) |
@@ -463,18 +457,18 @@ namespace Fsl
                 return "unknown";
               }
             };
-            rLog.AddLogEvent("variableRefresh",
-                             fmt::format("supported={};enabled={};active={};observed={};source={};observedSource={}",
-                                         toText(variableRefresh.Supported), toText(variableRefresh.Enabled), toText(variableRefresh.Active),
-                                         toText(variableRefresh.Observed), variableRefresh.Source, variableRefresh.ObservedSource));
+            rLog.AddEvent("variableRefresh",
+                          fmt::format("supported={};enabled={};active={};observed={};source={};observedSource={}", toText(variableRefresh.Supported),
+                                      toText(variableRefresh.Enabled), toText(variableRefresh.Active), toText(variableRefresh.Observed),
+                                      variableRefresh.Source, variableRefresh.ObservedSource));
           }
         }
         if (refreshInterval.TotalNanoseconds() != m_framePacingLogRefreshIntervalNs)
         {
           m_framePacingLogRefreshIntervalNs = refreshInterval.TotalNanoseconds();
           // In nanoseconds, and rounded to the ticks the times of the log are in
-          rLog.AddLogEvent("display", fmt::format("refreshIntervalTicks={};refreshIntervalNs={}",
-                                                  NanosecondTimeSpanUtil::ToTimeSpan(refreshInterval).Ticks(), refreshInterval.TotalNanoseconds()));
+          rLog.AddEvent("display", fmt::format("refreshIntervalTicks={};refreshIntervalNs={}",
+                                               NanosecondTimeSpanUtil::ToTimeSpan(refreshInterval).Ticks(), refreshInterval.TotalNanoseconds()));
         }
       }
     }
@@ -508,9 +502,9 @@ namespace Fsl
     }
 
     m_stats.TimeAfterDraw = m_timer.GetTimestamp();
-    if (m_framePacingLog)
+    if (m_trace)
     {
-      m_framePacingLog->SetLogValueAt(m_framePacingLogFrameIndex, m_framePacingLogColumns.DrawEnd, m_stats.TimeAfterDraw);
+      m_trace->SetValueAt(m_framePacingLogFrameIndex, m_framePacingLogColumns.DrawEnd, m_stats.TimeAfterDraw);
     }
 
     if (m_enableStats && m_state == DemoState::Running && m_demoAppProfilerOverlay)
@@ -573,10 +567,10 @@ namespace Fsl
 
   void DemoAppManager::OnSwapBuffers(const TickCount callTime, const TickCount returnTime) noexcept
   {
-    if (m_framePacingLog && m_framePacingLogHasFrame)
+    if (m_trace && m_framePacingLogHasFrame)
     {
-      m_framePacingLog->SetLogValueAt(m_framePacingLogFrameIndex, m_framePacingLogColumns.SwapCall, callTime);
-      m_framePacingLog->SetLogValueAt(m_framePacingLogFrameIndex, m_framePacingLogColumns.SwapReturn, returnTime);
+      m_trace->SetValueAt(m_framePacingLogFrameIndex, m_framePacingLogColumns.SwapCall, callTime);
+      m_trace->SetValueAt(m_framePacingLogFrameIndex, m_framePacingLogColumns.SwapReturn, returnTime);
     }
   }
 
@@ -593,9 +587,9 @@ namespace Fsl
       const auto timeNow = m_timer.GetTimestamp();
       const auto deltaFrameSwapCompletedTime = timeNow - m_stats.LastFrameSwapCompletedTime;
       m_stats.LastFrameSwapCompletedTime = timeNow;
-      if (m_framePacingLog && m_framePacingLogHasFrame)
+      if (m_trace && m_framePacingLogHasFrame)
       {
-        m_framePacingLog->SetLogValueAt(m_framePacingLogFrameIndex, m_framePacingLogColumns.SwapCompleted, timeNow);
+        m_trace->SetValueAt(m_framePacingLogFrameIndex, m_framePacingLogColumns.SwapCompleted, timeNow);
       }
 
       m_profilerServiceControl->AddFrameTimes(TimeSpanUtil::ToClampedMicrosecondsUInt64(deltaTimeUpdate),

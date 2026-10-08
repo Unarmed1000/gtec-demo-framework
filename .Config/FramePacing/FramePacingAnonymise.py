@@ -49,7 +49,7 @@ _g_sdkEnvironmentVariable = "FSL_GRAPHICS_SDK"
 _g_deviceNameFact = "vulkan.deviceName"
 _g_vendorIdFact = "vulkan.vendorId"
 _g_anonymousDeviceId = "0x0"
-# 'vulkan.deviceId=0x2b85' in the events of a log and 'deviceID: 0x2b85' in what an app prints
+# 'vulkan.deviceId=0x1234' in the events of a log and 'deviceID: 0x1234' in what an app prints
 _g_deviceIdPattern = re.compile(rb"(device ?id\W{0,3})(0x[0-9a-f]+|[0-9]+)", re.IGNORECASE)
 # The lines of what an app prints that name the graphics device: '- deviceName: <model>' of a Vulkan app, 'Renderer: <model>' of a
 # OpenGL ES app and 'GL renderer: [<model>]' of a OpenGL ES emulator. The trace of an app is anonymised by the app itself, so the tool

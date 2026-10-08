@@ -144,7 +144,7 @@ namespace Fsl
     rOptions.emplace_back("GLFlush", OptionArgument::OptionNone, CommandId::GLFlush,
                           "OpenGL ES: call glFlush after the last command of a frame, so the GPU is asked to work on the frame at a known "
                           "moment and before a swap the sample delays. Without it the driver decides when, the swap at the latest (the "
-                          "default). The frame log says if it is on and when it was called.");
+                          "default). The trace says if it is on and when it was called.");
   }
 
 
