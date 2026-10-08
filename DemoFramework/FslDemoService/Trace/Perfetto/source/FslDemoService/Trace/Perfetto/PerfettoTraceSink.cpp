@@ -163,8 +163,9 @@ namespace Fsl
         const std::size_t separator = entry.find('=');
         if (separator != std::string_view::npos && separator > 0u)
         {
-          const std::string_view key = entry.substr(0, separator);
-          rContext.AddDebugAnnotation(perfetto::DynamicString(key.data(), key.size()), std::string(entry.substr(separator + 1u)));
+          // A copy that ends where the key does: the SDK reads the name of a argument up to its terminator, whatever length it is given
+          const std::string key(entry.substr(0, separator));
+          rContext.AddDebugAnnotation(perfetto::DynamicString(key), std::string(entry.substr(separator + 1u)));
         }
         begin = end + 1u;
       }

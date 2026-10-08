@@ -26,6 +26,7 @@
 #include <FslDemoApp/Base/Service/AppInfo/IAppInfoService.hpp>
 #include <FslDemoService/Trace/Impl/TraceFrameTable.hpp>
 #include <FslDemoService/Trace/Impl/TraceLog.hpp>
+#include <FslDemoService/Trace/Impl/TracePathUtil.hpp>
 #include <FslDemoService/Trace/Impl/TraceService.hpp>
 #include <FslDemoService/Trace/Impl/TraceServiceOptionParser.hpp>
 #include <FslDemoService/Trace/Impl/TraceThreadUtil.hpp>
@@ -94,7 +95,8 @@ namespace Fsl
     }
     try
     {
-      const IO::Path fullPath = IO::Path::GetFullPath(tracePath);
+      // The file is created by the sink, so it is not there yet
+      const IO::Path fullPath = TracePathUtil::ToFullPath(tracePath);
       auto sink = sinkCreator(TraceSinkConfig{fullPath, m_anonymise});
       if (!sink)
       {
