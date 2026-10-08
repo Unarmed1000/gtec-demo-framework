@@ -370,6 +370,20 @@ namespace Fsl::UI
   }
 
 
+  void ScrollGestureHandler::SetScrollOffset(const PxPoint2 offsetPx) noexcept
+  {
+    // What moved the content is over. The distance a animation or a drag had added is not kept: the offset is the place the caller
+    // worked out.
+    TryCancelDrag();
+    m_animRecord.Status = AnimStatus::Idle;
+    m_animRecord.Anim.SetActualValue({});
+    m_pendingScrollDeltaPxf = 0.0f;
+    m_scrollDeltaRemainderPxf = 0.0f;
+    m_clampToRangePending = false;
+    m_scrollOffsetPx = ApplyScrollMode(m_scrollMode, offsetPx);
+  }
+
+
   PxPoint2 ScrollGestureHandler::Arrange(const PxSize2D finalAreaRenderSizePx, const PxSize2D contentRenderSizePx)
   {
     if (!IsScrollingRequired(finalAreaRenderSizePx, contentRenderSizePx))

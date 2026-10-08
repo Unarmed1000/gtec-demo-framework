@@ -134,6 +134,12 @@ namespace Fsl::UI
     //! @return true if the distance was taken and a arrange is needed, false if scrolling is not enabled or a drag is in progress
     bool AddScrollDelta(const PxValueF deltaPxf) noexcept;
 
+    //! @brief Take the scroll position over: a drag, flick or bounce ends, and the content is at the given place.
+    //! @param offsetPx the place of the content: zero at its start, minus the scroll size at its end. It is used as it is, so the caller
+    //!        keeps it inside the content.
+    //! @note  A distance of the scroll wheel that waits for the next arrange is dropped, it was asked for at the place the content left.
+    void SetScrollOffset(const PxPoint2 offsetPx) noexcept;
+
     PxPoint2 Arrange(const PxSize2D finalAreaRenderSizePx, const PxSize2D contentRenderSizePx);
 
   private:

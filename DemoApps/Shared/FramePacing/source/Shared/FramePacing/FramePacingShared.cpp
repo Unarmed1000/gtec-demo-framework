@@ -33,9 +33,9 @@
 #include <FslDemoService/FramePacingMarker/FramePacingFrameSchedule.hpp>
 #include <FslDemoService/FramePacingMarker/FramePacingMarkerInfo.hpp>
 #include <FslDemoService/FramePacingMarker/IFramePacingFrameLog.hpp>
-#include <FslDemoService/Trace/ITraceService.hpp>
 #include <FslDemoService/FramePacingMarker/IFramePacingMarkerService.hpp>
 #include <FslDemoService/Graphics/IGraphicsService.hpp>
+#include <FslDemoService/Trace/ITraceService.hpp>
 #include <FslGraphics/Bitmap/ReadOnlyRawBitmap.hpp>
 #include <FslGraphics/Colors.hpp>
 #include <FslGraphics/Render/Adapter/INativeBatch2D.hpp>
@@ -50,6 +50,7 @@
 #include <FslSimpleUI/Base/Control/Image.hpp>
 #include <FslSimpleUI/Base/Control/ScrollViewer.hpp>
 #include <FslSimpleUI/Base/Event/WindowSelectEvent.hpp>
+#include <FslSimpleUI/Base/Layout/DockLayout.hpp>
 #include <FslSimpleUI/Base/Layout/GridLayout.hpp>
 #include <FslSimpleUI/Base/Layout/StackLayout.hpp>
 #include <FslSimpleUI/Controls/Charts/AreaChart.hpp>
@@ -341,6 +342,8 @@ namespace Fsl
     const auto lblHint = uiFactory->CreateLabel("Space: start/end a run");
     const auto lblHintTimed = uiFactory->CreateLabel("T: start a timed run");
     const auto lblHintPacer = uiFactory->CreateLabel("P: frame pacer on/off");
+    const auto lblHintMenu = uiFactory->CreateLabel("Arrows + Enter: menu");
+    const auto lblHintReset = uiFactory->CreateLabel("0: reset the settings");
 
     // The two overlays
     m_ui.SwitchMarkerStats = uiFactory->CreateSwitch("Show the last marker", !options->IsMarkerStatsHidden());
@@ -409,73 +412,81 @@ namespace Fsl
     m_ui.RadioBackgroundFlight = uiFactory->CreateRadioButton(backgroundGroup, "Fractal flight", background == RaymarchScene::Flight);
     m_ui.RadioBackgroundHall = uiFactory->CreateRadioButton(backgroundGroup, "Scrolling hall", background == RaymarchScene::Hall);
 
+    // The controls of the side bar are rows of the keyboard menu, in the order they are stacked in. The row of a slider has its
+    // caption too.
     const auto stackLayout = std::make_shared<UI::StackLayout>(uiFactory->GetContext());
     stackLayout->SetOrientation(UI::LayoutOrientation::Vertical);
     stackLayout->SetAlignmentY(UI::ItemAlignment::Center);
     stackLayout->AddChild(m_ui.LabelStatus);
     stackLayout->AddChild(m_ui.LabelRun);
-    stackLayout->AddChild(m_ui.ButtonRun);
+    stackLayout->AddChild(m_keyboardMenu.AddButton(*uiFactory, m_ui.ButtonRun, [this]() { ToggleRun(); }));
     stackLayout->AddChild(uiFactory->CreateDivider(UI::LayoutOrientation::Horizontal));
-    stackLayout->AddChild(lblDuration);
-    stackLayout->AddChild(m_ui.SliderDuration);
-    stackLayout->AddChild(m_ui.ButtonTimedRun);
+    stackLayout->AddChild(m_keyboardMenu.AddSlider(*uiFactory, lblDuration, m_ui.SliderDuration));
+    stackLayout->AddChild(m_keyboardMenu.AddButton(*uiFactory, m_ui.ButtonTimedRun, [this]() { StartTimedRun(); }));
     stackLayout->AddChild(uiFactory->CreateDivider(UI::LayoutOrientation::Horizontal));
-    stackLayout->AddChild(m_ui.SwitchPacer);
+    stackLayout->AddChild(m_keyboardMenu.AddToggle(*uiFactory, m_ui.SwitchPacer));
     stackLayout->AddChild(m_ui.LabelTierInUse);
     stackLayout->AddChild(m_ui.LabelTierBest);
-    stackLayout->AddChild(m_ui.LabelRefreshRate);
-    stackLayout->AddChild(m_ui.LabelPacedRate);
-    stackLayout->AddChild(m_ui.SliderRefreshRate);
-    stackLayout->AddChild(lblTargetFps);
-    stackLayout->AddChild(m_ui.SliderTargetFps);
-    stackLayout->AddChild(m_ui.SwitchAdaptive);
-    stackLayout->AddChild(m_ui.SwitchPacerFeedback);
-    stackLayout->AddChild(m_ui.RadioHoldAuto);
-    stackLayout->AddChild(m_ui.RadioHoldVSync);
-    stackLayout->AddChild(m_ui.RadioHoldWait);
-    stackLayout->AddChild(m_ui.RadioHoldSchedule);
+    {
+      // The two lines above the slider of the refresh rate are its caption
+      const auto refreshRateCaption = std::make_shared<UI::StackLayout>(uiFactory->GetContext());
+      refreshRateCaption->SetOrientation(UI::LayoutOrientation::Vertical);
+      refreshRateCaption->AddChild(m_ui.LabelRefreshRate);
+      refreshRateCaption->AddChild(m_ui.LabelPacedRate);
+      stackLayout->AddChild(m_keyboardMenu.AddSlider(*uiFactory, refreshRateCaption, m_ui.SliderRefreshRate));
+    }
+    stackLayout->AddChild(m_keyboardMenu.AddSlider(*uiFactory, lblTargetFps, m_ui.SliderTargetFps));
+    stackLayout->AddChild(m_keyboardMenu.AddToggle(*uiFactory, m_ui.SwitchAdaptive));
+    stackLayout->AddChild(m_keyboardMenu.AddToggle(*uiFactory, m_ui.SwitchPacerFeedback));
+    stackLayout->AddChild(m_keyboardMenu.AddToggle(*uiFactory, m_ui.RadioHoldAuto));
+    stackLayout->AddChild(m_keyboardMenu.AddToggle(*uiFactory, m_ui.RadioHoldVSync));
+    stackLayout->AddChild(m_keyboardMenu.AddToggle(*uiFactory, m_ui.RadioHoldWait));
+    stackLayout->AddChild(m_keyboardMenu.AddToggle(*uiFactory, m_ui.RadioHoldSchedule));
     stackLayout->AddChild(m_ui.LabelPacerStatus);
     stackLayout->AddChild(m_ui.LabelPacerFrames);
     stackLayout->AddChild(uiFactory->CreateDivider(UI::LayoutOrientation::Horizontal));
-    stackLayout->AddChild(lblCpuLoad);
-    stackLayout->AddChild(m_ui.SliderCpuLoad);
-    stackLayout->AddChild(lblGpuLoad);
-    stackLayout->AddChild(m_ui.SliderGpuLoad);
-    stackLayout->AddChild(m_ui.RadioBackgroundMandelbrot);
-    stackLayout->AddChild(m_ui.RadioBackgroundBlobs);
-    stackLayout->AddChild(m_ui.RadioBackgroundLace);
-    stackLayout->AddChild(m_ui.RadioBackgroundFlight);
-    stackLayout->AddChild(m_ui.RadioBackgroundHall);
+    stackLayout->AddChild(m_keyboardMenu.AddSlider(*uiFactory, lblCpuLoad, m_ui.SliderCpuLoad));
+    stackLayout->AddChild(m_keyboardMenu.AddSlider(*uiFactory, lblGpuLoad, m_ui.SliderGpuLoad));
+    stackLayout->AddChild(m_keyboardMenu.AddToggle(*uiFactory, m_ui.RadioBackgroundMandelbrot));
+    stackLayout->AddChild(m_keyboardMenu.AddToggle(*uiFactory, m_ui.RadioBackgroundBlobs));
+    stackLayout->AddChild(m_keyboardMenu.AddToggle(*uiFactory, m_ui.RadioBackgroundLace));
+    stackLayout->AddChild(m_keyboardMenu.AddToggle(*uiFactory, m_ui.RadioBackgroundFlight));
+    stackLayout->AddChild(m_keyboardMenu.AddToggle(*uiFactory, m_ui.RadioBackgroundHall));
     stackLayout->AddChild(uiFactory->CreateDivider(UI::LayoutOrientation::Horizontal));
-    stackLayout->AddChild(m_ui.SwitchMarkerStats);
-    stackLayout->AddChild(m_ui.SwitchPacerStats);
-    stackLayout->AddChild(m_ui.SwitchWorkChart);
-    stackLayout->AddChild(m_ui.SwitchAnimationErrorChart);
-    stackLayout->AddChild(m_ui.SwitchTestPattern);
-    stackLayout->AddChild(m_ui.SwitchBoxAnimation);
-    stackLayout->AddChild(m_ui.SwitchBoxAnimationFast);
-    stackLayout->AddChild(m_ui.SwitchSyncMarker);
+    stackLayout->AddChild(m_keyboardMenu.AddToggle(*uiFactory, m_ui.SwitchMarkerStats));
+    stackLayout->AddChild(m_keyboardMenu.AddToggle(*uiFactory, m_ui.SwitchPacerStats));
+    stackLayout->AddChild(m_keyboardMenu.AddToggle(*uiFactory, m_ui.SwitchWorkChart));
+    stackLayout->AddChild(m_keyboardMenu.AddToggle(*uiFactory, m_ui.SwitchAnimationErrorChart));
+    stackLayout->AddChild(m_keyboardMenu.AddToggle(*uiFactory, m_ui.SwitchTestPattern));
+    stackLayout->AddChild(m_keyboardMenu.AddToggle(*uiFactory, m_ui.SwitchBoxAnimation));
+    stackLayout->AddChild(m_keyboardMenu.AddToggle(*uiFactory, m_ui.SwitchBoxAnimationFast));
+    stackLayout->AddChild(m_keyboardMenu.AddToggle(*uiFactory, m_ui.SwitchSyncMarker));
     stackLayout->AddChild(uiFactory->CreateDivider(UI::LayoutOrientation::Horizontal));
-    stackLayout->AddChild(m_ui.SwitchPresentTiming);
-    stackLayout->AddChild(m_ui.SwitchGpuTimeline);
+    stackLayout->AddChild(m_keyboardMenu.AddToggle(*uiFactory, m_ui.SwitchPresentTiming));
+    stackLayout->AddChild(m_keyboardMenu.AddToggle(*uiFactory, m_ui.SwitchGpuTimeline));
     stackLayout->AddChild(uiFactory->CreateDivider(UI::LayoutOrientation::Horizontal));
     stackLayout->AddChild(lblHint);
     stackLayout->AddChild(lblHintTimed);
     stackLayout->AddChild(lblHintPacer);
+    stackLayout->AddChild(lblHintMenu);
+    stackLayout->AddChild(lblHintReset);
 
-    const auto mainLayout = std::make_shared<UI::GridLayout>(uiFactory->GetContext());
-    mainLayout->AddColumnDefinition(UI::GridColumnDefinition(UI::GridUnitType::Star, 1.0f));
-    mainLayout->AddColumnDefinition(UI::GridColumnDefinition(UI::GridUnitType::Auto));
-    mainLayout->AddRowDefinition(UI::GridRowDefinition(UI::GridUnitType::Star, 1.0f));
-    // Left of the right bar: the overlays with every value of the last marker and the frame pacing stats, above the chart of the work
-    // per frame. Each is shown while its switch is on.
-    const auto contentLayout = std::make_shared<UI::GridLayout>(uiFactory->GetContext());
-    contentLayout->SetAlignmentX(UI::ItemAlignment::Stretch);
-    contentLayout->SetAlignmentY(UI::ItemAlignment::Stretch);
-    contentLayout->AddColumnDefinition(UI::GridColumnDefinition(UI::GridUnitType::Star, 1.0f));
-    contentLayout->AddRowDefinition(UI::GridRowDefinition(UI::GridUnitType::Star, 1.0f));
-    contentLayout->AddRowDefinition(UI::GridRowDefinition(UI::GridUnitType::Auto));
-    contentLayout->AddChild(CreateStatsWindow(*uiFactory), 0, 0);
+    // The window is docked: the bar with the controls at the right, the charts at the bottom of what is left of it, and the overlays
+    // with every value of the last marker and the frame pacing stats in the rest. Each of them is shown while its switch is on.
+    // A dock layout keeps all of them inside the window, so the overlays, which can ask for more height than a low window has, take
+    // no room from the charts and do not make the right bar higher than the window (its controls could then not all be scrolled to).
+    const auto mainLayout = std::make_shared<UI::DockLayout>(uiFactory->GetContext());
+    mainLayout->SetAlignmentX(UI::ItemAlignment::Stretch);
+    mainLayout->SetAlignmentY(UI::ItemAlignment::Stretch);
+    mainLayout->SetLastChildFill(true);
+    mainLayout->SetLimitToAvailableSpace(true);
+    // The controls can be scrolled, as a low window does not have room for all of them
+    stackLayout->SetMargin(DpThicknessF::Create(0, 0, 8, 0));
+    const auto scrollViewer = uiFactory->CreateScrollViewer(stackLayout, UI::ScrollModeFlags::TranslateY, false);
+    m_keyboardMenu.SetScrollViewer(scrollViewer);
+    const auto rightBar = uiFactory->CreateRightBar(scrollViewer);
+    mainLayout->AddChild(rightBar, UI::DockType::Right);
+    m_ui.RightBar = rightBar;
     m_ui.WorkChartBar = CreateWorkChartBar(*uiFactory);
     m_ui.AnimationErrorChartBar = CreateAnimationErrorChartBar(*uiFactory);
     {
@@ -485,16 +496,10 @@ namespace Fsl
       chartLayout->SetAlignmentX(UI::ItemAlignment::Stretch);
       chartLayout->AddChild(m_ui.AnimationErrorChartBar);
       chartLayout->AddChild(m_ui.WorkChartBar);
-      contentLayout->AddChild(chartLayout, 0, 1);
+      mainLayout->AddChild(chartLayout, UI::DockType::Bottom);
     }
-    mainLayout->AddChild(contentLayout, 0, 0);
-    // The controls can be scrolled, as a low window does not have room for all of them
-    stackLayout->SetMargin(DpThicknessF::Create(0, 0, 8, 0));
-    const auto scrollViewer = uiFactory->CreateScrollViewer(stackLayout, UI::ScrollModeFlags::TranslateY, false);
-    const auto rightBar = uiFactory->CreateRightBar(scrollViewer);
-    mainLayout->AddChild(rightBar, 1, 0);
-    m_ui.RightBar = rightBar;
-    mainLayout->SetLimitToAvailableSpace(true);
+    // The last child fills what is left
+    mainLayout->AddChild(CreateStatsWindow(*uiFactory), UI::DockType::Left);
     m_uiExtension->SetMainWindow(mainLayout);
 
     UpdateUI();
@@ -542,8 +547,17 @@ namespace Fsl
   }
 
 
+  void FramePacingShared::OnClickInput(const std::shared_ptr<UI::WindowInputClickEvent>& /*theEvent*/)
+  {
+    // The UI is used with the mouse (or a finger), so the cursor of the keys is in the way
+    m_keyboardMenu.HideCursor();
+  }
+
+
   void FramePacingShared::OnKeyEvent(const KeyEvent& event)
   {
+    // The arrow keys and return, and the keys that come up (a held key repeats in the menu)
+    m_keyboardMenu.OnKeyEvent(event);
     if (event.IsHandled() || !event.IsPressed())
     {
       return;
@@ -565,6 +579,13 @@ namespace Fsl
         m_ui.SwitchPacer->Toggle();
       }
       break;
+    case VirtualKey::Code0:
+      // The switches, radio buttons and sliders of the side bar are as the sample started with them
+      event.Handled();
+      m_keyboardMenu.ResetToDefaults();
+      // The slider of the refresh rate shows the rate that is used while it is known, which is not the value it was created with
+      UpdateRefreshRateUI();
+      break;
     default:
       break;
     }
@@ -581,6 +602,8 @@ namespace Fsl
   {
     m_updateTime = demoTime;
     m_frameStarted = false;
+    // Before the controls are read, so what a held key changed is used by this frame
+    m_keyboardMenu.Update(demoTime.ElapsedTime);
     UpdatePacer();
     UpdateTier();
     if (m_presentMethod == SamplePresentMethod::SwapInterval)

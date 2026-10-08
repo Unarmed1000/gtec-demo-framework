@@ -43,6 +43,7 @@
 #include <Shared/FramePacing/SampleConfig.hpp>
 #include <Shared/FramePacing/SampleFrameStats.hpp>
 #include <Shared/FramePacing/SampleFrameWork.hpp>
+#include <Shared/FramePacing/SampleKeyboardMenu.hpp>
 #include <Shared/FramePacing/SamplePacer.hpp>
 #include <Shared/FramePacing/SamplePacerHold.hpp>
 #include <Shared/FramePacing/SamplePacerProfile.hpp>
@@ -232,6 +233,8 @@ namespace Fsl
     Texture2D m_fillTexture;
     std::string m_runName;
     UIRecord m_ui;
+    //! The cursor that is moved over the controls of the side bar with the arrow keys
+    SampleKeyboardMenu m_keyboardMenu;
     PxSize2D m_windowSizePx;
     FramePacingRunState m_cachedRunState{FramePacingRunState::Idle};
     uint32_t m_cachedRunId{0};
@@ -475,6 +478,7 @@ namespace Fsl
     }
 
     // From EventListener
+    void OnClickInput(const std::shared_ptr<UI::WindowInputClickEvent>& theEvent) final;
     void OnSelect(const std::shared_ptr<UI::WindowSelectEvent>& theEvent) final;
 
     // Called from the parent app

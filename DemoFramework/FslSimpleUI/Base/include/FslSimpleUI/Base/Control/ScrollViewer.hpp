@@ -37,6 +37,7 @@
 #include <FslSimpleUI/Base/Control/ScrollGestureHandler.hpp>
 #include <FslSimpleUI/Base/Control/ScrollModeFlags.hpp>
 #include <FslSimpleUI/Base/Mesh/ContentSpriteMesh.hpp>
+#include <memory>
 
 namespace Fsl::UI
 {
@@ -72,6 +73,9 @@ namespace Fsl::UI
     //! The arrange found that the scroll position has to animate, the animation is started after the layout (WinPostLayout) as the
     //! window flags must not be changed during the layout
     bool m_animationCheckPending{false};
+    //! The window MakeVisible was asked for, until the next arrange has scrolled to it
+    std::weak_ptr<BaseWindow> m_makeVisibleWindow;
+    bool m_makeVisiblePending{false};
 
     ContentSpriteMesh m_cursorX;
     ContentSpriteMesh m_cursorY;
@@ -154,6 +158,14 @@ namespace Fsl::UI
     bool SetCursorY(const std::shared_ptr<IContentSprite>& value);
     bool SetCursorY(std::shared_ptr<IContentSprite>&& value);
 
+    //! @brief Scroll so a window of the content is inside the view (a cursor that is moved with the keys). Nothing moves when it is
+    //!        inside already.
+    //! @param window a window inside the content of this viewer: the content itself, or a child of it at any depth
+    //! @note  The next layout scrolls, once it has placed the content, so the place of the window is the one of that layout: by the
+    //!        shortest distance that brings the window in, along the axes that scroll. A window that is larger than the view is
+    //!        shown from its start. A drag, flick or bounce ends when the content has to move, and is left alone when it does not.
+    //!        The last call before a layout is the one that counts. A window that is not in the content at that layout is ignored.
+    void MakeVisible(const std::shared_ptr<BaseWindow>& window);
 
     void WinDraw(const UIDrawContext& context) override;
 
@@ -173,6 +185,13 @@ namespace Fsl::UI
     DataBinding::PropertySetBindingResult TrySetBindingNow(const DataBinding::DependencyPropertyDefinition& targetDef,
                                                            const DataBinding::Binding& binding) final;
     void ExtractAllProperties(DataBinding::DependencyPropertyDefinitionVector& rProperties) final;
+
+  private:
+    //! @brief Work out where the content has to be for the window MakeVisible was asked for to be inside the view
+    //! @param contentOffsetPx where the content was just arranged at
+    //! @return true if the content has to move, to rOffsetPx
+    bool TryCalcMakeVisibleOffset(const std::shared_ptr<BaseWindow>& window, const PxSize2D viewSizePx, const PxSize2D contentSizePx,
+                                  const PxPoint2 contentOffsetPx, PxPoint2& rOffsetPx) const;
   };
 }
 

@@ -36,18 +36,22 @@
 #include <FslDataBinding/Base/Object/DependencyPropertyDefinitionVector.hpp>
 #include <FslDataBinding/Base/Property/DependencyPropertyDefinitionFactory.hpp>
 #include <FslSimpleUI/Base/BaseWindowContext.hpp>
+#include <FslSimpleUI/Base/Control/Logic/ScrollMakeVisibleMath.hpp>
 #include <FslSimpleUI/Base/Control/ScrollGestureAnimationConfig.hpp>
 #include <FslSimpleUI/Base/Control/ScrollViewer.hpp>
 #include <FslSimpleUI/Base/Event/WindowInputClickEvent.hpp>
 #include <FslSimpleUI/Base/Event/WindowInputScrollWheelEvent.hpp>
+#include <FslSimpleUI/Base/IWindowManager.hpp>
 #include <FslSimpleUI/Base/Log/FmtMovementOwnership.hpp>
 #include <FslSimpleUI/Base/Log/FmtMovementTransactionAction.hpp>
 #include <FslSimpleUI/Base/MovementOwnership.hpp>
 #include <FslSimpleUI/Base/MovementTransactionAction.hpp>
 #include <FslSimpleUI/Base/PropertyTypeFlags.hpp>
 #include <FslSimpleUI/Base/ResolutionChangedInfo.hpp>
+#include <FslSimpleUI/Base/UIContext.hpp>
 #include <FslSimpleUI/Base/UIDrawContext.hpp>
 #include <FslSimpleUI/Render/Base/DrawCommandBuffer.hpp>
+#include <stdexcept>
 
 namespace Fsl::UI
 {
@@ -395,6 +399,19 @@ namespace Fsl::UI
   }
 
 
+  void ScrollViewer::MakeVisible(const std::shared_ptr<BaseWindow>& window)
+  {
+    if (!window)
+    {
+      throw std::invalid_argument("window can not be null");
+    }
+    m_makeVisibleWindow = window;
+    m_makeVisiblePending = true;
+    // The arrange knows where the window is, so it does the scrolling
+    PropertyUpdated(PropertyType::Layout);
+  }
+
+
   void ScrollViewer::WinDraw(const UIDrawContext& context)
   {
     base_type::WinDraw(context);
@@ -550,11 +567,25 @@ namespace Fsl::UI
       break;
     }
 
-    const PxPoint2 positionOffsetPx = m_gestureHandler.Arrange(localFinalSizePx, desiredlayoutSizePx);
+    PxPoint2 positionOffsetPx = m_gestureHandler.Arrange(localFinalSizePx, desiredlayoutSizePx);
+    base_type::CustomArrange(desiredlayoutSizePx, positionOffsetPx);
+    if (m_makeVisiblePending)
+    {
+      m_makeVisiblePending = false;
+      const std::shared_ptr<BaseWindow> window = m_makeVisibleWindow.lock();
+      m_makeVisibleWindow.reset();
+      // The content was arranged just above, so the place of the window in it is the one of this layout
+      PxPoint2 newOffsetPx;
+      if (window && TryCalcMakeVisibleOffset(window, localFinalSizePx, desiredlayoutSizePx, positionOffsetPx, newOffsetPx))
+      {
+        m_gestureHandler.SetScrollOffset(newOffsetPx);
+        positionOffsetPx = m_gestureHandler.Arrange(localFinalSizePx, desiredlayoutSizePx);
+        base_type::CustomArrange(desiredlayoutSizePx, positionOffsetPx);
+      }
+    }
     m_scrollPositionOffsetPx = positionOffsetPx;
     m_scrollViewSizePx = localFinalSizePx;
     m_scrollExtentPx = desiredlayoutSizePx;
-    base_type::CustomArrange(desiredlayoutSizePx, positionOffsetPx);
 
     // After the arrange we need to check if we need to animate. Starting the animation enables the update calls of the window, which
     // must not be done during the layout, so it is done in WinPostLayout.
@@ -563,6 +594,49 @@ namespace Fsl::UI
       m_animationCheckPending = true;
     }
     return finalSizePx;
+  }
+
+
+  bool ScrollViewer::TryCalcMakeVisibleOffset(const std::shared_ptr<BaseWindow>& window, const PxSize2D viewSizePx, const PxSize2D contentSizePx,
+                                              const PxPoint2 contentOffsetPx, PxPoint2& rOffsetPx) const
+  {
+    const auto& content = GetContent();
+    if (!content || !m_gestureHandler.IsScrollingEnabled())
+    {
+      // Content that fits in the view shows all of it
+      return false;
+    }
+    const auto uiContext = GetContext()->TheUIContext.Get();
+    if (!uiContext->WindowManager->IsMemberOfTree(content, window))
+    {
+      return false;
+    }
+
+    // Where the window is in the view. It is worked out from the content, as the place of this viewer on the screen is not set before
+    // its arrange is done.
+    const PxPoint2 positionPx = content->WinGetContentRectanglePx().TopLeft() + (window->PointToScreen({}) - content->PointToScreen({}));
+    const PxSize2D sizePx = window->RenderSizePx();
+
+    const ScrollModeFlags scrollMode = GetScrollMode();
+    PxValue moveXPx;
+    PxValue moveYPx;
+    if (ScrollModeFlagsUtil::IsEnabled(scrollMode, ScrollModeFlags::TranslateX))
+    {
+      moveXPx = ScrollMakeVisibleMath::CalcMoveDistancePx(viewSizePx.Width(), positionPx.X, sizePx.Width());
+    }
+    if (ScrollModeFlagsUtil::IsEnabled(scrollMode, ScrollModeFlags::TranslateY))
+    {
+      moveYPx = ScrollMakeVisibleMath::CalcMoveDistancePx(viewSizePx.Height(), positionPx.Y, sizePx.Height());
+    }
+    if (moveXPx.Value == 0 && moveYPx.Value == 0)
+    {
+      // Inside the view: what moves the content at the moment (a flick, a bounce) goes on
+      return false;
+    }
+    // The content can be past a end (a drag, a bounce), the place it is put at is not
+    rOffsetPx = PxPoint2(ScrollMakeVisibleMath::ClampOffsetPx(contentOffsetPx.X + moveXPx, viewSizePx.Width(), contentSizePx.Width()),
+                         ScrollMakeVisibleMath::ClampOffsetPx(contentOffsetPx.Y + moveYPx, viewSizePx.Height(), contentSizePx.Height()));
+    return true;
   }
 
 

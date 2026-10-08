@@ -14,6 +14,12 @@ and lets you control measured runs:
 - **Space** or **Start run**: start an open ended run, press again to end it.
 - **T** or **Start timed run**: start a run that ends by itself after the duration selected with the slider (1-120 seconds,
   `--TimedRunDuration <seconds>` sets it).
+- **0**: set the switches, radio buttons and sliders of the side bar back to what the sample started with.
+
+The side bar can be used without a mouse: the **up** and **down** arrow keys show a cursor and move it over the controls, **Enter**
+uses the control the cursor is at (it toggles a switch, checks a radio button, presses a button). The **left** and **right** arrow
+keys change a slider, faster the longer the key is held down, and switch a switch off and on. A click in the UI hides the cursor
+again.
 
 The moving bar and box are animated from the same animation time the marker reports, so any hitch is visible and measurable.
 
