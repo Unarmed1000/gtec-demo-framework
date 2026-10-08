@@ -98,9 +98,9 @@ namespace Fsl
       RegisterLogColumns();
       // On the timeline of the trace: when the marker of a frame was drawn, and when its pacer means the frame to be shown
       const TraceTrack markerTrack = m_trace->RegisterTrack("Marker", TraceTrackKind::Sequential);
-      m_trace->DeclareMark("marker drawn", markerTrack, m_logColumns.MarkerDraw, TraceLink::None);
+      m_trace->DeclareMark("marker drawn", markerTrack, m_logColumns.MarkerDraw, TraceLink::NoLink);
       const TraceTrack planTrack = m_trace->RegisterTrack("Pacer plan", TraceTrackKind::Sequential);
-      m_trace->DeclareMark("intended display", planTrack, m_logColumns.IntendedDisplay, TraceLink::None);
+      m_trace->DeclareMark("intended display", planTrack, m_logColumns.IntendedDisplay, TraceLink::NoLink);
     }
     else
     {

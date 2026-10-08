@@ -207,16 +207,16 @@ TEST(Test_TraceLog, Declare_OnlyTimesAreSpansAndMarks)
   const TraceValue count = log->RegisterValue("count", TraceUnit::Count, "");
   const TraceTrack track = log->RegisterTrack("Track", TraceTrackKind::Lanes);
 
-  EXPECT_FALSE(log->DeclareSpan("span", track, time, count, TraceLink::None));
-  EXPECT_FALSE(log->DeclareSpan("span", track, count, time, TraceLink::None));
-  EXPECT_FALSE(log->DeclareSpan("span", TraceTrack(), time, time, TraceLink::None));
-  EXPECT_FALSE(log->DeclareSpan("span", track, time, TraceValue(), TraceLink::None));
-  EXPECT_FALSE(log->DeclareMark("mark", track, count, TraceLink::None));
+  EXPECT_FALSE(log->DeclareSpan("span", track, time, count, TraceLink::NoLink));
+  EXPECT_FALSE(log->DeclareSpan("span", track, count, time, TraceLink::NoLink));
+  EXPECT_FALSE(log->DeclareSpan("span", TraceTrack(), time, time, TraceLink::NoLink));
+  EXPECT_FALSE(log->DeclareSpan("span", track, time, TraceValue(), TraceLink::NoLink));
+  EXPECT_FALSE(log->DeclareMark("mark", track, count, TraceLink::NoLink));
   // A moment is not something to draw a graph of
   EXPECT_FALSE(log->DeclareCounter("counter", time));
 
-  EXPECT_TRUE(log->DeclareSpan("span", track, time, time, TraceLink::None));
-  EXPECT_TRUE(log->DeclareMark("mark", track, time, TraceLink::None));
+  EXPECT_TRUE(log->DeclareSpan("span", track, time, time, TraceLink::NoLink));
+  EXPECT_TRUE(log->DeclareMark("mark", track, time, TraceLink::NoLink));
   EXPECT_TRUE(log->DeclareCounter("counter", count));
   log->Close();
 
@@ -239,7 +239,7 @@ TEST(Test_TraceLog, Declare_TooLateOnceAFrameWasWritten)
   {
     log->BeginFrame(i, 1);
   }
-  EXPECT_FALSE(log->DeclareMark("mark", track, time, TraceLink::None));
+  EXPECT_FALSE(log->DeclareMark("mark", track, time, TraceLink::NoLink));
   EXPECT_FALSE(log->RegisterValue("late", TraceUnit::Count, "").IsValid());
   EXPECT_FALSE(log->RegisterTrack("Late", TraceTrackKind::Sequential).IsValid());
   // A track that exists is still found

@@ -392,23 +392,23 @@ namespace Fsl::VulkanBasic
 
       // The calls of a frame, with the frame they belong to. The submit and the present are steps of the chain of the frame.
       const TraceTrack callTrack = rTrace.RegisterTrack("Vulkan", TraceTrackKind::Sequential);
-      rTrace.DeclareSpan("wait for present", callTrack, WaitForPresentBegin, WaitForPresentEnd, TraceLink::None);
-      rTrace.DeclareSpan("wait for frame slot", callTrack, FrameSlotWaitBegin, FrameSlotWaitEnd, TraceLink::None);
-      rTrace.DeclareSpan("acquire", callTrack, AcquireCall, AcquireReturn, TraceLink::None);
-      rTrace.DeclareSpan("wait for acquire fence", callTrack, AcquireFenceWaitBegin, AcquireFenceWaitEnd, TraceLink::None);
+      rTrace.DeclareSpan("wait for present", callTrack, WaitForPresentBegin, WaitForPresentEnd, TraceLink::NoLink);
+      rTrace.DeclareSpan("wait for frame slot", callTrack, FrameSlotWaitBegin, FrameSlotWaitEnd, TraceLink::NoLink);
+      rTrace.DeclareSpan("acquire", callTrack, AcquireCall, AcquireReturn, TraceLink::NoLink);
+      rTrace.DeclareSpan("wait for acquire fence", callTrack, AcquireFenceWaitBegin, AcquireFenceWaitEnd, TraceLink::NoLink);
       rTrace.DeclareSpan("submit", callTrack, SubmitCall, SubmitReturn, TraceLink::FrameChain);
       rTrace.DeclareSpan("present", callTrack, PresentCall, PresentReturn, TraceLink::FrameChain);
 
       // From the present to the display: the presents of the frames in flight overlap, so they are drawn in lanes
       const TraceTrack presentTrack = rTrace.RegisterTrack("Present to display", TraceTrackKind::Lanes);
-      rTrace.DeclareSpan("present to first pixel out", presentTrack, PresentCall, StageTicks[StageFirstPixelOut], TraceLink::None);
+      rTrace.DeclareSpan("present to first pixel out", presentTrack, PresentCall, StageTicks[StageFirstPixelOut], TraceLink::NoLink);
 
       // What the presentation engine measured (VK_EXT_present_timing), known a few frames after the present
       const TraceTrack displayTrack = rTrace.RegisterTrack("Display", TraceTrackKind::Sequential);
-      rTrace.DeclareMark("queue operations end", displayTrack, StageTicks[StageQueueOperationsEnd], TraceLink::None);
-      rTrace.DeclareMark("request dequeued", displayTrack, StageTicks[StageRequestDequeued], TraceLink::None);
+      rTrace.DeclareMark("queue operations end", displayTrack, StageTicks[StageQueueOperationsEnd], TraceLink::NoLink);
+      rTrace.DeclareMark("request dequeued", displayTrack, StageTicks[StageRequestDequeued], TraceLink::NoLink);
       rTrace.DeclareMark("first pixel out", displayTrack, StageTicks[StageFirstPixelOut], TraceLink::FrameChain);
-      rTrace.DeclareMark("first pixel visible", displayTrack, StageTicks[StageFirstPixelVisible], TraceLink::None);
+      rTrace.DeclareMark("first pixel visible", displayTrack, StageTicks[StageFirstPixelVisible], TraceLink::NoLink);
     }
 
     //! @return the state, null if the frames are not logged (the trace is off)

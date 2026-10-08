@@ -287,14 +287,14 @@ namespace Fsl
       RegisterLogColumns();
       // The frame as the pacer of the sample sees it: the wait for its start, its work and the hold before its present
       const TraceTrack frameTrack = rTrace.RegisterTrack("Sample frame", TraceTrackKind::Sequential);
-      rTrace.DeclareSpan("wait for frame start", frameTrack, m_logColumns.FrameWaitStart, m_logColumns.FrameStart, TraceLink::None);
-      rTrace.DeclareSpan("work", frameTrack, m_logColumns.FrameStart, m_logColumns.EndFrame, TraceLink::None);
-      rTrace.DeclareSpan("hold before present", frameTrack, m_logColumns.PresentWaitBegin, m_logColumns.PresentWaitEnd, TraceLink::None);
+      rTrace.DeclareSpan("wait for frame start", frameTrack, m_logColumns.FrameWaitStart, m_logColumns.FrameStart, TraceLink::NoLink);
+      rTrace.DeclareSpan("work", frameTrack, m_logColumns.FrameStart, m_logColumns.EndFrame, TraceLink::NoLink);
+      rTrace.DeclareSpan("hold before present", frameTrack, m_logColumns.PresentWaitBegin, m_logColumns.PresentWaitEnd, TraceLink::NoLink);
       // The GPU can work on a frame while the next one is drawn, so its work is drawn in lanes
       const TraceTrack gpuTrack = rTrace.RegisterTrack("GPU", TraceTrackKind::Lanes);
       rTrace.DeclareSpan("GPU work", gpuTrack, m_logColumns.GpuWorkBegin, m_logColumns.GpuWorkEnd, TraceLink::FrameChain);
       const TraceTrack planTrack = rTrace.RegisterTrack("Pacer plan", TraceTrackKind::Sequential);
-      rTrace.DeclareMark("next frame start", planTrack, m_logColumns.NextFrameStart, TraceLink::None);
+      rTrace.DeclareMark("next frame start", planTrack, m_logColumns.NextFrameStart, TraceLink::NoLink);
       rTrace.DeclareCounter("CPU work", m_logColumns.WorkCpu);
       rTrace.DeclareCounter("GPU time", m_logColumns.GpuTime);
       rTrace.DeclareCounter("Animation error", m_logColumns.AnimationError);

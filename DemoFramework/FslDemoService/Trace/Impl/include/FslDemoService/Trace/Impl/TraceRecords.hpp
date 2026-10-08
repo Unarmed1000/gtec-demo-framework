@@ -64,7 +64,7 @@ namespace Fsl
     uint32_t TrackIndex{0};
     uint32_t BeginIndex{0};
     uint32_t EndIndex{0};
-    TraceLink Link{TraceLink::None};
+    TraceLink Link{TraceLink::NoLink};
   };
 
   //! A time of a frame that is drawn as a mark
@@ -73,7 +73,7 @@ namespace Fsl
     std::string Title;
     uint32_t TrackIndex{0};
     uint32_t TimeIndex{0};
-    TraceLink Link{TraceLink::None};
+    TraceLink Link{TraceLink::NoLink};
   };
 
   //! A value of a frame that is drawn as a graph

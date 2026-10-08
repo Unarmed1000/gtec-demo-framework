@@ -141,7 +141,7 @@ if (m_trace)
   m_valueUploadEnd = m_trace->RegisterValue("uploadEndTicks", TraceUnit::Ticks, "When the upload of the frame was done");
   // How it is drawn
   const TraceTrack track = m_trace->RegisterTrack("Upload", TraceTrackKind::Lanes);
-  m_trace->DeclareSpan("upload", track, m_valueUploadBegin, m_valueUploadEnd, TraceLink::None);
+  m_trace->DeclareSpan("upload", track, m_valueUploadBegin, m_valueUploadEnd, TraceLink::NoLink);
   m_trace->DeclareCounter("Bodies", m_valueBodies);
   m_trace->SetFact("scene", "city");
 }

@@ -156,7 +156,8 @@ namespace Fsl
   //! If a span or a mark is part of the chain of its frame
   enum class TraceLink
   {
-    None,
+    //! It is not a step of the chain of its frame
+    NoLink,
     //! It is one of the steps a frame goes through: the steps of a frame are linked in the order of their times
     FrameChain,
   };
