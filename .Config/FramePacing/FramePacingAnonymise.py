@@ -51,6 +51,10 @@ _g_vendorIdFact = "vulkan.vendorId"
 _g_anonymousDeviceId = "0x0"
 # 'vulkan.deviceId=0x2b85' in the events of a log and 'deviceID: 0x2b85' in what an app prints
 _g_deviceIdPattern = re.compile(rb"(device ?id\W{0,3})(0x[0-9a-f]+|[0-9]+)", re.IGNORECASE)
+# The lines of what an app prints that name the graphics device: '- deviceName: <model>' of a Vulkan app, 'Renderer: <model>' of a
+# OpenGL ES app and 'GL renderer: [<model>]' of a OpenGL ES emulator. The trace of an app is anonymised by the app itself, so the tool
+# is not told the model and finds it by these lines.
+_g_deviceNameLinePattern = re.compile(rb"^((?:- deviceName|Renderer|GL renderer): ?)([^\r\n]*)", re.IGNORECASE | re.MULTILINE)
 
 
 def GetAnonymousDeviceName(vendorIdText: str | None) -> str:
@@ -103,6 +107,7 @@ def AnonymiseFiles(paths: list[Path], facts: dict[str, str], localPaths: list[tu
         if replaceName:
             newContent = newContent.replace(deviceName.encode("utf-8"), anonymousName.encode("utf-8"))
         newContent = _g_deviceIdPattern.sub(lambda match: match.group(1) + _g_anonymousDeviceId.encode("ascii"), newContent)
+        newContent = _g_deviceNameLinePattern.sub(lambda match: match.group(1) + anonymousName.encode("utf-8"), newContent)
         if localPaths:
             newContent = AnonymisePaths(newContent, localPaths)
         if newContent != content:

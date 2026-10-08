@@ -196,9 +196,14 @@ one of these rules or one of the names does.
    not ended. A tool that gives one of its events that flow id adds a step to the chain of the frame.
 6. **The names.** The names of the values are those of the `Schema` track, with their units. A value of the unit `ticks` is a
    moment and `durationTicks` a duration, both in ticks of 100 nanoseconds. `nanoseconds` is a time or a duration of a driver on a
-   clock of its own. A unsigned value is written as its 64 bits.
+   clock of its own. A unsigned value is written as its 64 bits. The `value` marks of the `Schema` track are in the order the values
+   were added, which is the order of the columns where the values are written as a table.
 
 ### Reading a trace
+
+`.Config/FramePacing/FramePacingTraceFile.py` reads a trace into rows of values, events and facts for the Python tools of the
+framework, the capture tool checks a run with it (see [FramePacingCapture.md](FramePacingCapture.md)). A tool that reads the CSV
+files of the frame pacing log gets them from a trace with `.Config/FramePacing/FramePacingTraceToCsv.py`.
 
 With the trace processor (the `perfetto` package of Python, the `trace_processor` shell or the query page of the viewer), the frames
 with a few of their values:

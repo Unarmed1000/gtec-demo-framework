@@ -1,8 +1,8 @@
 # Capturing frame pacing logs
 
 How to record what an app did with its frames, in a way that can be repeated: the same runs, the same load, and notes that say what the
-machine was doing. The log itself is written by the app (`--FramePacing.Log <file>`, see [FramePacing.md](FramePacing.md#the-frame-log)),
-the capture tool runs the app once for every run of a plan and checks each log.
+machine was doing. The log itself is written by the app as a trace (`--Trace <file>`, see [Trace.md](Trace.md)), the capture tool runs
+the app once for every run of a plan and checks each trace.
 
 The tool is in `.Config/FramePacing`:
 
@@ -12,10 +12,14 @@ File                        | What it is
 `CpuLoad.py`                | The external CPU load of a loaded run. It can be used on its own.
 `WindowOnTop.py`            | Keeps the window of the app above the other windows during a run (Windows).
 `FramePacingRunCheck.py`    | The checks of a log.
-`FramePacingLogFile.py`     | Reads the two files of a log, for scripts of your own.
+`FramePacingLogFile.py`     | The log of a run as the tools read it (`OpenLog`), from a trace or from the CSV files of a older capture. For scripts of your own.
+`FramePacingTraceFile.py`   | Reads the trace of a run.
+`FramePacingTraceToCsv.py`  | Writes the CSV files of a frame pacing log from a trace, for a tool that reads those.
 `Plans/*.toml`              | The plans that come with the tool.
 
-It needs Python 3.11 or newer and nothing outside the standard library.
+It needs Python 3.11 or newer. A trace is read with the trace processor of Perfetto, which the `perfetto` package brings
+(`pip install perfetto`, in a virtual environment where the system does not let pip install). The package downloads the trace processor
+the first time it is used. Everything else is the standard library, and a capture of CSV files is checked without the package.
 
 ## Before a capture
 
@@ -169,26 +173,30 @@ args = ["--Pacer", "--GpuLoad", "{gpu90}"]
 loaded = true                       # Optional: run it idle, then under load
 ```
 
-The tool adds `--FramePacing.Log <output>/<name>.csv --ExitAfterFrame <frames> -v` to every run.
+The tool adds `--Trace <output>/<name>.perfetto-trace --FramePacing.Log <output>/<name>.csv --ExitAfterFrame <frames> -v` to every run.
 
 ## What a capture leaves behind
 
 File                   | Content
 -----------------------|------------------------------------------------------------------------------------------------------------
-`<run>.csv`            | The frames of the run, one row per frame. See [the frame log](FramePacing.md#the-frame-log).
-`<run>.events.csv`     | The facts of the run and what happened during it.
+`<run>.perfetto-trace` | The trace of the run: every value of every frame, the events, the facts and what the main thread did in each frame. It is what the tool checks, and it opens in [ui.perfetto.dev](https://ui.perfetto.dev). See [Trace.md](Trace.md).
+`<run>.csv`            | The frames of the run again, one row per frame, for the tools that read CSV. See [the frame log](FramePacing.md#the-frame-log).
+`<run>.events.csv`     | The facts of the run and what happened during it, for the tools that read CSV.
 `<run>.run.txt`        | The notes of the run: what it was, the command line, when it ran, the load, what you told with `--fact`, the machine (OS, CPU, power plan, display mode, GPU and driver, swapchain, pacer settings) and the checks.
 `<run>.app.log`        | What the app printed.
 `summary.txt`          | One line per run, with its warnings.
 
 Keep the directory together, the notes are what makes a log usable later.
 
-A capture does not name the hardware it was made on. The log of an app and what it prints name the model of the graphics device, and
-the tool replaces it in the files of every run with the vendor (`NVIDIA GPU`), sets the device id to zero and leaves the model of the
-CPU out of the notes. The vendor and the driver version stay, they are what a reader of a log needs. The directories of the machine
-are replaced as well, in the logs and in the command line of the notes: the output directory by `<output>`, the SDK by `<sdk>` and
-the home directory of the user by `<home>`. `--hardware-names` keeps the models and the directories. A log that an app wrote without
-the tool (`--FramePacing.Log`) names the device as the driver reports it.
+A capture does not name the hardware it was made on. The trace is anonymised by the app that writes it (`--Trace.Anonymise`, which
+is on unless it is turned off). The CSV files and what the app prints name the model of the graphics device, and the tool replaces it
+in them with the vendor (`NVIDIA GPU`, or `GPU` where the app does not say whose it is), sets the device id to zero and leaves the
+model of the CPU out of the notes. In what the app printed it finds the model by the lines that report it (`- deviceName:`,
+`Renderer:` and `GL renderer:`). The vendor and the driver version stay, they are what a reader of a log needs. The directories of
+the machine are replaced as well, in the files and in the command line of the notes: the output directory by `<output>`, the SDK by
+`<sdk>` and the home directory of the user by `<home>`. `--hardware-names` keeps the models and the directories, and runs the app
+with `--Trace.Anonymise off`. CSV files that an app wrote without the tool (`--FramePacing.Log`) name the device as the driver
+reports it.
 
 ### Reading the summary
 
@@ -214,12 +222,29 @@ Part                           | Meaning
 The first 60 frames of a run are left out of the times, the swapchain, the pacer and the GPU timer are still settling there. The numbers
 are a first look that tells if a run is usable and roughly what it showed. They are made from the log, which holds every value.
 
-Logs that exist already can be checked again:
+Logs that exist already can be checked again, the traces of a capture or the CSV files of a older one:
 
 ```bash
-FramePacingCapture check D:/captures/240hz/w90_pacer_on_idle.csv
-FramePacingCapture check --write-notes --refresh-hz 240 D:/captures/240hz/*.csv
+FramePacingCapture check D:/captures/240hz/w90_pacer_on_idle.perfetto-trace
+FramePacingCapture check --write-notes --refresh-hz 240 D:/captures/240hz/*.perfetto-trace
+FramePacingCapture check D:/captures/older/w90_pacer_on_idle.csv
 ```
+
+### CSV files from a trace
+
+A tool that reads the CSV files of a frame pacing log can be given them from a trace:
+
+```bash
+# Writes w90_pacer_on_idle.csv and w90_pacer_on_idle.events.csv next to the trace
+python3 .Config/FramePacing/FramePacingTraceToCsv.py D:/captures/240hz/w90_pacer_on_idle.perfetto-trace
+# Or to a file of your choice
+python3 .Config/FramePacing/FramePacingTraceToCsv.py run.perfetto-trace -o D:/work/run.csv
+```
+
+The frames file is what the app would have written, apart from a value above 2^63: the trace holds the 64 bits of a value and not
+if it was unsigned, so such a value is written as a negative number. The events file has the same events, columns and facts. What
+is not the same there: every event has the time the trace has for it (a few ticks from the time the CSV log would have read), and
+the facts of the trace are there as well (`trace.formatVersion` and the other `trace.` facts).
 
 ### The warnings
 

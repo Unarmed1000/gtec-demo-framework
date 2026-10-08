@@ -21,8 +21,10 @@
 # * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 # ****************************************************************************************************************************************************
 
-# Reads the two files '--FramePacing.Log <file>' writes: '<file>' with one row for every frame and '<stem>.events.csv' with the facts of the run
-# and what happened during it. Every value of a frame is a whole number, an empty field is a value that does not exist.
+# What a run of an app logged about its frames: one row for every frame with a whole number for every value the frame has, the facts of
+# the run and what happened during it. FramePacingLog is what the tools work with. It is read from the trace '--Trace <file>' writes
+# (FramePacingTraceFile.py) or from the two files '--FramePacing.Log <file>' writes: '<file>' with one row for every frame and
+# '<stem>.events.csv' with the events, where an empty field is a value that does not exist.
 
 import csv
 from dataclasses import dataclass
@@ -49,17 +51,21 @@ class LogEvent:
         return result
 
 
-class FramePacingLogFile:
-    def __init__(self, framesPath: Path) -> None:
-        self.FramesPath = framesPath
-        self.EventsPath = ToEventsPath(framesPath)
+g_frameIndexColumnName = "frameIndex"
+g_traceFileSuffix = ".perfetto-trace"
+
+
+class FramePacingLog:
+    def __init__(self, filePaths: list[Path]) -> None:
+        # The files the log was read from
+        self.FilePaths = filePaths
         self.ColumnNames: list[str] = []
         self.RowCount = 0
         self.Events: list[LogEvent] = []
         self.Facts: dict[str, str] = {}
+        # What was wrong with the files, for the one who reads the checks of the run
+        self.ReadProblems: list[str] = []
         self._columns: dict[str, list[int | None]] = {}
-        self._ReadFrames()
-        self._ReadEvents()
 
     def HasColumn(self, name: str) -> bool:
         """True if the column exists and at least one frame has a value in it"""
@@ -76,6 +82,18 @@ class FramePacingLogFile:
 
     def GetEvents(self, name: str) -> list[LogEvent]:
         return [event for event in self.Events if event.Name == name]
+
+    def DescribeFiles(self) -> str:
+        return " and ".join(path.name for path in self.FilePaths)
+
+
+class FramePacingLogFile(FramePacingLog):
+    def __init__(self, framesPath: Path) -> None:
+        self.FramesPath = framesPath
+        self.EventsPath = ToEventsPath(framesPath)
+        super().__init__([self.FramesPath, self.EventsPath])
+        self._ReadFrames()
+        self._ReadEvents()
 
     def _ReadFrames(self) -> None:
         with open(self.FramesPath, newline="", encoding="utf-8") as file:
@@ -110,3 +128,16 @@ class FramePacingLogFile:
 def ToEventsPath(framesPath: Path) -> Path:
     """The name the app gives the events file of a log"""
     return framesPath.with_name(framesPath.stem + ".events.csv")
+
+
+def IsTracePath(path: Path) -> bool:
+    return path.name.endswith(g_traceFileSuffix)
+
+
+def OpenLog(path: Path) -> FramePacingLog:
+    """Read a log: a trace of the trace service, or the frames file of a frame pacing log (its events file is found next to it)"""
+    if IsTracePath(path):
+        # Only a trace needs the package that reads it
+        from FramePacingTraceFile import FramePacingTraceFile
+        return FramePacingTraceFile(path)
+    return FramePacingLogFile(path)

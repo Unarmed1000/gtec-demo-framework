@@ -28,7 +28,7 @@
 from collections import Counter
 from dataclasses import dataclass, field
 
-from FramePacingLogFile import FramePacingLogFile, g_ticksPerMillisecond, g_ticksPerSecond
+from FramePacingLogFile import FramePacingLog, g_ticksPerMillisecond, g_ticksPerSecond
 
 # The first frames of a run are left out of the timing numbers: the swapchain, the pacer and the GPU timer are still settling
 _g_skippedStartFrames = 60
@@ -158,7 +158,7 @@ def _DeltasOfValues(column: list[int | None], firstRow: int) -> list[int]:
     return [current - previous for previous, current in zip(values, values[1:])]
 
 
-def _FindRefreshInterval(log: FramePacingLogFile, expectation: RunExpectation) -> tuple[int | None, str]:
+def _FindRefreshInterval(log: FramePacingLog, expectation: RunExpectation) -> tuple[int | None, str]:
     for event in reversed(log.GetEvents("display")):
         ticks = int(event.GetValues().get("refreshIntervalTicks", "0"))
         if ticks > 0:
@@ -172,7 +172,7 @@ def _FindRefreshInterval(log: FramePacingLogFile, expectation: RunExpectation) -
     return None, "not known"
 
 
-def _CheckLoad(log: FramePacingLogFile, check: RunCheck) -> None:
+def _CheckLoad(log: FramePacingLog, check: RunCheck) -> None:
     idle = log.GetColumn("systemIdleTicks")
     kernel = log.GetColumn("systemKernelTicks")
     user = log.GetColumn("systemUserTicks")
@@ -207,8 +207,10 @@ def _CheckLoad(log: FramePacingLogFile, check: RunCheck) -> None:
         check.ProcessGpuDedicatedBytes = max(gpuDedicated)
 
 
-def _AddWarnings(log: FramePacingLogFile, check: RunCheck, expectation: RunExpectation) -> None:
+def _AddWarnings(log: FramePacingLog, check: RunCheck, expectation: RunExpectation) -> None:
     warnings = check.Warnings
+    # What was wrong with the files of the log comes first: the checks below are only as good as what was read
+    warnings.extend(log.ReadProblems)
     if expectation.ExitCode is not None and expectation.ExitCode != 0:
         warnings.append(f"the app exited with code {expectation.ExitCode}")
     if expectation.Frames is not None and check.Rows != expectation.Frames:
@@ -263,7 +265,7 @@ def _AddWarnings(log: FramePacingLogFile, check: RunCheck, expectation: RunExpec
             warnings.append(f"other programs used {otherBusy * 100.0:.0f} % of the CPUs during a run that was meant to be loaded")
 
 
-def _CheckVariableRefresh(log: FramePacingLogFile, check: RunCheck) -> None:
+def _CheckVariableRefresh(log: FramePacingLog, check: RunCheck) -> None:
     """The variableRefresh event is written when a answer of the window changes, so a answer holds until the next event"""
     events = log.GetEvents("variableRefresh")
     for index, event in enumerate(events):
@@ -282,7 +284,7 @@ def _CheckVariableRefresh(log: FramePacingLogFile, check: RunCheck) -> None:
             check.VariableRefreshRows += max(endFrame - event.FrameIndex, 0)
 
 
-def CheckRun(log: FramePacingLogFile, expectation: RunExpectation) -> RunCheck:
+def CheckRun(log: FramePacingLog, expectation: RunExpectation) -> RunCheck:
     check = RunCheck()
     check.Rows = log.RowCount
     check.RefreshIntervalTicks, check.RefreshIntervalSource = _FindRefreshInterval(log, expectation)
