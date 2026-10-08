@@ -54,6 +54,8 @@
 #include <FslDemoService/Graphics/Control/IGraphicsServiceControl.hpp>
 #include <FslDemoService/Profiler/IProfilerService.hpp>
 #include <FslDemoService/SystemStats/ISystemStatsService.hpp>
+#include <FslDemoService/Trace/ITraceService.hpp>
+#include <FslDemoService/Trace/ScopedTraceZone.hpp>
 #include <FslNativeWindow/Base/INativeWindow.hpp>
 #include <FslNativeWindow/Base/NativeWindowDisplayInfo.hpp>
 #include <FslNativeWindow/Base/NativeWindowTimingSupport.hpp>
@@ -101,6 +103,18 @@ namespace Fsl
     if (m_framePacingMarkerServiceControl && renderSystemOverlay)
     {
       m_framePacingOverlay = m_framePacingMarkerServiceControl->CreateOverlay(m_demoAppConfig.DemoServiceProvider);
+    }
+    m_trace = m_demoAppConfig.DemoServiceProvider.TryGet<ITraceService>();
+    if (m_trace && m_trace->IsEnabled())
+    {
+      m_traceZoneUpdate = m_trace->RegisterZone("Update");
+      m_traceZonePrepareDraw = m_trace->RegisterZone("Prepare draw");
+      m_traceZoneDraw = m_trace->RegisterZone("Draw");
+      m_traceZoneAppSwap = m_trace->RegisterZone("App swap");
+    }
+    else
+    {
+      m_trace.reset();
     }
     m_framePacingLog = m_demoAppConfig.DemoServiceProvider.TryGet<IFramePacingFrameLog>();
     if (m_framePacingLog && m_framePacingLog->IsLogEnabled())
@@ -263,6 +277,7 @@ namespace Fsl
 
       m_stats.TimeBeforeUpdate = m_timer.GetTimestamp();
       {
+        const ScopedTraceZone traceZone(m_trace.get(), m_traceZoneUpdate);
         m_record.DemoApp->_PreUpdate(currentUpdateTime);
 
         {    // Run all missing fixed updates
@@ -297,7 +312,11 @@ namespace Fsl
   {
     const FrameInfo frameInfo(m_record.FrameIndex, m_currentDemoTimeDraw);
 
-    const auto result = m_record.DemoApp->_TryPrepareDraw(frameInfo);
+    const auto result = [this, &frameInfo]()
+    {
+      const ScopedTraceZone traceZone(m_trace.get(), m_traceZonePrepareDraw);
+      return m_record.DemoApp->_TryPrepareDraw(frameInfo);
+    }();
     if (result != AppDrawResult::Completed)
     {
       return result;
@@ -437,6 +456,7 @@ namespace Fsl
       }
     }
 
+    const ScopedTraceZone traceZoneDraw(m_trace.get(), m_traceZoneDraw);
     m_record.DemoApp->_BeginDraw(frameInfo);
     try
     {
@@ -491,7 +511,11 @@ namespace Fsl
     }
     const FrameInfo frameInfo(m_record.FrameIndex, m_currentDemoTimeDraw);
 
-    const AppDrawResult result = m_record.DemoApp->_TrySwapBuffers(frameInfo);
+    const AppDrawResult result = [this, &frameInfo]()
+    {
+      const ScopedTraceZone traceZone(m_trace.get(), m_traceZoneAppSwap);
+      return m_record.DemoApp->_TrySwapBuffers(frameInfo);
+    }();
 
     if (result == AppDrawResult::Completed)
     {    // Increase the frame index

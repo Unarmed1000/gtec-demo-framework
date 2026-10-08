@@ -50,6 +50,8 @@
 #include <FslDemoService/NativeGraphics/Vulkan/NativeGraphicsService.hpp>
 #include <FslDemoService/NativeGraphics/Vulkan/NativeGraphicsSwapchainInfo.hpp>
 #include <FslDemoService/SystemStats/Control/ISystemStatsServiceControl.hpp>
+#include <FslDemoService/Trace/ITraceService.hpp>
+#include <FslDemoService/Trace/ScopedTraceZone.hpp>
 #include <FslUtil/Vulkan1_0/Debug/VUDebugUtils.hpp>
 #include <FslUtil/Vulkan1_0/Debug/VUScopedCmdDebugLabel.hpp>
 #include <FslUtil/Vulkan1_0/Log/All.hpp>
@@ -320,8 +322,94 @@ namespace Fsl::VulkanBasic
     uint32_t LoggedTimingPropertiesReadCount{0};
     uint32_t LoggedCalibrationCount{0};
 
+    //! The trace service (null: the trace is off) and the zones of the calls and waits of a frame
+    std::shared_ptr<ITraceService> Trace;
+    TraceZone ZoneWaitForPresent;
+    TraceZone ZoneFrameSlotWait;
+    TraceZone ZoneAcquire;
+    TraceZone ZoneAcquireFenceWait;
+    TraceZone ZoneSubmit;
+    TraceZone ZonePresent;
+
+    //! @brief Begin a zone of the trace that lasts as long as what is returned. Nothing happens if there is no state or no trace.
+    static ScopedTraceZone BeginZone(const std::unique_ptr<FramePacingLogState>& state, const TraceZone FramePacingLogState::* const pZone) noexcept
+    {
+      return {state ? state->Trace.get() : nullptr, state ? (*state).*pZone : TraceZone()};
+    }
+
+    //! @brief The name a graphics device gets in a anonymised trace in place of its model: its vendor, if the vendor id is one that
+    //!        is known (PCI vendor ids, and the ids Khronos gave to vendors without one).
+    static const char* ToAnonymousDeviceName(const uint32_t vendorId) noexcept
+    {
+      switch (vendorId)
+      {
+      case 0x1002:
+        return "AMD GPU";
+      case 0x1010:
+        return "Imagination GPU";
+      case 0x106b:
+        return "Apple GPU";
+      case 0x10de:
+        return "NVIDIA GPU";
+      case 0x13b5:
+        return "Arm GPU";
+      case 0x14e4:
+        return "Broadcom GPU";
+      case 0x5143:
+        return "Qualcomm GPU";
+      case 0x8086:
+        return "Intel GPU";
+      case 0x10005:
+        return "Mesa GPU";
+      default:
+        return "GPU";
+      }
+    }
+
+    //! @brief What the Vulkan app base shows in the trace: the zones of its calls and waits on the thread, and for every frame its
+    //!        calls, its present on the way to the display and the stages the presentation engine measured.
+    void SetupTrace(std::shared_ptr<ITraceService> trace)
+    {
+      if (!trace || !trace->IsEnabled())
+      {
+        return;
+      }
+      ITraceService& rTrace = *trace;
+      ZoneWaitForPresent = rTrace.RegisterZone("vkWaitForPresent2KHR");
+      ZoneFrameSlotWait = rTrace.RegisterZone("Wait for frame slot");
+      ZoneAcquire = rTrace.RegisterZone("vkAcquireNextImageKHR");
+      ZoneAcquireFenceWait = rTrace.RegisterZone("Wait for acquire fence");
+      ZoneSubmit = rTrace.RegisterZone("vkQueueSubmit");
+      ZonePresent = rTrace.RegisterZone("vkQueuePresentKHR");
+
+      // The calls of a frame, with the frame they belong to. The submit and the present are steps of the chain of the frame.
+      const TraceTrack callTrack = rTrace.RegisterTrack("Vulkan", TraceTrackKind::Sequential);
+      rTrace.DeclareSpan("wait for present", callTrack, rTrace.FindValue("waitForPresentBeginTicks"), rTrace.FindValue("waitForPresentEndTicks"),
+                         TraceLink::None);
+      rTrace.DeclareSpan("wait for frame slot", callTrack, rTrace.FindValue("frameSlotWaitBeginTicks"), rTrace.FindValue("frameSlotWaitEndTicks"),
+                         TraceLink::None);
+      rTrace.DeclareSpan("acquire", callTrack, rTrace.FindValue("acquireCallTicks"), rTrace.FindValue("acquireReturnTicks"), TraceLink::None);
+      rTrace.DeclareSpan("wait for acquire fence", callTrack, rTrace.FindValue("acquireFenceWaitBeginTicks"),
+                         rTrace.FindValue("acquireFenceWaitEndTicks"), TraceLink::None);
+      rTrace.DeclareSpan("submit", callTrack, rTrace.FindValue("submitCallTicks"), rTrace.FindValue("submitReturnTicks"), TraceLink::FrameChain);
+      rTrace.DeclareSpan("present", callTrack, rTrace.FindValue("presentCallTicks"), rTrace.FindValue("presentReturnTicks"), TraceLink::FrameChain);
+
+      // From the present to the display: the presents of the frames in flight overlap, so they are drawn in lanes
+      const TraceTrack presentTrack = rTrace.RegisterTrack("Present to display", TraceTrackKind::Lanes);
+      rTrace.DeclareSpan("present to first pixel out", presentTrack, rTrace.FindValue("presentCallTicks"), rTrace.FindValue("firstPixelOutTicks"),
+                         TraceLink::None);
+
+      // What the presentation engine measured (VK_EXT_present_timing), known a few frames after the present
+      const TraceTrack displayTrack = rTrace.RegisterTrack("Display", TraceTrackKind::Sequential);
+      rTrace.DeclareMark("queue operations end", displayTrack, rTrace.FindValue("queueOperationsEndTicks"), TraceLink::None);
+      rTrace.DeclareMark("request dequeued", displayTrack, rTrace.FindValue("requestDequeuedTicks"), TraceLink::None);
+      rTrace.DeclareMark("first pixel out", displayTrack, rTrace.FindValue("firstPixelOutTicks"), TraceLink::FrameChain);
+      rTrace.DeclareMark("first pixel visible", displayTrack, rTrace.FindValue("firstPixelVisibleTicks"), TraceLink::None);
+      Trace = std::move(trace);
+    }
+
     //! @return the state, null if the frames are not logged
-    static std::unique_ptr<FramePacingLogState> TryCreate(std::shared_ptr<IFramePacingFrameLog> log,
+    static std::unique_ptr<FramePacingLogState> TryCreate(std::shared_ptr<IFramePacingFrameLog> log, std::shared_ptr<ITraceService> trace,
                                                           const Vulkan::VUPhysicalDeviceRecord& physicalDevice,
                                                           const Vulkan::VulkanHostDeviceFeatures& hostDeviceFeatures,
                                                           const VulkanLaunchOptions& launchOptions, const bool swapchainMaintenance1Enabled)
@@ -401,6 +489,12 @@ namespace Fsl::VulkanBasic
 
       // The facts of the device the frames are drawn with
       const VkPhysicalDeviceProperties& properties = physicalDevice.Properties;
+      if (trace && trace->IsEnabled() && trace->IsAnonymised())
+      {
+        // A trace is made to be handed on: it names the vendor in place of the model of the device, unless it was asked to keep it
+        trace->AddAnonymousText(static_cast<const char*>(properties.deviceName), ToAnonymousDeviceName(properties.vendorID));
+        trace->AddAnonymousFact("vulkan.deviceId", "0x0");
+      }
       rLog.SetLogFact("vulkan.deviceName", static_cast<const char*>(properties.deviceName));
       rLog.SetLogFact("vulkan.vendorId", fmt::format("{:#x}", properties.vendorID));
       rLog.SetLogFact("vulkan.deviceId", fmt::format("{:#x}", properties.deviceID));
@@ -443,6 +537,7 @@ namespace Fsl::VulkanBasic
           swapchainMaintenance1Enabled, hostDeviceFeatures.PresentWait, launchOptions.AcquireFenceWait);
       }
       state->Log = std::move(log);
+      state->SetupTrace(std::move(trace));
       return state;
     }
   };
@@ -465,7 +560,8 @@ namespace Fsl::VulkanBasic
       m_framePacingOverlay = framePacingServiceControl->CreateOverlay(demoAppConfig.DemoServiceProvider);
     }
     m_systemStatsServiceControl = demoAppConfig.DemoServiceProvider.TryGet<ISystemStatsServiceControl>();
-    m_framePacingLogState = FramePacingLogState::TryCreate(demoAppConfig.DemoServiceProvider.TryGet<IFramePacingFrameLog>(), m_physicalDevice,
+    m_framePacingLogState = FramePacingLogState::TryCreate(demoAppConfig.DemoServiceProvider.TryGet<IFramePacingFrameLog>(),
+                                                           demoAppConfig.DemoServiceProvider.TryGet<ITraceService>(), m_physicalDevice,
                                                            m_hostDeviceFeatures, m_launchOptions, m_swapchainMaintenance1Enabled);
     const auto demoHostConfig = hostInfo->TryGetAppHostConfig();
     if (!demoHostConfig)
@@ -701,7 +797,10 @@ namespace Fsl::VulkanBasic
     // The frame pacing log says when the GPU was asked to work on the frame (the frame that is being drawn is the current one of the log)
     const bool logSubmit = m_framePacingLogState && m_framePacingLogState->HasFrame;
     const TickCount submitCallTime = logSubmit ? m_presentCallTimer.GetTimestamp() : TickCount();
-    m_deviceQueue.Submit(1, &submitInfo, queueSubmitFence);
+    {
+      const ScopedTraceZone traceZone = FramePacingLogState::BeginZone(m_framePacingLogState, &FramePacingLogState::ZoneSubmit);
+      m_deviceQueue.Submit(1, &submitInfo, queueSubmitFence);
+    }
     if (logSubmit)
     {
       const TickCount submitReturnTime = m_presentCallTimer.GetTimestamp();
@@ -1601,6 +1700,7 @@ namespace Fsl::VulkanBasic
       m_framePacingLogState->FrameSlotWaitBeginTime = m_presentCallTimer.GetTimestamp();
     }
     {    // Wait for the frame slot to be ready, so we know the frame resources can be reused
+      const ScopedTraceZone traceZone = FramePacingLogState::BeginZone(m_framePacingLogState, &FramePacingLogState::ZoneFrameSlotWait);
       const VkResult waitVkResult = WaitForFrameSlot(currentFrameIndex);
       if (waitVkResult != VK_SUCCESS)
       {
@@ -1627,6 +1727,7 @@ namespace Fsl::VulkanBasic
     // the presentation engine is not done with, and it is the GPU work of the frame that waits for it (the semaphore).
     const VkFence imageAcquiredFence = m_resources.Frames[currentFrameIndex].ImageAcquiredFence.Get();
     {
+      const ScopedTraceZone traceZone = FramePacingLogState::BeginZone(m_framePacingLogState, &FramePacingLogState::ZoneAcquire);
       m_currentPresentCalls.AcquireCallTime = m_presentCallTimer.GetTimestamp();
       result = vkAcquireNextImageKHR(m_device.Get(), m_swapchain.Get(), LocalConfig::DefaultTimeout, imageAcquiredSemaphore.Get(), imageAcquiredFence,
                                      &acquiredSwapImageIndex);
@@ -1636,6 +1737,7 @@ namespace Fsl::VulkanBasic
     if (imageAcquiredFence != VK_NULL_HANDLE && (result == VK_SUCCESS || result == VK_SUBOPTIMAL_KHR))
     {
       // The fence is only signaled for a acquire that gave a image, a acquire that failed leaves it as it was
+      const ScopedTraceZone traceZone = FramePacingLogState::BeginZone(m_framePacingLogState, &FramePacingLogState::ZoneAcquireFenceWait);
       const TickCount waitBeginTime = m_framePacingLogState ? m_presentCallTimer.GetTimestamp() : TickCount();
       VkResult waitVkResult = VK_SUCCESS;
       const AppDrawResult waitResult = WaitForFenceAndResetIt(m_device.Get(), imageAcquiredFence, waitVkResult);
@@ -1771,8 +1873,11 @@ namespace Fsl::VulkanBasic
     m_currentPresentCalls.PresentId = m_presentCounter;
     m_currentPresentCalls.ImageIndex = rFrame.AssignedSwapImageIndex;
     m_currentPresentCalls.PresentCallTime = m_presentCallTimer.GetTimestamp();
-    const auto result =
-      m_swapchain.TryQueuePresent(m_deviceQueue.Queue, 1, &signalSemaphore, &rFrame.AssignedSwapImageIndex, nullptr, pPresentInfoNext);
+    const auto result = [this, &signalSemaphore, &rFrame, pPresentInfoNext]()
+    {
+      const ScopedTraceZone traceZone = FramePacingLogState::BeginZone(m_framePacingLogState, &FramePacingLogState::ZonePresent);
+      return m_swapchain.TryQueuePresent(m_deviceQueue.Queue, 1, &signalSemaphore, &rFrame.AssignedSwapImageIndex, nullptr, pPresentInfoNext);
+    }();
     m_currentPresentCalls.PresentReturnTime = m_presentCallTimer.GetTimestamp();
     m_lastPresentCalls = m_currentPresentCalls;
     LogPresent(result, presentTimingInfo.IsTimingRequested, presentTimingInfo.RelativeTargetTimeNanoseconds);
@@ -1835,7 +1940,11 @@ namespace Fsl::VulkanBasic
     }
     const uint64_t presentId = m_presentWaitIds[framesBack - 1u];
     const TickCount waitBeginTime = m_framePacingLogState ? m_presentCallTimer.GetTimestamp() : TickCount();
-    const VkResult result = m_presentWait.Wait(presentId, LocalConfig::PresentWaitTimeoutNanoseconds);
+    const VkResult result = [this, presentId]()
+    {
+      const ScopedTraceZone traceZone = FramePacingLogState::BeginZone(m_framePacingLogState, &FramePacingLogState::ZoneWaitForPresent);
+      return m_presentWait.Wait(presentId, LocalConfig::PresentWaitTimeoutNanoseconds);
+    }();
     if (m_framePacingLogState)
     {
       FramePacingLogState& rState = *m_framePacingLogState;

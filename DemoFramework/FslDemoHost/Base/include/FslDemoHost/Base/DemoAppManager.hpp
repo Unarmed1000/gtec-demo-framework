@@ -44,6 +44,7 @@
 #include <FslDemoHost/Base/DemoState.hpp>
 #include <FslDemoHost/Base/LogStatsMode.hpp>
 #include <FslDemoService/FramePacingMarker/FramePacingLogColumn.hpp>
+#include <FslDemoService/Trace/TraceTypes.hpp>
 #include <memory>
 #include <utility>
 
@@ -61,6 +62,7 @@ namespace Fsl
   class INativeWindow;
   class IProfilerService;
   class IProfilerServiceControl;
+  class ITraceService;
   struct TimeSpan;
 
   class DemoAppManager
@@ -101,6 +103,12 @@ namespace Fsl
     std::unique_ptr<DemoAppProfilerOverlay> m_demoAppProfilerOverlay;
     //! Null if the frame pacing service is unavailable
     std::shared_ptr<IFramePacingOverlay> m_framePacingOverlay;
+    //! The trace service (null: the trace is off)
+    std::shared_ptr<ITraceService> m_trace;
+    TraceZone m_traceZoneUpdate;
+    TraceZone m_traceZonePrepareDraw;
+    TraceZone m_traceZoneDraw;
+    TraceZone m_traceZoneAppSwap;
     std::shared_ptr<IFramePacingMarkerServiceControl> m_framePacingMarkerServiceControl;
 
     //! The columns the host adds to the frame pacing log

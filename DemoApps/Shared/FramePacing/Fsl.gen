@@ -4,6 +4,7 @@
     <Dependency Name="FslDemoApp.Base"/>
     <Dependency Name="FslDemoHost.Base" Access="Private"/>
     <Dependency Name="FslDemoService.FramePacingMarker"/>
+    <Dependency Name="FslDemoService.Trace" Access="Private"/>
     <Dependency Name="FslSimpleUI.App"/>
     <Dependency Name="FslSimpleUI.App.Theme" Access="Private"/>
     <Dependency Name="FslSimpleUI.Controls.Charts" Access="Private"/>

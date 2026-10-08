@@ -37,6 +37,7 @@
 #include <FslDemoPlatform/DurationExitConfig.hpp>
 #include <FslDemoPlatform/MainLoopCallbackFunc.hpp>
 #include <FslDemoPlatform/Setup/DemoSetup.hpp>
+#include <FslDemoService/Trace/TraceTypes.hpp>
 #include <memory>
 
 namespace Fsl
@@ -52,6 +53,7 @@ namespace Fsl
   class INativeWindowEventSender;
   class IServiceHostLooper;
   class ITestService;
+  class ITraceService;
   class NativeWindowEventQueue;
 
   class DemoHostManager
@@ -71,6 +73,9 @@ namespace Fsl
     std::shared_ptr<IHostInfoControl> m_hostInfoControl;
     std::shared_ptr<IGraphicsServiceControl> m_graphicsService;
     std::shared_ptr<ITestService> m_testService;
+    //! The trace service (null: the trace is off)
+    std::shared_ptr<ITraceService> m_trace;
+    TraceZone m_traceZoneSwap;
 
     State m_state;
     bool m_basic2DPreallocEnabled{false};

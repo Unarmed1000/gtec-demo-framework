@@ -42,6 +42,8 @@ ISystemStatsService           | SystemStatsService                              
 ISystemStatsServiceControl    | SystemStatsService                                                           | Lets the graphics API supply the GPU memory usage where the OS has no number.
 ITestService                  | TestService                                                                  | Screenshot frequency, name scheme.
 ITextureService               | TextureService                                                               | Mipmap generation
+ITraceService                 | TraceService                                                                 | The trace of the app (--Trace): zones of the thread, values of a frame and how they are drawn, events and facts. See [Trace.md](Trace.md).
+ITraceServiceControl          | TraceService                                                                 | Begins the frames of the trace.
 IEGLHostInfo                  | EGLHostService                                                               | GetDisplay, GetSurface, GetContext
 IVulkanHostInfo               | VulkanHostService                                                            | GetInstance, GetPhysicalDevice, GetSurfaceKHR, GetLaunchOptions
 IWindowHostInfo               | WindowHostService                                                            | GetWindowSystem, GetWindows

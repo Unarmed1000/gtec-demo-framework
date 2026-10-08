@@ -52,6 +52,7 @@
 #include <FslDemoPlatform/Setup/DemoHostAppSetupBuilder.hpp>
 #include <FslDemoPlatform/Setup/DemoHostRegistry.hpp>
 #include <FslDemoPlatform/Setup/DemoSetupManager.hpp>
+#include <FslDemoService/Trace/Impl/TraceServiceFactory.hpp>
 #include <FslService/Impl/Registry/ServiceRegistry.hpp>
 #include <FslService/Impl/ServiceOptionParserDeque.hpp>
 #include <FslService/Impl/ServiceType/Local/ThreadLocalSingletonServiceFactoryTemplate.hpp>
@@ -60,6 +61,10 @@
 
 #ifdef FSL_FEATURE_FRAMEPACING
 #include <FslDemoService/FramePacingMarker/Impl/FramePacingMarkerServiceFactory.hpp>
+#endif
+
+#ifdef FSL_FEATURE_TRACE_PERFETTO
+#include <FslDemoService/Trace/Perfetto/PerfettoTraceSink.hpp>
 #endif
 
 namespace Fsl
@@ -118,6 +123,13 @@ namespace Fsl
     serviceRegistry.Register<ContentMonitorServiceFactory>(ServicePriorityList::ContentMonitor());
     serviceRegistry.Register<AppInfoServiceFactory>(ServicePriorityList::AppInfoService());
     serviceRegistry.Register<OptionsServiceFactory>(ServicePriorityList::Options());
+    // The trace service is there on every platform. What writes its file is only there where the Perfetto SDK is, elsewhere it records
+    // nothing.
+#ifdef FSL_FEATURE_TRACE_PERFETTO
+    serviceRegistry.Register(std::make_shared<TraceServiceFactory>(PerfettoTraceSink::TryCreate), ServicePriorityList::TraceService());
+#else
+    serviceRegistry.Register(std::make_shared<TraceServiceFactory>(), ServicePriorityList::TraceService());
+#endif
 #ifdef FSL_FEATURE_FRAMEPACING
     serviceRegistry.Register<FramePacingMarkerServiceFactory>(ServicePriorityList::FramePacingMarkerService());
 #endif

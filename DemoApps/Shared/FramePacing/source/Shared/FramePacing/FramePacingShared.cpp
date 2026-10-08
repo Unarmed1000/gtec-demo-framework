@@ -33,6 +33,7 @@
 #include <FslDemoService/FramePacingMarker/FramePacingFrameSchedule.hpp>
 #include <FslDemoService/FramePacingMarker/FramePacingMarkerInfo.hpp>
 #include <FslDemoService/FramePacingMarker/IFramePacingFrameLog.hpp>
+#include <FslDemoService/Trace/ITraceService.hpp>
 #include <FslDemoService/FramePacingMarker/IFramePacingMarkerService.hpp>
 #include <FslDemoService/Graphics/IGraphicsService.hpp>
 #include <FslGraphics/Bitmap/ReadOnlyRawBitmap.hpp>
@@ -259,6 +260,27 @@ namespace Fsl
     if (m_frameLog && m_frameLog->IsLogEnabled())
     {
       RegisterLogColumns();
+      // What the sample shows on the timeline of the trace of the trace service, from the values it logs
+      if (const auto trace = config.DemoServiceProvider.TryGet<ITraceService>(); trace && trace->IsEnabled())
+      {
+        ITraceService& rTrace = *trace;
+        // The frame as the pacer of the sample sees it: the wait for its start, its work and the hold before its present
+        const TraceTrack frameTrack = rTrace.RegisterTrack("Sample frame", TraceTrackKind::Sequential);
+        rTrace.DeclareSpan("wait for frame start", frameTrack, rTrace.FindValue("frameWaitStartTicks"), rTrace.FindValue("frameStartTicks"),
+                           TraceLink::None);
+        rTrace.DeclareSpan("work", frameTrack, rTrace.FindValue("frameStartTicks"), rTrace.FindValue("endFrameTicks"), TraceLink::None);
+        rTrace.DeclareSpan("hold before present", frameTrack, rTrace.FindValue("presentWaitBeginTicks"), rTrace.FindValue("presentWaitEndTicks"),
+                           TraceLink::None);
+        // The GPU can work on a frame while the next one is drawn, so its work is drawn in lanes
+        const TraceTrack gpuTrack = rTrace.RegisterTrack("GPU", TraceTrackKind::Lanes);
+        rTrace.DeclareSpan("GPU work", gpuTrack, rTrace.FindValue("gpuWorkBeginTicks"), rTrace.FindValue("gpuWorkEndTicks"), TraceLink::FrameChain);
+        const TraceTrack planTrack = rTrace.RegisterTrack("Pacer plan", TraceTrackKind::Sequential);
+        rTrace.DeclareMark("next frame start", planTrack, rTrace.FindValue("nextFrameStartTicks"), TraceLink::None);
+        rTrace.DeclareCounter("CPU work", rTrace.FindValue("workCpuTicks"));
+        rTrace.DeclareCounter("GPU time", rTrace.FindValue("gpuTimeTicks"));
+        rTrace.DeclareCounter("Animation error", rTrace.FindValue("animationErrorTicks"));
+        rTrace.DeclareCounter("Swap interval", rTrace.FindValue("swapInterval"));
+      }
     }
     else
     {

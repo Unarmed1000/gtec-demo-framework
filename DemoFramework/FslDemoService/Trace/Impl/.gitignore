@@ -1,0 +1,15 @@
+/.StartProject.bat
+/.vs/
+/CMakeLists.txt
+/FslDemoService.Trace.Impl.VC.VC.opendb
+/FslDemoService.Trace.Impl.VC.db
+/FslDemoService.Trace.Impl.manifest
+/FslDemoService.Trace.Impl.opensdf
+/FslDemoService.Trace.Impl.sdf
+/FslDemoService.Trace.Impl.sln
+/FslDemoService.Trace.Impl.v12.sdf
+/FslDemoService.Trace.Impl.v12.suo
+/FslDemoService.Trace.Impl.vcxproj
+/FslDemoService.Trace.Impl.vcxproj.filters
+/FslDemoService.Trace.Impl.vcxproj.user
+/build/

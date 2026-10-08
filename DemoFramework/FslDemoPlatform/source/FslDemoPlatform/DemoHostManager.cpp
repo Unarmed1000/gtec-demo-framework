@@ -42,6 +42,8 @@
 #include <FslDemoPlatform/DemoHostManager.hpp>
 #include <FslDemoPlatform/DemoHostManagerOptionParser.hpp>
 #include <FslDemoService/Graphics/Control/IGraphicsServiceControl.hpp>
+#include <FslDemoService/Trace/ITraceService.hpp>
+#include <FslDemoService/Trace/ScopedTraceZone.hpp>
 #include <FslNativeWindow/Base/NativeWindowEventQueue.hpp>
 #include <FslService/Impl/Threading/IServiceHostLooper.hpp>
 #include <cassert>
@@ -75,6 +77,15 @@ namespace Fsl
 
     // Acquire and configure the test service
     m_testService = serviceProvider.Get<ITestService>();
+    m_trace = serviceProvider.TryGet<ITraceService>();
+    if (m_trace && m_trace->IsEnabled())
+    {
+      m_traceZoneSwap = m_trace->RegisterZone("Swap");
+    }
+    else
+    {
+      m_trace.reset();
+    }
     m_testService->SetScreenshotConfig(demoHostManagerOptionParser->GetScreenshotConfig());
 
     // Get the demo host up and running
@@ -221,6 +232,8 @@ namespace Fsl
         assert(m_demoHost);
         // The frame was drawn and is about to be swapped: the last point where a screenshot of it can be captured on every API
         m_testService->OnFrameDrawCompleted();
+        // The swap of the host, or the one the app does itself: the zone ends where the frame is handed over
+        const ScopedTraceZone traceZone(m_trace.get(), m_traceZoneSwap);
         const TickCount swapCallTime = m_timer.GetTimestamp();
         const auto swapBuffersResult = m_demoHost->TrySwapBuffers();
         if (swapBuffersResult != SwapBuffersResult::AppControlled)

@@ -10,6 +10,7 @@
     <Dependency Name="FslDemoService.FramePacingMarker" Access="Private"/>
     <Dependency Name="FslDemoService.FramePacingMarker.Control" Access="Private"/>
     <Dependency Name="FslDemoService.SystemStats.Control" Access="Private"/>
+    <Dependency Name="FslDemoService.Trace" Access="Private"/>
     <Dependency Name="FslDemoService.Graphics.Impl" Access="Private"/>
     <Dependency Name="FslDemoService.NativeGraphics.Vulkan" Access="Private"/>
     <Platform Name="Windows" ProjectId="36325AFF-1384-491B-84F0-99ABCB694B85"/>

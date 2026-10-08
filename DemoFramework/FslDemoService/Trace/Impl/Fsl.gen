@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<FslBuildGen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../../.Config/Schema/1/FslBuildGen.xsd">
+  <Library Name="FslDemoService.Trace.Impl" CreationYear="2026">
+    <Dependency Name="FslDemoApp.Base"/>
+    <Dependency Name="FslDemoService.Trace"/>
+    <Dependency Name="FslDemoService.Trace.Control"/>
+    <Dependency Name="FslService.Impl"/>
+  </Library>
+</FslBuildGen>

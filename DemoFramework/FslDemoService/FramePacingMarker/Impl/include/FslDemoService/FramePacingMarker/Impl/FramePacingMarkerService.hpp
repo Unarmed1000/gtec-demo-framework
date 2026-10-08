@@ -38,7 +38,7 @@
 
 namespace Fsl
 {
-  class FramePacingFrameLog;
+  class FramePacingLogTee;
   class FramePacingMarkerServiceOptionParser;
   class IAppInfoService;
   class IHostInfo;
@@ -119,8 +119,8 @@ namespace Fsl
       FramePacingLogColumn ProcessGpuShared;
     };
 
-    //! The frame pacing log (null: the frames are not logged)
-    std::unique_ptr<FramePacingFrameLog> m_log;
+    //! Where the frames are logged: the frame pacing log, the trace of the trace service, or both (null: the frames are not logged)
+    std::unique_ptr<FramePacingLogTee> m_log;
     LogColumns m_logColumns;
     bool m_logFactsWritten{false};
     std::shared_ptr<IAppInfoService> m_appInfo;

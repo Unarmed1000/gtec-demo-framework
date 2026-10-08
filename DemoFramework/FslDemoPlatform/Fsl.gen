@@ -7,6 +7,7 @@
     <Dependency Name="FslDemoHost.Base"/>
     <Dependency Name="FslDemoService.CpuStats.Impl" Access="Private"/>
     <Dependency Name="FslDemoService.SystemStats.Impl" Access="Private"/>
+    <Dependency Name="FslDemoService.Trace.Impl" Access="Private"/>
     <Dependency Name="FslVersion" Access="Private"/>
     <Platform Name="Android">
       <Dependency Name="FslNativeWindow.Platform"/>
@@ -15,8 +16,12 @@
       <Dependency Name="Platform.Android.JNIUtil" Access="Private"/>
       <Dependency Name="FslDemoService.FramePacingMarker.Impl" Access="Private"/>
     </Platform>
-    <Platform Name="Apple;Emscripten;RDK_Yocto;Ubuntu">
+    <Platform Name="Apple;Emscripten;RDK_Yocto">
       <Dependency Name="FslDemoService.FramePacingMarker.Impl" Access="Private"/>
+    </Platform>
+    <Platform Name="Ubuntu">
+      <Dependency Name="FslDemoService.FramePacingMarker.Impl" Access="Private"/>
+      <Dependency Name="FslDemoService.Trace.Perfetto" Access="Private"/>
     </Platform>
     <Platform Name="QNX">
       <Dependency Name="FslDemoService.FramePacingMarker.Impl" Access="Private"/>
@@ -24,6 +29,7 @@
     <Platform Name="Yocto"/>
     <Platform Name="Windows" ProjectId="5D828207-1B76-40FE-8817-CAA002DE8144">
       <Dependency Name="FslDemoService.FramePacingMarker.Impl" Access="Private"/>
+      <Dependency Name="FslDemoService.Trace.Perfetto" Access="Private"/>
     </Platform>
   </Library>
 </FslBuildGen>

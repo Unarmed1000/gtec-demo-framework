@@ -129,6 +129,12 @@ namespace Fsl
     return Priority::Max() - 10;
   }
 
+  Priority ServicePriorityList::TraceService()
+  {
+    // Above the default priority, as the services that record to it are registered with the default priority or below it
+    return Priority::Max() - 20;
+  }
+
   Priority ServicePriorityList::VulkanHostService()
   {
     return Priority::Max() - 30;

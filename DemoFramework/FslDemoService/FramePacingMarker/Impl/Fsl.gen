@@ -8,6 +8,8 @@
     <Dependency Name="FslDemoService.FramePacingMarker"/>
     <Dependency Name="FslDemoService.FramePacingMarker.Control"/>
     <Dependency Name="FslDemoService.SystemStats"/>
+    <Dependency Name="FslDemoService.Trace"/>
+    <Dependency Name="FslDemoService.Trace.Control"/>
     <Dependency Name="FslService.Impl"/>
     <Platform Name="Android;Apple;RDK_Yocto;Ubuntu;Windows;QNX;Emscripten" Supported="true">
       <Dependency Name="mb_framepacing" Access="Private"/>

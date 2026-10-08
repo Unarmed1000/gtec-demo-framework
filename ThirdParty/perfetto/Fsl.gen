@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<FslBuildGen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../.Config/Schema/1/FslBuildGen.xsd">
+  <ExternalLibrary Name="perfetto" CreationYear="2026">
+    <Default.Platform.Supported Value="false"/>
+    <Define Name="FSL_ENABLE_PERFETTO" Access="Public"/>
+    <Platform Name="Android;Ubuntu" Supported="true">
+      <Dependency Name="Recipe.perfetto_58_2"/>
+    </Platform>
+    <Platform Name="Windows" Supported="true">
+      <Dependency Name="Recipe.perfetto_58_2"/>
+      <ExternalDependency Name="ws2_32.lib" Type="StaticLib"/>
+    </Platform>
+  </ExternalLibrary>
+</FslBuildGen>

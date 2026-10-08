@@ -29,8 +29,11 @@
 #include <FslDemoService/FramePacingMarker/Impl/FramePacingMarkerService.hpp>
 #include <FslDemoService/FramePacingMarker/Impl/FramePacingMarkerServiceOptionParser.hpp>
 #include <FslDemoService/FramePacingMarker/Impl/FramePacingOverlay.hpp>
-#include <FslDemoService/FramePacingMarker/Impl/Log/FramePacingFrameLog.hpp>
+#include <FslDemoService/FramePacingMarker/Impl/Log/FramePacingFrameLogTable.hpp>
+#include <FslDemoService/FramePacingMarker/Impl/Log/FramePacingLogTee.hpp>
 #include <FslDemoService/SystemStats/ISystemStatsService.hpp>
+#include <FslDemoService/Trace/Control/ITraceServiceControl.hpp>
+#include <FslDemoService/Trace/ITraceService.hpp>
 #include <mb/framepacing/marker/Options.hpp>
 #include <fmt/format.h>
 #include <algorithm>
@@ -89,10 +92,17 @@ namespace Fsl
     }
     m_runId = m_nextRunId.has_value() ? m_nextRunId.value() : CreateRunId();
 
-    if (!optionParser->GetLogPath().IsEmpty())
+    // The frames are logged to the frame pacing log, to the trace of the trace service, or to both: whichever was asked for
+    m_log = FramePacingLogTee::TryCreate(optionParser->GetLogPath(), serviceProvider.TryGet<ITraceService>(),
+                                         serviceProvider.TryGet<ITraceServiceControl>());
+    RegisterLogColumns();
+    if (const auto trace = serviceProvider.TryGet<ITraceService>(); m_log && trace && trace->IsEnabled())
     {
-      m_log = FramePacingFrameLog::TryCreate(optionParser->GetLogPath());
-      RegisterLogColumns();
+      // On the timeline of the trace: when the marker of a frame was drawn, and when its pacer means the frame to be shown
+      const TraceTrack markerTrack = trace->RegisterTrack("Marker", TraceTrackKind::Sequential);
+      trace->DeclareMark("marker drawn", markerTrack, trace->FindValue("markerDrawTicks"), TraceLink::None);
+      const TraceTrack planTrack = trace->RegisterTrack("Pacer plan", TraceTrackKind::Sequential);
+      trace->DeclareMark("intended display", planTrack, trace->FindValue("intendedDisplayTicks"), TraceLink::None);
     }
   }
 
@@ -262,7 +272,13 @@ namespace Fsl
 
     if (m_log)
     {
-      m_log->BeginFrame(m_frameIndex);
+      if (!m_logFactsWritten)
+      {
+        // In the trace a frame lasts from where the host started on it to where the host was done with it. Not done before the
+        // first frame, as the host adds its column after this service was created
+        m_log->SetTraceFrameBounds("hostCpuStartTicks", "hostSwapCompletedTicks");
+      }
+      m_log->BeginFrame(m_frameIndex, m_runId);
       if (!m_logFactsWritten)
       {
         // Not done before the first frame, as the name of the app is not known when the service is created
@@ -460,7 +476,7 @@ namespace Fsl
     {
       return;
     }
-    FramePacingFrameLog& rLog = *m_log;
+    FramePacingLogTee& rLog = *m_log;
     m_logColumns.MarkerKind = rLog.RegisterColumn("markerKind", FramePacingLogUnit::Code,
                                                   "The kind of marker of the frame: 0 frame, 1 the start of a run, 2 the end of a run");
     m_logColumns.RunId = rLog.RegisterColumn("runId", FramePacingLogUnit::Id, "The id of the current (or last) run, as the marker carries it");
@@ -555,7 +571,7 @@ namespace Fsl
     {
       return;
     }
-    FramePacingFrameLog& rLog = *m_log;
+    FramePacingLogTee& rLog = *m_log;
     // The clock every time of the log is on, and the same moment as a wall clock time so a log can be related to other recordings
     rLog.AddFact("clock", "HighResolutionTimer, 100 nanosecond ticks");
     rLog.AddFact("clockNativeFrequency", fmt::format("{}", m_timer.GetNativeTickFrequency()));

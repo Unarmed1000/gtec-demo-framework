@@ -1,0 +1,15 @@
+/.StartProject.bat
+/.vs/
+/CMakeLists.txt
+/FslDemoService.Trace.Perfetto.VC.VC.opendb
+/FslDemoService.Trace.Perfetto.VC.db
+/FslDemoService.Trace.Perfetto.manifest
+/FslDemoService.Trace.Perfetto.opensdf
+/FslDemoService.Trace.Perfetto.sdf
+/FslDemoService.Trace.Perfetto.sln
+/FslDemoService.Trace.Perfetto.v12.sdf
+/FslDemoService.Trace.Perfetto.v12.suo
+/FslDemoService.Trace.Perfetto.vcxproj
+/FslDemoService.Trace.Perfetto.vcxproj.filters
+/FslDemoService.Trace.Perfetto.vcxproj.user
+/build/

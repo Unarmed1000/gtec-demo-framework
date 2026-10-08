@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<FslBuildGen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../.Config/Schema/1/FslBuildGen.xsd">
+  <ExternalLibrary Name="Recipe.perfetto_58_2" CreationYear="2026">
+    <Default.Platform.Supported Value="false"/>
+
+    <!-- The C++ tracing SDK is released as two amalgamated files without a build script, so we build it with our own -->
+    <Platform Name="Android;Ubuntu" Supported="true">
+      <ExperimentalRecipe Name="perfetto" Version="58.2" Find="false">
+        <Pipeline>
+          <Download URL="https://github.com/google/perfetto/releases/download/v58.2/perfetto-cpp-sdk-src.zip" To="perfetto-cpp-sdk-src-58.2.zip" Hash="e56126ff81f0f914d35fe03c72419d147acf2890f36fbda7d4558fd5b84c4b09"/>
+          <Unpack File="perfetto-cpp-sdk-src-58.2.zip" OutputPath="_build">
+            <Copy From="{DST_PATH}/perfetto.h" To="{OUTPUT_PATH}/include/perfetto.h"/>
+            <Copy From="{DST_PATH}/perfetto.cc" To="{OUTPUT_PATH}/source/perfetto.cc"/>
+            <Copy From="{RECIPE_PATH}/CMakeLists.txt" To="{OUTPUT_PATH}/CMakeLists.txt"/>
+          </Unpack>
+          <CMakeBuild Project="perfetto" Target="install" Configuration="release" OutputPath="_Install"/>
+        </Pipeline>
+        <Installation>
+          <AddHeaders Name="include"/>
+          <AddLib Name="lib/libperfetto.a"/>
+          <Path Name="include/perfetto.h" Method="IsFile"/>
+        </Installation>
+      </ExperimentalRecipe>
+    </Platform>
+
+    <Platform Name="Windows" Supported="true">
+      <ExperimentalRecipe Name="perfetto" Version="58.2" Find="false">
+        <Pipeline>
+          <Download URL="https://github.com/google/perfetto/releases/download/v58.2/perfetto-cpp-sdk-src.zip" To="perfetto-cpp-sdk-src-58.2.zip" Hash="e56126ff81f0f914d35fe03c72419d147acf2890f36fbda7d4558fd5b84c4b09"/>
+          <Unpack File="perfetto-cpp-sdk-src-58.2.zip" OutputPath="_build">
+            <Copy From="{DST_PATH}/perfetto.h" To="{OUTPUT_PATH}/include/perfetto.h"/>
+            <Copy From="{DST_PATH}/perfetto.cc" To="{OUTPUT_PATH}/source/perfetto.cc"/>
+            <Copy From="{RECIPE_PATH}/CMakeLists.txt" To="{OUTPUT_PATH}/CMakeLists.txt"/>
+          </Unpack>
+          <CMakeBuild Project="perfetto" Target="install" Configuration="debug;release" OutputPath="_Install"/>
+        </Pipeline>
+        <Installation>
+          <AddHeaders Name="include"/>
+          <AddLib Name="lib/perfetto.lib" DebugName="lib/perfettod.lib"/>
+          <Path Name="include/perfetto.h" Method="IsFile"/>
+        </Installation>
+      </ExperimentalRecipe>
+    </Platform>
+  </ExternalLibrary>
+</FslBuildGen>

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<FslBuildGen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../../.Config/Schema/1/FslBuildGen.xsd">
+  <Library Name="FslDemoService.Trace.Perfetto" CreationYear="2026">
+    <Default.Platform.Supported Value="false"/>
+    <!-- Lets the platform setup give the trace service this writer on the platforms that have the Perfetto SDK -->
+    <Define Name="FSL_FEATURE_TRACE_PERFETTO" Access="Public"/>
+    <Dependency Name="FslDemoService.Trace.Impl"/>
+    <Platform Name="Ubuntu;Windows" Supported="true">
+      <Dependency Name="perfetto" Access="Private"/>
+    </Platform>
+  </Library>
+</FslBuildGen>

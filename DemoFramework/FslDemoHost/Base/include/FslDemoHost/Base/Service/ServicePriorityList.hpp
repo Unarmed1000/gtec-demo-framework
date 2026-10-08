@@ -58,6 +58,7 @@ namespace Fsl
     static Priority ProfilerService();
     static Priority TestService();
     static Priority TextureService();
+    static Priority TraceService();
     static Priority VulkanHostService();
     static Priority WindowHostService();
   };
