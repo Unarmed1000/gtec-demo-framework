@@ -136,7 +136,8 @@ Timed present                 |`--Pacer.TimedPresent`         |The pacer uses th
                               |`--Pacer.GpuWait`              |The kinds without a wait for a present (`timer-period` and `vblank-period`) hold the frame loop with a wait for the GPU's work on an earlier frame, where the app can make that wait (Vulkan): the pacer names the frame, the one before with the aim of low latency and the one before that with smoothness where two frames are in flight (`--VkFramesInFlight 2`). It is the wait for a frame slot of the app base, made for the frame the pacer names and reported to it.
                               |`--Pacer.SystemWaits <true\|false>`|true (default): the waits the app base makes by itself before a frame (the wait for a frame slot and the acquire of a Vulkan app) are reported to the pacer. On a timer the pacer then does not take a frame the system held for a late one, and on vertical blank times a start the side of the display held is not stepped over by the animation time. false: they are not reported, for a run to hold a run with them against.
                               |`--Pacer.WaitingPresents <n>`   |The presents the pacer lets wait to be shown while a frame is made, the frame itself counted (1 to 8). It is for measuring: not given, the pacer picks the number, which is what a app leaves to it (it picks two).
-Tier (radio buttons)          |`--Pacer.Kind <timer-period\|timer-present-wait\|vblank-period\|vblank-present-wait>`|What the pacer paces the frames with: the tier that is asked for, see [below](#how-the-pacer-paces-a-frame---pacerkind). The default is `vblank-present-wait`, the best tier the samples reach. A app that lacks what a kind uses is paced with the best kind of what it has, so the default is the best tier that is available.
+Tier (radio buttons)          |`--Pacer.Kind <timer-period\|timer-present-wait\|vblank-period\|vblank-present-wait>`|What the frame loop paces with, which is the sub tier that is asked for, see [below](#how-the-pacer-paces-a-frame---pacerkind). The default is `vblank-present-wait`, the best of the four. A app that lacks what a kind uses is paced with the best kind of what it has, so the default is the best tier that is available.
+                              |`--Pacer.PresentAtTime <true\|false>`|true (default): the pacer uses the present that takes a time before which the frame is not shown, where the app has one (Vulkan with a swapchain that takes a absolute target time), so the display places the frame: tier 2, and tier 1 where the display leaves out a frame that is overdue (the present mode FIFO latest ready). false: the frame loop places the frame, tier 3. A app without such a present is in tier 3 with both.
                               |`--Pacer.SystemHoldsLoop`       |Tell the pacer that the system holds the frame loop while its queue of frames is full (a acquire or a present that waits for the display), for `timer-period`. With the aim of smoothness the pacer then lets the system pace the loop, and a frame the system held is not late. Only for a system that does hold the loop. The Vulkan sample reports its wait for the frame slot and its acquire to the pacer with or without it, and the images of its swapchain.
                               |`--Pacer.ReadyPlace <percent>`  |Where in a refresh the pacer has a frame ready with `vblank-period` and `vblank-present-wait` (presented, and with the GPU work reported the GPU done with it), in percent of the refresh after a vertical blank (0 to 100, the default is 50). A frame that is ready there is shown at the next vertical blank: earlier leaves more room for a frame that runs long, later shows a newer frame.
                               |`--Pacer.KindChange <frames>`   |For measuring what a change of the kind does: every that many frames the run goes on with the next of the four kinds (`--Pacer.Kind` says the first), in a order that has every change from one of them to another once in twelve changes. The pacer is not started again by it. `0`, the default: the kind is not changed.
@@ -154,18 +155,30 @@ rate the frames are paced at: the refresh rate divided by the swap interval. The
 and the frame time that was measured, with how many of the last frames were late. They are shown with the pacer off as well: every frame is
 then held for one refresh, and the late frames are the ones of the last two seconds that took more than one refresh.
 
-Below the switch of the frame pacer the side bar has what the frames can be paced with, as one group of radio buttons: the four
-tiers of the pacer library the samples reach (see [FramePacingPlatformSupport.md](FramePacingPlatformSupport.md)). The tiers are the
-library's and the sample has no definition of its own. It has three major tiers of four sub tiers each, written as the two numbers
-with the best first: `1.1` to `3.4`. The radio buttons are major tier 3, where the frame loop places the frame, each with its own
-color: tier 3.1 vertical blank times with a wait for a present (orange, `--Pacer.Kind vblank-present-wait`), tier 3.2 vertical blank
-times (purple, `vblank-period`), tier 3.3 a timer with a wait for a present (blue, `timer-present-wait`) and tier 3.4 a timer (green,
-`timer-period`), which every app reaches. Major tier 2 is the same four where the display places the frame, which takes a present
-at a time, and major tier 1 the same again on a display that skips a frame that is overdue. The samples reach neither: the time
-their present can take is the time the frame before stays on screen at least, which changes no tier. That one is the switch
-`Timed present` (`--Pacer.TimedPresent`) below, where the present of the app takes it: the pacer then plans that time and the
-sample gives it to the present, next to everything it does without it. The line below the radio buttons is the library's line
-for the tier the run is in.
+Below the switch of the frame pacer the side bar has what the frames can be paced with, as one group of radio buttons: every tier
+of the pacer library (see [FramePacingPlatformSupport.md](FramePacingPlatformSupport.md)). The tiers are the library's and the sample has no definition of its
+own. It has three major tiers by who places a frame on its refresh, each with a line of the library above its radio buttons, and
+four sub tiers each, written as the two numbers with the best first: `1.1` to `3.4`.
+
+- **Tier 1, the display places a frame and skips one that is overdue**: the present is given a time before which the frame is not
+  shown, on a display side that shows the newest of the frames that are due (Vulkan with a absolute target time and the present
+  mode FIFO latest ready). The library rates it and paces it as the same sub tier of tier 2.
+- **Tier 2, the display places a frame**: the present is given such a time and every frame is shown (Vulkan with a absolute target
+  time, `--Pacer.PresentAtTime`, which is on by default).
+- **Tier 3, the frame loop places a frame**: the loop has to make the present at the right moment. Every app reaches its last sub
+  tier.
+
+A sub tier is what the frame loop paces with (`--Pacer.Kind`), each with its own color: vertical blank times with a wait for a
+present (orange, `vblank-present-wait`), vertical blank times (purple, `vblank-period`), a timer with a wait for a present (blue,
+`timer-present-wait`) and a timer (green, `timer-period`). In tier 3 that is their order, in tiers 1 and 2 the wait comes first
+(`x.1` vertical blank times with a wait, `x.2` a timer with a wait, `x.3` vertical blank times, `x.4` a timer).
+
+No tier is hidden: one the app does not have what it takes for is disabled. Of tiers 1 and 2 only one can be used on a system, as
+what the display does with a frame that is overdue is a fact of it and not something a run chooses. The time the frame before
+stays on screen at least changes no tier. That one is the switch `Timed present` (`--Pacer.TimedPresent`) below, where the present
+of the app takes it: the pacer then plans that time and the sample gives it to the present, unless the present is given a time
+before which the frame is not shown, as a present takes one of the two. The line below the radio buttons is the library's line for
+the tier the run is in.
 
 With `--Pacer.GpuWait` the two kinds without a wait for a present (`timer-period` and `vblank-period`) hold the frame loop with a
 wait for the GPU's work on an earlier frame, where the app can make that wait (Vulkan). The pacer names the frame: the one before
@@ -177,14 +190,15 @@ Vulkan needs, and that wait is reported to the pacer as a wait of the system.
 
 - The tier that is checked is the one the run is paced in, and the one it will be paced in while the frame pacer is off. The line
   below the group is the library's line for it.
-- A tier that can be used here can be checked, so the tier can be switched while the sample runs. The option says which one a
-  run starts with, and the default is the best one, `vblank-present-wait`. A tier is disabled when the app does not have what the
-  pacer uses in it (the library rates what the app can do): vertical blank times need a window system that tells when the display
-  refreshes, and the wait for a present needs a app that can wait for one (Vulkan with `--VkPresentWait <n>`).
-- A kind that was asked for and can not be used right now gives way to the kind of what is left of it: `vblank-present-wait` to
-  `vblank-period` without a present to wait for and to `timer-present-wait` without vertical blank times, and each of them to
-  `timer-period` without both. It comes back when it can be used again. So a run that asks for nothing is in the best tier the
-  system has.
+- A tier that can be used here can be checked, so the tier can be switched while the sample runs. The options say which one a
+  run starts with, and the default is the best one: `--Pacer.Kind vblank-present-wait` with `--Pacer.PresentAtTime true`. A tier is
+  disabled when the app does not have what it takes (the library rates what the app can do): a time on the present needs a
+  swapchain that takes a absolute target time, vertical blank times need a window system that tells when the display refreshes,
+  and the wait for a present needs a app that can wait for one (Vulkan with `--VkPresentWait <n>`).
+- What was asked for and can not be used right now gives way to the tier of what is left of it: a tier of the display placing the
+  frame to the same kind where the frame loop places it, `vblank-present-wait` to `vblank-period` without a present to wait for
+  and to `timer-present-wait` without vertical blank times, and each of them to `timer-period` without both. It comes back when
+  it can be used again. So a run that asks for nothing is in the best tier the system has.
 - With the frame pacer on the app base makes no wait for a present by itself: the pacer names the present a frame waits for, and
   `--VkPresentWait <n>` is the number of presents the pacer lets wait.
 
@@ -336,8 +350,8 @@ The sample computes no time. A frame is these calls, in this order:
 6. **The work of the CPU is done** (`EndFrame`): the pacer says how the frame is presented. A frame of one refresh is presented
    at once. A frame of two or more is held: by the swap interval the pacer gives a present that takes one (`eglSwapInterval`),
    and where the present can not hold it that long by a time the pacer gives, which the sample waits until before the present.
-   Where the present takes a time and the run uses it (`--Pacer.TimedPresent`) the plan also has the time the frame before stays
-   on screen at least.
+   Where the present takes a time and the run uses it the plan also has that time: the one before which the frame is not shown
+   (`--Pacer.PresentAtTime`), or the one the frame before stays on screen at least (`--Pacer.TimedPresent`).
 7. **The display time of a earlier frame is reported** (`AddDisplayReport`), where the app measures its presents and the run gives
    the pacer display reports.
 
@@ -397,6 +411,12 @@ refresh, and the sample waits for the times it is given. What the pacer has to g
   in, and where that part is depends on the platform (`--Pacer.ReadyPlace`; with a wait for a present the pacer learns it). It is
   not for a display with a variable refresh rate (G-SYNC, FreeSync): the vertical blank follows the frames there. The sample
   stops giving the pacer the vertical blank times when it sees that (see below).
+- **A present that is given a time before which the frame is not shown** (`--Pacer.PresentAtTime`, with every kind): the display
+  places the frame, so it is shown at the refresh it is for whenever the present is made before that (`VK_EXT_present_timing`
+  where the device and the surface have `presentAtAbsoluteTime`). The time is the pacer's, on the clock of the framework, and the
+  app base converts it to the time domain of the swapchain. The trace has what the present was given as a time of that domain
+  (`presentTargetAbsoluteNs`), and the `presentTiming` event has `canPresentAtTime=1` where a present can take such a time. It is
+  built and was not run: the driver of the system the captures were made on has the relative form only.
 - **A present that takes a time** (`--Pacer.TimedPresent`, with every kind): the presentation engine holds the frame as well. The
   present is given the time the frame before stays on screen at least (`VK_EXT_present_timing` where the device and the surface
   have `presentAtRelativeTime`): the image is not shown before that time has passed since the image of the present before it was
@@ -427,9 +447,10 @@ off: a display with it on refreshes like a fixed one while the frames come at th
 `variableRefreshSeen` where the sample stopped giving the pacer the vertical blank times. What a platform can tell is in
 [FramePacingPlatformSupport.md](FramePacingPlatformSupport.md#variable-refresh-what-a-platform-tells-an-app).
 
-Any Vulkan app can give a present such a time: `DemoAppVulkanBasic::IsPresentSchedulingSupported()` and
-`SetPresentRelativeTargetTime(time)` before the frame is presented. The absolute form of the extension (`presentAtAbsoluteTime`) is not
-used.
+Any Vulkan app can give a present such a time, before the frame is presented: `DemoAppVulkanBasic::IsPresentAtTimeSupported()` and
+`SetPresentAbsoluteTargetTime(time)` for the time before which the frame is not shown, `IsPresentSchedulingSupported()` and
+`SetPresentRelativeTargetTime(time)` for the time the frame before stays on screen at least. A present takes one of the two, the
+first where both are given.
 
 #### Display reports (Vulkan, optional)
 
@@ -646,6 +667,7 @@ Column | Unit | Description
 `resultReadAtFrame` | id | The frame in which the stages of this frame were read: how late they arrived
 `presentTimingRequested` | flag | 1 if the present was asked to be timed, 0 if not: present timing is off, or too many results were outstanding
 `presentTargetRelativeNs` | nanoseconds | The target time the present was given: its image is not shown before this long after the image of the present before it was shown (empty: the present was given none)
+`presentTargetAbsoluteNs` | nanoseconds | The time the present was given before which its image is not shown, as a time of the time domain of the swapchain (`presentTimeDomainId`), which is not the clock of the framework (empty: the present was given none)
 
 **The FramePacing samples**
 
@@ -781,7 +803,7 @@ A fact (on the `Facts` track, not a event) | Something that holds for the whole 
 `windowFocus` | The samples: the window got (`focused=1`) or lost (`focused=0`) the input focus of the window system (Windows, X11 and Wayland report it). The app keeps drawing without it. Only a change is logged, so a run that had the focus from its start to its end has none.
 `background` | The samples: the scene of the background, at the first frame and when it changes. The same `gpuLoadSteps` is another amount of GPU work with another scene, so two logs are only comparable when they name the same one.
 `tier` | The samples: the tier of the pacer library the run is in, at the first frames and when it changes. `tier` is the tier in use as the pacer library writes it, its major tier and its sub tier (`1.1` is the best, `3.4` the one every app reaches, `0` with the pacer off) with `tierName`, `best` the best one this system reaches with `bestName`, and `displaySideHolds` is 1 where the present of the app can hold a frame for two refreshes or more.
-`pacerConfig` | The samples: the pacer was switched or its settings changed (the refresh rate it uses, the target fps, adaptive, the display reports, and `kind`: what the pacer paces with, with its `aim` and `waitingPresents`, `framesInFlight`, the `startupPauseRefreshes` of its pause, and if it uses the present that takes a time (`timedPresent`), the wait for the GPU's work (`gpuWait`) and the waits of the system (`systemWaits`)). `refreshPeriodNs` is the refresh period the pacer was given, in nanoseconds: the one of the window system as it is, or the period of the rate of the command line or the slider. `refreshRateHz` is the same as a rate. The fact `sample.pacerKind` is the pacer that was asked for.
+`pacerConfig` | The samples: the pacer was switched or its settings changed (the refresh rate it uses, the target fps, adaptive, the display reports, and `kind`: what the pacer paces with, with its `aim` and `waitingPresents`, `framesInFlight`, the `startupPauseRefreshes` of its pause, and if it uses the time on the present before which a frame is not shown (`presentAtTime`), the present that takes the time the frame before stays on screen (`timedPresent`), the wait for the GPU's work (`gpuWait`) and the waits of the system (`systemWaits`)). `refreshPeriodNs` is the refresh period the pacer was given, in nanoseconds: the one of the window system as it is, or the period of the rate of the command line or the slider. `refreshRateHz` is the same as a rate. The fact `sample.pacerKind` is the pacer that was asked for.
 `pacerForgetPresents` | The samples: the pacer was told that the presents made so far are gone, because the swapchain was made anew (`reason=swapchain`).
 
 ### Adding values from an app

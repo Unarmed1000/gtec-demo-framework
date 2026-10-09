@@ -89,6 +89,47 @@ TEST_F(TestFixtureFslUtil_Vulkan1_0_TimeDomainUtil, ToTickCount_NotAHostClock)
   EXPECT_EQ(TickCount(), TimeDomainUtil::ToTickCount(VK_TIME_DOMAIN_DEVICE_KHR, 123456789u, 10000000u));
 }
 
+
+TEST_F(TestFixtureFslUtil_Vulkan1_0_TimeDomainUtil, FromTickCount_PerformanceCounter)
+{
+  // A counter that counts in ticks
+  EXPECT_EQ(123456789u, TimeDomainUtil::FromTickCount(VK_TIME_DOMAIN_QUERY_PERFORMANCE_COUNTER_KHR, TickCount(123456789), 10000000u));
+  // A counter that counts in microseconds
+  EXPECT_EQ(2000000u, TimeDomainUtil::FromTickCount(VK_TIME_DOMAIN_QUERY_PERFORMANCE_COUNTER_KHR, TickCount(20000000), 1000000u));
+  // A counter that is faster than the ticks
+  EXPECT_EQ(24000000u, TimeDomainUtil::FromTickCount(VK_TIME_DOMAIN_QUERY_PERFORMANCE_COUNTER_KHR, TickCount(10000000), 24000000u));
+  EXPECT_EQ(12000000u, TimeDomainUtil::FromTickCount(VK_TIME_DOMAIN_QUERY_PERFORMANCE_COUNTER_KHR, TickCount(5000000), 24000000u));
+}
+
+
+TEST_F(TestFixtureFslUtil_Vulkan1_0_TimeDomainUtil, FromTickCount_ClockMonotonic)
+{
+  // Nanoseconds, the frequency is not used
+  EXPECT_EQ(1000u, TimeDomainUtil::FromTickCount(VK_TIME_DOMAIN_CLOCK_MONOTONIC_KHR, TickCount(10), 0u));
+  EXPECT_EQ(1000000000u, TimeDomainUtil::FromTickCount(VK_TIME_DOMAIN_CLOCK_MONOTONIC_RAW_KHR, TickCount(10000000), 12345u));
+}
+
+
+TEST_F(TestFixtureFslUtil_Vulkan1_0_TimeDomainUtil, FromTickCount_IsTheInverseOfToTickCount)
+{
+  for (const VkTimeDomainKHR timeDomain : {VK_TIME_DOMAIN_QUERY_PERFORMANCE_COUNTER_KHR, VK_TIME_DOMAIN_CLOCK_MONOTONIC_KHR})
+  {
+    const TickCount time(4975611349786);
+    const uint64_t value = TimeDomainUtil::FromTickCount(timeDomain, time, 10000000u);
+    EXPECT_EQ(time, TimeDomainUtil::ToTickCount(timeDomain, value, 10000000u));
+  }
+}
+
+
+TEST_F(TestFixtureFslUtil_Vulkan1_0_TimeDomainUtil, FromTickCount_NothingToConvert)
+{
+  // Not a host clock, no frequency, and a time that is not after zero
+  EXPECT_EQ(0u, TimeDomainUtil::FromTickCount(VK_TIME_DOMAIN_DEVICE_KHR, TickCount(123456789), 10000000u));
+  EXPECT_EQ(0u, TimeDomainUtil::FromTickCount(VK_TIME_DOMAIN_QUERY_PERFORMANCE_COUNTER_KHR, TickCount(123456789), 0u));
+  EXPECT_EQ(0u, TimeDomainUtil::FromTickCount(VK_TIME_DOMAIN_CLOCK_MONOTONIC_KHR, TickCount(), 0u));
+  EXPECT_EQ(0u, TimeDomainUtil::FromTickCount(VK_TIME_DOMAIN_CLOCK_MONOTONIC_KHR, TickCount(-5), 0u));
+}
+
 #else
 
 TEST_F(TestFixtureFslUtil_Vulkan1_0_TimeDomainUtil, NotSupportedByTheHeaders)

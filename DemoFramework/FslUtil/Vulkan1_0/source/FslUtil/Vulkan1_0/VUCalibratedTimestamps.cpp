@@ -145,6 +145,12 @@ namespace Fsl::Vulkan
   }
 
 
+  uint64_t VUCalibratedTimestamps::TickCountToHostTime(const TickCount time) const noexcept
+  {
+    return TimeDomainUtil::FromTickCount(TimeDomainUtil::GetHostTimeDomain(), time, m_performanceCounterFrequency);
+  }
+
+
   VkResult VUCalibratedTimestamps::GetTimestamps(const uint32_t timestampCount, const VkCalibratedTimestampInfoKHR* const pTimestampInfos,
                                                  uint64_t* const pTimestamps, uint64_t* const pMaxDeviation) const noexcept
   {
@@ -181,6 +187,12 @@ namespace Fsl::Vulkan
   TickCount VUCalibratedTimestamps::HostTimeToTickCount(const uint64_t /*hostTime*/) const noexcept
   {
     return {};
+  }
+
+
+  uint64_t VUCalibratedTimestamps::TickCountToHostTime(const TickCount /*time*/) const noexcept
+  {
+    return 0;
   }
 
 #endif

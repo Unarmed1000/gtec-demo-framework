@@ -48,6 +48,7 @@ namespace Fsl
         PacerReadyPlace,
         PacerKindChange,
         PacerSystemHoldsLoop,
+        PacerPresentAtTime,
         PacerTimedPresent,
         PacerGpuWait,
         PacerSystemWaits,
@@ -139,11 +140,17 @@ namespace Fsl
       "For measuring what a change of the pacer does: every that many frames the run goes on with the next of the four kinds "
       "(--Pacer.Kind says the first), in a order that has every change from one of them to another once in twelve changes. The pacer "
       "is not started again by it. 0, the default: the pacer is not changed.");
+    rOptions.emplace_back("Pacer.PresentAtTime", OptionArgument::OptionRequired, CommandId::PacerPresentAtTime,
+                          "true (default): the pacer uses the present that takes a time before which the frame is not shown, where the app "
+                          "has one (Vulkan with a swapchain that takes a absolute target time), so the display places the frame: the "
+                          "tiers of major tier 2, and of major tier 1 where the display leaves out a frame that is overdue (the present "
+                          "mode FIFO latest ready). false: the frame loop places the frame, the tiers of major tier 3. A app without such "
+                          "a present is in major tier 3 with both.");
     rOptions.emplace_back("Pacer.TimedPresent", OptionArgument::OptionNone, CommandId::PacerTimedPresent,
                           "The pacer uses the present that takes a time, where the app has one (Vulkan with a swapchain "
                           "that takes a time the frame before stays on screen at least): the pacer plans that time and the sample gives "
                           "it to the present, next to everything it does without it. It changes no tier: only a present at a time "
-                          "lets the display place the frame.");
+                          "lets the display place the frame (--Pacer.PresentAtTime), and a present takes one of the two.");
     rOptions.emplace_back("Pacer.GpuWait", OptionArgument::OptionNone, CommandId::PacerGpuWait,
                           "The kinds without a wait for a present (timer-period and vblank-period) hold the frame loop with a "
                           "wait for the GPU's work on an earlier frame, where the app can make that wait (Vulkan): the pacer names the "
@@ -281,6 +288,9 @@ namespace Fsl
     case CommandId::PacerWaitingPresents:
       return TryParseInRange(m_pacerWaitingPresents, strOptArg, SampleConfig::WaitingPresents, "Pacer.WaitingPresents") ? OptionParseResult::Parsed
                                                                                                                         : OptionParseResult::Failed;
+    case CommandId::PacerPresentAtTime:
+      StringParseUtil::Parse(m_pacerPresentAtTime, strOptArg);
+      return OptionParseResult::Parsed;
     case CommandId::PacerTimedPresent:
       m_pacerTimedPresent = true;
       return OptionParseResult::Parsed;

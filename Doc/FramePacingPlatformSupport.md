@@ -31,9 +31,15 @@ It has three major tiers with the best first, by who places a frame at its refre
 written as the two numbers, `1.1` to `3.4`:
 
 - **Major tier 1**: the display places the frame and skips a frame that is overdue (a present at a time, on a display that drops
-  the presents whose time has passed for the newest). It is rated only: no pacer is built for it.
-- **Major tier 2**: the display places the frame (a present at a time).
-- **Major tier 3**: the frame loop places the frame. This is where the samples are.
+  the presents whose time has passed for the newest). It is rated only: no pacer is built for it, and it is paced as the same sub
+  tier of major tier 2. The Vulkan sample is in it with a swapchain that takes a absolute target time and the present mode FIFO
+  latest ready.
+- **Major tier 2**: the display places the frame (a present at a time). The Vulkan sample is in it with a swapchain that takes a
+  absolute target time.
+- **Major tier 3**: the frame loop places the frame. Every sample is in it without such a present, which is every system the
+  samples were run on.
+
+The side bar of the samples lists all twelve tiers, and the ones the app does not have what it takes for are disabled.
 
 The four sub tiers, here with the numbers of major tier 3:
 
@@ -98,7 +104,7 @@ each, with the name of the vsync source of the window. A window system that give
 shown starts a run in a lower tier and changes then. The facts `vulkan.uses.presentAtRelativeTime` and
 `window.vsyncSource` say what the system has, and the `pacerKind` column says what every frame was really paced with.
 
-What would move a configuration up and is not built: a present wait as the vsync signal (Vulkan level 2), the absolute target time and
+What would move a configuration up and is not built: a present wait as the vsync signal (Vulkan level 2),
 `VK_GOOGLE_display_timing` (Vulkan level 3), the vsync signal of Apple, and presenting a frame once per refresh, which
 needs nothing but FIFO.
 
@@ -112,7 +118,7 @@ From the least to the most.
 | 1 | `VK_KHR_present_id` or `VK_KHR_present_id2`; `VK_EXT_swapchain_maintenance1` or `VK_KHR_swapchain_maintenance1` | A number per present, and a fence per present that signals when the presentation engine is done with it. No display time, no timed present. | Present fences are used when available (`--VkSwapchainMaintenance1`). `VK_KHR_present_id2` numbers the presents for level 4. `VK_KHR_present_id` is not used. | measured (no effect on the pacing) |
 | 2 | `VK_KHR_present_wait` or `VK_KHR_present_wait2` (with a present id) | The app can block until a given present was presented: a wait that follows the display without the window system, and a coarse display time. | With `VK_KHR_present_wait2` and `--VkPresentWait <n>` a frame of `DemoAppVulkanBasic` does not start before the present `n` frames back was presented, see [below](#keeping-the-frame-loop-from-getting-ahead-of-the-display). Off by default. `VK_KHR_present_wait` is not used, and neither is used as a vsync signal. | measured (one run per case) |
 | 3 | `VK_GOOGLE_display_timing` (Android) | The refresh duration, a desired present time per present (absolute) and past presentation times. | Nothing. | not built |
-| 4 | `VK_EXT_present_timing` (with `VK_KHR_present_id2` and `VK_KHR_calibrated_timestamps`) | A target time per present, the time of each present stage afterwards (queue operations end, request dequeued, first pixel out, first pixel visible) and the refresh duration. | The stages are measured and logged. A relative target time holds a frame (`--Pacer.TimedPresent`). The display times can be given to the pacer (`--Pacer.DisplayReports`), which counts them and paces the same. The absolute target time is not used. | measured |
+| 4 | `VK_EXT_present_timing` (with `VK_KHR_present_id2` and `VK_KHR_calibrated_timestamps`) | A target time per present, the time of each present stage afterwards (queue operations end, request dequeued, first pixel out, first pixel visible) and the refresh duration. | The stages are measured and logged. A relative target time holds a frame (`--Pacer.TimedPresent`). A absolute target time lets the display place the frame (`--Pacer.PresentAtTime`, major tier 2): built and not run, no driver that was at hand has it. The display times can be given to the pacer (`--Pacer.DisplayReports`), which counts them and paces the same. | measured, but for the absolute target time |
 
 Within level 4 a device and a surface can have a relative target time (`presentAtRelativeTime`), an absolute one
 (`presentAtAbsoluteTime`) or both, and a surface reports only some of the stages. The NVIDIA driver that was measured has the relative
@@ -419,7 +425,10 @@ flowchart TD
     q2{"Does the window system give a vsync time,<br/>and was no variable refresh seen?<br/>INativeWindow::TryGetVSyncInfo"}
     q3{"Can the app wait for a present?<br/>VK_KHR_present_wait2 with --VkPresentWait"}
     q4{"Can the app wait for a present?<br/>VK_KHR_present_wait2 with --VkPresentWait"}
+    q0{"Does the swapchain take a absolute target time, and is it asked for?<br/>VK_EXT_present_timing with presentAtAbsoluteTime,<br/>--Pacer.PresentAtTime (on by default)"}
     q5{"Does the swapchain take a relative target time, and is it asked for?<br/>VK_EXT_present_timing with presentAtRelativeTime,<br/>--Pacer.TimedPresent"}
+    major3(["Tier 3: the frame loop places the frame"])
+    major2["Tier 2: the display places the frame<br/>tier 1 with the present mode FIFO latest ready<br/>the same four sub tiers"]:::built
 
     t31["Tier 3.1<br/>vertical blank times and a wait for a present"]:::measured
     t32["Tier 3.2<br/>vertical blank times"]:::measured
@@ -428,7 +437,7 @@ flowchart TD
     timed["The present is also given the time<br/>the frame before stays on screen at least"]:::measured
     plain["The frame is held by the time<br/>the pacer gives before the present"]:::measured
 
-    absolute["Absolute target time<br/>presentAtAbsoluteTime, VK_GOOGLE_display_timing"]:::notbuilt
+    absolute["Absolute target time of<br/>VK_GOOGLE_display_timing"]:::notbuilt
     presentwait["Present wait as the vsync signal<br/>VK_KHR_present_wait, VK_KHR_present_wait2"]:::notbuilt
 
     subgraph sources ["Where a vsync time comes from"]
@@ -440,7 +449,11 @@ flowchart TD
         other["Apple CADisplayLink"]:::notbuilt
     end
 
-    run --> q1
+    run --> q0
+    q0 -- "yes" --> major2
+    q0 -- "no" --> major3
+    major2 --> q1
+    major3 --> q1
     q1 -- "vblank-present-wait or vblank-period" --> q2
     q1 -- "timer-present-wait or timer-period" --> q4
     q2 -- "yes" --> q3
@@ -449,10 +462,10 @@ flowchart TD
     q3 -- "no, or vblank-period" --> t32
     q4 -- "yes, and a kind with a wait for a present" --> t33
     q4 -- "no, or a kind without it" --> t34
-    t31 --> q5
-    t32 --> q5
-    t33 --> q5
-    t34 --> q5
+    t31 -- "in tier 3" --> q5
+    t32 -- "in tier 3" --> q5
+    t33 -- "in tier 3" --> q5
+    t34 -- "in tier 3" --> q5
     q5 -- "yes" --> timed
     q5 -- "no" --> plain
 
@@ -462,7 +475,7 @@ flowchart TD
     x11present --> q2
     android --> q2
     other -.-> q2
-    q5 -. "not asked" .-> absolute
+    q0 -. "not asked" .-> absolute
     q2 -. "not asked" .-> presentwait
 
     classDef measured stroke:#2da44e,stroke-width:3px
@@ -470,10 +483,17 @@ flowchart TD
     classDef notbuilt stroke:#cf222e,stroke-width:2px,stroke-dasharray:6 4
 ```
 
-The questions, in the order they are asked:
+The chart has the sub tiers once, with the numbers of tier 3: in tiers 1 and 2 they are the same four kinds (there the wait comes
+first in their order). The questions, in the order they are asked:
 
+0. **Does the swapchain take a absolute target time, and is it asked for?** `VK_EXT_present_timing` on the device, the
+   `presentAtAbsoluteTime` feature, a surface that says it supports it, and `--Pacer.PresentAtTime`, which is on by default. With
+   it the display places the frame (tier 2, and tier 1 where the present mode is FIFO latest ready, which leaves out a frame that
+   is overdue). The trace has the answers (`vulkan.presentAtAbsoluteTimeDevice`, `canPresentAtTime=` in the `presentTiming` event,
+   `presentAtTime=` in the `pacerConfig` event). The OpenGL ES samples have no such present. `VK_GOOGLE_display_timing` is not
+   asked for.
 1. **What was asked for?** `--Pacer.Kind`, then the radio button the user checked last. The default is `vblank-present-wait`, the
-   best tier the samples reach, so a run that asks for nothing ends in the best tier the system has. A kind that was asked for and
+   best of the four, so a run that asks for nothing ends in the best tier the system has. A kind that was asked for and
    that the system can not do continues with what is left of it, it is not an error.
 2. **Does the window system give a vsync time?** A time of a vertical blank and a refresh period, both more than zero, from
    `INativeWindow::TryGetVSyncInfo`, on a display that was not seen to refresh at a variable rate. Windows answers, a Wayland
@@ -484,7 +504,8 @@ The questions, in the order they are asked:
 4. **Does the swapchain take a relative target time, and is it asked for?** `VK_EXT_present_timing` on the device, the
    `presentAtRelativeTime` feature, a surface that says it supports it, and `--Pacer.TimedPresent`. The log has the answers
    (`vulkan.presentAtRelativeTimeDevice`, `canSchedule=` in the `presentTiming` event, `timedPresent=` in the `pacerConfig` event).
-   It changes no tier. The absolute target time of the same extension and `VK_GOOGLE_display_timing` are not asked for.
+   It changes no tier, and it is only given where the present has no time before which the frame is not shown: a present takes
+   one of the two.
 
 A frame with a swap interval of one is presented right away on every path. The sample takes a FIFO present to hold a frame for one
 refresh. This is not probed: with a present mode that does not wait for the display (`--VkPresentMode`) nothing in the chart

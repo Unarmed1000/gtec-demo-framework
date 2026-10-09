@@ -135,6 +135,8 @@ namespace Fsl::Vulkan
     m_queueSize = 0;
     m_canPresentAtRelativeTime = false;
     m_nextRelativeTargetTime = 0;
+    m_canPresentAtAbsoluteTime = false;
+    m_nextAbsoluteTargetTime = {};
     m_targetStage = 0;
     m_hasTimeDomain = false;
     m_hasStageOffset = {};
@@ -217,9 +219,21 @@ namespace Fsl::Vulkan
 
   bool VUSwapchainPresentTiming::TryEnablePresentAtRelativeTime() noexcept
   {
-    m_canPresentAtRelativeTime = false;
-    m_targetStage = 0;
-    if (IsEnabled() && m_state.PresentAtRelativeTime)
+    m_canPresentAtRelativeTime = IsEnabled() && m_state.PresentAtRelativeTime && TrySelectTargetStage();
+    return m_canPresentAtRelativeTime;
+  }
+
+
+  bool VUSwapchainPresentTiming::TryEnablePresentAtAbsoluteTime() noexcept
+  {
+    m_canPresentAtAbsoluteTime = IsEnabled() && m_state.PresentAtAbsoluteTime && TrySelectTargetStage();
+    return m_canPresentAtAbsoluteTime;
+  }
+
+
+  bool VUSwapchainPresentTiming::TrySelectTargetStage() noexcept
+  {
+    if (m_targetStage == 0u)
     {
       // A target time is a time for a stage. The stage the image becomes visible in is the one the presentation engine aligns, the one
       // the first pixel leaves in is the next best where the surface does not report that.
@@ -231,9 +245,30 @@ namespace Fsl::Vulkan
       {
         m_targetStage = VK_PRESENT_STAGE_IMAGE_FIRST_PIXEL_OUT_BIT_EXT;
       }
-      m_canPresentAtRelativeTime = m_targetStage != 0u;
     }
-    return m_canPresentAtRelativeTime;
+    return m_targetStage != 0u;
+  }
+
+
+  uint64_t VUSwapchainPresentTiming::ToTargetStageTime(const TickCount time) const noexcept
+  {
+    if (time.Ticks() <= 0 || !m_hasTimeDomain)
+    {
+      return 0;
+    }
+    if (m_timeDomain == TimeDomainUtil::GetHostTimeDomain())
+    {
+      // The swapchain is on the clock of the framework
+      return m_calibratedTimestamps.TickCountToHostTime(time);
+    }
+    const uint32_t stageIndex = ToStageIndex(m_targetStage);
+    if (stageIndex >= LocalConfig::MaxStages || !m_hasStageOffset[stageIndex])
+    {
+      return 0;
+    }
+    // The inverse of what a time of the stage is converted with: nanoseconds on the clock of the swapchain
+    const int64_t stageTicks = time.Ticks() - m_stageOffsetTicks[stageIndex];
+    return stageTicks > 0 ? static_cast<uint64_t>(stageTicks) * TickCount::NanoSecondsPerTick : 0u;
   }
 
 
@@ -241,8 +276,11 @@ namespace Fsl::Vulkan
                                                        const void* const pNext) noexcept
   {
     rPresentInfo = {};
-    // A target time is for one present
-    const uint64_t relativeTargetTime = m_canPresentAtRelativeTime ? m_nextRelativeTargetTime : 0u;
+    // A target time is for one present, and a present takes one: a time before which the image is not shown comes before a time the
+    // image before it stays on screen
+    const uint64_t absoluteTargetTime = m_canPresentAtAbsoluteTime ? ToTargetStageTime(m_nextAbsoluteTargetTime) : 0u;
+    const uint64_t relativeTargetTime = (m_canPresentAtRelativeTime && absoluteTargetTime == 0u) ? m_nextRelativeTargetTime : 0u;
+    m_nextAbsoluteTargetTime = {};
     m_nextRelativeTargetTime = 0;
     if (!IsEnabled())
     {
@@ -258,7 +296,7 @@ namespace Fsl::Vulkan
     // The measurements are held in a queue of the swapchain until they are collected and a present fails when the queue is full, so the
     // timing is only requested when there is room. A target time does not need room, it is given without asking for the stages.
     const bool requestTiming = m_outstanding < LocalConfig::MaxOutstanding;
-    if (!requestTiming && relativeTargetTime == 0u)
+    if (!requestTiming && relativeTargetTime == 0u && absoluteTargetTime == 0u)
     {
       return &rPresentInfo.PresentId;
     }
@@ -266,16 +304,22 @@ namespace Fsl::Vulkan
     rPresentInfo.TimingInfo.sType = VK_STRUCTURE_TYPE_PRESENT_TIMING_INFO_EXT;
     rPresentInfo.TimingInfo.timeDomainId = m_timeDomainId;
     rPresentInfo.TimingInfo.presentStageQueries = requestTiming ? m_stageQueries : 0u;
-    // Without a target time the present is only measured. With one the image is not shown before the time has passed since the image of
-    // the present before it was shown.
-    rPresentInfo.TimingInfo.targetTime = relativeTargetTime;
-    if (relativeTargetTime != 0u)
+    // Without a target time the present is only measured. With a absolute one the image is not shown before that time of the time
+    // domain of the swapchain, with a relative one not before the time has passed since the image of the present before it was shown.
+    if (absoluteTargetTime != 0u)
     {
+      rPresentInfo.TimingInfo.targetTime = absoluteTargetTime;
+      rPresentInfo.TimingInfo.targetTimeDomainPresentStage = m_targetStage;
+    }
+    else if (relativeTargetTime != 0u)
+    {
+      rPresentInfo.TimingInfo.targetTime = relativeTargetTime;
       rPresentInfo.TimingInfo.flags = VK_PRESENT_TIMING_INFO_PRESENT_AT_RELATIVE_TIME_BIT_EXT;
       rPresentInfo.TimingInfo.targetTimeDomainPresentStage = m_targetStage;
     }
     rPresentInfo.IsTimingRequested = requestTiming;
     rPresentInfo.RelativeTargetTimeNanoseconds = relativeTargetTime;
+    rPresentInfo.AbsoluteTargetTime = absoluteTargetTime;
 
     rPresentInfo.TimingsInfo.sType = VK_STRUCTURE_TYPE_PRESENT_TIMINGS_INFO_EXT;
     rPresentInfo.TimingsInfo.pNext = &rPresentInfo.PresentId;
@@ -549,6 +593,12 @@ namespace Fsl::Vulkan
 
 
   bool VUSwapchainPresentTiming::TryEnablePresentAtRelativeTime() noexcept
+  {
+    return false;
+  }
+
+
+  bool VUSwapchainPresentTiming::TryEnablePresentAtAbsoluteTime() noexcept
   {
     return false;
   }

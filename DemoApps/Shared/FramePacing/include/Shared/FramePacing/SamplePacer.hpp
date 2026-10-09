@@ -27,11 +27,13 @@
 #include <FslBase/Time/TickCount.hpp>
 #include <FslBase/Time/TimeSpan.hpp>
 #include <Shared/FramePacing/SamplePacerAim.hpp>
+#include <Shared/FramePacing/SamplePacerCapabilities.hpp>
 #include <Shared/FramePacing/SamplePacerGpuWaitReport.hpp>
 #include <Shared/FramePacing/SamplePacerKind.hpp>
 #include <Shared/FramePacing/SamplePacerPlan.hpp>
 #include <Shared/FramePacing/SamplePacerRating.hpp>
 #include <Shared/FramePacing/SamplePacerSystemWait.hpp>
+#include <Shared/FramePacing/SamplePacerTier.hpp>
 #include <cstdint>
 #include <memory>
 #include <optional>
@@ -60,8 +62,13 @@ namespace Fsl
     //! wait for a present it uses what the kind names: a capability the app does not have is left out by the pacer, so a kind the
     //! app has not everything for paces as the kind of what is left.
     SamplePacerCapabilities Capabilities;
+    //! The pacer uses the present that takes a time before which the frame is not shown, where the app has one
+    //! (SamplePacerCapabilities::PresentAtTime): it plans that time for the present (SamplePacerPresentPlan::NotBeforeTime), and
+    //! the display places the frame. It is what the first two major tiers are made of.
+    bool PresentAtTime{true};
     //! The pacer uses the present that takes the time the frame before stays on screen at least, where the app has one
     //! (SamplePacerCapabilities): it plans that time for the present (SamplePacerPresentPlan::MinimumDuration). It changes no tier.
+    //! A present takes one time, so it is not used next to PresentAtTime.
     bool TimedPresent{false};
     //! The pacer holds the loop with a wait for the GPU's work, where the app can make that wait (SamplePacerCapabilities) and the
     //! pacer does not wait for a present: it names the frame (SamplePacerFrameStartPlan::WaitForGpuWorkFrameId).
@@ -204,14 +211,18 @@ namespace Fsl
 
     //! @brief How the pacer library writes a tier: its major tier and its sub tier. "1.1" is the best and "3.4" the baseline every
     //!        app reaches. Empty without the pacer library.
-    //! @param timedPresent true for the tier of the same pacer where the display places the frame (a present at a time)
-    [[nodiscard]] static std::string_view GetTierNumber(const SamplePacerTier tier, const bool timedPresent = false) noexcept;
+    [[nodiscard]] static std::string_view GetTierNumber(const SamplePacerTier tier) noexcept;
+
+    //! @brief How the pacer library writes the major tier of a tier ("1" to "3"), and its words for it: who places a frame on its
+    //!        refresh. Empty without the pacer library.
+    [[nodiscard]] static std::string_view GetMajorTierNumber(const SamplePacerTier tier) noexcept;
+    [[nodiscard]] static std::string_view GetMajorTierName(const SamplePacerTier tier) noexcept;
 
     //! @brief A few words for a tier, as shown on screen: the name the pacer library gives it (empty without the pacer library).
-    [[nodiscard]] static std::string_view GetTierName(const SamplePacerTier tier, const bool timedPresent = false) noexcept;
+    [[nodiscard]] static std::string_view GetTierName(const SamplePacerTier tier) noexcept;
 
     //! @brief One word for a tier, as written to a log.
-    [[nodiscard]] static std::string_view GetTierLogName(const SamplePacerTier tier, const bool timedPresent = false) noexcept;
+    [[nodiscard]] static std::string_view GetTierLogName(const SamplePacerTier tier) noexcept;
 
     //! @brief A sentence of the pacer library that says what the pacer uses in a tier and what that gives (empty without the pacer
     //!        library).
@@ -219,7 +230,7 @@ namespace Fsl
 
     //! @brief The same in one line of the pacer library, of at most GetTierShortDescriptionMaxLength characters (empty without the
     //!        pacer library).
-    [[nodiscard]] static std::string_view GetTierShortDescription(const SamplePacerTier tier, const bool timedPresent = false) noexcept;
+    [[nodiscard]] static std::string_view GetTierShortDescription(const SamplePacerTier tier) noexcept;
     [[nodiscard]] static uint32_t GetTierShortDescriptionMaxLength() noexcept;
 
     explicit SamplePacer(const SamplePacerConfig& config);
@@ -229,17 +240,21 @@ namespace Fsl
     //!        the swap interval of the target frame rate, the animation goes on. The config it has changes nothing.
     //! @note  Another SamplePacerConfig::Kind among the kinds that give plans, or other SamplePacerConfig::Capabilities, is the same
     //!        pacer with another set to use: nothing starts again. The frames and their ids, the animation time and the swap interval
-    //!        go on, and the change is in force from the frame after the one that is open. SamplePacerConfig::TimedPresent is part
-    //!        of that set.
+    //!        go on, and the change is in force from the frame after the one that is open. SamplePacerConfig::PresentAtTime and
+    //!        SamplePacerConfig::TimedPresent are part of that set.
     void SetConfig(const SamplePacerConfig& config);
 
     //! @brief The tier that paces the frame now, as the pacer says it (its working tier). It is below the tier of the kind until a
     //!        vertical blank was read and while the waits for a present are stopped. The baseline without the pacer library.
     [[nodiscard]] SamplePacerTier GetTier() const noexcept;
 
-    //! @brief True if the pacer plans a time for the present: the time the frame before stays on screen at least
-    //!        (SamplePacerPresentPlan::MinimumDuration), where the app has such a present and the config asks for it. It changes
-    //!        no tier.
+    //! @brief True if the pacer plans the time before which a frame is not shown (SamplePacerPresentPlan::NotBeforeTime), where the
+    //!        app has such a present and the config asks for it: the display places the frame.
+    [[nodiscard]] bool IsPresentAtTimeInUse() const noexcept;
+
+    //! @brief True if the pacer plans the time the frame before stays on screen at least
+    //!        (SamplePacerPresentPlan::MinimumDuration), where the app has such a present, the config asks for it and the present
+    //!        is not given a time before which the frame is not shown. It changes no tier.
     [[nodiscard]] bool IsTimedPresentInUse() const noexcept;
 
     //! @brief The presents made so far are gone (a swapchain that was made anew). None of them can be waited for anymore, and a

@@ -142,6 +142,8 @@ namespace Fsl::Vulkan
     bool IsTimingRequested{false};
     //! The target time the present was given, in nanoseconds after the present before it was shown (zero = none)
     uint64_t RelativeTargetTimeNanoseconds{0};
+    //! The time the present was given before which its image is not shown, as a value of the time domain of the swapchain (zero = none)
+    uint64_t AbsoluteTargetTime{0};
 #ifdef FSL_VULKAN_PRESENT_TIMING_SUPPORTED
     uint64_t Id{0};
     VkPresentId2KHR PresentId{};
@@ -175,6 +177,10 @@ namespace Fsl::Vulkan
     bool m_canPresentAtRelativeTime{false};
     //! The target time of the next present in nanoseconds after the present before it was shown (zero = none)
     uint64_t m_nextRelativeTargetTime{0};
+    //! True if a present of the swapchain can be given a time before which its image is not shown
+    bool m_canPresentAtAbsoluteTime{false};
+    //! The time before which the image of the next present is not shown, on the clock of the framework (zero = none)
+    TickCount m_nextAbsoluteTargetTime;
 #ifdef FSL_VULKAN_PRESENT_TIMING_SUPPORTED
     PFN_vkSetSwapchainPresentTimingQueueSizeEXT m_pfnSetQueueSize{nullptr};
     PFN_vkGetSwapchainTimingPropertiesEXT m_pfnGetTimingProperties{nullptr};
@@ -238,6 +244,27 @@ namespace Fsl::Vulkan
       m_nextRelativeTargetTime = m_canPresentAtRelativeTime ? nanoseconds : 0u;
     }
 
+    //! @brief Allow the presents of the swapchain to be given a time before which their image is not shown (SetNextAbsoluteTargetTime).
+    //!        Call it after a Reset that returned true if the device was created with the presentAtAbsoluteTime feature of
+    //!        VK_EXT_present_timing enabled.
+    //! @return true if the surface supports it too.
+    bool TryEnablePresentAtAbsoluteTime() noexcept;
+
+    //! @return true if a present of the swapchain can be given a time before which its image is not shown.
+    [[nodiscard]] bool CanPresentAtAbsoluteTime() const noexcept
+    {
+      return m_canPresentAtAbsoluteTime;
+    }
+
+    //! @brief Give the next present a time before which its image is not shown, on the clock of the framework (a HighResolutionTimer
+    //!        timestamp): it is converted to the time domain of the swapchain when the present is prepared. It applies to one present
+    //!        and comes before a relative target time, as a present takes one of the two. A default TickCount is no such time.
+    //!        Ignored if CanPresentAtAbsoluteTime is false.
+    void SetNextAbsoluteTargetTime(const TickCount time) noexcept
+    {
+      m_nextAbsoluteTargetTime = m_canPresentAtAbsoluteTime ? time : TickCount();
+    }
+
     //! @brief Prepare the structs of a present.
     //! @param rPresentInfo the storage of the structs, it must stay alive until the present was queued.
     //! @param presentId the id of the present, it must be greater than the id of the previous present of the swapchain.
@@ -265,6 +292,13 @@ namespace Fsl::Vulkan
     void UpdateTimeDomain();
     void UpdateTimingProperties();
     void UpdateCalibration();
+#ifdef FSL_VULKAN_PRESENT_TIMING_SUPPORTED
+    //! Pick the stage a target time is given for. False if the surface reports none of the stages a image is shown in.
+    bool TrySelectTargetStage() noexcept;
+    //! A time of the framework clock as a time of the stage a target time is given for, in the time domain of the swapchain (zero if it
+    //! can not be converted: the clock of the stage was not related to the clock of the framework yet)
+    [[nodiscard]] uint64_t ToTargetStageTime(const TickCount time) const noexcept;
+#endif
   };
 }
 

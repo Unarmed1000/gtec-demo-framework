@@ -183,10 +183,19 @@ namespace Fsl
       }
     }
 
-    //! The text of the radio button of a tier of the pacer library
+    //! The text of the radio button of a tier of the pacer library: its number, and what the frame loop paces with in it. Those
+    //! words are the library's name for the tier of the same sub tier where the frame loop places the frame, as its names for the
+    //! tiers of the other major tiers say their major tier again, which the line above their radio buttons says.
     std::string ToTierLabel(const SamplePacerTier tier)
     {
-      return fmt::format("Tier {}: {}", SamplePacer::GetTierNumber(tier), SamplePacer::GetTierName(tier));
+      const SamplePacerTier loopPlacedTier = SamplePacerTierChoiceUtil::ToLoopPlacedTier(SamplePacerTierChoiceUtil::ToKind(tier));
+      return fmt::format("{}: {}", SamplePacer::GetTierNumber(tier), SamplePacer::GetTierName(loopPlacedTier));
+    }
+
+    //! The line above the radio buttons of a major tier: its number and the library's words for who places a frame in it
+    std::string ToMajorTierLabel(const SamplePacerTier tier)
+    {
+      return fmt::format("Tier {}: {}", SamplePacer::GetMajorTierNumber(tier), SamplePacer::GetMajorTierName(tier));
     }
 
     //! The name of a scene of the background as --Background takes it
@@ -238,12 +247,30 @@ namespace Fsl
     //! The colors of a value of the frame pacing overlay that asks to be looked at
     constexpr UI::UIColor StatsWarningColor(PackedColor32(0xFFFFC233));    // yellow
     constexpr UI::UIColor StatsErrorColor(PackedColor32(0xFFFF5A4D));      // red
-    //! The colors of the tiers of the pacer library, the best tier first. They are the ones a well known game gives the quality of
+    //! The colors of what the frame loop paces with in a tier, the best first: vertical blank times with a wait for a present,
+    //! vertical blank times, a timer with a wait for a present, a timer. They are the ones a well known game gives the quality of
     //! its items (legendary, epic, rare, uncommon), the last three a little lighter so they can be read on the side bar.
     constexpr std::array<UI::UIColor, 4> TierColors = {UI::UIColor(PackedColor32(0xFFFF8000)),     // orange
                                                        UI::UIColor(PackedColor32(0xFFC27CFF)),     // purple
                                                        UI::UIColor(PackedColor32(0xFF4FA3FF)),     // blue
                                                        UI::UIColor(PackedColor32(0xFF5FD35F))};    // green
+
+    //! The color of a tier: the one of what the frame loop paces with in it, which is the same in every major tier
+    constexpr UI::UIColor ToTierColor(const SamplePacerTier tier) noexcept
+    {
+      switch (SamplePacerTierChoiceUtil::ToKind(tier))
+      {
+      case SamplePacerKind::VBlankWaitForPresent:
+        return TierColors[0];
+      case SamplePacerKind::VBlankPeriodOnly:
+        return TierColors[1];
+      case SamplePacerKind::TimerWaitForPresent:
+        return TierColors[2];
+      case SamplePacerKind::TimerPeriodOnly:
+        break;
+      }
+      return TierColors[3];
+    }
 
     constexpr UI::UIColor ToColor(const SampleStatsLevel level, const UI::UIColor normalColor) noexcept
     {
@@ -303,6 +330,7 @@ namespace Fsl
     const auto options = config.GetOptions<OptionParser>();
     // Read before the log is set up, which writes it as a fact
     m_pacerKind = options->GetPacerKind();
+    m_pacerPresentAtTime = options->IsPacerPresentAtTime();
     m_waitingPresentsOption = static_cast<uint32_t>(std::max(options->GetPacerWaitingPresents(), 0));
     m_readyPlacePercent = static_cast<uint32_t>(std::max(options->GetPacerReadyPlacePercent(), 0));
     m_kindChangeFrames = static_cast<uint32_t>(std::max(options->GetPacerKindChangeFrames(), 0));
@@ -463,17 +491,24 @@ namespace Fsl
     // Only for an app that measures its presents, so it stays disabled until the pacer is on and the presents are measured
     m_ui.SwitchPacerDisplayReports = uiFactory->CreateSwitch("Display reports to the pacer", options->IsPacerDisplayReports());
     m_ui.SwitchPacerDisplayReports->SetEnabled(false);
-    // What the frames can be paced with, one group of radio buttons: the tiers of the pacer library the samples reach
+    // What the frames can be paced with, one group of radio buttons: every tier of the pacer library
     // (Doc/FramePacingPlatformSupport.md) with the best first. They start disabled: ShowTiers enables the ones that can be used and
     // checks the one the run is paced by, once the app has said what it can do.
     const auto pacerGroup = uiFactory->CreateRadioGroup("pacer");
     for (std::size_t i = 0; i < m_ui.RadioTiers.size(); ++i)
     {
       const SamplePacerTier tier = SamplePacerTierChoiceUtil::Tiers[i];
-      m_ui.RadioTiers[i] = uiFactory->CreateRadioButton(pacerGroup, ToTierLabel(tier), SamplePacerTierChoiceUtil::ToKind(tier) == m_pacerKind);
-      m_ui.RadioTiers[i]->SetFontColorChecked(TierColors[i]);
-      m_ui.RadioTiers[i]->SetFontColorUnchecked(TierColors[i]);
+      // The tier where the frame loop places the frame is the one every app has for a kind
+      const bool isChecked = !SamplePacerTierChoiceUtil::IsPresentAtTimeTier(tier) && SamplePacerTierChoiceUtil::ToKind(tier) == m_pacerKind;
+      m_ui.RadioTiers[i] = uiFactory->CreateRadioButton(pacerGroup, ToTierLabel(tier), isChecked);
+      m_ui.RadioTiers[i]->SetFontColorChecked(ToTierColor(tier));
+      m_ui.RadioTiers[i]->SetFontColorUnchecked(ToTierColor(tier));
       m_ui.RadioTiers[i]->SetEnabled(false);
+    }
+    for (std::size_t i = 0; i < m_ui.LabelMajorTiers.size(); ++i)
+    {
+      // The first tier of every four
+      m_ui.LabelMajorTiers[i] = uiFactory->CreateLabel(ToMajorTierLabel(SamplePacerTierChoiceUtil::Tiers[i * 4u]));
     }
     {    // The line of the pacer library for every tier, in the order of the radio buttons
       std::vector<std::string> descriptions;
@@ -519,9 +554,13 @@ namespace Fsl
     if (SamplePacer::IsSupported())
     {
       // Without the pacer library there is no pacer to choose
-      for (const auto& radioButton : m_ui.RadioTiers)
+      for (std::size_t i = 0; i < m_ui.RadioTiers.size(); ++i)
       {
-        stackLayout->AddChild(m_keyboardMenu.AddToggle(*uiFactory, radioButton));
+        if ((i % 4u) == 0u)
+        {
+          stackLayout->AddChild(m_ui.LabelMajorTiers[i / 4u]);
+        }
+        stackLayout->AddChild(m_keyboardMenu.AddToggle(*uiFactory, m_ui.RadioTiers[i]));
       }
       stackLayout->AddChild(m_ui.LabelTierDescription);
       stackLayout->AddChild(uiFactory->CreateDivider(UI::LayoutOrientation::Horizontal));
@@ -842,16 +881,29 @@ namespace Fsl
   }
 
 
+  void FramePacingShared::SetPresentAtTimeSupport(const bool supported, const bool skipsOverdue)
+  {
+    m_presentAtTimeSupported = supported;
+    m_presentSkipsOverdue = skipsOverdue;
+  }
+
+
   SamplePacerCapabilities FramePacingShared::GetPacerCapabilities() const noexcept
   {
+    // Everything the app can do and can tell the pacer right now. What of it a run uses is the pacer's config.
     SamplePacerCapabilities has;
     has.PresentSwapIntervalMax = m_presentMethod == SamplePresentMethod::SwapInterval ? m_presentSwapIntervalMax : 0u;
+    has.PresentAtTime = m_presentAtTimeSupported;
+    // What the display does with presents whose time has passed is only something where a present has a time
+    has.PresentSkipsOverdue = m_presentAtTimeSupported && m_presentSkipsOverdue;
     has.PresentAfterDuration = m_timedPresentSupported;
     // The vertical blanks of a display that refreshes at a variable rate follow the frames, so there they can not hold one
     has.VBlankTimes = m_vsyncTime.TotalNanoseconds() > 0 && m_vsyncPeriod.TotalNanoseconds() > 0 && !m_variableRefreshSeen;
     has.WaitForPresent = m_presentWaitingPresents > 0u;
     has.DisplayTimes = m_presentTimingSupported;
     has.WaitForGpuWork = m_gpuWaitSupported;
+    has.GpuWorkTimes = m_gpuWorkTimesReported;
+    has.GpuWorkDurations = m_gpuWorkDurationsReported;
     return has;
   }
 
@@ -870,18 +922,20 @@ namespace Fsl
 
   void FramePacingShared::ReadTierRadioButtons()
   {
-    if (!m_shownKind.has_value())
+    if (!m_shownTier.has_value())
     {
       return;
     }
-    // A radio button that is checked and is not the one the sample checked: the user asks for that pacer
-    const SamplePacerKind shownKind = *m_shownKind;
+    // A radio button that is checked and is not the one the sample checked: the user asks for that tier, which is what the frame
+    // loop paces with in it and if the display places the frame
+    const SamplePacerTier shownTier = *m_shownTier;
     for (std::size_t i = 0; i < m_ui.RadioTiers.size(); ++i)
     {
-      const SamplePacerKind kind = SamplePacerTierChoiceUtil::ToKind(SamplePacerTierChoiceUtil::Tiers[i]);
-      if (kind != shownKind && m_ui.RadioTiers[i]->IsChecked())
+      const SamplePacerTier tier = SamplePacerTierChoiceUtil::Tiers[i];
+      if (tier != shownTier && m_ui.RadioTiers[i]->IsChecked())
       {
-        SetRequestedKind(kind);
+        SetRequestedKind(SamplePacerTierChoiceUtil::ToKind(tier));
+        m_pacerPresentAtTime = SamplePacerTierChoiceUtil::IsPresentAtTimeTier(tier);
       }
     }
   }
@@ -892,36 +946,38 @@ namespace Fsl
     // What a capability is worth is the rule of the pacer library, so each question is put to it
     const SamplePacerCapabilities has = GetPacerCapabilities();
 
-    // A tier can be used where the app has what its pacer uses: the library rates what a run with that pacer would use
+    // A tier can be used where the app has what it takes: the library rates what a run that asks for it would use. What the
+    // display does with a frame that is overdue is a fact of the system, so of the first two major tiers only one can be used.
     for (std::size_t i = 0; i < m_tierOffered.size(); ++i)
     {
       const SamplePacerTier tier = SamplePacerTierChoiceUtil::Tiers[i];
-      const SamplePacerKind kind = SamplePacerTierChoiceUtil::ToKind(tier);
-      m_tierOffered[i] = SamplePacer::Rate(SamplePacerTierChoiceUtil::ToUsedCapabilities(has, kind)).Tier == tier;
+      const SamplePacerCapabilities uses = SamplePacerTierChoiceUtil::ToUsedCapabilities(has, SamplePacerTierChoiceUtil::ToKind(tier),
+                                                                                         SamplePacerTierChoiceUtil::IsPresentAtTimeTier(tier));
+      m_tierOffered[i] = SamplePacer::Rate(uses).Tier == tier;
     }
 
-    // What the run is to be paced with: the kind that was asked for where the app has what it uses, else the kind of what is left
-    // of it
-    m_selectedKind = SamplePacerTierChoiceUtil::ToKind(SamplePacer::Rate(SamplePacerTierChoiceUtil::ToUsedCapabilities(has, m_pacerKind)).Tier);
+    // The tier the run is to be in: the one that was asked for where the app has what it takes, else the tier of what is left of it
+    m_selectedTier = SamplePacer::Rate(SamplePacerTierChoiceUtil::ToUsedCapabilities(has, m_pacerKind, m_pacerPresentAtTime)).Tier;
+    m_selectedKind = SamplePacerTierChoiceUtil::ToKind(m_selectedTier);
   }
 
 
-  void FramePacingShared::ShowTiers(const SamplePacerKind kind)
+  void FramePacingShared::ShowTiers(const SamplePacerTier tier)
   {
-    // A tier the system can not do is shown as disabled, like every other control that can not be used. The one of the pacer the
-    // run is paced by is never disabled.
+    // A tier the system can not do is shown as disabled, like every other control that can not be used. The one the run is paced
+    // in is never disabled.
     const bool isSupported = SamplePacer::IsSupported();
     uint32_t shownIndex = 0;
     for (std::size_t i = 0; i < m_ui.RadioTiers.size(); ++i)
     {
-      const SamplePacerKind tierKind = SamplePacerTierChoiceUtil::ToKind(SamplePacerTierChoiceUtil::Tiers[i]);
+      const bool isShownTier = SamplePacerTierChoiceUtil::Tiers[i] == tier;
       UI::RadioButton& rRadioButton = *m_ui.RadioTiers[i];
-      const bool isEnabled = isSupported && (tierKind == kind || m_tierOffered[i]);
+      const bool isEnabled = isSupported && (isShownTier || m_tierOffered[i]);
       if (rRadioButton.IsEnabled() != isEnabled)
       {
         rRadioButton.SetEnabled(isEnabled);
       }
-      if (tierKind == kind)
+      if (isShownTier)
       {
         shownIndex = static_cast<uint32_t>(i);
         if (!rRadioButton.IsChecked())
@@ -930,11 +986,11 @@ namespace Fsl
         }
       }
     }
-    // What the pacer that is checked does, in a line of the pacer library and in the color of its tier. The time the sample can
-    // give a present (the switch 'Timed present') changes no tier, so it is the same line with it.
+    // What the pacer does in the tier that is checked, in a line of the pacer library and in the color of the tier. The time the
+    // frame before stays on screen (the switch 'Timed present') changes no tier, so it is the same line with it.
     m_ui.LabelTierDescription->SetSelectedIndex(shownIndex);
-    m_ui.LabelTierDescription->SetFontColor(shownIndex < TierColors.size() ? TierColors[shownIndex] : m_ui.DefaultFontColor);
-    m_shownKind = kind;
+    m_ui.LabelTierDescription->SetFontColor(ToTierColor(tier));
+    m_shownTier = tier;
   }
 
 
@@ -1229,6 +1285,8 @@ namespace Fsl
 
   void FramePacingShared::AddGpuInterval(const uint64_t presentId, const TickCount gpuStartTime, const TickCount gpuEndTime)
   {
+    // The app can say when the GPU worked on a frame, which the pacer is told as something the app can do
+    m_gpuWorkTimesReported = true;
     m_measuredPresents.AddGpuInterval(presentId, gpuStartTime, gpuEndTime);
     if (IsPacerEnabled())
     {
@@ -1266,6 +1324,9 @@ namespace Fsl
 
   void FramePacingShared::AddGpuTime(const uint64_t frameId, const TimeSpan gpuTime, const std::optional<TickCount> gpuEndTime)
   {
+    // The app can say how long the GPU worked on a frame, and when where it knows when the work ended
+    m_gpuWorkDurationsReported = true;
+    m_gpuWorkTimesReported = m_gpuWorkTimesReported || gpuEndTime.has_value();
     if (IsPacerEnabled())
     {
       // The work of the GPU on a earlier frame, as far as the app has measured it: the pacer puts it together with the work of the
@@ -1565,9 +1626,10 @@ namespace Fsl
     pacerConfig.TargetFps = static_cast<uint32_t>(std::max(m_ui.SliderTargetFps->GetValue(), 0));
     pacerConfig.Adaptive = m_ui.SwitchAdaptive->IsChecked();
     // The kind the app has what it takes for right now (UpdateTierChoice). The pacer is told what the app has: the kind is what of
-    // that it uses, and the present that takes a time and the wait for the GPU's work where they were asked for.
+    // that it uses, and the times a present can take and the wait for the GPU's work where they were asked for.
     pacerConfig.Kind = m_selectedKind;
     pacerConfig.Capabilities = GetPacerCapabilities();
+    pacerConfig.PresentAtTime = m_pacerPresentAtTime;
     pacerConfig.TimedPresent = IsTimedPresentRequested();
     pacerConfig.GpuWait = m_pacerGpuWait;
     pacerConfig.ReadyPlacePercent = m_readyPlacePercent;
@@ -1639,6 +1701,7 @@ namespace Fsl
       SamplePacerConfig comparedConfig = pacerConfig;
       comparedConfig.Kind = m_pacerConfig.Kind;
       comparedConfig.Capabilities = m_pacerConfig.Capabilities;
+      comparedConfig.PresentAtTime = m_pacerConfig.PresentAtTime;
       comparedConfig.TimedPresent = m_pacerConfig.TimedPresent;
       comparedConfig.GpuWait = m_pacerConfig.GpuWait;
       // The display times are part of the set the pacer uses
@@ -1951,7 +2014,7 @@ namespace Fsl
       rLog.AddEvent("pacerConfig",
                     fmt::format("on={};refreshRateHz={};targetFps={};adaptive={};displayReports={};kind={};waitingPresents={};"
                                 "framesInFlight={};startupPauseRefreshes={};aim={};refreshPeriodNs={};readyPlacePercent={};swapChainImages={};"
-                                "systemHoldsLoop={};timedPresent={};gpuWait={};systemWaits={}",
+                                "systemHoldsLoop={};presentAtTime={};timedPresent={};gpuWait={};systemWaits={}",
                                 pacerOn ? 1 : 0, NanosecondTimeSpanUtil::ToFrequencyHz(m_pacerConfig.RefreshPeriod), m_pacerConfig.TargetFps,
                                 m_pacerConfig.Adaptive ? 1 : 0, m_pacerConfig.DisplayReports ? 1 : 0, ToString(m_pacerConfig.Kind),
                                 m_pacerConfig.WaitingPresents, m_pacerConfig.MaxFramesInFlight,
@@ -1959,7 +2022,8 @@ namespace Fsl
                                   ? m_pacerConfig.StartupPauseRefreshes
                                   : 0u,
                                 ToString(m_pacerConfig.Aim), m_pacerConfig.RefreshPeriod.TotalNanoseconds(), m_pacerConfig.ReadyPlacePercent,
-                                m_pacerConfig.SwapChainImages, m_pacerConfig.SystemHoldsLoop ? 1 : 0, m_pacerConfig.TimedPresent ? 1 : 0,
+                                m_pacerConfig.SwapChainImages, m_pacerConfig.SystemHoldsLoop ? 1 : 0,
+                                (m_pacerConfig.PresentAtTime && m_pacerConfig.Capabilities.PresentAtTime) ? 1 : 0, m_pacerConfig.TimedPresent ? 1 : 0,
                                 m_pacerConfig.GpuWait ? 1 : 0, m_pacerSystemWaits ? 1 : 0));
     }
 
@@ -2141,8 +2205,8 @@ namespace Fsl
       state.InUse = m_pacer->GetTier();
     }
 
-    // The radio buttons say the pacer the run is paced by, and the one it will be paced by while the frame pacer is off
-    ShowTiers(m_pacer ? m_pacerConfig.Kind : m_selectedKind);
+    // The radio buttons say the tier the run is paced in, and the one it will be paced in while the frame pacer is off
+    ShowTiers(m_selectedTier);
 
     if (m_tierKnown && state == m_tierState)
     {
@@ -2153,10 +2217,9 @@ namespace Fsl
     m_tierState = state;
 
     // The tier as the pacer library writes it: its major tier and its sub tier ("3.1")
-    const std::string_view best = SamplePacer::GetTierNumber(state.Best.Tier, state.Best.TimedPresent);
-    const std::string_view bestName = SamplePacer::GetTierLogName(state.Best.Tier, state.Best.TimedPresent);
-    // "0" and "pacerOff": the pacer is off, so the run is in no tier. The pacer in use is one where the loop places the frame: the
-    // sample has no present at a time.
+    const std::string_view best = SamplePacer::GetTierNumber(state.Best.Tier);
+    const std::string_view bestName = SamplePacer::GetTierLogName(state.Best.Tier);
+    // "0" and "pacerOff": the pacer is off, so the run is in no tier
     const std::string_view tier = state.InUse.has_value() ? SamplePacer::GetTierNumber(*state.InUse) : std::string_view("0");
     const std::string_view tierName = state.InUse.has_value() ? SamplePacer::GetTierLogName(*state.InUse) : std::string_view("pacerOff");
     const int32_t displaySideHolds = state.Best.DisplaySideHolds ? 1 : 0;

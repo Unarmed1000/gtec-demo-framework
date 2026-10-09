@@ -509,6 +509,25 @@ namespace Fsl
       //!        frame is presented (EndDraw at the latest). Zero is no target time. Ignored if IsPresentSchedulingSupported is false.
       void SetPresentRelativeTargetTime(const TimeSpan time) noexcept;
 
+      //! @brief Check if a present can be given a time before which its image is not shown (SetPresentAbsoluteTargetTime). It needs the
+      //!        presents to be measured (IsPresentTimingEnabled) and a device and a surface with presentAtAbsoluteTime of
+      //!        VK_EXT_present_timing, so it can change when the swapchain is recreated.
+      [[nodiscard]] bool IsPresentAtTimeSupported() const noexcept
+      {
+        return m_presentTiming.CanPresentAtAbsoluteTime();
+      }
+
+      //! @brief Give the present of the frame being drawn a time before which its image is not shown (a HighResolutionTimer timestamp),
+      //!        so the presentation engine shows it at the first refresh from that time on, whenever the present is made before it. It
+      //!        applies to one present, call it before the frame is presented (EndDraw at the latest). A default TickCount is no such
+      //!        time. A present takes one target time: this one comes before SetPresentRelativeTargetTime. Ignored if
+      //!        IsPresentAtTimeSupported is false.
+      void SetPresentAbsoluteTargetTime(const TickCount time) noexcept;
+
+      //! @brief Check if the swapchain shows the newest of the images that are ready at a refresh and never the ones before it (the
+      //!        present mode FIFO latest ready). With times on the presents it leaves out a frame that is overdue.
+      [[nodiscard]] bool IsPresentModeFifoLatestReady() const noexcept;
+
       //! @brief Get the id the present of the frame being drawn will get. The presents are numbered from one, whether they are measured or not.
       [[nodiscard]] uint64_t GetNextPresentId() const noexcept
       {
@@ -609,7 +628,8 @@ namespace Fsl
       //! True if the swapchain no longer matches the surface in a way a new swapchain would cure
       [[nodiscard]] bool IsSwapchainRecreationWorthIt() const;
       void LogFrameBegin();
-      void LogPresent(const VkResult result, const bool timingRequested, const uint64_t relativeTargetTimeNanoseconds) noexcept;
+      void LogPresent(const VkResult result, const bool timingRequested, const uint64_t relativeTargetTimeNanoseconds,
+                      const uint64_t absoluteTargetTime) noexcept;
 
       AppDrawResult TryDoPrepareDraw(const FrameInfo& frameInfo);
       AppDrawResult TryDoSwapBuffers(const FrameInfo& frameInfo);

@@ -51,6 +51,7 @@ namespace Fsl
     int32_t m_pacerReadyPlacePercent{SampleConfig::ReadyPlacePercent.Get()};
     int32_t m_pacerKindChangeFrames{SampleConfig::KindChangeFrames.Get()};
     bool m_pacerSystemHoldsLoop{false};
+    bool m_pacerPresentAtTime{true};
     bool m_pacerTimedPresent{false};
     bool m_pacerGpuWait{false};
     bool m_pacerSystemWaits{true};
@@ -148,7 +149,14 @@ namespace Fsl
       return m_pacerKindChangeFrames;
     }
 
-    //! @brief True if the pacer is to use the present that takes a time, where the app has one.
+    //! @brief True if the pacer is to use the present that takes a time before which the frame is not shown, where the app has one
+    //!        (the default): the display then places the frame.
+    [[nodiscard]] bool IsPacerPresentAtTime() const noexcept
+    {
+      return m_pacerPresentAtTime;
+    }
+
+    //! @brief True if the pacer is to use the present that takes the time the frame before stays on screen, where the app has one.
     [[nodiscard]] bool IsPacerTimedPresent() const noexcept
     {
       return m_pacerTimedPresent;

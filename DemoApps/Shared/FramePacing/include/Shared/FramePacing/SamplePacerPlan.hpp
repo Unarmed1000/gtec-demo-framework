@@ -69,6 +69,9 @@ namespace Fsl
     TickCount PresentTime;
     //! The swap interval for a present that takes one
     uint32_t SwapInterval{1};
+    //! The time before which the frame is not to be shown, for a present that takes one (a HighResolutionTimer timestamp), zero:
+    //! none. With it the display places the frame.
+    TickCount NotBeforeTime;
     //! The time the frame before this one is to stay on screen at least, for a present that takes one (zero: none). It is given to
     //! the present next to everything else of the plan: the time to wait until is still waited for.
     NanosecondTimeSpan MinimumDuration;

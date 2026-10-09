@@ -300,6 +300,7 @@ namespace Fsl::VulkanBasic
     TraceValue AcquireResult;
     TraceValue PresentTimingRequested;
     TraceValue PresentTargetRelative;
+    TraceValue PresentTargetAbsolute;
     TraceValue RefreshDuration;
     TraceValue RefreshInterval;
     TraceValue TimeDomainId;
@@ -496,6 +497,10 @@ namespace Fsl::VulkanBasic
         rLog.RegisterValue("presentTargetRelativeNs", TraceUnit::Nanoseconds,
                            "The target time the present was given: its image is not shown before this long after the image of the present "
                            "before it was shown (empty: the present was given none)");
+      state->PresentTargetAbsolute =
+        rLog.RegisterValue("presentTargetAbsoluteNs", TraceUnit::Nanoseconds,
+                           "The time the present was given before which its image is not shown, as a time of the time domain of the "
+                           "swapchain (presentTimeDomainId), which is not the clock of the framework (empty: the present was given none)");
       state->RefreshDuration = rLog.RegisterValue("refreshDurationNs", TraceUnit::Nanoseconds,
                                                   "VkSwapchainTimingPropertiesEXT::refreshDuration as the swapchain last reported it");
       state->RefreshInterval = rLog.RegisterValue("refreshIntervalNs", TraceUnit::Nanoseconds,
@@ -536,6 +541,7 @@ namespace Fsl::VulkanBasic
       rLog.SetFact("vulkan.calibratedTimestamps", hostDeviceFeatures.CalibratedTimestamps ? "1" : "0");
       rLog.SetFact("vulkan.presentTimingDevice", hostDeviceFeatures.PresentTiming ? "1" : "0");
       rLog.SetFact("vulkan.presentAtRelativeTimeDevice", hostDeviceFeatures.PresentAtRelativeTime ? "1" : "0");
+      rLog.SetFact("vulkan.presentAtAbsoluteTimeDevice", hostDeviceFeatures.PresentAtAbsoluteTime ? "1" : "0");
       rLog.SetFact("vulkan.presentTimingOption", fmt::format("{}", static_cast<int32_t>(launchOptions.PresentTiming)));
       rLog.SetFact("vulkan.presentWaitOption", fmt::format("{}", launchOptions.PresentWait));
       rLog.SetFact("vulkan.acquireFenceWaitOption", launchOptions.AcquireFenceWait ? "1" : "0");
@@ -562,11 +568,12 @@ namespace Fsl::VulkanBasic
         rLog.SetFact("vulkan.uses.calibrated_timestamps", hostDeviceFeatures.CalibratedTimestamps ? "1" : "0");
         rLog.SetFact("vulkan.uses.swapchain_maintenance1", swapchainMaintenance1Enabled ? "1" : "0");
         rLog.SetFact("vulkan.uses.presentAtRelativeTime", hostDeviceFeatures.PresentAtRelativeTime ? "1" : "0");
+        rLog.SetFact("vulkan.uses.presentAtAbsoluteTime", hostDeviceFeatures.PresentAtAbsoluteTime ? "1" : "0");
         FSLLOG3_INFO(
-          "FramePacing: Vulkan device has [{}], uses present timing: {}, a relative target time: {}, calibrated timestamps: {}, "
-          "present fences: {}, present wait: {}, a fence on the acquire: {}",
-          available, usesPresentTiming, hostDeviceFeatures.PresentAtRelativeTime, hostDeviceFeatures.CalibratedTimestamps,
-          swapchainMaintenance1Enabled, hostDeviceFeatures.PresentWait, launchOptions.AcquireFenceWait);
+          "FramePacing: Vulkan device has [{}], uses present timing: {}, a relative target time: {}, a absolute target time: {}, "
+          "calibrated timestamps: {}, present fences: {}, present wait: {}, a fence on the acquire: {}",
+          available, usesPresentTiming, hostDeviceFeatures.PresentAtRelativeTime, hostDeviceFeatures.PresentAtAbsoluteTime,
+          hostDeviceFeatures.CalibratedTimestamps, swapchainMaintenance1Enabled, hostDeviceFeatures.PresentWait, launchOptions.AcquireFenceWait);
       }
       state->Trace = std::move(trace);
       state->SetupTrace();
@@ -955,11 +962,18 @@ namespace Fsl::VulkanBasic
       if (presentTimingCreateFlags != 0u)
       {
         if (m_presentTiming.Reset(m_physicalDevice.Device, m_device.Get(), m_surface, m_swapchain.Get(), m_calibratedTimestamps) &&
-            m_hostDeviceFeatures.PresentAtRelativeTime && IsFifoPresentMode(presentMode))
+            IsFifoPresentMode(presentMode))
         {
           // The presents of this swapchain can be given a target time, if its surface supports that as well. A target time is only
           // valid with a present mode of the FIFO family (VUID-VkPresentTimingsInfoEXT-pSwapchains-12235).
-          m_presentTiming.TryEnablePresentAtRelativeTime();
+          if (m_hostDeviceFeatures.PresentAtRelativeTime)
+          {
+            m_presentTiming.TryEnablePresentAtRelativeTime();
+          }
+          if (m_hostDeviceFeatures.PresentAtAbsoluteTime)
+          {
+            m_presentTiming.TryEnablePresentAtAbsoluteTime();
+          }
         }
       }
       FSLLOG3_VERBOSE_IF(usePresentTiming, "Present timing: {}", m_presentTiming.IsEnabled() ? "enabled" : "not supported by the surface");
@@ -1211,12 +1225,13 @@ namespace Fsl::VulkanBasic
                                        m_launchOptions.AcquireFenceWait ? 1 : 0));
 
     const Vulkan::VUPresentTimingState timingState = m_presentTiming.GetState();
-    rState.Trace->AddEvent("presentTiming", fmt::format("generation={};enabled={};requested={};stages={:#x};timeDomain={};timeDomainId={};"
-                                                        "presentAtAbsoluteTime={};presentAtRelativeTime={};canSchedule={}",
-                                                        rState.Generation, m_presentTiming.IsEnabled() ? 1 : 0, m_presentTimingRequested ? 1 : 0,
-                                                        timingState.StageQueries, timingState.TimeDomain, timingState.TimeDomainId,
-                                                        timingState.PresentAtAbsoluteTime ? 1 : 0, timingState.PresentAtRelativeTime ? 1 : 0,
-                                                        m_presentTiming.CanPresentAtRelativeTime() ? 1 : 0));
+    rState.Trace->AddEvent("presentTiming",
+                           fmt::format("generation={};enabled={};requested={};stages={:#x};timeDomain={};timeDomainId={};"
+                                       "presentAtAbsoluteTime={};presentAtRelativeTime={};canSchedule={};canPresentAtTime={}",
+                                       rState.Generation, m_presentTiming.IsEnabled() ? 1 : 0, m_presentTimingRequested ? 1 : 0,
+                                       timingState.StageQueries, timingState.TimeDomain, timingState.TimeDomainId,
+                                       timingState.PresentAtAbsoluteTime ? 1 : 0, timingState.PresentAtRelativeTime ? 1 : 0,
+                                       m_presentTiming.CanPresentAtRelativeTime() ? 1 : 0, m_presentTiming.CanPresentAtAbsoluteTime() ? 1 : 0));
   }
 
 
@@ -1323,7 +1338,24 @@ namespace Fsl::VulkanBasic
   }
 
 
-  void DemoAppVulkanBasic::LogPresent(const VkResult result, const bool timingRequested, const uint64_t relativeTargetTimeNanoseconds) noexcept
+  void DemoAppVulkanBasic::SetPresentAbsoluteTargetTime(const TickCount time) noexcept
+  {
+    m_presentTiming.SetNextAbsoluteTargetTime(time);
+  }
+
+
+  bool DemoAppVulkanBasic::IsPresentModeFifoLatestReady() const noexcept
+  {
+#ifdef VK_KHR_present_mode_fifo_latest_ready
+    return m_swapchain.IsValid() && m_swapchain.GetPresentMode() == VK_PRESENT_MODE_FIFO_LATEST_READY_KHR;
+#else
+    return false;
+#endif
+  }
+
+
+  void DemoAppVulkanBasic::LogPresent(const VkResult result, const bool timingRequested, const uint64_t relativeTargetTimeNanoseconds,
+                                      const uint64_t absoluteTargetTime) noexcept
   {
     if (!m_framePacingLogState || !m_framePacingLogState->HasFrame)
     {
@@ -1341,6 +1373,10 @@ namespace Fsl::VulkanBasic
     if (relativeTargetTimeNanoseconds != 0u)
     {
       rLog.SetValueAt(frameIndex, rState.PresentTargetRelative, ToNanosecondTimeSpan(relativeTargetTimeNanoseconds));
+    }
+    if (absoluteTargetTime != 0u)
+    {
+      rLog.SetRawNanosecondsAt(frameIndex, rState.PresentTargetAbsolute, absoluteTargetTime);
     }
     // So a measurement that arrives later finds the frame of its present
     rState.PresentFrames[m_currentPresentCalls.PresentId % rState.PresentFrames.size()] = {m_currentPresentCalls.PresentId, frameIndex};
@@ -1934,7 +1970,7 @@ namespace Fsl::VulkanBasic
     m_currentPresentCalls.PresentReturnTime = m_presentCallTimer.GetTimestamp();
     m_currentPresentCalls.PresentResult = static_cast<int32_t>(result);
     m_lastPresentCalls = m_currentPresentCalls;
-    LogPresent(result, presentTimingInfo.IsTimingRequested, presentTimingInfo.RelativeTargetTimeNanoseconds);
+    LogPresent(result, presentTimingInfo.IsTimingRequested, presentTimingInfo.RelativeTargetTimeNanoseconds, presentTimingInfo.AbsoluteTargetTime);
     rFrame.PresentFencePending = hasPresentFence && IsPresentFenceSignalExpected(result);
     m_presentTiming.OnPresent(presentTimingInfo, result);
     if (m_presentWait.IsEnabled() && (result == VK_SUCCESS || result == VK_SUBOPTIMAL_KHR))

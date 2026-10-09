@@ -64,6 +64,14 @@ namespace Fsl::Vulkan::TimeDomainUtil
   //!        used for QUERY_PERFORMANCE_COUNTER.
   //! @return the time in 100ns ticks (a default TickCount if the time domain is not a host clock or the frequency is zero).
   TickCount ToTickCount(const VkTimeDomainKHR timeDomain, const uint64_t value, const uint64_t performanceCounterFrequency) noexcept;
+
+  //! @brief Convert a TickCount to a value of a host clock time domain: the inverse of ToTickCount.
+  //! @param timeDomain a time domain that IsHostClock.
+  //! @param time a time of the clock HighResolutionTimer reads.
+  //! @param performanceCounterFrequency the counts per second of the performance counter, only used for QUERY_PERFORMANCE_COUNTER.
+  //! @return the time in the unit of the time domain: nanoseconds for the CLOCK_MONOTONIC domains and counts for QUERY_PERFORMANCE_COUNTER
+  //!         (zero if the time domain is not a host clock, the frequency is zero or the time is not after zero).
+  uint64_t FromTickCount(const VkTimeDomainKHR timeDomain, const TickCount time, const uint64_t performanceCounterFrequency) noexcept;
 }
 
 #endif

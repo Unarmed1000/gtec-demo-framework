@@ -48,6 +48,34 @@ namespace Fsl::Vulkan::TimeDomainUtil
       return {};
     }
   }
+
+
+  uint64_t FromTickCount(const VkTimeDomainKHR timeDomain, const TickCount time, const uint64_t performanceCounterFrequency) noexcept
+  {
+    if (time.Ticks() <= 0)
+    {
+      return 0;
+    }
+    switch (timeDomain)
+    {
+    case VK_TIME_DOMAIN_QUERY_PERFORMANCE_COUNTER_KHR:
+      {
+        if (performanceCounterFrequency == 0u)
+        {
+          return 0;
+        }
+        // The inverse of the conversion of ToTickCount
+        const double countsPerTick = static_cast<double>(performanceCounterFrequency) / static_cast<double>(TickCount::TicksPerSecond);
+        return static_cast<uint64_t>(static_cast<double>(time.Ticks()) * countsPerTick);
+      }
+    case VK_TIME_DOMAIN_CLOCK_MONOTONIC_KHR:
+    case VK_TIME_DOMAIN_CLOCK_MONOTONIC_RAW_KHR:
+      // Nanoseconds
+      return static_cast<uint64_t>(time.Ticks()) * TickCount::NanoSecondsPerTick;
+    default:
+      return 0;
+    }
+  }
 }
 
 #endif

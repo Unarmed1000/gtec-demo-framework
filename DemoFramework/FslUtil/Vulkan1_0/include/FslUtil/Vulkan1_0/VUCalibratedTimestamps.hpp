@@ -83,6 +83,10 @@ namespace Fsl::Vulkan
     //! @brief Convert a value of the host time domain (TimeDomainUtil::GetHostTimeDomain) to the time of the framework clock.
     [[nodiscard]] TickCount HostTimeToTickCount(const uint64_t hostTime) const noexcept;
 
+    //! @brief Convert a time of the framework clock to a value of the host time domain: the inverse of HostTimeToTickCount (zero if the
+    //!        time is not after zero).
+    [[nodiscard]] uint64_t TickCountToHostTime(const TickCount time) const noexcept;
+
 #ifdef FSL_VULKAN_CALIBRATED_TIMESTAMPS_SUPPORTED
     //! @brief vkGetCalibratedTimestampsKHR for callers that need other time domains.
     //! @return VK_ERROR_EXTENSION_NOT_PRESENT if the entry point was not found.

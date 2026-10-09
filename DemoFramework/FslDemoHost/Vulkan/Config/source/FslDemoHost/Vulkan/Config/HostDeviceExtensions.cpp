@@ -235,15 +235,21 @@ namespace Fsl::Vulkan
     m_presentId2Features.presentId2 = VK_TRUE;
     PushFront(m_presentId2Features);
 
-    // The feedback is always enabled. Of the scheduling of presents the relative form is enabled where the device has it (a present a
-    // time after the one before it), the absolute form (presentAtAbsoluteTime) is not used.
+    // The feedback is always enabled. Of the scheduling of presents each form is enabled where the device has it: the relative one (a
+    // present a time after the one before it) and the absolute one (a present not before a time).
     m_presentTimingFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PRESENT_TIMING_FEATURES_EXT;
     m_presentTimingFeatures.presentTiming = VK_TRUE;
-    if (QueryFeatures<VkPhysicalDevicePresentTimingFeaturesEXT>(physicalDevice, VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PRESENT_TIMING_FEATURES_EXT)
-          .presentAtRelativeTime == VK_TRUE)
+    const auto availablePresentTimingFeatures =
+      QueryFeatures<VkPhysicalDevicePresentTimingFeaturesEXT>(physicalDevice, VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PRESENT_TIMING_FEATURES_EXT);
+    if (availablePresentTimingFeatures.presentAtRelativeTime == VK_TRUE)
     {
       m_presentTimingFeatures.presentAtRelativeTime = VK_TRUE;
       m_features.PresentAtRelativeTime = true;
+    }
+    if (availablePresentTimingFeatures.presentAtAbsoluteTime == VK_TRUE)
+    {
+      m_presentTimingFeatures.presentAtAbsoluteTime = VK_TRUE;
+      m_features.PresentAtAbsoluteTime = true;
     }
     PushFront(m_presentTimingFeatures);
 

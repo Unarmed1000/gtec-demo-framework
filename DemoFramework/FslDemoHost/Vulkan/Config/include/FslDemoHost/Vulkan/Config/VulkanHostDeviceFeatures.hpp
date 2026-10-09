@@ -43,6 +43,9 @@ namespace Fsl::Vulkan
     //! True if the presentAtRelativeTime feature of VK_EXT_present_timing was enabled as well. A present can then be given a target time
     //! relative to the present before it if its surface supports that too, see VUSwapchainPresentTiming::TryEnablePresentAtRelativeTime.
     bool PresentAtRelativeTime{false};
+    //! True if the presentAtAbsoluteTime feature of VK_EXT_present_timing was enabled as well. A present can then be given a time before
+    //! which its image is not shown if its surface supports that too, see VUSwapchainPresentTiming::TryEnablePresentAtAbsoluteTime.
+    bool PresentAtAbsoluteTime{false};
     //! True if VK_KHR_present_wait2 and VK_KHR_present_id2 were enabled with their features. A app can then wait until a present of a
     //! swapchain was presented if its surface supports that too, see VUSwapchainPresentWait.
     bool PresentWait{false};

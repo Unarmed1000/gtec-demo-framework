@@ -218,10 +218,11 @@ namespace Fsl
       std::shared_ptr<UI::Switch> SwitchLowLatency;
       std::shared_ptr<UI::Switch> SwitchTimedPresent;
       std::shared_ptr<UI::Switch> SwitchPacerDisplayReports;
-      //! What the frames can be paced with (below the switch of the frame pacer), one group of radio buttons: the tiers of the
-      //! pacer library the samples reach, with the best first. A tier that can not be used here is disabled, and the one that is
-      //! checked is the one the run is paced by.
-      std::array<std::shared_ptr<UI::RadioButton>, 4> RadioTiers;
+      //! What the frames can be paced with (below the switch of the frame pacer), one group of radio buttons: every tier of the
+      //! pacer library, with the best first. A tier that can not be used here is disabled, and the one that is checked is the one
+      //! the run is paced by. Above every four of them is the line of their major tier: who places a frame on its refresh.
+      std::array<std::shared_ptr<UI::RadioButton>, 12> RadioTiers;
+      std::array<std::shared_ptr<UI::Label>, 3> LabelMajorTiers;
       //! What the pacer that is checked does, below the group: a line of the pacer library for a tier. The label has the line of
       //! every pacer and is as wide as the longest, so the side bar keeps its width when another one is checked.
       std::shared_ptr<UI::SelectorLabel> LabelTierDescription;
@@ -350,12 +351,19 @@ namespace Fsl
     bool m_presentsMeasured{false};
     //! True if the app can give a present a target time (SetTimedPresentSupport)
     bool m_timedPresentSupported{false};
+    //! True if the app can give a present a time before which the frame is not shown, and if its display side then leaves out a
+    //! frame that is overdue (SetPresentAtTimeSupport)
+    bool m_presentAtTimeSupported{false};
+    bool m_presentSkipsOverdue{false};
+    //! True once the app reported when the GPU worked on a frame, and how long it worked on one (AddGpuInterval, AddGpuTime)
+    bool m_gpuWorkTimesReported{false};
+    bool m_gpuWorkDurationsReported{false};
     //! The tier of the pacer library the run is in (empty: the frame pacer is off) and what the pacer library rates this app at
     //! on this system. They are worked out every update and logged when they change.
     struct TierState
     {
       std::optional<SamplePacerTier> InUse;
-      //! The tier in use is the one with a present that takes a time on top
+      //! What the pacer library rates everything the app can do at
       SamplePacerRating Best;
 
       constexpr bool operator==(const TierState&) const noexcept = default;
@@ -423,14 +431,18 @@ namespace Fsl
     //! When m_vsyncTime was read, and the vertical blank the pacer was given last (it is only given a new one)
     TickCount m_vsyncReadTime;
     NanosecondTickCount m_pacerVBlankTime;
+    //! True if the run is to use the time on the present before which a frame is not shown, where the app has it
+    //! (--Pacer.PresentAtTime, then the radio button the user checked last): the display then places the frame
+    bool m_pacerPresentAtTime{true};
     //! The tiers that can be used right now, in the order of SamplePacerTierChoiceUtil::Tiers (the radio buttons that are
-    //! enabled), and what the run is to be paced with: the kind that was asked for (m_pacerKind) or the one that comes closest to
-    //! it. They are what Update decided.
-    std::array<bool, 4> m_tierOffered{};
+    //! enabled), and the tier the run is to be in with its kind: the one that was asked for (m_pacerKind, m_pacerPresentAtTime)
+    //! or the one that comes closest to it. They are what Update decided.
+    std::array<bool, 12> m_tierOffered{};
+    SamplePacerTier m_selectedTier{SamplePacerTier::TimerPeriodOnly};
     SamplePacerKind m_selectedKind{SamplePacerKind::TimerPeriodOnly};
-    //! The kind the radio buttons were last set to (empty: not yet). A button that is checked and is not its button was checked
+    //! The tier the radio buttons were last set to (empty: not yet). A button that is checked and is not its button was checked
     //! by the user.
-    std::optional<SamplePacerKind> m_shownKind;
+    std::optional<SamplePacerTier> m_shownTier;
     //! What the start of the frame that is about to start waits for, and if the pacer was asked for it yet
     SamplePacerFrameStartPlan m_frameStartPlan;
     bool m_frameStartPlanned{false};
@@ -737,6 +749,17 @@ namespace Fsl
     //! Tell the sample if the app can give a present a target time (the time the frame before stays on screen at least). The frame
     //! pacer plans that time where it is asked to. Call it every frame, as it can change when the swapchain is recreated.
     void SetTimedPresentSupport(const bool supported);
+    //! Tell the sample if the app can give a present a time before which the frame is not shown, so the display places the frame,
+    //! and if its display side then leaves out a frame that is overdue (a present mode that shows the newest frame that is due).
+    //! The frame pacer is told both and plans the time where it is asked to. Call it every frame, as it can change when the
+    //! swapchain is recreated.
+    void SetPresentAtTimeSupport(const bool supported, const bool skipsOverdue);
+    //! The time the present of the frame that just ended (EndFrame) is to be given: the frame is not to be shown before it (a
+    //! HighResolutionTimer timestamp). Zero if the frame pacer gave none.
+    [[nodiscard]] TickCount GetPresentNotBeforeTime() const noexcept
+    {
+      return m_pacer != nullptr ? m_presentPlan.NotBeforeTime : TickCount();
+    }
 
     //! @brief A app that presents with a swap interval says what the longest one is that it can set (the EGL config decides it, and it
     //!        can be one). It is what the tier the side bar shows as the best of the system depends on.
@@ -881,8 +904,8 @@ namespace Fsl
     void ReadTierRadioButtons();
     //! Work out which tiers can be used right now and what the run is to be paced with
     void UpdateTierChoice();
-    //! Enable the radio buttons of the tiers that can be used and check the one of the given kind
-    void ShowTiers(const SamplePacerKind kind);
+    //! Enable the radio buttons of the tiers that can be used and check the one of the given tier
+    void ShowTiers(const SamplePacerTier tier);
     //! @return the refresh period of the display the window is on, in nanoseconds (zero if the window system does not know it)
     [[nodiscard]] NanosecondTimeSpan ReadDisplayRefreshPeriod() const;
     //! Take the refresh period the window system reports now (m_detectedRefreshPeriod)
