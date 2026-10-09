@@ -23,6 +23,7 @@
 //****************************************************************************************************************************************************
 
 
+#include <FslBase/Math/Pixel/PxValue.hpp>
 #include <FslBase/Time/NanosecondTickCount.hpp>
 #include <FslBase/Time/NanosecondTimeSpan.hpp>
 #include <FslBase/Time/TickCount.hpp>
@@ -44,6 +45,10 @@ namespace Fsl
   //!
   //! What a frame value looks like on the timeline is declared once: two times are a span, a time is a mark, a count is a counter. The
   //! declaration only decides how it is drawn, the value is always written as the number it was set to.
+  //!
+  //! A frame value is set with the setter of what it is, and every setter is for the values of one kind of unit: a moment, a
+  //! duration, a flag, a frame index, a run id and pixels are given as their type (SetValue), a count, a id and a code as a number
+  //! (SetCount, SetId, SetCode). A value of another unit is not written, and that is logged once per value.
   //!
   //! Everything here does nothing while the trace is off, so there is no need to check for it. Use IsEnabled to skip the work of finding
   //! a value out. The service is used from the thread it was created on.
@@ -112,14 +117,27 @@ namespace Fsl
     //! @return false if it was not declared.
     virtual bool DeclareCounter(const std::string_view title, const TraceValue value) = 0;
 
-    //! @brief Set a value of the frame that is being drawn that is not a time or a duration of the framework: a count, a id, a code,
-    //!        pixels, or a number a driver gave. A time or a duration is set with SetValue.
-    virtual void SetInt64(const TraceValue value, const int64_t number) noexcept = 0;
-    virtual void SetUInt64(const TraceValue value, const uint64_t number) noexcept = 0;
+    //! @brief Set a number of things of the frame that is being drawn: a value of the unit TraceUnit::Count.
+    virtual void SetCount(const TraceValue value, const uint64_t count) noexcept = 0;
 
-    //! @brief Set a value of a earlier frame. It is ignored if the frame was written already (a frame is kept for 64 frames).
-    virtual void SetInt64At(const TraceFrameIndex frameIndex, const TraceValue value, const int64_t number) noexcept = 0;
-    virtual void SetUInt64At(const TraceFrameIndex frameIndex, const TraceValue value, const uint64_t number) noexcept = 0;
+    //! @brief Set a id or a index of the frame that is being drawn: a value of the unit TraceUnit::Id. A frame index and a run id are
+    //!        set with SetValue.
+    virtual void SetId(const TraceValue value, const uint64_t id) noexcept = 0;
+
+    //! @brief Set a code of the frame that is being drawn (a result code, a kind): a value of the unit TraceUnit::Code.
+    virtual void SetCode(const TraceValue value, const int64_t code) noexcept = 0;
+
+    //! @brief Set a moment of the frame that is being drawn that is on a clock that is not the one of the framework (a driver or the
+    //!        window system has a clock of its own), as the nanoseconds that clock gave: a value of the unit TraceUnit::Nanoseconds.
+    //!        A moment on the clock of the framework and a duration are set with SetValue.
+    virtual void SetRawNanoseconds(const TraceValue value, const uint64_t nanoseconds) noexcept = 0;
+
+    //! @brief Set a count, a id, a code or a moment on another clock of a earlier frame (see the setters above). It is ignored if the
+    //!        frame was written already (a frame is kept for 64 frames).
+    virtual void SetCountAt(const TraceFrameIndex frameIndex, const TraceValue value, const uint64_t count) noexcept = 0;
+    virtual void SetIdAt(const TraceFrameIndex frameIndex, const TraceValue value, const uint64_t id) noexcept = 0;
+    virtual void SetCodeAt(const TraceFrameIndex frameIndex, const TraceValue value, const int64_t code) noexcept = 0;
+    virtual void SetRawNanosecondsAt(const TraceFrameIndex frameIndex, const TraceValue value, const uint64_t nanoseconds) noexcept = 0;
 
     //! @brief Set a moment of the frame that is being drawn, given as the type the caller has. It is written in the unit of the value,
     //!        TraceUnit::Ticks (the tick the moment lies in) or TraceUnit::NanosecondTicks: the trace converts, the caller does not.
@@ -137,6 +155,15 @@ namespace Fsl
     //!        another unit.
     virtual void SetValue(const TraceValue value, const bool flag) noexcept = 0;
 
+    //! @brief Set the index of a frame or the id of a run as a value of the frame that is being drawn: a value of the unit
+    //!        TraceUnit::Id. It is not written to a value of another unit.
+    virtual void SetValue(const TraceValue value, const TraceFrameIndex index) noexcept = 0;
+    virtual void SetValue(const TraceValue value, const TraceRunId runId) noexcept = 0;
+
+    //! @brief Set a number of pixels of the frame that is being drawn: a value of the unit TraceUnit::Pixels. It is not written to a
+    //!        value of another unit.
+    virtual void SetValue(const TraceValue value, const PxValue pixels) noexcept = 0;
+
     //! @brief Set a moment of a earlier frame (see SetValue). It is ignored if the frame was written already.
     virtual void SetValueAt(const TraceFrameIndex frameIndex, const TraceValue value, const TickCount time) noexcept = 0;
     virtual void SetValueAt(const TraceFrameIndex frameIndex, const TraceValue value, const NanosecondTickCount time) noexcept = 0;
@@ -144,6 +171,13 @@ namespace Fsl
     //! @brief Set a duration of a earlier frame (see SetValue). It is ignored if the frame was written already.
     virtual void SetValueAt(const TraceFrameIndex frameIndex, const TraceValue value, const TimeSpan duration) noexcept = 0;
     virtual void SetValueAt(const TraceFrameIndex frameIndex, const TraceValue value, const NanosecondTimeSpan duration) noexcept = 0;
+
+    //! @brief Set a flag, the index of a frame, the id of a run or a number of pixels of a earlier frame (see SetValue). It is ignored
+    //!        if the frame was written already.
+    virtual void SetValueAt(const TraceFrameIndex frameIndex, const TraceValue value, const bool flag) noexcept = 0;
+    virtual void SetValueAt(const TraceFrameIndex frameIndex, const TraceValue value, const TraceFrameIndex index) noexcept = 0;
+    virtual void SetValueAt(const TraceFrameIndex frameIndex, const TraceValue value, const TraceRunId runId) noexcept = 0;
+    virtual void SetValueAt(const TraceFrameIndex frameIndex, const TraceValue value, const PxValue pixels) noexcept = 0;
 
     // Events and facts
 

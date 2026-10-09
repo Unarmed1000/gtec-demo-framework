@@ -23,6 +23,7 @@
 //****************************************************************************************************************************************************
 
 
+#include <FslBase/Math/Pixel/PxValue.hpp>
 #include <FslBase/System/HighResolutionTimer.hpp>
 #include <FslBase/Time/NanosecondTickCount.hpp>
 #include <FslBase/Time/NanosecondTimeSpan.hpp>
@@ -147,15 +148,14 @@ namespace Fsl
     //! @brief A frame begins: its row is opened and the row that is too old to change is written.
     void BeginFrame(const uint64_t frameIndex, const uint32_t runId);
 
-    void SetInt64(const TraceValue value, const int64_t number) noexcept
-    {
-      m_table.SetValue(m_frameIndex, value, number);
-    }
-
-    void SetInt64At(const uint64_t frameIndex, const TraceValue value, const int64_t number) noexcept
-    {
-      m_table.SetValue(frameIndex, value, number);
-    }
+    //! @brief Set a count, a id, a code, pixels or a moment on a clock that is not the framework's (in the nanoseconds of that
+    //!        clock): a value of the unit TraceUnit::Count, Id, Code, Pixels or Nanoseconds. It is not written to a value of another
+    //!        unit, which is logged once.
+    void SetCountAt(const uint64_t frameIndex, const TraceValue value, const uint64_t count) noexcept;
+    void SetIdAt(const uint64_t frameIndex, const TraceValue value, const uint64_t id) noexcept;
+    void SetCodeAt(const uint64_t frameIndex, const TraceValue value, const int64_t code) noexcept;
+    void SetPixelsAt(const uint64_t frameIndex, const TraceValue value, const PxValue pixels) noexcept;
+    void SetRawNanosecondsAt(const uint64_t frameIndex, const TraceValue value, const uint64_t nanoseconds) noexcept;
 
     //! @brief Set a moment. It is written in the unit of the value: TraceUnit::Ticks (the tick the moment lies in) or
     //!        TraceUnit::NanosecondTicks. It is not written to a value of another unit, which is logged once.
@@ -193,6 +193,8 @@ namespace Fsl
     }
 
     void AddRecord(const std::string_view name, const std::string_view details, const bool isFact);
+    void SetNumberAt(const uint64_t frameIndex, const TraceValue value, const TraceUnit unit, const int64_t number,
+                     const std::string_view given) noexcept;
     void ReportWrongUnit(const TraceValue value, const std::string_view given) noexcept;
     void HandOverZones();
     void TryHandOverZones() noexcept;

@@ -345,7 +345,7 @@ namespace Fsl
       m_framePacingLogFrameIndex = rLog.GetFrameIndex();
       m_framePacingLogHasFrame = true;
       rLog.SetValue(m_framePacingLogColumns.UpdateEnd, m_stats.TimeAfterUpdate);
-      rLog.SetUInt64(m_framePacingLogColumns.FrameSlot, frameInfo.FrameIndex);
+      rLog.SetId(m_framePacingLogColumns.FrameSlot, frameInfo.FrameIndex);
       // The time of the app counts from its start and is not a moment of the steady clock: a duration
       rLog.SetValue(m_framePacingLogColumns.FrameworkTime, TimeSpan(frameInfo.Time.CurrentTickCount.Ticks()));
       rLog.SetValue(m_framePacingLogColumns.FrameworkStep, frameInfo.Time.ElapsedTime);
@@ -425,14 +425,14 @@ namespace Fsl
             // is too coarse for it
             rLog.SetValue(m_framePacingLogColumns.DisplayVSync, vsyncInfo.VSyncTime);
             rLog.SetValue(m_framePacingLogColumns.DisplayRefreshPeriod, vsyncInfo.RefreshPeriod);
-            rLog.SetUInt64(m_framePacingLogColumns.DisplayVSyncFlags, NativeWindowVSyncTimeFlagsUtil::ToLogCode(vsyncInfo.TimeFlags));
+            rLog.SetCode(m_framePacingLogColumns.DisplayVSyncFlags, NativeWindowVSyncTimeFlagsUtil::ToLogCode(vsyncInfo.TimeFlags));
           }
           // What is known about variable refresh: the measurement per frame, the answers as a event when one of them changes
           const NativeWindowVariableRefreshInfo variableRefresh = window->TryGetVariableRefreshInfo();
           if (variableRefresh.ObservedIntervalCount != 0u)
           {
-            rLog.SetUInt64(m_framePacingLogColumns.DisplayVBlankInterval, variableRefresh.ObservedIntervalMilliPeriods);
-            rLog.SetUInt64(m_framePacingLogColumns.DisplayVBlankOffPeriod, variableRefresh.ObservedOffPeriodPerMille);
+            rLog.SetCount(m_framePacingLogColumns.DisplayVBlankInterval, variableRefresh.ObservedIntervalMilliPeriods);
+            rLog.SetCount(m_framePacingLogColumns.DisplayVBlankOffPeriod, variableRefresh.ObservedOffPeriodPerMille);
           }
           const int32_t packedAnswers = (static_cast<int32_t>(variableRefresh.Supported) << 12) |
                                         (static_cast<int32_t>(variableRefresh.Enabled) << 8) | (static_cast<int32_t>(variableRefresh.Active) << 4) |

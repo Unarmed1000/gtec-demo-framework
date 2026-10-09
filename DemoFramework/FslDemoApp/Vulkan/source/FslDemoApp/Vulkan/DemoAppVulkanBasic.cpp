@@ -32,6 +32,7 @@
 #include <FslBase/Bits/BitsUtil.hpp>
 #include <FslBase/Log/Log3Fmt.hpp>
 #include <FslBase/Span/SpanUtil_Vector.hpp>
+#include <FslBase/Time/NanosecondTimeSpan.hpp>
 #include <FslBase/Time/TimeSpan.hpp>
 #include <FslDemoApp/Base/FrameInfo.hpp>
 #include <FslDemoApp/Base/Overlay/DemoAppProfilerOverlay.hpp>
@@ -224,6 +225,13 @@ namespace Fsl::VulkanBasic
         }
       }
       return AppDrawResult::Completed;
+    }
+
+    //! A duration the driver gives in nanoseconds as the duration it is. The driver gives the largest number there is for a refresh
+    //! interval it does not know (a variable refresh rate): that one is -1 ns, which is what the trace had for it as a number.
+    constexpr NanosecondTimeSpan ToNanosecondTimeSpan(const uint64_t nanoseconds) noexcept
+    {
+      return NanosecondTimeSpan(static_cast<int64_t>(nanoseconds));
     }
 
     //! The refresh mode a swapchain says it is in, as the log writes it
@@ -1231,16 +1239,16 @@ namespace Fsl::VulkanBasic
       rState.HasWaitForPresent = false;
       rLog.SetValue(rState.WaitForPresentBegin, rState.WaitForPresentBeginTime);
       rLog.SetValue(rState.WaitForPresentEnd, rState.WaitForPresentEndTime);
-      rLog.SetUInt64(rState.WaitForPresentId, rState.WaitForPresentIdValue);
-      rLog.SetInt64(rState.WaitForPresentResult, rState.WaitForPresentResultValue);
+      rLog.SetId(rState.WaitForPresentId, rState.WaitForPresentIdValue);
+      rLog.SetCode(rState.WaitForPresentResult, rState.WaitForPresentResultValue);
     }
     if (rState.HasGpuWorkWait)
     {
       rState.HasGpuWorkWait = false;
       rLog.SetValue(rState.GpuWorkWaitBegin, rState.GpuWorkWaitBeginTime);
       rLog.SetValue(rState.GpuWorkWaitEnd, rState.GpuWorkWaitEndTime);
-      rLog.SetUInt64(rState.GpuWorkWaitId, rState.GpuWorkWaitIdValue);
-      rLog.SetInt64(rState.GpuWorkWaitResult, rState.GpuWorkWaitResultValue);
+      rLog.SetId(rState.GpuWorkWaitId, rState.GpuWorkWaitIdValue);
+      rLog.SetCode(rState.GpuWorkWaitResult, rState.GpuWorkWaitResultValue);
     }
     if (rState.HasAcquireFenceWait)
     {
@@ -1250,15 +1258,15 @@ namespace Fsl::VulkanBasic
     }
     rLog.SetValue(rState.AcquireCall, m_currentPresentCalls.AcquireCallTime);
     rLog.SetValue(rState.AcquireReturn, m_currentPresentCalls.AcquireReturnTime);
-    rLog.SetInt64(rState.AcquireResult, m_currentPresentCalls.AcquireResult);
-    rLog.SetUInt64(rState.SwapchainGeneration, rState.Generation);
+    rLog.SetCode(rState.AcquireResult, m_currentPresentCalls.AcquireResult);
+    rLog.SetCount(rState.SwapchainGeneration, rState.Generation);
 
     const Vulkan::VUPresentTimingState timingState = m_presentTiming.GetState();
     if (timingState.TimingPropertiesReadCount > 0u)
     {
       // As the swapchain reported them, the two are written apart: by the specification they tell a fixed from a variable refresh mode
-      rLog.SetUInt64(rState.RefreshDuration, timingState.RefreshDurationNanoseconds);
-      rLog.SetUInt64(rState.RefreshInterval, timingState.RefreshIntervalNanoseconds);
+      rLog.SetValue(rState.RefreshDuration, ToNanosecondTimeSpan(timingState.RefreshDurationNanoseconds));
+      rLog.SetValue(rState.RefreshInterval, ToNanosecondTimeSpan(timingState.RefreshIntervalNanoseconds));
     }
     if (timingState.TimingPropertiesReadCount != rState.LoggedTimingPropertiesReadCount)
     {
@@ -1300,11 +1308,11 @@ namespace Fsl::VulkanBasic
         }
         if (record.RawStageTimes[stageIndex] != 0u)
         {
-          rLog.SetUInt64At(presentFrame.FrameIndex, rState.StageRaw[stageIndex], record.RawStageTimes[stageIndex]);
+          rLog.SetRawNanosecondsAt(presentFrame.FrameIndex, rState.StageRaw[stageIndex], record.RawStageTimes[stageIndex]);
         }
       }
-      rLog.SetUInt64At(presentFrame.FrameIndex, rState.TimeDomainId, record.TimeDomainId);
-      rLog.SetUInt64At(presentFrame.FrameIndex, rState.ResultReadAtFrame, rState.FrameIndex.Value);
+      rLog.SetIdAt(presentFrame.FrameIndex, rState.TimeDomainId, record.TimeDomainId);
+      rLog.SetValueAt(presentFrame.FrameIndex, rState.ResultReadAtFrame, rState.FrameIndex);
     }
   }
 
@@ -1324,15 +1332,15 @@ namespace Fsl::VulkanBasic
     FramePacingLogState& rState = *m_framePacingLogState;
     ITraceService& rLog = *rState.Trace;
     const TraceFrameIndex frameIndex = rState.FrameIndex;
-    rLog.SetUInt64At(frameIndex, rState.PresentId, m_currentPresentCalls.PresentId);
-    rLog.SetUInt64At(frameIndex, rState.ImageIndex, m_currentPresentCalls.ImageIndex);
+    rLog.SetIdAt(frameIndex, rState.PresentId, m_currentPresentCalls.PresentId);
+    rLog.SetIdAt(frameIndex, rState.ImageIndex, m_currentPresentCalls.ImageIndex);
     rLog.SetValueAt(frameIndex, rState.PresentCall, m_currentPresentCalls.PresentCallTime);
     rLog.SetValueAt(frameIndex, rState.PresentReturn, m_currentPresentCalls.PresentReturnTime);
-    rLog.SetInt64At(frameIndex, rState.PresentResult, static_cast<int64_t>(result));
-    rLog.SetInt64At(frameIndex, rState.PresentTimingRequested, timingRequested ? 1 : 0);
+    rLog.SetCodeAt(frameIndex, rState.PresentResult, static_cast<int64_t>(result));
+    rLog.SetValueAt(frameIndex, rState.PresentTimingRequested, timingRequested);
     if (relativeTargetTimeNanoseconds != 0u)
     {
-      rLog.SetUInt64At(frameIndex, rState.PresentTargetRelative, relativeTargetTimeNanoseconds);
+      rLog.SetValueAt(frameIndex, rState.PresentTargetRelative, ToNanosecondTimeSpan(relativeTargetTimeNanoseconds));
     }
     // So a measurement that arrives later finds the frame of its present
     rState.PresentFrames[m_currentPresentCalls.PresentId % rState.PresentFrames.size()] = {m_currentPresentCalls.PresentId, frameIndex};

@@ -27,6 +27,7 @@
 #include <FslBase/Span/SpanUtil_Array.hpp>
 #include <FslBase/Time/NanosecondTickCountUtil.hpp>
 #include <FslBase/Time/NanosecondTimeSpanUtil.hpp>
+#include <FslBase/UncheckedNumericCast.hpp>
 #include <FslDemoApp/Base/Service/Events/Basic/WindowFocusEvent.hpp>
 #include <FslDemoApp/Shared/Host/DemoWindowMetrics.hpp>
 #include <FslDemoHost/Base/Service/WindowHost/IWindowHostInfo.hpp>
@@ -1387,7 +1388,7 @@ namespace Fsl
       if (m_lastGpuTime.Ticks() > 0 && m_gpuTimeLogFrameIndex.has_value())
       {
         // The GPU time is the one of an earlier frame, so the row says which
-        m_trace->SetUInt64(m_logColumns.WorkGpuFrameIndex, m_gpuTimeLogFrameIndex.value().Value);
+        m_trace->SetValue(m_logColumns.WorkGpuFrameIndex, m_gpuTimeLogFrameIndex.value());
       }
     }
   }
@@ -1990,72 +1991,72 @@ namespace Fsl
       rLog.SetValue(columns.FrameWaitTarget, m_frameStartLogTargetTime);
     }
     rLog.SetValue(columns.FrameStart, m_frameStartTime);
-    rLog.SetInt64(columns.CpuLoad, m_ui.SliderCpuLoad->GetValue());
-    rLog.SetInt64(columns.CpuSpike, m_frameCpuSpikeMs);
-    rLog.SetInt64(columns.GpuLoad, m_ui.SliderGpuLoad->GetValue());
+    rLog.SetCount(columns.CpuLoad, UncheckedNumericCast<uint64_t>(m_ui.SliderCpuLoad->GetValue()));
+    rLog.SetCount(columns.CpuSpike, UncheckedNumericCast<uint64_t>(m_frameCpuSpikeMs));
+    rLog.SetCount(columns.GpuLoad, UncheckedNumericCast<uint64_t>(m_ui.SliderGpuLoad->GetValue()));
     if (pacerOn)
     {
-      rLog.SetUInt64(columns.SwapInterval, m_schedule.SwapInterval);
-      rLog.SetInt64(columns.Change, static_cast<int64_t>(m_schedule.Change));
+      rLog.SetCount(columns.SwapInterval, m_schedule.SwapInterval);
+      rLog.SetCode(columns.Change, static_cast<int64_t>(m_schedule.Change));
       rLog.SetValue(columns.AnimationStep, m_schedule.AnimationStep);
       // The frame window as it is after the frame before this one was measured
       const SamplePacerStatus status = m_pacer->GetStatus();
-      rLog.SetUInt64(columns.PreferredSwapInterval, status.PreferredSwapInterval);
-      rLog.SetUInt64(columns.WindowFrames, status.Frames);
-      rLog.SetUInt64(columns.WindowLateFrames, status.LateFrames);
+      rLog.SetCount(columns.PreferredSwapInterval, status.PreferredSwapInterval);
+      rLog.SetCount(columns.WindowFrames, status.Frames);
+      rLog.SetCount(columns.WindowLateFrames, status.LateFrames);
       rLog.SetValue(columns.WindowStartsAhead, status.StartsAhead);
       rLog.SetValue(columns.WindowAverageWork, status.AverageWork);
       rLog.SetValue(columns.WindowSpan, status.WindowSpan);
       rLog.SetValue(columns.WindowFull, status.WindowFull);
-      rLog.SetUInt64(columns.PacerFrameId, m_schedule.FrameId);
+      rLog.SetId(columns.PacerFrameId, m_schedule.FrameId);
       rLog.SetValue(columns.NextFrameStart, m_schedule.NextFrameStartTime);
-      rLog.SetInt64(columns.PacerKind, ToLogCode(m_pacerConfig.Kind));
-      rLog.SetUInt64(columns.RefreshesBehindClock, m_pacer->GetRefreshesBehindClock());
+      rLog.SetCode(columns.PacerKind, ToLogCode(m_pacerConfig.Kind));
+      rLog.SetCount(columns.RefreshesBehindClock, m_pacer->GetRefreshesBehindClock());
       rLog.SetValue(columns.PacerGpuTime, m_pacer->GetGpuTime());
       if (m_pacerConfig.Kind == SamplePacerKind::TimerPeriodOnly || m_pacerConfig.Kind == SamplePacerKind::VBlankPeriodOnly)
       {
-        rLog.SetUInt64(columns.StartupPauses, m_pacer->GetStartupPauses());
+        rLog.SetCount(columns.StartupPauses, m_pacer->GetStartupPauses());
       }
       if (m_pacerConfig.Kind == SamplePacerKind::TimerPeriodOnly || m_pacerConfig.Kind == SamplePacerKind::TimerWaitForPresent)
       {
         // The pacer takes the waits of the app where it paces on its clock
-        rLog.SetUInt64(columns.SystemHeldFrames, m_pacer->GetSystemHeldFrames());
-        rLog.SetUInt64(columns.FrameSlotHeldFrames, m_pacer->GetFrameSlotHeldFrames());
+        rLog.SetCount(columns.SystemHeldFrames, m_pacer->GetSystemHeldFrames());
+        rLog.SetCount(columns.FrameSlotHeldFrames, m_pacer->GetFrameSlotHeldFrames());
       }
       if (IsVBlankKind(m_pacerConfig.Kind))
       {
-        rLog.SetUInt64(columns.DisplayHeldRefreshes, m_pacer->GetDisplayHeldRefreshes());
-        rLog.SetInt64(columns.VBlankReading, m_pacer->HasVBlankReading() ? 1 : 0);
-        rLog.SetUInt64(columns.VBlankJumps, m_pacer->GetVBlankJumps());
+        rLog.SetCount(columns.DisplayHeldRefreshes, m_pacer->GetDisplayHeldRefreshes());
+        rLog.SetValue(columns.VBlankReading, m_pacer->HasVBlankReading());
+        rLog.SetCount(columns.VBlankJumps, m_pacer->GetVBlankJumps());
       }
       if (m_pacerConfig.Kind == SamplePacerKind::VBlankWaitForPresent)
       {
-        rLog.SetUInt64(columns.ShownLaterByWaits, m_pacer->GetShownLaterByWaits());
+        rLog.SetCount(columns.ShownLaterByWaits, m_pacer->GetShownLaterByWaits());
         rLog.SetValue(columns.ReadyPlace, m_pacer->GetReadyPlaceNow());
-        rLog.SetUInt64(columns.ReadyPlaceTries, m_pacer->GetReadyPlaceTries());
-        rLog.SetUInt64(columns.ReadyPlaceTriesTakenBack, m_pacer->GetReadyPlaceTriesTakenBack());
+        rLog.SetCount(columns.ReadyPlaceTries, m_pacer->GetReadyPlaceTries());
+        rLog.SetCount(columns.ReadyPlaceTriesTakenBack, m_pacer->GetReadyPlaceTriesTakenBack());
       }
       if (m_pacerConfig.GpuWait)
       {
-        rLog.SetUInt64(columns.GpuWaitTimeouts, m_pacer->GetGpuWaitTimeouts());
+        rLog.SetCount(columns.GpuWaitTimeouts, m_pacer->GetGpuWaitTimeouts());
       }
       if (IsPresentWaitKind(m_pacerConfig.Kind))
       {
-        rLog.SetUInt64(columns.PresentWaitTimeouts, m_pacer->GetPresentWaitTimeouts());
-        rLog.SetInt64(columns.PresentWaitsStopped, m_pacer->IsPresentWaitStopped() ? 1 : 0);
+        rLog.SetCount(columns.PresentWaitTimeouts, m_pacer->GetPresentWaitTimeouts());
+        rLog.SetValue(columns.PresentWaitsStopped, m_pacer->IsPresentWaitStopped());
       }
       rLog.SetValue(columns.FeedbackOn, m_pacerConfig.PresentFeedback);
       if (m_pacerConfig.PresentFeedback)
       {
         // What the display reports the pacer had when it planned this frame say of the frames before it
         const SamplePacerDisplayErrors displayErrors = m_pacer->GetDisplayErrors();
-        rLog.SetUInt64(columns.DisplayReports, displayErrors.Reports);
-        rLog.SetUInt64(columns.DisplayRefused, displayErrors.Refused);
-        rLog.SetUInt64(columns.DisplayJudgedFrames, displayErrors.JudgedFrames);
-        rLog.SetUInt64(columns.DisplayErrorFrames, displayErrors.ErrorFrames);
-        rLog.SetUInt64(columns.DisplayOffTargetFrames, displayErrors.OffTargetFrames);
-        rLog.SetUInt64(columns.DisplayLateFrames, displayErrors.LateFrames);
-        rLog.SetUInt64(columns.DisplayStartToDisplayFrames, displayErrors.StartToDisplayFrames);
+        rLog.SetCount(columns.DisplayReports, displayErrors.Reports);
+        rLog.SetCount(columns.DisplayRefused, displayErrors.Refused);
+        rLog.SetCount(columns.DisplayJudgedFrames, displayErrors.JudgedFrames);
+        rLog.SetCount(columns.DisplayErrorFrames, displayErrors.ErrorFrames);
+        rLog.SetCount(columns.DisplayOffTargetFrames, displayErrors.OffTargetFrames);
+        rLog.SetCount(columns.DisplayLateFrames, displayErrors.LateFrames);
+        rLog.SetCount(columns.DisplayStartToDisplayFrames, displayErrors.StartToDisplayFrames);
         rLog.SetValue(columns.DisplayStartToDisplayTotal, displayErrors.StartToDisplayTotal);
         rLog.SetValue(columns.DisplayStartToDisplayLongest, displayErrors.StartToDisplayLongest);
       }

@@ -241,39 +241,74 @@ namespace Fsl
   }
 
 
-  void TraceService::SetInt64(const TraceValue value, const int64_t number) noexcept
+  void TraceService::SetCount(const TraceValue value, const uint64_t count) noexcept
   {
     if (m_log)
     {
-      m_log->SetInt64(value, number);
+      m_log->SetCountAt(m_log->GetFrameIndex(), value, count);
     }
   }
 
 
-  void TraceService::SetUInt64(const TraceValue value, const uint64_t number) noexcept
+  void TraceService::SetId(const TraceValue value, const uint64_t id) noexcept
   {
     if (m_log)
     {
-      // A unsigned value is written as its bits
-      m_log->SetInt64(value, static_cast<int64_t>(number));
+      m_log->SetIdAt(m_log->GetFrameIndex(), value, id);
     }
   }
 
 
-  void TraceService::SetInt64At(const TraceFrameIndex frameIndex, const TraceValue value, const int64_t number) noexcept
+  void TraceService::SetCode(const TraceValue value, const int64_t code) noexcept
   {
     if (m_log)
     {
-      m_log->SetInt64At(frameIndex.Value, value, number);
+      m_log->SetCodeAt(m_log->GetFrameIndex(), value, code);
     }
   }
 
 
-  void TraceService::SetUInt64At(const TraceFrameIndex frameIndex, const TraceValue value, const uint64_t number) noexcept
+  void TraceService::SetRawNanoseconds(const TraceValue value, const uint64_t nanoseconds) noexcept
   {
     if (m_log)
     {
-      m_log->SetInt64At(frameIndex.Value, value, static_cast<int64_t>(number));
+      m_log->SetRawNanosecondsAt(m_log->GetFrameIndex(), value, nanoseconds);
+    }
+  }
+
+
+  void TraceService::SetCountAt(const TraceFrameIndex frameIndex, const TraceValue value, const uint64_t count) noexcept
+  {
+    if (m_log)
+    {
+      m_log->SetCountAt(frameIndex.Value, value, count);
+    }
+  }
+
+
+  void TraceService::SetIdAt(const TraceFrameIndex frameIndex, const TraceValue value, const uint64_t id) noexcept
+  {
+    if (m_log)
+    {
+      m_log->SetIdAt(frameIndex.Value, value, id);
+    }
+  }
+
+
+  void TraceService::SetCodeAt(const TraceFrameIndex frameIndex, const TraceValue value, const int64_t code) noexcept
+  {
+    if (m_log)
+    {
+      m_log->SetCodeAt(frameIndex.Value, value, code);
+    }
+  }
+
+
+  void TraceService::SetRawNanosecondsAt(const TraceFrameIndex frameIndex, const TraceValue value, const uint64_t nanoseconds) noexcept
+  {
+    if (m_log)
+    {
+      m_log->SetRawNanosecondsAt(frameIndex.Value, value, nanoseconds);
     }
   }
 
@@ -323,6 +358,33 @@ namespace Fsl
   }
 
 
+  void TraceService::SetValue(const TraceValue value, const TraceFrameIndex index) noexcept
+  {
+    if (m_log)
+    {
+      m_log->SetIdAt(m_log->GetFrameIndex(), value, index.Value);
+    }
+  }
+
+
+  void TraceService::SetValue(const TraceValue value, const TraceRunId runId) noexcept
+  {
+    if (m_log)
+    {
+      m_log->SetIdAt(m_log->GetFrameIndex(), value, runId.Value);
+    }
+  }
+
+
+  void TraceService::SetValue(const TraceValue value, const PxValue pixels) noexcept
+  {
+    if (m_log)
+    {
+      m_log->SetPixelsAt(m_log->GetFrameIndex(), value, pixels);
+    }
+  }
+
+
   void TraceService::SetValueAt(const TraceFrameIndex frameIndex, const TraceValue value, const TickCount time) noexcept
   {
     if (m_log)
@@ -355,6 +417,42 @@ namespace Fsl
     if (m_log)
     {
       m_log->SetValueAt(frameIndex.Value, value, duration);
+    }
+  }
+
+
+  void TraceService::SetValueAt(const TraceFrameIndex frameIndex, const TraceValue value, const bool flag) noexcept
+  {
+    if (m_log)
+    {
+      m_log->SetFlagAt(frameIndex.Value, value, flag);
+    }
+  }
+
+
+  void TraceService::SetValueAt(const TraceFrameIndex frameIndex, const TraceValue value, const TraceFrameIndex index) noexcept
+  {
+    if (m_log)
+    {
+      m_log->SetIdAt(frameIndex.Value, value, index.Value);
+    }
+  }
+
+
+  void TraceService::SetValueAt(const TraceFrameIndex frameIndex, const TraceValue value, const TraceRunId runId) noexcept
+  {
+    if (m_log)
+    {
+      m_log->SetIdAt(frameIndex.Value, value, runId.Value);
+    }
+  }
+
+
+  void TraceService::SetValueAt(const TraceFrameIndex frameIndex, const TraceValue value, const PxValue pixels) noexcept
+  {
+    if (m_log)
+    {
+      m_log->SetPixelsAt(frameIndex.Value, value, pixels);
     }
   }
 

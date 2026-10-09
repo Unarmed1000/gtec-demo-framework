@@ -368,6 +368,56 @@ namespace Fsl
   }
 
 
+  void TraceLog::SetCountAt(const uint64_t frameIndex, const TraceValue value, const uint64_t count) noexcept
+  {
+    // A unsigned number is written as its bits
+    SetNumberAt(frameIndex, value, TraceUnit::Count, static_cast<int64_t>(count), "a count");
+  }
+
+
+  void TraceLog::SetIdAt(const uint64_t frameIndex, const TraceValue value, const uint64_t id) noexcept
+  {
+    SetNumberAt(frameIndex, value, TraceUnit::Id, static_cast<int64_t>(id), "a id");
+  }
+
+
+  void TraceLog::SetCodeAt(const uint64_t frameIndex, const TraceValue value, const int64_t code) noexcept
+  {
+    SetNumberAt(frameIndex, value, TraceUnit::Code, code, "a code");
+  }
+
+
+  void TraceLog::SetPixelsAt(const uint64_t frameIndex, const TraceValue value, const PxValue pixels) noexcept
+  {
+    SetNumberAt(frameIndex, value, TraceUnit::Pixels, pixels.Value, "pixels");
+  }
+
+
+  void TraceLog::SetRawNanosecondsAt(const uint64_t frameIndex, const TraceValue value, const uint64_t nanoseconds) noexcept
+  {
+    SetNumberAt(frameIndex, value, TraceUnit::Nanoseconds, static_cast<int64_t>(nanoseconds), "a moment on another clock");
+  }
+
+
+  void TraceLog::SetNumberAt(const uint64_t frameIndex, const TraceValue value, const TraceUnit unit, const int64_t number,
+                             const std::string_view given) noexcept
+  {
+    TraceUnit valueUnit{TraceUnit::Count};
+    if (!m_table.TryGetUnit(value, valueUnit))
+    {
+      return;
+    }
+    if (valueUnit == unit)
+    {
+      m_table.SetValue(frameIndex, value, number);
+    }
+    else
+    {
+      ReportWrongUnit(value, given);
+    }
+  }
+
+
   void TraceLog::ReportWrongUnit(const TraceValue value, const std::string_view given) noexcept
   {
     const std::size_t index = value.Value - 1u;

@@ -21,7 +21,10 @@
 //****************************************************************************************************************************************************
 
 #include <FslBase/Log/Log3Fmt.hpp>
+#include <FslBase/Math/Pixel/PxValue.hpp>
 #include <FslBase/Time/NanosecondTickCountUtil.hpp>
+#include <FslBase/Time/TimeSpan.hpp>
+#include <FslBase/UncheckedNumericCast.hpp>
 #include <FslDemoApp/Base/FrameInfo.hpp>
 #include <FslDemoApp/Base/Service/AppInfo/IAppInfoService.hpp>
 #include <FslDemoApp/Base/Service/Host/IHostInfo.hpp>
@@ -57,6 +60,12 @@ namespace Fsl
     int32_t ClampModuleSize(const int32_t moduleSizePx) noexcept
     {
       return std::clamp(moduleSizePx, MB::FramePacing::Marker::Options::MinModuleSizePx, MB::FramePacing::Marker::Options::MaxModuleSizePx);
+    }
+
+    //! A CPU time counter of the system as the duration it is: the counters are in ticks of 100 ns, which is the tick of a TimeSpan
+    constexpr TimeSpan ToTimeSpan(const uint64_t cpuTimeTicks) noexcept
+    {
+      return TimeSpan(UncheckedNumericCast<int64_t>(cpuTimeTicks));
     }
 
     //! The sequence id as 32 hex digits (the way the mb-framepacing tools show a sequence id that is not printable text)
@@ -303,15 +312,15 @@ namespace Fsl
         m_logFactsWritten = true;
         WriteLogFacts();
       }
-      m_trace->SetInt64(m_logColumns.MarkerKind, static_cast<int64_t>(m_frameKind));
-      m_trace->SetUInt64(m_logColumns.RunId, m_runId);
-      m_trace->SetInt64(m_logColumns.RunState, static_cast<int64_t>(m_sequence.GetState()));
+      m_trace->SetCode(m_logColumns.MarkerKind, static_cast<int64_t>(m_frameKind));
+      m_trace->SetValue(m_logColumns.RunId, TraceRunId(m_runId));
+      m_trace->SetCode(m_logColumns.RunState, static_cast<int64_t>(m_sequence.GetState()));
       m_trace->SetValue(m_logColumns.AnimationTime, NanosecondTimeSpan(m_frameAnimationNanoseconds));
       m_trace->SetValue(m_logColumns.CpuStart, cpuStartTime);
       m_trace->SetValue(m_logColumns.HostCpuStart, cpuStartTime);
       m_trace->SetValue(m_logColumns.BeginFrame, m_timer.GetTimestamp());
-      m_trace->SetInt64(m_logColumns.HasSchedule, 0);
-      m_trace->SetInt64(m_logColumns.MarkerDrawn, 0);
+      m_trace->SetValue(m_logColumns.HasSchedule, false);
+      m_trace->SetValue(m_logColumns.MarkerDrawn, false);
       WriteLogSystemLoad(m_timer.GetTimestamp());
     }
   }
@@ -341,7 +350,7 @@ namespace Fsl
     {
       // The values of the app replace the ones of the framework, as they do in the marker. The trace writes each in the unit its
       // value has: what a frame pacer gives in nanoseconds, as the marker carries it, and the start of the CPU as the tick it lies in.
-      m_trace->SetInt64(m_logColumns.HasSchedule, 1);
+      m_trace->SetValue(m_logColumns.HasSchedule, true);
       m_trace->SetValue(m_logColumns.AnimationTime, schedule.AnimationTime);
       if (schedule.CpuStartTime.has_value())
       {
@@ -402,17 +411,17 @@ namespace Fsl
     if (m_trace)
     {
       // What the marker that was just drawn carries, where it differs from what was known when the frame began
-      m_trace->SetInt64At(TraceFrameIndex(markerInfo.FrameIndex), m_logColumns.MarkerDrawn, 1);
+      m_trace->SetValueAt(TraceFrameIndex(markerInfo.FrameIndex), m_logColumns.MarkerDrawn, true);
       m_trace->SetValueAt(TraceFrameIndex(markerInfo.FrameIndex), m_logColumns.MarkerDraw, m_timer.GetTimestamp());
-      m_trace->SetInt64At(TraceFrameIndex(markerInfo.FrameIndex), m_logColumns.MarkerKind, static_cast<int64_t>(markerInfo.Kind));
+      m_trace->SetCodeAt(TraceFrameIndex(markerInfo.FrameIndex), m_logColumns.MarkerKind, static_cast<int64_t>(markerInfo.Kind));
       if (markerInfo.CpuBusyTime.has_value())
       {
         m_trace->SetValueAt(TraceFrameIndex(markerInfo.FrameIndex), m_logColumns.MarkerCpuBusy, *markerInfo.CpuBusyTime);
       }
-      m_trace->SetInt64At(TraceFrameIndex(markerInfo.FrameIndex), m_logColumns.MarkerStatic, markerInfo.Static ? 1 : 0);
-      m_trace->SetInt64At(TraceFrameIndex(markerInfo.FrameIndex), m_logColumns.MarkerStaticBefore, markerInfo.StaticBefore ? 1 : 0);
-      m_trace->SetInt64At(TraceFrameIndex(markerInfo.FrameIndex), m_logColumns.MarkerSync, markerInfo.SyncMarker ? 1 : 0);
-      m_trace->SetInt64At(TraceFrameIndex(markerInfo.FrameIndex), m_logColumns.MarkerModuleSize, m_moduleSizePx);
+      m_trace->SetValueAt(TraceFrameIndex(markerInfo.FrameIndex), m_logColumns.MarkerStatic, markerInfo.Static);
+      m_trace->SetValueAt(TraceFrameIndex(markerInfo.FrameIndex), m_logColumns.MarkerStaticBefore, markerInfo.StaticBefore);
+      m_trace->SetValueAt(TraceFrameIndex(markerInfo.FrameIndex), m_logColumns.MarkerSync, markerInfo.SyncMarker);
+      m_trace->SetValueAt(TraceFrameIndex(markerInfo.FrameIndex), m_logColumns.MarkerModuleSize, PxValue(m_moduleSizePx));
     }
   }
 
@@ -490,23 +499,24 @@ namespace Fsl
     SystemCpuTimes cpuTimes;
     if (m_systemStats->TryGetCpuTimes(cpuTimes))
     {
-      m_trace->SetUInt64(m_logColumns.SystemIdle, cpuTimes.SystemIdleTicks);
-      m_trace->SetUInt64(m_logColumns.SystemKernel, cpuTimes.SystemKernelTicks);
-      m_trace->SetUInt64(m_logColumns.SystemUser, cpuTimes.SystemUserTicks);
-      m_trace->SetUInt64(m_logColumns.ProcessKernel, cpuTimes.ProcessKernelTicks);
-      m_trace->SetUInt64(m_logColumns.ProcessUser, cpuTimes.ProcessUserTicks);
+      m_trace->SetValue(m_logColumns.SystemIdle, ToTimeSpan(cpuTimes.SystemIdleTicks));
+      m_trace->SetValue(m_logColumns.SystemKernel, ToTimeSpan(cpuTimes.SystemKernelTicks));
+      m_trace->SetValue(m_logColumns.SystemUser, ToTimeSpan(cpuTimes.SystemUserTicks));
+      m_trace->SetValue(m_logColumns.ProcessKernel, ToTimeSpan(cpuTimes.ProcessKernelTicks));
+      m_trace->SetValue(m_logColumns.ProcessUser, ToTimeSpan(cpuTimes.ProcessUserTicks));
     }
     GpuUsageRecord gpuUsage;
     if (m_systemStats->TryGetApplicationGpuUsage(gpuUsage))
     {
       // The system reports a percentage, it is written in thousandths of a percent
-      m_trace->SetInt64(m_logColumns.ProcessGpuUsage, std::llround(static_cast<double>(gpuUsage.UsagePercentage) * 1000.0));
+      m_trace->SetCount(m_logColumns.ProcessGpuUsage,
+                        UncheckedNumericCast<uint64_t>(std::llround(static_cast<double>(gpuUsage.UsagePercentage) * 1000.0)));
     }
     GpuMemoryUsageRecord gpuMemoryUsage;
     if (m_systemStats->TryGetApplicationGpuMemoryUsage(gpuMemoryUsage))
     {
-      m_trace->SetUInt64(m_logColumns.ProcessGpuDedicated, gpuMemoryUsage.DedicatedBytes);
-      m_trace->SetUInt64(m_logColumns.ProcessGpuShared, gpuMemoryUsage.SharedBytes);
+      m_trace->SetCount(m_logColumns.ProcessGpuDedicated, gpuMemoryUsage.DedicatedBytes);
+      m_trace->SetCount(m_logColumns.ProcessGpuShared, gpuMemoryUsage.SharedBytes);
     }
   }
 

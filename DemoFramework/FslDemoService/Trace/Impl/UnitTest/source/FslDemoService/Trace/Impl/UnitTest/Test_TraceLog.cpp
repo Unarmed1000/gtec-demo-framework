@@ -20,6 +20,7 @@
 //* EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //****************************************************************************************************************************************************
 
+#include <FslBase/Math/Pixel/PxValue.hpp>
 #include <FslBase/UnitTest/Helper/TestFixtureFslBase.hpp>
 #include <FslDemoService/Trace/Impl/TraceLog.hpp>
 #include <algorithm>
@@ -135,9 +136,9 @@ TEST(Test_TraceLog, AValueOfAEarlierFrameLandsInThatFrame)
   log->BeginFrame(0, 5);
   log->BeginFrame(1, 5);
   log->BeginFrame(2, 6);
-  log->SetInt64(value, 2000);
+  log->SetValueAt(2, value, TickCount(2000));
   // Known two frames later
-  log->SetInt64At(0, value, 1000);
+  log->SetValueAt(0, value, TickCount(1000));
   log->Close();
 
   ASSERT_EQ(3u, recorded->Frames.size());
@@ -234,6 +235,73 @@ TEST(Test_TraceLog, SetValueAt_NotWrittenToAValueOfAnotherUnit)
 
   ASSERT_EQ(1u, recorded->Frames.size());
   for (const TraceValue value : {time, timeNs, duration, durationNs, count})
+  {
+    EXPECT_FALSE(recorded->Frames[0].HasValue[value.Value - 1u]);
+  }
+}
+
+
+TEST(Test_TraceLog, SetNumbers_EachIsWrittenToAValueOfItsUnit)
+{
+  const auto recorded = std::make_shared<Recorded>();
+  const auto log = CreateLog(recorded);
+  const TraceValue count = log->RegisterValue("count", TraceUnit::Count, "");
+  const TraceValue id = log->RegisterValue("id", TraceUnit::Id, "");
+  const TraceValue code = log->RegisterValue("code", TraceUnit::Code, "");
+  const TraceValue pixels = log->RegisterValue("pixels", TraceUnit::Pixels, "");
+  const TraceValue otherClock = log->RegisterValue("driverNs", TraceUnit::Nanoseconds, "");
+
+  log->BeginFrame(0, 1);
+  log->BeginFrame(1, 1);
+  log->SetCountAt(1, count, 7);
+  log->SetIdAt(1, id, 42);
+  log->SetCodeAt(1, code, -3);
+  log->SetPixelsAt(1, pixels, PxValue(4));
+  log->SetRawNanosecondsAt(1, otherClock, 123456789012345);
+  // Of a earlier frame
+  log->SetCountAt(0, count, 6);
+  log->Close();
+
+  ASSERT_EQ(2u, recorded->Frames.size());
+  EXPECT_EQ(6, recorded->Frames[0].Values[count.Value - 1u]);
+  EXPECT_FALSE(recorded->Frames[0].HasValue[id.Value - 1u]);
+  EXPECT_EQ(7, recorded->Frames[1].Values[count.Value - 1u]);
+  EXPECT_EQ(42, recorded->Frames[1].Values[id.Value - 1u]);
+  EXPECT_EQ(-3, recorded->Frames[1].Values[code.Value - 1u]);
+  EXPECT_EQ(4, recorded->Frames[1].Values[pixels.Value - 1u]);
+  EXPECT_EQ(123456789012345, recorded->Frames[1].Values[otherClock.Value - 1u]);
+}
+
+
+TEST(Test_TraceLog, SetNumbers_NotWrittenToAValueOfAnotherUnit)
+{
+  const auto recorded = std::make_shared<Recorded>();
+  const auto log = CreateLog(recorded);
+  const TraceValue count = log->RegisterValue("count", TraceUnit::Count, "");
+  const TraceValue id = log->RegisterValue("id", TraceUnit::Id, "");
+  const TraceValue code = log->RegisterValue("code", TraceUnit::Code, "");
+  const TraceValue pixels = log->RegisterValue("pixels", TraceUnit::Pixels, "");
+  const TraceValue otherClock = log->RegisterValue("driverNs", TraceUnit::Nanoseconds, "");
+  const TraceValue time = log->RegisterValue("timeTicks", TraceUnit::Ticks, "");
+  const TraceValue flag = log->RegisterValue("flag", TraceUnit::Flag, "");
+
+  log->BeginFrame(0, 1);
+  // Each to the value of the next one
+  log->SetCountAt(0, id, 1);
+  log->SetIdAt(0, code, 1);
+  log->SetCodeAt(0, pixels, 1);
+  log->SetPixelsAt(0, otherClock, PxValue(1));
+  log->SetRawNanosecondsAt(0, count, 1);
+  // A number is no time and no flag
+  log->SetCountAt(0, time, 1);
+  log->SetIdAt(0, time, 1);
+  log->SetCodeAt(0, flag, 1);
+  // Not a value
+  log->SetCountAt(0, TraceValue(), 1);
+  log->Close();
+
+  ASSERT_EQ(1u, recorded->Frames.size());
+  for (const TraceValue value : {count, id, code, pixels, otherClock, time, flag})
   {
     EXPECT_FALSE(recorded->Frames[0].HasValue[value.Value - 1u]);
   }

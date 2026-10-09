@@ -155,7 +155,8 @@ if (m_trace)
 // During the draw of a frame: a value of the frame that is being drawn
 if (m_trace)
 {
-  m_trace->SetInt64(m_valueBodies, bodyCount);
+  // A count, a id and a code are set as a number, with the setter of what they are
+  m_trace->SetCount(m_valueBodies, bodyCount);
   // A time or a duration is given as the type it is (TickCount, TimeSpan, NanosecondTickCount, NanosecondTimeSpan): the trace writes
   // it in the unit of the value. A value that is known later is set for the frame it belongs to
   m_trace->SetValueAt(frameIndex, m_valueUploadEnd, uploadEndTime);
@@ -201,8 +202,12 @@ one of these rules or one of the names does.
    is not the one of the framework (a driver and the window system have a clock of their own). A app does not convert between ticks
    and nanoseconds: `SetValue` takes a moment as a `TickCount` or a `NanosecondTickCount` and a duration as a `TimeSpan` or a
    `NanosecondTimeSpan`, and the trace writes it in the unit the value was registered with (a moment as the tick it lies in, a
-   duration rounded to the nearest tick). A moment given to a value that is not a moment, or a duration to one that is not a
-   duration, is not written and logged once. A unsigned value is written as its 64 bits. The `value` marks of the `Schema` track are in the order the values
+   duration rounded to the nearest tick). Every setter is for the values of one kind of unit: `SetValue` also takes a flag as a
+   `bool`, the index of a frame as a `TraceFrameIndex` and the id of a run as a `TraceRunId` (a value of the unit `id`) and pixels as
+   a `PxValue`; `SetCount`, `SetId` and `SetCode` take a number for a value of the unit `count`, `id` and `code`; and
+   `SetRawNanoseconds` takes a moment on a clock that is not the one of the framework, as the nanoseconds that clock gave. Each has
+   a form for a earlier frame (`SetValueAt`, `SetCountAt` and so on). What is given to a value of another unit (a moment to a value
+   that is not a moment, a count to a id) is not written and logged once per value. A unsigned number is written as its 64 bits. The `value` marks of the `Schema` track are in the order the values
    were added, which is the order of the columns where the values are written as a table.
 
 ### Reading a trace
