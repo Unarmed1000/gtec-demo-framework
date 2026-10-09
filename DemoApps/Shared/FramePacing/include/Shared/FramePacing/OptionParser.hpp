@@ -57,8 +57,8 @@ namespace Fsl
     std::optional<double> m_pacerRefreshRateHz;
     int32_t m_pacerTargetFps{SampleConfig::TargetFps.Get()};
     bool m_pacerAdaptive{true};
-    bool m_pacerPresentFeedback{false};
-    int32_t m_pacerDrainRefreshes{SampleConfig::DrainRefreshes.Get()};
+    bool m_pacerDisplayReports{false};
+    int32_t m_pacerStartupPauseRefreshes{SampleConfig::StartupPauseRefreshes.Get()};
     int32_t m_cpuLoadMs{SampleConfig::CpuLoadMs.Get()};
     int32_t m_cpuSpikeMs{SampleConfig::CpuSpikeMs.Get()};
     int32_t m_cpuSpikeIntervalFrames{SampleConfig::CpuSpikeIntervalFrames.Get()};
@@ -191,15 +191,15 @@ namespace Fsl
     }
 
     //! @brief Check if the frame pacer is given when the frames were shown, where the app measures that.
-    [[nodiscard]] bool IsPacerPresentFeedback() const noexcept
+    [[nodiscard]] bool IsPacerDisplayReports() const noexcept
     {
-      return m_pacerPresentFeedback;
+      return m_pacerDisplayReports;
     }
 
     //! @brief Get the refreshes of the pause the pacer makes once after it started.
-    [[nodiscard]] int32_t GetPacerDrainRefreshes() const noexcept
+    [[nodiscard]] int32_t GetPacerStartupPauseRefreshes() const noexcept
     {
-      return m_pacerDrainRefreshes;
+      return m_pacerStartupPauseRefreshes;
     }
 
     //! @brief Check if a OpenGL ES sample calls glFlush after the last command of a frame.

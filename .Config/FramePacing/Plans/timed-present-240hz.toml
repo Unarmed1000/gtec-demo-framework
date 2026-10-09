@@ -27,26 +27,26 @@ duty = 1.0
 # frames are held and nothing else
 
 [[run]]
-name = "fps60_wait"
+name = "fps60_untimed"
 what = "60 fps (four refreshes per frame), light work, the sample waits before it presents"
 args = ["--GpuLoad", "{gpu20}", "--Pacer.Adaptive", "false", "--Pacer.TargetFps", "60", "--Pacer.Kind", "timer-period"]
 loaded = true
 
 [[run]]
-name = "fps60_scheduled"
+name = "fps60_timed"
 what = "60 fps (four refreshes per frame), light work, the present is given a time"
 args = ["--GpuLoad", "{gpu20}", "--Pacer.Adaptive", "false", "--Pacer.TargetFps", "60", "--Pacer.Kind", "timer-period", "--Pacer.TimedPresent"]
 loaded = true
 
 [[run]]
-name = "fps120_wait"
+name = "fps120_untimed"
 what = "120 fps (two refreshes per frame), light work, the sample waits before it presents"
 args = ["--GpuLoad", "{gpu20}", "--Pacer.Adaptive", "false", "--Pacer.TargetFps", "120", "--Pacer.Kind", "timer-period"]
 frames = 2400
 loaded = true
 
 [[run]]
-name = "fps120_scheduled"
+name = "fps120_timed"
 what = "120 fps (two refreshes per frame), light work, the present is given a time"
 args = ["--GpuLoad", "{gpu20}", "--Pacer.Adaptive", "false", "--Pacer.TargetFps", "120", "--Pacer.Kind", "timer-period", "--Pacer.TimedPresent"]
 frames = 2400
@@ -55,14 +55,14 @@ loaded = true
 # Work over a refresh: the adaptive pacer goes to two refreshes by itself
 
 [[run]]
-name = "w130_wait"
+name = "w130_untimed"
 what = "GPU work of 130 % of a refresh, adaptive pacer, the sample waits before it presents"
 args = ["--GpuLoad", "{gpu130}", "--Pacer.Kind", "timer-period"]
 frames = 2400
 loaded = true
 
 [[run]]
-name = "w130_scheduled"
+name = "w130_timed"
 what = "GPU work of 130 % of a refresh, adaptive pacer, the present is given a time"
 args = ["--GpuLoad", "{gpu130}", "--Pacer.Kind", "timer-period", "--Pacer.TimedPresent"]
 frames = 2400

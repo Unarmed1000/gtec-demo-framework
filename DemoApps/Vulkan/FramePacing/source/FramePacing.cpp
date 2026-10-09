@@ -226,8 +226,8 @@ namespace Fsl
 
     // When the frames reached the display, if the swapchain measures it (VK_EXT_present_timing). The measurements arrive a few frames
     // after the present.
-    m_shared.SetPresentFeedback(IsPresentTimingEnabled(), GetPresentRefreshDuration());
-    m_shared.SetPresentSchedulingSupport(IsPresentSchedulingSupported());
+    m_shared.SetPresentsMeasured(IsPresentTimingEnabled(), GetPresentRefreshDuration());
+    m_shared.SetTimedPresentSupport(IsPresentSchedulingSupported());
     m_shared.SetSwapchainRefresh(ToSampleSwapchainRefresh(GetPresentRefreshMode()));
     for (const Vulkan::VUPresentTimingRecord& record : GetPresentTimings())
     {
@@ -238,7 +238,7 @@ namespace Fsl
 
   void FramePacing::OnVulkanFrameStart()
   {
-    {    // A pacer that gives plans is told about the present of the frame before, before it is asked about this frame
+    {    // The frame pacer is told about the present of the frame before, before it is asked about this frame
       const VulkanBasic::PresentCallRecord& presentCalls = GetLastPresentCalls();
       if (presentCalls.PresentId != 0u)
       {
@@ -260,8 +260,7 @@ namespace Fsl
       const VulkanBasic::GpuWorkWaitRecord gpuWaitRecord = WaitForGpuWork(gpuWaitRequest.PresentId, gpuWaitRequest.Timeout);
       m_shared.AddGpuWait(gpuWaitRequest.PresentId, gpuWaitRecord.BeginTime, gpuWaitRecord.EndTime, gpuWaitRecord.IsDone());
     }
-    // The frame pacer holds the start of a frame here (the late profile, or a pacer that gives the time), before a swapchain image is
-    // acquired for it
+    // The frame pacer holds the start of a frame here, where it gives a time for it, before a swapchain image is acquired for it
     m_shared.WaitForFrameStart();
   }
 

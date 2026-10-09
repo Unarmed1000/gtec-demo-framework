@@ -53,7 +53,7 @@ namespace Fsl
     //! error of the frames from them (GetDisplayErrors), where the app has display times (SamplePacerCapabilities): they are then
     //! part of the set it uses, and a change of it starts nothing again. Only for an app that measures its presents, on a display
     //! with a fixed refresh rate.
-    bool PresentFeedback{false};
+    bool DisplayReports{false};
     //! What the pacer is to pace with: the set of capabilities that the kind names as the ones it uses
     SamplePacerKind Kind{SamplePacerKind::TimerPeriodOnly};
     //! What the app can do and can tell the pacer right now. The pacer is told all of it, and of the vertical blank times and the
@@ -112,7 +112,7 @@ namespace Fsl
   //! rounded on the way to the marker.
   struct SamplePacerSchedule
   {
-    //! The id the pacer gave the frame, which present feedback about the frame is given with (zero = no frame)
+    //! The id the pacer gave the frame, which the reports about the frame are given with (zero = no frame)
     uint64_t FrameId{0};
     //! The number of display refreshes the frame is held for
     uint32_t SwapInterval{1};
@@ -354,7 +354,7 @@ namespace Fsl
     [[nodiscard]] uint64_t GetDisplayHeldRefreshes() const noexcept;
 
     //! @brief A frame that was presented earlier was shown. Call it before the BeginFrame of the next frame, oldest frame first. It
-    //!        does nothing unless the config asks for present feedback. The pacer counts the animation error from it
+    //!        does nothing unless the config asks for display reports. The pacer counts the animation error from it
     //!        (GetDisplayErrors) and paces by none of it. A frame without a display time is not reported: no display time is not
     //!        "never shown".
     //! @param frameId the SamplePacerSchedule::FrameId of the frame

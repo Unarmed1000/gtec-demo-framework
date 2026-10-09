@@ -21,14 +21,14 @@
 //****************************************************************************************************************************************************
 
 #include <FslBase/Log/Log3Fmt.hpp>
-#include <Shared/FramePacing/SamplePresentFeedback.hpp>
+#include <Shared/FramePacing/SampleMeasuredPresents.hpp>
 #include <algorithm>
 #include <cstdlib>
 
 namespace Fsl
 {
-  void SamplePresentFeedback::AddFrame(const uint64_t presentId, const TickCount cpuStartTime,
-                                       const std::optional<TickCount> intendedDisplayTime) noexcept
+  void SampleMeasuredPresents::AddFrame(const uint64_t presentId, const TickCount cpuStartTime,
+                                        const std::optional<TickCount> intendedDisplayTime) noexcept
   {
     if (presentId == 0u)
     {
@@ -42,8 +42,8 @@ namespace Fsl
   }
 
 
-  void SamplePresentFeedback::AddPresentTiming(const uint64_t presentId, const std::optional<TickCount> displayTime,
-                                               const std::optional<TickCount> queueOperationsEndTime)
+  void SampleMeasuredPresents::AddPresentTiming(const uint64_t presentId, const std::optional<TickCount> displayTime,
+                                                const std::optional<TickCount> queueOperationsEndTime)
   {
     FrameRecord* const pFrame = TryGetFrame(presentId);
     if (pFrame == nullptr || pFrame->IsMeasured)
@@ -60,7 +60,7 @@ namespace Fsl
       m_totalQueueTicks += (queueOperationsEndTime.value() - pFrame->CpuStartTime).Ticks();
     }
     // Counted from when the CPU started on the frame (-1 = not available)
-    FSLLOG3_VERBOSE4("Present feedback: id {} handed over {:.3f} ms, displayed {:.3f} ms, aimed for {:.3f} ms", presentId,
+    FSLLOG3_VERBOSE4("Measured presents: id {} handed over {:.3f} ms, displayed {:.3f} ms, aimed for {:.3f} ms", presentId,
                      queueOperationsEndTime.has_value() ? (queueOperationsEndTime.value() - pFrame->CpuStartTime).TotalMilliseconds() : -1.0,
                      displayTime.has_value() ? (displayTime.value() - pFrame->CpuStartTime).TotalMilliseconds() : -1.0,
                      pFrame->IntendedDisplayTime.has_value() ? (pFrame->IntendedDisplayTime.value() - pFrame->CpuStartTime).TotalMilliseconds()
@@ -90,7 +90,7 @@ namespace Fsl
   }
 
 
-  void SamplePresentFeedback::AddGpuInterval(const uint64_t presentId, const TickCount gpuStartTime, const TickCount gpuEndTime) noexcept
+  void SampleMeasuredPresents::AddGpuInterval(const uint64_t presentId, const TickCount gpuStartTime, const TickCount gpuEndTime) noexcept
   {
     const FrameRecord* const pFrame = TryGetFrame(presentId);
     if (pFrame == nullptr)
@@ -102,9 +102,9 @@ namespace Fsl
   }
 
 
-  SamplePresentFeedbackStats SamplePresentFeedback::CalcStats() const
+  SampleMeasuredPresentsStats SampleMeasuredPresents::CalcStats() const
   {
-    SamplePresentFeedbackStats stats;
+    SampleMeasuredPresentsStats stats;
     int64_t displayErrorTicks = 0;
     int64_t worstDisplayErrorTicks = 0;
     int64_t latencyTicks = 0;
@@ -179,27 +179,27 @@ namespace Fsl
   }
 
 
-  void SamplePresentFeedback::LogSummary() const noexcept
+  void SampleMeasuredPresents::LogSummary() const noexcept
   {
     if (m_totalMeasuredFrames == 0u)
     {
       return;
     }
-    FSLLOG3_VERBOSE("Present feedback: {} presents measured, {} with a display time", m_totalMeasuredFrames, m_totalTimedFrames);
+    FSLLOG3_VERBOSE("Measured presents: {} presents measured, {} with a display time", m_totalMeasuredFrames, m_totalTimedFrames);
     if (m_totalTimedFrames > 0u)
     {
-      FSLLOG3_VERBOSE("Present feedback: average latency (CPU start to display) {:.3f} ms",
+      FSLLOG3_VERBOSE("Measured presents: average latency (CPU start to display) {:.3f} ms",
                       TimeSpan(m_totalLatencyTicks / static_cast<int64_t>(m_totalTimedFrames)).TotalMilliseconds());
     }
     if (m_totalQueueFrames > 0u)
     {
-      FSLLOG3_VERBOSE("Present feedback: average hand over (CPU start to the present being handed to the presentation engine) {:.3f} ms",
+      FSLLOG3_VERBOSE("Measured presents: average hand over (CPU start to the present being handed to the presentation engine) {:.3f} ms",
                       TimeSpan(m_totalQueueTicks / static_cast<int64_t>(m_totalQueueFrames)).TotalMilliseconds());
     }
     if (m_totalPacedFrames > 0u)
     {
       const auto pacedFrames = static_cast<int64_t>(m_totalPacedFrames);
-      FSLLOG3_VERBOSE("Present feedback: {} paced frames, display error average {:.3f} ms, average size {:.3f} ms, worst {:.3f} ms",
+      FSLLOG3_VERBOSE("Measured presents: {} paced frames, display error average {:.3f} ms, average size {:.3f} ms, worst {:.3f} ms",
                       m_totalPacedFrames, TimeSpan(m_totalDisplayErrorTicks / pacedFrames).TotalMilliseconds(),
                       TimeSpan(m_totalAbsDisplayErrorTicks / pacedFrames).TotalMilliseconds(),
                       TimeSpan(m_worstAbsDisplayErrorTicks).TotalMilliseconds());
@@ -207,7 +207,7 @@ namespace Fsl
   }
 
 
-  SamplePresentFeedback::FrameRecord* SamplePresentFeedback::TryGetFrame(const uint64_t presentId) noexcept
+  SampleMeasuredPresents::FrameRecord* SampleMeasuredPresents::TryGetFrame(const uint64_t presentId) noexcept
   {
     if (presentId == 0u)
     {

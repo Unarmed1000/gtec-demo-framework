@@ -54,8 +54,8 @@ namespace Fsl
         PacerRefreshRate,
         PacerTargetFps,
         PacerAdaptive,
-        PacerPresentFeedback,
-        PacerDrain,
+        PacerDisplayReports,
+        PacerStartupPause,
         CpuLoad,
         CpuSpike,
         CpuSpikeInterval,
@@ -167,11 +167,11 @@ namespace Fsl
                           "The frame rate the frame pacer aims for (0 = the refresh rate of the display, the default).");
     rOptions.emplace_back("Pacer.Adaptive", OptionArgument::OptionRequired, CommandId::PacerAdaptive,
                           "true (default): the frame pacer adapts its swap interval to how the frames do. false: a fixed frame rate.");
-    rOptions.emplace_back("Pacer.PresentFeedback", OptionArgument::OptionRequired, CommandId::PacerPresentFeedback,
-                          "true: the frame pacer is given when the display showed the frames, where the app measures its presents (Vulkan "
-                          "with VK_EXT_present_timing). It paces the same with it and counts what the display did. Only for a display with "
-                          "a fixed refresh rate. false (default).");
-    rOptions.emplace_back("Pacer.Drain", OptionArgument::OptionRequired, CommandId::PacerDrain,
+    rOptions.emplace_back("Pacer.DisplayReports", OptionArgument::OptionRequired, CommandId::PacerDisplayReports,
+                          "true: the frame pacer is given when the display showed the frames, as display reports, where the app measures "
+                          "its presents (Vulkan with VK_EXT_present_timing). It counts the animation error of the frames from them and "
+                          "paces the same. Only for a display with a fixed refresh rate. false (default).");
+    rOptions.emplace_back("Pacer.StartupPause", OptionArgument::OptionRequired, CommandId::PacerStartupPause,
                           "The refreshes of the pause the pacer makes once, half a second after it started, so the presents that are "
                           "queued between the app and the display are shown before the next one is added (timer-period and "
                           "vblank-period with the aim of low latency; 0 to 32, the default is 4, 0 is no such pause).");
@@ -317,12 +317,13 @@ namespace Fsl
     case CommandId::PacerAdaptive:
       StringParseUtil::Parse(m_pacerAdaptive, strOptArg);
       return OptionParseResult::Parsed;
-    case CommandId::PacerPresentFeedback:
-      StringParseUtil::Parse(m_pacerPresentFeedback, strOptArg);
+    case CommandId::PacerDisplayReports:
+      StringParseUtil::Parse(m_pacerDisplayReports, strOptArg);
       return OptionParseResult::Parsed;
-    case CommandId::PacerDrain:
-      return TryParseInRange(m_pacerDrainRefreshes, strOptArg, SampleConfig::DrainRefreshes, "Pacer.Drain") ? OptionParseResult::Parsed
-                                                                                                            : OptionParseResult::Failed;
+    case CommandId::PacerStartupPause:
+      return TryParseInRange(m_pacerStartupPauseRefreshes, strOptArg, SampleConfig::StartupPauseRefreshes, "Pacer.StartupPause")
+               ? OptionParseResult::Parsed
+               : OptionParseResult::Failed;
     case CommandId::CpuLoad:
       return TryParseInRange(m_cpuLoadMs, strOptArg, SampleConfig::CpuLoadMs, "CpuLoad") ? OptionParseResult::Parsed : OptionParseResult::Failed;
     case CommandId::CpuSpike:

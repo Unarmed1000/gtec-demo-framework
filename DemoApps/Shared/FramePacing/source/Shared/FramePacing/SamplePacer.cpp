@@ -260,7 +260,7 @@ namespace Fsl
       active.WaitForPresent = config.Capabilities.WaitForPresent && SamplePacerTierChoiceUtil::IsPresentWaitKind(config.Kind);
       active.PresentAfterDuration = config.Capabilities.PresentAfterDuration && config.TimedPresent;
       // The display times are used where the run gives them to the pacer
-      active.DisplayTimes = config.Capabilities.DisplayTimes && config.PresentFeedback;
+      active.DisplayTimes = config.Capabilities.DisplayTimes && config.DisplayReports;
       // The wait for the GPU's work where the config asks for it. The pacer does not ask for it next to a wait for a present.
       active.WaitForGpuWork = config.Capabilities.WaitForGpuWork && config.GpuWait;
       return ToLibrary(active);
@@ -312,7 +312,7 @@ namespace Fsl
       compared.TimedPresent = current.TimedPresent;
       compared.GpuWait = current.GpuWait;
       // The display times are part of the set the pacer uses
-      compared.PresentFeedback = current.PresentFeedback;
+      compared.DisplayReports = current.DisplayReports;
       return compared != current;
     }
   }
@@ -394,7 +394,7 @@ namespace Fsl
   {
     if (config.Kind != m_impl->Config.Kind || config.Capabilities != m_impl->Config.Capabilities ||
         config.TimedPresent != m_impl->Config.TimedPresent || config.GpuWait != m_impl->Config.GpuWait ||
-        config.PresentFeedback != m_impl->Config.PresentFeedback)
+        config.DisplayReports != m_impl->Config.DisplayReports)
     {
       // The same pacer with another set to use: nothing starts again. What the app has, then what of it is to be used: the pacer
       // leaves out what is not there.

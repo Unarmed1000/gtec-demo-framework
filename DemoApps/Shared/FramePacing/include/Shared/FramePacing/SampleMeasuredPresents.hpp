@@ -1,5 +1,5 @@
-#ifndef SHARED_FRAMEPACING_SAMPLEPRESENTFEEDBACK_HPP
-#define SHARED_FRAMEPACING_SAMPLEPRESENTFEEDBACK_HPP
+#ifndef SHARED_FRAMEPACING_SAMPLEMEASUREDPRESENTS_HPP
+#define SHARED_FRAMEPACING_SAMPLEMEASUREDPRESENTS_HPP
 //****************************************************************************************************************************************************
 //* BSD 3-Clause License
 //*
@@ -24,42 +24,19 @@
 
 #include <FslBase/Time/TickCount.hpp>
 #include <FslBase/Time/TimeSpan.hpp>
+#include <Shared/FramePacing/SampleMeasuredPresentsStats.hpp>
 #include <array>
 #include <cstdint>
 #include <optional>
 
 namespace Fsl
 {
-  //! What the measured presents of the last frames say (see SamplePresentFeedback)
-  struct SamplePresentFeedbackStats
-  {
-    //! The frames the presentation engine reported on
-    uint32_t MeasuredFrames{0};
-    //! The measured frames the presentation engine reported a display time for. It does not have one for every frame (the time of a stage
-    //! can be 'not available'), which does not mean the frame was not shown.
-    uint32_t TimedFrames{0};
-    //! The timed frames the frame pacer aimed at a display time
-    uint32_t PacedFrames{0};
-    //! The time from 'the frame pacer aimed for' to 'reached the display' of the paced frames (negative = early)
-    std::optional<TimeSpan> AverageDisplayError;
-    std::optional<TimeSpan> WorstDisplayError;
-    //! The time between two frames in a row reaching the display: how even the frames really are (empty if no two frames in a row were timed)
-    std::optional<TimeSpan> AverageDisplayInterval;
-    std::optional<TimeSpan> MinDisplayInterval;
-    std::optional<TimeSpan> MaxDisplayInterval;
-    //! The time from 'the CPU started on the frame' to 'reached the display' of the timed frames
-    std::optional<TimeSpan> AverageLatency;
-    //! The time from 'the CPU started on the frame' to 'the present was handed to the presentation engine' (empty if not reported)
-    std::optional<TimeSpan> AverageQueueTime;
-  };
-
-
   //! Relates the measured presents of an app (VK_EXT_present_timing) to the frames of the sample: when did a frame reach the display, how far
   //! was that from the time the frame pacer aimed for, and how long did it take from the start of the frame.
   //!
   //! A measurement arrives a few frames after its present, so the frames are remembered by the id of their present. All times are
   //! HighResolutionTimer timestamps.
-  class SamplePresentFeedback final
+  class SampleMeasuredPresents final
   {
     struct FrameRecord
     {
@@ -115,7 +92,7 @@ namespace Fsl
     }
 
     //! @brief Calculate what the remembered frames say.
-    [[nodiscard]] SamplePresentFeedbackStats CalcStats() const;
+    [[nodiscard]] SampleMeasuredPresentsStats CalcStats() const;
 
     //! The last measured frame: the time from 'the frame pacer aimed for' to 'reached the display' (empty if it was not paced or not timed)
     [[nodiscard]] std::optional<TimeSpan> GetLastDisplayError() const noexcept

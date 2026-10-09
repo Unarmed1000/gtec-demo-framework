@@ -495,7 +495,7 @@ namespace Fsl::VulkanBasic
       state->PresentTargetRelative =
         rLog.RegisterValue("presentTargetRelativeNs", TraceUnit::Nanoseconds,
                            "The target time the present was given: its image is not shown before this long after the image of the present "
-                           "before it was shown (empty: the present was not scheduled)");
+                           "before it was shown (empty: the present was given none)");
       state->RefreshDuration = rLog.RegisterValue("refreshDurationNs", TraceUnit::Nanoseconds,
                                                   "VkSwapchainTimingPropertiesEXT::refreshDuration as the swapchain last reported it");
       state->RefreshInterval = rLog.RegisterValue("refreshIntervalNs", TraceUnit::Nanoseconds,

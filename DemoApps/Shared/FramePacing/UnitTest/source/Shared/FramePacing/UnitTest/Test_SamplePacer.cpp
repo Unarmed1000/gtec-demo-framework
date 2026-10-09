@@ -903,7 +903,7 @@ TEST(TestSamplePacer, DisplayReports_ThePacerCountsTheAnimationErrorFromThem)
   // The app measures its presents, and the run gives the pacer the display times
   SamplePacerConfig config = Config(SamplePacerKind::TimerPeriodOnly);
   config.Capabilities.DisplayTimes = true;
-  config.PresentFeedback = true;
+  config.DisplayReports = true;
   SamplePacer pacer(config);
   const uint64_t firstFrameId = RunFrame(pacer, 0);
   const uint64_t secondFrameId = RunFrame(pacer, PeriodTicks);

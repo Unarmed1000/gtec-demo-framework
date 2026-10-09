@@ -1,12 +1,12 @@
-# Does the frame pacer work on plain Vulkan at 120 Hz? The pacer runs with the basic settings: no present feedback, no present
+# Does the frame pacer work on plain Vulkan at 120 Hz? The pacer runs with the basic settings: no display reports, no present
 # that takes a time and no present fences (--VkSwapchainMaintenance1 false), so nothing of an extension takes part in the pacing. Present timing is
 # on in most runs, but only to measure when the frames were shown. The runs that end in _plain switch that off as well: they prove
 # that nothing depends on it, and only have the frame starts to judge by.
 #
 # The part that differs between the runs is what the pacer paces with (--Pacer.Kind). Core Vulkan has no call that holds a frame for
 # more than one refresh, so the pacer holds such a frame by the times it says to wait until:
-#   wait   a timer and the refresh period (timer-period: it is not told where the refreshes are)
-#   vsync  the vertical blank times of the window system and the refresh period (vblank-period)
+#   timer   a timer and the refresh period (timer-period: it is not told where the refreshes are)
+#   vblank  the vertical blank times of the window system and the refresh period (vblank-period)
 #
 # Set the display to 120 Hz with variable refresh off before the plan is run.
 #
@@ -33,42 +33,42 @@ duty = 1.0
 # and nothing else
 
 [[run]]
-name = "fps60_wait"
+name = "fps60_timer"
 what = "60 fps (2 refreshes per frame), light work, paced on a timer"
 args = ["--CpuLoad", "{work20}", "--Pacer.Adaptive", "false", "--Pacer.TargetFps", "60", "--Pacer.Kind", "timer-period"]
 frames = 750
 loaded = true
 
 [[run]]
-name = "fps60_vsync"
+name = "fps60_vblank"
 what = "60 fps (2 refreshes per frame), light work, paced on the vertical blank times"
 args = ["--CpuLoad", "{work20}", "--Pacer.Adaptive", "false", "--Pacer.TargetFps", "60", "--Pacer.Kind", "vblank-period"]
 frames = 750
 loaded = true
 
 [[run]]
-name = "fps30_wait"
+name = "fps30_timer"
 what = "30 fps (4 refreshes per frame), light work, paced on a timer"
 args = ["--CpuLoad", "{work20}", "--Pacer.Adaptive", "false", "--Pacer.TargetFps", "30", "--Pacer.Kind", "timer-period"]
 frames = 400
 loaded = true
 
 [[run]]
-name = "fps30_vsync"
+name = "fps30_vblank"
 what = "30 fps (4 refreshes per frame), light work, paced on the vertical blank times"
 args = ["--CpuLoad", "{work20}", "--Pacer.Adaptive", "false", "--Pacer.TargetFps", "30", "--Pacer.Kind", "vblank-period"]
 frames = 400
 loaded = true
 
 [[run]]
-name = "fps15_wait"
+name = "fps15_timer"
 what = "15 fps (8 refreshes per frame), light work, paced on a timer"
 args = ["--CpuLoad", "{work20}", "--Pacer.Adaptive", "false", "--Pacer.TargetFps", "15", "--Pacer.Kind", "timer-period"]
 frames = 400
 loaded = true
 
 [[run]]
-name = "fps15_vsync"
+name = "fps15_vblank"
 what = "15 fps (8 refreshes per frame), light work, paced on the vertical blank times"
 args = ["--CpuLoad", "{work20}", "--Pacer.Adaptive", "false", "--Pacer.TargetFps", "15", "--Pacer.Kind", "vblank-period"]
 frames = 400
@@ -77,13 +77,13 @@ loaded = true
 # Work over a refresh: the adaptive pacer goes to two refreshes by itself and the frames are held under real work
 
 [[run]]
-name = "w130_wait"
+name = "w130_timer"
 what = "CPU work of 130 % of a refresh, adaptive pacer, paced on a timer"
 args = ["--CpuLoad", "{work130}", "--Pacer.Kind", "timer-period"]
 loaded = true
 
 [[run]]
-name = "w130_vsync"
+name = "w130_vblank"
 what = "CPU work of 130 % of a refresh, adaptive pacer, paced on the vertical blank times"
 args = ["--CpuLoad", "{work130}", "--Pacer.Kind", "vblank-period"]
 loaded = true
@@ -119,21 +119,21 @@ loaded = true
 # Fully plain: present timing is off too, so there are no display times and the frame starts are what is left to judge by
 
 [[run]]
-name = "fps30_wait_plain"
+name = "fps30_timer_plain"
 what = "30 fps (4 refreshes per frame), light work, paced on a timer, no present timing"
 args = ["--CpuLoad", "{work20}", "--Pacer.Adaptive", "false", "--Pacer.TargetFps", "30", "--Pacer.Kind", "timer-period", "--VkPresentTiming", "false"]
 frames = 400
 loaded = true
 
 [[run]]
-name = "fps30_vsync_plain"
+name = "fps30_vblank_plain"
 what = "30 fps (4 refreshes per frame), light work, paced on the vertical blank times, no present timing"
 args = ["--CpuLoad", "{work20}", "--Pacer.Adaptive", "false", "--Pacer.TargetFps", "30", "--Pacer.Kind", "vblank-period", "--VkPresentTiming", "false"]
 frames = 400
 loaded = true
 
 [[run]]
-name = "w130_vsync_plain"
+name = "w130_vblank_plain"
 what = "CPU work of 130 % of a refresh, adaptive pacer, paced on the vertical blank times, no present timing"
 args = ["--CpuLoad", "{work130}", "--Pacer.Kind", "vblank-period", "--VkPresentTiming", "false"]
 loaded = true

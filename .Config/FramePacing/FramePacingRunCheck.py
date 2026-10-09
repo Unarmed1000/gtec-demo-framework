@@ -43,8 +43,8 @@ _g_minTimedPresentShare = 0.9
 _g_idleOtherBusyLimit = 0.10
 # The share of the CPUs other programs have to use for a run with load to count as loaded
 _g_loadedOtherBusyMinimum = 0.10
-# The share of the display times the pacer may refuse before its present feedback counts as of no use
-_g_feedbackRefusedLimit = 0.10
+# The share of the display times the pacer may refuse before its display reports count as of no use
+_g_displayReportsRefusedLimit = 0.10
 _g_sourceWindowSystem = "the window system"
 _g_sourcePacer = "the settings of the pacer"
 _g_sourcePlan = "the plan"
@@ -95,10 +95,9 @@ class RunCheck:
     StartsAheadMedian: float | None = None
     StartsAheadMost: float | None = None
     # The frames the pacer measured by their display times, None if the log does not tell
-    FeedbackOnRows: int | None = None
-    # What the pacer counted from the display times it was given: reports (the ones it took), refused, judged, errorFrames, offTarget,
-    # late
-    FeedbackState: dict[str, int] = field(default_factory=dict)
+    DisplayReportsOnRows: int | None = None
+    # What the pacer counted from the display times it was given: taken, refused, judged, errorFrames, offTarget, late
+    DisplayReportCounts: dict[str, int] = field(default_factory=dict)
     ResultFramesLate: dict[int, int] = field(default_factory=dict)
     WorkCpuMs: Distribution | None = None
     WorkGpuMs: Distribution | None = None
@@ -248,9 +247,9 @@ def _AddWarnings(log: FramePacingLog, check: RunCheck, expectation: RunExpectati
     if check.VariableRefreshRows and expectation.RefreshRateHz is not None:
         warnings.append(f"variable refresh was seen for {check.VariableRefreshRows} of {check.Rows} frames ({check.VariableRefreshSource}): "
                         "the display followed the frames, the run is for a display with a fixed refresh rate")
-    used = check.FeedbackState.get("reports", 0)
-    refused = check.FeedbackState.get("refused", 0)
-    if check.FeedbackOnRows and (used + refused) > 0 and refused > (used + refused) * _g_feedbackRefusedLimit:
+    used = check.DisplayReportCounts.get("taken", 0)
+    refused = check.DisplayReportCounts.get("refused", 0)
+    if check.DisplayReportsOnRows and (used + refused) > 0 and refused > (used + refused) * _g_displayReportsRefusedLimit:
         warnings.append(f"the pacer refused {refused} of {used + refused} display times: they were for frames it does not keep anymore, "
                         "or not newer than the one before")
     otherBusy = check.GetOtherBusyShare()
@@ -309,15 +308,15 @@ def CheckRun(log: FramePacingLog, expectation: RunExpectation) -> RunCheck:
         if len(rates) > 0:
             check.StartsAheadMedian = _Percentile(rates, 0.5)
             check.StartsAheadMost = max(rates, key=abs)
-    if log.HasColumn("pacerFeedbackOn"):
-        check.FeedbackOnRows = sum(1 for value in log.GetValues("pacerFeedbackOn") if value != 0)
-        for key, column in (("reports", "pacerDisplayReports"), ("refused", "pacerDisplayRefused"), ("judged", "pacerDisplayJudgedFrames"),
+    if log.HasColumn("pacerDisplayReportsOn"):
+        check.DisplayReportsOnRows = sum(1 for value in log.GetValues("pacerDisplayReportsOn") if value != 0)
+        for key, column in (("taken", "pacerDisplayReports"), ("refused", "pacerDisplayRefused"), ("judged", "pacerDisplayJudgedFrames"),
                             ("errorFrames", "pacerDisplayErrorFrames"), ("offTarget", "pacerDisplayOffTargetFrames"),
                             ("late", "pacerDisplayLateFrames")):
             values = log.GetValues(column) if log.HasColumn(column) else []
             if len(values) > 0:
                 # The counters only grow while a pacer lives, a new pacer starts them again
-                check.FeedbackState[key] = values[-1]
+                check.DisplayReportCounts[key] = values[-1]
 
     firstRow = min(_g_skippedStartFrames, log.RowCount // 4)
     check.FrameStartColumn = "frameStartTicks" if log.HasColumn("frameStartTicks") else "cpuStartTicks"
@@ -403,9 +402,9 @@ def FormatReport(check: RunCheck) -> list[str]:
             lines.append(f"frame starts ahead of the times the pacer gave, in refreshes per second (the frames with a full frame window): "
                          f"median {check.StartsAheadMedian:+.2f}, {check.StartsAheadMost:+.2f} at the most. About zero: the app waits for "
                          "those times. Above one: the loop runs ahead of the display. Below minus one: the work does not fit")
-        if check.FeedbackOnRows is not None:
-            state = f", the display times at the end of the run: {_FormatCounts(check.FeedbackState)}" if check.FeedbackOnRows > 0 else ""
-            lines.append(f"present feedback to the pacer: on for {check.FeedbackOnRows} frames{state}")
+        if check.DisplayReportsOnRows is not None:
+            state = f", the display times at the end of the run: {_FormatCounts(check.DisplayReportCounts)}" if check.DisplayReportsOnRows > 0 else ""
+            lines.append(f"display reports to the pacer: on for {check.DisplayReportsOnRows} frames{state}")
     lines.append(f"frame start to frame start ({check.FrameStartColumn}): {_FormatDistribution(check.FrameStartIntervalMs, check.RefreshIntervalTicks)}")
     if check.TimedPresents is not None:
         lines.append(f"presents with a display time: {check.TimedPresents} of {check.Rows}")
@@ -453,8 +452,8 @@ def FormatSummary(name: str, check: RunCheck) -> str:
             parts.append("pacer off")
         else:
             parts.append("pacer SWITCHED")
-        if check.FeedbackOnRows:
-            parts.append(f"feedback {_FormatCounts(check.FeedbackState)}")
+        if check.DisplayReportsOnRows:
+            parts.append(f"display reports {_FormatCounts(check.DisplayReportCounts)}")
         if check.StartsAheadMedian is not None:
             parts.append(f"starts ahead {check.StartsAheadMedian:+.2f} refreshes/s")
     if check.VariableRefreshRows:

@@ -55,19 +55,18 @@ more) is no tier: the library rates it on its own.
 
 The table is about what a frame that is shown for more than one refresh is held by. At one refresh per frame every way holds a
 frame the same: a FIFO present holds it and nothing else is needed for that. The pacer of the library says what a frame waits for
-and the sample carries it out (`--Pacer.Kind` is what the pacer paces with). The numbers of the status column are from runs where
-the sample held the frames that way itself, before the times were the pacer's: they say what the system does with a frame that is
-held that way.
+and the sample carries it out (`--Pacer.Kind` is what the pacer paces with). One run per case, see
+[FramePacingCapture.md](FramePacingCapture.md).
 
 | Held by | What the configuration has | How a frame is held | Who decides when it is shown | Status |
 |---|---|---|---|---|
-| The display side | Vulkan with `VK_EXT_present_timing` and a relative target time on the device and the surface | The present carries the time the frame before stays on screen at least (`--Pacer.TimedPresent`) | The presentation engine | measured (Windows, NVIDIA): every frame shown for exactly its swap interval |
+| The display side | Vulkan with `VK_EXT_present_timing` and a relative target time on the device and the surface | The present carries the time the frame before stays on screen at least (`--Pacer.TimedPresent`) | The presentation engine | measured (Windows, NVIDIA, 240 Hz, with `timer-period`): at 60 and 120 fps no frame off its swap interval on an idle machine, 141 of 1138 and 12 of 2338 under CPU load. On a monitor next to one at twice its rate every frame was held twice as long |
 | The display side | OpenGL ES | `eglSwapInterval`, with the swap interval the pacer says | The driver, it counts the refreshes | built, the display times were not measured (OpenGL ES has nothing to measure them with) |
-| Vertical blank times | Vulkan FIFO on Windows | The pacer is given the vsync time of the monitor the window is on and gives a time to wait until (`--Pacer.Kind vblank-period`, `vblank-present-wait`) | The pacer, which knows where the refreshes are | measured at 50, 60, 120 and 240 Hz and on a 120 Hz second monitor: at least 99.6 % of the frames shown for exactly their swap interval, idle and under CPU load |
+| Vertical blank times | Vulkan FIFO on Windows | The pacer is given the vsync time of the monitor the window is on and gives a time to wait until (`--Pacer.Kind vblank-period`, `vblank-present-wait`) | The pacer, which knows where the refreshes are | measured on Windows at 240 Hz with `vblank-period`: at 120, 60 and 30 fps no frame off its swap interval on an idle machine, three in each run under CPU load (of 1137, 537 and 337) |
 | Vertical blank times | Vulkan FIFO on a Wayland compositor with presentation-time (`wp_presentation`) | The same with the vsync time of the compositor | The pacer, which knows where the refreshes are | built, run on a virtual machine only. How good it is depends on the times the compositor reports (`displayVSyncFlags`) and on where in a refresh a frame has to be ready, which has to be measured per compositor |
 | Vertical blank times | Vulkan FIFO on a X server with the Present extension | The same with the vsync time of the X server | The pacer, which knows where the refreshes are | built. Run through Xwayland on a virtual machine whose desktop was locked: the events arrive, the times were not checked |
 | Vertical blank times | Vulkan FIFO on Android from API level 33 | The same with the vsync time of the choreographer | The pacer, which knows where the refreshes are | built, compiled with the NDK only. Not run on a device |
-| A timer | Vulkan FIFO and no vsync time: a X server without Present, a Wayland compositor without presentation-time, Android below API level 33, Apple, QNX | The pacer gives a time to wait until on the clock of the app (`--Pacer.Kind timer-period`, `timer-present-wait`) | A guess: the pacer does not know where the refreshes are | measured (Windows): next to no frame a refresh early or late at 50, 60 and 120 Hz. At 240 Hz from 1 % to 35 %, depending on where the timer happens to start |
+| A timer | Vulkan FIFO and no vsync time: a X server without Present, a Wayland compositor without presentation-time, Android below API level 33, Apple, QNX | The pacer gives a time to wait until on the clock of the app (`--Pacer.Kind timer-period`, `timer-present-wait`) | A guess: the pacer does not know where the refreshes are | measured on Windows at 240 Hz with `timer-period`: at 120, 60 and 30 fps none to 8 frames of a run a refresh early or late (of 338 to 2338), idle and under CPU load |
 
 A run without the frame pacer is in no tier: nothing holds a frame for more than one refresh.
 
@@ -113,7 +112,7 @@ From the least to the most.
 | 1 | `VK_KHR_present_id` or `VK_KHR_present_id2`; `VK_EXT_swapchain_maintenance1` or `VK_KHR_swapchain_maintenance1` | A number per present, and a fence per present that signals when the presentation engine is done with it. No display time, no timed present. | Present fences are used when available (`--VkSwapchainMaintenance1`). `VK_KHR_present_id2` numbers the presents for level 4. `VK_KHR_present_id` is not used. | measured (no effect on the pacing) |
 | 2 | `VK_KHR_present_wait` or `VK_KHR_present_wait2` (with a present id) | The app can block until a given present was presented: a wait that follows the display without the window system, and a coarse display time. | With `VK_KHR_present_wait2` and `--VkPresentWait <n>` a frame of `DemoAppVulkanBasic` does not start before the present `n` frames back was presented, see [below](#keeping-the-frame-loop-from-getting-ahead-of-the-display). Off by default. `VK_KHR_present_wait` is not used, and neither is used as a vsync signal. | measured (one run per case) |
 | 3 | `VK_GOOGLE_display_timing` (Android) | The refresh duration, a desired present time per present (absolute) and past presentation times. | Nothing. | not built |
-| 4 | `VK_EXT_present_timing` (with `VK_KHR_present_id2` and `VK_KHR_calibrated_timestamps`) | A target time per present, the time of each present stage afterwards (queue operations end, request dequeued, first pixel out, first pixel visible) and the refresh duration. | The stages are measured and logged. A relative target time holds a frame (`--Pacer.TimedPresent`). The display times can be given to the pacer (`--Pacer.PresentFeedback`), which counts them and paces the same. The absolute target time is not used. | measured |
+| 4 | `VK_EXT_present_timing` (with `VK_KHR_present_id2` and `VK_KHR_calibrated_timestamps`) | A target time per present, the time of each present stage afterwards (queue operations end, request dequeued, first pixel out, first pixel visible) and the refresh duration. | The stages are measured and logged. A relative target time holds a frame (`--Pacer.TimedPresent`). The display times can be given to the pacer (`--Pacer.DisplayReports`), which counts them and paces the same. The absolute target time is not used. | measured |
 
 Within level 4 a device and a surface can have a relative target time (`presentAtRelativeTime`), an absolute one
 (`presentAtAbsoluteTime`) or both, and a surface reports only some of the stages. The NVIDIA driver that was measured has the relative
@@ -131,7 +130,7 @@ driver, which is what turns them into the Vulkan levels above.
 | Level | Protocol | What it gives | What the framework does | Status |
 |---|---|---|---|---|
 | 0 | Core protocol: `wl_surface.frame`, `wl_output.mode` | A callback once per repaint, with a time in milliseconds of undefined base: a hint that can come late, bunched or not at all. The refresh rate of the mode in mHz. | The refresh rate is read. The frame callback is not used. | the refresh rate: built; the callback: not built |
-| 1 | presentation-time (`wp_presentation`, `wp_presentation_feedback`), stable | For every commit: when it was presented (`presented`) and on which clock (`clock_id`), the time to the next refresh, a refresh counter and flags that say how good the time is, or `discarded` for a frame that was never shown. | The display time of a frame of the window is asked for once per frame, one request at a time, and is the vsync time of `INativeWindow::TryGetVSyncInfo` together with the refresh period the compositor reports. The flags are logged (`displayVSyncFlags`). Not used: a display time for every frame, which present feedback to the pacer would need. | built |
+| 1 | presentation-time (`wp_presentation`, `wp_presentation_feedback`), stable | For every commit: when it was presented (`presented`) and on which clock (`clock_id`), the time to the next refresh, a refresh counter and flags that say how good the time is, or `discarded` for a frame that was never shown. | The display time of a frame of the window is asked for once per frame, one request at a time, and is the vsync time of `INativeWindow::TryGetVSyncInfo` together with the refresh period the compositor reports. The flags are logged (`displayVSyncFlags`). Not used: a display time for every frame, which display reports to the pacer would need. | built |
 | 2 | fifo-v1 (`wp_fifo_manager_v1`, `wp_fifo_v1`), staging | The compositor holds a commit until the one before it was shown (`set_barrier`, `wait_barrier`): FIFO done by the compositor. | Nothing, it is for the Vulkan window system layer. | not built |
 | 3 | commit-timing-v1 (`wp_commit_timing_manager_v1`, `wp_commit_timer_v1`), staging | A target time on a commit (`set_timestamp`): a timed present at the Wayland level. | Nothing, it is for the Vulkan window system layer. | not built |
 
@@ -243,14 +242,14 @@ With two monitors at different rates the swapchain of a window on the slower one
 a 60 Hz monitor next to a 120 Hz one, 20.0 ms on a 24 Hz monitor next to a 50 Hz one, windowed and borderless full screen. The frames
 go out on the refresh of the monitor the window is on. The window system reports the rate of that monitor, and that is the rate the
 pacer is given. The overlay of the sample shows what the swapchain reports as `Swapchain refresh` and names the rate of the display
-next to it when the two differ. A scheduled present goes wrong there: on a 60 Hz monitor next to a 120 Hz one it held every frame
-twice as long as asked ([FramePacingCapture.md](FramePacingCapture.md)).
+next to it when the two differ. A present that is given a time goes wrong there: on a 60 Hz monitor next to a 120 Hz one every frame
+was held twice as long as asked ([FramePacingCapture.md](FramePacingCapture.md)).
 
 ## Other window systems
 
 | Platform | Vsync signal | What the framework does | Status |
 |---|---|---|---|
-| Windows | `IDXGIOutput::WaitForVBlank`: see the section above | `INativeWindow::TryGetVSyncInfo`, logged per frame, used by the vsync wait | measured |
+| Windows | `IDXGIOutput::WaitForVBlank`: see the section above | `INativeWindow::TryGetVSyncInfo`, written to the trace per frame, given to the pacer as the vertical blank times | measured |
 | X11 | The Present extension: a refresh counter with a time stamp, for the output the window is on | The vsync source `present`: the events the X server sends for every image a graphics API presents to the window give the time of a vertical blank; a vertical blank is only asked for (`PresentNotifyMSC`) when no such events arrive (`INativeWindow::TryGetVSyncInfo`). The refresh period is measured from two of them. Needs `libxpresent-dev`. | built. Run through Xwayland on a virtual machine whose desktop was locked: the events arrive, the times were not checked |
 | Android | Choreographer: a callback per refresh with the frame timelines of the next frame (for each the expected presentation time and the deadline it has to be ready by), and a callback with the vsync period | The vsync source `choreographer` (API level 33): a vsync callback is posted per frame (`AChoreographer_postVsyncCallback`), the expected presentation time of the timeline the platform prefers is the time of a vertical blank and the vsync period of the refresh rate callback is the refresh period (`INativeWindow::TryGetVSyncInfo`). The functions are looked up at run time, so an app still builds and starts for a lower API level and reports the source as not available there. The deadline of a timeline is not used. | built, compiled with the NDK only. Not run on a device |
 | Apple | `CADisplayLink`: a callback per refresh with the time the next frame displays | Nothing. | not built |
@@ -317,14 +316,13 @@ vertical blank times once variable refresh was seen (see below). The capture too
 ## Holding a frame for more than one refresh
 
 What the pacer of the FramePacing samples paces with (`--Pacer.Kind`, `--Pacer.TimedPresent`), which is what a frame of more than
-one refresh is held by. The OpenGL ES samples are not part of this: `eglSwapInterval` lets the driver count the refreshes. The
-status column is from runs where the sample held the frames that way itself, before the times were the pacer's.
+one refresh is held by. The OpenGL ES samples are not part of this: `eglSwapInterval` lets the driver count the refreshes.
 
 | What the pacer uses | Needs | How it works | Status |
 |---|---|---|---|
-| A present that takes a time (`--Pacer.TimedPresent`, with every kind) | Vulkan level 4 with a relative target time | The present is given the time the frame before stays on screen at least and the presentation engine holds the frame. | measured on Windows with no faster monitor next to the one of the window: 336 to 337 of 337 frames held for exactly their swap interval at 50, 60 and 120 Hz, at least 98.8 % at 240 Hz. On a monitor next to one at twice its rate every frame was held twice as long |
-| The vertical blank times (`vblank-period`, `vblank-present-wait`) | a vsync time from the window system, and a display that was not seen to refresh at a variable rate | The frame is presented inside the refresh before the one it is aimed at. | measured on Windows at 50, 60, 120 and 240 Hz: at least 99.2 % of the frames held for exactly their swap interval on an idle machine, 96.7 % in the worst run under CPU load (50 Hz). Built on Wayland (presentation-time) and X11 (Present), not measured |
-| A timer (`timer-period`, `timer-present-wait`) | nothing | The frame is presented at a time on the clock of the app. The pacer does not know where the refreshes are, so it is a guess. | measured on Windows: close to the vertical blank times at 50, 60 and 120 Hz, with a run now and then that has 3 % of its frames off. At 240 Hz from none to 35 % of the frames a refresh early or late, depending on where the timer happens to start |
+| A present that takes a time (`--Pacer.TimedPresent`, with every kind) | Vulkan level 4 with a relative target time | The present is given the time the frame before stays on screen at least and the presentation engine holds the frame. | measured (Windows, NVIDIA, 240 Hz, with `timer-period`): at 60 and 120 fps no frame off its swap interval on an idle machine, 141 of 1138 and 12 of 2338 under CPU load. On a monitor next to one at twice its rate every frame was held twice as long |
+| The vertical blank times (`vblank-period`, `vblank-present-wait`) | a vsync time from the window system, and a display that was not seen to refresh at a variable rate | The frame is presented inside the refresh before the one it is aimed at. | measured on Windows at 240 Hz with `vblank-period`: at 120, 60 and 30 fps no frame off its swap interval on an idle machine, three in each run under CPU load (of 1137, 537 and 337). Built on Wayland (presentation-time) and X11 (Present), not measured |
+| A timer (`timer-period`, `timer-present-wait`) | nothing | The frame is presented at a time on the clock of the app. The pacer does not know where the refreshes are, so it is a guess. | measured on Windows at 240 Hz with `timer-period`: at 120, 60 and 30 fps none to 8 frames of a run a refresh early or late (of 338 to 2338), idle and under CPU load. Where the timer lands in a refresh is chance |
 
 The default is the best of them the system has. With variable refresh on (G-SYNC) the vertical blank times do not hold a frame and
 a timer does. The sample stops giving the pacer the vertical blank times once it has seen the display refresh at a variable rate
@@ -332,15 +330,10 @@ a timer does. The sample stops giving the pacer the vertical blank times once it
 
 Where inside a refresh a frame has to be ready is not something to derive, it has to be measured per platform (`--Pacer.ReadyPlace`,
 in percent of the refresh after a vertical blank; the default is 50, and with a wait for a present the pacer moves it by what the
-waits tell it). The sweeps that were made are of a sample that presented at a place in the refresh before the target itself, before
-the place was the pacer's. On Windows at 240 Hz a present from 55 to 75 % of the refresh was shown at the vertical blank it was aimed
-at in every run, idle and under CPU load; earlier most runs had one frame shown a refresh too long, and at 95 % the frame starts got
-uneven. At 120, 60 and 50 Hz every place from 5 to 85 % was clean. The late presents that went wrong were within about a millisecond
-of the vertical blank at every rate, which reads as a time and not as a share of a refresh; the early end only showed at 240 Hz, so
-what it is has not been settled. Those sweeps at 60 and 50 Hz had a second monitor at 120 Hz next to the one of the window. With
-one monitor they were less flat (one or two frames of 337 off at most places, 10 to 14 at 95 % at 60 Hz), and at 240 Hz with one
-monitor 85 % was the place that went wrong (27 and 28 of 337 off). The plan `ready-place-sweep` of the capture tool is that sweep
-with the place of the pacer.
+waits tell it). The plan `ready-place-sweep` of the capture tool measures it. On Windows at 240 Hz with frames of two refreshes no
+frame was off its swap interval from 5 to 65 % of the refresh, idle and under CPU load. At 75 % it was none and 2 of 337 and at
+85 % 3 and 1: the present was made 0.79 ms before the frame reached the display there. At 95 % the present lay at 90 % of the
+refresh, the frame was shown a refresh later, and the run paced at three refreshes per frame.
 
 ## Keeping the frame loop from getting ahead of the display
 
@@ -363,7 +356,7 @@ What to know about them:
 - The fence of the acquire only holds the loop to the display as far as the driver keeps a image until it left the display. How many
   presents can wait is then bound by the images of the swapchain (`--VkSwapchainImages`). A swapchain that keeps a image until it
   left the display would have `n - 2` of `n` images waiting behind the one that is shown. On the system that was measured `n`
-  presents wait (three with three images, two with two, the table below): what a image holds is taken over when it is presented, the
+  presents wait (three with three images, two with two): what a image holds is taken over when it is presented, the
   presents wait below the swapchain, and the image count bounds them there.
 - When `vkWaitForPresent2KHR` returns in relation to the image being on the display is left to the window system by the
   specification, so it has to be measured against the display times (`firstPixelOutTicks`) before it is relied on. The wait ends
@@ -389,29 +382,19 @@ presented, the latency is from the start of a frame to its first pixel out:
 
 | | Waiting | Latency, refreshes (median, 99 %) | Presents without a display time | Shown for one refresh |
 |---|---|---|---|---|
-| **GPU work of 90 % of a refresh, swap interval one, the late profile held by the vsync** | | | | |
-| no wait | 1 to 3 | 2.98, 4.98 | 7.6 % | 1737 of 2117 |
-| `--VkPresentWait 1` | 0 | 1.75, 1.97 | none | 5 of 2291: every frame is shown for two |
-| `--VkPresentWait 2` | 1 | 1.72, 1.97 | none | 2257 of 2291 |
-| `--VkAcquireFenceWait true` | 3 | 3.91, 3.94 | 0.1 % | 2284 of 2288 |
-| `--VkAcquireFenceWait true --VkSwapchainImages 2` | 2 | 2.92, 2.94 | 0.2 % | 2278 of 2287 |
 | **GPU work of 20 % of a refresh, the pacer off** | | | | |
 | no wait | 2 | 2.68, 2.70 | none | all |
 | `--VkPresentWait 1` | 0 | 0.75, 0.97 | none | 2288 of 2291 |
 | `--VkPresentWait 2` | 1 | 1.76, 1.94 | none | all |
 | `--VkAcquireFenceWait true` | 3 | 3.91, 3.93 | none | all |
-| **GPU work of 20 %, the pacer on (early profile, held by the vsync)** | | | | |
-| no wait, with the one-time wait of the sample (`--Pacer.Drain`, the default) and without it | 1 | 2.30, 2.31 | 1 present | 2287 and 2289 of 2290 |
-| `--Pacer.Drain 0 --VkPresentWait 1` | 0 | 0.84, 0.98 | none | 2284 of 2291 |
 
 What they say, for this system:
 
-- `vkWaitForPresent2KHR` follows the display: in the 11,460 waits of the five runs above it never returned before the first pixel out
+- `vkWaitForPresent2KHR` follows the display: in the 11,460 waits of five runs it never returned before the first pixel out
   of the present it waited for, and 1.0 ms after it at the median (0.06 ms at 1 % of the waits, 2.4 ms at 99 %). Every wait
   succeeded.
 - The present wait keeps the number of presents that wait at what it was asked for, and the latency follows. Waiting for the
-  present of the frame before leaves no time to work ahead: with work that fills a refresh every frame is then shown for two. Waiting
-  for the one before that keeps one refresh per frame.
+  present of the frame before leaves no time to work ahead, waiting for the one before that leaves a refresh of it.
 - The fence of the acquire steadies the loop (no frame whose GPU work starts late, next to no present without a display time), and the
   presents that wait then sit at the number of swapchain images: it is the back-pressure of a full queue, with the most latency and
   not less of it.
@@ -513,7 +496,7 @@ What the pacer is given on every path:
 |---|---|---|
 | The refresh period | One value, given to the pacer again when it changes | The refresh rate of the display from the window system (`INativeWindow::TryGetDisplayInfo`). `--Pacer.RefreshRate` replaces it, and a slider in the sample sets it when the window system does not know it. |
 | The vertical blank times | Every new reading once, with the period that was measured with it, where the answer to question 2 is yes | `INativeWindow::TryGetVSyncInfo` |
-| Present feedback | Off, unless `--Pacer.PresentFeedback true` and the swapchain measures display times (`VK_EXT_present_timing`) | The display time of each present (first pixel out on the driver that was measured). It does not depend on how the frame is held. |
+| Display reports | Off, unless `--Pacer.DisplayReports true` and the swapchain measures display times (`VK_EXT_present_timing`) | The display time of each present (first pixel out on the driver that was measured). It does not depend on how the frame is held. |
 
 One period is known and not given to the pacer: the refresh duration `VK_EXT_present_timing` reports, which is only shown.
 

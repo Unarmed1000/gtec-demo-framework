@@ -1,14 +1,12 @@
-# Frame logs with every stage of a frame, for the charts of a frame on the timeline of the CPU, the GPU and the display. The cases
-# are the ones that were recorded before the frame loop was reordered and the log had the waits, so the two can be put side by side:
+# Traces with every stage of a frame, for the charts of a frame on the timeline of the CPU, the GPU and the display:
 #
-#   heavy_holdvsync  GPU work near a refresh at one refresh per frame, paced on the vertical blank times, full screen
-#   fps60_wait       60 fps on 240 Hz (four refreshes per frame), light work, paced on a timer, plain Vulkan
-#   half_scheduled   half the refresh rate, light work, the present is given a time
-#   w90              GPU work of 90 % of a refresh, adaptive pacer, plain Vulkan: where the swap interval rule slows down
-#   w94_fixed1       GPU work of 94 % of a refresh at a fixed swap interval of one
+#   heavy_vblank  GPU work near a refresh at one refresh per frame, paced on the vertical blank times, full screen
+#   fps60_timer   60 fps on 240 Hz (four refreshes per frame), light work, paced on a timer, plain Vulkan
+#   half_timed    half the refresh rate, light work, the present is given a time
+#   w90           GPU work of 90 % of a refresh, adaptive pacer, plain Vulkan: where the swap interval rule slows down
+#   w94_fixed1    GPU work of 94 % of a refresh at a fixed swap interval of one
 #
-# Where a frame waits is the pacer's to say, so each is run once. The names end in _early as the runs they are compared with do. The
-# last two runs are the swapchain with two images and the loop with two frames in flight.
+# The last two runs are the swapchain with two images and the loop with two frames in flight.
 #
 # A log of these runs has, on the clock of the framework: the update, the wait for the start of the frame, the wait of the host for
 # the frame slot, the acquire, the frame start, the marker, the submit, the end of the CPU work, the wait before the present, the
@@ -25,8 +23,7 @@ description = "240 Hz: every stage of a frame in the log for five cases, two swa
 app = "Vulkan.FramePacing"
 frames = 2400
 expected_refresh_hz = 240.0
-# The scene is named, as the GPU load settings below are the ones of that scene. It is the scene the runs this plan is compared with
-# were made with
+# The scene is named, as the GPU load settings below are the ones of that scene
 args = ["--Background", "flight", "--CpuLoad", "0", "--Pacer"]
 
 [variables]
@@ -43,31 +40,31 @@ window = "[0,0,1600,900]"
 # The five cases
 
 [[run]]
-name = "heavy_holdvsync_early"
+name = "heavy_vblank"
 what = "Full screen, GPU work near a refresh, adaptive pacer, paced on the vertical blank times"
 args = ["--Window", "[]", "--GpuLoad", "{heavy_fullscreen}", "--Pacer.Kind", "vblank-period"]
 
 [[run]]
-name = "fps60_wait_early"
+name = "fps60_timer"
 what = "60 fps (4 refreshes per frame), light work, paced on a timer, plain Vulkan"
 args = ["--Window", "{window}", "--GpuLoad", "{work20}", "--Pacer.Adaptive", "false", "--Pacer.TargetFps", "60", "--Pacer.Kind", "timer-period",
         "--VkSwapchainMaintenance1", "false"]
 frames = 600
 
 [[run]]
-name = "half_scheduled_early"
+name = "half_timed"
 what = "120 fps (2 refreshes per frame), light work, the present is given a time"
-args = ["--Window", "{window}", "--GpuLoad", "{work20}", "--Pacer.PresentFeedback", "true", "--Pacer.Adaptive", "false", "--Pacer.TargetFps", "120",
+args = ["--Window", "{window}", "--GpuLoad", "{work20}", "--Pacer.DisplayReports", "true", "--Pacer.Adaptive", "false", "--Pacer.TargetFps", "120",
         "--Pacer.Kind", "timer-period", "--Pacer.TimedPresent"]
 frames = 1200
 
 [[run]]
-name = "w90_early"
+name = "w90"
 what = "GPU work of 90 % of a refresh, adaptive pacer, plain Vulkan"
 args = ["--Window", "{window}", "--GpuLoad", "{work90}", "--Pacer.Kind", "vblank-period", "--VkSwapchainMaintenance1", "false"]
 
 [[run]]
-name = "w94_fixed1_early"
+name = "w94_fixed1"
 what = "GPU work of 94 % of a refresh at a fixed swap interval of one"
 args = ["--Window", "{window}", "--GpuLoad", "{work94}", "--Pacer.Adaptive", "false", "--Pacer.Kind", "timer-period"]
 

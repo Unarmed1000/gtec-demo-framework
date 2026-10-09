@@ -50,12 +50,12 @@
 #include <Shared/FramePacing/SampleFrameWorkAverage.hpp>
 #include <Shared/FramePacing/SampleGpuWaitRequest.hpp>
 #include <Shared/FramePacing/SampleKeyboardMenu.hpp>
+#include <Shared/FramePacing/SampleMeasuredPresents.hpp>
 #include <Shared/FramePacing/SamplePacer.hpp>
 #include <Shared/FramePacing/SamplePacerKind.hpp>
 #include <Shared/FramePacing/SamplePacerPlan.hpp>
 #include <Shared/FramePacing/SamplePacerRating.hpp>
 #include <Shared/FramePacing/SamplePacerTierChoice.hpp>
-#include <Shared/FramePacing/SamplePresentFeedback.hpp>
 #include <Shared/FramePacing/SamplePresentWaitRequest.hpp>
 #include <Shared/FramePacing/SampleStatsLevel.hpp>
 #include <Shared/FramePacing/SampleSwapchainRefresh.hpp>
@@ -146,8 +146,8 @@ namespace Fsl
       std::shared_ptr<UI::Label> IntervalChanges;
       std::shared_ptr<UI::Label> LastChange;
       std::shared_ptr<UI::Label> FrameWindow;
-      std::shared_ptr<UI::Label> Feedback;
-      std::shared_ptr<UI::Label> FeedbackLate;
+      std::shared_ptr<UI::Label> DisplayReports;
+      std::shared_ptr<UI::Label> DisplayLate;
       std::shared_ptr<UI::Label> VariableRefresh;
       //! What the measured presents say (only an app that measures them has values for these)
       std::shared_ptr<UI::Label> DisplayError;
@@ -167,7 +167,7 @@ namespace Fsl
       SampleStatsLevel FrameTime{SampleStatsLevel::Normal};
       SampleStatsLevel LateFrames{SampleStatsLevel::Normal};
       SampleStatsLevel AverageWork{SampleStatsLevel::Normal};
-      SampleStatsLevel FeedbackLate{SampleStatsLevel::Normal};
+      SampleStatsLevel DisplayLate{SampleStatsLevel::Normal};
       SampleStatsLevel VariableRefresh{SampleStatsLevel::Normal};
       SampleStatsLevel DisplayInterval{SampleStatsLevel::Normal};
       SampleStatsLevel DisplayRefresh{SampleStatsLevel::Normal};
@@ -217,7 +217,7 @@ namespace Fsl
       //! The aim of the pacer: on is low latency, off is smoothness
       std::shared_ptr<UI::Switch> SwitchLowLatency;
       std::shared_ptr<UI::Switch> SwitchTimedPresent;
-      std::shared_ptr<UI::Switch> SwitchPacerFeedback;
+      std::shared_ptr<UI::Switch> SwitchPacerDisplayReports;
       //! What the frames can be paced with (below the switch of the frame pacer), one group of radio buttons: the tiers of the
       //! pacer library the samples reach, with the best first. A tier that can not be used here is disabled, and the one that is
       //! checked is the one the run is paced by.
@@ -345,11 +345,11 @@ namespace Fsl
     //! frame pacer is switched off
     NanosecondTimeSpan m_animationOffset;
     //! Relates the presents the app measured to the frames of the sample
-    SamplePresentFeedback m_presentFeedback;
+    SampleMeasuredPresents m_measuredPresents;
     //! True if the app measures when its frames are presented
-    bool m_presentFeedbackEnabled{false};
-    //! True if the app can give a present a target time (SetPresentSchedulingSupport)
-    bool m_presentSchedulingSupported{false};
+    bool m_presentsMeasured{false};
+    //! True if the app can give a present a target time (SetTimedPresentSupport)
+    bool m_timedPresentSupported{false};
     //! The tier of the pacer library the run is in (empty: the frame pacer is off) and what the pacer library rates this app at
     //! on this system. They are worked out every update and logged when they change.
     struct TierState
@@ -370,7 +370,7 @@ namespace Fsl
     //! What the window system said when the sample started: what is certain about explicit sync, and the name of its vsync source
     SampleExplicitSync m_explicitSync{SampleExplicitSync::NotApplicable};
     std::string m_vsyncSourceName;
-    //! The target time of the present of the current frame, counted from when the frame before it was shown (zero = not scheduled)
+    //! The time the present of the current frame is given: the frame before it stays on screen at least this long (zero = none)
     TimeSpan m_presentRelativeTarget;
     //! When the display refreshes according to the window system, read once per frame: the time of a vertical blank and the time
     //! between two refreshes (both zero if the platform does not say). They are kept in nanoseconds as the window system gives them,
@@ -450,8 +450,8 @@ namespace Fsl
     int32_t m_cpuSpikeMs{SampleConfig::CpuSpikeMs.Get()};
     int32_t m_cpuSpikeIntervalFrames{SampleConfig::CpuSpikeIntervalFrames.Get()};
     int32_t m_frameCpuSpikeMs{0};
-    //! The refreshes of the pause the pacer makes once after it started (SampleConfig::DrainRefreshes)
-    int32_t m_drainRefreshes{SampleConfig::DrainRefreshes.Get()};
+    //! The refreshes of the pause the pacer makes once after it started (SampleConfig::StartupPauseRefreshes)
+    int32_t m_startupPauseRefreshes{SampleConfig::StartupPauseRefreshes.Get()};
     //! What was last written to the log about the background, so a change is written as a event
     RaymarchScene m_loggedBackgroundScene{RaymarchScene::Flight};
     bool m_hasLoggedBackground{false};
@@ -494,8 +494,8 @@ namespace Fsl
       TraceValue GpuLoad;
       TraceValue PacerFrameId;
       TraceValue NextFrameStart;
-      TraceValue FeedbackOn;
-      TraceValue FeedbackDisplay;
+      TraceValue DisplayReportsOn;
+      TraceValue DisplayReportTime;
       TraceValue DisplayReports;
       TraceValue DisplayRefused;
       TraceValue DisplayJudgedFrames;
@@ -736,7 +736,7 @@ namespace Fsl
     void SetMeasurementSupport(const bool presentTimingSupported, const bool gpuTimelineSupported);
     //! Tell the sample if the app can give a present a target time (the time the frame before stays on screen at least). The frame
     //! pacer plans that time where it is asked to. Call it every frame, as it can change when the swapchain is recreated.
-    void SetPresentSchedulingSupport(const bool supported);
+    void SetTimedPresentSupport(const bool supported);
 
     //! @brief A app that presents with a swap interval says what the longest one is that it can set (the EGL config decides it, and it
     //!        can be one). It is what the tier the side bar shows as the best of the system depends on.
@@ -744,8 +744,8 @@ namespace Fsl
     {
       m_presentSwapIntervalMax = maxSwapInterval;
     }
-    //! The target time of the present of the current frame after WaitForPresent: the frame is not to be shown before this long after the
-    //! frame before it was shown. Zero if the present is not scheduled.
+    //! The time the present of the current frame is to be given, after WaitForPresent: the frame is not to be shown before this long
+    //! after the frame before it was shown. Zero if the frame pacer gave none.
     [[nodiscard]] TimeSpan GetPresentRelativeTarget() const noexcept
     {
       return m_presentRelativeTarget;
@@ -757,7 +757,7 @@ namespace Fsl
     //! Tell the sample if the app measures when its frames reach the display (VK_EXT_present_timing). Call it every frame, as it can change
     //! when the swapchain is recreated.
     //! @param refreshDuration the duration of a refresh of the display according to the swapchain (zero if unknown)
-    void SetPresentFeedback(const bool enabled, const TimeSpan refreshDuration = {});
+    void SetPresentsMeasured(const bool enabled, const TimeSpan refreshDuration = {});
     //! Tell the sample what the swapchain says about how the display refreshes. Call it every frame, an app without a swapchain that
     //! says does not call it.
     void SetSwapchainRefresh(const SampleSwapchainRefresh swapchainRefresh) noexcept
@@ -903,7 +903,7 @@ namespace Fsl
     //! The time a frame is to take right now: what the frame pacer says, and one refresh without it (zero if it is not known)
     [[nodiscard]] TimeSpan GetTargetFrameTime() const noexcept;
     //! Update the rows of the frame pacing section that show what the measured presents say
-    void UpdatePresentFeedbackStats();
+    void UpdateMeasuredPresentsStats();
     void UpdateVariableRefreshStats();
     //! Add the values of the sample to the trace
     void RegisterLogColumns();

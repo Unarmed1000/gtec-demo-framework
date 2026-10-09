@@ -115,8 +115,8 @@ SDK (`MB::FramePacing::Pacer::TierPacer`). It is only part of the samples (`Samp
 
 The pacer holds every rule and every time calculation. It is told what the app can do and which of that it is to use, and it says
 what a frame waits for before it starts and before it is presented. The sample only supplies information and carries out the waits it
-is given, see [below](#how-the-pacer-paces-a-frame---pacerkind). The pacer can be given when the display showed the frames (present
-feedback, see below), which it counts and does not pace by.
+is given, see [below](#how-the-pacer-paces-a-frame---pacerkind). The pacer can be given when the display showed the frames (display
+reports, see below), which it counts and does not pace by.
 
 The pacer needs nothing but a steady clock, a wait until a time and the refresh period of the display. Every frame the sample gives it
 the time the frame starts and gets back the swap interval of the frame (the number of display refreshes it is shown for), the time step to
@@ -129,8 +129,8 @@ Frame pacer (or the **P** key)|`--Pacer`                       |Switch the frame
 Refresh rate                  |`--Pacer.RefreshRate <hz>`      |The refresh rate of the display. It is read from the window system, the slider only sets it when the window system does not know it. The argument overrides both and allows decimals (59.94).
 Target fps                    |`--Pacer.TargetFps <fps>`       |The frame rate the pacer aims for, 0 is the refresh rate of the display. 30 on a 60 Hz display holds every frame for two refreshes.
 Adaptive swap interval        |`--Pacer.Adaptive <true\|false>`|On: the pacer slows down when frames are late and speeds up again when they fit. Off: a fixed frame rate.
-Present feedback to the pacer |`--Pacer.PresentFeedback <true\|false>`|Vulkan only. On: the pacer is given when the display showed the frames and counts what the display did, see [below](#present-feedback-vulkan-optional). It paces the same on and off. Off is the default.
-                              |`--Pacer.Drain <refreshes>`     |The refreshes of the pause the pacer makes once, half a second after it started, so the presents that are queued between the app and the display are shown before the next one is added (`timer-period` and `vblank-period` with the aim of low latency; 0 to 32, the default is 4, 0 is none).
+Display reports to the pacer  |`--Pacer.DisplayReports <true\|false>`|Vulkan only. On: the pacer is given when the display showed the frames and counts what the display did, see [below](#display-reports-vulkan-optional). It paces the same on and off. Off is the default.
+                              |`--Pacer.StartupPause <refreshes>`     |The refreshes of the pause the pacer makes once, half a second after it started, so the presents that are queued between the app and the display are shown before the next one is added (`timer-period` and `vblank-period` with the aim of low latency; 0 to 32, the default is 4, 0 is none).
 Low latency (off: smoothness) |`--Pacer.Aim <smoothness\|low-latency>`|What the pacer optimizes for, see [below](#how-the-pacer-paces-a-frame---pacerkind). The default is `smoothness`.
 Timed present                 |`--Pacer.TimedPresent`         |The pacer uses the present that takes a time, where the app has one (Vulkan with a swapchain that takes a time the frame before stays on screen at least): the pacer plans that time and the sample gives it to the present, next to everything it does without it. It changes no tier: only a present at a time lets the display place the frame.
                               |`--Pacer.GpuWait`              |The kinds without a wait for a present (`timer-period` and `vblank-period`) hold the frame loop with a wait for the GPU's work on an earlier frame, where the app can make that wait (Vulkan): the pacer names the frame, the one before with the aim of low latency and the one before that with smoothness where two frames are in flight (`--VkFramesInFlight 2`). It is the wait for a frame slot of the app base, made for the frame the pacer names and reported to it.
@@ -281,7 +281,7 @@ How a frame is held for its swap interval depends on the API:
   held by a time the pacer gives, which the sample waits until before the host presents the frame. See
   [below](#what-a-vulkan-frame-loop-waits-on-and-why-the-pacer-gives-the-times). The GPU time of a frame is measured with timestamp
   queries and given to the pacer. The sample can measure when its frames reach the display (see the section after that) and, when
-  asked to, gives those display times to the pacer as present feedback.
+  asked to, gives those display times to the pacer as display reports.
 
 #### How the pacer paces a frame (`--Pacer.Kind`)
 
@@ -339,9 +339,9 @@ The sample computes no time. A frame is these calls, in this order:
    Where the present takes a time and the run uses it (`--Pacer.TimedPresent`) the plan also has the time the frame before stays
    on screen at least.
 7. **The display time of a earlier frame is reported** (`AddDisplayReport`), where the app measures its presents and the run gives
-   the pacer present feedback.
+   the pacer display reports.
 
-`--Pacer.Drain` is no wait of the sample: it is the length of the pause the pacer makes once after a start.
+`--Pacer.StartupPause` is no wait of the sample: it is the length of the pause the pacer makes once after a start.
 
 What the pacer does itself on a timer: the frame starts are kept on one grid of refresh
 periods on the clock. A frame that starts less than half a period late keeps its place and the frame after it is on time again.
@@ -360,7 +360,7 @@ What to know about it:
 - `timer-period` can not see the display: a refresh the display lost by itself leaves a present waiting, at one refresh per frame
   for good. `timer-present-wait` is the kind that bounds the presents that wait.
 - With the low latency aim `timer-period` makes one pause half a second after it started, so the presents that queued up while the window was new are shown
-  before the next one is added. The pause is the pacer's: the sample only waits for the times it is given. `--Pacer.Drain` says
+  before the next one is added. The pause is the pacer's: the sample only waits for the times it is given. `--Pacer.StartupPause` says
   how many refreshes it is (4 by default, 0 is none), and `pacerStartupPauses` in the frame log counts them.
 - When the swapchain is made anew the Vulkan sample tells the pacer (`ForgetPresents`): no present of the swapchain before can be
   waited for, `timer-period` makes its pause once more, and nothing else of the pacer changes. `WaitForPresent` refuses a present of
@@ -404,21 +404,18 @@ refresh, and the sample waits for the times it is given. What the pacer has to g
   (`presentTargetTicks`) and what the present was given (`presentTargetRelativeNs`), and the `presentTiming` event has
   `canSchedule=1` where a present can take such a time.
 
-Waiting alone does not shorten the way from a present to the display. A present reached the display 10 to 15 ms after its call in
-runs with light work at 240 Hz (about three refreshes); in a loop that does not wait it is 15.3 ms. A trace of the presents
+Waiting alone does not shorten the way from a present to the display. In a loop that does not wait a present reached the display
+15.3 ms after its call with light work at 240 Hz (3.7 refreshes). A trace of the presents
 (PresentMon) shows where that time is on Windows with a NVIDIA driver, which runs the Vulkan swapchain on a DXGI swapchain: the
 first dozen presents of a window go through the compositor and take three refreshes from the present of the driver to the display,
 and the presents the app makes meanwhile queue up in the driver. Then the window is flipped directly, the present of the driver
 reaches the display in one refresh (4.0 ms), and the app's presents still wait 5.6 to 7.2 ms in front of it: a loop that makes one
 frame per refresh does not work a queue off.
 
-The pause of the pacer is for that (`--Pacer.Drain <refreshes>`): half a second after it started it waits that many refreshes
-more, once, so what is queued is shown. Measured with a wait of the same length that the sample made itself, before the pause was
-the pacer's: with four refreshes a present reached the display after 2.8 ms from that wait to the end of the run, where it was
-11.1 ms before it and 9.7 ms for a whole run without it (light work, one run each). With GPU work of 86 % of a refresh it went from
-8.0 to 3.9 ms and was back at 8.1 ms nine frames later, one refresh behind again, and stayed there: a frame that is late once adds
-to the queue and a pause that is made once does not take it off. The wait for a present does (`timer-present-wait`,
-`vblank-present-wait`), which is why those kinds make no pause.
+The pause of the pacer is for that (`--Pacer.StartupPause <refreshes>`): half a second after it started it waits that many refreshes
+more, once, so what is queued is shown. A frame that is late after it adds to the queue again, and a pause that is made once does
+not take that off. The wait for a present does (`timer-present-wait`, `vblank-present-wait`), which is why those kinds make no
+pause.
 
 The vertical blank times are also left when the display was seen to refresh at a variable rate: the window says so
 (`INativeWindow::TryGetVariableRefreshInfo`, on Windows a measurement of the vertical blanks) or the swapchain does. From then on
@@ -427,16 +424,16 @@ refresh rate of the display changes, so the tier does not go back and forth. The
 shows what is known: `not seen`, `seen` with the refreshes of the mode between two refreshes of the display, `seen before`, or
 `unknown`, and in the Vulkan sample what the swapchain says (`swapchain: fixed`). `not seen` is no proof that variable refresh is
 off: a display with it on refreshes like a fixed one while the frames come at the rate of its mode. The frame log has the event
-`holdVariableRefresh` where the sample stopped giving the pacer the vertical blank times. What a platform can tell is in
+`variableRefreshSeen` where the sample stopped giving the pacer the vertical blank times. What a platform can tell is in
 [FramePacingPlatformSupport.md](FramePacingPlatformSupport.md#variable-refresh-what-a-platform-tells-an-app).
 
 Any Vulkan app can give a present such a time: `DemoAppVulkanBasic::IsPresentSchedulingSupported()` and
 `SetPresentRelativeTargetTime(time)` before the frame is presented. The absolute form of the extension (`presentAtAbsoluteTime`) is not
 used.
 
-#### Present feedback (Vulkan, optional)
+#### Display reports (Vulkan, optional)
 
-`--Pacer.PresentFeedback true` (the `Present feedback to the pacer` switch) gives the pacer the time the display showed each frame,
+`--Pacer.DisplayReports true` (the `Display reports to the pacer` switch) gives the pacer the time the display showed each frame,
 as display reports. It is statistics only: the pacer counts the animation error of the frames from them and paces by none of it
 (the swap interval, the animation step, the start of the next frame and the late frames of its frame window all come from the frame
 starts and the work of the frames). It needs the presents to be measured (`VK_EXT_present_timing`, the `Measure the presents`
@@ -449,12 +446,12 @@ What the sample does with it:
 
 - Every frame it remembers the id the pacer gave the frame next to the id of the present of the frame. When the display time of a
   present arrives, a few frames later, it gives the pacer the display time of that frame (`AddDisplayReport`). It tells the pacer
-  nothing about a frame without one: no display time is not "never shown". A present that was not asked to be timed gets no
-  feedback.
-- The waits of the sample are the ones the pacer gives, with and without feedback.
-- The `Present feedback` row of the frame pacing overlay shows the frames the pacer judged and the display times it refused. The
+  nothing about a frame without one: no display time is not "never shown". A present that was not asked to be timed is not
+  reported.
+- The waits of the sample are the ones the pacer gives, with and without the reports.
+- The `Display reports` row of the frame pacing overlay shows the frames the pacer judged and the display times it refused. The
   `Display late` row is the frames that were shown a refresh or more later than they were made for, next to the `Late frames` the
-  pacer counts from the frame starts. The frame log has it per frame (`pacerFeedbackOn`, `pacerFrameId`, `feedbackDisplayTicks`)
+  pacer counts from the frame starts. The frame log has it per frame (`pacerDisplayReportsOn`, `pacerFrameId`, `pacerDisplayReportTicks`)
   with the pacer's counts (`pacerDisplayReports`, `pacerDisplayRefused`, `pacerDisplayJudgedFrames`, `pacerDisplayErrorFrames`,
   `pacerDisplayOffTargetFrames`, `pacerDisplayLateFrames`) and the time from the start of a frame to its display
   (`pacerDisplayStartToDisplayFrames`, `pacerDisplayStartToDisplayTotalNs`, `pacerDisplayStartToDisplayLongestNs`).
@@ -648,7 +645,7 @@ Column | Unit | Description
 `presentTimeDomainId` | id | The id of the time domain the stages were reported in
 `resultReadAtFrame` | id | The frame in which the stages of this frame were read: how late they arrived
 `presentTimingRequested` | flag | 1 if the present was asked to be timed, 0 if not: present timing is off, or too many results were outstanding
-`presentTargetRelativeNs` | nanoseconds | The target time the present was given: its image is not shown before this long after the image of the present before it was shown (empty: the present was not scheduled)
+`presentTargetRelativeNs` | nanoseconds | The target time the present was given: its image is not shown before this long after the image of the present before it was shown (empty: the present was given none)
 
 **The FramePacing samples**
 
@@ -676,7 +673,7 @@ Column | Unit | Description
 `gpuWorkBeginTicks` | ticks | When the GPU started on the frame, on the clock of the framework
 `gpuWorkEndTicks` | ticks | When the GPU finished the frame, on the clock of the framework. Vulkan: the timestamp at the end of its commands (`VK_KHR_calibrated_timestamps`). OpenGL ES: a timestamp query after its last command, where the driver has timestamps
 `flushCallTicks` | ticks | OpenGL ES with `--GLFlush`: when `glFlush` was called after the last command of the frame, the GPU is asked to work on the frame from here
-`presentWaitTicks` | durationTicks | How long the sample delayed the present of the frame, to hold it for its swap interval
+`presentWaitTicks` | durationTicks | How long the frame waited before its present, for the time the frame pacer gave
 `presentWaitBeginTicks` | ticks | When the sample began to wait with the finished frame before its present
 `presentWaitTargetTicks` | ticks | The time the wait before the present aimed at
 `presentWaitEndTicks` | ticks | When the wait before the present woke, the present follows
@@ -684,7 +681,7 @@ Column | Unit | Description
 `cpuSpikeMs` | count | The milliseconds the frame was busy on top of the CPU load: a frame that runs long now and then (`--CpuSpike`), zero in the frames between
 `gpuLoadSteps` | count | The GPU load setting: the steps of the background (for the lace the rounds of detail and the samples per pixel come from it)
 `presentTargetTicks` | durationTicks | The target time the sample asked for: the frame is not to be shown before this long after the frame before it was shown
-`pacerFrameId` | id | The id the frame pacer gave the frame, present feedback is given with it
+`pacerFrameId` | id | The id the frame pacer gave the frame, its reports are given with it
 `nextFrameStartTicks` | ticks | The start of the frame plus its swap interval according to the frame pacer: what the waits of the sample hold to
 `pacerKind` | code | What the pacer of the library paced the frame with (`--Pacer.Kind`): 1 a timer and the refresh period, 2 a timer with a wait for a present, 3 the vertical blank times and the refresh period, 4 the vertical blank times with a wait for a present. The pacer gives the times the sample waits until
 `pacerRefreshesBehindClock` | count | The refreshes that were lost and that the animation time was not moved over, counted since the pacer was made, as it was when the frame started
@@ -702,9 +699,9 @@ Column | Unit | Description
 `pacerSystemHeldFrames` | count | `pacerKind` 1 and 2: the frames whose start the side of the display held (a acquire, a present that waited: for a eighth of a refresh or more), counted since the pacer was made
 `pacerFrameSlotHeldFrames` | count | `pacerKind` 1 and 2: the frames whose start a wait for a frame slot held for a eighth of a refresh or more (the GPU was not done with a earlier frame), counted since the pacer was made
 `pacerDisplayHeldRefreshes` | count | `pacerKind` 3 and 4: the refreshes frame starts were late by while the side of the display held the loop (a acquire, a present that waited, a wait for a frame slot or for the GPU's work while the GPU did no work), which the animation time does not step over, counted since the pacer was made
-`pacerFeedbackOn` | flag | 1 if the frame pacer is given the display times of the frames: it counts what the display did, it paces the same
-`feedbackDisplayTicks` | ticks | The display time of the frame the frame pacer was given as a display report
-`pacerDisplayReports` | count | With `pacerFeedbackOn`: the display times the pacer took as display reports, counted since the pacer was made. It counts the animation error from them and paces by none of it
+`pacerDisplayReportsOn` | flag | 1 if the frame pacer is given the display times of the frames: it counts what the display did, it paces the same
+`pacerDisplayReportTicks` | ticks | The display time of the frame the frame pacer was given as a display report
+`pacerDisplayReports` | count | With `pacerDisplayReportsOn`: the display times the pacer took as display reports, counted since the pacer was made. It counts the animation error from them and paces by none of it
 `pacerDisplayRefused` | count | The display times the pacer did not take: for a frame it does not keep (more than 64 frames old) or not newer than the one before
 `pacerDisplayJudgedFrames` | count | The frames the pacer judged from the display reports: the frame and the frame before it both have a display time
 `pacerDisplayErrorFrames` | count | The judged frames with a animation error of more than a millisecond: their animation time step less the time between the two display times
@@ -727,7 +724,7 @@ Most values of a row are those of its own frame, also the ones that arrive later
   ends, and the GPU has not worked on it then. The GPU time of the frame itself is `gpuTimeTicks`. Vulkan: the frame that used the
   frame slot before, so as many frames back as there are frames in flight. OpenGL ES: the newest query that had finished, one to
   three frames back, and a frame is not measured while all four queries are in use.
-- `pacerWindow*` is the frame window as it was after the frame before was measured, and `pacerFeedback*` are counters.
+- `pacerWindow*` is the frame window as it was after the frame before was measured, and `pacerDisplay*` are counters.
 - `displayVSyncTicks` is a recent vertical blank, read when the frame began. `refreshDurationNs` and `refreshIntervalNs` are what the
   swapchain reported last. The load of the machine is read once a second.
 
@@ -738,7 +735,7 @@ from them do not cover the same:
 ---|---|---
 The frame starts | In the update, right after the swap of the frame before returned | In the draw, after the update, the wait for the frame slot and the acquire
 `workCpuTicks` and the CPU busy of the marker cover | The rest of the update and the draw | The draw. The update of the frame is in no frame's work
-Where they end | Before the swap | CPU busy where the marker is drawn, `workCpuTicks` after the submit. Both end before the wait of the `early` profile and the present: `presentCallTicks` is when the present was called
+Where they end | Before the swap | CPU busy where the marker is drawn, `workCpuTicks` after the submit. Both end before the wait before the present and the present: `presentCallTicks` is when the present was called
 The GPU time | The elapsed time of a query: a duration without a start. Where the driver has the timestamps of the extension `gpuWorkEndTicks` is when the GPU finished the frame | The time between two timestamps. `gpuWorkBeginTicks` and `gpuWorkEndTicks` place it on the clock of the framework (`VK_KHR_calibrated_timestamps`)
 When the GPU is asked to work | `flushCallTicks` with `--GLFlush`. Without it not known: the driver sends the commands when it wants and at the swap at the latest (`hostSwapCallTicks`) | `submitCallTicks`
 
@@ -763,7 +760,7 @@ says if the swap waited.
 A log has the fact `sample.frameStartRow=own` when the values the sample logs at the start of a frame are in the row of that frame.
 A log of a OpenGL ES sample without the fact has them in the row of the frame before (`pacerFrameId - frameIndex` is 2 there, and 1
 in a log that is right): `frameWaitStartTicks`, `frameStartTicks`, `pacerOn`, `swapInterval`, `preferredSwapInterval`,
-`pacerChange`, `animationStepTicks`, `pacerWindow*`, `pacerFrameId`, `nextFrameStartTicks`, `pacerFeedbackOn` and its counters,
+`pacerChange`, `animationStepTicks`, `pacerWindow*`, `pacerFrameId`, `nextFrameStartTicks`, `pacerDisplayReportsOn` and its counters,
 `cpuLoadMs` and `gpuLoadSteps`.
 
 ### The events
@@ -778,13 +775,13 @@ A fact (on the `Facts` track, not a event) | Something that holds for the whole 
 `presentTiming` | Vulkan: if the presents of the swapchain are timed, the stages and the time domain of the surface and what it can schedule.
 `refreshProperties` | Vulkan: `refreshDuration` and `refreshInterval` of the swapchain and the refresh mode they stand for (`refreshMode` is `fixed`, `variable` or `unknown`), written when they change.
 `variableRefresh` | What the window knows about variable refresh on its display, written when an answer changes: `supported`, `enabled` and `active` are what the window system declares, `observed` is what was measured (each `yes`, `no` or `unknown`), `source` and `observedSource` are where they came from.
-`holdVariableRefresh` | The samples: `seen=1` from the frame on where the display was seen to refresh at a variable rate and the pacer is not given the vertical blank times anymore.
+`variableRefreshSeen` | The samples: `seen=1` from the frame on where the display was seen to refresh at a variable rate and the pacer is not given the vertical blank times anymore.
 `presentClockCalibration` | Vulkan: the offset between the clock of a present stage and the clock of the framework and how far off it can be, every time it is measured.
 `gpuClockCalibration` | The samples: the clock of the GPU was related to the clock of the framework anew (`gpuWorkBeginTicks` and `gpuWorkEndTicks` are converted with it). `readTicks` is how long the read took and `maxDeviationTicks` how far off a time can be: half the read on OpenGL ES, what the device reports on Vulkan. Vulkan, read four times a second: `clockRateDeviationPpm` is how much longer (positive) or shorter a count of the device clock was measured to take than the device states, from two reads at least two seconds apart; it is left out until it was measured, and the stated period is used until then.
 `windowFocus` | The samples: the window got (`focused=1`) or lost (`focused=0`) the input focus of the window system (Windows, X11 and Wayland report it). The app keeps drawing without it. Only a change is logged, so a run that had the focus from its start to its end has none.
 `background` | The samples: the scene of the background, at the first frame and when it changes. The same `gpuLoadSteps` is another amount of GPU work with another scene, so two logs are only comparable when they name the same one.
 `tier` | The samples: the tier of the pacer library the run is in, at the first frames and when it changes. `tier` is the tier in use as the pacer library writes it, its major tier and its sub tier (`1.1` is the best, `3.4` the one every app reaches, `0` with the pacer off) with `tierName`, `best` the best one this system reaches with `bestName`, and `displaySideHolds` is 1 where the present of the app can hold a frame for two refreshes or more.
-`pacerConfig` | The samples: the pacer was switched or its settings changed (the refresh rate it uses, the target fps, adaptive, present feedback, and `kind`: what the pacer paces with, with its `aim` and `waitingPresents`, `framesInFlight`, the `startupPauseRefreshes` of its pause, and if it uses the present that takes a time (`timedPresent`), the wait for the GPU's work (`gpuWait`) and the waits of the system (`systemWaits`)). `refreshPeriodNs` is the refresh period the pacer was given, in nanoseconds: the one of the window system as it is, or the period of the rate of the command line or the slider. `refreshRateHz` is the same as a rate. The fact `sample.pacerKind` is the pacer that was asked for.
+`pacerConfig` | The samples: the pacer was switched or its settings changed (the refresh rate it uses, the target fps, adaptive, the display reports, and `kind`: what the pacer paces with, with its `aim` and `waitingPresents`, `framesInFlight`, the `startupPauseRefreshes` of its pause, and if it uses the present that takes a time (`timedPresent`), the wait for the GPU's work (`gpuWait`) and the waits of the system (`systemWaits`)). `refreshPeriodNs` is the refresh period the pacer was given, in nanoseconds: the one of the window system as it is, or the period of the rate of the command line or the slider. `refreshRateHz` is the same as a rate. The fact `sample.pacerKind` is the pacer that was asked for.
 `pacerForgetPresents` | The samples: the pacer was told that the presents made so far are gone, because the swapchain was made anew (`reason=swapchain`).
 
 ### Adding values from an app

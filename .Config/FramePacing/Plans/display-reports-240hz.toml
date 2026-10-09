@@ -1,0 +1,66 @@
+# The frame pacer without and with display reports at 240 Hz: the same run twice, first without and then with the display times of the
+# frames given to the pacer (--Pacer.DisplayReports true, which needs VK_EXT_present_timing). The pacer paces the same with them and
+# only counts what the display did, so the twins are to pace alike and the run with the reports has the counters of the pacer
+# (pacerDisplayLateFrames against pacerWindowLateFrames).
+#
+# Set the display to 240 Hz with variable refresh off before the plan is run: with variable refresh on the display times are on no
+# grid of refreshes.
+# The GPU load settings depend on the GPU and on the size of the window, see work-matrix-240hz.
+#
+# The counters say the most on a machine that is busy with other work, where the frames start more than half a refresh off the
+# refreshes of the display. A CPU load alone did not do that on the machine these plans were made on, a build did (it loads the disk
+# and the memory as well). So besides the loaded twins of this plan, run the plan again while something builds and say so with --fact.
+
+description = "240 Hz: the pacer without and with display reports, GPU work of 20, 90 and 130 % of a refresh, each idle and under CPU load"
+app = "Vulkan.FramePacing"
+frames = 2400
+expected_refresh_hz = 240.0
+# The scene is named: the GPU load settings below were measured with it, and the default scene of the sample is another one now
+args = ["--Background", "flight", "--Window", "[0,0,1600,900]", "--CpuLoad", "0", "--Pacer"]
+
+[variables]
+# The --GpuLoad that makes the GPU work 20, 90 and 130 % of a refresh on a frame (the defaults were measured on a NVIDIA desktop GPU)
+gpu20 = "98"
+gpu90 = "455"
+gpu130 = "648"
+
+[load]
+# One busy process for every logical CPU
+processes = 0
+duty = 1.0
+
+[[run]]
+name = "w20_reports_off"
+what = "GPU work of 20 % of a refresh, pacer on, no display reports"
+args = ["--GpuLoad", "{gpu20}", "--Pacer.DisplayReports", "false"]
+loaded = true
+
+[[run]]
+name = "w20_reports_on"
+what = "GPU work of 20 % of a refresh, pacer on with display reports"
+args = ["--GpuLoad", "{gpu20}", "--Pacer.DisplayReports", "true"]
+loaded = true
+
+[[run]]
+name = "w90_reports_off"
+what = "GPU work of 90 % of a refresh, pacer on, no display reports"
+args = ["--GpuLoad", "{gpu90}", "--Pacer.DisplayReports", "false"]
+loaded = true
+
+[[run]]
+name = "w90_reports_on"
+what = "GPU work of 90 % of a refresh, pacer on with display reports"
+args = ["--GpuLoad", "{gpu90}", "--Pacer.DisplayReports", "true"]
+loaded = true
+
+[[run]]
+name = "w130_reports_off"
+what = "GPU work of 130 % of a refresh, pacer on, no display reports"
+args = ["--GpuLoad", "{gpu130}", "--Pacer.DisplayReports", "false"]
+loaded = true
+
+[[run]]
+name = "w130_reports_on"
+what = "GPU work of 130 % of a refresh, pacer on with display reports"
+args = ["--GpuLoad", "{gpu130}", "--Pacer.DisplayReports", "true"]
+loaded = true

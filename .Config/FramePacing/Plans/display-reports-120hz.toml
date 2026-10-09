@@ -1,0 +1,64 @@
+# The frame pacer without and with display reports at 120 Hz: the same run twice, first without and then with the display times of the
+# frames given to the pacer (--Pacer.DisplayReports true, which needs VK_EXT_present_timing). The pacer paces the same with them and
+# only counts what the display did, so the twins are to pace alike and the run with the reports has the counters of the pacer
+# (pacerDisplayLateFrames against pacerWindowLateFrames).
+#
+# Set the display to 120 Hz with variable refresh off before the plan is run: with variable refresh on the display times are on no
+# grid of refreshes.
+#
+# The counters say the most on a machine that is busy with other work, where the frames start more than half a refresh off the
+# refreshes of the display. A CPU load alone did not do that on the machine these plans were made on, a build did (it loads the disk
+# and the memory as well). So besides the loaded twins of this plan, run the plan again while something builds and say so with --fact.
+
+description = "120 Hz: the pacer without and with display reports, CPU work of 2, 7 and 11 ms (24, 84 and 132 % of a refresh), each idle and under CPU load"
+app = "Vulkan.FramePacing"
+frames = 1500
+expected_refresh_hz = 120.0
+args = ["--Window", "[0,0,1600,900]", "--GpuLoad", "0", "--Pacer"]
+
+[variables]
+# The --CpuLoad in milliseconds that is about 20, 90 and 130 % of a refresh
+cpu20 = "2"
+cpu90 = "7"
+cpu130 = "11"
+
+[load]
+# One busy process for every logical CPU
+processes = 0
+duty = 1.0
+
+[[run]]
+name = "w20_reports_off"
+what = "CPU work of 2 ms (24 % of a refresh), pacer on, no display reports"
+args = ["--CpuLoad", "{cpu20}", "--Pacer.DisplayReports", "false"]
+loaded = true
+
+[[run]]
+name = "w20_reports_on"
+what = "CPU work of 2 ms (24 % of a refresh), pacer on with display reports"
+args = ["--CpuLoad", "{cpu20}", "--Pacer.DisplayReports", "true"]
+loaded = true
+
+[[run]]
+name = "w90_reports_off"
+what = "CPU work of 7 ms (84 % of a refresh), pacer on, no display reports"
+args = ["--CpuLoad", "{cpu90}", "--Pacer.DisplayReports", "false"]
+loaded = true
+
+[[run]]
+name = "w90_reports_on"
+what = "CPU work of 7 ms (84 % of a refresh), pacer on with display reports"
+args = ["--CpuLoad", "{cpu90}", "--Pacer.DisplayReports", "true"]
+loaded = true
+
+[[run]]
+name = "w130_reports_off"
+what = "CPU work of 11 ms (132 % of a refresh), pacer on, no display reports"
+args = ["--CpuLoad", "{cpu130}", "--Pacer.DisplayReports", "false"]
+loaded = true
+
+[[run]]
+name = "w130_reports_on"
+what = "CPU work of 11 ms (132 % of a refresh), pacer on with display reports"
+args = ["--CpuLoad", "{cpu130}", "--Pacer.DisplayReports", "true"]
+loaded = true
