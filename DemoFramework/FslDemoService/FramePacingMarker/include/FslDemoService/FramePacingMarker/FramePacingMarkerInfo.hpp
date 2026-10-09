@@ -22,8 +22,8 @@
 //* EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //****************************************************************************************************************************************************
 
-#include <FslBase/Time/TickCount.hpp>
-#include <FslBase/Time/TimeSpan.hpp>
+#include <FslBase/Time/NanosecondTickCount.hpp>
+#include <FslBase/Time/NanosecondTimeSpan.hpp>
 #include <FslDemoService/FramePacingMarker/FramePacingMarkerKind.hpp>
 #include <FslDemoService/FramePacingMarker/FramePacingSequenceId.hpp>
 #include <chrono>
@@ -33,7 +33,7 @@
 namespace Fsl
 {
   //! Every value the last drawn frame pacing marker carried (the mb-framepacing marker payload). A value the framework does not know is
-  //! empty, exactly like the marker reports it as unknown.
+  //! empty, exactly like the marker reports it as unknown. Every time is in nanoseconds, as the marker carries it.
   struct FramePacingMarkerInfo
   {
     //! The kind of the main marker
@@ -41,19 +41,19 @@ namespace Fsl
     //! The number of frames rendered before this one
     uint64_t FrameIndex{0};
     //! The time the frame's animation was evaluated for
-    TimeSpan AnimationTime;
+    NanosecondTimeSpan AnimationTime;
     //! The id of the current (or last) run
     uint32_t RunId{0};
     //! When the frame pacer intends the frame to be shown (empty unless the app supplied it with SetFrameSchedule)
-    std::optional<TickCount> IntendedDisplayTime;
+    std::optional<NanosecondTickCount> IntendedDisplayTime;
     //! The frame time the frame pacer aims for (empty unless the app supplied it with SetFrameSchedule)
-    std::optional<TimeSpan> TargetFrameTime;
+    std::optional<NanosecondTimeSpan> TargetFrameTime;
     //! When the CPU started working on the frame (a HighResolutionTimer timestamp taken before the app update)
-    std::optional<TickCount> CpuStartTime;
+    std::optional<NanosecondTickCount> CpuStartTime;
     //! How long the CPU worked on the frame before the marker was drawn (the last thing before the frame is presented)
-    std::optional<TimeSpan> CpuBusyTime;
+    std::optional<NanosecondTimeSpan> CpuBusyTime;
     //! The frame time the application wants to run at (empty unless the app supplied it with SetFrameSchedule)
-    std::optional<TimeSpan> PreferredFrameTime;
+    std::optional<NanosecondTimeSpan> PreferredFrameTime;
     //! True if the marker flagged the frame as static after: nothing animates while it is on screen (only set if the app supplied it with
     //! SetFrameSchedule)
     bool Static{false};

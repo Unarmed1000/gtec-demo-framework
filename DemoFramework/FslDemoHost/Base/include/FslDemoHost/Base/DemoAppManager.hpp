@@ -133,7 +133,6 @@ namespace Fsl
       TraceValue FrameworkStep;
       TraceValue DisplayVSync;
       TraceValue DisplayRefreshPeriod;
-      TraceValue DisplayRefreshPeriodNs;
       TraceValue DisplayVSyncFlags;
       TraceValue DisplayVBlankInterval;
       TraceValue DisplayVBlankOffPeriod;

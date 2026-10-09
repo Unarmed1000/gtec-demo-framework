@@ -47,6 +47,7 @@
 #include <FslSimpleUI/Theme/Base/WindowType.hpp>
 #include <memory>
 #include <string>
+#include <vector>
 
 namespace Fsl
 {
@@ -68,6 +69,7 @@ namespace Fsl
     class ImageButton;
     class Label;
     class RadioButton;
+    class SelectorLabel;
     class RadioGroup;
     class ScrollViewer;
     class SimpleImageButton;
@@ -102,6 +104,12 @@ namespace Fsl
         virtual std::shared_ptr<Label> CreateLabel(std::string&& str, const FontType fontType = FontType::Default) = 0;
         virtual std::shared_ptr<Label> CreateLabel(const char* const psz, const FontType fontType = FontType::Default) = 0;
         virtual std::shared_ptr<Label> CreateLabel(const std::string& str, const FontType fontType = FontType::Default) = 0;
+
+        // ----- CreateSelectorLabel
+
+        //! @brief Create a label that shows one of the given texts and is as large as the largest of them.
+        virtual std::shared_ptr<SelectorLabel> CreateSelectorLabel(std::vector<std::string> entries, const uint32_t selectedIndex = 0,
+                                                                   const FontType fontType = FontType::Default) = 0;
 
         // ----- CreateImageButton
 

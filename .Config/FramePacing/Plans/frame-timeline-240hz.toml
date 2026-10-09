@@ -1,14 +1,14 @@
 # Frame logs with every stage of a frame, for the charts of a frame on the timeline of the CPU, the GPU and the display. The cases
 # are the ones that were recorded before the frame loop was reordered and the log had the waits, so the two can be put side by side:
 #
-#   heavy_holdvsync  GPU work near a refresh at one refresh per frame, held by the vsync, full screen
-#   fps60_wait       60 fps on 240 Hz (four refreshes per frame), light work, held by a timer sleep, plain Vulkan
-#   half_scheduled   half the refresh rate, light work, the present is scheduled
+#   heavy_holdvsync  GPU work near a refresh at one refresh per frame, paced on the vertical blank times, full screen
+#   fps60_wait       60 fps on 240 Hz (four refreshes per frame), light work, paced on a timer, plain Vulkan
+#   half_scheduled   half the refresh rate, light work, the present is given a time
 #   w90              GPU work of 90 % of a refresh, adaptive pacer, plain Vulkan: where the swap interval rule slows down
 #   w94_fixed1       GPU work of 94 % of a refresh at a fixed swap interval of one
 #
-# Each is run with the early profile (the frame is rendered right away and its present waits, the default) and with the late profile
-# (the start of the frame waits). The last two runs are the swapchain with two images and the loop with two frames in flight.
+# Where a frame waits is the pacer's to say, so each is run once. The names end in _early as the runs they are compared with do. The
+# last two runs are the swapchain with two images and the loop with two frames in flight.
 #
 # A log of these runs has, on the clock of the framework: the update, the wait for the start of the frame, the wait of the host for
 # the frame slot, the acquire, the frame start, the marker, the submit, the end of the CPU work, the wait before the present, the
@@ -21,7 +21,7 @@
 #   FramePacingCapture calibrate --window [] --percent 83
 #   FramePacingCapture run frame-timeline-240hz -o <dir> --set work20=.. --set work90=.. --set work94=.. --set heavy_fullscreen=..
 
-description = "240 Hz: every stage of a frame in the log for five cases, the early and the late profile, two swapchain images and two frames in flight"
+description = "240 Hz: every stage of a frame in the log for five cases, two swapchain images and two frames in flight"
 app = "Vulkan.FramePacing"
 frames = 2400
 expected_refresh_hz = 240.0
@@ -40,76 +40,45 @@ heavy_fullscreen = "78"
 # Where the window is. With more than one display it selects the display the plan runs on
 window = "[0,0,1600,900]"
 
-# The early profile (the default)
+# The five cases
 
 [[run]]
 name = "heavy_holdvsync_early"
-what = "Full screen, GPU work near a refresh, adaptive pacer, held by the vsync, the early profile"
-args = ["--Window", "[]", "--GpuLoad", "{heavy_fullscreen}", "--Pacer.Hold", "vsync"]
+what = "Full screen, GPU work near a refresh, adaptive pacer, paced on the vertical blank times"
+args = ["--Window", "[]", "--GpuLoad", "{heavy_fullscreen}", "--Pacer.Kind", "vblank-period"]
 
 [[run]]
 name = "fps60_wait_early"
-what = "60 fps (4 refreshes per frame), light work, held by a timer sleep, plain Vulkan, the early profile"
-args = ["--Window", "{window}", "--GpuLoad", "{work20}", "--Pacer.Adaptive", "false", "--Pacer.TargetFps", "60", "--Pacer.Hold", "wait",
+what = "60 fps (4 refreshes per frame), light work, paced on a timer, plain Vulkan"
+args = ["--Window", "{window}", "--GpuLoad", "{work20}", "--Pacer.Adaptive", "false", "--Pacer.TargetFps", "60", "--Pacer.Kind", "timer-period",
         "--VkSwapchainMaintenance1", "false"]
 frames = 600
 
 [[run]]
 name = "half_scheduled_early"
-what = "120 fps (2 refreshes per frame), light work, the present is scheduled, the early profile"
+what = "120 fps (2 refreshes per frame), light work, the present is given a time"
 args = ["--Window", "{window}", "--GpuLoad", "{work20}", "--Pacer.PresentFeedback", "true", "--Pacer.Adaptive", "false", "--Pacer.TargetFps", "120",
-        "--Pacer.Hold", "schedule"]
+        "--Pacer.Kind", "timer-period", "--Pacer.TimedPresent"]
 frames = 1200
 
 [[run]]
 name = "w90_early"
-what = "GPU work of 90 % of a refresh, adaptive pacer, plain Vulkan, the early profile"
-args = ["--Window", "{window}", "--GpuLoad", "{work90}", "--Pacer.Hold", "vsync", "--VkSwapchainMaintenance1", "false"]
+what = "GPU work of 90 % of a refresh, adaptive pacer, plain Vulkan"
+args = ["--Window", "{window}", "--GpuLoad", "{work90}", "--Pacer.Kind", "vblank-period", "--VkSwapchainMaintenance1", "false"]
 
 [[run]]
 name = "w94_fixed1_early"
-what = "GPU work of 94 % of a refresh at a fixed swap interval of one, the early profile"
-args = ["--Window", "{window}", "--GpuLoad", "{work94}", "--Pacer.Adaptive", "false", "--Pacer.Hold", "wait"]
+what = "GPU work of 94 % of a refresh at a fixed swap interval of one"
+args = ["--Window", "{window}", "--GpuLoad", "{work94}", "--Pacer.Adaptive", "false", "--Pacer.Kind", "timer-period"]
 
-# The late profile: the start of the frame waits
-
-[[run]]
-name = "heavy_holdvsync_late"
-what = "Full screen, GPU work near a refresh, adaptive pacer, held by the vsync, the late profile"
-args = ["--Window", "[]", "--GpuLoad", "{heavy_fullscreen}", "--Pacer.Hold", "vsync", "--Pacer.Profile", "late"]
-
-[[run]]
-name = "fps60_wait_late"
-what = "60 fps (4 refreshes per frame), light work, held by a timer sleep, plain Vulkan, the late profile"
-args = ["--Window", "{window}", "--GpuLoad", "{work20}", "--Pacer.Adaptive", "false", "--Pacer.TargetFps", "60", "--Pacer.Hold", "wait",
-        "--VkSwapchainMaintenance1", "false", "--Pacer.Profile", "late"]
-frames = 600
-
-[[run]]
-name = "half_scheduled_late"
-what = "120 fps (2 refreshes per frame), light work, the present is scheduled, the late profile"
-args = ["--Window", "{window}", "--GpuLoad", "{work20}", "--Pacer.PresentFeedback", "true", "--Pacer.Adaptive", "false", "--Pacer.TargetFps", "120",
-        "--Pacer.Hold", "schedule", "--Pacer.Profile", "late"]
-frames = 1200
-
-[[run]]
-name = "w90_late"
-what = "GPU work of 90 % of a refresh, adaptive pacer, plain Vulkan, the late profile"
-args = ["--Window", "{window}", "--GpuLoad", "{work90}", "--Pacer.Hold", "vsync", "--VkSwapchainMaintenance1", "false", "--Pacer.Profile", "late"]
-
-[[run]]
-name = "w94_fixed1_late"
-what = "GPU work of 94 % of a refresh at a fixed swap interval of one, the late profile"
-args = ["--Window", "{window}", "--GpuLoad", "{work94}", "--Pacer.Adaptive", "false", "--Pacer.Hold", "wait", "--Pacer.Profile", "late"]
-
-# The swapchain and the frames in flight, at work of 90 % with the early profile
+# The swapchain and the frames in flight, at work of 90 %
 
 [[run]]
 name = "w90_images2"
 what = "GPU work of 90 % of a refresh, adaptive pacer, a swapchain with two images"
-args = ["--Window", "{window}", "--GpuLoad", "{work90}", "--Pacer.Hold", "vsync", "--VkSwapchainMaintenance1", "false", "--VkSwapchainImages", "2"]
+args = ["--Window", "{window}", "--GpuLoad", "{work90}", "--Pacer.Kind", "vblank-period", "--VkSwapchainMaintenance1", "false", "--VkSwapchainImages", "2"]
 
 [[run]]
 name = "w90_flight2"
 what = "GPU work of 90 % of a refresh, adaptive pacer, two frames in flight"
-args = ["--Window", "{window}", "--GpuLoad", "{work90}", "--Pacer.Hold", "vsync", "--VkSwapchainMaintenance1", "false", "--VkFramesInFlight", "2"]
+args = ["--Window", "{window}", "--GpuLoad", "{work90}", "--Pacer.Kind", "vblank-period", "--VkSwapchainMaintenance1", "false", "--VkFramesInFlight", "2"]

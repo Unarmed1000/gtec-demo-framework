@@ -1,5 +1,5 @@
-#ifndef SHARED_FRAMEPACING_SAMPLEPACERHOLD_HPP
-#define SHARED_FRAMEPACING_SAMPLEPACERHOLD_HPP
+#ifndef SHARED_FRAMEPACING_SAMPLEPACERGPUWAITREPORT_HPP
+#define SHARED_FRAMEPACING_SAMPLEPACERGPUWAITREPORT_HPP
 //****************************************************************************************************************************************************
 //* BSD 3-Clause License
 //*
@@ -22,23 +22,22 @@
 //* EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //****************************************************************************************************************************************************
 
+
+#include <FslBase/Time/TickCount.hpp>
+#include <cstdint>
+
 namespace Fsl
 {
-  //! How a frame is held for more than one refresh where the present only holds it for one (a Vulkan FIFO present has no swap interval).
-  //! A method the system can not do falls back: the vsync wait, then the sleep.
-  //! What a platform can offer for each of them is listed in Doc/FramePacingPlatformSupport.md.
-  enum class SamplePacerHold
+  //! What became of the wait for the GPU's work on a frame a SamplePacerFrameStartPlan asked for.
+  struct SamplePacerGpuWaitReport
   {
-    //! The best method the system can do: the present with a target time, else the vsync wait, else the sleep
-    Auto,
-    //! The sample waits on the vsync of the window system: it presents during the refresh before the one the frame is aimed at, in the
-    //! middle of the time the window system leaves for it. It needs the window system to say when the display refreshes
-    //! (INativeWindow::TryGetVSyncInfo), nothing of the graphics API.
-    VSync,
-    //! The sample sleeps on a timer and presents then. It needs nothing, and does not know where the refreshes are: a guess.
-    Wait,
-    //! The present is given a target time and the presentation engine holds the frame (VK_EXT_present_timing with presentAtRelativeTime).
-    Schedule
+    //! The SamplePacerFrameStartPlan::WaitForGpuWorkFrameId that was waited for
+    uint64_t FrameId{0};
+    //! When the wait began and when it ended (HighResolutionTimer timestamps)
+    TickCount BeginTime;
+    TickCount EndTime;
+    //! True if the wait ended because the GPU was done with the frame, false if its time ran out
+    bool Done{true};
   };
 }
 

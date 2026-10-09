@@ -83,6 +83,12 @@ namespace Fsl
       return {static_cast<uint32_t>(perfetto::protos::gen::BUILTIN_CLOCK_MONOTONIC), static_cast<uint64_t>(std::max<int64_t>(ticks, 0)) * 100u};
     }
 
+    //! A time of the framework clock in nanoseconds as a time of the trace, which is in nanoseconds too
+    perfetto::TraceTimestamp ToTimestampFromNanoseconds(const int64_t nanoseconds) noexcept
+    {
+      return {static_cast<uint32_t>(perfetto::protos::gen::BUILTIN_CLOCK_MONOTONIC), static_cast<uint64_t>(std::max<int64_t>(nanoseconds, 0))};
+    }
+
     //! FNV-1a, so the id of a track only depends on its name
     constexpr uint64_t Hash(const std::string_view text, uint64_t hash = 14695981039346656037ull) noexcept
     {
@@ -121,6 +127,8 @@ namespace Fsl
       {
       case TraceUnit::Ticks:
         return "ticks";
+      case TraceUnit::NanosecondTicks:
+        return "nanosecondTicks";
       case TraceUnit::DurationTicks:
         return "durationTicks";
       case TraceUnit::Nanoseconds:
@@ -466,7 +474,9 @@ namespace Fsl
             continue;
           }
           const perfetto::Track track = ToTrack(GetFirstLaneTrackId(m_tracks[mark.TrackIndex]));
-          const perfetto::TraceTimestamp time = ToTimestamp(row.Values[mark.TimeIndex]);
+          const perfetto::TraceTimestamp time = m_schema.Values[mark.TimeIndex].Unit == TraceUnit::NanosecondTicks
+                                                  ? ToTimestampFromNanoseconds(row.Values[mark.TimeIndex])
+                                                  : ToTimestamp(row.Values[mark.TimeIndex]);
           if (mark.Link == TraceLink::FrameChain)
           {
             TRACE_EVENT_INSTANT("fsl", perfetto::StaticString(mark.Title.c_str()), track, time, perfetto::Flow::Global(flowId), "frameIndex",

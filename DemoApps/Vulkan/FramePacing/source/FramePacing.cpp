@@ -106,9 +106,17 @@ namespace Fsl
 
   void FramePacing::Update(const DemoTime& demoTime)
   {
+    // A pacer that names a present to wait for needs a swapchain that can be waited on (--VkPresentWait n), and n is then the
+    // number of presents it lets wait
+    m_shared.SetPresentWaitSupport(IsPresentWaitEnabled() ? GetPresentWaitFramesBack() : 0u);
+    // The app base can wait until the GPU is done with a frame the pacer names: it is its wait for a frame slot
+    m_shared.SetGpuWaitSupport(true);
     m_shared.Update(demoTime);
     // Follow the switch of the UI (a change recreates the swapchain before the next frame)
     SetPresentTimingRequested(m_shared.IsPresentTimingWanted());
+    // With the frame pacer on the wait for a present is made below (OnVulkanFrameStart), where the pacer names one, and not by the
+    // app base
+    SetPresentWaitByApp(!m_shared.IsPresentWaitByHost());
   }
 
 
@@ -119,9 +127,9 @@ namespace Fsl
     // The frame was submitted to the GPU and is presented after this. The GPU works on it from now on, so the frame pacer is given the
     // GPU time of the last frame that was measured.
     m_shared.EndFrame(m_gpuTimer.GetGpuTime());
-    // A FIFO present holds a frame for one refresh and there is no swap interval, so the present of a frame the frame pacer holds for
-    // more than one refresh is delayed instead. Or, where the swapchain can do it and the sample is asked to, the present is given a
-    // target time and the presentation engine holds the frame (zero is no target time).
+    // A FIFO present holds a frame for one refresh and there is no swap interval, so the frame pacer holds a frame of more than one
+    // refresh by a time to wait until before the present. Where the swapchain can do it and the sample is asked to, the present is
+    // also given the time the frame before stays on screen at least (zero is no such time).
     m_shared.WaitForPresent();
     SetPresentRelativeTargetTime(m_shared.GetPresentRelativeTarget());
   }
@@ -130,6 +138,12 @@ namespace Fsl
   void FramePacing::VulkanDraw(const DemoTime& /*demoTime*/, RapidVulkan::CommandBuffers& rCmdBuffers, const VulkanBasic::DrawContext& drawContext)
   {
     const uint32_t currentFrameIndex = drawContext.CurrentFrameIndex;
+
+    {    // The waits of the app base before this frame, which the frame pacer did not ask for: it is told before the frame starts
+      const VulkanBasic::FrameStartWaitRecord& waits = GetCurrentFrameStartWaits();
+      m_shared.AddSystemWait(SamplePacerSystemWait::FrameSlot, waits.FrameSlotWaitBeginTime, waits.FrameSlotWaitEndTime);
+      m_shared.AddSystemWait(SamplePacerSystemWait::Acquire, waits.AcquireCallTime, waits.AcquireReturnTime);
+    }
 
     const VkCommandBuffer hCmdBuffer = rCmdBuffers[currentFrameIndex];
     rCmdBuffers.Begin(currentFrameIndex, VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT, VK_NULL_HANDLE, 0, VK_NULL_HANDLE, VK_FALSE, 0, 0);
@@ -215,13 +229,6 @@ namespace Fsl
     m_shared.SetPresentFeedback(IsPresentTimingEnabled(), GetPresentRefreshDuration());
     m_shared.SetPresentSchedulingSupport(IsPresentSchedulingSupported());
     m_shared.SetSwapchainRefresh(ToSampleSwapchainRefresh(GetPresentRefreshMode()));
-    {    // When the frame before this one was presented: the frame pacer is told with the display time of that frame
-      const VulkanBasic::PresentCallRecord& presentCalls = GetLastPresentCalls();
-      if (presentCalls.PresentId != 0u)
-      {
-        m_shared.SetPresentCallTime(presentCalls.PresentId, presentCalls.PresentCallTime);
-      }
-    }
     for (const Vulkan::VUPresentTimingRecord& record : GetPresentTimings())
     {
       m_shared.AddPresentTiming(record.PresentId, record.GetDisplayTime(), record.QueueOperationsEnd, record.IsComplete);
@@ -231,7 +238,30 @@ namespace Fsl
 
   void FramePacing::OnVulkanFrameStart()
   {
-    // The frame pacer holds the start of a frame here (the late profile), before a swapchain image is acquired for it
+    {    // A pacer that gives plans is told about the present of the frame before, before it is asked about this frame
+      const VulkanBasic::PresentCallRecord& presentCalls = GetLastPresentCalls();
+      if (presentCalls.PresentId != 0u)
+      {
+        m_shared.AddPresentCall(presentCalls.PresentId, presentCalls.PresentCallTime, presentCalls.PresentReturnTime,
+                                presentCalls.IsPresentAccepted());
+      }
+    }
+    // The frame pacer can name a earlier present to wait for until it was shown: that wait comes first
+    const SamplePresentWaitRequest waitRequest = m_shared.GetPresentWaitRequest();
+    if (waitRequest.PresentId != 0u)
+    {
+      const VulkanBasic::PresentWaitRecord waitRecord = WaitForPresent(waitRequest.PresentId, waitRequest.Timeout);
+      m_shared.AddPresentWait(waitRequest.PresentId, waitRecord.BeginTime, waitRecord.EndTime, waitRecord.IsPresented());
+    }
+    // Or it names a earlier frame to wait for until the GPU is done with it, which holds the loop where no present is waited for
+    const SampleGpuWaitRequest gpuWaitRequest = m_shared.GetGpuWaitRequest();
+    if (gpuWaitRequest.PresentId != 0u)
+    {
+      const VulkanBasic::GpuWorkWaitRecord gpuWaitRecord = WaitForGpuWork(gpuWaitRequest.PresentId, gpuWaitRequest.Timeout);
+      m_shared.AddGpuWait(gpuWaitRequest.PresentId, gpuWaitRecord.BeginTime, gpuWaitRecord.EndTime, gpuWaitRecord.IsDone());
+    }
+    // The frame pacer holds the start of a frame here (the late profile, or a pacer that gives the time), before a swapchain image is
+    // acquired for it
     m_shared.WaitForFrameStart();
   }
 
@@ -241,6 +271,13 @@ namespace Fsl
     // Since we only draw using the NativeBatch and the background we just create the most basic render pass that is compatible
     m_dependentResources.MainRenderPass = CreateBasicRenderPass();
     m_background.OnBuildResources(context, m_dependentResources.MainRenderPass.Get());
+    // A frame pacer that is given the work of the GPU needs to know how many frames are in the works at the same time. That is
+    // what the app base runs with (one unless the user asks for more with --VkFramesInFlight), not the most the app is set up for.
+    m_shared.SetMaxFramesInFlight(context.MaxFramesInFlight);
+    // and how many frames the swapchain can hold
+    m_shared.SetSwapchainImageCount(context.SwapchainImagesCount);
+    // The swapchain is new: a frame pacer that waits for presents is told, as none of the swapchain before can be waited for
+    m_shared.OnSwapchainRecreated();
     return m_dependentResources.MainRenderPass.Get();
   }
 

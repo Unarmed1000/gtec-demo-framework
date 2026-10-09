@@ -31,6 +31,20 @@
 
 namespace Fsl
 {
+  //! Why a frame has a animation error that counts (one over SampleAnimationError::ErrorThreshold). The two are the causes the
+  //! mb-framepacing tools tell apart, with their words.
+  enum class SampleAnimationErrorCause
+  {
+    //! No error that counts
+    NoError,
+    //! The display was uneven: the frame, or the one before it, was not on screen for the time it was to be (half a refresh or more
+    //! off its target). A frame that is shown a refresh late is one, and so is the frame after it, which comes on time and has moved
+    //! too much.
+    Pacing,
+    //! The display was even and the animation was not: the frames came when they were to, and the animation moved by another time
+    DeltaTimeJitter
+  };
+
   //! What is known about the animation error of a frame (see SampleAnimationError)
   struct SampleAnimationErrorRecord
   {
@@ -46,8 +60,24 @@ namespace Fsl
     //! AnimationStep - DisplayStep. Zero: what moves was drawn where it is when the frame is seen. Negative: the frame was shown later
     //! than its animation says, so what moves moved too little. Positive: it was shown sooner, so it moved too much.
     TimeSpan Error;
+    //! If the error counts and why
+    SampleAnimationErrorCause Cause{SampleAnimationErrorCause::NoError};
 
     constexpr bool operator==(const SampleAnimationErrorRecord&) const noexcept = default;
+  };
+
+  //! The frames with a animation error that counts, which together are the stutter, by their cause
+  struct SampleStutterCount
+  {
+    uint32_t Pacing{0};
+    uint32_t DeltaTimeJitter{0};
+
+    [[nodiscard]] constexpr uint32_t Total() const noexcept
+    {
+      return Pacing + DeltaTimeJitter;
+    }
+
+    constexpr bool operator==(const SampleStutterCount&) const noexcept = default;
   };
 
   //! What the animation errors of the last frames say (see SampleAnimationError)
@@ -93,12 +123,19 @@ namespace Fsl
     static constexpr TimeSpan ErrorThreshold = TimeSpan::FromMilliseconds(1);
     //! The largest value of ToRefreshThousandths, in either direction (32 refreshes)
     static constexpr int32_t MaxRefreshThousandths = 32000;
+    //! The frames with a error that the count of the last second can hold
+    static constexpr std::size_t StutterCapacity = 512;
+    //! The time the newest errors are counted over (CalcRecentStutter)
+    static constexpr TimeSpan RecentTime = TimeSpan::FromSeconds(1);
 
   private:
     struct Frame
     {
       uint64_t PresentId{0};
       TimeSpan AnimationTime;
+      //! How long the frame is to be on screen, and the refresh period of the display when it was presented
+      TimeSpan TargetFrameTime;
+      TimeSpan RefreshPeriod;
       std::optional<TickCount> DisplayTime;
       bool NotShown{false};
     };
@@ -112,6 +149,19 @@ namespace Fsl
     bool m_hasShown{false};
     TimeSpan m_shownAnimationTime;
     TickCount m_shownDisplayTime;
+    TimeSpan m_shownTargetFrameTime;
+    //! True if the step before the last one that was judged was off its target (the display was uneven there)
+    bool m_lastStepUneven{false};
+    //! The frames with a error that counts: all of them by cause, and the newest ones with their display time
+    SampleStutterCount m_runStutter;
+    struct StutterEntry
+    {
+      TickCount DisplayTime;
+      SampleAnimationErrorCause Cause{SampleAnimationErrorCause::NoError};
+    };
+    std::array<StutterEntry, StutterCapacity> m_stutter{};
+    std::size_t m_stutterNext{0};
+    std::size_t m_stutterCount{0};
     //! The last errors, for the stats
     std::array<int64_t, StatsFrames> m_errors{};
     std::size_t m_errorNext{0};
@@ -123,7 +173,9 @@ namespace Fsl
 
     //! @brief A frame is presented. The ids of the presents are given in the order of the frames, each larger than the one before.
     //! @param animationTime the moment the frame was drawn for
-    void AddFrame(const uint64_t presentId, const TimeSpan animationTime) noexcept;
+    //! @param targetFrameTime how long the frame is to be on screen (its swap interval in time)
+    //! @param refreshPeriod the time between two refreshes of the display (zero: not known, a error then counts as pacing)
+    void AddFrame(const uint64_t presentId, const TimeSpan animationTime, const TimeSpan targetFrameTime, const TimeSpan refreshPeriod) noexcept;
 
     //! @brief When the frame was shown.
     void AddDisplayTime(const uint64_t presentId, const TickCount displayTime) noexcept;
@@ -138,6 +190,16 @@ namespace Fsl
 
     //! @brief What the errors of the last StatsFrames frames that were judged say
     [[nodiscard]] SampleAnimationErrorStats CalcStats() const noexcept;
+
+    //! @brief The frames with a error that counts since the last Clear, of the frames that were taken
+    [[nodiscard]] SampleStutterCount GetRunStutter() const noexcept
+    {
+      return m_runStutter;
+    }
+
+    //! @brief The frames with a error that counts that were shown in the last RecentTime before the frame that was taken last was
+    //!        shown
+    [[nodiscard]] SampleStutterCount CalcRecentStutter() const noexcept;
 
     //! @brief The error in thousandths of a refresh, which is what a chart draws: -1000 is a frame that was shown a refresh too late
     //! @return zero if the refresh period is not known, and not more than MaxRefreshThousandths in either direction

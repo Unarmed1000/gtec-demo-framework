@@ -42,6 +42,12 @@ namespace Fsl
     //! @param cpuStartTime when the CPU started working on the frame (a HighResolutionTimer timestamp taken before the app update).
     virtual void BeginFrame(const FrameInfo& frameInfo, const TickCount cpuStartTime) = 0;
 
+    //! @brief Called by the host after it swapped the buffers of a frame, so an app that paces its frames can ask when
+    //!        (IFramePacingMarkerService::TryGetLastSwapTimes).
+    //! @param callTime when the swap was called (a HighResolutionTimer timestamp)
+    //! @param returnTime when the swap returned
+    virtual void OnSwapBuffers(const TickCount callTime, const TickCount returnTime) noexcept = 0;
+
     //! @brief Create the overlay that draws the marker. The host owns it and draws it as the very last thing of every frame.
     //! @return null if the overlay can not be created (for example if the graphics service is unavailable).
     virtual std::unique_ptr<IFramePacingOverlay> CreateOverlay(const ServiceProvider& serviceProvider) = 0;

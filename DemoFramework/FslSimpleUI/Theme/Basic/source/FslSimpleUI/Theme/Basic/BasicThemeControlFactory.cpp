@@ -46,6 +46,7 @@
 #include <FslSimpleUI/Base/Control/Logic/RadioGroup.hpp>
 #include <FslSimpleUI/Base/Control/RadioButton.hpp>
 #include <FslSimpleUI/Base/Control/ScrollViewer.hpp>
+#include <FslSimpleUI/Base/Control/SelectorLabel.hpp>
 #include <FslSimpleUI/Base/Control/SimpleImageButton.hpp>
 #include <FslSimpleUI/Base/Control/Switch.hpp>
 #include <FslSimpleUI/Base/WindowContext.hpp>
@@ -319,6 +320,20 @@ namespace Fsl::UI::Theme
     UpdateLabelColor(*label, m_colors.DefaultFont);
     label->SetFont(fontType == FontType::Default ? m_resources->DefaultFont : m_resources->DefaultHeaderFont);
     label->SetContent(std::move(str));
+    label->FinishAnimation();
+    return label;
+  }
+
+  // ----- CreateSelectorLabel
+
+  std::shared_ptr<UI::SelectorLabel> BasicThemeControlFactory::CreateSelectorLabel(std::vector<std::string> entries, const uint32_t selectedIndex,
+                                                                                   const FontType fontType)
+  {
+    auto label = std::make_shared<UI::SelectorLabel>(m_context);
+    UpdateLabelColor(*label, m_colors.DefaultFont);
+    label->SetFont(fontType == FontType::Default ? m_resources->DefaultFont : m_resources->DefaultHeaderFont);
+    label->SetEntries(std::move(entries));
+    label->SetSelectedIndex(selectedIndex);
     label->FinishAnimation();
     return label;
   }

@@ -152,6 +152,114 @@ TEST(Test_TraceLog, AValueOfAEarlierFrameLandsInThatFrame)
 }
 
 
+TEST(Test_TraceLog, SetValueAt_ATimeIsWrittenInTheUnitOfTheValue)
+{
+  const auto recorded = std::make_shared<Recorded>();
+  const auto log = CreateLog(recorded);
+  const TraceValue ticks = log->RegisterValue("timeTicks", TraceUnit::Ticks, "");
+  const TraceValue nanoseconds = log->RegisterValue("timeNs", TraceUnit::NanosecondTicks, "");
+
+  log->BeginFrame(0, 1);
+  log->SetValueAt(0, ticks, TickCount(1234));
+  log->SetValueAt(0, nanoseconds, TickCount(1234));
+  log->BeginFrame(1, 1);
+  // The tick the moment lies in
+  log->SetValueAt(1, ticks, NanosecondTickCount(123499));
+  log->SetValueAt(1, nanoseconds, NanosecondTickCount(123499));
+  log->BeginFrame(2, 1);
+  log->SetValueAt(2, ticks, NanosecondTickCount(-1));
+  log->Close();
+
+  ASSERT_EQ(3u, recorded->Frames.size());
+  EXPECT_EQ(1234, recorded->Frames[0].Values[ticks.Value - 1u]);
+  EXPECT_EQ(123400, recorded->Frames[0].Values[nanoseconds.Value - 1u]);
+  EXPECT_EQ(1234, recorded->Frames[1].Values[ticks.Value - 1u]);
+  EXPECT_EQ(123499, recorded->Frames[1].Values[nanoseconds.Value - 1u]);
+  EXPECT_EQ(-1, recorded->Frames[2].Values[ticks.Value - 1u]);
+}
+
+
+TEST(Test_TraceLog, SetValueAt_ADurationIsWrittenInTheUnitOfTheValue)
+{
+  const auto recorded = std::make_shared<Recorded>();
+  const auto log = CreateLog(recorded);
+  const TraceValue ticks = log->RegisterValue("durationTicks", TraceUnit::DurationTicks, "");
+  const TraceValue nanoseconds = log->RegisterValue("durationNs", TraceUnit::Nanoseconds, "");
+
+  log->BeginFrame(0, 1);
+  log->SetValueAt(0, ticks, TimeSpan(41664));
+  log->SetValueAt(0, nanoseconds, TimeSpan(41664));
+  log->BeginFrame(1, 1);
+  // Rounded to the nearest tick
+  log->SetValueAt(1, ticks, NanosecondTimeSpan(4166389));
+  log->SetValueAt(1, nanoseconds, NanosecondTimeSpan(4166389));
+  log->BeginFrame(2, 1);
+  log->SetValueAt(2, ticks, NanosecondTimeSpan(4166349));
+  log->Close();
+
+  ASSERT_EQ(3u, recorded->Frames.size());
+  EXPECT_EQ(41664, recorded->Frames[0].Values[ticks.Value - 1u]);
+  EXPECT_EQ(4166400, recorded->Frames[0].Values[nanoseconds.Value - 1u]);
+  EXPECT_EQ(41664, recorded->Frames[1].Values[ticks.Value - 1u]);
+  EXPECT_EQ(4166389, recorded->Frames[1].Values[nanoseconds.Value - 1u]);
+  EXPECT_EQ(41663, recorded->Frames[2].Values[ticks.Value - 1u]);
+}
+
+
+TEST(Test_TraceLog, SetValueAt_NotWrittenToAValueOfAnotherUnit)
+{
+  const auto recorded = std::make_shared<Recorded>();
+  const auto log = CreateLog(recorded);
+  const TraceValue time = log->RegisterValue("timeTicks", TraceUnit::Ticks, "");
+  const TraceValue timeNs = log->RegisterValue("timeNs", TraceUnit::NanosecondTicks, "");
+  const TraceValue duration = log->RegisterValue("durationTicks", TraceUnit::DurationTicks, "");
+  const TraceValue durationNs = log->RegisterValue("durationNs", TraceUnit::Nanoseconds, "");
+  const TraceValue count = log->RegisterValue("count", TraceUnit::Count, "");
+
+  log->BeginFrame(0, 1);
+  // A duration is not a time
+  log->SetValueAt(0, time, TimeSpan(1));
+  log->SetValueAt(0, timeNs, NanosecondTimeSpan(1));
+  // A time is not a duration
+  log->SetValueAt(0, duration, TickCount(1));
+  log->SetValueAt(0, durationNs, NanosecondTickCount(1));
+  // A count is neither
+  log->SetValueAt(0, count, TickCount(1));
+  log->SetValueAt(0, count, NanosecondTimeSpan(1));
+  log->SetFlagAt(0, count, true);
+  // Not a value
+  log->SetValueAt(0, TraceValue(), TickCount(1));
+  log->SetFlagAt(0, TraceValue(), true);
+  log->Close();
+
+  ASSERT_EQ(1u, recorded->Frames.size());
+  for (const TraceValue value : {time, timeNs, duration, durationNs, count})
+  {
+    EXPECT_FALSE(recorded->Frames[0].HasValue[value.Value - 1u]);
+  }
+}
+
+
+TEST(Test_TraceLog, SetFlagAt_AFlagIsOneOrZero)
+{
+  const auto recorded = std::make_shared<Recorded>();
+  const auto log = CreateLog(recorded);
+  const TraceValue flag = log->RegisterValue("flag", TraceUnit::Flag, "");
+
+  log->BeginFrame(0, 1);
+  log->SetFlagAt(0, flag, true);
+  log->BeginFrame(1, 1);
+  log->SetFlagAt(1, flag, false);
+  log->Close();
+
+  ASSERT_EQ(2u, recorded->Frames.size());
+  EXPECT_TRUE(recorded->Frames[0].HasValue[flag.Value - 1u]);
+  EXPECT_EQ(1, recorded->Frames[0].Values[flag.Value - 1u]);
+  EXPECT_TRUE(recorded->Frames[1].HasValue[flag.Value - 1u]);
+  EXPECT_EQ(0, recorded->Frames[1].Values[flag.Value - 1u]);
+}
+
+
 TEST(Test_TraceLog, TheSchemaIsWrittenOnceBeforeTheFirstFrame)
 {
   const auto recorded = std::make_shared<Recorded>();
@@ -223,6 +331,33 @@ TEST(Test_TraceLog, Declare_OnlyTimesAreSpansAndMarks)
   ASSERT_EQ(1u, recorded->Schemas.size());
   EXPECT_EQ(1u, recorded->Schemas[0].Spans.size());
   EXPECT_EQ(1u, recorded->Schemas[0].Marks.size());
+  EXPECT_EQ(1u, recorded->Schemas[0].Counters.size());
+}
+
+
+TEST(Test_TraceLog, Declare_AMomentInNanosecondsIsAMark)
+{
+  const auto recorded = std::make_shared<Recorded>();
+  const auto log = CreateLog(recorded);
+  const TraceValue time = log->RegisterValue("timeTicks", TraceUnit::Ticks, "");
+  const TraceValue moment = log->RegisterValue("momentNs", TraceUnit::NanosecondTicks, "");
+  const TraceValue duration = log->RegisterValue("durationNs", TraceUnit::Nanoseconds, "");
+  const TraceTrack track = log->RegisterTrack("Track", TraceTrackKind::Lanes);
+
+  EXPECT_FALSE(log->DeclareSpan("span", track, time, moment, TraceLink::NoLink));
+  EXPECT_FALSE(log->DeclareSpan("span", track, moment, moment, TraceLink::NoLink));
+  EXPECT_FALSE(log->DeclareMark("mark", track, duration, TraceLink::NoLink));
+  // A moment is not something to draw a graph of
+  EXPECT_FALSE(log->DeclareCounter("counter", moment));
+
+  EXPECT_TRUE(log->DeclareMark("mark", track, moment, TraceLink::NoLink));
+  EXPECT_TRUE(log->DeclareCounter("counter", duration));
+  log->Close();
+
+  ASSERT_EQ(1u, recorded->Schemas.size());
+  EXPECT_EQ(0u, recorded->Schemas[0].Spans.size());
+  ASSERT_EQ(1u, recorded->Schemas[0].Marks.size());
+  EXPECT_EQ(moment.Value - 1u, recorded->Schemas[0].Marks[0].TimeIndex);
   EXPECT_EQ(1u, recorded->Schemas[0].Counters.size());
 }
 

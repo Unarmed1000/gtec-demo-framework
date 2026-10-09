@@ -34,8 +34,8 @@ namespace
   {
     FramePacingFrameRecord record;
     record.FrameIndex = 42;
-    record.AnimationTicks = 1000;
-    record.CpuStartTicks = 2000;
+    record.AnimationNanoseconds = 1000;
+    record.CpuStartNanoseconds = 2000;
     record.RunId = 7;
     return record;
   }
@@ -45,7 +45,7 @@ namespace
   {
     FramePacingMarkerInfo marker;
     marker.FrameIndex = 41;
-    marker.AnimationTime = TimeSpan(1000);
+    marker.AnimationTime = NanosecondTimeSpan(1000);
     marker.RunId = 7;
     return marker;
   }
@@ -56,16 +56,16 @@ TEST(Test_FramePacingFrameRecordUtil, ApplySchedule_AnimationTimeOnly)
 {
   FramePacingFrameRecord record = CreateHostRecord();
   FramePacingFrameSchedule schedule;
-  schedule.AnimationTime = TimeSpan(5000);
+  schedule.AnimationTime = NanosecondTimeSpan(5000);
 
   FramePacingFrameRecordUtil::ApplySchedule(record, schedule);
 
-  EXPECT_EQ(5000, record.AnimationTicks);
+  EXPECT_EQ(5000, record.AnimationNanoseconds);
   // The CPU start time of the host is kept
-  EXPECT_EQ(2000, record.CpuStartTicks);
-  EXPECT_EQ(0, record.IntendedDisplayTicks);
-  EXPECT_EQ(0, record.TargetFrameTicks);
-  EXPECT_EQ(0, record.PreferredFrameTicks);
+  EXPECT_EQ(2000, record.CpuStartNanoseconds);
+  EXPECT_EQ(0, record.IntendedDisplayNanoseconds);
+  EXPECT_EQ(0, record.TargetFrameNanoseconds);
+  EXPECT_EQ(0, record.PreferredFrameNanoseconds);
   EXPECT_FALSE(record.Static);
   // The values that are not part of the schedule are untouched
   EXPECT_EQ(42u, record.FrameIndex);
@@ -77,20 +77,22 @@ TEST(Test_FramePacingFrameRecordUtil, ApplySchedule_AllValues)
 {
   FramePacingFrameRecord record = CreateHostRecord();
   FramePacingFrameSchedule schedule;
-  schedule.AnimationTime = TimeSpan(5000);
-  schedule.CpuStartTime = TickCount(2100);
-  schedule.IntendedDisplayTime = TickCount(335433);
-  schedule.TargetFrameTime = TimeSpan(333333);
-  schedule.PreferredFrameTime = TimeSpan(166667);
+  schedule.AnimationTime = NanosecondTimeSpan(5000);
+  schedule.CpuStartTime = NanosecondTickCount(2100);
+  schedule.CpuBusyTime = NanosecondTimeSpan(41000);
+  schedule.IntendedDisplayTime = NanosecondTickCount(335433);
+  schedule.TargetFrameTime = NanosecondTimeSpan(33333333);
+  schedule.PreferredFrameTime = NanosecondTimeSpan(16666667);
   schedule.Static = true;
 
   FramePacingFrameRecordUtil::ApplySchedule(record, schedule);
 
-  EXPECT_EQ(5000, record.AnimationTicks);
-  EXPECT_EQ(2100, record.CpuStartTicks);
-  EXPECT_EQ(335433, record.IntendedDisplayTicks);
-  EXPECT_EQ(333333, record.TargetFrameTicks);
-  EXPECT_EQ(166667, record.PreferredFrameTicks);
+  EXPECT_EQ(5000, record.AnimationNanoseconds);
+  EXPECT_EQ(2100, record.CpuStartNanoseconds);
+  EXPECT_EQ(41000, record.CpuBusyNanoseconds);
+  EXPECT_EQ(335433, record.IntendedDisplayNanoseconds);
+  EXPECT_EQ(33333333, record.TargetFrameNanoseconds);
+  EXPECT_EQ(16666667, record.PreferredFrameNanoseconds);
   EXPECT_TRUE(record.Static);
 }
 
@@ -98,18 +100,18 @@ TEST(Test_FramePacingFrameRecordUtil, ApplySchedule_AllValues)
 TEST(Test_FramePacingFrameRecordUtil, ApplySchedule_ReplacesPreviousPacingValues)
 {
   FramePacingFrameRecord record = CreateHostRecord();
-  record.IntendedDisplayTicks = 111;
-  record.TargetFrameTicks = 222;
-  record.PreferredFrameTicks = 333;
+  record.IntendedDisplayNanoseconds = 111;
+  record.TargetFrameNanoseconds = 222;
+  record.PreferredFrameNanoseconds = 333;
   record.Static = true;
   FramePacingFrameSchedule schedule;
-  schedule.AnimationTime = TimeSpan(5000);
+  schedule.AnimationTime = NanosecondTimeSpan(5000);
 
   FramePacingFrameRecordUtil::ApplySchedule(record, schedule);
 
-  EXPECT_EQ(0, record.IntendedDisplayTicks);
-  EXPECT_EQ(0, record.TargetFrameTicks);
-  EXPECT_EQ(0, record.PreferredFrameTicks);
+  EXPECT_EQ(0, record.IntendedDisplayNanoseconds);
+  EXPECT_EQ(0, record.TargetFrameNanoseconds);
+  EXPECT_EQ(0, record.PreferredFrameNanoseconds);
   EXPECT_FALSE(record.Static);
 }
 
@@ -118,28 +120,51 @@ TEST(Test_FramePacingFrameRecordUtil, ApplySchedule_NotPositiveTimesAreUnknown)
 {
   FramePacingFrameRecord record = CreateHostRecord();
   FramePacingFrameSchedule schedule;
-  schedule.AnimationTime = TimeSpan(5000);
-  schedule.CpuStartTime = TickCount(0);
-  schedule.IntendedDisplayTime = TickCount(-1);
-  schedule.TargetFrameTime = TimeSpan(0);
-  schedule.PreferredFrameTime = TimeSpan(-166667);
+  schedule.AnimationTime = NanosecondTimeSpan(5000);
+  schedule.CpuStartTime = NanosecondTickCount(0);
+  schedule.IntendedDisplayTime = NanosecondTickCount(-1);
+  schedule.TargetFrameTime = NanosecondTimeSpan(0);
+  schedule.PreferredFrameTime = NanosecondTimeSpan(-16666667);
 
   FramePacingFrameRecordUtil::ApplySchedule(record, schedule);
 
-  EXPECT_EQ(0, record.CpuStartTicks);
-  EXPECT_EQ(0, record.IntendedDisplayTicks);
-  EXPECT_EQ(0, record.TargetFrameTicks);
-  EXPECT_EQ(0, record.PreferredFrameTicks);
+  EXPECT_EQ(0, record.CpuStartNanoseconds);
+  EXPECT_EQ(0, record.IntendedDisplayNanoseconds);
+  EXPECT_EQ(0, record.TargetFrameNanoseconds);
+  EXPECT_EQ(0, record.PreferredFrameNanoseconds);
 }
 
 
-TEST(Test_FramePacingFrameRecordUtil, ToKnownTicks)
+TEST(Test_FramePacingFrameRecordUtil, ApplySchedule_ANanosecondIsKept)
 {
-  EXPECT_EQ(0, FramePacingFrameRecordUtil::ToKnownTicks(std::optional<TimeSpan>()));
-  EXPECT_EQ(0, FramePacingFrameRecordUtil::ToKnownTicks(std::optional<TimeSpan>(TimeSpan(0))));
-  EXPECT_EQ(0, FramePacingFrameRecordUtil::ToKnownTicks(std::optional<TimeSpan>(TimeSpan(-5))));
-  EXPECT_EQ(5, FramePacingFrameRecordUtil::ToKnownTicks(std::optional<TimeSpan>(TimeSpan(5))));
-  EXPECT_EQ(9, FramePacingFrameRecordUtil::ToKnownTicks(std::optional<TickCount>(TickCount(9))));
+  // The refresh period of a 240.016 Hz mode is not a whole number of ticks of 100ns: the marker gets what the app gave
+  FramePacingFrameRecord record = CreateHostRecord();
+  FramePacingFrameSchedule schedule;
+  schedule.AnimationTime = NanosecondTimeSpan(770783689);
+  schedule.CpuStartTime = NanosecondTickCount(390293215838301);
+  schedule.CpuBusyTime = NanosecondTimeSpan(125199);
+  schedule.IntendedDisplayTime = NanosecondTickCount(390293217625389);
+  schedule.TargetFrameTime = NanosecondTimeSpan(4166389);
+  schedule.PreferredFrameTime = NanosecondTimeSpan(4166389);
+
+  FramePacingFrameRecordUtil::ApplySchedule(record, schedule);
+
+  EXPECT_EQ(770783689, record.AnimationNanoseconds);
+  EXPECT_EQ(390293215838301, record.CpuStartNanoseconds);
+  EXPECT_EQ(125199, record.CpuBusyNanoseconds);
+  EXPECT_EQ(390293217625389, record.IntendedDisplayNanoseconds);
+  EXPECT_EQ(4166389, record.TargetFrameNanoseconds);
+  EXPECT_EQ(4166389, record.PreferredFrameNanoseconds);
+}
+
+
+TEST(Test_FramePacingFrameRecordUtil, ToKnownNanoseconds)
+{
+  EXPECT_EQ(0, FramePacingFrameRecordUtil::ToKnownNanoseconds(std::optional<NanosecondTimeSpan>()));
+  EXPECT_EQ(0, FramePacingFrameRecordUtil::ToKnownNanoseconds(std::optional<NanosecondTimeSpan>(NanosecondTimeSpan(0))));
+  EXPECT_EQ(0, FramePacingFrameRecordUtil::ToKnownNanoseconds(std::optional<NanosecondTimeSpan>(NanosecondTimeSpan(-5))));
+  EXPECT_EQ(5, FramePacingFrameRecordUtil::ToKnownNanoseconds(std::optional<NanosecondTimeSpan>(NanosecondTimeSpan(5))));
+  EXPECT_EQ(9, FramePacingFrameRecordUtil::ToKnownNanoseconds(std::optional<NanosecondTickCount>(NanosecondTickCount(9))));
 }
 
 
@@ -155,7 +180,7 @@ TEST(Test_FramePacingFrameRecordUtil, IsStaticBefore_AnimationTimeMoved)
 {
   const FramePacingFrameRecord record = CreateHostRecord();
   FramePacingMarkerInfo marker = CreatePreviousMarker();
-  marker.AnimationTime = TimeSpan(999);
+  marker.AnimationTime = NanosecondTimeSpan(999);
 
   EXPECT_FALSE(FramePacingFrameRecordUtil::IsStaticBefore(record, marker));
 }
@@ -166,14 +191,14 @@ TEST(Test_FramePacingFrameRecordUtil, IsStaticBefore_ScheduleDecidesTheAnimation
   // The host's animation time stands still, but the app animates the frame by its own time
   FramePacingFrameRecord record = CreateHostRecord();
   FramePacingFrameSchedule schedule;
-  schedule.AnimationTime = TimeSpan(5000);
+  schedule.AnimationTime = NanosecondTimeSpan(5000);
   FramePacingFrameRecordUtil::ApplySchedule(record, schedule);
 
   EXPECT_FALSE(FramePacingFrameRecordUtil::IsStaticBefore(record, CreatePreviousMarker()));
 
   // And the other way around: the app's animation time stands still
   FramePacingMarkerInfo marker = CreatePreviousMarker();
-  marker.AnimationTime = TimeSpan(5000);
+  marker.AnimationTime = NanosecondTimeSpan(5000);
   EXPECT_TRUE(FramePacingFrameRecordUtil::IsStaticBefore(record, marker));
 }
 

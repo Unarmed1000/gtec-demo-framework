@@ -43,6 +43,14 @@ namespace Fsl::VulkanBasic
     //! When vkQueuePresentKHR was called and when it returned
     TickCount PresentCallTime;
     TickCount PresentReturnTime;
+    //! The VkResult of vkQueuePresentKHR (zero is success, 1000001003 is VK_SUBOPTIMAL_KHR: both were taken by the swapchain)
+    int32_t PresentResult{0};
+
+    //! True if the swapchain took the present, so the frame is on its way to the display
+    [[nodiscard]] constexpr bool IsPresentAccepted() const noexcept
+    {
+      return PresentResult == 0 || PresentResult == 1000001003;
+    }
   };
 }
 

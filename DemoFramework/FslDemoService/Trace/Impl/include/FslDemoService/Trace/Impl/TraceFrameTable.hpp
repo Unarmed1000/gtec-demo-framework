@@ -86,10 +86,28 @@ namespace Fsl
       return value.IsValid() && value.Value <= m_values.size();
     }
 
+    //! @brief Get the unit of a value of this table.
+    //! @return false if it is not a value of this table.
+    [[nodiscard]] bool TryGetUnit(const TraceValue value, TraceUnit& rUnit) const noexcept
+    {
+      if (!IsValue(value))
+      {
+        return false;
+      }
+      rUnit = m_values[value.Value - 1u].Unit;
+      return true;
+    }
+
     //! @return true if it is a value of this table that is a time.
     [[nodiscard]] bool IsTime(const TraceValue value) const noexcept
     {
       return IsValue(value) && m_values[value.Value - 1u].Unit == TraceUnit::Ticks;
+    }
+
+    //! @return true if it is a value of this table that is a moment on the clock of the framework: a time, or one in nanoseconds.
+    [[nodiscard]] bool IsMoment(const TraceValue value) const noexcept
+    {
+      return IsTime(value) || (IsValue(value) && m_values[value.Value - 1u].Unit == TraceUnit::NanosecondTicks);
     }
 
     //! @brief Open the row of a frame. The frames are expected in order.

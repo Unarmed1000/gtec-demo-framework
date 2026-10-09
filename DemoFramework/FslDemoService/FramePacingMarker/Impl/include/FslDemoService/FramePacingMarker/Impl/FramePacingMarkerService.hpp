@@ -80,10 +80,14 @@ namespace Fsl
     bool m_hasFrame{false};
     FramePacingMarkerKind m_frameKind{FramePacingMarkerKind::Frame};
     uint64_t m_frameIndex{0};
-    int64_t m_frameAnimationTicks{0};
-    int64_t m_frameCpuStartTicks{0};
+    int64_t m_frameAnimationNanoseconds{0};
+    int64_t m_frameCpuStartNanoseconds{0};
     //! The pacing values the app supplied for the frame being drawn (empty: the framework's values are reported)
     std::optional<FramePacingFrameSchedule> m_frameSchedule;
+    //! When the host swapped the buffers of the last frame: the call and its return (valid if m_hasSwapTimes)
+    TickCount m_swapCallTime;
+    TickCount m_swapReturnTime;
+    bool m_hasSwapTimes{false};
 
     //! Every value the last drawn marker carried (empty until the overlay drew a marker)
     std::optional<FramePacingMarkerInfo> m_lastMarker;
@@ -155,9 +159,11 @@ namespace Fsl
     [[nodiscard]] TimeSpan GetRunMeasuredTime() const noexcept final;
     bool TryGetLastMarker(FramePacingMarkerInfo& rInfo) const noexcept final;
     void SetFrameSchedule(const FramePacingFrameSchedule& schedule) noexcept final;
+    bool TryGetLastSwapTimes(TickCount& rCallTime, TickCount& rReturnTime) const noexcept final;
 
     // From IFramePacingMarkerServiceControl
     void BeginFrame(const FrameInfo& frameInfo, const TickCount cpuStartTime) final;
+    void OnSwapBuffers(const TickCount callTime, const TickCount returnTime) noexcept final;
     std::unique_ptr<IFramePacingOverlay> CreateOverlay(const ServiceProvider& serviceProvider) final;
 
     // From IFramePacingFrameSource

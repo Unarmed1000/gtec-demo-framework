@@ -30,25 +30,26 @@
 
 namespace Fsl::FramePacingFrameRecordUtil
 {
-  //! A optional time as the ticks the marker carries: 0 (unknown) if it is empty or not a positive time
+  //! A optional time as the nanoseconds the marker carries: 0 (unknown) if it is empty or not a positive time
   template <typename T>
-  constexpr int64_t ToKnownTicks(const std::optional<T>& value) noexcept
+  constexpr int64_t ToKnownNanoseconds(const std::optional<T>& value) noexcept
   {
-    return (value.has_value() && value->Ticks() > 0) ? value->Ticks() : 0;
+    return (value.has_value() && value->TotalNanoseconds() > 0) ? value->TotalNanoseconds() : 0;
   }
 
   //! Replace the pacing values of the record with the ones the app supplied for the frame.
   //! The animation time is always taken from the schedule. The CPU start time of the record (the host's) is kept if the schedule has none.
   constexpr void ApplySchedule(FramePacingFrameRecord& rRecord, const FramePacingFrameSchedule& schedule) noexcept
   {
-    rRecord.AnimationTicks = schedule.AnimationTime.Ticks();
+    rRecord.AnimationNanoseconds = schedule.AnimationTime.TotalNanoseconds();
     if (schedule.CpuStartTime.has_value())
     {
-      rRecord.CpuStartTicks = ToKnownTicks(schedule.CpuStartTime);
+      rRecord.CpuStartNanoseconds = ToKnownNanoseconds(schedule.CpuStartTime);
     }
-    rRecord.IntendedDisplayTicks = ToKnownTicks(schedule.IntendedDisplayTime);
-    rRecord.TargetFrameTicks = ToKnownTicks(schedule.TargetFrameTime);
-    rRecord.PreferredFrameTicks = ToKnownTicks(schedule.PreferredFrameTime);
+    rRecord.CpuBusyNanoseconds = ToKnownNanoseconds(schedule.CpuBusyTime);
+    rRecord.IntendedDisplayNanoseconds = ToKnownNanoseconds(schedule.IntendedDisplayTime);
+    rRecord.TargetFrameNanoseconds = ToKnownNanoseconds(schedule.TargetFrameTime);
+    rRecord.PreferredFrameNanoseconds = ToKnownNanoseconds(schedule.PreferredFrameTime);
     rRecord.Static = schedule.Static;
   }
 
@@ -58,7 +59,7 @@ namespace Fsl::FramePacingFrameRecordUtil
   constexpr bool IsStaticBefore(const FramePacingFrameRecord& record, const FramePacingMarkerInfo& lastMarker) noexcept
   {
     return lastMarker.RunId == record.RunId && (lastMarker.FrameIndex + 1u) == record.FrameIndex &&
-           lastMarker.AnimationTime.Ticks() == record.AnimationTicks;
+           lastMarker.AnimationTime.TotalNanoseconds() == record.AnimationNanoseconds;
   }
 }
 

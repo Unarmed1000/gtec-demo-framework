@@ -1,18 +1,19 @@
-# Does the frame pacer work on plain Vulkan at 240 Hz? The pacer runs with the basic settings: no present feedback, no scheduled
-# present and no present fences (--VkSwapchainMaintenance1 false), so nothing of an extension takes part in the pacing. Present timing is
+# Does the frame pacer work on plain Vulkan at 240 Hz? The pacer runs with the basic settings: no present feedback, no present
+# that takes a time and no present fences (--VkSwapchainMaintenance1 false), so nothing of an extension takes part in the pacing. Present timing is
 # on in most runs, but only to measure when the frames were shown. The runs that end in _plain switch that off as well: they prove
 # that nothing depends on it, and only have the frame starts to judge by.
 #
-# The part that differs between the runs is how a frame is held for more than one refresh, which core Vulkan has no call for:
-#   wait   the sample sleeps on a timer and presents (it does not know where the refreshes are)
-#   vsync  the sample waits on the vsync of the window system and presents in the middle of a refresh
+# The part that differs between the runs is what the pacer paces with (--Pacer.Kind). Core Vulkan has no call that holds a frame for
+# more than one refresh, so the pacer holds such a frame by the times it says to wait until:
+#   wait   a timer and the refresh period (timer-period: it is not told where the refreshes are)
+#   vsync  the vertical blank times of the window system and the refresh period (vblank-period)
 #
 # Set the display to 240 Hz with variable refresh off before the plan is run. The GPU load settings depend on the GPU and on
 # the size of the window, see work-matrix-240hz.
 #
 # Pass: at least 99 % of the frames are shown for exactly their swap interval, and the frame starts are whole refreshes apart.
 
-description = "240 Hz, plain Vulkan: a frame held by a timer sleep and by a wait on the vsync, fixed frame rates and GPU work of 20, 90 and 130 %, each idle and under CPU load"
+description = "240 Hz, plain Vulkan: the frames paced on a timer and on the vertical blank times, fixed frame rates and GPU work of 20, 90 and 130 %, each idle and under CPU load"
 app = "Vulkan.FramePacing"
 frames = 2400
 expected_refresh_hz = 240.0
@@ -35,43 +36,43 @@ duty = 1.0
 
 [[run]]
 name = "fps120_wait"
-what = "120 fps (2 refreshes per frame), light work, held by a timer sleep"
-args = ["--GpuLoad", "{work20}", "--Pacer.Adaptive", "false", "--Pacer.TargetFps", "120", "--Pacer.Hold", "wait"]
+what = "120 fps (2 refreshes per frame), light work, paced on a timer"
+args = ["--GpuLoad", "{work20}", "--Pacer.Adaptive", "false", "--Pacer.TargetFps", "120", "--Pacer.Kind", "timer-period"]
 frames = 1200
 loaded = true
 
 [[run]]
 name = "fps120_vsync"
-what = "120 fps (2 refreshes per frame), light work, held by a wait on the vsync"
-args = ["--GpuLoad", "{work20}", "--Pacer.Adaptive", "false", "--Pacer.TargetFps", "120", "--Pacer.Hold", "vsync"]
+what = "120 fps (2 refreshes per frame), light work, paced on the vertical blank times"
+args = ["--GpuLoad", "{work20}", "--Pacer.Adaptive", "false", "--Pacer.TargetFps", "120", "--Pacer.Kind", "vblank-period"]
 frames = 1200
 loaded = true
 
 [[run]]
 name = "fps60_wait"
-what = "60 fps (4 refreshes per frame), light work, held by a timer sleep"
-args = ["--GpuLoad", "{work20}", "--Pacer.Adaptive", "false", "--Pacer.TargetFps", "60", "--Pacer.Hold", "wait"]
+what = "60 fps (4 refreshes per frame), light work, paced on a timer"
+args = ["--GpuLoad", "{work20}", "--Pacer.Adaptive", "false", "--Pacer.TargetFps", "60", "--Pacer.Kind", "timer-period"]
 frames = 600
 loaded = true
 
 [[run]]
 name = "fps60_vsync"
-what = "60 fps (4 refreshes per frame), light work, held by a wait on the vsync"
-args = ["--GpuLoad", "{work20}", "--Pacer.Adaptive", "false", "--Pacer.TargetFps", "60", "--Pacer.Hold", "vsync"]
+what = "60 fps (4 refreshes per frame), light work, paced on the vertical blank times"
+args = ["--GpuLoad", "{work20}", "--Pacer.Adaptive", "false", "--Pacer.TargetFps", "60", "--Pacer.Kind", "vblank-period"]
 frames = 600
 loaded = true
 
 [[run]]
 name = "fps30_wait"
-what = "30 fps (8 refreshes per frame), light work, held by a timer sleep"
-args = ["--GpuLoad", "{work20}", "--Pacer.Adaptive", "false", "--Pacer.TargetFps", "30", "--Pacer.Hold", "wait"]
+what = "30 fps (8 refreshes per frame), light work, paced on a timer"
+args = ["--GpuLoad", "{work20}", "--Pacer.Adaptive", "false", "--Pacer.TargetFps", "30", "--Pacer.Kind", "timer-period"]
 frames = 400
 loaded = true
 
 [[run]]
 name = "fps30_vsync"
-what = "30 fps (8 refreshes per frame), light work, held by a wait on the vsync"
-args = ["--GpuLoad", "{work20}", "--Pacer.Adaptive", "false", "--Pacer.TargetFps", "30", "--Pacer.Hold", "vsync"]
+what = "30 fps (8 refreshes per frame), light work, paced on the vertical blank times"
+args = ["--GpuLoad", "{work20}", "--Pacer.Adaptive", "false", "--Pacer.TargetFps", "30", "--Pacer.Kind", "vblank-period"]
 frames = 400
 loaded = true
 
@@ -79,28 +80,28 @@ loaded = true
 
 [[run]]
 name = "w130_wait"
-what = "GPU work of 130 % of a refresh, adaptive pacer, held by a timer sleep"
-args = ["--GpuLoad", "{work130}", "--Pacer.Hold", "wait"]
+what = "GPU work of 130 % of a refresh, adaptive pacer, paced on a timer"
+args = ["--GpuLoad", "{work130}", "--Pacer.Kind", "timer-period"]
 loaded = true
 
 [[run]]
 name = "w130_vsync"
-what = "GPU work of 130 % of a refresh, adaptive pacer, held by a wait on the vsync"
-args = ["--GpuLoad", "{work130}", "--Pacer.Hold", "vsync"]
+what = "GPU work of 130 % of a refresh, adaptive pacer, paced on the vertical blank times"
+args = ["--GpuLoad", "{work130}", "--Pacer.Kind", "vblank-period"]
 loaded = true
 
-# Work that fits a refresh: one refresh per frame, where the present itself holds the frame and the hold method does nothing
+# Work that fits a refresh: one refresh per frame, where the present itself holds the frame
 
 [[run]]
 name = "w20"
 what = "GPU work of 20 % of a refresh, adaptive pacer"
-args = ["--GpuLoad", "{work20}", "--Pacer.Hold", "vsync"]
+args = ["--GpuLoad", "{work20}", "--Pacer.Kind", "vblank-period"]
 loaded = true
 
 [[run]]
 name = "w90"
 what = "GPU work of 90 % of a refresh, adaptive pacer"
-args = ["--GpuLoad", "{work90}", "--Pacer.Hold", "vsync"]
+args = ["--GpuLoad", "{work90}", "--Pacer.Kind", "vblank-period"]
 loaded = true
 
 # One and two frames in flight at work that nearly fills a refresh: with one the CPU waits for the GPU before it starts the next frame
@@ -108,33 +109,33 @@ loaded = true
 [[run]]
 name = "w90_flight1"
 what = "GPU work of 90 % of a refresh, one frame in flight"
-args = ["--GpuLoad", "{work90}", "--Pacer.Hold", "vsync", "--VkFramesInFlight", "1"]
+args = ["--GpuLoad", "{work90}", "--Pacer.Kind", "vblank-period", "--VkFramesInFlight", "1"]
 loaded = true
 
 [[run]]
 name = "w90_flight2"
 what = "GPU work of 90 % of a refresh, two frames in flight"
-args = ["--GpuLoad", "{work90}", "--Pacer.Hold", "vsync", "--VkFramesInFlight", "2"]
+args = ["--GpuLoad", "{work90}", "--Pacer.Kind", "vblank-period", "--VkFramesInFlight", "2"]
 loaded = true
 
 # Fully plain: present timing is off too, so there are no display times and the frame starts are what is left to judge by
 
 [[run]]
 name = "fps60_wait_plain"
-what = "60 fps (4 refreshes per frame), light work, held by a timer sleep, no present timing"
-args = ["--GpuLoad", "{work20}", "--Pacer.Adaptive", "false", "--Pacer.TargetFps", "60", "--Pacer.Hold", "wait", "--VkPresentTiming", "false"]
+what = "60 fps (4 refreshes per frame), light work, paced on a timer, no present timing"
+args = ["--GpuLoad", "{work20}", "--Pacer.Adaptive", "false", "--Pacer.TargetFps", "60", "--Pacer.Kind", "timer-period", "--VkPresentTiming", "false"]
 frames = 600
 loaded = true
 
 [[run]]
 name = "fps60_vsync_plain"
-what = "60 fps (4 refreshes per frame), light work, held by a wait on the vsync, no present timing"
-args = ["--GpuLoad", "{work20}", "--Pacer.Adaptive", "false", "--Pacer.TargetFps", "60", "--Pacer.Hold", "vsync", "--VkPresentTiming", "false"]
+what = "60 fps (4 refreshes per frame), light work, paced on the vertical blank times, no present timing"
+args = ["--GpuLoad", "{work20}", "--Pacer.Adaptive", "false", "--Pacer.TargetFps", "60", "--Pacer.Kind", "vblank-period", "--VkPresentTiming", "false"]
 frames = 600
 loaded = true
 
 [[run]]
 name = "w130_vsync_plain"
-what = "GPU work of 130 % of a refresh, adaptive pacer, held by a wait on the vsync, no present timing"
-args = ["--GpuLoad", "{work130}", "--Pacer.Hold", "vsync", "--VkPresentTiming", "false"]
+what = "GPU work of 130 % of a refresh, adaptive pacer, paced on the vertical blank times, no present timing"
+args = ["--GpuLoad", "{work130}", "--Pacer.Kind", "vblank-period", "--VkPresentTiming", "false"]
 loaded = true

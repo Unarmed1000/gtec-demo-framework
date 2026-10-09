@@ -35,16 +35,19 @@ namespace Fsl
     FramePacingMarkerKind Kind{FramePacingMarkerKind::Frame};
     //! The number of frames rendered before this one.
     uint64_t FrameIndex{0};
-    //! The animation time of the frame in 100ns ticks.
-    int64_t AnimationTicks{0};
-    //! When the CPU started working on the frame in 100ns ticks (a HighResolutionTimer timestamp), 0 if unknown.
-    int64_t CpuStartTicks{0};
-    //! When the frame pacer intends the frame to be shown in 100ns ticks (a HighResolutionTimer timestamp), 0 if unknown.
-    int64_t IntendedDisplayTicks{0};
-    //! The frame time the frame pacer aims for in 100ns ticks, 0 if unknown.
-    int64_t TargetFrameTicks{0};
-    //! The frame time the application wants to run at in 100ns ticks, 0 if unknown.
-    int64_t PreferredFrameTicks{0};
+    //! The animation time of the frame in nanoseconds.
+    int64_t AnimationNanoseconds{0};
+    //! When the CPU started working on the frame in nanoseconds (a HighResolutionTimer timestamp), 0 if unknown.
+    int64_t CpuStartNanoseconds{0};
+    //! How long the CPU has worked on the frame in nanoseconds as the app gave it, 0 if it did not: it is then measured when the marker
+    //! is drawn.
+    int64_t CpuBusyNanoseconds{0};
+    //! When the frame pacer intends the frame to be shown in nanoseconds (on the clock of the HighResolutionTimer), 0 if unknown.
+    int64_t IntendedDisplayNanoseconds{0};
+    //! The frame time the frame pacer aims for in nanoseconds, 0 if unknown.
+    int64_t TargetFrameNanoseconds{0};
+    //! The frame time the application wants to run at in nanoseconds, 0 if unknown.
+    int64_t PreferredFrameNanoseconds{0};
     //! True if nothing animates while the frame is on screen (the app said so).
     bool Static{false};
     //! True if nothing animated while the frame before this one was on screen (the service found it has the same animation time).

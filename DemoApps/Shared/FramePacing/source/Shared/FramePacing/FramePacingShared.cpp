@@ -63,7 +63,8 @@
 #include <Shared/FramePacing/OptionParser.hpp>
 #include <Shared/FramePacing/SampleAnimationErrorChart.hpp>
 #include <Shared/FramePacing/SampleConfig.hpp>
-#include <Shared/FramePacing/SamplePacingTierClassifier.hpp>
+#include <Shared/FramePacing/SampleExplicitSyncUtil.hpp>
+#include <Shared/FramePacing/SampleStatsLevelUtil.hpp>
 #include <fmt/chrono.h>
 #include <fmt/format.h>
 #include <algorithm>
@@ -74,6 +75,7 @@
 #include <string>
 #include <thread>
 #include <utility>
+#include <vector>
 
 namespace Fsl
 {
@@ -94,12 +96,6 @@ namespace Fsl
       constexpr double SwaySeconds = 29.0;
       //! The raymarched background: the time the shape and the colors of the lattice change in
       constexpr double MorphSeconds = 61.0;
-      //! WaitForPresent presents this long after the last refresh before the one the frame pacer aims for (at most an eighth of a refresh)
-      constexpr TimeSpan MaxPresentMargin(TimeSpan::TicksPerMillisecond);
-      //! How long after the first frame that waited for the time of the pacer the one-time wait of SampleConfig::DrainRefreshes is
-      //! made. The presents that queue up do so in the first frames of a swapchain, while its images take longer to reach the display
-      //! (on Windows the first presents of a window go through the compositor), so the wait comes after those.
-      constexpr TimeSpan DrainDelay(TimeSpan::TicksPerSecond / 2);
       //! WaitUntil only sleeps when the wait is longer than this (a sleeping thread can wake this late), a shorter wait yields
       constexpr TimeSpan CoarseSleepThreshold(20 * TimeSpan::TicksPerMillisecond);
       constexpr TimeSpan CoarseSleepMargin(16 * TimeSpan::TicksPerMillisecond);
@@ -137,20 +133,59 @@ namespace Fsl
       }
     }
 
-    const char* ToString(const SamplePacerHold hold) noexcept
+    //! The name of a kind of the pacer as --Pacer.Kind takes it
+    const char* ToString(const SamplePacerKind kind) noexcept
     {
-      switch (hold)
+      switch (kind)
       {
-      case SamplePacerHold::Auto:
-        return "auto";
-      case SamplePacerHold::VSync:
-        return "vsync";
-      case SamplePacerHold::Schedule:
-        return "schedule";
-      case SamplePacerHold::Wait:
+      case SamplePacerKind::TimerWaitForPresent:
+        return "timer-present-wait";
+      case SamplePacerKind::VBlankPeriodOnly:
+        return "vblank-period";
+      case SamplePacerKind::VBlankWaitForPresent:
+        return "vblank-present-wait";
+      case SamplePacerKind::TimerPeriodOnly:
       default:
-        return "wait";
+        return "timer-period";
       }
+    }
+
+    const char* ToString(const SamplePacerAim aim) noexcept
+    {
+      switch (aim)
+      {
+      case SamplePacerAim::LowLatency:
+        return "low-latency";
+      case SamplePacerAim::Smoothness:
+      default:
+        return "smoothness";
+      }
+    }
+
+    using SamplePacerTierChoiceUtil::IsPresentWaitKind;
+    using SamplePacerTierChoiceUtil::IsVBlankKind;
+
+    //! The value of pacerKind in the trace
+    int64_t ToLogCode(const SamplePacerKind kind) noexcept
+    {
+      switch (kind)
+      {
+      case SamplePacerKind::TimerWaitForPresent:
+        return 2;
+      case SamplePacerKind::VBlankPeriodOnly:
+        return 3;
+      case SamplePacerKind::VBlankWaitForPresent:
+        return 4;
+      case SamplePacerKind::TimerPeriodOnly:
+      default:
+        return 1;
+      }
+    }
+
+    //! The text of the radio button of a tier of the pacer library
+    std::string ToTierLabel(const SamplePacerTier tier)
+    {
+      return fmt::format("Tier {}: {}", SamplePacer::GetTierNumber(tier), SamplePacer::GetTierName(tier));
     }
 
     //! The name of a scene of the background as --Background takes it
@@ -169,22 +204,6 @@ namespace Fsl
       case RaymarchScene::Flight:
       default:
         return "flight";
-      }
-    }
-
-    //! The value of holdMethod in the trace
-    int64_t ToLogCode(const SamplePacerHold hold) noexcept
-    {
-      switch (hold)
-      {
-      case SamplePacerHold::VSync:
-        return 1;
-      case SamplePacerHold::Schedule:
-        return 3;
-      case SamplePacerHold::Auto:
-      case SamplePacerHold::Wait:
-      default:
-        return 0;
       }
     }
 
@@ -209,6 +228,35 @@ namespace Fsl
     constexpr UI::UIColor WorkChartGpuColor(PackedColor32(0xFFE0902A));      // orange
     constexpr UI::UIColor WorkChartFrameColor(PackedColor32(0xFFFFFFFF));    // white: the total, it stands out from the two it is made of
     constexpr float WorkChartHeightDp = 100.0f;
+    //! The legends of the charts are as wide as each other and do not follow their text, so the charts are as wide as each other
+    //! and do not move when a number in a legend gets another digit
+    constexpr float ChartLegendWidthDp = 260.0f;
+    //! How often the numbers of a legend are written
+    constexpr TimeSpan ChartLegendInterval = TimeSpan::FromMilliseconds(250);
+
+    //! The colors of a value of the frame pacing overlay that asks to be looked at
+    constexpr UI::UIColor StatsWarningColor(PackedColor32(0xFFFFC233));    // yellow
+    constexpr UI::UIColor StatsErrorColor(PackedColor32(0xFFFF5A4D));      // red
+    //! The colors of the tiers of the pacer library, the best tier first. They are the ones a well known game gives the quality of
+    //! its items (legendary, epic, rare, uncommon), the last three a little lighter so they can be read on the side bar.
+    constexpr std::array<UI::UIColor, 4> TierColors = {UI::UIColor(PackedColor32(0xFFFF8000)),     // orange
+                                                       UI::UIColor(PackedColor32(0xFFC27CFF)),     // purple
+                                                       UI::UIColor(PackedColor32(0xFF4FA3FF)),     // blue
+                                                       UI::UIColor(PackedColor32(0xFF5FD35F))};    // green
+
+    constexpr UI::UIColor ToColor(const SampleStatsLevel level, const UI::UIColor normalColor) noexcept
+    {
+      switch (level)
+      {
+      case SampleStatsLevel::Warning:
+        return StatsWarningColor;
+      case SampleStatsLevel::Error:
+        return StatsErrorColor;
+      case SampleStatsLevel::Normal:
+        break;
+      }
+      return normalColor;
+    }
 
     //! The chart of the animation error, in the colors of the report of the mb-framepacing tools
     constexpr UI::UIColor AnimationErrorChartBarColor(PackedColor32(0xFFE5534B));        // red
@@ -253,7 +301,17 @@ namespace Fsl
 
     const auto options = config.GetOptions<OptionParser>();
     // Read before the log is set up, which writes it as a fact
-    m_pacerProfile = options->GetPacerProfile();
+    m_pacerKind = options->GetPacerKind();
+    m_waitingPresentsOption = static_cast<uint32_t>(std::max(options->GetPacerWaitingPresents(), 0));
+    m_readyPlacePercent = static_cast<uint32_t>(std::max(options->GetPacerReadyPlacePercent(), 0));
+    m_kindChangeFrames = static_cast<uint32_t>(std::max(options->GetPacerKindChangeFrames(), 0));
+    m_kindChangeIndex = SamplePacerTierChoiceUtil::FindKindChangeIndex(options->GetPacerKind());
+    m_systemHoldsLoop = options->IsPacerSystemHoldsLoop();
+    m_pacerGpuWait = options->IsPacerGpuWait();
+    m_pacerSystemWaits = options->IsPacerSystemWaits();
+    SetRequestedKind(m_pacerKind);
+    m_cpuSpikeMs = options->GetCpuSpikeMs();
+    m_cpuSpikeIntervalFrames = options->GetCpuSpikeIntervalFrames();
     // Only a app whose present is a swap has a use for it (SamplePresentMethod::SwapInterval), a Vulkan app submits its frame
     m_flushWanted = options->IsGLFlushEnabled() && presentMethod == SamplePresentMethod::SwapInterval;
     m_refreshRateOverrideHz = options->GetPacerRefreshRateHz();
@@ -320,11 +378,11 @@ namespace Fsl
       {
         // Read once: it does not change while the window lives, and the call allocates
         const NativeWindowTimingSupport timingSupport = window->GetTimingSupport();
-        m_explicitSync = SamplePacingTierClassifier::ToExplicitSync(timingSupport);
+        m_explicitSync = SampleExplicitSyncUtil::ToExplicitSync(timingSupport);
         m_vsyncSourceName = timingSupport.VSyncSource;
       }
     }
-    m_detectedRefreshRateHz = ReadDisplayRefreshRateHz();
+    UpdateDetectedRefreshPeriod();
 
     // The service is only available on platforms that support the marker library
     if (m_framePacing)
@@ -345,6 +403,7 @@ namespace Fsl
     // Create a small status panel on the right side (the marker is drawn on the left side)
     const auto uiFactory = UI::Theme::ThemeSelector::CreateControlFactory(*m_uiExtension);
     m_ui.LabelStatus = uiFactory->CreateLabel(m_framePacing ? "Frame pacing marker: enabled" : "Frame pacing is not supported on this platform");
+    m_ui.DefaultFontColor = m_ui.LabelStatus->GetFontColor();
     m_ui.LabelRun = uiFactory->CreateLabel("");
     m_ui.ButtonRun = uiFactory->CreateTextButton(UI::Theme::ButtonType::Contained, "Start run");
     m_ui.ButtonRun->SetAlignmentX(UI::ItemAlignment::Stretch);
@@ -389,29 +448,42 @@ namespace Fsl
     m_ui.LabelRefreshRate = uiFactory->CreateLabel("");
     m_ui.SliderRefreshRate = uiFactory->CreateSliderFmtValue(UI::LayoutOrientation::Horizontal, SampleConfig::RefreshRateHz);
     m_ui.SliderRefreshRate->SetAlignmentX(UI::ItemAlignment::Stretch);
-    m_ui.LabelPacedRate = uiFactory->CreateLabel("");
     const auto lblTargetFps = uiFactory->CreateLabel("Target fps (0 = display rate)");
     m_ui.SliderTargetFps =
       uiFactory->CreateSliderFmtValue(UI::LayoutOrientation::Horizontal, WithValue(SampleConfig::TargetFps, options->GetPacerTargetFps()));
     m_ui.SliderTargetFps->SetAlignmentX(UI::ItemAlignment::Stretch);
     m_ui.SwitchAdaptive = uiFactory->CreateSwitch("Adaptive swap interval", options->IsPacerAdaptive());
+    // The aim of the pacer: it stays disabled until the pacer paces the frames
+    m_ui.SwitchLowLatency = uiFactory->CreateSwitch("Low latency (off: smoothness)", options->GetPacerAim() == SamplePacerAim::LowLatency);
+    m_ui.SwitchLowLatency->SetEnabled(false);
+    // Only for a app whose present takes a time
+    m_ui.SwitchTimedPresent = uiFactory->CreateSwitch("Timed present", options->IsPacerTimedPresent());
+    m_ui.SwitchTimedPresent->SetEnabled(false);
     // Only for an app that measures its presents, so it stays disabled until the pacer is on and the presents are measured
     m_ui.SwitchPacerFeedback = uiFactory->CreateSwitch("Present feedback to the pacer", options->IsPacerPresentFeedback());
     m_ui.SwitchPacerFeedback->SetEnabled(false);
-    // How a frame is held for more than one refresh. A method the system can not do falls back to one it can (GetHoldMethod).
-    const SamplePacerHold hold = options->GetPacerHold();
-    const auto holdGroup = uiFactory->CreateRadioGroup("hold");
-    m_ui.RadioHoldAuto = uiFactory->CreateRadioButton(holdGroup, "Hold: auto", hold == SamplePacerHold::Auto);
-    m_ui.RadioHoldVSync = uiFactory->CreateRadioButton(holdGroup, "Hold: wait on the vsync", hold == SamplePacerHold::VSync);
-    m_ui.RadioHoldWait = uiFactory->CreateRadioButton(holdGroup, "Hold: sleep", hold == SamplePacerHold::Wait);
-    m_ui.RadioHoldSchedule = uiFactory->CreateRadioButton(holdGroup, "Hold: scheduled present", hold == SamplePacerHold::Schedule);
-    m_vsyncPhasePercent = options->GetPacerVSyncPhasePercent();
+    // What the frames can be paced with, one group of radio buttons: the tiers of the pacer library the samples reach
+    // (Doc/FramePacingPlatformSupport.md) with the best first. They start disabled: ShowTiers enables the ones that can be used and
+    // checks the one the run is paced by, once the app has said what it can do.
+    const auto pacerGroup = uiFactory->CreateRadioGroup("pacer");
+    for (std::size_t i = 0; i < m_ui.RadioTiers.size(); ++i)
+    {
+      const SamplePacerTier tier = SamplePacerTierChoiceUtil::Tiers[i];
+      m_ui.RadioTiers[i] = uiFactory->CreateRadioButton(pacerGroup, ToTierLabel(tier), SamplePacerTierChoiceUtil::ToKind(tier) == m_pacerKind);
+      m_ui.RadioTiers[i]->SetFontColorChecked(TierColors[i]);
+      m_ui.RadioTiers[i]->SetFontColorUnchecked(TierColors[i]);
+      m_ui.RadioTiers[i]->SetEnabled(false);
+    }
+    {    // The line of the pacer library for every tier, in the order of the radio buttons
+      std::vector<std::string> descriptions;
+      descriptions.reserve(SamplePacerTierChoiceUtil::Tiers.size());
+      for (const SamplePacerTier tier : SamplePacerTierChoiceUtil::Tiers)
+      {
+        descriptions.emplace_back(SamplePacer::GetTierShortDescription(tier));
+      }
+      m_ui.LabelTierDescription = uiFactory->CreateSelectorLabel(std::move(descriptions), 0u);
+    }
     m_drainRefreshes = options->GetPacerDrainRefreshes();
-    // How well a frame is held for more than one refresh (Doc/FramePacingPlatformSupport.md), see UpdateTier
-    m_ui.LabelTierInUse = uiFactory->CreateLabel("");
-    m_ui.LabelTierBest = uiFactory->CreateLabel("");
-    m_ui.LabelPacerStatus = uiFactory->CreateLabel("");
-    m_ui.LabelPacerFrames = uiFactory->CreateLabel("");
     const auto lblCpuLoad = uiFactory->CreateLabel("CPU load (ms per frame)");
     m_ui.SliderCpuLoad =
       uiFactory->CreateSliderFmtValue(UI::LayoutOrientation::Horizontal, WithValue(SampleConfig::CpuLoadMs, options->GetCpuLoadMs()));
@@ -442,28 +514,27 @@ namespace Fsl
     stackLayout->AddChild(m_keyboardMenu.AddButton(*uiFactory, m_ui.ButtonTimedRun, [this]() { StartTimedRun(); }));
     stackLayout->AddChild(uiFactory->CreateDivider(UI::LayoutOrientation::Horizontal));
     stackLayout->AddChild(m_keyboardMenu.AddToggle(*uiFactory, m_ui.SwitchPacer));
-    stackLayout->AddChild(m_ui.LabelTierInUse);
-    stackLayout->AddChild(m_ui.LabelTierBest);
+    stackLayout->AddChild(uiFactory->CreateDivider(UI::LayoutOrientation::Horizontal));
+    if (SamplePacer::IsSupported())
     {
-      // The two lines above the slider of the refresh rate are its caption
-      const auto refreshRateCaption = std::make_shared<UI::StackLayout>(uiFactory->GetContext());
-      refreshRateCaption->SetOrientation(UI::LayoutOrientation::Vertical);
-      refreshRateCaption->AddChild(m_ui.LabelRefreshRate);
-      refreshRateCaption->AddChild(m_ui.LabelPacedRate);
-      stackLayout->AddChild(m_keyboardMenu.AddSlider(*uiFactory, refreshRateCaption, m_ui.SliderRefreshRate));
+      // Without the pacer library there is no pacer to choose
+      for (const auto& radioButton : m_ui.RadioTiers)
+      {
+        stackLayout->AddChild(m_keyboardMenu.AddToggle(*uiFactory, radioButton));
+      }
+      stackLayout->AddChild(m_ui.LabelTierDescription);
+      stackLayout->AddChild(uiFactory->CreateDivider(UI::LayoutOrientation::Horizontal));
     }
+    stackLayout->AddChild(m_keyboardMenu.AddSlider(*uiFactory, m_ui.LabelRefreshRate, m_ui.SliderRefreshRate));
     stackLayout->AddChild(m_keyboardMenu.AddSlider(*uiFactory, lblTargetFps, m_ui.SliderTargetFps));
     stackLayout->AddChild(m_keyboardMenu.AddToggle(*uiFactory, m_ui.SwitchAdaptive));
+    stackLayout->AddChild(m_keyboardMenu.AddToggle(*uiFactory, m_ui.SwitchLowLatency));
+    stackLayout->AddChild(m_keyboardMenu.AddToggle(*uiFactory, m_ui.SwitchTimedPresent));
     stackLayout->AddChild(m_keyboardMenu.AddToggle(*uiFactory, m_ui.SwitchPacerFeedback));
-    stackLayout->AddChild(m_keyboardMenu.AddToggle(*uiFactory, m_ui.RadioHoldAuto));
-    stackLayout->AddChild(m_keyboardMenu.AddToggle(*uiFactory, m_ui.RadioHoldVSync));
-    stackLayout->AddChild(m_keyboardMenu.AddToggle(*uiFactory, m_ui.RadioHoldWait));
-    stackLayout->AddChild(m_keyboardMenu.AddToggle(*uiFactory, m_ui.RadioHoldSchedule));
-    stackLayout->AddChild(m_ui.LabelPacerStatus);
-    stackLayout->AddChild(m_ui.LabelPacerFrames);
     stackLayout->AddChild(uiFactory->CreateDivider(UI::LayoutOrientation::Horizontal));
     stackLayout->AddChild(m_keyboardMenu.AddSlider(*uiFactory, lblCpuLoad, m_ui.SliderCpuLoad));
     stackLayout->AddChild(m_keyboardMenu.AddSlider(*uiFactory, lblGpuLoad, m_ui.SliderGpuLoad));
+    stackLayout->AddChild(uiFactory->CreateDivider(UI::LayoutOrientation::Horizontal));
     stackLayout->AddChild(m_keyboardMenu.AddToggle(*uiFactory, m_ui.RadioBackgroundMandelbrot));
     stackLayout->AddChild(m_keyboardMenu.AddToggle(*uiFactory, m_ui.RadioBackgroundBlobs));
     stackLayout->AddChild(m_keyboardMenu.AddToggle(*uiFactory, m_ui.RadioBackgroundLace));
@@ -523,7 +594,6 @@ namespace Fsl
     UpdateStatsVisibility();
     UpdateMarkerStats();
     UpdateRefreshRateUI();
-    UpdatePacerStatus();
     UpdatePacerStats();
   }
 
@@ -640,7 +710,6 @@ namespace Fsl
 
     {
       const ScopedTraceZone traceZone(m_trace.get(), m_traceZones.StatsUI);
-      UpdatePacerStatus();
       UpdateStatsVisibility();
       UpdateSyncMarker();
       UpdatePacerStats();
@@ -653,6 +722,7 @@ namespace Fsl
       SampleFrameWorkRecord work;
       while (m_frameWork.TryPop(work))
       {
+        m_frameWorkAverage.Add(work);
         if (m_ui.SwitchWorkChart->IsChecked())
         {
           UI::ChartDataEntry entry;
@@ -661,6 +731,23 @@ namespace Fsl
           entry.Values[WorkChartFrameChannel] = ToChartMicroseconds(work.FrameTime);
           m_workChartData->Append(entry);
         }
+      }
+      const TickCount now = m_timer.GetTimestamp();
+      if (m_frameWorkAverage.Count() > 0u && (now - m_workLegendTime) >= ChartLegendInterval)
+      {
+        // The legend says what the lines are at: the average of the last frames, written a few times a second so it can be read
+        m_workLegendTime = now;
+        const SampleFrameWorkRecord average = m_frameWorkAverage.CalcAverage();
+        SetFormattedContent(*m_ui.LabelWorkFrame, "Frame {:.2f} ms", average.FrameTime.TotalMilliseconds());
+        if (average.GpuTime.Ticks() > 0)
+        {
+          SetFormattedContent(*m_ui.LabelWorkGpu, "GPU {:.2f} ms", average.GpuTime.TotalMilliseconds());
+        }
+        else
+        {
+          m_ui.LabelWorkGpu->SetContent("GPU not measured");
+        }
+        SetFormattedContent(*m_ui.LabelWorkCpu, "CPU {:.2f} ms", average.CpuTime.TotalMilliseconds());
       }
     }
     {
@@ -697,22 +784,6 @@ namespace Fsl
       }
     }
 
-    // Tell the marker what the frame was paced by. Until the frame pacer was used the animation time is the time of the framework,
-    // which the marker reports by itself.
-    if (m_framePacing && (m_pacer || m_animationOffset.Ticks() != 0))
-    {
-      FramePacingFrameSchedule frameSchedule;
-      frameSchedule.AnimationTime = m_animationTime;
-      if (m_pacer)
-      {
-        frameSchedule.CpuStartTime = m_frameStartTime;
-        frameSchedule.IntendedDisplayTime = m_schedule.IntendedDisplayTime;
-        frameSchedule.TargetFrameTime = m_schedule.TargetFrameTime;
-        frameSchedule.PreferredFrameTime = m_schedule.PreferredFrameTime;
-      }
-      m_framePacing->SetFrameSchedule(frameSchedule);
-    }
-
     if (m_ui.SwitchTestPattern->IsChecked())
     {
       // Use the exact time the frame is animated for, this is what the marker reports
@@ -727,6 +798,31 @@ namespace Fsl
     }
 
     m_uiExtension->Draw();
+
+    // Tell the marker what the frame was paced by. Until the frame pacer was used the animation time is the time of the framework,
+    // which the marker reports by itself.
+    if (m_framePacing && (m_pacer || m_animationOffset.TotalNanoseconds() != 0))
+    {
+      // The marker carries nanoseconds: the times of the pacer go to it as the pacer gave them, and the ones that were read on the clock
+      // of the framework are whole ticks of 100ns
+      FramePacingFrameSchedule frameSchedule;
+      frameSchedule.AnimationTime = m_animationTime;
+      if (m_pacer)
+      {
+        frameSchedule.CpuStartTime = NanosecondTickCountUtil::FromTickCount(m_frameStartTime);
+        frameSchedule.IntendedDisplayTime = m_schedule.IntendedDisplayTime;
+        frameSchedule.TargetFrameTime = m_schedule.TargetFrameTime;
+        frameSchedule.PreferredFrameTime = m_schedule.PreferredFrameTime;
+        // The CPU busy time of the marker is the pacer's to count. The marker is drawn after this, so this is the last thing of the
+        // draw: what is left of the frame is the host drawing the marker.
+        const TimeSpan cpuBusy = m_pacer->GetCpuBusyAt(m_timer.GetTimestamp());
+        if (cpuBusy.Ticks() > 0)
+        {
+          frameSchedule.CpuBusyTime = NanosecondTimeSpanUtil::FromTimeSpan(cpuBusy);
+        }
+      }
+      m_framePacing->SetFrameSchedule(frameSchedule);
+    }
   }
 
 
@@ -745,34 +841,99 @@ namespace Fsl
   }
 
 
-  SamplePacerHold FramePacingShared::GetRequestedHold() const
+  SamplePacerCapabilities FramePacingShared::GetPacerCapabilities() const noexcept
   {
-    if (m_ui.RadioHoldAuto->IsChecked())
-    {
-      return SamplePacerHold::Auto;
-    }
-    if (m_ui.RadioHoldVSync->IsChecked())
-    {
-      return SamplePacerHold::VSync;
-    }
-    return m_ui.RadioHoldSchedule->IsChecked() ? SamplePacerHold::Schedule : SamplePacerHold::Wait;
+    SamplePacerCapabilities has;
+    has.PresentSwapIntervalMax = m_presentMethod == SamplePresentMethod::SwapInterval ? m_presentSwapIntervalMax : 0u;
+    has.PresentAfterDuration = m_presentSchedulingSupported;
+    // The vertical blanks of a display that refreshes at a variable rate follow the frames, so there they can not hold one
+    has.VBlankTimes = m_vsyncTime.TotalNanoseconds() > 0 && m_vsyncPeriod.TotalNanoseconds() > 0 && !m_variableRefreshSeen;
+    has.WaitForPresent = m_presentWaitingPresents > 0u;
+    has.DisplayTimes = m_presentTimingSupported;
+    has.WaitForGpuWork = m_gpuWaitSupported;
+    return has;
   }
 
 
-  SamplePacerHold FramePacingShared::GetHoldMethod() const
+  bool FramePacingShared::IsTimedPresentRequested() const
   {
-    const SamplePacerHold requested = GetRequestedHold();
-    if (!m_pacer || requested == SamplePacerHold::Wait)
+    return m_presentSchedulingSupported && m_ui.SwitchTimedPresent->IsChecked();
+  }
+
+
+  void FramePacingShared::SetRequestedKind(const SamplePacerKind kind) noexcept
+  {
+    m_pacerKind = kind;
+  }
+
+
+  void FramePacingShared::ReadTierRadioButtons()
+  {
+    if (!m_shownKind.has_value())
     {
-      return SamplePacerHold::Wait;
+      return;
     }
-    if ((requested == SamplePacerHold::Schedule || requested == SamplePacerHold::Auto) && m_presentSchedulingSupported)
+    // A radio button that is checked and is not the one the sample checked: the user asks for that pacer
+    const SamplePacerKind shownKind = *m_shownKind;
+    for (std::size_t i = 0; i < m_ui.RadioTiers.size(); ++i)
     {
-      return SamplePacerHold::Schedule;
+      const SamplePacerKind kind = SamplePacerTierChoiceUtil::ToKind(SamplePacerTierChoiceUtil::Tiers[i]);
+      if (kind != shownKind && m_ui.RadioTiers[i]->IsChecked())
+      {
+        SetRequestedKind(kind);
+      }
     }
-    // Auto without a present that takes a target time, and what is left of a method the system can not do: the vsync wait, else the sleep.
-    // The vertical blanks of a display that refreshes at a variable rate follow the frames, so there the vsync wait can not hold one.
-    return (m_vsyncTime.Ticks() > 0 && m_vsyncPeriod.Ticks() > 0 && !m_variableRefreshSeen) ? SamplePacerHold::VSync : SamplePacerHold::Wait;
+  }
+
+
+  void FramePacingShared::UpdateTierChoice()
+  {
+    // What a capability is worth is the rule of the pacer library, so each question is put to it
+    const SamplePacerCapabilities has = GetPacerCapabilities();
+
+    // A tier can be used where the app has what its pacer uses: the library rates what a run with that pacer would use
+    for (std::size_t i = 0; i < m_tierOffered.size(); ++i)
+    {
+      const SamplePacerTier tier = SamplePacerTierChoiceUtil::Tiers[i];
+      const SamplePacerKind kind = SamplePacerTierChoiceUtil::ToKind(tier);
+      m_tierOffered[i] = SamplePacer::Rate(SamplePacerTierChoiceUtil::ToUsedCapabilities(has, kind)).Tier == tier;
+    }
+
+    // What the run is to be paced with: the kind that was asked for where the app has what it uses, else the kind of what is left
+    // of it
+    m_selectedKind = SamplePacerTierChoiceUtil::ToKind(SamplePacer::Rate(SamplePacerTierChoiceUtil::ToUsedCapabilities(has, m_pacerKind)).Tier);
+  }
+
+
+  void FramePacingShared::ShowTiers(const SamplePacerKind kind)
+  {
+    // A tier the system can not do is shown as disabled, like every other control that can not be used. The one of the pacer the
+    // run is paced by is never disabled.
+    const bool isSupported = SamplePacer::IsSupported();
+    uint32_t shownIndex = 0;
+    for (std::size_t i = 0; i < m_ui.RadioTiers.size(); ++i)
+    {
+      const SamplePacerKind tierKind = SamplePacerTierChoiceUtil::ToKind(SamplePacerTierChoiceUtil::Tiers[i]);
+      UI::RadioButton& rRadioButton = *m_ui.RadioTiers[i];
+      const bool isEnabled = isSupported && (tierKind == kind || m_tierOffered[i]);
+      if (rRadioButton.IsEnabled() != isEnabled)
+      {
+        rRadioButton.SetEnabled(isEnabled);
+      }
+      if (tierKind == kind)
+      {
+        shownIndex = static_cast<uint32_t>(i);
+        if (!rRadioButton.IsChecked())
+        {
+          rRadioButton.SetIsChecked(true);
+        }
+      }
+    }
+    // What the pacer that is checked does, in a line of the pacer library and in the color of its tier. The time the sample can
+    // give a present (the switch 'Timed present') changes no tier, so it is the same line with it.
+    m_ui.LabelTierDescription->SetSelectedIndex(shownIndex);
+    m_ui.LabelTierDescription->SetFontColor(shownIndex < TierColors.size() ? TierColors[shownIndex] : m_ui.DefaultFontColor);
+    m_shownKind = kind;
   }
 
 
@@ -804,13 +965,15 @@ namespace Fsl
   void FramePacingShared::SetFramePresentId(const uint64_t presentId)
   {
     // The display time is only something the frame pacer aims for, and with present feedback it is not known before a display time arrived
-    const bool hasIntendedDisplayTime = m_pacer && m_schedule.IntendedDisplayTime.Ticks() != 0;
+    const bool hasIntendedDisplayTime = m_pacer && m_schedule.IntendedDisplayTime.TotalNanoseconds() != 0;
     m_presentFeedback.AddFrame(presentId, m_frameStartTime,
-                               hasIntendedDisplayTime ? std::optional<TickCount>(m_schedule.IntendedDisplayTime) : std::nullopt);
+                               hasIntendedDisplayTime ? std::optional<TickCount>(NanosecondTickCountUtil::ToTickCount(m_schedule.IntendedDisplayTime))
+                                                      : std::nullopt);
     if (m_presentFeedbackEnabled)
     {
       // The moment the frame is drawn for, to be held against the time it is shown at
-      m_animationError.AddFrame(presentId, m_animationTime);
+      m_animationError.AddFrame(presentId, NanosecondTimeSpanUtil::ToTimeSpan(m_animationTime), GetTargetFrameTime(),
+                                NanosecondTimeSpanUtil::ToTimeSpan(GetRefreshPeriod()));
     }
 
     {    // So the frame pacer can be told about the frame when its display time arrives, a few frames from now
@@ -818,6 +981,11 @@ namespace Fsl
       rPresentFrame = {};
       rPresentFrame.PresentId = presentId;
       rPresentFrame.PacerFrameId = m_pacer ? m_schedule.FrameId : 0u;
+      if (m_pacer)
+      {
+        // And the other way: a pacer that names a present to wait for does it by the id it gave the frame
+        m_pacerFramePresents[m_schedule.FrameId % m_pacerFramePresents.size()] = {m_schedule.FrameId, presentId};
+      }
       if (m_trace)
       {
         rPresentFrame.LogFrameIndex = m_trace->GetFrameIndex();
@@ -848,56 +1016,234 @@ namespace Fsl
       m_animationError.AddNotShown(presentId);
     }
 
-    // The frame pacer is told when the frame was shown, if it measures the frames by that. A present the presentation engine is done
-    // with and has no display time for is reported as not shown, so the frame pacer does not take the frame to be on time.
-    if (m_pacer && m_pacerConfig.PresentFeedback && !displayTime.has_value() && isComplete)
-    {
-      const PacerPresentFrame& presentFrame = m_pacerPresentFrames[presentId % m_pacerPresentFrames.size()];
-      if (presentFrame.PresentId == presentId && presentFrame.PacerFrameId != 0u)
-      {
-        m_pacer->AddPresentNotShown(presentFrame.PacerFrameId);
-        if (m_trace && presentFrame.HasLogFrame)
-        {
-          m_trace->SetInt64At(presentFrame.LogFrameIndex, m_logColumns.FeedbackReportedNotShown, 1);
-        }
-      }
-    }
+    // The frame pacer is told when the frame was shown, where the run gives it the display times: it counts the animation error
+    // from them. A present without a display time is not reported: no display time is not "never shown".
     if (m_pacer && m_pacerConfig.PresentFeedback && displayTime.has_value())
     {
       const PacerPresentFrame& presentFrame = m_pacerPresentFrames[presentId % m_pacerPresentFrames.size()];
       if (presentFrame.PresentId == presentId && presentFrame.PacerFrameId != 0u)
       {
-        const std::optional<TickCount> presentCallTime =
-          presentFrame.HasPresentCallTime ? std::optional<TickCount>(presentFrame.PresentCallTime) : std::nullopt;
-        m_pacer->AddPresentFeedback(presentFrame.PacerFrameId, displayTime.value(), presentCallTime);
+        m_pacer->AddDisplayTime(presentFrame.PacerFrameId, displayTime.value());
         if (m_trace && presentFrame.HasLogFrame)
         {
           // What the frame pacer was given about the frame
           m_trace->SetValueAt(presentFrame.LogFrameIndex, m_logColumns.FeedbackDisplay, displayTime.value());
-          if (presentCallTime.has_value())
-          {
-            m_trace->SetValueAt(presentFrame.LogFrameIndex, m_logColumns.FeedbackPresent, presentCallTime.value());
-          }
         }
       }
     }
   }
 
 
-  void FramePacingShared::SetPresentCallTime(const uint64_t presentId, const TickCount presentCallTime)
+  void FramePacingShared::AddSystemWait(const SamplePacerSystemWait kind, const TickCount beginTime, const TickCount endTime)
   {
-    PacerPresentFrame& rPresentFrame = m_pacerPresentFrames[presentId % m_pacerPresentFrames.size()];
-    if (rPresentFrame.PresentId == presentId)
+    // The pacer is told before it is told that the frame starts (StartFrame, which takes the start time of the frame after these
+    // waits). A wait that is given when the frame has started would be taken for one of the next frame, so it is left out.
+    if (m_pacer && m_pacerSystemWaits && !m_frameStarted && beginTime.Ticks() != 0 && endTime.Ticks() != 0)
     {
-      rPresentFrame.PresentCallTime = presentCallTime;
-      rPresentFrame.HasPresentCallTime = true;
+      m_pacer->AddSystemWait(kind, beginTime, endTime);
     }
+  }
+
+
+  SamplePresentWaitRequest FramePacingShared::GetPresentWaitRequest()
+  {
+    SamplePresentWaitRequest request;
+    if (m_frameStarted || !IsPacerEnabled())
+    {
+      return request;
+    }
+    PlanFrameStart();
+    const uint64_t pacerFrameId = m_frameStartPlan.WaitForPresentFrameId;
+    if (m_presentWaitRequested || pacerFrameId == 0u)
+    {
+      return request;
+    }
+    m_presentWaitRequested = true;
+    const PacerFramePresent& framePresent = m_pacerFramePresents[pacerFrameId % m_pacerFramePresents.size()];
+    if (framePresent.PacerFrameId == pacerFrameId && framePresent.PresentId != 0u)
+    {
+      request.PresentId = framePresent.PresentId;
+      request.Timeout = m_frameStartPlan.WaitForPresentTimeout;
+    }
+    return request;
+  }
+
+
+  void FramePacingShared::AddPresentWait(const uint64_t presentId, const TickCount beginTime, const TickCount endTime, const bool shown)
+  {
+    const uint64_t pacerFrameId = m_frameStartPlan.WaitForPresentFrameId;
+    if (!IsPacerEnabled() || !m_frameStartPlanned || pacerFrameId == 0u)
+    {
+      return;
+    }
+    const PacerFramePresent& framePresent = m_pacerFramePresents[pacerFrameId % m_pacerFramePresents.size()];
+    if (framePresent.PacerFrameId != pacerFrameId || framePresent.PresentId != presentId)
+    {
+      // Not the present the frame pacer asked for
+      return;
+    }
+    SamplePacerPresentWaitReport report;
+    report.FrameId = pacerFrameId;
+    report.BeginTime = beginTime;
+    report.EndTime = endTime;
+    report.Shown = shown;
+    m_pacer->AddPresentWait(report);
+    // The frame is planned again: the wait can have taken long, and the time to wait until can have moved with what the wait told
+    // the pacer. The present that was waited for is not asked for again.
+    m_frameStartPlan = m_pacer->PlanFrame(m_timer.GetTimestamp());
+  }
+
+
+  SampleGpuWaitRequest FramePacingShared::GetGpuWaitRequest()
+  {
+    SampleGpuWaitRequest request;
+    if (m_frameStarted || !IsPacerEnabled())
+    {
+      return request;
+    }
+    PlanFrameStart();
+    const uint64_t pacerFrameId = m_frameStartPlan.WaitForGpuWorkFrameId;
+    if (m_gpuWaitRequested || pacerFrameId == 0u)
+    {
+      return request;
+    }
+    m_gpuWaitRequested = true;
+    const PacerFramePresent& framePresent = m_pacerFramePresents[pacerFrameId % m_pacerFramePresents.size()];
+    if (framePresent.PacerFrameId == pacerFrameId && framePresent.PresentId != 0u)
+    {
+      request.PresentId = framePresent.PresentId;
+      request.Timeout = m_frameStartPlan.WaitForGpuWorkTimeout;
+    }
+    return request;
+  }
+
+
+  void FramePacingShared::AddGpuWait(const uint64_t presentId, const TickCount beginTime, const TickCount endTime, const bool done)
+  {
+    const uint64_t pacerFrameId = m_frameStartPlan.WaitForGpuWorkFrameId;
+    if (!IsPacerEnabled() || !m_frameStartPlanned || pacerFrameId == 0u)
+    {
+      return;
+    }
+    const PacerFramePresent& framePresent = m_pacerFramePresents[pacerFrameId % m_pacerFramePresents.size()];
+    if (framePresent.PacerFrameId != pacerFrameId || framePresent.PresentId != presentId)
+    {
+      // Not the frame the frame pacer asked for
+      return;
+    }
+    SamplePacerGpuWaitReport report;
+    report.FrameId = pacerFrameId;
+    report.BeginTime = beginTime;
+    report.EndTime = endTime;
+    report.Done = done;
+    m_pacer->AddGpuWait(report);
+    // The frame is planned again, as after a wait for a present. The frame that was waited for is not asked for again.
+    m_frameStartPlan = m_pacer->PlanFrame(m_timer.GetTimestamp());
+  }
+
+
+  void FramePacingShared::AddPresentCall(const uint64_t presentId, const TickCount callTime, const TickCount returnTime, const bool accepted)
+  {
+    if (!IsPacerEnabled() || presentId == 0u || presentId == m_reportedPresentId)
+    {
+      return;
+    }
+    m_reportedPresentId = presentId;
+    const PacerPresentFrame& presentFrame = m_pacerPresentFrames[presentId % m_pacerPresentFrames.size()];
+    if (presentFrame.PresentId == presentId && presentFrame.PacerFrameId != 0u)
+    {
+      ReportPresent(presentFrame.PacerFrameId, callTime, returnTime, accepted);
+    }
+  }
+
+
+  void FramePacingShared::ReportPresent(const uint64_t pacerFrameId, const TickCount callTime, const TickCount returnTime, const bool accepted)
+  {
+    if (pacerFrameId == 0u)
+    {
+      return;
+    }
+    SamplePacerPresentReport report;
+    report.FrameId = pacerFrameId;
+    report.CallTime = callTime;
+    report.ReturnTime = returnTime;
+    report.Accepted = accepted;
+    m_pacer->AddPresent(report);
+  }
+
+
+  void FramePacingShared::OnSwapchainRecreated()
+  {
+    if (!IsPacerEnabled())
+    {
+      return;
+    }
+    // The presents of the swapchain before are gone: none can be waited for, and what queued up below it is not there anymore.
+    // The frame that is about to start is planned again.
+    m_pacer->ForgetPresents();
+    m_frameStartPlanned = false;
+    if (m_trace)
+    {
+      m_trace->AddEvent("pacerForgetPresents", "reason=swapchain");
+    }
+  }
+
+
+  void FramePacingShared::PlanFrameStart()
+  {
+    if (m_frameStartPlanned)
+    {
+      return;
+    }
+    m_frameStartPlanned = true;
+    m_presentWaitRequested = false;
+    m_gpuWaitRequested = false;
+    if (m_presentMethod == SamplePresentMethod::SwapInterval && m_framePacing && m_presentPlan.FrameId != m_reportedPresentFrameId)
+    {
+      // The host presents the frames of the app (a swap), so the frame pacing service is the one that knows when
+      TickCount swapCallTime;
+      TickCount swapReturnTime;
+      if (m_framePacing->TryGetLastSwapTimes(swapCallTime, swapReturnTime))
+      {
+        m_reportedPresentFrameId = m_presentPlan.FrameId;
+        ReportPresent(m_presentPlan.FrameId, swapCallTime, swapReturnTime, true);
+      }
+    }
+    if (m_pacer && IsVBlankKind(m_pacerConfig.Kind) && m_vsyncTime.TotalNanoseconds() > 0 && m_vsyncPeriod.TotalNanoseconds() > 0 &&
+        !m_variableRefreshSeen && m_vsyncTime != m_pacerVBlankTime)
+    {
+      // Where the refreshes of the display are, before the frame is planned. Only a new one is given: a vertical blank the pacer
+      // has tells it nothing, whenever it is read again. It is the one of the display the window is on (NativeWindowVSyncInfo).
+      m_pacerVBlankTime = m_vsyncTime;
+      m_pacer->AddVBlank(m_vsyncTime, m_vsyncPeriod, m_vsyncReadTime);
+    }
+    const TickCount now = m_timer.GetTimestamp();
+    if (m_frameStartWaitTime.Ticks() == 0)
+    {
+      m_frameStartWaitTime = now;
+    }
+    m_frameStartPlan = m_pacer->PlanFrame(now);
   }
 
 
   void FramePacingShared::AddGpuInterval(const uint64_t presentId, const TickCount gpuStartTime, const TickCount gpuEndTime)
   {
     m_presentFeedback.AddGpuInterval(presentId, gpuStartTime, gpuEndTime);
+    if (IsPacerEnabled())
+    {
+      // The pacer is given when the GPU worked on the frame. How long it worked on the same frame can have been given already
+      // (AddGpuTime): the pacer lets a later report for a frame take the place of the first.
+      const PacerPresentFrame& pacerFrame = m_pacerPresentFrames[presentId % m_pacerPresentFrames.size()];
+      if (pacerFrame.PresentId == presentId && pacerFrame.PacerFrameId != 0u)
+      {
+        SamplePacerGpuWorkReport report;
+        report.FrameId = pacerFrame.PacerFrameId;
+        report.BeginTime = gpuStartTime;
+        report.EndTime = gpuEndTime;
+        report.Duration = gpuEndTime - gpuStartTime;
+        m_pacer->AddGpuWork(report);
+      }
+    }
     {
       const PresentFrame& presentFrame = m_presentFrames[presentId % m_presentFrames.size()];
       if (presentFrame.PresentId == presentId && presentFrame.FrameId != 0u)
@@ -919,6 +1265,20 @@ namespace Fsl
 
   void FramePacingShared::AddGpuTime(const uint64_t frameId, const TimeSpan gpuTime, const std::optional<TickCount> gpuEndTime)
   {
+    if (IsPacerEnabled())
+    {
+      // The work of the GPU on a earlier frame, as far as the app has measured it: the pacer puts it together with the work of the
+      // CPU. A app that also knows when the GPU began says so afterwards (AddGpuInterval).
+      const PacerFrame& pacerFrame = m_pacerFrames[frameId % m_pacerFrames.size()];
+      if (frameId != 0u && pacerFrame.FrameId == frameId && pacerFrame.PacerFrameId != 0u)
+      {
+        SamplePacerGpuWorkReport report;
+        report.FrameId = pacerFrame.PacerFrameId;
+        report.EndTime = gpuEndTime;
+        report.Duration = gpuTime;
+        m_pacer->AddGpuWork(report);
+      }
+    }
     m_frameWork.AddGpuTime(frameId, gpuTime, gpuEndTime);
     m_gpuTimeLogFrameIndex.reset();
     if (m_trace)
@@ -1015,7 +1375,8 @@ namespace Fsl
     m_tierFactsReady = true;
     if (m_pacer)
     {
-      m_pacer->EndFrame(now, m_lastCpuTime + m_lastGpuTime);
+      // The work of the CPU ends here, and the frame pacer says how the frame is to be presented
+      m_presentPlan = m_pacer->EndFrame(now);
     }
     if (m_trace)
     {
@@ -1032,192 +1393,33 @@ namespace Fsl
   }
 
 
-  void FramePacingShared::WaitForPresentOnVSync(const uint32_t presentSwapInterval)
-  {
-    // The window system says when the display refreshes, so the present does not have to be a guess. The frame is aimed at the vertical
-    // blank nearest to its start plus its swap interval, and presented during the refresh before the present holds it from. Where in
-    // that refresh is a setting, as only a part of it is safe: on the Windows compositor at 240 Hz a present from 45 to 85 % of the
-    // refresh was shown at the target, a earlier one two refreshes late and a later one a refresh late.
-    const int64_t period = m_vsyncPeriod.Ticks();
-    const int64_t aimedTicks = m_frameStartTime.Ticks() + (period * static_cast<int64_t>(m_schedule.SwapInterval));
-    const int64_t fromVSync = aimedTicks - m_vsyncTime.Ticks();
-    const int64_t refreshes = (fromVSync >= 0 ? (fromVSync + (period / 2)) : (fromVSync - (period / 2))) / period;
-    const TickCount target(m_vsyncTime.Ticks() + (refreshes * period));
-    const TickCount presentTime(target.Ticks() - (period * static_cast<int64_t>(std::max(presentSwapInterval, 1u))) +
-                                ((period * static_cast<int64_t>(m_vsyncPhasePercent)) / 100));
-
-    const TickCount waitStartTime = m_timer.GetTimestamp();
-    WaitUntil(presentTime, m_traceZones.HoldBeforePresent);
-    const TickCount waitEndTime = m_timer.GetTimestamp();
-    m_lastPresentWait = waitEndTime - waitStartTime;
-    // The next frame starts at the vertical blank this one is aimed at, so the frame starts are on the refreshes
-    m_nextFrameStartTime = target;
-    LogPresentWait(waitStartTime, presentTime, waitEndTime);
-    if (m_trace)
-    {
-      m_trace->SetValue(m_logColumns.HoldTarget, target);
-    }
-  }
-
-
-  TickCount FramePacingShared::ToNearestVBlank(const TickCount time) const noexcept
-  {
-    const int64_t period = m_vsyncPeriod.Ticks();
-    const int64_t fromVSync = time.Ticks() - m_vsyncTime.Ticks();
-    const int64_t refreshes = (fromVSync >= 0 ? (fromVSync + (period / 2)) : (fromVSync - (period / 2))) / period;
-    return TickCount(m_vsyncTime.Ticks() + (refreshes * period));
-  }
-
-
-  void FramePacingShared::WaitForPacerTime(const uint32_t presentSwapInterval, const SamplePacerHold holdMethod)
-  {
-    // The present holds the frame for its swap interval, but a present of a swapchain need not make the loop wait for the display. So
-    // the app waits for the time the frame pacer gives for the start of the next frame, on the side of the present the profile says.
-    //
-    // The times are kept one frame time apart, counted from the time the frame before was held to and not from where the loop is
-    // now: the loop takes time to get from a present to the start of the next frame, and that would be added to every frame. A frame
-    // that was more than half a frame time late is where the count starts again, as is the first one.
-    //
-    // With the vsync of the window system the time is put on its refreshes: the start of a frame on a vertical blank, a present at
-    // the place in the refresh the vsync wait presents at. Counted from a time that was on the refreshes the next one is a whole
-    // number of them later, so it does not go back and forth between two refreshes.
-    const TickCount lastPresentDueTime = m_presentDueTime;
-    const TickCount lastFrameStartDueTime = m_frameStartDueTime;
-    m_presentDueTime = {};
-    m_frameStartDueTime = {};
-    const TimeSpan frameTime = m_schedule.NextFrameStartTime - m_frameStartTime;
-    if (m_pacerProfile == SamplePacerProfile::Off || frameTime.Ticks() <= 0)
-    {
-      return;
-    }
-    const bool onVSync = holdMethod == SamplePacerHold::VSync && m_vsyncTime.Ticks() > 0 && m_vsyncPeriod.Ticks() > 0;
-    const int64_t halfFrameTime = frameTime.Ticks() / 2;
-
-    // Once, a while after the first frame that waited: a few refreshes more (SampleConfig::DrainRefreshes). With nothing presented
-    // for these refreshes the display shows the presents that queued up while the swapchain was new, and the frames after it are
-    // not behind them.
-    TimeSpan drainTime;
-    if (m_drainPending && m_drainCountStartTime.Ticks() == 0)
-    {
-      m_drainCountStartTime = m_frameStartTime;
-    }
-    if (m_drainPending && (m_frameStartTime - m_drainCountStartTime) >= LocalConfig::DrainDelay &&
-        (lastPresentDueTime.Ticks() != 0 || lastFrameStartDueTime.Ticks() != 0))
-    {
-      m_drainPending = false;
-      drainTime = TimeSpan((frameTime.Ticks() / static_cast<int64_t>(std::max(m_schedule.SwapInterval, 1u))) * m_drainRefreshes);
-      if (m_trace && m_drainRefreshes > 0)
-      {
-        m_trace->AddEvent("pacerDrain", fmt::format("refreshes={}", m_drainRefreshes));
-      }
-    }
-
-    if (m_pacerProfile == SamplePacerProfile::RenderLate)
-    {
-      const bool isOnCount = lastFrameStartDueTime.Ticks() != 0 && (m_frameStartTime - lastFrameStartDueTime).Ticks() <= halfFrameTime;
-      TickCount dueTime = (isOnCount ? lastFrameStartDueTime : m_frameStartTime) + frameTime + drainTime;
-      if (onVSync)
-      {
-        dueTime = ToNearestVBlank(dueTime);
-      }
-      m_nextFrameStartTime = dueTime;
-      m_frameStartDueTime = dueTime;
-      if (onVSync && m_trace)
-      {
-        m_trace->SetValue(m_logColumns.HoldTarget, dueTime);
-      }
-      return;
-    }
-
-    const bool isOnCount = lastPresentDueTime.Ticks() != 0 && (m_presentTime - lastPresentDueTime).Ticks() <= halfFrameTime;
-    TickCount dueTime = (isOnCount ? lastPresentDueTime : m_frameStartTime) + frameTime + drainTime;
-    if (onVSync)
-    {
-      // The present is made in the refresh before the vertical blank it is aimed at, at the place in it the vsync wait uses
-      const TimeSpan fromVBlank((m_vsyncPeriod.Ticks() * static_cast<int64_t>(m_vsyncPhasePercent)) / 100);
-      const TickCount refreshStart = ToNearestVBlank(dueTime - fromVBlank);
-      dueTime = refreshStart + fromVBlank;
-      if (m_trace)
-      {
-        m_trace->SetValue(m_logColumns.HoldTarget,
-                          refreshStart + TimeSpan(m_vsyncPeriod.Ticks() * static_cast<int64_t>(std::max(presentSwapInterval, 1u))));
-      }
-    }
-    const TickCount waitStartTime = m_timer.GetTimestamp();
-    WaitUntil(dueTime, m_traceZones.HoldBeforePresent);
-    m_presentTime = m_timer.GetTimestamp();
-    m_presentDueTime = dueTime;
-    m_lastPresentWait = m_presentTime - waitStartTime;
-    LogPresentWait(waitStartTime, dueTime, m_presentTime);
-  }
-
-
-  void FramePacingShared::WaitForPresent(const uint32_t presentSwapInterval)
+  void FramePacingShared::WaitForPresent()
   {
     const ScopedTraceZone traceZone(m_trace.get(), m_traceZones.WaitForPresent);
     m_presentRelativeTarget = {};
-    const SamplePacerHold holdMethod = GetHoldMethod();
-    m_sampleHeldFrame = m_pacer != nullptr && m_schedule.SwapInterval > presentSwapInterval;
-    if (m_trace && m_pacer)
+    if (!m_pacer)
     {
-      m_trace->SetInt64(m_logColumns.HoldMethod, ToLogCode(holdMethod));
-    }
-    if (m_pacer && m_schedule.SwapInterval <= presentSwapInterval)
-    {
-      // A frame that is held for more refreshes than the present holds it for is handled by the hold methods below
-      WaitForPacerTime(presentSwapInterval, holdMethod);
-    }
-    else
-    {
-      m_presentDueTime = {};
-      m_frameStartDueTime = {};
-    }
-    if (m_pacer && holdMethod == SamplePacerHold::VSync)
-    {
-      if (m_schedule.SwapInterval > presentSwapInterval)
-      {
-        WaitForPresentOnVSync(presentSwapInterval);
-      }
       return;
     }
-    if (m_pacer && holdMethod == SamplePacerHold::Schedule && m_pacerConfig.RefreshRateHz > 0.0)
+    // The frame pacer says when the frame is presented: the sample waits until the time it is given and computes none
+    if (m_presentPlan.PresentTime.Ticks() != 0)
     {
-      // The presentation engine holds the frame: the present is given a target time and is done right away. The frame is not shown
-      // before the target time has passed since the frame before it was shown, and then at the first refresh. Half a refresh less than
-      // the swap interval makes that the refresh the frame pacer aims for, with room on both sides for a clock that is a little off.
-      const int64_t refreshPeriodTicks = std::llround(static_cast<double>(TimeSpan::TicksPerSecond) / m_pacerConfig.RefreshRateHz);
-      const int64_t swapInterval = std::max(m_schedule.SwapInterval, 1u);
-      m_presentRelativeTarget = TimeSpan((refreshPeriodTicks * swapInterval) - (refreshPeriodTicks / 2));
-      if (m_schedule.SwapInterval > presentSwapInterval)
-      {
-        // The present does not hold the loop for the swap interval, so the next frame starts when this one is aimed to be shown
-        m_nextFrameStartTime = m_schedule.NextFrameStartTime;
-      }
+      const TickCount waitStartTime = m_timer.GetTimestamp();
+      WaitUntil(m_presentPlan.PresentTime, m_traceZones.HoldBeforePresent);
+      const TickCount waitEndTime = m_timer.GetTimestamp();
+      m_lastPresentWait = waitEndTime - waitStartTime;
+      LogPresentWait(waitStartTime, m_presentPlan.PresentTime, waitEndTime);
+    }
+    if (m_presentPlan.MinimumDuration.TotalNanoseconds() > 0)
+    {
+      // The pacer gives the present a time: the frame before this one stays on screen at least that long. It is given next to
+      // the wait above, which the pacer still asks for.
+      m_presentRelativeTarget = NanosecondTimeSpanUtil::ToTimeSpan(m_presentPlan.MinimumDuration);
       if (m_trace)
       {
         m_trace->SetValue(m_logColumns.PresentTarget, m_presentRelativeTarget);
       }
-      return;
     }
-    if (!m_pacer || m_schedule.SwapInterval <= presentSwapInterval)
-    {
-      return;
-    }
-    // A present that waits for vsync shows the frame at the first refresh the present allows. So a frame that is held for more
-    // refreshes than the present can hold it for is presented as late as it can and still be shown at the refresh the frame pacer
-    // aims for (sleep, then present). This is a guess: the pacer has no vsync times, the frame is taken to have started at a refresh.
-    // The time to hold to is the start of the frame plus its swap interval. Without present feedback that is the intended display time,
-    // with it the intended display time is the refresh the frame reaches through the queue of the swapchain, and unknown at first.
-    const TimeSpan refreshPeriod(std::llround(static_cast<double>(TimeSpan::TicksPerSecond) / m_pacerConfig.RefreshRateHz));
-    const TimeSpan presentHoldTime(refreshPeriod.Ticks() * static_cast<int64_t>(std::max(presentSwapInterval, 1u)));
-    const TimeSpan presentMargin = std::min(LocalConfig::MaxPresentMargin, TimeSpan(refreshPeriod.Ticks() / 8));
-    const TickCount waitStartTime = m_timer.GetTimestamp();
-    const TickCount waitTargetTime = (m_schedule.NextFrameStartTime - presentHoldTime) + presentMargin;
-    WaitUntil(waitTargetTime, m_traceZones.HoldBeforePresent);
-    const TickCount waitEndTime = m_timer.GetTimestamp();
-    m_lastPresentWait = waitEndTime - waitStartTime;
-    m_nextFrameStartTime = m_schedule.NextFrameStartTime;
-    LogPresentWait(waitStartTime, waitTargetTime, waitEndTime);
   }
 
 
@@ -1320,17 +1522,63 @@ namespace Fsl
 
   void FramePacingShared::UpdatePacer()
   {
-    const double detectedRefreshRateHz = ReadDisplayRefreshRateHz();
-    if (detectedRefreshRateHz != m_detectedRefreshRateHz)
+    if (UpdateDetectedRefreshPeriod())
     {
-      m_detectedRefreshRateHz = detectedRefreshRateHz;
       UpdateRefreshRateUI();
     }
 
+    ReadTierRadioButtons();
+    if (m_kindChangeFrames > 0u && m_pacer)
+    {
+      // A run that measures what a change of the pacer does: the next pacer of the order, every so many paced frames
+      ++m_kindChangeFrameCount;
+      if (m_kindChangeFrameCount >= m_kindChangeFrames)
+      {
+        m_kindChangeFrameCount = 0;
+        m_kindChangeIndex = (m_kindChangeIndex + 1u) % SamplePacerTierChoiceUtil::KindChangeOrder.size();
+        SetRequestedKind(SamplePacerTierChoiceUtil::KindChangeOrder[m_kindChangeIndex]);
+      }
+    }
+    {    // When the display refreshes according to the window system, read once per frame
+      const auto window = m_window.lock();
+      const NativeWindowVSyncInfo vsyncInfo = window ? window->TryGetVSyncInfo() : NativeWindowVSyncInfo();
+      m_vsyncReadTime = m_timer.GetTimestamp();
+      m_vsyncTime = vsyncInfo.IsValid() ? vsyncInfo.VSyncTime : NanosecondTickCount();
+      m_vsyncPeriod = vsyncInfo.IsValid() ? vsyncInfo.RefreshPeriod : NanosecondTimeSpan();
+
+      // Variable refresh: once it was seen it stays seen for this refresh rate
+      if (m_detectedRefreshRateHz != m_variableRefreshSeenRateHz)
+      {
+        m_variableRefreshSeenRateHz = m_detectedRefreshRateHz;
+        m_variableRefreshSeen = false;
+      }
+      if (m_swapchainRefresh == SampleSwapchainRefresh::Variable || (window && window->TryGetVariableRefreshInfo().IsSeen()))
+      {
+        m_variableRefreshSeen = true;
+      }
+    }
+    UpdateTierChoice();
+
     SamplePacerConfig pacerConfig;
-    pacerConfig.RefreshRateHz = GetRefreshRateHz();
+    pacerConfig.RefreshPeriod = GetRefreshPeriod();
     pacerConfig.TargetFps = static_cast<uint32_t>(std::max(m_ui.SliderTargetFps->GetValue(), 0));
     pacerConfig.Adaptive = m_ui.SwitchAdaptive->IsChecked();
+    // The kind the app has what it takes for right now (UpdateTierChoice). The pacer is told what the app has: the kind is what of
+    // that it uses, and the present that takes a time and the wait for the GPU's work where they were asked for.
+    pacerConfig.Kind = m_selectedKind;
+    pacerConfig.Capabilities = GetPacerCapabilities();
+    pacerConfig.TimedPresent = IsTimedPresentRequested();
+    pacerConfig.GpuWait = m_pacerGpuWait;
+    pacerConfig.ReadyPlacePercent = m_readyPlacePercent;
+    pacerConfig.SwapChainImages = m_swapchainImageCount;
+    pacerConfig.SystemHoldsLoop = m_systemHoldsLoop;
+    pacerConfig.Aim = m_ui.SwitchLowLatency->IsChecked() ? SamplePacerAim::LowLatency : SamplePacerAim::Smoothness;
+    // The presents that may wait: what the command line said, else the presents back the app can wait for with the pacer that waits
+    // for one, else the default of the library
+    pacerConfig.WaitingPresents = m_waitingPresentsOption;
+    pacerConfig.MaxFramesInFlight = std::max(m_maxFramesInFlight, 1u);
+    // The pause after a start is the pacer's to make. The sample only says how long it is to be (--Pacer.Drain).
+    pacerConfig.StartupPauseRefreshes = static_cast<uint32_t>(std::max(m_drainRefreshes, 0));
 
     const bool pacerOn = SamplePacer::IsSupported() && m_ui.SwitchPacer->IsChecked();
     // The settings of the pacer do nothing while it is off, so they can only be changed while it is on
@@ -1342,79 +1590,70 @@ namespace Fsl
     {
       m_ui.SwitchAdaptive->SetEnabled(pacerOn);
     }
+    if (m_ui.SwitchLowLatency->IsEnabled() != pacerOn)
+    {
+      m_ui.SwitchLowLatency->SetEnabled(pacerOn);
+    }
+    // A present that takes a time is the pacer's to use where the app has one
+    const bool timedPresentAvailable = pacerOn && m_presentSchedulingSupported;
+    if (m_ui.SwitchTimedPresent->IsEnabled() != timedPresentAvailable)
+    {
+      m_ui.SwitchTimedPresent->SetEnabled(timedPresentAvailable);
+    }
     // Present feedback needs the display times of the presents, so it is only offered while the app is asked to measure them and only
-    // used while the swapchain does
+    // used while the swapchain does. The pacer counts the animation error from it and paces by none of it.
     const bool feedbackAvailable = pacerOn && IsPresentTimingWanted();
     if (m_ui.SwitchPacerFeedback->IsEnabled() != feedbackAvailable)
     {
       m_ui.SwitchPacerFeedback->SetEnabled(feedbackAvailable);
     }
     pacerConfig.PresentFeedback = feedbackAvailable && m_presentFeedbackEnabled && m_ui.SwitchPacerFeedback->IsChecked();
-    {    // When the display refreshes according to the window system, read once per frame
-      const auto window = m_window.lock();
-      const NativeWindowVSyncInfo vsyncInfo = window ? window->TryGetVSyncInfo() : NativeWindowVSyncInfo();
-      m_vsyncTime = vsyncInfo.IsValid() ? NanosecondTickCountUtil::ToTickCount(vsyncInfo.VSyncTime) : TickCount();
-      m_vsyncPeriod = vsyncInfo.IsValid() ? NanosecondTimeSpanUtil::ToTimeSpan(vsyncInfo.RefreshPeriod) : TimeSpan();
-
-      // Variable refresh: once it was seen it stays seen for this hold selection and this refresh rate
-      const SamplePacerHold requestedHold = GetRequestedHold();
-      if (requestedHold != m_variableRefreshSeenHold || m_detectedRefreshRateHz != m_variableRefreshSeenRateHz)
-      {
-        m_variableRefreshSeenHold = requestedHold;
-        m_variableRefreshSeenRateHz = m_detectedRefreshRateHz;
-        m_variableRefreshSeen = false;
-      }
-      if (m_swapchainRefresh == SampleSwapchainRefresh::Variable || (window && window->TryGetVariableRefreshInfo().IsSeen()))
-      {
-        m_variableRefreshSeen = true;
-      }
-    }
-    {
-      // How a frame is held only matters while the pacer is on and the sample is the one that holds it (with eglSwapInterval the driver
-      // does). A method the system can not do is shown as disabled, like every other control that can not be used. One that is selected
-      // and stops being possible stays selected: the sample falls back (GetHoldMethod) and the overlay says what is used.
-      const bool holdApplies = pacerOn && m_presentMethod == SamplePresentMethod::WaitThenPresent;
-      const bool hasVSyncTime = m_vsyncTime.Ticks() > 0 && m_vsyncPeriod.Ticks() > 0 && !m_variableRefreshSeen;
-      const std::array<std::pair<UI::RadioButton*, bool>, 4> radios = {
-        std::pair<UI::RadioButton*, bool>(m_ui.RadioHoldAuto.get(), holdApplies),
-        std::pair<UI::RadioButton*, bool>(m_ui.RadioHoldVSync.get(), holdApplies && hasVSyncTime),
-        std::pair<UI::RadioButton*, bool>(m_ui.RadioHoldWait.get(), holdApplies),
-        std::pair<UI::RadioButton*, bool>(m_ui.RadioHoldSchedule.get(), holdApplies && m_presentSchedulingSupported)};
-      for (const auto& entry : radios)
-      {
-        if (entry.first->IsEnabled() != entry.second)
-        {
-          entry.first->SetEnabled(entry.second);
-        }
-      }
-    }
 
     if (!pacerOn)
     {
       m_pacer.reset();
-      m_nextFrameStartTime = {};
       m_pacerChanges = {};
       m_pacerPresentFrames = {};
     }
     else if (!m_pacer)
     {
       m_pacer = std::make_unique<SamplePacer>(pacerConfig);
-      // The frames before this one were not paced, so what is queued below the swapchain is to be shown first
-      m_drainPending = true;
-      m_drainCountStartTime = {};
       // A new pacer counts its frames from one again, so what is remembered about the frames of the one before must not reach it
       m_pacerPresentFrames = {};
-      m_nextFrameStartTime = {};
+      m_pacerFramePresents = {};
+      m_pacerFrames = {};
+      m_reportedPresentFrameId = 0;
+      m_frameStartPlanned = false;
+      m_presentPlan = {};
       m_frameStats.Clear();
       m_pacerChanges = {};
+      m_pacerChanges.StartTime = m_timer.GetTimestamp();
+      // And it has not been told where the refreshes of the display are
+      m_pacerVBlankTime = {};
     }
     else if (pacerConfig != m_pacerConfig)
     {
-      // The pacer starts again with the new settings (a empty frame window, the swap interval of the target frame rate)
+      // Another kind, or a app that has something else now, is the same pacer with another set to use: its frames go on and nothing
+      // starts again. With other settings it starts again (a empty frame window, the swap interval of the target frame rate).
+      SamplePacerConfig comparedConfig = pacerConfig;
+      comparedConfig.Kind = m_pacerConfig.Kind;
+      comparedConfig.Capabilities = m_pacerConfig.Capabilities;
+      comparedConfig.TimedPresent = m_pacerConfig.TimedPresent;
+      comparedConfig.GpuWait = m_pacerConfig.GpuWait;
+      // The display times are part of the set the pacer uses
+      comparedConfig.PresentFeedback = m_pacerConfig.PresentFeedback;
+      const bool startsAgain = comparedConfig != m_pacerConfig;
       m_pacer->SetConfig(pacerConfig);
-      m_nextFrameStartTime = {};
-      m_frameStats.Clear();
-      m_pacerChanges = {};
+      m_frameStartPlanned = false;
+      if (startsAgain)
+      {
+        m_frameStats.Clear();
+        m_pacerChanges = {};
+        m_pacerChanges.StartTime = m_timer.GetTimestamp();
+      }
+      // The pacer is told where the refreshes are again: with another refresh period the ones it had are not of this display, and a
+      // pacer that takes up the vertical blank times has none yet
+      m_pacerVBlankTime = {};
     }
     m_pacerConfig = pacerConfig;
   }
@@ -1426,11 +1665,9 @@ namespace Fsl
     {
       return;
     }
-    if (m_frameStartWaitTime.Ticks() == 0)
-    {
-      m_frameStartWaitTime = m_timer.GetTimestamp();
-    }
-    WaitUntil(m_nextFrameStartTime, m_traceZones.WaitForFrameStart);
+    // The frame pacer says what the start of the frame waits for
+    PlanFrameStart();
+    WaitUntil(m_frameStartPlan.StartTime, m_traceZones.WaitForFrameStart);
   }
 
 
@@ -1444,18 +1681,23 @@ namespace Fsl
     ++m_frameId;
     const ScopedTraceZone traceZoneStart(m_trace.get(), m_traceZones.StartFrame);
 
-    // The wait can have been made already (WaitForFrameStart), the frame then waited from there
-    const TickCount frameWaitStartTime = m_frameStartWaitTime.Ticks() != 0 ? m_frameStartWaitTime : m_timer.GetTimestamp();
-    m_frameStartWaitTime = {};
-    // The time the start of the frame is held to (zero: it is not held)
-    m_frameStartLogTargetTime = m_pacer ? m_nextFrameStartTime : TickCount();
     if (m_pacer)
     {
-      // A frame starts when the previous one is shown. A present that was delayed (WaitForPresent) need not wait for the display
-      // (a Vulkan swapchain can have a buffer to spare), so wait for the time the frame pacer aimed the previous frame at.
-      WaitUntil(m_nextFrameStartTime, m_traceZones.WaitForFrameStart);
+      // A app that does not wait before the frame takes anything (WaitForFrameStart) has not asked the frame pacer yet
+      PlanFrameStart();
     }
-    m_nextFrameStartTime = {};
+    // The frame waited from where it was planned first (PlanFrameStart), which can have been before this call (WaitForFrameStart)
+    const TickCount frameWaitStartTime = m_frameStartWaitTime.Ticks() != 0 ? m_frameStartWaitTime : m_timer.GetTimestamp();
+    m_frameStartWaitTime = {};
+    // The time the start of the frame is held to, as the frame pacer gave it (zero: it is not held)
+    const TickCount frameStartHoldTime = m_pacer ? m_frameStartPlan.StartTime : TickCount();
+    m_frameStartLogTargetTime = frameStartHoldTime;
+    if (m_pacer)
+    {
+      // A wait that was made already (WaitForFrameStart) returns at once here
+      WaitUntil(frameStartHoldTime, m_traceZones.WaitForFrameStart);
+    }
+    m_frameStartPlanned = false;
 
     const TickCount frameStartTime = m_timer.GetTimestamp();
     m_frameInterval = m_frameStartTime.Ticks() != 0 ? (frameStartTime - m_frameStartTime) : TimeSpan();
@@ -1463,16 +1705,19 @@ namespace Fsl
     m_frameWork.BeginFrame(m_frameId, frameStartTime);
 
     // The frame that just ended was held for the swap interval of its schedule (one refresh without the pacer)
-    if (m_frameInterval.Ticks() > 0 && m_pacerConfig.RefreshRateHz > 0.0)
+    if (m_frameInterval.Ticks() > 0 && m_pacerConfig.RefreshPeriod.TotalNanoseconds() > 0)
     {
-      const TimeSpan refreshPeriod(std::llround(static_cast<double>(TimeSpan::TicksPerSecond) / m_pacerConfig.RefreshRateHz));
+      const TimeSpan refreshPeriod = NanosecondTimeSpanUtil::ToTimeSpan(m_pacerConfig.RefreshPeriod);
       m_frameStats.AddFrame(frameStartTime, m_frameInterval, refreshPeriod, std::max(m_schedule.SwapInterval, 1u));
     }
 
-    const TimeSpan frameworkTime(m_updateTime.CurrentTickCount.Ticks());
+    // The animation clock counts nanoseconds, as the steps of the pacer are in them: a step that was rounded to a tick of 100ns would
+    // move the animation off the display by the rest of every frame
+    const NanosecondTimeSpan frameworkTime = NanosecondTimeSpanUtil::FromTimeSpan(TimeSpan(m_updateTime.CurrentTickCount.Ticks()));
     if (m_pacer)
     {
       m_schedule = m_pacer->BeginFrame(frameStartTime);
+      m_pacerFrames[m_frameId % m_pacerFrames.size()] = {m_frameId, m_schedule.FrameId};
       if (m_schedule.Change != SamplePacerChange::Unchanged)
       {
         if (m_schedule.Change == SamplePacerChange::Slower)
@@ -1502,7 +1747,9 @@ namespace Fsl
     m_frameStartLogPending = true;
     m_frameStartLogWaitTime = frameWaitStartTime;
 
-    BurnCpu(TimeSpan::FromMilliseconds(static_cast<int64_t>(m_ui.SliderCpuLoad->GetValue())));
+    // The simulated CPU load, and now and then a frame that runs long
+    m_frameCpuSpikeMs = (m_cpuSpikeMs > 0 && (m_frameId % static_cast<uint64_t>(std::max(m_cpuSpikeIntervalFrames, 1))) == 0u) ? m_cpuSpikeMs : 0;
+    BurnCpu(TimeSpan::FromMilliseconds(static_cast<int64_t>(m_ui.SliderCpuLoad->GetValue()) + m_frameCpuSpikeMs));
   }
 
 
@@ -1578,46 +1825,106 @@ namespace Fsl
                                                  "waits of the sample hold to");
     rColumns.FeedbackOn =
       rLog.RegisterValue("pacerFeedbackOn", TraceUnit::Flag,
-                         "1 if the frame pacer is given the display times of the frames: it counts what the display did, it paces the same");
+                         "1 if the frame pacer is given the display times of the frames: it counts the animation error from them, it paces "
+                         "the same");
     rColumns.FeedbackDisplay =
-      rLog.RegisterValue("feedbackDisplayTicks", TraceUnit::Ticks, "The display time of the frame the frame pacer was given as present feedback");
-    rColumns.FeedbackPresent =
-      rLog.RegisterValue("feedbackPresentTicks", TraceUnit::Ticks, "The present time of the frame the frame pacer was given with its display time");
-    rColumns.FeedbackReportedNotShown =
-      rLog.RegisterValue("feedbackNotShown", TraceUnit::Flag,
-                         "1 if the frame was reported to the frame pacer as not shown: the presentation engine was done with its present "
-                         "and had no display time for it");
-    rColumns.FeedbackUsed =
-      rLog.RegisterValue("pacerFeedbackUsed", TraceUnit::Count, "The display times the frame pacer counted from, counted since the pacer was made");
-    rColumns.FeedbackRefused =
-      rLog.RegisterValue("pacerFeedbackRefused", TraceUnit::Count,
-                         "The display times the frame pacer refused, counted since the pacer was made: too old, before the present of "
-                         "their frame or not a whole number of refreshes after the one before");
-    rColumns.FeedbackNotShown = rLog.RegisterValue(
-      "pacerFeedbackNotShown", TraceUnit::Count, "The frames that were reported to the frame pacer as never shown, counted since the pacer was made");
-    rColumns.HoldMethod = rLog.RegisterValue("holdMethod", TraceUnit::Code,
-                                             "How the frame is held for more than one refresh: 0 the sample sleeps on a timer, 1 it waits on "
-                                             "the vsync of the window system, 3 the present has a target time");
-    rColumns.HoldTarget =
-      rLog.RegisterValue("holdTargetTicks", TraceUnit::Ticks, "The vertical blank the frame was aimed at when it was held by waiting on the vsync");
+      rLog.RegisterValue("feedbackDisplayTicks", TraceUnit::Ticks, "The display time of the frame the frame pacer was given as a display report");
+    rColumns.DisplayReports = rLog.RegisterValue("pacerDisplayReports", TraceUnit::Count,
+                                                 "With pacerFeedbackOn: the display times the pacer took as display "
+                                                 "reports, counted since the pacer was made. It counts the animation error from them "
+                                                 "and paces by none of it");
+    rColumns.DisplayRefused = rLog.RegisterValue("pacerDisplayRefused", TraceUnit::Count,
+                                                 "The display times the pacer did not take: for a frame it does not keep (more than 64 "
+                                                 "frames old) or not newer than the one before");
+    rColumns.DisplayJudgedFrames =
+      rLog.RegisterValue("pacerDisplayJudgedFrames", TraceUnit::Count,
+                         "The frames the pacer judged from the display reports: the frame and the frame before it both have a display time");
+    rColumns.DisplayErrorFrames = rLog.RegisterValue("pacerDisplayErrorFrames", TraceUnit::Count,
+                                                     "The judged frames with a animation error of more than a millisecond: their animation "
+                                                     "time step less the time between the two display times");
+    rColumns.DisplayOffTargetFrames = rLog.RegisterValue("pacerDisplayOffTargetFrames", TraceUnit::Count,
+                                                         "The judged frames shown half a refresh or more off where their animation time "
+                                                         "step put them: at another refresh");
+    rColumns.DisplayStartToDisplayFrames =
+      rLog.RegisterValue("pacerDisplayStartToDisplayFrames", TraceUnit::Count,
+                         "The frames whose time from their start to their display the pacer counted, since the pacer was made");
+    rColumns.DisplayStartToDisplayTotal =
+      rLog.RegisterValue("pacerDisplayStartToDisplayTotalNs", TraceUnit::Nanoseconds, "The sum of those times from a frame's start to its display");
+    rColumns.DisplayStartToDisplayLongest =
+      rLog.RegisterValue("pacerDisplayStartToDisplayLongestNs", TraceUnit::Nanoseconds, "The longest of those times");
+    rColumns.DisplayLateFrames = rLog.RegisterValue("pacerDisplayLateFrames", TraceUnit::Count,
+                                                    "Of those, the frames shown later: the frame before them was on screen a refresh or "
+                                                    "more longer than it was made for");
     rColumns.PresentTarget = rLog.RegisterValue("presentTargetTicks", TraceUnit::DurationTicks,
                                                 "The target time the sample asked for: the frame is not to be shown before this long after "
                                                 "the frame before it was shown");
-    rColumns.FeedbackMissing =
-      rLog.RegisterValue("pacerFeedbackMissing", TraceUnit::Count,
-                         "The frames the frame pacer was given nothing about, counted since the pacer was made: feedback for a newer "
-                         "frame came first, or the frame got too old");
-    rColumns.FeedbackLateRefreshes =
-      rLog.RegisterValue("pacerFeedbackLateRefreshes", TraceUnit::Count,
-                         "The refreshes the display fell behind the swap intervals of the frames by its display times, counted since the "
-                         "pacer was made: the count of the display to hold against the late frames of the frame pacer");
+    rColumns.CpuSpike = rLog.RegisterValue("cpuSpikeMs", TraceUnit::Count,
+                                           "The milliseconds the frame was busy on top of the CPU load: a frame that runs long now and "
+                                           "then (--CpuSpike), zero in the frames between");
+    rColumns.PacerKind = rLog.RegisterValue("pacerKind", TraceUnit::Code,
+                                            "What the pacer of the library paced the frame with: 1 a timer and the refresh period, 2 a "
+                                            "timer with a wait for a present, 3 the vertical blank times and the refresh period, 4 the "
+                                            "vertical blank times with a wait for a present. The pacer gives the times the sample "
+                                            "waits until");
+    rColumns.RefreshesBehindClock = rLog.RegisterValue("pacerRefreshesBehindClock", TraceUnit::Count,
+                                                       "The refreshes that were lost and that the animation time was not moved over, counted since "
+                                                       "the pacer was made, as it was when the frame started");
+    rColumns.GpuWaitTimeouts = rLog.RegisterValue("pacerGpuWaitTimeouts", TraceUnit::Count,
+                                                  "With --Pacer.GpuWait: the waits for the GPU's work on a frame that ended without the GPU done "
+                                                  "with it, counted since the pacer was made");
+    rColumns.PresentWaitTimeouts =
+      rLog.RegisterValue("pacerPresentWaitTimeouts", TraceUnit::Count,
+                         "pacerKind 2 and 4: the waits for a present that ended without the present being shown, counted since the pacer was "
+                         "made");
+    rColumns.PresentWaitsStopped =
+      rLog.RegisterValue("pacerPresentWaitsStopped", TraceUnit::Flag,
+                         "pacerKind 2 and 4: 1 while the pacer does not wait for presents because its waits ran out (a window that is not shown): it "
+                         "paces on its timer and only asks if a present was shown");
+    rColumns.PacerGpuTime = rLog.RegisterValue("pacerGpuTimeTicks", TraceUnit::DurationTicks,
+                                               "The GPU time the pacer judges a frame with, as it was when the "
+                                               "frame started: the newest it was given (the sample gives it the GPU work of every "
+                                               "frame it has measured, with the times where it has them)");
+    rColumns.StartupPauses = rLog.RegisterValue("pacerStartupPauses", TraceUnit::Count,
+                                                "pacerKind 1 and 3: the pauses the pacer made after a start (half a second after its "
+                                                "first frame, and again after a new swapchain), counted since the pacer was made");
+    rColumns.VBlankReading = rLog.RegisterValue("pacerVBlankReading", TraceUnit::Flag,
+                                                "pacerKind 3 and 4: 1 once the pacer was given a vertical blank of the display it is on. Before "
+                                                "that it paces on its clock");
+    rColumns.VBlankJumps = rLog.RegisterValue("pacerVBlankJumps", TraceUnit::Count,
+                                              "pacerKind 3 and 4: the vertical blanks the pacer was given that were more than a eighth of a "
+                                              "refresh off where the ones before put them, counted since the pacer was made");
+    rColumns.ShownLaterByWaits = rLog.RegisterValue("pacerShownLaterByWaits", TraceUnit::Count,
+                                                    "pacerKind 4: the refreshes a wait for a present said a frame was shown later than the "
+                                                    "pacer had worked out, counted since the pacer was made");
+    rColumns.ReadyPlace = rLog.RegisterValue("pacerReadyPlaceTicks", TraceUnit::DurationTicks,
+                                             "pacerKind 4: where in a refresh the pacer has a frame ready now, as the time after the "
+                                             "vertical blank before it. It starts at --Pacer.ReadyPlace and the pacer moves it earlier "
+                                             "when frames that were ready there are shown a vertical blank late");
+    rColumns.ReadyPlaceTries = rLog.RegisterValue("pacerReadyPlaceTries", TraceUnit::Count,
+                                                  "pacerKind 4: the times the pacer tried that place one step later again, counted since "
+                                                  "the pacer was made");
+    rColumns.ReadyPlaceTriesTakenBack =
+      rLog.RegisterValue("pacerReadyPlaceTriesTakenBack", TraceUnit::Count,
+                         "pacerKind 4: the tries it took back, because a frame was shown later in the frames after one");
+    rColumns.SystemHeldFrames = rLog.RegisterValue("pacerSystemHeldFrames", TraceUnit::Count,
+                                                   "pacerKind 1 and 2: the frames whose start the side of the display held (a acquire, a present "
+                                                   "that waited: for a eighth of a refresh or more), counted since the pacer was made");
+    rColumns.FrameSlotHeldFrames = rLog.RegisterValue("pacerFrameSlotHeldFrames", TraceUnit::Count,
+                                                      "pacerKind 1 and 2: the frames whose start a wait for a frame slot held for a eighth of a "
+                                                      "refresh or more (the GPU was not done with a earlier frame), counted since the pacer "
+                                                      "was made");
+    rColumns.DisplayHeldRefreshes =
+      rLog.RegisterValue("pacerDisplayHeldRefreshes", TraceUnit::Count,
+                         "pacerKind 3 and 4: the refreshes frame starts were late by while the side of the display held the loop (a "
+                         "acquire, a present that waited, a wait for a frame slot or for the GPU's work while the GPU did no work), which "
+                         "the animation time does not step over, counted since the pacer was made");
     rColumns.AnimationError = rLog.RegisterValue(
       "animationErrorTicks", TraceUnit::DurationTicks,
       "The animation error of the frame by the display times the system reports: how far the animation moved from the frame presented "
       "before it, less how long after that frame it was shown. Negative: shown too late. Empty unless both frames have a display time");
     rLog.SetFact("sample.presentMethod", m_presentMethod == SamplePresentMethod::WaitThenPresent ? "WaitThenPresent" : "SwapInterval");
-    rLog.SetFact("sample.pacerProfile",
-                 m_pacerProfile == SamplePacerProfile::RenderLate ? "late" : (m_pacerProfile == SamplePacerProfile::RenderEarly ? "early" : "off"));
+    rLog.SetFact("sample.pacerKind", ToString(m_pacerKind));
+    rLog.SetFact("sample.pacerKindChangeFrames", fmt::format("{}", m_kindChangeFrames));
     rLog.SetFact("sample.pacerSupported", SamplePacer::IsSupported() ? "1" : "0");
     // What a frame started with is in the row of that frame. A log without this fact has it in the row of the frame before when the
     // frame starts in the update (SamplePresentMethod::SwapInterval).
@@ -1635,17 +1942,25 @@ namespace Fsl
     ITraceService& rLog = *m_trace;
     const LogColumns& columns = m_logColumns;
     const bool pacerOn = m_pacer != nullptr;
-    const SamplePacerHold requestedHold = GetRequestedHold();
-    if (!m_hasLoggedPacerConfig || pacerOn != m_loggedPacerOn || m_pacerConfig != m_loggedPacerConfig || requestedHold != m_loggedHold)
+    if (!m_hasLoggedPacerConfig || pacerOn != m_loggedPacerOn || m_pacerConfig != m_loggedPacerConfig)
     {
       // The settings the frames from here on are paced with
       m_hasLoggedPacerConfig = true;
       m_loggedPacerOn = pacerOn;
       m_loggedPacerConfig = m_pacerConfig;
-      m_loggedHold = requestedHold;
-      rLog.AddEvent("pacerConfig", fmt::format("on={};refreshRateHz={};targetFps={};adaptive={};presentFeedback={};hold={};vsyncPhasePercent={}",
-                                               pacerOn ? 1 : 0, m_pacerConfig.RefreshRateHz, m_pacerConfig.TargetFps, m_pacerConfig.Adaptive ? 1 : 0,
-                                               m_pacerConfig.PresentFeedback ? 1 : 0, ToString(requestedHold), m_vsyncPhasePercent));
+      rLog.AddEvent("pacerConfig",
+                    fmt::format("on={};refreshRateHz={};targetFps={};adaptive={};presentFeedback={};kind={};waitingPresents={};"
+                                "framesInFlight={};startupPauseRefreshes={};aim={};refreshPeriodNs={};readyPlacePercent={};swapChainImages={};"
+                                "systemHoldsLoop={};timedPresent={};gpuWait={};systemWaits={}",
+                                pacerOn ? 1 : 0, NanosecondTimeSpanUtil::ToFrequencyHz(m_pacerConfig.RefreshPeriod), m_pacerConfig.TargetFps,
+                                m_pacerConfig.Adaptive ? 1 : 0, m_pacerConfig.PresentFeedback ? 1 : 0, ToString(m_pacerConfig.Kind),
+                                m_pacerConfig.WaitingPresents, m_pacerConfig.MaxFramesInFlight,
+                                m_pacerConfig.Kind == SamplePacerKind::TimerPeriodOnly || m_pacerConfig.Kind == SamplePacerKind::VBlankPeriodOnly
+                                  ? m_pacerConfig.StartupPauseRefreshes
+                                  : 0u,
+                                ToString(m_pacerConfig.Aim), m_pacerConfig.RefreshPeriod.TotalNanoseconds(), m_pacerConfig.ReadyPlacePercent,
+                                m_pacerConfig.SwapChainImages, m_pacerConfig.SystemHoldsLoop ? 1 : 0, m_pacerConfig.TimedPresent ? 1 : 0,
+                                m_pacerConfig.GpuWait ? 1 : 0, m_pacerSystemWaits ? 1 : 0));
     }
 
     {
@@ -1662,7 +1977,8 @@ namespace Fsl
 
     if (m_variableRefreshSeen != m_loggedVariableRefreshSeen)
     {
-      // From here on the vsync wait is not used (or can be used again), see the holdMethod column for what the frames were held with
+      // From here on the pacer is not given the vertical blank times (or is given them again): they follow the frames on a display
+      // that refreshes at a variable rate
       m_loggedVariableRefreshSeen = m_variableRefreshSeen;
       rLog.AddEvent("holdVariableRefresh", fmt::format("seen={}", m_variableRefreshSeen ? 1 : 0));
     }
@@ -1675,6 +1991,7 @@ namespace Fsl
     }
     rLog.SetValue(columns.FrameStart, m_frameStartTime);
     rLog.SetInt64(columns.CpuLoad, m_ui.SliderCpuLoad->GetValue());
+    rLog.SetInt64(columns.CpuSpike, m_frameCpuSpikeMs);
     rLog.SetInt64(columns.GpuLoad, m_ui.SliderGpuLoad->GetValue());
     if (pacerOn)
     {
@@ -1692,26 +2009,91 @@ namespace Fsl
       rLog.SetValue(columns.WindowFull, status.WindowFull);
       rLog.SetUInt64(columns.PacerFrameId, m_schedule.FrameId);
       rLog.SetValue(columns.NextFrameStart, m_schedule.NextFrameStartTime);
+      rLog.SetInt64(columns.PacerKind, ToLogCode(m_pacerConfig.Kind));
+      rLog.SetUInt64(columns.RefreshesBehindClock, m_pacer->GetRefreshesBehindClock());
+      rLog.SetValue(columns.PacerGpuTime, m_pacer->GetGpuTime());
+      if (m_pacerConfig.Kind == SamplePacerKind::TimerPeriodOnly || m_pacerConfig.Kind == SamplePacerKind::VBlankPeriodOnly)
+      {
+        rLog.SetUInt64(columns.StartupPauses, m_pacer->GetStartupPauses());
+      }
+      if (m_pacerConfig.Kind == SamplePacerKind::TimerPeriodOnly || m_pacerConfig.Kind == SamplePacerKind::TimerWaitForPresent)
+      {
+        // The pacer takes the waits of the app where it paces on its clock
+        rLog.SetUInt64(columns.SystemHeldFrames, m_pacer->GetSystemHeldFrames());
+        rLog.SetUInt64(columns.FrameSlotHeldFrames, m_pacer->GetFrameSlotHeldFrames());
+      }
+      if (IsVBlankKind(m_pacerConfig.Kind))
+      {
+        rLog.SetUInt64(columns.DisplayHeldRefreshes, m_pacer->GetDisplayHeldRefreshes());
+        rLog.SetInt64(columns.VBlankReading, m_pacer->HasVBlankReading() ? 1 : 0);
+        rLog.SetUInt64(columns.VBlankJumps, m_pacer->GetVBlankJumps());
+      }
+      if (m_pacerConfig.Kind == SamplePacerKind::VBlankWaitForPresent)
+      {
+        rLog.SetUInt64(columns.ShownLaterByWaits, m_pacer->GetShownLaterByWaits());
+        rLog.SetValue(columns.ReadyPlace, m_pacer->GetReadyPlaceNow());
+        rLog.SetUInt64(columns.ReadyPlaceTries, m_pacer->GetReadyPlaceTries());
+        rLog.SetUInt64(columns.ReadyPlaceTriesTakenBack, m_pacer->GetReadyPlaceTriesTakenBack());
+      }
+      if (m_pacerConfig.GpuWait)
+      {
+        rLog.SetUInt64(columns.GpuWaitTimeouts, m_pacer->GetGpuWaitTimeouts());
+      }
+      if (IsPresentWaitKind(m_pacerConfig.Kind))
+      {
+        rLog.SetUInt64(columns.PresentWaitTimeouts, m_pacer->GetPresentWaitTimeouts());
+        rLog.SetInt64(columns.PresentWaitsStopped, m_pacer->IsPresentWaitStopped() ? 1 : 0);
+      }
       rLog.SetValue(columns.FeedbackOn, m_pacerConfig.PresentFeedback);
       if (m_pacerConfig.PresentFeedback)
       {
-        // What became of the feedback the frame pacer had when it planned this frame
-        const SamplePacerFeedbackState feedbackState = m_pacer->GetFeedbackState();
-        rLog.SetUInt64(columns.FeedbackUsed, feedbackState.Used);
-        rLog.SetUInt64(columns.FeedbackRefused, feedbackState.Refused);
-        rLog.SetUInt64(columns.FeedbackNotShown, feedbackState.NotShown);
-        rLog.SetUInt64(columns.FeedbackMissing, feedbackState.Missing);
-        rLog.SetUInt64(columns.FeedbackLateRefreshes, feedbackState.LateRefreshes);
+        // What the display reports the pacer had when it planned this frame say of the frames before it
+        const SamplePacerDisplayErrors displayErrors = m_pacer->GetDisplayErrors();
+        rLog.SetUInt64(columns.DisplayReports, displayErrors.Reports);
+        rLog.SetUInt64(columns.DisplayRefused, displayErrors.Refused);
+        rLog.SetUInt64(columns.DisplayJudgedFrames, displayErrors.JudgedFrames);
+        rLog.SetUInt64(columns.DisplayErrorFrames, displayErrors.ErrorFrames);
+        rLog.SetUInt64(columns.DisplayOffTargetFrames, displayErrors.OffTargetFrames);
+        rLog.SetUInt64(columns.DisplayLateFrames, displayErrors.LateFrames);
+        rLog.SetUInt64(columns.DisplayStartToDisplayFrames, displayErrors.StartToDisplayFrames);
+        rLog.SetValue(columns.DisplayStartToDisplayTotal, displayErrors.StartToDisplayTotal);
+        rLog.SetValue(columns.DisplayStartToDisplayLongest, displayErrors.StartToDisplayLongest);
       }
     }
   }
 
 
-  double FramePacingShared::ReadDisplayRefreshRateHz() const
+  NanosecondTimeSpan FramePacingShared::ReadDisplayRefreshPeriod() const
   {
     const auto window = m_window.lock();
     // This is cheap as the window caches it
-    return window ? window->TryGetDisplayInfo().RefreshRateHz() : 0.0;
+    return window ? window->TryGetDisplayInfo().RefreshInterval : NanosecondTimeSpan();
+  }
+
+
+  bool FramePacingShared::UpdateDetectedRefreshPeriod()
+  {
+    const NanosecondTimeSpan detectedRefreshPeriod = ReadDisplayRefreshPeriod();
+    if (detectedRefreshPeriod == m_detectedRefreshPeriod)
+    {
+      return false;
+    }
+    m_detectedRefreshPeriod = detectedRefreshPeriod;
+    m_detectedRefreshRateHz = NanosecondTimeSpanUtil::ToFrequencyHz(detectedRefreshPeriod);
+    return true;
+  }
+
+
+  NanosecondTimeSpan FramePacingShared::GetRefreshPeriod() const
+  {
+    if (!m_refreshRateOverrideHz.has_value() && m_detectedRefreshPeriod.TotalNanoseconds() > 0)
+    {
+      // The period of the window system as it is: it does not go through a rate
+      return m_detectedRefreshPeriod;
+    }
+    const double refreshRateHz = GetRefreshRateHz();
+    return refreshRateHz > 0.0 ? NanosecondTimeSpan(std::llround(static_cast<double>(NanosecondTimeSpan::NanosecondsPerSecond) / refreshRateHz))
+                               : NanosecondTimeSpan();
   }
 
 
@@ -1735,10 +2117,10 @@ namespace Fsl
       m_ui.LabelRefreshRate->SetContent("Refresh rate: unknown, set it (Hz)");
       return;
     }
+    // The rate that is used and where it is from are in the frame pacing overlay
     const double refreshRateHz = GetRefreshRateHz();
     m_ui.SliderRefreshRate->SetValue(static_cast<int32_t>(std::lround(refreshRateHz)));
-    SetFormattedContent(*m_ui.LabelRefreshRate, "Refresh rate: {:.2f} Hz ({})", refreshRateHz,
-                        m_refreshRateOverrideHz.has_value() ? "command line" : "display");
+    m_ui.LabelRefreshRate->SetContent("Refresh rate (Hz)");
   }
 
 
@@ -1748,79 +2130,61 @@ namespace Fsl
     {
       return;
     }
-    SamplePacingTierFacts facts;
-    facts.PresentHasSwapInterval = m_presentMethod == SamplePresentMethod::SwapInterval;
-    facts.PresentSwapIntervalMax = m_presentSwapIntervalMax;
-    facts.PacerOn = m_pacer != nullptr;
-    facts.SampleHeldFrame = m_sampleHeldFrame;
-    facts.HoldMethod = GetHoldMethod();
-    facts.PresentSchedulingSupported = m_presentSchedulingSupported;
-    facts.HasVSyncTime = m_vsyncTime.Ticks() > 0 && m_vsyncPeriod.Ticks() > 0 && !m_variableRefreshSeen;
-    facts.ExplicitSync = m_explicitSync;
-    // It is set again by the next frame the sample holds itself
-    m_sampleHeldFrame = false;
+    // The tiers are the pacer library's, and so is the rule that gives a tier: the sample only says what the app has and what the
+    // run uses, as capabilities, and the library rates them.
+    TierState state;
+    // The best here: everything this app can do on this system right now
+    state.Best = SamplePacer::Rate(GetPacerCapabilities());
+    if (m_pacer)
+    {
+      // The pacer says which tier paces the frame now
+      state.InUse = m_pacer->GetTier();
+    }
 
-    const SamplePacingTierInfo info = SamplePacingTierClassifier::Classify(facts);
-    if (m_tierKnown && info == m_tierInfo)
+    // The radio buttons say the pacer the run is paced by, and the one it will be paced by while the frame pacer is off
+    ShowTiers(m_pacer ? m_pacerConfig.Kind : m_selectedKind);
+
+    if (m_tierKnown && state == m_tierState)
     {
       return;
     }
-    // From here on: only when the tier changed (the pacer was switched, another hold method, the system lost or got a vsync time)
+    // From here on: only when it changed (the pacer was switched, another pacer, the system lost or got a vsync time)
     m_tierKnown = true;
-    m_tierInfo = info;
+    m_tierState = state;
 
-    const int32_t inUse = SamplePacingTierClassifier::ToNumber(info.InUse);
-    const int32_t best = SamplePacingTierClassifier::ToNumber(info.Best);
-    const std::string_view inUseReason = SamplePacingTierClassifier::ToDisplayString(info.InUseReason);
-    const std::string_view bestReason = SamplePacingTierClassifier::ToDisplayString(info.BestReason);
-    // Two numbers: what the run uses for pacing now, and the best this system can do
-    SetFormattedContent(*m_ui.LabelTierInUse, "In use: tier {} of {}, {}", inUse, SamplePacingTierClassifier::TierCount, inUseReason);
-    SetFormattedContent(*m_ui.LabelTierBest, "Best here: tier {} of {}, {}", best, SamplePacingTierClassifier::TierCount, bestReason);
-
-    const std::string_view inUseLogReason = SamplePacingTierClassifier::ToLogString(info.InUseReason);
-    const std::string_view bestLogReason = SamplePacingTierClassifier::ToLogString(info.BestReason);
+    // The tier as the pacer library writes it: its major tier and its sub tier ("3.1")
+    const std::string_view best = SamplePacer::GetTierNumber(state.Best.Tier, state.Best.TimedPresent);
+    const std::string_view bestName = SamplePacer::GetTierLogName(state.Best.Tier, state.Best.TimedPresent);
+    // "0" and "pacerOff": the pacer is off, so the run is in no tier. The pacer in use is one where the loop places the frame: the
+    // sample has no present at a time.
+    const std::string_view tier = state.InUse.has_value() ? SamplePacer::GetTierNumber(*state.InUse) : std::string_view("0");
+    const std::string_view tierName = state.InUse.has_value() ? SamplePacer::GetTierLogName(*state.InUse) : std::string_view("pacerOff");
+    const int32_t displaySideHolds = state.Best.DisplaySideHolds ? 1 : 0;
     if (m_trace)
     {
-      // A event and not a fact: the tier of a run can change, and its first value can be one from before the window system had a
+      // A event and not a fact: the tier of a run can change, and its first value can be from before the window system had a
       // vsync time
-      m_trace->AddEvent("tier", fmt::format("inUse={};reason={};best={};bestReason={}", inUse, inUseLogReason, best, bestLogReason));
-      FSLLOG3_INFO("FramePacing: tier in use {} ({}), best here {} ({}), vsync source '{}'", inUse, inUseLogReason, best, bestLogReason,
-                   m_vsyncSourceName);
+      m_trace->AddEvent("tier",
+                        fmt::format("tier={};tierName={};best={};bestName={};displaySideHolds={}", tier, tierName, best, bestName, displaySideHolds));
+      FSLLOG3_INFO("FramePacing: tier in use: {} ({}); best here: {} ({}); the display side holds: {}; vsync source '{}'", tier, tierName, best,
+                   bestName, displaySideHolds, m_vsyncSourceName);
     }
     else
     {
-      FSLLOG3_VERBOSE("FramePacing: tier in use {} ({}), best here {} ({}), vsync source '{}'", inUse, inUseLogReason, best, bestLogReason,
-                      m_vsyncSourceName);
+      FSLLOG3_VERBOSE("FramePacing: tier in use: {} ({}); best here: {} ({}); the display side holds: {}; vsync source '{}'", tier, tierName, best,
+                      bestName, displaySideHolds, m_vsyncSourceName);
     }
   }
 
 
-  void FramePacingShared::UpdatePacerStatus()
+  TimeSpan FramePacingShared::GetTargetFrameTime() const noexcept
   {
-    // The swap interval, the rate it gives and the frames are shown with the frame pacer off as well: every frame is then held for
-    // one refresh and the sample counts the late frames itself
-    uint32_t swapInterval = 1;
-    uint32_t frames = m_frameStats.FrameCount();
-    uint32_t lateFrames = m_frameStats.LateFrameCount();
-    if (m_pacer)
+    if (m_pacer && m_schedule.TargetFrameTime.TotalNanoseconds() > 0)
     {
-      const SamplePacerStatus status = m_pacer->GetStatus();
-      swapInterval = std::max(status.SwapInterval, 1u);
-      frames = status.Frames;
-      lateFrames = status.LateFrames;
+      return NanosecondTimeSpanUtil::ToTimeSpan(m_schedule.TargetFrameTime);
     }
-
-    SetFormattedContent(*m_ui.LabelPacedRate, "Paced rate: {:.2f} Hz", m_pacerConfig.RefreshRateHz / static_cast<double>(swapInterval));
-    if (m_pacer)
-    {
-      SetFormattedContent(*m_ui.LabelPacerStatus, "Swap interval {}", swapInterval);
-    }
-    else
-    {
-      SetFormattedContent(*m_ui.LabelPacerStatus, "Swap interval {} ({})", swapInterval,
-                          SamplePacer::IsSupported() ? "pacer off" : "pacer not supported");
-    }
-    SetFormattedContent(*m_ui.LabelPacerFrames, "Frame {:.2f} ms, {} of {} late", m_frameInterval.TotalMilliseconds(), lateFrames, frames);
+    // Without the frame pacer every frame is held for one refresh
+    return NanosecondTimeSpanUtil::ToTimeSpan(m_pacerConfig.RefreshPeriod);
   }
 
 
@@ -1831,7 +2195,28 @@ namespace Fsl
       // The overlay is hidden
       return;
     }
+    m_pacerStatsLevels = {};
+    FillPacerStats();
+
+    // A value that asks to be looked at is yellow, one that says the run does not do what it aims for is red
     const PacerStatsUIRecord& rStats = m_ui.PacerStats;
+    const UI::UIColor normalColor = m_ui.DefaultFontColor;
+    rStats.SwapInterval->SetFontColor(ToColor(m_pacerStatsLevels.SwapInterval, normalColor));
+    rStats.PacedRate->SetFontColor(ToColor(m_pacerStatsLevels.SwapInterval, normalColor));
+    rStats.FrameTime->SetFontColor(ToColor(m_pacerStatsLevels.FrameTime, normalColor));
+    rStats.LateFrames->SetFontColor(ToColor(m_pacerStatsLevels.LateFrames, normalColor));
+    rStats.AverageWork->SetFontColor(ToColor(m_pacerStatsLevels.AverageWork, normalColor));
+    rStats.FeedbackLate->SetFontColor(ToColor(m_pacerStatsLevels.FeedbackLate, normalColor));
+    rStats.VariableRefresh->SetFontColor(ToColor(m_pacerStatsLevels.VariableRefresh, normalColor));
+    rStats.DisplayInterval->SetFontColor(ToColor(m_pacerStatsLevels.DisplayInterval, normalColor));
+    rStats.DisplayRefresh->SetFontColor(ToColor(m_pacerStatsLevels.DisplayRefresh, normalColor));
+  }
+
+
+  void FramePacingShared::FillPacerStats()
+  {
+    const PacerStatsUIRecord& rStats = m_ui.PacerStats;
+    const TimeSpan targetFrameTime = GetTargetFrameTime();
 
     // What the sample measures, with the frame pacer on or off
     const SampleFrameTimes frameTimes = m_frameStats.FrameTimes();
@@ -1839,6 +2224,7 @@ namespace Fsl
     {
       SetFormattedContent(*rStats.FrameTime, "{:.2f} ms ({:.2f} to {:.2f})", frameTimes.Average.TotalMilliseconds(),
                           frameTimes.Min.TotalMilliseconds(), frameTimes.Max.TotalMilliseconds());
+      m_pacerStatsLevels.FrameTime = SampleStatsLevelUtil::RateFrameTime(frameTimes.Average, frameTimes.Max, targetFrameTime);
     }
     else
     {
@@ -1863,13 +2249,37 @@ namespace Fsl
     UpdatePresentFeedbackStats();
     UpdateVariableRefreshStats();
 
+    // The refresh rate the pacing counts with, and where it is from
+    const double refreshRateHz = GetRefreshRateHz();
+    {
+      const bool isKnown = m_refreshRateOverrideHz.has_value() || m_detectedRefreshRateHz > 0.0;
+      SetFormattedContent(*rStats.RefreshRate, "{:.2f} Hz ({})", refreshRateHz,
+                          m_refreshRateOverrideHz.has_value() ? "command line" : (isKnown ? "display" : "set with the slider"));
+    }
+
+    // If the present of the app can hold a frame for two refreshes or more, by the rating of the pacer library
+    if (!SamplePacer::IsSupported())
+    {
+      rStats.DisplaySideHolds->SetContent("pacer not supported");
+    }
+    else if (!m_tierKnown)
+    {
+      rStats.DisplaySideHolds->SetContent("unknown");
+    }
+    else
+    {
+      rStats.DisplaySideHolds->SetContent(m_tierState.Best.DisplaySideHolds ? "yes" : "no");
+    }
+
     if (!m_pacer)
     {
       // Without the pacer every frame is held for one refresh and the sample counts the late frames
       const uint32_t frames = m_frameStats.FrameCount();
       const uint32_t lateFrames = m_frameStats.LateFrameCount();
+      SetFormattedContent(*rStats.PacedRate, "{:.2f} Hz ({})", refreshRateHz, SamplePacer::IsSupported() ? PacerOffValue : "pacer not supported");
       SetFormattedContent(*rStats.SwapInterval, "1 ({})", SamplePacer::IsSupported() ? PacerOffValue : "pacer not supported");
       SetFormattedContent(*rStats.LateFrames, "{} of {} ({:.1f} %)", lateFrames, frames, frames > 0u ? ((100.0 * lateFrames) / frames) : 0.0);
+      m_pacerStatsLevels.LateFrames = SampleStatsLevelUtil::RateLateFrames(lateFrames, frames);
       for (UI::Label* pLabel : {rStats.AverageWork.get(), rStats.IntervalChanges.get(), rStats.LastChange.get(), rStats.FrameWindow.get(),
                                 rStats.Feedback.get(), rStats.FeedbackLate.get()})
       {
@@ -1880,19 +2290,30 @@ namespace Fsl
 
     // What the frame pacer decides on
     const SamplePacerStatus status = m_pacer->GetStatus();
+    // The rate the frames are paced at, and the one the app prefers (the target frame rate as the display can show it)
+    SetFormattedContent(*rStats.PacedRate, "{:.2f} Hz (preferred {:.2f})", refreshRateHz / static_cast<double>(std::max(status.SwapInterval, 1u)),
+                        refreshRateHz / static_cast<double>(std::max(status.PreferredSwapInterval, 1u)));
     SetFormattedContent(*rStats.SwapInterval, "{} (preferred {})", status.SwapInterval, status.PreferredSwapInterval);
+    // The frames are held for longer than the target frame rate asks for
+    m_pacerStatsLevels.SwapInterval = status.SwapInterval > status.PreferredSwapInterval ? SampleStatsLevel::Warning : SampleStatsLevel::Normal;
     SetFormattedContent(*rStats.LateFrames, "{} of {} ({:.1f} %)", status.LateFrames, status.Frames,
                         status.Frames > 0u ? ((100.0 * status.LateFrames) / status.Frames) : 0.0);
-    if (status.Frames > 0u && m_schedule.TargetFrameTime.Ticks() > 0)
+    m_pacerStatsLevels.LateFrames = SampleStatsLevelUtil::RateLateFrames(status.LateFrames, status.Frames);
+    if (status.Frames > 0u && m_schedule.TargetFrameTime.TotalNanoseconds() > 0)
     {
       SetFormattedContent(*rStats.AverageWork, "{:.2f} ms, {:.0f} % of the frame time", status.AverageWork.TotalMilliseconds(),
-                          (100.0 * static_cast<double>(status.AverageWork.Ticks())) / static_cast<double>(m_schedule.TargetFrameTime.Ticks()));
+                          (100.0 * status.AverageWork.TotalMilliseconds()) / m_schedule.TargetFrameTime.TotalMilliseconds());
+      m_pacerStatsLevels.AverageWork =
+        SampleStatsLevelUtil::RateWork(status.AverageWork, NanosecondTimeSpanUtil::ToTimeSpan(m_schedule.TargetFrameTime));
     }
     else
     {
       rStats.AverageWork->SetContent(UnknownValue);
     }
-    SetFormattedContent(*rStats.IntervalChanges, "{} slower, {} faster", m_pacerChanges.SlowerCount, m_pacerChanges.FasterCount);
+    // How often the frame pacer made the swap interval longer and shorter, and for how long that has been counted: since the frame
+    // pacer was switched on or one of its settings was changed
+    SetFormattedContent(*rStats.IntervalChanges, "{} slower, {} faster (counted for {:.0f} s)", m_pacerChanges.SlowerCount,
+                        m_pacerChanges.FasterCount, (m_timer.GetTimestamp() - m_pacerChanges.StartTime).TotalSeconds());
     if (m_pacerChanges.LastChange != SamplePacerChange::Unchanged)
     {
       SetFormattedContent(*rStats.LastChange, "{}, {:.1f} s ago", m_pacerChanges.LastChange == SamplePacerChange::Slower ? "slower" : "faster",
@@ -1905,11 +2326,11 @@ namespace Fsl
     SetFormattedContent(*rStats.FrameWindow, "{:.2f} s{}", status.WindowSpan.TotalSeconds(), status.WindowFull ? ", full" : "");
     if (m_pacerConfig.PresentFeedback)
     {
-      // Nearly everything refused means a display with a variable refresh rate, or a wrong refresh rate
-      const SamplePacerFeedbackState feedbackState = m_pacer->GetFeedbackState();
-      SetFormattedContent(*rStats.Feedback, "{} used, {} refused, {} missing", feedbackState.Used, feedbackState.Refused, feedbackState.Missing);
-      // The count of the display, to hold against the late frames the pacer counts from the frame starts
-      SetFormattedContent(*rStats.FeedbackLate, "{} refreshes", feedbackState.LateRefreshes);
+      // The pacer counts the animation error from the display times
+      const SamplePacerDisplayErrors displayErrors = m_pacer->GetDisplayErrors();
+      SetFormattedContent(*rStats.Feedback, "{} judged, {} refused", displayErrors.JudgedFrames, displayErrors.Refused);
+      SetFormattedContent(*rStats.FeedbackLate, "{} frames", displayErrors.LateFrames);
+      m_pacerStatsLevels.FeedbackLate = displayErrors.LateFrames > 0u ? SampleStatsLevel::Warning : SampleStatsLevel::Normal;
     }
     else
     {
@@ -1938,6 +2359,11 @@ namespace Fsl
       break;
     }
     UI::Label& rLabel = *m_ui.PacerStats.VariableRefresh;
+    // With a variable refresh rate the display follows the frames, so nothing here holds a frame for a refresh
+    m_pacerStatsLevels.VariableRefresh =
+      (info.Active == NativeWindowVariableRefreshAnswer::Yes || info.Observed == NativeWindowVariableRefreshAnswer::Yes || m_variableRefreshSeen)
+        ? SampleStatsLevel::Warning
+        : SampleStatsLevel::Normal;
     if (info.Active == NativeWindowVariableRefreshAnswer::Yes)
     {
       SetFormattedContent(rLabel, "active ({}){}", info.Source, pszSwapchain);
@@ -2016,6 +2442,8 @@ namespace Fsl
       // How evenly the frames reach the display, which is what the frame pacer is for
       SetFormattedContent(*rStats.DisplayInterval, "{:.2f} ms ({:.2f} to {:.2f})", stats.AverageDisplayInterval.value().TotalMilliseconds(),
                           stats.MinDisplayInterval.value().TotalMilliseconds(), stats.MaxDisplayInterval.value().TotalMilliseconds());
+      m_pacerStatsLevels.DisplayInterval =
+        SampleStatsLevelUtil::RateFrameTime(stats.AverageDisplayInterval.value(), stats.MaxDisplayInterval.value(), GetTargetFrameTime());
     }
     else
     {
@@ -2064,6 +2492,7 @@ namespace Fsl
       {
         SetFormattedContent(*rStats.DisplayRefresh, "{:.3f} ms ({:.2f} Hz), display {:.2f} Hz", m_measuredRefreshDuration.TotalMilliseconds(),
                             swapchainHz, m_detectedRefreshRateHz);
+        m_pacerStatsLevels.DisplayRefresh = SampleStatsLevel::Warning;
       }
     }
     else
@@ -2134,17 +2563,20 @@ namespace Fsl
     if (m_explicitSync != SampleExplicitSync::NotApplicable)
     {
       // Only what is certain: if the compositor offers it. If the driver uses it can not be asked.
-      const std::string_view explicitSyncText = SamplePacingTierClassifier::ToDisplayString(m_explicitSync);
+      const std::string_view explicitSyncText = SampleExplicitSyncUtil::ToDisplayString(m_explicitSync);
       rPacerStats.ExplicitSync = addStatsRow(*pacerGrid, pacerRow, "Explicit sync");
       rPacerStats.ExplicitSync->SetContent(StringViewLite(explicitSyncText.data(), explicitSyncText.size()));
     }
+    rPacerStats.RefreshRate = addStatsRow(*pacerGrid, pacerRow, "Refresh rate");
+    rPacerStats.PacedRate = addStatsRow(*pacerGrid, pacerRow, "Paced rate");
     rPacerStats.SwapInterval = addStatsRow(*pacerGrid, pacerRow, "Swap interval");
     rPacerStats.FrameTime = addStatsRow(*pacerGrid, pacerRow, "Frame time");
     rPacerStats.LateFrames = addStatsRow(*pacerGrid, pacerRow, "Late frames");
     rPacerStats.Work = addStatsRow(*pacerGrid, pacerRow, "Work");
     rPacerStats.AverageWork = addStatsRow(*pacerGrid, pacerRow, "Average work");
     rPacerStats.PresentWait = addStatsRow(*pacerGrid, pacerRow, "Present wait");
-    rPacerStats.IntervalChanges = addStatsRow(*pacerGrid, pacerRow, "Interval changes");
+    rPacerStats.DisplaySideHolds = addStatsRow(*pacerGrid, pacerRow, "Display side holds");
+    rPacerStats.IntervalChanges = addStatsRow(*pacerGrid, pacerRow, "Swap interval changes");
     rPacerStats.LastChange = addStatsRow(*pacerGrid, pacerRow, "Last change");
     rPacerStats.FrameWindow = addStatsRow(*pacerGrid, pacerRow, "Frame window");
     rPacerStats.Feedback = addStatsRow(*pacerGrid, pacerRow, "Present feedback");
@@ -2204,24 +2636,24 @@ namespace Fsl
     chart->SetRenderPolicy(UI::ChartRenderPolicy::FillAvailable);
 
     // The legend
-    const auto labelCpu = rUIFactory.CreateLabel("CPU");
-    labelCpu->SetFontColor(WorkChartCpuColor);
-    const auto labelGpu = rUIFactory.CreateLabel("GPU");
-    labelGpu->SetFontColor(WorkChartGpuColor);
-    const auto labelFrame = rUIFactory.CreateLabel("Frame");
-    labelFrame->SetFontColor(WorkChartFrameColor);
+    m_ui.LabelWorkCpu = rUIFactory.CreateLabel("CPU");
+    m_ui.LabelWorkCpu->SetFontColor(WorkChartCpuColor);
+    m_ui.LabelWorkGpu = rUIFactory.CreateLabel("GPU");
+    m_ui.LabelWorkGpu->SetFontColor(WorkChartGpuColor);
+    m_ui.LabelWorkFrame = rUIFactory.CreateLabel("Frame");
+    m_ui.LabelWorkFrame->SetFontColor(WorkChartFrameColor);
     const auto legend = std::make_shared<UI::StackLayout>(context);
     legend->SetOrientation(UI::LayoutOrientation::Vertical);
     legend->SetAlignmentY(UI::ItemAlignment::Center);
-    legend->AddChild(rUIFactory.CreateLabel("Work per frame"));
-    legend->AddChild(labelFrame);
-    legend->AddChild(labelGpu);
-    legend->AddChild(labelCpu);
+    legend->AddChild(rUIFactory.CreateLabel("Work per frame (average)"));
+    legend->AddChild(m_ui.LabelWorkFrame);
+    legend->AddChild(m_ui.LabelWorkGpu);
+    legend->AddChild(m_ui.LabelWorkCpu);
 
     const auto grid = std::make_shared<UI::GridLayout>(context);
     grid->SetAlignmentX(UI::ItemAlignment::Stretch);
     grid->SetMargin(DpThicknessF::Create(8, 0, 8, 0));
-    grid->AddColumnDefinition(UI::GridColumnDefinition(UI::GridUnitType::Auto));
+    grid->AddColumnDefinition(UI::GridColumnDefinition(UI::GridUnitType::Fixed, ChartLegendWidthDp));
     grid->AddColumnDefinition(UI::GridColumnDefinition(UI::GridUnitType::Fixed, 8));
     grid->AddColumnDefinition(UI::GridColumnDefinition(UI::GridUnitType::Star, 1.0f));
     grid->AddRowDefinition(UI::GridRowDefinition(UI::GridUnitType::Fixed, WorkChartHeightDp));
@@ -2267,16 +2699,18 @@ namespace Fsl
     const auto legend = std::make_shared<UI::StackLayout>(context);
     legend->SetOrientation(UI::LayoutOrientation::Vertical);
     legend->SetAlignmentY(UI::ItemAlignment::Center);
+    // What the chart shows is counted, in three numbers: the stutter (the frames with a error over the threshold) of the last second,
+    // and the stutter of the run by its two causes as the mb-framepacing tools tell them apart (jitter: their delta time jitter)
+    m_ui.LabelStutterRecent = rUIFactory.CreateLabel("Last second: 0");
+    m_ui.LabelStutterRun = rUIFactory.CreateLabel("Run: 0 pacing, 0 jitter");
     legend->AddChild(labelError);
-    legend->AddChild(rUIFactory.CreateLabel("up: shown too soon"));
-    legend->AddChild(rUIFactory.CreateLabel("down: shown too late"));
-    legend->AddChild(rUIFactory.CreateLabel("by the display times"));
-    legend->AddChild(rUIFactory.CreateLabel("the system reports"));
+    legend->AddChild(m_ui.LabelStutterRecent);
+    legend->AddChild(m_ui.LabelStutterRun);
 
     const auto grid = std::make_shared<UI::GridLayout>(context);
     grid->SetAlignmentX(UI::ItemAlignment::Stretch);
     grid->SetMargin(DpThicknessF::Create(8, 0, 8, 0));
-    grid->AddColumnDefinition(UI::GridColumnDefinition(UI::GridUnitType::Auto));
+    grid->AddColumnDefinition(UI::GridColumnDefinition(UI::GridUnitType::Fixed, ChartLegendWidthDp));
     grid->AddColumnDefinition(UI::GridColumnDefinition(UI::GridUnitType::Fixed, 8));
     grid->AddColumnDefinition(UI::GridColumnDefinition(UI::GridUnitType::Star, 1.0f));
     grid->AddRowDefinition(UI::GridRowDefinition(UI::GridUnitType::Fixed, AnimationErrorChartHeightDp));
@@ -2290,8 +2724,7 @@ namespace Fsl
 
   void FramePacingShared::UpdateAnimationError()
   {
-    const double refreshRateHz = GetRefreshRateHz();
-    const TimeSpan refreshPeriod(refreshRateHz > 0.0 ? std::llround(static_cast<double>(TimeSpan::TicksPerSecond) / refreshRateHz) : 0);
+    const TimeSpan refreshPeriod = NanosecondTimeSpanUtil::ToTimeSpan(GetRefreshPeriod());
     if (refreshPeriod != m_animationErrorRefreshPeriod)
     {
       // The chart is in refreshes: what a refresh is in time is said by the labels of its lines, and the band of no error is a time
@@ -2334,6 +2767,16 @@ namespace Fsl
           m_trace->SetValueAt(presentFrame.FrameIndex, m_logColumns.AnimationError, record.Error);
         }
       }
+    }
+
+    const TickCount now = m_timer.GetTimestamp();
+    if ((now - m_stutterLegendTime) >= ChartLegendInterval)
+    {
+      // The legend, written a few times a second so it can be read
+      m_stutterLegendTime = now;
+      const SampleStutterCount runStutter = m_animationError.GetRunStutter();
+      SetFormattedContent(*m_ui.LabelStutterRecent, "Last second: {}", m_animationError.CalcRecentStutter().Total());
+      SetFormattedContent(*m_ui.LabelStutterRun, "Run: {} pacing, {} jitter", runStutter.Pacing, runStutter.DeltaTimeJitter);
     }
   }
 
@@ -2392,10 +2835,15 @@ namespace Fsl
     if (!m_markerStep.HasMarker || info.FrameIndex != m_markerStep.FrameIndex)
     {
       m_markerStep.AnimationStep.reset();
+      m_markerStep.IntendedDisplayStep.reset();
       m_markerStep.CpuStartStep.reset();
       if (m_markerStep.HasMarker)
       {
         m_markerStep.AnimationStep = info.AnimationTime - m_markerStep.AnimationTime;
+        if (info.IntendedDisplayTime.has_value() && m_markerStep.IntendedDisplayTime.has_value())
+        {
+          m_markerStep.IntendedDisplayStep = info.IntendedDisplayTime.value() - m_markerStep.IntendedDisplayTime.value();
+        }
         if (info.CpuStartTime.has_value() && m_markerStep.CpuStartTime.has_value())
         {
           m_markerStep.CpuStartStep = info.CpuStartTime.value() - m_markerStep.CpuStartTime.value();
@@ -2404,15 +2852,16 @@ namespace Fsl
       m_markerStep.HasMarker = true;
       m_markerStep.FrameIndex = info.FrameIndex;
       m_markerStep.AnimationTime = info.AnimationTime;
+      m_markerStep.IntendedDisplayTime = info.IntendedDisplayTime;
       m_markerStep.CpuStartTime = info.CpuStartTime;
     }
 
     rStats.Kind->SetContent(ToString(info.Kind));
     SetFormattedContent(*rStats.FrameIndex, "{}", info.FrameIndex);
-    // The times are followed by their step from the marker before
+    // The times are followed by their step from the marker before: the delta time (DT)
     if (m_markerStep.AnimationStep.has_value())
     {
-      SetFormattedContent(*rStats.AnimationTime, "{:.3f} ms ({:+.3f})", info.AnimationTime.TotalMilliseconds(),
+      SetFormattedContent(*rStats.AnimationTime, "{:.3f} ms (DT {:+.3f})", info.AnimationTime.TotalMilliseconds(),
                           m_markerStep.AnimationStep->TotalMilliseconds());
     }
     else
@@ -2420,7 +2869,12 @@ namespace Fsl
       SetFormattedContent(*rStats.AnimationTime, "{:.3f} ms", info.AnimationTime.TotalMilliseconds());
     }
     SetFormattedContent(*rStats.RunId, "{}", info.RunId);
-    if (info.IntendedDisplayTime.has_value())
+    if (info.IntendedDisplayTime.has_value() && m_markerStep.IntendedDisplayStep.has_value())
+    {
+      SetFormattedContent(*rStats.IntendedDisplayTime, "{:.3f} ms (DT {:+.3f})", info.IntendedDisplayTime->TotalMilliseconds(),
+                          m_markerStep.IntendedDisplayStep->TotalMilliseconds());
+    }
+    else if (info.IntendedDisplayTime.has_value())
     {
       SetFormattedContent(*rStats.IntendedDisplayTime, "{:.3f} ms", info.IntendedDisplayTime->TotalMilliseconds());
     }
@@ -2438,7 +2892,7 @@ namespace Fsl
     }
     if (info.CpuStartTime.has_value() && m_markerStep.CpuStartStep.has_value())
     {
-      SetFormattedContent(*rStats.CpuStartTime, "{:.3f} ms ({:+.3f})", info.CpuStartTime->TotalMilliseconds(),
+      SetFormattedContent(*rStats.CpuStartTime, "{:.3f} ms (DT {:+.3f})", info.CpuStartTime->TotalMilliseconds(),
                           m_markerStep.CpuStartStep->TotalMilliseconds());
     }
     else if (info.CpuStartTime.has_value())

@@ -23,6 +23,8 @@
 //****************************************************************************************************************************************************
 
 
+#include <FslBase/Time/NanosecondTickCount.hpp>
+#include <FslBase/Time/NanosecondTimeSpan.hpp>
 #include <FslBase/Time/TickCount.hpp>
 #include <FslBase/Time/TimeSpan.hpp>
 #include <FslDemoService/Trace/TraceTypes.hpp>
@@ -102,7 +104,7 @@ namespace Fsl
                              const TraceLink link) = 0;
 
     //! @brief A time of a frame is drawn as a mark on a track.
-    //! @param time a value of the unit TraceUnit::Ticks.
+    //! @param time a value of the unit TraceUnit::Ticks or TraceUnit::NanosecondTicks.
     //! @return false if it was not declared.
     virtual bool DeclareMark(const std::string_view title, const TraceTrack track, const TraceValue time, const TraceLink link) = 0;
 
@@ -110,13 +112,38 @@ namespace Fsl
     //! @return false if it was not declared.
     virtual bool DeclareCounter(const std::string_view title, const TraceValue value) = 0;
 
-    //! @brief Set a value of the frame that is being drawn.
+    //! @brief Set a value of the frame that is being drawn that is not a time or a duration of the framework: a count, a id, a code,
+    //!        pixels, or a number a driver gave. A time or a duration is set with SetValue.
     virtual void SetInt64(const TraceValue value, const int64_t number) noexcept = 0;
     virtual void SetUInt64(const TraceValue value, const uint64_t number) noexcept = 0;
 
     //! @brief Set a value of a earlier frame. It is ignored if the frame was written already (a frame is kept for 64 frames).
     virtual void SetInt64At(const TraceFrameIndex frameIndex, const TraceValue value, const int64_t number) noexcept = 0;
     virtual void SetUInt64At(const TraceFrameIndex frameIndex, const TraceValue value, const uint64_t number) noexcept = 0;
+
+    //! @brief Set a moment of the frame that is being drawn, given as the type the caller has. It is written in the unit of the value,
+    //!        TraceUnit::Ticks (the tick the moment lies in) or TraceUnit::NanosecondTicks: the trace converts, the caller does not.
+    //!        It is not written to a value of another unit.
+    virtual void SetValue(const TraceValue value, const TickCount time) noexcept = 0;
+    virtual void SetValue(const TraceValue value, const NanosecondTickCount time) noexcept = 0;
+
+    //! @brief Set a duration of the frame that is being drawn, given as the type the caller has. It is written in the unit of the
+    //!        value, TraceUnit::DurationTicks (rounded to the nearest tick) or TraceUnit::Nanoseconds: the trace converts, the caller
+    //!        does not. It is not written to a value of another unit.
+    virtual void SetValue(const TraceValue value, const TimeSpan duration) noexcept = 0;
+    virtual void SetValue(const TraceValue value, const NanosecondTimeSpan duration) noexcept = 0;
+
+    //! @brief Set a flag of the frame that is being drawn: a value of the unit TraceUnit::Flag. It is not written to a value of
+    //!        another unit.
+    virtual void SetValue(const TraceValue value, const bool flag) noexcept = 0;
+
+    //! @brief Set a moment of a earlier frame (see SetValue). It is ignored if the frame was written already.
+    virtual void SetValueAt(const TraceFrameIndex frameIndex, const TraceValue value, const TickCount time) noexcept = 0;
+    virtual void SetValueAt(const TraceFrameIndex frameIndex, const TraceValue value, const NanosecondTickCount time) noexcept = 0;
+
+    //! @brief Set a duration of a earlier frame (see SetValue). It is ignored if the frame was written already.
+    virtual void SetValueAt(const TraceFrameIndex frameIndex, const TraceValue value, const TimeSpan duration) noexcept = 0;
+    virtual void SetValueAt(const TraceFrameIndex frameIndex, const TraceValue value, const NanosecondTimeSpan duration) noexcept = 0;
 
     // Events and facts
 
@@ -136,33 +163,6 @@ namespace Fsl
     //! @brief Name a fact that says which hardware this is (the id of the graphics device) and the value that is to be written for it
     //!        while the trace is anonymised. Do it before the fact is set.
     virtual void AddAnonymousFact(const std::string_view key, const std::string_view replacement) = 0;
-
-    // The typed forms, so a time is never mistaken for a duration
-
-    void SetValue(const TraceValue value, const TickCount time) noexcept
-    {
-      SetInt64(value, time.Ticks());
-    }
-
-    void SetValue(const TraceValue value, const TimeSpan duration) noexcept
-    {
-      SetInt64(value, duration.Ticks());
-    }
-
-    void SetValue(const TraceValue value, const bool flag) noexcept
-    {
-      SetInt64(value, flag ? 1 : 0);
-    }
-
-    void SetValueAt(const TraceFrameIndex frameIndex, const TraceValue value, const TickCount time) noexcept
-    {
-      SetInt64At(frameIndex, value, time.Ticks());
-    }
-
-    void SetValueAt(const TraceFrameIndex frameIndex, const TraceValue value, const TimeSpan duration) noexcept
-    {
-      SetInt64At(frameIndex, value, duration.Ticks());
-    }
   };
 }
 

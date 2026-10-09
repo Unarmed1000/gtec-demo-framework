@@ -483,6 +483,8 @@ if (m_gpuTimeCalibration.TryToHostTime(m_gpuTimer.GetBeginTimestamp(), gpuStartT
 
 ### Where the frame loop waits
 
+With ```--VkPresentWait <n>``` a frame of ```DemoAppVulkanBasic``` waits until the present ```n``` back was presented before it starts (```VK_KHR_present_wait2```, off by default). A app that decides itself which present a frame waits for calls ```SetPresentWaitByApp(true)```, which stops that wait of the app base, and then ```WaitForPresent(presentId, timeout)``` from ```OnVulkanFrameStart```: it returns when the wait began, when it ended and what ended it (```PresentWaitRecord```), and it does not wait for a present of a swapchain from before. ```IsPresentWaitEnabled()``` says if the swapchain can be waited on and ```GetPresentWaitFramesBack()``` what the user asked for. A app can also wait until the GPU is done with a frame it names: ```WaitForGpuWork(presentId, timeout)``` from ```OnVulkanFrameStart``` is the wait for a frame slot of the app base, made early, for the frame of the given present and with a timeout (```GpuWorkWaitRecord``` says when it began and ended and if the GPU was done). It needs no extension. The app base still waits for the frame slot of the frame after it, which returns at once where the GPU is done with that slot.
+
 ```GetLastPresentCalls()``` of ```DemoAppVulkanBasic``` returns when ```vkAcquireNextImageKHR``` and ```vkQueuePresentKHR``` were called and when they returned for the last frame that was presented. It needs no extension. ```Vulkan.FramePacing``` uses all of the above, and ```--Trace``` writes all of it to a trace for every frame of any Vulkan app, see [FramePacing.md](../FramePacing.md#the-frame-log).
 
 ## Known issues

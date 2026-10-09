@@ -102,12 +102,12 @@ Plan                 | Display                         | Runs
 `work-matrix-60hz`   | 60 Hz, variable refresh off     | The same with CPU work of 3, 15 and 22 ms.
 `present-feedback-240hz` | 240 Hz, variable refresh off | The pacer without and with present feedback (`--Pacer.PresentFeedback`), GPU work of 20, 90 and 130 %, each idle and under CPU load (12 runs).
 `present-feedback-120hz` | 120 Hz, variable refresh off | The same with CPU work of 2, 7 and 11 ms.
-`plain-vulkan-240hz`, `-120hz`, `-60hz`, `-50hz` | that rate, variable refresh off | Does the pacer work on plain Vulkan: a frame held by a timer sleep and by a wait on the vsync (`--Pacer.Hold`) at fixed frame rates and under work of 130 %, one and two frames in flight, and the key rows with present timing off as well (22 to 30 runs).
-`present-scheduling` | any fixed rate below 240 Hz, given with `--refresh-hz` and `--set` (see the plan) | A frame held by a scheduled present and by a timer sleep: half the refresh rate, a slower fixed rate and CPU work of 130 %, present feedback on in every run, each idle and under CPU load (12 runs). Not captured yet.
-`vsync-phase-sweep` | any fixed rate, given with `--refresh-hz` and `--set half_fps` | Where in a refresh a present has to be made: frames held for two refreshes by a wait on the vsync, with the present placed from 5 to 95 % of the refresh (`--Pacer.VSyncPhase`), each idle and under CPU load (20 runs).
-`present-scheduling-240hz` | 240 Hz, variable refresh off | A frame held for more than one refresh by a wait before the present and by a scheduled present (`--Pacer.Hold schedule`): a fixed 60 and 120 fps and work of 130 %, each idle and under CPU load (12 runs).
+`plain-vulkan-240hz`, `-120hz`, `-60hz`, `-50hz` | that rate, variable refresh off | Does the pacer work on plain Vulkan: the frames paced on a timer and on the vertical blank times (`--Pacer.Kind timer-period` and `vblank-period`) at fixed frame rates and under work of 130 %, one and two frames in flight, and the key rows with present timing off as well (22 to 30 runs).
+`present-scheduling` | any fixed rate below 240 Hz, given with `--refresh-hz` and `--set` (see the plan) | A frame held by a present that takes a time (`--Pacer.TimedPresent`) and by a wait before the present: half the refresh rate, a slower fixed rate and CPU work of 130 %, present feedback on in every run, each idle and under CPU load (12 runs).
+`ready-place-sweep` | any fixed rate, given with `--refresh-hz` and `--set half_fps` | Where in a refresh a frame has to be ready: frames held for two refreshes and paced on the vertical blank times, with the place from 5 to 95 % of the refresh (`--Pacer.ReadyPlace`), each idle and under CPU load (20 runs).
+`present-scheduling-240hz` | 240 Hz, variable refresh off | A frame held for more than one refresh by a wait before the present and by a present that takes a time (`--Pacer.TimedPresent`): a fixed 60 and 120 fps and work of 130 %, each idle and under CPU load (12 runs).
 `present-options-240hz` | 240 Hz, variable refresh off | The swapchain setup at work of 90 %: one against two frames in flight (`--VkFramesInFlight`) and FIFO against FIFO latest ready (`--VkPresentMode`), pacer off and on (8 runs).
-`frame-timeline-240hz` | 240 Hz, variable refresh off | Every stage of a frame in the log (the waits, the submit, the GPU begin and end, the display time) for the charts of a frame on a timeline: GPU work near a refresh held by the vsync in full screen, 60 fps held by a timer sleep, half the rate with a scheduled present, work of 90 % with the adaptive pacer and work of 94 % at a fixed swap interval of one, each with the early and the late profile, and two swapchain images and two frames in flight.
+`frame-timeline-240hz` | 240 Hz, variable refresh off | Every stage of a frame in the log (the waits, the submit, the GPU begin and end, the display time) for the charts of a frame on a timeline: GPU work near a refresh paced on the vertical blank times in full screen, 60 fps paced on a timer, half the rate with a present that takes a time, work of 90 % with the adaptive pacer and work of 94 % at a fixed swap interval of one, and two swapchain images and two frames in flight.
 `fixed-rates`        | Any fixed rate, one at a time   | Trivial work: pacer off, pacer on, pacer at half the refresh rate. Give `--refresh-hz` and `--set half_fps=`.
 `variable-refresh`   | Highest rate, variable refresh on | Fixed frame rates of 120, 80, 60 and 30 fps, pacer off, GPU and CPU load, windowed and fullscreen.
 
@@ -210,7 +210,7 @@ Part                           | Meaning
 `shown for refreshes`          | The frames by the number of refreshes from their display time to the next display time. `1: 2330, 2: 3` is three frames that stayed on the display for two refreshes. Needs `VK_EXT_present_timing`.
 `vrr: seen for n frames`       | The frames during which the window said the display refreshed at a variable rate (Windows measures it). Not there when it was not seen, which is no proof that variable refresh was off.
 `presents not shown or not timed` | Presents the presentation engine reported on without a display time: their image did not reach the display.
-`feedback used: n, refused: n` | With present feedback: what became of the display times the pacer was given, and `lateRefreshes`, the refreshes the display fell behind the swap intervals by them. Many refused is a warning: variable refresh, or a wrong refresh rate.
+`feedback reports: n, refused: n` | With present feedback: what the pacer counted from the display times it was given: the ones it took and refused, the frames it judged (`judged`), the ones with a animation error (`errorFrames`), shown at another refresh (`offTarget`) and shown later (`late`). Many refused is a warning.
 `work`                         | The median CPU and GPU time of a frame.
 `other programs`               | The share of the CPUs that was busy with something other than the app during the run.
 `ok` or `n WARNINGS`           | The warnings are listed below the line and in the notes.
@@ -257,6 +257,13 @@ Other programs used the CPUs during an idle run      | Find what was running and
 Other programs did not use the CPUs during a loaded run | The load did not start, or the machine has more CPUs than the load uses.
 
 ## What the captures so far have shown
+
+These captures were made while the sample held a frame itself: by a sleep on a timer, by a wait on the vsync of the window system
+or by a present with a target time (`--Pacer.Hold`), and with a setting for where in a refresh the present was made
+(`--Pacer.VSyncPhase`). The pacer of the library gives those times now: a timer is `--Pacer.Kind timer-period`, the vsync is
+`vblank-period`, the present with a target time is `--Pacer.TimedPresent` and the place in the refresh is `--Pacer.ReadyPlace`.
+What is written below about how a system shows a frame that is held one of those ways is what was measured then, with the names of
+then.
 
 On a NVIDIA desktop GPU (driver 617.14) with a 240 Hz display on Windows 11, a window on the desktop:
 
@@ -354,9 +361,9 @@ On a NVIDIA desktop GPU (driver 617.14) with a 240 Hz display on Windows 11, a w
   acquire before the frame goes on (5 presents without a display time in place of 97), and holding the start of every frame to the
   time the pacer gives for it, also at swap interval one (7). Two frames in flight and a third swapchain image did not help. One
   run each, and the GPU work moved between the runs (3.66 to 3.93 ms), so the counts are not at equal work. The sample waits for the
-  time of the pacer on every frame since then, see [FramePacing.md](FramePacing.md#waiting-for-the-time-of-the-pacer-vulkan), which
+  time of the pacer on every frame since then, see [FramePacing.md](FramePacing.md#what-a-vulkan-frame-loop-waits-on-and-why-the-pacer-gives-the-times), which
   also has what was found about the time from a present to the display.
-- **Where in a refresh the present is made matters at 240 Hz and next to not at all below** (the plan `vsync-phase-sweep` at 240, 120,
+- **Where in a refresh the present is made matters at 240 Hz and next to not at all below** (the plan `vsync-phase-sweep` of then at 240, 120,
   60 and 50 Hz, frames held for two refreshes). At 240 Hz a present from 55 to 75 % of the refresh is clean idle and under load, from
   5 to 45 % most runs have one frame that is shown a refresh too long, at 85 % one run had four frames off and at 95 % the frame
   starts get uneven. At 120, 60 and 50 Hz every place from 5 to 85 % is clean but for two frames in one run at 120 Hz, and 95 % has

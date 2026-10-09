@@ -24,13 +24,17 @@
 
 
 #include <FslBase/System/HighResolutionTimer.hpp>
+#include <FslBase/Time/NanosecondTickCount.hpp>
+#include <FslBase/Time/NanosecondTimeSpan.hpp>
 #include <FslBase/Time/TickCount.hpp>
+#include <FslBase/Time/TimeSpan.hpp>
 #include <FslDemoService/Trace/Impl/ITraceSink.hpp>
 #include <FslDemoService/Trace/Impl/TraceAnonymiser.hpp>
 #include <FslDemoService/Trace/Impl/TraceFrameTable.hpp>
 #include <FslDemoService/Trace/Impl/TraceRecords.hpp>
 #include <FslDemoService/Trace/Impl/TraceWriter.hpp>
 #include <FslDemoService/Trace/TraceTypes.hpp>
+#include <array>
 #include <cstdint>
 #include <memory>
 #include <string>
@@ -86,6 +90,8 @@ namespace Fsl
     bool m_schemaWritten{false};
     bool m_isClosed{false};
     bool m_handOverFailed{false};
+    //! The values that were given a time or a duration they have no unit for, so it is said once for each
+    std::array<bool, TraceFrameRow::MaxValues> m_wrongUnitReported{};
 
   public:
     //! @param sink where the records go (required).
@@ -151,6 +157,19 @@ namespace Fsl
       m_table.SetValue(frameIndex, value, number);
     }
 
+    //! @brief Set a moment. It is written in the unit of the value: TraceUnit::Ticks (the tick the moment lies in) or
+    //!        TraceUnit::NanosecondTicks. It is not written to a value of another unit, which is logged once.
+    void SetValueAt(const uint64_t frameIndex, const TraceValue value, const TickCount time) noexcept;
+    void SetValueAt(const uint64_t frameIndex, const TraceValue value, const NanosecondTickCount time) noexcept;
+
+    //! @brief Set a duration. It is written in the unit of the value: TraceUnit::DurationTicks (rounded to the nearest tick) or
+    //!        TraceUnit::Nanoseconds. It is not written to a value of another unit, which is logged once.
+    void SetValueAt(const uint64_t frameIndex, const TraceValue value, const TimeSpan duration) noexcept;
+    void SetValueAt(const uint64_t frameIndex, const TraceValue value, const NanosecondTimeSpan duration) noexcept;
+
+    //! @brief Set a flag: a value of the unit TraceUnit::Flag. It is not written to a value of another unit, which is logged once.
+    void SetFlagAt(const uint64_t frameIndex, const TraceValue value, const bool flag) noexcept;
+
     // Events and facts
     void AddEvent(const std::string_view name, const std::string_view details);
     void SetFact(const std::string_view key, const std::string_view value);
@@ -174,6 +193,7 @@ namespace Fsl
     }
 
     void AddRecord(const std::string_view name, const std::string_view details, const bool isFact);
+    void ReportWrongUnit(const TraceValue value, const std::string_view given) noexcept;
     void HandOverZones();
     void TryHandOverZones() noexcept;
     void WriteSchemaIfNeeded();

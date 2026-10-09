@@ -75,6 +75,15 @@ namespace Fsl
     void SetUInt64(const TraceValue value, const uint64_t number) noexcept final;
     void SetInt64At(const TraceFrameIndex frameIndex, const TraceValue value, const int64_t number) noexcept final;
     void SetUInt64At(const TraceFrameIndex frameIndex, const TraceValue value, const uint64_t number) noexcept final;
+    void SetValue(const TraceValue value, const TickCount time) noexcept final;
+    void SetValue(const TraceValue value, const NanosecondTickCount time) noexcept final;
+    void SetValue(const TraceValue value, const TimeSpan duration) noexcept final;
+    void SetValue(const TraceValue value, const NanosecondTimeSpan duration) noexcept final;
+    void SetValue(const TraceValue value, const bool flag) noexcept final;
+    void SetValueAt(const TraceFrameIndex frameIndex, const TraceValue value, const TickCount time) noexcept final;
+    void SetValueAt(const TraceFrameIndex frameIndex, const TraceValue value, const NanosecondTickCount time) noexcept final;
+    void SetValueAt(const TraceFrameIndex frameIndex, const TraceValue value, const TimeSpan duration) noexcept final;
+    void SetValueAt(const TraceFrameIndex frameIndex, const TraceValue value, const NanosecondTimeSpan duration) noexcept final;
     void AddEvent(const std::string_view name, const std::string_view details) final;
     void SetFact(const std::string_view key, const std::string_view value) final;
     void AddAnonymousText(const std::string_view text, const std::string_view replacement) final;

@@ -32,7 +32,6 @@
 #include <FslBase/Exceptions.hpp>
 #include <FslBase/Log/Log3Core.hpp>
 #include <FslBase/Log/Log3Fmt.hpp>
-#include <FslBase/Time/NanosecondTickCountUtil.hpp>
 #include <FslBase/Time/NanosecondTimeSpanUtil.hpp>
 #include <FslBase/Time/TimeSpanUtil.hpp>
 #include <FslDemoApp/Base/DemoAppFirewall.hpp>
@@ -147,13 +146,9 @@ namespace Fsl
                            "The time of a recent vertical blank of the display as the window system reported it when the frame began "
                            "(empty if the platform does not report it)");
       m_framePacingLogColumns.DisplayRefreshPeriod =
-        rLog.RegisterValue("displayRefreshPeriodTicks", TraceUnit::DurationTicks,
-                           "The time between two refreshes of the display as the window system measured it, read with displayVSyncTicks "
-                           "and rounded to the nearest tick");
-      m_framePacingLogColumns.DisplayRefreshPeriodNs =
         rLog.RegisterValue("displayRefreshPeriodNs", TraceUnit::Nanoseconds,
                            "The time between two refreshes of the display as the window system measured it or has it for the mode of the "
-                           "display, in nanoseconds");
+                           "display, in nanoseconds. It is read with displayVSyncTicks");
       m_framePacingLogColumns.DisplayVSyncFlags =
         rLog.RegisterValue("displayVSyncFlags", TraceUnit::Code,
                            "What the window system says about how displayVSyncTicks was obtained (NativeWindowVSyncTimeFlags), zero where "
@@ -351,7 +346,8 @@ namespace Fsl
       m_framePacingLogHasFrame = true;
       rLog.SetValue(m_framePacingLogColumns.UpdateEnd, m_stats.TimeAfterUpdate);
       rLog.SetUInt64(m_framePacingLogColumns.FrameSlot, frameInfo.FrameIndex);
-      rLog.SetInt64(m_framePacingLogColumns.FrameworkTime, frameInfo.Time.CurrentTickCount.Ticks());
+      // The time of the app counts from its start and is not a moment of the steady clock: a duration
+      rLog.SetValue(m_framePacingLogColumns.FrameworkTime, TimeSpan(frameInfo.Time.CurrentTickCount.Ticks()));
       rLog.SetValue(m_framePacingLogColumns.FrameworkStep, frameInfo.Time.ElapsedTime);
       if (m_demoAppConfig.WindowMetrics.ExtentPx != m_framePacingLogExtentPx)
       {
@@ -425,10 +421,10 @@ namespace Fsl
           const NativeWindowVSyncInfo vsyncInfo = window->TryGetVSyncInfo();
           if (vsyncInfo.IsValid())
           {
-            // The times of the log are in ticks. The period is too coarse in ticks, so it is logged in nanoseconds as well.
-            rLog.SetValue(m_framePacingLogColumns.DisplayVSync, NanosecondTickCountUtil::ToTickCount(vsyncInfo.VSyncTime));
-            rLog.SetValue(m_framePacingLogColumns.DisplayRefreshPeriod, NanosecondTimeSpanUtil::ToTimeSpan(vsyncInfo.RefreshPeriod));
-            rLog.SetInt64(m_framePacingLogColumns.DisplayRefreshPeriodNs, vsyncInfo.RefreshPeriod.TotalNanoseconds());
+            // The trace writes each in the unit of its value: the time as the tick it lies in, the period in nanoseconds, as a tick
+            // is too coarse for it
+            rLog.SetValue(m_framePacingLogColumns.DisplayVSync, vsyncInfo.VSyncTime);
+            rLog.SetValue(m_framePacingLogColumns.DisplayRefreshPeriod, vsyncInfo.RefreshPeriod);
             rLog.SetUInt64(m_framePacingLogColumns.DisplayVSyncFlags, NativeWindowVSyncTimeFlagsUtil::ToLogCode(vsyncInfo.TimeFlags));
           }
           // What is known about variable refresh: the measurement per frame, the answers as a event when one of them changes
@@ -567,6 +563,11 @@ namespace Fsl
 
   void DemoAppManager::OnSwapBuffers(const TickCount callTime, const TickCount returnTime) noexcept
   {
+    if (m_framePacingMarkerServiceControl)
+    {
+      // An app that paces its frames itself asks the service when its frame was swapped
+      m_framePacingMarkerServiceControl->OnSwapBuffers(callTime, returnTime);
+    }
     if (m_trace && m_framePacingLogHasFrame)
     {
       m_trace->SetValueAt(m_framePacingLogFrameIndex, m_framePacingLogColumns.SwapCall, callTime);

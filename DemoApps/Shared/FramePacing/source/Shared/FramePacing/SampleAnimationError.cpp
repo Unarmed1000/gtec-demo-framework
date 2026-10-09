@@ -35,13 +35,20 @@ namespace Fsl
     m_hasShown = false;
     m_shownAnimationTime = {};
     m_shownDisplayTime = {};
+    m_shownTargetFrameTime = {};
+    m_lastStepUneven = false;
+    m_runStutter = {};
+    m_stutter = {};
+    m_stutterNext = 0;
+    m_stutterCount = 0;
     m_errors = {};
     m_errorNext = 0;
     m_errorCount = 0;
   }
 
 
-  void SampleAnimationError::AddFrame(const uint64_t presentId, const TimeSpan animationTime) noexcept
+  void SampleAnimationError::AddFrame(const uint64_t presentId, const TimeSpan animationTime, const TimeSpan targetFrameTime,
+                                      const TimeSpan refreshPeriod) noexcept
   {
     if (m_count == Capacity)
     {
@@ -49,11 +56,14 @@ namespace Fsl
       m_first = (m_first + 1u) % Capacity;
       --m_count;
       m_hasShown = false;
+      m_lastStepUneven = false;
     }
     Frame& rFrame = m_frames[(m_first + m_count) % Capacity];
     rFrame = {};
     rFrame.PresentId = presentId;
     rFrame.AnimationTime = animationTime;
+    rFrame.TargetFrameTime = targetFrameTime;
+    rFrame.RefreshPeriod = refreshPeriod;
     ++m_count;
     m_newestPresentId = presentId;
   }
@@ -101,6 +111,7 @@ namespace Fsl
     {
       // Not shown, or not known when: the step into it and the step out of it are not judged
       m_hasShown = false;
+      m_lastStepUneven = false;
       return true;
     }
     const TickCount displayTime = *frame.DisplayTime;
@@ -115,10 +126,37 @@ namespace Fsl
       m_errors[m_errorNext] = rRecord.Error.Ticks();
       m_errorNext = (m_errorNext + 1u) % StatsFrames;
       m_errorCount = std::min(m_errorCount + 1u, StatsFrames);
+
+      // The display was uneven where the frame before this one was not on screen for the time it was to be: half a refresh or more
+      // off. Without a refresh period that can not be told, and a error is then taken to be the display's.
+      const int64_t offTargetTicks = std::abs((rRecord.DisplayStep - m_shownTargetFrameTime).Ticks());
+      const bool isStepUneven = frame.RefreshPeriod.Ticks() <= 0 || (offTargetTicks * 2) >= frame.RefreshPeriod.Ticks();
+      if (std::abs(rRecord.Error.Ticks()) > ErrorThreshold.Ticks())
+      {
+        // And the frame after a uneven step has the other half of it: it comes on time and has moved by the wrong time
+        rRecord.Cause = (isStepUneven || m_lastStepUneven) ? SampleAnimationErrorCause::Pacing : SampleAnimationErrorCause::DeltaTimeJitter;
+        if (rRecord.Cause == SampleAnimationErrorCause::Pacing)
+        {
+          ++m_runStutter.Pacing;
+        }
+        else
+        {
+          ++m_runStutter.DeltaTimeJitter;
+        }
+        m_stutter[m_stutterNext] = {displayTime, rRecord.Cause};
+        m_stutterNext = (m_stutterNext + 1u) % StutterCapacity;
+        m_stutterCount = std::min(m_stutterCount + 1u, StutterCapacity);
+      }
+      m_lastStepUneven = isStepUneven;
+    }
+    else
+    {
+      m_lastStepUneven = false;
     }
     m_hasShown = true;
     m_shownAnimationTime = frame.AnimationTime;
     m_shownDisplayTime = displayTime;
+    m_shownTargetFrameTime = frame.TargetFrameTime;
     return true;
   }
 
@@ -149,6 +187,32 @@ namespace Fsl
     stats.AverageAbsError = TimeSpan(totalAbs / static_cast<int64_t>(m_errorCount));
     stats.WorstError = TimeSpan(worst);
     return stats;
+  }
+
+
+  SampleStutterCount SampleAnimationError::CalcRecentStutter() const noexcept
+  {
+    SampleStutterCount count;
+    if (!m_hasShown)
+    {
+      return count;
+    }
+    for (std::size_t i = 0; i < m_stutterCount; ++i)
+    {
+      const StutterEntry& entry = m_stutter[i];
+      if ((m_shownDisplayTime - entry.DisplayTime) < RecentTime)
+      {
+        if (entry.Cause == SampleAnimationErrorCause::Pacing)
+        {
+          ++count.Pacing;
+        }
+        else
+        {
+          ++count.DeltaTimeJitter;
+        }
+      }
+    }
+    return count;
   }
 
 

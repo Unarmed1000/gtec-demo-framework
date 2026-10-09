@@ -23,6 +23,7 @@
 //****************************************************************************************************************************************************
 
 #include <FslBase/String/StringViewLite.hpp>
+#include <FslBase/Time/TickCount.hpp>
 #include <FslBase/Time/TimeSpan.hpp>
 #include <FslDemoService/FramePacingMarker/FramePacingFrameSchedule.hpp>
 #include <FslDemoService/FramePacingMarker/FramePacingMarkerInfo.hpp>
@@ -96,6 +97,13 @@ namespace Fsl
     //! @note Call it during the app's Draw, before the marker is drawn (on Vulkan before AddSystemUI). It applies to that frame only: a
     //!       frame without the call reports the animation time of the framework and no pacing values.
     virtual void SetFrameSchedule(const FramePacingFrameSchedule& schedule) noexcept = 0;
+
+    //! @brief Get when the host swapped the buffers of the last frame: when it called the swap and when the swap returned
+    //!        (HighResolutionTimer timestamps). For an app whose frames the host presents (OpenGL ES: eglSwapBuffers) and that paces
+    //!        them itself: the swap is where its frame loop can wait for the display, and the app can not time it. A Vulkan app presents
+    //!        its frames itself and has the times of its present (DemoAppVulkanBasic::GetLastPresentCalls).
+    //! @return false if no frame was swapped yet.
+    virtual bool TryGetLastSwapTimes(TickCount& rCallTime, TickCount& rReturnTime) const noexcept = 0;
   };
 }
 

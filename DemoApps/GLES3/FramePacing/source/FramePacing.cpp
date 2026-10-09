@@ -137,13 +137,12 @@ namespace Fsl
       glFlush();
     }
     m_shared.EndFrame(m_gpuTimer.GetGpuTime());
-    // The swap holds the frame for the refreshes the frame pacer decided on
-    const uint32_t swapInterval = m_shared.GetSwapInterval();
-    const uint32_t presentSwapInterval = m_swapInterval.Set(swapInterval);
-    if (presentSwapInterval < swapInterval)
+    // The swap holds the frame for the refreshes the frame pacer gives the present. It was told the longest swap interval the EGL
+    // config allows, so it asks for no more, and a frame the swap can not hold that long it holds by a time to wait until.
+    m_swapInterval.Set(m_shared.GetSwapInterval());
+    if (m_shared.IsPresentWaitPlanned())
     {
-      // The EGL config can not hold a frame that long, so the swap is delayed for the rest
-      m_shared.WaitForPresent(presentSwapInterval);
+      m_shared.WaitForPresent();
     }
   }
 }

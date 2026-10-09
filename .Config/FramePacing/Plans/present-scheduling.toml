@@ -1,10 +1,11 @@
-# The scheduled present at one fixed refresh rate: the presentation engine holds a frame as the present was given a target time
-# (--Pacer.Hold schedule, which needs VK_EXT_present_timing with presentAtRelativeTime on the device and the surface). Every case is
-# run with the scheduled present and with the timer sleep as the base line of the session. present-scheduling-240hz is the same for
-# 240 Hz with a GPU load; this plan is for the rates below it, where a CPU load makes the work.
+# The present that takes a time at one fixed refresh rate: the presentation engine holds a frame as the present was given the time
+# the frame before stays on screen at least (--Pacer.TimedPresent, which needs VK_EXT_present_timing with presentAtRelativeTime on
+# the device and the surface). Every case is run with it and without it as the base line of the session, paced on a timer
+# (--Pacer.Kind timer-period). present-scheduling-240hz is the same for 240 Hz with a GPU load; this plan is for the rates below it,
+# where a CPU load makes the work.
 #
 # Present feedback is on in every run. The pacer paces the same with it and counts what the display did, so the runs have its
-# counters (pacerFeedbackLateRefreshes against pacerWindowLateFrames) for both ways of holding a frame.
+# counters (pacerDisplayLateFrames against pacerWindowLateFrames) for both ways of holding a frame.
 #
 # Run it once for every refresh rate of interest, with variable refresh off. Set the display to the rate first, then give the rate,
 # half of it, a slower rate that is a whole number of frames per second, and the CPU load that is 130 % of a refresh:
@@ -14,7 +15,7 @@
 #
 # Pass: at least 99 % of the frames are shown for exactly their swap interval.
 
-description = "One fixed refresh rate: a frame held by a scheduled present and by a timer sleep, two fixed frame rates and CPU work of 130 %, present feedback on, each idle and under CPU load"
+description = "One fixed refresh rate: a frame held by a present that takes a time and by a wait before the present, two fixed frame rates and CPU work of 130 %, present feedback on, each idle and under CPU load"
 app = "Vulkan.FramePacing"
 frames = 400
 args = ["--Window", "{window}", "--GpuLoad", "0", "--Pacer", "--Pacer.PresentFeedback", "true"]
@@ -39,40 +40,40 @@ duty = 1.0
 
 [[run]]
 name = "half_scheduled"
-what = "{half_fps} fps (two refreshes per frame), light work, the present is scheduled"
-args = ["--CpuLoad", "0", "--Pacer.Adaptive", "false", "--Pacer.TargetFps", "{half_fps}", "--Pacer.Hold", "schedule"]
+what = "{half_fps} fps (two refreshes per frame), light work, the present is given a time"
+args = ["--CpuLoad", "0", "--Pacer.Adaptive", "false", "--Pacer.TargetFps", "{half_fps}", "--Pacer.Kind", "timer-period", "--Pacer.TimedPresent"]
 loaded = true
 
 [[run]]
 name = "half_wait"
-what = "{half_fps} fps (two refreshes per frame), light work, held by a timer sleep (the base line)"
-args = ["--CpuLoad", "0", "--Pacer.Adaptive", "false", "--Pacer.TargetFps", "{half_fps}", "--Pacer.Hold", "wait"]
+what = "{half_fps} fps (two refreshes per frame), light work, held by a wait before the present (the base line)"
+args = ["--CpuLoad", "0", "--Pacer.Adaptive", "false", "--Pacer.TargetFps", "{half_fps}", "--Pacer.Kind", "timer-period"]
 loaded = true
 
 [[run]]
 name = "slow_scheduled"
-what = "{slow_fps} fps, light work, the present is scheduled"
-args = ["--CpuLoad", "0", "--Pacer.Adaptive", "false", "--Pacer.TargetFps", "{slow_fps}", "--Pacer.Hold", "schedule"]
+what = "{slow_fps} fps, light work, the present is given a time"
+args = ["--CpuLoad", "0", "--Pacer.Adaptive", "false", "--Pacer.TargetFps", "{slow_fps}", "--Pacer.Kind", "timer-period", "--Pacer.TimedPresent"]
 loaded = true
 
 [[run]]
 name = "slow_wait"
-what = "{slow_fps} fps, light work, held by a timer sleep (the base line)"
-args = ["--CpuLoad", "0", "--Pacer.Adaptive", "false", "--Pacer.TargetFps", "{slow_fps}", "--Pacer.Hold", "wait"]
+what = "{slow_fps} fps, light work, held by a wait before the present (the base line)"
+args = ["--CpuLoad", "0", "--Pacer.Adaptive", "false", "--Pacer.TargetFps", "{slow_fps}", "--Pacer.Kind", "timer-period"]
 loaded = true
 
 # Work over a refresh: the adaptive pacer goes to two refreshes by itself and the frames are held under real work
 
 [[run]]
 name = "w130_scheduled"
-what = "CPU work of 130 % of a refresh, adaptive pacer, the present is scheduled"
-args = ["--CpuLoad", "{work130_ms}", "--Pacer.Hold", "schedule"]
+what = "CPU work of 130 % of a refresh, adaptive pacer, the present is given a time"
+args = ["--CpuLoad", "{work130_ms}", "--Pacer.Kind", "timer-period", "--Pacer.TimedPresent"]
 frames = 600
 loaded = true
 
 [[run]]
 name = "w130_wait"
-what = "CPU work of 130 % of a refresh, adaptive pacer, held by a timer sleep (the base line)"
-args = ["--CpuLoad", "{work130_ms}", "--Pacer.Hold", "wait"]
+what = "CPU work of 130 % of a refresh, adaptive pacer, held by a wait before the present (the base line)"
+args = ["--CpuLoad", "{work130_ms}", "--Pacer.Kind", "timer-period"]
 frames = 600
 loaded = true

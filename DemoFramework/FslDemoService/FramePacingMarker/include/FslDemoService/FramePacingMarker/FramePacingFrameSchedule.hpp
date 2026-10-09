@@ -22,27 +22,33 @@
 //* EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //****************************************************************************************************************************************************
 
-#include <FslBase/Time/TickCount.hpp>
-#include <FslBase/Time/TimeSpan.hpp>
+#include <FslBase/Time/NanosecondTickCount.hpp>
+#include <FslBase/Time/NanosecondTimeSpan.hpp>
 #include <optional>
 
 namespace Fsl
 {
   //! The pacing values of the frame being drawn, as an app with its own frame pacer knows them (the framework has no frame pacer).
   //! An app supplies them with IFramePacingMarkerService::SetFrameSchedule so the marker reports what the app actually paced the frame by.
-  //! A value the app does not know is left empty, the marker then reports it as unknown.
+  //! A value the app does not know is left empty, the marker then reports it as unknown. Every time is in nanoseconds, as the marker
+  //! carries it: a value goes into the marker as it is given. A time of the framework (a TimeSpan or TickCount, in ticks of 100ns) is
+  //! converted with NanosecondTimeSpanUtil::FromTimeSpan and NanosecondTickCountUtil::FromTickCount, which are exact.
   struct FramePacingFrameSchedule
   {
     //! The time the frame's animation is evaluated for
-    TimeSpan AnimationTime;
+    NanosecondTimeSpan AnimationTime;
     //! When the CPU started working on the frame (a HighResolutionTimer timestamp). Empty: the timestamp the host took before the app update.
-    std::optional<TickCount> CpuStartTime;
-    //! When the frame pacer intends the frame to be shown (a HighResolutionTimer timestamp)
-    std::optional<TickCount> IntendedDisplayTime;
+    std::optional<NanosecondTickCount> CpuStartTime;
+    //! How long the CPU has worked on the frame at the moment the schedule is given, as the frame pacer of the app counts it. The marker
+    //! then reports this value, so the app gives the schedule as late in its draw as it can. Empty (or zero): the service measures it,
+    //! from the CPU start time to where the marker is drawn.
+    std::optional<NanosecondTimeSpan> CpuBusyTime;
+    //! When the frame pacer intends the frame to be shown (on the clock of the HighResolutionTimer)
+    std::optional<NanosecondTickCount> IntendedDisplayTime;
     //! The frame time the frame pacer aims for
-    std::optional<TimeSpan> TargetFrameTime;
+    std::optional<NanosecondTimeSpan> TargetFrameTime;
     //! The frame time the application wants to run at
-    std::optional<TimeSpan> PreferredFrameTime;
+    std::optional<NanosecondTimeSpan> PreferredFrameTime;
     //! True if nothing animates while this frame is on screen, for an app that knows it while it draws the frame (the marker's static
     //! after flag). A app that does not know needs to do nothing: the service flags a frame that has the animation time of the frame
     //! before it by itself (static before).

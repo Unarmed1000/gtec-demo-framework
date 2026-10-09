@@ -1,12 +1,12 @@
-# The two ways a frame is held for more than one refresh at 240 Hz: the sample waits before it presents, or the presentation engine holds
-# the frame as the present was given a target time (--Pacer.Hold schedule, which needs VK_EXT_present_timing with
-# presentAtRelativeTime on the device and the surface). Every case is run both ways. It is an extra: plain-vulkan-240hz has the ways
-# that need no extension.
+# The two ways a frame is held for more than one refresh at 240 Hz: the sample waits until the time the pacer says before it presents,
+# or the presentation engine holds the frame as well, as the present was given the time the frame before stays on screen at least
+# (--Pacer.TimedPresent, which needs VK_EXT_present_timing with presentAtRelativeTime on the device and the surface). Every case is
+# run both ways, paced on a timer (--Pacer.Kind timer-period). It is an extra: plain-vulkan-240hz has the ways that need no extension.
 #
 # Set the display to 240 Hz with variable refresh off before the plan is run. The GPU load setting depends on the GPU and on the size of
 # the window, see work-matrix-240hz.
 
-description = "240 Hz: a frame held by a wait before the present and by a scheduled present, 60 and 120 fps and work of 130 %, each idle and under CPU load"
+description = "240 Hz: a frame held by a wait before the present and by a present that takes a time, 60 and 120 fps and work of 130 %, each idle and under CPU load"
 app = "Vulkan.FramePacing"
 frames = 1200
 expected_refresh_hz = 240.0
@@ -29,26 +29,26 @@ duty = 1.0
 [[run]]
 name = "fps60_wait"
 what = "60 fps (four refreshes per frame), light work, the sample waits before it presents"
-args = ["--GpuLoad", "{gpu20}", "--Pacer.Adaptive", "false", "--Pacer.TargetFps", "60", "--Pacer.Hold", "wait"]
+args = ["--GpuLoad", "{gpu20}", "--Pacer.Adaptive", "false", "--Pacer.TargetFps", "60", "--Pacer.Kind", "timer-period"]
 loaded = true
 
 [[run]]
 name = "fps60_scheduled"
-what = "60 fps (four refreshes per frame), light work, the present is scheduled"
-args = ["--GpuLoad", "{gpu20}", "--Pacer.Adaptive", "false", "--Pacer.TargetFps", "60", "--Pacer.Hold", "schedule"]
+what = "60 fps (four refreshes per frame), light work, the present is given a time"
+args = ["--GpuLoad", "{gpu20}", "--Pacer.Adaptive", "false", "--Pacer.TargetFps", "60", "--Pacer.Kind", "timer-period", "--Pacer.TimedPresent"]
 loaded = true
 
 [[run]]
 name = "fps120_wait"
 what = "120 fps (two refreshes per frame), light work, the sample waits before it presents"
-args = ["--GpuLoad", "{gpu20}", "--Pacer.Adaptive", "false", "--Pacer.TargetFps", "120", "--Pacer.Hold", "wait"]
+args = ["--GpuLoad", "{gpu20}", "--Pacer.Adaptive", "false", "--Pacer.TargetFps", "120", "--Pacer.Kind", "timer-period"]
 frames = 2400
 loaded = true
 
 [[run]]
 name = "fps120_scheduled"
-what = "120 fps (two refreshes per frame), light work, the present is scheduled"
-args = ["--GpuLoad", "{gpu20}", "--Pacer.Adaptive", "false", "--Pacer.TargetFps", "120", "--Pacer.Hold", "schedule"]
+what = "120 fps (two refreshes per frame), light work, the present is given a time"
+args = ["--GpuLoad", "{gpu20}", "--Pacer.Adaptive", "false", "--Pacer.TargetFps", "120", "--Pacer.Kind", "timer-period", "--Pacer.TimedPresent"]
 frames = 2400
 loaded = true
 
@@ -57,13 +57,13 @@ loaded = true
 [[run]]
 name = "w130_wait"
 what = "GPU work of 130 % of a refresh, adaptive pacer, the sample waits before it presents"
-args = ["--GpuLoad", "{gpu130}", "--Pacer.Hold", "wait"]
+args = ["--GpuLoad", "{gpu130}", "--Pacer.Kind", "timer-period"]
 frames = 2400
 loaded = true
 
 [[run]]
 name = "w130_scheduled"
-what = "GPU work of 130 % of a refresh, adaptive pacer, the present is scheduled"
-args = ["--GpuLoad", "{gpu130}", "--Pacer.Hold", "schedule"]
+what = "GPU work of 130 % of a refresh, adaptive pacer, the present is given a time"
+args = ["--GpuLoad", "{gpu130}", "--Pacer.Kind", "timer-period", "--Pacer.TimedPresent"]
 frames = 2400
 loaded = true

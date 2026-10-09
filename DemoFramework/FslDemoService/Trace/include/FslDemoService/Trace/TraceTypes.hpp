@@ -126,9 +126,12 @@ namespace Fsl
   {
     //! A moment on the steady clock of the framework (HighResolutionTimer) in 100 nanosecond ticks
     Ticks,
+    //! A moment on the steady clock of the framework in nanoseconds (NanosecondTickCount). It can be drawn as a mark
+    NanosecondTicks,
     //! A duration in 100 nanosecond ticks
     DurationTicks,
-    //! Nanoseconds as a driver or the window system gave them, on a clock of their own
+    //! A duration in nanoseconds, or a moment in nanoseconds on a clock that is not the one of the framework: a driver or the window
+    //! system has a clock of its own
     Nanoseconds,
     //! A number of things
     Count,

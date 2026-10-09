@@ -278,6 +278,87 @@ namespace Fsl
   }
 
 
+  void TraceService::SetValue(const TraceValue value, const TickCount time) noexcept
+  {
+    if (m_log)
+    {
+      m_log->SetValueAt(m_log->GetFrameIndex(), value, time);
+    }
+  }
+
+
+  void TraceService::SetValue(const TraceValue value, const NanosecondTickCount time) noexcept
+  {
+    if (m_log)
+    {
+      m_log->SetValueAt(m_log->GetFrameIndex(), value, time);
+    }
+  }
+
+
+  void TraceService::SetValue(const TraceValue value, const TimeSpan duration) noexcept
+  {
+    if (m_log)
+    {
+      m_log->SetValueAt(m_log->GetFrameIndex(), value, duration);
+    }
+  }
+
+
+  void TraceService::SetValue(const TraceValue value, const NanosecondTimeSpan duration) noexcept
+  {
+    if (m_log)
+    {
+      m_log->SetValueAt(m_log->GetFrameIndex(), value, duration);
+    }
+  }
+
+
+  void TraceService::SetValue(const TraceValue value, const bool flag) noexcept
+  {
+    if (m_log)
+    {
+      m_log->SetFlagAt(m_log->GetFrameIndex(), value, flag);
+    }
+  }
+
+
+  void TraceService::SetValueAt(const TraceFrameIndex frameIndex, const TraceValue value, const TickCount time) noexcept
+  {
+    if (m_log)
+    {
+      m_log->SetValueAt(frameIndex.Value, value, time);
+    }
+  }
+
+
+  void TraceService::SetValueAt(const TraceFrameIndex frameIndex, const TraceValue value, const NanosecondTickCount time) noexcept
+  {
+    if (m_log)
+    {
+      m_log->SetValueAt(frameIndex.Value, value, time);
+    }
+  }
+
+
+  void TraceService::SetValueAt(const TraceFrameIndex frameIndex, const TraceValue value, const TimeSpan duration) noexcept
+  {
+    if (m_log)
+    {
+      m_log->SetValueAt(frameIndex.Value, value, duration);
+    }
+  }
+
+
+  void TraceService::SetValueAt(const TraceFrameIndex frameIndex, const TraceValue value, const NanosecondTimeSpan duration) noexcept
+  {
+    if (m_log)
+    {
+      m_log->SetValueAt(frameIndex.Value, value, duration);
+    }
+  }
+
+
   void TraceService::AddEvent(const std::string_view name, const std::string_view details)
   {
     if (m_log)

@@ -21,15 +21,35 @@
 //****************************************************************************************************************************************************
 
 #include <FslBase/Log/Log3Fmt.hpp>
+#include <FslBase/Time/NanosecondTickCountUtil.hpp>
+#include <FslBase/Time/NanosecondTimeSpanUtil.hpp>
 #include <FslDemoService/Trace/Impl/TraceLog.hpp>
 #include <fmt/format.h>
 #include <algorithm>
 #include <exception>
+#include <limits>
 #include <span>
 #include <utility>
 
 namespace Fsl
 {
+  namespace
+  {
+    //! Ticks of 100 nanoseconds as nanoseconds, which is exact. Ticks have a hundred times the range.
+    //! @return false if the nanoseconds do not fit.
+    bool TryToNanoseconds(const int64_t ticks, int64_t& rNanoseconds) noexcept
+    {
+      constexpr int64_t NanosecondsPerTick = NanosecondTimeSpan::NanosecondsPerTick;
+      if (ticks < (std::numeric_limits<int64_t>::min() / NanosecondsPerTick) || ticks > (std::numeric_limits<int64_t>::max() / NanosecondsPerTick))
+      {
+        return false;
+      }
+      rNanoseconds = ticks * NanosecondsPerTick;
+      return true;
+    }
+  }
+
+
   TraceLog::TraceLog(std::unique_ptr<ITraceSink> sink, const bool anonymise, const bool useThread)
     : m_writer(std::move(sink), useThread)
     , m_anonymise(anonymise)
@@ -178,7 +198,7 @@ namespace Fsl
 
   bool TraceLog::DeclareMark(const std::string_view title, const TraceTrack track, const TraceValue time, const TraceLink link)
   {
-    if (m_isClosed || m_schemaWritten || title.empty() || !IsTrack(track) || !m_table.IsTime(time))
+    if (m_isClosed || m_schemaWritten || title.empty() || !IsTrack(track) || !m_table.IsMoment(time))
     {
       FSLLOG3_WARNING_IF(!m_isClosed, "Trace: the mark '{}' could not be declared (not a track, not a time, or too late)", title);
       return false;
@@ -191,7 +211,7 @@ namespace Fsl
   bool TraceLog::DeclareCounter(const std::string_view title, const TraceValue value)
   {
     // A moment is not something to draw a graph of
-    if (m_isClosed || m_schemaWritten || title.empty() || !m_table.IsValue(value) || m_table.IsTime(value))
+    if (m_isClosed || m_schemaWritten || title.empty() || !m_table.IsValue(value) || m_table.IsMoment(value))
     {
       FSLLOG3_WARNING_IF(!m_isClosed, "Trace: the counter '{}' could not be declared (not a value, a time, or too late)", title);
       return false;
@@ -225,6 +245,146 @@ namespace Fsl
     if (m_table.BeginFrame(frameIndex, runId, m_closedRow))
     {
       WriteRow(m_closedRow);
+    }
+  }
+
+
+  // The typed setters. This is the one place a time or a duration is converted between ticks and nanoseconds: the caller gives the type
+  // it has, and what is written is in the unit the value was registered with.
+
+  void TraceLog::SetValueAt(const uint64_t frameIndex, const TraceValue value, const TickCount time) noexcept
+  {
+    TraceUnit unit{TraceUnit::Count};
+    if (!m_table.TryGetUnit(value, unit))
+    {
+      return;
+    }
+    if (unit == TraceUnit::Ticks)
+    {
+      m_table.SetValue(frameIndex, value, time.Ticks());
+    }
+    else if (unit == TraceUnit::NanosecondTicks)
+    {
+      int64_t nanoseconds = 0;
+      if (TryToNanoseconds(time.Ticks(), nanoseconds))
+      {
+        m_table.SetValue(frameIndex, value, nanoseconds);
+      }
+    }
+    else
+    {
+      ReportWrongUnit(value, "a time");
+    }
+  }
+
+
+  void TraceLog::SetValueAt(const uint64_t frameIndex, const TraceValue value, const NanosecondTickCount time) noexcept
+  {
+    TraceUnit unit{TraceUnit::Count};
+    if (!m_table.TryGetUnit(value, unit))
+    {
+      return;
+    }
+    if (unit == TraceUnit::Ticks)
+    {
+      // The tick the moment lies in
+      m_table.SetValue(frameIndex, value, NanosecondTickCountUtil::ToTickCount(time).Ticks());
+    }
+    else if (unit == TraceUnit::NanosecondTicks)
+    {
+      m_table.SetValue(frameIndex, value, time.TotalNanoseconds());
+    }
+    else
+    {
+      ReportWrongUnit(value, "a time");
+    }
+  }
+
+
+  void TraceLog::SetValueAt(const uint64_t frameIndex, const TraceValue value, const TimeSpan duration) noexcept
+  {
+    TraceUnit unit{TraceUnit::Count};
+    if (!m_table.TryGetUnit(value, unit))
+    {
+      return;
+    }
+    if (unit == TraceUnit::DurationTicks)
+    {
+      m_table.SetValue(frameIndex, value, duration.Ticks());
+    }
+    else if (unit == TraceUnit::Nanoseconds)
+    {
+      int64_t nanoseconds = 0;
+      if (TryToNanoseconds(duration.Ticks(), nanoseconds))
+      {
+        m_table.SetValue(frameIndex, value, nanoseconds);
+      }
+    }
+    else
+    {
+      ReportWrongUnit(value, "a duration");
+    }
+  }
+
+
+  void TraceLog::SetValueAt(const uint64_t frameIndex, const TraceValue value, const NanosecondTimeSpan duration) noexcept
+  {
+    TraceUnit unit{TraceUnit::Count};
+    if (!m_table.TryGetUnit(value, unit))
+    {
+      return;
+    }
+    if (unit == TraceUnit::DurationTicks)
+    {
+      // Rounded to the nearest tick
+      m_table.SetValue(frameIndex, value, NanosecondTimeSpanUtil::ToTimeSpan(duration).Ticks());
+    }
+    else if (unit == TraceUnit::Nanoseconds)
+    {
+      m_table.SetValue(frameIndex, value, duration.TotalNanoseconds());
+    }
+    else
+    {
+      ReportWrongUnit(value, "a duration");
+    }
+  }
+
+
+  void TraceLog::SetFlagAt(const uint64_t frameIndex, const TraceValue value, const bool flag) noexcept
+  {
+    TraceUnit unit{TraceUnit::Count};
+    if (!m_table.TryGetUnit(value, unit))
+    {
+      return;
+    }
+    if (unit == TraceUnit::Flag)
+    {
+      m_table.SetValue(frameIndex, value, flag ? 1 : 0);
+    }
+    else
+    {
+      ReportWrongUnit(value, "a flag");
+    }
+  }
+
+
+  void TraceLog::ReportWrongUnit(const TraceValue value, const std::string_view given) noexcept
+  {
+    const std::size_t index = value.Value - 1u;
+    if (index >= m_wrongUnitReported.size() || m_wrongUnitReported[index])
+    {
+      return;
+    }
+    m_wrongUnitReported[index] = true;
+    try
+    {
+      FSLLOG3_WARNING("Trace: the value '{}' was given {}, which its unit is not for: it is not written (said once)", m_table.GetValues()[index].Name,
+                      given);
+    }
+    catch (const std::exception&)
+    {
+      // It could not be said: it is tried again the next time the value is given one
+      m_wrongUnitReported[index] = false;
     }
   }
 

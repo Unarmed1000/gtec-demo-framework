@@ -37,7 +37,10 @@
 #include <FslDemoApp/Vulkan/Basic/DemoAppVulkanSetup.hpp>
 #include <FslDemoApp/Vulkan/Basic/DrawContext.hpp>
 #include <FslDemoApp/Vulkan/Basic/FrameBufferCreateContext.hpp>
+#include <FslDemoApp/Vulkan/Basic/FrameStartWaitRecord.hpp>
+#include <FslDemoApp/Vulkan/Basic/GpuWorkWaitRecord.hpp>
 #include <FslDemoApp/Vulkan/Basic/PresentCallRecord.hpp>
+#include <FslDemoApp/Vulkan/Basic/PresentWaitRecord.hpp>
 #include <FslDemoApp/Vulkan/Basic/SwapchainInfo.hpp>
 #include <FslDemoApp/Vulkan/DemoAppVulkan.hpp>
 #include <FslUtil/Vulkan1_0/SurfaceFormatInfo.hpp>
@@ -233,6 +236,8 @@ namespace Fsl
         //! the last submit of each frame slot gives it (zero: the slot has not been submitted yet)
         RapidVulkan::Semaphore FrameTimeline;
         std::vector<uint64_t> FrameSubmitValues;
+        //! The id of the present of the frame each frame slot submitted last (zero: the slot has not been submitted yet)
+        std::vector<uint64_t> FramePresentIds;
 
         Resources() noexcept = default;
         Resources(const Resources&) = delete;
@@ -246,6 +251,7 @@ namespace Fsl
           // Reset in destruction order
           Frames.clear();
           FrameSubmitValues.clear();
+          FramePresentIds.clear();
           FrameTimeline.Reset();
           m_recycledSemaphores.clear();
           MainCommandPool.Reset();
@@ -339,8 +345,15 @@ namespace Fsl
       //! m_presentWait can wait for.
       std::array<uint64_t, 4> m_presentWaitIds{};
       uint32_t m_presentWaitIdCount{0};
+      //! The id of the first present the swapchain accepted (only valid if m_presentWaitIdCount is not zero): no earlier present can be
+      //! waited for
+      uint64_t m_presentWaitFirstId{0};
+      //! True if the app says which present a frame waits for (SetPresentWaitByApp)
+      bool m_presentWaitByApp{false};
       //! What the last wait for a present returned, so a change can be logged
       VkResult m_lastPresentWaitResult{VK_SUCCESS};
+      //! What the last wait for the GPU's work on a frame returned, so a change can be logged
+      VkResult m_lastGpuWorkWaitResult{VK_SUCCESS};
       //! The id of the last present (the presents are numbered from one)
       uint64_t m_presentCounter{0};
       //! True if the app wants its presents measured (it starts as DemoAppVulkanSetup::PresentTiming)
@@ -362,6 +375,8 @@ namespace Fsl
       //! The swapchain calls of the frame being drawn and of the last frame that was presented
       PresentCallRecord m_currentPresentCalls;
       PresentCallRecord m_lastPresentCalls;
+      //! The waits before the frame being drawn
+      FrameStartWaitRecord m_currentFrameStartWaits;
       //! Null if the system stats service is unavailable
       std::shared_ptr<ISystemStatsServiceControl> m_systemStatsServiceControl;
       //! What is added to the trace (null if the frames are not logged)
@@ -500,11 +515,55 @@ namespace Fsl
         return m_presentCounter + 1;
       }
 
+      //! @brief Check if a present of the swapchain can be waited for (WaitForPresent). The user asks for it with '--VkPresentWait' and it
+      //!        needs a device and a surface with VK_KHR_present_wait2, so it can change when the swapchain is recreated.
+      [[nodiscard]] bool IsPresentWaitEnabled() const noexcept
+      {
+        return m_presentWait.IsEnabled();
+      }
+
+      //! @brief The number of presents back the user asked the wait before a frame to be for ('--VkPresentWait', zero: no wait).
+      [[nodiscard]] uint32_t GetPresentWaitFramesBack() const noexcept
+      {
+        return m_launchOptions.PresentWait;
+      }
+
+      //! @brief true: the app says which present a frame waits for and for how long (it calls WaitForPresent from OnVulkanFrameStart),
+      //!        and the app base does not wait for one by itself. false (the default): before a frame the app base waits for the present
+      //!        '--VkPresentWait' back.
+      void SetPresentWaitByApp(const bool enabled) noexcept
+      {
+        m_presentWaitByApp = enabled;
+      }
+
+      //! @brief Wait until the present with the given id was presented, at the most for the given time. For a app that decides which
+      //!        present a frame waits for (SetPresentWaitByApp), call it from OnVulkanFrameStart.
+      //! @param presentId the id of a present of the swapchain as it is now (GetNextPresentId when its frame was drawn). A present of a
+      //!        swapchain from before can not be waited for: the call then returns at once (PresentWaitRecord::Result).
+      //! @return when the wait began and ended and what ended it. The frame pacing log gets it too.
+      PresentWaitRecord WaitForPresent(const uint64_t presentId, const TimeSpan timeout);
+
+      //! @brief Wait until the GPU is done with the frame of the present with the given id, at the most for the given time. It is the
+      //!        wait for a frame slot, made early and for a frame the app names: call it from OnVulkanFrameStart. The app base still
+      //!        waits for the frame slot of the frame after it, as the slot can not be used before the GPU is done with it: that wait
+      //!        returns at once where this one ended with the GPU done with the frame of that slot or a later one.
+      //! @param presentId the id of the present of a frame that was submitted (GetNextPresentId when its frame was drawn). A frame
+      //!        that is in no frame slot any more is one the GPU is done with: the call then returns at once.
+      //! @return when the wait began and ended and what ended it. The trace gets it too.
+      GpuWorkWaitRecord WaitForGpuWork(const uint64_t presentId, const TimeSpan timeout);
+
       //! @brief Get when the swapchain was called for the last frame that was presented (its PresentId is zero if there is none).
       //!        It is always available, as it needs no extension.
       [[nodiscard]] const PresentCallRecord& GetLastPresentCalls() const noexcept
       {
         return m_lastPresentCalls;
+      }
+
+      //! @brief Get when the app base waited before the frame that is being drawn: for its frame slot and for its swapchain image.
+      //!        It is of the current frame from VulkanDraw on, and always available.
+      [[nodiscard]] const FrameStartWaitRecord& GetCurrentFrameStartWaits() const noexcept
+      {
+        return m_currentFrameStartWaits;
       }
 
       //! @brief Get the present measurements that became available since the previous frame (empty if IsPresentTimingEnabled is false).
@@ -544,7 +603,7 @@ namespace Fsl
       //! The trace: what the swapchain is, the values of the frame that begins and the present that was just made
       void LogSwapchainCreated(const VkPresentModeKHR presentMode, const VkSwapchainCreateFlagsKHR createFlags, const uint32_t desiredMinImageCount);
       //! Wait until the GPU is done with the last frame that was submitted from a frame slot (the fence is not reset)
-      [[nodiscard]] VkResult WaitForFrameSlot(const uint32_t frameIndex);
+      [[nodiscard]] VkResult WaitForFrameSlot(const uint32_t frameIndex, const uint64_t timeoutNanoseconds);
       //! The number of images to ask the swapchain for at least
       [[nodiscard]] uint32_t GetDesiredMinSwapBufferCount() const;
       //! True if the swapchain no longer matches the surface in a way a new swapchain would cure

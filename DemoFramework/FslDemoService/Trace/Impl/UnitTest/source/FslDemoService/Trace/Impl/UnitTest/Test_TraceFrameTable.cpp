@@ -53,6 +53,25 @@ TEST(Test_TraceFrameTable, RegisterValue)
 }
 
 
+TEST(Test_TraceFrameTable, IsMoment_ATimeOrAMomentInNanoseconds)
+{
+  TraceFrameTable table;
+  const TraceValue time = table.RegisterValue("presentCallTicks", TraceUnit::Ticks, "");
+  const TraceValue moment = table.RegisterValue("intendedDisplayNs", TraceUnit::NanosecondTicks, "");
+  const TraceValue duration = table.RegisterValue("frameTimeNs", TraceUnit::Nanoseconds, "");
+  const TraceValue durationTicks = table.RegisterValue("workTicks", TraceUnit::DurationTicks, "");
+
+  EXPECT_TRUE(table.IsMoment(time));
+  EXPECT_TRUE(table.IsMoment(moment));
+  EXPECT_FALSE(table.IsMoment(duration));
+  EXPECT_FALSE(table.IsMoment(durationTicks));
+  EXPECT_FALSE(table.IsMoment(TraceValue()));
+
+  // A span and the bounds of a frame take a time in ticks only
+  EXPECT_FALSE(table.IsTime(moment));
+}
+
+
 TEST(Test_TraceFrameTable, RegisterValue_SameNameIsTheSameValue)
 {
   TraceFrameTable table;

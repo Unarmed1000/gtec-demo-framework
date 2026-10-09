@@ -1,0 +1,88 @@
+# Where in a refresh does a frame have to be ready? The pacer that is given the vertical blank times of the window system
+# (--Pacer.Kind vblank-period) has a frame presented at a place inside the refresh before the one it aims at. --Pacer.ReadyPlace is
+# that place, in percent of the refresh after a vertical blank. Only a part of a refresh is safe: too early and the frame is shown a
+# refresh too soon, too late and it misses its refresh. This plan runs the same fixed frame rate with the place from 5 to 95 % of the
+# refresh, so the part that is safe can be read from the runs.
+#
+# Run it once for every refresh rate of interest, with variable refresh off. Set the display to the rate first, then give the rate and
+# half of it:
+#   FramePacingCapture run ready-place-sweep -o <dir>/60Hz --refresh-hz 60 --set half_fps=30
+#
+# Pass for a run: every frame is shown for two refreshes. The places that pass are the safe part, the default of the pacer (50) should
+# sit inside it.
+
+description = "One fixed refresh rate: frames held for two refreshes and paced on the vertical blank times, ready from 5 to 95 % of a refresh, each idle and under CPU load"
+app = "Vulkan.FramePacing"
+frames = 400
+args = ["--Background", "flight", "--Window", "{window}", "--CpuLoad", "0", "--GpuLoad", "16", "--Pacer", "--VkSwapchainMaintenance1", "false", "--Pacer.Adaptive", "false", "--Pacer.TargetFps", "{half_fps}", "--Pacer.Kind", "vblank-period"]
+
+[variables]
+# Half the refresh rate of the display in frames per second
+half_fps = "120"
+# Where the window is. With more than one display it selects the display the plan runs on
+window = "[0,0,1600,900]"
+
+[load]
+# One busy process for every logical CPU
+processes = 0
+duty = 1.0
+
+[[run]]
+name = "place05"
+what = "the frame ready at 5 % of the refresh before the target"
+args = ["--Pacer.ReadyPlace", "5"]
+loaded = true
+
+[[run]]
+name = "place15"
+what = "the frame ready at 15 % of the refresh before the target"
+args = ["--Pacer.ReadyPlace", "15"]
+loaded = true
+
+[[run]]
+name = "place25"
+what = "the frame ready at 25 % of the refresh before the target"
+args = ["--Pacer.ReadyPlace", "25"]
+loaded = true
+
+[[run]]
+name = "place35"
+what = "the frame ready at 35 % of the refresh before the target"
+args = ["--Pacer.ReadyPlace", "35"]
+loaded = true
+
+[[run]]
+name = "place45"
+what = "the frame ready at 45 % of the refresh before the target"
+args = ["--Pacer.ReadyPlace", "45"]
+loaded = true
+
+[[run]]
+name = "place55"
+what = "the frame ready at 55 % of the refresh before the target"
+args = ["--Pacer.ReadyPlace", "55"]
+loaded = true
+
+[[run]]
+name = "place65"
+what = "the frame ready at 65 % of the refresh before the target"
+args = ["--Pacer.ReadyPlace", "65"]
+loaded = true
+
+[[run]]
+name = "place75"
+what = "the frame ready at 75 % of the refresh before the target"
+args = ["--Pacer.ReadyPlace", "75"]
+loaded = true
+
+[[run]]
+name = "place85"
+what = "the frame ready at 85 % of the refresh before the target"
+args = ["--Pacer.ReadyPlace", "85"]
+loaded = true
+
+[[run]]
+name = "place95"
+what = "the frame ready at 95 % of the refresh before the target"
+args = ["--Pacer.ReadyPlace", "95"]
+loaded = true

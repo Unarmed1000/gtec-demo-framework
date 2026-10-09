@@ -117,6 +117,11 @@ namespace Fsl
           return CreateLabel(StringViewLite(str), fontType);
         }
 
+        // ----- CreateSelectorLabel
+
+        std::shared_ptr<SelectorLabel> CreateSelectorLabel(std::vector<std::string> entries, const uint32_t selectedIndex,
+                                                           const FontType fontType) final;
+
 
         // ----- CreateImageButton
 

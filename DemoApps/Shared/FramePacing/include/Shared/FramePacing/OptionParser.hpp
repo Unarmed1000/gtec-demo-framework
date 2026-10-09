@@ -26,8 +26,8 @@
 #include <Shared/FramePacing/RaymarchParams.hpp>
 #include <Shared/FramePacing/SampleBoxAnimation.hpp>
 #include <Shared/FramePacing/SampleConfig.hpp>
-#include <Shared/FramePacing/SamplePacerHold.hpp>
-#include <Shared/FramePacing/SamplePacerProfile.hpp>
+#include <Shared/FramePacing/SamplePacerAim.hpp>
+#include <Shared/FramePacing/SamplePacerKind.hpp>
 #include <cstdint>
 #include <optional>
 
@@ -44,15 +44,24 @@ namespace Fsl
     SampleBoxAnimationSpeed m_boxAnimation{SampleBoxAnimationSpeed::Off};
     int32_t m_timedRunSeconds{SampleConfig::TimedRunSeconds.Get()};
     bool m_pacerEnabled{false};
+    //! The best tier the samples reach: a app that lacks what it uses is paced with the best kind of what it has
+    SamplePacerKind m_pacerKind{SamplePacerKind::VBlankWaitForPresent};
+    SamplePacerAim m_pacerAim{SamplePacerAim::Smoothness};
+    int32_t m_pacerWaitingPresents{SampleConfig::WaitingPresents.Get()};
+    int32_t m_pacerReadyPlacePercent{SampleConfig::ReadyPlacePercent.Get()};
+    int32_t m_pacerKindChangeFrames{SampleConfig::KindChangeFrames.Get()};
+    bool m_pacerSystemHoldsLoop{false};
+    bool m_pacerTimedPresent{false};
+    bool m_pacerGpuWait{false};
+    bool m_pacerSystemWaits{true};
     std::optional<double> m_pacerRefreshRateHz;
     int32_t m_pacerTargetFps{SampleConfig::TargetFps.Get()};
     bool m_pacerAdaptive{true};
     bool m_pacerPresentFeedback{false};
-    SamplePacerHold m_pacerHold{SamplePacerHold::Wait};
-    SamplePacerProfile m_pacerProfile{SamplePacerProfile::RenderEarly};
-    int32_t m_pacerVSyncPhasePercent{SampleConfig::VSyncPhasePercent.Get()};
     int32_t m_pacerDrainRefreshes{SampleConfig::DrainRefreshes.Get()};
     int32_t m_cpuLoadMs{SampleConfig::CpuLoadMs.Get()};
+    int32_t m_cpuSpikeMs{SampleConfig::CpuSpikeMs.Get()};
+    int32_t m_cpuSpikeIntervalFrames{SampleConfig::CpuSpikeIntervalFrames.Get()};
     int32_t m_gpuLoadSteps{SampleConfig::GpuLoadSteps.Get()};
     RaymarchScene m_background{RaymarchScene::Mandelbrot};
     bool m_glFlush{false};
@@ -109,6 +118,60 @@ namespace Fsl
       return m_pacerEnabled;
     }
 
+    //! @brief What the pacer of the library is asked to pace the frames with.
+    [[nodiscard]] SamplePacerKind GetPacerKind() const noexcept
+    {
+      return m_pacerKind;
+    }
+
+    //! @brief What the pacer optimizes for.
+    [[nodiscard]] SamplePacerAim GetPacerAim() const noexcept
+    {
+      return m_pacerAim;
+    }
+
+    //! @brief The presents the pacer lets wait while a frame is made (zero: not said).
+    [[nodiscard]] int32_t GetPacerWaitingPresents() const noexcept
+    {
+      return m_pacerWaitingPresents;
+    }
+
+    //! @brief Where in a refresh the pacer of the vertical blank times has a frame ready, in percent of the refresh.
+    [[nodiscard]] int32_t GetPacerReadyPlacePercent() const noexcept
+    {
+      return m_pacerReadyPlacePercent;
+    }
+
+    //! @brief The frames between two changes of the pacer kind during a run (zero: the kind is not changed).
+    [[nodiscard]] int32_t GetPacerKindChangeFrames() const noexcept
+    {
+      return m_pacerKindChangeFrames;
+    }
+
+    //! @brief True if the pacer is to use the present that takes a time, where the app has one.
+    [[nodiscard]] bool IsPacerTimedPresent() const noexcept
+    {
+      return m_pacerTimedPresent;
+    }
+
+    //! @brief True if the pacer is to hold the loop with a wait for the GPU's work, where the app can make that wait.
+    [[nodiscard]] bool IsPacerGpuWait() const noexcept
+    {
+      return m_pacerGpuWait;
+    }
+
+    //! @brief True if the waits the app base makes by itself before a frame are reported to the pacer (the default).
+    [[nodiscard]] bool IsPacerSystemWaits() const noexcept
+    {
+      return m_pacerSystemWaits;
+    }
+
+    //! @brief True if the pacer is told that the system holds the frame loop while its queue of frames is full.
+    [[nodiscard]] bool IsPacerSystemHoldsLoop() const noexcept
+    {
+      return m_pacerSystemHoldsLoop;
+    }
+
     //! @brief The refresh rate of the display in Hz the frame pacer should use (empty: ask the window system, else the UI slider).
     [[nodiscard]] std::optional<double> GetPacerRefreshRateHz() const noexcept
     {
@@ -133,26 +196,10 @@ namespace Fsl
       return m_pacerPresentFeedback;
     }
 
-    //! @brief Get how a frame is held for more than one refresh where the present only holds it for one.
-    [[nodiscard]] SamplePacerHold GetPacerHold() const noexcept
-    {
-      return m_pacerHold;
-    }
-
-    [[nodiscard]] SamplePacerProfile GetPacerProfile() const noexcept
-    {
-      return m_pacerProfile;
-    }
-
-    //! @brief Get where in the refresh before the one a frame is aimed at the vsync wait presents, in percent of the refresh.
+    //! @brief Get the refreshes of the pause the pacer makes once after it started.
     [[nodiscard]] int32_t GetPacerDrainRefreshes() const noexcept
     {
       return m_pacerDrainRefreshes;
-    }
-
-    [[nodiscard]] int32_t GetPacerVSyncPhasePercent() const noexcept
-    {
-      return m_pacerVSyncPhasePercent;
     }
 
     //! @brief Check if a OpenGL ES sample calls glFlush after the last command of a frame.
@@ -165,6 +212,18 @@ namespace Fsl
     [[nodiscard]] int32_t GetCpuLoadMs() const noexcept
     {
       return m_cpuLoadMs;
+    }
+
+    //! @brief The time one frame in every GetCpuSpikeIntervalFrames is busy on top of the CPU load, in milliseconds (0 = no such frame).
+    [[nodiscard]] int32_t GetCpuSpikeMs() const noexcept
+    {
+      return m_cpuSpikeMs;
+    }
+
+    //! @brief The number of frames from one frame that runs long to the next.
+    [[nodiscard]] int32_t GetCpuSpikeIntervalFrames() const noexcept
+    {
+      return m_cpuSpikeIntervalFrames;
     }
 
     //! @brief The number of steps the raymarched background takes for every pixel (0 = no background).

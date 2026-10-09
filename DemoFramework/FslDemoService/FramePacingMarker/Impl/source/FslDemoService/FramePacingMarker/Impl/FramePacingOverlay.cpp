@@ -22,6 +22,7 @@
 
 #include <FslBase/Log/Log3Fmt.hpp>
 #include <FslBase/Span/SpanUtil_Array.hpp>
+#include <FslBase/Time/NanosecondTickCountUtil.hpp>
 #include <FslDemoApp/Shared/Host/DemoWindowMetrics.hpp>
 #include <FslDemoService/FramePacingMarker/IFramePacingMarkerService.hpp>
 #include <FslDemoService/FramePacingMarker/Impl/FramePacingFrameRecord.hpp>
@@ -38,9 +39,9 @@
 #include <FslGraphics/Vertices/VertexPositionColorTexture.hpp>
 #include <FslService/Consumer/ServiceProvider.hpp>
 #include <mb/framepacing/core/time/ChronoConversion.hpp>
-#include <mb/framepacing/core/time/TickCount64.hpp>
-#include <mb/framepacing/core/time/TimeSpan.hpp>
-#include <mb/framepacing/core/time/TimeSpan32.hpp>
+#include <mb/framepacing/core/time/NanosecondTickCount.hpp>
+#include <mb/framepacing/core/time/NanosecondTimeDuration.hpp>
+#include <mb/framepacing/core/time/NanosecondTimeSpan.hpp>
 #include <mb/framepacing/marker/FrameMarker.hpp>
 #include <mb/framepacing/marker/payload/MarkerFlags.hpp>
 #include <mb/framepacing/marker/payload/SequenceId.hpp>
@@ -88,23 +89,27 @@ namespace Fsl
 
     static_assert(FramePacingSequenceId::ByteCount == FM::SequenceId::ByteCount);
 
-    //! How long the CPU has worked on the frame so far, in 100ns ticks (0 if unknown)
-    uint32_t CalcCpuBusyTicks(const int64_t cpuStartTicks, const int64_t nowTicks) noexcept
+    //! What the marker carries of a duration, as the service reports it
+    constexpr NanosecondTimeSpan ToNanosecondTimeSpan(const FP::NanosecondTimeDuration duration) noexcept
     {
-      if (cpuStartTicks <= 0 || nowTicks <= cpuStartTicks)
-      {
-        return 0u;
-      }
-      const int64_t busyTicks = nowTicks - cpuStartTicks;
-      return std::cmp_less_equal(busyTicks, std::numeric_limits<uint32_t>::max()) ? static_cast<uint32_t>(busyTicks)
-                                                                                  : std::numeric_limits<uint32_t>::max();
+      return NanosecondTimeSpan(duration.Nanoseconds());
     }
 
-    //! A frame time in 100ns ticks as the marker carries it: 32 bit, 0 if it is unknown or does not fit
-    uint32_t ToFrameTicks32(const int64_t ticks) noexcept
+    //! How long the CPU has worked on the frame so far (zero if unknown). The payload caps a time that is longer than the marker carries.
+    constexpr FP::NanosecondTimeDuration CalcCpuBusy(const int64_t cpuStartNanoseconds, const int64_t nowNanoseconds) noexcept
     {
-      // The max value is reserved (frames only when something changes)
-      return (ticks > 0 && std::cmp_less(ticks, std::numeric_limits<uint32_t>::max())) ? static_cast<uint32_t>(ticks) : 0u;
+      if (cpuStartNanoseconds <= 0 || nowNanoseconds <= cpuStartNanoseconds)
+      {
+        return {};
+      }
+      return FP::NanosecondTimeDuration::FromNanoseconds(nowNanoseconds - cpuStartNanoseconds);
+    }
+
+    //! A frame time as the marker takes it: zero if it is unknown. The service has no "frames only when something changes", so a frame
+    //! time is never the marker's value for that: one that is as long or longer is the longest frame time a marker carries.
+    constexpr FP::NanosecondTimeDuration ToMarkerFrameTime(const int64_t nanoseconds) noexcept
+    {
+      return FP::NanosecondTimeDuration::Min(FP::NanosecondTimeDuration::FromNanoseconds(nanoseconds), FM::Payload::MaxFrameTime);
     }
 
     int32_t ToInt32(const uint32_t value) noexcept
@@ -221,22 +226,24 @@ namespace Fsl
     // The framework has no frame pacer, so the intended display time, the target frame time and the preferred frame time are unknown (0)
     // unless the app supplied the values of the frame (IFramePacingMarkerService::SetFrameSchedule). A frame is flagged as static after
     // if the app said so, and as static before if the service found that it has the animation time of the frame before it.
-    // The marker is the last thing drawn before the frame is presented, so the CPU busy time is measured now.
-    const uint32_t preferredFrameTicks = ToFrameTicks32(record.PreferredFrameTicks);
-    const uint32_t targetFrameTicks = ToFrameTicks32(record.TargetFrameTicks);
-    const uint32_t cpuBusyTicks = CalcCpuBusyTicks(record.CpuStartTicks, m_timer.GetTimestamp().Ticks());
+    // The marker is the last thing drawn before the frame is presented, so the CPU busy time is measured now, unless the app gave the
+    // one its frame pacer counts.
+    const FP::NanosecondTimeDuration cpuBusy =
+      record.CpuBusyNanoseconds > 0
+        ? FP::NanosecondTimeDuration::FromNanoseconds(record.CpuBusyNanoseconds)
+        : CalcCpuBusy(record.CpuStartNanoseconds, NanosecondTickCountUtil::FromTickCount(m_timer.GetTimestamp()).TotalNanoseconds());
     const FM::MarkerFlags flags = (record.Static ? FM::MarkerFlags::StaticAfter : FM::MarkerFlags::NoFlags) |
                                   (record.StaticBefore ? FM::MarkerFlags::StaticBefore : FM::MarkerFlags::NoFlags);
     const FM::Payload payload{ToMarkerKind(record.Kind),
                               record.RunId,
                               record.FrameIndex,
                               flags,
-                              FP::TimeSpan(record.AnimationTicks),
-                              FP::TimeSpan32(preferredFrameTicks),
-                              FP::TimeSpan32(targetFrameTicks),
-                              FP::TickCount64(record.IntendedDisplayTicks),
-                              FP::TickCount64(record.CpuStartTicks),
-                              FP::TimeSpan32(cpuBusyTicks)};
+                              FP::NanosecondTimeSpan(record.AnimationNanoseconds),
+                              ToMarkerFrameTime(record.PreferredFrameNanoseconds),
+                              ToMarkerFrameTime(record.TargetFrameNanoseconds),
+                              FP::NanosecondTickCount(record.IntendedDisplayNanoseconds),
+                              FP::NanosecondTickCount(record.CpuStartNanoseconds),
+                              cpuBusy};
     const FM::StartMetadata metadata{FP::ToDateTimeTicks(record.RunStartTime), FM::SequenceId{record.RunSequenceId.Bytes}};
 
     // The main marker (frame, start or end) is drawn at the top left and the sync marker at the bottom left. Both grids are kept up to date
@@ -305,29 +312,30 @@ namespace Fsl
     FramePacingMarkerInfo markerInfo;
     markerInfo.Kind = record.Kind;
     markerInfo.FrameIndex = record.FrameIndex;
-    markerInfo.AnimationTime = TimeSpan(record.AnimationTicks);
+    markerInfo.AnimationTime = NanosecondTimeSpan(record.AnimationNanoseconds);
     markerInfo.RunId = record.RunId;
-    if (record.IntendedDisplayTicks > 0)
+    if (record.IntendedDisplayNanoseconds > 0)
     {
-      markerInfo.IntendedDisplayTime = TickCount(record.IntendedDisplayTicks);
+      markerInfo.IntendedDisplayTime = NanosecondTickCount(record.IntendedDisplayNanoseconds);
     }
-    if (targetFrameTicks > 0u)
+    // The durations are those of the payload: it holds what the marker carries
+    if (payload.TargetFrameTime() > FP::NanosecondTimeDuration())
     {
-      markerInfo.TargetFrameTime = TimeSpan(static_cast<int64_t>(targetFrameTicks));
+      markerInfo.TargetFrameTime = ToNanosecondTimeSpan(payload.TargetFrameTime());
     }
-    if (preferredFrameTicks > 0u)
+    if (payload.PreferredFrameTime() > FP::NanosecondTimeDuration())
     {
-      markerInfo.PreferredFrameTime = TimeSpan(static_cast<int64_t>(preferredFrameTicks));
+      markerInfo.PreferredFrameTime = ToNanosecondTimeSpan(payload.PreferredFrameTime());
     }
     markerInfo.Static = record.Static;
     markerInfo.StaticBefore = record.StaticBefore;
-    if (record.CpuStartTicks > 0)
+    if (record.CpuStartNanoseconds > 0)
     {
-      markerInfo.CpuStartTime = TickCount(record.CpuStartTicks);
+      markerInfo.CpuStartTime = NanosecondTickCount(record.CpuStartNanoseconds);
     }
-    if (cpuBusyTicks > 0u)
+    if (payload.CpuBusy() > FP::NanosecondTimeDuration())
     {
-      markerInfo.CpuBusyTime = TimeSpan(static_cast<int64_t>(cpuBusyTicks));
+      markerInfo.CpuBusyTime = ToNanosecondTimeSpan(payload.CpuBusy());
     }
     if (record.Kind == FramePacingMarkerKind::SequenceStart)
     {

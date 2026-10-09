@@ -21,6 +21,7 @@
 //****************************************************************************************************************************************************
 
 #include <FslBase/Log/Log3Fmt.hpp>
+#include <FslBase/Time/NanosecondTickCountUtil.hpp>
 #include <FslDemoApp/Base/FrameInfo.hpp>
 #include <FslDemoApp/Base/Service/AppInfo/IAppInfoService.hpp>
 #include <FslDemoApp/Base/Service/Host/IHostInfo.hpp>
@@ -237,6 +238,26 @@ namespace Fsl
   }
 
 
+  bool FramePacingMarkerService::TryGetLastSwapTimes(TickCount& rCallTime, TickCount& rReturnTime) const noexcept
+  {
+    if (!m_hasSwapTimes)
+    {
+      return false;
+    }
+    rCallTime = m_swapCallTime;
+    rReturnTime = m_swapReturnTime;
+    return true;
+  }
+
+
+  void FramePacingMarkerService::OnSwapBuffers(const TickCount callTime, const TickCount returnTime) noexcept
+  {
+    m_swapCallTime = callTime;
+    m_swapReturnTime = returnTime;
+    m_hasSwapTimes = true;
+  }
+
+
   void FramePacingMarkerService::BeginFrame(const FrameInfo& frameInfo, const TickCount cpuStartTime)
   {
     if (m_pendingRun.has_value())
@@ -258,10 +279,11 @@ namespace Fsl
 
     m_frameIndex = m_frameCount;
     ++m_frameCount;
-    // The animation time the app uses, TickCount is in 100ns ticks exactly like the marker format.
-    m_frameAnimationTicks = frameInfo.Time.CurrentTickCount.Ticks();
-    // A HighResolutionTimer timestamp, also in 100ns ticks
-    m_frameCpuStartTicks = cpuStartTime.Ticks();
+    // The animation time the app uses. The marker carries nanoseconds and the clocks of the framework count ticks of 100ns, so the
+    // times of the framework are whole ticks in it. A app that knows its times in nanoseconds gives them with SetFrameSchedule.
+    m_frameAnimationNanoseconds = NanosecondTickCountUtil::FromTickCount(frameInfo.Time.CurrentTickCount).TotalNanoseconds();
+    // A HighResolutionTimer timestamp
+    m_frameCpuStartNanoseconds = NanosecondTickCountUtil::FromTickCount(cpuStartTime).TotalNanoseconds();
     // An app with its own frame pacer supplies the values of the frame during its draw
     m_frameSchedule.reset();
     m_hasFrame = true;
@@ -284,10 +306,10 @@ namespace Fsl
       m_trace->SetInt64(m_logColumns.MarkerKind, static_cast<int64_t>(m_frameKind));
       m_trace->SetUInt64(m_logColumns.RunId, m_runId);
       m_trace->SetInt64(m_logColumns.RunState, static_cast<int64_t>(m_sequence.GetState()));
-      m_trace->SetInt64(m_logColumns.AnimationTime, m_frameAnimationTicks);
-      m_trace->SetInt64(m_logColumns.CpuStart, m_frameCpuStartTicks);
-      m_trace->SetInt64(m_logColumns.HostCpuStart, m_frameCpuStartTicks);
-      m_trace->SetInt64(m_logColumns.BeginFrame, m_timer.GetTimestamp().Ticks());
+      m_trace->SetValue(m_logColumns.AnimationTime, NanosecondTimeSpan(m_frameAnimationNanoseconds));
+      m_trace->SetValue(m_logColumns.CpuStart, cpuStartTime);
+      m_trace->SetValue(m_logColumns.HostCpuStart, cpuStartTime);
+      m_trace->SetValue(m_logColumns.BeginFrame, m_timer.GetTimestamp());
       m_trace->SetInt64(m_logColumns.HasSchedule, 0);
       m_trace->SetInt64(m_logColumns.MarkerDrawn, 0);
       WriteLogSystemLoad(m_timer.GetTimestamp());
@@ -317,24 +339,25 @@ namespace Fsl
     m_frameSchedule = schedule;
     if (m_trace)
     {
-      // The values of the app replace the ones of the framework, as they do in the marker
+      // The values of the app replace the ones of the framework, as they do in the marker. The trace writes each in the unit its
+      // value has: what a frame pacer gives in nanoseconds, as the marker carries it, and the start of the CPU as the tick it lies in.
       m_trace->SetInt64(m_logColumns.HasSchedule, 1);
-      m_trace->SetInt64(m_logColumns.AnimationTime, schedule.AnimationTime.Ticks());
+      m_trace->SetValue(m_logColumns.AnimationTime, schedule.AnimationTime);
       if (schedule.CpuStartTime.has_value())
       {
-        m_trace->SetInt64(m_logColumns.CpuStart, schedule.CpuStartTime->Ticks());
+        m_trace->SetValue(m_logColumns.CpuStart, *schedule.CpuStartTime);
       }
       if (schedule.IntendedDisplayTime.has_value())
       {
-        m_trace->SetInt64(m_logColumns.IntendedDisplay, schedule.IntendedDisplayTime->Ticks());
+        m_trace->SetValue(m_logColumns.IntendedDisplay, *schedule.IntendedDisplayTime);
       }
       if (schedule.TargetFrameTime.has_value())
       {
-        m_trace->SetInt64(m_logColumns.TargetFrameTime, schedule.TargetFrameTime->Ticks());
+        m_trace->SetValue(m_logColumns.TargetFrameTime, *schedule.TargetFrameTime);
       }
       if (schedule.PreferredFrameTime.has_value())
       {
-        m_trace->SetInt64(m_logColumns.PreferredFrameTime, schedule.PreferredFrameTime->Ticks());
+        m_trace->SetValue(m_logColumns.PreferredFrameTime, *schedule.PreferredFrameTime);
       }
     }
   }
@@ -348,12 +371,13 @@ namespace Fsl
     }
     rRecord.Kind = m_frameKind;
     rRecord.FrameIndex = m_frameIndex;
-    rRecord.AnimationTicks = m_frameAnimationTicks;
-    rRecord.CpuStartTicks = m_frameCpuStartTicks;
+    rRecord.AnimationNanoseconds = m_frameAnimationNanoseconds;
+    rRecord.CpuStartNanoseconds = m_frameCpuStartNanoseconds;
+    rRecord.CpuBusyNanoseconds = 0;
     // The framework has no frame pacer, so the pacing values are unknown unless the app supplied them
-    rRecord.IntendedDisplayTicks = 0;
-    rRecord.TargetFrameTicks = 0;
-    rRecord.PreferredFrameTicks = 0;
+    rRecord.IntendedDisplayNanoseconds = 0;
+    rRecord.TargetFrameNanoseconds = 0;
+    rRecord.PreferredFrameNanoseconds = 0;
     rRecord.Static = false;
     if (m_frameSchedule.has_value())
     {
@@ -379,11 +403,11 @@ namespace Fsl
     {
       // What the marker that was just drawn carries, where it differs from what was known when the frame began
       m_trace->SetInt64At(TraceFrameIndex(markerInfo.FrameIndex), m_logColumns.MarkerDrawn, 1);
-      m_trace->SetInt64At(TraceFrameIndex(markerInfo.FrameIndex), m_logColumns.MarkerDraw, m_timer.GetTimestamp().Ticks());
+      m_trace->SetValueAt(TraceFrameIndex(markerInfo.FrameIndex), m_logColumns.MarkerDraw, m_timer.GetTimestamp());
       m_trace->SetInt64At(TraceFrameIndex(markerInfo.FrameIndex), m_logColumns.MarkerKind, static_cast<int64_t>(markerInfo.Kind));
       if (markerInfo.CpuBusyTime.has_value())
       {
-        m_trace->SetInt64At(TraceFrameIndex(markerInfo.FrameIndex), m_logColumns.MarkerCpuBusy, markerInfo.CpuBusyTime->Ticks());
+        m_trace->SetValueAt(TraceFrameIndex(markerInfo.FrameIndex), m_logColumns.MarkerCpuBusy, *markerInfo.CpuBusyTime);
       }
       m_trace->SetInt64At(TraceFrameIndex(markerInfo.FrameIndex), m_logColumns.MarkerStatic, markerInfo.Static ? 1 : 0);
       m_trace->SetInt64At(TraceFrameIndex(markerInfo.FrameIndex), m_logColumns.MarkerStaticBefore, markerInfo.StaticBefore ? 1 : 0);
@@ -405,25 +429,27 @@ namespace Fsl
     m_logColumns.RunId = rLog.RegisterValue("runId", TraceUnit::Id, "The id of the current (or last) run, as the marker carries it");
     m_logColumns.RunState = rLog.RegisterValue("runState", TraceUnit::Code, "The state of the run: 0 idle, 1 starting, 2 measuring, 3 ending");
     m_logColumns.AnimationTime =
-      rLog.RegisterValue("animationTimeTicks", TraceUnit::DurationTicks,
-                         "The time the frame is animated for, as the marker carries it (the one of the app if it gave a schedule)");
-    m_logColumns.CpuStart = rLog.RegisterValue(
-      "cpuStartTicks", TraceUnit::Ticks, "When the CPU started on the frame, as the marker carries it (the one of the app if it gave a schedule)");
+      rLog.RegisterValue("animationTimeNs", TraceUnit::Nanoseconds,
+                         "The time the frame is animated for in nanoseconds, as the marker carries it (the one of the app if it gave a schedule)");
+    m_logColumns.CpuStart =
+      rLog.RegisterValue("cpuStartTicks", TraceUnit::Ticks,
+                         "When the CPU started on the frame, as the marker carries it to the tick (the one of the app if it gave a schedule)");
     m_logColumns.HostCpuStart = rLog.RegisterValue("hostCpuStartTicks", TraceUnit::Ticks, "When the host started the update of the frame");
     m_logColumns.BeginFrame =
       rLog.RegisterValue("beginFrameTicks", TraceUnit::Ticks,
                          "When the host told the service the frame begins: after the update and after the frame was prepared for drawing");
     m_logColumns.HasSchedule = rLog.RegisterValue("hasSchedule", TraceUnit::Flag, "1 if the app gave the pacing values of the frame");
-    m_logColumns.IntendedDisplay =
-      rLog.RegisterValue("intendedDisplayTicks", TraceUnit::Ticks, "When the frame pacer of the app intends the frame to be shown");
-    m_logColumns.TargetFrameTime =
-      rLog.RegisterValue("targetFrameTimeTicks", TraceUnit::DurationTicks, "The frame time the frame pacer of the app aims for");
-    m_logColumns.PreferredFrameTime =
-      rLog.RegisterValue("preferredFrameTimeTicks", TraceUnit::DurationTicks, "The frame time the app wants to run at");
+    m_logColumns.IntendedDisplay = rLog.RegisterValue("intendedDisplayNs", TraceUnit::NanosecondTicks,
+                                                      "When the frame pacer of the app intends the frame to be shown, as the marker carries it");
+    m_logColumns.TargetFrameTime = rLog.RegisterValue("targetFrameTimeNs", TraceUnit::Nanoseconds,
+                                                      "The frame time the frame pacer of the app aims for in nanoseconds, as the marker carries it");
+    m_logColumns.PreferredFrameTime = rLog.RegisterValue("preferredFrameTimeNs", TraceUnit::Nanoseconds,
+                                                         "The frame time the app wants to run at in nanoseconds, as the marker carries it");
     m_logColumns.MarkerDrawn = rLog.RegisterValue("markerDrawn", TraceUnit::Flag, "1 if the marker was drawn on the frame");
     m_logColumns.MarkerDraw = rLog.RegisterValue("markerDrawTicks", TraceUnit::Ticks, "When the marker was drawn, the last thing of the frame");
-    m_logColumns.MarkerCpuBusy = rLog.RegisterValue("markerCpuBusyTicks", TraceUnit::DurationTicks,
-                                                    "How long the CPU worked on the frame before the marker was drawn, as the marker carries it");
+    m_logColumns.MarkerCpuBusy =
+      rLog.RegisterValue("markerCpuBusyTicks", TraceUnit::DurationTicks,
+                         "How long the CPU worked on the frame before the marker was drawn, as the marker carries it to the tick");
     m_logColumns.MarkerStatic = rLog.RegisterValue("markerStatic", TraceUnit::Flag, "The static after flag of the marker");
     m_logColumns.MarkerStaticBefore = rLog.RegisterValue("markerStaticBefore", TraceUnit::Flag, "The static before flag of the marker");
     m_logColumns.MarkerSync = rLog.RegisterValue("markerSyncMarker", TraceUnit::Flag, "1 if the sync marker was drawn as well");

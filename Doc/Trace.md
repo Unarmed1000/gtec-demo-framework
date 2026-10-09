@@ -156,7 +156,8 @@ if (m_trace)
 if (m_trace)
 {
   m_trace->SetInt64(m_valueBodies, bodyCount);
-  // A value that is known later is set for the frame it belongs to
+  // A time or a duration is given as the type it is (TickCount, TimeSpan, NanosecondTickCount, NanosecondTimeSpan): the trace writes
+  // it in the unit of the value. A value that is known later is set for the frame it belongs to
   m_trace->SetValueAt(frameIndex, m_valueUploadEnd, uploadEndTime);
   m_trace->AddEvent("levelLoaded", "name=city");
 }
@@ -195,8 +196,13 @@ one of these rules or one of the names does.
 5. **The chain of a frame.** The steps of a frame have the flow id `(runId << 32) | (frameIndex & 0xFFFFFFFF)`, and the chain is
    not ended. A tool that gives one of its events that flow id adds a step to the chain of the frame.
 6. **The names.** The names of the values are those of the `Schema` track, with their units. A value of the unit `ticks` is a
-   moment and `durationTicks` a duration, both in ticks of 100 nanoseconds. `nanoseconds` is a time or a duration of a driver on a
-   clock of its own. A unsigned value is written as its 64 bits. The `value` marks of the `Schema` track are in the order the values
+   moment and `durationTicks` a duration, both in ticks of 100 nanoseconds. `nanosecondTicks` is a moment on the same clock in
+   nanoseconds, which can be drawn as a mark. `nanoseconds` is a duration in nanoseconds, or a moment in nanoseconds on a clock that
+   is not the one of the framework (a driver and the window system have a clock of their own). A app does not convert between ticks
+   and nanoseconds: `SetValue` takes a moment as a `TickCount` or a `NanosecondTickCount` and a duration as a `TimeSpan` or a
+   `NanosecondTimeSpan`, and the trace writes it in the unit the value was registered with (a moment as the tick it lies in, a
+   duration rounded to the nearest tick). A moment given to a value that is not a moment, or a duration to one that is not a
+   duration, is not written and logged once. A unsigned value is written as its 64 bits. The `value` marks of the `Schema` track are in the order the values
    were added, which is the order of the columns where the values are written as a table.
 
 ### Reading a trace

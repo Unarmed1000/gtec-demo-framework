@@ -94,7 +94,8 @@ namespace Fsl::VulkanBasic
 
       //! How long the wait for an earlier present to be presented lasts at the most (--VkPresentWait). A present of a window that is
       //! not shown may never be presented, so the wait has to end. It is longer than a frame that is held for many refreshes takes.
-      constexpr uint64_t PresentWaitTimeoutNanoseconds = uint64_t{250} * 1000u * 1000u;
+      constexpr TimeSpan PresentWaitTimeout(TimeSpan::TicksPerMillisecond * 250);
+      constexpr uint64_t NanosecondsPerTick = 100;
 
       //! How many times the recreation of a swapchain waits for the resize event of the window before it goes ahead without it
       constexpr const uint32_t MaxResizeEventWaits = 4;
@@ -277,6 +278,10 @@ namespace Fsl::VulkanBasic
     TraceValue WaitForPresentEnd;
     TraceValue WaitForPresentId;
     TraceValue WaitForPresentResult;
+    TraceValue GpuWorkWaitBegin;
+    TraceValue GpuWorkWaitEnd;
+    TraceValue GpuWorkWaitId;
+    TraceValue GpuWorkWaitResult;
     TraceValue AcquireFenceWaitBegin;
     TraceValue AcquireFenceWaitEnd;
     TraceValue SubmitCall;
@@ -311,6 +316,12 @@ namespace Fsl::VulkanBasic
     uint64_t WaitForPresentIdValue{0};
     int32_t WaitForPresentResultValue{0};
     bool HasWaitForPresent{false};
+    //! The same for the wait for the GPU's work on an earlier frame the app asked for (HasGpuWorkWait: it was made)
+    TickCount GpuWorkWaitBeginTime;
+    TickCount GpuWorkWaitEndTime;
+    uint64_t GpuWorkWaitIdValue{0};
+    int32_t GpuWorkWaitResultValue{0};
+    bool HasGpuWorkWait{false};
     TickCount AcquireFenceWaitBeginTime;
     TickCount AcquireFenceWaitEndTime;
     bool HasAcquireFenceWait{false};
@@ -329,6 +340,7 @@ namespace Fsl::VulkanBasic
     std::shared_ptr<ITraceService> Trace;
     TraceZone ZoneWaitForPresent;
     TraceZone ZoneFrameSlotWait;
+    TraceZone ZoneGpuWorkWait;
     TraceZone ZoneAcquire;
     TraceZone ZoneAcquireFenceWait;
     TraceZone ZoneSubmit;
@@ -380,6 +392,7 @@ namespace Fsl::VulkanBasic
       ITraceService& rTrace = *Trace;
       ZoneWaitForPresent = rTrace.RegisterZone("vkWaitForPresent2KHR");
       ZoneFrameSlotWait = rTrace.RegisterZone("Wait for frame slot");
+      ZoneGpuWorkWait = rTrace.RegisterZone("Wait for GPU work");
       ZoneAcquire = rTrace.RegisterZone("vkAcquireNextImageKHR");
       ZoneAcquireFenceWait = rTrace.RegisterZone("Wait for acquire fence");
       ZoneSubmit = rTrace.RegisterZone("vkQueueSubmit");
@@ -393,6 +406,7 @@ namespace Fsl::VulkanBasic
       // The calls of a frame, with the frame they belong to. The submit and the present are steps of the chain of the frame.
       const TraceTrack callTrack = rTrace.RegisterTrack("Vulkan", TraceTrackKind::Sequential);
       rTrace.DeclareSpan("wait for present", callTrack, WaitForPresentBegin, WaitForPresentEnd, TraceLink::NoLink);
+      rTrace.DeclareSpan("wait for GPU work", callTrack, GpuWorkWaitBegin, GpuWorkWaitEnd, TraceLink::NoLink);
       rTrace.DeclareSpan("wait for frame slot", callTrack, FrameSlotWaitBegin, FrameSlotWaitEnd, TraceLink::NoLink);
       rTrace.DeclareSpan("acquire", callTrack, AcquireCall, AcquireReturn, TraceLink::NoLink);
       rTrace.DeclareSpan("wait for acquire fence", callTrack, AcquireFenceWaitBegin, AcquireFenceWaitEnd, TraceLink::NoLink);
@@ -441,6 +455,18 @@ namespace Fsl::VulkanBasic
       state->WaitForPresentResult =
         rLog.RegisterValue("waitForPresentResult", TraceUnit::Code,
                            "The VkResult of vkWaitForPresent2KHR (0: the present was presented, 2 is VK_TIMEOUT: it was not within the wait)");
+      state->GpuWorkWaitBegin =
+        rLog.RegisterValue("gpuWorkWaitBeginTicks", TraceUnit::Ticks,
+                           "When the host began to wait for the GPU to be done with an earlier frame the app named "
+                           "(DemoAppVulkanBasic::WaitForGpuWork). It is before the wait for the frame slot. Empty: the app asked for none");
+      state->GpuWorkWaitEnd =
+        rLog.RegisterValue("gpuWorkWaitEndTicks", TraceUnit::Ticks, "When the wait for the GPU's work on an earlier frame ended");
+      state->GpuWorkWaitId =
+        rLog.RegisterValue("gpuWorkWaitPresentId", TraceUnit::Id, "The presentId of the frame whose GPU work the host waited for");
+      state->GpuWorkWaitResult =
+        rLog.RegisterValue("gpuWorkWaitResult", TraceUnit::Code,
+                           "The VkResult of the wait for the GPU's work (0: the GPU is done with the frame, 2 is VK_TIMEOUT: it was not "
+                           "within the wait)");
       state->AcquireFenceWaitBegin =
         rLog.RegisterValue("acquireFenceWaitBeginTicks", TraceUnit::Ticks,
                            "When the host began to wait for the fence of the acquire: for the swapchain image to be free "
@@ -579,6 +605,7 @@ namespace Fsl::VulkanBasic
     m_resources.Frames =
       CreateFrameSyncObjects(m_device.Get(), GetRenderConfig().MaxFramesInFlight, m_swapchainMaintenance1Enabled, m_launchOptions.AcquireFenceWait);
     m_resources.FrameSubmitValues.assign(m_resources.Frames.size(), 0u);
+    m_resources.FramePresentIds.assign(m_resources.Frames.size(), 0u);
     m_useFrameTimeline = m_deviceActiveFeatures12.timelineSemaphore != VK_FALSE && m_launchOptions.TimelineSemaphore != OptionUserChoice::Off;
     if (m_useFrameTimeline)
     {
@@ -814,6 +841,8 @@ namespace Fsl::VulkanBasic
       ++m_frameTimelineValue;
       m_resources.FrameSubmitValues[currentFrameIndex] = m_frameTimelineValue;
     }
+    // The frame of the present that comes next is the one the GPU now works on for this frame slot
+    m_resources.FramePresentIds[currentFrameIndex] = GetNextPresentId();
   }
 
 
@@ -907,6 +936,7 @@ namespace Fsl::VulkanBasic
       m_presentTimingRecords.clear();
       m_presentWait.Reset();
       m_presentWaitIdCount = 0;
+      m_presentWaitFirstId = 0;
 
       m_swapchain = Vulkan::SwapchainKHRUtil::CreateSwapchain(m_physicalDevice.Device, m_device.Get(), swapchainCreateFlags, m_surface,
                                                               desiredMinImageCount, 1, desiredImageUsageFlags, VK_SHARING_MODE_EXCLUSIVE, 0, nullptr,
@@ -1041,6 +1071,7 @@ namespace Fsl::VulkanBasic
       m_presentTiming.Reset();
       m_presentWait.Reset();
       m_presentWaitIdCount = 0;
+      m_presentWaitFirstId = 0;
       m_swapchain.Reset();
       throw;
     }
@@ -1089,11 +1120,11 @@ namespace Fsl::VulkanBasic
   }
 
 
-  VkResult DemoAppVulkanBasic::WaitForFrameSlot(const uint32_t frameIndex)
+  VkResult DemoAppVulkanBasic::WaitForFrameSlot(const uint32_t frameIndex, const uint64_t timeoutNanoseconds)
   {
     if (!m_useFrameTimeline)
     {
-      return vkWaitForFences(m_device.Get(), 1, m_resources.Frames[frameIndex].QueueSubmitFence.GetPointer(), VK_TRUE, LocalConfig::DefaultTimeout);
+      return vkWaitForFences(m_device.Get(), 1, m_resources.Frames[frameIndex].QueueSubmitFence.GetPointer(), VK_TRUE, timeoutNanoseconds);
     }
     const uint64_t submitValue = m_resources.FrameSubmitValues[frameIndex];
     if (submitValue == 0u)
@@ -1107,7 +1138,7 @@ namespace Fsl::VulkanBasic
     waitInfo.semaphoreCount = 1;
     waitInfo.pSemaphores = &timeline;
     waitInfo.pValues = &submitValue;
-    return vkWaitSemaphores(m_device.Get(), &waitInfo, LocalConfig::DefaultTimeout);
+    return vkWaitSemaphores(m_device.Get(), &waitInfo, timeoutNanoseconds);
   }
 
 
@@ -1202,6 +1233,14 @@ namespace Fsl::VulkanBasic
       rLog.SetValue(rState.WaitForPresentEnd, rState.WaitForPresentEndTime);
       rLog.SetUInt64(rState.WaitForPresentId, rState.WaitForPresentIdValue);
       rLog.SetInt64(rState.WaitForPresentResult, rState.WaitForPresentResultValue);
+    }
+    if (rState.HasGpuWorkWait)
+    {
+      rState.HasGpuWorkWait = false;
+      rLog.SetValue(rState.GpuWorkWaitBegin, rState.GpuWorkWaitBeginTime);
+      rLog.SetValue(rState.GpuWorkWaitEnd, rState.GpuWorkWaitEndTime);
+      rLog.SetUInt64(rState.GpuWorkWaitId, rState.GpuWorkWaitIdValue);
+      rLog.SetInt64(rState.GpuWorkWaitResult, rState.GpuWorkWaitResultValue);
     }
     if (rState.HasAcquireFenceWait)
     {
@@ -1696,13 +1735,15 @@ namespace Fsl::VulkanBasic
     // which matters with the few images a swapchain has.
     WaitForEarlierPresent();
     OnVulkanFrameStart();
+    m_currentFrameStartWaits = {};
+    m_currentFrameStartWaits.FrameSlotWaitBeginTime = m_presentCallTimer.GetTimestamp();
     if (m_framePacingLogState)
     {
-      m_framePacingLogState->FrameSlotWaitBeginTime = m_presentCallTimer.GetTimestamp();
+      m_framePacingLogState->FrameSlotWaitBeginTime = m_currentFrameStartWaits.FrameSlotWaitBeginTime;
     }
     {    // Wait for the frame slot to be ready, so we know the frame resources can be reused
       const ScopedTraceZone traceZone = FramePacingLogState::BeginZone(m_framePacingLogState, &FramePacingLogState::ZoneFrameSlotWait);
-      const VkResult waitVkResult = WaitForFrameSlot(currentFrameIndex);
+      const VkResult waitVkResult = WaitForFrameSlot(currentFrameIndex, LocalConfig::DefaultTimeout);
       if (waitVkResult != VK_SUCCESS)
       {
         FSLLOG3_WARNING("Waiting for the frame slot failed with: {}", RapidVulkan::Debug::ToString(waitVkResult));
@@ -1716,9 +1757,10 @@ namespace Fsl::VulkanBasic
         return waitResult;
       }
     }
+    m_currentFrameStartWaits.FrameSlotWaitEndTime = m_presentCallTimer.GetTimestamp();
     if (m_framePacingLogState)
     {
-      m_framePacingLogState->FrameSlotWaitEndTime = m_presentCallTimer.GetTimestamp();
+      m_framePacingLogState->FrameSlotWaitEndTime = m_currentFrameStartWaits.FrameSlotWaitEndTime;
     }
 
     uint32_t acquiredSwapImageIndex{0};
@@ -1734,6 +1776,8 @@ namespace Fsl::VulkanBasic
                                      &acquiredSwapImageIndex);
       m_currentPresentCalls.AcquireReturnTime = m_presentCallTimer.GetTimestamp();
       m_currentPresentCalls.AcquireResult = static_cast<int32_t>(result);
+      m_currentFrameStartWaits.AcquireCallTime = m_currentPresentCalls.AcquireCallTime;
+      m_currentFrameStartWaits.AcquireReturnTime = m_currentPresentCalls.AcquireReturnTime;
     }
     if (imageAcquiredFence != VK_NULL_HANDLE && (result == VK_SUCCESS || result == VK_SUBOPTIMAL_KHR))
     {
@@ -1790,7 +1834,7 @@ namespace Fsl::VulkanBasic
             // FSLLOG3_INFO("Remapping frameIndex {} to image previously used in frameIndex{}", currentFrameIndex,
             // rSwapchainRecord.AssignedFrameIndex);
             // We only wait for the other frames fence (and it will be up to the frame to reset it once we get to it)
-            const VkResult waitResult = WaitForFrameSlot(rSwapchainRecord.AssignedFrameIndex);
+            const VkResult waitResult = WaitForFrameSlot(rSwapchainRecord.AssignedFrameIndex, LocalConfig::DefaultTimeout);
             if (waitResult != VK_SUCCESS)
             {
               FSLLOG3_WARNING("Waiting for the frame slot that used the image failed with: {}", RapidVulkan::Debug::ToString(waitResult));
@@ -1880,6 +1924,7 @@ namespace Fsl::VulkanBasic
       return m_swapchain.TryQueuePresent(m_deviceQueue.Queue, 1, &signalSemaphore, &rFrame.AssignedSwapImageIndex, nullptr, pPresentInfoNext);
     }();
     m_currentPresentCalls.PresentReturnTime = m_presentCallTimer.GetTimestamp();
+    m_currentPresentCalls.PresentResult = static_cast<int32_t>(result);
     m_lastPresentCalls = m_currentPresentCalls;
     LogPresent(result, presentTimingInfo.IsTimingRequested, presentTimingInfo.RelativeTargetTimeNanoseconds);
     rFrame.PresentFencePending = hasPresentFence && IsPresentFenceSignalExpected(result);
@@ -1889,6 +1934,10 @@ namespace Fsl::VulkanBasic
       // Only a present the swapchain accepted can be waited for. The newest id is kept first.
       std::copy_backward(m_presentWaitIds.begin(), m_presentWaitIds.end() - 1, m_presentWaitIds.end());
       m_presentWaitIds[0] = m_presentCounter;
+      if (m_presentWaitIdCount == 0u)
+      {
+        m_presentWaitFirstId = m_presentCounter;
+      }
       m_presentWaitIdCount = std::min(m_presentWaitIdCount + 1u, static_cast<uint32_t>(m_presentWaitIds.size()));
     }
 
@@ -1934,23 +1983,46 @@ namespace Fsl::VulkanBasic
   void DemoAppVulkanBasic::WaitForEarlierPresent()
   {
     const uint32_t framesBack = m_launchOptions.PresentWait;
-    if (!m_presentWait.IsEnabled() || framesBack == 0u || framesBack > m_presentWaitIdCount)
+    if (m_presentWaitByApp || !m_presentWait.IsEnabled() || framesBack == 0u || framesBack > m_presentWaitIdCount)
     {
-      // Not asked for, not possible, or the swapchain has not accepted that many presents yet
+      // The app does it, not asked for, not possible, or the swapchain has not accepted that many presents yet
       return;
     }
-    const uint64_t presentId = m_presentWaitIds[framesBack - 1u];
-    const TickCount waitBeginTime = m_framePacingLogState ? m_presentCallTimer.GetTimestamp() : TickCount();
-    const VkResult result = [this, presentId]()
+    WaitForPresent(m_presentWaitIds[framesBack - 1u], LocalConfig::PresentWaitTimeout);
+  }
+
+
+  PresentWaitRecord DemoAppVulkanBasic::WaitForPresent(const uint64_t presentId, const TimeSpan timeout)
+  {
+    PresentWaitRecord record;
+    record.PresentId = presentId;
+    record.BeginTime = m_presentCallTimer.GetTimestamp();
+    record.EndTime = record.BeginTime;
+    if (!m_presentWait.IsEnabled())
+    {
+      record.Result = static_cast<int32_t>(VK_ERROR_FEATURE_NOT_PRESENT);
+      return record;
+    }
+    if (m_presentWaitIdCount == 0u || presentId < m_presentWaitFirstId || presentId > m_presentWaitIds[0])
+    {
+      // A present of a swapchain from before, or one that was never accepted: the swapchain as it is now will not present it, so a
+      // wait for it could only run out
+      record.Result = static_cast<int32_t>(VK_ERROR_OUT_OF_DATE_KHR);
+      return record;
+    }
+    const uint64_t timeoutNanoseconds = static_cast<uint64_t>(std::max(timeout.Ticks(), int64_t{0})) * LocalConfig::NanosecondsPerTick;
+    const VkResult result = [this, presentId, timeoutNanoseconds]()
     {
       const ScopedTraceZone traceZone = FramePacingLogState::BeginZone(m_framePacingLogState, &FramePacingLogState::ZoneWaitForPresent);
-      return m_presentWait.Wait(presentId, LocalConfig::PresentWaitTimeoutNanoseconds);
+      return m_presentWait.Wait(presentId, timeoutNanoseconds);
     }();
+    record.EndTime = m_presentCallTimer.GetTimestamp();
+    record.Result = static_cast<int32_t>(result);
     if (m_framePacingLogState)
     {
       FramePacingLogState& rState = *m_framePacingLogState;
-      rState.WaitForPresentBeginTime = waitBeginTime;
-      rState.WaitForPresentEndTime = m_presentCallTimer.GetTimestamp();
+      rState.WaitForPresentBeginTime = record.BeginTime;
+      rState.WaitForPresentEndTime = record.EndTime;
       rState.WaitForPresentIdValue = presentId;
       rState.WaitForPresentResultValue = static_cast<int32_t>(result);
       rState.HasWaitForPresent = true;
@@ -1962,6 +2034,49 @@ namespace Fsl::VulkanBasic
       m_lastPresentWaitResult = result;
       FSLLOG3_VERBOSE("Present wait: vkWaitForPresent2KHR for present {} returned {}", presentId, RapidVulkan::Debug::ToString(result));
     }
+    return record;
+  }
+
+
+  GpuWorkWaitRecord DemoAppVulkanBasic::WaitForGpuWork(const uint64_t presentId, const TimeSpan timeout)
+  {
+    GpuWorkWaitRecord record;
+    record.PresentId = presentId;
+    record.BeginTime = m_presentCallTimer.GetTimestamp();
+    record.EndTime = record.BeginTime;
+    // The frame slot that holds the frame. A frame that is in no slot any more is one the GPU is done with, as a slot is not used
+    // again before that.
+    const auto itrFind = presentId != 0u ? std::find(m_resources.FramePresentIds.begin(), m_resources.FramePresentIds.end(), presentId)
+                                         : m_resources.FramePresentIds.end();
+    VkResult result = VK_SUCCESS;
+    if (itrFind != m_resources.FramePresentIds.end())
+    {
+      const auto frameIndex = static_cast<uint32_t>(std::distance(m_resources.FramePresentIds.begin(), itrFind));
+      const uint64_t timeoutNanoseconds = static_cast<uint64_t>(std::max(timeout.Ticks(), int64_t{0})) * LocalConfig::NanosecondsPerTick;
+      {
+        const ScopedTraceZone traceZone = FramePacingLogState::BeginZone(m_framePacingLogState, &FramePacingLogState::ZoneGpuWorkWait);
+        result = WaitForFrameSlot(frameIndex, timeoutNanoseconds);
+      }
+      record.EndTime = m_presentCallTimer.GetTimestamp();
+    }
+    record.Result = static_cast<int32_t>(result);
+    if (m_framePacingLogState)
+    {
+      FramePacingLogState& rState = *m_framePacingLogState;
+      rState.GpuWorkWaitBeginTime = record.BeginTime;
+      rState.GpuWorkWaitEndTime = record.EndTime;
+      rState.GpuWorkWaitIdValue = presentId;
+      rState.GpuWorkWaitResultValue = static_cast<int32_t>(result);
+      rState.HasGpuWorkWait = true;
+    }
+    if (result != m_lastGpuWorkWaitResult)
+    {
+      // Said when it changes, not per frame: a timeout is a GPU that did not finish the frame within the wait, a error is followed by
+      // a lost device, which the wait for the frame slot reports
+      m_lastGpuWorkWaitResult = result;
+      FSLLOG3_VERBOSE("GPU work wait: the wait for the frame of present {} returned {}", presentId, RapidVulkan::Debug::ToString(result));
+    }
+    return record;
   }
 
 

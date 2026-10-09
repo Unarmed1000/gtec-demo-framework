@@ -42,15 +42,23 @@ namespace Fsl
         BoxAnimation,
         TimedRunDuration,
         Pacer,
+        PacerKind,
+        PacerAim,
+        PacerWaitingPresents,
+        PacerReadyPlace,
+        PacerKindChange,
+        PacerSystemHoldsLoop,
+        PacerTimedPresent,
+        PacerGpuWait,
+        PacerSystemWaits,
         PacerRefreshRate,
         PacerTargetFps,
         PacerAdaptive,
         PacerPresentFeedback,
-        PacerHold,
-        PacerProfile,
-        PacerVSyncPhase,
         PacerDrain,
         CpuLoad,
+        CpuSpike,
+        CpuSpikeInterval,
         GpuLoad,
         Background,
         GLFlush
@@ -100,6 +108,58 @@ namespace Fsl
                           "The duration in seconds of a timed run that is started in the UI (1 to 120, the default is 10).");
     rOptions.emplace_back("Pacer", OptionArgument::OptionNone, CommandId::Pacer,
                           "Start with the frame pacer of the sample on (the experimental mb-framepacing pacer).");
+    rOptions.emplace_back("Pacer.Kind", OptionArgument::OptionRequired, CommandId::PacerKind,
+                          "What the pacer of the library paces the frames with: the tier that is asked for. The pacer says what to wait "
+                          "for before a frame starts and before it is presented, and the sample only does that. vblank-present-wait (the "
+                          "default and the best tier the samples reach: the pacer is told when the display of the window refreshes, so "
+                          "it aims a frame at a vertical blank, and before a frame it names a earlier present to wait for until it was "
+                          "shown: Vulkan with --VkPresentWait n, which is then the number of presents the pacer lets wait and no longer "
+                          "a wait of the host. From the wait it learns where in a refresh a frame has to be ready), vblank-period (the "
+                          "vertical blank times without the wait), timer-present-wait (the wait, on a timer and without the vertical "
+                          "blank times) or timer-period (a timer and the refresh period of the display, which every app has). A app "
+                          "that lacks what a kind uses is paced with the best kind of what it has, so the default is the best tier "
+                          "that is available.");
+    rOptions.emplace_back("Pacer.Aim", OptionArgument::OptionRequired, CommandId::PacerAim,
+                          "What the pacer optimizes for: smoothness (the default: at one refresh per frame the pacer keeps frames that "
+                          "wait to be shown as a reserve, --Pacer.WaitingPresents less one, so a frame that runs a little long is "
+                          "covered and a frame reaches the screen that many refreshes later) or low-latency (the frames that wait are "
+                          "kept as few as the pacer can).");
+    rOptions.emplace_back("Pacer.WaitingPresents", OptionArgument::OptionRequired, CommandId::PacerWaitingPresents,
+                          "The presents the pacers timer-period and timer-present-wait let wait to be shown while a frame is made, the "
+                          "frame itself counted (1 to 8). It is for measuring: not given or 0 the pacer picks the number, which is "
+                          "what a app leaves to it (it picks two).");
+    rOptions.emplace_back(
+      "Pacer.ReadyPlace", OptionArgument::OptionRequired, CommandId::PacerReadyPlace,
+      "Where in a refresh the pacers vblank-period and vblank-present-wait have a frame ready (presented, and with the GPU work reported the "
+      "GPU done with it), in percent of the refresh after a vertical blank (0 to 100, the default is 50, the middle). "
+      "A frame that is ready there is shown at the next vertical blank: earlier leaves more room for a frame that "
+      "runs long, later shows a newer frame.");
+    rOptions.emplace_back(
+      "Pacer.KindChange", OptionArgument::OptionRequired, CommandId::PacerKindChange,
+      "For measuring what a change of the pacer does: every that many frames the run goes on with the next of the four kinds "
+      "(--Pacer.Kind says the first), in a order that has every change from one of them to another once in twelve changes. The pacer "
+      "is not started again by it. 0, the default: the pacer is not changed.");
+    rOptions.emplace_back("Pacer.TimedPresent", OptionArgument::OptionNone, CommandId::PacerTimedPresent,
+                          "The pacer uses the present that takes a time, where the app has one (Vulkan with a swapchain "
+                          "that takes a time the frame before stays on screen at least): the pacer plans that time and the sample gives "
+                          "it to the present, next to everything it does without it. It changes no tier: only a present at a time "
+                          "lets the display place the frame.");
+    rOptions.emplace_back("Pacer.GpuWait", OptionArgument::OptionNone, CommandId::PacerGpuWait,
+                          "The kinds without a wait for a present (timer-period and vblank-period) hold the frame loop with a "
+                          "wait for the GPU's work on an earlier frame, where the app can make that wait (Vulkan): the pacer names the "
+                          "frame, the one before with the aim of low latency and the one before that with smoothness where two frames "
+                          "are in flight (--VkFramesInFlight 2). It is the wait for a frame slot of the app base, made for the frame the "
+                          "pacer names and reported to it.");
+    rOptions.emplace_back("Pacer.SystemWaits", OptionArgument::OptionRequired, CommandId::PacerSystemWaits,
+                          "true (default): the waits the app base makes by itself before a frame (the wait for a frame slot and the "
+                          "acquire of a Vulkan app) are reported to the pacer. On a timer the pacer then does not take a frame "
+                          "the system held for a late one, and on vertical blank times a start the side of the display held is not "
+                          "stepped over by the animation time. false: they are not reported, for a run to hold a run with them against.");
+    rOptions.emplace_back("Pacer.SystemHoldsLoop", OptionArgument::OptionNone, CommandId::PacerSystemHoldsLoop,
+                          "Tell the pacer timer-period that the system holds the frame loop while its queue of frames is full (a acquire "
+                          "or a present that waits for the display). With the aim of smoothness the pacer then lets the system pace the "
+                          "loop, and a frame the system held is not late. Only for a system that does hold the loop. The Vulkan sample "
+                          "reports its wait for the frame slot and its acquire to the pacer with or without it.");
     rOptions.emplace_back("Pacer.RefreshRate", OptionArgument::OptionRequired, CommandId::PacerRefreshRate,
                           "The refresh rate of the display in Hz the frame pacer uses, decimals are allowed (59.94). Defaults to the "
                           "rate the window system reports, and to the UI slider if it does not know it.");
@@ -111,26 +171,17 @@ namespace Fsl
                           "true: the frame pacer is given when the display showed the frames, where the app measures its presents (Vulkan "
                           "with VK_EXT_present_timing). It paces the same with it and counts what the display did. Only for a display with "
                           "a fixed refresh rate. false (default).");
-    rOptions.emplace_back("Pacer.Hold", OptionArgument::OptionRequired, CommandId::PacerHold,
-                          "How a frame is held for more than one refresh where the present has no swap interval (Vulkan): wait (the "
-                          "default, sleep on a timer and present: a guess), vsync (wait on the vsync of the window system and present "
-                          "in the middle of the time it leaves, needs the window system to say when the display refreshes), schedule (a "
-                          "target time on the present, needs VK_EXT_present_timing) or auto (schedule, else vsync, else wait). A method the "
-                          "system can not do falls back to vsync, else wait.");
-    rOptions.emplace_back("Pacer.Profile", OptionArgument::OptionRequired, CommandId::PacerProfile,
-                          "Where a frame waits for the time the pacer gives for the next frame, where the app has to do the waiting "
-                          "(Vulkan): early (the default, the frame is rendered right away and its present waits), late (the start of the "
-                          "frame waits and the frame is presented when it is done) or off (no wait, to capture the loop without it). With "
-                          "--Pacer.Hold vsync the wait is for the vsync of the window system, else for a time on the clock of the app.");
-    rOptions.emplace_back("Pacer.VSyncPhase", OptionArgument::OptionRequired, CommandId::PacerVSyncPhase,
-                          "For the vsync hold: where in the refresh before the one a frame is aimed at the present is done, in percent "
-                          "of the refresh (1 to 99, the default is 65: the middle of what was measured to be shown at the target).");
     rOptions.emplace_back("Pacer.Drain", OptionArgument::OptionRequired, CommandId::PacerDrain,
-                          "The refreshes the app waits once, half a second after it began to wait for the time of the pacer, so the "
-                          "presents that are queued between the app and the display are shown before the next one is added (Vulkan, 0 to "
-                          "32, the default is 4, 0 is no such wait).");
+                          "The refreshes of the pause the pacer makes once, half a second after it started, so the presents that are "
+                          "queued between the app and the display are shown before the next one is added (timer-period and "
+                          "vblank-period with the aim of low latency; 0 to 32, the default is 4, 0 is no such pause).");
     rOptions.emplace_back("CpuLoad", OptionArgument::OptionRequired, CommandId::CpuLoad,
                           "Simulate a CPU load: the time in milliseconds the app spends busy every frame (0 = none, the default).");
+    rOptions.emplace_back("CpuSpike", OptionArgument::OptionRequired, CommandId::CpuSpike,
+                          "Simulate a frame that runs long now and then: the time in milliseconds one frame in every "
+                          "--CpuSpike.Interval frames is busy on top of the CPU load (0 = none, the default).");
+    rOptions.emplace_back("CpuSpike.Interval", OptionArgument::OptionRequired, CommandId::CpuSpikeInterval,
+                          "The number of frames from one frame that runs long to the next (2 to 100000, the default is 120).");
     rOptions.emplace_back("GpuLoad", OptionArgument::OptionRequired, CommandId::GpuLoad,
                           "A GPU load: the number of steps the background takes for every pixel; for the lace every doubling adds a "
                           "round of finer detail and the rest is samples per pixel (0 = no background, the default is a low load of 16).");
@@ -191,6 +242,63 @@ namespace Fsl
     case CommandId::Pacer:
       m_pacerEnabled = true;
       return OptionParseResult::Parsed;
+    case CommandId::PacerKind:
+      if (strOptArg == "timer-period")
+      {
+        m_pacerKind = SamplePacerKind::TimerPeriodOnly;
+        return OptionParseResult::Parsed;
+      }
+      if (strOptArg == "timer-present-wait")
+      {
+        m_pacerKind = SamplePacerKind::TimerWaitForPresent;
+        return OptionParseResult::Parsed;
+      }
+      if (strOptArg == "vblank-period")
+      {
+        m_pacerKind = SamplePacerKind::VBlankPeriodOnly;
+        return OptionParseResult::Parsed;
+      }
+      if (strOptArg == "vblank-present-wait")
+      {
+        m_pacerKind = SamplePacerKind::VBlankWaitForPresent;
+        return OptionParseResult::Parsed;
+      }
+      FSLLOG3_ERROR("Pacer.Kind must be 'timer-period', 'timer-present-wait', 'vblank-period' or 'vblank-present-wait'");
+      return OptionParseResult::Failed;
+    case CommandId::PacerAim:
+      if (strOptArg == "smoothness")
+      {
+        m_pacerAim = SamplePacerAim::Smoothness;
+        return OptionParseResult::Parsed;
+      }
+      if (strOptArg == "low-latency")
+      {
+        m_pacerAim = SamplePacerAim::LowLatency;
+        return OptionParseResult::Parsed;
+      }
+      FSLLOG3_ERROR("Pacer.Aim must be 'smoothness' or 'low-latency'");
+      return OptionParseResult::Failed;
+    case CommandId::PacerWaitingPresents:
+      return TryParseInRange(m_pacerWaitingPresents, strOptArg, SampleConfig::WaitingPresents, "Pacer.WaitingPresents") ? OptionParseResult::Parsed
+                                                                                                                        : OptionParseResult::Failed;
+    case CommandId::PacerTimedPresent:
+      m_pacerTimedPresent = true;
+      return OptionParseResult::Parsed;
+    case CommandId::PacerGpuWait:
+      m_pacerGpuWait = true;
+      return OptionParseResult::Parsed;
+    case CommandId::PacerSystemWaits:
+      StringParseUtil::Parse(m_pacerSystemWaits, strOptArg);
+      return OptionParseResult::Parsed;
+    case CommandId::PacerSystemHoldsLoop:
+      m_pacerSystemHoldsLoop = true;
+      return OptionParseResult::Parsed;
+    case CommandId::PacerKindChange:
+      return TryParseInRange(m_pacerKindChangeFrames, strOptArg, SampleConfig::KindChangeFrames, "Pacer.KindChange") ? OptionParseResult::Parsed
+                                                                                                                     : OptionParseResult::Failed;
+    case CommandId::PacerReadyPlace:
+      return TryParseInRange(m_pacerReadyPlacePercent, strOptArg, SampleConfig::ReadyPlacePercent, "Pacer.ReadyPlace") ? OptionParseResult::Parsed
+                                                                                                                       : OptionParseResult::Failed;
     case CommandId::PacerRefreshRate:
       {
         double value = 0.0;
@@ -212,55 +320,17 @@ namespace Fsl
     case CommandId::PacerPresentFeedback:
       StringParseUtil::Parse(m_pacerPresentFeedback, strOptArg);
       return OptionParseResult::Parsed;
-    case CommandId::PacerHold:
-      if (strOptArg == "auto")
-      {
-        m_pacerHold = SamplePacerHold::Auto;
-        return OptionParseResult::Parsed;
-      }
-      if (strOptArg == "vsync")
-      {
-        m_pacerHold = SamplePacerHold::VSync;
-        return OptionParseResult::Parsed;
-      }
-      if (strOptArg == "wait")
-      {
-        m_pacerHold = SamplePacerHold::Wait;
-        return OptionParseResult::Parsed;
-      }
-      if (strOptArg == "schedule")
-      {
-        m_pacerHold = SamplePacerHold::Schedule;
-        return OptionParseResult::Parsed;
-      }
-      FSLLOG3_ERROR("Pacer.Hold must be 'auto', 'vsync', 'wait' or 'schedule'");
-      return OptionParseResult::Failed;
-    case CommandId::PacerProfile:
-      if (strOptArg == "late")
-      {
-        m_pacerProfile = SamplePacerProfile::RenderLate;
-        return OptionParseResult::Parsed;
-      }
-      if (strOptArg == "early")
-      {
-        m_pacerProfile = SamplePacerProfile::RenderEarly;
-        return OptionParseResult::Parsed;
-      }
-      if (strOptArg == "off")
-      {
-        m_pacerProfile = SamplePacerProfile::Off;
-        return OptionParseResult::Parsed;
-      }
-      FSLLOG3_ERROR("Pacer.Profile must be 'late', 'early' or 'off'");
-      return OptionParseResult::Failed;
     case CommandId::PacerDrain:
       return TryParseInRange(m_pacerDrainRefreshes, strOptArg, SampleConfig::DrainRefreshes, "Pacer.Drain") ? OptionParseResult::Parsed
                                                                                                             : OptionParseResult::Failed;
-    case CommandId::PacerVSyncPhase:
-      return TryParseInRange(m_pacerVSyncPhasePercent, strOptArg, SampleConfig::VSyncPhasePercent, "Pacer.VSyncPhase") ? OptionParseResult::Parsed
-                                                                                                                       : OptionParseResult::Failed;
     case CommandId::CpuLoad:
       return TryParseInRange(m_cpuLoadMs, strOptArg, SampleConfig::CpuLoadMs, "CpuLoad") ? OptionParseResult::Parsed : OptionParseResult::Failed;
+    case CommandId::CpuSpike:
+      return TryParseInRange(m_cpuSpikeMs, strOptArg, SampleConfig::CpuSpikeMs, "CpuSpike") ? OptionParseResult::Parsed : OptionParseResult::Failed;
+    case CommandId::CpuSpikeInterval:
+      return TryParseInRange(m_cpuSpikeIntervalFrames, strOptArg, SampleConfig::CpuSpikeIntervalFrames, "CpuSpike.Interval")
+               ? OptionParseResult::Parsed
+               : OptionParseResult::Failed;
     case CommandId::GpuLoad:
       return TryParseInRange(m_gpuLoadSteps, strOptArg, SampleConfig::GpuLoadSteps, "GpuLoad") ? OptionParseResult::Parsed
                                                                                                : OptionParseResult::Failed;
