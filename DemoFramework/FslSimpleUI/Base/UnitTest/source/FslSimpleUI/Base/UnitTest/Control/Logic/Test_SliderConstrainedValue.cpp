@@ -202,7 +202,8 @@ TEST(TestControlLogic_SliderConstrainedValue, Construct_ValueMinMaxTickFrequency
   EXPECT_EQ(min, value.Min());
   EXPECT_EQ(max, value.Max());
   EXPECT_EQ(min, value.Get());
-  EXPECT_EQ(max, value.TickFrequency());
+  // The tick frequency is limited by the length of the range
+  EXPECT_EQ(max - min, value.TickFrequency());
 }
 
 
@@ -216,7 +217,37 @@ TEST(TestControlLogic_SliderConstrainedValue, Construct_ValueMinMaxTickFrequency
   EXPECT_EQ(min, value.Min());
   EXPECT_EQ(max, value.Max());
   EXPECT_EQ(min, value.Get());
-  EXPECT_EQ(max, value.TickFrequency());
+  // The tick frequency is limited by the length of the range
+  EXPECT_EQ(max - min, value.TickFrequency());
+}
+
+
+TEST(TestControlLogic_SliderConstrainedValue, Construct_ValueMinMaxTickFrequency_NegativeRange)
+{
+  const int32_t val = -14;
+  const int32_t min = -20;
+  const int32_t max = -10;
+  const int32_t tickFrequency = 5;
+  const UI::SliderConstrainedValue<int32_t> value(val, min, max, tickFrequency);
+
+  EXPECT_EQ(min, value.Min());
+  EXPECT_EQ(max, value.Max());
+  EXPECT_EQ(-15, value.Get());
+  EXPECT_EQ(tickFrequency, value.TickFrequency());
+}
+
+
+TEST(TestControlLogic_SliderConstrainedValue, Construct_ValueMinMaxTickFrequency_NegativeRange_TickFrequencyOutOfBounds_High)
+{
+  const int32_t val = -14;
+  const int32_t min = -20;
+  const int32_t max = -10;
+  const UI::SliderConstrainedValue<int32_t> value(val, min, max, 11);
+
+  EXPECT_EQ(min, value.Min());
+  EXPECT_EQ(max, value.Max());
+  EXPECT_EQ(max, value.Get());
+  EXPECT_EQ(max - min, value.TickFrequency());
 }
 
 

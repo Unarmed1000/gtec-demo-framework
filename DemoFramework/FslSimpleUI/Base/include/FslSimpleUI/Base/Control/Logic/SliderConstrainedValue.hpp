@@ -176,7 +176,9 @@ namespace Fsl::UI
 
     bool SetTickFrequency(const value_type tickFrequency)
     {
-      auto clampedTickFrequency = MathHelper::Clamp(tickFrequency, value_type(0), m_max);
+      // The tick frequency is a distance, so it is limited by the length of the range (m_max can be negative)
+      assert(m_min <= m_max);
+      auto clampedTickFrequency = MathHelper::Clamp(tickFrequency, value_type(0), static_cast<value_type>(m_max - m_min));
       if (clampedTickFrequency != m_tickFrequency)
       {
         m_tickFrequency = clampedTickFrequency;

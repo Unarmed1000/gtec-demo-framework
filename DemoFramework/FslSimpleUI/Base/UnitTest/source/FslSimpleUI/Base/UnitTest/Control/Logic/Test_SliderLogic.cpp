@@ -1367,11 +1367,11 @@ TEST(TestControlLogic_SliderLogic, SetTickFrequency_OutOfRange_Max)
 
   EXPECT_TRUE(logic.SetTickFrequency(200u));
   EXPECT_TRUE(logic.SetTickFrequency(2001u));
-  EXPECT_EQ(2000u, logic.GetTickFrequency());
+  EXPECT_EQ(1000u, logic.GetTickFrequency());
 
   EXPECT_TRUE(logic.SetTickFrequency(200u));
   EXPECT_TRUE(logic.SetTickFrequency(std::numeric_limits<uint32_t>::max()));
-  EXPECT_EQ(2000u, logic.GetTickFrequency());
+  EXPECT_EQ(1000u, logic.GetTickFrequency());
 }
 
 // ---------------------------------------------------------------------------------------------------------------------------------------------------
