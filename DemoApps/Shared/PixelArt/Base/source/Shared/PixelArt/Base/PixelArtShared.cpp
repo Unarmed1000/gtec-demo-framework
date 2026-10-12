@@ -261,7 +261,7 @@ namespace Fsl
     scrollLayout->AddChild(lblHintScene);
     scrollLayout->AddChild(lblHintMouse);
     scrollLayout->AddChild(lblHintReset);
-    const auto scrollViewer = rFactory.CreateScrollViewer(scrollLayout, UI::ScrollModeFlags::TranslateY, false);
+    const auto scrollViewer = rFactory.CreateScrollViewer(scrollLayout, UI::ScrollModeFlags::TranslateY, true);
     scrollViewer->SetAlignmentX(UI::ItemAlignment::Stretch);
     scrollViewer->SetAlignmentY(UI::ItemAlignment::Stretch);
 
