@@ -61,6 +61,13 @@ namespace Fsl::FramePacingFrameRecordUtil
     return lastMarker.RunId == record.RunId && (lastMarker.FrameIndex + 1u) == record.FrameIndex &&
            lastMarker.AnimationTime.TotalNanoseconds() == record.AnimationNanoseconds;
   }
+
+  //! True if the marker of the record's frame says that the app logs the frame record of the run to its trace. Only a start marker says
+  //! so, as it is its statement about the run: the other markers of a run with a trace do not carry it.
+  constexpr bool IsFrameRecordLogged(const FramePacingFrameRecord& record) noexcept
+  {
+    return record.Kind == FramePacingMarkerKind::SequenceStart && record.FrameRecordLogged;
+  }
 }
 
 #endif

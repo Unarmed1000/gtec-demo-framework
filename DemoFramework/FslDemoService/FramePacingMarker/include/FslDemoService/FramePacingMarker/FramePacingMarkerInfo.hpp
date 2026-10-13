@@ -64,6 +64,9 @@ namespace Fsl
     std::optional<std::chrono::system_clock::time_point> RunStartTime;
     //! Start markers only: the sequence id of the run
     std::optional<FramePacingSequenceId> RunSequenceId;
+    //! Start markers only: true if the marker says that the app logs the frame record of the run to a trace of its own, so there is a
+    //! trace the capture of the run can be merged with (the trace is on, see ITraceService)
+    bool FrameRecordLogged{false};
     //! True if the sync marker (the run id and the frame index) was drawn as well
     bool SyncMarker{false};
   };

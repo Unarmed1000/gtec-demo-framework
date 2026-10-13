@@ -26,6 +26,7 @@
 #include <FslDemoApp/Shared/Host/DemoWindowMetrics.hpp>
 #include <FslDemoService/FramePacingMarker/IFramePacingMarkerService.hpp>
 #include <FslDemoService/FramePacingMarker/Impl/FramePacingFrameRecord.hpp>
+#include <FslDemoService/FramePacingMarker/Impl/FramePacingFrameRecordUtil.hpp>
 #include <FslDemoService/FramePacingMarker/Impl/FramePacingOverlay.hpp>
 #include <FslDemoService/FramePacingMarker/Impl/IFramePacingFrameSource.hpp>
 #include <FslDemoService/Graphics/IGraphicsService.hpp>
@@ -235,8 +236,12 @@ namespace Fsl
       record.CpuBusyNanoseconds > 0
         ? FP::NanosecondTimeDuration::FromNanoseconds(record.CpuBusyNanoseconds)
         : CalcCpuBusy(record.CpuStartNanoseconds, NanosecondTickCountUtil::FromTickCount(m_timer.GetTimestamp()).TotalNanoseconds());
+    // A start marker says whether there is a trace of the app with the frame record of the run (it is logged below). The flag is the
+    // statement of the start marker about the run, the other markers do not carry it.
+    const bool frameRecordLogged = FramePacingFrameRecordUtil::IsFrameRecordLogged(record);
     const FM::MarkerFlags flags = (record.Static ? FM::MarkerFlags::StaticAfter : FM::MarkerFlags::NoFlags) |
-                                  (record.StaticBefore ? FM::MarkerFlags::StaticBefore : FM::MarkerFlags::NoFlags);
+                                  (record.StaticBefore ? FM::MarkerFlags::StaticBefore : FM::MarkerFlags::NoFlags) |
+                                  (frameRecordLogged ? FM::MarkerFlags::FrameRecordLogged : FM::MarkerFlags::NoFlags);
     const FM::Payload payload{ToMarkerKind(record.Kind),
                               record.RunId,
                               record.FrameIndex,
@@ -344,6 +349,7 @@ namespace Fsl
     {
       markerInfo.RunStartTime = record.RunStartTime;
       markerInfo.RunSequenceId = record.RunSequenceId;
+      markerInfo.FrameRecordLogged = frameRecordLogged;
     }
     markerInfo.SyncMarker = syncMarkerDrawn;
     m_service->SetLastMarker(markerInfo);

@@ -129,6 +129,11 @@ category and the track name the SDK says (`FrameRecordText`), through `ITraceSer
 `Frame` span of the frame has as `cpuStartNs`, `markerCpuBusyNs`, `animationTimeNs`, `preferredFrameTimeNs`, `targetFrameTimeNs`
 and `intendedDisplayNs`, which the tools of the framework read.
 
+A capture does not show whether a trace of the run exists, so the start marker of a run says it: its flag
+`MarkerFlags::FrameRecordLogged` is set when the trace is on, which is when the frame record of the frames of the run is logged.
+The tools of mb-framepacing then note with the run that there is a trace to merge the capture with. Only the start marker carries
+the flag, and the marker panel of the FramePacing samples shows it as "Frame record".
+
 ## The frame pacer of the FramePacing samples (experimental)
 
 The framework has no frame pacer, but the FramePacing samples can pace their frames with the experimental frame pacer of the mb-framepacing

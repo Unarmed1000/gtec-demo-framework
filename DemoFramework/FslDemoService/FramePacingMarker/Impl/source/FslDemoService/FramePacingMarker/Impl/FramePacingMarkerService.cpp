@@ -403,6 +403,9 @@ namespace Fsl
     rRecord.StaticBefore = m_lastMarker.has_value() && FramePacingFrameRecordUtil::IsStaticBefore(rRecord, *m_lastMarker);
     rRecord.RunStartTime = m_runStartTime;
     rRecord.RunSequenceId = m_runSequenceId;
+    // The frame record of a frame is logged where its marker is drawn (AddMarkerFrameRecord), which the trace is on for or not: the
+    // service only holds the trace service while the trace is being written
+    rRecord.FrameRecordLogged = m_trace != nullptr;
     rRecord.SyncMarkerEnabled = m_syncMarkerEnabled;
     rRecord.ModuleSizePx = m_moduleSizePx;
     rRecord.CaptureHeightPx = m_captureHeightPx;

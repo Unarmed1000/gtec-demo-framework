@@ -123,6 +123,7 @@ namespace Fsl
       std::shared_ptr<UI::Label> Static;
       std::shared_ptr<UI::Label> RunStartTime;
       std::shared_ptr<UI::Label> RunSequenceId;
+      std::shared_ptr<UI::Label> FrameRecord;
       std::shared_ptr<UI::Label> SyncMarker;
     };
 

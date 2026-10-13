@@ -57,6 +57,8 @@ namespace Fsl
     std::chrono::system_clock::time_point RunStartTime;
     //! Start markers only: the sequence id of the run (16 random bytes).
     FramePacingSequenceId RunSequenceId;
+    //! Start markers only: true if the frame record of the frames of the run is logged to the trace of the app.
+    bool FrameRecordLogged{false};
     //! Draw the sync marker at the bottom left as well
     bool SyncMarkerEnabled{false};
     int32_t ModuleSizePx{0};

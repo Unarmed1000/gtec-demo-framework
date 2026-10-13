@@ -225,3 +225,35 @@ TEST(Test_FramePacingFrameRecordUtil, IsStaticBefore_AnotherRun)
 
   EXPECT_FALSE(FramePacingFrameRecordUtil::IsStaticBefore(record, marker));
 }
+
+
+TEST(Test_FramePacingFrameRecordUtil, IsFrameRecordLogged_StartMarkerOfATracedRun)
+{
+  FramePacingFrameRecord record = CreateHostRecord();
+  record.Kind = FramePacingMarkerKind::SequenceStart;
+  record.FrameRecordLogged = true;
+
+  EXPECT_TRUE(FramePacingFrameRecordUtil::IsFrameRecordLogged(record));
+}
+
+
+TEST(Test_FramePacingFrameRecordUtil, IsFrameRecordLogged_StartMarkerWithoutATrace)
+{
+  FramePacingFrameRecord record = CreateHostRecord();
+  record.Kind = FramePacingMarkerKind::SequenceStart;
+
+  EXPECT_FALSE(FramePacingFrameRecordUtil::IsFrameRecordLogged(record));
+}
+
+
+TEST(Test_FramePacingFrameRecordUtil, IsFrameRecordLogged_OnlyTheStartMarkerSaysIt)
+{
+  FramePacingFrameRecord record = CreateHostRecord();
+  record.FrameRecordLogged = true;
+
+  record.Kind = FramePacingMarkerKind::Frame;
+  EXPECT_FALSE(FramePacingFrameRecordUtil::IsFrameRecordLogged(record));
+
+  record.Kind = FramePacingMarkerKind::SequenceEnd;
+  EXPECT_FALSE(FramePacingFrameRecordUtil::IsFrameRecordLogged(record));
+}

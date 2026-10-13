@@ -2617,6 +2617,7 @@ namespace Fsl
     rStats.Static = addStatsRow(*markerGrid, markerRow, "Static");
     rStats.RunStartTime = addStatsRow(*markerGrid, markerRow, "Run start time");
     rStats.RunSequenceId = addStatsRow(*markerGrid, markerRow, "Sequence id");
+    rStats.FrameRecord = addStatsRow(*markerGrid, markerRow, "Frame record");
     rStats.SyncMarker = addStatsRow(*markerGrid, markerRow, "Sync marker");
 
     // The frame times and the late frames are the ones of the last two seconds, the work and the present wait the ones of the last frame
@@ -2884,9 +2885,10 @@ namespace Fsl
     if (!m_framePacing || !m_framePacing->TryGetLastMarker(info))
     {
       rStats.Kind->SetContent("none drawn yet");
-      for (UI::Label* pLabel : {rStats.FrameIndex.get(), rStats.AnimationTime.get(), rStats.RunId.get(), rStats.IntendedDisplayTime.get(),
-                                rStats.TargetFrameTime.get(), rStats.CpuStartTime.get(), rStats.CpuBusyTime.get(), rStats.PreferredFrameTime.get(),
-                                rStats.Static.get(), rStats.RunStartTime.get(), rStats.RunSequenceId.get(), rStats.SyncMarker.get()})
+      for (UI::Label* pLabel :
+           {rStats.FrameIndex.get(), rStats.AnimationTime.get(), rStats.RunId.get(), rStats.IntendedDisplayTime.get(), rStats.TargetFrameTime.get(),
+            rStats.CpuStartTime.get(), rStats.CpuBusyTime.get(), rStats.PreferredFrameTime.get(), rStats.Static.get(), rStats.RunStartTime.get(),
+            rStats.RunSequenceId.get(), rStats.FrameRecord.get(), rStats.SyncMarker.get()})
       {
         pLabel->SetContent(UnknownValue);
       }
@@ -3006,6 +3008,15 @@ namespace Fsl
     else
     {
       rStats.RunSequenceId->SetContent(UnknownValue);
+    }
+    // Only a start marker says whether the app logs the frame record of the run to its trace (--Trace)
+    if (info.Kind == FramePacingMarkerKind::SequenceStart)
+    {
+      rStats.FrameRecord->SetContent(info.FrameRecordLogged ? "logged" : "not logged");
+    }
+    else
+    {
+      rStats.FrameRecord->SetContent(UnknownValue);
     }
     rStats.SyncMarker->SetContent(info.SyncMarker ? "drawn" : "off");
   }
